@@ -190,6 +190,8 @@ def test_time():
 if __name__ == '__main__':
     path = os.environ["LOG"]
     log = Log(path)
-    print("repr(log[2])")
-    print(repr(log[2]))
+
+    logcut = float(os.environ.get("LOGCUT", "2")) 
+    print("repr(log[%s])   LOGCUT:%s " % (logcut, logcut))
+    print(repr(log[logcut]))
 

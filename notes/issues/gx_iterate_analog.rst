@@ -40,7 +40,7 @@ Iteration Procedure
 * change the logging positions to bracket calls that are taking the time  
 * fix low handling fruit 
 
-  1. CSGFoundry::inst_find_unique reduced from 20s to ~0s : it was finding uniques over all instances uneecessarily 
+  1. CSGFoundry::inst_find_unique reduced from 20s to ~0s : it was finding uniques over all instances without any need
   2. IAS_Builder::CollectInstances using a map to cache the SBT offsets reduces time for all inst from 0.42s to ~0s  
 
 

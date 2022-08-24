@@ -30,6 +30,21 @@ int SSim::Compare( const SSim* a , const SSim* b, bool dump  )
     return NPFold::Compare(a->fold, b->fold, dump ) ;    
 }
 
+std::string SSim::DescCompare( const SSim* a , const SSim* b, bool dump )
+{
+    std::stringstream ss ; 
+    ss << "SSim::DescCompare" 
+       << " a " << ( a ? "Y" : "N" )
+       << " b " << ( b ? "Y" : "N" )
+       << std::endl 
+       << NPFold::DescCompare( a->fold, b->fold, dump )  
+       << std::endl 
+       ; 
+    std::string s = ss.str();
+    return s ; 
+}
+
+
 SSim* SSim::Create()
 {
     if(INSTANCE) LOG(LEVEL) << "replacing SSim::INSTANCE" ; 

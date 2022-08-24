@@ -56,6 +56,7 @@ struct NPFold
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* rel); 
     static int Compare(const NPFold* a, const NPFold* b, bool dump ); 
+    static std::string DescCompare(const NPFold* a, const NPFold* b, bool dump ); 
 
     static int Compare(const FTSENT** one, const FTSENT** two); 
     static void Indent(int i); 
@@ -175,6 +176,35 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
 
     if(dump) std::cout << "NPFold::Compare mismatch " << mismatch << std::endl ; 
     return mismatch ; 
+}
+
+inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b, bool dump)
+{
+    int na = a ? a->num_items() : -1 ; 
+    int nb = b ? b->num_items() : -1 ; 
+    bool item_match = na == nb ;  
+
+    std::stringstream ss ; 
+    ss << "NPFold::DescCompare"
+       << " a " << ( a ? "Y" : "N" )
+       << " b " << ( b ? "Y" : "N" )
+       << std::endl 
+       << " na " << na 
+       << " nb " << nb 
+       << " item_match " << item_match
+       << std::endl 
+       << " a.desc " 
+       << std::endl 
+       << ( a ? a->desc() : "-" )
+       << " b.desc " 
+       << std::endl 
+       << ( b ? b->desc() : "-" )
+       << std::endl 
+       ;
+
+
+    std::string s = ss.str(); 
+    return s; 
 }
 
 

@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SPath.hh"
 
 #include "NNode.hpp"
@@ -38,6 +39,7 @@ GeoChain::GeoChain(Opticks* ok_)
     ggeo(new GGeo(ok, true)),  // live=true to initLibs and not load from cache
     mesh(nullptr),
     volume(nullptr),
+    sim(SSim::Create()),
     fd(new CSGFoundry),
     lvIdx(0),  
     soIdx(0)  
@@ -204,6 +206,12 @@ void GeoChain::save(const char* name, const char* base_) const
     fd->save(cfbase, rel );    // expects existing directory $CFBASE/CSGFoundry 
 
     CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
-    assert( 0 == CSGFoundry::Compare(fd, lfd ) );  
+    int rc = CSGFoundry::Compare(fd, lfd ) ; 
+    if(rc)
+    {
+        LOG(fatal) << " CSGFoundry::Compare(fd, lfd )  failure " << rc ;   
+        LOG(error) << CSGFoundry::DescCompare(fd, lfd ) ; 
+    }
+    assert( 0 == rc );  
 }
 

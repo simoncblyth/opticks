@@ -112,6 +112,8 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
+    static std::string DescCompare( const CSGFoundry* a, const CSGFoundry* b ); 
+
 
     template<typename T>
     static int CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b );

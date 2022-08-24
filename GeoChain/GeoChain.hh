@@ -49,6 +49,7 @@ class Opticks ;
 class GGeo ; 
 class GMesh ; 
 class GVolume ; 
+struct SSim ; 
 struct CSGFoundry ; 
 struct nnode ; 
 
@@ -61,6 +62,7 @@ struct GEOCHAIN_API GeoChain
     GGeo* ggeo ; 
     GMesh* mesh ;
     GVolume* volume ;
+    SSim*       sim ; 
     CSGFoundry* fd ;  
     int lvIdx ; 
     int soIdx ; 

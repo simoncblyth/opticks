@@ -409,18 +409,45 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "itra" , a->itra , b->itra ); 
     mismatch += CompareVec( "inst" , a->inst , b->inst ); 
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
-    /* 
-    mismatch += CompareVec( "ins"  , a->ins , b->ins ); 
-    mismatch += CompareVec( "sensor_identifier"  , a->sensor_identifier , b->sensor_identifier ); 
-    mismatch += CompareVec( "sensor_index"       , a->sensor_index      , b->sensor_index ); 
-    */
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
-
     mismatch += SSim::Compare( a->sim, b->sim, true ); 
 
     return mismatch ; 
 }
+
+
+std::string CSGFoundry::DescCompare( const CSGFoundry* a, const CSGFoundry* b )
+{
+    std::stringstream ss ; 
+    ss << "CSGFoundry::DescCompare" << std::endl ; 
+    int mismatch = 0 ; 
+    int cv = 0 ; 
+    cv = CompareVec( "solid", a->solid, b->solid ); mismatch += cv ; 
+    ss << "CompareVec.solid " <<  cv << std::endl ; 
+    cv = CompareVec( "prim", a->prim, b->prim );   mismatch += cv ; 
+    ss << "CompareVec.prim " <<  cv << std::endl ; 
+    cv = CompareVec( "node" , a->node , b->node );  mismatch += cv ;
+    ss << "CompareVec.node " <<  cv << std::endl ; 
+    cv = CompareVec( "plan" , a->plan , b->plan );  mismatch += cv ;
+    ss << "CompareVec.plan " <<  cv << std::endl ; 
+    cv = CompareVec( "tran" , a->tran , b->tran );  mismatch += cv ;
+    ss << "CompareVec.tran " <<  cv << std::endl ; 
+    cv = CompareVec( "itra" , a->itra , b->itra );  mismatch += cv ;
+    ss << "CompareVec.itra " <<  cv << std::endl ; 
+    cv = CompareVec( "inst" , a->inst , b->inst );  mismatch += cv ;
+    ss << "CompareVec.inst " <<  cv << std::endl ; 
+    cv = CompareVec( "gas" , a->gas , b->gas );  mismatch += cv ;
+    ss << "CompareVec.gas " <<  cv << std::endl ; 
+    cv = SSim::Compare( a->sim, b->sim, true ) ;  mismatch += cv ;
+    ss << "SSim::Compare " <<  cv << std::endl ; 
+    ss << SSim::DescCompare( a->sim, b->sim, true) << std::endl ; 
+    ss << " mismatch " << mismatch << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 
 template<typename T>
