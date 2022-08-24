@@ -49,6 +49,14 @@ esac
 
 arg=${1:-$defarg}
 
+case $arg in
+  fold) QUIET=1 ;;
+  analog)  QUIET=1 ;;
+esac
+
+
+
+
 bin=G4CXRenderTest
 log=$bin.log
 gxrdir=$(dirname $BASH_SOURCE)

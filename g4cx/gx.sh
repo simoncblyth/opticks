@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 
 
-export QUIET=1
+#export QUIET=1
 
 ./gxs.sh $* 
 

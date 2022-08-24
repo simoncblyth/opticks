@@ -76,6 +76,7 @@ arg=${1:-$defarg}
 
 case $arg in
   fold) QUIET=1 ;;
+  analog)  QUIET=1 ;;
 esac
 
 bin=G4CXSimtraceTest

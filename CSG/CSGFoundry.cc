@@ -2783,7 +2783,6 @@ CSGFoundry::getFrame
 Replacing most of CSGOptiX::setComposition
 
 **/
-const char* CSGFoundry::FRS = "-1" ; 
 
 const char* CSGFoundry::getFrame_NOTES = R"(
 CSGFoundry::getFrame_NOTES
@@ -2813,6 +2812,7 @@ Grab these from remote with::
 
 )" ; 
 
+const char* CSGFoundry::FRS = "-1" ; 
 
 sframe CSGFoundry::getFrame() const 
 {

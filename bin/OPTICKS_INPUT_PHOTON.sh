@@ -3,6 +3,8 @@ usage(){ cat << EOU
 bin/OPTICKS_INPUT_PHOTON.sh 
 ==============================
 
+Shortcut for editing this : oip
+
 Usage example::
 
    source ../bin/OPTICKS_INPUT_PHOTON.sh
@@ -18,6 +20,10 @@ OPTICKS_INPUT_PHOTON
 
 OPTICKS_INPUT_PHOTON_FRAME
    moi_or_iidx string eg "Hama:0:1000" OR "35000", default of SEventConfig::InputPhotonFrame
+
+   HMM: note that this is no longer being set by the oip scripts, 
+   its now defined and exported by COMMON.sh  see com_ 
+
 
 Full list of scripts relevant to OPTICKS_INPUT_PHOTON::
 

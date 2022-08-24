@@ -6,7 +6,7 @@ COMMON.sh
 Shortcut bash functions:
 
 com_
-    Edit the COMMON.sh config scripts
+    Edit the COMMON.sh config scripts 
 geom_
     Edit the GEOM_.sh config
 oip

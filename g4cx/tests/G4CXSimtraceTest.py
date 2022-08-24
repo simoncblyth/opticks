@@ -74,10 +74,10 @@ if __name__ == '__main__':
 
     if not a is None and not a.seq is None:
         a_nib = seqnib_(a.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
-        a_gpos_ = a.record[PIDX,:a_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
+        a_gpos_ = a.record[PIDX,:a_nib[PIDX],0,:3]   # global frame photon step record positions of single PIDX photon
         a_gpos  = np.ones( (len(a_gpos_), 4 ) )
         a_gpos[:,:3] = a_gpos_
-        a_lpos = np.dot( a_gpos, t.sframe.w2m ) 
+        a_lpos = np.dot( a_gpos, t.sframe.w2m )      # a global positions into gxt target frame 
     else:
         a_lpos = None
     pass
