@@ -84,9 +84,9 @@ std::string NGrid<FVec,IVec,DIM>::desc(const IVec& ijk, const char* msg)
 
 
 template<typename FVec,typename IVec,int DIM>
-NGrid<FVec,IVec,DIM>::NGrid( int level )  // NB everything from the level 
+NGrid<FVec,IVec,DIM>::NGrid( int level_ )  // NB everything from the level 
     :
-    level(level),
+    level(level_),
     size( 1 << level ),
     nloc( 1 << (DIM*level) ),
     nijk( size, size, size),
@@ -142,7 +142,6 @@ IVec NGrid<FVec,IVec,DIM>::ijk(const int c) const
     assert(valid);
 
     morton3 loc(c);  
-    //unsigned long long i, j, k ;
     uint64_t i, j, k ;  
     loc.decode(i, j, k); 
     return IVec(i, j, k);

@@ -20,8 +20,7 @@
 #include "NGLM.hpp"
 #include "NGrid3.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 typedef NGrid<glm::vec3, glm::ivec3, 3> G3 ; 
@@ -30,19 +29,21 @@ typedef NMultiGrid3<glm::vec3, glm::ivec3> MG3 ;
 
 void test_basics()
 {
+    LOG(info); 
     int msk = (1 << 6) - 1 ;  // 0b111111 ;  
+    int level = 3 ; 
 
-    G3 grid(3);
+    G3 grid(level);
 
-    LOG(info) << grid.desc();
+    std::cout << grid.desc() << std::endl ;
     for(int loc=0 ; loc < grid.nloc ; loc++)
     {
         glm::ivec3 ijk = grid.ijk(loc) ;   // z-order morton index -> ijk
-        int loc2 = grid.loc(ijk);      // ijk -> morton
+        int loc2 = grid.loc(ijk);          // ijk -> morton index
         assert( loc2 == loc);
 
-        glm::vec3  xyz = grid.fpos(ijk);    // ijk -> fractional 
-        int loc3 = grid.loc(xyz);       // fractional -> morton
+        glm::vec3  xyz = grid.fpos(ijk);   // ijk -> fractional 
+        int loc3 = grid.loc(xyz);          // fractional -> morton
         assert( loc3 == loc);
 
         glm::ivec3 ijk2 = grid.ijk(xyz);   // fractional -> ijk 
@@ -50,12 +51,12 @@ void test_basics()
 
         if((loc & msk) == msk )
         {
-
-             LOG(info) 
-                   << " loc " << std::setw(5) << loc 
-                   << " ijk " << glm::to_string(ijk)
-                   << " fpos " << glm::to_string(xyz) 
-                   ; 
+            std::cout 
+                << " loc " << std::setw(5) << loc 
+                << " ijk " << glm::to_string(ijk)
+                << " fpos " << glm::to_string(xyz) 
+                << std::endl 
+                ; 
 
         }
 
@@ -66,9 +67,13 @@ void test_basics()
 
 void test_coarse_nominal()
 {
-
+    LOG(info); 
     G3 nominal(7);
     G3 coarse(5);
+
+    assert( nominal.level == 7 ); 
+    assert( coarse.level == 5 ); 
+
     int elevation = nominal.level - coarse.level ;
 
     int n_loc = 0.45632*nominal.nloc ;    // some random loc
@@ -86,7 +91,7 @@ void test_coarse_nominal()
     // coarse level is parent or grandparent etc.. in tree
     // less nloc when go coarse : so must down shift 
 
-    int c_loc = n_loc >> (3*elevation) ;
+    int c_loc = n_loc >> (3*elevation) ;   // 3 having a bit for each dimension ?
     int c_size = 1 << elevation ; 
 
 
@@ -133,17 +138,8 @@ void test_coarse_nominal()
 
 }
 
-
-
-
-int main(int argc, char** argv)
+void test_multigrid()
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
-
-    test_basics();
-    test_coarse_nominal();
-
     MG3 mg ; 
     G3* g5 = mg.grid[5] ; 
     G3* g7 = mg.grid[7] ; 
@@ -154,7 +150,18 @@ int main(int argc, char** argv)
     glm::vec3 fpos(0.1f, 0.2f, 0.3f ); 
     mg.dump("NMultiGrid3 dump, eg pos", fpos);
     mg.dump("NMultiGrid3 dump");
-   
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_basics();
+    test_coarse_nominal();
+    /*
+    test_multigrid();
+    */ 
 
     return 0 ; 
 }
