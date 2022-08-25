@@ -149,7 +149,26 @@ How to proceed ? smortonhist2d.h smortonhist2d.py
 * then the current simple grid loop of SFrameGenstep::MakeCenterExtentGensteps 
   can be guided by where the intersects from the prior run actually are 
 
+Whacky alternative sparse approach
+-------------------------------------
 
+* a simple list of morton indices at some resolution level can act as a sparse histogram
+* the morton uint64_t indices could be stored within the simtrace array
+* then to follow the intersects just need to find uniques after some bitshift
+
+  * actually its more convenient not to bitshift, just zero-ing the least significant bits 
+    in groups of 2 (for morton2d) will give coarser coordinates without needing to be 
+    concerned with scale changes   
+
+* the unique indices directly give coordinates for the gensteps that are close to the intersects  
+* this approach avoids some of the costs of going to higher resolution as there 
+  is no need for a mostly empty histo array and slow grid loops over it 
+
+
+See::
+
+    npy/mortonlib/morton2d_test.sh
+  
 
 bit shift morton index
 --------------------------

@@ -27,7 +27,7 @@ SSim* SSim::Get()
 
 int SSim::Compare( const SSim* a , const SSim* b, bool dump  )
 {
-    return NPFold::Compare(a->fold, b->fold, dump ) ;    
+    return ( a && b ) ? NPFold::Compare(a->fold, b->fold, dump ) : -1 ;    
 }
 
 std::string SSim::DescCompare( const SSim* a , const SSim* b, bool dump )
@@ -37,7 +37,7 @@ std::string SSim::DescCompare( const SSim* a , const SSim* b, bool dump )
        << " a " << ( a ? "Y" : "N" )
        << " b " << ( b ? "Y" : "N" )
        << std::endl 
-       << NPFold::DescCompare( a->fold, b->fold, dump )  
+       << ( ( a && b ) ? NPFold::DescCompare( a->fold, b->fold, dump ) : "-" )  
        << std::endl 
        ; 
     std::string s = ss.str();

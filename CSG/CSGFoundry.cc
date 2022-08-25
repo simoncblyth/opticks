@@ -2287,7 +2287,9 @@ void CSGFoundry::load( const char* dir_ )
 
     LOG(LEVEL) << "[ SSim::Load " ;  
     sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
-    LOG(LEVEL) << "] SSim::Load " ;  
+    LOG(LEVEL) << "] SSim::Load " ; 
+    if( sim == nullptr ) sim = SSim::Get() ;  // NEED SAME ENV AS ctor
+ 
     mtime = MTime(dir, "solid.npy"); 
 
     LOG(LEVEL) << "] loaddir " << loaddir ; 
