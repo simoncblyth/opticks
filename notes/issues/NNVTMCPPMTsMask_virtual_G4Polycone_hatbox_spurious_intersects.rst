@@ -88,10 +88,126 @@ From jps/PMTSim "NNVTMaskManager::getSolid" the relevant mask names are::
 
 
 
-Use morton codes to select spurious isolated intersects ?
-------------------------------------------------------------
+Use morton codes to select spurious isolated intersects for nmskSolidMask
+-----------------------------------------------------------------------------
 
 * https://blog.claude.nl/tech/timing-morton-code-on-python-on-apple-silicon/
+
+::
+
+    161     t_pos = SimtracePositions(t.simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
+    162     print(t_pos)
+    163 
+    164     if SPURIOUS:
+    165         u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
+    166     else:
+    167         t_spos = None
+    168     pass
+
+
+::
+
+    GEOM=nmskSolidMask SPURIOUS=1 MASK=t ZZ=0.099,0.101 XX=37.042,37.044 ./gxt.sh ana
+
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos [128130] 
+    INFO:opticks.ana.pvplt:upos[i_kpos] [[37.043  0.     0.1    1.   ]] 
+
+
+HMM: what would be useful is to rerun the index with spurious intersect using the simtrace origin and direction
+with both the CPU and GPU intersects 
+
+::
+
+   CSG/tests/CSGQueryTest.sh
+   CSG/tests/CSGQueryTest.cc
+
+Start::
+
+   CSG/CSGFoundrySimtraceRerunTest.sh
+   CSG/tests/CSGFoundrySimtraceRerunTest.cc 
+
+
+
+HMM so need to get the simtrace index, at moment have upos index::
+
+    In [2]: t_pos.upos.shape
+    Out[2]: (222743, 4)
+
+    In [3]: t.simtrace.shape
+    Out[3]: (627000, 4, 4)
+
+As t_pos holds the mask can workout the origin simtrace index::
+
+    In [5]: t_pos.mask.shape
+    Out[5]: (627000,)
+
+    In [7]: np.where(t_pos.mask)[0]
+    Out[7]: array([     7,     18,     38,     68,     83, ..., 626961, 626963, 626976, 626982, 626983])
+
+    In [8]: np.where(t_pos.mask)[0].shape
+    Out[8]: (222743,)
+
+    In [9]: wpos = np.where(t_pos.mask)[0] ; wpos
+    Out[9]: array([     7,     18,     38,     68,     83, ..., 626961, 626963, 626976, 626982, 626983])
+
+    In [16]:  j_kpos = wpos[i_kpos][0] ; j_kpos
+    Out[16]: 348547
+
+    In [17]: jp = t.simtrace[j_kpos] ; jp 
+    Out[17]: 
+    array([[ -0.   ,  -0.   ,  -1.   ,  80.85 ],
+           [ 37.043,   0.   ,   0.1  ,   0.   ],
+           [ 52.8  ,   0.   , -79.2  ,   0.   ],
+           [ -0.195,   0.   ,   0.981,   0.   ]], dtype=float32)
+
+
+    In [20]: jp[3,:3]
+    Out[20]: array([-0.195,  0.   ,  0.981], dtype=float32)
+
+    In [21]: jp[2,:3]
+    Out[21]: array([ 52.8,   0. , -79.2], dtype=float32)
+
+    In [22]: jp[2,:3] + jp[0,3]*jp[3,:3]      ## origin + dist*direction  at intersect 
+    Out[22]: array([37.043,  0.   ,  0.1  ], dtype=float32)
+
+
+
+::
+
+    269 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
+    270 {
+    271     unsigned idx = launch_idx.x ;  // aka photon_id
+    272     sevent* evt  = params.evt ;
+    273     if (idx >= evt->num_simtrace) return;
+    274 
+    275     unsigned genstep_id = evt->seed[idx] ;
+    276     if(idx == 0) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id );
+    277 
+    278     const quad6& gs     = evt->genstep[genstep_id] ;
+    279 
+    280     qsim* sim = params.sim ;
+    281     curandState rng = sim->rngstate[idx] ;
+    282 
+    283     quad4 p ;
+    284     sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );
+    285 
+    286     const float3& pos = (const float3&)p.q0.f  ;
+    287     const float3& mom = (const float3&)p.q1.f ;
+    288 
+    289     trace(
+    290         params.handle,
+    291         pos,
+    292         mom,
+    293         params.tmin,
+    294         params.tmax,
+    295         prd
+    296     );
+    297 
+    298     evt->add_simtrace( idx, p, prd, params.tmin );
+    299 
+    300 }
+
 
 
 

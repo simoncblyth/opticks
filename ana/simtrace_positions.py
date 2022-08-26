@@ -107,7 +107,7 @@ class SimtracePositions(object):
             lpos[:,:3] *= extent 
         pass
 
-        upos = lpos if local else gpos
+        upos = lpos if local else gpos   # local usually True 
 
         poslim = {}
         poslim[X] = np.array([upos[:,X].min(), upos[:,X].max()])

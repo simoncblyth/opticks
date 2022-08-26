@@ -463,7 +463,7 @@ a.q0.f
 a.q1
     intersect position from pos+t*dir, 0.
 a.q2
-    initial pos, tmin
+    initial pos, prd.boundary (formerly tmin)
 a.q3 
     initial dir, prd.identity
 
@@ -474,19 +474,19 @@ SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const qua
     float t = prd->distance() ; 
     quad4 a ;  
 
-    a.q0.f  = prd->q0.f ; 
+    a.q0.f  = prd->q0.f ;                // float4 : intersect normal and distance 
 
-    a.q1.f.x = p.q0.f.x + t*p.q1.f.x ; 
+    a.q1.f.x = p.q0.f.x + t*p.q1.f.x ;   // intersect position 
     a.q1.f.y = p.q0.f.y + t*p.q1.f.y ; 
     a.q1.f.z = p.q0.f.z + t*p.q1.f.z ; 
     a.q1.i.w = 0.f ;  
 
-    a.q2.f.x = p.q0.f.x ; 
+    a.q2.f.x = p.q0.f.x ;                //  initial pos 
     a.q2.f.y = p.q0.f.y ; 
     a.q2.f.z = p.q0.f.z ; 
-    a.q2.u.w = prd->boundary() ; // was tmin, but expecting bnd from CSGOptiXSimtraceTest.py:Photons
+    a.q2.u.w = prd->boundary() ; 
 
-    a.q3.f.x = p.q1.f.x ;
+    a.q3.f.x = p.q1.f.x ;                // initial dir
     a.q3.f.y = p.q1.f.y ;
     a.q3.f.z = p.q1.f.z ;
     a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 

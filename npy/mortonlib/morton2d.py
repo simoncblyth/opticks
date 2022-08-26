@@ -98,17 +98,20 @@ def test_one():
     print("test_one")
     x0 = np.array( (0x11111111,), dtype=np.uint64 )
     y0 = np.array( (0x22222222,), dtype=np.uint64 ) 
+
     k0 = morton2d.Key(x0, y0)
+
     print(x0)
     print(y0)
     print(k0)
 
-    y1 = morton2d.CompactBits(k0)
+    x1,y1 = morton2d.Decode(k0)
+    print(x1)
     print(y1)
 
-    x2,y2 = morton2d.Decode(k0)
-    print(x2)
-    print(y2)
+    assert np.all( x0 == x1 )
+    assert np.all( y0 == y1 )
+
 
 
 

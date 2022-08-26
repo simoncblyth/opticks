@@ -39,6 +39,7 @@ from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 from opticks.npy.mortonlib.morton2d import morton2d 
 
 
+SPURIOUS = "SPURIOUS" in os.environ
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
 FEAT = os.environ.get("FEAT", "pid" )
@@ -74,8 +75,8 @@ def spurious_2d_outliers(bbox, upos):
         pass
     pass 
     assert len(dim) == 2 
-    assert len(np.where(fpos > 1)[0]) == 0 
-    assert len(np.where(fpos < 0)[0]) == 0 
+    assert len(np.where(fpos > 1)[0]) == 0, "SPURIOUS running needs to use eg MASK=t " 
+    assert len(np.where(fpos < 0)[0]) == 0, "SPURIOUS running needs to use eg MASK=t "
     pass
     ipos = np.array( fpos*0xffffffff , dtype=np.uint64 ) 
     kpos = morton2d.Key(ipos[:,dim[0]], ipos[:,dim[1]]) 
@@ -160,8 +161,11 @@ if __name__ == '__main__':
     t_pos = SimtracePositions(t.simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
     print(t_pos)
 
-    u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
-    
+    if SPURIOUS:
+        u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
+    else:
+        t_spos = None
+    pass
 
     if SIMPLE:
         pl = pvplt_plotter()
