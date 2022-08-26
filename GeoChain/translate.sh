@@ -46,22 +46,13 @@ Usage::
 To render the resulting CSG geometry on GPU node use eg::
 
    cx
-   ./b7     # OptiX 7
-   om       # for pre-7
-  
-   ./cxs.sh              # 2D python intersect render, using center-extent-gensteps 
-                         # set GEOM/geom and edit cxs.sh to configure the planar grid 
-                         # of center-extent-gensteps to probe the shape in YZ XZ or XY planes
-                         #
-
-   ./cxr_geochain.sh     # 3d rendered view 
-
+   ./cxs_geochain.sh     # 2D python intersect render, using center-extent-gensteps 
+   ./cxr_geochain.sh     # 3D rendered view 
 
 2D intersect CSG geometry on CPU::
 
    c 
    ./csg_geochain.sh 
-
 
 
 NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS WHICH MUST BE CONSISTENT

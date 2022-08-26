@@ -19,6 +19,11 @@ Test with::
 
 See notes with SOpticksResource::DefaultOutputDir for discussion of change to directory layout. 
 
+
+NOTE that this does not set CFBASE but as that was found 
+confusing as sometimes an executables loads from CFBASE and sometimes
+it writes to it. 
+
 EOU
 }
 
@@ -30,7 +35,9 @@ EOU
 
 #geom=hama_body_log
 #geom=J001
-geom=J003
+#geom=J003
+geom=nmskSolidMaskVirtual
+
 
 export GEOM=${GEOM:-$geom}
 
@@ -63,6 +70,14 @@ elif [ "$GEOM" == "J003" ]; then
 
     export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
 
+elif [ "$GEOM" == "J003" ]; then
+
+    export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
+
+else 
+    case $GEOM in 
+        nmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
+    esac
 fi 
 
 case $GEOM in 
@@ -82,22 +97,12 @@ cg=${!cg_}
 
 TMP_GEOMDIR=/tmp/$USER/opticks/$GEOM
 GEOMDIR=${cg:-$TMP_GEOMDIR}
-
 export GEOMDIR 
 
 if [ -z "$QUIET" ]; then 
-   vars="BASH_SOURCE TMP_GEOMDIR GEOMDIR" 
+   vars="BASH_SOURCE gp_ gp cg_ cg TMP_GEOMDIR GEOMDIR" 
    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done  
    echo 
 fi 
-
-notes(){ cat << EON
-
-Formerly this set CFBASE but thats confusing 
-as sometimes an executables loads from CFBASE and sometimes
-it writes to it. 
-
-EON
-}
 
 
