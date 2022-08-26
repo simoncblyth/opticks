@@ -11,7 +11,7 @@ is no need for genstep sources.
 Essentially want to be able to increase resolution without 
 directly scaling the time/storage costs of huge intersect arrays. 
 
-Can think of two possible approaches:
+Can think of three possible approaches:
 
 1. calculate sdf of a set of prim at each candidate genstep position
    and apply sdf distance cuts
@@ -31,9 +31,17 @@ Can think of two possible approaches:
    * see npy/tests/NGrid3Test.cc for some work on multi-resolution addressing 
      using Morton codes : looks to allow shifting between resolution 
      levels by bit shifting the morton index
-      
 
-Favor the 2D histo approach for its generality and pragmatism.  
+3. use uniqing of bit mask manipulated morton codes of 2d intersect positions 
+   to act as a sparse histogram without any traditional+slow "histogramming", see::
+
+       npy/tests/mortonlib/morton2d_test.sh
+       npy/tests/mortonlib/domain2d_test.sh
+          
+
+Favor approach 3 for its low resource nature, just bit manipulations 
+on a vector of uint64_t means can work fast with very high resolutions
+and low overhead.  
 
 
 simtrace

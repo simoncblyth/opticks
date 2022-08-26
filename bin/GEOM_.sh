@@ -36,8 +36,9 @@ EOU
 #geom=hama_body_log
 #geom=J001
 #geom=J003
-geom=nmskSolidMaskVirtual
-
+#geom=nmskSolidMaskVirtual
+geom=nmskSolidMask
+#geom=nmskSolidMaskTail
 
 export GEOM=${GEOM:-$geom}
 
@@ -75,8 +76,13 @@ elif [ "$GEOM" == "J003" ]; then
     export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
 
 else 
+    # handling test geometries from j/PMTSim aka jps 
     case $GEOM in 
+        hama*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
+        nnvt*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
+        hmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
         nmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
+        lchi*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
     esac
 fi 
 

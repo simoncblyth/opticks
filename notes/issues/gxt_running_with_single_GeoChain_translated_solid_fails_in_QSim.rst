@@ -1,5 +1,26 @@
-gxt_running_with_single_GeoChain_translated_solid_fails_in_QSim
-==================================================================
+gxt_running_with_single_GeoChain_translated_solid_fails_in_QSim : FIXED
+==========================================================================
+
+Fixed this issue
+------------------
+
+::
+
+    epsilon:opticks blyth$ git commit -m "fixes allowing gxt.sh ana to work for a single GeoChain translated solid geometry, which does not have CSGFoudry/SSim dir " 
+    [master 0dcb84879] fixes allowing gxt.sh ana to work for a single GeoChain translated solid geometry, which does not have CSGFoudry/SSim dir
+     7 files changed, 340 insertions(+), 7 deletions(-)
+     create mode 100644 g4cx/tests/CSGFoundryLoadTest.py
+     create mode 100644 notes/issues/gxt_running_with_single_GeoChain_translated_solid_fails_in_QSim.rst
+    epsilon:opticks blyth$ git push 
+    Counting objects: 16, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (16/16), done.
+    Writing objects: 100% (16/16), 5.52 KiB | 5.52 MiB/s, done.
+    Total 16 (delta 13), reused 0 (delta 0)
+    To bitbucket.org:simoncblyth/opticks.git
+       5778865ed..0dcb84879  master -> master
+    epsilon:opticks blyth$ 
+
 
 
 Setup
@@ -19,8 +40,8 @@ Run the geochain translation::
     ./translate.sh 
 
 
-Introduce new "full" geometry to "geom_" using CFBaseFromGEOM approach
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Introduce new "full" geometry that happens to be a single solid to "geom_" using CFBaseFromGEOM approach
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -61,36 +82,7 @@ QCerenkov is not needed for simtrace, so can probably just do some skipping in s
                        TMP_GEOMDIR : /tmp/blyth/opticks/nmskSolidMaskVirtual 
                            GEOMDIR : /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual 
 
-                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON_.sh
-                              GEOM : nmskSolidMaskVirtual
-              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
-      OPTICKS_INPUT_PHOTON_ABSPATH : /home/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy
-        OPTICKS_INPUT_PHOTON_LABEL : RandomSpherical10
-                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON.sh 
-                         ScriptDir : ./../bin 
-              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy 
-        OPTICKS_INPUT_PHOTON_FRAME :  
-      OPTICKS_INPUT_PHOTON_ABSPATH : /home/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy 
-
-                       BASH_SOURCE : ./../bin/COMMON.sh
-                              GEOM : nmskSolidMaskVirtual
-              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
-        OPTICKS_INPUT_PHOTON_FRAME : 
-                               MOI : 
-    gdb -ex r --args G4CXSimtraceTest -ex r
-    Fri Aug 26 18:24:24 CST 2022
-
-    2022-08-26 18:24:28.425 INFO  [182404] [G4CXOpticks::setGeometry@137]  argumentless 
-    2022-08-26 18:24:28.425 INFO  [182404] [G4CXOpticks::setGeometry@150] [ CFBASEFromGEOM 
-    2022-08-26 18:24:28.425 INFO  [182404] [G4CXOpticks::setGeometry@151] [ CSGFoundry::Load 
-    2022-08-26 18:24:28.426 INFO  [182404] [CSGFoundry::Load@2456] [ argumentless 
-    2022-08-26 18:24:28.427 INFO  [182404] [CSGFoundry::ResolveCFBase@2519]  cfbase /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual readable 1
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]                      : -
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]                 HOME : /home/blyth
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]                 USER : blyth
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]               SCRIPT : -
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]                  PWD : /data/blyth/junotop/opticks/g4cx
-    2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::setMeta@138]              CMDLINE : -
+    ...
     2022-08-26 18:24:28.429 INFO  [182404] [CSGFoundry::load@2264] [ loaddir /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual/CSGFoundry
     2022-08-26 18:24:28.430 INFO  [182404] [CSGFoundry::loadArray@2617]  ni     1 nj 3 nk 4 solid.npy
     2022-08-26 18:24:28.430 INFO  [182404] [CSGFoundry::loadArray@2617]  ni     1 nj 4 nk 4 prim.npy
@@ -155,38 +147,9 @@ QCerenkov is not needed for simtrace, so can probably just do some skipping in s
     #11 0x0000000000408154 in main (argc=3, argv=0x7fffffff5ef8) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimtraceTest.cc:24
     (gdb) 
 
-::
 
-    244 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
-    245 {
-    246 #ifdef __APPLE__
-    247     return ;
-    248 #endif
-    249     fd = fd_ ;
-    250     LOG(LEVEL) << "[ fd " << fd ;
-    251 
-    252     LOG(LEVEL) << " [ new SEvt " ;
-    253     SEvt* sev = new SEvt ;
-    254     LOG(LEVEL) << " ] new SEvt " ;
-    255 
-    256     sev->setReldir("ALL");
-    257     sev->setGeo((SGeo*)fd);
-    258 
-    259     LOG(LEVEL) << "[ CSGOptiX::Create " ;
-    260     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
-    261     LOG(LEVEL) << "] CSGOptiX::Create " ;
-    262     qs = cx->sim ;
-    263     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ;
-    264 
-    265 
-
-
-
-
-Try to early exit QSim::UploadComponents for simtrace running 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
+Early exit QSim::UploadComponents for simtrace running causes crash on launch, so instead just skip QCerenkov for simtrace
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -204,7 +167,6 @@ Try to early exit QSim::UploadComponents for simtrace running
      112     if(is_simtrace) LOG(LEVEL) << " early exit for simtrace running " ;
      113 
      114 
-
 
 This fails at launch::
 
@@ -243,18 +205,7 @@ Skipping QCerenkov completes but problem with ana finding CFBase::
                                 cg : /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual 
                        TMP_GEOMDIR : /tmp/blyth/opticks/nmskSolidMaskVirtual 
                            GEOMDIR : /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual 
-
-                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON_.sh
-                              GEOM : nmskSolidMaskVirtual
-              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
-      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy
-        OPTICKS_INPUT_PHOTON_LABEL : RandomSpherical10
-                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON.sh 
-                         ScriptDir : ./../bin 
-              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy 
-        OPTICKS_INPUT_PHOTON_FRAME :  
-      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy 
-
+    ...
                        BASH_SOURCE : ./../bin/COMMON.sh
                               GEOM : nmskSolidMaskVirtual
               OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
@@ -283,7 +234,7 @@ Skipping QCerenkov completes but problem with ana finding CFBase::
     ipdb>                                                                                                                                                                                                     
 
 
-Fixed this by changing gxt.sh grab to grab one level up::
+Fixed this by changing "gxt.sh grab" to grab one level up::
 
     185 if [ "grab" == "$arg" ]; then
     186     #source $gxtdir/../bin/rsync.sh $UBASE 

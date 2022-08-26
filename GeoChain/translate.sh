@@ -1,5 +1,7 @@
 #!/bin/bash -l 
-source $PWD/../bin/GEOM.sh trim    ## sets GEOM envvar with projection suffix eg _XZ trimmed 
+
+[ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim   
+
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 GeoChain/translate.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
@@ -48,6 +50,14 @@ To render the resulting CSG geometry on GPU node use eg::
    cx
    ./cxs_geochain.sh     # 2D python intersect render, using center-extent-gensteps 
    ./cxr_geochain.sh     # 3D rendered view 
+
+It is also possible to use gxt.sh after adding a GEOM setup to "geom_" using the "\$GEOM_CFBaseFromGEOM" approach::
+
+   gx
+   ./gxt.sh           # workstation
+   ./gxt.sh grab      # laptop
+   ./gxt.sh ana       # laptop
+
 
 2D intersect CSG geometry on CPU::
 
@@ -175,8 +185,10 @@ which $bin
 opts=""
 #opts="$opts --x4tubsnudgeskip 0"
 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
-
 #DEBUG=1
+
+# TODO: dont accept options via commandline : do anything like that via envvars
+
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then 
         lldb__ $bin $opts 

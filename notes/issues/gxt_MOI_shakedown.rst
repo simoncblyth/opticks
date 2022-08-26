@@ -1,6 +1,13 @@
 gxt_MOI_shakedown
 ===================
 
+
+Next
+------
+
+* :doc:`NNVTMCPPMTsMask_virtual_G4Polycone_hatbox_spurious_intersects`
+
+
 Setup
 -------
 
@@ -10,168 +17,6 @@ Setup
     epsilon:g4cx blyth$ ./gxs.sh grab
     epsilon:g4cx blyth$ ./gxt.sh ana
     epsilon:g4cx blyth$ MASK=t ./gxt.sh ana
-
-
-TODO : unfixed PMT mask cutting across the PMT is apparent
--------------------------------------------------------------
-
-This was fixed previously in j, 
-now that the integration SVN commits are done can 
-bring over the fix from j into SVN. 
-
-
-How to investigate spurious intersects
-----------------------------------------
-
-* add G4VSolid implementation to U4VolumeMaker (or PMTSim) 
-  and test in isolation  using GeoChain
-
-* try getting the csg intersect machinery on CPU to give the same thing 
-
-* check with Geant4 X4SolidIntersect  
-
-
-Investigate Issue 3 with GeoChain
--------------------------------------
-
-geom::
-
-    nmskSolidMaskVirtual_XZ
-
-
-gc::
-
-   ./translate.sh   
-
-
-::
-
-    2022-08-24 16:57:19.841 INFO  [37434348] [CSGFoundry::save_@2080] /tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry
-    stree::save_ /tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry/SSim/stree
-     na 0 nb 2 item_match 0
-    2022-08-24 16:57:19.845 FATAL [37434348] [GeoChain::save@212]  CSGFoundry::Compare(fd, lfd )  failure -1
-     na 0 nb 2 item_match 0
-    2022-08-24 16:57:19.845 ERROR [37434348] [GeoChain::save@213] CSGFoundry::DescCompare
-    CompareVec.solid 0
-    CompareVec.prim 0
-    CompareVec.node 0
-    CompareVec.plan 0
-    CompareVec.tran 0
-    CompareVec.itra 0
-    CompareVec.inst 0
-    CompareVec.gas 0
-    SSim::Compare -1
-    SSim::DescCompare a Y b Y
-    NPFold::DescCompare a Y b Y
-     na 0 nb 2 item_match 0
-     a.desc 
-    NPFold::desc
-     savedir:/tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry/SSim subfold 0 ff 0 kk 0 aa 0
-     b.desc 
-    NPFold::desc
-     loaddir:/tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry/SSim subfold 0 ff 0 kk 2 aa 2
-                     stree/subs_freq/key.npy : ()
-                     stree/subs_freq/val.npy : ()
-
-
-
-     mismatch -1
-
-    Assertion failed: (0 == rc), function save, file /Users/blyth/opticks/GeoChain/GeoChain.cc, line 215.
-
-
-Hmm need to suppress this subs_freq 0,0 that is somehow happening from stree save/load::
-
-    In [1]: v = np.load("/tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry/SSim/stree/subs_freq/val.npy")
-    In [2]: k = np.load("/tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskVirtual/CSGFoundry/SSim/stree/subs_freq/key.npy")
-    In [3]: v
-    Out[3]: array(0, dtype=int32)
-    In [4]: k
-    Out[4]: array(0, dtype=int8)
-    In [3]: v.shape
-    Out[3]: ()
-    In [4]: k.shape
-    Out[4]: ()
-
-
-
-
-
-
-Issue 3 : Note some slop intersects from NNVTMCPPMTsMask_virtual hatbox G4Polycone
---------------------------------------------------------------------------------------
-
-* some on union coincidence plane between polycone and cylinder 
-
-  * actually whole shape is a single G4Polycone with 4 planes, 
-    it seems the anti-coincidence is not working possibly 
-    due to equal radii 
-
-  * this is an overcomplicated and expensive way to implement 
-    the cylinder part of the hatbox : using 3 polycone planes 
-
-   * HMM the Opticks G4Polycone translation could notice the 
-     equal radii and hence simplify the modelling in the translation
-
-   * TODO: need to get the shape from PMTSim nmsk into GeoChain
-     
-     * while doing this can think about more direct shape conversion 
-
-* also some unexpected ones mid-cylinder 
-
-  * using ZZ=0,1 shows that they are on the z=1mm plane 
-  * which is unexpected as the implementation makes it look like the 
-    G4Polycone plane is at 0 ?  Did the anti-coincicence kick in wrong somehow ?
-  * potentially changing to use 3 planes, not 4, could avoid the issue 
-    and simplify the shape
-
-
-::
-
-    244 void
-    245 NNVTMaskManager::makeMaskOutLogical() {
-    ...
-    268     // BELOW is using 4 zplanes
-    269     G4double zPlane[] = {
-    270                         -height_virtual,
-    271                         0, // at equator
-    272                         htop_out/2, // at half H_front
-    273                         htop_out + MAGIC_virtual_thickness
-    274                         };
-    275     G4double rInner[] = {0.,
-    276                          0., // at equator
-    277                          0., // at half H_front
-    278                          0.};
-    279     G4double rOuter[] = {mask_radiu_virtual,
-    280                          mask_radiu_virtual, // at equator
-    281                          mask_radiu_virtual, // at half H_front
-    282                          mask_radiu_virtual/2}; // reduce the front R
-    283 
-    284 
-    285     G4VSolid* SolidMaskVirtual = new G4Polycone(
-    286                 objName()+"sMask_virtual",
-    287                                 0,
-    288                                 360*deg,
-    289                                 // 2,
-    290                                 4,
-    291                                 zPlane,
-    292                                 rInner,
-    293                                 rOuter
-    294                                 );
-
-
-
-
-
-
-::
-
-    positions_pvplt feat.name pid 
-      0 :  3094 : 106024 :                  red :                                                          NNVTMCPPMTsMask_virtual 
-
-::
-
-   ZZ=0,1 ISEL=0 ./gxt.sh ana
 
 
 
