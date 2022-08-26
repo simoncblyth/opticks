@@ -312,7 +312,7 @@ class SimtraceFeatures(object):
         ins = ids & 0xffff   # ridx?    
 
         log.debug("[ Photons.bndfeat ")
-        bnd_namedict = {} if cf is None else cf.sim.bndnamedict 
+        bnd_namedict = {} if cf is None or cf.sim is None else cf.sim.bndnamedict 
         bnd_namedict[0xffff] = "0xffff" 
 
 

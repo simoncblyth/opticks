@@ -88,6 +88,9 @@ if [ -n "$OPTICKS_INPUT_PHOTON" ]; then
    unset OPTICKS_INPUT_PHOTON  ## simtrace running and input photons cannot be used together 
 fi 
 
+
+UGEOMDIR=${GEOMDIR//$HOME\/}
+
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
@@ -108,7 +111,7 @@ export A_CFBASE
 export B_FOLD
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
+    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
     source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
 fi 
@@ -182,8 +185,21 @@ if [ "ana" == "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
+if [ "anachk" == "$arg" ]; then 
+    export FOLD
+    export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
+    export MASK=${MASK:-pos}
+
+    ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/CSGFoundryLoadTest.py     
+    [ $? -ne 0 ] && echo $BASH_SOURCE anachk $bin error && exit 3 
+fi 
+
+
+
+
 if [ "grab" == "$arg" ]; then 
-    source $gxtdir/../bin/rsync.sh $UBASE 
+    #source $gxtdir/../bin/rsync.sh $UBASE 
+    source $gxtdir/../bin/rsync.sh $UGEOMDIR
 fi 
 
 

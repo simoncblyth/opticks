@@ -7,6 +7,7 @@
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "SEventConfig.hh"
 #include "SCSGOptiX.h"
 
 #include "NP.hh"
@@ -106,6 +107,8 @@ void QSim::UploadComponents( const SSim* ssim  )
     LOG(LEVEL) << "] new QBase : latency here of about 0.3s from first device access, if latency of >1s need to start nvidia-persistenced " ; 
     LOG(LEVEL) << base->desc(); 
 
+
+
     LOG(LEVEL) << "[ new QRng " ;
     QRng* rng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << "] new QRng " ;
@@ -159,8 +162,18 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
 
 
-    QCerenkov* cerenkov = new QCerenkov  ; 
-    LOG(LEVEL) << cerenkov->desc(); 
+
+    // TODO: make this more like the others : acting on the available inputs rather than the mode
+    bool is_simtrace = SEventConfig::IsRGModeSimtrace() ; 
+    if(is_simtrace == false ) 
+    {
+        QCerenkov* cerenkov = new QCerenkov  ; 
+        LOG(LEVEL) << cerenkov->desc(); 
+    }
+    else
+    {
+        LOG(LEVEL) << " skip QCerenkov for simtrace running " ;   
+    }
 
 
     const NP* multifilm = ssim->get(SSim::MULTIFILM); 

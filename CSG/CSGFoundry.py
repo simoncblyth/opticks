@@ -152,7 +152,8 @@ class SSim(NPFold):
     BND = "bnd.npy"
     @classmethod
     def Load(cls, simbase):
-        sim = cls(fold=os.path.join(simbase, "SSim"))  
+        ssdir = os.path.join(simbase, "SSim")
+        sim = cls(fold=ssdir) if os.path.isdir(ssdir) else None 
         return sim
 
     def __init__(self, fold):
