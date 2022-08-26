@@ -124,6 +124,8 @@ class SimtracePositions(object):
         self.local = local
 
         ## NB when applying the mask the below are changed  
+        ## note that need to exclude the nan for comparisons to work howver
+        ##      np.all( t_pos.simtrace[:,:3] == t.simtrace[:,:3] ) 
         self.simtrace = simtrace 
         self.upos = upos
 

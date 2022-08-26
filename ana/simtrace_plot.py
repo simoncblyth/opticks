@@ -178,6 +178,12 @@ class SimtracePlot(object):
             mpplt_add_contiguous_line_segments(ax, x_lpos, axes=self.frame.axes, linewidths=2)
         pass
 
+        if hasattr(self, 't_spos'):
+            t_spos = self.t_spos
+            ax.scatter( t_spos[:,H], t_spos[:,V], label="t_spos", s=5 )
+        pass
+
+
         if not self.look_ce is None:
             mpplt_ce_multiple(ax, self.look_ce, axes=self.frame.axes)
         pass

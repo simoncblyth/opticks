@@ -36,6 +36,8 @@ from opticks.ana.simtrace_plot import SimtracePlot, pv, mp
 from opticks.ana.pvplt import *
 from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 
+from opticks.npy.mortonlib.morton2d import morton2d 
+
 
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
@@ -52,6 +54,59 @@ def simple(pl, gs, pos):
     pvplt_simple(pl, gs.centers_local[:,:3], "gs.centers_local[:,:3]" )   
     pvplt_simple(pl, pos.gpos[:,:3], "pos.gpos[:,:3]" )
     pvplt_simple(pl, pos.lpos[:,:3], "pos.lpos[:,:3]" )
+
+
+
+
+def spurious_2d_outliers(bbox, upos):
+    """
+    :param bbox: array of shape (2,3) eg from t.sframe.bbox
+    :param upos: local frame positions expected to be within bbox, eg from t_pos.upos  
+
+    """
+    xbox = bbox[1] - bbox[0] 
+    fpos = np.zeros( (len(upos), 3), dtype=np.float32 )
+    dim = []
+    for d in [X,Y,Z]:
+        if xbox[d] > 0.:
+            dim.append(d)
+            fpos[:,d] = (upos[:,d] - bbox[0,d])/xbox[d]
+        pass
+    pass 
+    assert len(dim) == 2 
+    assert len(np.where(fpos > 1)[0]) == 0 
+    assert len(np.where(fpos < 0)[0]) == 0 
+    pass
+    ipos = np.array( fpos*0xffffffff , dtype=np.uint64 ) 
+    kpos = morton2d.Key(ipos[:,dim[0]], ipos[:,dim[1]]) 
+   
+    u_kpos_0, i_kpos_0, c_kpos_0 = np.unique( kpos & ( 0xfff << 52 ), return_index=True, return_counts=True)   ## scrub low bits and unique as data reduction   
+    sel = c_kpos_0 < 2
+    ## finding outliers in 2d is reduced to finding outliers in sorted list of uint 
+    ## and can also use the counts : outliers are expected to be low count 
+
+    u_kpos = u_kpos_0[sel]
+    i_kpos = i_kpos_0[sel]  # original upos index of the unique 
+
+    if len(i_kpos) < 10:
+        log.info("spurious_2d_outliers")
+        log.info("i_kpos %s " % str(i_kpos))
+        log.info("upos[i_kpos] %s " % str(upos[i_kpos]) )
+    pass                                                                                                                                                                                
+
+    d_kpos = morton2d.Decode(u_kpos)  ## HMM return tuple of 2 which is bit inconvenient  
+    t_spos = np.zeros( (len(u_kpos),3), dtype=np.float32 )
+    for idim,d in enumerate(dim):
+        t_spos[:,d] = d_kpos[idim].astype(np.float32)/np.float32(0xffffffff)
+        t_spos[:,d] *= xbox[d]
+        t_spos[:,d] += bbox[0,d]
+    pass 
+    return u_kpos, c_kpos_0, i_kpos, t_spos
+
+
+  
+
+
 
 
 if __name__ == '__main__':
@@ -105,6 +160,9 @@ if __name__ == '__main__':
     t_pos = SimtracePositions(t.simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
     print(t_pos)
 
+    u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
+    
+
     if SIMPLE:
         pl = pvplt_plotter()
         simple(pl, gs, t_pos)
@@ -121,10 +179,15 @@ if __name__ == '__main__':
     if not x_lpos is None:           
         plt.x_lpos = x_lpos   
     pass
+    if not t_spos is None:           
+        plt.t_spos = t_spos   
+    pass
+
     
     if not mp is None:
         plt.positions_mpplt()
         ax = plt.ax
+
     pass
 
     if not pv is None:

@@ -88,6 +88,15 @@ From jps/PMTSim "NNVTMaskManager::getSolid" the relevant mask names are::
 
 
 
+Use morton codes to select spurious isolated intersects ?
+------------------------------------------------------------
+
+* https://blog.claude.nl/tech/timing-morton-code-on-python-on-apple-silicon/
+
+
+
+
+
 How to investigate spurious intersects
 ----------------------------------------
 

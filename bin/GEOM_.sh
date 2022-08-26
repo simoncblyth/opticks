@@ -42,6 +42,8 @@ geom=nmskSolidMask
 
 export GEOM=${GEOM:-$geom}
 
+
+# transitional : from old OPTICKS_KEY geometry dirs 
 reldir(){
    case $1 in 
      J0*) echo DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1 ;;

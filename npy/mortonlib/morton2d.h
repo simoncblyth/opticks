@@ -103,167 +103,135 @@ template<class T = uint64_t>
 struct morton2d
 {
 public:
-	T key;
+T key;
 
 public:
 
-	inline morton2d() : key(0) {};
-	inline explicit morton2d(T _key) : key(_key) {};
+inline morton2d() : key(0) {};
+inline explicit morton2d(T _key) : key(_key) {};
 
-	/* If BMI2 intrinsics are not available, we rely on a look up table of precomputed morton codes. */
-	inline morton2d(const uint32_t x, const uint32_t y) : key(0) {
-
+/* If BMI2 intrinsics are not available, we rely on a look up table of precomputed morton codes. */
+inline morton2d(const uint32_t x, const uint32_t y) : key(0) 
+{
 #ifdef USE_BMI2
-		key = static_cast<T>(_pdep_u64(y, y2_mask) | _pdep_u64(x, x2_mask));
+    key = static_cast<T>(_pdep_u64(y, y2_mask) | _pdep_u64(x, x2_mask));
 #else
-		key = morton2dLUT[(x >> 24) & 0xFF] << 1 |
-			morton2dLUT[(y >> 24) & 0xFF];
-		key = key << 16 |
-			morton2dLUT[(x >> 16) & 0xFF] << 1 |
-			morton2dLUT[(y >> 16) & 0xFF];
-		key = key << 16 |
-			morton2dLUT[(x >> 8) & 0xFF] << 1 |
-			morton2dLUT[(y >> 8) & 0xFF];
-		key = key << 16 |
-			morton2dLUT[x & 0xFF] << 1 |
-			morton2dLUT[y & 0xFF];
+    key = morton2dLUT[(x >> 24) & 0xFF] << 1 | morton2dLUT[(y >> 24) & 0xFF];
+    key = key << 16 | morton2dLUT[(x >> 16) & 0xFF] << 1 | morton2dLUT[(y >> 16) & 0xFF];
+    key = key << 16 | morton2dLUT[(x >> 8)  & 0xFF] << 1 | morton2dLUT[(y >> 8) & 0xFF];
+    key = key << 16 | morton2dLUT[x & 0xFF] << 1 | morton2dLUT[y & 0xFF];
 #endif
-	}
+}
 
-	inline void decode(uint64_t& x, uint64_t& y) const
-	{
+inline void decode(uint64_t& x, uint64_t& y) const
+{
 #ifdef USE_BMI2
-		x = _pext_u64(this->key, x2_mask);
-		y = _pext_u64(this->key, y2_mask);
+    x = _pext_u64(this->key, x2_mask);
+    y = _pext_u64(this->key, y2_mask);
 #else
-		x = compactBits(this->key >> 1);
-		y = compactBits(this->key);
+    x = compactBits(this->key >> 1);
+    y = compactBits(this->key);
 #endif
-	}
+}
 
-	//Binary operators
-	inline bool operator==(const morton2d m1) const
-	{
-		return this->key == m1.key;
-	}
+//Binary operators
+inline bool operator==(const morton2d m1) const      { return this->key == m1.key; }
+inline bool operator!=(const morton2d m1) const      { return !operator==(m1); }
+inline morton2d operator|(const morton2d m1) const   { return morton2d<T>(this->key | m1.key); }
+inline morton2d operator&(const morton2d m1) const   { return morton2d<T>(this->key & m1.key); }
+inline morton2d operator >> (const uint64_t d) const { return morton2d<T>(this->key >> (2 * d)); }
+inline morton2d operator<<(const uint64_t d) const   { return morton2d<T>(this->key << (2 * d)); }
+inline void operator+=(const morton2d<T> rhs){
+    T x_sum = (this->key | y2_mask) + (rhs.key & x2_mask);
+    T y_sum = (this->key | x2_mask) + (rhs.key & y2_mask);
+    this->key = (x_sum & x2_mask) | (y_sum & y2_mask);
+}
 
-	inline bool operator!=(const morton2d m1) const
-	{
-		return !operator==(m1);
-	}
+inline void operator-=(const morton2d<T> rhs)
+{
+    T x_diff = (this->key & x2_mask) - (rhs.key & x2_mask);
+    T y_diff = (this->key & y2_mask) - (rhs.key & y2_mask);
+    this->key = (x_diff & x2_mask) | (y_diff & y2_mask);
+}
 
-	inline morton2d operator|(const morton2d m1) const
-	{
-		return morton2d<T>(this->key | m1.key);
-	}
+/* Increment X part of a morton2 code (xy interleaving)
+morton2(4,5).incX() == morton2(5,5);
 
-	inline morton2d operator&(const morton2d m1) const
-	{
-		return morton2d<T>(this->key & m1.key);
-	}
+Ref : http://bitmath.blogspot.fr/2012/11/tesseral-arithmetic-useful-snippets.html */
+inline morton2d incX() const
+{
+    const T x_sum = static_cast<T>((this->key | y2_mask) + 2);
+    return morton2d<T>((x_sum & x2_mask) | (this->key & y2_mask));
+}
 
-	inline morton2d operator >> (const uint64_t d) const
-	{
-		return morton2d<T>(this->key >> (2 * d));
-	}
+inline morton2d incY() const
+{
+    const T y_sum = static_cast<T>((this->key | x2_mask) + 1);
+    return morton2d<T>((y_sum & y2_mask) | (this->key & x2_mask));
+}
 
-	inline morton2d operator<<(const uint64_t d) const
-	{
-		return morton2d<T>(this->key << (2 * d));
-	}
+inline morton2d decX() const
+{
+    const T x_diff = static_cast<T>((this->key & x2_mask) - 2);
+    return morton2d<T>((x_diff & x2_mask) | (this->key & y2_mask));
+}
 
-	inline void operator+=(const morton2d<T> rhs)
-	{
-		T x_sum = (this->key | y2_mask) + (rhs.key & x2_mask);
-		T y_sum = (this->key | x2_mask) + (rhs.key & y2_mask);
-		this->key = (x_sum & x2_mask) | (y_sum & y2_mask);
-	}
+inline morton2d decY() const
+{
+    const T y_diff = static_cast<T>((this->key & y2_mask) - 1);
+    return morton2d<T>((y_diff & y2_mask) | (this->key & x2_mask));
+}
 
-	inline void operator-=(const morton2d<T> rhs)
-	{
-		T x_diff = (this->key & x2_mask) - (rhs.key & x2_mask);
-		T y_diff = (this->key & y2_mask) - (rhs.key & y2_mask);
-		this->key = (x_diff & x2_mask) | (y_diff & y2_mask);
-	}
+/*
+min(morton2(4,5), morton2(8,3)) == morton2(4,3);
+Ref : http://asgerhoedt.dk/?p=276
+*/
+static inline morton2d min(const morton2d lhs, const morton2d rhs)
+{
+    T lhsX = lhs.key & x2_mask;
+    T rhsX = rhs.key & x2_mask;
+    T lhsY = lhs.key & y2_mask;
+    T rhsY = rhs.key & y2_mask;
+    return morton2d<T>(std::min(lhsX, rhsX) + std::min(lhsY, rhsY));
+}
 
-	/* Increment X part of a morton2 code (xy interleaving)
-	morton2(4,5).incX() == morton2(5,5);
-
-	Ref : http://bitmath.blogspot.fr/2012/11/tesseral-arithmetic-useful-snippets.html */
-	inline morton2d incX() const
-	{
-		const T x_sum = static_cast<T>((this->key | y2_mask) + 2);
-		return morton2d<T>((x_sum & x2_mask) | (this->key & y2_mask));
-	}
-
-	inline morton2d incY() const
-	{
-		const T y_sum = static_cast<T>((this->key | x2_mask) + 1);
-		return morton2d<T>((y_sum & y2_mask) | (this->key & x2_mask));
-	}
-
-	inline morton2d decX() const
-	{
-		const T x_diff = static_cast<T>((this->key & x2_mask) - 2);
-		return morton2d<T>((x_diff & x2_mask) | (this->key & y2_mask));
-	}
-
-	inline morton2d decY() const
-	{
-		const T y_diff = static_cast<T>((this->key & y2_mask) - 1);
-		return morton2d<T>((y_diff & y2_mask) | (this->key & x2_mask));
-	}
-
-	/*
-	  min(morton2(4,5), morton2(8,3)) == morton2(4,3);
-	  Ref : http://asgerhoedt.dk/?p=276
-	*/
-	static inline morton2d min(const morton2d lhs, const morton2d rhs)
-	{
-		T lhsX = lhs.key & x2_mask;
-		T rhsX = rhs.key & x2_mask;
-		T lhsY = lhs.key & y2_mask;
-		T rhsY = rhs.key & y2_mask;
-		return morton2d<T>(std::min(lhsX, rhsX) + std::min(lhsY, rhsY));
-	}
-
-	/*
-	  max(morton2(4,5), morton2(8,3)) == morton2(8,5);
-	*/
-	static inline morton2d max(const morton2d lhs, const morton2d rhs)
-	{
-		T lhsX = lhs.key & x2_mask;
-		T rhsX = rhs.key & x2_mask;
-		T lhsY = lhs.key & y2_mask;
-		T rhsY = rhs.key & y2_mask;
-		return morton2d<T>(std::max(lhsX, rhsX) + std::max(lhsY, rhsY));
-	}
+/*
+max(morton2(4,5), morton2(8,3)) == morton2(8,5);
+*/
+static inline morton2d max(const morton2d lhs, const morton2d rhs)
+{
+    T lhsX = lhs.key & x2_mask;
+    T rhsX = rhs.key & x2_mask;
+    T lhsY = lhs.key & y2_mask;
+    T rhsY = rhs.key & y2_mask;
+    return morton2d<T>(std::max(lhsX, rhsX) + std::max(lhsY, rhsY));
+}
 
 #ifndef USE_BMI2
 
-	/* Fast encode of morton2 code when BMI2 instructions aren't available.
-	This does not work for values greater than 256.
+/* Fast encode of morton2 code when BMI2 instructions aren't available.
+This does not work for values greater than 256.
 
-	This function takes roughly the same time as a full encode (64 bits) using BMI2 intrinsic.*/
-	static inline morton2d morton2d_256(const uint32_t x, const uint32_t y)
-	{
-		assert(x < 256 && y < 256);
-		T key = morton2dLUT[x] << 1 |
-			morton2dLUT[y];
-		return morton2d(key);
-	}
+This function takes roughly the same time as a full encode (64 bits) using BMI2 intrinsic.*/
+static inline morton2d morton2d_256(const uint32_t x, const uint32_t y)
+{
+    assert(x < 256 && y < 256);
+    T key = morton2dLUT[x] << 1 |
+    morton2dLUT[y];
+    return morton2d(key);
+}
 
 private:
-	inline uint64_t compactBits(uint64_t n) const
-	{
-		n &= 0x5555555555555555;
-		n = (n ^ (n >> 1)) & 0x3333333333333333;
-		n = (n ^ (n >> 2)) & 0x0f0f0f0f0f0f0f0f;
-		n = (n ^ (n >> 4)) & 0x00ff00ff00ff00ff;
-		n = (n ^ (n >> 8)) & 0x0000ffff0000ffff;
-		n = (n ^ (n >> 16)) & 0x00000000ffffffff;
-		return n;
-	}
+inline uint64_t compactBits(uint64_t n) const
+{
+    n &= 0x5555555555555555;
+    n = (n ^ (n >> 1)) & 0x3333333333333333;
+    n = (n ^ (n >> 2)) & 0x0f0f0f0f0f0f0f0f;
+    n = (n ^ (n >> 4)) & 0x00ff00ff00ff00ff;
+    n = (n ^ (n >> 8)) & 0x0000ffff0000ffff;
+    n = (n ^ (n >> 16)) & 0x00000000ffffffff;
+    return n;
+}
 #endif
 
 };
@@ -273,9 +241,9 @@ morton2(4,5) + morton3(1,2) == morton2(5,7); */
 template<class T>
 inline morton2d<T> operator+(const morton2d<T> lhs, const morton2d<T> rhs)
 {
-	T x_sum = (lhs.key | y2_mask) + (rhs.key & x2_mask);
-	T y_sum = (lhs.key | x2_mask) + (rhs.key & y2_mask);
-	return morton2d<T>((x_sum & x2_mask) | (y_sum & y2_mask));
+T x_sum = (lhs.key | y2_mask) + (rhs.key & x2_mask);
+T y_sum = (lhs.key | x2_mask) + (rhs.key & y2_mask);
+return morton2d<T>((x_sum & x2_mask) | (y_sum & y2_mask));
 }
 
 /* Substract two mortons keys (xy interleaving)
@@ -283,42 +251,42 @@ inline morton2d<T> operator+(const morton2d<T> lhs, const morton2d<T> rhs)
 template<class T>
 inline morton2d<T> operator-(const morton2d<T> lhs, const morton2d<T> rhs)
 {
-	T x_diff = (lhs.key & x2_mask) - (rhs.key & x2_mask);
-	T y_diff = (lhs.key & y2_mask) - (rhs.key & y2_mask);
-	return morton2d<T>((x_diff & x2_mask) | (y_diff & y2_mask));
+T x_diff = (lhs.key & x2_mask) - (rhs.key & x2_mask);
+T y_diff = (lhs.key & y2_mask) - (rhs.key & y2_mask);
+return morton2d<T>((x_diff & x2_mask) | (y_diff & y2_mask));
 }
 
 template<class T>
 inline bool operator< (const morton2d<T>& lhs, const morton2d<T>& rhs)
 {
-	return (lhs.key) < (rhs.key);
+return (lhs.key) < (rhs.key);
 }
 
 template<class T>
 inline bool operator> (const morton2d<T>& lhs, const morton2d<T>& rhs)
 {
-	return (lhs.key) > (rhs.key);
+return (lhs.key) > (rhs.key);
 }
 
 template<class T>
 inline bool operator>= (const morton2d<T>& lhs, const morton2d<T>& rhs)
 {
-	return (lhs.key) >= (rhs.key);
+return (lhs.key) >= (rhs.key);
 }
 
 template<class T>
 inline bool operator<= (const morton2d<T>& lhs, const morton2d<T>& rhs)
 {
-	return (lhs.key) <= (rhs.key);
+return (lhs.key) <= (rhs.key);
 }
 
 template<class T>
 std::ostream& operator<<(std::ostream& os, const morton2d<T>& m)
 {
-	uint64_t x, y;
-	m.decode(x, y);
-	os << m.key << ": " << x << ", " << y;
-	return os;
+uint64_t x, y;
+m.decode(x, y);
+os << m.key << ": " << x << ", " << y;
+return os;
 }
 
 typedef morton2d<> morton2;
