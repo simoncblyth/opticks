@@ -41,6 +41,7 @@ from opticks.npy.mortonlib.morton2d import morton2d
 
 SPURIOUS = "SPURIOUS" in os.environ
 RERUN = "RERUN" in os.environ
+SELECTION = "SELECTION" in os.environ
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
 FEAT = os.environ.get("FEAT", "pid" )
@@ -75,15 +76,17 @@ def spurious_2d_outliers(bbox, upos):
             fpos[:,d] = (upos[:,d] - bbox[0,d])/xbox[d]
         pass
     pass 
-    assert len(dim) == 2 
-    assert len(np.where(fpos > 1)[0]) == 0, "SPURIOUS running needs to use eg MASK=t " 
-    assert len(np.where(fpos < 0)[0]) == 0, "SPURIOUS running needs to use eg MASK=t "
+    assert len(dim) == 2, "expecting intersects to be in 2D plane" 
+    assert len(np.where(fpos > 1)[0]) == 0, "SPURIOUS running needs all isect within bbox, eg use MASK=t " 
+    assert len(np.where(fpos < 0)[0]) == 0, "SPURIOUS running needs all isect within bbox, eg use MASK=t "
     pass
-    ipos = np.array( fpos*0xffffffff , dtype=np.uint64 ) 
-    kpos = morton2d.Key(ipos[:,dim[0]], ipos[:,dim[1]]) 
+    ipos = np.array( fpos*0xffffffff , dtype=np.uint64 )   ## 32bit range integer coordinates stored in 64 bit  
+    kpos = morton2d.Key(ipos[:,dim[0]], ipos[:,dim[1]])    ## morton interleave the two coordinates into one 64 bit code
    
-    u_kpos_0, i_kpos_0, c_kpos_0 = np.unique( kpos & ( 0xfff << 52 ), return_index=True, return_counts=True)   ## scrub low bits and unique as data reduction   
+    ## scrub low bits and apply uniquing as data reduction : how many bits determines the coarseness   
+    u_kpos_0, i_kpos_0, c_kpos_0 = np.unique( kpos & ( 0xfff << 52 ), return_index=True, return_counts=True)   
     sel = c_kpos_0 < 2
+
     ## finding outliers in 2d is reduced to finding outliers in sorted list of uint 
     ## and can also use the counts : outliers are expected to be low count 
 
@@ -92,11 +95,12 @@ def spurious_2d_outliers(bbox, upos):
 
     if len(i_kpos) < 10:
         log.info("spurious_2d_outliers")
-        log.info("i_kpos %s " % str(i_kpos))
-        log.info("upos[i_kpos] %s " % str(upos[i_kpos]) )
+        log.info("i_kpos\n%s" % str(i_kpos))
+        log.info("upos[i_kpos]\n%s" % str(upos[i_kpos]) )
     pass                                                                                                                                                                                
 
-    d_kpos = morton2d.Decode(u_kpos)  ## HMM return tuple of 2 which is bit inconvenient  
+    ## decode the selected isolated morton codes to find the probable spurious intersects
+    d_kpos = morton2d.Decode(u_kpos)  ## HMM returns tuple of 2 which is bit inconvenient  
     t_spos = np.zeros( (len(u_kpos),3), dtype=np.float32 )
     for idim,d in enumerate(dim):
         t_spos[:,d] = d_kpos[idim].astype(np.float32)/np.float32(0xffffffff)
@@ -104,9 +108,6 @@ def spurious_2d_outliers(bbox, upos):
         t_spos[:,d] += bbox[0,d]
     pass 
     return u_kpos, c_kpos_0, i_kpos, t_spos
-
-
-  
 
 
 
@@ -173,6 +174,9 @@ if __name__ == '__main__':
     if SPURIOUS:
         log.info("SPURIOUS envvars switches on morton enabled spurious_2d_outliers ")
         u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
+        j_kpos = t_pos.upos2simtrace[i_kpos]
+        log.info("j_kpos = t_pos.upos2simtrace[i_kpos]\n%s" % str(t_pos.upos2simtrace[i_kpos]) )
+        log.info("simtrace[j_kpos]\n%s" % str(simtrace[j_kpos]) )
     else:
         t_spos = None
     pass
@@ -194,14 +198,16 @@ if __name__ == '__main__':
         plt.x_lpos = x_lpos   
     pass
     if not t_spos is None:           
-        plt.t_spos = t_spos   
+        plt.t_spos = t_spos     ## spurious intersects identified by morton2d isolation 
     pass
 
+    if hasattr(t, "simtrace_selection") and SELECTION:  ## created by CSG/SimtraceRerunTest.sh with SELECTION envvar picking simtrace indices to highlight 
+        plt.simtrace_selection = t.simtrace_selection
+    pass 
     
     if not mp is None:
         plt.positions_mpplt()
         ax = plt.ax
-
     pass
 
     if not pv is None:

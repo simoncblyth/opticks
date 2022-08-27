@@ -25,26 +25,18 @@ CSGDraw::CSGDraw(const CSGQuery* q_, char axis_ )
 {
 }
 
-void CSGDraw::draw(const char* msg)
+char* CSGDraw::get() const
 {
-    LOG(info) << msg << " axis " << axis ; 
+    return canvas ? canvas->c : nullptr ; 
+}
 
-    LOG(info) 
-       << " type " << type
-       << " CSG::Name(type) " << CSG::Name(type)
-       << " IsTree " <<  CSG::IsTree((OpticksCSG_t)type) 
-       << " width " << width 
-       << " height " << height
-       ;
-
-
+void CSGDraw::render()
+{
     if( CSG::IsTree((OpticksCSG_t)type) )
     {
         int nodeIdxRel_root = 1 ;
         int inorder = 0 ; 
-
         draw_tree_r( nodeIdxRel_root,  0, inorder ); 
-
     }
     else if( CSG::IsList((OpticksCSG_t)type) )
     {
@@ -58,13 +50,25 @@ void CSGDraw::draw(const char* msg)
     {
         assert(0) ; // unexpected type 
     }
+}
 
+void CSGDraw::draw(const char* msg)
+{
+    LOG(info) << msg << " axis " << axis ; 
+    LOG(info) 
+       << " type " << type
+       << " CSG::Name(type) " << CSG::Name(type)
+       << " IsTree " <<  CSG::IsTree((OpticksCSG_t)type) 
+       << " width " << width 
+       << " height " << height
+       ;
 
+    render(); 
     canvas->print();
 } 
 
 /**
-CSGDraw::dump_tree_r
+CSGDraw::draw_tree_r
 -----------------------
 
 nodeIdxRel

@@ -36,6 +36,7 @@ list(APPEND SOURCES
     CSGGeometry.cc
     CSGDraw.cc
     CSGRecord.cc
+    CSGSimtraceRerun.cc
 
     CSG_LOG.cc
 )
@@ -64,6 +65,8 @@ list(APPEND CSG_HEADERS
     CSGRecord.h
 
     CSGEnum.h
+
+    CSGSimtraceRerun.h
 
     CSG_LOG.hh 
     CSG_API_EXPORT.hh 
@@ -116,8 +119,8 @@ target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 
 # these DEBUG flags are exceedingly verbose : only use for single photons and do not commit with them uncommented
-#target_compile_definitions( ${name} PRIVATE DEBUG )
-#target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
+# target_compile_definitions( ${name} PRIVATE DEBUG )
+# target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
 
 
 target_include_directories(${name}

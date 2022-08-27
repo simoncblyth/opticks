@@ -161,7 +161,7 @@ class SimtracePositions(object):
         self.mask = mask
         self.simtrace = self.simtrace[mask]
         self.upos = self.upos[mask]
-
+        self.upos2simtrace = np.where(mask)[0]   # map upos indices back to simtrace indices before mask applied
 
     def apply_pos_mask(self):
         """

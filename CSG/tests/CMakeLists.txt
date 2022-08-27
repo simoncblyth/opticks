@@ -30,7 +30,7 @@ set(TEST_SOURCES
     CSGLogTest.cc
     CSGMakerTest.cc
     CSGQueryTest.cc
-    SimtraceRerunTest.cc
+    CSGSimtraceRerunTest.cc
     CSGCopyTest.cc
 
     intersect_leaf_phicut_test.cc 

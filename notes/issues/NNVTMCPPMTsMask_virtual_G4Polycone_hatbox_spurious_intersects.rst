@@ -12,7 +12,8 @@ TODO : unfixed PMT mask cutting across the PMT is apparent
 
 This was fixed previously in j, 
 now that the integration SVN commits are done can 
-bring over the fix from j into SVN. 
+bring over the fix from j into SVN. But do it in a way to 
+be easily switchable. 
 
 
 "gxt.sh ana"  view 
@@ -114,19 +115,20 @@ Use morton codes to select spurious isolated intersects for nmskSolidMask
     INFO:opticks.ana.pvplt:upos[i_kpos] [[37.043  0.     0.1    1.   ]] 
 
 
+    GEOM=nmskSolidMask ./gxt.sh ana
+
+
+
 HMM: what would be useful is to rerun the index with spurious intersect using the simtrace origin and direction
 with both the CPU and GPU intersects 
+
 
 ::
 
    CSG/tests/CSGQueryTest.sh
    CSG/tests/CSGQueryTest.cc
 
-Start::
-
-   CSG/CSGFoundrySimtraceRerunTest.sh
-   CSG/tests/CSGFoundrySimtraceRerunTest.cc 
-
+Did this in CSG/SimtraceRerunTest.sh 
 
 
 HMM so need to get the simtrace index, at moment have upos index::
@@ -172,6 +174,62 @@ As t_pos holds the mask can workout the origin simtrace index::
     Out[22]: array([37.043,  0.   ,  0.1  ], dtype=float32)
 
 
+Automate the back mapping::
+
+    In [6]: t_pos.upos2simtrace[i_kpos]
+    Out[6]: array([176995, 153452, 459970])
+
+    In [7]: j_kpos = t_pos.upos2simtrace[i_kpos]
+
+    In [8]: simtrace[j_kpos]
+    Out[8]: 
+    array([[[  -0.   ,   -0.   ,   -1.   ,  125.124],
+            [-117.841,    0.   ,    0.1  ,   40.1  ],
+            [-184.8  ,    0.   , -105.6  ,    0.   ],
+            [   0.535,    0.   ,    0.845,    0.   ]],
+
+           [[  -0.   ,   -0.   ,   -1.   ,  239.297],
+            [ -98.882,    0.   ,    0.1  ,   40.1  ],
+            [-211.2  ,    0.   , -211.2  ,    0.   ],
+            [   0.469,    0.   ,    0.883,    0.   ]],
+
+           [[  -0.   ,   -0.   ,   -1.   ,  185.968],
+            [ 113.929,    0.   ,    0.1  ,   40.1  ],
+            [ 211.2  ,    0.   , -158.4  ,    0.   ],
+            [  -0.523,    0.   ,    0.852,    0.   ]]], dtype=float32)
+
+
+::
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos [ 43865  34010 181781] 
+    INFO:opticks.ana.pvplt:upos[i_kpos] [[-117.841    0.       0.1      1.   ]
+     [ -98.882    0.       0.1      1.   ]
+     [ 113.929    0.       0.1      1.   ]] 
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [176995 153452 459970]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[  -0.      -0.      -1.     125.124]
+      [-117.841    0.       0.1     40.1  ]
+      [-184.8      0.    -105.6      0.   ]
+      [   0.535    0.       0.845    0.   ]]
+
+     [[  -0.      -0.      -1.     239.297]
+      [ -98.882    0.       0.1     40.1  ]
+      [-211.2      0.    -211.2      0.   ]
+      [   0.469    0.       0.883    0.   ]]
+
+     [[  -0.      -0.      -1.     185.968]
+      [ 113.929    0.       0.1     40.1  ]
+      [ 211.2      0.    -158.4      0.   ]
+      [  -0.523    0.       0.852    0.   ]]]
+
+
+     SELECTION=176995,153452,459970 ./SimtraceRerunTest.sh 
+
+
+
 
 CPU rerun using CSG/SimtraceRerunTest.sh does not have that particular spurious intersect::
 
@@ -190,9 +248,129 @@ CPU rerun using CSG/SimtraceRerunTest.sh does not have that particular spurious 
            [ -0.195,   0.   ,   0.981,   0.   ]], dtype=float32)
 
 
-But visualizing the simtrace_rerun, shows it has several others on that same z=0.1 line::
+But visualizing the simtrace_rerun, shows it has three suprious intersects on that same z=0.1 line::
 
     ZZ=0.1 RERUN=1 ./gxt.sh ana
+
+
+Find their indices using morton magic::
+
+     GEOM=nmskSolidMask MASK=t RERUN=1 SPURIOUS=1 ./gxt.sh ana
+
+::
+
+    INFO:opticks.ana.pvplt:RERUN envvar switched on use of simtrace_rerun from CSG/SimtraceRerunTest.sh 
+    INFO:opticks.ana.simtrace_positions:apply_t_mask
+    SimtracePositions
+    t_pos.simtrace (222742, 4, 4) 
+    t_pos.isect (627000, 4) 
+    t_pos.gpos (627000, 4) 
+    t_pos.lpos (627000, 4) 
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos [ 43865  34010 181781] 
+    INFO:opticks.ana.pvplt:upos[i_kpos] [
+     [-117.841    0.       0.1      1.   ]
+     [ -98.882    0.       0.1      1.   ]
+     [ 113.929    0.       0.1      1.   ]] 
+
+
+
+Rerun the three spurious::
+
+    epsilon:CSG blyth$ SELECTION=176995,153452,459970 ./SimtraceRerunTest.sh 
+                       BASH_SOURCE : ./../bin/GEOM_.sh 
+                               gp_ : nmskSolidMask_GDMLPath 
+                                gp :  
+                               cg_ : nmskSolidMask_CFBaseFromGEOM 
+                                cg : /tmp/blyth/opticks/GeoChain/nmskSolidMask 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/nmskSolidMask 
+                           GEOMDIR : /tmp/blyth/opticks/GeoChain/nmskSolidMask 
+    ...
+    2022-08-27 16:34:27.512 INFO  [39352531] [CSGQuery::init@65]  sopr 0:0 solidIdx 0 primIdxRel 0
+    2022-08-27 16:34:27.513 INFO  [39352531] [SimtraceRerunTest::init@69]  fd.geom (null)
+    2022-08-27 16:34:27.513 INFO  [39352531] [CSGDraw::draw@30] SimtraceRerunTest axis Z
+    2022-08-27 16:34:27.513 INFO  [39352531] [CSGDraw::draw@32]  type 2 CSG::Name(type) intersection IsTree 1 width 7 height 2
+
+                                   in                                                         
+                                  1                                                           
+                                     0.00                                                     
+                                    -0.00                                                     
+                                                                                              
+               un                                      in                                     
+              2                                       3                                       
+                 0.00                                    0.00                                 
+                -0.00                                   -0.00                                 
+                                                                                              
+     zs                  cy                 !zs                 !cy                           
+    4                   5                   6                   7                             
+     194.00                0.10              186.00                0.10                       
+     -39.00              -38.90              -40.00              -39.90                       
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+     idx  176995 code 3
+                            isect0 HIT
+                        q0 norm t (    0.0002    0.0000   -1.0000  345.1852)
+                       q1 ipos sd (   -0.0780    0.0000  186.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -184.8000    0.0000 -105.6000    0.0000)
+                  q3 ray_dir gsid (    0.5351    0.0000    0.8448 C4U (     0    0    0    0 ) )
+
+                            isect1 HIT
+                        q0 norm t (   -0.0000   -0.0000   -1.0000  125.1237)
+                       q1 ipos sd ( -117.8414    0.0000    0.1000   40.1000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -184.8000    0.0000 -105.6000    0.0000)
+                  q3 ray_dir gsid (    0.5351    0.0000    0.8448 C4U (     0    0    0    0 ) )
+
+     idx  153452 code 3
+                            isect0 HIT
+                        q0 norm t (    0.0002    0.0000   -1.0000  449.8282)
+                       q1 ipos sd (   -0.0659    0.0000  186.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -211.2000    0.0000 -211.2000    0.0000)
+                  q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+                            isect1 HIT
+                        q0 norm t (   -0.0000   -0.0000   -1.0000  239.2969)
+                       q1 ipos sd (  -98.8822    0.0000    0.1000   40.1000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -211.2000    0.0000 -211.2000    0.0000)
+                  q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+     idx  459970 code 3
+                            isect0 HIT
+                        q0 norm t (    0.0004    0.0000   -1.0000  404.0836)
+                       q1 ipos sd (   -0.1580    0.0000  186.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  211.2000    0.0000 -158.4000    0.0000)
+                  q3 ray_dir gsid (   -0.5231    0.0000    0.8523 C4U (     0    0    0    0 ) )
+
+                            isect1 HIT
+                        q0 norm t (   -0.0000   -0.0000   -1.0000  185.9677)
+                       q1 ipos sd (  113.9287    0.0000    0.1000   40.1000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  211.2000    0.0000 -158.4000    0.0000)
+                  q3 ray_dir gsid (   -0.5231    0.0000    0.8523 C4U (     0    0    0    0 ) )
+
+    2022-08-27 16:34:27.514 INFO  [39352531] [main@148] t.desc SimtraceRerunTest::desc
+     fd Y
+     path0 /tmp/blyth/opticks/GeoChain/nmskSolidMask/G4CXSimtraceTest/ALL/simtrace.npy
+     path1 /tmp/blyth/opticks/GeoChain/nmskSolidMask/G4CXSimtraceTest/ALL/simtrace_rerun.npy
+     simtrace0 (627000, 4, 4, )
+     simtrace1 (627000, 4, 4, )
+     selection Y selection.size 3
+     code_count[0] 0
+     code_count[1] 0
+     code_count[2] 0
+     code_count[3] 3
+     code_count[4] 3
+
+
+
+
+
+
+
+
 
 
 

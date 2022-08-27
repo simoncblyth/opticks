@@ -222,7 +222,9 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     isect.q3.f.z = ray_direction.z ;
     isect.q3.u.w = gsid ;  
 
-    //std::cout << " ray_origin " << ray_origin << " ray_direction " << ray_direction << std::endl ; 
+#ifdef DEBUG
+    std::cout << "CSGQuery::intersect  ray_origin " << ray_origin << " ray_direction " << ray_direction << std::endl ; 
+#endif
 
     bool valid_intersect = intersect_prim( isect.q0.f, select_root_node, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
     if( valid_intersect ) 
@@ -239,13 +241,6 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     }
     return valid_intersect ; 
 }
-
-
-
-
-
-
-
 
 
 /**
@@ -278,7 +273,26 @@ bool CSGQuery::IsSpurious( const quad4& isect ) // static
 }
 
 
+std::string CSGQuery::Label() // static
+{
+    std::stringstream ss ; 
+    ss << "CSGQuery::Label " ; 
 
+#ifdef DEBUG
+    ss << " DEBUG" ; 
+#else
+    ss << " not-DEBUG" ; 
+#endif
+
+#ifdef DEBUG_RECORD
+    ss << " DEBUG_RECORD" ; 
+#else
+    ss << " not-DEBUG_RECORD" ; 
+#endif
+
+    std::string s = ss.str() ; 
+    return s ; 
+}
 
 
 std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_intersect  )  // static
@@ -349,13 +363,13 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev ) const
     unsigned gsid = prev.q3.u.w ; 
 
 #ifdef DEBUG_RECORD
-    //CSGRecord::SetEnabled(true); 
+    CSGRecord::SetEnabled(true); 
 #endif
 
     bool valid_intersect = intersect( isect, t_min, *ray_origin, *ray_direction, gsid );  
 
 #ifdef DEBUG_RECORD
-    //CSGRecord::SetEnabled(false); 
+    CSGRecord::SetEnabled(false); 
 #endif
 
    /*

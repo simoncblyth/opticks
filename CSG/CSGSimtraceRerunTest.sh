@@ -1,15 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-SimtraceRerunTest.sh
+CSGSimtraceRerunTest.sh
 ================================
 
 ::
 
     c
-    ./SimtraceRerunTest.sh 
-    ./SimtraceRerunTest.sh info
-    ./SimtraceRerunTest.sh run 
-    ./SimtraceRerunTest.sh ana
+    ./CSGSimtraceRerunTest.sh 
+    ./CSGSimtraceRerunTest.sh info
+    ./CSGSimtraceRerunTest.sh run 
+    ./CSGSimtraceRerunTest.sh ana
 
 EOU
 }
@@ -17,7 +17,7 @@ EOU
 
 arg=${1:-run}
 
-bin=SimtraceRerunTest
+bin=CSGSimtraceRerunTest
 log=$bin.log
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh 
 
@@ -36,6 +36,7 @@ fi
 if [ "run" == "$arg" ]; then
    [ -f "$log" ] && rm $log 
    export T_FOLD 
+
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error $bin && exit 1 
 fi 

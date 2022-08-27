@@ -7,6 +7,7 @@
 #include <string>
 #include "OpticksCSG.h"
 #include "csg_classify.h"
+#include "CSG_API_EXPORT.hh"
 
 struct quad6 ; 
 
@@ -19,7 +20,7 @@ CSGRecord
 
 **/
 
-struct CSGRecord
+struct CSG_API CSGRecord
 {
     static bool ENABLED ;  
     static void SetEnabled(bool enabled); 

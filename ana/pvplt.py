@@ -131,7 +131,7 @@ def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="wh
     pl.add_lines( xseg, color=line_color )
 
 
-def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2):
+def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red"):
     """
     :param ax: matplotlib 2D axis 
     :param xpos: (n,3) array of positions
@@ -141,9 +141,82 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2):
     xseg = contiguous_line_segments(xpos[:,:3]).reshape(-1,2,3)  # (n,2,3) 
     xseg2D = xseg[:,:,axes]   #  (n,2,2)    same as xseg[...,axes]  see https://numpy.org/doc/stable/user/basics.indexing.html 
 
-    lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors="red") 
+    lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors=colors ) 
     ax.add_collection(lc)
 
+
+def get_from_simtrace_isect( isect, mode="o2i"):
+    """
+    :param isect: (4,4) simtrace array item
+    :param mode: str "o2i" "nrm" "nrm10" 
+    :return step: (2,3) point to point step 
+    """
+    assert isect.shape == (4,4)
+
+    dist = isect[0,3] # simtrace layout assumed, see CSG/tests/SimtraceRerunTest.cc
+    nrm = isect[0,:3]
+    pos = isect[1,:3]
+    ori = isect[2,:3]
+    mom = isect[3,:3]
+
+    step = np.zeros( (2,3), dtype=np.float32 )
+    if mode == "o2i":
+        step[0] = ori 
+        step[1] = ori+dist*mom 
+    elif mode == "nrm":
+        step[0] = pos 
+        step[1] = pos+nrm 
+    elif mode == "nrm10":
+        step[0] = pos 
+        step[1] = pos+10*nrm 
+    else:
+        assert 0 
+    pass 
+    return step
+
+
+def mpplt_simtrace_selection_line(ax, sts, axes, linewidths=2):
+    """
+    :param ax:
+    :param sts: simtrace_selection array of shape (n,2,4,4)  where n is small eg < 10
+    :param axes:
+
+    The simtrace_selection created in CSG/tests/SimtraceRerunTest.cc
+    contains pairs of isect the first from normal GPU simtrace and
+    the second from CPU rerun.   
+
+    TODO: add a small arrow showing the intersection normals from  
+    TODO: at dot at pos 
+    """
+    pass
+    print("mpplt_simtrace_selection_line sts\n", sts)
+    colors = ["red","blue"]
+    for i in range(len(sts)): 
+        for j in [0,1]:
+            isect = sts[i,j] 
+            o2i = get_from_simtrace_isect(isect, "o2i")
+            nrm10 = get_from_simtrace_isect(isect, "nrm10")
+            mpplt_add_contiguous_line_segments(ax, o2i, axes, linewidths=linewidths, colors=colors[j%len(colors)] )
+            mpplt_add_contiguous_line_segments(ax, nrm10, axes, linewidths=linewidths, colors=colors[j%len(colors)] )
+        pass
+    pass
+
+def pvplt_simtrace_selection_line(pl, sts):
+    """
+    """
+    print("pvplt_simtrace_selection_line sts\n", sts)
+    colors = ["red","blue"]
+    for i in range(len(sts)): 
+        for j in [0,1]:
+            isect = sts[i,j] 
+            color = colors[j%len(colors)]
+            o2i = get_from_simtrace_isect(isect, "o2i")
+            nrm10 = get_from_simtrace_isect(isect, "nrm10")
+            pvplt_add_contiguous_line_segments(pl, o2i, line_color=color, point_color=color )
+            pvplt_add_contiguous_line_segments(pl, nrm10, line_color=color, point_color=color )
+        pass
+    pass
+  
 
 def ce_line_segments( ce, axes ):
     """

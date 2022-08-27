@@ -183,6 +183,10 @@ class SimtracePlot(object):
             ax.scatter( t_spos[:,H], t_spos[:,V], label="t_spos", s=5 )
         pass
 
+        if hasattr(self, 'simtrace_selection'):
+            sts = self.simtrace_selection
+            mpplt_simtrace_selection_line(ax, sts, axes=self.frame.axes, linewidths=2)
+        pass
 
         if not self.look_ce is None:
             mpplt_ce_multiple(ax, self.look_ce, axes=self.frame.axes)
@@ -321,6 +325,11 @@ class SimtracePlot(object):
 
         if hasattr(self, 'x_lpos'):
             pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3], point_size=25 )
+        pass
+
+        if hasattr(self, 'simtrace_selection'):
+            sts = self.simtrace_selection
+            pvplt_simtrace_selection_line(pl, sts)
         pass
 
         if not self.look_ce is None:

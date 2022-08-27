@@ -21,6 +21,14 @@
 std::vector<quad6> CSGRecord::record = {} ;     
 
 
+/**
+CSGRecord::CSGRecord
+----------------------
+
+ctor unpacks the quad6 record into the members 
+
+**/
+
 CSGRecord::CSGRecord( const quad6& r_ )
     :
     r(r_),
