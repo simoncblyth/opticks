@@ -37,8 +37,8 @@ EOU
 #geom=J001
 #geom=J003
 #geom=nmskSolidMaskVirtual
-geom=nmskSolidMask
-#geom=nmskSolidMaskTail
+#geom=nmskSolidMask
+geom=nmskSolidMaskTail
 
 export GEOM=${GEOM:-$geom}
 

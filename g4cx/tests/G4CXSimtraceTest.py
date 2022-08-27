@@ -40,6 +40,7 @@ from opticks.npy.mortonlib.morton2d import morton2d
 
 
 SPURIOUS = "SPURIOUS" in os.environ
+RERUN = "RERUN" in os.environ
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
 FEAT = os.environ.get("FEAT", "pid" )
@@ -158,10 +159,19 @@ if __name__ == '__main__':
     gs = FrameGensteps(t.genstep, t.sframe, local=local, symbol="gs" )  ## get gs positions in target frame
     print(gs)
 
-    t_pos = SimtracePositions(t.simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
+
+    if RERUN:
+        log.info("RERUN envvar switched on use of simtrace_rerun from CSG/SimtraceRerunTest.sh " ) 
+        simtrace = t.simtrace_rerun
+    else:
+        simtrace = t.simtrace
+    pass
+
+    t_pos = SimtracePositions(simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
     print(t_pos)
 
     if SPURIOUS:
+        log.info("SPURIOUS envvars switches on morton enabled spurious_2d_outliers ")
         u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
     else:
         t_spos = None

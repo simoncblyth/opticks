@@ -479,7 +479,7 @@ SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const qua
     a.q1.f.x = p.q0.f.x + t*p.q1.f.x ;   // intersect position 
     a.q1.f.y = p.q0.f.y + t*p.q1.f.y ; 
     a.q1.f.z = p.q0.f.z + t*p.q1.f.z ; 
-    a.q1.i.w = 0.f ;  
+    a.q1.f.w = tmin ;   // was 0.f  
 
     a.q2.f.x = p.q0.f.x ;                //  initial pos 
     a.q2.f.y = p.q0.f.y ; 

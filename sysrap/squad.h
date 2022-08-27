@@ -142,6 +142,13 @@ struct quad4
     SQUAD_METHOD float* data() ;
     SQUAD_METHOD const float* cdata() const ;
 
+    SQUAD_METHOD float3* v0() const ;
+    SQUAD_METHOD float3* v1() const ;
+    SQUAD_METHOD float3* v2() const ;
+    SQUAD_METHOD float3* v3() const ;
+
+
+
     // hmm actually *set_flags* doing all at once makes little sense, 
     // as idx does not need to be reset and only determine the flag later 
 
@@ -182,6 +189,11 @@ SQUAD_METHOD void quad4::zero()
 
 SQUAD_METHOD float*       quad4::data() {         return &q0.f.x ;  }
 SQUAD_METHOD const float* quad4::cdata() const  { return &q0.f.x ;  }
+
+SQUAD_METHOD float3*      quad4::v0() const { return (float3*)&q0.f.x ; }
+SQUAD_METHOD float3*      quad4::v1() const { return (float3*)&q1.f.x ; }
+SQUAD_METHOD float3*      quad4::v2() const { return (float3*)&q2.f.x ; }
+SQUAD_METHOD float3*      quad4::v3() const { return (float3*)&q3.f.x ; }
 
 
 

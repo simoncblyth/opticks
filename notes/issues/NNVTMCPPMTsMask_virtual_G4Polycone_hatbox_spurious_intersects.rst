@@ -173,6 +173,30 @@ As t_pos holds the mask can workout the origin simtrace index::
 
 
 
+CPU rerun using CSG/SimtraceRerunTest.sh does not have that particular spurious intersect::
+
+    In [31]: t.simtrace[348547]
+    Out[31]: 
+    array([[ -0.   ,  -0.   ,  -1.   ,  80.85 ],
+           [ 37.043,   0.   ,   0.1  ,   0.   ],
+           [ 52.8  ,   0.   , -79.2  ,   0.   ],
+           [ -0.195,   0.   ,   0.981,   0.   ]], dtype=float32)
+
+    In [32]: t.simtrace_rerun[348547]
+    Out[32]: 
+    array([[ -0.   ,  -0.   ,  -1.   , 270.385],
+           [  0.105,   0.   , 186.   ,   0.   ],
+           [ 52.8  ,   0.   , -79.2  ,   0.   ],
+           [ -0.195,   0.   ,   0.981,   0.   ]], dtype=float32)
+
+
+But visualizing the simtrace_rerun, shows it has several others on that same z=0.1 line::
+
+    ZZ=0.1 RERUN=1 ./gxt.sh ana
+
+
+
+
 ::
 
     269 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
