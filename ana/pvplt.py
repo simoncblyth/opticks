@@ -5,6 +5,8 @@ log = logging.getLogger(__name__)
 import numpy as np
 import pyvista as pv
 from matplotlib import collections  as mp_collections
+from matplotlib.patches import Circle, Rectangle, Ellipse
+
 from opticks.ana.axes import Axes, X,Y,Z
 
 themes = ["default", "dark", "paraview", "document" ]
@@ -143,6 +145,77 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
 
     lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors=colors ) 
     ax.add_collection(lc)
+
+
+
+
+def get_ellipse_param(elpar):
+    """
+    :param elpar_: list of up to 7 float
+    """
+    elw = elpar[0]*2 if len(elpar) > 0 else 100
+    elh = elpar[1]*2 if len(elpar) > 1 else 100 
+    elx = elpar[2]   if len(elpar) > 2 else 0 
+    ely = elpar[3]   if len(elpar) > 3 else 0 
+    ela = elpar[4]   if len(elpar) > 4 else 0.1 
+    ez0 = elpar[5]   if len(elpar) > 5 else 0.
+    ez1 = elpar[6]   if len(elpar) > 6 else 0.
+    return elw,elh,elx,ely,ela,ez0,ez1
+
+ 
+def mpplt_add_ellipse(ax, elpar):
+    """
+    :param ax: matplotlib 2D axis 
+    :param elpar: list of up to 5 float 
+    """
+
+    elw,elh,elx,ely,ela,ez0,ez1 = get_ellipse_param(elpar)
+    el = Ellipse(xy=[elx,ely], width=elw, height=elh, alpha=ela )
+
+    dz =  elh/2+ez0 
+
+    botleft = (-elw/2,-elh/2 + dz )
+    #ec = "red" 
+    ec = "none"
+    bx = Rectangle(botleft,elw,elh-dz, facecolor="none", edgecolor=ec )
+
+    ax.add_artist(el)
+    ax.add_artist(bx)
+    el.set_clip_path(bx)
+
+
+def get_rectangle_param(repar):
+    """
+    :param repar: list of up to 5 float
+    """
+    hx = repar[0] if len(repar) > 0 else 100 
+    hy = repar[1] if len(repar) > 1 else 100 
+    cx = repar[2] if len(repar) > 2 else 0 
+    cy = repar[3] if len(repar) > 3 else 0 
+    al = repar[4] if len(repar) > 4 else 0.2
+    dy = repar[5] if len(repar) > 5 else 0 
+    return hx,hy,cx,cy,al,dy 
+
+
+def mpplt_add_rectangle(ax, repar):
+    """
+                                   (cx+hx, cy+hy+dy)
+           +----------+----------+                  
+           |          |          |
+           |          |(cx,cy+dy)|
+           +----------+----------+
+           |          |          |
+           |          |          |
+           +----------+----------+
+       (cx-hx,cy-hy+dy)
+
+    """
+    hx,hy,cx,cy,al,dy = get_rectangle_param(repar)
+    botleft = (cx-hx, cy-hy+dy)
+    width = hx*2
+    height = hy*2 
+    bx = Rectangle( botleft, width, height, alpha=al, facecolor="none", edgecolor="red" )
+    ax.add_artist(bx)
 
 
 def get_from_simtrace_isect( isect, mode="o2i"):

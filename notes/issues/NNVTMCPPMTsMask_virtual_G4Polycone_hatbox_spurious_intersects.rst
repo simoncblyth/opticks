@@ -322,8 +322,48 @@ Rerun the three spurious::
 
 
 
+jps/tests/GetValuesTest:: 
+
+    PMTSim::getValues name_ [nmskSolidMask] name [SolidMask] mgr Y NAME_OFFSET 0 vv (15, )
+     name nmskSolidMask vv (15, )
+    NP::descValues num_val 15
+
+      0 v   264.0000 k  SolidMask.Top_out.pxySemiAxis.mask_radiu_out
+      1 v   194.0000 k  SolidMask.Top_out.pzSemiAxis.htop_out
+      2 v   -39.0000 k  SolidMask.Top_out.pzBottomCut.-height_out
+      3 v   194.0000 k  SolidMask.Top_out.pzTopCut.htop_out
+
+      4 v    19.5000 k  SolidMask.Bottom_out.hz.height_out/2
+      5 v   -19.4000 k  SolidMask.Mask_out.zoffset.-height_out/2+gap
+
+      6 v   256.0000 k  SolidMask.Top_in.pxySemiAxis.mask_radiu_in
+      7 v   186.0000 k  SolidMask.Top_in.pzSemiAxis.htop_in
+      8 v   -40.0000 k  SolidMask.Top_in.pzBottomCut.-(height_in+uncoincide_z)
+      9 v   186.0000 k  SolidMask.Top_in.pzTopCut.htop_in
+
+     10 v    20.0000 k  SolidMask.Bottom_in.hz.height_in/2 + uncoincide_z/2
+
+     11 v   -19.9000 k  SolidMask.Mask_in.zoffset.-height_in/2 + gap - uncoincide_z/2
+     12 v   -19.5000 k  SolidMask.Mask_in.zoffset.-height_in/2
+     13 v     0.1000 k  SolidMask.Mask_in.zoffset.gap
+     14 v    -0.5000 k  SolidMask.Mask_in.zoffset.-uncoincide_z/2
 
 
+::
+
+   ZZ=194 ./gxt.sh ana
+
+
+   ELLIPSE0=264,194,0,0,0.1,-39,0 ZZ=194,-39 ./gxt.sh ana
+   ELLIPSE0=264,194,0,0,0.1,-39,0 ZZ=194,-39 RECTANGLE0=264,19.5,0,0,0.3,-19.4 ./gxt.sh ana
+
+   ELLIPSE0=264,194,0,0,0.1,-39,0 ZZ=194,-39 RECTANGLE0=264,19.5,0,0,0.3,-19.4 RECTANGLE1=256,20,0,0,0.3,-19.9   ./gxt.sh ana
+
+
+
+
+   ELLIPSE1=256,186,0,0,0.1,-40,0 ZZ=186,-40 ./gxt.sh ana
+   ELLIPSE1=256,186,0,0,0.1,-40,0 ZZ=186,-40 RECTANGLE1=256,20,0,0,0.3,-19.9 ./gxt.sh ana
 
 
 

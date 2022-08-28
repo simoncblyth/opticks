@@ -16,6 +16,7 @@ MP =  not "NOMP" in os.environ
 if MP: 
     try:
         import matplotlib.pyplot as mp
+        from matplotlib.patches import Circle, Rectangle, Ellipse
     except ImportError:
         mp = None
     pass
@@ -96,6 +97,11 @@ class SimtracePlot(object):
         self.aa = aa
         self.sz = float(os.environ.get("SZ","1.0"))
 
+        self.ellipse0 = efloatlist_("ELLIPSE0", "0,0,0,0")      #  elw,elh,elx,ely,ela,ez0,ez1
+        self.ellipse1 = efloatlist_("ELLIPSE1", "0,0,0,0")      #  
+        self.rectangle0 = efloatlist_("RECTANGLE0", "0,0,0,0")  #  hx,hy,cx,cy,al,dy
+        self.rectangle1 = efloatlist_("RECTANGLE1", "0,0,0,0")  # 
+
         log.info(" aa[X] %s " % str(self.aa[X]))
         log.info(" aa[Y] %s " % str(self.aa[Y]))
         log.info(" aa[Z] %s " % str(self.aa[Z]))
@@ -145,6 +151,7 @@ class SimtracePlot(object):
         fig.suptitle("\n".join(title))
               
         self.ax = ax  # TODO: arrange to pass this in 
+        self.fig = fig 
 
         note = self.note
         note1 = self.note1
@@ -154,6 +161,20 @@ class SimtracePlot(object):
         if len(note1) > 0:
              mp.text(0.01, 0.95, note1, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
         pass
+
+        if len(self.ellipse0) > 0 and self.ellipse0[0] > 0.:
+            mpplt_add_ellipse(ax, self.ellipse0)
+        pass
+        if len(self.ellipse1) > 0 and self.ellipse1[0] > 0.:
+            mpplt_add_ellipse(ax, self.ellipse1)
+        pass
+        if len(self.rectangle0) > 0 and self.rectangle0[0] > 0.:
+            mpplt_add_rectangle(ax, self.rectangle0)
+        pass
+        if len(self.rectangle1) > 0 and self.rectangle1[0] > 0.:
+            mpplt_add_rectangle(ax, self.rectangle1)
+        pass
+
 
         # loop over unique values of the feature 
         for idesc in range(feat.unum):

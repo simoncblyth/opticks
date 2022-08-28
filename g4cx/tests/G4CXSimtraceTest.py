@@ -39,6 +39,8 @@ from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 from opticks.npy.mortonlib.morton2d import morton2d 
 
 
+
+
 SPURIOUS = "SPURIOUS" in os.environ
 RERUN = "RERUN" in os.environ
 SELECTION = "SELECTION" in os.environ
@@ -193,6 +195,8 @@ if __name__ == '__main__':
     pl = SimtracePlot.MakePVPlotter()
 
     plt = SimtracePlot(pl, pf.feat, gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
+
+
 
     if not x_lpos is None:           
         plt.x_lpos = x_lpos   
