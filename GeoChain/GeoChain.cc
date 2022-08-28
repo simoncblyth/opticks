@@ -10,6 +10,7 @@
 
 #include "NNode.hpp"
 #include "NCSG.hpp"
+#include "NP.hh"
 
 #include "GMesh.hh"
 #include "GGeo.hh"
@@ -41,6 +42,7 @@ GeoChain::GeoChain(Opticks* ok_)
     volume(nullptr),
     sim(SSim::Create()),
     fd(new CSGFoundry),
+    vv(nullptr),
     lvIdx(0),  
     soIdx(0)  
 {
@@ -195,17 +197,31 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top )
     LOG(LEVEL) << "]" ;  
 }
 
-void GeoChain::save(const char* name, const char* base_) const 
+
+
+const char* GeoChain::getCFBase(const char* name, const char* base_) const
 {
     const char* base = base_ ? base_ : BASE ;  
-    int create_dirs = 2 ; // 2: dirpath
-    const char* fold = SPath::Resolve(base, name, create_dirs );   
+    const char* fold = SPath::Resolve(base, name, DIRPATH );   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
-    const char* rel = "CSGFoundry" ; 
+    return cfbase ; 
+}
 
-    fd->save(cfbase, rel );    // expects existing directory $CFBASE/CSGFoundry 
+void GeoChain::save(const char* name, const char* base_) const 
+{
+    const char* cfbase = getCFBase(name, base_); 
+    fd->save(cfbase, CSGFoundry::RELDIR );    // expects existing directory $CFBASE/CSGFoundry 
+    checkSaveWithLoad(cfbase); 
 
-    CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
+    if(vv)
+    {
+        vv->save(cfbase, "GeoChain", "values.npy");  
+    }
+}
+
+void GeoChain::checkSaveWithLoad(const char* cfbase) const 
+{
+    CSGFoundry* lfd = CSGFoundry::Load(cfbase, CSGFoundry::RELDIR );  // load foundary and check identical bytes
     int rc = CSGFoundry::Compare(fd, lfd ) ; 
     if(rc)
     {
@@ -214,4 +230,8 @@ void GeoChain::save(const char* name, const char* base_) const
     }
     assert( 0 == rc );  
 }
+
+
+
+
 

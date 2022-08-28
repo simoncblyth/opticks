@@ -45,6 +45,10 @@ struct NP
         double         f ;  
     };            
 
+    static bool StartsWith( const char* s, const char* q) ; 
+    static NP*  MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* prefix=nullptr ); 
+    std::string descValues() const ; 
+
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );  // dtype from template type
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
@@ -56,7 +60,6 @@ struct NP
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
-
 
 
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
@@ -409,6 +412,50 @@ inline std::istream& operator>>(std::istream& is, NP& a)
  
     //is.setstate(std::ios::failbit);
     return is;
+}
+
+inline bool NP::StartsWith( const char* s, const char* q) // static
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
+
+inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* prefix ) // static
+{
+    std::cout << "NP::MakeValues values.size " << values.size() << std::endl ;  
+
+    std::vector<std::string> nams ; 
+    std::vector<double> vals ; 
+
+    for(unsigned i=0 ; i < values.size() ; i++)
+    {   
+        const std::pair<std::string, double>& kv = values[i] ; 
+        const char* k = kv.first.c_str() ; 
+        double v = kv.second ;
+
+        bool select = prefix == nullptr || StartsWith( k, prefix ) ; 
+        std::cout 
+            << "NP::MakeValues " 
+            << std::setw(3) << i 
+            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << v 
+            << " k " << std::setw(60) << k 
+            << " prefix " << ( prefix ? prefix : "-" ) 
+            << " select " << select 
+            <<  std::endl 
+            ;
+ 
+        if(select)
+        {   
+            nams.push_back(k); 
+            vals.push_back(v); 
+        }   
+    }  
+    std::cout << "NP::MakeValues vals.size " << vals.size() << std::endl ;  
+    if(vals.size() == 0 ) return nullptr ; 
+
+    NP* vv = NP::Make<double>( vals ) ; 
+    vv->set_names( nams );  
+
+    return vv ; 
 }
 
 
@@ -4075,4 +4122,31 @@ inline const char* NP::ReadString( const char* path )  // static
     std::string str = ss.str(); 
     return str.empty() ? nullptr : strdup(str.c_str()) ; 
 }
+
+
+inline std::string NP::descValues() const 
+{
+    assert( shape.size() == 1 ); 
+    unsigned num_val = shape[0] ; 
+    assert( names.size() == num_val );
+    assert( ebyte == 8 );  
+    std::stringstream ss ; 
+    ss << "NP::descValues num_val " << num_val  << std::endl ; 
+    const double* vv = cvalues<double>() ; 
+    for(unsigned i=0 ; i < num_val ; i++)
+    {
+        const char* k = names[i].c_str(); 
+        ss
+            << std::setw(3) << i 
+            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << vv[i] 
+            << " k " << std::setw(60) << k 
+            <<  std::endl 
+            ;
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
 

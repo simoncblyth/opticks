@@ -297,7 +297,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
         ierr = tranche_pop(tr, slice, tmin );
         if(ierr) break ; 
 
-        // beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height 
+        // nodeIdx, beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height 
         unsigned beginIdx = UNPACK4_2(slice);
         unsigned endIdx   = UNPACK4_3(slice);
 
@@ -313,7 +313,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
             unsigned depth = TREE_DEPTH(nodeIdx) ;
             unsigned elevation = height - depth ; 
 
-            const CSGNode* nd = node + nodeIdx - 1 ; 
+            const CSGNode* nd = node + nodeIdx - 1 ;   // nodeIdx is 1-based level order index 
             OpticksCSG_t typecode = (OpticksCSG_t)nd->typecode() ;
 #ifdef DEBUG
             printf("//intersect_tree  nodeIdx %d CSG::Name %10s depth %d elevation %d \n", nodeIdx, CSG::Name(typecode), depth, elevation ); 
@@ -326,7 +326,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
             bool node_or_leaf = typecode >= CSG_NODE ; 
 #ifdef DEBUG
             printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
-
 #endif
             if(node_or_leaf)
             {
@@ -477,9 +476,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                     rec.q0.f = csg.data[left] ; 
                     rec.q1.f = csg.data[right] ; 
 
-                    U4U uu ; 
-                    uu.u4.x = sbibit_PACK4( typecode, l_state, r_state, leftIsCloser ) ; 
-                    uu.u4.y = sbit_rPACK8( l_promote_miss, l_complement, l_unbounded, false, r_promote_miss, r_complement, r_unbounded, false ); 
+                    U4U uu ;   // union u4:4*uchar u:unsigned
+                    uu.u4.x = sbibit_PACK4( typecode, l_state, r_state, leftIsCloser ) ;  // 4*2bit into 8bit uchar
+                    uu.u4.y = sbit_rPACK8( l_promote_miss, l_complement, l_unbounded, false, r_promote_miss, r_complement, r_unbounded, false );  // 8 bits into uchar
                     uu.u4.z = tloop ; 
                     uu.u4.w = nodeIdx ; 
 
@@ -493,6 +492,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                     rec.q3.f.y = t_min ; // overall  
                     rec.q3.f.z = 0.f ;   // set to tminAdvanced when looping below 
                     rec.q3.f.w = 0.f ; 
+
+                    // q4 is set below with result 
+                    // q5 currently unused
 
                     CSGRecord::record.push_back(rec); 
                 }

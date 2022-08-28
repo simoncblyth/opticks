@@ -26,8 +26,9 @@ CSGSimtraceRerun::CSGSimtraceRerun()
     fd(CSGFoundry::Load()),
     SELECTION(getenv("SELECTION")),
     selection(SSys::getenvintvec("SELECTION",',')),  // when no envvar gives nullptr  
-    path0(SPath::Resolve("$T_FOLD", "simtrace.npy", NOOP)),
-    path1(SPath::Resolve("$T_FOLD", selection ? "simtrace_selection.npy" : "simtrace_rerun.npy", NOOP)),
+    fold(SPath::Resolve("$T_FOLD", NOOP)),
+    path0(SPath::Join(fold, "simtrace.npy")),
+    path1(SPath::Join(fold, selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
     simtrace0(NP::Load(path0)),
     simtrace1(selection ? NP::Make<float>(selection->size(),2,4,4) : NP::MakeLike(simtrace0)),
     qq0((const quad4*)simtrace0->bytes()),
@@ -159,8 +160,11 @@ void CSGSimtraceRerun::report() const
 {
     LOG(info) << "t.desc " << desc() ; 
 #ifdef DEBUG_RECORD
-    std::cout << "with : DEBUG_RECORD " << std::endl ; 
+    LOG(info) << "with : DEBUG_RECORD " ; 
     CSGRecord::Dump("CSGSimtraceRerun::report"); 
+
+    LOG(info) << " save CSGRecord.npy to fold " << fold ; 
+    CSGRecord::Save(fold); 
 #else
     std::cout << "not with DEBUG_RECORD : recompile with DEBUG_RECORD for full detailed recording " << std::endl ; 
 #endif

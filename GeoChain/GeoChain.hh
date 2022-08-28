@@ -52,6 +52,7 @@ class GVolume ;
 struct SSim ; 
 struct CSGFoundry ; 
 struct nnode ; 
+struct NP ; 
 
 struct GEOCHAIN_API GeoChain
 {
@@ -64,6 +65,7 @@ struct GEOCHAIN_API GeoChain
     GVolume* volume ;
     SSim*       sim ; 
     CSGFoundry* fd ;  
+    const NP* vv ;  // parameter values eg obtained from PMTSim::GetValues 
     int lvIdx ; 
     int soIdx ; 
  
@@ -76,7 +78,8 @@ struct GEOCHAIN_API GeoChain
     void convertMesh(GMesh* mesh ) ; 
     void convertName(const char* geom ); 
 
+    const char* getCFBase(const char* name, const char* base_) const ; 
     void save(const char* name, const char* base=nullptr) const ; 
+    void checkSaveWithLoad(const char* cfbase) const ; 
 }; 
-
 

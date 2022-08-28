@@ -208,6 +208,33 @@ std::string CSGRecord::desc(unsigned irec, const char* label  ) const
     return s ; 
 }
 
+/**
+
+    In [2]: t.CSGRecord
+    Out[2]: 
+    array([[[   0.   ,    0.   ,   -1.   ,  -78.839],
+            [   0.   ,    0.   ,   -1.   ,   78.957],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,   -1.   ,  -78.839],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           ...
+
+           [[   0.014,    0.   ,    1.   , -354.615],
+            [  -0.   ,   -0.   ,   -1.   ,  125.124],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [  -0.   ,   -0.   ,   -1.   ,  125.124],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [3]: t.CSGRecord.shape
+    Out[3]: (10, 6, 4)
+
+    In [5]: np.all( t.CSGRecord[:,5]  == 0. )
+    Out[5]: True
+
+**/
 
 
 void CSGRecord::Clear()  // static
@@ -216,12 +243,6 @@ void CSGRecord::Clear()  // static
 }
 void CSGRecord::Save(const char* dir)  // static
 {
-    if( !ENABLED)
-    {
-        LOG(error) << "CSGRecord::ENABLED is not set, define envvar CSGRecord_ENABLED to do so  " ; 
-        return ;  
-    }
-
     unsigned num_record = record.size() ;  
     LOG(info) << " dir " << dir << " num_record " << num_record ; 
 

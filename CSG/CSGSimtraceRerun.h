@@ -21,8 +21,10 @@ struct CSG_API CSGSimtraceRerun
     const char* SELECTION ; 
     std::vector<int>* selection ; 
 
+    const char* fold ; 
     const char* path0 ; 
-    const char* path1 ; 
+    const char* path1 ;
+ 
     NP* simtrace0 ; 
     NP* simtrace1 ; 
 

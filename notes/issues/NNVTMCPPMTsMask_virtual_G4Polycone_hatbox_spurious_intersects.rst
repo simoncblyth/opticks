@@ -309,7 +309,26 @@ Rerun the three spurious::
                                                                                               
                                                                                               
                                                                                               
-                                                                                              
+    
+
+::
+
+     64     G4Ellipsoid(const G4String& pName,
+     65                       G4double  pxSemiAxis,
+     66                       G4double  pySemiAxis,
+     67                       G4double  pzSemiAxis,
+     68                       G4double  pzBottomCut=0,
+     69                       G4double  pzTopCut=0);
+
+
+
+
+
+
+
+
+
+                                                                                          
                                                                                               
                                                                                               
      idx  176995 code 3

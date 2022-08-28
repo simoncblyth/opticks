@@ -118,9 +118,24 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 
-# these DEBUG flags are exceedingly verbose : only use for single photons and do not commit with them uncommented
-# target_compile_definitions( ${name} PRIVATE DEBUG )
-# target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
+
+#[=[
+DEBUG and DEBUG_RECORD preprocessor macros
+--------------------------------------------
+ 
+* WARNING : these two DEBUG flags are exceedingly verbose 
+* note that the code will not compile with nvcc when DEBUG_RECORD is enabled, 
+  due to use of std::vector for example
+* the flags effect critical parts of CSG intersection algorithm 
+* flags are intended for CPU debugging of CUDA compatible code 
+* only use them for tests of single intersections 
+* DO NOT COMMIT WITH THESE UNCOMMENTED
+
+#]=]
+
+#target_compile_definitions( ${name} PRIVATE DEBUG )
+#target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
+
 
 
 target_include_directories(${name}

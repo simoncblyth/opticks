@@ -32,6 +32,7 @@ EOU
 
 echo $BASH_SOURCE 
 
+#export CSGRecord_ENABLED=1
 
 #selection=176995,153452,459970
 selection=176995

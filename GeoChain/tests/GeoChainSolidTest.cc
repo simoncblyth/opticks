@@ -49,12 +49,20 @@ const G4VSolid* GetSolid(const char* geom, std::string& meta )
     }
     else
     {
-
 #ifdef WITH_PMTSIM
         solid = PMTSim::GetSolid(geom); 
 #endif
     }
     return solid ; 
+}
+
+const NP* GetValues(const char* geom)
+{
+    NP* vv = nullptr ; 
+#ifdef WITH_PMTSIM
+    vv = PMTSim::GetValues(geom); 
+#endif
+    return vv ; 
 }
 
 
@@ -68,7 +76,6 @@ int main(int argc, char** argv)
     LOG(info) << " geom_ [" << geom_ << "] " ; 
     LOG(info) << " geom  [" << geom  << "] " ; 
 
-
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
@@ -77,6 +84,8 @@ int main(int argc, char** argv)
 
     std::string meta ; 
     const G4VSolid* solid = GetSolid(geom, meta);  
+    const NP* vv = GetValues(geom) ; 
+    chain.vv = vv ;  
 
     if( solid )
     {   // for shapes authored as G4VSolid 

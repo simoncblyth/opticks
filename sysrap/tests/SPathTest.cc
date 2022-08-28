@@ -372,6 +372,12 @@ void test_Copy()
 
 }
 
+void test_Join()
+{
+    const char* p = SPath::Join("red", "green", "blue" ); 
+    std::cout << " p [" << p << "]" << std::endl ; 
+}
+
 
 
 int main(int argc , char** argv )
@@ -388,8 +394,8 @@ int main(int argc , char** argv )
     test_IsReadable_path();  
     test_Basename_2(); 
     test_Resolve_With_Index();  
-*/  
     test_Resolve_Default(); 
+*/  
 /*
     test_Resolve(); 
     test_Basename(); 
@@ -408,7 +414,8 @@ int main(int argc , char** argv )
     test_SearchDirUpTreeWithFile(); 
     test_Copy(); 
 */
-    
+    test_Join();   
+ 
     return 0  ; 
 }
 // om-;TEST=SPathTest om-t 

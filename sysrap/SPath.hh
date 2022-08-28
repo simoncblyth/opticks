@@ -91,6 +91,10 @@ struct SYSRAP_API SPath
 
     static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
+
+    template<typename ... Args> static std::string Join_( Args ... args ); 
+    template<typename ... Args> static const char* Join(  Args ... args ); 
+
 };
 
 
