@@ -1,0 +1,204 @@
+unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex
+==================================================================================================
+
+* fixed by changing "<" to "<="  in intersect_leaf_zsphere
+
+
+Checking nmskMaskOut revealed some rare unexpected misses from inside zsphere
+------------------------------------------------------------------------------
+
+The expected intersect that was missed is close to "apex"::
+
+    In [2]: dir = np.array( [0.135,0.,0.991] )
+    In [3]: ori = np.array( [-26.4,0,0 ] )
+    In [5]: ori+dir*195.792694 
+    Out[5]: array([  0.032,   0.   , 194.031])
+
+
+
+::
+
+    epsilon:g4cx blyth$ MASK=t SPURIOUS=1 ./gxt.sh ana
+
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos
+    [121331 133941]
+    INFO:opticks.ana.pvplt:upos[i_kpos]
+    [[-26.386   0.      0.1     1.   ]
+     [ -0.      0.      0.1     1.   ]]
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [294748 313463]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[  0.      0.      1.      0.101]
+      [-26.386   0.      0.1     0.05 ]
+      [-26.4     0.      0.      0.   ]
+      [  0.135   0.      0.991   0.   ]]
+
+     [[  0.      0.      1.      0.1  ]
+      [ -0.      0.      0.1     0.05 ]
+      [  0.      0.      0.      0.   ]
+      [ -0.      0.      1.      0.   ]]]
+        
+
+
+::
+
+    MASK=t RERUN=1 SPURIOUS=1 ./gxt.sh ana
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos
+    [121329]
+    INFO:opticks.ana.pvplt:upos[i_kpos]
+    [[-26.386   0.      0.1     1.   ]]
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [294748]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[  0.      0.      1.      0.101]
+      [-26.386   0.      0.1   -39.1  ]
+      [-26.4     0.      0.      0.05 ]
+      [  0.135   0.      0.991   0.   ]]]
+
+
+
+
+
+
+
+
+
+
+It manages to miss the zs from inside it::
+
+    //intersect_tree  nodeIdx 3 node_or_leaf 1 nd_isect (    0.0000     0.0000     1.0000     0.1009) 
+    //intersect_tree  nodeIdx 1 CSG::Name      union depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 node_or_leaf 0 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)            union  l: Miss     0.0000    r: Exit     0.1009     leftIsCloser 1 -> RETURN_B 
+    //   1 CSG decision : left 0 right 1 (stackIdx)            union  l: Miss     0.0000    r: Exit     0.1009     leftIsCloser 1 -> RETURN_B 
+    // intersect_tree ierr 0 csg.curr 0 
+    //distance_leaf typecode 103 name zsphere complement 0 sd   -39.1000 
+    //distance_leaf_cylinder sd    -0.0000 
+    //distance_leaf typecode 105 name cylinder complement 0 sd    -0.0000 
+     i   0 idx  294748 code 3
+                            isect0 HIT
+                        q0 norm t (    0.0000    0.0000    1.0000    0.1009)
+                       q1 ipos sd (  -26.3864    0.0000    0.1000    0.0500)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  -26.4000    0.0000    0.0000)
+                  q3 ray_dir gsid (    0.1350    0.0000    0.9908 C4U (     0    0    0    0 ) )
+
+                            isect1 HIT
+                        q0 norm t (    0.0000    0.0000    1.0000    0.1009)
+                       q1 ipos sd (  -26.3864    0.0000    0.1000  -39.1000) SPURIOUS INTERSECT  sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  -26.4000    0.0000    0.0000)
+                  q3 ray_dir gsid (    0.1350    0.0000    0.9908 C4U (     0    0    0    0 ) )
+
+
+    2022-08-29 15:52:01.861 INFO  [40823464] [CSGSimtraceRerun::save@169]  path1 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace_selection.npy
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@176] t.desc CSGSimtraceRerun::desc
+     fd Y
+     fd.geom -
+     CSGQuery::Label  DEBUG DEBUG_RECORD
+     path0 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace.npy
+     path1 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace_selection.npy
+     simtrace0 (627000, 4, 4, )
+     simtrace1 (1, 2, 4, 4, )
+     SELECTION 294748
+     selection Y selection.size 1
+     with_selection 1
+     code_count[0] 0
+     code_count[1] 0
+     code_count[2] 0
+     code_count[3] 1
+     code_count[4] 1
+
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@178] with : DEBUG_RECORD 
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGRecord::Dump@134] CSGSimtraceRerun::report CSGRecord::record.size 1IsEnabled 0
+     tloop    0 nodeIdx    1 irec          0 label                                                                                        rec union
+                     r.q0.f left  (    0.0000    0.0000    0.0000   -0.0000) Miss  - - - leftIsCloser
+                    r.q1.f right  (    0.0000    0.0000    1.0000    0.1009) Exit  - - -   ctrl RETURN_B
+               r.q3.f tmin/t_min  (    0.0500    0.0500    0.0000    0.0000)  tmin     0.0500 t_min     0.0500 tminAdvanced     0.0000
+                   r.q4.f result  (    0.0000    0.0000    1.0000    0.1009) 
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@181]  save CSGRecord.npy to fold /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGRecord::Save@247]  dir /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL num_record 1
+    NP::init size 24 ebyte 4 num_char 96
+    with : DEBUG 
+    epsilon:CSG blyth$ 
+
+
+Found the cause::
+
+     190 LEAF_FUNC
+     191 bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
+     192 {
+     ...
+     252 #ifdef DEBUG_RECORD
+     253         //std::raise(SIGINT); 
+     254 #endif
+     255 
+     256         if(      t1sph > t_min && z1sph > zmin && z1sph <= zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
+     257         else if( t1cap > t_min )                                  t_cand = t1cap ;  // t1cap qualifies -> t1cap 
+     258         else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
+     259         else if( t2sph > t_min && z2sph > zmin && z2sph <= zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
+     260 
+     261 /*
+     262 NB "z2sph <= zmax" changed from "z2sph < zmax" Aug 29, 2022
+     263 
+     264 The old inequality caused rare unexpected MISS for rays that would
+     265 have been expected to intersect close to the apex of the zsphere  
+     266 */
+     267 
+
+
+::
+
+    (lldb) f 3
+    frame #3: 0x00000001001a6e59 libCSG.dylib`intersect_leaf_zsphere(isect=0x00007ffeefbfde20, q0=0x000000010330e040, q1=0x000000010330e050, t_min=0x00007ffeefbfdadc, ray_origin=0x00007ffeefbfdaa0, ray_direction=0x00007ffeefbfda80) at csg_intersect_leaf.h:253
+       250 	    {
+       251 	
+       252 	#ifdef DEBUG_RECORD
+    -> 253 	        std::raise(SIGINT); 
+       254 	#endif
+       255 	
+       256 	        if(      t1sph > t_min && z1sph > zmin && z1sph < zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
+    (lldb) p t1sph
+    (float) $0 = -191.910675
+    (lldb) p t_min
+    (const float) $1 = 0.0500000007
+    (lldb) p z1sph
+    (float) $2 = -190.153519
+    (lldb) p zmin
+    (const float) $3 = -39
+    (lldb) p  t1sph > t_min
+    (bool) $4 = false
+    (lldb) p t1cap
+    (float) $5 = -39.3603897
+    (lldb) p t2cap
+    (float) $6 = 0.0500000007
+    (lldb) p t2cap > t_min
+    (bool) $7 = false
+    (lldb) p t2sph
+    (float) $8 = 195.792694
+    (lldb) p z2sph
+    (float) $9 = 194
+    (lldb) p zmin
+    (const float) $10 = -39
+    (lldb) p z2sph
+    (float) $11 = 194
+    (lldb) p zmax
+    (const float) $12 = 194
+    (lldb) p z2sph < zmax
+    (bool) $13 = false
+    (lldb) p z2sph <= zmax
+    (bool) $14 = true
+    (lldb) p ray_origin.z
+    (const float) $15 = 0
+    (lldb) p ray_direction.z 
+    (const float) $16 = 0.990843892
+    (lldb) p t2sph
+    (float) $17 = 195.792694
+    (lldb) p z2sph
+    (float) $18 = 194
+
+

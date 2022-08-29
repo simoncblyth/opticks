@@ -258,7 +258,14 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
         else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
         else if( t2sph > t_min && z2sph > zmin && z2sph <= zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
 
-        //  HMM: think this needs to be z2sph <= zmax for rays that intersect close to the apex of the sphere 
+/*
+NB "z2sph <= zmax" changed from "z2sph < zmax" Aug 29, 2022
+
+The old inequality caused rare unexpected MISS for rays that would
+have been expected to intersect close to the apex of the zsphere  
+
+See : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+*/
 
     }
 
