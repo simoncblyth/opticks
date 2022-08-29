@@ -287,6 +287,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     static const char* LOAD_FAIL_NOTES ; 
     void load( const char* dir ) ; 
+    NP* loadAux(const char* auxrel="Values/values.npy" ) const ; 
 
     static int MTime(const char* dir, const char* fname_); 
 

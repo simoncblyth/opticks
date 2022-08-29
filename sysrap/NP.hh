@@ -421,7 +421,7 @@ inline bool NP::StartsWith( const char* s, const char* q) // static
 
 inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* prefix ) // static
 {
-    std::cout << "NP::MakeValues values.size " << values.size() << std::endl ;  
+    if(VERBOSE) std::cout << "NP::MakeValues values.size " << values.size() << std::endl ;  
 
     std::vector<std::string> nams ; 
     std::vector<double> vals ; 
@@ -433,7 +433,7 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
         double v = kv.second ;
 
         bool select = prefix == nullptr || StartsWith( k, prefix ) ; 
-        std::cout 
+        if(VERBOSE) std::cout 
             << "NP::MakeValues " 
             << std::setw(3) << i 
             << " v " << std::setw(10) << std::fixed << std::setprecision(4) << v 
@@ -449,7 +449,7 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
             vals.push_back(v); 
         }   
     }  
-    std::cout << "NP::MakeValues vals.size " << vals.size() << std::endl ;  
+    if(VERBOSE) std::cout << "NP::MakeValues vals.size " << vals.size() << std::endl ;  
     if(vals.size() == 0 ) return nullptr ; 
 
     NP* vv = NP::Make<double>( vals ) ; 

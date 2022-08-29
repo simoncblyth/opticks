@@ -3,6 +3,14 @@ usage(){ cat << EOU
 CSGSimtraceRerunTest.sh
 ================================
 
+For CSGSimtraceRerunTest to provide full debug info it is necessary to 
+recompile the CSG package with two non-standard preprocessor macros, 
+that are not intended to ever be committed::
+
+    DEBUG
+    DEBUG_RECORD
+
+
 ::
 
     c

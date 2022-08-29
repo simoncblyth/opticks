@@ -2297,6 +2297,22 @@ void CSGFoundry::load( const char* dir_ )
 
 
 /**
+CSGFoundry::loadAux
+----------------------
+
+Load array from a cfbase relative path 
+
+**/
+
+NP* CSGFoundry::loadAux(const char* auxrel ) const 
+{
+    const char* auxpath = cfbase ? SPath::Join(cfbase, auxrel ) : nullptr ; 
+    NP* aux = auxpath && NP::Exists(auxpath) ? NP::Load(auxpath) : nullptr ; 
+    return aux ; 
+}
+
+
+/**
 CSGFoundry::MTime
 -------------------
 

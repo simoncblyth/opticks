@@ -17,6 +17,7 @@ struct CSG_API CSGSimtraceRerun
 { 
     SSim* sim ; 
     const CSGFoundry* fd ; 
+    const NP* vv ; 
 
     const char* SELECTION ; 
     std::vector<int>* selection ; 

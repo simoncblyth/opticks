@@ -23,7 +23,8 @@
 CSGSimtraceRerun::CSGSimtraceRerun()
     :
     sim(SSim::Create()),
-    fd(CSGFoundry::Load()),
+    fd(CSGFoundry::Load()),      // via GEOM envvar 
+    vv(fd ? fd->loadAux("Values/values.npy") : nullptr ),
     SELECTION(getenv("SELECTION")),
     selection(SSys::getenvintvec("SELECTION",',')),  // when no envvar gives nullptr  
     fold(SPath::Resolve("$T_FOLD", NOOP)),
@@ -42,6 +43,11 @@ CSGSimtraceRerun::CSGSimtraceRerun()
 void CSGSimtraceRerun::init()
 {
     d->draw("CSGSimtraceRerun");
+
+    LOG(info) << " fd.cfbase " << fd->cfbase ; 
+    LOG(info) << " vv " << ( vv ? vv->sstr() : "-" ) ; 
+    if(vv) std::cout << "vv.lpath [" << vv->lpath << "]" << std::endl << vv->descValues() ; 
+
     code_count.fill(0u); 
 }
  

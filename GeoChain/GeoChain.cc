@@ -215,7 +215,7 @@ void GeoChain::save(const char* name, const char* base_) const
 
     if(vv)
     {
-        vv->save(cfbase, "GeoChain", "values.npy");  
+        vv->save(cfbase, "Values", "values.npy");  
     }
 }
 

@@ -18,6 +18,33 @@ CSGRecord
 * CSGRecord_ENABLED envvar is the initial setting, this can be changed with SetEnabled. 
 * operation also requires the special (non-default) compilation flag DEBUG_RECORD
 
+
+For understanding CSGRecords note that records are added at CSG decisions 
+For example with the below tree decisions are made at nodeIdx 2,3,1
+as postorder is followed, ie 4,5,[2],6,7,[3],[1] 
+But loopbacks are done so there will often be repeated decisions
+with tmin advanced also at nodeIdx 2,3,1.
+
+
+                               in                                                         
+                              1                                                           
+                                 0.00                                                     
+                                -0.00                                                     
+                                                                                          
+           un                                      in                                     
+          2                                       3                                       
+             0.00                                    0.00                                 
+            -0.00                                   -0.00                                 
+                                                                                          
+ zs                  cy                 !zs                 !cy                           
+4                   5                   6                   7                             
+ 194.00                0.10              186.00                0.10                       
+ -39.00              -38.90              -40.00              -39.90                       
+                                                                                          
+
+
+TODO: get the winning nodeIdx into the final result CSGRecord ?
+
 **/
 
 struct CSG_API CSGRecord

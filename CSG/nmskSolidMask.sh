@@ -8,7 +8,6 @@ SELECTION envvar
     the CUDA compatible intersect code on the CPU. 
     Without this envvar all the simtrace items ate rerun.
 
-
 CSGSimtraceRerunTest requires a CSGFoundry geometry and corresponding 
 simtrace intersect array. Create these with:: 
 
@@ -31,6 +30,8 @@ EOU
 }
 
 echo $BASH_SOURCE 
+
+export CSGFoundry=INFO
 
 #export CSGRecord_ENABLED=1
 
