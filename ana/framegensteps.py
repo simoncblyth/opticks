@@ -6,7 +6,6 @@ framegensteps.py
 Uses per-genstep transforms to give world_frame_centers and 
 then uses the frame.w2m to get the grid centers in the target frame.  
 
-
 Related:
 
 * sysrap/sframe.h 

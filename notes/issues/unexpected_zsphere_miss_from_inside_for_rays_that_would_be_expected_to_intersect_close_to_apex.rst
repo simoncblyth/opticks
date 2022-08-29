@@ -3,6 +3,60 @@ unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect
 
 * fixed by changing "<" to "<="  in intersect_leaf_zsphere
 
+Perhaps a related issue with nmskSolidMask for intersects close to apex
+-------------------------------------------------------------------------------
+
+On GPU running has one out of 300k spurious intersect, select and plot it::
+
+    epsilon:g4cx blyth$ MASK=t SPURIOUS=1 ./gxt.sh 
+
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos
+    [128130]
+    INFO:opticks.ana.pvplt:upos[i_kpos]
+    [[37.043  0.     0.1    1.   ]]
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [348547]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[ -0.     -0.     -1.     80.85 ]
+      [ 37.043   0.      0.1     0.   ]
+      [ 52.8     0.    -79.2     0.   ]
+      [ -0.195   0.      0.981   0.   ]]]
+
+
+    epsilon:g4cx blyth$ SPURIOUS=1 MASK=t XDIST=300 ZZ=186 ./gxt.sh  
+
+
+Doing a simtrace CPU rerun gives two spurious intersects along same z=0.1::
+
+    c ; ./nmskSolidMask.sh   
+  
+Running this after recompiling with DEBUG DEBUG_RECORD gives lots of details::
+
+    c ; ./nmskSolidMask.sh 
+
+
+XDIST extending gives expected intersect close to apex of inner zsphere::
+
+    epsilon:g4cx blyth$ RERUN=1 SPURIOUS=1 MASK=t XDIST=500 ZZ=186 ./gxt.sh  
+
+
+::
+
+    epsilon:g4cx blyth$ GEOM=nmskSolidMask RERUN=1 MASK=t SELECTION=1 ZZ=186 ./gxt.sh 
+
+::
+
+     ./gxt.sh mpcap
+     ./gxt.sh mppub
+     PUB=message ./gxt.sh mppub
+
+
+
+
+
 
 Checking nmskMaskOut revealed some rare unexpected misses from inside zsphere
 ------------------------------------------------------------------------------

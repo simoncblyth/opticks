@@ -5,6 +5,8 @@ gxt.sh : G4CXSimtraceTest
 
 ::
 
+    
+
     cd ~/opticks/g4cx   # gx
     ./gxt.sh 
     ./gxt.sh info
@@ -23,6 +25,11 @@ To capture pyvista or matplotlib screens::
     ./gxt.sh mpcap
     ./gxt.sh mppub           # check the paths used by mppub
     PUB=chk ./gxt.sh mppub   # copy into /env/presentation 
+
+ana imp::
+
+    vi tests/G4CXSimtraceTest.py ../ana/simtrace_plot.py ../ana/pvplt.py ../ana/feature.py 
+
 
 
 As B uses A and T uses A+B the running order is:

@@ -173,14 +173,17 @@ if __name__ == '__main__':
     t_pos = SimtracePositions(simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
     print(t_pos)
 
+
     if SPURIOUS:
         log.info("SPURIOUS envvars switches on morton enabled spurious_2d_outliers ")
         u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
         j_kpos = t_pos.upos2simtrace[i_kpos]
         log.info("j_kpos = t_pos.upos2simtrace[i_kpos]\n%s" % str(t_pos.upos2simtrace[i_kpos]) )
         log.info("simtrace[j_kpos]\n%s" % str(simtrace[j_kpos]) )
+        simtrace_spurious = j_kpos
     else:
         t_spos = None
+        simtrace_spurious = []
     pass
 
     if SIMPLE:
@@ -205,10 +208,15 @@ if __name__ == '__main__':
     pass
 
     ## created by CSG/SimtraceRerunTest.sh with SELECTION envvar picking simtrace indices to highlight 
-    ## bit the SELECTION envvar used here just has to exist to trigger selection plotting 
+    ## but the SELECTION envvar used here just has to exist to trigger selection plotting 
     if hasattr(t, "simtrace_selection") and SELECTION:  
         plt.simtrace_selection = t.simtrace_selection
+    elif len(simtrace_spurious) > 0:
+        plt.simtrace_selection = simtrace[simtrace_spurious]
+    else:
+        pass
     pass 
+
     
     if not mp is None:
         plt.positions_mpplt()

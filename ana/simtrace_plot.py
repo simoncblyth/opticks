@@ -208,6 +208,7 @@ class SimtracePlot(object):
             mpplt_simtrace_selection_line(ax, sts, axes=self.frame.axes, linewidths=2)
         pass
 
+
         if not self.look_ce is None:
             mpplt_ce_multiple(ax, self.look_ce, axes=self.frame.axes)
         pass

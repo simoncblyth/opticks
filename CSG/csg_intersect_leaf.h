@@ -187,6 +187,30 @@ float distance_leaf_zsphere(const float3& pos, const quad& q0, const quad& q1 )
     return sd ; 
 }
 
+/**
+intersect_leaf_zsphere
+------------------------
+
+HMM: rays that look destined to land near to "apex" have a rare (order 1 in 300k) 
+problem of missing the zsphere.  This is probably arising from the upper cap 
+implementation acting effectively like cutting a pinhole at the apex. 
+
+When there is no upper cap perhaps can avoid the problem by setting zmax to beyond the 
+apex ? Or could have a different imp for zsphere with lower cap but no upper cap. 
+
+Note that zsphere with no upper cap is used a lot for PMTs so a simpler imp
+for zsphere without upper cut does make sense.  
+
+NB "z2sph <= zmax" changed from "z2sph < zmax" Aug 29, 2022
+
+The old inequality caused rare unexpected MISS for rays that would
+have been expected to intersect close to the apex of the zsphere  
+
+See : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+
+**/
+
+
 LEAF_FUNC
 bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
@@ -210,6 +234,13 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     const float zmax = center.z + zdelta.y ; 
     const float zmin = center.z + zdelta.x ;    
 
+#ifdef DEBUG_RECORD
+    bool with_upper_cut = zmax < radius ; 
+    bool with_lower_cut = zmin > -radius ; 
+    printf("// intersect_leaf_zsphere radius %10.4f zmax %10.4f zmin %10.4f  with_upper_cut %d with_lower_cut %d  \n", radius, zmax, zmin, with_upper_cut, with_lower_cut ); 
+#endif
+
+
     float d = dot(D, D);               // NB NOT assuming normalized ray_direction
 
     float t1sph, t2sph, disc, sdisc ;    
@@ -218,19 +249,18 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
     float z2sph = ray_origin.z + t2sph*ray_direction.z ; 
 
-
 #ifdef DEBUG_RECORD
     printf("// intersect_leaf_zsphere t1sph %10.4f t2sph %10.4f sdisc %10.4f \n", t1sph, t2sph, sdisc ); 
     printf("// intersect_leaf_zsphere z1sph %10.4f z2sph %10.4f zmax %10.4f zmin %10.4f sdisc %10.4f \n", z1sph, z2sph, zmax, zmin, sdisc ); 
 #endif
 
-
     float idz = 1.f/ray_direction.z ; 
-    float t_QCAP = (zmax - ray_origin.z)*idz ;   // cap intersects
-    float t_PCAP = (zmin - ray_origin.z)*idz ;
+    float t_QCAP = (zmax - ray_origin.z)*idz ;   // upper cap intersects
+    float t_PCAP = (zmin - ray_origin.z)*idz ;   // lower cap intersect 
 
-    float t1cap = fminf( t_QCAP, t_PCAP ) ;   // order cap intersects along the ray 
-    float t2cap = fmaxf( t_QCAP, t_PCAP ) ;   // t2cap > t1cap 
+
+    float t1cap = fminf( t_QCAP, t_PCAP ) ;      // order cap intersects along the ray 
+    float t2cap = fmaxf( t_QCAP, t_PCAP ) ;      // t2cap > t1cap 
 
 #ifdef DEBUG_RECORD
     bool t1cap_disqualify = t1cap < t1sph || t1cap > t2sph ; 
@@ -254,19 +284,9 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
 #endif
 
         if(      t1sph > t_min && z1sph > zmin && z1sph <= zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
-        else if( t1cap > t_min )                                  t_cand = t1cap ;  // t1cap qualifies -> t1cap 
-        else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
+        else if( t1cap > t_min )                                   t_cand = t1cap ;  // t1cap qualifies -> t1cap 
+        else if( t2cap > t_min )                                   t_cand = t2cap ;  // t2cap qualifies -> t2cap
         else if( t2sph > t_min && z2sph > zmin && z2sph <= zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
-
-/*
-NB "z2sph <= zmax" changed from "z2sph < zmax" Aug 29, 2022
-
-The old inequality caused rare unexpected MISS for rays that would
-have been expected to intersect close to the apex of the zsphere  
-
-See : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
-*/
-
     }
 
     bool valid_isect = t_cand > t_min ;
@@ -294,7 +314,6 @@ See : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_ex
 #ifdef DEBUG_RECORD
     printf("//]intersect_leaf_zsphere valid_isect %d \n", valid_isect ); 
 #endif
-
     return valid_isect ;
 }
 

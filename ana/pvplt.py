@@ -16,6 +16,7 @@ GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
+XDIST = efloat_("XDIST", "200")
 
 
 def pvplt_simple(pl, xyz, label):
@@ -133,7 +134,7 @@ def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="wh
     pl.add_lines( xseg, color=line_color )
 
 
-def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red"):
+def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red", linestyle="dotted" ):
     """
     :param ax: matplotlib 2D axis 
     :param xpos: (n,3) array of positions
@@ -143,7 +144,7 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
     xseg = contiguous_line_segments(xpos[:,:3]).reshape(-1,2,3)  # (n,2,3) 
     xseg2D = xseg[:,:,axes]   #  (n,2,2)    same as xseg[...,axes]  see https://numpy.org/doc/stable/user/basics.indexing.html 
 
-    lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors=colors ) 
+    lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors=colors, linestyle=linestyle ) 
     ax.add_collection(lc)
 
     xpos2d = xpos[:,axes]
@@ -238,6 +239,9 @@ def get_from_simtrace_isect( isect, mode="o2i"):
     if mode == "o2i":
         step[0] = ori 
         step[1] = ori+dist*mom 
+    elif mode == "o2i_XDIST":
+        step[0] = ori 
+        step[1] = ori+XDIST*mom 
     elif mode == "nrm":
         step[0] = pos 
         step[1] = pos+nrm 
@@ -264,33 +268,41 @@ def mpplt_simtrace_selection_line(ax, sts, axes, linewidths=2):
     """
     pass
     print("mpplt_simtrace_selection_line sts\n", sts)
-    colors = ["red","blue"]
-    for i in range(len(sts)): 
-        for j in [0,1]:
-            isect = sts[i,j] 
-            o2i = get_from_simtrace_isect(isect, "o2i")
-            nrm10 = get_from_simtrace_isect(isect, "nrm10")
-            mpplt_add_contiguous_line_segments(ax, o2i, axes, linewidths=linewidths, colors=colors[j%len(colors)] )
-            mpplt_add_contiguous_line_segments(ax, nrm10, axes, linewidths=linewidths, colors=colors[j%len(colors)] )
+
+    colors = ["red","blue"] 
+    if sts.ndim in (3,4) and sts.shape[-2:] == (4,4):
+        for i in range(len(sts)): 
+            jj = sts.shape[1] if sts.ndim == 4 else [-1,]
+            for j in jj:
+                isect = sts[i,j] if sts.ndim == 4 else sts[i]
+                color = colors[j%len(colors)]
+                o2i = get_from_simtrace_isect(isect, "o2i")
+                o2i_XDIST = get_from_simtrace_isect(isect, "o2i_XDIST")
+                nrm10 = get_from_simtrace_isect(isect, "nrm10")
+                mpplt_add_contiguous_line_segments(ax, o2i, axes, linewidths=linewidths, colors=color )
+                mpplt_add_contiguous_line_segments(ax, o2i_XDIST, axes, linewidths=linewidths, colors=color )
+                mpplt_add_contiguous_line_segments(ax, nrm10, axes, linewidths=linewidths, colors=color )
+            pass
         pass
-    pass
 
 def pvplt_simtrace_selection_line(pl, sts):
     """
     """
     print("pvplt_simtrace_selection_line sts\n", sts)
     colors = ["red","blue"]
-    for i in range(len(sts)): 
-        for j in [0,1]:
-            isect = sts[i,j] 
-            color = colors[j%len(colors)]
-            o2i = get_from_simtrace_isect(isect, "o2i")
-            nrm10 = get_from_simtrace_isect(isect, "nrm10")
-            pvplt_add_contiguous_line_segments(pl, o2i, line_color=color, point_color=color )
-            pvplt_add_contiguous_line_segments(pl, nrm10, line_color=color, point_color=color )
+    if sts.ndim in (3,4) and sts.shape[-2:] == (4,4):
+        for i in range(len(sts)): 
+            jj = sts.shape[1] if sts.ndim == 4 else [-1,]
+            for j in jj:
+                isect = sts[i,j] if sts.ndim == 4 else sts[i]
+                color = colors[j%len(colors)]
+                o2i = get_from_simtrace_isect(isect, "o2i")
+                nrm10 = get_from_simtrace_isect(isect, "nrm10")
+                pvplt_add_contiguous_line_segments(pl, o2i, line_color=color, point_color=color )
+                pvplt_add_contiguous_line_segments(pl, nrm10, line_color=color, point_color=color )
+            pass
         pass
-    pass
-  
+    pass  
 
 def ce_line_segments( ce, axes ):
     """

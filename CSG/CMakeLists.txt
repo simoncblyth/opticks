@@ -133,8 +133,8 @@ DEBUG and DEBUG_RECORD preprocessor macros
 
 #]=]
 
-#target_compile_definitions( ${name} PRIVATE DEBUG )
-#target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
+# target_compile_definitions( ${name} PRIVATE DEBUG )
+# target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
 
 
 

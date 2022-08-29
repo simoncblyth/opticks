@@ -238,6 +238,7 @@ class SimtraceFeatures(object):
     def __init__(self, pos, cf=None, featname="pid", do_mok=False, symbol="pf" ):
         """
         :param pos: SimtracePositions instance
+        :param cf: CSGFoundry instance 
 
         Although at first sight it looks like could use photons array 
         argument rather than Positions instance, that is not the case when masks are applied. 
@@ -301,15 +302,15 @@ class SimtraceFeatures(object):
         assert featname in ["pid", "bnd", "ins", "mok"]
         if p.ndim == 3:  # eg (121000, 4, 4)
             bnd = p[:,2,3].view(np.int32)
-            ids = p[:,3,3].view(np.int32) 
+            ids = p[:,3,3].view(np.int32)   ## see sevent::add_simtrace a.q3.u.w = prd->identity() 
         elif p.ndim == 4:
             bnd = p.view(np.int32)[:,:,2,3]
             ids = p.view(np.int32)[:,:,3,3] 
         else:
             log.info("unexpected p.shape %s " % str(p.shape))
         pass
-        pid = ids >> 16
-        ins = ids & 0xffff   # ridx?    
+        pid = ids >> 16       ## HMM: what about MISS ?     
+        ins = ids & 0xffff       
 
         log.debug("[ Photons.bndfeat ")
         bnd_namedict = {} if cf is None or cf.sim is None else cf.sim.bndnamedict 

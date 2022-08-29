@@ -37,10 +37,13 @@ EOU
 #geom=J001
 #geom=J003
 #geom=nmskSolidMaskVirtual
-#geom=nmskSolidMask
-#geom=nmskSolidMaskTail
-geom=nmskMaskOut
+
+geom=nmskSolidMask
+#geom=nmskMaskOut
 #geom=nmskMaskIn
+
+#geom=nmskSolidMaskTail
+
 
 export GEOM=${GEOM:-$geom}
 
