@@ -46,7 +46,8 @@ struct NP
     };            
 
     static bool StartsWith( const char* s, const char* q) ; 
-    static NP*  MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* prefix=nullptr ); 
+    static bool Contains(   const char* s, const char* q) ; 
+    static NP*  MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains=nullptr ); 
     std::string descValues() const ; 
 
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );  // dtype from template type
@@ -418,10 +419,18 @@ inline bool NP::StartsWith( const char* s, const char* q) // static
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
-
-inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* prefix ) // static
+inline bool NP::Contains( const char* s, const char* q) // static
 {
-    if(VERBOSE) std::cout << "NP::MakeValues values.size " << values.size() << std::endl ;  
+    return s && q && strlen(q) <= strlen(s) && strstr(s, q) != nullptr ;
+}
+
+inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains ) // static
+{
+    if(VERBOSE) std::cout 
+        << "NP::MakeValues values.size " << values.size() 
+        << " contains " << ( contains ? contains : "-" )
+        << std::endl 
+        ;  
 
     std::vector<std::string> nams ; 
     std::vector<double> vals ; 
@@ -432,13 +441,13 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
         const char* k = kv.first.c_str() ; 
         double v = kv.second ;
 
-        bool select = prefix == nullptr || StartsWith( k, prefix ) ; 
+        bool select = contains == nullptr || Contains( k, contains ) ; 
+
         if(VERBOSE) std::cout 
             << "NP::MakeValues " 
             << std::setw(3) << i 
             << " v " << std::setw(10) << std::fixed << std::setprecision(4) << v 
             << " k " << std::setw(60) << k 
-            << " prefix " << ( prefix ? prefix : "-" ) 
             << " select " << select 
             <<  std::endl 
             ;

@@ -17,6 +17,8 @@ EOU
 geomlist(){ cat << EOL
 nmskSolidMaskVirtual
 nmskSolidMask
+nmskMaskOut
+nmskMaskIn
 nmskSolidMaskTail
 EOL
 }

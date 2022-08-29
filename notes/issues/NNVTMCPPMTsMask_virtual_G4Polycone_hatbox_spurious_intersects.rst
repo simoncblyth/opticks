@@ -16,6 +16,34 @@ bring over the fix from j into SVN. But do it in a way to
 be easily switchable. 
 
 
+How to create single solid geometries and run simtrace intersects
+--------------------------------------------------------------------
+
+
+0. test single geom translation with::
+
+   GEOM=nmskMaskOut ./translate.sh 
+
+1. add to GeoChain/multi_translate.sh the GEOM strings used with PMTSim::GetSolid 
+2. run GeoChain/multi_translate.sh creating CSGFoundry folders 
+
+::
+
+    N[blyth@localhost g4cx]$ l /tmp/blyth/opticks/GeoChain/*/CSGFoundry/solid.npy
+    4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMaskTail/CSGFoundry/solid.npy
+    4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskMaskIn/CSGFoundry/solid.npy
+    4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskMaskOut/CSGFoundry/solid.npy
+    4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMask/CSGFoundry/solid.npy
+    4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual/CSGFoundry/solid.npy
+
+3. edit the default GEOM using "geom_" (keep this the same on both laptop and workstation) 
+4. "gxt.sh run" on workstation to simtrace intersect against the geometry
+5. "gxt.sh grab" on laptop to pull back the intersect arrays
+6. "gxt.sh ana" on laptop to visualize the intersects
+
+
+
+
 "gxt.sh ana"  view 
 ---------------------
 
