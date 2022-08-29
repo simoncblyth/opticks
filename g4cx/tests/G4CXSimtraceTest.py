@@ -197,7 +197,6 @@ if __name__ == '__main__':
     plt = SimtracePlot(pl, pf.feat, gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
 
 
-
     if not x_lpos is None:           
         plt.x_lpos = x_lpos   
     pass
@@ -205,7 +204,9 @@ if __name__ == '__main__':
         plt.t_spos = t_spos     ## spurious intersects identified by morton2d isolation 
     pass
 
-    if hasattr(t, "simtrace_selection") and SELECTION:  ## created by CSG/SimtraceRerunTest.sh with SELECTION envvar picking simtrace indices to highlight 
+    ## created by CSG/SimtraceRerunTest.sh with SELECTION envvar picking simtrace indices to highlight 
+    ## bit the SELECTION envvar used here just has to exist to trigger selection plotting 
+    if hasattr(t, "simtrace_selection") and SELECTION:  
         plt.simtrace_selection = t.simtrace_selection
     pass 
     

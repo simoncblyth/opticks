@@ -106,6 +106,12 @@ float __int_as_float(int i)
 #include "csg_robust_quadratic_roots.h"
 #include "csg_classify.h"
 
+#ifdef DEBUG_RECORD
+#include <csignal>
+#endif
+
+
+
 LEAF_FUNC
 float distance_leaf_sphere(const float3& pos, const quad& q0 )
 {
@@ -191,8 +197,12 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
 
     float b = dot(O, D);               // t of closest approach to sphere center
     float c = dot(O, O)-radius*radius; // < 0. indicates ray_origin inside sphere
-    if( c > 0.f && b > 0.f ) return false ;    
 
+#ifdef DEBUG_RECORD
+    printf("//[intersect_leaf_zsphere radius %10.4f b %10.4f c %10.4f \n", radius, b, c); 
+#endif
+
+    if( c > 0.f && b > 0.f ) return false ;    
     // Cannot intersect when ray origin outside sphere and direction away from sphere.
     // Whether early exit speeds things up is another question ... 
 
@@ -208,12 +218,26 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
     float z2sph = ray_origin.z + t2sph*ray_direction.z ; 
 
+
+#ifdef DEBUG_RECORD
+    printf("// intersect_leaf_zsphere t1sph %10.4f t2sph %10.4f sdisc %10.4f \n", t1sph, t2sph, sdisc ); 
+    printf("// intersect_leaf_zsphere z1sph %10.4f z2sph %10.4f zmax %10.4f zmin %10.4f sdisc %10.4f \n", z1sph, z2sph, zmax, zmin, sdisc ); 
+#endif
+
+
     float idz = 1.f/ray_direction.z ; 
     float t_QCAP = (zmax - ray_origin.z)*idz ;   // cap intersects
     float t_PCAP = (zmin - ray_origin.z)*idz ;
 
     float t1cap = fminf( t_QCAP, t_PCAP ) ;   // order cap intersects along the ray 
     float t2cap = fmaxf( t_QCAP, t_PCAP ) ;   // t2cap > t1cap 
+
+#ifdef DEBUG_RECORD
+    bool t1cap_disqualify = t1cap < t1sph || t1cap > t2sph ; 
+    bool t2cap_disqualify = t2cap < t1sph || t2cap > t2sph ;  
+    printf("//intersect_leaf_zsphere t1sph %7.3f t2sph %7.3f t_QCAP %7.3f t_PCAP %7.3f t1cap %7.3f t2cap %7.3f  \n", t1sph, t2sph, t_QCAP, t_PCAP, t1cap, t2cap ); 
+    printf("//intersect_leaf_zsphere  t1cap_disqualify %d t2cap_disqualify %d \n", t1cap_disqualify, t2cap_disqualify  ); 
+#endif
 
     // disqualify plane intersects outside sphere t range
     if(t1cap < t1sph || t1cap > t2sph) t1cap = t_min ; 
@@ -224,17 +248,24 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     float t_cand = t_min ; 
     if(sdisc > 0.f)
     {
-        if(      t1sph > t_min && z1sph > zmin && z1sph < zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
+
+#ifdef DEBUG_RECORD
+        //std::raise(SIGINT); 
+#endif
+
+        if(      t1sph > t_min && z1sph > zmin && z1sph <= zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
         else if( t1cap > t_min )                                  t_cand = t1cap ;  // t1cap qualifies -> t1cap 
         else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
-        else if( t2sph > t_min && z2sph > zmin && z2sph < zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
+        else if( t2sph > t_min && z2sph > zmin && z2sph <= zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
 
-#ifdef DEBUG
-        //printf("//intersect_leaf_zsphere t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
-#endif
+        //  HMM: think this needs to be z2sph <= zmax for rays that intersect close to the apex of the sphere 
+
     }
 
     bool valid_isect = t_cand > t_min ;
+#ifdef DEBUG_RECORD
+    printf("//intersect_leaf_zsphere valid_isect %d t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", valid_isect, t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
+#endif
 
     if(valid_isect)
     {
@@ -252,6 +283,11 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
             isect.z = t_cand == t_PCAP ? -1.f : 1.f ;
         }
     }
+
+#ifdef DEBUG_RECORD
+    printf("//]intersect_leaf_zsphere valid_isect %d \n", valid_isect ); 
+#endif
+
     return valid_isect ;
 }
 
@@ -1450,6 +1486,10 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     float3 origin    = q ? q->right_multiply(ray_origin,    1.f) : ray_origin ;  
     float3 direction = q ? q->right_multiply(ray_direction, 0.f) : ray_direction ;   
 
+#ifdef DEBUG_RECORD
+    printf("//[intersect_leaf typecode %d name %s gtransformIdx %d \n", typecode, CSG::Name(typecode), gtransformIdx ); 
+#endif
+
 #ifdef DEBUG
     //printf("//[intersect_leaf typecode %d name %s gtransformIdx %d \n", typecode, CSG::Name(typecode), gtransformIdx ); 
     //printf("//intersect_leaf ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
@@ -1506,9 +1546,11 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
          // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
     }
 
-#ifdef DEBUG
-    //printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
+
+#ifdef DEBUG_RECORD
+    printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
 #endif
+
 
     return valid_isect ; 
 }

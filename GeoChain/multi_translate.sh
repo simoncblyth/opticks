@@ -18,7 +18,11 @@ geomlist(){ cat << EOL
 nmskSolidMaskVirtual
 nmskSolidMask
 nmskMaskOut
+nmskTopOut
+nmskBottomOut
 nmskMaskIn
+nmskTopIn
+nmskBottomIn
 nmskSolidMaskTail
 EOL
 }

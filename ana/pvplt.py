@@ -146,6 +146,8 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
     lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors=colors ) 
     ax.add_collection(lc)
 
+    xpos2d = xpos[:,axes]
+    ax.scatter( xpos2d[:,0], xpos2d[:,1], s=3, label="xpos2d" )
 
 
 
@@ -258,7 +260,6 @@ def mpplt_simtrace_selection_line(ax, sts, axes, linewidths=2):
     contains pairs of isect the first from normal GPU simtrace and
     the second from CPU rerun.   
 
-    TODO: add a small arrow showing the intersection normals from  
     TODO: at dot at pos 
     """
     pass

@@ -215,7 +215,7 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     isect.q2.f.x = ray_origin.x ; 
     isect.q2.f.y = ray_origin.y ; 
     isect.q2.f.z = ray_origin.z ;
-    isect.q2.f.w = t_min ; 
+    isect.q2.f.w = t_min ;          
 
     isect.q3.f.x = ray_direction.x ; 
     isect.q3.f.y = ray_direction.y ; 
@@ -237,7 +237,7 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
         isect.q1.f.x = ipos.x ;
         isect.q1.f.y = ipos.y ;
         isect.q1.f.z = ipos.z ;
-        isect.q1.f.w = sd ;  
+        isect.q1.f.w = sd ;     // HMM: overwrite of tmin ?
     }
     return valid_intersect ; 
 }
@@ -254,7 +254,7 @@ Used for debugging distance issues
 void CSGQuery::distance( quad4& isect,  const float3& ray_origin ) const 
 {
     isect.zero();
-    isect.q1.f.w = distance(ray_origin) ;
+    isect.q1.f.w = distance(ray_origin) ;  // HMM thats an overwrite 
 
     isect.q2.f.x = ray_origin.x ; 
     isect.q2.f.y = ray_origin.y ; 
@@ -295,6 +295,13 @@ std::string CSGQuery::Label() // static
 }
 
 
+/**
+
+
+
+**/
+
+
 std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_intersect  )  // static
 {
     float sd = isect.q1.f.w ; 
@@ -329,7 +336,7 @@ std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_i
          << std::setw(10) << std::fixed << std::setprecision(4) << isect.q2.f.x 
          << std::setw(10) << std::fixed << std::setprecision(4) << isect.q2.f.y
          << std::setw(10) << std::fixed << std::setprecision(4) << isect.q2.f.z 
-         << std::setw(10) << std::fixed << std::setprecision(4) << isect.q2.f.w 
+         //<< std::setw(10) << std::fixed << std::setprecision(4) << isect.q2.f.w        // problem as simtrace has boundary here
          << ")" 
          << std::endl 
          << std::setw(30) << " q3 ray_dir gsid " 
@@ -359,7 +366,20 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev ) const
     float3* ray_origin = prev.v2() ; 
     float3* ray_direction = prev.v3() ; 
     float t_min = prev.q1.f.w ;    // t_min was formerly  prev.q2.f.w 
-    assert( t_min == 0.f );  
+
+    /*
+    std::cout 
+        << "CSGQuery::intersect_again" 
+        << " ray_origin " << *ray_origin 
+        << " ray_direction " << *ray_direction 
+        << " t_min " << t_min  
+        << std::endl
+        ; 
+
+    */
+
+    //if(t_min != 0.f) LOG(error) << " t_min " << t_min ;  // not zero eg from propagate epsilon 0.05
+    //assert( t_min == 0.f );  
     unsigned gsid = prev.q3.u.w ; 
 
 #ifdef DEBUG_RECORD

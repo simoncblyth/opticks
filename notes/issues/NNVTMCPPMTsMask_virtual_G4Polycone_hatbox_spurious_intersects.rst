@@ -19,15 +19,12 @@ be easily switchable.
 How to create single solid geometries and run simtrace intersects
 --------------------------------------------------------------------
 
-
 0. test single geom translation with::
 
-   GEOM=nmskMaskOut ./translate.sh 
+   gc ; GEOM=nmskMaskOut ./translate.sh 
 
 1. add to GeoChain/multi_translate.sh the GEOM strings used with PMTSim::GetSolid 
-2. run GeoChain/multi_translate.sh creating CSGFoundry folders 
-
-::
+2. run GeoChain/multi_translate.sh creating CSGFoundry folders and values arrays::
 
     N[blyth@localhost g4cx]$ l /tmp/blyth/opticks/GeoChain/*/CSGFoundry/solid.npy
     4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMaskTail/CSGFoundry/solid.npy
@@ -36,10 +33,127 @@ How to create single solid geometries and run simtrace intersects
     4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMask/CSGFoundry/solid.npy
     4 -rw-rw-r--. 1 blyth blyth 176 Aug 29 19:33 /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual/CSGFoundry/solid.npy
 
+    N[blyth@localhost GeoChain]$ l /tmp/blyth/opticks/GeoChain/*/Values/values_names.txt
+    4 -rw-rw-r--. 1 blyth blyth 1076 Aug 29 20:18 /tmp/blyth/opticks/GeoChain/nmskSolidMaskTail/Values/values_names.txt
+    4 -rw-rw-r--. 1 blyth blyth  699 Aug 29 20:18 /tmp/blyth/opticks/GeoChain/nmskMaskIn/Values/values_names.txt
+    4 -rw-rw-r--. 1 blyth blyth  377 Aug 29 20:18 /tmp/blyth/opticks/GeoChain/nmskMaskOut/Values/values_names.txt
+    4 -rw-rw-r--. 1 blyth blyth 1076 Aug 29 20:18 /tmp/blyth/opticks/GeoChain/nmskSolidMask/Values/values_names.txt
+    4 -rw-rw-r--. 1 blyth blyth 1076 Aug 29 20:18 /tmp/blyth/opticks/GeoChain/nmskSolidMaskVirtual/Values/values_names.txt
+    N[blyth@localhost GeoChain]$ 
+
+
 3. edit the default GEOM using "geom_" (keep this the same on both laptop and workstation) 
-4. "gxt.sh run" on workstation to simtrace intersect against the geometry
-5. "gxt.sh grab" on laptop to pull back the intersect arrays
-6. "gxt.sh ana" on laptop to visualize the intersects
+4. "gx ; gxt.sh run" on workstation to simtrace intersect against the geometry
+5. "gx ; gxt.sh grab" on laptop to pull back the intersect arrays and the param values too
+6. "gx ; gxt.sh ana" on laptop to visualize the intersects
+7. "c ; ./CSGSimtraceRerunTest.sh" on laptop, CPU rerun the simtrace intersects   
+
+Check nmskMaskOut
+-----------------------
+
+::
+
+    epsilon:g4cx blyth$ MASK=t SPURIOUS=1 ./gxt.sh ana
+
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos
+    [121331 133941]
+    INFO:opticks.ana.pvplt:upos[i_kpos]
+    [[-26.386   0.      0.1     1.   ]
+     [ -0.      0.      0.1     1.   ]]
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [294748 313463]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[  0.      0.      1.      0.101]
+      [-26.386   0.      0.1     0.05 ]
+      [-26.4     0.      0.      0.   ]
+      [  0.135   0.      0.991   0.   ]]
+
+     [[  0.      0.      1.      0.1  ]
+      [ -0.      0.      0.1     0.05 ]
+      [  0.      0.      0.      0.   ]
+      [ -0.      0.      1.      0.   ]]]
+        
+
+
+::
+
+    MASK=t RERUN=1 SPURIOUS=1 ./gxt.sh ana
+
+    INFO:opticks.ana.pvplt:SPURIOUS envvars switches on morton enabled spurious_2d_outliers 
+    INFO:opticks.ana.pvplt:spurious_2d_outliers
+    INFO:opticks.ana.pvplt:i_kpos
+    [121329]
+    INFO:opticks.ana.pvplt:upos[i_kpos]
+    [[-26.386   0.      0.1     1.   ]]
+    INFO:opticks.ana.pvplt:j_kpos = t_pos.upos2simtrace[i_kpos]
+    [294748]
+    INFO:opticks.ana.pvplt:simtrace[j_kpos]
+    [[[  0.      0.      1.      0.101]
+      [-26.386   0.      0.1   -39.1  ]
+      [-26.4     0.      0.      0.05 ]
+      [  0.135   0.      0.991   0.   ]]]
+
+
+
+It manages to miss the zs from inside it::
+
+    //intersect_tree  nodeIdx 3 node_or_leaf 1 nd_isect (    0.0000     0.0000     1.0000     0.1009) 
+    //intersect_tree  nodeIdx 1 CSG::Name      union depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 node_or_leaf 0 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)            union  l: Miss     0.0000    r: Exit     0.1009     leftIsCloser 1 -> RETURN_B 
+    //   1 CSG decision : left 0 right 1 (stackIdx)            union  l: Miss     0.0000    r: Exit     0.1009     leftIsCloser 1 -> RETURN_B 
+    // intersect_tree ierr 0 csg.curr 0 
+    //distance_leaf typecode 103 name zsphere complement 0 sd   -39.1000 
+    //distance_leaf_cylinder sd    -0.0000 
+    //distance_leaf typecode 105 name cylinder complement 0 sd    -0.0000 
+     i   0 idx  294748 code 3
+                            isect0 HIT
+                        q0 norm t (    0.0000    0.0000    1.0000    0.1009)
+                       q1 ipos sd (  -26.3864    0.0000    0.1000    0.0500)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  -26.4000    0.0000    0.0000)
+                  q3 ray_dir gsid (    0.1350    0.0000    0.9908 C4U (     0    0    0    0 ) )
+
+                            isect1 HIT
+                        q0 norm t (    0.0000    0.0000    1.0000    0.1009)
+                       q1 ipos sd (  -26.3864    0.0000    0.1000  -39.1000) SPURIOUS INTERSECT  sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  -26.4000    0.0000    0.0000)
+                  q3 ray_dir gsid (    0.1350    0.0000    0.9908 C4U (     0    0    0    0 ) )
+
+
+    2022-08-29 15:52:01.861 INFO  [40823464] [CSGSimtraceRerun::save@169]  path1 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace_selection.npy
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@176] t.desc CSGSimtraceRerun::desc
+     fd Y
+     fd.geom -
+     CSGQuery::Label  DEBUG DEBUG_RECORD
+     path0 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace.npy
+     path1 /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL/simtrace_selection.npy
+     simtrace0 (627000, 4, 4, )
+     simtrace1 (1, 2, 4, 4, )
+     SELECTION 294748
+     selection Y selection.size 1
+     with_selection 1
+     code_count[0] 0
+     code_count[1] 0
+     code_count[2] 0
+     code_count[3] 1
+     code_count[4] 1
+
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@178] with : DEBUG_RECORD 
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGRecord::Dump@134] CSGSimtraceRerun::report CSGRecord::record.size 1IsEnabled 0
+     tloop    0 nodeIdx    1 irec          0 label                                                                                        rec union
+                     r.q0.f left  (    0.0000    0.0000    0.0000   -0.0000) Miss  - - - leftIsCloser
+                    r.q1.f right  (    0.0000    0.0000    1.0000    0.1009) Exit  - - -   ctrl RETURN_B
+               r.q3.f tmin/t_min  (    0.0500    0.0500    0.0000    0.0000)  tmin     0.0500 t_min     0.0500 tminAdvanced     0.0000
+                   r.q4.f result  (    0.0000    0.0000    1.0000    0.1009) 
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGSimtraceRerun::report@181]  save CSGRecord.npy to fold /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL
+    2022-08-29 15:52:01.863 INFO  [40823464] [CSGRecord::Save@247]  dir /tmp/blyth/opticks/GeoChain/nmskMaskOut/G4CXSimtraceTest/ALL num_record 1
+    NP::init size 24 ebyte 4 num_char 96
+    with : DEBUG 
+    epsilon:CSG blyth$ 
+
 
 
 

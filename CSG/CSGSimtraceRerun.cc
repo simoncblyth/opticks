@@ -27,11 +27,12 @@ CSGSimtraceRerun::CSGSimtraceRerun()
     vv(fd ? fd->loadAux("Values/values.npy") : nullptr ),
     SELECTION(getenv("SELECTION")),
     selection(SSys::getenvintvec("SELECTION",',')),  // when no envvar gives nullptr  
+    with_selection(selection && selection->size() > 0 ),  // SELECTION envvar must have values for with_selection:true 
     fold(SPath::Resolve("$T_FOLD", NOOP)),
     path0(SPath::Join(fold, "simtrace.npy")),
-    path1(SPath::Join(fold, selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
+    path1(SPath::Join(fold, with_selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
     simtrace0(NP::Load(path0)),
-    simtrace1(selection ? NP::Make<float>(selection->size(),2,4,4) : NP::MakeLike(simtrace0)),
+    simtrace1(with_selection ? NP::Make<float>(selection->size(),2,4,4) : NP::MakeLike(simtrace0)),
     qq0((const quad4*)simtrace0->bytes()),
     qq1((quad4*)simtrace1->bytes()),  
     q(new CSGQuery(fd)),
@@ -65,6 +66,7 @@ std::string CSGSimtraceRerun::desc() const
        << " SELECTION " << ( SELECTION ? SELECTION : "-" ) << std::endl 
        << " selection " << ( selection ? "Y" : "N" )
        << " selection.size " << ( selection ? selection->size() : -1 ) << std::endl 
+       << " with_selection " << with_selection << std::endl 
        ;
 
     for(unsigned i=0 ; i < code_count.size() ; i++) ss << " code_count[" << i << "] " << code_count[i] << std::endl ; 
@@ -103,10 +105,16 @@ void CSGSimtraceRerun::intersect_again(unsigned idx, bool dump)
     quad4&       isect1 = qq1[idx] ;
     unsigned code = intersect_again(isect1, isect0); 
 
-    if( dump || code != 3 )
+    if( dump || code == 1 || code == 2 )  
     {
-        std::cout << " idx " << std::setw(7) << idx << " code " << code << std::endl ; 
-        std::cout << Desc(isect1, isect0) << std::endl ; 
+        std::cout 
+            << "CSGSimtraceRerun::intersect_again"
+            << " idx " << std::setw(7) << idx 
+            << " code " << code 
+            << std::endl  
+            << Desc(isect1, isect0) 
+            << std::endl 
+            ; 
     }
 }
 
@@ -130,7 +138,7 @@ void CSGSimtraceRerun::intersect_again_selection(unsigned i, bool dump)
 
     unsigned code = intersect_again(isect1, isect0); 
 
-    if( dump || code != 3 )
+    if( dump || code == 1 || code == 3 )
     {
         std::cout << " i " << std::setw(3) << i << " idx " << std::setw(7) << idx << " code " << code << std::endl ; 
         std::cout << Desc(isect1, isect0) << std::endl ; 
@@ -140,25 +148,26 @@ void CSGSimtraceRerun::intersect_again_selection(unsigned i, bool dump)
 
 void CSGSimtraceRerun::intersect_again()
 {
-    unsigned n = selection ? selection->size() : simtrace0->shape[0] ; 
+    unsigned n = with_selection ? selection->size() : simtrace0->shape[0] ; 
     for(unsigned i=0 ; i < n ; i++) 
     {
-        if( selection == nullptr )
+        if( with_selection )
         {
-             bool dump = i % 1000 == 0 ; 
-             intersect_again(i, dump); 
+             intersect_again_selection(i,true); 
         }
         else
         {
-             intersect_again_selection(i,true); 
-        } 
+             //bool dump = i % 100000 == 0 ; 
+             bool dump = false ; 
+             intersect_again(i, dump); 
+        }
     }
 }
 
 void CSGSimtraceRerun::save() const
 {
     LOG(info) << " path1 " << path1 ; 
-    if(selection) simtrace1->set_meta<std::string>("SELECTION", SELECTION) ; 
+    if(with_selection) simtrace1->set_meta<std::string>("SELECTION", SELECTION) ; 
     simtrace1->save(path1); 
 }
 
@@ -167,7 +176,7 @@ void CSGSimtraceRerun::report() const
     LOG(info) << "t.desc " << desc() ; 
 #ifdef DEBUG_RECORD
     LOG(info) << "with : DEBUG_RECORD " ; 
-    CSGRecord::Dump("CSGSimtraceRerun::report"); 
+    CSGRecord::Dump("CSGSimtraceRerun::report");   // HMM: that probably gets cleared for each intersect, so only the last set of CSGRecord gets dumped and saved 
 
     LOG(info) << " save CSGRecord.npy to fold " << fold ; 
     CSGRecord::Save(fold); 

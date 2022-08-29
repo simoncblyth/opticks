@@ -3,12 +3,37 @@ usage(){ cat << EOU
 CSGSimtraceRerunTest.sh
 ================================
 
-For CSGSimtraceRerunTest to provide full debug info it is necessary to 
-recompile the CSG package with two non-standard preprocessor macros, 
-that are not intended to ever be committed::
+CSGSimtraceRerunTest requires a CSGFoundry geometry and corresponding 
+simtrace intersect array. Create these with:: 
 
-    DEBUG
-    DEBUG_RECORD
+    geom_ ## set geom to "nmskSolidMask" :  a string understood by PMTSim::getSolid
+
+    gc     ## cd ~/opticks/GeoChain
+    ./translate.sh    ## translate PMTSim::getSolid Geant4 solid into CSGFoundry 
+
+    gx     ## cd ~/opticks/g4cx 
+
+    ./gxt.sh        # simtrace GPU run on workstation
+    ./gxt.sh grab   # rsync back to laptop
+    ./gxt.sh ana    # python plotting  
+
+
+
+SELECTION envvar 
+    provides simtrace indices to rerun on CPU using CSGQuery which runs
+    the CUDA compatible intersect code on the CPU. 
+    Without this envvar all the simtrace items ate rerun.
+
+    When using a rerun selection of a few intersects only it is 
+    possible to switch on full debug verbosity after 
+    recompilinh the CSG package with two non-standard preprocessor macros, 
+    that are not intended to ever be committed::
+
+        DEBUG
+        DEBUG_RECORD
+
+
+
 
 
 ::
@@ -34,6 +59,10 @@ BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
+
+export CSGFoundry=INFO
+
+
 T_FOLD=${FOLD/$bin/G4CXSimtraceTest}
 
 if [ "info" == "$arg" ]; then
@@ -44,9 +73,19 @@ fi
 if [ "run" == "$arg" ]; then
    [ -f "$log" ] && rm $log 
    export T_FOLD 
-
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error $bin && exit 1 
+fi 
+
+if [ "dbg" == "$arg" ]; then
+   [ -f "$log" ] && rm $log 
+   export T_FOLD 
+
+   case $(uname) in 
+      Darwin) lldb__ $bin ;;
+      Linux) gdb__ $bin ;;
+   esac
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error $bin && exit 1 
 fi 
 
 if [ "ana" == "$arg" ]; then

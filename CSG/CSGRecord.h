@@ -95,11 +95,13 @@ struct CSG_API CSGRecord
 Attempting to read the CSGRecord
 ==================================
 
+* TODO: look at simpler examples to confirm 
 * TODO: confirm the below reading of the tealeaves by for example carrying forward winner nodeIdx thru the levels 
 * TODO: make it easier to read by removing noise or improving layout 
-* TODO: reviviing the recursive CPU only intersect implementation would be useful as a cross-check
+* TODO: revive the recursive CPU only intersect implementation, it would be useful as a cross-check
   and for elucidation as the recursive algorithm is much simpler and should give exactly the same results 
-  using exactly the same node visits 
+  using exactly the same node visits : as the iterative algorithm is supposed to mimic 
+  what recursion would have done 
 
   * optixrap/cu/csg_intersect_boolean.h:unsupported_recursive_csg_r
 

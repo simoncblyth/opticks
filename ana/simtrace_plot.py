@@ -175,7 +175,6 @@ class SimtracePlot(object):
             mpplt_add_rectangle(ax, self.rectangle1)
         pass
 
-
         # loop over unique values of the feature 
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
@@ -183,7 +182,7 @@ class SimtracePlot(object):
             pos = upos[selector]    
             ## hmm any masking needs be applied to both upos and selector ?
             ## alternatively could apply the mask early and use that from the Feature machinery 
-
+            log.info(" feat.unum %d idesc %d label %s color %s msg %s " % (feat.unum, idesc, label, color, msg ))
             ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
 
