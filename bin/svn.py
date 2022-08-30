@@ -209,23 +209,24 @@ class WC(object):
         return vc 
 
     @classmethod
-    def detect_vc_from_scriptname(cls):
+    def detect_repo_from_scriptname(cls):
         scriptname = os.path.basename(sys.argv[0])  
         if scriptname == "svn.py":
-            vc = "svn"
+            repo = "offline_svn"
         elif scriptname == "git.py":
-            vc = "git"
+            repo = os.environ.get("REPO", "opticks_git" )
         else:
             assert 0 
         pass
-        #print("detected vc %s " % vc)
-        return vc
+        #print("detected repo %s " % repo)
+        return repo
 
     @classmethod
     def parse_args(cls, doc):
-        vc = cls.detect_vc_from_scriptname()
+        repo = cls.detect_repo_from_scriptname()
         defaults = {}
-        if vc == "svn":
+        if repo == "offline_svn":
+            vc = "svn"
             defaults["chdir"] = "~/junotop/offline" 
             defaults["rbase"] = "P:junotop/offline" 
             defaults["rstatpath"] = "~/rstat.txt" 
@@ -233,11 +234,21 @@ class WC(object):
             defaults["rstatcmd"] = "ssh P opticks/bin/svn.py"
             defaults["lstatcmd"] = "svn.py"
             defaults["statcmd"] = "svn status"
-        elif vc == "git":
+        elif repo == "opticks_git":
+            vc = "git"
             defaults["chdir"] = "~/opticks" 
             defaults["rbase"] = "P:opticks" 
             defaults["rstatpath"] = "~/rstat_opticks.txt" 
             defaults["lstatpath"] = "~/lstat_opticks.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
+            defaults["statcmd"] = "git status --porcelain"
+        elif repo == "j_git":
+            vc = "git"
+            defaults["chdir"] = "~/j" 
+            defaults["rbase"] = "P:j" 
+            defaults["rstatpath"] = "~/rstat_j.txt" 
+            defaults["lstatpath"] = "~/lstat_j.txt" 
             defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
             defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
@@ -265,6 +276,7 @@ class WC(object):
         args.lstatpath = expand_(args.lstatpath)
 
         args.vc = vc
+        args.repo = repo
         args.statcmd = defaults["statcmd"]
         return args
 

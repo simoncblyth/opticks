@@ -1,21 +1,26 @@
 #!/bin/bash -l 
 
 usage(){ cat << EOU
-multi_translate.sh 
+mtranslate.sh 
 =====================
 
 ::
 
     gc
-    vi multi_translate.sh    # change the list of GEOM to translate using GeoChain test machinery 
-    ./multi_translate.sh 
+    vi mtranslate.sh    # change the list of GEOM to translate using GeoChain test machinery 
+    ./mtranslate.sh 
 
 EOU
 }
 
 
-geomlist(){ cat << EOL
+
+geomlist_nmskSolidMaskVirtual(){ cat << EOL
 nmskSolidMaskVirtual
+EOL
+}
+
+geomlist_nmskSolidMask(){ cat << EOL
 nmskSolidMask
 nmskMaskOut
 nmskTopOut
@@ -23,11 +28,28 @@ nmskBottomOut
 nmskMaskIn
 nmskTopIn
 nmskBottomIn
-nmskSolidMaskTail
 EOL
 }
 
-for geom in $(geomlist) ; do 
+geomlist_nmskSolidMaskTail(){ cat << EOL
+nmskSolidMaskTail
+
+nmskTailOuter
+nmskTailOuterIEllipsoid
+nmskTailOuterITube
+nmskTailOuterI
+nmskTailOuterIITube
+
+nmskTailInner
+nmskTailInnerIEllipsoid
+nmskTailInnerITube
+nmskTailInnerI
+nmskTailInnerIITube 
+
+EOL
+}
+
+for geom in $(geomlist_nmskSolidMaskTail) ; do 
    echo $BASH_SOURCE $geom 
    GEOM=$geom ./translate.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE translate error for geom $geom && exit 1

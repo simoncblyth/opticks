@@ -4,9 +4,15 @@ unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect
 * fixed by changing "<" to "<="  in intersect_leaf_zsphere
 
 
+* next :doc:`nmskSolidMaskTail`
 
-This selection rerun shows the apex bug
------------------------------------------
+
+Following apex fix nmskSolidMask note an apparently harmless irregularity on bottom edge : sligthly lower nearer inside
+--------------------------------------------------------------------------------------------------------------------------
+
+
+This selection rerun shows the apex bug : fixed by upper placeholder zcut safety
+-----------------------------------------------------------------------------------
 
 c::
 
@@ -129,6 +135,8 @@ Hmm how to formalize this, do it in translation::
 
 Perhaps a related issue with nmskSolidMask for intersects close to apex
 -------------------------------------------------------------------------------
+
+* the safe upper cut when no upper cut avoids the apex issue
 
 On GPU running has one out of 300k spurious intersect, select and plot it::
 

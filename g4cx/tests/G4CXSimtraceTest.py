@@ -84,10 +84,14 @@ def spurious_2d_outliers(bbox, upos):
     pass
     ipos = np.array( fpos*0xffffffff , dtype=np.uint64 )   ## 32bit range integer coordinates stored in 64 bit  
     kpos = morton2d.Key(ipos[:,dim[0]], ipos[:,dim[1]])    ## morton interleave the two coordinates into one 64 bit code
-   
+  
+
+    SPURIOUS_CUT = 1 + int(os.environ.get("SPURIOUS", "1"))
+ 
+
     ## scrub low bits and apply uniquing as data reduction : how many bits determines the coarseness   
     u_kpos_0, i_kpos_0, c_kpos_0 = np.unique( kpos & ( 0xfff << 52 ), return_index=True, return_counts=True)   
-    sel = c_kpos_0 < 2
+    sel = c_kpos_0 < SPURIOUS_CUT 
 
     ## finding outliers in 2d is reduced to finding outliers in sorted list of uint 
     ## and can also use the counts : outliers are expected to be low count 
@@ -96,7 +100,7 @@ def spurious_2d_outliers(bbox, upos):
     i_kpos = i_kpos_0[sel]  # original upos index of the unique 
 
     if len(i_kpos) < 10:
-        log.info("spurious_2d_outliers")
+        log.info("spurious_2d_outliers SPURIOUS_CUT %d ", SPURIOUS_CUT )
         log.info("i_kpos\n%s" % str(i_kpos))
         log.info("upos[i_kpos]\n%s" % str(upos[i_kpos]) )
     pass                                                                                                                                                                                
