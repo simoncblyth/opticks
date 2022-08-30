@@ -720,12 +720,12 @@ nnode* X4Solid::convertSphere_(bool only_inner)
 {
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
 
-    float rmin = solid->GetInnerRadius()/mm ; 
-    float rmax = solid->GetOuterRadius()/mm ; 
+    double rmin = solid->GetInnerRadius()/mm ; 
+    double rmax = solid->GetOuterRadius()/mm ; 
 
-    bool has_inner = !only_inner && rmin > 0.f ; 
+    bool has_inner = !only_inner && rmin > 0. ; 
     nnode* inner = has_inner ? convertSphere_(true) : NULL ;  
-    float radius = only_inner ? rmin : rmax ;   
+    double radius = only_inner ? rmin : rmax ;   
 
     LOG(verbose) 
               << " radius : " << radius 
@@ -733,16 +733,16 @@ nnode* X4Solid::convertSphere_(bool only_inner)
               << " has_inner : " << has_inner 
               ;
 
-    float startThetaAngle = solid->GetStartThetaAngle()/degree ; 
-    float deltaThetaAngle = solid->GetDeltaThetaAngle()/degree ; 
+    double startThetaAngle = solid->GetStartThetaAngle()/degree ; 
+    double deltaThetaAngle = solid->GetDeltaThetaAngle()/degree ; 
 
     // z to the right, theta   0 -> z=r, theta 180 -> z=-r
-    float rTheta = startThetaAngle ;
-    float lTheta = startThetaAngle + deltaThetaAngle ;
-    assert( rTheta >= 0.f && rTheta <= 180.f) ; 
-    assert( lTheta >= 0.f && lTheta <= 180.f) ; 
+    double rTheta = startThetaAngle ;
+    double lTheta = startThetaAngle + deltaThetaAngle ;
+    assert( rTheta >= 0. && rTheta <= 180.) ; 
+    assert( lTheta >= 0. && lTheta <= 180.) ; 
 
-    bool zslice = startThetaAngle > 0.f || deltaThetaAngle < 180.f ; 
+    bool zslice = startThetaAngle > 0. || deltaThetaAngle < 180. ; 
 
     LOG(verbose) 
               << " rTheta : " << rTheta
@@ -750,9 +750,9 @@ nnode* X4Solid::convertSphere_(bool only_inner)
               << " zslice : " << zslice
               ;
 
-    float x = 0.f ; 
-    float y = 0.f ; 
-    float z = 0.f ; 
+    double x = 0. ; 
+    double y = 0. ; 
+    double z = 0. ; 
 
     nnode* cn = NULL ; 
     if(zslice)
@@ -773,9 +773,9 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
   
 
-    float startPhi = solid->GetStartPhiAngle()/degree ; 
-    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
-    bool has_deltaPhi = deltaPhi < 360.f ; 
+    double startPhi = solid->GetStartPhiAngle()/degree ; 
+    double  deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
+    bool has_deltaPhi = deltaPhi < 360. ; 
     
     bool enable_phi_segment = convertSphere_enable_phi_segment ; 
     
@@ -789,8 +789,8 @@ nnode* X4Solid::convertSphere_(bool only_inner)
                    ;
     }
 
-    float segZ = radius*1.01 ; 
-    float segR = radius*1.5 ;   
+    double segZ = radius*1.01 ; 
+    double segR = radius*1.5 ;   
 
     nnode* result =  has_deltaPhi && enable_phi_segment
                   ?
@@ -1484,40 +1484,26 @@ void X4Solid::convertEllipsoid()
 
     // G4GDMLWriteSolids::EllipsoidWrite
 
-    float ax = solid->GetSemiAxisMax(0)/mm ; 
-    float by = solid->GetSemiAxisMax(1)/mm ; 
-    float cz = solid->GetSemiAxisMax(2)/mm ; 
+    double ax = solid->GetSemiAxisMax(0)/mm ; 
+    double by = solid->GetSemiAxisMax(1)/mm ; 
+    double cz = solid->GetSemiAxisMax(2)/mm ; 
 
-    glm::vec3 scale( ax/cz, by/cz, 1.f) ;   
-    // unity scaling in z, so z-coords are unaffected  
+    glm::tvec3<double> scale( ax/cz, by/cz, 1.) ;   // unity scaling in z, so z-coords are unaffected  
  
-    float zcut1 = solid->GetZBottomCut()/mm ; 
-    float zcut2 = solid->GetZTopCut()/mm ;
+    double zcut1 = solid->GetZBottomCut()/mm ; 
+    double zcut2 = solid->GetZTopCut()/mm ;
 
-    bool dbg_with_hemi_ellipsoid_bug = m_ok->hasOpt("dbg_with_hemi_ellipsoid_bug") ; 
-
-    float z1 ; 
-    float z2 ; 
- 
-    if(dbg_with_hemi_ellipsoid_bug)
-    {
-        LOG(fatal) << " reproducing old bug : --dbg_with_hemi_ellipsoid_bug  " ; 
-        z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
-        z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
-        //       HUH ^^^^^^^^^^^^^ WHATS SPECIAL ABOUT ZERO
-        //       see notes/issues/review-analytic-geometry.rst    
-    }
-    else
-    { 
-        z1 = zcut1 > -cz ? zcut1 : -cz ; 
-        z2 = zcut2 <  cz ? zcut2 :  cz ; 
-    }
-
+    double z1 = zcut1 > -cz ? zcut1 : -cz ; 
+    double z2 = zcut2 <  cz ? zcut2 :  cz ; 
     assert( z2 > z1 ) ;  
 
-    bool zslice = z1 > -cz || z2 < cz ;  
+    bool upper_cut = z2 < cz ; 
+    bool lower_cut = z1 > -cz ; 
+    bool zslice = lower_cut || upper_cut ; 
 
     LOG(LEVEL) 
+         << " upper_cut " << upper_cut 
+         << " lower_cut " << lower_cut 
          << " zcut1 " << zcut1 
          << " zcut2 " << zcut2
          << " z1 " << z1
@@ -1528,12 +1514,30 @@ void X4Solid::convertEllipsoid()
          << " zslice " << zslice
          ;
 
+    nnode* cn = nullptr ; 
+    if( upper_cut == false && lower_cut == false )
+    {
+        cn =  (nnode*)nsphere::Create( 0.f, 0.f, 0.f, cz ) ; 
+    }
+    else if( upper_cut == true && lower_cut == true )
+    {
+        cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 )  ; 
+    }
+    else if ( upper_cut == false && lower_cut == true )   // PMT mask uses this 
+    {
+        double z2_safe = z2 + 0.1 ;  // trying to avoid the apex bug 
+        cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2_safe )  ; 
+        // when there is no upper cut avoid the placeholder upper cut from ever doing anything by a safety offset
+        // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+    }
+    else if ( upper_cut == true && lower_cut == false )
+    {
+        double z1_safe = z1 - 0.1 ; // also avoid analogous nadir bug 
+        cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1_safe, z2 )  ; 
+        // when there is no lower cut avoid the placeholder lower cut from ever doing anything by a safety offset
+        // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+    }
 
-    nnode* cn = zslice ? 
-                          (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 ) 
-                       :
-                          (nnode*)nsphere::Create( 0.f, 0.f, 0.f, cz )
-                       ;
 
     cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ; 
     cn->transform = nmat4triple::make_scale( scale );

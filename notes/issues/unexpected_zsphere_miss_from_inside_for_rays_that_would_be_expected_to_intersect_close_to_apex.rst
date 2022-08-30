@@ -3,6 +3,130 @@ unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect
 
 * fixed by changing "<" to "<="  in intersect_leaf_zsphere
 
+
+
+This selection rerun shows the apex bug
+-----------------------------------------
+
+c::
+
+    ./nmskSolidMask.sh
+
+    selection=153452
+    GEOM=nmskSolidMask SELECTION=$selection ./CSGSimtraceRerunTest.sh  
+
+
+isect1 is the rerun::
+
+             isect0 HIT
+                    q0 norm t (    0.0002    0.0000   -1.0000  449.8282)
+                   q1 ipos sd (   -0.0659    0.0000  186.0000    0.0000)- sd < SD_CUT :    -0.0010
+             q2 ray_ori t_min ( -211.2000    0.0000 -211.2000)
+              q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+             isect1 HIT
+                    q0 norm t (   -0.0000   -0.0000   -1.0000  239.2969)
+                   q1 ipos sd (  -98.8822    0.0000    0.1000   40.1000)- sd < SD_CUT :    -0.0010
+             q2 ray_ori t_min ( -211.2000    0.0000 -211.2000)
+              q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+gx::
+
+    SELECTION=1 ./gxt.sh 
+
+::
+
+    .    const float2 zdelta = make_float2(q1.f);
+    -    const float zmax = center.z + zdelta.y ; 
+    +    const float zmax = center.z + zdelta.y + 0.1f ;  // artificial increase zmax to test apex bug 
+         const float zmin = center.z + zdelta.x ;    
+
+
+After the artificial zmax increase get the expected near apex hit::
+
+             isect0 HIT
+                    q0 norm t (    0.0002    0.0000   -1.0000  449.8282)
+                   q1 ipos sd (   -0.0659    0.0000  186.0000    0.0000)- sd < SD_CUT :    -0.0010
+             q2 ray_ori t_min ( -211.2000    0.0000 -211.2000)
+              q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+             isect1 HIT
+                    q0 norm t (    0.0002   -0.0000   -1.0000  449.8283)
+                   q1 ipos sd (   -0.0659    0.0000  186.0000   -0.0000)- sd < SD_CUT :    -0.0010
+             q2 ray_ori t_min ( -211.2000    0.0000 -211.2000)
+              q3 ray_dir gsid (    0.4694    0.0000    0.8830 C4U (     0    0    0    0 ) )
+
+
+Hmm how to formalize this, do it in translation::
+
+    epsilon:extg4 blyth$ grep zsphere *.*
+    X4Solid.cc:        cn = nzsphere::Create( x, y, z, radius, zmin, zmax ) ;
+    X4Solid.cc:        cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
+    X4Solid.cc:    nzsphere 
+    X4Solid.cc:                          (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 ) 
+    epsilon:extg4 blyth$ 
+    epsilon:extg4 blyth$ 
+
+
+::
+
+    1480 void X4Solid::convertEllipsoid()
+    1481 {
+    1482     const G4Ellipsoid* const solid = static_cast<const G4Ellipsoid*>(m_solid);
+    1483     assert(solid);
+    1484 
+    1485     // G4GDMLWriteSolids::EllipsoidWrite
+    1486 
+    1487     double ax = solid->GetSemiAxisMax(0)/mm ;
+    1488     double by = solid->GetSemiAxisMax(1)/mm ;
+    1489     double cz = solid->GetSemiAxisMax(2)/mm ;
+    1490 
+    1491     glm::tvec3<double> scale( ax/cz, by/cz, 1.) ;   // unity scaling in z, so z-coords are unaffected  
+    1492 
+    1493     double zcut1 = solid->GetZBottomCut()/mm ;
+    1494     double zcut2 = solid->GetZTopCut()/mm ;
+    1495 
+    1496     double z1 = zcut1 > -cz ? zcut1 : -cz ;
+    1497     double z2 = zcut2 <  cz ? zcut2 :  cz ;
+    1498     assert( z2 > z1 ) ;
+    1499 
+    1500     bool upper_cut = z2 < cz ;
+    1501     bool lower_cut = z1 > -cz ;
+    1502     bool zslice = lower_cut || upper_cut ;
+    1503 
+    ....
+    1516 
+    1517     nnode* cn = nullptr ;
+    1518     if( upper_cut == false && lower_cut == false )
+    1519     {   
+    1520         cn =  (nnode*)nsphere::Create( 0.f, 0.f, 0.f, cz ) ;
+    1521     }
+    1522     else if( upper_cut == true && lower_cut == true )
+    1523     {   
+    1524         cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 )  ;
+    1525     }
+    1526     else if ( upper_cut == false && lower_cut == true )   // PMT mask uses this 
+    1527     {   
+    1528         double z2_safe = z2 + 0.1 ;  // trying to avoid the apex bug  
+    1529         cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2_safe )  ; 
+    1530         // when there is no upper cut avoid the placeholder upper cut from ever doing anything by a safety offset
+    1531         // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+    1532     }
+    1533     else if ( upper_cut == true && lower_cut == false )
+    1534     {   
+    1535         double z1_safe = z1 - 0.1 ; // also avoid analogous nadir bug 
+    1536         cn = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1_safe, z2 )  ; 
+    1537         // when there is no lower cut avoid the placeholder lower cut from ever doing anything by a safety offset
+    1538         // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+    1539     }
+    1540     
+    1541     
+    1542     cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ;
+
+
+
+
+
 Perhaps a related issue with nmskSolidMask for intersects close to apex
 -------------------------------------------------------------------------------
 

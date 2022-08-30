@@ -231,7 +231,7 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     // Whether early exit speeds things up is another question ... 
 
     const float2 zdelta = make_float2(q1.f);
-    const float zmax = center.z + zdelta.y ; 
+    const float zmax = center.z + zdelta.y ;   // + 0.1f artificial increase zmax to test apex bug 
     const float zmin = center.z + zdelta.x ;    
 
 #ifdef DEBUG_RECORD

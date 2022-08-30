@@ -272,7 +272,7 @@ def mpplt_simtrace_selection_line(ax, sts, axes, linewidths=2):
     colors = ["red","blue"] 
     if sts.ndim in (3,4) and sts.shape[-2:] == (4,4):
         for i in range(len(sts)): 
-            jj = sts.shape[1] if sts.ndim == 4 else [-1,]
+            jj = list(range(sts.shape[1])) if sts.ndim == 4 else [-1,]
             for j in jj:
                 isect = sts[i,j] if sts.ndim == 4 else sts[i]
                 color = colors[j%len(colors)]
@@ -292,7 +292,7 @@ def pvplt_simtrace_selection_line(pl, sts):
     colors = ["red","blue"]
     if sts.ndim in (3,4) and sts.shape[-2:] == (4,4):
         for i in range(len(sts)): 
-            jj = sts.shape[1] if sts.ndim == 4 else [-1,]
+            jj = list(range(sts.shape[1])) if sts.ndim == 4 else [-1,]
             for j in jj:
                 isect = sts[i,j] if sts.ndim == 4 else sts[i]
                 color = colors[j%len(colors)]

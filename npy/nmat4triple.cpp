@@ -131,6 +131,11 @@ const nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )
     glm::mat4 t = nglmext::make_translate(tlate);
     return new nmat4triple(t);
 }
+const nmat4triple* nmat4triple::make_scale( const glm::tvec3<double>& tsca )
+{
+    glm::vec3 sca(tsca.x, tsca.y, tsca.z); 
+    return make_scale(sca); 
+}
 const nmat4triple* nmat4triple::make_scale( const glm::vec3& tsca )
 {
     glm::mat4 s = nglmext::make_scale(tsca);
