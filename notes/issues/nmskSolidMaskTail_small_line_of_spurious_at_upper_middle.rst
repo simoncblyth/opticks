@@ -9,7 +9,6 @@ nmskSolidMaskTail_small_line_of_spurious_at_upper_middle
      gc
      GEOM=nmskSolidMaskTail ./translate.sh 
 
-
 ::
 
      gx
@@ -46,6 +45,62 @@ Will need to look at constituents, add the below to gc:mtranslate.sh::
 
     EOL
     }
+
+
+
+Checking nmskTailInner with uncoincide_z 1mm : has issues on top edge
+-------------------------------------------------------------------------
+
+HMM: I need a way to have both uncoincide and not under different names, 
+or have some versioning. Currently the manager prefix eg "nmsk" "nnvt" "hama" "hmsk" 
+is skipped over, so could use suffix like "__opt" to be interpreted into
+variations like uncoincide. 
+
+::
+
+    #geom=nmskSolidMask
+    #geom=nmskMaskOut
+    #geom=nmskMaskIn
+
+    #geom=nmskSolidMaskTail
+
+    #geom=nmskTailOuter
+    #geom=nmskTailOuterIEllipsoid
+    #geom=nmskTailOuterITube
+    #geom=nmskTailOuterI
+    #geom=nmskTailOuterIITube
+
+    geom=nmskTailInner
+    #geom=nmskTailInnerIEllipsoid
+    #geom=nmskTailInnerITube
+    #geom=nmskTailInnerI
+    #geom=nmskTailInnerIITube 
+
+
+
+    
+
+
+::
+
+    831 G4VSolid* NNVTMaskManager::getSolid(const char* name)
+    832 {
+    833     if (logicMaskVirtual == nullptr )
+    834     {
+    835         std::cout << "NNVTMaskManager::getSolid booting with getLV " << name << std::endl ;
+    836         getLV();
+    837     }
+    838 
+    839     G4VSolid* solid = nullptr ;
+    840     // makeMaskOutLogical 
+    841     if(strcmp(name, "SolidMaskVirtual") == 0 ) solid = SolidMaskVirtual ;
+    842 
+    843     // makeMaskLogical
+    844     if(strcmp(name, "TopOut") == 0 )     solid = Top_out ;
+    845     if(strcmp(name, "BottomOut") == 0 )  solid = Bottom_out ;
+    846     if(strcmp(name, "MaskOut") == 0 )    solid = Mask_out ;
+    847 
+    848     if(strcmp(name, "TopIn") == 0 )      solid = Top_in ;
 
 
 

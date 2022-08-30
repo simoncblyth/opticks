@@ -4,6 +4,9 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
+#include <fstream>
+#include <iostream>
+#include <cassert>
 
 struct sstr
 {
@@ -13,6 +16,7 @@ struct sstr
     static const char* TrimTrailing(const char* s);
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
+    static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str ); 
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
@@ -77,6 +81,16 @@ inline void sstr::Split( const char* str, char delim,   std::vector<std::string>
     std::string s;
     while (std::getline(ss, s, delim)) elem.push_back(s) ; 
 }
+
+inline void sstr::Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str )
+{
+    char* head = strdup(str); 
+    char* p = strstr(head, delim);  // pointer to first occurence of delim in str or null if not found
+    if(p) p[0] = '\0' ; 
+    const char* tail = p ? p + strlen(delim)  : nullptr ; 
+    head__tail.first = head ; 
+    head__tail.second = tail ? tail : ""  ; 
+}  
 
 
 template<typename ... Args>

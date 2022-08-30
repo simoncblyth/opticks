@@ -143,7 +143,7 @@ loglevels()
     export Dummy=INFO
     #export SGeoConfig=INFO
     export SEventConfig=INFO
-    export SEvt=INFO          # lots of AddGenstep output, messing with timings
+    #export SEvt=INFO          # lots of AddGenstep output, messing with timings : actually log times not changed much, but it feels slow over network
     #export Ctx=INFO
     export QSim=INFO
     export QBase=INFO
