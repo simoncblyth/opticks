@@ -84,8 +84,8 @@ void SCenterExtentGenstep::init()
     // input CEGS are 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
  
-    SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
-    assert( cegs.size() == 7 );
+    SFrameGenstep::StandardizeCEGS(cegs);
+    assert( cegs.size() == 8 );
 
     int ix0 = cegs[0] ;
     int ix1 = cegs[1] ;
@@ -94,6 +94,8 @@ void SCenterExtentGenstep::init()
     int iz0 = cegs[4] ;
     int iz1 = cegs[5] ;
     int photons_per_genstep = cegs[6] ;
+    int fine = cegs[7] ; 
+
 
     nx = (ix1 - ix0)/2 ;
     ny = (iy1 - iy0)/2 ;
@@ -106,6 +108,7 @@ void SCenterExtentGenstep::init()
         << " nz " << nz
         << " GridAxes " << gridaxes
         << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
+        << " fine " << fine
         ;
 
     peta->q0.i.x = ix0 ;

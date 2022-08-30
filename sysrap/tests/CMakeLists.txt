@@ -96,6 +96,8 @@ set(TEST_SOURCES
    stranRotateTest.cc
 
    SCenterExtentGenstepTest.cc
+   SFrameGenstep_MakeCenterExtentGensteps_Test.cc
+
    SEventTest.cc
    SThetaCutTest.cc
    SPhiCutTest.cc

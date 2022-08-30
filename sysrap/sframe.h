@@ -206,7 +206,7 @@ inline sframe sframe::Load_(const char* path)
 
 inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
 {
-    assert( cegs.size() == 7 );   // use QEvent::StandardizeCEGS to convert 4 to 7  
+    assert( cegs.size() == 8 );   // use SFrameGenstep::StandardizeCEGS to convert 4/7/8 to 8   
 
     q1.i.x = cegs[0] ;  // ix0   these are after standardization
     q1.i.y = cegs[1] ;  // ix1
@@ -217,6 +217,9 @@ inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
     q2.i.y = cegs[5] ;  // iz1 
     q2.i.z = cegs[6] ;  // num_photon
     q2.f.w = gridscale ; 
+
+    assert( cegs[7] == 1 ); // expecting 1 for cegs[7] other than fine regions where 2 (or 4) might be used
+
 }
 
 inline int sframe::ix0() const { return q1.i.x ; }

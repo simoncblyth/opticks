@@ -42,7 +42,21 @@ EOU
 #geom=nmskMaskOut
 #geom=nmskMaskIn
 
-geom=nmskSolidMaskTail
+#geom=nmskSolidMaskTail
+
+#geom=nmskTailOuter
+#geom=nmskTailOuterIEllipsoid
+#geom=nmskTailOuterITube
+#geom=nmskTailOuterI
+#geom=nmskTailOuterIITube
+
+geom=nmskTailInner
+#geom=nmskTailInnerIEllipsoid
+#geom=nmskTailInnerITube
+#geom=nmskTailInnerI
+#geom=nmskTailInnerIITube 
+
+
 
 
 export GEOM=${GEOM:-$geom}

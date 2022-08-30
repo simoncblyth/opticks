@@ -187,6 +187,7 @@ if [ "ana" == "$arg" ]; then
     export FOLD
     export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
+    export TOPLINE="gxt.sh/$bin.py : GEOM $GEOM " 
 
     ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 

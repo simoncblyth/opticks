@@ -163,8 +163,8 @@ if __name__ == '__main__':
 
     local = True 
 
-    gs = FrameGensteps(t.genstep, t.sframe, local=local, symbol="gs" )  ## get gs positions in target frame
-    print(gs)
+    t_gs = FrameGensteps(t.genstep, t.sframe, local=local, symbol="gs" )  ## get gs positions in target frame
+    print(t_gs)
 
 
     if RERUN:
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         simtrace = t.simtrace
     pass
 
-    t_pos = SimtracePositions(simtrace, gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
+    t_pos = SimtracePositions(simtrace, t_gs, t.sframe, local=local, mask=MASK, symbol="t_pos" )
     print(t_pos)
 
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
     if SIMPLE:
         pl = pvplt_plotter()
-        simple(pl, gs, t_pos)
+        simple(pl, t_gs, t_pos)
         pl.show()
         raise Exception("SIMPLE done")
     pass
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
     pl = SimtracePlot.MakePVPlotter()
 
-    plt = SimtracePlot(pl, pf.feat, gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
+    plt = SimtracePlot(pl, pf.feat, t_gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
 
 
     if not x_lpos is None:           

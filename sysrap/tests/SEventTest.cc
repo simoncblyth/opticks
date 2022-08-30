@@ -74,7 +74,7 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz, const float4* ce
     std::vector<int> cegs = {{nx, ny, nz, 10 }} ; 
     float gridscale = 1.f ; 
 
-    SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
+    SFrameGenstep::StandardizeCEGS(cegs);
 
     bool ce_scale = true ; 
     float3 offset = make_float3(0.f, 0.f, 0.f) ; 

@@ -171,6 +171,7 @@ rspeed_ = lambda a,i:rdist_(a,i)/rtime_(a,i)
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar TO DIRECTORY CONTAINING CSGFoundry dir 
 from opticks.CSG.CSGFoundry import CSGFoundry 
 
+
 cf = CSGFoundry.Load()    
 
 ## HMM: NASTY LOADING cf HERE IN THE MODULE 

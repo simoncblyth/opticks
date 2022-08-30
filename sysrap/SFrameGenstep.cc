@@ -86,8 +86,29 @@ std::string SFrameGenstep::Desc(const std::vector<float3>& ce_offset )
         const float3& offset = ce_offset[i] ; 
         ss << std::setw(4) << i << " : " << offset << std::endl ;   
     }
+
     std::string s = ss.str(); 
     return s ; 
+}
+
+std::string SFrameGenstep::Desc(const std::vector<int>& cegs )
+{
+    std::stringstream ss ; 
+    ss << " size " << cegs.size() << "[" ; 
+    for(unsigned i=0 ; i < cegs.size() ; i++) ss << cegs[i] << " " ; 
+    ss << "]" ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback )
+{
+    SSys::getenvintvec(ekey, cegs, delim, fallback );
+    StandardizeCEGS(cegs); 
+    assert( cegs.size() == 0 || cegs.size() == 8 );
+    LOG(info) << " ekey " << ekey << " Desc " << Desc(cegs)  ; 
 }
 
 
@@ -112,13 +133,8 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
     // CSGGenstep::init
     std::vector<int> cegs ; 
-    SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:1000" );
-
-    StandardizeCEGS(ce, cegs, gridscale );  // ce is informational here 
-    assert( cegs.size() == 7 );
-
+    GetGridConfig(cegs, "CEGS", ':', "16:0:9:1000" ); 
     fr.set_grid(cegs, gridscale); 
-
 
     std::vector<float3> ce_offset ; 
     CE_OFFSET(ce_offset, ce); 
@@ -135,7 +151,30 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
     Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
 
-    NP* gs = MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+
+    std::vector<NP*> gsl ; 
+    NP* gs_base = MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    gsl.push_back(gs_base) ; 
+
+
+
+    std::vector<std::string> keys = {{"CEHIGH_0", "CEHIGH_1", "CEHIGH_2", "CEHIGH_3" } } ; 
+    for(unsigned i=0 ; i < keys.size() ; i++)
+    {
+        const char* key = keys[i].c_str() ; 
+        std::vector<int> cehigh ; 
+        GetGridConfig(cehigh, key, ':', "" ); 
+        LOG(info) << " key " << key << " cehigh.size " << cehigh.size() ;  
+        if(cehigh.size() == 8)
+        {
+            NP* gs_cehigh = MakeCenterExtentGensteps(ce, cehigh, gridscale, geotran, ce_offset, ce_scale );
+            gsl.push_back(gs_cehigh) ; 
+        }
+    }
+
+    LOG(info) << " gsl.size " << gsl.size() ; 
+    NP* gs = NP::Concatenate(gsl) ; 
+
 
     //gs->set_meta<std::string>("moi", moi );
     gs->set_meta<int>("midx", fr.midx() );
@@ -214,15 +253,28 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
 
-    assert( cegs.size() == 7 );
+    assert( cegs.size() == 8 );
 
-    int ix0 = cegs[0] ;
-    int ix1 = cegs[1] ;
-    int iy0 = cegs[2] ;
-    int iy1 = cegs[3] ;
-    int iz0 = cegs[4] ;
-    int iz1 = cegs[5] ;
+ /**
+    Want to use fine to increase resolution .. but want to keep using single input indexing ? 
+    Hmm interpret fine=2 to mean double the points and half the gridscale ?
+ **/
+
+    int fine = cegs[7] ; 
+    assert( fine == 1 || fine == 2 ); 
+
+    double scale = double(gridscale)/double(fine) ; 
+
+
+    int ix0 = cegs[0]*fine ;
+    int ix1 = cegs[1]*fine ;
+    int iy0 = cegs[2]*fine ;
+    int iy1 = cegs[3]*fine ;
+    int iz0 = cegs[4]*fine ;
+    int iz1 = cegs[5]*fine ;
+
     int photons_per_genstep = cegs[6] ;
+
 
     int nx = (ix1 - ix0)/2 ; 
     int ny = (iy1 - iy0)/2 ; 
@@ -239,9 +291,12 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
         << " nz " << nz 
         << " GridAxes " << gridaxes
         << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
+        << " fine " << fine
+        << " gridscale " << gridscale
+        << " scale " << scale 
         ;
 
-    double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; // ce_scale:true is almost always expected 
+    double local_scale = ce_scale ? scale*ce.w : scale ; // ce_scale:true is almost always expected 
     // hmm: when using SCenterExtentFrame model2world transform the 
     // extent is already handled within the transform so must not apply extent scaling 
     // THIS IS CONFUSING : TODO FIND WAY TO AVOID THE CONFUSION BY MAKING THE DIFFERENT TYPES OF TRANSFORM MORE CONSISTENT
@@ -321,20 +376,34 @@ ix0:iy0:iz0:ix1:iy1:iz1:num_photons
      standardized absolute form of grid specification 
      (NOT used as an input layout)
 
+Notice that currently cannot distinguish between the two 7 elem layouts
+so have to say that the final absolute layout cannot be used as input form
 
 **/
 
-void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gridscale ) // static 
+void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static 
 {
-    int ix0, ix1, iy0, iy1, iz0, iz1, photons_per_genstep ; 
+    if( cegs.size() == 0 ) return ; 
+    if( cegs.size() == 8 ) return ; 
+
+    bool expect = cegs.size() == 4 || cegs.size() == 7 ; 
+    if(!expect) LOG(error) << " unexpected cegs.size " << cegs.size() ; 
+    assert( expect ); 
+
+    int ix0 = 0 ; 
+    int ix1 = 0 ; 
+    int iy0 = 0 ; 
+    int iy1 = 0 ; 
+    int iz0 = 0 ; 
+    int iz1 = 0 ; 
+    int photons_per_genstep = 0 ;
+
     if( cegs.size() == 4 ) 
     {   
         ix0 = -cegs[0] ; ix1 = cegs[0] ; 
         iy0 = -cegs[1] ; iy1 = cegs[1] ; 
         iz0 = -cegs[2] ; iz1 = cegs[2] ; 
         photons_per_genstep = cegs[3] ;
-
-        cegs.resize(7) ; 
     }   
     else if( cegs.size() == 7 ) 
     {  
@@ -352,13 +421,9 @@ void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, f
         ix1 =  nx + dx ; 
         iy1 =  ny + dy ; 
         iz1 =  nz + dz ; 
-    }   
-    else
-    {   
-        LOG(fatal) << " unexpected input cegs.size, expect 4 or 7 but find:" << cegs.size()  ;   
-        assert(0); 
-    }   
+    }
 
+    cegs.resize(8) ; 
     cegs[0] = ix0 ; 
     cegs[1] = ix1 ;
     cegs[2] = iy0 ; 
@@ -366,7 +431,7 @@ void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, f
     cegs[4] = iz0 ;
     cegs[5] = iz1 ;
     cegs[6] = photons_per_genstep ;
-
+    cegs[7] = 1 ;   // fine 
 
     //  +---+---+---+---+
     // -2  -1   0   1   2
@@ -383,7 +448,6 @@ void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, f
         << " grid_points (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) " << grid_points
         << " tot_photons (grid_points*photons_per_genstep) " << tot_photons
         ;
-
 }
 
 
