@@ -75,6 +75,9 @@ EOU
 }
 
 
+defarg=run
+arg=${1:-$defarg}
+
 # pick the Solid or Volume binary depending on GEOM
 
 bin=
@@ -97,23 +100,44 @@ else
    echo $msg THERE IS NO extg4 geoscript $geoscript 
 fi 
 
+echo $msg GEOM $GEOM bin $bin arg $arg 
 
-echo $msg GEOM $GEOM bin $bin
 
-if [ "$bin" == "" ]; then
-   echo $msg ERROR do not know which executable to use for GEOM $GEOM
-   exit 1 
-fi
+loglevels()
+{
+    #export GGeo=INFO
+    #export CSGSolid=INFO
+    export CSG_GGeo_Convert=INFO
+    export GeoChain=INFO
 
-############### logging control ###################
+    export NTreeProcess=INFO   ## balance decision happens here 
+    #export NTREEPROCESS_LVLIST=0
 
-#export GGeo=INFO
-#export CSGSolid=INFO
-export CSG_GGeo_Convert=INFO
-export GeoChain=INFO
 
-export NTreeProcess=INFO   ## balance decision happens here 
-#export NTREEPROCESS_LVLIST=0
+    #export NNodeNudger=INFO
+    #export NNODENUDGER_LVLIST=0
+
+    #export NTreeBalance=INFO
+    #export NTreeBuilder=INFO
+
+    #export nthetacut=INFO 
+    #export nphicut=INFO 
+    export NCSG=INFO
+    export NCSGData=INFO
+    export nmultiunion=INFO
+
+    export X4Solid=INFO  
+    export X4SolidTree=INFO
+    export X4SolidTree_verbose=1
+    export X4SolidMaker=INFO  
+    export X4PhysicalVolume=INFO
+
+    # checking that --skipsolidname is working 
+    #export OpticksDbg=INFO  
+    #export GInstancer=INFO
+}
+loglevels
+
 
 
 Unbalanced(){ cat << EOU
@@ -143,28 +167,6 @@ if [ "${GEOM/Unbalanced}" != "${GEOM}" ]; then
 fi 
 
 
-#export NNodeNudger=INFO
-#export NNODENUDGER_LVLIST=0
-
-#export NTreeBalance=INFO
-#export NTreeBuilder=INFO
-
-#export nthetacut=INFO 
-#export nphicut=INFO 
-export NCSG=INFO
-export NCSGData=INFO
-export nmultiunion=INFO
-
-export X4Solid=INFO  
-export X4SolidTree=INFO
-export X4SolidTree_verbose=1
-export X4SolidMaker=INFO  
-export X4PhysicalVolume=INFO
-
-# checking that --skipsolidname is working 
-#export OpticksDbg=INFO  
-#export GInstancer=INFO
-
 #export DUMP_RIDX=0
 
 
@@ -174,30 +176,30 @@ unset OPTICKS_KEY      # TODO: do this inside executables, as kinda important
 
 #####################################################
 
-#cd $(opticks-home)/GeoChain
-
-if [ -f "$bin.log" ]; then 
-    rm $bin.log 
-fi 
-
-which $bin
-
 opts=""
 #opts="$opts --x4tubsnudgeskip 0"
 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 #DEBUG=1
+## TODO: move away from use of commamdline options
+## TODO: dont accept options via commandline : do anything like that via envvars
 
-# TODO: dont accept options via commandline : do anything like that via envvars
 
-if [ -n "$DEBUG" ]; then 
-    if [ "$(uname)" == "Darwin" ]; then 
-        lldb__ $bin $opts 
-    else
-        gdb -ex r --args $bin $opts 
-    fi
-else 
+which $bin
+
+if [ "run" == "$arg" ]; then 
+   [ -f "$bin.log" ] && rm $bin.log 
     $bin $opts
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+fi 
+
+if [ "dbg" == "$arg" ]; then
+   [ -f "$bin.log" ] && rm $bin.log 
+   case $(uname) in
+       Darwin) lldb__ $bin $opts  ;; 
+       Linux)   gdb -ex r --args $bin $opts  ;; 
+   esac
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+
 fi
 
 exit 0
-
