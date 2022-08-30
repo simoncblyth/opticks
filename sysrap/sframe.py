@@ -59,6 +59,28 @@ class sframe(object):
         return axes
 
 
+    @classmethod
+    def CombineFrame(cls, stu_):
+        """
+        """
+        stu = list(filter(None, stu_))
+        if len(stu) == 1:
+            sf = stu[0]
+            fr = sf
+        elif len(stu) == 2:
+            sf, tf = stu[0], stu[1] 
+            assert sf.axes == tf.axes
+            fr = sf
+        elif len(stu) == 3:
+            sf, tf, uf = stu[0], stu[1], stu[2] 
+            assert sf.axes == tf.axes == uf.axes
+            fr = sf
+        else:
+            pass    
+        pass
+        return fr
+ 
+
     def __init__(self, path, clear_identity=True ):
         """
         Whether clear_identity makes any material difference depends on the identity values. 

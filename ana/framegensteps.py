@@ -103,7 +103,6 @@ class FrameGensteps(object):
         log.info(repr(self))
 
     def __repr__(self):
-
         symbol = self.symbol
         return "\n".join([
                    "FrameGensteps",
@@ -117,5 +116,34 @@ class FrameGensteps(object):
                    "%s.lim[Z] %s " % (symbol,str(self.lim[Z])),
               ])
 
+    @classmethod
+    def CombineLim(cls, stu ):
+        """
+        """
+        lim = {}
+        if len(stu) == 1:
+            s,t,u = stu[0], None,None
+            lim = s.lim
+        elif len(stu) == 2:
+            s,t,u = stu[0], stu[1],None
+            for d in [X,Y,Z]:
+                sl = s.lim[d]
+                tl = t.lim[d]
+                assert tl.shape == sl.shape == (2,)
+                lim[d] = np.array( [min(tl[0],sl[0]), max(tl[1],sl[1])] )
+            pass
+        elif len(stu) == 3:
+            s,t,u = stu[0], stu[1], stu[2]
+            for d in [X,Y,Z]:
+                sl = s.lim[d]
+                tl = t.lim[d]
+                ul = u.lim[d]
+                assert sl.shape == tl.shape == ul.shape == (2,)
+                lim[d] = np.array( [min(sl[0],tl[0],ul[0]), max(sl[1],tl[1],ul[0])] )
+            pass
+        else:
+            assert 0
+        pass
+        return lim
 
 

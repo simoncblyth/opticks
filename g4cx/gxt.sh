@@ -131,9 +131,9 @@ fi
 cehigh()
 {
     : increase genstep resolution, see sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.sh
-    export CEHIGH_0=-11:-9:0:0:-3:-1:100:2
-    export CEHIGH_1=9:11:0:0:-3:-1:100:2
-    export CEHIGH_2=-1:1:0:0:-3:-1:100:2
+    export CEHIGH_0=-11:-9:0:0:-3:-1:1000:2
+    export CEHIGH_1=9:11:0:0:-3:-1:1000:2
+    export CEHIGH_2=-1:1:0:0:-3:-1:1000:2
 }
 cehigh
 

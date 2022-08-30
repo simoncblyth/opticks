@@ -44,13 +44,13 @@ EOU
 
 #geom=nmskSolidMaskTail
 
-#geom=nmskTailOuter
+geom=nmskTailOuter
 #geom=nmskTailOuterIEllipsoid
 #geom=nmskTailOuterITube
 #geom=nmskTailOuterI
 #geom=nmskTailOuterIITube
 
-geom=nmskTailInner
+#geom=nmskTailInner
 #geom=nmskTailInnerIEllipsoid
 #geom=nmskTailInnerITube
 #geom=nmskTailInnerI
