@@ -17,6 +17,7 @@ struct sstr
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str ); 
+    static void chop( char** head, char** tail, const char* delim, const char* str ); 
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
@@ -91,6 +92,15 @@ inline void sstr::Chop( std::pair<std::string, std::string>& head__tail, const c
     head__tail.first = head ; 
     head__tail.second = tail ? tail : ""  ; 
 }  
+
+inline void sstr::chop( char** head, char** tail, const char* delim, const char* str )
+{
+    *head = strdup(str); 
+    char* p = strstr(*head, delim);  // pointer to first occurence of delim in str or null if not found
+    if(p) p[0] = '\0' ; 
+    *tail = p ? p + strlen(delim) : nullptr ; 
+}
+
 
 
 template<typename ... Args>
