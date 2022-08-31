@@ -54,9 +54,6 @@ if __name__ == '__main__':
 
     frame = sframe.CombineFrame( [s_frame, t_frame, u_frame ] )
 
-    H,V = frame.axes       # traditionally H,V = X,Z  but now generalized
-    _H,_V = frame.axlabels
-
     s_offset = efloatarray_("S_OFFSET", "0,0,0")
     t_offset = efloatarray_("T_OFFSET", "0,0,0")
     u_offset = efloatarray_("U_OFFSET", "0,0,0")
@@ -86,10 +83,16 @@ if __name__ == '__main__':
     fig.suptitle("\n".join(title))
 
     ax.set_aspect('equal')
-    ax.set_xlim( lim[H] )
-    ax.set_ylim( lim[V] )
-    ax.set_xlabel(_H)
-    ax.set_ylabel(_V)
+
+    if not frame is None and not lim is None:
+        H,V = frame.axes       # traditionally H,V = X,Z  but now generalized
+        _H,_V = frame.axlabels
+
+        ax.set_xlim( lim[H] )
+        ax.set_ylim( lim[V] )
+        ax.set_xlabel(_H)
+        ax.set_ylabel(_V)
+    pass
 
     if not s_pos is None:
         ax.scatter( s_pos[:,0], s_pos[:,2], label="S:%s" % s_geom, s=1 ) 

@@ -117,9 +117,10 @@ class FrameGensteps(object):
               ])
 
     @classmethod
-    def CombineLim(cls, stu ):
+    def CombineLim(cls, stu_ ):
         """
         """
+        stu = list(filter(None, stu_))
         lim = {}
         if len(stu) == 1:
             s,t,u = stu[0], None,None
@@ -142,7 +143,7 @@ class FrameGensteps(object):
                 lim[d] = np.array( [min(sl[0],tl[0],ul[0]), max(sl[1],tl[1],ul[0])] )
             pass
         else:
-            assert 0
+            lim = None
         pass
         return lim
 

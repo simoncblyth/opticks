@@ -301,9 +301,11 @@ struct NP
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
     template<typename T> void set_meta(const char* key, T value ) ;  
 
-
     template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback ); 
     template<typename T> static void SetMeta(       std::string& mt, const char* key, T value ); 
+
+    std::string descMeta() const ; 
+
 
 
     char*       bytes();  
@@ -2828,6 +2830,8 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
 
 
 
+
+
 inline void NP::set_names( const std::vector<std::string>& lines )
 {
     names.clear(); 
@@ -3030,6 +3034,18 @@ template void     NP::SetMeta<float>(       std::string&, const char*, float );
 template void     NP::SetMeta<double>(      std::string&, const char*, double ); 
 template void     NP::SetMeta<std::string>( std::string&, const char*, std::string ); 
 
+
+inline std::string NP::descMeta() const 
+{
+    std::stringstream ss ; 
+    ss << "NP::descMeta" 
+       << std::endl 
+       << meta 
+       << std::endl 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 
@@ -4148,7 +4164,7 @@ inline std::string NP::descValues() const
         ss
             << std::setw(3) << i 
             << " v " << std::setw(10) << std::fixed << std::setprecision(4) << vv[i] 
-            << " k " << std::setw(60) << k 
+            << " k " << std::setw(60) << std::left << k << std::right 
             <<  std::endl 
             ;
     }

@@ -13,9 +13,12 @@ EOU
 defarg="ana"
 arg=${1:-$defarg}
 
-export S_GEOM=nmskTailInner
-export T_GEOM=nmskTailOuter
-export U_GEOM=nmskSolidMaskTail
+export S_GEOM=nmskSolidMask
+export T_GEOM=nmskSolidMaskTail
+
+#export S_GEOM=nmskTailInner
+#export T_GEOM=nmskTailOuter
+#export U_GEOM=nmskSolidMaskTail
 
 export S_FOLD=/tmp/$USER/opticks/GeoChain/$S_GEOM/G4CXSimtraceTest/ALL
 export T_FOLD=/tmp/$USER/opticks/GeoChain/$T_GEOM/G4CXSimtraceTest/ALL

@@ -1,10 +1,11 @@
 #!/bin/bash -l 
 
 
-geomlist(){ cat << EOL
-nmskTailOuter
-nmskTailInner
-nmskSolidMask
+geomlist(){ cat << EOL | grep -v ^#
+#nmskTailOuter
+#nmskTailInner
+nmskSolidMaskTail
+#nmskSolidMask
 EOL
 }
 

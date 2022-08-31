@@ -76,7 +76,7 @@ class sframe(object):
             assert sf.axes == tf.axes == uf.axes
             fr = sf
         else:
-            pass    
+            fr = None
         pass
         return fr
  
