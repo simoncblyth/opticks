@@ -3,6 +3,11 @@
 cf_G4CXSimtraceTest.py
 ==============================
 
+::
+
+   FOCUS=-257,-39,7 ./cf_gxt.sh 
+
+
 """
 
 import os, numpy as np, logging
@@ -16,7 +21,8 @@ from opticks.ana.framegensteps import FrameGensteps
 import matplotlib.pyplot as mp
 
 SIZE = np.array([1280, 720]) 
-
+FOCUS = efloatarray_("FOCUS", "0,0,0")
+ 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -88,7 +94,8 @@ if __name__ == '__main__':
 
     topline = os.environ.get("TOPLINE", "cf_G4CXSimtraceTest.py")
     botline = os.environ.get("BOTLINE", "S_OFFSET:%s T_OFFSET:%s U_OFFSET:%s V_OFFSET:%s " % (str(s_offset),str(t_offset), str(u_offset), str(v_offset)))
-    title = [topline, botline ]
+    thirdline = os.environ.get("THIRDLINE", "FOCUS:%s " % (str(FOCUS)))
+    title = [topline, botline, thirdline ]
 
     fig, ax = mp.subplots(figsize=SIZE/100.)
     fig.suptitle("\n".join(title))
@@ -99,8 +106,28 @@ if __name__ == '__main__':
         H,V = frame.axes       # traditionally H,V = X,Z  but now generalized
         _H,_V = frame.axlabels
 
-        ax.set_xlim( lim[H] )
-        ax.set_ylim( lim[V] )
+        xlim = lim[H] 
+        ylim = lim[V]
+        aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
+           
+        print("xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
+
+        if not np.all(FOCUS == 0):
+            center = FOCUS[:2] 
+            extent = FOCUS[2] if len(FOCUS) > 2 else 100
+            diagonal  = np.array([extent*aspect, extent])
+            botleft = center - diagonal
+            topright = center + diagonal
+            print("botleft:%s" % str(botleft))
+            print("topright:%s" % str(topright))
+            xlim = np.array([botleft[0], topright[0]])
+            ylim = np.array([botleft[1], topright[1]])
+        else:
+            pass
+        pass
+
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
         ax.set_xlabel(_H)
         ax.set_ylabel(_V)
     pass

@@ -256,22 +256,22 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     assert( cegs.size() == 8 );
 
  /**
-    Want to use fine to increase resolution .. but want to keep using single input indexing ? 
-    Hmm interpret fine=2 to mean double the points and half the gridscale ?
+    Want to use *high( to increase resolution .. but want to keep using single input indexing ? 
+    Hmm interpret high=2 to mean double the points and half the gridscale ?
  **/
 
-    int fine = cegs[7] ; 
-    assert( fine == 1 || fine == 2 ); 
+    int high = cegs[7] ; 
+    assert( high == 1 || high == 2 || high == 3 || high == 4 ); 
 
-    double scale = double(gridscale)/double(fine) ; 
+    double scale = double(gridscale)/double(high) ; 
 
 
-    int ix0 = cegs[0]*fine ;
-    int ix1 = cegs[1]*fine ;
-    int iy0 = cegs[2]*fine ;
-    int iy1 = cegs[3]*fine ;
-    int iz0 = cegs[4]*fine ;
-    int iz1 = cegs[5]*fine ;
+    int ix0 = cegs[0]*high ;
+    int ix1 = cegs[1]*high ;
+    int iy0 = cegs[2]*high ;
+    int iy1 = cegs[3]*high ;
+    int iz0 = cegs[4]*high ;
+    int iz1 = cegs[5]*high ;
 
     int photons_per_genstep = cegs[6] ;
 
@@ -291,7 +291,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
         << " nz " << nz 
         << " GridAxes " << gridaxes
         << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
-        << " fine " << fine
+        << " high " << high
         << " gridscale " << gridscale
         << " scale " << scale 
         ;
