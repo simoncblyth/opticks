@@ -589,7 +589,13 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
 
         unsigned num_photons  = std::abs(num_photons_);  
 
-        assert( gencode == OpticksGenstep_TORCH );
+        bool expect = gencode == OpticksGenstep_TORCH || gencode == OpticksGenstep_FRAME ; 
+
+        if(!expect) LOG(error) 
+            << "unexpected gencod " << gencode 
+            << " OpticksGenstep_::Name " << OpticksGenstep_::Name(gencode) ; 
+
+        assert(expect);
 
         //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
         

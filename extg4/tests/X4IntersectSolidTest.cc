@@ -30,8 +30,7 @@ int main(int argc, char** argv)
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
-        const std::string& name_ = names[i]; 
-        const char* name = name_.c_str() ; 
+        const char* name = names[i].c_str() ; 
         std::string meta ; 
         const G4VSolid* solid = X4_GetSolid(name, meta); 
         if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for name " << name ; 

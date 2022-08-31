@@ -19,9 +19,9 @@ This can be done with::
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* X4_GetSolid(const char* name_, std::string& meta)
+const G4VSolid* X4_GetSolid(const char* geom, std::string& meta)
 {
-    const char* name = SStr::HeadFirst(name_, '_'); 
+    const char* name = SStr::HeadFirst(geom, '_');  // HMM: string up to first '_'
 
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(name))
@@ -32,7 +32,8 @@ const G4VSolid* X4_GetSolid(const char* name_, std::string& meta)
     {
 #ifdef WITH_PMTSIM
         std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid : WITH_PMTSIM invoking PMTSim::GetSolid(  " << name << ") " << std::endl ; 
-        solid = PMTSim::GetSolid(name); 
+        //solid = PMTSim::GetSolid(name); 
+        solid = PMTSim::GetSolid(geom);   // need geom for option passing following "__" 
 #else
         std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid :  not WITH_PMTSIM " << name << std::endl ;  
 #endif

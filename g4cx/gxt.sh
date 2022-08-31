@@ -88,8 +88,7 @@ esac
 
 bin=G4CXSimtraceTest
 log=$bin.log
-gxtdir=$(dirname $BASH_SOURCE)
-source $gxtdir/../bin/COMMON.sh 
+source $(dirname $BASH_SOURCE)/../bin/COMMON.sh 
 
 if [ -n "$OPTICKS_INPUT_PHOTON" ]; then 
    unset OPTICKS_INPUT_PHOTON  ## simtrace running and input photons cannot be used together 
@@ -118,7 +117,7 @@ export A_CFBASE
 export B_FOLD
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
+    vars="BASH_SOURCE arg bin defarg GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
     source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
 fi 
@@ -180,7 +179,7 @@ fi
 if [ "analog" == "$arg" ]; then 
     echo $msg analog log $log 
     if [ -f "$log" ]; then 
-        LOG=$log $gxtdir/../bin/log.sh 
+        LOG=$log $(dirname $BASH_SOURCE)/../bin/log.sh 
     fi 
 fi 
 
@@ -198,7 +197,7 @@ if [ "ana" == "$arg" ]; then
     export MASK=${MASK:-pos}
     export TOPLINE="gxt.sh/$bin.py : GEOM $GEOM " 
 
-    ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/$bin.py     
+    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
@@ -207,7 +206,7 @@ if [ "anachk" == "$arg" ]; then
     export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
 
-    ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/CSGFoundryLoadTest.py     
+    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/CSGFoundryLoadTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE anachk $bin error && exit 3 
 fi 
 
@@ -215,8 +214,7 @@ fi
 
 
 if [ "grab" == "$arg" ]; then 
-    #source $gxtdir/../bin/rsync.sh $UBASE 
-    source $gxtdir/../bin/rsync.sh $UGEOMDIR
+    source $(dirname $BASH_SOURCE)/../bin/rsync.sh $UGEOMDIR
 fi 
 
 

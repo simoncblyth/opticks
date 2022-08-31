@@ -48,6 +48,18 @@ Will need to look at constituents, add the below to gc:mtranslate.sh::
 
 
 
+TODO : use extg4/xxs.sh to get the Geant4 view on this nmsk solids
+---------------------------------------------------------------------- 
+
+* will need to update extg4/tests/X4IntersectSolidTest.cc to the gxt way of doing things
+
+started with::
+
+   x4
+   ./xxs0.sh 
+
+
+
 Checking nmskTailInner with uncoincide_z 1mm : has issues on top edge
 -------------------------------------------------------------------------
 
