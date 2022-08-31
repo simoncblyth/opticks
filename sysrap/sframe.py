@@ -60,25 +60,20 @@ class sframe(object):
 
 
     @classmethod
-    def CombineFrame(cls, stu_):
+    def CombineFrame(cls, framelist_):
         """
+        HMM: probably should do more consistency checks between all the frames 
         """
-        stu = list(filter(None, stu_))
-        if len(stu) == 1:
-            sf = stu[0]
-            fr = sf
-        elif len(stu) == 2:
-            sf, tf = stu[0], stu[1] 
-            assert sf.axes == tf.axes
-            fr = sf
-        elif len(stu) == 3:
-            sf, tf, uf = stu[0], stu[1], stu[2] 
-            assert sf.axes == tf.axes == uf.axes
-            fr = sf
-        else:
-            fr = None
+        framelist = list(filter(None, framelist_))
+        axes = None
+        for f in framelist:
+            if axes is None:
+                axes = f.axes
+            else:
+                assert axes == f.axes 
+            pass
         pass
-        return fr
+        return framelist[0] if len(framelist) > 0 else None
  
 
     def __init__(self, path, clear_identity=True ):

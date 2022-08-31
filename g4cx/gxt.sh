@@ -225,7 +225,6 @@ if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "m
     export CAP_BASE=$FOLD/figs
     export CAP_REL=gxt
     export CAP_STEM=${GEOM}_${OPTICKS_INPUT_PHOTON_LABEL}
-
     case $arg in 
        pvcap) source pvcap.sh cap  ;;
        mpcap) source mpcap.sh cap  ;;

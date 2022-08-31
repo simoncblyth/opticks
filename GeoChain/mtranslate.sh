@@ -31,27 +31,40 @@ nmskBottomIn
 EOL
 }
 
-geomlist_nmskSolidMaskTail(){ cat << EOL
+geomlist_nmskSolidMaskTail(){ cat << EOL | grep -v ^#
+
+
 nmskSolidMaskTail
 
 nmskTailOuter
-nmskTailOuterIEllipsoid
-nmskTailOuterITube
-nmskTailOuterI
-nmskTailOuterIITube
+#nmskTailOuterIEllipsoid
+#nmskTailOuterITube
+#nmskTailOuterI
+#nmskTailOuterIITube
 
 nmskTailInner
-nmskTailInnerIEllipsoid
-nmskTailInnerITube
-nmskTailInnerI
-nmskTailInnerIITube 
+#nmskTailInnerIEllipsoid
+#nmskTailInnerITube
+#nmskTailInnerI
+#nmskTailInnerIITube 
 
 EOL
 }
 
-for geom in $(geomlist_nmskSolidMaskTail) ; do 
-   echo $BASH_SOURCE $geom 
-   GEOM=$geom ./translate.sh 
+geomlist(){ cat << EOL | grep -v ^#
+nmskSolidMask
+nmskSolidMaskTail
+nmskTailOuter
+nmskTailInner
+EOL
+}
+
+
+#opt=__U0
+opt=__U1
+for geom in $(geomlist) ; do 
+   echo $BASH_SOURCE geom $geom opt $opt 
+   GEOM=${geom}${opt} ./translate.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE translate error for geom $geom && exit 1
 done 
 

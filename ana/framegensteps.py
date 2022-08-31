@@ -117,30 +117,40 @@ class FrameGensteps(object):
               ])
 
     @classmethod
-    def CombineLim(cls, stu_ ):
+    def CombineLim(cls, stuv_ ):
         """
         """
-        stu = list(filter(None, stu_))
+        stuv = list(filter(None, stuv_))
         lim = {}
-        if len(stu) == 1:
-            s,t,u = stu[0], None,None
+        if len(stuv) == 1:
+            s,t,u = stuv[0], None,None
             lim = s.lim
-        elif len(stu) == 2:
-            s,t,u = stu[0], stu[1],None
+        elif len(stuv) == 2:
+            s,t,u = stuv[0], stuv[1],None
             for d in [X,Y,Z]:
                 sl = s.lim[d]
                 tl = t.lim[d]
                 assert tl.shape == sl.shape == (2,)
                 lim[d] = np.array( [min(tl[0],sl[0]), max(tl[1],sl[1])] )
             pass
-        elif len(stu) == 3:
-            s,t,u = stu[0], stu[1], stu[2]
+        elif len(stuv) == 3:
+            s,t,u = stuv[0], stuv[1], stuv[2]
             for d in [X,Y,Z]:
                 sl = s.lim[d]
                 tl = t.lim[d]
                 ul = u.lim[d]
                 assert sl.shape == tl.shape == ul.shape == (2,)
                 lim[d] = np.array( [min(sl[0],tl[0],ul[0]), max(sl[1],tl[1],ul[0])] )
+            pass
+        elif len(stuv) == 4:
+            s,t,u,v = stuv[0], stuv[1], stuv[2], stuv[3]
+            for d in [X,Y,Z]:
+                sl = s.lim[d]
+                tl = t.lim[d]
+                ul = u.lim[d]
+                vl = v.lim[d]
+                assert sl.shape == tl.shape == ul.shape == vl.shape == (2,)
+                lim[d] = np.array( [min(sl[0],tl[0],ul[0],vl[0]), max(sl[1],tl[1],ul[1],vl[1])] )
             pass
         else:
             lim = None
