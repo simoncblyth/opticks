@@ -1,4 +1,9 @@
 #pragma once
+/**
+X4Simtrace : aiming to replace X4Intersect
+=============================================
+
+**/
 
 #include <cstring>
 #include "plog/Severity.h"

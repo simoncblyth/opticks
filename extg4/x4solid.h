@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <glm/glm.hpp>
 #include "scuda.h"
+#include "squad.h"
 
 #include "x4geomdefs.h"
 
@@ -21,7 +22,7 @@ struct x4solid
                           const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ); 
 
     static G4double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ); 
-
+    static void Simtrace( quad4& p, const G4VSolid* solid, bool dump=false); 
 }; 
 
 inline void x4solid::GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid )
@@ -130,5 +131,32 @@ inline G4double x4solid::Distance(const G4VSolid* solid, const G4ThreeVector& po
     }
     return t ; 
 }
+
+
+inline void x4solid::Simtrace(quad4& p, const G4VSolid* solid, bool dump)
+{
+    G4ThreeVector ori(p.q2.f.x, p.q2.f.y, p.q2.f.z); 
+    G4ThreeVector dir(p.q3.f.x, p.q3.f.y, p.q3.f.z); 
+ 
+    G4double t = Distance( solid, ori, dir, dump );  
+    //std::cout << "x4solid::Simtrace " << t << std::endl ; 
+
+    if( t == kInfinity ) return ;   // hmm: perhaps set ipos to ori for MISS ?
+
+    G4ThreeVector ipos = ori + dir*t ; 
+    float tmin = 0.f ; 
+
+    p.q0.f.x = 0.f ; // TODO surface normal at intersect ? 
+    p.q0.f.y = 0.f ; 
+    p.q0.f.z = 0.f ; 
+    p.q0.f.w = t ; 
+
+    p.q1.f.x = float(ipos.x()) ; 
+    p.q1.f.y = float(ipos.y()) ; 
+    p.q1.f.z = float(ipos.z()) ; 
+    p.q1.f.w = tmin  ; 
+}
+
+
 
 

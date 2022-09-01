@@ -103,7 +103,11 @@ struct sframe
     int sensor_index() const ; 
 
     void set_propagate_epsilon(float eps); 
+    void set_hostside_simtrace(); 
+
     float propagate_epsilon() const ; 
+    bool  is_hostside_simtrace() const ; 
+
 
     float* data() ; 
     const float* cdata() const ; 
@@ -183,6 +187,9 @@ inline std::string sframe::desc() const
        << " sensor_identifier  " << std::setw(7) << sensor_identifier()
        << " sensor_index  " << std::setw(5) << sensor_index()
        << std::endl 
+       << " propagate_epsilon " << std::setw(10) << std::fixed << std::setprecision(5) << propagate_epsilon()
+       << " is_hostside_simtrace " << ( is_hostside_simtrace() ? "YES" : "NO" ) 
+       << std::endl 
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -252,22 +259,19 @@ inline void sframe::set_identity(int ins, int gas, int sensor_identifier, int se
     aux.q0.i.y = gas ; 
     aux.q0.i.z = sensor_identifier ; 
     aux.q0.i.w = sensor_index  ; 
-
 }
-
-inline void sframe::set_propagate_epsilon(float eps)
-{
-    aux.q1.f.x = eps ; 
-}
-inline float sframe::propagate_epsilon() const 
-{
-    return aux.q1.f.x ; 
-}
-
 inline int sframe::ins() const { return aux.q0.i.x ; }
 inline int sframe::gas() const { return aux.q0.i.y ; }
 inline int sframe::sensor_identifier() const { return aux.q0.i.z ; }
 inline int sframe::sensor_index() const {      return aux.q0.i.w ; }
+
+
+inline void sframe::set_propagate_epsilon(float eps){     aux.q1.f.x = eps ; }
+inline void sframe::set_hostside_simtrace(){              aux.q1.u.y = 1u ; }
+
+inline float sframe::propagate_epsilon() const   { return aux.q1.f.x ; }
+inline bool sframe::is_hostside_simtrace() const { return aux.q1.u.y == 1u ; } 
+
 
 inline const float* sframe::cdata() const 
 {

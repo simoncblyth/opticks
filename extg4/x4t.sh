@@ -6,6 +6,10 @@ x4t.sh : reboot of xxs.sh using X4Simtrace
 Aiming to follow gxt.sh such that the gxt.sh python machinery 
 can be used with x4t.sh outputs. 
 
+::
+
+   FOCUS=257,-39,7 ./x4t.sh ana
+
 EOU
 }
 
@@ -26,9 +30,19 @@ log=$bin.log
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
 
+export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
+
+
+export S_GEOM=nmskSolidMask
+export T_GEOM=nmskSolidMaskTail
+
+export S_FOLD=/tmp/$USER/opticks/$S_GEOM/$bin/ALL
+export T_FOLD=/tmp/$USER/opticks/$T_GEOM/$bin/ALL
+
+
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin GEOM"
+    vars="BASH_SOURCE arg bin GEOM FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
 fi
 

@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCenterExtentGenstep.hh : TODO REPLACE THIS WITH SFrameGenstep
-=================================================================
+SCenterExtentGenstep.hh : TODO REPLACE ALL USE OF THIS WITH SFrameGenstep : THAT MEANS PYTHON TOO
+===================================================================================================
 
 NB this was demoted from extg4/X4Intersect as its all generally applicable 
 and hence belongs at a lower level 

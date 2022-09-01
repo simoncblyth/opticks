@@ -45,7 +45,7 @@ const G4VSolid* GetSolid(const char* geom, std::string& meta )
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(geom))
     {
-        solid = X4SolidMaker::Make(geom, meta); 
+        solid = X4SolidMaker::Make(geom); 
     }
     else
     {

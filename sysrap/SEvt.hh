@@ -119,6 +119,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<quad2>   prd ; 
     std::vector<stag>    tag ; 
     std::vector<sflat>   flat ; 
+    std::vector<quad4>   simtrace ; 
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -186,6 +187,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
+    void setFrame_HostsideSimtrace() ; 
+
+
     void setGeo(const SGeo* cf); 
     void setFrame(unsigned ins_idx); 
 
@@ -267,6 +271,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* makePrd() const ; 
     NP* makeTag() const ; 
     NP* makeFlat() const ; 
+    NP* makeSimtrace() const ; 
 
 
     // SCompProvider methods

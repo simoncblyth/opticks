@@ -33,6 +33,10 @@ struct SYSRAP_API SFrameGenstep
 
     static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
     static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale ) ; 
+
+    static void GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep ); 
+
+
     static void SetGridPlaneDirection( float4& dir, int gridaxes, double cosPhi, double sinPhi, double cosTheta, double sinTheta ); 
 };
 

@@ -2,6 +2,7 @@
 
 from opticks.ana.npmeta import NPMeta
 from opticks.ana.axes import * 
+from opticks.ana.pvplt import mpplt_focus, SIZE
 
 import os, numpy as np
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
@@ -365,7 +366,35 @@ class sframe(object):
                     l_("id",""),  repr(self.id) ,
                     l_("ins_gas_ias",self.ins_gas_ias)  
                    ])
-    
+
+
+    def mp_subplots(self, mp):
+        pass
+        H,V = self.axes 
+        _H,_V = self.axlabels
+
+        xlim = self.bbox[:,H]  
+        ylim = self.bbox[:,V]  
+        xlim, ylim = mpplt_focus(xlim, ylim)
+
+        fig, ax = mp.subplots(figsize=SIZE/100.)
+
+        ax.set_aspect('equal')
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        ax.set_xlabel(_H)
+        ax.set_ylabel(_V)
+
+        self.fig = fig
+        self.ax = ax
+
+        return fig, ax
+
+    def mp_scatter(self, pos, **kwa):
+        assert pos.ndim == 2 and pos.shape[1] == 3
+        H,V = self.axes 
+        self.ax.scatter( pos[:,H], pos[:,V], **kwa)
+
  
 
 if __name__ == '__main__':

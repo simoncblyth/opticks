@@ -124,18 +124,6 @@ void SCenterExtentGenstep::init()
     //const Tran<double>* geotran = Tran<double>::make_identity();
     const Tran<double>* geotran = Tran<double>::make_translate(ce.x, ce.y, ce.z);
 
-    /*
-    SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );
-    if( override_ce.size() == 4 && override_ce[3] > 0 )
-    {
-        ce.x = float(override_ce[0]);
-        ce.y = float(override_ce[1]);
-        ce.z = float(override_ce[2]);
-        ce.w = float(override_ce[3]);
-        LOG(info) << "override ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
-    }
-
-   */
 
     LOG(info) << "ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
 

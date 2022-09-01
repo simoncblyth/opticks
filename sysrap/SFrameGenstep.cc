@@ -537,6 +537,16 @@ SFrameGenstep::GenerateCenterExtentGenstepsPhotons
 
 Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>::generate_photon_torch
 
+The inner loop should be similar to qudarap/qsim.h/generate_photon_simtrace
+
+TODO: arrange a header such that can actually use the same code via some curand_uniform 
+macro refinition trickery
+
+-ve num_photons uses regular, not random azimuthal spray of directions
+
+TODO: consolidate the below two methods, paradir is the hangup 
+
+
 **/
 
 void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
@@ -602,17 +612,6 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
         
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
-
-            /**
-            This inner loop should be similar to qudarap/qsim.h/generate_photon_simtrace
-
-            TODO: arrange a header such that can actually use the same code via some curand_uniform 
-            macro refinition trickery
-
-            -ve num_photons uses regular, not random azimuthal spray of directions
-            **/
-
-
             u0 = num_photons_ < 0 ? double(j)/double(num_photons-1) : rng() ;
 
             phi = 2.*M_PIf*u0 ;     // azimuthal 0->2pi 
@@ -664,10 +663,102 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
 }
 
 
+/**
+SFrameGenstep::GenerateSimtracePhotons
+-----------------------------------------
 
+**/
 
+void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep )
+{
 
+    LOG(error) << "SFrameGenstep::GenerateSimtracePhotons simtrace.size " << simtrace.size() ; 
 
+    unsigned seed = 0 ; 
+    SRng<float> rng(seed) ;
+
+    bool simtrace_layout = true ; 
+    unsigned count = 0 ; 
+
+    for(unsigned i=0 ; i < genstep.size() ; i++)
+    {   
+        const quad6& gs = genstep[i]; 
+        C4U gsid ;   // genstep integer grid coordinate IXYZ and IW photon index up to 255
+        int gencode           = gs.q0.i.x ; 
+        int gridaxes          = gs.q0.i.y ; 
+        gsid.u                = gs.q0.u.z ;     // formerly gs.q1.u.w 
+        int      num_photons_ = gs.q0.i.w ;     // -ve num_photons_ doesnt use random u0 so creates phi wheels
+
+        qat4 qt(gs) ;  // copy 4x4 transform from last 4 quads of genstep 
+
+        unsigned num_photons  = std::abs(num_photons_);  
+        bool expect = gencode == OpticksGenstep_TORCH || gencode == OpticksGenstep_FRAME ; 
+
+        if(!expect) LOG(error) 
+            << "unexpected gencode " << gencode 
+            << " OpticksGenstep_::Name " << OpticksGenstep_::Name(gencode) ; 
+
+        assert(expect);
+        //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
+        
+        double u0, u1 ; 
+        double phi, sinPhi,   cosPhi ; 
+        double sinTheta, cosTheta ; 
+
+        for(unsigned j=0 ; j < num_photons ; j++)
+        {   
+            u0 = num_photons_ < 0 ? double(j)/double(num_photons-1) : rng() ;
+
+            phi = 2.*M_PIf*u0 ;     // azimuthal 0->2pi 
+            ssincos(phi,sinPhi,cosPhi);  
+            
+            // cosTheta sinTheta are only used for 3D (not 2D planar gensteps)
+            u1 = rng(); 
+            cosTheta = u1 ; 
+            sinTheta = sqrtf(1.0-u1*u1);
+
+            float4 ori ; // copy position from genstep, historically has been origin   
+            ori.x = gs.q1.f.x ;
+            ori.y = gs.q1.f.y ;
+            ori.z = gs.q1.f.z ;
+            ori.w = 1.f ; // <-- dont copy the "float" gsid 
+
+            float4 dir ; 
+            SetGridPlaneDirection(dir, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );  
+
+            // transform photon position and direction into the genstep frame
+            qt.right_multiply_inplace( ori, 1.f );  // position 
+            qt.right_multiply_inplace( dir, 0.f );  // direction
+
+            unsigned char ucj = (j < 255 ? j : 255 ) ;  // photon index local to the genstep
+            gsid.c4.w = ucj ;     // setting C4U union element to change gsid.u 
+
+            unsigned identity = gsid.u ;   // include photon index IW with the genstep coordinate
+
+            quad4& p = simtrace[count] ; 
+            p.zero(); 
+
+            if(simtrace_layout)  // follow layout of sevent::add_simtrace
+            {
+                p.q0.f = {0.f,0.f,0.f,0.f} ;   // intersect normal and distance
+                p.q1.f = {0.f,0.f,0.f,0.f} ;   // intersect position
+                p.q2.f = ori ;   // initial position
+                p.q3.f = dir ;   // initial direction 
+                p.q3.u.w = identity ;   
+            } 
+            else
+            {
+                p.q0.f = ori ; 
+                p.q1.f = dir ; 
+                p.q2.f = {0.f,0.f,0.f,0.f} ;
+                p.q3.f = {0.f,0.f,0.f,0.f} ;
+                p.q3.u.w = identity ;   
+            }
+            count += 1 ; 
+        }
+    }
+    LOG(info) << " simtrace.size " << simtrace.size() ; 
+}
 
 
 

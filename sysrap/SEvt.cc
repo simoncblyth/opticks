@@ -262,6 +262,9 @@ void SEvt::setFrame(const sframe& fr )
         NP* gs = SFrameGenstep::MakeCenterExtentGensteps(frame);  
         LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ; 
         addGenstep(gs); 
+
+        if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace(); 
+
     }   
     else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
     {   
@@ -287,6 +290,36 @@ void SEvt::setFrame(const sframe& fr )
     }   
 }
 
+
+/**
+SEvt::setFrame_HostsideSimtrace
+---------------------------------
+
+Called from SEvt::setFrame when sframe::is_hostside_simtrace, eg at behest of X4Simtrace::simtrace
+
+**/
+
+void SEvt::setFrame_HostsideSimtrace()
+{
+    unsigned num_photon_gs = getNumPhotonFromGenstep(); 
+    unsigned num_photon_evt = evt->num_photon ; 
+    LOG(error) 
+         << "frame.is_hostside_simtrace" 
+         << " num_photon_gs " << num_photon_gs
+         << " num_photon_evt " << num_photon_evt
+         ;
+    
+    assert( num_photon_gs == num_photon_evt ); 
+    setNumSimtrace( num_photon_gs ); 
+
+    LOG(info) << " before hostside_running_resize simtrace.size " << simtrace.size() ; 
+
+    hostside_running_resize(); 
+
+    LOG(info) << " after hostside_running_resize simtrace.size " << simtrace.size() ; 
+
+    SFrameGenstep::GenerateSimtracePhotons( simtrace, genstep );
+}
 
 void SEvt::setGeo(const SGeo* cf_)
 {
@@ -427,6 +460,7 @@ void SEvt::clear()
     prd.clear(); 
     tag.clear(); 
     flat.clear(); 
+    simtrace.clear(); 
 
     if(fold) fold->clear(); 
 
@@ -530,7 +564,7 @@ sgs SEvt::addGenstep(const quad6& q_)
         int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
         q.set_matline(matline); 
 
-        LOG(LEVEL) 
+        LOG(debug) 
             << " matline_ " << matline_ 
             << " mtindex " << mtindex
             << " matline " << matline
@@ -549,7 +583,7 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     int tot_photon = s.offset+s.photons ; 
 
-    if(enabled) LOG(LEVEL) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
+    if(enabled) LOG(debug) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
 
     if( tot_photon != evt->num_photon )
     {
@@ -577,9 +611,6 @@ void SEvt::setNumPhoton(unsigned num_photon)
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
     if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
     assert( num_photon_allowed );
-    LOG(LEVEL) 
-        << " num_photon " << num_photon 
-        ;  
 
     evt->num_photon = num_photon ; 
     evt->num_seq    = evt->max_seq   > 0 ? evt->num_photon : 0 ;
@@ -590,7 +621,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
 
-    LOG(LEVEL)
+    LOG(debug)
         << " evt->num_photon " << evt->num_photon
         << " evt->num_tag " << evt->num_tag
         << " evt->num_flat " << evt->num_flat
@@ -676,6 +707,12 @@ void SEvt::hostside_running_resize()
         flat.resize(evt->num_flat); 
         evt->flat = flat.data() ; 
     }
+    if(evt->num_simtrace > 0) 
+    {
+        simtrace.resize(evt->num_simtrace); 
+        evt->simtrace = simtrace.data() ; 
+    }
+
 
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
@@ -1157,6 +1194,17 @@ NP* SEvt::gatherFlat() const
     p->read2( (float*)evt->flat ); 
     return p ; 
 } 
+NP* SEvt::gatherSimtrace() const 
+{ 
+    if( evt->simtrace == nullptr ) return nullptr ; 
+    NP* p = makeSimtrace(); 
+    p->read2( (float*)evt->simtrace ); 
+    return p ; 
+}
+
+
+
+
 
 
 NP* SEvt::makePhoton() const 
@@ -1205,7 +1253,10 @@ NP* SEvt::makeFlat() const
     assert( sizeof(sflat) == sizeof(float)*sflat::SLOTS ); 
     return NP::Make<float>( evt->num_photon, sflat::SLOTS );   // 
 }
-
+NP* SEvt::makeSimtrace() const 
+{
+    return NP::Make<float>( evt->num_simtrace, 4, 4 ); 
+}
 
 
 
@@ -1275,13 +1326,6 @@ NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS
     assert(0); 
     return nullptr ; 
 }
-NP* SEvt::gatherSimtrace() const  // WOULD BE NICE TO BE ABLE TO Simtrace HOSTSIDE WITH G4Navigator : but not straightforward
-{ 
-    LOG(fatal) << " not yet implemented for hostside running : getting this error indicates CompMask mixup " ; 
-    assert(0); 
-    return nullptr ; 
-}
-
 
 
 
@@ -1357,7 +1401,7 @@ SEvt::gather
 Collects the components configured by SEventConfig::CompMask
 into NPFold from the SCompProvider which can either be:
 
-* this SEvt instance for hostside running, eg U4RecorderTest
+* this SEvt instance for hostside running, eg U4RecorderTest, X4SimtraceTest
 * the qudarap/QEvent instance for deviceside running, eg G4CXSimulateTest
 
 **/

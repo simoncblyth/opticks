@@ -17,6 +17,7 @@ SIZE = np.array([1280, 720])
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
 XDIST = efloat_("XDIST", "200")
+FOCUS = eary_("FOCUS", "0,0,0")
 
 
 def pvplt_simple(pl, xyz, label):
@@ -27,6 +28,27 @@ def pvplt_simple(pl, xyz, label):
     """
     pl.add_text( "pvplt_simple %s " % label, position="upper_left")
     pl.add_points( xyz, color="white" )     
+
+
+def mpplt_focus(xlim, ylim):
+    aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
+    print("xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
+    if not np.all(FOCUS == 0): 
+        center = FOCUS[:2] 
+        extent = FOCUS[2] if len(FOCUS) > 2 else 100 
+        diagonal  = np.array([extent*aspect, extent])
+        botleft = center - diagonal
+        topright = center + diagonal
+        print("botleft:%s" % str(botleft))
+        print("topright:%s" % str(topright))
+        xlim = np.array([botleft[0], topright[0]])
+        ylim = np.array([botleft[1], topright[1]])
+    else:
+        pass
+    pass
+    return xlim, ylim 
+
+
 
 
 def pvplt_viewpoint(pl, reset=False):

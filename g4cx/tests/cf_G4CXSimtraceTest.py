@@ -17,6 +17,7 @@ from opticks.CSG.Values import Values
 from opticks.ana.eget import efloatarray_, efloatlist_
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.ana.framegensteps import FrameGensteps
+from opticks.ana.pvplt import mpplt_focus
 
 import matplotlib.pyplot as mp
 
@@ -77,10 +78,6 @@ if __name__ == '__main__':
     print("U_OFFSET: %s " % repr(u_offset))
     print("V_OFFSET: %s " % repr(v_offset))
 
-    #aa = {}
-    #aa[X] = efloatlist_("XX")
-    #aa[Y] = efloatlist_("YY")
-    #aa[Z] = efloatlist_("ZZ")
 
     s_hit = s.simtrace[:,0,3]>0 if not s is None else None
     t_hit = t.simtrace[:,0,3]>0 if not t is None else None
@@ -99,7 +96,6 @@ if __name__ == '__main__':
 
     fig, ax = mp.subplots(figsize=SIZE/100.)
     fig.suptitle("\n".join(title))
-
     ax.set_aspect('equal')
 
     if not frame is None and not lim is None:
@@ -108,23 +104,7 @@ if __name__ == '__main__':
 
         xlim = lim[H] 
         ylim = lim[V]
-        aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
-           
-        print("xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
-
-        if not np.all(FOCUS == 0):
-            center = FOCUS[:2] 
-            extent = FOCUS[2] if len(FOCUS) > 2 else 100
-            diagonal  = np.array([extent*aspect, extent])
-            botleft = center - diagonal
-            topright = center + diagonal
-            print("botleft:%s" % str(botleft))
-            print("topright:%s" % str(topright))
-            xlim = np.array([botleft[0], topright[0]])
-            ylim = np.array([botleft[1], topright[1]])
-        else:
-            pass
-        pass
+        xlim, ylim = mpplt_focus(xlim, ylim)
 
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
