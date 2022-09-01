@@ -4,7 +4,6 @@ X4Simtrace : aiming to replace X4Intersect
 =============================================
 
 **/
-
 #include <cstring>
 #include "plog/Severity.h"
 #include "sframe.h"
@@ -32,12 +31,9 @@ struct X4_API X4Simtrace
 
 inline X4Simtrace::X4Simtrace()
     :
-    geom(ssys::getenvvar("GEOM", "nmskSolidMaskTail" )),  
+    geom(ssys::getenvvar("GEOM", "nmskSolidMaskTail")),  
     solid(nullptr), 
     evt(nullptr)
 {
 }
-
-
-
 

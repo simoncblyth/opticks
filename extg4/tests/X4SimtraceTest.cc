@@ -2,7 +2,7 @@
 X4SimtraceTest
 ======================
 
-Used from script extg4/xxs0.sh 
+Used from script extg4/x4t.sh 
 
 **/
 #include "OPTICKS_LOG.hh"
@@ -15,13 +15,15 @@ int main(int argc, char** argv)
 
     X4Simtrace t ;
 
-    // not encapsulated as do not want x4 to depend on PMTSim, only the tests 
+    // Access to solids is not encapsulated as do not want x4 
+    // to depend on PMTSim (which is JUNO specific). 
+    // Only a few tests depend on PMTSim.
+
     const G4VSolid* solid = X4_GetSolid(t.geom); 
     if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for geom " << t.geom  ; 
     assert( solid );   
+
     t.setSolid(solid); 
-
-
     t.simtrace(); 
     t.saveEvent() ; 
 

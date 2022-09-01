@@ -22,14 +22,17 @@ EOU
 defarg="ana"
 arg=${1:-$defarg}
 
-opt=U0
-#opt=U1
+#opt=U0
+opt=U1
 OPT=${OPT:-$opt}
 
-#export S_GEOM=nmskSolidMask__$OPT
+export S_GEOM=nmskSolidMask__$OPT
 export T_GEOM=nmskSolidMaskTail__$OPT
-export U_GEOM=nmskTailInner__$OPT
-export V_GEOM=nmskTailOuter__$OPT
+#export U_GEOM=nmskTailInner__$OPT
+#export V_GEOM=nmskTailOuter__$OPT
+
+focus=257,-39,7
+export FOCUS=${FOCUS:-$focus}
 
 geom=""
 vars="S_GEOM T_GEOM U_GEOM V_GEOM"

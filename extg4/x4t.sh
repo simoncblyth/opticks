@@ -12,14 +12,8 @@ can be used with x4t.sh outputs.
 
 EOU
 }
-
-
-export GRIDSCALE=0.1  ## HMM need to align the defaults used by gxt.sh and x4t.sh 
-
-
 export X4Simtrace=INFO 
 export SEvt=INFO 
-
 
 arg=${1:-run_ana}
 
@@ -29,17 +23,7 @@ log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
-
 export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
-
-
-export S_GEOM=nmskSolidMask
-export T_GEOM=nmskSolidMaskTail
-
-export S_FOLD=/tmp/$USER/opticks/$S_GEOM/$bin/ALL
-export T_FOLD=/tmp/$USER/opticks/$T_GEOM/$bin/ALL
-
-
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE arg bin GEOM FOLD"

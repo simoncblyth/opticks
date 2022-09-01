@@ -5,13 +5,12 @@
 #include "x4solid.h"
 #include "PLOG.hh"
 
-
 const plog::Severity X4Simtrace::LEVEL = PLOG::EnvLevel("X4Simtrace", "DEBUG"); 
 
 void X4Simtrace::setSolid(const G4VSolid* solid_)
 {
-    solid = solid_ ; 
     LOG(LEVEL) ; 
+    solid = solid_ ; 
     x4solid::GetCenterExtent(frame.ce, solid );   
 }
 
@@ -42,8 +41,7 @@ void X4Simtrace::simtrace()
          quad4& p = evt->simtrace[i] ; 
          x4solid::Simtrace(p, solid, dump);  
     }
-
-    evt->gather(); 
+    //evt->gather();  SEvt::save will do this automatically 
 }
 
 void X4Simtrace::saveEvent()
@@ -51,5 +49,4 @@ void X4Simtrace::saveEvent()
     LOG(LEVEL) ; 
     evt->save();  
 }
-
 

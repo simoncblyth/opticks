@@ -14,23 +14,7 @@ from opticks.sysrap.sframe import sframe , X, Y, Z
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    ## HMM: multi fold loading can live inside Fold.MultiLoad 
-    symbols = "s t".split()
-    ff = []
-    for symbol in symbols:
-        ekey = "$%s_FOLD" % symbol.upper() 
-        geom = os.environ.get("%s_GEOM" % symbol.upper(), None)
-        print("ekey %s " % ekey )
-
-        if not geom is None:
-            f = Fold.Load(ekey, symbol=symbol )
-            setattr(builtins, symbol, f)
-            setattr(builtins, "%s_geom" % symbol, geom)
-            ff.append(f)
-            print(repr(f))
-        pass
-    pass
-
+    ff = Fold.MultiLoad()
 
     frs = list(filter(None, map(lambda f:f.sframe, ff)))
     assert len(frs) > 0
@@ -44,13 +28,10 @@ if __name__ == '__main__':
     t_pos = t.simtrace[t_hit][:,1,:3]
 
 
-
     fig, ax = fr.mp_subplots(mp)  
-
 
     fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
     fr.mp_scatter(t_pos, label="%s" % t_geom, s=1 )
-
 
     ax.legend()
     fig.show()

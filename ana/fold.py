@@ -2,10 +2,7 @@
 
 import os, sys, logging, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
-
 from opticks.sysrap.sframe import sframe
-
-
 
 CMDLINE = " ".join(sys.argv)
 
@@ -13,6 +10,33 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 class Fold(object):
+
+    @classmethod
+    def MultiLoad(cls, symbols=None):
+        if symbols is None:
+            symbols = os.environ.get("SYMBOLS", "S,T").split(",")
+        pass
+        print("symbols:%s " % str(symbols))
+        ff = []
+        for symbol in symbols:
+            ekey = "$%s_FOLD" % symbol.upper() 
+            geom = os.environ.get("%s_GEOM" % symbol.upper(), None)
+            setattr(builtins, "%s_geom" % symbol.lower(), geom)
+            print("symbol %s ekey %s geom %s " % (symbol,ekey, geom)) 
+            if not geom is None:
+                f = Fold.Load(ekey, symbol=symbol.lower() )
+                ff.append(f)
+            else:
+                f = None 
+            pass
+            setattr(builtins, symbol.lower(), f)
+            pass
+        pass
+        for f in ff:
+            print(repr(f))
+        pass
+        return ff
+
 
     @classmethod
     def IsQuiet(cls, **kwa):
