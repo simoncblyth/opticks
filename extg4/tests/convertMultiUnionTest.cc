@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     const char* geom = SSys::getenvvar("GEOM", geom_default ); 
 
     std::string meta ; 
-    const G4VSolid* solid = X4SolidMaker::Make(geom, meta); 
+    const G4VSolid* solid = X4SolidMaker::Make(geom, &meta); 
     const G4MultiUnion* mun = dynamic_cast<const G4MultiUnion*>( solid ); 
 
     if( mun == nullptr )

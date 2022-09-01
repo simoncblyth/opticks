@@ -79,8 +79,9 @@ set(SOURCES
 
     X4Gen.cc
     X4.cc
-    X4geomdefs.cc
     X4Intersect.cc
+    X4Simtrace.cc
+
     X4SolidMaker.cc
     X4VolumeMaker.cc
 
@@ -152,10 +153,14 @@ set(HEADERS
 
     X4Gen.hh
     X4.hh
-    X4geomdefs.hh
     X4Intersect.hh
+    X4Simtrace.hh
+
     X4SolidMaker.hh
     X4VolumeMaker.hh
+
+    x4geomdefs.h
+    x4solid.h
 
 
     X4Named.hh

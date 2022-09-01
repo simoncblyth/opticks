@@ -48,10 +48,13 @@ Will need to look at constituents, add the below to gc:mtranslate.sh::
 
 
 
-TODO : use extg4/xxs.sh to get the Geant4 view on this nmsk solids
+WIP: use extg4/xxs.sh to get the Geant4 view on this nmsk solids
 ---------------------------------------------------------------------- 
 
 * will need to update extg4/tests/X4IntersectSolidTest.cc to the gxt way of doing things
+
+* :doc:`xxs_revival_for_Geant4_reference_intersects`
+
 
 started with::
 

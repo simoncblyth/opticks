@@ -99,12 +99,7 @@ bool X4SolidMaker::CanMake(const char* qname) // static
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
 
-const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
-{
-    std::string meta ; 
-    return X4SolidMaker::Make(qname, meta); 
-}
-const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // static
+const G4VSolid* X4SolidMaker::Make(const char* qname, std::string* meta )  // static
 {
     if(strcmp(qname, "NAMES") == 0 )
     {
@@ -201,7 +196,7 @@ const G4VSolid* X4SolidMaker::SphereWithPhiCutDEV(const char* name)  // static
 
 
 
-const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name, std::string& meta )  // static
+const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name, std::string* meta )  // static
 {
     const char* radiusMode = SSys::getenvvar("X4SolidMaker_GeneralSphereDEV_radiusMode"); 
     double innerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_innerRadius", 50.f) ;    // mm
@@ -218,21 +213,24 @@ const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name, std::string& me
     double thetaDelta  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaDelta",  0.5f) ;
 
 
-    NP::SetMeta<std::string>( meta, "creator", "X4SolidMaker::GeneralSphereDEV" );  
-    NP::SetMeta<std::string>( meta, "name",    name );  
+    if(meta)
+    {
+        NP::SetMeta<std::string>( *meta, "creator", "X4SolidMaker::GeneralSphereDEV" );  
+        NP::SetMeta<std::string>( *meta, "name",    name );  
 
-    NP::SetMeta<std::string>( meta, "radiusMode", radiusMode ); 
-    NP::SetMeta<float>( meta, "innerRadius", float(innerRadius) ); 
-    NP::SetMeta<float>( meta, "outerRadius", float(outerRadius) ); 
+        NP::SetMeta<std::string>( *meta, "radiusMode", radiusMode ); 
+        NP::SetMeta<float>( *meta, "innerRadius", float(innerRadius) ); 
+        NP::SetMeta<float>( *meta, "outerRadius", float(outerRadius) ); 
 
-    NP::SetMeta<std::string>( meta, "phiMode", phiMode ); 
-    NP::SetMeta<float>( meta, "phiStart", float(phiStart) ); 
-    NP::SetMeta<float>( meta, "phiDelta", float(phiDelta) ); 
+        NP::SetMeta<std::string>( *meta, "phiMode", phiMode ); 
+        NP::SetMeta<float>( *meta, "phiStart", float(phiStart) ); 
+        NP::SetMeta<float>( *meta, "phiDelta", float(phiDelta) ); 
 
-    NP::SetMeta<std::string>( meta, "thetaMode", thetaMode ); 
-    NP::SetMeta<float>( meta, "thetaStart", float(thetaStart) ); 
-    NP::SetMeta<float>( meta, "thetaDelta", float(thetaDelta) ); 
- 
+        NP::SetMeta<std::string>( *meta, "thetaMode", thetaMode ); 
+        NP::SetMeta<float>( *meta, "thetaStart", float(thetaStart) ); 
+        NP::SetMeta<float>( *meta, "thetaDelta", float(thetaDelta) ); 
+    }
+     
 
     G4String pName = name ; 
     G4double pRmin = innerRadius*mm ; 

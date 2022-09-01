@@ -148,16 +148,15 @@ void G4CXOpticks::setGeometry()
     else if(SOpticksResource::CFBaseFromGEOM())
     {
         LOG(LEVEL) << "[ CFBASEFromGEOM " ; 
+
         LOG(LEVEL) << "[ CSGFoundry::Load " ; 
-
         CSGFoundry* cf = CSGFoundry::Load() ;
-
         LOG(LEVEL) << "] CSGFoundry::Load " ; 
+
         LOG(LEVEL) << "[ setGeometry(cf)  " ; 
-
         setGeometry(cf); 
-
         LOG(LEVEL) << "] setGeometry(cf)  " ; 
+
         LOG(LEVEL) << "] CFBASEFromGEOM " ; 
     }
     else if(SSys::hasenvvar("GEOM"))

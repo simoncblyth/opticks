@@ -259,7 +259,9 @@ void SEvt::setFrame(const sframe& fr )
 
     if(SEventConfig::IsRGModeSimtrace())
     {   
-        addGenstep( SFrameGenstep::MakeCenterExtentGensteps(frame) );  
+        NP* gs = SFrameGenstep::MakeCenterExtentGensteps(frame);  
+        LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ; 
+        addGenstep(gs); 
     }   
     else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
     {   
@@ -525,7 +527,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     if(matline_ >= G4_INDEX_OFFSET )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ; 
-        int matline = cf->lookup_mtline(mtindex);
+        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
         q.set_matline(matline); 
 
         LOG(LEVEL) 

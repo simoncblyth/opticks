@@ -19,14 +19,14 @@ This can be done with::
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* X4_GetSolid(const char* geom, std::string& meta)
+const G4VSolid* X4_GetSolid(const char* geom, std::string* meta=nullptr )
 {
     const char* name = SStr::HeadFirst(geom, '_');  // HMM: string up to first '_'
 
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(name))
     {
-        solid = X4SolidMaker::Make(name, meta ); 
+        solid = X4SolidMaker::Make(name, meta); 
     }
     else
     {

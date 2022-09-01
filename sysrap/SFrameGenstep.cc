@@ -123,6 +123,10 @@ To switch off CE scaling set CE_SCALE envvar to "0"
 HMM as the typical CEGS is 16:0:9:500 to conform to standard aspect 
 ratio GRIDSCALE of 0.1 is more resonable than 1 ? 
 
+The sframe argument is used for its *ce* and the details
+of the grid config are saved into the sframe 
+which makes the config available from python. 
+
 **/
 
 
@@ -246,6 +250,10 @@ ie the single local XZ plane becomes lots of planes in global frame as the local
 When using reverse=false get all the tilts the same so local XZ single plane stays one plane in the global 
 frame as are doing the local_translate first. 
 
+The *high = cegs[7]* parameter is normally 1.  For high resolution regions it is 2/3/4 
+which multiplies the grid points and divides the gridscale. 
+This allows high resolution regions without changes to indexing. 
+
 **/
 
 NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) // static
@@ -255,16 +263,9 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
 
     assert( cegs.size() == 8 );
 
- /**
-    Want to use *high( to increase resolution .. but want to keep using single input indexing ? 
-    Hmm interpret high=2 to mean double the points and half the gridscale ?
- **/
-
     int high = cegs[7] ; 
     assert( high == 1 || high == 2 || high == 3 || high == 4 ); 
-
     double scale = double(gridscale)/double(high) ; 
-
 
     int ix0 = cegs[0]*high ;
     int ix1 = cegs[1]*high ;
@@ -349,11 +350,6 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
 
 
 
-
-
-
-
-
 /**
 SFrameGenstep::StandardizeCEGS
 --------------------------------
@@ -372,12 +368,11 @@ nx:ny:nz:num_photons
 nx:ny:nz:dx:dy:dz:num_photons
      offset grid -nx+dx:nx+dx, -ny+dy:ny+dy, -nz+dz:nz+dz  
 
-ix0:iy0:iz0:ix1:iy1:iz1:num_photons 
+ix0:iy0:iz0:ix1:iy1:iz1:num_photons:high
      standardized absolute form of grid specification 
-     (NOT used as an input layout)
-
-Notice that currently cannot distinguish between the two 7 elem layouts
-so have to say that the final absolute layout cannot be used as input form
+     This eight element form is now also be used as an
+     input config when wishing to increase resolution with 
+     the "high" 8th element cegs[7]. 
 
 **/
 
@@ -431,7 +426,7 @@ void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static
     cegs[4] = iz0 ;
     cegs[5] = iz1 ;
     cegs[6] = photons_per_genstep ;
-    cegs[7] = 1 ;   // fine 
+    cegs[7] = 1 ;   // high 
 
     //  +---+---+---+---+
     // -2  -1   0   1   2

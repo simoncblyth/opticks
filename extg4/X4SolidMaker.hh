@@ -21,8 +21,7 @@ struct X4_API X4SolidMaker
     static G4VSolid* PrimitiveClone( const G4VSolid* src, const char* prefix, unsigned idx); 
 
     static bool  CanMake(const char* name); 
-    static const G4VSolid* Make(const char* name); 
-    static const G4VSolid* Make(const char* name, std::string& meta ); 
+    static const G4VSolid* Make(const char* name, std::string* meta=nullptr ); 
 
     static G4double Sagitta( G4double radius, G4double chord ); 
     static G4double SagittaMax( G4double radius, G4double sy, G4double sz ); 
@@ -41,7 +40,7 @@ struct X4_API X4SolidMaker
 
     static const G4VSolid* SphereIntersectBox(const char* name); 
     static const G4VSolid* SphereWithPhiCutDEV(const char* name); 
-    static const G4VSolid* GeneralSphereDEV(const char* name, std::string& meta );
+    static const G4VSolid* GeneralSphereDEV(const char* name, std::string* meta );
     static const G4VSolid* SphereWithPhiSegment(const char* name); 
     static const G4VSolid* SphereWithThetaSegment(const char* name); 
     static const G4VSolid* AdditionAcrylicConstruction(const char* name);

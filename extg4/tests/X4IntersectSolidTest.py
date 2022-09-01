@@ -7,7 +7,7 @@ X4IntersectSolidTest.py : 2D scatter plots of geometry intersect positions
 
 For debugging::
 
-    ${IPYTHON:-ipython} -i tests/X4IntersectSolidTest.py
+    ${IPYTHON:-ipython} --pdb -i tests/X4IntersectSolidTest.py
 
 * can be adapted to allow comparison of intersect positions loaded from multiple input Fold 
 

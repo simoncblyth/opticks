@@ -7,6 +7,7 @@ find_package(PMTSim CONFIG)
 
 set(PMTSIM_TEST_SOURCES
     X4IntersectSolidTest.cc 
+    X4SimtraceTest.cc 
     X4IntersectVolumeTest.cc 
     X4MeshTest.cc
     X4VolumeMakerTest.cc 

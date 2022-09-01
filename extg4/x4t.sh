@@ -1,23 +1,31 @@
 #!/bin/bash -l
 usage(){ cat << EOU
-xxs0.sh : reboot of xxs.sh using X4Intersect::Scan
+x4t.sh : reboot of xxs.sh using X4Simtrace 
 ======================================================
+
+Aiming to follow gxt.sh such that the gxt.sh python machinery 
+can be used with x4t.sh outputs. 
 
 EOU
 }
 
 
-export GRIDSCALE=0.1  ## HMM need to align the defaults used by gxt.sh and xxs0.sh 
+export GRIDSCALE=0.1  ## HMM need to align the defaults used by gxt.sh and x4t.sh 
 
 
+export X4Simtrace=INFO 
+export SEvt=INFO 
 
 
 arg=${1:-run_ana}
 
-bin=X4IntersectSolidTest
+#bin=X4IntersectSolidTest
+bin=X4SimtraceTest
 log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
+unset OPTICKS_INPUT_PHOTON 
+
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE arg bin GEOM"
@@ -39,7 +47,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi  
 
 if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/X4IntersectSolidTest.py 
+    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana interactive error && exit 3
 fi 
 

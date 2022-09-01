@@ -19,8 +19,7 @@ void test_CanMake()
 void test_Make(const char* qname_)
 {
     const char* qname = qname_ ? qname_ : "UnionOfHemiEllipsoids-10" ;
-    std::string meta ; 
-    const G4VSolid* solid = X4SolidMaker::Make( qname, meta  ); 
+    const G4VSolid* solid = X4SolidMaker::Make( qname ); 
     LOG(info) << " qname " << qname << " solid " << solid ;  
 }
 

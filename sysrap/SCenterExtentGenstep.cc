@@ -22,8 +22,7 @@ void SCenterExtentGenstep::save() const
 }
 void SCenterExtentGenstep::save(const char* dir) const
 {
-    int create_dirs = 2 ; // 2:dirpath
-    const char* fold = SPath::Resolve(dir, create_dirs);  
+    const char* fold = SPath::Resolve(dir, DIRPATH);  
     
     LOG(info) << " saving to " << fold ; 
     gs->save(fold, "gs.npy" ); 
@@ -94,7 +93,7 @@ void SCenterExtentGenstep::init()
     int iz0 = cegs[4] ;
     int iz1 = cegs[5] ;
     int photons_per_genstep = cegs[6] ;
-    int fine = cegs[7] ; 
+    int high = cegs[7] ; 
 
 
     nx = (ix1 - ix0)/2 ;
@@ -108,7 +107,7 @@ void SCenterExtentGenstep::init()
         << " nz " << nz
         << " GridAxes " << gridaxes
         << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
-        << " fine " << fine
+        << " high " << high
         ;
 
     peta->q0.i.x = ix0 ;

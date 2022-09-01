@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     if( qname == nullptr ) return 0 ; 
 
     std::string meta ; 
-    const G4VSolid* solid = X4SolidMaker::Make( qname, meta ); 
+    const G4VSolid* solid = X4SolidMaker::Make( qname, &meta ); 
     assert( solid ); 
     if(!meta.empty()) LOG(info) << meta ; 
 

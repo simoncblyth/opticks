@@ -8,14 +8,30 @@
 #include "scuda.h"
 #include "squad.h"
 
+#include "SSys.hh"
 #include "SDirect.hh"   // cout_redirect cerr_redirect 
 #include "SPath.hh"
 #include "SCenterExtentGenstep.hh"
 
-#include "X4geomdefs.hh"
 #include "X4Intersect.hh"
+
+#include "x4geomdefs.h"
+#include "x4solid.h"
+
+
 #include "PLOG.hh"
 
+
+const bool X4Intersect::VERBOSE = SSys::getenvbool("VERBOSE") ; 
+
+
+/**
+X4Intersect::Scan
+-------------------
+
+Used from tests/X4IntersectSolidTest.cc which is used by xxs.sh 
+
+**/
 
 void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* basedir )  // static
 {
@@ -26,8 +42,7 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
 
     const std::string& solidname = solid->GetName() ; 
 
-    int createdirs = 2 ; // 2:dirpath 
-    const char* outdir = SPath::Resolve(basedir, name, "X4Intersect", createdirs);
+    const char* outdir = SPath::Resolve(basedir, name, "X4Intersect", DIRPATH );
 
     LOG(info) 
         << "x4i.desc " << x4i->desc() 
@@ -46,35 +61,27 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
 X4Intersect::X4Intersect( const G4VSolid* solid_  )
     :
     solid(solid_), 
-    ce(nullptr),
-    cegs(nullptr)
+    ce(nullptr),   // float4*  
+    cegs(nullptr)  // SCenterExtentGenstep*
 {
     init(); 
 }
 
+/**
+X4Intersect::init
+------------------
+
+Uses G4VSolid::BoundingLimits to determine *ce* center and extent, 
+and uses *ce* to create *cegs* SCenterExtentGenstep instance. 
+
+**/
+
 void X4Intersect::init()
 {
-    G4ThreeVector pMin ; 
-    G4ThreeVector pMax ; 
-    solid->BoundingLimits(pMin, pMax); 
-    G4ThreeVector center = ( pMin + pMax )/2. ;  
-    G4ThreeVector fullside = pMax - pMin ; 
-    G4ThreeVector halfside = fullside/2.  ; 
-    G4double extent = std::max( std::max( halfside.x(), halfside.y() ), halfside.z() ) ;  
-
-    LOG(info) 
-         << " pMin " << pMin 
-         << " pMax " << pMax 
-         << " center " << center 
-         << " fullside " << fullside      
-         << " halfside " << halfside      
-         << " entent " << extent 
-         ;
-
-    ce = new float4(make_float4(center.x(), center.y(), center.z(), extent)) ;  
+    ce = new float4 ; 
+    x4solid::GetCenterExtent( *ce, solid ); 
     cegs = new SCenterExtentGenstep(ce) ; 
 }
-
 
 const char* X4Intersect::desc() const 
 {
@@ -82,95 +89,18 @@ const char* X4Intersect::desc() const
 }
 
 
-G4double X4Intersect::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
-{
-    in =  solid->Inside(pos) ; 
-    G4double t = kInfinity ; 
-    switch( in )
-    {
-        case kInside:  t = solid->DistanceToOut( pos, dir ) ; break ; 
-        case kSurface: t = solid->DistanceToOut( pos, dir ) ; break ; 
-        case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ; 
-        default:  assert(0) ; 
-    }
-    return t ; 
-}
-
-G4double X4Intersect::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
-{
-    in =  solid->InsideNoVoxels(pos) ; 
-    G4double t = kInfinity ; 
-    switch( in )
-    {
-        case kInside:  t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
-        case kSurface: t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
-        case kOutside: t = solid->DistanceToInNoVoxels(  pos, dir ) ; break ; 
-        default:  assert(0) ; 
-    }
-    return t ; 
-}
-
-
-G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
-{
-    EInside in ; 
-
-    const G4MultiUnion* m = dynamic_cast<const G4MultiUnion*>(solid) ; 
-    G4double t = m ? DistanceMultiUnionNoVoxels_(m, pos, dir, in ) : Distance_( solid, pos, dir, in  );  
-
-    if(dump && t != kInfinity)
-    {
-        std::cout 
-            << " pos " 
-            << "(" 
-            << std::fixed << std::setw(10) << std::setprecision(3) << pos.x() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << pos.y() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << pos.z() 
-            << ")"
-            << " dir " 
-            << "(" 
-            << std::fixed << std::setw(10) << std::setprecision(3) << dir.x() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << dir.y() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << dir.z() 
-            << ")"
-            << " in " << X4geomdefs::EInside_(in ) 
-            ;
-
-       if( t == kInfinity)
-       {  
-            std::cout 
-                << " t " << std::setw(10) << "kInfinity" 
-                << std::endl 
-                ; 
-       }
-       else
-       {
-           G4ThreeVector ipos = pos + dir*t ;  
-           std::cout 
-                << " t " << std::fixed << std::setw(10) << std::setprecision(3) << t 
-                << " ipos " 
-                << "(" 
-                << std::fixed << std::setw(10) << std::setprecision(3) << ipos.x() << " "
-                << std::fixed << std::setw(10) << std::setprecision(3) << ipos.y() << " "
-                << std::fixed << std::setw(10) << std::setprecision(3) << ipos.z() 
-                << ")"
-                << std::endl 
-                ; 
-       }
-    }
-    return t ; 
-}
-
-
 /**
-X4Intersect::scan
-------------------
+X4Intersect::scan_
+-------------------
 
-Using the *pp* vector of "photon" positions and directions
+Using the *cegs.pp* vector of "photon" positions and directions
 calulate distances to the solid.  Collect intersections
-into *ss* vector. 
+into *cegs.ii* vector. 
 
-TODO: collect surface normals 
+TODO: 
+
+* adopt simtrace layout, even although some aspects like surface normal 
+  will  be missing from it. This means cegs->pp and cegs->ii will kinda merge 
 
 **/
 
@@ -178,8 +108,8 @@ void X4Intersect::scan_()
 {
     const std::vector<quad4>& pp = cegs->pp ; 
     std::vector<quad4>& ii = cegs->ii ; 
-    bool dump = false ; 
 
+    bool dump = false ; 
     for(unsigned i=0 ; i < pp.size() ; i++)
     {
         const quad4& p = pp[i]; 
@@ -187,7 +117,7 @@ void X4Intersect::scan_()
         G4ThreeVector pos(p.q0.f.x, p.q0.f.y, p.q0.f.z); 
         G4ThreeVector dir(p.q1.f.x, p.q1.f.y, p.q1.f.z); 
 
-        G4double t = Distance( solid, pos, dir, dump );  
+        G4double t = x4solid::Distance( solid, pos, dir, dump );  
 
         if( t == kInfinity ) continue ; 
         G4ThreeVector ipos = pos + dir*t ;  
@@ -208,7 +138,6 @@ void X4Intersect::scan_()
 
 void X4Intersect::scan()
 {
-
     std::stringstream coutbuf;
     std::stringstream cerrbuf;
     {   
@@ -227,11 +156,10 @@ void X4Intersect::scan()
         << " cerr " << strlen(cerr_.c_str()) 
         ;
 
-    /*
-    if(cout_.size() > 0) LOG(info) << "cout from scan " << std::endl << cout_ ; 
-    if(cerr_.size() > 0) LOG(warning) << "cerr from scan "  << std::endl << cerr_ ; 
-    */
+    if(VERBOSE)
+    {
+        if(cout_.size() > 0) LOG(info) << "cout from scan " << std::endl << cout_ ; 
+        if(cerr_.size() > 0) LOG(warning) << "cerr from scan "  << std::endl << cerr_ ; 
+    }
 }
-
-
 
