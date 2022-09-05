@@ -33,7 +33,7 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
     select_prim(nullptr),
     select_nodeOffset(0),
     select_prim_numNode(0),
-    select_root_node(nullptr),
+    select_root_node(nullptr),   // set by selectPrim
     select_root_typecode(CSG_ZERO),
     select_root_subNum(0),
     select_is_tree(true)
@@ -76,11 +76,13 @@ void CSGQuery::selectPrim(unsigned solidIdx, unsigned primIdxRel )
 void CSGQuery::selectPrim( const CSGPrim* pr )
 {
     select_prim = pr ; 
+    select_prim_ce = pr->ce(); 
     select_nodeOffset = pr->nodeOffset() ; 
     select_prim_numNode = pr->numNode() ; 
     select_root_node = node0 + pr->nodeOffset() ; 
     select_root_typecode = select_root_node->typecode(); 
     select_root_subNum = select_root_node->subNum(); 
+
 
 
     select_is_tree = CSG::IsTree((OpticksCSG_t)select_root_typecode) ; 
@@ -171,6 +173,9 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const quad4& p ) const
 
 
 
+
+
+
 /**
 CSGQuery::intersect
 --------------------
@@ -241,6 +246,10 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     }
     return valid_intersect ; 
 }
+
+
+
+
 
 
 /**
@@ -353,6 +362,31 @@ std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_i
     return s ; 
 }
 
+/**
+CSGQuery::simtrace
+--------------------
+
+**/
+
+bool CSGQuery::simtrace( quad4& p ) const 
+{
+    float3* ray_origin = p.v2() ; 
+    float3* ray_direction = p.v3() ; 
+    float t_min = p.q1.f.w ;   
+
+    // the 1st float4 argumnent gives surface normal at intersect and distance 
+    bool valid_intersect = intersect_prim( p.q0.f, select_root_node, plan0, itra0, t_min, *ray_origin, *ray_direction ) ; 
+    if( valid_intersect ) 
+    {
+        float t = p.q0.f.w ; 
+        float3 ipos = (*ray_origin) + t*(*ray_direction) ;   
+        p.q1.f.x = ipos.x ;
+        p.q1.f.y = ipos.y ;
+        p.q1.f.z = ipos.z ;
+        //p.q1.f.w = distance(ipos) ;     // HMM: overwrite of tmin is problematic
+    }
+    return valid_intersect ; 
+}
 
 
 /**

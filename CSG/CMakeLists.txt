@@ -37,6 +37,7 @@ list(APPEND SOURCES
     CSGDraw.cc
     CSGRecord.cc
     CSGSimtraceRerun.cc
+    CSGSimtrace.cc
 
     CSG_LOG.cc
 )
@@ -67,6 +68,7 @@ list(APPEND CSG_HEADERS
     CSGEnum.h
 
     CSGSimtraceRerun.h
+    CSGSimtrace.hh
 
     CSG_LOG.hh 
     CSG_API_EXPORT.hh 

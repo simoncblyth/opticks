@@ -1,26 +1,23 @@
-#!/bin/bash -l
+#!/bin/bash -l 
 usage(){ cat << EOU
-x4t.sh : reboot of xxs.sh using X4SimtraceTest 
-======================================================
+ct.sh : using CSGSimtraceTest
+===============================
 
-Aiming to follow gxt.sh such that the gxt.sh python machinery 
-can be used with x4t.sh outputs. 
+Intent:
 
-See also cf_x4t.sh that loads and plots from multiple fold. 
-
-::
-
-   FOCUS=257,-39,7 ./x4t.sh ana
+1. load single solid GEOM from CSGFoundry folder, normally created by GeoChain/mtranslate.sh 
+2. load center-extent gensteps, just like X4SimtraceTest.cc does 
+3. use CSG intersection headers to get intersect positions using CUDA compatible code on the CPU 
 
 EOU
 }
-export X4Simtrace=INFO 
-export SEvt=INFO 
+
+export CSGSimtrace=INFO
+
 
 arg=${1:-run_ana}
 
-#bin=X4IntersectSolidTest
-bin=X4SimtraceTest
+bin=CSGSimtraceTest
 log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
@@ -44,11 +41,13 @@ if [ "${arg/dbg}" != "$arg" ]; then
         Linux)  gdb__ $bin ;;
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
-fi  
+fi
 
-if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py 
+if [ "${arg/ana}"  != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py
     [ $? -ne 0 ] && echo $BASH_SOURCE ana interactive error && exit 3
-fi 
+fi
 
-exit 0 
+exit 0
+
+

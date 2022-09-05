@@ -31,6 +31,7 @@ set(TEST_SOURCES
     CSGMakerTest.cc
     CSGQueryTest.cc
     CSGSimtraceRerunTest.cc
+    CSGSimtraceTest.cc
     CSGCopyTest.cc
 
     intersect_leaf_phicut_test.cc 

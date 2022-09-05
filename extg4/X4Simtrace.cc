@@ -41,7 +41,8 @@ void X4Simtrace::simtrace()
          quad4& p = evt->simtrace[i] ; 
          x4solid::Simtrace(p, solid, dump);  
     }
-    //evt->gather();  SEvt::save will do this automatically 
+
+
 }
 
 void X4Simtrace::saveEvent()

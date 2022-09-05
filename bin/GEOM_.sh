@@ -57,7 +57,8 @@ geom=nmskSolidMask
 #geom=nmskTailInnerIITube 
 
 
-
+opt=U1
+geom=${geom}__${opt}
 
 export GEOM=${GEOM:-$geom}
 
@@ -102,7 +103,7 @@ else
         hama*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
         nnvt*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
         hmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
-        nmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
+        nmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM ;;
         lchi*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
     esac
 fi 

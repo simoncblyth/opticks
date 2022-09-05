@@ -3,6 +3,8 @@ usage(){ cat << EOU
 cf_x4t.sh
 ===========
 
+See also x4t.sh that loads and plots from a single folder
+
 ::
 
    FOCUS=257,-39,7 ./cf_x4t.sh ana

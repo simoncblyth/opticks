@@ -46,6 +46,8 @@ struct CSG_API CSGQuery
 
     bool intersect( quad4& isect,  float t_min, const quad4& p ) const ;
     bool intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const ;
+
+    bool simtrace( quad4& isect ) const ; 
     bool intersect_again( quad4& isect, const quad4& prev_isect ) const ; 
 
     static bool IsSpurious( const quad4& isect ); 
@@ -58,6 +60,7 @@ struct CSG_API CSGQuery
     const qat4*    itra0 ; 
 
     const CSGPrim* select_prim ;
+    float4         select_prim_ce ; 
     int            select_nodeOffset ; 
     int            select_prim_numNode ;
     const CSGNode* select_root_node ;
