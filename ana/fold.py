@@ -22,7 +22,7 @@ class Fold(object):
             ekey = "$%s_FOLD" % symbol.upper() 
             geom = os.environ.get("%s_GEOM" % symbol.upper(), None)
             setattr(builtins, "%s_geom" % symbol.lower(), geom)
-            print("symbol %s ekey %s geom %s " % (symbol,ekey, geom)) 
+            log.info("symbol %s ekey %s geom %s " % (symbol,ekey, geom)) 
             if not geom is None:
                 f = Fold.Load(ekey, symbol=symbol.lower() )
                 ff.append(f)
@@ -33,7 +33,7 @@ class Fold(object):
             pass
         pass
         for f in ff:
-            print(repr(f))
+            log.info(repr(f))
         pass
         return ff
 

@@ -38,19 +38,19 @@ EOU
 #geom=J003
 #geom=nmskSolidMaskVirtual
 
-geom=nmskSolidMask
+#geom=nmskSolidMask
 #geom=nmskMaskOut
 #geom=nmskMaskIn
 
-#geom=nmskSolidMaskTail
-
+geom=nmskSolidMaskTail
 #geom=nmskTailOuter
+#geom=nmskTailInner
+
 #geom=nmskTailOuterIEllipsoid
 #geom=nmskTailOuterITube
 #geom=nmskTailOuterI
 #geom=nmskTailOuterIITube
 
-#geom=nmskTailInner
 #geom=nmskTailInnerIEllipsoid
 #geom=nmskTailInnerITube
 #geom=nmskTailInnerI

@@ -22,7 +22,14 @@ log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
+
+#export FOCUS=257,-39,7
+
 export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
+export TOPLINE="CSG/ct.sh GEOM $GEOM FOCUS $FOCUS"
+
+
+
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE arg bin GEOM FOLD"

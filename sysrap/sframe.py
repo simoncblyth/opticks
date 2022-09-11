@@ -377,8 +377,15 @@ class sframe(object):
         ylim = self.bbox[:,V]  
         xlim, ylim = mpplt_focus(xlim, ylim)
 
-        fig, ax = mp.subplots(figsize=SIZE/100.)
 
+        topline = os.environ.get("TOPLINE", "sframe.py:mp_subplots")
+        botline = os.environ.get("BOTLINE", "sframe.py:mp_subplots")
+
+        title = [topline, botline, self.thirdline]
+
+        fig, ax = mp.subplots(figsize=SIZE/100.)
+        fig.suptitle("\n".join(title))
+    
         ax.set_aspect('equal')
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
