@@ -24,6 +24,8 @@ struct CSG_API CSGSimtrace
     SSim* sim ; 
     const CSGFoundry* fd ; 
     SEvt* evt ; 
+    const char* outdir ; 
+
     sframe frame ;
     CSGQuery* q ; 
     CSGDraw* d ; 

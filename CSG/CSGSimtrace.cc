@@ -25,6 +25,7 @@ CSGSimtrace::CSGSimtrace()
     sim(SSim::Create()),
     fd(CSGFoundry::Load()),
     evt(new SEvt),
+    outdir(evt->getOutputDir()), 
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z')),
     SELECTION(getenv("SELECTION")),
@@ -41,7 +42,7 @@ void CSGSimtrace::init()
     d->draw("CSGSimtrace");
     frame.set_hostside_simtrace();  
     frame.ce = q->select_prim_ce ; 
-    LOG(LEVEL) << " frame.ce " << frame.ce << " SELECTION " << SELECTION << " num_selection " << num_selection ; 
+    LOG(LEVEL) << " frame.ce " << frame.ce << " SELECTION " << SELECTION << " num_selection " << num_selection << " outdir " << outdir ; 
     evt->setFrame(frame);  
 
     if(selection_simtrace)
@@ -52,7 +53,8 @@ void CSGSimtrace::init()
 
 int CSGSimtrace::simtrace()
 {
-    return qss ? simtrace_selection() : simtrace_all() ; 
+    int num_intersect = qss ? simtrace_selection() : simtrace_all() ; 
+    return num_intersect ; 
 }
 
 int CSGSimtrace::simtrace_all()
@@ -97,7 +99,6 @@ void CSGSimtrace::saveEvent()
     LOG(LEVEL) ; 
     if(num_selection > 0)
     {
-        const char* outdir = evt->getOutputDir(); 
         LOG(LEVEL) 
             << " outdir " << outdir 
             << " num_selection " << num_selection 
@@ -109,6 +110,9 @@ void CSGSimtrace::saveEvent()
     {
         evt->save();  
     }
+
+    q->post(outdir); 
+
 }
 
 

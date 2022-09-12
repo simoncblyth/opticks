@@ -174,6 +174,12 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
 
 
 
+def mpplt_hist(mp, v, bins=100):
+    fig, ax = mp.subplots()                                                                                                                                             
+    ax.hist(v, bins=bins )                                                                                                                               
+    fig.show()                      
+
+
 def get_ellipse_param(elpar):
     """
     :param elpar_: list of up to 7 float

@@ -12,6 +12,11 @@
 #include "CSGRecord.h"
 #endif
 
+#ifdef DEBUG_CYLINDER
+#include "CSGDebug_Cylinder.hh"
+#endif
+
+
 
 #include "OpticksCSG.h"
 
@@ -299,6 +304,14 @@ std::string CSGQuery::Label() // static
     ss << " not-DEBUG_RECORD" ; 
 #endif
 
+#ifdef DEBUG_CYLINDER
+    ss << " DEBUG_CYLINDER" ; 
+#else
+    ss << " not-DEBUG_CYLINDER" ; 
+#endif
+
+
+
     std::string s = ss.str() ; 
     return s ; 
 }
@@ -387,6 +400,20 @@ bool CSGQuery::simtrace( quad4& p ) const
     }
     return valid_intersect ; 
 }
+
+
+void CSGQuery::post(const char* outdir) 
+{
+#ifdef DEBUG_CYLINDER
+    if(outdir)
+    {
+        const std::vector<CSGDebug_Cylinder>& record = CSGDebug_Cylinder::record ; 
+        LOG(info) << " CSGDebug_Cylinder::record.size " << record.size() << " outdir " << outdir ; 
+        CSGDebug_Cylinder::Save(outdir); 
+    }
+#endif
+}
+
 
 
 /**

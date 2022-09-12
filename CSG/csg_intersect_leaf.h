@@ -110,6 +110,9 @@ float __int_as_float(int i)
 #include <csignal>
 #endif
 
+#ifdef DEBUG_CYLINDER
+#include "CSGDebug_Cylinder.hh"
+#endif
 
 
 LEAF_FUNC
@@ -1047,16 +1050,12 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     const float       z1 = q1.f.x  ; 
     const float       z2 = q1.f.y  ; 
 
-
-    //if(fabs(z1) != fabs(z2)) return false ;   
     const float  sizeZ = z2 - z1 ; 
     const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
 
 #ifdef DEBUG_RECORD
     printf("//[intersect_leaf_cylinder radius %10.4f z1 %10.4f z2 %10.4f sizeZ %10.4f \n", radius, z1, z2, sizeZ ); 
 #endif
-
-
     const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame (cylinder origin at base point P)
     const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
     const float3 d = make_float3(0.f, 0.f, sizeZ );   // d: (PQ) cylinder axis vector (not normalized)
@@ -1064,10 +1063,10 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     float rr = radius*radius ; 
     float3 dnorm = normalize(d);  
 
-    float mm = dot(m, m) ; 
-    float nn = dot(n, n) ; 
-    float dd = dot(d, d) ;  
-    float nd = dot(n, d) ;
+    float mm = dot(m, m) ;   //    
+    float nn = dot(n, n) ;   // all 1. when ray_direction normalized
+    float dd = dot(d, d) ;   // sizeZ*sizeZ 
+    float nd = dot(n, d) ;   // dot product of axis vector and ray, ie -0.3/0.3 (for hz 0.15 cyl)
     float md = dot(m, d) ;
     float mn = dot(m, n) ; 
     float k = mm - rr ; 
@@ -1080,7 +1079,6 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     float c = dd*k - md*md ; 
 
     float disc = b*b-a*c;
-
     float t_cand = t_min ; 
 
 
@@ -1095,10 +1093,12 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
 #endif
         if(c > 0.f) return false ;  // ray starts and ends outside cylinder
 
-        float t_PCAP_AX = -mn/nn  ;
-        float t_QCAP_AX = (nd - mn)/nn ;
-         
-        if(md < 0.f )     // ray origin on P side
+
+#ifdef OLD_PRECISION_CHALLENGED
+        float t_PCAP_AX = -mn/nn  ;      
+        float t_QCAP_AX = (nd - mn)/nn ;  
+    
+        if(md < 0.f )     // ray origin on P side  
         {
             t_cand = t_PCAP_AX > t_min ? t_PCAP_AX : t_QCAP_AX ;
         } 
@@ -1111,8 +1111,26 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
             t_cand = nd > 0.f ? t_QCAP_AX : t_PCAP_AX ;  
         }
 
+#else
+        float t_PCAP_AX = copysignf(1.f, ray_direction.z)*(z1 - ray_origin.z) ;  // up/down oriented to match the dot product approach but more simply
+        float t_QCAP_AX = copysignf(1.f, ray_direction.z)*(z2 - ray_origin.z) ;  // up/down oriented to match the dot product approach but more simply
+
+        if(ray_origin.z < z1)
+        {
+            t_cand = t_PCAP_AX > t_min ? t_PCAP_AX : t_QCAP_AX ;
+        }
+        else if( ray_origin.z > z2 )
+        {
+            t_cand = t_QCAP_AX > t_min ? t_QCAP_AX : t_PCAP_AX ;
+        }
+        else              // ray origin inside,   nd > 0 ray along +d towards Q  
+        {
+            t_cand = ray_direction.z > 0.f ? t_QCAP_AX : t_PCAP_AX ;  
+        }
+#endif
+
         unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0u ) ;
-    
+
         bool has_axial_intersect = t_cand > t_min && endcap > 0u ;
 
         if(has_axial_intersect)
@@ -1122,6 +1140,43 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
             isect.y = sign*dnorm.y ; 
             isect.z = sign*dnorm.z ; 
             isect.w = t_cand ;      
+
+#ifdef DEBUG_CYLINDER
+
+            float checkz = ray_origin.z+ray_direction.z*t_cand ; 
+
+
+            CSGDebug_Cylinder dbg = {} ; 
+
+            dbg.ray_origin = ray_origin ;   // 0
+            dbg.rr = rr ; 
+
+            dbg.ray_direction = ray_direction ;  // 1 
+            dbg.k  = k ; 
+
+            dbg.m = m ;     // 2
+            dbg.mm = mm ;  
+
+            dbg.n = n ;     // 3
+            dbg.nn = nn ;  
+
+            dbg.d = d ;     // 4
+            dbg.dd = dd ;  
+
+            dbg.nd = nd ;   // 5 
+            dbg.md = md ; 
+            dbg.mn = mn ; 
+            dbg.checkz = checkz ; 
+
+            dbg.a = a ;    // 6 
+            dbg.b = b ; 
+            dbg.c = c ; 
+            dbg.disc = disc ; 
+
+            dbg.isect = isect ;      // 7 
+
+            CSGDebug_Cylinder::record.push_back(dbg); 
+#endif
         }
 
         return has_axial_intersect ;

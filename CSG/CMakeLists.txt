@@ -39,6 +39,8 @@ list(APPEND SOURCES
     CSGSimtraceRerun.cc
     CSGSimtrace.cc
 
+    CSGDebug_Cylinder.cc
+
     CSG_LOG.cc
 )
     
@@ -69,6 +71,7 @@ list(APPEND CSG_HEADERS
 
     CSGSimtraceRerun.h
     CSGSimtrace.hh
+    CSGDebug_Cylinder.hh
 
     CSG_LOG.hh 
     CSG_API_EXPORT.hh 
@@ -122,11 +125,11 @@ target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 
 
 #[=[
-DEBUG and DEBUG_RECORD preprocessor macros
---------------------------------------------
+DEBUG,DEBUG_RECORD,DEBUG_CYLINDER preprocessor macros
+-------------------------------------------------------
  
-* WARNING : these two DEBUG flags are exceedingly verbose 
-* note that the code will not compile with nvcc when DEBUG_RECORD is enabled, 
+* WARNING : these flags are exceedingly verbose 
+* note that the code will not compile with nvcc when DEBUG_RECORD or DEBUG_CYLINDER are used, 
   due to use of std::vector for example
 * the flags effect critical parts of CSG intersection algorithm 
 * flags are intended for CPU debugging of CUDA compatible code 
@@ -137,6 +140,7 @@ DEBUG and DEBUG_RECORD preprocessor macros
 
 #target_compile_definitions( ${name} PRIVATE DEBUG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
+#target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
 
 
 

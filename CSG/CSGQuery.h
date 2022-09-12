@@ -50,6 +50,8 @@ struct CSG_API CSGQuery
     bool simtrace( quad4& isect ) const ; 
     bool intersect_again( quad4& isect, const quad4& prev_isect ) const ; 
 
+    void post(const char* outdir); 
+
     static bool IsSpurious( const quad4& isect ); 
 
 

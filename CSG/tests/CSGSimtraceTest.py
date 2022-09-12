@@ -16,7 +16,7 @@ import matplotlib.pyplot as mp
 from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
 
-from opticks.ana.pvplt import mpplt_simtrace_selection_line
+from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist
 
 
 if __name__ == '__main__':
@@ -67,10 +67,12 @@ if __name__ == '__main__':
     else:
         sts = None
     pass  
+
     if not sts is None:
         mpplt_simtrace_selection_line(ax, sts, axes=fr.axes, linewidths=2)
     pass
 
+    d = getattr(s, "CSGDebug_Cylinder", None) if not s is None else None
 
 
     if not t is None:

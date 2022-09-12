@@ -339,6 +339,22 @@ struct quad6
 };
 
 
+
+struct quad8
+{ 
+    quad q0 ; 
+    quad q1 ; 
+    quad q2 ; 
+    quad q3 ;
+    quad q4 ;
+    quad q5 ;
+    quad q6 ;
+    quad q7 ;
+};
+
+
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 

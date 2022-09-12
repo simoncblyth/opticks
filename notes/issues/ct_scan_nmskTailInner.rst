@@ -1,6 +1,180 @@
 ct_scan_nmskTailInner
 ========================
 
+
+nmskTailOuterITube and nmskTailOuterITube : checkz has peak at expected place but large cloud
+------------------------------------------------------------------------------------------------
+
+::
+
+    In [1]: mpplt_hist( mp, np.abs(d[:,5,3]), bins=50 )   
+
+
+with fat cylinder nmskTailOuterIITube : the checkz is as expected
+--------------------------------------------------------------------
+
+
+check with fat cylinder::
+
+    geom_  # nmskTailOuterIITube
+    c
+    ./ct.sh 
+
+    In [1]: mpplt_hist( mp, np.abs(d[:,5,3]) )   ## checkz 
+
+    In [2]: np.abs(d[:,5,3])
+    Out[2]: 
+    array([72.099, 72.115, 72.128, 72.095, 72.104, 72.12 , 72.105, 72.111, 72.111, 72.125, 72.104, 72.11 , 72.114, 72.115, 72.116, 72.112, 72.113, 72.114, 72.118, 72.108, 72.113, 72.103, 72.116, 72.104,
+           72.122, 72.106, 72.117, 72.097, 72.104, 72.099, 72.112, 72.097, 72.09 , 72.09 , 72.095, 72.127, 72.123], dtype=float32)
+
+    In [3]: np.abs(d[:,5,3]).min()
+    Out[3]: 72.09011
+
+    In [4]: np.abs(d[:,5,3]).max()
+    Out[4]: 72.12756
+
+
+
+indep endcap intersect
+------------------------
+
+
+::
+
+     856 /**
+     857 intersect_leaf_plane
+     858 -----------------------
+     859 
+     860 * https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
+     861 
+     862 Equation for points p that are in the plane::
+     863 
+     864    (p - p0).n = 0      
+     865 
+     866    p0   : point in plane which is pointed to by normal n vector from origin,  
+     867    p-p0 : vector that lies within the plane, and hence is perpendicular to the normal direction 
+     868    p0.n : d, distance from plane to origin 
+     869 
+     870 
+     871    p = o + t v   : parametric ray equation  
+     872 
+     873    (o + t v - p0).n = 0 
+     874 
+     875    (p0-o).n  = t v.n
+     876 
+     877             (p0 - o).n        d - o.n
+     878        t  = -----------  =   -----------
+     879                v.n              v.n  
+     880 **/
+
+
+::
+
+     +---------------------------+--------I------------------+   z2
+     |                           |        :                  |
+     +                           +        :                  +
+     |                           |        O                  |
+     +---------------------------+---------------------------+   z1
+
+
+     n2 = [0,0,1] 
+     
+            t2 = ( z2 - ray_origin.z )/ray_direction.z  
+ 
+            ray_origin.x*ray_origin.x + ray_origin.y*ray_origin.y > rr 
+
+            t2 = z2 - ray_origin.z 
+            t1 = z1 - ray_origin.z  
+
+
+
+
+::
+
+    1093     // axial ray endcap handling : can treat axial rays in 2d way 
+    1094     if(fabs(a) < 1e-6f)
+    1095     {
+    1096 
+    1097 #ifdef DEBUG_RECORD
+    1098     printf("//intersect_leaf_cylinder : axial ray endcap handling, a %10.4g c(dd*k - md*md) %10.4g dd %10.4g k %10.4g md %10.4g  \n", a, c,dd,k,md );
+    1099 #endif
+    1100         if(c > 0.f) return false ;  // ray starts and ends outside cylinder
+    1101 
+    1102         float t_PCAP_AX = -mn/nn  ;
+    1103         float t_QCAP_AX = (nd - mn)/nn ;
+
+    /// problem not only edges so must be precision loss on these t ?  BUT nn is 1. 
+
+
+Can simply do a checkz on the candidate intersect ?::
+
+    In [32]: d[0,0,:3]+d[0,7,3]*d[0,1,:3]
+    Out[32]: array([-264.155,    0.   ,   -0.323], dtype=float32)
+
+
+
+
+    1104 
+    1105         if(md < 0.f )     // ray origin on P side
+    1106         {
+    1107             t_cand = t_PCAP_AX > t_min ? t_PCAP_AX : t_QCAP_AX ;
+
+    /// HMM: maybe should disqualify the root by setting it to t_min ? no both roots should be in play as t_min could disqualify one 
+
+    1108         }
+    1109         else if(md > dd )  // ray origin on Q side 
+    1110         {
+    1111             t_cand = t_QCAP_AX > t_min ? t_QCAP_AX : t_PCAP_AX ;
+    1112         }
+    1113         else              // ray origin inside,   nd > 0 ray along +d towards Q  
+    1114         {
+    1115             t_cand = nd > 0.f ? t_QCAP_AX : t_PCAP_AX ;
+    1116         }
+    1117 
+    1118         unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0u ) ;
+    1119    
+
+
+
+
+hmm : a simpler ray-cylinder intersection func would be good
+---------------------------------------------------------------
+
+The below approach looks nice but it doesnt handle the endcaps and axial rays 
+which are giving the trouble. 
+
+
+
+* https://math.stackexchange.com/questions/3248356/calculating-ray-cylinder-intersection-points
+
+
+The points at which the ray intersects the cylinder are the only ones on the
+line that are at a distance equal to the radius from the cylinder’s axis. Since
+you’re starting from a description of the cylinder as axis and radius, you can
+use a standard formula for the distance from a point to a line to find these
+points instead of trying to come up with an equation for the cylinder or trying
+to come up with a transformation into some standard configuration.
+
+Let 𝐱(𝑡)=𝐩0+𝑡𝐯
+
+be the parameterization of the ray with the given starting point and direction
+vector. Choose two points 𝐱1 and 𝐱2 on the cylinder’s axis: since that’s also
+defined by a ray (line?) you can choose the origin point of that line for 𝐱1
+and add any convenient multiple of the axis direction vector to it for the
+other. Letting 𝑟 be the cylinder’s radius, the point-line distance formula
+gives following the quadratic equation in 𝑡: |(𝐱(𝑡)−𝐱1)×(𝐱(𝑡)−𝐱2)|2|𝐱1−𝐱2|2=𝑟2.
+
+Expand and solve for 𝑡, rejecting any negative solutions, then compute 𝐱(𝑡) for
+each resulting value of 𝑡. The one with the lesser 𝑡-value is the nearer to the origin of the ray.
+
+For a finite cylinder, you can then project these points onto the cylinder’s
+axis and perform a range check. If you choose for 𝐱1 and 𝐱2 above the two
+points on the cylinder’s axis that bound the cylinder, then if 𝐩 is a solution
+to the infinite intersection, it lies on the bounded cylinder iff
+0≤(𝐩−𝐱1)⋅(𝐱2−𝐱1)≤(𝐱2−𝐱1)⋅(𝐱2−𝐱1).
+
+
+
 issue 2 : manifests with nmskTailOuterITube hz 0.15 mm alone with regularly spaced spills along the length of the cylinder
 ---------------------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +189,7 @@ issue 2 : manifests with nmskTailOuterITube hz 0.15 mm alone with regularly spac
 * SO THE PROBLEM LOOKS TO BE CAUSED BY PRECISION LOSS IN VERY THIN CYLINDER INTERSECTION 
  
   * AND IT APPEARS TO BE IN THE AXIAL SPECIAL CASE 
-  * NOW : I WANT TO COLLECT AXIAL CALC INTERMEDIATES : HIDDEN BEHIND 
+  * COLLECTED AXIAL CALC INTERMEDIATES USING CSGDebug_Cylinder
 
 
 ::
