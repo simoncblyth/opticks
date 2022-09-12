@@ -62,11 +62,16 @@ nmskTailInnerITube
 nmskTailInnerI
 nmskTailInnerIITube 
 
+nmskTailOuterIEllipsoid
+nmskTailOuterITube
+nmskTailOuterI
+nmskTailOuterIITube
+
 EOL
 }
 
 geomlist1(){ cat << EOL | grep -v ^#
-#nmskTailInnerITube
+nmskTailInnerITube
 nmskTailOuterITube
 EOL
 }
@@ -74,7 +79,7 @@ EOL
 
 #opt=__U0
 opt=__U1
-for geom in $(geomlist1) ; do 
+for geom in $(geomlist) ; do 
    echo $BASH_SOURCE geom $geom opt $opt 
    GEOM=${geom}${opt} ./translate.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE translate error for geom $geom && exit 1

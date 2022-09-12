@@ -156,7 +156,7 @@ def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="wh
     pl.add_lines( xseg, color=line_color )
 
 
-def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red", linestyle="dotted" ):
+def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red", linestyle="dotted", label="label:mpplt_add_contiguous_line_segments", s=5 ):
     """
     :param ax: matplotlib 2D axis 
     :param xpos: (n,3) array of positions
@@ -170,7 +170,7 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
     ax.add_collection(lc)
 
     xpos2d = xpos[:,axes]
-    ax.scatter( xpos2d[:,0], xpos2d[:,1], s=3, label="xpos2d" )
+    ax.scatter( xpos2d[:,0], xpos2d[:,1], s=s, label=label )
 
 
 
@@ -289,21 +289,32 @@ def mpplt_simtrace_selection_line(ax, sts, axes, linewidths=2):
     TODO: at dot at pos 
     """
     pass
-    print("mpplt_simtrace_selection_line sts\n", sts)
+    log.info("mpplt_simtrace_selection_line sts\n%s\n" % repr(sts))
+
+    MPPLT_SIMTRACE_SELECTION_LINE = os.environ.get("MPPLT_SIMTRACE_SELECTION_LINE", "o2i,o2i_XDIST,nrm10" )
+    cfg = MPPLT_SIMTRACE_SELECTION_LINE.split(",")
+    log.info("MPPLT_SIMTRACE_SELECTION_LINE %s cfg %s " % (MPPLT_SIMTRACE_SELECTION_LINE, str(cfg)))
 
     colors = ["red","blue"] 
     if sts.ndim in (3,4) and sts.shape[-2:] == (4,4):
         for i in range(len(sts)): 
             jj = list(range(sts.shape[1])) if sts.ndim == 4 else [-1,]
+            log.info(" jj %s " % str(jj))
             for j in jj:
                 isect = sts[i,j] if sts.ndim == 4 else sts[i]
                 color = colors[j%len(colors)]
-                o2i = get_from_simtrace_isect(isect, "o2i")
-                o2i_XDIST = get_from_simtrace_isect(isect, "o2i_XDIST")
-                nrm10 = get_from_simtrace_isect(isect, "nrm10")
-                mpplt_add_contiguous_line_segments(ax, o2i, axes, linewidths=linewidths, colors=color )
-                mpplt_add_contiguous_line_segments(ax, o2i_XDIST, axes, linewidths=linewidths, colors=color )
-                mpplt_add_contiguous_line_segments(ax, nrm10, axes, linewidths=linewidths, colors=color )
+                if "o2i" in cfg:
+                    o2i = get_from_simtrace_isect(isect, "o2i")
+                    mpplt_add_contiguous_line_segments(ax, o2i, axes, linewidths=linewidths, colors=color, label="o2i", s=10 )
+                pass
+                if "o2i_XDIST" in cfg:
+                    o2i_XDIST = get_from_simtrace_isect(isect, "o2i_XDIST")
+                    mpplt_add_contiguous_line_segments(ax, o2i_XDIST, axes, linewidths=linewidths, colors=color, label="o2i_XDIST"  )
+                pass
+                if "nrm10" in cfg: 
+                    nrm10 = get_from_simtrace_isect(isect, "nrm10")
+                    mpplt_add_contiguous_line_segments(ax, nrm10, axes, linewidths=linewidths, colors=color, label="nrm10" )
+                pass     
             pass
         pass
 

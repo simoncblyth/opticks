@@ -1,7 +1,7 @@
 #pragma once
 
 #include "plog/Severity.h"
-#include "ssys.h"
+#include <vector>
 #include "sframe.h"
 
 struct CSGFoundry ; 
@@ -9,7 +9,8 @@ struct SEvt ;
 struct SSim ; 
 struct CSGQuery ; 
 struct CSGDraw ; 
-
+struct NP ; 
+struct quad4 ; 
 
 #include "CSG_API_EXPORT.hh"
 
@@ -27,8 +28,19 @@ struct CSG_API CSGSimtrace
     CSGQuery* q ; 
     CSGDraw* d ; 
 
+    const char* SELECTION ; 
+    std::vector<int>* selection ; 
+    unsigned num_selection ; 
+    NP* selection_simtrace ; 
+    quad4* qss ; 
+
     CSGSimtrace();  
-    void simtrace();
+    void init(); 
+
+    int simtrace();
+    int simtrace_all();
+    int simtrace_selection();
+
     void saveEvent();  
 }; 
 

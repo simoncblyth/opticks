@@ -983,7 +983,7 @@ nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
     return tube ; 
 }
 
-const float X4Solid::hz_disc_cylinder_cut = 1.0f ; // 1mm 
+const float X4Solid::hz_disc_cylinder_cut = 0.1f ; // was 1.0 until sep 11, 2022 : see notes/issues/ct_scan_nmskTailInner.rst
 
 nnode* X4Solid::convertTubs_disc()
 {  

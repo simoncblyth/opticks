@@ -1468,17 +1468,21 @@ with the A side.
 
 void SEvt::save() 
 {
-    const char* dir = SGeo::DefaultDir(); 
+    const char* dir = DefaultDir(); 
     LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
 void SEvt::load()
 {
-    const char* dir = SGeo::DefaultDir(); 
+    const char* dir = DefaultDir(); 
     LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
     load(dir); 
 }
 
+const char* SEvt::DefaultDir() // static
+{
+    return SGeo::DefaultDir() ; 
+}
 
 
 void SEvt::save(const char* base, const char* reld1 ) 

@@ -2,8 +2,35 @@ ct_scan_nmskTailInner
 ========================
 
 
-Observe some rare spurious halo beyond the expected face of nmskTailInner.
 
+issue 2 : "spill" off ends of the sub-mm lips from ~vertical/horizontal rays
+-----------------------------------------------------------------------------------
+
+* added selection handling to CSG/ct.sh to look into this
+* rogue intersects have +z/-z normals : would guess that the v.thin cylinders are implicated
+
+::
+
+    In [5]: sts[:,:,:3]
+    Out[5]: 
+    array([[[   0.   ,    0.   ,   -1.   ],        
+            [ 264.525,    0.   ,  -40.112],
+            [ 264.   ,    0.   , -211.2  ],
+            [   0.003,    0.   ,    1.   ]],   ## +Z dir 
+
+           [[   0.   ,    0.   ,    1.   ],
+            [ 264.84 ,    0.   ,  -38.194],
+            [ 264.   ,    0.   ,  237.6  ],
+            [   0.003,    0.   ,   -1.   ]]], dtype=float32)     ## -Z dir
+
+    In [8]: np.where(w)[0]
+    Out[8]: array([495871, 512880])
+
+
+
+
+issue 1 : FIXED : v. thin hz < 1mm tubs mistranslated as disc not cylinder : Observe some rare spurious halo beyond the expected face of nmskTailInner.
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 ::
 
     c
@@ -132,6 +159,10 @@ AHHA, the translation uses disc when it should be using tubs::
     1043     bool deltaPhi_segment_enabled = true ;
     1044     bool has_deltaPhi = deltaPhi < 360. ;
     1045 
+
+
+
+
 
 
 

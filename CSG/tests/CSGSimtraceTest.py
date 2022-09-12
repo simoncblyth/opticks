@@ -55,8 +55,12 @@ if __name__ == '__main__':
         fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
     pass
   
-    if not s is None:
-        sts = s.simtrace[s.simtrace[:,1,0] > 257.]
+    if not s is None and "SELECTION" in os.environ:
+        #if s_geom 
+        #w = np.logical_and( s.simtrace[:,0,3]>0, np.logical_and( s.simtrace[:,1,Z] > -38.9, s.simtrace[:,1,Z] < -20. ))
+        w = s.simtrace[:,1,X] > 264.5
+        wi = np.where(w)[0]  
+        sts = s.simtrace[w][:50]
     else:
         sts = None
     pass  
@@ -70,7 +74,9 @@ if __name__ == '__main__':
         fr.mp_scatter(t_pos, label="%s" % t_geom, s=1 )
     pass
 
-    ax.legend()
+    if not "NOLEGEND" in os.environ:
+        ax.legend()
+    pass
     fig.show()
 pass
 

@@ -43,3 +43,22 @@ if [ "${arg/ana}"  != "$arg" ]; then
 fi 
 
 
+if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+
+    FOLD=$S_FOLD
+    GEOM="${S_GEOM}_${T_GEOM}"
+
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=cf_ct
+    export CAP_STEM=${GEOM}
+    case $arg in  
+       mpcap) source mpcap.sh cap  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+
+    if [ "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
+
+
