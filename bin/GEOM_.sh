@@ -42,12 +42,12 @@ EOU
 #geom=nmskMaskOut
 #geom=nmskMaskIn
 
-geom=nmskSolidMaskTail
+#geom=nmskSolidMaskTail
 #geom=nmskTailOuter
 #geom=nmskTailInner
 
 #geom=nmskTailOuterIEllipsoid
-#geom=nmskTailOuterITube
+geom=nmskTailOuterITube
 #geom=nmskTailOuterI
 #geom=nmskTailOuterIITube
 

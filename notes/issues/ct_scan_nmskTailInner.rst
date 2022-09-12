@@ -1,6 +1,90 @@
 ct_scan_nmskTailInner
 ========================
 
+issue 2 : manifests with nmskTailOuterITube hz 0.15 mm alone with regularly spaced spills along the length of the cylinder
+---------------------------------------------------------------------------------------------------------------------------
+
+* the regularity could simply be from where the genstep sources are 
+
+* HMM: ARE THEY FROM AXIAL RAYS ?  YES : ALL 227 SELECTED BELOW ARE +-Z DIRECTION RAYS
+
+* in 3D those are presumably some kind of float precision artifact rings 
+* testing with nmskTailInnerITube__U1 hz 0.65 mm shows a very small amount of spill at the ends, 
+  suggesting the problem gets worse as the cylinder gets thinner 
+
+* SO THE PROBLEM LOOKS TO BE CAUSED BY PRECISION LOSS IN VERY THIN CYLINDER INTERSECTION 
+ 
+  * AND IT APPEARS TO BE IN THE AXIAL SPECIAL CASE 
+  * NOW : I WANT TO COLLECT AXIAL CALC INTERMEDIATES : HIDDEN BEHIND 
+
+
+::
+
+    GEOM=nmskTailOuterITube__U1 ./ct.sh 
+
+    In [9]: w = np.abs(s_pos[:,2]) > 0.15 + 0.01
+
+    In [10]: s_pos[w]                                                                                                                                                           
+    Out[10]: 
+    array([[-264.155,    0.   ,   -0.323],
+           [-264.398,    0.   ,   -0.722],
+           [-263.616,    0.   ,    0.397],
+           [-263.965,    0.   ,    0.195],
+           [-263.935,    0.   ,    0.485],
+           [-264.199,    0.   ,    0.819],
+           [-264.222,    0.   ,    0.708],
+           [-264.071,    0.   ,    0.329],
+           [-264.345,    0.   ,    0.728],
+           [-263.656,    0.   ,   -0.232],
+           [-263.319,    0.   ,   -0.602],
+           [-264.239,    0.   ,    0.417],
+           [-237.854,    0.   ,   -0.477],
+           [-237.078,    0.   ,    0.628],
+           [-237.331,    0.   ,    0.252],
+           [-237.388,    0.   ,    0.324],
+           [-237.656,    0.   ,   -0.318],
+           [-237.503,    0.   ,    0.286],
+           [-237.745,    0.   ,   -0.813],
+           [-237.539,    0.   ,    0.389],
+           [-237.607,    0.   ,    0.217],
+           [-237.64 ,    0.   ,    0.519],
+           [-237.649,    0.   ,    0.602],
+
+    In [12]: len(s_pos[w])                                                                                                                                                      
+    Out[12]: 227
+
+
+simpler to select on original array indices::
+
+    In [20]: np.abs(s.simtrace[:,1,2]) > 0.16                                                                                                                                   
+    Out[20]: array([False, False, False, False, False, ..., False, False, False, False, False])
+
+    In [21]: w = np.abs(s.simtrace[:,1,2]) > 0.16                                                                                                                               
+
+    In [23]: s.simtrace[w].shape                                                                                                                                                
+    Out[23]: (227, 4, 4)
+
+
+All the spill come from near axial rays, so it is an axial ray problem::
+
+    In [25]: s.simtrace[w,3,:3]                                                                                                                                                 
+    Out[25]: 
+    array([[-0.001,  0.   ,  1.   ],
+           [-0.002,  0.   ,  1.   ],
+           [ 0.002,  0.   ,  1.   ],
+           [ 0.001,  0.   ,  1.   ],
+           [ 0.002,  0.   ,  1.   ],
+           [-0.003,  0.   , -1.   ],
+           [-0.002,  0.   , -1.   ],
+           [-0.001,  0.   , -1.   ],
+           [-0.002,  0.   , -1.   ],
+           [ 0.001,  0.   , -1.   ],
+           [ 0.003,  0.   , -1.   ],
+           [-0.001,  0.   , -1.   ],
+           [-0.001,  0.   ,  1.   ],
+
+
+
 
 
 issue 2 : "spill" off ends of the sub-mm lips from ~vertical/horizontal rays
@@ -26,6 +110,185 @@ issue 2 : "spill" off ends of the sub-mm lips from ~vertical/horizontal rays
     In [8]: np.where(w)[0]
     Out[8]: array([495871, 512880])
 
+
+
+
+::
+
+    2022-09-12 14:51:29.931 INFO  [4293206] [CSGQuery::init@65]  sopr 0:0 solidIdx 0 primIdxRel 0
+    NP::init size 16 ebyte 4 num_char 64
+    2022-09-12 14:51:29.932 INFO  [4293206] [CSGDraw::draw@57] CSGSimtrace axis Z
+    2022-09-12 14:51:29.932 INFO  [4293206] [CSGDraw::draw@58]  type 2 CSG::Name(type) intersection IsTree 1 width 15 height 3
+
+                                                       in                                                                                                                     
+                                                      1                                                                                                                       
+                                                         0.00                                                                                                                 
+                                                        -0.00                                                                                                                 
+                                                                                                                                                                              
+                                   un                                                          in                                                                             
+                                  2                                                           3                                                                               
+                                     0.00                                                        0.00                                                                         
+                                    -0.00                                                       -0.00                                                                         
+                                                                                                                                                                              
+               un                            cy                            in                           !cy                                                                   
+              4                             5                             6                             7                                                                     
+                 0.00                        -39.00                          0.00                        -39.00                                                               
+                -0.00                       -183.22                         -0.00                       -175.22                                                               
+                                                                                                                                                                              
+     zs                  cy                                     !zs                 !cy                                                                                       
+    8                   9                                       12                  13                                                                                        
+     -39.00              -39.00                                  -39.00              -38.00                                                                                   
+    -194.10              -39.30                                 -186.10              -39.30                                                                                   
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                              
+    2022-09-12 14:51:29.932 INFO  [4293206] [CSGSimtrace::init@44]  frame.ce ( 0.000, 0.000,-97.050,264.000)  SELECTION 495871 num_selection 1
+    2022-09-12 14:51:29.932 INFO  [4293206] [SFrameGenstep::StandardizeCEGS@437]  CEGS  ix0 ix1 -16 16 iy0 iy1 0 0 iz0 iz1 -9 9 photons_per_genstep 1000 grid_points (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) 627 tot_photons (grid_points*photons_per_genstep) 627000
+    2022-09-12 14:51:29.932 INFO  [4293206] [SFrameGenstep::GetGridConfig@111]  ekey CEGS Desc  size 8[-16 16 0 0 -9 9 1000 1 ]
+    2022-09-12 14:51:29.932 INFO  [4293206] [SFrameGenstep::CE_OFFSET@68] ekey CE_OFFSET val (null) is_CE 0 ce_offset.size 1 ce ( 0.000, 0.000,-97.050,264.000) 
+    SFrameGenstep::Desc ce_offset.size 1
+       0 : ( 0.000, 0.000, 0.000) 
+
+    2022-09-12 14:51:29.932 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@146]  ce ( 0.000, 0.000,-97.050,264.000)  ce_offset.size 1
+    2022-09-12 14:51:29.932 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@287]  num_offset 1 ce_scale 1 nx 16 ny 0 nz 9 GridAxes 2 GridAxesName XZ high 1 gridscale 0.1 scale 0.1
+    2022-09-12 14:51:29.937 INFO  [4293206] [SFrameGenstep::GetGridConfig@111]  ekey CEHIGH_0 Desc  size 0[]
+    2022-09-12 14:51:29.937 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@171]  key CEHIGH_0 cehigh.size 0
+    2022-09-12 14:51:29.937 INFO  [4293206] [SFrameGenstep::GetGridConfig@111]  ekey CEHIGH_1 Desc  size 0[]
+    2022-09-12 14:51:29.937 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@171]  key CEHIGH_1 cehigh.size 0
+    2022-09-12 14:51:29.937 INFO  [4293206] [SFrameGenstep::GetGridConfig@111]  ekey CEHIGH_2 Desc  size 0[]
+    2022-09-12 14:51:29.937 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@171]  key CEHIGH_2 cehigh.size 0
+    2022-09-12 14:51:29.937 INFO  [4293206] [SFrameGenstep::GetGridConfig@111]  ekey CEHIGH_3 Desc  size 0[]
+    2022-09-12 14:51:29.937 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@171]  key CEHIGH_3 cehigh.size 0
+    2022-09-12 14:51:29.937 INFO  [4293206] [*SFrameGenstep::MakeCenterExtentGensteps@179]  gsl.size 1
+      0 NP  dtype <f4(627, 6, 4, ) size 15048 uifc f ebyte 4 shape.size 3 data.size 60192 meta.size 0 names.size 0 nv 24
+     ni_total 627
+     c NP  dtype <f4(627, 6, 4, ) size 15048 uifc f ebyte 4 shape.size 3 data.size 60192 meta.size 0 names.size 0
+    2022-09-12 14:51:29.941 ERROR [4293206] [SEvt::setFrame_HostsideSimtrace@306] frame.is_hostside_simtrace num_photon_gs 627000 num_photon_evt 627000
+    2022-09-12 14:51:29.941 INFO  [4293206] [SEvt::setFrame_HostsideSimtrace@315]  before hostside_running_resize simtrace.size 0
+    2022-09-12 14:51:30.002 INFO  [4293206] [SEvt::setFrame_HostsideSimtrace@319]  after hostside_running_resize simtrace.size 627000
+    2022-09-12 14:51:30.003 ERROR [4293206] [SFrameGenstep::GenerateSimtracePhotons@675] SFrameGenstep::GenerateSimtracePhotons simtrace.size 627000
+    2022-09-12 14:51:30.111 INFO  [4293206] [SFrameGenstep::GenerateSimtracePhotons@760]  simtrace.size 627000
+    //intersect_prim typecode 2 name intersection 
+    //intersect_tree  numNode(subNum) 15 height 3 fullTree(hex) 80000 
+    //intersect_tree  nodeIdx 8 CSG::Name    zsphere depth 3 elevation 0 
+    //intersect_tree  nodeIdx 8 node_or_leaf 1 
+    //intersect_node typecode 103 name zsphere 
+    //[intersect_leaf typecode 103 name zsphere gtransformIdx 3 
+    //[intersect_leaf_zsphere radius   194.0000 b  -210.7613 c 44605.4375 
+    // intersect_leaf_zsphere radius   194.0000 zmax   -39.0000 zmin  -194.1000  with_upper_cut 1 with_lower_cut 0  
+    // intersect_leaf_zsphere t1sph   210.7622 t2sph   211.6396 sdisc     0.0000 
+    // intersect_leaf_zsphere z1sph    -0.4388 z2sph     0.4386 zmax   -39.0000 zmin  -194.1000 sdisc     0.0000 
+    //intersect_leaf_zsphere t1sph 210.762 t2sph 211.640 t_QCAP 172.201 t_PCAP  17.100 t1cap  17.100 t2cap 172.201  
+    //intersect_leaf_zsphere  t1cap_disqualify 1 t2cap_disqualify 1 
+    //intersect_leaf_zsphere valid_isect 0 t_min   0.000 t1sph 210.762 t1cap   0.000 t2cap   0.000 t2sph 211.640 t_cand   0.000 
+    //]intersect_leaf_zsphere valid_isect 0 
+    //]intersect_leaf typecode 103 name zsphere valid_isect 0 isect (    0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 8 node_or_leaf 1 nd_isect (    0.0000     0.0000     0.0000    -0.0000) 
+    //intersect_tree  nodeIdx 9 CSG::Name   cylinder depth 3 elevation 0 
+    //intersect_tree  nodeIdx 9 node_or_leaf 1 
+    //intersect_node typecode 105 name cylinder 
+    //[intersect_leaf typecode 105 name cylinder gtransformIdx 4 
+    //]intersect_leaf typecode 105 name cylinder valid_isect 1 isect (    0.0000     0.0000    -1.0000   171.0886)   
+    //intersect_tree  nodeIdx 9 node_or_leaf 1 nd_isect (    0.0000     0.0000    -1.0000   171.0886) 
+
+    ## first rogue intersect is with nodeIdx:9 the thinner cylinder hz 0.15    nmskTailOuterITube zrange 0.15 -0.15  : 0.30
+
+
+Add more debug, interestingly c is exactly zero. I thought that was radial cut, but the ray is clearly outside the radius ?::
+
+    //intersect_node typecode 105 name cylinder 
+    //[intersect_leaf typecode 105 name cylinder gtransformIdx 4 
+    //[intersect_leaf_cylinder radius   264.0000 z1    -0.1500 z2     0.1500 sizeZ     0.3000 
+    //intersect_leaf_cylinder : axial ray endcap handling, a  8.345e-07 c(dd*k - md*md)          0 dd       0.09 k  2.955e+04 md     -51.57  
+    //]intersect_leaf typecode 105 name cylinder valid_isect 1 isect (    0.0000     0.0000    -1.0000   171.0886)   
+    //intersect_tree  nodeIdx 9 node_or_leaf 1 nd_isect (    0.0000     0.0000    -1.0000   171.0886) 
+
+
+    In [2]: 0.3*0.3
+    Out[2]: 0.09
+
+    In [3]: md=-51.57
+
+    In [4]: md*md                                                                                                                                                                   
+    Out[4]: 2659.4649
+
+    In [5]: 2.955e+04                                                                                                                                                               
+    Out[5]: 29550.0
+
+    In [6]: 2.955e+04*0.09                                                                                                                                                          
+    Out[6]: 2659.5
+
+
+
+    //intersect_tree  nodeIdx 4 CSG::Name      union depth 2 elevation 1 
+    //intersect_tree  nodeIdx 4 node_or_leaf 0 
+    //   4 : stack peeking : left 0 right 1 (stackIdx)            union  l: Miss     0.0000    r:Enter   171.0886     leftIsCloser 1 -> RETURN_B 
+    //intersect_tree  nodeIdx 10 CSG::Name       zero depth 3 elevation 0 
+    //intersect_tree  nodeIdx 11 CSG::Name       zero depth 3 elevation 0 
+    //intersect_tree  nodeIdx 5 CSG::Name   cylinder depth 2 elevation 1 
+    //intersect_tree  nodeIdx 5 node_or_leaf 1 
+    //intersect_node typecode 105 name cylinder 
+    //[intersect_leaf typecode 105 name cylinder gtransformIdx 1 
+    //]intersect_leaf typecode 105 name cylinder valid_isect 0 isect (    0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 5 node_or_leaf 1 nd_isect (    0.0000     0.0000     0.0000     0.0000) 
+    //intersect_tree  nodeIdx 2 CSG::Name      union depth 1 elevation 2 
+    //intersect_tree  nodeIdx 2 node_or_leaf 0 
+    //   2 : stack peeking : left 0 right 1 (stackIdx)            union  l:Enter   171.0886    r: Miss     0.0000     leftIsCloser 0 -> RETURN_A 
+    //intersect_tree  nodeIdx 12 CSG::Name    zsphere depth 3 elevation 0 
+    //intersect_tree  nodeIdx 12 node_or_leaf 1 
+    //intersect_node typecode 103 name zsphere 
+    //[intersect_leaf typecode 103 name zsphere gtransformIdx 5 
+    //[intersect_leaf_zsphere radius   186.0000 b  -210.7711 c 46801.4688 
+    // intersect_leaf_zsphere radius   186.0000 zmax   -39.0000 zmin  -186.1000  with_upper_cut 1 with_lower_cut 0  
+    // intersect_leaf_zsphere t1sph   210.7720 t2sph   222.0488 sdisc     0.0000 
+    // intersect_leaf_zsphere z1sph    -0.4290 z2sph    10.8478 zmax   -39.0000 zmin  -186.1000 sdisc     0.0000 
+    //intersect_leaf_zsphere t1sph 210.772 t2sph 222.049 t_QCAP 172.201 t_PCAP  25.100 t1cap  25.100 t2cap 172.201  
+    //intersect_leaf_zsphere  t1cap_disqualify 1 t2cap_disqualify 1 
+    //intersect_leaf_zsphere valid_isect 0 t_min   0.000 t1sph 210.772 t1cap   0.000 t2cap   0.000 t2sph 222.049 t_cand   0.000 
+    //]intersect_leaf_zsphere valid_isect 0 
+    //]intersect_leaf typecode 103 name zsphere valid_isect 0 isect (   -0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 12 node_or_leaf 1 nd_isect (   -0.0000     0.0000     0.0000    -0.0000) 
+    //intersect_tree  nodeIdx 13 CSG::Name   cylinder depth 3 elevation 0 
+    //intersect_tree  nodeIdx 13 node_or_leaf 1 
+    //intersect_node typecode 105 name cylinder 
+    //[intersect_leaf typecode 105 name cylinder gtransformIdx 6 
+    //]intersect_leaf typecode 105 name cylinder valid_isect 0 isect (   -0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 13 node_or_leaf 1 nd_isect (   -0.0000     0.0000     0.0000     0.0000) 
+    //intersect_tree  nodeIdx 6 CSG::Name intersection depth 2 elevation 1 
+    //intersect_tree  nodeIdx 6 node_or_leaf 0 
+    //   6 : stack peeking : left 1 right 2 (stackIdx)     intersection  l: Exit     0.0000    r: Exit     0.0000     leftIsCloser 0 -> RETURN_B 
+    //intersect_tree  nodeIdx 14 CSG::Name       zero depth 3 elevation 0 
+    //intersect_tree  nodeIdx 15 CSG::Name       zero depth 3 elevation 0 
+    //intersect_tree  nodeIdx 7 CSG::Name   cylinder depth 2 elevation 1 
+    //intersect_tree  nodeIdx 7 node_or_leaf 1 
+    //intersect_node typecode 105 name cylinder 
+    //[intersect_leaf typecode 105 name cylinder gtransformIdx 2 
+    //]intersect_leaf typecode 105 name cylinder valid_isect 0 isect (   -0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 7 node_or_leaf 1 nd_isect (   -0.0000     0.0000     0.0000     0.0000) 
+    //intersect_tree  nodeIdx 3 CSG::Name intersection depth 1 elevation 2 
+    //intersect_tree  nodeIdx 3 node_or_leaf 0 
+    //   3 : stack peeking : left 1 right 2 (stackIdx)     intersection  l: Exit     0.0000    r: Exit     0.0000     leftIsCloser 0 -> RETURN_B 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 3 
+    //intersect_tree  nodeIdx 1 node_or_leaf 0 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter   171.0886    r: Exit     0.0000     leftIsCloser 1 -> RETURN_A 
+    2022-09-12 14:51:30.112 INFO  [4293206] [CSGSimtrace::simtrace_selection@87]  num_selection 1 num_intersect 1
+    2022-09-12 14:51:30.112 INFO  [4293206] [CSGSimtrace::saveEvent@97] 
+    2022-09-12 14:51:30.112 INFO  [4293206] [CSGSimtrace::saveEvent@101]  outdir /tmp/blyth/opticks/nmskSolidMaskTail__U1/CSGSimtraceTest/ALL num_selection 1 selection_simtrace.sstr (1, 4, 4, )
+    Fold : symbol s base /tmp/blyth/opticks/nmskSolidMaskTail__U1/CSGSimtraceTest/ALL 
+    xlim:[-422.4  422.4] ylim:[-237.6  237.6] FOCUS:[0. 0. 0.] 
+    INFO:opticks.ana.pvplt:mpplt_simtrace_selection_line sts
+    array([[[ 0.000e+00,  0.000e+00, -1.000e+00,  1.711e+02],
+            [ 2.645e+02,  0.000e+00, -4.011e+01,  0.000e+00],
+            [ 2.640e+02,  0.000e+00, -2.112e+02,  1.000e+00],
+            [ 3.071e-03,  0.000e+00,  1.000e+00, -1.701e+38]]], dtype=float32)
+
+    INFO:opticks.ana.pvplt:MPPLT_SIMTRACE_SELECTION_LINE o2i,o2i_XDIST,nrm10 cfg ['o2i', 'o2i_XDIST', 'nrm10'] 
+    INFO:opticks.ana.pvplt: jj [-1] 
+
+    In [1]:                            
 
 
 

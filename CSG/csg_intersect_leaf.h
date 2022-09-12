@@ -1047,9 +1047,15 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     const float       z1 = q1.f.x  ; 
     const float       z2 = q1.f.y  ; 
 
+
     //if(fabs(z1) != fabs(z2)) return false ;   
     const float  sizeZ = z2 - z1 ; 
     const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
+
+#ifdef DEBUG_RECORD
+    printf("//[intersect_leaf_cylinder radius %10.4f z1 %10.4f z2 %10.4f sizeZ %10.4f \n", radius, z1, z2, sizeZ ); 
+#endif
+
 
     const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame (cylinder origin at base point P)
     const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
@@ -1083,6 +1089,10 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     // axial ray endcap handling : can treat axial rays in 2d way 
     if(fabs(a) < 1e-6f)     
     {
+
+#ifdef DEBUG_RECORD
+    printf("//intersect_leaf_cylinder : axial ray endcap handling, a %10.4g c(dd*k - md*md) %10.4g dd %10.4g k %10.4g md %10.4g  \n", a, c,dd,k,md ); 
+#endif
         if(c > 0.f) return false ;  // ray starts and ends outside cylinder
 
         float t_PCAP_AX = -mn/nn  ;
@@ -1098,12 +1108,12 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
         }
         else              // ray origin inside,   nd > 0 ray along +d towards Q  
         {
-            t_cand = nd > 0 ? t_QCAP_AX : t_PCAP_AX ;  
+            t_cand = nd > 0.f ? t_QCAP_AX : t_PCAP_AX ;  
         }
 
-        unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0 ) ;
+        unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0u ) ;
     
-        bool has_axial_intersect = t_cand > t_min && endcap > 0 ;
+        bool has_axial_intersect = t_cand > t_min && endcap > 0u ;
 
         if(has_axial_intersect)
         {
@@ -1150,12 +1160,12 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
         } 
         else if( aNEAR < 0.f ) //  near intersection outside cylinder z range, on P side
         {
-            t_cand =  nd > 0 ? t_PCAP : t_min ;   // nd > 0, ray headed upwards (+z)
+            t_cand =  nd > 0.f ? t_PCAP : t_min ;   // nd > 0, ray headed upwards (+z)
             checkr = checkr_PCAP ; 
         } 
         else if( aNEAR > dd ) //  intersection outside cylinder z range, on Q side
         {
-            t_cand = nd < 0 ? t_QCAP : t_min ;  // nd < 0, ray headed downwards (-z) 
+            t_cand = nd < 0.f ? t_QCAP : t_min ;  // nd < 0, ray headed downwards (-z) 
             checkr = checkr_QCAP ; 
         }
 
@@ -1202,12 +1212,12 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
         } 
         else if( aFAR < 0.f ) //  far intersection outside cylinder z range, on P side (-z)
         {
-            t_cand = nd < 0 ? t_PCAP : t_min ;      // sign flip cf RTCD:p198     
+            t_cand = nd < 0.f ? t_PCAP : t_min ;      // sign flip cf RTCD:p198     
             checkr = checkr_PCAP ; 
         } 
         else if( aFAR > dd ) //  far intersection outside cylinder z range, on Q side (+z)
         {
-            t_cand = nd > 0 ? t_QCAP : t_min  ;    // sign flip cf RTCD:p198
+            t_cand = nd > 0.f ? t_QCAP : t_min  ;    // sign flip cf RTCD:p198
             checkr = checkr_QCAP ;
         }
 

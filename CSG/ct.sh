@@ -8,6 +8,12 @@ ct.sh : using CSGSimtraceTest
 2. load center-extent gensteps, just like X4SimtraceTest.cc does 
 3. use CSG intersection headers to get intersect positions using CUDA compatible code on the CPU 
 
+
+::
+
+   MPPLT_SIMTRACE_SELECTION_LINE=o2i ./ct.sh ana
+
+
 EOU
 }
 
@@ -22,12 +28,16 @@ log=$bin.log
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
 
-#export FOCUS=257,-39,7
 
 export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
-export TOPLINE="CSG/ct.sh GEOM $GEOM FOCUS $FOCUS"
 
-export SELECTION=495871,512880
+if [ "$GEOM" == "nmskSolidMaskTail__U1" ]; then 
+   export SELECTION=495871
+   #export SELECTION=495871,512880
+   #export FOCUS=257,-39,7
+fi 
+
+export TOPLINE="CSG/ct.sh GEOM $GEOM FOCUS $FOCUS"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

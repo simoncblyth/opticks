@@ -98,7 +98,11 @@ void CSGSimtrace::saveEvent()
     if(num_selection > 0)
     {
         const char* outdir = evt->getOutputDir(); 
-        LOG(LEVEL) << " outdir " << outdir << " num_selection " << num_selection ; 
+        LOG(LEVEL) 
+            << " outdir " << outdir 
+            << " num_selection " << num_selection 
+            << " selection_simtrace.sstr " << selection_simtrace->sstr()
+            ; 
         selection_simtrace->save(outdir, "simtrace_selection.npy") ; 
     }
     else

@@ -54,8 +54,11 @@ if __name__ == '__main__':
     if not s is None:
         fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
     pass
-  
-    if not s is None and "SELECTION" in os.environ:
+ 
+    
+    if not s is None and hasattr(s,"simtrace_selection"):
+       sts = s.simtrace_selection 
+    elif not s is None and "SELECTION" in os.environ:
         #if s_geom 
         #w = np.logical_and( s.simtrace[:,0,3]>0, np.logical_and( s.simtrace[:,1,Z] > -38.9, s.simtrace[:,1,Z] < -20. ))
         w = s.simtrace[:,1,X] > 264.5
