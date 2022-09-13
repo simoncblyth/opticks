@@ -47,9 +47,9 @@ EOU
 #geom=nmskTailInner
 
 #geom=nmskTailOuterIEllipsoid
-geom=nmskTailOuterITube
+#geom=nmskTailOuterITube
 #geom=nmskTailOuterI
-#geom=nmskTailOuterIITube
+geom=nmskTailOuterIITube
 
 #geom=nmskTailInnerIEllipsoid
 #geom=nmskTailInnerITube

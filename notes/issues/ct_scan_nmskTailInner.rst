@@ -2,6 +2,62 @@ ct_scan_nmskTailInner
 ========================
 
 
+
+Implemented a simpler CSG_ALTCYLINDER for comparison of numerical robustness with CSG_CYLINDER
+--------------------------------------------------------------------------------------------------
+
+::
+
+    1044 bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+    1045 {
+    1046     const float& r  = q0.f.w ; 
+    1047     const float& z1 = q1.f.x  ; 
+    1048     const float& z2 = q1.f.y  ; 
+    1049     const float& ox = ray_origin.x ;
+    1050     const float& oy = ray_origin.y ;
+    1051     const float& oz = ray_origin.z ;
+    1052     const float& vx = ray_direction.x ;
+    1053     const float& vy = ray_direction.y ;
+    1054     const float& vz = ray_direction.z ;
+    1055     
+    1056     float a = vx*vx + vy*vy ;     // see CSG/sympy_cylinder.py 
+    1057     float b = ox*vx + oy*vy ;
+    1058     float c = ox*ox + oy*oy - r*r ;
+    1059     float disc = b*b-a*c;
+    1060     
+    1061     float t_cand = CUDART_INF_F ;
+    1062     float t_near = CUDART_INF_F ;
+    1063     float t_far  = CUDART_INF_F ;
+    1064     float t_z1cap = (z1 - oz)/vz ;
+    1065     float t_z2cap = (z2 - oz)/vz ;
+    1066     
+    1067     if(disc > 0.f)  // has intersections with the infinite cylinder
+    1068     {
+    1069         float sdisc ;
+    1070         robust_quadratic_roots(t_near, t_far, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+    1071         float z_near = oz+t_near*vz ;  
+    1072         float z_far  = oz+t_far*vz ;   
+    1073         if( t_near > t_min && z_near > z1 && z_near < z2 && t_near < t_cand ) t_cand = t_near ;
+    1074         if( t_far  > t_min && z_far  > z1 && z_far  < z2 && t_far  < t_cand ) t_cand = t_far ; 
+    1075     }   
+    1076     
+    1077     if( t_z1cap > t_min && t_z1cap < t_cand ) t_cand = t_z1cap ;
+    1078     if( t_z2cap > t_min && t_z2cap < t_cand ) t_cand = t_z2cap ;
+    1079     
+    1080     bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ;
+    1081     if(valid_intersect)
+    1082     {
+    1083         bool sheet = ( t_cand == t_near || t_cand == t_far ) ;
+    1084         isect.x = sheet ? (ox + t_cand*vx)/r : 0.f ; 
+    1085         isect.y = sheet ? (oy + t_cand*vy)/r : 0.f ; 
+    1086         isect.z = sheet ? 0.f : ( t_cand == t_z1cap ? -1.f : 1.f) ;
+    1087         isect.w = t_cand ;      
+    1088     }
+    1089     return valid_intersect ;
+    1090 }
+
+
+
 nmskTailOuterITube and nmskTailOuterITube : checkz has peak at expected place but large cloud
 ------------------------------------------------------------------------------------------------
 
@@ -133,6 +189,53 @@ Can simply do a checkz on the candidate intersect ?::
     1117 
     1118         unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0u ) ;
     1119    
+
+
+
+
+3d vector distance between point and line : ie where point is on surface of cylinder and line is the axis
+------------------------------------------------------------------------------------------------------------
+
+* https://math.stackexchange.com/questions/2711638/proving-3d-vector-distance-between-point-and-line
+
+
+Recast ray intersection with cylinder as distance from axis line AB 
+to a point C must be the radius.::
+
+
+         [0,0,z2]  B +--d-+ C  (o + t v)
+                     |   /
+                     |  /
+                     | /
+                     |/
+                   A +   [ 0,0,z1 ]
+
+
+
+                   B + [0,0,z2]
+                     |\    
+                     | \
+                     |d C  (o + t v) 
+                     | /
+                     |/
+                   A + [ 0,0,z1 ]
+
+* Area of triangle ABC with height d, |BA|d/2
+* Area spanned by vectors u (BA) and v (BC), |u x v|/2
+* equating areas gives: d = |BAxBC| / |BA| 
+
+But the area can ve given by a different choice of sides too, so:
+
+* d = |ACxBC|/|BA|
+
+    AC = o+tv - [0,0,z1]
+    BC = o+tv - [0,0,z2]
+   |BA| = (z2-z1)    (z2 > z1 by definition)
+
+
+
+
+
 
 
 

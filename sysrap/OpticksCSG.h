@@ -55,9 +55,10 @@ typedef enum {
         CSG_HYPERBOLOID=117,
         CSG_CUBIC=118,
         CSG_INFCYLINDER=119,
-        CSG_PHICUT=120, 
-        CSG_THETACUT=121, 
-        CSG_UNDEFINED=122, 
+        CSG_ALTCYLINDER=120,
+        CSG_PHICUT=121, 
+        CSG_THETACUT=122, 
+        CSG_UNDEFINED=123, 
 
     CSG_OBSOLETE=1000, 
         CSG_PARTLIST=1001,   
@@ -137,6 +138,7 @@ static const char* CSG_TORUS_          = "torus" ;
 static const char* CSG_HYPERBOLOID_    = "hyperboloid" ; 
 static const char* CSG_CUBIC_          = "cubic" ; 
 static const char* CSG_INFCYLINDER_   = "infcylinder" ; 
+static const char* CSG_ALTCYLINDER_   = "altcylinder" ; 
 static const char* CSG_PHICUT_        = "phicut" ; 
 static const char* CSG_THETACUT_      = "thetacut" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
@@ -184,6 +186,7 @@ struct CSG
         else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
         else if(strcmp(nodename, CSG_CYLINDER_) == 0)       tc = CSG_CYLINDER ;
         else if(strcmp(nodename, CSG_INFCYLINDER_) == 0)    tc = CSG_INFCYLINDER ;
+        else if(strcmp(nodename, CSG_ALTCYLINDER_) == 0)    tc = CSG_ALTCYLINDER ;
         else if(strcmp(nodename, CSG_DISC_) == 0)           tc = CSG_DISC ;
         else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
         else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
@@ -263,6 +266,7 @@ struct CSG
             case CSG_HYPERBOLOID:   s = CSG_HYPERBOLOID_   ; break ; 
             case CSG_CUBIC:         s = CSG_CUBIC_         ; break ; 
             case CSG_INFCYLINDER:   s = CSG_INFCYLINDER_   ; break ; 
+            case CSG_ALTCYLINDER:   s = CSG_ALTCYLINDER_   ; break ; 
             case CSG_PHICUT:        s = CSG_PHICUT_        ; break ; 
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ; 
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 

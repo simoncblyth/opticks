@@ -140,7 +140,7 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER preprocessor macros
 
 #target_compile_definitions( ${name} PRIVATE DEBUG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
-#target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
+target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
 
 
 

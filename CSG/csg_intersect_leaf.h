@@ -1027,6 +1027,68 @@ float distance_leaf_cylinder( const float3& pos, const quad& q0, const quad& q1 
     return sd ; 
 }
 
+/**
+intersect_leaf_altcylinder : try a much simpler approach 
+---------------------------------------------------------------------------------------
+
+WARNING : UNTESTED
+
+Giving up the pseudo-generality of *intersect_leaf_cylinder* looks to 
+provide the same roots with less flops : so that means less precision loss presumably.  
+
+HMM for axial rays a=0, b=0, c=-r*r  disc=0.f
+
+**/
+
+LEAF_FUNC
+bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+{
+    const float& r  = q0.f.w ; 
+    const float& z1 = q1.f.x  ; 
+    const float& z2 = q1.f.y  ; 
+    const float& ox = ray_origin.x ; 
+    const float& oy = ray_origin.y ; 
+    const float& oz = ray_origin.z ; 
+    const float& vx = ray_direction.x ; 
+    const float& vy = ray_direction.y ; 
+    const float& vz = ray_direction.z ; 
+
+    float a = vx*vx + vy*vy ;     // see CSG/sympy_cylinder.py 
+    float b = ox*vx + oy*vy ; 
+    float c = ox*ox + oy*oy - r*r ; 
+    float disc = b*b-a*c;
+
+    float t_cand = CUDART_INF_F ;
+    float t_near = CUDART_INF_F ;
+    float t_far  = CUDART_INF_F ;
+    float t_z1cap = (z1 - oz)/vz ; 
+    float t_z2cap = (z2 - oz)/vz ;  
+
+    if(disc > 0.f)  // has intersections with the infinite cylinder
+    {
+        float sdisc ;   
+        robust_quadratic_roots(t_near, t_far, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+        float z_near = oz+t_near*vz ; 
+        float z_far  = oz+t_far*vz ; 
+        if( t_near > t_min && z_near > z1 && z_near < z2 && t_near < t_cand ) t_cand = t_near ; 
+        if( t_far  > t_min && z_far  > z1 && z_far  < z2 && t_far  < t_cand ) t_cand = t_far ; 
+    }
+
+    if( t_z1cap > t_min && t_z1cap < t_cand ) t_cand = t_z1cap ; 
+    if( t_z2cap > t_min && t_z2cap < t_cand ) t_cand = t_z2cap ; 
+
+    bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ; 
+    if(valid_intersect)
+    {
+        bool sheet = ( t_cand == t_near || t_cand == t_far ) ; 
+        isect.x = sheet ? (ox + t_cand*vx)/r : 0.f ; 
+        isect.y = sheet ? (oy + t_cand*vy)/r : 0.f ; 
+        isect.z = sheet ? 0.f : ( t_cand == t_z1cap ? -1.f : 1.f) ; 
+        isect.w = t_cand ;      
+    }
+    return valid_intersect ; 
+}
+
 
 /**
 intersect_leaf_cylinder
@@ -1077,6 +1139,7 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     float a = dd*nn - nd*nd ;   
     float b = dd*mn - nd*md ;
     float c = dd*k - md*md ; 
+
 
     float disc = b*b-a*c;
     float t_cand = t_min ; 
@@ -1142,10 +1205,6 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
             isect.w = t_cand ;      
 
 #ifdef DEBUG_CYLINDER
-
-            float checkz = ray_origin.z+ray_direction.z*t_cand ; 
-
-
             CSGDebug_Cylinder dbg = {} ; 
 
             dbg.ray_origin = ray_origin ;   // 0
@@ -1166,7 +1225,7 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
             dbg.nd = nd ;   // 5 
             dbg.md = md ; 
             dbg.mn = mn ; 
-            dbg.checkz = checkz ; 
+            dbg.checkz = ray_origin.z+ray_direction.z*t_cand ;
 
             dbg.a = a ;    // 6 
             dbg.b = b ; 
@@ -1187,8 +1246,36 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     if(disc > 0.0f)  // has intersections with the infinite cylinder
     {
         float t_NEAR, t_FAR, sdisc ;   
-
         robust_quadratic_roots(t_NEAR, t_FAR, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+
+#ifdef DEBUG_CYLINDER
+        /*
+        // see CSG/sympy_cylinder.py 
+        const float& ox = ray_origin.x ; 
+        const float& oy = ray_origin.y ; 
+        const float& vx = ray_direction.x ; 
+        const float& vy = ray_direction.y ; 
+
+        float a1 = vx*vx + vy*vy ; 
+        float b1 = ox*vx + oy*vy ; 
+        float c1 = ox*ox + oy*oy - rr ; 
+
+        float disc1 = b1*b1-a1*c1;
+        
+        //printf("// intersect_leaf_cylinder  a %10.4f a1 %10.4f a/a1 %10.4f  b %10.4f b1 %10.4f b/b1 %10.4f     c %10.4f c1 %10.4f c/c1 %10.4f  \n", 
+        //    a, a1, a/a1, 
+        //    b, b1, b/b1, 
+        //    c, c1, c/c1 ); 
+   
+
+        float t_NEAR1, t_FAR1, sdisc1 ;   
+        robust_quadratic_roots(t_NEAR1, t_FAR1, disc1, sdisc1, a1, b1, c1); //  Solving:  a t^2 + 2 b t +  c = 0 
+
+        printf("// intersect_leaf_cylinder  t_NEAR %10.4f t_NEAR1 %10.4f t_FAR %10.4f t_FAR1 %10.4f \n", t_NEAR, t_NEAR1, t_FAR, t_FAR1 );  
+
+        */
+#endif
+
 
         float t_PCAP = -md/nd ; 
         float t_QCAP = (dd-md)/nd ;   
@@ -1200,8 +1287,8 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
         float3 P1 = ray_origin + t_NEAR*ray_direction ;  
         float3 P2 = ray_origin + t_FAR*ray_direction ;  
 
-        float3 N1  = (P1 - position)/radius  ;   
-        float3 N2  = (P2 - position)/radius  ;  
+        float3 N1  = (P1 - position)/radius  ;     // HMM: subtracting fixed position at base ?
+        float3 N2  = (P2 - position)/radius  ;     // that is wrong for the z component, but z component is zero so no problem 
 
         float checkr = 0.f ; 
         float checkr_PCAP = k + t_PCAP*(2.f*mn + t_PCAP*nn) ; // bracket typo in RTCD book, 2*t*t makes no sense   
@@ -1612,6 +1699,7 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_THETACUT:         valid_isect = intersect_leaf_thetacut(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_CYLINDER:         valid_isect = intersect_leaf_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_ALTCYLINDER:      valid_isect = intersect_leaf_altcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_INFCYLINDER:      valid_isect = intersect_leaf_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_DISC:             valid_isect = intersect_leaf_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
     }
