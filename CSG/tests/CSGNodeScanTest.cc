@@ -1,4 +1,3 @@
-
 /**
 CSGNodeScanTest.cc
 =====================
@@ -15,6 +14,7 @@ For lower level tests see::
 #include <cmath>
 
 #include "OPTICKS_LOG.hh"
+#include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
 #include "NP.hh"
@@ -30,136 +30,152 @@ For lower level tests see::
 
 struct Scan 
 {
-    NP* ipos ; 
-    NP* iray ; 
-    NP* isec ; 
+    const char* geom ; 
+    CSGNode nd ; 
+    float t_min ; 
+    int num ; 
+    bool shifted ; 
+    const char* modes_ ; 
+    const char* axes_ ; 
+    std::vector<int>* modes ; 
+    std::vector<int>* axes ; 
 
-    Scan(int num);  
-    static Scan* XY(const CSGNode* node,  int n=100, const char* modes="0,1,2,3", float t_min=0., bool shifted=true );  
-    void save(const char* dir) const ; 
+    NP* simtrace ; 
+    quad4* qq ;  
+    const char* fold ; 
+
+    Scan(); 
+    void init(); 
+    std::string desc() const ; 
+    void save() const ; 
 }; 
 
-Scan::Scan(int num)
+Scan::Scan()
     :
-    ipos(NP::Make<float>(num, 3)),
-    iray(NP::Make<float>(num, 2, 3)),
-    isec(NP::Make<float>(num, 4))
+    geom(SSys::getenvvar("GEOM", "iphi")),
+    nd(CSGNode::MakeDemo(geom)),  
+    t_min(SSys::getenvfloat("TMIN",0.f)),
+    num(SSys::getenvint("NUM", 200)),
+    shifted(true),
+    modes_(SSys::getenvvar("MODES", "0,1,2,3")),
+    axes_(SSys::getenvvar("AXES", "0,2,1")),  // X,Z,Y  3rd gets set to zero 
+    modes(SStr::ISplit(modes_, ',')),
+    axes(SStr::ISplit(axes_, ',')),
+    simtrace(NP::Make<float>(modes->size(),num,4,4)),
+    qq((quad4*)simtrace->values<float>()),
+    fold(SPath::Resolve("$TMP/CSGNodeScanTest", geom, DIRPATH )) 
 {
+    init(); 
 }
 
-void Scan::save(const char* dir) const 
+std::string Scan::desc() const
 {
-    ipos->save(dir, "ipos.npy");
-    iray->save(dir, "iray.npy");
-    isec->save(dir, "isec.npy");
+    std::stringstream ss ; 
+    ss << "Scan::desc" << std::endl 
+       << " geom " << geom << std::endl
+       << " num " << num << std::endl
+       << " modes_ " << modes_ << std::endl
+       << " axes_ " << axes_ << std::endl
+       << " simtrace.sstr " << simtrace->sstr() << std::endl
+       << " fold " << fold << std::endl 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
-
-Scan* Scan::XY(const CSGNode* node, int n, const char* modes_, float t_min, bool shifted )
+void Scan::save() const 
 {
-    std::vector<int> modes ; 
-    SStr::ISplit(modes_, modes, ',' ); 
-    int num = n*modes.size()  ; 
+    simtrace->save(fold, "simtrace.npy");
+}
 
-    Scan* scan = new Scan(num);  
+void Scan::init()
+{
+    assert( axes->size() == 3 ); 
+    int h = (*axes)[0] ; 
+    int v = (*axes)[1] ; 
+    int d = (*axes)[2] ; 
 
-    float* _ipos = scan->ipos->values<float>() ; 
-    float* _iray = scan->iray->values<float>() ; 
-    float* _isec = scan->isec->values<float>() ; 
-  
     unsigned offset = 0 ; 
-    for(unsigned m=0 ; m < modes.size() ; m++)
+    for(unsigned m=0 ; m < modes->size() ; m++)
     {
-        int mode = modes[m]; 
-        float dx, dy, ox, oy ; 
-        for(int i=0 ; i < n ; i++)
+        int mode = (*modes)[m]; 
+        float vx, vy, ox, oy ; 
+        for(int i=0 ; i < num ; i++)
         {
-            int j = i - n/2 ; 
+            int j = i - num/2 ; 
             if( mode == 0 )       // shoot upwards from X axis, or shifted line
             {
-                dx = 0.f ; 
-                dy = 1.f ; 
+                vx = 0.f ; 
+                vy = 1.f ; 
                 ox = j*0.1f ; 
                 oy = shifted ? -10.f : 0. ; 
             }
             else if( mode == 1 )  //  shoot downwards from X axis, or shifted line
             {
-                dx = 0.f ; 
-                dy = -1.f ; 
+                vx = 0.f ; 
+                vy = -1.f ; 
                 ox = j*0.1f ; 
                 oy = shifted ?  10.f : 0. ; 
             }
             else if( mode == 2 )   // shoot to right from Y axis, or shifted line 
             {
-                dx = 1.f ; 
-                dy = 0.f ; 
+                vx = 1.f ; 
+                vy = 0.f ; 
                 ox = shifted ? -10.f : 0.  ; 
                 oy = j*0.1f ; 
             }
             else if( mode == 3 )  // shoot to left from Y axis, or shifted line
             {
-                dx = -1.f ; 
-                dy = 0.f ; 
+                vx = -1.f ; 
+                vy = 0.f ; 
                 ox = shifted ? 10.f : 0.  ; 
                 oy = j*0.1f ; 
             }
 
-            float3 ray_origin    = make_float3( ox, oy, 0.f ); 
-            float3 ray_direction = make_float3( dx, dy, 0.f ); 
-            float3 position = make_float3( 0.f, 0.f, 0.f ); 
 
-            _iray[(i+offset)*2*3+0] = ray_origin.x ; 
-            _iray[(i+offset)*2*3+1] = ray_origin.y ; 
-            _iray[(i+offset)*2*3+2] = ray_origin.z ;
+            // standard simtrace layout see sevent.h sevent::add_simtrace
+            quad4& _qq = qq[m*num+i] ; 
+            float* oo = (float*)&_qq.q2.f.x ;  // ray_origin
+            float* dd = (float*)&_qq.q3.f.x ;  // ray_direction
 
-            _iray[(i+offset)*2*3+3] = ray_direction.x ; 
-            _iray[(i+offset)*2*3+4] = ray_direction.y ; 
-            _iray[(i+offset)*2*3+5] = ray_direction.z ;
-  
-            float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ); 
+            float3* ray_origin    = (float3*)&_qq.q2.f.x ; 
+            float3* ray_direction = (float3*)&_qq.q3.f.x ; 
+            float3* position      = (float3*)&_qq.q1.f.x ; 
+
+            oo[h] = ox ; 
+            oo[v] = oy ; 
+            oo[d] = 0.f ; 
+
+            dd[h] = vx ; 
+            dd[v] = vy ; 
+            dd[d] = 0.f ; 
+           
+            float4* isect = &_qq.q0.f ; 
             const float4* plan = nullptr ; 
             const qat4* itra = nullptr ; 
+            const CSGNode* node = &nd ; 
 
-            bool valid_intersect = intersect_node(isect, node, node, plan, itra, t_min, ray_origin, ray_direction ); 
+            bool valid_intersect = intersect_node(*isect, node, node, plan, itra, t_min, *ray_origin, *ray_direction ); 
             // TODO: this should be using higher level intersect_prim ???
 
             if(valid_intersect)
             {
-                float t = isect.w ;  
-                position = ray_origin + t*ray_direction ; 
-                 
-                _ipos[(i+offset)*3 + 0] = position.x ; 
-                _ipos[(i+offset)*3 + 1] = position.y ; 
-                _ipos[(i+offset)*3 + 2] = position.z ; 
-
-                _isec[(i+offset)*4 + 0] = isect.x ; 
-                _isec[(i+offset)*4 + 1] = isect.y ; 
-                _isec[(i+offset)*4 + 2] = isect.z ; 
-                _isec[(i+offset)*4 + 3] = isect.w ; 
+                float t = (*isect).w ;  
+                *position = *ray_origin + t*(*ray_direction) ; 
             }
         }
-        offset += n ; 
+        offset += num ; 
     }
-    return scan ; 
 }
-
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);  
-     
-    const char* name = "iphi" ; 
-    CSGNode nd = CSGNode::MakeDemo(name) ;  
-    Scan* scan = Scan::XY(&nd); 
- 
-    // TODO: expand this to work with trees of multiple CSGNode
-  
-    const char* base = "$TMP/CSGNodeScanTest" ; 
-    int create_dirs = 2 ; // 2:dirpath   
-    const char* fold = SPath::Resolve(base, name, create_dirs ); 
 
-    LOG(info) << " save to " << fold ; 
-    scan->save(fold); 
-
+    LOG(info) << " running scan " ; 
+    Scan s ; 
+    LOG(info) << s.desc() ; 
+    s.save(); 
     return 0 ; 
 }   

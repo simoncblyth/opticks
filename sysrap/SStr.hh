@@ -123,6 +123,8 @@ class SYSRAP_API SStr {
 
       static void Split( const char* str, char delim,   std::vector<std::string>& elem ) ;
       static int  ISplit( const char* line, std::vector<int>& ivec, char delim ) ;
+      static std::vector<int>* ISplit( const char* line, char delim ); 
+
 
       static void ParseGridSpec(  std::array<int,9>& grid, const char* spec); 
       static void DumpGrid(      const std::array<int,9>& grid ) ;

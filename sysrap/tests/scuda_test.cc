@@ -24,7 +24,7 @@
 #include "scuda.h"
 
 
-int main()
+void test_cross()
 {
     float3 mom = make_float3( -0.2166f,-0.9745f, 0.0578f ); 
     float3 oriented_normal = make_float3(  0.2166f,0.9745f, -0.0578f ); 
@@ -37,7 +37,20 @@ int main()
 
     float3 A_trans = normalize(trans) ; 
     printf("// A_trans (%10.7f, %10.7f, %10.7f) \n", A_trans.x, A_trans.y, A_trans.z ); 
+}
 
+void test_indexed()
+{
+    float4 v = make_float4( 0.f , 1.f, 2.f, 3.f ); 
+    const float* vv = (const float*)&v ; 
+    printf("//test_indexed vv[0] %10.4f vv[1] %10.4f vv[2] %10.4f vv[3] %10.4f \n",vv[0], vv[1], vv[2], vv[3] ); 
+}
+
+
+int main()
+{
+    //test_crosss(); 
+    test_indexed();  
 
     return 0 ; 
 }

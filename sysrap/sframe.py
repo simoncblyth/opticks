@@ -82,6 +82,9 @@ class sframe(object):
         Whether clear_identity makes any material difference depends on the identity values. 
         But it should be done anyhow.  For some identity values they will appear as nan in float.
         """
+        if path is None:
+            return
+        pass
 
         metapath = path.replace(".npy", "_meta.txt")
         if os.path.exists(metapath):
@@ -368,6 +371,16 @@ class sframe(object):
                    ])
 
 
+    @classmethod
+    def FakeXZ(cls, e=10):
+        path = None
+        fr = cls(path)
+        fr.axes = X,Z
+        fr.axlabels = "X","Z"
+        fr.bbox = np.array( [[-e,-e,-e],[e,e,e]] )
+        return fr 
+
+
     def mp_subplots(self, mp):
         pass
         H,V = self.axes 
@@ -380,8 +393,9 @@ class sframe(object):
 
         topline = os.environ.get("TOPLINE", "sframe.py:mp_subplots")
         botline = os.environ.get("BOTLINE", "sframe.py:mp_subplots")
+        thirdline = getattr(self, "thirdline", "thirdline" )
 
-        title = [topline, botline, self.thirdline]
+        title = [topline, botline, thirdline]
 
         fig, ax = mp.subplots(figsize=SIZE/100.)
         fig.suptitle("\n".join(title))

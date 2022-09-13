@@ -511,6 +511,19 @@ CSGNode CSGNode::Cylinder(float px, float py, float radius, float z1, float z2)
     return nd ; 
 } 
 
+CSGNode CSGNode::AltCylinder(float radius, float z1, float z2)
+{
+    assert( z2 > z1 ); 
+    CSGNode nd = {} ; 
+    nd.setParam( 0.f, 0.f, 0.f, radius, z1, z2)  ; 
+    nd.setAABB( -radius, -radius, z1, +radius, +radius, z2 );   
+    nd.setTypecode(CSG_ALTCYLINDER); 
+    return nd ; 
+} 
+
+
+
+
 CSGNode CSGNode::InfCylinder(float radius, float hz)
 {
     assert( hz > 0.f );  // need to bound it ? 
@@ -608,6 +621,7 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     if(strncmp(name, "plan", 4) == 0) return CSGNode::Plane(1.f, 0.f, 0.f, 0.f) ; 
     if(strncmp(name, "slab", 4) == 0) return CSGNode::Slab(1.f, 0.f, 0.f, -10.f, 10.f ) ; 
     if(strncmp(name, "cyli", 4) == 0) return CSGNode::Cylinder(0.f, 0.f, 100.f, -50.f, 50.f ) ; 
+    if(strncmp(name, "acyl", 4) == 0) return CSGNode::AltCylinder(10.f, -5.f, 5.f ) ; 
     if(strncmp(name, "disc", 4) == 0) return CSGNode::Disc(    0.f, 0.f, 50.f, 100.f, -2.f, 2.f ) ; 
     if(strncmp(name, "iphi", 4) == 0) return CSGNode::InfPhiCut(0.25f, 0.10f) ; 
     if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f ) ; 

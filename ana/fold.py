@@ -46,10 +46,14 @@ class Fold(object):
 
     @classmethod
     def Load(cls, *args, **kwa):
+
         reldir = kwa.pop("reldir", None) 
         if len(args) == 0:
             args = list(filter(None, [os.environ["FOLD"], reldir])) 
         pass
+
+        log.info("Fold.Load args %s " % str(args))
+
         relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
         base = os.path.join(*args)

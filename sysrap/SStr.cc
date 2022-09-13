@@ -753,9 +753,12 @@ int SStr::ISplit( const char* line, std::vector<int>& ivec, char delim )
     return ivec.size(); 
 }
 
-
-
-
+std::vector<int>* SStr::ISplit( const char* line, char delim )
+{
+    std::vector<int>* ivec = new std::vector<int>() ; 
+    ISplit(line, *ivec, delim ); 
+    return ivec ; 
+}
 
 
 
