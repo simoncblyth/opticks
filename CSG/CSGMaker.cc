@@ -25,6 +25,14 @@ bool CSGMaker::StartsWith( const char* n, const char* q ) // static
     return strlen(q) >= strlen(n) && strncmp(q, n, strlen(n)) == 0 ; 
 }
 
+/**
+CSGMaker::CanMake
+------------------
+
+returns true when one of the listed NAMES starts with the query name. 
+CAUTION regards common prefixes. 
+
+**/
 bool CSGMaker::CanMake(const char* qname) // static 
 {
     bool found = false ; 
@@ -34,14 +42,6 @@ bool CSGMaker::CanMake(const char* qname) // static
     LOG(LEVEL) << " qname " << qname << " found " << found ; 
     return found ; 
 }
-
-void CSGMaker::GetNames(std::vector<std::string>& names ) // static
-{
-    std::stringstream ss(NAMES) ;    
-    std::string name ; 
-    while (std::getline(ss, name)) if(!name.empty()) names.push_back(name); 
-}
-
 
 const char* CSGMaker::NAMES = R"LITERAL(
 JustOrb
@@ -56,6 +56,7 @@ Plane
 slab
 Slab
 cyli
+acyl
 disc
 vcub
 vtet
@@ -87,6 +88,13 @@ ithl
 bssc
 )LITERAL"; 
 
+void CSGMaker::GetNames(std::vector<std::string>& names ) // static
+{
+    std::stringstream ss(NAMES) ;    
+    std::string name ; 
+    while (std::getline(ss, name)) if(!name.empty()) names.push_back(name); 
+}
+
 
 
 
@@ -106,6 +114,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("slab", name))     so = makeSlab(name) ;
     else if(StartsWith("Slab", name))     so = makeSlab(name) ;
     else if(StartsWith("cyli", name))     so = makeCylinder(name) ;
+    else if(StartsWith("acyl", name))     so = makeAltCylinder(name) ;
     else if(StartsWith("disc", name))     so = makeDisc(name) ;
     else if(StartsWith("vcub", name))     so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("vtet", name))     so = makeConvexPolyhedronTetrahedron(name) ;
@@ -1294,6 +1303,13 @@ CSGSolid* CSGMaker::makeCylinder(const char* label, float px, float py, float ra
     CSGNode nd = CSGNode::Cylinder( px, py, radius, z1, z2 ); 
     return makeSolid11(label, nd, nullptr, CYLI_MIDX ); 
 }
+
+CSGSolid* CSGMaker::makeAltCylinder(const char* label, float radius, float z1, float z2)
+{
+    CSGNode nd = CSGNode::AltCylinder( radius, z1, z2 ); 
+    return makeSolid11(label, nd, nullptr, ACYL_MIDX ); 
+}
+
 
 CSGSolid* CSGMaker::makeDisc(const char* label, float px, float py, float ir, float r, float z1, float z2)
 {

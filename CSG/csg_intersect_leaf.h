@@ -1038,6 +1038,16 @@ provide the same roots with less flops : so that means less precision loss presu
 
 HMM for axial rays a=0, b=0, c=-r*r  disc=0.f
 
+There are four possible t
+
+* 2 from curved sheet, obtained from solving quadratic, that must be within z1 z2 range
+* 2 from endcaps that must be within r2 range  
+
+Finding the intersect means finding the smallest t from the four that exceeds t_min  
+
+Current approach keeps changing t_cand, could instead collect all four potential t 
+into a float4 and then pick from that ? 
+
 **/
 
 LEAF_FUNC
@@ -1053,29 +1063,26 @@ bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, 
     const float& vy = ray_direction.y ; 
     const float& vz = ray_direction.z ; 
 
-    float a = vx*vx + vy*vy ;     // see CSG/sympy_cylinder.py 
-    float b = ox*vx + oy*vy ; 
-    float c = ox*ox + oy*oy - r*r ; 
-    float disc = b*b-a*c;
+    const float r2 = r*r ; 
+    const float a = vx*vx + vy*vy ;     // see CSG/sympy_cylinder.py 
+    const float b = ox*vx + oy*vy ; 
+    const float c = ox*ox + oy*oy - r2 ; 
+
+    float t_near, t_far, disc, sdisc ;   
+    robust_quadratic_roots_disqualifying(t_min, t_near, t_far, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+    float z_near = oz+t_near*vz ; 
+    float z_far  = oz+t_far*vz ; 
+
+    const float t_z1cap = (z1 - oz)/vz ; 
+    const float t_z2cap = (z2 - oz)/vz ;  
+    const float r2_z1cap = (ox+t_z1cap*vx)*(ox+t_z1cap*vx) + (oy+t_z1cap*vy)*(oy+t_z1cap*vy) ;  
+    const float r2_z2cap = (ox+t_z2cap*vx)*(ox+t_z1cap*vx) + (oy+t_z2cap*vy)*(oy+t_z1cap*vy) ;  
 
     float t_cand = CUDART_INF_F ;
-    float t_near = CUDART_INF_F ;
-    float t_far  = CUDART_INF_F ;
-    float t_z1cap = (z1 - oz)/vz ; 
-    float t_z2cap = (z2 - oz)/vz ;  
-
-    if(disc > 0.f)  // has intersections with the infinite cylinder
-    {
-        float sdisc ;   
-        robust_quadratic_roots(t_near, t_far, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
-        float z_near = oz+t_near*vz ; 
-        float z_far  = oz+t_far*vz ; 
-        if( t_near > t_min && z_near > z1 && z_near < z2 && t_near < t_cand ) t_cand = t_near ; 
-        if( t_far  > t_min && z_far  > z1 && z_far  < z2 && t_far  < t_cand ) t_cand = t_far ; 
-    }
-
-    if( t_z1cap > t_min && t_z1cap < t_cand ) t_cand = t_z1cap ; 
-    if( t_z2cap > t_min && t_z2cap < t_cand ) t_cand = t_z2cap ; 
+    if( t_near  > t_min && z_near   > z1 && z_near < z2 && t_near  < t_cand ) t_cand = t_near ; 
+    if( t_far   > t_min && z_far    > z1 && z_far  < z2 && t_far   < t_cand ) t_cand = t_far ; 
+    if( t_z1cap > t_min && r2_z1cap < r2                && t_z1cap < t_cand ) t_cand = t_z1cap ; 
+    if( t_z2cap > t_min && r2_z2cap < r2                && t_z2cap < t_cand ) t_cand = t_z2cap ; 
 
     bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ; 
     if(valid_intersect)

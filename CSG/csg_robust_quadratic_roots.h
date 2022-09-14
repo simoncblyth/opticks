@@ -85,6 +85,7 @@ Alternative quadratic in 1/t
       q =  b - sqrt( b^2 - d c ) # b < 0
    
 
+
 */
 
 static __device__
@@ -105,5 +106,30 @@ void robust_quadratic_roots(float& t1, float &t2, float& disc, float& sdisc, con
     t2 = fmaxf( root1, root2 );
 #endif
 } 
+
+
+/**
+robust_quadratic_roots_disqualifying
+--------------------------------------
+
+This is a variant that avoids being forced to be used within a "disc block" 
+by passing t_min as argument and disqualify roots by setting them 
+to t_min when disc < 0.f 
+
+**/
+
+static __device__
+void robust_quadratic_roots_disqualifying(const float t_min, float& t1, float &t2, float& disc, float& sdisc, const float d, const float b, const float c)
+{
+    disc = b*b-d*c;
+    sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;          // real roots for sdisc > 0.f 
+    float q = b > 0.f ? -(b + sdisc) : -(b - sdisc) ; // picking robust quadratic roots that avoid catastrophic subtraction 
+    float root1 = sdisc > 0.f ? q/d : t_min ; 
+    float root2 = sdisc > 0.f ? c/q : t_min ;
+    t1 = fminf( root1, root2 );
+    t2 = fmaxf( root1, root2 );
+} 
+
+
 
 

@@ -78,10 +78,5 @@ if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     fi  
 fi 
 
-
-
-
-
 exit 0
-
 

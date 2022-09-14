@@ -38,7 +38,7 @@ struct CSGDemoTest
 };
 
 
-//const char* CSGDemoTest::BASE = "$TMP/CSGDemoTest" ; 
+// IT IS EXPEDIENT FOR ALL TEST GEOMETRIES TO LIVE IN THE SAME TREE 
 #ifdef __APPLE__
 const char* CSGDemoTest::BASE = "$TMP/GeoChain_Darwin" ;
 #else
@@ -62,8 +62,7 @@ void CSGDemoTest::init()
 
 void CSGDemoTest::save() const 
 {
-    int create_dirs = 2 ; // 2: dirpath
-    const char* fold = SPath::Resolve(BASE, geom, create_dirs );
+    const char* fold = SPath::Resolve(BASE, geom, DIRPATH );
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
     const char* rel = "CSGFoundry" ;
     fd.save(cfbase, rel );  

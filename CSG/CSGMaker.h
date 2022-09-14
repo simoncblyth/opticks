@@ -25,7 +25,8 @@ struct CSG_API CSGMaker
         SPHE_MIDX, ZSPH_MIDX, CONE_MIDX, HYPE_MIDX, BOX3_MIDX, 
         PLAN_MIDX, SLAB_MIDX, CYLI_MIDX, DISC_MIDX, VCUB_MIDX, 
         VTET_MIDX, ELLI_MIDX, UBSP_MIDX, IBSP_MIDX, DBSP_MIDX, 
-        RCYL_MIDX, ICYL_MIDX, IPHI_MIDX, ITHE_MIDX, ITHL_MIDX
+        RCYL_MIDX, ICYL_MIDX, IPHI_MIDX, ITHE_MIDX, ITHL_MIDX,
+        ACYL_MIDX
     }; 
 
     CSGFoundry* fd ; 
@@ -121,6 +122,7 @@ struct CSG_API CSGMaker
     CSGSolid* makePlane(      const char* label="plan", float nx=1.0f,  float ny=0.f,    float nz=0.f,     float d=0.f );
     CSGSolid* makeSlab(       const char* label="slab", float nx=1.0f,  float ny=0.f,    float nz=0.f,     float d1=-50.f, float d2=50.f );
     CSGSolid* makeCylinder(   const char* label="cyli", float px=0.f,   float py=0.f,    float r=100.f,    float z1=-50.f, float z2=50.f );
+    CSGSolid* makeAltCylinder(const char* label="acyl", float r=100.f,    float z1=-50.f, float z2=50.f );
     CSGSolid* makeDisc(       const char* label="disc", float px=0.f,   float py=0.f,    float ir=50.f,    float r=100.f,  float z1=-2.f, float z2=2.f);
 
     CSGSolid* makeConvexPolyhedronCube(       const char* label="vcub", float extent=100.f );
