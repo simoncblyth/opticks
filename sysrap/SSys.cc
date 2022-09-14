@@ -499,6 +499,13 @@ float3 SSys::getenvfloat3( const char* envkey, const char* fallback, char delim 
              );  
 }
 
+float3 SSys::getenvfloat3norm( const char* envkey, const char* fallback, char delim  )
+{
+    float3 v = getenvfloat3(envkey, fallback, delim); 
+    return normalize(v); 
+}
+
+
 float4 SSys::getenvfloat4( const char* envkey, const char* fallback, char delim  )
 {
    std::vector<float> fvec ;  
