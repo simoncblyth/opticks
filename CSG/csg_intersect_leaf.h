@@ -1074,9 +1074,15 @@ bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, 
     float z_far  = oz+t_far*vz ; 
 
     const float t_z1cap = (z1 - oz)/vz ; 
-    const float t_z2cap = (z2 - oz)/vz ;  
     const float r2_z1cap = (ox+t_z1cap*vx)*(ox+t_z1cap*vx) + (oy+t_z1cap*vy)*(oy+t_z1cap*vy) ;  
-    const float r2_z2cap = (ox+t_z2cap*vx)*(ox+t_z1cap*vx) + (oy+t_z2cap*vy)*(oy+t_z1cap*vy) ;  
+
+    const float t_z2cap = (z2 - oz)/vz ;  
+    const float r2_z2cap = (ox+t_z2cap*vx)*(ox+t_z2cap*vx) + (oy+t_z2cap*vy)*(oy+t_z2cap*vy) ;  
+
+#ifdef DEBUG
+    //printf("// t_z1cap %10.4f r2_z1cap %10.4f \n", t_z1cap, r2_z1cap ); 
+    //printf("// t_z2cap %10.4f r2_z2cap %10.4f \n", t_z2cap, r2_z2cap ); 
+#endif
 
     float t_cand = CUDART_INF_F ;
     if( t_near  > t_min && z_near   > z1 && z_near < z2 && t_near  < t_cand ) t_cand = t_near ; 

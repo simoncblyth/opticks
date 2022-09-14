@@ -22,8 +22,6 @@ it might be in future, ie keep it simple, no refs,
 
 struct CSG_API CSGSolid   // Composite shape 
 {
-
-
     char        label[16] ;   // sizeof 4 int 
 
     int         numPrim ; 

@@ -1,4 +1,5 @@
 #include "SSys.hh"
+#include "SSim.hh"
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
 #include "OPTICKS_LOG.hh"
@@ -23,6 +24,9 @@ int main(int argc, char** argv)
      const char* arg =  argc > 1 ? argv[1] : nullptr ; 
      bool listnames = arg && ( strcmp(arg,"N") == 0 || strcmp(arg,"n") == 0 ) ; 
      OPTICKS_LOG(argc, argv); 
+
+     SSim* sim = SSim::Create(); 
+     assert(sim); 
 
      std::vector<std::string> names ; 
      GetNames(names, listnames); 

@@ -21,7 +21,9 @@ struct CSG_API CSGMaker
 
     static float4 TriPlane( const std::vector<float3>& v, unsigned i, unsigned j, unsigned k );
 
-    enum {  // enum used for Demo solids (equivalent to lvIdx or meshIdx with full geometries)
+    // enum used for Demo solids (equivalent to lvIdx or meshIdx with full geometries)
+    // TODO: remove this, its causing out of range problem on CSGFoundry::save for single solid/prim/node geometries
+    enum {  
         SPHE_MIDX, ZSPH_MIDX, CONE_MIDX, HYPE_MIDX, BOX3_MIDX, 
         PLAN_MIDX, SLAB_MIDX, CYLI_MIDX, DISC_MIDX, VCUB_MIDX, 
         VTET_MIDX, ELLI_MIDX, UBSP_MIDX, IBSP_MIDX, DBSP_MIDX, 

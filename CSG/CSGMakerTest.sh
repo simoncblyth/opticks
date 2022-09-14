@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 
-
 usage(){ cat << EOU
 CSGMakerTest.sh : Creates CSGFoundry directories of CSGSolid/CSGPrim/CSGNode using CSG/tests/CSGMakerTest.cc
 ===============================================================================================================
@@ -22,16 +21,26 @@ Subsequenly visualize the geometry with::
 EOU
 }
 
-source ../bin/GEOM.sh trim 
+source $(dirname $BASH_SOURCE)/../bin/GEOM.sh trim 
 
 export CSGMaker_makeBoxedSphere_FACTOR=10
 
 bin=CSGMakerTest 
-
 echo === $BASH_SOURCE :  GEOM $GEOM bin $bin which $(which $bin)
-if [ -n "$DEBUG" ]; then 
-    lldb__ $bin
-else
+defarg="run"
+arg=${1:-$defarg}
+
+if [ "$arg" == "run" ]; then 
     $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
 
+if [ "$arg" == "dbg" ]; then 
+    case $(uname) in 
+      Darwin) lldb__ $bin ;;
+      Linux)  gdb__ $bin ;; 
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+fi 
+
+exit 0

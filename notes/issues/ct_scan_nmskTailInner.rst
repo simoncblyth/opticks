@@ -2,6 +2,26 @@ ct_scan_nmskTailInner
 ========================
 
 
+Testing acyl
+---------------
+
+* integrarted CSGMakerTest.sh solids with GeoChain solids by moving to $DefaultGeometryBase as $TMP/GEOM
+* so can now create geometries either from Geant4 or from CSG and access them consistently 
+
+Using that acyl ct.sh scan shows unexpected intersects along top face, that are not present with cyli::
+
+    In [3]: s.simtrace[:,1,0]
+    Out[3]: array([-100.   ,   -2.44 ,    0.   ,    0.   ,    0.   , ...,    0.   ,    0.   ,   97.685,    0.   ,    0.   ], dtype=float32)
+
+    In [4]: w = s.simtrace[:,1,0] > 120.
+
+    In [13]: s.simtrace[w,:,:3].shape
+    Out[13]: (6330, 4, 3)
+
+
+
+
+
 
 Implemented a simpler CSG_ALTCYLINDER for comparison of numerical robustness with CSG_CYLINDER
 --------------------------------------------------------------------------------------------------

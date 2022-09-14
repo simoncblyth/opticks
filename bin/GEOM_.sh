@@ -3,11 +3,20 @@ usage(){ cat << EOU
 GEOM_.sh
 ===========
 
+Edit this script using "geom_" bash function from opticks/opticks.bash 
+
+* NB this GEOM_.sh script is distinct from the "geom" bash function and GEOM.txt file
+  which does similar, but traditionally has been used with very small single solid geometries
+  
+* TODO: consolidate the two geometry config approaches
+
+
 This script is sourced from the below scripts to 
 define the GEOM envvar for setup of test geometries. 
 
 u4/u4s.sh 
 gx/gxs.sh 
+
 
 Test with::
 
@@ -18,7 +27,6 @@ Test with::
 
 
 See notes with SOpticksResource::DefaultOutputDir for discussion of change to directory layout. 
-
 
 NOTE that this does not set CFBASE but as that was found 
 confusing as sometimes an executables loads from CFBASE and sometimes
@@ -49,7 +57,7 @@ EOU
 #geom=nmskTailOuterIEllipsoid
 #geom=nmskTailOuterITube
 #geom=nmskTailOuterI
-geom=nmskTailOuterIITube
+#geom=nmskTailOuterIITube
 
 #geom=nmskTailInnerIEllipsoid
 #geom=nmskTailInnerITube
@@ -57,8 +65,12 @@ geom=nmskTailOuterIITube
 #geom=nmskTailInnerIITube 
 
 
-opt=U1
-geom=${geom}__${opt}
+#opt=U1
+#geom=${geom}__${opt}
+
+geom=acyl
+#geom=cyli
+
 
 export GEOM=${GEOM:-$geom}
 
@@ -98,14 +110,8 @@ elif [ "$GEOM" == "J003" ]; then
     export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
 
 else 
-    # handling test geometries from j/PMTSim aka jps 
-    case $GEOM in 
-        hama*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
-        nnvt*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
-        hmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
-        nmsk*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM ;;
-        lchi*) export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GeoChain/$GEOM ;;
-    esac
+    # handling test geometries from j/PMTSim aka jps and from GeoChain or CSGMakerTest 
+    export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM 
 fi 
 
 case $GEOM in 
@@ -123,7 +129,7 @@ cg=${!cg_}
 
 # CFBASE is the directory that contains (or will contain) the CSGFoundry geometry folder 
 
-TMP_GEOMDIR=/tmp/$USER/opticks/$GEOM
+TMP_GEOMDIR=/tmp/$USER/opticks/GEOM/$GEOM
 GEOMDIR=${cg:-$TMP_GEOMDIR}
 export GEOMDIR 
 

@@ -25,11 +25,11 @@ arg=${1:-run_ana}
 bin=CSGSimtraceTest
 log=$bin.log
 
-source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
+source $(dirname $BASH_SOURCE)/../bin/COMMON.sh   # this sources ../bin/GEOM_.sh  change the geometry with geom_ 
 unset OPTICKS_INPUT_PHOTON 
 
 
-export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
+export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 
 if [ "$GEOM" == "nmskSolidMaskTail__U1" ]; then 
    export SELECTION=495871

@@ -482,6 +482,10 @@ CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, in
 /**
 CSGMaker::makeSolid11 makes 1-CSGPrim with 1-CSGNode
 ---------------------------------------------------------
+
+HMM: the absolute meshIdx here is causing out of range in CSGFoundry::getMeshName 
+when creating a single CSGSolid/CSGPrim/CSGNode  
+
 **/
 
 CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl, int meshIdx, const Tran<double>* tr  ) 

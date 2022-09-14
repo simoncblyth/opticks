@@ -4,6 +4,7 @@
 
 #include <cstring>
 
+#include "SGeo.hh"
 #include "SSys.hh"
 #include "SSim.hh"
 #include "SPath.hh"
@@ -26,12 +27,14 @@
 
 const plog::Severity GeoChain::LEVEL = PLOG::EnvLevel("GeoChain", "DEBUG") ; 
 
+/*
 
 #ifdef __APPLE__
 const char* GeoChain::BASE = "$TMP/GeoChain_Darwin" ; 
 #else
 const char* GeoChain::BASE = "$TMP/GeoChain" ; 
 #endif
+*/
 
 
 GeoChain::GeoChain(Opticks* ok_)
@@ -201,7 +204,7 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top )
 
 const char* GeoChain::getCFBase(const char* name, const char* base_) const
 {
-    const char* base = base_ ? base_ : BASE ;  
+    const char* base = base_ ? base_ : "$DefaultGeometryBase" ;  
     const char* fold = SPath::Resolve(base, name, DIRPATH );   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
     return cfbase ; 

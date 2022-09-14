@@ -256,10 +256,11 @@ see notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
 
 void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const 
 {
-    for(unsigned i=0 ; i < prim.size() ; i++)
+    unsigned num_prim = prim.size(); 
+    for(unsigned i=0 ; i < num_prim ; i++)
     {
         const CSGPrim& pr = prim[i] ; 
-        unsigned midx = pr.meshIdx(); 
+        unsigned midx = num_prim == 1 ? 0 : pr.meshIdx();  // kludge avoid out-of-range for single prim CSGFoundry
         const std::string& mname = getMeshName(midx); 
         LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
         pname.push_back(mname);  
@@ -271,7 +272,11 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
 
 const char* CSGFoundry::getMeshName(unsigned midx) const 
 {
-    assert( midx < meshname.size() ); 
+    bool in_range = midx < meshname.size() ;
+
+    if(!in_range) LOG(fatal) << " not in range midx " << midx << " meshname.size()  " << meshname.size()  ; 
+    assert(in_range); 
+
     return meshname[midx].c_str() ; 
 }
 
@@ -1989,7 +1994,7 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 }
 
 
-const char* CSGFoundry::BASE = "$DefaultOutputDir" ; // incorporates GEOM if defined
+const char* CSGFoundry::BASE = "$DefaultGeometryDir" ; // incorporates GEOM if defined
 const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
 
 /**
@@ -2020,7 +2025,7 @@ void CSGFoundry::save() const
 }
 
 
-const char* cfdir = SPath::Resolve("$DefaultOutputDir", DIRPATH);
+//const char* cfdir = SPath::Resolve("$DefaultOutputDir", DIRPATH);
 
 
 void CSGFoundry::save(const char* base, const char* rel) const 

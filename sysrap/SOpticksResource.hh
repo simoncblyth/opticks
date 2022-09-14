@@ -30,7 +30,9 @@ struct SYSRAP_API SOpticksResource
     static const char* PrecookedDir();
 
     static const char* ExecutableName(); 
-    static const char* DefaultOutputDir(); 
+    static const char* DefaultOutputDir();      // eg /tmp/blyth/opticks/GEOM/acyl/ExecutableName
+    static const char* DefaultGeometryBase();   // eg /tmp/blyth/opticks/GEOM 
+    static const char* DefaultGeometryDir();    // eg /tmp/blyth/opticks/GEOM/acyl
 
 
     // setkey:true means OPTICKS_KEY envvar gets used 

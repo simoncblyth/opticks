@@ -57,7 +57,7 @@ struct NP ;
 struct GEOCHAIN_API GeoChain
 {
     static const plog::Severity LEVEL ; 
-    static const char* BASE ; 
+    //static const char* BASE ; 
 
     Opticks* ok ; 
     GGeo* ggeo ; 

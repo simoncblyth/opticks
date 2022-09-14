@@ -47,6 +47,7 @@ struct CSGIntersectComparisonTest
     std::string desc() const ; 
 
     static std::string DescRay(const float3& o, const float3& v, const float t_min ); 
+    static std::string DescIsect(const float4& isect, const float3& pos ); 
     static std::string Desc(const float& v); 
     static std::string Desc(const float3& v); 
     static std::string Desc(const float4& v); 
@@ -91,16 +92,18 @@ std::string CSGIntersectComparisonTest::descRay() const
 
 std::string CSGIntersectComparisonTest::descA() const 
 {
+    float3 a_pos = ray_origin + a_isect.w*ray_direction ;  
     std::stringstream ss ; 
-    ss << " A " << ( a_valid_isect ? Desc(a_isect) : "MISS" ) ;     
+    ss << " A " << ( a_valid_isect ? DescIsect(a_isect, a_pos) : "MISS" ) ;     
     std::string s = ss.str();
     return s ; 
 }
 
 std::string CSGIntersectComparisonTest::descB() const 
 {
+    float3 b_pos = ray_origin + b_isect.w*ray_direction ;  
     std::stringstream ss ; 
-    ss << " B " << ( b_valid_isect ? Desc(b_isect) : "MISS" ) ;     
+    ss << " B " << ( b_valid_isect ? DescIsect(b_isect, b_pos) : "MISS" ) ;     
     std::string s = ss.str();
     return s ; 
 }
@@ -140,6 +143,28 @@ std::string CSGIntersectComparisonTest::DescRay(const float3& o, const float3& v
     std::string s = ss.str();
     return s ; 
 }
+
+std::string CSGIntersectComparisonTest::DescIsect(const float4& isect, const float3& pos ) // static 
+{
+    std::stringstream ss ; 
+    ss 
+       << "("
+       << Desc(isect.x) 
+       << Desc(isect.y) 
+       << Desc(isect.z)
+       << Desc(isect.w)
+       << ";"
+       << Desc(pos.x) 
+       << Desc(pos.y) 
+       << Desc(pos.z)
+       << ")"
+       ;
+    std::string s = ss.str();
+    return s ; 
+}
+
+ 
+
 
 std::string CSGIntersectComparisonTest::Desc(const float3& v) // static 
 {
@@ -190,29 +215,23 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     float radius = 100.f ; 
-    float z1 = -1.f ; 
-    float z2 = 1.f ; 
+    float z2 = 50.f ; 
+    float z1 = -50.f ; 
 
     CSGNode a = CSGNode::Cylinder( 0.f, 0.f, radius, z1, z2 ) ; 
     CSGNode b = CSGNode::AltCylinder( radius, z1, z2 ) ; 
 
     CSGIntersectComparisonTest t(&a, &b); 
 
-    //t.intersect(); 
-    //t.xscan(); 
-
-    /*
-    t.ray_direction.x = -1.f ; 
+    t.ray_direction.x = 0.993f ; 
     t.ray_direction.y = 0.f ; 
-    t.ray_direction.z = 0.f ; 
+    t.ray_direction.z = 0.119f ; 
 
-    t.ray_origin.x =  -90.f ; 
+    t.ray_origin.x =  110.f ; 
     t.ray_origin.y =    0.f ; 
-    t.ray_origin.z =    0.f ; 
+    t.ray_origin.z =   40.f ; 
 
-    t.t_min = 1.f ; 
-
-    */
+    t.t_min = 0.f ; 
 
     t.intersect(); 
 

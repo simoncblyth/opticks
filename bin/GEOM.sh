@@ -1,9 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-GEOM.sh
-=========
+GEOM.sh : defines and exports GEOM envvar using string obtained from GEOM.txt file
+=====================================================================================
 
-In some situations it is more convenient to simply source a script 
+To change the string, and hence the GEOM envvar, 
+use the "geom" bash function from opticks/opticks.bash
+
+* HMM: notice that "geom" is distinct from "geom_" which does similar 
+
+This script does not make use of opticks bash functions 
+as in some situations it is more convenient to simply source a script 
 and not rely on the hookup of opticks.bash functions. 
 
 Usage::
@@ -32,6 +38,7 @@ local-opticks-geompath()
 
 local-opticks-geom () 
 { 
+    : cat the geompath excluding comments and when trim arg is used remove portion of string beginning with underscore
     local arg=${1:-trim}
     local geompath=$(local-opticks-geompath)
     local geom=""
@@ -47,6 +54,7 @@ local-opticks-geom ()
     fi;
     echo $geom
 }
+
 
 unset GEOM
 arg=${1:-asis}

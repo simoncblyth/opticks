@@ -18,8 +18,8 @@ GeoChainNodeTest.cc : testing the chain of geometry conversions for NNode trees
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    const char* name = SSys::getenvvar("GEOM", "sphere" ); 
 
+    const char* name = SSys::getenvvar("GEOM", "sphere" ); 
     nnode* root = nullptr ; 
     if(strcmp(name, "sphere") == 0)
     {
@@ -28,16 +28,15 @@ int main(int argc, char** argv)
 
     assert( root ); 
 
-    const char* base = GeoChain::BASE ; 
 
     unsetenv("OPTICKS_KEY"); 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
-    GeoChain chain(&ok); 
-    chain.convertNodeTree(root);  
-    chain.save(base, name); 
+    GeoChain gc(&ok); 
+    gc.convertNodeTree(root);  
+    gc.save(name); 
 
     return 0 ; 
 }

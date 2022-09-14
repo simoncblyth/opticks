@@ -44,6 +44,15 @@ if __name__ == '__main__':
     if not s is None:
         s_hit = s.simtrace[:,0,3]>0 
         s_pos = s.simtrace[s_hit][:,1,:3]
+
+        ## investigate unexpected top cap intersects : FIXED z2cap TYPO
+        ## 
+        ## e = np.logical_and( s.simtrace[:,2,0] > 100., np.logical_and( s.simtrace[:,1,0] > 120. , s.simtrace[:,0,3]>0 )) 
+        ## 
+        ## e_ori = s.simtrace[e][:100,2,:3]
+        ## e_dir = s.simtrace[e][:100,3,:3]
+        ## fr.mp_scatter(e_ori, label="e_ori", s=2 ) 
+        ## fr.mp_arrow(  e_ori, 10*e_dir, label="e_ori,e_dir", s=2 ) 
     pass
 
     if not t is None:

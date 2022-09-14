@@ -416,6 +416,15 @@ class sframe(object):
         H,V = self.axes 
         self.ax.scatter( pos[:,H], pos[:,V], **kwa)
 
+    def mp_arrow(self, pos, mom, **kwa):
+        assert pos.ndim == 2 and pos.shape[1] == 3
+        assert mom.ndim == 2 and mom.shape[1] == 3
+        assert len(pos) == len(mom)
+        H,V = self.axes 
+
+        for i in range(len(pos)):
+            self.ax.arrow( pos[i,H], pos[i,V], mom[i,H], mom[i,V] )
+        pass
  
 
 if __name__ == '__main__':

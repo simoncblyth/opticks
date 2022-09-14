@@ -121,8 +121,19 @@ Previously used the inconsistent flipped layout TMP/ExecutableName/GEOM which co
 
 const char* SOpticksResource::DefaultOutputDir()
 { 
-    return SPath::Resolve("$TMP", SSys::getenvvar("GEOM"), ExecutableName(), NOOP); 
+    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), ExecutableName(), NOOP); 
 }
+const char* SOpticksResource::DefaultGeometryDir()
+{ 
+    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), NOOP); 
+}
+const char* SOpticksResource::DefaultGeometryBase()
+{ 
+    return SPath::Resolve("$TMP/GEOM", NOOP); 
+}
+
+
+
 
 
 std::string SOpticksResource::Dump()
@@ -138,6 +149,8 @@ std::string SOpticksResource::Dump()
     const char* rng_dir = RNGDir() ; 
     const char* precooked_dir = PrecookedDir() ; 
     const char* outputdir = DefaultOutputDir(); 
+    const char* geometrydir = DefaultGeometryDir(); 
+    const char* geometrybase = DefaultGeometryBase(); 
     const char* runcache_dir = RuncacheDir() ; 
 
     bool setkey = true ; 
@@ -165,6 +178,8 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::RNGDir()                 " << ( rng_dir ? rng_dir : "-" )  << std::endl 
         << "SOpticksResource::PrecookedDir()           " << ( precooked_dir ? precooked_dir : "-" )  << std::endl 
         << "SOpticksResource::DefaultOutputDir()       " << ( outputdir ? outputdir : "-" ) << std::endl 
+        << "SOpticksResource::DefaultGeometryBase()    " << ( geometrybase ? geometrybase : "-" ) << std::endl 
+        << "SOpticksResource::DefaultGeometryDir()    " << ( geometrydir ? geometrydir : "-" ) << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
         << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
@@ -419,7 +434,11 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   PrecookedDir          |                                                     |
 +-------------------------+-----------------------------------------------------+
-|   DefaultOutputDir      |                                                     |
+|   DefaultOutputDir      | eg /tmp/blyth/opticks/GEOM/acyl/ExecutableName      |
++-------------------------+-----------------------------------------------------+
+|   DefaultGeometryDir    | eg /tmp/blyth/opticks/GEOM/acyl                     |
++-------------------------+-----------------------------------------------------+
+|   DefaultGeometryBase   | eg /tmp/blyth/opticks/GEOM                          |
 +-------------------------+-----------------------------------------------------+
 |   SomeGDMLPath          |                                                     |
 +-------------------------+-----------------------------------------------------+
@@ -446,6 +465,8 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "RNGDir")==0)           tok = SOpticksResource::RNGDir(); 
     else if( strcmp(key, "PrecookedDir")==0)     tok = SOpticksResource::PrecookedDir(); 
     else if( strcmp(key, "DefaultOutputDir")==0) tok = SOpticksResource::DefaultOutputDir(); 
+    else if( strcmp(key, "DefaultGeometryBase")==0) tok = SOpticksResource::DefaultGeometryBase(); 
+    else if( strcmp(key, "DefaultGeometryDir")==0) tok = SOpticksResource::DefaultGeometryDir(); 
     else if( strcmp(key, "SomeGDMLPath")==0)     tok = SOpticksResource::SomeGDMLPath(); 
     else if( strcmp(key, "GDMLPath")==0)         tok = SOpticksResource::GDMLPath(); 
     else if( strcmp(key, "CFBaseFromGEOM")==0)   tok = SOpticksResource::CFBaseFromGEOM(); 
