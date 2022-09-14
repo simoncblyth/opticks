@@ -1031,7 +1031,7 @@ float distance_leaf_cylinder( const float3& pos, const quad& q0, const quad& q1 
 intersect_leaf_altcylinder : try a much simpler approach 
 ---------------------------------------------------------------------------------------
 
-WARNING : UNTESTED
+WARNING : CURRENTLY TESTING IN tests/CSGIntersectComparisonTest.cc
 
 Giving up the pseudo-generality of *intersect_leaf_cylinder* looks to 
 provide the same roots with less flops : so that means less precision loss presumably.  
@@ -1081,8 +1081,8 @@ bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, 
     float t_cand = CUDART_INF_F ;
     if( t_near  > t_min && z_near   > z1 && z_near < z2 && t_near  < t_cand ) t_cand = t_near ; 
     if( t_far   > t_min && z_far    > z1 && z_far  < z2 && t_far   < t_cand ) t_cand = t_far ; 
-    if( t_z1cap > t_min && r2_z1cap < r2                && t_z1cap < t_cand ) t_cand = t_z1cap ; 
-    if( t_z2cap > t_min && r2_z2cap < r2                && t_z2cap < t_cand ) t_cand = t_z2cap ; 
+    if( t_z1cap > t_min && r2_z1cap <= r2               && t_z1cap < t_cand ) t_cand = t_z1cap ; 
+    if( t_z2cap > t_min && r2_z2cap <= r2               && t_z2cap < t_cand ) t_cand = t_z2cap ; 
 
     bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ; 
     if(valid_intersect)

@@ -39,6 +39,10 @@
 #include "PLOG.hh"
 
 
+#include "scuda.h"
+
+
+
 /*
 simon:optixrap blyth$ python -c 'import sys, os, numpy as np ; sys.exit(214) '
 simon:optixrap blyth$ echo $?
@@ -471,6 +475,9 @@ std::vector<float>* SSys::getenvfloatvec(const char* envkey, const char* fallbac
     return fvec ; 
 }
 
+
+
+
 int  SSys::getenvfloatvec( const char* envkey, std::vector<float>& fvec, const char* fallback, char delim )
 {
     char* line = getenv(envkey);
@@ -479,6 +486,29 @@ int  SSys::getenvfloatvec( const char* envkey, std::vector<float>& fvec, const c
     std::string s;
     while (std::getline(ss, s, delim)) fvec.push_back(atof_(s.c_str())) ; 
     return fvec.size(); 
+}
+
+float3 SSys::getenvfloat3( const char* envkey, const char* fallback, char delim  )
+{
+   std::vector<float> fvec ;  
+   getenvfloatvec(envkey, fvec, fallback, delim ); 
+   return make_float3( 
+              fvec.size() > 0 ? fvec[0] : 0.f , 
+              fvec.size() > 1 ? fvec[1] : 0.f , 
+              fvec.size() > 2 ? fvec[2] : 0.f  
+             );  
+}
+
+float4 SSys::getenvfloat4( const char* envkey, const char* fallback, char delim  )
+{
+   std::vector<float> fvec ;  
+   getenvfloatvec(envkey, fvec, fallback, delim ); 
+   return make_float4( 
+              fvec.size() > 0 ? fvec[0] : 0.f , 
+              fvec.size() > 1 ? fvec[1] : 0.f , 
+              fvec.size() > 2 ? fvec[2] : 0.f ,
+              fvec.size() > 3 ? fvec[3] : 0.f 
+            );  
 }
 
 

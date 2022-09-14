@@ -35,6 +35,9 @@ and detecting the interactivity level of the session.
 #include <vector>
 #include "plog/Severity.h"
 
+struct float3 ; 
+struct float4 ; 
+
 #include "SYSRAP_API_EXPORT.hh"
 
 class SYSRAP_API SSys {
@@ -75,6 +78,11 @@ class SYSRAP_API SSys {
 
      static std::vector<float>* getenvfloatvec(const char* envkey, const char* fallback="0,0,0", char delim=',' );
      static int                 getenvfloatvec( const char* envkey, std::vector<float>& fvec, const char* fallback="0,0,0", char delim=',' );
+
+     static float3  getenvfloat3( const char* envkey, const char* fallback="0,0,0",   char delim=','  ); 
+     static float4  getenvfloat4( const char* envkey, const char* fallback="0,0,0,0", char delim=','  ); 
+
+
      static std::string Desc(const std::vector<int>* ivec); 
 
      static std::vector<int>* getenvintvec(const char* envkey, char delim=',');
