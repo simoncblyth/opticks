@@ -25,6 +25,16 @@ bool CSGMaker::StartsWith( const char* n, const char* q ) // static
     return strlen(q) >= strlen(n) && strncmp(q, n, strlen(n)) == 0 ; 
 }
 
+
+
+void CSGMaker::GetNames(std::vector<std::string>& names ) // static
+{
+    std::stringstream ss(NAMES) ;    
+    std::string name ; 
+    while (std::getline(ss, name)) if(!name.empty()) names.push_back(name); 
+}
+
+
 /**
 CSGMaker::CanMake
 ------------------
@@ -56,7 +66,7 @@ Plane
 slab
 Slab
 cyli
-acyl
+ocyl
 disc
 vcub
 vtet
@@ -88,16 +98,6 @@ ithl
 bssc
 )LITERAL"; 
 
-void CSGMaker::GetNames(std::vector<std::string>& names ) // static
-{
-    std::stringstream ss(NAMES) ;    
-    std::string name ; 
-    while (std::getline(ss, name)) if(!name.empty()) names.push_back(name); 
-}
-
-
-
-
 // see CSGNode::MakeDemo for CSGNode level equivalent
 CSGSolid* CSGMaker::make(const char* name)
 {
@@ -114,7 +114,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("slab", name))     so = makeSlab(name) ;
     else if(StartsWith("Slab", name))     so = makeSlab(name) ;
     else if(StartsWith("cyli", name))     so = makeCylinder(name) ;
-    else if(StartsWith("acyl", name))     so = makeAltCylinder(name) ;
+    else if(StartsWith("ocyl", name))     so = makeOldCylinder(name) ;
     else if(StartsWith("disc", name))     so = makeDisc(name) ;
     else if(StartsWith("vcub", name))     so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("vtet", name))     so = makeConvexPolyhedronTetrahedron(name) ;
@@ -1142,12 +1142,8 @@ CSGSolid* CSGMaker::makeDifferenceCylinder( const char* label, float rmax, float
 {
     assert( rmax > rmin ); 
     assert( z2 > z1 ); 
-
-    float px = 0.f ;  
-    float py = 0.f ;  
-
-    CSGNode outer = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 
-    CSGNode inner = CSGNode::Cylinder( px, py,   rmin, z1*z_inner_factor, z2*z_inner_factor ); 
+    CSGNode outer = CSGNode::Cylinder( rmax, z1, z2 ); 
+    CSGNode inner = CSGNode::Cylinder( rmin, z1*z_inner_factor, z2*z_inner_factor ); 
     return makeBooleanTriplet(label, CSG_DIFFERENCE, outer, inner ); 
 }
 
@@ -1173,8 +1169,8 @@ CSGSolid* CSGMaker::makeBoxSubSubCylinder( const char* label, float fullside, fl
     CSGNode r = CSGNode::BooleanOperator(CSG_DIFFERENCE, -1); 
     CSGNode ll = CSGNode::Zero(); 
     CSGNode lr = CSGNode::Zero(); 
-    CSGNode rl = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 
-    CSGNode rr = CSGNode::Cylinder( 0.f, 0.f, rmin, z1*z_inner_factor, z2*z_inner_factor ); 
+    CSGNode rl = CSGNode::Cylinder( rmax, z1, z2 ); 
+    CSGNode rr = CSGNode::Cylinder( rmin, z1*z_inner_factor, z2*z_inner_factor ); 
     int meshIdx = -1 ;  
     return makeBooleanSeptuplet(label, t, l, r, ll, lr, rl, rr, meshIdx );  
 }
@@ -1232,7 +1228,10 @@ CSGSolid* CSGMaker::makeEllipsoid(  const char* label, float rx, float ry, float
 
 CSGSolid* CSGMaker::makeRotatedCylinder(const char* label, float px, float py, float radius, float z1, float z2, float ax, float ay, float az, float angle_deg )
 {
-    CSGNode nd = CSGNode::Cylinder( px, py, radius, z1, z2 ); 
+    assert( px == 0.f ); // not supported anymore  
+    assert( py == 0.f ); 
+
+    CSGNode nd = CSGNode::Cylinder( radius, z1, z2 ); 
     const Tran<double>* tr = Tran<double>::make_rotate(ax, ay, az, angle_deg ); 
     return makeSolid11(label, nd, nullptr, RCYL_MIDX, tr  ); 
 }
@@ -1302,16 +1301,16 @@ CSGSolid* CSGMaker::makeSlab(const char* label, float nx, float ny, float nz, fl
     return makeSolid11(label, nd, nullptr, SLAB_MIDX ); 
 }
 
-CSGSolid* CSGMaker::makeCylinder(const char* label, float px, float py, float radius, float z1, float z2)
+CSGSolid* CSGMaker::makeCylinder(const char* label, float radius, float z1, float z2)
 {
-    CSGNode nd = CSGNode::Cylinder( px, py, radius, z1, z2 ); 
+    CSGNode nd = CSGNode::Cylinder( radius, z1, z2 ); 
     return makeSolid11(label, nd, nullptr, CYLI_MIDX ); 
 }
 
-CSGSolid* CSGMaker::makeAltCylinder(const char* label, float radius, float z1, float z2)
+CSGSolid* CSGMaker::makeOldCylinder(const char* label, float radius, float z1, float z2)
 {
-    CSGNode nd = CSGNode::AltCylinder( radius, z1, z2 ); 
-    return makeSolid11(label, nd, nullptr, ACYL_MIDX ); 
+    CSGNode nd = CSGNode::OldCylinder( radius, z1, z2 ); 
+    return makeSolid11(label, nd, nullptr, OCYL_MIDX ); 
 }
 
 

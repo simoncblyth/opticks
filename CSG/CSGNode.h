@@ -264,8 +264,8 @@ struct CSG_API CSGNode
     static CSGNode Box3(float fullside); 
     static CSGNode Plane(float nx, float ny, float nz, float d);
     static CSGNode Slab(float nx, float ny, float nz, float d1, float d2 ) ;
-    static CSGNode Cylinder(float px, float py, float radius, float z1, float z2) ;
-    static CSGNode AltCylinder(float radius, float z1, float z2); 
+    static CSGNode Cylinder(   float radius, float z1, float z2) ;
+    static CSGNode OldCylinder(float radius, float z1, float z2); 
 
     static CSGNode InfCylinder(float radius, float hz ) ;
     static CSGNode InfPhiCut(  float startPhi_pi, float deltaPhi_pi ) ;

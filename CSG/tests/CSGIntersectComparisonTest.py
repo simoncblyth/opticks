@@ -21,7 +21,7 @@ if __name__ == '__main__':
     a_simtrace = s.a_simtrace.reshape(-1,4,4)
     b_simtrace = s.b_simtrace.reshape(-1,4,4)
 
-    fr = sframe.FakeXZ(e=120) 
+    fr = sframe.FakeXZ(e=300) 
 
     fig, ax = fr.mp_subplots(mp)  
 

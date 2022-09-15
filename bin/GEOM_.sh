@@ -50,7 +50,7 @@ EOU
 #geom=nmskMaskOut
 #geom=nmskMaskIn
 
-#geom=nmskSolidMaskTail
+geom=nmskSolidMaskTail
 #geom=nmskTailOuter
 #geom=nmskTailInner
 
@@ -64,13 +64,13 @@ EOU
 #geom=nmskTailInnerI
 #geom=nmskTailInnerIITube 
 
-
-#opt=U1
-#geom=${geom}__${opt}
-
-geom=acyl
+#geom=acyl
 #geom=cyli
 
+opt=U1
+case $geom in 
+   nmsk*) geom=${geom}__${opt} ;;
+esac
 
 export GEOM=${GEOM:-$geom}
 

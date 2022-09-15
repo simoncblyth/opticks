@@ -40,7 +40,7 @@ void lowlevel_test()
     float4 isect1 = make_float4(0.f, 0.f, 0.f, 0.f ); 
 
     bool valid_isect0 = intersect_leaf_cylinder(    isect0, q0, q1, t_min, ray_origin, ray_direction ); 
-    bool valid_isect1 = intersect_leaf_altcylinder( isect1, q0, q1, t_min, ray_origin, ray_direction ); 
+    bool valid_isect1 = intersect_leaf_oldcylinder( isect1, q0, q1, t_min, ray_origin, ray_direction ); 
 
 
 
@@ -69,7 +69,7 @@ void lowlevel_test()
 
 void midlevel_test()
 {
-    CSGNode nd = CSGNode::AltCylinder( 100.f , -1.f, 1.f ) ; 
+    CSGNode nd = CSGNode::Cylinder( 100.f , -1.f, 1.f ) ; 
 
     bool valid_isect(false); 
     float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ); 

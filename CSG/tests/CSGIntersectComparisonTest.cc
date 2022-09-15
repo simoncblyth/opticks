@@ -2,9 +2,11 @@
 CSGIntersectComparisonTest.cc
 ===============================
 
+Compare intersects onto two implementations of a CSGNode 
+
 ::
 
-    RAYORI=90,0,0 RAYDIR=1,0,0 TMIN=9 CSGIntersectComparisonTest
+    METHOD=intersect RAYORI=90,0,0 RAYDIR=1,0,0 TMIN=9 CSGIntersectComparisonTest
 
 **/
 
@@ -35,6 +37,17 @@ enum { X, Y, Z } ;
 struct CSGIntersectComparisonTest
 {
     static constexpr const char* FOLD = "$TMP/CSGIntersectComparisonTest" ; 
+
+    const char* METHOD ; 
+    bool FULL ; 
+    const char* RERUN ; 
+    NP* rerun ; 
+    const quad4* rr ; 
+
+    const char* AXES ; 
+    unsigned h ; 
+    unsigned v ; 
+    unsigned o ; 
 
     const CSGNode* a ; 
     const CSGNode* b ; 
@@ -71,6 +84,21 @@ struct CSGIntersectComparisonTest
     unsigned seed ; 
     SRng<double> rng ; 
     float margin ; 
+
+    float x0 ; 
+    float x1 ; 
+    float y0 ; 
+    float y1 ; 
+    float z0 ; 
+    float z1 ; 
+
+    float h0 ; 
+    float h1 ; 
+    float v0 ; 
+    float v1 ; 
+    float o0 ; 
+    float o1 ; 
+
     unsigned num ; 
 
     std::vector<quad4> a_simtrace ;  
@@ -88,6 +116,7 @@ struct CSGIntersectComparisonTest
     void intersect(); 
     unsigned smaller_sd() const ; 
 
+    static void LoadSimtrace( const quad4& st, float& t_min, float3& ori, float3& dir ); 
     static void FormSimtrace( quad4& st, const float4& isect, const float3& pos, float t_min, const float3& ori, const float3& dir ); 
     void save(); 
 
@@ -102,14 +131,35 @@ struct CSGIntersectComparisonTest
     void scan(int axis); 
 
     static unsigned OtherAxis(unsigned h, unsigned v); 
-    void random2D(unsigned h, unsigned v); 
+
+    void random2D(); 
+    void random2D_ray_origin();
+    void random2D_ray_direction(); 
+
+    void random2D_fixed_origin(); 
+ 
     void random3D(); 
+    void random3D_ray_origin();
+    void random3D_ray_direction(); 
+
+
+    void loaded(); 
+
+    void expected_miss(); 
+    void expected_hit(); 
+    void attempt_to_tickle_axial_issue(); 
+
+    bool match(const char* q) const ; 
+    void method(); 
+    bool is_intersect() const ; 
+
 
     std::string descGeom() const ; 
     std::string descRay() const ; 
     std::string descA() const ; 
     std::string descB() const ; 
     std::string descFull() const ; 
+    std::string desc_() const ; 
     std::string desc() const ; 
 
     static std::string DescRay(const float3& o, const float3& v, const float t_min ); 
@@ -121,6 +171,15 @@ struct CSGIntersectComparisonTest
 
 CSGIntersectComparisonTest::CSGIntersectComparisonTest( const CSGNode* a_, const CSGNode* b_ ) 
     : 
+    METHOD(SSys::getenvvar("METHOD", "loaded")),
+    FULL(SSys::getenvbool("FULL")),
+    RERUN(SSys::getenvvar("RERUN", "/tmp/simtrace.npy")),
+    rerun( NP::Load(RERUN) ),
+    rr( rerun ? (const quad4*)rerun->values<float>() : nullptr ),
+    AXES(SSys::getenvvar("AXES", "XZ")),
+    h( strlen(AXES) > 0 ? AXES[0] - 'X' : ~0u ),
+    v( strlen(AXES) > 1 ? AXES[1] - 'X' : ~0u ),
+    o( OtherAxis(h,v) ),
     a(a_), 
     b(b_),
     a_mn(a->mn()),
@@ -151,6 +210,18 @@ CSGIntersectComparisonTest::CSGIntersectComparisonTest( const CSGNode* a_, const
     seed(SSys::getenvunsigned("SEED", 1u)),
     rng(seed),
     margin(SSys::getenvfloat("MARGIN",1.2f)),
+    x0(mn[X]*margin),
+    x1(mx[X]*margin),
+    y0(mn[Y]*margin),
+    y1(mx[Y]*margin),
+    z0(mn[Z]*margin),
+    z1(mx[Z]*margin),
+    h0(mn[h]*margin), 
+    h1(mx[h]*margin), 
+    v0(mn[v]*margin), 
+    v1(mx[v]*margin), 
+    o0(mn[o]*margin), 
+    o1(mx[o]*margin), 
     num(SSys::getenvunsigned("NUM", 1000))
 {
     init(); 
@@ -238,17 +309,24 @@ void CSGIntersectComparisonTest::intersect()
     a_valid_isect = intersect_leaf( a_isect, a , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
     b_valid_isect = intersect_leaf( b_isect, b , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
 
+    status = ( int(a_valid_isect) << 1 ) | int(b_valid_isect) ; 
 
-    status = ( int(a_valid_isect) << 1 ) | int(b_valid_isect) ;   // 0: MISS MISS, 3: HIT HIT, 1/2 mixed   
+    // 0: A_MISS B_MISS  
+    // 1: A_MISS B_HIT  
+    // 2: A_HIT  B_MISS   
+    // 3: A_HIT  B_HIT
+
     a_pos = a_valid_isect ? ray_origin + a_isect.w*ray_direction : zero3 ;  
     b_pos = b_valid_isect ? ray_origin + b_isect.w*ray_direction : zero3 ;  
 
     a_sd = a_valid_isect ? distance_leaf(a_pos, a, nullptr, nullptr ) : -1.f ;  
     b_sd = b_valid_isect ? distance_leaf(b_pos, b, nullptr, nullptr ) : -1.f ;  
     sd_winner = smaller_sd() ;  
+    if( a_valid_isect && b_valid_isect ) sd_winner_stats[sd_winner] += 1u ;
 
     expected = is_expected();   // needs a_pos b_pos
-    if(expected == false) std::cout << desc() << std::endl; 
+    if(expected == false || is_intersect()) std::cout << desc() << std::endl; 
+
 
     quad4 sta ; 
     FormSimtrace(sta, a_isect, a_pos, t_min, ray_origin, ray_direction ); 
@@ -258,7 +336,6 @@ void CSGIntersectComparisonTest::intersect()
     FormSimtrace(stb, b_isect, b_pos, t_min, ray_origin, ray_direction ); 
     b_simtrace.push_back(stb); 
 
-    sd_winner_stats[sd_winner] += 1u ;
 }
 
 void CSGIntersectComparisonTest::save()
@@ -272,14 +349,27 @@ void CSGIntersectComparisonTest::save()
     NP::Write(fold, "b_simtrace.npy",  (float*)b_simtrace.data(), b_simtrace.size(), 4, 4 ); 
 }
 
-void CSGIntersectComparisonTest::FormSimtrace( quad4& st, const float4& isect, const float3& pos, float t_min, const float3& ori, const float3& dir )
+
+void CSGIntersectComparisonTest::LoadSimtrace( const quad4& st, float& tmin, float3& ori, float3& dir )
+{
+    tmin = st.q1.f.w ; 
+    ori.x = st.q2.f.x ; 
+    ori.y = st.q2.f.y ; 
+    ori.z = st.q2.f.z ; 
+
+    dir.x = st.q3.f.x ; 
+    dir.y = st.q3.f.y ; 
+    dir.z = st.q3.f.z ; 
+}
+
+void CSGIntersectComparisonTest::FormSimtrace( quad4& st, const float4& isect, const float3& pos, float tmin, const float3& ori, const float3& dir )
 {
     st.q0.f = isect ; 
 
     st.q1.f.x = pos.x ; 
     st.q1.f.y = pos.y ; 
     st.q1.f.z = pos.z ;
-    st.q1.f.w = t_min ;
+    st.q1.f.w = tmin ;
 
     st.q2.f.x = ori.x ; 
     st.q2.f.y = ori.y ; 
@@ -337,8 +427,6 @@ std::string CSGIntersectComparisonTest::descDiff() const
     return s ; 
 }
 
-
-
 std::string CSGIntersectComparisonTest::descGeom() const 
 {
     std::stringstream ss ; 
@@ -372,18 +460,27 @@ std::string CSGIntersectComparisonTest::descB() const
 std::string CSGIntersectComparisonTest::descFull() const
 {
     std::stringstream ss ; 
-    ss << descRay() << descA() << descB() << descDiff() ; 
+    ss << descRay() << std::endl 
+       << descA() << std::endl 
+       << descB() << std::endl 
+       << descDiff() ; 
     std::string s = ss.str();
     return s ; 
 }
 
-std::string CSGIntersectComparisonTest::desc() const
+std::string CSGIntersectComparisonTest::desc_() const
 {
     std::stringstream ss ; 
     ss << descRay() << descA() << descDiff() ; 
     std::string s = ss.str();
     return s ; 
 }
+std::string CSGIntersectComparisonTest::desc() const
+{
+    return FULL ? descFull() : desc_() ; 
+}
+
+
 std::string CSGIntersectComparisonTest::Desc(const float& v) // static 
 {
     std::stringstream ss ; 
@@ -459,14 +556,13 @@ std::string CSGIntersectComparisonTest::Desc(const float4& v) // static
 }
 void CSGIntersectComparisonTest::scan(int axis)
 {
-    float v_mn = mn[axis]*1.2f ; 
-    float v_mx = mx[axis]*1.2f ; 
+    float a_mn = mn[axis]*1.2f ; 
+    float a_mx = mx[axis]*1.2f ; 
+    float a_st = (a_mx - a_mn)/float(num) ;   
 
-    float v_st = (v_mx - v_mn)/100.f ;   
-
-    for(float v=v_mn ; v <= v_mx ; v+= v_st )
+    for(float a=a_mn ; a <= a_mx ; a += a_st )
     {
-        oo[axis] = v ; 
+        oo[axis] = a ; 
         intersect(); 
     }
 }
@@ -487,129 +583,162 @@ unsigned CSGIntersectComparisonTest::OtherAxis(unsigned h, unsigned v) // static
     return o ; 
 }
 
-void CSGIntersectComparisonTest::random2D(unsigned h, unsigned v)
+void CSGIntersectComparisonTest::random2D()
 {
-    unsigned o = OtherAxis(h,v); 
-    float h0 = mn[h]*margin ; 
-    float h1 = mx[h]*margin ; 
-
-    float v0 = mn[v]*margin ; 
-    float v1 = mx[v]*margin ; 
-
-    float o0 = mn[o]*margin ; 
-    float o1 = mx[o]*margin ; 
-    float ao = (o0 + o1)/2.f  ; 
-
-    double phi, sinPhi, cosPhi ; 
-
     for(unsigned i=0 ; i < num ; i++ )
     {
-        double u0 = rng() ; 
-        double u1 = rng() ; 
-        double u2 = rng() ; 
-
-        double ah = h0 + u0*(h1 - h0 ); 
-        double av = v0 + u1*(v1 - v0 ); 
-
-        oo[h] = ah ; 
-        oo[v] = av ; 
-        oo[o] = ao ; 
-        
-        phi = 2.*M_PIf*u2 ;     // azimuthal 0->2pi 
-        ssincos(phi,sinPhi,cosPhi);  
-
-        vv[h] = cosPhi ; 
-        vv[v] = sinPhi ; 
-        vv[o] = 0.f ; 
-   
+        random2D_ray_origin();
+        random2D_ray_direction();
         intersect(); 
     }
 }
+void CSGIntersectComparisonTest::random2D_fixed_origin()
+{
+    for(unsigned i=0 ; i < num ; i++ )
+    {
+        random2D_ray_direction();
+        intersect(); 
+    }
+}
+
+void CSGIntersectComparisonTest::random2D_ray_origin()
+{
+    double u0 = rng() ; 
+    double u1 = rng() ; 
+    float ah = h0 + u0*(h1 - h0 ); 
+    float av = v0 + u1*(v1 - v0 ); 
+    float ao = (o0 + o1)/2.f  ; 
+    oo[h] = ah ; 
+    oo[v] = av ; 
+    oo[o] = ao ; 
+}
+void CSGIntersectComparisonTest::random2D_ray_direction()
+{
+    double phi, sinPhi, cosPhi ; 
+
+    double u2 = rng() ; 
+    phi = 2.*M_PIf*u2 ;     // azimuthal 0->2pi 
+    ssincos(phi,sinPhi,cosPhi);  
+
+    vv[h] = cosPhi ; 
+    vv[v] = sinPhi ; 
+    vv[o] = 0.f ; 
+}
+
 
 void CSGIntersectComparisonTest::random3D()
 {
-    float x0 = mn[X]*margin ; 
-    float x1 = mx[X]*margin ; 
-
-    float y0 = mn[Y]*margin ; 
-    float y1 = mx[Y]*margin ; 
-
-    float z0 = mn[Z]*margin ; 
-    float z1 = mx[Z]*margin ; 
-
-    double phi, sinPhi, cosPhi  ;
-    double cosTheta, sinTheta ;  
-
     for(unsigned i=0 ; i < num ; i++ )
     {
-        double u0 = rng() ; 
-        double u1 = rng() ; 
-        double u2 = rng() ; 
-        double u3 = rng() ; 
-        double u4 = rng() ; 
-
-        oo[X] = x0 + u0*(x1 - x0 ); 
-        oo[Y] = y0 + u1*(y1 - y0 );
-        oo[Z] = z0 + u2*(z1 - z0 );
-
-        cosTheta = u3 ; 
-        sinTheta = sqrtf(1.0-cosTheta*cosTheta);
-
-        phi = 2.*M_PIf*u4 ;     // azimuthal 0->2pi 
-        ssincos(phi,sinPhi,cosPhi);  
-
-        vv[X] = sinTheta * cosPhi  ; 
-        vv[Y] = sinTheta * sinPhi  ; 
-        vv[Z] = cosTheta  ; 
-
+        random3D_ray_origin();
+        random3D_ray_direction();
         intersect(); 
     }
 }
 
-
-void test_one_expected_miss( CSGIntersectComparisonTest& t )
+void CSGIntersectComparisonTest::loaded()
 {
-    t.ray_direction.x = 0.993f ; 
-    t.ray_direction.y = 0.f ; 
-    t.ray_direction.z = 0.119f ;   // HMM: normalize ?
-
-    t.ray_origin.x =  110.f ; 
-    t.ray_origin.y =    0.f ; 
-    t.ray_origin.z =   40.f ; 
-
-    t.t_min = 0.f ; 
-
-    t.intersect(); 
+    assert( rerun ); 
+    LOG(info) << " rerun " << rerun->sstr() ; 
+    num = rerun->shape[0] ; 
+    for(unsigned i=0 ; i < num ; i++ )
+    {
+        const quad4& st = rr[i] ; 
+        LoadSimtrace( st, t_min, ray_origin, ray_direction ); 
+        intersect(); 
+    }
 }
-void test_one_expected_hit( CSGIntersectComparisonTest& t )
+
+void CSGIntersectComparisonTest::random3D_ray_origin()
 {
-    t.ray_direction = normalize(make_float3( 1.f, 1.f, 1.f) ); 
-    t.ray_origin    = make_float3( 0.f, 0.f, 0.f ); 
-    t.intersect(); 
+    double u0 = rng() ; 
+    double u1 = rng() ; 
+    double u2 = rng() ; 
+
+    oo[X] = x0 + u0*(x1 - x0 ); 
+    oo[Y] = y0 + u1*(y1 - y0 );
+    oo[Z] = z0 + u2*(z1 - z0 );
 }
+void CSGIntersectComparisonTest::random3D_ray_direction()
+{
+    double phi, sinPhi, cosPhi  ;
+    double cosTheta, sinTheta ;  
+
+    double u3 = rng() ; 
+    double u4 = rng() ; 
+
+    cosTheta = u3 ; 
+    sinTheta = sqrtf(1.0-cosTheta*cosTheta);
+
+    phi = 2.*M_PIf*u4 ;     // azimuthal 0->2pi 
+    ssincos(phi,sinPhi,cosPhi);  
+
+    vv[X] = sinTheta * cosPhi  ; 
+    vv[Y] = sinTheta * sinPhi  ; 
+    vv[Z] = cosTheta  ; 
+}
+
+void CSGIntersectComparisonTest::expected_miss()
+{
+    ray_origin = make_float3( 110.f, 0.f, 40.f ); 
+    ray_direction = normalize(make_float3(0.993f,0.f, 0.119f)) ; 
+    t_min = 0.f ; 
+    intersect(); 
+}
+void CSGIntersectComparisonTest::expected_hit()
+{
+    ray_origin    = make_float3( 0.f, 0.f, 0.f ); 
+    ray_direction = normalize(make_float3( 1.f, 1.f, 1.f) ); 
+    intersect(); 
+}
+void CSGIntersectComparisonTest::attempt_to_tickle_axial_issue()
+{
+    ray_origin.z = -100.f ; 
+    ray_origin.x = -264.f ; 
+    random2D_fixed_origin() ; 
+}
+
+bool CSGIntersectComparisonTest::match(const char* q) const 
+{
+    return strcmp(METHOD, q) == 0 ; 
+}
+void CSGIntersectComparisonTest::method()
+{
+    LOG(info) << " METHOD " << METHOD ; 
+
+    if(match("scanX"))         scan(X) ; 
+    if(match("scanY"))         scan(Y) ; 
+    if(match("scanZ"))         scan(Z) ; 
+    if(match("random2D"))      random2D() ; 
+    if(match("random3D"))      random3D() ; 
+    if(match("expected_miss")) expected_miss() ; 
+    if(match("expected_hit"))  expected_hit() ; 
+    if(match("loaded"))        loaded() ; 
+    if(match("intersect"))     intersect() ; 
+}
+
+bool CSGIntersectComparisonTest::is_intersect() const 
+{
+    return match("intersect") ; 
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    float radius = SSys::getenvfloat("RADIUS", 264.f)  ; 
     float hz = SSys::getenvfloat("HZ", 0.15f ); 
-    float radius = SSys::getenvfloat("RADIUS", 100.f)  ; 
-
     float z2 = hz ; 
     float z1 = -hz ; 
+    CSGNode a_nd = CSGNode::OldCylinder( radius, z1, z2 ) ; 
+    CSGNode b_nd = CSGNode::Cylinder(    radius, z1, z2 ) ; 
+    CSGNode* a = &a_nd ; 
+    CSGNode* b = &b_nd ; 
 
-    CSGNode a = CSGNode::Cylinder( 0.f, 0.f, radius, z1, z2 ) ; 
-    CSGNode b = CSGNode::AltCylinder( radius, z1, z2 ) ; 
 
-    CSGIntersectComparisonTest t(&a, &b); 
-
-    //test_one_expected_miss(t); 
-    //test_one_expected_hit(t); 
-
-    //t.scan(X) ; 
-    //t.random2D(X,Z) ; 
-    t.random3D() ; 
-
+    CSGIntersectComparisonTest t(a, b); 
+    t.method();     
     t.save(); 
 
     return 0 ; 

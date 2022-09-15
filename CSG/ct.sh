@@ -31,11 +31,11 @@ unset OPTICKS_INPUT_PHOTON
 
 export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 
-if [ "$GEOM" == "nmskSolidMaskTail__U1" ]; then 
-   export SELECTION=495871
+#if [ "$GEOM" == "nmskSolidMaskTail__U1" ]; then 
+   #export SELECTION=495871
    #export SELECTION=495871,512880
    #export FOCUS=257,-39,7
-fi 
+#fi 
 
 export TOPLINE="CSG/ct.sh GEOM $GEOM FOCUS $FOCUS"
 

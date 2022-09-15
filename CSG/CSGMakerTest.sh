@@ -11,7 +11,7 @@ Used to create small test geometries, often with single solids.::
    vi ~/.opticks/GEOM.txt   ## OR "geom" shortcut function 
                             ## uncomment or add GEOM name with projection suffix _XY etc..  
 
-   ./CSGMakerTest.sh        ## reads the GEOM and runs CSGMakerTest to create the CSGFoundry  
+   ./CSGMakerTest.sh        ## sources bin/GEOM.sh to set GEOM envvar and runs CSGMakerTest to create the CSGFoundry  
 
 Subsequenly visualize the geometry with::
 

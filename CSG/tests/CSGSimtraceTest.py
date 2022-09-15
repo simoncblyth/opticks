@@ -15,7 +15,7 @@ from opticks.ana.fold import Fold
 import matplotlib.pyplot as mp
 from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
-
+from opticks.CSG.Values import Values 
 from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist
 
 
@@ -30,6 +30,8 @@ if __name__ == '__main__':
         t = None
         fr = s.sframe
         s_geom = os.environ["GEOM"]
+
+        sv = Values.Find("$FOLD", symbol="sv") if not s_geom is None else None
     elif not SYMBOLS is None:
         ff = Fold.MultiLoad()
         frs = list(filter(None, map(lambda f:f.sframe, ff)))
