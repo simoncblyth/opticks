@@ -44,13 +44,13 @@ EOU
 #geom=hama_body_log
 #geom=J001
 #geom=J003
-#geom=nmskSolidMaskVirtual
+geom=nmskSolidMaskVirtual
 
 #geom=nmskSolidMask
 #geom=nmskMaskOut
 #geom=nmskMaskIn
 
-geom=nmskSolidMaskTail
+#geom=nmskSolidMaskTail
 #geom=nmskTailOuter
 #geom=nmskTailInner
 

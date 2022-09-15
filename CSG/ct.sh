@@ -3,7 +3,6 @@ usage(){ cat << EOU
 ct.sh : using CSGSimtraceTest
 ===============================
 
-
 1. load single solid GEOM from CSGFoundry folder, normally created by GeoChain/mtranslate.sh 
 2. load center-extent gensteps, just like X4SimtraceTest.cc does 
 3. use CSG intersection headers to get intersect positions using CUDA compatible code on the CPU 

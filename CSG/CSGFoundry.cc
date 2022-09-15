@@ -2152,14 +2152,24 @@ const char* CSGFoundry::load_FAIL_base_null_NOTES = R"(
 CSGFoundry::load_FAIL_base_null_NOTES
 ======================================
 
-Loading of the geometry failed as the base directory was not provided. 
-This typically means you are attempting to run an executable directly 
-when you should be running the script that sets up the needed environment
-that specifies which geometry directory to load. 
+You appear to be attempting to load a geometry folder that does not exist.  
+Perhaps this is due to incorrect envvars or the folder really does not exist.
+Scripts that can create geometry folders include:
+
+* GeoChain/translate.sh 
+* GeoChain/mtranslate.sh 
+* CSG/CSGMakerTest.sh 
+
+GeoChain typically converts a Geant4 geometry into CSG and saves the CSGFoundry folder.
+CSGMaker saves a CSGFoundry geometry that was authored directly in CSG. 
+
+
+Attempting to run an executable directly rather than the script 
+that sets up the environment can cause such errors.
 
 This error can also happen when attempting to load event+geometry
 that was previously written to directories below /tmp 
-but has subsequently been "cleaned" living the directory structure
+but has subsequently been "cleaned" leaving the directory structure
 but with all the directories emptied. 
 
 Relevant envvars : CFBASE and GEOM 

@@ -1,5 +1,7 @@
-ct_scan_nmskTailInner
-========================
+ct_scan_nmskTailInner FIXED by new CSG_CYLINDER implemntation
+=================================================================
+
+* next :doc:`nmskSolidMaskVirtual_G4Polycone_spurious_line_between_hat_and_head`
 
 
 CONFIRMED : Adoption of new CSG_CYLINDER (the old CSG_ALTCYLINDER) avoids spurious

@@ -15,10 +15,6 @@ EOU
 
 
 
-geomlist_nmskSolidMaskVirtual(){ cat << EOL
-nmskSolidMaskVirtual
-EOL
-}
 
 geomlist_nmskSolidMask(){ cat << EOL
 nmskSolidMask
@@ -32,7 +28,6 @@ EOL
 }
 
 geomlist_nmskSolidMaskTail(){ cat << EOL | grep -v ^#
-
 
 nmskSolidMaskTail
 
@@ -70,16 +65,24 @@ nmskTailOuterIITube
 EOL
 }
 
-geomlist1(){ cat << EOL | grep -v ^#
+geomlist_short(){ cat << EOL | grep -v ^#
+nmskSolidMaskVirtual
 nmskTailInnerITube
 nmskTailOuterITube
 EOL
 }
 
+geomlist_one(){ cat << EOL | grep -v ^#
+nmskSolidMaskVirtual
+EOL
+}
+
+
+
 
 #opt=__U0
 opt=__U1
-for geom in $(geomlist) ; do 
+for geom in $(geomlist_one) ; do 
    echo $BASH_SOURCE geom $geom opt $opt 
    GEOM=${geom}${opt} ./translate.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE translate error for geom $geom && exit 1
