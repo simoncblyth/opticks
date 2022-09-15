@@ -12,6 +12,7 @@ CSGIntersectComparisonTest.cc
 #include "OPTICKS_LOG.hh"
 #include <cmath>
 #include <vector>
+#include <map>
 
 #include "scuda.h"
 #include "squad.h"
@@ -23,7 +24,7 @@ CSGIntersectComparisonTest.cc
 #include "SPath.hh"
 #include "NP.hh"
 
-#define DEBUG 1 
+//#define DEBUG 1 
 #include "csg_intersect_leaf.h"
 
 #include "CSGNode.h"
@@ -56,6 +57,10 @@ struct CSGIntersectComparisonTest
     float3 zero3 ; 
     float3 a_pos ; 
     float3 b_pos ; 
+    float  a_sd ; 
+    float  b_sd ; 
+    unsigned sd_winner ; 
+    std::map<unsigned, unsigned> sd_winner_stats ; 
 
     float t_min ; 
     float3 ray_origin ; 
@@ -65,16 +70,24 @@ struct CSGIntersectComparisonTest
 
     unsigned seed ; 
     SRng<double> rng ; 
+    float margin ; 
+    unsigned num ; 
+
     std::vector<quad4> a_simtrace ;  
     std::vector<quad4> b_simtrace ;  
 
 
     CSGIntersectComparisonTest( const CSGNode* a, const CSGNode* b ); 
+    void init(); 
+    std::string descStats() const ; 
+
     static void Zero(float4& v); 
     static void Zero(float3& v); 
     void zero(); 
 
     void intersect(); 
+    unsigned smaller_sd() const ; 
+
     static void FormSimtrace( quad4& st, const float4& isect, const float3& pos, float t_min, const float3& ori, const float3& dir ); 
     void save(); 
 
@@ -90,6 +103,7 @@ struct CSGIntersectComparisonTest
 
     static unsigned OtherAxis(unsigned h, unsigned v); 
     void random2D(unsigned h, unsigned v); 
+    void random3D(); 
 
     std::string descGeom() const ; 
     std::string descRay() const ; 
@@ -99,7 +113,7 @@ struct CSGIntersectComparisonTest
     std::string desc() const ; 
 
     static std::string DescRay(const float3& o, const float3& v, const float t_min ); 
-    static std::string DescIsect(const float4& isect, const float3& pos ); 
+    static std::string DescIsect(const float4& isect, const float3& pos, const float sd ); 
     static std::string Desc(const float& v); 
     static std::string Desc(const float3& v); 
     static std::string Desc(const float4& v); 
@@ -126,16 +140,24 @@ CSGIntersectComparisonTest::CSGIntersectComparisonTest( const CSGNode* a_, const
     zero3( make_float3( 0.f, 0.f, 0.f )), 
     a_pos( make_float3( 0.f, 0.f, 0.f )),
     b_pos( make_float3( 0.f, 0.f, 0.f )),
+    a_sd(0.f),
+    b_sd(0.f),
+    sd_winner(0u),
     t_min(SSys::getenvint("TMIN",0.f)),
     ray_origin(   SSys::getenvfloat3("RAYORI","0,0,0")), 
     ray_direction(SSys::getenvfloat3norm("RAYDIR","0,0,1")),
     oo((float*)&ray_origin),
     vv((float*)&ray_direction),
     seed(SSys::getenvunsigned("SEED", 1u)),
-    rng(seed)
+    rng(seed),
+    margin(SSys::getenvfloat("MARGIN",1.2f)),
+    num(SSys::getenvunsigned("NUM", 1000))
 {
-    std::cout << descGeom() ; 
+    init(); 
+}
 
+void CSGIntersectComparisonTest::init()
+{ 
     assert( a_mn.x == b_mn.x ); 
     assert( a_mn.y == b_mn.y ); 
     assert( a_mn.z == b_mn.z );
@@ -143,6 +165,43 @@ CSGIntersectComparisonTest::CSGIntersectComparisonTest( const CSGNode* a_, const
     assert( a_mx.x == b_mx.x ); 
     assert( a_mx.y == b_mx.y ); 
     assert( a_mx.z == b_mx.z );
+
+    sd_winner_stats[0u] = 0u ; 
+    sd_winner_stats[1u] = 0u ; 
+    sd_winner_stats[2u] = 0u ; 
+}
+
+std::string CSGIntersectComparisonTest::descStats() const 
+{
+    std::vector<std::string> labels = {{
+        "sd_winner_stats[0u] A=B (draw  )", 
+        "sd_winner_stats[1u] A<B (A wins)",
+        "sd_winner_stats[2u] A>B (B wins)",
+        "                         TOTAL: "
+        }} ; 
+
+
+    unsigned total = 0u ;   
+    for(unsigned i=0 ; i < 3 ; i++ ) total += sd_winner_stats.at(i) ; 
+
+    std::stringstream ss ; 
+    ss << "descStats" << std::endl  ; 
+
+    for(unsigned i=0 ; i < 3 ; i++)
+    {
+        ss << std::setw(30) << labels[i] 
+           << std::setw(10) << sd_winner_stats.at(i)
+           << std::fixed << std::setw(10) << std::setprecision(4) << float(sd_winner_stats.at(i))/float(total) 
+           << std::endl
+           ; 
+    }
+    ss << std::setw(30) << labels[3]
+       << std::setw(10) << total 
+       << std::endl 
+       ; 
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void CSGIntersectComparisonTest::Zero(float4& v)
@@ -166,14 +225,27 @@ void CSGIntersectComparisonTest::zero()
     Zero(b_pos);  
 }
 
+unsigned CSGIntersectComparisonTest::smaller_sd() const
+{
+    float abs_a = std::abs(a_sd) ; 
+    float abs_b = std::abs(b_sd) ; 
+    return abs_a == abs_b ? 0u : ( abs_a < abs_b ? 1u : 2u ) ; 
+} 
+
 void CSGIntersectComparisonTest::intersect()
 {
     zero(); 
     a_valid_isect = intersect_leaf( a_isect, a , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
     b_valid_isect = intersect_leaf( b_isect, b , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
+
+
     status = ( int(a_valid_isect) << 1 ) | int(b_valid_isect) ;   // 0: MISS MISS, 3: HIT HIT, 1/2 mixed   
     a_pos = a_valid_isect ? ray_origin + a_isect.w*ray_direction : zero3 ;  
     b_pos = b_valid_isect ? ray_origin + b_isect.w*ray_direction : zero3 ;  
+
+    a_sd = a_valid_isect ? distance_leaf(a_pos, a, nullptr, nullptr ) : -1.f ;  
+    b_sd = b_valid_isect ? distance_leaf(b_pos, b, nullptr, nullptr ) : -1.f ;  
+    sd_winner = smaller_sd() ;  
 
     expected = is_expected();   // needs a_pos b_pos
     if(expected == false) std::cout << desc() << std::endl; 
@@ -185,10 +257,15 @@ void CSGIntersectComparisonTest::intersect()
     quad4 stb ; 
     FormSimtrace(stb, b_isect, b_pos, t_min, ray_origin, ray_direction ); 
     b_simtrace.push_back(stb); 
+
+    sd_winner_stats[sd_winner] += 1u ;
 }
 
 void CSGIntersectComparisonTest::save()
 {
+    LOG(info) << std::endl << descGeom() ; 
+    LOG(info) << std::endl << descStats() ; 
+
     const char* fold = SPath::Resolve(FOLD, DIRPATH); 
     LOG(info) << fold ; 
     NP::Write(fold, "a_simtrace.npy",  (float*)a_simtrace.data(), a_simtrace.size(), 4, 4 ); 
@@ -281,14 +358,14 @@ std::string CSGIntersectComparisonTest::descRay() const
 std::string CSGIntersectComparisonTest::descA() const 
 {
     std::stringstream ss ; 
-    ss << " A " << ( a_valid_isect ? DescIsect(a_isect, a_pos) : "MISS" ) ;     
+    ss << " A " << ( a_valid_isect ? DescIsect(a_isect, a_pos, a_sd) : "MISS" ) ;     
     std::string s = ss.str();
     return s ; 
 }
 std::string CSGIntersectComparisonTest::descB() const 
 {
     std::stringstream ss ; 
-    ss << " B " << ( b_valid_isect ? DescIsect(b_isect, b_pos) : "MISS" ) ;     
+    ss << " B " << ( b_valid_isect ? DescIsect(b_isect, b_pos, b_sd) : "MISS" ) ;     
     std::string s = ss.str();
     return s ; 
 }
@@ -333,7 +410,7 @@ std::string CSGIntersectComparisonTest::DescRay(const float3& o, const float3& v
     std::string s = ss.str();
     return s ; 
 }
-std::string CSGIntersectComparisonTest::DescIsect(const float4& isect, const float3& pos ) // static 
+std::string CSGIntersectComparisonTest::DescIsect(const float4& isect, const float3& pos, const float sd ) // static 
 {
     std::stringstream ss ; 
     ss 
@@ -346,6 +423,8 @@ std::string CSGIntersectComparisonTest::DescIsect(const float4& isect, const flo
        << Desc(pos.x) 
        << Desc(pos.y) 
        << Desc(pos.z)
+       << ";"
+       << std::scientific << sd 
        << ")"
        ;
     std::string s = ss.str();
@@ -394,6 +473,9 @@ void CSGIntersectComparisonTest::scan(int axis)
 
 unsigned CSGIntersectComparisonTest::OtherAxis(unsigned h, unsigned v) // static
 {
+    assert( h != v ); 
+    assert( h < 3 ); 
+    assert( v < 3 ); 
     // identify the other axis 
     unsigned o = 0u ; 
     if( h == 0u && v == 1u ) o = 2u ; 
@@ -407,14 +489,7 @@ unsigned CSGIntersectComparisonTest::OtherAxis(unsigned h, unsigned v) // static
 
 void CSGIntersectComparisonTest::random2D(unsigned h, unsigned v)
 {
-    assert( h != v ); 
-    assert( h < 3 ); 
-    assert( v < 3 ); 
     unsigned o = OtherAxis(h,v); 
-    unsigned n = SSys::getenvunsigned("NUM", 1000) ; 
-
-    float margin = 1.2f ; 
-
     float h0 = mn[h]*margin ; 
     float h1 = mx[h]*margin ; 
 
@@ -425,11 +500,9 @@ void CSGIntersectComparisonTest::random2D(unsigned h, unsigned v)
     float o1 = mx[o]*margin ; 
     float ao = (o0 + o1)/2.f  ; 
 
-
     double phi, sinPhi, cosPhi ; 
 
-
-    for(unsigned i=0 ; i < n ; i++ )
+    for(unsigned i=0 ; i < num ; i++ )
     {
         double u0 = rng() ; 
         double u1 = rng() ; 
@@ -453,6 +526,45 @@ void CSGIntersectComparisonTest::random2D(unsigned h, unsigned v)
     }
 }
 
+void CSGIntersectComparisonTest::random3D()
+{
+    float x0 = mn[X]*margin ; 
+    float x1 = mx[X]*margin ; 
+
+    float y0 = mn[Y]*margin ; 
+    float y1 = mx[Y]*margin ; 
+
+    float z0 = mn[Z]*margin ; 
+    float z1 = mx[Z]*margin ; 
+
+    double phi, sinPhi, cosPhi  ;
+    double cosTheta, sinTheta ;  
+
+    for(unsigned i=0 ; i < num ; i++ )
+    {
+        double u0 = rng() ; 
+        double u1 = rng() ; 
+        double u2 = rng() ; 
+        double u3 = rng() ; 
+        double u4 = rng() ; 
+
+        oo[X] = x0 + u0*(x1 - x0 ); 
+        oo[Y] = y0 + u1*(y1 - y0 );
+        oo[Z] = z0 + u2*(z1 - z0 );
+
+        cosTheta = u3 ; 
+        sinTheta = sqrtf(1.0-cosTheta*cosTheta);
+
+        phi = 2.*M_PIf*u4 ;     // azimuthal 0->2pi 
+        ssincos(phi,sinPhi,cosPhi);  
+
+        vv[X] = sinTheta * cosPhi  ; 
+        vv[Y] = sinTheta * sinPhi  ; 
+        vv[Z] = cosTheta  ; 
+
+        intersect(); 
+    }
+}
 
 
 void test_one_expected_miss( CSGIntersectComparisonTest& t )
@@ -480,10 +592,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    float hz = 0.1f ; 
-    //float hz = 50.f ; 
+    float hz = SSys::getenvfloat("HZ", 0.15f ); 
+    float radius = SSys::getenvfloat("RADIUS", 100.f)  ; 
 
-    float radius = 100.f ; 
     float z2 = hz ; 
     float z1 = -hz ; 
 
@@ -496,7 +607,8 @@ int main(int argc, char** argv)
     //test_one_expected_hit(t); 
 
     //t.scan(X) ; 
-    t.random2D(X,Z) ; 
+    //t.random2D(X,Z) ; 
+    t.random3D() ; 
 
     t.save(); 
 

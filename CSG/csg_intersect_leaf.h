@@ -1642,6 +1642,7 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
         case CSG_CONVEXPOLYHEDRON: distance = distance_leaf_convexpolyhedron(  local_position, node, plan )         ; break ;
         case CSG_BOX3:             distance = distance_leaf_box3(              local_position, node->q0 )           ; break ;
         case CSG_CYLINDER:         distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
+        case CSG_ALTCYLINDER:      distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_PLANE:            distance = distance_leaf_plane(             local_position, node->q0 )           ; break ;
         case CSG_SLAB:             distance = distance_leaf_slab(              local_position, node->q0, node->q1 ) ; break ;
         case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;

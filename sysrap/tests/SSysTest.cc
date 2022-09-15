@@ -272,6 +272,11 @@ void test_getenvunsigned_fallback_max()
     unsigned pidx = SSys::getenvunsigned_fallback_max("PIDX"); 
     LOG(info) << " pidx " << pidx << " 0x" << std::hex << pidx << std::dec; 
 }
+void test_getenvunsigned()
+{
+    unsigned num = SSys::getenvunsigned("NUM", 0u); 
+    LOG(info) << " NUM " << num ; 
+}
 
 
 
@@ -303,9 +308,10 @@ int main(int argc , char** argv )
     test_RunPythonScript(); 
     test_OS(); 
     test_getenvfloatvec(); 
+    test_getenvunsigned_fallback_max(); 
     **/
 
-    test_getenvunsigned_fallback_max(); 
+    test_getenvunsigned(); 
 
 
 

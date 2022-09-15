@@ -2,6 +2,84 @@ ct_scan_nmskTailInner
 ========================
 
 
+Finding the winner cylinder imp : by which has smaller surface distance 
+----------------------------------------------------------------------------------------
+
+* get draw 75% of time with ALT_CYLINDER winning almost 25% of time and old cylinder only 0.3% 
+
+::
+
+    HZ=0.15 NUM=1000000 ./CSGIntersectComparisonTest.sh 
+
+    2022-09-15 10:28:46.077 INFO  [6399244] [CSGIntersectComparisonTest::save@266] 
+     A CSGNode     0  cy aabb:  -100.0  -100.0    -0.2   100.0   100.0     0.2  trIdx:     0 subNum:  -1 subOffset::  -1
+     B CSGNode     0  al aabb:  -100.0  -100.0    -0.2   100.0   100.0     0.2  trIdx:     0 subNum:  -1 subOffset::  -1
+     a_mn ( -100.00 -100.00   -0.15)
+     b_mn ( -100.00 -100.00   -0.15)
+     a_mx (  100.00  100.00    0.15)
+     b_mx (  100.00  100.00    0.15)
+
+    2022-09-15 10:28:46.077 INFO  [6399244] [CSGIntersectComparisonTest::save@267] 
+    descStats
+    sd_winner_stats[0u] A=B (draw  )    751845    0.7518
+    sd_winner_stats[1u] A<B (A wins)      3006    0.0030
+    sd_winner_stats[2u] A>B (B wins)    245149    0.2451
+                             TOTAL:    1000000
+
+    2022-09-15 10:28:46.077 INFO  [6399244] [CSGIntersectComparisonTest::save@270] /tmp/blyth/opticks/CSGIntersectComparisonTest
+    INFO:opticks.ana.fold:Fold.Load args ['/tmp/blyth/opticks/CSGIntersectComparisonTest'] 
+    Fold : symbol s base /tmp/blyth/opticks/CSGIntersectComparisonTest 
+
+
+
+
+Curious quantization in dmax
+------------------------------
+
+::
+
+    epsilon:tests blyth$ ./CSGIntersectComparisonTest.sh 
+     A CSGNode     0  cy aabb:  -100.0  -100.0    -0.2   100.0   100.0     0.2  trIdx:     0 subNum:  -1 subOffset::  -1
+     B CSGNode     0  al aabb:  -100.0  -100.0    -0.2   100.0   100.0     0.2  trIdx:     0 subNum:  -1 subOffset::  -1
+     a_mn ( -100.00 -100.00   -0.15)
+     b_mn ( -100.00 -100.00   -0.15)
+     a_mx (  100.00  100.00    0.15)
+     b_mx (  100.00  100.00    0.15)
+    (  -24.48    0.00   -0.10;   -1.00    0.00    0.00;    0.00) A (    0.00    0.00    1.00   55.65;  -80.13    0.00    0.15) status 3 dpos 2.980232e-08 ddis 3.814697e-06 dnrm 0.000000e+00 dmax 3.814697e-06
+    (  -39.23    0.00    0.02;   -0.86    0.00    0.51;    0.00) A (    0.00    0.00    1.00    0.26;  -39.45    0.00    0.15) status 3 dpos 3.814697e-06 ddis -2.980232e-08 dnrm 0.000000e+00 dmax 3.814697e-06
+    (   45.25    0.00    0.03;   -0.99    0.00    0.11;    0.00) A (    0.00    0.00    1.00    1.08;   44.17    0.00    0.15) status 3 dpos 3.814697e-06 ddis -1.192093e-07 dnrm 0.000000e+00 dmax 3.814697e-06
+    (  -52.67    0.00    0.04;   -1.00    0.00   -0.00;    0.00) A (   -1.00    0.00    0.00   47.33; -100.00    0.00   -0.03) status 3 dpos 0.000000e+00 ddis 3.814697e-06 dnrm 0.000000e+00 dmax 3.814697e-06
+    (   87.26    0.00   -0.12;   -0.92    0.00    0.38;    0.00) A (    0.00    0.00    1.00    0.71;   86.60    0.00    0.15) status 3 dpos 7.629395e-06 ddis -1.192093e-07 dnrm 0.000000e+00 dmax 7.629395e-06
+    ( -102.53    0.00    0.00;    1.00    0.00    0.02;    0.00) A (   -1.00    0.00    0.00    2.53; -100.00    0.00    0.07) status 3 dpos 5.215406e-08 ddis 2.145767e-06 dnrm 0.000000e+00 dmax 2.145767e-06
+    (  -70.85    0.00    0.14;    1.00    0.00    0.01;    0.00) A (    0.00    0.00    1.00    0.80;  -70.05    0.00    0.15) status 3 dpos 1.490116e-08 ddis 1.251698e-06 dnrm 0.000000e+00 dmax 1.251698e-06
+    (  100.00    0.00   -0.00;   -0.96    0.00   -0.29;    0.00) A (    1.00    0.00    0.00    0.00;  100.00    0.00   -0.00) status 3 dpos 0.000000e+00 ddis 1.025386e-06 dnrm 0.000000e+00 dmax 1.025386e-06
+    (   97.03    0.00   -0.14;   -1.00    0.00    0.06;    0.00) A (    0.00    0.00    1.00    5.17;   91.88    0.00    0.15) status 3 dpos 7.629395e-06 ddis -4.768372e-07 dnrm 0.000000e+00 dmax 7.629395e-06
+    2022-09-15 09:23:05.770 INFO  [6327465] [CSGIntersectComparisonTest::save@193] /tmp/blyth/opticks/CSGIntersectComparisonTest
+    INFO:opticks.ana.fold:Fold.Load args ['/tmp/blyth/opticks/CSGIntersectComparisonTest'] 
+    Fold : symbol s base /tmp/blyth/opticks/CSGIntersectComparisonTest 
+    s
+
+    CMDLINE:/Users/blyth/opticks/CSG/tests/CSGIntersectComparisonTest.py
+    s.base:/tmp/blyth/opticks/CSGIntersectComparisonTest
+
+      : s.b_simtrace                                       :         (1000, 4, 4) : 0:00:01.676975 
+      : s.a_simtrace                                       :         (1000, 4, 4) : 0:00:01.678797 
+
+     min_stamp : 2022-09-15 09:23:05.772675 
+     max_stamp : 2022-09-15 09:23:05.774497 
+     dif_stamp : 0:00:00.001822 
+     age_stamp : 0:00:01.676975 
+    7.6293945e-06
+    xlim:[-120  120] ylim:[-120  120] FOCUS:[0. 0. 0.] 
+
+    In [1]: 3.814697*2                                                                                                                                                                                                                                                 
+    Out[1]: 7.629394
+
+
+
+
+
+
 Testing acyl
 ---------------
 
@@ -20,62 +98,13 @@ Using that acyl ct.sh scan shows unexpected intersects along top face, that are 
 
 
 
-
-
-
 Implemented a simpler CSG_ALTCYLINDER for comparison of numerical robustness with CSG_CYLINDER
 --------------------------------------------------------------------------------------------------
+
 
 ::
 
     1044 bool intersect_leaf_altcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
-    1045 {
-    1046     const float& r  = q0.f.w ; 
-    1047     const float& z1 = q1.f.x  ; 
-    1048     const float& z2 = q1.f.y  ; 
-    1049     const float& ox = ray_origin.x ;
-    1050     const float& oy = ray_origin.y ;
-    1051     const float& oz = ray_origin.z ;
-    1052     const float& vx = ray_direction.x ;
-    1053     const float& vy = ray_direction.y ;
-    1054     const float& vz = ray_direction.z ;
-    1055     
-    1056     float a = vx*vx + vy*vy ;     // see CSG/sympy_cylinder.py 
-    1057     float b = ox*vx + oy*vy ;
-    1058     float c = ox*ox + oy*oy - r*r ;
-    1059     float disc = b*b-a*c;
-    1060     
-    1061     float t_cand = CUDART_INF_F ;
-    1062     float t_near = CUDART_INF_F ;
-    1063     float t_far  = CUDART_INF_F ;
-    1064     float t_z1cap = (z1 - oz)/vz ;
-    1065     float t_z2cap = (z2 - oz)/vz ;
-    1066     
-    1067     if(disc > 0.f)  // has intersections with the infinite cylinder
-    1068     {
-    1069         float sdisc ;
-    1070         robust_quadratic_roots(t_near, t_far, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
-    1071         float z_near = oz+t_near*vz ;  
-    1072         float z_far  = oz+t_far*vz ;   
-    1073         if( t_near > t_min && z_near > z1 && z_near < z2 && t_near < t_cand ) t_cand = t_near ;
-    1074         if( t_far  > t_min && z_far  > z1 && z_far  < z2 && t_far  < t_cand ) t_cand = t_far ; 
-    1075     }   
-    1076     
-    1077     if( t_z1cap > t_min && t_z1cap < t_cand ) t_cand = t_z1cap ;
-    1078     if( t_z2cap > t_min && t_z2cap < t_cand ) t_cand = t_z2cap ;
-    1079     
-    1080     bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ;
-    1081     if(valid_intersect)
-    1082     {
-    1083         bool sheet = ( t_cand == t_near || t_cand == t_far ) ;
-    1084         isect.x = sheet ? (ox + t_cand*vx)/r : 0.f ; 
-    1085         isect.y = sheet ? (oy + t_cand*vy)/r : 0.f ; 
-    1086         isect.z = sheet ? 0.f : ( t_cand == t_z1cap ? -1.f : 1.f) ;
-    1087         isect.w = t_cand ;      
-    1088     }
-    1089     return valid_intersect ;
-    1090 }
-
 
 
 nmskTailOuterITube and nmskTailOuterITube : checkz has peak at expected place but large cloud
@@ -262,6 +291,8 @@ But the area can ve given by a different choice of sides too, so:
 
 hmm : a simpler ray-cylinder intersection func would be good
 ---------------------------------------------------------------
+
+* implemnented CSG_ALTCYLINDER 
 
 The below approach looks nice but it doesnt handle the endcaps and axial rays 
 which are giving the trouble. 
