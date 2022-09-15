@@ -13,6 +13,23 @@ class Fold(object):
 
     @classmethod
     def MultiLoad(cls, symbols=None):
+        """
+        Values are read from the environment and added to the invoking global context
+        using the builtins module. The prefixes are obtained from the SYMBOLS envvar 
+        which defaults to "S,T".  
+
+        Crucially in addition directory paths provided by S_FOLD and T_FOLD
+        are loaded as folders and variables are added to global context. 
+
+        The default SYMBOLS would transmogrify:
+
+        * S_LABEL -> s_label 
+        * T_LABEL -> t_label 
+        * S_FOLD -> s 
+        * T_FOLD -> t 
+
+        In addition an array [s,t] is returned 
+        """
         if symbols is None:
             symbols = os.environ.get("SYMBOLS", "S,T").split(",")
         pass
@@ -20,10 +37,10 @@ class Fold(object):
         ff = []
         for symbol in symbols:
             ekey = "$%s_FOLD" % symbol.upper() 
-            geom = os.environ.get("%s_GEOM" % symbol.upper(), None)
-            setattr(builtins, "%s_geom" % symbol.lower(), geom)
-            log.info("symbol %s ekey %s geom %s " % (symbol,ekey, geom)) 
-            if not geom is None:
+            label = os.environ.get("%s_LABEL" % symbol.upper(), None)
+            setattr(builtins, "%s_label" % symbol.lower(), label)
+            log.info("symbol %s ekey %s label %s " % (symbol,ekey, label)) 
+            if not label is None:
                 f = Fold.Load(ekey, symbol=symbol.lower() )
                 ff.append(f)
             else:

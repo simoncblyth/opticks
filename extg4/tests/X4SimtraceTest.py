@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as mp
 from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
+from opticks.ana.eget import efloatarray_
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -22,7 +23,7 @@ if __name__ == '__main__':
         s = Fold.Load(symbol="s")
         t = None
         fr = s.sframe
-        s_geom = os.environ["GEOM"]
+        s_label = os.environ["GEOM"]
     elif not SYMBOLS is None:
         ff = Fold.MultiLoad()
         frs = list(filter(None, map(lambda f:f.sframe, ff)))
@@ -32,24 +33,30 @@ if __name__ == '__main__':
         assert 0 
     pass
 
+
+    s_offset = efloatarray_("S_OFFSET", "0,0,0")
+    t_offset = efloatarray_("T_OFFSET", "0,0,0")
+
+
+
     fig, ax = fr.mp_subplots(mp)  
 
     if not s is None:
         s_hit = s.simtrace[:,0,3]>0 
-        s_pos = s.simtrace[s_hit][:,1,:3]
+        s_pos = s_offset + s.simtrace[s_hit][:,1,:3]
     pass
 
     if not t is None:
         t_hit = t.simtrace[:,0,3]>0 
-        t_pos = t.simtrace[t_hit][:,1,:3]
+        t_pos = t_offset + t.simtrace[t_hit][:,1,:3]
     pass
 
     if not s is None:
-        fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
+        fr.mp_scatter(s_pos, label="%s" % s_label, s=1 )
     pass
 
     if not t is None:
-        fr.mp_scatter(t_pos, label="%s" % t_geom, s=1 )
+        fr.mp_scatter(t_pos, label="%s" % t_label, s=1 )
     pass
 
     ax.legend()

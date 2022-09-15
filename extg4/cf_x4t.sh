@@ -19,29 +19,28 @@ log=$bin.log
 export SYMBOLS="S,T"
 
 
-
 #s_geom=nmskSolidMask
 #t_geom=nmskSolidMaskTail
-
-
 
 s_geom=nmskTailOuter
 t_geom=nmskTailInner
 opt=U1
 
-export S_GEOM=${s_geom}__$opt
-export T_GEOM=${t_geom}__$opt
-export S_FOLD=/tmp/$USER/opticks/GEOM/$S_GEOM/$bin/ALL
-export T_FOLD=/tmp/$USER/opticks/GEOM/$T_GEOM/$bin/ALL
+
+export S_LABEL=${s_geom}__$opt
+export T_LABEL=${t_geom}__$opt
+
+export S_FOLD=/tmp/$USER/opticks/GEOM/$S_LABEL/$bin/ALL
+export T_FOLD=/tmp/$USER/opticks/GEOM/$T_LABEL/$bin/ALL
 
 export FOCUS=257,-39,7
 
-export TOPLINE="extg4/cf_x4t.sh S_GEOM $S_GEOM T_GEOM $T_GEOM"
+export TOPLINE="extg4/cf_x4t.sh S_LABEL $S_LABEL T_LABEL $T_LABEL"
 export BOTLINE="FOCUS $FOCUS"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin S_GEOM T_GEOM S_FOLD T_FOLD"
+    vars="BASH_SOURCE arg bin S_LABEL T_LABEL S_FOLD T_FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
 fi
 

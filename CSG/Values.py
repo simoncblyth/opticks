@@ -63,6 +63,22 @@ class Values(object):
                "%s.n: %s " % (self.symbol, str(self.n.shape))  
                ])
 
+
+    def get_idx(self, q):
+        n_idx = np.where( self.n == q )[0]   
+        assert len(n_idx) in (0,1)
+        return -1 if len(n_idx) == 0 else n_idx[0]
+
+    def get(self, name):
+        """
+        :param name: eg SolidMask.SolidMaskVirtual.htop_out
+        :return val: scalar
+
+        sv.get("SolidMask.SolidMaskVirtual.htop_out")   194.0
+        """
+        idx = self.get_idx(name)
+        return self.a[idx] if idx > -1 else None
+
     def __repr__(self):
         a = self.a
         n = self.n 

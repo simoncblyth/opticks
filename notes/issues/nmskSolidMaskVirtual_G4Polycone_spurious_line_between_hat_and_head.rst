@@ -26,5 +26,14 @@ issue
 * zooming in the ct scan corner  however shows that standard coincidence avoidance 
   actually can be used because the lower hat radius is less than the head cylinder radius 
 
+  * HMM : actually NO : that is a mis-interpretation
+
+* comparing ct.sh and x4t.sh using extg4/ct_vs_x4t.sh makes it look like the
+  uncoincidence alg appears to have run when it should not done : resulting in the shelf 
+
+
+::
+
+    S_OFFSET=0,0,-1 ./ct_vs_x4t.sh 
 
 
