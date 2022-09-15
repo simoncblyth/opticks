@@ -13,6 +13,7 @@ ct.sh : using CSGSimtraceTest
 
    MPPLT_SIMTRACE_SELECTION_LINE=o2i ./ct.sh ana
 
+   FOCUS=-257,-39,7 ./ct.sh ana  
 
 EOU
 }

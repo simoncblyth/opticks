@@ -32,8 +32,8 @@ struct nuv ;
 
 struct NPY_API ncylinder : nnode 
 {
-    static ncylinder* Create(const nquad& param, const nquad& param1 ); 
-    static ncylinder* Create(float radius_, float z1_, float z2_ ); 
+    static ncylinder* Create(const nquad& param, const nquad& param1, bool old ); 
+    static ncylinder* Create(float radius_, float z1_, float z2_, bool old=false ); 
     static ncylinder* Create(); 
     static ncylinder* Create(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1); 
 

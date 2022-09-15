@@ -49,12 +49,21 @@ if __name__ == '__main__':
 
         ## investigate unexpected top cap intersects : FIXED z2cap TYPO
         ## 
+        ##                                                                    intersect pos x > 120.  t > 0 
         ## e = np.logical_and( s.simtrace[:,2,0] > 100., np.logical_and( s.simtrace[:,1,0] > 120. , s.simtrace[:,0,3]>0 )) 
         ## 
         ## e_ori = s.simtrace[e][:100,2,:3]
         ## e_dir = s.simtrace[e][:100,3,:3]
         ## fr.mp_scatter(e_ori, label="e_ori", s=2 ) 
         ## fr.mp_arrow(  e_ori, 10*e_dir, label="e_ori,e_dir", s=2 ) 
+    pass
+
+    if not s is None and "UNEXPECTED" in os.environ:  
+        w = np.logical_and( np.abs(s.simtrace[:,1,2]) > 0.20 , s.simtrace[:,0,3]>0 )  
+        w_simtrace = s.simtrace[w][::10]
+        w_ori = w_simtrace[:,2,:3]
+        fr.mp_scatter(w_ori, label="w_ori", s=1 )
+        mpplt_simtrace_selection_line(ax, w_simtrace, axes=fr.axes, linewidths=2)
     pass
 
     if not t is None:
@@ -65,8 +74,14 @@ if __name__ == '__main__':
     if not s is None:
         fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
     pass
+
+    if not s is None and hasattr(s,"genstep") and "GS" in os.environ:
+        s_gs  = s.genstep[:,5,:3]  
+        fr.mp_scatter(s_gs, label="s_gs", s=1 )
+    pass
+
+
  
-    
     if not s is None and hasattr(s,"simtrace_selection"):
        sts = s.simtrace_selection 
     elif not s is None and "SELECTION" in os.environ:

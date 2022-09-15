@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
-    GeoChain chain(&ok); 
+    GeoChain gc(&ok); 
 
     std::string meta ; 
     const G4VSolid* solid = GetSolid(geom, meta);  
@@ -89,15 +89,15 @@ int main(int argc, char** argv)
 
     if( solid )
     {   // for shapes authored as G4VSolid 
-        chain.convertSolid(solid, meta );  
+        gc.convertSolid(solid, meta );  
     }
     else
     {   // for shapes authored as CSGSolid/CSGPrim/CSGNode 
         // HMM: handling these with CSG/CSGMakerTest.sh  
-        chain.convertName(geom);         
+        gc.convertName(geom);         
     }
 
-    chain.save(geom); 
+    gc.save(geom); 
 
     return 0 ; 
 }

@@ -43,10 +43,10 @@
 
 
 
-ncylinder* ncylinder::Create(const nquad& param, const nquad& param1 )  // static
+ncylinder* ncylinder::Create(const nquad& param, const nquad& param1, bool old )  // static
 {
     ncylinder* n = new ncylinder ; 
-    nnode::Init(n,CSG_CYLINDER) ; 
+    nnode::Init(n, old ? CSG_OLDCYLINDER : CSG_CYLINDER) ; 
 
     n->param = param ; 
     n->param1 = param1 ;
@@ -59,7 +59,7 @@ ncylinder* ncylinder::Create(const nquad& param, const nquad& param1 )  // stati
 }
 
 
-ncylinder* ncylinder::Create(float radius_, float z1_, float z2_ )  // static 
+ncylinder* ncylinder::Create(float radius_, float z1_, float z2_, bool old )  // static 
 {
     nquad param, param1 ;
 
@@ -70,12 +70,12 @@ ncylinder* ncylinder::Create(float radius_, float z1_, float z2_ )  // static
     param1.u.z = 0u ; 
     param1.u.w = 0u ; 
 
-    return Create(param, param1); 
+    return Create(param, param1, old  ); 
 }
 
 ncylinder* ncylinder::Create() // static 
 {
-    return Create(10.f, -5.f, 15.f ); 
+    return Create(10.f, -5.f, 15.f, false ); 
 }
 
 
@@ -93,7 +93,7 @@ ncylinder* ncylinder::Create(float x0, float y0, float z0, float w0, float x1, f
     float z1_ = x1 ; 
     float z2_ = y1 ; 
 
-    return Create( radius_, z1_, z2_ );
+    return Create( radius_, z1_, z2_, false );
 }
 
 

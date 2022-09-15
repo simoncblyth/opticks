@@ -1,11 +1,9 @@
 #!/bin/bash -l 
-
-[ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim   
-
-msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 GeoChain/translate.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
 ===========================================================================================
+
+For switching to use CSG_OLDCYLINDER implementation see oldcylinder_translate.sh 
 
 HMM: maybe rename to geochain.sh 
 
@@ -74,6 +72,8 @@ NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS 
 EOU
 }
 
+msg="=== $BASH_SOURCE :"
+[ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim     # use "geom" bash func to change the config file 
 
 defarg=run
 arg=${1:-$defarg}
@@ -182,6 +182,8 @@ opts=""
 #DEBUG=1
 ## TODO: move away from use of commamdline options
 ## TODO: dont accept options via commandline : do anything like that via envvars
+
+
 
 
 which $bin

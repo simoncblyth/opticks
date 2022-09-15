@@ -391,7 +391,7 @@ void CSGNode::setAABBLocal()
         getParam( fx, fy, fz, a, b, c ); 
         setAABB( -fx*0.5f , -fy*0.5f, -fz*0.5f, fx*0.5f , fy*0.5f, fz*0.5f );   
     }
-    else if( tc == CSG_CYLINDER )
+    else if( tc == CSG_CYLINDER || tc == CSG_OLDCYLINDER )
     {
         float px, py, a, radius, z1, z2 ; 
         getParam( px, py, a, radius, z1, z2) ; 

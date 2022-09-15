@@ -421,10 +421,11 @@ nnode* nnode::primclone() const
     nnode* c = nullptr ; 
     switch( type )
     {
-        case CSG_SPHERE:   c = nsphere::Create(param)              ; break ; 
-        case CSG_BOX3:     c = nbox::Create(param, CSG_BOX3)       ; break ; 
-        case CSG_BOX:      c = nbox::Create(param, CSG_BOX)        ; break ; 
-        case CSG_CYLINDER: c = ncylinder::Create(param, param1)    ; break ; 
+        case CSG_SPHERE:   c = nsphere::Create(param)                     ; break ; 
+        case CSG_BOX3:     c = nbox::Create(param, CSG_BOX3)              ; break ; 
+        case CSG_BOX:      c = nbox::Create(param, CSG_BOX)               ; break ; 
+        case CSG_CYLINDER:    c = ncylinder::Create(param, param1, false) ; break ; 
+        case CSG_OLDCYLINDER: c = ncylinder::Create(param, param1, true ) ; break ; 
         default: c = nullptr ; 
     }
 
@@ -1830,6 +1831,7 @@ std::function<float(float,float,float)> nnode::sdf() const
         case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = *n ; } break ; 
         case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
         case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
+        case CSG_OLDCYLINDER:    { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
         case CSG_DISC:           { ndisc* n         = (ndisc*)node          ; f = *n ; } break ; 
         case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = *n ; } break ; 
         case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = *n ; } break ; 

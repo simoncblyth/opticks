@@ -25,7 +25,7 @@ log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
-export FOLD=/tmp/$USER/opticks/$GEOM/$bin/ALL
+export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 #export FOCUS=257,-39,7
 
 export TOPLINE="extg4/x4t.sh GEOM $GEOM FOCUS $FOCUS" 

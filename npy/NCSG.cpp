@@ -782,7 +782,8 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
        case CSG_BOX3:           node = nbox::Create(p0, CSG_BOX3) ; break ; 
        case CSG_SLAB:           node = make_slab(p0, p1)          ; break ; 
        case CSG_PLANE:          node = make_plane(p0)             ; break ; 
-       case CSG_CYLINDER:       node = ncylinder::Create(p0, p1)  ; break ; 
+       case CSG_CYLINDER:       node = ncylinder::Create(p0, p1, false)  ; break ; 
+       case CSG_OLDCYLINDER:    node = ncylinder::Create(p0, p1, true )  ; break ; 
        case CSG_DISC:           node = make_disc(p0, p1)          ; break ; 
        case CSG_CONE:           node = make_cone(p0)              ; break ; 
        case CSG_TORUS:          node = make_torus(p0)             ; break ; 

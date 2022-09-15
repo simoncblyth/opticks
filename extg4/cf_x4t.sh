@@ -31,8 +31,8 @@ opt=U1
 
 export S_GEOM=${s_geom}__$opt
 export T_GEOM=${t_geom}__$opt
-export S_FOLD=/tmp/$USER/opticks/$S_GEOM/$bin/ALL
-export T_FOLD=/tmp/$USER/opticks/$T_GEOM/$bin/ALL
+export S_FOLD=/tmp/$USER/opticks/GEOM/$S_GEOM/$bin/ALL
+export T_FOLD=/tmp/$USER/opticks/GEOM/$T_GEOM/$bin/ALL
 
 export FOCUS=257,-39,7
 

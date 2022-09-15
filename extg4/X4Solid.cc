@@ -941,6 +941,13 @@ notes/issues/csg_sub_sub_spurious_intersects_on_elarged_inner_ghost_solid_bug.rs
 
 nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
 {  
+    const char* old_key = "X4Solid__convertTubs_cylinder_old_cylinder_implementation" ; 
+    bool old_cylinder_implementation = SSys::getenvbool(old_key) ; 
+    if(old_cylinder_implementation)
+    {
+        LOG(error) << " CAUTION old_cylinder_implementation enabled by envvar " << old_key ; 
+    }
+
     const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
     assert(solid); 
 
@@ -956,6 +963,7 @@ nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
         << " hz " << hz
         << " has_inner " << has_inner
         << " do_nudge_inner " << do_nudge_inner
+        << " old_cylinder_implementation " << old_cylinder_implementation
         ;
    
     nnode* inner = NULL ; 
@@ -965,16 +973,16 @@ nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
         { 
             double nudge_inner = 0.01 ; 
             double dz = hz*nudge_inner ;  
-            inner = ncylinder::Create(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
+            inner = ncylinder::Create(rmin, -(hz+dz), (hz+dz), old_cylinder_implementation );   // radius, z1, z2    (z2 > z1)
         }
         else
         {
-            inner = ncylinder::Create(rmin, -hz, hz );         // radius, z1, z2    (z2 > z1)
+            inner = ncylinder::Create(rmin, -hz, hz, old_cylinder_implementation );         // radius, z1, z2    (z2 > z1)
         }
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
 
-    nnode* outer = ncylinder::Create(rmax, -hz, hz);
+    nnode* outer = ncylinder::Create(rmax, -hz, hz, old_cylinder_implementation );
     outer->label = BStr::concat( m_name, "_outer", NULL ); 
 
     nnode* tube = has_inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner) : outer ; 

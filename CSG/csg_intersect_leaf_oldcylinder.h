@@ -14,6 +14,8 @@ For ascii art explanation of the maths see optixrap/cu/intersect_ztubs.h
 
 **/
 
+#define CSG_OLDCYLINDER_PRECISION_ISSUE 1 
+
 LEAF_FUNC
 bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
@@ -66,7 +68,7 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
         if(c > 0.f) return false ;  // ray starts and ends outside cylinder
 
 
-#ifdef OLD_PRECISION_CHALLENGED
+#ifdef CSG_OLDCYLINDER_PRECISION_ISSUE
         float t_PCAP_AX = -mn/nn  ;      
         float t_QCAP_AX = (nd - mn)/nn ;  
     
@@ -82,6 +84,7 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
         {
             t_cand = nd > 0.f ? t_QCAP_AX : t_PCAP_AX ;  
         }
+
 
 #else
         float t_PCAP_AX = copysignf(1.f, ray_direction.z)*(z1 - ray_origin.z) ;  // up/down oriented to match the dot product approach but more simply

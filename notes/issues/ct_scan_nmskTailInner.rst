@@ -2,6 +2,10 @@ ct_scan_nmskTailInner
 ========================
 
 
+CONFIRMED : Adoption of new CSG_CYLINDER (the old CSG_ALTCYLINDER) avoids spurious
+-------------------------------------------------------------------------------------
+
+
 
 Rerunning CSGIntersectComparisonTest with simtrace from ct.sh reproduces the spurious
 ----------------------------------------------------------------------------------------
