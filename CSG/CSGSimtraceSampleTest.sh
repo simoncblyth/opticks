@@ -1,43 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-CSGSimtraceRerunTest.sh
+CSGSimtraceSampleTest.sh
 ================================
 
-CSGSimtraceRerunTest requires a CSGFoundry geometry and corresponding 
-simtrace intersect array. Create these with:: 
+CSGSimtraceSampleTest requires a CSGFoundry geometry and corresponding 
+small simtrace intersect array. Create these with:: 
 
     geom_ ## set geom to "nmskSolidMask" :  a string understood by PMTSim::getSolid
 
     gc     ## cd ~/opticks/GeoChain
     ./translate.sh    ## translate PMTSim::getSolid Geant4 solid into CSGFoundry 
-
-    gx     ## cd ~/opticks/g4cx 
-
-    ./gxt.sh        # simtrace GPU run on workstation
-    ./gxt.sh grab   # rsync back to laptop
-    ./gxt.sh ana    # python plotting  
-
-
-SELECTION envvar 
-    provides simtrace indices to rerun on CPU using CSGQuery which runs
-    the CUDA compatible intersect code on the CPU. 
-    Without this envvar all the simtrace items ate rerun.
-
-    When using a rerun selection of a few intersects only it is 
-    possible to switch on full debug verbosity after 
-    recompilinh the CSG package with two non-standard preprocessor macros, 
-    that are not intended to ever be committed::
-
-        DEBUG
-        DEBUG_RECORD
-
-::
-
-    c
-    ./CSGSimtraceRerunTest.sh 
-    ./CSGSimtraceRerunTest.sh info
-    ./CSGSimtraceRerunTest.sh run 
-    ./CSGSimtraceRerunTest.sh ana
 
 EOU
 }
@@ -45,7 +17,7 @@ EOU
 
 arg=${1:-run}
 
-bin=CSGSimtraceRerunTest
+bin=CSGSimtraceSampleTest
 log=$bin.log
 source $(dirname $BASH_SOURCE)/../bin/COMMON.sh 
 
@@ -55,13 +27,12 @@ UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between diffe
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
 export CSGFoundry=INFO
+export CSGSimtraceSample=INFO 
 
-
-T_FOLD=${FOLD/$bin/G4CXSimtraceTest}
-export T_FOLD 
+export SAMPLE_PATH=/tmp/simtrace_sample.npy
 
 if [ "info" == "$arg" ]; then
-    vars="BASH_SOURCE arg bin GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD T_FOLD"
+    vars="BASH_SOURCE arg bin GEOM GEOMDIR UGEOMDIR BASE SAMPLE_PATH"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
 fi 
 

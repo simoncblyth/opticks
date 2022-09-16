@@ -423,6 +423,18 @@ bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const 
 
 
 
+LEAF_FUNC
+float z_apex_cone( const quad& q0 )
+{
+    float r1 = q0.f.x ; 
+    float z1 = q0.f.y ; 
+    float r2 = q0.f.z ; 
+    float z2 = q0.f.w ;   // z2 > z1
+    float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
+    return z0 ; 
+}
+
+
 /**
 intersect_leaf_cone
 =====================
@@ -486,8 +498,8 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
     float tth2 = tth*tth ; 
     float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
 
-#ifdef DEBUG
-    printf("//intersect_lead_cone r1 %10.4f z1 %10.4f r2 %10.4f z2 %10.4f : z0 %10.4f \n", r1, z1, r2, z2, z0 );  
+#ifdef DEBUG_CONE
+    printf("//intersect_leaf_cone r1 %10.4f z1 %10.4f r2 %10.4f z2 %10.4f : z0 %10.4f \n", r1, z1, r2, z2, z0 );  
 #endif
  
     float r1r1 = r1*r1 ; 
@@ -507,8 +519,8 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
 
 
 
-#ifdef DEBUG
-    printf("//intersect_leaf_cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );  
+#ifdef DEBUG_CONE
+    printf("//intersect_leaf_cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f disc > 0.f %d : tth %10.4f \n", c2, c1, c0, disc, disc>0.f, tth  );  
 #endif
  
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
@@ -881,6 +893,31 @@ Equation for points p that are in the plane::
             (p0 - o).n        d - o.n
        t  = -----------  =   -----------
                v.n              v.n  
+
+
+Special case example : 
+
+* for rays within XZ plane what is the z-coordinate at which rays cross the x=0 "line" ?
+
+
+                : 
+                :    Z
+                :    |
+                p0   +--X
+               /:
+              / :
+             /  :
+            /   :      
+           /    :
+          +     :
+         o     x=0
+    
+
+         plane normal  [-1, 0, 0]
+
+    t0 = -o.x/v.x
+    z0 =  o.z + t0*v.z 
+
 **/
 
 LEAF_FUNC

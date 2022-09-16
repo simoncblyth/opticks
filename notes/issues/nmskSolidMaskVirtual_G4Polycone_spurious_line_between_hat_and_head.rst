@@ -267,5 +267,35 @@ Looking at *intersect_leaf_cone* note that its not using *robust_quadratic_roots
     z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
 
 
+Almost all the spurious cross x=0 close to the apex. 
+The one that doesnt is very nearly shooting up the axis starting from origin.
 
+Using CSGSimtraceSample.sh with simtrace array of the spurious::
+
+     o.x           -237.6450 v.x              0.5402 t0(-o.x/v.x)   439.9518 z0             291.0315
+     o.x           -211.2400 v.x              0.5538 t0(-o.x/v.x)   381.4507 z0             291.2147
+     o.x           -211.2400 v.x              0.7059 t0(-o.x/v.x)   299.2489 z0             291.1763
+     o.x           -132.0250 v.x              0.2816 t0(-o.x/v.x)   468.8077 z0             291.4034
+     o.x           -105.6200 v.x             -0.5532 t0(-o.x/v.x)  -190.9166 z0             291.0645
+     o.x            -52.8100 v.x              0.1320 t0(-o.x/v.x)   399.9243 z0             290.8022
+     o.x            -26.4050 v.x             -0.1410 t0(-o.x/v.x)  -187.2420 z0             290.9908
+     o.x            -26.4050 v.x             -0.1643 t0(-o.x/v.x)  -160.7213 z0             290.5624
+     o.x            -26.4050 v.x             -0.3141 t0(-o.x/v.x)   -84.0729 z0             291.0587
+     o.x              0.0000 v.x             -0.0004 t0(-o.x/v.x)     0.0000 z0               0.0000
+     o.x             26.4050 v.x             -0.0621 t0(-o.x/v.x)   425.1504 z0             292.3047
+     o.x             52.8100 v.x             -0.1317 t0(-o.x/v.x)   401.0959 z0             291.9841
+     o.x             79.2150 v.x             -0.2091 t0(-o.x/v.x)   378.8108 z0             291.2207
+     o.x             79.2150 v.x             -0.2866 t0(-o.x/v.x)   276.3970 z0             291.2073
+     o.x            132.0250 v.x             -0.3161 t0(-o.x/v.x)   417.7253 z0             290.6928
+     o.x            184.8350 v.x             -0.4006 t0(-o.x/v.x)   461.4159 z0             290.7523
+     o.x            237.6450 v.x             -0.5399 t0(-o.x/v.x)   440.1857 z0             291.3093
+     o.x            264.0500 v.x             -0.6088 t0(-o.x/v.x)   433.7131 z0             291.2607
+    2022-09-16 20:40:05.854 INFO  [8515964] [CSGSimtraceSample::intersect@92] CSGSimtraceSample::desc
+     fd Y
+     fd.geom -
+     CSGQuery::Label  not-DEBUG not-DEBUG_RECORD DEBUG_CYLINDER
+     path /tmp/simtrace_sample.npy
+     simtrace (18, 4, 4, )
+     n 18 num_intersect 18
+    epsilon:CSG blyth$ ./nmskSolidMaskVirtual.sh sample
 

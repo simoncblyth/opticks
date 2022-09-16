@@ -58,11 +58,23 @@ if __name__ == '__main__':
         ## fr.mp_arrow(  e_ori, 10*e_dir, label="e_ori,e_dir", s=2 ) 
     pass
 
+    if s_geom.startswith("nmskSolidMaskVirtual"): 
+        r1=sv.get("SolidMask.SolidMaskVirtual.rOuter2.mask_radiu_virtual")
+        r2=sv.get("SolidMask.SolidMaskVirtual.rOuter3.mask_radiu_virtual/2")
+        z1=sv.get("SolidMask.SolidMaskVirtual.zPlane2.htop_out/2")
+        z2=sv.get("SolidMask.SolidMaskVirtual.zPlane3.htop_out+MAGIC_virtual_thickness")
+        z0=(z2*r1-z1*r2)/(r1-r2)
+        ax.set_ylim( -240, z0+50 )
+    pass
+
+
     if not s is None and "UNEXPECTED" in os.environ:  
 
         if s_geom.startswith("nmskSolidMaskVirtual"): 
             w = np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 ) 
             w_simtrace = s.simtrace[w]
+            w_path = "/tmp/simtrace_sample.npy"
+            np.save(w_path, w_simtrace)
         else:
             w = np.logical_and( np.abs(s.simtrace[:,1,2]) > 0.20 , s.simtrace[:,0,3]>0 )  
             w_simtrace = s.simtrace[w][::10]
