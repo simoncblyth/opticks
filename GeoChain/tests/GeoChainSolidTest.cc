@@ -86,12 +86,11 @@ int main(int argc, char** argv)
 
     std::string meta ; 
 
-    LOG(info) << " ----------------- GetSolid ------------------------------ " ; 
     const G4VSolid* solid = GetSolid(geom, meta);  
     const NP* vv = GetValues(geom) ; 
-    LOG(info) << " --------------------------------------------------------- values.sstr " << ( vv ? vv->sstr() : "-" ) ; 
-
     gc.vv = vv ;  
+    //if(vv) std::cout << "vv.descValues" << std::endl << vv->descValues() ; 
+
 
     if( solid )  // for shapes authored as G4VSolid 
     {   

@@ -6,6 +6,7 @@ import numpy as np
 import pyvista as pv
 from matplotlib import collections  as mp_collections
 from matplotlib.patches import Circle, Rectangle, Ellipse
+from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 
 from opticks.ana.axes import Axes, X,Y,Z
 
@@ -428,7 +429,9 @@ def pvplt_parallel_lines(pl, gslim , aa, axes, look ):
         pass 
     pass
 
-def mpplt_parallel_lines(ax, gslim, aa, axes, look, linestyle=None  ):
+
+
+def mpplt_parallel_lines(ax, bbox, aa, axes, linestyle=None  ):
     """
     Draws axis parallel line segments in matplotlib and pyvista.
     The segments extend across the genstep grid limits.
@@ -436,9 +439,9 @@ def mpplt_parallel_lines(ax, gslim, aa, axes, look, linestyle=None  ):
     in envvars XX, YY, ZZ
 
     :param ax: matplotlib axis
+    :param bbox: array of shape (3,2)
     :param aa: {X:XX, Y:YY, Z:ZZ } dict of values 
     :param axes: tuple eg (0,2) 
-    :param look: (3,) position   (NOT USED)
 
            +----------------------+
            |                      |
@@ -455,17 +458,24 @@ def mpplt_parallel_lines(ax, gslim, aa, axes, look, linestyle=None  ):
     """
     if ax is None: return
     H,V = axes    
-    log.info("mpplt_parallel_lines gslim[H] %s gslim[V] %s aa %s " % (str(gslim[H]), str(gslim[V]), str(aa)))
+    log.info("mpplt_parallel_lines bbox[H] %s bbox[V] %s aa %s " % (str(bbox[H]), str(bbox[V]), str(aa)))
     for i in [X,Y,Z]: 
         if len(aa[i]) == 0: continue
         for a in aa[i]:
             if V == i:  # vertical ordinate -> horizontal line 
-                ax.plot( gslim[H], [a,a], linestyle=linestyle )
+                ax.plot( bbox[H], [a,a], linestyle=linestyle )
             elif H == i:  # horizontal ordinate -> vertical line
-                ax.plot( [a,a], gslim[V], linestyle=linestyle )
+                ax.plot( [a,a], bbox[V], linestyle=linestyle )
             pass
         pass
     pass
+
+def mpplt_parallel_lines_auto(ax, bbox, axes, linestyle=None  ):
+    aa = {}  
+    aa[X] = efloatlist_("XX")
+    aa[Y] = efloatlist_("YY")
+    aa[Z] = efloatlist_("ZZ")
+    mpplt_parallel_lines(ax, bbox, aa, axes, linestyle=linestyle )
 
 
 

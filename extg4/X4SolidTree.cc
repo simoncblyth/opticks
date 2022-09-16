@@ -41,23 +41,21 @@ G4VSolid* X4SolidTree::ApplyZCutTree( const G4VSolid* original, double zcut ) //
     return zs->root ; 
 }
 
-void X4SolidTree::Draw(const G4VSolid* original, const char* msg ) // static
+
+
+std::string X4SolidTree::Desc(const G4VSolid* solid )
 {
-    LOG(LEVEL) << "[" ; 
-    if(original == nullptr )
-    {
-        LOG(error)  << "ERROR X4SolidTree::Draw got nullptr original : msg " << msg ; 
-        return ; 
-    }    
-
-
-    X4SolidTree* zs = new X4SolidTree(original); 
-    zs->draw(msg);
-    zs->dumpNames(msg); 
-    zs->zdump(msg); 
-
-    LOG(LEVEL) << "]" ; 
+    assert(solid);  
+    X4SolidTree* zs = new X4SolidTree(solid); 
+    std::stringstream ss ; 
+    ss << zs->desc() << std::endl ; 
+    ss << zs->descNames() << std::endl ; 
+    ss << zs->descZ() << std::endl ; 
+    std::string s = ss.str() ; 
+    return s ; 
 }
+
+
 
 X4SolidTree::X4SolidTree(const G4VSolid* original_ ) 
     :
@@ -597,7 +595,7 @@ int X4SolidTree::num_node_select_r(const G4VSolid* node_, int qcls) const
             << "X4SolidTree::num_node_select_r"
             << " zcl " << zcl
             << " zcn " << ClassifyMaskName(zcl)
-            << " Desc " << Desc(node)
+            << " Smry " << Smry(node)
             << std::endl
             ;  
 
@@ -612,7 +610,7 @@ int X4SolidTree::num_node_select_r(const G4VSolid* node_, int qcls) const
     return num ; 
 } 
 
-const char* X4SolidTree::desc() const 
+const char* X4SolidTree::smry() const 
 {
     int num_node_     = num_node(); 
     int num_prim_     = num_prim(); 
@@ -750,24 +748,41 @@ void X4SolidTree::prune_crux(G4VSolid* x, bool act, int pass)
 
 void X4SolidTree::draw(const char* msg, int pass) 
 {
+    std::cout 
+        << msg 
+        << " [" << std::setw(2) << pass << "]" 
+        << std::endl
+        << desc() 
+        << std::endl
+        ; 
+}
+
+std::string X4SolidTree::desc()
+{
+    render_to_canvas(); 
+
+    std::stringstream ss ; 
+    ss 
+        << " nameprefix " << ( nameprefix ? nameprefix : "-" ) 
+        << " " << smry() 
+        << " Order:" << OrderName(ORDER_MODE) 
+        << std::endl
+        ;
+
+    ss << canvas->c << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void X4SolidTree::render_to_canvas() 
+{
     canvas->clear();
 
-    //int mode = RPRE ; 
-    int mode = IN ; 
-    draw_r(root, mode);
+    draw_r(root, ORDER_MODE );
 
     canvas->draw(   -1, -1, 0,0,  "zdelta" ); 
     canvas->draw(   -1, -1, 0,2,  "az1" ); 
     canvas->draw(   -1, -1, 0,3,  "az0" ); 
-
-    std::cout 
-        << msg 
-        << " [" << std::setw(2) << pass << "]" 
-        << " nameprefix " << ( nameprefix ? nameprefix : "-" ) 
-        << " " << desc() 
-        << " Order:" << OrderName(mode) 
-        << std::endl
-        ;
  
     for(unsigned i=0 ; i < names->size() ; i++ ) 
     {
@@ -786,18 +801,17 @@ void X4SolidTree::draw(const char* msg, int pass)
             ;
         canvas->draw(  i,  -1, 0,4, snam.c_str() ); 
     } 
-    canvas->print(); 
 }
 
-void X4SolidTree::dumpNames(const char* msg) const 
+std::string X4SolidTree::descNames() const 
 {
-    std::cout << msg << std::endl ; 
+    std::stringstream ss ; 
     for(unsigned i=0 ; i < names->size() ; i++ ) 
     {
         const std::string& name = (*names)[i] ; 
         std::string nam = nameprefix ? name.substr(strlen(nameprefix)) : "" ; 
         std::string snam = nam.substr(0,6) ;  
-        std::cout 
+        ss 
             << std::setw(3) << i 
             << " : " 
             << std::setw(35) << name 
@@ -808,22 +822,28 @@ void X4SolidTree::dumpNames(const char* msg) const
             << std::endl
             ;
     } 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
-void X4SolidTree::zdump(const char* msg) const 
+
+std::string X4SolidTree::descZ() const 
 {
-    std::cout << msg << std::endl ; 
-    int mode = IN ; 
-    zdump_r(root, mode); 
+    std::stringstream ss ; 
+    ss << "X4SolidTree::descZ"  << std::endl ; 
+    descZ_r(root, ORDER_MODE, ss ); 
+    std::string s = ss.str(); 
+    return s ;   
 }
 
-void X4SolidTree::zdump_r( const G4VSolid* node_, int mode ) const 
+void X4SolidTree::descZ_r( const G4VSolid* node_, int mode, std::stringstream& ss ) const 
 {
     if( node_ == nullptr ) return ;
 
     const G4VSolid* node = Moved(node_); 
-    zdump_r( Left(node),  mode  );
-    zdump_r( Right(node), mode );
+
+    descZ_r( Left(node),  mode, ss );
+    descZ_r( Right(node), mode, ss );
 
     int ix = in(node_) ;            // inorder index, aka "side", increasing from left to right 
     int iy = depth(node_) ;         // increasing downwards
@@ -833,7 +853,6 @@ void X4SolidTree::zdump_r( const G4VSolid* node_, int mode ) const
     int zcl = zcls(node_);                 
     const char* zcn = ClassifyMaskName(zcl) ; 
     G4String name = node->GetName(); 
-
 
     bool can_z = X4SolidTree::CanZ(node) ;
 
@@ -846,7 +865,7 @@ void X4SolidTree::zdump_r( const G4VSolid* node_, int mode ) const
         double az0 = z0 + zdelta ;  
         double az1 = z1 + zdelta ;  
 
-        std::cout 
+        ss
             << " ix " << std::setw(2) << ix
             << " iy " << std::setw(2) << iy
             << " idx " << std::setw(2) << idx
@@ -1023,7 +1042,7 @@ int X4SolidTree::EntityType(const G4VSolid* solid)   // static
     return type ; 
 }
 
-std::string X4SolidTree::Desc(const G4VSolid* solid) // static
+std::string X4SolidTree::Smry(const G4VSolid* solid) // static
 {
     std::stringstream ss ; 
 
@@ -1380,7 +1399,7 @@ void X4SolidTree::apply_cut(double zcut)
     printf("X4SolidTree::apply_cut %7.2f \n", zcut );
 
     if(verbose)
-    Draw(root, "X4SolidTree::apply_cut root before cut"); 
+    std::cout << "X4SolidTree::apply_cut root before cut" << std::endl << Desc(root) ; 
 
     unsigned pass = 0 ;
     unsigned maxpass = 10 ;

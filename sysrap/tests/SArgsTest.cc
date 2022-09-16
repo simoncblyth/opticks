@@ -27,8 +27,9 @@ void test_argforced(int argc, char** argv)
 {
     const char* argforced = "--compute --nopropagate --tracer --nogdmlpath" ;
     //const char* argforced = "--nogdmlpath" ;
+    const char* opts = nullptr ; 
 
-    SArgs* sa = new SArgs(argc, argv, argforced );
+    SArgs* sa = new SArgs(argc, argv, argforced, opts );
 
     std::cout << " sa->argc " << sa->argc << std::endl ; 
     sa->dump();
@@ -51,7 +52,8 @@ void test_starts_with()
 void test_get_first_arg_ending_with(int argc, char** argv)
 {
     const char* extra = "--red --green path/to/geometry.gdmlx --blue another.gdml" ;
-    SArgs* sa = new SArgs(argc, argv, extra );
+    const char* opts = "--pink slip" ; 
+    SArgs* sa = new SArgs(argc, argv, extra, opts );
     const char* arg = sa->get_first_arg_ending_with(".gdml", NULL ); 
     LOG(info) << arg ; 
 }

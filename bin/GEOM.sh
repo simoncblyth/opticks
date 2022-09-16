@@ -60,6 +60,7 @@ unset GEOM
 arg=${1:-asis}
 geom=$(local-opticks-geom $arg)
 export GEOM=$geom
-echo === $BASH_SOURCE : GEOM $GEOM arg $arg local-opticks-home $(local-opticks-home)
+
+[ -z "$QUIET" ] && echo === $BASH_SOURCE : GEOM $GEOM arg $arg local-opticks-home $(local-opticks-home)
 
 

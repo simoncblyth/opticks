@@ -356,9 +356,20 @@ void CSGGeometry::draw(const char* msg)
 {
     d->draw(msg); 
 }
+std::string CSGGeometry::desc() 
+{
+    return d->desc(); 
+}
 
 void CSGGeometry::Draw( const CSGFoundry* fd, const char* msg  ) // static 
 {
-    CSGGeometry cgeo(nullptr, fd); 
-    cgeo.draw(msg); 
+    CSGGeometry cg(nullptr, fd); 
+    cg.draw(msg); 
 }
+
+std::string CSGGeometry::Desc( const CSGFoundry* fd ) // static 
+{
+    CSGGeometry cg(nullptr, fd); 
+    return cg.desc(); 
+}
+

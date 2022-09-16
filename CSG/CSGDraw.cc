@@ -56,6 +56,18 @@ void CSGDraw::draw(const char* msg)
 {
     LOG(info) 
        << ( msg ? msg : "-" ) 
+       << std::endl 
+       << hdr()  
+       << std::endl 
+       << desc()
+       << std::endl 
+       ; 
+} 
+
+std::string CSGDraw::hdr() const  
+{
+    std::stringstream ss ; 
+    ss 
        << " axis " << axis 
        << " type " << type
        << " CSG::Name(type) " << CSG::Name(type)
@@ -64,9 +76,20 @@ void CSGDraw::draw(const char* msg)
        << " height " << height
        ;
 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string CSGDraw::desc() 
+{
     render(); 
-    canvas->print();
-} 
+    std::stringstream ss ; 
+    ss << hdr() << std::endl ; 
+    ss << canvas->c << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 /**
 CSGDraw::draw_tree_r

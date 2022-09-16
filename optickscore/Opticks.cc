@@ -364,7 +364,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
     m_log(new SLog("Opticks::Opticks","",debug)),
     m_ok(this),
-    m_sargs(new SArgs(argc, argv, argforced)),  
+    m_opts(SSys::getenvvar("OPTICKS_OPTS")),
+    m_sargs(new SArgs(argc, argv, argforced, m_opts)),  
     m_geo(nullptr),
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
@@ -2443,7 +2444,7 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const BMeta* meta)  // static
 
     LOG(LEVEL) << " argline " << argline ; 
 
-    SArgs sa(0, NULL, argline.c_str()); 
+    SArgs sa(0, NULL, argline.c_str(), nullptr); 
 
 
     const char* executable = sa.elem[0].c_str(); 

@@ -72,6 +72,9 @@ NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS 
 EOU
 }
 
+
+QUIET=1
+
 msg="=== $BASH_SOURCE :"
 [ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim     # use "geom" bash func to change the config file 
 
@@ -94,13 +97,14 @@ esac
 geoscript=../extg4/${GEOM}.sh 
 
 if [ -f "$geoscript" ]; then
-   echo $msg sourcing geoscript $geoscript
+
+   [ -z "$QUIET" ] && echo $msg sourcing geoscript $geoscript
    source $geoscript 
 else
-   echo $msg THERE IS NO extg4 geoscript $geoscript 
+   [ -z "$QUIET" ] && echo $msg THERE IS NO extg4 geoscript $geoscript 
 fi 
 
-echo $msg GEOM $GEOM bin $bin arg $arg 
+[ -z "$QUIET" ] && echo $msg GEOM $GEOM bin $bin arg $arg 
 
 
 loglevels()
@@ -187,7 +191,7 @@ opts=""
 
 
 
-which $bin
+[ -z "$QUIET" ] && which $bin
 
 if [ "run" == "$arg" ]; then 
    [ -f "$bin.log" ] && rm $bin.log 

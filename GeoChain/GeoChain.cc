@@ -21,21 +21,9 @@
 #include "CSGFoundry.h"
 #include "CSGGeometry.h"
 #include "CSG_GGeo_Convert.h"
-
 #include "PLOG.hh"
 
-
 const plog::Severity GeoChain::LEVEL = PLOG::EnvLevel("GeoChain", "DEBUG") ; 
-
-/*
-
-#ifdef __APPLE__
-const char* GeoChain::BASE = "$TMP/GeoChain_Darwin" ; 
-#else
-const char* GeoChain::BASE = "$TMP/GeoChain" ; 
-#endif
-*/
-
 
 GeoChain::GeoChain(Opticks* ok_)
     :
@@ -72,7 +60,7 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
     LOG(LEVEL) << "[" ;  
     LOG(LEVEL) << " meta " << std::endl << ( meta.empty() ? " empty " : meta )  ;  
 
-    X4SolidTree::Draw(solid, "GeoChain::convertSolid/X4SolidTree::Draw : original G4VSolid tree" );  
+    LOG(LEVEL) << "X4SolidTree::Desc : original G4VSolid tree" << std::endl << X4SolidTree::Desc(solid) ; 
 
     G4String solidname = solid->GetName(); 
     const char* soname = strdup(solidname.c_str()); 
@@ -82,7 +70,7 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
     LOG(LEVEL) << " mesh " << mesh ; 
     convertMesh(mesh); 
     
-    CSGGeometry::Draw(fd, "GeoChain::convertSolid/CSGGeometry::Draw : converted CSGNode tree"); 
+    LOG(LEVEL) << "CSGGeometry::Desc : converted CSGNode tree" << std::endl << CSGGeometry::Desc(fd) ;  
 
     if(!meta.empty())  // pass metadata from the solid creation into the CSGFoundry meta.txt
     {
@@ -211,6 +199,9 @@ const char* GeoChain::getCFBase(const char* name, const char* base_) const
 void GeoChain::save(const char* name, const char* base_) const 
 {
     const char* cfbase = getCFBase(name, base_); 
+
+    LOG(LEVEL) << " name " << name << " cfbase " << cfbase ; 
+
     fd->save(cfbase, CSGFoundry::RELDIR );    // expects existing directory $CFBASE/CSGFoundry 
     checkSaveWithLoad(cfbase); 
 

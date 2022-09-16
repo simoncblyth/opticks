@@ -2082,7 +2082,7 @@ on loading
 void CSGFoundry::save_(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
-    LOG(info) << dir ; 
+    LOG(LEVEL) << dir ; 
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
 

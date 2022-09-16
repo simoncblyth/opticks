@@ -50,6 +50,7 @@ class BRAP_API  BOpticks {
 
     private:
         const char*          m_firstarg ; 
+        const char*          m_opts ; 
         SArgs*               m_sargs ; 
         int                  m_argc ; 
         char**               m_argv ; 

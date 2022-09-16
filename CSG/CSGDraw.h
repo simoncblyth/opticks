@@ -2,6 +2,7 @@
 
 #include "plog/Severity.h"
 #include "CSG_API_EXPORT.hh"
+#include <string>
 
 struct CSGQuery ; 
 struct SCanvas ; 
@@ -20,6 +21,8 @@ struct CSG_API CSGDraw
     void draw_list_item( const CSGNode* nd, unsigned idx ); 
 
     void draw(const char* msg);
+    std::string hdr() const ; 
+    std::string desc()  ; 
 
 
     const CSGQuery* q ; 

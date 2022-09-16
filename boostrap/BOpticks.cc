@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include "SArgs.hh"
+#include "SSys.hh"
 
 #include "BOpticks.hh"
 #include "SOpticksKey.hh"
@@ -30,7 +31,8 @@
 BOpticks::BOpticks(int argc, char** argv, const char* argforced )
     :    
     m_firstarg( argc > 1 ? argv[1] : nullptr ), 
-    m_sargs(new SArgs(argc, argv, argforced)), 
+    m_opts(SSys::getenvvar("OPTICKS_OPTS")),
+    m_sargs(new SArgs(argc, argv, argforced, m_opts)), 
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
     m_envkey(m_sargs->hasArg("--envkey") ? SOpticksKey::SetKey(nullptr) : false),

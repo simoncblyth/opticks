@@ -48,7 +48,8 @@ struct X4_API X4SolidTree
     static const plog::Severity LEVEL ; 
     static const bool verbose ; 
     static G4VSolid* ApplyZCutTree( const G4VSolid* original, double zcut ); 
-    static void Draw(const G4VSolid* original, const char* msg="X4SolidTree::Draw" ); 
+    //static void Draw(const G4VSolid* original ); 
+    static std::string Desc(const G4VSolid* solid ); 
 
     // members
     const G4VSolid* original ; 
@@ -114,6 +115,8 @@ struct X4_API X4SolidTree
     int index( const G4VSolid* n, int mode ) const ; 
 
     enum { IN, RIN, PRE, RPRE, POST, RPOST } ; 
+    static constexpr const int ORDER_MODE = IN ;  // RPRE
+
 
     static const char* IN_ ; 
     static const char* RIN_ ;
@@ -162,7 +165,7 @@ struct X4_API X4SolidTree
     int num_node_select(int qcls) const; 
     int num_node_select_r(const G4VSolid* n, int qcls) const ;
 
-    const char* desc() const ; 
+    const char* smry() const ; 
 
     void prune(bool act, int pass); 
     void prune_crux(G4VSolid* x, bool act, int pass);
@@ -172,14 +175,16 @@ struct X4_API X4SolidTree
     void collectNodes_r( std::vector<const G4VSolid*>& nodes, const G4VSolid* node_, int query_zcls, int depth  );
 
     void draw(const char* msg="X4SolidTree::draw", int pass=-1); 
+    void render_to_canvas();
+    std::string desc(); 
+
     void draw_r( const G4VSolid* n, int mode); 
 
-    void dumpNames(const char* msg="X4SolidTree::dumpNames") const  ; 
+    std::string descNames() const  ; 
 
 
-    void zdump(const char* msg="X4SolidTree::zdump") const ; 
-    void zdump_r( const G4VSolid* node_, int mode ) const ; 
-
+    std::string descZ() const ; 
+    void descZ_r( const G4VSolid* node_, int mode, std::stringstream& ss ) const ; 
 
 
     int maxdepth() const  ;
@@ -250,7 +255,7 @@ struct X4_API X4SolidTree
     static const char*     EntityTag(       const G4VSolid* solid, bool move ) ; // move:true sees thru G4DisplacedSolid 
     static bool            IsBoolean(         const G4VSolid* solid) ;
     static bool            IsDisplaced(       const G4VSolid* solid) ;
-    static std::string     Desc(const G4VSolid* solid); 
+    static std::string     Smry(const G4VSolid* solid); 
 
     // navigation
     static const G4VSolid* Left(  const G4VSolid* node) ;

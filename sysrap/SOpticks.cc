@@ -12,7 +12,7 @@ const plog::Severity SOpticks::LEVEL = PLOG::EnvLevel("SOpticks", "DEBUG");
 
 SOpticks::SOpticks(int argc, char** argv, const char* argforced)
    :
-   m_sargs(new SArgs(argc, argv, argforced))
+   m_sargs(new SArgs(argc, argv, argforced, nullptr))
 {
 }
 

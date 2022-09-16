@@ -818,6 +818,7 @@ class OKCORE_API Opticks {
    private:
        SLog*                m_log ;
        Opticks*             m_ok ;   // for OK_PROFILE 
+       const char*          m_opts ;  // OPTICKS_OPTS
        SArgs*               m_sargs ; 
        const SGeo*          m_geo ; 
        int                  m_argc ; 

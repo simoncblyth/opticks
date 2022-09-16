@@ -190,7 +190,7 @@ class SimtracePlot(object):
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
-        mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, self.look, linestyle="dashed" ) 
+        mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, linestyle="dashed" ) 
 
         if hasattr(self, 'x_lpos'):
             x_lpos = self.x_lpos

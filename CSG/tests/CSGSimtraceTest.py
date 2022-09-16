@@ -16,7 +16,7 @@ import matplotlib.pyplot as mp
 from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.CSG.Values import Values 
-from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist
+from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist, mpplt_parallel_lines_auto
 
 
 if __name__ == '__main__':
@@ -64,6 +64,10 @@ if __name__ == '__main__':
         w_ori = w_simtrace[:,2,:3]
         fr.mp_scatter(w_ori, label="w_ori", s=1 )
         mpplt_simtrace_selection_line(ax, w_simtrace, axes=fr.axes, linewidths=2)
+    pass
+
+    if not s is None:
+        mpplt_parallel_lines_auto( ax, fr.bbox.T, fr.axes, linestyle="dashed" )
     pass
 
     if not t is None:
