@@ -59,6 +59,7 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
 {
     LOG(LEVEL) << "[" ;  
     LOG(LEVEL) << " meta " << std::endl << ( meta.empty() ? " empty " : meta )  ;  
+    LOG(LEVEL) << "vv.descValues" << std::endl << ( vv ? vv->descValues() : "no-values" ) ; 
 
     LOG(LEVEL) << "X4SolidTree::Desc : original G4VSolid tree" << std::endl << X4SolidTree::Desc(solid) ; 
 

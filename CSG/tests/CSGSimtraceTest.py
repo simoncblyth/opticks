@@ -59,8 +59,15 @@ if __name__ == '__main__':
     pass
 
     if not s is None and "UNEXPECTED" in os.environ:  
-        w = np.logical_and( np.abs(s.simtrace[:,1,2]) > 0.20 , s.simtrace[:,0,3]>0 )  
-        w_simtrace = s.simtrace[w][::10]
+
+        if s_geom.startswith("nmskSolidMaskVirtual"): 
+            w = np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 ) 
+            w_simtrace = s.simtrace[w]
+        else:
+            w = np.logical_and( np.abs(s.simtrace[:,1,2]) > 0.20 , s.simtrace[:,0,3]>0 )  
+            w_simtrace = s.simtrace[w][::10]
+        pass
+        log.info("UNEXPECTED w_simtrace : %s " % str(w_simtrace.shape))
         w_ori = w_simtrace[:,2,:3]
         fr.mp_scatter(w_ori, label="w_ori", s=1 )
         mpplt_simtrace_selection_line(ax, w_simtrace, axes=fr.axes, linewidths=2)

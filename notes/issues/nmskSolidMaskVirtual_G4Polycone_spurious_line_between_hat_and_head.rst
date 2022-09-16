@@ -222,27 +222,49 @@ after controlling logging for GeoChain running and PMTSim::GetSolid
 
 
 
-Compare without and without nudging 
-------------------------------------
+Capture explorations in CSG/nmskSolidMaskVirtual.sh
+--------------------------------------------------------
+
+::
+
+     01 #!/bin/bash -l 
+      2 usage(){ cat << EOU
+      3 nmskSolidMaskVirtual.sh
+      4 =========================
+      5 
+      6 With the nudging, currently ON by default, see sprinkle along z=98 and nothing along z=0, and clear geometry changed "shoulder"::
+      7 
+      8     ./nmskSolidMaskVirtual.sh withnudge_ct_ana
+      9     ./nmskSolidMaskVirtual.sh ana
+     10 
+     11 Disabling nudging get very clear coincidence lines at z=97 and z=0::
+     12 
+     13     ./nmskSolidMaskVirtual.sh skipnudge_ct_ana
+     14     ./nmskSolidMaskVirtual.sh ana
+     15 
+     16 After running eg skipnudge_ct the ana appearance will stay the same 
+     17 until running eg withnudge_ct 
+     18 
+     19 EOU
+     20 }
+
+::
+
+    In [7]: w = np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 )
+    In [8]: np.count_nonzero(w)
+    Out[8]: 18
 
 
-Without : get solid coincidence lines at z=97 and z=0::
+Looks like the spurious sprinkle have rays that when extended go close to the cone apex::
 
-    gc ; SArgs=INFO NCSG=INFO ncylinder=INFO ./translate.sh 
-    c  ; ZZ=0,97 ./ct.sh ana
-
+    NOLEGEND=1 XDIST=400 XX=0 ./nmskSolidMaskVirtual.sh unx
 
 
+Looking at *intersect_leaf_cone* note that its not using *robust_quadratic_roots*.
 
+::
 
-With the nudging the coincidence line at zero disappears and with a sprinkle at z=98::
-    
-    gc ; OPTICKS_OPTS="--x4nudgeskip 0" SArgs=INFO NCSG=INFO ncylinder=INFO ./translate.sh 
-    c  ; GEOM=nmskSolidMaskVirtual ./ct.sh 
-
-
-
-
+    z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
 
 
 

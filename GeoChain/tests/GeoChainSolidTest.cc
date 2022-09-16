@@ -89,7 +89,6 @@ int main(int argc, char** argv)
     const G4VSolid* solid = GetSolid(geom, meta);  
     const NP* vv = GetValues(geom) ; 
     gc.vv = vv ;  
-    //if(vv) std::cout << "vv.descValues" << std::endl << vv->descValues() ; 
 
 
     if( solid )  // for shapes authored as G4VSolid 

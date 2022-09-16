@@ -503,6 +503,10 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
     float c0 = o.x*o.x + o.y*o.y - (o.z-z0)*(o.z-z0)*tth2 ;
     float disc = c1*c1 - c0*c2 ; 
 
+    // TODO: use robust_quadratic_roots 
+
+
+
 #ifdef DEBUG
     printf("//intersect_leaf_cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );  
 #endif
@@ -515,7 +519,7 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
     if(disc > 0.f)  // has intersects with infinite cone
     {
         float sdisc = sqrtf(disc) ;   
-        float root1 = (-c1 - sdisc)/c2 ;
+        float root1 = (-c1 - sdisc)/c2 ;    
         float root2 = (-c1 + sdisc)/c2 ;  
         float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;  
         float root2p = root2 > t_min ? root2 : RT_DEFAULT_MAX ; 
