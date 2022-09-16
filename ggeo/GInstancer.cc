@@ -76,7 +76,7 @@ GInstancer::GInstancer(Opticks* ok, GGeo* ggeo)
 {
     //if(m_repeat_min != INSTANCE_REPEAT_MIN_DEFAULT )
     {
-        LOG(error) 
+        LOG(LEVEL) 
             << std::endl 
             << std::setw(40) << " INSTANCE_REPEAT_MIN_DEFAULT : " << std::setw(8) << INSTANCE_REPEAT_MIN_DEFAULT << std::endl 
             << std::setw(40) << " INSTANCE_REPEAT_MIN : "         << std::setw(8) << INSTANCE_REPEAT_MIN << std::endl 

@@ -44,7 +44,7 @@ const char* CSGGeometry::OutDir(const char* cfbase, const char* geom, const char
 {
     if(cfbase == nullptr )
     {
-        LOG(fatal) << " require CFBASE to control output dir " ; 
+        LOG(LEVEL) << " require CFBASE to control output dir " ; 
         return nullptr ;   
     }
 
@@ -95,12 +95,12 @@ CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)
     sz(0),
     sw(0)
 {
-    LOG(info) << " GEOM " << geom  ; 
     init(); 
 }
 
 void CSGGeometry::init()
 {
+    LOG(LEVEL) << " GEOM " << geom  ; 
     init_fd(); 
     q = new CSGQuery(fd); 
     q->dumpPrim("CSGGeometry::init"); 
@@ -134,7 +134,7 @@ void CSGGeometry::init_fd()
     }
     else
     {
-        LOG(info) << " booting from provided CSGFoundry pointer " ; 
+        LOG(LEVEL) << " booting from provided CSGFoundry pointer " ; 
         cfbase = fd->getCFBase(); 
     }
 }
@@ -171,7 +171,7 @@ void CSGGeometry::init_selection()
     }
     else
     {
-        LOG(info) << " no SXYZ or SXYZW selection " ; 
+        LOG(LEVEL) << " no SXYZ or SXYZW selection " ; 
     }
 }
 

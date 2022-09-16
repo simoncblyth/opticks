@@ -25,19 +25,19 @@ SSim* SSim::Get()
    return INSTANCE ; 
 }
 
-int SSim::Compare( const SSim* a , const SSim* b, bool dump  )
+int SSim::Compare( const SSim* a , const SSim* b )
 {
-    return ( a && b ) ? NPFold::Compare(a->fold, b->fold, dump ) : -1 ;    
+    return ( a && b ) ? NPFold::Compare(a->fold, b->fold ) : -1 ;    
 }
 
-std::string SSim::DescCompare( const SSim* a , const SSim* b, bool dump )
+std::string SSim::DescCompare( const SSim* a , const SSim* b )
 {
     std::stringstream ss ; 
     ss << "SSim::DescCompare" 
        << " a " << ( a ? "Y" : "N" )
        << " b " << ( b ? "Y" : "N" )
        << std::endl 
-       << ( ( a && b ) ? NPFold::DescCompare( a->fold, b->fold, dump ) : "-" )  
+       << ( ( a && b ) ? NPFold::DescCompare( a->fold, b->fold ) : "-" )  
        << std::endl 
        ; 
     std::string s = ss.str();

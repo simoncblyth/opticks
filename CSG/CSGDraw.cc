@@ -54,8 +54,9 @@ void CSGDraw::render()
 
 void CSGDraw::draw(const char* msg)
 {
-    LOG(info) << msg << " axis " << axis ; 
     LOG(info) 
+       << ( msg ? msg : "-" ) 
+       << " axis " << axis 
        << " type " << type
        << " CSG::Name(type) " << CSG::Name(type)
        << " IsTree " <<  CSG::IsTree((OpticksCSG_t)type) 

@@ -2527,7 +2527,7 @@ void GGeo::convertSim_BndLib(SSim* sim) const
     }    
     else 
     {    
-        LOG(error) << "cannot create GBndLib buffer : no materials ? " ; 
+        LOG(LEVEL) << "cannot create GBndLib buffer : no materials ? " ; 
     }    
 }
 
@@ -2555,7 +2555,7 @@ void GGeo::convertSim_Prop(SSim* sim) const
     const char* ri_prop = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ; 
     if( idpath == nullptr )
     {
-        LOG(error) << " SSim cannot add ri_prop as no idpath " << ri_prop ;  
+        LOG(LEVEL) << " SSim cannot add ri_prop as no idpath " << ri_prop ;  
     }
     else
     {

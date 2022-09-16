@@ -164,7 +164,7 @@ struct stree
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
     std::vector<int> sensor_id ;           // updated by reorderSensors
 
-    int level ; 
+    int level ;   // verbosity 
     unsigned sensor_count ; 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
     NPFold* mtfold ;                        // material properties
@@ -306,7 +306,7 @@ struct stree
 
 inline stree::stree()
     :
-    level(1),        // set to 0: once operational
+    level(0),        // set to 0: once operational
     sensor_count(0),
     subs_freq(new sfreq),
     mtfold(new NPFold)
@@ -530,7 +530,7 @@ inline void stree::traverse_r(int nidx, int depth, int sibdex) const
     const char* so = get_soname(nidx); 
 
     if(nd.sensor_id > -1 )
-    std::cout 
+    if(level > 0) std::cout 
         << "stree::traverse_r"
         << " " 
         << nd.desc() 
@@ -561,10 +561,10 @@ as the snode are collected in preorder ?
 
 inline void stree::reorderSensors()
 {
-    std::cout << "[ stree::reorderSensors" << std::endl ; 
+    if(level > 0) std::cout << "[ stree::reorderSensors" << std::endl ; 
     sensor_count = 0 ; 
     reorderSensors_r(0); 
-    std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
+    if(level > 0) std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
 
     get_sensor_id(sensor_id); 
     assert( sensor_count == sensor_id.size() ); 
@@ -1140,7 +1140,7 @@ inline void stree::save( const char* base, const char* reldir ) const
 
 inline void stree::save_( const char* fold ) const 
 {
-    std::cout << "stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
+    if(level > 0) std::cout << "stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
@@ -1213,7 +1213,7 @@ iinst_f4
 
 inline void stree::load_( const char* fold )
 {
-    std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
+    if(level > 0) std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
 
     ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
     ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 

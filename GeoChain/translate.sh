@@ -114,7 +114,7 @@ loglevels()
     #export NTREEPROCESS_LVLIST=0
 
 
-    #export NNodeNudger=INFO
+    export NNodeNudger=INFO
     #export NNODENUDGER_LVLIST=0
 
     #export NTreeBalance=INFO
@@ -125,6 +125,7 @@ loglevels()
     export NCSG=INFO
     export NCSGData=INFO
     export nmultiunion=INFO
+    export ncylinder=INFO
 
     export X4Solid=INFO  
     export X4SolidTree=INFO
@@ -136,7 +137,7 @@ loglevels()
     #export OpticksDbg=INFO  
     #export GInstancer=INFO
 }
-loglevels
+#loglevels
 
 
 

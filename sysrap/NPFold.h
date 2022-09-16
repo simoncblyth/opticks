@@ -55,8 +55,8 @@ struct NPFold
     static std::string FormKey(const char* k); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* rel); 
-    static int Compare(const NPFold* a, const NPFold* b, bool dump ); 
-    static std::string DescCompare(const NPFold* a, const NPFold* b, bool dump ); 
+    static int Compare(const NPFold* a, const NPFold* b ); 
+    static std::string DescCompare(const NPFold* a, const NPFold* b ); 
 
     static int Compare(const FTSENT** one, const FTSENT** two); 
     static void Indent(int i); 
@@ -137,13 +137,11 @@ inline NPFold* NPFold::Load(const char* base, const char* rel)
     return nf ;  
 }
 
-inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
+inline int NPFold::Compare(const NPFold* a, const NPFold* b )
 {
     int na = a->num_items(); 
     int nb = b->num_items(); 
     bool item_match = na == nb ;  
-
-    if(dump) std::cout << " na " << na << " nb " << nb << " item_match " << item_match << std::endl ; 
     if(!item_match ) return -1 ; 
 
     int mismatch = 0 ; 
@@ -155,30 +153,34 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
         const NP*   b_arr = b->get_array(i); 
 
         bool key_match = strcmp(a_key, b_key) == 0 ; 
-        if(dump) std::cout 
+        bool arr_match = NP::Memcmp(a_arr, b_arr) == 0 ; 
+
+
+        if(!key_match) mismatch += 1  ; 
+        if(!key_match) std::cout 
+            << "NPFold::Compare KEY_MATCH FAIL"
             << " a_key " << std::setw(40) << a_key 
             << " b_key " << std::setw(40) << b_key 
             << " key_match " << key_match 
             << std::endl 
             ; 
-        if(!key_match) mismatch += 1  ; 
 
-        bool arr_match = NP::Memcmp(a_arr, b_arr) == 0 ; 
-        if(dump) std::cout 
+
+        if(!arr_match) mismatch += 1 ; 
+        if(!arr_match) std::cout 
+            << "NPFold::Compare ARR_MATCH FAIL"
             << " a_arr " << std::setw(40) << a_arr->sstr() 
             << " b_arr " << std::setw(40) << b_arr->sstr() 
             << " arr_match " << arr_match 
             << std::endl
             ; 
 
-        if(!arr_match) mismatch += 1 ; 
     }
-
-    if(dump) std::cout << "NPFold::Compare mismatch " << mismatch << std::endl ; 
+    if(mismatch > 0) std::cout << "NPFold::Compare mismatch " << mismatch << std::endl ; 
     return mismatch ; 
 }
 
-inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b, bool dump)
+inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
 {
     int na = a ? a->num_items() : -1 ; 
     int nb = b ? b->num_items() : -1 ; 

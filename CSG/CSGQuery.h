@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 
 struct CSGFoundry ; 
 struct CSGPrim ; 
@@ -16,6 +17,7 @@ struct SCanvas ;
 
 struct CSG_API CSGQuery 
 {
+    static const plog::Severity LEVEL ; 
     static const float SD_CUT ; 
     static const int VERBOSE ; 
     static std::string Label(); 
@@ -36,6 +38,7 @@ struct CSG_API CSGQuery
     void     dump(const char* msg) const ;
 
 
+    std::string descPrim() const ; 
     void     dumpPrim(const char* msg="CSGQuery::dumpPrim") const ;
     CSGGrid* scanPrim(int resolution) const ;
 

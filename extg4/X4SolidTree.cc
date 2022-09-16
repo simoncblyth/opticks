@@ -31,15 +31,13 @@ const plog::Severity X4SolidTree::LEVEL = PLOG::EnvLevel("X4SolidTree", "DEBUG")
 
 G4VSolid* X4SolidTree::ApplyZCutTree( const G4VSolid* original, double zcut ) // static
 {
-    if(verbose)
-    std::cout << "[ X4SolidTree::ApplyZCutTree zcut " << zcut << " original.GetName " << original->GetName() << std::endl ; 
+    LOG(LEVEL) << "[ zcut " << zcut << " original.GetName " << original->GetName() ; 
 
     X4SolidTree* zs = new X4SolidTree(original); 
     zs->apply_cut( zcut );  
     //zs->dump("X4SolidTree::ApplyZCutTree"); 
 
-    if(verbose)
-    std::cout << "] X4SolidTree::ApplyZCutTree  zs.root.GetName " << zs->root->GetName()  << std::endl ; 
+    LOG(LEVEL) << "] zs.root.GetName " << zs->root->GetName() ; 
     return zs->root ; 
 }
 
@@ -48,7 +46,7 @@ void X4SolidTree::Draw(const G4VSolid* original, const char* msg ) // static
     LOG(LEVEL) << "[" ; 
     if(original == nullptr )
     {
-        std::cout << "ERROR X4SolidTree::Draw got nullptr original : msg " << msg << std::endl ; 
+        LOG(error)  << "ERROR X4SolidTree::Draw got nullptr original : msg " << msg ; 
         return ; 
     }    
 

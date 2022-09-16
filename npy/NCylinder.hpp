@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "plog/Severity.h"
 #include "NNode.hpp"
 #include "NGLM.hpp"
 #include "NCylinder.h"
@@ -32,6 +33,8 @@ struct nuv ;
 
 struct NPY_API ncylinder : nnode 
 {
+    static const plog::Severity LEVEL ; 
+
     static ncylinder* Create(const nquad& param, const nquad& param1, bool old ); 
     static ncylinder* Create(float radius_, float z1_, float z2_, bool old=false ); 
     static ncylinder* Create(); 

@@ -326,7 +326,7 @@ bool Opticks::envkey()
     bool allownokey = isAllowNoKey(); 
     if(allownokey)
     {
-        LOG(fatal) << " --allownokey option prevents key checking : this is for debugging of geocache creation " ; 
+        LOG(LEVEL) << " --allownokey option prevents key checking : this is for debugging of geocache creation " ; 
         return false ; 
     }
 
@@ -1035,7 +1035,7 @@ void Opticks::initResource()
     }
     else
     {
-        LOG(fatal) << " idpath NULL " ; 
+        LOG(LEVEL) << " idpath NULL " ; 
     }
 
     bool assert_readable = false ;  // false: as many tests use Opticks and do not need the RNG  
@@ -3085,7 +3085,7 @@ void Opticks::defineEventSpec()
     if( !pfx )
     { 
         pfx = DEFAULT_PFX ; 
-        LOG(fatal) 
+        LOG(LEVEL) 
             << " resource_pfx " << resource_pfx 
             << " config_pfx " << config_pfx 
             << " pfx " << pfx 

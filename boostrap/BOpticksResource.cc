@@ -708,7 +708,7 @@ void BOpticksResource::initViaKey()
 
     if( m_key == nullptr )
     {
-        LOG(fatal) << " m_key is nullptr : early exit " ; 
+        LOG(LEVEL) << " m_key is nullptr : early exit " ; 
         return ;    // temporary whilst debugging geocache creation
     }
     assert( m_key ) ;

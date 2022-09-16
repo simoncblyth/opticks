@@ -1531,7 +1531,7 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
    {
        const char* spec = m_bndspec->getKey(i);
        size_t speclen = (size_t)strlen(spec) ; 
-       if(speclen == 0 ) LOG(error) << "dummy spec detected, using boundary 0 " ; 
+       if(speclen == 0 ) LOG(LEVEL) << "dummy spec detected, using boundary 0 " ; 
 
        unsigned boundary = speclen == 0 ? 0 : m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);

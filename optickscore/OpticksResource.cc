@@ -119,7 +119,7 @@ void OpticksResource::init()
 
    if( m_allownokey )
    {
-       LOG(fatal) << " CAUTION : are allowing no key " ; 
+       LOG(LEVEL) << " CAUTION : are allowing no key " ; 
    } 
    else
    {

@@ -45,8 +45,8 @@ struct SYSRAP_API SSim
     static SSim* Load(const char* base, const char* rel=RELDIR ); 
     static SSim* Load_(const char* dir); 
 
-    static int Compare( const SSim* a , const SSim* b, bool dump=false ) ; 
-    static std::string DescCompare( const SSim* a , const SSim* b, bool dump=false ); 
+    static int Compare( const SSim* a , const SSim* b ) ; 
+    static std::string DescCompare( const SSim* a , const SSim* b ); 
 
 
     static void Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ); 

@@ -504,7 +504,7 @@ void GNodeLib::addVolume(const GVolume* volume)
     //assert( origin ); 
     if( origin == nullptr )
     {
-        LOG(error) 
+        LOG(LEVEL) 
             << " GVolume::getOriginNode giving NULL (test geometry perhaps) "
             << " origin " << origin
             << " origin_copyNumber " << origin_copyNumber 

@@ -25,6 +25,8 @@
 #include "csg_intersect_tree.h"
 
 
+const plog::Severity CSGQuery::LEVEL = PLOG::EnvLevel("CSGQuery", "DEBUG") ; 
+
 const int CSGQuery::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 
 
@@ -67,7 +69,7 @@ void CSGQuery::init()
     const char* sopr = SSys::getenvvar("SOPR", "0:0" ); 
     SName::ParseSOPR(solidIdx, primIdxRel, sopr );    
 
-    LOG(info) << " sopr " << sopr << " solidIdx " << solidIdx << " primIdxRel " << primIdxRel ; 
+    LOG(LEVEL) << " sopr " << sopr << " solidIdx " << solidIdx << " primIdxRel " << primIdxRel ; 
     selectPrim(solidIdx, primIdxRel );  
 }
 
@@ -491,22 +493,32 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
     return grid ;
 }
 
-void CSGQuery::dumpPrim(const char* msg) const 
+
+
+std::string CSGQuery::descPrim() const
 {
-    
-    if( select_prim_numNode == 0 ) return ;
-
-    LOG(info) 
-          << msg 
-          << " select_prim_numNode " << select_prim_numNode
-          << " select_nodeOffset " << select_nodeOffset
-          ; 
-
+    std::stringstream ss ; 
     for(int nodeIdx=select_nodeOffset ; nodeIdx < select_nodeOffset+select_prim_numNode ; nodeIdx++)
     {
         const CSGNode* nd = node0 + nodeIdx ;
-        LOG(info) << nd->desc() ;
+        ss << nd->desc() << std::endl ;
     }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+void CSGQuery::dumpPrim(const char* msg) const 
+{
+    if( select_prim_numNode == 0 ) return ;
+    LOG(LEVEL) 
+          << msg 
+          << " select_prim_numNode " << select_prim_numNode
+          << " select_nodeOffset " << select_nodeOffset
+          << std::endl 
+          << descPrim()
+          ; 
+
 }
 
 void CSGQuery::dump(const char* msg) const

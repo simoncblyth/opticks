@@ -416,7 +416,7 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
-    mismatch += SSim::Compare( a->sim, b->sim, true ); 
+    mismatch += SSim::Compare( a->sim, b->sim ); 
 
     return mismatch ; 
 }
@@ -444,9 +444,9 @@ std::string CSGFoundry::DescCompare( const CSGFoundry* a, const CSGFoundry* b )
     ss << "CompareVec.inst " <<  cv << std::endl ; 
     cv = CompareVec( "gas" , a->gas , b->gas );  mismatch += cv ;
     ss << "CompareVec.gas " <<  cv << std::endl ; 
-    cv = SSim::Compare( a->sim, b->sim, true ) ;  mismatch += cv ;
+    cv = SSim::Compare( a->sim, b->sim ) ;  mismatch += cv ;
     ss << "SSim::Compare " <<  cv << std::endl ; 
-    ss << SSim::DescCompare( a->sim, b->sim, true) << std::endl ; 
+    ss << SSim::DescCompare( a->sim, b->sim ) << std::endl ; 
     ss << " mismatch " << mismatch << std::endl ; 
     std::string s = ss.str(); 
     return s ; 

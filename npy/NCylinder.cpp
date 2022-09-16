@@ -41,7 +41,7 @@
 
 #include "NCylinder.h"
 
-
+const plog::Severity ncylinder::LEVEL = PLOG::EnvLevel("ncylinder", "DEBUG") ; 
 
 ncylinder* ncylinder::Create(const nquad& param, const nquad& param1, bool old )  // static
 {
@@ -119,7 +119,7 @@ void  ncylinder::increase_z2(float dz)
     float _z2 = z2(); 
     float new_z2 = _z2 + dz ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " _z2 " << _z2
         << " dz " << dz
         << " new_z2 " << new_z2 
@@ -135,7 +135,7 @@ void  ncylinder::decrease_z1(float dz)
     float _z1 = z1(); 
     float new_z1 = _z1 - dz ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " _z1 " << _z1
         << " dz " << dz
         << " new_z1 " << new_z1

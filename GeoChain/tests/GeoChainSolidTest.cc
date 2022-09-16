@@ -29,6 +29,7 @@ just the path to the CSGFoundry directory.
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
+#include "NP.hh"
 #include "Opticks.hh"
 #include "GeoChain.hh"
 
@@ -72,9 +73,10 @@ int main(int argc, char** argv)
 
     const char* geom_ = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ) ; 
     const char* geom = SStr::Trim(geom_); 
-
-    LOG(info) << " geom_ [" << geom_ << "] " ; 
-    LOG(info) << " geom  [" << geom  << "] " ; 
+    LOG(info) 
+         << " geom_ [" << geom_ << "]" 
+         << " geom (after trim)  [" << geom  << "] " 
+         ; 
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
@@ -83,17 +85,20 @@ int main(int argc, char** argv)
     GeoChain gc(&ok); 
 
     std::string meta ; 
+
+    LOG(info) << " ----------------- GetSolid ------------------------------ " ; 
     const G4VSolid* solid = GetSolid(geom, meta);  
     const NP* vv = GetValues(geom) ; 
-    chain.vv = vv ;  
+    LOG(info) << " --------------------------------------------------------- values.sstr " << ( vv ? vv->sstr() : "-" ) ; 
 
-    if( solid )
-    {   // for shapes authored as G4VSolid 
+    gc.vv = vv ;  
+
+    if( solid )  // for shapes authored as G4VSolid 
+    {   
         gc.convertSolid(solid, meta );  
     }
-    else
-    {   // for shapes authored as CSGSolid/CSGPrim/CSGNode 
-        // HMM: handling these with CSG/CSGMakerTest.sh  
+    else      // for shapes authored as CSGSolid/CSGPrim/CSGNode  (HMM: what about CSG/CSGMakerTest.sh)
+    {   
         gc.convertName(geom);         
     }
 
