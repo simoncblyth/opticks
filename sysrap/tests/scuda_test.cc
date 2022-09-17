@@ -1,5 +1,7 @@
-// name=scuda_test ; gcc $name.cc -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name 
 /**
+
+./scuda_test.sh 
+
 
                evt 0x7f6413c02000
 //qsim.propagate idx 1 bnc 0 cosTheta     1.0000 dir (   -0.2166    -0.9745     0.0578) nrm (   -0.2166    -0.9745     0.0578) 
@@ -47,10 +49,47 @@ void test_indexed()
 }
 
 
+void test_efloat()
+{
+    float f = scuda::efloat("f",101.102f); 
+    printf("//test_efloat f (%10.4f) \n", f ); 
+}
+
+void test_efloat3()
+{
+    float3 v = scuda::efloat3("v3","3,33,333"); 
+    printf("//test_efloat3 v3 (%10.4f %10.4f %10.4f) \n", v.x, v.y, v.z ); 
+}
+
+void test_efloat4()
+{
+    float4 v = scuda::efloat4("v4","4,44,444,4444"); 
+    printf("//test_efloat4 v4 (%10.4f %10.4f %10.4f %10.4f) \n", v.x, v.y, v.z, v.w ); 
+}
+
+void test_efloat3n()
+{
+    float3 v = scuda::efloat3n("v3n","1,1,1"); 
+    printf("//test_efloat3n v3n (%10.4f %10.4f %10.4f) \n", v.x, v.y, v.z ); 
+}
+
+
+
+
+
+
 int main()
 {
-    //test_crosss(); 
+    /*
+    test_crosss(); 
     test_indexed();  
+    */
+
+    test_efloat(); 
+    test_efloat3(); 
+    test_efloat4(); 
+    test_efloat3n(); 
+
 
     return 0 ; 
 }

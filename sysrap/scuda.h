@@ -2635,6 +2635,102 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float2& v0, const float2&
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+#include <vector>
+
+
+struct scuda
+{
+    template<typename T>    // parse string into value
+    static T  sval(const char* str ); 
+
+    template<typename T>    // parse envvar into value
+    static T  eval(const char* ekey, T fallback ); 
+
+    template<typename T>    // parse string into vector 
+    static void   svec( std::vector<T>& v, const char* str, char delim=',' ); 
+
+    template<typename T>    // parse envvar into vector 
+    static void   evec( std::vector<T>& v, const char* ekey, const char* fallback, char delim=',' ); 
+
+    static float  efloat( const char* ekey, float fallback=0.f ); 
+    static float3 efloat3(const char* ekey, const char* fallback="0,0,0",   char delim=',' ); 
+    static float4 efloat4(const char* ekey, const char* fallback="0,0,0,0", char delim=',' ); 
+    static float3 efloat3n(const char* ekey, const char* fallback="0,0,0",   char delim=',' ); 
+
+};
+
+template<typename T>
+inline T scuda::sval( const char* str )
+{
+    std::string s(str) ;
+    std::istringstream iss(s);
+    T t ; 
+    iss >> t ;     
+    return t ; 
+}
+
+template<typename T>
+inline T scuda::eval( const char* ekey, T fallback )
+{
+    const char* str = getenv(ekey) ; 
+    return str ? sval<T>(str) : fallback ; 
+}
+
+template<typename T>
+inline void scuda::svec(std::vector<T>& v , const char* str, char delim )
+{
+    std::stringstream ss;
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {
+        T t = sval<T>(s.c_str()); 
+        v.push_back(t) ;
+    }
+}
+
+template<typename T>
+inline void scuda::evec(std::vector<T>& v , const char* ekey, const char* fallback, char delim )
+{
+    const char* str = getenv(ekey) ; 
+    svec(v, str ? str : fallback, delim ); 
+}
+
+inline float scuda::efloat(const char* ekey, float fallback)
+{
+    return eval<float>(ekey, fallback); 
+}
+
+inline float3 scuda::efloat3(const char* ekey, const char* fallback, char delim )
+{
+   std::vector<float> fv ;
+   evec(fv, ekey, fallback, delim );
+   return make_float3(
+              fv.size() > 0 ? fv[0] : 0.f ,
+              fv.size() > 1 ? fv[1] : 0.f ,
+              fv.size() > 2 ? fv[2] : 0.f
+             );
+}
+
+inline float4 scuda::efloat4(const char* ekey, const char* fallback, char delim )
+{
+   std::vector<float> fv ;
+   evec(fv, ekey, fallback, delim );
+   return make_float4(
+              fv.size() > 0 ? fv[0] : 0.f ,
+              fv.size() > 1 ? fv[1] : 0.f ,
+              fv.size() > 2 ? fv[2] : 0.f ,
+              fv.size() > 3 ? fv[3] : 0.f
+             );
+}
+
+inline float3 scuda::efloat3n(const char* ekey, const char* fallback, char delim )
+{
+   float3 v = efloat3(ekey, fallback, delim); 
+   return normalize(v);  
+}
+
 
 
 inline std::ostream& operator<<(std::ostream& os, const float2& v)

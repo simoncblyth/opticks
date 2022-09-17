@@ -435,6 +435,11 @@ float z_apex_cone( const quad& q0 )
 }
 
 
+
+#include "csg_intersect_leaf_newcone.h"
+
+
+
 /**
 intersect_leaf_cone
 =====================
@@ -525,6 +530,8 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
  
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
     // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
+
+
  
     bool valid_isect = false ;
  
@@ -1460,6 +1467,7 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_ZSPHERE:          valid_isect = intersect_leaf_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
         case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_leaf_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
         case CSG_CONE:             valid_isect = intersect_leaf_cone(             isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_NEWCONE:          valid_isect = intersect_leaf_newcone(          isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      valid_isect = intersect_leaf_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_BOX3:             valid_isect = intersect_leaf_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;

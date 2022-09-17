@@ -16,6 +16,12 @@ Disabling nudging get very clear coincidence lines at z=97 and z=0::
 After running eg skipnudge_ct the ana appearance will stay the same 
 until running eg withnudge_ct 
 
+Rerun a simtrace_sample.npy array of problem rays saved from "ana"::
+
+    ./nmskSolidMaskVirtual.sh sample
+
+
+
 EOU
 }
 

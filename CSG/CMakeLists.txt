@@ -90,6 +90,7 @@ list(APPEND INTERSECT_HEADERS
 
     csg_intersect_leaf_thetacut.h 
     csg_intersect_leaf_phicut.h 
+    csg_intersect_leaf_newcone.h 
     csg_intersect_leaf_oldcylinder.h 
 
     csg_robust_quadratic_roots.h
@@ -143,7 +144,7 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER preprocessor macros
 #target_compile_definitions( ${name} PRIVATE DEBUG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
 #target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
-#target_compile_definitions( ${name} PRIVATE DEBUG_CONE )
+target_compile_definitions( ${name} PRIVATE DEBUG_CONE )
 
 
 

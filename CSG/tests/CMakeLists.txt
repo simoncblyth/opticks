@@ -41,7 +41,7 @@ set(TEST_SOURCES
     intersect_leaf_thetacut_test.cc
     intersect_leaf_box3_test.cc 
     intersect_leaf_cylinder_test.cc 
-    intersect_leaf_cylinder_vs_altcylinder_test.cc
+    intersect_leaf_cylinder_vs_oldcylinder_test.cc
     CSGIntersectComparisonTest.cc 
 
     distance_leaf_slab_test.cc

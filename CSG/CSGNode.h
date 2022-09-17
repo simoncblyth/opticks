@@ -259,6 +259,7 @@ struct CSG_API CSGNode
     static CSGNode Sphere(float radius);
     static CSGNode ZSphere(float radius, float z1, float z2);
     static CSGNode Cone(float r1, float z1, float r2, float z2); 
+    static CSGNode NewCone(float r1, float z1, float r2, float z2); 
     static CSGNode Hyperboloid(float r0, float zf, float z1, float z2);
     static CSGNode Box3(float fx, float fy, float fz ); 
     static CSGNode Box3(float fullside); 

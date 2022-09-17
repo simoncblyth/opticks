@@ -476,6 +476,7 @@ CSGNode CSGNode::ZSphere(float radius, float z1, float z2)  // static
     nd.setTypecode(CSG_ZSPHERE) ; 
     return nd ;
 }
+
 CSGNode CSGNode::Cone(float r1, float z1, float r2, float z2)  // static
 {
     assert( z2 > z1 ); 
@@ -486,6 +487,14 @@ CSGNode CSGNode::Cone(float r1, float z1, float r2, float z2)  // static
     nd.setTypecode(CSG_CONE) ; 
     return nd ; 
 }
+CSGNode CSGNode::NewCone(float r1, float z1, float r2, float z2)  // static
+{
+    CSGNode nd = Cone(r1,z1,r2,z2); 
+    nd.setTypecode(CSG_NEWCONE) ; 
+    return nd ; 
+}
+
+
 CSGNode CSGNode::Box3(float fullside)  // static 
 {
     return Box3(fullside, fullside, fullside); 
