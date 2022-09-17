@@ -30,9 +30,12 @@ defarg=withnudge_ct_ana
 
 arg=${1:-$defarg}
 
-export ZZ=0,98,291.1
-export XX=0
+#export ZZ=0,97,98,291.1
+#export XX=0
 export GEOM=nmskSolidMaskVirtual
+
+focus=-264,98,10
+#export FOCUS=${FOCUS:-$focus}
 
 loglevels(){
     export GeoChain=INFO
@@ -62,6 +65,18 @@ if [ "${arg/ana}" != "$arg" ]; then
    ./ct.sh ana
    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
+if [ "mpcap" == "$arg" ]; then 
+   c
+   ./ct.sh mpcap
+   [ $? -ne 0 ] && echo $BASH_SOURCE mpcap error && exit 3 
+fi 
+if [ "mppub" == "$arg" ]; then 
+   c
+   ./ct.sh mppub
+   [ $? -ne 0 ] && echo $BASH_SOURCE mppub error && exit 3 
+fi 
+
+
 if [ "${arg/unx}" != "$arg" ]; then 
    c
    XDIST=500 NOLEGEND=1 UNEXPECTED=1 ./ct.sh ana
@@ -72,6 +87,9 @@ if [ "${arg/sample}" != "$arg" ]; then
    c 
    ./CSGSimtraceSampleTest.sh 
 fi
+
+
+
 
 
 exit 0 

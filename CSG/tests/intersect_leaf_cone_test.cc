@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     const float& t0 = i0.w ; 
     const float& t1 = i1.w ; 
 
-    bool vi0 = intersect_leaf_cone(    i0, q0, tmn, o, d ); 
+    bool vi0 = intersect_leaf_oldcone( i0, q0, tmn, o, d ); 
     bool vi1 = intersect_leaf_newcone( i1, q0, tmn, o, d ); 
 
     p0 = vi0 ? o + t0*d : zero3  ; 

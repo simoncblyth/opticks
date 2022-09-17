@@ -128,15 +128,17 @@ target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 
 
 #[=[
-DEBUG,DEBUG_RECORD,DEBUG_CYLINDER preprocessor macros
--------------------------------------------------------
+DEBUG,DEBUG_RECORD,DEBUG_CYLINDER,DEBUG_CONE preprocessor macros
+-------------------------------------------------------------------
  
-* WARNING : these flags are exceedingly verbose 
-* note that the code will not compile with nvcc when DEBUG_RECORD or DEBUG_CYLINDER are used, 
-  due to use of std::vector for example
+* WARNING : these DEBUG flags are exceedingly verbose 
+* note that nvcc compilation will fail when these are enabled, 
+  as they are intended for CPU debugging of GPU code. 
+  Some use std::vector for collecting CSGRecords. 
+
 * the flags effect critical parts of CSG intersection algorithm 
 * flags are intended for CPU debugging of CUDA compatible code 
-* only use them for tests of single intersections 
+* only use them for tests of single or small numbers of intersections 
 * DO NOT COMMIT WITH THESE UNCOMMENTED
 
 #]=]
@@ -144,7 +146,7 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER preprocessor macros
 #target_compile_definitions( ${name} PRIVATE DEBUG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
 #target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
-target_compile_definitions( ${name} PRIVATE DEBUG_CONE )
+#target_compile_definitions( ${name} PRIVATE DEBUG_CONE )
 
 
 

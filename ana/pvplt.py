@@ -33,15 +33,15 @@ def pvplt_simple(pl, xyz, label):
 
 def mpplt_focus(xlim, ylim):
     aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
-    print("xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
+    log.info("mpplt_focus xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
     if not np.all(FOCUS == 0): 
         center = FOCUS[:2] 
         extent = FOCUS[2] if len(FOCUS) > 2 else 100 
         diagonal  = np.array([extent*aspect, extent])
         botleft = center - diagonal
         topright = center + diagonal
-        print("botleft:%s" % str(botleft))
-        print("topright:%s" % str(topright))
+        log.info("mpplt_focus botleft:%s" % str(botleft))
+        log.info("mpplt_focus topright:%s" % str(topright))
         xlim = np.array([botleft[0], topright[0]])
         ylim = np.array([botleft[1], topright[1]])
     else:

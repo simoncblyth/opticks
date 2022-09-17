@@ -487,10 +487,10 @@ CSGNode CSGNode::Cone(float r1, float z1, float r2, float z2)  // static
     nd.setTypecode(CSG_CONE) ; 
     return nd ; 
 }
-CSGNode CSGNode::NewCone(float r1, float z1, float r2, float z2)  // static
+CSGNode CSGNode::OldCone(float r1, float z1, float r2, float z2)  // static
 {
     CSGNode nd = Cone(r1,z1,r2,z2); 
-    nd.setTypecode(CSG_NEWCONE) ; 
+    nd.setTypecode(CSG_OLDCONE) ; 
     return nd ; 
 }
 

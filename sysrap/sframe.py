@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import logging
+log = logging.getLogger(__name__)
+
 from opticks.ana.npmeta import NPMeta
 from opticks.ana.axes import * 
 from opticks.ana.pvplt import mpplt_focus, SIZE
@@ -388,6 +391,8 @@ class sframe(object):
 
         xlim = self.bbox[:,H]  
         ylim = self.bbox[:,V]  
+
+        log.info("mp_subplots xlim %s ylim %s " % (str(xlim), str(ylim)))  
         xlim, ylim = mpplt_focus(xlim, ylim)
 
 

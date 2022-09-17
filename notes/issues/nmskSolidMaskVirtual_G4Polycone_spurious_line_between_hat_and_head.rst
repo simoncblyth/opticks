@@ -299,3 +299,204 @@ Using CSGSimtraceSample.sh with simtrace array of the spurious::
      n 18 num_intersect 18
     epsilon:CSG blyth$ ./nmskSolidMaskVirtual.sh sample
 
+
+
+
+
+Slight variation in direction makes the rays miss : when they should hit the endcap
+-------------------------------------------------------------------------------------
+
+Before changing CSG_NEWCONE alg::
+
+    epsilon:tests blyth$ ./intersect_leaf_cone_test.sh
+    // r1   100.0000 z1  -100.0000  r2    50.0000 z2   -50.0000 apex z0     0.0000 
+    //intersect_leaf_cone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_cone c2    -0.6000 c1   134.1641 c0 -30000.0000 disc     0.0020 disc > 0.f 1 : tth    -1.0000 
+    //intersect_leaf_newcone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_newcone c2    -0.6000 c1   134.1641 c0 -30000.0000 disc     0.0020 disc > 0.f 1 : tth    -1.0000 
+    // ray ( -100.0000     0.0000  -200.0000 ;     0.4472     0.0000     0.8944 ;     0.0000)
+    // vi0 1 i0 (    0.0000     0.0000    -1.0000   111.8034)  p0 (  -50.0000     0.0000  -100.0000)
+    // vi1 1 i1 (    0.0000     0.0000    -1.0000   111.8034)  p1 (  -50.0000     0.0000  -100.0000)
+
+    epsilon:tests blyth$ RAYDIR=1,0,2.0001 ./intersect_leaf_cone_test.sh run
+    // r1   100.0000 z1  -100.0000  r2    50.0000 z2   -50.0000 apex z0     0.0000 
+    //intersect_leaf_cone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_cone c2    -0.6000 c1   134.1676 c0 -30000.0000 disc    -0.0020 disc > 0.f 0 : tth    -1.0000 
+    //intersect_leaf_newcone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_newcone c2    -0.6000 c1   134.1676 c0 -30000.0000 disc    -0.0020 disc > 0.f 0 : tth    -1.0000 
+    // ray ( -100.0000     0.0000  -200.0000 ;     0.4472     0.0000     0.8944 ;     0.0000)
+    // vi0 0 i0 (    0.0000     0.0000     0.0000     0.0000)  p0 (    0.0000     0.0000     0.0000)
+    // vi1 0 i1 (    0.0000     0.0000     0.0000     0.0000)  p1 (    0.0000     0.0000     0.0000)
+    epsilon:tests blyth$ 
+
+
+After adjusting the logic, treating cap itersects as independent of infinite cone ones::
+
+    epsilon:tests blyth$ ./intersect_leaf_cone_test.sh
+    // r1   100.0000 z1  -100.0000  r2    50.0000 z2   -50.0000 apex z0     0.0000 
+    //intersect_leaf_cone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_cone c2    -0.6000 c1   134.1641 c0 -30000.0000 disc     0.0020 disc > 0.f 1 : tth    -1.0000 
+    //intersect_leaf_newcone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_newcone c2    -0.6000 c1   134.1641 c0 -30000.0000 disc     0.0020 disc > 0.f 1 : tth    -1.0000 
+    // ray ( -100.0000     0.0000  -200.0000 ;     0.4472     0.0000     0.8944 ;     0.0000)
+    // vi0 1 i0 (    0.0000     0.0000    -1.0000   111.8034)  p0 (  -50.0000     0.0000  -100.0000)
+    // vi1 1 i1 (    0.0000     0.0000    -1.0000   111.8034)  p1 (  -50.0000     0.0000  -100.0000)
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ RAYDIR=1,0,2.0001 ./intersect_leaf_cone_test.sh run
+    // r1   100.0000 z1  -100.0000  r2    50.0000 z2   -50.0000 apex z0     0.0000 
+    //intersect_leaf_cone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_cone c2    -0.6000 c1   134.1676 c0 -30000.0000 disc    -0.0020 disc > 0.f 0 : tth    -1.0000 
+    //intersect_leaf_newcone r1   100.0000 z1  -100.0000 r2    50.0000 z2   -50.0000 : z0     0.0000 
+    //intersect_leaf_newcone c2    -0.6000 c1   134.1676 c0 -30000.0000 disc    -0.0020 disc > 0.f 0 : tth    -1.0000 
+    // ray ( -100.0000     0.0000  -200.0000 ;     0.4472     0.0000     0.8944 ;     0.0000)
+    // vi0 0 i0 (    0.0000     0.0000     0.0000     0.0000)  p0 (    0.0000     0.0000     0.0000)
+    // vi1 1 i1 (    0.0000     0.0000    -1.0000   111.8023)  p1 (  -50.0025     0.0000  -100.0000)
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+
+
+
+Investigate a spurious that is not on the cylinder cone line
+---------------------------------------------------------------
+
+
+* below shows the cause to be catastrophic precision loss in t_near
+* this is fixed in newcone using *robust_quadratic_roots*
+
+
+::
+
+    In [1]: w = np.logical_and( np.abs(s.simtrace[:,1,0] - (-214)) < 5, np.abs(s.simtrace[:,1,2] - (115)) < 5 )
+
+    In [3]: np.where(w)
+    Out[3]: (array([421273]),)
+
+    In [5]: s.simtrace[w,:,:3]
+    Out[5]: 
+    array([[[  -0.546,    0.   ,    0.838],
+            [-212.85 ,    0.   ,  114.494],
+            [ 158.43 ,    0.   , -158.43 ],
+            [  -0.806,    0.   ,    0.592]]], dtype=float32)
+
+
+
+
+::
+
+    epsilon:CSG blyth$ ./nmskSolidMaskVirtual.sh sample
+    /Users/blyth/opticks/CSG
+                       BASH_SOURCE : ./../bin/GEOM_.sh 
+                               gp_ : nmskSolidMaskVirtual_GDMLPath 
+                                gp :  
+                               cg_ : nmskSolidMaskVirtual_CFBaseFromGEOM 
+                                cg : /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual 
+                           GEOMDIR : /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual 
+
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON_.sh
+                              GEOM : nmskSolidMaskVirtual
+              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
+      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy
+        OPTICKS_INPUT_PHOTON_LABEL : RandomSpherical10
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON.sh 
+                         ScriptDir : ./../bin 
+              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy 
+        OPTICKS_INPUT_PHOTON_FRAME :  
+      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/RandomSpherical10_f8.npy 
+
+                       BASH_SOURCE : ./../bin/COMMON.sh
+                              GEOM : nmskSolidMaskVirtual
+              OPTICKS_INPUT_PHOTON : RandomSpherical10_f8.npy
+        OPTICKS_INPUT_PHOTON_FRAME : 
+                               MOI : 
+    PLOG::EnvLevel adjusting loglevel by envvar   key SArgs level INFO fallback DEBUG
+    PLOG::EnvLevel adjusting loglevel by envvar   key CSGFoundry level INFO fallback DEBUG
+    PLOG::EnvLevel adjusting loglevel by envvar   key CSGSimtraceSample level INFO fallback DEBUG
+    PLOG::EnvLevel adjusting loglevel by envvar   key ncylinder level INFO fallback DEBUG
+    2022-09-17 16:18:02.592 INFO  [9048710] [*CSGFoundry::Load@2487] [ argumentless 
+    2022-09-17 16:18:02.593 INFO  [9048710] [*CSGFoundry::ResolveCFBase@2550]  cfbase /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual readable 1
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]                      : -
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]                 HOME : /Users/blyth
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]                 USER : blyth
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]               SCRIPT : -
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]                  PWD : /Users/blyth/opticks/CSG
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::setMeta@138]              CMDLINE : -
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::load@2279] [ loaddir /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual/CSGFoundry
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     1 nj 3 nk 4 solid.npy
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     1 nj 4 nk 4 prim.npy
+    2022-09-17 16:18:02.593 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     7 nj 4 nk 4 node.npy
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     3 nj 4 nk 4 tran.npy
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     3 nj 4 nk 4 itra.npy
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::loadArray@2648]  ni     1 nj 4 nk 4 inst.npy
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::load@2303] [ SSim::Load 
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::load@2305] ] SSim::Load 
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGFoundry::load@2310] ] loaddir /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual/CSGFoundry
+    2022-09-17 16:18:02.594 INFO  [9048710] [*CSGFoundry::ELVString@2446]  elv_selection_ (null) elv (null)
+    2022-09-17 16:18:02.594 INFO  [9048710] [*CSGFoundry::Load@2502] ] argumentless 
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGSimtraceSample::init@37]  axis Z type 1 CSG::Name(type) union IsTree 1 width 7 height 2
+                                   un                                                         
+                                  1                                                           
+                                     0.00                                                     
+                                    -0.00                                                     
+                                                                                              
+               un                            co                                               
+              2                             3                                                 
+                 0.00                        194.05                                           
+                -0.00                         97.00                                           
+                                                                                              
+     cy                  cy                                                                   
+    4                   5                                                                     
+       1.00               98.00                                                               
+    -183.22                0.00                                                               
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+                                                                                              
+
+
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGSimtraceSample::init@38]  fd.cfbase /tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual
+    2022-09-17 16:18:02.594 INFO  [9048710] [CSGSimtraceSample::init@39]  vv (10, )
+    2022-09-17 16:18:02.595 INFO  [9048710] [CSGSimtraceSample::init@40] vv.lpath [/tmp/blyth/opticks/GEOM/nmskSolidMaskVirtual/Values/values.npy]
+    2022-09-17 16:18:02.595 INFO  [9048710] [CSGSimtraceSample::init@41] vv.descValues 
+    NP::descValues num_val 10
+      0 v  -183.2246 k SolidMask.SolidMaskVirtual.zPlane0.-height_virtual          
+      1 v     0.0000 k SolidMask.SolidMaskVirtual.zPlane1.0                        
+      2 v    97.0000 k SolidMask.SolidMaskVirtual.zPlane2.htop_out/2               
+      3 v   194.0500 k SolidMask.SolidMaskVirtual.zPlane3.htop_out+MAGIC_virtual_thickness
+      4 v   264.0500 k SolidMask.SolidMaskVirtual.rOuter0.mask_radiu_virtual       
+      5 v   264.0500 k SolidMask.SolidMaskVirtual.rOuter1.mask_radiu_virtual       
+      6 v   264.0500 k SolidMask.SolidMaskVirtual.rOuter2.mask_radiu_virtual       
+      7 v   132.0250 k SolidMask.SolidMaskVirtual.rOuter3.mask_radiu_virtual/2     
+      8 v     0.0500 k SolidMask.SolidMaskVirtual.MAGIC_virtual_thickness          
+      9 v   194.0000 k SolidMask.SolidMaskVirtual.htop_out                         
+
+    //intersect_leaf_oldcone r1   264.0500 z1    97.0000 r2   132.0250 z2   194.0500 : z0   291.1000 
+    //intersect_leaf_oldcone c2    -0.0000 c1   365.0782 c0 -348871.4688 disc 133281.9219 disc > 0.f 1 : tth    -1.3604 
+    //intersect_leaf_oldcone c0 -3.489e+05 c1      365.1 c2  -5.96e-07 t_near      460.8 t_far  1.225e+09 sdisc   365.0780 (-c1-sdisc)     -730.2 (-c1+sdisc) -0.0002747 
+    //intersect_leaf_oldcone t_near_alt      477.8 t_far_alt  1.225e+09 t_near_alt-t_near         17 t_far_alt-t_far          0 
+    //intersect_leaf_oldcone r1   264.0500 z1    97.0000 r2   132.0250 z2   194.0500 : z0   291.1000 
+    //intersect_leaf_oldcone c2    -0.0000 c1   365.0782 c0 -348871.4688 disc 133281.9219 disc > 0.f 1 : tth    -1.3604 
+    //intersect_leaf_oldcone c0 -3.489e+05 c1      365.1 c2  -5.96e-07 t_near      460.8 t_far  1.225e+09 sdisc   365.0780 (-c1-sdisc)     -730.2 (-c1+sdisc) -0.0002747 
+    //intersect_leaf_oldcone t_near_alt      477.8 t_far_alt  1.225e+09 t_near_alt-t_near         17 t_far_alt-t_far          0 
+                                 - HIT
+                        q0 norm t (   -0.5457    0.0000    0.8380  460.8000)
+                       q1 ipos sd ( -212.8504    0.0000  114.4940    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (  158.4300    0.0000 -158.4300)
+                  q3 ray_dir gsid (   -0.8057    0.0000    0.5923 C4U (     0    0    0  255 ) )
+
+     o.x            158.4300 v.x             -0.8057 t0(-o.x/v.x)   196.6291 z0             -41.9699
+    2022-09-17 16:18:02.595 INFO  [9048710] [CSGSimtraceSample::intersect@89] CSGSimtraceSample::desc
+     fd Y
+     fd.geom -
+     CSGQuery::Label  not-DEBUG not-DEBUG_RECORD not-DEBUG_CYLINDER
+     path /tmp/simtrace_sample.npy
+     simtrace (1, 4, 4, )
+     n 1 num_intersect 1
+    epsilon:CSG blyth$ 
+
+
+

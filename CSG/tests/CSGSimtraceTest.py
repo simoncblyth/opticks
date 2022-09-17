@@ -71,7 +71,9 @@ if __name__ == '__main__':
     if not s is None and "UNEXPECTED" in os.environ:  
 
         if s_geom.startswith("nmskSolidMaskVirtual"): 
-            w = np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 ) 
+            w_label, w = "apex glancers",  np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 ) 
+            #w_label, w = "quadratic precision loss", np.logical_and( np.abs(s.simtrace[:,1,0] - (-214)) < 5, np.abs(s.simtrace[:,1,2] - (115)) < 5 )
+ 
             w_simtrace = s.simtrace[w]
             w_path = "/tmp/simtrace_sample.npy"
             np.save(w_path, w_simtrace)
