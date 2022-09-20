@@ -25,6 +25,11 @@ Gradient:    2*[x, y, (z0-z) tanth^2 ]
 
 huh : is there a simpler way to get normal ? just from cone param ?
 
+
+**References**
+
+* https://www.geometrictools.com/Documentation/IntersectionLineCone.pdf
+
 **/
 
 

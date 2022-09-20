@@ -19,11 +19,12 @@ if __name__ == '__main__':
     SYMBOLS = os.environ.get("SYMBOLS", None)
     FOLD = os.environ.get("FOLD", None)
 
-    if not FOLD is None:
+    if SYMBOLS is None and not FOLD is None:
         s = Fold.Load(symbol="s")
         t = None
         fr = s.sframe
         s_label = os.environ["GEOM"]
+        SYMBOLS="S" 
     elif not SYMBOLS is None:
         ff = Fold.MultiLoad()
         frs = list(filter(None, map(lambda f:f.sframe, ff)))
@@ -34,32 +35,28 @@ if __name__ == '__main__':
     pass
 
 
-    s_offset = efloatarray_("S_OFFSET", "0,0,0")
-    t_offset = efloatarray_("T_OFFSET", "0,0,0")
-
-
-
     fig, ax = fr.mp_subplots(mp)  
 
-    if not s is None:
-        s_hit = s.simtrace[:,0,3]>0 
-        s_pos = s_offset + s.simtrace[s_hit][:,1,:3]
+    log.info("SYMBOLS %s " % str(SYMBOLS))
+    if not SYMBOLS is None:
+        for A in list(SYMBOLS):
+            a = A.lower()
+            log.info("A %s a %s" % ( A, a ) )
+            if hasattr(builtins, a):
+                fold = getattr(builtins, a)
+                label = getattr(builtins, "%s_label" % a )
+                label = label.split("__")[0] if "__" in label else label
+                a_offset = efloatarray_("%s_OFFSET" % A, "0,0,0")
+                log.info("label %s" % ( label ) )
+                a_hit = fold.simtrace[:,0,3]>0
+                a_pos = a_offset + fold.simtrace[a_hit][:,1,:3]
+                fr.mp_scatter(a_pos, label="%s:%s" % (A,label), s=1 )
+            else:
+                log.info(" a %s not in builtins" % a)
+            pass
+        pass
     pass
-
-    if not t is None:
-        t_hit = t.simtrace[:,0,3]>0 
-        t_pos = t_offset + t.simtrace[t_hit][:,1,:3]
-    pass
-
-    if not s is None:
-        fr.mp_scatter(s_pos, label="%s" % s_label, s=1 )
-    pass
-
-    if not t is None:
-        fr.mp_scatter(t_pos, label="%s" % t_label, s=1 )
-    pass
-
-    ax.legend()
+    fr.mp_legend()
     fig.show()
 
 

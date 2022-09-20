@@ -103,7 +103,7 @@ class SYSRAP_API SStr {
 
       static const char* TrimLeading(const char* s); 
       static const char* TrimTrailing(const char* s); 
-      static const char* Trim(const char* s); 
+      static const char* Trim(const char* s);  // Trim leading and trailing whitespace
 
       static const char* HeadFirst(const char* s, char c); 
       static const char* HeadLast( const char* s, char c); 

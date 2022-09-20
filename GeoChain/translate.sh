@@ -94,6 +94,7 @@ case $GEOM in
 esac
 
 # TODO: arrange auto-detection of Solid OR Volume so can then have single executable 
+# HMM COULD DO THAT WITH SOME NAMING CONVENTION ?
 geoscript=../extg4/${GEOM}.sh 
 
 if [ -f "$geoscript" ]; then
@@ -141,6 +142,7 @@ loglevels()
     #export OpticksDbg=INFO  
     #export GInstancer=INFO
 }
+#export GeoChain=INFO
 #loglevels
 
 
@@ -172,23 +174,17 @@ if [ "${GEOM/Unbalanced}" != "${GEOM}" ]; then
 fi 
 
 
-#export DUMP_RIDX=0
-
-
 ################# mechanics ###############
 
 unset OPTICKS_KEY      # TODO: do this inside executables, as kinda important 
 
 #####################################################
 
-opts=""
-#opts="$opts --x4tubsnudgeskip 0"
-#opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
+##opts=""
+##opts="$opts --x4tubsnudgeskip 0"
+##opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 #DEBUG=1
-## TODO: move away from use of commamdline options
-## TODO: dont accept options via commandline : do anything like that via envvars
-
-
+##  NOTE : IF OPTS ARE NEEDED USE OPTICKS_OPTS envvar NOT COMMANDLINE OPTIONS
 
 
 [ -z "$QUIET" ] && which $bin
@@ -202,8 +198,8 @@ fi
 if [ "dbg" == "$arg" ]; then
    [ -f "$bin.log" ] && rm $bin.log 
    case $(uname) in
-       Darwin) lldb__ $bin $opts  ;; 
-       Linux)   gdb -ex r --args $bin $opts  ;; 
+       Darwin) lldb__ $bin   ;; 
+       Linux)   gdb -ex r --args $bin   ;; 
    esac
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 

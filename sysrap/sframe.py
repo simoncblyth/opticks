@@ -430,6 +430,20 @@ class sframe(object):
         for i in range(len(pos)):
             self.ax.arrow( pos[i,H], pos[i,V], mom[i,H], mom[i,V] )
         pass
+
+    def mp_legend(self):
+        NOLEGEND = "NOLEGEND" in os.environ
+        LSIZ = float(os.environ.get("LSIZ",50))
+        LOC = os.environ.get("LOC", "upper right")
+        log.info("mp_legend LSIZ %s LOC %s NOLEGEND %s " % (LSIZ,LOC,NOLEGEND) )
+        if not NOLEGEND:
+            lgnd = self.ax.legend(loc=LOC)
+            for handle in lgnd.legendHandles:
+                handle.set_sizes([LSIZ])
+            pass
+        pass
+
+
  
 
 if __name__ == '__main__':

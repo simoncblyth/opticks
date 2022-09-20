@@ -39,11 +39,13 @@ eo(){ env | grep =INFO ; }
 
 geom(){ 
    : opticks/opticks.bash 
+   : NB this is distinct from geom_ bash function  
    local path=$HOME/.opticks/GEOM.txt 
+   local script=$HOME/opticks/bin/GEOM.sh
    if [ "$1" == "scp" ]; then 
        scp $path P:.opticks/
    else
-       vi $path ;
+       vi $path $script ;
    fi   
 }
 

@@ -14,6 +14,11 @@ class Fold(object):
     @classmethod
     def MultiLoad(cls, symbols=None):
         """
+        Used by::
+
+            CSG/tests/CSGSimtraceTest.py
+            extg4/tests/X4SimtraceTest.py
+
         Values are read from the environment and added to the invoking global context
         using the builtins module. The prefixes are obtained from the SYMBOLS envvar 
         which defaults to "S,T".  
@@ -31,7 +36,12 @@ class Fold(object):
         In addition an array [s,t] is returned 
         """
         if symbols is None:
-            symbols = os.environ.get("SYMBOLS", "S,T").split(",")
+            symbols = os.environ.get("SYMBOLS", "S,T")
+            if "," in symbols:
+                symbols = symbols.split(",")
+            else:
+                symbols = list(symbols)
+            pass
         pass
         print("symbols:%s " % str(symbols))
         ff = []

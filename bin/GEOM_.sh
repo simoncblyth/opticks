@@ -44,16 +44,23 @@ EOU
 #geom=hama_body_log
 #geom=J001
 #geom=J003
-geom=nmskSolidMaskVirtual
+
+
+#geom=nnvtPMTSolid
+#geom=nnvtBodySolid
+#geom=nnvtInner1Solid
+#geom=nnvtInner2Solid
 
 #geom=nmskSolidMask
-#geom=nmskMaskOut
-#geom=nmskMaskIn
-
 #geom=nmskSolidMaskTail
+geom=nmskSolidMaskVirtual
+
+
+
 #geom=nmskTailOuter
 #geom=nmskTailInner
-
+#geom=nmskMaskOut
+#geom=nmskMaskIn
 #geom=nmskTailOuterIEllipsoid
 #geom=nmskTailOuterITube
 #geom=nmskTailOuterI
@@ -70,6 +77,7 @@ geom=nmskSolidMaskVirtual
 opt=U1
 case $geom in 
    nmsk*) geom=${geom}__${opt} ;;
+   nnvt*) geom=${geom}__${opt} ;;
 esac
 
 export GEOM=${GEOM:-$geom}

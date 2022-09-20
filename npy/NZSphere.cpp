@@ -134,15 +134,15 @@ void nzsphere::check() const
           ;
  
     if(!z2_lt_radius)
-       LOG(fatal) 
-           << " NOT z2_lt_radius "
+       LOG(LEVEL) 
+           << " NOT z2_lt_radius (maybe un-zcut ellipsoid safety margin) "
            << " z2 " << z2() 
            << " radius " << radius() 
            ;
 
     if(!z1_lt_radius)
-       LOG(fatal) 
-           << " NOT z1_lt_radius "
+       LOG(LEVEL) 
+           << " NOT z1_lt_radius (maybe un-zcut elliposoid safety margin) "
            << " z1 " << z1() 
            << " radius " << radius() 
            ;

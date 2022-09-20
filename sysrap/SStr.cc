@@ -591,7 +591,7 @@ const char* SStr::TrimTrailing(const char* s)
     e[1] = '\0' ;
     return p ; 
 }
-const char* SStr::Trim(const char* s)
+const char* SStr::Trim(const char* s)  // trim leading and trailing whitespace 
 {
     char* p = strdup(s); 
     char* e = p + strlen(p) - 1 ; 

@@ -7,27 +7,27 @@ Thus header needs to be included before csg_intersect_node.h which needs to be i
 
 distance_leaf_sphere 
 intersect_leaf_sphere
-    CSG_SPHERE  
+    CSG_SPHERE, robust_quadratic_roots
 
 distance_leaf_zsphere 
 intersect_leaf_zsphere
-    CSG_ZSPHERE 
+    CSG_ZSPHERE, robust_quadratic_roots 
 
 distance_leaf_convexpolyhedron
 intersect_leaf_convexpolyhedron
-    CSG_CONVEXPOLYHEDRON
+    CSG_CONVEXPOLYHEDRON, plane intersections
 
 MISSING : distance_leaf_cone
 intersect_leaf_cone
-    CSG_CONE
+    CSG_CONE, newcone with robust_quadratic_roots, oldcone without
 
 MISSING : distance_leaf_hyperboloid
 intersect_leaf_hyperboloid
-    CSG_HYPERBOLOID
+    CSG_HYPERBOLOID, robust_quadratic_roots 
 
 distance_leaf_box3
 intersect_leaf_box3
-    CSG_BOX3
+    CSG_BOX3, plane intersections
 
 distance_leaf_plane
 intersect_leaf_plane
@@ -43,15 +43,18 @@ intersect_leaf_slab
 
 distance_leaf_cylinder
 intersect_leaf_cylinder
-    CSG_CYLINDER
+    CSG_CYLINDER, robust_quadratic_roots_disqualifying 
 
 MISSING : distance_leaf_infcylinder
 intersect_leaf_infcylinder
-    CSG_INFCYLINDER
+    CSG_INFCYLINDER, robust_quadratic_roots
 
 MISSING : distance_leaf_disc
 intersect_leaf_disc
-    CSG_DISC
+    CSG_DISC, disc still using the pseudo-general flop-heavy approach similar to oldcylinder
+  
+    * TODO: adopt less-flops approach like newcylinder
+    * (NOT URGENT AS disc NOT CURRENTLY VERY RELEVANT IN ACTIVE GEOMETRIES) 
 
 
 distance_leaf
@@ -140,8 +143,8 @@ bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, co
     float d = dot(D, D);
 
 #ifdef CATASTROPHIC_SUBTRACTION_ROOTS
-    float disc = b*b-d*c;
-    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
+    float disc = b*b-d*c;   // when d*c small,  sdisc ~ b => catastrophic precision loss in root2 = (-b + sdisc)/d
+    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // repeated root for sdisc 0.f
     float root1 = (-b - sdisc)/d ;
     float root2 = (-b + sdisc)/d ;  // root2 > root1 always
 #else

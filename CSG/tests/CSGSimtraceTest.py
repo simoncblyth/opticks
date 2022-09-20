@@ -17,6 +17,7 @@ from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.CSG.Values import Values 
 from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist, mpplt_parallel_lines_auto
+from opticks.ana.eget import efloatarray_
 
 
 if __name__ == '__main__':
@@ -25,18 +26,22 @@ if __name__ == '__main__':
     SYMBOLS = os.environ.get("SYMBOLS", None)
     FOLD = os.environ.get("FOLD", None)
 
-    if not FOLD is None:
+    if SYMBOLS is None and not FOLD is None:
         s = Fold.Load(symbol="s")
         t = None
         fr = s.sframe
-        s_geom = os.environ["GEOM"]
-
-        sv = Values.Find("$FOLD", symbol="sv") if not s_geom is None else None
+        s_label = os.environ["GEOM"]
+        SYMBOLS = "S" 
+        sv = Values.Find("$FOLD", symbol="sv") if not s_label is None else None
     elif not SYMBOLS is None:
+        log.info("SYMBOLS defined %s proceed with Fold.MultiLoad", SYMBOLS)
         ff = Fold.MultiLoad()
+        log.info(" ff %s " % str(ff))
+        assert len(ff) > 0 
         frs = list(filter(None, map(lambda f:f.sframe, ff)))
         assert len(frs) > 0 
         fr = frs[0]       ## HMM: picking first frame, maybe need to form composite bbox from all frames ?
+        sv = None
     else:
         assert 0 
     pass
@@ -58,7 +63,7 @@ if __name__ == '__main__':
         ## fr.mp_arrow(  e_ori, 10*e_dir, label="e_ori,e_dir", s=2 ) 
     pass
 
-    if s_geom.startswith("nmskSolidMaskVirtual"): 
+    if s_label.startswith("nmskSolidMaskVirtual") and not sv is None: 
         r1=sv.get("SolidMask.SolidMaskVirtual.rOuter2.mask_radiu_virtual")
         r2=sv.get("SolidMask.SolidMaskVirtual.rOuter3.mask_radiu_virtual/2")
         z1=sv.get("SolidMask.SolidMaskVirtual.zPlane2.htop_out/2")
@@ -70,7 +75,7 @@ if __name__ == '__main__':
 
     if not s is None and "UNEXPECTED" in os.environ:  
 
-        if s_geom.startswith("nmskSolidMaskVirtual"): 
+        if s_label.startswith("nmskSolidMaskVirtual"): 
             w_label, w = "apex glancers",  np.logical_and( np.abs(s.simtrace[:,1,0]) < 220, np.abs(s.simtrace[:,1,2]-98) < 1 ) 
             #w_label, w = "quadratic precision loss", np.logical_and( np.abs(s.simtrace[:,1,0] - (-214)) < 5, np.abs(s.simtrace[:,1,2] - (115)) < 5 )
  
@@ -90,27 +95,14 @@ if __name__ == '__main__':
     if not s is None:
         mpplt_parallel_lines_auto( ax, fr.bbox.T, fr.axes, linestyle="dashed" )
     pass
-
-    if not t is None:
-        t_hit = t.simtrace[:,0,3]>0 
-        t_pos = t.simtrace[t_hit][:,1,:3]
-    pass
-
-    if not s is None:
-        fr.mp_scatter(s_pos, label="%s" % s_geom, s=1 )
-    pass
-
     if not s is None and hasattr(s,"genstep") and "GS" in os.environ:
         s_gs  = s.genstep[:,5,:3]  
         fr.mp_scatter(s_gs, label="s_gs", s=1 )
     pass
-
-
  
     if not s is None and hasattr(s,"simtrace_selection"):
        sts = s.simtrace_selection 
     elif not s is None and "SELECTION" in os.environ:
-        #if s_geom 
         #w = np.logical_and( s.simtrace[:,0,3]>0, np.logical_and( s.simtrace[:,1,Z] > -38.9, s.simtrace[:,1,Z] < -20. ))
         w = s.simtrace[:,1,X] > 264.5
         wi = np.where(w)[0]  
@@ -125,14 +117,26 @@ if __name__ == '__main__':
 
     d = getattr(s, "CSGDebug_Cylinder", None) if not s is None else None
 
-
-    if not t is None:
-        fr.mp_scatter(t_pos, label="%s" % t_geom, s=1 )
+    log.info("SYMBOLS %s " % str(SYMBOLS))
+    if not SYMBOLS is None:
+        for A in list(SYMBOLS):
+            a = A.lower()
+            log.info("A %s a %s" % ( A, a ) )
+            if hasattr(builtins, a):
+                fold = getattr(builtins, a)
+                label = getattr(builtins, "%s_label" % a )
+                a_offset = efloatarray_("%s_OFFSET" % A, "0,0,0")
+                log.info("label %s" % ( label ) )
+                a_hit = fold.simtrace[:,0,3]>0 
+                a_pos = a_offset + fold.simtrace[a_hit][:,1,:3]
+                label = label.split("__")[0] if "__" in label else label
+                fr.mp_scatter(a_pos, label="%s:%s" % (A,label), s=1 )
+            else:
+                log.info(" a not in globals") 
+            pass
+        pass
     pass
-
-    if not "NOLEGEND" in os.environ:
-        ax.legend()
-    pass
+    fr.mp_legend()
     fig.show()
 pass
 

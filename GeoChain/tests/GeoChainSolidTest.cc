@@ -41,7 +41,7 @@ just the path to the CSGFoundry directory.
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* GetSolid(const char* geom, std::string& meta )
+const G4VSolid* GetSolid(const char* geom, std::string* meta=nullptr )
 {
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(geom))
@@ -72,28 +72,24 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* geom_ = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ) ; 
-    const char* geom = SStr::Trim(geom_); 
-    LOG(info) 
-         << " geom_ [" << geom_ << "]" 
-         << " geom (after trim)  [" << geom  << "] " 
-         ; 
+    const char* geom = SStr::Trim(geom_);   // Trim leading and trailing whitespace
+    LOG(info) << " geom [" << geom  << "] " ; 
+
+    const G4VSolid* solid = GetSolid(geom);  
+    const NP* values = GetValues(geom) ; 
+
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
     GeoChain gc(&ok); 
-
-    std::string meta ; 
-
-    const G4VSolid* solid = GetSolid(geom, meta);  
-    const NP* vv = GetValues(geom) ; 
-    gc.vv = vv ;  
+    gc.vv = values ;  
 
 
     if( solid )  // for shapes authored as G4VSolid 
     {   
-        gc.convertSolid(solid, meta );  
+        gc.convertSolid(solid);  
     }
     else      // for shapes authored as CSGSolid/CSGPrim/CSGNode  (HMM: what about CSG/CSGMakerTest.sh)
     {   

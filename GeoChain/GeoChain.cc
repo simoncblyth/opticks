@@ -55,10 +55,10 @@ which then gets passed into CSGFoundry meta.
 
 **/
 
-void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
+void GeoChain::convertSolid(const G4VSolid* solid, std::string* meta )
 {
     LOG(LEVEL) << "[" ;  
-    LOG(LEVEL) << " meta " << std::endl << ( meta.empty() ? " empty " : meta )  ;  
+    LOG(LEVEL) << " meta " << std::endl << ( meta && !meta->empty() ? *meta : " no-meta"  )  ;  
     LOG(LEVEL) << "vv.descValues" << std::endl << ( vv ? vv->descValues() : "no-values" ) ; 
 
     LOG(LEVEL) << "X4SolidTree::Desc : original G4VSolid tree" << std::endl << X4SolidTree::Desc(solid) ; 
@@ -73,9 +73,9 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
     
     LOG(LEVEL) << "CSGGeometry::Desc : converted CSGNode tree" << std::endl << CSGGeometry::Desc(fd) ;  
 
-    if(!meta.empty())  // pass metadata from the solid creation into the CSGFoundry meta.txt
+    if(meta && !meta->empty())  // pass metadata from the solid creation into the CSGFoundry meta.txt
     {
-        fd->meta = strdup(meta.c_str());  
+        fd->meta = strdup(meta->c_str());  
     }
 
 

@@ -72,8 +72,18 @@ nmskTailOuterITube
 EOL
 }
 
-geomlist_one(){ cat << EOL | grep -v ^#
+geomlist_old(){ cat << EOL | grep -v ^#
+nmskSolidMask
+nmskSolidMaskTail
 nmskSolidMaskVirtual
+EOL
+}
+
+geomlist_one(){ cat << EOL | grep -v ^#
+nnvtPMTSolid
+nnvtBodySolid
+nnvtInner1Solid
+nnvtInner2Solid
 EOL
 }
 

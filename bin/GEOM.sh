@@ -7,6 +7,7 @@ To change the string, and hence the GEOM envvar,
 use the "geom" bash function from opticks/opticks.bash
 
 * HMM: notice that "geom" is distinct from "geom_" which does similar 
+* TODO: consolidation 
 
 This script does not make use of opticks bash functions 
 as in some situations it is more convenient to simply source a script 
@@ -24,6 +25,7 @@ local-opticks-home(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
 
 local-opticks-geompath()
 {
+    :  opticks/bin/GEOM.sh  
     : uses the first of dotpath or homepath 
     local dotpath=$HOME/.opticks/GEOM.txt
     local homepath=$(local-opticks-home)/GEOM.txt
@@ -36,8 +38,20 @@ local-opticks-geompath()
     echo $path
 }
 
+local-opticks-trim-projection()
+{
+    :  opticks/bin/GEOM.sh  
+    local gproj=$1
+    case $gproj in 
+      *_XZ|*_XY|*_YZ|*_YX|*_ZX|*_ZY) g=${gproj:0:-3} ;;
+                                  *) g=$gproj ;;
+    esac
+    echo $g 
+}
+
 local-opticks-geom () 
 { 
+    :  opticks/bin/GEOM.sh  
     : cat the geompath excluding comments and when trim arg is used remove portion of string beginning with underscore
     local arg=${1:-trim}
     local geompath=$(local-opticks-geompath)
@@ -46,7 +60,8 @@ local-opticks-geom ()
         local catgeom=$(cat $geompath 2>/dev/null | grep -v \#) 
         if [ -n "$catgeom" ]; then 
             case $arg in 
-              trim) geom=$(echo ${catgeom%%_*})  ;;
+              dumbtrim) geom=$(echo ${catgeom%%_*})  ;;
+              trim) geom=$(local-opticks-trim-projection $catgeom) ;;
               asis) geom=$catgeom ;;
                  *) geom=$catgeom ;;
             esac 
