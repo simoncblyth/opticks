@@ -91,6 +91,7 @@ list(APPEND INTERSECT_HEADERS
     csg_intersect_leaf_thetacut.h 
     csg_intersect_leaf_phicut.h 
     csg_intersect_leaf_newcone.h 
+    csg_intersect_leaf_oldcone.h 
     csg_intersect_leaf_oldcylinder.h 
 
     csg_robust_quadratic_roots.h
