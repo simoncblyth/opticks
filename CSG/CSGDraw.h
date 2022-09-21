@@ -20,7 +20,6 @@ struct CSG_API CSGDraw
     void draw_leaf();
     void draw_list_item( const CSGNode* nd, unsigned idx ); 
 
-    void draw(const char* msg);
     std::string hdr() const ; 
     std::string desc()  ; 
 

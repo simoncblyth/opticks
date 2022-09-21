@@ -65,7 +65,7 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
         }
     }
 
-    LOG(info) 
+    LOG(LEVEL) 
          << "ekey " << ekey 
          << " val " << val 
          << " is_CE " << is_CE
@@ -73,7 +73,7 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
          << " ce " << ce 
          ; 
 
-    std::cout << Desc(ce_offset) << std::endl ; 
+    LOG(LEVEL) << Desc(ce_offset) ; 
 
 }
 
@@ -108,7 +108,7 @@ void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, cha
     SSys::getenvintvec(ekey, cegs, delim, fallback );
     StandardizeCEGS(cegs); 
     assert( cegs.size() == 0 || cegs.size() == 8 );
-    LOG(info) << " ekey " << ekey << " Desc " << Desc(cegs)  ; 
+    LOG(LEVEL) << " ekey " << ekey << " Desc " << Desc(cegs)  ; 
 }
 
 
@@ -143,7 +143,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     std::vector<float3> ce_offset ; 
     CE_OFFSET(ce_offset, ce); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " ce " << ce 
         << " ce_offset.size " << ce_offset.size() 
         ;
@@ -168,7 +168,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
         const char* key = keys[i].c_str() ; 
         std::vector<int> cehigh ; 
         GetGridConfig(cehigh, key, ':', "" ); 
-        LOG(info) << " key " << key << " cehigh.size " << cehigh.size() ;  
+        LOG(LEVEL) << " key " << key << " cehigh.size " << cehigh.size() ;  
         if(cehigh.size() == 8)
         {
             NP* gs_cehigh = MakeCenterExtentGensteps(ce, cehigh, gridscale, geotran, ce_offset, ce_scale );
@@ -176,8 +176,11 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
         }
     }
 
-    LOG(info) << " gsl.size " << gsl.size() ; 
+    LOG(LEVEL) << " gsl.size " << gsl.size() ; 
+
+    LOG(LEVEL) << "[ NP::Concatenate " ; 
     NP* gs = NP::Concatenate(gsl) ; 
+    LOG(LEVEL) << "] NP::Concatenate " ; 
 
 
     //gs->set_meta<std::string>("moi", moi );
@@ -284,7 +287,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     int gridaxes = SGenstep::GridAxes(nx, ny, nz);   // { XYZ, YZ, XZ, XY }
     int num_offset = int(ce_offset.size()) ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " num_offset " << num_offset
         << " ce_scale " << ce_scale
         << " nx " << nx 
@@ -434,7 +437,7 @@ void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static
     unsigned grid_points = (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) ;  
     unsigned tot_photons = grid_points*std::abs(photons_per_genstep) ; 
 
-    LOG(info)
+    LOG(LEVEL)
         << " CEGS "
         << " ix0 ix1 " << ix0 << " " << ix1
         << " iy0 iy1 " << iy0 << " " << iy1
@@ -672,7 +675,7 @@ SFrameGenstep::GenerateSimtracePhotons
 void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep )
 {
 
-    LOG(error) << "SFrameGenstep::GenerateSimtracePhotons simtrace.size " << simtrace.size() ; 
+    LOG(LEVEL) << "SFrameGenstep::GenerateSimtracePhotons simtrace.size " << simtrace.size() ; 
 
     unsigned seed = 0 ; 
     SRng<float> rng(seed) ;
@@ -757,7 +760,7 @@ void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const
             count += 1 ; 
         }
     }
-    LOG(info) << " simtrace.size " << simtrace.size() ; 
+    LOG(LEVEL) << " simtrace.size " << simtrace.size() ; 
 }
 
 

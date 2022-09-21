@@ -51,11 +51,12 @@ EOU
 #geom=nnvtInner1Solid
 #geom=nnvtInner2Solid
 
+#geom=hamaPMTSolid
+#geom=hamaDynodeSolid   ## seems dynode changed, needs reworking in PMTSim
+
 #geom=nmskSolidMask
 #geom=nmskSolidMaskTail
-geom=nmskSolidMaskVirtual
-
-
+#geom=nmskSolidMaskVirtual
 
 #geom=nmskTailOuter
 #geom=nmskTailInner
@@ -76,8 +77,7 @@ geom=nmskSolidMaskVirtual
 
 opt=U1
 case $geom in 
-   nmsk*) geom=${geom}__${opt} ;;
-   nnvt*) geom=${geom}__${opt} ;;
+   nmsk*|hmsk*|nnvt*|hama*) geom=${geom}__${opt} ;;
 esac
 
 export GEOM=${GEOM:-$geom}
@@ -142,7 +142,7 @@ GEOMDIR=${cg:-$TMP_GEOMDIR}
 export GEOMDIR 
 
 if [ -z "$QUIET" ]; then 
-   vars="BASH_SOURCE gp_ gp cg_ cg TMP_GEOMDIR GEOMDIR" 
+   vars="BASH_SOURCE gp_ gp cg_ cg TMP_GEOMDIR GEOMDIR BASH_SOURCE" 
    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done  
    echo 
 fi 

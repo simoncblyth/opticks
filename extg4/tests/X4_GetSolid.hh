@@ -21,21 +21,20 @@ This can be done with::
 
 const G4VSolid* X4_GetSolid(const char* geom, std::string* meta=nullptr )
 {
-    const char* name = SStr::HeadFirst(geom, '_');  // HMM: string up to first '_'
+    const char* geom_upto_first_underscore = SStr::HeadFirst(geom, '_');  
 
     const G4VSolid* solid = nullptr ; 
-    if(X4SolidMaker::CanMake(name))
+    if(X4SolidMaker::CanMake(geom_upto_first_underscore ))
     {
-        solid = X4SolidMaker::Make(name, meta); 
+        solid = X4SolidMaker::Make(geom_upto_first_underscore , meta); 
     }
     else
     {
 #ifdef WITH_PMTSIM
-        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid : WITH_PMTSIM invoking PMTSim::GetSolid(  " << name << ") " << std::endl ; 
-        //solid = PMTSim::GetSolid(name); 
+        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid : WITH_PMTSIM invoking PMTSim::GetSolid(\"" << geom << "\") " << std::endl ; 
         solid = PMTSim::GetSolid(geom);   // need geom for option passing following "__" 
 #else
-        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid :  not WITH_PMTSIM " << name << std::endl ;  
+        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid :  not WITH_PMTSIM " << geom << std::endl ;  
 #endif
     }
     return solid ; 

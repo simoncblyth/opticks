@@ -72,7 +72,17 @@ geom_(){
    fi   
 }
 
-
+geomlist(){
+   : opticks/opticks.bash 
+   local path=$(opticks-home)/bin/geomlist.sh
+   if [ "$1" == "scp" ]; then 
+       scp $path P:opticks/bin/
+   elif [ "$1" == "source" ]; then 
+       source $path
+   else
+       vi $path ;
+   fi   
+}
 
 oip(){ 
    : opticks/opticks.bash 

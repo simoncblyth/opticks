@@ -1,11 +1,9 @@
 #!/bin/bash -l
 usage(){ cat << EOU
-x4t.sh : reboot of xxs.sh using X4SimtraceTest 
-======================================================
+x4t.sh : using X4SimtraceTest (this is an update of xxs.sh which used X4IntersectSolidTest)
+=============================================================================================
 
-Aiming to follow gxt.sh such that the gxt.sh python machinery 
-can be used with x4t.sh outputs. 
-
+Aiming to follow gxt.sh such that common python plotting machinery can be used with x4t.sh outputs. 
 See also cf_x4t.sh that loads and plots from multiple fold. 
 
 ::
@@ -14,12 +12,19 @@ See also cf_x4t.sh that loads and plots from multiple fold.
 
 EOU
 }
-export X4Simtrace=INFO 
-export SEvt=INFO 
+
+loglevels()
+{
+   export X4Simtrace=INFO   
+   export SEvt=INFO 
+
+   export PMTSim=3
+   export VERBOSE=1
+}
+loglevels
 
 arg=${1:-run_ana}
 
-#bin=X4IntersectSolidTest
 bin=X4SimtraceTest
 log=$bin.log
 

@@ -3196,12 +3196,12 @@ inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static
                 ; 
         assert(compatible);  
 
-        std::cout << std::setw(3) << i << " " << a->desc() << " nv " << nv << std::endl ; 
+        if(VERBOSE) std::cout << "NP::Concatenate " << std::setw(3) << i << " " << a->desc() << " nv " << nv << std::endl ; 
     }
 
     unsigned ni_total = 0 ; 
     for(unsigned i=0 ; i < aa.size() ; i++) ni_total += aa[i]->shape[0] ; 
-    std::cout << " ni_total " << ni_total << std::endl ; 
+    if(VERBOSE) std::cout << "NP::Concatenate ni_total " << ni_total << std::endl ; 
 
     std::vector<int> comb_shape ; 
     NPS::copy_shape( comb_shape, a0->shape );  
@@ -3209,7 +3209,7 @@ inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static
 
     NP* c = new NP(a0->dtype); 
     c->set_shape(comb_shape); 
-    std::cout << " c " << c->desc() << std::endl ; 
+    if(VERBOSE) std::cout << "NP::Concatenate c " << c->desc() << std::endl ; 
 
     unsigned offset_bytes = 0 ; 
     for(unsigned i=0 ; i < aa.size() ; i++)

@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 struct SSim ; 
 struct CSGFoundry ; 
@@ -15,6 +16,8 @@ struct CSGDraw ;
 
 struct CSG_API CSGSimtraceRerun
 { 
+    static const plog::Severity LEVEL ; 
+
     SSim* sim ; 
     const CSGFoundry* fd ; 
     const NP* vv ; 

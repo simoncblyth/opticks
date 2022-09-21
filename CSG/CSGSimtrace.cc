@@ -39,7 +39,8 @@ CSGSimtrace::CSGSimtrace()
 
 void CSGSimtrace::init()
 {
-    d->draw("CSGSimtrace");
+    LOG(LEVEL) << d->desc();
+
     frame.set_hostside_simtrace();  
     frame.ce = q->select_prim_ce ; 
     LOG(LEVEL) << " frame.ce " << frame.ce << " SELECTION " << SELECTION << " num_selection " << num_selection << " outdir " << outdir ; 

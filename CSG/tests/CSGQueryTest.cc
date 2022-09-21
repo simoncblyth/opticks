@@ -89,7 +89,7 @@ CSGQueryTest::CSGQueryTest()
     if(VERBOSE > 0 )
     {
         LOG(info) << " GEOM " << fd->geom ; 
-        d->draw("CSGQueryTest");
+        LOG(info) << d->desc();
     }
 }
 

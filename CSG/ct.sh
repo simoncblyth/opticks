@@ -17,7 +17,13 @@ ct.sh : using CSGSimtraceTest
 EOU
 }
 
-export CSGSimtrace=INFO
+loglevels()
+{
+    export CSGSimtrace=INFO
+}
+#loglevels
+
+
 
 
 arg=${1:-run_ana}
@@ -25,9 +31,7 @@ arg=${1:-run_ana}
 bin=CSGSimtraceTest
 log=$bin.log
 
-source $(dirname $BASH_SOURCE)/../bin/COMMON.sh   # this sources ../bin/GEOM_.sh  change the geometry with geom_ 
-unset OPTICKS_INPUT_PHOTON 
-
+source $(dirname $BASH_SOURCE)/../bin/GEOM_.sh   # change the geometry with geom_ 
 
 export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 

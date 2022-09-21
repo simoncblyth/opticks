@@ -30,7 +30,8 @@ void CSGGeometry::operator()()
     {
         LOG(info) << " dump  " ; 
         dump();  
-        draw(); 
+        LOG(info) << desc(); 
+
     }
     else
     {
@@ -212,7 +213,7 @@ void CSGGeometry::centerExtentGenstepIntersect()
         intersectSelected(path); 
     }
 
-    draw("CSGGeometry::centerExtentGenstepIntersect"); 
+    LOG(info) << desc() ; 
 }
 
 
@@ -352,19 +353,11 @@ void CSGGeometry::dump(const char* msg) const
     LOG(error) << "q.dump" ; 
     q->dump(msg); 
 }
-void CSGGeometry::draw(const char* msg) 
-{
-    d->draw(msg); 
-}
+
+
 std::string CSGGeometry::desc() 
 {
     return d->desc(); 
-}
-
-void CSGGeometry::Draw( const CSGFoundry* fd, const char* msg  ) // static 
-{
-    CSGGeometry cg(nullptr, fd); 
-    cg.draw(msg); 
 }
 
 std::string CSGGeometry::Desc( const CSGFoundry* fd ) // static 

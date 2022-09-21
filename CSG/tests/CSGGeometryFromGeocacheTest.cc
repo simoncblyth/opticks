@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     CSGGeometry geom(cfbase) ;
     geom.dump(); 
-    geom.draw(); 
+    LOG(info) << geom.desc(); 
 
     return 0 ; 
 

@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 
     CSGGeometry geom ;
     geom.dump(); 
-    geom.draw(); 
+    std::cout << geom.desc() << std::endl ; 
 
     return 0 ; 
 

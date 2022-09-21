@@ -19,6 +19,8 @@
 #include "CSGSimtraceRerun.h"
 #include "PLOG.hh"
 
+const plog::Severity CSGSimtraceRerun::LEVEL = PLOG::EnvLevel("CSGSimtraceRerun", "DEBUG") ; 
+
 
 CSGSimtraceRerun::CSGSimtraceRerun()
     :
@@ -43,11 +45,10 @@ CSGSimtraceRerun::CSGSimtraceRerun()
 
 void CSGSimtraceRerun::init()
 {
-    d->draw("CSGSimtraceRerun");
-
-    LOG(info) << " fd.cfbase " << fd->cfbase ; 
-    LOG(info) << " vv " << ( vv ? vv->sstr() : "-" ) ; 
-    if(vv) std::cout << "vv.lpath [" << vv->lpath << "]" << std::endl << vv->descValues() ; 
+    LOG(LEVEL) << d->desc();
+    LOG(LEVEL) << " fd.cfbase " << fd->cfbase ; 
+    LOG(LEVEL) << " vv " << ( vv ? vv->sstr() : "-" ) ; 
+    LOG(LEVEL) << "vv.lpath [" << ( vv->lpath.empty() ? "" : vv->lpath )  << "]" << std::endl << ( vv ? vv->descValues() : "-" ) ; 
 
     code_count.fill(0u); 
 }

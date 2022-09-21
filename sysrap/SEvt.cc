@@ -303,7 +303,7 @@ void SEvt::setFrame_HostsideSimtrace()
 {
     unsigned num_photon_gs = getNumPhotonFromGenstep(); 
     unsigned num_photon_evt = evt->num_photon ; 
-    LOG(error) 
+    LOG(LEVEL) 
          << "frame.is_hostside_simtrace" 
          << " num_photon_gs " << num_photon_gs
          << " num_photon_evt " << num_photon_evt
@@ -312,11 +312,11 @@ void SEvt::setFrame_HostsideSimtrace()
     assert( num_photon_gs == num_photon_evt ); 
     setNumSimtrace( num_photon_gs ); 
 
-    LOG(info) << " before hostside_running_resize simtrace.size " << simtrace.size() ; 
+    LOG(LEVEL) << " before hostside_running_resize simtrace.size " << simtrace.size() ; 
 
     hostside_running_resize(); 
 
-    LOG(info) << " after hostside_running_resize simtrace.size " << simtrace.size() ; 
+    LOG(LEVEL) << " after hostside_running_resize simtrace.size " << simtrace.size() ; 
 
     SFrameGenstep::GenerateSimtracePhotons( simtrace, genstep );
 }

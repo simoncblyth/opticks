@@ -52,18 +52,6 @@ void CSGDraw::render()
     }
 }
 
-void CSGDraw::draw(const char* msg)
-{
-    LOG(info) 
-       << ( msg ? msg : "-" ) 
-       << std::endl 
-       << hdr()  
-       << std::endl 
-       << desc()
-       << std::endl 
-       ; 
-} 
-
 std::string CSGDraw::hdr() const  
 {
     std::stringstream ss ; 

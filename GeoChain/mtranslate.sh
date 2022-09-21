@@ -13,88 +13,12 @@ mtranslate.sh
 EOU
 }
 
+geomlist_OPT=U1
+names=$(source $(dirname $BASH_SOURCE)/../bin/geomlist.sh names)  # use geomlist to edit the geomlist bash functions 
 
-
-
-geomlist_nmskSolidMask(){ cat << EOL
-nmskSolidMask
-nmskMaskOut
-nmskTopOut
-nmskBottomOut
-nmskMaskIn
-nmskTopIn
-nmskBottomIn
-EOL
-}
-
-geomlist_nmskSolidMaskTail(){ cat << EOL | grep -v ^#
-
-nmskSolidMaskTail
-
-nmskTailOuter
-#nmskTailOuterIEllipsoid
-#nmskTailOuterITube
-#nmskTailOuterI
-#nmskTailOuterIITube
-
-nmskTailInner
-#nmskTailInnerIEllipsoid
-#nmskTailInnerITube
-#nmskTailInnerI
-#nmskTailInnerIITube 
-
-EOL
-}
-
-geomlist(){ cat << EOL | grep -v ^#
-nmskSolidMask
-nmskSolidMaskTail
-nmskTailOuter
-nmskTailInner
-
-nmskTailInnerIEllipsoid
-nmskTailInnerITube
-nmskTailInnerI
-nmskTailInnerIITube 
-
-nmskTailOuterIEllipsoid
-nmskTailOuterITube
-nmskTailOuterI
-nmskTailOuterIITube
-
-EOL
-}
-
-geomlist_short(){ cat << EOL | grep -v ^#
-nmskSolidMaskVirtual
-nmskTailInnerITube
-nmskTailOuterITube
-EOL
-}
-
-geomlist_old(){ cat << EOL | grep -v ^#
-nmskSolidMask
-nmskSolidMaskTail
-nmskSolidMaskVirtual
-EOL
-}
-
-geomlist_one(){ cat << EOL | grep -v ^#
-nnvtPMTSolid
-nnvtBodySolid
-nnvtInner1Solid
-nnvtInner2Solid
-EOL
-}
-
-
-
-
-#opt=__U0
-opt=__U1
-for geom in $(geomlist_one) ; do 
+for geom in $names ; do 
    echo $BASH_SOURCE geom $geom opt $opt 
-   GEOM=${geom}${opt} ./translate.sh 
+   GEOM=${geom} ./translate.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE translate error for geom $geom && exit 1
 done 
 

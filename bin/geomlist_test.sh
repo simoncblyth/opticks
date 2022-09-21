@@ -17,7 +17,8 @@ bin=X4SimtraceTest
 
 geomlist_FOLD=/tmp/$USER/opticks/GEOM/%s/$bin/ALL
 geomlist_OPT=U1
-source $(dirname $BASH_SOURCE)/geomlist.sh 
+
+source $(dirname $BASH_SOURCE)/geomlist.sh export
 
 
 

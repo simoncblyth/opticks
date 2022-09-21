@@ -2539,7 +2539,10 @@ const char* CSGFoundry::ResolveCFBase_() // static
 {
     const char* cfbase = nullptr ; 
     cfbase = SOpticksResource::CFBaseFromGEOM() ;
+
+    LOG(LEVEL) << "cfbase " << ( cfbase ? cfbase : "no-cfbase from SOpticksResource::CFBaseFromGEOM try next SOpticksResource::CFBase  " ) ;   
     if(cfbase == nullptr) cfbase = SOpticksResource::CFBase() ;  // standard or override
+    LOG(LEVEL) << "cfbase " << ( cfbase ? cfbase : "no-cfbase from SOpticksResource::CFBase" ) ;   
     return cfbase ; 
 }
 

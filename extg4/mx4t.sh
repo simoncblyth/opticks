@@ -16,7 +16,7 @@ log=$bin.log
 
 geomlist_FOLD=/tmp/$USER/opticks/GEOM/%s/$bin/ALL
 geomlist_OPT=U1
-source $(dirname $BASH_SOURCE)/../bin/geomlist.sh        
+source $(dirname $BASH_SOURCE)/../bin/geomlist.sh export       
 
 #export FOCUS=257,-39,7
 
@@ -27,6 +27,15 @@ if [ "${arg/info}" != "$arg" ]; then
     vars="BASH_SOURCE arg bin S_LABEL T_LABEL S_FOLD T_FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
 fi
+
+
+if [ "${arg/run}"  != "$arg" ]; then 
+   names=$(source $(dirname $BASH_SOURCE)/../bin/geomlist.sh names)
+   for geom in $names ; do 
+      echo geom $geom
+      GEOM=$geom $bin
+   done 
+fi 
 
 if [ "${arg/ana}"  != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py 

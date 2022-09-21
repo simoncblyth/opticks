@@ -22,7 +22,6 @@ struct float4 ;
 struct CSG_API CSGGeometry 
 {
     static const plog::Severity LEVEL ;   
-    static void Draw( const CSGFoundry* fd, const char* msg="CSGGeometry::Draw"  ); 
     static std::string Desc( const CSGFoundry* fd ); 
     static const char* OutDir(const char* cfbase, const char* geom, const char* sopr);  
 
@@ -65,7 +64,6 @@ struct CSG_API CSGGeometry
 
 
     void dump(const char* msg="CSGGeometry::dump") const ; 
-    void draw(const char* msg="CSGGeometry::draw") ; 
 
     std::string desc() ; 
 
