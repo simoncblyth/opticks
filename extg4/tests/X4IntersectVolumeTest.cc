@@ -30,13 +30,15 @@ int main(int argc, char** argv)
 
 #ifdef WITH_PMTSIM
 
-    typedef std::vector<double> VD ; 
+    typedef std::vector<double> VD ;  // curious why not use NP ?
     typedef std::vector<G4VSolid*> VS ; 
 
     VD* tr = new VD ; 
     VS* so = new VS ; 
 
+    LOG(info) << "[ PMTSim::GetPV geom [" << geom << "]" ; 
     G4VPhysicalVolume* pv = PMTSim::GetPV(geom, tr, so );
+    LOG(info) << "] PMTSim::GetPV geom [" << geom << "]" ; 
     assert(pv); 
     assert( tr->size() % 16 == 0 ); 
     assert( tr->size() == 16*so->size() );  // expect 16 doubles of the transform matrix for every solid
@@ -46,11 +48,16 @@ int main(int argc, char** argv)
     P4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
     unsigned num = so->size(); 
 
+    LOG(info) << " num " << num ; 
     for(unsigned i=0 ; i < num ; i++)
     {
         G4VSolid* solid = (*so)[i] ; 
-        G4String soname = solid->GetName(); 
-        X4Intersect::Scan(solid, soname.c_str(), base ); 
+        G4String soname_ = solid->GetName(); 
+        const char* soname = soname_.c_str() ; 
+
+        LOG(info) << "[ X4Intersect::Scan soname [" << soname << "]" ; 
+        X4Intersect::Scan(solid, soname, base ); 
+        LOG(info) << "] X4Intersect::Scan soname [" << soname << "]" ; 
     }
 #else
     LOG(fatal) << " not-WITH_PMTSIM : Not implemented for geom " << geom ; 

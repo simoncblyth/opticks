@@ -79,7 +79,7 @@ class Fold(object):
             args = list(filter(None, [os.environ["FOLD"], reldir])) 
         pass
 
-        log.info("Fold.Load args %s " % str(args))
+        log.debug("Fold.Load args %s " % str(args))
 
         relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 

@@ -20,7 +20,7 @@ source $(dirname $BASH_SOURCE)/../bin/geomlist.sh export
 
 #export FOCUS=257,-39,7
 
-export TOPLINE="CSG/mx4t.sh $geomlist_LABEL $SYMBOLS"
+export TOPLINE="extg4/mx4t.sh $geomlist_LABEL $SYMBOLS"
 export BOTLINE="FOCUS $FOCUS"
 
 if [ "${arg/info}" != "$arg" ]; then 

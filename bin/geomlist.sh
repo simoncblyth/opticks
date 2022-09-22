@@ -37,7 +37,12 @@ EOU
 }
 
 
-geomlist_nmskSolidMask(){ cat << EOL
+geomlist_N_full(){ cat << EOL | grep -v ^#
+nmskSolidMask
+nmskSolidMaskTail
+nmskTailOuter
+nmskTailInner
+
 nmskSolidMask
 nmskMaskOut
 nmskTopOut
@@ -45,33 +50,6 @@ nmskBottomOut
 nmskMaskIn
 nmskTopIn
 nmskBottomIn
-EOL
-}
-
-geomlist_nmskSolidMaskTail(){ cat << EOL | grep -v ^#
-
-nmskSolidMaskTail
-
-nmskTailOuter
-#nmskTailOuterIEllipsoid
-#nmskTailOuterITube
-#nmskTailOuterI
-#nmskTailOuterIITube
-
-nmskTailInner
-#nmskTailInnerIEllipsoid
-#nmskTailInnerITube
-#nmskTailInnerI
-#nmskTailInnerIITube 
-
-EOL
-}
-
-geomlist(){ cat << EOL | grep -v ^#
-nmskSolidMask
-nmskSolidMaskTail
-nmskTailOuter
-nmskTailInner
 
 nmskTailInnerIEllipsoid
 nmskTailInnerITube
@@ -86,34 +64,14 @@ nmskTailOuterIITube
 EOL
 }
 
-geomlist_short(){ cat << EOL | grep -v ^#
+geomlist_N_short(){ cat << EOL | grep -v ^#
 nmskSolidMaskVirtual
 nmskTailInnerITube
 nmskTailOuterITube
 EOL
 }
 
-geomlist_old(){ cat << EOL | grep -v ^#
-nmskSolidMask
-nmskSolidMaskTail
-nmskSolidMaskVirtual
-EOL
-}
-
-geomlist_one(){ cat << EOL | grep -v ^#
-nnvtPMTSolid
-nnvtBodySolid
-nnvtInner1Solid
-nnvtInner2Solid
-EOL
-}
-
-
-
-
-
-
-geomlist0(){ cat << EOL
+geomlist_N(){ cat << EOL | grep -v ^#
 nmskSolidMask
 nmskSolidMaskTail
 nmskSolidMaskVirtual
@@ -123,10 +81,8 @@ nnvtInner1Solid
 nnvtInner2Solid
 EOL
 }
-geomlist0_LABEL="nmsk_nnvt_solids"
 
-
-geomlist(){ cat << EOL | grep -v ^#
+geomlist_H(){ cat << EOL | grep -v ^#
 hmskSolidMaskVirtual
 hmskSolidMask
 hmskSolidMaskTail
@@ -138,7 +94,22 @@ hamaInner2Solid
 # Inner1 and Inner2 have coindent plane across middle of PMT, they are 5mm smaller than inside BodySolid
 EOL
 }
-geomlist_LABEL="hmsk_hama_solids"
+
+geomlist_tag=H
+
+
+if [ "${geomlist_tag}" == "N" ]; then
+   geomlist(){  geomlist_N ; }
+   geomlist_LABEL="nmsk_nnvt_solids"
+elif [  "${geomlist_tag}" == "H" ]; then
+   geomlist(){  geomlist_H ; }
+   geomlist_LABEL="hmsk_hama_solids"
+fi 
+
+
+
+
+
 
 
 

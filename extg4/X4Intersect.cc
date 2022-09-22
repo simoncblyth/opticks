@@ -22,6 +22,8 @@
 #include "PLOG.hh"
 
 
+
+const plog::Severity X4Intersect::LEVEL = PLOG::EnvLevel("X4Intersect", "DEBUG") ; 
 const bool X4Intersect::VERBOSE = SSys::getenvbool("VERBOSE") ; 
 
 
@@ -44,7 +46,7 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
 
     const char* outdir = SPath::Resolve(basedir, name, "X4Intersect", DIRPATH );
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "x4i.desc " << x4i->desc() 
         << " solidname " << solidname.c_str() 
         << " name " << name 
@@ -150,7 +152,7 @@ void X4Intersect::scan()
     std::string cerr_ = cerrbuf.str() ; 
 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "scan" 
         << " cout " << strlen(cout_.c_str()) 
         << " cerr " << strlen(cerr_.c_str()) 
@@ -158,8 +160,8 @@ void X4Intersect::scan()
 
     if(VERBOSE)
     {
-        if(cout_.size() > 0) LOG(info) << "cout from scan " << std::endl << cout_ ; 
-        if(cerr_.size() > 0) LOG(warning) << "cerr from scan "  << std::endl << cerr_ ; 
+        if(cout_.size() > 0) LOG(LEVEL) << "cout from scan " << std::endl << cout_ ; 
+        if(cerr_.size() > 0) LOG(LEVEL) << "cerr from scan "  << std::endl << cerr_ ; 
     }
 }
 

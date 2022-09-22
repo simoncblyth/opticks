@@ -117,6 +117,10 @@ void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, cha
 SFrameGenstep::MakeCenterExtentGensteps
 -----------------------------------------
 
+Canonical usage is from SEvt::setFrame for simtrace running. 
+
+
+
 NOTE: changed CE_SCALE default to be 1, enabling it
 To switch off CE scaling set CE_SCALE envvar to "0" 
 
@@ -554,7 +558,7 @@ TODO: consolidate the below two methods, paradir is the hangup
 
 void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
 {
-    LOG(info) << " gsa " << gsa->sstr() ; 
+    LOG(LEVEL) << " gsa " << gsa->sstr() ; 
 
     assert( gsa->shape.size() == 3 && gsa->shape[1] == 6 && gsa->shape[2] == 4 );
     assert( gsa->has_shape(-1,6,4) ); 
@@ -575,11 +579,11 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
     if(with_paradir)  
     {
         paradir = normalize(paradir);     
-        LOG(info) << " PARADIR enabled " << paradir ; 
+        LOG(LEVEL) << " PARADIR enabled " << paradir ; 
     }
     else
     {
-        LOG(info) << " PARADIR NOT-enabled " ; 
+        LOG(LEVEL) << " PARADIR NOT-enabled " ; 
     }
 
     
@@ -662,7 +666,7 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
         }
     }
 
-    LOG(info) << " pp.size " << pp.size() ; 
+    LOG(LEVEL) << " pp.size " << pp.size() ; 
 }
 
 

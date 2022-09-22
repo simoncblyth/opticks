@@ -18,7 +18,6 @@ HMM: compare this with CSG/CSGGenstep and consolidate to avoid duplication
 
   * probably duplication arose from separate dev for Geant4 and Opticks sides
 
-
 **/
 
 struct NP ; 

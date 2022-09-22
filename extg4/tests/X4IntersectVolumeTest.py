@@ -3,7 +3,7 @@
 X4IntersectVolumeTest.py : 2D scatter plots of geometry intersect positions
 ============================================================================
 
-* typically used from xxs.sh 
+* typically used from xxv.sh 
 
 """
 
@@ -41,6 +41,8 @@ efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").s
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    log.info("X4IntersectVolumeTest.py")
+
     reldir = os.environ.get("CXS_RELDIR", "extg4/X4IntersectVolumeTest" ) 
     geom = os.environ.get("GEOM", "body_phys")
 
@@ -50,26 +52,25 @@ if __name__ == '__main__':
     basedir = os.path.expandvars(os.path.join("/tmp/$USER/opticks",reldir, geom ))
     transforms = np.load(os.path.join(basedir, "transforms.npy"))
     transforms_meta = np.loadtxt( os.path.join(basedir, "transforms_meta.txt"), dtype=np.object ) 
+    soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
 
     figsdir = os.path.join(basedir, "figs")
     if not os.path.isdir(figsdir):
         os.makedirs(figsdir)
     pass
+
     savefig = True
     figname = "isect"
-    print("figsdir %s " % figsdir)
 
-    print(basedir)
-    print(transforms)
-    print("transforms_meta:", transforms_meta)
-    soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
-    print("soname_prefix:%s" % soname_prefix)
-
+    log.info("figsdir %s " % figsdir)
+    log.info("basedir %s" % basedir)
+    log.info("transforms.shape %s" % str(transforms.shape))
+    log.info("transforms_meta %s" % ",".join(transforms_meta))
+    log.info("soname_prefix %s" % soname_prefix)
 
     topline = "X4IntersectVolumeTest.py"
     botline = "%s/%s " % (reldir, geom)
     thirdline = soname_prefix
-
 
     isects = {}
     for soname in transforms_meta:
@@ -77,7 +78,8 @@ if __name__ == '__main__':
     pass
 
     size = np.array([1280, 720])
-    H,V = Z,X
+    #H,V = Z,X
+    H,V = X,Z
 
     if mp: 
         sz = 3
@@ -88,7 +90,15 @@ if __name__ == '__main__':
         soname0 = transforms_meta[0]
         isect0 = isects[soname0]
         gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
-        ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
+
+        hlim = gpos[:,H].min(), gpos[:,H].max()
+        vlim = gpos[:,V].min(), gpos[:,V].max()
+        ax.set_xlim( hlim )
+        ax.set_ylim( vlim )
+
+        if not "NOGS" in os.environ:
+            ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
+        pass
 
         for i, soname in enumerate(transforms_meta):
             isect = isects[soname]
@@ -107,7 +117,7 @@ if __name__ == '__main__':
 
         if savefig:
             figpath = os.path.join(figsdir,figname+"_mpplt.png")
-            print("saving %s " % figpath)
+            log.info("saving figpath %s " % figpath)
             fig.savefig(figpath)
         pass 
     pass

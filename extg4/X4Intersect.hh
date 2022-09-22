@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
+
 #include "X4_API_EXPORT.hh"
 #include "G4ThreeVector.hh"
 #include "geomdefs.hh"
@@ -13,6 +15,7 @@ class G4MultiUnion ;
 
 struct X4_API X4Intersect
 {
+    static const plog::Severity LEVEL ;  
     static const bool VERBOSE ;  
     static void Scan(const G4VSolid* solid, const char* name, const char* basedir ); 
 

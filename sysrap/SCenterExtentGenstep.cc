@@ -14,6 +14,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity SCenterExtentGenstep::LEVEL = PLOG::EnvLevel("SCenterExtentGenstep", "DEBUG" ); 
+
 const char* SCenterExtentGenstep::BASE = "$TMP/SCenterExtentGenstep"  ; 
 
 void SCenterExtentGenstep::save() const
@@ -24,7 +26,8 @@ void SCenterExtentGenstep::save(const char* dir) const
 {
     const char* fold = SPath::Resolve(dir, DIRPATH);  
     
-    LOG(info) << " saving to " << fold ; 
+    LOG(LEVEL) << " saving to " << fold ; 
+
     gs->save(fold, "gs.npy" ); 
     save_vec(fold, "isect.npy", ii ); 
     save_vec(fold, "photons.npy", pp ); 
@@ -35,15 +38,15 @@ void SCenterExtentGenstep::save_vec(const char* dir, const char* name, const std
 {
     if(vv.size() == 0) 
     {
-        LOG(info) << " skip as no vec entries for " << name  ;
+        LOG(LEVEL) << " skip as no vec entries for " << name  ;
         return ; 
     }
-    LOG(info) << "[ " << name << " size " << vv.size() ;
+    LOG(LEVEL) << "[ " << name << " size " << vv.size() ;
     NP* arr = NP::Make<float>(vv.size(), 4, 4);
-    LOG(info) << arr->sstr() ;
+    LOG(LEVEL) << arr->sstr() ;
     arr->read<float>((float*)vv.data());
     arr->save(dir, name);
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T value ) 
@@ -77,7 +80,7 @@ void SCenterExtentGenstep::init()
 {
     peta->zero(); 
 
-    LOG(info) << "[ gridscale " << gridscale  ;
+    LOG(LEVEL) << "[ gridscale " << gridscale  ;
 
     SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:10" );
     // input CEGS are 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
@@ -101,7 +104,7 @@ void SCenterExtentGenstep::init()
     nz = (iz1 - iz0)/2 ;
     int gridaxes = SGenstep::GridAxes(nx, ny, nz);
 
-    LOG(info)
+    LOG(LEVEL)
         << " nx " << nx
         << " ny " << ny
         << " nz " << nz
@@ -125,7 +128,7 @@ void SCenterExtentGenstep::init()
     const Tran<double>* geotran = Tran<double>::make_translate(ce.x, ce.y, ce.z);
 
 
-    LOG(info) << "ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
+    LOG(LEVEL) << "ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
 
     peta->q2.f.x = ce.x ;   // moved from q1
     peta->q2.f.y = ce.y ;
@@ -147,7 +150,7 @@ void SCenterExtentGenstep::init()
 
     SFrameGenstep::GenerateCenterExtentGenstepsPhotons( pp, gs, gridscale );
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
 
 const char* SCenterExtentGenstep::desc() const 
