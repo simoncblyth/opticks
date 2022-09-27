@@ -156,6 +156,9 @@ Multiple pipelines, SBT, ...
 * https://forums.developer.nvidia.com/t/how-to-handle-multiple-ray-generators/83446
 
 
+
+
+
 From OptiX 7.2 Release Notes : **Specialization**
 -----------------------------------------------------
 
@@ -173,8 +176,48 @@ OptixModuleCompileOptions::boundValues. See the Programming Guide section
 * https://raytracing-docs.nvidia.com/optix7/guide/index.html#program_pipeline_creation#parameter-specialization
 
 
+
+CUDA gcc version compatibility
+--------------------------------
+
+* https://rotadev.com/cuda-incompatible-with-my-gcc-version-dev/
+
++============================+===============================+
+| CUDA version	             | max supported GCC version     |
++============================+===============================+
+| 11.4.1+, 11.5	             | 11                            |
++----------------------------+-------------------------------+
+| 11.1, 11.2, 11.3, 11.4.0	 | 10                            |
++----------------------------+-------------------------------+
+| 11	                     | 9                             |
++----------------------------+-------------------------------+
+| 10.1, 10.2	             | 8                             |
++----------------------------+-------------------------------+
+| 9.2, 10.0	                 | 7                             |
++----------------------------+-------------------------------+
+
+With CUDA 10.1 and gcc 11.2 (CUDA 10.1 max supported GCC is 8, to work with gcc 11 would need CUDA 11.5)::
+
+    [  1%] Generating OpticksGenstep_Enum.ini
+    In file included from /usr/local/cuda/include/cuda_runtime.h:83,
+                     from <command-line>:
+    /usr/local/cuda/include/crt/host_config.h:129:2: error: #error -- unsupported GNU version! gcc versions later than 8 are not supported!
+      129 | #error -- unsupported GNU version! gcc versions later than 8 are not supported!
+          |  ^~~~~
+    [2022-09-26 21:30:19,444] p349597 {/data/bl
+
+
+
+
 Driver Versions for each OptiX Release
 ------------------------------------------
+
+
+OptiX 7.5.0 (June 2022) 
+
+Applications compiled with the 7.5.0 SDK headers will require driver version 515 or later. 
+CUDA Toolkit 11.7
+
 
 OptiX 7.2.0 requires that you install a r455+ driver
 

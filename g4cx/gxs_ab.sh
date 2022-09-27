@@ -8,6 +8,9 @@ gxs_ab.sh
     gx
     ./gxs_ab.sh
 
+
+HMM : LOOKS TO BE REPLACED WITH ab.sh ?
+
 EOU
 }
 

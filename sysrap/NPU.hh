@@ -190,7 +190,7 @@ struct NPS
 
     static int copy_shape(std::vector<int>& dst, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1) 
     {
-        if(ni > 0) dst.push_back(ni); 
+        if(ni >= 0) dst.push_back(ni);   // experimental allow zero items
         if(nj > 0) dst.push_back(nj); 
         if(nk > 0) dst.push_back(nk); 
         if(nl > 0) dst.push_back(nl); 
@@ -201,7 +201,7 @@ struct NPS
 
     void set_shape(int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1)
     {
-        if(ni > 0) shape.push_back(ni); 
+        if(ni >= 0) shape.push_back(ni);   // experimental allow zero items
         if(nj > 0) shape.push_back(nj); 
         if(nk > 0) shape.push_back(nk); 
         if(nl > 0) shape.push_back(nl); 

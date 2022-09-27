@@ -27,7 +27,53 @@ Progress
 **B : Fully instrumented Geant4 reached plateau, ready for A-B iteration, random alignment + comparison**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+* https://bitbucket.org/simoncblyth/opticks/commits/?page=7
+
+* 07/29 : lightweight geometry translation expts, serializing n-ary tree and forming subtree digests
+
+  * U4Tree.h U4TreeTest.cc
+
+
+* 07/27 : rejig SEvt accessors, heavy:gather lightweight:get 
+* 07/26 : local frame sphoton.h for new workflow hits orchestrated by SEvt.hh using SGeo.hh and sframe.h
+
+  * notes/issues/joined_up_thinking_geometry_translation.rst 
+
+* 07/25 : preparations for JUNO offline integration of new workflow, stran.h Tran::photon_transform
+
+  * sphoton::transform and look at targetted transform collection in u4/U4Tree u4/U4Transform
+
+* 07/24 : move SEvt inside G4CXOpticks to simplify integrated use of G4CXOpticks
+
+* 07/24 moving away from OPTICKS_KEY
+
+  * QCerenkov was assuming saved GGeo with IDPath defined and access to IDPath/GScintillatorLib/LS_ori/RINDEX.npy : try without
+  * try simply skipping GGeo::save when no idpath set, eg when no OPTICKS_KEY
+
+* 07/23 : CSG/tests/CSGFoundryAB.sh notes/issues/ellipsoid_transform_compare_two_geometries.rst  
+* 07/23 : notes/issues/review_geometry_translation.rst 
+* 07/22 : avoid overlapping, the instanced geometry is not showing the ellipsoid transform problem
+* 07/22 : pull SPlaceCylinder.h SPlaceSphere.h SPlaceRing.h out of SPlace.h 
+* 07/21 : SPlace.h AroundCylinder and AroundSphere now creating instance transforms for testing, works OK for placing and orienting arrows in pyvista plotting
+* 07/20 : a2b vector rotation matrix machinery to prepare test instanced geometry to try to reproduce the missed transform issue
+
+  * stran.h Tran::MakeRotateA2B creating a transform matrix that rotates from one vector to another 
+
+* 07/19 : using GDMLSub to select single PV of the PMT hatbox from full GDML and wrap it fails to reproduce the ellipsoid transform issue
+* 07/19 : machinery for running from full GDML, but selecting a PV by solid name and ordinal and wrapping it in small geometry test (U4Volume::FindPVSub)
+
+  * notes/issues/full_geom_missing_ellipsoid_transform_again.rst 
+
+* 07/17 : check hama_body_log, dont see the issue (of ellipsoid without its scale transform)
+* 07/17 : widen the line of input photons for DownXZ1000 for better check of PMT intersects
+* 07/15 : decouple variable definition from export for : OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME 
+* 07/13 : colored package list RST tables/pages using bin/stats.sh : code stats
 * 07/13 : A-B : investigate extra BT in B cf A : looks like U4Recorder needs microStep suppression together with random rewinds to stay aligned 
+
+  * notes/issues/ab_full_geom_extra_BT.rst 
+  * notes/issues/ab_full_geom.rst 
+
 * 07/12 : B : export A_FOLD in u4s.sh to allow U4RecorderTest.cc to load the sframe.npy from the A side so input photons can be transformed the same in A and B
 * 07/11 : A+B : SEvt machinery for transforming input photons into instance frame using OPTICKS_INPUT_PHOTON_FRAME 
 * 07/11 : B : use BoxOfScintillator for fast turnaround tagging of reemission random consumption

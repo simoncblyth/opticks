@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 """
-G4CXSimulateTest_ab.py 
-======================
+ab.py (formerly G4CXSimulateTest_ab.py) : random aligned comparison
+======================================================================
 
 Usage::
 
@@ -136,11 +136,6 @@ if __name__ == '__main__':
 
     epr("a.base", globals(), locals() )
     epr("b.base", globals(), locals() )
-
-
-
-
-
-
+pass
 
 
