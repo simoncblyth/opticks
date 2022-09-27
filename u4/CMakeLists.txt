@@ -38,6 +38,7 @@ set(SOURCES
     U4Recorder.cc
     U4StepPoint.cc
     U4Random.cc
+    U4Scintillation_Debug.cc
     InstrumentedG4OpBoundaryProcess.cc
 
 ) 
@@ -69,6 +70,7 @@ set(HEADERS
     U4Random.hh
     U4Touchable.h
 
+    U4Scintillation_Debug.hh
     InstrumentedG4OpBoundaryProcess.hh
 )
 
