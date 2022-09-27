@@ -17,8 +17,9 @@ Saves .npy array with first 100 non-reemission records to::
 
 #include "plog/Severity.h"
 #include <vector>
+#include "U4_API_EXPORT.hh"
 
-struct U4Scintillation_Debug
+struct U4_API U4Scintillation_Debug
 {   
     static const plog::Severity LEVEL ; 
     static std::vector<U4Scintillation_Debug> record ;   
