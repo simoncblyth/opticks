@@ -16,15 +16,15 @@ void U4Scintillation_Debug::add()
 
 void U4Scintillation_Debug::EndOfEvent(int eventID)
 {
-    if(SaveDir == nullptr) return ;   
-    const char* dir = SPath::Resolve(SaveDir, eventID, DIRPATH );  
+    const char* dir = SPath::Resolve(SaveDir ? SaveDir : "/tmp" , eventID, DIRPATH );  
     Save(dir) ; 
     record.clear(); 
 }
 
 void U4Scintillation_Debug::Save(const char* dir)  // static
 {
-    LOG(LEVEL) << "U4Scintillation_Debug::Save"  << " dir " << dir << " num_record " << record.size() ;
+    LOG(LEVEL) << " dir " << dir << " num_record " << record.size() ;
+    std::cout  << " dir " << dir << " num_record " << record.size() << std::endl ;
     if( record.size() > 0) NP::Write<double>(dir, NAME, (double*)record.data(), record.size(), NUM_QUAD, 4 );  
 }
 

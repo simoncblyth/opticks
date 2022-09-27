@@ -8,6 +8,8 @@ export U4Scintillation_Debug_SaveDir=$fold
 export FOLD0=$fold/z000
 export FOLD1=$fold/p001
 
+export U4Scintillation_Debug=INFO
+
 
 arg=${1:-run_ana}
 
