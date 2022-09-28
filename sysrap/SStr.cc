@@ -197,12 +197,11 @@ template const char* SStr::FormatInt<8>( const char* , int  );
 template const char* SStr::FormatInt<64>( const char* , int  );
 
 
-const char* SStr::FormatIndex( int idx )
+const char* SStr::FormatIndex( int idx, bool prefix, int wid )
 {
     std::stringstream ss ;  
-    ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) )
-       << std::setfill('0') << std::setw(3) << std::abs(idx) 
-       ; 
+    if(prefix) ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) ) ; 
+    ss << std::setfill('0') << std::setw(wid) << std::abs(idx) ; 
     std::string s = ss.str(); 
     return strdup(s.c_str()); 
 }

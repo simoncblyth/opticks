@@ -119,7 +119,7 @@ void test_FormatIndex()
     for(int i=-10 ; i <= 10 ; i++ )
     {
         const char* result = SStr::FormatIndex(i);
-        std::cout << "[" << result << "]" << std::endl ;   
+        std::cout << " i " << std::setw(4) << i << "[" << result << "]" << std::endl ;   
     }
 }
 
@@ -848,10 +848,10 @@ int main(int argc , char** argv )
     test_Format_Ellipsis(); 
     test_StartsWithLetterAZaz(); 
     test_FormatInt_2(); 
-    test_FormatIndex(); 
     test_Name(); 
     test_ParseStringIntInt(); 
     */
+    test_FormatIndex(); 
 
 
     return 0  ; 

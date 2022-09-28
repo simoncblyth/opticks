@@ -71,7 +71,7 @@ class SYSRAP_API SStr {
       static const char* FormatInt( const char* fmt, int value ); 
 
 
-      static const char* FormatIndex( int idx ); 
+      static const char* FormatIndex( int idx, bool prefix=false, int wid=3 ); 
 
 
       template<typename T>
