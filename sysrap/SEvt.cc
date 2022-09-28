@@ -1686,7 +1686,11 @@ const NP* SEvt::getPhoton() const { return fold->get(SComp::PHOTON_) ; }
 const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
 
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
-unsigned SEvt::getNumHit() const    { return fold->get_num(SComp::HIT_) ; }
+unsigned SEvt::getNumHit() const    
+{ 
+    int num = fold->get_num(SComp::HIT_) ; 
+    return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
+}
 
 void SEvt::getPhoton(sphoton& p, unsigned idx) const  // global
 {
