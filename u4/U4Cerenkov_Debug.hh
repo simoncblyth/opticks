@@ -1,16 +1,16 @@
 #pragma once
 /**
-U4Scintillation_Debug.h
+U4Cerenkov_Debug.h
 ===========================
 
 Usage::
 
-   export U4Scintillation_Debug_SaveDir=/tmp
+   export U4Cerenkov_Debug_SaveDir=/tmp
    ntds3
 
 Saves .npy array with first 100 non-reemission records to::
 
-   /tmp/U4Scintillation_Debug.npy 
+   /tmp/U4Cerenkov_Debug.npy 
 
 
 **/
@@ -19,15 +19,16 @@ Saves .npy array with first 100 non-reemission records to::
 #include <vector>
 #include "U4_API_EXPORT.hh"
 
-struct U4_API U4Scintillation_Debug
+struct U4_API U4Cerenkov_Debug
 {   
     static const plog::Severity LEVEL ; 
-    static std::vector<U4Scintillation_Debug> record ;   
+    static std::vector<U4Cerenkov_Debug> record ;   
     static constexpr const unsigned NUM_QUAD = 2u ; 
-    static constexpr const char* NAME = "U4Scintillation_Debug.npy" ; 
+    static constexpr const char* NAME = "U4Cerenkov_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
-    static constexpr const char* EKEY = "U4Scintillation_Debug_SaveDir" ;   
+    static constexpr const char* EKEY = "U4Cerenkov_Debug_SaveDir" ;   
     static const char* SaveDir ; 
+    static void Save(const char* dir);
     static void EndOfEvent(int eventID); 
 
     double posx ; 
@@ -35,10 +36,10 @@ struct U4_API U4Scintillation_Debug
     double posz ;
     double time ; 
 
-    double ScintillationYield ; 
-    double MeanNumberOfTracks ; 
-    double NumTracks ; 
-    double Spare ; 
+    double BetaInverse ; 
+    double step_length ; 
+    double MeanNumberOfPhotons ; 
+    double fNumPhotons ; 
 
     void add(); 
 };
