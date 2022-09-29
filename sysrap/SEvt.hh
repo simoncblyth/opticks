@@ -149,6 +149,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Save() ; 
     static void Save(const char* base, const char* reldir ); 
     static void Save(const char* dir); 
+    static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
+
     static void SetIndex(int index); 
     static void UnsetIndex(); 
     static int  GetIndex(); 
@@ -284,6 +286,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void saveFrame(const char* dir_) const ; 
 
     void saveGenstep(const char* dir) const ; 
+    void saveGenstepLabels(const char* dir, const char* name="gsl.npy") const ; 
 
 
     void gather() ;  // with on device running this downloads

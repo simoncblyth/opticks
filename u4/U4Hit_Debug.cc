@@ -6,9 +6,8 @@
 const plog::Severity U4Hit_Debug::LEVEL = PLOG::EnvLevel("U4Hit_Debug", "debug" ); 
 std::vector<U4Hit_Debug> U4Hit_Debug::record = {} ;
 
-void U4Hit_Debug::EndOfEvent(int eventID)
+void U4Hit_Debug::Save(const char* dir)
 {
-    const char* dir = U4Debug::GetSaveDir(eventID);
     LOG(LEVEL) << " dir " << dir << " num_record " << record.size() ;
     std::cout  << " dir " << dir << " num_record " << record.size() << std::endl ;
     assert( NUM_QUAD == 1u ); 

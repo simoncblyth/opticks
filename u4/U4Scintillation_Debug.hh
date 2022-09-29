@@ -26,8 +26,7 @@ struct U4_API U4Scintillation_Debug
     static constexpr const unsigned NUM_QUAD = 2u ; 
     static constexpr const char* NAME = "U4Scintillation_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
-
-    static void EndOfEvent(int eventID); 
+    static void Save(const char* dir); 
     void add(); 
 
     double posx ; 

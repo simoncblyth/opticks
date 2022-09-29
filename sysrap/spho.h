@@ -11,7 +11,13 @@ isSameLineage
 isIdentical
     requires isSameLineage and same reemission generation
 
-* HMM: spho lacks gentype, to get that must reference corresponding sgs struct using the gs index 
+NB spho lacks gentype, to get that must reference corresponding sgs struct using the gs index 
+
+NB having reemission generations larger than zero DOES NOT mean the 
+photon originally came from scintillaton.
+For example in a case where no photons are coming from scint, 
+reemission of initially Cerenkov photons may still happen, 
+resulting in potentially multiple reemission generations.   
 
 **/
 

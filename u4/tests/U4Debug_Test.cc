@@ -50,9 +50,7 @@ int main(int argc, char** argv)
     c.add(); 
     c.add(); 
 
-    //U4Scintillation_Debug::EndOfEvent(eventID); 
-    //U4Cerenkov_Debug::EndOfEvent(eventID); 
-    U4Debug::EndOfEvent(eventID); 
+    U4Debug::Save(eventID); 
 
 
     s.add(); 
@@ -63,9 +61,7 @@ int main(int argc, char** argv)
     h.add(); 
   
     eventID += 1 ; 
-    U4Debug::EndOfEvent(eventID); 
-    //U4Scintillation_Debug::EndOfEvent(eventID); 
-    //U4Cerenkov_Debug::EndOfEvent(eventID); 
+    U4Debug::Save(eventID); 
 
     return 0 ; 
 }

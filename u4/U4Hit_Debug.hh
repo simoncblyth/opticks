@@ -17,7 +17,7 @@ struct U4_API U4Hit_Debug
     static constexpr const unsigned NUM_QUAD = 1u ; 
     static constexpr const char* NAME = "U4Hit_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
-    static void EndOfEvent(int eventID); 
+    static void Save(const char* dir); 
     void add(); 
 
     spho label ; 

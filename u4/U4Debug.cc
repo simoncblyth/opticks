@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include "PLOG.hh"
 #include "SPath.hh"
+#include "SEvt.hh"
 
 #include "U4Cerenkov_Debug.hh"
 #include "U4Scintillation_Debug.hh"
@@ -17,10 +18,14 @@ const char* U4Debug::GetSaveDir(int eventID)
     return SPath::Resolve(SaveDir ? SaveDir : "/tmp" , eventID, DIRPATH );  
 }
 
-void U4Debug::EndOfEvent(int eventID)
+void U4Debug::Save(int eventID)
 {
-    LOG(LEVEL) << " eventID " << eventID ; 
-    U4Cerenkov_Debug::EndOfEvent(eventID);   
-    U4Scintillation_Debug::EndOfEvent(eventID);   
-    U4Hit_Debug::EndOfEvent(eventID);   
+    const char* dir = GetSaveDir(eventID); 
+    LOG(LEVEL) << " eventID " << eventID << " dir " << dir ; 
+
+    U4Cerenkov_Debug::Save(dir);   
+    U4Scintillation_Debug::Save(dir);   
+    U4Hit_Debug::Save(dir);   
+
+    SEvt::SaveGenstepLabels( dir ); 
 }

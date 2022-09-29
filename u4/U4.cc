@@ -134,6 +134,7 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
     //if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
+    LOG(LEVEL) << gs.desc(); 
 }
 
 
@@ -220,6 +221,7 @@ void U4::CollectGenstep_G4Cerenkov_modified(
     quad6 gs_ = MakeGenstep_G4Cerenkov_modified( aTrack, aStep, numPhotons, betaInverse, pmin, pmax, maxCos, maxSin2, meanNumberOfPhotons1, meanNumberOfPhotons2 );
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
     if(dump) std::cout << "U4::CollectGenstep_G4Cerenkov_modified " << gs.desc() << std::endl ; 
+    LOG(LEVEL) << gs.desc(); 
 }
 
 
@@ -237,12 +239,19 @@ NB calling this prior to generation loops to get the ancestor spho.h label
 This label is needed for BOTH Scintillation and Cerenkov in order for photon G4Track 
 labelling done by U4::GenPhotonEnd to work. 
 
+When the track has no user info the ancestor is set to spho::Placeholder label {-1,-1,-1,-1}. 
+
+If the call to U4::GenPhotonAncestor is omitted from the Scintillation OR Cerenkov 
+PostStepDoIt then the ancestor will default to {0,0,0,0} : that will cause 
+unexpected labels. 
+
 **/
 
 void U4::GenPhotonAncestor( const G4Track* aTrack )
 {
     ancestor = U4PhotonInfo::Get(aTrack) ; 
     if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;  
+    LOG(LEVEL) << ancestor.desc() ; 
 }
 
 /**

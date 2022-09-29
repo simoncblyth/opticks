@@ -32,7 +32,7 @@ struct U4_API U4Debug
     static const char* SaveDir ; 
 
     static const char* GetSaveDir(int eventID); 
-    static void EndOfEvent(int eventID); 
+    static void Save(int eventID); 
 };
 
 

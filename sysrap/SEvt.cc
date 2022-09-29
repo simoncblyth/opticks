@@ -414,6 +414,8 @@ void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
 void SEvt::Save(){  Check() ; INSTANCE->save(); }
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
+void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
+
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
@@ -591,6 +593,8 @@ sgs SEvt::addGenstep(const quad6& q_)
     }
     return s ; 
 }
+
+
 
 /**
 SEvt::setNumPhoton
@@ -1351,6 +1355,11 @@ void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE
     LOG(LEVEL) << a->sstr() << " dir " << dir ; 
     a->save(dir, "gs.npy"); 
 }
+void SEvt::saveGenstepLabels(const char* dir, const char* name) const 
+{
+    NP::Write<int>(dir, name, (int*)gs.data(), gs.size(), 4 ); 
+}
+
 
 std::string SEvt::descGS() const 
 {
@@ -1359,6 +1368,10 @@ std::string SEvt::descGS() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
 
 std::string SEvt::descDir() const 
 {
