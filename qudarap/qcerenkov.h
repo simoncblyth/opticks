@@ -13,6 +13,7 @@ qcerenkov.h
 
 #include "scurand.h"
 #include "smath.h"
+#include "OpticksPhoton.h"
 
 
 struct scerenkov ; 
@@ -112,6 +113,10 @@ inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, curandStateXORWOW&
 
     p.time = gs.time + delta / midVelocity ;
     p.pos = gs.pos + fraction * gs.DeltaPosition ;   // NB here gs.DeltaPosition must not be normalized 
+
+    p.zero_flags(); 
+    p.set_flag(CERENKOV) ;
+ 
 } 
 
 /**

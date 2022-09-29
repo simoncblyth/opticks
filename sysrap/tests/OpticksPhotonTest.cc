@@ -194,6 +194,24 @@ void test_AbbrevSequenceToMask()
 
 
 
+void test_Abbrev_Flag()
+{
+    LOG(info); 
+    unsigned lastBit = 17 ;
+    for(unsigned n=0 ; n <= lastBit ; n++ )
+    {
+        unsigned flag = 0x1 << n ;
+        std::cout 
+            << " n " << std::setw(10) << n 
+            << " (0x1 << n) " << std::setw(10) << flag 
+            << " OpticksPhoton::Flag " << std::setw(20) << OpticksPhoton::Flag(flag) 
+            << " OpticksPhoton::Abbrev " << std::setw(20) << OpticksPhoton::Abbrev(flag) 
+            << std::endl 
+            ;  
+    }
+
+}
+
 
 
 
@@ -212,10 +230,10 @@ int main(int argc, char** argv)
     test_AbbrevToFlagValSequence();
     test_PointAbbrev();
     test_PointVal1();
-    */
     test_AbbrevSequenceToMask(); 
-    /*
     */
+
+    test_Abbrev_Flag(); 
 
 
     return 0 ; 

@@ -17,7 +17,7 @@ struct curandStateXORWOW ;
 struct quad6 ; 
 struct sphoton ; 
 
-//#include "stdio.h"
+#include "OpticksPhoton.h"
 
 struct qscint
 {
@@ -64,6 +64,8 @@ inline QSCINT_METHOD void qscint::generate(sphoton& p, curandStateXORWOW& rng, c
     float deltaTime = fraction*gs.step_length/gs.meanVelocity - gs.ScintillationTime*logf(u4) ;
 
     p.time = gs.time + deltaTime ; 
+    p.zero_flags(); 
+    p.set_flag(SCINTILLATION) ;
 }
 
 

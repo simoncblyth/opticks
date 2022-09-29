@@ -141,8 +141,7 @@ inline const char* OpticksPhoton::Flag(const unsigned int flag)
         case EFFICIENCY_CULL:    s=EFFICIENCY_CULL_ ;break; 
         case EFFICIENCY_COLLECT: s=EFFICIENCY_COLLECT_ ;break; 
         default:               s=BAD_FLAG_  ;
-
-        std::cerr << "OpticksPhoton::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
+        //std::cerr << "OpticksPhoton::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
     }
     return s;
 }
