@@ -1,5 +1,5 @@
-OpticksPhoton_FlagMask_string_omits_generation_flag_CK_SI_TO
-===============================================================
+FIXED : OpticksPhoton_FlagMask_string_omits_generation_flag_CK_SI_TO 
+========================================================================
 
 Overview
 ----------
@@ -7,8 +7,8 @@ Overview
 * from ~/j/issues/junosw_offline_update_sept_2022.rst
 
 
-TODO : Why is the CK origin flag not dumped ?
-------------------------------------------------
+DONE : Why is the CK origin flag not dumped ? Fixed by addition to qcerenkov::generate qscint::generate
+----------------------------------------------------------------------------------------------------------
 
 Perhaps enum updates not accomodated ?::
 
@@ -26,6 +26,29 @@ Perhaps enum updates not accomodated ?::
          9 gp.x   18004.06 gp.y   -1181.39 gp.z    6883.82 gp.R   19311.37 pmt    5532             RE|SD|BT
         10 gp.x   -6796.09 gp.y  -17821.26 gp.z    2825.18 gp.R   19281.23 pmt    7360          RE|SC|SD|BT
         11 gp.x     402.42 gp.y   13634.73 gp.z   13677.00 gp.R   19316.53 pmt    2522                SD|BT
+
+After fix::
+
+    [ junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    2022-09-30 03:05:46.022 DEBUG [178202] [junoSD_PMT_v2_Opticks::EndOfEvent@169] [ eventID 1 m_opticksMode 3
+    2022-09-30 03:05:46.032 INFO  [178202] [junoSD_PMT_v2_Opticks::EndOfEvent@190]  eventID 1 num_hit 28 way_enabled 0
+         0 gp.x     840.38 gp.y   19245.69 gp.z    1502.42 gp.R   19322.53 pmt    8114             CK|SD|BT
+         1 gp.x  -13430.50 gp.y   -7767.71 gp.z  -11408.74 gp.R   19258.11 pmt   14076          CK|RE|SD|BT
+         2 gp.x  -14922.10 gp.y   11530.04 gp.z    4201.58 gp.R   19320.04 pmt    6864          CK|RE|SD|BT
+         3 gp.x  -15151.85 gp.y    5609.26 gp.z   10628.09 gp.R   19339.04 pmt    3868          CK|RE|SD|BT
+         4 gp.x   10853.07 gp.y    1425.27 gp.z   15936.91 gp.R   19334.06 pmt    1390       CK|RE|SC|SD|BT
+         5 gp.x   11710.61 gp.y   14482.46 gp.z   -5129.43 gp.R   19318.16 pmt   11299             CK|SD|BT
+         6 gp.x  -17505.01 gp.y    6837.48 gp.z   -4430.66 gp.R   19308.22 pmt   10926          CK|RE|SD|BT
+         7 gp.x    5155.31 gp.y   17928.19 gp.z   -5137.70 gp.R   19349.24 pmt   11313       CK|RE|SC|SD|BT
+         8 gp.x   -4309.12 gp.y    6244.47 gp.z   17786.38 gp.R   19336.94 pmt     640          CK|RE|SD|BT
+         9 gp.x   18004.06 gp.y   -1181.39 gp.z    6883.82 gp.R   19311.37 pmt    5532          CK|RE|SD|BT
+        10 gp.x   -6796.09 gp.y  -17821.26 gp.z    2825.18 gp.R   19281.23 pmt    7360       CK|RE|SC|SD|BT
+        11 gp.x     402.42 gp.y   13634.73 gp.z   13677.00 gp.R   19316.53 pmt    2522             CK|SD|BT
+
+
+
+
+
 
 ::
 
