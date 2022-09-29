@@ -37,6 +37,7 @@ set(TEST_SOURCES
    U4Material_MakePropertyFold_LoadTest.cc
    U4TouchableTest.cc
    U4Scintillation_Debug_Test.cc 
+   U4Hit_Debug_Test.cc 
  
 )
 

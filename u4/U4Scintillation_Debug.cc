@@ -8,12 +8,6 @@ const plog::Severity U4Scintillation_Debug::LEVEL = PLOG::EnvLevel("U4Scintillat
 std::vector<U4Scintillation_Debug> U4Scintillation_Debug::record = {} ;
 const char* U4Scintillation_Debug::SaveDir = getenv(EKEY) ;   
 
-void U4Scintillation_Debug::add()
-{
-    LOG(LEVEL) << "num_record " << record.size() ;
-    if(record.size() < LIMIT) record.push_back(*this); 
-}
-
 void U4Scintillation_Debug::EndOfEvent(int eventID)
 {
     const char* dir = SPath::Resolve(SaveDir ? SaveDir : "/tmp" , eventID, DIRPATH );  
@@ -23,4 +17,9 @@ void U4Scintillation_Debug::EndOfEvent(int eventID)
     record.clear(); 
 }
 
+void U4Scintillation_Debug::add()
+{
+    LOG(LEVEL) << "num_record " << record.size() ;
+    if(record.size() < LIMIT) record.push_back(*this); 
+}
 

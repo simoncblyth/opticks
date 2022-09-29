@@ -24,11 +24,12 @@ struct U4_API U4Scintillation_Debug
     static const plog::Severity LEVEL ; 
     static std::vector<U4Scintillation_Debug> record ;   
     static constexpr const unsigned NUM_QUAD = 2u ; 
+    static constexpr const char* EKEY = "U4Debug_SaveDir" ;   
     static constexpr const char* NAME = "U4Scintillation_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
-    static constexpr const char* EKEY = "U4Scintillation_Debug_SaveDir" ;   
     static const char* SaveDir ; 
     static void EndOfEvent(int eventID); 
+    void add(); 
 
     double posx ; 
     double posy ; 
@@ -39,7 +40,5 @@ struct U4_API U4Scintillation_Debug
     double MeanNumberOfTracks ; 
     double NumTracks ; 
     double Spare ; 
-
-    void add(); 
 };
 

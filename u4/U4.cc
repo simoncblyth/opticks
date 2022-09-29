@@ -232,8 +232,9 @@ void U4::CollectGenstep_G4Cerenkov_modified(
 U4::GenPhotonAncestor
 ----------------------
 
-NB calling this prior to generation loops to get the ancestor 
-is needed for BOTH Scintillation and Cerenkov in order for photon G4Track 
+NB calling this prior to generation loops to get the ancestor spho.h label 
+
+This label is needed for BOTH Scintillation and Cerenkov in order for photon G4Track 
 labelling done by U4::GenPhotonEnd to work. 
 
 **/
@@ -248,12 +249,16 @@ void U4::GenPhotonAncestor( const G4Track* aTrack )
 U4::GenPhotonBegin
 -------------------
 
+This is called from head of Scintillation and Cerenkov generation loops.
+It updates the private "pho" spho.h label which carries 
+genstep index, photon index within genstep, photon identity, reemission index
+
 **/
 
 void U4::GenPhotonBegin( int genloop_idx )
 {
     assert(genloop_idx > -1); 
-    pho = gs.MakePho(genloop_idx, ancestor); 
+    pho = gs.MakePho(genloop_idx, ancestor);  
 
     int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
     assert( pho.id == align_id );     
@@ -273,6 +278,9 @@ void U4::GenPhotonBegin( int genloop_idx )
 U4::GenPhotonEnd
 ------------------
 
+This is called from tail of Scintillation and Cerenkov generation loops
+following instanciation of the secondary track. 
+
 Sets spho label into the secondary track using U4PhotonInfo::Set
 
 **/
@@ -281,14 +289,11 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 {
     assert(genloop_idx > -1); 
     secondary = gs.MakePho(genloop_idx, ancestor) ; 
+    assert( secondary.isIdentical(pho) );  // make sure paired U4::GenPhotonBegin and U4::GenPhotonEnd
 
-    assert( secondary.isIdentical(pho) ); 
-
-    //std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #ifdef DEBUG
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #endif
-
     U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
 }
 

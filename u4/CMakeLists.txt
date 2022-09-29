@@ -40,6 +40,7 @@ set(SOURCES
     U4Random.cc
     U4Scintillation_Debug.cc
     U4Cerenkov_Debug.cc
+    U4Hit_Debug.cc
     InstrumentedG4OpBoundaryProcess.cc
 
 ) 
@@ -73,6 +74,8 @@ set(HEADERS
 
     U4Scintillation_Debug.hh
     U4Cerenkov_Debug.hh
+    U4Hit_Debug.hh
+
     InstrumentedG4OpBoundaryProcess.hh
 )
 

@@ -51,6 +51,7 @@ find_package(G4CX CONFIG QUIET)
 if(G4CX_FOUND)
     #add_compile_definitions(WITH_G4OPTICKS)
     add_compile_definitions(WITH_G4CXOPTICKS)
+    add_compile_definitions(WITH_G4CXOPTICKS_DEBUG)
 
     if(Opticks_VERBOSE)
         message(STATUS "${Opticks_MODULE} : PLog_INCLUDE_DIR :${PLog_INCLUDE_DIR} ")

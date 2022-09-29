@@ -24,12 +24,12 @@ struct U4_API U4Cerenkov_Debug
     static const plog::Severity LEVEL ; 
     static std::vector<U4Cerenkov_Debug> record ;   
     static constexpr const unsigned NUM_QUAD = 2u ; 
+    static constexpr const char* EKEY = "U4Debug_SaveDir" ;   
     static constexpr const char* NAME = "U4Cerenkov_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
-    static constexpr const char* EKEY = "U4Cerenkov_Debug_SaveDir" ;   
     static const char* SaveDir ; 
-    static void Save(const char* dir);
     static void EndOfEvent(int eventID); 
+    void add(); 
 
     double posx ; 
     double posy ; 
@@ -40,7 +40,5 @@ struct U4_API U4Cerenkov_Debug
     double step_length ; 
     double MeanNumberOfPhotons ; 
     double fNumPhotons ; 
-
-    void add(); 
 };
 
