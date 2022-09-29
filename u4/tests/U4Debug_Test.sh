@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 
 msg="=== $BASH_SOURCE :"
-name=U4Scintillation_Debug_Test
+name=U4Debug_Test
 fold=/tmp/$name
 
 export U4Debug_SaveDir=$fold
@@ -11,6 +11,7 @@ export FOLD1=$fold/001
 export U4Scintillation_Debug=INFO
 export U4Cerenkov_Debug=INFO
 export U4Hit_Debug=INFO
+export U4Debug=INFO
 
 
 arg=${1:-run_ana}

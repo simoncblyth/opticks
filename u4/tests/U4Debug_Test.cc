@@ -1,6 +1,9 @@
 #include "OPTICKS_LOG.hh"
+
 #include "U4Scintillation_Debug.hh"
 #include "U4Cerenkov_Debug.hh"
+#include "U4Hit_Debug.hh"
+#include "U4Debug.hh"
 
 int main(int argc, char** argv)
 {
@@ -8,6 +11,8 @@ int main(int argc, char** argv)
 
     U4Scintillation_Debug s ; 
     U4Cerenkov_Debug c ; 
+    U4Hit_Debug h ; 
+
     int eventID = 0 ; 
 
     s.posx = 1. ; 
@@ -26,6 +31,11 @@ int main(int argc, char** argv)
     s.Spare = 4. ; 
 
 
+    h.label = {1,2,3,4} ; 
+    h.add(); 
+    h.add(); 
+
+
     c.BetaInverse = 2. ; 
     c.step_length = 2. ; 
     c.MeanNumberOfPhotons = 2. ; 
@@ -40,18 +50,22 @@ int main(int argc, char** argv)
     c.add(); 
     c.add(); 
 
-    U4Scintillation_Debug::EndOfEvent(eventID); 
-    U4Cerenkov_Debug::EndOfEvent(eventID); 
+    //U4Scintillation_Debug::EndOfEvent(eventID); 
+    //U4Cerenkov_Debug::EndOfEvent(eventID); 
+    U4Debug::EndOfEvent(eventID); 
+
 
     s.add(); 
     s.add(); 
 
     c.add(); 
 
+    h.add(); 
   
     eventID += 1 ; 
-    U4Scintillation_Debug::EndOfEvent(eventID); 
-    U4Cerenkov_Debug::EndOfEvent(eventID); 
+    U4Debug::EndOfEvent(eventID); 
+    //U4Scintillation_Debug::EndOfEvent(eventID); 
+    //U4Cerenkov_Debug::EndOfEvent(eventID); 
 
     return 0 ; 
 }
