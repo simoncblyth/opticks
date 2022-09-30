@@ -1,10 +1,42 @@
 PLOG_logging_from_external_libs always DEBUG, never suppressed
 =================================================================
 
-DONE : setup a test which uses FindOpticks.cmake and that reproduces 
-the logging mis-behaviour to allow investigation 
+Overview
+----------
 
-* doing this in examples/UseFindOpticks/CMakeLists.txt
+Getting PLOG logging to work properly in an external lib 
+in a project that does not use " -fvisibility=hidden " 
+is proving difficult. 
+
+Despite numerous attempts its still not working. 
+
+
+The way things go wrong:
+
+1. logging not suppressed by the level 
+2. all logging suppressed 
+
+
+DONE 
+-----
+
+1. setup a test examples/UseFindOpticks/CMakeLists.txt which uses FindOpticks.cmake and that reproduces the logging mis-behaviour to allow investigation 
+2. added API to use the integer template argument for logging 
+
+
+
+AHHA : the normal LOG(LEVEL) invokation is using the PLOG_DEFAULT_INSTANCE which is 0 
+------------------------------------------------------------------------------------------
+
+::
+
+    #define LOG_(instance, severity)        IF_LOG_(instance, severity) (*plog::get<instance>()) += plog::Record(severity, PLOG_GET_FUNC(), __LINE__, PLOG_GET_FILE(), PLOG_GET_THIS())
+    #define LOG(severity)                   LOG_(PLOG_DEFAULT_INSTANCE, severity)
+
+
+So try changing the PMTSim logging to use the appropriate index::
+
+    LOG_(1, LEVEL) 
 
 
 Expt
@@ -191,6 +223,8 @@ Hmm maybe can use a namespace to avoid the symbol clash whilst not using " -fvis
 
 
 
+Actually plog has integer template argument that perhaps can handle this
+
 /usr/local/opticks/externals/plog/include/plog/Logger.h::
 
 
@@ -264,7 +298,9 @@ Simulation/DetSimV2/PMTSim/PMTSim/OK_PMTSIM_LOG.hh::
 
 
 
-::
+
+Need to use consistent integer template argument for creation in the shared lib as well as hookup in the main::
+
 
      21 #pragma once
      22 #include "SYSRAP_API_EXPORT.hh"

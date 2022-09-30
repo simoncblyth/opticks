@@ -99,15 +99,63 @@ Main app::
 int main(int argc, char** argv)
 {
     LOCAL_OPTICKS_LOG(argc, argv); 
-    DEMO_LOG::Initialize(info, plog::get(), nullptr );
 
+    // the logmax controls logging from the shared lib, not the main.  WHY ?  
+    // inhibition of logging only works in the shared libs, not the main
+    // Actually thats not much of a problem, as most everything happens in shared libs. 
 
-    
+    //plog::Severity logmax = plog::none  ; // 0
+    //plog::Severity logmax = fatal  ;      // 1 
+    //plog::Severity logmax = error  ;      // 2 
+    //plog::Severity logmax = warning  ;    // 3 
+    plog::Severity logmax = info  ;       // 4 
+    //plog::Severity logmax = debug   ;     // 5 
+    //plog::Severity logmax = verbose   ;   // 6 
+
+    std::cout 
+        << "main "
+        << " logmax " << logmax 
+        << " plog::severityToString(logmax) " << plog::severityToString(logmax) 
+        << std::endl 
+        ;
+
+    DEMO_LOG::Initialize(logmax, plog::get(), nullptr );
 
 
     LOG(error) << "[" << argv[0] ; 
     DemoLib::Dump(); 
     LOG(error) << "]" << argv[0] ; 
+
+
+
+
+    std::cout << "LOG(plog::none) " << std::endl ; 
+    LOG(plog::none)     << " LOG(plog::none)    " << plog::none    ; 
+
+    std::cout << "LOG(fatal) " << std::endl ; 
+    LOG(fatal)    << " LOG(fatal)   " << fatal   ; 
+
+    std::cout << "LOG(error) " << std::endl ; 
+    LOG(error)    << " LOG(error)   " << error   ; 
+
+    std::cout << "LOG(warning) " << std::endl ; 
+    LOG(warning)  << " LOG(warning) " << warning ; 
+
+    std::cout << "LOG(info) " << std::endl ; 
+    LOG(info)     << " LOG(info)    " << info    ; 
+
+    std::cout << "LOG(debug) " << std::endl ; 
+    LOG(debug)    << " LOG(debug)   " << debug   ; 
+
+    std::cout << "LOG(verbose) " << std::endl ; 
+    LOG(verbose)  << " LOG(verbose) " << verbose ; 
+
+
+
+
+
+
+
     return 0 ; 
 
 }
