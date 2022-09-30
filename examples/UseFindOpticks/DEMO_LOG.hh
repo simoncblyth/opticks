@@ -18,26 +18,15 @@
  */
 
 
-#include <plog/Log.h>
+#pragma once
+#include "DEMO_API_EXPORT.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "PLOG_INIT.hh"
-#include "PLOG.hh"
-       
-void SYSRAP_LOG::Initialize(int level, void* app1, void* app2 )
-{
-    PLOG_INIT(level, app1, app2);
-}
-void SYSRAP_LOG::Check(const char* msg)
-{
-    PLOG_CHECK(msg);
-}
+#define DEMO_LOG__  {     DEMO_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "DEMO"), plog::get(), NULL );  } 
 
-
-template<int IDX>
-void SYSRAP_LOG::Init(int level, void* app1, void* app2 )
-{
-    PLOG_INIT_(level, app1, app2, IDX ); 
-}
-
+#define DEMO_LOG_ {     DEMO_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
+class DEMO_API DEMO_LOG {
+   public:
+       static void Initialize(int level, void* app1, void* app2 );
+       static void Check(const char* msg);
+};
 

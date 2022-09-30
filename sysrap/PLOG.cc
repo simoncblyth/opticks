@@ -269,6 +269,26 @@ int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
     const char* fallback = _name(_fallback);
     return prefixlevel_parse(fallback, prefix) ; 
 }
+
+
+
+
+/**
+PLOG::prefixlevel_parse
+-------------------------
+
+This provides loglevel control at the granularity of a library 
+controlled by commandline options. BUT this has proved far too coarse 
+a control to be useful, and has not been used in many years. 
+
+Hence this prefixlevel_parse functionality could be removed ?
+
+Controlling logging at the level of classes/structs 
+has proved very useful. 
+
+**/
+
+
 int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
     int ll =  _prefixlevel_parse(args._argc, args._argv, fallback, prefix);
