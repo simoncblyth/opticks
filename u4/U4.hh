@@ -3,6 +3,66 @@
 U4.hh
 ======
 
+Genstep Collection
+--------------------
+
+Genstep collection within  Geant4 Scintillation+Cerenkov processes 
+is central to Opticks operation, as the gensteps are the parameters 
+that allow photons to be generated on GPU.  
+
+Optical Photon Labelling
+----------------------------
+
+In pure Opticks running (opticksMode:1) there is no Geant4 generation loop, 
+only in validation running (opticksMode:3) where both CPU and GPU propagations are done 
+does generation loop monitoring become relevant and useful. 
+Geant4 generation loop photon labelling is done using the API::
+
+   U4::GenPhotonAncestor
+   U4::GenPhotonBegin
+   U4::GenPhotonEnd
+
+With Geant4 generation loop monitoring every optical photon G4Track gets an spho.h label that 
+is stored using G4VUserTrackInformation, via U4PhotonInfo. 
+The label identifies exactly the originating photon and genstep 
+and how many reemission generations have been undergone. 
+
+* HMM: pure opticksMode:1 running does not provide such labels currently 
+ 
+Example of labels with {gs,ix,id,gx} ::
+
+   In [1]: f30h
+    Out[1]: 
+    array([[  0,  15,  15,   0],
+           [  1,  22,  56,   2],
+           [  1,  10,  44,   1],
+           [  1,   8,  42,   1],
+           [  1,   3,  37,   0],
+           [  1,   2,  36,   1],
+           [  2,   3,  60,   2],
+           [  3,  41, 102,   1],
+           [  3,  36,  97,   2],
+           [  3,  29,  90,   1],
+           [  3,  19,  80,   1],
+           [  4,  26, 157,   4],
+           [  5,   7, 174,   1],
+           [  6,   2, 195,   1]], dtype=int32)
+
+spho.h::
+                
+    struct spho
+    {
+        int gs ; // 0-based genstep index within the event
+        int ix ; // 0-based photon index within the genstep
+        int id ; // 0-based photon identity index within the event 
+        int gn ; // 0-based reemission index incremented at each reemission 
+    ...
+    };
+
+
+Implementation Notes
+-------------------------
+
 Note that Opticks types are mostly kept out of this header in order to simplify 
 usage from detector framework code.  For example this is done by:
 
@@ -26,6 +86,7 @@ struct U4_API U4
 {
     static const plog::Severity LEVEL ;
 
+    // genstep collection
     static void CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
@@ -47,10 +108,12 @@ struct U4_API U4
         G4double    meanNumberOfPhotons2
     );
 
+    // optical photon labelling 
     static void GenPhotonAncestor(const G4Track* aTrack );                    // prior to photon generation loop(s)
     static void GenPhotonBegin( int genloop_idx );                            // start of generation loop
     static void GenPhotonEnd(   int genloop_idx, G4Track* aSecondaryTrack );  // end of generation loop
-    static void GenPhotonSecondaries(const G4Track* aTrack, const G4VParticleChange* change ); 
+
+    // other 
     static NP* CollectOpticalSecondaries(const G4VParticleChange* pc ); 
 };
 

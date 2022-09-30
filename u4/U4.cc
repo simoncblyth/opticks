@@ -306,28 +306,15 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
     U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
 }
 
-void U4::GenPhotonSecondaries( const G4Track* aTrack, const G4VParticleChange* change )
-{
-    G4int numSecondaries = change->GetNumberOfSecondaries() ; 
-    if(dump) std::cout << "U4::GenPhotonSecondaries  numSecondaries " << numSecondaries << std::endl ; 
 
-    /*
-    //TODO: reinstate some form of consistency check 
 
-    // HMM: only works for 1st genstep of event perhaps ?
+/**
+U4::CollectOpticalSecondaries
+------------------------------
 
-    int numphoton = SEvt::GetNumPhoton() ; 
-    bool consistent = numphoton > -1 && numphoton - 1  == pho.id ;  
-    //if( dump || !consistent )
-    { 
-        std::cout << " consistent " << consistent << std::endl ; 
-        std::cout << " SEvt::GetNumPhoton " << numphoton << std::endl ; 
-        std::cout << " pho " << pho.desc() << std::endl ; 
-        std::cout << " gs " << gs.desc() << std::endl ; 
-    }
-    assert(consistent); 
-    */
-}
+Optional and as yet incomplete conversion of G4VParticleChange into NP array of photons
+
+**/
 
 NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
 {
@@ -346,6 +333,8 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
         const G4ThreeVector& pmom = ph->GetMomentumDirection() ;
         const G4ThreeVector& ppol = ph->GetPolarization() ;
         sphoton& sp = pp[i] ; 
+
+        // position ? 
 
         sp.mom.x = pmom.x(); 
         sp.mom.y = pmom.y(); 
