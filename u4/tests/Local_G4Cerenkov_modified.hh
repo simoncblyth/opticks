@@ -45,8 +45,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef G4Cerenkov_modified_h
-#define G4Cerenkov_modified_h 1
+#ifndef Local_G4Cerenkov_modified_h
+#define Local_G4Cerenkov_modified_h 1
 
 /////////////
 // Includes
@@ -84,12 +84,12 @@ struct OpticksRandom ;
 #endif 
 
 
-class G4Cerenkov_modified : public G4VProcess
+class Local_G4Cerenkov_modified : public G4VProcess
 {
 public:
 
 #ifdef INSTRUMENTED
-   template <typename T> friend struct G4Cerenkov_modifiedTest ;  
+   template <typename T> friend struct Local_G4Cerenkov_modifiedTest ;  
    bool looping_condition(unsigned& count); 
    OpticksDebug<double>* gen ; 
    OpticksDebug<double>* par ; 
@@ -101,11 +101,11 @@ public:
   // Constructors and Destructor
   ////////////////////////////////
 
-  explicit G4Cerenkov_modified(const G4String& processName = "Cerenkov", 
+  explicit Local_G4Cerenkov_modified(const G4String& processName = "Cerenkov", 
              G4ProcessType type = fElectromagnetic);
-  ~G4Cerenkov_modified();
+  ~Local_G4Cerenkov_modified();
 
-  explicit G4Cerenkov_modified(const G4Cerenkov_modified &right);
+  explicit Local_G4Cerenkov_modified(const Local_G4Cerenkov_modified &right);
 
 private:
 
@@ -113,7 +113,7 @@ private:
   // Operators
   //////////////
 
-  G4Cerenkov_modified& operator=(const G4Cerenkov_modified &right) = delete;
+  Local_G4Cerenkov_modified& operator=(const Local_G4Cerenkov_modified &right) = delete;
 
 public:
 
@@ -271,59 +271,59 @@ private:
   ////////////////////
 
 inline
-G4bool G4Cerenkov_modified::GetTrackSecondariesFirst() const
+G4bool Local_G4Cerenkov_modified::GetTrackSecondariesFirst() const
 {
   return fTrackSecondariesFirst;
 }
 
 inline
-G4double G4Cerenkov_modified::GetMaxBetaChangePerStep() const
+G4double Local_G4Cerenkov_modified::GetMaxBetaChangePerStep() const
 {
   return fMaxBetaChange;
 }
 
 inline
-G4int G4Cerenkov_modified::GetMaxNumPhotonsPerStep() const
+G4int Local_G4Cerenkov_modified::GetMaxNumPhotonsPerStep() const
 {
   return fMaxPhotons;
 }
 
 inline
-void G4Cerenkov_modified::SetStackPhotons(const G4bool stackingFlag)
+void Local_G4Cerenkov_modified::SetStackPhotons(const G4bool stackingFlag)
 {
         fStackingFlag = stackingFlag;
 }
 
 inline
-G4bool G4Cerenkov_modified::GetStackPhotons() const
+G4bool Local_G4Cerenkov_modified::GetStackPhotons() const
 {
         return fStackingFlag;
 }
 
 inline
-G4int G4Cerenkov_modified::GetNumPhotons() const
+G4int Local_G4Cerenkov_modified::GetNumPhotons() const
 {
         return fNumPhotons;
 }
 
 inline
-G4int G4Cerenkov_modified::GetNumPhotons1() const
+G4int Local_G4Cerenkov_modified::GetNumPhotons1() const
 {
         return fNumPhotons1;
 }
 
 inline
-G4int G4Cerenkov_modified::GetNumPhotons2() const
+G4int Local_G4Cerenkov_modified::GetNumPhotons2() const
 {
         return fNumPhotons2;
 }
 
 inline
-G4PhysicsTable* G4Cerenkov_modified::GetPhysicsTable() const
+G4PhysicsTable* Local_G4Cerenkov_modified::GetPhysicsTable() const
 {
   return thePhysicsTable;
 }
 
-#endif /* G4Cerenkov_modified_h */
+#endif /* Local_G4Cerenkov_modified_h */
 
 

@@ -71,7 +71,7 @@
 #include "G4MaterialCutsCouple.hh"
 #include "G4ParticleDefinition.hh"
 
-#include "G4Cerenkov_modified.hh"
+#include "Local_G4Cerenkov_modified.hh"
 
 #ifdef INSTRUMENTED
 #include "OpticksDebug.hh"
@@ -104,7 +104,7 @@
   // Constructors
   /////////////////
 
-G4Cerenkov_modified::G4Cerenkov_modified(const G4String& processName, G4ProcessType type)
+Local_G4Cerenkov_modified::Local_G4Cerenkov_modified(const G4String& processName, G4ProcessType type)
            : G4VProcess(processName, type),
              fTrackSecondariesFirst(false),
              fMaxBetaChange(0.0),
@@ -132,7 +132,7 @@ G4Cerenkov_modified::G4Cerenkov_modified(const G4String& processName, G4ProcessT
   // Destructors
   ////////////////
 
-G4Cerenkov_modified::~G4Cerenkov_modified()
+Local_G4Cerenkov_modified::~Local_G4Cerenkov_modified()
 {
   if (thePhysicsTable != nullptr) {
      thePhysicsTable->clearAndDestroy();
@@ -144,7 +144,7 @@ G4Cerenkov_modified::~G4Cerenkov_modified()
   // Methods
   ////////////
 
-G4bool G4Cerenkov_modified::IsApplicable(const G4ParticleDefinition& aParticleType)
+G4bool Local_G4Cerenkov_modified::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
   G4bool result = false;
 
@@ -156,22 +156,22 @@ G4bool G4Cerenkov_modified::IsApplicable(const G4ParticleDefinition& aParticleTy
   return result;
 }
 
-void G4Cerenkov_modified::SetTrackSecondariesFirst(const G4bool state)
+void Local_G4Cerenkov_modified::SetTrackSecondariesFirst(const G4bool state)
 {
   fTrackSecondariesFirst = state;
 }
 
-void G4Cerenkov_modified::SetMaxBetaChangePerStep(const G4double value)
+void Local_G4Cerenkov_modified::SetMaxBetaChangePerStep(const G4double value)
 {
   fMaxBetaChange = value*CLHEP::perCent;
 }
 
-void G4Cerenkov_modified::SetMaxNumPhotonsPerStep(const G4int NumPhotons)
+void Local_G4Cerenkov_modified::SetMaxNumPhotonsPerStep(const G4int NumPhotons)
 {
   fMaxPhotons = NumPhotons;
 }
 
-void G4Cerenkov_modified::BuildPhysicsTable(const G4ParticleDefinition&)
+void Local_G4Cerenkov_modified::BuildPhysicsTable(const G4ParticleDefinition&)
 {
   if (!thePhysicsTable) BuildThePhysicsTable();
 }
@@ -179,7 +179,7 @@ void G4Cerenkov_modified::BuildPhysicsTable(const G4ParticleDefinition&)
 // PostStepDoIt
 // -------------
 //
-G4VParticleChange* G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+G4VParticleChange* Local_G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 // This routine is called for each tracking Step of a charged particle
 // in a radiator. A Poisson-distributed number of photons is generated
@@ -607,19 +607,16 @@ G4VParticleChange* G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, cons
   }
 
   if (verboseLevel>0) {
-     G4cout <<"\n Exiting from G4Cerenkov_modified::DoIt -- NumberOfSecondaries = "
+     G4cout <<"\n Exiting from Local_G4Cerenkov_modified::DoIt -- NumberOfSecondaries = "
       << aParticleChange.GetNumberOfSecondaries() << G4endl;
   }
 
-#ifdef STANDALONE
-    U4::GenPhotonSecondaries(&aTrack, pParticleChange  );
-#endif
     return pParticleChange;
 }
 
 
 #ifdef INSTRUMENTED
-bool G4Cerenkov_modified::looping_condition(unsigned& count)
+bool Local_G4Cerenkov_modified::looping_condition(unsigned& count)
 {   
     count += 1 ;
     return true ;
@@ -633,7 +630,7 @@ bool G4Cerenkov_modified::looping_condition(unsigned& count)
 // ---------------------------------------------
 //
 
-void G4Cerenkov_modified::BuildThePhysicsTable()
+void Local_G4Cerenkov_modified::BuildThePhysicsTable()
 {
   if (thePhysicsTable) return;
 
@@ -727,14 +724,14 @@ void G4Cerenkov_modified::BuildThePhysicsTable()
 // ---------------
 //
 
-G4double G4Cerenkov_modified::GetMeanFreePath(const G4Track&,
+G4double Local_G4Cerenkov_modified::GetMeanFreePath(const G4Track&,
                                            G4double,
                                            G4ForceCondition*)
 {
   return 1.;
 }
 
-G4double G4Cerenkov_modified::PostStepGetPhysicalInteractionLength(
+G4double Local_G4Cerenkov_modified::PostStepGetPhysicalInteractionLength(
                                            const G4Track& aTrack,
                                            G4double,
                                            G4ForceCondition* condition)
@@ -852,7 +849,7 @@ G4double G4Cerenkov_modified::PostStepGetPhysicalInteractionLength(
 //             ^^^^^^^^^^
 
 G4double
-  G4Cerenkov_modified::GetAverageNumberOfPhotons(const G4double charge,
+  Local_G4Cerenkov_modified::GetAverageNumberOfPhotons(const G4double charge,
                                         const G4double beta, 
                       const G4Material* aMaterial,
                       G4MaterialPropertyVector* Rindex) //const
@@ -862,7 +859,7 @@ G4double
 
 #ifdef X_INSTRUMENTED
   std::cout 
-       << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+       << "Local_G4Cerenkov_modified::GetAverageNumberOfPhotons"
        << " Rfact " << std::fixed << std::setw(10) << std::setprecision(5) << Rfact
        << " eV " << std::fixed << std::setw(10) << std::setprecision(7) << eV
        << " cm " << std::fixed << std::setw(10) << std::setprecision(5) << cm
@@ -1121,7 +1118,7 @@ G4double
 
 #ifdef X_INSTRUMENTED
   std::cout 
-       << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+       << "Local_G4Cerenkov_modified::GetAverageNumberOfPhotons"
        << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(5) << BetaInverse
        << " maxRI " << std::fixed << std::setw(10) << std::setprecision(5) << maxRI
        << " minRI " << std::fixed << std::setw(10) << std::setprecision(5) << minRI
@@ -1141,7 +1138,7 @@ G4double
       G4double cai1 = CerenkovAngleIntegrals->GetValue(the_energies_threshold[2*i+1], isOutRange);
 
       std::cout 
-           << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+           << "Local_G4Cerenkov_modified::GetAverageNumberOfPhotons"
            << " the_energies_threshold[2*i+0]/eV " << std::fixed << std::setw(10) << std::setprecision(5) << the_energies_threshold[2*i+0]/eV
            << " the_energies_threshold[2*i+1]/eV " << std::fixed << std::setw(10) << std::setprecision(5) << the_energies_threshold[2*i+1]/eV
            << " cai0 " << std::fixed << std::setw(20) << std::setprecision(10) << cai0
@@ -1156,7 +1153,7 @@ G4double
 }
 
 /**
-G4Cerenkov_modified::s2Integrate
+Local_G4Cerenkov_modified::s2Integrate
 ----------------------------------
 
 See:
@@ -1208,7 +1205,7 @@ rather than the derived and non-linear s2
 
 **/
 
-G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge, const G4double beta, const G4Material*, G4MaterialPropertyVector* Rindex) const
+G4double Local_G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge, const G4double beta, const G4Material*, G4MaterialPropertyVector* Rindex) const
 {
     if(beta <= 0.0)return 0.0;
     G4double BetaInverse = 1./beta;
@@ -1251,7 +1248,7 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
         else
         {
             std::cout 
-                << "G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
+                << "Local_G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
                 << " FATAL "
                 << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0
                 << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1
@@ -1269,7 +1266,7 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
 
 #ifdef X_INSTRUMENTED
   std::cout 
-       << "G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
+       << "Local_G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
        << " Rfact " << std::fixed << std::setw(10) << std::setprecision(5) << Rfact
        << " eV " << std::fixed << std::setw(10) << std::setprecision(7) << eV
        << " cm " << std::fixed << std::setw(10) << std::setprecision(5) << cm
@@ -1284,7 +1281,7 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
 } 
 
 
-void G4Cerenkov_modified::DumpPhysicsTable() const
+void Local_G4Cerenkov_modified::DumpPhysicsTable() const
 {
   G4int PhysicsTableSize = thePhysicsTable->entries();
   G4PhysicsOrderedFreeVector *v;

@@ -114,19 +114,11 @@ inline void U4Physics::ConstructEM()
   }
 }
 
-//#include "G4Cerenkov.hh"
-#include "G4Cerenkov_modified.hh"
+#include "Local_G4Cerenkov_modified.hh"
+#include "Local_DsG4Scintillation.h"
 
-#include "DsG4Scintillation.h"
-
-
-//#ifdef DEBUG_TAG
 #include "ShimG4OpAbsorption.h"
 #include "ShimG4OpRayleigh.h"
-//#else
-//#include "G4OpAbsorption.hh"
-//#include "G4OpRayleigh.hh"
-//#endif
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
 
@@ -154,18 +146,18 @@ inline int U4Physics::EInt(const char* key, const char* fallback)  // static
 
 inline void U4Physics::ConstructOp()
 {
-    if(EInt("G4Cerenkov_DISABLE", "0") == 0 )
+    if(EInt("Local_G4Cerenkov_modified_DISABLE", "0") == 0 )
     {
-        fCerenkov = new G4Cerenkov_modified ;
+        fCerenkov = new Local_G4Cerenkov_modified ;
         fCerenkov->SetMaxNumPhotonsPerStep(10000);
         fCerenkov->SetMaxBetaChangePerStep(10.0);
         fCerenkov->SetTrackSecondariesFirst(true);   
-        fCerenkov->SetVerboseLevel(EInt("G4Cerenkov_verboseLevel", "0"));
+        fCerenkov->SetVerboseLevel(EInt("Local_G4Cerenkov_modified_verboseLevel", "0"));
     }
 
-    if(EInt("DsG4Scintillation_DISABLE", "0") == 0 )
+    if(EInt("Local_DsG4Scintillation_DISABLE", "0") == 0 )
     {
-        fScintillation = new DsG4Scintillation(EInt("DsG4Scintillation_opticksMode","0")) ; 
+        fScintillation = new Local_DsG4Scintillation(EInt("Local_DsG4Scintillation_opticksMode","0")) ; 
         fScintillation->SetTrackSecondariesFirst(true);
     }
 

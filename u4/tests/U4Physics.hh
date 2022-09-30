@@ -12,8 +12,8 @@ This is intended solely for use from U4RecorderTest
 #include <sstream>
 #include "G4VUserPhysicsList.hh"
 
-class G4Cerenkov_modified ; 
-class DsG4Scintillation ; 
+class Local_G4Cerenkov_modified ; 
+class Local_DsG4Scintillation ; 
 
 #ifdef DEBUG_TAG
 class ShimG4OpAbsorption ;
@@ -30,8 +30,8 @@ struct U4Physics : public G4VUserPhysicsList
 {
     static int EInt(const char* key, const char* fallback="0"); 
 
-    G4Cerenkov_modified*  fCerenkov ; 
-    DsG4Scintillation*    fScintillation ; 
+    Local_G4Cerenkov_modified*  fCerenkov ; 
+    Local_DsG4Scintillation*    fScintillation ; 
 
 #ifdef DEBUG_TAG
     ShimG4OpAbsorption*   fAbsorption ;

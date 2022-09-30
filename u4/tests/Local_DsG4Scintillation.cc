@@ -58,7 +58,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------
-// DsG4Scintillation is a class modified from G4Scintillation
+// Local_DsG4Scintillation is a class modified from G4Scintillation
 // Birks' law is implemented 
 // Author: Liang Zhan, 2006/01/27
 // Added weighted photon track method based on GLG4Scint. Jianglai 09/05/2006
@@ -73,7 +73,7 @@
 #include <boost/python.hpp>
 #endif
 
-#include "DsG4Scintillation.h"
+#include "Local_DsG4Scintillation.h"
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -95,8 +95,8 @@
 
 
 #ifdef WITH_G4OPTICKS
-//const plog::Severity DsG4Scintillation::LEVEL = PLOG::EnvLevel("DsG4Scintillation", "DEBUG") ; 
-const plog::Severity DsG4Scintillation::LEVEL = error ; 
+//const plog::Severity Local_DsG4Scintillation::LEVEL = PLOG::EnvLevel("Local_DsG4Scintillation", "DEBUG") ; 
+const plog::Severity Local_DsG4Scintillation::LEVEL = error ; 
 #endif
 
 
@@ -105,13 +105,13 @@ const plog::Severity DsG4Scintillation::LEVEL = error ;
 #include "U4Stack.h"
 #include "SEvt.hh"
 
-const bool DsG4Scintillation::FLOAT = getenv("DsG4Scintillation_FLOAT") != nullptr ;
-const int  DsG4Scintillation::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
+const bool Local_DsG4Scintillation::FLOAT = getenv("Local_DsG4Scintillation_FLOAT") != nullptr ;
+const int  Local_DsG4Scintillation::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
 
-//void DsG4Scintillation::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
-void DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
+//void Local_DsG4Scintillation::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+void Local_DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
 {
-    //std::cout << "DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
+    //std::cout << "Local_DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
 
     SEvt::AddTag( U4Stack_ScintDiscreteReset, u ); 
@@ -163,7 +163,7 @@ using namespace std;
 // Operators
 //////////////
 
-// DsG4Scintillation::operator=(const DsG4Scintillation &right)
+// Local_DsG4Scintillation::operator=(const Local_DsG4Scintillation &right)
 // {
 // }
 
@@ -171,7 +171,7 @@ using namespace std;
 // Constructors
 /////////////////
 
-DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processName,
+Local_DsG4Scintillation::Local_DsG4Scintillation(G4int opticksMode, const G4String& processName,
                                      G4ProcessType type)
     : G4VRestDiscreteProcess(processName, type)
     , doReemission(true)   // SCB set false to simplify debug
@@ -200,15 +200,15 @@ DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processN
     theReemissionIntegralTable = NULL;
 
     //verboseLevel = 2;
-    //G4cout << " DsG4Scintillation set verboseLevel by hand to " << verboseLevel << G4endl;
+    //G4cout << " Local_DsG4Scintillation set verboseLevel by hand to " << verboseLevel << G4endl;
 
 #ifdef STANDALONE
     {
-        const char* level_ = getenv("DsG4Scintillation_verboseLevel") ;
+        const char* level_ = getenv("Local_DsG4Scintillation_verboseLevel") ;
         const char* fallback = "0" ;  
         int level =  std::atoi(level_ ? level_ : fallback) ;
         SetVerboseLevel(level); 
-        std::cout << "DsG4Scintillation::DsG4Scintillation level " << level << " verboseLevel " << verboseLevel << std::endl ;  
+        std::cout << "Local_DsG4Scintillation::Local_DsG4Scintillation level " << level << " verboseLevel " << verboseLevel << std::endl ;  
     }
 #endif
 
@@ -226,7 +226,7 @@ DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processN
 // Destructors
 ////////////////
 
-DsG4Scintillation::~DsG4Scintillation() 
+Local_DsG4Scintillation::~Local_DsG4Scintillation() 
 {
     if (theFastIntegralTable != NULL) {
         theFastIntegralTable->clearAndDestroy();
@@ -250,20 +250,20 @@ DsG4Scintillation::~DsG4Scintillation()
 // ----------
 //
 G4VParticleChange*
-DsG4Scintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
+Local_DsG4Scintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 // This routine simply calls the equivalent PostStepDoIt since all the
 // necessary information resides in aStep.GetTotalEnergyDeposit()
 
 {
-    return DsG4Scintillation::PostStepDoIt(aTrack, aStep);
+    return Local_DsG4Scintillation::PostStepDoIt(aTrack, aStep);
 }
 
 // PostStepDoIt
 // -------------
 //
 G4VParticleChange*
-DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 // This routine is called for each tracking step of a charged particle
 // in a scintillator. A Poisson/Gauss-distributed number of photons is 
@@ -651,7 +651,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         CGenstep gs ; 
         if(is_opticks_genstep && (m_opticksMode & 1))
         {
-            gs = G4Opticks::Get()->collectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime); 
+            gs = G4Opticks::Get()->collectGenstep_Local_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime); 
         }
 #endif
 
@@ -860,9 +860,6 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4VParticleChange* change = G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep); 
 
-#ifdef STANDALONE
-    U4::GenPhotonSecondaries(&aTrack, change);  
-#endif
 
     if (verboseLevel > 0) {
         G4cout << "\n Exiting from G4Scintillation::DoIt -- NumberOfSecondaries = " 
@@ -875,7 +872,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_G4OPTICKS
-G4MaterialPropertyVector* DsG4Scintillation::getMaterialProperty(const char* name, G4int materialIndex)
+G4MaterialPropertyVector* Local_DsG4Scintillation::getMaterialProperty(const char* name, G4int materialIndex)
 {
     const G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
     G4int numOfMaterials = G4Material::GetNumberOfMaterials();
@@ -887,7 +884,7 @@ G4MaterialPropertyVector* DsG4Scintillation::getMaterialProperty(const char* nam
     return prop ; 
 }
 
-G4PhysicsOrderedFreeVector* DsG4Scintillation::getScintillationIntegral(G4int scnt, G4int materialIndex) const
+G4PhysicsOrderedFreeVector* Local_DsG4Scintillation::getScintillationIntegral(G4int scnt, G4int materialIndex) const
 {
     G4PhysicsOrderedFreeVector* ScintillationIntegral = NULL;
 
@@ -904,7 +901,7 @@ G4PhysicsOrderedFreeVector* DsG4Scintillation::getScintillationIntegral(G4int sc
 }
 
 
-G4double DsG4Scintillation::getSampledEnergy(G4int scnt, G4int materialIndex) const 
+G4double Local_DsG4Scintillation::getSampledEnergy(G4int scnt, G4int materialIndex) const 
 {
     G4PhysicsOrderedFreeVector* ScintillationIntegral = getScintillationIntegral(scnt, materialIndex); 
     G4double CIIvalue = G4UniformRand()*ScintillationIntegral->GetMaxValue();
@@ -912,7 +909,7 @@ G4double DsG4Scintillation::getSampledEnergy(G4int scnt, G4int materialIndex) co
     return sampledEnergy ; 
 }
 
-G4double DsG4Scintillation::getSampledWavelength(G4int scnt, G4int materialIndex) const
+G4double Local_DsG4Scintillation::getSampledWavelength(G4int scnt, G4int materialIndex) const
 {
     G4double sampledEnergy = getSampledEnergy(scnt, materialIndex ); 
     G4double wavelength = h_Planck*c_light/sampledEnergy ; 
@@ -926,7 +923,7 @@ G4double DsG4Scintillation::getSampledWavelength(G4int scnt, G4int materialIndex
 // --------------------------------------------------
 //
 
-void DsG4Scintillation::BuildThePhysicsTable()
+void Local_DsG4Scintillation::BuildThePhysicsTable()
 {
     if (theFastIntegralTable && theSlowIntegralTable && theReemissionIntegralTable) return;
 
@@ -1166,7 +1163,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 // ---------------
 //
 
-G4double DsG4Scintillation::GetMeanFreePath(const G4Track&,
+G4double Local_DsG4Scintillation::GetMeanFreePath(const G4Track&,
                                             G4double ,
                                             G4ForceCondition* condition)
 {
@@ -1180,7 +1177,7 @@ G4double DsG4Scintillation::GetMeanFreePath(const G4Track&,
 // ---------------
 //
 
-G4double DsG4Scintillation::GetMeanLifeTime(const G4Track&,
+G4double Local_DsG4Scintillation::GetMeanLifeTime(const G4Track&,
                                             G4ForceCondition* condition)
 {
     *condition = Forced;
@@ -1190,12 +1187,12 @@ G4double DsG4Scintillation::GetMeanLifeTime(const G4Track&,
 }
 
 // OP simulator
-G4PhysicsTable* DsG4Scintillation::getSlowIntegralTable() {
+G4PhysicsTable* Local_DsG4Scintillation::getSlowIntegralTable() {
     return theSlowIntegralTable;
 }
-G4PhysicsTable* DsG4Scintillation::getFastIntegralTable() {
+G4PhysicsTable* Local_DsG4Scintillation::getFastIntegralTable() {
     return theFastIntegralTable;
 }
-G4PhysicsTable* DsG4Scintillation::getReemissionIntegralTable() {
+G4PhysicsTable* Local_DsG4Scintillation::getReemissionIntegralTable() {
     return theReemissionIntegralTable;
 }

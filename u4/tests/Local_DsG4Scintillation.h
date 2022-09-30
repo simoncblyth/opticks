@@ -58,7 +58,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------
-// DsG4Scintillation
+// Local_DsG4Scintillation
 // 
 // A class modified from G4Scintillation.
 // Birks' law is used to calculate the scintillation photon number 
@@ -66,8 +66,8 @@
 // Modified: bv@bnl.gov, 2008/4/16 for DetSim
 //--------------------------------------------------------------
 
-#ifndef DsG4Scintillation_h
-#define DsG4Scintillation_h 1
+#ifndef Local_DsG4Scintillation_h
+#define Local_DsG4Scintillation_h 1
 
 
 #ifdef WITH_G4OPTICKS
@@ -108,7 +108,7 @@ class G4UIdirectory;
 // Class Definition
 /////////////////////
 
-class DsG4Scintillation : public G4VRestDiscreteProcess, public G4UImessenger
+class Local_DsG4Scintillation : public G4VRestDiscreteProcess, public G4UImessenger
 { //too lazy to create another UImessenger class
 
 private:
@@ -128,7 +128,7 @@ public:
         // Operators
         //////////////
 
-	// DsG4Scintillation& operator=(const DsG4Scintillation &right);
+	// Local_DsG4Scintillation& operator=(const Local_DsG4Scintillation &right);
 
 public: // Without description
 
@@ -136,12 +136,12 @@ public: // Without description
 	// Constructors and Destructor
 	////////////////////////////////
 
-	DsG4Scintillation(G4int opticksMode = 0, const G4String& processName = "Scintillation",
+	Local_DsG4Scintillation(G4int opticksMode = 0, const G4String& processName = "Scintillation",
                           G4ProcessType type = fElectromagnetic);
 
-	// DsG4Scintillation(const DsG4Scintillation &right);
+	// Local_DsG4Scintillation(const Local_DsG4Scintillation &right);
 
-	~DsG4Scintillation();	
+	~Local_DsG4Scintillation();	
 
         ////////////
         // Methods
@@ -149,7 +149,7 @@ public: // Without description
 
 public: // With description
 
-        // DsG4Scintillation Process has both PostStepDoIt (for energy 
+        // Local_DsG4Scintillation Process has both PostStepDoIt (for energy 
         // deposition of particles in flight) and AtRestDoIt (for energy
         // given to the medium by particles at rest)
 
@@ -367,7 +367,7 @@ private:
 
 
 inline 
-G4bool DsG4Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
+G4bool Local_DsG4Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
         if (aParticleType.GetParticleName() == "opticalphoton"){
            return true;
@@ -380,38 +380,38 @@ G4bool DsG4Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType
 }
 
 inline 
-void DsG4Scintillation::SetTrackSecondariesFirst(const G4bool state) 
+void Local_DsG4Scintillation::SetTrackSecondariesFirst(const G4bool state) 
 { 
 	fTrackSecondariesFirst = state;
 }
 
 inline
-G4bool DsG4Scintillation::GetTrackSecondariesFirst() const
+G4bool Local_DsG4Scintillation::GetTrackSecondariesFirst() const
 {
         return fTrackSecondariesFirst;
 }
 
 inline
-void DsG4Scintillation::SetScintillationYieldFactor(const G4double yieldfactor)
+void Local_DsG4Scintillation::SetScintillationYieldFactor(const G4double yieldfactor)
 {
         YieldFactor = yieldfactor;
 }
 
 
 inline
-G4double DsG4Scintillation::GetScintillationYieldFactor() const
+G4double Local_DsG4Scintillation::GetScintillationYieldFactor() const
 {
         return YieldFactor;
 }
 
 inline 
-void DsG4Scintillation::SetUseFastMu300nsTrick(const G4bool fastMu300nsTrick)
+void Local_DsG4Scintillation::SetUseFastMu300nsTrick(const G4bool fastMu300nsTrick)
 {
         FastMu300nsTrick = fastMu300nsTrick;
 }
 
 inline 
-G4bool DsG4Scintillation::GetUseFastMu300nsTrick() const
+G4bool Local_DsG4Scintillation::GetUseFastMu300nsTrick() const
 {
       return  FastMu300nsTrick;
 }
@@ -420,37 +420,37 @@ G4bool DsG4Scintillation::GetUseFastMu300nsTrick() const
 
 
 inline
-void DsG4Scintillation::SetScintillationExcitationRatio(const G4double excitationratio)
+void Local_DsG4Scintillation::SetScintillationExcitationRatio(const G4double excitationratio)
 {
         ExcitationRatio = excitationratio;
 }
 
 inline
-G4double DsG4Scintillation::GetScintillationExcitationRatio() const
+G4double Local_DsG4Scintillation::GetScintillationExcitationRatio() const
 {
         return ExcitationRatio;
 }
 
 inline
-G4PhysicsTable* DsG4Scintillation::GetSlowIntegralTable() const
+G4PhysicsTable* Local_DsG4Scintillation::GetSlowIntegralTable() const
 {
         return theSlowIntegralTable;
 }
 
 inline
-G4PhysicsTable* DsG4Scintillation::GetFastIntegralTable() const
+G4PhysicsTable* Local_DsG4Scintillation::GetFastIntegralTable() const
 {
         return theFastIntegralTable;
 }
 
 inline
-G4PhysicsTable* DsG4Scintillation::GetReemissionIntegralTable() const
+G4PhysicsTable* Local_DsG4Scintillation::GetReemissionIntegralTable() const
 {
  	return theReemissionIntegralTable;
 }
 
 inline
-void DsG4Scintillation::DumpPhysicsTable() const
+void Local_DsG4Scintillation::DumpPhysicsTable() const
 {
         if (theFastIntegralTable) {
            G4int PhysicsTableSize = theFastIntegralTable->entries();
@@ -486,4 +486,4 @@ void DsG4Scintillation::DumpPhysicsTable() const
          }
 }
 
-#endif /* DsG4Scintillation_h */
+#endif /* Local_DsG4Scintillation_h */

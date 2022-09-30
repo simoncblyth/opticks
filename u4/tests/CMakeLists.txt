@@ -64,10 +64,10 @@ functions
 
 set(U4RecorderTest_SOURCES
    U4RecorderTest.cc
-   DsG4Scintillation.cc
    ShimG4OpAbsorption.cc
    ShimG4OpRayleigh.cc
-   G4Cerenkov_modified.cc
+   Local_G4Cerenkov_modified.cc
+   Local_DsG4Scintillation.cc
    U4Physics.cc
 )
 
