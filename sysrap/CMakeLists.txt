@@ -30,11 +30,11 @@ include_directories(
 )
 
 
-set(WITH_PLOG YES)
+set(WITH_SLOG YES)
 
 set(SOURCES
     SYSRAP_LOG.cc 
-    PLOG.cc 
+    SLOG.cc 
     SProc.cc
     SSys.cc
     SStr.cc
@@ -124,8 +124,8 @@ set(HEADERS
     SYSRAP_API_EXPORT.hh
     SYSRAP_HEAD.hh
     SYSRAP_TAIL.hh
-    PLOG.hh
-    PLOG_INIT.hh  
+    SLOG.hh
+    SLOG_INIT.hh  
 
     SProc.hh
     SBacktrace.h
@@ -459,8 +459,8 @@ target_compile_definitions( ${name} PRIVATE DEBUG_TAG )
 if(WITH_STTF)
 target_compile_definitions( ${name} PUBLIC WITH_STTF)
 endif()
-if(WITH_PLOG)
-target_compile_definitions( ${name} PUBLIC WITH_PLOG)
+if(WITH_SLOG)
+target_compile_definitions( ${name} PUBLIC WITH_SLOG)
 endif()
 
 

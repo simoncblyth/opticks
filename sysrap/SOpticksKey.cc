@@ -31,9 +31,9 @@
 #include "SPath.hh"
 #include "SOpticksKey.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SOpticksKey::LEVEL = PLOG::EnvLevel("SOpticksKey", "DEBUG") ; 
+const plog::Severity SOpticksKey::LEVEL = SLOG::EnvLevel("SOpticksKey", "DEBUG") ; 
 
 SOpticksKey* SOpticksKey::fKey = NULL ; 
 

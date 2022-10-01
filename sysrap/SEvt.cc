@@ -14,7 +14,7 @@
 #include "stran.h"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
 #include "NP.hh"
@@ -32,7 +32,7 @@
 #include "SComp.h"
 //#include "SCF.h"
 
-const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
+const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 

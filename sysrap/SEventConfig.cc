@@ -12,9 +12,9 @@
 #include "OpticksPhoton.hh"
 #include "salloc.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SEventConfig::LEVEL = PLOG::EnvLevel("SEventConfig", "DEBUG") ; 
+const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ; 
 
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 int SEventConfig::_MaxGenstepDefault = 1000*K ; 

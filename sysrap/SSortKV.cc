@@ -19,7 +19,7 @@
 
 
 #include "SSortKV.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 void SSortKV::dump(const char* msg) const 
 {

@@ -1,9 +1,9 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "SThetaCut.hh"
 
-const plog::Severity SThetaCut::LEVEL = PLOG::EnvLevel("SThetaCut", "DEBUG" ); 
+const plog::Severity SThetaCut::LEVEL = SLOG::EnvLevel("SThetaCut", "DEBUG" ); 
 
 /**
 SThetaCut::PrepareParam 

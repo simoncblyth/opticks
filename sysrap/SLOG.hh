@@ -37,7 +37,7 @@ using plog::verbose ;
 
 /**
 
-PLOG : Logging Infrastructure 
+SLOG : Logging Infrastructure 
 --------------------------------
 
 new approach to initialization
@@ -52,7 +52,7 @@ Opticks executables follow the following pattern.
 
    int main(int argc, char** argv)
    {
-       OPTICKS_LOG(argc, argv);  // pass arguments to PLOG_ macro
+       OPTICKS_LOG(argc, argv);  // pass arguments to SLOG_ macro
 
        Opticks ok(argc, argv);
 
@@ -64,21 +64,21 @@ Opticks executables follow the following pattern.
 
 OPTICKS_LOG is a macro from OPTICKS_LOG.hh that must be placed in the main program::
 
-    #define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
+    #define OPTICKS_LOG(argc, argv) {      SLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); } 
 
-The PLOG_COLOR macro from PLOG_INIT.hh creates two static appenders in the main compilation unit::
+The SLOG_COLOR macro from SLOG_INIT.hh creates two static appenders in the main compilation unit::
 
-    #define PLOG_COLOR(argc, argv) \
+    #define SLOG_COLOR(argc, argv) \
     { \
-        PLOG* _plog = new PLOG(argc, argv); \
+        SLOG* _plog = new SLOG(argc, argv); \
         static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
         static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
-        PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
+        SLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
     } \
 
-The PLOG_INIT macro also from PLOG_INIT.hh applies plog::init to the main consoleAppender and adds the fileAppender:: 
+The SLOG_INIT macro also from SLOG_INIT.hh applies plog::init to the main consoleAppender and adds the fileAppender:: 
 
-    #define PLOG_INIT(level, app1, app2 ) \
+    #define SLOG_INIT(level, app1, app2 ) \
     { \
         plog::IAppender* appender1 = static_cast<plog::IAppender*>(app1) ; \
         plog::IAppender* appender2 = static_cast<plog::IAppender*>(app2) ; \
@@ -111,7 +111,7 @@ Extracts from OPTICKS_LOG.hh showing the OPTICKS_LOG_::Initialize::
     class SYSRAP_API OPTICKS_LOG_ {
        public:
            // initialize all linked loggers and hookup the main logger
-           static void Initialize(PLOG* instance, void* app1, void* app2 )
+           static void Initialize(SLOG* instance, void* app1, void* app2 )
            {
                int max_level = instance->parse("info") ;
                // note : can decrease verbosity from the max_level in the subproj, but not increase
@@ -131,7 +131,7 @@ From SYSRAP_LOG.cc::
 
     void SYSRAP_LOG::Initialize(int level, void* app1, void* app2 )
     {
-        PLOG_INIT(level, app1, app2);
+        SLOG_INIT(level, app1, app2);
     }
 
 
@@ -164,7 +164,7 @@ For details see notes/issues/plog-appender-not-equal-this-assert.rst
 
 
 
-*PLOG* parses command line arguments and configures the 
+*SLOG* parses command line arguments and configures the 
 logging level of each project, for example:
 
 .. code-block:: sh
@@ -226,11 +226,11 @@ have yet to be updated.
    #include "NPY_LOG.hh"
    #include "OKCORE_LOG.hh"
 
-   #include "PLOG.hh"        // infrastructure header
+   #include "SLOG.hh"        // infrastructure header
 
    int main(int argc, char** argv)
    {
-       PLOG_(argc, argv);  // pass arguments to PLOG_ macro
+       SLOG_(argc, argv);  // pass arguments to SLOG_ macro
 
        SYSRAP_LOG__ ;     // setup loggers for all projects you want to see output from
        BRAP_LOG__ ; 
@@ -248,7 +248,7 @@ have yet to be updated.
 
 **/
 
-struct PLOG ; 
+struct SLOG ; 
 
 
 
@@ -276,7 +276,7 @@ Delta
 #include "SAr.hh"
 struct STTF ; 
 
-struct SYSRAP_API PLOG 
+struct SYSRAP_API SLOG 
 {
     static const int MAXARGC ; 
 
@@ -291,8 +291,8 @@ struct SYSRAP_API PLOG
     static plog::Severity Delta(plog::Severity level_, int delta); 
     static plog::Severity EnvLevel( const char* key, const char* fallback); 
 
-    PLOG(const char* name, const char* fallback="VERBOSE", const char* prefix=NULL );
-    PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
+    SLOG(const char* name, const char* fallback="VERBOSE", const char* prefix=NULL );
+    SLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
     void init(const char* fallback, const char* prefix); 
 
     const char* name(); 
@@ -318,11 +318,11 @@ struct SYSRAP_API PLOG
     static const char* _logpath();
 
 
-    static PLOG* instance ; 
+    static SLOG* instance ; 
 };
 
-#define pLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE, PLOG::Delta(severity,delta))
+#define sLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE, SLOG::Delta(severity,delta))
 
-#include "PLOG_INIT.hh"
+#include "SLOG_INIT.hh"
 
 

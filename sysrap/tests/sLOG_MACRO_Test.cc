@@ -18,7 +18,7 @@
  */
 
 #include <cassert>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SArgs.hh"
 
 #include "SYSRAP_LOG.hh"
@@ -26,25 +26,25 @@
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    SLOG_(argc, argv);
     SYSRAP_LOG__ ; 
 
     plog::Severity level = info ; 
 
-    pLOG(level, -3) << "-3" ; 
-    pLOG(level, -2) << "-2" ; 
-    pLOG(level, -1) << "-1" ; 
-    pLOG(level, 0) << "0" ; 
-    pLOG(level, 1) << "1" ; 
-    pLOG(level, 2) << "2" ; 
-    pLOG(level, 3) << "3" ; 
+    sLOG(level, -3) << "-3" ; 
+    sLOG(level, -2) << "-2" ; 
+    sLOG(level, -1) << "-1" ; 
+    sLOG(level, 0) << "0" ; 
+    sLOG(level, 1) << "1" ; 
+    sLOG(level, 2) << "2" ; 
+    sLOG(level, 3) << "3" ; 
 
 
 
     std::cout << R"(
 
 
-    Use pLOG(level, delta) to adjust logging level 
+    Use sLOG(level, delta) to adjust logging level 
     required for the output of the message relative to a base level. 
     Note the inversion as are changing the level to get an output:
 
@@ -58,9 +58,9 @@ int main(int argc, char** argv)
 
        plog::Severity m_level = info ;  //  typically class member with base severity 
 
-       pLOG(m_level, -1) << "Decrease needed log level below base : so will appear more " ;  
-       pLOG(m_level,  0) << "Leave loglevel asis, same as LOG(m_level) << ... " ;  
-       pLOG(m_level, +1) << "Increase needed log level above base : so will appear less " ;  
+       sLOG(m_level, -1) << "Decrease needed log level below base : so will appear more " ;  
+       sLOG(m_level,  0) << "Leave loglevel asis, same as LOG(m_level) << ... " ;  
+       sLOG(m_level, +1) << "Increase needed log level above base : so will appear less " ;  
 
 
     This avoids manual adjustment of lots of output levels, whilst debugging a class 

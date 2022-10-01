@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SArgs.hh"
 
 
-const plog::Severity SArgs::LEVEL = PLOG::EnvLevel("SArgs", "DEBUG" ); 
+const plog::Severity SArgs::LEVEL = SLOG::EnvLevel("SArgs", "DEBUG" ); 
 
 void SArgs::add(int argc_, char** argv_)
 {

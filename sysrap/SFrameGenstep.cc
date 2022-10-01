@@ -7,7 +7,7 @@
 #include "sc4u.h"
 #include "ssincos.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SRng.hh"
 #include "SGenstep.hh"
@@ -16,7 +16,7 @@
 #include "NP.hh"
 
 
-const plog::Severity SFrameGenstep::LEVEL = PLOG::EnvLevel("SFrameGenstep", "DEBUG" ); 
+const plog::Severity SFrameGenstep::LEVEL = SLOG::EnvLevel("SFrameGenstep", "DEBUG" ); 
 
 /**
 SFrameGenstep::CE_OFFSET

@@ -4,9 +4,9 @@
 #include "SProc.hh"
 #include "SGeo.hh"
 #include "SEventConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SGeo::LEVEL = PLOG::EnvLevel("SGeo", "DEBUG"); 
+const plog::Severity SGeo::LEVEL = SLOG::EnvLevel("SGeo", "DEBUG"); 
 
 const char* SGeo::LAST_UPLOAD_CFBASE = nullptr ;
 

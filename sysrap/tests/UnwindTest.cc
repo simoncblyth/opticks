@@ -19,7 +19,7 @@
 
 // https://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
@@ -62,7 +62,7 @@ void bar() {
 
 int main(int argc, char **argv) 
 {
-    PLOG_(argc, argv );
+    OPTICKS_LOG(argc, argv );
 
     bar();
 

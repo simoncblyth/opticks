@@ -20,7 +20,7 @@
 #include <cstring>
 
 #include "SLogger.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 SLogger::SLogger(const char* label, const char* extra, plog::Severity level) 
    :
@@ -28,7 +28,7 @@ SLogger::SLogger(const char* label, const char* extra, plog::Severity level)
    m_extra(strdup(extra)),
    m_level(level)
 {
-    pLOG(m_level,0) 
+    sLOG(m_level,0) 
         << " ( "
         << m_label 
         << " " 
@@ -39,12 +39,12 @@ SLogger::SLogger(const char* label, const char* extra, plog::Severity level)
 
 const char* SLogger::exename() // static
 {
-    return PLOG::instance->args.exename() ; 
+    return SLOG::instance->args.exename() ; 
 }
 
 void SLogger::operator()(const char* msg)
 {
-    pLOG(m_level,0) 
+    sLOG(m_level,0) 
         << " ) "
         << m_label 
         << " " 

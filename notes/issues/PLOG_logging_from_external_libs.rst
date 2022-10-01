@@ -32,6 +32,19 @@ DONE
 3. checked in examples/UsePlogStandalone
 
 
+Renaming PLOG to SLOG
+------------------------
+
+::
+
+    perl -pi -e 's/PLOG::EnvLevel/SLOG::EnvLevel/g' *.cc
+    perl -pi -e 's/PLOG.hh/SLOG.hh/' *.cc
+    perl -pi -e 's/PLOG::instance/SLOG::instance/g' *.cc 
+
+
+    perl -pi -e "s/PLOG_/OPTICKS_LOG/" *.cc
+
+
 TRY THE LATEST plog
 ----------------------
 

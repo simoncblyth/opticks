@@ -28,9 +28,9 @@
 #include "SAbbrev.hh"
 #include "SDice.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SAbbrev::LEVEL = PLOG::EnvLevel("SAbbrev", "DEBUG") ;
+const plog::Severity SAbbrev::LEVEL = SLOG::EnvLevel("SAbbrev", "DEBUG") ;
 
 SAbbrev* SAbbrev::FromString(const char* str) // static
 {

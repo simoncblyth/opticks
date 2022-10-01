@@ -1,10 +1,10 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "SMath.hh"
 #include "SPhiCut.hh"
 
-const plog::Severity SPhiCut::LEVEL = PLOG::EnvLevel("SPhiCut", "DEBUG" ); 
+const plog::Severity SPhiCut::LEVEL = SLOG::EnvLevel("SPhiCut", "DEBUG" ); 
 
 /**
 SPhiCut::PrepareParam 

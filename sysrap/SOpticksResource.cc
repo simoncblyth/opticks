@@ -8,12 +8,12 @@
 #include "SProc.hh"
 #include "SOpticksResource.hh"
 #include "SOpticksKey.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NP.hh"
 
 
-const plog::Severity SOpticksResource::LEVEL = PLOG::EnvLevel("SOpticksResource", "DEBUG"); 
+const plog::Severity SOpticksResource::LEVEL = SLOG::EnvLevel("SOpticksResource", "DEBUG"); 
 
 const char* SOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
 const char* SOpticksResource::RNGCACHE_PREFIX_KEY = "OPTICKS_RNGCACHE_PREFIX" ; 

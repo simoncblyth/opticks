@@ -36,7 +36,7 @@
 
 #include "SSys.hh"
 #include "SStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 #include "scuda.h"
@@ -53,7 +53,7 @@ extern char **environ;
 
 
 
-const plog::Severity SSys::LEVEL = PLOG::EnvLevel("SSys", "DEBUG")  ; 
+const plog::Severity SSys::LEVEL = SLOG::EnvLevel("SSys", "DEBUG")  ; 
 
 
 #ifdef __APPLE__

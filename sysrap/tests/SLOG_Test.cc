@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SArgs.hh"
 
 
@@ -77,16 +77,16 @@ void test_arguments(const char* exe)
 
         SArgs* a = new SArgs(exe, t.c_str()) ;
 
-        if(PLOG::instance != NULL) PLOG::instance = NULL ; 
+        if(SLOG::instance != NULL) SLOG::instance = NULL ; 
 
-        PLOG* pl = j == 0 ?
-                             new PLOG(a->argc, a->argv, fallback ) 
+        SLOG* pl = j == 0 ?
+                             new SLOG(a->argc, a->argv, fallback ) 
                           :
-                             new PLOG(a->argc, a->argv, fallback, prefix )
+                             new SLOG(a->argc, a->argv, fallback, prefix )
                           ; 
 
         std::stringstream ss ; 
-        ss << "PLOG(..," << fallback ; 
+        ss << "SLOG(..," << fallback ; 
         if(j==1) ss << "," << prefix ;
         ss << ")" ;
 

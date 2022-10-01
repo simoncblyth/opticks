@@ -4,9 +4,9 @@
 
 #include "SMeta.hh"
 #include "SPath.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SMeta::LEVEL = PLOG::EnvLevel("SMeta", "DEBUG"); 
+const plog::Severity SMeta::LEVEL = SLOG::EnvLevel("SMeta", "DEBUG"); 
 
 
 

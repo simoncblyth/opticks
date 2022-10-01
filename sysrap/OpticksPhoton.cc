@@ -10,8 +10,8 @@
 #include "SStr.hh"
 
 #ifdef WITH_PLOG
-#include "PLOG.hh"
-const plog::Severity OpticksPhoton::LEVEL = PLOG::EnvLevel("OpticksPhoton", "DEBUG"); 
+#include "SLOG.hh"
+const plog::Severity OpticksPhoton::LEVEL = SLOG::EnvLevel("OpticksPhoton", "DEBUG"); 
 #endif
 const char* OpticksPhoton::flag2color = R"LITERAL(
     {

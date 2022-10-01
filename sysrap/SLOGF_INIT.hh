@@ -18,10 +18,10 @@
  */
 
 /**
-PLOGF_INIT
+SLOGF_INIT
 =============
 
-Color PLOG logging macros.
+Color SLOG logging macros.
 
 **/
 
@@ -30,16 +30,16 @@ Color PLOG logging macros.
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Appenders/ConsoleAppender.h>
 
-#define PLOGF_(argc, argv) \
+#define SLOGF_(argc, argv) \
 { \
-    PLOG _plog(argc, argv) \
+    SLOG _plog(argc, argv) \
     static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog.filename, _plog.maxFileSize, _plog.maxFiles ); \
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
     plog::Severity severity = static_cast<plog::Severity>(_plog.level) ; \
     plog::init( severity , &fileAppender ).addAppender(&consoleAppender) ; \
 }
 
-#define PLOGF_CHECK(msg) \
+#define SLOGF_CHECK(msg) \
 { \
     LOG(fatal) << msg  ; \
     LOG(error) << msg  ; \

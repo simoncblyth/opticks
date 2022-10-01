@@ -24,18 +24,18 @@
 #include <string>
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SProc.hh"
 
 #define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
 
-PLOG* PLOG::instance = NULL ; 
+SLOG* SLOG::instance = NULL ; 
 
-const int PLOG::MAXARGC = 100 ;  
+const int SLOG::MAXARGC = 100 ;  
 
-//#define PLOG_DBG 1
+//#define SLOG_DBG 1
 
 /**
 
@@ -51,7 +51,7 @@ plog enum levels
 
 **/
 
-plog::Severity PLOG::Delta(plog::Severity level_, int delta)
+plog::Severity SLOG::Delta(plog::Severity level_, int delta)
 {
     int level = (int)level_ + delta ; 
     if(level < (int)fatal)   level = (int)fatal ; 
@@ -60,19 +60,19 @@ plog::Severity PLOG::Delta(plog::Severity level_, int delta)
 }
 
 /**
-PLOG::EnvLevel
+SLOG::EnvLevel
 ----------------
 
 Used to make static logging LEVEL initializers sensitive to envvars
 holding logging level strings::
 
-    const plog::Severity ClassName::LEVEL = PLOG::EnvLevel("ClassName", "DEBUG") ;  
+    const plog::Severity ClassName::LEVEL = SLOG::EnvLevel("ClassName", "DEBUG") ;  
 
 Static initializers run very early, prior to logging being setup.
 
 **/
 
-plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
+plog::Severity SLOG::EnvLevel( const char* key, const char* fallback)
 {
     const char* level = SSys::getenvvar(key, fallback);  
     plog::Severity severity = plog::severityFromString(level) ;
@@ -80,7 +80,7 @@ plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
     if(strcmp(level, fallback) != 0)
     {
         std::cerr 
-            << "PLOG::EnvLevel"
+            << "SLOG::EnvLevel"
             << " adjusting loglevel by envvar  "
             << " key " << key  
             << " level " << level
@@ -94,7 +94,7 @@ plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
 
 
 
-void PLOG::_dump(const char* msg, int argc, char** argv)
+void SLOG::_dump(const char* msg, int argc, char** argv)
 {
     std::cerr <<  msg
               << " argc " << argc ;
@@ -103,7 +103,7 @@ void PLOG::_dump(const char* msg, int argc, char** argv)
     std::cerr << std::endl ;               
 }
 
-int PLOG::_parse(int argc, char** argv, const char* fallback)
+int SLOG::_parse(int argc, char** argv, const char* fallback)
 {
     // Parse arguments case insensitively looking for --VERBOSE --info --error etc.. returning global logging level
 
@@ -130,14 +130,14 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 
     int level = static_cast<int>(severity); 
 
-    //_dump("PLOG::parse", argc, argv );
+    //_dump("SLOG::parse", argc, argv );
 
     return level ;  
 }
 
 
 /**
-PLOG::_logpath_parse_problematic
+SLOG::_logpath_parse_problematic
 --------------------------------------
 
 Constructs logfile path based on executable name argv[0] with .log appended 
@@ -152,7 +152,7 @@ are installed which presents a permission problems with shared installs.
 
 **/
 
-const char* PLOG::_logpath_parse_problematic(int argc, char** argv)
+const char* SLOG::_logpath_parse_problematic(int argc, char** argv)
 {
     assert( argc < MAXARGC && " argc sanity check fail "); 
     std::string lp(argc > 0 ? argv[0] : "default") ; 
@@ -162,14 +162,14 @@ const char* PLOG::_logpath_parse_problematic(int argc, char** argv)
 
 
 /**
-PLOG::_logpath()
+SLOG::_logpath()
 ------------------
 
 This uses just the executable name with .log appended 
 
 **/
 
-const char* PLOG::_logpath()
+const char* SLOG::_logpath()
 {
     const char* exename = SProc::ExecutableName() ; 
     std::string lp(exename) ; 
@@ -181,7 +181,7 @@ const char* PLOG::_logpath()
 
 
 /**
-PLOG::_prefixlevel_parse
+SLOG::_prefixlevel_parse
 ---------------------------
 
 Example commandline::
@@ -200,7 +200,7 @@ Both prefix and the arguments are lowercased before comparison.
 
 **/
 
-int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const char* prefix)
+int SLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const char* prefix)
 {
 
     assert( argc < MAXARGC && " argc sanity check fail "); 
@@ -229,7 +229,7 @@ int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const 
     plog::Severity severity = strcmp(llc, "TRACE")==0 ? plog::severityFromString("VERB") : plog::severityFromString(llc) ;
     int level = static_cast<int>(severity); 
 
-    //_dump("PLOG::prefix_parse", argc, argv );
+    //_dump("SLOG::prefix_parse", argc, argv );
 
     return level ; 
 }
@@ -237,17 +237,17 @@ int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const 
 
 
 
-int PLOG::parse(plog::Severity _fallback)
+int SLOG::parse(plog::Severity _fallback)
 {
     const char* fallback = _name(_fallback);
     return parse(fallback);
 }
-int PLOG::parse(const char* fallback)
+int SLOG::parse(const char* fallback)
 {
     int ll = _parse(args._argc, args._argv, fallback);
 
-#ifdef PLOG_DBG
-    std::cerr << "PLOG::parse"
+#ifdef SLOG_DBG
+    std::cerr << "SLOG::parse"
               << " fallback " << fallback
               << " level " << ll 
               << " name " << _name(ll)
@@ -258,13 +258,13 @@ int PLOG::parse(const char* fallback)
 }
 
 
-int PLOG::prefixlevel_parse(int _fallback, const char* prefix)
+int SLOG::prefixlevel_parse(int _fallback, const char* prefix)
 {
     plog::Severity fallback = static_cast<plog::Severity>(_fallback); 
     return prefixlevel_parse(fallback, prefix) ; 
 }
 
-int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
+int SLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 {
     const char* fallback = _name(_fallback);
     return prefixlevel_parse(fallback, prefix) ; 
@@ -274,7 +274,7 @@ int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 
 
 /**
-PLOG::prefixlevel_parse
+SLOG::prefixlevel_parse
 -------------------------
 
 This provides loglevel control at the granularity of a library 
@@ -289,12 +289,12 @@ has proved very useful.
 **/
 
 
-int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
+int SLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
     int ll =  _prefixlevel_parse(args._argc, args._argv, fallback, prefix);
 
-#ifdef PLOG_DBG
-    std::cerr << "PLOG::prefixlevel_parse"
+#ifdef SLOG_DBG
+    std::cerr << "SLOG::prefixlevel_parse"
               << " fallback " << fallback
               << " prefix " << prefix 
               << " level " << ll 
@@ -307,41 +307,41 @@ int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 
 
 
-const char* PLOG::_name(int level)
+const char* SLOG::_name(int level)
 {
    plog::Severity severity  = static_cast<plog::Severity>(level); 
    return plog::severityToString(severity);
 }
-const char* PLOG::_name(plog::Severity severity)
+const char* SLOG::_name(plog::Severity severity)
 {
    return plog::severityToString(severity);
 }
 
-const char* PLOG::name()
+const char* SLOG::name()
 {
    plog::Severity severity  = static_cast<plog::Severity>(level); 
    return _name(severity);
 }
 
-const char* PLOG::exename() const 
+const char* SLOG::exename() const 
 {
     return args.exename(); 
 }
-const char* PLOG::cmdline() const 
+const char* SLOG::cmdline() const 
 {
     return args.cmdline(); 
 }
 
 
-const char* PLOG::get_arg_after(const char* option, const char* fallback) const 
+const char* SLOG::get_arg_after(const char* option, const char* fallback) const 
 {
     return args.get_arg_after(option, fallback); 
 }
-int PLOG::get_int_after(const char* option, const char* fallback) const 
+int SLOG::get_int_after(const char* option, const char* fallback) const 
 {
     return args.get_int_after(option, fallback); 
 }
-bool PLOG::has_arg(const char* arg) const 
+bool SLOG::has_arg(const char* arg) const 
 {
     return args.has_arg(arg); 
 }
@@ -351,7 +351,7 @@ bool PLOG::has_arg(const char* arg) const
 
 
 
-PLOG::PLOG(const char* name, const char* fallback, const char* prefix)
+SLOG::SLOG(const char* name, const char* fallback, const char* prefix)
     :
     args(name, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
     ttf(new STTF),
@@ -363,7 +363,7 @@ PLOG::PLOG(const char* name, const char* fallback, const char* prefix)
     init(fallback, prefix); 
 }
 
-PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
+SLOG::SLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
     args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
     ttf(new STTF),
@@ -376,10 +376,10 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
 }
 
 
-void PLOG::init(const char* fallback, const char* prefix)
+void SLOG::init(const char* fallback, const char* prefix)
 {
     level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
-    assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
+    assert( instance == NULL && "ONLY EXPECTING A SINGLE SLOG INSTANCE" );
     instance = this ; 
 }
 

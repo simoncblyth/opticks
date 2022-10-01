@@ -21,12 +21,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SStr.hh"
 #include "SColor.hh"
 #include "SPPM.hh"
 
-const plog::Severity SPPM::LEVEL = PLOG::EnvLevel("SPPM", "DEBUG")  ; 
+const plog::Severity SPPM::LEVEL = SLOG::EnvLevel("SPPM", "DEBUG")  ; 
 
 SPPM::SPPM()
     :   

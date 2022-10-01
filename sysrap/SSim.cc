@@ -6,7 +6,7 @@
 #include "sdigest.h"
 #include "stree.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SOpticksResource.hh"
@@ -16,7 +16,7 @@
 #include "SBnd.h"
 
 
-const plog::Severity SSim::LEVEL = PLOG::EnvLevel("SSim", "DEBUG"); 
+const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
 SSim* SSim::INSTANCE = nullptr ; 
 const unsigned SSim::MISSING = ~0u ; 
 

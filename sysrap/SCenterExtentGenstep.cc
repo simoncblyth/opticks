@@ -12,9 +12,9 @@
 
 #include "NP.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SCenterExtentGenstep::LEVEL = PLOG::EnvLevel("SCenterExtentGenstep", "DEBUG" ); 
+const plog::Severity SCenterExtentGenstep::LEVEL = SLOG::EnvLevel("SCenterExtentGenstep", "DEBUG" ); 
 
 const char* SCenterExtentGenstep::BASE = "$TMP/SCenterExtentGenstep"  ; 
 

@@ -1,10 +1,10 @@
-PLOG review
+SLOG review
 ==============
 
 Overview
 ----------
 
-PLOG provides a thin convenience/configuration layer above the 
+SLOG provides a thin convenience/configuration layer above the 
 underlying plog logging framework. In particular it 
 makes it simple to setup a chained multi-logger system with a
 main logger and loggers for each library with individually

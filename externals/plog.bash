@@ -290,6 +290,15 @@ plog--upstream()
 {
    PLOG_URL=$(plog-url-upstream) plog--
 }
+plog-p2s()
+{
+
+    perl -pi -e 's/PLOG::EnvLevel/SLOG::EnvLevel/g' *.cc *.hh
+    perl -pi -e 's/PLOG.hh/SLOG.hh/'                *.cc *.hh
+    perl -pi -e 's/PLOG::instance/SLOG::instance/g' *.cc *.hh
+}
+
+
 
 plog-pc-scratch-(){ cat << EOS
 #prefix=\${pcfiledir}/../../..

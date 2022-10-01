@@ -32,10 +32,10 @@
 
 #include "SStr.hh"
 #include "SPath.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity SStr::LEVEL = PLOG::EnvLevel("SStr", "DEBUG"); 
+const plog::Severity SStr::LEVEL = SLOG::EnvLevel("SStr", "DEBUG"); 
 
 
 /**

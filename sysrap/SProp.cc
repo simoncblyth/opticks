@@ -1,13 +1,13 @@
 
 #include <vector>
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NP.hh"
 #include "SPath.hh"
 #include "SProp.hh"
 
 
-const plog::Severity SProp::LEVEL = PLOG::EnvLevel("SProp", "DEBUG"); 
+const plog::Severity SProp::LEVEL = SLOG::EnvLevel("SProp", "DEBUG"); 
 
 const char* SProp::DEMO_PATH = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ;
 

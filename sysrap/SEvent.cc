@@ -15,7 +15,7 @@
 
 
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 
@@ -25,7 +25,7 @@
 #include "SGenstep.hh"
 #include "SEvent.hh"
 
-const plog::Severity SEvent::LEVEL = PLOG::EnvLevel("SEvent", "DEBUG") ; 
+const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ; 
 
 
 NP* SEvent::MakeDemoGensteps(const char* config)

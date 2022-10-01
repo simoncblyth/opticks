@@ -21,7 +21,7 @@
 #pragma once
 #include "SYSRAP_API_EXPORT.hh"
 
-#define SYSRAP_LOG__  {       SYSRAP_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
+#define SYSRAP_LOG__  {       SYSRAP_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
 #define SYSRAP_LOG_ {         SYSRAP_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 #define _SYSRAP_LOG( IDX ) {  SYSRAP_LOG::Init<IDX>( info, plog::get<IDX>(), nullptr ) ; }
 

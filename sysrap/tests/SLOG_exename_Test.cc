@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* exename = PLOG::instance->args.exename() ;    
+    const char* exename = SLOG::instance->args.exename() ;    
 
     LOG(info) << " exename " << exename ; 
 

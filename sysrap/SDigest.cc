@@ -27,9 +27,9 @@
 
 #include <iostream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SDigest::LEVEL = PLOG::EnvLevel("SDigest", "DEBUG") ; 
+const plog::Severity SDigest::LEVEL = SLOG::EnvLevel("SDigest", "DEBUG") ; 
 
 
 /**

@@ -155,12 +155,12 @@ What you need to do to get logging to work for a package
 #include "SYSRAP_API_EXPORT.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 class SYSRAP_API OPTICKS_LOG_ {
    public:
        // initialize all linked loggers and hookup the main logger
-       static void Initialize(PLOG* instance, void* app1, void* /*app2*/ )
+       static void Initialize(SLOG* instance, void* app1, void* /*app2*/ )
        {
            int max_level = instance->parse("info") ;  
            // note : can decrease verbosity from the max_level in the subproj, but not increase
@@ -453,10 +453,10 @@ class SYSRAP_API OPTICKS_LOG_ {
        }
 };
 
-#define OPTICKS_LOG_COLOR__(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL );  }  
-#define OPTICKS_LOG__(argc, argv) {      PLOG_(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
-#define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
-#define OPTICKS_ELOG(name) {           PLOG_ECOLOR(name);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
+#define OPTICKS_LOG_COLOR__(argc, argv) {      SLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); }  
+#define OPTICKS_LOG__(argc, argv) {            SLOG_(     argc, argv);     OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); } 
+#define OPTICKS_LOG(argc, argv) {              SLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); } 
+#define OPTICKS_ELOG(name) {                   SLOG_ECOLOR(name);          OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); } 
 
 
 /**
@@ -470,7 +470,7 @@ PLOG_COLOR(argc, argv)
         static plog::RollingFileAppender<plog::TxtFormatter> 
         static plog::ColorConsoleAppender<plog::TxtFormatter> 
 
-OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL )
+OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL )
 
 
 

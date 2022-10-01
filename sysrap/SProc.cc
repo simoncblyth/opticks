@@ -18,7 +18,7 @@
  */
 
 #include "SProc.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"   // needed for plog::info enum etc..
 
 
 #ifdef _MSC_VER

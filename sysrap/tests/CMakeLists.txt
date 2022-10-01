@@ -35,7 +35,7 @@ set(TEST_SOURCES
 
    
    PLogTest.cc 
-   PLOG_Test.cc 
+   SLOG_Test.cc 
    SYSRAP_LOG_Test.cc 
    SYSRAP_LOG_FileAppenderTest.cc
 
@@ -44,8 +44,8 @@ set(TEST_SOURCES
    SOPTICKS_LOG_Test.cc 
 
    OPTICKS_LOG_Test.cc
-   pLOG_MACRO_Test.cc
-   PLOG_exename_Test.cc
+   sLOG_MACRO_Test.cc
+   SLOG_exename_Test.cc
     
    reallocTest.cc
    OpticksCSGTest.cc

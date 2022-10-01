@@ -35,13 +35,13 @@ typedef plog::TxtFormatter         FMT ;   // default full format
 
 /**
 
-PLOG\_INIT : logging macros
+SLOG\_INIT : logging macros
 ==============================
 
 
-PLOG\_INIT macros are used in two situations:
+SLOG\_INIT macros are used in two situations:
 
-* an executable main as a result of PLOG\_ or PLOT\_COLOR applied
+* an executable main as a result of SLOG\_ or PLOT\_COLOR applied
   to the arguments
 
 * package logger 
@@ -51,7 +51,7 @@ PLOG\_INIT macros are used in two situations:
 
 
 
-#define PLOG_INIT0(level, app1, app2 ) \
+#define SLOG_INIT0(level, app1, app2 ) \
 { \
     plog::IAppender* appender1 = app1 ? static_cast<plog::IAppender*>(app1) : NULL ; \
     plog::IAppender* appender2 = app2 ? static_cast<plog::IAppender*>(app2) : NULL ; \
@@ -62,7 +62,7 @@ PLOG\_INIT macros are used in two situations:
 } \
 
 
-#define PLOG_INIT(level, app1, app2 ) \
+#define SLOG_INIT(level, app1, app2 ) \
 { \
     plog::IAppender* appender1 = static_cast<plog::IAppender*>(app1) ; \
     plog::IAppender* appender2 = static_cast<plog::IAppender*>(app2) ; \
@@ -74,7 +74,7 @@ PLOG\_INIT macros are used in two situations:
 
 
 
-#define PLOG_INIT_(level, app1, app2, IDX ) \
+#define SLOG_INIT_(level, app1, app2, IDX ) \
 { \
     plog::IAppender* appender1 = static_cast<plog::IAppender*>(app1) ; \
     plog::IAppender* appender2 = static_cast<plog::IAppender*>(app2) ; \
@@ -90,33 +90,33 @@ PLOG\_INIT macros are used in two situations:
 
 
 
-#define PLOG_ECOLOR(name) \
+#define SLOG_ECOLOR(name) \
 { \
-    PLOG* _plog = new PLOG(name); \
+    SLOG* _plog = new SLOG(name); \
     static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
     static plog::ColorConsoleAppender<FMT> consoleAppender; \
-    PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
+    SLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
 } \
 
-#define PLOG_COLOR(argc, argv) \
+#define SLOG_COLOR(argc, argv) \
 { \
-    PLOG* _plog = new PLOG(argc, argv); \
+    SLOG* _plog = new SLOG(argc, argv); \
     static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
     static plog::ColorConsoleAppender<FMT> consoleAppender; \
-    PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
+    SLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
 } \
 
-#define PLOG_(argc, argv) \
+#define SLOG_(argc, argv) \
 { \
-    PLOG* _plog = new PLOG(argc, argv); \
+    SLOG* _plog = new SLOG(argc, argv); \
     static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
     static plog::ConsoleAppender<FMT> consoleAppender; \
-    PLOG_INIT( _plog->level,  &consoleAppender, &fileAppender ); \
+    SLOG_INIT( _plog->level,  &consoleAppender, &fileAppender ); \
 } \
 
 
 
-#define PLOG_CHECK(msg) \
+#define SLOG_CHECK(msg) \
 { \
     LOG(fatal) << msg  ; \
     LOG(error) << msg  ; \

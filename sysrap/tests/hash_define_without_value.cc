@@ -20,7 +20,7 @@
 
 
 #include <cassert>
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #define G4DAE_EXTRAS_NO_VALUE
 #define G4DAE_EXTRAS_WITH_ONE 1
@@ -28,7 +28,7 @@
 
 int main(int argc, char** argv)
 {
-   PLOG_(argc, argv);
+   OPTICKS_LOG(argc, argv);
 
    int count(0); 
 

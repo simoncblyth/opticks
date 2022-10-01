@@ -18,10 +18,9 @@
  */
 
 #include <cassert>
-#include "PLOG.hh"
 #include "SArgs.hh"
 
-#include "SYSRAP_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void check(const char* msg)
@@ -38,10 +37,9 @@ void check(const char* msg)
 
 void test_standard_usage(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    SYSRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    assert(PLOG::instance);
+    assert(SLOG::instance);
 
     check("local");
     SYSRAP_LOG::Check("calling SYSRAP lib from test main");
@@ -106,12 +104,12 @@ int main(int /*argc_*/, char** argv_)
 
         const char* uprefix = j == 0 ? NULL : prefix ; 
 
-        if(PLOG::instance != NULL) PLOG::instance = NULL ; 
+        if(SLOG::instance != NULL) SLOG::instance = NULL ; 
 
-        PLOG* pl = new PLOG(a->argc, a->argv, fallback, uprefix );
+        SLOG* pl = new SLOG(a->argc, a->argv, fallback, uprefix );
 
         std::stringstream ss ; 
-        ss << "PLOG(..," << fallback ; 
+        ss << "SLOG(..," << fallback ; 
         if(j==1) ss << "," << uprefix ;
         ss << ")" ;
 

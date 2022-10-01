@@ -27,8 +27,7 @@
 #include <string>
 
 #include "SSys.hh"
-#include "SYSRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_cout_cerr_redirect(const char* msg)
@@ -85,9 +84,8 @@ void test_stream_redirect()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    SYSRAP_LOG__ ; 
 
     LOG(info) << argv[0] ; 
 

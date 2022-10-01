@@ -22,12 +22,11 @@
 #include "SMap.hh"
 
 #include "SYSRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    SYSRAP_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     typedef std::string K ; 
     typedef unsigned long long V ; 

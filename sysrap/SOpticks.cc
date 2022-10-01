@@ -5,9 +5,9 @@
 #include "SOpticks.hh"
 #include "SEventConfig.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SOpticks::LEVEL = PLOG::EnvLevel("SOpticks", "DEBUG"); 
+const plog::Severity SOpticks::LEVEL = SLOG::EnvLevel("SOpticks", "DEBUG"); 
 
 
 SOpticks::SOpticks(int argc, char** argv, const char* argforced)

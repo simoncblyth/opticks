@@ -7,9 +7,9 @@
 
 #include "SPath.hh"
 #include "SRngSpec.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SRngSpec::LEVEL = PLOG::EnvLevel("SRngSpec", "DEBUG"); 
+const plog::Severity SRngSpec::LEVEL = SLOG::EnvLevel("SRngSpec", "DEBUG"); 
 
 const char* SRngSpec::DefaultRngDir()  // static 
 {

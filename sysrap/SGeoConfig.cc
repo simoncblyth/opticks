@@ -11,9 +11,9 @@
 #include "SGeoConfig.hh"
 #include "SName.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SGeoConfig::LEVEL = PLOG::EnvLevel("SGeoConfig", "DEBUG"); 
+const plog::Severity SGeoConfig::LEVEL = SLOG::EnvLevel("SGeoConfig", "DEBUG"); 
 
 
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  

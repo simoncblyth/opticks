@@ -24,25 +24,25 @@
 void test_offset_level_logging()
 {
     plog::Severity level = info ; 
-    pLOG(level,4)  << " hello+4 " ; 
-    pLOG(level,3)  << " hello+3 " ; 
-    pLOG(level,2)  << " hello+2 " ; 
-    pLOG(level,1)  << " hello+1 " ; 
-    pLOG(level,0)  << " hello+0 " ; 
-    pLOG(level,-1) << " hello-1 " ; 
-    pLOG(level,-2) << " hello-2 " ; 
-    pLOG(level,-3) << " hello-3 " ; 
-    pLOG(level,-4) << " hello-4 " ; 
+    sLOG(level,4)  << " hello+4 " ; 
+    sLOG(level,3)  << " hello+3 " ; 
+    sLOG(level,2)  << " hello+2 " ; 
+    sLOG(level,1)  << " hello+1 " ; 
+    sLOG(level,0)  << " hello+0 " ; 
+    sLOG(level,-1) << " hello-1 " ; 
+    sLOG(level,-2) << " hello-2 " ; 
+    sLOG(level,-3) << " hello-3 " ; 
+    sLOG(level,-4) << " hello-4 " ; 
 }
 
 
-void test_PLOG_SAr_dump()
+void test_SLOG_SAr_dump()
 {
-    // use PLOG::instance to recover commandline arguments 
-    PLOG* plog = PLOG::instance ; 
-    LOG(info) << " plog " << plog ; 
-    assert(plog && "OPTICKS_LOG is needed to instanciate PLOG"); 
-    const SAr& args = plog->args ; 
+    // use SLOG::instance to recover commandline arguments 
+    SLOG* slog = SLOG::instance ; 
+    LOG(info) << " slog " << slog ; 
+    assert(slog && "OPTICKS_LOG is needed to instanciate SLOG"); 
+    const SAr& args = slog->args ; 
     args.dump(); 
     LOG(info) << " args.argc " << args._argc ; 
     for(int i=0 ; i < args._argc ; i++)  LOG(info) << i << ":" << args._argv[i] ; 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     //OPTICKS_ELOG("EmbeddedLogTest");
 
     //test_offset_level_logging() ;
-    test_PLOG_SAr_dump();
+    test_SLOG_SAr_dump();
 
     return 0 ; 
 }

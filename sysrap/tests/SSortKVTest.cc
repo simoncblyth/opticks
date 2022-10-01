@@ -20,17 +20,12 @@
 
 
 #include "SSortKV.hh"
-
-#include "SYSRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc , char** argv )
 {
-    PLOG_(argc, argv);
-
-    SYSRAP_LOG__ ; 
-
+    OPTICKS_LOG(argc, argv);
 
     bool descending = false ; 
     SSortKV skv(descending) ; 

@@ -8,7 +8,7 @@
 
 #ifdef WITH_PLOG
 #include <plog/Severity.h>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #else
 #define LOG(severity) if(false) std::cout    // just kill the logging when no PLOG
 #endif
@@ -93,7 +93,7 @@ struct SIMG
 
 
 #ifdef WITH_PLOG
-const plog::Severity SIMG::LEVEL = PLOG::EnvLevel("SIMG", "DEBUG"); 
+const plog::Severity SIMG::LEVEL = SLOG::EnvLevel("SIMG", "DEBUG"); 
 #endif
 
 
@@ -253,7 +253,7 @@ void SIMG::annotate( const char* bottom_line, const char* top_line, int line_hei
     // Possibly related to this being implemented in the header ?
 
 #ifdef WITH_PLOG
-    STTF* ttf = PLOG::instance ? PLOG::instance->ttf : nullptr ; 
+    STTF* ttf = SLOG::instance ? SLOG::instance->ttf : nullptr ; 
 #else
     STTF* ttf = nullptr ; 
 #endif

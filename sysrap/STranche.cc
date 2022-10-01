@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "STranche.hh"
 
 

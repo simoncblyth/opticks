@@ -38,10 +38,10 @@
 #include "SStr.hh"
 #include "SPath.hh"
 #include "SOpticksResource.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity SPath::LEVEL = PLOG::EnvLevel("SPath", "DEBUG"); 
+const plog::Severity SPath::LEVEL = SLOG::EnvLevel("SPath", "DEBUG"); 
 
 
 const char* SPath::Stem( const char* name ) // static

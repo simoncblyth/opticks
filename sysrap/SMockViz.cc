@@ -1,8 +1,8 @@
 #include <iostream>
 #include "SMockViz.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity SMockViz::LEVEL = PLOG::EnvLevel("SMockViz", "DEBUG"); 
+const plog::Severity SMockViz::LEVEL = SLOG::EnvLevel("SMockViz", "DEBUG"); 
 
 SMockViz::SMockViz()
 {

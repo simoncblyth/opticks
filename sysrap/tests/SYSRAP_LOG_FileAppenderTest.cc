@@ -20,15 +20,13 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include "PLOG.hh"
-#include "SYSRAP_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    SYSRAP_LOG__ ; 
 
     LOG(info) << " hello from " << argv[0] ; 
 
