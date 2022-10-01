@@ -4,13 +4,13 @@
 
 #include "SSys.hh"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 #include "squad.h"
 
 #include "CSGDebug_Cylinder.hh"
 
-const plog::Severity CSGDebug_Cylinder::LEVEL = PLOG::EnvLevel("CSGDebug_Cylinder", "DEBUG") ; 
+const plog::Severity CSGDebug_Cylinder::LEVEL = SLOG::EnvLevel("CSGDebug_Cylinder", "DEBUG") ; 
 
 std::vector<CSGDebug_Cylinder> CSGDebug_Cylinder::record = {} ;     
 

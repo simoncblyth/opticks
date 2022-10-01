@@ -6,13 +6,13 @@
 #include "OpticksCSG.h"
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "CSGNode.h"
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
 
-const plog::Severity CSGMaker::LEVEL = PLOG::EnvLevel("CSGMaker", "DEBUG" ); 
+const plog::Severity CSGMaker::LEVEL = SLOG::EnvLevel("CSGMaker", "DEBUG" ); 
 
 CSGMaker::CSGMaker( CSGFoundry* fd_ )
     :

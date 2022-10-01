@@ -1,4 +1,4 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SEventConfig.hh"
 #include "SOpticksResource.hh"
 #include "SSys.hh"
@@ -10,7 +10,7 @@
 #include "CSGDraw.h"
 #include "NP.hh"
 
-const plog::Severity CSGSimtrace::LEVEL = PLOG::EnvLevel("CSGSimtrace", "DEBUG"); 
+const plog::Severity CSGSimtrace::LEVEL = SLOG::EnvLevel("CSGSimtrace", "DEBUG"); 
 
 int CSGSimtrace::Preinit()    // static
 {

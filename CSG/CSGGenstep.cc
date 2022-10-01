@@ -1,7 +1,7 @@
 #include "SStr.hh"
 #include "SPath.hh"
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "scuda.h"
 #include "sqat4.h"
@@ -12,7 +12,7 @@
 #include "CSGGenstep.h"
 
 
-const plog::Severity CSGGenstep::LEVEL = PLOG::EnvLevel("CSGGenstep", "DEBUG"); 
+const plog::Severity CSGGenstep::LEVEL = SLOG::EnvLevel("CSGGenstep", "DEBUG"); 
 
 CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
     :

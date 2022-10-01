@@ -13,10 +13,10 @@
 #include "CSGDraw.h"
 
 #include "CSGSimtraceSample.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity CSGSimtraceSample::LEVEL = PLOG::EnvLevel("CSGSimtraceSample", "DEBUG"); 
+const plog::Severity CSGSimtraceSample::LEVEL = SLOG::EnvLevel("CSGSimtraceSample", "DEBUG"); 
 
 CSGSimtraceSample::CSGSimtraceSample()
     :

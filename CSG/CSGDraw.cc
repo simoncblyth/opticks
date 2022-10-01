@@ -1,4 +1,4 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "OpticksCSG.h"
 #include "SCanvas.hh"
 
@@ -10,7 +10,7 @@
 #include "CSGDraw.h"
 
 
-const plog::Severity CSGDraw::LEVEL = PLOG::EnvLevel("CSGDraw", "DEBUG"); 
+const plog::Severity CSGDraw::LEVEL = SLOG::EnvLevel("CSGDraw", "DEBUG"); 
 
 
 CSGDraw::CSGDraw(const CSGQuery* q_, char axis_ )

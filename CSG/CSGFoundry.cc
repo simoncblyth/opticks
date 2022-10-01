@@ -26,7 +26,7 @@
 
 #include "SEvt.hh"
 #include "SSim.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "scuda.h"
 #include "sqat4.h"
@@ -44,7 +44,7 @@
 
 const unsigned CSGFoundry::IMAX = 50000 ; 
 
-const plog::Severity CSGFoundry::LEVEL = PLOG::EnvLevel("CSGFoundry", "DEBUG" ); 
+const plog::Severity CSGFoundry::LEVEL = SLOG::EnvLevel("CSGFoundry", "DEBUG" ); 
 const int CSGFoundry::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 
 std::string CSGFoundry::descComp() const 

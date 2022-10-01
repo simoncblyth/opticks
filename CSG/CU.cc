@@ -8,7 +8,7 @@
 #include "CUDA_CHECK.h"
 
 #ifdef WITH_PLOG
-#include "PLOG.hh"
+#include "SLOG.hh"
 #endif
 
 #include "CSGSolid.h"
@@ -19,7 +19,7 @@
 #include "CU.h"
 
 #ifdef WITH_PLOG
-const plog::Severity CU::LEVEL = PLOG::EnvLevel("CU","DEBUG"); 
+const plog::Severity CU::LEVEL = SLOG::EnvLevel("CU","DEBUG"); 
 #endif
 
 /**

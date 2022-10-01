@@ -17,9 +17,9 @@
 #endif
 
 #include "CSGSimtraceRerun.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity CSGSimtraceRerun::LEVEL = PLOG::EnvLevel("CSGSimtraceRerun", "DEBUG") ; 
+const plog::Severity CSGSimtraceRerun::LEVEL = SLOG::EnvLevel("CSGSimtraceRerun", "DEBUG") ; 
 
 
 CSGSimtraceRerun::CSGSimtraceRerun()

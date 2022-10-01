@@ -11,10 +11,10 @@
 #include "CSGNode.h"
 
 #include "CSGCopy.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity CSGCopy::LEVEL = PLOG::EnvLevel("CSGCopy", "DEBUG" ); 
+const plog::Severity CSGCopy::LEVEL = SLOG::EnvLevel("CSGCopy", "DEBUG" ); 
 const int CSGCopy::DUMP_RIDX = SSys::getenvint("DUMP_RIDX", -1) ; 
 const int CSGCopy::DUMP_NPS = SSys::getenvint("DUMP_NPS", 0) ; 
 

@@ -1,6 +1,6 @@
 #include <csignal>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 #include "sqat4.h"
 #include "sframe.h"
@@ -9,7 +9,7 @@
 #include "CSGFoundry.h"
 #include "CSGTarget.h"
 
-const plog::Severity CSGTarget::LEVEL = PLOG::EnvLevel("CSGTarget", "DEBUG" ); 
+const plog::Severity CSGTarget::LEVEL = SLOG::EnvLevel("CSGTarget", "DEBUG" ); 
 
 CSGTarget::CSGTarget( const CSGFoundry* foundry_ )
     :

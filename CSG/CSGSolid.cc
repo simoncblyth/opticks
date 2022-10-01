@@ -11,9 +11,9 @@
 #include <iomanip>
 #include <cstring>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity CSGSolid::LEVEL = PLOG::EnvLevel("CSGSolid", "DEBUG") ; 
+const plog::Severity CSGSolid::LEVEL = SLOG::EnvLevel("CSGSolid", "DEBUG") ; 
 
 
 CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )

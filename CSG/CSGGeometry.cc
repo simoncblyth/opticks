@@ -2,7 +2,7 @@
 
 #include "SSys.hh"
 #include "SPath.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "scuda.h"
 #include "squad.h"
@@ -18,7 +18,7 @@
 #include "CSGRecord.h"
 #include "CSGGrid.h"
 
-const plog::Severity CSGGeometry::LEVEL = PLOG::EnvLevel("CSGGeometry", "DEBUG") ; 
+const plog::Severity CSGGeometry::LEVEL = SLOG::EnvLevel("CSGGeometry", "DEBUG") ; 
 
 
 void CSGGeometry::operator()()

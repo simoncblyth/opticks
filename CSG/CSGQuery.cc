@@ -1,4 +1,4 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "sc4u.h"
@@ -26,7 +26,7 @@
 #include "csg_intersect_tree.h"
 
 
-const plog::Severity CSGQuery::LEVEL = PLOG::EnvLevel("CSGQuery", "DEBUG") ; 
+const plog::Severity CSGQuery::LEVEL = SLOG::EnvLevel("CSGQuery", "DEBUG") ; 
 
 const int CSGQuery::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 

@@ -9,7 +9,7 @@
 #include "SStr.hh"
 #include "SSys.hh"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "scuda.h"
 #include "CSGFoundry.h"

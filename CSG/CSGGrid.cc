@@ -2,7 +2,7 @@
 #include "NP.hh"
 #include "scuda.h"
 #include "CSGGrid.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 CSGGrid::CSGGrid( const float4& ce_, int nx_, int ny_, int nz_ )

@@ -10,7 +10,7 @@
 #include "SThetaCut.hh"
 #include "SPhiCut.hh"
 #include "OpticksCSG.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "CSGNode.h"
 

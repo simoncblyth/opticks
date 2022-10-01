@@ -8,7 +8,7 @@
 
 #include "DemoGrid.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "CSGFoundry.h"
 
 
