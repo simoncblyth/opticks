@@ -3,9 +3,9 @@
 
 #include "X4Simtrace.hh"
 #include "x4solid.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4Simtrace::LEVEL = PLOG::EnvLevel("X4Simtrace", "DEBUG"); 
+const plog::Severity X4Simtrace::LEVEL = SLOG::EnvLevel("X4Simtrace", "DEBUG"); 
 
 void X4Simtrace::setSolid(const G4VSolid* solid_)
 {

@@ -27,9 +27,9 @@
 
 #include "X4MaterialPropertiesTable.hh"
 #include "GPropertyMap.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4LogicalSurface::LEVEL = PLOG::EnvLevel("X4LogicalSurface","DEBUG") ; 
+const plog::Severity X4LogicalSurface::LEVEL = SLOG::EnvLevel("X4LogicalSurface","DEBUG") ; 
 
 void X4LogicalSurface::Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src, char mode )
 {

@@ -33,10 +33,10 @@
 #include "GBorderSurface.hh"
 #include "GSurfaceLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity X4LogicalBorderSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurfaceTable","DEBUG"); 
+const plog::Severity X4LogicalBorderSurfaceTable::LEVEL = SLOG::EnvLevel("X4LogicalBorderSurfaceTable","DEBUG"); 
 
 void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst, char mode )
 {

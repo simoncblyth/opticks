@@ -59,7 +59,7 @@
 #include "SSys.hh"
 #include "SDigest.hh"
 #include "SGDML.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "BStr.hh"
 #include "BFile.hh"
@@ -105,7 +105,7 @@ X4PhysicalVolume
 **/
 
 
-const plog::Severity X4PhysicalVolume::LEVEL = PLOG::EnvLevel("X4PhysicalVolume", "DEBUG") ;
+const plog::Severity X4PhysicalVolume::LEVEL = SLOG::EnvLevel("X4PhysicalVolume", "DEBUG") ;
 const bool           X4PhysicalVolume::DBG = true ;
 
 
@@ -742,7 +742,7 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const 
 const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top, const char* digestextra, const char* digestextra2 )
 {
     std::string digest = Digest(top, digestextra, digestextra2 );
-    const char* exename = PLOG::instance ? PLOG::instance->args.exename() : "OpticksEmbedded" ; 
+    const char* exename = SLOG::instance ? SLOG::instance->args.exename() : "OpticksEmbedded" ; 
     std::stringstream ss ; 
     ss 
        << exename

@@ -27,9 +27,9 @@
 #include "GPropertyMap.hh"
 #include "GDomain.hh"
 #include "GProperty.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
+const plog::Severity X4MaterialPropertiesTable::LEVEL = SLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
 /**
 X4MaterialPropertiesTable::GetProperty

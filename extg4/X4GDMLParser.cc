@@ -25,7 +25,7 @@
 #include "X4GDMLWriteStructure.hh"
 #include "X4GDMLReadStructure.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* X4GDMLParser::PreparePath( const char* prefix, int lvidx, const char* ext  ) // static
 { 

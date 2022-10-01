@@ -28,7 +28,7 @@
 
 #include "X4Sample.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

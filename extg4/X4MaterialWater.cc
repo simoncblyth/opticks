@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -12,7 +12,7 @@
 #include "X4Array.hh"
 #include "X4MaterialWater.hh"
 
-const plog::Severity X4MaterialWater::LEVEL = PLOG::EnvLevel("X4MaterialWater", "DEBUG" ); 
+const plog::Severity X4MaterialWater::LEVEL = SLOG::EnvLevel("X4MaterialWater", "DEBUG" ); 
 
 /**
 X4MaterialWater::IsApplicable

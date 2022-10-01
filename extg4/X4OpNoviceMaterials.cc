@@ -24,7 +24,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include "G4Material.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 X4OpNoviceMaterials::X4OpNoviceMaterials()

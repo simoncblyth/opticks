@@ -32,10 +32,10 @@
 #include "GBorderSurface.hh"   
 #include "GDomain.hh"   
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity X4LogicalBorderSurface::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurface", "DEBUG"); 
+const plog::Severity X4LogicalBorderSurface::LEVEL = SLOG::EnvLevel("X4LogicalBorderSurface", "DEBUG"); 
 
 
 GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src, char mode)

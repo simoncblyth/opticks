@@ -26,9 +26,7 @@
 
 #include "X4_API_EXPORT.hh"
 
-#ifdef WITH_PLOG
 #include "plog/Severity.h"
-#endif
 
 #include "X4OpticalSurfaceModel.hh"
 #include "X4OpticalSurfaceFinish.hh"
@@ -65,9 +63,7 @@ struct  X4_API X4OpticalSurface
     const char* type ; 
     const char* value ; 
 
-#ifdef WITH_PLOG
     static const plog::Severity LEVEL ; 
-#endif
     static X4OpticalSurface* FromString(const char* spec, char delim=','); 
     static GOpticalSurface* Convert(const G4OpticalSurface* const src );
 };

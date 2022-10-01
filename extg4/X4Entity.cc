@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include "X4Entity.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 X4Entity* X4Entity::fEntity = NULL ; 
 

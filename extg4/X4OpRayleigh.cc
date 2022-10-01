@@ -1,4 +1,4 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "G4Material.hh"
 #include "G4OpticalPhoton.hh"

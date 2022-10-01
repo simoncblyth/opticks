@@ -26,9 +26,9 @@
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/MemBufFormatTarget.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4GDMLWriteStructure::LEVEL = PLOG::EnvLevel("X4GDMLWriteStructure", "DEBUG" ); 
+const plog::Severity X4GDMLWriteStructure::LEVEL = SLOG::EnvLevel("X4GDMLWriteStructure", "DEBUG" ); 
 
 X4GDMLWriteStructure::X4GDMLWriteStructure(bool refs)
 {

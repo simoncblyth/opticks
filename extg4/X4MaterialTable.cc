@@ -30,10 +30,10 @@
 #include "GMaterialLib.hh"
 #include "Opticks.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity X4MaterialTable::LEVEL = PLOG::EnvLevel("X4MaterialTable", "DEBUG") ; 
+const plog::Severity X4MaterialTable::LEVEL = SLOG::EnvLevel("X4MaterialTable", "DEBUG") ; 
 
 
 void X4MaterialTable::CollectAllMaterials(std::vector<G4Material*>& all_materials) // static

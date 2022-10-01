@@ -70,9 +70,9 @@
 #include "NTreeBuilder.hpp"
 #include "NTreeProcess.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4Solid::LEVEL = PLOG::EnvLevel("X4Solid", "DEBUG") ;
+const plog::Severity X4Solid::LEVEL = SLOG::EnvLevel("X4Solid", "DEBUG") ;
 
 unsigned X4Solid::fVerbosity = 0 ; 
 void X4Solid::SetVerbosity(unsigned verbosity) // static

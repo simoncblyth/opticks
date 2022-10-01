@@ -29,9 +29,9 @@
 #include "SSys.hh"
 #include "SStr.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4::LEVEL = PLOG::EnvLevel("X4", "DEBUG" ); 
+const plog::Severity X4::LEVEL = SLOG::EnvLevel("X4", "DEBUG" ); 
 
 SLabelCache<int>* X4::surface_index_cache = nullptr ; 
 

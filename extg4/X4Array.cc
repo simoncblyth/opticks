@@ -13,9 +13,9 @@
 
 #include "NPY.hpp"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4Array::LEVEL = PLOG::EnvLevel("X4Array", "DEBUG" ); 
+const plog::Severity X4Array::LEVEL = SLOG::EnvLevel("X4Array", "DEBUG" ); 
 
 
 X4Array* X4Array::Load(const char* base, const char* name, double en_scale )   // static 

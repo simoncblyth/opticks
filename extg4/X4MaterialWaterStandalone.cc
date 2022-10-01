@@ -3,7 +3,7 @@
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "X4MaterialWaterStandalone.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 X4MaterialWaterStandalone::X4MaterialWaterStandalone()
     :

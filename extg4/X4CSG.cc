@@ -20,7 +20,7 @@
 #include <iostream>
 #include <cstring>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "BStr.hh"
 #include "BFile.hh"
@@ -53,7 +53,7 @@ match the X4CSG::TAIL string below
 
 **/
 
-const plog::Severity X4CSG::LEVEL = PLOG::EnvLevel("X4CSG","DEBUG"); 
+const plog::Severity X4CSG::LEVEL = SLOG::EnvLevel("X4CSG","DEBUG"); 
 
 void X4CSG::Serialize( const G4VSolid* solid, const Opticks* ok, const char* csgpath ) // static
 {
@@ -238,7 +238,7 @@ int main( int argc , char** argv )
     Opticks ok(argc, argv);  
     ok.configure(); 
 
-    const char* exename = PLOG::instance->args.exename() ; 
+    const char* exename = SLOG::instance->args.exename() ; 
 
     G4VSolid* solid = make_solid() ; 
 

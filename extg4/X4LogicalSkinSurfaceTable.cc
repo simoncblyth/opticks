@@ -26,9 +26,9 @@
 #include "GSkinSurface.hh"
 #include "GSurfaceLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4LogicalSkinSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalSkinSurfaceTable","DEBUG"); 
+const plog::Severity X4LogicalSkinSurfaceTable::LEVEL = SLOG::EnvLevel("X4LogicalSkinSurfaceTable","DEBUG"); 
 
 
 void X4LogicalSkinSurfaceTable::Convert( GSurfaceLib* dst, char mode )

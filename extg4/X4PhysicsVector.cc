@@ -28,11 +28,11 @@
 #include "GProperty.hh"
 #include "SDigest.hh"
 #include "SDirect.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename T>
-const plog::Severity X4PhysicsVector<T>::LEVEL = PLOG::EnvLevel("X4PhysicsVector", "DEBUG" ) ; 
+const plog::Severity X4PhysicsVector<T>::LEVEL = SLOG::EnvLevel("X4PhysicsVector", "DEBUG" ) ; 
 
 
 template <typename T>

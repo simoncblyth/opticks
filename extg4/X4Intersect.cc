@@ -19,11 +19,11 @@
 #include "x4solid.h"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 
-const plog::Severity X4Intersect::LEVEL = PLOG::EnvLevel("X4Intersect", "DEBUG") ; 
+const plog::Severity X4Intersect::LEVEL = SLOG::EnvLevel("X4Intersect", "DEBUG") ; 
 const bool X4Intersect::VERBOSE = SSys::getenvbool("VERBOSE") ; 
 
 

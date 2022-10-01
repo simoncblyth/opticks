@@ -25,7 +25,7 @@
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 X4MaterialLib::Standardize

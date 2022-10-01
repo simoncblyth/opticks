@@ -25,7 +25,7 @@
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 std::string X4Transform3D::Digest(const G4Transform3D&  t)
 {

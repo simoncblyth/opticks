@@ -30,7 +30,7 @@
 #include "GOpticalSurface.hh"   
 #include "GSkinSurface.hh"   
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, char mode )

@@ -20,7 +20,7 @@
 
 #include "X4SolidStore.hh"
 #include "X4Solid.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "Opticks.hh"
 #include "G4SolidStore.hh"
 #include "NNode.hpp"

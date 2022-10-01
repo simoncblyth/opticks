@@ -10,9 +10,9 @@
 #include "G4PhysicalConstants.hh"
 
 #include "NPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4Scintillation::LEVEL = PLOG::EnvLevel("X4Scintillation", "DEBUG" ); 
+const plog::Severity X4Scintillation::LEVEL = SLOG::EnvLevel("X4Scintillation", "DEBUG" ); 
 
 
 X4Scintillation::X4Scintillation( const NPY<double>* fast_, const NPY<double>* slow_ )

@@ -30,9 +30,9 @@
 #include "G4String.hh"
 #include "G4GDMLReadDefine.hh"  // for G4GDMLMatrix
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4GDMLReadStructure::LEVEL = PLOG::EnvLevel("X4GDMLReadStructure", "DEBUG" ); 
+const plog::Severity X4GDMLReadStructure::LEVEL = SLOG::EnvLevel("X4GDMLReadStructure", "DEBUG" ); 
 
 X4GDMLReadStructure::X4GDMLReadStructure()
 {

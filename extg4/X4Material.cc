@@ -26,10 +26,10 @@
 
 #include "BFile.hh"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity X4Material::LEVEL = PLOG::EnvLevel("X4Material", "DEBUG") ; 
+const plog::Severity X4Material::LEVEL = SLOG::EnvLevel("X4Material", "DEBUG") ; 
 
 
 std::string X4Material::Digest()

@@ -46,7 +46,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 void X4Mesh::Save( const G4VSolid* solid, const char* path)  // static 

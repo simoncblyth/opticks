@@ -32,7 +32,7 @@
 #include "X4SolidExtent.hh"
 #include "X4AffineTransform.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

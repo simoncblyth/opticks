@@ -25,9 +25,9 @@
 #include "X4GDML.hh"
 #include "G4GDMLParser.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4GDML::LEVEL = PLOG::EnvLevel("X4GDML", "DEBUG"); 
+const plog::Severity X4GDML::LEVEL = SLOG::EnvLevel("X4GDML", "DEBUG"); 
 
 G4VPhysicalVolume* X4GDML::Parse(const char* path) // static 
 {

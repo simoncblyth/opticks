@@ -7,7 +7,7 @@
 #include "G4Box.hh"
 
 #include "SStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "X4Material.hh"
 #include "X4SolidMaker.hh"
@@ -17,7 +17,7 @@
 #include "PMTSim.hh"
 #endif
 
-const plog::Severity X4VolumeMaker::LEVEL = PLOG::EnvLevel("X4VolumeMaker", "DEBUG"); 
+const plog::Severity X4VolumeMaker::LEVEL = SLOG::EnvLevel("X4VolumeMaker", "DEBUG"); 
 
 G4VPhysicalVolume* X4VolumeMaker::Make(const char* name)
 {

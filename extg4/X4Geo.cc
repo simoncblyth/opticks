@@ -11,9 +11,9 @@ trying to relocate here for reusablility
 
 #include "X4PhysicalVolume.hh"
 #include "GGeo.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity X4Geo::LEVEL = PLOG::EnvLevel("X4Geo", "DEBUG"); 
+const plog::Severity X4Geo::LEVEL = SLOG::EnvLevel("X4Geo", "DEBUG"); 
 
 
 GGeo* X4Geo::Translate(const G4VPhysicalVolume* top)  // static 
