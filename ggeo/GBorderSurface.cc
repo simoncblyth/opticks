@@ -30,9 +30,9 @@
 
 #include "GGEO_BODY.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GBorderSurface::LEVEL = PLOG::EnvLevel("GBorderSurface", "DEBUG"); 
+const plog::Severity GBorderSurface::LEVEL = SLOG::EnvLevel("GBorderSurface", "DEBUG"); 
 
 
 

@@ -48,7 +48,7 @@
 #include "GBuffer.hh"
 #include "GMesh.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 TODO List
@@ -60,7 +60,7 @@ TODO List
 **/
 
 
-const plog::Severity GMesh::LEVEL = PLOG::EnvLevel("GMesh", "DEBUG" ); 
+const plog::Severity GMesh::LEVEL = SLOG::EnvLevel("GMesh", "DEBUG" ); 
 
 namespace fs = boost::filesystem;
 

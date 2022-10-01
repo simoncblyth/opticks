@@ -29,7 +29,7 @@
 #include "GBndLib.hh"
 #include "GPmtLib.hh"
 #include "GPmt.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const char* GPmtLib::TRI_PMT_PATH = "dpib/GMergedMesh/0" ; // relative to idbase : opticksdata "export" dir

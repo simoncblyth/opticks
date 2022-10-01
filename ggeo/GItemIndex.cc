@@ -45,10 +45,10 @@
 #include "GVector.hh"
 #include "GItemIndex.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GItemIndex::LEVEL = PLOG::EnvLevel("GItemIndex", "DEBUG") ; 
+const plog::Severity GItemIndex::LEVEL = SLOG::EnvLevel("GItemIndex", "DEBUG") ; 
 
 
 GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype, const char* reldir)

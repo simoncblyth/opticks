@@ -37,10 +37,10 @@
 #include "BFile.hh"
 #include "NSlice.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GItemList::LEVEL = PLOG::EnvLevel("GItemList", "DEBUG"); 
+const plog::Severity GItemList::LEVEL = SLOG::EnvLevel("GItemList", "DEBUG"); 
 
 const char* GItemList::GITEMLIST = "GItemList" ; 
 

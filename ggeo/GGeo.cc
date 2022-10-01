@@ -110,12 +110,12 @@
 #include "GGeo.hh"
 
 #include "GGEO_BODY.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #define BSIZ 50
 
 
-const plog::Severity GGeo::LEVEL = PLOG::EnvLevel("GGeo", "DEBUG")  ; 
+const plog::Severity GGeo::LEVEL = SLOG::EnvLevel("GGeo", "DEBUG")  ; 
 
 const char* GGeo::PICKFACE = "pickface" ;
 

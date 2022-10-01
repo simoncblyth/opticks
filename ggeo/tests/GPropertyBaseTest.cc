@@ -18,12 +18,12 @@
  */
 
 #include "GProperty.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     int N = 3 ; 
 

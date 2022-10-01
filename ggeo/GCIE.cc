@@ -26,7 +26,7 @@
 #include "GDomain.hh" 
 #include "GCIE.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

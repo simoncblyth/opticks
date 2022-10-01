@@ -57,10 +57,10 @@
 
 #include "Opticks.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GParts::LEVEL = PLOG::EnvLevel("GParts", "DEBUG") ; 
+const plog::Severity GParts::LEVEL = SLOG::EnvLevel("GParts", "DEBUG") ; 
 
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
@@ -256,8 +256,8 @@ GParts* GParts::Create(
     LOG(level) 
          << "[  deferred creation from GPts" 
          << " DEBUG " << DEBUG
-         << " level " << level << " " << PLOG::_name(level)
-         << " LEVEL " << LEVEL << " " << PLOG::_name(LEVEL)
+         << " level " << level << " " << SLOG::_name(level)
+         << " LEVEL " << LEVEL << " " << SLOG::_name(LEVEL)
          << " num_pt " << num_pt 
          ; 
 

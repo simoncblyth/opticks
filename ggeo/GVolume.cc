@@ -36,7 +36,7 @@
 
 #include "GVolume.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "GGEO_BODY.hh"
 
 const unsigned GVolume::SENSOR_UNSET = 0u ; 

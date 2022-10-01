@@ -37,7 +37,7 @@
 #include "GVolume.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 

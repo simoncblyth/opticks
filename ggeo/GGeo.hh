@@ -39,7 +39,7 @@ struct stree ;
 class NLookup ; 
 class BMeta ;
 class TorchStepNPY ; 
-class SLog ; 
+class SLogger ; 
 
 // okc-
 class Opticks ; 
@@ -455,7 +455,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     private:
         static GGeo*                  fInstance ; 
         stree*                        m_tree ; 
-        SLog*                         m_log ; 
+        SLogger*                      m_log ; 
         Opticks*                      m_ok ;  
         bool                          m_enabled_legacy_g4dae ; 
         bool                          m_live ;   

@@ -58,11 +58,11 @@
 #include "GPropertyLib.hh"
 #include "GConstant.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 
-const plog::Severity GPropertyLib::LEVEL = PLOG::EnvLevel("GPropertyLib", "DEBUG") ;
+const plog::Severity GPropertyLib::LEVEL = SLOG::EnvLevel("GPropertyLib", "DEBUG") ;
 
 
 

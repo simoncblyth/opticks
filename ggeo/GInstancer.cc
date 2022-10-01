@@ -47,9 +47,9 @@
 #include "GPt.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
+const plog::Severity GInstancer::LEVEL = SLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
 const int GInstancer::INSTANCE_REPEAT_MIN = SSys::getenvint("GInstancer_instance_repeat_min", INSTANCE_REPEAT_MIN_DEFAULT ); 
 const int GInstancer::INSTANCE_VERTEX_MIN = SSys::getenvint("GInstancer_instance_vertex_min",   0 ); 

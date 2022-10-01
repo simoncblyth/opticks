@@ -70,10 +70,10 @@
 #include "NGeoTestConfig.hpp"
 #include "GGeoTest.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GGeoTest::LEVEL = PLOG::EnvLevel("GGeoTest", "DEBUG") ; 
+const plog::Severity GGeoTest::LEVEL = SLOG::EnvLevel("GGeoTest", "DEBUG") ; 
 
 const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 

@@ -40,7 +40,7 @@
 #include "GParts.hh"
 #include "GPmt.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  

@@ -39,10 +39,10 @@
 #include "GItemList.hh"
 #include "GConstant.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GMaterialLib::LEVEL = PLOG::EnvLevel("GMaterialLib", "DEBUG") ;
+const plog::Severity GMaterialLib::LEVEL = SLOG::EnvLevel("GMaterialLib", "DEBUG") ;
 
 const GMaterialLib* GMaterialLib::INSTANCE = NULL ; 
 const GMaterialLib* GMaterialLib::Get(){ return INSTANCE ; }

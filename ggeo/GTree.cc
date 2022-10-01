@@ -24,9 +24,9 @@
 #include "GVolume.hh"
 #include "GTree.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GTree::LEVEL = PLOG::EnvLevel("GTree", "DEBUG") ; 
+const plog::Severity GTree::LEVEL = SLOG::EnvLevel("GTree", "DEBUG") ; 
 
 
 /**

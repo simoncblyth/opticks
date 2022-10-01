@@ -1,4 +1,4 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GParts.hh"

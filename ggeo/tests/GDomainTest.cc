@@ -18,12 +18,12 @@
  */
 
 #include "GDomain.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     GDomain<float>* dom = new GDomain<float>(0.f,100.f,11.f) ; 
 

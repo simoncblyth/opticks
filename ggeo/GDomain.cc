@@ -29,7 +29,7 @@
 #include "Opticks.hh"
 #include "sdomain.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename T> GDomain<T>* GDomain<T>::fDefaultDomain = NULL  ;

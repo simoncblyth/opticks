@@ -31,7 +31,7 @@
 #include "GMesh.hh"
 #include "GVolume.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 // elimnate state that is only used once, instead pass in as arguments when needed

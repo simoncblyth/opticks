@@ -33,13 +33,13 @@
 #include "GPho.hh"
 #include "GVolume.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 Started from npy/NPho adding use of GGeo for access to transforms
 **/
 
-const plog::Severity GPho::LEVEL = PLOG::EnvLevel("GPho", "DEBUG"); 
+const plog::Severity GPho::LEVEL = SLOG::EnvLevel("GPho", "DEBUG"); 
 
 const char* GPho::A = "All" ; 
 const char* GPho::L = "Landed on sensors" ; 

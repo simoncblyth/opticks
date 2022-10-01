@@ -42,11 +42,11 @@
 
 #include "GSurfaceLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 
-const plog::Severity GSurfaceLib::LEVEL = PLOG::EnvLevel("GSurfaceLib", "DEBUG") ; 
+const plog::Severity GSurfaceLib::LEVEL = SLOG::EnvLevel("GSurfaceLib", "DEBUG") ; 
 
 
 // surface

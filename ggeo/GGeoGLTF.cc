@@ -32,7 +32,7 @@
 #include "YOG.hh"
 #include "YOGMaker.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 using YOG::Sc ; 
 using YOG::Nd ; 

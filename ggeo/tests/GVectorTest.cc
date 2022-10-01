@@ -21,7 +21,7 @@
 #include "GVector.hh"
 #include "GBBox.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "GGEO_LOG.hh"
 
 
@@ -82,7 +82,7 @@ void test_bbox_enlarge()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     GGEO_LOG_ ; 
  
     test_bbox_matrix_scaling();

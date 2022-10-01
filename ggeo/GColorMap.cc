@@ -26,7 +26,7 @@
 
 #include "GColorMap.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

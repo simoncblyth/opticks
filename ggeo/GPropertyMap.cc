@@ -45,14 +45,14 @@ namespace fs = boost::filesystem;
 #include "GPropertyMap.hh"
 #include "GSurfaceLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
 
 
 template <typename T>
-const plog::Severity GPropertyMap<T>::LEVEL = PLOG::EnvLevel("GPropertyMap","DEBUG") ;
+const plog::Severity GPropertyMap<T>::LEVEL = SLOG::EnvLevel("GPropertyMap","DEBUG") ;
 
 
 

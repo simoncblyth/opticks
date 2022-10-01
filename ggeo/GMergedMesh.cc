@@ -50,9 +50,9 @@
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GMergedMesh::LEVEL = PLOG::EnvLevel("GMergedMesh", "DEBUG") ; 
+const plog::Severity GMergedMesh::LEVEL = SLOG::EnvLevel("GMergedMesh", "DEBUG") ; 
 
 bool GMergedMesh::isSkip() const
 {

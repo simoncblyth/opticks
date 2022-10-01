@@ -31,7 +31,7 @@
 #include "GItemList.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const unsigned int GSourceLib::icdf_length = 1024 ; 
 const char* GSourceLib::radiance_ = "radiance" ; 

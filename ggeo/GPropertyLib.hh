@@ -34,7 +34,7 @@
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
-class SLog ; 
+class SLogger ; 
 template <typename T> class NPY ;
 struct NP ; 
 class NPYBase ; 
@@ -268,7 +268,7 @@ class GGEO_API GPropertyLib {
         void findRawMapsWithProperties(       std::vector<GPropertyMap<double>*>& dst, const char* props, char delim );
         void findRawOriginalMapsWithProperties( std::vector<GPropertyMap<double>*>& dst, const char* props, char delim );
     protected:
-        SLog*                                m_log ; 
+        SLogger*                             m_log ; 
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
     protected:

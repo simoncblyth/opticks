@@ -42,10 +42,10 @@
 
 
 #include "GGEO_BODY.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-const plog::Severity GGeoLib::LEVEL = PLOG::EnvLevel("GGeoLib","DEBUG") ; 
+const plog::Severity GGeoLib::LEVEL = SLOG::EnvLevel("GGeoLib","DEBUG") ; 
 
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 

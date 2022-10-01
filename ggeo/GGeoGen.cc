@@ -5,9 +5,9 @@
 #include "TorchStepNPY.hpp"
 #include "NPY.hpp"
 #include "NGLM.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GGeoGen::LEVEL = PLOG::EnvLevel("GGeoGen", "DEBUG"); 
+const plog::Severity GGeoGen::LEVEL = SLOG::EnvLevel("GGeoGen", "DEBUG"); 
 
 GGeoGen::GGeoGen(const GGeo* ggeo)
     :

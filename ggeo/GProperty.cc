@@ -46,7 +46,7 @@
 #include "GAry.hh"
 #include "GConstant.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename T>

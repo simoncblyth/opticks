@@ -37,7 +37,7 @@
 #include "GAry.hh"
 #include "GDomain.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

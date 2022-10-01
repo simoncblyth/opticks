@@ -48,7 +48,7 @@
 #include "GMatrix.hh"
 #include "GMaker.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const plog::Severity GMaker::LEVEL = debug ; 

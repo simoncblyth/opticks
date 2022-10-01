@@ -25,7 +25,7 @@
 #include <set>
 #include "plog/Severity.h"
 
-class SLog ; 
+class SLogger ; 
 class Opticks ;
 
 class GGeo ; 
@@ -126,7 +126,7 @@ class GGEO_API GInstancer {
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
         void           makeMergedMeshAndInstancedBuffers(unsigned verbosity);
    private:
-       SLog*                     m_log ; 
+       SLogger*                  m_log ; 
        Opticks*                  m_ok ; 
        unsigned                  m_repeat_min ; 
        unsigned                  m_vertex_min ; 

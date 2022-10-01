@@ -32,7 +32,7 @@
 #include "NSlice.hpp"
 #include "GBuffer.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 

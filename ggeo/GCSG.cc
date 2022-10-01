@@ -25,7 +25,7 @@
 #include "GMergedMesh.hh"
 
 #include "GCSG.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 // TODO: adopt OpticksCSG enum and names

@@ -18,7 +18,7 @@
  */
 
 #include "BStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"

@@ -37,9 +37,9 @@
 #include "GItemList.hh"
 #include "GGeoLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GMeshLib::LEVEL = PLOG::EnvLevel("GMeshLib", "DEBUG") ; 
+const plog::Severity GMeshLib::LEVEL = SLOG::EnvLevel("GMeshLib", "DEBUG") ; 
 
 const unsigned GMeshLib::MAX_MESH = SSys::getenvint("GMeshLib_MAX_MESH", 400) ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
 /**

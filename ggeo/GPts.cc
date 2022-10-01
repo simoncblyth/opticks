@@ -22,7 +22,7 @@
 #include <csignal>
 
 #include "SCount.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NPY.hpp"
 #include "BStr.hh"
 #include "GItemList.hh"
@@ -31,9 +31,9 @@
 #include "GPts.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GPts::LEVEL = PLOG::EnvLevel("GPts", "DEBUG") ; 
+const plog::Severity GPts::LEVEL = SLOG::EnvLevel("GPts", "DEBUG") ; 
 
 
 const char* GPts::GPTS_LIST = "GPts" ; 

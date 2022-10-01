@@ -36,10 +36,10 @@
 #include "GSurfaceLib.hh"
 #include "GColorizer.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-const plog::Severity GColorizer::LEVEL = PLOG::EnvLevel("GColorizer","DEBUG") ; 
+const plog::Severity GColorizer::LEVEL = SLOG::EnvLevel("GColorizer","DEBUG") ; 
 
 
 GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 

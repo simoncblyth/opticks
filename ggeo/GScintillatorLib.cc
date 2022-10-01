@@ -31,10 +31,10 @@
 #include "GMaterial.hh"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GScintillatorLib::LEVEL = PLOG::EnvLevel("GScintillatorLib", "DEBUG") ; 
+const plog::Severity GScintillatorLib::LEVEL = SLOG::EnvLevel("GScintillatorLib", "DEBUG") ; 
 
 const char* GScintillatorLib::slow_component    = "slow_component" ;
 const char* GScintillatorLib::fast_component    = "fast_component" ;

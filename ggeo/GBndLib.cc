@@ -48,10 +48,10 @@
 #include "GBnd.hh"
 #include "GBndLib.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GBndLib::LEVEL = PLOG::EnvLevel("GBndLib", "DEBUG") ; 
+const plog::Severity GBndLib::LEVEL = SLOG::EnvLevel("GBndLib", "DEBUG") ; 
 
 const GBndLib* GBndLib::INSTANCE = NULL ; 
 const GBndLib* GBndLib::GetInstance(){ return INSTANCE ; }

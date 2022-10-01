@@ -21,7 +21,7 @@
 #include "GDomain.hh"
 #include "GAry.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "NPY_LOG.hh"
 
 typedef GAry<float> A ;
@@ -122,7 +122,7 @@ void test_gradient()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     NPY_LOG_ ;
 
 /*
