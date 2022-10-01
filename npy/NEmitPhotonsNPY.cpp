@@ -32,10 +32,10 @@
 #include "NEmitConfig.hpp"
 #include "NEmitPhotonsNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity NEmitPhotonsNPY::LEVEL = PLOG::EnvLevel("NEmitPhotonsNPY", "DEBUG") ; 
+const plog::Severity NEmitPhotonsNPY::LEVEL = SLOG::EnvLevel("NEmitPhotonsNPY", "DEBUG") ; 
 
 NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool dbgemit, NPY<unsigned>* mask, int num_photons )
     :

@@ -23,10 +23,10 @@
 #include "OpticksCSG.h"
 #include "NTreeBalance.hpp"
 #include "NTreeBuilder.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template <typename T>
-const plog::Severity NTreeBalance<T>::LEVEL = PLOG::EnvLevel("NTreeBalance","DEBUG") ; 
+const plog::Severity NTreeBalance<T>::LEVEL = SLOG::EnvLevel("NTreeBalance","DEBUG") ; 
 
 
 template <typename T>

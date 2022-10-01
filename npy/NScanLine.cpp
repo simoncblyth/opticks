@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "GLMFormat.hpp"
 #include "NGLM.hpp"

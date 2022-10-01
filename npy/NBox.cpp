@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"

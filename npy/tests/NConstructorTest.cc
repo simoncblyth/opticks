@@ -18,7 +18,6 @@
  */
 
 #include "NOctools.hpp"
-#include "NPY_LOG.hh"
 
 #include "NField3.hpp"
 #include "NGrid3.hpp"
@@ -29,7 +28,7 @@
 #include "NOct.hpp"
 
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 //template class NConstructor<NOct> ;
@@ -37,9 +36,8 @@
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    NPY_LOG__ ; 
 
 
     int nominal = 5 ; 

@@ -34,11 +34,11 @@
 #include "NStep.hpp"
 #include "GenstepNPY.hpp"
 #include "TorchStepNPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 
-const plog::Severity TorchStepNPY::LEVEL = PLOG::EnvLevel("TorchStepNPY", "DEBUG" ); 
+const plog::Severity TorchStepNPY::LEVEL = SLOG::EnvLevel("TorchStepNPY", "DEBUG" ); 
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"

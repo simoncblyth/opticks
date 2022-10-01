@@ -22,12 +22,12 @@
 
 #include "SStr.hh"
 #include "SPPM.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "BFile.hh"
 #include "NPY.hpp"
 #include "ImageNPY.hpp"
 
-const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "DEBUG"); 
+const plog::Severity ImageNPY::LEVEL = SLOG::EnvLevel("ImageNPY", "DEBUG"); 
 
 
 NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp, bool old_concat )  // static

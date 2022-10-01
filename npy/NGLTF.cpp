@@ -20,7 +20,7 @@
 
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "BFile.hh"
 
 #include "NYGLTF.hpp"

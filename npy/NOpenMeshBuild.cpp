@@ -20,7 +20,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "Nuv.hpp"
 #include "NGLMExt.hpp"

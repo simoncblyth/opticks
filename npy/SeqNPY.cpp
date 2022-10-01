@@ -24,7 +24,7 @@
 #include "NPY.hpp"
 #include "SeqNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const unsigned SeqNPY::N = 16 ; 
 

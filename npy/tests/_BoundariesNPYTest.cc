@@ -27,12 +27,12 @@
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 // see ggv-/tests/BoundariesNPYTest.cc
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
 
     // npy is lower level than okc- so cannot 

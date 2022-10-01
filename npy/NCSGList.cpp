@@ -31,12 +31,12 @@
 #include "NCSGList.hpp"
 #include "NGeoTestConfig.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* NCSGList::FILENAME = "csg.txt" ; 
 
 
-const plog::Severity NCSGList::LEVEL = PLOG::EnvLevel("NCSGList","DEBUG") ; 
+const plog::Severity NCSGList::LEVEL = SLOG::EnvLevel("NCSGList","DEBUG") ; 
 
 
 bool NCSGList::ExistsDir(const char* dir)

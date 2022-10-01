@@ -31,7 +31,7 @@
 
 #include "BoundariesNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 BoundariesNPY::BoundariesNPY(NPY<float>* photons) 

@@ -28,7 +28,7 @@
 #include "NPY.hpp"
 
 #include "AxisNPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 AxisNPY::AxisNPY(NPY<float>* axis) 

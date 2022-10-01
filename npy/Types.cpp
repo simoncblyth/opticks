@@ -36,7 +36,7 @@
 #include "Types.hpp"
 #include "Index.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* Types::TAIL = " " ;
 

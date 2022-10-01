@@ -40,7 +40,7 @@
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 namespace fs = boost::filesystem;
 

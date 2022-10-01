@@ -38,10 +38,10 @@ extern char **environ;
 #include "BStr.hh"
 #include "NMeta.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity NMeta::LEVEL = PLOG::EnvLevel("NMeta", "DEBUG"); 
+const plog::Severity NMeta::LEVEL = SLOG::EnvLevel("NMeta", "DEBUG"); 
 
 
 NMeta::NMeta(const NMeta& other)

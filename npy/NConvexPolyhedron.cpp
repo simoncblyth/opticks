@@ -29,7 +29,7 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 nconvexpolyhedron* nconvexpolyhedron::Create(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3) // static

@@ -28,7 +28,7 @@
 #include "NSlice.hpp"
 #include "NPho.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 

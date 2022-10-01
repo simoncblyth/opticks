@@ -2,11 +2,11 @@
 #include "nmat4triple_.hpp"
 #include "GLMFormat.hpp"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template<typename T>
-const plog::Severity nmat4triple_<T>::LEVEL = PLOG::EnvLevel("nmat4triple_", "DEBUG"); 
+const plog::Severity nmat4triple_<T>::LEVEL = SLOG::EnvLevel("nmat4triple_", "DEBUG"); 
 
 
 template<typename T>

@@ -32,10 +32,10 @@
 // npy-
 #include "Index.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity Index::LEVEL = PLOG::EnvLevel("Index", "DEBUG") ; 
+const plog::Severity Index::LEVEL = SLOG::EnvLevel("Index", "DEBUG") ; 
 
 int Index::COUNT = 0 ; 
 

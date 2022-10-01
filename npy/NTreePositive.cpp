@@ -22,11 +22,11 @@
 
 #include "NTreePositive.hpp"
 #include "NNodeCollector.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename T>
-const plog::Severity NTreePositive<T>::LEVEL = PLOG::EnvLevel("NTreePositive", "DEBUG") ; 
+const plog::Severity NTreePositive<T>::LEVEL = SLOG::EnvLevel("NTreePositive", "DEBUG") ; 
  
 
 template <typename T>

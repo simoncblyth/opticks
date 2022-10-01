@@ -45,7 +45,7 @@
 
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 NPolyMode_t NPolygonizer::PolyMode(const char* poly)

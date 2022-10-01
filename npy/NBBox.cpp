@@ -30,10 +30,10 @@
 #include "NBBox.hpp"
 #include "NPoint.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity nbbox::LEVEL = PLOG::EnvLevel("NBBox","DEBUG"); 
+const plog::Severity nbbox::LEVEL = SLOG::EnvLevel("NBBox","DEBUG"); 
 
 nbbox nbbox::make_transformed( const glm::mat4& t ) const 
 {

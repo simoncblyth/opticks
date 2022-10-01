@@ -37,7 +37,7 @@
 #include "uif.h"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 NGunConfig::NGunConfig()
     :

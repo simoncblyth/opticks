@@ -21,12 +21,12 @@
 #include <iomanip>
 
 #include "NYMath.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
 
     std::cout << std::setw(15) << " ym::pow2(10) " << ym::pow2(10) << std::endl ; 

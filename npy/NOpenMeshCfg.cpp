@@ -25,7 +25,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "BStr.hh"
 

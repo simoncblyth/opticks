@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NCSG.hpp"
 #include "NTriSource.hpp"
 #include "NCSGBSP.hpp"

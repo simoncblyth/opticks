@@ -34,7 +34,7 @@
 #include "NBBox.hpp"
 #include "Nuv.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

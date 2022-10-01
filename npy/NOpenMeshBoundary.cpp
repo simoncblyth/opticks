@@ -21,7 +21,7 @@
 #include <limits>
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NNode.hpp"
 

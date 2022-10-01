@@ -22,7 +22,7 @@
 
 #include "NLoad.hpp"
 #include "NPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const plog::Severity NLoad::LEVEL = info ; 
 

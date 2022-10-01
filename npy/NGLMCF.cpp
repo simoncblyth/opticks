@@ -25,10 +25,10 @@
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity NGLMCF::LEVEL = PLOG::EnvLevel("NGLMCF", "debug") ; 
+const plog::Severity NGLMCF::LEVEL = SLOG::EnvLevel("NGLMCF", "debug") ; 
 
 
 NGLMCF::NGLMCF( const glm::mat4& A_, const glm::mat4& B_ ) 
@@ -48,7 +48,7 @@ NGLMCF::NGLMCF( const glm::mat4& A_, const glm::mat4& B_ )
 
 
 template<typename T>
-const plog::Severity NGLMCF_<T>::LEVEL = PLOG::EnvLevel("NGLMCF_", "debug") ; 
+const plog::Severity NGLMCF_<T>::LEVEL = SLOG::EnvLevel("NGLMCF_", "debug") ; 
 
 
 template<typename T>

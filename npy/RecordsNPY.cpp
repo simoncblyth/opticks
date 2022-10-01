@@ -36,7 +36,7 @@
 #include "Index.hpp"
 #include "Typ.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 RecordsNPY::RecordsNPY(NPY<short>* records, unsigned maxrec, unsigned verbosity)

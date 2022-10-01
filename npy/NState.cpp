@@ -29,7 +29,7 @@
 #include "NConfigurable.hpp"
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

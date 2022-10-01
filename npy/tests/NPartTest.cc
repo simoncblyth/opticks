@@ -18,7 +18,7 @@
  */
 
 #include "NPart.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 float unsigned_as_float(unsigned u)
 {
@@ -135,7 +135,7 @@ void test_csgtree()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     test_p0();
     test_p1();

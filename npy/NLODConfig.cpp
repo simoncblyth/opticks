@@ -18,7 +18,7 @@
  */
 
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NLODConfig.hpp"
 
 

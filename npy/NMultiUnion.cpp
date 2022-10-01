@@ -1,13 +1,13 @@
 #include <limits>
 #include <csignal>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NBBox.hpp"
 #include "nmat4triple.hpp"
 #include "NMultiUnion.hpp"
 
-const plog::Severity nmultiunion::LEVEL = PLOG::EnvLevel("nmultiunion", "DEBUG"); 
+const plog::Severity nmultiunion::LEVEL = SLOG::EnvLevel("nmultiunion", "DEBUG"); 
 
 
 

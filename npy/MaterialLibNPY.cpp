@@ -20,7 +20,7 @@
 
 #include "NPY.hpp"
 #include "MaterialLibNPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 MaterialLibNPY::MaterialLibNPY(NPY<float>* mlib) 
        :  

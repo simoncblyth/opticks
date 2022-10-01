@@ -34,9 +34,6 @@ NEmitPhotonsNPYTest $TMP/tboolean-box-- 1,5,99992
 
 #include "GLMFormat.hpp"
 
-#include "NPY_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "SYSRAP_LOG.hh"
 
 #include "NPY.hpp"
 #include "NCSGList.hpp"
@@ -44,14 +41,11 @@ NEmitPhotonsNPYTest $TMP/tboolean-box-- 1,5,99992
 #include "NPho.hpp"
 #include "NPY.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    SYSRAP_LOG__ ;  
-    NPY_LOG__ ;  
-    BRAP_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     const char* csgpath = argc > 1 ? argv[1] : NULL ; 
     const char* maskstr = argc > 2 ? argv[2] : NULL ; 

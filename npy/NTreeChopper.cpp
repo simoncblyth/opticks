@@ -23,7 +23,7 @@
 #include <map>
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "OpticksCSG.h"
 
@@ -34,7 +34,7 @@
 
 
 template <typename T>
-const plog::Severity NTreeChopper<T>::LEVEL = PLOG::EnvLevel("NTreeChopper", "DEBUG"); 
+const plog::Severity NTreeChopper<T>::LEVEL = SLOG::EnvLevel("NTreeChopper", "DEBUG"); 
 
 template <typename T>
 NTreeChopper<T>::NTreeChopper(T* root_, float epsilon_) 

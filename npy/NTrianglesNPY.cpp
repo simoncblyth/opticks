@@ -32,7 +32,7 @@
 
 #include "NTris.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #ifdef _MSC_VER
 // instanciations of 'NTrianglesNPY' raise warning:

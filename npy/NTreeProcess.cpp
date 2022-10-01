@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 #include "NPY.hpp"
@@ -34,10 +34,10 @@
 #include "NTreeChopper.hpp"
 #endif
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template <typename T>
-const plog::Severity NTreeProcess<T>::LEVEL = PLOG::EnvLevel("NTreeProcess", "DEBUG") ; 
+const plog::Severity NTreeProcess<T>::LEVEL = SLOG::EnvLevel("NTreeProcess", "DEBUG") ; 
 
 template <typename T>
 unsigned NTreeProcess<T>::MaxHeight0 = SSys::getenvint( "NTREEPROCESS_MAXHEIGHT0", 3 ) ;  

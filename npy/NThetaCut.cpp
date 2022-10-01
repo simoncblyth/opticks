@@ -12,9 +12,9 @@ TODO: implement this  distance to the surface
 **/
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity nthetacut::LEVEL = PLOG::EnvLevel("nthetacut", "DEBUG" ); 
+const plog::Severity nthetacut::LEVEL = SLOG::EnvLevel("nthetacut", "DEBUG" ); 
 
 
 float nthetacut::operator()(float x_, float y_, float z_) const 

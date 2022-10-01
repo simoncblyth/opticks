@@ -33,7 +33,7 @@
 #include <glm/gtx/matrix_operation.hpp>
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 /**
@@ -51,7 +51,7 @@ Adapted from Composition::getEyeUVW and examples/UseGeometryShader:getMVP
 
 **/
 
-const plog::Severity nglmext::LEVEL = PLOG::EnvLevel("nglmext", "DEBUG"); 
+const plog::Severity nglmext::LEVEL = SLOG::EnvLevel("nglmext", "DEBUG"); 
 
 
 void nglmext::GetEyeUVW(

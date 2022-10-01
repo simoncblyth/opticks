@@ -33,7 +33,7 @@
 
 #include "Ellipse.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const NTreeJUNO::VI NTreeJUNO::LVS = { 18,-18, 19,-19, 20,-20, 21,-21  } ; 

@@ -22,7 +22,7 @@
 
 #include "SSys.hh"
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NSceneConfig.hpp"
 
 const char* NSceneConfig::CSG_BBOX_ANALYTIC_ = "CSG_BBOX_ANALYTIC" ; 

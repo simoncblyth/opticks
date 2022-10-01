@@ -34,7 +34,7 @@
 
 #include "NNode.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

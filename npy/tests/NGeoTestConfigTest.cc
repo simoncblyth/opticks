@@ -21,8 +21,7 @@
 #include "NGLM.hpp"
 #include "NGeoTestConfig.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 const char* CONFIG = 
     "mode=BoxInBox_"
@@ -38,8 +37,7 @@ const char* CONFIG =
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     NGeoTestConfig gtc(CONFIG);
     gtc.dump();

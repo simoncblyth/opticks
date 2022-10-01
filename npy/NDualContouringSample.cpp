@@ -40,7 +40,7 @@
 #include "NFieldGrid3.hpp"
 #include "NOctools.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 NDualContouringSample::NDualContouringSample(int nominal, int coarse, int verbosity, float threshold, float scale_bb)
   :

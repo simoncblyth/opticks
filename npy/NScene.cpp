@@ -52,7 +52,7 @@
 #include "N.hpp"
 #include "NScene.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const NSceneConfig* NScene::getConfig() 

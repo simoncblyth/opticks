@@ -33,7 +33,7 @@
 #include "nmat4triple.hpp"
 #include "NGLMCF.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 std::string nd::pvtag(unsigned nch) const 

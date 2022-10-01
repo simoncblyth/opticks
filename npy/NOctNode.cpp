@@ -22,7 +22,7 @@
 #include "NQuad.hpp"
 #include "NOctNode.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const nivec3 NOctNode::OFFSETS[] = 

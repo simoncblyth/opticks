@@ -2,7 +2,7 @@
 #include "nmat4pair.hpp"
 #include "SDigest.hh"
 #include "GLMFormat.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 std::string nmat4pair::digest() 
 {

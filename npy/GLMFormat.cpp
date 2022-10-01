@@ -38,7 +38,7 @@
 
 
 #include "GLMFormat.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <>

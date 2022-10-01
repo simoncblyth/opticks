@@ -25,7 +25,7 @@
 #include <climits>
 #include <cassert>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl, bool optional, int verbosity)
     :

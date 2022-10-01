@@ -20,7 +20,7 @@
 #include "SStr.hh"
 #include "NGPU.hpp"
 #include "NPY.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 NGPU* NGPU::fInstance = NULL ; 
 

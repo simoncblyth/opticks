@@ -24,10 +24,10 @@
 #include "NNodeCollector.hpp"
 #include "NTreeBuilder.hpp"
 #include "NTreeAnalyse.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = PLOG::EnvLevel("NTreeBuilder", "DEBUG")  ; 
+template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = SLOG::EnvLevel("NTreeBuilder", "DEBUG")  ; 
 
 template <typename T> const char* NTreeBuilder<T>::PRIM_ = "PRIM" ; 
 template <typename T> const char* NTreeBuilder<T>::BILEAF_ = "BILEAF" ; 

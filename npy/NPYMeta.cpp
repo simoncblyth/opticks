@@ -23,9 +23,9 @@
 
 #include "NPYMeta.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity NPYMeta::LEVEL = PLOG::EnvLevel("NPYMeta", "DEBUG"); 
+const plog::Severity NPYMeta::LEVEL = SLOG::EnvLevel("NPYMeta", "DEBUG"); 
 
 const char* NPYMeta::META = "meta.json" ;
 const char* NPYMeta::ITEM_META = "item_meta.json" ;

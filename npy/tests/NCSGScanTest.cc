@@ -74,8 +74,7 @@ Scans individual CSG trees::
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void ManualScan(NCSG* csg)
 {
@@ -115,8 +114,7 @@ void AutoScan(NCSG* csg)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;

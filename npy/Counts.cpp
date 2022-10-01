@@ -29,7 +29,7 @@
 #include "Counts.hpp"
 #include "Index.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template<typename T>
 Counts<T>::Counts(const char* name)

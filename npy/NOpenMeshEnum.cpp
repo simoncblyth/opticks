@@ -19,7 +19,7 @@
 
 #include <cstddef>
 #include <cstring>
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include <OpenMesh/Core/System/config.hh>
 #include "NOpenMeshEnum.hpp"

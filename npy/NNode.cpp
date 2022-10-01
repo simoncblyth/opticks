@@ -53,10 +53,10 @@
 
 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity nnode::LEVEL = PLOG::EnvLevel("nnode", "DEBUG"); 
+const plog::Severity nnode::LEVEL = SLOG::EnvLevel("nnode", "DEBUG"); 
 
 
 unsigned nnode::bb_count = 0 ; 

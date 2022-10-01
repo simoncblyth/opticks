@@ -37,11 +37,11 @@
 #include "Nuv.hpp"
 #include "NCone.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NCylinder.h"
 
-const plog::Severity ncylinder::LEVEL = PLOG::EnvLevel("ncylinder", "DEBUG") ; 
+const plog::Severity ncylinder::LEVEL = SLOG::EnvLevel("ncylinder", "DEBUG") ; 
 
 ncylinder* ncylinder::Create(const nquad& param, const nquad& param1, bool old )  // static
 {

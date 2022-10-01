@@ -22,7 +22,7 @@
 #include "G4StepNPY.hpp"
 #include "TrivialCheckNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 bool TrivialCheckNPY::IsApplicable(char entryCode)
 {

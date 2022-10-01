@@ -37,8 +37,7 @@ Tests directories of multiple trees::
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
  
@@ -56,8 +55,7 @@ void test_Polygonize(const char* basedir, int verbosity )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     int verbosity = SSys::getenvint("VERBOSITY", 0 );
     LOG(info) << " argc " << argc 

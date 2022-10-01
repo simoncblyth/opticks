@@ -36,7 +36,7 @@
 #include "NNode.hpp"
 #include "NBox.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float expand_bb, int ctrl, std::string seedstr)

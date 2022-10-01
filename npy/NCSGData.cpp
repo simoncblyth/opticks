@@ -18,7 +18,7 @@
  */
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -40,7 +40,7 @@
 //#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
 
-const plog::Severity NCSGData::LEVEL = PLOG::EnvLevel("NCSGData", "DEBUG"); 
+const plog::Severity NCSGData::LEVEL = SLOG::EnvLevel("NCSGData", "DEBUG"); 
 
 
 const NPYSpecList* NCSGData::MakeSPECS()

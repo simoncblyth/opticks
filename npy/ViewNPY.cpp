@@ -31,7 +31,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* ViewNPY::BYTE_ = "BYTE"; 
 const char* ViewNPY::UNSIGNED_BYTE_ = "UNSIGNED_BYTE" ; 
@@ -47,7 +47,7 @@ const char* ViewNPY::INT_2_10_10_10_REV_ = "INT_2_10_10_10_REV"  ;
 const char* ViewNPY::UNSIGNED_INT_2_10_10_10_REV_ = "UNSIGNED_INT_2_10_10_10_REV" ; 
 const char* ViewNPY::UNSIGNED_INT_10F_11F_11F_REV_ = "UNSIGNED_INT_10F_11F_11F_REV" ;
 
-const plog::Severity ViewNPY::LEVEL = PLOG::EnvLevel("ViewNPY", "DEBUG"); 
+const plog::Severity ViewNPY::LEVEL = SLOG::EnvLevel("ViewNPY", "DEBUG"); 
 
 
 const char* ViewNPY::getTypeName()

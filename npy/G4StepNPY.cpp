@@ -29,10 +29,10 @@
 #include "G4StepNPY.hpp"
 #include "NPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity G4StepNPY::LEVEL = PLOG::EnvLevel("G4StepNPY", "DEBUG"); 
+const plog::Severity G4StepNPY::LEVEL = SLOG::EnvLevel("G4StepNPY", "DEBUG"); 
 
 
 G4StepNPY::G4StepNPY(NPY<float>* npy) 

@@ -4,10 +4,10 @@
 #include "NPY.hpp"
 #include "NStep.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity NStep::LEVEL = PLOG::EnvLevel("NStep", "DEBUG"); 
+const plog::Severity NStep::LEVEL = SLOG::EnvLevel("NStep", "DEBUG"); 
 
 NStep::NStep()
     :

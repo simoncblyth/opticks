@@ -19,15 +19,14 @@
 
 #include "NGenerator.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "NBox.hpp"
 #include "NBBox.hpp"
 
-#include "NPY_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     nbox* box = nbox::Create( 0,0,0, 10, CSG_BOX);
     nbbox bb = box->bbox();

@@ -25,7 +25,7 @@
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -134,8 +134,7 @@ void test_existance()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     test_morton3d();
     test_morton2d();

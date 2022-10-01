@@ -65,7 +65,7 @@ struct NPY_API nxform
 #include "NGLMExt.hpp"
 #include "nmat4triple.hpp"
 #include "NGLMCF.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename N>

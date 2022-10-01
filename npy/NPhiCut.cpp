@@ -6,10 +6,10 @@
 #include "SPhiCut.hh"
 #include "nmat4triple.hpp"
 #include "NPhiCut.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity nphicut::LEVEL = PLOG::EnvLevel("nphicut", "DEBUG"); 
+const plog::Severity nphicut::LEVEL = SLOG::EnvLevel("nphicut", "DEBUG"); 
 
 
 

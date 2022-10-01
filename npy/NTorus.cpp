@@ -37,7 +37,7 @@
 #include "NPart.hpp"
 #include "Nuv.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 // signed distance function

@@ -30,7 +30,7 @@
 
 #include "NGeoTestConfig.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 //    "pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0_"

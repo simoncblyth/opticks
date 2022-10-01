@@ -25,7 +25,7 @@
 
 #include "HitsNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 HitsNPY::HitsNPY(NPY<float>* photons, NSensorList* sensorlist) 

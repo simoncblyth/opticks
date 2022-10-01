@@ -1,5 +1,5 @@
 #include "SPath.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NP.hh"
 
 #include "NBBox.hpp"

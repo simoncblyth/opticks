@@ -21,7 +21,7 @@
 #include "GLMPrint.hpp"
 
 #include "NTriangle.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 ntriangle::ntriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) 
 {

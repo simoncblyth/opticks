@@ -29,13 +29,11 @@
 #include "NPY.hpp"
 #include "NLoad.hpp"
 
-#include "PLOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-     PLOG_(argc, argv);
-     NPY_LOG__ ; 
+     OPTICKS_LOG(argc, argv);
 
      NPYBase::setGlobalVerbose(true);
 

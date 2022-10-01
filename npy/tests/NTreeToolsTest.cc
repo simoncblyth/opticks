@@ -18,9 +18,7 @@
  */
 
 #include "NTreeTools.hpp"
-
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 struct Node 
@@ -41,8 +39,7 @@ template class NTraverser<Node,4> ;
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Node root(0);
     root.children[0] = new Node(1) ; 

@@ -22,7 +22,7 @@
 
 #include "NField3.hpp"
 #include "NGLM.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template <typename FVec, typename IVec, int DIM>
 const FVec NField<FVec,IVec,DIM>::ZOFFSETS[] = 

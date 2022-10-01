@@ -56,9 +56,9 @@
 #include "NCSGData.hpp"
 #include "NPYMeta.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity NCSG::LEVEL = PLOG::EnvLevel("NCSG", "DEBUG") ; 
+const plog::Severity NCSG::LEVEL = SLOG::EnvLevel("NCSG", "DEBUG") ; 
 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 

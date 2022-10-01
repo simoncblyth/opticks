@@ -38,7 +38,7 @@
 #include "Types.hpp"
 #include "Typ.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 PhotonsNPY::PhotonsNPY(NPY<float>* photons) 

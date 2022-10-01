@@ -27,7 +27,7 @@
 #include "BMap.hh"
 
 #include "NLookup.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const plog::Severity NLookup::LEVEL = debug ; 

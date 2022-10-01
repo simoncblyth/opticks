@@ -39,7 +39,7 @@
 #include "BMeta.hh"
 
 #include "NPYSpec.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 const unsigned NPYBase::SIGNBIT    = 0x80000000 ; 
@@ -52,7 +52,7 @@ bool  NPYBase::NPDump = false ;
 void NPYBase::SetNPDump(bool npdump) { NPDump = npdump ; }
 bool NPYBase::IsNPDump(){ return NPDump ; }
 
-const plog::Severity NPYBase::LEVEL = PLOG::EnvLevel("NPYBase", "DEBUG"); 
+const plog::Severity NPYBase::LEVEL = SLOG::EnvLevel("NPYBase", "DEBUG"); 
 
 
 const char* NPYBase::FLOAT_ = "FLOAT" ; 

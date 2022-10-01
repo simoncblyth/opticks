@@ -19,7 +19,7 @@
 
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 void test_icosahedron_subdiv(unsigned int nsd)
 {
@@ -66,7 +66,7 @@ void test_octahedron_subdiv()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     test_icosahedron_subdiv();
     test_octahedron_subdiv();

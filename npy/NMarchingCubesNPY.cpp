@@ -32,7 +32,7 @@
 #include "NBox.hpp"
 #include "NTorus.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 NMarchingCubesNPY::NMarchingCubesNPY(int nx, int ny, int nz)
     :

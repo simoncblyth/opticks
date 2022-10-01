@@ -21,10 +21,10 @@
 
 #include "BFile.hh"
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NSnapConfig.hpp"
 
-const plog::Severity NSnapConfig::LEVEL = PLOG::EnvLevel("NSnapConfig","DEBUG") ; 
+const plog::Severity NSnapConfig::LEVEL = SLOG::EnvLevel("NSnapConfig","DEBUG") ; 
 
 const float NSnapConfig::NEGATIVE_ZERO = -0.f ; 
 

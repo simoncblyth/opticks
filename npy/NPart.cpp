@@ -23,7 +23,7 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include <cstdio>
 #include <cassert>

@@ -18,11 +18,11 @@
  */
 
 #include "NPYSpec.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     NPYSpec* spec = new NPYSpec(NULL, 0,4,4,0,0, NPYBase::FLOAT, "") ;
     spec->Summary();
 

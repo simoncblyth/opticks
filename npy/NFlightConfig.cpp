@@ -22,10 +22,10 @@
 #include "SSys.hh"
 #include "BFile.hh"
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NFlightConfig.hpp"
 
-const plog::Severity NFlightConfig::LEVEL = PLOG::EnvLevel("NFlightConfig","DEBUG") ; 
+const plog::Severity NFlightConfig::LEVEL = SLOG::EnvLevel("NFlightConfig","DEBUG") ; 
 
 const char* NFlightConfig::DEFAULT = "flight=RoundaboutXY,ext=.jpg,scale0=1,scale1=1,period=4" ; 
 

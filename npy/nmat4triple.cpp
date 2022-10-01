@@ -2,10 +2,10 @@
 #include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity nmat4triple::LEVEL = PLOG::EnvLevel("nmat4triple", "DEBUG"); 
+const plog::Severity nmat4triple::LEVEL = SLOG::EnvLevel("nmat4triple", "DEBUG"); 
 
 
 nmat4triple::nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 

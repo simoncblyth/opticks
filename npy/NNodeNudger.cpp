@@ -23,7 +23,7 @@
 #include <map>
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "OpticksCSG.h"
 
@@ -35,7 +35,7 @@
 #include "NNodeCoincidence.hpp"
 
 
-const plog::Severity NNodeNudger::LEVEL = PLOG::EnvLevel("NNodeNudger", "DEBUG"); 
+const plog::Severity NNodeNudger::LEVEL = SLOG::EnvLevel("NNodeNudger", "DEBUG"); 
 
 
 std::vector<int>* NNodeNudger::TreeList = SSys::getenvintvec("NNODENUDGER_LVLIST") ;  

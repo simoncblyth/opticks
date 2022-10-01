@@ -43,12 +43,12 @@ namespace fs = boost::filesystem;
 #include "NPY.hpp"
 #include "NP.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 // ctor takes ownership of a copy of the inputs 
 template <typename T>
-const plog::Severity NPY<T>::LEVEL = PLOG::EnvLevel("NPY", "DEBUG") ; 
+const plog::Severity NPY<T>::LEVEL = SLOG::EnvLevel("NPY", "DEBUG") ; 
 
 template <typename T>
 NPY<T>::NPY(const std::vector<int>& shape, const std::vector<T>& data_, std::string& metadata) 

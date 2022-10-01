@@ -27,7 +27,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #ifdef _MSC_VER
 // 'ViewNPY' or 'NTrianglesNPY' : object allocated on the heap may not be aligned 16

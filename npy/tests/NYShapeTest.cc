@@ -22,7 +22,7 @@
 
 #include "NYMath.hpp"
 #include "NYShape.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 typedef std::array<int,3>   int3 ;
@@ -145,7 +145,7 @@ void test_par()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     ysphere a(10) ; 
     ysphere b(1000) ; 

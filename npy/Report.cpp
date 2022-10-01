@@ -30,7 +30,7 @@
 // npy-
 #include "Report.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* Report::NAME = "report.txt" ;
 const char* Report::TIMEFORMAT = "%Y%m%d_%H%M%S" ;

@@ -32,7 +32,7 @@
 #include "NSceneConfig.hpp"
 #include "NNodePoints.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config)

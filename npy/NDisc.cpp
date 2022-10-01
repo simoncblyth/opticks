@@ -38,7 +38,7 @@
 #include "NCone.hpp"
 #include "Nuv.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
     
 nbbox ndisc::bbox() const 

@@ -34,7 +34,7 @@
 
 #include "BTimeKeeper.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 typedef NField<glm::vec3,glm::ivec3,3> FI ; 

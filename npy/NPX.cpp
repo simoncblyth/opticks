@@ -1,9 +1,9 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include <iostream>
 #include "NPX.hpp"
 
 template <typename T>
-const plog::Severity NPX<T>::LEVEL = PLOG::EnvLevel("NPX", "DEBUG") ; 
+const plog::Severity NPX<T>::LEVEL = SLOG::EnvLevel("NPX", "DEBUG") ; 
 
 template <typename T>
 NPX<T>* NPX<T>::make(unsigned int ni, unsigned int nj, unsigned int nk)

@@ -1,8 +1,8 @@
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NPY.hpp"
 #include "NPoint.hpp"
 
-const plog::Severity NPoint::LEVEL = PLOG::EnvLevel("NPoint","INFO"); 
+const plog::Severity NPoint::LEVEL = SLOG::EnvLevel("NPoint","INFO"); 
 
 
 NPoint::NPoint(unsigned ni)

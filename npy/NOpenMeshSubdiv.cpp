@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NOpenMeshCfg.hpp"
 #include "NOpenMeshProp.hpp"

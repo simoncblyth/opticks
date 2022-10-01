@@ -38,7 +38,7 @@
 #include "SequenceNPY.hpp"
 #include "RecordsNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 SequenceNPY::SequenceNPY(NPY<float>* photons) 

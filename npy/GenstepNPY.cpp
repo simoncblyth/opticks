@@ -29,10 +29,10 @@
 #include "GLMFormat.hpp"
 #include "uif.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity GenstepNPY::LEVEL = PLOG::EnvLevel("GenstepNPY", "DEBUG") ; 
+const plog::Severity GenstepNPY::LEVEL = SLOG::EnvLevel("GenstepNPY", "DEBUG") ; 
 
 
 GenstepNPY::GenstepNPY(unsigned gentype, const char* config, bool is_default ) 

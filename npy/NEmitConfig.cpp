@@ -20,7 +20,7 @@
 #include <sstream>
 
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NEmitConfig.hpp"
 
 

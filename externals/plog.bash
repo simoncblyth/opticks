@@ -292,10 +292,10 @@ plog--upstream()
 }
 plog-p2s()
 {
-
-    perl -pi -e 's/PLOG::EnvLevel/SLOG::EnvLevel/g' *.cc *.hh
-    perl -pi -e 's/PLOG.hh/SLOG.hh/'                *.cc *.hh
-    perl -pi -e 's/PLOG::instance/SLOG::instance/g' *.cc *.hh
+    perl -pi -e 's/PLOG::EnvLevel/SLOG::EnvLevel/g' *.cc *.hh *.hpp *.cpp
+    perl -pi -e 's/PLOG.hh/SLOG.hh/'                *.cc *.hh *.hpp *.cpp
+    perl -pi -e 's/PLOG::instance/SLOG::instance/g' *.cc *.hh *.hpp *.cpp 
+    perl -pi -e 's/PLOG_INIT/SLOG_INIT/g'           *.cc *.hh *.hpp *.cpp 
 }
 
 

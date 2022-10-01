@@ -27,7 +27,7 @@
 #include "NPYSpecList.hpp"
 #include "NPYList.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 NPYList::NPYList(const NPYSpecList* specs)

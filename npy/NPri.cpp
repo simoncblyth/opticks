@@ -27,7 +27,7 @@
 #include "NSlice.hpp"
 #include "NPri.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 unsigned NPri::getNumG4Event() const { return 1 ; }
