@@ -26,8 +26,6 @@ See eg tboolean-torus-a
 
 **/
 
-#include "OKCORE_LOG.hh"
-#include "NPY_LOG.hh"
 
 #include "NCSGList.hpp"
 
@@ -35,13 +33,11 @@ See eg tboolean-torus-a
 #include "OpticksEvent.hh"
 #include "OpticksEventCompare.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();

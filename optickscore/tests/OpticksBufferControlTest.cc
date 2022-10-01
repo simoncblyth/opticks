@@ -21,7 +21,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 typedef std::vector<const char*> VC ; 
 
@@ -43,7 +43,7 @@ void dump(const OpticksBufferControl& ctrl )
 
 int main(int argc, char** argv)
 {
-     PLOG_(argc, argv);
+     OPTICKS_LOG(argc, argv);
 
      const char* ctrl_ = "OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT,UPLOAD_WITH_CUDA" ;
      unsigned long long mask = OpticksBufferControl::Parse(ctrl_) ;

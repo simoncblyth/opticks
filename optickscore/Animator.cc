@@ -28,7 +28,7 @@
 #include "OpticksConst.hh"
 #include "Animator.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* Animator::OFF_  = "OFF" ; 
 const char* Animator::SLOW32_ = "SLOW32" ; 
@@ -146,7 +146,7 @@ const int Animator::period_low  = 25 ;
 const int Animator::period_high = 10000 ; 
 
 
-const plog::Severity Animator::LEVEL = PLOG::EnvLevel("Animator", "DEBUG"); 
+const plog::Severity Animator::LEVEL = SLOG::EnvLevel("Animator", "DEBUG"); 
 
 
 Animator::Animator(float* target, unsigned int period, float low, float high, const char* label)

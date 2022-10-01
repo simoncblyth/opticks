@@ -8,10 +8,10 @@
 #include "NP.hh"
 #include "NSnapConfig.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "Snap.hh"
 
-const plog::Severity Snap::LEVEL = PLOG::EnvLevel("Snap", "DEBUG"); 
+const plog::Severity Snap::LEVEL = SLOG::EnvLevel("Snap", "DEBUG"); 
 
 
 Snap::Snap(Opticks* ok, SRenderer* renderer, NSnapConfig* config)  

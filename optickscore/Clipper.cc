@@ -31,7 +31,7 @@
 // okc-
 #include "Clipper.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* Clipper::PREFIX = "clipper" ;
 const char* Clipper::getPrefix()

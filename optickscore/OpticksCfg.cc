@@ -39,7 +39,7 @@ template OKCORE_API void BCfg::addOptionI<Opticks>(Opticks*, const char*, const 
 template OKCORE_API void BCfg::addOptionS<Opticks>(Opticks*, const char*, const char* );
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <class Listener>

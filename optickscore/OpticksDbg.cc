@@ -35,9 +35,9 @@
 #include "OpticksCfg.hh"
 #include "OpticksDbg.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity OpticksDbg::LEVEL = PLOG::EnvLevel("OpticksDbg", "DEBUG" ); 
+const plog::Severity OpticksDbg::LEVEL = SLOG::EnvLevel("OpticksDbg", "DEBUG" ); 
 
 OpticksDbg::OpticksDbg(Opticks* ok) 
    :

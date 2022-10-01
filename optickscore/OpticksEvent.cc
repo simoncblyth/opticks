@@ -84,10 +84,10 @@
 #include "OpticksActionControl.hh"
 #include "Indexer.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity OpticksEvent::LEVEL = PLOG::EnvLevel("OpticksEvent", "DEBUG") ; 
+const plog::Severity OpticksEvent::LEVEL = SLOG::EnvLevel("OpticksEvent", "DEBUG") ; 
 
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;

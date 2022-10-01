@@ -1,11 +1,11 @@
 #include <sstream>
 #include <iomanip>
 #include "NGLM.hpp"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "OpticksPhotonFlags.hh"
 
-const plog::Severity OpticksPhotonFlags::LEVEL = PLOG::EnvLevel("OpticksPhotonFlags", "DEBUG"); 
+const plog::Severity OpticksPhotonFlags::LEVEL = SLOG::EnvLevel("OpticksPhotonFlags", "DEBUG"); 
 
 
 OpticksPhotonFlags::OpticksPhotonFlags( const glm::vec4& f )

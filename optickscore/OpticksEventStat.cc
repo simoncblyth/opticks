@@ -27,7 +27,7 @@
 #include "OpticksFlags.hh"
 #include "OpticksEventStat.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

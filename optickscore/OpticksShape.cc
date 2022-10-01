@@ -1,10 +1,10 @@
 #include <cassert>
 #include <sstream>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SPack.hh"
 #include "OpticksShape.hh"
 
-const plog::Severity OpticksShape::LEVEL = PLOG::EnvLevel("OpticksShape", "DEBUG"); 
+const plog::Severity OpticksShape::LEVEL = SLOG::EnvLevel("OpticksShape", "DEBUG"); 
 
 
 unsigned OpticksShape::Encode( unsigned meshIndex, unsigned boundaryIndex )

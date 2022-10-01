@@ -22,7 +22,7 @@
 #include "GLMFormat.hpp"
 #include "OpticksDomain.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

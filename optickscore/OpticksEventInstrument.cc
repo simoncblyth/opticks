@@ -28,7 +28,7 @@
 
 #include "OpticksEventInstrument.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

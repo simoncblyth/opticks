@@ -37,7 +37,7 @@ void test_Dump()
 
 void test_load_and_dump()
 {
-    const SAr& args = PLOG::instance->args ;   
+    const SAr& args = SLOG::instance->args ;   
     const char* def = "$DATADIR/gensteps/dayabay/natural/1.npy" ;  // DATADIR is an internal "envvar"
     const char* path = args._argc > 1 ? args._argv[1] : def ; 
 

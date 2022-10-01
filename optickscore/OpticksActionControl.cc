@@ -21,7 +21,7 @@
 #include <sstream>
 #include <bitset>
 #include "BStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* OpticksActionControl::GS_LOADED_     = "GS_LOADED" ; 
 const char* OpticksActionControl::GS_FABRICATED_ = "GS_FABRICATED" ; 

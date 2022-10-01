@@ -26,7 +26,7 @@
 // brap-
 #include "BFile.hh"
 #include "BDir.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -38,7 +38,7 @@
 #include "Bookmarks.hh"
 
 
-const plog::Severity Bookmarks::LEVEL = PLOG::EnvLevel("Bookmarks", "DEBUG"); 
+const plog::Severity Bookmarks::LEVEL = SLOG::EnvLevel("Bookmarks", "DEBUG"); 
 
 
 Bookmarks::Bookmarks(const char* dir)  

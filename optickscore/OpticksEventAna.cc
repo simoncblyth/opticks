@@ -33,7 +33,7 @@
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventAna.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist )
     :

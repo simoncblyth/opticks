@@ -1,10 +1,10 @@
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NPY.hpp"
 #include "SensorLib.hh"
 
-const plog::Severity SensorLib::LEVEL = PLOG::EnvLevel("SensorLib", "DEBUG"); 
+const plog::Severity SensorLib::LEVEL = SLOG::EnvLevel("SensorLib", "DEBUG"); 
 
 const char* SensorLib::SENSOR_DATA = "sensorData.npy" ;
 const char* SensorLib::SENSOR_ANGULAR_EFFICIENCY = "angularEfficiency.npy" ;

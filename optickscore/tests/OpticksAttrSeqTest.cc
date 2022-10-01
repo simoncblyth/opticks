@@ -23,14 +23,12 @@
 #include "OpticksAttrSeq.hh"
 #include "Index.hpp"
 
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    OKCORE_LOG__ ;   
 
     Opticks ok(argc, argv);
     ok.configure();

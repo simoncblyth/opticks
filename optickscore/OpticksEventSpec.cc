@@ -29,13 +29,13 @@
 
 #include "OpticksEventSpec.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* OpticksEventSpec::G4_ = "G4" ; 
 const char* OpticksEventSpec::OK_ = "OK" ; 
 const char* OpticksEventSpec::NO_ = "NO" ; 
 
-const plog::Severity OpticksEventSpec::LEVEL = PLOG::EnvLevel("OpticksEventSpec", "DEBUG") ; 
+const plog::Severity OpticksEventSpec::LEVEL = SLOG::EnvLevel("OpticksEventSpec", "DEBUG") ; 
 
 OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec) 
     :

@@ -23,7 +23,7 @@
 
 #include "SCtrl.hh"
 #include "BStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NPY.hpp"
 #include "NGLM.hpp"
@@ -32,7 +32,7 @@
 #include "InterpolatedView.hh"
 
 
-const plog::Severity InterpolatedView::LEVEL = PLOG::EnvLevel("InterpolatedView", "DEBUG" ); 
+const plog::Severity InterpolatedView::LEVEL = SLOG::EnvLevel("InterpolatedView", "DEBUG" ); 
 
 const char* InterpolatedView::PREFIX = "interpolatedview" ;
 const char* InterpolatedView::getPrefix()

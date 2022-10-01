@@ -86,10 +86,10 @@
 #include "Composition.hh"
 #include "CompositionCfg.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity Composition::LEVEL = PLOG::EnvLevel("Composition", "DEBUG"); 
+const plog::Severity Composition::LEVEL = SLOG::EnvLevel("Composition", "DEBUG"); 
 
 const char* Composition::PREFIX = "composition" ;
 const char* Composition::getPrefix()

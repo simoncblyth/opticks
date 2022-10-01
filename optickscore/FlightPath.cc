@@ -30,7 +30,7 @@
 // brap-
 #include "BFile.hh"
 #include "BDir.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -49,7 +49,7 @@
 
 
 
-const plog::Severity FlightPath::LEVEL = PLOG::EnvLevel("FlightPath", "DEBUG" ); 
+const plog::Severity FlightPath::LEVEL = SLOG::EnvLevel("FlightPath", "DEBUG" ); 
 
 void FlightPath::setCtrl(SCtrl* ctrl)
 {

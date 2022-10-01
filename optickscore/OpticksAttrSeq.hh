@@ -47,7 +47,7 @@ History
 #include <vector>
 #include "plog/Severity.h"
 
-class SLog ; 
+class SLogger ; 
 
 
 class Opticks ;
@@ -112,7 +112,7 @@ class OKCORE_API OpticksAttrSeq {
     private:
         void init();
     private:
-        SLog*                                m_log ; 
+        SLogger*                             m_log ; 
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
         const char*                          m_type ; 

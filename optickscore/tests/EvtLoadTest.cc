@@ -20,20 +20,16 @@
 // op --tevtload
 // tlens-load 
 
-#include "OKCORE_LOG.hh"
-#include "NPY_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventDump.hh"
 
-#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    //NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();

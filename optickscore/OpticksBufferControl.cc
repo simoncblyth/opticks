@@ -20,7 +20,7 @@
 #include "OpticksBufferControl.hh"
 #include <sstream>
 #include "BStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* OpticksBufferControl::OPTIX_SETSIZE_ = "OPTIX_SETSIZE" ; 
 const char* OpticksBufferControl::OPTIX_NON_INTEROP_ = "OPTIX_NON_INTEROP" ;   // use optix buffer even in in interop mode

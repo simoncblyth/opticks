@@ -30,7 +30,7 @@ OpticksEventDumpTest
 #include "OpticksEvent.hh"
 #include "OpticksEventDump.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 int main(int argc, char** argv)
 {

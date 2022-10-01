@@ -24,10 +24,10 @@
 #include "SSys.hh"
 #include "Opticks.hh"
 #include "OpticksMode.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity OpticksMode::LEVEL = PLOG::EnvLevel("OpticksMode", "DEBUG" ); 
+const plog::Severity OpticksMode::LEVEL = SLOG::EnvLevel("OpticksMode", "DEBUG" ); 
 
 const char* OpticksMode::COMPUTE_ARG_ = "--compute" ; 
 const char* OpticksMode::INTEROP_ARG_ = "--interop" ; 

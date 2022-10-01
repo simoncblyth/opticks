@@ -31,9 +31,9 @@
 
 #include "OpticksProfile.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity OpticksProfile::LEVEL = PLOG::EnvLevel("OpticksProfile", "DEBUG") ; 
+const plog::Severity OpticksProfile::LEVEL = SLOG::EnvLevel("OpticksProfile", "DEBUG") ; 
 
 const char* OpticksProfile::NAME = "OpticksProfile" ; 
 

@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-class SLog ; 
+class SLogger ; 
 
 class SOpticksKey ; 
 class BOpticksResource ; 
@@ -158,7 +158,7 @@ class OKCORE_API OpticksResource
        void        setTestConfig(const char* config) ; 
 
    private:
-       SLog*             m_log ; 
+       SLogger*          m_log ; 
        BOpticksResource* m_rsc ; 
        SOpticksKey*      m_key ; 
        Opticks*          m_ok ; 

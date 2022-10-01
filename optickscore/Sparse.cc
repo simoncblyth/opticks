@@ -25,7 +25,7 @@
 
 #include "BStr.hh"
 #include "BHex.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NPY.hpp"
 #include "Index.hpp"

@@ -32,7 +32,7 @@
 #include "NSpectral.hpp"
 
 #include "OpticksColors.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 using namespace std ; 
 
@@ -61,7 +61,7 @@ NPY<unsigned char>* OpticksColors::getCompositeBuffer()
 }
 
 
-const plog::Severity OpticksColors::LEVEL = PLOG::EnvLevel("OpticksColors", "DEBUG" ); 
+const plog::Severity OpticksColors::LEVEL = SLOG::EnvLevel("OpticksColors", "DEBUG" ); 
 
 OpticksColors* OpticksColors::load(const char* dir, const char* name)
 {

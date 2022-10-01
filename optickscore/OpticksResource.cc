@@ -35,7 +35,7 @@ namespace fs = boost::filesystem;
 // brap-
 #include "BFile.hh"
 #include "BStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "Map.hh"
 #include "BOpticksResource.hh"
 #include "BResource.hh"
@@ -58,7 +58,7 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
-const plog::Severity OpticksResource::LEVEL = PLOG::EnvLevel("OpticksResource", "DEBUG") ; 
+const plog::Severity OpticksResource::LEVEL = SLOG::EnvLevel("OpticksResource", "DEBUG") ; 
 
 /*
 OpticksResource::OpticksResource

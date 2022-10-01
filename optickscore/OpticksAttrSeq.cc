@@ -31,7 +31,7 @@
 // brap-
 #include "BStr.hh"
 #include "BHex.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // npy-
 #include "BMeta.hh"
@@ -43,12 +43,12 @@
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
-const plog::Severity OpticksAttrSeq::LEVEL = PLOG::EnvLevel("OpticksAttrSeq", "DEBUG"); 
+const plog::Severity OpticksAttrSeq::LEVEL = SLOG::EnvLevel("OpticksAttrSeq", "DEBUG"); 
 
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)

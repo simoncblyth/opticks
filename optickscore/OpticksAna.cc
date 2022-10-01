@@ -28,7 +28,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksAna.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const plog::Severity OpticksAna::LEVEL = debug ; 
 

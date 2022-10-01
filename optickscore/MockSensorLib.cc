@@ -1,5 +1,5 @@
 #include "SRand.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NPY.hpp"
 #include "SensorLib.hh"
 #include "MockSensorLib.hh"

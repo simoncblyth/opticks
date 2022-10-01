@@ -22,7 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"

@@ -19,7 +19,7 @@
 
 #include <cassert>
 #include <sstream>
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "OpticksConst.hh"
 #include "Composition.hh"

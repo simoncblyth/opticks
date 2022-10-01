@@ -21,7 +21,7 @@
 
 #include <numeric>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // npy-
 #include "NPY.hpp"

@@ -61,7 +61,7 @@
 #include "BStr.hh"
 #include "BPropNames.hh"
 #include "BEnv.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "Map.hh"
 
 
@@ -135,7 +135,7 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 15 ;  // (incremented when
 **/
 
 
-const plog::Severity Opticks::LEVEL = PLOG::EnvLevel("Opticks", "DEBUG")  ; 
+const plog::Severity Opticks::LEVEL = SLOG::EnvLevel("Opticks", "DEBUG")  ; 
 
 
 BPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
@@ -482,7 +482,7 @@ void Opticks::init()
     m_parameters->add<int>("Geant4Version",  OKConf::Geant4VersionInteger() );
 
     m_parameters->addEnvvar("CUDA_VISIBLE_DEVICES");
-    m_parameters->add<std::string>("CMDLINE", PLOG::instance ? PLOG::instance->cmdline() : "OpticksEmbedded" ); 
+    m_parameters->add<std::string>("CMDLINE", SLOG::instance ? SLOG::instance->cmdline() : "OpticksEmbedded" ); 
     if(m_envkey) m_parameters->add<int>("--envkey", 1 ); // OPTICKS_KEY envvar is only relevant when use --envkey to switch on sensitivity 
     m_parameters->addEnvvarsWithPrefix("OPTICKS_"); 
 
@@ -2183,12 +2183,12 @@ Opticks::has_arg
 -----------------
 
 This works prior to Opticks::config via the args collected 
-into PLOG::instance by OPTICKS_LOG 
+into SLOG::instance by OPTICKS_LOG 
 
 **/
 bool Opticks::has_arg(const char* arg) const 
 {
-    return PLOG::instance ? PLOG::instance->has_arg(arg) : false ;
+    return SLOG::instance ? SLOG::instance->has_arg(arg) : false ;
 }
 
 
@@ -2201,7 +2201,7 @@ Invoked by Opticks::configure after initResource
 
 void Opticks::updateCacheMeta()  
 {
-    std::string argline = PLOG::instance ? PLOG::instance->args.argline() : "OpticksEmbedded" ;
+    std::string argline = SLOG::instance ? SLOG::instance->args.argline() : "OpticksEmbedded" ;
 
     int runstamp = getRunStamp() ;
     const char* rundate = getRunDate() ;

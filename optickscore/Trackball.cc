@@ -28,7 +28,7 @@
 
 #include "NGLM.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // npy-
 #include "GLMPrint.hpp"

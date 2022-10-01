@@ -30,7 +30,7 @@
 #include "OpticksEventStat.hh"
 #include "OpticksEventCompare.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 OpticksEventCompare::OpticksEventCompare(OpticksEvent* a, OpticksEvent* b)
     :

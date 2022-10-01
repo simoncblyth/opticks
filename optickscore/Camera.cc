@@ -34,10 +34,10 @@
 // okc-
 #include "OpticksConst.hh"
 #include "Camera.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity Camera::LEVEL = PLOG::EnvLevel("Camera", "DEBUG") ; 
+const plog::Severity Camera::LEVEL = SLOG::EnvLevel("Camera", "DEBUG") ; 
 
 
 // Unexplained interference between plog and Camera..

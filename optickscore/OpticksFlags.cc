@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "BStr.hh"
 #include "SBit.hh"
 
@@ -37,7 +37,7 @@
 #include "OpticksFlags.hh"
 
 
-const plog::Severity OpticksFlags::LEVEL = PLOG::EnvLevel("OpticksFlags", "DEBUG") ; 
+const plog::Severity OpticksFlags::LEVEL = SLOG::EnvLevel("OpticksFlags", "DEBUG") ; 
 
 
 const char* OpticksFlags::ABBREV_META_NAME = "OpticksFlagsAbbrevMeta.json" ;

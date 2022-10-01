@@ -32,10 +32,10 @@
 
 #include "G4StepNPY.hpp"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity OpticksRun::LEVEL = PLOG::EnvLevel("OpticksRun", "DEBUG")  ; 
+const plog::Severity OpticksRun::LEVEL = SLOG::EnvLevel("OpticksRun", "DEBUG")  ; 
 
 
 OpticksRun::OpticksRun(Opticks* ok) 

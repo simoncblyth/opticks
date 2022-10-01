@@ -29,7 +29,7 @@
 #include "OpticksEventStat.hh"
 #include "OpticksEventDump.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 OpticksEventDump::OpticksEventDump(OpticksEvent* evt ) 
     :

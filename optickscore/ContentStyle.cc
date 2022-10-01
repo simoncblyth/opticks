@@ -18,7 +18,7 @@
  */
 
 #include <cassert>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "ContentStyle.hh"
 
 ContentStyle::ContentStyle()

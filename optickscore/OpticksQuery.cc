@@ -25,7 +25,7 @@
 // brap-
 #include "BStr.hh"
 #include "SDigest.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 // okc-
 #include "OpticksQuery.hh"

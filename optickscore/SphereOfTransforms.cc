@@ -1,13 +1,13 @@
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SPack.hh"
 #include "NPY.hpp"
 #include "NGLMExt.hpp"
 
 #include "SphereOfTransforms.hh"
 
-const plog::Severity  SphereOfTransforms::LEVEL = PLOG::EnvLevel("SphereOfTransforms", "DEBUG"); 
+const plog::Severity  SphereOfTransforms::LEVEL = SLOG::EnvLevel("SphereOfTransforms", "DEBUG"); 
 
 unsigned SphereOfTransforms::NumTransforms(unsigned num_theta, unsigned num_phi)
 {

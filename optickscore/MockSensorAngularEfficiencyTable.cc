@@ -1,9 +1,9 @@
 #include <string>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NPY.hpp"
 #include "MockSensorAngularEfficiencyTable.hh"
 
-const plog::Severity MockSensorAngularEfficiencyTable::LEVEL = PLOG::EnvLevel("MockSensorAngularEfficiencyTable", "DEBUG"); 
+const plog::Severity MockSensorAngularEfficiencyTable::LEVEL = SLOG::EnvLevel("MockSensorAngularEfficiencyTable", "DEBUG"); 
 
 
 NPY<float>* MockSensorAngularEfficiencyTable::Make(unsigned num_sensor_cat, unsigned num_theta_steps, unsigned num_phi_steps)  // static 

@@ -4,7 +4,7 @@
 #include "NPY.hpp"
 #include "NGLM.hpp"
 #include "IntersectSDF.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "NBox.hpp"
 #include "NSphere.hpp"
@@ -38,7 +38,7 @@ float IntersectSDF::sdf(unsigned geocode, const glm::vec3& lpos )
     return sd ; 
 }
 
-const plog::Severity IntersectSDF::LEVEL = PLOG::EnvLevel("IntersectSDF", "DEBUG"); 
+const plog::Severity IntersectSDF::LEVEL = SLOG::EnvLevel("IntersectSDF", "DEBUG"); 
 
 
 unsigned IntersectSDF::getRC() const { return m_rc ; }

@@ -27,7 +27,7 @@
 
 #include "NGLM.hpp"
 
-class SLog ; 
+class SLogger ; 
 class SRngSpec ; 
 struct SArgs ; 
 struct SGeo ; 
@@ -365,7 +365,7 @@ class OKCORE_API Opticks {
        // BMeta parameters 
        template <typename T> void set(const char* name, T value);
    public:
-       bool        has_arg(const char* arg) const  ; // via PLOG::instance
+       bool        has_arg(const char* arg) const  ; // via SLOG::instance
 
        void        updateCacheMeta() ; 
        void        appendCacheMeta(const char* key, BMeta* obj);
@@ -816,7 +816,7 @@ class OKCORE_API Opticks {
    private:
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
-       SLog*                m_log ;
+       SLogger*             m_log ;
        Opticks*             m_ok ;   // for OK_PROFILE 
        const char*          m_opts ;  // OPTICKS_OPTS
        SArgs*               m_sargs ; 

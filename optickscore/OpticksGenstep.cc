@@ -39,9 +39,9 @@
 #include "OpticksEvent.hh"
 #include "OpticksActionControl.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity OpticksGenstep::LEVEL = PLOG::EnvLevel("OpticksGenstep", "DEBUG"); 
+const plog::Severity OpticksGenstep::LEVEL = SLOG::EnvLevel("OpticksGenstep", "DEBUG"); 
 
 
 std::string OpticksGenstep::Dump()   // static

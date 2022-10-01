@@ -38,9 +38,9 @@
 #include "View.hh"
 #include "Ctrl.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity View::LEVEL = PLOG::EnvLevel("View", "DEBUG"); 
+const plog::Severity View::LEVEL = SLOG::EnvLevel("View", "DEBUG"); 
 
 const char* View::STANDARD_ = "STANDARD" ; 
 const char* View::FLIGHTPATH_ = "FLIGHTPATH" ; 

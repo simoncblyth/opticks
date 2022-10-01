@@ -1,9 +1,9 @@
 #include <cassert>
 #include <sstream>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "OpticksIdentity.hh"
 
-const plog::Severity OpticksIdentity::LEVEL = PLOG::EnvLevel("OpticksIdentity", "DEBUG"); 
+const plog::Severity OpticksIdentity::LEVEL = SLOG::EnvLevel("OpticksIdentity", "DEBUG"); 
 
 /**
 OpticksIdentity::Encode

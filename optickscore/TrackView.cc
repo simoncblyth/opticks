@@ -20,7 +20,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // npy-
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
