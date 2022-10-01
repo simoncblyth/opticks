@@ -69,10 +69,10 @@ class BRAP_API BListenUDP
 #include <boost/thread.hpp>    // just to report thread id : no threads are created 
 #include <boost/lexical_cast.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template <typename T>
-const plog::Severity BListenUDP<T>::LEVEL = PLOG::EnvLevel("BListenUDP", "DEBUG") ; 
+const plog::Severity BListenUDP<T>::LEVEL = SLOG::EnvLevel("BListenUDP", "DEBUG") ; 
 
 /**
 BListenUDP::BListenUDP

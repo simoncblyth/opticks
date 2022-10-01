@@ -25,7 +25,7 @@
 #include "BStr.hh"
 #include "BBnd.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char BBnd::DELIM = '/' ; 
 

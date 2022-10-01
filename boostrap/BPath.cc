@@ -25,7 +25,7 @@
 #include "BPath.hh"
 #include "SDigest.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* BPath::getIdPath() const 
 {

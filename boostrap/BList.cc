@@ -41,7 +41,7 @@ namespace pt = boost::property_tree;
 #include "BTree.hh"
 #include "BFile.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 

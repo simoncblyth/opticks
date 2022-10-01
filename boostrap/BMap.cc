@@ -32,7 +32,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 namespace fs = boost::filesystem;

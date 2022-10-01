@@ -27,7 +27,7 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
-class SLog ; 
+class SLogger ; 
 class SOpticksKey ; 
 
 class BPath ; 
@@ -307,7 +307,7 @@ class BRAP_API  BOpticksResource {
 
    protected:
         bool         m_testgeo ;   
-        SLog*        m_log ; 
+        SLogger*     m_log ; 
         bool         m_setup ; 
         SOpticksKey* m_key ; 
         BPath*       m_id ; 

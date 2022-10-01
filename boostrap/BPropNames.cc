@@ -26,7 +26,7 @@
 #include "BTxt.hh"
 #include "BPropNames.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 BPropNames::BPropNames(const char* libname)
    :

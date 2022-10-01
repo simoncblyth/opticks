@@ -31,7 +31,7 @@
 #include "BList.hh"
 #include "BTimes.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 BTimes::BTimes(const char* label)  

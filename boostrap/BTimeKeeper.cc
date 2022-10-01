@@ -27,7 +27,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* BTimeKeeper::COLUMNS = "t_absolute,t_delta" ;
 const char* BTimeKeeper::START = "START" ;

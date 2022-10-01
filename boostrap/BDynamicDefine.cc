@@ -23,7 +23,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "BFile.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "BDynamicDefine.hh"
 

@@ -25,12 +25,12 @@
 
 #include "BFile.hh"
 #include "BCfg.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 typedef std::vector<std::string>::const_iterator VSI ; 
 
 
-const plog::Severity BCfg::LEVEL = PLOG::EnvLevel("BCfg", "DEBUG"); 
+const plog::Severity BCfg::LEVEL = SLOG::EnvLevel("BCfg", "DEBUG"); 
 
 namespace po = boost::program_options;
 

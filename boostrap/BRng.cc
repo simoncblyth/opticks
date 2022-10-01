@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "BRng.hh"
 
 
-const plog::Severity BRng::LEVEL = PLOG::EnvLevel("BRng", "DEBUG") ; 
+const plog::Severity BRng::LEVEL = SLOG::EnvLevel("BRng", "DEBUG") ; 
 
 
 float BRng::getLo() const 

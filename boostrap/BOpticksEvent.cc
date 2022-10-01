@@ -29,10 +29,10 @@
 #include "BResource.hh"
 #include "BOpticksEvent.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity BOpticksEvent::LEVEL = PLOG::EnvLevel("BOpticksEvent", "DEBUG" ) ; 
+const plog::Severity BOpticksEvent::LEVEL = SLOG::EnvLevel("BOpticksEvent", "DEBUG" ) ; 
 
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/$0/evt/$1/$2" ;  
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/$0/evt/$1/$2/$3" ; 

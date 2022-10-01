@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     LOG(verbose) << argv[0] ;
     LOG(debug) << argv[0] ;

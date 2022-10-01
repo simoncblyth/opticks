@@ -39,10 +39,10 @@
 namespace fs = boost::filesystem;
 
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity BFile::LEVEL = PLOG::EnvLevel("BFile", "DEBUG"); 
+const plog::Severity BFile::LEVEL = SLOG::EnvLevel("BFile", "DEBUG"); 
 
 
 char* BFile::OPTICKS_PATH_PREFIX = NULL ;

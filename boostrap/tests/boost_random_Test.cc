@@ -27,7 +27,7 @@
 #include <boost/random/variate_generator.hpp>
 
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 using std::cout ; 
 using std::endl  ; 
@@ -61,7 +61,7 @@ void test_0()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     test_0();
 

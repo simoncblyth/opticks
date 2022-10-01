@@ -35,7 +35,7 @@
 
 
 #include "BRAP_BODY.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 void BRegex::dump( pairs_t& pairs, const char* msg)

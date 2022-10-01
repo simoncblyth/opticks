@@ -38,7 +38,7 @@
 #include "SStr.hh"
 #include "BStr.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

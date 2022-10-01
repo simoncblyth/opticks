@@ -23,13 +23,13 @@
 #include "BTxt.hh"
 #include "BStr.hh"
 #include "SVec.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include <cmath>
 #include <cstdlib>
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity BLog::LEVEL = PLOG::EnvLevel("BLog", "DEBUG"); 
+const plog::Severity BLog::LEVEL = SLOG::EnvLevel("BLog", "DEBUG"); 
 
 const double BLog::TOLERANCE = 1e-6 ; 
 

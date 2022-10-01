@@ -31,7 +31,7 @@ turned out to be pilot error.
 
 #include <iostream>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 #include "SMockViz.hh"
 #include "OPTICKS_LOG.hh"

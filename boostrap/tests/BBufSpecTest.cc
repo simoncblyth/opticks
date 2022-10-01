@@ -21,12 +21,12 @@
 #include <cassert>
 #include "BBufSpec.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "BRAP_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     BRAP_LOG_ ;
 
     BBufSpec bs = BBufSpec(1, NULL, 0, -1);

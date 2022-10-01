@@ -27,7 +27,7 @@
 
 #include "Map.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template <typename K, typename V>

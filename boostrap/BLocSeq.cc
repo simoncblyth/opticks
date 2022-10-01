@@ -19,7 +19,7 @@
 
 #include <cassert>
 #include <iostream>
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "SPairVec.hh"
 #include "SMap.hh"

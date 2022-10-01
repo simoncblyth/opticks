@@ -27,7 +27,7 @@
 #include "BStr.hh"
 
 #include "BTxt.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #ifdef _MSC_VER
 #define strdup _strdup

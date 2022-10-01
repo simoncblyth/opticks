@@ -46,9 +46,9 @@ namespace fs = boost::filesystem;
 
 #include "BOpticksResource.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity BOpticksResource::LEVEL = PLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
+const plog::Severity BOpticksResource::LEVEL = SLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
 
 
 BOpticksResource* BOpticksResource::fInstance = nullptr  ;  

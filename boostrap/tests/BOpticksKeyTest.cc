@@ -48,7 +48,7 @@ int main( int argc, char** argv )
     }    
     LOG(info) << key->desc() ; 
 
-    const char* exename = PLOG::instance->args.exename() ; 
+    const char* exename = SLOG::instance->args.exename() ; 
     std::cout << " exename " << exename << std::endl ; 
 
     test_setupViaKey(); 

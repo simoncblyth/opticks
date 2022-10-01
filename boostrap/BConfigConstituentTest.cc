@@ -18,6 +18,9 @@
  */
 
 
+#include "OPTICKS_LOG.hh"
+
+
 struct DemoConstituentConfig 
 {
     DemoConstituentConfig(const char* cfg);
@@ -64,7 +67,7 @@ DemoInheritConfig::DemoInheritConfig(const char* cfg)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     DemoInheritConfig cfg("red=1,green=2,blue=3");
     cfg.dump();

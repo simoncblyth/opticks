@@ -18,7 +18,7 @@
  */
 
 #include <iostream>
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "BRAP_LOG.hh"
 #include "BConfig.hh"
 
@@ -59,7 +59,7 @@ DemoConfig::DemoConfig(const char* cfg_, const char* kvdelim)
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
     BRAP_LOG__ ; 
 
     DemoConfig cfg("red=1,green=2,blue=3,cyan=1.5,magenta=purple", "=");

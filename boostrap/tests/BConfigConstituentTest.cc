@@ -18,7 +18,7 @@
  */
 
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "BConfig.hh"
 
 
@@ -58,7 +58,7 @@ void DemoConfig::dump() const
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     DemoConfig cfg("red=1,green=2,blue=3");
     cfg.dump();

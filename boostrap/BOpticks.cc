@@ -26,7 +26,7 @@
 #include "SOpticksKey.hh"
 #include "BOpticksResource.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 BOpticks::BOpticks(int argc, char** argv, const char* argforced )
     :    

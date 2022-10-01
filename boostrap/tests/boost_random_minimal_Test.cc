@@ -29,7 +29,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/generator_iterator.hpp>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 //typedef boost::mt19937     RNG_t; 
 //typedef boost::ecuyer1988  RNG_t;
@@ -139,7 +139,7 @@ void test_1()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     test_0();
     test_1();

@@ -26,10 +26,10 @@
 #include "BTimesTable.hh"
 #include "BTimes.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity BTimesTable::LEVEL = PLOG::EnvLevel("BTimesTable", "DEBUG") ; 
+const plog::Severity BTimesTable::LEVEL = SLOG::EnvLevel("BTimesTable", "DEBUG") ; 
 
 
 BTimesTable::BTimesTable(const std::vector<std::string>& columns)

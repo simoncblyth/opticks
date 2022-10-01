@@ -37,7 +37,7 @@ extern char **environ;
 #include "SSys.hh"
 #include "BFile.hh"
 #include "BList.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 

@@ -22,7 +22,7 @@
 
 #include "BResource.hh"
 #include "BFile.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 BResource* BResource::INSTANCE = NULL ; 
 

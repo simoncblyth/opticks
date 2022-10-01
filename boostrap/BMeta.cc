@@ -39,10 +39,10 @@ extern char **environ;
 #include "BStr.hh"
 #include "BMeta.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
-const plog::Severity BMeta::LEVEL = PLOG::EnvLevel("BMeta", "DEBUG"); 
+const plog::Severity BMeta::LEVEL = SLOG::EnvLevel("BMeta", "DEBUG"); 
 
 
 BMeta::BMeta(const BMeta& other)

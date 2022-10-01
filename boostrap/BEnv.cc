@@ -30,9 +30,9 @@
 #include "BEnv.hh"
 #include "Map.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity BEnv::LEVEL = PLOG::EnvLevel("BEnv","DEBUG"); 
+const plog::Severity BEnv::LEVEL = SLOG::EnvLevel("BEnv","DEBUG"); 
 
 
 #ifdef _MSC_VER
@@ -340,9 +340,9 @@ void BEnv::dumpEnvironment(const char* msg, const char* prefix)
           LOG(info)  << kv ; 
       }
 
-      // surprised to find that PLOG is writing to std::cout ... 
+      // surprised to find that plog is writing to std::cout ... 
       // so to distinguish the crucial path written by OpticksIDPATH 
-      // need to follow PLOG here
+      // need to follow plog here
    }
 }
 #endif

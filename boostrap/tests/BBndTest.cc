@@ -20,7 +20,7 @@
 
 #include <cstring>
 #include "BBnd.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -60,7 +60,7 @@ void test_BBnd()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     test_DuplicateOuterMaterial();
     test_BBnd();

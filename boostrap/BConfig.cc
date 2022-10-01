@@ -20,7 +20,7 @@
 
 #include "BStr.hh"
 #include "BConfig.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 const char* BConfig::DEFAULT_KVDELIM = "=" ; 
 
