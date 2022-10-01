@@ -1,9 +1,9 @@
 #include "U4Scintillation_Debug.hh"
 #include "U4Debug.hh"
 #include "NP.hh"    
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity U4Scintillation_Debug::LEVEL = PLOG::EnvLevel("U4Scintillation_Debug", "debug" ); 
+const plog::Severity U4Scintillation_Debug::LEVEL = SLOG::EnvLevel("U4Scintillation_Debug", "debug" ); 
 std::vector<U4Scintillation_Debug> U4Scintillation_Debug::record = {} ;
 
 void U4Scintillation_Debug::Save(const char* dir)

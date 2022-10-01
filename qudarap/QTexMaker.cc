@@ -3,9 +3,9 @@
 #include "scuda.h"
 #include "NP.hh"
 #include "QTex.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity QTexMaker::LEVEL = PLOG::EnvLevel("QTexMaker", "DEBUG"); 
+const plog::Severity QTexMaker::LEVEL = SLOG::EnvLevel("QTexMaker", "DEBUG"); 
 
 
 QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode, bool normalizedCoords )  // static 

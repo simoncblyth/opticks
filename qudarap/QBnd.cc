@@ -22,9 +22,9 @@
 #include "qbnd.h"
 
 #include "SDigestNP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "DEBUG"); 
+const plog::Severity QBnd::LEVEL = SLOG::EnvLevel("QBnd", "DEBUG"); 
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 

@@ -34,7 +34,7 @@
 #include "SBT.h"
 
 #include "CU.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 SBT
@@ -47,7 +47,7 @@ PGs and their data.
 
 **/
 
-const plog::Severity SBT::LEVEL = PLOG::EnvLevel("SBT", "DEBUG"); 
+const plog::Severity SBT::LEVEL = SLOG::EnvLevel("SBT", "DEBUG"); 
 
 
 SBT::SBT(const PIP* pip_)

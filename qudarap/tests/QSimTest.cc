@@ -91,7 +91,7 @@ Inhibiting logging  within executables does not work ...
 
 **/
 
-const plog::Severity QSimTest::LEVEL = PLOG::EnvLevel("QSimTest", "INFO"); 
+const plog::Severity QSimTest::LEVEL = SLOG::EnvLevel("QSimTest", "INFO"); 
 
 const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
 

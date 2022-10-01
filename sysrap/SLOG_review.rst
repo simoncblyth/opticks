@@ -27,10 +27,10 @@ use of LOG(trace) into LOG(verbose)
 
 ::
 
-    epsilon:sysrap blyth$ hg diff PLOG.hh
-    diff -r 3e7743e5bc48 sysrap/PLOG.hh
-    --- a/sysrap/PLOG.hh    Thu Aug 16 00:01:19 2018 +0800
-    +++ b/sysrap/PLOG.hh    Thu Aug 16 12:57:29 2018 +0800
+    epsilon:sysrap blyth$ hg diff SLOG.hh
+    diff -r 3e7743e5bc48 sysrap/SLOG.hh
+    --- a/sysrap/SLOG.hh    Thu Aug 16 00:01:19 2018 +0800
+    +++ b/sysrap/SLOG.hh    Thu Aug 16 12:57:29 2018 +0800
     @@ -15,7 +15,7 @@
      using plog::verbose ;
      
@@ -108,7 +108,7 @@ Typical Opticks executable main
       3 #include <iostream>
       4 
       5 #include "BFile.hh"
-      6 #include "PLOG.hh"
+      6 #include "SLOG.hh"
       7 
       8 #include "SYSRAP_LOG.hh"
       9 #include "BRAP_LOG.hh"
@@ -120,7 +120,7 @@ Typical Opticks executable main
      ..
      74 int main(int argc, char** argv)
      75 {
-     76     PLOG_(argc,argv);
+     76     SLOG_(argc,argv);
      77     LOG(info) << argv[0] ;
      78 
      79 
@@ -134,7 +134,7 @@ Typical Opticks executable main
      87 
 
 
-PLOG.hh
+SLOG.hh
 ~~~~~~~~~~
 
 ::
@@ -155,9 +155,9 @@ PLOG.hh
      18 
      19 #include "SYSRAP_API_EXPORT.hh"
     ...
-    105 struct PLOG ;
+    105 struct SLOG ;
     106 
-    107 struct SYSRAP_API PLOG
+    107 struct SYSRAP_API SLOG
     108 {
     109     int    argc ;
     110     char** argv ;
@@ -165,7 +165,7 @@ PLOG.hh
     112     const char* logpath ;
     113     int   logmax ;
     114 
-    115     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
+    115     SLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
     116 
     117     const char* name();
     118     int parse( const char* fallback);
@@ -180,17 +180,17 @@ PLOG.hh
     127     static const char* _name(int level);
     128     static const char* _logpath_parse(int argc, char** argv);
     129 
-    130     static PLOG* instance ;
+    130     static SLOG* instance ;
     ...     ^^^^^^^^^^^^^^^^^^^^^^^^^^ static singleton instance : possibly source of stomp problems with recent gcc ?
 
     131 };
     132 
     133 
-    134 #include "PLOG_INIT.hh"
+    134 #include "SLOG_INIT.hh"
     135 
 
 
-PLOG_INIT.hh
+SLOG_INIT.hh
 ~~~~~~~~~~~~~~
 
 ::
@@ -204,9 +204,9 @@ PLOG_INIT.hh
       7 
       8 /*
       9 
-     10 PLOG_INIT macros are used in two situations:
+     10 SLOG_INIT macros are used in two situations:
      11 
-     12 * an executable main as a result of PLOG_ or PLOT_COLOR applied
+     12 * an executable main as a result of SLOG_ or PLOT_COLOR applied
      13   to the arguments
      14 
      15 * package logger 
@@ -216,7 +216,7 @@ PLOG_INIT.hh
      19 
      20 
      21 
-     22 #define PLOG_INIT(level, app1, app2 ) \
+     22 #define SLOG_INIT(level, app1, app2 ) \
      23 { \
      24     plog::IAppender* appender1 = app1 ? static_cast<plog::IAppender*>(app1) : NULL ; \
      25     plog::IAppender* appender2 = app2 ? static_cast<plog::IAppender*>(app2) : NULL ; \
@@ -227,43 +227,43 @@ PLOG_INIT.hh
      30 } \ 
      31     
      32     
-     33 #define PLOG_COLOR(argc, argv) \
+     33 #define SLOG_COLOR(argc, argv) \
      34 { \ 
-     35     PLOG _plog(argc, argv); \
+     35     SLOG _plog(argc, argv); \
      36     static plog::RollingFileAppender<plog::FuncMessageFormatter> fileAppender( _plog.logpath, _plog.logmax); \
      37     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
-     38     PLOG_INIT( _plog.level, &consoleAppender, &fileAppender ); \
+     38     SLOG_INIT( _plog.level, &consoleAppender, &fileAppender ); \
      39 } \ 
      40     
-     41 #define PLOG_(argc, argv) \
+     41 #define SLOG_(argc, argv) \
      42 { \ 
-     43     PLOG _plog(argc, argv); \
+     43     SLOG _plog(argc, argv); \
      44     static plog::RollingFileAppender<plog::FuncMessageFormatter> fileAppender( _plog.logpath, _plog.logmax); \
      45     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
-     46     PLOG_INIT( _plog.level,  &consoleAppender, &fileAppender ); \
+     46     SLOG_INIT( _plog.level,  &consoleAppender, &fileAppender ); \
      47 } \ 
      48     
      ...
 
 
-What PLOG_(argc, argv) does
+What SLOG_(argc, argv) does
 ------------------------------
 
 ::
 
      74 int main(int argc, char** argv)
      75 {
-     76     PLOG_(argc,argv);
+     76     SLOG_(argc,argv);
      77     LOG(info) << argv[0] ;
      78  
 
-Instanciates PLOG struct into main which parses command line arguments into:
+Instanciates SLOG struct into main which parses command line arguments into:
 
 * global logmax
 * global logpath
-* holds onto arguments within PLOG::instance, for use from the package loggers
+* holds onto arguments within SLOG::instance, for use from the package loggers
 
-Invokes PLOG_INIT macro which instanciates the main plog logger and hooks up 
+Invokes SLOG_INIT macro which instanciates the main plog logger and hooks up 
 file and console appenders.
 
 
@@ -272,13 +272,13 @@ What SYSRAP_LOG__ and other pkg macros do
 
 ::
 
-      5 #define SYSRAP_LOG__  {     SYSRAP_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
+      5 #define SYSRAP_LOG__  {     SYSRAP_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
 
       ## notice that the main logger plog::get() is being passed to the lib logger as an appender
 
 
-* uses the command line arguments persisted in PLOG::instance to define the per-package logging level 
-  and passes this level to the package libs where PLOG_INIT is invoked to instanciate the 
+* uses the command line arguments persisted in SLOG::instance to define the per-package logging level 
+  and passes this level to the package libs where SLOG_INIT is invoked to instanciate the 
   per-library loggers.  
 
 * also chains together the main and library loggers ; this means than the lib 
@@ -297,7 +297,7 @@ SYSRAP_LOG.hh  SYSRAP_LOG.cc
       2 #pragma once
       3 #include "SYSRAP_API_EXPORT.hh"
       4 
-      5 #define SYSRAP_LOG__  {     SYSRAP_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
+      5 #define SYSRAP_LOG__  {     SYSRAP_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "SYSRAP"), plog::get(), NULL );  } 
       6 
       7 #define SYSRAP_LOG_ {     SYSRAP_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
       8 class SYSRAP_API SYSRAP_LOG {
@@ -311,16 +311,16 @@ SYSRAP_LOG.hh  SYSRAP_LOG.cc
       2 #include <plog/Log.h>
       3 
       4 #include "SYSRAP_LOG.hh"
-      5 #include "PLOG_INIT.hh"
-      6 #include "PLOG.hh"
+      5 #include "SLOG_INIT.hh"
+      6 #include "SLOG.hh"
       7        
       8 void SYSRAP_LOG::Initialize(int level, void* app1, void* app2 )
       9 {  
-     10     PLOG_INIT(level, app1, app2); 
+     10     SLOG_INIT(level, app1, app2); 
      11 }      
      12 void SYSRAP_LOG::Check(const char* msg)
      13 {
-     14     PLOG_CHECK(msg);
+     14     SLOG_CHECK(msg);
      15 }
      16 
 
@@ -335,7 +335,7 @@ NPY_LOG.hh NPY_LOG.cc
       2 #pragma once
       3 #include "NPY_API_EXPORT.hh"
       4 
-      5 #define NPY_LOG__  {     NPY_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "NPY"), plog::get(), NULL );  } 
+      5 #define NPY_LOG__  {     NPY_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "NPY"), plog::get(), NULL );  } 
       6 
       7 #define NPY_LOG_ {     NPY_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
       8 class NPY_API NPY_LOG {
@@ -349,16 +349,16 @@ NPY_LOG.hh NPY_LOG.cc
       2 #include <plog/Log.h>
       3 
       4 #include "NPY_LOG.hh"
-      5 #include "PLOG_INIT.hh"
-      6 #include "PLOG.hh"
+      5 #include "SLOG_INIT.hh"
+      6 #include "SLOG.hh"
       7 
       8 void NPY_LOG::Initialize(int level, void* app1, void* app2 )
       9 {
-     10     PLOG_INIT(level, app1, app2);
+     10     SLOG_INIT(level, app1, app2);
      11 }
      12 void NPY_LOG::Check(const char* msg)
      13 {
-     14     PLOG_CHECK(msg);
+     14     SLOG_CHECK(msg);
      15 }
 
 
@@ -405,7 +405,7 @@ Issue : log level not controlled in standalone script build cfg4/tests/CGDMLKlud
     CFG4_LOG.cc:#include "CFG4_LOG.hh"
     CFG4_LOG.cc:void CFG4_LOG::Initialize(int level, void* app1, void* app2 )
     CFG4_LOG.cc:void CFG4_LOG::Check(const char* msg)
-    CFG4_LOG.hh:#define CFG4_LOG__  {     CFG4_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "CFG4"), plog::get(), NULL );  } 
+    CFG4_LOG.hh:#define CFG4_LOG__  {     CFG4_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "CFG4"), plog::get(), NULL );  } 
     CFG4_LOG.hh:#define CFG4_LOG_ {     CFG4_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
     CFG4_LOG.hh:class CFG4_API CFG4_LOG {
     CMakeLists.txt:    CFG4_LOG.cc
@@ -426,7 +426,7 @@ The main does this, CGDMLKludgeTest.cc::
        
 What OPTICKS_LOG does depends on the preprocessor macros such as *-DOPTICKS_CFG4*::
 
-   #define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
+   #define OPTICKS_LOG(argc, argv) {      SLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); } 
 
 
 
@@ -435,7 +435,7 @@ OPTICKS_LOG.hh::
     108 class SYSRAP_API OPTICKS_LOG_ {
     109    public:
     110        // initialize all linked loggers and hookup the main logger
-    111        static void Initialize(PLOG* instance, void* app1, void* /*app2*/ )
+    111        static void Initialize(SLOG* instance, void* app1, void* /*app2*/ )
     112        {
     113            int max_level = instance->parse("info") ;
     114            // note : can decrease verbosity from the max_level in the subproj, but not increase

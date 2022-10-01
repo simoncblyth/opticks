@@ -9,7 +9,7 @@
 #include "SPath.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "G4LogicalBorderSurface.hh"
 #include "U4Recorder.hh"
@@ -28,7 +28,7 @@
 #include "SCF.h"
 #include "U4Step.h"
 
-const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
+const plog::Severity U4Recorder::LEVEL = SLOG::EnvLevel("U4Recorder", "DEBUG"); 
 
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
 const int U4Recorder::EIDX = SSys::getenvint("EIDX",-1) ; 

@@ -22,9 +22,9 @@ using CLHEP::mm ;
 #include "SSys.hh"
 #include "U4SolidMaker.hh"
 #include "U4SolidTree.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity U4SolidMaker::LEVEL = PLOG::EnvLevel("U4SolidMaker", "DEBUG"); 
+const plog::Severity U4SolidMaker::LEVEL = SLOG::EnvLevel("U4SolidMaker", "DEBUG"); 
 
 const char* U4SolidMaker::NAMES = R"LITERAL(
 JustOrbOrbUnion

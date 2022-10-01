@@ -1,5 +1,5 @@
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
 #include "squad.h"
@@ -18,7 +18,7 @@
 #include "qscint.h"
 
 
-const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "DEBUG"); 
+const plog::Severity QScint::LEVEL = SLOG::EnvLevel("QScint", "DEBUG"); 
 
 const QScint* QScint::INSTANCE = nullptr ; 
 const QScint* QScint::Get(){ return INSTANCE ;  }

@@ -1,5 +1,5 @@
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "scuda.h"
 #include "sqat4.h"
@@ -34,7 +34,7 @@
 
 
 
-const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
+const plog::Severity G4CXOpticks::LEVEL = SLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
 const U4SensorIdentifier* G4CXOpticks::SensorIdentifier = nullptr ; 
 void G4CXOpticks::SetSensorIdentifier( const U4SensorIdentifier* sid ){ SensorIdentifier = sid ; }  // static 

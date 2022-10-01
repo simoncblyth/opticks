@@ -10,7 +10,7 @@ stored in the boundary buffer.
 Principal user QBnd.hh
 
 * SSim has several functions that perhaps could be relocated here 
-* Note that PLOG logging machinery doesnt work with header only imps 
+* Note that SLOG logging machinery doesnt work with header only imps 
 
 **/
 

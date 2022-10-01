@@ -1,9 +1,9 @@
 #include "U4Cerenkov_Debug.hh"
 #include "U4Debug.hh"
 #include "NP.hh"    
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity U4Cerenkov_Debug::LEVEL = PLOG::EnvLevel("U4Cerenkov_Debug", "debug" ); 
+const plog::Severity U4Cerenkov_Debug::LEVEL = SLOG::EnvLevel("U4Cerenkov_Debug", "debug" ); 
 std::vector<U4Cerenkov_Debug> U4Cerenkov_Debug::record = {} ;
 
 void U4Cerenkov_Debug::Save(const char* dir)

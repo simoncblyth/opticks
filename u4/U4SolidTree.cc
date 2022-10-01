@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <cstdlib>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "G4SolidStore.hh"
 #include "G4UnionSolid.hh"
@@ -27,7 +27,7 @@
 
 const bool U4SolidTree::verbose = getenv("U4SolidTree_verbose") != nullptr ; 
 
-const plog::Severity U4SolidTree::LEVEL = PLOG::EnvLevel("U4SolidTree", "DEBUG") ; 
+const plog::Severity U4SolidTree::LEVEL = SLOG::EnvLevel("U4SolidTree", "DEBUG") ; 
 
 G4VSolid* U4SolidTree::ApplyZCutTree( const G4VSolid* original, double zcut ) // static
 {

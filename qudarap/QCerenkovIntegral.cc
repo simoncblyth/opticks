@@ -1,7 +1,7 @@
 #include <sstream>
 #include <algorithm>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "scuda.h"
@@ -15,7 +15,7 @@
 #include "QCK.hh"
 
 
-const plog::Severity QCerenkovIntegral::LEVEL = PLOG::EnvLevel("QCerenkovIntegral", "DEBUG"); 
+const plog::Severity QCerenkovIntegral::LEVEL = SLOG::EnvLevel("QCerenkovIntegral", "DEBUG"); 
 
 
 const unsigned QCerenkovIntegral::SPLITBIN_PAYLOAD_SIZE = 8 ; 

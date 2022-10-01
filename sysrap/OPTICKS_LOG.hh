@@ -463,10 +463,10 @@ class SYSRAP_API OPTICKS_LOG_ {
 OPTICKS_LOG macro is used from the main
 ------------------------------------------
 
-PLOG_COLOR(argc, argv) 
-    instanciates PLOG and appenders::
+SLOG_COLOR(argc, argv) 
+    instanciates SLOG and appenders::
 
-        PLOG* _plog = new PLOG(argc, argv);
+        SLOG* _plog = new SLOG(argc, argv);
         static plog::RollingFileAppender<plog::TxtFormatter> 
         static plog::ColorConsoleAppender<plog::TxtFormatter> 
 

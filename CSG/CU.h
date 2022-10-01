@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 #include "plog/Severity.h"
 #endif
 
@@ -9,7 +9,7 @@
 
 struct CSG_API CU
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     static const plog::Severity LEVEL ; 
 #endif
 

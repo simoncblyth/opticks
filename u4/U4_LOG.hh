@@ -21,7 +21,7 @@
 #pragma once
 #include "U4_API_EXPORT.hh"
 
-#define U4_LOG__  {     U4_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "U4"), plog::get(), NULL );  } 
+#define U4_LOG__  {     U4_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "U4"), plog::get(), NULL );  } 
 
 #define U4_LOG_ {     U4_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 

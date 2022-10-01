@@ -24,7 +24,7 @@
 #include "SEvt.hh"
 #include "SEventConfig.hh"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "OpticksGenstep.h"
 
@@ -36,7 +36,7 @@
 
 template struct QBuf<quad6> ; 
 
-const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG"); 
+const plog::Severity QEvent::LEVEL = SLOG::EnvLevel("QEvent", "DEBUG"); 
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
 

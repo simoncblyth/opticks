@@ -1,5 +1,5 @@
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
 #include "squad.h"
@@ -15,7 +15,7 @@
 #include "QTex.hh"
 #include "qmultifilm.h"
 
-const plog::Severity QMultiFilm::LEVEL = PLOG::EnvLevel("QMultiFilm", "DEBUG"); 
+const plog::Severity QMultiFilm::LEVEL = SLOG::EnvLevel("QMultiFilm", "DEBUG"); 
 const QMultiFilm* QMultiFilm::INSTANCE = nullptr ; 
 const QMultiFilm* QMultiFilm::Get(){ return INSTANCE ;  }
 

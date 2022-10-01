@@ -2,13 +2,13 @@
 #include <limits>
 
 #include "SSys.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "QU.hh"
 
 #include "QBase.hh"
 #include "qbase.h"
 
-const plog::Severity QBase::LEVEL = PLOG::EnvLevel("QBase", "DEBUG"); 
+const plog::Severity QBase::LEVEL = SLOG::EnvLevel("QBase", "DEBUG"); 
 const QBase* QBase::INSTANCE = nullptr ; 
 const QBase* QBase::Get(){ return INSTANCE ; }
 

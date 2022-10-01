@@ -39,7 +39,7 @@ Maybe because pointer arithmetic is all being done on constant input buffers ?
 
 #include <iostream>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"

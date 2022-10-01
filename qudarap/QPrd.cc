@@ -4,7 +4,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SEventConfig.hh"
 
 #include "QBnd.hh"
@@ -13,7 +13,7 @@
 #include "SBnd.h"
 
 
-const plog::Severity QPrd::LEVEL = PLOG::EnvLevel("QPrd", "DEBUG") ; 
+const plog::Severity QPrd::LEVEL = SLOG::EnvLevel("QPrd", "DEBUG") ; 
 
 const QPrd* QPrd::INSTANCE = nullptr ; 
 const QPrd* QPrd::Get(){ return INSTANCE ; }

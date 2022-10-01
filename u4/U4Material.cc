@@ -11,14 +11,14 @@
 #include "sdomain.h"
 #include "NPFold.h"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "G4Material.hh"
 #include "G4SystemOfUnits.hh"
 #include "U4Material.hh"
 #include "U4MaterialPropertyVector.h"
 
-const plog::Severity U4Material::LEVEL = PLOG::EnvLevel("U4Material", "DEBUG"); 
+const plog::Severity U4Material::LEVEL = SLOG::EnvLevel("U4Material", "DEBUG"); 
 
 
 std::string U4Material::DescMaterialTable()

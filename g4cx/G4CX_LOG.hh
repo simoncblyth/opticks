@@ -21,7 +21,7 @@
 #pragma once
 #include "G4CX_API_EXPORT.hh"
 
-#define G4CX_LOG__  {     G4CX_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "G4CX"), plog::get(), NULL );  } 
+#define G4CX_LOG__  {     G4CX_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "G4CX"), plog::get(), NULL );  } 
 
 #define G4CX_LOG_ {     G4CX_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 

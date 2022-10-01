@@ -20,7 +20,7 @@
 #include "IAS_Builder.h"
 #include "SBT.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 /**
 IAS_Builder::Build
@@ -37,7 +37,7 @@ Canonically invoked during CSGOptiX instanciation, from stack::
 
 **/
 
-const plog::Severity IAS_Builder::LEVEL = PLOG::EnvLevel("IAS_Builder", "DEBUG"); 
+const plog::Severity IAS_Builder::LEVEL = SLOG::EnvLevel("IAS_Builder", "DEBUG"); 
 
 
 /**

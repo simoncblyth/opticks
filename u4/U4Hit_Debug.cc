@@ -1,9 +1,9 @@
 #include "U4Hit_Debug.hh"
 #include "U4Debug.hh"
 #include "NP.hh"    
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity U4Hit_Debug::LEVEL = PLOG::EnvLevel("U4Hit_Debug", "debug" ); 
+const plog::Severity U4Hit_Debug::LEVEL = SLOG::EnvLevel("U4Hit_Debug", "debug" ); 
 std::vector<U4Hit_Debug> U4Hit_Debug::record = {} ;
 
 void U4Hit_Debug::Save(const char* dir)

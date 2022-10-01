@@ -21,14 +21,14 @@
 #include "SPath.hh"
 #include "SStr.hh"
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "sscint.h"
 #include "scerenkov.h"
 
 #include "U4PhotonInfo.h"
 #include "U4.hh" 
 
-const plog::Severity U4::LEVEL = PLOG::EnvLevel("U4", "DEBUG"); 
+const plog::Severity U4::LEVEL = SLOG::EnvLevel("U4", "DEBUG"); 
 
 
 /**

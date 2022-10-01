@@ -9,7 +9,7 @@
 #include "SBit.hh"
 #include "SStr.hh"
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 #include "SLOG.hh"
 const plog::Severity OpticksPhoton::LEVEL = SLOG::EnvLevel("OpticksPhoton", "DEBUG"); 
 #endif
@@ -165,7 +165,7 @@ void OpticksPhoton::AbbrevToFlagValSequence( unsigned long long& seqhis, unsigne
        seqhis |= ( bitpos << ishift )  ; 
        seqval |= ( val1 << ishift )  ; 
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
        LOG(debug)
                    << "[" 
                    <<  skey

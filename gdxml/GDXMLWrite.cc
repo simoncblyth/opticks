@@ -1,9 +1,9 @@
 #include <iostream>
 #include <sstream>
 #include "GDXMLWrite.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GDXMLWrite::LEVEL = PLOG::EnvLevel("GDXMLWrite", "DEBUG") ; 
+const plog::Severity GDXMLWrite::LEVEL = SLOG::EnvLevel("GDXMLWrite", "DEBUG") ; 
 
 GDXMLWrite::GDXMLWrite(xercesc::DOMDocument* doc_)
     :

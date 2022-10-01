@@ -13,9 +13,9 @@
 #include "QBuf.hh"
 #include "QOptical.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity QOptical::LEVEL = PLOG::EnvLevel("QOptical", "DEBUG");
+const plog::Severity QOptical::LEVEL = SLOG::EnvLevel("QOptical", "DEBUG");
 
 const QOptical* QOptical::INSTANCE = nullptr ; 
 const QOptical* QOptical::Get(){ return INSTANCE ; }

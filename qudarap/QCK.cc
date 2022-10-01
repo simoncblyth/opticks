@@ -5,7 +5,7 @@
 
 #include "NP.hh"
 #include "QCK.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 template<typename T>
 void QCK<T>::save(const char* base, const char* reldir) const 

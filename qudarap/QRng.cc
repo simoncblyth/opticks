@@ -1,6 +1,6 @@
 #include <sstream>
 #include <cstring>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SPath.hh"
 #include "QRng.hh"
 #include "qrng.h"
@@ -8,7 +8,7 @@
 
 #include "QUDA_CHECK.h"
 
-const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "DEBUG"); 
+const plog::Severity QRng::LEVEL = SLOG::EnvLevel("QRng", "DEBUG"); 
 const QRng* QRng::INSTANCE = nullptr ; 
 const QRng* QRng::Get(){ return INSTANCE ;  }
 

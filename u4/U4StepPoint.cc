@@ -8,7 +8,7 @@
 //#include "G4OpBoundaryProcess.hh"
 //#include "InstrumentedG4OpBoundaryProcess.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "scuda.h"
@@ -21,7 +21,7 @@
 #include "U4StepPoint.hh"
 
 
-const plog::Severity U4StepPoint::LEVEL = PLOG::EnvLevel("U4StepPoint", "DEBUG"); 
+const plog::Severity U4StepPoint::LEVEL = SLOG::EnvLevel("U4StepPoint", "DEBUG"); 
 
 
 /**

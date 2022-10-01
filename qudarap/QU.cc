@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include "NP.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SPath.hh"
 
 #include "scuda.h"
@@ -27,7 +27,7 @@
 
 #include "qmultifilm.h"
 
-const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
+const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ; 
 salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
 
 template <typename T> 

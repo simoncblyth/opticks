@@ -14,9 +14,9 @@
 #include "QState.hh"
 #include "qdebug.h"
 #include "QU.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity QDebug::LEVEL = PLOG::EnvLevel("QDebug", "DEBUG") ; 
+const plog::Severity QDebug::LEVEL = SLOG::EnvLevel("QDebug", "DEBUG") ; 
 const QDebug* QDebug::INSTANCE = nullptr ; 
 const QDebug* QDebug::Get(){ return INSTANCE ; }
 

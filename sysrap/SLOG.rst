@@ -1,5 +1,5 @@
 
-.. include:: PLOG.hh
+.. include:: SLOG.hh
    :start-after: /**
    :end-before: **/
 

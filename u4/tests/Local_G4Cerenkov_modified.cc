@@ -79,7 +79,7 @@
 #endif
 
 #ifdef STANDALONE
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "U4.hh"
 #endif
 

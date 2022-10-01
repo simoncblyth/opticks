@@ -1,7 +1,7 @@
 #include <sstream>
 #include <cuda_runtime.h>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
 #include "NP.hh"
@@ -11,7 +11,7 @@
 #include "QTexLookup.hh"
 
 template<typename T>
-const plog::Severity QTexLookup<T>::LEVEL = PLOG::EnvLevel("QTexLookup", "DEBUG") ; 
+const plog::Severity QTexLookup<T>::LEVEL = SLOG::EnvLevel("QTexLookup", "DEBUG") ; 
  
 
 template<typename T>

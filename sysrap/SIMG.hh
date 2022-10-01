@@ -6,17 +6,17 @@
 #include <iostream>
 #include <cassert>
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 #include <plog/Severity.h>
 #include "SLOG.hh"
 #else
-#define LOG(severity) if(false) std::cout    // just kill the logging when no PLOG
+#define LOG(severity) if(false) std::cout    // just kill the logging when no SLOG
 #endif
 
 
 struct SIMG 
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
    static const plog::Severity LEVEL ; 
 #endif
 
@@ -92,7 +92,7 @@ struct SIMG
 #include "STTF.hh"
 
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 const plog::Severity SIMG::LEVEL = SLOG::EnvLevel("SIMG", "DEBUG"); 
 #endif
 
@@ -252,7 +252,7 @@ void SIMG::annotate( const char* bottom_line, const char* top_line, int line_hei
     // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
     // Possibly related to this being implemented in the header ?
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     STTF* ttf = SLOG::instance ? SLOG::instance->ttf : nullptr ; 
 #else
     STTF* ttf = nullptr ; 

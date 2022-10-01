@@ -9,9 +9,9 @@
 #include "GDXML.hh"
 
 #include "SStr.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GDXML::LEVEL = PLOG::EnvLevel("GDXML", "DEBUG" ); 
+const plog::Severity GDXML::LEVEL = SLOG::EnvLevel("GDXML", "DEBUG" ); 
 
 /**
 GDXML::Fix

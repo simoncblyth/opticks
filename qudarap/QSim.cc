@@ -1,6 +1,6 @@
 
 #include <csignal>
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -37,7 +37,7 @@
 
 #include "QSim.hh"
 
-const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "DEBUG"); 
+const plog::Severity QSim::LEVEL = SLOG::EnvLevel("QSim", "DEBUG"); 
 
 QSim* QSim::INSTANCE = nullptr ; 
 QSim* QSim::Get(){ return INSTANCE ; }

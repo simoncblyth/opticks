@@ -67,7 +67,7 @@
 //
 #ifdef STANDALONE
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "U4.hh"
 #else
 #include <boost/python.hpp>
@@ -89,13 +89,13 @@
 #include "CGenstep.hh"
 #include "CTrack.hh"
 #include "CPhotonInfo.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #endif
 
 
 
 #ifdef WITH_G4OPTICKS
-//const plog::Severity Local_DsG4Scintillation::LEVEL = PLOG::EnvLevel("Local_DsG4Scintillation", "DEBUG") ; 
+//const plog::Severity Local_DsG4Scintillation::LEVEL = SLOG::EnvLevel("Local_DsG4Scintillation", "DEBUG") ; 
 const plog::Severity Local_DsG4Scintillation::LEVEL = error ; 
 #endif
 

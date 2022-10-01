@@ -9,7 +9,7 @@
 #include "SComp.h"
 #include "SStr.hh"
 #include "SPath.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "NP.hh"
 #include "Frame.h"
 
@@ -17,7 +17,7 @@
 #include "SIMG.hh"
 
 
-const plog::Severity Frame::LEVEL = PLOG::EnvLevel("Frame", "DEBUG" ); 
+const plog::Severity Frame::LEVEL = SLOG::EnvLevel("Frame", "DEBUG" ); 
 
 unsigned Frame::getNumPixels() const 
 {

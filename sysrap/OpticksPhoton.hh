@@ -14,7 +14,7 @@ The STANDALONE subset of methods can be used header only.
 #include <iostream>
 #include <sstream>
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 #include "plog/Severity.h"
 #endif
 
@@ -27,7 +27,7 @@ struct OpticksPhoton
 struct SYSRAP_API OpticksPhoton
 #endif
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     static const plog::Severity LEVEL ; 
 #endif
     static constexpr const char* ZERO_ = ".";

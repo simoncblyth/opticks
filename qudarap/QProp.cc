@@ -9,11 +9,11 @@
 #include "QProp.hh"
 #include "QU.hh"
 #include "qprop.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 
 template<typename T>
-const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "DEBUG"); 
+const plog::Severity QProp<T>::LEVEL = SLOG::EnvLevel("QProp", "DEBUG"); 
 
 template<typename T>
 const QProp<T>* QProp<T>::INSTANCE = nullptr ; 

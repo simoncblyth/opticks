@@ -19,9 +19,9 @@
 #include "Binding.h"
 #include "PIP.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity PIP::LEVEL = PLOG::EnvLevel("PIP", "DEBUG"); 
+const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG"); 
 
 
 static bool readFile( std::string& str, const char* path )

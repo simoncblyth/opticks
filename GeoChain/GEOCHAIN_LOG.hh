@@ -21,7 +21,7 @@
 #pragma once
 #include "GEOCHAIN_API_EXPORT.hh"
 
-#define GEOCHAIN_LOG__  {     GEOCHAIN_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "GEOCHAIN"), plog::get(), NULL );  } 
+#define GEOCHAIN_LOG__  {     GEOCHAIN_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "GEOCHAIN"), plog::get(), NULL );  } 
 
 #define GEOCHAIN_LOG_ {     GEOCHAIN_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 class GEOCHAIN_API GEOCHAIN_LOG {

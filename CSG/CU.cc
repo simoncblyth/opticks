@@ -7,7 +7,7 @@
 #include "cuda_runtime.h"
 #include "CUDA_CHECK.h"
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 #include "SLOG.hh"
 #endif
 
@@ -18,7 +18,7 @@
 
 #include "CU.h"
 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
 const plog::Severity CU::LEVEL = SLOG::EnvLevel("CU","DEBUG"); 
 #endif
 
@@ -32,7 +32,7 @@ Allocate on device and copy from host to device
 template <typename T>
 T* CU::UploadArray(const T* array, unsigned num_items ) // static
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     LOG(LEVEL) << " num_items " << num_items  ; 
 #endif
     T* d_array = nullptr ; 
@@ -52,7 +52,7 @@ Allocate on host and copy from device to host
 template <typename T>
 T* CU::DownloadArray(const T* d_array, unsigned num_items ) // static
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     LOG(LEVEL) << " num_items " << num_items  ; 
 #endif
     T* array = new T[num_items] ;  
@@ -94,7 +94,7 @@ T* CU::UploadVec(const std::vector<T>& vec)
 {
     unsigned num_items = vec.size() ; 
     unsigned num_bytes = num_items*sizeof(T) ; 
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     LOG(LEVEL) << " num_items " << num_items  ; 
 #endif
     T* d_array = nullptr ; 
@@ -111,7 +111,7 @@ template CSG_API unsigned*  CU::UploadVec<unsigned>(const std::vector<unsigned>&
 template <typename T>
 void CU::DownloadVec(std::vector<T>& vec, const T* d_array, unsigned num_items)  // static
 {
-#ifdef WITH_PLOG
+#ifdef WITH_SLOG
     LOG(LEVEL) << " num_items " << num_items ; 
 #endif
     unsigned num_bytes = num_items*sizeof(T) ; 

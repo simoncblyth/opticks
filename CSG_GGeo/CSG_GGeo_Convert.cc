@@ -11,7 +11,7 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "saabb.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SGeoConfig.hh"
 #include "SName.h"
 
@@ -32,7 +32,7 @@
 
 
 #include "CSG_GGeo_Convert.h"
-const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
+const plog::Severity CSG_GGeo_Convert::LEVEL = SLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
 /**
 CSG_GGeo_Convert::Translate

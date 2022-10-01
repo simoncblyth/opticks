@@ -14,7 +14,7 @@
 #include "SSys.hh"
 #include "SPlace.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
 #include "U4.hh"
 #include "U4Material.hh"
@@ -31,7 +31,7 @@
 #include "PMTSim.hh"
 #endif
 
-const plog::Severity U4VolumeMaker::LEVEL = PLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
+const plog::Severity U4VolumeMaker::LEVEL = SLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
 const char* U4VolumeMaker::GEOM = SSys::getenvvar("GEOM", "BoxOfScintillator"); 
 
 std::string U4VolumeMaker::Desc() // static

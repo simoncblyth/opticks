@@ -21,7 +21,7 @@
 #pragma once
 #include "GDXML_API_EXPORT.hh"
 
-#define GDXML_LOG__  {     GDXML_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "GDXML"), plog::get(), NULL );  } 
+#define GDXML_LOG__  {     GDXML_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "GDXML"), plog::get(), NULL );  } 
 
 #define GDXML_LOG_ {     GDXML_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 

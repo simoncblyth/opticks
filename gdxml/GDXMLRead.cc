@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "GDXMLErrorHandler.hh"
 
 std::string Matrix::desc() const 
@@ -40,7 +40,7 @@ std::string Transcode(const XMLCh* const toTranscode)
 }
 
 
-const plog::Severity GDXMLRead::LEVEL = PLOG::EnvLevel("GDXMLRead", "DEBUG") ; 
+const plog::Severity GDXMLRead::LEVEL = SLOG::EnvLevel("GDXMLRead", "DEBUG") ; 
 
 
 GDXMLRead::GDXMLRead( const char* path, bool kludge_truncated_matrix_)

@@ -1,5 +1,5 @@
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 
 #include "QUDA_CHECK.h"

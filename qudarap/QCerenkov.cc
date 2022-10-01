@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cuda_runtime.h>
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "scuda.h"
@@ -25,7 +25,7 @@
 #include "QCK.hh"
 
 
-const plog::Severity QCerenkov::LEVEL = PLOG::EnvLevel("QCerenkov", "DEBUG"); 
+const plog::Severity QCerenkov::LEVEL = SLOG::EnvLevel("QCerenkov", "DEBUG"); 
 
 const QCerenkov* QCerenkov::INSTANCE = nullptr ; 
 const QCerenkov* QCerenkov::Get(){ return INSTANCE ;  }

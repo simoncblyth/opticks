@@ -21,7 +21,7 @@
 #pragma once
 #include "QUDARAP_API_EXPORT.hh"
 
-#define QUDARAP_LOG__  {     QUDARAP_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "QUDARAP"), plog::get(), NULL );  } 
+#define QUDARAP_LOG__  {     QUDARAP_LOG::Initialize(SLOG::instance->prefixlevel_parse( info, "QUDARAP"), plog::get(), NULL );  } 
 
 #define QUDARAP_LOG_ {     QUDARAP_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
 class QUDARAP_API QUDARAP_LOG {

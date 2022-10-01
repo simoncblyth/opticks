@@ -53,7 +53,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "SMeta.hh"
 #include "SPath.hh"
 #include "SVec.hh"
-#include "PLOG.hh"
+#include "SLOG.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "sframe.h"
@@ -104,7 +104,7 @@ LONGTERM: see if can pull out the essentials into a smaller class
 
 #include "CSGOptiX.h"
 
-const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
+const plog::Severity CSGOptiX::LEVEL = SLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 CSGOptiX* CSGOptiX::INSTANCE = nullptr ; 
 CSGOptiX* CSGOptiX::Get()
 {

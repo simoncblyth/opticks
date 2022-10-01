@@ -21,9 +21,9 @@
 #include "CSGFoundry.h"
 #include "CSGGeometry.h"
 #include "CSG_GGeo_Convert.h"
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GeoChain::LEVEL = PLOG::EnvLevel("GeoChain", "DEBUG") ; 
+const plog::Severity GeoChain::LEVEL = SLOG::EnvLevel("GeoChain", "DEBUG") ; 
 
 GeoChain::GeoChain(Opticks* ok_)
     :

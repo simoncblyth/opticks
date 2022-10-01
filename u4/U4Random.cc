@@ -18,9 +18,9 @@
 #include "SBacktrace.h"
 #include "SDBG.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity U4Random::LEVEL = PLOG::EnvLevel("U4Random", "DEBUG") ; 
+const plog::Severity U4Random::LEVEL = SLOG::EnvLevel("U4Random", "DEBUG") ; 
 
 U4Random* U4Random::INSTANCE = nullptr ; 
 U4Random* U4Random::Get(){ return INSTANCE ; }

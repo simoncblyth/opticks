@@ -213,13 +213,13 @@ $(sysrap-tags-foreach sysrap-genlog-includes-)
 
 #include "SYSRAP_API_EXPORT.hh"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 // NB must implement in header as this code is required to live in the main, not in a lib
 
 class SYSRAP_API OPTICKS_LOG_ {
    public:
        // initialize all linked loggers and hookup the main logger
-       static void Initialize(PLOG* instance, void* app1, void* app2 )
+       static void Initialize(SLOG* instance, void* app1, void* app2 )
        {
            int max_level = instance->parse("info") ;  
            // note : can decrease verbosity from the max_level in the subproj, but not increase
@@ -235,20 +235,20 @@ $(sysrap-tags-foreach sysrap-genlog-check-)
 
 #define OPTICKS_LOG_COLOR__(argc, argv) \
 {  \
-    PLOG_COLOR(argc, argv); \
-    OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL );  \
+    SLOG_COLOR(argc, argv); \
+    OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL );  \
 }  \
 
 #define OPTICKS_LOG__(argc, argv) \
 {  \
-    PLOG_(argc, argv); \
-    OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); \
+    SLOG_(argc, argv); \
+    OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); \
 } \
 
 #define OPTICKS_LOG(argc, argv) \
 {  \
-    PLOG_COLOR(argc, argv); \
-    OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); \
+    SLOG_COLOR(argc, argv); \
+    OPTICKS_LOG_::Initialize(SLOG::instance, plog::get(), NULL ); \
 } \
 
 

@@ -17,9 +17,9 @@
 #include "GAS.h"
 #include "GAS_Builder.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity GAS_Builder::LEVEL = PLOG::EnvLevel("GAS_Builder", "DEBUG"); 
+const plog::Severity GAS_Builder::LEVEL = SLOG::EnvLevel("GAS_Builder", "DEBUG"); 
 
 /**
 GAS_Builder::Build : CSGPrimSpec --> GAS : Compound Solid (set of Prim level)

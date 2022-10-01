@@ -13,9 +13,9 @@
 #include "OPTIX_CHECK.h"
 #include "Properties.h"
 
-#include "PLOG.hh"
+#include "SLOG.hh"
 
-const plog::Severity Ctx::LEVEL = PLOG::EnvLevel("Ctx", "DEBUG") ; 
+const plog::Severity Ctx::LEVEL = SLOG::EnvLevel("Ctx", "DEBUG") ; 
 
 
 OptixDeviceContext Ctx::context = nullptr ;
