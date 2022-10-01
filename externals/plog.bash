@@ -94,6 +94,146 @@ How to shrink that ? Whats the biz with planting symbols in the separate proj li
 Can I make it invisible, controlled via envvar ?
 
 
+Review how plog is implemented, in order to help with debugging misbehaviour when used from externals
+--------------------------------------------------------------------------------------------------------
+
+* https://github.com/simoncblyth/plog
+
+
+
+plog/Severity.h::
+
+     03 namespace plog
+      4 {
+      5     enum Severity
+      6     {
+      7         none = 0,
+      8         fatal = 1,
+      9         error = 2,
+     10         warning = 3,
+     11         info = 4,
+     12         debug = 5,
+     13         verbose = 6
+     14     };
+     ..
+     49 }
+
+plog/Log.h::
+
+     * LOG macro : if record severity <= logger severity append the record  
+
+     33 //////////////////////////////////////////////////////////////////////////
+     34 // Log severity level checker
+     35 
+     36 #define IF_LOG_(instance, severity)     if (plog::get<instance>() && plog::get<instance>()->checkSeverity(severity)) 
+     37 #define IF_LOG(severity)                IF_LOG_(PLOG_DEFAULT_INSTANCE, severity)
+     38 
+     39 //////////////////////////////////////////////////////////////////////////
+     40 // Main logging macros
+     41 
+     42 #define LOG_(instance, severity)        IF_LOG_(instance, severity) (*plog::get<instance>()) += plog::Record(severity, PLOG_GET_FUNC(), __LINE__, PLOG_GET_FILE(), PLOG_GET_THIS())
+     43 #define LOG(severity)                   LOG_(PLOG_DEFAULT_INSTANCE, severity)
+
+
+plog/Init.h::
+
+     08 namespace plog
+     09 {
+     ..
+     26     template<int instance>
+     27     inline Logger<instance>& init(Severity maxSeverity = none, IAppender* appender = NULL)
+     28     {
+     29         static Logger<instance> logger(maxSeverity);
+     30         return appender ? logger.addAppender(appender) : logger;
+     31     }
+     ..
+     95 }
+
+plog/Logger.h::
+
+     * Logger ISA IAppender itself and contains a vector of "child" IAppender
+     * Logger::write appends only for records with severity <= Logger::m_maxSeverity
+     * Logger::operator+= writes record to all child IAppender but not to self 
+
+     10 namespace plog
+     11 {
+     12     template<int instance>
+     13     class Logger : public util::Singleton<Logger<instance> >, public IAppender
+     14     {
+     15     public:
+     16         Logger(Severity maxSeverity = none) : m_maxSeverity(maxSeverity)
+     17         {
+     18         }
+     19 
+     20         Logger& addAppender(IAppender* appender)
+     21         {
+     22             assert(appender != this);
+     23             m_appenders.push_back(appender);
+     24             return *this;
+     25         }
+     .. 
+     37         bool checkSeverity(Severity severity) const
+     38         {
+     39             return severity <= m_maxSeverity;
+     40         }
+     41 
+     42         virtual void write(const Record& record)
+     43         {
+     44             if (checkSeverity(record.getSeverity()))
+     45             {
+     46                 *this += record;
+     47             }
+     48         }
+     49 
+     50         void operator+=(const Record& record)
+     51         {
+     52             for (std::vector<IAppender*>::iterator it = m_appenders.begin(); it != m_appenders.end(); ++it)
+     53             {
+     54                 (*it)->write(record);
+     55             }
+     56         }
+     57 
+     58     private:
+     59         Severity m_maxSeverity;
+     60         std::vector<IAppender*> m_appenders;
+     61     };
+     62 
+     63     template<int instance>
+     64     inline Logger<instance>* get()
+     65     {
+     66         return Logger<instance>::getInstance();
+     67     }
+     68 
+     69     inline Logger<PLOG_DEFAULT_INSTANCE>* get()
+     70     {
+     71         return Logger<PLOG_DEFAULT_INSTANCE>::getInstance();
+     72     }
+     73 }
+
+
+plog/Appenders/IAppender.h::
+
+     * place where Records go 
+
+     01 #pragma once
+      2 #include <plog/Record.h>
+      3 
+      4 namespace plog
+      5 {
+      6     class IAppender
+      7     {
+      8     public:
+      9         virtual ~IAppender()
+     10         {
+     11         }
+     12 
+     13         virtual void write(const Record& record) = 0;
+     14     };
+     15 }
+         
+
+
+
 EOU
 }
 plog-env(){      opticks- ;  }
@@ -111,7 +251,7 @@ plog-icd(){  cd $(plog-idir); }
 
 plog-url-upstream(){  echo https://github.com/SergiusTheBest/plog ; }
 plog-url-pinned(){  echo https://github.com/simoncblyth/plog.git ; }
-plog-url(){  plog-url-pinned ; }
+plog-url(){  echo ${PLOG_URL:-$(plog-url-pinned)} ; }
 
 
 plog-wipe(){
@@ -131,7 +271,7 @@ plog-get(){
    if [ ! -d plog ]; then  
        opticks-git-clone $url 
    else
-       echo $msg plog already cloned
+       echo $msg plog already cloned : use plog-wipe and try again to force it
    fi 
    cd $iwd
 }
@@ -146,7 +286,10 @@ plog--()
    return 0
 }
 
-
+plog--upstream()
+{
+   PLOG_URL=$(plog-url-upstream) plog--
+}
 
 plog-pc-scratch-(){ cat << EOS
 #prefix=\${pcfiledir}/../../..

@@ -10,11 +10,18 @@ is proving difficult.
 
 Despite numerous attempts its still not working. 
 
-
 The way things go wrong:
 
 1. logging not suppressed by the level 
 2. all logging suppressed 
+
+
+Note that the latest plog has PLOG_LOCAL switch that claims to avoid needing visibility hidden. 
+
+Possibly the difficulties with JUNOSW and plog might be because there is no access to main 
+everything is in shared libs .. the main is python.  
+So that perhaps gives problem of static initialization ordering ?
+
 
 
 DONE 
@@ -22,6 +29,51 @@ DONE
 
 1. setup a test examples/UseFindOpticks/CMakeLists.txt which uses FindOpticks.cmake and that reproduces the logging mis-behaviour to allow investigation 
 2. added API to use the integer template argument for logging 
+3. checked in examples/UsePlogStandalone
+
+
+TRY THE LATEST plog
+----------------------
+
+::
+
+    epsilon:plog blyth$ cd /usr/local/opticks/externals/
+    epsilon:externals blyth$ mv plog plog.old
+    epsilon:externals blyth$ plog--upstream
+    === plog-get : url https://github.com/SergiusTheBest/plog
+    === opticks-git-clone : dir /usr/local/opticks/externals url https://github.com/SergiusTheBest/plog dist OPTICKS_DOWNLOAD_CACHE /usr/local/opticks/download_cache cmd git clone https://github.com/SergiusTheBest/plog
+    Cloning into 'plog'...
+    remote: Enumerating objects: 3092, done.
+    remote: Counting objects: 100% (427/427), done.
+    remote: Compressing objects: 100% (202/202), done.
+    remote: Total 3092 (delta 195), reused 389 (delta 175), pack-reused 2665
+    Receiving objects: 100% (3092/3092), 515.63 KiB | 360.00 KiB/s, done.
+    Resolving deltas: 100% (1729/1729), done.
+    === plog-pc : /usr/local/opticks/externals/lib/pkgconfig/PLog.pc
+    epsilon:externals blyth$ 
+    epsilon:externals blyth$ 
+
+
+
+
+
+Looking at plog issues
+------------------------
+
+* https://github.com/SergiusTheBest/plog/issues/72
+
+::
+
+    Also you can rewrite your previous sample:
+
+    plog::init<1000>(plog::verbose, "/var/log/my.log");
+    plog::init<0>(plog::info, plog::get<1000>());
+    plog::init<1>(plog::debug, plog::get<1000>());
+    plog::init<2>(plog::warning, plog::get<1000>());
+
+    so the default log stays 0 and the sink becomes 1000.
+
+
 
 
 

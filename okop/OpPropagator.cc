@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SLog.hh"
+#include "SLogger.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"

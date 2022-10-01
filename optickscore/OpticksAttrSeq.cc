@@ -26,7 +26,7 @@
 
 #include <boost/lexical_cast.hpp>
 //#include <boost/algorithm/string.hpp>
-#include "SLog.hh"
+#include "SLogger.hh"
 
 // brap-
 #include "BStr.hh"
@@ -53,7 +53,7 @@ const plog::Severity OpticksAttrSeq::LEVEL = PLOG::EnvLevel("OpticksAttrSeq", "D
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    :
-   m_log(new SLog("OpticksAttrSeq::OpticksAttrSeq","",verbose)),
+   m_log(new SLogger("OpticksAttrSeq::OpticksAttrSeq","",verbose)),
    m_ok(ok),
    m_resource(m_ok->getResource()),
    m_type(strdup(type)),

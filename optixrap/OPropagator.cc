@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "BTimes.hh"
 
 // optickscore-
@@ -64,7 +64,7 @@ void OPropagator::setEntry(unsigned int entry_index)
 
 OPropagator::OPropagator(Opticks* ok, OEvent* oevt, OpticksEntry* entry) 
     :
-    m_log(new SLog("OPropagator::OPropagator","", LEVEL)),
+    m_log(new SLogger("OPropagator::OPropagator","", LEVEL)),
     m_ok(ok),
     m_oevt(oevt),
     m_ocontext(m_oevt->getOContext()),

@@ -19,7 +19,7 @@
 
 #include "OPTICKS_LOG.hh"
 
-#include "SLog.hh"
+#include "SLogger.hh"
 
 int main(int argc , char** argv )
 {
@@ -27,7 +27,7 @@ int main(int argc , char** argv )
 
     OPTICKS_LOG_::Check();
 
-    SLog::Nonce();
+    SLogger::Nonce();
 
     LOG(info) << argv[0] ; 
 

@@ -24,7 +24,7 @@
 #include "BTimeKeeper.hh"
 
 #include "SSys.hh"
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "OXPPNS.hh"
 #include "OError.hh"
 
@@ -78,7 +78,7 @@ int OScene::preinit() const
 OScene::OScene(OpticksHub* hub, const char* cmake_target, const char* ptxrel) 
     :   
     m_preinit(preinit()),
-    m_log(new SLog("OScene::OScene","", LEVEL)),
+    m_log(new SLogger("OScene::OScene","", LEVEL)),
     m_timer(new BTimeKeeper("OScene::")),
     m_hub(hub),
     m_ok(hub->getOpticks()),

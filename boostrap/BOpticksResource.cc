@@ -29,7 +29,7 @@ namespace fs = boost::filesystem;
 // for the OKCONF_OPTICKS_INSTALL_PREFIX define from OKConf_Config.hh
 #include "OKConf.hh"
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SProc.hh"
@@ -103,7 +103,7 @@ OPTICKS_RESOURCE_LAYOUT envvar -> m_layout, which overrides the default of 0
 BOpticksResource::BOpticksResource()
     :
     m_testgeo(false), 
-    m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
+    m_log(new SLogger("BOpticksResource::BOpticksResource","",debug)),
     m_setup(false),
     m_key(SOpticksKey::GetKey()),   // will be nullptr unless BOpticksKey::SetKey has been called 
     m_id(nullptr),

@@ -18,7 +18,7 @@
  */
 
 
-#include "SLog.hh"
+#include "SLogger.hh"
 
 #include "Opticks.hh"  // okc-
 #include "OpticksEntry.hh" 
@@ -68,7 +68,7 @@ int OpEngine::preinit() const
 OpEngine::OpEngine(OpticksHub* hub) 
     : 
     m_preinit(preinit()),
-    m_log(new SLog("OpEngine::OpEngine","",LEVEL)),
+    m_log(new SLogger("OpEngine::OpEngine","",LEVEL)),
     m_hub(hub),
     m_ok(m_hub->getOpticks()),
     m_scene(new OScene(m_hub)),

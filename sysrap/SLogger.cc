@@ -19,10 +19,10 @@
 
 #include <cstring>
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "PLOG.hh"
 
-SLog::SLog(const char* label, const char* extra, plog::Severity level) 
+SLogger::SLogger(const char* label, const char* extra, plog::Severity level) 
    :
    m_label(strdup(label)),
    m_extra(strdup(extra)),
@@ -37,12 +37,12 @@ SLog::SLog(const char* label, const char* extra, plog::Severity level)
 }
 
 
-const char* SLog::exename() // static
+const char* SLogger::exename() // static
 {
     return PLOG::instance->args.exename() ; 
 }
 
-void SLog::operator()(const char* msg)
+void SLogger::operator()(const char* msg)
 {
     pLOG(m_level,0) 
         << " ) "
@@ -54,7 +54,7 @@ void SLog::operator()(const char* msg)
         ;  
 }
 
-void SLog::Nonce()
+void SLogger::Nonce()
 {
     LOG(verbose) << "verbose" ; 
     LOG(debug) << "debug" ; 

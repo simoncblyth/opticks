@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "NPY.hpp"
 #include "NPho.hpp"
 
@@ -63,7 +63,7 @@ OContext* OEvent::getOContext() const
 
 OEvent::OEvent(Opticks* ok, OContext* ocontext)
     :
-    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
+    m_log(new SLogger("OEvent::OEvent", "", LEVEL)),
     m_ok(ok),
     m_way_enabled(m_ok->isWayEnabled()),
     m_downloadmask(initDownloadMask()),

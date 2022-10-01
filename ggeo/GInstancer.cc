@@ -19,7 +19,7 @@
 
 
 #include "SSys.hh"
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "BTimeKeeper.hh"
 
 // npy-
@@ -56,7 +56,7 @@ const int GInstancer::INSTANCE_VERTEX_MIN = SSys::getenvint("GInstancer_instance
 
 GInstancer::GInstancer(Opticks* ok, GGeo* ggeo) 
     : 
-    m_log(new SLog("GInstancer::GInstancer","", verbose)),
+    m_log(new SLogger("GInstancer::GInstancer","", verbose)),
     m_ok(ok),
     m_repeat_min(INSTANCE_REPEAT_MIN),
     m_vertex_min(INSTANCE_VERTEX_MIN), 

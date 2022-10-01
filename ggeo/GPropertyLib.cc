@@ -27,7 +27,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SConstant.hh"
 #include "SAbbrev.hh"
 #include "NP.hh"
@@ -111,7 +111,7 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 // this ctor is used from GBndLib::load for interpolating to finedom
 GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<double>* domain, bool optional )
     :
-     m_log(new SLog("GPropertyLib::GPropertyLib.interpolating-ctor")),
+     m_log(new SLogger("GPropertyLib::GPropertyLib.interpolating-ctor")),
      m_ok(other->getOpticks()),
      m_resource(NULL),
      m_buffer(NULL),
@@ -137,7 +137,7 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<double>* domain, bool op
 // the domain will get set in ::init to the default
 GPropertyLib::GPropertyLib(Opticks* ok, const char* type, bool optional) 
      :
-     //m_log(new SLog("GPropertyLib::GPropertyLib.normal-ctor", type)),
+     //m_log(new SLogger("GPropertyLib::GPropertyLib.normal-ctor", type)),
      m_log(NULL),
      m_ok(ok),
      m_resource(NULL),

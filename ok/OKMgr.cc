@@ -21,7 +21,7 @@
 
 class NConfigurable ; 
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "BTimeKeeper.hh"
 
 #include "Opticks.hh"       // okc-
@@ -52,7 +52,7 @@ int OKMgr::rc() const
 
 OKMgr::OKMgr(int argc, char** argv, const char* argforced ) 
     :
-    m_log(new SLog("OKMgr::OKMgr","", debug)),
+    m_log(new SLogger("OKMgr::OKMgr","", debug)),
     m_ok(Opticks::HasInstance() ? Opticks::Get() : new Opticks(argc, argv, argforced)),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),

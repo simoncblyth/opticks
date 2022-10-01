@@ -458,3 +458,26 @@ class SYSRAP_API OPTICKS_LOG_ {
 #define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
 #define OPTICKS_ELOG(name) {           PLOG_ECOLOR(name);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
 
+
+/**
+OPTICKS_LOG macro is used from the main
+------------------------------------------
+
+PLOG_COLOR(argc, argv) 
+    instanciates PLOG and appenders::
+
+        PLOG* _plog = new PLOG(argc, argv);
+        static plog::RollingFileAppender<plog::TxtFormatter> 
+        static plog::ColorConsoleAppender<plog::TxtFormatter> 
+
+OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL )
+
+
+
+
+
+
+**/
+
+
+

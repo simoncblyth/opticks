@@ -21,7 +21,7 @@
 #include <csignal>
 #include "CFG4_BODY.hh"
 
-#include "SLog.hh"
+#include "SLogger.hh"
 
 // okc-
 #include "Opticks.hh"
@@ -155,7 +155,7 @@ int CG4::preinit()
 
 CG4::CG4(OpticksHub* hub) 
     :
-    m_log(new SLog("CG4::CG4", "", LEVEL)),
+    m_log(new SLogger("CG4::CG4", "", LEVEL)),
     m_hub(hub),
     m_ok(m_hub->getOpticks()),
     m_preinit(preinit()),

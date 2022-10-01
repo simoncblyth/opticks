@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "PLOG.hh"
 // npy-
 #include "NGLM.hpp"
@@ -56,7 +56,7 @@ OKGLTracer* OKGLTracer::GetInstance(){ return fInstance ;}
 
 OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate) 
     :
-    m_log(new SLog("OKGLTracer::OKGLTracer","", LEVEL)),
+    m_log(new SLogger("OKGLTracer::OKGLTracer","", LEVEL)),
     m_ope(ope),
     m_viz(viz),
     m_hub(m_viz->getHub()),

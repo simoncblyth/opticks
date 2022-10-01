@@ -20,7 +20,7 @@
 #include <cstring>
 
 // sysrap-
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SLauncher.hh"
 #include "SRenderer.hh"
 
@@ -103,7 +103,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
     SCtrl(),
     m_preinit(preinit()), 
-    m_log(new SLog("OpticksViz::OpticksViz", "", LEVEL)),
+    m_log(new SLogger("OpticksViz::OpticksViz", "", LEVEL)),
 #ifdef WITH_BOOST_ASIO
     m_io_context(),
     m_listen_udp(new BListenUDP<OpticksViz>(m_io_context,this)),   // UDP messages -> ::command calls to this

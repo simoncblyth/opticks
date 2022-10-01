@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SLog.hh"
+#include "SLogger.hh"
 
 
 #include "NGLM.hpp"
@@ -59,7 +59,7 @@ int OKPropagator::preinit() const
 OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz) 
     :
     m_preinit(preinit()),
-    m_log(new SLog("OKPropagator::OKPropagator", "", LEVEL)),
+    m_log(new SLogger("OKPropagator::OKPropagator", "", LEVEL)),
     m_hub(hub),    
     m_idx(idx),
     m_viz(viz),    

@@ -19,7 +19,7 @@
 
 #include "OpticksConst.hh"
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SSortKV.hh"
 
 #include "NGLM.hpp"
@@ -113,7 +113,7 @@ bool GScene::HasCache( Opticks* ok ) // static
 GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     :
     GGeoBase(),
-    m_log(new SLog("GScene::GScene","", LEVEL)),
+    m_log(new SLogger("GScene::GScene","", LEVEL)),
     m_ok(ok),
     m_query(ok->getQuery()),
     m_ggeo(ggeo),

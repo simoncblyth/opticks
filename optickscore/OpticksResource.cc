@@ -28,7 +28,7 @@ namespace fs = boost::filesystem;
 
 
 // sysrap
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SDigest.hh"
 #include "SSys.hh"
 
@@ -83,7 +83,7 @@ TODO
 
 OpticksResource::OpticksResource(Opticks* ok) 
     :
-    m_log(new SLog("OpticksResource::OpticksResource","",debug)),
+    m_log(new SLogger("OpticksResource::OpticksResource","",debug)),
     m_rsc(BOpticksResource::Get(NULL)),   // use prior instance or create if not existing
     m_key(m_rsc->getKey()),
     m_ok(ok),

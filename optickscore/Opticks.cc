@@ -34,7 +34,7 @@
 
 #include "OKConf.hh"
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "SProc.hh"
 #include "SArgs.hh"
 #include "STime.hh"
@@ -362,7 +362,7 @@ Opticks* Opticks::Configure(int argc, char** argv, const char* argforced)  // st
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
-    m_log(new SLog("Opticks::Opticks","",debug)),
+    m_log(new SLogger("Opticks::Opticks","",debug)),
     m_ok(this),
     m_opts(SSys::getenvvar("OPTICKS_OPTS")),
     m_sargs(new SArgs(argc, argv, argforced, m_opts)),  

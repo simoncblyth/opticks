@@ -61,7 +61,7 @@ set(SOURCES
     SConstant.cc
 
     STimes.cc
-    SLog.cc
+    SLogger.cc
     SBase36.cc
     SSortKV.cc
     SPairVec.cc
@@ -173,7 +173,7 @@ set(HEADERS
     SEvt.hh
 
     STimes.hh
-    SLog.hh
+    SLogger.hh
     SBase36.hh
     SSortKV.hh
     SPairVec.hh

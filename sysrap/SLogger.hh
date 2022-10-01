@@ -20,8 +20,8 @@
 #pragma once
 
 /**
-SLog
-======
+SLogger
+========
 
 Trivial logger enabling bracketing 
 of constructor initializer lists.
@@ -31,13 +31,13 @@ of constructor initializer lists.
 
 #include "SYSRAP_API_EXPORT.hh"
 #include "plog/Severity.h"
-class SYSRAP_API SLog 
+class SYSRAP_API SLogger 
 {
     public:
         static const char* exename();
         static void Nonce(); 
     public:
-        SLog(const char* label, const char* extra="", plog::Severity=plog::info );
+        SLogger(const char* label, const char* extra="", plog::Severity=plog::info );
         void operator()(const char* msg="");
     private:
         const char* m_label ; 

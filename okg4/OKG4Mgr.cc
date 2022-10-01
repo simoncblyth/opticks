@@ -21,7 +21,7 @@
 
 class NConfigurable ; 
 
-#include "SLog.hh"
+#include "SLogger.hh"
 #include "BTimeKeeper.hh"
 
 #include "G4StepNPY.hpp"
@@ -96,7 +96,7 @@ int OKG4Mgr::preinit() const
 
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
-    m_log(new SLog("OKG4Mgr::OKG4Mgr","",debug)),
+    m_log(new SLogger("OKG4Mgr::OKG4Mgr","",debug)),
     m_ok(new Opticks(argc, argv)),  
     m_preinit(preinit()),
     m_run(m_ok->getRun()),
