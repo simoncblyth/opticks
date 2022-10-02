@@ -36,6 +36,7 @@ set(TEST_SOURCES
    
    PLogTest.cc 
    SLOG_Test.cc 
+   SLOGTest.cc 
    SYSRAP_LOG_Test.cc 
    SYSRAP_LOG_FileAppenderTest.cc
 

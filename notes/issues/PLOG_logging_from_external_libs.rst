@@ -73,6 +73,95 @@ TRY THE LATEST plog
 
 
 
+* HMM plog now using PLOG macros which clash with by sysrap/PLOG.hh so have renames sysrap/PLOG to sysrap/SLOG 
+
+
+issue 1 : need plog/Init.h for initilzation now not plog/Log.h
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    [  0%] Built target PythonJSON
+    [  1%] Built target PythonPH
+    Scanning dependencies of target SysRap
+    [  1%] Building CXX object CMakeFiles/SysRap.dir/SYSRAP_LOG.cc.o
+    [  2%] Building CXX object CMakeFiles/SysRap.dir/SLOG.cc.o
+    /Users/blyth/opticks/sysrap/SYSRAP_LOG.cc:29:5: error: no member named 'init' in namespace 'plog'
+        SLOG_INIT(level, app1, app2);
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/blyth/opticks/sysrap/SLOG_INIT.hh:70:11: note: expanded from macro 'SLOG_INIT'
+        plog::init( severity ,  appender1 ); \
+        ~~~~~~^
+    /Users/blyth/opticks/sysrap/SYSRAP_LOG.cc:40:5: error: no template named 'init' in namespace 'plog'; did you mean 'Init'?
+        SLOG_INIT_(level, app1, app2, IDX ); 
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /Users/blyth/opticks/sysrap/SLOG_INIT.hh:82:5: note: expanded from macro 'SLOG_INIT_'
+
+
+
+issue 2 : dangling else warnings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* in my old plog PR I avoided that, but it was not accepted
+* https://github.com/SergiusTheBest/plog/pull/92
+
+
+::
+
+    192 const char* SProc::ExecutablePath(bool basename)
+    193 {
+    194     char buf[PATH_MAX];
+    195     uint32_t size = sizeof(buf);
+    196     bool ok = _NSGetExecutablePath(buf, &size) == 0 ;
+    197 
+    198     if(!ok)
+    199        LOG(fatal)
+    200            << "_NSGetExecutablePath FAIL "
+    201            << " size " << size
+    202            << " buf " << buf
+    203            ;
+    204 
+
+::
+
+    192 const char* SProc::ExecutablePath(bool basename)
+    193 {
+    194     char buf[PATH_MAX];
+    195     uint32_t size = sizeof(buf);
+    196     bool ok = _NSGetExecutablePath(buf, &size) == 0 ;
+    197 
+    198     LOG_IF(fatal, !ok)
+    199            << "_NSGetExecutablePath FAIL "
+    200            << " size " << size 
+    201            << " buf " << buf 
+    202            ;
+
+
+
+
+
+::
+
+    [  1%] Building CXX object CMakeFiles/SysRap.dir/SProc.cc.o
+    /Users/blyth/opticks/sysrap/SProc.cc:199:8: warning: add explicit braces to avoid dangling else [-Wdangling-else]
+           LOG(fatal) 
+           ^
+    /usr/local/opticks/externals/plog/include/plog/Log.h:131:41: note: expanded from macro 'LOG'
+    #define LOG(severity)                   PLOG_(PLOG_DEFAULT_INSTANCE_ID, severity)
+                                            ^
+    /usr/local/opticks/externals/plog/include/plog/Log.h:50:42: note: expanded from macro 'PLOG_'
+    #define PLOG_(instanceId, severity)      IF_PLOG_(instanceId, severity) (*plog::get<instanceId>()) += plog::Record(severity, PLOG_GET_FUNC(), __LINE__, PLOG_GET_FILE(), PLOG_GET_THIS(), i...
+                                             ^
+    /usr/local/opticks/externals/plog/include/plog/Log.h:42:132: note: expanded from macro 'IF_PLOG_'
+    #   define IF_PLOG_(instanceId, severity)   if (!plog::get<instanceId>() || !plog::get<instanceId>()->checkSeverity(severity)) {;} else
+                                                                                                                                       ^
+    [  2%] Building CXX object CMakeFiles/SysRap.dir/SSys.cc.o
+    1 warning generated.
+
+
+
+
+
 
 
 Looking at plog issues

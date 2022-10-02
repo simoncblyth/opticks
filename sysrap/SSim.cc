@@ -47,7 +47,7 @@ std::string SSim::DescCompare( const SSim* a , const SSim* b )
 
 SSim* SSim::Create()
 {
-    if(INSTANCE) LOG(LEVEL) << "replacing SSim::INSTANCE" ; 
+    LOG_IF(LEVEL, INSTANCE) << "replacing SSim::INSTANCE" ; 
     new SSim ; 
     return INSTANCE ;  
 }
@@ -88,7 +88,7 @@ SSim::SSim()
 void SSim::add(const char* k, const NP* a )
 { 
     assert(k); 
-    if(a == nullptr) LOG(LEVEL) << "k:" << k  << " a null " ; 
+    LOG_IF(LEVEL, a == nullptr) << "k:" << k  << " a null " ; 
     if(a == nullptr) return ; 
 
     fold->add(k,a);  
@@ -235,13 +235,12 @@ int SSim::getBndIndex(const char* bname) const
     int bidx = bnd->get_name_index(bname, count ); 
     bool bname_found = count == 1 && bidx > -1  ;
 
-    if(!bname_found) 
-       LOG(fatal) 
-          << " bname " << bname
-          << " bidx " << bidx
-          << " count " << count
-          << " bname_found " << bname_found
-          ;    
+    LOG_IF(fatal, !bname_found) 
+        << " bname " << bname
+        << " bidx " << bidx
+        << " count " << count
+        << " bname_found " << bname_found
+        ;    
 
     assert( bname_found ); 
     return bidx ; 
@@ -271,7 +270,7 @@ Fabricates boundaries and appends them to the bnd and optical arrays
 void SSim::addFake_( const std::vector<std::string>& specs )
 {  
     bool has_optical = hasOptical(); 
-    if(!has_optical) LOG(fatal) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  
+    LOG_IF(fatal, !has_optical) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  
     assert(has_optical);  
 
     const NP* optical = fold->get(OPTICAL); 
@@ -358,7 +357,7 @@ NP* SSim::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
         SStr::Split(spec, '/', elem );  
 
         bool four_elem = elem.size() == 4 ; 
-        if(four_elem == false) LOG(fatal) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
+        LOG_IF(fatal, four_elem == false) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
         assert(four_elem); 
 
         for(unsigned s=0 ; s < 4 ; s++ )
@@ -481,7 +480,7 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
         SStr::Split(spec, '/', elem );  
 
         bool four_elem = elem.size() == 4 ; 
-        if(four_elem == false) LOG(fatal) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
+        LOG_IF(fatal, four_elem == false) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
         assert(four_elem); 
 
         for(unsigned s=0 ; s < 4 ; s++ )

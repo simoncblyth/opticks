@@ -296,6 +296,7 @@ plog-p2s()
     perl -pi -e 's/PLOG.hh/SLOG.hh/'                *.cc *.hh *.hpp *.cpp
     perl -pi -e 's/PLOG::instance/SLOG::instance/g' *.cc *.hh *.hpp *.cpp 
     perl -pi -e 's/PLOG_INIT/SLOG_INIT/g'           *.cc *.hh *.hpp *.cpp 
+    perl -pi -e 's/PLOG_CHECK/SLOG_CHECK/g'           *.cc *.hh *.hpp *.cpp 
 }
 
 

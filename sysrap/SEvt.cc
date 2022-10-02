@@ -178,7 +178,7 @@ NP* SEvt::LoadInputPhoton(const char* ip)
     const char* path = SStr::StartsWithLetterAZaz(ip) ?  SPath::Resolve(INPUT_PHOTON_DIR, ip, NOOP) : SPath::Resolve( ip, NOOP ) ; 
 
     NP* a = NP::Load(path); 
-    if( a == nullptr ) LOG(fatal) << " FAILED to load input photon from path " << path << " SEventConfig::InputPhoton " << ip ; 
+    LOG_IF(fatal, a == nullptr) << " FAILED to load input photon from path " << path << " SEventConfig::InputPhoton " << ip ; 
 
     assert( a ) ; 
     assert( a->has_shape(-1,4,4) ); 
@@ -328,7 +328,7 @@ void SEvt::setGeo(const SGeo* cf_)
 
 void SEvt::setFrame(unsigned ins_idx)
 {
-    if(cf == nullptr) LOG(fatal) << "must SEvt::setGeo before being can access frames " ; 
+    LOG_IF(fatal, cf == nullptr) << "must SEvt::setGeo before being can access frames " ; 
     assert(cf); 
     sframe fr ; 
     int rc = cf->getFrame(fr, ins_idx) ; 
@@ -542,15 +542,12 @@ sgs SEvt::addGenstep(const quad6& q_)
 
 
     bool input_photon_with_normal_genstep = input_photon && OpticksGenstep_::IsInputPhoton(gentype) == false  ; 
-    if(input_photon_with_normal_genstep)
-    {
-        LOG(fatal)
-            << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
-            << " MIXING input photons with other gensteps is not allowed "
-            << " for example avoid defining OPTICKS_INPUT_PHOTON when doing simtrace"
-            ; 
-    }
-    assert( input_photon_with_normal_genstep  == false ); 
+    LOG_IF(fatal, input_photon_with_normal_genstep)
+        << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
+        << " MIXING input photons with other gensteps is not allowed "
+        << " for example avoid defining OPTICKS_INPUT_PHOTON when doing simtrace"
+        ; 
+    assert( input_photon_with_normal_genstep == false ); 
 
 
     int gidx = int(gs.size())  ;  // 0-based genstep label index
@@ -585,7 +582,7 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     int tot_photon = s.offset+s.photons ; 
 
-    if(enabled) LOG(debug) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
+    LOG_IF(debug, enabled) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
 
     if( tot_photon != evt->num_photon )
     {
@@ -613,7 +610,7 @@ Also called by QEvent::setNumPhoton prior to device side allocations.
 void SEvt::setNumPhoton(unsigned num_photon)
 {
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
-    if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
+    LOG_IF(fatal, !num_photon_allowed) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
     assert( num_photon_allowed );
 
     evt->num_photon = num_photon ; 
@@ -638,7 +635,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
 void SEvt::setNumSimtrace(unsigned num_simtrace)
 {
     bool num_simtrace_allowed = int(num_simtrace) <= evt->max_simtrace ;
-    if(!num_simtrace_allowed) LOG(fatal) << " num_simtrace " << num_simtrace << " evt.max_simtrace " << evt->max_simtrace ;
+    LOG_IF(fatal, !num_simtrace_allowed) << " num_simtrace " << num_simtrace << " evt.max_simtrace " << evt->max_simtrace ;
     assert( num_simtrace_allowed );
     LOG(LEVEL) << " num_simtrace " << num_simtrace ;  
 
@@ -768,7 +765,7 @@ void SEvt::beginPhoton(const spho& label)
     unsigned idx = label.id ; 
 
     bool in_range = idx < pho.size() ; 
-    if(!in_range) LOG(error) 
+    LOG_IF(error, !in_range) 
         << " not in_range " 
         << " idx " << idx 
         << " pho.size  " << pho.size() 
@@ -956,7 +953,7 @@ void SEvt::rjoinPhotonCheck(const sphoton& ph ) const
     if(flagmask_or) dbg->rjoinPhotonCheck_flagmask_or++ ; 
     
     bool expect = flag_xor && flagmask_or ; 
-    if(!expect) LOG(fatal)
+    LOG_IF(fatal, !expect)
         << "rjoinPhotonCheck : unexpected flag/flagmask" 
         << " flag_AB " << flag_AB
         << " flag_MI " << flag_MI
@@ -985,7 +982,7 @@ void SEvt::rjoinSeqCheck(unsigned seq_flag) const
     if(flag_MI)  dbg->rjoinSeqCheck_flag_MI++ ; 
     if(flag_xor) dbg->rjoinSeqCheck_flag_xor++ ; 
 
-    if(!flag_xor) LOG(fatal) << " flag_xor FAIL " << OpticksPhoton::Abbrev(seq_flag) << std::endl ;  
+    LOG_IF(fatal, !flag_xor) << " flag_xor FAIL " << OpticksPhoton::Abbrev(seq_flag) << std::endl ;  
     assert( flag_xor ); 
 }
 
@@ -1055,17 +1052,15 @@ void SEvt::addTag(unsigned tag, float flat)
     stagr& tagr = current_ctx.tagr ; 
     unsigned idx = current_ctx.idx ; 
 
-    if( int(idx) == PIDX ) 
-    {
-        LOG(info) 
-             << " idx " << idx
-             << " PIDX " << PIDX
-             << " tag " << tag 
-             << " flat " << flat 
-             << " evt.tag " << evt->tag 
-             << " tagr.slot " << tagr.slot
-              ; 
-    }
+    LOG_IF(info, int(idx) == PIDX ) 
+        << " idx " << idx
+        << " PIDX " << PIDX
+        << " tag " << tag 
+        << " flat " << flat 
+        << " evt.tag " << evt->tag 
+        << " tagr.slot " << tagr.slot
+        ; 
+
     tagr.add(tag,flat)  ; 
 
 
@@ -1075,22 +1070,18 @@ void SEvt::addTag(unsigned tag, float flat)
         assert( flat_cursor > -1 ); 
         double flat_prior = random->getFlatPrior(); 
         bool cursor_slot_match = unsigned(flat_cursor) == tagr.slot ; 
-        if(!cursor_slot_match)
-        {
-            LOG(error)
-                << " idx " << idx
-                << " cursor_slot_match " << cursor_slot_match
-                << " flat " << flat 
-                << " tagr.slot " << tagr.slot 
-                << " ( from SRandom "
-                << " flat_prior " << flat_prior 
-                << " flat_cursor " << flat_cursor 
-                << "  ) " 
-                << std::endl
-                << " MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED "
-                ;
-                ; 
-        }
+        LOG_IF(error, !cursor_slot_match)
+            << " idx " << idx
+            << " cursor_slot_match " << cursor_slot_match
+            << " flat " << flat 
+            << " tagr.slot " << tagr.slot 
+            << " ( from SRandom "
+            << " flat_prior " << flat_prior 
+            << " flat_cursor " << flat_cursor 
+            << "  ) " 
+            << std::endl
+            << " MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED "
+            ;
         assert( cursor_slot_match ); 
     }
 
@@ -1574,7 +1565,7 @@ void SEvt::load(const char* dir_)
 {
     const char* dir = getOutputDir(dir_); 
     LOG(LEVEL) << " dir " << dir ; 
-    if( dir == nullptr ) LOG(fatal) << " null dir : probably missing environment : run script, not executable directly " ;   
+    LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
     assert(dir); 
     fold->load(dir); 
 }
@@ -1901,7 +1892,7 @@ void SEvt::getFramePhoton(sphoton& lp, unsigned idx) const
     getPhoton(lp, idx); 
 
     bool zero_frame = frame.is_zero() ; 
-    if(zero_frame) LOG(fatal) << " must setFrame before can getFramePhoton " ; 
+    LOG_IF(fatal, zero_frame) << " must setFrame before can getFramePhoton " ; 
     assert(!zero_frame);  
 
     frame.transform_w2m(lp); 
@@ -1911,7 +1902,7 @@ void SEvt::getFrameHit(sphoton& lp, unsigned idx) const
     getHit(lp, idx); 
 
     bool zero_frame = frame.is_zero() ; 
-    if(zero_frame) LOG(fatal) << " must setFrame before can getFrameHit " ; 
+    LOG_IF(fatal, zero_frame) << " must setFrame before can getFrameHit " ; 
     assert(!zero_frame);  
 
     frame.transform_w2m(lp); 

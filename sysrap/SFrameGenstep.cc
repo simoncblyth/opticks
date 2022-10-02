@@ -53,7 +53,7 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
         assert(fvec); 
 
         bool multiple_of_3 = num_values % 3 == 0 ;
-        if(!multiple_of_3) LOG(fatal) << " not multiple_of_3 num_values " << num_values << " ekey " << ekey  ; 
+        LOG_IF(fatal, !multiple_of_3) << " not multiple_of_3 num_values " << num_values << " ekey " << ekey  ; 
         assert(multiple_of_3); 
         unsigned num_offset = num_values/3 ; 
         for(unsigned i=0 ; i < num_offset ; i++)
@@ -154,7 +154,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
 
     int ce_scale = SSys::getenvint("CE_SCALE", 1) ; // TODO: ELIMINATE AFTER RTP CHECK 
-    if(ce_scale == 0) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
+    LOG_IF(fatal, ce_scale == 0) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
  
 
     Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
@@ -389,7 +389,7 @@ void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static
     if( cegs.size() == 8 ) return ; 
 
     bool expect = cegs.size() == 4 || cegs.size() == 7 ; 
-    if(!expect) LOG(error) << " unexpected cegs.size " << cegs.size() ; 
+    LOG_IF(error, !expect) << " unexpected cegs.size " << cegs.size() ; 
     assert( expect ); 
 
     int ix0 = 0 ; 
@@ -603,7 +603,7 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
 
         bool expect = gencode == OpticksGenstep_TORCH || gencode == OpticksGenstep_FRAME ; 
 
-        if(!expect) LOG(error) 
+        LOG_IF(error, !expect) 
             << "unexpected gencod " << gencode 
             << " OpticksGenstep_::Name " << OpticksGenstep_::Name(gencode) ; 
 
@@ -701,7 +701,7 @@ void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const
         unsigned num_photons  = std::abs(num_photons_);  
         bool expect = gencode == OpticksGenstep_TORCH || gencode == OpticksGenstep_FRAME ; 
 
-        if(!expect) LOG(error) 
+        LOG_IF(error, !expect) 
             << "unexpected gencode " << gencode 
             << " OpticksGenstep_::Name " << OpticksGenstep_::Name(gencode) ; 
 

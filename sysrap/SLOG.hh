@@ -25,13 +25,14 @@
 #include <cstddef>
 #include <plog/Log.h>
 
-// translate from boost log levels to plog 
-using plog::fatal ;
-using plog::error ;
-using plog::warning ;
-using plog::info ;
-using plog::debug ;
-using plog::verbose ;
+// plog log levels 
+using plog::none  ;    // 0
+using plog::fatal ;    // 1
+using plog::error ;    // 2
+using plog::warning ;  // 3 
+using plog::info ;     // 4
+using plog::debug ;    // 5
+using plog::verbose ;  // 6 
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -271,9 +272,9 @@ Delta
 **/
 
 
-
-
+#include <string>
 #include "SAr.hh"
+
 struct STTF ; 
 
 struct SYSRAP_API SLOG 
@@ -287,6 +288,24 @@ struct SYSRAP_API SLOG
     const char* filename ; 
     int         maxFileSize ;    // bytes
     int         maxFiles ; 
+
+
+    template<int IDX>
+    static plog::Severity MaxSeverity(plog::Logger<IDX>* logger) ; 
+
+    template<int IDX>
+    static const char* MaxSeverityString(plog::Logger<IDX>* logger) ; 
+
+    template<int IDX>
+    static std::string Desc(plog::Logger<IDX>* logger); 
+
+    template<int IDX>
+    static std::string Desc(); 
+
+    static void Dump(); 
+
+
+
 
     static plog::Severity Delta(plog::Severity level_, int delta); 
     static plog::Severity EnvLevel( const char* key, const char* fallback); 
@@ -317,12 +336,11 @@ struct SYSRAP_API SLOG
     static const char* _logpath_parse_problematic(int argc, char** argv);
     static const char* _logpath();
 
-
     static SLOG* instance ; 
 };
 
-#define sLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE, SLOG::Delta(severity,delta))
 
 #include "SLOG_INIT.hh"
 
+#define sLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE_ID, SLOG::Delta(severity,delta))
 

@@ -42,6 +42,7 @@ const int SLOG::MAXARGC = 100 ;
 
 plog enum levels
 
+ none = 0, 
  fatal = 1,
  error = 2,
  warning = 3,
@@ -50,6 +51,58 @@ plog enum levels
  verbose = 6 
 
 **/
+
+template<int IDX>
+plog::Severity SLOG::MaxSeverity(plog::Logger<IDX>* logger)
+{
+    return logger ? logger->getMaxSeverity() : plog::none ; 
+}
+template<int IDX>
+const char* SLOG::MaxSeverityString(plog::Logger<IDX>* logger)
+{
+    return  plog::severityToString(SLOG::MaxSeverity<IDX>(logger)) ; 
+}
+
+template<int IDX>
+std::string SLOG::Desc(plog::Logger<IDX>* logger)
+{
+    std::stringstream ss ; 
+    ss << " logger " << logger
+       << " SLOG::MaxSeverity<IDX>(logger) " << SLOG::MaxSeverity<IDX>(logger)
+       << " SLOG::MaxSeverityString<IDX>(logger) " << SLOG::MaxSeverityString<IDX>(logger)
+       ; 
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+template<int IDX>
+std::string SLOG::Desc()
+{
+    plog::Logger<IDX>* lib_logger = plog::get<IDX>(); 
+    return Desc(lib_logger) ; 
+}
+
+
+template std::string SLOG::Desc<0>(plog::Logger<0>* ) ; 
+template std::string SLOG::Desc<0>() ; 
+
+
+void SLOG::Dump()
+{
+    LOG(none)    << " LOG(none) " ; 
+    LOG(fatal)   << " LOG(fatal) " ; 
+    LOG(error)   << " LOG(error) " ; 
+    LOG(warning) << " LOG(warning) " ; 
+    LOG(info)    << " LOG(info) " ; 
+    LOG(debug)   << " LOG(debug) " ; 
+    LOG(verbose) << " LOG(verbose) " ; 
+}
+
+
+
+
 
 plog::Severity SLOG::Delta(plog::Severity level_, int delta)
 {

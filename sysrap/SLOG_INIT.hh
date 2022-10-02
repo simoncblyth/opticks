@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
-#include <plog/Log.h>
+//#include <plog/Log.h>
+#include <plog/Init.h>
+#include <plog/Appenders/RollingFileAppender.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Appenders/ConsoleAppender.h>
 

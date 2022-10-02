@@ -16,5 +16,15 @@ int main(int argc, char** argv)
     propcom->dump(); 
 
 
+    LOG(none)    << " LOG(none) " ; 
+    LOG(fatal)   << " LOG(fatal) " ; 
+    LOG(error)   << " LOG(error) " ; 
+    LOG(warning) << " LOG(warning) " ; 
+    LOG(info)    << " LOG(info) " ; 
+    LOG(debug)   << " LOG(debug) " ; 
+    LOG(verbose) << " LOG(verbose) " ; 
+
+
+
     return 0 ; 
 }

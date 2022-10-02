@@ -195,8 +195,7 @@ const char* SProc::ExecutablePath(bool basename)
     uint32_t size = sizeof(buf);
     bool ok = _NSGetExecutablePath(buf, &size) == 0 ; 
 
-    if(!ok)
-       LOG(fatal) 
+    LOG_IF(fatal, !ok) 
            << "_NSGetExecutablePath FAIL " 
            << " size " << size 
            << " buf " << buf 

@@ -39,7 +39,7 @@ const NP* SProp::MockupCombination(const char* path_ )  // static
     if( a == nullptr ) return nullptr ;  // non-existing path 
 
     bool is_double = strcmp( a->dtype, "<f8") == 0; 
-    if(is_double == false) LOG(fatal) << "EXPECTING double precision input array " ; 
+    LOG_IF(fatal, !is_double) << "EXPECTING double precision input array " ; 
     assert(is_double); 
 
     return MockupCombination(a) ; 

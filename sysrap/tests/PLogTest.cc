@@ -18,7 +18,9 @@
  */
 
 // om-;TEST=PLogTest om-t
+
 #include <plog/Log.h>
+#include <plog/Init.h>
 
 #include <plog/Formatters/MessageOnlyFormatter.h>
 #include <plog/Formatters/FuncMessageFormatter.h>
@@ -71,7 +73,8 @@ int main(int, char** argv)
     LOG(trace) << argv[0]  ;
 
 
-    if(1) LOG(info) << argv[0] << " if-LOG can can cause dangling else problem with some versions of plog " ;
+    // if(1) LOG(info) << argv[0] << " if-LOG can can cause dangling else problem with some versions of plog " ;
+    LOG_IF(info, 1 ) << argv[0] << " this does same as above line and avoids dangling else warning " ; 
 
 
     int ilevel = info ; 

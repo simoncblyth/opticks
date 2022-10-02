@@ -18,7 +18,7 @@
  */
 
 
-#include <plog/Log.h>
+#include <plog/Init.h>
 
 #include "SYSRAP_LOG.hh"
 #include "SLOG_INIT.hh"

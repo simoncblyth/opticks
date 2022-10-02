@@ -772,7 +772,7 @@ int SSys::RunPythonScript(const char* script)
 
     int RC = script_path.empty() ? 101 : SSys::exec(python_executable,script_path.c_str()) ;
     LOG(info) << " RC " << RC ; 
-    if( RC != 0 ) LOG(error) << std::endl << RunPythonScript_NOTES  ; 
+    LOG_IF(error, RC != 0) << std::endl << RunPythonScript_NOTES  ; 
 
     return RC ; 
 }
