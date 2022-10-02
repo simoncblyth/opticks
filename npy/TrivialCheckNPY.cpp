@@ -38,8 +38,7 @@ TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps, char
     m_g4step(new G4StepNPY(m_gensteps))
 {
     bool expected = IsApplicable(m_entryCode)  ; 
-    if(!expected) 
-       LOG(fatal) << " unexpected entryCode " << m_entryCode ; 
+    LOG_IF(fatal, !expected) << " unexpected entryCode " << m_entryCode ; 
 
     assert(expected);
 }

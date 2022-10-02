@@ -27,7 +27,7 @@ nmat4triple_<T>::nmat4triple_(const T* data )
     v(nglmext::invert_trs(t, match)),
     q(glm::transpose(v))
 {
-    if(!match) LOG(error) << " mis-match " ; 
+    LOG_IF(error, !match) << " mis-match " ; 
 }
 
 template<typename T>
@@ -38,11 +38,7 @@ nmat4triple_<T>::nmat4triple_(const glm::tmat4x4<T>& t_ )
     v(nglmext::invert_trs(t, match)),
     q(glm::transpose(v))
 {
-    if(!match)
-    {
-        LOG(error) << " mis-match " ; 
-        //std::raise(SIGINT); 
-    }
+    LOG_IF(error, !match) << " mis-match " ; 
 }
 
 template<typename T>

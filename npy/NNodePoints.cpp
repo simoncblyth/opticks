@@ -144,8 +144,7 @@ glm::uvec4 NNodePoints::collect_surface_points()
     glm::uvec4 tots ; 
 
     
-    if(m_verbosity > 2)
-    LOG(error) << "before while" 
+    LOG_IF(error, m_verbosity > 2) << "before while" 
                << " num_composite_points " << num_composite_points
                << " target " << m_target 
              ; 
@@ -167,10 +166,10 @@ glm::uvec4 NNodePoints::collect_surface_points()
         level++ ; 
         num_composite_points = m_composite_points.size() ;
     }
-    if(m_verbosity > 2)
-    LOG(error) << "after while" 
-               << " num_composite_points " << num_composite_points
-                ; 
+    LOG_IF(error, m_verbosity > 2) 
+        << "after while" 
+        << " num_composite_points " << num_composite_points
+        ; 
 
     return tots ; 
 }
@@ -194,12 +193,12 @@ glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , uns
     {
         nnode* prim = m_primitives[prim_idx] ; 
 
-        if(m_verbosity > 4) 
-        LOG(info) << "NNodePoints::collectCompositePoints"
-                  << " prim_idx " << prim_idx 
-                  << " level " << level
-                  << " margin " << margin
-                  ;
+        LOG_IF(info, m_verbosity > 4) 
+            << "NNodePoints::collectCompositePoints"
+            << " prim_idx " << prim_idx 
+            << " level " << level
+            << " margin " << margin
+            ;
 
 
         prim->collectParPoints(prim_idx, level, margin, FRAME_GLOBAL , m_verbosity );

@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
         NPY<float>* gt = tree->getGTransformBuffer(); 
 
-        if(!gt) LOG(fatal) << "NO GTransformBuffer " ; 
+        LOG_IF(fatal, gt == nullptr) << "NO GTransformBuffer " ; 
         //assert(gt); 
     }
 

@@ -219,19 +219,19 @@ void NTreeBuilder<T>::init()
          T* root = build_r( m_height ) ; 
          setRoot(root);
     
-         if(m_dump) LOG(LEVEL) << "MIXED before populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
+         LOG_IF(LEVEL, m_dump) << "MIXED before populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
          populate(m_otherprim_copy); 
          populate(m_subs_copy); 
 
-         if(m_dump) LOG(LEVEL) << "MIXED after populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
+         LOG_IF(LEVEL, m_dump) << "MIXED after populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
 
          // see notes/issues/OKX4Test_sFasteners_generalize_tree_balancing.rst 
          prune();
 
-         if(m_dump) LOG(LEVEL) << "MIXED after prune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
+         LOG_IF(LEVEL, m_dump) << "MIXED after prune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
 
          rootprune(); 
-         if(m_dump) LOG(LEVEL) << "MIXED after rootprune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
+         LOG_IF(LEVEL, m_dump) << "MIXED after rootprune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
     }
 
 
@@ -384,7 +384,7 @@ void NTreeBuilder<T>::rootprune()
 
     if(node->left->is_operator() && node->right->is_zero() )
     {
-        if(m_dump) LOG(LEVEL) << "promoting root.left to root " ; 
+        LOG_IF(LEVEL, m_dump) << "promoting root.left to root " ; 
         setRoot( node->left ); 
     } 
 }

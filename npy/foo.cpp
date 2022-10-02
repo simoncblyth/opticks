@@ -19,6 +19,7 @@
 
 
 #include <plog/Log.h>
+#include <plog/Init.h>
 
 // Helper macro to mark functions exported from the library.
 #if defined _MSC_VER || defined __CYGWIN__

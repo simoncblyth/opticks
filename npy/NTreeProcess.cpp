@@ -79,7 +79,7 @@ T* NTreeProcess<T>::Process( T* root_ , int soIdx, int lvIdx )  // static
 
     bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 
 
-    if(listed) LOG(info) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
+    LOG_IF(info, listed) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
      // dump it here, prior to the inplace positivization 
  
     unsigned height0 = root_->maxdepth(); 

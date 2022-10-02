@@ -49,7 +49,7 @@ nmat4pair::nmat4pair(const glm::mat4& t_ )
      t(t_),
      v(nglmext::invert_trs(t, match))
 {
-     if(!match) LOG(error) << " mis-match " ; 
+     LOG_IF(error, !match) << " mis-match " ; 
 
 }
 

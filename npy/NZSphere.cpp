@@ -126,33 +126,29 @@ void nzsphere::check() const
     bool z1_lt_radius = fabs(z1()) <= radius() ; 
     bool zmax_gt_zmin = zmax() > zmin() ; 
 
-    if(!z2_gt_z1)
-       LOG(fatal) 
-          << " NOT z2_gt_z1 " 
-          << " z1 " << z1()
-          << " z2 " << z2()
-          ;
+    LOG_IF(fatal, !z2_gt_z1) 
+        << " NOT z2_gt_z1 " 
+        << " z1 " << z1()
+        << " z2 " << z2()
+        ;
  
-    if(!z2_lt_radius)
-       LOG(LEVEL) 
-           << " NOT z2_lt_radius (maybe un-zcut ellipsoid safety margin) "
-           << " z2 " << z2() 
-           << " radius " << radius() 
-           ;
+    LOG_IF(LEVEL, !z2_lt_radius) 
+        << " NOT z2_lt_radius (maybe un-zcut ellipsoid safety margin) "
+        << " z2 " << z2() 
+        << " radius " << radius() 
+        ;
 
-    if(!z1_lt_radius)
-       LOG(LEVEL) 
-           << " NOT z1_lt_radius (maybe un-zcut elliposoid safety margin) "
-           << " z1 " << z1() 
-           << " radius " << radius() 
-           ;
+    LOG_IF(LEVEL, !z1_lt_radius) 
+        << " NOT z1_lt_radius (maybe un-zcut elliposoid safety margin) "
+        << " z1 " << z1() 
+        << " radius " << radius() 
+        ;
 
-    if(!zmax_gt_zmin)
-       LOG(fatal) 
-           << " NOT zmax_gt_zmin "
-           << " zmax " << zmax() 
-           << " zmin " << zmin() 
-           ;
+    LOG_IF(fatal, !zmax_gt_zmin) 
+        << " NOT zmax_gt_zmin "
+        << " zmax " << zmax() 
+        << " zmin " << zmin() 
+        ;
 
     assert( z2_gt_z1 );
     assert( zmax_gt_zmin ); 

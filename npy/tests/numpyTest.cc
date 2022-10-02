@@ -47,14 +47,14 @@ struct numpyTest
         }
         else if( mode > 1)
         {
-            if( mode == 2 ) LOG(info) << " NPY<unsigned>::load, getValue " ; 
-            if( mode == 3 ) LOG(info) << " NPY<unsigned>::load, getQuadF " ; 
-            if( mode == 4 ) LOG(info) << " NPY<unsigned>::load, getQuad_ " ; 
-            if( mode == 5 ) LOG(info) << " NPY<unsigned>::load, getQuadU " ; 
-            if( mode == 6 ) LOG(info) << " NPY<unsigned>::load, getQuadI " ; 
-            if( mode == 7 ) LOG(info) << " NPY<unsigned>::load, getQuadLocal " ; 
+            LOG_IF(info, mode == 2 ) << " NPY<unsigned>::load, getValue " ; 
+            LOG_IF(info, mode == 3 ) << " NPY<unsigned>::load, getQuadF " ; 
+            LOG_IF(info, mode == 4 ) << " NPY<unsigned>::load, getQuad_ " ; 
+            LOG_IF(info, mode == 5 ) << " NPY<unsigned>::load, getQuadU " ; 
+            LOG_IF(info, mode == 6 ) << " NPY<unsigned>::load, getQuadI " ; 
+            LOG_IF(info, mode == 7 ) << " NPY<unsigned>::load, getQuadLocal " ; 
 
-            NPY<unsigned>* a = NPY<unsigned>::load(path) ; 
+            NPY<unsigned>* a = NPY<unsigned>::load(path, mode == 3 ) ; 
 
             const std::vector<int>& sh = a->getShapeVector(); 
             for(unsigned d=0 ; d < sh.size() ; d++)  shape.push_back(sh[d]) ; 

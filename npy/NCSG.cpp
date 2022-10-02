@@ -359,7 +359,7 @@ void NCSG::savesrc(const char* idpath, const char* rela, const char* relb ) cons
 void NCSG::savesrc(const char* treedir_ ) const 
 {
     bool same_dir = m_treedir && strcmp( treedir_, m_treedir) == 0  ;
-    if( same_dir ) LOG(fatal) << "saving back into the same dir as loaded from is not allowed " ; 
+    LOG_IF(fatal, same_dir) << "saving back into the same dir as loaded from is not allowed " ; 
     assert( !same_dir) ; 
     assert( treedir_ ) ; 
 
@@ -377,12 +377,12 @@ void NCSG::savesrc(const char* treedir_ ) const
 
 void NCSG::loadsrc()
 {
-    if(m_verbosity > 1) 
-         LOG(info) 
-             << " verbosity(>1) " << m_verbosity 
-             << " index " << m_index 
-             << " treedir " << m_treedir 
-             ; 
+
+    LOG_IF(info, m_verbosity > 1) 
+        << " verbosity(>1) " << m_verbosity 
+        << " index " << m_index 
+        << " treedir " << m_treedir 
+        ; 
 
     m_csgdata->loadsrc( m_treedir ) ; 
     m_meta->load( m_treedir ); 
@@ -397,8 +397,8 @@ void NCSG::postload()
     m_soIdx = m_csgdata->getSrcSOIdx(); 
     m_lvIdx = m_csgdata->getSrcLVIdx(); 
 
-    if( m_verbosity > 2) 
-    LOG(error) 
+    
+    LOG_IF(error, m_verbosity > 2) 
         << " verbosity(>2) " << m_verbosity
         << " soIdx " << m_soIdx 
         << " lvIdx " << m_lvIdx 
@@ -459,21 +459,17 @@ NCSG::import : from complete binary tree buffers into nnode tree
 
 void NCSG::import()
 {
-    if(m_verbosity > 1)
-        LOG(info) 
-                  << " verbosity(>1) " << m_verbosity
-                  << " treedir " << m_treedir
-                  << " smry " << smry()
-                  ; 
+    LOG_IF(info, m_verbosity > 1) 
+        << " verbosity(>1) " << m_verbosity
+        << " treedir " << m_treedir
+        << " smry " << smry()
+        ; 
 
-    if(m_verbosity > 1)
-    {
-        LOG(info) 
-                  << " verbosity(>0) " << m_verbosity 
-                  << " importing buffer into CSG node tree "
-                  << " num_nodes " << getNumNodes()
-                  ;
-    }
+    LOG_IF(info, m_verbosity > 1) 
+        << " verbosity(>0) " << m_verbosity 
+        << " importing buffer into CSG node tree "
+        << " num_nodes " << getNumNodes()
+        ;
 
     m_csgdata->prepareForImport() ;  // from m_srctransforms to m_transforms, and get m_gtransforms ready to collect
 
@@ -507,7 +503,7 @@ void NCSG::import()
     checkroot(); 
 
     if(m_verbosity > 5) check();  // recursive transform dumping 
-    if(m_verbosity > 1) LOG(info) << "]" ; 
+    LOG_IF(info, m_verbosity > 1) << "]" ; 
 }
 
 
@@ -1475,18 +1471,18 @@ void NCSG::export_node(nnode* node, unsigned idx)
 
         if( expect_external_bbox )
         {
-            if( node->external_bbox == false ) LOG(fatal) << " expect_external_bbox for node->type " << CSG::Name(node->type) ; 
+            LOG_IF(fatal, node->external_bbox == false) << " expect_external_bbox for node->type " << CSG::Name(node->type) ; 
             assert( node->external_bbox == true ); 
         }
 
         if( node->external_bbox )
         { 
-            if(has_bb_zero == true) LOG(fatal) << " node->external_bbox indicates that bbox was set externally BUT has_bb_zero is true : expected non-empty bb " ; 
+            LOG_IF(fatal, has_bb_zero == true) << " node->external_bbox indicates that bbox was set externally BUT has_bb_zero is true : expected non-empty bb " ; 
             assert( has_bb_zero == false );        
         }
         else
         {
-            if(has_bb_zero == false) LOG(fatal) << " node->external_bbox is false indicating bbox was not set externally has_bb_zero is false : unexpected bb is present   " ; 
+            LOG_IF(fatal, has_bb_zero == false) << " node->external_bbox is false indicating bbox was not set externally has_bb_zero is false : unexpected bb is present   " ; 
             assert( has_bb_zero == true );        
         } 
 
@@ -1533,8 +1529,7 @@ void NCSG::export_planes(nnode* node, NPY<float>* _planes)
     unsigned planeIdx0 = _planes->getNumItems();   // 0-based idx
     unsigned planeIdx1 = planeIdx0 + 1 ;           // 1-based idx
 
-    if( node->verbosity > 2 )
-    LOG(error) 
+    LOG_IF(error, node->verbosity > 2) 
          << " export_planes "
          << " node.verbosity " << node->verbosity
          << " planeIdx1 " << planeIdx1 
@@ -1858,12 +1853,8 @@ void NCSG::resizeToFit( const nbbox& fit_bb, float scale, float delta ) const
 
     bool empty_bb = fit_bb.is_empty(); 
 
-    if(empty_bb)
-        LOG(fatal) << " EMPTY fit_bb " << fit_bb.desc()
-        ;
-
+    LOG_IF(fatal, empty_bb) << " EMPTY fit_bb " << fit_bb.desc() ; 
     assert( !empty_bb );     
-
 
     nnode* root = getRoot();
 

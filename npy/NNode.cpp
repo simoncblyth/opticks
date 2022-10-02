@@ -800,8 +800,7 @@ void nnode::set_centering()
     nvec3 c0 = nvec3::from_vec4(ce0) ; 
     bool centered0 = c0.is_zero(1e-5) ;  
 
-    if(verbosity > 0)
-    LOG(info) 
+    LOG_IF(info, verbosity > 0) 
         << " bb0 " << bb0.description()
         << " ce0 " << ce0.desc()
         << ( centered0 ? " CENTERED " : " NOT-CENTERED " )
@@ -824,8 +823,7 @@ void nnode::set_centering()
         LOG(info) << "c1 " << c1.descg() ;   
     }
 
-    if(verbosity > 0)
-    LOG(info) 
+    LOG_IF(info, verbosity > 0) 
         << " bb1 " << bb1.description()
         << " ce1 " << ce1.desc()
         << ( centered1 ? " CENTERED " : " NOT-CENTERED " )
@@ -1499,10 +1497,10 @@ void nnode::get_composite_bbox( nbbox& bb ) const
     }
 
     nbbox l_bb = left->bbox();
-    if( verbosity > 4 ) LOG(info) << "l_bb " << l_bb.desc() ; 
+    LOG_IF(info, verbosity > 4 ) << "l_bb " << l_bb.desc() ; 
 
     nbbox r_bb = right->bbox();
-    if( verbosity > 4 ) LOG(info) << "r_bb " << r_bb.desc() ; 
+    LOG_IF(info, verbosity > 4 ) << "r_bb " << r_bb.desc() ; 
 
 
     if( left->is_unbounded() )
@@ -1557,9 +1555,7 @@ void nnode::get_primitive_bbox(nbbox& bb) const
     else if(node->type == CSG_SPHERE)
     { 
         const nsphere* n = dynamic_cast<const nsphere*>(node) ;
-        if(!n) LOG(fatal) << "failed to dynamic_cast a node of type CSG_SPHERE to const nsphere " ;  assert(n) ; 
-        //nsphere* n = (nsphere*)node ;
-        //if(!n) LOG(fatal) << "failed to cast a node of type CSG_SPHERE to nsphere " ;  assert(n) ; 
+        LOG_IF(fatal, !n) << "failed to dynamic_cast a node of type CSG_SPHERE to const nsphere " ;  assert(n) ; 
         nbbox pp = n->bbox() ;
         bb.copy_from(pp) ; 
     }
@@ -1571,7 +1567,7 @@ void nnode::get_primitive_bbox(nbbox& bb) const
     }
     else if(node->type == CSG_BOX || node->type == CSG_BOX3)
     {
-        if(verbosity > 4 ) LOG(info) << " CSG_BOX/CSG_BOX3 " ; 
+        LOG_IF(info, verbosity > 4 ) << " CSG_BOX/CSG_BOX3 " ; 
         nbox* n = (nbox*)node ;
         nbbox pp = n->bbox() ;   // <-- if the node is not a real nbox 
         bb.copy_from(pp) ; 

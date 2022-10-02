@@ -78,8 +78,7 @@ void NPYList::saveBuffer(const char* treedir, int bid, const char* msg ) const
     unsigned ni = buffer->getNumItems(); 
     std::string path = getBufferPath(treedir, bid); 
 
-    if(verbosity > 2)
-    LOG(info) 
+    LOG_IF(info, verbosity > 2) 
            << " spec.verbosity " << verbosity 
            <<  " save " << path 
            <<  " numItems " << ni 
@@ -111,12 +110,11 @@ void NPYList::loadBuffer(const char* treedir, int bid, const char* msg)
     }
     if(!exists) return ; 
 
-    if(verbosity > 2 )
-        LOG(info) 
-             << " spec.verbosity " << verbosity 
-             <<  " loaded " << path 
-             << " msg " << ( msg ? msg : "-" )
-             ; 
+    LOG_IF(info, verbosity > 2 ) 
+        << " spec.verbosity " << verbosity 
+        <<  " loaded " << path 
+        << " msg " << ( msg ? msg : "-" )
+        ; 
 
 
     NPYBase::Type_t type = getBufferType(bid); 
@@ -201,12 +199,12 @@ void NPYList::initBuffer(int bid, int ni, bool zero, const char* msg)
     }  
 
     int verbosity = spec->getVerbosity() ; 
-    if( verbosity > 2 ) 
-         LOG(info) << " initBuffer " 
-                   << " spec.verbosity " << verbosity 
-                   << " msg " << ( msg ? msg : "NULL" ) 
-                   << " name " << spec->getName() 
-                  ; 
+    LOG_IF(info, verbosity > 2) 
+        << " initBuffer " 
+        << " spec.verbosity " << verbosity 
+        << " msg " << ( msg ? msg : "NULL" ) 
+        << " name " << spec->getName() 
+        ; 
 
 
     NPYBase* buffer = NPYBase::Make( ni, spec, zero );  

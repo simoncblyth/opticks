@@ -46,7 +46,7 @@ NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& path
 
     //std::cout << "ImageNPY::LoadPPMConcat LEVEL " << LEVEL << std::endl ; 
 
-    if(old_concat) LOG(LEVEL) << "using old_concat imp " ; 
+    LOG_IF(LEVEL, old_concat) << "using old_concat imp " ; 
     NPY<unsigned char>* comb = old_concat ? NPY<unsigned char>::old_concat(imgs) : NPY<unsigned char>::concat(imgs) ; 
 
     LOG(LEVEL) << "concat img shape " << comb->getShapeString() ; 

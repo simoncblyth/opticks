@@ -462,10 +462,11 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)
 
     bool same= HasSameItemSize(this, other);
 
-    if(!same) LOG(fatal) << "HasSameItemSize FAIL"
-                         << " other " << other->getShapeString()
-                         << " this " << this->getShapeString()
-                         ;
+    LOG_IF(fatal, !same) 
+        << "HasSameItemSize FAIL"
+        << " other " << other->getShapeString()
+        << " this " << this->getShapeString()
+        ;
 
     assert(same && "addItem requires the same item size for this and other");
 
@@ -514,11 +515,11 @@ void NPY<T>::add(const NPY<T>* other)
     unsigned extra = other->getNumItems() ;
 
     bool same= HasSameItemSize(this, other);
-    if(!same) 
-        LOG(fatal) << "HasSameItemSize FAIL"
-                   << " other " << other->getShapeString()
-                   << " this " << this->getShapeString()
-                   ;
+    LOG_IF(fatal, !same) 
+        << "HasSameItemSize FAIL"
+        << " other " << other->getShapeString()
+        << " this " << this->getShapeString()
+        ;
 
     assert(same);
 
@@ -932,11 +933,10 @@ bool NPY<T>::equals(const NPY<T>* other, bool dump_) const
     unsigned nv = getNumValues(0);
     unsigned no = other->getNumValues(0);
 
-    if(dump_) 
-        LOG(info)
-            << " nv " << nv  
-            << " no " << no
-            ;  
+    LOG_IF(info, dump_)
+        << " nv " << nv  
+        << " no " << no
+        ;  
 
     if( nv != no ) return false ; 
     T mxd = maxdiff(other, dump_) ;  
@@ -2344,14 +2344,13 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
     if(IsInteger())
     {
         bool expect = mode == 'I' ; 
-        if(!expect)   
-            LOG(fatal) << " for integer types the comparison mode must be 'I' and the epsilon is ignored " ; 
+        LOG_IF(fatal, !expect) << " for integer types the comparison mode must be 'I' and the epsilon is ignored " ; 
         assert(expect); 
     }   
     else if( IsReal() )
     {
         bool expect = mode == 'A' || mode == 'R' ; 
-        if(!expect)   LOG(fatal) << " for real types the comparison mode must be 'A' or 'R' and the epsilon is used " ; 
+        LOG_IF(fatal, !expect) << " for real types the comparison mode must be 'A' or 'R' and the epsilon is used " ; 
         assert(expect); 
     }
     else
@@ -3086,7 +3085,7 @@ template <typename T>
 void NPY<T>::setValue(int i, int j, int k, int l, T value)
 {
     bool in_range = unsigned(i) < m_ni ; 
-    if(!in_range) LOG(fatal) << " i " << i <<  " m_ni " << m_ni ;     
+    LOG_IF(fatal, !in_range) << " i " << i <<  " m_ni " << m_ni ;     
     assert( in_range ); 
     unsigned int idx = getValueIndex(i,j,k,l);
     setValueFlat(idx, value); 
@@ -3153,7 +3152,7 @@ void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
     T* dat = getValues();
 
     bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
-    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    LOG_IF(fatal, !expect) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
     assert(expect);
 
     if( j_ == -1)
@@ -3180,7 +3179,7 @@ template <typename T>
 glm::mat4 NPY<T>::getMat4(int i, int j_) const 
 {
     bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
-    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    LOG_IF(fatal, !expect) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
     assert(expect);
 
     int j = j_ == -1 ? 0 : j_ ; 
@@ -3194,7 +3193,7 @@ template <typename T>
 glm::tmat4x4<T> NPY<T>::getMat4_(int i, int j_) const 
 {
     bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
-    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    LOG_IF(fatal, !expect) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
     assert(expect);
 
     int j = j_ == -1 ? 0 : j_ ; 

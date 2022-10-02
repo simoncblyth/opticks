@@ -43,7 +43,8 @@ NGLMCF::NGLMCF( const glm::mat4& A_, const glm::mat4& B_ )
     diffMax(epsilon_translation*10.),
     match(diffFractional < diffFractionalMax)
 {
-    if(SSys::getenvbool("NGLMCF")) LOG(LEVEL) << desc("NGLMCF"); 
+    bool dump = SSys::getenvbool("NGLMCF") ; 
+    LOG_IF(LEVEL, dump) << desc("NGLMCF"); 
 }
 
 
@@ -64,7 +65,8 @@ NGLMCF_<T>::NGLMCF_( const glm::tmat4x4<T>& A_, const glm::tmat4x4<T>& B_ )
     diffMax(epsilon_translation*10.),
     match(diffFractional < diffFractionalMax)
 {
-    if(SSys::getenvbool("NGLMCF_")) LOG(LEVEL) << desc("NGLMCF_"); 
+    bool dump = SSys::getenvbool("NGLMCF_") ; 
+    LOG_IF(LEVEL, dump) << desc("NGLMCF_"); 
 }
 
 /**

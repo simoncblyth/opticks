@@ -128,11 +128,10 @@ void NCSGData::loadsrc(const char* treedir)  // invoked from NCSG::NCSG(const ch
 
     import_src_identity();
 
-    if(m_verbosity > 1)
-        LOG(info) 
-              << " verbosity(>1) " << m_verbosity  
-              << smry() 
-              ;
+    LOG_IF(info, m_verbosity > 1) 
+        << " verbosity(>1) " << m_verbosity  
+        << smry() 
+        ;
 }
 
 
