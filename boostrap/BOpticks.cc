@@ -49,7 +49,7 @@ const char* BOpticks::getPath(const char* rela, const char* relb, const char* re
 }
 
 int BOpticks::getError() const { 
-    if( m_error > 0 ) LOG(fatal) << " MISSING OPTICKS_KEY " ; 
+    LOG_IF(fatal, m_error > 0) << " m_error > 0 : MISSING OPTICKS_KEY " ; 
     return m_error ; 
 }
 

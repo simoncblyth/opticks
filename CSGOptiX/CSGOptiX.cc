@@ -730,7 +730,7 @@ void CSGOptiX::prepareParam()
     six->updateContext();  // Populates optix::context with values from hostside params
 #else
     params->upload();  
-    if(!flight) LOG(LEVEL) << params->detail(); 
+    LOG_IF(LEVEL, !flight) << params->detail(); 
 #endif
 }
 

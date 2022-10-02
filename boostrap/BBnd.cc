@@ -81,8 +81,7 @@ BBnd::BBnd(const char* spec)
     BStr::split( elem, spec, DELIM );
     bool four = elem.size() == 4  ;
 
-    if(!four)
-    LOG(fatal) << "BBnd::BBnd malformed boundary spec " << spec << " elem.size " << elem.size() ;  
+    LOG_IF(fatal, !four) << "BBnd::BBnd malformed boundary spec " << spec << " elem.size " << elem.size() ;  
     assert(four);
 
     omat = elem[0].empty() ? NULL : elem[0].c_str() ;

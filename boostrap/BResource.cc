@@ -200,10 +200,10 @@ void BResource::dumpPaths(const char* msg) const
 
 
         bool match = path2 == path ;         
-        if(!match) LOG(fatal) 
-                    << " path [" << path << "] " 
-                    << " path2 [" << path2 << "] "
-                    ;
+        LOG_IF(fatal, !match) 
+            << " path [" << path << "] " 
+            << " path2 [" << path2 << "] "
+            ;
 
         assert( match );
     } 

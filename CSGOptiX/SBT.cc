@@ -285,8 +285,8 @@ Access the GAS from the vgas map using *gas_idx* key
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
     unsigned count = vgas.count(gas_idx); 
+    LOG_IF(fatal, count == 0) << " no such gas_idx " << gas_idx ; 
     assert( count < 2 ); 
-    if( count == 0 ) LOG(fatal) << " no such gas_idx " << gas_idx ; 
     return vgas.at(gas_idx); 
 }
 
@@ -557,7 +557,7 @@ void SBT::createIAS(const std::vector<qat4>& inst )
 const IAS& SBT::getIAS(unsigned ias_idx) const 
 {
     bool in_range =  ias_idx < vias.size() ; 
-    if(!in_range) LOG(fatal) << "OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() ; 
+    LOG_IF(fatal, !in_range) << "OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() ; 
     assert(in_range); 
     return vias[ias_idx]; 
 }
@@ -577,7 +577,7 @@ bool SBT::ValidSpec(const char* spec) // static
 void SBT::setTop(const char* spec)
 {
     bool valid_spec = ValidSpec(spec); 
-    if(!valid_spec) LOG(fatal) << " valid spec is required [" << spec << "]"  ; 
+    LOG_IF(fatal, !valid_spec) << " valid spec is required [" << spec << "]"  ; 
     assert( valid_spec );  
     AS* a = getAS(spec); 
     setTop(a); 
@@ -728,7 +728,7 @@ unsigned SBT::getTotalRec() const
         unsigned gas_idx = it->first ; 
 
         bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx)  ; 
-        if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
+        LOG_IF(error, !enabled) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
 
         const GAS& gas = it->second ; 
@@ -776,7 +776,7 @@ std::string SBT::descGAS() const
         const GAS& gas = it->second ; 
 
         bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx)  ; 
-        if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
+        LOG_IF(error, !enabled) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 

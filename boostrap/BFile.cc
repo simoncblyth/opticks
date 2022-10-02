@@ -331,8 +331,9 @@ std::string BFile::ResolveKey( const char* _key )
            << " evtbase " << evtbase
            ; 
 
-       if(evalue.empty()) LOG(fatal) << "Failed to resolve OPTICKS_EVENT_BASE " ; 
-       assert(!evalue.empty());  
+       bool evalue_empty = evalue.empty(); 
+       LOG_IF(fatal, evalue_empty) << "Failed to resolve OPTICKS_EVENT_BASE " ; 
+       assert(!evalue_empty);  
 
     }
     else if(strcmp(key,"INSTALLCACHE_DIR")==0) 
