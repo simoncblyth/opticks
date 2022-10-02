@@ -451,6 +451,7 @@ target_include_directories( ${name} PUBLIC
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
+target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) ## only does anything with newer plog
 target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    
 ## DEBUG_TAG is needed for random aligned running in multiple pkgs: sysrap, qudarap, u4
 ## however making this PUBLIC makes rebuilding real heavy 

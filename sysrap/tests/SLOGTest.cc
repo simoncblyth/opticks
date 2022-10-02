@@ -33,6 +33,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    std::cout << "SLOG::Flags() " << SLOG::Flags() << std::endl ; 
+
+
     plog::Logger<0>* main_logger = plog::get<0>() ; 
 
     plog::Severity main_level = main_logger->getMaxSeverity(); 

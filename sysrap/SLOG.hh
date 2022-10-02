@@ -303,8 +303,7 @@ struct SYSRAP_API SLOG
     static std::string Desc(); 
 
     static void Dump(); 
-
-
+    static std::string Flags(); 
 
 
     static plog::Severity Delta(plog::Severity level_, int delta); 
@@ -342,5 +341,12 @@ struct SYSRAP_API SLOG
 
 #include "SLOG_INIT.hh"
 
-#define sLOG(severity, delta)     LOG_(PLOG_DEFAULT_INSTANCE_ID, SLOG::Delta(severity,delta))
+// newer plog has _ID  older does not 
+#ifdef PLOG_DEFAULT_INSTANCE_ID
+#define SLOG_DEFAULT_INSTANCE_ID PLOG_DEFAULT_INSTANCE_ID
+#else
+#define SLOG_DEFAULT_INSTANCE_ID PLOG_DEFAULT_INSTANCE
+#endif
+
+#define sLOG(severity, delta)     LOG_(SLOG_DEFAULT_INSTANCE_ID, SLOG::Delta(severity,delta))
 

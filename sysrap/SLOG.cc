@@ -63,6 +63,8 @@ const char* SLOG::MaxSeverityString(plog::Logger<IDX>* logger)
     return  plog::severityToString(SLOG::MaxSeverity<IDX>(logger)) ; 
 }
 
+
+
 template<int IDX>
 std::string SLOG::Desc(plog::Logger<IDX>* logger)
 {
@@ -71,10 +73,12 @@ std::string SLOG::Desc(plog::Logger<IDX>* logger)
        << " SLOG::MaxSeverity<IDX>(logger) " << SLOG::MaxSeverity<IDX>(logger)
        << " SLOG::MaxSeverityString<IDX>(logger) " << SLOG::MaxSeverityString<IDX>(logger)
        ; 
-
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
 
 
 template<int IDX>
@@ -84,9 +88,27 @@ std::string SLOG::Desc()
     return Desc(lib_logger) ; 
 }
 
-
 template std::string SLOG::Desc<0>(plog::Logger<0>* ) ; 
 template std::string SLOG::Desc<0>() ; 
+
+std::string SLOG::Flags()
+{
+    std::stringstream ss ; 
+    ss 
+#ifdef PLOG_LOCAL
+       << " PLOG_LOCAL "
+#else
+       << " NOT:PLOG_LOCAL "
+#endif
+#ifdef PLOG_GLOBAL
+       << " PLOG_GLOBAL "
+#else
+       << " NOT:PLOG_GLOBAL "
+#endif
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 void SLOG::Dump()
