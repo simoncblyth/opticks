@@ -95,7 +95,7 @@ CSGQueryTest::CSGQueryTest()
 
 void CSGQueryTest::operator()( char mode)
 {
-    if(VERBOSE > 0 ) LOG(info) << " mode " << mode ; 
+    LOG_IF(info, VERBOSE > 0) << " mode " << mode ; 
     switch(mode)
     {
         case 'O': OneIntersection() ; break ; 
@@ -163,7 +163,7 @@ std::string CSGQueryTest::config(
 
     std::string s = ss.str(); 
 
-    if(VERBOSE > 0 ) LOG(info) << std::endl << s ; 
+    LOG_IF(info, VERBOSE > 0) << std::endl << s ; 
     return s ; 
 }
 
@@ -337,7 +337,7 @@ void CSGQueryTest::Load()
 
     memcpy( dst, src, itembytes  );  
 
-    if(VERBOSE > 0) LOG(info) 
+    LOG_IF(info, VERBOSE > 0) 
         << "load_isect "  << std::endl
         << " q0.f " << load_isect.q0.f << std::endl 
         << " q1.f " << load_isect.q1.f << std::endl 

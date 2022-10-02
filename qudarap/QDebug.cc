@@ -55,7 +55,7 @@ qdebug* QDebug::MakeInstance()   // static
 
     unsigned cerenkov_matline = qb ? qb->bnd->boundary_tex_MaterialLine_LS : 0 ;   
 
-    if(qb == nullptr) LOG(error) 
+    LOG_IF(error, qb == nullptr) 
          << "AS NO QBnd at QDebug::MakeInstance the qdebug cerenkov genstep is using default matline of zero " << std::endl 
          << "THIS MEANS qdebug CERENKOV GENERATION WILL LIKELY INFINITE LOOP AND TIMEOUT " << std::endl 
          << " cerenkov_matline " << cerenkov_matline  << std::endl

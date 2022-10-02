@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     LOG(info) << " lvIdx " << lvIdx << " csgpath " << csgpath ; 
 
     NCSGList* ls = NCSGList::Load(csgpath.c_str());  
-    if(!ls) LOG(error) << "failed to load " << csgpath ; 
+    LOG_IF(error, !ls) << "failed to load NCSGList " << csgpath ; 
 
     return 0 ; 
 }

@@ -84,7 +84,7 @@ can be common between the branches
 
 void QEvent::init()
 {
-    if(!sev) LOG(fatal) << "QEvent instanciated before SEvt instanciated : this is not going to fly " ; 
+    LOG_IF(fatal, !sev) << "QEvent instanciated before SEvt instanciated : this is not going to fly " ; 
 
     assert(sev); 
     assert(evt); 
@@ -148,7 +148,7 @@ int QEvent::setGenstep()  // onto device
 {
     NP* gs = SEvt::GatherGenstep(); // TODO: review memory handling  
     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
-    if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
+    LOG_IF(fatal, gs == nullptr ) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
     //if(gs == nullptr) std::raise(SIGINT); 
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 
@@ -164,7 +164,7 @@ int QEvent::setGenstep(NP* gs_)
     LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
  
     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
-    if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
+    LOG_IF(fatal, !num_gs_allowed) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
     QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep ); 
@@ -218,10 +218,9 @@ narrowed here prior to upload.
 void QEvent::setInputPhoton()
 {
     input_photon = SEvt::GetInputPhoton(); 
-    if( input_photon == nullptr ) 
-        LOG(fatal) 
-            << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
-            ; 
+    LOG_IF(fatal, input_photon == nullptr) 
+        << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
+        ; 
 
     assert(input_photon);  
     assert(input_photon->has_shape( -1, 4, 4) ); 
@@ -337,8 +336,9 @@ NP* QEvent::gatherGenstepFromDevice() const
 
 NP* QEvent::gatherSeed() const 
 {
-    if(!hasSeed()) LOG(fatal) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasSeed()) return nullptr ;  
+    bool has_seed = hasSeed() ; 
+    LOG_IF(fatal, !has_seed) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_seed) return nullptr ;  
     NP* s = NP::Make<int>( evt->num_seed ); 
     QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
     return s ; 
@@ -378,8 +378,9 @@ void QEvent::gatherSimtrace(NP* t) const
 }
 NP* QEvent::gatherSimtrace() const 
 {
-    if(!hasSimtrace()) LOG(LEVEL) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
-    if(!hasSimtrace()) return nullptr ;  
+    bool has_simtrace = hasSimtrace(); 
+    LOG_IF(LEVEL, !has_simtrace) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
+    if(!has_simtrace) return nullptr ;  
     NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
     gatherSimtrace(t); 
     return t ; 
@@ -387,7 +388,8 @@ NP* QEvent::gatherSimtrace() const
 
 void QEvent::gatherSeq(NP* seq) const 
 {
-    if(!hasSeq()) return ; 
+    bool has_seq = hasSeq(); 
+    if(!has_seq) return ; 
     LOG(LEVEL) << "[ evt.num_seq " << evt->num_seq << " seq.sstr " << seq->sstr() << " evt.seq " << evt->seq ; 
     assert( seq->has_shape(evt->num_seq, 2) ); 
     QU::copy_device_to_host<sseq>( (sseq*)seq->bytes(), evt->seq, evt->num_seq ); 
@@ -396,8 +398,9 @@ void QEvent::gatherSeq(NP* seq) const
 
 NP* QEvent::gatherSeq() const 
 {
-    if(!hasSeq()) LOG(LEVEL) << " gatherSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasSeq()) return nullptr ;
+    bool has_seq = hasSeq(); 
+    LOG_IF(LEVEL, !has_seq) << " gatherSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_seq) return nullptr ;
   
     NP* seq = sev->makeSeq(); 
 
@@ -407,8 +410,9 @@ NP* QEvent::gatherSeq() const
 
 NP* QEvent::gatherPrd() const 
 {
-    if(!hasPrd()) LOG(LEVEL) << " gatherPrd called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasPrd()) return nullptr ;
+    bool has_prd = hasPrd(); 
+    LOG_IF(LEVEL, !has_prd) << " gatherPrd called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_prd) return nullptr ;
   
     NP* prd = sev->makePrd(); 
     LOG(LEVEL) << " evt.num_prd " << evt->num_prd ; 
@@ -418,8 +422,9 @@ NP* QEvent::gatherPrd() const
 
 NP* QEvent::gatherTag() const 
 {
-    if(!hasTag()) LOG(LEVEL) << " gatherTag called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasTag()) return nullptr ;
+    bool has_tag = hasTag() ; 
+    LOG_IF(LEVEL, !has_tag) << " gatherTag called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_tag) return nullptr ;
   
     NP* tag = sev->makeTag(); 
     LOG(LEVEL) << " evt.num_tag " << evt->num_tag << " tag.desc " << tag->desc() ; 
@@ -429,8 +434,9 @@ NP* QEvent::gatherTag() const
 
 NP* QEvent::gatherFlat() const 
 {
-    if(!hasFlat()) LOG(LEVEL) << " gatherFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasFlat()) return nullptr ;
+    bool has_flat = hasFlat(); 
+    LOG_IF(LEVEL, !has_flat) << " gatherFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_flat) return nullptr ;
   
     NP* flat = sev->makeFlat(); 
     LOG(LEVEL) << " evt.num_flat " << evt->num_flat << " flat.desc " << flat->desc() ; 
@@ -441,8 +447,9 @@ NP* QEvent::gatherFlat() const
 
 NP* QEvent::gatherRecord() const 
 {
-    if(!hasRecord()) LOG(LEVEL) << " gatherRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasRecord()) return nullptr ;  
+    bool has_record = hasRecord() ; 
+    LOG_IF(LEVEL, !has_record) << " gatherRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_record) return nullptr ;  
 
     NP* r = sev->makeRecord(); 
 
@@ -453,8 +460,9 @@ NP* QEvent::gatherRecord() const
 
 NP* QEvent::gatherRec() const 
 {
-    if(!hasRec()) LOG(LEVEL) << " gatherRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasRec()) return nullptr ;  
+    bool has_rec = hasRec(); 
+    LOG_IF(LEVEL, !has_rec ) << " gatherRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_rec) return nullptr ;  
 
     NP* r = sev->makeRec(); 
 
@@ -514,8 +522,11 @@ NP* QEvent::gatherHit() const
 {
     // hasHit at this juncture is misleadingly always false, 
     // because the hits array is derived by *gatherHit_* which  selects from the photons 
-    if(!hasPhoton()) LOG(LEVEL) << " gatherHit called when there is no photon array " ; 
-    if(!hasPhoton()) return nullptr ; 
+
+    bool has_photon = hasPhoton(); 
+
+    LOG_IF(LEVEL, !has_photon) << " gatherHit called when there is no photon array " ; 
+    if(!has_photon) return nullptr ; 
 
     assert( evt->photon ); 
     assert( evt->num_photon ); 

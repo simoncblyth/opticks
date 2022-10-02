@@ -33,7 +33,7 @@ void test_findSolidIdx(const CSGFoundry* fd, int argc, char** argv)
          }
     }
     LOG(info) << "]"  ;
-    if( argc == 1 ) LOG(error) << " enter args such as r0/r1/r2/r3/... to select and dump composite solids " ; 
+    LOG_IF(error, argc == 1) << " enter args such as r0/r1/r2/r3/... to select and dump composite solids " ; 
  
 }
 

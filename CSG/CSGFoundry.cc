@@ -87,7 +87,7 @@ CSGFoundry::CSGFoundry()
     origin(nullptr),
     elv(nullptr)
 {
-    if(sim == nullptr) LOG(fatal) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
+    LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
     assert(sim); 
     init(); 
 }
@@ -274,7 +274,7 @@ const char* CSGFoundry::getMeshName(unsigned midx) const
 {
     bool in_range = midx < meshname.size() ;
 
-    if(!in_range) LOG(fatal) << " not in range midx " << midx << " meshname.size()  " << meshname.size()  ; 
+    LOG_IF(fatal, !in_range) << " not in range midx " << midx << " meshname.size()  " << meshname.size()  ; 
     assert(in_range); 
 
     return meshname[midx].c_str() ; 
@@ -414,7 +414,7 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "itra" , a->itra , b->itra ); 
     mismatch += CompareVec( "inst" , a->inst , b->inst ); 
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
-    if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
+    LOG_IF(fatal, mismatch != 0 ) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
     mismatch += SSim::Compare( a->sim, b->sim ); 
 
@@ -461,19 +461,19 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     int mismatch = 0 ; 
 
     bool size_match = a.size() == b.size() ; 
-    if(!size_match) LOG(info) << name << " size_match FAIL " << a.size() << " vs " << b.size()    ; 
+    LOG_IF(info, !size_match) << name << " size_match FAIL " << a.size() << " vs " << b.size()    ; 
     if(!size_match) mismatch += 1 ; 
     if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
 
     int data_match = memcmp( a.data(), b.data(), a.size()*sizeof(T) ) ; 
-    if(data_match != 0) LOG(info) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " ; 
+    LOG_IF(info, data_match != 0) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " ; 
     if(data_match != 0) mismatch += 1 ; 
 
     int byte_match = CompareBytes( a.data(), b.data(), a.size()*sizeof(T) ) ;
-    if(byte_match != 0) LOG(info) << name << " sizeof(T) " << sizeof(T) << " byte_match FAIL " ; 
+    LOG_IF(info, byte_match != 0) << name << " sizeof(T) " << sizeof(T) << " byte_match FAIL " ; 
     if(byte_match != 0) mismatch += 1 ; 
 
-    if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL for " << name ;  
+    LOG_IF(fatal, mismatch != 0) << " mismatch FAIL for " << name ;  
     if( mismatch != 0 ) std::cout << " mismatch FAIL for " << name << std::endl ;  
     //assert( mismatch == 0 ); 
     return mismatch ; 
@@ -1207,7 +1207,7 @@ Better for SBT creation not to be mixed up with geometry selection.
 CSGPrimSpec CSGFoundry::getPrimSpec(unsigned solidIdx) const 
 {
     CSGPrimSpec ps = d_prim ? getPrimSpecDevice(solidIdx) : getPrimSpecHost(solidIdx) ; 
-    if(ps.device == false) LOG(info) << "WARNING using host PrimSpec, upload first " ; 
+    LOG_IF(info, ps.device == false) << "WARNING using host PrimSpec, upload first " ; 
     return ps ; 
 }
 CSGPrimSpec CSGFoundry::getPrimSpecHost(unsigned solidIdx) const 
@@ -1346,7 +1346,7 @@ the global plan vector.
 
 CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr  )
 {
-    if(!last_added_prim) LOG(fatal) << "must addPrim prior to addNode" ; 
+    LOG_IF(fatal, !last_added_prim) << "must addPrim prior to addNode" ; 
     assert( last_added_prim ); 
 
     unsigned globalNodeIdx = node.size() ;  
@@ -1356,7 +1356,7 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tr
     unsigned localNodeIdx = globalNodeIdx - nodeOffset ; 
 
     bool ok_localNodeIdx = localNodeIdx < numNode ; 
-    if(!ok_localNodeIdx) LOG(fatal) 
+    LOG_IF(fatal, !ok_localNodeIdx) 
         << " TOO MANY addNode FOR Prim " 
         << " localNodeIdx " << localNodeIdx
         << " numNode " << numNode
@@ -1366,15 +1366,11 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tr
     assert( ok_localNodeIdx  ); 
 
     bool ok_globalNodeIdx = globalNodeIdx < IMAX  ;
-    if(!ok_globalNodeIdx)
-    {
-        LOG(fatal) 
-            << " FATAL : OUT OF RANGE "
-            << " globalNodeIdx " << globalNodeIdx 
-            << " IMAX " << IMAX
-            ;
-    }
-
+    LOG_IF(fatal, !ok_globalNodeIdx) 
+        << " FATAL : OUT OF RANGE "
+        << " globalNodeIdx " << globalNodeIdx 
+        << " IMAX " << IMAX
+        ;
     assert( ok_globalNodeIdx ); 
 
     unsigned num_planes = pl ? pl->size() : 0 ; 
@@ -1648,7 +1644,7 @@ When reusing preexisting nodes, provide a nodeOffset_ argument > -1
 
 CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )  
 {
-    if(!last_added_solid) LOG(fatal) << "must addSolid prior to addPrim" ; 
+    LOG_IF(fatal, !last_added_solid) << "must addSolid prior to addPrim" ; 
     assert( last_added_solid ); 
 
     unsigned primOffset = last_added_solid->primOffset ; 
@@ -1658,7 +1654,7 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
     unsigned localPrimIdx = globalPrimIdx - primOffset ; 
 
     bool in_range = localPrimIdx < numPrim ; 
-    if(!in_range) LOG(fatal) 
+    LOG_IF(fatal, !in_range) 
         << " TOO MANY addPrim FOR SOLID " 
         << " localPrimIdx " << localPrimIdx
         << " numPrim " << numPrim
@@ -2179,10 +2175,10 @@ Relevant envvars : CFBASE and GEOM
 
 void CSGFoundry::load(const char* base_, const char* rel) 
 {
-    if(base_ == nullptr) LOG(error) << load_FAIL_base_null_NOTES ; 
+    LOG_IF(error, base_ == nullptr) << load_FAIL_base_null_NOTES ; 
     assert(base_); 
     bool conventional = strcmp( rel, RELDIR) == 0  ; 
-    if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
+    LOG_IF(fatal, !conventional) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
     assert(conventional); 
 
     const char* base = SPath::Resolve(base_, NOOP); 
@@ -2552,8 +2548,7 @@ const char* CSGFoundry::ResolveCFBase() // static
     bool readable = cfbase == nullptr ? false : SPath::IsReadable(cfbase, "CSGFoundry") ; 
     LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ; 
 
-    if(!readable)
-        LOG(fatal) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
+    LOG_IF(fatal, !readable) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
    
     return readable ? cfbase : nullptr ; 
 }
@@ -2687,7 +2682,7 @@ void CSGFoundry::upload()
     assert( tran.size() == itra.size() ); 
 
     bool is_uploaded_0 = isUploaded(); 
-    if(is_uploaded_0) LOG(fatal) << "HAVE ALREADY UPLOADED : THIS CANNOT BE DONE MORE THAN ONCE " ; 
+    LOG_IF(fatal, is_uploaded_0) << "HAVE ALREADY UPLOADED : THIS CANNOT BE DONE MORE THAN ONCE " ; 
     assert(is_uploaded_0 == false); 
 
     // allocates and copies
@@ -2699,7 +2694,7 @@ void CSGFoundry::upload()
     LOG(LEVEL) << "] CU::UploadArray "  ; 
 
     bool is_uploaded_1 = isUploaded(); 
-    if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 
+    LOG_IF(fatal, !is_uploaded_1) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded_1 == true); 
 
     //const char* ocfb = getOriginCFBase(); 
@@ -2886,7 +2881,7 @@ sframe CSGFoundry::getFrame(const char* frs) const
 {
     sframe fr ; 
     int rc = getFrame(fr, frs ? frs : FRS );
-    if(rc != 0) LOG(error) << " frs " << frs << std::endl << getFrame_NOTES ; 
+    LOG_IF(error, rc != 0) << " frs " << frs << std::endl << getFrame_NOTES ; 
     if(rc != 0) std::raise(SIGINT); 
 
     fr.prepare();  // creates Tran<double>
@@ -2941,7 +2936,7 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
     LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
-    if(rc != 0) LOG(error) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
+    LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
     return rc ; 
 }
 

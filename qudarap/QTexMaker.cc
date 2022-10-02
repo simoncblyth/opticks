@@ -15,7 +15,7 @@ QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode, bool normal
     unsigned hd_factor = icdf->get_meta<unsigned>("hd_factor", 0) ; 
     LOG(info) << " hd_factor " << hd_factor ; 
 
-    if( filterMode == 'P' ) LOG(fatal) << " filtermode 'P' without interpolation is in use : appropriate for basic tex machinery tests only " ; 
+    LOG_IF(fatal, filterMode == 'P' ) << " filtermode 'P' without interpolation is in use : appropriate for basic tex machinery tests only " ; 
 
     LOG(info)
         << "["  

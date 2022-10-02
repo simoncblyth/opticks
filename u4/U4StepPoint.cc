@@ -141,12 +141,11 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
         unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
 
         flag = BoundaryFlag(bstat) ;   
-        if( flag == NAN_ABORT ) 
-            LOG(LEVEL) 
-                << " fGeomBoundary " 
-                << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
-                << " flag " << OpticksPhoton::Flag(flag)
-                ;
+        LOG_IF(LEVEL, flag == NAN_ABORT ) 
+            << " fGeomBoundary " 
+            << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
+            << " flag " << OpticksPhoton::Flag(flag)
+            ;
     }
     else if( status == fWorldBoundary && proc == U4StepPoint_Transportation )
     {

@@ -101,15 +101,17 @@ void CSGCopy::copy()
 
         unsigned dump_ = Dump(sSolidIdx); 
         bool dump_solid = dump_ & 0x1 ; 
-        if(dump_solid)
-        {
-            LOG(info) << "sSolidIdx " << sSolidIdx << " DUMP_RIDX " << DUMP_RIDX  << " DUMP_NPS " << DUMP_NPS << " dump_solid " << dump_solid  ;   
-        }
+        LOG_IF(info, dump_solid) 
+            << "sSolidIdx " << sSolidIdx 
+            << " DUMP_RIDX " << DUMP_RIDX  
+            << " DUMP_NPS " << DUMP_NPS 
+            << " dump_solid " << dump_solid  
+            ;   
 
         const CSGSolid* sso = src->getSolid(sSolidIdx);
         unsigned numSelectedPrim = src->getNumSelectedPrimInSolid(sso, elv );  
         const std::string& solidLabel = src->getSolidLabel(sSolidIdx); 
-        if(dump_solid) LOG(LEVEL) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim << " solidLabel " << solidLabel ; 
+        LOG_IF(LEVEL, dump_solid) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim << " solidLabel " << solidLabel ; 
 
         if( numSelectedPrim == 0 ) continue ;  
 
@@ -134,7 +136,7 @@ void CSGCopy::copy()
         //dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
         dso->center_extent = solid_bb.center_extent(); 
 
-        if(dump_solid) LOG(LEVEL) << " dso " << dso->desc() ; 
+        LOG_IF(LEVEL, dump_solid) << " dso " << dso->desc() ; 
 
     }   // over solids of the entire geometry 
 

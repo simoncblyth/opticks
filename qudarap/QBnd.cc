@@ -132,7 +132,7 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
 
     bool buf_has_meta = buf->has_meta() ;
-    if(!buf_has_meta) LOG(fatal) << " buf_has_meta FAIL : domain metadata is required to create texture  buf.desc " << buf->desc() ;  
+    LOG_IF(fatal, !buf_has_meta) << " buf_has_meta FAIL : domain metadata is required to create texture  buf.desc " << buf->desc() ;  
     assert( buf_has_meta ); 
 
     quad domainX ; 

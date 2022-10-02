@@ -95,7 +95,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
     if(pv == nullptr) pv = PVS_(name); 
     if(pv == nullptr) pv = PVL_(name); 
     if(pv == nullptr) pv = PV1_(name); 
-    if(pv == nullptr) LOG(error) << "returning nullptr for name [" << name << "]" ; 
+    LOG_IF(error, pv == nullptr) << "returning nullptr for name [" << name << "]" ; 
     LOG(LEVEL) << "]" << name ; 
     return pv ; 
 }
@@ -190,7 +190,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
     if(has_manager_prefix) 
     {
         G4LogicalVolume* lv = PMTSim::GetLV(name) ; 
-        if( lv == nullptr ) LOG(fatal) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
+        LOG_IF(fatal, lv == nullptr ) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
 
         pv = WrapRockWater( lv ) ;          

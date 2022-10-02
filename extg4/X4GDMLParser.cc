@@ -100,8 +100,11 @@ void X4GDMLParser::write(const G4VSolid* solid, const char* path )
     std::string cout_ = coutbuf.str() ; 
     std::string cerr_ = cerrbuf.str() ; 
 
-    //if(cout_.size() > 0) LOG(info)  << "cout:" << cout_ ; 
-    if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
+    //bool with_cout = cout_.size() > 0 ;  
+    bool with_cerr = cerr_.size() > 0 ;  
+
+    //LOG_IF(info,  with_cout)  << "cout:" << cout_ ; 
+    LOG_IF(error, with_cerr) << "cerr:"<< cerr_ ; 
 }
 
 
@@ -121,8 +124,12 @@ std::string X4GDMLParser::to_string( const G4VSolid* solid )
     std::string cout_ = coutbuf.str() ; 
     std::string cerr_ = cerrbuf.str() ; 
 
-    //if(cout_.size() > 0) LOG(info)    << "cout:" << cout_ ; 
-    if(cerr_.size() > 0) LOG(error) << "cerr:"<< cerr_ ; 
+    //bool with_cout = cout_.size() > 0 ;  
+    bool with_cerr = cerr_.size() > 0 ;  
+
+    //LOG_IF(info,  with_cout)  << "cout:" << cout_ ; 
+    LOG_IF(error, with_cerr) << "cerr:"<< cerr_ ; 
+
     return gdml ; 
 }
 

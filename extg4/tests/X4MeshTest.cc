@@ -14,9 +14,11 @@ int main(int argc, char** argv)
 
     std::string meta ; 
     const G4VSolid* solid = X4_GetSolid(geom, &meta); 
-    if(!meta.empty()) LOG(info) << "meta:" << std::endl << meta ; 
 
-    if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for geom " << geom ; 
+    bool has_meta = !meta.empty() ; 
+    LOG_IF(info, has_meta) << "meta:" << std::endl << meta ; 
+
+    LOG_IF(fatal, solid == nullptr) << "failed to X4_GetSolid for geom " << geom ; 
     if(!solid) return 1 ; 
 
     const char* base = "$TMP/extg4/X4MeshTest" ; 

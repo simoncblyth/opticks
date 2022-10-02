@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     const char* path = argc > 1 ? argv[1] : NULL  ; 
     const char* cfg  = argc > 2 ? argv[2] : "mt,sk,bs" ; 
 
-    if(!path) LOG(error) << " expecting first argument path to GDML " ; 
+    LOG_IF(error, !path) << " expecting first argument path to GDML " ; 
     if(!path) return 0 ; 
 
     LOG(info) << " parsing " << path ; 

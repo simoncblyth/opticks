@@ -1637,12 +1637,11 @@ bool X4Solid::Polycone_DoPhiSegment( const G4PolyconeHistorical* ph )
 
     if(enable_phi_segment == false)
     { 
-        if(has_phi_segment == true) 
-             LOG(error) 
-                 << " startPhi " << startPhi
-                 << " deltaPhi " << deltaPhi
-                 << " skipped has_phi_segment == false assert " 
-                 ; 
+        LOG_IF(error, has_phi_segment ) 
+            << " startPhi " << startPhi
+            << " deltaPhi " << deltaPhi
+            << " skipped has_phi_segment == false assert " 
+            ; 
         //assert( !has_phi_segment ); 
     }
 
@@ -1680,10 +1679,10 @@ void X4Solid::Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nn
         }
         
         bool z_ascending = z2 > z1 ; 
-        if(!z_ascending) LOG(fatal) << " !z_ascending " 
-                                    << " z1 " << z1  
-                                    << " z2 " << z2
-                                    ;  
+        LOG_IF(fatal, !z_ascending) << " !z_ascending " 
+            << " z1 " << z1  
+            << " z2 " << z2
+            ;  
         assert(z_ascending); 
 
         nnode* n = NULL ; 

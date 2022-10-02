@@ -160,8 +160,10 @@ void X4Intersect::scan()
 
     if(VERBOSE)
     {
-        if(cout_.size() > 0) LOG(LEVEL) << "cout from scan " << std::endl << cout_ ; 
-        if(cerr_.size() > 0) LOG(LEVEL) << "cerr from scan "  << std::endl << cerr_ ; 
+        bool with_cout = cout_.size() > 0 ; 
+        bool with_cerr = cerr_.size() > 0 ; 
+        LOG_IF(LEVEL, with_cout) << "cout from scan " << std::endl << cout_ ; 
+        LOG_IF(LEVEL, with_cerr) << "cerr from scan " << std::endl << cerr_ ; 
     }
 }
 

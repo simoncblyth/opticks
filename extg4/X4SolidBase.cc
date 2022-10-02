@@ -280,10 +280,9 @@ void X4SolidBase::setG4Param(const std::vector<T>& param, const std::vector<std:
     assert( match );  
 
     unsigned npar =param.size() ; 
-    if( npar == 0)
-       LOG(fatal) << " must setG4Param before generating g4code for instanciation of G4VSolid " 
-                  << " for entity " <<  m_entityName
-                  ;
+    LOG_IF(fatal, npar == 0) << " must setG4Param before generating g4code for instanciation of G4VSolid " 
+        << " for entity " <<  m_entityName
+        ;
 
     assert( npar > 0 ); 
 

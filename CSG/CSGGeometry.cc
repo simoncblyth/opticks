@@ -298,7 +298,7 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
 void CSGGeometry::intersectSelected(const char* path)
 {
     NP* a = NP::Load(path); 
-    if( a == nullptr ) LOG(fatal) << " FAILED to load from path " << path ; 
+    LOG_IF(fatal, a == nullptr) << " FAILED to load from path " << path ; 
     if( a == nullptr ) return ; 
 
     bool expected_shape = a->has_shape(-1,4,4) ;  

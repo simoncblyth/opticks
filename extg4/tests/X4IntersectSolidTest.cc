@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     {
         const char* name = names[i].c_str() ; 
         const G4VSolid* solid = X4_GetSolid(name); 
-        if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for name " << name ; 
+        LOG_IF(fatal, solid == nullptr ) << "failed to X4_GetSolid for name " << name ; 
         assert( solid );   
 
         X4Intersect::Scan(solid, name, base ); 

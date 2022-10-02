@@ -117,7 +117,7 @@ void CSGOptiXRenderTest::initCX()
 {
     assert(cx); 
     bool expect =  cx->raygenmode == 0 ;  
-    if(!expect) LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
+    LOG_IF(fatal, !expect) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
     assert(expect); 
 }
 

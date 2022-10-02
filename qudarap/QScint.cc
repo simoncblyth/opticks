@@ -80,7 +80,7 @@ TODO: move the hd_factor into payload instead of items for easier extension to 2
 QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static 
 {
     bool expected_shape = src->has_shape(1,4096,1) ||  src->has_shape(3,4096,1) ; 
-    if(!expected_shape) LOG(fatal) << " unexpected shape of src " << ( src ? src->sstr() : "-" ) ; 
+    LOG_IF(fatal, !expected_shape) << " unexpected shape of src " << ( src ? src->sstr() : "-" ) ; 
 
     assert( expected_shape ); 
     assert( src->uifc == 'f' ); 
@@ -101,9 +101,7 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
     bool qscint_disable_interpolation = SSys::getenvbool("QSCINT_DISABLE_INTERPOLATION"); 
     char filterMode = qscint_disable_interpolation ? 'P' : 'L' ; 
 
-    if(qscint_disable_interpolation)
-        LOG(fatal) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode 
-        ; 
+    LOG_IF(fatal, qscint_disable_interpolation) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode ; 
 
     bool normalizedCoords = true ; 
     QTex<float>* tx = new QTex<float>(nx, ny, src->cvalues<float>(), filterMode, normalizedCoords ) ; 

@@ -325,8 +325,8 @@ void Six::createGAS_Selection()
 optix::Geometry Six::getGeometry(unsigned solid_idx) const 
 {
     unsigned count = solids.count(solid_idx); 
+    LOG_IF(fatal, count == 0) << " FAILED to find solid_idx " << solid_idx ; 
     assert( count <= 1 ) ; 
-    if( count == 0 ) LOG(fatal) << " FAILED to find solid_idx " << solid_idx ; 
     return solids.at(solid_idx); 
 }
 

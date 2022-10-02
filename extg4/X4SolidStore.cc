@@ -44,9 +44,8 @@ void X4SolidStore::Dump() // static
 
         nnode* tree = X4Solid::Convert(solid, ok); 
         LOG(info)  << tree->ana_brief() ;  
-
-        if( i == num_solid - 2 )
-        LOG(info)  << tree->ana_desc() ;  
+        bool penultimate = num_solid >= 2 && i == num_solid-2 ; 
+        LOG_IF(info, penultimate ) << " penultimate " << tree->ana_desc() ;  
     }
 }
 

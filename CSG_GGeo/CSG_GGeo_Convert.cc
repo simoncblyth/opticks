@@ -78,7 +78,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)
 {
-    if(!sim) LOG(fatal) << "sim nullptr, must instanciate SSim before CSG_GGeo_Convert" ; 
+    LOG_IF(fatal, !sim) << "sim nullptr, must instanciate SSim before CSG_GGeo_Convert" ; 
     assert(sim); 
     LOG(LEVEL) 
         << " reverse " << reverse
@@ -501,15 +501,14 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     AABB bb = {} ;
 
-    if(dump) 
-        LOG(LEVEL)
-            << " primIdx " << primIdx 
-            << " numPrim " << numPrim
-            << " numParts " << numParts 
-            << " meshIdx " << meshIdx 
-            << " last_ridx " << last_ridx
-            << " dump " << dump
-            ; 
+    LOG_IF(LEVEL, dump)
+        << " primIdx " << primIdx 
+        << " numPrim " << numPrim
+        << " numParts " << numParts 
+        << " meshIdx " << meshIdx 
+        << " last_ridx " << last_ridx
+        << " dump " << dump
+        ; 
    
     CSGNode* root = nullptr ; 
 
@@ -784,16 +783,15 @@ std::vector<float4>* CSG_GGeo_Convert::GetPlanes(const GParts* comp, unsigned pr
 
     bool pl_expect = pl_buf->hasShape(-1, 4) ;   // HUH: was (planNum, 4) surely should be (-1, 4)
 
-    if(!pl_expect)
-        LOG(fatal)
-           << " primIdx " << primIdx
-           << " partOffset " << partOffset
-           << " partIdx " << partIdx
-           << " tc " << CSG::Name(tc)
-           << " planIdx " << planIdx
-           << " planNum " << planNum 
-           << " unexpected pl_buf shape  " << pl_buf->getShapeString()
-           ;
+    LOG_IF(fatal, !pl_expect)
+        << " primIdx " << primIdx
+        << " partOffset " << partOffset
+        << " partIdx " << partIdx
+        << " tc " << CSG::Name(tc)
+        << " planIdx " << planIdx
+        << " planNum " << planNum 
+        << " unexpected pl_buf shape  " << pl_buf->getShapeString()
+        ;
 
     assert( pl_expect ); 
 

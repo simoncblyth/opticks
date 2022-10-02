@@ -88,8 +88,7 @@ X4Entity_t X4Entity::type( const char* name )
     VN::iterator it = std::find(n.begin(), n.end(), name ) ; 
     bool found = it != n.end() ; 
 
-    if(!found)
-        LOG(fatal) << "invalid name " << name ; 
+    LOG_IF(fatal, !found) << "invalid name " << name ; 
 
     assert( found ) ;  
     size_t idx = std::distance( n.begin(), it  ) ; 
@@ -107,8 +106,7 @@ const char* X4Entity::name( X4Entity_t type )
     VT::iterator it = std::find(t.begin(), t.end(), type ) ; 
     bool found = it != t.end() ; 
 
-    if(!found)
-        LOG(fatal) << "invalid type " << type ; 
+    LOG_IF(fatal, !found) << "invalid type " << type ; 
 
     assert( found ) ;  
     size_t idx = std::distance( t.begin(), it  ) ; 

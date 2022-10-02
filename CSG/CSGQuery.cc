@@ -95,22 +95,18 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
 
     select_is_tree = CSG::IsTree((OpticksCSG_t)select_root_typecode) ; 
 
-    if(VERBOSE > 0 ) LOG(info) 
-         << " select_prim " << select_prim
-         << " select_nodeOffset " << select_nodeOffset
-         << " select_prim_numNode " << select_prim_numNode
-         << " select_root_node " << select_root_node 
-         << " select_root_typecode " << CSG::Name(select_root_typecode)
-         << " select_root_subNum " << select_root_subNum
-         << " getSelectedTreeHeight " << getSelectedTreeHeight()
-         ;   
+    LOG_IF(info, VERBOSE > 0) 
+        << " select_prim " << select_prim
+        << " select_nodeOffset " << select_nodeOffset
+        << " select_prim_numNode " << select_prim_numNode
+        << " select_root_node " << select_root_node 
+        << " select_root_typecode " << CSG::Name(select_root_typecode)
+        << " select_root_subNum " << select_root_subNum
+        << " getSelectedTreeHeight " << getSelectedTreeHeight()
+        ;   
 
+    LOG_IF(fatal, select_root_subNum == 0) << "select_root_subNum ZERO " ; 
 
-    if( select_root_subNum == 0 )
-    {
-        LOG(fatal) << "select_root_subNum ZERO " ; 
-        //assert(0); 
-    }
 }
 
 int CSGQuery::getSelectedType() const

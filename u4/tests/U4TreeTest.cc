@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 
     const char* path = SPath::Resolve("$GDMLPath", NOOP ) ; 
     LOG(info) << " path [" << path << "]" ; 
-    if( path == nullptr ) LOG(fatal) << " $GDMLPath null, see SOpticksResource  " ; 
+    LOG_IF(fatal, path == nullptr) << " $GDMLPath null, see SOpticksResource  " ; 
     if( path == nullptr ) return 0 ; 
 
 

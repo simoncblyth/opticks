@@ -201,8 +201,11 @@ void X4Mesh::polygonize()
     std::string cout_ = coutbuf.str() ; 
     std::string cerr_ = cerrbuf.str() ; 
 
-    if(cout_.size() > 0) LOG(info) << "cout from polygonization lvIdx " << m_lvIdx << std::endl << cout_ ; 
-    if(cerr_.size() > 0) LOG(warning) << "cerr from polygonization lvIdx " << m_lvIdx << std::endl << cerr_ ; 
+    bool with_cout = cout_.size() > 0 ;  
+    bool with_cerr = cerr_.size() > 0 ;  
+
+    LOG_IF(info,    with_cout) << "cout from polygonization lvIdx " << m_lvIdx << std::endl << cout_ ; 
+    LOG_IF(warning, with_cerr) << "cerr from polygonization lvIdx " << m_lvIdx << std::endl << cerr_ ; 
 
     std::string polysmry ; 
     { 

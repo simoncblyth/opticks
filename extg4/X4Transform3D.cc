@@ -91,7 +91,7 @@ glm::mat4 X4Transform3D::Convert( const G4Transform3D& t ) // static
     a[12] = t.dx() ; a[13] = t.dy() ; a[14] = t.dz() ; a[15] = 1.f    ;
 
     unsigned n = checkArray(a);
-    if(n > 0) LOG(fatal) << "nan/inf array values";
+    LOG_IF(fatal, n > 0) << "nan/inf array values";
     assert( n == 0); 
 
     return glm::make_mat4(a.data()) ; 

@@ -23,7 +23,7 @@ QPrd::QPrd()
     bnd(QBnd::Get()),
     sbn(bnd->sbn)
 {
-    if( bnd == nullptr )  LOG(fatal) << "QPrd must be instanciated after QBnd " ; 
+    LOG_IF(fatal, bnd == nullptr ) << "QPrd must be instanciated after QBnd " ; 
     assert(bnd); 
     init(); 
     INSTANCE = this ; 

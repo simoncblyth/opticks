@@ -245,8 +245,7 @@ void X4MaterialPropertiesTable::DumpConstPropMap( const G4MaterialPropertiesTabl
 
 void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode )
 {
-    if(mpt == NULL) 
-      LOG(fatal) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
+    LOG_IF(fatal, mpt == nullptr ) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
     assert( mpt ); 
     X4MaterialPropertiesTable xtab(pmap, mpt, mode);
 }

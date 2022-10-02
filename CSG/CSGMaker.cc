@@ -502,8 +502,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
     p->setAABB( n->AABB() ); 
 
     float extent = p->extent(); 
-    if(extent == 0.f )
-        LOG(fatal) << "FATAL : " << label << " : got zero extent " ; 
+    LOG_IF(fatal, extent == 0.f) << "FATAL : " << label << " : got zero extent " ; 
     assert( extent > 0.f ); 
 
     AABB bb = AABB::Make( p->AABB() ); 

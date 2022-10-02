@@ -147,9 +147,7 @@ QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int 
     bool qmultifilmlut_disable_interpolation = SSys::getenvbool("QMULTIFILMLUT_DISABLE_INTERP"); 
     char filterMode = qmultifilmlut_disable_interpolation ? 'P' : 'L' ; 
 
-    if(qmultifilmlut_disable_interpolation)
-        LOG(fatal) << "QMULTIFILMLUT_DISABLE_INTERP active using filterMode " << filterMode 
-        ; 
+    LOG_IF(fatal, qmultifilmlut_disable_interpolation) << "QMULTIFILMLUT_DISABLE_INTERP active using filterMode " << filterMode ; 
 
     
     QTex<float4>* tx = new QTex<float4>(nx, ny, src->cvalues<float>()+offset , filterMode , 1 ) ; 

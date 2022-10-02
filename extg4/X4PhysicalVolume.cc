@@ -357,11 +357,10 @@ void X4PhysicalVolume::collectScintillatorMaterials()
     m_mlib->findRawOriginalMapsWithProperties( raw_energy_pmaps, SCINTILLATOR_PROPERTIES, ',' );
 
     bool consistent = scintillators_raw.size() == raw_energy_pmaps.size()  ;
-    if(!consistent) 
-        LOG(fatal) 
-            << " scintillators_raw.size " << scintillators_raw.size()
-            << " raw_energy_pmaps.size " << raw_energy_pmaps.size()
-            ; 
+    LOG_IF(fatal, !consistent) 
+        << " scintillators_raw.size " << scintillators_raw.size()
+        << " raw_energy_pmaps.size " << raw_energy_pmaps.size()
+        ; 
  
     assert( consistent ); 
     unsigned num_scint = scintillators_raw.size() ; 
@@ -1096,13 +1095,13 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
     bool dbglv = lvIdx == ok->getDbgLV() ; 
 
     bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
-    if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    LOG_IF(fatal, is_x4balanceskip) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
     bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ; 
-    if( is_x4nudgeskip ) LOG(fatal) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    LOG_IF(fatal, is_x4nudgeskip ) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
     bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
-    if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    LOG_IF(fatal, is_x4pointskip) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
 
     LOG(LEVEL)
@@ -1175,7 +1174,7 @@ GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx,
     csg->set_soname( soname ) ; 
     csg->set_lvname( lvname ) ; 
 
-    if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    LOG_IF(fatal, is_x4polyskip ) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
     GMesh* mesh = nullptr ; 
     if(solid)
@@ -1624,13 +1623,13 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const char* _lv_p = X4::GDMLName(lv_p) ; 
 
     bool ps = SStr::HasPointerSuffix(_lv, 6, 12) ;  // 9,12 on macOS 
-    if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv ;  
+    LOG_IF(fatal, !ps) << " unexpected pointer suffix _lv " << _lv ;  
     assert(ps) ;    
 
     if( _lv_p )
     {
         bool ps = SStr::HasPointerSuffix(_lv_p, 6, 12); 
-        if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv_p ;  
+        LOG_IF(fatal, !ps) << " unexpected pointer suffix _lv " << _lv_p ;  
         assert(ps) ;    
     }
 
@@ -1652,11 +1651,11 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const GSkinSurface* g_sslv = m_ggeo->findSkinSurface(_lv) ;  
     const GSkinSurface* g_sslv_p = _lv_p ? m_ggeo->findSkinSurface(_lv_p) : NULL ;  
 
-    if( g_sslv_p )
-        LOG(debug) << " node_count " << m_node_count 
-                   << " _lv_p   " << _lv_p
-                   << " g_sslv_p " << g_sslv_p->getName()
-                   ; 
+    LOG_IF(debug, g_sslv_p) 
+        << " node_count " << m_node_count 
+        << " _lv_p   " << _lv_p
+        << " g_sslv_p " << g_sslv_p->getName()
+        ; 
 
 
 

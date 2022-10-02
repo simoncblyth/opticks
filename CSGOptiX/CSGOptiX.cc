@@ -177,7 +177,7 @@ void CSGOptiX::InitSim( const SSim* ssim  )
     LOG(LEVEL) << "[" ; ; 
     if(SEventConfig::IsRGModeRender()) return ; 
 
-    if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
+    LOG_IF(fatal, ssim == nullptr ) << "simulate/simtrace modes require SSim/QSim setup" ;
     assert(ssim);  
 
     QSim::UploadComponents(ssim);  
@@ -358,7 +358,7 @@ void CSGOptiX::initCheckSim()
     LOG(LEVEL) << " sim " << sim << " event " << event ; 
     if(SEventConfig::IsRGModeRender() == false)
     {
-        if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ; 
+        LOG_IF(fatal, sim == nullptr) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ; 
         assert(sim); 
         
     }
@@ -389,7 +389,7 @@ void CSGOptiX::initGeometry()
     params->itra = foundry->d_itra ; 
 
     bool is_uploaded =  params->node != nullptr ;
-    if(!is_uploaded) LOG(fatal) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;  
+    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;  
     assert( is_uploaded ); 
 
 #if OPTIX_VERSION < 70000
@@ -575,8 +575,8 @@ void CSGOptiX::setFrame(const sframe& fr_ )
         << " w2m " << w2m
         ; 
 
-    if(m2w) LOG(LEVEL) << "m2w " << *m2w ; 
-    if(w2m) LOG(LEVEL) << "w2m " << *w2m ; 
+    LOG_IF(LEVEL, m2w) << "m2w " << *m2w ; 
+    LOG_IF(LEVEL, w2m) << "w2m " << *w2m ; 
 
     LOG(LEVEL) << "]" ; 
 }

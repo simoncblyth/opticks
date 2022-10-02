@@ -150,7 +150,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
        return ;  
     }
 
-    if(label.id % 1000 == 0 ) LOG(info) << " label.id " << label.id ; 
+    bool modulo = label.id % 1000 == 0  ;  
+    LOG_IF(info, modulo) << " label.id " << label.id ; 
 
     U4Random::SetSequenceIndex(label.id); 
 
@@ -177,8 +178,9 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     sev->finalPhoton(label);       
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
-    if(tstat != fStopAndKill) LOG(info) << " post.tstat " << U4TrackStatus::Name(tstat) ; 
-    assert( tstat == fStopAndKill ); 
+    bool is_fStopAndKill = tstat == fStopAndKill ; 
+    LOG_IF(info, !is_fStopAndKill) << " not is_fStopAndKill  post.tstat " << U4TrackStatus::Name(tstat) ; 
+    assert( is_fStopAndKill ); 
 }
 
 /**
@@ -248,7 +250,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
 
-    if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
+    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
 
     assert( flag > 0 ); 
 
@@ -292,7 +294,7 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
     if( tstat == fAlive )
     {
         bool is_live_flag = OpticksPhoton::IsLiveFlag(flag);  
-        if(!is_live_flag)  LOG(error) 
+        LOG_IF(error, !is_live_flag ) 
             << " is_live_flag " << is_live_flag 
             << " unexpected trackStatus/flag  " 
             << " trackStatus " << U4TrackStatus::Name(tstat) 
@@ -304,7 +306,7 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
     else if( tstat == fStopAndKill )
     { 
         bool is_terminal_flag = OpticksPhoton::IsTerminalFlag(flag);  
-        if(!is_terminal_flag)  LOG(error) 
+        LOG_IF(error, !is_terminal_flag ) 
             << " is_terminal_flag " << is_terminal_flag 
             << " unexpected trackStatus/flag  " 
             << " trackStatus " << U4TrackStatus::Name(tstat) 

@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     X4Simtrace t ;
 
     const G4VSolid* solid = X4_GetSolid(t.geom); 
-    if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for geom " << t.geom  ; 
+    LOG_IF(fatal, solid == nullptr) << "failed to X4_GetSolid for geom " << t.geom  ; 
     assert( solid );   
 
     t.setSolid(solid); 

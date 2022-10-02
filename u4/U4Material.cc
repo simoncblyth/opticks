@@ -74,7 +74,7 @@ const char* U4Material::FindMaterialName(const char* volname)
             count+= 1 ; 
         }
     }
-    if( count > 1 ) LOG(fatal) << " count " << count << " volname " << volname << " matname " << matname ;  
+    LOG_IF(fatal, count > 1) << " count " << count << " volname " << volname << " matname " << matname ;  
     assert( count < 2 ); 
     return matname ; 
 }

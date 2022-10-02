@@ -285,8 +285,10 @@ T QCerenkovIntegral::GetS2Integral_WithCut( T& emin, T& emax, T BetaInverse, T e
     else if( en_0 <  en_b && en_1 <= en_b )  state = FULL ;  // edges of this bin both below en_b (or en_1 == en_b), so full bin integral 
     else if( en_0 <= en_b && en_b <  en_1 )  state = PART ;  // edges of this bin straddle ecut, so partial bin integral  
     else                                     state = ERR ; 
-    
-    if( state == ERR || state == NONE ) LOG(error) << " missed condition ?" << " en_0 " << en_0 << " en_1 " << en_1 << " en_a " << en_a << " en_b " << en_b ;  
+   
+    bool missed_condition = state == ERR || state == NONE ; 
+ 
+    LOG_IF(error, missed_condition) << " missed condition ?" << " en_0 " << en_0 << " en_1 " << en_1 << " en_a " << en_a << " en_b " << en_b ;  
  
     const T zero(0.) ; 
     if( state == CUT ) return zero ; 

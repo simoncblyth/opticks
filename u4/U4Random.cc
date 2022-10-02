@@ -170,13 +170,12 @@ void U4Random::init()
 {
     INSTANCE = this ; 
     m_ready = m_seq != nullptr ; 
-    if(m_ready == false) 
-        LOG(error)
-            << desc()
-            << std::endl 
-            << NOTES
-            << std::endl 
-            ;
+    LOG_IF(error, m_ready == false)
+        << desc()
+        << std::endl 
+        << NOTES
+        << std::endl 
+        ;
 }
 
 bool U4Random::isReady() const { return m_ready ; }
@@ -450,7 +449,7 @@ double U4Random::flat()
 
         //LOG(info) << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack) ; 
 
-        if(is_classified == false) LOG(error) << std::endl << summary ; 
+        LOG_IF(error, !is_classified) << std::endl << summary ; 
 
         bool select = isSelect(m_seq_index, cursor ) || is_classified == false ; 
         if( select ) 

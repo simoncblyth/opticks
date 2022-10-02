@@ -131,12 +131,11 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
     const char* udir = rng_sequence_PRECOOKED ? SPath::Resolve("$PrecookedDir/QSimTest/rng_sequence", DIRPATH) : dir ; 
-    if( rng_sequence_PRECOOKED ) 
-        LOG(error) 
-            << " QSimTest__rng_sequence_PRECOOKED envvar triggers directory override " << std::endl 
-            << " default  [" << dir << "] " << std::endl 
-            << " override [" << udir << "]"  
-            ; 
+    LOG_IF(error, rng_sequence_PRECOOKED) 
+        << " QSimTest__rng_sequence_PRECOOKED envvar triggers directory override " << std::endl 
+        << " default  [" << dir << "] " << std::endl 
+        << " override [" << udir << "]"  
+        ; 
 
     qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
 }
@@ -559,8 +558,7 @@ must be done prior to QEvent::init which happens when QSim is instanciated.
 void QSimTest::EventConfig(unsigned type )  // static
 {
     SEvt* sev = SEvt::Get();
-    if(sev != nullptr)
-    LOG(fatal) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
+    LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
     assert(sev == nullptr); 
 
     LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 

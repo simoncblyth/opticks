@@ -147,15 +147,14 @@ void X4MaterialLib::init()
              << " has_prefix " << has_prefix 
              ;     
 
-        if(!name_match)
-            LOG(fatal) 
-                << " MATERIAL NAME MISMATCH " 
-                << std::setw(5) << i 
-                << " ok pmap_name " << std::setw(30) << pmap_name
-                << " g4 m4_name  " << std::setw(30) << m4_name
-                << " g4 m4_name_base  " << std::setw(30) << m4_name_base
-                << " has_prefix " << has_prefix 
-                ;
+        LOG_IF(fatal, !name_match) 
+            << " MATERIAL NAME MISMATCH " 
+            << std::setw(5) << i 
+            << " ok pmap_name " << std::setw(30) << pmap_name
+            << " g4 m4_name  " << std::setw(30) << m4_name
+            << " g4 m4_name_base  " << std::setw(30) << m4_name_base
+            << " has_prefix " << has_prefix 
+            ;
 
         assert(name_match ); 
         if( m4->GetMaterialPropertiesTable() == NULL ) continue ; 

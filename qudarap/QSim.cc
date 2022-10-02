@@ -42,9 +42,9 @@ const plog::Severity QSim::LEVEL = SLOG::EnvLevel("QSim", "DEBUG");
 QSim* QSim::INSTANCE = nullptr ; 
 QSim* QSim::Get(){ return INSTANCE ; }
 
-QSim* QSim::Create(){ 
-
-    if(INSTANCE != nullptr)  LOG(fatal) << " a QSim INSTANCE already exists " ; 
+QSim* QSim::Create()
+{ 
+    LOG_IF(fatal, INSTANCE != nullptr) << " a QSim INSTANCE already exists " ; 
     assert( INSTANCE == nullptr ) ;  
     return new QSim  ;  
 }
@@ -288,12 +288,12 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simulate()
 {
-   if( event == nullptr ) LOG(error) << " event null " << desc()  ; 
+   LOG_IF(error, event == nullptr) << " event null " << desc()  ; 
    if( event == nullptr ) std::raise(SIGINT) ; 
    if( event == nullptr ) return -1. ; 
  
    int rc = event->setGenstep() ; 
-   if(rc != 0) LOG(error) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
+   LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
    return dt ; 
 }
@@ -311,7 +311,7 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 double QSim::simtrace()
 {
    int rc = event->setGenstep(); 
-   if(rc != 0) LOG(error) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
+   LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
    double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
    return dt ; 
 }
