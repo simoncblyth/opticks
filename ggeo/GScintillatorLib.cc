@@ -166,7 +166,7 @@ GItemList*  GScintillatorLib::geant4ICDFCreateNames() const
     {
         std::string name =  m_g4icdf->getMeta<std::string>("name", "" ); 
         bool empty = name.empty();  
-        if(empty) LOG(fatal) << "Geant4ICDF must have non-empty name metadata " ; 
+        LOG_IF(fatal, empty) << "Geant4ICDF must have non-empty name metadata " ; 
         assert( !empty ); 
         names->add(name.c_str());
     }

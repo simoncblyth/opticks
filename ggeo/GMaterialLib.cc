@@ -708,14 +708,13 @@ void GMaterialLib::importForTex2d()
 
     bool expected = domLen == nk && nj == NUM_FLOAT4 && nl == 4 ; 
 
-    if(!expected )
-        LOG(fatal) << "GMaterialLib::importForTex2d"
-                   << " UNEXPECTED BUFFER SHAPE " 
-                   << m_buffer->getShapeString()
-                   << " domLen " << domLen 
-                   << " nk " << nk 
-                   << " (recreate geocache by running with -G)" 
-                   ;
+    LOG_IF(fatal, !expected) << "GMaterialLib::importForTex2d"
+        << " UNEXPECTED BUFFER SHAPE " 
+        << m_buffer->getShapeString()
+        << " domLen " << domLen 
+        << " nk " << nk 
+        << " (recreate geocache by running with -G)" 
+        ;
 
     assert(expected);
 
@@ -1158,7 +1157,7 @@ GMaterial* GMaterialLib::getBasisMaterial(const char* name) const
 void GMaterialLib::reuseBasisMaterial(const char* name)
 {
     GMaterial* mat = getBasisMaterial(name);
-    if(!mat) LOG(fatal) << "reuseBasisMaterial requires basis library to be present and to contain the material  " << name ; 
+    LOG_IF(fatal, !mat) << "reuseBasisMaterial requires basis library to be present and to contain the material  " << name ; 
     assert( mat );        
 
     addDirect( mat ); 
@@ -1252,7 +1251,7 @@ void GMaterialLib::addSensitiveMaterial(GMaterial* mt)
            << " GMaterial : " << mt
            << " name : " << mt->getName() ; 
  
-    if(!is_sensitive) LOG(fatal) << " material does not have non-zero EFFICIENCY prop " << mt->getName() ; 
+    LOG_IF(fatal, !is_sensitive) << " material does not have non-zero EFFICIENCY prop " << mt->getName() ; 
 
     assert( is_sensitive ) ;  
 

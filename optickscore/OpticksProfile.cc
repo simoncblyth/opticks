@@ -371,12 +371,11 @@ bool OpticksProfile::isAccExported() const
     unsigned n_apy = m_apy->getNumItems() ;
     unsigned n_lapy = m_lapy->getNumItems() ;
     bool match = n_apy == n_lapy ; 
-    if(!match)
-       LOG(fatal) 
-            << "MISMATCH"
-            << " apy " << m_apy->getShapeString()
-            << " lapy " << m_lapy->getShapeString()
-            ;
+    LOG_IF(fatal, !match) 
+        << "MISMATCH"
+        << " apy " << m_apy->getShapeString()
+        << " lapy " << m_lapy->getShapeString()
+        ;
 
     assert( match ); 
     return n_apy > 0 ; 

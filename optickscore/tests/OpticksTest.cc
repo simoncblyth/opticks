@@ -285,7 +285,7 @@ void test_isCXSkipLV(const Opticks* ok)
     {
         unsigned meshIdx = i ; 
         bool cxSkip = ok->isCXSkipLV(meshIdx) ; 
-        if(cxSkip) LOG(info) << " --cxskiplv meshIdx " << meshIdx ; 
+        LOG_IF(info, cxSkip) << " --cxskiplv meshIdx " << meshIdx ; 
     }
 }
 

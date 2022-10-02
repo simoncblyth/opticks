@@ -807,8 +807,7 @@ void GMesh::allocate()
 
     bool empty = numVertices == 0 && numFaces == 0 ; 
 
-    if(empty)
-    LOG(warning) << "GMesh::allocate EMPTY"
+    LOG_IF(warning, empty) << "GMesh::allocate EMPTY"
               << " numVertices " << numVertices
               << " numFaces " << numFaces
               << " numVolumes " << numVolumes
@@ -1404,8 +1403,9 @@ void GMesh::setNodesBuffer(GBuffer* buffer)
     unsigned int num_nodes = numBytes/sizeof(unsigned int);
 
     // assert(m_num_faces == num_nodes);   // must load indices before nodes
-    if(m_num_faces != num_nodes)
-        LOG(warning) << "GMesh::setNodesBuffer allowing inconsistency " ; 
+
+    bool face_node_mismatch = m_num_faces != num_nodes ;  
+    LOG_IF(warning, face_node_mismatch ) << "GMesh::setNodesBuffer allowing face_node_mismatch  " ; 
 }
 
 
@@ -1426,8 +1426,8 @@ void GMesh::setBoundariesBuffer(GBuffer* buffer)
     unsigned int num_boundaries = numBytes/sizeof(unsigned int);
 
     // assert(m_num_faces == num_boundaries);   // must load indices before boundaries, for m_num_faces
-    if(m_num_faces != num_boundaries)
-        LOG(warning) << "GMesh::setBoundariesBuffer allowing inconsistency " ; 
+    bool face_boundary_mismatch = m_num_faces != num_boundaries ; 
+    LOG_IF(warning, face_boundary_mismatch) << "GMesh::setBoundariesBuffer allowing face_boundary_mismatch " ; 
 }
 
 
@@ -2026,7 +2026,7 @@ void GMesh::loadGBuffer(const char* path, const char* name)
     else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
     else LOG(fatal) << " unknown buffer " << name << " " << path ; 
     
-    if(!buffer) LOG(fatal) << " failed to load " << name << " " << path ; 
+    LOG_IF(fatal, !buffer) << " failed to load " << name << " " << path ; 
     assert(buffer); 
  
     if(buffer) setBuffer(name, buffer);
@@ -2348,29 +2348,27 @@ void GMesh::checks_faceRepeatedInstancedIdentity()
     bool nodeinfo_ok = m_nodeinfo_buffer && m_nodeinfo_buffer->getNumItems() == numVolumes ;
     bool iidentity_ok = m_iidentity_buffer && numInstanceIdentity == numVolumes*numITransforms ;
 
-    if(!nodeinfo_ok)
-        LOG(fatal) 
-            << "\n nodeinfo_ok " << nodeinfo_ok
-            << "\n nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
-            << "\n numVolumes " << numVolumes  
-            ;
+    LOG_IF(fatal, !nodeinfo_ok) 
+        << "\n nodeinfo_ok " << nodeinfo_ok
+        << "\n nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
+        << "\n numVolumes " << numVolumes  
+        ;
 
-    if(!iidentity_ok)
-       LOG(fatal) 
-           << "\n iidentity_ok " << iidentity_ok
-           << "\n iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
-           << "\n numFaces (sum of faces in numVolumes)" << numFaces 
-           << "\n numVolumes " << numVolumes
-           << "\n numITransforms " << numITransforms
-           << "\n numVolumes*numITransforms " << numVolumes*numITransforms 
-           << "\n numInstanceIdentity " << numInstanceIdentity << " (expected to equal the above) " 
-           << "\n numRepeatedIdentity " << numRepeatedIdentity 
-           << "\n m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
-           << "\n m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
-           ; 
+    LOG_IF(fatal, !iidentity_ok) 
+        << "\n iidentity_ok " << iidentity_ok
+        << "\n iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
+        << "\n numFaces (sum of faces in numVolumes)" << numFaces 
+        << "\n numVolumes " << numVolumes
+        << "\n numITransforms " << numITransforms
+        << "\n numVolumes*numITransforms " << numVolumes*numITransforms 
+        << "\n numInstanceIdentity " << numInstanceIdentity << " (expected to equal the above) " 
+        << "\n numRepeatedIdentity " << numRepeatedIdentity 
+        << "\n m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
+        << "\n m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
+        ; 
 
     assert(nodeinfo_ok);
-    assert(iidentity_ok);  // this is now failing 
+    assert(iidentity_ok); 
 
 
     // check nodeinfo per-volume sum of faces matches expected total 

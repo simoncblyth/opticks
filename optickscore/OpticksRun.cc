@@ -300,7 +300,7 @@ before passing baton (sharing pointers) with m_evt
 **/
 void OpticksRun::setGensteps(NPY<float>* gensteps, char ctrl)   // TODO: make this const : as gensteps are not owned by OpticksRun or OpticksEvent
 {
-    if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
+    LOG_IF(fatal, !gensteps) << "NULL gensteps" ; 
     LOG(LEVEL) 
          << "gensteps " << ( gensteps ? gensteps->getShapeString() : "NULL" )  ;  
 
@@ -687,8 +687,7 @@ void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
     gs->setGenstepTranslated();
 
     NLookup* lookup = gs->getLookup();
-    if(!lookup)
-            LOG(fatal) << "OpticksRun::translateLegacyGensteps"
+    LOG_IF(fatal, !lookup) << "OpticksRun::translateLegacyGensteps"
                        << " IMPORT OF LEGACY GENSTEPS REQUIRES gs->setLookup(NLookup*) "
                        << " PRIOR TO OpticksRun::setGenstepData(gs) "
                        ;

@@ -165,14 +165,13 @@ void IntersectSDF::check_lpos_sdf()
                  float sd = sdf(geocode, lpo) ; 
 
                  bool expect = std::abs(sd) < m_epsilon ; 
-                 if(!expect)
-                     LOG(fatal)
-                         << " i " << std::setw(5) << i  
-                         << " lpo " << glm::to_string( lpo )
-                         << " sd " << sd
-                         << " epsilon " << m_epsilon
-                         << std::endl
-                         ;
+                 LOG_IF(fatal, !expect)
+                     << " i " << std::setw(5) << i  
+                     << " lpo " << glm::to_string( lpo )
+                     << " sd " << sd
+                     << " epsilon " << m_epsilon
+                     << std::endl
+                     ;
                  assert(expect); 
 
                  if( sd < t_mimx.x ) t_mimx.x = sd ; 

@@ -69,13 +69,13 @@ unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index
         bool repeat_ok    = (repeat_index    & 0xff)   == repeat_index ; 
         bool placement_ok = (placement_index & 0xffff) == placement_index  ;
         bool offset_ok    = (offset_index    & 0xff)   == offset_index ; 
- 
-        if(!repeat_ok || !placement_ok || !offset_ok )
-            LOG(fatal) 
-                << " repeat_index " << repeat_index 
-                << " placement_index " << placement_index 
-                << " offset_index " << offset_index 
-                ;
+
+        bool out_of_range = !repeat_ok || !placement_ok || !offset_ok  ; 
+        LOG_IF(fatal, out_of_range) 
+            << " repeat_index " << repeat_index 
+            << " placement_index " << placement_index 
+            << " offset_index " << offset_index 
+            ;
 
         assert( repeat_ok ); 
         assert( placement_ok ); 
@@ -93,12 +93,12 @@ unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index
         bool placement_ok = placement_index == 0  ;
         bool offset_ok    = (offset_index    & 0xffffff) == offset_index ;  
 
-        if(!repeat_ok || !placement_ok || !offset_ok )
-            LOG(fatal) 
-                << " repeat_index " << repeat_index 
-                << " placement_index " << placement_index 
-                << " offset_index " << offset_index 
-                ;
+        bool out_of_range = !repeat_ok || !placement_ok || !offset_ok  ; 
+        LOG_IF(fatal, out_of_range) 
+            << " repeat_index " << repeat_index 
+            << " placement_index " << placement_index 
+            << " offset_index " << offset_index 
+            ;
 
         assert( repeat_ok ); 
         assert( placement_ok ); 

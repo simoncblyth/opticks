@@ -496,9 +496,7 @@ RecordsNPY* OpticksEvent::getRecordsNPY()
     {
         m_records = OpticksEventInstrument::CreateRecordsNPY(this) ;
 
-        if(!m_records)
-            LOG(error) << "failed to CreateRecordsNPY " 
-            ; 
+        LOG_IF(error, !m_records) << "failed to CreateRecordsNPY "  ; 
         //assert( m_records ); 
     }
     return m_records ;
@@ -1184,12 +1182,12 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     if(isCompute()) ctrl.add(OpticksBufferControl::COMPUTE_MODE_) ; 
     if(isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
 
-    if(ctrl("VERBOSE_MODE"))
-     LOG(verbose) 
-               << std::setw(10) << name 
-               << " : " << ctrl.description("(spec)") 
-               << " : " << brief()
-               ;
+    bool verbose_mode = ctrl("VERBOSE_MODE") ; 
+    LOG_IF(verbose, verbose_mode) 
+        << std::setw(10) << name 
+        << " : " << ctrl.description("(spec)") 
+        << " : " << brief()
+        ;
 }
 
 
@@ -1358,12 +1356,11 @@ void OpticksEvent::resize()
  
     unsigned rng_max = getRngMax(); 
     bool enoughRng = num_photons <= rng_max ; 
-    if(!enoughRng)
-        LOG(fatal) 
-             << "NOT ENOUGH RNG : USE OPTION --rngmax 3/10/100 "
-             << " num_photons " << num_photons
-             << " rng_max " << rng_max 
-             ;
+    LOG_IF(fatal, !enoughRng) 
+        << "NOT ENOUGH RNG : USE OPTION --rngmax 3/10/100 "
+        << " num_photons " << num_photons
+        << " rng_max " << rng_max 
+        ;
     assert(enoughRng && " need to prepare and persist more RNG states up to maximual per propagation number" );
 
 
@@ -2092,7 +2089,7 @@ void OpticksEvent::saveNopstepData()
     {
         unsigned num_nop = no->getNumItems(); 
         if(num_nop > 0)  no->save(m_pfx, "no", m_typ,  m_tag, m_udet);
-        if(num_nop == 0) LOG(debug) << "saveNopstepData zero nop " ;
+        LOG_IF(debug, num_nop == 0) << "saveNopstepData zero nop " ;
         //if(num_nop > 0) no->dump("OpticksEvent::save (nopstep)");
     
         NPY<int>* idom = getIDomain();
@@ -2494,14 +2491,14 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<unsigned>*           se = NPY<unsigned>::load(     m_pfx, "se", m_typ,  m_tag, udet, qload );
     NPY<float>*              ht = NPY<float>::load(        m_pfx, "ht", m_typ,  m_tag, udet, qload );
 
-    if(ph == NULL || ps == NULL || rs == NULL )
-        LOG(warning) 
-             << " " << getDir()
-             << " MISSING INDEX BUFFER(S) " 
-             << " ph " << ph
-             << " ps " << ps
-             << " rs " << rs
-             ;
+    bool missing_index = ph == NULL || ps == NULL || rs == NULL ; 
+    LOG_IF(warning, missing_index) 
+        << " " << getDir()
+        << " MISSING INDEX BUFFER(S) " 
+        << " ph " << ph
+        << " ps " << ps
+        << " rs " << rs
+        ;
 
 
     if(gs) loadBuffersImportSpec(gs,m_genstep_spec) ;
@@ -2624,8 +2621,7 @@ NPY<float>* OpticksEvent::loadGenstepDerivativeFromFile(const char* stem)
     std::string path = BOpticksEvent::path(m_det, m_typ, m_tag, stem, ".npy" ); // top/sub/tag/stem/ext
     bool exists = BFile::ExistsFile(path.c_str()) ;
 
-    if(exists)
-    LOG(info) << "OpticksEvent::loadGenstepDerivativeFromFile  "
+    LOG_IF(info, exists) << "OpticksEvent::loadGenstepDerivativeFromFile  "
               << " m_det " << m_det
               << " m_typ " << m_typ
               << " m_tag " << m_tag
@@ -2808,7 +2804,8 @@ void OpticksEvent::indexPhotonsCPU()
     recsel1->reshape(-1, maxrec, 1, 4);
     recsel1->setBufferSpec(m_recsel_spec);  
 
-    if(recsel0 && recsel0->hasData()) LOG(warning) << " leaking recsel0 " ; 
+    bool leaking_recsel0 = recsel0 && recsel0->hasData() ; 
+    LOG_IF(warning, leaking_recsel0) << " leaking recsel0 " ; 
 
     setRecselData(recsel1);
 

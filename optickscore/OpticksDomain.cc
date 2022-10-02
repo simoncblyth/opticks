@@ -148,10 +148,9 @@ void OpticksDomain::importBuffer()
     m_settings = idom->getQuad_(0); 
     unsigned int maxrec = m_settings.w ; 
 
-    if(maxrec != 10)
-        LOG(fatal) 
-            << " from idom settings m_maxrec BUT EXPECT 10 " << maxrec 
-            ;
+    LOG_IF(fatal, maxrec != 10 ) 
+        << " from idom settings m_maxrec BUT EXPECT 10 " << maxrec 
+        ;
 
     //assert(maxrec == 10);
 }

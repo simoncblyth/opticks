@@ -1063,10 +1063,10 @@ NPY<double>* GBndLib::createBufferForTex2d()
         << " sur " << sur
         ; 
 
-    if(mat == NULL ) LOG(fatal) << "NULL mat buffer" ;
+    LOG_IF(fatal, mat == nullptr) << "NULL mat buffer" ;
     assert(mat);
 
-    if(sur == NULL ) LOG(warning) << "NULL sur buffer" ;
+    LOG_IF(warning, sur == nullptr) << "NULL sur buffer" ;
       
 
     unsigned int ni = getNumBnd();

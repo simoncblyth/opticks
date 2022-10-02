@@ -60,7 +60,7 @@ GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, Optick
 
 void GColorizer::init()
 {
-    if(!m_colors) LOG(fatal) << "m_colors NULL " ; 
+    LOG_IF(fatal, !m_colors) << "m_colors NULL " ; 
     assert( m_colors ); 
 }
 
@@ -240,8 +240,8 @@ nvec3 GColorizer::getSurfaceColor(const GNode* node)
         colorcode = m_slib->getAttrNames()->getColorCode(osur);    
     }  
 
-    if(colorcode != UINT_MAX )
-    LOG(debug) << "GColorizer::getSurfaceColor " 
+    bool expected_color = colorcode != UINT_MAX ; 
+    LOG_IF(debug, expected_color) << "GColorizer::getSurfaceColor " 
               << " isur " << std::setw(3) << isur_ << std::setw(30) <<  ( isur ? isur : "-" )
               << " osur " << std::setw(3) << osur_ << std::setw(30) <<  ( osur ? osur : "-" )
               << " colorcode " << std::hex << colorcode  << std::dec 

@@ -212,7 +212,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    init(); 
    (*m_log)("DONE"); 
 
-   if(fInstance != NULL) LOG(error) << " replacing GGeo::fInstance " ; 
+   LOG_IF(error, fInstance != nullptr ) << " replacing GGeo::fInstance " ; 
    fInstance = this ; 
 }
 
@@ -1617,7 +1617,7 @@ void GGeo::deferredCreateGParts()
         assert( mm->getParts() == NULL ); 
 
         GPts* pts = mm->getPts(); 
-        if( pts == NULL ) LOG(fatal) << " pts NULL, cannot create GParts for mm " << i ; 
+        LOG_IF(fatal, pts == nullptr ) << " pts NULL, cannot create GParts for mm " << i ; 
         assert(pts); 
 
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
@@ -1966,9 +1966,9 @@ glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx, bool c
         bool pidx_match = pidx_0 == pidx ; 
         bool oidx_match = oidx_0 == oidx ; 
 
-        if(!ridx_match) LOG(error) << " ridx_match " << ridx_match << " ridx_0 " << ridx_0 << " ridx " << ridx ; 
-        if(!pidx_match) LOG(error) << " pidx_match " << pidx_match << " pidx_0 " << pidx_0 << " pidx " << pidx ; 
-        if(!oidx_match) LOG(error) << " oidx_match " << oidx_match << " oidx_0 " << oidx_0 << " oidx " << oidx ; 
+        LOG_IF(error,!ridx_match) << " ridx_match " << ridx_match << " ridx_0 " << ridx_0 << " ridx " << ridx ; 
+        LOG_IF(error,!pidx_match) << " pidx_match " << pidx_match << " pidx_0 " << pidx_0 << " pidx " << pidx ; 
+        LOG_IF(error,!oidx_match) << " oidx_match " << oidx_match << " oidx_0 " << oidx_0 << " oidx " << oidx ; 
 
         assert( ridx_match ); 
         assert( pidx_match ); 
@@ -2481,7 +2481,7 @@ collecting arrays such as "bnd" from GGeo
 void GGeo::convertSim() const 
 {
     SSim* sim = SSim::Get();
-    if(sim == nullptr) LOG(fatal) << "SSim should have been created by CSGFoundry::CSGFoundry " ; 
+    LOG_IF(fatal, sim == nullptr) << "SSim should have been created by CSGFoundry::CSGFoundry " ; 
     assert(sim);  
 
     convertSim_BndLib(sim); 

@@ -42,10 +42,10 @@ int main(int argc, char** argv)
     GMaterialLib* mlib = GMaterialLib::load(&ok);
     GSurfaceLib*  sbas = GSurfaceLib::load(&ok);
    
-    if(!mlib) LOG(fatal) << " failed to load mlib " ; 
+    LOG_IF(fatal, !mlib) << " failed to load mlib " ; 
     if(!mlib) return 0 ; 
     
-    if(!sbas) LOG(fatal) << " failed to load sbas : basis slib  " ; 
+    LOG_IF(fatal, !sbas) << " failed to load sbas : basis slib  " ; 
     if(!sbas) return 0 ; 
 
     GBndLib*      blib = new GBndLib(&ok) ;

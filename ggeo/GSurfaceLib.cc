@@ -589,7 +589,7 @@ GPropertyMap<double>* GSurfaceLib::getBasisSurface(const char* name) const
 void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2)
 {
     GPropertyMap<double>* surf = getBasisSurface(name);
-    if(!surf) LOG(fatal) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
+    LOG_IF(fatal, !surf) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
     assert( surf );        
 
     bool direct = true ;  // already standardized 
@@ -599,7 +599,7 @@ void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1,
 void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
 {
     GPropertyMap<double>* surf = getBasisSurface(name);
-    if(!surf) LOG(fatal) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
+    LOG_IF(fatal, !surf) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
     assert( surf );           
   
     bool direct = true ;  // already standardized 
@@ -1351,8 +1351,7 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface) const
 
     bool iss = NameEndsWithSensorSurface(name) ;     
 
-    if(iss)
-    LOG(debug) << "GSurfaceLib::isSensorSurface"
+    LOG_IF(debug, iss) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 
               << " iss " << iss 

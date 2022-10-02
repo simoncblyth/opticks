@@ -283,8 +283,9 @@ void GGeoLib::loadConstituents(const char* idpath )
         }
         else
         {
-            if(parts) LOG(fatal) << " parts exists but mm does not " ;
-            assert(parts==NULL);
+            bool no_parts = parts==nullptr ; 
+            LOG_IF(fatal, !no_parts) << " parts exists but mm does not " ;
+            assert(no_parts);
             LOG(debug)
                  << " no mmdir for ridx " << ridx 
                  ;
@@ -350,10 +351,13 @@ GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, const GNode* base, const GN
 
 void GGeoLib::setMergedMesh(unsigned int index, GMergedMesh* mm)
 {
-    if(m_merged_mesh.find(index) != m_merged_mesh.end())
-        LOG(warning) << "GGeoLib::setMergedMesh REPLACING GMergedMesh "
-                     << " index " << index 
-                     ;
+    bool found_index = m_merged_mesh.find(index) != m_merged_mesh.end() ; 
+
+    LOG_IF(warning, found_index) 
+        << "GGeoLib::setMergedMesh REPLACING GMergedMesh "
+        << " index " << index 
+        ;
+
     m_merged_mesh[index] = mm ; 
 }
 
@@ -467,11 +471,13 @@ int GGeoLib::checkMergedMeshes() const
         if(mm == NULL) mia++ ; 
     } 
 
-    if(m_verbosity > 2 || mia != 0)
-    LOG(info) << "GGeoLib::checkMergedMeshes" 
-              << " nmm " << nmm
-              << " mia " << mia
-              ;
+    bool dump = m_verbosity > 2 || mia != 0 ; 
+
+    LOG_IF(info, dump) 
+        << "GGeoLib::checkMergedMeshes" 
+        << " nmm " << nmm
+        << " mia " << mia
+        ;
 
     return mia ; 
 }
@@ -510,7 +516,7 @@ void GGeoLib::dryrun_convertMergedMesh(unsigned i)
     GMergedMesh* mm = m_geolib->getMergedMesh(i);
 
     bool raylod = m_ok->isRayLOD() ;
-    if(raylod) LOG(fatal) << " RayLOD enabled " ;
+    LOG_IF(fatal, raylod) << " RayLOD enabled " ;
     assert(raylod == false);  
 
     bool is_null = mm == NULL ;

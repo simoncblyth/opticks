@@ -224,10 +224,11 @@ T np_maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
     unsigned alen = a->getLength() ;
     unsigned blen = b->getLength() ;
  
-    if(dump) LOG(info) << " np_maxdiff " 
-                       << " a " << std::setw(5) << alen
-                       << " b " << std::setw(5) << blen
-                       ;
+    LOG_IF(info, dump) 
+        << " np_maxdiff " 
+        << " a " << std::setw(5) << alen
+        << " b " << std::setw(5) << blen
+        ;
 
     assert(alen == blen); 
     T max(0);
@@ -239,16 +240,16 @@ T np_maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
 
        max = std::max( max, ab );
 
-       if(dump) LOG(info) 
-                    <<  " i " << std::setw(4) << i
-                    <<  " av " << std::setw(10) << av 
-                    <<  " bv " << std::setw(10) << bv 
-                    <<  " ab " << std::setw(10) << ab 
-                    ; 
+       LOG_IF(info, dump) 
+           <<  " i " << std::setw(4) << i
+           <<  " av " << std::setw(10) << av 
+           <<  " bv " << std::setw(10) << bv 
+           <<  " ab " << std::setw(10) << ab 
+           ; 
 
     }
 
-    if(dump) LOG(info) << " maxdiff " << max ; 
+    LOG_IF(info, dump) << " maxdiff " << max ; 
 
     return max ;
 }

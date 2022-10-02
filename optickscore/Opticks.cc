@@ -729,9 +729,7 @@ const std::vector<unsigned>&  Opticks::getMask() const
 unsigned Opticks::getMaskIndex(unsigned idx) const
 {
     bool mask = hasMask();  
-    if(!mask)
-        LOG(warning) << "BUT there is no mask " ; 
-
+    LOG_IF(warning, !mask) << "BUT there is no mask " ; 
     return mask ? m_dbg->getMaskIndex(idx) : idx ;
 }
 bool Opticks::hasMask() const 
@@ -3630,20 +3628,24 @@ void Opticks::setSpaceDomain(const glm::vec4& sd)
 
 void Opticks::setSpaceDomain(float x, float y, float z, float w)
 {
-    if( m_space_domain.x != 0.f && m_space_domain.x != x ) LOG(fatal) << " changing x " << m_space_domain.x << " -> " << x ;  
-    if( m_space_domain.y != 0.f && m_space_domain.y != y ) LOG(fatal) << " changing y " << m_space_domain.y << " -> " << y ;  
-    if( m_space_domain.z != 0.f && m_space_domain.z != z ) LOG(fatal) << " changing z " << m_space_domain.z << " -> " << z ;  
-    if( m_space_domain.w != 0.f && m_space_domain.w != w ) LOG(fatal) << " changing w " << m_space_domain.w << " -> " << w ;  
+    bool x_change = m_space_domain.x != 0.f && m_space_domain.x != x ; 
+    bool y_change = m_space_domain.y != 0.f && m_space_domain.y != y ; 
+    bool z_change = m_space_domain.z != 0.f && m_space_domain.z != z ; 
+    bool w_change = m_space_domain.w != 0.f && m_space_domain.w != w ; 
+
+    LOG_IF(fatal, x_change) << " changing x " << m_space_domain.x << " -> " << x ;
+    LOG_IF(fatal, y_change) << " changing y " << m_space_domain.y << " -> " << y ;
+    LOG_IF(fatal, z_change) << " changing z " << m_space_domain.z << " -> " << z ;
+    LOG_IF(fatal, w_change) << " changing w " << m_space_domain.w << " -> " << w ;
 
     m_space_domain.x = x  ; 
     m_space_domain.y = y  ; 
     m_space_domain.z = z  ; 
     m_space_domain.w = w  ; 
 
-    if( isDbgAim() ) 
-    {  
-        LOG(info) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
-    }
+
+    bool is_dbg_aim = isDbgAim() ;  
+    LOG_IF(info, is_dbg_aim ) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
 
     setupTimeDomain(w); 
 
@@ -3814,11 +3816,13 @@ void Opticks::configureDomains()
 
    int x_rng_max = getRngMax() ;
 
-   if(e_rng_max != x_rng_max)
-       LOG(verbose) << "Opticks::configureDomains"
-                  << " CUDAWRAP_RNG_MAX " << e_rng_max 
-                  << " x_rng_max " << x_rng_max 
-                  ;
+   bool rng_max_change = e_rng_max != x_rng_max ; 
+
+   LOG_IF(verbose, rng_max_change) 
+       << "Opticks::configureDomains"
+       << " CUDAWRAP_RNG_MAX " << e_rng_max 
+       << " x_rng_max " << x_rng_max 
+       ;
 
    //assert(e_rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
 }
@@ -4166,12 +4170,11 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     evt->setMode(m_mode);
 
-    if(!m_domains_configured)
-         LOG(fatal) 
-             << " domains MUST be configured by calling setSpaceDomain "
-             << " prior to makeEvent being possible "
-             << " description " << description()
-             ;
+    LOG_IF(fatal, !m_domains_configured) 
+        << " domains MUST be configured by calling setSpaceDomain "
+        << " prior to makeEvent being possible "
+        << " description " << description()
+        ;
 
     assert(m_domains_configured);
 

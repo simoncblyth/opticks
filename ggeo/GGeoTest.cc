@@ -829,8 +829,7 @@ void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
         const char* self_pv = volume->getPVName() ;   
         const char* parent_pv = parent ? parent->getPVName() : UNIVERSE_PV ; 
 
-        if(m_dbgbnd)
-        LOG(error) 
+        LOG_IF(error, m_dbgbnd) 
               << "[--dbgbnd]"
               << " spec " << spec
               << " unknown_osur " << unknown_osur

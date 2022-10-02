@@ -271,13 +271,12 @@ void GOpticalSurface::checkValue() const
 {
     float value = boost::lexical_cast<float>(m_value) ; 
     bool is_allowed = value >= 0.f && value <= 1.f ; 
-    if(!is_allowed)
-        LOG(fatal) 
-            << " value unexpected " 
-            << " value " << value 
-            << " m_value " << m_value 
-            << " m_name " << m_name
-            ;
+    LOG_IF(fatal, !is_allowed) 
+        << " value unexpected " 
+        << " value " << value 
+        << " m_value " << m_value 
+        << " m_name " << m_name
+        ;
     assert( is_allowed ); 
 }
 

@@ -88,14 +88,14 @@ void GBnd::check()
     
     if(dbgbnd)
     {
-        if(osur_unknown)
-            LOG(error) << "[--dbgbnd]"
-                       << " osur_unknown " << osur_
-                       ;
-        if(isur_unknown)
-            LOG(error) << "[--dbgbnd]"
-                       << " isur_unknown " << isur_ 
-                       ;
+        LOG_IF(error, osur_unknown) 
+            << "[--dbgbnd]"
+            << " osur_unknown " << osur_
+            ;
+        LOG_IF(error, isur_unknown) 
+            << "[--dbgbnd]"
+            << " isur_unknown " << isur_ 
+            ;
     }
 }
 

@@ -232,7 +232,7 @@ void test_getMeshName_getMeshIndexWithName( const GMeshLib* mlib, int argc, char
         unsigned long int uli = strtoul(arg, endptr, base); 
         bool end_points_to_terminator = end == arg + strlen(arg) ;  
         
-        if(dump) LOG(LEVEL)
+        LOG_IF(LEVEL, dump)
             << " i " << std::setw(3) << i 
             << " arg " << std::setw(50) << arg
             << " uli " << std::setw(10) << uli 

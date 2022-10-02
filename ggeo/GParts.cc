@@ -635,8 +635,7 @@ GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
     }
 
     unsigned verbosity = tree->getVerbosity(); 
-    if(verbosity > 1)
-    LOG(info) 
+    LOG_IF(info, verbosity > 1) 
         << " tree " << std::setw(5) << tree->getIndex()
         << " usedglobally " << std::setw(1) << usedglobally 
         << " nodebuf " << ( nodebuf ? nodebuf->getShapeString() : "NULL" ) 
@@ -670,12 +669,12 @@ GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
     assert( nodebuf->hasItemShape(NJ, NK) && ni > 0 );
 
     bool type_ok = root && root->type < CSG_UNDEFINED ;
-    if(!type_ok)
-        LOG(fatal) << "GParts::make"
-                   << " bad type " << root->type
-                   << " name " << CSG::Name(root->type) 
-                   << " YOU MAY JUST NEED TO RECOMPILE " 
-                   ;
+    LOG_IF(fatal, !type_ok) 
+        << "GParts::make"
+        << " bad type " << root->type
+        << " name " << CSG::Name(root->type) 
+        << " YOU MAY JUST NEED TO RECOMPILE " 
+        ;
 
     assert(type_ok);
 
@@ -834,10 +833,9 @@ void GParts::checkSpec(GItemList* spec) const
     } 
     else
     {
-        if(!empty_rel)
-            LOG(fatal)
-                << " EXPECTING EMPTY RelDir FOR NON GPmt GParts [" << reldir << "]"
-                ;
+        LOG_IF(fatal, !empty_rel)
+            << " EXPECTING EMPTY RelDir FOR NON GPmt GParts [" << reldir << "]"
+            ;
         assert( empty_rel );
     }
 }
@@ -850,8 +848,7 @@ void GParts::init()
     unsigned nspec = m_bndspec ? m_bndspec->getNumItems() : 0  ;
 
     bool match = npart == nspec ; 
-    if(!match) 
-    LOG(fatal) 
+    LOG_IF(fatal, !match) 
         << " parts/spec MISMATCH "  
         << " npart " << npart 
         << " nspec " << nspec
@@ -1366,7 +1363,7 @@ void GParts::add(GParts* other)
 
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     { 
-        if(dump) LOG(LEVEL) 
+        LOG_IF(LEVEL, dump) 
             << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT 
             << " ridx " << getRepeatIndex() 
             << " tranOffset " << tranOffset  
@@ -1381,7 +1378,7 @@ void GParts::add(GParts* other)
     }
     else
     {
-        if(dump) LOG(LEVEL) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
+        LOG_IF(LEVEL, dump) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
     }
 
     m_idx_buffer->add(other_idx_buffer);
@@ -1405,7 +1402,7 @@ void GParts::add(GParts* other)
         << " m_aix.size " << m_aix.size()
         ; 
 
-    if(dupe) LOG(fatal) << " dupe " << aix ; 
+    LOG_IF(fatal, dupe) << " dupe " << aix ; 
     assert(!dupe); 
 #endif
 
@@ -1463,9 +1460,7 @@ to allow the GParts to be placed within other geometry
 
 void GParts::setContainingMaterial(const char* material)
 {
-    if(m_medium)
-       LOG(fatal) << "setContainingMaterial called already " << m_medium 
-       ;
+    LOG_IF(fatal, m_medium) << "setContainingMaterial called already " << m_medium ;
 
     assert( m_medium == NULL && "GParts::setContainingMaterial WAS CALLED ALREADY " );
     m_medium = strdup(material); 
@@ -1497,8 +1492,10 @@ void GParts::close()
 {
     //std::raise(SIGINT); 
 
-    if(isClosed()) LOG(fatal) << "closed already " ;
-    assert(!isClosed()); 
+    bool is_closed = isClosed(); 
+    LOG_IF(fatal, is_closed) << "closed already " ;
+    assert(!is_closed); 
+
     m_closed = true ; 
 
     LOG(LEVEL) << "[" ; 
@@ -1531,7 +1528,7 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
    {
        const char* spec = m_bndspec->getKey(i);
        size_t speclen = (size_t)strlen(spec) ; 
-       if(speclen == 0 ) LOG(LEVEL) << "dummy spec detected, using boundary 0 " ; 
+       LOG_IF(LEVEL, speclen == 0) << "dummy spec detected, using boundary 0 " ; 
 
        unsigned boundary = speclen == 0 ? 0 : m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
@@ -1854,8 +1851,7 @@ void GParts::dumpPrim(unsigned primIdx)
         if(iszero) num_zeros++ ; 
         else num_nonzeros++ ; 
 
-        if(!iszero)
-        LOG(info) 
+        LOG_IF(info, !iszero) 
             << " p " << std::setw(3) << p 
             << " partIdx " << std::setw(3) << partIdx
             << " typecode " << typecode
@@ -2499,7 +2495,7 @@ void GParts::setVolumeIndex(unsigned idx)
     // only called once per node
     bool dupe = std::find(m_nix.begin(), m_nix.end(), idx ) != m_nix.end() ; 
     m_nix.push_back(idx);  
-    if(dupe) LOG(fatal) << " dupe " << idx ; 
+    LOG_IF(fatal, dupe) << " dupe " << idx ; 
     assert(!dupe); 
 #endif 
 

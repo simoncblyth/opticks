@@ -194,13 +194,12 @@ void GItemIndex::loadIndex(const char* idpath, const char* override_)
     // hmm stomps existing index ?
     m_index = Index::load(idpath, itemtype, reldir);
 
-    if(!m_index)
-        LOG(error)
-            << " failed for "
-            << " idpath " << idpath
-            << " reldir " << ( reldir ? reldir : "-" )
-            << " override " << ( override_ ? override_ : "NULL" )
-            ; 
+    LOG_IF(error, !m_index)
+        << " failed for "
+        << " idpath " << idpath
+        << " reldir " << ( reldir ? reldir : "-" )
+        << " override " << ( override_ ? override_ : "NULL" )
+        ; 
 
 }
 
@@ -488,8 +487,7 @@ const char* GItemIndex::ShortenLabel(const char* label, unsigned ntail )
 
 NPY<unsigned char>* GItemIndex::makeColorBuffer()
 {
-   if(m_colors==NULL)
-       LOG(warning) << "GItemIndex::makeColorBuffer no colors defined will provide defaults"  ; 
+   LOG_IF(warning, m_colors==nullptr) << "GItemIndex::makeColorBuffer no colors defined will provide defaults"  ; 
 
    formTable(); 
    LOG(info) << "GItemIndex::makeColorBuffer codes " << m_codes.size() ;  

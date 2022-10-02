@@ -106,8 +106,7 @@ unsigned long long OpticksBufferControl::Parse(const char* ctrl_, char delim)
         {
             const char* tag_ = elems[i].c_str() ;
             unsigned long long tag = ParseTag(tag_) ;
-            if(tag == 0)
-                 LOG(fatal) << "OpticksBufferControl::Parse BAD TAG " << tag_ ;
+            LOG_IF(fatal, tag == 0 ) << "OpticksBufferControl::Parse BAD TAG " << tag_ ;
             assert(tag);
             ctrl |= tag ;
         }

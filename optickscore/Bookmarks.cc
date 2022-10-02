@@ -287,7 +287,7 @@ void Bookmarks::collect()
 {
     if(m_current == UNSET ) return ; 
 
-    if(m_verbose) LOG(info) << "Bookmarks::collect " << m_current ; 
+    LOG_IF(info, m_verbose) << "Bookmarks::collect " << m_current ; 
 
     m_state->collect();
     m_state->setName(m_current);
@@ -297,7 +297,7 @@ void Bookmarks::collect()
 void Bookmarks::apply()
 {
     if(m_current == UNSET ) return ; 
-    if(m_verbose) LOG(info) << "Bookmarks::apply " << m_current ; 
+    LOG_IF(info, m_verbose) << "Bookmarks::apply " << m_current ; 
 
     m_state->setName(m_current);
     int rc = m_state->load();

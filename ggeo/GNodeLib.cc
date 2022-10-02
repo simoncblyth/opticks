@@ -779,12 +779,11 @@ glm::mat4 GNodeLib::getTransform(unsigned index) const
 glm::mat4 GNodeLib::getInverseTransform(unsigned index) const 
 {
     bool index_ok = index < m_num_volumes ; 
-    if(!index_ok)
-       LOG(fatal) 
-           << " FATAL : index out of range "
-           << " index " << index 
-           << " m_num_volumes " << m_num_volumes
-           ;
+    LOG_IF(fatal, !index_ok) 
+        << " FATAL : index out of range "
+        << " index " << index 
+        << " m_num_volumes " << m_num_volumes
+        ;
     assert( index_ok ); 
     glm::mat4 it = m_inverse_transforms->getMat4(index) ; 
     return it ;  
@@ -797,7 +796,7 @@ glm::mat4 GNodeLib::getInverseTransform(unsigned index) const
 glm::vec4 GNodeLib::getCE(unsigned index) const 
 {
     bool valid = index < m_num_volumes ; 
-    if(!valid) LOG(fatal) << " invalid index " << index << " num_volumes " << m_num_volumes ; 
+    LOG_IF(fatal, !valid) << " invalid index " << index << " num_volumes " << m_num_volumes ; 
     assert(valid); 
     glm::vec4 ce = m_center_extent->getQuad_(index) ; 
     return ce ;  
@@ -805,7 +804,7 @@ glm::vec4 GNodeLib::getCE(unsigned index) const
 glm::uvec4 GNodeLib::getIdentity(unsigned index) const 
 {
     bool expect = index < m_num_volumes ;
-    if(!expect) LOG(error) << " index " << index  << " num_volumes " << m_num_volumes ; 
+    LOG_IF(fatal, !expect) << " index " << index  << " num_volumes " << m_num_volumes ; 
     assert( expect ); 
     //glm::uvec4 id = m_identity->getQuad(index) ; see notes/issues/triplet-id-loosing-offset-index-in-NPY.rst
     glm::uvec4 id = m_identity->getQuad_(index) ; 

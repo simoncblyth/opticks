@@ -233,12 +233,11 @@ void GInstancer::deltacheck_r( const GNode* node, unsigned int depth)
     
     unsigned int nprogeny = node->getPriorProgenyCount() ;
 
-    if(nprogeny > 0 ) 
-        LOG(debug) 
-            << " #progeny "  << std::setw(6) << nprogeny 
-            << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
-            << " name " << node->getName() 
-            ;
+    LOG_IF(debug, nprogeny > 0) 
+        << " #progeny "  << std::setw(6) << nprogeny 
+        << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
+        << " name " << node->getName() 
+        ;
 
     assert(delta < 1e-6) ;
 
@@ -417,12 +416,13 @@ bool GInstancer::operator()(const std::string& dig)
 {
     bool cr = isContainedRepeat(dig, 3);
  
-    if(cr && m_verbosity > 2) 
-         LOG(info) 
-                  << "GInstancer::operator() "
-                  << " pdig "  << std::setw(32) << dig  
-                  << " disallowd as isContainedRepeat "
-                  ;
+    bool dump = cr && m_verbosity > 2 ; 
+
+    LOG_IF(info, dump) 
+        << "GInstancer::operator() "
+        << " pdig "  << std::setw(32) << dig  
+        << " disallowd as isContainedRepeat "
+        ;
 
     return cr ;  
 } 

@@ -285,8 +285,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* 
     const GNode* start = base ? base : root ; 
     unsigned depth = 0 ; 
 
-    if(verbosity > 1)
-    LOG(info)
+    LOG_IF(info, verbosity > 1)
         << " ridx " << ridx 
         << " starting from " << start->getName() ;
         ; 
@@ -392,18 +391,17 @@ void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass )
         }
     }
     
-    if(m_verbosity > 1)
-        LOG(info)
-            << " m_verbosity " << m_verbosity
-            << " node " << node 
-            << " volume " << volume 
-            << " volume.pts " << volume->getParts()
-            << " depth " << depth 
-            << " NumChildren " << node->getNumChildren()
-            << " pass " << pass
-            << " selected " << selected
-            << " csgskip " << csgskip
-            ; 
+    LOG_IF(info, m_verbosity > 1)
+        << " m_verbosity " << m_verbosity
+        << " node " << node 
+        << " volume " << volume 
+        << " volume.pts " << volume->getParts()
+        << " depth " << depth 
+        << " NumChildren " << node->getNumChildren()
+        << " pass " << pass
+        << " selected " << selected
+        << " csgskip " << csgskip
+        ; 
 
 
     switch(pass)
@@ -509,8 +507,7 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
         countMesh( other );     // increment m_num_vertices, m_num_faces
     }
 
-    if(m_verbosity > 1)
-    LOG(info) 
+    LOG_IF(info, m_verbosity > 1) 
         << "other GMergedMesh" 
         << " selected " << selected
         << " num_mergedmesh " << m_num_mergedmesh 
@@ -690,8 +687,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected)
         gbbox bb = other->getBBox(i) ;
         gfloat4 ce = other->getCenterExtent(i) ;
 
-        if(m_verbosity > 2)
-        LOG(info) 
+        LOG_IF(info, m_verbosity > 2) 
             << " m_cur_volume " << m_cur_volume  
             << " i " << i
             << " ce " <<  ce.description() 
@@ -776,7 +772,7 @@ void GMergedMesh::mergeVolumeBBox( gfloat3* vertices, unsigned nvert )
 {
     // needs to be outside the selection branch for the all volume center extent
     gbbox* bb = GMesh::findBBox(vertices, nvert) ;
-    if(bb == NULL) LOG(fatal) << "NULL bb " ; 
+    LOG_IF(fatal, bb == nullptr) << "NULL bb " ; 
     assert(bb); 
 
     m_bbox[m_cur_volume] = *bb ;  

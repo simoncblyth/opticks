@@ -152,11 +152,10 @@ unsigned GPho::wayConsistencyCheck(bool dump)
     mismatch += mismatch_flags ; 
     mismatch += mismatch_index ; 
 
-    if(mismatch > 0)
-        LOG(info) 
-            << " mismatch_flags " << mismatch_flags
-            << " mismatch_index " << mismatch_index
-            ;
+    LOG_IF(info, mismatch > 0 ) 
+        << " mismatch_flags " << mismatch_flags
+        << " mismatch_index " << mismatch_index
+        ;
 
     return mismatch ; 
 }

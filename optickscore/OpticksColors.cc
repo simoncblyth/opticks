@@ -411,11 +411,10 @@ void OpticksColors::addColors(std::vector<unsigned int>& codes, unsigned int sta
         unsigned int green = (color & 0x00FF00) >> 8 ;
         unsigned int blue  = (color & 0x0000FF)      ;
 
-        unsigned int offset = count*4 ;  
-        if(!( offset < 4*max_colors))
-             LOG(fatal) << "OpticksColors::addColors out of range " << offset ;
-
-        assert( offset < 4*max_colors && " going over size of buffer" );
+        unsigned int offset = count*4 ;
+        bool in_range = offset < 4*max_colors ; 
+        LOG_IF(fatal, !in_range ) << "OpticksColors::addColors out of range " << offset ;
+        assert( in_range && " going over size of buffer" );
 
         colors[offset + 0] = red ; 
         colors[offset + 1] = green ; 

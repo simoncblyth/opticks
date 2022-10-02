@@ -291,11 +291,11 @@ bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool
     unsigned alen = a->getLength() ;
     unsigned blen = b->getLength() ;
 
-    if(dump) LOG(info)
-                << "GProperty<T>::hasSameDomain"
-                << " alen " << alen
-                << " blen " << blen
-                ;
+    LOG_IF(info, dump)
+        << "GProperty<T>::hasSameDomain"
+        << " alen " << alen
+        << " blen " << blen
+        ;
 
     if(alen != blen)
     {

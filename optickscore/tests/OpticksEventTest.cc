@@ -81,7 +81,7 @@ void test_appendNote()
     std::string note = evt.getNote();
 
     bool match = note.compare("hello world") == 0 ;
-    if(!match) LOG(fatal) << "got unexpected " << note ; 
+    LOG_IF(fatal, !match) << "got unexpected " << note ; 
     assert(match);
 
 }

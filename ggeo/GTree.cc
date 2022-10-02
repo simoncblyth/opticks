@@ -183,16 +183,15 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
         bool progeny_match = progeny.size() == numProgeny ;
 
         {
-           if(!progeny_match)
-           LOG(fatal) 
-                      << " progeny_match " << ( progeny_match ? " OK " : " MISMATCH " )
-                      << " progeny.size() " << progeny.size() 
-                      << " numProgeny " << numProgeny
-                      << " numPlacements " << numPlacements
-                      << " numVolumes " << numVolumes
-                      << " i " << i 
-                      << " ridx " << ridx
-                      ;
+            LOG_IF(fatal, !progeny_match) 
+                << " progeny_match " << ( progeny_match ? " OK " : " MISMATCH " )
+                << " progeny.size() " << progeny.size() 
+                << " numProgeny " << numProgeny
+                << " numPlacements " << numPlacements
+                << " numVolumes " << numVolumes
+                << " i " << i 
+                << " ridx " << ridx
+                ;
             assert( progeny_match );
         }
 

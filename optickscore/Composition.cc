@@ -334,11 +334,10 @@ void Composition::command(const char* cmd)
         default : msg="unimplemented command"       ; break ;  
     }
 
-    if(msg) 
-        LOG(info)
-            << " cmd " << cmd 
-            << " msg " << msg
-            ;
+    LOG_IF(info, msg)
+        << " cmd " << cmd 
+        << " msg " << msg
+        ;
 }
 
 
@@ -2265,8 +2264,7 @@ float Composition::getNDCDepth(const glm::vec4& position_world)
     }
 
 
-    if(0)
-    LOG(debug) << "Composition::getNDCDepth"
+    LOG_IF(debug, 0) << "Composition::getNDCDepth"
               << " p_world " << gformat(position_world)
               << " p_eye " << gformat(position_eye)
               << " eyeDist " << eyeDist 

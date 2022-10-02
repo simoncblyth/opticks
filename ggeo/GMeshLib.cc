@@ -375,12 +375,11 @@ GMesh* GMeshLib::getMeshSimple(unsigned index) const
     GMesh* mesh = const_cast<GMesh*>(mesh_);   // hmm rethink needed ?
 
     bool index_match = mesh->getIndex() == index ; 
-    if(!index_match)
-       LOG(error) 
-           << " mesh indices do not match " 
-           << " m_meshes index " << index
-           << " mesh.index " << mesh->getIndex()
-           ; 
+    LOG_IF(error, !index_match) 
+        << " mesh indices do not match " 
+        << " m_meshes index " << index
+        << " mesh.index " << mesh->getIndex()
+        ; 
 
     //assert( index_match ); 
     return mesh ; 
@@ -557,10 +556,9 @@ void GMeshLib::loadMeshes(const char* idpath )
             mesh->setCSG(solid); 
 
             const char* name = getMeshName(idx);
-            if(name == NULL)
-                LOG(fatal) 
-                    << " no name for mesh idx " << idx 
-                    ; 
+            LOG_IF(fatal, name == nullptr ) 
+                << " no name for mesh idx " << idx 
+                ; 
 
             assert(name);
 
