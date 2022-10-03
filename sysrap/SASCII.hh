@@ -41,6 +41,16 @@ class SYSRAP_API SASCII
       static const char OTHER[] ;  
       static const char EXTRA[] ;  
       static const char ALLOWED[] ;  
+
+  public:
+      static int Index(const char* arr, int num,  char s ); 
+      static int LowerIndex(char s); 
+      static int UpperIndex(char s); 
+
+      static char ToUpper(char s ); 
+      static char ToLower(char s ); 
+      static const char* ToUpper( const char* str ); 
+      static const char* ToLower( const char* str ); 
   public:
       static unsigned Count( char c, const char* list );  
       static bool IsUpper( char c );  

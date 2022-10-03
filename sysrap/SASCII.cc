@@ -42,6 +42,44 @@ const char SASCII::ALLOWED[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
  ; 
 
 
+
+int SASCII::Index(const char* arr, int num,  char s )
+{
+    int idx = -1 ; 
+    for(int i=0 ; i < num ; i++ ) if(arr[i] == s) idx = i ; 
+    return idx ; 
+}
+
+int SASCII::LowerIndex(char s){ return Index(LOWER, sizeof(LOWER)/sizeof(char), s ) ; }
+int SASCII::UpperIndex(char s){ return Index(UPPER, sizeof(UPPER)/sizeof(char), s ) ; }
+
+
+char SASCII::ToUpper(char s )
+{
+    int idx = LowerIndex(s) ; 
+    return idx == -1 ? s : UPPER[idx] ; 
+}
+char SASCII::ToLower(char s )
+{
+    int idx = UpperIndex(s) ; 
+    return idx == -1 ? s : LOWER[idx] ; 
+}
+const char* SASCII::ToUpper( const char* str )
+{
+    char* s = strdup(str); 
+    for(unsigned i=0 ; i < strlen(s) ; i++ ) s[i] = ToUpper(s[i] ); 
+    return s ; 
+}
+const char* SASCII::ToLower( const char* str )
+{
+    char* s = strdup(str); 
+    for(unsigned i=0 ; i < strlen(s) ; i++ ) s[i] = ToLower(s[i] ); 
+    return s ; 
+}
+
+
+
+
 void SASCII::dump() const 
 {
     unsigned num_upper = sizeof(UPPER)/sizeof(char) ; 
@@ -263,7 +301,6 @@ std::string SASCII::getTwoRandom(SDice<26>& rng ) const
     ss << UPPER[u0] << UPPER[u1] ; 
     return ss.str() ; 
 }
-
 
 
 

@@ -95,11 +95,70 @@ void test_dump()
 
 }
 
+void test_UpperIndex()
+{
+    const char* upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
+    for(unsigned i=0 ; i < strlen(upper) ; i++)
+    {
+        char c = upper[i] ; 
+        int ui = SASCII::UpperIndex(c) ; 
+        std::cout 
+            << " i: " << std::setw(2) << i 
+            << " c: " << std::setw(2) << c 
+            << " ui: " << std::setw(2) << ui
+            << std::endl
+            ;
+
+    }
+}
+
+
+void test_LowerIndex()
+{
+    const char* lower = "abcdefghijklmnopqrstuvwxyz" ; 
+    for(unsigned i=0 ; i < strlen(lower) ; i++)
+    {
+        char c = lower[i] ; 
+        int li = SASCII::LowerIndex(c) ; 
+        std::cout 
+            << " i: " << std::setw(2) << i 
+            << " c: " << std::setw(2) << c 
+            << " li: " << std::setw(2) << li
+            << std::endl
+            ;
+
+    }
+}
+
+
+
+void test_ToUpper_ToLower()
+{
+    std::vector<std::string> strs = {
+           "fatal", "error", "warn", "info", "debug", "verb", "none" ,
+           "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "VERB", "NONE" 
+         } ; 
+    for(unsigned i=0 ; i < strs.size() ; i++)
+    {
+        const char* str = strs[i].c_str() ; 
+        std::cout 
+           << " str " << std::setw(20) << str 
+           << " SASCII::ToUpper(str) " << std::setw(20) << SASCII::ToUpper(str) 
+           << " SASCII::ToLower(str) " << std::setw(20) << SASCII::ToLower(str) 
+           << std::endl 
+           ; 
+    }
+}
 
 
 int main(int argc, char** argv )
 {
+   /*
    test_dump(); 
+   test_UpperIndex();  
+   test_LowerIndex();  
+   */
+   test_ToUpper_ToLower(); 
 
    return 0 ; 
 }

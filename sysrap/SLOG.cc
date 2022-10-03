@@ -28,6 +28,7 @@
 #include "SSys.hh"
 #include "SProc.hh"
 #include "SOpticksResource.hh"
+#include "SASCII.hh"
 
 #define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
@@ -151,7 +152,8 @@ Static initializers run very early, prior to logging being setup.
 plog::Severity SLOG::EnvLevel( const char* key, const char* fallback)
 {
     const char* level = SSys::getenvvar(key, fallback);  
-    plog::Severity severity = plog::severityFromString(level) ;
+    const char* upper_level = SASCII::ToUpper(level); 
+    plog::Severity severity = plog::severityFromString(upper_level) ;
 
     if(strcmp(level, fallback) != 0)
     {
@@ -161,6 +163,7 @@ plog::Severity SLOG::EnvLevel( const char* key, const char* fallback)
             << " key " << key  
             << " level " << level
             << " fallback " << fallback
+            << " upper_level " << upper_level
             << std::endl 
             ;     
     }
