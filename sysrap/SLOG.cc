@@ -27,6 +27,7 @@
 #include "SLOG.hh"
 #include "SSys.hh"
 #include "SProc.hh"
+#include "SOpticksResource.hh"
 
 #define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
@@ -246,7 +247,7 @@ This uses just the executable name with .log appended
 
 const char* SLOG::_logpath()
 {
-    const char* exename = SProc::ExecutableName() ; 
+    const char* exename = SOpticksResource::ExecutableName() ; 
     std::string lp(exename) ; 
     lp += ".log" ; 
     return strdup(lp.c_str());
