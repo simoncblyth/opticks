@@ -26,6 +26,62 @@ plog-usage(){ cat << EOU
 PLOG : Simple header only logging that works across DLLs
 ============================================================
 
+Upstream Update : Oct 3, 2022
+--------------------------------
+
+* https://github.com/simoncblyth/plog
+* https://github.com/SergiusTheBest/plog
+
+I deleted my old fork of plog and forked again from the 
+upstream latest under the same name. 
+    
+There was only one commit different in my old fork with 
+IF_LOG logic inversion, that avoided compilation 
+warnings from a common construct::
+
+    if(cond) LOG(info) << "hello"
+
+Subsequently I have changed all occurrences of the above construct 
+within active Opticks packages to use:: 
+
+    LOG_IF(info, cond) << "hello"  ; 
+
+After doing that there is no need for the deviation, so can use 
+the latest plog. 
+
+However caution dictates to pin it at current status, for better 
+control over future changes. 
+
+PLOG_LOCAL symbol visibility control
+--------------------------------------
+
+The primary reason for the update is the new PLOG_LOCAL 
+symbol visibility control which makes plog fully usable 
+within projects that do not control symbol visibility 
+with compiler options::
+
+   -fvisibility=hidden -fvisibility-inlines-hidden
+
+This makes it possible to extend Opticks style logging control 
+to packages that are integrated with Opticks, like JUNOSW. 
+
+
+old IF_LOG logic inversion : PR that was not accepted by Sergio
+---------------------------------------------------------------------
+
+* https://github.com/SergiusTheBest/plog/pull/92
+
+::
+
+
+    -#define IF_LOG_(instance, severity)     if (!plog::get<instance>() || !plog::get<instance>()->checkSeverity(severity)) {;} else
+    +#define IF_LOG_(instance, severity)     if (plog::get<instance>() && plog::get<instance>()->checkSeverity(severity)) 
+     #define IF_LOG(severity)                IF_LOG_(PLOG_DEFAULT_INSTANCE, severity)
+
+
+About windows use
+--------------------
+
 Inclusion of plog/Log.h brings in Windef.h that does::
 
    #define near 
@@ -73,13 +129,6 @@ fixed this by bringing my plog fork uptodate
     1 warning generated.
     [  0%] Building CXX object sysrap/CMakeFiles/SysRap.dir/PLOG.cc.o
     In file included from /Users/blyth/opticks/sysrap/PLOG.cc:7:
-
-
-
-but lastest plog has dangling else problem, have made pull request upstream
-------------------------------------------------------------------------------
-
-But Sergio didnt agree, tant pis : I continue to use my fork
 
 
 
