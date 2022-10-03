@@ -95,9 +95,21 @@ using envvar SOpticksResource_ExecutableName
 
 const char* SOpticksResource::ExecutableName()
 {  
-    const char* exe = SProc::ExecutableName() ; 
-    if(SStr::StartsWith(exe, "python")) exe = SSys::getenvvar("SCRIPT", "script" ); 
-    return SSys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
+    const char* exe0 = SProc::ExecutableName() ; 
+    bool is_python = SStr::StartsWith(exe0, "python") ;  
+    const char* script = SSys::getenvvar("SCRIPT"); 
+    const char* exe = is_python && script ? script : exe0 ; 
+    const char* result = SSys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
+
+    LOG(LEVEL) 
+        << " exe0 " << exe0 
+        << " is_python " << is_python 
+        << " script " << script 
+        << " exe " << exe 
+        << " result " << result 
+        ;
+
+    return result ; 
 } 
 
 /**

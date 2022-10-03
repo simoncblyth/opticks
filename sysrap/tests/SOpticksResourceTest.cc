@@ -69,6 +69,11 @@ int main(int argc, char** argv)
         const char* path = SPath::Resolve("$DefaultOutputDir", NOOP) ; 
         std::cout << "SPath::Resolve(\"$DefaultOutputDir\", NOOP) " << path  << std::endl ; 
     }
+    else if( strcmp(arg, "--exe") == 0 )
+    {
+        const char* exe = SOpticksResource::ExecutableName() ; 
+        std::cout << "SOpticksResource::ExecutableName() " << exe  << std::endl ; 
+    }
     else
     {
         LOG(error) << " arg [" << arg << "] is not handled " ; 
