@@ -23,6 +23,7 @@
 //    OTHERWISE RANDOMLY REPLACES STRINGS IN SYSTEM HEADERS
 
 #include <cstddef>
+#include <string>
 #include <plog/Log.h>
 
 // plog log levels 
@@ -312,6 +313,7 @@ struct SYSRAP_API SLOG
     SLOG(const char* name, const char* fallback="VERBOSE", const char* prefix=NULL );
     SLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
     void init(const char* fallback, const char* prefix); 
+    std::string desc() const ; 
 
     const char* name(); 
     const char* exename() const ;

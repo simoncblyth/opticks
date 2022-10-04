@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <cstdlib>
 #include <cstring>
 #include <cassert>
 #include <iostream>
@@ -460,7 +461,20 @@ void SLOG::init(const char* fallback, const char* prefix)
     level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
     assert( instance == NULL && "ONLY EXPECTING A SINGLE SLOG INSTANCE" );
     instance = this ; 
+    if(getenv("SLOG")) std::cout << "SLOG::init " << desc() << std::endl ; 
 }
 
+std::string SLOG::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "SLOG::desc"
+       << " level " << plog::severityToString((plog::Severity)level)  
+       << " filename " << filename
+       << " maxFileSize " << maxFileSize
+       << " maxFiles " << maxFiles 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
