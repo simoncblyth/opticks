@@ -10,7 +10,7 @@
 
 #include "U4Debug.hh"
 
-const plog::Severity U4Debug::LEVEL = SLOG::EnvLevel("U4Debug", "debug" ); 
+const plog::Severity U4Debug::LEVEL = SLOG::EnvLevel("U4Debug", "DEBUG" ); 
 const char* U4Debug::SaveDir = getenv(EKEY) ;   
 
 const char* U4Debug::GetSaveDir(int eventID)

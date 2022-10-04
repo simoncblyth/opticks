@@ -98,10 +98,12 @@ const char* SOpticksResource::ExecutableName()
     const char* exe0 = SProc::ExecutableName() ; 
     bool is_python = SStr::StartsWith(exe0, "python") ;  
     const char* script = SSys::getenvvar("SCRIPT"); 
-    const char* exe = is_python && script ? script : exe0 ; 
+    const char* exe = ( is_python && script ) ? script : exe0 ; 
     const char* result = SSys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
 
-    LOG(LEVEL) 
+    // as this is used before logging is setup cannot use normal logging to check 
+    if(SSys::getenvvar("SOpticksResource")) std::cout 
+        << "SOpticksResource::ExecutableName" 
         << " exe0 " << exe0 
         << " is_python " << is_python 
         << " script " << script 
