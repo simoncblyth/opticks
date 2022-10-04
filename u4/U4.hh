@@ -117,7 +117,8 @@ struct U4_API U4
     static NP* CollectOpticalSecondaries(const G4VParticleChange* pc ); 
 
     // put back old unused API, until can get integration changes thru into JUNOSW 
-    void GenPhotonSecondaries( const G4Track* , const G4VParticleChange* ); 
+    static void GenPhotonSecondaries( const G4Track* , const G4VParticleChange* ); 
+
 
 };
 
