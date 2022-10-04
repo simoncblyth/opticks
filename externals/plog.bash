@@ -26,6 +26,56 @@ plog-usage(){ cat << EOU
 PLOG : Simple header only logging that works across DLLs
 ============================================================
 
+plog logging levels
+---------------------
+
+plog/Severity.h::
+
+      3 namespace plog
+      4 {
+      5     enum Severity
+      6     {
+      7         none = 0,
+      8         fatal = 1,
+      9         error = 2,
+     10         warning = 3,
+     11         info = 4,
+     12         debug = 5,
+     13         verbose = 6
+     14     };
+
+plog/Logger.h::
+
+     37         bool checkSeverity(Severity severity) const
+     38         {
+     39             return severity <= m_maxSeverity;
+     40         }
+
+
+m_maxSeverity 
+   logger level, 
+   typical Opticks usage fixes this at "info:4" for each shared lib
+   and "verbose:6" in the main
+
+severity 
+   record level, coming from LOG(LEVEL) lines in the code, 
+   typical Opticks usage (with SLOG::EnvLevel) defaults this to "debug:5" 
+   Subsequently logging from individual classes are actuated by defining envvars, eg::
+
+      export G4CXOpticks=INFO
+   
+   That changes record levels to "info:4" which is "<= m_maxSeverity"
+   so logging messages appear. 
+ 
+NB the decision to emit a logging record is::
+
+    recordLevel <= loggerLevel 
+
+   
+
+
+
+
 Upstream Update : Oct 3, 2022
 --------------------------------
 

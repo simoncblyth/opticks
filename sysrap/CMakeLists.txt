@@ -125,6 +125,7 @@ set(HEADERS
     SYSRAP_HEAD.hh
     SYSRAP_TAIL.hh
     SLOG.hh
+    PLOG.hh
     SLOG_INIT.hh  
 
     SProc.hh
