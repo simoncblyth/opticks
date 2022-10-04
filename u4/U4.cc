@@ -348,4 +348,9 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
 } 
 
 
+void U4::GenPhotonSecondaries( const G4Track* , const G4VParticleChange* )
+{
+    // do nothing 
+}
+
 
