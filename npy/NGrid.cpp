@@ -96,9 +96,13 @@ void NGrid<T>::clear()
 }
 
 template <typename T>
-std::string NGrid<T>::desc() 
+std::string NGrid<T>::desc(bool label) const 
 {
     std::stringstream ss ; 
+    ss << rowjoin ; 
+    ss << ruler(true) << rowjoin ; 
+    ss << ruler(false)  << rowjoin ; 
+
     for(unsigned r=0 ; r < nr ; r++)
     {
         for(unsigned c=0 ; c < nc ; c++)
@@ -109,7 +113,7 @@ std::string NGrid<T>::desc()
             if(ptr)
             {  
                 out = ptr->id() ; 
-                if(ptr->label && strcmp(ptr->label, out.c_str()) != 0)
+                if(label && ptr->label && strcmp(ptr->label, out.c_str()) != 0)
                 {
                     out += " " ; 
                     out += ptr->label ; 
@@ -120,8 +124,67 @@ std::string NGrid<T>::desc()
         }
         ss << rowjoin ; 
     }
+
+    ss << rowjoin ; 
+    ss << ruler(false) << rowjoin ; 
+    ss << ruler(true)  << rowjoin ; 
+    ss << labelindex()  << rowjoin ; 
+
     return ss.str();
 }
+
+template<typename T>
+const char* NGrid<T>::RULER_MARKS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
+
+template <typename T>
+std::string NGrid<T>::ruler(bool mark) const 
+{
+    std::stringstream ss ; 
+    for(unsigned c=0 ; c < nc ; c++)
+    {   
+        unsigned num_in_column = 0 ; 
+        for(unsigned r=0 ; r < nr ; r++) if(get(r,c)) num_in_column += 1 ; 
+        assert( num_in_column < 2 ); 
+
+        char mkr = mark ? RULER_MARKS[c%strlen(RULER_MARKS)] : '.' ;  
+        ss << std::setw(width) << ( num_in_column > 0 ? mkr : ' ' ) ; 
+    }
+    return ss.str();
+}
+
+template <typename T>
+std::string NGrid<T>::labelindex() const 
+{
+    std::stringstream ss ; 
+    for(unsigned c=0 ; c < nc ; c++)
+    {   
+        unsigned num_in_column = 0 ; 
+        const T* first = nullptr ;  
+        for(unsigned r=0 ; r < nr ; r++) 
+        {
+            const T* ptr = get(r,c) ; 
+            if(ptr && first == nullptr) 
+            {
+                first = ptr ; 
+                num_in_column += 1 ; 
+            }
+            assert( num_in_column < 2 ); 
+        }
+
+        if(first && first->label)
+        {
+            char mkr = RULER_MARKS[c%strlen(RULER_MARKS)] ;  
+            ss << std::setw(width) << mkr << " " << first->label << std::endl ; 
+        } 
+    }
+    return ss.str();
+}
+ 
+
+
+
+
+
 
 
 #include "No.hpp"

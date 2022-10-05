@@ -19,14 +19,19 @@
 
 #include <algorithm>
 #include <cassert>
+#include <csignal>
 
 #include "OpticksCSG.h"
 #include "NTreeBalance.hpp"
 #include "NTreeBuilder.hpp"
+#include "SSys.hh"
 #include "SLOG.hh"
 
 template <typename T>
 const plog::Severity NTreeBalance<T>::LEVEL = SLOG::EnvLevel("NTreeBalance","DEBUG") ; 
+
+template <typename T>
+const bool NTreeBalance<T>::UnableToBalance_SIGINT = SSys::getenvbool("NTreeBalance__UnableToBalance_SIGINT") ; 
 
 
 template <typename T>
@@ -118,6 +123,7 @@ T* NTreeBalance<T>::create_balanced()
         //assert(0);
         unable_to_balance = true ;  
         balanced = root ; 
+        if(UnableToBalance_SIGINT) std::raise(SIGINT); 
     }
     return balanced ; 
 }

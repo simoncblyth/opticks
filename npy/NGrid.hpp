@@ -46,7 +46,11 @@ struct NPY_API NGrid
    void     set(unsigned r, unsigned c, const T* ptr);
    const T* get(unsigned r, unsigned c) const ; 
 
-   std::string desc() ;
+   std::string desc(bool label=false) const  ;
+   std::string ruler(bool mark) const  ;
+   std::string labelindex() const  ;
+
+   static const char* RULER_MARKS ; 
 
    unsigned    nr ;  
    unsigned    nc ;  

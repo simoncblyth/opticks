@@ -42,6 +42,7 @@ template <typename T>
 struct NPY_API NTreeBalance
 {
     static const plog::Severity LEVEL ; 
+    static const bool UnableToBalance_SIGINT  ; 
 
     NTreeBalance(T* root_, bool dump_); 
 

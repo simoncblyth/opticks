@@ -115,8 +115,7 @@ void X4MaterialTable::init()
 
         if( mpt == NULL )
         {
-            LOG(error) << "PROCEEDING TO convert material with no mpt " << material->GetName() ; 
-            // continue ;  
+            LOG(LEVEL) << "PROCEEDING TO convert material with no mpt " << material->GetName() ; 
         }
         else
         {

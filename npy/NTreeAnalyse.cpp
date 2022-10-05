@@ -143,18 +143,6 @@ std::string NTreeAnalyse<T>::brief() const
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 #include "No.hpp"
 #include "NNode.hpp"
 
