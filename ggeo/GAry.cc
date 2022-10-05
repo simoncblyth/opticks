@@ -26,6 +26,8 @@
 #include <cfloat>
 #include <vector>
 
+#include "sdigest.h"
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
@@ -890,6 +892,16 @@ void GAry<T>::reciprocate()
     T one(1);
     for(unsigned int i=0 ; i < m_length ; i++ ) m_values[i] = one/m_values[i] ; 
 }  
+
+template <typename T>
+std::string GAry<T>::digest() const
+{
+    const char* buf = (const char*)m_values ; 
+    int len = sizeof(T)*m_length ; 
+    return sdigest::Buf(buf, len) ; 
+}
+
+
 
 template <typename T>
 int GAry<T>::linear_search(T key)

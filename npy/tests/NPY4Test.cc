@@ -28,7 +28,8 @@ void test_make_modulo_selection()
     bool dump = true ; 
     unsigned dumplimit = 100 ; 
     char mode = 'A' ; 
-    unsigned mismatch_items = NPY<float>::compare( tr, tr2, epsilon, dump, dumplimit, mode ); 
+    std::string desc ; 
+    unsigned mismatch_items = NPY<float>::compare( tr, tr2, epsilon, dump, dumplimit, mode, &desc ); 
     assert( mismatch_items == 0 ); 
 
 }
@@ -80,7 +81,8 @@ void test_write_item_big()
     unsigned char eps = 0; 
     unsigned dumplimit = 100 ; 
     char mode = 'A' ; 
-    assert( NPY<unsigned char>::compare(ab,ab2,eps, dump, dumplimit, mode) == 0 ); 
+    std::string desc ;  
+    assert( NPY<unsigned char>::compare(ab,ab2,eps, dump, dumplimit, mode, &desc) == 0 ); 
 }
 
 
@@ -212,8 +214,9 @@ void test_setQuad_()
     bool dump = true ; 
     unsigned dumplimit = 100 ; 
     char mode = 'A' ; 
+    std::string desc ; 
 
-    assert( NPY<unsigned char>::compare(a,b,eps,dump, dumplimit, mode) == 0 ); 
+    assert( NPY<unsigned char>::compare(a,b,eps,dump, dumplimit, mode, &desc) == 0 ); 
 }
 
 

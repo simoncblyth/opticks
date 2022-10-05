@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 template <class T> class GAry ; 
 template <class T> class GDomain ; 
@@ -96,6 +97,7 @@ public:
    void add(GAry<T>* other);
    void subtract(GAry<T>* other);
    void reciprocate();
+   std::string digest() const ; 
 
    // find the index of the value closest to the random draw u on the low side
    int binary_search(T u);

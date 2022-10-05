@@ -9,7 +9,7 @@ loglevels(){
    export G4CXOpticks=INFO
    export X4PhysicalVolume=INFO
 }
-loglevels
+#loglevels
 
 
 lldb__ G4CXOpticks_setGeometry_Test

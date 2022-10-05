@@ -30,10 +30,10 @@ std::string SArrayDigest<T>::arraydigest( T* data, unsigned int n )
 }
 
 
-
+template class SArrayDigest<double> ;
 template class SArrayDigest<float> ;
 template class SArrayDigest<int> ;
-template class SArrayDigest<unsigned int> ;
+template class SArrayDigest<unsigned> ;
 
  
 

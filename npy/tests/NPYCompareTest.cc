@@ -37,9 +37,11 @@ int main(int argc, char** argv)
     unsigned char epsilon = 0 ; 
     unsigned dumplimit = 100 ; 
     char mode = 'I' ;     
+    std::string desc ; 
 
-    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode);  
+    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode, &desc);  
     LOG(info) << " diffs " << diffs ; 
+    LOG(info) << " desc " << desc ; 
 
     unsigned i = 0 ; 
     const unsigned char* av = a->getValuesConst(i, 0); 

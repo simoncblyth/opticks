@@ -54,11 +54,11 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         static const char* keyspec ;
     public:
         void save();
-        void dump(const char* msg="GScintillatorLib::dump");
+        std::string brief() const ; 
+        std::string desc() const ;
         static GScintillatorLib* load(Opticks* cache);
     public:
         GScintillatorLib(Opticks* cache, unsigned int icdf_length=4096);
-        void Summary(const char* msg="GScintillatorLib::Summary");
     public:
         //void add(GPropertyMap<double>* scint);
         unsigned int getNumScintillators();

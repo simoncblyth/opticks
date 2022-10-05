@@ -238,8 +238,9 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     unsigned eps = 0 ; 
     unsigned dumplimit = 100 ; 
     char mode = 'I' ; 
+    std::string desc ; 
 
-    unsigned mismatch = NPY<unsigned>::compare( buf, buf2, eps, dump, dumplimit, mode ); 
+    unsigned mismatch = NPY<unsigned>::compare( buf, buf2, eps, dump, dumplimit, mode, &desc ); 
     if( mismatch > 0 )
     {
          const char* path = "$TMP/GTree/iid.npy" ; 
@@ -250,6 +251,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
              << " saving to "
              << " path " << path 
              << " path2 " << path2
+             ;
+
+         LOG(error) 
+             << " desc " << desc 
              ;
  
          buf->save(path); 

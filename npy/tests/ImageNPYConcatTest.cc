@@ -62,9 +62,11 @@ NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, cons
     unsigned char epsilon = 0 ; 
     unsigned dumplimit = 100 ; 
     char mode = 'I' ; 
+    std::string desc ; 
 
-    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode);  
-    LOG(info) << " diffs " ;  
+    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode, &desc);  
+    LOG(info) << " diffs " << diffs ;  
+    LOG(info) << " desc " << desc ;  
 
     const char* a_path = SStr::ReplaceEnd(path, ".ppm", "_old_concat.npy" ) ;
     LOG(info) << "saving array to " << a_path ; 

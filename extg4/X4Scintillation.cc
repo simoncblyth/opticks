@@ -20,11 +20,16 @@ X4Scintillation::X4Scintillation( const NPY<double>* fast_, const NPY<double>* s
     fast(fast_),
     slow(slow_),
     epsilon(0.), 
-    mismatch(NPY<double>::compare(fast, slow, epsilon, true, 100, 'A')), 
+    mismatch_desc(""),
+    mismatch(NPY<double>::compare(fast, slow, epsilon, true, 100, 'A', &mismatch_desc)), 
     theFastLightVector(X4MaterialPropertyVector::FromArray(fast)),
     theSlowLightVector(X4MaterialPropertyVector::FromArray(slow)),
     ScintillationIntegral(Integral(theFastLightVector))
 {
+    LOG_IF(fatal, mismatch > 0) 
+         << " mismatch " << mismatch  
+         << " mismatch_desc " << mismatch_desc 
+         ; 
     assert( mismatch == 0 ); 
 }
 

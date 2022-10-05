@@ -193,7 +193,7 @@ int main(int argc, char** argv)
     ok.configure();
 
     GScintillatorLib* slib = GScintillatorLib::load(&ok);
-    slib->dump();
+    LOG(info) << slib->desc();
 
     //test_getRaw(slib, "LS" ); 
     //test_getBuffer(slib); 

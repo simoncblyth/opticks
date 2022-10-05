@@ -389,7 +389,10 @@ void X4PhysicalVolume::collectScintillatorMaterials()
         m_sclib->addRawOriginal(pmap);      
     }
 
-    m_sclib->dump("X4PhysicalVolume::collectScintillatorMaterials"); 
+    LOG(LEVEL) << "[ m_sclib.desc " ; 
+    LOG(LEVEL) << m_sclib->desc(); 
+    LOG(LEVEL) << "] m_sclib.desc " ; 
+
     LOG(LEVEL) << "]" ; 
 }
 
@@ -440,8 +443,8 @@ void X4PhysicalVolume::convertScintillators()
     collectScintillatorMaterials(); 
 
 #ifdef __APPLE__
-    LOG(fatal) << " __APPLE__ early SIGINT " ; 
-    std::raise(SIGINT); 
+    //LOG(fatal) << " __APPLE__ early SIGINT " ; 
+    //std::raise(SIGINT); 
 #endif
 
     createScintillatorGeant4InterpolatedICDF(); 

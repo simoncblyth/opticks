@@ -16,8 +16,6 @@ int main(int argc, char** argv)
     GPropertyMap<double>* pmap = GPropertyMap<double>::load( path, name, type ); 
 
     LOG(info) << pmap->desc_table() ; 
-
-
     LOG(info) << pmap->make_table() ; 
 
 

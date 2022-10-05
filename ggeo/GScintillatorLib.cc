@@ -46,19 +46,26 @@ const char* GScintillatorLib::keyspec =
 "reemission_cdf:DUMMY," 
 ;
 
-void GScintillatorLib::Summary(const char* msg)
+
+std::string GScintillatorLib::brief() const 
 {
-    LOG(info) 
-        << msg 
+    std::stringstream ss ; 
+    ss 
         << " GScintillatorLib.getNumRaw  " << getNumRaw() 
         << " GScintillatorLib.getNumRawOriginal  " << getNumRawOriginal() 
         ;
+    std::string s = ss.str(); 
+    return s ; 
+
 }
 
-void GScintillatorLib::dump(const char* msg)
+std::string GScintillatorLib::desc() const 
 {
-    Summary(msg); 
-    dumpRaw(msg); 
+    std::stringstream ss ; 
+    ss << brief() << std::endl ; 
+    ss << descRaw() << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void GScintillatorLib::save()

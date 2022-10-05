@@ -2253,10 +2253,12 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>
     for(unsigned i=0 ; i < epsilons.size() ; i++)
     {   
         double epsilon = epsilons[i] ; 
-        unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit, mode  );
+        std::string desc ; 
+        unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit, mode, &desc  );
         std::cout 
             << " epsilon " << std::setw(10) << std::scientific << epsilon 
             << " mismatch " << mismatch
+            << " desc " << desc 
             << std::endl 
             ;   
         mismatch_tot += mismatch ; 
@@ -2339,7 +2341,7 @@ Itemwise comparison of array values.
 **/
 
 template <typename T>
-unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bool dump, unsigned dumplimit, char mode  )
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bool dump, unsigned dumplimit, char mode, std::string* desc  )
 {
     if(IsInteger())
     {
@@ -2360,19 +2362,23 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
     }
 
 
-    if(dump)
+    std::stringstream ss ; 
+    if(desc)
     {
-        LOG(info) << " a " << a->getShapeString(); 
-        LOG(info) << " b " << b->getShapeString(); 
+        ss 
+            << " a " << a->getShapeString()
+            << " b " << b->getShapeString()
+            << std::endl
+            ;  
     }
 
     assert( a->hasSameShape(b) ); 
     unsigned ni = a->getNumItems();      // first dimension 
     unsigned nv = a->getNumValues(1);    //  
 
-    if(dump)
+    if(desc)
     {
-        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon << " mode " << mode ; 
+        ss << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon << " mode " << mode << std::endl ; 
     }     
 
     unsigned mismatch_items(0); 
@@ -2389,9 +2395,9 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
             if(!match)
             {
                 mismatch_values++ ; 
-                if(dump && mismatch_values < dumplimit ) 
+                if(desc && mismatch_values < dumplimit ) 
                 {
-                    std::cout 
+                    ss 
                         << " mismatch_values " << std::setw(4) << mismatch_values
                         << " i " << std::setw(4) << i 
                         << " v " << std::setw(4) << v
@@ -2403,7 +2409,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
         }       
         if(mismatch_values > 0) 
         {
-            std::cout 
+             ss
                  << " i " << std::setw(4) << i 
                  << " mismatch_values " << std::setw(4) << mismatch_values
                  << std::endl 
@@ -2411,9 +2417,9 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
             mismatch_items++ ; 
         }
     }
-    if( dump || mismatch_items > 0 )
+    if( desc)
     {
-        LOG(info) << " mismatch_items " << mismatch_items ;
+        *desc = ss.str(); 
     }
     return mismatch_items ; 
 }

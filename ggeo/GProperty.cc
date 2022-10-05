@@ -74,6 +74,8 @@ std::string GProperty<T>::brief(const char* msg) const
     if(zero) ss << " zero " ;
     
     ss << " len: " << std::setw(4) << getLength() ; 
+    ss << " domdig: " << std::setw(32) << m_domain->digest() ; 
+    ss << " valdig: " << std::setw(32) << m_values->digest() ; 
  
     if(constant)  
         ss << " constant: " << getConstant() ;

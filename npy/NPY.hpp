@@ -176,8 +176,8 @@ class NPY_API NPY : public NPYBase {
    public:
        static std::string compare_diff( const T a, const T b, const T epsilon,  char mode  ); 
        static bool     compare_value( const T a, const T b, const T epsilon,  char mode  ); 
-       static unsigned compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump, unsigned dumplimit, char mode  ); 
-       static unsigned compare( const NPY<T>* a, const NPY<T>* b, const T epsilon, bool dump, unsigned dumplimit, char mode  ); 
+       static unsigned compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump, unsigned dumplimit, char mode ); 
+       static unsigned compare( const NPY<T>* a, const NPY<T>* b, const T epsilon, bool dump, unsigned dumplimit, char mode, std::string* desc  ); 
        static unsigned compare_element_jk(const NPY<T>* a, const NPY<T>* b, int j, int k, bool dump );
    public:
        // ctor takes ownership of a copy of the inputs 

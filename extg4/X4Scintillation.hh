@@ -23,6 +23,7 @@ Maybe will need to add some casts too.
 **/
 #include "X4_API_EXPORT.hh"
 
+#include <string>
 #include "plog/Severity.h"
 #include "G4MaterialPropertyVector.hh"  
 
@@ -35,6 +36,7 @@ struct X4_API X4Scintillation
     const NPY<double>* fast ;
     const NPY<double>* slow ;
     const double epsilon ; 
+    std::string mismatch_desc ; 
     unsigned mismatch ; 
 
     const G4MaterialPropertyVector* theFastLightVector ; 
