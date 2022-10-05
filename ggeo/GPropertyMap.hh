@@ -97,6 +97,7 @@ class GGEO_API GPropertyMap {
       std::string description() const ;
       std::string prop_desc() const ;
   public:
+      std::string desc_table() const ; 
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
   public:
       GPropertyMap<T>* spawn_interpolated(T nm=1.0f);

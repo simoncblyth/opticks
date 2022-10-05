@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <csignal>
 
 
 #include "snode.h"
@@ -437,6 +438,12 @@ void X4PhysicalVolume::convertScintillators()
 {
     LOG(LEVEL) << "[" ; 
     collectScintillatorMaterials(); 
+
+#ifdef __APPLE__
+    LOG(fatal) << " __APPLE__ early SIGINT " ; 
+    std::raise(SIGINT); 
+#endif
+
     createScintillatorGeant4InterpolatedICDF(); 
     LOG(LEVEL) << "]" ; 
 }

@@ -18,6 +18,7 @@
  */
 
 
+#include <csignal>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -30,6 +31,7 @@
 
 // sysrap-
 #include "SDigest.hh"
+#include "SSys.hh"
 #include "NP.hh"
 
 // brap-
@@ -68,9 +70,11 @@ std::string GProperty<T>::brief(const char* msg) const
     bool zero = isZero();
     bool constant = isConstant();
 
-    ss << msg ;
+    if(msg) ss << msg ;
     if(zero) ss << " zero " ;
-
+    
+    ss << " len: " << std::setw(4) << getLength() ; 
+ 
     if(constant)  
         ss << " constant: " << getConstant() ;
     else 
@@ -290,22 +294,16 @@ bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool
 
     unsigned alen = a->getLength() ;
     unsigned blen = b->getLength() ;
+    bool len_match = alen == blen ; 
 
-    LOG_IF(info, dump)
+    LOG_IF(error, !len_match)
         << "GProperty<T>::hasSameDomain"
+        << " !len_match "
         << " alen " << alen
         << " blen " << blen
         ;
 
-    if(alen != blen)
-    {
-        LOG(warning) 
-             << " length mismatch " 
-             << " alen " << alen 
-             << " blen " << blen 
-             ;
-        return false ; 
-    }
+    if(!len_match) return false ; 
     T mxdif = GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) ;
     if(mxdif > delta) return false ;
 
@@ -464,7 +462,11 @@ GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GPro
 }
 
 
+/**
+GProperty<T>::make_table
+---------------------------
 
+**/
 
 
 template <typename T>
@@ -501,6 +503,9 @@ std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool co
                             << " " << a->brief(titles[0].c_str()) 
                             << " " << b->brief(titles[c].c_str())
                             ; 
+
+                 if(SSys::getenvvar("GProperty_SIGINT")) std::raise(SIGINT); 
+
                  hasSameDomain(a,b, delta, true); // dump
             }
             //assert(same_domain);
@@ -762,6 +767,17 @@ NPY<T>* GProperty<T>::makeArray() const
     }
     return a ; 
 }
+
+template <typename T>
+NP* GProperty<T>::makeAry() const 
+{
+    NPY<T>* array = makeArray(); 
+    NP* arr = array->spawn(); 
+    array->reset(); 
+    return arr ; 
+}
+
+
 
 template <typename T>
 void GProperty<T>::save(const char* path)

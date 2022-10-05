@@ -115,13 +115,25 @@ class Fold(object):
         self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
+        self.order = kwa.get("order", None)
+        assert self.order in ["ascend", "descend", None ] 
 
         print(self.brief())
 
         if self.quiet == False:
             print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
         pass
+
         names = os.listdir(base)
+
+        if not self.order is None:
+            sizes = list(map(lambda name:os.stat(os.path.join(base, name)).st_size, names))
+            order = np.argsort(np.array(sizes))
+            if self.order == "descend":
+                order = order[::-1] 
+            pass
+            names = np.array(names)[order]  
+        pass
 
         paths = []
         stems = []

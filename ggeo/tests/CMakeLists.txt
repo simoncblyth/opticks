@@ -72,6 +72,7 @@ set(TEST_SOURCES
 
     GPropertyDebugTest.cc
     GPropertyMapTest.cc
+    GPropertyMap_make_table_Test.cc 
 
     GPropertyTest.cc
     GSurfaceLibTest.cc

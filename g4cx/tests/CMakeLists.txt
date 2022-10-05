@@ -7,6 +7,7 @@ set(TEST_SOURCES
    G4CXRenderTest.cc
    G4CXSimulateTest.cc
    G4CXSimtraceTest.cc
+   G4CXOpticks_setGeometry_Test.cc
 )
 
 

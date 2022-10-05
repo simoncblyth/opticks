@@ -156,7 +156,8 @@ class GGEO_API GPropertyLib {
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:
-        void     dumpRaw(const char* msg="GPropertyLib::dumpRaw") const ;
+        std::string           descRaw() const ; 
+        void                  dumpRaw(const char* msg="GPropertyLib::dumpRaw") const ;
         void                  addRaw( GPropertyMap<double>* pmap);
         unsigned              getNumRaw() const ;
         GPropertyMap<double>* getRaw(unsigned index) const ;

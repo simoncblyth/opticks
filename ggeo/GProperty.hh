@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-
+struct NP ; 
 template <typename T> class NPY ; 
 template <typename T> class GDomain ; 
 template <typename T> class GAry ; 
@@ -98,6 +98,7 @@ public:
    GAry<T>* getDomain() const ;
 
    NPY<T>*  makeArray() const ; 
+   NP*      makeAry() const ; 
 
    char* digest();   
    std::string getDigestString();

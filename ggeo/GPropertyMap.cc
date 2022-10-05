@@ -916,14 +916,57 @@ std::string GPropertyMap<T>::prop_desc() const
 }
 
 
+/**
+GPropertyMap<T>::desc_table
+----------------------------
+
+Using this to investigate domain warnings in make_table
 
 
+**/
 
+
+template <typename T>
+std::string GPropertyMap<T>::desc_table() const 
+{
+    unsigned int nprop = getNumProperties() ;
+    std::stringstream ss ; 
+    ss << "desc_table numProperties " << nprop << " [ " << std::endl  ; 
+    for(unsigned int i=0 ; i < nprop ; i++)
+    {
+        GProperty<T>* prop = getPropertyByIndex(i);
+        std::string name = getPropertyNameByIndex(i) ;
+        assert(prop);
+
+        bool blank_name = strlen(name.c_str()) == 0 ; 
+        LOG_IF(warning, blank_name) << "GPropertyMap<T>::make_table " << getName() << " property " << i << " has blank name " ;  
+        bool is_constant = prop->isConstant(); 
+
+        ss 
+            << std::setw(25) << name 
+            << std::setw(3)  << ( is_constant ? " C " : "" ) 
+            << prop->brief()
+            << std::endl 
+            ; 
+    }
+    std::string s = ss.str();
+    return s ; 
+}
+
+
+/**
+GPropertyMap<T>::make_table
+-----------------------------
+
+Partition prop into 5 piles of constans : "c" "d" "e" "f" "g" 
+with a maximum of 5 prop in each and one pile "v" of non-constant prop. 
+ 
+
+**/
 
 template <typename T>
 std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool dreciprocal)
 {
-
    std::vector< GProperty<T>* > vprops ; 
    std::vector< std::string > vtitles ; 
 
@@ -942,9 +985,6 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
    std::vector< GProperty<T>* > gprops ; 
    std::vector< std::string > gtitles ; 
 
-   // Partition prop into 5 piles of constans : "c" "d" "e" "f" "g" 
-   // with a maximum of 5 prop in each and one pile "v" of non-constant prop. 
- 
    unsigned int clim = 5 ; 
 
    unsigned int nprop = getNumProperties() ;
@@ -1094,7 +1134,7 @@ void GPropertyMap<T>::save(const char* dir)
 }
 
 template <typename T>
-GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const char* type)
+GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const char* type) // static 
 {
     // path eg $IDPATH/GScintillatorLib
     // name eg GdDopedLS

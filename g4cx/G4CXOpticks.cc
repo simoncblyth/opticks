@@ -135,7 +135,13 @@ for use from python for example.
 void G4CXOpticks::setGeometry()
 {
     LOG(LEVEL) << " argumentless " ; 
-    if(SSys::hasenvvar(SOpticksResource::SomeGDMLPath_))
+
+    if(SSys::hasenvvar(SOpticksResource::OpticksGDMLPath_))
+    {
+        LOG(LEVEL) << " OpticksGDMLPath " ; 
+        setGeometry(SOpticksResource::OpticksGDMLPath()); 
+    }
+    else if(SSys::hasenvvar(SOpticksResource::SomeGDMLPath_))
     {
         LOG(LEVEL) << " SomeGDMLPath " ; 
         setGeometry(SOpticksResource::SomeGDMLPath()); 
@@ -205,10 +211,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
 
-#ifdef __APPLE__
-    return ;  
-#endif
-   
+  
     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
 
@@ -221,6 +224,12 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
     gg = gg_ ; 
+
+#ifdef __APPLE__
+    LOG(fatal) << " __APPLE__ early exit " ; 
+    return ;  
+#endif
+ 
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
 }
@@ -420,6 +429,41 @@ void G4CXOpticks::saveEvent() const
     */
     LOG(LEVEL) << "]" ; 
 }
+
+
+/**
+G4CXOpticks::saveGeometry
+---------------------------
+
+This is called from G4CXOpticks::setGeometry after geometry translation when::
+
+    export G4CXOpticks__setGeometry_saveGeometry=1
+    export G4CXOpticks=INFO       # to see the directory path 
+
+What is saved::
+
+    N[blyth@localhost ~]$ l /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/
+    total 41012
+        0 drwxr-xr-x.  4 blyth blyth      109 Oct  5 18:21 .
+        4 -rw-rw-r--.  1 blyth blyth      201 Oct  5 18:21 origin_gdxml_report.txt
+    20504 -rw-rw-r--.  1 blyth blyth 20992917 Oct  5 18:21 origin.gdml
+    20504 -rw-rw-r--.  1 blyth blyth 20994470 Oct  5 18:21 origin_raw.gdml
+        0 drwxrwxr-x. 15 blyth blyth      273 Oct  5 18:21 GGeo
+        0 drwxr-xr-x.  3 blyth blyth      190 Oct  5 18:21 CSGFoundry
+        0 drwxr-xr-x.  3 blyth blyth       25 Oct  5 18:21 ..
+    N[blyth@localhost ~]$ 
+
+Grab that locally::
+
+    getgeom () 
+    { 
+        GEOM=${GEOM:-ntds3};
+        BASE=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks;
+        source $OPTICKS_HOME/bin/rsync.sh $BASE
+    }
+
+**/
+
 
 void G4CXOpticks::saveGeometry() const
 {

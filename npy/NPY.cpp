@@ -1925,7 +1925,7 @@ NPY::copy_
 -------------
 
 Copy between old templated and new un-templated array types using separate memory allocation.
-Currently no automated metadata transfer between old and new array types.  
+NPYBase::CopyMeta is used to transfer metadata between old and new array types.  
 
 **/
 
