@@ -28,6 +28,9 @@ find_package(OpticksCUDA REQUIRED MODULE)
 set(SOURCES
     QUDARAP_LOG.cc
 
+    QCurandState.cc
+    QCurandState.cu
+
     QSim.cc
     QSim.cu
 
@@ -84,6 +87,11 @@ SET(HEADERS
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
     QUDA_CHECK.h
+
+
+    QCurandState.hh
+    qcurandstate.h
+
 
     QSim.hh
     qsim.h

@@ -25,6 +25,8 @@ set(TEST_SOURCES
    QBufTest.cc
    QMultiFilmTest.cc
 
+
+   QCurandStateTest.cc
 )
 
 set(OTHER_TEST_SOURCES

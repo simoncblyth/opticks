@@ -24,6 +24,7 @@
 #include "qdebug.h"
 #include "qscint.h"
 #include "qcerenkov.h"
+#include "qcurandstate.h"
 
 #include "qmultifilm.h"
 
@@ -111,6 +112,7 @@ template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_
 template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items) ;
 template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items) ;
 template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
+template qcurandstate*  QU::UploadArray<qcurandstate>(const qcurandstate* array, unsigned num_items) ;
 template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
@@ -279,6 +281,7 @@ template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(   unsigned num_item
 template QUDARAP_API stag*      QU::device_alloc_zero<stag>(   unsigned num_items, const char* label) ;
 template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(  unsigned num_items, const char* label) ;
 template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
+template QUDARAP_API curandState* QU::device_alloc_zero<curandState>(  unsigned num_items, const char* label) ;
 
 
 

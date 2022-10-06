@@ -25,6 +25,9 @@ QRng::QRng(const char* path_, unsigned skipahead_event_offset)
 {
     INSTANCE = this ; 
     upload(); 
+    bool uploaded = d_qr != nullptr ; 
+    LOG_IF(fatal, !uploaded) << " FAILED to upload curand states " ;  
+    assert(uploaded); 
 }
 
 
