@@ -12,7 +12,7 @@ __global__ void _QCurandState_curand_init(int threads_per_launch, int thread_off
     if (id >= threads_per_launch) return;
     curand_init(cs->seed, id+thread_offset, cs->offset, states_thread_offset + id );  
 
-    if( id == 0 ) printf("// _QCurandState_curand_init thread_offset %d \n", thread_offset ); 
+    //if( id == 0 ) printf("// _QCurandState_curand_init thread_offset %d \n", thread_offset ); 
 }
 
 
