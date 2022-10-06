@@ -159,13 +159,29 @@ cudarap/tests/cuRANDWrapperTest.cc::
      81     crw->Summary("cuRANDWrapperTest::main");
 
 
-Hmm these are real old (some of my first non-trivial CUDA) : so they are a mess.
+Hmm these are real ancient (first non-trivial CUDA) : so they are a mess.
 Needs a rethink to do more simply and more modular::
 
     epsilon:cudarap blyth$ vi cuRANDWrapper.hh cuRANDWrapper_kernel.cu cuRANDWrapper.cc cuRANDWrapper_kernel.hh
 
 
+Starting in qudarap/QCurandState.hh
 
 
+::
+
+    epsilon:qudarap blyth$ ls -l /tmp/QCurandState.bin
+    -rw-r--r--  1 blyth  wheel  44000000 Oct  6 17:13 /tmp/QCurandState.bin
+
+
+    epsilon:qudarap blyth$ ls -l /tmp/QCurandState.bin
+    -rw-r--r--  1 blyth  wheel  44000000 Oct  6 17:13 /tmp/QCurandState.bin
+    epsilon:qudarap blyth$ ls -l /Users/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin
+    -rw-r--r--  1 blyth  staff  44000000 Apr  6  2020 /Users/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin
+    epsilon:qudarap blyth$ diff -b /tmp/QCurandState.bin /Users/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin
+    epsilon:qudarap blyth$ 
+    epsilon:qudarap blyth$ rc
+    RC 0
+    epsilon:qudarap blyth$ 
 
 

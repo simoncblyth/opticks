@@ -342,6 +342,7 @@ template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_ite
 template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 template void QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
 template void QU::copy_device_to_host<sflat>( sflat* h, sflat* d,  unsigned num_items);
+template void QU::copy_device_to_host<curandState>( curandState* h, curandState* d,  unsigned num_items);
 
 
 /**

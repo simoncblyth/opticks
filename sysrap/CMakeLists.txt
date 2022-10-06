@@ -128,6 +128,9 @@ set(HEADERS
     PLOG.hh
     SLOG_INIT.hh  
 
+
+    SLaunchSequence.h 
+
     SProc.hh
     SBacktrace.h
     SStackFrame.h

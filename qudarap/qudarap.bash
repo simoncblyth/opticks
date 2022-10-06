@@ -23,7 +23,13 @@ qudarap-scd(){  cd $(qudarap-sdir); }
 qudarap-tcd(){  cd $(qudarap-tdir); }
 qudarap-bcd(){  cd $(qudarap-bdir); }
 
+qudarap-prepare-installation(){
 
+    NUM=1 QCurandStateTest 
+    NUM=3 QCurandStateTest 
 
-
+    if [ "$(uname)" == "Linux" ]; then 
+       NUM=10 QCurandStateTest 
+    fi 
+}
 

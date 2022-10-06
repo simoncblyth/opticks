@@ -99,6 +99,26 @@ curandState* QRng::Load(long& rngmax, const char* path)  // static
     return rng_states ; 
 }
 
+void QRng::Save( curandState* states, unsigned num_states, const char* path ) // static
+{
+    FILE *fp = fopen(path,"wb");
+    LOG_IF(fatal, fp == nullptr) << " error opening file " << path ; 
+    assert(fp); 
+
+    for(unsigned i = 0 ; i < num_states ; ++i )
+    {   
+        curandState& rng = states[i] ;
+        fwrite(&rng.d,                     sizeof(unsigned int),1,fp);
+        fwrite(&rng.v,                     sizeof(unsigned int),5,fp);
+        fwrite(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);
+        fwrite(&rng.boxmuller_flag_double, sizeof(int)         ,1,fp);
+        fwrite(&rng.boxmuller_extra,       sizeof(float)       ,1,fp);
+        fwrite(&rng.boxmuller_extra_double,sizeof(double)      ,1,fp);
+    }   
+    fclose(fp);
+    return ; 
+}
+
 
 
 void QRng::upload()
