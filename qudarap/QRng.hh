@@ -28,6 +28,7 @@ struct QUDARAP_API QRng
     static const char* DEFAULT_PATH ; 
     static const QRng* Get(); 
 
+    static const char* Load_FAIL_NOTES ; 
     static curandState* Load(long& rngmax, const char* path); 
     static void Save( curandState* states, unsigned num_states, const char* path ); 
 

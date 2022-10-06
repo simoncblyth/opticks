@@ -47,6 +47,27 @@ QRng::~QRng()
 }
 
 
+const char* QRng::Load_FAIL_NOTES = R"(
+QRng::Load_FAIL_NOTES
+=======================
+
+QRng::Load failed to load the curandState files. 
+These files should to created during *opticks-full* installation 
+by the bash function *opticks-prepare-installation* 
+which runs *qudarap-prepare-installation*. 
+
+Investigate by looking at the contents of the curandState directory, 
+as shown below::
+
+    epsilon:~ blyth$ ls -l  ~/.opticks/rngcache/RNG/
+    total 892336
+    -rw-r--r--  1 blyth  staff   44000000 Oct  6 19:43 QCurandState_1000000_0_0.bin
+    -rw-r--r--  1 blyth  staff  132000000 Oct  6 19:53 QCurandState_3000000_0_0.bin
+    epsilon:~ blyth$ 
+
+
+)" ;
+
 /**
 QRng::Load
 ------------
@@ -60,10 +81,11 @@ in the curandState which is typedef to curandStateXORWOW.
 curandState* QRng::Load(long& rngmax, const char* path)  // static 
 {
     FILE *fp = fopen(path,"rb");
-    if(fp == NULL) {
-        LOG(fatal) << " error opening file " << path ; 
-        return nullptr ; 
-    }   
+
+    bool failed = fp == nullptr ; 
+    LOG_IF(fatal, failed ) << " unabled to open file [" << path << "]" ; 
+    LOG_IF(error, failed ) << Load_FAIL_NOTES  ; 
+    assert(!failed); 
 
     fseek(fp, 0L, SEEK_END);
     long file_size = ftell(fp);
