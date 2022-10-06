@@ -166,6 +166,7 @@ $OPTICKS_EVENT_BASE
 $HOME/hello
 $NON_EXISTING_EVAR/elsewhere
 $DefaultOutputDir
+$RNGDir
 )LIT";
     std::stringstream ss(lines); 
     std::string line ;
@@ -197,6 +198,7 @@ void test_Resolve_Default()
     LOG(info) << "SPath::Resolve(NOOP) " << dir0 ; 
     LOG(info) << "SPath::Resolve(DIRPATH) " << dir1 ; 
 }
+
 void test_Resolve()
 {
     LOG(info); 
@@ -214,6 +216,7 @@ $CFBASE/CSGFoundry/SSim
 stem.ext
 /
 $
+$RNGDir
 )LIT";
     std::stringstream ss(lines); 
     std::string line ;
@@ -396,8 +399,8 @@ int main(int argc , char** argv )
     test_Resolve_With_Index();  
     test_Resolve_Default(); 
 */  
-/*
     test_Resolve(); 
+/*
     test_Basename(); 
     test_Dirname(); 
     test_UserTmpDir(); 
@@ -413,8 +416,8 @@ int main(int argc , char** argv )
     test_Remove(); 
     test_SearchDirUpTreeWithFile(); 
     test_Copy(); 
-*/
     test_Join();   
+*/
  
     return 0  ; 
 }

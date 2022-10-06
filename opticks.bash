@@ -1944,8 +1944,8 @@ opticks-prepare-installation()
     local msg="=== $FUNCNAME :"
     echo $msg generating RNG seeds into installcache 
 
-    cudarap-
-    cudarap-prepare-installation
+    qudarap-
+    qudarap-prepare-installation
 }
 
 opticks-check-installation()
@@ -1963,8 +1963,8 @@ opticks-check-installation()
             echo $msg $dir/PTX : missing PTX : compiled OptiX programs created when building oxrap-  
             rc=101
         else
-            cudarap-
-            cudarap-check-installation
+            qudarap-
+            qudarap-check-installation
             rc=$?
         fi 
     fi

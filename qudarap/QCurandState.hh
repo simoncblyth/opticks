@@ -37,6 +37,11 @@ struct QUDARAP_API QCurandState
     static std::string Stem(unsigned long long num, unsigned long long seed, unsigned long long offset); 
     static std::string Path(unsigned long long num, unsigned long long seed, unsigned long long offset); 
 
+    static constexpr const char* EKEY = "QCurandState_SPEC" ; 
+    static QCurandState* Create(); 
+    static QCurandState* Create(const char* spec); 
+
+
     std::string path ; 
     qcurandstate* h_cs ; 
     qcurandstate* cs ; 
@@ -45,6 +50,9 @@ struct QUDARAP_API QCurandState
 
     QCurandState(unsigned long long num, unsigned long long seed=0u, unsigned long long offset=0u); 
     void init(); 
+    void alloc(); 
+    void create(); 
+    void download(); 
     void save() const ; 
 
     std::string desc() const ; 
