@@ -25,4 +25,11 @@ void U4Cerenkov_Debug::add()
     if(record.size() < LIMIT) record.push_back(*this); 
 }
 
+void U4Cerenkov_Debug::fill(double value)
+{
+    double* ptr = &posx ; 
+    for(unsigned i=0 ; i < 4*NUM_QUAD ; i++)  *(ptr + i) = value ; 
+}
+
+
 

@@ -15,20 +15,8 @@ int main(int argc, char** argv)
 
     int eventID = 0 ; 
 
-    s.posx = 1. ; 
-    s.posy = 1. ; 
-    s.posz = 1. ; 
-    s.time = 1. ; 
-
-    c.posx = 1. ; 
-    c.posy = 1. ; 
-    c.posz = 1. ; 
-    c.time = 1. ; 
-
-    s.ScintillationYield = 1. ; 
-    s.MeanNumberOfTracks = 2. ; 
-    s.NumTracks = 3. ; 
-    s.MeanNumberOfPhotons = 4. ; 
+    s.fill(1.); 
+    c.fill(1.) ; 
 
 
     h.label = {1,2,3,4} ; 
@@ -36,11 +24,7 @@ int main(int argc, char** argv)
     h.add(); 
 
 
-    c.BetaInverse = 2. ; 
-    c.step_length = 2. ; 
-    c.MeanNumberOfPhotons = 2. ; 
-    c.fNumPhotons = 2. ; 
-
+    c.fill(2.); 
 
     s.add(); 
     s.add(); 

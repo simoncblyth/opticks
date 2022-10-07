@@ -28,6 +28,7 @@ struct U4_API U4Cerenkov_Debug
     static constexpr int LIMIT = 10000 ; 
     static void Save(const char* dir); 
     void add(); 
+    void fill(double value); 
 
     double posx ; 
     double posy ; 
