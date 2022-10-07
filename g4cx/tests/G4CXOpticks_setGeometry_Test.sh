@@ -8,15 +8,18 @@ Test of geometry conversions in isolation.
 EOU
 }
 
-export OpticksGDMLPath=/tmp/$USER/opticks/GEOM/${GEOM:-ntds3}/G4CXOpticks/origin.gdml
+export GEOM=ntds3
+export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
+
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
 
 loglevels(){
    export G4CXOpticks=INFO
    export X4PhysicalVolume=INFO
+   export SOpticksResource=INFO
 }
-#loglevels
+loglevels
 env | grep =INFO
 
 bin=G4CXOpticks_setGeometry_Test

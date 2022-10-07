@@ -51,6 +51,7 @@ struct SYSRAP_API SOpticksResource
     static const char* CFBaseAlt();
     static const char* OldCFBaseFromGEOM();
     static const char* CFBaseFromGEOM();
+    static const char* GDMLPathFromGEOM(); 
 
     static const char* SearchCFBase(const char* dir); 
     static constexpr const char* SearchCFBase_RELF = "CSGFoundry/solid.npy" ; 

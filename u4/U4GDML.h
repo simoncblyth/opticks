@@ -7,7 +7,7 @@ class G4GDMLParser ;
 struct U4GDML
 {
     static constexpr const plog::Severity LEVEL = info ; 
-    static const G4VPhysicalVolume* Read();
+    //static const G4VPhysicalVolume* Read();
     static const G4VPhysicalVolume* Read(const char* path);
     static const G4VPhysicalVolume* Read(const char* base, const char* name);
     static void Write(const G4VPhysicalVolume* world, const char* path);
@@ -53,15 +53,19 @@ GDML fixups that allow Geant4 to parse the JUNO GDML.
 
 **/
 
-inline const G4VPhysicalVolume* U4GDML::Read()
-{
-    return Read("$IDPath/origin_GDMLKludge.gdml");  
-    // HMM: hardcoded path is out of place here, especially this old path  
-    // should come via SOpticksResource with a technique to override 
-}
+//inline const G4VPhysicalVolume* U4GDML::Read()
+//{
+//    return Read("$IDPath/origin_GDMLKludge.gdml");  
+//    // HMM: hardcoded path is out of place here, especially this old path  
+//    // should come via SOpticksResource with a technique to override 
+//}
 
 inline const G4VPhysicalVolume* U4GDML::Read(const char* path)
 {
+    bool exists = SPath::Exists(path); 
+    LOG_IF(fatal, !exists) << " path invalid or does not exist [" << path << "]" ; 
+    assert(exists); 
+
     U4GDML g ; 
     g.read(path); 
     return g.world ; 

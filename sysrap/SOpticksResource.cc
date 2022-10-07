@@ -104,11 +104,11 @@ const char* SOpticksResource::ExecutableName()
     // as this is used before logging is setup cannot use normal logging to check 
     if(SSys::getenvvar("SOpticksResource")) std::cout 
         << "SOpticksResource::ExecutableName" 
-        << " exe0 " << exe0 
+        << " exe0 "      << ( exe0 ? exe0 : "-" )
         << " is_python " << is_python 
-        << " script " << script 
-        << " exe " << exe 
-        << " result " << result 
+        << " script "    << ( script ? script : "-" )
+        << " exe "       << ( exe  ? exe : "-" )
+        << " result "    << ( result ? result : "-" ) 
         ;
 
     return result ; 
@@ -349,6 +349,13 @@ const char* SOpticksResource::CFBaseFromGEOM()
     const char* geom = SSys::getenvvar("GEOM"); 
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
 }
+
+const char* SOpticksResource::GDMLPathFromGEOM()
+{
+    const char* geom = SSys::getenvvar("GEOM"); 
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
+}
+
 
 
 /**

@@ -165,6 +165,12 @@ void G4CXOpticks::setGeometry()
 
         LOG(LEVEL) << "] CFBASEFromGEOM " ; 
     }
+    else if(SOpticksResource::GDMLPathFromGEOM())
+    {
+        LOG(LEVEL) << "[ GDMLPathFromGEOM " ; 
+        setGeometry(SOpticksResource::GDMLPathFromGEOM()) ; 
+        LOG(LEVEL) << "] GDMLPathFromGEOM " ; 
+    }
     else if(SSys::hasenvvar("GEOM"))
     {
         LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
@@ -179,7 +185,7 @@ void G4CXOpticks::setGeometry()
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
-    LOG(LEVEL) << " gdmlpath " << gdmlpath ; 
+    LOG(LEVEL) << " gdmlpath [" << gdmlpath << "]" ;
     const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
     setGeometry(world); 
 }

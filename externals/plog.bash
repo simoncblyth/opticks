@@ -26,6 +26,36 @@ plog-usage(){ cat << EOU
 PLOG : Simple header only logging that works across DLLs
 ============================================================
 
+
+
+clone an older plog
+----------------------
+
+::
+
+    epsilon:tmp blyth$ git clone -b 1.1.4 https://github.com/SergiusTheBest/plog
+    Cloning into 'plog'...
+    remote: Enumerating objects: 3092, done.
+    remote: Counting objects: 100% (427/427), done.
+    remote: Compressing objects: 100% (202/202), done.
+    remote: Total 3092 (delta 195), reused 389 (delta 175), pack-reused 2665
+    Receiving objects: 100% (3092/3092), 515.63 KiB | 197.00 KiB/s, done.
+    Resolving deltas: 100% (1729/1729), done.
+    Note: checking out 'dcbcca75faccfbde3ba4aae85a185d042af5a185'.
+
+    You are in 'detached HEAD' state. You can look around, make experimental
+    changes and commit them, and you can discard any commits you make in this
+    state without impacting any branches by performing another checkout.
+
+    If you want to create a new branch to retain commits you create, you may
+    do so (now or later) by using -b with the checkout command again. Example:
+
+      git checkout -b <new-branch-name>
+
+
+
+
+
 plog logging levels
 ---------------------
 
