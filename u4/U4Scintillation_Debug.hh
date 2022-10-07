@@ -23,31 +23,37 @@ struct U4_API U4Scintillation_Debug
 {   
     static const plog::Severity LEVEL ; 
     static std::vector<U4Scintillation_Debug> record ;   
-    static constexpr const unsigned NUM_QUAD = 4u ; 
+    static constexpr const unsigned NUM_QUAD = 5u ; 
     static constexpr const char* NAME = "U4Scintillation_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
     static void Save(const char* dir); 
     void add(); 
     void fill(double value); 
 
-    double posx ; 
-    double posy ; 
+    double posx ;
+    double posy ;
     double posz ;
-    double time ; 
+    double time ;
 
-    double ResolutionScale ; 
-    double dx ; 
-    double dE_dx ; 
-    double birk1 ; 
+    double ResolutionScale ;
+    double dx ;
+    double dE_dx ;
+    double birk1 ;
 
-    double TotalEnergyDeposit ; 
-    double QuenchedTotalEnergyDeposit ; 
-    double delta ; 
-    double birk2 ; 
+    double TotalEnergyDeposit ;
+    double QuenchedTotalEnergyDeposit ;
+    double delta ;
+    double birk2 ;
 
-    double ScintillationYield ; 
-    double MeanNumberOfTracks ; 
-    double NumTracks ; 
-    double MeanNumberOfPhotons ; 
+    double ScintillationYield ;
+    double MeanNumberOfTracks ;
+    double NumTracks ;
+    double MeanNumberOfPhotons ;
+
+    double Density ; 
+    double fPhotonWeight ;  
+    double fApplyPreQE ; 
+    double fEnableQuenching ; 
+
 };
 
