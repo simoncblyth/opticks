@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     s.ScintillationYield = 1. ; 
     s.MeanNumberOfTracks = 2. ; 
     s.NumTracks = 3. ; 
-    s.Spare = 4. ; 
+    s.MeanNumberOfPhotons = 4. ; 
 
 
     h.label = {1,2,3,4} ; 

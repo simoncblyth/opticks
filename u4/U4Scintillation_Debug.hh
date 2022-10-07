@@ -37,6 +37,6 @@ struct U4_API U4Scintillation_Debug
     double ScintillationYield ; 
     double MeanNumberOfTracks ; 
     double NumTracks ; 
-    double Spare ; 
+    double MeanNumberOfPhotons ; 
 };
 
