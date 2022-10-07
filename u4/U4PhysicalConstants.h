@@ -20,7 +20,7 @@ struct U4PhysicalConstants
     static constexpr const char*  _BirksConstant1_v1 = "BirksConstant1_v1" ; 
     static constexpr const double BirksConstant1_v1 = 12.05e-3*g/cm2/MeV ;  // suspected typo fix
 
-    static constexpr const char*  _BirksConstant1_v2 = "BirksConstant1_v1" ; 
+    static constexpr const char*  _BirksConstant1_v2 = "BirksConstant1_v2" ; 
     static constexpr const double BirksConstant1_v2 = 0.0125*g/cm2/MeV ;    // from comment in code
 
     static constexpr const char*  _gval = "g" ; 
@@ -41,6 +41,11 @@ struct U4PhysicalConstants
     static constexpr const char* _universe_mean_density_per = "universe_mean_density/(g/cm3)" ; 
     static constexpr const double universe_mean_density_per_ = universe_mean_density/(g/cm3) ; 
 
+    static constexpr const char* _density_unit = "(g/cm3)" ; 
+    static constexpr const double density_unit_ = (g/cm3) ; 
+
+ 
+
 
     static void Get(std::vector<std::string>& labels, std::vector<double>& values); 
     static std::string Desc();  
@@ -58,7 +63,7 @@ void U4PhysicalConstants::Get( std::vector<std::string>& labels, std::vector<dou
     labels.push_back( _MeVval )                ;  values.push_back(MeVval) ; 
     labels.push_back( _universe_mean_density ) ;  values.push_back(universe_mean_density_) ; 
     labels.push_back( _universe_mean_density_per  ) ;  values.push_back(universe_mean_density_per_ ) ; 
-
+    labels.push_back( _density_unit  )         ;  values.push_back(density_unit_ ) ; 
 }
 
 std::string U4PhysicalConstants::Desc()  // static

@@ -25,15 +25,29 @@ Light output reduced by parametric factor::
     1/(1 + birk1*delta + birk2* delta^2)
 
 
-* birk1 : 0.0125*g/cm2/MeV 
-* delta : 
-
+* birk1 : 0.0125*g/cm2/MeV   : density*length/energy
+* delta :                    : energy/length/density  
+* birk1*delta                : unitless 
 
 
 G4double dE = TotalEnergyDeposit;
 G4double dx = aStep.GetStepLength();
 G4double dE_dx = dE/dx;             // energy over length 
 G4double delta = dE_dx/aMaterial->GetDensity();//get scintillator density 
+
+In [10]: d["dE_dx"]
+Out[10]: 9.293368125518313
+
+In [11]: d["dE_dx"]/d["Density"]
+Out[11]: 1.7333662276764504e-18
+
+In [12]: d["delta"]
+Out[12]: 1.7333662276764504e-18
+
+In [13]: d["TotalEnergyDeposit"]/d["dx"]
+Out[13]: 7.887351897652502e-08
+
+
 
 
 
@@ -99,6 +113,28 @@ class U4Scintillation_Debug(object):
         keys = self.FIELDS
         return dict(zip(keys, vals))
 
+    def desc_MeanNumberOfPhotons(self, idx):
+        d = self[idx]
+        al = "d[\"MeanNumberOfPhotons\"]" 
+        av = d["MeanNumberOfPhotons"] 
+
+        bl = "%s.MeanNumberOfPhotons(%3d)" % (self.symbol, idx) 
+        bv = self.MeanNumberOfPhotons(idx)
+
+        cl = "%s.MeanNumberOfPhotons_untypo(%3d)" % (self.symbol, idx)
+        cv = self.MeanNumberOfPhotons_untypo(idx)
+
+        line = "%4d : %s:%10.4f %s:%10.4f %s:%10.4f " % (idx, al,av,bl,bv,cl,cv) 
+        return line
+
+    def __str__(self):
+        lines = []
+        for idx in list(range(len(self.a))):
+            line = self.desc_MeanNumberOfPhotons(idx)
+            lines.append(line)
+        pass
+        return "\n".join(lines)
+
 
 
 if __name__ == '__main__':
@@ -109,6 +145,6 @@ if __name__ == '__main__':
     print(s31)
     print(U4Scintillation_Debug.FIELDS)
 
-
+    print(str(s30))
 
 

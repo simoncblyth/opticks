@@ -23,7 +23,7 @@ struct U4_API U4Scintillation_Debug
 {   
     static const plog::Severity LEVEL ; 
     static std::vector<U4Scintillation_Debug> record ;   
-    static constexpr const unsigned NUM_QUAD = 5u ; 
+    static constexpr const unsigned NUM_QUAD = 6u ; 
     static constexpr const char* NAME = "U4Scintillation_Debug.npy" ; 
     static constexpr int LIMIT = 10000 ; 
     static void Save(const char* dir); 
@@ -50,10 +50,18 @@ struct U4_API U4Scintillation_Debug
     double NumTracks ;
     double MeanNumberOfPhotons ;
 
-    double Density ; 
-    double fPhotonWeight ;  
-    double fApplyPreQE ; 
-    double fEnableQuenching ; 
+    double Density ;
+    double fPhotonWeight ;
+    double fApplyPreQE ;
+    double fEnableQuenching ;
+
+    double gammaloss ;
+    double fPreQE ;
+    double b ;
+    double c ;
+
+
+    // NB for python parsing check line terminations with set list
 
 };
 
