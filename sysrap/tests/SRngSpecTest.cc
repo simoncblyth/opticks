@@ -1,11 +1,16 @@
 #include <sstream>
 #include <vector>
 #include "SRngSpec.hh"
+#include "SEvt.hh"
 #include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    SEvt evt ; 
+    LOG(info) << evt.brief() ; 
+
 
     unsigned long long seed = 0ull ; 
     unsigned long long offset = 0ull ; 

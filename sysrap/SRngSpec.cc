@@ -7,6 +7,7 @@
 
 #include "SPath.hh"
 #include "SRngSpec.hh"
+#include "SEvt.hh"
 #include "SLOG.hh"
 
 const plog::Severity SRngSpec::LEVEL = SLOG::EnvLevel("SRngSpec", "DEBUG"); 
@@ -19,8 +20,14 @@ const char* SRngSpec::DefaultRngDir()  // static
 const char* SRngSpec::CURANDStatePath(const char* rngdir, unsigned rngmax, unsigned long long seed, unsigned long long offset) // static
 {
     char buf[256];
-    snprintf(buf, 256, "%s/cuRANDWrapper_%u_%llu_%llu.bin", 
+
+    const char* oldpfx = "cuRANDWrapper" ; 
+    const char* newpfx = "QCurandState" ; 
+    const char* pfx = SEvt::Exists() ? newpfx : oldpfx ;  // rough heuristic to distinguish between old and new Opticks
+
+    snprintf(buf, 256, "%s/%s_%u_%llu_%llu.bin", 
                  rngdir ? rngdir : DefaultRngDir(),
+                 pfx, 
                  rngmax,
                  seed,
                  offset); 

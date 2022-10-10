@@ -43,7 +43,7 @@ EOU
 
 #geom=hama_body_log
 #geom=J001
-#geom=J003
+geom=J003
 
 
 #geom=nnvtPMTSolid

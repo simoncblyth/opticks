@@ -134,6 +134,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
+    static bool Exists(); 
     static bool RECORDING ; 
 
     static void Check(); 
@@ -303,6 +304,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void save(const char* dir); 
     void load(const char* dir); 
 
+    std::string brief() const ; 
     std::string desc() const ; 
     std::string descGS() const ; 
     std::string descDir() const ; 

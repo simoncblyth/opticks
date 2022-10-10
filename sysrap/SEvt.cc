@@ -388,6 +388,7 @@ NP* SEvt::gatherDomain() const
 }
 
 SEvt* SEvt::Get(){ return INSTANCE ; }
+bool SEvt::Exists(){ return INSTANCE != nullptr ; }
 void SEvt::Check()
 {
     if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before using most SEvt methods" << std::endl ; 
@@ -1384,6 +1385,13 @@ std::string SEvt::descFold() const
     return fold->desc(); 
 }
 
+std::string SEvt::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt " << this ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 std::string SEvt::desc() const 
 {

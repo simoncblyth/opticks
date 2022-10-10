@@ -18,6 +18,27 @@ TODO
 * transform rebase
 
 
+
+Find users of stree.h
+------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-fl stree.h | grep -v stree
+    ./CSG/CSGTarget.cc
+    ./CSG/tests/CSGFoundryLoadTest.cc
+    ./extg4/X4PhysicalVolume.cc
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SBnd.h
+    ./sysrap/sphit.h
+    ./sysrap/sframe.h
+    ./sysrap/SSim.cc
+    ./ggeo/GGeo.cc
+    ./ggeo/tests/GGeoLoadFromDirTest.cc
+    ./u4/U4Tree.h
+    ./CSG_GGeo/CSG_GGeo_Convert.cc
+
+
 Users of stree.h
 -------------------
 
@@ -26,7 +47,7 @@ u4/U4Tree.h
 
 CSG_GGeo/CSG_GGeo_Convert.cc
     stree.h/tree member obtained from "SSim::Get()->get_tree()"
-    tree used from CSG_GGeo_Convert::addInstances to lookup_sensor_identifier
+    tree used from CSG_GGeo_Convert::addInstances to stree::lookup_sensor_identifier
     the sensor_id and sensor_index are incorporated into the CSGFoundry instances 
     (so this usage is "precache")
 

@@ -192,15 +192,19 @@ void SSim::load(const char* base, const char* reldir)
     LOG(LEVEL) << "[" ; 
     const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
 
-    LOG(LEVEL) << "[ fold.load " ; 
+    LOG(LEVEL) << "[ fold.load [" << dir << "]" ; 
     fold->load(dir) ;   
-    LOG(LEVEL) << "] fold.load " ; 
+    LOG(LEVEL) << "] fold.load [" << dir << "]" ; 
 
     if(load_tree_load)
     {
         LOG(LEVEL) << "[ tree.load " ; 
         tree->load(dir, stree::RELDIR); 
         LOG(LEVEL) << "] tree.load " ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " not loading stree.h yet (still comes from GGeo?) : to enable test loading define SSim__load_tree_load " ;  
     }
 
     LOG(LEVEL) << "]" ; 
