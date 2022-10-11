@@ -29,6 +29,7 @@ TODO: should be using Tran<double> for transforming , might as well
 
 #include <cassert>
 #include <vector>
+#include <cstring>
 #include <string>
 
 #include "scuda.h"
@@ -45,6 +46,7 @@ TODO: should be using Tran<double> for transforming , might as well
 struct sframe
 {
     static constexpr const char* NAME = "sframe.npy" ; 
+    static constexpr const char* DEFAULT_FRS = "-1" ; 
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
 
@@ -88,10 +90,13 @@ struct sframe
     float gridscale() const ; 
 
 
+    const char* get_frs() const ; // returns nullptr when frs is default  
+    bool is_frs_default() const ; 
     void set_midx_mord_iidx(int midx, int mord, int iidx); 
     int midx() const ; 
     int mord() const ; 
     int iidx() const ; 
+
 
     void set_inst(int inst); 
     int inst() const ; 
@@ -238,6 +243,15 @@ inline int sframe::iz1() const { return q2.i.y ; }
 inline int sframe::num_photon() const { return q2.i.z ; }
 inline float sframe::gridscale() const { return q2.f.w ; }
 
+
+inline const char* sframe::get_frs() const
+{
+    return is_frs_default() ? nullptr : frs ; 
+}
+inline bool sframe::is_frs_default() const 
+{
+    return frs != nullptr && strcmp(frs, DEFAULT_FRS) == 0 ; 
+}
 
 inline void sframe::set_midx_mord_iidx(int midx, int mord, int iidx)
 {

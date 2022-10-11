@@ -2870,17 +2870,16 @@ Grab these from remote with::
 
 )" ; 
 
-const char* CSGFoundry::FRS = "-1" ; 
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi_or_iidx = SSys::getenvvar("MOI",FRS);   // TODO: MOI->FRS perhaps ?
+    const char* moi_or_iidx = SSys::getenvvar("MOI",sframe::DEFAULT_FRS);
     return getFrame(moi_or_iidx); 
 }
 sframe CSGFoundry::getFrame(const char* frs) const 
 {
     sframe fr ; 
-    int rc = getFrame(fr, frs ? frs : FRS );
+    int rc = getFrame(fr, frs ? frs : sframe::DEFAULT_FRS );
     LOG_IF(error, rc != 0) << " frs " << frs << std::endl << getFrame_NOTES ; 
     if(rc != 0) std::raise(SIGINT); 
 

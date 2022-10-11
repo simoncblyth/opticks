@@ -258,7 +258,14 @@ void SEvt::setFrame(const sframe& fr )
     frame = fr ; 
 
     if(SEventConfig::IsRGModeSimtrace())
-    {   
+    { 
+        const char* frs = fr.get_frs() ; // nullptr when default -1 : meaning all geometry 
+        if(frs)
+        {
+            LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::setReldir " ; 
+            setReldir(frs);  
+        }
+  
         NP* gs = SFrameGenstep::MakeCenterExtentGensteps(frame);  
         LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ; 
         addGenstep(gs); 
@@ -474,7 +481,7 @@ void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
 
-void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : nullptr ; }
+void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : nullptr ; } // default is "ALL" 
 const char* SEvt::getReldir() const { return reldir ; }
 
 

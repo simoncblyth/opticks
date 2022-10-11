@@ -141,6 +141,8 @@ set(HEADERS
     sstr.h
     SStr.hh
 
+    schrono.h
+
     SBnd.h
 
     SPath.hh

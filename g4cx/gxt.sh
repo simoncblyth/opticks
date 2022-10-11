@@ -3,16 +3,40 @@ usage(){ cat << EOU
 gxt.sh : G4CXSimtraceTest 
 =============================================================================================================
 
+* TODO: MOI targetting volumes needs metadata, to appear in presentation 
+* TODO: organize volume targetted outputs within MOI labelled subfolders (could have extras too, eg extent of genstep box) 
+  (currently MOI volume targetted outputs overwrite full geom outputs)
+
+Changing the ALL subdir seems appropriate::
+
+    epsilon:g4cx blyth$ l /Users/blyth/.opticks/GEOM/J004/G4CXSimtraceTest/ALL/
+    total 109256
+         8 -rw-rw-r--  1 blyth  staff       126 Oct 11 16:40 NPFold_meta.txt
+         8 -rw-rw-r--  1 blyth  staff       384 Oct 11 16:40 sframe.npy
+         8 -rw-rw-r--  1 blyth  staff        37 Oct 11 16:40 sframe_meta.txt
+    109056 -rw-rw-r--  1 blyth  staff  55680128 Oct 11 16:40 simtrace.npy
+         8 -rw-rw-r--  1 blyth  staff        25 Oct 11 16:40 NPFold_index.txt
+       168 -rw-rw-r--  1 blyth  staff     83648 Oct 11 16:40 genstep.npy
+         0 drwxr-xr-x  4 blyth  staff       128 Oct 11 16:29 figs
+         0 drwxr-xr-x  9 blyth  staff       288 Oct 11 16:24 .
+
+
+
 ::
 
     cd ~/opticks/g4cx   # gx
     ./gxt.sh 
     ./gxt.sh info
     ./gxt.sh fold
-    ./gxt.sh run
+
+    ./gxt.sh run       ## on workstation
     ./gxt.sh dbg
-    ./gxt.sh grab
+
+    ./gxt.sh grab      ## on laptop 
     ./gxt.sh ana
+
+
+
 
 To capture pyvista or matplotlib screens:: 
 

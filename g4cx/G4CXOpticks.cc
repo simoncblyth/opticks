@@ -75,7 +75,8 @@ G4CXOpticks::G4CXOpticks()
     gg(nullptr),
     fd(nullptr), 
     cx(nullptr),
-    qs(nullptr)
+    qs(nullptr),
+    t0(schrono::stamp())
 {
     init();
 }
@@ -89,6 +90,15 @@ void G4CXOpticks::init()
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
+
+G4CXOpticks::~G4CXOpticks()
+{
+    schrono::TP t1 = schrono::stamp(); 
+    double dt = schrono::duration(t0, t1 );
+    //LOG(LEVEL) << "lifetime (s) " << std::scientific << dt << " s " ; 
+    LOG(LEVEL) << "lifetime " << std::setw(10) << std::fixed << std::setprecision(3) << dt << " s " ; 
+}
+
 
 std::string G4CXOpticks::Desc() 
 {
@@ -378,11 +388,11 @@ void G4CXOpticks::simtrace()
     SEvt* sev = SEvt::Get();  assert(sev); 
 
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
-    sev->setFrame(fr);   // 
+    sev->setFrame(fr);   
 
     cx->setFrame(fr);    
     // Q: why does cx need the frame ?
-    // A: rendering viewpoint is based on the frame center, extent and transforms 
+    // A: the rendering viewpoint or simtrace grid is based on the frame center, extent and transforms 
 
     qs->simtrace(); 
     LOG(LEVEL) << "]" ; 

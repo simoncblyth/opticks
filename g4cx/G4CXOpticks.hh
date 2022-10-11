@@ -21,6 +21,7 @@ struct CSGOptiX ;
 struct SSim ; 
 struct QSim ; 
 
+#include "schrono.h"
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
 
@@ -43,9 +44,11 @@ struct G4CX_API G4CXOpticks
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
+    schrono::TP t0 ; 
  
     G4CXOpticks(); 
     void init(); 
+    virtual ~G4CXOpticks(); 
 
     static std::string Desc();
     std::string desc() const ; 
