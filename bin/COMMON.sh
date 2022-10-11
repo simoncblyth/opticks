@@ -21,13 +21,7 @@ bindir=$(dirname $BASH_SOURCE)
 source $bindir/GEOM_.sh                   # defines and exports : GEOM, GEOMDIR 
 source $bindir/OPTICKS_INPUT_PHOTON.sh    # defines and exports : OPTICKS_INPUT_PHOTON
 
-
-upfind_cfbase(){
-    : COMMON.sh : traverse directory tree upwards searching CFBase geometry dir identified by existance of CSGFoundry/solid.npy  
-    local dir=$1
-    while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
-    echo $dir
-}
+# upfind_cfbase relocated to GEOM_.sh 
 
 case $GEOM in 
  J000) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;

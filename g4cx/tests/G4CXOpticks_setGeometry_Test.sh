@@ -11,7 +11,7 @@ EOU
 #export GEOM=ntds3
 #export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
 
-source $(dirname $BASH_SOURCE)/../bin/GEOM_.sh   # change the geometry with geom_ 
+source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
 
 
 export GProperty_SIGINT=1
@@ -21,16 +21,31 @@ loglevels(){
    export G4CXOpticks=INFO
    export X4PhysicalVolume=INFO
    export SOpticksResource=INFO
+   export CSGFoundry=INFO
 }
 loglevels
 env | grep =INFO
 
 bin=G4CXOpticks_setGeometry_Test
 
-export TAIL="-o run"
+defarg=run
+arg=${1:-$defarg}
 
-case $(uname) in 
-   Darwin) lldb__ $bin  ;; 
-   Linux)  gdb__  $bin ;;
-esac
+if [ "$arg" == "run" ]; then 
+    $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
+fi 
+
+if [ "$arg" == "dbg" ]; then 
+    export TAIL="-o run"
+    case $(uname) in 
+       Darwin) lldb__ $bin  ;; 
+       Linux)  gdb__  $bin ;;
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
+fi 
+
+exit 0
+
+
 
