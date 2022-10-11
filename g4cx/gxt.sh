@@ -3,28 +3,41 @@ usage(){ cat << EOU
 gxt.sh : G4CXSimtraceTest 
 =============================================================================================================
 
-* TODO: MOI targetting volumes needs metadata, to appear in presentation 
-* TODO: organize volume targetted outputs within MOI labelled subfolders (could have extras too, eg extent of genstep box) 
-  (currently MOI volume targetted outputs overwrite full geom outputs)
+MOI targetting
+-----------------
 
-Changing the ALL subdir seems appropriate::
+MOI envvar such as Hama:0:1000 changes the target sframe
+focussing the simtrace gensteps in a grid close to the sframe position. 
+In addition the MOI value replaces the default SEvt::setReldir of "ALL"
+in order to keep result arrays separate for different targets. 
 
-    epsilon:g4cx blyth$ l /Users/blyth/.opticks/GEOM/J004/G4CXSimtraceTest/ALL/
-    total 109256
-         8 -rw-rw-r--  1 blyth  staff       126 Oct 11 16:40 NPFold_meta.txt
-         8 -rw-rw-r--  1 blyth  staff       384 Oct 11 16:40 sframe.npy
-         8 -rw-rw-r--  1 blyth  staff        37 Oct 11 16:40 sframe_meta.txt
-    109056 -rw-rw-r--  1 blyth  staff  55680128 Oct 11 16:40 simtrace.npy
-         8 -rw-rw-r--  1 blyth  staff        25 Oct 11 16:40 NPFold_index.txt
-       168 -rw-rw-r--  1 blyth  staff     83648 Oct 11 16:40 genstep.npy
-         0 drwxr-xr-x  4 blyth  staff       128 Oct 11 16:29 figs
-         0 drwxr-xr-x  9 blyth  staff       288 Oct 11 16:24 .
+* TODO: extras within reldir eg for wider/narrower/offset views 
+
+* an example output directory /Users/blyth/.opticks/GEOM/J004/G4CXSimtraceTest/Hama:0:1000/
+
+MOI acts within the configured GEOM::
+
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run   ## run time with full JUNO geometry < 1 second
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh grab  
+    ## grab time depends on network, can be minutes to rsync the simtrace.npy intersects
+
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh ana   ## seconds to plot  
+    MOI=Hama:0:1000 NOLEGEND=1 ~/opticks/g4cx/gxt.sh ana 
+
+    MOI=NNVT:0:1000 ~/opticks/g4cx/gxt.sh grab 
+    MOI=NNVT:0:1000 NOLEGEND=1 ~/opticks/g4cx/gxt.sh ana  
 
 
+When MOI is not defined the sframe::DEFAULT_FRS value is -1 which corresponds to the entire geometry. 
+
+
+Without MOI targetting
+-------------------------
 
 ::
 
     cd ~/opticks/g4cx   # gx
+
     ./gxt.sh 
     ./gxt.sh info
     ./gxt.sh fold
@@ -34,7 +47,6 @@ Changing the ALL subdir seems appropriate::
 
     ./gxt.sh grab      ## on laptop 
     ./gxt.sh ana
-
 
 
 
@@ -122,9 +134,10 @@ fi
 
 UGEOMDIR=${GEOMDIR//$HOME\/}
 
+
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
-FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+FOLD=$BASE/${MOI:-ALL}    # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
 # analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
 
@@ -220,7 +233,10 @@ if [ "ana" == "$arg" ]; then
     export FOLD
     export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
-    export TOPLINE="gxt.sh/$bin.py : GEOM $GEOM " 
+
+    topline="gxt.sh/$bin.py : GEOM $GEOM "
+    [ -n "$MOI" ] && topline="$topline MOI $MOI"
+    export TOPLINE="$topline" 
 
     ${IPYTHON:-ipython} --pdb -i $home/g4cx/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
