@@ -1737,12 +1737,14 @@ inline NP* NP::copy() const
 
 inline NP* NP::LoadWide(const char* dir, const char* reldir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, reldir, name); 
     return LoadWide(path.c_str());
 }
 
 inline NP* NP::LoadWide(const char* dir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, name); 
     return LoadWide(path.c_str());
 }
@@ -1756,6 +1758,7 @@ Loads array and widens it to 8 bytes per element if not already wide.
 **/
 inline NP* NP::LoadWide(const char* path)
 {
+    if(!path) return nullptr ; 
     NP* a = NP::Load(path);  
 
     assert( a->uifc == 'f' && ( a->ebyte == 8 || a->ebyte == 4 ));  
@@ -1771,12 +1774,14 @@ inline NP* NP::LoadWide(const char* path)
 
 inline NP* NP::LoadNarrow(const char* dir, const char* reldir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, reldir, name); 
     return LoadNarrow(path.c_str());
 }
 
 inline NP* NP::LoadNarrow(const char* dir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, name); 
     return LoadNarrow(path.c_str());
 }
@@ -1791,6 +1796,7 @@ Loads array and narrows to 4 bytes per element if not already narrow.
 **/
 inline NP* NP::LoadNarrow(const char* path)
 {
+    if(!path) return nullptr ; 
     NP* a = NP::Load(path);  
 
     assert( a->uifc == 'f' && ( a->ebyte == 8 || a->ebyte == 4 ));  
@@ -3362,6 +3368,7 @@ inline NP* NP::Load(const char* path)
 
 inline NP* NP::Load_(const char* path)
 {
+    if(!path) return nullptr ; 
     NP* a = new NP() ; 
     int rc = a->load(path) ; 
     return rc == 0 ? a  : NULL ; 
@@ -3369,12 +3376,14 @@ inline NP* NP::Load_(const char* path)
 
 inline NP* NP::Load(const char* dir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, name); 
     return Load(path.c_str());
 }
 
 inline NP* NP::Load(const char* dir, const char* reldir, const char* name)
 {
+    if(!dir) return nullptr ; 
     std::string path = form_path(dir, reldir, name); 
     return Load(path.c_str());
 }

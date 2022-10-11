@@ -1,6 +1,8 @@
 opticks-prepare-installation-needs-updating-from-cudarap-to-QUDARap-binary
 ==============================================================================
 
+FIXED by addition of qudarap/tests/QCurandStateTest.cc
+
 
 Issue Reported by Ami
 -----------------------

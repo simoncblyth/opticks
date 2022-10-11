@@ -5,8 +5,6 @@ gxt.sh : G4CXSimtraceTest
 
 ::
 
-    
-
     cd ~/opticks/g4cx   # gx
     ./gxt.sh 
     ./gxt.sh info
@@ -88,10 +86,13 @@ esac
 
 bin=G4CXSimtraceTest
 log=$bin.log
-source $(dirname $BASH_SOURCE)/../bin/COMMON.sh 
+home=$(dirname $BASH_SOURCE)/..
+
+source $home/bin/GEOM_.sh   # use geom_ bash function to edit 
 
 if [ -n "$OPTICKS_INPUT_PHOTON" ]; then 
-   unset OPTICKS_INPUT_PHOTON  ## simtrace running and input photons cannot be used together 
+   echo $msg WARNING : simtrace running and input photons cannot be used together  : unset OPTICKS_INPUT_PHOTON
+   unset OPTICKS_INPUT_PHOTON  
 fi 
 
 
@@ -104,8 +105,8 @@ FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 # analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
 
 T_FOLD=$FOLD
-A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
-B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
+A_FOLD=$($home/g4cx/gxs.sh fold)
+B_FOLD=$($home/u4/u4s.sh fold)
 
 T_CFBASE=$(upfind_cfbase $T_FOLD)
 A_CFBASE=$(upfind_cfbase $A_FOLD)  
@@ -117,9 +118,9 @@ export A_CFBASE
 export B_FOLD
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin defarg GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
+    vars="BASH_SOURCE arg bin home defarg GEOM GEOMDIR UGEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
-    source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
+    source $home/bin/AB_FOLD.sh   # just lists dir content 
 fi 
 
 if [ "$arg" == "fold" ]; then 
@@ -179,7 +180,7 @@ fi
 if [ "analog" == "$arg" ]; then 
     echo $msg analog log $log 
     if [ -f "$log" ]; then 
-        LOG=$log $(dirname $BASH_SOURCE)/../bin/log.sh 
+        LOG=$log $home/bin/log.sh 
     fi 
 fi 
 
@@ -197,7 +198,7 @@ if [ "ana" == "$arg" ]; then
     export MASK=${MASK:-pos}
     export TOPLINE="gxt.sh/$bin.py : GEOM $GEOM " 
 
-    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/$bin.py     
+    ${IPYTHON:-ipython} --pdb -i $home/g4cx/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
@@ -206,7 +207,7 @@ if [ "anachk" == "$arg" ]; then
     export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
 
-    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/tests/CSGFoundryLoadTest.py     
+    ${IPYTHON:-ipython} --pdb -i $home/g4cx/tests/CSGFoundryLoadTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE anachk $bin error && exit 3 
 fi 
 
@@ -214,7 +215,7 @@ fi
 
 
 if [ "grab" == "$arg" ]; then 
-    source $(dirname $BASH_SOURCE)/../bin/rsync.sh $UGEOMDIR
+    source $home/bin/rsync.sh $UGEOMDIR
 fi 
 
 

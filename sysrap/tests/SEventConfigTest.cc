@@ -22,7 +22,7 @@ void test_EstimateAlloc()
     std::cout << SEventConfig::Desc() << std::endl ; 
 
     salloc* al = salloc::Load(BASE) ; 
-    std::cout << "al.desc" << std::endl << al->desc() ; 
+    LOG(info)  << "al.desc" << std::endl << ( al ? al->desc() : "-" ) ; 
 }
 
 

@@ -117,6 +117,11 @@ elif [ "$GEOM" == "J003" ]; then
 
     export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
 
+    # from jxf: use  "SAVE=1 ntds3" to save current junosw geometry which uses envvar G4CXOpticks__setGeometry_saveGeometry 
+
+    ## HMM full geom should use something similar to tmp geom layout for easier versioning 
+    ## maybe $HOME/.opticks/GEOM/$GEOM 
+
 else 
     # handling test geometries from j/PMTSim aka jps and from GeoChain or CSGMakerTest 
     export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM 

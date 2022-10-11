@@ -2,6 +2,8 @@
 G4CXSimtraceTest.cc :  based on cx:tests/CSGOptiXSimtraceTest.cc
 ==========================================================================
 
+Canonically used from g4cx/gxt.sh 
+
 **/
 
 #include <cuda_runtime.h>

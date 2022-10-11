@@ -1,4 +1,26 @@
 #pragma once
+/**
+salloc.h
+===========
+
+This is used to debug out of memory errors on device. 
+
+Some device allocations such as those by QU::device_alloc 
+are monitored when the *QU:alloc* *salloc* instance 
+has been instanciated. 
+
+::
+
+    epsilon:opticks blyth$ opticks-fl salloc.h 
+    ./CSGOptiX/CSGOptiX.cc
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SEventConfig.cc
+    ./sysrap/tests/SEventConfigTest.cc
+    ./sysrap/tests/salloc_test.cc
+    ./qudarap/QU.cc
+
+
+**/
 
 #include <string>
 #include <vector>
@@ -25,7 +47,7 @@ struct salloc
     NP* make_array() const ; 
 
     void save(const char* base, const char* reldir=RELDIR); 
-    void load(const char* base, const char* reldir=RELDIR);
+    void import(const NP* aa);
     static salloc* Load(const char* base, const char* reldir=RELDIR); 
 
     std::string desc() const ; 
@@ -57,19 +79,23 @@ inline void salloc::save(const char* base, const char* reldir )
     NP* a = make_array(); 
     a->save(base, reldir, ALLOC ); 
 }
-inline void salloc::load(const char* base, const char* reldir )
-{
-    NP* a = NP::Load(base, reldir, ALLOC) ; 
-    //std::cout << "salloc::load a.desc " << a->desc() << std::endl ; 
 
+inline void salloc::import(const NP* a)
+{
+    assert( a ); 
     alloc.resize( a->shape[0] ); 
     memcpy( alloc.data(), a->bytes(), a->arr_bytes() ); 
     a->get_names(label); 
 }
+
 inline salloc* salloc::Load(const char* base, const char* reldir )
 {
+    NP* aa = NP::Load(base, reldir, ALLOC) ; 
+    if( aa == nullptr ) return nullptr ; 
+
+    //std::cout << "salloc::Load aa.desc " << aa->desc() << std::endl ; 
     salloc* a = new salloc ; 
-    a->load(base, reldir) ; 
+    a->import(aa) ; 
     return a ; 
 }
 
