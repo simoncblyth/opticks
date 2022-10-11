@@ -17,18 +17,11 @@ odir=$1
 
 if [ -n "$odir" ]; then 
 
-    #case $odir in 
-    #    $HOME/*) pdir=/home/$USER/${odir/$HOME\/} ;;
-    #          *) pdir=$odir ;;
-    #esac
-
     if [ -d "$odir" ]; then
         echo == $BASH_SOURCE odir $odir exists
     else
         echo == $BASH_SOURCE creating rsync destination directory $odir 
     fi 
-
-
 
     xdir=$odir/  ## require trailing slash to avoid rsync duplicating path element 
     from=P:$xdir

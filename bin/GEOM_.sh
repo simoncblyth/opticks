@@ -35,16 +35,18 @@ it writes to it.
 EOU
 }
 
-#geom=BoxOfScintillator
 
+
+#geom=J001
+#geom=J003
+geom=J004
+
+#geom=BoxOfScintillator
 #geom=RaindropRockAirWater
 #geom=RaindropRockAirWaterSD
 #geom=RaindropRockAirWaterSmall
 
 #geom=hama_body_log
-#geom=J001
-#geom=J003
-
 
 #geom=nnvtPMTSolid
 #geom=nnvtBodySolid
@@ -56,7 +58,7 @@ EOU
 
 #geom=nmskSolidMask
 #geom=nmskSolidMaskTail
-geom=nmskSolidMaskVirtual
+#geom=nmskSolidMaskVirtual
 
 #geom=nmskTailOuter
 #geom=nmskTailInner
@@ -115,7 +117,8 @@ elif [ "$GEOM" == "J003" ]; then
 
 elif [ "$GEOM" == "J004" ]; then
 
-    # from jxf: use  "GEOM=J004 ntds3" to save current junosw geometry which uses envvar G4CXOpticks__setGeometry_saveGeometry 
+    # from jxf: save the geometry from junosw using  "GEOM=J004 ntds3" 
+    # this uses envvar G4CXOpticks__setGeometry_saveGeometry to signal the save and pass the directory 
     export J004_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM 
 
 else 

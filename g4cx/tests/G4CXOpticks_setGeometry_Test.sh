@@ -8,8 +8,11 @@ Test of geometry conversions in isolation.
 EOU
 }
 
-export GEOM=ntds3
-export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
+#export GEOM=ntds3
+#export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
+
+source $(dirname $BASH_SOURCE)/../bin/GEOM_.sh   # change the geometry with geom_ 
+
 
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1

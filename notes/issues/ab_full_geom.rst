@@ -8,10 +8,54 @@ Random aligned AB testing with input photons using full (or nearly full) geometr
 
 
 
-Updating saved geometry : with "SAVE=1 ntds3"
+Updating saved geometry : with "GEOM=J004 ntds3"
 --------------------------------------------------
 
-::
+New saving dir::
+
+    /home/blyth/.opticks/GEOM/J004
+
+    N[blyth@localhost ~]$ l /home/blyth/.opticks/GEOM/J004/
+    total 41012
+        0 drwxr-xr-x.  4 blyth blyth      109 Oct 11 22:50 .
+    20504 -rw-rw-r--.  1 blyth blyth 20992917 Oct 11 22:50 origin.gdml
+        4 -rw-rw-r--.  1 blyth blyth      190 Oct 11 22:50 origin_gdxml_report.txt
+    20504 -rw-rw-r--.  1 blyth blyth 20994470 Oct 11 22:50 origin_raw.gdml
+        0 drwxrwxr-x. 15 blyth blyth      273 Oct 11 22:50 GGeo
+        0 drwxr-xr-x.  3 blyth blyth      190 Oct 11 22:50 CSGFoundry
+        0 drwxr-xr-x.  3 blyth blyth       18 Oct 11 22:50 ..
+
+
+Simplify saving::
+
+    2022-10-11 22:50:10.198 INFO  [371266] [G4CXOpticks::setGeometry@265] ] CSGOptiX::Create 
+    2022-10-11 22:50:10.198 INFO  [371266] [G4CXOpticks::setGeometry@267]  cx 0x15eadf1b0 qs 0x15e64ca20 QSim::Get 0x15e64ca20
+    2022-10-11 22:50:10.198 INFO  [371266] [G4CXOpticks::setGeometry@272] [ G4CXOpticks__setGeometry_saveGeometry 
+    2022-10-11 22:50:10.198 INFO  [371266] [G4CXOpticks::saveGeometry@473] [ /home/blyth/.opticks/GEOM/J004
+    2022-10-11 22:50:15.232 INFO  [371266] [BFile::preparePath@837] created directory /home/blyth/.opticks/GEOM/J004/GGeo/GItemList
+    2022-10-11 22:50:15.331 INFO  [371266] [BFile::preparePath@837] created directory /home/blyth/.opticks/GEOM/J004/GGeo/GNodeLib
+    2022-10-11 22:50:15.620 INFO  [371266] [BFile::preparePath@837] created directory /home/blyth/.opticks/GEOM/J004/GGeo/GScintillatorLib/LS
+    2022-10-11 22:50:15.622 INFO  [371266] [BFile::preparePath@837] created directory /home/blyth/.opticks/GEOM/J004/GGeo/GScintillatorLib/LS_ori
+    2022-10-11 22:50:17.777 INFO  [371266] [U4GDML::write@152]  ekey U4GDML_GDXML_FIX_DISABLE U4GDML_GDXML_FIX_DISABLE 0 U4GDML_GDXML_FIX 1
+    G4GDML: Writing '/home/blyth/.opticks/GEOM/J004/origin_raw.gdml'...
+    G4GDML: Writing definitions...
+    G4GDML: Writing materials...
+    G4GDML: Writing solids...
+    G4GDML: Writing structure...
+    G4GDML: Writing setup...
+    G4GDML: Writing surfaces...
+    G4GDML: Writing '/home/blyth/.opticks/GEOM/J004/origin_raw.gdml' done !
+    2022-10-11 22:50:21.357 INFO  [371266] [U4GDML::write@163]  Apply GDXML::Fix  rawpath /home/blyth/.opticks/GEOM/J004/origin_raw.gdml dstpath /home/blyth/.opticks/GEOM/J004/origin.gdml
+    2022-10-11 22:50:21.357 INFO  [371266] [G4CXOpticks::saveGeometry@479] ] /home/blyth/.opticks/GEOM/J004
+    2022-10-11 22:50:21.357 INFO  [371266] [G4CXOpticks::setGeometry@274] ] G4CXOpticks__setGeometry_saveGeometry 
+    2022-10-11 22:50:21.357 INFO  [371266] [G4CXOpticks::setGeometry@277] ] fd 0x15b5afba0
+
+
+
+
+
+
+Old saving dir was /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks::
 
     2022-10-11 21:43:24.664 INFO  [356625] [G4CXOpticks::setGeometry@282] [ G4CXOpticks__setGeometry_saveGeometry 
     2022-10-11 21:43:24.664 INFO  [356625] [G4CXOpticks::saveGeometry@477] dir [$DefaultOutputDir
@@ -52,11 +96,6 @@ Updating saved geometry : with "SAVE=1 ntds3"
 This explains "/tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks" the ntds3 comes from SCRIPT envvar swapout of executable name "python" 
 
 That is OK for an output directory, but not really for geometry saving. 
-
-CFBASE is used for controlling input, maybe use G4CXOpticks_SAVE_CFBASE to trigger saving 
-and provide the directory. 
-
-
 
 
 
