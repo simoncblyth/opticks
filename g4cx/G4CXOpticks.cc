@@ -58,15 +58,6 @@ void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
     g4cx->setGeometry(world); 
 }
 
-std::string G4CXOpticks::FormPath(const char* base, const char* rel )
-{
-    if( rel == nullptr ) rel = RELDIR ; 
-    std::stringstream ss ;    
-    ss << base << "/" << rel ; 
-    std::string dir = ss.str();   
-    return dir ; 
-}
-
 
 
 
@@ -252,8 +243,7 @@ A: SSim could hold the SEvt together with stree ?
 **/
 
 
-const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks__setGeometry_saveGeometry") ;
-//const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily always ON 
+const char* G4CXOpticks::setGeometry_saveGeometry = SSys::getenvvar("G4CXOpticks__setGeometry_saveGeometry") ;
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
@@ -280,7 +270,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     if( setGeometry_saveGeometry )
     {
         LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
-        saveGeometry(); 
+        saveGeometry(setGeometry_saveGeometry); 
         LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
 
@@ -477,12 +467,7 @@ void G4CXOpticks::saveGeometry() const
     LOG(LEVEL)  << "dir [" << ( dir ? dir : "-" )  ; 
     saveGeometry(dir) ; 
 }
-void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
-{
-    std::string dir = FormPath(base, rel); 
-    saveGeometry_(dir.c_str()); 
-}
-void G4CXOpticks::saveGeometry_(const char* dir_) const
+void G4CXOpticks::saveGeometry(const char* dir_) const
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(LEVEL) << "[ " << ( dir ? dir : "-" ) ; 

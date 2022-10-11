@@ -34,6 +34,9 @@ struct SYSRAP_API SOpticksResource
     static const char* DefaultGeometryBase();   // eg /tmp/blyth/opticks/GEOM 
     static const char* DefaultGeometryDir();    // eg /tmp/blyth/opticks/GEOM/acyl
 
+    static std::string Desc_DefaultOutputDir();  
+  
+
 
     // setkey:true means OPTICKS_KEY envvar gets used 
     static const char* IDPath(bool setkey=true);

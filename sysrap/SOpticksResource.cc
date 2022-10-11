@@ -131,6 +131,13 @@ This layout is consistent with geocache output layout CFBASE/ExecutableName eg:
    /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/G4CXSimulateTest
 
 Previously used the inconsistent flipped layout TMP/ExecutableName/GEOM which complicated scripts. 
+
+
+Hmm how did this arise::
+
+    /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks
+
+
 **/
 
 const char* SOpticksResource::DefaultOutputDir()
@@ -146,9 +153,19 @@ const char* SOpticksResource::DefaultGeometryBase()
     return SPath::Resolve("$TMP/GEOM", NOOP); 
 }
 
-
-
-
+std::string SOpticksResource::Desc_DefaultOutputDir()
+{
+    const char* GEOM = SSys::getenvvar("GEOM") ; 
+    std::stringstream ss ; 
+    ss << "SOpticksResource::Desc_DefaultOutputDir" << std::endl 
+       << " SPath::Resolve(\"$TMP/GEOM\",NOOP) " << SPath::Resolve("$TMP/GEOM",NOOP) << std::endl 
+       << " SSys::getenvvar(\"GEOM\") " << ( GEOM ? GEOM : "-" )  << std::endl 
+       << " SOpticksResource::ExecutableName() " << SOpticksResource::ExecutableName() << std::endl 
+       << " SOpticksResource::DefaultOutputDir() " << SOpticksResource::DefaultOutputDir() << std::endl 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 std::string SOpticksResource::Dump()
 {

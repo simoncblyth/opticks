@@ -32,8 +32,6 @@ struct G4CX_API G4CXOpticks
 
     static G4CXOpticks* INSTANCE ; 
     static G4CXOpticks* Get(); 
-    static constexpr const char* RELDIR = "G4CXOpticks" ; 
-    static std::string FormPath(const char* base, const char* rel );
     static void SetGeometry(const G4VPhysicalVolume* world) ; 
     static void Finalize(); 
 
@@ -56,7 +54,7 @@ struct G4CX_API G4CXOpticks
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
     void setGeometry(GGeo* gg); 
-    static const bool setGeometry_saveGeometry ; 
+    static const char* setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
 
     static const bool simulate_saveEvent ; 
@@ -67,8 +65,7 @@ struct G4CX_API G4CXOpticks
     void saveEvent() const ; 
 
     void saveGeometry() const ;
-    void saveGeometry(const char* base, const char* rel=nullptr) const; 
-    void saveGeometry_(const char* dir) const ; 
+    void saveGeometry(const char* dir) const ; 
 
 
 };

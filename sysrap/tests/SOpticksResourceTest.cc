@@ -69,6 +69,11 @@ int main(int argc, char** argv)
         const char* path = SPath::Resolve("$DefaultOutputDir", NOOP) ; 
         std::cout << "SPath::Resolve(\"$DefaultOutputDir\", NOOP) " << path  << std::endl ; 
     }
+    else if( strcmp(arg, "--ddod") == 0 )
+    {
+        std::string desc = SOpticksResource::Desc_DefaultOutputDir() ; 
+        std::cout << "SOpticksResource::Desc_DefaultOutputDir() " << std::endl << desc  << std::endl ; 
+    }
     else if( strcmp(arg, "--exe") == 0 )
     {
         const char* exe = SOpticksResource::ExecutableName() ; 

@@ -8,6 +8,59 @@ Random aligned AB testing with input photons using full (or nearly full) geometr
 
 
 
+Updating saved geometry : with "SAVE=1 ntds3"
+--------------------------------------------------
+
+::
+
+    2022-10-11 21:43:24.664 INFO  [356625] [G4CXOpticks::setGeometry@282] [ G4CXOpticks__setGeometry_saveGeometry 
+    2022-10-11 21:43:24.664 INFO  [356625] [G4CXOpticks::saveGeometry@477] dir [$DefaultOutputDir
+    2022-10-11 21:43:24.664 INFO  [356625] [G4CXOpticks::saveGeometry_@488] [ /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks
+    2022-10-11 21:43:32.056 INFO  [356625] [U4GDML::write@152]  ekey U4GDML_GDXML_FIX_DISABLE U4GDML_GDXML_FIX_DISABLE 0 U4GDML_GDXML_FIX 1
+    G4GDML: Writing '/tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/origin_raw.gdml'...
+    G4GDML: Writing definitions...
+    G4GDML: Writing materials...
+    G4GDML: Writing solids...
+    G4GDML: Writing structure...
+    G4GDML: Writing setup...
+    G4GDML: Writing surfaces...
+    G4GDML: Writing '/tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/origin_raw.gdml' done !
+    2022-10-11 21:43:35.456 INFO  [356625] [U4GDML::write@163]  Apply GDXML::Fix  rawpath /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/origin_raw.gdml dstpath /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/origin.gdml
+    2022-10-11 21:43:35.456 INFO  [356625] [G4CXOpticks::saveGeometry_@494] ] /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks
+    2022-10-11 21:43:35.456 INFO  [356625] [G4CXOpticks::setGeometry@284] ] G4CXOpticks__setGeometry_saveGeometry 
+
+
+::
+
+    epsilon:issues blyth$ GEOM=ntds3 SPathTest  
+    2022-10-11 15:04:45.530 INFO  [26722014] [test_Resolve@204] 
+                                                            $TMP :                                           /tmp/blyth/opticks
+                                               $DefaultOutputDir :                      /tmp/blyth/opticks/GEOM/ntds3/SPathTest
+                                                    $OPTICKS_TMP :                                           /tmp/blyth/opticks
+
+::
+
+    epsilon:sysrap blyth$ SOpticksResourceTest --ddod
+    SOpticksResource::Desc_DefaultOutputDir() 
+    SOpticksResource::Desc_DefaultOutputDir
+     SPath::Resolve("$TMP/GEOM",NOOP) /tmp/blyth/opticks/GEOM
+     SSys::getenvvar("GEOM") -
+     SOpticksResource::ExecutableName() SOpticksResourceTest
+     SOpticksResource::DefaultOutputDir() /tmp/blyth/opticks/GEOM/SOpticksResourceTest
+
+
+This explains "/tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks" the ntds3 comes from SCRIPT envvar swapout of executable name "python" 
+
+That is OK for an output directory, but not really for geometry saving. 
+
+CFBASE is used for controlling input, maybe use G4CXOpticks_SAVE_CFBASE to trigger saving 
+and provide the directory. 
+
+
+
+
+
+
 Test Environment : target Hama:0:1000 with storch_test "down" disc beam 
 --------------------------------------------------------------------------
 
