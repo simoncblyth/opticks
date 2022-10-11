@@ -3,16 +3,50 @@ usage(){ cat << EOU
 ct.sh : using CSGSimtraceTest
 ===============================
 
-1. load single solid GEOM from CSGFoundry folder, normally created by GeoChain/mtranslate.sh 
-2. load center-extent gensteps, just like X4SimtraceTest.cc does 
-3. use CSG intersection headers to get intersect positions using CUDA compatible code on the CPU 
+This uses the CSG intersection headers to get intersect positions using CUDA 
+compatible code runing on the CPU, not the GPU where usually deployed.
+The advantage of testing GPU code on CPU is ease of debugging.  
 
+Workflow:
 
-::
+1. config GEOM with bash function geom_ OR vi ~/opticks/bin/GEOM_.sh 
 
-   MPPLT_SIMTRACE_SELECTION_LINE=o2i ./ct.sh ana
+2. when starting from Geant4 geometry must translate it into CSGFoundry geometry, 
+   and persists into /tmp/$USER/opticks/GEOM/$GEOM/CSGFoundry with::
 
-   FOCUS=-257,-39,7 ./ct.sh ana  
+   ~/opticks/GeoChain/translate.sh 
+   ~/opticks/CSG/ct.sh translate   # alternative to above  
+
+3. run the CSG intersection, using CSGSimtraceTest::
+
+   ~/opticks/CSG/ct.sh run
+   ## persists intersects into /tmp/$USER/opticks/GEOM/$GEOM/CSGSimtraceTest
+
+4. present the CSG intersections with python plots::
+
+   ~/opticks/CSG/ct.sh ana
+
+5. alternative way of doing steps 2,3 and 4 together::
+
+   ~/opticks/CSG/ct.sh translate_run_ana
+   
+6. screencapture displayed plots into png::
+
+   ~/opticks/CSG/ct.sh mpcap
+
+7. copy captured png into publish repository for inclusion into presentations::
+
+   PUB=example_distinguishing_string ~/opticks/CSG/ct.sh mppub
+
+Control plot presentation with envvars::
+
+   MPPLT_SIMTRACE_SELECTION_LINE=o2i ~/opticks/CSG/ct.sh ana
+
+   GEOM=nmskSolidMaskTail__U1 FOCUS=-257,-39,7 ~/opticks/CSG/ct.sh ana  
+
+   ct
+   FOCUS=-257,-39,7  ./ct.sh ana   # show intersects from a portion of the geometry 
+
 
 EOU
 }
@@ -24,30 +58,25 @@ loglevels()
 #loglevels
 
 
-
-
 arg=${1:-run_ana}
 
 bin=CSGSimtraceTest
 log=$bin.log
 
 source $(dirname $BASH_SOURCE)/../bin/GEOM_.sh   # change the geometry with geom_ 
-
 export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 
-#if [ "$GEOM" == "nmskSolidMaskTail__U1" ]; then 
-   #export SELECTION=495871
-   #export SELECTION=495871,512880
-   #export FOCUS=257,-39,7
-#fi 
-
 export TOPLINE="CSG/ct.sh GEOM $GEOM FOCUS $FOCUS"
-
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE arg bin GEOM FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
 fi
+
+if [ "${arg/translate}" != "$arg" ]; then
+    $(dirname $BASH_SOURCE)/../GeoChain/translate.sh 
+    [ $? -ne 0 ] && echo $BASH_SOURCE translate error && exit 1 
+fi  
 
 if [ "${arg/run}" != "$arg" ]; then
     [ -f "$log" ] && rm $log 

@@ -15,6 +15,7 @@ Inputs:
 
 geomlist_OPT:var 
     suffix that is appended to geom names following two underscores
+
 geomlist_FOLD:var
     directory path format of the geometry fold 
 
@@ -32,6 +33,15 @@ The function exports the list of geometry names from the *geomlist* bash
 function into a set of envvars that communicate the 
 geometry folders, names and symbols in a form that is understood by 
 the python ana/fold.py Fold.MultiLoad 
+
+Geomlist functions include::
+
+   geomlist_N_full
+   geomlist_N_short
+   geomlist_N
+   geomlist_H
+
+
 
 EOU
 }
@@ -95,7 +105,8 @@ hamaInner2Solid
 EOL
 }
 
-geomlist_tag=H
+#geomlist_tag=H
+geomlist_tag=N
 
 
 if [ "${geomlist_tag}" == "N" ]; then
@@ -116,6 +127,8 @@ fi
 
 geomlist_names()
 {
+    : bin/geomlist.sh 
+    : reads geomlist into array variable then lists each name with opt appended
     local gg
     read -d "" -a gg <<< $(geomlist)
     local len=${#gg[@]}
@@ -129,6 +142,12 @@ geomlist_names()
 
 geomlist_export()
 {
+    : bin/geomlist.sh 
+    : reads geomlist into array variable and exports into multiple envvars 
+    : keyed by the SYMBOLS envvar 
+    : the layout of envvars is understood by ana/fold.py  
+    :
+    : note current limitation of 9 GEOM could easily be extended
     local gg
     read -d "" -a gg <<< $(geomlist)
     local len=${#gg[@]}
@@ -146,15 +165,22 @@ geomlist_export()
        local fk="${s}_FOLD"
        local fv=$(printf ${geomlist_FOLD} $h)
        local hk="${s}_LABEL"  # formerly _GEOM
+       local cfb=$(dirname $(dirname $fv))
 
-       local chk=""
-       if [ -f "$fv/sframe.npy" -a -f "$fv/simtrace.npy" ]; then 
+       local chk="?"
+       if [ ! -f "$cfb/CSGFoundry/solid.npy" ]; then
+           chk="NO-CSGFoundry"
+       elif [ -f "$fv/sframe.npy" -a -f "$fv/simtrace.npy" ]; then 
            chk="OK"
        else
-           chk="MISSING"
+           chk="NO-Intersect"
        fi 
 
+       if [ -n "$VERBOSE" ]; then 
        printf "i %2d s %1s g %20s fk %10s fv %70s hk %10s h %30s chk %s \n" $i $s $g $fk $fv $hk $h $chk
+       else
+       printf "i %2d s %1s fv %70s chk %s \n" $i $s $fv "$chk"
+       fi 
 
 
        export $fk=$fv

@@ -1,11 +1,30 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-mx4t.sh
-===========
+mx4t.sh : X4SimtraceTest : Geant4 intersection and presentation
+==================================================================
 
-See also x4t.sh that loads and plots from a single folder
+Workflow:
 
-and CSG/mct.sh for CSG equivalent. 
+1. configure GEOM list with *geomlist_* bash function
+2. check status of the listed GEOM names:: 
+
+    ~/opticks/extg4/mx4t.sh status 
+    x4 ; ./mx4t.sh status 
+
+3. if any GEOM are listed as NO-Intersect run the intersects::
+
+    ~/opticks/extg4/mx4t.sh run
+    x4 ; ./mx4t.sh run
+
+4. present the intersects with python plotting::
+
+    ~/opticks/extg4/mx4t.sh ana
+    x4 ; ./mx4t.sh ana
+
+See also:
+
+* x4t.sh that loads and plots from a single folder
+* CSG/mct.sh for CSG equivalent. 
 
 EOU
 }
@@ -22,6 +41,10 @@ source $(dirname $BASH_SOURCE)/../bin/geomlist.sh export
 
 export TOPLINE="extg4/mx4t.sh $geomlist_LABEL $SYMBOLS"
 export BOTLINE="FOCUS $FOCUS"
+
+if [ "${arg/status}" != "$arg" ]; then 
+    echo geomlist export gives status
+fi 
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE arg bin S_LABEL T_LABEL S_FOLD T_FOLD"

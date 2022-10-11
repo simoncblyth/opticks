@@ -32,15 +32,14 @@ Usage::
 
    gc                          # cd ~/opticks/GeoChain  
 
-   vi ~/.opticks/GEOM.txt     ## or "geom" shortcut function, add or uncomment GEOM string in the file 
-   ./translate.sh             ## default GEOM value is obtained from the GEOM.txt file
+   geom_                   
+   ./translate.sh             ## default GEOM value is obtained from the ~/opticks/bin/GEOM_.sh file
 
 
-   GEOM=body_solid ./translate.sh 
-   GEOM=body_phys  ./translate.sh 
+   GEOM=nnvtBodySolid__U0 ./translate.sh 
+   GEOM=nnvtBodyPhys__U0  ./translate.sh 
 
-
-   GEOM=body_phys ./grab.sh    # grab from remote node 
+   GEOM=nnvtBodyPhys__U0 ./grab.sh    # grab from remote node 
 
 
 To render the resulting CSG geometry on GPU node use eg::
@@ -76,37 +75,36 @@ EOU
 QUIET=1
 
 msg="=== $BASH_SOURCE :"
-[ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim     # use "geom" bash func to change the config file 
 
-defarg=run
-arg=${1:-$defarg}
+# formerly used an older way to config GEOM
+# [ -z "$GEOM" ] && source $PWD/../bin/GEOM.sh trim   
 
-# pick the Solid or Volume binary depending on GEOM
+source $(dirname $BASH_SOURCE)/../bin/GEOM_.sh   # change the geometry with geom_ 
 
-bin=
-case $GEOM in 
-   body_phys*)                  bin=GeoChainVolumeTest ;;
-   inner1_phys)                 bin=GeoChainVolumeTest ;; 
-   inner2_phys)                 bin=GeoChainVolumeTest ;; 
-   dynode_phys)                 bin=GeoChainVolumeTest ;; 
+geoscript=$(dirname $BASH_SOURCE)/../extg4/${GEOM}.sh 
 
-   *)                           bin=GeoChainSolidTest  ;;    # default : assume solid
-esac
-
-# TODO: arrange auto-detection of Solid OR Volume so can then have single executable 
-# HMM COULD DO THAT WITH SOME NAMING CONVENTION ?
-geoscript=../extg4/${GEOM}.sh 
-
+# some test geometries have envvar parameter controls collected into geoscripts 
 if [ -f "$geoscript" ]; then
-
    [ -z "$QUIET" ] && echo $msg sourcing geoscript $geoscript
    source $geoscript 
 else
    [ -z "$QUIET" ] && echo $msg THERE IS NO extg4 geoscript $geoscript 
 fi 
-
 [ -z "$QUIET" ] && echo $msg GEOM $GEOM bin $bin arg $arg 
 
+
+
+
+defarg=run
+arg=${1:-$defarg}
+
+bin=GeoChainSolidTest  # default assume solid 
+case $GEOM in 
+   *BodyPhys*)                   bin=GeoChainVolumeTest ;;
+   *Inner1Phys*)                 bin=GeoChainVolumeTest ;; 
+   *Inner2Phys*)                 bin=GeoChainVolumeTest ;; 
+   *DynodePhys*)                 bin=GeoChainVolumeTest ;; 
+esac
 
 loglevels()
 {
@@ -142,6 +140,7 @@ loglevels()
     #export OpticksDbg=INFO  
     #export GInstancer=INFO
 }
+
 #export GeoChain=INFO
 #loglevels
 

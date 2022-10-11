@@ -3,6 +3,10 @@ usage(){ cat << EOU
 x4t.sh : using X4SimtraceTest (this is an update of xxs.sh which used X4IntersectSolidTest)
 =============================================================================================
 
+Change the GEOM by editing the file opened with::
+
+   geom_  
+
 Aiming to follow gxt.sh such that common python plotting machinery can be used with x4t.sh outputs. 
 See also cf_x4t.sh that loads and plots from multiple fold. 
 

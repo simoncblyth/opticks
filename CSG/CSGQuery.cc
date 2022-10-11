@@ -105,7 +105,7 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
         << " getSelectedTreeHeight " << getSelectedTreeHeight()
         ;   
 
-    LOG_IF(fatal, select_root_subNum == 0) << "select_root_subNum ZERO " ; 
+    LOG_IF(LEVEL, select_root_subNum == 0) << "select_root_subNum ZERO " ;  // hmm formerly fatal ? why ?
 
 }
 

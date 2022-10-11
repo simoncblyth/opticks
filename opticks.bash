@@ -72,7 +72,7 @@ geom_(){
    fi   
 }
 
-geomlist(){
+geomlist_(){
    : opticks/opticks.bash 
    local path=$(opticks-home)/bin/geomlist.sh
    if [ "$1" == "scp" ]; then 

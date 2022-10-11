@@ -21,7 +21,6 @@ Rerun a simtrace_sample.npy array of problem rays saved from "ana"::
     ./nmskSolidMaskVirtual.sh sample
 
 
-
 EOU
 }
 
@@ -46,33 +45,27 @@ loglevels
 
 
 if [ "${arg/withnudge}" != "$arg" ]; then 
-   gc
-   ./translate.sh
+   $(dirname $BASH_SOURCE)/../GeoChain/translate.sh
    [ $? -ne 0 ] && echo $BASH_SOURCE withnudge translate error && exit 1 
 fi 
 if [ "${arg/skipnudge}" != "$arg" ]; then 
-   gc
-   OPTICKS_OPTS="--x4nudgeskip 0" ./translate.sh
+   OPTICKS_OPTS="--x4nudgeskip 0" $(dirname $BASH_SOURCE)/../GeoChain/translate.sh
    [ $? -ne 0 ] && echo $BASH_SOURCE skipnudge translate error && exit 1 
 fi 
 if [ "${arg/ct}" != "$arg" ]; then 
-   c
-   ./ct.sh run
+   $(dirname $BASH_SOURCE)/../CSG/ct.sh run
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
 if [ "${arg/ana}" != "$arg" ]; then 
-   c
-   ./ct.sh ana
+   $(dirname $BASH_SOURCE)/../CSG/ct.sh ana
    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
 if [ "mpcap" == "$arg" ]; then 
-   c
-   ./ct.sh mpcap
+   $(dirname $BASH_SOURCE)/../CSG/ct.sh mpcap
    [ $? -ne 0 ] && echo $BASH_SOURCE mpcap error && exit 3 
 fi 
 if [ "mppub" == "$arg" ]; then 
-   c
-   ./ct.sh mppub
+   $(dirname $BASH_SOURCE)/../CSG/ct.sh mppub
    [ $? -ne 0 ] && echo $BASH_SOURCE mppub error && exit 3 
 fi 
 

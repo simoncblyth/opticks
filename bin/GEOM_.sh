@@ -43,7 +43,7 @@ EOU
 
 #geom=hama_body_log
 #geom=J001
-geom=J003
+#geom=J003
 
 
 #geom=nnvtPMTSolid
@@ -56,7 +56,7 @@ geom=J003
 
 #geom=nmskSolidMask
 #geom=nmskSolidMaskTail
-#geom=nmskSolidMaskVirtual
+geom=nmskSolidMaskVirtual
 
 #geom=nmskTailOuter
 #geom=nmskTailInner
@@ -80,7 +80,7 @@ case $geom in
    nmsk*|hmsk*|nnvt*|hama*) geom=${geom}__${opt} ;;
 esac
 
-export GEOM=${GEOM:-$geom}
+export GEOM=${GEOM:-$geom}  ## NB pre-existing GEOM overrides all the above 
 
 
 # transitional : from old OPTICKS_KEY geometry dirs 
@@ -122,11 +122,14 @@ else
     export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM 
 fi 
 
+
+
 case $GEOM in 
  RaindropRockAirWaterSmall) export U4VolumeMaker_RaindropRockAirWater_FACTOR=1 ;;
       RaindropRockAirWater) export U4VolumeMaker_RaindropRockAirWater_FACTOR=10 ;;
     RaindropRockAirWaterSD) export U4VolumeMaker_RaindropRockAirWater_FACTOR=10 ;;
 esac
+## HMM: move this kinda specifics to geoscript perhaps
 
 
 
