@@ -145,7 +145,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
     else
     {
-        LOG(error) << "  propcom null, SSim::PROPCOM " <<  SSim::PROPCOM ;   
+        LOG(LEVEL) << "  propcom null, SSim::PROPCOM " <<  SSim::PROPCOM ;   
     }
 
 

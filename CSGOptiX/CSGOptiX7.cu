@@ -273,7 +273,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     if (idx >= evt->num_simtrace) return;
 
     unsigned genstep_id = evt->seed[idx] ; 
-    if(idx == 0) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id ); 
+    if(idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d genstep_id %d evt->num_simtrace %d \n", idx, genstep_id, evt->num_simtrace ); 
 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      

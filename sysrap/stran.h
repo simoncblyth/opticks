@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <array>
+#include <csignal>
 
 
 /**
@@ -626,11 +627,14 @@ bool Tran<T>::checkIsIdentity(char mat, const char* caller, T epsilon)
     {
         T mxdif = maxdiff_from_identity('i'); 
         std::cerr 
-            << "Tran::checkIsIdentity fail from " << caller 
+            << "stran.h : Tran::checkIsIdentity FAIL : "
+            << " caller " << caller 
             << " epsilon " << epsilon
             << " mxdif_from_identity " << mxdif
             << std::endl 
             ;  
+
+        //std::raise(SIGINT); 
     }
     return ok ; 
 }
@@ -644,7 +648,9 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
     glm::tmat4x4<T> tran = MatFromQat(&q) ; 
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
-    tr->checkIsIdentity('i', "ConvertToTran"); 
+    bool ok = tr->checkIsIdentity('i', "ConvertToTran"); 
+    if(!ok) std::cerr << "stran.h Tran::ConvertToTran checkIsIdentity FAIL " << std:endl ; 
+
     return tr ; 
 }
 
@@ -657,7 +663,8 @@ Tran<T>* Tran<T>::ConvertFromQat(const qat4* q_, T epsilon )
     glm::tmat4x4<T> tran = MatFromQat(&q) ; 
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
-    tr->checkIsIdentity('i', "ConvertFromQat"); 
+    bool ok = tr->checkIsIdentity('i', "ConvertFromQat"); 
+    if(!ok) std::cerr << "stran.h Tran::ConvertFromQat checkIsIdentity FAIL " << std:endl ; 
     return tr ; 
 }
 
@@ -670,7 +677,8 @@ Tran<T>* Tran<T>::ConvertFromData(const T* data )
     glm::tmat4x4<T> tran = MatFromData(data) ; 
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
-    tr->checkIsIdentity('i', "ConvertToTran"); 
+    bool ok = tr->checkIsIdentity('i', "ConvertFromData"); 
+    if(!ok) std::cerr << "stran.h Tran::ConvertFromData checkIsIdentity FAIL " << std:endl ; 
     return tr ; 
 }
 
@@ -700,7 +708,8 @@ Tran<T>* Tran<T>::FromPair(const qat4* t, const qat4* v, T epsilon ) // static
     glm::tmat4x4<T> tran = MatFromQat(t) ; 
     glm::tmat4x4<T> itra = MatFromQat(v) ; 
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
-    tr->checkIsIdentity('i', "FromPair", epsilon ); 
+    bool ok = tr->checkIsIdentity('i', "FromPair", epsilon ); 
+    if(!ok) std::cerr << "stran.h Tran::FromPair checkIsIdentity FAIL " << std:endl ; 
     return tr ; 
 }
 

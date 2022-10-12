@@ -523,6 +523,11 @@ sgs SEvt::addGenstep(const NP* a)
     quad6* qq = (quad6*)a->bytes(); 
     sgs s = {} ; 
     for(int i=0 ; i < num_gs ; i++) s = addGenstep(qq[i]) ; 
+
+
+     
+
+
     return s ; 
 }
 
