@@ -17,8 +17,8 @@ in order to keep result arrays separate for different targets.
 
 MOI acts within the configured GEOM::
 
-    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run     
-    MOI=NNVT:0:1000 ~/opticks/g4cx/gxt.sh run
+    MOI=Hama:0:1000 LOGLEVEL=none ~/opticks/g4cx/gxt.sh run     
+    MOI=NNVT:0:1000 LOGLEVEL=none ~/opticks/g4cx/gxt.sh run
 
     MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh grab  
     MOI=NNVT:0:1000 ~/opticks/g4cx/gxt.sh grab 
@@ -324,6 +324,7 @@ fi
 
 if [ "grab" == "$arg" ]; then 
     source $home/bin/rsync.sh $UGEOMDIR
+    [ $? -ne 0 ] && echo $BASH_SOURCE grab error && exit 4
 fi 
 
 
