@@ -553,7 +553,17 @@ struct qat4
     }  
 
 
-    QAT4_METHOD std::string desc(char mat='t', unsigned wid=8, unsigned prec=3) const 
+    QAT4_METHOD std::string desc(char mat='t', unsigned wid=8, unsigned prec=3, bool id=true) const 
+    {
+        std::stringstream ss ; 
+        ss << desc_(mat, wid, prec) 
+           << " " 
+           << ( id ? descId() : "" ) 
+           ; 
+        std::string s = ss.str() ; 
+        return s ; 
+    }
+    QAT4_METHOD std::string desc_(char mat='t', unsigned wid=8, unsigned prec=3) const 
     {
         std::stringstream ss ; 
         ss << mat << ":" ; 
@@ -574,10 +584,12 @@ struct qat4
 
         std::stringstream ss ; 
         ss
-            << " ins " << std::setw(7) << ins_idx  
-            << " gas " << std::setw(3) << gas_idx  
-            << " s_ident " << std::setw(7) << sensor_identifier
-            << " s_index " << std::setw(5) << sensor_index 
+            << "( i/g/si/sx " 
+            << std::setw(7) << ins_idx  
+            << std::setw(3) << gas_idx  
+            << std::setw(7) << sensor_identifier
+            << std::setw(5) << ( sensor_index == 1065353216 ? -1 : sensor_index )  // 1065353216 is 1.f viewed as int 
+            << " )"
             ;
 
         std::string s = ss.str() ; 

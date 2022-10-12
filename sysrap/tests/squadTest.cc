@@ -259,44 +259,37 @@ void test_qselector()
     bool select_3 = selector(p) ; assert( select_3 == false );  
 }
 
-void test_qphoton()
+void test_union1()
 {
-    qphoton qp ; 
-    qp.q.zero() ; 
+    quad q ; 
 
-    qp.p.wavelength = 500.f ;   
-    // HMM: curious how much performance difference between struct access and method call 
+    q.f.x = 0.f ;  
+    q.f.y = 0.f ;  
+    q.f.z = 0.f ;  
+    q.f.w = 1.f ;  
 
-    assert( qp.q.wavelength()  == 500.f ); 
+    std::cout 
+        << " q.f.x " << std::setw(10) << q.f.x 
+        << " q.i.x " << std::setw(10) << q.i.x
+        << std::endl 
+        << " q.f.y " << std::setw(10) << q.f.y 
+        << " q.i.y " << std::setw(10) << q.i.y
+        << std::endl 
+        << " q.f.z " << std::setw(10) << q.f.z 
+        << " q.i.z " << std::setw(10) << q.i.z
+        << std::endl 
+        << " q.f.w " << std::setw(10) << q.f.w 
+        << " q.i.w " << std::setw(10) << q.i.w
+        << std::endl 
+        ;
 
-    qp.q.set_wavelength( 600.f ); 
-    assert( qp.p.wavelength == 600.f ); 
+    assert( q.i.w == 1065353216  ); 
+    assert( q.u.w == 1065353216u ); 
 
-    printf("//test_qphoton qp.p.wavelength %10.4f \n", qp.p.wavelength ); 
 
-    photon& p = qp.p ; 
 
-    unsigned flag     = 0xffffu  ; 
-    unsigned boundary = 0xffffu ;
-    unsigned idx      = 0x7fffffffu ;
-    float orient      = -1.f ;
-    unsigned identity = 0xffffffffu ;
 
-    p.set_flag( flag );  
-    p.set_boundary( boundary );  
-    p.set_idx( idx ); 
-    p.set_orient( orient ); 
-    p.identity = identity ; 
-
-    std::cout << std::endl << p.desc() << std::endl ; 
-
-    assert( p.flag()   == flag ); 
-    assert( p.boundary() == boundary );
-    assert( p.idx() == idx );
-    assert( p.orient() == orient );
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -316,9 +309,10 @@ int main(int argc, char** argv)
     test_quad4_set_idx_set_prd_get_idx_get_prd(); 
     test_quad4_idx_orient(); 
     test_qselector(); 
+    test_qphoton(); 
     */
 
-    test_qphoton(); 
+    test_union1(); 
 
 
 

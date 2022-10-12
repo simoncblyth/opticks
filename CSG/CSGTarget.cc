@@ -245,27 +245,41 @@ TODO: check this with global non-instanced geometry
 int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m ) const 
 {
     const qat4* t = getInstanceTransform(midx, mord, iidx); 
-    if(t == nullptr)
-    {
-        LOG(fatal) 
-            << " failed to get InstanceTransform (midx mord iidx) " 
-            << "(" << midx << " " << mord << " " << iidx << ")" 
-            ;
-        return 1 ;  
-    }
-
-    const qat4* v = Tran<double>::Invert(t );    
+    const qat4* v = t ? Tran<double>::Invert(t ) : nullptr ; 
     // TODO: avoid this Invert by collecting paired instance transforms from Geant4 source 
 
-    if(m2w) qat4::copy(*m2w, *t);  
-    if(w2m) qat4::copy(*w2m, *v);  
+    LOG_IF(fatal, t == nullptr) 
+        << " failed to get InstanceTransform (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ")" ;
 
+    LOG_IF(fatal, v == nullptr) 
+        << " failed Tran<double>::Invert " ;
+
+    if(t == nullptr) return 1 ;  
+    if(v == nullptr) return 2 ;  
+
+    LOG(LEVEL) 
+        << std::endl
+        << t->desc('t') 
+        << std::endl
+        << v->desc('v') 
+        ; 
+
+    if(m2w)
+    {
+        qat4::copy(*m2w, *t);  
+        m2w->clearIdentity();  // recent addition
+    }
+    if(w2m) 
+    {
+        qat4::copy(*w2m, *v);  
+        w2m->clearIdentity();  // recent addition 
+    }
 
     qat4 q(t->cdata());   // copy the instance (transform and identity info)
 
     int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
     q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
-    q.clearIdentity();           // clear before doing any transforming 
+    q.clearIdentity();    // clearIdentity sets the (3,3) 1. : needed before doing any transforming 
 
 
     const CSGPrim* lpr = foundry->getMeshPrim(midx, mord);  
@@ -276,7 +290,9 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     q.transform_aabb_inplace( gpr.AABB_() ); 
 
     LOG(LEVEL) 
+        << std::endl 
         << " q " << q 
+        << std::endl 
         << " ins_idx " << ins_idx
         << " gas_idx " << gas_idx
         << " sensor_identifier " << sensor_identifier

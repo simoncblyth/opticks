@@ -1,7 +1,18 @@
 #!/bin/bash -l 
 
-export MOI=Hama:0:1000    
+moi=Hama:0:1000
+moi=NNVT:0:1000
+
+
+export MOI=$moi
 export METHOD=getFrame
+
+loglevel()
+{
+    export CSGTarget=INFO
+}
+loglevel
+
 
 bin=CSGTargetTest
 
