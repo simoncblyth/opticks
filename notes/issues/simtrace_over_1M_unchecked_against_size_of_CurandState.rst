@@ -34,10 +34,36 @@ Note that even with only one CEHIGH block, the num_simtrace exceeds the default 
 How to fix ?
 ----------------
 
-* start by pulling SCurandState out of QCurandState so can do the CurandState checks/config from SEvt 
-
-* QRng was accepting a default path to a 1M file, but that is unconnected with SEvt::max_simtrace or max_photon 
+* QRng was accepting a default path to a 1M file, but that is unconnected with SEventConfig::MaxSimtrace or MaxPhoton 
 * clearly the QCurandState path accepted by QRng should be based on the SEvt/SEventConfig values of max_simtrace/max_photon 
+
+* start by pulling SCurandState out of QCurandState so can do the CurandState checks/config from SEventConfig SCurandState 
+* add SEventConfig::MaxCurandState which is max of MaxPhoton and MaxSimtrace
+
+
+::
+
+    commit 82f5bee43fb5f461ede5e489d39562c12e98a0d9 (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Wed Oct 12 17:17:19 2022 +0100
+
+        connect SEventConfig to the SCurandState/QRng choice of curandState file to load
+
+    commit 50f35cc11c35fa13d89cb0b514bfeaffa5b4129a
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Wed Oct 12 16:38:15 2022 +0100
+
+        save the unexpected non-paired transforms
+
+    commit f7fcf1bc012e8f26399cb5a62a50c26426501480
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Wed Oct 12 16:14:41 2022 +0100
+
+        move some of QCurandState down into SCurandState, aiming to tie together SEvt maxima with the number of curandState loaded
+
+
+
+
 
 
 

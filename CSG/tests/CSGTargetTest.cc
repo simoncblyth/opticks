@@ -26,16 +26,21 @@ Check a few different iidx of midx 120::
 **/
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SSim.hh"
+
 #include "SOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"
 #include "sqat4.h"
+#include "stran.h"
+#include "sframe.h"
 #include "CSGFoundry.h"
 
 
 struct CSGTargetTest
 {
+    SSim*           sim ; 
     CSGFoundry*     fd ; 
     float4          ce ; 
 
@@ -50,6 +55,7 @@ struct CSGTargetTest
 
 CSGTargetTest::CSGTargetTest()
     :
+    sim(SSim::Create()),
     fd(CSGFoundry::Load()),
     ce(make_float4( 0.f, 0.f, 0.f, 1000.f ))
 {
@@ -157,9 +163,9 @@ int main(int argc, char** argv)
     CSGTargetTest tt ; 
     CSGFoundry* fd = tt.fd ; 
 
-    const char* METH = SSys::getenvvar("METH", "MOI"); 
+    const char* METHOD = SSys::getenvvar("METHOD", "MOI"); 
 
-    if( strcmp(METH, "MOI") == 0)
+    if( strcmp(METHOD, "MOI") == 0)
     {
         const char* MOI = SSys::getenvvar("MOI", nullptr ); 
         if(MOI) 
@@ -171,16 +177,24 @@ int main(int argc, char** argv)
             tt.dumpALL(); 
         }
     }
-    else if( strcmp(METH, "descInst") == 0 )
+    else if( strcmp(METHOD, "descInst") == 0 )
     {
         unsigned ias_idx = 0 ; 
         unsigned long long emm = 0ull ;  
         std::cout << "fd.descInst" << std::endl << fd->descInst(ias_idx, emm) << std::endl ;          
     }
-    else if( strcmp(METH, "descInstance") == 0 )
+    else if( strcmp(METHOD, "descInstance") == 0 )
     {
         std::cout << fd->descInstance() ; // IDX=0,10,100 envvar           
     }
+    else if( strcmp(METHOD, "getFrame") == 0 )
+    {
+        sframe fr = fd->getFrame() ;  // depends on MOI or its default -1  
+        Tran<double>* tr = fr.getTransform(); 
+        std::cout << tr->desc() << std::endl ; 
+    }
+
+
     return 0 ; 
 }
 

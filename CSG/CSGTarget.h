@@ -13,9 +13,11 @@ struct CSGTarget
 
     CSGTarget( const CSGFoundry* foundry );  
 
-    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
 
     int getFrame(sframe& fr,  int midx, int mord, int iidxg ) const ; 
+
+    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
+
     int getFrame(sframe& fr,  int inst_idx ) const ; 
 
     int getLocalCenterExtent( float4& lce, int midx, int mord) const ;

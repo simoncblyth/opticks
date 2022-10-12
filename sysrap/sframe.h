@@ -128,6 +128,8 @@ struct sframe
     void load_(const char* path ) ; 
     void load(const NP* a) ; 
 
+    Tran<double>* getTransform() const ; 
+
 
     void prepare();   // below are const by asserting that *prepare* has been called
 
@@ -421,6 +423,16 @@ inline void sframe::transform_w2m( sphoton& p, bool normalize ) const
     assert( tr_w2m) ;
     p.transform( tr_w2m->t, normalize ); 
 }
+
+
+inline Tran<double>* sframe::getTransform() const 
+{
+    Tran<double>* geotran = Tran<double>::FromPair( &m2w, &w2m, 1e-6 ); 
+    return geotran ; 
+}
+
+
+
 
 
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)

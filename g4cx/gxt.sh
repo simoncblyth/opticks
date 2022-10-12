@@ -17,22 +17,25 @@ in order to keep result arrays separate for different targets.
 
 MOI acts within the configured GEOM::
 
-    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run      ## run time with full JUNO geometry < 1 second
-    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh dbg   
-
-
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run     
+    MOI=NNVT:0:1000 ~/opticks/g4cx/gxt.sh run
 
     MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh grab  
-    ## grab time depends on network, can be minutes to rsync the simtrace.npy intersects
-
-    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh ana   ## seconds to plot  
-    MOI=Hama:0:1000 NOLEGEND=1 ~/opticks/g4cx/gxt.sh ana 
-
     MOI=NNVT:0:1000 ~/opticks/g4cx/gxt.sh grab 
-    MOI=NNVT:0:1000 NOLEGEND=1 ~/opticks/g4cx/gxt.sh ana  
+
+    MOI=Hama:0:1000                     ~/opticks/g4cx/gxt.sh ana   
+    MOI=Hama:0:1000 NOLEGEND=1          ~/opticks/g4cx/gxt.sh ana 
+    MOI=Hama:0:1000 NOLEGEND=1 GSPLOT=1 ~/opticks/g4cx/gxt.sh ana 
+
+    MOI=NNVT:0:1000                     ~/opticks/g4cx/gxt.sh ana  
+    MOI=NNVT:0:1000 NOLEGEND=1          ~/opticks/g4cx/gxt.sh ana  
+    MOI=NNVT:0:1000 NOLEGEND=1 GSPLOT=1 ~/opticks/g4cx/gxt.sh ana  
 
 
-When MOI is not defined the sframe::DEFAULT_FRS value is -1 which corresponds to the entire geometry. 
+* *run* time with full JUNO geometry < 1 second
+* *grab* time depends on network, can be minutes to rsync the simtrace.npy intersects
+* *ana* plotting takes a few seconds
+* when MOI is not defined the sframe::DEFAULT_FRS value is -1 which corresponds to the entire geometry. 
 
 
 Without MOI targetting
@@ -193,9 +196,9 @@ cehigh_PMT()
 {
     echo === $FUNCNAME
     export CEHIGH_0=-8:8:0:0:-6:-4:1000:4   # across the bottom to check for insitu overlaps
-    #export CEHIGH_1=-8:8:0:0:4:6:1000:4     # across the top
-    #export CEHIGH_2=-8:-6:0:0:-3:3:1000:4   # left side
-    #export CEHIGH_3=6:8:0:0:-3:3:1000:4     # right side
+    export CEHIGH_1=-8:8:0:0:4:6:1000:4     # across the top
+    export CEHIGH_2=-8:-6:0:0:-4:4:1000:4   # left side
+    export CEHIGH_3=6:8:0:0:-4:4:1000:4     # right side
     ## need to change SFrameGenstep::MakeCenterExtentGensteps to add more than 4 regions 
 }
 
@@ -211,8 +214,19 @@ cehigh
 
 
 
-loglevels()
+loglevel_none()
 {
+    echo $FUNCNAME
+}
+loglevel_minimal()
+{
+    echo $FUNCNAME 
+    export SEvt=INFO
+    export CSGTarget=INFO
+}
+loglevel_verbose()
+{
+    echo $FUNCNAME 
     export Dummy=INFO
     #export SGeoConfig=INFO
     export SEventConfig=INFO
@@ -232,7 +246,24 @@ loglevels()
     #export U4VolumeMaker=INFO
 }
 
-[ -n "$VERBOSE" ] && loglevels
+
+loglevel()
+{
+    if [ -n "$LOGLEVEL" ]; then 
+        echo $FUNCNAME : LOGLEVEL $LOGLEVEL : is defined 
+        case $LOGLEVEL in 
+               none) loglevel_none ;;
+            minimal) loglevel_minimal ;;
+            verbose) loglevel_verbose ;;
+                  *) loglevel_verbose ;;
+        esac
+    else
+        echo $FUNCNAME : LOGLEVEL not defined not setting any loglevels   
+    fi
+    env | grep =INFO
+}
+loglevel
+
 
 
 
