@@ -165,14 +165,42 @@ if [ "$arg" == "fold" ]; then
 fi 
 
 
-cehigh()
+cehigh_Notes(){ cat << EON
+
+increase genstep resolution, see sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.sh
+see SFrameGenstep::StandardizeCEGS
+
+ix0:ix1:iy0:iy1:iz0:iz1:num_photons:high
+
+* the i are original grid ranges, high increases the resolution by dividing the grid 
+
+EON
+}
+
+cehigh_MaskLip()
 {
-    : increase genstep resolution, see sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.sh
+    echo === $FUNCNAME
     export CEHIGH_0=-11:-9:0:0:-2:0:1000:4
     export CEHIGH_1=9:11:0:0:-2:0:1000:4
     export CEHIGH_2=-1:1:0:0:-2:0:1000:4
 }
+
+cehigh_PMT()
+{
+    echo === $FUNCNAME
+    export CEHIGH_0=-8:8:0:0:-6:-4:1000:4   # across the bottom to check for insitu overlaps
+}
+
+cehigh()
+{
+    echo === $FUNCNAME : GEOM $GEOM MOI $MOI
+    case $MOI in 
+       Hama*|NNVT*) cehigh_PMT  ;;
+    esac
+    env | grep CEHIGH
+}
 cehigh
+
 
 
 loglevels()

@@ -375,18 +375,26 @@ nx:ny:nz:num_photons
 nx:ny:nz:dx:dy:dz:num_photons
      offset grid -nx+dx:nx+dx, -ny+dy:ny+dy, -nz+dz:nz+dz  
 
-ix0:iy0:iz0:ix1:iy1:iz1:num_photons:high
+ix0:ix1:iy0:iy1:iz0:iz1:num_photons:high
      standardized absolute form of grid specification 
      This eight element form is now also be used as an
      input config when wishing to increase resolution with 
      the "high" 8th element cegs[7]. 
+
+
+When using CEHIGH envvars the third form is used::
+
+    export CEHIGH_0=-11:-9:0:0:-2:0:1000:4
+    export CEHIGH_1=9:11:0:0:-2:0:1000:4
+    export CEHIGH_2=-1:1:0:0:-2:0:1000:4
+
 
 **/
 
 void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static 
 {
     if( cegs.size() == 0 ) return ; 
-    if( cegs.size() == 8 ) return ; 
+    if( cegs.size() == 8 ) return ;  // when start with 8, just exit
 
     bool expect = cegs.size() == 4 || cegs.size() == 7 ; 
     LOG_IF(error, !expect) << " unexpected cegs.size " << cegs.size() ; 
