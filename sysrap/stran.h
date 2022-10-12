@@ -6,6 +6,7 @@
 #include <sstream>
 #include <array>
 #include <csignal>
+#include <cstdlib>
 
 
 /**
@@ -634,7 +635,7 @@ bool Tran<T>::checkIsIdentity(char mat, const char* caller, T epsilon)
             << std::endl 
             ;  
 
-        //std::raise(SIGINT); 
+        if(getenv("stran_checkIsIdentity_SIGINT")) std::raise(SIGINT); 
     }
     return ok ; 
 }
