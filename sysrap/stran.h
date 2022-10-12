@@ -110,7 +110,11 @@ struct Tran
     bool checkIsIdentity(char mat='i', const char* caller="caller", T epsilon=EPSILON); 
  
     void write(T* dst, unsigned num_values=3*4*4) const ; 
-    void save(const char* dir, const char* name="stran.npy") const ; 
+
+
+    NP* as_array()const ; 
+    void save_(const char* path) const ; 
+    void save(const char* dir, const char* name="stran.npy") const ;
 
     static void Apply(        const glm::tmat4x4<T>& tr, T* p0    , T w    , unsigned count, unsigned stride, unsigned offset, bool normalize ); 
     static void ApplyToFloat( const glm::tmat4x4<T>& tr, float* p0, float w, unsigned count, unsigned stride, unsigned offset, bool normalize ); 
@@ -710,7 +714,13 @@ Tran<T>* Tran<T>::FromPair(const qat4* t, const qat4* v, T epsilon ) // static
     glm::tmat4x4<T> itra = MatFromQat(v) ; 
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
     bool ok = tr->checkIsIdentity('i', "FromPair", epsilon ); 
-    if(!ok) std::cerr << "stran.h Tran::FromPair checkIsIdentity FAIL " << std::endl ; 
+    if(!ok) 
+    {
+         std::cerr << "stran.h Tran::FromPair checkIsIdentity FAIL " << std::endl ; 
+         const char* path = "/tmp/stran_FromPair_checkIsIdentity_FAIL.npy" ; 
+         std::cerr << "stran.h save to path " << path << std::endl ; 
+         tr->save_(path); 
+    }
     return tr ; 
 }
 
@@ -795,13 +805,31 @@ void Tran<T>::write(T* dst, unsigned num_values) const
 }
 
 template<typename T>
-void Tran<T>::save(const char* dir, const char* name) const 
+NP* Tran<T>::as_array()const 
 {
     NP* a = NP::Make<T>(3, 4, 4 );  
     unsigned num_values = 3*4*4 ; 
     write( a->values<T>(), num_values ) ; 
+    return a ; 
+}
+
+template<typename T>
+void Tran<T>::save(const char* dir, const char* name) const 
+{
+    NP* a = as_array(); 
     a->save(dir, name);
 }
+template<typename T>
+void Tran<T>::save_(const char* path) const 
+{
+    NP* a = as_array(); 
+    a->save(path);
+}
+
+
+
+
+
 
 /**
 Tran::Apply
