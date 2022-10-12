@@ -10,9 +10,12 @@ SEventConfig
 
 Primary user of this config is QEvent::init 
 
-
 MaxPhoton
-   TODO: the actual maximum depends on rngstate : need to hook into that 
+
+MaxSimtrace
+
+MaxCurandState
+   from std::max of MaxPhoton and MaxSimtrace
 
 MaxRec
     normally 0, disabling creation of the QEvent domain compressed step record buffer
@@ -84,6 +87,8 @@ struct SYSRAP_API SEventConfig
     static int MaxGenstep(); 
     static int MaxPhoton(); 
     static int MaxSimtrace(); 
+    static int MaxCurandState();  // from max of MaxPhoton and MaxSimtrace
+
     static int MaxBounce(); 
     static int MaxRecord();  // full photon step record  
     static int MaxRec();     // compressed photon step record

@@ -11,9 +11,12 @@ struct SYSRAP_API SCurandState
     static const char* NAME_PREFIX ; 
     static const char* DEFAULT_PATH ; 
 
-    static std::string Stem(unsigned long long num, unsigned long long seed, unsigned long long offset); 
-    static std::string Path(unsigned long long num, unsigned long long seed, unsigned long long offset); 
-    static long GetRngMax(const char* path) ; 
+    static std::string Desc() ;  
+    static const char* Path() ; 
+    static std::string Stem_(unsigned long long num, unsigned long long seed, unsigned long long offset); 
+    static std::string Path_(unsigned long long num, unsigned long long seed, unsigned long long offset); 
+    static long RngMax() ; 
+    static long RngMax(const char* path) ; 
 
 
     SCurandState(const char* spec); 

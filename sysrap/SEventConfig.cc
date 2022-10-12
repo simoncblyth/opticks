@@ -74,6 +74,8 @@ const char* SEventConfig::EventMode(){ return _EventMode ; }
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
+int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
+
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
@@ -224,7 +226,8 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kMaxPhoton 
        << std::setw(20) << " MaxPhoton " << " : " << MaxPhoton() << std::endl 
        << std::setw(25) << kMaxSimtrace 
-       << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() << std::endl 
+       << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() 
+       << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() << std::endl 
        << std::setw(25) << kMaxRecord

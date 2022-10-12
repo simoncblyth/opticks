@@ -38,7 +38,7 @@ struct QUDARAP_API QRng
     qrng*          qr ;  
     qrng*          d_qr ;  
 
-    QRng(const char* path=nullptr, unsigned skipahead_event_offset=1) ;  
+    QRng(unsigned skipahead_event_offset=1) ;  
 
     virtual ~QRng(); 
 

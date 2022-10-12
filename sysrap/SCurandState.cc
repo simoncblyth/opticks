@@ -3,24 +3,55 @@
 #include "PLOG.hh"
 #include "SPath.hh"
 #include "SCurandState.hh"
+#include "SEventConfig.hh"
 #include "SStr.hh"
 
 const plog::Severity SCurandState::LEVEL = SLOG::EnvLevel("SCurandState", "DEBUG" );  
 const char* SCurandState::RNGDIR = SPath::Resolve("$RNGDir", DIRPATH ) ; 
 const char* SCurandState::NAME_PREFIX = "QCurandState" ; 
-const char* SCurandState::DEFAULT_PATH   = SPath::Resolve("$RNGDir/QCurandState_1000000_0_0.bin", 0) ; 
+const char* SCurandState::DEFAULT_PATH = nullptr ; 
 
-std::string SCurandState::Stem(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandState::Desc()  // static
+{
+    const char* path = Path() ; 
+    long rngmax = RngMax() ; 
+
+    std::stringstream ss ; 
+    ss << "SCurandState::Desc" << std::endl 
+       << " SEventConfig::MaxCurandState() " << SEventConfig::MaxCurandState() << std::endl
+       << " SCurandState::Path() " << path << std::endl 
+       << " SCurandState::RngMax() " << rngmax << std::endl 
+       ;
+    std::string s = ss.str() ;
+    return s ; 
+}
+
+const char* SCurandState::Path()  // static
+{
+    if(DEFAULT_PATH == nullptr)
+    {
+        int rngmax = SEventConfig::MaxCurandState(); 
+        int seed = 0 ; 
+        int offset = 0 ; 
+        // seed and offset could some from SEventConfig too 
+        
+        std::string path = Path_(rngmax, seed, offset ); 
+        DEFAULT_PATH = strdup(path.c_str()); 
+    }
+    return DEFAULT_PATH ; 
+}
+
+std::string SCurandState::Stem_(unsigned long long num, unsigned long long seed, unsigned long long offset)
 {
     std::stringstream ss ; 
     ss << NAME_PREFIX << "_" << num << "_" << seed << "_" << offset  ;   
     std::string s = ss.str(); 
     return s ;   
 } 
-std::string SCurandState::Path(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandState::Path_(unsigned long long num, unsigned long long seed, unsigned long long offset)
 {
     std::stringstream ss ; 
-    ss << RNGDIR << "/" << Stem(num, seed, offset) << ".bin" ; 
+    ss << RNGDIR << "/" << Stem_(num, seed, offset) << ".bin" ; 
     std::string s = ss.str(); 
     return s ;   
 }
@@ -34,8 +65,13 @@ Presumably the 44 bytes of content get padded to 48 bytes
 in the curandState which is typedef to curandStateXORWOW.
 
 **/
+long SCurandState::RngMax()
+{
+    const char* path = Path(); 
+    return RngMax(path) ; 
+}
 
-long SCurandState::GetRngMax(const char* path)
+long SCurandState::RngMax(const char* path)
 {
     FILE *fp = fopen(path,"rb");
 
@@ -60,8 +96,6 @@ long SCurandState::GetRngMax(const char* path)
     assert( file_size % content_size == 0 );
     return rngmax ; 
 }
-
-
 
 
 
@@ -108,9 +142,9 @@ void SCurandState::init()
         if(num <= 100) num *= 1000000 ; // num <= 100 assumed to be in millions  
     }
 
-    path = Path(num, seed, offset); 
+    path = Path_(num, seed, offset); 
     exists = SPath::Exists(path.c_str()); 
-    rngmax = exists ? GetRngMax( path.c_str() ) : 0 ; 
+    rngmax = exists ? RngMax( path.c_str() ) : 0 ; 
 }
 
 std::string SCurandState::desc() const 
@@ -128,8 +162,6 @@ std::string SCurandState::desc() const
     std::string s = ss.str() ;
     return s ; 
 }
-
-
 
 
 

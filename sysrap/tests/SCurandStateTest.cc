@@ -18,5 +18,7 @@ int main(int argc, char** argv)
         std::cout << scs.desc() << std::endl  ; 
     }
 
+    LOG(info) << std::endl << SCurandState::Desc() ; 
+
     return 0 ; 
 }

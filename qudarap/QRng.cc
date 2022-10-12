@@ -14,9 +14,9 @@ const QRng* QRng::INSTANCE = nullptr ;
 const QRng* QRng::Get(){ return INSTANCE ;  }
 
 
-QRng::QRng(const char* path_, unsigned skipahead_event_offset)
+QRng::QRng(unsigned skipahead_event_offset)
     :
-    path(path_ ? strdup(path_) : nullptr),  // null path will assert in Load
+    path(SCurandState::Path()),        // null path will assert in Load
     rngmax(0),
     rng_states(Load(rngmax, path)),   // rngmax set based on file_size/item_size 
     qr(new qrng(skipahead_event_offset)),
