@@ -649,7 +649,7 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
     bool ok = tr->checkIsIdentity('i', "ConvertToTran"); 
-    if(!ok) std::cerr << "stran.h Tran::ConvertToTran checkIsIdentity FAIL " << std:endl ; 
+    if(!ok) std::cerr << "stran.h Tran::ConvertToTran checkIsIdentity FAIL " << std::endl ; 
 
     return tr ; 
 }
@@ -664,7 +664,7 @@ Tran<T>* Tran<T>::ConvertFromQat(const qat4* q_, T epsilon )
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
     bool ok = tr->checkIsIdentity('i', "ConvertFromQat"); 
-    if(!ok) std::cerr << "stran.h Tran::ConvertFromQat checkIsIdentity FAIL " << std:endl ; 
+    if(!ok) std::cerr << "stran.h Tran::ConvertFromQat checkIsIdentity FAIL " << std::endl ; 
     return tr ; 
 }
 
@@ -678,7 +678,7 @@ Tran<T>* Tran<T>::ConvertFromData(const T* data )
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
     bool ok = tr->checkIsIdentity('i', "ConvertFromData"); 
-    if(!ok) std::cerr << "stran.h Tran::ConvertFromData checkIsIdentity FAIL " << std:endl ; 
+    if(!ok) std::cerr << "stran.h Tran::ConvertFromData checkIsIdentity FAIL " << std::endl ; 
     return tr ; 
 }
 
@@ -709,7 +709,7 @@ Tran<T>* Tran<T>::FromPair(const qat4* t, const qat4* v, T epsilon ) // static
     glm::tmat4x4<T> itra = MatFromQat(v) ; 
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
     bool ok = tr->checkIsIdentity('i', "FromPair", epsilon ); 
-    if(!ok) std::cerr << "stran.h Tran::FromPair checkIsIdentity FAIL " << std:endl ; 
+    if(!ok) std::cerr << "stran.h Tran::FromPair checkIsIdentity FAIL " << std::endl ; 
     return tr ; 
 }
 

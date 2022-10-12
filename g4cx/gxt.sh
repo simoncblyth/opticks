@@ -189,9 +189,9 @@ cehigh_PMT()
 {
     echo === $FUNCNAME
     export CEHIGH_0=-8:8:0:0:-6:-4:1000:4   # across the bottom to check for insitu overlaps
-    export CEHIGH_1=-8:8:0:0:4:6:1000:4     # across the top
-    export CEHIGH_2=-8:-6:0:0:-3:3:1000:4   # left side
-    export CEHIGH_3=6:8:0:0:-3:3:1000:4     # right side
+    #export CEHIGH_1=-8:8:0:0:4:6:1000:4     # across the top
+    #export CEHIGH_2=-8:-6:0:0:-3:3:1000:4   # left side
+    #export CEHIGH_3=6:8:0:0:-3:3:1000:4     # right side
     ## need to change SFrameGenstep::MakeCenterExtentGensteps to add more than 4 regions 
 }
 
