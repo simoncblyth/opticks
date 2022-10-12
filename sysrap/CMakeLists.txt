@@ -35,6 +35,8 @@ set(WITH_SLOG YES)
 set(SOURCES
     SYSRAP_LOG.cc 
     SLOG.cc 
+
+    SCurandState.cc
     SProc.cc
     SSys.cc
     SStr.cc
@@ -128,9 +130,10 @@ set(HEADERS
     PLOG.hh
     SLOG_INIT.hh  
 
-
     SLaunchSequence.h 
 
+
+    SCurandState.hh
     SProc.hh
     SBacktrace.h
     SStackFrame.h

@@ -25,6 +25,7 @@ OR could split up into multiple files ?
 #include <cstdint>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
+#include "SCurandState.hh"
 
 struct qcurandstate ; 
 struct SLaunchSequence ; 
@@ -32,23 +33,17 @@ struct SLaunchSequence ;
 struct QUDARAP_API QCurandState
 {
     static const plog::Severity LEVEL ; 
-    static const char* RNGDIR ; 
-    static const char* NAME_PREFIX ; 
-    static std::string Stem(unsigned long long num, unsigned long long seed, unsigned long long offset); 
-    static std::string Path(unsigned long long num, unsigned long long seed, unsigned long long offset); 
-
     static constexpr const char* EKEY = "QCurandState_SPEC" ; 
     static QCurandState* Create(); 
     static QCurandState* Create(const char* spec); 
 
-
-    std::string path ; 
+    const SCurandState scs ; 
     qcurandstate* h_cs ; 
     qcurandstate* cs ; 
     qcurandstate* d_cs ; 
     SLaunchSequence* lseq ; 
 
-    QCurandState(unsigned long long num, unsigned long long seed=0u, unsigned long long offset=0u); 
+    QCurandState(const SCurandState& scs); 
     void init(); 
     void alloc(); 
     void create(); 

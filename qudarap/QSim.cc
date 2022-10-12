@@ -101,6 +101,7 @@ This structure is used to allow separate testing.
 void QSim::UploadComponents( const SSim* ssim  )
 {
     LOG(LEVEL) << "[ ssim " << ssim ; 
+    if(getenv("QSim__UploadComponents_SIGINT")) std::raise(SIGINT); 
 
     LOG(LEVEL) << "[ new QBase" ;
     QBase* base = new QBase ; 

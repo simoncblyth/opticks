@@ -17,7 +17,11 @@ in order to keep result arrays separate for different targets.
 
 MOI acts within the configured GEOM::
 
-    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run   ## run time with full JUNO geometry < 1 second
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh run      ## run time with full JUNO geometry < 1 second
+    MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh dbg   
+
+
+
     MOI=Hama:0:1000 ~/opticks/g4cx/gxt.sh grab  
     ## grab time depends on network, can be minutes to rsync the simtrace.npy intersects
 
@@ -255,7 +259,7 @@ fi
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     case $(uname) in
-        Linux) gdb_ $bin -ex r  ;;
+        Linux) gdb__ $bin -ex r  ;;
         Darwin) lldb__ $bin ;; 
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 

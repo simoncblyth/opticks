@@ -32,6 +32,7 @@ set(TEST_SOURCES
 
    SCFTest.cc
    SGeoTest.cc
+   SCurandStateTest.cc
 
    
    PLogTest.cc 

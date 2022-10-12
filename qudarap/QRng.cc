@@ -2,6 +2,7 @@
 #include <cstring>
 #include "SLOG.hh"
 #include "SPath.hh"
+#include "SCurandState.hh"
 #include "QRng.hh"
 #include "qrng.h"
 #include "QU.hh"
@@ -13,15 +14,11 @@ const QRng* QRng::INSTANCE = nullptr ;
 const QRng* QRng::Get(){ return INSTANCE ;  }
 
 
-// formerly the prefix was cuRANDWrapper
-const char* QRng::DEFAULT_PATH   = SPath::Resolve("$HOME/.opticks/rngcache/RNG/QCurandState_1000000_0_0.bin", 0) ; 
-//const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin", 0) ; 
-
 QRng::QRng(const char* path_, unsigned skipahead_event_offset)
     :
-    path(path_ ? strdup(path_) : DEFAULT_PATH),
+    path(path_ ? strdup(path_) : nullptr),  // null path will assert in Load
     rngmax(0),
-    rng_states(Load(rngmax, path)),
+    rng_states(Load(rngmax, path)),   // rngmax set based on file_size/item_size 
     qr(new qrng(skipahead_event_offset)),
     d_qr(nullptr)
 {
@@ -38,14 +35,9 @@ void QRng::cleanup()
     QUDA_CHECK(cudaFree(qr->rng_states)); 
 }
 
-/**
-calling exceptions from dtor is bad, causes warning
-**/
-
 QRng::~QRng()
 {
 }
-
 
 const char* QRng::Load_FAIL_NOTES = R"(
 QRng::Load_FAIL_NOTES
@@ -72,39 +64,42 @@ as shown below::
 QRng::Load
 ------------
 
-Find that file_size is not a mutiple of item content. 
-Presumably the 44 bytes of content get padded to 48 bytes
-in the curandState which is typedef to curandStateXORWOW.
+rngmax is an output argument obtained from file_size/item_size 
 
 **/
 
 curandState* QRng::Load(long& rngmax, const char* path)  // static 
 {
-    FILE *fp = fopen(path,"rb");
+    bool null_path = path == nullptr ; 
+    LOG_IF(fatal, null_path ) << " QRng::Load null path " ; 
+    assert( !null_path );  
 
+    FILE *fp = fopen(path,"rb");
     bool failed = fp == nullptr ; 
     LOG_IF(fatal, failed ) << " unabled to open file [" << path << "]" ; 
     LOG_IF(error, failed ) << Load_FAIL_NOTES  ; 
     assert(!failed); 
+
 
     fseek(fp, 0L, SEEK_END);
     long file_size = ftell(fp);
     rewind(fp);
 
     long type_size = sizeof(curandState) ;  
-    long content_size = 44 ; 
+    long item_size = 44 ; 
 
-    rngmax = file_size/content_size ; 
+    rngmax = file_size/item_size ; 
+
 
     LOG(LEVEL) 
         << " path " << path 
         << " file_size " << file_size 
+        << " item_size " << item_size 
         << " type_size " << type_size 
-        << " content_size " << content_size 
         << " rngmax " << rngmax
         ; 
 
-    assert( file_size % content_size == 0 );  
+    assert( file_size % item_size == 0 );  
 
     curandState* rng_states = (curandState*)malloc(sizeof(curandState)*rngmax);
 
