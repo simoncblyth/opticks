@@ -427,7 +427,8 @@ inline void sframe::transform_w2m( sphoton& p, bool normalize ) const
 
 inline Tran<double>* sframe::getTransform() const 
 {
-    Tran<double>* geotran = Tran<double>::FromPair( &m2w, &w2m, 1e-6 ); 
+    double eps = 1e-3 ; // formerly used 1e-6 gives idenity check warnings  
+    Tran<double>* geotran = Tran<double>::FromPair( &m2w, &w2m, eps ); 
     return geotran ; 
 }
 

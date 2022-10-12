@@ -157,7 +157,8 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     LOG_IF(fatal, ce_scale == 0) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
  
 
-    Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
+    //Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
+    Tran<double>* geotran = fr.getTransform(); 
 
 
     std::vector<NP*> gsl ; 

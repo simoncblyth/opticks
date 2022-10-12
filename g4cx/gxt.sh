@@ -221,6 +221,7 @@ loglevel_none()
 loglevel_minimal()
 {
     echo $FUNCNAME 
+    export G4CXOpticks=INFO
     export SEvt=INFO
     export CSGTarget=INFO
 }
