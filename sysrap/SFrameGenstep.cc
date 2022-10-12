@@ -377,12 +377,13 @@ nx:ny:nz:dx:dy:dz:num_photons
 
 ix0:ix1:iy0:iy1:iz0:iz1:num_photons:high
      standardized absolute form of grid specification 
-     This eight element form is now also be used as an
-     input config when wishing to increase resolution with 
+     that SFrameGenstep::StandardizeCEGS creates.
+
+     This eight element form is also now used as an
+     input form when wishing to increase resolution with 
      the "high" 8th element cegs[7]. 
 
-
-When using CEHIGH envvars the third form is used::
+Examples of CEHIGH envvars using the third standardized form::
 
     export CEHIGH_0=-11:-9:0:0:-2:0:1000:4
     export CEHIGH_1=9:11:0:0:-2:0:1000:4
