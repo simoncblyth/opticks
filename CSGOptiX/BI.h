@@ -11,19 +11,26 @@ struct BI
 
     OptixBuildInput buildInput ; 
 
-    OptixBuildInputCustomPrimitiveArray& getBuildInputCPA() ; 
+    OptixBuildInputCustomPrimitiveArray&       getBuildInputCPA()  ; 
+    const OptixBuildInputCustomPrimitiveArray& getBuildInputCPA() const ; 
     
 };
 
 inline OptixBuildInputCustomPrimitiveArray& BI::getBuildInputCPA()
 {
 #if OPTIX_VERSION == 70000
-    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
+    return buildInput.aabbArray ;  
 #elif OPTIX_VERSION > 70000
-    // Hans reports that .aabbArray is not defined in OptiX 7.5 API 
-    // TODO: check exactly which version this change happened at 
-    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.customPrimitiveArray ;  
+    return buildInput.customPrimitiveArray ;  
 #endif
-    return buildInputCPA ; 
 }
+inline const OptixBuildInputCustomPrimitiveArray& BI::getBuildInputCPA() const
+{
+#if OPTIX_VERSION == 70000
+    return buildInput.aabbArray ;  
+#elif OPTIX_VERSION > 70000
+    return buildInput.customPrimitiveArray ;  
+#endif
+}
+
 
