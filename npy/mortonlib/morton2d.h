@@ -49,6 +49,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <algorithm>
 #include <assert.h>
 #include <immintrin.h>
+#include <ostream>
 
 /*
 BMI2(Bit Manipulation Instruction Set 2) is a special set of instructions available for intel core i5, i7(since Haswell architecture) and Xeon E3.

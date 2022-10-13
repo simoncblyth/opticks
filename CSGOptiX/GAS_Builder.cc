@@ -102,7 +102,9 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 
     bi.buildInput = {};
     bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
+    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ; 
+
+
     buildInputCPA.aabbBuffers = &bi.d_aabb ;  
     buildInputCPA.numPrimitives = ps.num_prim  ;   
     buildInputCPA.strideInBytes = ps.stride_in_bytes ;

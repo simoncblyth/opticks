@@ -689,7 +689,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
             const BI& bi = gas.bis[j] ; 
-            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_sbt = buildInputCPA.numSbtRecords ;  // <-- corresponding to bbox of the GAS
 
             for( unsigned k=0 ; k < num_sbt ; k++)
@@ -738,7 +738,7 @@ unsigned SBT::getTotalRec() const
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
             const BI& bi = gas.bis[j] ; 
-            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             tot_rec += num_rec ; 
         }         
@@ -783,7 +783,7 @@ std::string SBT::descGAS() const
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
             const BI& bi = gas.bis[j] ; 
-            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             ss << num_rec << " " ;  
             tot_rec += num_rec ; 
@@ -866,7 +866,7 @@ void SBT::createHitgroup()
             // Q: is there a bi for each node ?
             // A: NO, roughly speaking the bi hold the bbox references for all CSGPrim of the solid(=GAS) 
 
-            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             assert( num_rec == unsigned(numPrim) ) ; 
 

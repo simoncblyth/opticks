@@ -46,6 +46,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cstdint>
 #include <array>
 #include <assert.h>
+#include <ostream>
 
 #if _MSC_VER
 #include <immintrin.h>

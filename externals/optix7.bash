@@ -36,6 +36,32 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+Versions
+----------
+
+The issue with Opticks and gcc 11.2 is that CUDA 10.1 
+which I am currently using with OptiX 7 
+can only be used with up to gcc 8.
+In order for Opticks to compile with gcc 11.2 
+I will need several version updates::
+ 
+    gcc             8.3.0     ->  11.2 
+    CUDA            10.1      ->  11.7
+    OptiX           7.0.0     ->  7.5.0  
+    NVIDIA Driver   435.21    ->  515+
+
+The set of versions to use is driven by the 
+guidelines of each OptiX version release notes.
+
+I fully expect to do this update in future. 
+The API changes are expected to be minimal, 
+and there is strong potential for improved performance
+simply from the OptiX and driver updates. 
+
+But nevertheless every update has potential for issues.
+Hence I think it preferable to validate and make 
+performance measurements before and after such an update. 
+
 
 Multi GPU
 -----------
