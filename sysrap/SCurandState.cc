@@ -83,17 +83,20 @@ long SCurandState::RngMax(const char* path)
     long file_size = ftell(fp);
     rewind(fp);
 
-    long content_size = 44 ;
-    long rngmax = file_size/content_size ;
+    long item_size = 44 ;
+    bool expected_file_size = file_size % item_size == 0 ; 
+    long rngmax = file_size/item_size ;
 
     LOG(LEVEL)
         << " path " << path
         << " file_size " << file_size
-        << " content_size " << content_size
+        << " item_size " << item_size
         << " rngmax " << rngmax
+        << " expected_file_size " << ( expected_file_size ? "YES" : "NO" )
         ;
 
-    assert( file_size % content_size == 0 );
+    LOG_IF(fatal, !expected_file_size) << " NOT EXPECTED FILE SIZE " ; 
+    assert( expected_file_size );
     return rngmax ; 
 }
 

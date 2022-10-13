@@ -4,20 +4,54 @@ QCurandState.hh : creates states
 =====================================
 
 * loading from file is handled by QRng::Load 
-* HMM:maybe move into here ?
 
 The curandState originate on the device as a result of 
 calling curand_init and they need to be downloaded and stored
 into files named informatively with seeds, counts, offsets etc..
 
 A difficulty is that calling curand_init is a very heavy kernel, 
-so need to split up into multiple launches that all write into the same file. 
-OR could split up into multiple files ?
+so currently the below large files are created via multiple launches all 
+writing into the single files shown below.  
+The old cuRANDWrapper and new QCurandState have exactly the same contents. 
 
-* HMM : start with small sizes and verify that reproduces the cudarap states 
-  before scaling it up 
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|  num      | bytes (ls)    | filesize(du -h)|  path                                                              |
++===========+===============+================+====================================================================+
+|   200M    |  8800000000   |   8.2G         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_200000000_0_0.bin  |
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|   100M    |  4400000000   |   4.1G         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_100000000_0_0.bin  |
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|    10M    |   440000000   |   420M         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_10000000_0_0.bin   | 
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|     3M    |   132000000   |   126M         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin    |
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|     2M    |    88000000   |    84M         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_2000000_0_0.bin    |
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|     1M    |    44000000   |    42M         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin    |
++-----------+---------------+----------------+--------------------------------------------------------------------+
 
-* curandState Content size is 44 bytes which get padded to 48 bytes in the file. 
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|  num      | bytes (ls)    | filesize(du -h)|  path                                                              |
++===========+===============+================+====================================================================+
+|    10M    |   440000000   |   420M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_10000000_0_0.bin    |   
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|     3M    |   132000000   |   126M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin     |
++-----------+---------------+----------------+--------------------------------------------------------------------+
+|     1M    |    44000000   |    42M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_1000000_0_0.bin     | 
++-----------+---------------+----------------+--------------------------------------------------------------------+
+
+
+With GPU VRAM of 48G the limit coming from combination of photons and curandStates is about 400M
+
+* curandState item size in the files is 44 bytes which get padded to 48 bytes in curandState type
+* dealing with 16.4GB files for 400M states is uncomfortable, so will need to rearrange into multiple files
+* chunking into files of 10M states each would correspond to 40 files of 10M states each (420M bytes) 
+* with 40-100 files of 10M states each could push to one trillion photon launch if had GPU with 100G VRAM 
+* also could arrange for just the needed states (in 10M chunks) to be loaded+uploaded 
+  depending on configured max photon, which depends on available VRAM 
+
+
+TODO:chunked creation, chunk naming, chunked save/load 
 
 **/
 
