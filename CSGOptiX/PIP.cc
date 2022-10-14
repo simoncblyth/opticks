@@ -40,10 +40,18 @@ static bool readFile( std::string& str, const char* path )
 
 OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
 {
-    OptixCompileDebugLevel level  ; 
+    OptixCompileDebugLevel level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
+#if OPTIX_VERSION == 70000
     if(     strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
     else if(strcmp(option, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
+#elif OPTIX_VERSION == 70500
+    if(     strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT ; 
+    else if(strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
+    else if(strcmp(option, "MINIMAL") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL ; 
+    else if(strcmp(option, "MODERATE") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE ; 
+    else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
+#endif
     else assert(0) ; 
     LOG(LEVEL) << " option " << option << " level " << level ;  
     return level ; 
@@ -53,16 +61,20 @@ const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
     const char* s = nullptr ; 
     switch(debugLevel)
     {  
+#if OPTIX_VERSION == 70000
         case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
         case OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO: s = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ ; break ;
         case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
+#elif OPTIX_VERSION == 70500
+        case OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT:  s = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT_  ; break ; 
+        case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
+        case OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL:  s = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL_  ; break ;
+        case OPTIX_COMPILE_DEBUG_LEVEL_MODERATE: s = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE_ ; break ;
+        case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
+#endif
     }
     return s ;    
 }
-const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_NONE_     = "OPTIX_COMPILE_DEBUG_LEVEL_NONE" ; 
-const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ = "OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO" ; 
-const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_FULL_     = "OPTIX_COMPILE_DEBUG_LEVEL_FULL" ; 
-
 
 OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // static 
 {
@@ -89,11 +101,6 @@ const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
     }
     return s ; 
 } 
-const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_0" ; 
-const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_1" ; 
-const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_2" ; 
-const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_3" ; 
-
 OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
 {
     OptixExceptionFlags flag = OPTIX_EXCEPTION_FLAG_NONE ; 
