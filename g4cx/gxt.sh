@@ -32,10 +32,25 @@ MOI acts within the configured GEOM::
     MOI=NNVT:0:1000 NOLEGEND=1 GSPLOT=1 ~/opticks/g4cx/gxt.sh ana  
 
 
+NB for naming consistency must remember to reuse the same MOI 
+when doing captures and publication copies::
+
+    gx
+    MOI=Hama:0:1000 ./gxt.sh ana
+    MOI=Hama:0:1000 ./gxt.sh mpcap
+    MOI=Hama:0:1000 ./gxt.sh mppub
+
+    MOI=NNVT:0:1000 ./gxt.sh mpcap
+    MOI=NNVT:0:1000 ./gxt.sh mppub
+
+
 * *run* time with full JUNO geometry < 1 second
 * *grab* time depends on network, can be minutes to rsync the simtrace.npy intersects
 * *ana* plotting takes a few seconds
 * when MOI is not defined the sframe::DEFAULT_FRS value is -1 which corresponds to the entire geometry. 
+
+
+* TODO: bring over support for FOCUS control as with CSG/ct.sh
 
 
 Without MOI targetting
@@ -304,7 +319,11 @@ if [ "ana" == "$arg" ]; then
 
     topline="gxt.sh/$bin.py : GEOM $GEOM "
     [ -n "$MOI" ] && topline="$topline MOI $MOI"
-    export TOPLINE="$topline" 
+    export TOPLINE="$topline"
+
+    botline=""
+    [ -n "$FOCUS" ] && botline="$botline FOCUS $FOCUS"
+    export BOTLINE="$botline"
 
     ${IPYTHON:-ipython} --pdb -i $home/g4cx/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
@@ -330,9 +349,16 @@ fi
 
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+
+
+    stem=$GEOM
+    [ -n "$MOI" ] && stem="${stem}_$MOI" 
+
+    echo == $BASH_SOURCE arg $arg GEOM $GEOM MOI $MOI stem $stem 
+
     export CAP_BASE=$FOLD/figs
     export CAP_REL=gxt
-    export CAP_STEM=${GEOM}_${OPTICKS_INPUT_PHOTON_LABEL}
+    export CAP_STEM=$stem
     case $arg in 
        pvcap) source pvcap.sh cap  ;;
        mpcap) source mpcap.sh cap  ;;

@@ -32,6 +32,16 @@ def pvplt_simple(pl, xyz, label):
 
 
 def mpplt_focus(xlim, ylim):
+    """
+    Used from::
+
+        sysrap/sframe.py:mp_subplots (as used by tests/CSGSimtraceTest.py)
+        g4cx/tests/cf_G4CXSimtraceTest.py:main
+
+    :param xlim: array of shape (2,) 
+    :param ylim: array of shape (2,)
+    :return xlim,ylim: restricted by FOCUS envvar 
+    """
     aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
     log.info("mpplt_focus xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
     if not np.all(FOCUS == 0): 

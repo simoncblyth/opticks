@@ -132,36 +132,32 @@ class SimtracePlot(object):
 
         H,V = self.frame.axes       # traditionally H,V = X,Z  but now generalized
         _H,_V = self.frame.axlabels
-
         log.info(" frame.axes H:%s V:%s " % (_H, _V))  
 
         feat = self.feat
         sz = self.sz
         print("positions_mpplt feat.name %s " % feat.name )
 
-        xlim = lim[X]
-        ylim = lim[Y]
-        zlim = lim[Z]
-
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline, self.botline, self.frame.thirdline]
+        #fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
+        #title = [self.topline, self.botline, self.frame.thirdline]
+        #fig.suptitle("\n".join(title))    # now done in frame.mp_subplots
 
-        fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
-        fig.suptitle("\n".join(title))
+        fig, ax = self.frame.mp_subplots(mp)   # this way is sensitive to FOCUS
               
         self.ax = ax  # TODO: arrange to pass this in 
         self.fig = fig 
 
         note = self.note
         note1 = self.note1
+
         if len(note) > 0:
              mp.text(0.01, 0.99, note, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
         pass
         if len(note1) > 0:
              mp.text(0.01, 0.95, note1, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
         pass
-
         if len(self.ellipse0) > 0 and self.ellipse0[0] > 0.:
             mpplt_add_ellipse(ax, self.ellipse0)
         pass
@@ -186,9 +182,6 @@ class SimtracePlot(object):
             ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
 
-        log.info(" xlim[0] %8.4f xlim[1] %8.4f " % (xlim[0], xlim[1]) )
-        log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
-        log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
         mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, linestyle="dashed" ) 
 
@@ -197,37 +190,33 @@ class SimtracePlot(object):
             ax.scatter( x_lpos[:,H], x_lpos[:,V], label="x_lpos", s=10 )
             mpplt_add_contiguous_line_segments(ax, x_lpos, axes=self.frame.axes, linewidths=2)
         pass
-
         if hasattr(self, 't_spos'):
             t_spos = self.t_spos
             ax.scatter( t_spos[:,H], t_spos[:,V], label="t_spos", s=5 )
         pass
-
         if hasattr(self, 'simtrace_selection'):
             sts = self.simtrace_selection
             mpplt_simtrace_selection_line(ax, sts, axes=self.frame.axes, linewidths=2)
         pass
-
-
         if not self.look_ce is None:
             mpplt_ce_multiple(ax, self.look_ce, axes=self.frame.axes)
         pass
-
         if not self.look_epsilon is None:
             mpplt_ce(ax, self.look_epsilon, axes=self.frame.axes, colors="yellow" ) 
         pass
-
-
         label = "gs_center XZ"
         if gsplot > 0:
             ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
         pass
 
-        ax.set_aspect('equal')
-        ax.set_xlim( lim[H] )
-        ax.set_ylim( lim[V] ) 
-        ax.set_xlabel(_H)
-        ax.set_ylabel(_V)
+        # not setting xlim ylim here, as thats 
+        # now done in sframe.py:mp_subplots
+        #
+        # ax.set_aspect('equal')
+        # ax.set_xlim( lim[H] )
+        # ax.set_ylim( lim[V] ) 
+        # ax.set_xlabel(_H)
+        # ax.set_ylabel(_V)
 
         if legend:
             ax.legend(loc="upper right", markerscale=4)
@@ -238,11 +227,7 @@ class SimtracePlot(object):
         if GUI:
             fig.show()
         pass 
-
-        outpath = self.outpath_("positions",ptype )
-        print(outpath)
-        fig.savefig(outpath)
-
+        #fig.savefig()
 
 
     def positions_pvplt(self):
@@ -318,11 +303,10 @@ class SimtracePlot(object):
         lim = self.gs.lim
         ugsc = self.gs.ugsc
 
-        xlim = lim[X]
-        ylim = lim[Y]
-        zlim = lim[Z]
-
-        H,V = self.frame.axes      ## traditionally H,V = X,Z  but are now generalizing 
+        #xlim = lim[X]
+        #ylim = lim[Y]
+        #zlim = lim[Z]
+        #H,V = self.frame.axes      ## traditionally H,V = X,Z  but are now generalizing 
  
         upos = self.pos.upos
 
@@ -370,14 +354,7 @@ class SimtracePlot(object):
 
         self.frame.pv_compose(pl, local=True) 
 
-
-        outpath = self.outpath_("positions","pvplt")
-        print(outpath)
-        cp = pl.show(screenshot=outpath)
-
-        #img = pl.screenshot(outpath, return_img=True)
-        #print("img.shape %s " % str(img.shape) )
-        #self.img = img 
+        cp = pl.show()
 
         return cp 
 
