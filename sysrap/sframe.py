@@ -340,7 +340,7 @@ class sframe(object):
         eye = self.eye
         up = self.up
 
-        print("frame.pv_compose look:%s eye: %s up:%s  PARA:%s RESET:%d ZOOM:%s  " % (str(look), str(eye), str(up), RESET, PARA, ZOOM ))
+        log.info("frame.pv_compose look:%s eye: %s up:%s  PARA:%s RESET:%d ZOOM:%s  " % (str(look), str(eye), str(up), RESET, PARA, ZOOM ))
 
         pl.set_focus(    look )
         pl.set_viewup(   up )
@@ -429,6 +429,7 @@ class sframe(object):
         for i in range(len(pos)):
             self.ax.arrow( pos[i,H], pos[i,V], mom[i,H], mom[i,V] )
         pass
+
 
     def mp_legend(self):
         NOLEGEND = "NOLEGEND" in os.environ

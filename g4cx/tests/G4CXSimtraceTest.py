@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
 
     if SPURIOUS:
-        log.info("SPURIOUS envvars switches on morton enabled spurious_2d_outliers ")
+        log.info("SPURIOUS envvar switches on search for morton outliers using spurious_2d_outliers ")
         u_kpos, c_kpos, i_kpos, t_spos = spurious_2d_outliers( t.sframe.bbox, t_pos.upos )
         j_kpos = t_pos.upos2simtrace[i_kpos]
         log.info("j_kpos = t_pos.upos2simtrace[i_kpos]\n%s" % str(t_pos.upos2simtrace[i_kpos]) )
@@ -223,7 +223,6 @@ if __name__ == '__main__':
     else:
         pass
     pass 
-
     
     if not mp is None:
         plt.positions_mpplt()

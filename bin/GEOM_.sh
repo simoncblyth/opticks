@@ -35,8 +35,6 @@ it writes to it.
 EOU
 }
 
-
-
 #geom=J001
 #geom=J003
 geom=J004
@@ -58,6 +56,8 @@ geom=J004
 
 #geom=nmskSolidMask
 #geom=nmskSolidMaskTail
+
+#geom=nmskSolidMaskTail     ## NB no need for __U1 opt here, that is set below
 #geom=nmskSolidMaskVirtual
 
 #geom=nmskTailOuter
@@ -77,7 +77,7 @@ geom=J004
 #geom=acyl
 #geom=cyli
 
-opt=U1
+opt=U1  # U2 
 case $geom in 
    nmsk*|hmsk*|nnvt*|hama*) geom=${geom}__${opt} ;;
 esac

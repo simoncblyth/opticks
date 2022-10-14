@@ -16,12 +16,15 @@ import matplotlib.pyplot as mp
 from opticks.ana.fold import Fold
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.CSG.Values import Values 
-from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist, mpplt_parallel_lines_auto
+from opticks.ana.pvplt import mpplt_simtrace_selection_line, mpplt_hist, mpplt_parallel_lines_auto, mpplt_add_shapes
 from opticks.ana.eget import efloatarray_
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+
+    #fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    fmt = '{%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=fmt)
 
     SYMBOLS = os.environ.get("SYMBOLS", None)
     FOLD = os.environ.get("FOLD", None)
@@ -72,6 +75,8 @@ if __name__ == '__main__':
         ax.set_ylim( -240, z0+50 )
     pass
 
+    mpplt_add_shapes(ax)  # ELLIPSE0 ELLIPSE1 RECTANGLE0 RECTANGLE1
+
 
     if not s is None and "UNEXPECTED" in os.environ:  
 
@@ -121,7 +126,6 @@ if __name__ == '__main__':
     if not SYMBOLS is None:
         for A in list(SYMBOLS):
             a = A.lower()
-            log.info("A %s a %s" % ( A, a ) )
             if hasattr(builtins, a):
                 fold = getattr(builtins, a)
                 label = getattr(builtins, "%s_label" % a )
@@ -134,7 +138,7 @@ if __name__ == '__main__':
                 assert 0 
             pass
             a_offset = efloatarray_("%s_OFFSET" % A, "0,0,0")
-            log.info("label %s" % ( label ) )
+            log.info("A %s a %s label %s" % ( A, a, label ) )
             a_hit = fold.simtrace[:,0,3]>0 
             a_pos = a_offset + fold.simtrace[a_hit][:,1,:3]
             label = label.split("__")[0] if "__" in label else label

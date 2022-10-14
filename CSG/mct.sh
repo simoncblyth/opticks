@@ -20,7 +20,7 @@ Workflow:
 
    ~/opticks/CSG/mct.sh run
 
-4. present the intersects with python plots::
+5. present the intersects with python plots::
 
    ~/opticks/CSG/mct.sh ana
 
@@ -28,6 +28,38 @@ Workflow:
 Alternatively do all the above with::
 
     ~/opticks/CSG/mct.sh translate_run_ana 
+
+
+Manual "fitting" ellipses to the NNVT PMT::
+
+    ELLIPSE0=249,179 ./mct.sh ## NNVT pmt_in
+    ELLIPSE0=254,184 ./mct.sh ## NNVT pmt_out  +5
+    ELLIPSE0=256,186 ./mct.sh ## NNVT mask_in  +5+2
+    ELLIPSE0=264,194 ./mct.sh ## NNVT mask_out +5+2+8
+
+HAMA PMT top hemi::
+
+    ELLIPSE0=249,185      ELLIPSE0_OPT=top ./mct.sh  ##        HAMA pmt_in   
+    ELLIPSE0=254,190      ELLIPSE0_OPT=top ./mct.sh  ## +5     HAMA pmt_out 
+    ELLIPSE0=256,192      ELLIPSE0_OPT=top ./mct.sh  ## +5+2   HAMA mask_in  
+    ELLIPSE0=264,200      ELLIPSE0_OPT=top ./mct.sh  ## +5+2+8 HAMA mask_out
+
+HAMA PMT bot hemi::
+
+    ELLIPSE0=249,185,0,-5 ELLIPSE0_OPT=bot ./mct.sh  ## HAMA pmt_in 
+    ELLIPSE0=254,190,0,-5 ELLIPSE0_OPT=bot ./mct.sh  ## HAMA pmt_out 
+    ELLIPSE0=256,192      ELLIPSE0_OPT=bot ./mct.sh  ## HAMA mask_in 
+    ELLIPSE0=264,200      ELLIPSE0_OPT=bot ./mct.sh  ## HAMA mask_out 
+
+
+
+
+
+
+
+
+
+
 
 EOU
 }

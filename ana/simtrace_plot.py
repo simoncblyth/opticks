@@ -97,11 +97,6 @@ class SimtracePlot(object):
         self.aa = aa
         self.sz = float(os.environ.get("SZ","1.0"))
 
-        self.ellipse0 = efloatlist_("ELLIPSE0", "0,0,0,0")      #  elw,elh,elx,ely,ela,ez0,ez1
-        self.ellipse1 = efloatlist_("ELLIPSE1", "0,0,0,0")      #  
-        self.rectangle0 = efloatlist_("RECTANGLE0", "0,0,0,0")  #  hx,hy,cx,cy,al,dy
-        self.rectangle1 = efloatlist_("RECTANGLE1", "0,0,0,0")  # 
-
         log.info(" aa[X] %s " % str(self.aa[X]))
         log.info(" aa[Y] %s " % str(self.aa[Y]))
         log.info(" aa[Z] %s " % str(self.aa[Z]))
@@ -158,18 +153,7 @@ class SimtracePlot(object):
         if len(note1) > 0:
              mp.text(0.01, 0.95, note1, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
         pass
-        if len(self.ellipse0) > 0 and self.ellipse0[0] > 0.:
-            mpplt_add_ellipse(ax, self.ellipse0)
-        pass
-        if len(self.ellipse1) > 0 and self.ellipse1[0] > 0.:
-            mpplt_add_ellipse(ax, self.ellipse1)
-        pass
-        if len(self.rectangle0) > 0 and self.rectangle0[0] > 0.:
-            mpplt_add_rectangle(ax, self.rectangle0)
-        pass
-        if len(self.rectangle1) > 0 and self.rectangle1[0] > 0.:
-            mpplt_add_rectangle(ax, self.rectangle1)
-        pass
+
 
         # loop over unique values of the feature 
         for idesc in range(feat.unum):
@@ -303,12 +287,6 @@ class SimtracePlot(object):
 
         lim = self.gs.lim
         ugsc = self.gs.ugsc
-
-        #xlim = lim[X]
-        #ylim = lim[Y]
-        #zlim = lim[Z]
-        #H,V = self.frame.axes      ## traditionally H,V = X,Z  but are now generalizing 
- 
         upos = self.pos.upos
 
         feat = self.feat 
@@ -319,13 +297,13 @@ class SimtracePlot(object):
         pl.add_text(self.botline, position="lower_left")
         pl.add_text(self.frame.thirdline, position="lower_right")
 
-        print("positions_pvplt feat.name %s " % feat.name )
+        log.info("positions_pvplt_2D feat.name %s " % feat.name )
 
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
             if skip: continue
             pos = upos[selector] 
-            print(msg)
+            log.info(msg)
             pl.add_points( pos[:,:3], color=color )
         pass
 

@@ -17,6 +17,9 @@ GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
+
+
+
 XDIST = efloat_("XDIST", "200")
 FOCUS = eary_("FOCUS", "0,0,0")
 
@@ -185,6 +188,10 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
 
 
 
+
+
+
+
 def mpplt_hist(mp, v, bins=100):
     fig, ax = mp.subplots()                                                                                                                                             
     ax.hist(v, bins=bins )                                                                                                                               
@@ -204,26 +211,56 @@ def get_ellipse_param(elpar):
     ez1 = elpar[6]   if len(elpar) > 6 else 0.
     return elw,elh,elx,ely,ela,ez0,ez1
 
- 
-def mpplt_add_ellipse(ax, elpar):
+def mpplt_add_ellipse_(ax, par, opt):
     """
     :param ax: matplotlib 2D axis 
     :param elpar: list of up to 5 float 
+
+      tl            .
+              .            .
+              
+      ml  +                      .
+            
+              .            .
+      bl  +         .
+           
     """
-
-    elw,elh,elx,ely,ela,ez0,ez1 = get_ellipse_param(elpar)
+    elw,elh,elx,ely,ela,ez0,ez1 = get_ellipse_param(par)
     el = Ellipse(xy=[elx,ely], width=elw, height=elh, alpha=ela )
-
-    dz =  elh/2+ez0 
-
-    botleft = (-elw/2,-elh/2 + dz )
-    #ec = "red" 
-    ec = "none"
-    bx = Rectangle(botleft,elw,elh-dz, facecolor="none", edgecolor=ec )
-
     ax.add_artist(el)
-    ax.add_artist(bx)
-    el.set_clip_path(bx)
+
+    #dz =  elh/2+ez0 
+
+    topleft = (-elw/2, elh/2 + ez0 )
+    midleft = (-elw/2, ez0 )
+    botleft = (-elw/2,-elh/2 + ez0 ) 
+    ec = "red" if opt.find("red") > -1 else "none"
+
+    log.info( " elw/2 %s elh/2 %s ez0 %s botleft %s ec %s opt %s" % (elw/2, elh/2, ez0, str(botleft), ec, opt) )
+
+    if opt.find("top") > -1:
+        clip_bx = Rectangle(midleft,elw,elh/2, facecolor="none", edgecolor=ec )
+    elif opt.find("bot") > -1:
+        clip_bx = Rectangle(botleft,elw,elh/2, facecolor="none", edgecolor=ec )
+    else:
+        clip_bx = None
+    pass
+    if not clip_bx is None:
+        ax.add_artist(clip_bx)
+        el.set_clip_path(clip_bx)
+        ## clipping is selecting part of the ellipse to include (not to cut away)
+    pass
+
+
+def mpplt_add_ellipse(ax, ekey ):
+    assert ekey.startswith("ELLIPSE")
+    par = efloatlist_(ekey, "0,0,0,0")      #  elw,elh,elx,ely,ela,ez0,ez1
+    opt = os.environ.get("%s_OPT" % ekey, "")
+
+    if len(par) > 0 and par[0] > 0.:
+        mpplt_add_ellipse_(ax, par, opt)
+    pass
+
 
 
 def get_rectangle_param(repar):
@@ -239,7 +276,7 @@ def get_rectangle_param(repar):
     return hx,hy,cx,cy,al,dy 
 
 
-def mpplt_add_rectangle(ax, repar):
+def mpplt_add_rectangle_(ax, par, opt):
     """
                                    (cx+hx, cy+hy+dy)
            +----------+----------+                  
@@ -252,12 +289,32 @@ def mpplt_add_rectangle(ax, repar):
        (cx-hx,cy-hy+dy)
 
     """
-    hx,hy,cx,cy,al,dy = get_rectangle_param(repar)
+    hx,hy,cx,cy,al,dy = get_rectangle_param(par)
     botleft = (cx-hx, cy-hy+dy)
     width = hx*2
     height = hy*2 
     bx = Rectangle( botleft, width, height, alpha=al, facecolor="none", edgecolor="red" )
     ax.add_artist(bx)
+
+
+def mpplt_add_rectangle(ax, ekey):
+    assert ekey.startswith("RECTANGLE")
+    par = efloatlist_(ekey, "0,0,0,0")  #  hx,hy,cx,cy,al,dy
+    opt = os.environ.get("%s_OPT" % ekey, "")
+    mpplt_add_rectangle_(ax, par, opt)
+
+
+def mpplt_add_shapes(ax):
+    """
+    """
+    mpplt_add_ellipse(ax,"ELLIPSE0")
+    mpplt_add_ellipse(ax,"ELLIPSE1")
+    mpplt_add_ellipse(ax,"ELLIPSE2")
+
+    mpplt_add_rectangle(ax,"RECTANGLE0")
+    mpplt_add_rectangle(ax,"RECTANGLE1")
+    mpplt_add_rectangle(ax,"RECTANGLE2")
+
 
 
 def get_from_simtrace_isect( isect, mode="o2i"):

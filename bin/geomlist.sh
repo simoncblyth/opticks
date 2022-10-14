@@ -105,8 +105,8 @@ hamaInner2Solid
 EOL
 }
 
-#geomlist_tag=H
-geomlist_tag=N
+geomlist_tag=H
+#geomlist_tag=N
 
 
 if [ "${geomlist_tag}" == "N" ]; then
