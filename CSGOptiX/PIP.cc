@@ -94,6 +94,7 @@ const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
     const char* s = nullptr ; 
     switch(optLevel)
     {
+        case OPTIX_COMPILE_OPTIMIZATION_DEFAULT: s = OPTIX_COMPILE_OPTIMIZATION_DEFAULT_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_0: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_1: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_2: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ ; break ; 
@@ -439,7 +440,12 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 
     OptixPipelineLinkOptions pipeline_link_options = {};
     pipeline_link_options.maxTraceDepth          = max_trace_depth ;
+
+#if OPTIX_VERSION == 70000
     pipeline_link_options.overrideUsesMotionBlur = false;
+#elif OPTIX_VERSION == 70500
+#endif
+
     pipeline_link_options.debugLevel             = DebugLevel(linkPipeline_debugLevel) ;
 
     size_t sizeof_log = 0 ; 

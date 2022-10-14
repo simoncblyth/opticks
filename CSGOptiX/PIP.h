@@ -48,6 +48,7 @@ struct PIP
 
     static OptixCompileOptimizationLevel OptimizationLevel(const char* option) ; 
     static const char* OptimizationLevel_( OptixCompileOptimizationLevel optLevel ); 
+    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_DEFAULT_ = "OPTIX_COMPILE_OPTIMIZATION_DEFAULT" ;
     static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_0" ;
     static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_1" ;
     static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_2" ; 
