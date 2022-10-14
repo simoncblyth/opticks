@@ -165,9 +165,19 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     NP* gs_base = MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
     gsl.push_back(gs_base) ; 
 
+    std::vector<std::string> keys = {{
+        "CEHIGH_0", 
+        "CEHIGH_1", 
+        "CEHIGH_2", 
+        "CEHIGH_3",
+        "CEHIGH_4",
+        "CEHIGH_5",
+        "CEHIGH_6",
+        "CEHIGH_7",
+        "CEHIGH_8",
+        "CEHIGH_9"
+      }} ; 
 
-
-    std::vector<std::string> keys = {{"CEHIGH_0", "CEHIGH_1", "CEHIGH_2", "CEHIGH_3" } } ; 
     for(unsigned i=0 ; i < keys.size() ; i++)
     {
         const char* key = keys[i].c_str() ; 

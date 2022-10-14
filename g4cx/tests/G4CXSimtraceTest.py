@@ -119,7 +119,10 @@ def spurious_2d_outliers(bbox, upos):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+
+    #fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    fmt = '{%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=fmt)
 
     t = Fold.Load(symbol="t")
     a = Fold.Load("$A_FOLD", symbol="a")

@@ -27,6 +27,8 @@ MOI acts within the configured GEOM::
     MOI=Hama:0:1000 NOLEGEND=1          ~/opticks/g4cx/gxt.sh ana 
     MOI=Hama:0:1000 NOLEGEND=1 GSPLOT=1 ~/opticks/g4cx/gxt.sh ana 
 
+    MOI=Hama:0:1000 NOLEGEND=1 FOCUS=-100,-100,100  ~/opticks/g4cx/gxt.sh ana 
+
     MOI=NNVT:0:1000                     ~/opticks/g4cx/gxt.sh ana  
     MOI=NNVT:0:1000 NOLEGEND=1          ~/opticks/g4cx/gxt.sh ana  
     MOI=NNVT:0:1000 NOLEGEND=1 GSPLOT=1 ~/opticks/g4cx/gxt.sh ana  
@@ -214,7 +216,11 @@ cehigh_PMT()
     export CEHIGH_1=-8:8:0:0:4:6:1000:4     # across the top
     export CEHIGH_2=-8:-6:0:0:-4:4:1000:4   # left side
     export CEHIGH_3=6:8:0:0:-4:4:1000:4     # right side
-    ## need to change SFrameGenstep::MakeCenterExtentGensteps to add more than 4 regions 
+    export CEHIGH_4=-6:-4:0:0:2:4:1000:4    # inner top left corner 
+    export CEHIGH_5=4:6:0:0:2:4:1000:4      # inner top right corner 
+    export CEHIGH_6=-6:-4:0:0:-4:-2:1000:4  # inner bottom left corner
+    export CEHIGH_7=4:6:0:0:-4:-2:1000:4    # inner bottom right corner
+    ## see SFrameGenstep::MakeCenterExtentGensteps for where the CEHIGH_ are acted on 
 }
 
 cehigh()

@@ -178,7 +178,8 @@ class SimtracePlot(object):
             pos = upos[selector]    
             ## hmm any masking needs be applied to both upos and selector ?
             ## alternatively could apply the mask early and use that from the Feature machinery 
-            log.info(" feat.unum %d idesc %d label %s color %s msg %s " % (feat.unum, idesc, label, color, msg ))
+            #log.info(" feat.unum %d idesc %d label %s color %s msg %s ." % (feat.unum, idesc, label, color, msg ))
+            log.debug(" feat.unum %d msg %s " % (feat.unum, msg ))
             ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
 
