@@ -94,11 +94,11 @@ const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
     const char* s = nullptr ; 
     switch(optLevel)
     {
-        case OPTIX_COMPILE_OPTIMIZATION_DEFAULT: s = OPTIX_COMPILE_OPTIMIZATION_DEFAULT_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_0: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_1: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_2: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ ; break ; 
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_3: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ ; break ; 
+        default:                                                                         ; break ; 
     }
     return s ; 
 } 
