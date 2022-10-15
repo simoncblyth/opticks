@@ -17,12 +17,12 @@ namespace schrono
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ; 
     typedef std::chrono::duration<double> DT ; 
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> stamp()
+    inline std::chrono::time_point<std::chrono::high_resolution_clock> stamp()
     {
         TP t = std::chrono::high_resolution_clock::now();
         return t ; 
     }
-    double duration( 
+    inline double duration( 
         std::chrono::time_point<std::chrono::high_resolution_clock>& t0, 
         std::chrono::time_point<std::chrono::high_resolution_clock>& t1 )
     {
@@ -31,13 +31,13 @@ namespace schrono
         return dt ; 
     }
 
-    void sleep(int seconds)
+    inline void sleep(int seconds)
     {
         std::chrono::seconds dura(seconds);
         std::this_thread::sleep_for( dura );
     }
 
-    std::time_t approx_time_t(std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
+    inline std::time_t approx_time_t(std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
     {
         auto highResNow = std::chrono::high_resolution_clock::now();
         auto systemNow = std::chrono::system_clock::now();
