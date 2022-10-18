@@ -169,8 +169,17 @@ int QEvent::setGenstep(NP* gs_)
     gs = gs_ ; 
     SGenstep::Check(gs); 
     evt->num_genstep = gs->shape[0] ; 
+    bool not_allocated = evt->genstep == nullptr && evt->seed == nullptr ; 
 
-    if( evt->genstep == nullptr && evt->seed == nullptr ) device_alloc_genstep() ; 
+    LOG(LEVEL) 
+        << " evt.num_genstep " << evt->num_genstep 
+        << " not_allocated " << ( not_allocated ? "YES" : "NO" ) 
+        ; 
+
+    if(not_allocated) 
+    {
+        device_alloc_genstep() ; 
+    }
 
     LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
  
