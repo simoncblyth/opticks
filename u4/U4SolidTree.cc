@@ -18,6 +18,7 @@
 #include "G4Orb.hh"
 #include "G4MultiUnion.hh"
 #include "G4Sphere.hh"
+#include "G4Version.hh"
 
 #include "G4RotationMatrix.hh"
 
@@ -2342,13 +2343,21 @@ G4VSolid* U4SolidTree::PromoteTubsToPolycone( const G4VSolid* solid ) // static
     const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(solid) ; 
     assert(tubs); 
 
-    G4String name = tubs->GetName(); 
+    G4String name = tubs->GetName();
+#if G4VERSION_NUMBER < 1100
     double dz = tubs->GetDz(); 
     double rmin = tubs->GetRMin(); 
     double rmax = tubs->GetRMax(); 
     double sphi = tubs->GetSPhi(); 
     double dphi = tubs->GetDPhi(); 
- 
+#else
+    double dz   = tubs->GetZHalfLength();
+    double rmin = tubs->GetInnerRadius();
+    double rmax = tubs->GetOuterRadius();
+    double sphi = tubs->GetStartPhiAngle();
+    double dphi = tubs->GetDeltaPhiAngle();
+#endif
+    
     G4int numZPlanes = 2 ; 
     G4double zPlane[] = { -dz    , dz } ;   
     G4double rInner[] = {  rmin  , rmin   } ;   

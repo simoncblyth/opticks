@@ -1,3 +1,4 @@
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -14,7 +15,9 @@
 #include "SLOG.hh"
 
 #include "G4Material.hh"
+
 #include "G4SystemOfUnits.hh"
+#include "G4Version.hh"
 #include "U4Material.hh"
 #include "U4MaterialPropertyVector.h"
 
@@ -23,7 +26,7 @@ const plog::Severity U4Material::LEVEL = SLOG::EnvLevel("U4Material", "DEBUG");
 
 std::string U4Material::DescMaterialTable()
 {
-    std::vector<std::string> names ; 
+    std::vector<std::string> names ;
     GetMaterialNames(names);  
     std::stringstream ss ; 
     ss << "U4Material::DescMaterialTable " << names.size() << std::endl ; 
@@ -156,9 +159,15 @@ std::string U4Material::DescProperty(const G4MaterialPropertyVector* prop)
            << std::setw(5) << "mx" << std::fixed << std::setw(10) << std::setprecision(5) << mx
            << std::setw(12) << "GetMaxValue" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMaxValue()
            << std::setw(12) << "GetMinValue" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMinValue()
+#if G4VERSION_NUMBER < 1100
            << std::setw(23) << "GetMinLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMinLowEdgeEnergy()/eV
            << std::setw(23) << "GetMaxLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMaxLowEdgeEnergy()/eV
-           ; 
+#elif
+           << std::setw(23) << "GetMinLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMinEnergy()/eV
+           << std::setw(23) << "GetMaxLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMaxEnergy()/eV	  
+#endif
+	  ;
+
     }
     std::string s = ss.str(); 
     return s ; 
@@ -228,7 +237,7 @@ void U4Material::RemoveProperty( const char* key, G4Material* mat )
     }
 }
 
-
+#if G4VERSION_NUMBER < 1100
 void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Material* mat )
 {
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
@@ -245,8 +254,23 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
          G4String name = pnames[it->first] ;  
          names.push_back(name.c_str()) ; 
     }
-}
 
+    
+}
+#elif
+void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Material* mat )
+{
+  const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
+  if( mpt_ == nullptr ) return ; 
+  std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
+  //const vector<G4String>::const_iterator iter = pnames.begin();
+  for(vector<G4String>::const_iterator iter = pnames.begin(); iter != pnames.end(); iter++)
+    {
+      // std::string name=(iter).c_str();
+      //names.push_back(name);  
+    }
+}
+#endif
 /**
 U4Material::MakePropertyFold
 ----------------------------
@@ -366,7 +390,7 @@ std::string U4Material::DescPropertyNames( const G4Material* mat )
     MSC* msc = mpt->GetPropertiesCMap();
     for(MSC::const_iterator it=msc->begin() ; it != msc->end() ; it++ ) ss << it->first << std::endl ; 
     */
-
+#if G4VERSION_NUMBER < 1100
     ss << " GetPropertyMap " << std::endl ; 
     typedef std::map<G4int, G4MaterialPropertyVector*, std::less<G4int> > MIV ; 
     const MIV* miv =  mpt->GetPropertyMap(); 
@@ -377,7 +401,7 @@ std::string U4Material::DescPropertyNames( const G4Material* mat )
     const MIC* mic =  mpt->GetConstPropertyMap(); 
     for(MIC::const_iterator it=mic->begin() ; it != mic->end() ; it++ ) ss << cnames[it->first] << std::endl ; 
 
-
+#endif
     std::string s = ss.str(); 
     return s ; 
 }
