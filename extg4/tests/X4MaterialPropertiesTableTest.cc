@@ -89,8 +89,9 @@ int main(int argc, char** argv)
     test_MaterialPropertyNames(mpt); 
     test_MaterialConstPropertyNames(mpt); 
 
-    bool all = true ; 
+    bool all = true ;
+#if G4VERSION_NUMBER < 1100
     X4MaterialPropertiesTable::Dump(mpt, all); 
-    
+#endif
     return 0 ; 
 }

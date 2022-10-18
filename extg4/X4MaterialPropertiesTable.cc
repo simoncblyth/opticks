@@ -18,6 +18,10 @@
  */
 
 #include <map>
+#if G4VERSION_NUMBER >= 1100
+#include <vector>
+#include <algorithm>
+#endif
 #include "G4MaterialPropertiesTable.hh"
 
 #include "X4MaterialPropertiesTable.hh"
@@ -28,6 +32,7 @@
 #include "GDomain.hh"
 #include "GProperty.hh"
 #include "SLOG.hh"
+
 
 const plog::Severity X4MaterialPropertiesTable::LEVEL = SLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
@@ -91,15 +96,27 @@ NB there is a difference between the existance of a property key and existance o
 property corresponding to that key. 
 
 **/
-
+#if G4VERSION_NUMBER < 1100
 bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
 {
     int idx = GetPropertyIndex(mpt, key); 
     auto m = mpt->GetPropertyMap();    // map is created at every call in 1100 
     return m->count(idx) == 1 ; 
 }
-
-
+#else
+bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+  //int idx = mpt->GetPropertyIndex(key);
+  const std::vector<G4String>& names= mpt->GetMaterialPropertyNames();
+  if (std::find(names.begin(), names.end(), key) != names.end()) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+			       
+#endif
 
 /**
 X4MaterialPropertiesTable::ConstPropertyExists
@@ -110,14 +127,19 @@ with non-existing keys : it can never return false as a fatal exception is throw
 This method provides a workaround for the removal of introspection. 
 
 **/
-
+#if G4VERSION_NUMBER < 1100
 bool X4MaterialPropertiesTable::ConstPropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
 {
     int idx = GetConstPropertyIndex(mpt, key);   
     auto m = mpt->GetConstPropertyMap(); 
     return m->count(idx) == 1 ; 
 }
-
+#else
+bool X4MaterialPropertiesTable::ConstPropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+   return mpt->ConstPropertyExists(key);
+}
+#endif
 
 int X4MaterialPropertiesTable::GetIndex(const std::vector<G4String>& nn, const char* key ) // static
 {
@@ -131,6 +153,7 @@ int X4MaterialPropertiesTable::GetIndex(const std::vector<G4String>& nn, const c
 }
 
 
+#if G4VERSION_NUMBER < 1100
 
 void X4MaterialPropertiesTable::Dump( const G4MaterialPropertiesTable* mpt_, bool all ) // static
 {
@@ -235,7 +258,7 @@ void X4MaterialPropertiesTable::DumpConstPropMap( const G4MaterialPropertiesTabl
 
 }
 
-
+#endif
 
 
 

@@ -24,6 +24,7 @@
 #include "plog/Severity.h"
 #include "G4String.hh"
 #include "G4MaterialPropertyVector.hh"
+#include "G4Version.hh"
 
 class G4MaterialPropertiesTable ; 
 template <typename T> class GPropertyMap ; 
@@ -49,11 +50,12 @@ class X4_API X4MaterialPropertiesTable
         static int  GetIndex(              const std::vector<G4String>& names,   const char* key ); 
         static bool PropertyExists(        const G4MaterialPropertiesTable* mpt, const char* key );
         static bool ConstPropertyExists(   const G4MaterialPropertiesTable* mpt, const char* key );
+#if G4VERSION_NUMBER < 1100
 
         static void Dump( const G4MaterialPropertiesTable* mpt, bool all ); 
         static void DumpPropMap( const G4MaterialPropertiesTable* mpt, bool all ); 
         static void DumpConstPropMap( const G4MaterialPropertiesTable* mpt, bool all ); 
-
+#endif
     public:
         static void Convert(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode );
         static std::string Digest(const G4MaterialPropertiesTable* mpt);

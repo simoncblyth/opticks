@@ -23,7 +23,7 @@
 
 #include "SCanvas.hh"
 #include "X4SolidTree.hh"
-
+#include "G4Version.hh"
 
 const bool X4SolidTree::verbose = getenv("X4SolidTree_verbose") != nullptr ; 
 
@@ -2359,13 +2359,21 @@ G4VSolid* X4SolidTree::PromoteTubsToPolycone( const G4VSolid* solid ) // static
     const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(solid) ; 
     assert(tubs); 
 
-    G4String name = tubs->GetName(); 
-    double dz = tubs->GetDz(); 
-    double rmin = tubs->GetRMin(); 
+    G4String name = tubs->GetName();
+#if G4VERSION_NUMBER < 1100
+    double dz   = tubs->GetDz();   //GetZHalfLength
+    double rmin = tubs->GetRMin(); //GetInnerRadius
     double rmax = tubs->GetRMax(); 
     double sphi = tubs->GetSPhi(); 
     double dphi = tubs->GetDPhi(); 
- 
+#else
+    double dz   = tubs->GetZHalfLength();
+    double rmin = tubs->GetInnerRadius();
+    double rmax = tubs->GetOuterRadius();
+    double sphi = tubs->GetStartPhiAngle();
+    double dphi = tubs->GetDeltaPhiAngle();
+#endif
+    
     G4int numZPlanes = 2 ; 
     G4double zPlane[] = { -dz    , dz } ;   
     G4double rInner[] = {  rmin  , rmin   } ;   
