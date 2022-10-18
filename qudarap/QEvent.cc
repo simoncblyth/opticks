@@ -153,6 +153,17 @@ int QEvent::setGenstep()  // onto device
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 
 
+
+/**
+QEvent::setGenstep
+-------------------
+
+Recall that even with input photon running, still have gensteps.  
+So when the number of gensteps is zero can safely skip this. 
+
+**/
+
+
 int QEvent::setGenstep(NP* gs_) 
 { 
     gs = gs_ ; 

@@ -173,7 +173,8 @@ extern "C" void QEvent_fill_seed_buffer(sevent* evt )
 QEvent_count_genstep_photons_and_fill_seed_buffer
 ---------------------------------------------------
 
-This function does the same at the above two functions. 
+This function does the same as the above two functions. 
+It is invoked from QEvent::setGenstep
 
 **/
 
