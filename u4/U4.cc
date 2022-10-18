@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
 
 #include "G4VParticleChange.hh"
 #include "G4SystemOfUnits.hh"
@@ -123,6 +124,9 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
     return _gs ; 
 }
 
+
+const char* U4::CollectGenstep_DsG4Scintillation_r4695_DISABLE = "U4__CollectGenstep_DsG4Scintillation_r4695_DISABLE" ; 
+
 void U4::CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
@@ -131,6 +135,12 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
          G4double ScintillationTime
     )
 {
+    if(getenv(CollectGenstep_DsG4Scintillation_r4695_DISABLE))
+    {
+        LOG(error) << CollectGenstep_DsG4Scintillation_r4695_DISABLE ; 
+        return ; 
+    }
+
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
     //if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
@@ -205,6 +215,7 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
     return _gs ; 
 }
 
+const char* U4::CollectGenstep_G4Cerenkov_modified_DISABLE = "U4__CollectGenstep_G4Cerenkov_modified_DISABLE" ; 
 
 void U4::CollectGenstep_G4Cerenkov_modified( 
     const G4Track* aTrack,
@@ -218,6 +229,14 @@ void U4::CollectGenstep_G4Cerenkov_modified(
     G4double    meanNumberOfPhotons1,
     G4double    meanNumberOfPhotons2)
 {
+
+    if(getenv(CollectGenstep_G4Cerenkov_modified_DISABLE))
+    {
+        LOG(error) << CollectGenstep_G4Cerenkov_modified_DISABLE ; 
+        return ; 
+    }
+
+
     quad6 gs_ = MakeGenstep_G4Cerenkov_modified( aTrack, aStep, numPhotons, betaInverse, pmin, pmax, maxCos, maxSin2, meanNumberOfPhotons1, meanNumberOfPhotons2 );
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
     if(dump) std::cout << "U4::CollectGenstep_G4Cerenkov_modified " << gs.desc() << std::endl ; 

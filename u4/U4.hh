@@ -87,6 +87,7 @@ struct U4_API U4
     static const plog::Severity LEVEL ;
 
     // genstep collection
+    static const char* CollectGenstep_DsG4Scintillation_r4695_DISABLE ; 
     static void CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
@@ -95,6 +96,7 @@ struct U4_API U4
          G4double ScintillationTime
     ); 
 
+    static const char* CollectGenstep_G4Cerenkov_modified_DISABLE ; 
     static void CollectGenstep_G4Cerenkov_modified( 
         const G4Track* aTrack,
         const G4Step* aStep,
