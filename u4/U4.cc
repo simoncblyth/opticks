@@ -126,6 +126,7 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
 
 
 const char* U4::CollectGenstep_DsG4Scintillation_r4695_DISABLE = "U4__CollectGenstep_DsG4Scintillation_r4695_DISABLE" ; 
+const char* U4::CollectGenstep_DsG4Scintillation_r4695_ZEROPHO = "U4__CollectGenstep_DsG4Scintillation_r4695_ZEROPHO" ; 
 
 void U4::CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
@@ -140,6 +141,13 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
         LOG(error) << CollectGenstep_DsG4Scintillation_r4695_DISABLE ; 
         return ; 
     }
+    if(getenv(CollectGenstep_DsG4Scintillation_r4695_ZEROPHO))
+    {
+        LOG(error) << CollectGenstep_DsG4Scintillation_r4695_ZEROPHO ; 
+        numPhotons = 0 ; 
+    }
+
+
 
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
@@ -216,6 +224,7 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 }
 
 const char* U4::CollectGenstep_G4Cerenkov_modified_DISABLE = "U4__CollectGenstep_G4Cerenkov_modified_DISABLE" ; 
+const char* U4::CollectGenstep_G4Cerenkov_modified_ZEROPHO = "U4__CollectGenstep_G4Cerenkov_modified_ZEROPHO" ; 
 
 void U4::CollectGenstep_G4Cerenkov_modified( 
     const G4Track* aTrack,
@@ -235,6 +244,13 @@ void U4::CollectGenstep_G4Cerenkov_modified(
         LOG(error) << CollectGenstep_G4Cerenkov_modified_DISABLE ; 
         return ; 
     }
+    if(getenv(CollectGenstep_G4Cerenkov_modified_ZEROPHO))
+    {
+        LOG(error) << CollectGenstep_G4Cerenkov_modified_ZEROPHO ; 
+        numPhotons = 0 ; 
+    }
+
+
 
 
     quad6 gs_ = MakeGenstep_G4Cerenkov_modified( aTrack, aStep, numPhotons, betaInverse, pmin, pmax, maxCos, maxSin2, meanNumberOfPhotons1, meanNumberOfPhotons2 );

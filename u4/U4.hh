@@ -88,6 +88,7 @@ struct U4_API U4
 
     // genstep collection
     static const char* CollectGenstep_DsG4Scintillation_r4695_DISABLE ; 
+    static const char* CollectGenstep_DsG4Scintillation_r4695_ZEROPHO ; 
     static void CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
@@ -97,6 +98,7 @@ struct U4_API U4
     ); 
 
     static const char* CollectGenstep_G4Cerenkov_modified_DISABLE ; 
+    static const char* CollectGenstep_G4Cerenkov_modified_ZEROPHO ; 
     static void CollectGenstep_G4Cerenkov_modified( 
         const G4Track* aTrack,
         const G4Step* aStep,
