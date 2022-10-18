@@ -52,15 +52,6 @@ HAMA PMT bot hemi::
     ELLIPSE0=264,200      ELLIPSE0_OPT=bot ./mct.sh  ## HAMA mask_out 
 
 
-
-
-
-
-
-
-
-
-
 EOU
 }
 

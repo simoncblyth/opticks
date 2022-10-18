@@ -58,7 +58,7 @@ loglevels()
 #loglevels
 
 
-arg=${1:-run_ana}
+arg=${1:-info_translate_run_ana}
 
 bin=CSGSimtraceTest
 log=$bin.log

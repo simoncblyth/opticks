@@ -95,6 +95,7 @@ EOL
 geomlist_H(){ cat << EOL | grep -v ^#
 hmskSolidMaskVirtual
 hmskSolidMask
+#hmskSolidMaskTail__U1BUG33
 hmskSolidMaskTail
 hamaPMTSolid
 hamaBodySolid
@@ -135,9 +136,21 @@ geomlist_names()
     for (( i=0; i<$len; i++ ));do 
        local s=${ss[i]}
        local g=${gg[i]}
-       local h=${g}__${geomlist_OPT}
-       echo $h
+       geomlist_name_with_opt $g
     done
+}
+
+geomlist_name_with_opt()
+{
+   : bin/geomlist.sh names that already include a double underscore are left asis
+   local g=$1 
+   local h
+   if [ "${g/__}" != "$g" ]; then
+       h=${g}   # when double underscore present already, use asis
+   else
+       h=${g}__${geomlist_OPT}
+   fi 
+   echo $h
 }
 
 geomlist_export()
@@ -160,7 +173,7 @@ geomlist_export()
     for (( i=0; i<$len; i++ ));do 
        local s=${ss[i]}
        local g=${gg[i]}
-       local h=${g}__${geomlist_OPT}
+       local h=$(geomlist_name_with_opt $g)
      
        local fk="${s}_FOLD"
        local fv=$(printf ${geomlist_FOLD} $h)
@@ -194,6 +207,11 @@ geomlist_dump()
 {
     vars="BASH_SOURCE geomlist_LABEL geomlist_FOLD geomlist_OPT SYMBOLS S_LABEL S_FOLD T_LABEL T_FOLD U_LABEL U_FOLD BASH_SOURCE"
     for var in $vars ; do printf "%15s %s \n" $var ${!var} ; done
+}
+
+geomlist__()
+{
+    source $BASH_SOURCE $* 
 }
 
 

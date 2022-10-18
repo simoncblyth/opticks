@@ -37,14 +37,14 @@ EOU
 
 #geom=J001
 #geom=J003
-geom=J004
+#geom=J004
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
 #geom=RaindropRockAirWaterSD
 #geom=RaindropRockAirWaterSmall
 
-#geom=hama_body_log
+#geom=hamaBodyLog
 
 #geom=nnvtPMTSolid
 #geom=nnvtBodySolid
@@ -53,6 +53,28 @@ geom=J004
 
 #geom=hamaPMTSolid
 #geom=hamaDynodeSolid   ## seems dynode changed, needs reworking in PMTSim
+
+#geom=hmskSolidMaskVirtual
+#geom=hmskSolidMask
+geom=hmskSolidMaskTail
+#geom=hamaPMTSolid
+#geom=hamaBodySolid
+#geom=hamaInner1Solid
+#geom=hamaInner2Solid
+
+#
+#geom=hmskTailOuterIEllipsoid
+#geom=hmskTailOuterITube             # hz 0.15 cylinder 
+#geom=hmskTailOuterI                 # union of hmskTailOuterIEllipsoid and hmskTailOuterITube 
+#geom=hmskTailOuterIITube            # hz ~72 cylinder
+#geom=hmskTailOuter                   # union of above union and the big cylidner  
+#
+#geom=hmskTailInnerIEllipsoid
+#geom=hmskTailInnerITube
+#geom=hmskTailInnerI
+#geom=hmskTailInnerIITube
+#geom=hmskTailInner
+
 
 #geom=nmskSolidMask
 #geom=nmskSolidMaskTail
@@ -77,7 +99,8 @@ geom=J004
 #geom=acyl
 #geom=cyli
 
-opt=U1  # U2 
+#opt=U1BUG33  # U2 
+opt=U1
 case $geom in 
    nmsk*|hmsk*|nnvt*|hama*) geom=${geom}__${opt} ;;
 esac
