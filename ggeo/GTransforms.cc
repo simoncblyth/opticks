@@ -64,7 +64,7 @@ void GTransforms::add(const glm::mat4& mat)
 
 void GTransforms::add()
 {
-    glm::mat4 identity ; 
+    glm::mat4 identity(1.f) ; 
     add(identity);
 }
 

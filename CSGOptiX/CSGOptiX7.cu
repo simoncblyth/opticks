@@ -168,7 +168,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     unsigned index = idx.y * params.width + idx.x ;
 
     if(params.pixels) params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
-    if(params.isect)  params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity())) ; 
+    if(params.isect)  params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
 }
  
 /**
