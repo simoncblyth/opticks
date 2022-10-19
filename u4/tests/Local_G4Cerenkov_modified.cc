@@ -71,6 +71,8 @@
 #include "G4MaterialCutsCouple.hh"
 #include "G4ParticleDefinition.hh"
 
+#include "G4Version.hh"
+
 #include "Local_G4Cerenkov_modified.hh"
 
 #ifdef INSTRUMENTED
@@ -269,8 +271,13 @@ G4VParticleChange* Local_G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack
   }
 
   ////////////////////////////////////////////////////////////////
+#if G4VERSION_NUMBER < 1100 
   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+#else
+  G4double Pmin = Rindex->GetMinEnergy();
+  G4double Pmax = Rindex->GetMaxEnergy();
+#endif
   G4double dp = Pmax - Pmin;
 
 
@@ -882,9 +889,12 @@ G4double
 
   G4PhysicsOrderedFreeVector* CerenkovAngleIntegrals =
              (G4PhysicsOrderedFreeVector*)((*thePhysicsTable)(materialIndex));
-
+#if G4VERSION_NUMBER < 1100
   if(!(CerenkovAngleIntegrals->IsFilledVectorExist()))return 0.0;
-
+#else
+  G4int length = CerenkovAngleIntegrals->GetVectorLength();
+  if(0 == length)     return 0.0;
+#endif
   /*
   // Min and Max photon energies 
   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
