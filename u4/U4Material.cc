@@ -359,7 +359,6 @@ NPFold* U4Material::MakePropertyFold(const G4Material* mat )
 
 std::string U4Material::DescPropertyNames( const G4Material* mat )
 {
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
     const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
     std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
     std::vector<G4String> cnames = mpt_->GetMaterialConstPropertyNames();
@@ -386,6 +385,7 @@ std::string U4Material::DescPropertyNames( const G4Material* mat )
     for(MSC::const_iterator it=msc->begin() ; it != msc->end() ; it++ ) ss << it->first << std::endl ; 
     */
 #if G4VERSION_NUMBER < 1100
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
     ss << " GetPropertyMap " << std::endl ; 
     typedef std::map<G4int, G4MaterialPropertyVector*, std::less<G4int> > MIV ; 
     const MIV* miv =  mpt->GetPropertyMap(); 

@@ -172,7 +172,7 @@ void U4Process::ClearNumberOfInteractionLengthLeft(const G4Track& aTrack, const 
 {
     G4ProcessManager* mgr = GetManager(); 
     G4ProcessVector* procv = mgr->GetProcessList() ;
-    for(int i=0 ; i < procv->entries() ; i++)
+    for(int i=0 ; i < int(procv->entries()) ; i++)
     {
         G4VProcess* proc = (*procv)[i] ;
         unsigned type = ProcessType(Name(proc)) ;   
