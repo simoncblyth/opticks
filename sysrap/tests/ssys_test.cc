@@ -38,15 +38,26 @@ void test_getenvv()
         ; 
 }
 
+void test_getenvvec()
+{
+    std::vector<int>* ivec = ssys::getenvvec<int>("IVEC", "1,2,3,4" ); 
+    assert( ivec->size() == 4 ); 
+
+    std::cout << "IVEC " << ssys::DescVec(ivec) << std::endl ; 
+
+}
+
+
 
 int main(int argc, char** argv)
 {
     /*
     test_popen_0(); 
     test_popen_1();
-    */
-
     test_getenvv(); 
+    */
+    test_getenvvec(); 
+
  
     return 0 ; 
 }
