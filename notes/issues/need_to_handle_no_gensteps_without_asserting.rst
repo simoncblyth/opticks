@@ -21,7 +21,6 @@ Ami reports::
     Aborted (core dumped)
 
 
-
 Hmm : this is probably related to recent change of allowing empty arrays.
 Formerly empty arrays yielded nullptr.  
 
