@@ -5,9 +5,14 @@ sdigest.h
 
 Header-only hexdigest 
 
+Example from /usr/include/openssl/opensslv.h::
+
+   33 # define OPENSSL_VERSION_NUMBER  0x100020bfL
+
 **/
 
 #include <string>
+#include <sstream>
 
 #if defined __APPLE__
 
@@ -22,14 +27,22 @@ Header-only hexdigest
 #elif __linux
 
 #   include <openssl/md5.h>
+#   include <openssl/opensslv.h>
 
 #endif
 
 struct NP ; 
 
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 struct sdigest
 {
+    static std::string Desc(); 
+
     MD5_CTX ctx ; 
     sdigest(); 
     void add( const std::string& str); 
@@ -37,6 +50,7 @@ struct sdigest
     void add( int i ); 
     void add( const char* buffer, int length); 
     std::string finalize() ; 
+
 
     static std::string Item(const NP* a, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1); 
     static std::string Buf(const char* buffer, int length); 
@@ -50,6 +64,26 @@ struct sdigest
 
     static std::string Finalize(MD5_CTX& c); 
 }; 
+
+
+inline std::string sdigest::Desc()
+{
+    std::stringstream ss ; 
+#if OPENSSL_VERSION_NUMBER == 0x100020bfL
+    ss << "OPENSSL_VERSION_NUMBER == 0x100020bfL" << std::endl ; 
+#elif OPENSSL_VERSION_NUMBER > 0x100020bfL
+    ss << "OPENSSL_VERSION_NUMBER > 0x100020bfL" << std::endl ; 
+#elif OPENSSL_VERSION_NUMBER < 0x100020bfL
+    ss << "OPENSSL_VERSION_NUMBER < 0x100020bfL" << std::endl ; 
+#endif
+
+#if __linux
+    ss << "Linux : OPENSSL_VERSION_NUMBER is 0x" << std::hex << OPENSSL_VERSION_NUMBER  << std::dec << std::endl ; 
+#endif
+
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 inline sdigest::sdigest(){ MD5_Init(&ctx); }
@@ -162,4 +196,7 @@ inline std::string sdigest::Finalize(MD5_CTX& c) // static
     return std::string(buf, buf + 32); 
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 

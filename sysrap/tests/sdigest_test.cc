@@ -37,7 +37,7 @@ When comparing with digests from files beware of the newline::
 #include "ssys.h"
 #include "sstr.h"
 
-void check(const std::vector<std::string>& dig )
+void check(const std::vector<std::string>& dig, const char* known=nullptr )
 {
     for(unsigned i=0 ; i < dig.size() ; i++) 
     {
@@ -47,6 +47,7 @@ void check(const std::vector<std::string>& dig )
             << std::endl
             ;
         assert( strcmp( dig[0].c_str(), dig[i].c_str() ) == 0 );  
+        if(known) assert( strcmp(known, dig[i].c_str() ) == 0 );
     }
 }
 
@@ -62,10 +63,17 @@ void test_hello()
     dat[5] = '\0' ; 
 
     const char* m = "hello" ; 
+    const char* hello_digest = "5d41402abc4b2a76b9719d911017c592" ; 
+
     std::string msg = "hello" ; 
 
     std::stringstream ss ; 
+#ifdef __APPLE__
     ss << "md5 -q -s " << m ; 
+#else
+    ss << "echo " << hello_digest ;   
+    // kludge as Linux equivalent "echo -n hello | md5sum" needs a pipe  
+#endif
     std::string cmd = ss.str(); 
 
     std::vector<std::string> dig(9) ; 
@@ -92,7 +100,7 @@ void test_hello()
     sstr::Write(path, m ); 
     dig[8] = sdigest::Path(path) ; 
 
-    check(dig); 
+    check(dig, hello_digest ); 
 }
 
 void test_int()
@@ -115,7 +123,10 @@ void test_int()
     check(dig); 
 }
 
-
+void test_Desc()
+{
+    std::cout << "sdigest::Desc() " << sdigest::Desc() << std::endl ; 
+}
 
 int main(int argc, char** argv)
 {
@@ -123,5 +134,7 @@ int main(int argc, char** argv)
     test_int(); 
     */
     test_hello(); 
+    test_Desc(); 
+
     return 0 ;  
 }
