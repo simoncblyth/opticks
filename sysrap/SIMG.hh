@@ -247,7 +247,7 @@ inline const char* SIMG::Ext(const char* path)
 
 
 
-void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
+inline void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
     // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
     // Possibly related to this being implemented in the header ?

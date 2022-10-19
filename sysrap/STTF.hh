@@ -10,15 +10,21 @@ Based on:
 * https://github.com/nothings/stb/blob/master/stb_truetype.h
 * http://nothings.org/stb/stb_truetype.h 
 
+It would be convenient for this to use the header-only OKConf.h 
+as STTF.hh and SIMG.hh are otherwise purely header-only.  
+But that runs into SLOG.hh complications. 
+
 **/
 
 #include <stdio.h>
 #include <stdlib.h>
+
+//#include "OKConf.h"   
 #include "OKConf.hh"
 
 struct STTF
 {
-    static const char* KEY ; 
+    static constexpr const char* KEY = "OPTICKS_STTF_PATH" ; 
     static const char* GetFontPath(); 
     static unsigned char* Load(const char* path); 
 
@@ -75,7 +81,6 @@ struct STTF
 
 
 
-const char* STTF::KEY = "OPTICKS_STTF_PATH" ; 
 
 inline const char* STTF::GetFontPath() // static
 {
@@ -152,7 +157,7 @@ inline void STTF::init()
 }
 
 
-STTF::~STTF()
+inline STTF::~STTF()
 {
     stbtt_fontinfo* font = (stbtt_fontinfo*)font_ ; 
     delete font ; 

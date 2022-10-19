@@ -79,6 +79,7 @@ set(SOURCES
 
 set(HEADERS
     OKConf.hh
+    OKConf.h
     OpticksVersionNumber.hh
     OKCONF_API_EXPORT.hh
 )
