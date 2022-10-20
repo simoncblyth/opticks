@@ -70,7 +70,16 @@ class SYSRAP_API SDigest
        void update( const std::string& str );
        char* finalize();
    private:
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
        MD5_CTX m_ctx ;
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 
 };
 

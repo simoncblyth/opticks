@@ -172,6 +172,14 @@ std::string SDigest::DigestPath(const char* path, unsigned bufsize)
     return dig.finalize();
 }
 
+
+
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 // https://stackoverflow.com/questions/10324611/how-to-calculate-the-md5-hash-of-a-large-file-in-c
 
 
@@ -306,6 +314,22 @@ char* md5digest_str2md5(char* buffer, int length)
 }
 
 
+SDigest::SDigest()
+{
+   MD5_Init(&m_ctx); 
+}
+
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
+
+
+
+
+
 const char* SDigest::hexchar = "0123456789abcdef" ;  
 
 bool SDigest::IsDigest(const char* s)
@@ -321,10 +345,10 @@ bool SDigest::IsDigest(const char* s)
 }
 
 
-SDigest::SDigest()
-{
-   MD5_Init(&m_ctx); 
-}
+
+
+
+
 SDigest::~SDigest()
 {
 }
