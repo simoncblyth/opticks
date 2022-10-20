@@ -239,6 +239,7 @@ om-sdir(){
    : TODO generalize current approach of just special casing pkg names, could use a naming convention jPMTSim 
    case $1 in 
       PMTSim) echo $HOME/j/$1 ;; 
+      PMTFastSim) echo $HOME/j/$1 ;; 
            *) echo $(om-home)/$1 ;;
    esac
 }
