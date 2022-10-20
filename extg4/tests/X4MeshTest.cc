@@ -3,7 +3,7 @@
 #include "SPath.hh"
 #include "X4Solid.hh"
 #include "X4Mesh.hh"
-#include "X4_GetSolid.hh"
+#include "X4_Get.hh"
 
 int main(int argc, char** argv)
 {
@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     const char* geom = SSys::getenvvar("GEOM", geom_default ); 
 
     std::string meta ; 
-    const G4VSolid* solid = X4_GetSolid(geom, &meta); 
+    const G4VSolid* solid = X4_Get::GetSolid(geom, &meta); 
 
     bool has_meta = !meta.empty() ; 
     LOG_IF(info, has_meta) << "meta:" << std::endl << meta ; 

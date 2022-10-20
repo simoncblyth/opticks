@@ -4,6 +4,16 @@ X4IntersectVolumeTest
 
 Used from script extg4/xxv.sh 
 
+The call to PMTSim::GetPV populates vectors via pointer to vector arguments 
+containing the solids and their transforms, relative to the top level PV presumably. 
+(Could be just simple one level). These transforms are saved.  
+
+Subsequently the scanning is applied to each solid individually.
+
+The python level plotting then brings together the solid frame intersects
+into the volume frame by applying the saved transforms for each solid.  
+ 
+
 **/
 
 #include <cstdlib>
@@ -40,13 +50,14 @@ int main(int argc, char** argv)
     G4VPhysicalVolume* pv = PMTSim::GetPV(geom, tr, so );
     LOG(info) << "] PMTSim::GetPV geom [" << geom << "]" ; 
     assert(pv); 
+
+    unsigned num = so->size(); 
     assert( tr->size() % 16 == 0 ); 
-    assert( tr->size() == 16*so->size() );  // expect 16 doubles of the transform matrix for every solid
+    assert( tr->size() == 16*num );  // expect 16 doubles of the transform matrix for every solid
 
     const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
     P4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
     P4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
-    unsigned num = so->size(); 
 
     LOG(info) << " num " << num ; 
     for(unsigned i=0 ; i < num ; i++)

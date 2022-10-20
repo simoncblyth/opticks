@@ -11,7 +11,7 @@ Used from script extg4/xxs.sh
 #include "SPath.hh"
 
 #include "X4Intersect.hh"
-#include "X4_GetSolid.hh"
+#include "X4_Get.hh"
 
 
 int main(int argc, char** argv)
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* name = names[i].c_str() ; 
-        const G4VSolid* solid = X4_GetSolid(name); 
+        const G4VSolid* solid = X4_Get::GetSolid(name); 
         LOG_IF(fatal, solid == nullptr ) << "failed to X4_GetSolid for name " << name ; 
         assert( solid );   
 

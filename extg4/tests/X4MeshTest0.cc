@@ -22,7 +22,7 @@
 #include "X4Mesh.hh"
 
 #include "OPTICKS_LOG.hh"
-#include "X4_GetSolid.hh"
+//#include "X4_Get.hh"
 
 void test_convert_save()
 {
