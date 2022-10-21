@@ -15,6 +15,18 @@ appears to only work if your executables link to a library
 which is in the same directory as the library you are creating.  
 Fortunately thats easy to do by linking with Opticks::OKConf.
 
+Attempting to detect the CUDA version::
+
+    message( STATUS "CMAKE_CUDA_COMPILER_VERSION  : ${CMAKE_CUDA_COMPILER_VERSION}" )
+
+Requires:
+
+* CMake 3.17
+* "LANGUAGES CUDA" on the project line
+* BUT: it messes up clang compiler detection in cmake/Modules/OpticksCXXFlags.cmake 
+* so use envvar OPTICKS_CUDA_NVCC_DIALECT detection in cmake/Modules/OpticksCXXFlags.cmake to kludge this
+
+
 #]=]
 
 find_package(OKConf REQUIRED CONFIG)
@@ -23,6 +35,8 @@ find_package(PLog   REQUIRED MODULE)
 #find_package(CUDA REQUIRED)
 
 find_package(OpticksCUDA REQUIRED MODULE)
+
+
 
 
 include_directories(

@@ -234,6 +234,31 @@ With CUDA 10.1 and gcc 11.2 (CUDA 10.1 max supported GCC is 8, to work with gcc 
 
 
 
+CXX dialect support per GCC version
+-------------------------------------
+
+* https://stackoverflow.com/questions/34836775/compiler-standards-support-c11-c14-c17
+
+https://gcc.gnu.org/projects/cxx-status.html#cxx11
+
+GCC 4.8.1+ -std=c++11
+
+GCC 6.1+ -std=c++14
+
+GCC 5+ -std=c++17
+
+GCC 8+ -std=c++20 (experimental support)
+
+
+
+
+
+
+
+
+
+
+
 
 Driver Versions for each OptiX Release
 ------------------------------------------
