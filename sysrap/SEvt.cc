@@ -1549,9 +1549,9 @@ If an index has been set with SEvt::setIndex SEvt::SetIndex
 and not unset with SEvt::UnsetIndex SEvt::unsetIndex
 then the directory is suffixed with the index::
 
-    /some/directory/n001
-    /some/directory/z000
-    /some/directory/p001
+    /some/directory/001
+    /some/directory/002
+    /some/directory/003
    
 HMM: what about a save following a gather ? does the download happen twice ?
 

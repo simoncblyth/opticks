@@ -807,7 +807,7 @@ void GGeo::save()
     const char* idpath = m_ok->getIdPath() ;
     if( idpath == nullptr ) 
     {
-         LOG(error) << "cannot save as no idpath set" ; 
+         LOG(LEVEL) << "cannot save as no idpath set" ; 
          //std::raise(SIGINT); 
     }
     else
