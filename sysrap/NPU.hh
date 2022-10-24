@@ -378,6 +378,9 @@ struct U
     static int         GetEnvInt( const char* envkey, int fallback );  
     static const char* GetEnv(    const char* envkey, const char* fallback); 
 
+    template<typename T>
+    static T           GetE(const char* ekey, T fallback);  
+
     static int MakeDirs( const char* dirpath, int mode=0 ); 
     static int MakeDirsForFile( const char* filepath, int mode=0); 
     static void DirList(std::vector<std::string>& names, const char* path, const char* ext); 
@@ -385,6 +388,9 @@ struct U
     static std::string Desc(const std::vector<std::string>& names); 
 
 };
+
+
+
 
 
 inline int U::GetEnvInt(const char* envkey, int fallback)
@@ -399,6 +405,29 @@ inline const char* U::GetEnv(const char* envkey, const char* fallback)
     const char* evalue = getenv(envkey);
     return evalue ? evalue : fallback ; 
 } 
+
+
+template<typename T>
+inline T U::GetE(const char* ekey, T fallback)
+{
+    char* v = getenv(ekey);
+    if(v == nullptr) return fallback ;
+
+    std::string s(v);
+    std::istringstream iss(s);
+    T t ;
+    iss >> t ;
+    return t ;
+}
+
+template int      U::GetE(const char*, int );
+template unsigned U::GetE(const char*, unsigned );
+template float    U::GetE(const char*, float );
+template double   U::GetE(const char*, double );
+
+
+
+
 
 inline bool U::EndsWith( const char* s, const char* q)
 {
