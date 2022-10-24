@@ -3,9 +3,9 @@
 #include "basic_complex.h"
 
 __global__ 
-void on_device(){ basic_complex::test() ; }
+void on_device(){ basic_complex<float>::test() ; }
 
-void on_host(){   basic_complex::test() ; }
+void on_host(){   basic_complex<float>::test() ; }
 
 int main()
 {

@@ -22,12 +22,46 @@ Exercising complex number arithmetic with common source used on device and host.
 #    define BASIC_METHOD inline 
 #endif
 
+namespace Const
+{
+    template<typename T> 
+    BASIC_METHOD constexpr T zero(){ return T(0.0) ; }
+ 
+    template<typename T>
+    BASIC_METHOD constexpr T one() { return T(1.0) ; }
+
+    template<typename T>
+    BASIC_METHOD constexpr T two() { return T(2.0) ; }
+     
+    template<typename T>
+    BASIC_METHOD constexpr T pi() { return T(CUDART_PI) ; }
+
+    template<typename T>
+    BASIC_METHOD constexpr T twopi() { return T(2.0*CUDART_PI) ; }
+}
+
+// constexpr should mean that the calc of the above 
+// functions happen at compile time,  not when they are used
+
+
+/**
+Need the BASIC_METHOD above to avoid::
+
+    warning: calling a constexpr __host__ function("zero") from a __host__
+    __device__ function("test") is not allowed. The experimental flag
+    '--expt-relaxed-constexpr' can be used to allow this.
+
+**/
+
+
+template <typename T>
 struct basic_complex
 {
     BASIC_METHOD static void test() ; 
 }; 
 
-BASIC_METHOD void basic_complex::test()
+template <typename T>
+BASIC_METHOD void basic_complex<T>::test()
 {
 #ifdef WITH_THRUST
     using thrust::complex ; 
@@ -43,12 +77,13 @@ BASIC_METHOD void basic_complex::test()
     using std::cos ; 
 #endif
 
-    complex<float> i(0.f,1.f) ; 
-    complex<float> z0 = i ; 
-    complex<float> z1 = sqrt(z0)  ; 
-    complex<float> z2 = exp(z0*CUDART_PI_F)  ; 
-    complex<float> z3 = sin(z0)  ; 
-    complex<float> z4 = cos(z0)  ; 
+
+    complex<T> i(Const::zero<T>(),Const::one<T>()) ; 
+    complex<T> z0 = i ; 
+    complex<T> z1 = sqrt(z0)  ; 
+    complex<T> z2 = exp(z0*Const::pi<T>())  ; 
+    complex<T> z3 = sin(z0)  ; 
+    complex<T> z4 = cos(z0)  ; 
 
     printf("//basic_complex::test\n"); 
     printf("      z0 ( %10.4f %10.4f )                     \n", z0.real(), z0.imag() );  
@@ -56,6 +91,7 @@ BASIC_METHOD void basic_complex::test()
     printf("      z2 ( %10.4f %10.4f ) exp(z0*CUDART_PI_F) \n", z2.real(), z2.imag() );  
     printf("      z3 ( %10.4f %10.4f ) sin(z0)             \n", z3.real(), z3.imag() );  
     printf("      z4 ( %10.4f %10.4f ) cos(z0)             \n", z4.real(), z4.imag() );  
+
 }
 
 

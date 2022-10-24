@@ -1,6 +1,6 @@
 #include "basic_complex.h"
 
-void on_host(){   basic_complex::test() ; }
+void on_host(){   basic_complex<float>::test() ; }
 
 int main()
 {
