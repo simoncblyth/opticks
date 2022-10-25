@@ -1,25 +1,29 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+stree_test.sh 
+===============
+
+Tool to load a persisted stree geometry for debugging. 
+
+
+EOU
+}
 
 defarg="build_run_ana"
 arg=${1:-$defarg}
 
-
 name=stree_test 
 
-#export BASE=/tmp/$USER/opticks/U4TreeTest
-export BASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
-export BASE_aug5=/tmp/$USER/opticks/ntds3_aug5/G4CXOpticks
-
-## gets loaded from STBASE/stree
-
+export GEOM=${GEOM:-J004}
+export CFBASE=$HOME/.opticks/GEOM/$GEOM
+export BASE=$CFBASE/CSGFoundry/SSim
 export FOLD=$BASE/stree
-export CFBASE=$BASE
-#export CFBASE=$BASE_aug5
 
-#source $OPTICKS_HOME/bin/COMMON.sh 
-#T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
-#T_CFBASE=$(upfind_cfbase $T_FOLD)  
-
+if [ ! -d "$BASE/stree" ]; then
+    echo $BASH_SOURCE : BASE $BASE
+    echo $BASH_SOURCE : BASE directory MUST contain an stree directory : THIS DOES NOT 
+    exit 1
+fi 
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE GEOM BASE FOLD"
@@ -27,6 +31,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
+    mkdir -p /tmp/$name
     gcc $name.cc \
           -std=c++11 -lstdc++ \
           -I.. \

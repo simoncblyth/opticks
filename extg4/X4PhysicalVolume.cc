@@ -121,6 +121,8 @@ const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 
 GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* argforce)
 {
+    assert(0) ; // NOT USED IN NEW WORKFLOW : NOW USING X4Geo::Translate ? 
+
     const char* key = X4PhysicalVolume::Key(top) ; 
 
     SOpticksKey::SetKey(key);

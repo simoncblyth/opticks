@@ -73,7 +73,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     foundry(foundry_),
     ggeo(ggeo_),
     sim(SSim::Get()),
-    tree(sim ? sim->get_tree() : nullptr),
+    tree(sim ? sim->get_tree() : nullptr),   // stree.h instance
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)

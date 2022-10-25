@@ -63,7 +63,7 @@ void test_get_nodes(const stree& st)
 
 void test_find_lvid_node(const stree& st)
 {
-    const char* q_soname = "HamamatsuR12860sMask_virtual" ;  
+    const char* q_soname = ssys::getenvvar("Q_SONAME", "HamamatsuR12860sMask_virtual")  ;  
     for(int q_ordinal=0 ; q_ordinal < 10 ; q_ordinal++ )
     {
         int nidx = st.find_lvid_node(q_soname, q_ordinal ); 
@@ -300,15 +300,19 @@ void test_desc_m2w_product(const stree& st)
     std::cout << st.desc_m2w_product(nidx, reverse) << std::endl ;  
 } 
 
+void test_desc_sub(const stree& st)
+{
+    std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
+    //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
+}
+
 int main(int argc, char** argv)
 {
     stree st ; 
     st.load(BASE); 
 
-    std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
-    //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
-
     /*
+    test_desc_sub(st); 
     test_m2w_w2m(st); 
     test_get_m2w_product_get_w2m_product(st) ;  
     test_get_nodes(st); 
@@ -322,6 +326,8 @@ int main(int argc, char** argv)
     test_get_ancestors(st); 
     */
 
+    test_desc_sub(st); 
+    test_get_sensor_id(st); 
 
 
     return 0 ; 

@@ -18,13 +18,11 @@ const plog::Severity X4Geo::LEVEL = SLOG::EnvLevel("X4Geo", "DEBUG");
 
 GGeo* X4Geo::Translate(const G4VPhysicalVolume* top)  // static 
 {
-    //const char* keyspec = X4PhysicalVolume::Key(top) ;
-
     bool live = true ; 
 
     GGeo* gg = new GGeo( nullptr, live );   // picks up preexisting Opticks::Instance
 
-    X4PhysicalVolume xtop(gg, top) ;
+    X4PhysicalVolume xtop(gg, top) ;  // lots of heavy lifting translation in here 
 
     gg->postDirectTranslation();    
 

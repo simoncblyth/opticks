@@ -3,7 +3,12 @@
 U4Tree.h : explore minimal approach to geometry translation
 ==============================================================
 
-* note how persisting is mostly delegated to stree.h 
+Almost all the geometry information is populated 
+and persisted within the *st* (sysrap/stree.h) member
+The other members simply hold on to Geant4 pointers
+that make no sense to persist and cannot live 
+within sysrap as that does not depend on G4 headers.  
+
 * see also sysrap/stree.h sysrap/tests/stree_test.cc
 
 **/
@@ -122,9 +127,20 @@ U4Tree::convertMaterials
 1. recursive traverse collecting material pointers from all active LV into materials vector 
    in postorder of first encounter.
 
-2. create SSim/stree/mtfold holding properties of all active materials 
+2. creates SSim/stree/mtfold holding properties of all active materials::
 
-   TODO: relocate to SSim/mtfold, rather than SSim/stree/mtfold ? 
+    epsilon:~ blyth$ cd /Users/blyth/.opticks/GEOM/J004/CSGFoundry/SSim/stree/mtfold/Water
+    epsilon:Water blyth$ l
+    total 40
+     0 drwxr-xr-x   6 blyth  staff   192 Oct 11 15:50 .
+     0 drwxr-xr-x  18 blyth  staff   576 Oct 11 15:50 ..
+    16 -rw-rw-r--   1 blyth  staff  5184 Oct 11 15:50 ABSLENGTH.npy
+     8 -rw-rw-r--   1 blyth  staff   704 Oct 11 15:50 GROUPVEL.npy
+     8 -rw-rw-r--   1 blyth  staff    38 Oct 11 15:50 NPFold_index.txt
+     8 -rw-rw-r--   1 blyth  staff   704 Oct 11 15:50 RINDEX.npy
+
+
+CONSIDERING : maybe relocate to SSim/mtfold ? rather than SSim/stree/mtfold ? 
 
 **/
 
@@ -148,6 +164,14 @@ inline void U4Tree::convertMaterial(const G4Material* const mt)
     st->add_material( mtname, g4index  ); 
 }
 
+
+/**
+U4Tree::convertSolids
+----------------------
+
+Currently just collects names. 
+
+**/
 
 inline void U4Tree::convertSolids()
 {

@@ -267,8 +267,8 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
 }
 #endif
 /**
-U4Material::MakePropertyFold
-----------------------------
+U4Material::MakePropertyFold_flat
+------------------------------------
 
 Converts the properties of all materials into a 
 NPFold with keys of form : "materialName"/"propName" 
@@ -304,6 +304,14 @@ NPFold* U4Material::MakePropertyFold_flat()
     return fold ; 
 }
 
+/**
+U4Material::MakePropertyFold
+------------------------------
+
+Canonically invoked from U4Tree::convertMaterials
+with result going into st.mtfold
+
+**/
 
 NPFold* U4Material::MakePropertyFold()
 {

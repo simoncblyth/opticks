@@ -95,14 +95,15 @@ if __name__ == '__main__':
     f = Fold.Load(symbol="f")
     print(repr(f))
 
-    g = Fold.Load(os.path.join(os.path.dirname(f.base), "GGeo/stree"), symbol="g") 
+    g_fold = os.path.join(os.path.dirname(f.base), "GGeo/stree") 
+    print("g_fold:%s" % g_fold)
+    g = Fold.Load(g_fold,symbol="g") 
+    print(repr(g))
 
     st = stree(f)
     print(repr(st))
 
     check_inst(f, cf)
     #check_sensor(st)
-
-
 
 
