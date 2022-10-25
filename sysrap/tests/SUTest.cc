@@ -3,7 +3,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "SU.hh"
-#include "OPTICKS_LOG.hh"
+//#include "OPTICKS_LOG.hh"
 
 /**
 populate : mockup photon array with one third marked as hits
@@ -66,7 +66,7 @@ test_monolithic
 
 void test_monolithic()
 {
-    LOG(info); 
+    //LOG(info); 
     std::vector<quad4> pp(10) ;
     unsigned mask = 0xbeefcafe ;
     unsigned x_num_hit = populate(pp.data(), pp.size(), mask);
@@ -99,7 +99,7 @@ test_presized
 **/
 void test_presized()
 {
-    LOG(info); 
+    //LOG(info); 
     std::vector<quad4> pp(10) ; 
     unsigned mask = 0xbeefcafe ; 
     unsigned x_num_hit = populate(pp.data(), pp.size(), mask);
@@ -125,12 +125,52 @@ void test_presized()
     dump( hit, num_hit, mask  );
 }
 
+
+void test_copy_host_to_device_sizeof()
+{
+    std::cout << "test_copy_host_to_device_sizeof\n"; 
+    const int N = 10 ; 
+    std::vector<float> demo(N) ; 
+    for(unsigned i=0 ; i < N ; i++) demo[i] = float(i)*100.f ; 
+
+    std::vector<float> demo2(N, 0.f); 
+
+
+    char* d_demo = SU::device_alloc_sizeof(N,sizeof(float)); 
+    SU::copy_host_to_device_sizeof( d_demo, (char*)demo.data(), N, sizeof(float) ); 
+
+    SU::copy_device_to_host_sizeof( (char*)demo2.data(), d_demo, N, sizeof(float)) ; 
+    for(unsigned i=0 ; i < N ; i++) std::cout << " demo2[" << i << "] = " << demo2[i] << std::endl ; 
+}
+
+void test_upload_array_sizeof()
+{
+    std::cout << "test_upload_array_sizeof\n"; 
+    const int N = 10 ; 
+    std::vector<float> demo(N) ; 
+    for(unsigned i=0 ; i < N ; i++) demo[i] = float(i)*100.f ; 
+
+    std::vector<float> demo2(N, 0.f); 
+
+    char* d_demo = SU::upload_array_sizeof( (char*)demo.data(), N, sizeof(float) ) ; 
+    
+    SU::copy_device_to_host_sizeof( (char*)demo2.data(), d_demo, N, sizeof(float)) ; 
+    for(unsigned i=0 ; i < N ; i++) std::cout << " demo2[" << i << "] = " << demo2[i] << std::endl ; 
+}
+
+
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    //OPTICKS_LOG(argc, argv); 
     std::cout << argv[0] << std::endl ; 
-    //test_monolithic();
+
+    /*
+    test_monolithic();
     test_presized();
+    test_copy_host_to_device_sizeof(); 
+    */
+    test_upload_array_sizeof(); 
+
     return 0 ;
 }
 

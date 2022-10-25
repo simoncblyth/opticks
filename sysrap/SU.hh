@@ -22,6 +22,9 @@ struct SYSRAP_API SU
     template<typename T>
     static T* device_alloc( unsigned num ); 
 
+
+
+
     template<typename T>
     static void device_zero( T* d, unsigned num ); 
 
@@ -36,6 +39,16 @@ struct SYSRAP_API SU
     static unsigned count_if_sphoton( const sphoton* d, unsigned num_d, const sphoton_selector& selector ); 
 
     static void copy_if_device_to_device_presized_sphoton( sphoton* d_select, const sphoton* d, unsigned num_d, const sphoton_selector& selector ); 
+
+
+
+    // try "untyped" byte moving "_sizeof" funcs  : handy for quick testing 
+    static char* device_alloc_sizeof( unsigned num, unsigned sizeof_item ); 
+    static void copy_host_to_device_sizeof( char* d, const char* h, unsigned num, unsigned sizeof_item ); 
+    static void copy_device_to_host_sizeof( char* h, const char* d, unsigned num, unsigned sizeof_item ); 
+    static char* upload_array_sizeof(const char* array, unsigned num_items, unsigned sizeof_item ); 
+
+
 
 }; 
 

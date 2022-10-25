@@ -106,7 +106,12 @@ T* SU::device_alloc( unsigned num  )
     cudaMalloc(&d,  num*sizeof(T));
     return d ; 
 }
+template SYSRAP_API char*  SU::device_alloc( unsigned ); 
+template SYSRAP_API float* SU::device_alloc( unsigned ); 
 template SYSRAP_API quad4* SU::device_alloc( unsigned ); 
+
+
+
 
 
 template<typename T>
@@ -155,5 +160,36 @@ void SU::copy_device_to_host_presized( T* h, const T* d, unsigned num  )
 }
 template SYSRAP_API void SU::copy_device_to_host_presized( quad4*, const quad4*, unsigned ); 
 
+
+
+
+
+// TODO: error check all these cuda operations following QU
+
+
+char* SU::device_alloc_sizeof( unsigned num, unsigned sizeof_item )
+{
+    char* d ; 
+    cudaMalloc(&d,  num*sizeof_item );
+    return d ; 
+}
+
+void SU::copy_host_to_device_sizeof( char* d, const char* h, unsigned num, unsigned sizeof_item )
+{
+    cudaMemcpy(d, h, num*sizeof_item, cudaMemcpyHostToDevice);
+}
+
+void SU::copy_device_to_host_sizeof( char* h, const char* d, unsigned num, unsigned sizeof_item )
+{
+    cudaMemcpy(h, d, num*sizeof_item, cudaMemcpyDeviceToHost);
+}
+
+char* SU::upload_array_sizeof(const char* h, unsigned num_items, unsigned sizeof_item ) // static
+{
+    char* d = nullptr ; 
+    cudaMalloc(reinterpret_cast<void**>( &d ), num_items*sizeof_item ); 
+    cudaMemcpy(reinterpret_cast<void*>( d ), h, sizeof_item*num_items, cudaMemcpyHostToDevice ); 
+    return d ; 
+}
 
 
