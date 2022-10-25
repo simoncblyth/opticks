@@ -72,7 +72,13 @@ unsigned SU::count_if( const T* d, unsigned num_d,  const qselector<T>& selector
 
 template SYSRAP_API unsigned SU::count_if( const quad4* , unsigned, const qselector<quad4>& ); 
 
+/**
+SU::count_if_sphoton
+----------------------
 
+NB d is device side pointer 
+
+**/
 
 unsigned SU::count_if_sphoton( const sphoton* d, unsigned num_d,  const sphoton_selector& selector )
 {
