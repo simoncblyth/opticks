@@ -2361,7 +2361,7 @@ void Opticks::loadOriginCacheMeta_()
     {
         LOG(LEVEL) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
     }
-    assert( geocache_code_version_pass ); 
+    //assert( geocache_code_version_pass ); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -4533,7 +4533,7 @@ const char*        Opticks::getCURANDStatePath(bool assert_readable) const
     bool readable = SPath::IsReadable(path); 
     if(!readable)
     {
-        LOG(fatal) 
+        LOG(LEVEL) 
            << " CURANDStatePath IS NOT READABLE " 
            << " INVALID RNG config : change options --rngmax/--rngseed/--rngoffset "  
            << " path " << path 

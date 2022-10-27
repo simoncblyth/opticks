@@ -60,6 +60,7 @@ struct NP
 
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
     template<typename T> static T To( const char* a ); 
+    template<typename T> static bool ConvertsTo( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
 
@@ -121,6 +122,35 @@ struct NP
 
     static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
     static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
+
+
+    template<typename T>
+    static void ReadKV(const char* dir, const char* name, 
+                      std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
+
+    template<typename T>
+    static void ReadKV(const char* path, 
+                       std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
+
+
+    template<typename T>
+    static T ReadKV_Value(const char* dir, const char* name, const char* key ); 
+
+    template<typename T>
+    static T ReadKV_Value(const char* spec_or_path, const char* key ); 
+
+
+    template<typename T>
+    static std::string DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra); 
+
+    template <typename T> 
+    static NP* ArrayFromTxt(const char* path); 
+
+    static unsigned CountChar(const char* str, char q ); 
+
+    static const char* Resolve( const char* spec) ; 
+    static const char* ResolveProp(const char* spec); 
+
 
     static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
     static void        WriteString( const char* dir, const char* name, const char* str ); 
@@ -479,6 +509,21 @@ template <typename T> inline T NP::To( const char* a )   // static
     iss >> v ; 
     return v ; 
 }
+
+template <typename T> inline bool NP::ConvertsTo( const char* a )   // static 
+{   
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;   
+    iss >> v ; 
+    return iss.fail() == false ; 
+}
+
+
+
+
+
+
 
 // specialization for std::string as the above truncates at the first blank in the string, see tests/NP_set_meta_get_meta_test.cc  
 template<> inline std::string NP::To(const char* a ) 
@@ -3730,7 +3775,8 @@ template <typename T> void NP::read2(const T* src)
     memcpy( bytes(), src, arr_bytes() );    
 }
 
-template <typename T> void NP::write(T* dst) const 
+template <typename T> 
+inline void NP::write(T* dst) const 
 {
     assert( sizeof(T) == ebyte ); 
     memcpy( dst, bytes(), arr_bytes() );    
@@ -3738,7 +3784,8 @@ template <typename T> void NP::write(T* dst) const
 
 
 
-template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
+template <typename T> 
+inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
 {
     assert( x1 > x0 ); 
     assert( nx > 0 ) ; 
@@ -3796,7 +3843,8 @@ of the next bin by skipping the last sub-edge unless it is from the last bin.
 **/
 
 
-template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
+template <typename T> 
+inline NP* NP::MakeDiv( const NP* src, unsigned mul  )
 {
     assert( mul > 0 ); 
     unsigned ndim = src->shape.size(); 
@@ -3875,14 +3923,16 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
 }
 
 
-template <typename T> NP*  NP::Make( const std::vector<T>& src ) // static
+template <typename T> 
+inline NP*  NP::Make( const std::vector<T>& src ) // static
 {
     NP* a = NP::Make<T>(src.size()); 
     a->read(src.data()); 
     return a ; 
 }
 
-template <typename T> NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
+template <typename T> 
+inline NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
 {
     std::vector<T> src = {d0, v1, d1, v1 } ; 
     return NP::Make<T>(src) ; 
@@ -3900,6 +3950,10 @@ template <typename T> NP* NP::FromString(const char* str, char delim)  // static
     NP* a = NP::Make<T>(vec) ; 
     return a ; 
 }
+
+
+
+
 
 
 
@@ -4103,8 +4157,273 @@ inline void NP::ReadNames(const char* path, std::vector<std::string>& names )
     std::ifstream ifs(path);
     std::string line;
     while(std::getline(ifs, line)) names.push_back(line) ; 
+
 }
 
+
+
+
+
+template<typename T>
+inline std::string NP::DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extras)
+{
+    std::stringstream ss ; 
+    assert( keys.size() == vals.size() ); 
+    if(extras) assert( extras->size() == keys.size() );
+    for(unsigned i=0 ; i < keys.size() ; i++)
+    {
+         ss 
+            << std::setw(20) << keys[i] 
+            << " : "
+            << std::scientific << std::setw(10) << std::setprecision(5) << vals[i]
+            << " : "
+            << ( extras ? (*extras)[i] : "" )
+            << std::endl   
+            ;   
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+template<typename T>
+inline void NP::ReadKV(const char* dir, const char* name, std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extras ) 
+{
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string path = ss.str() ; 
+    ReadKV(path.c_str(), keys, vals, extras); 
+}
+
+template<typename T>
+inline void NP::ReadKV(const char* path, std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extras ) 
+{
+    std::ifstream ifs(path);
+    std::string line;
+    while(std::getline(ifs, line)) 
+    {
+        std::string key ; 
+        T val ; 
+        std::string extra ; 
+
+        std::istringstream iss(line);
+        iss >> key >> val >> extra ; 
+
+        if(VERBOSE) std::cout 
+            << "NP::ReadKV" 
+            << " key[" <<  key << "]" 
+            << " val[" <<  val << "]" 
+            << " extra[" <<  extra << "]" 
+            << std::endl ;  
+
+        keys.push_back(key); 
+        vals.push_back(val); 
+        if(extras) extras->push_back(extra); 
+    }
+}
+
+template<typename T>
+inline T NP::ReadKV_Value(const char* dir, const char* name, const char* key )
+{
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string path = ss.str() ; 
+    return NP::ReadKV_Value<T>(path.c_str(), key ); 
+}
+
+template<typename T>
+inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
+{
+    const char* path = Resolve(spec_or_path); 
+
+    std::vector<std::string> keys ; 
+    std::vector<T> vals ; 
+    std::vector<std::string> extras ; 
+
+    ReadKV<T>(path, keys, vals, &extras ); 
+
+    std::vector<std::string>::iterator it = std::find(keys.begin(), keys.end(), key ) ; 
+
+    if(it == keys.end())
+    {
+        std::cout 
+            << "NP::ReadKV_Value"
+            << " FATAL "
+            << " failed to find key " << key 
+            << std::endl 
+            ;
+        std::cout << NP::DescKV<T>(keys, vals, &extras ) << std::endl ; 
+        assert(0); 
+    }
+
+    unsigned idx = std::distance( keys.begin(), it ); 
+    return vals[idx] ;  
+}
+
+
+/**
+NP::ArrayFromTxt
+-------------------
+
+Number of fields on each line must be consistent, 
+as must the number of fields that convert to type T. 
+
+For example the below input txt with type "float" or "double"::
+
+    1.55     *eV    2.72832
+    2.69531  *eV    2.7101
+    2.7552   *eV    2.5918
+    3.17908  *eV    1.9797
+    15.5     *eV    1.9797
+
+Would yield an array of shape (5,2) with metadata key "other" of "*eV" 
+
+**/
+
+template <typename T> 
+inline NP* NP::ArrayFromTxt(const char* spec)  // static 
+{   
+    const char* path = Resolve(spec) ; 
+    if(!Exists(path))
+    {
+        std::cerr 
+            << "NP::ArrayFromTxt"
+            << " FATAL path does not EXIST "
+            << " spec [" << spec << "]"
+            << " path [" << path << "]"
+            << std::endl 
+            ;
+        assert(0); 
+    }
+
+    std::ifstream ifs(path);
+    std::string line;
+    unsigned UNSET = ~0u ; 
+    unsigned num_field = UNSET ; 
+    unsigned num_column = UNSET ; 
+
+    std::vector<std::string> other ; 
+    std::vector<T> value ; 
+
+    while(std::getline(ifs, line)) 
+    {
+        std::vector<std::string> fields ; 
+        std::string field ; 
+        std::istringstream iss(line);
+        while( iss >> field ) fields.push_back(field) ; 
+
+        if( num_field == UNSET ) 
+        {
+            num_field = fields.size() ; 
+        }
+        else if( fields.size() != num_field )
+        {
+            std::cerr 
+                << "NP::ArrayFromTxt" 
+                << " FATAL : INCONSISTENT NUMBER OF FIELDS " << std::endl 
+                << " [" << line << "]" << std::endl 
+                << " fields.size : " << fields.size() 
+                << " num_field : " << num_field 
+                << std::endl
+                ;
+            assert(0); 
+        }
+        assert( num_field != UNSET ); 
+
+        unsigned line_column = 0u ;  
+        for(unsigned i=0 ; i < num_field ; i++)
+        {
+            const char* str = fields[i].c_str(); 
+            if(ConvertsTo<T>(str)) 
+            {   
+                value.push_back(To<T>(str)) ; 
+                line_column += 1 ;  
+            }
+            else
+            {
+                if(std::find(other.begin(), other.end(), str) == other.end())
+                {
+                    other.push_back(str); 
+                }
+            }
+        }
+   
+        if( num_column == UNSET )
+        {
+            num_column = line_column ; 
+        }
+        else if( line_column != num_column )
+        {
+            std::cerr
+                << "NP::ArrayFromTxt"
+                << " FATAL : INCONSISTENT NUMBER OF VALUES " << std::endl  
+                << " [" << line << "]" << std::endl 
+                << " fields.size : " << fields.size() 
+                << " num_field : " << num_field 
+                << " num_column : " << num_column
+                << " line_column : " << line_column
+                << std::endl
+                ;
+            assert(0); 
+        }
+    }
+
+    unsigned num_value = value.size() ; 
+    assert( num_value % num_column == 0 ); 
+
+    unsigned num_row = num_value/num_column ; 
+    assert( num_row*num_column == num_value ); 
+
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < other.size() ; i++ ) ss << other[i] << " " ; 
+    std::string u_other = ss.str() ; 
+
+    //std::cout << " other.size " << other.size() << " u_other " << u_other << std::endl ; 
+
+    NP* a = NP::Make<T>( num_row, num_column ); 
+    a->read2( value.data() ); 
+    a->set_meta<std::string>("other", u_other ); 
+
+    return a ; 
+}
+
+inline unsigned NP::CountChar(const char* str, char q )
+{
+    unsigned count = 0 ; 
+    char* c = (char*)str ; 
+    while(*c)
+    {
+        if(*c == '.') count += 1 ; 
+        c++ ; 
+    }  
+    return count ; 
+}
+
+inline const char* NP::Resolve( const char* spec) 
+{
+    return CountChar(spec, '.') > 1 ? ResolveProp(spec) : spec ; 
+}
+
+inline const char* NP::ResolveProp(const char* spec)
+{
+    assert(CountChar(spec, '.') > 1);
+
+    char* s = strdup(spec) ; 
+    while(*s && *s == ' ') s++ ;  // skip any leading whitespace 
+    char* c = s ; 
+    while(*c)    // terminate when hit end of spec or trailing whitespace
+    {
+        if(*c == '.') *c = '/' ; 
+        c++ ; 
+        if(*c == ' ') *c = '\0' ;  // terminate at first trailing space
+    }
+    const char* base = getenv("NP_PROP_BASE") ; 
+    std::stringstream ss ; 
+    ss << ( base ? base : "/tmp" ) << "/" << s  ; 
+
+    std::string path = ss.str(); 
+    return strdup(path.c_str()) ; 
+}
 
 
 inline void NP::WriteString( const char* dir, const char* reldir, const char* name, const char* str )  // static 
