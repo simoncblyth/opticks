@@ -31,6 +31,8 @@ struct PIP
 
     OptixPipeline pipeline = nullptr;
 
+
+    static bool OptiXVersionIsSupported(); 
     static OptixCompileDebugLevel        DebugLevel(const char* option); 
     static const char *                  DebugLevel_( OptixCompileDebugLevel debugLevel ); 
 

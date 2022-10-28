@@ -38,6 +38,18 @@ static bool readFile( std::string& str, const char* path )
 }
 
 
+bool PIP::OptiXVersionIsSupported()  // static
+{
+    bool ok = false ; 
+#if OPTIX_VERSION == 70000
+    ok = true ; 
+#elif OPTIX_VERSION == 70500
+    ok = true ; 
+#endif
+    return ok ; 
+}
+
+
 OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
 {
     OptixCompileDebugLevel level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
@@ -52,8 +64,17 @@ OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
     else if(strcmp(option, "MODERATE") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
 #endif
-    else assert(0) ; 
-    LOG(LEVEL) << " option " << option << " level " << level ;  
+    else 
+    {
+        LOG(fatal)
+            << " NOT RECOGNIZED "
+            << " option " << option  
+            << " level " << level  
+            << " OPTIX_VERSION " << OPTIX_VERSION
+            ;
+        assert(0);   
+    } 
+    LOG(LEVEL) << " option " << option << " level " << level << " OPTIX_VERSION " << OPTIX_VERSION ;  
     return level ; 
 }
 const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
@@ -73,6 +94,15 @@ const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
         case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
 #endif
     }
+
+    if( s == nullptr )
+    {
+        LOG(fatal) 
+            << " IS NOT RECOGNIZED  "
+            << " debugLevel " << debugLevel 
+            << " OPTIX_VERSION " << OPTIX_VERSION 
+            ; 
+    }
     return s ;    
 }
 
@@ -84,7 +114,16 @@ OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // stat
     else if( strcmp(option, "LEVEL_2") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2  ; 
     else if( strcmp(option, "LEVEL_3") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3  ; 
     else if( strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_DEFAULT  ; 
-    else assert(0) ; 
+    else 
+    {
+        LOG(fatal) 
+            << " IS NOT RECOGNIZED  "
+            << " option " << option 
+            << " level " << level 
+            << " OPTIX_VERSION " << OPTIX_VERSION 
+            ; 
+        assert(0) ; 
+    }
  
     LOG(LEVEL) << " option " << option << " level " << level ;  
     return level ; 
@@ -100,6 +139,16 @@ const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
         case OPTIX_COMPILE_OPTIMIZATION_LEVEL_3: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ ; break ; 
         default:                                                                         ; break ; 
     }
+
+    if( s == nullptr )
+    {
+        LOG(fatal) 
+            << " IS NOT RECOGNIZED  "
+            << " optLevel " << optLevel 
+            << " OPTIX_VERSION " << OPTIX_VERSION 
+            ; 
+        assert(0) ; 
+    }
     return s ; 
 } 
 OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
@@ -110,7 +159,16 @@ OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
     else if( strcmp(opt, "TRACE_DEPTH") == 0)    flag = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH  ; 
     else if( strcmp(opt, "USER") == 0)           flag = OPTIX_EXCEPTION_FLAG_USER  ; 
     else if( strcmp(opt, "DEBUG") == 0)          flag = OPTIX_EXCEPTION_FLAG_DEBUG  ; 
-    else assert(0) ; 
+    else 
+    {
+        LOG(fatal) 
+            << " IS NOT RECOGNIZED  "
+            << " opt " << opt
+            << " flag " << flag
+            << " OPTIX_VERSION " << OPTIX_VERSION 
+            ; 
+        assert(0) ; 
+    }
     return flag ; 
 }
 const char* PIP::ExceptionFlags__(OptixExceptionFlags excFlag)
@@ -432,7 +490,7 @@ Create pipeline from the program_groups
 **/
 
 
-const char* PIP::linkPipeline_debugLevel = SSys::getenvvar("PIP_linkPipeline_debugLevel", "LINEINFO" ) ; 
+const char* PIP::linkPipeline_debugLevel = SSys::getenvvar("PIP_linkPipeline_debugLevel", "DEFAULT" ) ; 
 
 void PIP::linkPipeline(unsigned max_trace_depth)
 {
