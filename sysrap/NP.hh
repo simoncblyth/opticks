@@ -147,10 +147,15 @@ struct NP
     static NP* ArrayFromTxtFile(const char* path); 
 
     template <typename T> 
+    static NP* ArrayFromTxtFile(const char* base, const char* relp); 
+
+    template <typename T> 
     static NP* ArrayFromString(const char* str); 
 
 
     static unsigned CountChar(const char* str, char q ); 
+    static void ReplaceCharInsitu(       char* str, char q, char n ); 
+    static const char* ReplaceChar(const char* str, char q, char n ); 
 
     static const char* Resolve( const char* spec) ; 
     static const char* ResolveProp(const char* spec); 
@@ -4267,6 +4272,17 @@ inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
 }
 
 
+
+template <typename T> 
+inline NP* NP::ArrayFromTxtFile(const char* base, const char* relp )  // static 
+{   
+    std::stringstream ss ;  
+    ss << base << "/" << relp ; 
+    std::string s = ss.str(); 
+    return ArrayFromTxtFile<T>( s.c_str()); 
+}
+
+
 /**
 NP::ArrayFromTxtFile
 ----------------------
@@ -4422,6 +4438,22 @@ inline unsigned NP::CountChar(const char* str, char q )
         c++ ; 
     }  
     return count ; 
+}
+
+inline void NP::ReplaceCharInsitu(char* str, char q, char n )
+{
+    char* c = str ; 
+    while(*c)
+    {
+        if(*c == q) *c = n ; 
+        c++ ; 
+    }     
+}
+inline const char* NP::ReplaceChar(const char* str, char q, char n )
+{
+    char* s = strdup(str); 
+    ReplaceCharInsitu(s, q, n); 
+    return s ; 
 }
 
 inline const char* NP::Resolve( const char* spec) 
