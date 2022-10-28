@@ -4286,7 +4286,7 @@ inline NP* NP::ArrayFromTxtFile(const char* spec_or_path )  // static
         std::cerr 
             << "NP::ArrayFromTxtFile"
             << " FATAL path does not EXIST "
-            << " spec [" << spec << "]"
+            << " spec_or_path [" << spec_or_path << "]"
             << " path [" << path << "]"
             << std::endl 
             ;
