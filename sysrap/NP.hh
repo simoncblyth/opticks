@@ -144,7 +144,11 @@ struct NP
     static std::string DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra); 
 
     template <typename T> 
-    static NP* ArrayFromTxt(const char* path); 
+    static NP* ArrayFromTxtFile(const char* path); 
+
+    template <typename T> 
+    static NP* ArrayFromString(const char* str); 
+
 
     static unsigned CountChar(const char* str, char q ); 
 
@@ -159,6 +163,8 @@ struct NP
     static const char* ReadString( const char* dir, const char* reldir, const char* name);
     static const char* ReadString( const char* dir, const char* name);
     static const char* ReadString( const char* path );
+
+    static const char* ReadString2( const char* path );
 
 
     template<typename T> T*       values() ; 
@@ -4262,10 +4268,41 @@ inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
 
 
 /**
-NP::ArrayFromTxt
--------------------
+NP::ArrayFromTxtFile
+----------------------
 
-Number of fields on each line must be consistent, 
+1. resolves spec_or_path into path
+2. reads txt from the file into str
+3. creates array with NP::ArrayFromString  
+
+**/
+
+template <typename T> 
+inline NP* NP::ArrayFromTxtFile(const char* spec_or_path )  // static 
+{   
+    const char* path = Resolve(spec_or_path ) ; 
+    if(!Exists(path))
+    {
+        std::cerr 
+            << "NP::ArrayFromTxtFile"
+            << " FATAL path does not EXIST "
+            << " spec [" << spec << "]"
+            << " path [" << path << "]"
+            << std::endl 
+            ;
+        assert(0); 
+    }
+
+    const char* str = ReadString2(path); 
+    return ArrayFromString<T>(str); 
+}
+
+
+/**
+NP::ArrayFromString
+----------------------
+
+The number of fields on each line must be consistent, 
 as must the number of fields that convert to type T. 
 
 For example the below input txt with type "float" or "double"::
@@ -4281,23 +4318,8 @@ Would yield an array of shape (5,2) with metadata key "other" of "*eV"
 **/
 
 template <typename T> 
-inline NP* NP::ArrayFromTxt(const char* spec)  // static 
-{   
-    const char* path = Resolve(spec) ; 
-    if(!Exists(path))
-    {
-        std::cerr 
-            << "NP::ArrayFromTxt"
-            << " FATAL path does not EXIST "
-            << " spec [" << spec << "]"
-            << " path [" << path << "]"
-            << std::endl 
-            ;
-        assert(0); 
-    }
-
-    std::ifstream ifs(path);
-    std::string line;
+inline NP* NP::ArrayFromString(const char* str)  // static 
+{ 
     unsigned UNSET = ~0u ; 
     unsigned num_field = UNSET ; 
     unsigned num_column = UNSET ; 
@@ -4305,12 +4327,15 @@ inline NP* NP::ArrayFromTxt(const char* spec)  // static
     std::vector<std::string> other ; 
     std::vector<T> value ; 
 
-    while(std::getline(ifs, line)) 
+    std::string line ; 
+    std::stringstream fss(str) ;
+    while(std::getline(fss, line)) 
     {
         std::vector<std::string> fields ; 
         std::string field ; 
         std::istringstream iss(line);
         while( iss >> field ) fields.push_back(field) ; 
+        if(fields.size() == 0) continue ; 
 
         if( num_field == UNSET ) 
         {
@@ -4319,7 +4344,7 @@ inline NP* NP::ArrayFromTxt(const char* spec)  // static
         else if( fields.size() != num_field )
         {
             std::cerr 
-                << "NP::ArrayFromTxt" 
+                << "NP::ArrayFromString" 
                 << " FATAL : INCONSISTENT NUMBER OF FIELDS " << std::endl 
                 << " [" << line << "]" << std::endl 
                 << " fields.size : " << fields.size() 
@@ -4355,7 +4380,7 @@ inline NP* NP::ArrayFromTxt(const char* spec)  // static
         else if( line_column != num_column )
         {
             std::cerr
-                << "NP::ArrayFromTxt"
+                << "NP::ArrayFromString"
                 << " FATAL : INCONSISTENT NUMBER OF VALUES " << std::endl  
                 << " [" << line << "]" << std::endl 
                 << " fields.size : " << fields.size() 
@@ -4475,6 +4500,16 @@ inline const char* NP::ReadString( const char* path )  // static
     std::string str = ss.str(); 
     return str.empty() ? nullptr : strdup(str.c_str()) ; 
 }
+
+inline const char* NP::ReadString2(const char* path)  // static
+{
+    std::ifstream ifs(path);
+    std::stringstream ss ;
+    ss << ifs.rdbuf();
+    std::string str = ss.str(); 
+    return str.empty() ? nullptr : strdup(str.c_str()) ; 
+}
+
 
 
 inline std::string NP::descValues() const 
