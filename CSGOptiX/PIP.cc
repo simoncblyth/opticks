@@ -57,6 +57,7 @@ OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
     if(     strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
     else if(strcmp(option, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
+    else if(strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
 #elif OPTIX_VERSION == 70500
     if(     strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT ; 
     else if(strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
