@@ -89,8 +89,9 @@ struct NPFold
     NPFold(); 
 
     void check() const ; 
-    void add(const char* k, const NP* a); 
-    void set(const char* k, const NP* a); 
+    void add_(const char* k, const NP* a); 
+    void add( const char* k, const NP* a); 
+    void set( const char* k, const NP* a); 
     void clear(); 
 
     int num_items() const ; 
@@ -343,15 +344,33 @@ NPFold::add
 ------------
 
 If added keys do not end with the EXT ".npy" then the EXT is added prior to collection. 
+Note that even when collecting arrays created from txt files, such as with SProp.h
+where files would have no extension (or .txt extension) it is still appropriate 
+to add the .npy EXT to the NPFold in preparation for subsequent saving 
+and for the simplicity of consistency. 
 
 **/
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
     std::string key = FormKey(k); 
-    kk.push_back(key); 
+    add_(key.c_str(), a ); 
+}
+
+/**
+NPFold::add_
+--------------
+
+This lower level method does not add EXT to keys
+
+**/
+inline void NPFold::add_(const char* k, const NP* a) 
+{
+    kk.push_back(k); 
     aa.push_back(a); 
 }
+
+
 
 inline void NPFold::set(const char* k, const NP* a) 
 {

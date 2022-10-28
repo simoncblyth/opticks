@@ -7,13 +7,14 @@ The persisting is handled by a contained NPFold
 but the loading needs to follow SProp specific conventions 
 and also use NP::ArrayFromTxtFile 
 
-Of course after initial loading from the TxtFile 
+Of course after initial loading from the TxtFiles 
 the NPFold can be saved and loaded and combined with other
 NPFold just like standard ones. 
  
 **/
 
 #include "NPFold.h"
+
 
 struct SProp
 {
@@ -25,36 +26,56 @@ struct SProp
 
     static int Compare(const FTSENT** one, const FTSENT** two);
     int  load_fts(const char* base) ;
-    void load_array(const char* base, const char* relp) ;      
+    void load_array(const char* base, const char* name) ;      
 
-    SProp(); 
-    NPFold* f ; 
+    SProp(const char* spec, const char* symbol=nullptr);
+    void init(); 
+    std::string desc() const ; 
+
+    const char* spec ;  
+    const char* symbol ; 
+    const char* base ;  
+    NPFold* fold ; 
 };
 
-inline const char* SProp::Resolve(const char* spec_or_path) // static 
+/**
+SProp::Resolve
+-----------------
+
+spec is expected to be of the following form::
+
+   Material.Pyrex
+   Material.Vacuum
+   PMTProperty.R12860
+   PMTProperty.NNVTMCP
+   PMTProperty.NNVTMCP_HiQE
+ 
+Which corresponds to a file system directory 
+beneath $NP_PROP_FOLD that contains property txt 
+files that follow the convention of not having 
+and "." in their names. 
+
+This spec is converted into directory paths such as::
+
+   $NP_PROP_BASE/Material/Pyrex
+   $NP_PROP_BASE/Material/Vacuum 
+   $NP_PROP_BASE/PMTProperty/R12860
+   $NP_PROP_BASE/PMTProperty/NNVTMCP
+   $NP_PROP_BASE/PMTProperty/NNVTMCP_HiQE
+
+**/
+
+inline const char* SProp::Resolve(const char* spec) // static 
 {
-    unsigned num_dot = NP::CountChar(spec_or_path, '.') ; 
-    const char* relp = num_dot > 1 ? NP::ReplaceChar(spec_or_path, '.', '/' ) : spec_or_path ; 
-    const char* base = getenv(kNP_PROP_BASE) ; 
+    unsigned num_dot = NP::CountChar(spec, '.') ; 
+    const char* relp = num_dot > 0 ? NP::ReplaceChar(spec, '.', '/' ) : spec ; 
+    const char* base_ = getenv(kNP_PROP_BASE) ; 
+    const char* base  = base_ ? base_ : "/tmp" ; 
+
     std::stringstream ss ; 
-    ss << ( base ? base : "/tmp" ) << "/" << relp  ; 
+    ss << base << "/" << relp  ; 
     std::string s = ss.str(); 
     return strdup(s.c_str()); 
-}
-
-inline SProp* SProp::Load(const char* spec_or_path) // static
-{
-    const char* base = Resolve(spec_or_path); 
-    if(VERBOSE) std::cout 
-        << "SProp::Load"
-        << " spec_or_path " << spec_or_path
-        << " base " << ( base ? base : "-" )
-        << std::endl 
-        ;
-
-    SProp* p = new SProp ; 
-    p->load_fts(base); 
-    return p ; 
 }
 
 inline int SProp::Compare(const FTSENT** one, const FTSENT** two)
@@ -80,8 +101,8 @@ inline int SProp::load_fts(const char* base_)
             case FTS_F :
             case FTS_SL:
                 {   
-                    char* relp = node->fts_path+strlen(base)+1 ;
-                    load_array(base, relp) ; 
+                    char* name= node->fts_path+strlen(base)+1 ;
+                    load_array(base, name) ; 
                 }   
                 break;
             default:
@@ -92,31 +113,66 @@ inline int SProp::load_fts(const char* base_)
     return 0 ; 
 }
 
-inline void SProp::load_array(const char* base, const char* relp)
+/**
+SProp::load_array
+-------------------
+
+This follows the somewhat unusual convention that 
+the property txt files have no "." in their names.
+
+Files with "." in their names are ignored. 
+
+**/
+
+inline void SProp::load_array(const char* base, const char* name)
 {
-    unsigned relp_dot = NP::CountChar(relp,'.'); 
+    unsigned name_dot = NP::CountChar(name,'.'); 
 
     if(VERBOSE) std::cout 
         << "SProp::load_array"
         << " base " << base
-        << " relp " << relp
-        << " relp_dot " << relp_dot
+        << " name " << name
+        << " name_dot " << name_dot
         << std::endl
         ;
-    if(relp_dot > 0) return ; 
+    if(name_dot > 0) return ; 
 
-    NP* a = NP::ArrayFromTxtFile<double>(base, relp) ; 
+    NP* a = NP::ArrayFromTxtFile<double>(base, name) ; 
 
-    std::cout 
-        << " relp " << std::setw(30) << relp 
+    if(VERBOSE) std::cout 
+        << " name " << std::setw(30) << name 
         << " a " << ( a ? a->sstr() : "-" )
         << std::endl
         ;
+
+    fold->add(name, a );  // NB the NPFold keys will have .npy added
 }
 
-inline SProp::SProp()
-   :
-   f(new NPFold)
+inline SProp::SProp(const char* spec_, const char* symbol_)
+    :
+    spec(spec_ ? strdup(spec_) : nullptr),
+    symbol( symbol_ ? strdup(symbol_) : nullptr ), 
+    base(spec  ? Resolve(spec) : nullptr),  
+    fold(new NPFold)
 {
+    init(); 
+}
+
+inline void SProp::init()
+{
+    load_fts(base); 
+}
+
+inline std::string SProp::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "SProp " 
+       << ( symbol ? symbol : "-" )
+       << spec 
+       << base << std::endl 
+       << fold->desc()
+       ;
+    std::string s = ss.str() ; 
+    return s ; 
 }
 
