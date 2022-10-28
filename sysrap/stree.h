@@ -3,40 +3,15 @@
 stree.h : explore minimal approach to geometry translation
 ============================================================
 
-See also u4/U4Tree.h that creates the stree from Geant4 volumes. 
+See also u4/U4Tree.h that populates the stree from traversals of Geant4 volumes. 
 
 * this is seeking to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
 
-* DONE : controlling the order of repeats with same freq, using 2-level sort  
+Lifecycle
+------------
 
+Canonical stree instance is SSim member instanciated by SSim::SSim 
 
-TODO
------
-
-* maintain correspondence between source nodes and destination nodes thru the factorization
-* triplet_identity 
-* transform rebase
-
-
-
-Find users of stree.h
-------------------------
-
-::
-
-    epsilon:opticks blyth$ opticks-fl stree.h | grep -v stree
-    ./CSG/CSGTarget.cc
-    ./CSG/tests/CSGFoundryLoadTest.cc
-    ./extg4/X4PhysicalVolume.cc
-    ./sysrap/CMakeLists.txt
-    ./sysrap/SBnd.h
-    ./sysrap/sphit.h
-    ./sysrap/sframe.h
-    ./sysrap/SSim.cc
-    ./ggeo/GGeo.cc
-    ./ggeo/tests/GGeoLoadFromDirTest.cc
-    ./u4/U4Tree.h
-    ./CSG_GGeo/CSG_GGeo_Convert.cc
 
 
 Users of stree.h
@@ -70,11 +45,38 @@ sysrap/SBnd.h
 
 
 
+Find users of stree.h
+------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-fl stree.h | grep -v stree
+    ./CSG/CSGTarget.cc
+    ./CSG/tests/CSGFoundryLoadTest.cc
+    ./extg4/X4PhysicalVolume.cc
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SBnd.h
+    ./sysrap/sphit.h
+    ./sysrap/sframe.h
+    ./sysrap/SSim.cc
+    ./ggeo/GGeo.cc
+    ./ggeo/tests/GGeoLoadFromDirTest.cc
+    ./u4/U4Tree.h
+    ./CSG_GGeo/CSG_GGeo_Convert.cc
 
 
 
-mapping from "factorized" instances back to origin PV and vice-versa 
------------------------------------------------------------------------
+TODO Overview
+-------------------
+
+* maintain correspondence between source nodes and destination nodes thru the factorization
+* triplet_identity ?
+* transform rebase
+* solids nsphere ncone etc... into a more uniform direct to CSGPrim approach 
+
+
+TODO : mapping from "factorized" instances back to origin PV and vice-versa 
+-----------------------------------------------------------------------------
 
 Excluding the remainder, the instances each correspond to contiguous ranges of nidx.
 So can return back to the origin pv volumes using "U4Tree::get_pv(int nidx)" so long  
@@ -115,6 +117,28 @@ because tthe CSGPrim are references from all the instances but for the remainder
 the CSGPrim are only referenced once (?). TODO: check this 
 
 TODO: collect the nidx of the remainder into stree.h ?
+
+
+static log level control
+-------------------------
+
+As stree (and also U4Tree) are header only they cannot easily 
+have a static EnvLevel as initing a static in header only situation 
+is complicated in C++11.  
+With C++17 can supposedly do this easily with "inline static". See
+
+https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
+
+Pragmatic workaround for runtime logging control is to 
+rely on the "guardian" of stree, which is SSim, 
+as that instanciates stree in can easily set a member. 
+
+So the stree::set_level is invoked from SSim::init based on the envvar:: 
+
+    export SSim__stree_level=0    # no logging   
+    export SSim__stree_level=1    # minimal logging   
+    export SSim__stree_level=2    # some logging   
+    export SSim__stree_level=3    # verbose logging   
 
 
 **/
@@ -204,6 +228,7 @@ struct stree
 
     stree();
 
+    void set_level(int level_); 
     std::string desc() const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
@@ -327,17 +352,31 @@ struct stree
 
 inline stree::stree()
     :
-    level(0),        // set to 0: once operational
+    level(0),
     sensor_count(0),
     subs_freq(new sfreq),
     mtfold(new NPFold)
 {
 }
 
+inline void stree::set_level(int level_)
+{
+    level = level_ ; 
+    if(level > 0)
+    {
+        std::cout 
+            << "stree::set_level " << level  
+            << " [adjust via envvar SSim__stree_level ]"
+            << std::endl 
+            ;
+    } 
+}
+
 inline std::string stree::desc() const
 {
     std::stringstream ss ;
     ss << "stree::desc"
+       << " level " << level 
        << " sensor_count " << sensor_count 
        << " nds " << nds.size()
        << " m2w " << m2w.size()

@@ -28,6 +28,7 @@ struct stree ;
 struct SYSRAP_API SSim
 {
     static const plog::Severity LEVEL ; 
+    static const int stree_level ; 
 
     static constexpr const char* RELDIR = "SSim" ; 
     static constexpr const char* BND = "bnd.npy" ; 
@@ -92,6 +93,7 @@ struct SYSRAP_API SSim
 
 private:
     SSim(); 
+    void init(); 
 };
 
 

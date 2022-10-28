@@ -254,6 +254,9 @@ Prior to CSGOptiX::Create the SEvt instance is created.
 Q: is there a more general place for SEvt hookup ?
 A: SSim could hold the SEvt together with stree ?
 
+But SEvt feels like it should be separate, 
+as the SSim focus is initialization and SEvt focis is post-init.  
+
 **/
 
 

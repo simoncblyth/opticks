@@ -103,6 +103,11 @@ void test_get_bnd()
 
 }
 
+void test_Create()
+{
+    SSim* sim = SSim::Create(); 
+    LOG(info) << " sim.desc " << sim->desc() ; 
+}
 
 
 int main(int argc, char** argv)
@@ -114,9 +119,10 @@ int main(int argc, char** argv)
     test_findName(); 
     test_addFake();     
     test_addFake_ellipsis();     
+    test_get_bnd(); 
     */
 
-    test_get_bnd(); 
+    test_Create(); 
 
 
     return 0 ; 

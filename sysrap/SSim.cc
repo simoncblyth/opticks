@@ -17,6 +17,9 @@
 
 
 const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
+const int SSim::stree_level = SSys::getenvint("SSim__stree_level", 0) ; 
+
+
 SSim* SSim::INSTANCE = nullptr ; 
 const unsigned SSim::MISSING = ~0u ; 
 
@@ -82,8 +85,15 @@ SSim::SSim()
     fold(new NPFold),
     tree(new stree)
 {
-    INSTANCE = this ; 
+    init(); 
 }
+
+void SSim::init()
+{
+    INSTANCE = this ; 
+    tree->set_level(stree_level); 
+}
+
 
 void SSim::add(const char* k, const NP* a )
 { 

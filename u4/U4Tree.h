@@ -36,15 +36,30 @@ within sysrap as that does not depend on G4 headers.
 #include "U4Transform.h"
 #include "U4Material.hh"
 
+/*
+HMM: cannot have U4Tree EnvLevel because it is currently header only, 
+and cannot easily init a static in header only situation in C++11, 
+With C++17 can supposedly do this easily with "inline static". See
+
+https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
+
+Pragmatic workaround for runtime logging level is to 
+adopt the log level int from stree st.level which is 
+controlled via envvar::
+
+    export SSim__stree_level=1   # 0:one 1:minimal 2:some 3:verbose 4:extreme
+
+*/
+
 struct U4Tree
 {
-    static constexpr const bool VERBOSE = true ; 
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
 
 
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
     const U4SensorIdentifier* sid ; 
+    int level ;    // use export SSim__stree_level=1  will control this 
 
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
@@ -90,14 +105,14 @@ Canonically invoked from G4CXOpticks::setGeometry
 **/
 inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
 {
-    if(VERBOSE) std::cout << "[ U4Tree::Create " << std::endl ; 
+    if(st->level > 0) std::cout << "[ U4Tree::Create " << std::endl ; 
     U4Tree* tr = new U4Tree(st, top, sid ) ;
 
     st->factorize(); 
     tr->identifySensitive(); 
     st->add_inst(); 
 
-    if(VERBOSE) std::cout << "] U4Tree::Create " << std::endl ; 
+    if(st->level > 0) std::cout << "] U4Tree::Create " << std::endl ; 
     return tr ; 
 }
 
@@ -106,7 +121,8 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
     :
     st(st_),
     top(top_),
-    sid(sid_ ? sid_ : new U4SensorIdentifierDefault)
+    sid(sid_ ? sid_ : new U4SensorIdentifierDefault),
+    level(st->level)
 {
     init(); 
 }
@@ -322,14 +338,14 @@ U4Tree::identifySensitive
 
 inline void U4Tree::identifySensitive()
 {
-    if(VERBOSE) std::cerr << "[ U4Tree::identifySensitive " << std::endl ; 
+    if(level > 0) std::cerr << "[ U4Tree::identifySensitive " << std::endl ; 
     st->sensor_count = 0 ; 
 
     identifySensitiveInstances(); 
     identifySensitiveGlobals(); 
-
     st->reorderSensors();  // change nd.sensor_index to facilitate comparison with GGeo
-    if(VERBOSE) std::cerr << "] U4Tree::identifySensitive " << std::endl ; 
+
+    if(level > 0) std::cerr << "] U4Tree::identifySensitive st.sensor_count " << st->sensor_count << std::endl ; 
 }
 
 
@@ -368,7 +384,7 @@ factored subtrees : easy way to do that is to label the tree with the ridx.
 inline void U4Tree::identifySensitiveInstances()
 {
     unsigned num_factor = st->get_num_factor(); 
-    if(VERBOSE) std::cerr 
+    if(level > 0) std::cerr 
         << "[ U4Tree::identifySensitiveInstances" 
         << " num_factor " << num_factor 
         << " st.sensor_count " << st->sensor_count 
@@ -396,10 +412,25 @@ inline void U4Tree::identifySensitiveInstances()
             snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 
             nd.sensor_index = sensor_index ; 
+
+            if(level > 1) std::cerr
+                << "U4Tree::identifySensitiveInstances"
+                << " i " << std::setw(7) << i 
+                << " sensor_id " << std::setw(7) << sensor_id  
+                << " sensor_index " << std::setw(7) << sensor_index  
+                << std::endl
+                ;
         }
+
+        if(level > 0) std::cerr 
+            << "U4Tree::identifySensitiveInstances"
+            << " factor " << i 
+            << " fac.sensors " << fac.sensors
+            << std::endl 
+            ;   
     }
 
-    if(VERBOSE) std::cerr 
+    if(level > 0) std::cerr 
         << "] U4Tree::identifySensitiveInstances"
         << " num_factor " << num_factor
         << " st.sensor_count " << st->sensor_count 
@@ -420,7 +451,7 @@ inline void U4Tree::identifySensitiveGlobals()
     std::vector<int> remainder ; 
     st->get_remainder_nodes(remainder) ;   
 
-    if(VERBOSE) std::cerr 
+    if(level > 0) std::cerr 
         << "[ U4Tree::identifySensitiveGlobals" 
         << " st.sensor_count " << st->sensor_count 
         << " remainder.size " << remainder.size()
@@ -441,8 +472,16 @@ inline void U4Tree::identifySensitiveGlobals()
         snode& nd = st->nds[nidx] ; 
         nd.sensor_id = sensor_id ; 
         nd.sensor_index = sensor_index ; 
+
+        if(level > 1) std::cerr
+            << "U4Tree::identifySensitiveGlobals"
+            << " i " << std::setw(7) << i 
+            << " sensor_id " << std::setw(7) << sensor_id  
+            << " sensor_index " << std::setw(7) << sensor_index  
+            << std::endl
+            ;
     }
-    if(VERBOSE) std::cerr 
+    if(level > 0) std::cerr 
         << "] U4Tree::identifySensitiveGlobals " 
         << " st.sensor_count " << st->sensor_count 
         << " remainder.size " << remainder.size()
