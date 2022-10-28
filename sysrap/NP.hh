@@ -2963,7 +2963,7 @@ inline int NP::NameIndex( const char* qname, unsigned& count, const std::vector<
 
 inline bool NP::is_named_shape() const 
 {
-    return shape.size() == 2 && shape[1] == 1 && shape[0] == names.size() ; 
+    return int(shape.size()) == 2 && shape[1] == 1 && shape[0] == int(names.size()) ; 
 }
 
 template<typename T>
