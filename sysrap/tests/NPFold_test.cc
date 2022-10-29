@@ -143,13 +143,13 @@ void test_desc_subfold()
 void test_find_subfold_0()
 {
     NPFold* nf0 = make_compound(); 
-    NPFold* nf4 = nf0->find_subfold("nf1/nf4"); 
+    const NPFold* nf4 = nf0->find_subfold("nf1/nf4"); 
     std::cout << "[nf0->find_subfold('nf1/nf4')\n " << ( nf4 ? nf4->desc() : "-" ) << "]" << std::endl ; 
 }
 void test_find_subfold_1()
 {
     NPFold* nf0 = make_compound(); 
-    NPFold* nf6 = nf0->find_subfold("nf1/nf4/nf6"); 
+    const NPFold* nf6 = nf0->find_subfold("nf1/nf4/nf6"); 
     std::cout << "[nf0->find_subfold('nf1/nf4/nf6')\n " << ( nf6 ? nf6->desc() : "-" ) << "]" << std::endl ; 
 }
 
@@ -203,24 +203,49 @@ void test_set_same_key()
 }
 
 
-void test_recursive_txt_load()
+void test_recursive_txt_load(const char* name)
 {
-    const char* root = getenv("NP_PROP_BASE") ; 
-    if(root == nullptr) return ; 
-
-    const char* name = "PMTProperty" ; 
-    //const char* name = "Material" ; 
-    const char* base = U::Path(root, name ) ; 
+    const char* base = U::Path(getenv("NP_PROP_BASE"), name) ; 
 
     NPFold* fold = NPFold::Load(base) ; 
 
-    std::cout << "fold.desc" << fold->desc() << std::endl ;  
+    std::cout << fold->desc() << std::endl ;  
 
     const char* tmpd = U::Path("/tmp", name ) ; 
     fold->save(tmpd); 
 }
 
+void test_accessors()
+{
+    const char* base = U::Path(getenv("NP_PROP_BASE"), "PMTProperty" ) ; 
+    NPFold* fold = NPFold::Load(base) ; 
 
+    // look for an array in all the PMTProperty subfold 
+    const char* name = "THICKNESS" ; 
+
+    unsigned num = fold->get_num_subfold() ; 
+    for(unsigned idx=0 ; idx < num ; idx++)
+    {
+        const char* key = fold->get_subfold_key(idx);
+        const NP* a = fold->find_array(key, name) ; 
+        if( a == nullptr ) continue ; 
+
+        std::cout << " key " << key << " name " << name << std::endl ;  
+        std::cout << " a.lpath " << a->get_lpath() << std::endl ;
+        std::cout << " a.sstr " << ( a ? a->sstr() : "-" ) << std::endl ; 
+        std::string units = a->get_meta<std::string>("units", "") ; 
+        std::cout << " units " << units << std::endl;
+
+        std::vector<std::string> qtys = {"ARC_THICKNESS", "PHC_THICKNESS" } ; 
+        for(unsigned q=0 ; q < qtys.size() ; q++)
+        {
+            const char* qty = qtys[q].c_str(); 
+            double d = a->get_named_value<double>(qty, -1 );  
+            std::cout << " qty " << qty << " d " << std::scientific << d << std::endl ;
+        }
+        std::cout << std::endl << std::endl ; 
+    }
+}
 
 
 int main()
@@ -236,9 +261,12 @@ int main()
     test_add_same_key(); 
     test_set_same_key(); 
     test_add_same_key_clear(); 
+
+    test_recursive_txt_load("Material"); 
+    test_recursive_txt_load("PMTProperty"); 
     */
 
-    test_recursive_txt_load(); 
+    test_accessors(); 
 
 
     return 0 ; 

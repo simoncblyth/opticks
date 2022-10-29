@@ -355,8 +355,7 @@ struct NP
     template<typename T> static void SetMeta(       std::string& mt, const char* key, T value ); 
 
     std::string descMeta() const ; 
-
-
+    const char* get_lpath() const ; 
 
     char*       bytes();  
     const char* bytes() const ;  
@@ -367,6 +366,7 @@ struct NP
     unsigned item_bytes() const ;   // *item* comprises all dimensions beyond the first 
     unsigned hdr_bytes() const ;  
     unsigned meta_bytes() const ;
+
 
     void clear() ; 
   
@@ -3143,6 +3143,10 @@ inline std::string NP::descMeta() const
     return s ; 
 }
 
+inline const char* NP::get_lpath() const 
+{
+    return lpath.c_str() ? lpath.c_str() : "-" ; 
+}
 
 
 /**

@@ -382,6 +382,7 @@ struct U
     static std::string FormName( const char* prefix, int idx, const char* ext ); 
     static std::string FormName( const char* prefix, const char* body, const char* ext ); 
 
+    static constexpr const char* DEFAULT_PATH_ARG_0 = "/tmp" ; 
     template<typename ... Args>
     static std::string Path_( Args ... args_  ); 
 
@@ -498,13 +499,14 @@ inline std::string U::FormName( const char* prefix, const char* body, const char
 template<typename ... Args>
 std::string U::Path_( Args ... args_  )
 {
-    std::vector<std::string> args = {args_...};
-    std::vector<std::string> elem ; 
+    std::vector<const char*> args = {args_...} ; 
 
+    std::vector<std::string> elem ; 
     for(unsigned i=0 ; i < args.size() ; i++)
     {   
-        const std::string& arg = args[i] ; 
-        if(!arg.empty()) elem.push_back(arg);  
+        const char* arg = args[i] ;   
+        if( i == 0 && arg == nullptr ) arg = DEFAULT_PATH_ARG_0 ; 
+        if(arg) elem.push_back(arg);  
     }   
 
     unsigned num_elem = elem.size() ; 
@@ -515,6 +517,7 @@ std::string U::Path_( Args ... args_  )
         ss << ele << ( i < num_elem - 1 ? "/" : "" ) ; 
     }   
     std::string s = ss.str();
+
     return s ;
 }  
 

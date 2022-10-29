@@ -12,9 +12,7 @@ There are two load/save modes:
    in which the ordering of the keys are preserved
  
 2. without index txt file : the ordering of keys/arrays 
-   is not preserved, it will be the fts filesystem traversal order 
-   This mode allows all .npy from within any directory tree to 
-   be loaded into the NPFold instance.   
+   follows the sorted order from U::DirList 
 
 
 Supporting NPFold within NPFold recursively
@@ -25,6 +23,25 @@ level "Properties" NPFold containing "Materials" and "Surfaces" sub-NPFold.
 
 A sub-NPFold of an NPFold is simply represented by a key in the 
 index that does not end with ".npy" which gets stored into ff vector. 
+
+Loading txt property files
+----------------------------
+
+Simple txt property files can also be loaded. 
+NB these txt property files are input only.
+
+The NPFold keys still use the .npy extension
+and saving the NPFold proceeds normally saving the arrays into 
+standard binary .npy and sidecars. 
+
+
+Former load_fts approach vs current load_dir
+-----------------------------------------------
+
+Former use of fts filesystem traversal with load_fts led 
+to loading a directory tree of .npy all into a single NPFold
+Now with load_dir each directory is loading into an NPFold
+so loading a directory tree creates a corresponding tree of NPFold. 
 
 **/
 
@@ -68,9 +85,13 @@ struct NPFold
     int          get_subfold_idx(const char* f) const ; 
     NPFold*      get_subfold(const char* f) const ; 
 
-    NPFold*      find_subfold(const char* fpath) ; 
-    static void Traverse_r(NPFold* nd, std::string nd_path, 
-          std::vector<NPFold*>& folds, 
+
+    const NP*      find_array(const char* apath) const ; 
+    const NP*      find_array(const char* base, const char* name) const ; 
+    const NPFold*  find_subfold(const char* fpath) const  ; 
+
+    static void Traverse_r(const NPFold* nd, std::string nd_path, 
+          std::vector<const NPFold*>& folds, 
           std::vector<std::string>& paths ); 
     static std::string Concat(const char* base, const char* sub, char delim='/' ); 
 
@@ -95,6 +116,9 @@ struct NPFold
     void set( const char* k, const NP* a); 
     void clear(); 
 
+
+    // single level (non recursive) accessors
+
     int num_items() const ; 
     const char* get_key(unsigned idx) const ; 
     const NP*   get_array(unsigned idx) const ; 
@@ -104,6 +128,8 @@ struct NPFold
 
     const NP* get(const char* k) const ; 
     int   get_num(const char* k) const ; 
+
+
 
     void save(const char* base, const char* rel) ; 
     void save(const char* base) ; 
@@ -268,6 +294,33 @@ inline NPFold* NPFold::get_subfold(const char* f) const
     return idx == UNDEF ? nullptr : get_subfold(idx) ; 
 }
 
+
+
+/**
+NPFold::find_array
+--------------------
+
+0. split apath into base and name
+1. find the subfold using *base* 
+2. get the array from the subfold
+
+**/
+
+inline const NP* NPFold::find_array(const char* apath) const 
+{
+    std::string base = U::DirName(apath); 
+    std::string name = U::BaseName(apath); 
+    return find_array( base.c_str(), name.c_str()) ; 
+}
+
+inline const NP* NPFold::find_array(const char* base, const char* name) const 
+{
+    const NPFold* fold = find_subfold(base); 
+    return fold ? fold->get(name) : nullptr  ; 
+}
+
+
+
 /**
 NPFold::find_subfold using full subfold qpath, start path is "" 
 ----------------------------------------------------------------
@@ -278,9 +331,9 @@ NPFold::find_subfold using full subfold qpath, start path is ""
 
 **/
 
-inline NPFold* NPFold::find_subfold(const char* qpath) 
+inline const NPFold* NPFold::find_subfold(const char* qpath) const 
 {
-    std::vector<NPFold*> folds ;
+    std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
     Traverse_r( this, "",  folds, paths ); 
     size_t idx = std::distance( paths.begin(), std::find( paths.begin(), paths.end(), qpath ) ) ; 
@@ -313,8 +366,8 @@ like a file system.
 
 **/
 
-inline void NPFold::Traverse_r(NPFold* nd, std::string path, 
-                 std::vector<NPFold*>& folds, std::vector<std::string>& paths ) // static
+inline void NPFold::Traverse_r(const NPFold* nd, std::string path, 
+                 std::vector<const NPFold*>& folds, std::vector<std::string>& paths ) // static
 {
     folds.push_back(nd); 
     paths.push_back(path); 
@@ -323,7 +376,7 @@ inline void NPFold::Traverse_r(NPFold* nd, std::string path,
     unsigned num_sub = nd->subfold.size(); 
     for(unsigned i=0 ; i < num_sub ; i++) 
     {
-        NPFold* sub = nd->subfold[i] ; 
+        const NPFold* sub = nd->subfold[i] ; 
         std::string subpath = Concat(path.c_str(), nd->ff[i].c_str(), '/' ) ;  
 
         Traverse_r( sub, subpath,  folds, paths );  
@@ -344,7 +397,7 @@ inline std::string NPFold::Concat(const char* base, const char* sub, char delim 
 
 inline std::string NPFold::desc_subfold(const char* top) 
 {
-    std::vector<NPFold*>       folds ;
+    std::vector<const NPFold*>       folds ;
     std::vector<std::string>   paths ;
     Traverse_r( this, top,  folds, paths ); 
 
