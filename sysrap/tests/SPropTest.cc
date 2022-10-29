@@ -11,6 +11,19 @@ That is not a long term solution.
 Will need to boot from an NPFold obtained from SSim 
 in production. 
 
+HMM : WHAT THIS IS DOING IS TOO SIMILAR TO 
+WHAT NPFold DOES MORE FLEXIBLY 
+
+SHOULD BE ABLE TO LOAD FROM TXT AN NPFold 
+STARTING FROM "PMTProperty" 
+
+Hmm actually NO : dont want to constrain
+what is included in the NPFold by the layout 
+of the input files.  
+
+Want to be able to put together a collection of 
+NPFold from a selection. 
+
 **/
 
 struct SPropSet

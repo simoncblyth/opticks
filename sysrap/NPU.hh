@@ -23,6 +23,11 @@ other projects together with NP.hh
 #include <cstdint>
 #include <algorithm>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+
 /**
 desc : type codes and sizes used by descr_
 ---------------------------------------------
@@ -368,12 +373,20 @@ struct NPS
 
 struct U
 {
+    enum { ERROR_PATH=-1, DIR_PATH=1 , FILE_PATH=2, OTHER_PATH=3 } ;   
+
     static bool EndsWith( const char* s, const char* q) ; 
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
     static std::string DirName( const char* path ); 
     static std::string BaseName( const char* path ); 
     static std::string FormName( const char* prefix, int idx, const char* ext ); 
     static std::string FormName( const char* prefix, const char* body, const char* ext ); 
+
+    template<typename ... Args>
+    static std::string Path_( Args ... args_  ); 
+
+    template<typename ... Args>
+    static const char* Path( Args ... args ); 
 
     static int         GetEnvInt( const char* envkey, int fallback );  
     static const char* GetEnv(    const char* envkey, const char* fallback); 
@@ -383,7 +396,11 @@ struct U
 
     static int MakeDirs( const char* dirpath, int mode=0 ); 
     static int MakeDirsForFile( const char* filepath, int mode=0); 
-    static void DirList(std::vector<std::string>& names, const char* path, const char* ext); 
+
+    static int PathType( const char* path );  // directory:1 file:2 
+    static int PathType( const char* base, const char* name );  // directory:1 file:2 
+
+    static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static std::string Desc(const std::vector<std::string>& names); 
 
@@ -478,6 +495,50 @@ inline std::string U::FormName( const char* prefix, const char* body, const char
 }
 
 
+template<typename ... Args>
+std::string U::Path_( Args ... args_  )
+{
+    std::vector<std::string> args = {args_...};
+    std::vector<std::string> elem ; 
+
+    for(unsigned i=0 ; i < args.size() ; i++)
+    {   
+        const std::string& arg = args[i] ; 
+        if(!arg.empty()) elem.push_back(arg);  
+    }   
+
+    unsigned num_elem = elem.size() ; 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < num_elem ; i++)
+    {   
+        const std::string& ele = elem[i] ; 
+        ss << ele << ( i < num_elem - 1 ? "/" : "" ) ; 
+    }   
+    std::string s = ss.str();
+    return s ;
+}  
+
+template std::string U::Path_( const char*, const char* );
+template std::string U::Path_( const char*, const char*, const char* );
+template std::string U::Path_( const char*, const char*, const char*, const char* );
+
+template<typename ... Args>
+const char* U::Path( Args ... args )
+{
+    std::string s = Path_(args...)  ;
+    return strdup(s.c_str()) ;
+}  
+
+template const char* U::Path( const char*, const char* );
+template const char* U::Path( const char*, const char*, const char* );
+template const char* U::Path( const char*, const char*, const char*, const char* );
+
+
+
+
+
+
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio> 
@@ -514,6 +575,23 @@ inline int U::MakeDirsForFile( const char* filepath, int mode_ )
     return MakeDirs(dirpath.c_str(), mode_ );  
 }
 
+inline int U::PathType( const char* base, const char* name )
+{
+    const char* path = Path(base, name); 
+    return PathType(path) ; 
+}
+inline int U::PathType( const char* path )
+{
+    int rc = ERROR_PATH ; 
+    struct stat st ;
+    if(0 == stat(path, &st))
+    {   
+        if(     S_ISDIR(st.st_mode)) rc = DIR_PATH ; 
+        else if(S_ISREG(st.st_mode)) rc = FILE_PATH ;   
+        else                         rc = OTHER_PATH ; 
+    }   
+    return rc ;   
+}
 
 inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext)
 {
@@ -523,11 +601,12 @@ inline void U::DirList(std::vector<std::string>& names, const char* path, const 
     struct dirent* entry ;
     while ((entry = readdir(dir)) != nullptr) 
     {   
-        const char* name = entry->d_name ; 
-        if(strlen(name) > strlen(ext) && strcmp(name + strlen(name) - strlen(ext), ext)==0)
-        {   
-            names.push_back(name); 
-        }   
+        const char* name = entry->d_name ;
+        bool dot_name = strcmp(name,".") == 0 || strcmp(name,"..") == 0 ; 
+        if(dot_name) continue ; 
+ 
+        bool ext_match = ext == nullptr ? true : ( strlen(name) > strlen(ext) && strcmp(name + strlen(name) - strlen(ext), ext)==0)  ;
+        if(ext_match) names.push_back(name); 
     }   
     closedir (dir);
     std::sort( names.begin(), names.end() );  

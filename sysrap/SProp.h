@@ -3,6 +3,19 @@
 SProp.h : Loads text property files into arrays 
 ================================================
 
+As this is an input side transient that is only 
+relevant at initialization for loading of property
+text files it does not deserve such a short name 
+like SProp.h
+
+Maybe STxtPropLoader is more appropriate.  
+
+CAN THIS TXT FILE LOADING FUNCTIONALITY BE INTEGRATED 
+INTO NPFold ? 
+
+WANT ANY ADDITIONAL ACCESSORS TO BE VIA NPFold 
+
+
 The persisting is handled by a contained NPFold 
 but the loading needs to follow SProp specific conventions 
 and also use NP::ArrayFromTxtFile 
@@ -22,14 +35,11 @@ struct SProp
     static constexpr const bool VERBOSE = false ; 
 
     static const char* Resolve(const char* spec_or_path); 
-    static SProp* Load(const char* spec_or_path); 
-
     static int Compare(const FTSENT** one, const FTSENT** two);
     int  load_fts(const char* base) ;
     void load_array(const char* base, const char* name) ;      
 
     SProp(const char* spec, const char* symbol=nullptr);
-    void init(); 
     std::string desc() const ; 
 
     const char* spec ;  
@@ -68,7 +78,7 @@ This spec is converted into directory paths such as::
 inline const char* SProp::Resolve(const char* spec) // static 
 {
     unsigned num_dot = NP::CountChar(spec, '.') ; 
-    const char* relp = num_dot > 0 ? NP::ReplaceChar(spec, '.', '/' ) : spec ; 
+    const char* relp = num_dot > 0 ? NP::ReplaceChar(spec, '.', '/', false ) : spec ; 
     const char* base_ = getenv(kNP_PROP_BASE) ; 
     const char* base  = base_ ? base_ : "/tmp" ; 
 
@@ -137,7 +147,7 @@ inline void SProp::load_array(const char* base, const char* name)
         ;
     if(name_dot > 0) return ; 
 
-    NP* a = NP::ArrayFromTxtFile<double>(base, name) ; 
+    NP* a = NP::LoadFromTxtFile<double>(base, name) ; 
 
     if(VERBOSE) std::cout 
         << " name " << std::setw(30) << name 
@@ -152,13 +162,8 @@ inline SProp::SProp(const char* spec_, const char* symbol_)
     :
     spec(spec_ ? strdup(spec_) : nullptr),
     symbol( symbol_ ? strdup(symbol_) : nullptr ), 
-    base(spec  ? Resolve(spec) : nullptr),  
+    base(spec ? Resolve(spec) : nullptr),  
     fold(new NPFold)
-{
-    init(); 
-}
-
-inline void SProp::init()
 {
     load_fts(base); 
 }

@@ -24,8 +24,8 @@ void test_0()
 
     std::cout << "nf1" << std::endl << nf1->desc()  ; 
 
-
-    int cf = NPFold::Compare(&nf0, nf1, true ); 
+    int cf = NPFold::Compare(&nf0, nf1);
+    if( cf != 0 ) std::cout << NPFold::DescCompare( &nf0, nf1) ; 
     assert( cf == 0 ); 
 }
 
@@ -48,7 +48,8 @@ void test_add_without_ext()
     NPFold* nf1 = NPFold::Load(base); 
 
     std::cout << "nf1" << std::endl << nf1->desc()  ; 
-    int cf = NPFold::Compare(&nf0, nf1, true ); 
+    int cf = NPFold::Compare(&nf0, nf1 ); 
+    if( cf != 0 ) std::cout << NPFold::DescCompare( &nf0, nf1) ; 
     assert( cf == 0 ); 
 }
 
@@ -202,6 +203,23 @@ void test_set_same_key()
 }
 
 
+void test_recursive_txt_load()
+{
+    const char* root = getenv("NP_PROP_BASE") ; 
+    if(root == nullptr) return ; 
+
+    const char* name = "PMTProperty" ; 
+    //const char* name = "Material" ; 
+    const char* base = U::Path(root, name ) ; 
+
+    NPFold* fold = NPFold::Load(base) ; 
+
+    std::cout << "fold.desc" << fold->desc() << std::endl ;  
+
+    const char* tmpd = U::Path("/tmp", name ) ; 
+    fold->save(tmpd); 
+}
+
 
 
 
@@ -217,9 +235,10 @@ int main()
 
     test_add_same_key(); 
     test_set_same_key(); 
+    test_add_same_key_clear(); 
     */
 
-    test_add_same_key_clear(); 
+    test_recursive_txt_load(); 
 
 
     return 0 ; 

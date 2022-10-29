@@ -1,5 +1,15 @@
-// name=fts_test ; gcc $name.cc -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name /tmp/NPFold_test
-// https://stackoverflow.com/questions/12609747/traversing-a-filesystem-with-fts3
+/**
+fts_test.cc
+=============
+
+::
+
+    ./fts_test.sh 
+
+
+* https://stackoverflow.com/questions/12609747/traversing-a-filesystem-with-fts3
+
+**/
 
 #include <cstdlib>
 #include <cstdio>
@@ -17,7 +27,11 @@ void indent(int i)
     for(; i > 0; i--) printf("   ");
 }
 
-void dump(char* base)
+
+
+// traverses tree starting from base and outputs names of regular files encountered
+// directories are just skipped
+void traverse(char* base)
 {
     char* path[2] {base, nullptr};
 
@@ -29,12 +43,16 @@ void dump(char* base)
     {
         switch (node->fts_info) 
         {
-            case FTS_D :
-                break;
+            case FTS_D :   break ;     // NB directories are just skipped 
             case FTS_F :
-            case FTS_SL:
-                indent(node->fts_level);
-                printf("%20s %s \n", node->fts_name, node->fts_path+strlen(base)+1 );
+            case FTS_SL:               // only regular files or symbolic links are acted upon 
+                //indent(node->fts_level);
+                printf("node->fts_level %d node.fts_name %20s node.fts_path %s relp %s \n", 
+                           node->fts_level, 
+                           node->fts_name, 
+                           node->fts_path, 
+                           node->fts_path+strlen(base)+1
+                           );
                 break;
             default:
                 break;
@@ -51,7 +69,7 @@ int main(int argc, char** argv)
         exit(255);
     }
 
-    dump(argv[1]); 
+    traverse(argv[1]); 
 
     return 0;
 }

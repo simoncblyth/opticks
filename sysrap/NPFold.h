@@ -17,8 +17,8 @@ There are two load/save modes:
    be loaded into the NPFold instance.   
 
 
-RECENT ADDITION : supporting NPFold within NPFold recursively
-------------------------------------------------------------------
+Supporting NPFold within NPFold recursively
+----------------------------------------------
 
 For example "Materials" NPFold containing sub-NPFold for each material and at higher 
 level "Properties" NPFold containing "Materials" and "Surfaces" sub-NPFold. 
@@ -59,7 +59,6 @@ struct NPFold
     static std::string DescCompare(const NPFold* a, const NPFold* b ); 
 
     static int Compare(const FTSENT** one, const FTSENT** two); 
-    static void Indent(int i); 
 
     // [subfold handling 
     void         add_subfold(const char* f, NPFold* fo ); 
@@ -68,12 +67,14 @@ struct NPFold
     const char*  get_subfold_key(unsigned idx) const ; 
     int          get_subfold_idx(const char* f) const ; 
     NPFold*      get_subfold(const char* f) const ; 
-    NPFold*      find_subfold(const char* fpath) ; 
-    static std::string Concat(const char* base, const char* sub, char delim='/' ); 
 
+    NPFold*      find_subfold(const char* fpath) ; 
     static void Traverse_r(NPFold* nd, std::string nd_path, 
           std::vector<NPFold*>& folds, 
           std::vector<std::string>& paths ); 
+    static std::string Concat(const char* base, const char* sub, char delim='/' ); 
+
+
     std::string desc_subfold(const char* top="/");  
 
     std::vector<NPFold*> subfold ;  
@@ -107,18 +108,22 @@ struct NPFold
     void save(const char* base, const char* rel) ; 
     void save(const char* base) ; 
     void _save_arrays(const char* base); 
-    void _save_subfold(const char* base); 
+    void _save_subfold_r(const char* base); 
 
     int load(const char* base) ; 
     int load(const char* base, const char* rel) ; 
 
-    int  load_fts(const char* base) ; 
+    int  no_longer_used_load_fts(const char* base) ; 
+    int  load_dir(const char* base) ; 
     int  load_index(const char* base) ; 
+
     void load_array(const char* base, const char* relp); 
     void load_subfold(const char* base, const char* relp);
 
 
-    std::string desc() const ; 
+    std::string desc(int depth=0) const ; 
+    static std::string Indent(int width); 
+
     std::string brief() const ; 
 }; 
 
@@ -156,7 +161,6 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b )
         bool key_match = strcmp(a_key, b_key) == 0 ; 
         bool arr_match = NP::Memcmp(a_arr, b_arr) == 0 ; 
 
-
         if(!key_match) mismatch += 1  ; 
         if(!key_match) std::cout 
             << "NPFold::Compare KEY_MATCH FAIL"
@@ -166,7 +170,6 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b )
             << std::endl 
             ; 
 
-
         if(!arr_match) mismatch += 1 ; 
         if(!arr_match) std::cout 
             << "NPFold::Compare ARR_MATCH FAIL"
@@ -175,7 +178,6 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b )
             << " arr_match " << arr_match 
             << std::endl
             ; 
-
     }
     if(mismatch > 0) std::cout << "NPFold::Compare mismatch " << mismatch << std::endl ; 
     return mismatch ; 
@@ -204,12 +206,9 @@ inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
        << ( b ? b->desc() : "-" )
        << std::endl 
        ;
-
-
     std::string s = ss.str(); 
     return s; 
 }
-
 
 inline NPFold::NPFold()
     :
@@ -217,7 +216,6 @@ inline NPFold::NPFold()
     loaddir(nullptr)
 {
 }
-
 
 inline void NPFold::check() const
 {
@@ -230,7 +228,7 @@ inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
     return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
 }
 
-inline std::string NPFold::FormKey(const char* k)
+inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not present already
 {
     std::stringstream ss ; 
     ss << k ; 
@@ -240,12 +238,10 @@ inline std::string NPFold::FormKey(const char* k)
 }
 
 
-
-
 // [ subfold handling 
 inline void NPFold::add_subfold(const char* f, NPFold* fo )
 {
-    ff.push_back(f); 
+    ff.push_back(f); // subfold keys 
     subfold.push_back(fo); 
 }
 inline int NPFold::get_num_subfold() const
@@ -271,6 +267,17 @@ inline NPFold* NPFold::get_subfold(const char* f) const
     int idx = get_subfold_idx(f) ; 
     return idx == UNDEF ? nullptr : get_subfold(idx) ; 
 }
+
+/**
+NPFold::find_subfold using full subfold qpath, start path is "" 
+----------------------------------------------------------------
+
+0. recursively collects vectors of folds and paths
+1. attempts to match the qpath with the vector or paths to get the idx 
+2. returns the subfold or nullptr if not found
+
+**/
+
 inline NPFold* NPFold::find_subfold(const char* qpath) 
 {
     std::vector<NPFold*> folds ;
@@ -294,15 +301,17 @@ inline NPFold* NPFold::find_subfold(const char* qpath)
     return idx < paths.size() ? folds[idx] : nullptr ;  
 }
 
-inline std::string NPFold::Concat(const char* base, const char* sub, char delim ) // static
-{
-    assert(sub) ; // base can be nullptr : needed for root, but sub must always be defined 
-    std::stringstream ss ;
-    if(base && strlen(base) > 0) ss << base << delim ; 
-    ss << sub ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
+/**
+NPFold::Traverse_r
+-------------------
+
+Traverse starting from a single NPFold and proceeding 
+recursively to visit its subfold and their subfold and so on. 
+Collects all folds and paths in vectors, where the paths 
+are concatenated from the keys at each recursion level just 
+like a file system.
+
+**/
 
 inline void NPFold::Traverse_r(NPFold* nd, std::string path, 
                  std::vector<NPFold*>& folds, std::vector<std::string>& paths ) // static
@@ -320,6 +329,18 @@ inline void NPFold::Traverse_r(NPFold* nd, std::string path,
         Traverse_r( sub, subpath,  folds, paths );  
     }
 }
+
+inline std::string NPFold::Concat(const char* base, const char* sub, char delim ) // static
+{
+    assert(sub) ; // base can be nullptr : needed for root, but sub must always be defined 
+    std::stringstream ss ;
+    if(base && strlen(base) > 0) ss << base << delim ; 
+    ss << sub ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 inline std::string NPFold::desc_subfold(const char* top) 
 {
@@ -369,8 +390,6 @@ inline void NPFold::add_(const char* k, const NP* a)
     kk.push_back(k); 
     aa.push_back(a); 
 }
-
-
 
 inline void NPFold::set(const char* k, const NP* a) 
 {
@@ -428,7 +447,7 @@ inline const NP* NPFold::get_array(unsigned idx) const
 NPFold::find
 -------------
 
-If the key *k* does not ext with EXT ".npy" then that is added before searching.
+If the query key *k* does not end with the EXT ".npy" then that is added before searching.
 
 std::find returns iterator to the first match
 
@@ -480,13 +499,13 @@ inline void NPFold::save(const char* base)  // not const as sets savedir
 
     _save_arrays(base); 
 
-    NP::WriteNames(base, INDEX, ff, 0, true  ); // append write subfold keys to INDEX  
-    _save_subfold(base); 
+    NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX  
+    _save_subfold_r(base); 
 
     if(!meta.empty()) NP::WriteString(base, META, meta.c_str() );  
 }
 
-inline void NPFold::_save_arrays(const char* base)
+inline void NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames
 {
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
@@ -504,9 +523,7 @@ inline void NPFold::_save_arrays(const char* base)
     // this motivated adding directory creation to NP::save 
 }
 
-
-
-inline void NPFold::_save_subfold(const char* base)
+inline void NPFold::_save_subfold_r(const char* base)  // NB recursively called via NPFold::save
 {
     assert( subfold.size() == ff.size() ); 
     for(unsigned i=0 ; i < ff.size() ; i++) 
@@ -524,15 +541,29 @@ inline int NPFold::Compare(const FTSENT** one, const FTSENT** two)
 {
     return (strcmp((*one)->fts_name, (*two)->fts_name));
 }
-inline void NPFold::Indent(int i)
-{ 
-    for(; i > 0; i--) printf("    ");
-}
 
+/**
+NPFold::load_array
+--------------------
+
+0. NP::Load for relp ending .npy otherwise NP::LoadFromTxtFile<double>
+1. add the array using relp as the key
+
+**/
 inline void NPFold::load_array(const char* base, const char* relp)
 {
-    if(IsNPY(relp)) add(relp,  NP::Load(base, relp) ) ; 
+    bool npy = IsNPY(relp) ; 
+
+    NP* a = npy ? NP::Load(base, relp) : NP::LoadFromTxtFile<double>(base, relp) ;  
+    
+    if(a) add(relp,a ) ; 
 }
+
+/**
+NPFold::load_subfold
+---------------------
+
+**/
 
 inline void NPFold::load_subfold(const char* base, const char* relp)
 {
@@ -540,13 +571,27 @@ inline void NPFold::load_subfold(const char* base, const char* relp)
     add_subfold(relp,  NPFold::Load(base, relp) ) ; 
 }
 
+/**
+NPFold::no_longer_used_load_fts
+----------------------------------
 
+This is called by NPFold::load when the 
+base directory does not include an INDEX file. 
+
+This traverses a directory tree 
+and invokes NPFold::load_array when 
+meeting regular files or symbolic links.
+
+See "man fts" and tests/fts_test.sh for background.
+
+**/
  
-inline int NPFold::load_fts(const char* base_) 
+inline int NPFold::no_longer_used_load_fts(const char* base_) 
 {
     char* base = const_cast<char*>(base_);  
     char* basepath[2] {base, nullptr};
 
+    // NB fs is file system hierarchy, not just one directory 
     FTS* fs = fts_open(basepath,FTS_COMFOLLOW|FTS_NOCHDIR,&Compare);
     if(fs == nullptr) return 1 ; 
 
@@ -555,10 +600,10 @@ inline int NPFold::load_fts(const char* base_)
     {   
         switch (node->fts_info) 
         {   
-            case FTS_D :
-                break;
-            case FTS_F :
-            case FTS_SL:
+            case FTS_D :    // directory being visited in preorder  
+                 break;
+            case FTS_F  :   // regular file
+            case FTS_SL :   // symbolic link 
                 {
                     char* relp = node->fts_path+strlen(base)+1 ;
                     load_array(base, relp) ; 
@@ -572,6 +617,38 @@ inline int NPFold::load_fts(const char* base_)
     return 0 ; 
 }
 
+/**
+NPFold::load_dir
+-----------------
+
+Loads directory-by-directory into separate NPFold 
+unlike load_fts that loads entire tree into a single NPFold. 
+
+**/
+
+inline int NPFold::load_dir(const char* base) 
+{
+    std::vector<std::string> names ; 
+    U::DirList(names, base) ; 
+
+    for(unsigned i=0 ; i < names.size() ; i++)
+    {
+        const char* name = names[i].c_str(); 
+        int type = U::PathType(base, name) ; 
+
+        if( type == U::FILE_PATH ) 
+        {
+            load_array(base, name) ; 
+        }
+        else if( type == U::DIR_PATH ) 
+        {
+            load_subfold(base, name);  // instanciates NPFold and add_subfold
+        }
+    }
+    return 0 ; 
+}
+
+
 inline int NPFold::load_index(const char* base) 
 {
     std::vector<std::string> keys ; 
@@ -581,15 +658,35 @@ inline int NPFold::load_index(const char* base)
         const char* key = keys[i].c_str() ; 
         if(IsNPY(key))
         {
-            load_array(base, key );   // invokes ::add appending to kk and aa 
+            load_array(base, key );   // invokes *add* appending to kk and aa 
         }
         else
         {
-            load_subfold(base, key); 
+            load_subfold(base, key);  // instanciates NPFold and add_subfold
         }
     }
     return 0 ; 
 }
+
+/**
+NPFold::load
+---------------
+
+HMM : note the structural difference when loading with index and 
+with just loading from file system with fts
+
+* with index get NPFold instances for each directory with keys without slash   
+* with fts get single NPFold with path keys with slash  
+
+So only get the same if call on leaf directories 
+
+How to avoid this structural difference and allow booting from property text files ? 
+
+* currently array/subfold decision is based .npy
+* need another way to detect 
+ 
+
+**/
 
 inline int NPFold::load(const char* base) 
 {
@@ -598,7 +695,7 @@ inline int NPFold::load(const char* base)
     if(has_meta) meta = NP::ReadString( base, META ); 
 
     bool has_index = NP::Exists(base, INDEX) ; 
-    return has_index ? load_index(base) : load_fts(base) ; 
+    return has_index ? load_index(base) : load_dir(base) ; 
 }
 inline int NPFold::load(const char* base_, const char* rel) 
 {
@@ -608,23 +705,32 @@ inline int NPFold::load(const char* base_, const char* rel)
 
 
 
-inline std::string NPFold::desc() const  
+inline std::string NPFold::desc(int depth) const  
 {
     std::stringstream ss ; 
-    ss << "NPFold::desc"  << std::endl ; 
+    ss << "NPFold::desc depth " << depth << std::endl ; 
     ss << brief() << std::endl ; 
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
         const char* k = kk[i].c_str() ; 
         const NP* a = aa[i] ; 
-        ss << std::setw(40) << k << " : " << ( a ? a->sstr() : "-" ) << std::endl ;  
+        ss << Indent(depth*10) << std::setw(20) << k << " : " << ( a ? a->sstr() : "-" ) << std::endl ;  
     }
     for(unsigned i=0 ; i < ff.size() ; i++) 
     {
         const char* f = ff[i].c_str()  ; 
-        ss << std::setw(40) << f << std::endl ;  
+        ss << std::endl << f << std::endl ;  
+
+        NPFold* sf = subfold[i] ; 
+        ss << sf->desc(depth+1) << std::endl ;   
     }
     std::string s = ss.str(); 
+    return s ; 
+}
+
+inline std::string NPFold::Indent(int width)  // static
+{
+    std::string s(width, ' '); 
     return s ; 
 }
 

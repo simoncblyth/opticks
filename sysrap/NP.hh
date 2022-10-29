@@ -144,22 +144,24 @@ struct NP
     static std::string DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra); 
 
     template <typename T> 
-    static NP* ArrayFromTxtFile(const char* path); 
+    static NP* LoadFromTxtFile(const char* path); 
 
     template <typename T> 
-    static NP* ArrayFromTxtFile(const char* base, const char* relp); 
+    static NP* LoadFromTxtFile(const char* base, const char* relp); 
 
     template <typename T> 
-    static NP* ArrayFromString(const char* str); 
+    static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
 
-    static constexpr const char* UNITS = "m eV mm nm" ; 
+
+    static constexpr const char* UNITS = "eV MeV nm mm cm m ns g/cm2/MeV" ; 
+    static char* FindUnit(const char* line, const std::vector<std::string>& units  ); 
     static void GetUnits(std::vector<std::string>& units ); 
     static bool IsListed(const std::vector<std::string>& ls, const char* str); 
     static std::string StringConcat(const std::vector<std::string>& ls, char delim=' ' ); 
 
     static unsigned CountChar(const char* str, char q ); 
-    static void ReplaceCharInsitu(       char* str, char q, char n ); 
-    static const char* ReplaceChar(const char* str, char q, char n ); 
+    static void ReplaceCharInsitu(       char* str, char q, char n, bool first ); 
+    static const char* ReplaceChar(const char* str, char q, char n, bool first ); 
 
     static const char* Resolve( const char* spec) ; 
     static const char* ResolveProp(const char* spec); 
@@ -530,6 +532,8 @@ template <typename T> inline T NP::To( const char* a )   // static
 
 template <typename T> inline bool NP::ConvertsTo( const char* a )   // static 
 {   
+    if( a == nullptr ) return false ; 
+    if( strlen(a) == 0) return false ; 
     std::string s(a);
     std::istringstream iss(s);
     T v ;   
@@ -4304,19 +4308,19 @@ inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
 
 
 template <typename T> 
-inline NP* NP::ArrayFromTxtFile(const char* base, const char* relp )  // static 
+inline NP* NP::LoadFromTxtFile(const char* base, const char* relp )  // static 
 {   
     std::stringstream ss ;  
     ss << base << "/" << relp ; 
     std::string path = ss.str(); 
-    NP* a = ArrayFromTxtFile<T>( path.c_str()); 
+    NP* a = LoadFromTxtFile<T>( path.c_str()); 
     a->lpath = path ; 
     return a ; 
 }
 
 
 /**
-NP::ArrayFromTxtFile
+NP::LoadFromTxtFile
 ----------------------
 
 1. resolves spec_or_path into path
@@ -4326,7 +4330,7 @@ NP::ArrayFromTxtFile
 **/
 
 template <typename T> 
-inline NP* NP::ArrayFromTxtFile(const char* spec_or_path )  // static 
+inline NP* NP::LoadFromTxtFile(const char* spec_or_path )  // static 
 {   
     const char* path = Resolve(spec_or_path ) ; 
     if(!Exists(path))
@@ -4342,11 +4346,21 @@ inline NP* NP::ArrayFromTxtFile(const char* spec_or_path )  // static
     }
 
     const char* str = ReadString2(path); 
-    NP* a = ArrayFromString<T>(str); 
+    NP* a = LoadFromString<T>(str, path); 
     a->lpath = path ; 
     return a ; 
 }
 
+inline char* NP::FindUnit(const char* line, const std::vector<std::string>& units  ) // static
+{
+    char* upos = nullptr ; 
+    for(unsigned i=0 ; i < units.size() ; i++)
+    {
+        const char* u = units[i].c_str(); 
+        upos = (char*)strstr(line, u) ; 
+    }
+    return upos ; 
+}
 
 inline void NP::GetUnits(std::vector<std::string>& units ) // static
 {
@@ -4372,7 +4386,7 @@ inline std::string NP::StringConcat(const std::vector<std::string>& ls, char del
 }
 
 /**
-NP::ArrayFromString
+NP::LoadFromString
 ----------------------
 
 The number of fields on each line must be consistent, 
@@ -4390,9 +4404,13 @@ Would yield an array of shape (5,2) with metadata key "other" of "*eV"
 
 **/
 
+
 template <typename T> 
-inline NP* NP::ArrayFromString(const char* str)  // static 
+inline NP* NP::LoadFromString(const char* str, const char* path)  // static 
 { 
+    // path is optional for debug messages
+    //std::cout << "NP::LoadFromString " << ( path ? path : "-" ) << std::endl ; 
+
     std::vector<std::string> recognized_units ; 
     GetUnits(recognized_units); 
 
@@ -4408,16 +4426,47 @@ inline NP* NP::ArrayFromString(const char* str)  // static
     std::stringstream fss(str) ;
     while(std::getline(fss, line)) 
     {
-        ReplaceCharInsitu((char*)line.c_str(), '*', ' '); 
-        // handle a deranged txt file format which fails 
-        // to keep different fields separated with whitespace  
+        char* l = (char*)line.c_str() ;
 
-        //std::cout << "[" << line << "]" << std::endl ;
+        if(strlen(l) == 0) continue ; 
+        if(strlen(l) > 0 && l[0] == '#') continue ; 
+
+
+        // handle a deranged txt file format 
+        //
+        //  "ScintillationYield   9846/MeV"
+        //  "BirksConstant1  12.05e-3*g/cm2/MeV"
+        // 
+        // which fails to keep different fields separated with whitespace  
+        // and where the first '*' or '/' is used to delimiting 
+        // a value with a unit string
+        // 
+
+        char* upos = FindUnit(l, recognized_units) ; 
+        if(upos && (upos - l) > 0)
+        {
+            if(*(upos-1) == '/') *(upos-1) = ' ' ;   
+        } 
+
+        ReplaceCharInsitu( l, '*', ' ', false ); 
+
 
         std::vector<std::string> fields ; 
         std::string field ; 
         std::istringstream iss(line);
-        while( iss >> field ) fields.push_back(field) ; 
+        while( iss >> field ) 
+        {
+            const char* f = field.c_str(); 
+            if(IsListed(recognized_units, f))
+            {
+                if(!IsListed(units, f)) units.push_back(f); 
+            }
+            else
+            {
+                fields.push_back(field) ; 
+            }
+        }
+
         if(fields.size() == 0) continue ; 
 
         if( num_field == UNSET ) 
@@ -4428,15 +4477,18 @@ inline NP* NP::ArrayFromString(const char* str)  // static
         {
             std::cerr 
                 << "NP::ArrayFromString" 
-                << " FATAL : INCONSISTENT NUMBER OF FIELDS " << std::endl 
+                << " WARNING : INCONSISTENT NUMBER OF FIELDS " << std::endl 
                 << " [" << line << "]" << std::endl 
                 << " fields.size : " << fields.size() 
                 << " num_field : " << num_field 
+                << " path " << ( path ? path : "-" )
                 << std::endl
                 ;
             assert(0); 
         }
         assert( num_field != UNSET ); 
+
+        //std::cout << "[" << line << "] num_field " << num_field << std::endl; 
 
         unsigned line_column = 0u ;  
         for(unsigned i=0 ; i < num_field ; i++)
@@ -4446,10 +4498,6 @@ inline NP* NP::ArrayFromString(const char* str)  // static
             {   
                 value.push_back(To<T>(str)) ; 
                 line_column += 1 ;  
-            }
-            else if(IsListed(recognized_units, str))
-            {
-                if(!IsListed(units, str)) units.push_back(str); 
             }
             else
             {
@@ -4471,6 +4519,7 @@ inline NP* NP::ArrayFromString(const char* str)  // static
                 << " num_field : " << num_field 
                 << " num_column : " << num_column
                 << " line_column : " << line_column
+                << " path " << ( path ? path : "-" )
                 << std::endl
                 ;
             assert(0); 
@@ -4520,19 +4569,24 @@ inline unsigned NP::CountChar(const char* str, char q )
     return count ; 
 }
 
-inline void NP::ReplaceCharInsitu(char* str, char q, char n )
+inline void NP::ReplaceCharInsitu(char* str, char q, char n, bool first )
 {
+    unsigned count = 0 ;  
     char* c = str ; 
     while(*c)
     {
-        if(*c == q) *c = n ; 
+        if(*c == q) 
+        {
+           if((first && count == 0) || first == false ) *c = n ; 
+           count += 1 ; 
+        }
         c++ ; 
     }     
 }
-inline const char* NP::ReplaceChar(const char* str, char q, char n )
+inline const char* NP::ReplaceChar(const char* str, char q, char n, bool first  )
 {
     char* s = strdup(str); 
-    ReplaceCharInsitu(s, q, n); 
+    ReplaceCharInsitu(s, q, n, first ); 
     return s ; 
 }
 
