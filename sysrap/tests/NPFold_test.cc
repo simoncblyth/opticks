@@ -217,17 +217,16 @@ void test_recursive_txt_load(const char* name)
 
 void test_accessors()
 {
-    const char* base = U::Path(getenv("NP_PROP_BASE"), "PMTProperty" ) ; 
-    NPFold* fold = NPFold::Load(base) ; 
+    NPFold* pmt = NPFold::LoadProp("PMTProperty") ; 
 
     // look for an array in all the PMTProperty subfold 
     const char* name = "THICKNESS" ; 
 
-    unsigned num = fold->get_num_subfold() ; 
+    unsigned num = pmt->get_num_subfold() ; 
     for(unsigned idx=0 ; idx < num ; idx++)
     {
-        const char* key = fold->get_subfold_key(idx);
-        const NP* a = fold->find_array(key, name) ; 
+        const char* key = pmt->get_subfold_key(idx);
+        const NP* a     = pmt->find_array(key, name) ; 
         if( a == nullptr ) continue ; 
 
         std::cout << " key " << key << " name " << name << std::endl ;  

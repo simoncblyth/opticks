@@ -71,7 +71,11 @@ struct NPFold
     static bool IsNPY(const char* k); 
     static std::string FormKey(const char* k); 
     static NPFold* Load(const char* base); 
-    static NPFold* Load(const char* base, const char* rel); 
+    static NPFold* Load(const char* base, const char* relp); 
+
+    static constexpr const char* kNP_PROP_BASE = "NP_PROP_BASE" ; 
+    static NPFold* LoadProp(const char* rel0, const char* rel1=nullptr ); 
+
     static int Compare(const NPFold* a, const NPFold* b ); 
     static std::string DescCompare(const NPFold* a, const NPFold* b ); 
 
@@ -136,8 +140,8 @@ struct NPFold
     void _save_arrays(const char* base); 
     void _save_subfold_r(const char* base); 
 
-    int load(const char* base) ; 
-    int load(const char* base, const char* rel) ; 
+    int load(const char* base ) ; 
+    int load(const char* base, const char* rel0, const char* rel1=nullptr ) ; 
 
     int  no_longer_used_load_fts(const char* base) ; 
     int  load_dir(const char* base) ; 
@@ -155,6 +159,8 @@ struct NPFold
 
 
 
+
+
 inline NPFold* NPFold::Load(const char* base)
 {
     NPFold* nf = new NPFold ; 
@@ -162,12 +168,23 @@ inline NPFold* NPFold::Load(const char* base)
     return nf ;  
 }
 
-inline NPFold* NPFold::Load(const char* base, const char* rel)
+inline NPFold* NPFold::Load(const char* base, const char* relp)
 {
     NPFold* nf = new NPFold ; 
-    nf->load(base, rel); 
+    nf->load(base, relp); 
     return nf ;  
 }
+
+inline NPFold* NPFold::LoadProp(const char* rel0, const char* rel1 )
+{
+    const char* base = getenv(kNP_PROP_BASE) ; 
+    NPFold* nf = new NPFold ; 
+    nf->load(base ? base : "/tmp", rel0, rel1 ); 
+    return nf ;  
+}
+
+
+
 
 inline int NPFold::Compare(const NPFold* a, const NPFold* b )
 {
@@ -750,9 +767,9 @@ inline int NPFold::load(const char* base)
     bool has_index = NP::Exists(base, INDEX) ; 
     return has_index ? load_index(base) : load_dir(base) ; 
 }
-inline int NPFold::load(const char* base_, const char* rel) 
+inline int NPFold::load(const char* base_, const char* rel0, const char* rel1) 
 {
-    std::string base = NP::form_path(base_, rel); 
+    std::string base = NP::form_path(base_, rel0, rel1); 
     return load(base.c_str()); 
 }
 
