@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     LOG(info) << " fold [" << fold << "]" ; 
 
     const char* s = "Water" ; 
-    NPFold* f = mats->find_subfold(s) ; 
+    const NPFold* f = mats->find_subfold(s) ; 
     LOG(info) << " f->desc_subfold(" << s << ")" << std::endl << f->desc() << std::endl ;   
 
     return 0 ; 
