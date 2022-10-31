@@ -540,6 +540,8 @@ inline const NP* NPFold::get(const char* k) const
     int idx = find(k) ; 
     return idx == UNDEF ? nullptr : aa[idx] ; 
 }
+
+
 /**
 NPFold::get_num
 -----------------
@@ -645,14 +647,22 @@ inline void NPFold::load_subfold(const char* base, const char* relp)
 NPFold::no_longer_used_load_fts
 ----------------------------------
 
-This is called by NPFold::load when the 
+This was formerly called by NPFold::load when the 
 base directory does not include an INDEX file. 
 
-This traverses a directory tree 
-and invokes NPFold::load_array when 
-meeting regular files or symbolic links.
+It has been replaced by NPFold::load_dir
+because of the structural difference between 
+loading with index and loading with fts. 
 
+fts traverses the directory tree and invokes NPFold::load_array when 
+meeting regular files or symbolic links.
 See "man fts" and tests/fts_test.sh for background.
+
+This fts approach resulted in a single NPFold 
+with keys containing slash.
+ 
+Switching to NP::load_dir unifies the structure 
+with an NPFold for each directory. 
 
 **/
  

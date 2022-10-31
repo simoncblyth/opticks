@@ -14,6 +14,19 @@ struct U4PhysicalConstants
     static constexpr const char*  _hc_eVnm = "hc_eVnm" ; 
     static constexpr const double hc_eVnm = h_Planck*c_light/(eV*nm) ; 
 
+    static constexpr const char*  _twopi_hbarc = "twopi_hbarc" ; 
+    static constexpr const double twopi_hbarc = twopi*hbarc ; 
+
+    static constexpr const char*  _twopi_hbarc_eVnm = "twopi_hbarc_eVnm" ; 
+    static constexpr const double twopi_hbarc_eVnm = twopi*hbarc/(eV*nm) ; 
+
+    static constexpr const char*  _unit_eV = "unit_eV" ; 
+    static constexpr const double unit_eV = eV ; 
+
+    static constexpr const char*  _unit_nm = "unit_nm" ; 
+    static constexpr const double unit_nm = nm ; 
+
+
     static constexpr const char*  _BirksConstant1_v0 = "BirksConstant1_v0" ; 
     static constexpr const double BirksConstant1_v0 = 12.05e3*g/cm2/MeV ;  // from $JUNOTOP/data/Simulation/DetSim/Material/LS/ConstantProperty 
 
@@ -54,6 +67,10 @@ struct U4PhysicalConstants
 void U4PhysicalConstants::Get( std::vector<std::string>& labels, std::vector<double>& values) 
 {
     labels.push_back( _hc_eVnm)                ;  values.push_back(hc_eVnm) ; 
+    labels.push_back( _twopi_hbarc )           ;  values.push_back(twopi_hbarc) ; 
+    labels.push_back( _twopi_hbarc_eVnm )      ;  values.push_back(twopi_hbarc_eVnm) ; 
+    labels.push_back( _unit_eV )               ;  values.push_back(unit_eV) ; 
+    labels.push_back( _unit_nm )               ;  values.push_back(unit_nm) ; 
     labels.push_back( _BirksConstant1_v0 )     ;  values.push_back(BirksConstant1_v0) ; 
     labels.push_back( _BirksConstant1_v1 )     ;  values.push_back(BirksConstant1_v1) ; 
     labels.push_back( _BirksConstant1_v2 )     ;  values.push_back(BirksConstant1_v2) ; 

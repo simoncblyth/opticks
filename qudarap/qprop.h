@@ -51,6 +51,8 @@ qprop<T>::interpolate
 3. binary search to find the bin relevant to domain argument x  
 4. linear interpolation to yield the y value at x
 
+TODO: generalize nj=2 assumption 
+
 **/
 
 template <typename T>

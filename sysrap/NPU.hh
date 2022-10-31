@@ -1227,3 +1227,103 @@ inline std::string NPU::_make_header(const std::string& dict)
 }
 
 
+
+/**
+nview.h
+=========
+
+Templated reinterpretation of bits allowing to view 
+unsigned int as float and double and vice versa.
+
+Note this is present in sysrap/sview.h 
+
+**/
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#    define NVIEW_METHOD __host__ __device__ __forceinline__
+#else
+#    define NVIEW_METHOD inline
+#endif
+
+struct nview
+{
+    union UIF32 
+    {
+        unsigned u ;  
+        int i  ;  
+        float f ; 
+    }; 
+
+    struct uint2 { unsigned x, y ; }; 
+    struct int2  { unsigned x, y ; }; 
+
+    union UIF64
+    {
+        uint2  uu ;  
+        int2   ii ;  
+        double f ; 
+    }; 
+
+    template<typename T> static T int_as( int i ); 
+    template<typename T> static int int_from( T v ); 
+
+    template<typename T> static T uint_as( unsigned u ); 
+    template<typename T> static unsigned uint_from( T v ); 
+}; 
+
+template<> NVIEW_METHOD float nview::int_as<float>( int i )
+{
+     UIF32 u32 ; 
+     u32.i = i ; 
+     return u32.f ; 
+}
+template<> NVIEW_METHOD double nview::int_as<double>( int i )
+{
+     UIF64 u64 ; 
+     u64.ii.x = i ; 
+     return u64.f ; 
+}
+
+
+template<> NVIEW_METHOD int nview::int_from<float>( float f )
+{
+     UIF32 u32 ; 
+     u32.f = f ; 
+     return u32.i ; 
+}
+template<> NVIEW_METHOD int nview::int_from<double>( double f )
+{
+     UIF64 u64 ; 
+     u64.f = f ; 
+     return u64.ii.x  ; 
+}
+
+template<> NVIEW_METHOD float nview::uint_as<float>( unsigned u )
+{
+     UIF32 u32 ; 
+     u32.u = u ; 
+     return u32.f ; 
+}
+template<> NVIEW_METHOD double nview::uint_as<double>( unsigned v )
+{
+     UIF64 u64 ; 
+     u64.uu.x = v ; 
+     return u64.f ; 
+}
+
+template<> NVIEW_METHOD unsigned nview::uint_from<float>( float f )
+{
+     UIF32 u32 ; 
+     u32.f = f ; 
+     return u32.u ; 
+}
+template<> NVIEW_METHOD unsigned nview::uint_from<double>( double f )
+{
+     UIF64 u64 ; 
+     u64.f = f ; 
+     return u64.uu.x ; 
+}
+
+
+
+
