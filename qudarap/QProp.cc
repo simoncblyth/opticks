@@ -1,15 +1,12 @@
 #include <cuda_runtime.h>
-#include <sstream>
-
-#include "SStr.hh"
-#include "SPath.hh"
-#include "scuda.h"
-#include "QUDA_CHECK.h"
-#include "NP.hh"
-#include "QProp.hh"
-#include "QU.hh"
-#include "qprop.h"
 #include "SLOG.hh"
+#include "NP.hh"
+
+#include "QUDA_CHECK.h"
+#include "QU.hh"
+
+#include "QProp.hh"
+#include "qprop.h"
 
 
 template<typename T>
@@ -25,6 +22,63 @@ template<typename T>
 qprop<T>* QProp<T>::getDevicePtr() const
 {
     return d_prop ; 
+}
+
+
+/**
+QProp::Make3D
+-----------------
+
+* QProp requires 1+2D (num_prop, num_energy, 2 )
+* BUT: real world arrays such as PMTProp often have more dimensions 3+2D::
+
+      (num_pmtcat, num_layer, num_prop, num_energy, 2)   
+
+* to avoid code duplication or complicated template handling 
+  of different shapes, this takes the approach of using NP::change_shape 
+  to scrunch up the higher dimensions yielding::
+
+      (num_pmtcat*num_layer*num_prop, num_energy, 2 )
+
+* as there will usually be other dimensional needs in future, its 
+  more sustainable to standardize to keep things simple at the 
+  expense of requiring a simple calc to get access the 
+  scrunched "iprop" eg:: 
+
+    int iprop = pmtcat*NUM_LAYER*NUM_PROP + layer*NUM_PROP + prop_index ;     
+
+HMM can do equivalent of NP::combined_interp_5 
+
+**/
+
+
+template<typename T>
+QProp<T>* QProp<T>::Make3D(const NP* a)
+{
+    const std::vector<int>& shape = a->shape ; 
+    unsigned ndim = shape.size() ; 
+    NP* b = a->copy() ; 
+
+    if( ndim < 3 )
+    {   
+        LOG(fatal) << "ndim < 3 : must be 3 or more, not: " << ndim ; 
+        assert(0); 
+    }
+    else if( ndim == 3 )
+    {
+        LOG(LEVEL) << " ndim == 3, no reshaping needed " ; 
+    }
+    else if( ndim > 3 )
+    {
+        LOG(LEVEL) << " ndim > 3, reshaping needed, ndim: " << ndim  ; 
+        int ni = 1 ; 
+        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
+        // scrunch up the higher dimensions          
+        b->change_shape(ni, shape[ndim-2], shape[ndim-1] ); 
+        LOG(LEVEL) << " changed shape from a.sstr " << a->sstr() << " to b.sstr " << b->sstr() ; 
+    }
+
+    return new QProp<T>(b) ; 
 }
 
 
@@ -62,8 +116,15 @@ template<typename T>
 void QProp<T>::init()
 {
     assert( a->uifc == 'f' ); 
-    assert( a->ebyte == sizeof(T) );  
     assert( a->shape.size() == 3 ); 
+
+    bool type_consistent = a->ebyte == sizeof(T) ; 
+    LOG_IF(fatal, !type_consistent) 
+        << " type_consistent FAIL " 
+        << " sizeof(T) " << sizeof(T)
+        << " a.ebyte " << a->ebyte
+        ; 
+    assert( type_consistent );  
 
     //dump(); 
     uploadProps(); 
@@ -153,6 +214,13 @@ extern void QProp_lookup(
     unsigned domain_width
 ); 
 
+/**
+QProp::lookup
+--------------
+
+
+**/
+
 template<typename T>
 void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsigned domain_width ) const 
 {
@@ -183,6 +251,45 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsign
      
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+
+
+/**
+lookup_scan
+-------------
+
+nx lookups in x0->x1 inclusive for each property yielding nx*qp.ni values.
+
+1. create *x* domain array of shape (nx,) with values in range x0 to x1 
+2. create *y* lookup array of shape (qp.ni, nx ) 
+3. invoke QProp::lookup collecting *y* lookup values from kernel call 
+4. save prop, domain and lookup into fold/reldir
+
+**/
+
+template<typename T>
+void QProp<T>::lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char* reldir ) const 
+{
+    NP* x = NP::Linspace<T>( x0, x1, nx ); 
+    NP* y = NP::Make<T>(ni, nx ); 
+
+    lookup(y->values<T>(), x->cvalues<T>(), ni, nx );
+
+    a->save(fold, reldir, "prop.npy"); 
+    x->save(fold, reldir, "domain.npy"); 
+    y->save(fold, reldir, "lookup.npy"); 
+
+    LOG(info) << "save to " << fold << "/" << reldir  ; 
+}
+
+
+
+
+
+
+
 
 
 template<typename T>

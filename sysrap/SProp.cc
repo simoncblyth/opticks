@@ -25,7 +25,6 @@ Also the properties are narrowed to float when the template type is float.
 **/
 
 
-
 const NP* SProp::MockupCombination(const char* path_ )  // static 
 {
     const char* path = SPath::Resolve(path_ , NOOP); 

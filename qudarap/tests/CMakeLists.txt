@@ -56,3 +56,30 @@ foreach(CU ${TEST_SOURCES_CU})
 endforeach()
 
 
+find_package(PMTSim CONFIG)
+
+
+if(PMTSim_FOUND)
+
+    set(PMTSIM_TEST_SOURCES
+        QPMTPropTest.cc 
+    )
+
+    foreach(SRC ${PMTSIM_TEST_SOURCES})
+        get_filename_component(TGT ${SRC} NAME_WE)
+        add_executable(${TGT} ${SRC})
+
+        set(testname ${name}.${TGT})
+        add_test(${testname} ${TGT})
+
+        target_link_libraries(${TGT} QUDARap )
+        target_link_libraries( ${TGT} Opticks::PMTSim )
+        target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )
+
+        install(TARGETS ${TGT} DESTINATION lib)
+    endforeach()
+
+endif()
+
+
+
