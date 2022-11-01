@@ -134,6 +134,10 @@ elif [ "$GEOM" == "J002" ]; then
     export J002_GEOMSub=HamamatsuR12860sMask_virtual0x:0:1000
     export J002_GEOMWrap=AroundSphere 
 
+elif [ "$GEOM" == "ntds3" ]; then 
+
+    export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
+
 elif [ "$GEOM" == "J003" ]; then
 
     export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
@@ -143,6 +147,10 @@ elif [ "$GEOM" == "J004" ]; then
     # from jxf: save the geometry from junosw using  "GEOM=J004 ntds3" 
     # this uses envvar G4CXOpticks__setGeometry_saveGeometry to signal the save and pass the directory 
     export J004_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM 
+
+elif [ "$GEOM" == "J004G" ]; then
+
+    export J004G_GDMLPath=$HOME/.opticks/GEOM/J004/origin.gdml
 
 else 
     # handling test geometries from j/PMTSim aka jps and from GeoChain or CSGMakerTest 

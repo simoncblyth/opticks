@@ -75,17 +75,17 @@ See ana/p.py for python accessors such as::
 **/
 struct sphoton
 {
-    float3 pos ; 
+    float3 pos ;        // 0
     float  time ; 
 
-    float3 mom ; 
-    unsigned iindex ;  // instance index,  (formerly float weight, but have never used that)
-
-    float3 pol ; 
+    float3 mom ;        // 1 
+    unsigned iindex ;   // instance index,  (formerly float weight, but have never used that)
+ 
+    float3 pol ;         // 2
     float  wavelength ;   
 
-    unsigned boundary_flag ;   
-    unsigned identity ; 
+    unsigned boundary_flag ;  // 3   
+    unsigned identity ;       // [:,3,1]
     unsigned orient_idx ;   
     unsigned flagmask ; 
 

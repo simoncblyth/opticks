@@ -236,10 +236,6 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
     LOG(LEVEL); 
     gg = gg_ ; 
 
-#ifdef __APPLE__
-    LOG(fatal) << " __APPLE__ early exit " ; 
-    return ;  
-#endif
  
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
@@ -265,6 +261,7 @@ const char* G4CXOpticks::setGeometry_saveGeometry = SSys::getenvvar("G4CXOpticks
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
 #ifdef __APPLE__
+    LOG(fatal) << " __APPLE__ early exit " ; 
     return ; 
 #endif
     fd = fd_ ; 

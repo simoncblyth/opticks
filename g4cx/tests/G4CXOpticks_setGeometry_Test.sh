@@ -8,22 +8,26 @@ Test of geometry conversions in isolation.
 EOU
 }
 
-#export GEOM=ntds3
-#export ntds3_GDMLPathFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks/origin.gdml
 
-source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
+export GEOM=J004G
+export J004G_GDMLPathFromGEOM=$HOME/.opticks/GEOM/J004/origin.gdml
+
+#source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
 
 
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
 
 loglevels(){
+   export Dummy=INFO
    export G4CXOpticks=INFO
-   export X4PhysicalVolume=INFO
-   export SOpticksResource=INFO
+   #export X4PhysicalVolume=INFO
+   #export SOpticksResource=INFO
    export CSGFoundry=INFO
+   export GSurfaceLib=INFO
 }
 loglevels
+
 env | grep =INFO
 
 bin=G4CXOpticks_setGeometry_Test

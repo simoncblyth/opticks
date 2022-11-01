@@ -1739,6 +1739,15 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
     getPhotonFrame(fr, lp); 
     fr.transform_w2m(lp); 
 }
+
+/**
+SEvt::getLocalHit
+------------------
+
+Canonical usage from U4HitGet::FromEvt
+
+**/
+
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
 {
     getHit(lp, idx); 

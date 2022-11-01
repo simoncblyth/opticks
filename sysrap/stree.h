@@ -1521,7 +1521,7 @@ inline void stree::enumerateFactors()
     
         factor.push_back( fac );  
     }
-    if(level > 0) std::cout << "[ stree::enumerateFactors " << std::endl ;
+    if(level > 0) std::cout << "] stree::enumerateFactors " << std::endl ;
 }
 
 

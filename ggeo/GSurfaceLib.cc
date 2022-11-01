@@ -472,6 +472,7 @@ GPropertyMap<double>* GSurfaceLib::createStandardSurface(GPropertyMap<double>* s
     GProperty<double>* _reflect_diffuse  = NULL ; 
 
     bool is_sensor = src->isSensor() ; 
+    LOG(LEVEL) << " is_sensor " << is_sensor ; 
 
     if(!src)
     {
