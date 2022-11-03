@@ -3,7 +3,14 @@
 import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
-import pyvista as pv
+
+try:
+    import pyvista as pv
+except ImportError:
+    pv = None
+pass
+
+
 from matplotlib import collections  as mp_collections
 from matplotlib.patches import Circle, Rectangle, Ellipse
 from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
@@ -11,7 +18,10 @@ from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 from opticks.ana.axes import Axes, X,Y,Z
 
 themes = ["default", "dark", "paraview", "document" ]
-pv.set_plot_theme(themes[1])
+
+if not pv is None:
+    pv.set_plot_theme(themes[1])
+pass
 
 GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
