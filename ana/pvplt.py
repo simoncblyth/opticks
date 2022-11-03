@@ -10,9 +10,24 @@ except ImportError:
     pv = None
 pass
 
+try:
+    import matplotlib as mp
+except ImportError:
+    mp = None
+pass
 
-from matplotlib import collections  as mp_collections
-from matplotlib.patches import Circle, Rectangle, Ellipse
+
+if not mp is None:
+    from matplotlib import collections  as mp_collections
+    from matplotlib.patches import Circle, Rectangle, Ellipse
+else:
+    mp_collections = None
+    Circle = None
+    Rectangle = None
+    Ellipse = None
+pass 
+
+
 from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 
 from opticks.ana.axes import Axes, X,Y,Z
