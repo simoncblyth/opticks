@@ -22,7 +22,7 @@
 enum_.py
 =================
 
-Canonical usage is for parsing sysrap/OpticksPhoton.h and sysrap/OpticksGenstep.h
+Canonical usage is for parsing SysRap/OpticksPhoton.h and SysRap/OpticksGenstep.h
 which is done from custom commands in optickscore/CMakeLists.txt
 
 Renaming to enum_ was required due to a py3 module name clash.
@@ -117,7 +117,7 @@ class Enum(dict):
 
 if __name__ == '__main__':
 
-    default_path = "$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h"
+    default_path = "$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h"
     ## NB envvar not needed when absolute path argument given   
 
     parser = argparse.ArgumentParser(__doc__)

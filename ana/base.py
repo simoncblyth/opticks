@@ -416,7 +416,7 @@ class PhotonMaskFlags(EnumFlags):
     Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h", mask2int=False) 
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=False) 
         self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
         ## looks like SysRap suffers case inconsistency 
 
@@ -427,7 +427,7 @@ class PhotonCodeFlags(EnumFlags):
     This is used by histype.py for seqhis_ana
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h", mask2int=True) 
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=True) 
         self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
 
 
