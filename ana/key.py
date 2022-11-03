@@ -43,13 +43,13 @@ log = logging.getLogger(__name__)
 
 def keydir(keyspec=None):
     if keyspec is None:
-        keyspec = os.environ["OPTICKS_KEY"] 
+        keyspec = os.environ.get("OPTICKS_KEY", None) 
     pass
-    return Key.Keydir(keyspec)
+    return Key.Keydir(keyspec) 
 
 def key_(keyspec=None):
     if keyspec is None:
-        keyspec = os.environ["OPTICKS_KEY"] 
+        keyspec = os.environ.get("OPTICKS_KEY", None) 
     pass
     return Key(keyspec)
 
