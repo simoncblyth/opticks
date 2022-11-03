@@ -190,6 +190,9 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
 CSG_GGeo_Convert::convertSim
 --------------------------------
 
+BndLib, ScintillatorLib, Prop, MultiFilm are converted from GGeo in NP arrays
+that are added into SSim by GGeo::convertSim
+
 **/
 
 void CSG_GGeo_Convert::convertSim() 
