@@ -9,10 +9,7 @@ EOU
 }
 
 
-export GEOM=J004G
-export J004G_GDMLPathFromGEOM=$HOME/.opticks/GEOM/J004/origin.gdml
-
-#source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
+source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
 
 
 export GProperty_SIGINT=1

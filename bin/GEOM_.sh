@@ -152,6 +152,10 @@ elif [ "$GEOM" == "J004G" ]; then
 
     export J004G_GDMLPath=$HOME/.opticks/GEOM/J004/origin.gdml
 
+elif [ "$GEOM" == "example_pet" ]; then
+
+    export example_pet_GDMLPathFromGEOM=$HOME/geant_pet/example_pet_opticks/small_pet.gdml
+
 else 
     # handling test geometries from j/PMTSim aka jps and from GeoChain or CSGMakerTest 
     export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM 

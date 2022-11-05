@@ -260,11 +260,19 @@ const char* G4CXOpticks::setGeometry_saveGeometry = SSys::getenvvar("G4CXOpticks
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
+    fd = fd_ ; 
+
+    if( setGeometry_saveGeometry )
+    {
+        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
+        saveGeometry(setGeometry_saveGeometry); 
+        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
+    }
+
 #ifdef __APPLE__
     LOG(fatal) << " __APPLE__ early exit " ; 
     return ; 
 #endif
-    fd = fd_ ; 
     LOG(LEVEL) << "[ fd " << fd ; 
 
     LOG(LEVEL) << " [ new SEvt " ; 
@@ -280,13 +288,6 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     qs = cx->sim ; 
     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
 
-
-    if( setGeometry_saveGeometry )
-    {
-        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
-        saveGeometry(setGeometry_saveGeometry); 
-        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
-    }
 
     LOG(LEVEL) << "] fd " << fd ; 
 }

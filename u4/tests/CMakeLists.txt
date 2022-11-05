@@ -25,6 +25,7 @@ set(TEST_SOURCES
    U4MaterialPropertyVectorTest.cc
    U4PhotonInfoTest.cc
    U4GDMLTest.cc
+   U4GDMLReadTest.cc 
    U4PhysicalConstantsTest.cc
    U4RandomTest.cc
    U4VolumeMakerTest.cc
