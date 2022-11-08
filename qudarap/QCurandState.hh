@@ -46,7 +46,7 @@ With GPU VRAM of 48G the limit coming from combination of photons and curandStat
 * curandState item size in the files is 44 bytes which get padded to 48 bytes in curandState type
 * dealing with 16.4GB files for 400M states is uncomfortable, so will need to rearrange into multiple files
 * chunking into files of 10M states each would correspond to 40 files of 10M states each (420M bytes) 
-* with 40-100 files of 10M states each could push to one trillion photon launch if had GPU with 100G VRAM 
+* with 40-100 files of 10M states each could push to one billion photon launch if had GPU with 100G VRAM 
 * also could arrange for just the needed states (in 10M chunks) to be loaded+uploaded 
   depending on configured max photon, which depends on available VRAM 
 
