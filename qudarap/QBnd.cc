@@ -68,7 +68,7 @@ Narrows the NP array if wide and creates GPU texture
 QBnd::QBnd(const NP* buf)
     :
     dsrc(buf->ebyte == 8 ? buf : nullptr),
-    src(SSim::NarrowIfWide(buf)),
+    src(NP::MakeNarrowIfWide(buf)),
     sbn(new SBnd(src)),
     tex(MakeBoundaryTex(src)),
     bnd(MakeInstance(tex, buf->names)),

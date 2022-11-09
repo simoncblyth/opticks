@@ -62,7 +62,7 @@ find_package(PMTSim CONFIG)
 if(PMTSim_FOUND)
 
     set(PMTSIM_TEST_SOURCES
-        QPMTPropTest.cc 
+        QPMTTest.cc 
     )
 
     foreach(SRC ${PMTSIM_TEST_SOURCES})

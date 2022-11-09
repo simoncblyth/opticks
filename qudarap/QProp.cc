@@ -30,7 +30,7 @@ QProp::Make3D
 -----------------
 
 * QProp requires 1+2D (num_prop, num_energy, 2 )
-* BUT: real world arrays such as PMTProp often have more dimensions 3+2D::
+* BUT: real world arrays such as those from JPMT.h often have more dimensions 3+2D::
 
       (num_pmtcat, num_layer, num_prop, num_energy, 2)   
 
@@ -108,15 +108,16 @@ QProp<T>::QProp(const NP* a_)
     prop(new qprop<T>),
     d_prop(nullptr)
 {
-    INSTANCE = this ; 
     init(); 
 } 
 
 template<typename T>
 void QProp<T>::init()
 {
+    INSTANCE = this ; 
     assert( a->uifc == 'f' ); 
     assert( a->shape.size() == 3 ); 
+    assert( nv == ni*nj*nk ) ; 
 
     bool type_consistent = a->ebyte == sizeof(T) ; 
     LOG_IF(fatal, !type_consistent) 
@@ -127,21 +128,34 @@ void QProp<T>::init()
     assert( type_consistent );  
 
     //dump(); 
-    uploadProps(); 
+    upload(); 
 }
+
+/**
+QProp::upload
+--------------
+
+1. allocate device array for *nv* T values 
+2. populate *prop* on host with device pointers and (height, width) values
+
+   * height is the number of props
+   * width is max_num_energy_of_all_prop_plus_one * 2    
+     (+1 for integer num_energy last column annotation, as done by NP::combine)
+
+3. copy *pp* array values to device *prop->pp*
+4. copy *prop* to device and retain device-side pointer *d_prop*
+
+**/
 
 template<typename T>
-void QProp<T>::uploadProps()
+void QProp<T>::upload()
 {
     prop->pp = QU::device_alloc<T>(nv,"QProp<T>::uploadProps:nv") ; 
-    prop->height = ni ; 
-    prop->width =  nj*nk ; 
-
+    prop->height = ni ;   
+    prop->width =  nj*nk ;
     QU::copy_host_to_device<T>( prop->pp, pp, nv ); 
-
     d_prop = QU::UploadArray<qprop<T>>(prop, 1 );  
 }
-
 
 
 template<typename T>

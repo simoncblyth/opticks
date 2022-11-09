@@ -96,7 +96,8 @@ SET(HEADERS
     QSim.hh
     qsim.h
 
-
+    QPMT.hh
+    qpmt.h
 
     qgs.h
     qprop.h

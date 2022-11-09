@@ -53,7 +53,6 @@ struct SYSRAP_API SSim
     static void Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ); 
     static NP*  AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs ) ; 
     static NP*  AddBoundary( const NP* src, const std::vector<std::string>& specs ); 
-    static const NP* NarrowIfWide(const NP* buf ); 
     static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
     static std::string DescOptical(const NP* optical, const NP* bnd ); 
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 

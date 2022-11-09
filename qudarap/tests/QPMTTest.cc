@@ -1,34 +1,35 @@
 /**
-QPMTPropTest.cc
+QPMTTest.cc
 =================
 
 QProp::lookup_scan is testing on GPU interpolation
 BUT: the kernel is rather hidden away, need a more open test
 to workout how to integrate with j/Layr/Layr.h TMM calcs
 
+
 qprop.h is very simple, might as well extend that a little 
-into a qpmtprop.h
+into a dedicated qpmt.h handling thickness, rindex, kindex
 
 **/
 
 #include <cuda_runtime.h>
-#include "JPMTProp.h"
-#include "QPMTProp.hh"
+#include "JPMT.h"
+#include "QPMT.hh"
 #include "OPTICKS_LOG.hh"
 
-const char* FOLD = "/tmp/QPMTPropTest" ;
+const char* FOLD = "/tmp/QPMTTest" ;
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    JPMTProp pp ; 
-    //std::cout << pp.desc() << std::endl ;
+    JPMT jp ; 
+    //std::cout << jp.desc() << std::endl ;
 
-    QPMTProp<double> qpp(pp.rindex, pp.thickness) ;   
-    std::cout << qpp.desc() << std::endl ; 
+    QPMT<double> qp(jp.rindex, jp.thickness) ;   
+    std::cout << qp.desc() << std::endl ; 
 
-    qpp.rindex->lookup_scan( 1.55, 15.5, 100u, FOLD, "rindex" );   
+    qp.rindex_prop->lookup_scan( 1.55, 15.5, 100u, FOLD, "rindex" );   
     
     cudaDeviceSynchronize();
 

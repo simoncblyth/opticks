@@ -20,6 +20,7 @@
 #include "qsim.h"
 #include "qbase.h"
 #include "qprop.h"
+#include "qpmt.h"
 #include "qrng.h"
 #include "qdebug.h"
 #include "qscint.h"
@@ -107,6 +108,7 @@ T* QU::UploadArray(const T* array, unsigned num_items ) // static
 }
 
 template float*         QU::UploadArray<float>(const float* array, unsigned num_items) ;
+template double*        QU::UploadArray<double>(const double* array, unsigned num_items) ;
 template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items) ;
 template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items) ;
 template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items) ;
@@ -116,6 +118,8 @@ template qcurandstate*  QU::UploadArray<qcurandstate>(const qcurandstate* array,
 template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
+template qpmt<float>*   QU::UploadArray<qpmt<float>>(const qpmt<float>* array, unsigned num_items) ;
+template qpmt<double>*  QU::UploadArray<qpmt<double>>(const qpmt<double>* array, unsigned num_items) ;
 template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items) ;

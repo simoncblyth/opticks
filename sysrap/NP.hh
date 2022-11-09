@@ -243,9 +243,15 @@ struct NP
 
     static NP* MakeLike(  const NP* src);  
     static NP* MakeNarrow(const NP* src); 
-    static NP* MakeWideIfNarrow(  const NP* src); 
     static NP* MakeWide(  const NP* src); 
     static NP* MakeCopy(  const NP* src); 
+
+    static NP* MakeWideIfNarrow(  const NP* src); 
+    static NP* MakeNarrowIfWide(  const NP* src); 
+
+    template<typename T>
+    static NP* MakeType(const NP* src); 
+
 
     static NP* MakeItemCopy(  const NP* src, int i,int j=-1,int k=-1,int l=-1,int m=-1, int o=-1 ); 
     void  item_shape(std::vector<int>& sub, int i, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 ) const ; 
@@ -1320,7 +1326,6 @@ inline void NP::CopyMeta( NP* b, const NP* a ) // static
     b->names = a->names ; 
 }
 
-
 inline NP* NP::MakeNarrow(const NP* a) // static 
 {
     assert( a->ebyte == 8 ); 
@@ -1348,12 +1353,7 @@ inline NP* NP::MakeNarrow(const NP* a) // static
         << " b.dtype " << b->dtype
         << std::endl 
         ;
-
     return b ; 
-}
-inline NP* NP::MakeWideIfNarrow(const NP* a) // static 
-{
-    return a->ebyte == 4 ? MakeWide(a) : MakeCopy(a) ; 
 }
 
 inline NP* NP::MakeWide(const NP* a) // static 
@@ -1405,6 +1405,54 @@ inline NP* NP::MakeCopy(const NP* a) // static
         << std::endl 
         ;
 
+    return b ; 
+}
+
+inline NP* NP::MakeWideIfNarrow(const NP* a) // static 
+{
+    return a->ebyte == 4 ? MakeWide(a) : MakeCopy(a) ; 
+}
+inline NP* NP::MakeNarrowIfWide(const NP* a) // static 
+{
+    return a->ebyte == 8 ? MakeNarrow(a) : MakeCopy(a) ; 
+}
+
+/**
+NP::MakeType
+--------------
+
+Copies, Narrows or Widens as needed to transform the 
+source array into the template type.  
+Copies are done when there is no need to narrow or widen 
+for memory management consistency.  
+
+**/
+
+template<typename T>
+inline NP* NP::MakeType(const NP* a) // static 
+{
+    if(VERBOSE) std::cout << " source type a->ebyte " << a->ebyte << " sizeof(T) " << sizeof(T) << std::endl ; 
+
+    assert( sizeof(T) == 4 || sizeof(T) == 8 ); 
+    assert( a->ebyte == 4 || a->ebyte == 8 ); 
+
+    NP* b = nullptr ; 
+    if( a->ebyte == 4 && sizeof(T) == 4)  
+    {
+        b = MakeCopy(a); 
+    } 
+    else if( a->ebyte == 8 && sizeof(T) == 8)
+    {
+        b = MakeCopy(a); 
+    }
+    else if( a->ebyte == 8 && sizeof(T) == 4)
+    {
+        b = MakeNarrow(a) ;  
+    }
+    else if( a->ebyte == 4 && sizeof(T) == 8)
+    {
+        b = MakeWide(a) ;  
+    }
     return b ; 
 }
 
@@ -2675,7 +2723,37 @@ qudarap/qprop.h qprop<T>::interpolate
     GPU version of NP::combined_interp provisioned by qudarap/QProp.hh
 
 
-TODO: remove arbitrary restriction to 2 in final dimension 
+::
+
+    In [1]: a.shape
+    Out[1]: (24, 15, 2)
+
+    In [2]: a[:,-1,-1]
+    Out[2]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+
+    In [3]: a[:,-1,-1].view(np.int64)
+    Out[3]: array([10,  2, 14,  2, 14, 14,  4,  2, 10,  2, 14,  2, 14, 14,  4,  2, 10,  2, 14,  2, 14, 14,  4,  2])
+
+
+    In [18]: a.shape
+    Out[18]: (3, 4, 2, 15, 2)
+
+    In [17]: a[...,-1,-1].view(np.int64)
+    Out[17]: 
+    array([[[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]],
+
+           [[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]],
+
+           [[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]]])
 
 
     std::cout 
@@ -2684,9 +2762,9 @@ TODO: remove arbitrary restriction to 2 in final dimension
          << " ni " << ni 
          << " lo " << lo
          << " hi " << hi
-         << " vx_lo " << vv[nj*lo+jdom] 
+         << " vx_lo " <<  vv[nj*lo+jdom] 
          << " vy_lo " <<  vv[nj*lo+jval] 
-         << " vx_hi " << vv[nj*hi+jdom] 
+         << " vx_hi " <<  vv[nj*hi+jdom] 
          << " vy_hi " <<  vv[nj*hi+jval] 
          << std::endl
          ; 
@@ -2706,7 +2784,7 @@ template<typename T> inline T NP::combined_interp_3(int i, T x) const
 
 
 /**
-NP::combined_interp_5d
+NP::combined_interp_5
 --------------------------
 
 Example array layout for complex refractive index::

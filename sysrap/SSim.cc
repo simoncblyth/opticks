@@ -442,7 +442,7 @@ specs argument.
 
 NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) // static 
 {
-    const NP* src = NarrowIfWide(dsrc) ;  
+    const NP* src = NP::MakeNarrowIfWide(dsrc) ;  
 
     unsigned ndim = src->shape.size() ; 
     assert( ndim == 5 ); 
@@ -543,12 +543,6 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
 
     return dst ; 
 }
-
-const NP* SSim::NarrowIfWide(const NP* buf )  // static 
-{
-    return buf->ebyte == 4 ? buf : NP::MakeNarrow(buf) ; 
-}
-
 
 
 

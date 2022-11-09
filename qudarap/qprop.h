@@ -1,16 +1,21 @@
 #pragma once
+/**
+qprop
+=======
+
+HMM: this relies on the prop arrays having last column integer 
+annotation as done by NP::combine but there is no naming 
+or anything that stresses that 
+
+**/
+
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QPROP_METHOD __device__
 #else
    #define QPROP_METHOD 
 #endif 
-
-/**
-qprop
-=======
-
-**/
 
 #include "sview.h"
 
@@ -37,9 +42,6 @@ struct qprop
 }; 
 
 
-
-
-
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
 /**
@@ -50,8 +52,6 @@ qprop<T>::interpolate
 2. interpret the last column to obtain the number of payload values
 3. binary search to find the bin relevant to domain argument x  
 4. linear interpolation to yield the y value at x
-
-TODO: generalize nj=2 assumption 
 
 **/
 
