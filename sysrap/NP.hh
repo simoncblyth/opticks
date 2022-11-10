@@ -88,6 +88,8 @@ struct NP
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true); 
+    template<typename... Args> static NP* Combine(Args ... aa);  // Combine_ellipsis
+
 
     // load array asis 
     static NP* Load(const char* path); 
@@ -239,9 +241,13 @@ struct NP
     template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
 
 
+    static NP* MakeLike(  const NP* src);  
     static void CopyMeta( NP* b, const NP* a ); 
 
-    static NP* MakeLike(  const NP* src);  
+    static constexpr const char* Preserve_Last_Column_Integer_Annotation = "Preserve_Last_Column_Integer_Annotation" ; 
+    void set_preserve_last_column_integer_annotation(); 
+    bool is_preserve_last_column_integer_annotation() const ; 
+
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
     static NP* MakeCopy(  const NP* src); 
@@ -381,10 +387,11 @@ struct NP
     char*       bytes();  
     const char* bytes() const ;  
 
-    unsigned num_values() const ; 
-    unsigned num_itemvalues() const ; 
-    unsigned arr_bytes() const ;   // formerly num_bytes
-    unsigned item_bytes() const ;   // *item* comprises all dimensions beyond the first 
+    unsigned num_items() const ;       // shape[0] 
+    unsigned num_values() const ;      // all values, product of shape[0]*shape[1]*...
+    unsigned num_itemvalues() const ;  // values after first dimension 
+    unsigned arr_bytes() const ;       // formerly num_bytes
+    unsigned item_bytes() const ;      // *item* comprises all dimensions beyond the first 
     unsigned hdr_bytes() const ;  
     unsigned meta_bytes() const ;
 
@@ -781,6 +788,7 @@ inline void NP::set_dtype(const char* dtype_)
 // former approach assumed data is already sized : but shape comes first 
 
 inline unsigned NP::hdr_bytes() const { return _hdr.length() ; }
+inline unsigned NP::num_items() const { return shape[0] ;  }
 inline unsigned NP::num_values() const { return NPS::size(shape) ;  }
 inline unsigned NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
 inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
@@ -1326,6 +1334,16 @@ inline void NP::CopyMeta( NP* b, const NP* a ) // static
     b->names = a->names ; 
 }
 
+
+inline void NP::set_preserve_last_column_integer_annotation()
+{
+    set_meta<int>(Preserve_Last_Column_Integer_Annotation, 1 );
+}
+inline bool NP::is_preserve_last_column_integer_annotation() const 
+{
+    return 1 == get_meta<int>(Preserve_Last_Column_Integer_Annotation, 0) ; 
+}
+
 inline NP* NP::MakeNarrow(const NP* a) // static 
 {
     assert( a->ebyte == 8 ); 
@@ -1334,16 +1352,41 @@ inline NP* NP::MakeNarrow(const NP* a) // static
     NP* b = new NP(b_dtype.c_str()); 
     CopyMeta(b, a ); 
 
+    bool plcia = b->is_preserve_last_column_integer_annotation() ; 
+    if(plcia) std::cout 
+        << "NP::MakeNarrow"
+        << " b.plcia " << plcia 
+        << " a.ni " << a->num_items()
+        << " b.ni " << b->num_items()
+        << " a.iv " << a->num_itemvalues()
+        << " b.iv " << b->num_itemvalues()
+        << std::endl 
+        ; 
+
+
     assert( a->num_values() == b->num_values() ); 
     unsigned nv = a->num_values(); 
+    unsigned iv = a->num_itemvalues(); 
 
     if( a->uifc == 'f' && b->uifc == 'f')
     {
         const double* aa = a->cvalues<double>() ;  
-        float* bb = b->values<float>() ;  
-        for(unsigned i=0 ; i < nv ; i++)
+        float*        bb = b->values<float>() ;  
+        for(unsigned i=0 ; i < nv ; i++) 
         {
             bb[i] = float(aa[i]); 
+
+            bool preserve_last_column_integer = plcia && ((i % iv) == iv - 1 ) ; 
+            if(preserve_last_column_integer)
+            {
+                UIF64 uif64 ; 
+                uif64.f = aa[i] ; 
+                std::cout << " preserve_last_column_integer uif64.u " << uif64.u << std::endl ; 
+
+                UIF32 uif32 ; 
+                uif32.u = int(uif64.u) ; 
+                bb[i] = uif32.f ;  
+            }
         }
     }
 
@@ -3273,8 +3316,8 @@ inline bool NP::has_meta() const
 
 template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
 {
-    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
-    return GetMeta<T>( metadata, key, fallback ); 
+    if(meta.empty()) return fallback ; 
+    return GetMeta<T>( meta.c_str(), key, fallback ); 
 }
 
 template int      NP::get_meta<int>(const char*, int ) const ; 
@@ -3629,10 +3672,24 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
                 if(VERBOSE) std::cout << "NP::Combine annotate " << i << " uif64.u  " << uif64.u  << std::endl ; 
                 *(cc + (i+1)*item_bytes/ebyte0 - 1) = uif64.f ;   
             }  
+
+            c->set_preserve_last_column_integer_annotation() ;  
+            // make the annotation survive MakeNarrow  
+            // (currently annotation is scrubbed by MakeWide but could be easily be implented)
         }
     }
     return c ; 
 }
+
+
+template<typename... Args> inline NP* NP::Combine(Args ... args)  // Combine_ellipsis
+{
+    std::vector<const NP*> aa = {args...};
+    bool annotate = true ;  
+    return Combine(aa, annotate); 
+}
+
+
 
 inline NP* NP::Load(const char* path)
 {
@@ -4264,7 +4321,7 @@ When the first int shape dimension is zero a nullptr is returned.
 
 **/
 
-template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args ) 
+template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args )   // Make_ellipsis
 {
     std::string dtype = descr_<T>::dtype() ; 
     std::vector<int> shape = {args...};
