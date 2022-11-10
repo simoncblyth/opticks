@@ -250,7 +250,7 @@ struct NP
     static NP* MakeNarrowIfWide(  const NP* src); 
 
     template<typename T>
-    static NP* MakeType(const NP* src); 
+    static NP* MakeWithType(const NP* src); 
 
 
     static NP* MakeItemCopy(  const NP* src, int i,int j=-1,int k=-1,int l=-1,int m=-1, int o=-1 ); 
@@ -1418,8 +1418,8 @@ inline NP* NP::MakeNarrowIfWide(const NP* a) // static
 }
 
 /**
-NP::MakeType
---------------
+NP::MakeWithType
+-------------------
 
 Copies, Narrows or Widens as needed to transform the 
 source array into the template type.  
@@ -1429,9 +1429,14 @@ for memory management consistency.
 **/
 
 template<typename T>
-inline NP* NP::MakeType(const NP* a) // static 
+inline NP* NP::MakeWithType(const NP* a) // static 
 {
-    if(VERBOSE) std::cout << " source type a->ebyte " << a->ebyte << " sizeof(T) " << sizeof(T) << std::endl ; 
+    if(VERBOSE) std::cout 
+        << "NP::MakeWithType" 
+        << " source type a->ebyte " << a->ebyte 
+        << " sizeof(T) " << sizeof(T) 
+        << std::endl
+        ; 
 
     assert( sizeof(T) == 4 || sizeof(T) == 8 ); 
     assert( a->ebyte == 4 || a->ebyte == 8 ); 

@@ -232,17 +232,18 @@ extern void QProp_lookup(
 QProp::lookup
 --------------
 
+Note that this is doing separate CUDA launches for each property
 
 **/
 
 template<typename T>
-void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsigned domain_width ) const 
+void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned domain_width ) const 
 {
-    unsigned num_lookup = lookup_prop*domain_width ; 
+    unsigned num_lookup = num_prop*domain_width ; 
 
     LOG(LEVEL) 
         << "["
-        << " lookup_prop " << lookup_prop
+        << " num_prop " << num_prop
         << " domain_width " << domain_width
         << " num_lookup " << num_lookup
         ; 
@@ -254,9 +255,12 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsign
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, domain_width, 1 ); 
+    //configureLaunch( numBlocks, threadsPerBlock, domain_width, 1 ); 
 
-    for(unsigned iprop=0 ; iprop < lookup_prop ; iprop++)
+    unsigned threads_per_block = 512u ; 
+    QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, domain_width, threads_per_block ); 
+
+    for(unsigned iprop=0 ; iprop < num_prop ; iprop++)
     {
         QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, iprop, domain_width );  
     }
@@ -305,7 +309,7 @@ void QProp<T>::lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char
 
 
 
-
+/**
 template<typename T>
 void QProp<T>::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const 
 {
@@ -317,7 +321,7 @@ void QProp<T>::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
     numBlocks.z = 1 ; 
 }
-
+**/
 
 
 #pragma GCC diagnostic push

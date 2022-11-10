@@ -24,7 +24,11 @@ template <typename T> struct qprop ;
 template<typename T>
 struct qpmt
 {
-    qprop<T>* rindex ;
+    static constexpr const int NUM_CAT = 3 ; 
+    static constexpr const int NUM_LAYR = 4 ; 
+    static constexpr const int NUM_PROP = 2 ; 
+
+    qprop<T>* rindex_prop ;
     T*        thickness ; 
 }; 
 

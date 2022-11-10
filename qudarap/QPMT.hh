@@ -1,24 +1,59 @@
 #pragma once
 /**
-QPMT.hh
-=========
+QPMT.hh : projecting PMT properties onto device using qpmt.h
+==============================================================
 
-* where to narrow ? 
+* narrowing (or widening, or copying) inputs to template type done in ctor
 
-* QPMT.hh does not depend on JPMT.h directly, as thats too JUNO specific, 
-  instead make ctor args the arrays that JPMT.h collects to keep generality 
+* QPMT.hh does not directly depend on the JUNO specific JPMT.h, instead 
+  the QPMT ctor accepts the arrays that JPMT.h collects from property files
 
-  * so just use JPMT.h (via PMTSim) in qudarap/tests/QPMTTest.cc not in qudarap
+  * hence JPMT.h (via PMTSim) only used in tests qudarap/tests/QPMTTest.cc not in qudarap
 
-* rindex array scrunch done in QProp::Make3D could be done in JPMT.h ?
+* QPMT.hh/qpmt.h layout has some similarities to QCerenkov.hh/qcerenkov.h 
 
-* QPMT.hh/qpmt.h has some similarities to QCerenkov.hh/qcerenkov.h 
+
+HMM: narrowing scrubs last column integer annotation which is essential for prop interpolation::
+
+    In [7]: t.rindex[...,-1,-1].view(np.int32)
+    Out[7]: 
+    array([[[0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]],
+
+           [[0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]],
+
+           [[0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]]], dtype=int32)
+
+    In [3]: t.src_rindex[...,-1,-1].view(np.int64)
+    Out[3]: 
+    array([[[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]],
+
+           [[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]],
+
+           [[10,  2],
+            [14,  2],
+            [14, 14],
+            [ 4,  2]]])
 
 **/
 
-
 #include "NP.hh"
 
+#include "plog/Severity.h"
 #include "qpmt.h"
 #include "QProp.hh"
 #include "QU.hh"
@@ -28,6 +63,10 @@ QPMT.hh
 template<typename T>
 struct QUDARAP_API QPMT
 {
+    static const plog::Severity LEVEL ; 
+
+    const NP* src_rindex ;  
+    const NP* src_thickness ;  
     const NP* rindex ;  
     const NP* thickness ;  
     const QProp<T>* rindex_prop ; 
@@ -37,16 +76,21 @@ struct QUDARAP_API QPMT
 
     QPMT( const NP* rindex, const NP* thickness );     
     void init(); 
-
+    void save(const char* base) const ; 
     std::string desc() const ; 
+
+    NP* interpolate(const NP* domain) const ; 
+    NP* interpolate() const ; 
 };
 
 
 template<typename T>
-inline QPMT<T>::QPMT( const NP* rindex_ , const NP* thickness_ )
+inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_ )
     :
-    rindex(   NP::MakeType<T>(rindex_)),
-    thickness(NP::MakeType<T>(thickness_)),
+    src_rindex(rindex_),
+    src_thickness(thickness_),
+    rindex(   NP::MakeWithType<T>(rindex_)),
+    thickness(NP::MakeWithType<T>(thickness_)),
     rindex_prop(QProp<T>::Make3D(rindex)),  
     pmt(new qpmt<T>()),
     d_pmt(nullptr)
@@ -57,10 +101,26 @@ inline QPMT<T>::QPMT( const NP* rindex_ , const NP* thickness_ )
 template<typename T>
 inline void QPMT<T>::init()
 {
-    pmt->rindex = rindex_prop->getDevicePtr() ;  
+    const int& ni = qpmt<T>::NUM_CAT ; 
+    const int& nj = qpmt<T>::NUM_LAYR ; 
+    const int& nk = qpmt<T>::NUM_PROP ; 
+
+    assert(    rindex->has_shape(ni, nj, nk, -1, 2 )); 
+    assert( thickness->has_shape(ni, nj, 1 )); 
+
+    pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
     pmt->thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); 
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  
     // getting above line to link required template instanciation at tail of qpmt.h 
+}
+
+template<typename T>
+inline void QPMT<T>::save(const char* base) const 
+{
+    src_rindex->save(base, "src_rindex.npy" );  
+    src_thickness->save(base, "src_thickness.npy" );  
+    rindex->save(base, "rindex.npy" );  
+    thickness->save(base, "thickness.npy" );  
 }
 
 template<typename T>
@@ -71,27 +131,18 @@ inline std::string QPMT<T>::desc() const
        << std::endl
        << "rindex"
        << std::endl
-       << rindex->desc()
+       << rindex->sstr()
        << std::endl
        << "thickness"
        << std::endl
-       << thickness->desc()
+       << thickness->sstr()
        << std::endl
+       << " pmt.rindex_prop " << pmt->rindex_prop 
+       << " pmt.thickness " << pmt->thickness 
+       << " d_pmt " << d_pmt  
        ;
     std::string s = ss.str(); 
     return s ;
 }
-
-
-
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wattributes"
-// quell warning: type attributes ignored after type is already defined [-Wattributes]
-template struct QUDARAP_API QPMT<float>;
-template struct QUDARAP_API QPMT<double>;
-//#pragma GCC diagnostic pop
- 
-
-
 
 

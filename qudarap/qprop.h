@@ -62,6 +62,8 @@ inline QPROP_METHOD T qprop<T>::interpolate( unsigned iprop, T x )
 
     int ni = sview::int_from<T>( *(vv+width-1) ) ; 
 
+    printf("//qprop:interpolate iprop %d width %d height %d ni %d \n", iprop, width, height, ni ); 
+
     int lo = 0 ;
     int hi = ni-1 ;
 

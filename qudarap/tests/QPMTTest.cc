@@ -23,13 +23,23 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    JPMT jp ; 
-    //std::cout << jp.desc() << std::endl ;
+    JPMT pmt ; 
+    //std::cout << pmt.desc() << std::endl ;
 
-    QPMT<double> qp(jp.rindex, jp.thickness) ;   
+    QPMT<float> qp(pmt.rindex, pmt.thickness) ;   
     std::cout << qp.desc() << std::endl ; 
+    qp.save(FOLD) ; 
 
-    qp.rindex_prop->lookup_scan( 1.55, 15.5, 100u, FOLD, "rindex" );   
+    //std::cout << "qp.rindex_prop->lookup_scan" << std::endl ;  
+    //qp.rindex_prop->lookup_scan( 1.55, 15.5, 100u, FOLD, "rindex" );   
+
+    std::cout << "qp.interpolate" << std::endl ;  
+
+    NP* domain = NP::Linspace<float>( 1.55, 15.5, 4 );  
+    NP* interp = qp.interpolate(domain ); 
+    interp->save(FOLD, "interp.npy" ); 
+
+    std::cout << " interp.sstr " << interp->sstr() << std::endl ; 
     
     cudaDeviceSynchronize();
 

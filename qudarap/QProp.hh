@@ -52,10 +52,10 @@ struct QUDARAP_API QProp
     void dump() const ; 
     std::string desc() const ;
     qprop<T>* getDevicePtr() const ;
-    void lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsigned domain_width ) const ; 
+    void lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned domain_width ) const ; 
     void lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char* reldir=nullptr ) const ; 
 
-    void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const ;
+    //void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const ;
 };
 
 

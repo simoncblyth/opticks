@@ -34,6 +34,8 @@ set(SOURCES
     QSim.cc
     QSim.cu
 
+    QPMT.cc
+    QPMT.cu 
 
     QEvent.cc
     QEvent.cu
