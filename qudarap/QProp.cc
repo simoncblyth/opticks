@@ -26,8 +26,8 @@ qprop<T>* QProp<T>::getDevicePtr() const
 
 
 /**
-QProp::Make3D
------------------
+QProp::Make3D  : NOW REMOVED : SHOULD ADJUST SHAPE BEFORE USING CTOR 
+-----------------------------------------------------------------------
 
 * QProp requires 1+2D (num_prop, num_energy, 2 )
 * BUT: real world arrays such as those from JPMT.h often have more dimensions 3+2D::
@@ -49,37 +49,14 @@ QProp::Make3D
 
 HMM can do equivalent of NP::combined_interp_5 
 
-**/
-
-
 template<typename T>
 QProp<T>* QProp<T>::Make3D(const NP* a)
 {
-    const std::vector<int>& shape = a->shape ; 
-    unsigned ndim = shape.size() ; 
     NP* b = a->copy() ; 
-
-    if( ndim < 3 )
-    {   
-        LOG(fatal) << "ndim < 3 : must be 3 or more, not: " << ndim ; 
-        assert(0); 
-    }
-    else if( ndim == 3 )
-    {
-        LOG(LEVEL) << " ndim == 3, no reshaping needed " ; 
-    }
-    else if( ndim > 3 )
-    {
-        LOG(LEVEL) << " ndim > 3, reshaping needed, ndim: " << ndim  ; 
-        int ni = 1 ; 
-        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
-        // scrunch up the higher dimensions          
-        b->change_shape(ni, shape[ndim-2], shape[ndim-1] ); 
-        LOG(LEVEL) << " changed shape from a.sstr " << a->sstr() << " to b.sstr " << b->sstr() ; 
-    }
-
+    b->change_shape_to_3D(); 
     return new QProp<T>(b) ; 
 }
+**/
 
 
 /**

@@ -77,6 +77,8 @@ struct NP
     bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) const ;  
     void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) ;   // one dimension entry left at -1 can be auto-set
 
+    void change_shape_to_3D() ; 
+
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
     static void sizeof_check(); 
@@ -89,6 +91,9 @@ struct NP
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true); 
     template<typename... Args> static NP* Combine(Args ... aa);  // Combine_ellipsis
+
+    
+
 
 
     // load array asis 
@@ -247,10 +252,13 @@ struct NP
     static constexpr const char* Preserve_Last_Column_Integer_Annotation = "Preserve_Last_Column_Integer_Annotation" ; 
     void set_preserve_last_column_integer_annotation(); 
     bool is_preserve_last_column_integer_annotation() const ; 
+    static float PreserveNarrowedDoubleInteger( double f ); 
 
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
     static NP* MakeCopy(  const NP* src); 
+    static NP* MakeCopy3D(const NP* src); 
+    static NP* ChangeShape3D(NP* src); 
 
     static NP* MakeWideIfNarrow(  const NP* src); 
     static NP* MakeNarrowIfWide(  const NP* src); 
@@ -889,6 +897,30 @@ inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
     assert( size == size2 ); 
 }
 
+inline void NP::change_shape_to_3D() 
+{
+    unsigned ndim = shape.size() ; 
+    if(VERBOSE) std::cerr << "NP::change_shape_to_3D sstr " << sstr() << std::endl ; 
+
+    if( ndim < 3 ) 
+    {   
+        std::cerr << "NP::change_shape_to_3D : ndim < 3 : must be 3 or more, not: " << ndim << std::endl ; 
+        assert(0); 
+    }   
+    else if( ndim == 3 ) 
+    {   
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim == 3, no reshaping needed " << std::endl ; 
+    }   
+    else if( ndim > 3 ) 
+    {   
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim > 3, reshaping needed, ndim: " << ndim  << std::endl ;   
+        int ni = 1 ; 
+        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
+        // scrunch up the higher dimensions          
+        change_shape(ni, shape[ndim-2], shape[ndim-1] );  
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : changed shape to : " << sstr() << std::endl  ; 
+    }   
+}
 
 
 
@@ -1344,6 +1376,17 @@ inline bool NP::is_preserve_last_column_integer_annotation() const
     return 1 == get_meta<int>(Preserve_Last_Column_Integer_Annotation, 0) ; 
 }
 
+inline float NP::PreserveNarrowedDoubleInteger( double f )
+{
+     UIF64 uif64 ; 
+     uif64.f = f ; 
+     if(VERBOSE) std::cout << "NP::PreserveNarrowedDoubleInteger  uif64.u " << uif64.u << std::endl ; 
+
+     UIF32 uif32 ; 
+     uif32.u = int(uif64.u) ; 
+     return uif32.f ;  
+}
+
 inline NP* NP::MakeNarrow(const NP* a) // static 
 {
     assert( a->ebyte == 8 ); 
@@ -1353,7 +1396,7 @@ inline NP* NP::MakeNarrow(const NP* a) // static
     CopyMeta(b, a ); 
 
     bool plcia = b->is_preserve_last_column_integer_annotation() ; 
-    if(plcia) std::cout 
+    if(VERBOSE && plcia) std::cout 
         << "NP::MakeNarrow"
         << " b.plcia " << plcia 
         << " a.ni " << a->num_items()
@@ -1375,18 +1418,8 @@ inline NP* NP::MakeNarrow(const NP* a) // static
         for(unsigned i=0 ; i < nv ; i++) 
         {
             bb[i] = float(aa[i]); 
-
-            bool preserve_last_column_integer = plcia && ((i % iv) == iv - 1 ) ; 
-            if(preserve_last_column_integer)
-            {
-                UIF64 uif64 ; 
-                uif64.f = aa[i] ; 
-                std::cout << " preserve_last_column_integer uif64.u " << uif64.u << std::endl ; 
-
-                UIF32 uif32 ; 
-                uif32.u = int(uif64.u) ; 
-                bb[i] = uif32.f ;  
-            }
+            bool preserve_last_column_integer = plcia && ((i % iv) == iv - 1 ) ; // only works for 3D not higher D
+            if(preserve_last_column_integer) bb[i] = PreserveNarrowedDoubleInteger(aa[i]) ; 
         }
     }
 
@@ -1450,6 +1483,31 @@ inline NP* NP::MakeCopy(const NP* a) // static
 
     return b ; 
 }
+
+/**
+NP::MakeCopy3D
+----------------
+
+Copy and change shape to 3D, original dimensions must be 3D or more. 
+
+**/
+
+inline NP* NP::MakeCopy3D(const NP* a) // static 
+{
+    NP* b = MakeCopy(a); 
+    b->change_shape_to_3D(); 
+    return b ; 
+}
+
+inline NP* NP::ChangeShape3D(NP* a) // static 
+{
+    a->change_shape_to_3D(); 
+    return a ; 
+}
+
+
+
+
 
 inline NP* NP::MakeWideIfNarrow(const NP* a) // static 
 {

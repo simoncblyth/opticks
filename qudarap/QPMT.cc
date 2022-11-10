@@ -8,7 +8,6 @@
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
-
 // NB this cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>

@@ -6,6 +6,7 @@ defarg="run_ana"
 arg=${1:-$defarg}
 
 export QPMT=INFO
+export FOLD=/tmp/$name
 
 if [ "${arg/run}" != "$arg" ]; then  
     $name

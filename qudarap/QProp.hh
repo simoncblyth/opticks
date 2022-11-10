@@ -41,7 +41,7 @@ struct QUDARAP_API QProp
     qprop<T>* d_prop ; 
 
     // scrunch the high dimensions yielding (num_prop, num_energy, 2)
-    static QProp<T>* Make3D( const NP* a );  
+    //static QProp<T>* Make3D( const NP* a );  
     QProp(const NP* a); 
 
     virtual ~QProp(); 

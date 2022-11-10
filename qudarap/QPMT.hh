@@ -12,63 +12,27 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 
 * QPMT.hh/qpmt.h layout has some similarities to QCerenkov.hh/qcerenkov.h 
 
-
-HMM: narrowing scrubs last column integer annotation which is essential for prop interpolation::
-
-    In [7]: t.rindex[...,-1,-1].view(np.int32)
-    Out[7]: 
-    array([[[0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0]],
-
-           [[0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0]],
-
-           [[0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0]]], dtype=int32)
-
-    In [3]: t.src_rindex[...,-1,-1].view(np.int64)
-    Out[3]: 
-    array([[[10,  2],
-            [14,  2],
-            [14, 14],
-            [ 4,  2]],
-
-           [[10,  2],
-            [14,  2],
-            [14, 14],
-            [ 4,  2]],
-
-           [[10,  2],
-            [14,  2],
-            [14, 14],
-            [ 4,  2]]])
-
 **/
 
+#include "plog/Severity.h"
 #include "NP.hh"
 
-#include "plog/Severity.h"
 #include "qpmt.h"
 #include "QProp.hh"
 #include "QU.hh"
 #include "QUDARAP_API_EXPORT.hh"
-
 
 template<typename T>
 struct QUDARAP_API QPMT
 {
     static const plog::Severity LEVEL ; 
 
-    const NP* src_rindex ;  
     const NP* src_thickness ;  
-    const NP* rindex ;  
     const NP* thickness ;  
+
+    const NP* src_rindex ;  
+    const NP* rindex3 ;  
+    const NP* rindex ;  
     const QProp<T>* rindex_prop ; 
 
     qpmt<T>* pmt ; 
@@ -83,15 +47,26 @@ struct QUDARAP_API QPMT
     NP* interpolate() const ; 
 };
 
+/**
+QPMT::QPMT
+------------
+
+NB this ctor changes the rindex to 3D in *rindex3* 
+prior to narrowing with NP::MakeWithType because 
+without that not all the last prop column integer annotations
+would survive which would cause most of the interpolations to fail  
+
+**/
 
 template<typename T>
 inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_ )
     :
-    src_rindex(rindex_),
     src_thickness(thickness_),
-    rindex(   NP::MakeWithType<T>(rindex_)),
     thickness(NP::MakeWithType<T>(thickness_)),
-    rindex_prop(QProp<T>::Make3D(rindex)),  
+    src_rindex(rindex_),
+    rindex3(  NP::MakeCopy3D(src_rindex)),
+    rindex(   NP::MakeWithType<T>(rindex3)),
+    rindex_prop(new QProp<T>(rindex)),  
     pmt(new qpmt<T>()),
     d_pmt(nullptr)
 {
@@ -105,7 +80,7 @@ inline void QPMT<T>::init()
     const int& nj = qpmt<T>::NUM_LAYR ; 
     const int& nk = qpmt<T>::NUM_PROP ; 
 
-    assert(    rindex->has_shape(ni, nj, nk, -1, 2 )); 
+    assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
     assert( thickness->has_shape(ni, nj, 1 )); 
 
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
@@ -117,10 +92,13 @@ inline void QPMT<T>::init()
 template<typename T>
 inline void QPMT<T>::save(const char* base) const 
 {
-    src_rindex->save(base, "src_rindex.npy" );  
     src_thickness->save(base, "src_thickness.npy" );  
-    rindex->save(base, "rindex.npy" );  
     thickness->save(base, "thickness.npy" );  
+
+    src_rindex->save(base, "src_rindex.npy" );  
+    rindex3->save(base, "rindex3.npy" );  
+    rindex->save(base, "rindex.npy" );  
+    rindex_prop->a->save(base, "rindex_prop_a.npy" );  
 }
 
 template<typename T>
@@ -144,5 +122,4 @@ inline std::string QPMT<T>::desc() const
     std::string s = ss.str(); 
     return s ;
 }
-
 
