@@ -17,6 +17,8 @@ QPMT.hh
 **/
 
 
+#include "NP.hh"
+
 #include "qpmt.h"
 #include "QProp.hh"
 #include "QU.hh"
@@ -57,10 +59,9 @@ inline void QPMT<T>::init()
 {
     pmt->rindex = rindex_prop->getDevicePtr() ;  
     pmt->thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); 
-    d_pmt = nullptr ; 
-    // d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  // symbol difficulties here 
+    d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  
+    // getting above line to link required template instanciation at tail of qpmt.h 
 }
-
 
 template<typename T>
 inline std::string QPMT<T>::desc() const 
@@ -89,5 +90,8 @@ inline std::string QPMT<T>::desc() const
 template struct QUDARAP_API QPMT<float>;
 template struct QUDARAP_API QPMT<double>;
 //#pragma GCC diagnostic pop
-
  
+
+
+
+
