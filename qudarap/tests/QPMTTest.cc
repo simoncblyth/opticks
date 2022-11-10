@@ -38,13 +38,13 @@ QPMTTest::QPMTTest(const JPMT& jpmt_ )
     domain(NP::Linspace<float>( 1.55, 15.5, 1550-155+1 )),
     interp(qpmt.interpolate(domain))
 {
-    std::cout << pmt.desc() << std::endl ;
+    std::cout << jpmt.desc() << std::endl ;
     std::cout << qpmt.desc() << std::endl ; 
 }
 
 void QPMTTest::save() const 
 {
-    qpmt.save(FOLD) ; 
+    jpmt.save(FOLD) ; 
     qpmt.save(FOLD) ; 
     interp->save(FOLD, "interp.npy" ); 
     domain->save(FOLD, "domain.npy" ); 
