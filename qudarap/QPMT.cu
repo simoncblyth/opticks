@@ -29,13 +29,13 @@ __global__ void _QPMT_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, un
     if (ix >= domain_width ) return;
     T energy_eV = domain[ix] ; 
 
-    printf("//_QPMT_interpolate domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
+    //printf("//_QPMT_interpolate domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
 
     const unsigned& ni = qpmt<T>::NUM_CAT ; 
     const unsigned& nj = qpmt<T>::NUM_LAYR ; 
     const unsigned& nk = qpmt<T>::NUM_PROP ; 
 
-    printf("//_QPMT_interpolate ni %d nj %d nk %d \n", ni, nj, nk ); 
+    //printf("//_QPMT_interpolate ni %d nj %d nk %d \n", ni, nj, nk ); 
  
     // cf the CPU equivalent NP::combined_interp_5
 
@@ -48,7 +48,7 @@ __global__ void _QPMT_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, un
 
         T value = pmt->rindex_prop->interpolate(iprop, energy_eV ); 
 
-        printf("//_QPMT_interpolate iprop %d index %d value %10.4f \n", iprop, index, value );  
+        //printf("//_QPMT_interpolate iprop %d index %d value %10.4f \n", iprop, index, value );  
 
         lookup[index] = value ; 
     }

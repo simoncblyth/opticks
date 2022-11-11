@@ -81,9 +81,9 @@ class NPMeta(object):
         pass
         return ret 
 
-    def __str__(self):
-        return "\n".join(self.lines)
     def __repr__(self):
+        return "\n".join(self.lines)
+    def __str__(self):
         return repr(self.d)
 
 
