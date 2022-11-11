@@ -56,7 +56,8 @@ SEvt::SEvt()
     fold(new NPFold),
     cf(nullptr),
     hostside_running_resize_done(false),
-    gather_done(false)
+    gather_done(false),
+    numphoton_collected(0u)
 { 
     init(); 
 }
@@ -435,6 +436,7 @@ int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
 void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
+int SEvt::GetNumPhotonCollected(){    return INSTANCE ? INSTANCE->getNumPhotonCollected() : UNDEF ; }
 int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : UNDEF ; }
 int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : UNDEF ; }
 int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : UNDEF ; }
@@ -460,6 +462,8 @@ void SEvt::clear()
 
     genstep.clear();
     gs.clear();
+    numphoton_collected = 0u ; 
+
     pho0.clear(); 
     pho.clear(); 
     slot.clear(); 
@@ -506,6 +510,12 @@ unsigned SEvt::getNumPhotonFromGenstep() const
     for(unsigned i=0 ; i < genstep.size() ; i++) tot += genstep[i].numphoton() ; 
     return tot ; 
 }
+
+unsigned SEvt::getNumPhotonCollected() const 
+{
+    return numphoton_collected ; 
+}
+
 
 
 /**
@@ -579,14 +589,23 @@ sgs SEvt::addGenstep(const quad6& q_)
     }
 
 
+    unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
+
+    unsigned offset_0 = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
+    unsigned offset_1 = numphoton_collected ; 
+    assert( offset_0 == offset_1 );   
+    // TODO: when this assert has proved to succeed, can remove the slower getNumPhotonFromGenstep
+
     sgs s = {} ;                  // genstep summary struct 
     s.index = genstep.size() ;    // 0-based genstep index since last clear  
-    s.photons = q.numphoton() ;   // numphoton in this genstep 
-    s.offset = getNumPhotonFromGenstep() ;   // sum numphotons from all previously collected gensteps (since last reset)
+    s.photons = q_numphoton ;     // numphoton in this genstep 
+    s.offset = offset_0 ;         // sum numphotons from all previously collected gensteps (since last clear)
     s.gentype = q.gentype() ; 
 
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
+    numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
+
 
     int tot_photon = s.offset+s.photons ; 
 
@@ -1775,6 +1794,7 @@ std::string SEvt::descNum() const
     ss << "SEvt::descNum" 
        << " getNumGenstepFromGenstep "  <<  getNumGenstepFromGenstep() 
        << " getNumPhotonFromGenstep "   <<  getNumPhotonFromGenstep() 
+       << " getNumPhotonCollected "     <<  getNumPhotonCollected() 
        << " getNumPhoton(from NPFold) " <<  getNumPhoton()
        << " getNumHit(from NPFold) "    <<  getNumHit()
        << std::endl 

@@ -108,8 +108,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<unsigned> comp ; 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
+    unsigned           numphoton_collected ; // try to avoid looping over all gensteps for every genstep
+
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
+
 
     std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 
@@ -159,6 +162,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SetReldir(const char* reldir); 
     static const char* GetReldir(); 
 
+    static int GetNumPhotonCollected(); 
     static int GetNumPhotonFromGenstep(); 
     static int GetNumGenstepFromGenstep(); 
     static int GetNumHit() ; 
@@ -224,6 +228,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     unsigned getNumGenstepFromGenstep() const ; 
     unsigned getNumPhotonFromGenstep() const ; 
+    unsigned getNumPhotonCollected() const ; 
 
     static constexpr const unsigned G4_INDEX_OFFSET = 1000000 ; 
     sgs addGenstep(const quad6& q) ; 
