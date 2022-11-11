@@ -29,8 +29,7 @@ lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2: RINDEX,
 arrange that as three in kernel nested for loops (24 props) 
 with the energy domain passed in as input so the parallelism is over the energy 
 
-So the shape of the lookup output is  (3,4,2, domain_width, 2 )   
-where payload is (domain_value, interpolated_value)
+So the shape of the lookup output is  (3,4,2, domain_width )   
 
 **/
 
