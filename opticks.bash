@@ -2439,10 +2439,15 @@ opticks-docs-make()
 
 opticks-notes-cd(){ cd $(opticks-home)/notes/issues/$1 ; }
 opticks-refs-cd(){  cd $HOME/opticks_refs ; }
+opticks-refs-ls(){  opticks-refs-cd ; ls -lt *.pdf | head -30 ; }
+or(){ 
+   : ~/opticks/opticks.bash 
+   opticks-refs-ls ; 
+} 
 or1(){ 
    : ~/opticks/opticks.bash 
-   opticks-refs-cd 
-   ls -lt *.pdf | head -30 ; open $(ls -1t *.pdf | head -1) ; 
+   opticks-refs-ls 
+   open $(ls -1t *.pdf | head -1) ; 
 }
 
 

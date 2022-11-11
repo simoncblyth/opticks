@@ -219,9 +219,9 @@ def test_Rdr3x4():
 
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
-     test_Render()
-     test_Rdr2x2()
-     test_Rdr3x3()
+     #test_Render()
+     #test_Rdr2x2()
+     #test_Rdr3x3()
      test_Rdr3x4()
 
 
