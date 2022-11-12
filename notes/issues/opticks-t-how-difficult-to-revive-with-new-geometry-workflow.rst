@@ -406,3 +406,59 @@ Fix the above. Mostly lack of loaded resources or geometry specifics.
 
 
 
+okc fails
+--------------
+
+::
+
+    okc
+    om-test 
+
+
+    Total Test time (real) =   6.20 sec
+
+    The following tests FAILED:
+          2 - OpticksCoreTest.IndexerTest (Child aborted)
+          8 - OpticksCoreTest.OpticksFlagsTest (Child aborted)
+         10 - OpticksCoreTest.OpticksColorsTest (Child aborted)
+         11 - OpticksCoreTest.OpticksCfgTest (Child aborted)
+         12 - OpticksCoreTest.OpticksCfg2Test (Child aborted)
+         13 - OpticksCoreTest.OpticksTest (Child aborted)
+         14 - OpticksCoreTest.OpticksTwoTest (Child aborted)
+         15 - OpticksCoreTest.OpticksResourceTest (Child aborted)
+         20 - OpticksCoreTest.OK_PROFILE_Test (Child aborted)
+         21 - OpticksCoreTest.OpticksAnaTest (Child aborted)
+         22 - OpticksCoreTest.OpticksDbgTest (Child aborted)
+         24 - OpticksCoreTest.CompositionTest (Child aborted)
+         25 - OpticksCoreTest.Composition_vs_SGLM_Test (Child aborted)
+         28 - OpticksCoreTest.EvtLoadTest (Child aborted)
+         29 - OpticksCoreTest.OpticksEventAnaTest (Child aborted)
+         30 - OpticksCoreTest.OpticksEventCompareTest (Child aborted)
+         31 - OpticksCoreTest.OpticksEventDumpTest (Child aborted)
+         37 - OpticksCoreTest.CfgTest (Child aborted)
+         41 - OpticksCoreTest.OpticksEventTest (Child aborted)
+         42 - OpticksCoreTest.OpticksEventLeakTest (Child aborted)
+         43 - OpticksCoreTest.OpticksRunTest (Child aborted)
+         44 - OpticksCoreTest.FlightPathTest (Child aborted)
+         45 - OpticksCoreTest.Opticks_getOutPathTest (Child aborted)
+    Errors while running CTest
+    Sat Nov 12 15:01:03 GMT 2022
+    epsilon:optickscore blyth$ 
+
+Removing requirement for OPTICKS_KEY gets down to::
+
+    The following tests FAILED:
+         15 - OpticksCoreTest.OpticksResourceTest (Child aborted)
+         41 - OpticksCoreTest.OpticksEventTest (SEGFAULT)
+         42 - OpticksCoreTest.OpticksEventLeakTest (SEGFAULT)
+         43 - OpticksCoreTest.OpticksRunTest (SEGFAULT)
+    Errors while running CTest
+    Sat Nov 12 15:07:44 GMT 2022
+    epsilon:optickscore blyth$ 
+
+Fix the above using IDPATH_TRANSITIONAL of "/tmp" as a kludge. 
+
+
+
+
+

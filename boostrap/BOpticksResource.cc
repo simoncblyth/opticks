@@ -134,7 +134,7 @@ BOpticksResource::BOpticksResource()
     m_idgdml(nullptr),
     m_idsubd(nullptr),
     m_idname(nullptr),
-    m_idpath(nullptr),
+    m_idpath(IDPATH_TRANSITIONAL),
     m_idpath_tmp(nullptr),
     m_evtbase(nullptr),
     m_evtpfx(nullptr),
@@ -749,19 +749,23 @@ void BOpticksResource::initViaKey()
     m_idfold = strdup(fold.c_str()) ; 
     m_res->addDir("idfold", m_idfold ); 
 
-    std::string idpath = getGeocachePath( m_idname, m_idsubd, m_srcdigest, layout );
+
+    //  THIS CODE IS NEAR DEATH : TRY TO GET ALONG WITH IDPATH_TRANSITIONAL
+    //
+    //std::string idpath = getGeocachePath( m_idname, m_idsubd, m_srcdigest, layout );
     // HMM IT WOULD BE GOOD TO ARRANGE FOR THIS TO BE STATICALLY AVAILABLE FROM THE KEY ?
     // BUT ITS A LITTLE INVOLVED DUE TO DIFFERENT POSSIBILITES FOR THE OPTICKS_INSTALL_PREFIX
+    //
+    //
+    // LOG(LEVEL)
+    //       <<  " idname " << m_idname 
+    //       <<  " idfile " << m_idfile 
+    //       <<  " srcdigest " << m_srcdigest
+    //       <<  " idpath " << idpath 
+    //        ;
+    //
+    // m_idpath = strdup(idpath.c_str()) ; 
 
-
-    LOG(LEVEL)
-           <<  " idname " << m_idname 
-           <<  " idfile " << m_idfile 
-           <<  " srcdigest " << m_srcdigest
-           <<  " idpath " << idpath 
-            ;
-
-    m_idpath = strdup(idpath.c_str()) ; 
     m_res->addDir("idpath", m_idpath ); 
 
     m_gltfpath = makeIdPathPath(m_idfile) ; // not a srcpath for G4LIVE, but potential cache file 

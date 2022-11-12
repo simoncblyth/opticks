@@ -79,6 +79,7 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 
 class BRAP_API  BOpticksResource {
     public:
+        static constexpr const char* IDPATH_TRANSITIONAL = "/tmp" ;
         static constexpr const char* GDMLAUXMETA = "gdmlauxmeta.json" ;
         static constexpr const char* CACHEMETA  = "cachemeta.json" ; 
         static constexpr const char* RUNCOMMENT = "runcomment.txt" ; 

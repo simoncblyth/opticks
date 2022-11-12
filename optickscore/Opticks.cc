@@ -318,6 +318,8 @@ Opticks::envkey
 Checks if a key is set already. 
 If not attempts to set the key obtained from the OPTICKS_KEY envvar.
 
+NB : THIS IS VERY OLD WORKFLOW
+
 **/
 
 bool Opticks::envkey()
@@ -337,7 +339,7 @@ bool Opticks::envkey()
     SOpticksKey::SetKey(NULL) ;  // use keyspec from OPTICKS_KEY envvar 
 
     key_is_set = SOpticksKey::IsSet() ; 
-    assert( key_is_set == true && "valid geocache and key are required, for operation without geocache use --allownokey " ); 
+    //assert( key_is_set == true && "valid geocache and key are required, for operation without geocache use --allownokey " ); 
 
     return key_is_set ; 
 }

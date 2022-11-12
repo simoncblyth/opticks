@@ -123,7 +123,7 @@ void OpticksResource::init()
    } 
    else
    {
-       assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
+       //assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
    }
 
    initRunResultsDir(); 
