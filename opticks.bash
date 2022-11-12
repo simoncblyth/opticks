@@ -1954,7 +1954,25 @@ opticks-check-installation()
     local rc=0
     local iwd=$PWD
 
+    qudarap-
+    qudarap-check-installation
+    rc=$?
+ 
+    cd $iwd
+    echo $msg rc $rc
+    return $rc
+}
+
+opticks-former-check-installation()
+{
+    # see notes/issues/opticks-t-how-difficult-to-revive-with-new-geometry-workflow.rst
+
+    local msg="=== $FUNCNAME :"
+    local rc=0
+    local iwd=$PWD
+
     local dir=$(opticks-installcachedir)
+
     if [ ! -d "$dir" ]; then
         echo $msg missing dir $dir 
         rc=100
@@ -1989,7 +2007,7 @@ opticks-i(){
 }
 
 
-opticks-check-key()
+opticks-former-check-key()
 {
    local msg="=== $FUNCNAME :"
    if [ -z "$OPTICKS_KEY" ]; then 
@@ -1998,6 +2016,20 @@ opticks-check-key()
    fi  
    return 0 
 }
+
+opticks-check-key()
+{
+   local msg="=== $FUNCNAME :"
+   if [ -n "$OPTICKS_KEY" ]; then 
+       echo $msg ERROR : OPTICKS_KEY envvar is defined : that is very old workflow 
+       return 1 
+   fi  
+   return 0 
+}
+
+
+
+
 
 
 opticks-t-notes(){ cat << EON

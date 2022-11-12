@@ -148,7 +148,9 @@ inline SBnd::SBnd(const NP* src_)
     src(src_),
     bnames(src->names)
 {
-    assert(bnames.size() > 0 ); 
+    unsigned num_bnames = bnames.size() ; 
+    if( num_bnames == 0 ) std::cerr << "SBnd::SBnd no names from src " << ( src ? src->sstr() : "-" ) << std::endl ; 
+    //assert(num_bnames > 0 ); 
 }
 
 inline std::string SBnd::getItemDigest( int i, int j, int w ) const 

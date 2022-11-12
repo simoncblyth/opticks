@@ -186,7 +186,7 @@ std::string SOpticksResource::Dump()
 
     bool setkey = true ; 
     const char* idpath = IDPath(setkey) ; 
-    const char* cgdir = CGDir(setkey) ; 
+    //const char* cgdir = CGDir(setkey) ; 
     const char* cfbase = CFBase(); 
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
@@ -213,7 +213,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::DefaultGeometryDir()    " << ( geometrydir ? geometrydir : "-" ) << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
-        << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
+       // << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
@@ -250,6 +250,8 @@ const NP* SOpticksResource::IDLoad(const char* relpath)
 }
 
 
+/*
+
 const char* SOpticksResource::CGDir_NAME = "CSG_GGeo" ; 
 const char* SOpticksResource::CGDir(bool setkey){ return CGDir_(setkey, CGDir_NAME) ; }
 const char* SOpticksResource::CGDir_(bool setkey, const char* rel)  
@@ -261,6 +263,8 @@ const char* SOpticksResource::CGDir_(bool setkey, const char* rel)
 
 const char* SOpticksResource::CGDir_NAME_Alt = "CSG_GGeo_Alt" ; 
 const char* SOpticksResource::CGDirAlt(bool setkey){ return CGDir_(setkey, CGDir_NAME_Alt) ; }
+
+*/
 
 
 
@@ -289,22 +293,30 @@ const char* SOpticksResource::CFBASE_ = "CFBASE" ;
 const char* SOpticksResource::CFBase()
 {
     const char* cfbase = SSys::getenvvar(CFBASE_) ; 
+
+    /*
     if( cfbase == nullptr )
     {
         bool setkey = true ; 
         cfbase = CGDir(setkey);    
     }
+    */
+
     return cfbase ; 
 }
 
 const char* SOpticksResource::CFBaseAlt()
 {
     const char* cfbase = SSys::getenvvar("CFBASE_ALT") ; 
+
+    /*
     if( cfbase == nullptr )
     {
         bool setkey = true ; 
         cfbase = CGDirAlt(setkey); 
     }
+    */
+
     return cfbase ; 
 }
 

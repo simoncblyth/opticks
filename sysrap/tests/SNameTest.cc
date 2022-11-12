@@ -1,3 +1,16 @@
+/**
+SNameTest
+===========
+
+Names within a geometry tend to change often
+so for maintainability (and because they are geometry specific) 
+cannot assert when the names do not match expectations::
+
+    CFBase=~/.opticks/GEOM/J004 SNameTest
+
+**/
+
+
 #include "SPath.hh"
 #include "SSys.hh"
 #include "NP.hh"
@@ -105,15 +118,18 @@ void SNameTest::test_getIDXListFromNames()
      char delim = ',' ; 
      const char* prefix = "t" ; 
      const char* elv = id->getIDXListFromNames(names, delim, prefix); 
+     bool match = strcmp( elv, x_elv) == 0 ; 
+
      std::cout 
          << "test_getIDXListFromNames" 
          << " names [" << names << "]"
          << " elv [" << elv << "]"
          << " x_elv [" << x_elv << "]"
+         << " match " << match 
          << std::endl 
          ;
 
-     assert( strcmp( elv, x_elv) == 0 ); 
+     //assert( match ); 
 }
 
 void SNameTest::test_hasNames()

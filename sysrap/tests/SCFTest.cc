@@ -11,7 +11,11 @@ int main(int argc, char** argv)
 
     LOG(info) << " cf " << cf << " cf.desc " << ( cf ? cf->desc() : "-" ) ;  
 
-    if(cf == nullptr) return 1 ; 
+    if(cf == nullptr) 
+    {
+        LOG(fatal) << " No CFBASE envvar presumably : nothing to do here " ; 
+        return 0 ; 
+    }
 
     std::vector<int>* instv = SSys::getenvintvec("INST") ; 
     if(instv == nullptr) return 1 ; 

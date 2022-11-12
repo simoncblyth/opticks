@@ -228,6 +228,9 @@ int main(int argc, char** argv)
 
     SSim* sim = SSim::Load(); 
     const NP* bnd = sim->get_bnd(); 
+    LOG_IF(fatal, !bnd) << " NO bnd : nothing to do " ; 
+    if(!bnd) return 0 ; 
+
 
     SBnd sb(bnd) ; 
 

@@ -14,7 +14,15 @@ int main(int argc, char** argv)
 
     NP* gs = SFrameGenstep::MakeCenterExtentGensteps(fr);
     LOG(info) << " gs " << ( gs ? gs->sstr() : "-" ) ;  
-    gs->save(FOLD, "gs.npy"); 
+
+    if(FOLD)
+    {
+        gs->save(FOLD, "gs.npy"); 
+    }
+    else
+    {
+        LOG(error) << "define FOLD envvar to save the gensteps array " ; 
+    }
 
     return 0 ; 
 

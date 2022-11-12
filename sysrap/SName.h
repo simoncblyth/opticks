@@ -104,7 +104,8 @@ inline std::string SName::desc() const
 {
     unsigned num_name = getNumName() ; 
     std::stringstream ss ; 
-    ss << "SName::desc numName " << num_name << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
+    ss << "SName::desc numName " << num_name ;  ; 
+    if( num_name > 0 ) ss << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -395,7 +396,16 @@ inline const char* SName::getIDXListFromNames( const std::vector<std::string>& q
 {
     std::vector<unsigned> idxs ; 
     findIndicesFromNames(idxs, qq); 
-    assert( qq.size() == idxs.size() ); 
+
+    bool found_all_names =  qq.size() == idxs.size() ; 
+    if(!found_all_names) std::cerr 
+        << "SName::getIDXListFromNames !found_all_names "
+        << " qq.size " << qq.size() 
+        << " idxs.size " << idxs.size() 
+        << std::endl 
+        ; 
+    //assert( found_all_names ); 
+
     return IDXList(idxs, prefix); 
 }
 inline const char* SName::getIDXListFromSearch( const char* names_containing, const char* prefix) const 
