@@ -35,8 +35,6 @@ set(TEST_SOURCES
     X4MaterialWaterStandaloneTest.cc
     X4MaterialWaterTest.cc
     X4MaterialTableTest.cc
-    X4PhysicalVolumeTest.cc
-    X4PhysicalVolume2Test.cc
     X4Transform3DTest.cc
     X4AffineTransformTest.cc
     X4ThreeVectorTest.cc
@@ -63,14 +61,19 @@ set(TEST_SOURCES
     G4MaterialPropertyVectorTest.cc 
     X4PhysicalConstantsTest.cc
 
-    X4SurfaceTest.cc
 
     CLHEPVersionInteger.cc
 
     convertMultiUnionTest.cc
 )
 
+set(FORMER_TEST_SOURCES
 
+    X4PhysicalVolumeTest.cc   ## X4PhysicalVolume::Convert no longer used NOW USING X4Geo::Translate
+    X4PhysicalVolume2Test.cc
+    X4SurfaceTest.cc
+
+)
 
 
 foreach(TEST_CC_SRC ${TEST_SOURCES})

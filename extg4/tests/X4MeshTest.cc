@@ -9,8 +9,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* geom_default = "hmsk_solidMask" ; 
-    const char* geom = SSys::getenvvar("GEOM", geom_default ); 
+    const char* geom_default = "hmskSolidMask" ; 
+    const char* geom = SSys::getenvvar("X4MeshTest_GEOM", geom_default ); 
 
     std::string meta ; 
     const G4VSolid* solid = X4_Get::GetSolid(geom, &meta); 

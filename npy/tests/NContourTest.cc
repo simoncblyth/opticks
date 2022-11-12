@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* geom = SSys::getenvvar("GEOM", "Cone_0") ; 
+    const char* geom = SSys::getenvvar("NContourTest_GEOM", "Cone_0") ; 
     LOG(info) << "NContourTest geom [" << geom  << "]"  ; 
 
     NContourTest t("$TMP/npy/NContourTest", geom);  

@@ -159,8 +159,11 @@ elif [ "$GEOM" == "example_pet" ]; then
 else 
     # handling test geometries from j/PMTSim aka jps and from GeoChain or CSGMakerTest 
     export ${GEOM}_CFBaseFromGEOM=/tmp/$USER/opticks/GEOM/$GEOM 
+    #export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 fi 
 
+
+##### TODO: GET RID OF THE BELOW : GEOM SHOULD FOCUS ON VITALS #######
 
 
 case $GEOM in 

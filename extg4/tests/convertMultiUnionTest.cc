@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     const char* geom_default = "BoxFourBoxContiguous" ; 
-    const char* geom = SSys::getenvvar("GEOM", geom_default ); 
+    const char* geom = SSys::getenvvar("convertMultiUnionTest_GEOM", geom_default ); 
 
     std::string meta ; 
     const G4VSolid* solid = X4SolidMaker::Make(geom, &meta); 

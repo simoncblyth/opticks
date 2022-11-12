@@ -694,4 +694,277 @@ What should IDPATH_TRANSITIONAL be ? "$CFBaseFromGEOM/GGeo" ?
     0 drwxrwxr-x   12 blyth  staff   384 Oct 11 15:50 GMergedMesh
     epsilon:J004 blyth$ 
 
- 
+
+
+
+
+
+::
+
+    epsilon:tests blyth$ cat OpticksTest.sh 
+    #!/bin/bash -l 
+
+    export GEOM=J004
+    source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh  
+    env | grep $GEOM
+
+    OpticksTest 
+
+
+
+    epsilon:tests blyth$ cat GScintillatorLibTest.sh 
+    #!/bin/bash -l 
+
+    export GEOM=J004
+    source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh  
+    env | grep $GEOM
+
+    GScintillatorLibTest
+
+
+    
+With testenv bracketing::
+
+     566 om-testenv-dump(){
+     567     local pfx="$1"
+     568     if [ -z "$QUIET" ]; then 
+     569         local fmt="$pfx %20s : %s \n"
+     570         local vars="$(om-testenv-vars)"
+     571         local var ; for var in $vars ; do printf "$fmt" "$var" "${!var}" ; done
+     572     fi
+     573 }
+     574 
+     575 om-testenv-push()
+     576 {
+     577     om-testenv-dump "[push"
+     578 
+     579     export OM_KEEP_GEOM=$GEOM
+     580     export GEOM=${OPTICKS_T_GEOM:-$GEOM}
+     581 
+     582     source $(dirname $BASH_SOURCE)/bin/GEOM_.sh
+     583 
+     584     om-testenv-dump "]push"
+     585 }
+     586 om-testenv-pop()
+     587 {
+     588     om-testenv-dump "[pop "
+     589 
+     590     if [ -n "$OM_KEEP_GEOM" ] ; then
+     591         export GEOM=$OM_KEEP_GEOM
+     592         unset OM_KEEP_GEOM
+     593     else
+     594         unset GEOM
+     595     fi
+     596 
+     597     om-testenv-dump "]pop "
+     598 }
+     599 
+
+
+
+
+::
+
+    90% tests passed, 6 tests failed out of 62
+
+    Total Test time (real) =  14.81 sec
+
+    The following tests FAILED:
+         35 - GGeoTest.GGeoLoadFromDirTest (SEGFAULT)
+
+         43 - GGeoTest.GGeoTest (Child aborted)
+         44 - GGeoTest.GGeoIdentityTest (Child aborted)
+         45 - GGeoTest.GGeoConvertTest (Child aborted)
+         60 - GGeoTest.GPhoTest (Child aborted)
+         61 - GGeoTest.GGeoDumpTest (Child aborted)
+    Errors while running CTest
+    Sat Nov 12 18:37:34 GMT 2022
+    [pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    [pop              FUNCNAME : om-testenv-dump 
+    [pop          OM_KEEP_GEOM :  
+    [pop                  GEOM : J004 
+    [pop        OPTICKS_T_GEOM : J004 
+    ]pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    ]pop              FUNCNAME : om-testenv-dump 
+    ]pop          OM_KEEP_GEOM :  
+    ]pop                  GEOM :  
+    ]pop        OPTICKS_T_GEOM : J004 
+    epsilon:ggeo blyth$ 
+
+
+
+GGeoTest::    
+
+    epsilon:ggeo blyth$ om-testenv-push
+    [push          BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    [push             FUNCNAME : om-testenv-dump 
+    [push         OM_KEEP_GEOM :  
+    [push                 GEOM :  
+    [push       OPTICKS_T_GEOM : J004 
+                       BASH_SOURCE : /Users/blyth/opticks/bin/GEOM_.sh 
+                               gp_ : J004_GDMLPath 
+                                gp :  
+                               cg_ : J004_CFBaseFromGEOM 
+                                cg : /Users/blyth/.opticks/GEOM/J004 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/GEOM/J004 
+                           GEOMDIR : /Users/blyth/.opticks/GEOM/J004 
+                       BASH_SOURCE : /Users/blyth/opticks/bin/GEOM_.sh 
+
+    ]push          BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    ]push             FUNCNAME : om-testenv-dump 
+    ]push         OM_KEEP_GEOM :  
+    ]push                 GEOM : J004 
+    ]push       OPTICKS_T_GEOM : J004 
+    epsilon:ggeo blyth$ GGeoTest 
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ 
+
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff5c1fcb66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff5c3c7080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff5c1581ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff5c1201ac libsystem_c.dylib`__assert_rtn + 320
+      * frame #4: 0x00000001002f542a libGGeo.dylib`GGeo::deferredCreateGParts(this=0x0000000101902f00) at GGeo.cc:1617
+        frame #5: 0x00000001002f35e0 libGGeo.dylib`GGeo::deferred(this=0x0000000101902f00) at GGeo.cc:655
+        frame #6: 0x00000001002f2f4b libGGeo.dylib`GGeo::postLoadFromCache(this=0x0000000101902f00) at GGeo.cc:605
+        frame #7: 0x00000001002eed35 libGGeo.dylib`GGeo::loadFromCache(this=0x0000000101902f00) at GGeo.cc:586
+        frame #8: 0x00000001002ee8e9 libGGeo.dylib`GGeo::Load(ok=0x00007ffeefbfe620) at GGeo.cc:134
+        frame #9: 0x0000000100009fd9 GGeoTest`main(argc=1, argv=0x00007ffeefbfe890) at GGeoTest.cc:426
+        frame #10: 0x00007fff5c0ac015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+    (lldb) f 4
+    frame #4: 0x00000001002f542a libGGeo.dylib`GGeo::deferredCreateGParts(this=0x0000000101902f00) at GGeo.cc:1617
+       1614	    for(unsigned i=0 ; i < nmm ; i++)
+       1615	    {
+       1616	        GMergedMesh* mm = m_geolib->getMergedMesh(i);
+    -> 1617	        assert( mm->getParts() == NULL ); 
+       1618	
+       1619	        GPts* pts = mm->getPts(); 
+       1620	        LOG_IF(fatal, pts == nullptr ) << " pts NULL, cannot create GParts for mm " << i ; 
+    (lldb) p nmm
+    (unsigned int) $0 = 10
+    (lldb) 
+
+
+
+Four fails for the same cause::
+    
+    epsilon:ggeo blyth$ GGeoIdentityTest
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ GGeoTest 
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ GGeoConvertTest 
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ GPhoTest 
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ GGeoDumpTest 
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+    Abort trap: 6
+    epsilon:ggeo blyth$ 
+
+
+    
+
+Now down to 57::
+
+
+
+    FAILS:  57  / 510   :  Sat Nov 12 18:53:04 2022   
+      21 /129 Test #21 : NPYTest.NContourTest                          ***Exception: SegFault         0.03   FIXED
+
+      43 /62  Test #43 : GGeoTest.GGeoTest                             Child aborted***Exception:     1.36   
+      44 /62  Test #44 : GGeoTest.GGeoIdentityTest                     Child aborted***Exception:     1.36   
+      45 /62  Test #45 : GGeoTest.GGeoConvertTest                      Child aborted***Exception:     1.34   
+      60 /62  Test #60 : GGeoTest.GPhoTest                             Child aborted***Exception:     1.32   
+      61 /62  Test #61 : GGeoTest.GGeoDumpTest                         Child aborted***Exception:     1.33   
+
+      All above 5 are asserts from non-null GParts loaded from deferred ? 
+
+      1  /45  Test #1  : ExtG4Test.X4SolidMakerTest                    Child aborted***Exception:     0.11    FIXED JustOrb
+      2  /45  Test #2  : ExtG4Test.X4SolidMultiUnionTest               Child aborted***Exception:     0.11    FIXED GEOM clash 
+
+      16 /45  Test #16 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.10    SKIPPED : API NO LONGER USED
+      17 /45  Test #17 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.11    SKIPPED : API NO LONGER USED 
+      38 /45  Test #38 : ExtG4Test.X4SurfaceTest                       Child aborted***Exception:     0.17    SKIPPED : API NO LONGER USED
+
+    (lldb) f 4
+    frame #4: 0x00000001001e8cbb libExtG4.dylib`X4PhysicalVolume::Convert(top=0x00000001081228f0, argforce="--printenabled --nogdmlpath") at X4PhysicalVolume.cc:124
+       121 	
+       122 	GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* argforce)
+       123 	{
+    -> 124 	    assert(0) ; // NOT USED IN NEW WORKFLOW : NOW USING X4Geo::Translate ? 
+       125 	
+       126 	    const char* key = X4PhysicalVolume::Key(top) ; 
+       127 	
+    (lldb) 
+
+
+      40 /45  Test #40 : ExtG4Test.convertMultiUnionTest               Child aborted***Exception:     0.11     FIXED GEOM clash 
+      41 /45  Test #41 : ExtG4Test.X4IntersectSolidTest                Child aborted***Exception:     0.10     FIXED GEOM clash 
+      42 /45  Test #42 : ExtG4Test.X4SimtraceTest                      Child aborted***Exception:     0.10     FIXED GEOM clash  
+      43 /45  Test #43 : ExtG4Test.X4IntersectVolumeTest               Child aborted***Exception:     0.21     FIXED GEOM clash  
+      44 /45  Test #44 : ExtG4Test.X4MeshTest                          ***Failed                      0.10     FIXED GEOM clash  
+      45 /45  Test #45 : ExtG4Test.X4VolumeMakerTest                   Child aborted***Exception:     0.11     FIXED GEOM clash
+
+      FIXED ALL THE X4 TESTS
+
+
+      1  /39  Test #1  : CSGTest.CSGNodeTest                           Child aborted***Exception:     0.03   
+      3  /39  Test #3  : CSGTest.CSGIntersectSolidTest                 Child aborted***Exception:     0.03   
+      5  /39  Test #5  : CSGTest.CSGPrimSpecTest                       Child aborted***Exception:     0.03   
+      6  /39  Test #6  : CSGTest.CSGPrimTest                           Child aborted***Exception:     0.04   
+      8  /39  Test #8  : CSGTest.CSGFoundryTest                        Child aborted***Exception:     0.04   
+      9  /39  Test #9  : CSGTest.CSGFoundry_getCenterExtent_Test       Child aborted***Exception:     0.06   
+      10 /39  Test #10 : CSGTest.CSGFoundry_findSolidIdx_Test          Child aborted***Exception:     0.04   
+      11 /39  Test #11 : CSGTest.CSGNameTest                           Child aborted***Exception:     0.03   
+      13 /39  Test #13 : CSGTest.CSGTargetGlobalTest                   Child aborted***Exception:     0.04   
+      14 /39  Test #14 : CSGTest.CSGFoundry_MakeCenterExtentGensteps_Test Child aborted***Exception:     0.03   
+      15 /39  Test #15 : CSGTest.CSGFoundry_getFrame_Test              Child aborted***Exception:     0.04   
+      16 /39  Test #16 : CSGTest.CSGFoundry_SGeo_SEvt_Test             Child aborted***Exception:     0.03   
+      19 /39  Test #19 : CSGTest.CSGScanTest                           Child aborted***Exception:     0.03   
+      22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.04   
+      23 /39  Test #23 : CSGTest.CSGQueryTest                          Child aborted***Exception:     0.03   
+      25 /39  Test #25 : CSGTest.CSGSimtraceRerunTest                  ***Exception: SegFault         0.11   
+      26 /39  Test #26 : CSGTest.CSGSimtraceSampleTest                 ***Exception: SegFault         0.11   
+      27 /39  Test #27 : CSGTest.CSGCopyTest                           Child aborted***Exception:     0.04   
+      33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.04   
+      35 /39  Test #35 : CSGTest.CSGNodeScanTest                       Child aborted***Exception:     0.03   
+      36 /39  Test #36 : CSGTest.CSGSignedDistanceFieldTest            Child aborted***Exception:     0.03   
+      37 /39  Test #37 : CSGTest.CSGGeometryTest                       Child aborted***Exception:     0.03   
+      38 /39  Test #38 : CSGTest.CSGGeometryFromGeocacheTest           Child aborted***Exception:     0.03   
+
+      1  /3   Test #1  : GeoChainTest.GeoChainSolidTest                Child aborted***Exception:     0.12   
+      2  /3   Test #2  : GeoChainTest.GeoChainVolumeTest               Child aborted***Exception:     0.16   
+      3  /3   Test #3  : GeoChainTest.GeoChainNodeTest                 Child aborted***Exception:     0.10   
+
+      3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
+      4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
+      5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.03   
+      7  /20  Test #7  : QUDARapTest.QSimTest                          Child aborted***Exception:     1.15   
+      8  /20  Test #8  : QUDARapTest.QBndTest                          ***Exception: SegFault         0.03   
+      9  /20  Test #9  : QUDARapTest.QPrdTest                          ***Exception: SegFault         0.03   
+      10 /20  Test #10 : QUDARapTest.QOpticalTest                      ***Exception: SegFault         0.03   
+      11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
+      13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.06   
+      18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.03   
+
+      5  /18  Test #5  : U4Test.U4GDMLReadTest                         Child aborted***Exception:     0.09   
+      7  /18  Test #7  : U4Test.U4RandomTest                           ***Exception: SegFault         0.54   
+      8  /18  Test #8  : U4Test.U4VolumeMakerTest                      Child aborted***Exception:     0.09   
+      13 /18  Test #13 : U4Test.U4TreeTest                             Child aborted***Exception:     0.11   
+
+    [pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    [pop              FUNCNAME : om-testenv-dump 
+    [pop          OM_KEEP_GEOM :  
+    [pop                  GEOM : J004 
+    [pop        OPTICKS_T_GEOM : J004 
+     

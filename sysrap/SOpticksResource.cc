@@ -498,11 +498,8 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   GDMLPath              | GEOM gives Name, Name_GDMLPath gives path           |
 +-------------------------+-----------------------------------------------------+
-|   CFBaseFromGeom        | GEOM gives Name, Name_CFBaseFromGeom gives path     |
+|   CFBaseFromGeom        | GEOM gives Name, Name_CFBaseFromGeom gives dirpath  |
 +-------------------------+-----------------------------------------------------+
-
-
-
 
 
 **/

@@ -31,7 +31,7 @@ struct X4_API X4Simtrace
 
 inline X4Simtrace::X4Simtrace()
     :
-    geom(ssys::getenvvar("GEOM", "nmskSolidMaskTail")),  
+    geom(ssys::getenvvar("X4Simtrace_GEOM", "nmskSolidMaskTail")),  
     solid(nullptr), 
     evt(nullptr)
 {

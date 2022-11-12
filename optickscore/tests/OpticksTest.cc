@@ -22,7 +22,9 @@
 
 #include <iostream>
 
+#include "SPath.hh"
 #include "BFile.hh"
+
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
@@ -252,6 +254,8 @@ void test_getIdPath(const Opticks* ok)
     const char* geocachedir = ok->getGeocacheDir(); 
     LOG(info) << " idpath      " << idpath ; 
     LOG(info) << " geocachedir " << geocachedir ; 
+    LOG(info) << " SPath::Resolve(ok->getIdPath) " << SPath::Resolve(idpath, NOOP ) ; 
+
 }
 
 void test_writeGeocacheScript(const Opticks* ok)
@@ -331,15 +335,15 @@ int main(int argc, char** argv)
     test_getFlightInputDir(&ok); 
 
     test_getArgList(&ok); 
-    test_getIdPath(&ok); 
     test_writeGeocacheScript(&ok); 
     test_isGPartsTransformOffset(&ok); 
     test_getCacheMetaTime(&ok); 
     test_isCXSkipLV(&ok); 
+    test_getSize(&ok); 
 
     */
+    test_getIdPath(&ok); 
 
-    test_getSize(&ok); 
 
     return 0 ;
 }

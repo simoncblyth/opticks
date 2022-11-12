@@ -63,6 +63,11 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, "--allownokey" );
     ok.configure(); 
 
+    LOG_IF(error, BASE==nullptr ) << " BASE envvar not set : nothing to do " ; 
+    if(BASE==nullptr) return 0 ; 
+
+
+
     GGeo* ggeo = GGeo::LoadFromDir(&ok, BASE ); 
     unsigned nmm = ggeo->getNumMergedMesh();
 

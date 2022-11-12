@@ -535,7 +535,14 @@ om-make(){    om-one-or-all make $* ; return $? ; }
 om-install(){ om-one-or-all install $* ; return $? ; }
 om-cleaninstall(){ om-one-or-all cleaninstall $* ; return $? ; }
 om-visit(){   om-one-or-all visit $* ; return $? ; }
-om-test(){    om-one-or-all test $* ; return $? ; }
+om-test(){    
+    local rc=0
+    om-testenv-push 
+    om-one-or-all test $* 
+    rc=$?
+    om-testenv-pop
+    return $rc  
+}
 om-echo(){    om-one-or-all echo $* ; return $? ; }
 om-clean(){   om-one-or-all clean $* ; return $? ; }
 om-find(){    om-one-or-all find $* ; return $? ; }
@@ -543,6 +550,53 @@ om-find(){    om-one-or-all find $* ; return $? ; }
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
 om----(){     om-make-all + ; }  ## all projs following this one 
+
+
+om-testenv-notes(){ cat << EON
+om-testenv-notes
+------------------
+
+# HMM: should be sourcing ~/.opticks/GEOM.sh ?  
+
+EON
+}
+
+om-testenv-vars(){ echo BASH_SOURCE FUNCNAME OM_KEEP_GEOM GEOM OPTICKS_T_GEOM ; }
+
+om-testenv-dump(){
+    local pfx="$1"
+    if [ -z "$QUIET" ]; then 
+        local fmt="$pfx %20s : %s \n"
+        local vars="$(om-testenv-vars)"
+        local var ; for var in $vars ; do printf "$fmt" "$var" "${!var}" ; done
+    fi 
+}
+
+om-testenv-push()
+{
+    om-testenv-dump "[push" 
+
+    export OM_KEEP_GEOM=$GEOM
+    export GEOM=${OPTICKS_T_GEOM:-$GEOM}
+
+    source $(dirname $BASH_SOURCE)/bin/GEOM_.sh   
+
+    om-testenv-dump "]push" 
+}
+om-testenv-pop()
+{
+    om-testenv-dump "[pop " 
+
+    if [ -n "$OM_KEEP_GEOM" ] ; then
+        export GEOM=$OM_KEEP_GEOM
+        unset OM_KEEP_GEOM
+    else
+        unset GEOM
+    fi
+
+    om-testenv-dump "]pop " 
+}
+
 
 
 om-check()

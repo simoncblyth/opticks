@@ -32,6 +32,7 @@ namespace fs = boost::filesystem;
 #include "SLogger.hh"
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SPath.hh"
 #include "SProc.hh"
 #include "SAr.hh"
 #include "SOpticksResource.hh"
@@ -49,6 +50,10 @@ namespace fs = boost::filesystem;
 #include "SLOG.hh"
 
 const plog::Severity BOpticksResource::LEVEL = SLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
+
+const char* BOpticksResource::IDPATH_TRANSITIONAL = SPath::Resolve("$CFBaseFromGEOM/GGeo", NOOP) ;
+
+
 
 
 BOpticksResource* BOpticksResource::fInstance = nullptr  ;  
@@ -78,6 +83,8 @@ instance and do initViaKey assuming an OPTICKS_KEY envvar.
 **/
 const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
 {
+    LOG(LEVEL) << " rela " << rela << " relb " << relb << " relc " << relc ; 
+
     BOpticksResource* rsc = BOpticksResource::Get(nullptr) ; 
     return rsc->makeIdPathPath(rela, relb, relc); 
 }

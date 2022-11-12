@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
 
-    const char* name = SSys::getenvvar("GEOM", "AltXJfixtureConstructionU"); 
+    const char* name = SSys::getenvvar("X4SolidMultiUnionTest_GEOM", "AltXJfixtureConstructionU"); 
 
     const G4VSolid* solid = X4SolidMaker::Make(name);  
 
