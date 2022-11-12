@@ -1,5 +1,6 @@
 #include "SSys.hh"
-#include "Opticks.hh"
+#include "SSim.hh"
+//#include "Opticks.hh"
 #include "scuda.h"
 #include "CSGFoundry.h"
 
@@ -41,12 +42,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
+    //Opticks ok(argc, argv); 
+    //ok.configure(); 
 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    LOG(info) << "cfbase " << cfbase ; 
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    SSim::Create(); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
  
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 

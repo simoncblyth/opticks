@@ -46,6 +46,7 @@ struct CSG_API CSGGeometry
     int sy ;  
     int sz ;  
     int sw ;  
+    int rc ; 
 
     void operator()(); 
     CSGGeometry(const char* default_cfbase = nullptr, const CSGFoundry* fd_ = nullptr); 

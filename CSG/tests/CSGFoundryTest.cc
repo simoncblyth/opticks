@@ -7,6 +7,7 @@
 #include "sqat4.h"
 #include "OPTICKS_LOG.hh"
 #include "SPath.hh"
+#include "SSim.hh"
 
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
@@ -214,6 +215,8 @@ void test_setPrimBoundary()
 
 void test_getPrimName()
 {
+    SSim::Create(); 
+
     CSGFoundry* fd = CSGFoundry::Load() ; 
     std::vector<std::string> pname ; 
     fd->getPrimName(pname);

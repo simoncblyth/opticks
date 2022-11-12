@@ -1354,6 +1354,7 @@ Values are *NOT* copied from *src*.
 
 inline NP* NP::MakeLike(const NP* src) // static 
 {
+    if(src == nullptr) return nullptr ; 
     NP* dst = new NP(src->dtype); 
     dst->set_shape(src->shape) ; 
     return dst ; 

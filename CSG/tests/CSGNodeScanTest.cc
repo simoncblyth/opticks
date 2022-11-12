@@ -52,7 +52,7 @@ struct Scan
 
 Scan::Scan()
     :
-    geom(SSys::getenvvar("GEOM", "iphi")),
+    geom(SSys::getenvvar("CSGNodeScanTest_GEOM", "iphi")),
     nd(CSGNode::MakeDemo(geom)),  
     t_min(SSys::getenvfloat("TMIN",0.f)),
     num(SSys::getenvint("NUM", 200)),

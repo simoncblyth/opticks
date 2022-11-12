@@ -1,4 +1,5 @@
 #include "OPTICKS_LOG.hh"
+#include "SSim.hh"
 #include "SSys.hh"
 #include "SBitSet.hh"
 #include "CSGFoundry.h"
@@ -13,6 +14,7 @@ int main(int argc, char** argv)
 
     LOG(info) << " mode [" << mode << "]" ; 
 
+    SSim::Create(); 
 
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
     // CSGFoundry::Load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  

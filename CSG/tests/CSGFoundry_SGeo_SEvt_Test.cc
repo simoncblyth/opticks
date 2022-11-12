@@ -1,5 +1,6 @@
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 
@@ -9,6 +10,8 @@ int main(int argc, char** argv)
 
     SEvt* sev = SEvt::Load() ;  
     const char* cfbase = sev->getSearchCFBase() ; // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
+
+    SSim::Create();  
     const CSGFoundry* fd = CSGFoundry::Load(cfbase);
     sev->setGeo(fd); 
 

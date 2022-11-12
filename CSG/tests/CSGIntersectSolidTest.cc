@@ -56,10 +56,12 @@ int main(int argc, char** argv)
     const char* cfbase = SOpticksResource::CFBase(); 
 #endif
 
-    bool with_geom = SSys::getenvbool("GEOM") ; 
+    bool with_geom = SSys::getenvbool("CSGGeometry_GEOM") ; 
     LOG(info) << " with_geom " << with_geom << " cfbase " << cfbase ;
 
     CSGGeometry geom(with_geom ? nullptr : cfbase) ;
+    if(geom.rc != 0 ) return 0 ; 
+
     geom() ; 
 
     const char* msg = "CSG/tests/CSGIntersectSolidTest.cc" ; 

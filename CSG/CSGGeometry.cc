@@ -79,7 +79,7 @@ CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)
     :
     default_geom(nullptr),
     default_sopr(nullptr),
-    geom(SSys::getenvvar("GEOM", default_geom)),
+    geom(SSys::getenvvar("CSGGeometry_GEOM", default_geom)),
     sopr(SSys::getenvvar("SOPR", default_sopr)),
     cfbase(SSys::getenvvar("CFBASE", default_cfbase)), 
     outdir(OutDir(cfbase,geom,sopr)),
@@ -94,15 +94,24 @@ CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)
     sx(0),
     sy(0),
     sz(0),
-    sw(0)
+    sw(0),
+    rc(0)
 {
     init(); 
 }
 
 void CSGGeometry::init()
 {
-    LOG(LEVEL) << " GEOM " << geom  ; 
+    LOG(LEVEL) << " CSGGeometry_GEOM " << geom  ; 
     init_fd(); 
+
+    if(fd == nullptr)
+    {
+        LOG(fatal) << " ABORT " ;    
+        rc = 101 ;  
+        return ; 
+    }
+
     q = new CSGQuery(fd); 
     q->dumpPrim("CSGGeometry::init"); 
     ce = new float4(q->select_prim->ce()) ; 
@@ -130,7 +139,7 @@ void CSGGeometry::init_fd()
         else
         {
             LOG(fatal) << " neither GEOM or CFBASE envvars are defined and fd pointer not provided : ABORT " ; 
-            std::raise(SIGINT); 
+            //std::raise(SIGINT); 
         }
     }
     else
@@ -180,8 +189,12 @@ void CSGGeometry::init_selection()
 
 void CSGGeometry::saveSignedDistanceField() const 
 {
+    LOG_IF(error, q == nullptr ) << " q null : ABORT " ; 
+    if(!q) return ; 
+
     int resolution = SSys::getenvint("RESOLUTION", 25) ; 
     LOG(info) << " name " << name << " RESOLUTION " << resolution ; 
+
     q->dumpPrim();
 
     const CSGGrid* grid = q->scanPrim(resolution); 
@@ -344,6 +357,9 @@ void CSGGeometry::intersectSelected(const char* path)
 
 void CSGGeometry::dump(const char* msg) const 
 {
+    LOG_IF(fatal, !fd ) << " fd null : ABORT " ; 
+    if(!fd) return ; 
+
     LOG(error) << "fd.dumpSolid" ; 
     fd->dumpSolid(); 
     LOG(error) << "fd.dumpPrim" ; 
@@ -357,7 +373,7 @@ void CSGGeometry::dump(const char* msg) const
 
 std::string CSGGeometry::desc() 
 {
-    return d->desc(); 
+    return d ? d->desc() :  "ERROR-d-null" ; 
 }
 
 std::string CSGGeometry::Desc( const CSGFoundry* fd ) // static 

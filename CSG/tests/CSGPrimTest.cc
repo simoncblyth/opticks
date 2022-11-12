@@ -17,6 +17,7 @@ NB to control which geometry is loaded invoke this executable via the CSGPrimTes
 **/
 
 #include "SSys.hh"
+#include "SSim.hh"
 #include "scuda.h"
 #include "CSGFoundry.h"
 
@@ -25,6 +26,8 @@ NB to control which geometry is loaded invoke this executable via the CSGPrimTes
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    SSim::Create(); 
 
     CSGFoundry* fd = CSGFoundry::Load(); 
 

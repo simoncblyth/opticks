@@ -7,6 +7,7 @@ See also sysrap/SNameTest.cc
 **/
 
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SName.h"
 
 #include "OPTICKS_LOG.hh"
@@ -137,6 +138,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    SSim::Create(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 

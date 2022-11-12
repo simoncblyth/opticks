@@ -967,4 +967,190 @@ Now down to 57::
     [pop          OM_KEEP_GEOM :  
     [pop                  GEOM : J004 
     [pop        OPTICKS_T_GEOM : J004 
-     
+    
+
+
+CSG fails
+------------
+
+::
+
+    epsilon:CSG blyth$ CSGNodeTest 
+    2022-11-12 19:32:25.277 FATAL [54209341] [CSGFoundry::CSGFoundry@90] must SSim::Create before CSGFoundry::CSGFoundry 
+    Assertion failed: (sim), function CSGFoundry, file /Users/blyth/opticks/CSG/CSGFoundry.cc, line 91.
+    Abort trap: 6
+    epsilon:CSG blyth$ 
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff5c1fcb66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff5c3c7080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff5c1581ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff5c1201ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001001752e5 libCSG.dylib`CSGFoundry::CSGFoundry(this=0x0000000102002970) at CSGFoundry.cc:91
+        frame #5: 0x00000001001755d5 libCSG.dylib`CSGFoundry::CSGFoundry(this=0x0000000102002970) at CSGFoundry.cc:89
+        frame #6: 0x00000001001a0ed2 libCSG.dylib`CSGFoundry::Load(base="/Users/blyth/.opticks/GEOM/J004", rel="CSGFoundry") at CSGFoundry.cc:2591
+        frame #7: 0x00000001001a0361 libCSG.dylib`CSGFoundry::Load_() at CSGFoundry.cc:2564
+        frame #8: 0x00000001001a005d libCSG.dylib`CSGFoundry::Load() at CSGFoundry.cc:2484
+        frame #9: 0x000000010002ba8d CSGNodeTest`main(argc=1, argv=0x00007ffeefbfe8e0) at CSGNodeTest.cc:8
+        frame #10: 0x00007fff5c0ac015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+CSGFoundryLoadTest.cc::
+
+     06 int main(int argc, char** argv)
+      7 {
+      8     OPTICKS_LOG(argc, argv);
+      9 
+     10     SSim::Create() ;
+     11 
+     12     CSGFoundry* cf = CSGFoundry::Load() ;
+     13     LOG(info) << cf->desc() ;
+     14 
+     15     stree* st = cf->sim->tree ;
+     16     LOG(info) << st->desc() ;
+     17 
+     18     return 0 ;
+     19 }
+
+
+
+::        
+
+    Target 0: (CSGFoundry_SGeo_SEvt_Test) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0xc)
+      * frame #0: 0x00000001001657bc libCSG.dylib`qat4::getIdentity(this=0x0000000000000000, ins_idx=0x00007ffeefbfe46c, gas_idx=0x00007ffeefbfe468, sensor_identifier=0x00007ffeefbfe464, sensor_index=0x00007ffeefbfe460) const at sqat4.h:329
+        frame #1: 0x000000010020515b libCSG.dylib`CSGTarget::getFrame(this=0x00000001022031f0, fr=0x00007ffeefbfe6a0, inst_idx=39216) const at CSGTarget.cc:147
+        frame #2: 0x00000001001a33da libCSG.dylib`CSGFoundry::getFrame(this=0x00000001022034b0, fr=0x00007ffeefbfe6a0, inst_idx=39216) const at CSGFoundry.cc:2944
+        frame #3: 0x00000001012b7e18 libSysRap.dylib`SEvt::setFrame(this=0x000000010281b200, ins_idx=39216) at SEvt.cc:342
+        frame #4: 0x000000010002b255 CSGFoundry_SGeo_SEvt_Test`main(argc=1, argv=0x00007ffeefbfe8c8) at CSGFoundry_SGeo_SEvt_Test.cc:19
+        frame #5: 0x00007fff5c0ac015 libdyld.dylib`start + 1
+        frame #6: 0x00007fff5c0ac015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+    (lldb) f 1
+    frame #1: 0x000000010020515b libCSG.dylib`CSGTarget::getFrame(this=0x00000001022031f0, fr=0x00007ffeefbfe6a0, inst_idx=39216) const at CSGTarget.cc:147
+       144 	    const qat4* _t = foundry->getInst(inst_idx); 
+       145 	
+       146 	    int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    -> 147 	    _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
+       148 	
+       149 	    assert( ins_idx == inst_idx ); 
+       150 	    fr.set_inst(inst_idx); 
+    (lldb) p _t
+    (const qat4 *) $0 = 0x0000000000000000
+    (lldb) 
+        
+
+    
+Check again : 9 remaining CSG fails
+-----------------------------------------
+
+::
+
+    The following tests FAILED:
+         16 - CSGTest.CSGFoundry_SGeo_SEvt_Test (SEGFAULT)
+         22 - CSGTest.CSGMakerTest (Child aborted)
+         33 - CSGTest.CSGIntersectComparisonTest (Child aborted)
+         35 - CSGTest.CSGNodeScanTest (Child aborted)
+
+
+         37 - CSGTest.CSGGeometryTest (SEGFAULT)
+         38 - CSGTest.CSGGeometryFromGeocacheTest (SEGFAULT)
+         25 - CSGTest.CSGSimtraceRerunTest (SEGFAULT)  
+         26 - CSGTest.CSGSimtraceSampleTest (SEGFAULT)   
+         36 - CSGTest.CSGSignedDistanceFieldTest (SEGFAULT)
+         PREVENT FAIL WITH PROTECTIONS 
+
+
+Check again : down to 4 CSG fails
+--------------------------------------
+
+::
+
+
+    The following tests FAILED:
+         16 - CSGTest.CSGFoundry_SGeo_SEvt_Test (SEGFAULT)
+         22 - CSGTest.CSGMakerTest (Child aborted)
+         33 - CSGTest.CSGIntersectComparisonTest (Child aborted)
+         35 - CSGTest.CSGNodeScanTest (Child aborted)                   FIXED : GEOM clash  
+
+
+
+    epsilon:CSG blyth$ CSGMakerTest 
+    2022-11-12 20:44:57.913 INFO  [54313274] [GetNames@18]  names.size 42
+    2022-11-12 20:44:57.915 INFO  [54313274] [main@38] JustOrb
+    2022-11-12 20:44:57.916 INFO  [54313274] [*CSGMaker::makeSolid11@510] so.label JustOrb so.center_extent ( 0.000, 0.000, 0.000,100.000) 
+    2022-11-12 20:44:57.916 INFO  [54313274] [*CSGFoundry::MakeGeom@2383]  so 0x104daf000
+    2022-11-12 20:44:57.916 INFO  [54313274] [*CSGFoundry::MakeGeom@2384]  so.desc CSGSolid          JustOrb primNum/Offset     1    0 ce ( 0.000, 0.000, 0.000,100.000) 
+    2022-11-12 20:44:57.916 INFO  [54313274] [*CSGFoundry::MakeGeom@2385]  fd.desc CSGFoundry  num_total 1 num_solid 1 num_prim 1 num_node 1 num_plan 0 num_tran 1 num_itra 1 num_inst 1 gas 0 meshname 1 mmlabel 1 mtime 1668285897 mtimestamp 20221112_204457 sim Y
+    2022-11-12 20:44:57.916 INFO  [54313274] [main@41] CSGFoundry  num_total 1 num_solid 1 num_prim 1 num_node 1 num_plan 0 num_tran 1 num_itra 1 num_inst 1 gas 0 meshname 1 mmlabel 1 mtime 1668285897 mtimestamp 20221112_204457 sim Y
+    2022-11-12 20:44:57.919 INFO  [54313274] [main@38] BoxedSphere
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGMaker::makeBoxedSphere@300] CSGMaker_makeBoxedSphere_HALFSIDE 100
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGMaker::makeBoxedSphere@301] CSGMaker_makeBoxedSphere_FACTOR   1
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGMaker::makeBoxedSphere@325]  so->center_extent ( 0.000, 0.000, 0.000,100.000) 
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGFoundry::MakeGeom@2383]  so 0x107257000
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGFoundry::MakeGeom@2384]  so.desc CSGSolid      BoxedSphere primNum/Offset     2    0 ce ( 0.000, 0.000, 0.000,100.000) 
+    2022-11-12 20:44:57.919 INFO  [54313274] [*CSGFoundry::MakeGeom@2385]  fd.desc CSGFoundry  num_total 1 num_solid 1 num_prim 2 num_node 2 num_plan 0 num_tran 1 num_itra 1 num_inst 1 gas 0 meshname 1 mmlabel 1 mtime 1668285897 mtimestamp 20221112_204457 sim Y
+    2022-11-12 20:44:57.919 INFO  [54313274] [main@41] CSGFoundry  num_total 1 num_solid 1 num_prim 2 num_node 2 num_plan 0 num_tran 1 num_itra 1 num_inst 1 gas 0 meshname 1 mmlabel 1 mtime 1668285897 mtimestamp 20221112_204457 sim Y
+    2022-11-12 20:44:57.920 FATAL [54313274] [*CSGFoundry::getMeshName@277]  not in range midx 4294967295 meshname.size()  1
+    Assertion failed: (in_range), function getMeshName, file /Users/blyth/opticks/CSG/CSGFoundry.cc, line 278.
+    Abort trap: 6
+    epsilon:CSG blyth$ 
+    epsilon:CSG blyth$ 
+
+
+
+       638 	
+       639 	void CSGIntersectComparisonTest::loaded()
+       640 	{
+    -> 641 	    assert( rerun ); 
+       642 	    LOG(info) << " rerun " << rerun->sstr() ; 
+       643 	    num = rerun->shape[0] ; 
+       644 	    for(unsigned i=0 ; i < num ; i++ )
+    (lldb) 
+
+
+
+
+Overall down to 25
+--------------------
+
+::
+
+
+    FAILS:  25  / 507   :  Sat Nov 12 20:51:54 2022   
+      43 /62  Test #43 : GGeoTest.GGeoTest                             Child aborted***Exception:     1.30   
+      44 /62  Test #44 : GGeoTest.GGeoIdentityTest                     Child aborted***Exception:     1.32   
+      45 /62  Test #45 : GGeoTest.GGeoConvertTest                      Child aborted***Exception:     1.31   
+      60 /62  Test #60 : GGeoTest.GPhoTest                             Child aborted***Exception:     1.37   
+      61 /62  Test #61 : GGeoTest.GGeoDumpTest                         Child aborted***Exception:     1.31   
+      16 /39  Test #16 : CSGTest.CSGFoundry_SGeo_SEvt_Test             ***Exception: SegFault         0.03   
+      22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.03   
+      33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.03   
+      1  /3   Test #1  : GeoChainTest.GeoChainSolidTest                Child aborted***Exception:     0.11   
+      2  /3   Test #2  : GeoChainTest.GeoChainVolumeTest               Child aborted***Exception:     0.15   
+      3  /3   Test #3  : GeoChainTest.GeoChainNodeTest                 Child aborted***Exception:     0.10   
+      3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
+      4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
+      5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.03   
+      7  /20  Test #7  : QUDARapTest.QSimTest                          Child aborted***Exception:     1.26   
+      8  /20  Test #8  : QUDARapTest.QBndTest                          ***Exception: SegFault         0.03   
+      9  /20  Test #9  : QUDARapTest.QPrdTest                          ***Exception: SegFault         0.03   
+      10 /20  Test #10 : QUDARapTest.QOpticalTest                      ***Exception: SegFault         0.03   
+      11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
+      13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.11   
+      18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.03   
+      5  /18  Test #5  : U4Test.U4GDMLReadTest                         Child aborted***Exception:     0.09   
+      7  /18  Test #7  : U4Test.U4RandomTest                           ***Exception: SegFault         0.54   
+      8  /18  Test #8  : U4Test.U4VolumeMakerTest                      Child aborted***Exception:     0.10   
+      13 /18  Test #13 : U4Test.U4TreeTest                             Child aborted***Exception:     0.11   
+    [pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    [pop              FUNCNAME : om-testenv-dump 
+        
+
+ 

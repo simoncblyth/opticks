@@ -22,6 +22,7 @@ See also CSGTargetTest.cc
 
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SSim.hh"
 #include "Opticks.hh"
 #include "CSGFoundry.h"
 
@@ -34,11 +35,11 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+
+    SSim::Create(); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
 
     LOG(info) 
-        << "cfbase " << cfbase 
         << "foundry " << fd->desc() 
         ; 
     fd->summary(); 

@@ -25,7 +25,7 @@ CSGSimtraceSample::CSGSimtraceSample()
     vv(fd ? fd->loadAux("Values/values.npy") : nullptr ),
     path(SSys::getenvvar("SAMPLE_PATH","/tmp/simtrace_sample.npy")),
     simtrace(NP::Load(path)),
-    qq((quad4*)simtrace->bytes()),  
+    qq(simtrace ? (quad4*)simtrace->bytes() : nullptr),  
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z'))
 {
@@ -58,7 +58,7 @@ std::string CSGSimtraceSample::desc() const
 
 int CSGSimtraceSample::intersect()
 {
-    unsigned n = simtrace->shape[0] ; 
+    unsigned n = simtrace ? simtrace->shape[0] : 0u ; 
     int num_intersect = 0 ; 
     for(unsigned i=0 ; i < n ; i++) 
     {

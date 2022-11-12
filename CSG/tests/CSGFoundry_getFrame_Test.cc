@@ -4,6 +4,7 @@
 #include "sqat4.h"
 #include "sframe.h"
 
+#include "SSim.hh"
 #include "SEvt.hh"
 
 #include "SPath.hh"
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    SSim::Create(); 
     const CSGFoundry* fd = CSGFoundry::Load();
 
     //sframe fr = test_getFrame_MOI(fd); 
@@ -72,9 +74,14 @@ int main(int argc, char** argv)
 
     std::cout << "fr" << fr << std::endl ;   
 
+    if( FOLD == nullptr )
+    {
+        LOG(error) << " define FOLD to save frame and other stuff " ; 
+        return 0 ; 
+    }
+
     fr.save(FOLD); 
     fr.save_extras(FOLD); 
-
     SEventConfig::SetRGModeSimulate(); 
 
     SEvt sev ;  
@@ -89,6 +96,7 @@ int main(int argc, char** argv)
     std::cout << " ip   " << ( ip  ? ip->sstr() : "-" )  << std::endl ; 
     std::cout << " ipt0  " << ( ipt0 ? ipt0->sstr() : "-" )  << std::endl ; 
     std::cout << " ipt1  " << ( ipt1 ? ipt1->sstr() : "-" )  << std::endl ; 
+
 
     ip->save(FOLD,  "ip.npy"); 
     ipt0->save(FOLD, "ipt0.npy"); 

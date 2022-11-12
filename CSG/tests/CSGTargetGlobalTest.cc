@@ -8,8 +8,9 @@ MOI=solidXJfixture:64 CSGTargetGlobalTest
 #include "NP.hh"
 #include "SPath.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SStr.hh"
-#include "Opticks.hh"
+//#include "Opticks.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"
@@ -21,13 +22,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
+    //Opticks ok(argc, argv); 
+    //ok.configure(); 
 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    LOG(info) << "cfbase " << cfbase ; 
-
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    SSim::Create(); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 

@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "scuda.h"
+#include "SSim.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 
@@ -27,6 +28,8 @@ int main(int argc, char** argv)
 
     const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "elli" ); 
     LOG(info) << " CSGSCANTEST_SOLID " << solid ; 
+
+    SSim::Create(); 
 
     CSGFoundry fd ;  
     fd.maker->make( solid ); 

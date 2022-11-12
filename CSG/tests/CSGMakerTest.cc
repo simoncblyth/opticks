@@ -6,7 +6,7 @@
 
 void GetNames( std::vector<std::string>& names, bool listnames )
 {
-     const char* geom = SSys::getenvvar("GEOM", nullptr ); 
+     const char* geom = SSys::getenvvar("CSGMakerTest_GEOM", nullptr ); 
      if( geom == nullptr ) 
      {
          CSGMaker::GetNames(names); 

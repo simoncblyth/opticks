@@ -7,6 +7,7 @@ DUMP=2 NUM=210 CSGQueryTest A
 
 **/
 
+#include "SSim.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
@@ -366,6 +367,8 @@ int main(int argc, char** argv)
 
     char mode = argc > 1 ? argv[1][0] : 'O' ; 
     if( SSys::getenvbool("YX") ) mode = 'L' ;  // L mode loads isect for rerunning 
+
+    SSim::Create(); 
 
     CSGQueryTest t ; 
     t(mode); 

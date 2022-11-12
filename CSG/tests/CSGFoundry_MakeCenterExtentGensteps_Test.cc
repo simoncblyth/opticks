@@ -4,6 +4,7 @@
 #include "sqat4.h"
 #include "sframe.h"
 
+#include "SSim.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SEvt.hh"
@@ -17,6 +18,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     SEvt evt ;
+
+    SSim::Create(); 
 
     CSGFoundry* fd = CSGFoundry::Load();
 

@@ -35,8 +35,8 @@ CSGSimtraceRerun::CSGSimtraceRerun()
     path1(SPath::Join(fold, with_selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
     simtrace0(NP::Load(path0)),
     simtrace1(with_selection ? NP::Make<float>(selection->size(),2,4,4) : NP::MakeLike(simtrace0)),
-    qq0((const quad4*)simtrace0->bytes()),
-    qq1((quad4*)simtrace1->bytes()),  
+    qq0(simtrace0 ? (const quad4*)simtrace0->bytes() : nullptr),
+    qq1(simtrace1 ? (quad4*)simtrace1->bytes() : nullptr),  
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z'))
 {
@@ -149,7 +149,12 @@ void CSGSimtraceRerun::intersect_again_selection(unsigned i, bool dump)
 
 void CSGSimtraceRerun::intersect_again()
 {
-    unsigned n = with_selection ? selection->size() : simtrace0->shape[0] ; 
+    unsigned n = with_selection ? 
+                                   ( selection ? selection->size() : 0u ) 
+                                :  
+                                    (simtrace0 ? simtrace0->shape[0] : 0u ) 
+                                ;
+ 
     for(unsigned i=0 ; i < n ; i++) 
     {
         if( with_selection )
@@ -167,6 +172,9 @@ void CSGSimtraceRerun::intersect_again()
 
 void CSGSimtraceRerun::save() const
 {
+    LOG_IF(error, simtrace1 == nullptr) << " simtrace1 null : cannot save " ; 
+    if(simtrace1 == nullptr) return ; 
+
     LOG(info) << " path1 " << path1 ; 
     if(with_selection) simtrace1->set_meta<std::string>("SELECTION", SELECTION) ; 
     simtrace1->save(path1); 
