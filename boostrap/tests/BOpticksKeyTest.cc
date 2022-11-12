@@ -41,11 +41,17 @@ int main( int argc, char** argv )
     //SOpticksKey::SetKey("X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819") ; 
     SOpticksKey::SetKey(NULL);  // NULL means use the OPTICKS_KEY envvar 
     SOpticksKey* key = SOpticksKey::GetKey(); 
-    if( key == NULL ) 
+    if( key == nullptr ) 
     {
-        LOG(fatal) << "key is NULL, that means you did not set the OPTICKS_KEY envvar " ; 
-        return 1 ; 
+        LOG(info) << "key is NULL, that means you did not set the OPTICKS_KEY envvar " ; 
+        return 0 ; 
     }    
+    else
+    { 
+        LOG(fatal) << " IT IS NOW REGARDED AS AN ERROR TO HAVE OPTICKS_KEY ENVVAR DEFINED " ; 
+        return 1 ;    
+    }
+
     LOG(info) << key->desc() ; 
 
     const char* exename = SLOG::instance->args.exename() ; 
