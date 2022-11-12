@@ -462,3 +462,236 @@ Fix the above using IDPATH_TRANSITIONAL of "/tmp" as a kludge.
 
 
 
+Now down to 66::
+
+    FAILS:  66  / 510   :  Sat Nov 12 15:25:24 2022   
+      13 /62  Test #13 : GGeoTest.GScintillatorLibTest                 ***Exception: SegFault         0.04   
+      16 /62  Test #16 : GGeoTest.GBndLibTest                          Child aborted***Exception:     0.04   
+      17 /62  Test #17 : GGeoTest.GBndLibInitTest                      Child aborted***Exception:     0.04   
+      31 /62  Test #31 : GGeoTest.GPartsCreateTest                     ***Exception: SegFault         0.03   
+      33 /62  Test #33 : GGeoTest.GPtTest                              ***Exception: SegFault         0.03   
+      35 /62  Test #35 : GGeoTest.GGeoLoadFromDirTest                  ***Exception: SegFault         0.03   
+      37 /62  Test #37 : GGeoTest.BoundariesNPYTest                    Child aborted***Exception:     0.04   
+      42 /62  Test #42 : GGeoTest.GGeoLibTest                          Child aborted***Exception:     0.03   
+      43 /62  Test #43 : GGeoTest.GGeoTest                             Child aborted***Exception:     0.04   
+      44 /62  Test #44 : GGeoTest.GGeoIdentityTest                     Child aborted***Exception:     0.04   
+      45 /62  Test #45 : GGeoTest.GGeoConvertTest                      Child aborted***Exception:     0.04   
+      47 /62  Test #47 : GGeoTest.GMakerTest                           Child aborted***Exception:     0.04   
+      55 /62  Test #55 : GGeoTest.GSurfaceLibTest                      Child aborted***Exception:     0.04   
+      57 /62  Test #57 : GGeoTest.RecordsNPYTest                       Child aborted***Exception:     0.04   
+      59 /62  Test #59 : GGeoTest.GNodeLibTest                         ***Exception: SegFault         0.04   
+      60 /62  Test #60 : GGeoTest.GPhoTest                             Child aborted***Exception:     0.04   
+      61 /62  Test #61 : GGeoTest.GGeoDumpTest                         Child aborted***Exception:     0.04   
+      1  /45  Test #1  : ExtG4Test.X4SolidMakerTest                    Child aborted***Exception:     0.11   
+      16 /45  Test #16 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.11   
+      17 /45  Test #17 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.11   
+      38 /45  Test #38 : ExtG4Test.X4SurfaceTest                       Child aborted***Exception:     0.16   
+      41 /45  Test #41 : ExtG4Test.X4IntersectSolidTest                Child aborted***Exception:     0.10   
+      44 /45  Test #44 : ExtG4Test.X4MeshTest                          Child aborted***Exception:     0.15   
+      1  /39  Test #1  : CSGTest.CSGNodeTest                           Child aborted***Exception:     0.03   
+      3  /39  Test #3  : CSGTest.CSGIntersectSolidTest                 ***Exception: Interrupt        0.03   
+      5  /39  Test #5  : CSGTest.CSGPrimSpecTest                       Child aborted***Exception:     0.03   
+      6  /39  Test #6  : CSGTest.CSGPrimTest                           Child aborted***Exception:     0.03   
+      8  /39  Test #8  : CSGTest.CSGFoundryTest                        Child aborted***Exception:     0.04   
+      9  /39  Test #9  : CSGTest.CSGFoundry_getCenterExtent_Test       Child aborted***Exception:     0.06   
+      10 /39  Test #10 : CSGTest.CSGFoundry_findSolidIdx_Test          Child aborted***Exception:     0.05   
+      11 /39  Test #11 : CSGTest.CSGNameTest                           Child aborted***Exception:     0.04   
+      12 /39  Test #12 : CSGTest.CSGTargetTest                         Child aborted***Exception:     0.04   
+      13 /39  Test #13 : CSGTest.CSGTargetGlobalTest                   Child aborted***Exception:     0.04   
+      14 /39  Test #14 : CSGTest.CSGFoundry_MakeCenterExtentGensteps_Test Child aborted***Exception:     0.03   
+      15 /39  Test #15 : CSGTest.CSGFoundry_getFrame_Test              Child aborted***Exception:     0.04   
+      16 /39  Test #16 : CSGTest.CSGFoundry_SGeo_SEvt_Test             Child aborted***Exception:     0.03   
+      18 /39  Test #18 : CSGTest.CSGFoundryLoadTest                    Child aborted***Exception:     0.03   
+      19 /39  Test #19 : CSGTest.CSGScanTest                           Child aborted***Exception:     0.03   
+      22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.05   
+      23 /39  Test #23 : CSGTest.CSGQueryTest                          Child aborted***Exception:     0.04   
+      24 /39  Test #24 : CSGTest.CSGSimtraceTest                       Child aborted***Exception:     0.05   
+      25 /39  Test #25 : CSGTest.CSGSimtraceRerunTest                  Child aborted***Exception:     0.04   
+      26 /39  Test #26 : CSGTest.CSGSimtraceSampleTest                 Child aborted***Exception:     0.03   
+      27 /39  Test #27 : CSGTest.CSGCopyTest                           Child aborted***Exception:     0.03   
+      33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.04   
+      36 /39  Test #36 : CSGTest.CSGSignedDistanceFieldTest            ***Exception: Interrupt        0.03   
+      37 /39  Test #37 : CSGTest.CSGGeometryTest                       ***Exception: Interrupt        0.03   
+      38 /39  Test #38 : CSGTest.CSGGeometryFromGeocacheTest           ***Exception: Interrupt        0.03   
+      2  /3   Test #2  : GeoChainTest.GeoChainVolumeTest               ***Exception: SegFault         0.38   
+      3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
+      4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
+      5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.03   
+      7  /20  Test #7  : QUDARapTest.QSimTest                          Child aborted***Exception:     1.10   
+      8  /20  Test #8  : QUDARapTest.QBndTest                          ***Exception: SegFault         0.03   
+      9  /20  Test #9  : QUDARapTest.QPrdTest                          ***Exception: SegFault         0.03   
+      10 /20  Test #10 : QUDARapTest.QOpticalTest                      ***Exception: SegFault         0.03   
+      11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
+      13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.11   
+      18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.02   
+      5  /18  Test #5  : U4Test.U4GDMLReadTest                         Child aborted***Exception:     0.09   
+      7  /18  Test #7  : U4Test.U4RandomTest                           ***Exception: SegFault         0.57   
+      13 /18  Test #13 : U4Test.U4TreeTest                             Child aborted***Exception:     0.12   
+      1  /4   Test #1  : G4CXTest.G4CXRenderTest                       Child aborted***Exception:     1.08   
+      2  /4   Test #2  : G4CXTest.G4CXSimulateTest                     Child aborted***Exception:     1.07   
+      3  /4   Test #3  : G4CXTest.G4CXSimtraceTest                     Child aborted***Exception:     0.91   
+      4  /4   Test #4  : G4CXTest.G4CXOpticks_setGeometry_Test         Child aborted***Exception:     0.12   
+    epsilon:optickscore blyth$ 
+
+
+
+GGeo fails::
+
+    The following tests FAILED:
+         13 - GGeoTest.GScintillatorLibTest (SEGFAULT)
+         16 - GGeoTest.GBndLibTest (Child aborted)
+         17 - GGeoTest.GBndLibInitTest (Child aborted)
+         31 - GGeoTest.GPartsCreateTest (SEGFAULT)
+         33 - GGeoTest.GPtTest (SEGFAULT)
+         35 - GGeoTest.GGeoLoadFromDirTest (SEGFAULT)
+         37 - GGeoTest.BoundariesNPYTest (Child aborted)
+         42 - GGeoTest.GGeoLibTest (Child aborted)
+         43 - GGeoTest.GGeoTest (Child aborted)
+         44 - GGeoTest.GGeoIdentityTest (Child aborted)
+         45 - GGeoTest.GGeoConvertTest (Child aborted)
+         47 - GGeoTest.GMakerTest (Child aborted)
+         55 - GGeoTest.GSurfaceLibTest (Child aborted)
+         57 - GGeoTest.RecordsNPYTest (Child aborted)
+         59 - GGeoTest.GNodeLibTest (SEGFAULT)
+         60 - GGeoTest.GPhoTest (Child aborted)
+         61 - GGeoTest.GGeoDumpTest (Child aborted)
+    Errors while running CTest
+    Sat Nov 12 15:26:39 GMT 2022
+    epsilon:ggeo blyth$ 
+
+
+Access to geometry failures
+----------------------------
+
+::
+
+    epsilon:ggeo blyth$ GScintillatorLibTest 
+    2022-11-12 15:30:34.209 ERROR [53974744] [*NPY<double>::load@1093] NPY<T>::load failed for path [/tmp/GScintillatorLib/GScintillatorLib.npy] use debugload with NPYLoadTest to investigate (problems are usually from dtype mismatches) 
+    2022-11-12 15:30:34.210 INFO  [53974744] [GPropertyLib::loadFromCache@608] Optional buffer not present  dir /tmp/GScintillatorLib name GScintillatorLib.npy
+    2022-11-12 15:30:34.210 INFO  [53974744] [main@196]  GScintillatorLib.getNumRaw  0 GScintillatorLib.getNumRawOriginal  0
+    [ nraw 0] nraw 0
+
+
+    Segmentation fault: 11
+    epsilon:ggeo blyth$ find ~/.opticks/GEOM/J004 -name GScintillatorLib.npy
+    /Users/blyth/.opticks/GEOM/J004/GGeo/GScintillatorLib/GScintillatorLib.npy
+    epsilon:ggeo blyth$ 
+
+
+    epsilon:ggeo blyth$ GEOM=J004 source ~/opticks/bin/GEOM_.sh 
+                       BASH_SOURCE : /Users/blyth/opticks/bin/GEOM_.sh 
+                               gp_ : J004_GDMLPath 
+                                gp :  
+                               cg_ : J004_CFBaseFromGEOM 
+                                cg : /Users/blyth/.opticks/GEOM/J004 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/GEOM/J004 
+                           GEOMDIR : /Users/blyth/.opticks/GEOM/J004 
+                       BASH_SOURCE : /Users/blyth/opticks/bin/GEOM_.sh 
+
+    epsilon:ggeo blyth$ echo $CFBASE
+
+    epsilon:ggeo blyth$ env | grep J004
+    GEOMDIR=/Users/blyth/.opticks/GEOM/J004
+    J004_CFBaseFromGEOM=/Users/blyth/.opticks/GEOM/J004
+    epsilon:ggeo blyth$ 
+
+
+How to configure GEOM for tests is unclear in new flexible geometry working environment
+------------------------------------------------------------------------------------------
+
+* GEOM jumps around between geometries and levels of geometry,
+  testing cannot rely on that taking some reference value 
+
+* GEOM does not fulfil the assumption of always pointing to a 
+  fully featured geometry that the former OPTICKS_KEY did
+
+* MAYBE : introduce a separate OPTICKS_T_GEOM
+  that is expected to be less variable than GEOM 
+  and which is used to control the geometry used by opticks-t 
+  (actually the usage needs to be at om-test level, 
+  as need to support running at single package level)
+
+* HMM: can this be done purely at bash level ?  
+
+* just need to get the old idpath via IDPATH_TRANSITIONAL 
+  to work from transitional "$CFBaseFromGEOM/GGeo" ? 
+
+* om-test can invoke bin/GEOM_.sh script ?
+
+  * HMM: not scalable to have users editing something thats in repo 
+    to configure where their geometry is 
+  * TODO: switch to userspace for GEOM config::
+
+       "GEOM=$OPTICKS_T_GEOM source ~/.opticks/GEOM.sh" ?
+
+
+What should IDPATH_TRANSITIONAL be ? "$CFBaseFromGEOM/GGeo" ?
+----------------------------------------------------------------
+
+::
+
+    epsilon:~ blyth$ cd ~/.opticks
+    epsilon:.opticks blyth$ find . -name GScintillatorLib.npy
+    ./ntds3/G4CXOpticks/GGeo/GScintillatorLib/GScintillatorLib.npy
+    ./geocache/G4OKVolumeTest_World_pv_g4live/g4ok_gltf/454372a9f3c659bed5168603f4a26a22/1/GScintillatorLib/GScintillatorLib.npy
+    ./geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1/GScintillatorLib/GScintillatorLib.npy
+    ./GEOM/J004/GGeo/GScintillatorLib/GScintillatorLib.npy
+    ./GEOM/example_pet/GGeo/GScintillatorLib/GScintillatorLib.npy
+    epsilon:.opticks blyth$ 
+
+    epsilon:.opticks blyth$ cd /usr/local/opticks/geocache/
+    epsilon:geocache blyth$ find . -name GScintillatorLib.npy 
+    ./G4OKPMTSimTest_nnvt_body_phys_g4live/g4ok_gltf/bf7a3ecb6d69fdec7b83d46e187503f1/1/GScintillatorLib/GScintillatorLib.npy
+    ./OpticksEmbedded_World_g4live/g4ok_gltf/43bc26d43bba43fc6c680afe1e9df8fa/1/GScintillatorLib/GScintillatorLib.npy
+    ./OKX4Test_lWorld0x5780b30_PV_g4live/g4ok_gltf/5303cd587554cb16682990189831ae83/1/GScintillatorLib/GScintillatorLib.npy
+    ./OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GScintillatorLib/GScintillatorLib.npy
+    ./OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/0dce832a26eb41b58a000497a3127cb8/1/GScintillatorLib/GScintillatorLib.npy
+    ./OKX4Test_World0xc15cfc0_PV_g4live/g4ok_gltf/742ab212f7f2da665ed627411ebdb07d/1/GScintillatorLib/GScintillatorLib.npy
+    ./OKX4Test_lWorld0x68777d0_PV_g4live/g4ok_gltf/b574f652da8bb005cefa723ecf24b65b/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/bc3ed0133d9cea75f52fa6fb60c6c988/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/519a6b7d159ca9d99452211b9361d94e/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/36866edf42c8c86e06bf9a520a61f11d/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/454372a9f3c659bed5168603f4a26a22/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/4945968a8835051c4cef2c31f2bb109a/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/89064e4668fdbf2021363b5713f8c1ea/1/GScintillatorLib/GScintillatorLib.npy
+    ./G4OKVolumeTest_World_pv_g4live/g4ok_gltf/0747692aead8f4ff52e3c3911ed6e2d3/1/GScintillatorLib/GScintillatorLib.npy
+    ./CerenkovMinimal_World_g4live/g4ok_gltf/792496b5e2cc08bdf5258cc12e63de9f/1/GScintillatorLib/GScintillatorLib.npy
+    ...
+
+
+::
+
+    epsilon:opticks blyth$ cd ~/.opticks/GEOM/J004
+    epsilon:J004 blyth$ l
+    total 83464
+        0 drwxr-xr-x   4 blyth  staff       128 Nov  4 20:29 ..
+        0 drwxr-xr-x   5 blyth  staff       160 Oct 11 20:25 G4CXSimtraceTest
+        0 drwxr-xr-x   8 blyth  staff       256 Oct 11 16:24 .
+    41472 -rw-rw-r--   1 blyth  staff  20992917 Oct 11 15:50 origin.gdml
+        8 -rw-rw-r--   1 blyth  staff       190 Oct 11 15:50 origin_gdxml_report.txt
+    41984 -rw-rw-r--   1 blyth  staff  20994470 Oct 11 15:50 origin_raw.gdml
+        0 drwxrwxr-x  17 blyth  staff       544 Oct 11 15:50 GGeo
+        0 drwxr-xr-x  13 blyth  staff       416 Oct 11 15:50 CSGFoundry
+
+    epsilon:J004 blyth$ l GGeo/
+    total 16
+    0 drwxr-xr-x    8 blyth  staff   256 Oct 11 16:24 ..
+    0 drwxrwxr-x   17 blyth  staff   544 Oct 11 15:50 .
+    8 -rw-rw-r--    1 blyth  staff   223 Oct 11 15:50 cachemeta.json
+    8 -rw-rw-r--    1 blyth  staff   160 Oct 11 15:50 runcomment.txt
+    0 drwxr-xr-x    5 blyth  staff   160 Oct 11 15:50 stree
+    0 drwxrwxr-x    3 blyth  staff    96 Oct 11 15:50 GBndLib
+    0 drwxrwxr-x    7 blyth  staff   224 Oct 11 15:50 GItemList
+    0 drwxrwxr-x    3 blyth  staff    96 Oct 11 15:50 GSourceLib
+    0 drwxrwxr-x    6 blyth  staff   192 Oct 11 15:50 GScintillatorLib
+    0 drwxrwxr-x    5 blyth  staff   160 Oct 11 15:50 GSurfaceLib
+    0 drwxrwxr-x    4 blyth  staff   128 Oct 11 15:50 GMaterialLib
+    0 drwxrwxr-x   11 blyth  staff   352 Oct 11 15:50 GNodeLib
+    0 drwxrwxr-x  144 blyth  staff  4608 Oct 11 15:50 GMeshLib
+    0 drwxrwxr-x  143 blyth  staff  4576 Oct 11 15:50 GMeshLibNCSG
+    0 drwxrwxr-x   12 blyth  staff   384 Oct 11 15:50 GPts
+    0 drwxrwxr-x   12 blyth  staff   384 Oct 11 15:50 GParts
+    0 drwxrwxr-x   12 blyth  staff   384 Oct 11 15:50 GMergedMesh
+    epsilon:J004 blyth$ 
+
+ 
