@@ -589,17 +589,18 @@ sgs SEvt::addGenstep(const quad6& q_)
     }
 
 
-    unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
+#ifdef SEVT_NUMPHOTON_FROM_GENSTEP_CHECK
+    unsigned numphoton_from_genstep = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
+    assert( numphoton_from_genstep == numphoton_collected );   
+    // DONE: Zike reports this assert succeeds, so have removed the slower getNumPhotonFromGenstep
+#endif
 
-    unsigned offset_0 = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
-    unsigned offset_1 = numphoton_collected ; 
-    assert( offset_0 == offset_1 );   
-    // TODO: when this assert has proved to succeed, can remove the slower getNumPhotonFromGenstep
+    unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
 
     sgs s = {} ;                  // genstep summary struct 
     s.index = genstep.size() ;    // 0-based genstep index since last clear  
     s.photons = q_numphoton ;     // numphoton in this genstep 
-    s.offset = offset_0 ;         // sum numphotons from all previously collected gensteps (since last clear)
+    s.offset = numphoton_collected ;  // sum numphotons from all previously collected gensteps (since last clear)
     s.gentype = q.gentype() ; 
 
     gs.push_back(s) ; 

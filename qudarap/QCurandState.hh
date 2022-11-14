@@ -51,6 +51,14 @@ With GPU VRAM of 48G the limit coming from combination of photons and curandStat
   depending on configured max photon, which depends on available VRAM 
 
 
+Decide on max size of photon launches by scaling from 48G for 400M, eg with 8G VRAM::
+
+    In [2]: 8.*400./48.
+    Out[2]: 66.66666666666667    ## so you might aim for 60M photons max if only hand 8G VRAM
+
+
+
+
 TODO:chunked creation, chunk naming, chunked save/load 
 
 **/
