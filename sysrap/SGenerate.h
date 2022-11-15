@@ -37,7 +37,16 @@ struct SGenerate
 
 inline NP* SGenerate::GeneratePhotons()
 {
-    NP* gs = SEvt::GatherGenstep();  // user code needs to instanciate SEvt and AddGenstep 
+    NP* gs = SEvt::GatherGenstep(); 
+
+    if( gs == nullptr )
+    {
+        std::cerr << "SGenerate::GeneratePhotons FATAL SEvt::GatherGenstep returns null " << std::endl ; 
+        std::cerr << "user code needs to instanciate SEvt and AddGenstep " << std::endl ;  
+        return nullptr ;  
+    }
+
+
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {

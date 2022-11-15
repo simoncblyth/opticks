@@ -81,8 +81,8 @@ void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
 void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); }
 void U4Recorder::BeginOfEventAction(const G4Event*){ LOG(info); }
 void U4Recorder::EndOfEventAction(const G4Event*){   LOG(info); }
-void U4Recorder::PreUserTrackingAction(const G4Track* track){  if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
-void U4Recorder::PostUserTrackingAction(const G4Track* track){ if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
+void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(info) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
+void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(info) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
 
 template<typename T>
 void U4Recorder::UserSteppingAction(const G4Step* step){ if(U4Track::IsOptical(step->GetTrack())) UserSteppingAction_Optical<T>(step); }
@@ -123,6 +123,7 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+    LOG(LEVEL); 
     const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
 
     //std::cout << "U4Recorder::PreUserTrackingAction_Optical " << U4Process::Desc() << std::endl ; 
@@ -169,6 +170,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
+    LOG(info); 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  // all photons are expected to be labelled
     if(!Enabled(label)) return ;  
@@ -227,6 +229,7 @@ will fulfil *single_bit*.
 template <typename T>
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
+    LOG(info); 
     const G4Track* track = step->GetTrack(); 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  
@@ -329,6 +332,5 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
 
 template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
-
 
 
