@@ -94,4 +94,26 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 
 
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
+
+set(U4PMTFastSimTest_SOURCES
+   U4PMTFastSimTest.cc
+   ShimG4OpAbsorption.cc
+   ShimG4OpRayleigh.cc
+   Local_G4Cerenkov_modified.cc
+   Local_DsG4Scintillation.cc
+   U4Physics.cc
+)
+
+if(PMTFastSim_FOUND)
+    set(TGT U4PMTFastSimTest)
+    add_executable(${TGT} ${U4PMTFastSimTest_SOURCES})
+    target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+    target_link_libraries(${TGT} U4 Opticks::SysRap Opticks::PMTFastSim)
+    install(TARGETS ${TGT} DESTINATION lib)
+endif()
+
+
+
+
 

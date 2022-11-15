@@ -24,9 +24,9 @@ class G4OpRayleigh ;
 #endif
 
 class InstrumentedG4OpBoundaryProcess ; 
+#include "U4_API_EXPORT.hh"
 
-
-struct U4Physics : public G4VUserPhysicsList
+struct U4_API U4Physics : public G4VUserPhysicsList
 {
     static int EInt(const char* key, const char* fallback="0"); 
 

@@ -121,7 +121,12 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     runMgr->Initialize(); 
 }
 
-G4VPhysicalVolume* U4RecorderTest::Construct(){ return const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV()); } // sensitive to GEOM envvar 
+G4VPhysicalVolume* U4RecorderTest::Construct()
+{ 
+    G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
+    std::cout << "U4RecorderTest::Construct pv " << pv << std::endl ;
+    return pv ; 
+}  
 
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 {   

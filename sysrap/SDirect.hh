@@ -31,7 +31,10 @@ Stream redirection experiments.
 // http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string
 
 #include <iostream>
+#include <iomanip>
 #include <streambuf>
+#include <sstream>
+#include <string>
 
 struct cout_redirect {
     cout_redirect( std::streambuf * new_buffer ) 
@@ -81,6 +84,31 @@ private:
     std::ostream & src;
     std::streambuf * const sbuf;
 };
+
+
+inline std::string OutputMessage(const char* msg, const std::string& out, const std::string& err, bool verbose )  // static
+{
+    std::stringstream ss ;
+
+    ss << std::left << std::setw(30) << msg << std::right
+       << " yielded chars : "
+       << " cout " << std::setw(6) << out.size()
+       << " cerr " << std::setw(6) << err.size()
+       << " : set VERBOSE to see them "
+       << std::endl
+       ;   
+
+    if(verbose)
+    {   
+        ss << "cout[" << std::endl << out << "]" << std::endl  ;
+        ss << "cerr[" << std::endl << err << "]" << std::endl  ;
+    }   
+    std::string s = ss.str();
+    return s ; 
+}
+
+
+
 
 
 

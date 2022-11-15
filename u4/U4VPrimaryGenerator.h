@@ -13,8 +13,9 @@ not the library.
 struct sphoton ; 
 class G4PrimaryVertex ; 
 class G4Event ; 
+#include "U4_API_EXPORT.hh"
 
-struct U4VPrimaryGenerator
+struct U4_API U4VPrimaryGenerator
 {
     template<typename P> 
     static void GetPhotonParam( 

@@ -25,7 +25,13 @@ find_package(CLHEP  REQUIRED CONFIG)
 # undefined symbols CLHEP::HepRandom::getTheEngine()
 find_package(OpticksXercesC REQUIRED MODULE)
 
-find_package(PMTSim CONFIG)
+#find_package(PMTSim CONFIG)   ## NB : NOT REQUIRED
+#set(PMTSim_FOUND NO)
+
+find_package(PMTFastSim CONFIG)   ## NB : NOT REQUIRED
+#set(PMTFastSim_FOUND NO)
+
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
 
 
 set(SOURCES
@@ -46,7 +52,6 @@ set(SOURCES
     U4FastSim_Debug.cc
 
     InstrumentedG4OpBoundaryProcess.cc
-
 ) 
 
 set(HEADERS
@@ -109,8 +114,15 @@ target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 
 if(PMTSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
-    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
+    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM PMTSIM_STANDALONE )
 endif()
+
+if(PMTFastSim_FOUND)
+    target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
+    target_compile_definitions( ${name} PUBLIC WITH_PMTFASTSIM PMTFASTSIM_STANDALONE )
+endif()
+
+
 
 
 

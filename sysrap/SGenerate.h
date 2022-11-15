@@ -9,6 +9,8 @@ to allow switching on MOCK_CURAND in the "user" code
 rather than the widely used sysrap library. 
 
 **/
+
+
 struct NP ; 
 struct SGenerate
 {
@@ -33,7 +35,7 @@ struct SGenerate
 
 #endif
 
-NP* SGenerate::GeneratePhotons()
+inline NP* SGenerate::GeneratePhotons()
 {
     NP* gs = SEvt::GatherGenstep();  // user code needs to instanciate SEvt and AddGenstep 
     NP* ph = nullptr ; 
@@ -49,7 +51,8 @@ NP* SGenerate::GeneratePhotons()
     //std::cout << "SGenerate::GeneratePhotons ph " << ( ph ? ph->brief() : "-" ) << std::endl ; 
     return ph ;  
 }
-NP* SGenerate::GeneratePhotons(const NP* gs_)
+
+inline NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
     //std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
 

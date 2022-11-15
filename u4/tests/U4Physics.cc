@@ -1,7 +1,6 @@
 #include "U4Physics.hh"
 #include "G4ProcessManager.hh"
 
-
 U4Physics::U4Physics()
     :
     fCerenkov(nullptr),
@@ -19,7 +18,7 @@ U4Physics::U4Physics()
 #include "G4IonConstructor.hh"
 
 
-inline void U4Physics::ConstructParticle()
+void U4Physics::ConstructParticle()
 {
     G4BosonConstructor::ConstructParticle(); 
     G4LeptonConstructor::ConstructParticle();
@@ -28,7 +27,7 @@ inline void U4Physics::ConstructParticle()
     G4IonConstructor::ConstructParticle();
 }
 
-inline void U4Physics::ConstructProcess()
+void U4Physics::ConstructProcess()
 {
     AddTransportation();
     ConstructEM();
@@ -55,7 +54,7 @@ inline void U4Physics::ConstructProcess()
 
 #include "G4hIonisation.hh"
 
-inline void U4Physics::ConstructEM()
+void U4Physics::ConstructEM()
 {
     G4int em_verbosity = 0 ; 
     G4EmParameters* empar = G4EmParameters::Instance() ;
@@ -137,14 +136,14 @@ std::string U4Physics::Desc()
 }
 
 
-inline int U4Physics::EInt(const char* key, const char* fallback)  // static 
+int U4Physics::EInt(const char* key, const char* fallback)  // static 
 {
     const char* val_ = getenv(key) ;
     int val =  std::atoi(val_ ? val_ : fallback) ;
     return val ; 
 }
 
-inline void U4Physics::ConstructOp()
+void U4Physics::ConstructOp()
 {
     if(EInt("Local_G4Cerenkov_modified_DISABLE", "0") == 0 )
     {
@@ -203,6 +202,5 @@ inline void U4Physics::ConstructOp()
         }
     }
 }
-
 
 
