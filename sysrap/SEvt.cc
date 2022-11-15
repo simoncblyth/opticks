@@ -57,7 +57,8 @@ SEvt::SEvt()
     cf(nullptr),
     hostside_running_resize_done(false),
     gather_done(false),
-    numphoton_collected(0u)
+    numphoton_collected(0u),
+    numphoton_genstep_max(0u)
 { 
     init(); 
 }
@@ -437,6 +438,7 @@ void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->se
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
 int SEvt::GetNumPhotonCollected(){    return INSTANCE ? INSTANCE->getNumPhotonCollected() : UNDEF ; }
+int SEvt::GetNumPhotonGenstepMax(){   return INSTANCE ? INSTANCE->getNumPhotonGenstepMax() : UNDEF ; }
 int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : UNDEF ; }
 int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : UNDEF ; }
 int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : UNDEF ; }
@@ -463,6 +465,7 @@ void SEvt::clear()
     genstep.clear();
     gs.clear();
     numphoton_collected = 0u ; 
+    numphoton_genstep_max = 0u ; 
 
     pho0.clear(); 
     pho.clear(); 
@@ -514,6 +517,10 @@ unsigned SEvt::getNumPhotonFromGenstep() const
 unsigned SEvt::getNumPhotonCollected() const 
 {
     return numphoton_collected ; 
+}
+unsigned SEvt::getNumPhotonGenstepMax() const 
+{
+    return numphoton_genstep_max ; 
 }
 
 
@@ -596,6 +603,7 @@ sgs SEvt::addGenstep(const quad6& q_)
 #endif
 
     unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
+    if(q_numphoton > numphoton_genstep_max) numphoton_genstep_max = q_numphoton ; 
 
     sgs s = {} ;                  // genstep summary struct 
     s.index = genstep.size() ;    // 0-based genstep index since last clear  

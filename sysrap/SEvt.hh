@@ -108,7 +108,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<unsigned> comp ; 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
-    unsigned           numphoton_collected ; // try to avoid looping over all gensteps for every genstep
+    unsigned           numphoton_collected ;    // avoid looping over all gensteps for every genstep
+    unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
@@ -163,6 +164,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const char* GetReldir(); 
 
     static int GetNumPhotonCollected(); 
+    static int GetNumPhotonGenstepMax(); 
     static int GetNumPhotonFromGenstep(); 
     static int GetNumGenstepFromGenstep(); 
     static int GetNumHit() ; 
@@ -226,9 +228,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setReldir(const char* reldir_) ;  
     const char* getReldir() const ; 
 
-    unsigned getNumGenstepFromGenstep() const ; 
-    unsigned getNumPhotonFromGenstep() const ; 
-    unsigned getNumPhotonCollected() const ; 
+    unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
+    unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear obtained by looping over collected gensteps
+    unsigned getNumPhotonCollected() const ;    // total collected photons since last clear
+    unsigned getNumPhotonGenstepMax() const ;   // max photon in genstep since last clear
 
     static constexpr const unsigned G4_INDEX_OFFSET = 1000000 ; 
     sgs addGenstep(const quad6& q) ; 
