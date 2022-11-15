@@ -24,6 +24,8 @@ class G4OpRayleigh ;
 #endif
 
 class InstrumentedG4OpBoundaryProcess ; 
+class G4FastSimulationManagerProcess ; 
+
 #include "U4_API_EXPORT.hh"
 
 struct U4_API U4Physics : public G4VUserPhysicsList
@@ -42,6 +44,7 @@ struct U4_API U4Physics : public G4VUserPhysicsList
 #endif
 
     InstrumentedG4OpBoundaryProcess*  fBoundary ;
+    G4FastSimulationManagerProcess*   fFastSim ;  
 
     static std::string Desc(); 
     U4Physics(); 

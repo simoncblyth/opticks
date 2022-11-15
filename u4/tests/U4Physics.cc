@@ -1,5 +1,6 @@
 #include "U4Physics.hh"
 #include "G4ProcessManager.hh"
+#include "G4FastSimulationManagerProcess.hh"
 
 U4Physics::U4Physics()
     :
@@ -7,7 +8,8 @@ U4Physics::U4Physics()
     fScintillation(nullptr),
     fAbsorption(nullptr),
     fRayleigh(nullptr),
-    fBoundary(nullptr)
+    fBoundary(nullptr),
+    fFastSim(nullptr)
 {
 }
 
@@ -160,6 +162,13 @@ void U4Physics::ConstructOp()
         fScintillation->SetTrackSecondariesFirst(true);
     }
 
+    if(EInt("G4FastSimulationManagerProcess_ENABLE", "0") == 1 )
+    {
+        fFastSim  = new G4FastSimulationManagerProcess("fast_sim_man");
+    }
+
+
+
 
 #ifdef DEBUG_TAG
     fAbsorption = new ShimG4OpAbsorption();
@@ -199,6 +208,7 @@ void U4Physics::ConstructOp()
             pmanager->AddDiscreteProcess(fRayleigh);
             //pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
             pmanager->AddDiscreteProcess(fBoundary);
+            if(fFastSim) pmanager->AddDiscreteProcess(fFastSim); 
         }
     }
 }

@@ -2,9 +2,14 @@
 
 export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
+export G4FastSimulationManagerProcess_ENABLE=1
+
+
 export U4Recorder=INFO
 export GEOM=hamaLogicalPMT
 export U4RecorderTest__PRIMARY_MODE=iphoton
+
+
 
 bin=U4PMTFastSimTest
 

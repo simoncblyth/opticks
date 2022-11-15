@@ -182,7 +182,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     G4TrackStatus tstat = track->GetTrackStatus(); 
     bool is_fStopAndKill = tstat == fStopAndKill ; 
     LOG_IF(info, !is_fStopAndKill) << " not is_fStopAndKill  post.tstat " << U4TrackStatus::Name(tstat) ; 
-    assert( is_fStopAndKill ); 
+    //assert( is_fStopAndKill ); 
 }
 
 /**
@@ -255,7 +255,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
 
-    assert( flag > 0 ); 
+    //assert( flag > 0 ); 
 
 
     if( flag == NAN_ABORT )

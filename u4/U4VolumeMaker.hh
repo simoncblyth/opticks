@@ -5,6 +5,7 @@
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 class G4Material ; 
+class junoPMTOpticalModel ;
 
 struct NP ; 
 
@@ -30,9 +31,12 @@ struct U4_API U4VolumeMaker
     static const G4VPhysicalVolume* PVG_(const char* name); 
     static const G4VPhysicalVolume* PVP_(const char* name); 
     static const G4VPhysicalVolume* PVF_(const char* name); 
+    static       junoPMTOpticalModel* PVF_POM ;  // set by last PVF_ call giving non-null pom
+
     static const G4VPhysicalVolume* PVS_(const char* name); 
     static const G4VPhysicalVolume* PVL_(const char* name); 
     static const G4VPhysicalVolume* PV1_(const char* name); 
+
   
  
     // general LV maker using U4SolidMaker::Make, U4Material::FindMaterialName

@@ -11,6 +11,8 @@
 #include "G4ParticleGun.hh"
 #include "G4GeometryManager.hh"
 
+class junoPMTOpticalModel ; 
+
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
 #include "SSys.hh"
@@ -47,6 +49,9 @@ struct U4RecorderTest
     char                  fPrimaryMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
+    G4VPhysicalVolume*    fPV ; 
+    junoPMTOpticalModel*  fPOM ; 
+
 
     G4VPhysicalVolume* Construct(); 
 
@@ -110,7 +115,9 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     :
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
-    fGun(fPrimaryMode == 'G' ? InitGun() : nullptr)
+    fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
+    fPV(nullptr),
+    fPOM(nullptr)
 {
     runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
     runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
@@ -124,7 +131,19 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
 G4VPhysicalVolume* U4RecorderTest::Construct()
 { 
     G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
-    std::cout << "U4RecorderTest::Construct pv " << pv << std::endl ;
+
+    junoPMTOpticalModel* pom = U4VolumeMaker::PVF_POM ; 
+
+    fPV = pv ; 
+    fPOM = pom ; 
+
+    std::cout 
+        << "U4RecorderTest::Construct"
+        << " fPV " << fPV 
+        << " fPOM " << fPOM 
+        << std::endl 
+        ;
+
     return pv ; 
 }  
 

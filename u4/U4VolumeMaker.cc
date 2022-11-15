@@ -222,11 +222,14 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
     if(has_manager_prefix) 
     {
         G4LogicalVolume* lv = PMTFastSim::GetLV(name) ; 
+        junoPMTOpticalModel* pom = PMTFastSim::GetPMTOpticalModel(name); 
+        if(pom) PVF_POM = pom ; 
+        LOG(LEVEL) << "PVF_POM  " << PVF_POM  ;  
+
         LOG_IF(fatal, lv == nullptr ) << "PMTFastSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
 
         pv = WrapRockWater( lv ) ;          
-
     }
     LOG(LEVEL) << "]" ; 
 #else
@@ -234,6 +237,8 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
 #endif
     return pv ; 
 }
+
+junoPMTOpticalModel* U4VolumeMaker::PVF_POM = nullptr ; 
 
 
 const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
