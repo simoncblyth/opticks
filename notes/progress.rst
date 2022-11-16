@@ -21,6 +21,100 @@ Progress
      think about how they are related to each other 
 
 
+
+2022 Nov
+----------
+
+* 11/15 : fast sim debug using U4PMTFastSimTest.cc 
+* 11/15 : add access to volumes from PMTFastSim via U4VolumeMaker::PV, use from u4/tests/U4PMTFastSimTest.cc
+* 11/12 : fix lots of CSG test fails, overall down to 25/507 fails
+* 11/12 : start reviving opticks-t tests, remove opticks-t- check on relic installcache dir and OPTICKS_KEY envvar 
+* 11/11 : add SEvt::numphoton_collected SEvt::GetNumPhotonCollected SEvt::getNumPhotonCollected to avoid looping over all gensteps to get the running total, after have confirmed equivalence
+* 11/10 : QPMTTest on device interpolation now working, after arranging for the last column integer annotation to survive narrowing by doing the narrowing when 3D 
+* 11/10 : arrange for NP::MakeNarrow to preserve last column integer annotation when a metadata switch is enabled
+* 11/05 : move geometry persisting earlier in G4CXOpticks, add GEOM example_pet to bin/GEOM_.sh, notes on bordersurface issue 
+* 11/03 : try to remove OPTICKS_KEY dependency
+* 11/03 : add ana/tests/check.sh ana/test/check.py to demonstrate basic use of ana photon history debugging machinery
+* 11/01 : QProp::Make3D allowing to scrunch up higher dimensions eg from JPMTProp into standard 3, use from qudarap/tests/QPMTPropTest.cc
+
+2022 Oct
+----------
+
+* 10/29 : NPFold::load with multiple rel
+* 10/29 : improve access into tree of subfold of arrays using NPFold::find_array 
+* 10/29 : parsing deranged property txt file format in NP::LoadFromString and using that in NPFold::load_dir to recursively load directories of property txt files into trees of NPFold
+* 10/28 : NP::ArrayFromString generalize to handle real world property text files, NP::get_named_value accessor for single column key:value prop files
+* 10/28 : SProp.h machinery for loading directories of property text files into NPFold
+* 10/28 : split into NP::ArrayFromTxtFile NP::ArrayFromString as both useful 
+* 10/27 : Add NP::ArrayFromTxt NP::ReadKV array and const property from txt accessors, skip the geocache_code_version_pass assert
+* 10/27 : change PIP::CreateModule_debugLevel to a value that works with OptiX 7.5 as well as 7.0
+* 10/25 : low level _sizeof methods needed by https://github.com/simoncblyth/j/blob/main/PMTFastSim/LayrTest.sh
+* 10/24 : develop pattern for std::complex/thrust::complex arithmetic with common nvcc/gcc source via the C++ using declaration
+* 10/20 : om special case directories names PMTFastSim informing the build that these have sources in j repo
+* 10/20 : try surrounding all use of OpenSSL 3.0 deprecated MD5 API to quell -Wdeprecated-declarations compilation warnings reported by Hans 
+* 10/19 : in sdigest.h try to suppress OpenSSH 3.0 deprecated MD5 API compilation warnings  
+* 10/19 : attempting a header only OKConf.h so STTF.hh and SIMG.hh can work header only, but it runs into SLOG.hh complications 
+* 10/18 : incorporate x4,u4 changes from Hans for Geant4 1100 
+* 10/18 : notes for cuda::std::complex
+* 10/18 : prep to look into FastSim details
+* 10/14 : add more CEHIGH regions to illuminate PMT inner corners
+* 10/14 : a few more OptiX 7.5 API changes
+* 10/13 : try generalization against OptiX 700 -> 750 API change with BI::getBuildInputCPA 
+* 10/12 : move some of QCurandState down into SCurandState, aiming to tie together SEvt maxima with the number of curandState loaded
+* 10/12 : adjust cehigh extra resolution genstep grid to look for overlaps insitu at PMT bottom 
+* 10/11 : tidy and document the Simtrace 2D cross-section intersect and plotting machinery
+* 10/07 : some more fields in u4/U4Scintillation_Debug.hh 
+* 10/07 : add SOpticksResource::GDMLPathFromGEOM used from G4CXOpticks::setGeometry
+* 10/06 : update opticks-prepare-installation to use qudarap-prepare-installation which is based on qudarap/QCurandState
+* 10/06 : QCurandStateTest to replace the old cuRANDWrapperTest
+* 10/06 : issue reported by Ami : notes/issues/opticks-prepare-installation-needs-updating-from-cudarap-to-QUDARap-binary.rst start developing new workflow curandState preparation to avoid need for mixed workflows
+* 10/05 : investigate LS property warnings during translation, bending of property domain meaning prevents GPropertyMap table presentation and causes lots of domain warnings
+* 10/05 : U4Debug class to simplify comparisons, realize that opticksMode 1 steps should not be matching opticksMode 0 as is found, it is modes 0 and 3 that should have exact step match : they do currently
+* 10/03 : document update of my plog fork https://github.com/simoncblyth/plog to the upstream latest, mainly for the new PLOG_LOCAL functionality that makes it possible to use full Opticks style logging controls within integrated packages 
+* 10/02 : LOG_IF update the rest of the active packages to work with latest plog without dangling else warnings
+* 10/01 : rest of the active projects, rename PLOG to SLOG : needed for updating to newer PLOG external 
+
+2022 Sep
+---------
+
+* 09/30 : expt with plog int template argument to try to use opticks PLOG in across shared libs of external projects that do not use -fvisibility=hidden
+* 09/29 : start examples/UseFindOpticks to look into mis-behaviour of PLOG LEVEL logging from an external library
+* 09/28 : context info for U4Scintillation_Debug, remove index prefix
+* 09/21 : standardize the geomlist to make it easier to work with multiple geometries, useful for checking hama solids just like have done with nnvt
+* 09/17 : adopt new CSG_CONE implementation avoiding apex glancer MISS and parallel ray quadratic precision loss issues
+* 09/16 : CSGSimtraceSample.sh for running small simtrace arrays, eg obtained from python selections of spurious rays
+* 09/16 : G4Polycone cylinder + cone union, sprinkle of spurious appear to all have rays that when extended would go close to the cone apex
+* 09/15 : move prior cylinder imp to CSG_OLDCYLINDER and promote CSG_ALTCYLINDER to CSG_CYLINDER, the new simpler cylinder imp avoids spurious intersects observed with thin cylinders like nmskTailOuterITube 
+* 09/13 : implement a simpler less flops CSG_ALTCYLINDER/intersect_leaf_altcylinder that perhaps improves numerical robustness and speed 
+* 09/12 : investigating axial ray intersect precision loss with very thin cylinders, try simpler approach as should be more robust
+* 09/12 : change X4Solid thin cylinder as disc criteria to 0.1 mm from 1 mm : so the PMT mask sub-mm lips are translated as cylinder, look into lip spill intersects from vertical/horizontal rays : probably v.thin cylinder axial special casing problem 
+* 09/11 : found probable cause of mask thin lip spurious intersects : a mistranslation of the hz 0.3 and 0.65 thin tubs as disc when cylinder needed 
+* 09/05 : CSG/ct.sh CSGSimtraceTest.cc for CPU running of CUDA csg intersect code with standard simtrace approach
+* 09/01 : x4t.sh now working, presenting X4Simtrace G4VSolid intersects using same simtrace approach as gxt.sh
+
+2022 Aug
+----------
+
+* 08/30 : add CEHIGH_0/1/2/3 for adding additional gensteps to provide high resolution regions of a simtrace 
+* 08/30 : X4Solid::convertEllipsoid add safety to upper and lower placeholder cuts where there is no such cut intended, to address the rare zsphere apex bug
+* 08/29 : investigate futher MISS-ing near apex intersects, probably from handling when no upper cap
+* 08/29 :  notes on fixing a rare zsphere MISS for rays expected to intersect close to apex : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst 
+* 08/27 : CSGSimtraceRerun.cc as used by CSG/nmskSolidMask.sh for highly detailed CSGRecord look at CSG intersect algorithm
+* 08/26 : GeoChain single solid translations of j/PMTSim solids : nmskSolidMaskVirtual, nmskSolidMask, nmskSolidMaskTail and added GEOM handling using CFBaseFromGEOM
+* 08/26 : morton bracketing, try to configure gxt.sh to run from GeoChain translated single solid geometry nmskSolidMaskVirtual 
+* 08/21 : shave 21s off CSGFoundry::upload by only finding unique gas, as the others not needed 
+* 08/20 : as stree is now held by SSim relocate persisted folders accordingly
+* 08/19 : add stree::labelFactorSubtrees so U4Tree::identifySensitiveInstances can traverse just the global remainder nodes to find them there as well as within the instanced factor subtrees
+* 08/16 : passing sensor_identifier all the way up to U4hit level using sphit.h which is populated by SEvt::getLocalHit using info from sframe.h
+* 08/15 : transform debug by populating an stree.h during GGeo creation in X4PhysicalVolume::convertStructure
+* 08/14 : correct off-by-one inconsistency in sensor_index in CSG_GGeo_Convert::addInstances
+* 08/14 : more sqat4.h identity updates, pass stree into CSG_GGeo_Convert::Translate done by G4CXOpticks::setGeometry
+* 08/13 : prepare for getting sensor_id sensor_index into CSG_GGeo created CSGFoundry inst at the CSG_GGeo stage as a transitional sensor solution prior to U4Tree/stree becoming the mainline route to create CSGFoundry 
+* 08/08 : add GGeo::save_to_dir implemented by changing idpath for usage from G4CXOpticks::saveGeometry
+* 08/06 : add gdxml to the standard om-subs--all package list
+* 08/04 : conclude that U4Tree.h/stree.h minimal approach to factorization is matching the GGeo/GInstancer factorization, with improved precision and better capability for retaining mapping across the factorization which is helped stree.h simplicity and persistability
+
+
 2022 July : B focus, start full geom random alignment
 -------------------------------------------------------
 
@@ -33,7 +127,6 @@ Progress
 * 07/29 : lightweight geometry translation expts, serializing n-ary tree and forming subtree digests
 
   * U4Tree.h U4TreeTest.cc
-
 
 * 07/27 : rejig SEvt accessors, heavy:gather lightweight:get 
 * 07/26 : local frame sphoton.h for new workflow hits orchestrated by SEvt.hh using SGeo.hh and sframe.h
