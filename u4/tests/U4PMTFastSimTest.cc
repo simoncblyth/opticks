@@ -3,32 +3,29 @@
 
 struct U4PMTFastSimTest
 {
+    static G4RunManager* InitRunManager(G4VUserPhysicsList* phy);  
     G4VUserPhysicsList*        phy ; 
     G4RunManager*              run ; 
     U4RecorderTest*            rec ; 
-
     U4PMTFastSimTest(); 
-    void beamOn(int n); 
-
-    virtual ~U4PMTFastSimTest(); 
+    virtual ~U4PMTFastSimTest(){ delete rec ; }
 };
+
+G4RunManager* U4PMTFastSimTest::InitRunManager(G4VUserPhysicsList* phy)
+{
+    G4RunManager* run = new G4RunManager ; 
+    run->SetUserInitialization(phy) ; 
+    return run ; 
+}
 
 U4PMTFastSimTest::U4PMTFastSimTest()
     :
     phy((G4VUserPhysicsList*)new U4Physics),
-    run(new G4RunManager),
-    rec(nullptr)
+    run(InitRunManager(phy)),
+    rec(new U4RecorderTest(run))
 {
-    run->SetUserInitialization(phy); 
-    rec = new U4RecorderTest(run) ;  
+    run->BeamOn(U::GetEnvInt("BeamOn",1)); 
 }
-
-void U4PMTFastSimTest::beamOn(int n)
-{
-    run->BeamOn(n); 
-}
-
-U4PMTFastSimTest::~U4PMTFastSimTest(){ delete rec ; }
 
 int main(int argc, char** argv)
 {
@@ -38,7 +35,6 @@ int main(int argc, char** argv)
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
-    //t.beamOn(1); 
 
     return 0 ; 
 }
