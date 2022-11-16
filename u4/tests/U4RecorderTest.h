@@ -50,7 +50,7 @@ struct U4RecorderTest
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     G4VPhysicalVolume*    fPV ; 
-    junoPMTOpticalModel*  fPOM ; 
+    junoPMTOpticalModel*  fPOM ;   // HMM: a foreigner coming in via optional PMTFastSim 
 
 
     G4VPhysicalVolume* Construct(); 

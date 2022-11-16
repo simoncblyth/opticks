@@ -315,7 +315,7 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
             << " trackStatus " << U4TrackStatus::Name(tstat) 
             << " flag " << OpticksPhoton::Flag(flag) 
             ;     
-        assert( is_terminal_flag );  
+        //assert( is_terminal_flag );  
     }
     else
     {
