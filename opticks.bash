@@ -2176,6 +2176,7 @@ opticks-f(){
 }
 
 
+opticks-rl(){ opticks-r "$1" -l ; }   
 opticks-r(){   
    : search rst, bash, txt, cmake py  BUT not code or headers
    local str="${1:-ENV_HOME}"
