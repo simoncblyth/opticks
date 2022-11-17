@@ -59,20 +59,23 @@ if __name__ == '__main__':
 
     points = np.zeros( (16, 3) )
     for j in range(len(points)):
-        angle = 2*np.pi*float(j)/(len(points)-1)
+        angle = 2*np.pi*float(j)/(len(points))
+        # when looped avoiding the repeated point from 0,2pi degeneracy 
+        # avoids the joint being visible
+    
         points[j] = [np.cos(angle), np.sin(angle), 0]
     pass
 
     #points = np.array([ [0,0,0], [1,0,0], [0,1,0], [1,1,0] ])  
 
 
-    A = 0.5   # eg 0:straight lines, 0.5 default? 
+    A = 0.5   # eg 0:straight lines, 0.5 default,smoothest? 1:wiggly  "tension"
 
     assert len(points) >= 4 
     numseg = len(points)-3    # sliding window of 4 points for each segment  
 
-    looped = True 
-    if looped: numseg += 3   # the looped joint is a bit irregular somehow
+    looped = True
+    if looped: numseg += 3    
 
     segnum = 100              # number of points to interpolate each segment into 
     tt = np.linspace(0,1, segnum)
