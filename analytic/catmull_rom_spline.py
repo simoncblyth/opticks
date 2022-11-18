@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-catmull_rom_spline.py
-======================
+catmull_rom_spline.py  : SEE catmull_rom_spline_2.py FOR A BETTER IMPLEMENTATION 
+======================================================================================
 
 ::
 
@@ -13,6 +13,9 @@ catmull_rom_spline.py
 * https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
 
 * https://www.cs.cmu.edu/~fp/courses/graphics/asst5/catmullRom.pdf
+
+  ~/opticks_refs/derivation_catmullRom_spline.pdf
+
 
 * https://dev.to/ndesmic/splines-from-scratch-catmull-rom-3m66
 
@@ -42,6 +45,7 @@ def pp(q, q_label="?", note=""):
     pass
 
 
+
 if __name__ == '__main__':
 
     """
@@ -62,12 +66,10 @@ if __name__ == '__main__':
         angle = 2*np.pi*float(j)/(len(points))
         # when looped avoiding the repeated point from 0,2pi degeneracy 
         # avoids the joint being visible
-    
         points[j] = [np.cos(angle), np.sin(angle), 0]
     pass
 
     #points = np.array([ [0,0,0], [1,0,0], [0,1,0], [1,1,0] ])  
-
 
     A = 0.5   # eg 0:straight lines, 0.5 default,smoothest? 1:wiggly  "tension"
 
@@ -81,7 +83,6 @@ if __name__ == '__main__':
     tt = np.linspace(0,1, segnum)
 
     xpp = np.zeros( (numseg*segnum,3) )  
-
 
     u, a  = sp.symbols("u a")
     M = sp.Matrix([
@@ -102,9 +103,8 @@ if __name__ == '__main__':
     VM = V*M
     pp(VM,"VM")     
     pp(VM.T,"VM.T")     
-
-
     VMa = VM.subs([(a,A)])   
+
     numpoi = len(points) 
 
     for iseg in range(numseg):
@@ -128,13 +128,10 @@ if __name__ == '__main__':
         VMa_p = VMa*p 
         #pp(VMa_p, "VMa_p")
         fn = lambdify(u, VMa_p,'numpy')  
-
         for i in range(len(tt)):
            xpp[iseg*segnum+i] = fn(tt[i])     
            # how to directly pull an array of arrays here ? avoiding the python loop 
         pass    
-    pass
-
 
 
     fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) 
