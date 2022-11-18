@@ -1,5 +1,9 @@
 #include "U4RecorderTest.h"
 #include "SEvt.hh"
+#include "SFastSim_Debug.hh"
+
+#include "J_PMTFASTSIM_LOG.hh"
+
 
 struct U4PMTFastSimTest
 {
@@ -30,11 +34,14 @@ U4PMTFastSimTest::U4PMTFastSimTest()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    J_PMTFASTSIM_LOG_(0); 
 
     SEvt evt ; 
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
+
+    SFastSim_Debug::Save("/tmp/SFastSim_Debug" ); 
 
     return 0 ; 
 }

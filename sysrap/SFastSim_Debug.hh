@@ -1,6 +1,6 @@
 #pragma once
 /**
-U4FastSim_Debug.h
+SFastSim_Debug.h
 ===========================
 
 
@@ -8,15 +8,15 @@ U4FastSim_Debug.h
 
 #include "plog/Severity.h"
 #include <vector>
-#include "U4_API_EXPORT.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
-struct U4_API U4FastSim_Debug
+struct SYSRAP_API SFastSim_Debug
 {   
     static const plog::Severity LEVEL ; 
-    static std::vector<U4FastSim_Debug> record ;   
+    static std::vector<SFastSim_Debug> record ;   
     static constexpr const unsigned NUM_QUAD = 4u ; 
-    static constexpr const char* NAME = "U4FastSim_Debug.npy" ; 
-    static constexpr int LIMIT = 10000 ; 
+    static constexpr const char* NAME = "SFastSim_Debug.npy" ; 
+    static constexpr int LIMIT = 100000 ; 
     static void Save(const char* dir); 
     void add(); 
     void fill(double value); 

@@ -129,6 +129,8 @@ set(SOURCES
     SSim.cc
     SProp.cc
 
+    SFastSim_Debug.cc
+
 ) 
     
 
@@ -335,6 +337,7 @@ set(HEADERS
     NPFold.h 
     SSim.hh
     SProp.hh
+    SFastSim_Debug.hh
 
 )
 
