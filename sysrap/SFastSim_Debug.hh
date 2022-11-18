@@ -21,27 +21,27 @@ struct SYSRAP_API SFastSim_Debug
     void add(); 
     void fill(double value); 
 
-    double posx ;
+    double posx ;  // pos = fs[:,0,:3]
     double posy ;
     double posz ;
-    double time ;
+    double time ;  // tim = fs[:,0,3]
 
-    double dirx ;
+    double dirx ;  // mom = fs[:,1,:3]
     double diry ;
     double dirz ;
-    double dist1 ;
+    double dist1 ; // ds1 = fs[:,1,3]
 
-    double polx ;
+    double polx ;  // pol = fs[:,2,:3]
     double poly ;
     double polz ;
-    double dist2 ;
+    double dist2 ; // ds2 = fs[:,2,3]
 
-    double ModelTrigger ;
-    double whereAmI ;
-    double c ;
-    double d ;
+    double ModelTrigger ; // trg = fs[:,3,0].astype(np.int64)   ## wasting 63 bits 
+    double whereAmI ;     // wai = fs[:,3,1].astype(np.int64)   ## wasting 62-63 bits 
+    double c ;            // c   = fs[:,3,2]
+    double d ;            // d   = fs[:,3,3]
 
     // NB for python parsing check line terminations with set list
-
+    // TODO: improve py parsing to cope with comments
 };
 

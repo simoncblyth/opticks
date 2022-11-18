@@ -38,9 +38,9 @@ if [ "$arg" == "dbg" ]; then
 fi 
 
 
-if [ "$arg" == "ana" ]; then
-
+if [ "$arg" == "ana" -o "$arg" == "nana" ]; then
     export FOLD=/tmp/SFastSim_Debug
+    [ "$arg" == "nana" ] && export NOGUI=1
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
