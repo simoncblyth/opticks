@@ -11,12 +11,26 @@ loglevel(){
 #loglevel
 
 export GEOM=hamaLogicalPMT
-export U4RecorderTest__PRIMARY_MODE=iphoton
+export U4RecorderTest__PRIMARY_MODE=torch 
+# hmm seems iphoton and torch do same thing internally 
 export BeamOn=1
 
 
 export SEvent_MakeGensteps_num_ph=50000
-export storch_FillGenstep_radius=200 
+#export SEvent_MakeGensteps_num_ph=1000
+export storch_FillGenstep_type=line     # disc
+export storch_FillGenstep_radius=250
+
+# up from line below equator
+#export storch_FillGenstep_pos=0,0,-20
+#export storch_FillGenstep_mom=0,0,1
+
+# down from line outside Pyrex
+export storch_FillGenstep_pos=0,0,200
+export storch_FillGenstep_mom=0,0,-1
+
+
+
 
 
 bin=U4PMTFastSimTest

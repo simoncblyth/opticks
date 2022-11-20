@@ -25,7 +25,10 @@ into the volume frame by applying the saved transforms for each solid.
 
 #include "G4VSolid.hh"
 
-#ifdef WITH_PMTSIM
+#ifdef WITH_PMTFASTSIM
+#include "PMTFastSim.hh"
+#include "N4Volume.hh"
+#elif WITH_PMTSIM
 #include "PMTSim.hh"
 #include "P4Volume.hh"
 #endif
@@ -38,26 +41,36 @@ int main(int argc, char** argv)
     const char* geom = SSys::getenvvar("X4IntersectVolumeTest_GEOM", geom_default );  
     int rc = 0 ; 
 
-#ifdef WITH_PMTSIM
+#if defined(WITH_PMTFASTSIM) || defined(WITH_PMTSIM)
 
     typedef std::vector<double> VD ;  // curious why not use NP ?
     typedef std::vector<G4VSolid*> VS ; 
-
     VD* tr = new VD ; 
     VS* so = new VS ; 
 
+#ifdef WITH_PMTFASTSIM
+    LOG(info) << "[ PMTFastSim::GetPV geom [" << geom << "]" ; 
+    G4VPhysicalVolume* pv = PMTFastSim::GetPV(geom, tr, so );
+    LOG(info) << "] PMTFastSim::GetPV geom [" << geom << "]" ; 
+#elif WITH_PMTSIM
     LOG(info) << "[ PMTSim::GetPV geom [" << geom << "]" ; 
     G4VPhysicalVolume* pv = PMTSim::GetPV(geom, tr, so );
     LOG(info) << "] PMTSim::GetPV geom [" << geom << "]" ; 
+#endif
     assert(pv); 
-
     unsigned num = so->size(); 
     assert( tr->size() % 16 == 0 ); 
     assert( tr->size() == 16*num );  // expect 16 doubles of the transform matrix for every solid
 
     const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
+
+#ifdef WITH_PMTFASTSIM
+    N4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
+    N4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
+#elif WITH_PMTSIM
     P4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
     P4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
+#endif
 
     LOG(info) << " num " << num ; 
     for(unsigned i=0 ; i < num ; i++)
@@ -71,7 +84,7 @@ int main(int argc, char** argv)
         LOG(info) << "] X4Intersect::Scan soname [" << soname << "]" ; 
     }
 #else
-    LOG(fatal) << " not-WITH_PMTSIM : Not implemented for geom " << geom ; 
+    LOG(fatal) << " not-WITH_PMTSIM OR WITH_PMTFASTSIM : cannot do anything without the volume " << geom ; 
     rc=1 ;   
 #endif
     return rc ; 

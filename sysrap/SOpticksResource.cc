@@ -385,6 +385,13 @@ const char* SOpticksResource::GDMLPathFromGEOM()
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
 }
 
+const char* SOpticksResource::WrapLVForName(const char* name)
+{
+    assert(name) ; 
+    return SSys::getenvvar(SStr::Name(name, "_WrapLVForName")) ; 
+}
+
+
 
 
 /**

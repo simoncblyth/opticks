@@ -15,7 +15,10 @@ The volume to create is controlled by the name string obtained from envvar *GEOM
 
 #include "G4VPhysicalVolume.hh"
 
-#ifdef WITH_PMTSIM
+
+#ifdef WITH_PMTFASTSIM
+#include "PMTFastSim.hh"
+#elif WITH_PMTSIM
 #include "PMTSim.hh"
 #endif
 
@@ -26,8 +29,12 @@ int main(int argc, char** argv)
     const char* name = SSys::getenvvar("GEOM", name_default ); 
 
     const G4VPhysicalVolume* pv = nullptr ; 
-#ifdef WITH_PMTSIM
+#ifdef WITH_PMTFASTSIM
+    pv = PMTFastSim::GetPV(name);  
+    LOG(info) << "PMTFastSim::GetPV " << name << " pv " << pv ; 
+#elif WITH_PMTSIM
     pv = PMTSim::GetPV(name);  
+    LOG(info) << "PMTSim::GetPV " << name << " pv " << pv ; 
 #endif
     if( pv == nullptr ) 
     {

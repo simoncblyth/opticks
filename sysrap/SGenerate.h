@@ -61,6 +61,16 @@ inline NP* SGenerate::GeneratePhotons()
     return ph ;  
 }
 
+/**
+SGenerate::GeneratePhotons
+----------------------------
+
+Does high level genstep handling, prepares MOCK CURAND, 
+creates seeds, creates photon array. 
+The details of the generation are done by storch::generate or scarrier:generate
+
+**/
+
 inline NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
     //std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 

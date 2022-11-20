@@ -46,6 +46,13 @@ struct U4_API U4VPrimaryGenerator
 #include "sphoton.h"
 #include "NP.hh"
 
+/**
+U4VPrimaryGenerator::GetPhotonParam
+-------------------------------------
+
+Photon parameters from Opticks photon types such as sphoton.h shuffled into Geant4 three vectors. 
+
+**/
 
 template<typename P>
 inline void U4VPrimaryGenerator::GetPhotonParam( 
@@ -61,6 +68,17 @@ inline void U4VPrimaryGenerator::GetPhotonParam(
      wavelength_nm = p.wavelength ;   
 }
 
+
+/**
+U4VPrimaryGenerator::MakePrimaryVertexPhoton
+----------------------------------------------
+
+Converts Opticks photon type P (eg sphoton.h) into G4PrimaryVertex
+
+1. shuffle photon param from P into G4ThreeVector, G4double
+2. create G4PrimaryVertex and populate with the param obtained above 
+
+**/
 
 template<typename P>
 inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const P& p)
@@ -87,6 +105,9 @@ inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const P& p
 /**
 U4VPrimaryGenerator::GeneratePrimaries
 ---------------------------------------
+
+1. generates NP array of Opticks sphoton or sphotond with SGenerate::GeneratePhotons 
+2. populates the G4Event argument with these as G4PrimaryVertex
 
 Notice that there are no G4Track in sight here, so there is no 
 way to annotate the tracks with *spho* labels.  
@@ -128,5 +149,4 @@ inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
         } 
     }
 }
-
 

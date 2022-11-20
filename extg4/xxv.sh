@@ -30,12 +30,15 @@ loglevels(){
 loglevels
 
 
+# HMM: should be using GEOM_.sh ? 
 
 #geom=hamaBodyPhys:nurs
 #geom=hamaBodyPhys:nurs:pdyn
 #geom=hamaBodyPhys:nurs:pdyn:prtc:obto
-geom=hamaBodyPhys:pdyn
+#geom=hamaBodyPhys:pdyn
 #geom=hamaBodyPhys
+
+geom=hamaLogicalPMTWrapLV
 
 #geom=nnvtBodyPhys:nurs
 #geom=nnvtBodyPhys:nurs:pdyn
@@ -44,35 +47,44 @@ geom=hamaBodyPhys:pdyn
 #geom=nnvtBodyPhys
 
 
-export GEOM=${GEOM:-$geom}
+#export GEOM=${GEOM:-$geom}
+export X4IntersectVolumeTest_GEOM=${GEOM:-$geom}
+export FOLD=/tmp/$USER/opticks/extg4/X4IntersectVolumeTest/$X4IntersectVolumeTest_GEOM
+
 zcut=${geom#*zcut}
 [ "$geom" != "$zcut" ] && zzd=$zcut 
 echo geom $geom zcut $geom zzd $zzd
 
-# TODO: now the defauts should be used rather than this manual approach 
 
-dz=-4
-num_pho=10
-cegs=9:0:16:0:0:$dz:$num_pho
-gridscale=0.10
+manual_config(){
+    dz=-4
+    num_pho=10
+    cegs=9:0:16:0:0:$dz:$num_pho
+    gridscale=0.10
 
-#zz=190,-162,-195,-210,-275,-350,-365,-420,-450
-xx=-254,254
+    #zz=190,-162,-195,-210,-275,-350,-365,-420,-450
+    xx=-254,254
 
-unset CXS_OVERRIDE_CE
-export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
+    unset CXS_OVERRIDE_CE
+    export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
-export GRIDSCALE=${GRIDSCALE:-$gridscale}
-export CXS_CEGS=${CXS_CEGS:-$cegs}
-export CXS_RELDIR=${CXS_RELDIR:-$reldir} 
-export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir} 
+    export GRIDSCALE=${GRIDSCALE:-$gridscale}
+    export CXS_CEGS=${CXS_CEGS:-$cegs}
+    export CXS_RELDIR=${CXS_RELDIR:-$reldir} 
+    export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir} 
+
+    env | grep CXS
+}
+#manual_config
+
+export GRIDSCALE=0.08  ## HUH: why is this needed ? default scale wrong  ?
+
 
 # presentational only 
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 export ZZD=${ZZD:-$zzd}
 
-env | grep CXS
 
 
 
@@ -106,6 +118,24 @@ if [ "${arg/ana}"  != "$arg" ]; then
         [ $? -ne 0 ] && echo $BASH_SOURCE ana interactive error && exit 4
     fi
 fi 
+
+
+if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=xxv
+    export CAP_STEM=$X4IntersectVolumeTest_GEOM
+    case $arg in  
+       mpcap) source mpcap.sh cap  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+
+    if [ "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
+
+
+
 
 exit 0 
 

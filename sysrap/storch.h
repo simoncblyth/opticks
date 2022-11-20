@@ -107,6 +107,7 @@ struct storch
    static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
    static constexpr const char* storch_FillGenstep_pos = "storch_FillGenstep_pos" ; 
    static constexpr const char* storch_FillGenstep_radius = "storch_FillGenstep_radius" ; 
+   static constexpr const char* storch_FillGenstep_type = "storch_FillGenstep_type" ; 
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
@@ -136,7 +137,9 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     qvals( gs.radius, storch_FillGenstep_radius, "50" ); 
     printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
 
-    gs.type = storchtype::Type("disc");  
+    const char* type = qenv(storch_FillGenstep_type, "disc" );  
+    gs.type = storchtype::Type(type);  
+    printf("//storch::FillGenstep storch_FillGenstep_type %s  gs.type %d \n", type, gs.type ); 
     gs.mode = 255 ;    //torchmode::Type("...");  
 }
 
@@ -161,6 +164,8 @@ inline std::string storch::desc() const
 storch::generate
 -----------------
 
+For CPU running with mock curand this is invoked by SGenerate::GeneratePhotons
+
 Populate "sphoton& p" as parameterized by "const quad6& gs_" which casts to "const storch& gs",
 the photon_id and genstep_id inputs are informational only. 
 
@@ -181,7 +186,6 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
        gs.type
       );  
 #endif
-
     if( gs.type == T_DISC )
     {
         //printf("//storch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
@@ -211,6 +215,29 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.pol.y = -cosPhi ; 
         p.pol.z = 0.f ;    
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
+        smath::rotateUz(p.pol, p.mom) ; 
+    }
+    else if( gs.type == T_LINE )
+    {
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
+        p.mom = gs.mom ; 
+
+        float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        //float r = gs.radius*u_zenith ;
+        float frac = float(photon_id)/float(gs.numphoton) ;  // 0->1 
+        float r = gs.radius*2.f*(frac-0.5f) ;
+
+        p.pos.x = r ;
+        p.pos.y = 0.f ; 
+        p.pos.z = 0.f ;   
+
+        smath::rotateUz(p.pos, p.mom) ; 
+        p.pos = p.pos + gs.pos ; // translate position after orienting the line
+
+        p.pol.x = 0.f ;
+        p.pol.y = -1.f ; 
+        p.pol.z = 0.f ;    
         smath::rotateUz(p.pol, p.mom) ; 
     }
 

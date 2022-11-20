@@ -62,37 +62,46 @@ if __name__ == '__main__':
     ms2 = np.where(ds2 == kInfinity )[0]
     ht2 = np.where(ds2 != kInfinity )[0]
     
-    trg_no  = np.where(trg == 0)[0]
-    trg_yes = np.where(trg == 1)[0]
+    #  enum EWhereAmI { OutOfRegion, kInGlass, kInVacuum };
+    glass      = wai == 1 
+    vacuum     = wai == 2 
+    trg_no     = trg == 0 
+    trg_yes    = trg == 1 
+    glass_no   = np.logical_and( wai == 1, trg == 0 )
+    glass_yes  = np.logical_and( wai == 1, trg == 1 ) 
+    vacuum_no  = np.logical_and( wai == 2, trg == 0 )
+    vacuum_yes = np.logical_and( wai == 2, trg == 1 )  
 
-    wai_1   = np.where( wai == 1)[0]
-    wai_2   = np.where( wai == 2)[0]
-
-    wai_1_trg_1 = np.logical_and( wai == 1, trg == 1 )   # only small number of these, all at top
-    yellow = wai_1_trg_1 
-
-    label = "MODE:%d " % MODE 
-    if MODE == 0:
-        blue = trg_no
-        cyan = trg_yes
-        label += "blue:trg_no "
-        label += "cyan:trg_yes "
-    elif MODE == 1:
-        blue = wai_1
-        cyan = wai_2
-        label += "blue:wai_1 "
-        label += "cyan:wai_2 "
+    selnames = "glass vacuum trg_no trg_yes glass_no glass_yes vacuum_no vacuum_yes".split()
+    for selname in selnames:
+        sel = locals()[selname]
+        print(" %20s : %s " % (selname, np.count_nonzero(sel) ))
     pass
+
+    #specs = "blue:trg_no:lines cyan:trg_yes:lines"
+    #specs = "blue:glass_no:lines cyan:glass_yes:lines"
+    specs = "blue:glass_no:lines cyan:glass_yes:lines red:vacuum_yes:lines yellow:vacuum_no:lines"
+    label = "U4PMTFastSimTest.py:SFastSim_Debug " + specs
 
     if NOGUI:
         print("not plotting as NOGUI in environ")
     else:
-        pl = pvplt_plotter("U4PMTFastSimTest.py:SFastSim_Debug " + label  )
-        #pl.add_points( pos[blue], color="blue" )
-        #pl.add_points( pos[cyan], color="cyan" )
-        pl.add_points( pos[yellow], color="yellow" )
+        pl = pvplt_plotter(label)
+        os.environ["EYE"] = "0,100,165"
+        os.environ["LOOK"] = "0,0,165"
+        pvplt_viewpoint(pl)
+
+        for spec in specs.split():
+            color,selname,stylename = spec.split(":")    
+            sel = locals()[selname]
+            if stylename == "lines":
+                pvplt_lines(pl, pos[sel], mom[sel], color=color, factor=10 )
+            elif stylename == "points":
+                pl.add_points( pos[sel], color=color )
+            else:
+                pass
+            pass
+        pass
         pl.show()
     pass
-
-
 pass

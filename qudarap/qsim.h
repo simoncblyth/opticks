@@ -740,7 +740,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float _c1 = -dot(p.mom, *normal ); 
     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; 
     const float3 trans = cross(p.mom, oriented_normal) ; 
-    const float trans_length = length(trans) ; 
+    const float trans_length = length(trans) ;   // HMM: same as sin(theta) ?
     const float c1 = fabs(_c1) ; 
     const bool normal_incidence = trans_length < 1e-6f  ; 
  

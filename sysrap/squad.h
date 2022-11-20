@@ -453,16 +453,18 @@ inline float qenvfloat( const char* key, const char* fallback )
     return v ; 
 }
 
-inline int qenvint( const char* key, const char* fallback )
+inline const char* qenv(const char* key, const char* fallback )
 {
     char* val = getenv(key);
     char* p = const_cast<char*>( val ? val : fallback ); 
-    return std::atoi(p); 
+    return p ; 
 }
 
-
-
-
+inline int qenvint( const char* key, const char* fallback )
+{
+    const char* p = qenv(key, fallback); 
+    return std::atoi(p); 
+}
 
 inline void qvals( float2& v,  const char* key, const char* fallback )
 {

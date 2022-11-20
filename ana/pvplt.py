@@ -168,7 +168,7 @@ def pvplt_arrows( pl, pos, vec, color='yellow', factor=0.15 ):
     pl.add_mesh(vec_arrows, color=color, show_scalar_bar=False)
 
 
-def pvplt_lines( pl, pos, vec, color='white' ):
+def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     init_pl = pl == None 
     if init_pl:
         pl = pvplt_plotter(label="pvplt_line")   
@@ -176,7 +176,7 @@ def pvplt_lines( pl, pos, vec, color='white' ):
     pos_cloud = pv.PolyData(pos)
     pos_cloud['vec'] = vec
     geom = pv.Line(pointa=(0.0, 0., 0.), pointb=(1.0, 0., 0.),)
-    vec_lines = pos_cloud.glyph(orient='vec', scale=False, factor=1.0, geom=geom)
+    vec_lines = pos_cloud.glyph(orient='vec', scale=False, factor=factor, geom=geom)
     pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 

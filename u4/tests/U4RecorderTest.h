@@ -32,7 +32,7 @@ class junoPMTOpticalModel ;
 
 //template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step* ) ; 
 
-struct U4RecorderTest
+struct U4RecorderTest   // HMM: U4Action would be a better name 
     : 
     public G4UserRunAction,  
     public G4UserEventAction,
@@ -50,8 +50,7 @@ struct U4RecorderTest
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     G4VPhysicalVolume*    fPV ; 
-    junoPMTOpticalModel*  fPOM ;   // HMM: a foreigner coming in via optional PMTFastSim 
-
+    junoPMTOpticalModel*  fPOM ;     // just stays nullptr when do not have PMTFASTSIM_STANDALONE
 
     G4VPhysicalVolume* Construct(); 
 
@@ -93,7 +92,7 @@ char U4RecorderTest::PrimaryMode()
     const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
-    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
+    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ;   // CAUTION: torch and iphoton both call U4VPrimaryGenerator::GeneratePrimaries
     return mode ;   
 }
 
@@ -132,15 +131,16 @@ G4VPhysicalVolume* U4RecorderTest::Construct()
 { 
     G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
 
-    junoPMTOpticalModel* pom = U4VolumeMaker::PVF_POM ; 
-
     fPV = pv ; 
+#ifdef PMTFASTSIM_STANDALONE
+    junoPMTOpticalModel* pom = U4VolumeMaker::PVF_POM ; 
     fPOM = pom ; 
+#endif
 
     std::cout 
         << "U4RecorderTest::Construct"
-        << " fPV " << fPV 
-        << " fPOM " << fPOM 
+        << " fPV " << ( fPV ? "Y" : "N" )
+        << " fPOM " << ( fPOM ? "Y" : "N" ) 
         << std::endl 
         ;
 
@@ -153,8 +153,8 @@ void U4RecorderTest::GeneratePrimaries(G4Event* event)
     switch(fPrimaryMode)
     {
         case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
-        case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   // eg from collected torch gensteps 
-        case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   
+        case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; // eg from collected torch gensteps 
+        case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; // NOTE torch and iphoton are doing the same thing : misleading 
         default:  assert(0) ; break ; 
     }
     LOG(LEVEL) << "]" ; 

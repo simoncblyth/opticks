@@ -201,7 +201,7 @@ void GeoChain::save(const char* name, const char* base_) const
 {
     const char* cfbase = getCFBase(name, base_); 
 
-    LOG(LEVEL) << " name " << name << " cfbase " << cfbase ; 
+    LOG(info) << " name " << name << " cfbase " << cfbase ; 
 
     fd->save(cfbase, CSGFoundry::RELDIR );    // expects existing directory $CFBASE/CSGFoundry 
     checkSaveWithLoad(cfbase); 

@@ -48,6 +48,7 @@ endif()
 
 set(PMTSim_VERBOSE ON)
 find_package(PMTSim CONFIG)
+find_package(PMTFastSim CONFIG)
 
 if(PMTSim_VERBOSE)
 if(PMTSim_FOUND)
@@ -244,12 +245,13 @@ target_link_libraries( ${name} PUBLIC
     CLHEP::CLHEP
 )
 
-if(PMTSim_FOUND)
+if(PMTFastSim_FOUND)
+    target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
+    target_compile_definitions( ${name} PUBLIC WITH_PMTFASTSIM )
+elseif(PMTSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
     target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
 endif()
-
-
 
 
 target_include_directories( ${name} PUBLIC 

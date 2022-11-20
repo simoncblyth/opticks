@@ -26,7 +26,7 @@ GeoChainVolumeTest
 HMM : consolidating to a single executable would need to implement
 the below name switch in the main. But that would hardcode specific 
 geometry names into code, so just stick to doing it in the script for now.
-Doing this in PMTSim which is JUNO specific might be a solution.
+Doing this split in PMTSim which is JUNO specific might be a solution.
 
 Usage::
 
@@ -104,6 +104,7 @@ case $GEOM in
    *Inner1Phys*)                 bin=GeoChainVolumeTest ;; 
    *Inner2Phys*)                 bin=GeoChainVolumeTest ;; 
    *DynodePhys*)                 bin=GeoChainVolumeTest ;; 
+   *WrapLV*)                     bin=GeoChainVolumeTest ;;
 esac
 
 loglevels()

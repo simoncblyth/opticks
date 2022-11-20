@@ -44,7 +44,7 @@ if __name__ == '__main__':
     log.info("X4IntersectVolumeTest.py")
 
     reldir = os.environ.get("CXS_RELDIR", "extg4/X4IntersectVolumeTest" ) 
-    geom = os.environ.get("GEOM", "body_phys")
+    geom = os.environ.get("X4IntersectVolumeTest_GEOM", "body_phys")
 
     colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
     gcol = "grey"

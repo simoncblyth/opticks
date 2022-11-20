@@ -56,11 +56,14 @@ EOU
 
 #geom=hmskSolidMaskVirtual
 #geom=hmskSolidMask
-geom=hmskSolidMaskTail
+#geom=hmskSolidMaskTail
 #geom=hamaPMTSolid
 #geom=hamaBodySolid
 #geom=hamaInner1Solid
 #geom=hamaInner2Solid
+
+geom=hamaLogicalPMTWrapLV
+
 
 #
 #geom=hmskTailOuterIEllipsoid
