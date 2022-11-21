@@ -35,6 +35,13 @@ struct SGenerate
 
 #endif
 
+/**
+SGenerate::GeneratePhotons
+----------------------------
+
+Called for example from U4VPrimaryGenerator::GeneratePrimaries
+
+**/
 inline NP* SGenerate::GeneratePhotons()
 {
     NP* gs = SEvt::GatherGenstep(); 
@@ -106,7 +113,7 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
         }    
     }
 #endif
-    return ph ; 
+    return ph ;
 }
 
 

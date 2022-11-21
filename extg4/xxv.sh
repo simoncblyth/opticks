@@ -9,8 +9,16 @@ with structure transforms applied to intersects.
 
 To run over all the commented and uncommented geom listed in xxv.sh below use ./xxv_scan.sh 
 
+TODO: perhaps update to use sframe.cc/py 
 
-TODO: improve presentation, currently too small : perhaps update to use sframe.cc/py 
+::
+  
+   QUIET=1 ./xxv.sh run 
+      ## run with minimal logging  
+
+   LABELS=pmt_s_1_4,body_s_1_4,inner1_s_I,inner2_s_1_4 ./xxv.sh ana
+      ## plot, with solid/volume selection by abbreviated label 
+      ## NB position of pmt and body depends on which PMTOpticalModel (POM) is enabled
 
 EOU
 }
@@ -18,6 +26,7 @@ EOU
 msg="=== $BASH_SOURCE :"
 bin=X4IntersectVolumeTest
 reldir=extg4/$bin
+srcdir=$(dirname $BASH_SOURCE)
 
 
 loglevels(){
@@ -27,7 +36,7 @@ loglevels(){
     export PMTSim=2 
 
 }
-loglevels
+[ -z "$QUIET" ] && loglevels
 
 
 # HMM: should be using GEOM_.sh ? 
@@ -50,6 +59,11 @@ geom=hamaLogicalPMTWrapLV
 #export GEOM=${GEOM:-$geom}
 export X4IntersectVolumeTest_GEOM=${GEOM:-$geom}
 export FOLD=/tmp/$USER/opticks/extg4/X4IntersectVolumeTest/$X4IntersectVolumeTest_GEOM
+
+export hama_FastCoverMaterial=Cheese
+#export hama_UsePMTOpticalModel=0
+export hama_UsePMTOpticalModel=1
+
 
 zcut=${geom#*zcut}
 [ "$geom" != "$zcut" ] && zzd=$zcut 
@@ -86,9 +100,6 @@ export ZZ=${ZZ:-$zz}
 export ZZD=${ZZD:-$zzd}
 
 
-
-
-
 arg=${1:-runana}
 
 if [ "${arg/exit}" != "$arg" ]; then
@@ -111,10 +122,10 @@ fi
 if [ "${arg/ana}"  != "$arg" ]; then 
 
     if [ -n "$SCANNER" ]; then 
-        ${IPYTHON:-ipython} --pdb  tests/$bin.py 
+        ${IPYTHON:-ipython} --pdb  $srcdir/tests/$bin.py 
         [ $? -ne 0 ] && echo $BASH_SOURCE ana noninteractive error && exit 3
     else
-        ${IPYTHON:-ipython} --pdb -i tests/$bin.py 
+        ${IPYTHON:-ipython} --pdb -i $srcdir/tests/$bin.py 
         [ $? -ne 0 ] && echo $BASH_SOURCE ana interactive error && exit 4
     fi
 fi 

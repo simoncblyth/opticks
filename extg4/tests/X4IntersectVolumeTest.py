@@ -9,6 +9,7 @@ X4IntersectVolumeTest.py : 2D scatter plots of geometry intersect positions
 
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.pvplt import mpplt_add_contiguous_line_segments 
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -22,11 +23,8 @@ pass
 try:
     import pyvista as pv
     from pyvista.plotting.colors import hexcolors  
-    #theme = "default"
-    theme = "dark"
-    #theme = "paraview"
-    #theme = "document"
-    pv.set_plot_theme(theme)
+    themes = "default dark paraview document".split()
+    pv.set_plot_theme(themes[1])
 except ImportError:
     pv = None
     hexcolors = None
@@ -76,13 +74,28 @@ if __name__ == '__main__':
     for soname in transforms_meta:
         isects[soname] = Fold.Load(basedir, soname, "X4Intersect")
     pass
+    LABELS = list(filter(None,os.environ.get("LABELS","").split(",")))
+    SZ = float(os.environ.get("SZ",3))
+
+
+    EXTRA = os.environ.get("EXTRA", "/tmp/U4PMTFastSimTest/pid726.npy")
+    if os.path.exists(EXTRA):
+        extra = np.load(EXTRA)
+        print("loaded extra %s from EXTRA %s " % (str(extra.shape), EXTRA))
+    else:
+        extra = None
+    pass     
+
+
+     
+    REVERSE = int(os.environ.get("REVERSE","0")) == 1
+    print("REVERSE : %d " % REVERSE)
 
     size = np.array([1280, 720])
     #H,V = Z,X
     H,V = X,Z
 
     if mp: 
-        sz = 3
         fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
         fig.suptitle("\n".join([topline,botline,thirdline]))
         ax.set_aspect('equal')
@@ -97,10 +110,12 @@ if __name__ == '__main__':
         ax.set_ylim( vlim )
 
         if not "NOGS" in os.environ:
-            ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
+            ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=gcol ) 
         pass
-
-        for i, soname in enumerate(transforms_meta):
+        num = len(transforms_meta)
+        for j in range(num):
+            i = num - 1 - j  if REVERSE else j              
+            soname = transforms_meta[i] 
             isect = isects[soname]
             tran = np.float32(transforms[i])
             ipos = isect.isect[:,0,:3] + tran[3,:3]
@@ -110,9 +125,23 @@ if __name__ == '__main__':
             if label[0] == "_": label = label[1:]   # seems labels starting "_" have special meaning to mpl, causing problems
             label = label.replace("solid","s")
 
-            ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=color, label=label ) 
+            select = len(LABELS) == 0 or label in LABELS
+            print(" %2d : %30s : %15s : %s " % (i, soname, label, select ))
+            if select:
+                ax.scatter( ipos[:,H], ipos[:,V], s=SZ, color=color, label=label ) 
+            pass
         pass
-        ax.legend(loc="lower left",  markerscale=4)
+
+        if not extra is None:
+            print("extra scatter EXTRA %s " % EXTRA)
+            ax.scatter( extra[:,0,H], extra[:,0,V], s=20, color="red" )
+            mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label="extra" )
+        pass
+
+        LOC = os.environ.get("LOC", "lower left")
+        if LOC != "skip":
+            ax.legend(loc=LOC,  markerscale=4)
+        pass
         fig.show()
 
         if savefig:

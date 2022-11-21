@@ -104,8 +104,10 @@ struct storch
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
    static constexpr const char* storch_FillGenstep_pos = "storch_FillGenstep_pos" ; 
+   static constexpr const char* storch_FillGenstep_time = "storch_FillGenstep_time" ; 
+   static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
+   static constexpr const char* storch_FillGenstep_wavelength = "storch_FillGenstep_wavelength" ; 
    static constexpr const char* storch_FillGenstep_radius = "storch_FillGenstep_radius" ; 
    static constexpr const char* storch_FillGenstep_type = "storch_FillGenstep_type" ; 
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
@@ -117,20 +119,32 @@ struct storch
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+/**
+storch::FillGenstep
+----------------------
+
+Canonically invoked from SEvent::MakeGensteps
+
+**/
 inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
     gs.gentype = OpticksGenstep_TORCH ; 
     gs.numphoton = numphoton_per_genstep  ;   
 
     qvals( gs.pos , storch_FillGenstep_pos , "0,0,-90" );    
-    gs.time = 0.f ; 
     printf("//storch::FillGenstep storch_FillGenstep_pos gs.pos (%10.4f %10.4f %10.4f) \n", gs.pos.x, gs.pos.y, gs.pos.z ); 
+
+    qvals( gs.time, storch_FillGenstep_time, "0.0" ); 
+    printf("//storch::FillGenstep storch_FillGenstep_time gs.time (%10.4f) \n", gs.time ); 
 
     qvals( gs.mom , storch_FillGenstep_mom , "0,0,1" );    
     gs.mom = normalize(gs.mom); 
     printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
 
-    gs.wavelength = 501.f ; 
+    qvals( gs.wavelength, storch_FillGenstep_wavelength, "420" ); 
+    printf("//storch::FillGenstep storch_FillGenstep_wavelength gs.wavelength (%10.4f) \n", gs.wavelength  ); 
+
     gs.zenith = make_float2( 0.f, 1.f );  
     gs.azimuth = make_float2( 0.f, 1.f );  
 

@@ -55,7 +55,7 @@ if __name__ == '__main__':
     trg = fs[:,3,0].astype(np.int64)
     wai = fs[:,3,1].astype(np.int64)
     c   = fs[:,3,2]
-    d   = fs[:,3,3]
+    pid = fs[:,3,3].astype(np.int64)
 
     ms1 = np.where(ds1 == kInfinity )[0]
     ht1 = np.where(ds1 != kInfinity )[0]
@@ -71,6 +71,25 @@ if __name__ == '__main__':
     glass_yes  = np.logical_and( wai == 1, trg == 1 ) 
     vacuum_no  = np.logical_and( wai == 2, trg == 0 )
     vacuum_yes = np.logical_and( wai == 2, trg == 1 )  
+
+
+    PID = int(os.environ.get("PID", -1))
+    pidsel = np.where( pid == PID )[0]  
+    num_pidsel = len(pidsel)  
+    print(" PID %d pidsel %s num_pidsel %d " % (PID, str(pidsel), num_pidsel))
+
+    if PID > -1 and num_pidsel > 0:
+        ph = np.zeros( [num_pidsel,4,4], dtype=np.float64 )
+        ph[:] = fs[pidsel, :4]
+        pidsel_path = "/tmp/U4PMTFastSimTest/pid%d.npy" % PID
+        dirpath = os.path.dirname(pidsel_path)
+        if not os.path.isdir(dirpath):
+            os.makedirs(dirpath)
+        pass
+        print("Save PID %d ph %s to pidsel_path %s " % (PID, str(ph.shape), pidsel_path))
+        np.save(pidsel_path, ph )
+    pass
+
 
     selnames = "glass vacuum trg_no trg_yes glass_no glass_yes vacuum_no vacuum_yes".split()
     for selname in selnames:
@@ -94,6 +113,9 @@ if __name__ == '__main__':
         for spec in specs.split():
             color,selname,stylename = spec.split(":")    
             sel = locals()[selname]
+            numsel = np.count_nonzero(sel) 
+            if numsel == 0: continue
+
             if stylename == "lines":
                 pvplt_lines(pl, pos[sel], mom[sel], color=color, factor=10 )
             elif stylename == "points":

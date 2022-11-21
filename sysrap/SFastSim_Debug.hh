@@ -39,7 +39,7 @@ struct SYSRAP_API SFastSim_Debug
     double ModelTrigger ; // trg = fs[:,3,0].astype(np.int64)   ## wasting 63 bits 
     double whereAmI ;     // wai = fs[:,3,1].astype(np.int64)   ## wasting 62-63 bits 
     double c ;            // c   = fs[:,3,2]
-    double d ;            // d   = fs[:,3,3]
+    double PhotonId ;     // pid = fs[:,3,3].astype(np.int64)   ## again wasting bits 
 
     // NB for python parsing check line terminations with set list
     // TODO: improve py parsing to cope with comments

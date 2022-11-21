@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+"""
+pvplt.py
+===========
+
+pvplt_simple
+mpplt_focus
+    given xlim, ymin args and FOCUS env-array return new xlim,ylim 
+
+pvplt_viewpoint
+    according to EYE, LOOK, UP, ZOOM, PARA envvars 
+pvplt_photon
+    pos, mom, pol plotting 
+pvplt_plotter
+pvplt_arrows
+pvplt_lines
+pvplt_add_contiguous_line_segments
+
+mpplt_add_contiguous_line_segments
+
+
+
+
+"""
 
 import os, logging
 log = logging.getLogger(__name__)
@@ -27,9 +50,7 @@ else:
     Ellipse = None
 pass 
 
-
 from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
-
 from opticks.ana.axes import Axes, X,Y,Z
 
 themes = ["default", "dark", "paraview", "document" ]
