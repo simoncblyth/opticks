@@ -31,6 +31,11 @@ struct spho ;
 struct U4_API U4Recorder 
 {
     static const plog::Severity LEVEL ; 
+
+    static const int STATES ; // configures number of g4states to persist 
+    static const int RERUN  ; 
+    static constexpr int STATE_ITEMS = 2*17+4 ; // 2*17+4 is appropriate for MixMaxRng 
+
     static const int PIDX ;   // used to control debug printout for idx 
     static const int EIDX ;   // used to enable U4Recorder for an idx, skipping all others
     static const int GIDX ; 
@@ -53,6 +58,8 @@ struct U4_API U4Recorder
     void PostUserTrackingAction(const G4Track*);
 
     void PreUserTrackingAction_Optical(const G4Track*);
+    void saveOrLoadStates(int id); 
+
     void PostUserTrackingAction_Optical(const G4Track*);
 
     template<typename T> void UserSteppingAction(const G4Step*);

@@ -31,6 +31,9 @@
 
 const plog::Severity U4Recorder::LEVEL = SLOG::EnvLevel("U4Recorder", "DEBUG"); 
 
+const int U4Recorder::STATES = SSys::getenvint("U4Recorder_STATES",-1) ; 
+const int U4Recorder::RERUN  = SSys::getenvint("U4Recorder_RERUN",-1) ; 
+
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
 const int U4Recorder::EIDX = SSys::getenvint("EIDX",-1) ; 
 const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
@@ -124,8 +127,6 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-
-
     LOG(LEVEL); 
     const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
 
@@ -159,15 +160,9 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
     U4Random::SetSequenceIndex(label.id); 
 
-    // for pure-optical Geant4 photon rerunning need to 
-    // save the engine state somewhere into SEvt at this juncture
-
-
-
     SEvt* sev = SEvt::Get(); 
 
-
-    //U4Engine::SaveStatus( states, label.id );      
+    saveOrLoadStates(label.id); 
 
     if(label.gn == 0)
     {
@@ -180,8 +175,41 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 }
 
 /**
-U4Recorder::PostUserTrackingAction_Optical
+U4Recorder::saveOrLoadStates
+------------------------------
 
+For pure-optical Geant4 photon rerunning without pre-cooked randoms
+need to save the engine state into SEvt prior to using 
+any Geant4 randoms for the photon. So can restore the random engine 
+back to this state. 
+
+HMM: but to then reuse that state will need to persist 
+the g4states array with SEvt and then load it back.
+Where to do that ?
+
+**/
+
+void U4Recorder::saveOrLoadStates( int id )
+{
+    if(STATES == -1 || id >= STATES )  return ; 
+    SEvt* sev = SEvt::Get(); 
+    NP* g4states = sev->g4states ; 
+
+    if( RERUN < 0 ) // saving states
+    {
+        if(g4states == nullptr) sev->init_g4states(STATES, STATE_ITEMS ); 
+        U4Engine::SaveStatus( g4states, id );      
+    }
+    else
+    {
+        LOG_IF( fatal, g4states == nullptr ) << " cannot U4Engine::RestoreStatus without g4states loaded " ; 
+        assert( g4states ); 
+        U4Engine::RestoreStatus( g4states, id );   
+    }
+}
+
+/**
+U4Recorder::PostUserTrackingAction_Optical
 
 **/
 

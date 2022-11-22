@@ -94,6 +94,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string meta ; 
     NP* input_photon ; 
     NP* input_photon_transformed ; 
+    NP* g4states ;    // populated by U4Engine::SaveStatus
 
     const SRandom*        random ; 
     const SCompProvider*  provider ; 
@@ -183,6 +184,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     void init(); 
+    void init_g4states(int max_states, int item_values); 
 
     static const char* INPUT_PHOTON_DIR ; 
     static NP* LoadInputPhoton(); 

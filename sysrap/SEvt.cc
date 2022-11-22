@@ -51,6 +51,7 @@ SEvt::SEvt()
     dbg(new sdebug),
     input_photon(nullptr),
     input_photon_transformed(nullptr),
+    g4states(nullptr),
     random(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
@@ -146,6 +147,27 @@ void SEvt::init()
 
     initInputPhoton(); 
     LOG(LEVEL) << "]" ; 
+}
+
+/**
+SEvt::init_g4states
+---------------------
+
+Not invoked by default.  May be invoked by U4Recorder::PreUserTrackingAction_Optical
+Item values of 2*17+4=38 is appropriate for the default Geant4 10.4.2 random engine: MixMaxRng 
+See::
+
+     g4-cls MixMaxRng 
+     g4-cls RandomEngine 
+     g4-cls Randomize
+     
+**/
+
+void SEvt::init_g4states(int max_states, int item_values)
+{
+    if(max_states < 0 ) return ; 
+    g4states = NP::Make<unsigned long>(max_states, item_values ); 
+    LOG(LEVEL) << " g4states " << g4states->sstr() ; 
 }
 
 
