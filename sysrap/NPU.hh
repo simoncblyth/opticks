@@ -389,6 +389,11 @@ struct U
     template<typename ... Args>
     static const char* Path( Args ... args ); 
 
+    template<typename T>
+    static std::vector<T>* MakeVec(const char* line, char delim=','); 
+
+    template<typename T>
+    static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=','); 
     static int         GetEnvInt( const char* envkey, int fallback );  
     static const char* GetEnv(    const char* envkey, const char* fallback); 
 
@@ -409,6 +414,30 @@ struct U
 
 
 
+template<typename T>
+inline std::vector<T>* U::MakeVec(const char* line, char delim)
+{
+    if(line == nullptr) return nullptr ; 
+    std::vector<T>* vec = new std::vector<T>() ; 
+    std::stringstream ss; 
+    ss.str(line);
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {   
+        std::istringstream iss(s);
+        T t ; 
+        iss >> t ; 
+        vec->push_back(t) ; 
+    }   
+    return vec ; 
+}
+
+template<typename T>
+inline std::vector<T>* U::GetEnvVec(const char* ekey, const char* fallback, char delim)
+{
+    char* line = getenv(ekey);
+    return MakeVec<T>( line ? line : fallback, delim  ) ; 
+}
 
 
 inline int U::GetEnvInt(const char* envkey, int fallback)

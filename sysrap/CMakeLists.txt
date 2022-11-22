@@ -165,6 +165,8 @@ set(HEADERS
     SBnd.h
 
     SPath.hh
+    spath.h 
+
     SSeq.hh
     STranche.hh
     SVec.hh

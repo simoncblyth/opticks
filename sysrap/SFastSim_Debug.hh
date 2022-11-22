@@ -36,6 +36,8 @@ struct SYSRAP_API SFastSim_Debug
     double polz ;
     double dist2 ; // ds2 = fs[:,2,3]
 
+    // TODO: make the layout closer to sphoton.h, stop wasting bits  
+
     double ModelTrigger ; // trg = fs[:,3,0].astype(np.int64)   ## wasting 63 bits 
     double whereAmI ;     // wai = fs[:,3,1].astype(np.int64)   ## wasting 62-63 bits 
     double c ;            // c   = fs[:,3,2]

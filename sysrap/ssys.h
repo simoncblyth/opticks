@@ -22,6 +22,10 @@ struct ssys
     template<typename T>
     static T getenvv(const char* ekey, T fallback);  
 
+
+    template<typename T>
+    static std::vector<T>* make_vec(const char* line, char delim=','); 
+
     template<typename T>
     static std::vector<T>* getenvvec(const char* ekey, const char* fallback, char delim=','); 
 
@@ -89,24 +93,29 @@ template double   ssys::getenvv(const char*, double );
 
 
 template<typename T>
-inline std::vector<T>* ssys::getenvvec(const char* ekey, const char* fallback, char delim)
+inline std::vector<T>* ssys::make_vec(const char* line, char delim)
 {
-    assert(fallback); 
     std::vector<T>* vec = new std::vector<T>() ; 
-    char* line = getenv(ekey);
-    std::stringstream ss; 
-    ss.str(line ? line : fallback);
+    std::stringstream ss;  
+    ss.str(line);
     std::string s;
     while (std::getline(ss, s, delim)) 
-    {
+    {    
         std::istringstream iss(s);
-        T t ; 
-        iss >> t ; 
+        T t ;  
+        iss >> t ;  
         vec->push_back(t) ; 
-    }
+    }    
     return vec ; 
 }
 
+template<typename T>
+inline std::vector<T>* ssys::getenvvec(const char* ekey, const char* fallback, char delim)
+{
+    assert(fallback); 
+    char* line = getenv(ekey);
+    return make_vec<T>( line ? line : fallback, delim );  
+}
 
 
 template std::vector<int>*      ssys::getenvvec(const char*, const char*, char);

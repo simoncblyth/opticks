@@ -14,6 +14,7 @@ rather than the widely used sysrap library.
 struct NP ; 
 struct SGenerate
 {
+    static constexpr const char* SGenerate_GeneratePhotons_MASK = "SGenerate_GeneratePhotons_MASK" ; 
     static NP* GeneratePhotons();  
     static NP* GeneratePhotons(const NP* gs);  
 }; 
@@ -53,7 +54,6 @@ inline NP* SGenerate::GeneratePhotons()
         return nullptr ;  
     }
 
-
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {
@@ -64,8 +64,16 @@ inline NP* SGenerate::GeneratePhotons()
     {
         ph = GeneratePhotons(gs);
     }
-    //std::cout << "SGenerate::GeneratePhotons ph " << ( ph ? ph->brief() : "-" ) << std::endl ; 
-    return ph ;  
+
+    NP* phs = NP::MakeSelectCopyE_(ph, SGenerate_GeneratePhotons_MASK );  
+    std::cout 
+        << "SGenerate::GeneratePhotons"
+        << " ph " << ( ph ? ph->brief() : "-" ) 
+        << " phs " << ( phs ? phs->brief() : "-" )  << " (SGenerate_GeneratePhotons_MASK) "
+        << std::endl 
+        ; 
+
+    return phs ;  
 }
 
 /**
