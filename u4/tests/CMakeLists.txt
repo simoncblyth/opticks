@@ -28,6 +28,7 @@ set(TEST_SOURCES
    U4GDMLReadTest.cc 
    U4PhysicalConstantsTest.cc
    U4RandomTest.cc
+   U4EngineTest.cc
    U4VolumeMakerTest.cc
    U4LogTest.cc
    U4RotationMatrixTest.cc

@@ -1,5 +1,16 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+U4PMTFastSimTest.sh
+======================
+
+::
+
+    PID=726 ./U4PMTFastSimTest.sh nana
+
+EOU
+}
+
 export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1
@@ -13,7 +24,7 @@ loglevel
 export GEOM=hamaLogicalPMT
 export U4RecorderTest__PRIMARY_MODE=torch 
 # hmm seems iphoton and torch do same thing internally 
-export BeamOn=1
+export BeamOn=${BeamOn:-1}
 
 export hama_FastCoverMaterial=Cheese
 export hama_UsePMTOpticalModel=1

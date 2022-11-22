@@ -3,10 +3,6 @@
 U4PMTFastSimTest.py
 =====================
 
-TODO: restrict to 2D so can create some more informative plots 
-
-
-
 ::
 
     In [10]: np.unique(wai, return_counts=True)
@@ -52,7 +48,7 @@ if __name__ == '__main__':
     pol = fs[:,2,:3]
     ds2 = fs[:,2,3]
 
-    trg = fs[:,3,0].astype(np.int64)
+    trg = fs[:,3,0].astype(np.int64)  ## NB not ".view", as here wasting bits 
     wai = fs[:,3,1].astype(np.int64)
     c   = fs[:,3,2]
     pid = fs[:,3,3].astype(np.int64)
@@ -75,19 +71,25 @@ if __name__ == '__main__':
 
     PID = int(os.environ.get("PID", -1))
     pidsel = np.where( pid == PID )[0]  
+    #pidsel = np.where( pid == PID )[0]  
     num_pidsel = len(pidsel)  
     print(" PID %d pidsel %s num_pidsel %d " % (PID, str(pidsel), num_pidsel))
 
     if PID > -1 and num_pidsel > 0:
-        ph = np.zeros( [num_pidsel,4,4], dtype=np.float64 )
-        ph[:] = fs[pidsel, :4]
+        extra = np.zeros( [num_pidsel,4,4], dtype=np.float64 )
+        extra[:] = fs[pidsel, :4]                   # copy, not reference, fs 
+        extra[np.where( extra == kInfinity )] = -1  # replace obnoxious 9e99
+
         pidsel_path = "/tmp/U4PMTFastSimTest/pid%d.npy" % PID
         dirpath = os.path.dirname(pidsel_path)
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
         pass
-        print("Save PID %d ph %s to pidsel_path %s " % (PID, str(ph.shape), pidsel_path))
-        np.save(pidsel_path, ph )
+
+        print("Save PID %d extra %s to pidsel_path %s (used from xxv.sh) " % (PID, str(extra.shape), pidsel_path))
+        np.save(pidsel_path, extra )
+
+        ModelTrigger = extra[np.where(extra[:,3,0].astype(np.int64) == 1)]   
     pass
 
 

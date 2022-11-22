@@ -19,6 +19,7 @@ This was developed from examples/Geant4/CerenkovStandalone/OpticksRandom.hh
 **/
 
 #include <vector>
+#include <string>
 #include "plog/Severity.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "SRandom.h"
@@ -29,6 +30,7 @@ struct U4_API U4Random : public CLHEP::HepRandomEngine, public SRandom
 {
     friend struct U4RandomTest ; 
     static const plog::Severity LEVEL ; 
+    static std::string Desc(); 
 
     //static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ;  
     static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy" ; 

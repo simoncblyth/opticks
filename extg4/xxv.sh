@@ -91,7 +91,7 @@ manual_config(){
 }
 #manual_config
 
-export GRIDSCALE=0.08  ## HUH: why is this needed ? default scale wrong  ?
+export GRIDSCALE=0.08  ## HUH: why is default scale wrong  ?
 
 
 # presentational only 
@@ -130,7 +130,6 @@ if [ "${arg/ana}"  != "$arg" ]; then
     fi
 fi 
 
-
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
     export CAP_REL=xxv
@@ -145,8 +144,4 @@ if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     fi  
 fi 
 
-
-
-
 exit 0 
-

@@ -3,8 +3,8 @@
 U4Recorder
 ===========
 
-U4Recorder is NOT a G4UserRunAction, G4UserEventAction, ... despite 
-having the corresponding method names. 
+U4Recorder is NOT a G4UserRunAction, G4UserEventAction, 
+... despite having the corresponding method names. 
 
 The U4Recorder relies on the RunAction, EventAction  etc.. classes 
 calling those lifecycle methods.   
@@ -21,12 +21,12 @@ class G4Step ;
 class G4VSolid ; 
 class G4StepPoint ; 
 
+struct NP ; 
 struct spho ; 
 
 #include "plog/Severity.h"
 #include "G4TrackStatus.hh"
 #include "U4_API_EXPORT.hh"
-
 
 struct U4_API U4Recorder 
 {
@@ -41,6 +41,7 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
 
     U4Recorder(); 
+    // NO MEMBERS : persisting is handled at lower level by sysrap/SEvt 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -55,11 +56,8 @@ struct U4_API U4Recorder
     void PostUserTrackingAction_Optical(const G4Track*);
 
     template<typename T> void UserSteppingAction(const G4Step*);
-
     template<typename T> void UserSteppingAction_Optical(const G4Step*); 
 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
-
 };
-
 

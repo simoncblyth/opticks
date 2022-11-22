@@ -78,6 +78,7 @@ set(HEADERS
     U4OpBoundaryProcess.h
     U4StepPoint.hh
     U4Random.hh
+    U4Engine.h
     U4Touchable.h
 
     U4Debug.hh

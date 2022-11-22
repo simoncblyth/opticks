@@ -97,7 +97,6 @@ if __name__ == '__main__':
 
     if mp: 
         fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
-        fig.suptitle("\n".join([topline,botline,thirdline]))
         ax.set_aspect('equal')
        
         soname0 = transforms_meta[0]
@@ -134,14 +133,28 @@ if __name__ == '__main__':
 
         if not extra is None:
             print("extra scatter EXTRA %s " % EXTRA)
-            ax.scatter( extra[:,0,H], extra[:,0,V], s=20, color="red" )
+            ModelTriggerYES = extra[np.where(extra[:,3,0].astype(np.int64) == 1)]  
+            ModelTriggerNO = extra[np.where(extra[:,3,0].astype(np.int64) == 0)]  
+
+            if "ModelTriggerYES" in os.environ:
+                ax.scatter( ModelTriggerYES[:,0,H], ModelTriggerYES[:,0,V], s=50, color="red"   )
+                thirdline += " ModelTriggerYES" 
+            pass
+            if "ModelTriggerNO" in os.environ:
+                ax.scatter( ModelTriggerNO[:,0,H], ModelTriggerNO[:,0,V], s=50, color="blue"  )
+                thirdline += " ModelTriggerNO" 
+            pass
+
             mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label="extra" )
         pass
 
-        LOC = os.environ.get("LOC", "lower left")
+        #loc = "lower left"
+        loc = "upper right"
+        LOC = os.environ.get("LOC",loc)
         if LOC != "skip":
             ax.legend(loc=LOC,  markerscale=4)
         pass
+        fig.suptitle("\n".join([topline,botline,thirdline]))
         fig.show()
 
         if savefig:

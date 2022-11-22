@@ -13,6 +13,7 @@
 
 #include "G4LogicalBorderSurface.hh"
 #include "U4Recorder.hh"
+#include "U4Engine.h"
 #include "U4Track.h"
 #include "U4StepPoint.hh"
 #include "U4OpBoundaryProcess.h"
@@ -123,6 +124,8 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+
+
     LOG(LEVEL); 
     const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
 
@@ -156,7 +159,15 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
     U4Random::SetSequenceIndex(label.id); 
 
+    // for pure-optical Geant4 photon rerunning need to 
+    // save the engine state somewhere into SEvt at this juncture
+
+
+
     SEvt* sev = SEvt::Get(); 
+
+
+    //U4Engine::SaveStatus( states, label.id );      
 
     if(label.gn == 0)
     {
@@ -167,6 +178,12 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         sev->rjoinPhoton(label); 
     }
 }
+
+/**
+U4Recorder::PostUserTrackingAction_Optical
+
+
+**/
 
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
