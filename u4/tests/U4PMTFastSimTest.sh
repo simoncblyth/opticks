@@ -16,8 +16,8 @@ export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1
 
 
-running_mode=SRM_G4STATE_SAVE  
-#running_mode=SRM_G4STATE_RERUN
+#running_mode=SRM_G4STATE_SAVE  
+running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_G4STATE_RERUN=726
 

@@ -72,13 +72,7 @@ inline std::string U4Engine::DescStateArray() // static
 
     std::stringstream ss ; 
     ss << "U4Engine::DescStateArray" << std::endl << std::endl  ; 
-    ss << "state = np.array([ "  ; 
-    for(unsigned i=0 ; i < state.size() ; i++) 
-    {
-        if( i % 10 == 0 ) ss << std::endl ; 
-        ss << state[i] << ( i < state.size() - 1 ? ", " : " " ) ; 
-    }
-    ss << "], dtype=np.uint64)" << std::endl ; 
+    ss << "state = " << NP::ArrayString<unsigned long>( state, 10 ) << std::endl ; 
 
     std::string s = ss.str(); 
     return s ; 

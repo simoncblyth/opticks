@@ -214,12 +214,17 @@ struct NP
     unsigned offset_(Args ... idxx ) const ; 
 
 
+    template<typename T>
+    static std::string ArrayString(const std::vector<T>& vec, unsigned modulo=10 ); 
+
+    template<typename T, typename... Args> 
+    std::string sliceArrayString(Args ... idxx ) const ;  
+
     // use -1 to mark the last dimension to select upon 
     // eg to select first item use (0, -1) 
     template<typename T, typename... Args> 
     void slice(std::vector<T>& out, Args ... idxx ) const ;  // slice_ellipsis
 
-   
 
     template<typename T> 
     void slice_(std::vector<T>& out, const std::vector<int>& idxx ) const ; 
@@ -1055,7 +1060,34 @@ inline unsigned NP::offset_(Args ... idxx_) const
 }
 
 
+template<typename T>
+inline std::string NP::ArrayString(const std::vector<T>& vec, unsigned modulo ) // static
+{
+    const char* np_type = "uint64" ;   // TODO: make this depend on type
+    unsigned size = vec.size(); 
 
+    std::stringstream ss ; 
+    ss << "np.array([ "  ;   
+    for(unsigned i=0 ; i < size ; i++) 
+    {   
+        if( size > modulo && (( i % modulo ) == 0) ) ss << std::endl ; 
+        ss << vec[i] << ( i < size - 1 ? ", " : " " ) ; 
+    }   
+    ss << "], dtype=np." << np_type << " )"  ; 
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+template<typename T, typename... Args> 
+inline std::string NP::sliceArrayString(Args ... idxx_ ) const 
+{
+    std::vector<int> idxx = {idxx_...};
+    std::vector<T> out ; 
+    slice(out, idxx ); 
+    return ArrayString(out, 10); 
+}
 
 
 /**
@@ -1069,6 +1101,11 @@ template<typename T, typename... Args> inline void NP::slice(std::vector<T>& out
    std::vector<int> idxx = {idxx_...};
    slice_(out, idxx); 
 }
+
+
+
+
+
 
 
 

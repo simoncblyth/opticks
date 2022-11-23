@@ -24,5 +24,15 @@ int main(int argc, char** argv)
     LOG(info) << " SEvt::getG4State " << ( g4state ? g4state->sstr() : "-" ); 
 
 
+    if(SEventConfig::_G4StateRerun > -1) 
+    {
+        std::cout 
+            << "SEventConfig::_G4StateRerun " << SEventConfig::_G4StateRerun 
+            << std::endl 
+            << g4state->sliceArrayString<unsigned long>( SEventConfig::_G4StateRerun, -1 ) 
+            << std::endl 
+            ;  
+    }
+
     return 0 ; 
 }

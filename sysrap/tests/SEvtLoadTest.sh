@@ -10,7 +10,7 @@ export SOpticksResource_ExecutableName=U4PMTFastSimTest
 
 ## both these are needed to induce SEvt::Load rather than SEvt::Create
 export OPTICKS_RUNNING_MODE=SRM_G4STATE_RERUN
-export OPTICKS_G4STATE_RERUN=0     ## value must be > -1 and less than the number of g4state
+export OPTICKS_G4STATE_RERUN=726     ## value must be > -1 and less than the number of g4state
 
 
 SEvtLoadTest 

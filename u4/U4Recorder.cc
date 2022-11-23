@@ -152,6 +152,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         U4Track::SetFabricatedLabel(track); 
         label = U4Track::Label(track); 
         LOG(LEVEL) << " labelling photon " << label.desc() ; 
+
+        saveOrLoadStates(label.id);  // moved here as labelling happens once per photon
     }
     assert( label.isDefined() );  
     if(!Enabled(label)) 
@@ -171,7 +173,6 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
     SEvt* sev = SEvt::Get(); 
 
-    saveOrLoadStates(label.id); 
 
     if(label.gn == 0)
     {
@@ -201,12 +202,6 @@ back to this state.
 
 void U4Recorder::saveOrLoadStates( int id )  
 {
-    if( id == SEventConfig::_G4StateRerun )
-    {
-        LOG(LEVEL) << " id == SEventConfig::_G4StateRerun " << id  ; 
-        LOG(LEVEL) << U4Engine::DescStateArray() ; 
-    }
-
     bool g4state_save = SEventConfig::IsRunningModeG4StateSave() ; 
     bool g4state_rerun = SEventConfig::IsRunningModeG4StateRerun() ; 
     bool g4state_active =  g4state_save || g4state_rerun ; 
@@ -221,8 +216,16 @@ void U4Recorder::saveOrLoadStates( int id )
         assert( g4state ); 
 
         int max_state = g4state ? g4state->shape[0] : 0  ; 
-        LOG(LEVEL) << " max_state " << max_state ; 
 
+        if( id == SEventConfig::_G4StateRerun )
+        {
+            LOG(LEVEL) 
+                << "U4Engine::SaveState for id (SEventConfig::_G4StateRerun) " << id 
+                << " from the max_state " << max_state 
+                << std::endl 
+                << U4Engine::DescStateArray()
+                ; 
+        }
         U4Engine::SaveState( g4state, id );      
     }
     else if(g4state_rerun)
@@ -232,6 +235,15 @@ void U4Recorder::saveOrLoadStates( int id )
         assert( g4state ); 
 
         U4Engine::RestoreState( g4state, id );   
+
+        if( id == SEventConfig::_G4StateRerun )
+        {
+            LOG(LEVEL) 
+                << "U4Engine::RestoreState for id (SEventConfig::_G4StateRerun)  " << id 
+                << std::endl 
+                << U4Engine::DescStateArray()
+                ; 
+        }
     }
 }
 
