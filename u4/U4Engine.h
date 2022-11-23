@@ -22,13 +22,14 @@ For MixMaxRng the vector length is 17*2+4 = 38 and 32 bit unsigned long is OK
 struct U4_API U4Engine
 {
     static std::string Desc(); 
-    static void ShowStatus(); 
+    static void ShowState(); 
     static std::string ConfPath(const char* fold, const char* name=nullptr); 
-    static void SaveStatus(const char* fold, const char* name=nullptr) ; 
-    static void RestoreStatus(const char* fold, const char* name=nullptr) ; 
 
-    static void SaveStatus(          NP* states, int idx ); 
-    static void RestoreStatus( const NP* states, int idx ); 
+    static void SaveState(const char* fold, const char* name=nullptr) ; 
+    static void RestoreState(const char* fold, const char* name=nullptr) ; 
+
+    static void SaveState(          NP* states, int idx ); 
+    static void RestoreState( const NP* states, int idx ); 
 
 }; 
 
@@ -55,7 +56,7 @@ inline std::string U4Engine::Desc() // static
     std::string s = ss.str() ; 
     return s ; 
 }
-inline void U4Engine::ShowStatus() // static
+inline void U4Engine::ShowState() // static
 {
     CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
     engine->showStatus(); 
@@ -70,7 +71,7 @@ inline std::string U4Engine::ConfPath(const char* fold, const char* name) // sta
     return path ;    
 }
 
-inline void U4Engine::SaveStatus(const char* fold, const char* name) // status
+inline void U4Engine::SaveState(const char* fold, const char* name) // status
 {
     std::string conf = ConfPath(fold, name) ;  
     std::cout << "U4Engine::SaveStatus " << conf << std::endl ;  
@@ -78,7 +79,7 @@ inline void U4Engine::SaveStatus(const char* fold, const char* name) // status
     engine->saveStatus(conf.c_str()) ; 
 }
 
-inline void U4Engine::RestoreStatus(const char* fold, const char* name) // status
+inline void U4Engine::RestoreState(const char* fold, const char* name) // status
 {
     std::string conf = ConfPath(fold, name) ;  
     std::cout << "U4Engine::RestoreStatus " << conf << std::endl ;  
@@ -86,7 +87,7 @@ inline void U4Engine::RestoreStatus(const char* fold, const char* name) // statu
     engine->restoreStatus(conf.c_str()) ; 
 }
 
-inline void U4Engine::SaveStatus( NP* states, int idx ) // static
+inline void U4Engine::SaveState( NP* states, int idx ) // static
 {
     assert( states && states->shape.size() > 0 && idx < states->shape[0] ); 
 
@@ -100,7 +101,7 @@ inline void U4Engine::SaveStatus( NP* states, int idx ) // static
     memcpy( states->bytes() + size*idx,  state.data(), size  ); 
 }
 
-inline void U4Engine::RestoreStatus( const NP* states, int idx ) // static
+inline void U4Engine::RestoreState( const NP* states, int idx ) // static
 {
     assert( states && states->shape.size() > 0 && idx < states->shape[0] ); 
 

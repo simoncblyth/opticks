@@ -177,14 +177,13 @@ struct SYSRAP_API SEvt : public SCompProvider
 
  
     SEvt(); 
+    void init(); 
+    void initG4States(int max_states, int item_values); 
 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
     const char* getSearchCFBase() const ; 
 
-
-    void init(); 
-    void init_g4states(int max_states, int item_values); 
 
     static const char* INPUT_PHOTON_DIR ; 
     static NP* LoadInputPhoton(); 
@@ -295,6 +294,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void saveLabels(const char* dir) const ;  // formerly savePho
     void saveFrame(const char* dir_) const ; 
+    void saveG4States(const char* dir_) const ; 
 
     void saveGenstep(const char* dir) const ; 
     void saveGenstepLabels(const char* dir, const char* name="gsl.npy") const ; 

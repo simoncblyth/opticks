@@ -63,6 +63,72 @@ SEvt::SEvt()
 { 
     init(); 
 }
+/**
+SEvt::init
+-----------
+
+Only configures limits, no allocation yet. 
+Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
+
+Initially SEvt is set as its own SCompProvider, 
+allowing U4RecorderTest/SEvt::save to gather the component 
+arrays provided from SEvt.
+
+For device running the SCompProvider is overridden to 
+become QEvent allowing SEvt::save to persist the 
+components gatherered from device buffers. 
+
+**/
+
+void SEvt::init()
+{
+    LOG(LEVEL) << "[" ; 
+    INSTANCE = this ; 
+    evt->init(); 
+    dbg->zero(); 
+    LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
+
+    SEventConfig::CompList(comp); 
+
+    LOG(LEVEL) << " SEventConfig::CompMaskLabel "  << SEventConfig::CompMaskLabel() ; 
+    LOG(LEVEL) << descComp() ; 
+
+    initInputPhoton(); 
+    LOG(LEVEL) << "]" ; 
+}
+
+/**
+SEvt::initG4States
+---------------------
+
+Not invoked by default.  May be invoked by U4Recorder::PreUserTrackingAction_Optical
+
+* HMM: thats a bit spagetti, config control ?  
+* actually G4States only makes sense from U4 so its OK 
+
+Item values of 2*17+4=38 is appropriate for the default Geant4 10.4.2 random engine: MixMaxRng 
+See::
+
+     g4-cls MixMaxRng 
+     g4-cls RandomEngine 
+     g4-cls Randomize
+     
+**/
+
+void SEvt::initG4States(int max_states, int item_values)
+{
+    if(max_states < 0 ) return ; 
+    g4states = NP::Make<unsigned long>(max_states, item_values ); 
+    LOG(LEVEL) << " g4states " << g4states->sstr() ; 
+}
+
+
+
+
+
+
+
+
 
 const char* SEvt::getSaveDir() const 
 {
@@ -115,60 +181,10 @@ const char* SEvt::getSearchCFBase() const
 }
 
 
-/**
-SEvt::init
------------
 
-Only configures limits, no allocation yet. 
-Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
-Initially SEvt is set as its own SCompProvider, 
-allowing U4RecorderTest/SEvt::save to gather the component 
-arrays provided from SEvt.
 
-For device running the SCompProvider is overridden to 
-become QEvent allowing SEvt::save to persist the 
-components gatherered from device buffers. 
 
-**/
-
-void SEvt::init()
-{
-    LOG(LEVEL) << "[" ; 
-    INSTANCE = this ; 
-    evt->init(); 
-    dbg->zero(); 
-    LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
-
-    SEventConfig::CompList(comp); 
-
-    LOG(LEVEL) << " SEventConfig::CompMaskLabel "  << SEventConfig::CompMaskLabel() ; 
-    LOG(LEVEL) << descComp() ; 
-
-    initInputPhoton(); 
-    LOG(LEVEL) << "]" ; 
-}
-
-/**
-SEvt::init_g4states
----------------------
-
-Not invoked by default.  May be invoked by U4Recorder::PreUserTrackingAction_Optical
-Item values of 2*17+4=38 is appropriate for the default Geant4 10.4.2 random engine: MixMaxRng 
-See::
-
-     g4-cls MixMaxRng 
-     g4-cls RandomEngine 
-     g4-cls Randomize
-     
-**/
-
-void SEvt::init_g4states(int max_states, int item_values)
-{
-    if(max_states < 0 ) return ; 
-    g4states = NP::Make<unsigned long>(max_states, item_values ); 
-    LOG(LEVEL) << " g4states " << g4states->sstr() ; 
-}
 
 
 const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
@@ -1375,8 +1391,8 @@ NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLO
 }
 NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS 
 { 
-    LOG(fatal) << " not yet implemented for hostside running : getting this error indicates CompMask mixup" ; 
-    assert(0); 
+    LOG(error) << " not yet implemented for hostside running : avoid this error by changing CompMask with SEventConfig " ; 
+    //assert(0); 
     return nullptr ; 
 }
 
@@ -1530,8 +1546,6 @@ However in some circumstances such as with the B side of aligned running (U4Reco
 it is appropriate to use the override code or envvar to locate B side outputs together 
 with the A side. 
 
-
-
 **/
 
 
@@ -1619,12 +1633,14 @@ void SEvt::save(const char* dir_)
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
 
-    LOG(LEVEL) << "[ fold.save " ; 
+    LOG(LEVEL) << "[ fold.save " << dir ; 
     fold->save(dir); 
-    LOG(LEVEL) << "] fold.save " ; 
+    LOG(LEVEL) << "] fold.save " << dir ; 
 
     saveLabels(dir); 
     saveFrame(dir); 
+
+    if(SEventConfig::IsRunningModeG4StateSave()) saveG4States(dir); 
 }
 void SEvt::load(const char* dir_) 
 {
@@ -1665,6 +1681,15 @@ void SEvt::saveFrame(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ; 
     frame.save(dir); 
+    LOG(LEVEL) << "] dir " << dir ; 
+}
+
+void SEvt::saveG4States(const char* dir) const 
+{
+    assert( SEventConfig::IsRunningModeG4StateSave() ); 
+    if(g4states == nullptr) return ; 
+    LOG(LEVEL) << "[ dir " << dir ; 
+    g4states->save(dir, "g4states.npy"); 
     LOG(LEVEL) << "] dir " << dir ; 
 }
 

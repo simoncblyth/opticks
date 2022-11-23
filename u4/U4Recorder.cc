@@ -178,6 +178,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 U4Recorder::saveOrLoadStates
 ------------------------------
 
+HMM: sounds like to/from file, but its to array, maybe "preserveOrRestoreG4State"
+
 For pure-optical Geant4 photon rerunning without pre-cooked randoms
 need to save the engine state into SEvt prior to using 
 any Geant4 randoms for the photon. So can restore the random engine 
@@ -189,22 +191,26 @@ Where to do that ?
 
 **/
 
-void U4Recorder::saveOrLoadStates( int id )
+void U4Recorder::saveOrLoadStates( int id )  
 {
     if(STATES == -1 || id >= STATES )  return ; 
     SEvt* sev = SEvt::Get(); 
-    NP* g4states = sev->g4states ; 
 
-    if( RERUN < 0 ) // saving states
+    if( SEventConfig::IsRunningModeG4StateSave() ) // saving states
     {
-        if(g4states == nullptr) sev->init_g4states(STATES, STATE_ITEMS ); 
-        U4Engine::SaveStatus( g4states, id );      
+        LOG(LEVEL) << " call initG4States " ; 
+        if(sev->g4states == nullptr) sev->initG4States(STATES, STATE_ITEMS ); 
+        
+        LOG_IF( fatal, sev->g4states == nullptr ) << " cannot U4Engine::SaveStatus with null sev->g4states " ; 
+        assert( sev->g4states ); 
+
+        U4Engine::SaveState( sev->g4states, id );      
     }
     else
     {
-        LOG_IF( fatal, g4states == nullptr ) << " cannot U4Engine::RestoreStatus without g4states loaded " ; 
-        assert( g4states ); 
-        U4Engine::RestoreStatus( g4states, id );   
+        LOG_IF( fatal, sev->g4states == nullptr ) << " cannot U4Engine::RestoreStatus without g4states loaded " ; 
+        assert( sev->g4states ); 
+        U4Engine::RestoreState( sev->g4states, id );   
     }
 }
 

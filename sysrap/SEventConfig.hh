@@ -8,7 +8,23 @@
 SEventConfig
 ==============
 
+This is for configuration that is important and/or where 
+the settings have impact across multiple classes/structs. 
+
+Note that geometry related things are configured in SGeoConfig. 
+
+For settings that are local to individual structs or mainly for 
+shortterm debug : **do not implement here**. Instead 
+implement local config locally using constexpr envvar keys 
+inside the structs. 
+
 Primary user of this config is QEvent::init 
+
+
+EventMode
+    configures what will be persisted, ie what is in the SEvt
+RunningMode
+    configures how running is done, eg Default/DefaultSaveG4State/RerunG4State 
 
 MaxPhoton
 
@@ -57,7 +73,8 @@ struct SYSRAP_API SEventConfig
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
 
-    static constexpr const char* kEventMode = "OPTICKS_EVENTMODE" ; 
+    static constexpr const char* kEventMode = "OPTICKS_EVENT_MODE" ; 
+    static constexpr const char* kRunningMode = "OPTICKS_RUNNING_MODE" ; 
     static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
     static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
@@ -81,9 +98,16 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
 
 
-
-
     static const char* EventMode(); 
+
+
+    static int         RunningMode(); 
+    static const char* RunningModeLabel(); 
+    static bool IsRunningModeDefault(); 
+    static bool IsRunningModeG4StateSave(); 
+    static bool IsRunningModeG4StateRerun();  
+
+
     static int MaxGenstep(); 
     static int MaxPhoton(); 
     static int MaxSimtrace(); 
@@ -101,13 +125,12 @@ struct SYSRAP_API SEventConfig
     static const char* OutFold(); 
     static const char* OutName(); 
     static unsigned HitMask(); 
-    static int RGMode(); 
     static unsigned CompMask(); 
     static float PropagateEpsilon(); 
     static const char* InputPhoton(); 
     static const char* InputPhotonFrame(); 
 
-
+    static int RGMode(); 
     static bool IsRGModeRender(); 
     static bool IsRGModeSimtrace(); 
     static bool IsRGModeSimulate(); 
@@ -121,7 +144,9 @@ struct SYSRAP_API SEventConfig
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
 
-    static void SetEventMode(const char* mode); 
+    static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
+    static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State 
+
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
     static void SetMaxSimtrace( int max_simtrace); 
@@ -153,6 +178,7 @@ struct SYSRAP_API SEventConfig
     static unsigned CompMaskAuto() ; 
 
     static const char* _EventModeDefault ; 
+    static const char* _RunningModeDefault ; 
     static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
     static int _MaxSimtraceDefault ; 
@@ -176,6 +202,7 @@ struct SYSRAP_API SEventConfig
 
 
     static const char* _EventMode ; 
+    static int _RunningMode ; 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
     static int _MaxSimtrace ; 

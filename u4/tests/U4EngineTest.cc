@@ -6,7 +6,7 @@ U4EngineTest.cc
 
     epsilon:tests blyth$ U4EngineTest 
      mode:0 saving engine states 
-    U4Engine::SaveStatus /tmp/U4EngineTest/s0.conf
+    U4Engine::SaveState /tmp/U4EngineTest/s0.conf
      label s0.conf
         0 :     0.1305
         1 :     0.6178
@@ -18,7 +18,7 @@ U4EngineTest.cc
         7 :     0.8376
         8 :     0.3594
         9 :     0.9269
-    U4Engine::SaveStatus /tmp/U4EngineTest/s1.conf
+    U4Engine::SaveState /tmp/U4EngineTest/s1.conf
      label s1.conf
         0 :     0.5480
         1 :     0.1372
@@ -30,7 +30,7 @@ U4EngineTest.cc
         7 :     0.9630
         8 :     0.0069
         9 :     0.3705
-    U4Engine::SaveStatus /tmp/U4EngineTest/s2.conf
+    U4Engine::SaveState /tmp/U4EngineTest/s2.conf
      label s2.conf
         0 :     0.5728
         1 :     0.6244
@@ -46,7 +46,7 @@ U4EngineTest.cc
     epsilon:tests blyth$ 
     epsilon:tests blyth$ U4EngineTest 1
      mode:1 restore engine state 
-    U4Engine::RestoreStatus /tmp/U4EngineTest/s2.conf
+    U4Engine::RestoreState /tmp/U4EngineTest/s2.conf
      label s2.conf Restored
         0 :     0.5728
         1 :     0.6244
@@ -65,7 +65,7 @@ U4EngineTest.cc
     epsilon:tests blyth$ U4EngineTest 2
      mode:2 restore engine state from array 
      states (10, 38, )
-     label U4Engine::RestoreStatus(states, 2)
+     label U4Engine::RestoreState(states, 2)
         0 :     0.5728
         1 :     0.6244
         2 :     0.4719
@@ -122,19 +122,19 @@ int main(int argc, char** argv)
     {
         NP* states = NP::Make<unsigned long>(10, 2*17+4 ) ; 
         std::cout << " mode:0 saving engine states " << std::endl ; 
-        U4Engine::SaveStatus(FOLD, "s0.conf") ;   
-        U4Engine::SaveStatus( states, 0 ); 
-        if(show) U4Engine::ShowStatus(); 
+        U4Engine::SaveState(FOLD, "s0.conf") ;   
+        U4Engine::SaveState( states, 0 ); 
+        if(show) U4Engine::ShowState(); 
         dump("s0.conf", N ); 
 
-        U4Engine::SaveStatus(FOLD, "s1.conf") ;   
-        U4Engine::SaveStatus( states, 1 ); 
-        if(show) U4Engine::ShowStatus(); 
+        U4Engine::SaveState(FOLD, "s1.conf") ;   
+        U4Engine::SaveState( states, 1 ); 
+        if(show) U4Engine::ShowState(); 
         dump("s1.conf", N); 
 
-        U4Engine::SaveStatus(FOLD, "s2.conf") ;   
-        U4Engine::SaveStatus( states, 2 ); 
-        if(show) U4Engine::ShowStatus(); 
+        U4Engine::SaveState(FOLD, "s2.conf") ;   
+        U4Engine::SaveState( states, 2 ); 
+        if(show) U4Engine::ShowState(); 
         dump("s2.conf", N); 
 
         states->save(FOLD, "states.npy"); 
@@ -142,18 +142,18 @@ int main(int argc, char** argv)
     else if( mode == 1 )
     {
         std::cout << " mode:1 restore engine state from file " << std::endl ; 
-        U4Engine::RestoreStatus(FOLD, "s2.conf") ;   
-        if(show) U4Engine::ShowStatus(); 
-        dump("U4Engine::RestoreStatus(FOLD, \"s2.conf\")", N ); 
+        U4Engine::RestoreState(FOLD, "s2.conf") ;   
+        if(show) U4Engine::ShowState(); 
+        dump("U4Engine::RestoreState(FOLD, \"s2.conf\")", N ); 
     }
     else if( mode == 2 )
     {
         std::cout << " mode:2 restore engine state from array " << std::endl ; 
         NP* states = NP::Load(FOLD, "states.npy"); 
         std::cout << " states " << states->sstr() << std::endl; 
-        U4Engine::RestoreStatus( states, 2 ); 
-        if(show) U4Engine::ShowStatus(); 
-        dump("U4Engine::RestoreStatus(states, 2)", N ); 
+        U4Engine::RestoreState( states, 2 ); 
+        if(show) U4Engine::ShowState(); 
+        dump("U4Engine::RestoreState(states, 2)", N ); 
     }
 
     std::cout << U4Engine::Desc() << std::endl ; 

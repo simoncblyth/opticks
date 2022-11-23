@@ -49,6 +49,8 @@ int main(int argc, char** argv)
 
     SFastSim_Debug::Save("/tmp/SFastSim_Debug" ); 
 
+    evt.save(); 
+
     return 0 ; 
 }
 

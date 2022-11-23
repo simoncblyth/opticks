@@ -7,7 +7,8 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SEventConfig.hh"
-#include "SRG.h"
+#include "SRG.h"  // raygenmode
+#include "SRM.h"  // runningmode
 #include "SComp.h"
 #include "OpticksPhoton.hh"
 #include "salloc.h"
@@ -17,6 +18,8 @@
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ; 
 
 const char* SEventConfig::_EventModeDefault = "Default" ; 
+const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
+ 
 int SEventConfig::_MaxGenstepDefault = 1000*K ; 
 int SEventConfig::_MaxBounceDefault = 9 ; 
 int SEventConfig::_MaxRecordDefault = 0 ; 
@@ -48,6 +51,8 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
 
 const char* SEventConfig::_EventMode = SSys::getenvvar(kEventMode, _EventModeDefault ); 
+int SEventConfig::_RunningMode = SRM::Type(SSys::getenvvar(kRunningMode, _RunningModeDefault)); 
+
 int SEventConfig::_MaxGenstep   = SSys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
 int SEventConfig::_MaxPhoton    = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
 int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
@@ -71,6 +76,15 @@ const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame,
 
 
 const char* SEventConfig::EventMode(){ return _EventMode ; }
+
+int         SEventConfig::RunningMode(){ return _RunningMode ; }
+const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
+bool SEventConfig::IsRunningModeDefault(){      return RunningMode() == SRM_DEFAULT ; } 
+bool SEventConfig::IsRunningModeG4StateSave(){  return RunningMode() == SRM_G4STATE_SAVE ; } 
+bool SEventConfig::IsRunningModeG4StateRerun(){ return RunningMode() == SRM_G4STATE_RERUN ; } 
+
+
+
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
@@ -87,7 +101,6 @@ float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
-int SEventConfig::RGMode(){  return _RGMode ; } 
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 unsigned SEventConfig::CompMask(){  return _CompMask; } 
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
@@ -95,15 +108,24 @@ const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
 
+int SEventConfig::RGMode(){  return _RGMode ; } 
+bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
+bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
+bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
+const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
+
+
+
+
+
 const char* SEventConfig::Default = "Default" ; 
 const char* SEventConfig::StandardFullDebug = "StandardFullDebug" ; 
-
-// considered calling Initialize from the below, but prefer to 
-// have a fixed position G4CXOpticks::init where SEventConfig::Initialize is called
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
+void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
+
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
 void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; Check() ; }
@@ -120,7 +142,7 @@ void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? st
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
 void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 
-void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
+void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ; Check() ; }
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
 void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
@@ -176,12 +198,6 @@ unsigned SEventConfig::CompMaskAuto()
 
 
 
-
-bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
-bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
-bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
-
-const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 std::string SEventConfig::CompMaskLabel(){ return SComp::Desc( _CompMask ) ; }
 
@@ -220,52 +236,81 @@ std::string SEventConfig::Desc()
     std::stringstream ss ; 
     ss << "SEventConfig::Desc" << std::endl 
        << std::setw(25) << kEventMode
-       << std::setw(20) << " EventMode " << " : " << EventMode() << std::endl 
+       << std::setw(20) << " EventMode " << " : " << EventMode() 
+       << std::endl 
+       << std::setw(25) << kRunningMode
+       << std::setw(20) << " RunningMode " << " : " << RunningMode() 
+       << std::endl 
+       << std::setw(25) << ""
+       << std::setw(20) << " RunningModeLabel " << " : " << RunningModeLabel() 
+       << std::endl 
        << std::setw(25) << kMaxGenstep 
-       << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() << std::endl 
+       << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() 
+       << std::endl 
        << std::setw(25) << kMaxPhoton 
-       << std::setw(20) << " MaxPhoton " << " : " << MaxPhoton() << std::endl 
+       << std::setw(20) << " MaxPhoton " << " : " << MaxPhoton() 
+       << std::endl 
        << std::setw(25) << kMaxSimtrace 
        << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() 
-       << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() << std::endl 
+       << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() 
+       << std::endl 
        << std::setw(25) << kMaxBounce
-       << std::setw(20) << " MaxBounce " << " : " << MaxBounce() << std::endl 
+       << std::setw(20) << " MaxBounce " << " : " << MaxBounce() 
+       << std::endl 
        << std::setw(25) << kMaxRecord
-       << std::setw(20) << " MaxRecord " << " : " << MaxRecord() << std::endl 
+       << std::setw(20) << " MaxRecord " << " : " << MaxRecord() 
+       << std::endl 
        << std::setw(25) << kMaxRec
-       << std::setw(20) << " MaxRec " << " : " << MaxRec() << std::endl 
+       << std::setw(20) << " MaxRec " << " : " << MaxRec() 
+       << std::endl 
        << std::setw(25) << kMaxSeq
-       << std::setw(20) << " MaxSeq " << " : " << MaxSeq() << std::endl 
+       << std::setw(20) << " MaxSeq " << " : " << MaxSeq() 
+       << std::endl 
        << std::setw(25) << kMaxPrd
-       << std::setw(20) << " MaxPrd " << " : " << MaxPrd() << std::endl 
+       << std::setw(20) << " MaxPrd " << " : " << MaxPrd() 
+       << std::endl 
        << std::setw(25) << kMaxTag
-       << std::setw(20) << " MaxTag " << " : " << MaxTag() << std::endl 
+       << std::setw(20) << " MaxTag " << " : " << MaxTag() 
+       << std::endl 
        << std::setw(25) << kMaxFlat
-       << std::setw(20) << " MaxFlat " << " : " << MaxFlat() << std::endl 
+       << std::setw(20) << " MaxFlat " << " : " << MaxFlat() 
+       << std::endl 
        << std::setw(25) << kHitMask
-       << std::setw(20) << " HitMask " << " : " << HitMask() << std::endl 
+       << std::setw(20) << " HitMask " << " : " << HitMask() 
+       << std::endl 
        << std::setw(25) << ""
-       << std::setw(20) << " HitMaskLabel " << " : " << HitMaskLabel() << std::endl 
+       << std::setw(20) << " HitMaskLabel " << " : " << HitMaskLabel() 
+       << std::endl 
        << std::setw(25) << kMaxExtent
-       << std::setw(20) << " MaxExtent " << " : " << MaxExtent() << std::endl 
+       << std::setw(20) << " MaxExtent " << " : " << MaxExtent() 
+       << std::endl 
        << std::setw(25) << kMaxTime
-       << std::setw(20) << " MaxTime " << " : " << MaxTime() << std::endl 
+       << std::setw(20) << " MaxTime " << " : " << MaxTime() 
+       << std::endl 
        << std::setw(25) << kRGMode
-       << std::setw(20) << " RGMode " << " : " << RGMode() << std::endl 
+       << std::setw(20) << " RGMode " << " : " << RGMode() 
+       << std::endl 
        << std::setw(25) << ""
-       << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel() << std::endl 
+       << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel() 
+       << std::endl 
        << std::setw(25) << kCompMask
-       << std::setw(20) << " CompMask " << " : " << CompMask() << std::endl 
+       << std::setw(20) << " CompMask " << " : " << CompMask() 
+       << std::endl 
        << std::setw(25) << ""
-       << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel() << std::endl 
+       << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel() 
+       << std::endl 
        << std::setw(25) << kOutFold
-       << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
+       << std::setw(20) << " OutFold " << " : " << OutFold() 
+       << std::endl 
        << std::setw(25) << kOutName
-       << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  << std::endl 
+       << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  
+       << std::endl 
        << std::setw(25) << kPropagateEpsilon
-       << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() << std::endl 
+       << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() 
+       << std::endl 
        << std::setw(25) << kInputPhoton
-       << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )  << std::endl 
+       << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )  
+       << std::endl 
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -311,6 +356,16 @@ SEventConfig::Initialize
 -------------------------
 
 Canonically invoked from G4CXOpticks::init
+
+* HMM : that is too high a level for calling SEventConfig::Initialize ? 
+  it means that with purely G4 running such as U4 tests 
+  this doesnt get called and are running with the base defaults, 
+  and not the collectively controlled ones
+
+* TODO: see if can move to invoking from SEvt instanciation 
+
+
+
 
 HMM: if change the max after calling this need to SEventConfig::SetCompMaskAuto() 
 
