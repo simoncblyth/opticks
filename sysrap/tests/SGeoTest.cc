@@ -2,6 +2,7 @@
 #include <iostream>
 #include "OPTICKS_LOG.hh"
 #include "SGeo.hh"
+#include "SPath.hh"
 
 /*
 struct SGeoTest : public SGeo
@@ -18,7 +19,16 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    std::cout << "SGeo::DefaultDir " << SGeo::DefaultDir() << std::endl ; 
+    std::cout
+        << std::setw(50) << "SGeo::DefaultDir() " 
+        << " : "
+        << std::setw(50) << SGeo::DefaultDir() 
+        << std::endl
+        << std::setw(50) << "SPath::Resolve(SGeo::DefaultDir(), NOOP)" 
+        << " : "
+        << std::setw(50) << SPath::Resolve(SGeo::DefaultDir(), NOOP) 
+        << std::endl 
+        ; 
  
     return 0 ; 
 }

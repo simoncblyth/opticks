@@ -327,7 +327,7 @@ set(HEADERS
     OpticksPhoton.h
     OpticksPhoton.hh
     SU.hh
-    SComponent.hh 
+    SComponent_OLD.hh 
     SComp.h 
 
     SEventConfig.hh

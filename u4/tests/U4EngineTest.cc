@@ -111,8 +111,7 @@ void dump(const char* label, int n)
     for(int i=0 ; i < n ; i++) dump(i, G4UniformRand() ) ; 
 }
 
-
-int main(int argc, char** argv)
+void test_SaveState_RestoreState(int argc, char** argv)
 {
     int mode = argc > 1 ? std::atoi(argv[1]) : 0 ; 
     int N = 10 ; 
@@ -157,6 +156,14 @@ int main(int argc, char** argv)
     }
 
     std::cout << U4Engine::Desc() << std::endl ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    //test_SaveState_RestoreState(argc, argv); 
+    std::cout << U4Engine::DescState() << std::endl ; 
+    std::cout << U4Engine::DescStateArray() << std::endl ; 
 
     return 0 ; 
 }

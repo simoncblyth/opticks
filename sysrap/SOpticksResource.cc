@@ -118,11 +118,11 @@ const char* SOpticksResource::ExecutableName()
 SOpticksResource::DefaultOutputDir
 ------------------------------------
 
-Default dir used by argumentless SEvt::save is TMP/GEOM/ExecutableName eg::
+Default dir used by argumentless SEvt::save is $TMP/GEOM/$GEOM/ExecutableName eg::
 
-   /tmp/blyth/opticks/RaindropRockAirWater/G4CXSimulateTest
+   /tmp/blyth/opticks/GEOM/RaindropRockAirWater/G4CXSimulateTest
 
-This allows TMP/GEOM to be equated with a "temporary CFBASE" for consistent handling in scripts.::
+This allows $TMP/GEOM/$GEOM to be equated with a "temporary CFBASE" for consistent handling in scripts.::
 
     TMP_CFBASE=/tmp/$USER/opticks/$GEOM
 

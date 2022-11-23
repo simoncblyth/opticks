@@ -128,7 +128,9 @@ not torch ones so needs some experimentation to see what approach to take.
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     LOG(LEVEL); 
-    const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+
+    G4Track* _track = const_cast<G4Track*>(track) ; 
+    _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
 
     //std::cout << "U4Recorder::PreUserTrackingAction_Optical " << U4Process::Desc() << std::endl ; 
     //std::cout << U4Process::Desc() << std::endl ; 
@@ -140,6 +142,13 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
     if( label.isDefined() == false ) // happens with torch gensteps and input photons 
     {
+        int rerun_id = SEventConfig::G4StateRerun() ;
+        if( rerun_id > -1 ) 
+        {
+            LOG(LEVEL) << " setting rerun_id " << rerun_id ; 
+            U4Track::SetId(_track, rerun_id) ; 
+        }
+
         U4Track::SetFabricatedLabel(track); 
         label = U4Track::Label(track); 
         LOG(LEVEL) << " labelling photon " << label.desc() ; 
@@ -178,39 +187,51 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 U4Recorder::saveOrLoadStates
 ------------------------------
 
-HMM: sounds like to/from file, but its to array, maybe "preserveOrRestoreG4State"
+Called from U4Recorder::PreUserTrackingAction_Optical
+
+HMM: sounds like to/from file, but it is to array, maybe "preserveOrRestoreG4State"
+the save/load to/from file is handled by SEvt  
 
 For pure-optical Geant4 photon rerunning without pre-cooked randoms
 need to save the engine state into SEvt prior to using 
 any Geant4 randoms for the photon. So can restore the random engine 
 back to this state. 
 
-HMM: but to then reuse that state will need to persist 
-the g4states array with SEvt and then load it back.
-Where to do that ?
-
 **/
 
 void U4Recorder::saveOrLoadStates( int id )  
 {
-    if(STATES == -1 || id >= STATES )  return ; 
+    if( id == SEventConfig::_G4StateRerun )
+    {
+        LOG(LEVEL) << " id == SEventConfig::_G4StateRerun " << id  ; 
+        LOG(LEVEL) << U4Engine::DescStateArray() ; 
+    }
+
+    bool g4state_save = SEventConfig::IsRunningModeG4StateSave() ; 
+    bool g4state_rerun = SEventConfig::IsRunningModeG4StateRerun() ; 
+    bool g4state_active =  g4state_save || g4state_rerun ; 
+    if( g4state_active == false ) return ; 
+    
     SEvt* sev = SEvt::Get(); 
 
-    if( SEventConfig::IsRunningModeG4StateSave() ) // saving states
+    if(g4state_save) 
     {
-        LOG(LEVEL) << " call initG4States " ; 
-        if(sev->g4states == nullptr) sev->initG4States(STATES, STATE_ITEMS ); 
-        
-        LOG_IF( fatal, sev->g4states == nullptr ) << " cannot U4Engine::SaveStatus with null sev->g4states " ; 
-        assert( sev->g4states ); 
+        NP* g4state = sev->gatherG4State(); 
+        LOG_IF( fatal, g4state == nullptr ) << " cannot U4Engine::SaveState with null g4state " ; 
+        assert( g4state ); 
 
-        U4Engine::SaveState( sev->g4states, id );      
+        int max_state = g4state ? g4state->shape[0] : 0  ; 
+        LOG(LEVEL) << " max_state " << max_state ; 
+
+        U4Engine::SaveState( g4state, id );      
     }
-    else
+    else if(g4state_rerun)
     {
-        LOG_IF( fatal, sev->g4states == nullptr ) << " cannot U4Engine::RestoreStatus without g4states loaded " ; 
-        assert( sev->g4states ); 
-        U4Engine::RestoreState( sev->g4states, id );   
+        const NP* g4state = sev->getG4State(); 
+        LOG_IF( fatal, g4state == nullptr ) << " cannot U4Engine::RestoreState with null g4state " ; 
+        assert( g4state ); 
+
+        U4Engine::RestoreState( g4state, id );   
     }
 }
 

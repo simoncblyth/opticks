@@ -41,9 +41,23 @@ const char* SEvt::DEFAULT_RELDIR = "ALL" ;
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
+/**
+SEvt::SEvt
+-----------
+
+Instanciation invokes SEventConfig::Initialize() 
+
+The config used depends on:
+
+1. envvars such as OPTICKS_EVENT_MODE that can change default config values 
+2. static SEventConfig method calls done before SEvt instanciation 
+   that change the default config values 
+
+**/
+
 SEvt::SEvt()
     :
-    cfgrc(SEventConfig::Initialize()),  // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
+    cfgrc(SEventConfig::Initialize()),  
     index(MISSING_INDEX),
     reldir(DEFAULT_RELDIR),
     selector(new sphoton_selector(SEventConfig::HitMask())),
@@ -51,13 +65,14 @@ SEvt::SEvt()
     dbg(new sdebug),
     input_photon(nullptr),
     input_photon_transformed(nullptr),
-    g4states(nullptr),
+    g4state(nullptr),
     random(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
     cf(nullptr),
     hostside_running_resize_done(false),
     gather_done(false),
+    is_loaded(false),
     numphoton_collected(0u),
     numphoton_genstep_max(0u)
 { 
@@ -94,36 +109,9 @@ void SEvt::init()
     LOG(LEVEL) << descComp() ; 
 
     initInputPhoton(); 
+    initG4State(); 
     LOG(LEVEL) << "]" ; 
 }
-
-/**
-SEvt::initG4States
----------------------
-
-Not invoked by default.  May be invoked by U4Recorder::PreUserTrackingAction_Optical
-
-* HMM: thats a bit spagetti, config control ?  
-* actually G4States only makes sense from U4 so its OK 
-
-Item values of 2*17+4=38 is appropriate for the default Geant4 10.4.2 random engine: MixMaxRng 
-See::
-
-     g4-cls MixMaxRng 
-     g4-cls RandomEngine 
-     g4-cls Randomize
-     
-**/
-
-void SEvt::initG4States(int max_states, int item_values)
-{
-    if(max_states < 0 ) return ; 
-    g4states = NP::Make<unsigned long>(max_states, item_values ); 
-    LOG(LEVEL) << " g4states " << g4states->sstr() ; 
-}
-
-
-
 
 
 
@@ -276,6 +264,72 @@ NP* SEvt::getInputPhoton_() const { return input_photon ; }
 NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
 bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
 
+
+/**
+SEvt::initG4State
+-------------------
+
+HMM: is this the right place ? It depends on the RunningMode.  
+
+**/
+
+void SEvt::initG4State()
+{
+    if(SEventConfig::IsRunningModeG4StateSave())
+    {
+        LOG(LEVEL) << "SEventConfig::IsRunningModeG4StateSave creating g4state array " ;  
+        NP* state = makeG4State(); 
+        setG4State(state); 
+    }
+}
+
+/**
+SEvt::makeG4State
+---------------------
+
+Not invoked by default. 
+
+See U4Recorder::PreUserTrackingAction_Optical
+
+* HMM: thats a bit spagetti, config control ?  
+
+Item values of 2*17+4=38 is appropriate for the default Geant4 10.4.2 random engine: MixMaxRng 
+See::
+
+     g4-cls MixMaxRng 
+     g4-cls RandomEngine 
+     g4-cls Randomize
+     
+**/
+
+NP* SEvt::makeG4State() const 
+{
+     const char* spec = SEventConfig::G4StateSpec() ; 
+
+     std::vector<int> elem ; 
+     sstr::split<int>(elem, spec, ':'); 
+     assert( elem.size() == 2 ); 
+
+     int max_states = elem[0] ; 
+     int item_values = elem[1] ;
+
+     NP* a =  NP::Make<unsigned long>(max_states, item_values ); 
+
+     LOG(info) 
+         << " SEventConfig::G4StateSpec() " << spec  
+         << " max_states " << max_states
+         << " item_values " << item_values 
+         << " a.sstr " << a->sstr()
+         ;
+     return a ; 
+}
+
+
+void SEvt::setG4State( NP* state) { g4state = state ; }
+NP* SEvt::gatherG4State() const {  return g4state ; }
+// gather is used prior to persisting, get is used after loading 
+
+const NP* SEvt::getG4State() const {  return fold->get(SComp::Name(SCOMP_G4STATE)) ; }
 
 
 /**
@@ -435,6 +489,20 @@ NP* SEvt::gatherDomain() const
 }
 
 SEvt* SEvt::Get(){ return INSTANCE ; }
+
+SEvt* SEvt::Create() 
+{
+    return new SEvt ; 
+}
+SEvt* SEvt::CreateOrLoad() 
+{
+    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
+    LOG(LEVEL) << " g4state_rerun_id " << g4state_rerun_id ; 
+    SEvt* evt = g4state_rerun_id == -1 ? SEvt::Create() : SEvt::Load() ; 
+    return evt ; 
+}
+
+
 bool SEvt::Exists(){ return INSTANCE != nullptr ; }
 void SEvt::Check()
 {
@@ -1331,8 +1399,6 @@ NP* SEvt::makeSimtrace() const
 
 
 
-
-
 // SCompProvider methods
 
 std::string SEvt::getMeta() const 
@@ -1364,6 +1430,7 @@ NP* SEvt::gatherComponent_(unsigned comp) const
     switch(comp)
     {   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
+        case SCOMP_G4STATE:   a = gatherG4State()  ; break ;   
 
         case SCOMP_GENSTEP:   a = gatherGenstep()  ; break ;   
         case SCOMP_DOMAIN:    a = gatherDomain()   ; break ;   
@@ -1448,6 +1515,8 @@ std::string SEvt::descDir() const
        << std::endl
        << " loaddir " << ( loaddir ? loaddir : "-" )
        << std::endl
+       << " is_loaded " << ( is_loaded ? "YES" : "NO" )
+       << std::endl
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -1474,6 +1543,11 @@ std::string SEvt::desc() const
        << descDir()
        << std::endl
        << dbg->desc()
+       << std::endl
+       << " g4state " << ( g4state ? g4state->sstr() : "-" )
+       << std::endl
+       << " SEventConfig::Initialize_COUNT " << SEventConfig::Initialize_COUNT 
+       << std::endl
        ; 
     std::string s = ss.str(); 
     return s ; 
@@ -1640,7 +1714,6 @@ void SEvt::save(const char* dir_)
     saveLabels(dir); 
     saveFrame(dir); 
 
-    if(SEventConfig::IsRunningModeG4StateSave()) saveG4States(dir); 
 }
 void SEvt::load(const char* dir_) 
 {
@@ -1649,6 +1722,7 @@ void SEvt::load(const char* dir_)
     LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
     assert(dir); 
     fold->load(dir); 
+    is_loaded = true ; 
 }
 
 
@@ -1684,14 +1758,6 @@ void SEvt::saveFrame(const char* dir) const
     LOG(LEVEL) << "] dir " << dir ; 
 }
 
-void SEvt::saveG4States(const char* dir) const 
-{
-    assert( SEventConfig::IsRunningModeG4StateSave() ); 
-    if(g4states == nullptr) return ; 
-    LOG(LEVEL) << "[ dir " << dir ; 
-    g4states->save(dir, "g4states.npy"); 
-    LOG(LEVEL) << "] dir " << dir ; 
-}
 
 std::string SEvt::descComp() const 
 {
@@ -1715,6 +1781,7 @@ std::string SEvt::descComponent() const
     const NP* seq      = fold->get(SComp::Name(SCOMP_SEQ)) ; 
     const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
     const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
+    const NP* g4state  = fold->get(SComp::Name(SCOMP_G4STATE)) ; 
 
     std::stringstream ss ; 
     ss << "SEvt::descComponent" 
@@ -1765,6 +1832,10 @@ std::string SEvt::descComponent() const
        << std::endl
        << std::setw(20) << "simtrace" << " " 
        << std::setw(20) << ( simtrace ? simtrace->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "g4state" << " " 
+       << std::setw(20) << ( g4state ? g4state->sstr() : "-" ) 
        << " "
        << std::endl
        ;

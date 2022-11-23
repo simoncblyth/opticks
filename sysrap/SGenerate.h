@@ -14,7 +14,6 @@ rather than the widely used sysrap library.
 struct NP ; 
 struct SGenerate
 {
-    static constexpr const char* SGenerate_GeneratePhotons_MASK = "SGenerate_GeneratePhotons_MASK" ; 
     static NP* GeneratePhotons();  
     static NP* GeneratePhotons(const NP* gs);  
 }; 
@@ -65,11 +64,15 @@ inline NP* SGenerate::GeneratePhotons()
         ph = GeneratePhotons(gs);
     }
 
-    NP* phs = NP::MakeSelectCopyE_(ph, SGenerate_GeneratePhotons_MASK );  
+    int rerun_id = SEventConfig::G4StateRerun() ;
+    NP* phs = rerun_id > -1 ? NP::MakeSelectCopy(ph, rerun_id ) : NP::MakeCopy(ph) ;
+
     std::cout 
         << "SGenerate::GeneratePhotons"
+        << " rerun_id " << rerun_id
         << " ph " << ( ph ? ph->brief() : "-" ) 
-        << " phs " << ( phs ? phs->brief() : "-" )  << " (SGenerate_GeneratePhotons_MASK) "
+        << " phs " << ( phs ? phs->brief() : "-" ) 
+        << " (" << SEventConfig::kG4StateRerun << ") " 
         << std::endl 
         ; 
 

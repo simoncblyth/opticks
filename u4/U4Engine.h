@@ -23,6 +23,8 @@ struct U4_API U4Engine
 {
     static std::string Desc(); 
     static void ShowState(); 
+    static std::string DescStateArray(); 
+    static std::string DescState(); 
     static std::string ConfPath(const char* fold, const char* name=nullptr); 
 
     static void SaveState(const char* fold, const char* name=nullptr) ; 
@@ -61,6 +63,39 @@ inline void U4Engine::ShowState() // static
     CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
     engine->showStatus(); 
 }
+
+inline std::string U4Engine::DescStateArray() // static
+{
+    CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
+    assert( engine ); 
+    std::vector<unsigned long> state = engine->put(); 
+
+    std::stringstream ss ; 
+    ss << "U4Engine::DescStateArray" << std::endl << std::endl  ; 
+    ss << "state = np.array([ "  ; 
+    for(unsigned i=0 ; i < state.size() ; i++) 
+    {
+        if( i % 10 == 0 ) ss << std::endl ; 
+        ss << state[i] << ( i < state.size() - 1 ? ", " : " " ) ; 
+    }
+    ss << "], dtype=np.uint64)" << std::endl ; 
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+inline std::string U4Engine::DescState() // static
+{
+    CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
+    assert( engine ); 
+    std::stringstream ss ; 
+    ss << "U4Engine::DescState" << std::endl ; 
+    engine->put(ss); 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 inline std::string U4Engine::ConfPath(const char* fold, const char* name) // static
 {

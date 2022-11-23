@@ -570,7 +570,12 @@ void QSimTest::EventConfig(unsigned type )  // static
 
         SEventConfig::SetMaxBounce(maxbounce); 
         SEventConfig::SetEventMode("StandardFullDebug"); 
-        SEventConfig::Initialize(); 
+
+        SEventConfig::Initialize();   
+        // HMM: Initialize is done by SEvt::SEvt : SO THIS WILL NEED REWORKING 
+        // must make any config changes before SEvt instanciation typically in the main 
+
+
         SEventConfig::SetMaxGenstep(1);        // MOCK_PROPAGATE starts from input photons but uses a single placeholder genstep 
         SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
 
@@ -683,6 +688,9 @@ int main(int argc, char** argv)
     QSim::UploadComponents(ssim);   // instanciates things like QBnd
 
     QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
+
+
+
 
     SEvt evt ; 
 

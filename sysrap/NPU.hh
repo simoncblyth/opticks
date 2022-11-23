@@ -412,13 +412,20 @@ struct U
 
 };
 
+/**
+U::MakeVec
+------------
 
+If no elements are parsed from the line, nullptr is returned. 
+
+**/
 
 template<typename T>
 inline std::vector<T>* U::MakeVec(const char* line, char delim)
 {
     if(line == nullptr) return nullptr ; 
-    std::vector<T>* vec = new std::vector<T>() ; 
+
+    std::vector<T> vec ; 
     std::stringstream ss; 
     ss.str(line);
     std::string s;
@@ -427,9 +434,9 @@ inline std::vector<T>* U::MakeVec(const char* line, char delim)
         std::istringstream iss(s);
         T t ; 
         iss >> t ; 
-        vec->push_back(t) ; 
+        vec.push_back(t) ; 
     }   
-    return vec ; 
+    return vec.size() == 0 ? nullptr : new std::vector<T>(vec) ; 
 }
 
 template<typename T>

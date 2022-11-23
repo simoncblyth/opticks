@@ -39,17 +39,27 @@ int main(int argc, char** argv)
 
     std::cout << U4Engine::Desc() << std::endl ; 
 
-    //U4Engine::SaveStatus("."); 
+    SEvt* evt = SEvt::CreateOrLoad() ; 
 
-
-    SEvt evt ; 
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
 
     SFastSim_Debug::Save("/tmp/SFastSim_Debug" ); 
 
-    evt.save(); 
+    
+    if(evt->is_loaded) 
+    {
+        LOG(info) << " not saving as evt->is_loaded " ; 
+        // TODO: save under a different reldir 
+        // the default reldir is ALL
+        // event loading is done for rerunning 
+        // so the reldir needs to reflect that 
+    }
+    else
+    {
+        evt->save(); 
+    }
 
     return 0 ; 
 }

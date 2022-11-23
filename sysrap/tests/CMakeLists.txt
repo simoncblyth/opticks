@@ -114,6 +114,7 @@ set(TEST_SOURCES
    SCVDLabel.cc 
 
    SEvtTest.cc
+   SEvtLoadTest.cc
    SSimTest.cc
    SBndTest.cc
    SNameTest.cc

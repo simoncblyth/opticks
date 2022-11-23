@@ -1,6 +1,6 @@
 #pragma once
 /**
-SComponent.hh : naming array components of Opticks Event 
+SComponent_OLD.hh : naming array components of Opticks Event 
 =============================================================
 
 NB new workflow uses SComp.h NOT THIS 
@@ -32,10 +32,11 @@ enum {
     SEVT_HIT,
     SEVT_HIY,
     SEVT_FDOM,
-    SEVT_IDOM
+    SEVT_IDOM,
+    SEVT_G4STATES
 };
 
-struct SComponent 
+struct SComponent_OLD 
 {
     static bool        StartsWith( const char* s, const char* q); 
     static const char* Name(unsigned comp); 
@@ -59,14 +60,15 @@ struct SComponent
     static constexpr const char* HIY_      = "hiy" ; 
     static constexpr const char* FDOM_     = "fdom" ; 
     static constexpr const char* IDOM_     = "idom" ; 
+    static constexpr const char* G4STATES_ = "g4states" ; 
 };
 
-inline bool SComponent::StartsWith( const char* s, const char* q)  // static
+inline bool SComponent_OLD::StartsWith( const char* s, const char* q)  // static
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ; 
 }
 
-inline unsigned    SComponent::Component(const char* name)
+inline unsigned    SComponent_OLD::Component(const char* name)
 {
     unsigned comp = SEVT_UNDEFINED ; 
     if(StartsWith(name, GENSTEP_))  comp = SEVT_GENSTEP ; 
@@ -86,10 +88,11 @@ inline unsigned    SComponent::Component(const char* name)
     if(StartsWith(name, HIY_))      comp = SEVT_HIY ; 
     if(StartsWith(name, FDOM_))     comp = SEVT_FDOM ; 
     if(StartsWith(name, IDOM_))     comp = SEVT_IDOM ; 
+    if(StartsWith(name, G4STATES_)) comp = SEVT_G4STATES ; 
     return comp ; 
 }
 
-inline const char* SComponent::Name(unsigned comp)
+inline const char* SComponent_OLD::Name(unsigned comp)
 {
     const char* s = nullptr ; 
     switch(comp)
@@ -112,6 +115,7 @@ inline const char* SComponent::Name(unsigned comp)
         case SEVT_HIY:       s = HIY_      ; break ;  
         case SEVT_FDOM:      s = FDOM_     ; break ;  
         case SEVT_IDOM:      s = IDOM_     ; break ;  
+        case SEVT_G4STATES:  s = G4STATES_ ; break ;  
     }
     return s ; 
 }

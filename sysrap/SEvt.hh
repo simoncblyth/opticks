@@ -94,7 +94,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string meta ; 
     NP* input_photon ; 
     NP* input_photon_transformed ; 
-    NP* g4states ;    // populated by U4Engine::SaveStatus
+    NP* g4state ;    // populated by U4Engine::SaveStatus
 
     const SRandom*        random ; 
     const SCompProvider*  provider ; 
@@ -103,6 +103,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running 
     bool              gather_done ; 
+    bool              is_loaded ; 
 
     sframe            frame ;
 
@@ -139,6 +140,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
+    static SEvt* Create() ; 
+    static SEvt* CreateOrLoad() ; 
+
     static bool Exists(); 
     static bool RECORDING ; 
 
@@ -178,7 +182,6 @@ struct SYSRAP_API SEvt : public SCompProvider
  
     SEvt(); 
     void init(); 
-    void initG4States(int max_states, int item_values); 
 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
@@ -194,6 +197,13 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getInputPhoton_() const ; 
     NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
     bool hasInputPhoton() const ; 
+
+
+    void initG4State() ; 
+    NP* makeG4State() const ; 
+    void setG4State(NP* state) ; 
+    NP* gatherG4State() const ;
+    const NP* getG4State() const ;
 
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
@@ -286,6 +296,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* makeSimtrace() const ; 
 
 
+
     // SCompProvider methods
 
     std::string getMeta() const ; 
@@ -294,7 +305,6 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void saveLabels(const char* dir) const ;  // formerly savePho
     void saveFrame(const char* dir_) const ; 
-    void saveG4States(const char* dir_) const ; 
 
     void saveGenstep(const char* dir) const ; 
     void saveGenstepLabels(const char* dir, const char* name="gsl.npy") const ; 

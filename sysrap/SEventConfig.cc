@@ -1,5 +1,6 @@
 #include <sstream>
 #include <cstring>
+#include <csignal>
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -19,6 +20,9 @@ const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG
 
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
+const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
+const char* SEventConfig::_G4StateSpecNotes   = " 38=2*17+4 is appropriate for MixMaxRng  " ; 
+int         SEventConfig::_G4StateRerunDefault = -1 ;
  
 int SEventConfig::_MaxGenstepDefault = 1000*K ; 
 int SEventConfig::_MaxBounceDefault = 9 ; 
@@ -52,6 +56,9 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
 const char* SEventConfig::_EventMode = SSys::getenvvar(kEventMode, _EventModeDefault ); 
 int SEventConfig::_RunningMode = SRM::Type(SSys::getenvvar(kRunningMode, _RunningModeDefault)); 
+const char* SEventConfig::_G4StateSpec  = SSys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
+int         SEventConfig::_G4StateRerun = SSys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
+
 
 int SEventConfig::_MaxGenstep   = SSys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
 int SEventConfig::_MaxPhoton    = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
@@ -77,12 +84,27 @@ const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame,
 
 const char* SEventConfig::EventMode(){ return _EventMode ; }
 
+
 int         SEventConfig::RunningMode(){ return _RunningMode ; }
 const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
 bool SEventConfig::IsRunningModeDefault(){      return RunningMode() == SRM_DEFAULT ; } 
 bool SEventConfig::IsRunningModeG4StateSave(){  return RunningMode() == SRM_G4STATE_SAVE ; } 
 bool SEventConfig::IsRunningModeG4StateRerun(){ return RunningMode() == SRM_G4STATE_RERUN ; } 
 
+const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
+
+/**
+SEventConfig::G4StateRerun
+----------------------------
+
+When rerun mode is not enabled returns -1 even when rerun id is set. 
+
+**/
+int SEventConfig::G4StateRerun()
+{ 
+    bool rerun_enabled = IsRunningModeG4StateRerun() ;  
+    return rerun_enabled && _G4StateRerun > -1 ? _G4StateRerun : -1  ; 
+}
 
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
@@ -125,6 +147,8 @@ void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
 void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
+void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; Check() ; }
+void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; Check() ; }
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
@@ -160,6 +184,8 @@ void SEventConfig::SetCompMaskAuto(){ SetCompMask_( CompMaskAuto() ) ; }
 SEventConfig::CompMaskAuto
 ---------------------------
 
+Canonically invoked by SEventConfig::Initialize
+
 **/
 
 unsigned SEventConfig::CompMaskAuto()
@@ -190,6 +216,17 @@ unsigned SEventConfig::CompMaskAuto()
     {
         mask |= SCOMP_PIXEL ; 
     }
+
+    if(IsRunningModeG4StateSave() || IsRunningModeG4StateRerun())
+    {
+        LOG(LEVEL) << " adding SCOMP_G4STATE to comp list " ; 
+        mask |= SCOMP_G4STATE ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " NOT : adding SCOMP_G4STATE to comp list " ; 
+    }
+
     return mask ; 
 }
 
@@ -243,6 +280,15 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << ""
        << std::setw(20) << " RunningModeLabel " << " : " << RunningModeLabel() 
+       << std::endl 
+       << std::setw(25) << kG4StateSpec
+       << std::setw(20) << " G4StateSpec " << " : " << G4StateSpec() 
+       << std::endl 
+       << std::setw(25) << ""
+       << std::setw(20) << " G4StateSpecNotes " << " : " << _G4StateSpecNotes
+       << std::endl 
+       << std::setw(25) << kG4StateRerun
+       << std::setw(20) << " G4StateRerun " << " : " << G4StateRerun() 
        << std::endl 
        << std::setw(25) << kMaxGenstep 
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() 
@@ -355,30 +401,40 @@ const char* SEventConfig::OutPath( const char* reldir, const char* stem, int ind
 SEventConfig::Initialize
 -------------------------
 
-Canonically invoked from G4CXOpticks::init
+Canonically invoked from SEvt::SEvt 
 
-* HMM : that is too high a level for calling SEventConfig::Initialize ? 
-  it means that with purely G4 running such as U4 tests 
-  this doesnt get called and are running with the base defaults, 
-  and not the collectively controlled ones
+* Formerly this was invoked from G4CXOpticks::init, but that is 
+  too high level as SEvt is needed for purely G4 running such as the U4 tests 
 
-* TODO: see if can move to invoking from SEvt instanciation 
-
+* NB must make any static call adjustments before SEvt instanciation 
+  for them to have any effect 
 
 
-
-HMM: if change the max after calling this need to SEventConfig::SetCompMaskAuto() 
-
-HMM: currently there is some conflation between the comps to gather and comp existance
-
-* need to split these, eg photon comp is always needed but not always gathered
+TODO: check if still conflation between the comps to gather and comp existance ?
+      need to split those, eg photon comp is always needed but not always gathered
 
 **/
 
+int SEventConfig::Initialize_COUNT = 0 ; 
 
 int SEventConfig::Initialize() // static
 {
+    LOG_IF(fatal, Initialize_COUNT > 0 ) 
+        << "BUG : SEventConfig::Initialize() called more than once " << std::endl
+        << " this is now done automatically at SEvt::SEvt usually in main " 
+        ; 
+    assert( Initialize_COUNT == 0); 
+    Initialize_COUNT += 1 ; 
+
     const char* mode = EventMode(); 
+    LOG(LEVEL) <<  " EventMode() " << mode ; 
+    LOG(LEVEL) 
+        <<  " RunningMode() " << RunningMode() 
+        <<  " RunningModeLabel() " << RunningModeLabel() 
+        ; 
+
+    //std::raise(SIGINT); 
+
     int maxbounce = MaxBounce(); 
 
     if(strcmp(mode, Default) == 0 )

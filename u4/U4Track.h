@@ -9,6 +9,8 @@ struct U4Track
     static G4Track* MakePhoton(); 
 
     static int Id(const G4Track* track); 
+    static void SetId(G4Track* track, int id); 
+
     static bool IsOptical(const G4Track* track); 
     static std::string Desc(const G4Track* track); 
     static spho Label(const G4Track* track);   // returns placeholders when track has no label  
@@ -37,11 +39,31 @@ inline G4Track* U4Track::MakePhoton()
     return track ; 
 }
 
+/**
+U4Track::Id
+-------------
+
+0-based Id (unlike original G4Track::GetTrackID which is 1-based)
+
+**/
+
 int U4Track::Id(const G4Track* track)
 {
     return track->GetTrackID() - 1 ;   
-    // 0-based Id (unlike original G4Track::GetTrackID which is 1-based)
 }
+
+/**
+U4Track::SetId
+----------------
+
+NB *id* is 0-based but Geant4 uses a 1-based TrackId  
+
+**/
+void U4Track::SetId(G4Track* track, int id)
+{
+    track->SetTrackID( id + 1 ); 
+}
+
 
 bool U4Track::IsOptical(const G4Track* track)
 {

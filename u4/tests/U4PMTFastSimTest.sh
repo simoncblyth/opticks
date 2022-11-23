@@ -15,16 +15,18 @@ export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1
 
-# see SEventConfig::RunningMode
-export OPTICKS_RUNNING_MODE=SRM_G4STATE_SAVE
-#export OPTICKS_RUNNING_MODE=SRM_G4STATE_RERUN
-export U4Recorder_STATES=1000
+
+running_mode=SRM_G4STATE_SAVE  
+#running_mode=SRM_G4STATE_RERUN
+export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
+export OPTICKS_G4STATE_RERUN=726
 
 
 loglevel(){
    export U4Recorder=INFO
-   export junoPMTOpticalModel=INFO
-   export SEvt=INFO
+   #export junoPMTOpticalModel=INFO
+   #export SEvt=INFO
+   export SEventConfig=INFO
 }
 loglevel
 

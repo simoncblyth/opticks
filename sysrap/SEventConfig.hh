@@ -75,6 +75,8 @@ struct SYSRAP_API SEventConfig
 
     static constexpr const char* kEventMode = "OPTICKS_EVENT_MODE" ; 
     static constexpr const char* kRunningMode = "OPTICKS_RUNNING_MODE" ; 
+    static constexpr const char* kG4StateSpec = "OPTICKS_G4STATE_SPEC" ; 
+    static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
     static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
     static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
@@ -100,13 +102,15 @@ struct SYSRAP_API SEventConfig
 
     static const char* EventMode(); 
 
-
     static int         RunningMode(); 
     static const char* RunningModeLabel(); 
     static bool IsRunningModeDefault(); 
     static bool IsRunningModeG4StateSave(); 
     static bool IsRunningModeG4StateRerun();  
 
+    static const char* G4StateSpec(); 
+    static int         G4StateRerun(); 
+    static int         G4StateRerun_GetEnabledId() ;
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
@@ -146,6 +150,8 @@ struct SYSRAP_API SEventConfig
 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State 
+    static void SetG4StateSpec(const char* spec); 
+    static void SetG4StateRerun(int id); 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
@@ -179,6 +185,10 @@ struct SYSRAP_API SEventConfig
 
     static const char* _EventModeDefault ; 
     static const char* _RunningModeDefault ; 
+    static const char* _G4StateSpecDefault ; 
+    static const char* _G4StateSpecNotes ; 
+    static int         _G4StateRerunDefault ; 
+
     static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
     static int _MaxSimtraceDefault ; 
@@ -202,7 +212,10 @@ struct SYSRAP_API SEventConfig
 
 
     static const char* _EventMode ; 
-    static int _RunningMode ; 
+    static int         _RunningMode ; 
+    static const char* _G4StateSpec ; 
+    static int         _G4StateRerun ; 
+
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
     static int _MaxSimtrace ; 
@@ -225,6 +238,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonFrame ; 
 
 
+    static int Initialize_COUNT ; 
     static int Initialize(); 
     static uint64_t EstimateAlloc(); 
 

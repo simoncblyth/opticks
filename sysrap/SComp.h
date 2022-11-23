@@ -33,7 +33,8 @@ enum {
     SCOMP_FLAT      = 0x1 << 13,
     SCOMP_ISECT     = 0x1 << 14,
     SCOMP_FPHOTON   = 0x1 << 15,
-    SCOMP_PIXEL     = 0x1 << 16
+    SCOMP_PIXEL     = 0x1 << 16,
+    SCOMP_G4STATE   = 0x1 << 17  
 };
 
 struct SYSRAP_API SCompProvider
@@ -62,6 +63,7 @@ struct SYSRAP_API SComp
     static constexpr const char* ISECT_     = "isect" ; 
     static constexpr const char* FPHOTON_   = "fphoton" ; 
     static constexpr const char* PIXEL_     = "pixel" ; 
+    static constexpr const char* G4STATE_   = "g4state" ; 
 
     static bool Match(const char* q, const char* n ); 
     static unsigned    Comp(const char* name); 
@@ -89,6 +91,7 @@ struct SYSRAP_API SComp
     static bool IsIsect(   unsigned mask){ return mask & SCOMP_ISECT ; }
     static bool IsFphoton( unsigned mask){ return mask & SCOMP_FPHOTON ; }
     static bool IsPixel(   unsigned mask){ return mask & SCOMP_PIXEL ; }
+    static bool IsG4State( unsigned mask){ return mask & SCOMP_G4STATE ; }
 
 };
 
@@ -116,6 +119,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, ISECT_))    comp = SCOMP_ISECT ; 
     if(Match(name, FPHOTON_))  comp = SCOMP_FPHOTON ; 
     if(Match(name, PIXEL_))    comp = SCOMP_PIXEL ; 
+    if(Match(name, G4STATE_))  comp = SCOMP_G4STATE ; 
     return comp ; 
 }
 inline const char* SComp::Name(unsigned comp)
@@ -140,6 +144,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_ISECT:     s = ISECT_      ; break ;  
         case SCOMP_FPHOTON:   s = FPHOTON_    ; break ;  
         case SCOMP_PIXEL:     s = PIXEL_      ; break ;  
+        case SCOMP_G4STATE:   s = G4STATE_    ; break ;  
     }
     return s ; 
 }
@@ -163,6 +168,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_ISECT )    names.push_back(ISECT_) ; 
     if( mask & SCOMP_FPHOTON )  names.push_back(FPHOTON_) ; 
     if( mask & SCOMP_PIXEL )    names.push_back(PIXEL_) ; 
+    if( mask & SCOMP_G4STATE )  names.push_back(G4STATE_) ; 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" ); 
