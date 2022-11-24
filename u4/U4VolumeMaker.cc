@@ -736,9 +736,10 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
     double rock_halfside, air_halfside, water_radius ; 
     RaindropRockAirWater_Configure( rock_halfside, air_halfside, water_radius); 
 
-    G4Material* water_material  = G4Material::GetMaterial("Water");   assert(water_material); 
-    G4Material* air_material  = G4Material::GetMaterial("Air");   assert(air_material); 
-    G4Material* rock_material = G4Material::GetMaterial("Rock");  assert(rock_material); 
+    bool warn = false ; 
+    G4Material* water_material  = G4Material::GetMaterial("Water", warn);   assert(water_material); 
+    G4Material* air_material  = G4Material::GetMaterial("Air", warn);   assert(air_material); 
+    G4Material* rock_material = G4Material::GetMaterial("Rock", warn);  assert(rock_material); 
 
     G4Orb* water_solid = new G4Orb("water_solid", water_radius ); 
     G4Box* air_solid = new G4Box("air_solid", air_halfside, air_halfside, air_halfside );

@@ -58,7 +58,8 @@ is what thePhysicsTable provides in all the Geant4 versions.
 
 G4MaterialPropertyVector* X4MaterialWater::GetProperty(const G4int index)
 {
-    G4Material* Water = G4Material::GetMaterial("Water");
+    G4bool warn = false ; 
+    G4Material* Water = G4Material::GetMaterial("Water", warn );
     if(Water == nullptr) return nullptr ; 
     G4MaterialPropertiesTable* WaterMPT = Water->GetMaterialPropertiesTable() ; 
     if(WaterMPT == nullptr) return nullptr ; 
@@ -68,7 +69,8 @@ G4MaterialPropertyVector* X4MaterialWater::GetProperty(const G4int index)
 
 X4MaterialWater::X4MaterialWater()
     :
-    Water(G4Material::GetMaterial("Water")),
+    warn(false),
+    Water(G4Material::GetMaterial("Water", warn)),
     WaterMPT(Water ? Water->GetMaterialPropertiesTable() : nullptr),
     rayleigh0(WaterMPT ? WaterMPT->GetProperty(kRAYLEIGH) : nullptr ),
     rayleigh(rayleigh0 ? rayleigh0 : static_cast<G4MaterialPropertyVector*>(X4OpRayleigh::WaterScatteringLength()) )

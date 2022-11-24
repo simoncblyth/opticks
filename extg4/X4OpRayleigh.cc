@@ -42,7 +42,8 @@ G4PhysicsVector* X4OpRayleigh::GetFromPhysicsTable(const G4OpRayleigh* proc, siz
 
 X4OpRayleigh::X4OpRayleigh()
     :
-    Water(G4Material::GetMaterial("Water")),
+    warn(false),
+    Water(G4Material::GetMaterial("Water", warn)),
     WaterIndex(Water ? Water->GetIndex() : 0), 
     OpticalPhoton(G4OpticalPhoton::Definition()), 
     RayleighProcess(new G4OpRayleigh), 

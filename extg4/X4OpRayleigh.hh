@@ -26,6 +26,7 @@ struct X4_API X4OpRayleigh
     static G4PhysicsVector* WaterScatteringLength(); 
     static G4PhysicsVector* GetFromPhysicsTable(const G4OpRayleigh* proc, size_t index ); 
 
+    bool                         warn ; 
     G4Material*                  Water ; 
     size_t                       WaterIndex ; 
     G4ParticleDefinition*        OpticalPhoton ; 

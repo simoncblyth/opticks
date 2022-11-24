@@ -61,6 +61,7 @@ struct X4_API X4MaterialWater
     static G4MaterialPropertyVector* GetRINDEX(); 
     static G4MaterialPropertyVector* GetProperty(const G4int index); 
 
+    bool                         warn ; 
     G4Material*                  Water ; 
     G4MaterialPropertiesTable*   WaterMPT ;  
     G4MaterialPropertyVector*  rayleigh0 ; // from the material, possibly null         
