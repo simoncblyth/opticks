@@ -50,6 +50,11 @@ std::string STime::Stamp()
 {
     return STime::Format(0, nullptr); 
 }
+std::string STime::Now()
+{
+    return STime::Format(0, "%c"); 
+}
+
 
 std::string STime::mtime(const char* base, const char* name)
 {

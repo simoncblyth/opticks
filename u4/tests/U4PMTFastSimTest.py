@@ -70,6 +70,8 @@ if __name__ == '__main__':
 
 
     PID = int(os.environ.get("PID", -1))
+    if PID == -1: PID = int(os.environ.get("OPTICKS_G4STATE_RERUN", -1))
+
     pidsel = np.where( pid == PID )[0]  
     #pidsel = np.where( pid == PID )[0]  
     num_pidsel = len(pidsel)  

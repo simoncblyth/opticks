@@ -110,13 +110,24 @@ U4VPrimaryGenerator::GeneratePrimaries
 2. populates the G4Event argument with these as G4PrimaryVertex
 
 Notice that there are no G4Track in sight here, so there is no 
-way to annotate the tracks with *spho* labels.  
+direct way to annotate the tracks with *spho* labels.  
+
+To do so would have to arrange to catch the tracks at labelling stage 
+in U4Recorder::PreUserTrackingAction_Optical where could
+associate back to the originating array, that could be held in the 
+SEvt as "input photons". This relies on Geant4 being consistent
+in the way PrimaryVertex become G4Track ? I expect it will work 
+in purely optical case. 
 
 **/
 
 inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
 {
     NP* ph = SGenerate::GeneratePhotons(); 
+    // TODO: these *ph* are effectively input photons (even though generated from gensteps),
+    //       should associate as such in the SEvt to retain access to these
+    //
+
     std::cout << "U4VPrimaryGenerator::GeneratePrimaries ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
 
     if(ph == nullptr) std::cerr 

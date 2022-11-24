@@ -1,4 +1,5 @@
 #include "U4RecorderTest.h"
+#include "STime.hh"
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
 #include "U4Engine.h"
@@ -37,7 +38,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     J_PMTFASTSIM_LOG_(0); 
 
-    std::cout << U4Engine::Desc() << std::endl ; 
+    LOG(info) << "[ " << argv[0] << " " << STime::Now() ; 
+    LOG(info) << U4Engine::Desc()  ; 
 
     SEvt* evt = SEvt::CreateOrLoad() ; 
 
@@ -61,6 +63,7 @@ int main(int argc, char** argv)
         evt->save(); 
     }
 
+    LOG(info) << "] " << argv[0] << " " << STime::Now() ; 
     return 0 ; 
 }
 

@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 U4PMTFastSimTest.sh
 ======================
@@ -11,31 +10,22 @@ U4PMTFastSimTest.sh
 EOU
 }
 
+## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
 export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
-export G4FastSimulationManagerProcess_ENABLE=1
-
+export G4FastSimulationManagerProcess_ENABLE=1  
 
 #running_mode=SRM_G4STATE_SAVE  
 running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_G4STATE_RERUN=726
 
-
-loglevel(){
-   export U4Recorder=INFO
-   #export junoPMTOpticalModel=INFO
-   #export SEvt=INFO
-   export SEventConfig=INFO
-}
-loglevel
-
 export GEOM=hamaLogicalPMT
 export U4RecorderTest__PRIMARY_MODE=torch 
 # hmm seems iphoton and torch do same thing internally 
 export BeamOn=${BeamOn:-1}
 
-export hama_FastCoverMaterial=Cheese
+export hama_FastCoverMaterial=Cheese    ## declProp config of Manager
 export hama_UsePMTOpticalModel=1
 
 #num_ph=2
@@ -62,6 +52,14 @@ export storch_FillGenstep_mom=0,0,-1
 
 bin=U4PMTFastSimTest
 log=$bin.log
+
+loglevel(){
+   export U4Recorder=INFO
+   export junoPMTOpticalModel=INFO
+   #export SEvt=INFO
+   export SEventConfig=INFO
+}
+loglevel
 
 
 defarg="run"

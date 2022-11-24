@@ -127,7 +127,7 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << "[" ; 
 
     G4Track* _track = const_cast<G4Track*>(track) ; 
     _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
@@ -182,22 +182,28 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     {
         sev->rjoinPhoton(label); 
     }
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
-U4Recorder::saveOrLoadStates
-------------------------------
+U4Recorder::saveOrLoadStates to/from NP g4state array managed by SEvt
+-----------------------------------------------------------------------
 
 Called from U4Recorder::PreUserTrackingAction_Optical
-
-HMM: sounds like to/from file, but it is to array, maybe "preserveOrRestoreG4State"
-the save/load to/from file is handled by SEvt  
 
 For pure-optical Geant4 photon rerunning without pre-cooked randoms
 need to save the engine state into SEvt prior to using 
 any Geant4 randoms for the photon. So can restore the random engine 
 back to this state. 
 
+NB for rerunning to reproduce a selected single photon this requires:
+
+1. optical primaries have corresponding selection applied in SGenerate::GeneratePhotons
+   as called from U4VPrimaryGenerator::GeneratePrimaries
+
+2. U4Track::SetId adjusts track id to the rerun id within 
+   U4Recorder::PreUserTrackingAction_Optical prior to calling this
+   
 **/
 
 void U4Recorder::saveOrLoadStates( int id )  
@@ -254,7 +260,7 @@ U4Recorder::PostUserTrackingAction_Optical
 
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << "[" ; 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  // all photons are expected to be labelled
     if(!Enabled(label)) return ;  
@@ -267,6 +273,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     bool is_fStopAndKill = tstat == fStopAndKill ; 
     LOG_IF(info, !is_fStopAndKill) << " not is_fStopAndKill  post.tstat " << U4TrackStatus::Name(tstat) ; 
     //assert( is_fStopAndKill ); 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -308,21 +315,21 @@ one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhot
 so only the first call to UserSteppingAction_Optical after PreUserTrackingAction_Optical
 will fulfil *single_bit*.
 
+HMM: but if subsequent step points failed to set a non-zero flag could get that repeated 
+
 **/
 
 template <typename T>
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << "[" ; 
     const G4Track* track = step->GetTrack(); 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  
 
-
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
-
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(label); 
@@ -338,8 +345,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-
     //assert( flag > 0 ); 
+
+    LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
 
     if( flag == NAN_ABORT )
@@ -350,7 +358,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     {
         G4TrackStatus tstat = track->GetTrackStatus(); 
 
-        Check_TrackStatus_Flag(tstat, flag); 
+        Check_TrackStatus_Flag(tstat, flag, "UserSteppingAction_Optical" ); 
 
         U4StepPoint::Update(current_photon, post); 
 
@@ -363,6 +371,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -374,13 +383,13 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 In CFG4 did StopAndKill but so far seems no reason to do that. Probably that was for aligning truncation.
 **/
 
-void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
+void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, const char* from )
 {
-    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
+    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag) << " from " << from  ; 
 
     if( tstat == fAlive )
     {
-        bool is_live_flag = OpticksPhoton::IsLiveFlag(flag);  
+        bool is_live_flag = OpticksPhoton::IsLiveFlag(flag);    // with FastSim seeing fSuspend
         LOG_IF(error, !is_live_flag ) 
             << " is_live_flag " << is_live_flag 
             << " unexpected trackStatus/flag  " 
@@ -389,6 +398,10 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
             ;     
 
         assert( is_live_flag );  
+    }
+    else if( tstat == fSuspend )
+    {
+        LOG(LEVEL) << " fSuspend : this happens when hand over to FastSim, ie when ModelTrigger:YES " ;  
     }
     else if( tstat == fStopAndKill )
     { 

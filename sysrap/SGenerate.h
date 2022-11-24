@@ -64,8 +64,10 @@ inline NP* SGenerate::GeneratePhotons()
         ph = GeneratePhotons(gs);
     }
 
+    // HMM: should this selection be done here OR later 
     int rerun_id = SEventConfig::G4StateRerun() ;
     NP* phs = rerun_id > -1 ? NP::MakeSelectCopy(ph, rerun_id ) : NP::MakeCopy(ph) ;
+    // NB: the array now carries idlist metadata with the rerun_id 
 
     std::cout 
         << "SGenerate::GeneratePhotons"

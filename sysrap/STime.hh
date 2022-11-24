@@ -27,7 +27,8 @@ struct SYSRAP_API STime
     static const char* FMT ;   // 
     static int EpochSeconds(); 
     static std::string Format(int epochseconds=0, const char* fmt=nullptr ); 
-    static std::string Stamp(); 
+    static std::string Stamp();  // eg "20221124_152839"  
+    static std::string Now();    // eg "Thu Nov 24 15:28:39 2022"
     static std::string mtime(const char* base, const char* name); 
     static std::string mtime(const char* path); 
 

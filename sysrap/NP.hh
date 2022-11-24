@@ -1633,7 +1633,6 @@ inline NP* NP::MakeWithType(const NP* a) // static
 /**
 NP::MakeSelectCopy
 --------------------
-
 **/
 
 template<typename... Args> 
@@ -1675,6 +1674,14 @@ inline NP* NP::MakeSelectCopy_(  const NP* src, const int* items, int num_items 
     {
         memcpy( dst->bytes() + i*size, src->bytes() + items[i]*size , size ); 
     }
+
+    // format string idlist list of items and set into metadata 
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_items ; i++) ss << items[i] << ( i < num_items-1 ? "," : "" ) ; 
+    std::string idlist = ss.str() ; 
+    dst->set_meta<std::string>("idlist", idlist ); 
+    // item indices become "id" when you use them to make a selection
+
     return dst ; 
 }
 

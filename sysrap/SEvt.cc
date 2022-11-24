@@ -985,7 +985,7 @@ void SEvt::rjoinPhoton(const spho& label)
     pho[idx] = label ;   
     current_pho = label ; 
 
-    int& bounce = slot[idx] ; assert( bounce > 0 );   
+    const int& bounce = slot[idx] ; assert( bounce > 0 );   
     int prior = bounce - 1 ; 
 
     if( evt->photon )
@@ -1136,8 +1136,7 @@ Invoked from U4Recorder::UserSteppingAction_Optical to cause the
 current photon to be recorded into record vector. 
 
 The pointPhoton and finalPhoton methods need to do the hostside equivalent of 
-what CSGOptiX/CSGOptiX7.cu:simulate does device side,
-so have setup the environment to match::
+what CSGOptiX/CSGOptiX7.cu:simulate does device side, so have setup the environment to match:
 
 ctx.point looks like it is populating sevent arrays, but actually are also populating 
 the vectors thanks to setting of the sevent pointers in SEvt::hostside_running_resize
@@ -1177,7 +1176,7 @@ void SEvt::pointPhoton(const spho& label)
         << " seq.desc_seqhis " << seq.desc_seqhis() ; 
         ;
 
-    bounce += 1 ; 
+    bounce += 1 ;   // increments slot array, by reference
 }
 
 /**

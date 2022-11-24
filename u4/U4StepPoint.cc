@@ -5,15 +5,15 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-//#include "G4OpBoundaryProcess.hh"
-//#include "InstrumentedG4OpBoundaryProcess.hh"
 
 #include "SLOG.hh"
+#include "SSys.hh"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "SFastSimOpticalModel.hh"
 
 #include "U4StepStatus.h"
 #include "U4OpBoundaryProcess.h"
@@ -22,6 +22,7 @@
 
 
 const plog::Severity U4StepPoint::LEVEL = SLOG::EnvLevel("U4StepPoint", "DEBUG"); 
+const char* U4StepPoint::OpFastSim_ = SSys::getenvvar("U4StepPoint_OpFastSim", "fast_sim_man" );  
 
 
 /**
@@ -76,6 +77,13 @@ std::string U4StepPoint::DescPositionTime(const G4StepPoint* point )
     return s ; 
 }
 
+const char* U4StepPoint::ProcessName(const G4StepPoint* point) // static
+{
+    const G4VProcess* process = point->GetProcessDefinedStep() ;
+    if(process == nullptr) return nullptr ; 
+    const G4String& processName = process->GetProcessName() ; 
+    return processName.c_str(); 
+}
 
 unsigned U4StepPoint::ProcessDefinedStepType(const G4StepPoint* point) // static
 {
@@ -92,6 +100,7 @@ unsigned U4StepPoint::ProcessDefinedStepType(const char* name) // static
     if(strcmp(name, Transportation_) == 0 ) type = U4StepPoint_Transportation ;
     if(strcmp(name, OpRayleigh_) == 0)      type = U4StepPoint_OpRayleigh ;   
     if(strcmp(name, OpAbsorption_) == 0)    type = U4StepPoint_OpAbsorption ;   
+    if(strcmp(name, OpFastSim_) == 0)       type = U4StepPoint_OpFastSim ;   
     if(strcmp(name, OTHER_) == 0)           type = U4StepPoint_OTHER ;   
     return type ; 
 }
@@ -106,6 +115,7 @@ const char* U4StepPoint::ProcessDefinedStepTypeName( unsigned type ) // static
         case U4StepPoint_Transportation: s = Transportation_ ; break ;
         case U4StepPoint_OpRayleigh:     s = OpRayleigh_     ; break ;
         case U4StepPoint_OpAbsorption:   s = OpAbsorption_   ; break ;  
+        case U4StepPoint_OpFastSim:      s = OpFastSim_      ; break ;  
         default:                         s = OTHER_          ; break ; 
     }
     return s ; 
@@ -122,7 +132,7 @@ HMM: no BULK_REEMIT ?
 **/
 
 template <typename T>
-unsigned U4StepPoint::Flag(const G4StepPoint* point)
+unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn)
 {
     G4StepStatus status = point->GetStepStatus()  ;
     unsigned proc = ProcessDefinedStepType(point); 
@@ -140,22 +150,49 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     {
         unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
 
-        flag = BoundaryFlag(bstat) ;   
+        flag = BoundaryFlag(bstat) ;   // BT BR NA SA SD SR DR 
         LOG_IF(LEVEL, flag == NAN_ABORT ) 
             << " fGeomBoundary " 
             << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
             << " flag " << OpticksPhoton::Flag(flag)
             ;
     }
+    else if( status == fGeomBoundary && proc == U4StepPoint_OpFastSim )
+    {
+        char fs_stat = SFastSimOpticalModel::GetStatus();    
+        // NB: this way of accessing the FastSim status is limited to single PMT type
+        switch(fs_stat)
+        {
+           case 'T': flag = BOUNDARY_TRANSMIT ; break ; 
+           case 'R': flag = BOUNDARY_REFLECT  ; break ; 
+           case 'A': flag = SURFACE_ABSORB    ; break ; 
+           case 'D': flag = SURFACE_DETECT    ; break ; 
+        }
+        LOG(LEVEL) << " fU4StepPoint_OpFastSim fs_stat " << fs_stat << " flag " << OpticksPhoton::Flag(flag) ; 
+    }
     else if( status == fWorldBoundary && proc == U4StepPoint_Transportation )
     {
         flag = MISS ; 
+    }
+    else
+    {
+        if(warn)
+        { 
+            const char* procName = ProcessName(point); 
+            LOG(error) 
+                << " failed to define flag for StepPoint "
+                << " G4StepStatus " << U4StepStatus::Name(status) 
+                << " proc " << ProcessDefinedStepTypeName(proc )
+                << " procName " << ( procName ? procName : "-" )
+                ; 
+        }
+
     }
     return flag ; 
 }
 
 
-unsigned U4StepPoint::BoundaryFlag(unsigned status)
+unsigned U4StepPoint::BoundaryFlag(unsigned status) // BT BR NA SA SD SR DR 
 {
     unsigned flag = 0 ; 
     switch(status)
@@ -232,17 +269,20 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
 
     unsigned proc = ProcessDefinedStepType(point); 
     const char* procName = ProcessDefinedStepTypeName(proc); 
+    const char* procNameRaw = ProcessName(point); 
 
     unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
     const char* bstatName = U4OpBoundaryProcessStatus::Name(bstat); 
 
-    unsigned flag = Flag<T>(point); 
+    bool warn = false ; 
+    unsigned flag = Flag<T>(point, warn); 
     const char* flagName = OpticksPhoton::Flag(flag); 
 
     std::stringstream ss ; 
     ss << "U4StepPoint::Desc" 
        << " proc " << proc
        << " procName " << procName 
+       << " procNameRaw " << ( procNameRaw ? procNameRaw : "-" ) 
        << " status " << status
        << " statusName " << statusName 
        << " bstat " << bstat
@@ -257,7 +297,7 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
 
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
-template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* ); 
+template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint*, bool ); 
 template std::string U4StepPoint::Desc<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* point); 
 
 

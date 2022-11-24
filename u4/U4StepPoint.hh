@@ -13,6 +13,7 @@ enum {
    U4StepPoint_Transportation, 
    U4StepPoint_OpRayleigh, 
    U4StepPoint_OpAbsorption, 
+   U4StepPoint_OpFastSim, 
    U4StepPoint_OTHER 
 };  
 
@@ -28,7 +29,9 @@ struct U4_API U4StepPoint
     static constexpr const char* OpRayleigh_     = "OpRayleigh" ; 
     static constexpr const char* OpAbsorption_   = "OpAbsorption" ; 
     static constexpr const char* OTHER_          = "OTHER" ; 
+    static           const char* OpFastSim_ ;  // default "fast_sim_man" configurable by envvar U4StepPoint_OpFastSim 
 
+    static const char* ProcessName(const G4StepPoint* point); 
     static unsigned ProcessDefinedStepType(const G4StepPoint* point); 
     static unsigned ProcessDefinedStepType(const char* name); 
     static const char* ProcessDefinedStepTypeName(unsigned type); 
@@ -36,12 +39,11 @@ struct U4_API U4StepPoint
     static unsigned BoundaryFlag(unsigned status) ; 
 
     template <typename T>
-    static unsigned Flag(const G4StepPoint* point); 
+    static unsigned Flag(const G4StepPoint* point, bool warn=true ); 
 
 
     template <typename T>
     static std::string Desc(const G4StepPoint* point); 
-
 
 }; 
 

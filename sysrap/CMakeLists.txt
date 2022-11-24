@@ -130,6 +130,7 @@ set(SOURCES
     SProp.cc
 
     SFastSim_Debug.cc
+    SFastSimOpticalModel.cc
 
 ) 
     
@@ -340,6 +341,7 @@ set(HEADERS
     SSim.hh
     SProp.hh
     SFastSim_Debug.hh
+    SFastSimOpticalModel.hh
 
 )
 

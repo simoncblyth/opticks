@@ -25,9 +25,9 @@ struct U4_API U4Engine
     static void ShowState(); 
     static std::string DescStateArray(); 
     static std::string DescState(); 
-    static std::string ConfPath(const char* fold, const char* name=nullptr); 
 
-    static void SaveState(const char* fold, const char* name=nullptr) ; 
+    static std::string ConfPath(const char* fold, const char* name=nullptr); 
+    static void SaveState(   const char* fold, const char* name=nullptr) ; 
     static void RestoreState(const char* fold, const char* name=nullptr) ; 
 
     static void SaveState(          NP* states, int idx ); 
@@ -39,7 +39,7 @@ struct U4_API U4Engine
 U4Engine::Desc
 -----------------
 
-Trying to introspect the engine::
+Introspect the engine::
 
     g4-cls Randomize
     g4-cls MixMaxRng   ## by inspection the default engine in 10.4.2
@@ -115,6 +115,37 @@ inline void U4Engine::RestoreState(const char* fold, const char* name) // status
     CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
     engine->restoreStatus(conf.c_str()) ; 
 }
+
+/**
+U4Engine::SaveState
+----------------------
+
+* currently idx is treated as an index (not an id)
+  with the requirement that the idx is less than the 
+  number of states items in the array  
+
+* currently saving 1000 states takes 320K::
+
+    In [2]: 8*38*1000
+    Out[2]: 304000
+
+    640 -rw-r--r--   1 blyth  wheel  304128 Nov 23 22:46 g4state.npy
+
+    epsilon:ALL blyth$ du -h g4state.npy
+    320K	g4state.npy
+
+* NB could half the size as the g4state values would fit into 32 bit 
+  but are stored into 64 bit : need to type shift from 
+  "unsigned long" to "unsigned" 
+
+* so that gets expensive when want to to save/restore the g4state 
+  for one in a million photon, as would need 320M bytes just to access 304 bytes
+
+* TODO: sparse (by id) approach 
+  (eg by adding idset/idget accessors to NP using id string vec metadata 
+  to give the mapping between id and storage index)
+  
+**/
 
 inline void U4Engine::SaveState( NP* states, int idx ) // static
 {

@@ -65,6 +65,6 @@ struct U4_API U4Recorder
     template<typename T> void UserSteppingAction(const G4Step*);
     template<typename T> void UserSteppingAction_Optical(const G4Step*); 
 
-    void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
+    void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, const char* from ); 
 };
 

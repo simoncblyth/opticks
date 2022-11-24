@@ -14,7 +14,12 @@ struct U4_API U4OpBoundaryProcess
 U4OpBoundaryProcess::GetStatus
 --------------------------------
 
-Identifies desired boundary process by dynamic_cast not giving nullptr 
+* identifies the boundary process with type T by trying all optical processes 
+  and seeing which one has non-null dynamic_cast
+
+* assumes that the modified boundary process still has method that returns the standard enum::
+
+   G4OpBoundaryProcessStatus GetStatus() const;
 
 **/
 

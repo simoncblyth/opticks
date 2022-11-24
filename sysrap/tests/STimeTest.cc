@@ -61,6 +61,21 @@ void test_mtime()
     LOG(info) << " path " << path << " mt " << mt ; 
 }
 
+void test_Stamp()
+{
+    LOG(info) 
+        << std::endl 
+        << " STime::Stamp() " << STime::Stamp() 
+        << std::endl 
+        << " STime::Format(0,\"%c\") " << STime::Format(0,"%c") 
+        << std::endl 
+        << " STime::Now() " << STime::Now() 
+        << std::endl 
+        ; 
+
+    
+}
+
 
 int main(int argc, char** argv) 
 {
@@ -68,6 +83,7 @@ int main(int argc, char** argv)
 
     test_EpochSeconds(); 
     test_mtime(); 
+    test_Stamp(); 
 
     return 0 ; 
 }
