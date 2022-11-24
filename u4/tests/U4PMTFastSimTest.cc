@@ -42,26 +42,18 @@ int main(int argc, char** argv)
     LOG(info) << U4Engine::Desc()  ; 
 
     SEvt* evt = SEvt::CreateOrLoad() ; 
+    if(evt->is_loaded) evt->clear_partial("g4state");  // clear loaded evt but keep g4state
 
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
-
-    SFastSim_Debug::Save("/tmp/SFastSim_Debug" ); 
-
     
-    if(evt->is_loaded) 
-    {
-        LOG(info) << " not saving as evt->is_loaded " ; 
-        // TODO: save under a different reldir 
-        // the default reldir is ALL
-        // event loading is done for rerunning 
-        // so the reldir needs to reflect that 
-    }
-    else
-    {
-        evt->save(); 
-    }
+    if(evt->is_loaded) evt->setReldir("SEL");  // evt is loaded when rerunning a single photon
+
+    evt->save(); 
+    const char* savedir = evt->getSaveDir(); 
+    SFastSim_Debug::Save(savedir); 
+    LOG(info) << " savedir " << savedir ;  
 
     LOG(info) << "] " << argv[0] << " " << STime::Now() ; 
     return 0 ; 

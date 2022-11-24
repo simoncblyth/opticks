@@ -421,7 +421,7 @@ int SEventConfig::Initialize() // static
 {
     LOG_IF(fatal, Initialize_COUNT > 0 ) 
         << "BUG : SEventConfig::Initialize() called more than once " << std::endl
-        << " this is now done automatically at SEvt::SEvt usually in main " 
+        << " this is now done automatically at SEvt::SEvt usually from main " 
         ; 
     assert( Initialize_COUNT == 0); 
     Initialize_COUNT += 1 ; 

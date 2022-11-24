@@ -246,6 +246,24 @@ void test_accessors()
     }
 }
 
+void test_clear_partial()
+{
+    NPFold nf0 ; 
+
+    nf0.add("a", NP::MakeFlat<float>(1,4,4) ); 
+    nf0.add("b", NP::MakeFlat<float>(2,4,4) ); 
+    nf0.add("c", NP::MakeFlat<float>(3,4,4) ); 
+    nf0.add("d", NP::MakeFlat<float>(4,4,4) ); 
+
+    std::cout << nf0.desc() << std::endl ;  
+
+    nf0.clear_partial("c,a"); 
+
+    std::cout << "after clear_partial c,a " << std::endl << nf0.desc() << std::endl ;  
+
+
+}
+
 
 int main()
 {
@@ -263,9 +281,10 @@ int main()
 
     test_recursive_txt_load("Material"); 
     test_recursive_txt_load("PMTProperty"); 
-    */
-
     test_accessors(); 
+    */
+    test_clear_partial(); 
+
 
 
     return 0 ; 

@@ -230,7 +230,10 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     NP* gatherDomain() const ; 
 
+    void clear_() ; 
     void clear() ; 
+    void clear_partial(const char* keep_keylist, char delim=','); 
+
 
     void setIndex(int index_) ;  
     void unsetIndex() ;  

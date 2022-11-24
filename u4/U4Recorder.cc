@@ -270,9 +270,9 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     sev->finalPhoton(label);       
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
-    bool is_fStopAndKill = tstat == fStopAndKill ; 
-    LOG_IF(info, !is_fStopAndKill) << " not is_fStopAndKill  post.tstat " << U4TrackStatus::Name(tstat) ; 
-    //assert( is_fStopAndKill ); 
+    bool is_fStopAndKill_or_fSuspend = tstat == fStopAndKill || tstat == fSuspend  ; 
+    LOG_IF(info, !is_fStopAndKill_or_fSuspend ) << " not is_fStopAndKill_or_fSuspend  post.tstat " << U4TrackStatus::Name(tstat) ; 
+    assert( is_fStopAndKill_or_fSuspend ); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -338,6 +338,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
     if(first_point)
     { 
+        LOG(info) << " first_point " ; 
         U4StepPoint::Update(current_photon, pre);
         sev->pointPhoton(label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
@@ -345,7 +346,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-    //assert( flag > 0 ); 
+    assert( flag > 0 ); 
 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
@@ -412,7 +413,7 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
             << " trackStatus " << U4TrackStatus::Name(tstat) 
             << " flag " << OpticksPhoton::Flag(flag) 
             ;     
-        //assert( is_terminal_flag );  
+        assert( is_terminal_flag );  
     }
     else
     {

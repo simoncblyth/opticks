@@ -494,6 +494,15 @@ SEvt* SEvt::Create()
 {
     return new SEvt ; 
 }
+
+/**
+SEvt::CreateOrLoad
+-------------------
+
+HMM: when Loading for a rerun, need the g4state but need to clear 
+most of the rest of the SEvt perhaps ? 
+
+**/
 SEvt* SEvt::CreateOrLoad() 
 {
     int g4state_rerun_id = SEventConfig::G4StateRerun(); 
@@ -509,7 +518,6 @@ void SEvt::Check()
     if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before using most SEvt methods" << std::endl ; 
     assert(INSTANCE); 
 }
-
 
 void SEvt::AddTag(unsigned stack, float u ){  INSTANCE->addTag(stack,u);  } 
 int  SEvt::GetTagSlot(){ return INSTANCE->getTagSlot() ; }
@@ -555,19 +563,10 @@ NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nul
 void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
 
-/**
-SEvt::clear
--------------
 
-HMM: most of the arrays are only relevant to hostside running, 
-so its kinda confusing clearing them 
 
-**/
-
-void SEvt::clear()
+void SEvt::clear_()
 {
-    LOG(LEVEL) << "[" ; 
-
     genstep.clear();
     gs.clear();
     numphoton_collected = 0u ; 
@@ -584,11 +583,37 @@ void SEvt::clear()
     tag.clear(); 
     flat.clear(); 
     simtrace.clear(); 
+}
 
+
+/**
+SEvt::clear
+-------------
+
+HMM: most of the arrays are only relevant to hostside running, 
+so its kinda confusing clearing them 
+
+**/
+
+void SEvt::clear()
+{
+    LOG(LEVEL) << "[" ; 
+    clear_(); 
     if(fold) fold->clear(); 
-
     LOG(LEVEL) << "]" ; 
 }
+
+void SEvt::clear_partial(const char* keep_keylist, char delim)
+{
+    LOG(LEVEL) << "[" ; 
+    clear_(); 
+    if(fold) fold->clear_partial(keep_keylist, delim ); 
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+
 
 void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }

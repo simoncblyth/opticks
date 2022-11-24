@@ -21,6 +21,11 @@ presumably using the name to distingish::
     1115                                                                    body_phys, body_region);
     1116 
 
+One alternative::
+
+    Instead of having to pull the status from the actual SFastSimOpticalModel INSTANCE
+    could get each instance to update a status char ... so that status correspond to the
+    last DoIt status of any pmtcat. 
 
 **/
 #include "SYSRAP_API_EXPORT.hh"

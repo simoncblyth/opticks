@@ -120,6 +120,9 @@ struct NPFold
     void set( const char* k, const NP* a); 
     void clear(); 
 
+    static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
+    void clear_partial(const char* keylist, char delim=','); 
+
 
     // single level (non recursive) accessors
 
@@ -498,6 +501,64 @@ inline void NPFold::clear()
     ff.clear(); 
 }
 
+inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim) // static
+{
+    std::stringstream ss; 
+    ss.str(keylist)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str())); 
+}
+
+
+/**
+NPFold::clear_partial
+-----------------------
+
+It is not so easy to do partial erase from vector
+as the indices keep changing as elements are removed. 
+So take a simpler approach:
+
+1. first copy keys and arrays identified by the *keep_keylist* into tmp_kk, tmp_aa
+2. do a normal clear of all elements, which deletes 
+3. add copied tmp_aa tmp_kk back to the fold 
+
+NB that this means old pointers will be invalidated. 
+Unsure if that will be a problem.
+
+**/
+
+inline void NPFold::clear_partial(const char* keep_keylist, char delim)
+{
+    check(); 
+
+    std::vector<std::string> keep ; 
+    SplitKeys(keep, keep_keylist, delim); 
+
+    std::vector<const NP*>   tmp_aa ; 
+    std::vector<std::string> tmp_kk ; 
+
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i]; 
+        const std::string& k = kk[i] ; 
+        bool listed = std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
+        if(listed)
+        { 
+            tmp_aa.push_back(NP::MakeCopy(a)); 
+            tmp_kk.push_back(k); 
+        }
+    } 
+
+    clear(); 
+
+    assert( tmp_aa.size() == tmp_kk.size() ); 
+    for(unsigned i=0 ; i < tmp_aa.size() ; i++)
+    {
+        const NP* a = tmp_aa[i]; 
+        const std::string& k = tmp_kk[i] ; 
+        add_( k.c_str(), a ); 
+    }
+}
 
 inline int NPFold::num_items() const 
 {

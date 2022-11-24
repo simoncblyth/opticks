@@ -15,12 +15,12 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ; 
 
-    SEvt* sev = SEvt::CreateOrLoad(); 
-    if(sev == nullptr) return 0 ; 
-    LOG(info) << sev->desc() ; 
-    LOG(info) << sev->descComponent() ; 
+    SEvt* evt = SEvt::CreateOrLoad(); 
+    if(evt == nullptr) return 0 ; 
+    LOG(info) << evt->desc() ; 
+    LOG(info) << evt->descComponent() ; 
 
-    const NP* g4state = sev->getG4State(); 
+    const NP* g4state = evt->getG4State(); 
     LOG(info) << " SEvt::getG4State " << ( g4state ? g4state->sstr() : "-" ); 
 
 
@@ -33,6 +33,14 @@ int main(int argc, char** argv)
             << std::endl 
             ;  
     }
+
+    if(evt->is_loaded)
+    {
+        evt->setReldir("SEvtLoadTest"); 
+        evt->clear_partial("g4state"); 
+        evt->save(); 
+    }
+
 
     return 0 ; 
 }

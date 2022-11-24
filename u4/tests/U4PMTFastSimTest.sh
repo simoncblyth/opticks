@@ -18,7 +18,15 @@ export G4FastSimulationManagerProcess_ENABLE=1
 #running_mode=SRM_G4STATE_SAVE  
 running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
+
+case $running_mode in 
+   SRM_G4STATE_SAVE)  reldir=ALL ;; 
+   SRM_G4STATE_RERUN) reldir=SEL ;; 
+esac
+
+
 export OPTICKS_G4STATE_RERUN=726
+export OPTICKS_EVENT_MODE=StandardFullDebug
 
 export GEOM=hamaLogicalPMT
 export U4RecorderTest__PRIMARY_MODE=torch 
@@ -59,7 +67,7 @@ loglevel(){
    #export SEvt=INFO
    export SEventConfig=INFO
 }
-loglevel
+#loglevel
 
 
 defarg="run"
@@ -81,11 +89,15 @@ if [ "$arg" == "dbg" ]; then
 fi 
 
 if [ "$arg" == "ana" -o "$arg" == "nana" ]; then
-    export FOLD=/tmp/SFastSim_Debug
+    #export FOLD=/tmp/SFastSim_Debug
+    export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/$reldir
+
     [ "$arg" == "nana" ] && export NOGUI=1
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
+
+
 
 exit 0 
 
