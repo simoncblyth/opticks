@@ -65,6 +65,13 @@ export hama_FastCoverMaterial=Cheese
 export hama_UsePMTOpticalModel=1
 
 
+# XFOLD/XPID has precedence over EXTRA
+export XFOLD=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL
+export XPID=726
+
+export EXTRA=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL/py_pidsel_726.npy
+
+
 zcut=${geom#*zcut}
 [ "$geom" != "$zcut" ] && zzd=$zcut 
 echo geom $geom zcut $geom zzd $zzd

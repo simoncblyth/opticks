@@ -61,6 +61,7 @@ MaxTime (ns)
 struct SYSRAP_API SEventConfig
 {
     static const plog::Severity LEVEL ;  
+    static const int LIMIT ; 
     static void Check(); 
     static std::string Desc(); 
     static std::string HitMaskLabel(); 

@@ -10,6 +10,10 @@ X4IntersectVolumeTest.py : 2D scatter plots of geometry intersect positions
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import mpplt_add_contiguous_line_segments 
+from opticks.npy.mortonlib.morton2d import morton2d 
+
+sbitmask_ = lambda i:np.uint64(-1) >> np.uint64(64-i) 
+
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -77,13 +81,29 @@ if __name__ == '__main__':
     LABELS = list(filter(None,os.environ.get("LABELS","").split(",")))
     SZ = float(os.environ.get("SZ",3))
 
+     
 
+    XFOLD = os.environ.get("XFOLD", "/tmp/U4PMTFastSimTest")
+    XPID = int(os.environ.get("XPID", -1 ))
     EXTRA = os.environ.get("EXTRA", "/tmp/U4PMTFastSimTest/pid726.npy")
-    if os.path.exists(EXTRA):
+
+    xfold = None
+    extra = None
+    extra_type = None
+
+    if os.path.isdir(XFOLD) and XPID > -1:
+        xfold = Fold.Load(XFOLD, symbol="xfold")
+        extra = xfold.record[XPID]
+        extra_type = "record"
+        print("loaded extra %s from EXTRA.xfold %s XPID %d extra_type %s  " % (str(extra.shape), EXTRA, XPID, extra_type ))
+        extra_wl = extra[:,2,3] 
+        extra = extra[extra_wl > 0]
+        print("after restrict to extra_wl > 0 : to remove tail zeros : extra %s " % (str(extra.shape)))
+        # TODO: assert that all the wl zero skipped are at the tail 
+    elif os.path.exists(EXTRA):
         extra = np.load(EXTRA)
-        print("loaded extra %s from EXTRA %s " % (str(extra.shape), EXTRA))
-    else:
-        extra = None
+        extra_type = "ModelTrigger"
+        print("loaded extra %s from EXTRA %s extra_type %s " % (str(extra.shape), EXTRA, extra_type ))
     pass     
 
 
@@ -108,7 +128,7 @@ if __name__ == '__main__':
         ax.set_xlim( hlim )
         ax.set_ylim( vlim )
 
-        if not "NOGS" in os.environ:
+        if "GS" in os.environ:
             ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=gcol ) 
         pass
         num = len(transforms_meta)
@@ -132,20 +152,52 @@ if __name__ == '__main__':
         pass
 
         if not extra is None:
-            print("extra scatter EXTRA %s " % EXTRA)
-            ModelTriggerYES = extra[np.where(extra[:,3,0].astype(np.int64) == 1)]  
-            ModelTriggerNO = extra[np.where(extra[:,3,0].astype(np.int64) == 0)]  
+            print("extra %s EXTRA %s extra_type %s " % ( str(extra.shape), EXTRA, extra_type ))
+            if extra_type == "ModelTrigger":
+                ModelTriggerYES = extra[np.where(extra[:,3,0].astype(np.int64) == 1)]  
+                ModelTriggerNO = extra[np.where(extra[:,3,0].astype(np.int64) == 0)]  
 
-            if "ModelTriggerYES" in os.environ:
-                ax.scatter( ModelTriggerYES[:,0,H], ModelTriggerYES[:,0,V], s=50, color="red"   )
-                thirdline += " ModelTriggerYES" 
+                if "ModelTriggerYES" in os.environ:
+                    ax.scatter( ModelTriggerYES[:,0,H], ModelTriggerYES[:,0,V], s=50, color="red"   )
+                    thirdline += " ModelTriggerYES" 
+                pass
+                if "ModelTriggerNO" in os.environ:
+                    ax.scatter( ModelTriggerNO[:,0,H], ModelTriggerNO[:,0,V], s=50, color="blue"  )
+                    thirdline += " ModelTriggerNO" 
+                pass
             pass
-            if "ModelTriggerNO" in os.environ:
-                ax.scatter( ModelTriggerNO[:,0,H], ModelTriggerNO[:,0,V], s=50, color="blue"  )
-                thirdline += " ModelTriggerNO" 
-            pass
-
             mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label="extra" )
+
+            if extra_type == "record":
+                hv = extra[:,0,(H,V)]   
+
+                hv_dom = np.zeros((2,2))
+                hv_dom[0] = hv[:,0].min(), hv[:,0].max()
+                hv_dom[1] = hv[:,1].min(), hv[:,1].max()
+
+                shv = (hv - hv_dom[:,0])/(hv_dom[:,1]-hv_dom[:,0])  ## scale coordinates into 0->1  
+                
+                ihv = np.array( shv*0xffffffff , dtype=np.uint64 )   ## 32bit range integer coordinates stored in 64 bit  
+                khv = morton2d.Key(ihv[:,0], ihv[:,1])              ## morton interleave the two coordinates into one 64 bit code
+
+                nbit = 8
+                mask = ~sbitmask_(64-nbit)
+                print( "nbit {0:2d} mask {1:064b} {2:016x}  ".format(nbit, mask, mask) )     
+
+                r_khv = khv & np.uint64(mask) 
+                u_khv, i_khv, c_khv = np.unique( r_khv , return_index=True, return_counts=True)
+                u_h, u_v = morton2d.Decode(u_khv) 
+
+
+                #.astype(np.float32)/np.float32(0xffffffff)
+
+
+                for i in range(len(extra)):
+                    ax.text(hv[i,0],hv[i,1], str(i), fontsize=15 )
+                pass
+            pass
+
+        pass
         pass
 
         #loc = "lower left"

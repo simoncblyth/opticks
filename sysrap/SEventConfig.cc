@@ -255,13 +255,16 @@ caused huge memory allocations in debug event modes.
 
 **/
 
+//const int SEventConfig::LIMIT = 16 ; 
+const int SEventConfig::LIMIT = 32 ; 
+
 void SEventConfig::Check()
 {
-   assert( _MaxBounce >  0 && _MaxBounce <  16 ) ; 
-   assert( _MaxRecord >= 0 && _MaxRecord <= 16 ) ; 
-   assert( _MaxRec    >= 0 && _MaxRec    <= 16 ) ; 
-   assert( _MaxSeq    >= 0 && _MaxSeq    <= 16 ) ; 
-   assert( _MaxPrd    >= 0 && _MaxPrd    <= 16 ) ; 
+   assert( _MaxBounce >  0 && _MaxBounce <  LIMIT ) ;  
+   assert( _MaxRecord >= 0 && _MaxRecord <= LIMIT ) ; 
+   assert( _MaxRec    >= 0 && _MaxRec    <= LIMIT ) ; 
+   assert( _MaxSeq    >= 0 && _MaxSeq    <= LIMIT ) ; 
+   assert( _MaxPrd    >= 0 && _MaxPrd    <= LIMIT ) ; 
 
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ; 
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ; 

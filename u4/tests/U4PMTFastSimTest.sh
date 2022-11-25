@@ -18,6 +18,7 @@ export G4FastSimulationManagerProcess_ENABLE=1
 #running_mode=SRM_G4STATE_SAVE  
 running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
+export OPTICKS_MAX_BOUNCE=20 
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL ;; 

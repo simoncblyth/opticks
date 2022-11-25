@@ -82,7 +82,7 @@ if __name__ == '__main__':
         extra[:] = fs[pidsel, :4]                   # copy, not reference, fs 
         extra[np.where( extra == kInfinity )] = -1  # replace obnoxious 9e99
 
-        pidsel_path = "/tmp/U4PMTFastSimTest/pid%d.npy" % PID
+        pidsel_path = os.path.expandvars("$FOLD/py_pidsel_%d.npy" % PID)
         dirpath = os.path.dirname(pidsel_path)
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
