@@ -61,5 +61,6 @@ inline int U4PhotonInfo::GetIndex(const G4Track* track)
 inline void U4PhotonInfo::Set(G4Track* track, const spho& pho_ )
 {
     track->SetUserInformation(new U4PhotonInfo(pho_)); 
+    // hmm: seems expensive if already has the label 
 }
 

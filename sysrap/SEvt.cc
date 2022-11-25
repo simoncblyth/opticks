@@ -82,7 +82,7 @@ SEvt::SEvt()
 SEvt::init
 -----------
 
-Only configures limits, no allocation yet. 
+Only configures array maxima, no allocation yet. 
 Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
 Initially SEvt is set as its own SCompProvider, 
@@ -99,8 +99,10 @@ void SEvt::init()
 {
     LOG(LEVEL) << "[" ; 
     INSTANCE = this ; 
-    evt->init(); 
+
+    evt->init();    // array maxima set according to SEventConfig values 
     dbg->zero(); 
+
     LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
 
     SEventConfig::CompList(comp); 
@@ -113,20 +115,8 @@ void SEvt::init()
     LOG(LEVEL) << "]" ; 
 }
 
-
-
-
-
-
-const char* SEvt::getSaveDir() const 
-{
-   return fold->savedir ;  
-}
-const char* SEvt::getLoadDir() const 
-{
-   return fold->loaddir ;  
-}
-
+const char* SEvt::getSaveDir() const { return fold->savedir ; }
+const char* SEvt::getLoadDir() const { return fold->loaddir ; }
 
 /**
 SEvt::getSearchCFbase
@@ -169,14 +159,7 @@ const char* SEvt::getSearchCFBase() const
 }
 
 
-
-
-
-
-
-
 const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
-
 /**
 SEvt::LoadInputPhoton
 ----------------------
@@ -269,6 +252,8 @@ bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
 SEvt::initG4State
 -------------------
 
+Called by SEvt::init but does nothing unless SEventConfig::IsRunningModeG4StateSave()
+
 HMM: is this the right place ? It depends on the RunningMode.  
 
 **/
@@ -299,21 +284,26 @@ See::
      g4-cls MixMaxRng 
      g4-cls RandomEngine 
      g4-cls Randomize
-     
+
+
+TODO: half the size with "unsigned" not "unsigned long", 
+to workaround wasteful CLHEP API which uses "unsigned long" but only needs 32 bit elements
+
 **/
 
 NP* SEvt::makeG4State() const 
 {
-     const char* spec = SEventConfig::G4StateSpec() ; 
+     const char* spec = SEventConfig::G4StateSpec() ; // default spec 1000:38
 
      std::vector<int> elem ; 
-     sstr::split<int>(elem, spec, ':'); 
+     sstr::split<int>(elem, spec, ':');  
      assert( elem.size() == 2 ); 
 
      int max_states = elem[0] ; 
      int item_values = elem[1] ;
 
      NP* a =  NP::Make<unsigned long>(max_states, item_values ); 
+
 
      LOG(info) 
          << " SEventConfig::G4StateSpec() " << spec  
@@ -324,11 +314,8 @@ NP* SEvt::makeG4State() const
      return a ; 
 }
 
-
 void SEvt::setG4State( NP* state) { g4state = state ; }
-NP* SEvt::gatherG4State() const {  return g4state ; }
-// gather is used prior to persisting, get is used after loading 
-
+NP* SEvt::gatherG4State() const {  return g4state ; } // gather is used prior to persisting, get is used after loading 
 const NP* SEvt::getG4State() const {  return fold->get(SComp::Name(SCOMP_G4STATE)) ; }
 
 
@@ -342,8 +329,14 @@ is now split from eg initInputPhotons.
 For simtrace and input photon running with or without a transform 
 it is necessary to call this prior to calling QSim::simulate.
 
-**/
+**simtrace running**
+    MakeCenterExtentGensteps based on the given frame. 
 
+**simulate inputphoton running**
+    MakeInputPhotonGenstep and m2w (model-2-world) 
+    transforms the photons using the frame transform
+
+**/
 
 const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt_setFrame_WIDE_INPUT_PHOTON") ; 
 
@@ -439,10 +432,13 @@ void SEvt::setFrame(unsigned ins_idx)
     setFrame(fr); 
 }
 
+/**
+SEvt::MakeInputPhotonGenstep
+-----------------------------
 
+May be called from SEvt::setFrame
 
-
-
+**/
 
 quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
 {
@@ -473,12 +469,22 @@ std::string SEvt::descProvider() const
     return s ; 
 }
 
+/**
+SEvt::gatherDomain
+--------------------
+
+Create (2,4,4) NP array and populate with quad4 from::
+
+    sevent::get_domain 
+    sevent::get_config
+
+**/
 
 NP* SEvt::gatherDomain() const
 {
     quad4 dom[2] ;
     evt->get_domain(dom[0]);
-    evt->get_config(dom[1]);
+    evt->get_config(dom[1]);  // maxima, counts 
     NP* domain = NP::Make<float>( 2, 4, 4 );
     domain->read2<float>( (float*)&dom[0] );
     // actually it makes more sense to place metadata on domain than hits 
@@ -488,19 +494,15 @@ NP* SEvt::gatherDomain() const
     return domain ;
 }
 
-SEvt* SEvt::Get(){ return INSTANCE ; }
-
-SEvt* SEvt::Create() 
-{
-    return new SEvt ; 
-}
+SEvt* SEvt::Get(){     return INSTANCE ; }
+SEvt* SEvt::Create() { return new SEvt ; }
 
 /**
 SEvt::CreateOrLoad
 -------------------
 
-HMM: when Loading for a rerun, need the g4state but need to clear 
-most of the rest of the SEvt perhaps ? 
+HMM: when Loading for a g4state rerun, need the g4state but need to clear 
+the rest of the SEvt perhaps ? See u4/tests/U4PMTFastSimTest.cc
 
 **/
 SEvt* SEvt::CreateOrLoad() 
@@ -515,12 +517,16 @@ SEvt* SEvt::CreateOrLoad()
 bool SEvt::Exists(){ return INSTANCE != nullptr ; }
 void SEvt::Check()
 {
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before using most SEvt methods" << std::endl ; 
+    LOG_IF(fatal, !INSTANCE) << "must instanciate SEvt before using most SEvt methods" ; 
     assert(INSTANCE); 
 }
 
+
+// tags are used when recording all randoms consumed by simulation  
 void SEvt::AddTag(unsigned stack, float u ){  INSTANCE->addTag(stack,u);  } 
 int  SEvt::GetTagSlot(){ return INSTANCE->getTagSlot() ; }
+
+
 sgs SEvt::AddGenstep(const quad6& q){ Check(); return INSTANCE->addGenstep(q);  }
 sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
@@ -590,7 +596,7 @@ void SEvt::clear_()
 SEvt::clear
 -------------
 
-HMM: most of the arrays are only relevant to hostside running, 
+HMM: most of the vectors are only relevant to hostside running, 
 so its kinda confusing clearing them 
 
 **/
@@ -634,7 +640,9 @@ unsigned SEvt::getNumGenstepFromGenstep() const
 SEvt::getNumPhotonFromGenstep
 ----------------------------------
 
-Total photons by summation over all collected genstep 
+Total photons by summation over all collected genstep. 
+When collecting very large numbers of gensteps the alternative 
+SEvt::getNumPhotonCollected is faster. 
 
 **/
 
@@ -660,7 +668,7 @@ unsigned SEvt::getNumPhotonGenstepMax() const
 SEvt::addGenstep
 ------------------
 
-The sgs summary struct of the last genstep is returned. 
+The sgs summary struct of the last genstep added is returned. 
 
 **/
 
@@ -674,7 +682,7 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
-bool SEvt::RECORDING = true ;  // TODO: needs to be normally false, Q:what uses this ? 
+//bool SEvt::RECORDING = true ;  // TODO: needs to be normally false, Q:what uses this ? 
 
 /**
 SEvt::addGenstep
@@ -768,8 +776,6 @@ This is called from SEvt::addGenstep, updating evt.num_photon
 according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
 depending on the configured max which when zero will keep the counts zero.  
 
-
-
 Also called by QEvent::setNumPhoton prior to device side allocations. 
 
 **/
@@ -814,11 +820,17 @@ void SEvt::setNumSimtrace(unsigned num_simtrace)
 SEvt::hostside_running_resize
 -------------------------------
 
-NB evt->photon, evt->record, ...  pointers are used to hold device side 
-addresses for QEvent running and CPU side addresses for SEvt based running.
+Canonically called from SEvt::beginPhoton  (also SEvt::setFrame_HostsideSimtrace)
 
-This makes it necessary to defer resizing, to give QEvent 
-time to be instanciated and declare itself as the comp provider 
+According to the num from sevent.h evt->num_photon, num_record etc.. 
+the std::vectors are resized and sevent.h evt pointers are updated to follow
+around the std::vectors as they are reallocated.
+
+This makes the hostside sevent.h:evt environment mimic the deviceside environment 
+even though deviceside uses device buffers and hostside uses std::vectors. 
+
+Notice how the same sevent.h struct that holds deviceside pointers 
+is being using to hold the hostside vector data pointers. 
 
 **/
 
@@ -835,6 +847,7 @@ void SEvt::hostside_running_resize()
     hostside_running_resize_done = true ; 
 
 
+     // pho and slot dont have device side equivalent arrays 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
 
@@ -906,6 +919,21 @@ const sgs& SEvt::get_gs(const spho& label) const
     return _gs ; 
 }
 
+/**
+SEvt::get_genflag
+-------------------
+
+This is called for example from SEvt::beginPhoton
+to become the "TO" "SI" "CK" at the start of photon histories. 
+
+1. lookup sgs genstep label corresponding to the spho photon label 
+2. convert the sgs gentype into the corresponding photon genflag which must be 
+   one of CERENKOV, SCINTILLATION or TORCH
+
+   * What about input photons ? Presumably they are TORCH ? 
+   
+**/
+
 unsigned SEvt::get_genflag(const spho& label) const 
 {
     const sgs& _gs = get_gs(label);  
@@ -919,6 +947,13 @@ unsigned SEvt::get_genflag(const spho& label) const
 /**
 SEvt::beginPhoton : only used for hostside running eg with U4RecorderTest
 ---------------------------------------------------------------------------
+
+Canonically invoked from tail of U4Recorder::PreUserTrackingAction_Optical
+
+0. calls hostside_running_resize which resizes vectors and updates all the evt pointers
+1. determine genflag SI/CK/TO, via lookups in the sgs corresponding to the spho label
+2. zeros current_ctx and slot[label.id] (the "recording head" )
+3. start filling current_ctx.p sphoton with set_idx and set_flag  
 
 **/
 void SEvt::beginPhoton(const spho& label)
@@ -952,7 +987,6 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
-    //LOG(info) << " idx " << idx ; 
 
     ctx.idx = idx ;  
     ctx.evt = evt ; 
@@ -961,17 +995,58 @@ void SEvt::beginPhoton(const spho& label)
     ctx.p.set_idx(idx); 
     ctx.p.set_flag(genflag); 
 
-    assert( ctx.p.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
+    bool flagmask_one_bit = ctx.p.flagmask_count() == 1  ;
+    LOG_IF(error, !flagmask_one_bit ) 
+        << " not flagmask_one_bit "
+        << " : should only be a single bit in the flagmask at this juncture "
+        << " label " << label.desc() 
+         ;
+
+    assert( flagmask_one_bit ); 
 }
 
 unsigned SEvt::getCurrentPhotonIdx() const { return current_pho.id ; }
 
 
 /**
+SEvt::resumePhoton
+---------------------
+
+Canonically called from tail of U4Recorder::PreUserTrackingAction_Optical
+following a FastSim->SlowSim transition. 
+
+Transitions between Geant4 "SlowSim" and FastSim result in fSuspend track status
+and the history of a single photon being split across multiple calls to 
+U4RecorderTest::PreUserTrackingAction (U4Recorder::PreUserTrackingAction_Optical)
+   
+Need to join up the histories, a bit like rjoin does for reemission. 
+But with FastSim/SlowSim the G4Track are the same pointers, unlike
+with reemission where the G4Track pointers differ.  
+
+BUT reemission photons will also go thru FastSim/SlowSim transitions, 
+so need separate approach than the label.gn (photon generation) handling of reemission ?
+
+**/
+
+void SEvt::resumePhoton(const spho& label)
+{
+    dbg->resumePhoton++ ; 
+    LOG(LEVEL); 
+    LOG(LEVEL) << label.desc() ; 
+
+    unsigned idx = label.id ; 
+    assert( idx < pho.size() );  
+
+}
+
+
+
+
+/**
 SEvt::rjoinPhoton : only used for hostside running
 ---------------------------------------------------
 
-Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with 
+Called from tail of U4Recorder::PreUserTrackingAction_Optical for G4Track with 
 spho label indicating a reemission generation greater than zero.
 
 Note that this will mostly be called for photons that originate from 
@@ -998,9 +1073,9 @@ void SEvt::rjoinPhoton(const spho& label)
     assert( label.gn == parent_label.gn + 1 ); 
 
     const sgs& _gs = get_gs(label);  
-    bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype); 
+    bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype);  // SI/CK/TO 
     assert(expected_gentype);  
-    // within a scintillator the photons from any genstep type may undergo reemission  
+    // NB: within scintillator, photons of any gentype may undergo reemission  
 
     const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 
@@ -1012,6 +1087,8 @@ void SEvt::rjoinPhoton(const spho& label)
 
     const int& bounce = slot[idx] ; assert( bounce > 0 );   
     int prior = bounce - 1 ; 
+
+    // RE-WRITE HISTORY : CHANGING BULK_ABSORB INTO BULK_REEMIT
 
     if( evt->photon )
     {
@@ -1269,6 +1346,10 @@ SEvt::finalPhoton : only used for hostside running
 
 Canonically called from U4Recorder::PostUserTrackingAction_Optical
 
+1. asserts label is same lineage as current_pho
+2. calls sctx::end on ctx, copying ctx.seq into evt->seq[idx]
+3. copies ctx.p into evt->photon[idx]  
+
 **/
 
 void SEvt::finalPhoton(const spho& label)
@@ -1276,11 +1357,12 @@ void SEvt::finalPhoton(const spho& label)
     dbg->finalPhoton++ ; 
     LOG(LEVEL) << label.desc() ; 
     assert( label.isSameLineage(current_pho) ); 
+
     unsigned idx = label.id ; 
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
 
-    ctx.end(); 
+    ctx.end();   // copies seq into evt->seq[idx] (and tag, flat when DEBUG_TAG)
     evt->photon[idx] = ctx.p ;
 }
 

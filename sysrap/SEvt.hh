@@ -5,10 +5,11 @@ SEvt.hh
 
 TODO : lifecycle leak checking 
 
-
 Q: Where is this instanciated canonically ?
 A: So far in G4CXOpticks and in the mains of lower level tests
 
+gather vs get
+-----------------
 
 Note the distinction in the names of accessors:
 
@@ -21,10 +22,8 @@ Note the distinction in the names of accessors:
    cheap action, done as many times as needed, returning a pointer to 
    already allocating memory that is separately managed, eg within NPFold
 
-
-
-
-
+header-only INSTANCE problem 
+------------------------------
 
 Attempting to do this header only gives duplicate symbol for the SEvt::INSTANCE.
 It seems c++17 would allow "static inline SEvt* INSTANCE"  but c++17 
@@ -35,13 +34,13 @@ It is possible with c++11 but is non-intuitive
 
 * https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
 
-Replacing cfg4/CGenstepCollector
+HMM : Alt possibility for merging sgs label into genstep header
+------------------------------------------------------------------
 
-HMM: gs vector of sgs provides summary of the full genstep, 
+gs vector of sgs provides summary of the full genstep, 
 changing the first quad of the genstep to hold this summary info 
 would avoid the need for the summary vector and mean the genstep 
 index and photon offset info was available on device.
-
 Header of full genstep has plenty of spare bits to squeeze in
 index and photon offset in addition to  gentype/trackid/matline/numphotons 
 
@@ -88,10 +87,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     int cfgrc ; 
     int index ; 
     const char* reldir ; 
+
     sphoton_selector* selector ; 
     sevent* evt ; 
     sdebug* dbg ; 
     std::string meta ; 
+
     NP* input_photon ; 
     NP* input_photon_transformed ; 
     NP* g4state ;    // populated by U4Engine::SaveStatus
@@ -110,6 +111,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<unsigned> comp ; 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
+
     unsigned           numphoton_collected ;    // avoid looping over all gensteps for every genstep
     unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
 
@@ -144,7 +146,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static SEvt* CreateOrLoad() ; 
 
     static bool Exists(); 
-    static bool RECORDING ; 
+    //static bool RECORDING ; 
 
     static void Check(); 
     static void AddTag(unsigned stack, float u ); 
@@ -255,8 +257,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned get_genflag(const spho& label) const ; 
 
     void beginPhoton(const spho& sp); 
-    void rjoinPhoton(const spho& sp); 
     unsigned getCurrentPhotonIdx() const ; 
+    void resumePhoton(const spho& sp); 
+    void rjoinPhoton(const spho& sp); 
 
     void rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const ; 
     static void ComparePhotonDump(const sphoton& a, const sphoton& b ); 

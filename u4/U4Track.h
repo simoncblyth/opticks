@@ -47,7 +47,7 @@ U4Track::Id
 
 **/
 
-int U4Track::Id(const G4Track* track)
+inline int U4Track::Id(const G4Track* track)
 {
     return track->GetTrackID() - 1 ;   
 }
@@ -59,24 +59,23 @@ U4Track::SetId
 NB *id* is 0-based but Geant4 uses a 1-based TrackId  
 
 **/
-void U4Track::SetId(G4Track* track, int id)
+inline void U4Track::SetId(G4Track* track, int id)
 {
     track->SetTrackID( id + 1 ); 
 }
 
-
-bool U4Track::IsOptical(const G4Track* track)
+inline bool U4Track::IsOptical(const G4Track* track)
 {
     G4ParticleDefinition* particle = track->GetDefinition(); 
     return particle == G4OpticalPhoton::OpticalPhotonDefinition() ; 
 }
 
-spho U4Track::Label(const G4Track* track)  // returns placeholders when track has no label 
+inline spho U4Track::Label(const G4Track* track)  // returns placeholders when track has no label 
 {
     return U4PhotonInfo::Get(track) ;
 }
 
-void U4Track::SetFabricatedLabel(const G4Track* track)
+inline void U4Track::SetFabricatedLabel(const G4Track* track)
 {
     int trackID = Id(track) ; 
     assert( trackID >= 0 );  
@@ -85,10 +84,7 @@ void U4Track::SetFabricatedLabel(const G4Track* track)
     U4PhotonInfo::Set(_track, fab );        
 }
 
-
-
-
-std::string U4Track::Desc(const G4Track* track)
+inline std::string U4Track::Desc(const G4Track* track)
 {
     spho sp = Label(track); 
 
@@ -103,12 +99,10 @@ std::string U4Track::Desc(const G4Track* track)
     return s ; 
 }
 
-
-void U4Track::SetStopAndKill(const G4Track* track)
+inline void U4Track::SetStopAndKill(const G4Track* track)
 {
     G4Track* track_ = const_cast<G4Track*>(track); 
     track_->SetTrackStatus(fStopAndKill);
 }
-
 
 

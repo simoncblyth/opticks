@@ -68,16 +68,8 @@ SCTX_METHOD void sctx::zero(){ *this = {} ; }
 
 #ifndef PRODUCTION
 /**
-sctx::point : record current sphoton p into record/rec/seq 
----------------------------------------------------------------
-
-As *prd* is updated by *trace* rather than *propagate* it is handled separately. 
-Consider a history::
-
-   TO->BT->BT->SC->AB
-
-The *prd* corresponds to the arrows and corresponding trace that happens to get 
-between the points. 
+sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/rec/seq 
+---------------------------------------------------------------------------------------
 
 **/
 
@@ -87,19 +79,45 @@ SCTX_METHOD void sctx::point(int bounce)
     if(evt->rec    && bounce < evt->max_rec)    evt->add_rec( rec, idx, bounce, p );    // this copies into evt->rec array 
     if(evt->seq    && bounce < evt->max_seq)    seq.add_nibble( bounce, p.flag(), p.boundary() );  
 }
+
+
+/**
+sctx::trace : copy current prd into (idx,bounce) entry of evt->prd
+---------------------------------------------------------------------
+
+As *prd* is updated by *trace* rather than *propagate* it is handled separately to sctx:point.
+The *prd* corresponds to the arrows (and trace) that gets between the points, eg:: 
+
+   TO->BT->BT->SC->AB
+
+**/
+
 SCTX_METHOD void sctx::trace(int bounce)
 {
     if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
 }
+
+/**
+sctx::end : copy current seq into idx entry of evt->seq
+-----------------------------------------------------------
+
+Q: did I forget rec ? 
+A: No. rec+record are added bounce-by-bounce into evt->rec/record in sctx::point 
+
+   * seq is different because it is added nibble by nibble into the big integer
+
+
+Q: why not copy p into evt->photon[idx] here ?
+A: unsure, currently thats done in SEvt::finalPhoton
+
+**/
+
 SCTX_METHOD void sctx::end()
 {
-    if( evt->seq) evt->seq[idx] = seq ; // Q: did I forget rec ? A: No. rec+record are added to evt->rec+record in sctx::point 
+    if(evt->seq)  evt->seq[idx] = seq ; 
 #ifdef DEBUG_TAG
-    //printf("//sctx::end DEBUG_TAG idx %d \n", idx ) ; 
     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
     if(evt->flat) evt->flat[idx] = tagr.flat ;
-#else
-    //printf("//sctx::end not-DEBUG_TAG idx %d \n", idx ) ; 
 #endif
 }
 

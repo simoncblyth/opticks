@@ -38,9 +38,9 @@ struct spho
     bool isIdentical(const spho& other) const { return isSameLineage(other) && gn == other.gn ; }
 
     bool isPlaceholder() const { return gs == -1 ; }
-    bool isDefined() const { return gs != -1 ; }
+    bool isDefined() const {     return gs != -1 ; }
 
-    spho make_reemit() const ; 
+    spho make_nextgen() const ; // formerly make_reemit 
     std::string desc() const ;
 };
 
@@ -48,8 +48,6 @@ struct spho
 #include <cassert>
 #include <sstream>
 #include <iomanip>
-
-
 
 
 inline spho spho::MakePho(int gs_, int ix_, int id_, int gn_) // static
@@ -80,10 +78,10 @@ inline spho spho::Placeholder() // static
     spho inv = {-1, -1, -1, -1 };
     return inv ;
 }
-inline spho spho::make_reemit() const
+inline spho spho::make_nextgen() const
 {
-    spho reemit = {gs, ix, id, gn+1 } ;
-    return reemit ;
+    spho nextgen = {gs, ix, id, gn+1 } ;
+    return nextgen ;
 }
 
 inline std::string spho::desc() const

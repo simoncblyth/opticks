@@ -1,11 +1,11 @@
 #pragma once
 /**
-sevent.h : host/device communication instance
-==============================================
+sevent.h : host/device communication instance : holder of array pointers
+===========================================================================
 
 Instantiation of sevent is done by SEvt::SEvt
 and the instance is subsequently uploaded to the device after 
-device buffer allocations hence the sevent instance
+device buffer allocations hence the *sevent* instance
 provides event config and device buffer pointers 
 both on device and host. 
 
@@ -205,7 +205,7 @@ SEVENT_METHOD void sevent::init()
 sevent::init_domain
 --------------------
 
-Domaina are mainly(only?) used for the compressed photon "rec", 
+Domains are mainly(only?) used for the compressed photon "rec", 
 but now are making more use of the full photon "record"
 as thats considerably simpler that "rec". 
  

@@ -55,7 +55,7 @@ ancestor.isDefined:true
 
 inline spho sgs::MakePho(unsigned idx, const spho& ancestor)
 {
-    return ancestor.isDefined() ? ancestor.make_reemit() : spho::MakePho(index, idx, offset + idx, 0) ; 
+    return ancestor.isDefined() ? ancestor.make_nextgen() : spho::MakePho(index, idx, offset + idx, 0) ; 
 }
 
 inline std::string sgs::desc() const 

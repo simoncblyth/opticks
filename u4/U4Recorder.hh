@@ -46,7 +46,8 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
 
     U4Recorder(); 
-    // NO MEMBERS : persisting is handled at lower level by sysrap/SEvt 
+    const G4Track* transient_fSuspend_track ; 
+    // NO NON-TRANSIENT MEMBERS : persisting is handled at lower level by sysrap/SEvt 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);

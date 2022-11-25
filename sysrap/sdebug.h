@@ -11,6 +11,7 @@ struct sdebug
     int addGenstep ;
     int beginPhoton ;
     int rjoinPhoton ;
+    int resumePhoton ;
     int pointPhoton ;
     int finalPhoton ;
     int d12match_fail ;
@@ -30,6 +31,7 @@ struct sdebug
     int addGenstep ;
     int beginPhoton ;
     int rjoinPhoton ;
+    int resumePhoton ;
     int pointPhoton ;
     int finalPhoton ;
     int d12match_fail ;

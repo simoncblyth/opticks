@@ -78,7 +78,12 @@ bool U4Recorder::Enabled(const spho& label)
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
-U4Recorder::U4Recorder(){ INSTANCE = this ; }
+U4Recorder::U4Recorder()
+    :
+    transient_fSuspend_track(nullptr)
+{ 
+    INSTANCE = this ; 
+}
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
@@ -106,16 +111,15 @@ see examples::
 
 However primary optical photons arising from input photons or torch gensteps
 are not labelled at generation as that is probably not possible without hacking 
-GeneratePrimaries.
+Geant4 GeneratePrimaries.
 
-* TODO: exercise torch running 
 * TODO: review how input photons worked within old workflow and bring that over to U4 
   (actually might have done this at detector framework level ?)
 
 As a workaround for photon G4Track arriving at U4Recorder without labels, 
 the U4Track::SetFabricatedLabel method is below used to creates a label based entirely 
 on a 0-based track_id with genstep index set to zero. This standin for a real label 
-is only really equivalent for events with a single torch/input genstep. 
+is only really equivalent for events with a single torch/inputphoton genstep. 
 But torch gensteps are typically used for debugging so this restriction is ok.  
 
 HMM: not easy to workaround this restriction as often will collect multiple gensteps 
@@ -123,10 +127,27 @@ before getting around to seeing any tracks from them so cannot devine the genste
 by consulting gensteps collected by SEvt. YES: but this experience is from C and S gensteps, 
 not torch ones so needs some experimentation to see what approach to take. 
 
+**Reemission Rejoining**
+
+At the tail of this method SEvt::beginPhoton OR SEvt::rejoinPhoton is called
+with the spho label as argument. Which to call depends on label.gn which 
+is greater than zero for reemission generations that need to be re-joined. 
+
+HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
+
 **/
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+    bool resume_fSuspend = track == transient_fSuspend_track ; 
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    LOG(info) 
+        << " track " << track 
+        << " status:" << U4TrackStatus::Name(tstat) 
+        << " resume_fSuspend " << ( resume_fSuspend ? "YES" : "NO" ) 
+        ;
+ 
+    assert( tstat == fAlive ); 
     LOG(LEVEL) << "[" ; 
 
     G4Track* _track = const_cast<G4Track*>(track) ; 
@@ -136,9 +157,6 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     //std::cout << U4Process::Desc() << std::endl ; 
 
     spho label = U4Track::Label(track); 
-
-    G4TrackStatus tstat = track->GetTrackStatus(); 
-    assert( tstat == fAlive ); 
 
     if( label.isDefined() == false ) // happens with torch gensteps and input photons 
     {
@@ -153,7 +171,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         label = U4Track::Label(track); 
         LOG(LEVEL) << " labelling photon " << label.desc() ; 
 
-        saveOrLoadStates(label.id);  // moved here as labelling happens once per photon
+        saveOrLoadStates(label.id);  // moved here as labelling happens once per torch/input photon
     }
     assert( label.isDefined() );  
     if(!Enabled(label)) 
@@ -173,13 +191,24 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
     SEvt* sev = SEvt::Get(); 
 
-
-    if(label.gn == 0)
+    // Perhaps use label.gn generation for SlowSim<->FastSim transitions ?
+    // BUT reemission photons can also undergo such transitions, so cannot easily reuse. 
+    //
+    // HMM: as this split depends only on label.gn it could be done over in SEvt 
+    if(label.gn == 0)  
     {
-        sev->beginPhoton(label);       
+        if(resume_fSuspend == false)
+        {        
+            sev->beginPhoton(label);  // THIS ZEROS THE SLOT 
+        }
+        else  // resume_fSuspend:true happens following FastSim ModelTrigger:YES, DoIt
+        {
+            sev->resumePhoton(label); 
+        }
     }
     else if( label.gn > 0 )
     {
+        assert( resume_fSuspend == false ); // FastSim/SlowSim transitions of reemission photons not implemented 
         sev->rjoinPhoton(label); 
     }
     LOG(LEVEL) << "]" ; 
@@ -261,18 +290,32 @@ U4Recorder::PostUserTrackingAction_Optical
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
     LOG(LEVEL) << "[" ; 
+
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    LOG(info) << U4TrackStatus::Name(tstat) ; 
+
+    bool is_fStopAndKill = tstat == fStopAndKill ; 
+    bool is_fSuspend     = tstat == fSuspend ; 
+    bool is_fStopAndKill_or_fSuspend = is_fStopAndKill || is_fSuspend  ; 
+    LOG_IF(info, !is_fStopAndKill_or_fSuspend ) << " not is_fStopAndKill_or_fSuspend  post.tstat " << U4TrackStatus::Name(tstat) ; 
+    assert( is_fStopAndKill_or_fSuspend ); 
+
+
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  // all photons are expected to be labelled
     if(!Enabled(label)) return ;  
-    U4Random::SetSequenceIndex(-1); 
 
-    SEvt* sev = SEvt::Get(); 
-    sev->finalPhoton(label);       
-
-    G4TrackStatus tstat = track->GetTrackStatus(); 
-    bool is_fStopAndKill_or_fSuspend = tstat == fStopAndKill || tstat == fSuspend  ; 
-    LOG_IF(info, !is_fStopAndKill_or_fSuspend ) << " not is_fStopAndKill_or_fSuspend  post.tstat " << U4TrackStatus::Name(tstat) ; 
-    assert( is_fStopAndKill_or_fSuspend ); 
+    if(is_fStopAndKill)
+    {
+        U4Random::SetSequenceIndex(-1); 
+        SEvt* sev = SEvt::Get(); 
+        sev->finalPhoton(label);  
+        transient_fSuspend_track = nullptr ;
+    }
+    else if(is_fSuspend)
+    {
+        transient_fSuspend_track = track ; 
+    }
     LOG(LEVEL) << "]" ; 
 }
 
@@ -338,7 +381,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
     if(first_point)
     { 
-        LOG(info) << " first_point " ; 
+        LOG(info) << " first_point, track " << track  ; 
         U4StepPoint::Update(current_photon, pre);
         sev->pointPhoton(label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
