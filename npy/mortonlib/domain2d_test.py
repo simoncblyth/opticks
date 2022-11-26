@@ -11,7 +11,7 @@ if __name__ == '__main__':
     fig, ax = mp.subplots(figsize=SIZE/100.)
     ax.set_aspect('equal')
 
-    ax.scatter( a[:,0], a[:,1], s=0.1 )
+    ax.scatter( a[:,0], a[:,1], s=10 )
     fig.show()
 
 

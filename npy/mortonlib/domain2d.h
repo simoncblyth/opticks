@@ -20,11 +20,16 @@ struct domain2d
         scale = scale_ ; 
     }
 
+    // fx_ fy_ returns in domain values in range 0->1
     double   fx_( double x ) const { return (x - dx[0])/(dx[1]-dx[0]) ; } 
     double   fy_( double y ) const { return (y - dy[0])/(dy[1]-dy[0]) ; } 
+
+    // ix_, iy_ return integer scaled values in range 0->scale 
     uint64_t ix_( double x ) const { return scale*fx_(x) ; }
     uint64_t iy_( double y ) const { return scale*fy_(y) ; }
 
+    // convert coordinates in domain into integers in 0->scale 
+    // then bit interleave them into uint64_t morton key 
     uint64_t key_( double x, double y )
     {
         uint64_t ix = ix_(x) ; 
@@ -33,6 +38,7 @@ struct domain2d
         return m2.key ;     
     }
 
+    // decode morton key integer back into domain doubles 
     void decode_( double& x, double& y, uint64_t ik )
     {
         uint64_t ix, iy ;
@@ -59,7 +65,11 @@ struct domain2d
 domain2d::coarsen
 -------------------
 
-Attempt to coarsen coordinates by masking the least significant bits of morton code
+Coarsen coordinates by masking the least significant bits of morton code
+and uniqify them into uu. 
+
+This is a form a histogramming of 2d coordinates using 1d morton code
+that represents the coordinates. 
 
 HMM: have to mask almost all 64 bits to see reduction in counts 
 Presumably this is  because the input points are in a grid, they are 
