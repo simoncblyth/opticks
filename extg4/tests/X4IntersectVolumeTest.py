@@ -10,9 +10,6 @@ X4IntersectVolumeTest.py : 2D scatter plots of geometry intersect positions
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import mpplt_add_contiguous_line_segments 
-from opticks.npy.mortonlib.morton2d import morton2d 
-
-sbitmask_ = lambda i:np.uint64(-1) >> np.uint64(64-i) 
 
 
 log = logging.getLogger(__name__)
@@ -170,30 +167,14 @@ if __name__ == '__main__':
 
             if extra_type == "record":
                 hv = extra[:,0,(H,V)]   
-
-                hv_dom = np.zeros((2,2))
-                hv_dom[0] = hv[:,0].min(), hv[:,0].max()
-                hv_dom[1] = hv[:,1].min(), hv[:,1].max()
-
-                shv = (hv - hv_dom[:,0])/(hv_dom[:,1]-hv_dom[:,0])  ## scale coordinates into 0->1  
                 
-                ihv = np.array( shv*0xffffffff , dtype=np.uint64 )   ## 32bit range integer coordinates stored in 64 bit  
-                khv = morton2d.Key(ihv[:,0], ihv[:,1])              ## morton interleave the two coordinates into one 64 bit code
-
-                nbit = 8
-                mask = ~sbitmask_(64-nbit)
-                print( "nbit {0:2d} mask {1:064b} {2:016x}  ".format(nbit, mask, mask) )     
-
-                r_khv = khv & np.uint64(mask) 
-                u_khv, i_khv, c_khv = np.unique( r_khv , return_index=True, return_counts=True)
-                u_h, u_v = morton2d.Decode(u_khv) 
-
-
-                #.astype(np.float32)/np.float32(0xffffffff)
-
-
                 for i in range(len(extra)):
-                    ax.text(hv[i,0],hv[i,1], str(i), fontsize=15 )
+
+                    dx,dy = 0,0
+                    if i==2: dx,dy=1,2  
+                    if i==3: dx,dy=1,-2  
+
+                    ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15 )
                 pass
             pass
 

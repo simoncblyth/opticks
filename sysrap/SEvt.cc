@@ -1070,7 +1070,7 @@ void SEvt::rjoinPhoton(const spho& label)
     // check labels of parent and child are as expected
     const spho& parent_label = pho[idx]; 
     assert( label.isSameLineage( parent_label) ); 
-    assert( label.gn == parent_label.gn + 1 ); 
+    assert( label.gen() == parent_label.gen() + 1 ); 
 
     const sgs& _gs = get_gs(label);  
     bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype);  // SI/CK/TO 

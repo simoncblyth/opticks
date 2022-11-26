@@ -10,7 +10,8 @@ template <typename T>
 static constexpr T sbitmask(unsigned n)
 {
     //return static_cast<T>(-(n != 0)) & (static_cast<T>(-1) >> ((sizeof(T) * CHAR_BIT) - n));
-    return n == 0 ? 0 : (static_cast<T>(-1) >> ((sizeof(T) * CHAR_BIT) - n));
+    //return n == 0 ? 0 : (static_cast<T>(-1) >> ((sizeof(T) * CHAR_BIT) - n));
+    return n == 0 ? 0 : ( (~static_cast<T>(0)) >> ((sizeof(T) * CHAR_BIT) - n));
 }
 
 /**

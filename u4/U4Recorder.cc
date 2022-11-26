@@ -194,8 +194,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     // Perhaps use label.gn generation for SlowSim<->FastSim transitions ?
     // BUT reemission photons can also undergo such transitions, so cannot easily reuse. 
     //
-    // HMM: as this split depends only on label.gn it could be done over in SEvt 
-    if(label.gn == 0)  
+    // HMM: as this split depends only on label.gen() it could be done over in SEvt 
+    if(label.gen() == 0)  
     {
         if(resume_fSuspend == false)
         {        
@@ -206,7 +206,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
             sev->resumePhoton(label); 
         }
     }
-    else if( label.gn > 0 )
+    else if( label.gen() > 0 )
     {
         assert( resume_fSuspend == false ); // FastSim/SlowSim transitions of reemission photons not implemented 
         sev->rjoinPhoton(label); 
