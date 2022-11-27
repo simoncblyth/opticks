@@ -1614,7 +1614,19 @@ void GGeo::deferredCreateGParts()
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
-        assert( mm->getParts() == NULL ); 
+
+        GParts* prior_parts = mm->getParts() ;  
+        LOG_IF(error, prior_parts != nullptr) 
+            << " prior_parts is not nullptr (formerly caused an assert, now just continues the loop) "
+            << " probably the former assert was because had to defer GParts creation in order "
+            << " to support the old and new OptiX geometry models, specifically the old:within-merged-mesh "
+            << " and new:global handling of transform referencing "
+            << " now that are only supporting the new approach it is OK (and more convenient) to "
+            << " persist the GParts in the geocache "
+            ; 
+        //assert( prior_parts == nullptr ); 
+        if(prior_parts != nullptr) continue ;  
+
 
         GPts* pts = mm->getPts(); 
         LOG_IF(fatal, pts == nullptr ) << " pts NULL, cannot create GParts for mm " << i ; 

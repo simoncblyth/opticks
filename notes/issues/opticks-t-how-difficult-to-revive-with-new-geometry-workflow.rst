@@ -1129,12 +1129,15 @@ Overall down to 25
       45 /62  Test #45 : GGeoTest.GGeoConvertTest                      Child aborted***Exception:     1.31   
       60 /62  Test #60 : GGeoTest.GPhoTest                             Child aborted***Exception:     1.37   
       61 /62  Test #61 : GGeoTest.GGeoDumpTest                         Child aborted***Exception:     1.31   
+
       16 /39  Test #16 : CSGTest.CSGFoundry_SGeo_SEvt_Test             ***Exception: SegFault         0.03   
       22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.03   
       33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.03   
+
       1  /3   Test #1  : GeoChainTest.GeoChainSolidTest                Child aborted***Exception:     0.11   
       2  /3   Test #2  : GeoChainTest.GeoChainVolumeTest               Child aborted***Exception:     0.15   
       3  /3   Test #3  : GeoChainTest.GeoChainNodeTest                 Child aborted***Exception:     0.10   
+
       3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
       4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
       5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.03   
@@ -1145,6 +1148,7 @@ Overall down to 25
       11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
       13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.11   
       18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.03   
+
       5  /18  Test #5  : U4Test.U4GDMLReadTest                         Child aborted***Exception:     0.09   
       7  /18  Test #7  : U4Test.U4RandomTest                           ***Exception: SegFault         0.54   
       8  /18  Test #8  : U4Test.U4VolumeMakerTest                      Child aborted***Exception:     0.10   
@@ -1153,4 +1157,77 @@ Overall down to 25
     [pop              FUNCNAME : om-testenv-dump 
         
 
- 
+
+
+Look at GGeo fails : ALL FROM SAME ASSERT
+---------------------------------------------
+
+::
+
+    42/62 Test #42: GGeoTest.GGeoLibTest ....................   Passed    0.36 sec
+          Start 43: GGeoTest.GGeoTest
+    43/62 Test #43: GGeoTest.GGeoTest .......................Child aborted***Exception:   1.43 sec
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+
+          Start 44: GGeoTest.GGeoIdentityTest
+    44/62 Test #44: GGeoTest.GGeoIdentityTest ...............Child aborted***Exception:   1.37 sec
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+
+          Start 45: GGeoTest.GGeoConvertTest
+    45/62 Test #45: GGeoTest.GGeoConvertTest ................Child aborted***Exception:   1.37 sec
+    Assertion failed: (mm->getParts() == NULL), function deferredCreateGParts, file /Users/blyth/opticks/ggeo/GGeo.cc, line 1617.
+
+          Start 46: GGeoTest.GGeoTestTest
+    46/62 Test #46: GGeoTest.GGeoTestTest ...................   Passed    0.03 sec
+
+
+
+
+
+::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff70412b66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff705dd080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff7036e1ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff703361ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001002f618a libGGeo.dylib`GGeo::deferredCreateGParts(this=0x0000000101b00cb0) at GGeo.cc:1617
+        frame #5: 0x00000001002f4340 libGGeo.dylib`GGeo::deferred(this=0x0000000101b00cb0) at GGeo.cc:655
+        frame #6: 0x00000001002f3cab libGGeo.dylib`GGeo::postLoadFromCache(this=0x0000000101b00cb0) at GGeo.cc:605
+        frame #7: 0x00000001002efa95 libGGeo.dylib`GGeo::loadFromCache(this=0x0000000101b00cb0) at GGeo.cc:586
+        frame #8: 0x00000001002ef649 libGGeo.dylib`GGeo::Load(ok=0x00007ffeefbfe670) at GGeo.cc:134
+        frame #9: 0x000000010000a099 GGeoTest`main(argc=1, argv=0x00007ffeefbfe8e8) at GGeoTest.cc:426
+        frame #10: 0x00007fff702c2015 libdyld.dylib`start + 1
+        frame #11: 0x00007fff702c2015 libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 7
+    frame #7: 0x00000001002efa95 libGGeo.dylib`GGeo::loadFromCache(this=0x0000000101b00cb0) at GGeo.cc:586
+       583 	
+       584 	    m_meshlib->setGGeoLib(m_geolib); 
+       585 	
+    -> 586 	    postLoadFromCache(); 
+       587 	
+       588 	    LOG(LEVEL) << "]" ; 
+       589 	}
+    (lldb) p m_ok->getIdPath()
+    (const char *) $0 = 0x0000000101a019a0 "/Users/blyth/.opticks/GEOM/J004/GGeo"
+    (lldb) 
+
+    (lldb) f 4
+    frame #4: 0x00000001002f618a libGGeo.dylib`GGeo::deferredCreateGParts(this=0x0000000101b00cb0) at GGeo.cc:1617
+       1614	    for(unsigned i=0 ; i < nmm ; i++)
+       1615	    {
+       1616	        GMergedMesh* mm = m_geolib->getMergedMesh(i);
+    -> 1617	        assert( mm->getParts() == NULL ); 
+       1618	
+       1619	        GPts* pts = mm->getPts(); 
+       1620	        LOG_IF(fatal, pts == nullptr ) << " pts NULL, cannot create GParts for mm " << i ; 
+    (lldb) 
+
+
+
+
+
+
