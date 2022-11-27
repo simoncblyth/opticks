@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
+    const NP* propcom = SProp::MockupCombination("$CFBaseFromGEOM/GGeo/GScintillatorLib/LS_ori/RINDEX.npy");
 
     unsigned nx = 1601u ; 
     //unsigned nx = 161u ; 

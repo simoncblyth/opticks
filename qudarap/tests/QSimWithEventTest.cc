@@ -22,8 +22,12 @@ int main(int argc, char** argv)
 
     SEvt evt ; 
 
-    const SSim* ssim = SSim::Load(); 
-    QSim::UploadComponents(ssim); 
+    LOG(info) << "[ SSim::Load " ; 
+    const SSim* sim = SSim::Load(); 
+    LOG(info) << "] SSim::Load : sim " << sim  ; 
+    LOG(info) << " sim.desc " << std::endl << sim->desc() ; 
+
+    QSim::UploadComponents(sim); 
 
     QSim* qs = QSim::Create(); 
     QEvent* qe = qs->event ; 
@@ -33,7 +37,6 @@ int main(int argc, char** argv)
     int x_total = 0 ; 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total ) ; 
     SEvt::AddGenstep(gs); 
-
 
     qe->setGenstep(); 
 
@@ -48,7 +51,6 @@ int main(int argc, char** argv)
 
     NP* photon = qe->gatherPhoton();  
     photon->dump(); 
-
 
     cudaDeviceSynchronize(); 
 

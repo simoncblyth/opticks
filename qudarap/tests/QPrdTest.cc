@@ -5,7 +5,6 @@
 #include "squad.h"
 
 #include "NP.hh"
-#include "SOpticksResource.hh"
 #include "SPath.hh"
 #include "QBnd.hh"
 #include "QPrd.hh"
@@ -16,9 +15,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase() ; 
-    LOG(info) << " cfbase " << cfbase ; 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry/SSim/bnd.npy"); 
+    const char* bndpath = SPath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/bnd.npy", NOOP); 
+    NP* bnd = NP::Load(bndpath); 
+
+    LOG(info) 
+        << " bndpath " << bndpath
+        << " bnd " << ( bnd ? bnd->sstr() : "-" )
+        ;
 
     QBnd qb(bnd);  // TODO: consolidate with QOptical  
     QPrd qp ; 

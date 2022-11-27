@@ -62,13 +62,13 @@ SSim::Load from $CFBase/CSGFoundry/SSim : so assumes already persisted geometry
  
 **/
 
-const char* SSim::DEFAULT = "$CFBase/CSGFoundry/SSim" ; 
+const char* SSim::DEFAULT = "$CFBaseFromGEOM/CSGFoundry" ; 
 
 SSim* SSim::Load(){ return Load_(DEFAULT) ; }
 
 SSim* SSim::Load_(const char* base_)
 {
-    const char* base = SPath::Resolve(base_ ? base_ : DEFAULT, DIRPATH); 
+    const char* base = SPath::Resolve(base_ ? base_ : DEFAULT, NOOP); 
     SSim* sim = new SSim ; 
     sim->load(base);  
     return sim ; 

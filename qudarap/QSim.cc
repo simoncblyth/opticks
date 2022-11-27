@@ -128,6 +128,7 @@ void QSim::UploadComponents( const SSim* ssim  )
        // TODO: combine the below as optical and bnd MUST travel together 
         QOptical* qopt = new QOptical(optical); 
         LOG(LEVEL) << qopt->desc(); 
+
         QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
         LOG(LEVEL) << qbnd->desc(); 
     }
@@ -161,7 +162,6 @@ void QSim::UploadComponents( const SSim* ssim  )
         QScint* scint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
         LOG(LEVEL) << scint->desc(); 
     }
-
 
 
     // TODO: make this more like the others : acting on the available inputs rather than the mode

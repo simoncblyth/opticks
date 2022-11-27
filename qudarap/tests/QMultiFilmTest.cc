@@ -46,27 +46,21 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    //Opticks ok(argc, argv); 
-    //ok.configure(); 
-/*
-#ifdef OLD_WAY
-    GScintillatorLib* slib = GScintillatorLib::load(&ok);
-    slib->dump();
-    NP* icdf = slib->getBuf(); 
-#else
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
-#endif
-    //icdf->dump(); 
+    const char* artpath = SSys::getenvvar("ARTPATH", "/tmp/debug_multi_film_table/all_table.npy") ; 
+    NP* art = NP::Load(artpath) ; 
 
-    unsigned hd_factor = 0u ; 
-*/
-    NP* icdf = NP::Load("/tmp/debug_multi_film_table/","all_table.npy");
+    LOG(info)
+       << " ARTPATH " << artpath 
+       << " art " << ( art ? art->sstr() : "-" )
+       ;
 
-    QMultiFilm sc(icdf);     // uploads reemission texture  
+    LOG_IF(error, !art ) << " FAILED to load art array " ; 
+    if(!art) return 0 ;  
 
-    test_lookup(sc); 
-    //test_check(sc); 
+    QMultiFilm mf(art);   
+
+    test_lookup(mf); 
+    //test_check(mf); 
 
     return 0 ; 
 }

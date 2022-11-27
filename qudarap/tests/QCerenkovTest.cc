@@ -1,6 +1,7 @@
 
 #include "SPath.hh"
 #include "NP.hh"
+#include "QBase.hh"
 #include "QCerenkov.hh"
 
 #include "scuda.h"
@@ -36,6 +37,13 @@ int main(int argc, char** argv)
     LOG(info) << " t " << t ; 
 
     LOG(info) << "[ QCerenkov " ; 
+
+    QBase qb ;
+    LOG(info) << " qb.desc " << qb.desc() ;  
+
+
+    
+
     QCerenkov ck ;  
     LOG(info) << "] QCerenkov " ; 
 
@@ -47,7 +55,6 @@ int main(int argc, char** argv)
     {
         test_check(ck); 
     }
-
 
     return 0 ; 
 }

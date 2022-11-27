@@ -14,8 +14,6 @@ makes no sense to treat them separately
 #include "SPath.hh"
 #include "NP.hh"
 
-#include "SOpticksResource.hh"
-
 #include "QOptical.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -30,12 +28,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase() ; 
-    LOG(info) << " cfbase " << cfbase ; 
-
-    bool exists = NP::Exists(cfbase, "CSGFoundry/SSim/optical.npy") ; 
-
-    NP* optical = exists ? NP::Load(cfbase, "CSGFoundry/SSim/optical.npy") : nullptr ; 
+    const char* optical_path = SPath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/optical.npy", NOOP ) ;
+    NP* optical = NP::Load(optical_path) ; 
+   
+    LOG(info) 
+        << " optical_path " << optical_path
+        << " optical " << ( optical ? optical->sstr() : "-" )
+        ;
 
     if( optical == nullptr )
     {

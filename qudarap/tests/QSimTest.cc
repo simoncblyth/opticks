@@ -690,8 +690,6 @@ int main(int argc, char** argv)
     QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
 
 
-
-
     SEvt evt ; 
 
     QSimTest qst(type, num)  ; 

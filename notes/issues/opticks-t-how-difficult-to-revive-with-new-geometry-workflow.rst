@@ -1500,7 +1500,6 @@ Down to 18/509 on laptop
                SKIP CHECK WHEN NO SEvt
 
       9  /19  Test #9  : U4Test.U4VolumeMakerTest                      Child aborted***Exception:     0.09   
-               
 
       14 /19  Test #14 : U4Test.U4TreeTest                             Child aborted***Exception:     0.11   
 
@@ -1536,6 +1535,67 @@ u4 fails
         frame #5: 0x000000010000c340 U4RandomTest`main(argc=1, argv=0x00007ffeefbfe7a0) at U4RandomTest.cc:30
         frame #6: 0x00007fff702c2015 libdyld.dylib`start + 1
     (lldb) 
+
+
+
+check again : down to 10/509 : all qudarap
+----------------------------------------------
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+      14 /19  Test #14 : U4Test.U4TreeTest                             Passed                         19.59  
+
+
+    FAILS:  10  / 509   :  Sun Nov 27 19:05:42 2022   
+
+      3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
+          FIXED by path update
+      4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
+          FIXED by path update
+
+
+      5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.02   
+          QCerenkov failing for lack of QBase 
+
+      7  /20  Test #7  : QUDARapTest.QSimTest                          Child aborted***Exception:     1.25   
+          QCerenkov failing for lack of QBnd
+
+
+      8  /20  Test #8  : QUDARapTest.QBndTest                          ***Exception: SegFault         0.03   
+          FIXED by path update 
+      9  /20  Test #9  : QUDARapTest.QPrdTest                          ***Exception: SegFault         0.03   
+          FIXED by path update 
+      10 /20  Test #10 : QUDARapTest.QOpticalTest                      ***Exception: SegFault         0.03   
+          FIXED by path update 
+      11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
+          FIXED by path update 
+      13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.14   
+          FIXED by SSim::DEFAULT = "$CFBaseFromGEOM/CSGFoundry" 
+      18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.02   
+          FIXED by path check 
+
+
+    [pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+    [pop              FUNCNAME : om-testenv-dump 
+    [pop          OM_KEEP_GEOM :  
+
+
+
+
+check again : down to 1 fail
+--------------------------------
+
+
+::
+
+     5/20 Test  #5: QUDARapTest.QCerenkovTest ...........Child aborted***Exception:   0.99 sec
+    main@37:  t L
+    main@39: [ QCerenkov 
+    main@42:  qb.desc QBase::desc base 0x7f9151c07a00 d_base 0x700c60000 base.desc qbase::desc pidx 4294967295
+    Assertion failed: (bnd), function MakeInstance, file /Users/blyth/opticks/qudarap/QCerenkov.cc, line 81.
+
 
 
 

@@ -12,9 +12,6 @@ const plog::Severity QBase::LEVEL = SLOG::EnvLevel("QBase", "DEBUG");
 const QBase* QBase::INSTANCE = nullptr ; 
 const QBase* QBase::Get(){ return INSTANCE ; }
 
-
-
-
 qbase* QBase::MakeInstance() // static 
 {
     qbase* base = new qbase ; 
@@ -64,6 +61,5 @@ std::string QBase::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
-
 
 

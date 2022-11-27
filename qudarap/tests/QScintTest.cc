@@ -26,11 +26,17 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase(); 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
+    const char* cfbase = SOpticksResource::CFBaseFromGEOM(); 
+    NP* icdf = NP::Load(cfbase, "CSGFoundry/SSim/icdf.npy"); // HMM: this needs a more destinctive name/location  
+
+    LOG(info) 
+        << " cfbase " << cfbase
+        << " icdf " << ( icdf ? icdf->sstr() : "-" )
+        ; 
+
+    if(icdf == nullptr) return 0 ; 
 
     unsigned hd_factor = 0u ; 
-
     QScint sc(icdf, hd_factor);     // uploads reemission texture  
 
     test_lookup(sc); 

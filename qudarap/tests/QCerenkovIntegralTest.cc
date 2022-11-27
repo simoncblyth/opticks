@@ -188,9 +188,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* idpath = SOpticksResource::IDPath();  
-    int create_dirs = 0 ; // 0:do-nothing
-    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs ); 
+    const char* rindexpath = SPath::Resolve("$CFBaseFromGEOM/GGeo/GScintillatorLib/LS_ori/RINDEX.npy", NOOP ); 
     LOG(info) << " rindexpath " << rindexpath ; 
 
     char d = 'S' ; 
