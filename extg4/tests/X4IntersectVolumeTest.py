@@ -163,7 +163,7 @@ if __name__ == '__main__':
                     thirdline += " ModelTriggerNO" 
                 pass
             pass
-            mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label="extra" )
+            mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label=None )
 
             if extra_type == "record":
                 hv = extra[:,0,(H,V)]   
@@ -171,10 +171,12 @@ if __name__ == '__main__':
                 for i in range(len(extra)):
 
                     dx,dy = 0,0
-                    if i==2: dx,dy=1,2  
-                    if i==3: dx,dy=1,-2  
+                    if i==2: dx,dy=-10,0  
+                    if i==3: dx,dy=0,-10  
+                    if i==4: dx,dy=-10,0  
+                    if i==16: dx,dy=10,-10  
 
-                    ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15 )
+                    ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15, backgroundcolor="yellow" )
                 pass
             pass
 
@@ -182,7 +184,8 @@ if __name__ == '__main__':
         pass
 
         #loc = "lower left"
-        loc = "upper right"
+        #loc = "upper right"
+        loc = "upper left"
         LOC = os.environ.get("LOC",loc)
         if LOC != "skip":
             ax.legend(loc=LOC,  markerscale=4)
