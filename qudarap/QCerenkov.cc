@@ -35,19 +35,11 @@ const char* QCerenkov::DEFAULT_FOLD = "$TMP/QCerenkovIntegralTest/test_makeICDF_
 
 NP* QCerenkov::Load(const char* fold, const char* name)  // static
 {
-    int create_dirs = 0 ;  // 0:nop
-    const char* path = SPath::Resolve(fold, name, create_dirs);  
+    const char* path = SPath::Resolve(fold, name, NOOP);  
     NP* a = NP::Load(path); 
-
-    if( a == nullptr )
-    {
-        LOG(fatal)
-            << " failed to load array from path " << path 
-            ; 
-    }
+    LOG_IF(fatal, !a) << " failed to load array from path " << path ; 
     return a ; 
 }
-
 
 /**
 QCerenkov::MakeTex
@@ -83,11 +75,11 @@ qcerenkov* QCerenkov::MakeInstance() // static
     const QProp<float>* prop = QProp<float>::Get(); 
     // assert(prop); 
 
-    qcerenkov* cerenkov= new qcerenkov ; 
-    cerenkov->base = base->d_base ;  
-    cerenkov->bnd = bnd->d_bnd ;  
-    cerenkov->prop = prop ? prop->d_prop : nullptr ; 
-    return cerenkov ; 
+    qcerenkov* ck = new qcerenkov ; 
+    ck->base = base->d_base ;  
+    ck->bnd = bnd->d_bnd ;  
+    ck->prop = prop ? prop->d_prop : nullptr ; 
+    return ck ; 
 }
 
 
@@ -119,7 +111,7 @@ QCerenkov::QCerenkov(const char* fold_ )
 
 QCerenkov::QCerenkov()
     :
-    fold(nullptr),
+    fold(nullptr),  // HMM: whats the point of this with no fold ? 
     icdf_(nullptr),
     icdf(nullptr),
     filterMode('P'),
@@ -139,6 +131,8 @@ QCerenkov::init
 ----------------
 
 TODO: move most of this into statics
+
+TODO: treat icdf just like bnd, base, prop ?
 
 **/
 
