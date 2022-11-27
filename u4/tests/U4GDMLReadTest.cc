@@ -49,11 +49,12 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* srcpath = SOpticksResource::GDMLPathFromGEOM() ; 
+    LOG(info) << " argv[0] " << argv[0] << " srcpath " << srcpath ; 
+
+
     const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  
 
     Traverse trv(world);
-
-  
 
     LOG(info) 
         << " argv[0] " << argv[0] << std::endl 

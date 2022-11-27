@@ -25,8 +25,8 @@ The volume to create is controlled by the name string obtained from envvar *GEOM
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    const char* name_default = "hama_body_phys"  ; 
-    const char* name = SSys::getenvvar("GEOM", name_default ); 
+    const char* name_default = "hamaBodyPhys"  ; 
+    const char* name = SSys::getenvvar("GeoChainVolumeTest_GEOM", name_default ); 
 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTFASTSIM

@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* name = SSys::getenvvar("GEOM", "sphere" ); 
+    const char* name = SSys::getenvvar("GeoChainNodeTest_GEOM", "sphere" ); 
     nnode* root = nullptr ; 
     if(strcmp(name, "sphere") == 0)
     {

@@ -270,7 +270,7 @@ U4Random::setSequenceIndex
 --------------------------------
 
 Switches random stream when index is not negative.
-This is used for example used to switch between the separate streams 
+This is used for example to switch between the separate streams 
 used for each photon.
 
 A negative index disables the control of the Geant4 random engine.  
@@ -490,6 +490,11 @@ void U4Random::check_cursor_vs_tagslot()
     assert(m_seq_index > -1) ;  // must not call when disabled, use G4UniformRand to use standard engine
     int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
 
+    if(SEvt::Exists() == false)
+    {
+        LOG(error) << " SEvt::Exists() false : cannot make this check " ; 
+        return ; 
+    }
 
     int slot = SEvt::GetTagSlot(); 
     bool cursor_slot_match = cursor == slot ;  

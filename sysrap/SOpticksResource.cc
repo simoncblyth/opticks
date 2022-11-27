@@ -428,14 +428,24 @@ Bash functions to edit config : geom_, com_. oip
 
 const char* SOpticksResource::CFBaseFromGEOM()
 {
-    const char* geom = SSys::getenvvar("GEOM"); 
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
+    const char* geom = GEOM(); 
+    const char* path = geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
+    LOG(LEVEL) 
+        << " geom " << geom 
+        << " path " << path 
+        ;
+    return path ; 
 }
 
 const char* SOpticksResource::GDMLPathFromGEOM()
 {
-    const char* geom = SSys::getenvvar("GEOM"); 
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
+    const char* geom = GEOM(); 
+    const char* path =  geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
+    LOG(LEVEL) 
+        << " geom " << geom 
+        << " path " << path 
+        ;
+    return path ; 
 }
 
 const char* SOpticksResource::WrapLVForName(const char* name)

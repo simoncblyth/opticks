@@ -37,7 +37,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom_default = "nnvtBodyPhys" ; 
+    //const char* geom_default = "nnvtBodyPhys" ; 
+    const char* geom_default = "hamaBodyPhys" ; 
     const char* geom = SSys::getenvvar("X4IntersectVolumeTest_GEOM", geom_default );  
     int rc = 0 ; 
 

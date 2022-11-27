@@ -149,7 +149,9 @@ elif [ "$GEOM" == "J004" ]; then
 
     # from jxf: save the geometry from junosw using  "GEOM=J004 ntds3" 
     # this uses envvar G4CXOpticks__setGeometry_saveGeometry to signal the save and pass the directory 
-    export J004_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM 
+    cfbase=$HOME/.opticks/GEOM/$GEOM
+    export J004_CFBaseFromGEOM=$cfbase
+    export J004_GDMLPathFromGEOM=$cfbase/origin.gdml
 
 elif [ "$GEOM" == "J004G" ]; then
 

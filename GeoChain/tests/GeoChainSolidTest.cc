@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom_ = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ) ; 
+    const char* geom_ = SSys::getenvvar("GeoChainSolidTest_GEOM", "AdditionAcrylicConstruction" ) ; 
     const char* geom = SStr::Trim(geom_);   // Trim leading and trailing whitespace
     LOG(info) << " geom [" << geom  << "] " ; 
 

@@ -1466,3 +1466,76 @@ controlling the default directory is just ignoring that envvar.
 
 
 
+
+Down to 18/509 on laptop
+---------------------------
+
+
+::
+
+    FAILS:  18  / 509   :  Sun Nov 27 17:45:03 2022   
+      40 /42  Test #40 : ExtG4Test.X4IntersectVolumeTest               Child aborted***Exception:     0.16   
+             LACK OF nnvtBodyPhys with PMTFastSim, fixed by switch to hamaBodyPhys
+
+      1  /3   Test #1  : GeoChainTest.GeoChainSolidTest                Child aborted***Exception:     0.11   
+      2  /3   Test #2  : GeoChainTest.GeoChainVolumeTest               Child aborted***Exception:     0.15   
+      3  /3   Test #3  : GeoChainTest.GeoChainNodeTest                 Child aborted***Exception:     0.10   
+            FIXED BY CHANGE TO ExecutableName_GEOM envvars  
+
+      3  /20  Test #3  : QUDARapTest.QScintTest                        ***Exception: SegFault         0.02   
+      4  /20  Test #4  : QUDARapTest.QCerenkovIntegralTest             ***Exception: SegFault         0.03   
+      5  /20  Test #5  : QUDARapTest.QCerenkovTest                     Child aborted***Exception:     0.03   
+      7  /20  Test #7  : QUDARapTest.QSimTest                          Child aborted***Exception:     1.47   
+      8  /20  Test #8  : QUDARapTest.QBndTest                          ***Exception: SegFault         0.03   
+      9  /20  Test #9  : QUDARapTest.QPrdTest                          ***Exception: SegFault         0.03   
+      10 /20  Test #10 : QUDARapTest.QOpticalTest                      ***Exception: SegFault         0.03   
+      11 /20  Test #11 : QUDARapTest.QPropTest                         ***Exception: SegFault         0.03   
+      13 /20  Test #13 : QUDARapTest.QSimWithEventTest                 Child aborted***Exception:     1.12   
+      18 /20  Test #18 : QUDARapTest.QMultiFilmTest                    ***Exception: SegFault         0.02   
+
+      5  /19  Test #5  : U4Test.U4GDMLReadTest                         Child aborted***Exception:     0.09   
+               FIXED BY ADDING J004_GDMLPathFromGEOM envvar
+
+      7  /19  Test #7  : U4Test.U4RandomTest                           ***Exception: SegFault         0.62   
+               SKIP CHECK WHEN NO SEvt
+
+      9  /19  Test #9  : U4Test.U4VolumeMakerTest                      Child aborted***Exception:     0.09   
+               
+
+      14 /19  Test #14 : U4Test.U4TreeTest                             Child aborted***Exception:     0.11   
+
+    [pop           BASH_SOURCE : /Users/blyth/opticks/om.bash 
+
+
+
+u4 fails
+------------
+
+
+::
+
+    test_basics@16:  rand.dump after U4Random::setSequenceIndex(0) : USING PRECOOKED RANDOMS 
+    ...
+     i     8 u    0.14407
+     i     9 u    0.18780
+    ...
+       1341	int SEvt::getTagSlot() const 
+       1342	{
+    -> 1343	    if(evt->tag == nullptr) return -1 ; 
+       1344	    const stagr& tagr = current_ctx.tagr ; 
+       1345	    return tagr.slot ; 
+       1346	}
+    Target 0: (U4RandomTest) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x20)
+      * frame #0: 0x00000001062d445c libSysRap.dylib`SEvt::getTagSlot(this=0x0000000000000000) const at SEvt.cc:1343
+        frame #1: 0x00000001062d4440 libSysRap.dylib`SEvt::GetTagSlot() at SEvt.cc:529
+        frame #2: 0x00000001001c0f77 libU4.dylib`U4Random::check_cursor_vs_tagslot(this=0x000000010781b760) at U4Random.cc:494
+        frame #3: 0x00000001001be0bc libU4.dylib`U4Random::setSequenceIndex(this=0x000000010781b760, index_=-1) at U4Random.cc:287
+        frame #4: 0x000000010000bc18 U4RandomTest`test_basics(rnd=0x000000010781b760) at U4RandomTest.cc:18
+        frame #5: 0x000000010000c340 U4RandomTest`main(argc=1, argv=0x00007ffeefbfe7a0) at U4RandomTest.cc:30
+        frame #6: 0x00007fff702c2015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+

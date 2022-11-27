@@ -62,9 +62,9 @@ GDML fixups that allow Geant4 to parse the JUNO GDML.
 
 inline const G4VPhysicalVolume* U4GDML::Read(const char* path)
 {
-    bool exists = SPath::Exists(path); 
+    bool exists = path ? SPath::Exists(path) : false ; 
     LOG_IF(fatal, !exists) << " path invalid or does not exist [" << path << "]" ; 
-    assert(exists); 
+    if(!exists) return nullptr ; 
 
     U4GDML g ; 
     g.read(path); 

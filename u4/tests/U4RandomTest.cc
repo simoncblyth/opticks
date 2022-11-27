@@ -2,24 +2,30 @@
 #include <cassert>
 #include <iostream>
 
+#include "OPTICKS_LOG.hh"
 #include "U4Random.hh"
 
 void test_basics(U4Random* rnd)
 {
-    std::cout << "rnd.m_seqpath " << rnd->m_seqpath << std::endl ; 
+    LOG(info) << "rnd.m_seqpath " << rnd->m_seqpath ; 
 
-    std::cout << " rand.dump asis : STANDARD G4UniformRand " << std::endl ; 
+    LOG(info) << " rand.dump asis : STANDARD G4UniformRand " ; 
     rnd->dump(); 
+
+    LOG(info) << " rand.dump after U4Random::setSequenceIndex(0) : USING PRECOOKED RANDOMS " ; 
     rnd->setSequenceIndex(0); 
-    std::cout << " rand.dump after U4Random::setSequenceIndex(0) : USING PRECOOKED RANDOMS " << std::endl ; 
     rnd->dump(); 
+
+
+    LOG(info) << " rand.dump after U4Random::setSequenceIndex(-1) : BACK TO STANDARD RANDOMS " ; 
     rnd->setSequenceIndex(-1); 
-    std::cout << " rand.dump after U4Random::setSequenceIndex(-1) : BACK TO STANDARD RANDOMS " << std::endl ; 
     rnd->dump(); 
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+
     U4Random* rnd = new U4Random ; 
 
     test_basics(rnd); 
