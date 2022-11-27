@@ -143,6 +143,14 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 {
     const qat4* _t = foundry->getInst(inst_idx); 
 
+    LOG_IF(error, _t == nullptr) 
+        << " inst_idx " << inst_idx 
+        << " failed to foundry->getInst(inst_idx), " 
+        << " foundry->getNumInst() : " << foundry->getNumInst()
+        ;
+    if(_t == nullptr) return 1 ; 
+
+
     int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
     _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 

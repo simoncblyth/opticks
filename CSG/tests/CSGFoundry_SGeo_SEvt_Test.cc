@@ -8,8 +8,28 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    LOG(info) << "[ SEvt::Load" ; 
     SEvt* sev = SEvt::Load() ;  
-    const char* cfbase = sev->getSearchCFBase() ; // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
+    LOG(info) << sev->descFold(); 
+    int total_items = sev->getTotalItems() ; 
+
+    LOG(info) << " total_items " << total_items ; 
+    if(total_items == 0 ) return 0 ; 
+
+
+    LOG(info) << "] SEvt::Load" ; 
+
+    LOG(info) << " loaded SEvt from " << sev->getLoadDir() ;  
+    LOG(info) << sev->desc() ; 
+
+    if(sev->is_loadfail)
+    {
+        LOG(info) << " sev.is_loadfail" ; 
+        return 0 ; 
+    }
+
+    const char* cfbase = sev->getSearchCFBase() ; 
+    // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
 
     SSim::Create();  
     const CSGFoundry* fd = CSGFoundry::Load(cfbase);

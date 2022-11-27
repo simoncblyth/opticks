@@ -65,6 +65,7 @@ struct NPFold
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* EXT = ".npy" ; 
+    static constexpr const char* TOP = "/" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
     static constexpr const char* META  = "NPFold_meta.txt" ; 
 
@@ -94,13 +95,15 @@ struct NPFold
     const NP*      find_array(const char* base, const char* name) const ; 
     const NPFold*  find_subfold(const char* fpath) const  ; 
 
-    static void Traverse_r(const NPFold* nd, std::string nd_path, 
+    static int Traverse_r(const NPFold* nd, std::string nd_path, 
           std::vector<const NPFold*>& folds, 
           std::vector<std::string>& paths ); 
     static std::string Concat(const char* base, const char* sub, char delim='/' ); 
 
 
-    std::string desc_subfold(const char* top="/");  
+    std::string desc_subfold(const char* top="/") const ;  
+    int total_items() const ; 
+
 
     std::vector<NPFold*> subfold ;  
     std::vector<std::string> ff ;  // for sub-NPFold 
@@ -154,7 +157,8 @@ struct NPFold
     void load_subfold(const char* base, const char* relp);
 
 
-    std::string desc(int depth=0) const ; 
+    std::string desc() const ; 
+    std::string desc(int depth) const ; 
     static std::string Indent(int width); 
 
     std::string brief() const ; 
@@ -386,7 +390,7 @@ like a file system.
 
 **/
 
-inline void NPFold::Traverse_r(const NPFold* nd, std::string path, 
+inline int NPFold::Traverse_r(const NPFold* nd, std::string path, 
                  std::vector<const NPFold*>& folds, std::vector<std::string>& paths ) // static
 {
     folds.push_back(nd); 
@@ -394,13 +398,18 @@ inline void NPFold::Traverse_r(const NPFold* nd, std::string path,
 
     assert( nd->subfold.size() == nd->ff.size() ); 
     unsigned num_sub = nd->subfold.size(); 
+
+    int tot_items = nd->num_items() ; 
+
     for(unsigned i=0 ; i < num_sub ; i++) 
     {
         const NPFold* sub = nd->subfold[i] ; 
         std::string subpath = Concat(path.c_str(), nd->ff[i].c_str(), '/' ) ;  
 
-        Traverse_r( sub, subpath,  folds, paths );  
+        int num = Traverse_r( sub, subpath,  folds, paths );  
+        tot_items += num ; 
     }
+    return tot_items ; 
 }
 
 inline std::string NPFold::Concat(const char* base, const char* sub, char delim ) // static
@@ -415,13 +424,14 @@ inline std::string NPFold::Concat(const char* base, const char* sub, char delim 
 
 
 
-inline std::string NPFold::desc_subfold(const char* top) 
+inline std::string NPFold::desc_subfold(const char* top)  const 
 {
-    std::vector<const NPFold*>       folds ;
+    std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
-    Traverse_r( this, top,  folds, paths ); 
+    int tot_items = Traverse_r( this, top,  folds, paths ); 
 
     std::stringstream ss ; 
+    ss << " tot_items " << tot_items << std::endl ; 
     ss << " folds " << folds.size() << std::endl ; 
     ss << " paths " << paths.size() << std::endl ; 
     for(unsigned i=0 ; i < paths.size() ; i++) ss << i << " [" << paths[i] << "]" << std::endl ; 
@@ -429,6 +439,16 @@ inline std::string NPFold::desc_subfold(const char* top)
     std::string s = ss.str(); 
     return s ; 
 }
+
+inline int NPFold::total_items() const 
+{
+    std::vector<const NPFold*> folds ;
+    std::vector<std::string>   paths ;
+    
+    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
+    return tot_items ; 
+}
+
 
 // ] subfold handling 
 
@@ -771,6 +791,7 @@ inline int NPFold::load_dir(const char* base)
 {
     std::vector<std::string> names ; 
     U::DirList(names, base) ; 
+    if(names.size() == 0) return 1 ; 
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
@@ -831,12 +852,26 @@ How to avoid this structural difference and allow booting from property text fil
 
 inline int NPFold::load(const char* base) 
 {
+    //std::cout << "[ NPFold::load : base " << base << std::endl ; 
+
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
     if(has_meta) meta = NP::ReadString( base, META ); 
 
     bool has_index = NP::Exists(base, INDEX) ; 
-    return has_index ? load_index(base) : load_dir(base) ; 
+    int rc = has_index ? load_index(base) : load_dir(base) ; 
+
+    /*
+    std::cout 
+        << "] NPFold::load"
+        << " base " << base
+        << " has_index " << has_index
+        << " rc " << rc
+        << std::endl
+        ;
+    */
+
+    return rc ; 
 }
 inline int NPFold::load(const char* base_, const char* rel0, const char* rel1) 
 {
@@ -846,6 +881,16 @@ inline int NPFold::load(const char* base_, const char* rel0, const char* rel1)
 
 
 
+inline std::string NPFold::desc() const  
+{
+    std::stringstream ss ; 
+    ss << "NPFold::desc_subfold"  << std::endl ; 
+    ss << desc_subfold() ; 
+    ss << "NPFold::desc(0) "  << std::endl ; 
+    ss << desc(0) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 inline std::string NPFold::desc(int depth) const  
 {
     std::stringstream ss ; 

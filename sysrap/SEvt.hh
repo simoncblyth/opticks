@@ -105,6 +105,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running 
     bool              gather_done ; 
     bool              is_loaded ; 
+    bool              is_loadfail ; 
 
     sframe            frame ;
 
@@ -187,6 +188,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
+    int getTotalItems() const ; 
+
     const char* getSearchCFBase() const ; 
 
 
@@ -320,7 +323,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     // save methods not const as calls gather
     void save() ; 
-    void load() ; 
+    int  load() ; 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
     void save(const char* base, const char* reldir ); 
     static const char* DefaultDir() ; 
@@ -328,7 +331,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     const char* getOutputDir(const char* base_=nullptr) const ; 
     void save(const char* dir); 
-    void load(const char* dir); 
+    int  load(const char* dir); 
 
     std::string brief() const ; 
     std::string desc() const ; 

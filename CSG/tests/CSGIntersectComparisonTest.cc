@@ -738,6 +738,8 @@ int main(int argc, char** argv)
 
 
     CSGIntersectComparisonTest t(a, b); 
+    if(t.rerun == nullptr) return 0 ; 
+
     t.method();     
     t.save(); 
 

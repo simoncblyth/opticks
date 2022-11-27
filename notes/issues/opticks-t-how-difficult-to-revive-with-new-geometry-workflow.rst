@@ -1159,8 +1159,8 @@ Overall down to 25
 
 
 
-Look at GGeo fails : ALL FROM SAME ASSERT
----------------------------------------------
+Look at GGeo fails : ALL FROM SAME ASSERT : FIXED BY SKIPPING THE ASSERT
+--------------------------------------------------------------------------
 
 ::
 
@@ -1228,6 +1228,146 @@ Look at GGeo fails : ALL FROM SAME ASSERT
 
 
 
+Look at CSG Fails
+--------------------
+
+
+::
+
+      16 /39  Test #16 : CSGTest.CSGFoundry_SGeo_SEvt_Test             ***Exception: SegFault         0.03   
+                 AVOIDED BY BAIL OUT WHEN SEvt::Load GIVES EMPTY 
+
+      22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.03   
+      33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.03   
+                 WAS EXPECTING A FAIL : AVOIDED ASSERT FOR THIS
+
+
+CSGFoundry_SGeo_SEvt_Test : needs some protection over frame index existing ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+
+::
+
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0xc)
+      * frame #0: 0x00000001001693dc libCSG.dylib`qat4::getIdentity(this=0x0000000000000000, ins_idx=0x00007ffeefbfe44c, gas_idx=0x00007ffeefbfe448, sensor_identifier=0x00007ffeefbfe444, sensor_index=0x00007ffeefbfe440) const at sqat4.h:329
+        frame #1: 0x000000010020a88b libCSG.dylib`CSGTarget::getFrame(this=0x00000001021030e0, fr=0x00007ffeefbfe680, inst_idx=39216) const at CSGTarget.cc:147
+        frame #2: 0x00000001001a6fda libCSG.dylib`CSGFoundry::getFrame(this=0x0000000102103470, fr=0x00007ffeefbfe680, inst_idx=39216) const at CSGFoundry.cc:2944
+        frame #3: 0x00000001012d08c8 libSysRap.dylib`SEvt::setFrame(this=0x000000010281b200, ins_idx=39216) at SEvt.cc:428
+        frame #4: 0x000000010002c4b5 CSGFoundry_SGeo_SEvt_Test`main(argc=1, argv=0x00007ffeefbfe8a8) at CSGFoundry_SGeo_SEvt_Test.cc:19
+        frame #5: 0x00007fff702c2015 libdyld.dylib`start + 1
+        frame #6: 0x00007fff702c2015 libdyld.dylib`start + 1
+    (lldb) f 4
+    frame #4: 0x000000010002c4b5 CSGFoundry_SGeo_SEvt_Test`main(argc=1, argv=0x00007ffeefbfe8a8) at CSGFoundry_SGeo_SEvt_Test.cc:19
+       16  	    sev->setGeo(fd); 
+       17  	
+       18  	    int ins_idx = SSys::getenvint("INS_IDX", 39216) ;
+    -> 19  	    if( ins_idx >= 0 ) sev->setFrame(ins_idx); 
+       20  	    std::cout << sev->descFull() ; 
+       21  	  
+       22  	    return 0 ; 
+    (lldb) p ins_idx
+    (int) $0 = 39216
+    (lldb) 
+
+    (lldb) f 3
+    frame #3: 0x00000001012d08c8 libSysRap.dylib`SEvt::setFrame(this=0x000000010281b200, ins_idx=39216) at SEvt.cc:428
+       425 	    LOG_IF(fatal, cf == nullptr) << "must SEvt::setGeo before being can access frames " ; 
+       426 	    assert(cf); 
+       427 	    sframe fr ; 
+    -> 428 	    int rc = cf->getFrame(fr, ins_idx) ; 
+       429 	    assert( rc == 0 );  
+       430 	    fr.prepare();     
+       431 	
+    (lldb) f 2
+    frame #2: 0x00000001001a6fda libCSG.dylib`CSGFoundry::getFrame(this=0x0000000102103470, fr=0x00007ffeefbfe680, inst_idx=39216) const at CSGFoundry.cc:2944
+       2941	
+       2942	int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
+       2943	{
+    -> 2944	    return target->getFrame( fr, inst_idx ); 
+       2945	}
+       2946	
+       2947	
+    (lldb) f 1
+    frame #1: 0x000000010020a88b libCSG.dylib`CSGTarget::getFrame(this=0x00000001021030e0, fr=0x00007ffeefbfe680, inst_idx=39216) const at CSGTarget.cc:147
+       144 	    const qat4* _t = foundry->getInst(inst_idx); 
+       145 	
+       146 	    int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    -> 147 	    _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
+       148 	
+       149 	    assert( ins_idx == inst_idx ); 
+       150 	    fr.set_inst(inst_idx); 
+    (lldb) p _t 
+    (const qat4 *) $1 = 0x0000000000000000
+    (lldb) 
+
+
+
+
+CSGMakerTest failing to persist
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff70412b66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff705dd080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff7036e1ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff703361ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x000000010017d765 libCSG.dylib`CSGFoundry::getMeshName(this=0x0000000102001870, midx=4294967295) const at CSGFoundry.cc:278
+        frame #5: 0x000000010017cf03 libCSG.dylib`CSGFoundry::getPrimName(this=0x0000000102001870, pname=size=0) const at CSGFoundry.cc:264
+        frame #6: 0x000000010019ac80 libCSG.dylib`CSGFoundry::save_(this=0x0000000102001870, dir_="/tmp/blyth/opticks/GEOM/CSGFoundry") const at CSGFoundry.cc:2086
+        frame #7: 0x000000010019a973 libCSG.dylib`CSGFoundry::save(this=0x0000000102001870, base="/tmp/blyth/opticks/GEOM", rel="CSGFoundry") const at CSGFoundry.cc:2033
+        frame #8: 0x000000010019a1fa libCSG.dylib`CSGFoundry::save(this=0x0000000102001870) const at CSGFoundry.cc:2020
+        frame #9: 0x000000010002d1f5 CSGMakerTest`main(argc=1, argv=0x00007ffeefbfe8c0) at CSGMakerTest.cc:43
+        frame #10: 0x00007fff702c2015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+    (lldb) p cfbase
+    (const char *) $1 = 0x00000001020016f0 "/tmp/blyth/opticks/GEOM"
+    (lldb) f 7
+    frame #7: 0x000000010019a973 libCSG.dylib`CSGFoundry::save(this=0x0000000102001870, base="/tmp/blyth/opticks/GEOM", rel="CSGFoundry") const at CSGFoundry.cc:2033
+       2030	    std::stringstream ss ;   
+       2031	    ss << base << "/" << rel ; 
+       2032	    std::string dir = ss.str();   
+    -> 2033	    save_(dir.c_str()); 
+       2034	}
+       2035	
+       2036	/**
+    (lldb) f 6
+    frame #6: 0x000000010019ac80 libCSG.dylib`CSGFoundry::save_(this=0x0000000102001870, dir_="/tmp/blyth/opticks/GEOM/CSGFoundry") const at CSGFoundry.cc:2086
+       2083	    if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
+       2084	
+       2085	    std::vector<std::string> primname ; 
+    -> 2086	    getPrimName(primname); 
+       2087	    if(primname.size() > 0 ) NP::WriteNames( dir, "primname.txt", primname );
+       2088	
+       2089	    if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
+    (lldb) 
+
+    (lldb) f 5
+    frame #5: 0x000000010017cf03 libCSG.dylib`CSGFoundry::getPrimName(this=0x0000000102001870, pname=size=0) const at CSGFoundry.cc:264
+       261 	    {
+       262 	        const CSGPrim& pr = prim[i] ; 
+       263 	        unsigned midx = num_prim == 1 ? 0 : pr.meshIdx();  // kludge avoid out-of-range for single prim CSGFoundry
+    -> 264 	        const std::string& mname = getMeshName(midx); 
+       265 	        LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
+       266 	        pname.push_back(mname);  
+       267 	    }
+    (lldb) p num_prim
+    (unsigned int) $2 = 2
+
+    ## HUH: would have expected 1 ?
+
+    (lldb) p midx
+    (unsigned int) $3 = 4294967295
+    (lldb) p ~0
+    (int) $4 = -1
+    (lldb) p unsigned(~0)
+    (unsigned int) $5 = 4294967295
+    (lldb) 
 
 
 

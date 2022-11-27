@@ -73,6 +73,7 @@ SEvt::SEvt()
     hostside_running_resize_done(false),
     gather_done(false),
     is_loaded(false),
+    is_loadfail(false),
     numphoton_collected(0u),
     numphoton_genstep_max(0u)
 { 
@@ -117,6 +118,7 @@ void SEvt::init()
 
 const char* SEvt::getSaveDir() const { return fold->savedir ; }
 const char* SEvt::getLoadDir() const { return fold->loaddir ; }
+int SEvt::getTotalItems() const { return fold->total_items() ; }
 
 /**
 SEvt::getSearchCFbase
@@ -535,8 +537,12 @@ void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
 
 SEvt* SEvt::Load()  // static 
 {
+    LOG(LEVEL) << "[" ; 
     SEvt* se = new SEvt ; 
-    se->load() ; 
+    int rc = se->load() ; 
+    if(rc != 0) se->is_loadfail = true ; 
+
+    LOG(LEVEL) << "]" ; 
     return se ; 
 }
 
@@ -1623,6 +1629,8 @@ std::string SEvt::descDir() const
        << std::endl
        << " is_loaded " << ( is_loaded ? "YES" : "NO" )
        << std::endl
+       << " is_loadfail " << ( is_loadfail ? "YES" : "NO" )
+       << std::endl
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -1735,11 +1743,12 @@ void SEvt::save()
     LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
-void SEvt::load()
+int SEvt::load()
 {
     const char* dir = DefaultDir(); 
-    LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
-    load(dir); 
+    int rc = load(dir); 
+    LOG(LEVEL) << "SGeo::DefaultDir " << dir << " rc " << rc ;
+    return rc ;  
 }
 
 const char* SEvt::DefaultDir() // static
@@ -1821,14 +1830,19 @@ void SEvt::save(const char* dir_)
     saveFrame(dir); 
 
 }
-void SEvt::load(const char* dir_) 
+int SEvt::load(const char* dir_) 
 {
     const char* dir = getOutputDir(dir_); 
     LOG(LEVEL) << " dir " << dir ; 
     LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
     assert(dir); 
-    fold->load(dir); 
+
+    LOG(LEVEL) << "[ fold.load " << dir ; 
+    int rc = fold->load(dir); 
+    LOG(LEVEL) << "] fold.load " << dir ; 
     is_loaded = true ; 
+
+    return rc ; 
 }
 
 

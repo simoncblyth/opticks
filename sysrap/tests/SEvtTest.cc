@@ -49,7 +49,7 @@ void test_LifeCycle()
 
     sev.addGenstep(gs);  
 
-    spho label = {0,0,0,0} ; 
+    spho label = {0,0,0,{0,0,0,0}} ; 
 
     sev.beginPhoton(label); 
 
