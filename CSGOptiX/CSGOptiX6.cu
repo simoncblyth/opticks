@@ -24,7 +24,6 @@ TODO: COMBINE GEOM INTO HERE TO MAKE 6 MORE LIKE 7
 #include "qbnd.h"
 #include "qcerenkov.h"
 #include "qsim.h"
-#include "qevent.h"
 
 
 
