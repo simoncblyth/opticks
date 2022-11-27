@@ -114,6 +114,56 @@ const char* SOpticksResource::ExecutableName()
     return result ; 
 } 
 
+const char* SOpticksResource::ExecutableName_GEOM()
+{
+    std::stringstream ss ; 
+    ss << ExecutableName() << "_GEOM" ;  
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
+/**
+SOpticksResource::GEOMFromEnv
+--------------------------------
+
+Precedence order for the GEOM string returned
+
+1. value of envvar ExecutableName_GEOM 
+2. value of envvar GEOM 
+3. fallback argumnent, which can be nullptr 
+
+**/
+
+const char* SOpticksResource::GEOMFromEnv(const char* fallback)
+{
+    const char* geom_std = SSys::getenvvar("GEOM", fallback) ; 
+    const char* geom_bin = ExecutableName_GEOM() ; 
+    const char* geom = SSys::getenvvar(geom_bin, geom_std) ;     
+    return geom ; 
+}
+
+const char* SOpticksResource::_GEOM = nullptr ; 
+
+/**
+SOpticksResource::GEOM
+-------------------------
+
+If _GEOM is nullptr an attempt to get it from environment is done, 
+otherwise the cached _GEOM is returned.   
+
+**/
+
+const char* SOpticksResource::GEOM(const char* fallback)
+{
+    if(_GEOM == nullptr) _GEOM = GEOMFromEnv(fallback); 
+    return _GEOM ; 
+}
+void SOpticksResource::SetGEOM( const char* geom )
+{
+    _GEOM = strdup(geom); 
+}
+
+
 /**
 SOpticksResource::DefaultOutputDir
 ------------------------------------
@@ -140,13 +190,14 @@ Hmm how did this arise::
 
 **/
 
+
 const char* SOpticksResource::DefaultOutputDir()
 { 
-    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), ExecutableName(), NOOP); 
+    return SPath::Resolve("$TMP/GEOM", GEOM(), ExecutableName(), NOOP); 
 }
 const char* SOpticksResource::DefaultGeometryDir()
 { 
-    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), NOOP); 
+    return SPath::Resolve("$TMP/GEOM", GEOM(), NOOP); 
 }
 const char* SOpticksResource::DefaultGeometryBase()
 { 
@@ -155,11 +206,11 @@ const char* SOpticksResource::DefaultGeometryBase()
 
 std::string SOpticksResource::Desc_DefaultOutputDir()
 {
-    const char* GEOM = SSys::getenvvar("GEOM") ; 
+    const char* geom = GEOM() ; 
     std::stringstream ss ; 
     ss << "SOpticksResource::Desc_DefaultOutputDir" << std::endl 
        << " SPath::Resolve(\"$TMP/GEOM\",NOOP) " << SPath::Resolve("$TMP/GEOM",NOOP) << std::endl 
-       << " SSys::getenvvar(\"GEOM\") " << ( GEOM ? GEOM : "-" )  << std::endl 
+       << " SOpticksResource::GEOM() " << ( geom ? geom : "-" )  << std::endl 
        << " SOpticksResource::ExecutableName() " << SOpticksResource::ExecutableName() << std::endl 
        << " SOpticksResource::DefaultOutputDir() " << SOpticksResource::DefaultOutputDir() << std::endl 
        ;
@@ -191,6 +242,7 @@ std::string SOpticksResource::Dump()
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
     const char* gdmlpath = GDMLPath(); 
+    const char* geom = GEOM(); 
 
 
     std::stringstream ss ; 
@@ -218,6 +270,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
         << "SOpticksResource::GDMLPath()               " << ( gdmlpath ? gdmlpath : "-" ) << std::endl
+        << "SOpticksResource::GEOM()                   " << ( geom ? geom : "-" ) << std::endl
         ;
 
     std::string s = ss.str(); 
@@ -446,21 +499,20 @@ For example exercise this with::
 
 **/
 
-const char* SOpticksResource::GEOM = "GEOM" ; 
 
-const char* SOpticksResource::GDMLPath(){ return GDMLPath( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GDMLPath(){ return GDMLPath( GEOM()); }
 const char* SOpticksResource::GDMLPath(const char* geom)
 {
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
 }
 
-const char* SOpticksResource::GEOMSub(){ return GEOMSub( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GEOMSub(){ return GEOMSub( GEOM()); }
 const char* SOpticksResource::GEOMSub(const char* geom)
 {
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMSub")) ; 
 }
 
-const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( GEOM()); }
 const char* SOpticksResource::GEOMWrap(const char* geom)
 {
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 

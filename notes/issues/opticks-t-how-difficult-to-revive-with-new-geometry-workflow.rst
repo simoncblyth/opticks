@@ -1238,6 +1238,7 @@ Look at CSG Fails
                  AVOIDED BY BAIL OUT WHEN SEvt::Load GIVES EMPTY 
 
       22 /39  Test #22 : CSGTest.CSGMakerTest                          Child aborted***Exception:     0.03   
+
       33 /39  Test #33 : CSGTest.CSGIntersectComparisonTest            Child aborted***Exception:     0.03   
                  WAS EXPECTING A FAIL : AVOIDED ASSERT FOR THIS
 
@@ -1368,6 +1369,100 @@ CSGMakerTest failing to persist
     (lldb) p unsigned(~0)
     (unsigned int) $5 = 4294967295
     (lldb) 
+
+
+CSGMakerTest is stomping on standard geometry folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hmm: problem is this test assumes GEOM envvar to control the 
+name and output dir but that is not practical so had changed
+to CSGMakerTest_GEOM in the test but the GEOM machinery 
+controlling the default directory is just ignoring that envvar. 
+
+* HMM: the default GEOM access machinery could always check
+  first for ExecutableName_GEOM before looking at GEOM : so 
+  tests that need to effectively set GEOM can do so without 
+  causing problems for standard GEOM access
+
+::
+
+    1993 const char* CSGFoundry::BASE = "$DefaultGeometryDir" ; // incorporates GEOM if defined
+    1994 const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
+    1995 
+    1996 /**
+    1997 CSGFoundry::getBaseDir
+    1998 -------------------------
+    1999 
+    2000 Returns value of CFBASE envvar if defined, otherwise resolves '$DefaultOutputDir' which 
+    2001 is for example /tmp/$USER/opticks/$GEOM/SProc::ExecutableName
+    2002 
+    2003 **/
+    2004 
+    2005 const char* CSGFoundry::getBaseDir(bool create) const
+    2006 {
+    2007     const char* cfbase_default = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //   
+    2008     const char* cfbase = SSys::getenvvar("CFBASE", cfbase_default );
+    2009     return cfbase ? strdup(cfbase) : nullptr ;
+    2010 }
+
+::
+
+    143 const char* SOpticksResource::DefaultOutputDir()
+    144 {
+    145     return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), ExecutableName(), NOOP);
+    146 }
+    147 const char* SOpticksResource::DefaultGeometryDir()
+    148 {
+    149     return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), NOOP);
+    150 }
+    151 const char* SOpticksResource::DefaultGeometryBase()
+    152 {
+    153     return SPath::Resolve("$TMP/GEOM", NOOP);
+    154 }
+         
+
+
+    epsilon:opticks blyth$ opticks-f "SSys::getenvvar(\"GEOM"
+    ./CSG/CSGSimtrace.cc:    geom(SSys::getenvvar("GEOM", "nmskSolidMaskTail")),  
+    ./CSG/tests/CSGMakerTest.cc:     const char* geom = SSys::getenvvar("GEOM", nullptr ); 
+    ./CSG/tests/CSGDemoTest.cc:    const char* geom = SSys::getenvvar("GEOM", "sphere" ); 
+    ./CSG/CSGFoundry.cc:    if(geom == nullptr) geom = SSys::getenvvar("GEOM", "GeneralSphereDEV") ; 
+    ./GeoChain/tests/GeoChainNodeTest.cc:    const char* name = SSys::getenvvar("GEOM", "sphere" ); 
+    ./GeoChain/tests/GeoChainVolumeTest.cc:    const char* name = SSys::getenvvar("GEOM", name_default ); 
+    ./GeoChain/tests/GeoChainSolidTest.cc:    const char* geom_ = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ) ; 
+    ./g4ok/tests/G4OKVolumeTest.cc:    const char* geom = SSys::getenvvar("GEOM", geom_default );  
+    ./sysrap/SOpticksResource.cc:    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), ExecutableName(), NOOP); 
+    ./sysrap/SOpticksResource.cc:    return SPath::Resolve("$TMP/GEOM", SSys::getenvvar("GEOM"), NOOP); 
+    ./sysrap/SOpticksResource.cc:    const char* GEOM = SSys::getenvvar("GEOM") ; 
+    ./sysrap/SOpticksResource.cc:    const char* geom = SSys::getenvvar("GEOM"); 
+    ./sysrap/SOpticksResource.cc:    const char* geom = SSys::getenvvar("GEOM"); 
+    ./sysrap/SOpticksResource.cc:    const char* geom = SSys::getenvvar("GEOM"); 
+    ./u4/U4VolumeMaker.cc:const char* U4VolumeMaker::GEOM = SSys::getenvvar("GEOM", "BoxOfScintillator"); 
+    epsilon:opticks blyth$ 
+
+
+
+::
+
+    epsilon:tests blyth$ l /tmp/blyth/opticks/GEOM/J004/CSGFoundry/
+    total 80
+    8 -rw-r--r--   1 blyth  wheel  192 Nov 27 16:23 inst.npy
+    8 -rw-r--r--   1 blyth  wheel  192 Nov 27 16:23 itra.npy
+    8 -rw-r--r--   1 blyth  wheel  192 Nov 27 16:23 tran.npy
+    8 -rw-r--r--   1 blyth  wheel  192 Nov 27 16:23 node.npy
+    8 -rw-r--r--   1 blyth  wheel  192 Nov 27 16:23 prim.npy
+    8 -rw-r--r--   1 blyth  wheel  176 Nov 27 16:23 solid.npy
+    8 -rw-r--r--   1 blyth  wheel  130 Nov 27 16:23 meta.txt
+    8 -rw-r--r--   1 blyth  wheel    8 Nov 27 16:23 mmlabel.txt
+    8 -rw-r--r--   1 blyth  wheel    8 Nov 27 16:23 primname.txt
+    8 -rw-r--r--   1 blyth  wheel    8 Nov 27 16:23 meshname.txt
+    0 drwxr-xr-x   5 blyth  wheel  160 Nov 27 14:35 ..
+    0 drwxr-xr-x  12 blyth  wheel  384 Nov 27 14:35 .
+    epsilon:tests blyth$ date
+    Sun Nov 27 16:23:25 GMT 2022
+    epsilon:tests blyth$ cat /tmp/blyth/opticks/GEOM/J004/CSGFoundry/meshname.txt
+    JustOrb
+    epsilon:tests blyth$ 
 
 
 

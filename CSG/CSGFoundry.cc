@@ -261,9 +261,17 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
     {
         const CSGPrim& pr = prim[i] ; 
         unsigned midx = num_prim == 1 ? 0 : pr.meshIdx();  // kludge avoid out-of-range for single prim CSGFoundry
-        const std::string& mname = getMeshName(midx); 
-        LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
-        pname.push_back(mname);  
+
+        if(midx == UNDEFINED)
+        {
+            pname.push_back("err-midx-undefined");   // avoid FAIL  with CSGMakerTest 
+        }
+        else
+        {
+            const std::string& mname = getMeshName(midx); 
+            LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
+            pname.push_back(mname);  
+        }
     }
 }
 
@@ -2017,6 +2025,7 @@ void CSGFoundry::save() const
         LOG(fatal) << "cannot save unless CFBASE envvar defined or geom has been set " ; 
         return ;   
     }
+    LOG(LEVEL) << " cfbase " << cfbase ; 
     save(cfbase, RELDIR );  
 }
 

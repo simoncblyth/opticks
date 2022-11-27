@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     const char* dir = SPath::Resolve(dir_default, create_dirs) ; 
     LOG(info) << " CSGSCANTEST_BASE dir " << dir ; 
 
-    const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "elli" ); 
+    const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "Ellipsoid" ); 
     LOG(info) << " CSGSCANTEST_SOLID " << solid ; 
 
     SSim::Create(); 

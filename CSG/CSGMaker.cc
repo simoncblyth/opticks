@@ -56,26 +56,18 @@ bool CSGMaker::CanMake(const char* qname) // static
 const char* CSGMaker::NAMES = R"LITERAL(
 JustOrb
 BoxedSphere
-zsph
 ZSphere
-cone
-hype
-box3
-plan
+Cone
+Hyperboloid
+Box3
 Plane
-slab
 Slab
-cyli
-ocyl
-disc
-vcub
-vtet
+Cylinder
+OldCylinder
+Disc
 ConvexPolyhedronCube
 ConvexPolyhedronTetrahedron
-elli
-ubsp
-ibsp
-dbsp
+Ellipsoid
 UnionBoxSphere
 UnionListBoxSphere
 UnionLLBoxSphere
@@ -89,13 +81,13 @@ ContiguousBoxSphere
 DiscontiguousBoxSphere
 DifferenceBoxSphere
 ListTwoBoxTwoSphere
-rcyl
-dcyl
-icyl
-iphi
-ithe
-ithl
-bssc
+RotatedCylinder
+DifferenceCylinder
+InfCylinder
+InfPhiCut
+InfThetaCut
+InfThetaCutL
+BoxSubSubCylinder
 )LITERAL"; 
 
 // see CSGNode::MakeDemo for CSGNode level equivalent
@@ -104,23 +96,18 @@ CSGSolid* CSGMaker::make(const char* name)
     CSGSolid* so = nullptr ; 
     if(     StartsWith("JustOrb", name))     so = makeSphere(name) ;
     else if(StartsWith("BoxedSphere", name)) so = makeBoxedSphere(name) ;
-    else if(StartsWith("zsph", name))     so = makeZSphere(name) ;
-    else if(StartsWith("ZSphere", name))  so = makeZSphere(name) ;
-    else if(StartsWith("cone", name))     so = makeCone(name) ;
-    else if(StartsWith("hype", name))     so = makeHyperboloid(name) ;
-    else if(StartsWith("box3", name))     so = makeBox3(name) ;
-    else if(StartsWith("plan", name))     so = makePlane(name) ;
-    else if(StartsWith("Plane", name))    so = makePlane(name) ;
-    else if(StartsWith("slab", name))     so = makeSlab(name) ;
-    else if(StartsWith("Slab", name))     so = makeSlab(name) ;
-    else if(StartsWith("cyli", name))     so = makeCylinder(name) ;
-    else if(StartsWith("ocyl", name))     so = makeOldCylinder(name) ;
-    else if(StartsWith("disc", name))     so = makeDisc(name) ;
-    else if(StartsWith("vcub", name))     so = makeConvexPolyhedronCube(name) ;
-    else if(StartsWith("vtet", name))     so = makeConvexPolyhedronTetrahedron(name) ;
+    else if(StartsWith("ZSphere", name))     so = makeZSphere(name) ;
+    else if(StartsWith("Cone", name))        so = makeCone(name) ;
+    else if(StartsWith("Hyperboloid", name)) so = makeHyperboloid(name) ;
+    else if(StartsWith("Box3", name))        so = makeBox3(name) ;
+    else if(StartsWith("Plane", name))       so = makePlane(name) ;
+    else if(StartsWith("Slab", name))        so = makeSlab(name) ;
+    else if(StartsWith("Cylinder", name))    so = makeCylinder(name) ;
+    else if(StartsWith("OldCylinder", name)) so = makeOldCylinder(name) ;
+    else if(StartsWith("Disc", name))     so = makeDisc(name) ;
     else if(StartsWith("ConvexPolyhedronCube", name))        so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("ConvexPolyhedronTetrahedron", name)) so = makeConvexPolyhedronTetrahedron(name) ;
-    else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
+    else if(StartsWith("Ellipsoid", name)) so = makeEllipsoid(name) ;
     else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
     else if(StartsWith("UnionListBoxSphere", name))    so = makeUnionListBoxSphere(name) ;
     else if(StartsWith("UnionLLBoxSphere", name))      so = makeUnionLLBoxSphere(name) ;
@@ -134,13 +121,13 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("DiscontiguousBoxSphere", name))   so = makeDiscontiguousBoxSphere(name) ;
     else if(StartsWith("DifferenceBoxSphere", name))   so = makeDifferenceBoxSphere(name) ;
     else if(StartsWith("ListTwoBoxTwoSphere", name))   so = makeListTwoBoxTwoSphere(name); 
-    else if(StartsWith("rcyl", name)) so = makeRotatedCylinder(name) ;
-    else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
-    else if(StartsWith("icyl", name)) so = makeInfCylinder(name) ;
-    else if(StartsWith("iphi", name)) so = makeInfPhiCut(name) ;
-    else if(StartsWith("ithe", name)) so = makeInfThetaCut(name) ;
-    else if(StartsWith("ithl", name)) so = makeInfThetaCutL(name) ;
-    else if(StartsWith("bssc", name)) so = makeBoxSubSubCylinder(name) ;
+    else if(StartsWith("RotatedCylinder", name)) so = makeRotatedCylinder(name) ;
+    else if(StartsWith("DifferenceCylinder", name)) so = makeDifferenceCylinder(name) ;
+    else if(StartsWith("InfCylinder", name)) so = makeInfCylinder(name) ;
+    else if(StartsWith("InfPhiCut", name)) so = makeInfPhiCut(name) ;
+    else if(StartsWith("InfThetaCut", name)) so = makeInfThetaCut(name) ;
+    else if(StartsWith("InfThetaCutL", name)) so = makeInfThetaCutL(name) ;
+    else if(StartsWith("BoxSubSubCylinder", name)) so = makeBoxSubSubCylinder(name) ;
     else 
     {
         LOG(fatal) << "invalid name [" << name << "]" << " expecting one of the below " << std::endl << NAMES  ; 

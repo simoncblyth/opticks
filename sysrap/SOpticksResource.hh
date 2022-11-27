@@ -30,6 +30,13 @@ struct SYSRAP_API SOpticksResource
     static const char* PrecookedDir();
 
     static const char* ExecutableName(); 
+    static const char* ExecutableName_GEOM(); 
+
+    static const char* GEOMFromEnv(const char* fallback); 
+    static const char* _GEOM ; 
+    static const char* GEOM(const char* fallback=nullptr); 
+    static void  SetGEOM(const char* geom); 
+    
     static const char* DefaultOutputDir();      // eg /tmp/blyth/opticks/GEOM/acyl/ExecutableName
     static const char* DefaultGeometryBase();   // eg /tmp/blyth/opticks/GEOM 
     static const char* DefaultGeometryDir();    // eg /tmp/blyth/opticks/GEOM/acyl
@@ -68,7 +75,6 @@ struct SYSRAP_API SOpticksResource
     static const char* OpticksGDMLPath_ ; 
     static const char* OpticksGDMLPath(); 
 
-    static const char* GEOM ; 
     static const char* GDMLPath(); 
     static const char* GDMLPath(const char* geom); 
 

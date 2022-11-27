@@ -89,6 +89,7 @@ struct CSG_API CSGFoundry : public SGeo
     static const unsigned IMAX ; 
     static const char* BASE ; 
     static const char* RELDIR ; 
+    static const constexpr unsigned UNDEFINED = ~0u ; 
 
     static CSGFoundry* MakeGeom(const char* geom);
     static CSGFoundry* LoadGeom(const char* geom=nullptr); 
