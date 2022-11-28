@@ -367,26 +367,54 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
     LOG(LEVEL) << "[" ; 
     const G4Track* track = step->GetTrack(); 
-    spho label = U4Track::Label<spho>(track); 
-    assert( label.isDefined() );  
-    if(!Enabled(label)) return ;  
+
+    spho* label = U4Track::LabelRef<spho>(track); 
+    assert( label->isDefined() );  
+    if(!Enabled(*label)) return ;  
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
     SEvt* sev = SEvt::Get(); 
-    sev->checkPhotonLineage(label); 
+    sev->checkPhotonLineage(*label); 
     sphoton& current_photon = sev->current_ctx.p ;
 
-    bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
+
+    // first_point when single bit in the flag from genflag set in beginPhoton
+    bool first_point = current_photon.flagmask_count() == 1 ;  
     if(first_point)
     { 
         LOG(info) << " first_point, track " << track  ; 
         U4StepPoint::Update(current_photon, pre);
-        sev->pointPhoton(label);  // saves SEvt::current_photon/rec/record/prd into sevent 
+        sev->pointPhoton(*label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
 
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
+
+    // DEFER_FSTRACKINFO : special flag signalling that 
+    // the FastSim DoIt status needs to be accessed via the 
+    // trackinfo label 
+
+    if(flag == DEFER_FSTRACKINFO)
+    {
+        char fstrackinfo_stat = label->uc4.w ; 
+        label->uc4.w = '_' ;   // scrub after access 
+
+        switch(fstrackinfo_stat)
+        {
+           case 'T': flag = BOUNDARY_TRANSMIT ; break ; 
+           case 'R': flag = BOUNDARY_REFLECT  ; break ; 
+           case 'A': flag = SURFACE_ABSORB    ; break ; 
+           case 'D': flag = SURFACE_DETECT    ; break ; 
+           case '_': flag = 0                 ; break ; 
+           default:  flag = 0                 ; break ; 
+        }
+        LOG(info) 
+            << " DEFER_FSTRACKINFO " 
+            << " fstrackinfo_stat " << fstrackinfo_stat 
+            << " flag " << OpticksPhoton::Flag(flag) 
+            ; 
+    }
 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
     assert( flag > 0 ); 

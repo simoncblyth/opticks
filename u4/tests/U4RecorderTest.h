@@ -11,7 +11,6 @@
 #include "G4ParticleGun.hh"
 #include "G4GeometryManager.hh"
 
-class junoPMTOpticalModel ; 
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
@@ -30,7 +29,6 @@ class junoPMTOpticalModel ;
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
 
-//template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step* ) ; 
 
 struct U4RecorderTest   // HMM: U4Action would be a better name 
     : 
@@ -50,7 +48,6 @@ struct U4RecorderTest   // HMM: U4Action would be a better name
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     G4VPhysicalVolume*    fPV ; 
-    junoPMTOpticalModel*  fPOM ;     // just stays nullptr when do not have PMTFASTSIM_STANDALONE
 
     G4VPhysicalVolume* Construct(); 
 
@@ -115,8 +112,7 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
     fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
-    fPV(nullptr),
-    fPOM(nullptr)
+    fPV(nullptr)
 {
     runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
     runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
@@ -132,15 +128,10 @@ G4VPhysicalVolume* U4RecorderTest::Construct()
     G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
 
     fPV = pv ; 
-#ifdef PMTFASTSIM_STANDALONE
-    junoPMTOpticalModel* pom = U4VolumeMaker::PVF_POM ; 
-    fPOM = pom ; 
-#endif
 
     std::cout 
         << "U4RecorderTest::Construct"
         << " fPV " << ( fPV ? "Y" : "N" )
-        << " fPOM " << ( fPOM ? "Y" : "N" ) 
         << std::endl 
         ;
 

@@ -162,11 +162,13 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn)
     else if( status == fGeomBoundary && proc == U4StepPoint_OpFastSim )
     {
         char fs_stat = SFastSimOpticalModel::GetStatus();    
+        //
         // NB: this way of accessing the FastSim status is limited to single PMT type
         // actually maybe single PMT even 
         // 
         // A more workable approach is to store the state inside the trackinfo.
-        // within junoPMTOpticalModel and access it here.
+        // from within the FastSim DoIt and access it here.
+        //
         // HMM : but cannot access the G4Track from here it seems.   
         // PROBABLY SHOULD RETURN SOME MARKER THAT THE FASTFLAG NEEDS TO 
         // GRABBED FROM THE TRACK 

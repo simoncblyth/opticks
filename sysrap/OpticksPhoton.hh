@@ -48,6 +48,7 @@ struct SYSRAP_API OpticksPhoton
     static constexpr const char* EFFICIENCY_CULL_ = "EFFICIENCY_CULL" ;
     static constexpr const char* EFFICIENCY_COLLECT_ = "EFFICIENCY_COLLECT" ;
     static constexpr const char* BAD_FLAG_ = "BAD_FLAG" ;
+    static constexpr const char* DEFER_FSTRACKINFO_ = "DEFER_FSTRACKINFO" ;
 
     static constexpr const char* _ZERO              = "  " ;
     static constexpr const char* _CERENKOV          = "CK" ;
@@ -67,6 +68,7 @@ struct SYSRAP_API OpticksPhoton
     static constexpr const char* _EFFICIENCY_COLLECT = "EC" ;
     static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
     static constexpr const char* _BAD_FLAG           = "XX" ;
+    static constexpr const char* _DEFER_FSTRACKINFO  = "YY" ; 
 
     static bool IsTerminalFlag(const unsigned flag); 
     static bool IsLiveFlag(const unsigned flag); 
@@ -140,6 +142,7 @@ inline const char* OpticksPhoton::Flag(const unsigned int flag)
         case NAN_ABORT:        s=NAN_ABORT_ ;break; 
         case EFFICIENCY_CULL:    s=EFFICIENCY_CULL_ ;break; 
         case EFFICIENCY_COLLECT: s=EFFICIENCY_COLLECT_ ;break; 
+        case DEFER_FSTRACKINFO:  s=DEFER_FSTRACKINFO_ ; break ; 
         default:               s=BAD_FLAG_  ;
         //std::cerr << "OpticksPhoton::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
     }
@@ -168,6 +171,7 @@ inline const char* OpticksPhoton::Abbrev(const unsigned int flag)
         case NAN_ABORT:        s=_NAN_ABORT ;break; 
         case EFFICIENCY_COLLECT: s=_EFFICIENCY_COLLECT ;break; 
         case EFFICIENCY_CULL:    s=_EFFICIENCY_CULL ;break; 
+        case DEFER_FSTRACKINFO:  s=_DEFER_FSTRACKINFO ; break ; 
         default:               s=_BAD_FLAG  ;
 
         //    std::cerr << "OpticksPhoton::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             

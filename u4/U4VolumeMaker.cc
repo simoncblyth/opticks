@@ -212,6 +212,22 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
     return pv ; 
 }
 
+/**
+U4VolumeMaker::PVF_
+---------------------
+
+HMM: Coupling between U4 and PMTSim/PMTFastSim 
+should be reduced to a minimum. 
+
+Can it be reduced back to just to Geant4 geometry access ? 
+
+Extending to JUNO specifics like junoPMTOpticalModel seems a step too far. 
+
+Also, more comfortable with PMTSim/PMTFastSim dependency 
+being restricted to test executables, keeping it out 
+of the U4 lib. Could do this with header-only U4 impls.  
+
+**/
 
 const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
 {
@@ -222,9 +238,10 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
     if(has_manager_prefix) 
     {
         G4LogicalVolume* lv = PMTFastSim::GetLV(name) ; 
-        junoPMTOpticalModel* pom = PMTFastSim::GetPMTOpticalModel(name); 
-        if(pom) PVF_POM = pom ; 
-        LOG(LEVEL) << "PVF_POM  " << PVF_POM  ;  
+
+        //junoPMTOpticalModel* pom = PMTFastSim::GetPMTOpticalModel(name); 
+        //if(pom) PVF_POM = pom ; 
+        //LOG(LEVEL) << "PVF_POM  " << PVF_POM  ;  
 
         LOG_IF(fatal, lv == nullptr ) << "PMTFastSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
@@ -238,7 +255,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
     return pv ; 
 }
 
-junoPMTOpticalModel* U4VolumeMaker::PVF_POM = nullptr ; 
+//junoPMTOpticalModel* U4VolumeMaker::PVF_POM = nullptr ; 
 
 
 const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
