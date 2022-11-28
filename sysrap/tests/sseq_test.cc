@@ -181,11 +181,29 @@ void test_get_flag_set_flag()
 
 }
 
-void test_desc_seqhis()
+
+
+void test_desc_seqhis(const std::vector<unsigned>& history)
 {
     sseq seq ; 
     seq.zero(); 
 
+     for(int bounce=0 ; bounce < history.size() ; bounce++)
+     {
+        unsigned flag = history[bounce] ; 
+        unsigned boundary = 0 ;  
+        seq.add_nibble( bounce, flag, boundary ); 
+
+        std::cout 
+            << std::setw(20) << OpticksPhoton::Flag(flag) 
+            << " : " <<  seq.desc_seqhis() 
+            << std::endl 
+            ; 
+     }
+}
+
+void test_desc_seqhis_0()
+{
     std::vector<unsigned> history = { 
        CERENKOV, 
        BOUNDARY_TRANSMIT, 
@@ -207,20 +225,64 @@ void test_desc_seqhis()
        SCINTILLATION
      } ; 
 
-     for(int bounce=0 ; bounce < history.size() ; bounce++)
-     {
-        unsigned flag = history[bounce] ; 
-        unsigned boundary = 0 ;  
-        seq.add_nibble( bounce, flag, boundary ); 
+   test_desc_seqhis(history); 
+}
+
+
+void test_wraparound(std::vector<unsigned>& history )
+{
+    unsigned long long seqhis = 0ull ; 
+
+    for(unsigned i=0 ; i < history.size() ; i++)
+    {
+        unsigned flag = history[i]; 
+        unsigned slot = i ; 
+
+        seqhis |=  (( FFS(flag) & 0xfull ) << 4*slot );
 
         std::cout 
             << std::setw(20) << OpticksPhoton::Flag(flag) 
-            << " : " <<  seq.desc_seqhis() 
-            << std::endl 
-            ; 
-     }
+            << " "
+            << " FFS(flag) " << std::setw(2) << FFS(flag)   
+            << " "
+            << " seqhis " << std::hex << seqhis << std::dec
+            << std::endl
+            ;
+    }
 }
 
+
+
+
+
+void test_desc_seqhis_1()
+{
+    std::vector<unsigned> history = { 
+       TORCH,             // 0
+       BOUNDARY_TRANSMIT, // 1
+       BOUNDARY_TRANSMIT, // 2
+       BOUNDARY_TRANSMIT, // 3
+       BOUNDARY_TRANSMIT, // 4
+       SURFACE_SREFLECT,  // 5
+       SURFACE_SREFLECT,  // 6
+       BOUNDARY_TRANSMIT, // 7
+       BOUNDARY_REFLECT,  // 8
+       BOUNDARY_REFLECT,  // 9
+       BOUNDARY_TRANSMIT, // 10
+       SURFACE_SREFLECT,  // 11
+       SURFACE_SREFLECT,  // 12
+       SURFACE_SREFLECT,  // 13
+       BOUNDARY_TRANSMIT, // 14 
+       BOUNDARY_REFLECT,  // 15 
+       BOUNDARY_TRANSMIT, // 16  
+       SURFACE_SREFLECT,  // 17
+       BOUNDARY_TRANSMIT, // 18   
+       SURFACE_ABSORB     // 19 
+     } ; 
+
+   //test_desc_seqhis(history); 
+   test_wraparound(history); 
+}
 
 
 int main()
@@ -234,9 +296,11 @@ int main()
     test_ClearNibble(); 
     test_SetNibble(); 
     test_get_flag_set_flag(); 
+    test_desc_seqhis_0();    
+    test_desc_seqhis_1();    
     */
+    test_desc_seqhis_1();    
 
-    test_desc_seqhis();    
 
     return 0 ; 
 }

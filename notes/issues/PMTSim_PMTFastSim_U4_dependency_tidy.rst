@@ -118,27 +118,57 @@ Unexpected NA in history::
 Dumping the seqhis point by point with the rerun shows its a wraparound effect::
 
     epsilon:tests blyth$ grep SEvt::pointPhoton *.log
-    SEvt::pointPhoton@1269:  label.id   726 bounce  0 seq.desc_seqhis                 0 nib  0  
-    SEvt::pointPhoton@1269:  label.id   726 bounce  1 seq.desc_seqhis                 d nib  1 TO
-    SEvt::pointPhoton@1269:  label.id   726 bounce  2 seq.desc_seqhis                cd nib  2 TO BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce  3 seq.desc_seqhis               ccd nib  3 TO BT BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce  4 seq.desc_seqhis              cccd nib  4 TO BT BT BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce  5 seq.desc_seqhis             ccccd nib  5 TO BT BT BT BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce  6 seq.desc_seqhis            accccd nib  6 TO BT BT BT BT SR
-    SEvt::pointPhoton@1269:  label.id   726 bounce  7 seq.desc_seqhis           aaccccd nib  7 TO BT BT BT BT SR SR
-    SEvt::pointPhoton@1269:  label.id   726 bounce  8 seq.desc_seqhis          caaccccd nib  8 TO BT BT BT BT SR SR BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce  9 seq.desc_seqhis         bcaaccccd nib  9 TO BT BT BT BT SR SR BT BR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 10 seq.desc_seqhis        bbcaaccccd nib 10 TO BT BT BT BT SR SR BT BR BR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 11 seq.desc_seqhis       cbbcaaccccd nib 11 TO BT BT BT BT SR SR BT BR BR BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce 12 seq.desc_seqhis      acbbcaaccccd nib 12 TO BT BT BT BT SR SR BT BR BR BT SR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 13 seq.desc_seqhis     aacbbcaaccccd nib 13 TO BT BT BT BT SR SR BT BR BR BT SR SR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 14 seq.desc_seqhis    aaacbbcaaccccd nib 14 TO BT BT BT BT SR SR BT BR BR BT SR SR SR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 15 seq.desc_seqhis   caaacbbcaaccccd nib 15 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT
-    SEvt::pointPhoton@1269:  label.id   726 bounce 16 seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 17 seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 18 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
-    SEvt::pointPhoton@1269:  label.id   726 bounce 19 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce  0 ctx.p.flag TO seq.desc_seqhis                 0 nib  0  
+    SEvt::pointPhoton@1269:  label.id   726 bounce  1 ctx.p.flag BT seq.desc_seqhis                 d nib  1 TO
+    SEvt::pointPhoton@1269:  label.id   726 bounce  2 ctx.p.flag BT seq.desc_seqhis                cd nib  2 TO BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  3 ctx.p.flag BT seq.desc_seqhis               ccd nib  3 TO BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  4 ctx.p.flag BT seq.desc_seqhis              cccd nib  4 TO BT BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  5 ctx.p.flag SR seq.desc_seqhis             ccccd nib  5 TO BT BT BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  6 ctx.p.flag SR seq.desc_seqhis            accccd nib  6 TO BT BT BT BT SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce  7 ctx.p.flag BT seq.desc_seqhis           aaccccd nib  7 TO BT BT BT BT SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce  8 ctx.p.flag BR seq.desc_seqhis          caaccccd nib  8 TO BT BT BT BT SR SR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  9 ctx.p.flag BR seq.desc_seqhis         bcaaccccd nib  9 TO BT BT BT BT SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 10 ctx.p.flag BT seq.desc_seqhis        bbcaaccccd nib 10 TO BT BT BT BT SR SR BT BR BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 11 ctx.p.flag SR seq.desc_seqhis       cbbcaaccccd nib 11 TO BT BT BT BT SR SR BT BR BR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce 12 ctx.p.flag SR seq.desc_seqhis      acbbcaaccccd nib 12 TO BT BT BT BT SR SR BT BR BR BT SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 13 ctx.p.flag SR seq.desc_seqhis     aacbbcaaccccd nib 13 TO BT BT BT BT SR SR BT BR BR BT SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 14 ctx.p.flag BT seq.desc_seqhis    aaacbbcaaccccd nib 14 TO BT BT BT BT SR SR BT BR BR BT SR SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 15 ctx.p.flag BR seq.desc_seqhis   caaacbbcaaccccd nib 15 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce 16 ctx.p.flag BT seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 17 ctx.p.flag SR seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 18 ctx.p.flag BT seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 19 ctx.p.flag SA seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
     epsilon:tests blyth$ 
 
 
+Also looks like getting repeated flag at FastSim/SlowSim transitions ? 
+NO its not, its just the BT across the fake boundary leading to more. 
+
+Reproduce the misbehavior in sseq_test::
+
+    epsilon:tests blyth$ name=sseq_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
+                   TORCH :                 d nib  1 TO
+       BOUNDARY_TRANSMIT :                cd nib  2 TO BT
+       BOUNDARY_TRANSMIT :               ccd nib  3 TO BT BT
+       BOUNDARY_TRANSMIT :              cccd nib  4 TO BT BT BT
+       BOUNDARY_TRANSMIT :             ccccd nib  5 TO BT BT BT BT
+        SURFACE_SREFLECT :            accccd nib  6 TO BT BT BT BT SR
+        SURFACE_SREFLECT :           aaccccd nib  7 TO BT BT BT BT SR SR
+       BOUNDARY_TRANSMIT :          caaccccd nib  8 TO BT BT BT BT SR SR BT
+        BOUNDARY_REFLECT :         bcaaccccd nib  9 TO BT BT BT BT SR SR BT BR
+        BOUNDARY_REFLECT :        bbcaaccccd nib 10 TO BT BT BT BT SR SR BT BR BR
+       BOUNDARY_TRANSMIT :       cbbcaaccccd nib 11 TO BT BT BT BT SR SR BT BR BR BT
+        SURFACE_SREFLECT :      acbbcaaccccd nib 12 TO BT BT BT BT SR SR BT BR BR BT SR
+        SURFACE_SREFLECT :     aacbbcaaccccd nib 13 TO BT BT BT BT SR SR BT BR BR BT SR SR
+        SURFACE_SREFLECT :    aaacbbcaaccccd nib 14 TO BT BT BT BT SR SR BT BR BR BT SR SR SR
+       BOUNDARY_TRANSMIT :   caaacbbcaaccccd nib 15 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT
+        BOUNDARY_REFLECT :  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+       BOUNDARY_TRANSMIT :  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+        SURFACE_SREFLECT :  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+       BOUNDARY_TRANSMIT :  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+          SURFACE_ABSORB :  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    epsilon:tests blyth$ 
+
+
+     
 

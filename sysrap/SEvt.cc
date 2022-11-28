@@ -1269,6 +1269,7 @@ void SEvt::pointPhoton(const spho& label)
     LOG(info) 
         << " label.id " << std::setw(5) << label.id
         << " bounce " << std::setw(2) << bounce 
+        << " ctx.p.flag " << std::setw(2) << OpticksPhoton::Abbrev(ctx.p.flag()) 
         << " seq.desc_seqhis " << seq.desc_seqhis()
         ;   
 
