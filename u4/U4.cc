@@ -26,7 +26,8 @@
 #include "sscint.h"
 #include "scerenkov.h"
 
-#include "U4PhotonInfo.h"
+//#include "Deprecated_U4PhotonInfo.h"
+#include "U4TrackInfo.h"
 #include "U4.hh" 
 
 const plog::Severity U4::LEVEL = SLOG::EnvLevel("U4", "DEBUG"); 
@@ -284,7 +285,7 @@ unexpected labels.
 
 void U4::GenPhotonAncestor( const G4Track* aTrack )
 {
-    ancestor = U4PhotonInfo::Get(aTrack) ; 
+    ancestor = U4TrackInfo<spho>::Get(aTrack) ; 
     if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;  
     LOG(LEVEL) << ancestor.desc() ; 
 }
@@ -338,7 +339,7 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 #ifdef DEBUG
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #endif
-    U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
+    U4TrackInfo<spho>::Set(aSecondaryTrack, secondary ); 
 }
 
 

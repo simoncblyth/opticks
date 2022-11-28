@@ -156,7 +156,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     //std::cout << "U4Recorder::PreUserTrackingAction_Optical " << U4Process::Desc() << std::endl ; 
     //std::cout << U4Process::Desc() << std::endl ; 
 
-    spho label = U4Track::Label(track); 
+    spho label = U4Track::Label<spho>(track); 
 
     if( label.isDefined() == false ) // happens with torch gensteps and input photons 
     {
@@ -167,8 +167,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
             U4Track::SetId(_track, rerun_id) ; 
         }
 
-        U4Track::SetFabricatedLabel(track); 
-        label = U4Track::Label(track); 
+        U4Track::SetFabricatedLabel<spho>(track); 
+        label = U4Track::Label<spho>(track); 
         LOG(LEVEL) << " labelling photon " << label.desc() ; 
 
         saveOrLoadStates(label.id);  // moved here as labelling happens once per torch/input photon
@@ -301,7 +301,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     assert( is_fStopAndKill_or_fSuspend ); 
 
 
-    spho label = U4Track::Label(track); 
+    spho label = U4Track::Label<spho>(track); 
     assert( label.isDefined() );  // all photons are expected to be labelled
     if(!Enabled(label)) return ;  
 
@@ -367,7 +367,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
     LOG(LEVEL) << "[" ; 
     const G4Track* track = step->GetTrack(); 
-    spho label = U4Track::Label(track); 
+    spho label = U4Track::Label<spho>(track); 
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  
 

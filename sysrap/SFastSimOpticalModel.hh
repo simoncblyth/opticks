@@ -3,29 +3,24 @@
 SFastSimOpticalModel
 ======================
 
-HMM: what about when there are multiple instances of 
-FastSim in operation at same time, eg with one for each PMT type ? 
+This provided a kludge method to pass a status char 'A/R/T/D' 
+from the PMTFastSim junoPMTOpticalModel::DoIt into U4StepPoint 
+for use by U4Recorder.  But as this approach is limited to 
+single PMT tests only, it was replaced by lodging information 
+inside the trackinfo.  
 
-Cannot then assume a single INSTANCE. That will cause
-overwriting of the INSTANCE : so the last one will win. 
+When multiple PMTs are in use cannot then assume a single INSTANCE, 
+so this approach would suffer from overwriting and confusion between the
+status of multiple PMTs. 
 
-Could keep updating the INSTANCE in the DoIt ? 
+::
 
-Need better way to get the FastSim status into U4Recorder,  
-presumably using the name to distingish::
+    epsilon:opticks blyth$ opticks-fl SFastSimOpticalModel.hh
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SFastSimOpticalModel.cc
+    ./u4/U4StepPoint.cc
+    epsilon:opticks blyth$ 
 
-    1106 void
-    1107 HamamatsuR12860PMTManager::helper_fast_sim()
-    1108 {
-    1114     pmtOpticalModel = new junoPMTOpticalModel(GetName()+"_optical_model",
-    1115                                                                    body_phys, body_region);
-    1116 
-
-One alternative::
-
-    Instead of having to pull the status from the actual SFastSimOpticalModel INSTANCE
-    could get each instance to update a status char ... so that status correspond to the
-    last DoIt status of any pmtcat. 
 
 **/
 #include "SYSRAP_API_EXPORT.hh"
@@ -37,7 +32,6 @@ struct SYSRAP_API SFastSimOpticalModel
     static char GetStatus() ; 
 
     const char* name ; 
-
     SFastSimOpticalModel(const char* name); 
  
     virtual char getStatus() const = 0 ;  // 'A' 'R' 'T' 'D' '?'

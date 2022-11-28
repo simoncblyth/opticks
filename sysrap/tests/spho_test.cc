@@ -66,6 +66,31 @@ int main()
          << std::endl 
          ;  
 
+     p.uc4.x = 'A' ; 
+     p.uc4.y = 'a' ; 
+     p.uc4.z = '?' ; 
+     p.uc4.w = '_' ; 
+     std::cout 
+         << p.desc() << " " 
+         << "p.uc4.x = 'A' p.uc4.y = 'a' p.uc4.z = '?'  p.uc4.w = '_'  " 
+         << std::endl 
+         ;  
+
+
+     p.uc4.x = 'Z' ; 
+     p.uc4.y = 'z' ; 
+     p.uc4.z = ' ' ; 
+     p.uc4.w = '_' ; 
+     std::cout 
+         << p.desc() << " " 
+         << "p.uc4.x = 'Z' p.uc4.y = 'z' p.uc4.z = ' '  p.uc4.w = '_'  " 
+         << std::endl 
+         ;  
+
+
+
+
+
 
      return 0 ; 
 }
