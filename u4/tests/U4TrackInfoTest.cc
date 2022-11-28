@@ -1,7 +1,7 @@
 
 #include "spho.h"
 #include "U4Track.h"
-#include "U4TrackInfo.h"
+#include "STrackInfo.h"
 
 
 int main(int argc, char** argv)
@@ -9,16 +9,16 @@ int main(int argc, char** argv)
     G4Track* track = U4Track::MakePhoton(); 
     spho p0 = {1, 2, 3, {10,20,30,40}} ; 
 
-    U4TrackInfo<spho>::Set(track, p0 ); 
+    STrackInfo<spho>::Set(track, p0 ); 
     const G4Track* ctrack = track ; 
 
     std::cout << U4Track::Desc<spho>(ctrack) << std::endl ; 
 
-    spho p1 = U4TrackInfo<spho>::Get(ctrack); 
+    spho p1 = STrackInfo<spho>::Get(ctrack); 
 
     assert( p1.isIdentical(p0) ); 
 
-    spho* p2 = U4TrackInfo<spho>::GetRef(ctrack); 
+    spho* p2 = STrackInfo<spho>::GetRef(ctrack); 
 
     assert( p2->isIdentical(p0) ); 
 

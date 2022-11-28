@@ -24,17 +24,14 @@ status of multiple PMTs.
 
 **/
 #include "SYSRAP_API_EXPORT.hh"
+#include <vector>
 
 struct SYSRAP_API SFastSimOpticalModel
 {
-    static const SFastSimOpticalModel* Get() ; 
-    static const SFastSimOpticalModel* INSTANCE ; 
-    static char GetStatus() ; 
-
+    static std::vector<SFastSimOpticalModel*> record ; 
     const char* name ; 
     SFastSimOpticalModel(const char* name); 
  
-    virtual char getStatus() const = 0 ;  // 'A' 'R' 'T' 'D' '?'
 };
 
 

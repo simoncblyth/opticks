@@ -340,8 +340,10 @@ set(HEADERS
     NPFold.h 
     SSim.hh
     SProp.hh
+
     SFastSim_Debug.hh
     SFastSimOpticalModel.hh
+    STrackInfo.h
 
 )
 

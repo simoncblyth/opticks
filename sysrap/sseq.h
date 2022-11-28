@@ -141,10 +141,10 @@ SSEQ_METHOD std::string sseq::desc_seqhis() const
 
     std::stringstream ss ; 
     ss 
-         << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec 
-         << " nib " << std::setw(2) << seqhis_nibbles() 
-         << " " << sstr::TrimTrailing(fseq.c_str()) 
-         ;
+        << " " << std::setw(16) << std::hex << seqhis << std::dec 
+        << " nib " << std::setw(2) << seqhis_nibbles() 
+        << " " << sstr::TrimTrailing(fseq.c_str()) 
+        ;
     std::string s = ss.str(); 
     return s ; 
 }

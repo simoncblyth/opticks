@@ -15,11 +15,7 @@ struct U4Track
     template<typename T>
     static std::string Desc(const G4Track* track); 
 
-    template<typename T>
-    static T Label(const G4Track* track);     // return-by-value, placeholder when track has no label  
-
-    template<typename T>
-    static T* LabelRef(const G4Track* track);  // return-reference, nullptr when track has no label  
+    // pass-thru to STrackInfo methods Label and LabelRef removed 
 
     template<typename T>
     static void SetFabricatedLabel(const G4Track* track); 
@@ -32,8 +28,7 @@ struct U4Track
 #include "G4OpticalPhoton.hh"
 
 #include "spho.h"
-#include "U4TrackInfo.h"
-//#include "U4PhotonInfo.h"
+#include "STrackInfo.h"
 
 inline G4Track* U4Track::MakePhoton()
 {
@@ -88,24 +83,6 @@ inline void U4Track::SetStopAndKill(const G4Track* track)
 
 
 
-
-
-
-template<typename T>
-inline T U4Track::Label(const G4Track* track)  // returns placeholders when track has no label 
-{
-    //return U4PhotonInfo::Get(track) ;
-    return U4TrackInfo<T>::Get(track) ;
-}
-
-template<typename T>
-inline T* U4Track::LabelRef(const G4Track* track)  // returns nullptr when track has no label
-{
-    //return U4PhotonInfo::GetRef(track) ;
-    return U4TrackInfo<T>::GetRef(track) ;
-}
-
-
 template<typename T>
 inline void U4Track::SetFabricatedLabel(const G4Track* track)
 {
@@ -113,24 +90,22 @@ inline void U4Track::SetFabricatedLabel(const G4Track* track)
     assert( trackID >= 0 );  
     T fab = T::Fabricate(trackID); 
     G4Track* _track = const_cast<G4Track*>(track);  
-    //U4PhotonInfo::Set(_track, fab );        
-    U4TrackInfo<T>::Set(_track, fab );        
+    STrackInfo<T>::Set(_track, fab );        
 }
 
 template<typename T>
 inline std::string U4Track::Desc(const G4Track* track)
 {
-    T sp = Label<T>(track); 
+    T* label = STrackInfo<T>::GetRef(track); 
 
     std::stringstream ss ; 
     ss << "U4Track::Desc"
        << " Id " << std::setw(5) << Id(track)
        << " Op " << std::setw(1) << IsOptical(track)
-       << " sp " << sp.desc() 
+       << " label  " << ( label ? label->desc() : "-" ) 
        ;
 
     std::string s = ss.str(); 
     return s ; 
 }
-
 

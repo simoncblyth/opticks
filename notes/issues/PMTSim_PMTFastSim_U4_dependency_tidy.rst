@@ -98,3 +98,47 @@ Seems can remove POM from U4RecorderTest without issue::
 
 
 
+
+Unexpected NA in history::
+
+    280 U4Recorder::PostUserTrackingAction_Optical@330:  label.id   729 seq.desc_seqhis     8acbbcaaccccd nib 13 TO BT BT BT BT SR SR BT BR BR BT SR SA
+     281 U4Recorder::PostUserTrackingAction_Optical@330:  label.id   728 seq.desc_seqhis              8ccd nib  4 TO BT BT SA
+     282 U4Recorder::PostUserTrackingAction_Optical@330:  label.id   727 seq.desc_seqhis      8ccccaaccccd nib 12 TO BT BT BT BT SR SR BT BT BT BT SA
+     283 U4Recorder::PostUserTrackingAction_Optical@330:  label.id   726 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+     284 U4Recorder::PostUserTrackingAction_Optical@330:  label.id   725 seq.desc_seqhis              8ccd nib  4 TO BT BT SA
+
+
+    U4Recorder::BeginOfEventAction@93: 
+    U4Recorder::PostUserTrackingAction_Optical@330:  label.id   726 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    U4Recorder::EndOfEventAction@94: 
+
+
+
+
+Dumping the seqhis point by point with the rerun shows its a wraparound effect::
+
+    epsilon:tests blyth$ grep SEvt::pointPhoton *.log
+    SEvt::pointPhoton@1269:  label.id   726 bounce  0 seq.desc_seqhis                 0 nib  0  
+    SEvt::pointPhoton@1269:  label.id   726 bounce  1 seq.desc_seqhis                 d nib  1 TO
+    SEvt::pointPhoton@1269:  label.id   726 bounce  2 seq.desc_seqhis                cd nib  2 TO BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  3 seq.desc_seqhis               ccd nib  3 TO BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  4 seq.desc_seqhis              cccd nib  4 TO BT BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  5 seq.desc_seqhis             ccccd nib  5 TO BT BT BT BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  6 seq.desc_seqhis            accccd nib  6 TO BT BT BT BT SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce  7 seq.desc_seqhis           aaccccd nib  7 TO BT BT BT BT SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce  8 seq.desc_seqhis          caaccccd nib  8 TO BT BT BT BT SR SR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce  9 seq.desc_seqhis         bcaaccccd nib  9 TO BT BT BT BT SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 10 seq.desc_seqhis        bbcaaccccd nib 10 TO BT BT BT BT SR SR BT BR BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 11 seq.desc_seqhis       cbbcaaccccd nib 11 TO BT BT BT BT SR SR BT BR BR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce 12 seq.desc_seqhis      acbbcaaccccd nib 12 TO BT BT BT BT SR SR BT BR BR BT SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 13 seq.desc_seqhis     aacbbcaaccccd nib 13 TO BT BT BT BT SR SR BT BR BR BT SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 14 seq.desc_seqhis    aaacbbcaaccccd nib 14 TO BT BT BT BT SR SR BT BR BR BT SR SR SR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 15 seq.desc_seqhis   caaacbbcaaccccd nib 15 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT
+    SEvt::pointPhoton@1269:  label.id   726 bounce 16 seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 17 seq.desc_seqhis  bcaaacbbcaaccccd nib 16 TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 18 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    SEvt::pointPhoton@1269:  label.id   726 bounce 19 seq.desc_seqhis  bcaaacbbcaaccced nib 16 TO NA BT BT BT SR SR BT BR BR BT SR SR SR BT BR
+    epsilon:tests blyth$ 
+
+
+

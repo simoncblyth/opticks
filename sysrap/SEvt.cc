@@ -1265,10 +1265,17 @@ void SEvt::pointPhoton(const spho& label)
     bool first_point = ctx.p.flagmask_count() == 1 ; 
     int& bounce = slot[idx] ; 
 
+    sseq& seq = ctx.seq ; 
+    LOG(info) 
+        << " label.id " << std::setw(5) << label.id
+        << " bounce " << std::setw(2) << bounce 
+        << " seq.desc_seqhis " << seq.desc_seqhis()
+        ;   
+
+
     if(first_point == false) ctx.trace(bounce); 
     ctx.point(bounce); 
 
-    sseq& seq = ctx.seq ;  
 
     LOG(LEVEL) 
         << " idx " << idx 

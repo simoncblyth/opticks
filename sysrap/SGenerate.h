@@ -56,7 +56,6 @@ inline NP* SGenerate::GeneratePhotons()
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {
-        //std::cout << "SGenerate::GeneratePhotons SEvt::GetInputPhoton " << std::endl ; 
         ph = SEvt::GetInputPhoton(); 
     }
     else
@@ -69,14 +68,17 @@ inline NP* SGenerate::GeneratePhotons()
     NP* phs = rerun_id > -1 ? NP::MakeSelectCopy(ph, rerun_id ) : NP::MakeCopy(ph) ;
     // NB: the array now carries idlist metadata with the rerun_id 
 
-    std::cout 
-        << "SGenerate::GeneratePhotons"
-        << " rerun_id " << rerun_id
-        << " ph " << ( ph ? ph->brief() : "-" ) 
-        << " phs " << ( phs ? phs->brief() : "-" ) 
-        << " (" << SEventConfig::kG4StateRerun << ") " 
-        << std::endl 
-        ; 
+    if(rerun_id > -1 )
+    {
+        std::cout 
+            << "SGenerate::GeneratePhotons"
+            << " rerun_id " << rerun_id
+            << " ph " << ( ph ? ph->brief() : "-" ) 
+            << " phs " << ( phs ? phs->brief() : "-" ) 
+            << " (" << SEventConfig::kG4StateRerun << ") " 
+            << std::endl 
+            ; 
+    }
 
     return phs ;  
 }

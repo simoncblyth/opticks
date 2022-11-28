@@ -5,14 +5,13 @@ int main(int argc, char** argv)
     G4Track* track = U4Track::MakePhoton(); 
     spho p0 = {1, 2, 3, {0,0,0,0}} ; 
 
-    //U4PhotonInfo::Set(track, p0 ); 
-    U4TrackInfo<spho>::Set(track, p0 ); 
+    STrackInfo<spho>::Set(track, p0 ); 
 
     const G4Track* ctrack = track ; 
     std::cout << U4Track::Desc<spho>(ctrack) << std::endl ; 
 
 
-    spho* p2 = U4Track::LabelRef<spho>(ctrack); 
+    spho* p2 = STrackInfo<spho>::GetRef(ctrack); 
     assert( p2->isIdentical(p0) ); 
     std::cout << U4Track::Desc<spho>(ctrack) << std::endl ; 
 

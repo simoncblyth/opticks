@@ -68,7 +68,11 @@ loglevel(){
    #export SEvt=INFO
    export SEventConfig=INFO
 }
-#loglevel
+
+
+if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
+   loglevel
+fi 
 
 
 defarg="run"
