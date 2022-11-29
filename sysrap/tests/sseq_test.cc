@@ -229,34 +229,56 @@ void test_desc_seqhis_0()
 }
 
 
+
+template<int N>
+std::string desc_flag(unsigned flag)
+{
+    std::stringstream ss ;
+    ss 
+       << std::hex << flag << std::dec 
+       << " " 
+       << std::bitset<N>(flag).to_string() 
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+template<typename T>
 void test_wraparound(std::vector<unsigned>& history )
 {
     unsigned long long seqhis = 0ull ; 
+    unsigned long long four = 4ull ; 
 
     for(unsigned i=0 ; i < history.size() ; i++)
     {
-        unsigned flag = history[i]; 
-        unsigned slot = i ; 
+        T flag = history[i]; 
+        T slot = i ; 
 
-        seqhis |=  (( FFS(flag) & 0xfull ) << 4*slot );
+        unsigned long long change = (( FFS(flag) & 0xfull ) << four*slot );
+
+        seqhis |= change ;  
 
         std::cout 
             << std::setw(20) << OpticksPhoton::Flag(flag) 
             << " "
-            << " FFS(flag) " << std::setw(2) << FFS(flag)   
+            << " FFS(flag) " << std::setw(1) << std::hex << FFS(flag) << std::dec
             << " "
-            << " seqhis " << std::hex << seqhis << std::dec
+            << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+            << " change " << std::setw(16) << std::hex << change << std::dec
             << std::endl
             ;
     }
+
+    for(int i=0 ; i < 16 ; i++) std::cout << desc_flag<4>(i) << std::endl ; 
+ 
+    std::cout << " (0xd | 0xc) == 0xd " << desc_flag<4>(0xd | 0xc) << std::endl ; 
+    std::cout << " (0xc | 0xa) == 0xe " << desc_flag<4>(0xc | 0xa) << std::endl ; 
 }
-
-
-
 
 
 void test_desc_seqhis_1()
 {
+    std::cout << "test_desc_seqhis_1" << std::endl ; 
     std::vector<unsigned> history = { 
        TORCH,             // 0
        BOUNDARY_TRANSMIT, // 1
@@ -280,8 +302,35 @@ void test_desc_seqhis_1()
        SURFACE_ABSORB     // 19 
      } ; 
 
-   //test_desc_seqhis(history); 
-   test_wraparound(history); 
+   test_desc_seqhis(history); 
+   //test_wraparound<unsigned>(history); 
+   //test_wraparound<unsigned long long>(history); 
+}
+
+/**
+
+What happens when shifting beyond the width of the type is undefined.
+But i see wraparound which causes overwriting. 
+
+**/
+
+void test_shiftwrap()
+{
+    unsigned long long seqhis = 0ull ; 
+    for(unsigned j=0 ; j < 2 ; j++)
+    for(unsigned i=0 ; i < 16 ; i++)
+    {
+        unsigned slot = j*16 + i ;  
+        unsigned long long flag = j == 0 ? 0x5ull : 0xfull ;   
+        unsigned long long change = flag << 4*slot ; 
+        seqhis |= change ; 
+
+        std::cout 
+            << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+            << " change " << std::setw(16) << std::hex << change << std::dec
+            << std::endl
+            ;
+    }
 }
 
 
@@ -298,9 +347,10 @@ int main()
     test_get_flag_set_flag(); 
     test_desc_seqhis_0();    
     test_desc_seqhis_1();    
+    test_shiftwrap();    
     */
-    test_desc_seqhis_1();    
 
+    test_desc_seqhis_1();    
 
     return 0 ; 
 }

@@ -76,6 +76,8 @@ struct SYSRAP_API OpticksPhoton
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
     static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1); 
+    static std::string FlagSequence(const unsigned long long* seqhis, unsigned nseq, bool abbrev=true, int highlight=-1); 
+
     static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 
 #ifdef STANDALONE
@@ -210,18 +212,24 @@ inline void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, c
 
 inline std::string OpticksPhoton::FlagSequence(const unsigned long long seqhis, bool abbrev, int highlight)
 {
-    std::stringstream ss ;
+    return FlagSequence(&seqhis, 1, abbrev, highlight ); 
+}
+
+inline std::string OpticksPhoton::FlagSequence(const unsigned long long* seqhis, unsigned nseq, bool abbrev, int highlight)
+{
     assert(sizeof(unsigned long long)*8 == 16*4);
+    unsigned hi = highlight < 0 ? 16*nseq : highlight ; 
 
-    unsigned hi = highlight < 0 ? 16 : highlight ; 
+    std::stringstream ss ;
 
-    for(unsigned int i=0 ; i < 16 ; i++)
+    for(unsigned i=0 ; i < nseq ; i++)
+    for(unsigned j=0 ; j < 16   ; j++)
     {
-        unsigned long long f = (seqhis >> i*4) & 0xF ; 
+        unsigned long long f = (seqhis[i] >> j*4) & 0xF ; 
         unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
-        if(i == hi) ss << "[" ;  
+        if(j == hi) ss << "[" ;  
         ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) ;
-        if(i == hi) ss << "]" ;  
+        if(j == hi) ss << "]" ;  
         ss << " " ; 
     }
     return ss.str();

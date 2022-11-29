@@ -176,6 +176,28 @@ STAG_METHOD std::string stagc::Desc()
 
 #endif
 
+
+/**
+stag
+-------
+
+NSEQ:4
+    number of elements in seqtag array 
+
+BITS:4
+    number of bits for each tag entry  
+
+MASK
+    mask of all ones with BITS width 
+
+SLOTMAX:64/BITS
+    maximum BITS entries within a single 64 bit element  
+
+SLOTS:SLOTMAX*NSEQ
+    total number of available tags across all NSEQ
+
+**/
+
 struct stag
 {
     static constexpr const unsigned NSEQ = 4 ;   // NB MUST MATCH stag.py:NSEQ
@@ -310,8 +332,14 @@ STAG_METHOD void stag::zero()
 }
 STAG_METHOD void stag::set(unsigned slot, unsigned tag) 
 {
-    unsigned iseq = slot/SLOTMAX ; 
+    unsigned iseq = slot/SLOTMAX ;  // iseq:element to write to 
     if(iseq < NSEQ) seqtag[iseq] |=  (( tag & MASK ) << BITS*(slot - iseq*SLOTMAX) );
+
+    // NB: note that this does not clear first, so it requires starting with zeroed elements 
+    //
+    // slot ranges across all elements, so subtracting total slots for preceding elements (iseq*SLOTMAX)
+    // gives the appropriate shift for the iseq element 
+
 }
 STAG_METHOD unsigned stag::get(unsigned slot) const 
 {
