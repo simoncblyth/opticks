@@ -165,18 +165,29 @@ if __name__ == '__main__':
             pass
             mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label=None )
 
+          
+
             if extra_type == "record":
                 hv = extra[:,0,(H,V)]   
+                tweak = False
                 
                 for i in range(len(extra)):
-
                     dx,dy = 0,0
-                    if i==2: dx,dy=-10,0  
-                    if i==3: dx,dy=0,-10  
-                    if i==4: dx,dy=-10,0  
-                    if i==16: dx,dy=10,-10  
-
-                    ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15, backgroundcolor="yellow" )
+                    if tweak:
+                        if i==2: dx,dy=-10,0  
+                        if i==3: dx,dy=0,-10  
+                        if i==4: dx,dy=-10,0  
+                        if i==16: dx,dy=10,-10  
+                        backgroundcolor="yellow"
+                    else:
+                        backgroundcolor=None 
+                    pass
+                    if backgroundcolor is None:
+                        ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15 )
+                    else:
+                        ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15, backgroundcolor=backgroundcolor )
+                    pass
+ 
                 pass
             pass
 

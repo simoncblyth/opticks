@@ -7,7 +7,7 @@ This provided a kludge method to pass a status char 'A/R/T/D'
 from the PMTFastSim junoPMTOpticalModel::DoIt into U4StepPoint 
 for use by U4Recorder.  But as this approach is limited to 
 single PMT tests only, it was replaced by lodging information 
-inside the trackinfo.  
+inside the trackinfo using sysrap/STrackInfo<spho> 
 
 When multiple PMTs are in use cannot then assume a single INSTANCE, 
 so this approach would suffer from overwriting and confusion between the

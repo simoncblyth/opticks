@@ -126,15 +126,8 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
 G4VPhysicalVolume* U4RecorderTest::Construct()
 { 
     G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
-
     fPV = pv ; 
-
-    std::cout 
-        << "U4RecorderTest::Construct"
-        << " fPV " << ( fPV ? "Y" : "N" )
-        << std::endl 
-        ;
-
+    LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
     return pv ; 
 }  
 

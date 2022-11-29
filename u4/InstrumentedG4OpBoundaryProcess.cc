@@ -91,6 +91,10 @@
 
 
 
+#include "SLOG.hh"
+#include "spho.h"
+#include "STrackInfo.h"
+
 #ifdef DEBUG_PIDX
 
 #include "scuda.h"
@@ -105,6 +109,10 @@ const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ;
 #ifdef DEBUG_TAG
 #include "U4Stack.h"
 #include "SEvt.hh"
+
+
+
+const plog::Severity InstrumentedG4OpBoundaryProcess::LEVEL = SLOG::EnvLevel("InstrumentedG4OpBoundaryProcess", "DEBUG" ); 
 
 const bool InstrumentedG4OpBoundaryProcess::FLOAT  = getenv("InstrumentedG4OpBoundaryProcess_FLOAT") != nullptr ;
 
@@ -162,6 +170,8 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
         if ( verboseLevel > 0) {
            G4cout << GetProcessName() << " is created " << G4endl;
         }
+
+        LOG(LEVEL) << " processName " << GetProcessName()  ; 
 
         SetProcessSubType(fOpBoundary);
 
@@ -222,6 +232,10 @@ InstrumentedG4OpBoundaryProcess::~InstrumentedG4OpBoundaryProcess(){}
 G4VParticleChange*
 InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+
+       spho* label = STrackInfo<spho>::GetRef(&aTrack) ; 
+       LOG(LEVEL) << " label.desc " << label->desc(); 
+
 #ifdef DEBUG_PIDX
         // U4PhotonInfo::GetIndex is picking up the index from the label set 
         // in U4Recorder::PreUserTrackingAction_Optical for initially unlabelled input photons
@@ -386,6 +400,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                 return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 	}
 
+
         theReflectivity =  1.;
         theEfficiency   =  0.;
         theTransmittance = 0.;
@@ -403,6 +418,9 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
         G4LogicalSurface* Surface = NULL;
 
         Surface = G4LogicalBorderSurface::GetSurface(thePrePV, thePostPV);
+
+
+
 
 //#ifdef DEBUG_PIDX
         //std::cout << "InstrumentedG4OpBoundaryProcess::PostStepDoIt Surface " << ( Surface ? "Y" : "N" ) << std::endl ; 
@@ -428,6 +446,9 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                 G4LogicalSkinSurface::GetSurface(thePostPV->GetLogicalVolume());
 	  }
 	}
+
+    LOG(LEVEL) << " Surface " << ( Surface ? Surface->GetName() : "-" ) ; 
+
 
         if (Surface) OpticalSurface = 
            dynamic_cast <G4OpticalSurface*> (Surface->GetSurfaceProperty());

@@ -15,8 +15,8 @@ export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1  
 
-#running_mode=SRM_G4STATE_SAVE  
-running_mode=SRM_G4STATE_RERUN
+running_mode=SRM_G4STATE_SAVE  
+#running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_MAX_BOUNCE=20 
 
@@ -25,9 +25,11 @@ case $running_mode in
    SRM_G4STATE_RERUN) reldir=SEL ;; 
 esac
 
-
 export OPTICKS_G4STATE_RERUN=726
 export OPTICKS_EVENT_MODE=StandardFullDebug
+
+export InstrumentedG4OpBoundaryProcess=INFO
+
 
 export GEOM=hamaLogicalPMT
 export U4RecorderTest__PRIMARY_MODE=torch 
@@ -36,6 +38,7 @@ export BeamOn=${BeamOn:-1}
 
 export hama_FastCoverMaterial=Cheese    ## declProp config of Manager
 export hama_UsePMTOpticalModel=1
+export hama_UseNaturalGeometry=1
 
 #num_ph=2
 #num_ph=10
@@ -47,7 +50,8 @@ radius=250
 [ $num_ph -lt 11  ] && radius=0
 
 export SEvent_MakeGensteps_num_ph=$num_ph
-export storch_FillGenstep_type=line     # disc
+#export storch_FillGenstep_type=disc
+export storch_FillGenstep_type=line     
 export storch_FillGenstep_radius=$radius
 
 # up from line below equator
@@ -65,6 +69,7 @@ log=$bin.log
 loglevel(){
    export U4Recorder=INFO
    export junoPMTOpticalModel=INFO
+   export junoPMTOpticalModelSimple=INFO
    #export SEvt=INFO
    export SEventConfig=INFO
 }

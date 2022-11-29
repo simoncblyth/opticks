@@ -81,7 +81,7 @@
 
 #include "U4RandomTools.hh"
 #include "U4RandomDirection.hh"
-
+#include "plog/Severity.h"
 
 
 #include "G4Step.hh"
@@ -155,6 +155,7 @@ class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
 #endif
 
 public:
+        static const plog::Severity LEVEL ; 
 #ifdef DEBUG_TAG
         static const bool FLOAT ;  
         void ResetNumberOfInteractionLengthLeft();

@@ -63,6 +63,7 @@ export FOLD=/tmp/$USER/opticks/extg4/X4IntersectVolumeTest/$X4IntersectVolumeTes
 export hama_FastCoverMaterial=Cheese
 #export hama_UsePMTOpticalModel=0
 export hama_UsePMTOpticalModel=1
+export hama_UseNaturalGeometry=1
 
 
 # XFOLD/XPID has precedence over EXTRA

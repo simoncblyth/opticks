@@ -26,6 +26,8 @@ U4PMTFastSimTest.py
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.p import * 
+
 NOGUI = "NOGUI" in os.environ
 MODE = int(os.environ.get("MODE", 0))
 if not NOGUI:

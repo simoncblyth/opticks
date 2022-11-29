@@ -1265,17 +1265,19 @@ void SEvt::pointPhoton(const spho& label)
     bool first_point = ctx.p.flagmask_count() == 1 ; 
     int& bounce = slot[idx] ; 
 
-    sseq& seq = ctx.seq ; 
-    LOG(info) 
-        << " label.id " << std::setw(5) << label.id
-        << " bounce " << std::setw(2) << bounce 
-        << " ctx.p.flag " << std::setw(2) << OpticksPhoton::Abbrev(ctx.p.flag()) 
-        << " seq.desc_seqhis " << seq.desc_seqhis()
-        ;   
-
 
     if(first_point == false) ctx.trace(bounce); 
     ctx.point(bounce); 
+
+
+    sseq& seq = ctx.seq ; 
+    LOG(LEVEL) 
+        << "(" << std::setw(5) << label.id
+        << "," << std::setw(2) << bounce
+        << ") "
+        << std::setw(2) << OpticksPhoton::Abbrev(ctx.p.flag()) 
+        << seq.desc_seqhis()
+        ;   
 
 
     LOG(LEVEL) 
@@ -1482,7 +1484,7 @@ NP* SEvt::makeRec() const
 }
 NP* SEvt::makeSeq() const 
 {
-    return NP::Make<unsigned long long>( evt->num_seq, 2); 
+    return NP::Make<unsigned long long>( evt->num_seq, 2, sseq::NSEQ );  
 }
 NP* SEvt::makePrd() const 
 {

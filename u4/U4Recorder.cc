@@ -390,8 +390,9 @@ HMM: but if subsequent step points failed to set a non-zero flag could get that 
 template <typename T>
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
-    LOG(LEVEL) << "[" ; 
     const G4Track* track = step->GetTrack(); 
+    G4VPhysicalVolume* pv = track->GetVolume() ; 
+    LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
     spho* label = STrackInfo<spho>::GetRef(track); 
     assert( label->isDefined() );  
@@ -403,7 +404,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
     sphoton& current_photon = sev->current_ctx.p ;
-
 
     // first_point when single bit in the flag from genflag set in beginPhoton
     bool first_point = current_photon.flagmask_count() == 1 ;  
@@ -434,6 +434,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
            case '_': flag = 0                 ; break ; 
            default:  flag = 0                 ; break ; 
         }
+        LOG_IF(error, flag == 0)
+            << " DEFER_FSTRACKINFO " 
+            << " FAILED TO GET THE FastSim status from trackinfo " 
+            << " fstrackinfo_stat " << fstrackinfo_stat  
+            ;
+
         LOG(LEVEL) 
             << " DEFER_FSTRACKINFO " 
             << " fstrackinfo_stat " << fstrackinfo_stat 
