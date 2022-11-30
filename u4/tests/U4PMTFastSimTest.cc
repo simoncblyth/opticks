@@ -3,6 +3,7 @@
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
 #include "U4Engine.h"
+#include "U4UniformRand.h"
 
 #include "J_PMTFASTSIM_LOG.hh"
 
@@ -13,7 +14,10 @@ struct U4PMTFastSimTest
     G4VUserPhysicsList*        phy ; 
     G4RunManager*              run ; 
     U4RecorderTest*            rec ; 
+    NP*                        bef ;  
+
     U4PMTFastSimTest(); 
+    void BeamOn(); 
     virtual ~U4PMTFastSimTest(){ delete rec ; }
 };
 
@@ -28,9 +32,16 @@ U4PMTFastSimTest::U4PMTFastSimTest()
     :
     phy((G4VUserPhysicsList*)new U4Physics),
     run(InitRunManager(phy)),
-    rec(new U4RecorderTest(run))
+    rec(new U4RecorderTest(run)),
+    bef(nullptr)
 {
-    run->BeamOn(U::GetEnvInt("BeamOn",1)); 
+}
+
+void U4PMTFastSimTest::BeamOn()
+{
+    int n = U::GetEnvInt("BeamOn",1) ; 
+    // if( n < 0 ) bef = U4UniformRand::Get(1000);    HMM: dont match because the g4states are not restored yet 
+    if( n > 0 ) run->BeamOn(n); 
 }
 
 int main(int argc, char** argv)
@@ -47,12 +58,19 @@ int main(int argc, char** argv)
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
+    t.BeamOn(); 
     
     if(evt->is_loaded) evt->setReldir("SEL");  // evt is loaded when rerunning a single photon
 
     evt->save(); 
     const char* savedir = evt->getSaveDir(); 
     SFastSim_Debug::Save(savedir); 
+
+    U4Recorder* fRecorder = t.rec->fRecorder ; 
+    fRecorder->saveRerunRand(savedir); 
+
+    if(t.bef) t.bef->save(savedir, "bef.npy") ; // doesnt match without BeamOn as g4state not restored yet 
+
     LOG(info) << " savedir " << savedir ;  
 
     LOG(info) << "] " << argv[0] << " " << STime::Now() ; 

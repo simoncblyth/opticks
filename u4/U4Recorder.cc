@@ -19,10 +19,10 @@
 #include "U4Track.h"
 #include "U4StepPoint.hh"
 #include "U4OpBoundaryProcess.h"
-//#include "InstrumentedG4OpBoundaryProcess.hh"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
+#include "U4UniformRand.h"
 
 #include "U4Surface.h"
 
@@ -82,7 +82,8 @@ U4Recorder* U4Recorder::INSTANCE = nullptr ;
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
 U4Recorder::U4Recorder()
     :
-    transient_fSuspend_track(nullptr)
+    transient_fSuspend_track(nullptr),
+    rerun_rand(nullptr)
 { 
     INSTANCE = this ; 
 }
@@ -283,15 +284,33 @@ void U4Recorder::saveOrLoadStates( int id )
 
         U4Engine::RestoreState( g4state, id );   
 
+
         if( id == SEventConfig::_G4StateRerun )
         {
+            rerun_rand = U4UniformRand::Get(1000);
             LOG(LEVEL) 
                 << "U4Engine::RestoreState for id (SEventConfig::_G4StateRerun)  " << id 
                 << std::endl 
                 << U4Engine::DescStateArray()
+                << std::endl
+                << " rerun_rand "
+                << std::endl
+                << rerun_rand->repr<double>()  
                 ; 
+
+            U4Engine::RestoreState( g4state, id );   
+
         }
     }
+}
+
+void U4Recorder::saveRerunRand(const char* dir) const 
+{
+    if( rerun_rand == nullptr ) return ; 
+
+    int id = SEventConfig::_G4StateRerun ; 
+    std::string name = U::FormName("U4Recorder_G4StateRerun_", id, ".npy" ); 
+    rerun_rand->save( dir, name.c_str()); 
 }
 
 /**

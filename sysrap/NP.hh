@@ -303,6 +303,9 @@ struct NP
  
     NP* copy() const ; 
 
+
+    template<typename T> int find_value_index(T value, T epsilon) const ; 
+
     bool is_pshaped() const ; 
     template<typename T> T    plhs(unsigned column ) const ;  
     template<typename T> T    prhs(unsigned column ) const ;  
@@ -384,6 +387,9 @@ struct NP
     std::string desc() const ; 
     std::string brief() const ; 
     std::string sstr() const ; 
+
+    template<typename T> std::string repr() const ; 
+
 
 
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
@@ -2173,6 +2179,27 @@ inline NP* NP::LoadNarrow(const char* path)
 
 
 
+template<typename T> inline int NP::find_value_index(T value, T epsilon) const
+{
+    const T* vv = cvalues<T>(); 
+    unsigned ni = shape[0] ;
+    unsigned ndim = shape.size() ; 
+    int idx = -1 ; 
+    if(ndim == 1)
+    {
+        for(unsigned i=0 ; i < ni ; i++) 
+        {  
+            T v = vv[i]; 
+            if(std::abs(v-value) < epsilon)
+            {
+                idx = i ; 
+                break ; 
+            }
+        }
+    }
+    return idx ; 
+} 
+
 
 
 
@@ -2344,7 +2371,6 @@ template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, i
         hi  = vv[nj*(i+1)+column] ; 
     }
 }
-
 
 
 
@@ -3292,6 +3318,7 @@ inline std::string NP::desc() const
     return ss.str(); 
 }
 
+
 inline std::string NP::brief() const 
 {
     std::stringstream ss ; 
@@ -3303,6 +3330,33 @@ inline std::string NP::brief() const
 }
 
 
+template<typename T>
+inline std::string NP::repr() const 
+{
+    const T* vv = cvalues<T>(); 
+    int ndim = shape.size() ; 
+    int ni = ndim > 0 ? shape[0] : 0 ; 
+    const int edge = 5 ; 
+
+    std::stringstream ss ; 
+    ss << "{" ; 
+    if(ndim == 1)
+    {
+        for(int i=0 ; i < ni ; i++) 
+        {     
+            if( i < edge || i > ni - edge )
+            { 
+                ss << std::setw(10) << std::fixed << std::setprecision(5) << vv[i] << " " ; 
+            }
+            else if( i == edge )
+            {
+                ss << "... " ;  
+            }
+        }
+    }
+    ss << "}" ; 
+    return ss.str(); 
+}
 
 
 

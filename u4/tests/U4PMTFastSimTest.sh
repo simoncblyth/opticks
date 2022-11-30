@@ -15,10 +15,10 @@ export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1  
 
-running_mode=SRM_G4STATE_SAVE  
-#running_mode=SRM_G4STATE_RERUN
+#running_mode=SRM_G4STATE_SAVE  
+running_mode=SRM_G4STATE_RERUN
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
-export OPTICKS_MAX_BOUNCE=20 
+export OPTICKS_MAX_BOUNCE=20                # can go upto 31 now that extended sseq.h 
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL ;; 
@@ -38,7 +38,7 @@ export BeamOn=${BeamOn:-1}
 
 export hama_FastCoverMaterial=Cheese    ## declProp config of Manager
 export hama_UsePMTOpticalModel=1
-export hama_UseNaturalGeometry=1
+export hama_UseNaturalGeometry=0
 
 #num_ph=2
 #num_ph=10

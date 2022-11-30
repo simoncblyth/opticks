@@ -47,6 +47,7 @@ struct U4_API U4Recorder
 
     U4Recorder(); 
     const G4Track* transient_fSuspend_track ; 
+    NP* rerun_rand ;  
     // NO NON-TRANSIENT MEMBERS : persisting is handled at lower level by sysrap/SEvt 
 
     void BeginOfRunAction(const G4Run*);
@@ -60,6 +61,7 @@ struct U4_API U4Recorder
 
     void PreUserTrackingAction_Optical(const G4Track*);
     void saveOrLoadStates(int id); 
+    void saveRerunRand(const char* dir) const ; 
 
     void PostUserTrackingAction_Optical(const G4Track*);
 

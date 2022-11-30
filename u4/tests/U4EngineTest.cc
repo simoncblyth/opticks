@@ -90,6 +90,7 @@ U4EngineTest.cc
 #include "NP.hh"
 #include "U4Engine.h"
 #include "G4Types.hh"
+#include "U4UniformRand.h"
 
 #include "Randomize.hh"
 
@@ -159,11 +160,44 @@ void test_SaveState_RestoreState(int argc, char** argv)
 }
 
 
-int main(int argc, char** argv)
+void test_Desc()
 {
-    //test_SaveState_RestoreState(argc, argv); 
     std::cout << U4Engine::DescState() << std::endl ; 
     std::cout << U4Engine::DescStateArray() << std::endl ; 
+}
+
+void test_U4UniformRand()
+{
+
+    NP* states = NP::Make<unsigned long>(10, 2*17+4 ) ; 
+
+    U4Engine::SaveState( states, 0 ); 
+    NP* u0 = U4UniformRand::Get(100); 
+
+    U4Engine::RestoreState( states, 0 ); 
+    NP* u1 = U4UniformRand::Get(100); 
+
+    U4Engine::RestoreState( states, 0 ); 
+    NP* u2 = U4UniformRand::Get(100); 
+
+    std::cout << "u0 " << u0->repr<double>() << std::endl; 
+    std::cout << "u1 " << u1->repr<double>() << std::endl; 
+    std::cout << "u2 " << u2->repr<double>() << std::endl; 
+
+    u0->save(FOLD, "test_U4UniformRand", "u0.npy"); 
+    u1->save(FOLD, "test_U4UniformRand", "u1.npy"); 
+    u2->save(FOLD, "test_U4UniformRand", "u2.npy"); 
+}
+
+
+int main(int argc, char** argv)
+{
+    /*
+    test_SaveState_RestoreState(argc, argv); 
+    test_Desc(); 
+    */
+
+    test_U4UniformRand();     
 
     return 0 ; 
 }

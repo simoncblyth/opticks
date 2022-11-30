@@ -38,6 +38,8 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
+    uu = t.U4Recorder_G4StateRerun_726   
+
     fs = t.SFastSim_Debug   
     kInfinity = 9.000e+99    
 

@@ -94,6 +94,8 @@
 #include "SLOG.hh"
 #include "spho.h"
 #include "STrackInfo.h"
+#include "U4OpticalSurface.h"
+#include "U4MaterialPropertiesTable.h"
 
 #ifdef DEBUG_PIDX
 
@@ -121,6 +123,9 @@ inline void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft(
 {
     //std::cout << "InstrumentedG4OpBoundaryProcess::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
+
+    LOG(LEVEL) << " u " << std::setw(10) << std::fixed << std::setprecision(6) << u ; 
+
 
     SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u );  
 
@@ -447,13 +452,24 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 	  }
 	}
 
-    LOG(LEVEL) << " Surface " << ( Surface ? Surface->GetName() : "-" ) ; 
 
 
         if (Surface) OpticalSurface = 
            dynamic_cast <G4OpticalSurface*> (Surface->GetSurfaceProperty());
 
+
+    /*
+    LOG(LEVEL) 
+        << " Surface " << ( Surface ? Surface->GetName() : "-" ) 
+        << " OpticalSurface " << ( OpticalSurface ? OpticalSurface->GetName() : "-" ) 
+        ; 
+    */
+
         if (OpticalSurface) {
+
+
+           LOG(LEVEL) << U4OpticalSurface::Desc(OpticalSurface) ; 
+
 
            type      = OpticalSurface->GetType();
            theModel  = OpticalSurface->GetModel();
@@ -462,15 +478,20 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
            aMaterialPropertiesTable = OpticalSurface->
                                         GetMaterialPropertiesTable();
 
+
            if (aMaterialPropertiesTable) {
 
-              if (theFinish == polishedbackpainted ||
-                  theFinish == groundbackpainted ) {
+               LOG(LEVEL) << U4MaterialPropertiesTable::Desc(aMaterialPropertiesTable) ; 
+
+              if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
+              {
                   Rindex = aMaterialPropertiesTable->GetProperty(kRINDEX);
-	          if (Rindex) {
-                     Rindex2 = Rindex->Value(thePhotonMomentum);
+	              if (Rindex) 
+                  {
+                      Rindex2 = Rindex->Value(thePhotonMomentum);
                   }
-                  else {
+                  else 
+                  {
                      theStatus = NoRINDEX;
                      if ( verboseLevel > 0) BoundaryProcessVerbose();
                      aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
@@ -485,6 +506,13 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                       aMaterialPropertiesTable->GetProperty(kREALRINDEX);
               PropertyPointer2 =
                       aMaterialPropertiesTable->GetProperty(kIMAGINARYRINDEX);
+
+
+              LOG(LEVEL) 
+                   << " PropertyPointer.kREFLECTIVITY " << PropertyPointer
+                   << " PropertyPointer1.kREALRINDEX " << PropertyPointer1 
+                   << " PropertyPointer2.kIMAGINARYRINDEX " << PropertyPointer2
+                   ;
 
               iTE = 1;
               iTM = 1;
@@ -513,6 +541,14 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                       theTransmittance =
                       PropertyPointer->Value(thePhotonMomentum);
               }
+
+
+              LOG(LEVEL)
+                  << " theReflectivity " << theReflectivity
+                  << " theEfficiency " << theEfficiency
+                  << " theTransmittance " << theTransmittance
+                  ; 
+
 
               if (aMaterialPropertiesTable->
                                      ConstPropertyExists("SURFACEROUGHNESS"))
@@ -579,6 +615,8 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                  return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
               }
            }
+
+           LOG(LEVEL) << " Rindex2 " << Rindex2 ;  
         }
 
 	if (type == dielectric_metal) {
@@ -608,11 +646,14 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
              DielectricDielectric();
           }
           else {
+
+
+
              G4double rand = G4UniformRand();
 #ifdef DEBUG_TAG
              SEvt::AddTag(U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
 #endif
-
+             LOG(LEVEL) << "didi.rand " << rand ; 
 
 #ifdef DEBUG_PIDX
              // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
