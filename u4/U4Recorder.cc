@@ -288,14 +288,17 @@ void U4Recorder::saveOrLoadStates( int id )
         if( id == SEventConfig::_G4StateRerun )
         {
             rerun_rand = U4UniformRand::Get(1000);
+            U4UniformRand::UU = rerun_rand ; 
+
             LOG(LEVEL) 
                 << "U4Engine::RestoreState for id (SEventConfig::_G4StateRerun)  " << id 
                 << std::endl 
                 << U4Engine::DescStateArray()
                 << std::endl
-                << " rerun_rand "
+                << " rerun_rand (about to be consumed, did RestoreState after collecting them)  "
                 << std::endl
                 << rerun_rand->repr<double>()  
+                << std::endl
                 ; 
 
             U4Engine::RestoreState( g4state, id );   

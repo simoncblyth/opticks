@@ -38,7 +38,7 @@ export BeamOn=${BeamOn:-1}
 
 export hama_FastCoverMaterial=Cheese    ## declProp config of Manager
 export hama_UsePMTOpticalModel=1
-export hama_UseNaturalGeometry=0
+export hama_UseNaturalGeometry=1
 
 #num_ph=2
 #num_ph=10

@@ -89,13 +89,17 @@
 
 #include <csignal>
 
-
+#include "JPMT.h"
+#include "Layr.h"
 
 #include "SLOG.hh"
 #include "spho.h"
 #include "STrackInfo.h"
 #include "U4OpticalSurface.h"
 #include "U4MaterialPropertiesTable.h"
+
+#include "U4UniformRand.h"
+NP* U4UniformRand::UU = nullptr ; 
 
 #ifdef DEBUG_PIDX
 
@@ -124,7 +128,7 @@ inline void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft(
     //std::cout << "InstrumentedG4OpBoundaryProcess::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
 
-    LOG(LEVEL) << " u " << std::setw(10) << std::fixed << std::setprecision(6) << u ; 
+    LOG(LEVEL) << U4UniformRand::Desc(u) ; 
 
 
     SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u );  
@@ -172,6 +176,8 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                                                G4ProcessType type)
              : G4VDiscreteProcess(processName, type)
 {
+        PostStepDoIt_count = -1 ; 
+
         if ( verboseLevel > 0) {
            G4cout << GetProcessName() << " is created " << G4endl;
         }
@@ -179,6 +185,8 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
         LOG(LEVEL) << " processName " << GetProcessName()  ; 
 
         SetProcessSubType(fOpBoundary);
+
+        jpmt = new JPMT ; 
 
         theStatus = Undefined;
         theModel = glisur;
@@ -237,10 +245,25 @@ InstrumentedG4OpBoundaryProcess::~InstrumentedG4OpBoundaryProcess(){}
 G4VParticleChange*
 InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+    PostStepDoIt_count += 1 ;  
+    spho* label = STrackInfo<spho>::GetRef(&aTrack) ; 
 
-       spho* label = STrackInfo<spho>::GetRef(&aTrack) ; 
-       LOG(LEVEL) << " label.desc " << label->desc(); 
+    LOG(LEVEL) << "[ " <<  PostStepDoIt_count  ;   
+    LOG(LEVEL) 
+        << " PostStepDoIt_count " << PostStepDoIt_count
+        << " label.desc " << label->desc()
+        ; 
 
+    // coping with the spagetti mush  
+    G4VParticleChange* change = PostStepDoIt_(aTrack, aStep) ; 
+
+    LOG(LEVEL) << "] " << PostStepDoIt_count  ; 
+    return change ; 
+}
+
+G4VParticleChange*
+InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track& aTrack, const G4Step& aStep)
+{
 #ifdef DEBUG_PIDX
         // U4PhotonInfo::GetIndex is picking up the index from the label set 
         // in U4Recorder::PreUserTrackingAction_Optical for initially unlabelled input photons
@@ -290,6 +313,12 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
         G4VPhysicalVolume* thePostPV =
                                pStep->GetPostStepPoint()->GetPhysicalVolume();
 
+        LOG(LEVEL)
+            << " PostStepDoIt_count " << PostStepDoIt_count
+            << " thePrePV " << ( thePrePV ? thePrePV->GetName() : "-" )
+            << " thePostPV " << ( thePostPV ? thePostPV->GetName() : "-" )
+            ;
+
         if ( verboseLevel > 0 ) {
            G4cout << " Photon at Boundary! " << G4endl;
            if (thePrePV)  G4cout << " thePrePV:  " << thePrePV->GetName()  << G4endl;
@@ -313,7 +342,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
            G4cout << " Old Polarization:       " << OldPolarization << G4endl;
         }
 
-        G4ThreeVector theGlobalPoint = pStep->GetPostStepPoint()->GetPosition();
+        theGlobalPoint = pStep->GetPostStepPoint()->GetPosition();
 
         G4bool valid;
         //  Use the new method for Exit Normal in global coordinates,
@@ -458,17 +487,25 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
            dynamic_cast <G4OpticalSurface*> (Surface->GetSurfaceProperty());
 
 
-    /*
+        char opsu =  OpticalSurface ? OpticalSurface->GetName().c_str()[0] : '_' ;  
+        bool custom = opsu == '@' ; 
+
     LOG(LEVEL) 
+        << " PostStepDoIt_count " << PostStepDoIt_count
         << " Surface " << ( Surface ? Surface->GetName() : "-" ) 
         << " OpticalSurface " << ( OpticalSurface ? OpticalSurface->GetName() : "-" ) 
+        << " opsu " << opsu 
+        << " custom " << custom 
         ; 
-    */
+
 
         if (OpticalSurface) {
 
 
-           LOG(LEVEL) << U4OpticalSurface::Desc(OpticalSurface) ; 
+           LOG(LEVEL) 
+               << " PostStepDoIt_count " << PostStepDoIt_count << " "
+               << U4OpticalSurface::Desc(OpticalSurface) 
+               ; 
 
 
            type      = OpticalSurface->GetType();
@@ -481,7 +518,10 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
            if (aMaterialPropertiesTable) {
 
-               LOG(LEVEL) << U4MaterialPropertiesTable::Desc(aMaterialPropertiesTable) ; 
+               LOG(LEVEL) 
+                   << " PostStepDoIt_count " << PostStepDoIt_count << " " 
+                   << U4MaterialPropertiesTable::Desc(aMaterialPropertiesTable) 
+                   ; 
 
               if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
               {
@@ -509,6 +549,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
 
               LOG(LEVEL) 
+                   << " PostStepDoIt_count " << PostStepDoIt_count
                    << " PropertyPointer.kREFLECTIVITY " << PropertyPointer
                    << " PropertyPointer1.kREALRINDEX " << PropertyPointer1 
                    << " PropertyPointer2.kIMAGINARYRINDEX " << PropertyPointer2
@@ -517,15 +558,19 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
               iTE = 1;
               iTM = 1;
 
-              if (PropertyPointer) {
 
+
+              if(custom) CustomART(aTrack, aStep) ;  // FOR NOW DONT CHANGE RESULTS 
+
+              if (PropertyPointer) 
+              {
                  theReflectivity =
                           PropertyPointer->Value(thePhotonMomentum);
 
-              } else if (PropertyPointer1 && PropertyPointer2) {
-
+              } 
+              else if (PropertyPointer1 && PropertyPointer2) 
+              {
                  CalculateReflectivity();
-
               }
 
               PropertyPointer =
@@ -544,6 +589,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
 
               LOG(LEVEL)
+                  << " PostStepDoIt_count " << PostStepDoIt_count
                   << " theReflectivity " << theReflectivity
                   << " theEfficiency " << theEfficiency
                   << " theTransmittance " << theTransmittance
@@ -591,6 +637,11 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                       return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
            }
         }
+  
+        LOG(LEVEL) 
+            << " PostStepDoIt_count " << PostStepDoIt_count
+            << " after OpticalSurface if "  
+            ;
 
         if (type == dielectric_dielectric ) {
            if (theFinish == polished || theFinish == ground ) {
@@ -616,11 +667,20 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
               }
            }
 
-           LOG(LEVEL) << " Rindex2 " << Rindex2 ;  
+           LOG(LEVEL) 
+               << " PostStepDoIt_count " << PostStepDoIt_count
+               << " dielectric_dielectric " 
+               << " Rindex2 " << Rindex2 
+               ;  
         }
 
 	if (type == dielectric_metal) {
-
+     
+          LOG(LEVEL) 
+              << " PostStepDoIt_count " << PostStepDoIt_count
+              << " dielectric_metal " 
+              ;  
+ 
           DielectricMetal();
 
 	}
@@ -650,10 +710,16 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
 
              G4double rand = G4UniformRand();
+             LOG(LEVEL) 
+                 << " PostStepDoIt_count " << PostStepDoIt_count
+                 << " didi.rand " << U4UniformRand::Desc(rand) 
+                 << " theReflectivity " << std::setw(10) << std::fixed << std::setprecision(4) << theReflectivity
+                 << " theTransmittance " << std::setw(10) << std::fixed << std::setprecision(4) << theTransmittance
+                 ; 
+
 #ifdef DEBUG_TAG
              SEvt::AddTag(U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
 #endif
-             LOG(LEVEL) << "didi.rand " << rand ; 
 
 #ifdef DEBUG_PIDX
              // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
@@ -726,6 +792,204 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
+
+void InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4Step& aStep )
+{
+    G4double energy = thePhotonMomentum ; 
+    G4double wavelength = twopi*hbarc/energy ;
+
+    G4double energy_eV = energy/eV ;
+    G4double wavelength_nm = wavelength/nm ; 
+
+    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
+
+    G4ThreeVector localPoint        = transform.TransformPoint(theGlobalPoint);
+    G4ThreeVector localMomentum     = transform.TransformAxis(OldMomentum);
+    G4ThreeVector localPolarization = transform.TransformAxis(OldPolarization);
+    G4ThreeVector localNormal       = transform.TransformAxis(theGlobalNormal);
+
+    G4double minus_cos_theta_global = OldMomentum*theGlobalNormal ;
+
+    const G4ThreeVector& surface_normal = localNormal ; 
+    const G4ThreeVector& direction = localMomentum ; 
+    const G4ThreeVector& polarization = localPolarization ; 
+
+    G4double minus_cos_theta = direction*surface_normal  ; 
+    G4ThreeVector oriented_normal = ( minus_cos_theta < 0. ? 1. : -1. )*surface_normal ;
+
+
+    LOG(LEVEL) 
+        << std::endl
+        << " PostStepDoIt_count " << PostStepDoIt_count  
+        << std::endl
+        << " energy_eV " << energy_eV 
+        << std::endl
+        << " wavelength_nm " << wavelength_nm
+        << std::endl
+        << " OldMomentum " << OldMomentum
+        << std::endl
+        << " OldPolarization " << OldPolarization
+        << std::endl
+        << " theGlobalPoint " << theGlobalPoint
+        << std::endl
+        << " theGlobalNormal " << theGlobalNormal
+        << std::endl
+        << " transform " << transform
+        << std::endl
+        << " localPoint " << localPoint
+        << std::endl
+        << " localMomentum " << localMomentum
+        << std::endl
+        << " localPolarization " << localPolarization
+        << std::endl
+        << " localNormal " << localNormal << " TODO: check rigidly outwards for backwards photons " 
+        << std::endl
+        << " minus_cos_theta_global " << minus_cos_theta_global
+        << std::endl
+        << " minus_cos_theta " << minus_cos_theta << " local and global should make no difference " 
+        ;
+
+
+    int pmtcat = JPMT::HAMA ;  // TODO: pmtcat ctor argument ? HMM: NNVT_HiQE ?
+    //double _qe = 0.5 ; 
+    double _qe = 0.0 ; 
+
+    StackSpec<double> spec ; 
+    spec.d0  = 0. ; 
+    spec.d1  = jpmt->get_thickness_nm( pmtcat, JPMT::L1 );  
+    spec.d2  = jpmt->get_thickness_nm( pmtcat, JPMT::L2 );  
+    spec.d3 = 0. ; 
+
+    spec.n0r = jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::RINDEX, energy_eV );  
+    spec.n0i = jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::KINDEX, energy_eV );
+
+    spec.n1r = jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::RINDEX, energy_eV );
+    spec.n1i = jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::KINDEX, energy_eV );
+
+    spec.n2r = jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::RINDEX, energy_eV );  
+    spec.n2i = jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::KINDEX, energy_eV );  
+
+    spec.n3r = jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::RINDEX, energy_eV );  
+    spec.n3i = jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::KINDEX, energy_eV );
+
+    Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  // NB stack is flipped for minus_cos_theta > 0. 
+    Stack<double,4> stackNormal(wavelength_nm, -1.            , spec );  // minus_cos_theta -1. means normal incidence and stack not flipped
+
+    // NB stack is flipped for minus_cos_theta > 0. so:
+    //
+    //    stack.ll[0] always incident side
+    //    stack.ll[3] always transmission side 
+    //
+    // stackNormal is not flipped, presumably due to _qe definition
+
+
+    double _n0         = stack.ll[0].n.real() ; 
+    double _sin_theta0 = stack.ll[0].st.real() ; 
+    double _cos_theta0 = stack.ll[0].ct.real() ;
+
+    double _n3         = stack.ll[3].n.real() ; 
+    double _cos_theta3 = stack.ll[3].ct.real() ;
+
+
+ 
+    double E_s2 = _sin_theta0 > 0. ? (polarization*direction.cross(oriented_normal))/_sin_theta0 : 0. ; 
+    E_s2 *= E_s2;
+
+    double fT_s = stack.art.T_s ; 
+    double fT_p = stack.art.T_p ; 
+    double fR_s = stack.art.R_s ; 
+    double fR_p = stack.art.R_p ; 
+
+    double fT_n = stackNormal.art.T ; 
+    double fR_n = stackNormal.art.R ; 
+
+    double one = 1.0 ; 
+    double T = fT_s*E_s2 + fT_p*(one-E_s2);
+    double R = fR_s*E_s2 + fR_p*(one-E_s2);
+    double A = one - (T+R);
+    double An = one - (fT_n+fR_n);
+    double detect_fraction = _qe/An;
+
+    LOG_IF(error, detect_fraction > 1.)
+         << " detect_fraction > 1. : " << detect_fraction
+         << " _qe " << _qe
+         << " An " << An
+         ;
+
+    double u0 = G4UniformRand();
+    double u1 = G4UniformRand();
+
+    char status = '?' ;
+    if(     u0 < A)    status = u1 < detect_fraction ? 'D' : 'A' ;
+    else if(u0 < A+R)  status = 'R' ;
+    else               status = 'T' ;
+
+    // HMM: could the standard methods be used instead of this decision ?
+
+
+    G4ThreeVector new_direction(direction); 
+    G4ThreeVector new_polarization(polarization); 
+
+    // the below is copying junoPMTOpticalModel (TODO: need to compare with G4OpBoundaryProcess)
+    if( status == 'R' )
+    {
+        new_direction    -= 2.*(new_direction*oriented_normal)*oriented_normal ;
+        new_polarization -= 2.*(new_polarization*oriented_normal)*oriented_normal ;
+    }
+    else if( status == 'T' )
+    {
+        new_direction = (_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*new_direction;
+        // not normalized ?
+        new_polarization = (new_polarization-(new_polarization*direction)*direction).unit();
+    }
+
+    LOG(LEVEL) 
+        << " status " << status 
+        << std::endl 
+        << " new_direction " << new_direction 
+        << std::endl 
+        << " new_polarization " << new_polarization 
+        ; 
+
+
+    const G4Track* track = &aTrack ; 
+
+    spho* label = STrackInfo<spho>::GetRef(track);
+    LOG_IF(fatal, !label)
+        << " all photon tracks must be labelled "
+        << " track " << &track
+        << std::endl
+        << STrackInfo<spho>::Desc(track)
+        ;
+
+    assert( label );
+    label->uc4.w = status ;
+
+    LOG(LEVEL)
+        << " T " << std::setw(10) << std::fixed << std::setprecision(4) << T
+        << " R " << std::setw(10) << std::fixed << std::setprecision(4) << R
+        << " A " << std::setw(10) << std::fixed << std::setprecision(4) << A
+        << " u0 " << std::setw(10) << std::fixed << std::setprecision(4) << u0
+        << " u1 " << std::setw(10) << std::fixed << std::setprecision(4) << u1
+        << " status " << status
+        ;
+
+
+     // cannot use DoAbsorption ? as that does theEfficieny random throw
+    if(status == 'A' || status == 'D')
+    {
+        theStatus = status == 'D' ? Detection : Absorption  ;
+        aParticleChange.ProposeLocalEnergyDeposit(status == 'D' ? thePhotonMomentum : 0.0);
+
+        NewMomentum = OldMomentum;
+        NewPolarization = OldPolarization;   // follow DoAbsorption
+        aParticleChange.ProposeTrackStatus(fStopAndKill);
+    }
+
+
+
+}
+
 
 void InstrumentedG4OpBoundaryProcess::BoundaryProcessVerbose() const
 {
@@ -891,8 +1155,25 @@ InstrumentedG4OpBoundaryProcess::GetFacetNormal(const G4ThreeVector& Momentum,
         return FacetNormal;
 }
 
+
+/**
+InstrumentedG4OpBoundaryProcess::DielectricMetal
+--------------------------------------------------
+
+Changes::
+
+   theStatus
+   NewMomentum
+   NewPolarization
+
+**/
+
 void InstrumentedG4OpBoundaryProcess::DielectricMetal()
 {
+       LOG(LEVEL) 
+           << " PostStepDoIt_count " << PostStepDoIt_count
+           ;
+
         G4int n = 0;
         G4double rand, PdotN, EdotN;
         G4ThreeVector A_trans, A_paral;
@@ -902,6 +1183,15 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
            n++;
 
            rand = G4UniformRand();
+
+           LOG(LEVEL) 
+               << " PostStepDoIt_count " << PostStepDoIt_count
+               << " do-while n " << n 
+               << " rand " << U4UniformRand::Desc(rand) 
+               << " theReflectivity " << theReflectivity
+               << " theTransmittance " << theTransmittance
+               ;
+
 #ifdef DEBUG_TAG
            SEvt::AddTag(U4Stack_BoundaryDiMeReflectivity, rand); 
 #endif
@@ -915,6 +1205,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
                 NewMomentum = OldMomentum;
                 NewPolarization = OldPolarization;
               }
+              LOG(LEVEL) << " rand > theReflectivity && n == 1  break " ; 
               break;
            }
            else {
@@ -980,13 +1271,19 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
 
              }
 
+             LOG(LEVEL) << " Old<-New ? UGLY " ; 
+
              OldMomentum = NewMomentum;
              OldPolarization = NewPolarization;
 
 	   }
 
+       LOG(LEVEL) << " while check " ; 
+
           // Loop checking, 13-Aug-2015, Peter Gumplinger
 	} while (NewMomentum * theGlobalNormal < 0.0);
+
+    LOG(LEVEL) << " after while " ; 
 }
 
 void InstrumentedG4OpBoundaryProcess::DielectricLUT()
@@ -1686,3 +1983,177 @@ G4bool InstrumentedG4OpBoundaryProcess::InvokeSD(const G4Step* pStep)
   if (sd) return sd->Hit(&aStep);
   else return false;
 }
+
+
+/**
+InstrumentedG4OpBoundaryProcess::DoAbsorption
+----------------------------------------------
+
+
+**/
+
+void InstrumentedG4OpBoundaryProcess::DoAbsorption()
+{
+
+          LOG(LEVEL) 
+               << " PostStepDoIt_count " << PostStepDoIt_count
+               << " theEfficiency " << theEfficiency
+               ;
+
+              theStatus = Absorption;
+
+              if ( G4BooleanRand_theEfficiency(theEfficiency) ) {
+
+                 // EnergyDeposited =/= 0 means: photon has been detected
+                 theStatus = Detection;
+                 aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+              }
+              else {
+                 aParticleChange.ProposeLocalEnergyDeposit(0.0);
+              }
+
+              NewMomentum = OldMomentum;
+              NewPolarization = OldPolarization;
+
+//              aParticleChange.ProposeEnergy(0.0);
+              aParticleChange.ProposeTrackStatus(fStopAndKill);
+}
+
+
+/**
+InstrumentedG4OpBoundaryProcess::DoReflection
+-----------------------------------------------
+
+UGLY : depends on and sets theStatus 
+
+**/
+
+void InstrumentedG4OpBoundaryProcess::DoReflection()
+{
+        if ( theStatus == LambertianReflection ) {
+
+          NewMomentum = U4LambertianRand(theGlobalNormal);
+          theFacetNormal = (NewMomentum - OldMomentum).unit();
+
+        }
+        else if ( theFinish == ground ) {
+
+          theStatus = LobeReflection;
+          if ( PropertyPointer1 && PropertyPointer2 ){
+          } else {
+             theFacetNormal =
+                 GetFacetNormal(OldMomentum,theGlobalNormal);
+          }
+          G4double PdotN = OldMomentum * theFacetNormal;
+          NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+
+        }
+        else {
+
+          theStatus = SpikeReflection;
+          theFacetNormal = theGlobalNormal;
+          G4double PdotN = OldMomentum * theFacetNormal;
+          NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+
+        }
+        G4double EdotN = OldPolarization * theFacetNormal;
+        NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+}
+
+
+
+#ifdef DEBUG_PIDX
+const int  InstrumentedG4OpBoundaryProcess::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
+#endif
+
+
+
+
+G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoeff(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+
+#ifdef DEBUG_TAG
+   SEvt::AddTag(U4Stack_BoundaryDiDiTransCoeff, u ); 
+#endif   
+
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoff pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_TAG
+   SEvt::AddTag(U4Stack_AbsorptionEffDetect, u ); 
+#endif   
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+
+G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theReflectivity(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_theReflectivity pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+
+
+G4bool InstrumentedG4OpBoundaryProcess::IsApplicable(const G4ParticleDefinition& 
+                                                       aParticleType)
+{
+   return ( &aParticleType == G4OpticalPhoton::OpticalPhoton() );
+}
+
+G4OpBoundaryProcessStatus InstrumentedG4OpBoundaryProcess::GetStatus() const
+{
+   return theStatus;
+}
+
+void InstrumentedG4OpBoundaryProcess::SetInvokeSD(G4bool flag)
+{
+  fInvokeSD = flag;
+}
+
+void InstrumentedG4OpBoundaryProcess::ChooseReflection()
+{
+                 G4double rand = G4UniformRand();
+#ifdef DEBUG_TAG
+                 SEvt::AddTag( U4Stack_ChooseReflection, rand ); 
+#endif
+
+                 if ( rand >= 0.0 && rand < prob_ss ) {
+                    theStatus = SpikeReflection;
+                    theFacetNormal = theGlobalNormal;
+                 }
+                 else if ( rand >= prob_ss &&
+                           rand <= prob_ss+prob_sl) {
+                    theStatus = LobeReflection;
+                 }
+                 else if ( rand > prob_ss+prob_sl &&
+                           rand < prob_ss+prob_sl+prob_bs ) {
+                    theStatus = BackScattering;
+                 }
+                 else {
+                    theStatus = LambertianReflection;
+                 }
+}
+
+

@@ -30,6 +30,7 @@ set(TEST_SOURCES
    U4GDMLReadTest.cc 
    U4PhysicalConstantsTest.cc
    U4RandomTest.cc
+   U4UniformRandTest.cc
    U4EngineTest.cc
    U4VolumeMakerTest.cc
    U4LogTest.cc
@@ -43,6 +44,8 @@ set(TEST_SOURCES
 
    U4Debug_Test.cc 
    U4Hit_Debug_Test.cc 
+
+   G4ThreeVectorTest.cc 
  
 )
 
