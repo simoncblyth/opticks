@@ -254,7 +254,7 @@ private:
         // Invoke SD for post step point if the photon is 'detected'
         G4bool InvokeSD(const G4Step* step);
 
-        void CustomART(const G4Track& aTrack, const G4Step& aStep ); 
+        char CustomART(const G4Track& aTrack, const G4Step& aStep ); 
 
 private:
         JPMT* jpmt ; 
