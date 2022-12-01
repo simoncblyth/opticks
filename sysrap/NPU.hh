@@ -518,7 +518,9 @@ inline std::string U::BaseName( const char* path )
 inline std::string U::FormName( const char* prefix, int idx, const char* ext )
 {
     std::stringstream ss ; 
-    ss << prefix << idx << ext ; 
+    if(prefix) ss << prefix ; 
+    ss << idx ; 
+    if(ext) ss << ext ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -526,7 +528,9 @@ inline std::string U::FormName( const char* prefix, int idx, const char* ext )
 inline std::string U::FormName( const char* prefix, const char* body, const char* ext )
 {
     std::stringstream ss ; 
-    ss << prefix << body << ext ; 
+    if(prefix) ss << prefix ; 
+    if(body) ss << body ; 
+    if(ext) ss << ext ; 
     std::string s = ss.str(); 
     return s ; 
 }

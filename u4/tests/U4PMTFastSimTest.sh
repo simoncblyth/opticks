@@ -5,40 +5,55 @@ U4PMTFastSimTest.sh
 
 ::
 
+    N=0 ./U4PMTFastSimTest.sh 
+    N=1 ./U4PMTFastSimTest.sh 
+
     PID=726 ./U4PMTFastSimTest.sh nana
 
 EOU
 }
+
+bin=U4PMTFastSimTest
+log=$bin.log
+
+export GEOM=hamaLogicalPMT
+export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
 export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
 export G4FastSimulationManagerProcess_ENABLE=1  
 
+export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
+
+## u4/tests/U4PMTFastSimTest.cc
+export BeamOn=${BeamOn:-1}
+
+## PMTFastSim/HamamatsuR12860PMTManager declProp config 
+export hama_FastCoverMaterial=Cheese  
+export hama_UsePMTOpticalModel=1
+export hama_UseNaturalGeometry=${N:-0}  ## 0:FastSim/jPOM 1:InstrumentedG4OpBoundaryProcess/CustomART
+
+case $hama_UseNaturalGeometry in
+  0) echo FastSim/jPOM ;;
+  1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
+esac
+
 #running_mode=SRM_G4STATE_SAVE  
 running_mode=SRM_G4STATE_RERUN
-export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
-export OPTICKS_MAX_BOUNCE=20                # can go upto 31 now that extended sseq.h 
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL ;; 
-   SRM_G4STATE_RERUN) reldir=SEL ;; 
+   SRM_G4STATE_RERUN) reldir=SEL$hama_UseNaturalGeometry ;; 
 esac
 
+
+## sysrap/SEventConfig 
+export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
+export OPTICKS_MAX_BOUNCE=20                # can go upto 31 now that extended sseq.h 
 export OPTICKS_G4STATE_RERUN=726
 export OPTICKS_EVENT_MODE=StandardFullDebug
 
-export InstrumentedG4OpBoundaryProcess=INFO
-
-
-export GEOM=hamaLogicalPMT
-export U4RecorderTest__PRIMARY_MODE=torch 
-# hmm seems iphoton and torch do same thing internally 
-export BeamOn=${BeamOn:-1}
-
-export hama_FastCoverMaterial=Cheese    ## declProp config of Manager
-export hama_UsePMTOpticalModel=1
-export hama_UseNaturalGeometry=1
 
 #num_ph=2
 #num_ph=10
@@ -62,21 +77,17 @@ export storch_FillGenstep_radius=$radius
 export storch_FillGenstep_pos=0,0,200
 export storch_FillGenstep_mom=0,0,-1
 
-
-bin=U4PMTFastSimTest
-log=$bin.log
-
 loglevel(){
    export U4Recorder=INFO
    export junoPMTOpticalModel=INFO
    export junoPMTOpticalModelSimple=INFO
    #export SEvt=INFO
    export SEventConfig=INFO
+   export InstrumentedG4OpBoundaryProcess=INFO
 }
 
-
 if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
-   loglevel
+   loglevel  ## switch on logging when doing single photon RERUN
 fi 
 
 
@@ -99,15 +110,17 @@ if [ "$arg" == "dbg" ]; then
 fi 
 
 if [ "$arg" == "ana" -o "$arg" == "nana" ]; then
-    #export FOLD=/tmp/SFastSim_Debug
-    export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/$reldir
-
+    export FOLD=$BASE/$reldir
     [ "$arg" == "nana" ] && export NOGUI=1
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
 
-
+if [ "$arg" == "cf" -o "$arg" == "ncf" ]; then
+    [ "$arg" == "ncf" ] && export NOGUI=1
+    ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
+fi 
 
 exit 0 
 

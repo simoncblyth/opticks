@@ -7,14 +7,12 @@
 
 #include "J_PMTFASTSIM_LOG.hh"
 
-
 struct U4PMTFastSimTest
 {
     static G4RunManager* InitRunManager(G4VUserPhysicsList* phy);  
     G4VUserPhysicsList*        phy ; 
     G4RunManager*              run ; 
     U4RecorderTest*            rec ; 
-    NP*                        bef ;  
 
     U4PMTFastSimTest(); 
     void BeamOn(); 
@@ -32,35 +30,46 @@ U4PMTFastSimTest::U4PMTFastSimTest()
     :
     phy((G4VUserPhysicsList*)new U4Physics),
     run(InitRunManager(phy)),
-    rec(new U4RecorderTest(run)),
-    bef(nullptr)
+    rec(new U4RecorderTest(run))
 {
 }
 
 void U4PMTFastSimTest::BeamOn()
 {
-    int n = U::GetEnvInt("BeamOn",1) ; 
-    // if( n < 0 ) bef = U4UniformRand::Get(1000);    HMM: dont match because the g4states are not restored yet 
-    if( n > 0 ) run->BeamOn(n); 
+    run->BeamOn(U::GetEnvInt("BeamOn",1)); 
 }
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     J_PMTFASTSIM_LOG_(0); 
 
-    LOG(info) << "[ " << argv[0] << " " << STime::Now() ; 
+    const char* ekey = "hama_UseNaturalGeometry" ; 
+    int eval = SSys::getenvint(ekey, 0 );  
+    LOG(info) 
+        << "[ " << argv[0] << " " << STime::Now() 
+        << " ekey " << ekey 
+        << " eval " << eval 
+        ;
+
     LOG(info) << U4Engine::Desc()  ; 
 
     SEvt* evt = SEvt::CreateOrLoad() ; 
-    if(evt->is_loaded) evt->clear_partial("g4state");  // clear loaded evt but keep g4state
+    bool is_loaded = evt->is_loaded ;  // true when rerunning as single photon
+    if(is_loaded) 
+    {
+        evt->clear_partial("g4state");  // clear loaded evt but keep g4state
+        std::string reldir = U::FormName("SEL", eval, nullptr ); 
+        LOG(info) << " reldir " << reldir ; 
+        evt->setReldir(reldir.c_str());
+    }
 
     SEvt::AddTorchGenstep(); 
 
     U4PMTFastSimTest t ;  
     t.BeamOn(); 
-    
-    if(evt->is_loaded) evt->setReldir("SEL");  // evt is loaded when rerunning a single photon
+
 
     evt->save(); 
     const char* savedir = evt->getSaveDir(); 
@@ -68,9 +77,6 @@ int main(int argc, char** argv)
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
     fRecorder->saveRerunRand(savedir); 
-
-    if(t.bef) t.bef->save(savedir, "bef.npy") ; // doesnt match without BeamOn as g4state not restored yet 
-
     LOG(info) << " savedir " << savedir ;  
 
     LOG(info) << "] " << argv[0] << " " << STime::Now() ; 

@@ -852,6 +852,7 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     G4ThreeVector localPoint        = transform.TransformPoint(theGlobalPoint);
     if( localPoint.z() < 0. ) return 'Z' ; 
 
+    G4double time = aTrack.GetLocalTime(); 
     G4ThreeVector localNormal       = transform.TransformAxis(theGlobalNormal);
     G4ThreeVector localMomentum     = transform.TransformAxis(OldMomentum);
     G4ThreeVector localPolarization = transform.TransformAxis(OldPolarization);
@@ -992,9 +993,34 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     }
     else if( status == 'T' )
     {
+        LOG(LEVEL)
+           << " time " << time 
+           << " pos " << localPoint
+           << " norm " << oriented_normal
+           ;   
+        LOG(LEVEL)
+           << " _n0 " << _n0 
+           << " _n3 " << _n3 
+           << " _cos_theta0 " << _cos_theta0
+           << " _cos_theta3 " << _cos_theta3
+           ;   
+
+        LOG(LEVEL)
+           << " bef "
+           << " dir " << new_direction
+           << " pol " << new_polarization
+           ;   
+             
         new_direction = (_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*new_direction;
         new_polarization = (new_polarization-(new_polarization*direction)*direction).unit();
         // not normalized at this juncture ?
+
+        LOG(LEVEL)
+           << " aft "
+           << " dir " << new_direction
+           << " pol " << new_polarization
+           ;   
+ 
     }
 
     LOG(LEVEL) 
@@ -1007,7 +1033,6 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
 
     /*
     // no need for labelling : as standard status mechanisms should apply 
-
     const G4Track* track = &aTrack ; 
     spho* label = STrackInfo<spho>::GetRef(track);
     LOG_IF(fatal, !label)
@@ -1016,7 +1041,6 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
         << std::endl
         << STrackInfo<spho>::Desc(track)
         ;
-
     assert( label );
     label->uc4.w = status ;
     */

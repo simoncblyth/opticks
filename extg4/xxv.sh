@@ -12,6 +12,10 @@ To run over all the commented and uncommented geom listed in xxv.sh below use ./
 TODO: perhaps update to use sframe.cc/py 
 
 ::
+
+   N=0 ./xxv.sh ana
+   N=1 ./xxv.sh ana
+
   
    QUIET=1 ./xxv.sh run 
       ## run with minimal logging  
@@ -67,7 +71,7 @@ export hama_UseNaturalGeometry=1
 
 
 # XFOLD/XPID has precedence over EXTRA
-export XFOLD=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL
+export XFOLD=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL${N:-0}
 export XPID=726
 
 export EXTRA=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL/py_pidsel_726.npy
