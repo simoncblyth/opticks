@@ -100,6 +100,10 @@
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4MaterialPropertiesTable.h"
 
+#include "SPhoton_Debug.h"
+template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
+
+
 #include "U4UniformRand.h"
 NP* U4UniformRand::UU = nullptr ; 
 
@@ -146,9 +150,10 @@ void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
 
 #endif
 
-
-
-
+void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
+{
+    SPhoton_Debug<'B'>::Save(fold);   
+}
 
 
 InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
@@ -844,24 +849,38 @@ Members set::
    NewPolarization
    aParticleChange
 
+The z-position "trigger" definitely needs to be local 
+to select the upper hemi, but everything else should 
+be done in global frame. 
+
+Otherwise would have to transform into local frame
+and then transform back to global frame for the results::
+
+  NewMomentum 
+  NewPolarization
+
+
 **/
 
 char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4Step& aStep )
 {
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPoint        = transform.TransformPoint(theGlobalPoint);
-    if( localPoint.z() < 0. ) return 'Z' ; 
+    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+    G4double z_local = localPoint.z() ; 
+    if( z_local < 0. ) return 'Z' ; 
 
-    G4double time = aTrack.GetLocalTime(); 
+
+    G4double minus_cos_theta_global = OldMomentum*theGlobalNormal ;
+    G4double time = aTrack.GetLocalTime();  // just for debug output 
+
     G4ThreeVector localNormal       = transform.TransformAxis(theGlobalNormal);
     G4ThreeVector localMomentum     = transform.TransformAxis(OldMomentum);
     G4ThreeVector localPolarization = transform.TransformAxis(OldPolarization);
 
-    G4double minus_cos_theta_global = OldMomentum*theGlobalNormal ;
-
+    // TODO: compare with global 
     const G4ThreeVector& surface_normal = localNormal ; 
-    const G4ThreeVector& direction = localMomentum ; 
-    const G4ThreeVector& polarization = localPolarization ; 
+    const G4ThreeVector& direction      = localMomentum ; 
+    const G4ThreeVector& polarization   = localPolarization ; 
 
     G4double minus_cos_theta = direction*surface_normal  ; 
     G4ThreeVector oriented_normal = ( minus_cos_theta < 0. ? 1. : -1. )*surface_normal ;
@@ -1075,6 +1094,25 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
         NewMomentum = new_direction.unit() ; 
         NewPolarization = new_polarization.unit() ; 
     }
+
+
+    SPhoton_Debug<'B'> dbg ; 
+
+    dbg.pos = localPoint ; 
+    dbg.time = time ; 
+
+    dbg.mom = NewMomentum ; 
+    dbg.iindex = 0 ; 
+
+    dbg.pol = NewPolarization ;  
+    dbg.wavelength = wavelength_nm ; 
+
+    dbg.nrm = oriented_normal ;  
+    dbg.spare = 0. ; 
+
+    dbg.add();  
+
+
     return status ; 
 }
 

@@ -9,7 +9,7 @@ X4IntersectVolumeTest.py : 2D scatter plots of geometry intersect positions
 
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import mpplt_add_contiguous_line_segments 
+from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line
 
 
 log = logging.getLogger(__name__)
@@ -87,11 +87,23 @@ if __name__ == '__main__':
     xfold = None
     extra = None
     extra_type = None
+    spud = None 
 
     if os.path.isdir(XFOLD) and XPID > -1:
         xfold = Fold.Load(XFOLD, symbol="xfold")
         extra = xfold.record[XPID]
         extra_type = "record"
+        a_spud = getattr(xfold, "A_SPhoton_Debug", None)
+        b_spud = getattr(xfold, "B_SPhoton_Debug", None)
+        if not a_spud is None: spud = a_spud
+        if not b_spud is None: spud = b_spud
+        if not a_spud is None and not b_spud is None:
+            print("HMM BOTH A AND B SPUDS : a_spud : %s b_spud: %s " % (str(a_spud.shape), str(b_spud.shape)))
+        pass
+        if not spud is None:
+            print("spud %s " % (str(spud.shape)))  
+        pass
+
         print("loaded extra %s from EXTRA.xfold %s XPID %d extra_type %s  " % (str(extra.shape), EXTRA, XPID, extra_type ))
         extra_wl = extra[:,2,3] 
         extra = extra[extra_wl > 0]
@@ -109,8 +121,10 @@ if __name__ == '__main__':
     print("REVERSE : %d " % REVERSE)
 
     size = np.array([1280, 720])
-    #H,V = Z,X
-    H,V = X,Z
+
+    axes = X,Z
+    H,V = axes
+
 
     if mp: 
         fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
@@ -148,6 +162,34 @@ if __name__ == '__main__':
             pass
         pass
 
+        if not spud is None:
+            """                       
+            Illustrate the normal vector::
+
+ 
+                       b    b:intersect+NRM_SCALE*normal 
+                       :
+                  -----i--- i: spud_pos
+                       :
+                       a    a:intersect-NRM_SCALE*normal 
+
+            """
+            nrm_scale = float(os.environ.get("NRM_SCALE","50"))
+            spud_pos = spud[:,0,:3]
+            spud_nrm = spud[:,3,:3]
+
+            nrm_b = spud_pos + nrm_scale*spud_nrm
+            nrm_i = spud_pos
+            nrm_a = spud_pos - nrm_scale*spud_nrm
+
+            for i in range(len(spud)):
+                mpplt_add_line(ax, nrm_a[i], nrm_b[i], axes )   
+                ax.arrow( nrm_b[i,H], nrm_b[i,V], 10*spud_nrm[i,H], 10*spud_nrm[i,V], head_width=10, head_length=10, fc='k', ec='k' )
+            pass
+            #ax.scatter( nrm_b[:,H], nrm_b[:,V], s=10*SZ )
+            ax.scatter( nrm_i[:,H], nrm_i[:,V], s=100*SZ )  
+        pass
+
         if not extra is None:
             print("extra %s EXTRA %s extra_type %s " % ( str(extra.shape), EXTRA, extra_type ))
             if extra_type == "ModelTrigger":
@@ -164,8 +206,6 @@ if __name__ == '__main__':
                 pass
             pass
             mpplt_add_contiguous_line_segments(ax, extra[:,0,:3], axes=(H,V), label=None )
-
-          
 
             if extra_type == "record":
                 hv = extra[:,0,(H,V)]   
@@ -187,10 +227,8 @@ if __name__ == '__main__':
                     else:
                         ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15, backgroundcolor=backgroundcolor )
                     pass
- 
                 pass
             pass
-
         pass
         pass
 

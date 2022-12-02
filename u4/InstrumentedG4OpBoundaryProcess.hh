@@ -255,6 +255,8 @@ private:
         G4bool InvokeSD(const G4Step* step);
 
         char CustomART(const G4Track& aTrack, const G4Step& aStep ); 
+public:  
+        static void Save(const char* dir); 
 
 private:
         JPMT* jpmt ; 

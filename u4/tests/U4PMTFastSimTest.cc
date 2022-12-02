@@ -2,8 +2,12 @@
 #include "STime.hh"
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
+
 #include "U4Engine.h"
 #include "U4UniformRand.h"
+
+#include "InstrumentedG4OpBoundaryProcess.hh"
+#include "junoPMTOpticalModel.hh"
 
 #include "J_PMTFASTSIM_LOG.hh"
 
@@ -74,6 +78,8 @@ int main(int argc, char** argv)
     evt->save(); 
     const char* savedir = evt->getSaveDir(); 
     SFastSim_Debug::Save(savedir); 
+    junoPMTOpticalModel::Save(savedir); 
+    InstrumentedG4OpBoundaryProcess::Save(savedir); 
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
     fRecorder->saveRerunRand(savedir); 

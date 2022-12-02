@@ -344,6 +344,7 @@ set(HEADERS
     SFastSim_Debug.hh
     SFastSimOpticalModel.hh
     STrackInfo.h
+    SPhoton_Debug.h
 
 )
 

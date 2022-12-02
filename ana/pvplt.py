@@ -42,6 +42,7 @@ pass
 
 if not mp is None:
     from matplotlib import collections  as mp_collections
+    from matplotlib import lines as mp_lines 
     from matplotlib.patches import Circle, Rectangle, Ellipse
 else:
     mp_collections = None
@@ -233,9 +234,16 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
     ax.scatter( xpos2d[:,0], xpos2d[:,1], s=s, label=label )
 
 
-
-
-
+def mpplt_add_line(ax, a, b, axes ):
+    """
+    :param ax:  matplotlib 2D axis
+    :param a: (3,) xyz position array 
+    :param b: (3,) xyz position array 
+    :param axes: (2,) 2-tuple identifying axes X=0, Y=1, Z=2
+    """
+    H,V = axes
+    l = mp_lines.Line2D([a[H],b[H]], [a[V],b[V]])    
+    ax.add_line(l) 
 
 
 def mpplt_hist(mp, v, bins=100):
