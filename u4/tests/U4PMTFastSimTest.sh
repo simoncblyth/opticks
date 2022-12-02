@@ -14,7 +14,6 @@ EOU
 }
 
 bin=U4PMTFastSimTest
-log=$bin.log
 
 export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
@@ -38,6 +37,9 @@ case $hama_UseNaturalGeometry in
   0) echo FastSim/jPOM ;;
   1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
 esac
+log=${bin}.log
+logN=${bin}_${hama_UseNaturalGeometry}.log
+
 
 #running_mode=SRM_G4STATE_SAVE  
 running_mode=SRM_G4STATE_RERUN
@@ -46,6 +48,17 @@ case $running_mode in
    SRM_G4STATE_SAVE)  reldir=ALL ;; 
    SRM_G4STATE_RERUN) reldir=SEL$hama_UseNaturalGeometry ;; 
 esac
+
+
+if [ "$running_mode" == "SRM_G4STATE_RERUN" -a "$hama_UseNaturalGeometry" == "1" ]; then
+
+   ## when using natural geometry need to apply some burns to
+   ## jump ahead in a way that corresponds to the consumption 
+   ## for navigating the fake volumes in the old complex geomerty 
+
+   ./UU_BURN.sh 
+   export SEvt__UU_BURN=/tmp/UU_BURN.npy
+fi 
 
 
 ## sysrap/SEventConfig 
@@ -98,6 +111,9 @@ if [ "$arg" == "run" ]; then
     [ -f "$log" ] && rm $log 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+
+    [ -f "$log" ] && echo $BASH_SOURCE rename log $log to logN $logN && mv $log $logN    
+    ## HMM: probably an envvar can change the logname directly ? 
 fi 
 
 if [ "$arg" == "dbg" ]; then

@@ -104,7 +104,8 @@
 template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
 
 #include "U4UniformRand.h"
-NP* U4UniformRand::UU = nullptr ; 
+NP* U4UniformRand::UU = nullptr ;  
+// UU gets set by U4Recorder::saveOrLoadStates when doing single photon reruns
 
 #ifdef DEBUG_PIDX
 
@@ -130,7 +131,21 @@ const bool InstrumentedG4OpBoundaryProcess::FLOAT  = getenv("InstrumentedG4OpBou
 void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
 {
     G4double u = G4UniformRand() ; 
-    LOG(LEVEL) << U4UniformRand::Desc(u) ; 
+
+    int u_idx = U4UniformRand::Find(u, SEvt::UU ) ;   
+    LOG(LEVEL) << U4UniformRand::Desc(u, SEvt::UU ) << " u_idx " << u_idx  ; 
+
+    int uu_burn = SEvt::UU_BURN ? SEvt::UU_BURN->ifind2D<int>(u_idx, 0, 1 ) : -1  ; 
+    if( uu_burn > 0 )
+    {
+         LOG(LEVEL) 
+            << " u_idx " << u_idx 
+            << " uu_burn " << uu_burn
+            ;
+
+         U4UniformRand::Burn(uu_burn); 
+    } 
+
 
     SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u );  
 

@@ -303,8 +303,9 @@ struct NP
  
     NP* copy() const ; 
 
-
     template<typename T> int find_value_index(T value, T epsilon) const ; 
+    template<typename T> T   ifind2D(T value, int jcol, int jret ) const ; 
+
 
     bool is_pshaped() const ; 
     template<typename T> T    plhs(unsigned column ) const ;  
@@ -2178,6 +2179,11 @@ inline NP* NP::LoadNarrow(const char* path)
 }
 
 
+/**
+NP::find_value_index
+---------------------
+
+**/
 
 template<typename T> inline int NP::find_value_index(T value, T epsilon) const
 {
@@ -2199,6 +2205,71 @@ template<typename T> inline int NP::find_value_index(T value, T epsilon) const
     }
     return idx ; 
 } 
+
+/**
+NP::ifind2D
+------------
+
+Consider a 2D array of integers of shape (ni, nj).
+Look for *ival* in the *jcol* column of each of the *ni* items 
+and return the corresponding *vret* from the *jret* column
+or the *i* index if *jret* is -1. 
+
+::
+
+    In [2]: a
+    Out[2]: 
+    array([[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11],
+           [12, 13, 14, 15],
+           [16, 17, 18, 19],
+           [20, 21, 22, 23],
+           [24, 25, 26, 27],
+           [28, 29, 30, 31],
+           [32, 33, 34, 35],
+           [36, 37, 38, 39]], dtype=int32)
+
+::
+
+    NP* a = NP::Make<int>(10,4) ; 
+    a->fillIndexFlat();
+    a->save("/tmp/a.npy");  
+
+    int ival = 4 ;  // value to look for
+    int jcol = 0 ;  // column in which to look for ival 
+    int jret = 3 ;  // column to return -> 7  
+
+    int vret = a->ifind2D<int>(ival, jcol, jret );  
+
+    std::cout << " vret " << vret << std::endl ; 
+    assert( vret == 7 ); 
+
+**/
+
+template<typename T> inline T NP::ifind2D(T ivalue, int jcol, int jret ) const
+{
+    if( shape.size() != 2 ) return -2 ;   
+
+    int ni = shape[0] ;
+    int nj = shape[1] ;
+
+    if( jcol >= nj ) return -3 ; 
+    if( jret >= nj ) return -4 ; 
+
+    const T* vv = cvalues<T>(); 
+
+    T vcol = -1 ; 
+    T vret = -1 ;  
+ 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        vcol = vv[i*nj+jcol]; 
+        vret = jret < 0 ? i : vv[i*nj+jret]; 
+        if( vcol == ivalue ) break ; 
+    }
+    return vret ; 
+}
 
 
 
@@ -3334,24 +3405,26 @@ template<typename T>
 inline std::string NP::repr() const 
 {
     const T* vv = cvalues<T>(); 
-    int ndim = shape.size() ; 
-    int ni = ndim > 0 ? shape[0] : 0 ; 
+    int nv = num_values() ; 
     const int edge = 5 ; 
 
     std::stringstream ss ; 
     ss << "{" ; 
-    if(ndim == 1)
-    {
-        for(int i=0 ; i < ni ; i++) 
-        {     
-            if( i < edge || i > ni - edge )
+    for(int i=0 ; i < nv ; i++) 
+    {     
+        if( i < edge || i > nv - edge )
+        {
+            switch(uifc)
             { 
-                ss << std::setw(10) << std::fixed << std::setprecision(5) << vv[i] << " " ; 
+                case 'f': ss << std::setw(10) << std::fixed << std::setprecision(5) << vv[i] << " " ; break ; 
+                case 'u': ss << std::setw(5) << vv[i] << " " ; break ; 
+                case 'i': ss << std::setw(5) << vv[i] << " " ; break ; 
+                case 'c': ss << std::setw(10) << vv[i] << " " ; break ;   // TODO: check array of std::complex 
             }
-            else if( i == edge )
-            {
-                ss << "... " ;  
-            }
+        }
+        else if( i == edge )
+        {
+            ss << "... " ;  
         }
     }
     ss << "}" ; 
@@ -3929,9 +4002,16 @@ template<typename... Args> inline NP* NP::Combine(Args ... args)  // Combine_ell
 
 
 
-inline NP* NP::Load(const char* path)
+inline NP* NP::Load(const char* path_)
 {
-    if(VERBOSE) std::cerr << "[ NP::Load " << path << std::endl ; 
+    const char* path = U::Resolve(path_); 
+    if(VERBOSE) 
+        std::cerr 
+            << "[ NP::Load " 
+            << " path_ " << path_ 
+            << " path " << path
+            << std::endl 
+            ; 
 
     bool npy_ext = U::EndsWith(path, EXT) ; 
     NP* a = nullptr ; 

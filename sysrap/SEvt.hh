@@ -81,8 +81,6 @@ struct SGeo ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
-    //static const SCF* CF ;  // TODO: eliminate 
-    static constexpr const unsigned UNDEF = ~0u ; 
 
     int cfgrc ; 
     int index ; 
@@ -135,6 +133,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     quad2   current_prd = {} ; 
     sctx    current_ctx = {};  
 
+
+    static constexpr const unsigned UNDEF = ~0u ; 
+    static NP* UU ;  
+    static NP* UU_BURN ;  
     static const plog::Severity LEVEL ; 
     static const int PIDX ; 
     static const int GIDX ; 
@@ -147,7 +149,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     static SEvt* CreateOrLoad() ; 
 
     static bool Exists(); 
-    //static bool RECORDING ; 
 
     static void Check(); 
     static void AddTag(unsigned stack, float u ); 

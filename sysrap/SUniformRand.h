@@ -43,7 +43,7 @@ g4-cls Random
 template<typename E>
 struct SUniformRand
 {
-    static NP* UU ; 
+    static NP* UU ;  // this causes issues, maybe easier to just pass SEvt::UU as argument 
     static constexpr const double EPSILON = 1e-6 ; 
     static std::string Desc(int n=10); 
     static void Get(std::vector<double>& uu); 

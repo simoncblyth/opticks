@@ -30,7 +30,10 @@
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "SComp.h"
-//#include "SCF.h"
+
+
+NP* SEvt::UU = nullptr ; 
+NP* SEvt::UU_BURN = NP::Load("$SEvt__UU_BURN") ; 
 
 const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;

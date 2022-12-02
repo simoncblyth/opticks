@@ -289,6 +289,7 @@ void U4Recorder::saveOrLoadStates( int id )
         {
             rerun_rand = U4UniformRand::Get(1000);
             U4UniformRand::UU = rerun_rand ; 
+            SEvt::UU = rerun_rand ;  // better hitching it somewhere thats always accessible 
 
             LOG(LEVEL) 
                 << "U4Engine::RestoreState for id (SEventConfig::_G4StateRerun)  " << id 

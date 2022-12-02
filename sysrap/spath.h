@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <sstream>
@@ -7,12 +8,51 @@
 
 struct spath
 {
+    static const char* Resolve(const char* spec); 
+
     template<typename ... Args>
     static std::string Join_( Args ... args_  ); 
 
     template<typename ... Args>
     static const char* Join( Args ... args ); 
 };
+
+/**
+spath::Resolve
+----------------
+
+::
+
+    $TOK/remainder/path/name.npy   (tok_plus) 
+    $TOK
+
+**/
+
+inline const char* spath::Resolve(const char* spec_)
+{
+    if(spec_ == nullptr) return nullptr ; 
+    char* spec = strdup(spec_); 
+
+    std::stringstream ss ; 
+    if( spec[0] == '$' )
+    {
+        char* sep = strchr(spec, '/');       // point to first slash  
+        char* end = strchr(spec, '\0' ); 
+        bool tok_plus =  sep && end && sep != end ;  
+        if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
+        char* pfx = getenv(spec+1) ; 
+        if(tok_plus) *sep = '/' ;            // put back the slash 
+        ss << ( pfx ? pfx : "/tmp" ) << ( sep ? sep : "" ) ; 
+    }
+    else
+    {
+        ss << spec ; 
+    }
+    std::string s = ss.str(); 
+    const char* path = s.c_str(); 
+    return strdup(path) ; 
+}
+
 
 template<typename ... Args>
 inline std::string spath::Join_( Args ... args_  )  // static

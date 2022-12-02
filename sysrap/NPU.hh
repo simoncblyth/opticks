@@ -410,6 +410,8 @@ struct U
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static std::string Desc(const std::vector<std::string>& names); 
 
+    static const char* Resolve(const char* spec);   // $TOK/remainder/path.npy $TOK
+
 };
 
 /**
@@ -682,6 +684,45 @@ inline std::string U::Desc(const std::vector<std::string>& names)
     std::string s = ss.str();
     return s ;
 }
+
+
+/**
+U::Resolve
+----------------
+
+::
+
+    $TOK/remainder/path/name.npy   (tok_plus) 
+    $TOK
+
+**/
+
+inline const char* U::Resolve(const char* spec_)
+{
+    if(spec_ == nullptr) return nullptr ; 
+    char* spec = strdup(spec_); 
+
+    std::stringstream ss ; 
+    if( spec[0] == '$' )
+    {   
+        char* sep = strchr(spec, '/');       // point to first slash  
+        char* end = strchr(spec, '\0' );  
+        bool tok_plus =  sep && end && sep != end ;   
+        if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
+        char* pfx = getenv(spec+1) ; 
+        if(tok_plus) *sep = '/' ;            // put back the slash 
+        ss << ( pfx ? pfx : "/tmp" ) << ( sep ? sep : "" ) ; 
+    }   
+    else
+    {   
+        ss << spec ; 
+    }   
+    std::string s = ss.str(); 
+    const char* path = s.c_str(); 
+    return strdup(path) ; 
+}
+
+
 
 
 
