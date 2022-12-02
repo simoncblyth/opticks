@@ -45,8 +45,9 @@ Add entries with::
 **/
 
 #include <cstdint>
-#include "G4ThreeVector.hh"
 #include <vector>
+#include <string>
+#include "G4ThreeVector.hh"
 #include "NP.hh"    
 
 template<char N>
@@ -56,6 +57,8 @@ struct SPhoton_Debug
     static constexpr const char* NAME = "SPhoton_Debug.npy" ; 
     static constexpr const unsigned NUM_QUAD = 4u ; 
 
+    static int Count(); 
+    static std::string Name(); 
     static void Save(const char* dir); 
     void add(); 
     void fill(double value); 
@@ -74,25 +77,36 @@ struct SPhoton_Debug
 
 }; 
 
-
 template<char N>
-inline void SPhoton_Debug<N>::Save(const char* dir)
+inline std::string SPhoton_Debug<N>::Name() // static
 {
     std::string name ; 
     name += N ; 
     name += '_' ; 
     name += NAME ; 
+    return name ; 
+}
 
+template<char N>
+inline void SPhoton_Debug<N>::Save(const char* dir) // static
+{
+    std::string name = Name(); 
     std::cout  
         << "SPhoton_Debug::Save"
         << " dir " << dir 
-        << " name " << name 
+        << " name " << name
         << " num_record " << record.size() 
         << std::endl 
         ;
 
     if( record.size() > 0) NP::Write<double>(dir, name.c_str(), (double*)record.data(), record.size(), NUM_QUAD, 4 );  
     record.clear(); 
+}
+
+template<char N>
+inline int SPhoton_Debug<N>::Count()  // static
+{
+    return record.size() ; 
 }
 
 template<char N>

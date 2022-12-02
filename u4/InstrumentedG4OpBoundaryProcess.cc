@@ -103,7 +103,6 @@
 #include "SPhoton_Debug.h"
 template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
 
-
 #include "U4UniformRand.h"
 NP* U4UniformRand::UU = nullptr ; 
 
@@ -869,7 +868,6 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     G4double z_local = localPoint.z() ; 
     if( z_local < 0. ) return 'Z' ; 
 
-
     G4double minus_cos_theta_global = OldMomentum*theGlobalNormal ;
     G4double time = aTrack.GetLocalTime();  // just for debug output 
 
@@ -998,15 +996,23 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     else if(u0 < A+R)  status = 'R' ;
     else               status = 'T' ;
 
-    // HMM: could the standard methods be used instead of this decision ?
+
+    
 
 
+    LOG(LEVEL)
+        << " T " << std::setw(10) << std::fixed << std::setprecision(4) << T
+        << " R " << std::setw(10) << std::fixed << std::setprecision(4) << R
+        << " A " << std::setw(10) << std::fixed << std::setprecision(4) << A
+        ; 
     G4ThreeVector new_direction(direction); 
     G4ThreeVector new_polarization(polarization); 
 
     // the below is copying junoPMTOpticalModel (TODO: need to compare with G4OpBoundaryProcess)
     if( status == 'R' )
     {
+        // looks like the convention for oriented_normal will cancel out here ?
+
         new_direction    -= 2.*(new_direction*oriented_normal)*oriented_normal ;
         new_polarization -= 2.*(new_polarization*oriented_normal)*oriented_normal ;
     }
@@ -1029,8 +1035,12 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
            << " dir " << new_direction
            << " pol " << new_polarization
            ;   
-             
-        new_direction = (_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*new_direction;
+        
+        // my convention for oriented_normal seems to be opposite to what 
+        // this formula (duplicated from junoPMTOpticalModel) is expecting  ?     
+
+        double flip = -1. ;   
+        new_direction = flip*(_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*new_direction;
         new_polarization = (new_polarization-(new_polarization*direction)*direction).unit();
         // not normalized at this juncture ?
 
@@ -1041,38 +1051,6 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
            ;   
  
     }
-
-    LOG(LEVEL) 
-        << " status " << status 
-        << std::endl 
-        << " new_direction " << new_direction 
-        << std::endl 
-        << " new_polarization " << new_polarization 
-        ; 
-
-    /*
-    // no need for labelling : as standard status mechanisms should apply 
-    const G4Track* track = &aTrack ; 
-    spho* label = STrackInfo<spho>::GetRef(track);
-    LOG_IF(fatal, !label)
-        << " all photon tracks must be labelled "
-        << " track " << &track
-        << std::endl
-        << STrackInfo<spho>::Desc(track)
-        ;
-    assert( label );
-    label->uc4.w = status ;
-    */
-
-
-    LOG(LEVEL)
-        << " T " << std::setw(10) << std::fixed << std::setprecision(4) << T
-        << " R " << std::setw(10) << std::fixed << std::setprecision(4) << R
-        << " A " << std::setw(10) << std::fixed << std::setprecision(4) << A
-        << " u0 " << std::setw(10) << std::fixed << std::setprecision(4) << u0
-        << " u1 " << std::setw(10) << std::fixed << std::setprecision(4) << u1
-        << " status " << status
-        ;
 
 
      // cannot use DoAbsorption ? as that does theEfficieny random throw
@@ -1097,6 +1075,16 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
 
 
     SPhoton_Debug<'B'> dbg ; 
+    int u0_idx = U4UniformRand::Find(u0);     
+
+    LOG(LEVEL)
+       << " time " << time 
+       << " dbg.Count " << dbg.Count()
+       << " dbg.Name " << dbg.Name()
+       << " u0 " << U4UniformRand::Desc(u0) 
+       << " u1 " << U4UniformRand::Desc(u1)
+       << " u0_idx " << u0_idx 
+       ;    
 
     dbg.pos = localPoint ; 
     dbg.time = time ; 
@@ -1108,7 +1096,7 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     dbg.wavelength = wavelength_nm ; 
 
     dbg.nrm = oriented_normal ;  
-    dbg.spare = 0. ; 
+    dbg.spare = z_local ; 
 
     dbg.add();  
 

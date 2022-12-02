@@ -1,13 +1,15 @@
 #pragma once
 /**
-U4UniformRand.h
+SUniformRand.h
 =================
+
+This adapts u4/U4UniformRand.h to try to get rid of Geant4 dependency. 
 
 As this is headeronly and can benefit from a static UU 
 include this header into a compilation unit with::
 
-    #include "U4UniformRand.h"
-    NP* U4UniformRand::UU = nullptr ;
+    #include "SUniformRand.h"
+    NP* SUniformRand::UU = nullptr ;
 
 And where appropriate set the UU to a reference array of randoms. 
 
@@ -22,6 +24,14 @@ Randomize.hh
 Randomize.h
     CLHEP level setup
 
+Random.h
+    CLHEP::HepRandom class with static method CLHEP::HepRandom::getTheEngine()
+
+
+g4-cls Randomize
+g4-cls Random
+
+
 
 **/
 
@@ -30,7 +40,8 @@ Randomize.h
 #include "Randomize.hh"
 #include "NP.hh"
 
-struct U4UniformRand
+template<typename E>
+struct SUniformRand
 {
     static NP* UU ; 
     static constexpr const double EPSILON = 1e-6 ; 
@@ -42,13 +53,15 @@ struct U4UniformRand
 }; 
 
 
-inline void U4UniformRand::Get(std::vector<double>& uu ) // static
+template<typename E>
+inline void SUniformRand<E>::Get(std::vector<double>& uu ) // static
 {
     unsigned n = uu.size(); 
-    for(unsigned i=0 ; i < n ; i++) uu[i] = G4UniformRand(); 
+    for(unsigned i=0 ; i < n ; i++) uu[i] = E::getTheEngine()->flat() ; 
 }
 
-inline std::string U4UniformRand::Desc(int n )
+template<typename E>
+inline std::string SUniformRand<E>::Desc(int n )
 {
     std::vector<double> uu(n) ; 
     Get(uu); 
@@ -66,19 +79,22 @@ inline std::string U4UniformRand::Desc(int n )
 }
 
 
-inline NP* U4UniformRand::Get(int n)
+template<typename E>
+inline NP* SUniformRand<E>::Get(int n)
 {
     std::vector<double> uu(n) ; 
     Get(uu); 
     return NP::Make<double>(uu) ; 
 }
 
-inline int U4UniformRand::Find(double u, const NP* uu)
+template<typename E>
+inline int SUniformRand<E>::Find(double u, const NP* uu)
 {
     return uu ? uu->find_value_index(u, EPSILON) : -2 ; 
 }
 
-inline std::string U4UniformRand::Desc(double u, const NP* uu)
+template<typename E>
+inline std::string SUniformRand<E>::Desc(double u, const NP* uu)
 {
     std::stringstream ss ; 
     ss << "UU[" 
