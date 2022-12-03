@@ -31,6 +31,7 @@ find_package(OpticksXercesC REQUIRED MODULE)
 find_package(PMTFastSim CONFIG)   ## NB : NOT REQUIRED
 #set(PMTFastSim_FOUND NO)
 
+
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
 
 

@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     c.fill(1.) ; 
 
 
-    h.label = {1,2,3,4} ; 
+    h.label = {1,2,3,{0,0,0,0}} ; 
     h.add(); 
     h.add(); 
 

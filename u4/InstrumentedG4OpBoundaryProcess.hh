@@ -83,8 +83,9 @@
 #include "U4RandomDirection.hh"
 #include "plog/Severity.h"
 
+#ifdef WITH_PMTFASTSIM
 struct JPMT ; 
-
+#endif
 
 #include "G4Step.hh"
 #include "G4VDiscreteProcess.hh"
@@ -254,12 +255,16 @@ private:
         // Invoke SD for post step point if the photon is 'detected'
         G4bool InvokeSD(const G4Step* step);
 
+#ifdef WITH_PMTFASTSIM
         char CustomART(const G4Track& aTrack, const G4Step& aStep ); 
+#endif
 public:  
         static void Save(const char* dir); 
 
 private:
+#ifdef WITH_PMTFASTSIM
         JPMT* jpmt ; 
+#endif
 
         G4double thePhotonMomentum;
 

@@ -77,21 +77,19 @@
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4OpProcessSubType.hh"
-
 #include "InstrumentedG4OpBoundaryProcess.hh"
 #include "G4GeometryTolerance.hh"
-
 #include "G4VSensitiveDetector.hh"
 #include "G4ParallelWorldProcess.hh"
-
 #include "G4SystemOfUnits.hh"
-
-
 #include <csignal>
 
+
+#ifdef WITH_PMTFASTSIM
 #include "CustomART.h"
 #include "JPMT.h"
 #include "Layr.h"
+#endif
 
 #include "SLOG.hh"
 #include "spho.h"
@@ -173,8 +171,10 @@ void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
     : 
     G4VDiscreteProcess(processName, type),
-    PostStepDoIt_count(-1), 
-    jpmt(new JPMT)  
+    PostStepDoIt_count(-1)
+#ifdef WITH_PMTFASTSIM
+    ,jpmt(new JPMT)  
+#endif
 {
     LOG(LEVEL) << " processName " << GetProcessName()  ; 
 
@@ -619,10 +619,11 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
             }
             //]OpticalSurface.mpt.theReflectivity,theTransmittance,theEfficiency
 
+#ifdef WITH_PMTFASTSIM
             //[OpticalSurface.mpt.CustomART
             CustomART_status = OpticalSurfaceName[0] == '@' ? CustomART(aTrack, aStep) : 'N' ; 
             //]OpticalSurface.mpt.CustomART
-
+#endif
 
             LOG(LEVEL)
                 << " PostStepDoIt_count " << PostStepDoIt_count
@@ -704,9 +705,8 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
 
     //[type_switch 
-
+#ifdef WITH_PMTFASTSIM
     bool CustomART_active = CustomART_::IsActive(CustomART_status) ; 
-
     LOG(LEVEL) 
         << " PostStepDoIt_count " << PostStepDoIt_count
         << " type switch " << U4SurfaceType::Name(type)
@@ -719,7 +719,9 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
     {
         LOG(LEVEL) << "CustomART_active : SKIP type_switch : CustomART_status : " << CustomART_status ;  
     }
-    else if (type == dielectric_metal) 
+    else 
+#endif
+    if (type == dielectric_metal) 
     {
         //[type_switch.dime
         DielectricMetal();
@@ -842,6 +844,8 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 }
 
 
+
+#ifdef WITH_PMTFASTSIM
 
 /**
 InstrumentedG4OpBoundaryProcess::CustomART
@@ -1118,6 +1122,7 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
 
     return status ; 
 }
+#endif
 
 /**
 InstrumentedG4OpBoundaryProcess::GetFacetNormal
