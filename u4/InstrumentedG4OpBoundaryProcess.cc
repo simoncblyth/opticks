@@ -128,38 +128,50 @@ const bool InstrumentedG4OpBoundaryProcess::FLOAT  = getenv("InstrumentedG4OpBou
 //void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
 void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
 {
-    G4double u = G4UniformRand() ; 
+    G4double u0 = G4UniformRand() ; 
 
-    int u_idx = U4UniformRand::Find(u, SEvt::UU ) ;   
-    LOG(LEVEL) << U4UniformRand::Desc(u, SEvt::UU ) << " u_idx " << u_idx  ; 
-
-    int uu_burn = SEvt::UU_BURN ? SEvt::UU_BURN->ifind2D<int>(u_idx, 0, 1 ) : -1  ; 
-    if( uu_burn > 0 )
+    bool burn_enabled = true ; 
+    if(burn_enabled)
     {
-         LOG(LEVEL) 
-            << " u_idx " << u_idx 
-            << " uu_burn " << uu_burn
-            ;
+        int u0_idx = U4UniformRand::Find(u0, SEvt::UU ) ;   
+        LOG(LEVEL) << U4UniformRand::Desc(u0, SEvt::UU ) << " m_u0_idx " << m_u0_idx  ; 
 
-         U4UniformRand::Burn(uu_burn); 
-    } 
+        int uu_burn = SEvt::UU_BURN ? SEvt::UU_BURN->ifind2D<int>(u0_idx, 0, 1 ) : -1  ; 
+        if( uu_burn > 0 )
+        {
+             u0 = U4UniformRand::Burn(uu_burn); 
+             LOG(LEVEL) << U4UniformRand::Desc(u0, SEvt::UU ) << " after uu_burn " << uu_burn << " for u0_idx " << u0_idx  ; 
+        } 
 
+        m_u0 = u0 ; 
+        m_u0_idx = u0_idx ; 
+    }
 
-    SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u );  
+    SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u0 );  
 
     if(FLOAT)
     {   
-        float f = -1.f*std::log( float(u) ) ;   
+        float f = -1.f*std::log( float(u0) ) ;   
         theNumberOfInteractionLengthLeft = f ; 
     }   
     else
     {   
-        theNumberOfInteractionLengthLeft = -1.*G4Log(u) ;   
+        theNumberOfInteractionLengthLeft = -1.*G4Log(u0) ;   
     }   
     theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
 
 }
+#endif
 
+#ifdef WITH_PMTFASTSIM
+double InstrumentedG4OpBoundaryProcess::getU0() const
+{
+    return m_u0 ; 
+}
+int InstrumentedG4OpBoundaryProcess::getU0_idx() const
+{
+    return m_u0_idx ; 
+}
 #endif
 
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
@@ -171,9 +183,13 @@ void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
     : 
     G4VDiscreteProcess(processName, type),
+    SOpBoundaryProcess(processName.c_str()),
     PostStepDoIt_count(-1)
 #ifdef WITH_PMTFASTSIM
-    ,jpmt(new JPMT)  
+    ,m_jpmt(new JPMT)
+    ,m_CustomART_count(0)  
+    ,m_u0(-1.)
+    ,m_u0_idx(-1)
 #endif
 {
     LOG(LEVEL) << " processName " << GetProcessName()  ; 
@@ -557,10 +573,12 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
         //[OpticalSurface.mpt
         if (aMaterialPropertiesTable) 
         {
+            /*
             LOG(LEVEL) 
                 << " PostStepDoIt_count " << PostStepDoIt_count << " " 
                 << U4MaterialPropertiesTable::Desc(aMaterialPropertiesTable) 
                 ; 
+            */
 
             //[OpticalSurface.mpt.backpainted
             if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
@@ -586,12 +604,14 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
             PropertyPointer1 = aMaterialPropertiesTable->GetProperty(kREALRINDEX); 
             PropertyPointer2 = aMaterialPropertiesTable->GetProperty(kIMAGINARYRINDEX); 
 
+            /*
             LOG(LEVEL) 
                 << " PostStepDoIt_count " << PostStepDoIt_count
                 << " PropertyPointer.kREFLECTIVITY " << PropertyPointer
                 << " PropertyPointer1.kREALRINDEX " << PropertyPointer1 
                 << " PropertyPointer2.kIMAGINARYRINDEX " << PropertyPointer2
                 ;
+            */
 
             iTE = 1;
             iTM = 1;
@@ -858,7 +878,7 @@ Members used::
    OldMomentum
    OldPolarization
    thePhotonMomentum 
-   jpmt
+   m_jpmt
 
 Members set::
 
@@ -869,13 +889,31 @@ Members set::
 
 The z-position "trigger" definitely needs to be local 
 to select the upper hemi, but everything else should 
-be done in global frame. 
-
+be done in global frame.  
 Otherwise would have to transform into local frame
 and then transform back to global frame for the results::
 
   NewMomentum 
   NewPolarization
+
+BUT this is stymied by flipping of theGlobalNormal. 
+
+TODO: transform the PMT : so can test local/global handling 
+
+
+theGlobalNormal not always outwards, its being flipped already : making it useless for orientation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If were able to rely on an outward normal then could avoid lots of the transforming 
+into local frame. Observe that cannot trust theGlobalNormal to be outwards 
+which it needs to be for the orientation based on the dot product 
+of direction and outwards normal to be valid
+
+TODO: look into where theGlobalNormal is coming from, 
+perhaps can find where the raw normal coming from the 
+G4VSolid is prior to any flips being applied. 
+
+HMM : currently in single PMT testing global and local frames are the same 
 
 
 **/
@@ -883,25 +921,25 @@ and then transform back to global frame for the results::
 char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4Step& aStep )
 {
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+
+    G4ThreeVector localPoint  = transform.TransformPoint(theGlobalPoint);
+    G4ThreeVector localNormal = transform.TransformAxis(theGlobalNormal);
+    G4ThreeVector localMomentum = transform.TransformAxis(OldMomentum);
+    G4ThreeVector localPolarization = transform.TransformAxis(OldPolarization);
+
     G4double z_local = localPoint.z() ; 
     if( z_local < 0. ) return 'Z' ; 
 
-    G4double minus_cos_theta_global = OldMomentum*theGlobalNormal ;
-    G4double time = aTrack.GetLocalTime();  // just for debug output 
-
-    G4ThreeVector localNormal       = transform.TransformAxis(theGlobalNormal);
-    G4ThreeVector localMomentum     = transform.TransformAxis(OldMomentum);
-    G4ThreeVector localPolarization = transform.TransformAxis(OldPolarization);
-
-    // TODO: compare with global 
-    const G4ThreeVector& surface_normal = localNormal ; 
+    bool outwards = localNormal.z() > 0. ; // as always upper hemi of PMT in local frame  
+    G4ThreeVector surface_normal = (outwards ? 1. : -1.)*localNormal ; 
     const G4ThreeVector& direction      = localMomentum ; 
     const G4ThreeVector& polarization   = localPolarization ; 
 
     G4double minus_cos_theta = direction*surface_normal  ; 
     G4ThreeVector oriented_normal = ( minus_cos_theta < 0. ? 1. : -1. )*surface_normal ;
 
+
+    G4double time = aTrack.GetLocalTime();  // just for debug output 
     G4double energy = thePhotonMomentum ; 
     G4double wavelength = twopi*hbarc/energy ;
 
@@ -933,11 +971,9 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
         << std::endl
         << " localPolarization " << localPolarization
         << std::endl
-        << " localNormal " << localNormal << " TODO: check rigidly outwards for backwards photons " 
+        << " localNormal " << localNormal 
         << std::endl
-        << " minus_cos_theta_global " << minus_cos_theta_global
-        << std::endl
-        << " minus_cos_theta " << minus_cos_theta << " local and global should make no difference " 
+        << " minus_cos_theta " << minus_cos_theta 
         ;
 
 
@@ -947,21 +983,22 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
 
     StackSpec<double> spec ; 
     spec.d0  = 0. ; 
-    spec.d1  = jpmt->get_thickness_nm( pmtcat, JPMT::L1 );  
-    spec.d2  = jpmt->get_thickness_nm( pmtcat, JPMT::L2 );  
+    spec.d1  = m_jpmt->get_thickness_nm( pmtcat, JPMT::L1 );  
+    spec.d2  = m_jpmt->get_thickness_nm( pmtcat, JPMT::L2 );  
     spec.d3 = 0. ; 
 
-    spec.n0r = jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::RINDEX, energy_eV );  
-    spec.n0i = jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::KINDEX, energy_eV );
+    spec.n0r = m_jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::RINDEX, energy_eV );  
+    spec.n0i = m_jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::KINDEX, energy_eV );
 
-    spec.n1r = jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::RINDEX, energy_eV );
-    spec.n1i = jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::KINDEX, energy_eV );
+    spec.n1r = m_jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::RINDEX, energy_eV );
+    spec.n1i = m_jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::KINDEX, energy_eV );
 
-    spec.n2r = jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::RINDEX, energy_eV );  
-    spec.n2i = jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::KINDEX, energy_eV );  
+    spec.n2r = m_jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::RINDEX, energy_eV );  
+    spec.n2i = m_jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::KINDEX, energy_eV );  
 
-    spec.n3r = jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::RINDEX, energy_eV );  
-    spec.n3i = jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::KINDEX, energy_eV );
+    spec.n3r = m_jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::RINDEX, energy_eV );  
+    spec.n3i = m_jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::KINDEX, energy_eV );
+
 
     Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  // NB stack is flipped for minus_cos_theta > 0. 
     Stack<double,4> stackNormal(wavelength_nm, -1.            , spec );  // minus_cos_theta -1. means normal incidence and stack not flipped
@@ -982,27 +1019,60 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     double _cos_theta3 = stack.ll[3].ct.real() ;
 
 
- 
+    //LOG(LEVEL) << " m_CustomART_count " << m_CustomART_count << " stack " << stack ; 
+
+
+    // E_s2 : S-vs-P power fraction : signs make no difference as squared
     double E_s2 = _sin_theta0 > 0. ? (polarization*direction.cross(oriented_normal))/_sin_theta0 : 0. ; 
-    E_s2 *= E_s2;
+    E_s2 *= E_s2;  
+
+
+    LOG(LEVEL)
+        << " m_CustomART_count " << m_CustomART_count 
+        << " _sin_theta0 " << std::fixed << std::setw(10) << std::setprecision(5) << _sin_theta0 
+        << " oriented_normal " << oriented_normal 
+        << " polarization*direction.cross(oriented_normal) " << polarization*direction.cross(oriented_normal) 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        ;    
+
 
     double fT_s = stack.art.T_s ; 
     double fT_p = stack.art.T_p ; 
     double fR_s = stack.art.R_s ; 
     double fR_p = stack.art.R_p ; 
-
-    double fT_n = stackNormal.art.T ; 
-    double fR_n = stackNormal.art.R ; 
-
     double one = 1.0 ; 
     double T = fT_s*E_s2 + fT_p*(one-E_s2);
     double R = fR_s*E_s2 + fR_p*(one-E_s2);
     double A = one - (T+R);
-    double An = one - (fT_n+fR_n);
-    double detect_fraction = _qe/An;
 
-    LOG_IF(error, detect_fraction > 1.)
-         << " detect_fraction > 1. : " << detect_fraction
+
+   LOG(LEVEL)
+        << " m_CustomART_count " << m_CustomART_count 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        << " fT_s " << std::fixed << std::setw(10) << std::setprecision(5) << fT_s 
+        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
+        << " fT_p " << std::fixed << std::setw(10) << std::setprecision(5) << fT_p 
+        << " T " << std::fixed << std::setw(10) << std::setprecision(5) << T 
+        ;    
+
+    LOG(LEVEL)
+        << " m_CustomART_count " << m_CustomART_count 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        << " fR_s " << std::fixed << std::setw(10) << std::setprecision(5) << fR_s 
+        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
+        << " fR_p " << std::fixed << std::setw(10) << std::setprecision(5) << fR_p 
+        << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R 
+        << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A 
+        ;    
+
+
+    double fT_n = stackNormal.art.T ; 
+    double fR_n = stackNormal.art.R ; 
+    double An = one - (fT_n+fR_n);
+    double D = _qe/An;
+
+    LOG_IF(error, D > 1.)
+         << " ERR: D > 1. : " << D 
          << " _qe " << _qe
          << " An " << An
          ;
@@ -1010,20 +1080,36 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     double u0 = G4UniformRand();
     double u1 = G4UniformRand();
 
+    /**
+       0         A         A+R         1
+       |---------+----------+----------|  u0
+          D/A         R          T
+          u1 
+    **/
     char status = '?' ;
-    if(     u0 < A)    status = u1 < detect_fraction ? 'D' : 'A' ;
+    if(     u0 < A)    status = u1 < D ? 'D' : 'A' ;
     else if(u0 < A+R)  status = 'R' ;
     else               status = 'T' ;
 
+    int u0_idx = U4UniformRand::Find(u0, SEvt::UU);     
+    int u1_idx = U4UniformRand::Find(u1, SEvt::UU);     
+    LOG(LEVEL) 
+         << " u0 " << U4UniformRand::Desc(u0) 
+         << " u0_idx " << u0_idx 
+         << " A "   << std::setw(10) << std::fixed << std::setprecision(4) << A
+         << " A+R " << std::setw(10) << std::fixed << std::setprecision(4) << (A+R) 
+         << " T "   << std::setw(10) << std::fixed << std::setprecision(4) << T
+         << " status " 
+         << status 
+         ; 
+    LOG(LEVEL) 
+         << " u1 " << U4UniformRand::Desc(u1) 
+         << " u1_idx " << u1_idx 
+         << " D " << std::setw(10) << std::fixed << std::setprecision(4) << D
+         ; 
 
-    
 
 
-    LOG(LEVEL)
-        << " T " << std::setw(10) << std::fixed << std::setprecision(4) << T
-        << " R " << std::setw(10) << std::fixed << std::setprecision(4) << R
-        << " A " << std::setw(10) << std::fixed << std::setprecision(4) << A
-        ; 
     G4ThreeVector new_direction(direction); 
     G4ThreeVector new_polarization(polarization); 
 
@@ -1094,15 +1180,11 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
 
 
     SPhoton_Debug<'B'> dbg ; 
-    int u0_idx = U4UniformRand::Find(u0);     
 
     LOG(LEVEL)
        << " time " << time 
        << " dbg.Count " << dbg.Count()
        << " dbg.Name " << dbg.Name()
-       << " u0 " << U4UniformRand::Desc(u0) 
-       << " u1 " << U4UniformRand::Desc(u1)
-       << " u0_idx " << u0_idx 
        ;    
 
     dbg.pos = localPoint ; 
@@ -1117,9 +1199,14 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
     dbg.nrm = oriented_normal ;  
     dbg.spare = z_local ; 
 
+    dbg.u0 = m_u0 ; 
+    dbg.x1 = 0. ; 
+    dbg.x2 = 0. ; 
+    dbg.u0_idx = m_u0_idx ; 
+
     dbg.add();  
 
-
+    m_CustomART_count += 1; 
     return status ; 
 }
 #endif
@@ -1351,14 +1438,14 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
                 }
             }
 
-            LOG(LEVEL) << " Old<-New ? UGLY " ; 
+            //LOG(LEVEL) << " dime: Old<-New ? UGLY " ; 
             OldMomentum = NewMomentum;
             OldPolarization = NewPolarization;
 	    }
-        LOG(LEVEL) << " while check " ; 
+        //LOG(LEVEL) << " while check " ; 
           // Loop checking, 13-Aug-2015, Peter Gumplinger
 	} while (NewMomentum * theGlobalNormal < 0.0);
-    LOG(LEVEL) << " after while " ; 
+    //LOG(LEVEL) << " dime: after while  " ; 
 }
 
 void InstrumentedG4OpBoundaryProcess::DielectricLUT()

@@ -115,6 +115,7 @@ struct sevent
     int      max_prd     ; // eg: 16  
     int      max_tag     ; // 0 or 1 only 
     int      max_flat    ; // 0 or 1 only
+    int      max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
 
     //[ counts and pointers, zeroed by sevent::zero  
     //  only first 4 are always in use, the last 7 are only relevant whilst debugging 
@@ -131,6 +132,7 @@ struct sevent
     int      num_tag ; 
     int      num_flat ; 
     int      num_simtrace ; 
+    int      num_aux ; 
 
     // With QEvent device running the below are pointers to device buffers. 
     // Most are allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
@@ -150,6 +152,7 @@ struct sevent
     stag*    tag ; 
     sflat*   flat ;     
     quad4*   simtrace ;   //QEvent::device_alloc_simtrace
+    quad4*   aux ; 
 
     //] counts and pointers 
 
@@ -192,6 +195,7 @@ SEVENT_METHOD void sevent::init()
     max_prd      = SEventConfig::MaxPrd()  ;  
     max_tag      = SEventConfig::MaxTag()  ;  
     max_flat     = SEventConfig::MaxFlat()  ;  
+    max_aux      = SEventConfig::MaxAux()  ;  
 
     zero();  // pointers and counts  
 
@@ -236,6 +240,7 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_bounce    " << std::setw(w) << max_bounce   << std::endl 
         << " evt.max_record    " << std::setw(w) << max_record   << std::endl 
         << " evt.max_rec       " << std::setw(w) << max_rec      << std::endl 
+        << " evt.max_aux       " << std::setw(w) << max_aux      << std::endl 
         << " evt.max_seq       " << std::setw(w) << max_seq      << std::endl 
         << " evt.max_prd       " << std::setw(w) << max_prd      << std::endl 
         << " evt.max_tag       " << std::setw(w) << max_tag      << std::endl 
@@ -257,6 +262,7 @@ SEVENT_METHOD std::string sevent::descNum() const
         << " evt.num_photon   "  << std::setw(w) << num_photon   << std::endl 
         << " evt.num_record   "  << std::setw(w) << num_record   << std::endl 
         << " evt.num_rec      "  << std::setw(w) << num_rec      << std::endl 
+        << " evt.num_aux      "  << std::setw(w) << num_aux      << std::endl 
         << " evt.num_seq      "  << std::setw(w) << num_seq      << std::endl 
         << " evt.num_hit      "  << std::setw(w) << num_hit      << std::endl 
         << " evt.num_simtrace "  << std::setw(w) << num_simtrace << std::endl 
@@ -294,6 +300,10 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " evt.rec "         << std::setw(w) << ( rec  ? "Y" : "N" ) << " " << std::setw(20) << rec 
         << std::setw(20) << " num_rec "         << std::setw(7) << num_rec 
         << std::setw(20) << " max_rec "         << std::setw(7) << max_rec 
+        << std::endl 
+        << std::setw(20) << " evt.aux "         << std::setw(w) << ( aux  ? "Y" : "N" ) << " " << std::setw(20) << aux 
+        << std::setw(20) << " num_aux "         << std::setw(7) << num_aux 
+        << std::setw(20) << " max_aux "         << std::setw(7) << max_aux 
         << std::endl 
         << std::setw(20) << " evt.seq "         << std::setw(w) << ( seq     ? "Y" : "N" ) << " " << std::setw(20) << seq
         << std::setw(20) << " num_seq "         << std::setw(7) << num_seq 
@@ -407,6 +417,7 @@ SEVENT_METHOD void sevent::zero()
 
     num_record = 0 ; 
     num_rec = 0 ; 
+    num_aux = 0 ; 
     num_seq = 0 ; 
     num_prd = 0 ; 
     num_tag = 0 ; 
@@ -421,6 +432,7 @@ SEVENT_METHOD void sevent::zero()
 
     record = nullptr ; 
     rec = nullptr ; 
+    aux = nullptr ; 
     seq = nullptr ; 
     prd = nullptr ; 
     tag = nullptr ; 

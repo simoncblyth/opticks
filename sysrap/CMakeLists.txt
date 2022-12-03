@@ -132,6 +132,7 @@ set(SOURCES
     SFastSim_Debug.cc
     SFastSimOpticalModel.cc
 
+    SOpBoundaryProcess.cc
 ) 
     
 
@@ -347,6 +348,7 @@ set(HEADERS
     SPhoton_Debug.h
     SUniformRand.h
 
+    SOpBoundaryProcess.hh
 )
 
 

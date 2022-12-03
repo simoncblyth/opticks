@@ -47,28 +47,30 @@ struct U4UniformRand
     static NP* UU ; 
     static constexpr const double EPSILON = 1e-6 ; 
 
-    static double One(); 
-    static void Burn(int n); 
+    static double Get(); 
+    static double Burn(int n); 
 
     static void Get(std::vector<double>& uu); 
     static std::string Desc(int n=10); 
 
-    static NP* Get(int n=1000); 
+    static NP* Get(int n); 
     static int Find(double u, const NP* uu=UU ) ; 
     static std::string Desc(double u, const NP* uu=UU ) ; 
 }; 
 
-inline double U4UniformRand::One() // static
+inline double U4UniformRand::Get() // static
 {
     return G4UniformRand();  // ONLY dependency on Geant4/CLHEP is here 
 }
-inline void U4UniformRand::Burn(int n) // static
+inline double U4UniformRand::Burn(int n) // static
 {
-    for(int i=0 ; i < n ; i++) One();
+    double u = -1. ; 
+    for(int i=0 ; i < n ; i++) u = Get();
+    return u ; 
 }
 inline void U4UniformRand::Get(std::vector<double>& uu ) // static
 {
-    for(unsigned i=0 ; i < uu.size() ; i++) uu[i] = One();
+    for(unsigned i=0 ; i < uu.size() ; i++) uu[i] = Get();
 }
 inline std::string U4UniformRand::Desc(int n )
 {

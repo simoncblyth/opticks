@@ -598,6 +598,7 @@ void SEvt::clear_()
     tag.clear(); 
     flat.clear(); 
     simtrace.clear(); 
+    aux.clear(); 
 }
 
 
@@ -802,6 +803,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
 
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
+    evt->num_aux    = evt->max_aux    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
 
     LOG(debug)
@@ -876,6 +878,11 @@ void SEvt::hostside_running_resize()
     {
         rec.resize(evt->num_rec); 
         evt->rec = rec.data() ; 
+    }
+    if(evt->num_aux > 0) 
+    {
+        aux.resize(evt->num_aux); 
+        evt->aux = aux.data() ; 
     }
     if(evt->num_seq > 0) 
     {
@@ -1427,6 +1434,13 @@ NP* SEvt::gatherRec() const
     r->read2( (short*)evt->rec ); 
     return r ; 
 } 
+NP* SEvt::gatherAux() const 
+{ 
+    if( evt->aux == nullptr ) return nullptr ; 
+    NP* r = makeAux(); 
+    r->read2( (float*)evt->aux ); 
+    return r ; 
+} 
 NP* SEvt::gatherSeq() const 
 { 
     if( evt->seq == nullptr ) return nullptr ; 
@@ -1483,6 +1497,11 @@ NP* SEvt::makeRec() const
 {
     NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
     r->set_meta<std::string>("rpos", "4,GL_SHORT,GL_TRUE,16,0,false" );  // eg used by examples/UseGeometryShader
+    return r ; 
+}
+NP* SEvt::makeAux() const 
+{ 
+    NP* r = NP::Make<float>( evt->num_photon, evt->max_aux, 4, 4 ); 
     return r ; 
 }
 NP* SEvt::makeSeq() const 
@@ -1562,6 +1581,7 @@ NP* SEvt::gatherComponent_(unsigned comp) const
         case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;   
         case SCOMP_REC:       a = gatherRec()      ; break ;   
+        case SCOMP_AUX:       a = gatherAux()      ; break ;   
         case SCOMP_SEQ:       a = gatherSeq()      ; break ;   
         case SCOMP_PRD:       a = gatherPrd()      ; break ;   
         case SCOMP_TAG:       a = gatherTag()      ; break ;   
@@ -1911,6 +1931,7 @@ std::string SEvt::descComponent() const
     const NP* hit      = fold->get(SComp::Name(SCOMP_HIT)) ; 
     const NP* record   = fold->get(SComp::Name(SCOMP_RECORD)) ; 
     const NP* rec      = fold->get(SComp::Name(SCOMP_REC)) ;  
+    const NP* aux      = fold->get(SComp::Name(SCOMP_REC)) ;  
     const NP* seq      = fold->get(SComp::Name(SCOMP_SEQ)) ; 
     const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
     const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
@@ -1947,6 +1968,12 @@ std::string SEvt::descComponent() const
        << std::setw(30) << "SEventConfig::MaxRecord"
        << std::setw(20) << SEventConfig::MaxRecord()
        << std::endl
+       << std::setw(20) << "aux" << " " 
+       << std::setw(20) << ( aux ? aux->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxAux"
+       << std::setw(20) << SEventConfig::MaxAux()
+       << std::endl
        << std::setw(20) << "rec" << " " 
        << std::setw(20) << ( rec ? rec->sstr() : "-" ) 
        << " "
@@ -1982,6 +2009,7 @@ std::string SEvt::descComponent() const
 
 const NP* SEvt::getPhoton() const { return fold->get(SComp::PHOTON_) ; }
 const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
+const NP* SEvt::getAux() const {    return fold->get(SComp::AUX_) ; }
 
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    

@@ -84,6 +84,7 @@
 #include "plog/Severity.h"
 
 #ifdef WITH_PMTFASTSIM
+#include "SOpBoundaryProcess.hh"
 struct JPMT ; 
 #endif
 
@@ -149,7 +150,12 @@ enum G4OpBoundaryProcessStatus {  Undefined,
 
 
 #include "U4_API_EXPORT.hh"
-class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
+class U4_API InstrumentedG4OpBoundaryProcess 
+    : 
+    public G4VDiscreteProcess
+#ifdef WITH_PMTFASTSIM
+    ,public SOpBoundaryProcess
+#endif
 {
         int PostStepDoIt_count ; 
 
@@ -161,11 +167,16 @@ class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
 
 public:
         static const plog::Severity LEVEL ; 
+
+#ifdef WITH_PMTFASTSIM
+        double getU0() const ; 
+        int getU0_idx() const ; 
+#endif
+
 #ifdef DEBUG_TAG
         static const bool FLOAT ;  
         void ResetNumberOfInteractionLengthLeft();
 #endif
-
 
         ////////////////////////////////
         // Constructors and Destructor
@@ -261,11 +272,14 @@ private:
 public:  
         static void Save(const char* dir); 
 
-private:
 #ifdef WITH_PMTFASTSIM
-        JPMT* jpmt ; 
+        JPMT*  m_jpmt ; 
+        int    m_CustomART_count ; 
+        double m_u0 ; 
+        int    m_u0_idx ; 
 #endif
 
+private:
         G4double thePhotonMomentum;
 
         G4ThreeVector OldMomentum;

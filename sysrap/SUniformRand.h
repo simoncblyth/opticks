@@ -43,13 +43,13 @@ g4-cls Random
 template<typename E>
 struct SUniformRand
 {
-    static NP* UU ;  // this causes issues, maybe easier to just pass SEvt::UU as argument 
+    // static NP* UU ;  // often causes symbol issues, maybe easier to just pass SEvt::UU as argument 
     static constexpr const double EPSILON = 1e-6 ; 
     static std::string Desc(int n=10); 
     static void Get(std::vector<double>& uu); 
     static NP* Get(int n=1000); 
-    static int Find(double u, const NP* uu=UU ) ; 
-    static std::string Desc(double u, const NP* uu=UU ) ; 
+    static int Find(double u, const NP* uu ) ; 
+    static std::string Desc(double u, const NP* uu ) ; 
 }; 
 
 

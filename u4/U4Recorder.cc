@@ -5,13 +5,13 @@
 #include "STrackInfo.h"
 #include "spho.h"
 #include "srec.h"
-//#include "sevent.h"
 
 #include "NP.hh"
 #include "SPath.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
 #include "SLOG.hh"
+#include "SOpBoundaryProcess.hh"
 
 #include "G4LogicalBorderSurface.hh"
 #include "U4Recorder.hh"
@@ -427,6 +427,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
     sphoton& current_photon = sev->current_ctx.p ;
+    quad4& current_aux = sev->current_ctx.aux ; 
+
+    SOpBoundaryProcess* bop = SOpBoundaryProcess::Get(); 
+    current_aux.q0.f.x = bop->getU0() ; 
+    current_aux.q0.i.w = bop->getU0_idx() ; 
+
 
     // first_point when single bit in the flag from genflag set in beginPhoton
     bool first_point = current_photon.flagmask_count() == 1 ;  

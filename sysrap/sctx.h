@@ -30,6 +30,7 @@ struct sstate ;
 struct srec ; 
 struct sseq ; 
 struct stagr ;  
+struct quad4 ; 
 #endif
 
 struct sctx
@@ -45,6 +46,7 @@ struct sctx
     srec rec ; 
     sseq seq ; 
     stagr tagr ; 
+    quad4 aux ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -68,8 +70,8 @@ SCTX_METHOD void sctx::zero(){ *this = {} ; }
 
 #ifndef PRODUCTION
 /**
-sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/rec/seq 
----------------------------------------------------------------------------------------
+sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/rec/seq/aux 
+-------------------------------------------------------------------------------------------
 
 **/
 
@@ -78,6 +80,7 @@ SCTX_METHOD void sctx::point(int bounce)
     if(evt->record && bounce < evt->max_record) evt->record[evt->max_record*idx+bounce] = p ;   
     if(evt->rec    && bounce < evt->max_rec)    evt->add_rec( rec, idx, bounce, p );    // this copies into evt->rec array 
     if(evt->seq    && bounce < evt->max_seq)    seq.add_nibble( bounce, p.flag(), p.boundary() );  
+    if(evt->aux    && bounce < evt->max_aux)    evt->aux[evt->max_aux*idx+bounce] = aux ;   
 }
 
 

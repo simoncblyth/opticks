@@ -55,7 +55,7 @@ struct SPhoton_Debug
 {
     static std::vector<SPhoton_Debug> record ;   
     static constexpr const char* NAME = "SPhoton_Debug.npy" ; 
-    static constexpr const unsigned NUM_QUAD = 4u ; 
+    static constexpr const unsigned NUM_QUAD = 5u ; 
 
     static int Count(); 
     static std::string Name(); 
@@ -74,6 +74,11 @@ struct SPhoton_Debug
 
     G4ThreeVector nrm ;     // 3
     G4double      spare ; 
+
+    G4double      u0 ;      // 4
+    G4double      x1 ; 
+    G4double      x2 ; 
+    uint64_t      u0_idx ; 
 
 }; 
 

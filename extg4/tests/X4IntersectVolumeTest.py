@@ -220,7 +220,8 @@ if __name__ == '__main__':
                         if i==16: dx,dy=10,-10  
                         backgroundcolor="yellow"
                     else:
-                        backgroundcolor=None 
+                        backgroundcolor="yellow"
+                        #backgroundcolor=None 
                     pass
                     if backgroundcolor is None:
                         ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15 )

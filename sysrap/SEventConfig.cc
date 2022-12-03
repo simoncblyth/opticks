@@ -28,6 +28,7 @@ int SEventConfig::_MaxGenstepDefault = 1000*K ;
 int SEventConfig::_MaxBounceDefault = 9 ; 
 int SEventConfig::_MaxRecordDefault = 0 ; 
 int SEventConfig::_MaxRecDefault = 0 ; 
+int SEventConfig::_MaxAuxDefault = 0 ; 
 int SEventConfig::_MaxSeqDefault = 0 ; 
 int SEventConfig::_MaxPrdDefault = 0 ; 
 int SEventConfig::_MaxTagDefault = 0 ; 
@@ -66,6 +67,7 @@ int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDe
 int SEventConfig::_MaxBounce    = SSys::getenvint(kMaxBounce, _MaxBounceDefault ) ; 
 int SEventConfig::_MaxRecord    = SSys::getenvint(kMaxRecord, _MaxRecordDefault ) ;    
 int SEventConfig::_MaxRec       = SSys::getenvint(kMaxRec, _MaxRecDefault ) ;   
+int SEventConfig::_MaxAux       = SSys::getenvint(kMaxAux, _MaxAuxDefault ) ;   
 int SEventConfig::_MaxSeq       = SSys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;  
 int SEventConfig::_MaxPrd       = SSys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;  
 int SEventConfig::_MaxTag       = SSys::getenvint(kMaxTag,  _MaxTagDefault ) ;  
@@ -115,6 +117,7 @@ int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() 
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
+int SEventConfig::MaxAux(){      return _MaxAux ; }
 int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 int SEventConfig::MaxPrd(){      return _MaxPrd ; }
 int SEventConfig::MaxTag(){      return _MaxTag ; }
@@ -156,6 +159,7 @@ void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtr
 void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; Check() ; }
 void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; Check() ; }
 void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
+void SEventConfig::SetMaxAux(    int max_aux){     _MaxAux     = max_aux     ; Check() ; }
 void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
 void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; Check() ; }
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; Check() ; }
@@ -202,6 +206,7 @@ unsigned SEventConfig::CompMaskAuto()
         }
         if(MaxRecord()>0)    mask |= SCOMP_RECORD ; 
         if(MaxRec()>0)       mask |= SCOMP_REC ; 
+        if(MaxAux()>0)       mask |= SCOMP_AUX ; 
         if(MaxSeq()>0)       mask |= SCOMP_SEQ ; 
         if(MaxPrd()>0)       mask |= SCOMP_PRD ; 
         if(MaxTag()>0)       mask |= SCOMP_TAG ; 
@@ -450,6 +455,7 @@ int SEventConfig::Initialize() // static
         SEventConfig::SetMaxRec(maxbounce+1); 
         SEventConfig::SetMaxSeq(maxbounce+1); 
         SEventConfig::SetMaxPrd(maxbounce+1); 
+        SEventConfig::SetMaxAux(maxbounce+1); 
 
         // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
         SEventConfig::SetMaxTag(1);   

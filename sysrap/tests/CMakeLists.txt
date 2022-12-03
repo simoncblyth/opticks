@@ -115,6 +115,8 @@ set(TEST_SOURCES
 
    SEvtTest.cc
    SEvtLoadTest.cc
+   SEvt__UU_BURN_Test.cc
+
    SSimTest.cc
    SBndTest.cc
    SNameTest.cc

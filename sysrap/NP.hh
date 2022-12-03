@@ -2259,14 +2259,29 @@ template<typename T> inline T NP::ifind2D(T ivalue, int jcol, int jret ) const
 
     const T* vv = cvalues<T>(); 
 
-    T vcol = -1 ; 
     T vret = -1 ;  
  
     for(int i=0 ; i < ni ; i++) 
     {
-        vcol = vv[i*nj+jcol]; 
-        vret = jret < 0 ? i : vv[i*nj+jret]; 
-        if( vcol == ivalue ) break ; 
+        T vcol = vv[i*nj+jcol]; 
+        bool match = vcol == ivalue ; 
+
+        T cand = jret < 0 ? i : vv[i*nj+jret]; 
+
+        if(VERBOSE) std::cout 
+           << "NP::ifind2D"
+           << " i " << i 
+           << " vcol " << vcol 
+           << " cand " << cand
+           << " match " << match 
+           << std::endl 
+           ; 
+
+        if(match)
+        {
+            vret = cand ; 
+            break ; 
+        }
     }
     return vret ; 
 }

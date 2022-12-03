@@ -84,6 +84,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxBounce  = "OPTICKS_MAX_BOUNCE" ; 
     static constexpr const char* kMaxRecord  = "OPTICKS_MAX_RECORD" ; 
     static constexpr const char* kMaxRec     = "OPTICKS_MAX_REC" ; 
+    static constexpr const char* kMaxAux     = "OPTICKS_MAX_AUX" ; 
     static constexpr const char* kMaxSeq     = "OPTICKS_MAX_SEQ" ; 
     static constexpr const char* kMaxPrd     = "OPTICKS_MAX_PRD" ; 
     static constexpr const char* kMaxTag     = "OPTICKS_MAX_TAG" ; 
@@ -121,6 +122,7 @@ struct SYSRAP_API SEventConfig
     static int MaxBounce(); 
     static int MaxRecord();  // full photon step record  
     static int MaxRec();     // compressed photon step record
+    static int MaxAux();     // auxiliary photon step record, used for debug 
     static int MaxSeq();     // seqhis slots
     static int MaxPrd();    
     static int MaxTag();    
@@ -160,6 +162,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxBounce( int max_bounce); 
     static void SetMaxRecord( int max_record); 
     static void SetMaxRec(    int max_rec); 
+    static void SetMaxAux(    int max_aux); 
     static void SetMaxSeq(    int max_seq); 
     static void SetMaxPrd(    int max_prd); 
     static void SetMaxTag(    int max_tag); 
@@ -196,6 +199,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxBounceDefault ; 
     static int _MaxRecordDefault ; 
     static int _MaxRecDefault ; 
+    static int _MaxAuxDefault ; 
     static int _MaxSeqDefault ; 
     static int _MaxPrdDefault ; 
     static int _MaxTagDefault ; 
@@ -223,6 +227,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxBounce ; 
     static int _MaxRecord ; 
     static int _MaxRec ; 
+    static int _MaxAux ; 
     static int _MaxSeq ; 
     static int _MaxPrd ; 
     static int _MaxTag ; 
