@@ -4008,10 +4008,12 @@ inline NP* NP::Load(const char* path_)
     if(VERBOSE) 
         std::cerr 
             << "[ NP::Load " 
-            << " path_ " << path_ 
-            << " path " << path
+            << " path_ " << ( path_  ? path_ : "-" )
+            << " path " << ( path ? path : "-" )
             << std::endl 
             ; 
+
+    if(path == nullptr) return nullptr ; // eg when path_ starts with unsetenvvar "$TOKEN" 
 
     bool npy_ext = U::EndsWith(path, EXT) ; 
     NP* a = nullptr ; 

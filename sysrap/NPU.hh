@@ -692,8 +692,10 @@ U::Resolve
 
 ::
 
-    $TOK/remainder/path/name.npy   (tok_plus) 
-    $TOK
+    $TOKEN/remainder/path/name.npy   (tok_plus) 
+    $TOKEN
+
+If the TOKEN envvar is not set then nullptr is returned.  
 
 **/
 
@@ -710,8 +712,9 @@ inline const char* U::Resolve(const char* spec_)
         bool tok_plus =  sep && end && sep != end ;   
         if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
         char* pfx = getenv(spec+1) ; 
+        if(pfx == nullptr) return nullptr ; 
         if(tok_plus) *sep = '/' ;            // put back the slash 
-        ss << ( pfx ? pfx : "/tmp" ) << ( sep ? sep : "" ) ; 
+        ss << pfx  << ( sep ? sep : "" ) ; 
     }   
     else
     {   
