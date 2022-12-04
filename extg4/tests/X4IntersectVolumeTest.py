@@ -42,13 +42,13 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     log.info("X4IntersectVolumeTest.py")
 
-    reldir = os.environ.get("CXS_RELDIR", "extg4/X4IntersectVolumeTest" ) 
     geom = os.environ.get("X4IntersectVolumeTest_GEOM", "body_phys")
 
-    colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
-    gcol = "grey"
+    #reldir = os.environ.get("CXS_RELDIR", "extg4/X4IntersectVolumeTest" ) 
+    #basedir = os.path.expandvars(os.path.join("/tmp/$USER/opticks",reldir, geom ))
 
-    basedir = os.path.expandvars(os.path.join("/tmp/$USER/opticks",reldir, geom ))
+    basedir = os.path.expandvars("$FOLD")
+
     transforms = np.load(os.path.join(basedir, "transforms.npy"))
     transforms_meta = np.loadtxt( os.path.join(basedir, "transforms_meta.txt"), dtype=np.object ) 
     soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
@@ -57,6 +57,10 @@ if __name__ == '__main__':
     if not os.path.isdir(figsdir):
         os.makedirs(figsdir)
     pass
+
+    colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
+    gcol = "grey"
+
 
     savefig = True
     figname = "isect"
@@ -68,7 +72,7 @@ if __name__ == '__main__':
     log.info("soname_prefix %s" % soname_prefix)
 
     topline = "X4IntersectVolumeTest.py"
-    botline = "%s/%s " % (reldir, geom)
+    botline = "%s" % (geom)
     thirdline = soname_prefix
 
     isects = {}

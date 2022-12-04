@@ -63,7 +63,8 @@ int main(int argc, char** argv)
     assert( tr->size() % 16 == 0 ); 
     assert( tr->size() == 16*num );  // expect 16 doubles of the transform matrix for every solid
 
-    const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
+    //const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
+    const char* base = SPath::Resolve("$FOLD", DIRPATH ) ; 
 
 #ifdef WITH_PMTFASTSIM
     N4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 

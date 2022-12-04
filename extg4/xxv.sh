@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 xxv.sh : Volume equivalent of xxs.sh using extg4/tests/X4IntersectVolumeTest.cc
 ==================================================================================
@@ -32,7 +31,6 @@ bin=X4IntersectVolumeTest
 reldir=extg4/$bin
 srcdir=$(dirname $BASH_SOURCE)
 
-
 loglevels(){
     export X4Intersect=INFO
     export SCenterExtentGenstep=INFO
@@ -62,13 +60,22 @@ geom=hamaLogicalPMTWrapLV
 
 #export GEOM=${GEOM:-$geom}
 export X4IntersectVolumeTest_GEOM=${GEOM:-$geom}
-export FOLD=/tmp/$USER/opticks/extg4/X4IntersectVolumeTest/$X4IntersectVolumeTest_GEOM
 
+
+export N=${N:-0}
+
+## HMM: this is duplication of settings in tests/U4PMTFastSimTest.sh 
+## it is setting the declProp options of IGeomManager
 export hama_FastCoverMaterial=Cheese
-#export hama_UsePMTOpticalModel=0
 export hama_UsePMTOpticalModel=1
-export hama_UseNaturalGeometry=1
+export hama_UseNaturalGeometry=$N     ## 0:FastSim/jPOM 1:InstrumentedG4OpBoundaryProcess/CustomART
 
+### SIMPLER BOOKKEEPING FOR THESE SETTINGS TO BE ENCOMPASSED WITHIN THE GEOM STRING ? 
+
+export FOLD=/tmp/$USER/opticks/extg4/X4IntersectVolumeTest/$X4IntersectVolumeTest_GEOM/$N
+
+
+## WHY ARE THE BELOW USING A DIFFERENT GEOM NAME ? 
 
 # XFOLD/XPID has precedence over EXTRA
 export XFOLD=/tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4PMTFastSimTest/SEL${N:-0}
@@ -112,7 +119,7 @@ export ZZ=${ZZ:-$zz}
 export ZZD=${ZZD:-$zzd}
 
 
-arg=${1:-runana}
+arg=${1:-run_ana}
 
 if [ "${arg/exit}" != "$arg" ]; then
    echo $msg early exit 
