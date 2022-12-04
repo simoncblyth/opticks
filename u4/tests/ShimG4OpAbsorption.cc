@@ -1,9 +1,16 @@
+#include <csignal>
+
 #include "G4SystemOfUnits.hh"
+
 #include "ShimG4OpAbsorption.h"
 #include "SEvt.hh"
+#include "SLOG.hh"
+#include "U4UniformRand.h"
 #include "U4Stack.h"
 
-#include <csignal>
+
+const plog::Severity ShimG4OpAbsorption::LEVEL = SLOG::EnvLevel("ShimG4OpAbsorption", "DEBUG") ; 
+
 
 ShimG4OpAbsorption::ShimG4OpAbsorption(const G4String& processName, G4ProcessType type )
     :
@@ -31,8 +38,12 @@ const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX"
 // void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
  void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
 {
-    //std::cout << "ShimG4OpAbsorption::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
+
+    LOG(LEVEL)
+        << U4UniformRand::Desc(u, SEvt::UU )
+        ;
+
     SEvt::AddTag( U4Stack_AbsorptionDiscreteReset, u ); 
 
     if(FLOAT)

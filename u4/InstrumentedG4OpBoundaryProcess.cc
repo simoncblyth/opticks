@@ -133,18 +133,36 @@ void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
     bool burn_enabled = true ; 
     if(burn_enabled)
     {
-        int u0_idx = U4UniformRand::Find(u0, SEvt::UU ) ;   
-        LOG(LEVEL) << U4UniformRand::Desc(u0, SEvt::UU ) << " m_u0_idx " << m_u0_idx  ; 
+        int u0_idx = U4UniformRand::Find(u0, SEvt::UU ) ;  
+        int u0_idx_delta = u0_idx - m_u0_idx ; 
+ 
+        LOG(LEVEL) 
+            << U4UniformRand::Desc(u0, SEvt::UU ) 
+            << " u0_idx " << u0_idx 
+            << " u0_idx_delta " << u0_idx_delta 
+            << " BOP.RESET " 
+            ; 
 
         int uu_burn = SEvt::UU_BURN ? SEvt::UU_BURN->ifind2D<int>(u0_idx, 0, 1 ) : -1  ; 
+
         if( uu_burn > 0 )
         {
-             u0 = U4UniformRand::Burn(uu_burn); 
-             LOG(LEVEL) << U4UniformRand::Desc(u0, SEvt::UU ) << " after uu_burn " << uu_burn << " for u0_idx " << u0_idx  ; 
+            u0 = U4UniformRand::Burn(uu_burn);
+            u0_idx = U4UniformRand::Find(u0, SEvt::UU ) ;  
+            u0_idx_delta = u0_idx - m_u0_idx ;   
+
+            LOG(LEVEL) 
+                << U4UniformRand::Desc(u0, SEvt::UU ) 
+                << " u0_idx " << u0_idx 
+                << " u0_idx_delta " << u0_idx_delta 
+                << " after uu_burn " << uu_burn
+                << " BOP.RESET " 
+                ; 
         } 
 
         m_u0 = u0 ; 
         m_u0_idx = u0_idx ; 
+        m_u0_idx_delta = u0_idx_delta ; 
     }
 
     SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u0 );  
@@ -1101,13 +1119,13 @@ char InstrumentedG4OpBoundaryProcess::CustomART(const G4Track& aTrack, const G4S
          << " T "   << std::setw(10) << std::fixed << std::setprecision(4) << T
          << " status " 
          << status 
+         << " DECISION "
          ; 
     LOG(LEVEL) 
          << " u1 " << U4UniformRand::Desc(u1) 
          << " u1_idx " << u1_idx 
          << " D " << std::setw(10) << std::fixed << std::setprecision(4) << D
          ; 
-
 
 
     G4ThreeVector new_direction(direction); 
@@ -2372,6 +2390,12 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoeff(const G4double 
 {
     G4double u = G4UniformRand() ; 
     G4bool ret = u < prob  ; 
+
+    LOG(LEVEL) 
+        << U4UniformRand::Desc(u, SEvt::UU)
+        << " TransCoeff " << prob 
+        << " DECISION " << ( ret ? "T" : "R" ) 
+        ; 
 #ifdef DEBUG_TAG
     SEvt::AddTag(U4Stack_BoundaryDiDiTransCoeff, u ); 
 #endif   

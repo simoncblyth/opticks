@@ -7,18 +7,19 @@ G4OpAbsorption : public G4VDiscreteProcess
 
 **/
 
+#include "plog/Severity.h"
 #include "G4OpAbsorption.hh"
 
 
 class ShimG4OpAbsorption : public G4OpAbsorption 
 {
+
     public:
         ShimG4OpAbsorption(const G4String& processName = "OpAbsorption",
                                 G4ProcessType type = fOptical);
        ~ShimG4OpAbsorption();
 
-
-//#ifdef DEBUG_TAG
+        static const plog::Severity LEVEL ; 
         static const bool FLOAT ; 
         static const int  PIDX ; 
         void ResetNumberOfInteractionLengthLeft(); 
@@ -32,6 +33,5 @@ class ShimG4OpAbsorption : public G4OpAbsorption
                  G4ForceCondition* condition
                 );  
 
-//#endif
 };
 

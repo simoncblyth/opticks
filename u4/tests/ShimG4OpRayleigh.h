@@ -7,6 +7,10 @@ class G4OpRayleigh : public G4VDiscreteProcess
 
 **/
 
+#ifdef DEBUG_TAG
+#include "plog/Severity.h"
+#endif
+
 #include "G4OpRayleigh.hh"
 #include "U4_API_EXPORT.hh"
 
@@ -18,6 +22,7 @@ class U4_API ShimG4OpRayleigh : public G4OpRayleigh
 
 
 #ifdef DEBUG_TAG
+        static const plog::Severity LEVEL ; 
         static const bool FLOAT ; 
         static const int  PIDX ; 
         void ResetNumberOfInteractionLengthLeft(); 

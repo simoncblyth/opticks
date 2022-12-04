@@ -303,7 +303,6 @@ void U4Recorder::saveOrLoadStates( int id )
                 ; 
 
             U4Engine::RestoreState( g4state, id );   
-
         }
     }
 }

@@ -3,7 +3,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-
 ShimG4OpRayleigh::ShimG4OpRayleigh()
     :
     G4OpRayleigh("OpRayleigh",fOptical)
@@ -19,7 +18,11 @@ ShimG4OpRayleigh::~ShimG4OpRayleigh()
 #ifdef DEBUG_TAG
 
 #include "U4Stack.h"
+#include "U4UniformRand.h"
 #include "SEvt.hh"
+#include "SLOG.hh"
+
+const plog::Severity ShimG4OpRayleigh::LEVEL = SLOG::EnvLevel("ShimG4OpRayleigh", "DEBUG"); 
 
 const bool ShimG4OpRayleigh::FLOAT = getenv("ShimG4OpRayleigh_FLOAT") != nullptr ;
 const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
@@ -37,6 +40,11 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
  void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft()
 {
     G4double u = G4UniformRand() ; 
+
+    LOG(LEVEL) 
+        << U4UniformRand::Desc(u, SEvt::UU )
+        ;
+
     SEvt::AddTag( U4Stack_RayleighDiscreteReset, u ); 
 
     if(FLOAT)

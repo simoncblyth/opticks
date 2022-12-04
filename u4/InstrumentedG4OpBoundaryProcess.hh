@@ -277,6 +277,7 @@ public:
         int    m_CustomART_count ; 
         double m_u0 ; 
         int    m_u0_idx ; 
+        int    m_u0_idx_delta ; 
 #endif
 
 private:

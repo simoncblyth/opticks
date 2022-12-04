@@ -110,6 +110,8 @@ loglevel(){
    #export SEvt=INFO
    export SEventConfig=INFO
    export InstrumentedG4OpBoundaryProcess=INFO
+   export ShimG4OpAbsorption=INFO
+   export ShimG4OpRayleigh=INFO
 }
 
 if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
