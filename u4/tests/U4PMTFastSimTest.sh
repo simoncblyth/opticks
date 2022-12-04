@@ -21,22 +21,34 @@ export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
 export Local_G4Cerenkov_modified_DISABLE=1
 export Local_DsG4Scintillation_DISABLE=1
+#export G4OpAbsorption_DISABLE=1
+#export G4OpRayleigh_DISABLE=1
+#export G4OpBoundaryProcess_DISABLE=1
+
 export G4FastSimulationManagerProcess_ENABLE=1  
+
+## HMM: should FastSim be switched off for N=1 running ? 
+
 
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
 ## u4/tests/U4PMTFastSimTest.cc
 export BeamOn=${BeamOn:-1}
 
+
 ## PMTFastSim/HamamatsuR12860PMTManager declProp config 
 export hama_FastCoverMaterial=Cheese  
-export hama_UsePMTOpticalModel=1
+export hama_UsePMTOpticalModel=1        ## adds dynode geom 
 export hama_UseNaturalGeometry=${N:-0}  ## 0:FastSim/jPOM 1:InstrumentedG4OpBoundaryProcess/CustomART
 
 case $hama_UseNaturalGeometry in
   0) echo FastSim/jPOM ;;
   1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
 esac
+
+
+
+
 log=${bin}.log
 logN=${bin}_${hama_UseNaturalGeometry}.log
 
@@ -92,6 +104,7 @@ export storch_FillGenstep_mom=0,0,-1
 
 loglevel(){
    export U4Recorder=INFO
+   export U4Physics=INFO
    export junoPMTOpticalModel=INFO
    export junoPMTOpticalModelSimple=INFO
    #export SEvt=INFO
@@ -117,6 +130,7 @@ if [ "$arg" == "run" ]; then
 fi 
 
 if [ "$arg" == "dbg" ]; then
+    export BP=MixMaxRng::flat
     [ -f "$log" ] && rm $log 
     case $(uname) in 
         Darwin) lldb__ $bin ;;

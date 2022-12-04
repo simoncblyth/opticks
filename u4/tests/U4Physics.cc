@@ -2,6 +2,9 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
+#include "SLOG.hh"
+const plog::Severity U4Physics::LEVEL = SLOG::EnvLevel("U4Physics", "DEBUG") ; 
+
 U4Physics::U4Physics()
     :
     fCerenkov(nullptr),
@@ -168,18 +171,36 @@ void U4Physics::ConstructOp()
     }
 
 
+    int G4OpAbsorption_DISABLE = EInt("G4OpAbsorption_DISABLE", "0") ; 
+    int G4OpRayleigh_DISABLE = EInt("G4OpRayleigh_DISABLE", "0") ; 
+    int G4OpBoundaryProcess_DISABLE = EInt("G4OpBoundaryProcess_DISABLE", "0") ; 
 
+    LOG(LEVEL) << "G4OpAbsorption_DISABLE      : " << G4OpAbsorption_DISABLE ;  
+    LOG(LEVEL) << "G4OpRayleigh_DISABLE        : " << G4OpRayleigh_DISABLE ;  
+    LOG(LEVEL) << "G4OpBoundaryProcess_DISABLE : " << G4OpBoundaryProcess_DISABLE ;  
 
+    if(G4OpAbsorption_DISABLE == 0)
+    {
 #ifdef DEBUG_TAG
-    fAbsorption = new ShimG4OpAbsorption();
-    fRayleigh = new ShimG4OpRayleigh();
+        fAbsorption = new ShimG4OpAbsorption();
 #else
-    fAbsorption = new G4OpAbsorption();
-    fRayleigh = new G4OpRayleigh();
+        fAbsorption = new G4OpAbsorption();
 #endif
+    }
 
-    fBoundary = new InstrumentedG4OpBoundaryProcess();
+    if(G4OpRayleigh_DISABLE == 0)
+    {
+#ifdef DEBUG_TAG
+        fRayleigh = new ShimG4OpRayleigh();
+#else
+        fRayleigh = new G4OpRayleigh();
+#endif
+    }
 
+    if(G4OpBoundaryProcess_DISABLE == 0)
+    {
+        fBoundary = new InstrumentedG4OpBoundaryProcess();
+    }
 
   auto particleIterator=GetParticleIterator();
   particleIterator->reset();
@@ -204,11 +225,10 @@ void U4Physics::ConstructOp()
 
         if (particleName == "opticalphoton") 
         {
-            pmanager->AddDiscreteProcess(fAbsorption);
-            pmanager->AddDiscreteProcess(fRayleigh);
-            //pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
-            pmanager->AddDiscreteProcess(fBoundary);
-            if(fFastSim) pmanager->AddDiscreteProcess(fFastSim); 
+            if(fAbsorption) pmanager->AddDiscreteProcess(fAbsorption);
+            if(fRayleigh)   pmanager->AddDiscreteProcess(fRayleigh);
+            if(fBoundary)   pmanager->AddDiscreteProcess(fBoundary);
+            if(fFastSim)    pmanager->AddDiscreteProcess(fFastSim); 
         }
     }
 }

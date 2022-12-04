@@ -10,6 +10,8 @@ This is intended solely for use from U4RecorderTest
 #include <cstdlib>
 #include <string>
 #include <sstream>
+
+#include "plog/Severity.h"
 #include "G4VUserPhysicsList.hh"
 
 class Local_G4Cerenkov_modified ; 
@@ -30,6 +32,7 @@ class G4FastSimulationManagerProcess ;
 
 struct U4_API U4Physics : public G4VUserPhysicsList
 {
+    static const plog::Severity LEVEL ; 
     static int EInt(const char* key, const char* fallback="0"); 
 
     Local_G4Cerenkov_modified*  fCerenkov ; 
