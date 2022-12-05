@@ -166,6 +166,24 @@ rtime_ = lambda a,i:a.record[:,i+1,0,3] - a.record[:,i,0,3]
 rspeed_ = lambda a,i:rdist_(a,i)/rtime_(a,i)
 
 
+## HMM r1time_ works when i is an array 
+# r1dist_ when i is array gives single scalar does not 
+r1time_ = lambda r,i:r[i+1,0,3] - r[i,0,3]
+r1dist_ = lambda r,i:np.sqrt(np.sum( (r[i+1,0,:3]-r[i,0,:3])*(r[i+1,0,:3]-r[i,0,:3]) ))
+r1speed_ = lambda r,i:r1dist_(r,i)/r1time_(r,i)
+
+
+## rv: do that in a more vectorized way 
+rvtime_ = lambda r:np.diff(r[:,0,3])
+rvstep_ = lambda r:np.diff(r[:,0,:3],axis=0 )   
+rvdist_ = lambda r:np.sqrt(np.sum(rvstep_(r)*rvstep_(r),axis=1))
+rvspeed_ = lambda r:rvdist_(r)/rvtime_(r)
+
+## alternate avoiding intermediary lambda funcs 
+#rvdist_ = lambda r:np.sqrt(np.sum(np.diff(r[:,0,:3],axis=0 )*np.diff(r[:,0,:3],axis=0 ),axis=1)) 
+#rvspeed_ = lambda r:np.sqrt(np.sum(np.diff(r[:,0,:3],axis=0 )*np.diff(r[:,0,:3],axis=0 ),axis=1))/np.diff(r[:,0,3])
+
+
 
 
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar TO DIRECTORY CONTAINING CSGFoundry dir 

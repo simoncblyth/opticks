@@ -5,11 +5,10 @@ U4PMTFastSimTest_cf.py
 
 ::
 
-    In [5]: seqhis_(a.seq[726,0])
-    Out[5]: ['TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR', 'BT SR BT SA']
+    PID = 726    
+    seqhis_(a.seq[PID,0] : ['TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR', 'BT SR BT SA'] 
+    seqhis_(b.seq[PID,0] : ['TO BT BT SR SR BR BR SR SR SR BR SR BR SR SA', '?0?'] 
 
-    In [6]: seqhis_(b.seq[726,0])
-    Out[6]: ['TO BT BT SA', '?0?']
 
 
 """
@@ -29,6 +28,10 @@ PID = int(os.environ.get("PID", -1))
 if PID == -1: PID = int(os.environ.get("OPTICKS_G4STATE_RERUN", -1))
 
 
+# mapping from new to old point index for PID 726 big bouncer
+b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
+
+
 if __name__ == '__main__':
 
     print("PID : %d " % (PID))
@@ -41,5 +44,22 @@ if __name__ == '__main__':
     print("seqhis_(a.seq[PID,0] : %s " % seqhis_(a.seq[PID,0] ))
     print("seqhis_(b.seq[PID,0] : %s " % seqhis_(b.seq[PID,0] ))
   
+    ar = a.record[PID]
+    br = b.record[PID]
+
+    abr = np.zeros( (len(b2a), 2, 4), dtype=np.float32 )
+    for i,j in enumerate(b2a):
+        abr[i,0] = ar[j,0]
+        abr[i,1] = br[i,0]
+    pass    
+    print(repr(abr))
+
+
+        
+
+           
+
+
+
 
 

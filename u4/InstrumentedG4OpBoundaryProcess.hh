@@ -86,6 +86,7 @@
 #ifdef WITH_PMTFASTSIM
 #include "SOpBoundaryProcess.hh"
 struct JPMT ; 
+struct CustomBoundary ; 
 #endif
 
 #include "G4Step.hh"
@@ -169,6 +170,8 @@ public:
         static const plog::Severity LEVEL ; 
 
 #ifdef WITH_PMTFASTSIM
+        CustomBoundary* m_custom ; 
+
         double getU0() const ; 
         int getU0_idx() const ; 
 #endif
@@ -290,7 +293,10 @@ private:
         G4ThreeVector NewPolarization;
 
         G4ThreeVector theGlobalPoint ;
+        G4ThreeVector theGlobalExitNormal;   // SCB: as provided by G4Navigator 
         G4ThreeVector theGlobalNormal;
+        G4ThreeVector theRecoveredNormal ;   // SCB: try to use haveEnteredDaughter status to unflip back to G4Track independent normal 
+
         G4ThreeVector theFacetNormal;
 
         G4Material* Material1;

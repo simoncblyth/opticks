@@ -53,7 +53,7 @@ After adding UseGivenVelocity::
     {
     +    const_cast<G4Track*>(track)->UseGivenVelocity(true);  
 
-    In [4]: a.photon[:,0]                                                                                                                                                         
+    In [4]: a.photon[:,0]
     Out[4]: 
     array([[-100.   ,  -31.67 ,   75.357,    0.59 ],
            [ -22.228, -100.   ,    5.93 ,    0.602],
@@ -67,7 +67,7 @@ After adding UseGivenVelocity::
            [ -67.583,   60.769,  100.   ,    1.51 ]], dtype=float32)
 
 
-    In [3]: b.photon[:,0]                                                                                                                                                         
+    In [3]: b.photon[:,0]
     Out[3]: 
     array([[-100.   ,  -31.67 ,   75.357,    0.589],
            [ -22.228, -100.   ,    5.93 ,    0.601],
