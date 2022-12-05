@@ -85,7 +85,6 @@
 
 #ifdef WITH_PMTFASTSIM
 #include "SOpBoundaryProcess.hh"
-struct JPMT ; 
 struct CustomBoundary ; 
 #endif
 
@@ -174,6 +173,8 @@ public:
 
         double getU0() const ; 
         int getU0_idx() const ; 
+
+        static void Save(const char* dir); 
 #endif
 
 #ifdef DEBUG_TAG
@@ -269,15 +270,9 @@ private:
         // Invoke SD for post step point if the photon is 'detected'
         G4bool InvokeSD(const G4Step* step);
 
-#ifdef WITH_PMTFASTSIM
-        char CustomART(const G4Track& aTrack, const G4Step& aStep ); 
-#endif
 public:  
-        static void Save(const char* dir); 
 
-#ifdef WITH_PMTFASTSIM
-        JPMT*  m_jpmt ; 
-        int    m_CustomART_count ; 
+#ifdef DEBUG_TAG 
         double m_u0 ; 
         int    m_u0_idx ; 
         int    m_u0_idx_delta ; 

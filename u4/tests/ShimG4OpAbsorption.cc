@@ -40,6 +40,13 @@ const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX"
 {
     G4double u = G4UniformRand() ; 
 
+    std::cout
+        << "ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft"
+        << " LEVEL:" << LEVEL 
+        << " plog::severityToString(LEVEL):" << plog::severityToString(LEVEL) 
+        << std::endl
+        ; 
+
     LOG(LEVEL)
         << U4UniformRand::Desc(u, SEvt::UU )
         ;

@@ -86,7 +86,6 @@
 
 
 #ifdef WITH_PMTFASTSIM
-#include "CustomART.h"
 #include "JPMT.h"
 #include "Layr.h"
 #include "CustomBoundary.h"
@@ -98,10 +97,6 @@
 #include "U4OpticalSurface.h"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4MaterialPropertiesTable.h"
-
-#include "SPhoton_Debug.h"
-template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
-template<> std::vector<SPhoton_Debug<'C'>> SPhoton_Debug<'C'>::record = {} ;
 
 
 #include "U4UniformRand.h"
@@ -195,9 +190,10 @@ int InstrumentedG4OpBoundaryProcess::getU0_idx() const
 }
 #endif
 
+
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 {
-    SPhoton_Debug<'B'>::Save(fold);   
+    CustomBoundary::Save(fold); 
 }
 
 
@@ -217,8 +213,6 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                   theGlobalPoint,
                   theRecoveredNormal,
                   thePhotonMomentum))
-    ,m_jpmt(new JPMT)
-    ,m_CustomART_count(0)  
     ,m_u0(-1.)
     ,m_u0_idx(-1)
 #endif
@@ -565,7 +559,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
     theModel = glisur;
     theFinish = polished;
 
-    char CustomART_status = 'U' ; 
+    char CustomBoundary_status = 'U' ; 
 
     G4SurfaceType type = dielectric_dielectric;
 
@@ -687,16 +681,15 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
             //]OpticalSurface.mpt.theReflectivity,theTransmittance,theEfficiency
 
 #ifdef WITH_PMTFASTSIM
-            //[OpticalSurface.mpt.CustomART
-            //CustomART_status = OpticalSurfaceName[0] == '@' ? CustomART(aTrack, aStep) : 'N' ; 
+            //[OpticalSurface.mpt.CustomBoundary
 
-            CustomART_status = 'N' ; 
+            CustomBoundary_status = 'N' ; 
             if(OpticalSurfaceName[0] == '@')
             {
                  bool custom_triggered = m_custom->isTriggered(aTrack) ; 
-                 CustomART_status = custom_triggered == false ? 'Z' : m_custom->DoIt(aTrack, aStep) ; 
+                 CustomBoundary_status = custom_triggered == false ? 'Z' : m_custom->DoIt(aTrack, aStep) ; 
             } 
-            //]OpticalSurface.mpt.CustomART
+            //]OpticalSurface.mpt.CustomBoundary
 #endif
 
             LOG(LEVEL)
@@ -704,7 +697,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
                 << " theReflectivity " << theReflectivity
                 << " theEfficiency " << theEfficiency
                 << " theTransmittance " << theTransmittance
-                << " CustomART_status " << CustomART_status
+                << " CustomBoundary_status " << CustomBoundary_status
                 ; 
 
             if (aMaterialPropertiesTable->ConstPropertyExists("SURFACEROUGHNESS"))
@@ -780,18 +773,18 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
     //[type_switch 
 #ifdef WITH_PMTFASTSIM
-    bool CustomART_active = CustomART_::IsActive(CustomART_status) ; 
+    bool CustomBoundary_active = CustomStatus::IsActive(CustomBoundary_status) ; 
     LOG(LEVEL) 
         << " PostStepDoIt_count " << PostStepDoIt_count
         << " type switch " << U4SurfaceType::Name(type)
-        << " CustomART_status " << CustomART_status
-        << " CustomART_active " << CustomART_active
-        << " CustomART_::Desc " << CustomART_::Desc(CustomART_status) 
+        << " CustomBoundary_status " << CustomBoundary_status
+        << " CustomBoundary_active " << CustomBoundary_active
+        << " CustomStatus::Desc " << CustomStatus::Desc(CustomBoundary_status) 
         ; 
 
-    if(CustomART_active)
+    if(CustomBoundary_active)
     {
-        LOG(LEVEL) << "CustomART_active : SKIP type_switch : CustomART_status : " << CustomART_status ;  
+        LOG(LEVEL) << "CustomBoundary_active : SKIP type_switch : CustomBoundary_status : " << CustomBoundary_status ;  
     }
     else 
 #endif

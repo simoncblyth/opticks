@@ -14,12 +14,12 @@ G4OpAbsorption : public G4VDiscreteProcess
 class ShimG4OpAbsorption : public G4OpAbsorption 
 {
 
+        static const plog::Severity LEVEL ; 
     public:
         ShimG4OpAbsorption(const G4String& processName = "OpAbsorption",
                                 G4ProcessType type = fOptical);
        ~ShimG4OpAbsorption();
 
-        static const plog::Severity LEVEL ; 
         static const bool FLOAT ; 
         static const int  PIDX ; 
         void ResetNumberOfInteractionLengthLeft(); 

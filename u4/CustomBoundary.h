@@ -36,10 +36,33 @@ on the boundary between Pyrex and Vacuum where thin layers of ARC
 
 The parameter names follow those of G4OpBoundaryProcess apart from
 *theRecoveredNormal*.  *theRecoveredNormal* is required to be the outwards
-normal for the inner volume in global frame.  Absolutely no G4Track dependent
+normal for the inner volume in global frame. Absolutely no G4Track dependent
 flips must be applied to this normal, it must be purely an outwards geometry
 normal. NB this means that theGlobalExitNormal must be corrected, removing a
 flip done by G4Navigator based on "enteredDaughter".  
+
+For example, from a modified G4OpBoundaryProcess::
+
+     418     G4bool haveEnteredDaughter= (thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume()); // SCB
+     419 
+     ...
+     449     G4int hNavId = G4ParallelWorldProcess::GetHypNavigatorID();
+     450     std::vector<G4Navigator*>::iterator iNav =
+     451                 G4TransportationManager::GetTransportationManager()->
+     452                                          GetActiveNavigatorsIterator();
+     453     theGlobalExitNormal =
+     454                    (iNav[hNavId])->GetGlobalExitNormal(theGlobalPoint,&valid);
+     455 
+     456     // theGlobalExitNormal is already oriented by G4Navigator to point from vol1 -> vol2 
+     457     // so undo that flip by G4Navigator in order to recover the original geometry 
+     458     // normal that is independent of G4Track direction
+     459 
+     460     theRecoveredNormal = ( haveEnteredDaughter ? -1. : 1. )* theGlobalExitNormal  ;
+     464     theGlobalNormal = theGlobalExitNormal ;
+
+CAUTION: theGlobalNormal is compromised (by being flipped) multiple times 
+within G4OpBoundaryProcess so it is vital that a separate *theGlobalExitNormal* 
+is used which is never compromised. 
 
 Requiring *theRecoveredNormal* allows the *DoIt* to be implemented without
 having to transform into local frame, because it provides an absolute
@@ -70,9 +93,19 @@ CustomBoundary::DoIt
     orientation of the photon with respect to the boundary and the *minus_cos_theta* 
     where theta is the angle of incidence. 
 
+TODO
+-------
+
+* test a transformed PMT 
+
+* compare the reflection and refraction implemented here 
+  (which was copied from junoPMTOpticalModel)
+  with that which would be done by standard G4OpBoundaryProcess
+
+
 **/
 
-
+#include <cstring>
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 
@@ -81,10 +114,13 @@ CustomBoundary::DoIt
 #include "Layr.h"
 #include "U4UniformRand.h"
 #include "SPhoton_Debug.h"
+template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
+
 
 struct CustomBoundary
 {
     static const constexpr plog::Severity LEVEL = info  ; 
+    static void Save(const char* fold); 
 
     JPMT* m_jpmt ; 
     int   m_DoIt_count ; 
@@ -116,6 +152,50 @@ struct CustomBoundary
     char DoIt(const G4Track& aTrack, const G4Step& aStep ); 
 };
 
+struct CustomStatus
+{
+   static constexpr const char* ACTIVE = "ARTD" ; 
+   static constexpr const char* U_ = "Undefined" ; 
+   static constexpr const char* N_ = "NameOfOpticalSurfaceUnmatched" ; 
+   static constexpr const char* Z_ = "ZLocalDoesNotTrigger" ; 
+   static constexpr const char* A_ = "Absorb" ; 
+   static constexpr const char* R_ = "Reflect" ; 
+   static constexpr const char* T_ = "Transmit" ; 
+   static constexpr const char* D_ = "Detect" ; 
+
+   static bool IsActive(char status) ; 
+   static const char* Desc(char status); 
+}; 
+
+inline bool CustomStatus::IsActive(char status)
+{
+    return strchr(ACTIVE, status) != nullptr ; 
+} 
+
+inline const char* CustomStatus::Desc(char status)
+{
+   const char* s = nullptr ; 
+   switch(status)
+   {
+       case 'U': s = U_ ; break ; 
+       case 'N': s = N_ ; break ; 
+       case 'Z': s = Z_ ; break ; 
+       case 'A': s = A_ ; break ; 
+       case 'R': s = R_ ; break ; 
+       case 'T': s = T_ ; break ; 
+       case 'D': s = D_ ; break ; 
+   }
+   return s ; 
+}
+
+
+
+
+
+inline void CustomBoundary::Save(const char* fold) // static
+{
+    SPhoton_Debug<'B'>::Save(fold);   
+}
 
 inline CustomBoundary::CustomBoundary(
           G4ThreeVector& NewMomentum_,
@@ -191,15 +271,17 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     spec.n3i = m_jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::KINDEX, energy_eV );
 
 
-    Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  // NB stack is flipped for minus_cos_theta > 0. 
-    Stack<double,4> stackNormal(wavelength_nm, -1.            , spec );  // minus_cos_theta -1. means normal incidence and stack not flipped
+    Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
+    Stack<double,4> stackNormal(wavelength_nm, -1.            , spec ); 
 
     // NB stack is flipped for minus_cos_theta > 0. so:
     //
     //    stack.ll[0] always incident side
     //    stack.ll[3] always transmission side 
     //
-    // stackNormal is not flipped, presumably due to _qe definition
+    // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) 
+    //      presumably this is due to _qe definition
+    //
 
 
     double _n0         = stack.ll[0].n.real() ; 
@@ -209,11 +291,9 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     double _n3         = stack.ll[3].n.real() ; 
     double _cos_theta3 = stack.ll[3].ct.real() ;
 
-
     // E_s2 : S-vs-P power fraction : signs make no difference as squared
     double E_s2 = _sin_theta0 > 0. ? (polarization*direction.cross(oriented_normal))/_sin_theta0 : 0. ; 
     E_s2 *= E_s2;  
-
 
     LOG(LEVEL)
         << " m_DoIt_count " << m_DoIt_count 
@@ -222,7 +302,6 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
         << " polarization*direction.cross(oriented_normal) " << polarization*direction.cross(oriented_normal) 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
         ;    
-
 
     double fT_s = stack.art.T_s ; 
     double fT_p = stack.art.T_p ; 
@@ -303,21 +382,21 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     NewMomentum = OldMomentum ; 
     NewPolarization = OldPolarization ; 
 
-    // the below is copying junoPMTOpticalModel 
-    // TODO: compare with G4OpBoundaryProcess
-
+    // the below reflect/refract is a copy of junoPMTOpticalModel  TODO: compare with G4OpBoundaryProcess
     if( status == 'R' )
     {
         theStatus = FresnelReflection ;
         NewMomentum   -= 2.*(NewMomentum*oriented_normal)*oriented_normal ;
         NewPolarization -= 2.*(NewPolarization*oriented_normal)*oriented_normal ;
-        // looks like the convention for oriented_normal will cancel out here ?
+        // looks like the convention for sign of oriented_normal cancels out here ?
     }
     else if( status == 'T' )
     {
         theStatus = FresnelRefraction ; 
         // my convention for oriented_normal seems to be opposite to what 
         // this formula (duplicated from junoPMTOpticalModel) is expecting  ?     
+        // CAUTION: this was an adhoc flip, 
+        // TODO: check more fundamentally by comparing with G4OpBoundaryProcess and qsim.h:propagate_at_boundary
         double flip = -1. ;   
         NewMomentum = flip*(_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*NewMomentum;
         NewPolarization = (NewPolarization-(NewPolarization*direction)*direction).unit();
@@ -332,14 +411,16 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     }
 
 
-    G4double time = aTrack.GetLocalTime();  // just for debug output 
+    G4double time = aTrack.GetLocalTime();  // just for debug output, the only use of aTrack  
 
-    SPhoton_Debug<'C'> dbg ; 
+    SPhoton_Debug<'B'> dbg ; 
 
     LOG(LEVEL)
        << " time " << time 
        << " dbg.Count " << dbg.Count()
        << " dbg.Name " << dbg.Name()
+       << " status " << status
+       << " CustomStatus::Desc(status) " << CustomStatus::Desc(status)
        ;    
 
     dbg.pos = theGlobalPoint ; 
@@ -356,8 +437,6 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     //dbg.nrm = theGlobalExitNormal ;  // inwards first, the rest outwards : oriented into direction of incident photon
     //dbg.nrm = theGlobalNormal ;      // this has been oriented : outwards first, the rest inwards  
     dbg.nrm = theRecoveredNormal ;  
-  
-
     dbg.spare = 0. ; 
 
     dbg.u0 = u0 ; 

@@ -66,6 +66,9 @@ What you need to do to get logging to work for a package
 #ifdef OPTICKS_U4
 #include "U4_LOG.hh"
 #endif
+#ifdef OPTICKS_U4TEST
+#include "U4TEST_LOG.hh"
+#endif
 #ifdef OPTICKS_BRAP
 #include "BRAP_LOG.hh"
 #endif

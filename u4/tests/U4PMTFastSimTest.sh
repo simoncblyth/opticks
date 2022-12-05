@@ -115,7 +115,7 @@ loglevel(){
 }
 
 if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
-   loglevel  ## switch on logging when doing single photon RERUN
+   echo loglevel  ## switch on logging when doing single photon RERUN
 fi 
 
 
