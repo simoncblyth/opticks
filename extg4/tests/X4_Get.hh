@@ -29,10 +29,14 @@ This can be done with::
 #include "PMTSim.hh"
 #endif
 
+namespace X4_Get 
+{
+    inline const G4VSolid* GetSolid(const char* geom, std::string* meta=nullptr ); 
+}
 
 namespace X4_Get 
 {
-    inline const G4VSolid* GetSolid(const char* geom, std::string* meta=nullptr )
+    inline const G4VSolid* GetSolid(const char* geom, std::string* meta )
     {
         const char* geom_upto_first_underscore = SStr::HeadFirst(geom, '_');  
 

@@ -4,8 +4,6 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 
-
-
 #[=[
 Unlike most executables U4VPrimaryGeneratorTest 
 needs the MOCK_CURAND macro in order to use CUDA 
@@ -81,11 +79,9 @@ target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
 
 
-
 set(U4HitTest_SOURCES
     U4HitTest.cc
 )
-
 
 find_package(CSG REQUIRED)
 set(TGT U4HitTest)
@@ -97,17 +93,20 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
 
-set(U4PMTFastSimTest_SOURCES
-   U4PMTFastSimTest.cc
-
-)
-
 if(PMTFastSim_FOUND)
-    set(TGT U4PMTFastSimTest)
-    add_executable(${TGT} ${U4PMTFastSimTest_SOURCES})
-    target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
-    target_link_libraries(${TGT} U4 Opticks::SysRap Opticks::PMTFastSim)
-    install(TARGETS ${TGT} DESTINATION lib)
+
+    set(PMTFastSim_TESTS
+       U4PMTFastSimTest.cc
+       U4PMTFastSimGeomTest.cc
+    )
+
+    foreach(SRC ${PMTFastSim_TESTS})
+        get_filename_component(TGT ${SRC} NAME_WE)
+        add_executable(${TGT} ${SRC})
+        target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+        target_link_libraries(${TGT} U4 Opticks::SysRap Opticks::PMTFastSim)
+        install(TARGETS ${TGT} DESTINATION lib)
+   endforeach()
 endif()
 
 

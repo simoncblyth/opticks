@@ -1,3 +1,11 @@
+/**
+U4RecorderTest.h  : U4Action might be a better name
+========================================================
+
+Unusual : Geant4 application in a header. 
+
+**/
+
 #include "G4RunManager.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
@@ -151,7 +159,6 @@ void U4RecorderTest::BeginOfEventAction(const G4Event* evt){     fRecorder->Begi
 void U4RecorderTest::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
 void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
-
 void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
 
 U4RecorderTest::~U4RecorderTest()

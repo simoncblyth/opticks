@@ -21,16 +21,16 @@ into the volume frame by applying the saved transforms for each solid.
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "SVolume.h"
+
 #include "X4Intersect.hh"
 
 #include "G4VSolid.hh"
 
 #ifdef WITH_PMTFASTSIM
 #include "PMTFastSim.hh"
-#include "N4Volume.hh"
 #elif WITH_PMTSIM
 #include "PMTSim.hh"
-#include "P4Volume.hh"
 #endif
 
 int main(int argc, char** argv)
@@ -66,13 +66,9 @@ int main(int argc, char** argv)
     //const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
     const char* base = SPath::Resolve("$FOLD", DIRPATH ) ; 
 
-#ifdef WITH_PMTFASTSIM
-    N4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
-    N4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
-#elif WITH_PMTSIM
-    P4Volume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
-    P4Volume::SaveTransforms(tr, so, base, "transforms.npy" ); 
-#endif
+    SVolume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 
+    SVolume::SaveTransforms(tr, so, base, "transforms.npy" ); 
+
 
     LOG(info) << " num " << num ; 
     for(unsigned i=0 ; i < num ; i++)

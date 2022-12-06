@@ -25,8 +25,8 @@
 #include "U4UniformRand.h"
 
 #include "U4Surface.h"
-
 #include "U4Process.h"
+#include "U4Touchable.h"
 
 #include "SCF.h"
 #include "U4Step.h"
@@ -415,6 +415,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4Track* track = step->GetTrack(); 
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
+
+    const G4VTouchable* touch = track->GetTouchable();  
+    LOG(LEVEL) << U4Touchable::Desc(touch) ;
+
 
     spho* label = STrackInfo<spho>::GetRef(track); 
     assert( label->isDefined() );  

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <limits>
 
+#include "SSys.hh"
 #include "SPath.hh"
 #include "SDir.h"
 #include "SStr.hh"
@@ -424,11 +425,19 @@ The matdir may use the standard tokens eg::
 
 **/
 
-G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_ )
+G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_  )
 {
+    const char* ekey = "U4Material__MakeMaterialPropertiesTable_sigint" ; 
+    bool sigint = SSys::getenvbool(ekey) ; 
     const char* matdir = SPath::Resolve(matdir_, NOOP); 
     std::vector<std::string> names ; 
-    SDir::List(names, matdir, ".npy" ); 
+    SDir::List(names, matdir, ".npy", sigint ); 
+ 
+    LOG_IF(error, names.size() == 0) 
+       << "Failed to read anything from directory "
+       << " matdir[" << matdir << "] "
+       << "set envvar to raise SIGINT : " << ekey 
+       ;
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
 

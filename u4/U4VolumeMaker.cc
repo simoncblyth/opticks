@@ -78,10 +78,12 @@ U4VolumeMaker::PV
 
 Invokes several PV getter methods the first to provide a PV wins.
 
+PVG_
+    load geometry from a gdmlpath
 PVP_
     PMTSim getter, requiring WITH_PMTSIM macro to be set meaning that PMTSim pkg was found by CMake
 PVF_
-    PMTFastSim getter, requiring WITH_PMTFASTSIM 
+    PMTFastSim getter, requiring WITH_PMTFASTSIM macro, meaning that PMTFastSim pkg found by CMake
 PVS_
     Specials provided locally 
 PVL_
@@ -249,8 +251,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
 #endif
     return pv ; 
 }
-
-//junoPMTOpticalModel* U4VolumeMaker::PVF_POM = nullptr ; 
 
 
 const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)

@@ -5,6 +5,7 @@ SDir.h : header only directory listing paths with supplied ext
 
 **/
 
+#include <csignal>
 #include <cassert>
 #include <sstream>
 #include <iostream>
@@ -17,7 +18,7 @@ SDir.h : header only directory listing paths with supplied ext
 
 struct SDir 
 {
-    static void List(std::vector<std::string>& names, const char* path, const char* ext ); 
+    static void List(std::vector<std::string>& names, const char* path, const char* ext, bool sigint=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext ); 
     static std::string Desc(const std::vector<std::string>& names); 
 }; 
@@ -30,11 +31,19 @@ Collect the names of files or directories within a single directory that end wit
 
 **/
 
-inline void SDir::List(std::vector<std::string>& names, const char* path, const char* ext )
+inline void SDir::List(std::vector<std::string>& names, const char* path, const char* ext, bool sigint )
 {
     DIR* dir = opendir(path) ;
-    if(!dir) std::cout << "SDir::List FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
-    if(!dir) return ; 
+    if(!dir)
+    { 
+        std::cout << "SDir::List FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
+        if(sigint)
+        {
+            std::cout << "SDir::List std::raise(SIGINT) due to argument sigint:true " << std::endl ;  
+            std::raise(SIGINT) ; 
+        }
+        return ; 
+    }
     struct dirent* entry ;
     while ((entry = readdir(dir)) != nullptr) 
     {   

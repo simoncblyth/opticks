@@ -99,6 +99,7 @@
 #include "U4MaterialPropertiesTable.h"
 
 
+
 #include "U4UniformRand.h"
 NP* U4UniformRand::UU = nullptr ;  
 // UU gets set by U4Recorder::saveOrLoadStates when doing single photon reruns
@@ -684,6 +685,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
             //[OpticalSurface.mpt.CustomBoundary
             CustomBoundary_doneIt = m_custom->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
             //]OpticalSurface.mpt.CustomBoundary
+
 #endif
 
             LOG(LEVEL)
