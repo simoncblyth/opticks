@@ -85,7 +85,8 @@
 
 #ifdef WITH_PMTFASTSIM
 #include "SOpBoundaryProcess.hh"
-struct CustomBoundary ; 
+#include "JPMT.h"
+template <typename T> struct CustomBoundary ; 
 #endif
 
 #include "G4Step.hh"
@@ -169,7 +170,7 @@ public:
         static const plog::Severity LEVEL ; 
 
 #ifdef WITH_PMTFASTSIM
-        CustomBoundary* m_custom ; 
+        CustomBoundary<JPMT>* m_custom ; 
 
         double getU0() const ; 
         int getU0_idx() const ; 

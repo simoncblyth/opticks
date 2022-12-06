@@ -64,7 +64,7 @@ CAUTION: theGlobalNormal is compromised (by being flipped) multiple times
 within G4OpBoundaryProcess so it is vital that a separate *theGlobalExitNormal* 
 is used which is never compromised. 
 
-Requiring *theRecoveredNormal* allows the *DoIt* to be implemented without
+Requiring *theRecoveredNormal* allows the *doIt* to be implemented without
 having to transform into local frame, because it provides an absolute
 orientation. If this approach turns out to be inconvenient another way of
 establishing an absolute orientation is to take a compromised normal (that has
@@ -76,54 +76,99 @@ normal::
     bool outwards = localNormal.z() > 0. ; // as always upper hemi of PMT in local frame  
     G4ThreeVector surface_normal = (outwards ? 1. : -1.)*localNormal ; 
 
-The disadvantage of using a local normal is that makes it necessary to
-transform momentum and polarization into local frame and then transform back to
+The disadvantage of using a local normal is that it then makes it necessary to
+transform momentum and polarization into local frame and transform back to
 global frame.  Conversely using *theRecoveredNormal* which is an absolute
 global normal allows the whole calculation to be done in global frame, avoiding
 all that transforming. 
 
-CustomBoundary::isTriggered 
+
+CustomBoundary::maybe_doIt
+    for OpticalSurfaceName starting with '@' the isPositiveLocalZ is used to 
+    check for upper half (eg upper hemisphere of ellipsoidal PMT) in which 
+    case the doIt is run
+
+CustomBoundary::isPositiveLocalZ
     transforms theGlobalPoint into the frame of the G4Track 
     in order to get the local Z coordinate of the intersect, 
     returning true for local_z > 0. 
      
-CustomBoundary::DoIt 
+CustomBoundary::doIt 
     performs its calculations purely in global frame, 
     using the dot product between *theRecoveredNormal* and *OldMomentum* to provide the
     orientation of the photon with respect to the boundary and the *minus_cos_theta* 
     where theta is the angle of incidence. 
 
+template type J
+    required to have enumerations : RINDEX, KINDEX, L0, L1, L2, L3, DEFAULT_CAT
+    and methods to access layer refractive indices and thicknesses for various 
+    categories of sensors (eg PMTs) and layers with arguments including energy_eV  
+  
+    * currently required to have argumentless ctor 
+
 TODO
--------
+----
 
 * test a transformed PMT 
 
-* compare the reflection and refraction implemented here 
-  (which was copied from junoPMTOpticalModel)
-  with that which would be done by standard G4OpBoundaryProcess
+* compare the reflection and refraction (especially the polarization) 
+  implemented here (which was copied from junoPMTOpticalModel) with that which 
+  would be done by standard G4OpBoundaryProcess (and qsim.h propagate_at_boundary)
 
+* maybe make template type J accept an MPT MaterialPropertiesTable in its ctor, enabling 
+  it to be implemented purely from a bunch of custom properties loading into the 
+  OpticalSurface : then it would be more convenient for the instance of J to 
+  be passed in as a parameter to CustomBoundary. 
 
 **/
 
 #include <cstring>
+
+struct CustomStatus
+{
+   static constexpr const char* ACTIVE = "ARTD" ; 
+   static constexpr const char* A_ = "Absorb" ; 
+   static constexpr const char* R_ = "Reflect" ; 
+   static constexpr const char* T_ = "Transmit" ; 
+   static constexpr const char* D_ = "Detect" ; 
+   static const char* Name(char status); 
+}; 
+
+inline const char* CustomStatus::Name(char status)
+{
+   const char* s = nullptr ; 
+   switch(status)
+   {
+       case 'A': s = A_ ; break ; 
+       case 'R': s = R_ ; break ; 
+       case 'T': s = T_ ; break ; 
+       case 'D': s = D_ ; break ; 
+   }
+   return s ; 
+}
+
+
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 
 #include "SLOG.hh"
 #include "JPMT.h"
 #include "Layr.h"
+
+#ifdef DEBUG_TAG
 #include "U4UniformRand.h"
 #include "SPhoton_Debug.h"
 template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
+#endif
 
-
+template<typename J>
 struct CustomBoundary
 {
-    static const constexpr plog::Severity LEVEL = info  ; 
+    static const constexpr plog::Severity LEVEL = debug ;  
     static void Save(const char* fold); 
 
-    JPMT* m_jpmt ; 
-    int   m_DoIt_count ; 
+    J*    parameter_accessor ; 
+    int   count ; 
 
     G4ThreeVector& NewMomentum ; 
     G4ThreeVector& NewPolarization ; 
@@ -148,56 +193,19 @@ struct CustomBoundary
         const G4double& thePhotonMomentum
       ); 
 
-    G4bool isTriggered(const G4Track& aTrack) const ; 
-    char DoIt(const G4Track& aTrack, const G4Step& aStep ); 
+    G4bool maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
+    G4bool isPositiveLocalZ(const G4Track& aTrack) const ; 
+    char   doIt(const G4Track& aTrack, const G4Step& aStep ); 
 };
 
-struct CustomStatus
-{
-   static constexpr const char* ACTIVE = "ARTD" ; 
-   static constexpr const char* U_ = "Undefined" ; 
-   static constexpr const char* N_ = "NameOfOpticalSurfaceUnmatched" ; 
-   static constexpr const char* Z_ = "ZLocalDoesNotTrigger" ; 
-   static constexpr const char* A_ = "Absorb" ; 
-   static constexpr const char* R_ = "Reflect" ; 
-   static constexpr const char* T_ = "Transmit" ; 
-   static constexpr const char* D_ = "Detect" ; 
-
-   static bool IsActive(char status) ; 
-   static const char* Desc(char status); 
-}; 
-
-inline bool CustomStatus::IsActive(char status)
-{
-    return strchr(ACTIVE, status) != nullptr ; 
-} 
-
-inline const char* CustomStatus::Desc(char status)
-{
-   const char* s = nullptr ; 
-   switch(status)
-   {
-       case 'U': s = U_ ; break ; 
-       case 'N': s = N_ ; break ; 
-       case 'Z': s = Z_ ; break ; 
-       case 'A': s = A_ ; break ; 
-       case 'R': s = R_ ; break ; 
-       case 'T': s = T_ ; break ; 
-       case 'D': s = D_ ; break ; 
-   }
-   return s ; 
-}
-
-
-
-
-
-inline void CustomBoundary::Save(const char* fold) // static
+template<typename J>
+inline void CustomBoundary<J>::Save(const char* fold) // static
 {
     SPhoton_Debug<'B'>::Save(fold);   
 }
 
-inline CustomBoundary::CustomBoundary(
+template<typename J>
+inline CustomBoundary<J>::CustomBoundary(
           G4ThreeVector& NewMomentum_,
           G4ThreeVector& NewPolarization_,
           G4ParticleChange& aParticleChange_,
@@ -209,8 +217,8 @@ inline CustomBoundary::CustomBoundary(
     const G4double&      thePhotonMomentum_
     )
     :
-    m_jpmt(new JPMT),
-    m_DoIt_count(0),
+    parameter_accessor(new J),
+    count(0),
     NewMomentum(NewMomentum_),
     NewPolarization(NewPolarization_),
     aParticleChange(aParticleChange_),
@@ -223,7 +231,18 @@ inline CustomBoundary::CustomBoundary(
 {
 }
 
-inline G4bool CustomBoundary::isTriggered(const G4Track& aTrack) const 
+template<typename J>
+inline G4bool CustomBoundary<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
+{
+    if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return false ; 
+    char status = '?' ; 
+    if(isPositiveLocalZ(aTrack)) status = doIt(aTrack, aStep) ; 
+    bool doneIt = strchr("ARTD", status) != nullptr ; 
+    return doneIt ; 
+}
+
+template<typename J>
+inline G4bool CustomBoundary<J>::isPositiveLocalZ(const G4Track& aTrack) const 
 {
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
     G4ThreeVector localPoint  = transform.TransformPoint(theGlobalPoint);
@@ -231,7 +250,8 @@ inline G4bool CustomBoundary::isTriggered(const G4Track& aTrack) const
     return z_local > 0. ; 
 }
 
-inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
+template<typename J>
+inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 {
     const G4ThreeVector& surface_normal = theRecoveredNormal ; 
     const G4ThreeVector& direction      = OldMomentum ; 
@@ -248,27 +268,29 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     G4double wavelength_nm = wavelength/nm ; 
 
     // TODO: lookup the pmtid from the track and use to access pmtcat and qe
-    int pmtcat = JPMT::HAMA ; 
+    // via the parameter_accessor 
+    int pmtcat = J::DEFAULT_CAT ; 
     //double _qe = 0.5 ; 
     double _qe = 0.0 ; 
 
+
     StackSpec<double> spec ; 
     spec.d0  = 0. ; 
-    spec.d1  = m_jpmt->get_thickness_nm( pmtcat, JPMT::L1 );  
-    spec.d2  = m_jpmt->get_thickness_nm( pmtcat, JPMT::L2 );  
+    spec.d1  = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
+    spec.d2  = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
     spec.d3 = 0. ; 
 
-    spec.n0r = m_jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::RINDEX, energy_eV );  
-    spec.n0i = m_jpmt->get_rindex( pmtcat, JPMT::L0, JPMT::KINDEX, energy_eV );
+    spec.n0r = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
+    spec.n0i = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
 
-    spec.n1r = m_jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::RINDEX, energy_eV );
-    spec.n1i = m_jpmt->get_rindex( pmtcat, JPMT::L1, JPMT::KINDEX, energy_eV );
+    spec.n1r = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
+    spec.n1i = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
 
-    spec.n2r = m_jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::RINDEX, energy_eV );  
-    spec.n2i = m_jpmt->get_rindex( pmtcat, JPMT::L2, JPMT::KINDEX, energy_eV );  
+    spec.n2r = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
+    spec.n2i = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
 
-    spec.n3r = m_jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::RINDEX, energy_eV );  
-    spec.n3i = m_jpmt->get_rindex( pmtcat, JPMT::L3, JPMT::KINDEX, energy_eV );
+    spec.n3r = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
+    spec.n3i = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
 
 
     Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
@@ -296,7 +318,7 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     E_s2 *= E_s2;  
 
     LOG(LEVEL)
-        << " m_DoIt_count " << m_DoIt_count 
+        << " count " << count 
         << " _sin_theta0 " << std::fixed << std::setw(10) << std::setprecision(5) << _sin_theta0 
         << " oriented_normal " << oriented_normal 
         << " polarization*direction.cross(oriented_normal) " << polarization*direction.cross(oriented_normal) 
@@ -314,7 +336,7 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
 
 
    LOG(LEVEL)
-        << " m_DoIt_count " << m_DoIt_count 
+        << " count " << count 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
         << " fT_s " << std::fixed << std::setw(10) << std::setprecision(5) << fT_s 
         << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
@@ -323,7 +345,7 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
         ;    
 
     LOG(LEVEL)
-        << " m_DoIt_count " << m_DoIt_count 
+        << " count " << count 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
         << " fR_s " << std::fixed << std::setw(10) << std::setprecision(5) << fR_s 
         << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
@@ -358,6 +380,8 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     else if(u0 < A+R)  status = 'R' ;
     else               status = 'T' ;
 
+
+#ifdef DEBUG_TAG
     int u0_idx = U4UniformRand::Find(u0, SEvt::UU);     
     int u1_idx = U4UniformRand::Find(u1, SEvt::UU);     
 
@@ -376,6 +400,7 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
          << " u1_idx " << u1_idx 
          << " D " << std::setw(10) << std::fixed << std::setprecision(4) << D
          ; 
+#endif
 
 
 
@@ -411,20 +436,12 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     }
 
 
-    G4double time = aTrack.GetLocalTime();  // just for debug output, the only use of aTrack  
 
+#ifdef DEBUG_TAG
     SPhoton_Debug<'B'> dbg ; 
 
-    LOG(LEVEL)
-       << " time " << time 
-       << " dbg.Count " << dbg.Count()
-       << " dbg.Name " << dbg.Name()
-       << " status " << status
-       << " CustomStatus::Desc(status) " << CustomStatus::Desc(status)
-       ;    
-
     dbg.pos = theGlobalPoint ; 
-    dbg.time = time ; 
+    dbg.time = aTrack.GetLocalTime();  // just for debug, the only use of aTrack 
 
     dbg.mom = NewMomentum ; 
     dbg.iindex = 0 ; 
@@ -432,10 +449,6 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     dbg.pol = NewPolarization ;  
     dbg.wavelength = wavelength_nm ; 
 
-    //dbg.nrm = oriented_normal ;  
-    //dbg.nrm = surface_normal ;       // verified that surface_normal always outwards
-    //dbg.nrm = theGlobalExitNormal ;  // inwards first, the rest outwards : oriented into direction of incident photon
-    //dbg.nrm = theGlobalNormal ;      // this has been oriented : outwards first, the rest inwards  
     dbg.nrm = theRecoveredNormal ;  
     dbg.spare = 0. ; 
 
@@ -444,7 +457,16 @@ inline char CustomBoundary::DoIt(const G4Track& aTrack, const G4Step& aStep )
     dbg.x2 = 0. ; 
     dbg.u0_idx = 0 ; 
 
+    LOG(LEVEL)
+       << " time " << dbg.time
+       << " dbg.Count " << dbg.Count()
+       << " dbg.Name " << dbg.Name()
+       << " status " << status
+       << " CustomStatus::Name(status) " << CustomStatus::Name(status)
+       ;    
+
     dbg.add();  
+#endif
 
     return status ; 
 }

@@ -73,7 +73,7 @@
 #include <boost/python.hpp>
 #endif
 
-#include "Local_DsG4Scintillation.h"
+#include "Local_DsG4Scintillation.hh"
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"

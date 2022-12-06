@@ -132,7 +132,7 @@ if [ "$arg" == "run" ]; then
 fi 
 
 if [ "$arg" == "dbg" ]; then
-    export BP=MixMaxRng::flat
+    #export BP=MixMaxRng::flat
     [ -f "$log" ] && rm $log 
     case $(uname) in 
         Darwin) lldb__ $bin ;;

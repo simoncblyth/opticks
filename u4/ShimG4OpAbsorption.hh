@@ -9,9 +9,9 @@ G4OpAbsorption : public G4VDiscreteProcess
 
 #include "plog/Severity.h"
 #include "G4OpAbsorption.hh"
+#include "U4_API_EXPORT.hh"
 
-
-class ShimG4OpAbsorption : public G4OpAbsorption 
+class U4_API ShimG4OpAbsorption : public G4OpAbsorption 
 {
 
         static const plog::Severity LEVEL ; 

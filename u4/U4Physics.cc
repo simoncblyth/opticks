@@ -119,11 +119,10 @@ void U4Physics::ConstructEM()
 }
 
 #include "Local_G4Cerenkov_modified.hh"
-#include "Local_DsG4Scintillation.h"
+#include "Local_DsG4Scintillation.hh"
 
-#include "ShimG4OpAbsorption.h"
-#include "ShimG4OpRayleigh.h"
-
+#include "ShimG4OpAbsorption.hh"
+#include "ShimG4OpRayleigh.hh"
 #include "InstrumentedG4OpBoundaryProcess.hh"
 
 

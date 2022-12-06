@@ -71,11 +71,6 @@ functions
 
 set(U4RecorderTest_SOURCES
    U4RecorderTest.cc
-   ShimG4OpAbsorption.cc
-   ShimG4OpRayleigh.cc
-   Local_G4Cerenkov_modified.cc
-   Local_DsG4Scintillation.cc
-   U4Physics.cc
 )
 
 set(TGT U4RecorderTest)
@@ -104,11 +99,7 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND
 
 set(U4PMTFastSimTest_SOURCES
    U4PMTFastSimTest.cc
-   ShimG4OpAbsorption.cc
-   ShimG4OpRayleigh.cc
-   Local_G4Cerenkov_modified.cc
-   Local_DsG4Scintillation.cc
-   U4Physics.cc
+
 )
 
 if(PMTFastSim_FOUND)

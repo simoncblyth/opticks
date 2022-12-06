@@ -2,7 +2,7 @@
 
 #include "G4SystemOfUnits.hh"
 
-#include "ShimG4OpAbsorption.h"
+#include "ShimG4OpAbsorption.hh"
 #include "SEvt.hh"
 #include "SLOG.hh"
 #include "U4UniformRand.h"
@@ -39,13 +39,6 @@ const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX"
  void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
 {
     G4double u = G4UniformRand() ; 
-
-    std::cout
-        << "ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft"
-        << " LEVEL:" << LEVEL 
-        << " plog::severityToString(LEVEL):" << plog::severityToString(LEVEL) 
-        << std::endl
-        ; 
 
     LOG(LEVEL)
         << U4UniformRand::Desc(u, SEvt::UU )
