@@ -340,7 +340,8 @@ void G4CXOpticks::simulate()
     }
 
     unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
-    unsigned num_photon  = sev->getNumPhotonFromGenstep(); 
+    //unsigned num_photon  = sev->getNumPhotonFromGenstep(); 
+    unsigned num_photon  = sev->getNumPhotonCollected(); 
 
     LOG(LEVEL) 
         << "[ num_genstep " << num_genstep
@@ -350,7 +351,7 @@ void G4CXOpticks::simulate()
 
     //]
 
-    qs->simulate(); 
+    qs->simulate();   // GPU launch doing generation and simulation here 
 
     sev->gather();   // downloads components configured by SEventConfig::CompMask 
 

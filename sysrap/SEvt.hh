@@ -6,7 +6,7 @@ SEvt.hh
 TODO : lifecycle leak checking 
 
 Q: Where is this instanciated canonically ?
-A: So far in G4CXOpticks and in the mains of lower level tests
+A: So far in G4CXOpticks::setGeometry and in the mains of lower level tests
 
 gather vs get
 -----------------
