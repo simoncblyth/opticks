@@ -63,6 +63,7 @@ struct U4Tree
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
+    std::vector<const G4VSolid*>    solids ; 
 
     // HMM: should really be SSim argument now ?
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
@@ -203,6 +204,7 @@ inline void U4Tree::convertSolid(const G4LogicalVolume* const lv)
     const G4VSolid* const solid = lv->GetSolid(); 
     G4String  soname_ = solid->GetName() ;   // returns by value, not reference
     st->soname.push_back(soname_); 
+    solids.push_back(solid); 
 }
 
 /**

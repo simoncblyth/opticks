@@ -1,4 +1,37 @@
 #pragma once
+/**
+X4Intersect.hh : NB ARE IN PROCESS OF REMOVING THIS, REPLACE WITH sysrap/SIntersect.h
+========================================================================================
+
+::
+
+    epsilon:extg4 blyth$ opticks-fl X4Intersect 
+    ./ana/pub.py
+    ./ana/axes.py
+    ./CSG/tests/CSGIntersectSolidTest.py
+    ./extg4/xxs.sh
+    ./extg4/x4t.sh
+    ./extg4/CMakeLists.txt
+    ./extg4/X4Intersect.hh
+    ./extg4/xxv.sh
+    ./extg4/X4Intersect.cc
+    ./extg4/tests/X4IntersectSolidTest.py
+    ./extg4/tests/CMakeLists.txt
+    ./extg4/tests/X4IntersectVolumeTest.py
+    ./extg4/tests/X4IntersectVolumeTest.cc
+    ./extg4/tests/X4_Get.hh
+    ./extg4/tests/X4IntersectSolidTest.cc
+    ./extg4/pubv.sh
+    ./extg4/X4Simtrace.hh
+    ./extg4/pub.sh
+    ./GeoChain/tests/GeoChainSolidTest.cc
+    ./sysrap/SFrameGenstep.hh
+    ./sysrap/SVolume.h
+    ./sysrap/SCenterExtentGenstep.hh
+    epsilon:opticks blyth$ 
+
+
+**/
 
 #include <vector>
 #include <string>

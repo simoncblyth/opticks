@@ -7,6 +7,16 @@
 
 const plog::Severity X4Simtrace::LEVEL = SLOG::EnvLevel("X4Simtrace", "DEBUG"); 
 
+
+void X4Simtrace::Scan(const G4VSolid* solid) // static
+{
+    X4Simtrace t ;
+    t.setSolid(solid); 
+    t.simtrace(); 
+    t.saveEvent() ; 
+}
+
+
 void X4Simtrace::setSolid(const G4VSolid* solid_)
 {
     LOG(LEVEL) ; 

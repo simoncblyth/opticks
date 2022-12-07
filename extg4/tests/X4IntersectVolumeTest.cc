@@ -23,7 +23,8 @@ into the volume frame by applying the saved transforms for each solid.
 #include "SPath.hh"
 #include "SVolume.h"
 
-#include "X4Intersect.hh"
+//#include "SIntersect.h"
+#include "SSimtrace.h"
 
 #include "G4VSolid.hh"
 
@@ -32,8 +33,6 @@ into the volume frame by applying the saved transforms for each solid.
 #elif WITH_PMTSIM
 #include "PMTSim.hh"
 #endif
-
-
 
 
 
@@ -53,6 +52,15 @@ int main(int argc, char** argv)
     typedef std::vector<G4VSolid*> VS ; 
     VD* tr = new VD ; 
     VS* so = new VS ; 
+
+    /**
+    NB the transform collection within PMTSim, PMTFastSim is 
+    provided by sysrap/SVolume.h which is currently 
+    limited to a single level of transforms.
+ 
+    Aiming to lift the restriction using stree.h based approach, 
+    under development in u4/tests/U4PMTFastSimGeomTest.cc
+    **/
 
 #ifdef WITH_PMTFASTSIM
     LOG(info) << "[ PMTFastSim::GetPV geom [" << geom << "]" ; 
@@ -83,7 +91,10 @@ int main(int argc, char** argv)
         const char* soname = soname_.c_str() ; 
 
         LOG(info) << "[ X4Intersect::Scan soname [" << soname << "]" ; 
-        X4Intersect::Scan(solid, soname, base ); 
+        //SIntersect::Scan(solid, soname, base ); 
+     
+        SSimtrace::Scan(solid, base) ;   
+
         LOG(info) << "] X4Intersect::Scan soname [" << soname << "]" ; 
     }
 #else

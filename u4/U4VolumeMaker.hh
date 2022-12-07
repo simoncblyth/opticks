@@ -99,6 +99,7 @@ struct U4_API U4VolumeMaker
     // instance wraps 
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_radius = "U4VolumeMaker_MakeTransforms_AroundCircle_radius" ; 
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_numInRing = "U4VolumeMaker_MakeTransforms_AroundCircle_numInRing" ; 
+    static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase = "U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase" ; 
     static const NP* MakeTransforms( const char* name, const char* prefix ); 
     static void WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv ); 
 

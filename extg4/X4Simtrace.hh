@@ -17,8 +17,8 @@ struct SEvt ;
 struct X4_API X4Simtrace
 {
     static const plog::Severity LEVEL ; 
+    static void Scan(const G4VSolid* solid); 
 
-    const char* geom ; 
     const G4VSolid* solid ; 
     SEvt* evt ; 
     sframe frame ;  
@@ -31,7 +31,6 @@ struct X4_API X4Simtrace
 
 inline X4Simtrace::X4Simtrace()
     :
-    geom(ssys::getenvvar("X4Simtrace_GEOM", "nmskSolidMaskTail")),  
     solid(nullptr), 
     evt(nullptr)
 {

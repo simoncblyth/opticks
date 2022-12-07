@@ -915,7 +915,8 @@ const NP* U4VolumeMaker::MakeTransforms( const char* name, const char* prefix )
     {
         double radius = SSys::getenvdouble(U4VolumeMaker_MakeTransforms_AroundCircle_radius, 1000.); 
         unsigned numInRing = SSys::getenvunsigned(U4VolumeMaker_MakeTransforms_AroundCircle_numInRing, 4u );  
-        trs = SPlace::AroundCircle(opts, radius, numInRing  );
+        double fracPhase = SSys::getenvdouble(U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase, 0.); 
+        trs = SPlace::AroundCircle(opts, radius, numInRing, fracPhase  );
     }
     return trs ; 
 }

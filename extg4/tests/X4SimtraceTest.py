@@ -55,7 +55,7 @@ if __name__ == '__main__':
             a_offset = efloatarray_("%s_OFFSET" % A, "0,0,0")
             log.info("label %s" % ( label ) )
             a_hit = fold.simtrace[:,0,3]>0
-            a_pos = a_offset + fold.simtrace[a_hit][:,1,:3]
+            a_pos = a_offset + fold.simtrace[a_hit][:,1,:3]  ## no rotation, just translation
             fr.mp_scatter(a_pos, label="%s:%s" % (A,label), s=1 )
             pass
         pass

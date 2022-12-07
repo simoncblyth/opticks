@@ -62,7 +62,7 @@ EOU
 #geom=hamaInner1Solid
 #geom=hamaInner2Solid
 
-geom=hamaLogicalPMTWrapLV
+#geom=hamaLogicalPMTWrapLV
 
 
 #
@@ -79,7 +79,7 @@ geom=hamaLogicalPMTWrapLV
 #geom=hmskTailInner
 
 
-#geom=nmskSolidMask
+geom=nmskSolidMask
 #geom=nmskSolidMaskTail
 
 #geom=nmskSolidMaskTail     ## NB no need for __U1 opt here, that is set below

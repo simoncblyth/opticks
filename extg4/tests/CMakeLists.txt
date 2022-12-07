@@ -4,6 +4,8 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(PMTSim CONFIG)
+message( STATUS " PMTSim_FOUND : ${PMTSim_FOUND} " )
+
 
 set(PMTSIM_TEST_SOURCES
     X4IntersectSolidTest.cc 

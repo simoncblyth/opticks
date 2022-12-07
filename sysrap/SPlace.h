@@ -10,7 +10,7 @@ struct SPlace
     static constexpr const char* OPTS = "TR,tr,R,T,r,t" ; 
     static NP* AroundSphere(   const char* opts, double radius, double item_arclen, unsigned num_ring=10 ); 
     static NP* AroundCylinder( const char* opts, double radius, double halfheight , unsigned num_ring=10, unsigned num_in_ring=16  ); 
-    static NP* AroundCircle(   const char* opts, double radius, unsigned num_in_ring=4  ); 
+    static NP* AroundCircle(   const char* opts, double radius, unsigned numInRing=4, double fracPhase=0. ); 
 };
 
 
@@ -97,10 +97,10 @@ Circle currently fixed in XZ plane
 
 **/
 
-NP* SPlace::AroundCircle(const char* opts_, double radius, unsigned num_in_ring )
+NP* SPlace::AroundCircle(const char* opts_, double radius, unsigned numInRing, double fracPhase )
 {
     const char* opts = opts_ ? opts_ : OPTS ; 
-    SPlaceCircle ci(radius, num_in_ring ); 
+    SPlaceCircle ci(radius, numInRing, fracPhase ); 
     return ci.transforms(opts)  ; 
 }
 

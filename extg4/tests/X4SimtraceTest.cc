@@ -10,6 +10,8 @@ Only a few tests depend on PMTSim.
 
 **/
 #include "OPTICKS_LOG.hh"
+
+#include "ssys.h"
 #include "X4Simtrace.hh"
 #include "X4_Get.hh"
 
@@ -17,15 +19,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    X4Simtrace t ;
-
-    const G4VSolid* solid = X4_Get::GetSolid(t.geom); 
-    LOG_IF(fatal, solid == nullptr) << "failed to X4_GetSolid for geom " << t.geom  ; 
+    const char* geom = ssys::getenvvar("X4SimtraceTest_GEOM", "nmskSolidMaskTail") ; 
+    const G4VSolid* solid = X4_Get::GetSolid(geom); 
+    LOG_IF(fatal, solid == nullptr) << "failed to X4_GetSolid for geom " << geom  ; 
     assert( solid );   
 
-    t.setSolid(solid); 
-    t.simtrace(); 
-    t.saveEvent() ; 
+    X4Simtrace::Scan(solid); 
+
 
     return 0 ; 
 }

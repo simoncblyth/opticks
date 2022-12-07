@@ -11,6 +11,10 @@ import os, logging, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line
 
+#from opticks.ana.framegensteps import FrameGensteps
+#from opticks.ana.simtrace_positions import SimtracePositions
+#from opticks.ana.simtrace_plot import SimtracePlot, pv, mp
+
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -41,6 +45,8 @@ efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").s
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     log.info("X4IntersectVolumeTest.py")
+
+    SSimtrace = True   ## trying some convergence
 
     geom = os.environ.get("X4IntersectVolumeTest_GEOM", "body_phys")
 
@@ -75,14 +81,18 @@ if __name__ == '__main__':
     botline = "%s" % (geom)
     thirdline = soname_prefix
 
+
     isects = {}
     for soname in transforms_names:
-        isects[soname] = Fold.Load(basedir, soname, "X4Intersect")
+        if SSimtrace:
+            isects[soname] = Fold.Load(basedir, soname )
+        else:
+            isects[soname] = Fold.Load(basedir, soname, "X4Intersect")
+        pass
     pass
     LABELS = list(filter(None,os.environ.get("LABELS","").split(",")))
     SZ = float(os.environ.get("SZ",3))
 
-     
 
     XFOLD = os.environ.get("XFOLD", "/tmp/U4PMTFastSimTest")
     XPID = int(os.environ.get("XPID", -1 ))
@@ -136,7 +146,11 @@ if __name__ == '__main__':
        
         soname0 = transforms_names[0]
         isect0 = isects[soname0]
-        gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
+        if SSimtrace:
+            gpos = isect0.genstep[:,5,:3]    # last line of the transform is translation
+        else:
+            gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
+        pass
 
         hlim = gpos[:,H].min(), gpos[:,H].max()
         vlim = gpos[:,V].min(), gpos[:,V].max()
@@ -152,7 +166,11 @@ if __name__ == '__main__':
             soname = transforms_names[i] 
             isect = isects[soname]
             tran = np.float32(transforms[i,0])
-            ipos = isect.isect[:,0,:3] + tran[3,:3]
+            if SSimtrace:
+                ipos = isect.simtrace[:,1,:3] + tran[3,:3]     ## OOPS : ONLY TRANSLATES 
+            else:
+                ipos = isect.isect[:,0,:3] + tran[3,:3]
+            pass
             color = colors[ i % len(colors)]
 
             label = str(soname)[len(soname_prefix):]

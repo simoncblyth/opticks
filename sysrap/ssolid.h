@@ -1,19 +1,24 @@
 #pragma once
+/**
+ssolid.h
+===========
+
+**/
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+
 #include <glm/glm.hpp>
 #include "scuda.h"
 #include "squad.h"
-
-#include "x4geomdefs.h"
+#include "sgeomdefs.h"
 
 #include "G4VSolid.hh"
 #include "G4MultiUnion.hh"
 #include "G4ThreeVector.hh"
 
-struct x4solid
+struct ssolid
 {
     static void GetCenterExtent( float4& ce,             const G4VSolid* solid );  
     static void GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid );  
@@ -25,7 +30,7 @@ struct x4solid
     static void Simtrace( quad4& p, const G4VSolid* solid, bool dump=false); 
 }; 
 
-inline void x4solid::GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid ) // static
+inline void ssolid::GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid ) // static
 {
     G4ThreeVector pMin ; 
     G4ThreeVector pMax ; 
@@ -41,7 +46,7 @@ inline void x4solid::GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* so
     ce.w = extent ; 
 }
 
-inline void x4solid::GetCenterExtent( float4& ce, const G4VSolid* solid ) // static
+inline void ssolid::GetCenterExtent( float4& ce, const G4VSolid* solid ) // static
 {
     glm::tvec4<double> ce_ ; 
     GetCenterExtent(ce_, solid ); 
@@ -52,7 +57,7 @@ inline void x4solid::GetCenterExtent( float4& ce, const G4VSolid* solid ) // sta
 }
 
 
-inline G4double x4solid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
+inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
 {
     in =  solid->Inside(pos) ; 
     G4double t = kInfinity ; 
@@ -68,7 +73,7 @@ inline G4double x4solid::Distance_(const G4VSolid* solid, const G4ThreeVector& p
 
 
 
-inline G4double x4solid::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
+inline G4double ssolid::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
 {
     in =  solid->InsideNoVoxels(pos) ; 
     G4double t = kInfinity ; 
@@ -83,7 +88,7 @@ inline G4double x4solid::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, 
 }
 
 
-inline G4double x4solid::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
+inline G4double ssolid::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
 {
     EInside in ; 
     const G4MultiUnion* m = dynamic_cast<const G4MultiUnion*>(solid) ; 
@@ -104,7 +109,7 @@ inline G4double x4solid::Distance(const G4VSolid* solid, const G4ThreeVector& po
             << std::fixed << std::setw(10) << std::setprecision(3) << dir.y() << " "
             << std::fixed << std::setw(10) << std::setprecision(3) << dir.z() 
             << ")"
-            << " in " << x4geomdefs::EInside_(in ) 
+            << " in " << sgeomdefs::EInside_(in ) 
             ;
 
        if( t == kInfinity)
@@ -134,7 +139,7 @@ inline G4double x4solid::Distance(const G4VSolid* solid, const G4ThreeVector& po
 
 
 /**
-x4solid::Simtrace
+ssolid::Simtrace
 -------------------
 
 Updates quad4& p in simtrace layout with intersect position onto the solid. 
@@ -153,13 +158,13 @@ p.q3.f.xyz
 
 **/
 
-inline void x4solid::Simtrace(quad4& p, const G4VSolid* solid, bool dump) // static
+inline void ssolid::Simtrace(quad4& p, const G4VSolid* solid, bool dump) // static
 {
     G4ThreeVector ori(p.q2.f.x, p.q2.f.y, p.q2.f.z); 
     G4ThreeVector dir(p.q3.f.x, p.q3.f.y, p.q3.f.z); 
  
     G4double t = Distance( solid, ori, dir, dump );  
-    //std::cout << "x4solid::Simtrace " << t << std::endl ; 
+    //std::cout << "ssolid::Simtrace " << t << std::endl ; 
 
     if( t == kInfinity ) return ;   // hmm: perhaps set ipos to ori for MISS ? Currently gets left at origin
 

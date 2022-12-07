@@ -108,10 +108,9 @@ inline NP* SVolume::MakeArray( std::vector<double>* tr, std::vector<G4VSolid*>* 
     std::vector<std::string> names ; 
     GetSolidNames(names, solids) ; 
 
-    NP* a = NP::Make<double>( num_solid, num_transform, 4, 4 );   // NB shape to allow multiple transforms per solid
+    NP* a = NP::Make<double>( num_solid, num_transform, 4, 4 );   // NB changed shape to allow multiple transforms per solid
     a->read( tr->data() ); 
-    // a->meta = meta ; 
-    a->set_names(names) ;  // NB changed, to set_names formerly set meta string 
+    a->set_names(names) ;  // NB changed, to set_names formerly used a->meta string 
    
     return a ; 
 }
@@ -140,6 +139,13 @@ inline void SVolume::DumpTransforms( std::vector<double>* tr, std::vector<G4VSol
     }
 }
 
+/**
+SVolume::Traverse
+-------------------
+
+This is used for example by PMTFastSim::GetPV
+
+**/
 
 inline void SVolume::Traverse(const G4VPhysicalVolume* const pv, std::vector<double>* tr , std::vector<G4VSolid*>* solids ) // static
 {
@@ -151,7 +157,7 @@ SVolume::Traverse_r
 ---------------------
 
 Recursively traverses the volume hierarchy collecting single level of transforms and solids. 
-NB Assumes no multi-level transforms, so in this form only appropriate for very simple volume trees.  
+NB Assumes no multi-level transforms, so in this form its only appropriate for very simple volume trees.  
 
 **/
 

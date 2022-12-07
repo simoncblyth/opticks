@@ -20,10 +20,10 @@ EOU
 loglevels()
 {
    export X4Simtrace=INFO   
-   export SEvt=INFO 
+   #export SEvt=INFO 
 
    export PMTSim=3
-   export VERBOSE=1
+   #export VERBOSE=1
 }
 loglevels
 
@@ -36,6 +36,7 @@ source $(dirname $BASH_SOURCE)/../bin/COMMON.sh
 unset OPTICKS_INPUT_PHOTON 
 export FOLD=/tmp/$USER/opticks/GEOM/$GEOM/$bin/ALL
 #export FOCUS=257,-39,7
+export X4SimtraceTest_GEOM=$GEOM 
 
 export TOPLINE="extg4/x4t.sh GEOM $GEOM FOCUS $FOCUS" 
 
@@ -77,6 +78,5 @@ if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
         source epub.sh 
     fi  
 fi 
-
 
 exit 0 

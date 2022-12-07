@@ -350,6 +350,11 @@ set(HEADERS
     SPhoton_Debug.h
     SUniformRand.h
 
+    sgeomdefs.h 
+    ssolid.h
+    SIntersect.h
+    SSimtrace.h
+
     SOpBoundaryProcess.hh
 )
 

@@ -430,8 +430,10 @@ int SEventConfig::Initialize() // static
     LOG_IF(fatal, Initialize_COUNT > 0 ) 
         << "BUG : SEventConfig::Initialize() called more than once " << std::endl
         << " this is now done automatically at SEvt::SEvt usually from main " 
+        << " (IN SOME CASES ITS CONVENIENT TO HAVE MORE THAN ONE SEvt, THOUGH "
+        << "  SO MAYBE SHOULD MOVE THIS TO OPTICKS_LOG/SLOG ? "  
         ; 
-    assert( Initialize_COUNT == 0); 
+    // assert( Initialize_COUNT == 0); 
     Initialize_COUNT += 1 ; 
 
     const char* mode = EventMode(); 

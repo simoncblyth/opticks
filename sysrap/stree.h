@@ -171,6 +171,7 @@ struct stree
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
     static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
+    static constexpr const char* TRS = "trs.npy" ;  // optional, when use save_trs
     static constexpr const char* MTNAME = "mtname.txt" ;
     static constexpr const char* MTINDEX = "mtindex.npy" ;
     static constexpr const char* MTLINE = "mtline.npy" ;
@@ -300,6 +301,9 @@ struct stree
 
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
+
+    NP* make_trs() const ; 
+    void save_trs(const char* fold) const ; 
 
     template<typename S, typename T>   // S:compound type T:atomic "transport" type
     static void ImportArray( std::vector<S>& vec, const NP* a ); 
@@ -1244,7 +1248,29 @@ inline void stree::save_( const char* fold ) const
     assert( sensor_count == sensor_id.size() ); 
     NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
     NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
+}
 
+inline NP* stree::make_trs() const
+{
+    NP* trs = NP::Make<double>( gtd.size(), 4, 4 ); 
+    trs->read2<double>( (double*)gtd.data() ) ; 
+
+    std::vector<std::string> nd_soname ; 
+    int num_nodes = get_num_nodes(); 
+    for(int nidx=0 ; nidx < num_nodes ; nidx++)
+    {
+        const char* so = get_soname(nidx); 
+        nd_soname.push_back(so);    
+    }   
+    trs->set_names(nd_soname); 
+
+    return trs ; 
+}
+
+inline void stree::save_trs(const char* fold) const 
+{
+    NP* trs = make_trs();  
+    trs->save(fold, TRS ); 
 }
 
 inline void stree::load( const char* base, const char* reldir ) 
