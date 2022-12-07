@@ -294,6 +294,7 @@ struct stree
 
     std::string desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems=10) const ;
     std::string desc_ancestry(int nidx, bool show_sub=false) const ;
+    std::string desc_solids() const ; 
 
     static std::string FormPath(const char* base, const char* rel ); 
 
@@ -1182,6 +1183,21 @@ inline std::string stree::desc_ancestry(int nidx, bool show_sub) const
     return s ; 
 }
 
+inline std::string stree::desc_solids() const 
+{
+    std::stringstream ss ; 
+    ss << "stree::desc_solids" << std::endl ; 
+    for(int nidx=0 ; nidx < get_num_nodes() ; nidx++) 
+    {
+        ss
+            << " nidx " << std::setw(6) << nidx 
+            << " so " << get_soname(nidx)
+            << std::endl 
+            ;   
+    }
+    std::string s = ss.str();
+    return s ; 
+}
 
 
 

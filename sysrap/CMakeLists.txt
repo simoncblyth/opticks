@@ -277,6 +277,7 @@ set(HEADERS
     SPlaceSphere.h
     SPlaceRing.h
     SPlaceCylinder.h
+    SPlaceCircle.h
 
     ssincos.h
     sxyz.h

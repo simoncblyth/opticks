@@ -22,19 +22,8 @@ int main(int argc, char** argv)
     stree st ; 
     U4Tree ut(&st, pv ) ;
 
-    //LOG(info) << " st.desc " << st.desc() ; 
-
-    int nn = st.get_num_nodes(); 
-    for(int nidx=0 ; nidx < nn ; nidx++)
-    {
-        const char* so = st.get_soname(nidx); 
-        std::cout
-            << " nidx " << std::setw(6) << nidx 
-            << " so " << so 
-            << std::endl 
-            ;
-    }
-
+    //LOG(info) << st.desc() ; 
+    LOG(info) << st.desc_solids() ; 
 
 
     return 0 ; 

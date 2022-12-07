@@ -2,6 +2,7 @@
 
 #include "SPlaceSphere.h"
 #include "SPlaceCylinder.h"
+#include "SPlaceCircle.h"
 
 
 struct SPlace
@@ -9,6 +10,7 @@ struct SPlace
     static constexpr const char* OPTS = "TR,tr,R,T,r,t" ; 
     static NP* AroundSphere(   const char* opts, double radius, double item_arclen, unsigned num_ring=10 ); 
     static NP* AroundCylinder( const char* opts, double radius, double halfheight , unsigned num_ring=10, unsigned num_in_ring=16  ); 
+    static NP* AroundCircle(   const char* opts, double radius, unsigned num_in_ring=4  ); 
 };
 
 
@@ -85,4 +87,21 @@ NP* SPlace::AroundCylinder(const char* opts_, double radius, double halfheight, 
     SPlaceCylinder cy(radius, halfheight, num_ring, num_in_ring ); 
     return cy.transforms(opts)  ; 
 }
+
+
+/**
+SPlace::AroundCircle
+---------------------
+
+Circle currently fixed in XZ plane 
+
+**/
+
+NP* SPlace::AroundCircle(const char* opts_, double radius, unsigned num_in_ring )
+{
+    const char* opts = opts_ ? opts_ : OPTS ; 
+    SPlaceCircle ci(radius, num_in_ring ); 
+    return ci.transforms(opts)  ; 
+}
+
 

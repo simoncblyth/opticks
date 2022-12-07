@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     LOG(info) << "] PMTSim::GetPV geom [" << geom << "]" ; 
 #endif
     assert(pv); 
+
     unsigned num = so->size(); 
     assert( tr->size() % 16 == 0 ); 
     assert( tr->size() == 16*num );  // expect 16 doubles of the transform matrix for every solid
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
     for(unsigned i=0 ; i < num ; i++)
     {
         G4VSolid* solid = (*so)[i] ; 
-        G4String soname_ = solid->GetName(); 
+        G4String soname_ = solid->GetName();  // careful, by value 
         const char* soname = soname_.c_str() ; 
 
         LOG(info) << "[ X4Intersect::Scan soname [" << soname << "]" ; 

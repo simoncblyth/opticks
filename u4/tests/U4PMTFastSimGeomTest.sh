@@ -27,6 +27,12 @@ case $hama_UseNaturalGeometry in
   1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
 esac
 
+export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=3100  
+export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=3000  
+export ${GEOM}_GEOMWrap=AroundCircle 
+export U4VolumeMaker_MakeTransforms_AroundCircle_radius=1000
+export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=4
+
 
 loglevels()
 {

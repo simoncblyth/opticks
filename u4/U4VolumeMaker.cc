@@ -22,7 +22,6 @@
 #include "U4Surface.h"
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
-//#include "U4SensitiveDetector.h"
 #include "U4RotationMatrix.h"
 #include "U4Volume.h"
 #include "U4GDML.h"
@@ -138,11 +137,13 @@ to take control of the geometry defining code for example in j/PMTSim.
 const char* U4VolumeMaker::PVG_WriteNames     = "U4VolumeMaker_PVG_WriteNames" ; 
 const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Sub" ; 
 
+
+
+
 const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
     const char* gdmlpath = SOpticksResource::GDMLPath(name) ;   
     const char* sub = SOpticksResource::GEOMSub(name);  
-    const char* wrap = SOpticksResource::GEOMWrap(name);  
 
     bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
 
@@ -157,7 +158,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     { 
         const G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, sub ) ;  
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
-        pv = wrap == nullptr ? WrapRockWater( lv_sub ) : WrapInstance( lv_sub, wrap );  
+        pv = Wrap( name, lv_sub );  
 
         if(SSys::getenvbool(PVG_WriteNames_Sub))
             U4Volume::WriteNames( pv, SPath::Resolve("$TMP", PVG_WriteNames_Sub, DIRPATH));  
@@ -169,7 +170,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
           << " exists " << exists
           << " loaded " << loaded
           << " sub " << ( sub ? sub : "-" ) 
-          << " wrap " << ( wrap ? wrap : "-" ) 
           << " pv " << pv 
           ;  
 
@@ -244,7 +244,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
         LOG_IF(fatal, lv == nullptr ) << "PMTFastSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
 
-        pv = WrapRockWater( lv ) ;          
+        pv = Wrap( name, lv ) ;          
     }
     LOG(LEVEL) << "]" ; 
 #else
@@ -337,6 +337,25 @@ void U4VolumeMaker::LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, 
     }
 }
 
+
+/**
+U4VolumeMaker::Wrap
+-----------------------
+
+Consults envvar ${GEOM}_GeomWrap for the wrap config, 
+which when present must be one of : AroundCylinder, AroundSphere, AroundCircle
+
+**/
+
+const G4VPhysicalVolume* U4VolumeMaker::Wrap( const char* name, G4LogicalVolume* lv )
+{
+    const char* wrap = SOpticksResource::GEOMWrap(name);  
+    LOG(LEVEL) << "[ name " << name << " wrap " << ( wrap ? wrap : "-" ) ; 
+    const G4VPhysicalVolume* pv = wrap == nullptr ? WrapRockWater( lv ) : WrapAroundItem( name, lv, wrap );  
+    LOG(LEVEL) << "] name " << name << " wrap " << ( wrap ? wrap : "-" ) << " pv " << ( pv ? "YES" : "NO" ) ; 
+    return pv ;  
+}
+
 /**
 U4VolumeMaker::WrapRockWater
 -------------------------------
@@ -415,29 +434,39 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv 
 }
 
 /**
-U4VolumeMaker::WrapInstance
------------------------------
+U4VolumeMaker::WrapAroundItem
+-------------------------------
 
 The *item_lv* is repeated many times using transforms from U4VolumeMaker::MakeTransforms
-which makes use of SPlace::AroundSphere SPlace::AroundCylinder
+controlled by the *prefix* string which must be one of::
 
+    AroundSphere
+    AroundCylinder
+    AroundCircle
+
+which makes use of SPlace::AroundSphere SPlace::AroundCylinder SPlace::AroundCircle.
 All those repeats have a "Water" box mother volume which is contained within "Rock". 
 
 **/
 
-const G4VPhysicalVolume* U4VolumeMaker::WrapInstance( G4LogicalVolume* item_lv, const char* prefix )
+const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, G4LogicalVolume* item_lv, const char* prefix )
 {
-    const NP* trs = MakeTransforms(prefix) ; 
+    const NP* trs = MakeTransforms(name, prefix) ; 
 
     LOG(LEVEL) 
         << " prefix " << prefix 
         << " trs " << ( trs ? trs->sstr() : "-" )
         ;
 
-    G4LogicalVolume*  rock_lv  = Box_(20000., "Rock" );
-    G4LogicalVolume*  water_lv = Box_(19000., "Water" );
+
+    double rock_halfside   = SSys::getenvdouble(U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE,  20000.); 
+    double water_halfside  = SSys::getenvdouble(U4VolumeMaker_WrapAroundItem_Water_HALFSIDE, 19000.); 
+
+    G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock" );
+    G4LogicalVolume*  water_lv = Box_(water_halfside, "Water" );
  
-    WrapAround(prefix, trs, item_lv, water_lv ); 
+    WrapAround(prefix, trs, item_lv, water_lv );  
+    // item_lv placed inside water_lv once for each transform
 
     const G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     const G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
@@ -862,9 +891,7 @@ G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const ch
 }
 
 
-
-
-const NP* U4VolumeMaker::MakeTransforms( const char* prefix )
+const NP* U4VolumeMaker::MakeTransforms( const char* name, const char* prefix )
 {
     const char* opts = "TR,tr,R,T,r,t" ; 
     const NP* trs = nullptr ; 
@@ -883,25 +910,46 @@ const NP* U4VolumeMaker::MakeTransforms( const char* prefix )
         unsigned num_ring = 8 ; 
         unsigned num_in_ring = 16 ; 
         trs = SPlace::AroundCylinder(opts, radius, halfheight, num_ring, num_in_ring  );
-     }
-     return trs ; 
+    }
+    else if(strcmp(prefix, "AroundCircle")==0) 
+    {
+        double radius = SSys::getenvdouble(U4VolumeMaker_MakeTransforms_AroundCircle_radius, 1000.); 
+        unsigned numInRing = SSys::getenvunsigned(U4VolumeMaker_MakeTransforms_AroundCircle_numInRing, 4u );  
+        trs = SPlace::AroundCircle(opts, radius, numInRing  );
+    }
+    return trs ; 
 }
 
+/**
+U4VolumeMaker::WrapAround
+----------------------------
+
+Place *lv* multiple times inside *mother_lv* using the *trs* 
+tranforms to configure the placement rotations and translations. 
+
+NB there is no check that the placements are within the mother_lv 
+so it is up to the user to ensure that the mother volume is sufficiently 
+large to accommodate the lv with all the transforms applied to it. 
+
+**/
 
 void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
 {
     unsigned num_place = trs->shape[0] ; 
-    unsigned place_tr = trs->shape[1] ; 
+    unsigned place_tr = trs->shape[1] ;   
     unsigned place_values = place_tr*4*4 ; 
 
     assert( trs->has_shape(num_place,place_tr,4,4) );  
-    const double* tt = trs->cvalues<double>(); 
+    assert( place_tr == 6 );  // expected number of different options from "TR,tr,R,T,r,t"
+    enum { _TR, _tr, _R, _T, _r, _t } ;  // order must match opts "TR,tr,R,T,r,t"
 
+    const double* tt = trs->cvalues<double>(); 
 
     for(unsigned i=0 ; i < num_place ; i++)
     {
-        const double* T = tt + place_values*i + 3*16 ;  // 3:from index of "T" in opts
-        const double* R = tt + place_values*i + 2*16 ;  // 2:from index of "R" in opts
+        const double* T = tt + place_values*i + _T*16 ;  
+        const double* R = tt + place_values*i + _R*16 ;  
+
         // TODO: get these from a single matrix, not 6 
 
         G4ThreeVector tla( T[12], T[13], T[14] ); 

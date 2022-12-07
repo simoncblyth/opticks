@@ -50,8 +50,8 @@ if __name__ == '__main__':
     basedir = os.path.expandvars("$FOLD")
 
     transforms = np.load(os.path.join(basedir, "transforms.npy"))
-    transforms_meta = np.loadtxt( os.path.join(basedir, "transforms_meta.txt"), dtype=np.object ) 
-    soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
+    transforms_names = np.loadtxt( os.path.join(basedir, "transforms_names.txt"), dtype=np.object ) 
+    soname_prefix = os.path.commonprefix(list(map(str, transforms_names))) 
 
     figsdir = os.path.join(basedir, "figs")
     if not os.path.isdir(figsdir):
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     log.info("figsdir %s " % figsdir)
     log.info("basedir %s" % basedir)
     log.info("transforms.shape %s" % str(transforms.shape))
-    log.info("transforms_meta %s" % ",".join(transforms_meta))
+    log.info("transforms_names %s" % ",".join(transforms_names))
     log.info("soname_prefix %s" % soname_prefix)
 
     topline = "X4IntersectVolumeTest.py"
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     thirdline = soname_prefix
 
     isects = {}
-    for soname in transforms_meta:
+    for soname in transforms_names:
         isects[soname] = Fold.Load(basedir, soname, "X4Intersect")
     pass
     LABELS = list(filter(None,os.environ.get("LABELS","").split(",")))
@@ -134,7 +134,7 @@ if __name__ == '__main__':
         fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
         ax.set_aspect('equal')
        
-        soname0 = transforms_meta[0]
+        soname0 = transforms_names[0]
         isect0 = isects[soname0]
         gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
 
@@ -146,12 +146,12 @@ if __name__ == '__main__':
         if "GS" in os.environ:
             ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=gcol ) 
         pass
-        num = len(transforms_meta)
+        num = len(transforms_names)
         for j in range(num):
             i = num - 1 - j  if REVERSE else j              
-            soname = transforms_meta[i] 
+            soname = transforms_names[i] 
             isect = isects[soname]
-            tran = np.float32(transforms[i])
+            tran = np.float32(transforms[i,0])
             ipos = isect.isect[:,0,:3] + tran[3,:3]
             color = colors[ i % len(colors)]
 

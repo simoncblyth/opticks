@@ -374,13 +374,21 @@ inline glm::tmat4x4<T> Tran<T>::RotateA2B_parallel(const glm::tvec3<T>& a, const
         vals[idx] = ( i == j ? 1. : 0.)  - 2.*u[i]*u[j]/uu -2.*v[i]*v[j]/vv + 4.*uv*v[i]*u[j]/(uu*vv) ; 
 
     }
-
     vals[15] = 1. ; 
-
 
     return glm::make_mat4x4<T>( vals.data() ); 
 }
 
+
+/**
+Tran::RotateA2B
+------------------
+
+Form a rotation transform that rotates vector a to vector b with proper handling 
+of parallel or anti-parallel edge cases when the absolute dot product of a and b 
+is close to 1.  
+
+**/
 
 template<typename T>
 inline glm::tmat4x4<T> Tran<T>::RotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip)
@@ -392,6 +400,10 @@ inline glm::tmat4x4<T> Tran<T>::RotateA2B(const glm::tvec3<T>& a, const glm::tve
 /**
 Tran::Place
 -------------
+
+Create a transform combining rotation from a to b and translation of c 
+The flip argument controls transposes being applied to the rotation 
+matrix and the order of multiplication of the rotation and the translation. 
 
 HMM: not sure regards the "tla*rot" vs "rot*tla"  order flip : 
 it depends on whether will using the transform to right or left multiply.
@@ -951,10 +963,34 @@ NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) /
     return b ; 
 }
 
+
+/**
+Tran::AddTransform
+---------------------
+
+* The option string determines the meaning of the a,b,c vectors
+  and flip lowercase/UPPERCASE flip:true/FALSE
+
+
+
+
+TR/tr
+    Tran::Place(a,b,c,flip)
+R/r
+    Tran::RotateA2B(a,b, flip)   c is ignored 
+T/t
+
+D
+    
+
+**/
+
+
 template<typename T>
 inline void Tran<T>::AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c )
 {
     for(unsigned i=0 ; i < 16 ; i++) ttk[i] = T(0.) ; // start zeroed
+
 
     if(strcmp(opt,"TR") == 0 || strcmp(opt,"tr") == 0 )
     {

@@ -3,7 +3,11 @@
 SVolume.h
 =============
 
-Developed within PMTSim but it is generally useful so try moving to sysrap header-only 
+Developed within j/PMTSim but as generally useful moved to sysrap header-only.
+
+An early user of this was x4/tests/X4IntersectVolumeTest.cc as used by x4/xxv.sh  
+
+HUH: thats wierd, lots of passing around vectors of solids just to get their names 
 
 **/
 
@@ -20,6 +24,9 @@ struct SVolume
 {
     static void SaveTransforms( std::vector<double>* tr, std::vector<G4VSolid*>* names, const char* path ); 
     static void SaveTransforms( std::vector<double>* tr, std::vector<G4VSolid*>* names, const char* fold, const char* name ); 
+
+    static void GetSolidNames(std::vector<std::string>& names,  std::vector<G4VSolid*>* solids ); 
+
     static NP* MakeArray( std::vector<double>* tr, std::vector<G4VSolid*>* solids ); 
     static void DumpTransforms( std::vector<double>* tr, std::vector<G4VSolid*>* names, const char* msg ); 
 
@@ -59,30 +66,52 @@ inline void SVolume::SaveTransforms( std::vector<double>* tr, std::vector<G4VSol
     a->save(path); 
 }
 
+inline void SVolume::GetSolidNames(std::vector<std::string>& names,  std::vector<G4VSolid*>* solids ) // static
+{
+    unsigned num = solids->size() ;
+    for(unsigned i=0 ; i < num ; i++) 
+    {
+        G4VSolid* solid = (*solids)[i] ; 
+        G4String name = solid->GetName() ; 
+        names.push_back(name); 
+    }
+}
+
 /**
 SVolume::MakeArray
 ---------------------
 
 Creates array of transforms with the names of the solids as metadata. 
 
+
+
 **/
 inline NP* SVolume::MakeArray( std::vector<double>* tr, std::vector<G4VSolid*>* solids ) // static
 {
-    unsigned num = solids->size() ;
-    assert( tr->size() == num*16 ); 
+    unsigned num_solid = solids->size() ;
+    unsigned num_value = tr->size(); 
+    assert( num_value % 16 == 0 );  
+    unsigned num_transform = num_value/num_solid/16 ; 
 
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < num ; i++) 
-    {
-        G4VSolid* solid = (*solids)[i] ; 
-        G4String name = solid->GetName() ; 
-        ss << name << std::endl ; 
-    }
-    std::string meta = ss.str(); 
+    bool expect = num_value == num_solid*num_transform*16 ; 
 
-    NP* a = NP::Make<double>( num, 4, 4 ); 
+    if(!expect) std::cerr 
+        << "SVolume::MakeArray"
+        << " num_solid " << num_solid
+        << " num_value " << num_value
+        << " num_transform " << num_transform
+        << " num_solid*num_transform*16 " << num_solid*num_transform*16
+        << std::endl 
+        ;
+    assert(expect); 
+
+    std::vector<std::string> names ; 
+    GetSolidNames(names, solids) ; 
+
+    NP* a = NP::Make<double>( num_solid, num_transform, 4, 4 );   // NB shape to allow multiple transforms per solid
     a->read( tr->data() ); 
-    a->meta = meta ; 
+    // a->meta = meta ; 
+    a->set_names(names) ;  // NB changed, to set_names formerly set meta string 
    
     return a ; 
 }
