@@ -33,6 +33,11 @@ into the volume frame by applying the saved transforms for each solid.
 #include "PMTSim.hh"
 #endif
 
+
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -63,7 +68,6 @@ int main(int argc, char** argv)
     assert( tr->size() % 16 == 0 ); 
     assert( tr->size() == 16*num );  // expect 16 doubles of the transform matrix for every solid
 
-    //const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, DIRPATH ) ; 
     const char* base = SPath::Resolve("$FOLD", DIRPATH ) ; 
 
     SVolume::DumpTransforms(tr, so, "X4IntersectVolumeTest.DumpTransforms"); 

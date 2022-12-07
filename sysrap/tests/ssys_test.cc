@@ -47,6 +47,18 @@ void test_getenvvec()
 
 }
 
+void test_getenvvec_string()
+{
+    std::vector<std::string>* svec = ssys::getenvvec<std::string>("SVEC", "1,2,3,4" ); 
+    assert( svec->size() == 4 ); 
+
+    std::cout << "SVEC " << ssys::DescVec(svec) << std::endl ; 
+
+}
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -55,8 +67,9 @@ int main(int argc, char** argv)
     test_popen_0(); 
     test_popen_1();
     test_getenvv(); 
-    */
     test_getenvvec(); 
+    */
+    test_getenvvec_string(); 
 
  
     return 0 ; 

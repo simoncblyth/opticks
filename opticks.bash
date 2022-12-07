@@ -2633,6 +2633,7 @@ okg4(){     okg4- ; okg4-cd $* ; }
 
 g4ok(){     g4ok- ; g4ok-cd $* ; }
 x4(){       x4- ; x4-cd $* ; }
+x4t(){      x4- ; x4-cd tests ; }
 x4gen(){    x4gen- ; x4gen-cd $* ; }
 yog(){      yog- ; yog-cd $* ; }
 

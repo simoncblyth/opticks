@@ -12,6 +12,7 @@
 #include "SOpticksResource.hh"
 #include "SPath.hh"
 #include "SSys.hh"
+#include "ssys.h"
 #include "SPlace.h"
 
 #include "SLOG.hh"
@@ -340,6 +341,24 @@ void U4VolumeMaker::LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, 
 U4VolumeMaker::WrapRockWater
 -------------------------------
 
+    +---------------Rock------------+
+    |                               |
+    |                               |
+    |     +--------Water------+     |
+    |     |                   |     |
+    |     |                   |     |
+    |     |      +-Item-+     |     |
+    |     |      |      |     |     |
+    |     |      |      |     |     |
+    |     |      +------+     |     |
+    |     |                   |     |
+    |     |                   |     |
+    |     +-------------------+     |
+    |                               |
+    |                               |
+    +-------------------------------+
+
+
 **/
 
 const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
@@ -360,22 +379,30 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv 
     const G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv, flip_axes );  assert( item_pv ); 
 
 
+    LOG(LEVEL) << std::endl << U4Volume::Traverse( item_pv ); 
 
-    U4Volume::Traverse( item_pv, "item_pv" ); 
+    std::vector<std::string>* vbs1 = nullptr ; 
+    vbs1 = ssys::getenvvec<std::string>(U4VolumeMaker_WrapRockWater_BS1, "pyrex_vacuum_bs:hama_body_phys:hama_inner1_phys", ':' );
 
+    G4LogicalBorderSurface* bs1 = nullptr ; 
+    if(vbs1 && vbs1->size() == 3 )
+    {
+         const std::string& bs1n = (*vbs1)[0] ; 
+         const std::string& pv1 = (*vbs1)[1] ; 
+         const std::string& pv2 = (*vbs1)[2] ; 
+         bs1 = U4Surface::MakePerfectDetectorBorderSurface(bs1n.c_str(), pv1.c_str(), pv2.c_str(), item_pv ); 
 
-    const char* pv1 = "hama_body_log_pv" ;   
-    const char* pv2 = "hama_inner1_phys" ; 
-    G4LogicalBorderSurface* pyrex_vacuum_bs = U4Surface::MakePerfectDetectorBorderSurface("pyrex_vacuum_bs",  pv1, pv2, item_pv ); 
+        LOG(error)
+            << " attempt to add  PerfectDetectorBorderSurface between volumes "
+            << " bs1n " << bs1n
+            << " pv1 " << pv1 
+            << " pv2 " << pv2 
+            << " bs1 " << ( bs1 ? "YES" : "NO" )
+            << " using config from " << U4VolumeMaker_WrapRockWater_BS1 
+            ;
+    }
+    //if(bs1 == nullptr) std::raise(SIGINT); 
 
-    LOG(error)
-        << " attempt to add  PerfectDetectorBorderSurface between volumes "
-        << " pv1 " << pv1 
-        << " pv2 " << pv2 
-        << " pyrex_vacuum_bs " << ( pyrex_vacuum_bs ? "YES" : "NO" )
-        ;
-
-    //if(pyrex_vacuum_bs == nullptr) std::raise(SIGINT); 
 
     const G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     const G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  

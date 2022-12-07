@@ -12,8 +12,6 @@ Lifecycle
 
 Canonical stree instance is SSim member instanciated by SSim::SSim 
 
-
-
 Users of stree.h
 -------------------
 
@@ -161,7 +159,6 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include "sfactor.h"
 
 
-
 struct stree
 {
     static constexpr const int MAXDEPTH = 15 ; // presentational only   
@@ -267,6 +264,7 @@ struct stree
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
 
+    int         get_num_nodes() const ; 
     const char* get_soname(int nidx) const ; 
     const char* get_sub(   int nidx) const ; 
     int         get_depth( int nidx) const ; 
@@ -511,6 +509,7 @@ inline std::string stree::Digest(int lvid ) // static
 {
     return sdigest::Int(lvid);
 }
+
 
 inline void stree::get_children( std::vector<int>& children , int nidx ) const
 {
@@ -911,6 +910,12 @@ inline const char* stree::get_sub_soname(const char* sub) const
     return first_nidx == -1 ? nullptr : get_soname(first_nidx ) ; 
 }
 
+
+inline int stree::get_num_nodes() const 
+{
+    return nds.size() ; 
+}
+
 inline const char* stree::get_soname(int nidx) const
 {
     return nidx > -1 ? soname[nds[nidx].lvid].c_str() : "?" ;
@@ -984,18 +989,16 @@ As this uses get_ancestors (which operates via parent links) and
 get_m2w it should work during node creation immediately after 
 the snode and m2w transforms are pushed back. 
 
-
 Note that even when things appear to be working OK, 
 bugs can still lurk as lots of the transforms in the stack are identity. 
 
 So there is still potential for wrong direction of multiplication bugs. 
-
 **/
 
 inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const 
 {
     std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx); 
+    get_ancestors(nodes, nidx);  // nodes is in root-first-order
     nodes.push_back(nidx); 
 
     unsigned num_nodes = nodes.size();

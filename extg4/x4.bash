@@ -70,7 +70,7 @@ EOU
 
 
 x4-dir(){ echo $(dirname $(x4-source)) ; }
-x4-cd(){  cd $(x4-dir) ; }
+x4-cd(){  cd $(x4-dir)/${1} ; }
 x4-c(){   cd $(x4-dir) ; }
 x4--(){   opticks-- $(x4-dir) ; }
 x4-t(){   x4-cd ;  om- ; om-test ;  }

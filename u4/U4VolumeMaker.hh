@@ -48,6 +48,8 @@ struct U4_API U4VolumeMaker
 
     static constexpr const char* U4VolumeMaker_WrapRockWater_HALFSIDE = "U4VolumeMaker_WrapRockWater_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapRockWater_FACTOR   = "U4VolumeMaker_WrapRockWater_FACTOR" ; 
+    static constexpr const char* U4VolumeMaker_WrapRockWater_BS1 = "U4VolumeMaker_WrapRockWater_BS1" ; 
+
     static const G4VPhysicalVolume* WrapRockWater( G4LogicalVolume* lv ); 
     static const G4VPhysicalVolume* WrapInstance( G4LogicalVolume* item_lv, const char* prefix ); 
 

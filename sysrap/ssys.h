@@ -122,6 +122,7 @@ template std::vector<int>*      ssys::getenvvec(const char*, const char*, char);
 template std::vector<unsigned>* ssys::getenvvec(const char*, const char*, char);
 template std::vector<float>*    ssys::getenvvec(const char*, const char*, char);
 template std::vector<double>*   ssys::getenvvec(const char*, const char*, char);
+template std::vector<std::string>*   ssys::getenvvec(const char*, const char*, char);
  
 template<typename T>
 inline std::string ssys::DescVec( const std::vector<T>* vec, unsigned edgeitems  )
@@ -142,3 +143,7 @@ template std::string ssys::DescVec(const std::vector<int>* , unsigned ) ;
 template std::string ssys::DescVec(const std::vector<unsigned>* , unsigned ) ; 
 template std::string ssys::DescVec(const std::vector<float>* , unsigned ) ; 
 template std::string ssys::DescVec(const std::vector<double>* , unsigned ) ; 
+template std::string ssys::DescVec(const std::vector<std::string>* , unsigned ) ; 
+
+
+

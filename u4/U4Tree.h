@@ -55,7 +55,6 @@ struct U4Tree
 {
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
 
-
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
     const U4SensorIdentifier* sid ; 
@@ -64,7 +63,6 @@ struct U4Tree
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
-
 
     // HMM: should really be SSim argument now ?
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
@@ -90,10 +88,7 @@ struct U4Tree
     void identifySensitive(); 
     void identifySensitiveInstances(); 
     void identifySensitiveGlobals(); 
-
 }; 
-
-
 
 
 /**
@@ -286,6 +281,8 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
 
     glm::tmat4x4<double> tr_gtd(1.) ;          // "GGeo Transform Debug" comparison
     st->get_m2w_product(tr_gtd, nidx, false );  // NB this must be after push back of nd and tr_m2w
+    // product of m2w transforms from root down to nidx 
+
     st->gtd.push_back(tr_gtd);  
 
 
@@ -488,7 +485,4 @@ inline void U4Tree::identifySensitiveGlobals()
         << std::endl 
         ; 
 }
-
-
-
 

@@ -117,6 +117,14 @@ inline void SVolume::Traverse(const G4VPhysicalVolume* const pv, std::vector<dou
     Traverse_r( pv, 0, tr, solids); 
 }
 
+/**
+SVolume::Traverse_r
+---------------------
+
+Recursively traverses the volume hierarchy collecting single level of transforms and solids. 
+NB Assumes no multi-level transforms, so in this form only appropriate for very simple volume trees.  
+
+**/
 
 inline void SVolume::Traverse_r(const G4VPhysicalVolume* const pv, int depth, std::vector<double>* tr, std::vector<G4VSolid*>* solids ) // static
 {
@@ -201,7 +209,4 @@ inline void SVolume::DumpSolids() // static
             ; 
     }
 }
-
-
-
 

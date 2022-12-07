@@ -28,6 +28,14 @@ case $hama_UseNaturalGeometry in
 esac
 
 
+loglevels()
+{
+    export U4VolumeMaker=INFO
+}
+loglevels
+
+
+
 log=${bin}.log
 logN=${bin}_${hama_UseNaturalGeometry}.log
 

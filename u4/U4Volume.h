@@ -1,8 +1,13 @@
 #pragma once
 
+#include <string>
+#include <ostream>
+#include <sstream>
+
 #include "NP.hh"
 #include "SStr.hh"
-#include <string>
+
+
 class G4VPhysicalVolume ; 
 
 struct U4Volume
@@ -16,9 +21,9 @@ struct U4Volume
     static void               FindPV_WithSolidName_r( const G4VPhysicalVolume* pv,  const char* q_soname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) ; 
 
 
-    static void Traverse( const G4VPhysicalVolume* pv, const char* label ); 
-    static void Traverse( const G4LogicalVolume*   lv, const char* label ); 
-    static void Traverse_r(const G4VPhysicalVolume* pv, int depth, size_t sib, const char* label ); 
+    static std::string Traverse( const G4VPhysicalVolume* pv, const char* label=nullptr ); 
+    static std::string Traverse( const G4LogicalVolume*   lv, const char* label=nullptr ); 
+    static void Traverse_r(const G4VPhysicalVolume* pv, int depth, size_t sib, const char* label, std::ostream& ss ); 
     static std::string DescPV(const G4VPhysicalVolume* pv); 
     static std::string DescLV(const G4LogicalVolume* lv); 
 
@@ -117,35 +122,44 @@ inline void U4Volume::FindPV_WithSolidName_r( const G4VPhysicalVolume* pv,  cons
 
 
 
-inline void U4Volume::Traverse( const G4VPhysicalVolume* pv, const char* label )
+inline std::string U4Volume::Traverse( const G4VPhysicalVolume* pv, const char* label )
 {
-    Traverse_r( pv, 0, 0, label);
-}
-inline void U4Volume::Traverse( const G4LogicalVolume* lv, const char* label  )
-{
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) Traverse_r( lv->GetDaughter(i), 0, i, label  ); 
+    std::stringstream ss ; 
+    Traverse_r( pv, 0, 0, label, ss );
+    std::string s = ss.str(); 
+    return s ; 
 }
 
-inline void U4Volume::Traverse_r( const G4VPhysicalVolume* pv, int depth, size_t sib, const char* label )
+inline std::string U4Volume::Traverse( const G4LogicalVolume* lv, const char* label )
+{
+    std::stringstream ss ; 
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) Traverse_r( lv->GetDaughter(i), 0, i, label, ss  ); 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+inline void U4Volume::Traverse_r( const G4VPhysicalVolume* pv, int depth, size_t sib, const char* label, std::ostream& ss )
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    std::cout 
-        << " label " << std::setw(10) << label 
-        << " depth " << std::setw(2) << depth 
+
+    if(label) ss << " label " << std::setw(10) << label ; 
+    ss
+        << " dep " << std::setw(2) << depth 
         << " sib " << std::setw(2) << sib 
         << " " << DescPV(pv) 
         << " " << DescLV(lv) 
         << std::endl 
         ; 
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) Traverse_r( lv->GetDaughter(i), depth+1, i, label ); 
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) Traverse_r( lv->GetDaughter(i), depth+1, i, label, ss ); 
 }
+
 
 inline std::string U4Volume::DescPV(const G4VPhysicalVolume* pv)
 {
     std::stringstream ss ; 
     ss
-        << "U4Volume::DescPV"
-        << " pvname " << pv->GetName()   
+        << "DescPV "
+        << std::setw(20) << pv->GetName()   
         ;
     std::string s = ss.str(); 
     return s ; 
@@ -161,11 +175,11 @@ inline std::string U4Volume::DescLV(const G4LogicalVolume* lv)
 
     std::stringstream ss ; 
     ss
-        << "U4Volume::DescLV"
-        << " lvname " << lv->GetName()   
-        << " num_daughters " << std::setw(4) << num_daughters
-        << " mtname " << mtname
-        << " soname " << soname
+        << "DescLV "
+        << std::setw(20) << lv->GetName()   
+        << " nd " << std::setw(4) << num_daughters
+        << " mt " << std::setw(8) << mtname
+        << " so " << soname
         ;
 
     std::string s = ss.str(); 
