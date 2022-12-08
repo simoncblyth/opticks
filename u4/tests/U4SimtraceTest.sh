@@ -1,18 +1,18 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4PMTFastSimGeomTest.sh
+U4SimtraceTest.sh
 ==========================
 
 ::
 
-    N=0 ./U4PMTFastSimGeomTest.sh 
-    N=1 ./U4PMTFastSimGeomTest.sh 
+    N=0 ./U4SimtraceTest.sh 
+    N=1 ./U4SimtraceTest.sh 
 
 
 EOU
 }
 
-bin=U4PMTFastSimGeomTest
+bin=U4SimtraceTest
 
 export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
@@ -34,8 +34,8 @@ export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=750
 export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=700  
 export ${GEOM}_GEOMWrap=AroundCircle 
 export U4VolumeMaker_MakeTransforms_AroundCircle_radius=400
-export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=2
-export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0.2
+export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=4
+export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
 
 export LOC=skip
 export CEGS=16:0:9:10

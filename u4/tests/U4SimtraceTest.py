@@ -1,5 +1,10 @@
 #!/usr/bin/env python
+"""
+U4SimtraceTest.py
+====================
 
+
+"""
 import os, logging, numpy as np
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
@@ -7,7 +12,6 @@ from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line
 
 colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 gcol = "grey"
-
 
 #from opticks.ana.framegensteps import FrameGensteps
 #from opticks.ana.simtrace_positions import SimtracePositions
@@ -33,6 +37,11 @@ if __name__ == '__main__':
     FOLD = os.path.expandvars("$FOLD")
     trs = np.load(os.path.join(FOLD, "trs.npy"))
     trs_names = np.loadtxt( os.path.join(FOLD, "trs_names.txt"), dtype=np.object )
+
+    topline = "U4SimtraceTest.py"
+    botline = "%s" % FOLD
+    thirdline = "thirdline"
+
 
     sfs = odict()
     for i, name in enumerate(trs_names):
@@ -73,7 +82,7 @@ if __name__ == '__main__':
         if LOC != "skip":
             ax.legend(loc=LOC,  markerscale=4)
         pass
-        #fig.suptitle("\n".join([topline,botline,thirdline]))
+        fig.suptitle("\n".join([topline,botline,thirdline]))
         fig.show()
     pass
 pass

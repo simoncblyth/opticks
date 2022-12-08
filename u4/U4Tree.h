@@ -9,6 +9,11 @@ The other members simply hold on to Geant4 pointers
 that make no sense to persist and cannot live 
 within sysrap as that does not depend on G4 headers.  
 
+Actually header only impls can live anywhere, so could move this to sysrap, 
+but are more comfortable to do that only with small highly focussed headers. 
+Currently this header is not so big, but expect that this will 
+grow into the central header of the more direct geometry translation. 
+
 * see also sysrap/stree.h sysrap/tests/stree_test.cc
 
 **/
@@ -21,6 +26,7 @@ within sysrap as that does not depend on G4 headers.
 
 #include <glm/glm.hpp>
 #include "G4VPhysicalVolume.hh"
+#include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4Material.hh"
 
@@ -29,6 +35,7 @@ within sysrap as that does not depend on G4 headers.
 #include "sdigest.h"
 #include "sfreq.h"
 #include "stree.h"
+#include "SSimtrace.h"
 
 #include "U4SensorIdentifier.h"
 #include "U4SensorIdentifierDefault.h"
@@ -53,6 +60,7 @@ controlled via envvar::
 
 struct U4Tree
 {
+    static void Simtrace( const G4VPhysicalVolume* const top, const char* base ); 
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
 
     stree* st ; 
@@ -487,4 +495,32 @@ inline void U4Tree::identifySensitiveGlobals()
         << std::endl 
         ; 
 }
+
+
+/**
+U4Tree::Simtrace
+------------------
+
+This is too encapsulated, it gives no surface for debug/development. 
+So instead moved this functionality to U4Simtrace.h 
+
+**/
+
+inline void U4Tree::Simtrace( const G4VPhysicalVolume* const pv, const char* base )
+{
+    stree st ; 
+    U4Tree ut(&st, pv ) ; 
+    st.save_trs(base); 
+
+    assert( st.soname.size() == ut.solids.size() );  
+    for(unsigned i=0 ; i < st.soname.size() ; i++)  // over unique solid names
+    {   
+        const char* soname = st.soname[i].c_str(); 
+        const G4VSolid* solid = ut.solids[i] ; 
+        G4String name = solid->GetName(); 
+        assert( strcmp( name.c_str(), soname ) == 0 );  
+        SSimtrace::Scan(solid, base) ;   
+    }   
+}
+
 

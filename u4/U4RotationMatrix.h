@@ -7,9 +7,7 @@ typedef CLHEP::HepRotation G4RotationMatrix;
 
 g4-cls Rotation
 
-
-Subclass in order to allow use of protected ctor
-
+Subclass G4RotationMatrix in order to use protected ctor
 
 **/
 
@@ -74,6 +72,8 @@ inline std::string U4RotationMatrix::Desc(const G4RotationMatrix* rot )
 
 
 /**
+U4RotationMatrix::U4RotationMatrix
+-------------------------------------
 
 The input array a16 is assumed to be of 16 elements 
 The array element to rotation matrix element mapping depends on f.
@@ -95,10 +95,10 @@ For f:true::
 **/
 
 inline U4RotationMatrix::U4RotationMatrix(const double* a16, bool f )
-      :    
-         G4RotationMatrix( a16[0],     a16[f?4:1], a16[f?8:2], 
-                           a16[f?1:4], a16[5],     a16[f?9:6],
-                           a16[f?2:8], a16[f?6:9], a16[10]     )
+    :    
+    G4RotationMatrix( a16[0],     a16[f?4:1], a16[f?8:2], 
+                      a16[f?1:4], a16[5],     a16[f?9:6],
+                      a16[f?2:8], a16[f?6:9], a16[10]     )
 {}
 
 
@@ -106,11 +106,11 @@ inline U4RotationMatrix::U4RotationMatrix(
            double xx, double xy, double xz, 
            double yx, double yy, double yz, 
            double zx, double zy, double zz  
-     )   
-     :   
-       G4RotationMatrix( xx, xy, xz ,   
-                         yx, yy, yz ,
-                         zx, zy, zz )
+   )   
+   :   
+   G4RotationMatrix( xx, xy, xz ,   
+                     yx, yy, yz ,
+                     zx, zy, zz )
 {}  
 
 
@@ -124,9 +124,9 @@ inline U4RotationMatrix* U4RotationMatrix::ZZ( double phi )
 
 inline U4RotationMatrix* U4RotationMatrix::Flip(unsigned mask )
 {
-    double XX = mask & X ? -1. : 1. ; 
-    double YY = mask & Y ? -1. : 1. ; 
-    double ZZ = mask & Z ? -1. : 1. ; 
+    double XX = (mask & X) ? -1. : 1. ; 
+    double YY = (mask & Y) ? -1. : 1. ; 
+    double ZZ = (mask & Z) ? -1. : 1. ; 
 
     return new U4RotationMatrix( XX, 0., 0., 
                                  0., YY, 0., 
@@ -144,7 +144,5 @@ inline U4RotationMatrix* U4RotationMatrix::Flip(const char* axes)
 {
     return Flip(FlipMask(axes)); 
 }
-
-
 
 

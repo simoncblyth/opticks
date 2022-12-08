@@ -97,7 +97,7 @@ if(PMTFastSim_FOUND)
 
     set(PMTFastSim_TESTS
        U4PMTFastSimTest.cc
-       U4PMTFastSimGeomTest.cc
+       U4SimtraceTest.cc
     )
 
     foreach(SRC ${PMTFastSim_TESTS})
