@@ -350,8 +350,8 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 #ifndef PRODUCTION
         sseq& seq = sev->current_ctx.seq ; 
         LOG(info) 
-            << " label.id " << std::setw(5) << label->id
-            << " seq.desc_seqhis " << seq.desc_seqhis()
+            << " l.id " << std::setw(5) << label->id
+            << " seq " << seq.brief()
             ;  
 #endif
 
@@ -416,10 +416,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
-    const G4VTouchable* touch = track->GetTouchable();  
-    LOG(LEVEL) << U4Touchable::Desc(touch) ;
-
-
     spho* label = STrackInfo<spho>::GetRef(track); 
     assert( label->isDefined() );  
     if(!Enabled(*label)) return ;  
@@ -436,6 +432,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.q0.f.x = bop->getU0() ; 
     current_aux.q0.i.w = bop->getU0_idx() ; 
 
+
+    const G4VTouchable* touch = track->GetTouchable();  
+    LOG(LEVEL) << U4Touchable::Brief(touch) ;
+    current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
 
     // first_point when single bit in the flag from genflag set in beginPhoton
     bool first_point = current_photon.flagmask_count() == 1 ;  

@@ -18,27 +18,19 @@ export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 export FOLD=$BASE
 
-## PMTFastSim/HamamatsuR12860PMTManager declProp config 
-export hama_FastCoverMaterial=Cheese  
-export hama_UsePMTOpticalModel=1  
-
+geomscript=$GEOM.sh 
 version=${N:-0}
-export hama_UseNaturalGeometry=$version 
 
-case $version in
-  0) echo FastSim/jPOM ;;
-  1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
-esac
+if [ -f "$geomscript" ]; then  
+    source $geomscript $version
+else
+    echo $BASH_SOURCE : no gemoscript $geomscript
+fi 
 
-export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=750  
-export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=700  
-export ${GEOM}_GEOMWrap=AroundCircle 
-export U4VolumeMaker_MakeTransforms_AroundCircle_radius=400
-export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=4
-export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
-
+# python ana level presentation 
 export LOC=skip
-export CEGS=16:0:9:10
+
+
 
 
 loglevels()

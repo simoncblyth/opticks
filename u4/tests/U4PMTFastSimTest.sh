@@ -1,22 +1,29 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4PMTFastSimTest.sh
-======================
+U4PMTFastSimTest.sh  : TODO needs new name 
+=================================================
 
 ::
 
-    N=0 ./U4PMTFastSimTest.sh 
-    N=1 ./U4PMTFastSimTest.sh 
+    N=0 ./U4PMTFastSimTest.sh   # old geom  
+    N=1 ./U4PMTFastSimTest.sh   # new natural geom
 
     PID=726 ./U4PMTFastSimTest.sh nana
+
+
+    N=1 MODE=0 ./U4PMTFastSimTest.sh ph  # no GUI with NumPy 
+    N=1 MODE=2 ./U4PMTFastSimTest.sh ph  # 2D GUI with matplotlib
+    N=1 MODE=3 ./U4PMTFastSimTest.sh ph  # 3D GUI with pyvista
+
 
 EOU
 }
 
 bin=U4PMTFastSimTest
-
 export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
+
+
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
 export Local_G4Cerenkov_modified_DISABLE=1
@@ -24,11 +31,8 @@ export Local_DsG4Scintillation_DISABLE=1
 #export G4OpAbsorption_DISABLE=1
 #export G4OpRayleigh_DISABLE=1
 #export G4OpBoundaryProcess_DISABLE=1
-
 export G4FastSimulationManagerProcess_ENABLE=1  
-
-## HMM: should FastSim be switched off for N=1 running ? 
-
+## HMM: should FastSim process be switched off for N=1 running ? 
 
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
@@ -36,33 +40,36 @@ export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same
 export BeamOn=${BeamOn:-1}
 
 
-## PMTFastSim/HamamatsuR12860PMTManager declProp config 
-export hama_FastCoverMaterial=Cheese  
-export hama_UsePMTOpticalModel=1        ## adds dynode geom 
-export hama_UseNaturalGeometry=${N:-0}  ## 0:FastSim/jPOM 1:InstrumentedG4OpBoundaryProcess/CustomART
+geomscript=$GEOM.sh 
+version=${N:-0}
 
-case $hama_UseNaturalGeometry in
-  0) echo FastSim/jPOM ;;
-  1) echo InstrumentedG4OpBoundaryProcess/CustomART ;;
-esac
+if [ -f "$geomscript" ]; then  
+    source $geomscript $version
+else
+    echo $BASH_SOURCE : no geomscript $geomscript
+fi 
+
+# python ana level presentation 
+export LOC=skip
+
 
 
 
 
 log=${bin}.log
-logN=${bin}_${hama_UseNaturalGeometry}.log
+logN=${bin}_${version}.log
 
 
-#running_mode=SRM_G4STATE_SAVE  
-running_mode=SRM_G4STATE_RERUN
+running_mode=SRM_G4STATE_SAVE  
+#running_mode=SRM_G4STATE_RERUN
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL ;; 
-   SRM_G4STATE_RERUN) reldir=SEL$hama_UseNaturalGeometry ;; 
+   SRM_G4STATE_RERUN) reldir=SEL$version ;; 
 esac
 
 
-if [ "$running_mode" == "SRM_G4STATE_RERUN" -a "$hama_UseNaturalGeometry" == "1" ]; then
+if [ "$running_mode" == "SRM_G4STATE_RERUN" -a "$version" == "1" ]; then
 
    ## when using natural geometry need to apply some burns to
    ## jump ahead in a way that corresponds to the consumption 
@@ -101,6 +108,7 @@ export storch_FillGenstep_radius=$radius
 # down from line outside Pyrex
 export storch_FillGenstep_pos=0,0,200
 export storch_FillGenstep_mom=0,0,-1
+
 
 loglevel(){
    export U4Recorder=INFO
@@ -143,15 +151,22 @@ fi
 
 if [ "$arg" == "ana" -o "$arg" == "nana" ]; then
     export FOLD=$BASE/$reldir
-    [ "$arg" == "nana" ] && export NOGUI=1
+    [ "$arg" == "nana" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
 
 if [ "$arg" == "cf" -o "$arg" == "ncf" ]; then
-    [ "$arg" == "ncf" ] && export NOGUI=1
+    [ "$arg" == "ncf" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
+fi 
+
+if [ "$arg" == "ph" -o "$arg" == "nph" ]; then
+    export FOLD=$BASE/$reldir
+    [ "$arg" == "nph" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_ph.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ph error && exit 5
 fi 
 
 exit 0 

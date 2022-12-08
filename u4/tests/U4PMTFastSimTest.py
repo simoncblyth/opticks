@@ -3,24 +3,6 @@
 U4PMTFastSimTest.py
 =====================
 
-::
-
-    In [10]: np.unique(wai, return_counts=True)
-    Out[10]: (array([1, 2]), array([32628, 67372]))
-
-    In [2]: np.unique( np.logical_and( wai == 1, trg == 0 ), return_counts=True )
-    Out[2]: (array([False,  True]), array([67436, 32564]))
-
-    In [3]: np.unique( np.logical_and( wai == 1, trg == 1 ), return_counts=True )
-    Out[3]: (array([False,  True]), array([99936,    64]))
-
-    In [4]: np.unique( np.logical_and( wai == 2, trg == 0 ), return_counts=True )
-    Out[4]: (array([False,  True]), array([83308, 16692]))
-
-    In [5]: np.unique( np.logical_and( wai == 2, trg == 1 ), return_counts=True )
-    Out[5]: (array([False,  True]), array([49320, 50680]))
-
-
 
 
 """
@@ -33,6 +15,9 @@ MODE = int(os.environ.get("MODE", 0))
 if not NOGUI:
     from opticks.ana.pvplt import * 
 pass
+
+
+
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")

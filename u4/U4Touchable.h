@@ -3,13 +3,7 @@
 U4Touchable.h
 ================
 
-::
-
-    U4Recorder::UserSteppingAction_Optical@423: U4Touchable::Desc depth 4
-     i  0 cp      0 nd      7 so   hama_inner2_solid_1_4 pv  hama_inner2_phys
-     i  1 cp      0 nd      2 so     hama_body_solid_1_4 pv    hama_body_phys
-     i  2 cp      0 nd      1 so      hama_pmt_solid_1_4 pv       hama_log_pv
-     i  3 cp      0 nd      1 so             Water_solid pv       Water_lv_pv
+The history is from inside to outside, so "deeper" corresponds to wider volumes.
 
 **/
 
@@ -24,76 +18,124 @@ U4Touchable.h
 
 struct U4Touchable
 {
-    static int GetReplicaDepth(const G4VTouchable* touch) ; 
-    static int GetReplicaNumber(const G4VTouchable* touch) ; 
-    static std::string Desc(const G4VTouchable* touch);
+    static int ReplicaNumber(const G4VTouchable* touch) ; 
+    static int ReplicaDepth(const G4VTouchable* touch) ; 
+    static int TouchDepth(const G4VTouchable* touch ); 
+    static bool HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name); 
+
+    static std::string Brief(const G4VTouchable* touch ); 
+    static std::string Desc(const G4VTouchable* touch, int so_wid=20, int pv_wid=20);
 };
 
-inline int U4Touchable::GetReplicaDepth(const G4VTouchable* touch) 
+inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
 {
-    const G4VPhysicalVolume* tpv = touch->GetVolume() ;
+    int d = ReplicaDepth(touch);
+    return d > -1 ? touch->GetReplicaNumber(d) : -1  ;
+}
+
+/**
+U4Touchable::ReplicaDepth
+---------------------------
+
+Starting from touch depth look outwards at (volume, mother_volume) 
+pairs checking for a depth at which the mother_volume has more than one 
+daughter with the same name as the volume. This means the volume has
+at least one same named sibling making this the replica depth. 
+When no such depth is found return -1. 
+
+**/
+
+inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
+{
     int nd = touch->GetHistoryDepth();
+    int t = TouchDepth(touch); 
+    assert( t > -1 && t < nd ); 
 
-    for(int i=0; i<nd; i++) 
+    for (int d=t ; d < nd-1; ++d ) 
     {   
-        const G4VPhysicalVolume* ipv = touch->GetVolume(i) ; 
-        if(ipv == tpv) 
-        {   
-            int j=1;
-            for (j=1; j < (nd-i); ++j) 
-            {   
-                int d = i+j-1 ; 
+        const G4VPhysicalVolume* dpv = touch->GetVolume(d);
+        const G4VPhysicalVolume* mpv = touch->GetVolume(d+1);
 
-                const G4VPhysicalVolume* dpv = touch->GetVolume(d);
-                const G4LogicalVolume* dlv = dpv->GetLogicalVolume();
-                const G4String& dlv_name = dlv->GetName() ; 
+        const G4LogicalVolume* dlv = dpv->GetLogicalVolume();
+        const G4LogicalVolume* mlv = mpv->GetLogicalVolume();
 
-                const G4VPhysicalVolume* jpv = touch->GetVolume(i+j);
-                const G4LogicalVolume* jlv = jpv->GetLogicalVolume();
-                int jlv_dau = jlv->GetNoDaughters();
+        bool hierarchy = dpv->GetMotherLogical() == mlv ; 
+        assert(hierarchy); 
 
-                if (jlv_dau > 1)  
-                {   
-                    int count = 0;  
-                    // looks like the count < 2 will never do anything due to below break 
-                    for (int k=0; (count<2) && (k < jlv_dau); ++k)   
-                    {
-                        const G4VPhysicalVolume* kpv = jlv->GetDaughter(k) ;
-                        const G4LogicalVolume*   klv = kpv->GetLogicalVolume() ;
-                        const G4String& klv_name = klv->GetName() ;
-                        if (dlv_name == klv_name) ++count ;
-                    }
-                    if(count > 1) return d ;
-                }
-            }
-        }
+        const char* dlv_name = dlv->GetName().c_str() ; 
+        if(HasMoreThanOneDaughterWithName(mlv, dlv_name)) return d ; 
     }
     return -1 ;
 }
 
+/**
+U4Touchable::TouchDepth
+-------------------------
 
-inline int U4Touchable::GetReplicaNumber(const G4VTouchable* touch)  // static 
+Depth of touch volume, -1 if not found. 
+
+**/
+
+inline int U4Touchable::TouchDepth(const G4VTouchable* touch ) // static
 {
-    int d = GetReplicaDepth(touch);
-    return d > 0 ? touch->GetReplicaNumber(d) : -1  ;
+    const G4VPhysicalVolume* tpv = touch->GetVolume() ;
+    int t = -1 ; 
+    for(int i=0 ; i < touch->GetHistoryDepth() ; i++) 
+    {   
+        const G4VPhysicalVolume* ipv = touch->GetVolume(i) ; 
+        if(ipv == tpv) 
+        {
+            t = i ;  
+            break ; 
+        }
+    } 
+    return t ; 
 }
 
-
-
-inline std::string U4Touchable::Desc(const G4VTouchable* touch)
+inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name)  // static
 {
-    int depth = touch->GetHistoryDepth();
-    int replica_depth = GetReplicaDepth(touch); 
-    int replica_number = GetReplicaNumber(touch); 
+    int num_dau = lv->GetNoDaughters();
+    if(num_dau <= 1) return false ; 
+    int count = 0;  
+    for (int k=0; k < num_dau ; ++k)   
+    {
+        const G4VPhysicalVolume* kpv = lv->GetDaughter(k) ;
+        const G4LogicalVolume*   klv = kpv->GetLogicalVolume() ;
+        const char* klv_name = klv->GetName().c_str() ;
+        if(strcmp(name, klv_name)==0) count += 1 ;
+        if(count > 1) return true ;
+    }
+    return false ; 
+}
+
+inline std::string U4Touchable::Brief(const G4VTouchable* touch )
+{
+    std::stringstream ss ; 
+    ss << "U4Touchable::Brief"
+       << " HistoryDepth " << std::setw(2) <<  touch->GetHistoryDepth()
+       << " TouchDepth " << std::setw(2) << TouchDepth(touch)
+       << " ReplicaDepth " << std::setw(2) << ReplicaDepth(touch)
+       << " ReplicaNumber " << std::setw(6) << ReplicaNumber(touch)
+       ; 
+    return ss.str(); 
+}
+inline std::string U4Touchable::Desc(const G4VTouchable* touch, int so_wid, int pv_wid )
+{
+    int history_depth = touch->GetHistoryDepth();
+    int touch_depth = TouchDepth(touch); 
+    int replica_depth = ReplicaDepth(touch); 
+    int replica_number = ReplicaNumber(touch); 
 
     std::stringstream ss ; 
-    ss << "U4Touchable::Desc" << std::endl 
-       << " touch->GetHistoryDepth  " << depth << std::endl 
-       << " replica_depth " << replica_depth << std::endl 
-       << " replica_number " << replica_number << std::endl 
+    ss << "U4Touchable::Desc"
+       << " HistoryDepth " << std::setw(2) << history_depth 
+       << " TouchDepth " << std::setw(2) << touch_depth 
+       << " ReplicaDepth " << std::setw(2) << replica_depth
+       << " ReplicaNumber " << std::setw(6) << replica_number 
+       << std::endl 
        ; 
 
-    for(int i=0 ; i<depth ; i++) 
+    for(int i=0 ; i< history_depth ; i++) 
     { 
         G4VPhysicalVolume* pv = touch->GetVolume(i); 
         G4LogicalVolume* lv = pv->GetLogicalVolume();
@@ -104,8 +146,8 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch)
         ss << " i " << std::setw(2) << i 
            << " cp " << std::setw(6)  << cp
            << " nd " << std::setw(6)  << nd
-           << " so " << std::setw(40) << so->GetName()
-           << " pv " << std::setw(60) << pv->GetName()
+           << " so " << std::setw(so_wid) << so->GetName()
+           << " pv " << std::setw(pv_wid) << pv->GetName()
            << std::endl ; 
     }   
     std::string s = ss.str(); 

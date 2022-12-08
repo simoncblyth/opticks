@@ -2,15 +2,17 @@
 U4SimtraceTest.cc
 ===================
 
-The below does simtrace scans of all unique solids in the geometry tree and
-saves the placement transforms of all nodes into *base* with NP set_names
-containing the solid names of all nodes.  This can be presented as 2D cross
-sections of the geometry using U4PMTFastSimGeomTest.py 
+Usually invoked from U4SimtraceTest.sh
+
+This does simtrace scans of all unique solids in a Geant4 geometry tree and
+saves the placement transforms of all nodes into *base* directory with NP set_names
+containing the solid names of all nodes.  These folders of .npy files 
+can be presented as 2D cross sections of the geometry using U4SimtraceTest.py 
+as orchestrated by U4SimtraceTest.sh
 
 Although in principal this should work for any geometry it is intended to
 assist with debugging within small test geometries.  With large geometries it
 will be very slow and write huge amounts of output. 
-
 
 **/
 

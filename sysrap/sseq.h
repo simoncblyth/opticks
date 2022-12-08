@@ -81,6 +81,7 @@ struct sseq
 #else
     SSEQ_METHOD std::string desc() const ; 
     SSEQ_METHOD std::string desc_seqhis() const ; 
+    SSEQ_METHOD std::string brief() const ; 
 #endif
 };
 
@@ -205,6 +206,11 @@ SSEQ_METHOD std::string sseq::desc_seqhis() const
     std::string s = ss.str(); 
     return s ; 
 }
+SSEQ_METHOD std::string sseq::brief() const
+{
+    std::string fseq = OpticksPhoton::FlagSequence(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
+    return sstr::TrimTrailing(fseq.c_str()) ; 
+} 
 
 #endif
 

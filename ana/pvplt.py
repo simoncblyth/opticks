@@ -40,6 +40,7 @@ except ImportError:
 pass
 
 
+
 if not mp is None:
     from matplotlib import collections  as mp_collections
     from matplotlib import lines as mp_lines 
@@ -163,6 +164,13 @@ def pvplt_plotter(label="pvplt_plotter"):
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
     return pl 
+
+
+def mpplt_plotter(label="mpplt_plotter"):
+    fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) # 100 dpi 
+    ax.set_aspect('equal')
+    return fig, ax
+
 
 
 def pvplt_arrows( pl, pos, vec, color='yellow', factor=0.15 ):

@@ -965,7 +965,7 @@ void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolu
         const char* iname = PlaceName(prefix, i, nullptr); 
 
         G4bool pMany_unused = false ; 
-        G4int  pCopyNo = i*100 ; 
+        G4int  pCopyNo = (i+1)*1000 ; 
 
         const G4VPhysicalVolume* pv_n = new G4PVPlacement(rot, tla, lv, iname, mother_lv, pMany_unused, pCopyNo ); // 1st ctor
         assert( pv_n );  
