@@ -79,7 +79,7 @@ struct sphoton
     float  time ; 
 
     float3 mom ;        // 1 
-    unsigned iindex ;   // instance index,  (formerly float weight, but have never used that)
+    unsigned iindex ;   // instance index, t.record[:,:,1,3].view(np.int32)  
  
     float3 pol ;         // 2
     float  wavelength ;   

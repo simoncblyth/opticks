@@ -1,8 +1,6 @@
 /**
-U4PMTFastSimTest.cc
-======================
-
-TODO: rename 
+U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
+======================================================
 
 
 **/
@@ -11,35 +9,37 @@ TODO: rename
 #include "STime.hh"
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
-
 #include "U4Engine.h"
 #include "U4UniformRand.h"
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
+
+#ifdef WITH_PMTFASTSIM
 #include "junoPMTOpticalModel.hh"
-
 #include "J_PMTFASTSIM_LOG.hh"
+#endif
 
-struct U4PMTFastSimTest
+
+struct U4SimulateTest
 {
     static G4RunManager* InitRunManager(G4VUserPhysicsList* phy);  
     G4VUserPhysicsList*        phy ; 
     G4RunManager*              run ; 
     U4RecorderTest*            rec ; 
 
-    U4PMTFastSimTest(); 
+    U4SimulateTest(); 
     void BeamOn(); 
-    virtual ~U4PMTFastSimTest(){ delete rec ; }
+    virtual ~U4SimulateTest(){ delete rec ; }
 };
 
-G4RunManager* U4PMTFastSimTest::InitRunManager(G4VUserPhysicsList* phy)
+G4RunManager* U4SimulateTest::InitRunManager(G4VUserPhysicsList* phy)
 {
     G4RunManager* run = new G4RunManager ; 
     run->SetUserInitialization(phy) ; 
     return run ; 
 }
 
-U4PMTFastSimTest::U4PMTFastSimTest()
+U4SimulateTest::U4SimulateTest()
     :
     phy((G4VUserPhysicsList*)new U4Physics),
     run(InitRunManager(phy)),
@@ -47,7 +47,7 @@ U4PMTFastSimTest::U4PMTFastSimTest()
 {
 }
 
-void U4PMTFastSimTest::BeamOn()
+void U4SimulateTest::BeamOn()
 {
     run->BeamOn(U::GetEnvInt("BeamOn",1)); 
 }
@@ -56,45 +56,43 @@ void U4PMTFastSimTest::BeamOn()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+#ifdef WITH_PMTFASTSIM
     J_PMTFASTSIM_LOG_(0); 
+#endif
 
-    const char* ekey = "hama_UseNaturalGeometry" ; 
-    int eval = SSys::getenvint(ekey, 0 );  
-    LOG(info) 
-        << "[ " << argv[0] << " " << STime::Now() 
-        << " ekey " << ekey 
-        << " eval " << eval 
-        ;
-
+    int VERSION = SSys::getenvint("VERSION", 0 );  
+    LOG(info) << "[ " << argv[0] << " " << STime::Now() << " VERSION " << VERSION ; 
     LOG(info) << U4Engine::Desc()  ; 
 
     SEvt* evt = SEvt::CreateOrLoad() ; 
-    bool is_loaded = evt->is_loaded ;  // true when rerunning as single photon
-    if(is_loaded) 
-    {
-        evt->clear_partial("g4state");  // clear loaded evt but keep g4state
-        std::string reldir = U::FormName("SEL", eval, nullptr ); 
-        LOG(info) << " reldir " << reldir ; 
-        evt->setReldir(reldir.c_str());
-    }
+
+    bool rerun = evt->is_loaded ;  
+    if(rerun) evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+
+    std::string reldir = U::FormName( rerun ? "SEL" : "ALL" , VERSION, nullptr ); 
+    LOG(info) << " reldir " << reldir << " rerun " << rerun ; 
+    evt->setReldir(reldir.c_str());
 
     SEvt::AddTorchGenstep(); 
 
-    U4PMTFastSimTest t ;  
+    U4SimulateTest t ;  
     t.BeamOn(); 
-
 
     evt->save(); 
     const char* savedir = evt->getSaveDir(); 
+
     SFastSim_Debug::Save(savedir); 
+
+#ifdef WITH_PMTFASTSIM
     junoPMTOpticalModel::Save(savedir); 
+#endif
     InstrumentedG4OpBoundaryProcess::Save(savedir); 
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
     fRecorder->saveRerunRand(savedir); 
     LOG(info) << " savedir " << savedir ;  
 
-    LOG(info) << "] " << argv[0] << " " << STime::Now() ; 
+    LOG(info) << "] " << argv[0] << " " << STime::Now() << " VERSION " << VERSION ; 
     return 0 ; 
 }
 

@@ -96,7 +96,7 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND
 if(PMTFastSim_FOUND)
 
     set(PMTFastSim_TESTS
-       U4PMTFastSimTest.cc
+       U4SimulateTest.cc
        U4SimtraceTest.cc
     )
 

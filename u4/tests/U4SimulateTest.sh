@@ -1,29 +1,27 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4PMTFastSimTest.sh  : TODO needs new name 
-=================================================
+U4SimulateTest.sh  (formerly U4PMTFastSimTest.sh)
+===================================================
 
 ::
 
-    N=0 ./U4PMTFastSimTest.sh   # old geom  
-    N=1 ./U4PMTFastSimTest.sh   # new natural geom
+    N=0 ./U4SimulateTest.sh   # old geom  
+    N=1 ./U4SimulateTest.sh   # new natural geom
 
-    PID=726 ./U4PMTFastSimTest.sh nana
+    PID=726 ./U4SimulateTest.sh nana
 
 
-    N=1 MODE=0 ./U4PMTFastSimTest.sh ph  # no GUI with NumPy 
-    N=1 MODE=2 ./U4PMTFastSimTest.sh ph  # 2D GUI with matplotlib
-    N=1 MODE=3 ./U4PMTFastSimTest.sh ph  # 3D GUI with pyvista
+    N=1 MODE=0 ./U4SimulateTest.sh ph  # no GUI with NumPy 
+    N=1 MODE=2 ./U4SimulateTest.sh ph  # 2D GUI with matplotlib
+    N=1 MODE=3 ./U4SimulateTest.sh ph  # 3D GUI with pyvista
 
 
 EOU
 }
 
-bin=U4PMTFastSimTest
+bin=U4SimulateTest
 export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
-
-
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
 export Local_G4Cerenkov_modified_DISABLE=1
@@ -36,15 +34,15 @@ export G4FastSimulationManagerProcess_ENABLE=1
 
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
-## u4/tests/U4PMTFastSimTest.cc
+## u4/tests/U4SimulateTest.cc
 export BeamOn=${BeamOn:-1}
 
 
 geomscript=$GEOM.sh 
-version=${N:-0}
+export VERSION=${N:-0}
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $version
+    source $geomscript $VERSION
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
@@ -53,19 +51,15 @@ fi
 export LOC=skip
 
 
-
-
-
 log=${bin}.log
-logN=${bin}_${version}.log
-
+logN=${bin}_$VERSION.log
 
 running_mode=SRM_G4STATE_SAVE  
 #running_mode=SRM_G4STATE_RERUN
 
 case $running_mode in 
-   SRM_G4STATE_SAVE)  reldir=ALL ;; 
-   SRM_G4STATE_RERUN) reldir=SEL$version ;; 
+   SRM_G4STATE_SAVE)  reldir=ALL$VERSION ;; 
+   SRM_G4STATE_RERUN) reldir=SEL$VERSION ;; 
 esac
 
 

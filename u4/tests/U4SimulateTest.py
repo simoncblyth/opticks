@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """
-U4PMTFastSimTest.py
+U4SimulateTest.py
 =====================
-
 
 
 """
@@ -93,7 +92,7 @@ if __name__ == '__main__':
     #specs = "blue:trg_no:lines cyan:trg_yes:lines"
     #specs = "blue:glass_no:lines cyan:glass_yes:lines"
     specs = "blue:glass_no:lines cyan:glass_yes:lines red:vacuum_yes:lines yellow:vacuum_no:lines"
-    label = "U4PMTFastSimTest.py:SFastSim_Debug " + specs
+    label = "U4SimulateTest.py:SFastSim_Debug " + specs
 
     if NOGUI:
         print("not plotting as NOGUI in environ")

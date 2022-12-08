@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-U4PMTFastSimTest_cf.py
+U4SimulateTest_cf.py
 ========================
 
 ::
@@ -27,10 +27,8 @@ pass
 PID = int(os.environ.get("PID", -1))
 if PID == -1: PID = int(os.environ.get("OPTICKS_G4STATE_RERUN", -1))
 
-
 # mapping from new to old point index for PID 726 big bouncer
 b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
-
 
 if __name__ == '__main__':
 
@@ -53,13 +51,4 @@ if __name__ == '__main__':
         abr[i,1] = br[i,0]
     pass    
     print(repr(abr))
-
-
-        
-
-           
-
-
-
-
 

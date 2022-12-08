@@ -16,21 +16,19 @@ bin=U4SimtraceTest
 
 export GEOM=hamaLogicalPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
-export FOLD=$BASE
+export VERSION=${N:-0}
+export FOLD=$BASE/$VERSION
 
 geomscript=$GEOM.sh 
-version=${N:-0}
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $version
+    source $geomscript $VERSION
 else
     echo $BASH_SOURCE : no gemoscript $geomscript
 fi 
 
 # python ana level presentation 
 export LOC=skip
-
-
 
 
 loglevels()
@@ -41,7 +39,7 @@ loglevels
 
 
 log=${bin}.log
-logN=${bin}_${version}.log
+logN=${bin}_$VERSION.log
 
 defarg="run_ana"
 arg=${1:-$defarg}
@@ -63,7 +61,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg"  ]; then
-    [ "$arg" == "nana" ] && export NOGUI=1
+    [ "$arg" == "nana" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
