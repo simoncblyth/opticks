@@ -9,6 +9,7 @@ import os, logging, numpy as np
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line
+from opticks.ana.p import * 
 
 colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 gcol = "grey"
@@ -48,6 +49,24 @@ if __name__ == '__main__':
         sfs[name] = Fold.Load(FOLD, name, symbol="sfs%0.2d" % i )
     pass
 
+
+    XFOLD = os.environ.get("XFOLD", None)
+    XPID = int(os.environ.get("XPID", -1 ))
+
+    if not XFOLD is None and os.path.isdir(XFOLD) and XPID > -1: 
+        xf = Fold.Load(XFOLD, symbol="xfold")
+        x = xf.record[XPID]
+        x_wl = x[:,2,3] 
+        x = x[x_wl > 0]
+        x_type = "record"
+    else:
+        xfold = None
+        x = None
+        x_type = None
+    pass
+
+
+
     axes = X,Z
     H,V = axes
 
@@ -76,6 +95,38 @@ if __name__ == '__main__':
 
             ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
         pass
+
+
+        if not x is None:
+            mpplt_add_contiguous_line_segments(ax, x[:,0,:3], axes=(H,V), label=None )
+            if x_type == "record":
+                hv = x[:,0,(H,V)]
+                tweak = False
+
+                for i in range(len(x)):
+                    dx,dy = 0,0
+                    if tweak:
+                        if i==2: dx,dy=-10,0
+                        if i==3: dx,dy=0,-10
+                        if i==4: dx,dy=-10,0
+                        if i==16: dx,dy=10,-10
+                        #backgroundcolor="yellow"
+                        backgroundcolor=None 
+                    else:
+                        #backgroundcolor="yellow"
+                        backgroundcolor=None 
+                    pass
+                    if backgroundcolor is None:
+                        ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15 )
+                    else:
+                        ax.text(dx+hv[i,0],dy+hv[i,1], str(i), fontsize=15, backgroundcolor=backgroundcolor )
+                    pass
+                pass
+            pass
+        pass
+
+
+
 
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])

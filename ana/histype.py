@@ -74,6 +74,32 @@ from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
 
 class HisType(SeqType):
+    @classmethod
+    def Convert(cls, q):
+        """
+
+        ::
+
+            q = xf.seq[:,0] 
+            s = HisType.Convert(q)
+            ss = ht.aflags[s].view("|S%d" % (3*32)) 
+
+            n = np.sum( seqnib_(q), axis=1 )   
+
+            np.c_[ss, n, np.arange(len(ss))]  
+
+            In [36]: np.c_[ss, n, np.arange(len(ss))][n > 16]
+            Out[36]: 
+            array([[b'TO BT BT BT BT SR SR SR BT BT BT BT BT BT BT BT SA                                              ', b'17', b'204'],
+                   [b'TO BR BT BT BT BT SR SR SR BT BT BT BT BT BT BR BT BT BT BT SA                                  ', b'21', b'921'],
+                   [b'TO BR BR BT BT BT BT SR SR BT BR BT SR SR SR BT BT BT BT BT BT                                  ', b'21', b'925']], dtype='|S96')
+
+        """
+        s = np.zeros( (len(q), 32), dtype=np.int8 )
+        for i in np.arange(16): s[:,i]    = ( q[:,0] >> (4*i) ) & 0xf     
+        for i in np.arange(16): s[:,16+i] = ( q[:,1] >> (4*i) ) & 0xf     
+        return s 
+
     def __init__(self):
         flags = PhotonCodeFlags() 
         SeqType.__init__(self, flags, flags.abbrev)

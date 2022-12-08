@@ -97,11 +97,17 @@ class BaseType(object):
         log.debug("abbrev %s " % repr(map(lambda _:abbrev.name2abbr.get(_,None),flags.names)))
 
         abbrs = list(map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names ))
-        self.abbr2code = dict(zip(abbrs, flags.codes))
-        self.code2abbr = dict(zip(flags.codes, abbrs))
+
+        abbr2code = dict(zip(abbrs, flags.codes))
+        code2abbr = dict(zip(flags.codes, abbrs))
+        aflags = np.array( ['   '] + list(map(lambda _:"%s " % _  ,abbrs )), dtype="|S3" )  
+
+        self.abbr2code = abbr2code
+        self.code2abbr = code2abbr
         self.flags = flags
         self.abbrev = abbrev
         self.delim = delim
+        self.aflags = aflags 
 
     def __call__(self, args):
         for a in args:

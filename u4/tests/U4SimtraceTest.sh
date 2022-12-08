@@ -15,9 +15,15 @@ EOU
 bin=U4SimtraceTest
 
 export GEOM=hamaLogicalPMT
-export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
+export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
+export BASE=$GEOMFOLD/$bin
+
 export VERSION=${N:-0}
 export FOLD=$BASE/$VERSION
+
+export XFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
+export XPID=${XPID:-0}
+
 
 geomscript=$GEOM.sh 
 
