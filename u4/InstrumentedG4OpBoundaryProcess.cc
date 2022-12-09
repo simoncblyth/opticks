@@ -189,6 +189,15 @@ int InstrumentedG4OpBoundaryProcess::getU0_idx() const
 {
     return m_u0_idx ; 
 }
+const double* InstrumentedG4OpBoundaryProcess::getRecoveredNormal() const 
+{
+    return (const double*)&theRecoveredNormal ;
+}
+char InstrumentedG4OpBoundaryProcess::getCustomBoundaryStatus() const 
+{
+    return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
+}
+
 #endif
 
 
@@ -204,7 +213,7 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
     SOpBoundaryProcess(processName.c_str()),
     PostStepDoIt_count(-1)
 #ifdef WITH_PMTFASTSIM
-    ,m_custom(new CustomBoundary<JPMT>(
+    ,m_custom_boundary(new CustomBoundary<JPMT>(
                   NewMomentum,
                   NewPolarization,
                   aParticleChange,
@@ -241,6 +250,8 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
 
     Material1 = NULL;
     Material2 = NULL;
+
+    theRecoveredNormal.set(0.,0.,0.); 
 
     OpticalSurface = NULL;
 
@@ -683,9 +694,10 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
 #ifdef WITH_PMTFASTSIM
             //[OpticalSurface.mpt.CustomBoundary
-            CustomBoundary_doneIt = m_custom->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
-            //]OpticalSurface.mpt.CustomBoundary
 
+            CustomBoundary_doneIt = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
+
+            //]OpticalSurface.mpt.CustomBoundary
 #endif
 
             LOG(LEVEL)

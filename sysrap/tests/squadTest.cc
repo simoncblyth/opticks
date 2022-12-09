@@ -285,11 +285,24 @@ void test_union1()
 
     assert( q.i.w == 1065353216  ); 
     assert( q.u.w == 1065353216u ); 
-
-
-
-
 }
+
+void test_set_v()
+{
+    quad4 p ; 
+    p.zero(); 
+
+    double src[4] = {1., 2., 3., 4. } ;  
+    const double* s = &src[0] ; 
+
+    p.set_v(0, s, 1); 
+    p.set_v(1, s, 2); 
+    p.set_v(2, s, 3); 
+    p.set_v(3, s, 4); 
+
+    std::cout << p << std::endl ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -310,10 +323,10 @@ int main(int argc, char** argv)
     test_quad4_idx_orient(); 
     test_qselector(); 
     test_qphoton(); 
+    test_union1(); 
     */
 
-    test_union1(); 
-
+    test_set_v(); 
 
 
     return 0 ; 

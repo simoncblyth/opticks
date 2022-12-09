@@ -432,6 +432,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.q0.f.x = bop->getU0() ; 
     current_aux.q0.i.w = bop->getU0_idx() ; 
 
+    const double* recoveredNormal = bop->getRecoveredNormal() ; 
+    current_aux.set_v(3, recoveredNormal, 3); 
+    char customBoundaryStatus = bop->getCustomBoundaryStatus() ; 
+    current_aux.q1.i.w = int(customBoundaryStatus) ; 
+
 
     const G4VTouchable* touch = track->GetTouchable();  
     LOG(LEVEL) << U4Touchable::Brief(touch) ;

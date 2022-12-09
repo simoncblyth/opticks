@@ -8,6 +8,17 @@ U4SimtraceTest.sh
     N=0 ./U4SimtraceTest.sh 
     N=1 ./U4SimtraceTest.sh 
 
+    APID=173 PLAB=1 BGC=yellow ./U4SimtraceTest.sh ana
+
+Z-changing big bouncers::
+
+    N=0 APID=256 PLAB=1 BGC=white ./U4SimtraceTest.sh ana
+    N=1 APID=261 PLAB=1 BGC=white ./U4SimtraceTest.sh ana
+
+Grab the custom boundary status for each point::
+
+    In [25]: t.aux[261,:32,1,3].copy().view(np.int8)[::4].copy().view("|S32")
+    Out[25]: array([b'TTTZNZRZNZA'], dtype='|S32')
 
 EOU
 }
@@ -21,8 +32,13 @@ export BASE=$GEOMFOLD/$bin
 export VERSION=${N:-0}
 export FOLD=$BASE/$VERSION
 
-export XFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
-export XPID=${XPID:-0}
+export AFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
+export APID=${APID:-0}
+
+#export BFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
+#export BPID=${BPID:-0}
+
+
 
 
 geomscript=$GEOM.sh 

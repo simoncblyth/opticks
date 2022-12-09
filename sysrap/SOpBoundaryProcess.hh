@@ -11,6 +11,9 @@ struct SYSRAP_API SOpBoundaryProcess
 
     virtual double getU0() const = 0 ; 
     virtual int    getU0_idx() const = 0 ; 
+    virtual const double* getRecoveredNormal() const = 0 ;
+    virtual char getCustomBoundaryStatus() const = 0 ; 
+
 }; 
 
 

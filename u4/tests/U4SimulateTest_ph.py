@@ -36,12 +36,54 @@ if __name__ == '__main__':
     #pos = t.photon[:,0,:3]
     pos = t.record[:,:,0,:3].reshape(-1,3) 
 
-    rp = t.record[...,1,3].view(np.int32)  # ReplicaNumber
+
+    ## ReplicaNumber
+    rp = t.record[...,1,3].view(np.int32) 
     np.set_printoptions(edgeitems=50)  
 
     u_rp, i_rp, v_rp, n_rp = np.unique(rp, axis=0, return_index=True, return_inverse=True, return_counts=True ) 
+    print("\nnp.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp] ## unique ReplicaNumber sequences ")
     print(np.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp])
-    assert len(rp) == len(v_rp)   # inverse v_rp contains unique array indices that reproduces the original array 
+    print("\nlen(v_rp) : %d ## v_rp : unique array indices that reproduce original array  " % len(v_rp))
+    assert len(rp) == len(v_rp) 
+
+    q_ = t.seq[:,0]
+    q = ht.seqhis(q_)
+    print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
+    print(repr(q[v_rp == 0]))
+
+    n = np.sum( seqnib_(q_), axis=1 ) 
+    print("\nnp.unique(n, return_counts=True) ## occupied nibbles  ")
+    print(repr(np.unique(n, return_counts=True)))
+
+    
+    print("\nq[n > 16]  ## flag sequence of big bouncers  ")
+    print(repr(q[n>16]))  
+
+    print("\nnp.where(n > 28)  ## find index of big bouncer " )
+    print(np.where(n > 28)) 
+
+    cut = 10
+    expr = "np.c_[np.where(n>%d)[0],q[n > %d]]" % (cut,cut)
+    print("\n%s  ## show indices of multiple big bouncers together with history " % expr)
+    print(eval(expr))
+
+    expr = " t.record[%d,:n[%d],0] " % (PID,PID)
+    print("\n%s  ## show step record points for PID %d  " % (expr, PID))
+    print(eval(expr))
+
+    expr = " np.where( t.record[:500,:,0,2] < 0 ) "
+    print("\n%s ## look for records with -Z positions in the first half, that all start in +Z ")
+    print(eval(expr))
+
+    expr = " np.where( t.record[500:,:,0,2] > 0 ) "
+    print("\n%s ## look for records with +Z positions in the second half, that all start in -Z ")
+    print(eval(expr))
+
+
+
+
+
 
 
 

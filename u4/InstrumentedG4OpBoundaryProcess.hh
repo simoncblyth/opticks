@@ -170,10 +170,12 @@ public:
         static const plog::Severity LEVEL ; 
 
 #ifdef WITH_PMTFASTSIM
-        CustomBoundary<JPMT>* m_custom ; 
+        CustomBoundary<JPMT>* m_custom_boundary ; 
 
         double getU0() const ; 
         int getU0_idx() const ; 
+        const double* getRecoveredNormal() const ; 
+        char getCustomBoundaryStatus() const ; 
 
         static void Save(const char* dir); 
 #endif

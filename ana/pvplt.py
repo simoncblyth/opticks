@@ -62,8 +62,8 @@ if not pv is None:
 pass
 
 GUI = not "NOGUI" in os.environ
-SIZE = np.array([1280, 720], dtype=np.float64)
-ASPECT = SIZE[0]/SIZE[1]  # 1280/720 = 1.7777777777777777
+SIZE = np.array([1280, 720] )
+ASPECT = float(SIZE[0])/float(SIZE[1])  # 1280/720 = 1.7777777777777777
 
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )

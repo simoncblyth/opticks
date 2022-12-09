@@ -175,6 +175,8 @@ struct quad4
     void ephoton() ; 
     void normalize_mom_pol(); 
     void transverse_mom_pol(); 
+    float* get_v(int i) const ;  
+    void set_v(int i, const double* xyz, int n); 
 #endif
 };
 
@@ -194,6 +196,8 @@ SQUAD_METHOD float3*      quad4::v0() const { return (float3*)&q0.f.x ; }
 SQUAD_METHOD float3*      quad4::v1() const { return (float3*)&q1.f.x ; }
 SQUAD_METHOD float3*      quad4::v2() const { return (float3*)&q2.f.x ; }
 SQUAD_METHOD float3*      quad4::v3() const { return (float3*)&q3.f.x ; }
+
+
 
 
 
@@ -693,6 +697,30 @@ inline void quad4::transverse_mom_pol()
              ; 
     }
     assert(is_transverse); 
+}
+
+
+inline float* quad4::get_v(int i) const 
+{
+    float* v = nullptr ; 
+    switch(i)
+    {
+       case 0: v = (float*)&q0.f.x ; break ; 
+       case 1: v = (float*)&q1.f.x ; break ; 
+       case 2: v = (float*)&q2.f.x ; break ; 
+       case 3: v = (float*)&q3.f.x ; break ; 
+    }
+    return v ; 
+}
+
+inline void quad4::set_v(int i, const double* src, int n)
+{
+    if(src == nullptr) return ; 
+    assert( n > -1 && n <= 4 ); 
+    assert( i > -1 && i < 4 ); 
+    float* v = get_v(i); 
+    if(v == nullptr) return ; 
+    for(int j=0 ; j < n ; j++)  v[j] = float(src[j]) ; 
 }
 
 inline quad4 quad4::make_ephoton()  // static

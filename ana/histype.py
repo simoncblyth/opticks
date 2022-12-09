@@ -104,6 +104,9 @@ class HisType(SeqType):
         flags = PhotonCodeFlags() 
         SeqType.__init__(self, flags, flags.abbrev)
 
+    def seqhis(self, q):
+        qq = self.Convert(q)
+        return self.aflags[qq].view("|S%d" % (3*32) )
 
 
 def test_HistoryTable(ht, seqhis):

@@ -62,7 +62,7 @@ be the case for normalized u. See oxrap/rotateUz.h for the algebra.
 
 Special cases:
 
-u = [0,0,1] (up=0.) 
+u = [0,0,1] (up=0., !u.z<0.) 
    does nothing, effectively identity matrix
 
 u = [0,0,-1] (up=0., u.z<0. ) 

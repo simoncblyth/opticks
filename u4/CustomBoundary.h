@@ -154,6 +154,7 @@ inline const char* CustomStatus::Name(char status)
 #include "SLOG.hh"
 #include "JPMT.h"
 #include "Layr.h"
+#include "U4Touchable.h"
 
 #ifdef DEBUG_TAG
 #include "U4UniformRand.h"
@@ -167,8 +168,10 @@ struct CustomBoundary
     static const constexpr plog::Severity LEVEL = debug ;  
     static void Save(const char* fold); 
 
-    J*    parameter_accessor ; 
-    int   count ; 
+    J*     parameter_accessor ; 
+    int    count ; 
+    double zlocal ; 
+    char   customStatus ; 
 
     G4ThreeVector& NewMomentum ; 
     G4ThreeVector& NewPolarization ; 
@@ -194,7 +197,7 @@ struct CustomBoundary
       ); 
 
     G4bool maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
-    G4bool isPositiveLocalZ(const G4Track& aTrack) const ; 
+    double getLocalZ(const G4Track& aTrack) const ; 
     char   doIt(const G4Track& aTrack, const G4Step& aStep ); 
 };
 
@@ -219,6 +222,8 @@ inline CustomBoundary<J>::CustomBoundary(
     :
     parameter_accessor(new J),
     count(0),
+    zlocal(-1.),
+    customStatus('?'),
     NewMomentum(NewMomentum_),
     NewPolarization(NewPolarization_),
     aParticleChange(aParticleChange_),
@@ -234,20 +239,19 @@ inline CustomBoundary<J>::CustomBoundary(
 template<typename J>
 inline G4bool CustomBoundary<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
 {
+    customStatus = 'N' ; // N:OpticalSurfaceName does not start with '@'
     if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return false ; 
-    char status = '?' ; 
-    if(isPositiveLocalZ(aTrack)) status = doIt(aTrack, aStep) ; 
-    bool doneIt = strchr("ARTD", status) != nullptr ; 
-    return doneIt ; 
+    zlocal = getLocalZ(aTrack); 
+    customStatus = zlocal > 0. ? doIt(aTrack, aStep) : 'Z' ;  // Z:-ve Z not triggered
+    return strchr("ARTD", customStatus) != nullptr ; 
 }
 
 template<typename J>
-inline G4bool CustomBoundary<J>::isPositiveLocalZ(const G4Track& aTrack) const 
+inline double CustomBoundary<J>::getLocalZ(const G4Track& aTrack) const 
 {
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPoint  = transform.TransformPoint(theGlobalPoint);
-    G4double z_local = localPoint.z() ; 
-    return z_local > 0. ; 
+    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+    return localPoint.z() ; 
 }
 
 template<typename J>
@@ -267,10 +271,10 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     G4double energy_eV = energy/eV ;
     G4double wavelength_nm = wavelength/nm ; 
 
-    // TODO: lookup the pmtid from the track and use to access pmtcat and qe
-    // via the parameter_accessor 
+    const G4VTouchable* touch = aTrack.GetTouchable();    
+    int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
+    // TODO: check replicaNumber, add J API to access pmtcat+qe from replicaNumber
     int pmtcat = J::DEFAULT_CAT ; 
-    //double _qe = 0.5 ; 
     double _qe = 0.0 ; 
 
 
@@ -319,6 +323,7 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     LOG(LEVEL)
         << " count " << count 
+        << " replicaNumber " << replicaNumber
         << " _sin_theta0 " << std::fixed << std::setw(10) << std::setprecision(5) << _sin_theta0 
         << " oriented_normal " << oriented_normal 
         << " polarization*direction.cross(oriented_normal) " << polarization*direction.cross(oriented_normal) 

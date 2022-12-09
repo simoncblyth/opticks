@@ -237,9 +237,10 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.time = gs.time ; 
         p.mom = gs.mom ; 
 
-        float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        //float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
         //float r = gs.radius*u_zenith ;
-        float frac = float(photon_id)/float(gs.numphoton) ;  // 0->1 
+
+        float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
         float r = gs.radius*2.f*(frac-0.5f) ;
 
         p.pos.x = r ;

@@ -76,7 +76,7 @@ fi
 
 ## sysrap/SEventConfig 
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
-export OPTICKS_MAX_BOUNCE=20                # can go upto 31 now that extended sseq.h 
+export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
 export OPTICKS_G4STATE_RERUN=726
 export OPTICKS_EVENT_MODE=StandardFullDebug
 
@@ -95,13 +95,18 @@ export SEvent_MakeGensteps_num_ph=$num_ph
 export storch_FillGenstep_type=line     
 export storch_FillGenstep_radius=$radius
 
-# up from line below equator
+# up +Z from line below equator
 #export storch_FillGenstep_pos=0,0,-20
 #export storch_FillGenstep_mom=0,0,1
 
-# down from line outside Pyrex
-export storch_FillGenstep_pos=0,0,200
-export storch_FillGenstep_mom=0,0,-1
+# down -Zfrom line outside Pyrex
+#export storch_FillGenstep_pos=0,0,200
+#export storch_FillGenstep_mom=0,0,-1
+
+# zero line to the right, along +ve X
+export storch_FillGenstep_pos=0,0,0
+export storch_FillGenstep_mom=-1,0,0
+
 
 
 loglevel(){
@@ -116,15 +121,17 @@ loglevel(){
    export ShimG4OpRayleigh=INFO
 }
 
+
 if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
-   loglevel  ## switch on logging when doing single photon RERUN
+   echo $BASH_SOURCE : switch on logging when doing single photon RERUN
+   loglevel  
 fi 
 
 
-defarg="run"
+defarg="run_ph"
 arg=${1:-$defarg}
 
-if [ "$arg" == "run" ]; then
+if [ "${arg/run}" != "$arg" ]; then
     [ -f "$log" ] && rm $log 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
@@ -133,7 +140,7 @@ if [ "$arg" == "run" ]; then
     ## HMM: probably an envvar can change the logname directly ? 
 fi 
 
-if [ "$arg" == "dbg" ]; then
+if [ "${arg/dbg}" != "$arg" ]; then
     #export BP=MixMaxRng::flat
     [ -f "$log" ] && rm $log 
     case $(uname) in 
@@ -143,20 +150,20 @@ if [ "$arg" == "dbg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
 fi 
 
-if [ "$arg" == "ana" -o "$arg" == "nana" ]; then
+if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
-    [ "$arg" == "nana" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
+    [ "$arg" == "nfs" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_fs.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
 
-if [ "$arg" == "cf" -o "$arg" == "ncf" ]; then
+if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
     [ "$arg" == "ncf" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
 fi 
 
-if [ "$arg" == "ph" -o "$arg" == "nph" ]; then
+if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nph" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_ph.py 

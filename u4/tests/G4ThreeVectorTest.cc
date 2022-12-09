@@ -1,9 +1,21 @@
+/**
+G4ThreeVectorTest.cc
+======================
+
+::
+
+    g4-cls ThreeVector
+
+**/
+
+
 #include <iostream>
 #include "G4ThreeVector.hh"
 
 int main(int argc, char** argv)
 {
     G4ThreeVector a(1., 2., 3.); 
+    a.set(10.,20.,30.); 
 
     std::cout << " sizeof(a) " << sizeof(a) << std::endl ; 
     std::cout << " sizeof(double)*3 " << sizeof(double)*3  << std::endl; 

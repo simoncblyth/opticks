@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-U4SimulateTest.py
-=====================
+U4SimulateTest_fs.py  : FastSim ModelTrigger etc.. plotting
+===============================================================
 
 
 """
@@ -9,9 +9,8 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 
-NOGUI = "NOGUI" in os.environ
 MODE = int(os.environ.get("MODE", 0))
-if not NOGUI:
+if MODE > 0:
     from opticks.ana.pvplt import * 
 pass
 
@@ -92,10 +91,10 @@ if __name__ == '__main__':
     #specs = "blue:trg_no:lines cyan:trg_yes:lines"
     #specs = "blue:glass_no:lines cyan:glass_yes:lines"
     specs = "blue:glass_no:lines cyan:glass_yes:lines red:vacuum_yes:lines yellow:vacuum_no:lines"
-    label = "U4SimulateTest.py:SFastSim_Debug " + specs
+    label = "U4SimulateTest_fs.py:SFastSim_Debug " + specs
 
-    if NOGUI:
-        print("not plotting as NOGUI in environ")
+    if MODE == 0:
+        print("not plotting as MODE 0  in environ")
     else:
         pl = pvplt_plotter(label)
         os.environ["EYE"] = "0,100,165"
