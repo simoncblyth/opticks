@@ -11,7 +11,6 @@
 #include "SStr.hh"
 #include "SOpticksResource.hh"
 #include "SPath.hh"
-#include "SSys.hh"
 #include "ssys.h"
 #include "SPlace.h"
 
@@ -38,7 +37,7 @@
 
 
 const plog::Severity U4VolumeMaker::LEVEL = SLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
-const char* U4VolumeMaker::GEOM = SSys::getenvvar("GEOM", "BoxOfScintillator"); 
+const char* U4VolumeMaker::GEOM = ssys::getenvvar("GEOM", "BoxOfScintillator"); 
 
 std::string U4VolumeMaker::Desc() // static
 {
@@ -149,7 +148,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 
     const G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ; 
 
-    if(loaded && SSys::getenvbool(PVG_WriteNames))
+    if(loaded && ssys::getenvbool(PVG_WriteNames))
         U4Volume::WriteNames( loaded, SPath::Resolve("$TMP", PVG_WriteNames, DIRPATH));  
     
     const G4VPhysicalVolume* pv = loaded ; 
@@ -160,7 +159,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
         pv = Wrap( name, lv_sub );  
 
-        if(SSys::getenvbool(PVG_WriteNames_Sub))
+        if(ssys::getenvbool(PVG_WriteNames_Sub))
             U4Volume::WriteNames( pv, SPath::Resolve("$TMP", PVG_WriteNames_Sub, DIRPATH));  
     }
 
@@ -384,8 +383,8 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv 
 {
     LOG(LEVEL) << "["  ; 
 
-    double halfside = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
-    double factor   = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
+    double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
+    double factor   = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
 
     LOG(LEVEL) << U4VolumeMaker_WrapRockWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_WrapRockWater_FACTOR << " " << factor ; 
@@ -401,7 +400,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv 
     LOG(LEVEL) << std::endl << U4Volume::Traverse( item_pv ); 
 
     std::vector<std::string>* vbs1 = nullptr ; 
-    vbs1 = ssys::getenvvec<std::string>(U4VolumeMaker_WrapRockWater_BS1, "pyrex_vacuum_bs:hama_body_phys:hama_inner1_phys", ':' );
+    vbs1 = ssys::getenv_vec<std::string>(U4VolumeMaker_WrapRockWater_BS1, "pyrex_vacuum_bs:hama_body_phys:hama_inner1_phys", ':' );
 
     G4LogicalBorderSurface* bs1 = nullptr ; 
     if(vbs1 && vbs1->size() == 3 )
@@ -459,11 +458,20 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, G4Logi
         ;
 
 
-    double rock_halfside   = SSys::getenvdouble(U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE,  20000.); 
-    double water_halfside  = SSys::getenvdouble(U4VolumeMaker_WrapAroundItem_Water_HALFSIDE, 19000.); 
+    double rock_halfside   = ssys::getenv_<double>(U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE,  20000.); 
+    double water_halfside  = ssys::getenv_<double>(U4VolumeMaker_WrapAroundItem_Water_HALFSIDE, 19000.); 
 
-    G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock" );
-    G4LogicalVolume*  water_lv = Box_(water_halfside, "Water" );
+    std::vector<double>* _rock_boxscale = ssys::getenv_vec<double>(U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE, "1,1,1" ); 
+    std::vector<double>* _water_boxscale = ssys::getenv_vec<double>(U4VolumeMaker_WrapAroundItem_Water_BOXSCALE, "1,1,1" ); 
+
+    if(_rock_boxscale) assert(_rock_boxscale->size() == 3 ); 
+    if(_water_boxscale) assert(_water_boxscale->size() == 3 ); 
+
+    const double* rock_boxscale = _rock_boxscale ? _rock_boxscale->data() : nullptr ;  
+    const double* water_boxscale = _water_boxscale ? _water_boxscale->data() : nullptr ;  
+
+    G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock" , nullptr, rock_boxscale );
+    G4LogicalVolume*  water_lv = Box_(water_halfside, "Water", nullptr, water_boxscale );
  
     WrapAround(prefix, trs, item_lv, water_lv );  
     // item_lv placed inside water_lv once for each transform
@@ -488,7 +496,7 @@ The LV provided is placed within a WorldBox of halfside extent and the world PV 
 
 const G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv )
 {
-    double halfside = SSys::getenvdouble(U4VolumeMaker_WrapVacuum_HALFSIDE, 1000.); 
+    double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapVacuum_HALFSIDE, 1000.); 
     LOG(LEVEL) << U4VolumeMaker_WrapVacuum_HALFSIDE << " " << halfside ; 
 
     G4LogicalVolume*   vac_lv  = Box_(halfside, "Vacuum" );
@@ -788,8 +796,8 @@ is to increase U4VolumeMaker_RaindropRockAirWater_FACTOR to 10. for example.
 
 void U4VolumeMaker::RaindropRockAirWater_Configure( double& rock_halfside, double& air_halfside, double& water_radius )
 {
-    double halfside = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
-    double factor   = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
+    double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
+    double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
@@ -881,11 +889,18 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
     return lv ; 
 }
-G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix )
+G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix, const double* scale )
 {
     if( prefix == nullptr ) prefix = mat ; 
     G4Material* material  = U4Material::Get(mat);   assert(material); 
-    G4Box* solid = new G4Box( SStr::Name(prefix,"_solid"), halfside, halfside, halfside );
+
+    double hx = scale ? scale[0]*halfside : halfside ; 
+    double hy = scale ? scale[1]*halfside : halfside ; 
+    double hz = scale ? scale[2]*halfside : halfside ; 
+
+    LOG(LEVEL) << " hx " << hx << " hy " << hy << " hz " << hz << " halfside " << halfside ; 
+
+    G4Box* solid = new G4Box( SStr::Name(prefix,"_solid"), hx, hy, hz );
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
     return lv ; 
 }
@@ -913,9 +928,9 @@ const NP* U4VolumeMaker::MakeTransforms( const char* name, const char* prefix )
     }
     else if(strcmp(prefix, "AroundCircle")==0) 
     {
-        double radius = SSys::getenvdouble(U4VolumeMaker_MakeTransforms_AroundCircle_radius, 1000.); 
-        unsigned numInRing = SSys::getenvunsigned(U4VolumeMaker_MakeTransforms_AroundCircle_numInRing, 4u );  
-        double fracPhase = SSys::getenvdouble(U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase, 0.); 
+        double radius = ssys::getenv_<double>(U4VolumeMaker_MakeTransforms_AroundCircle_radius, 1000.); 
+        unsigned numInRing = ssys::getenv_<unsigned>(U4VolumeMaker_MakeTransforms_AroundCircle_numInRing, 4u );  
+        double fracPhase = ssys::getenv_<double>(U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase, 0.); 
         trs = SPlace::AroundCircle(opts, radius, numInRing, fracPhase  );
     }
     return trs ; 

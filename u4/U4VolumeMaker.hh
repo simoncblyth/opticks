@@ -55,6 +55,8 @@ struct U4_API U4VolumeMaker
 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE = "U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_HALFSIDE = "U4VolumeMaker_WrapAroundItem_Water_HALFSIDE" ; 
+    static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE" ; 
+    static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Water_BOXSCALE" ; 
     static const G4VPhysicalVolume* WrapAroundItem( const char* name, G4LogicalVolume* item_lv, const char* prefix ); // prefix eg AroundCircle
 
 
@@ -93,7 +95,7 @@ struct U4_API U4VolumeMaker
     // general lv creators 
  
     static G4LogicalVolume* Orb_( double radius,   const char* mat, const char* prefix=nullptr ); 
-    static G4LogicalVolume* Box_( double halfside, const char* mat, const char* prefix=nullptr ); 
+    static G4LogicalVolume* Box_( double halfside, const char* mat, const char* prefix=nullptr, const double* boxscale=nullptr ); 
 
 
     // instance wraps 

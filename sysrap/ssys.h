@@ -18,19 +18,19 @@ struct ssys
     static const char* getenvvar(const char* ekey, const char* fallback); 
     static int getenvint(const char* ekey, int fallback);  
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
+    static bool     getenvbool(const char* ekey);  
 
     template<typename T>
-    static T getenvv(const char* ekey, T fallback);  
-
+    static T getenv_(const char* ekey, T fallback);  
 
     template<typename T>
     static std::vector<T>* make_vec(const char* line, char delim=','); 
 
     template<typename T>
-    static std::vector<T>* getenvvec(const char* ekey, const char* fallback, char delim=','); 
+    static std::vector<T>* getenv_vec(const char* ekey, const char* fallback, char delim=','); 
 
     template<typename T>
-    static std::string DescVec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
+    static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
 }; 
 
 
@@ -60,20 +60,30 @@ inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
     char* val = getenv(ekey);
     return val ? val : fallback ; 
 }
+
 inline int ssys::getenvint(const char* ekey, int fallback)
 {
     char* val = getenv(ekey);
     return val ? std::atoi(val) : fallback ; 
 }
-
 inline unsigned ssys::getenvunsigned(const char* ekey, unsigned fallback)
 {
     int ival = getenvint(ekey, int(fallback)); 
     return ival > -1 ? ival : fallback ; 
 }
+inline bool ssys::getenvbool( const char* ekey )
+{
+    char* val = getenv(ekey);
+    bool ival = val ? true : false ;
+    return ival ; 
+}
+
+
+
+
 
 template<typename T>
-inline T ssys::getenvv(const char* ekey, T fallback)
+inline T ssys::getenv_(const char* ekey, T fallback)
 {
     char* v = getenv(ekey);
     if(v == nullptr) return fallback ; 
@@ -85,10 +95,11 @@ inline T ssys::getenvv(const char* ekey, T fallback)
     return t ; 
 }
 
-template int      ssys::getenvv(const char*, int ); 
-template unsigned ssys::getenvv(const char*, unsigned ); 
-template float    ssys::getenvv(const char*, float ); 
-template double   ssys::getenvv(const char*, double ); 
+template int      ssys::getenv_(const char*, int ); 
+template unsigned ssys::getenv_(const char*, unsigned ); 
+template float    ssys::getenv_(const char*, float ); 
+template double   ssys::getenv_(const char*, double ); 
+template std::string ssys::getenv_(const char*, std::string ); 
 
 
 
@@ -110,7 +121,7 @@ inline std::vector<T>* ssys::make_vec(const char* line, char delim)
 }
 
 template<typename T>
-inline std::vector<T>* ssys::getenvvec(const char* ekey, const char* fallback, char delim)
+inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim)
 {
     assert(fallback); 
     char* line = getenv(ekey);
@@ -118,14 +129,15 @@ inline std::vector<T>* ssys::getenvvec(const char* ekey, const char* fallback, c
 }
 
 
-template std::vector<int>*      ssys::getenvvec(const char*, const char*, char);
-template std::vector<unsigned>* ssys::getenvvec(const char*, const char*, char);
-template std::vector<float>*    ssys::getenvvec(const char*, const char*, char);
-template std::vector<double>*   ssys::getenvvec(const char*, const char*, char);
-template std::vector<std::string>*   ssys::getenvvec(const char*, const char*, char);
+template std::vector<int>*      ssys::getenv_vec(const char*, const char*, char);
+template std::vector<unsigned>* ssys::getenv_vec(const char*, const char*, char);
+template std::vector<float>*    ssys::getenv_vec(const char*, const char*, char);
+template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char);
+template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char);
  
+
 template<typename T>
-inline std::string ssys::DescVec( const std::vector<T>* vec, unsigned edgeitems  )
+inline std::string ssys::desc_vec( const std::vector<T>* vec, unsigned edgeitems  )
 {
     unsigned size = vec ? vec->size() : 0 ; 
 
@@ -139,11 +151,11 @@ inline std::string ssys::DescVec( const std::vector<T>* vec, unsigned edgeitems 
 }
 
 
-template std::string ssys::DescVec(const std::vector<int>* , unsigned ) ; 
-template std::string ssys::DescVec(const std::vector<unsigned>* , unsigned ) ; 
-template std::string ssys::DescVec(const std::vector<float>* , unsigned ) ; 
-template std::string ssys::DescVec(const std::vector<double>* , unsigned ) ; 
-template std::string ssys::DescVec(const std::vector<std::string>* , unsigned ) ; 
+template std::string ssys::desc_vec(const std::vector<int>* , unsigned ) ; 
+template std::string ssys::desc_vec(const std::vector<unsigned>* , unsigned ) ; 
+template std::string ssys::desc_vec(const std::vector<float>* , unsigned ) ; 
+template std::string ssys::desc_vec(const std::vector<double>* , unsigned ) ; 
+template std::string ssys::desc_vec(const std::vector<std::string>* , unsigned ) ; 
 
 
 

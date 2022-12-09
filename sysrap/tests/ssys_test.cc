@@ -23,53 +23,46 @@ void test_popen_1()
     std::cout << ssys::popen("md5 -q -s hello") << std::endl ; 
 }
 
-void test_getenvv()
+void test_getenv_()
 {
-    int i = ssys::getenvv("i",0) ; 
-    unsigned u = ssys::getenvv("u",0) ; 
-    float f = ssys::getenvv("f",0.f) ; 
-    double d = ssys::getenvv("d",0.) ; 
+    int i = ssys::getenv_<int>("i",0) ; 
+    unsigned u = ssys::getenv_<unsigned>("u",0) ; 
+    float f = ssys::getenv_<float>("f",0.f) ; 
+    double d = ssys::getenv_<double>("d",0.) ; 
+    std::string s = ssys::getenv_<std::string>("s","string") ; 
 
     std::cout 
         << "i " << i << std::endl 
         << "u " << u << std::endl 
         << "f " << f << std::endl 
         << "d " << d << std::endl 
+        << "s " << s << std::endl 
         ; 
 }
 
-void test_getenvvec()
+void test_getenv_vec()
 {
-    std::vector<int>* ivec = ssys::getenvvec<int>("IVEC", "1,2,3,4" ); 
+    std::vector<int>* ivec = ssys::getenv_vec<int>("IVEC", "1,2,3,4" ); 
     assert( ivec->size() == 4 ); 
-
-    std::cout << "IVEC " << ssys::DescVec(ivec) << std::endl ; 
-
+    std::cout << "IVEC " << ssys::desc_vec<int>(ivec) << std::endl ; 
 }
 
 void test_getenvvec_string()
 {
-    std::vector<std::string>* svec = ssys::getenvvec<std::string>("SVEC", "1,2,3,4" ); 
+    std::vector<std::string>* svec = ssys::getenv_vec<std::string>("SVEC", "A1,B2,C3,D4" ); 
     assert( svec->size() == 4 ); 
-
-    std::cout << "SVEC " << ssys::DescVec(svec) << std::endl ; 
-
+    std::cout << "SVEC " << ssys::desc_vec<std::string>(svec) << std::endl ; 
 }
-
-
-
-
-
 
 int main(int argc, char** argv)
 {
     /*
     test_popen_0(); 
     test_popen_1();
-    test_getenvv(); 
-    test_getenvvec(); 
-    */
+    test_getenv_vec(); 
     test_getenvvec_string(); 
+    */
+    test_getenv_(); 
 
  
     return 0 ; 
