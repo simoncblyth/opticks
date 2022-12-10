@@ -3,6 +3,17 @@
 CustomBoundary.h : Adding Multi-Layer TMM ARTD to G4OpBoundaryProcess
 =======================================================================
 
+Alternative names::
+
+    CustomSurface.h
+    TMMSurface.h
+    MultiLayerSurface.h 
+    MultiFilmSurface.h 
+
+Incorporating "Surface" in the name seems more appropriate than Boundary
+as its acting as a "smart" surface from Geant4 point of view.
+
+
 This extends G4OpBoundaryProcess providing custom calculation of ARTD (Absorb,
 Reflect, Transmit, Detect) probabilities.  This can be used for example to add
 multi-layer TMM calculation of ARTD based on layer refractive indices and
@@ -68,9 +79,9 @@ Requiring *theRecoveredNormal* allows the *doIt* to be implemented without
 having to transform into local frame, because it provides an absolute
 orientation. If this approach turns out to be inconvenient another way of
 establishing an absolute orientation is to take a compromised normal (that has
-been flipped depending on G4Track) and transform that into the local frame and
-then fix the orientation based on the sign of the z-component of the local
-normal::
+been flipped depending on G4Track an unknown number of times) and transform
+that into the local frame and then fix the orientation based on the sign of the
+z-component of the local normal::
 
     G4ThreeVector localNormal = transform.TransformAxis(theGlobalNormal);
     bool outwards = localNormal.z() > 0. ; // as always upper hemi of PMT in local frame  
@@ -84,14 +95,10 @@ all that transforming.
 
 
 CustomBoundary::maybe_doIt
-    for OpticalSurfaceName starting with '@' the isPositiveLocalZ is used to 
+    for OpticalSurfaceName starting with '@' local_z is used to 
     check for upper half (eg upper hemisphere of ellipsoidal PMT) in which 
-    case the doIt is run
-
-CustomBoundary::isPositiveLocalZ
-    transforms theGlobalPoint into the frame of the G4Track 
-    in order to get the local Z coordinate of the intersect, 
-    returning true for local_z > 0. 
+    case the doIt is run. The local_z is obtained from theGlobalPoint transformed 
+    into the frame of the G4Track. 
      
 CustomBoundary::doIt 
     performs its calculations purely in global frame, 
@@ -106,10 +113,9 @@ template type J
   
     * currently required to have argumentless ctor 
 
+
 TODO
 ----
-
-* test a transformed PMT 
 
 * compare the reflection and refraction (especially the polarization) 
   implemented here (which was copied from junoPMTOpticalModel) with that which 
@@ -171,6 +177,7 @@ struct CustomBoundary
     J*     parameter_accessor ; 
     int    count ; 
     double zlocal ; 
+    double lposcost ; 
     char   customStatus ; 
 
     G4ThreeVector& NewMomentum ; 
@@ -197,7 +204,6 @@ struct CustomBoundary
       ); 
 
     G4bool maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
-    double getLocalZ(const G4Track& aTrack) const ; 
     char   doIt(const G4Track& aTrack, const G4Step& aStep ); 
 };
 
@@ -223,6 +229,7 @@ inline CustomBoundary<J>::CustomBoundary(
     parameter_accessor(new J),
     count(0),
     zlocal(-1.),
+    lposcost(-2.),
     customStatus('?'),
     NewMomentum(NewMomentum_),
     NewPolarization(NewPolarization_),
@@ -241,18 +248,17 @@ inline G4bool CustomBoundary<J>::maybe_doIt(const char* OpticalSurfaceName, cons
 {
     customStatus = 'N' ; // N:OpticalSurfaceName does not start with '@'
     if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return false ; 
-    zlocal = getLocalZ(aTrack); 
-    customStatus = zlocal > 0. ? doIt(aTrack, aStep) : 'Z' ;  // Z:-ve Z not triggered
-    return strchr("ARTD", customStatus) != nullptr ; 
-}
 
-template<typename J>
-inline double CustomBoundary<J>::getLocalZ(const G4Track& aTrack) const 
-{
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
     G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
-    return localPoint.z() ; 
+    zlocal = localPoint.z() ; 
+    lposcost = localPoint.cosTheta() ; 
+
+    customStatus = zlocal > 0. ? doIt(aTrack, aStep) : 'Z' ;  // Z:-ve Z not triggered
+    bool doneIt = strchr("ARTD", customStatus) != nullptr ; 
+    return doneIt ; 
 }
+
 
 template<typename J>
 inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
@@ -298,33 +304,33 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
 
     Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
-    Stack<double,4> stackNormal(wavelength_nm, -1.            , spec ); 
 
     // NB stack is flipped for minus_cos_theta > 0. so:
     //
     //    stack.ll[0] always incident side
     //    stack.ll[3] always transmission side 
-    //
+
+    const double _ni = stack.ll[0].n.real() ; 
+    const double _si = stack.ll[0].st.real() ; 
+    const double _ci = stack.ll[0].ct.real() ;
+
+    const double _nt = stack.ll[3].n.real() ; 
+    const double _ct = stack.ll[3].ct.real() ;
+    const double eta = _ni/_nt ;  
+
+    Stack<double,4> stackNormal(wavelength_nm, -1.            , spec ); 
     // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) 
     //      presumably this is due to _qe definition
-    //
 
-
-    double _n0         = stack.ll[0].n.real() ; 
-    double _sin_theta0 = stack.ll[0].st.real() ; 
-    double _cos_theta0 = stack.ll[0].ct.real() ;
-
-    double _n3         = stack.ll[3].n.real() ; 
-    double _cos_theta3 = stack.ll[3].ct.real() ;
 
     // E_s2 : S-vs-P power fraction : signs make no difference as squared
-    double E_s2 = _sin_theta0 > 0. ? (polarization*direction.cross(oriented_normal))/_sin_theta0 : 0. ; 
+    double E_s2 = _si > 0. ? (polarization*direction.cross(oriented_normal))/_si : 0. ; 
     E_s2 *= E_s2;  
 
     LOG(LEVEL)
         << " count " << count 
         << " replicaNumber " << replicaNumber
-        << " _sin_theta0 " << std::fixed << std::setw(10) << std::setprecision(5) << _sin_theta0 
+        << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
         << " oriented_normal " << oriented_normal 
         << " polarization*direction.cross(oriented_normal) " << polarization*direction.cross(oriented_normal) 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
@@ -380,10 +386,9 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
           D/A         R          T
           u1 
     **/
-    char status = '?' ;
-    if(     u0 < A)    status = u1 < D ? 'D' : 'A' ;
-    else if(u0 < A+R)  status = 'R' ;
-    else               status = 'T' ;
+
+    char status =  u0 < A ? ( u1 < D ? 'D' : 'A' ) : ( u0 < A + R ? 'R' : 'T' ) ; 
+
 
 
 #ifdef DEBUG_TAG
@@ -408,29 +413,32 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 #endif
 
 
-
     NewMomentum = OldMomentum ; 
     NewPolarization = OldPolarization ; 
 
     // the below reflect/refract is a copy of junoPMTOpticalModel  TODO: compare with G4OpBoundaryProcess
+    // looks like the convention for sign of oriented_normal cancels out for the reflection ?
+
     if( status == 'R' )
     {
         theStatus = FresnelReflection ;
-        NewMomentum   -= 2.*(NewMomentum*oriented_normal)*oriented_normal ;
-        NewPolarization -= 2.*(NewPolarization*oriented_normal)*oriented_normal ;
-        // looks like the convention for sign of oriented_normal cancels out here ?
+        NewMomentum   -= 2.*(OldMomentum*oriented_normal)*oriented_normal ;
+        NewPolarization -= 2.*(OldPolarization*oriented_normal)*oriented_normal ;
     }
     else if( status == 'T' )
     {
         theStatus = FresnelRefraction ; 
-        // my convention for oriented_normal seems to be opposite to what 
-        // this formula (duplicated from junoPMTOpticalModel) is expecting  ?     
-        // CAUTION: this was an adhoc flip, 
-        // TODO: check more fundamentally by comparing with G4OpBoundaryProcess and qsim.h:propagate_at_boundary
-        double flip = -1. ;   
-        NewMomentum = flip*(_cos_theta3 - _cos_theta0*_n0/_n3)*oriented_normal + (_n0/_n3)*NewMomentum;
-        NewPolarization = (NewPolarization-(NewPolarization*direction)*direction).unit();
-        NewMomentum = NewMomentum.unit() ; 
+        NewMomentum = eta*OldMomentum + (eta*_ci - _ct)*oriented_normal ;  
+
+        // NewMomentum = NewMomentum.unit() ;  
+        // No need to normalize that is inherent. Derived in qsim.h:propagate_at_boundary.
+        // This formula matches that used in qsim.h:propagate_at_boundary
+        // The bracket is flipped compared with junoPMTOpticalModel.
+        // TODO: check the oriented_normal sign convention, is it really flipped. 
+
+        NewPolarization = (OldPolarization-(OldPolarization*OldMomentum)*OldMomentum).unit();
+        // HMM: WHERE DID THIS COME FROM ?
+
     }
     else if(status == 'A' || status == 'D')
     {

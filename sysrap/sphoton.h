@@ -3,7 +3,76 @@
 sphoton.h
 ============
 
-TODO: MAYBE RE-ARRANGE FLAG PAIRINGS::
++----+----------------+----------------+----------------+----------------+--------------------------+
+| q  |      x         |      y         |     z          |      w         |  notes                   |
++====+================+================+================+================+==========================+
+|    |  pos.x         |  pos.y         |  pos.z         |  time          |                          |
+| q0 |                |                |                |                |                          |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    |  mom.x         |  mom.y         | mom.z          |  iindex        |                          |
+| q1 |                |                |                | (unsigned)     |                          |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    |  pol.x         |  pol.y         |  pol.z         |  wavelength    |                          |
+| q2 |                |                |                |                |                          |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    | boundary_flag  |  identity      |  orient_idx    |  flagmask      |  (unsigned)              |
+| q3 |                |                |  orient:1bit   |                |                          |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+
+
+iindex
+    instance index of intersected geometry
+
+boundary (16 bit)
+    boundary index of intersected geometry
+    index corresponds to unique combinations of four material and surface indices  
+    (omat,osur,isur,imat)     
+
+flag (16 bit)
+    OpticksPhoton.h history flag enum eg: TO CK SI BT BR SR AB RE ...
+
+identity (32 bit)
+    combination of primIdx and instanceId of intersected geometry 
+
+orient (1 bit)
+    set according to the sign of cosTheta 
+    (dot product of surface normal and momentum at last intersect) 
+
+idx (31 bit)
+    photon index, always exists even before any intersect
+
+flagmask (32 bit)
+    bitwise-OR of step point flag, always exists even before any intersect 
+
+
+
+NB locations and packing here need to match ana/p.py 
+------------------------------------------------------
+
+See ana/p.py for python accessors such as::
+
+    boundary_  = lambda p:p.view(np.uint32)[3,0] >> 16    
+    flag_      = lambda p:p.view(np.uint32)[3,0] & 0xffff
+
+    identity_ = lambda p:p.view(np.uint32)[3,1]   
+    primIdx_   = lambda p:identity_(p) >> 16  
+    instanceId_  = lambda p:identity_(p) & 0xffff  
+
+    idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
+    orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
+
+    flagmask_ = lambda p:p.view(np.uint32)[3,3]
+
+
+
+POSSIBLE FLAGS REARRANGEMENT
+------------------------------
+
+::
 
     unsigned idx ; 
     unsigned orient_identity ; 
@@ -25,9 +94,6 @@ JUNO max prim_idx ~3245 : so thats OK
 
     In [2]: 0x7fff
     Out[2]: 32767
-
-
-NB locations and packing here need to match ana/p.py 
 
 
 **/
@@ -57,22 +123,6 @@ NB locations and packing here need to match ana/p.py
    struct NP ; 
 #endif
 
-/**
-See ana/p.py for python accessors such as::
-
-    boundary_  = lambda p:p.view(np.uint32)[3,0] >> 16    
-    flag_      = lambda p:p.view(np.uint32)[3,0] & 0xffff
-
-    identity_ = lambda p:p.view(np.uint32)[3,1]   
-    primIdx_   = lambda p:identity_(p) >> 16  
-    instanceId_  = lambda p:identity_(p) & 0xffff  
-
-    idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
-    orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
-
-    flagmask_ = lambda p:p.view(np.uint32)[3,3]
-
-**/
 struct sphoton
 {
     float3 pos ;        // 0
@@ -86,7 +136,7 @@ struct sphoton
 
     unsigned boundary_flag ;  // 3   
     unsigned identity ;       // [:,3,1]
-    unsigned orient_idx ;   
+    unsigned orient_idx ;     
     unsigned flagmask ; 
 
     SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient, unsigned iindex );

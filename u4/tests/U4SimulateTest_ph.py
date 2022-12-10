@@ -15,6 +15,7 @@ from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 
 LABEL = os.environ.get("LABEL", "U4SimulateTest_ph.py" )
+VERSION =  int(os.environ.get("VERSION", "-1"))
 MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,3]
 PID = int(os.environ.get("PID", -1))
@@ -49,21 +50,37 @@ if __name__ == '__main__':
 
     q_ = t.seq[:,0]
     q = ht.seqhis(q_)
+
+    qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
+    quo = np.argsort(qn)[::-1]  
+    expr = "np.c_[qn,qi,qu][quo]"
+    
+    print("\n%s  ## unique histories qu in descending count qn order, qi first index " % expr )
+    print(eval(expr))  
+
     print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
     print(repr(q[v_rp == 0]))
 
     n = np.sum( seqnib_(q_), axis=1 ) 
     print("\nnp.unique(n, return_counts=True) ## occupied nibbles  ")
     print(repr(np.unique(n, return_counts=True)))
-
     
     print("\nq[n > 16]  ## flag sequence of big bouncers  ")
     print(repr(q[n>16]))  
 
+    cut = 10
+
+    expr = "q[n > %d]" % cut 
+    print("\n%s  ## flag sequence of big bouncers  " % expr )
+    print(repr(eval(expr)))  
+
+    expr = "np.c_[n,q][n>%d]" % (cut)
+    print("\n%s  ## nibble count with flag sequence of big bouncers  " % expr )
+    print(eval(expr))  
+
     print("\nnp.where(n > 28)  ## find index of big bouncer " )
     print(np.where(n > 28)) 
 
-    cut = 10
     expr = "np.c_[np.where(n>%d)[0],q[n > %d]]" % (cut,cut)
     print("\n%s  ## show indices of multiple big bouncers together with history " % expr)
     print(eval(expr))
@@ -80,11 +97,7 @@ if __name__ == '__main__':
     print("\n%s ## look for records with +Z positions in the second half, that all start in -Z ")
     print(eval(expr))
 
-
-
-
-
-
+    print("\nt.base : %s  VERSION: %d " % (t.base, VERSION))
 
 
     if MODE == 0:

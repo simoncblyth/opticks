@@ -555,7 +555,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 normalize(const float3& v)
   return v * invLen;
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)
+SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)  // CLHEP ThreeVector calls this cosTheta 
 {
   return v.z / sqrtf(dot(v, v)); 
 }

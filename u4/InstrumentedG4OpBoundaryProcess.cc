@@ -198,6 +198,7 @@ char InstrumentedG4OpBoundaryProcess::getCustomBoundaryStatus() const
     return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
 }
 
+
 #endif
 
 

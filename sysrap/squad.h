@@ -73,6 +73,17 @@ quad2
     | f:lposcost | u:iindex   | u:identity | u:boundary    |
     +------------+------------+------------+---------------+
 
+
+lposcost
+    Local position cos(theta) of intersect, 
+    canonically calculated in CSGOptiX7.cu:__intersection__is
+    normalize_z(ray_origin + isect.w*ray_direction )
+    where normalize_z is v.z/sqrtf(dot(v, v)) 
+
+    This is kinda imagining a sphere thru the intersection point 
+    which is likely onto an ellipsoid or a box or anything 
+    to provide a standard way of giving a z-polar measure.
+
 **/
 struct quad2
 { 
@@ -176,7 +187,7 @@ struct quad4
     void normalize_mom_pol(); 
     void transverse_mom_pol(); 
     float* get_v(int i) const ;  
-    void set_v(int i, const double* xyz, int n); 
+    void set_v(int i, const double* src, int n); 
 #endif
 };
 

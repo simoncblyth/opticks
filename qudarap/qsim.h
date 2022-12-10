@@ -610,13 +610,13 @@ Input:
 
 Consumes one random deciding between BOUNDARY_REFLECT and BOUNDARY_TRANSMIT
 
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-| output flag         |   command        |  changed                                                |  note                                                 |
-+=====================+==================+=========================================================+=======================================================+
-|   BOUNDARY_REFLECT  |    -             |  direction, polarization                                |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-|   BOUNDARY_TRANSMIT |    -             |  direction, polarization                                |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
++---------------------+------------------+-------------------------------+----------+
+| output flag         |   command        |  changed                      |  note    |
++=====================+==================+===============================+==========+
+|   BOUNDARY_REFLECT  |    -             |  direction, polarization      |          |
++---------------------+------------------+-------------------------------+----------+
+|   BOUNDARY_TRANSMIT |    -             |  direction, polarization      |          |
++---------------------+------------------+-------------------------------+----------+
 
 Notes:
 
@@ -638,7 +638,6 @@ Notes:
                        .   \
                        +----+
                          s2
-
 
 Snells law::
 
@@ -721,7 +720,7 @@ calulation actually needs to be non-zero in order to be able to normalize trans 
 However using "bool normal_incidence = trans_length == 0.f" also problematic
 as it means would be using very small trans vectors to define A_trans and this
 would cause a difference with double precision Geant4 and float precision Opticks. 
-So try using a cutoff "trans_length < 1e-6f" below which to special case a normal 
+So try using a cutoff "trans_length < 1e-6f" below which to special case normal 
 incidence. 
 
 **/
@@ -811,6 +810,9 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                        eta*(p.mom) + (eta*c1 - c2)*oriented_normal
                     ;
 
+    // Q: Does the new p.mom need to be normalized ?
+    // A: NO, it is inherently normalized as derived in the following comment  
+
 
     const float3 A_paral = normalize(cross(p.mom, A_trans));
 
@@ -867,6 +869,113 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 
     return CONTINUE ; 
 }
+
+
+/**
+Reflected momentum vector 
+---------------------------
+
+::
+
+     p.mom(new) = p.mom(old) + 2.f*c1*oriented_normal
+
+     OA = oriented_normal
+
+     IO = OC = p.mom (old)
+          OR = p.mom (new)
+
+          OR = OC + CD + DR  = OC + 2.f*DR 
+          CD = DR = c1*oriented_normal 
+
+
+                  s1   s1 
+                I----A----R
+                .\   .   /.
+            c1  . \  .  / .  c1
+                .  \ . /  .
+                .   \./   .
+       ---------+----O----D------
+                :    :.   :
+                :    : .  :  c1
+           c1   :    :  . :  
+                :    :   .:
+                +....B....C
+                 s1    s1 
+
+
+* NB that is inherently normalized, as demonstrated in the below reference 
+
+
+Transmitted momentum vector
+-------------------------------
+
+* https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+* ~/opticks_refs/bram_de_greve_reflection_refraction_in_ray_tracing.pdf
+
+
+::  
+
+     eta = n1/n2 
+
+     p.mom(new) =  eta*p.mom(old) + (eta*c1 - c2)*oriented_normal
+
+
+Consider the perp and para components of the incident and transmitted mom vectors::
+
+    i = i_perp + i_para 
+    t = t_perp + t_para
+
+    i_perp = ( i.n ) n      (component of i in normal direction)
+    t_perp = ( t.n ) n      (component of t in normal direction )
+
+    i_para = i - (i.n) n    
+    t_para = t - (t.n) n    
+
+    # HMM caution with backwards oriented normal direction convention
+    #     and dot product signs 
+
+
+Snell::
+
+    n1 s1 = n2 s2 
+
+    eta s1 = s2      (eta = n1/n2)   
+        
+    s2 = eta s1 
+
+    |i_para| = s1 
+    |t_para| = s2 
+
+    t_para  = eta i_para     (as they point in same direction)
+
+    t_para  = eta ( i - (i.n) n ) 
+            = eta ( i + c1 n )     
+
+    t_perp  = - sqrt( 1-|t_para|^2 ) n     (-ve as opposite direction to oriented normal)
+            = - c2 n 
+
+    t   = eta i + ( eta c1 - c2 ) n        
+
+
+Now is that inherently normalized ? YES
+
+   t.t =  eta*eta*i.i  + (eta c1 - c2 )*(eta c1 - c2 )*n.n + 2 eta (eta c1 - c2) i.n      
+
+         (i.i = 1, n.n = 1, i.n = -c1 )
+
+       = eta*eta + (eta c1 - c2)*(eta c1 - c2) + 2 eta(eta c1 - c2) (-c1 )
+
+       = eta eta  +  eta eta c1 c1 + c2 c2 - 2 eta c1 c2  - 2 eta eta c1 c1 + 2 eta c2 c1   
+                                           --------------                    --------------
+       =   eta eta  ( 1 - c1 c1 ) + c2 c2
+
+       = 1.f      ( form above   c2c2 = 1.f - eta eta ( 1.f - c1c1 ) )    # snell and trig identity 
+
+
+**/
+
+
+
 
 
 
@@ -937,14 +1046,15 @@ transmit
 
 
 /*
- qsim::propagate_at_multifilm
- ==============================
- based on https://juno.ihep.ac.cn/trac/browser/offline/trunk/Simulation/DetSimV2/PMTSim/src/junoPMTOpticalModel.cc 
+qsim::propagate_at_multifilm
+-------------------------------
 
- Rs: s-component reflect probability
- Ts: s-component transmit probability
- Rp: p-component reflect probability
- Tp: p-component reflect probability
+based on https://juno.ihep.ac.cn/trac/browser/offline/trunk/Simulation/DetSimV2/PMTSim/src/junoPMTOpticalModel.cc 
+
+Rs: s-component reflect probability
+Ts: s-component transmit probability
+Rp: p-component reflect probability
+Tp: p-component reflect probability
 
 TODO:
    access the qe
@@ -967,71 +1077,83 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     const float3 oriented_normal = _c1 < 0.f ? (*normal) : -(*normal) ;
 
     const float c1 = fabs(_c1) ;  
+    const float s1 = sqrtf(1.f-c1*c1);
+
+    float EsEs = s1 > 0.f ? dot(p.pol, cross( p.mom, *normal))/s1 : 0. ;
+    EsEs *= EsEs;   //   orienting normal doesnt matter as squared : this is S_vs_P power fraction
+
+
     unsigned boundaryIdx = _c1 < 0.f ? 0u : 1u ; // if _c1 < 0 , thus the photon position is in glass ( kInGlass = 0 ) . 
     unsigned pmtType = 0u ;  //Fix me the pmtType need to find  
     float wavelength = p.wavelength ; 
     //boundaryIdx = 1u ;//just use to test
      
-    float4 RsTsRpTp = multifilm -> lookup(pmtType, boundaryIdx, wavelength, c1);
-    float s1 = sqrtf(1.f-c1*c1);
-    cuComplex s2 = make_cuComplex(s1*eta, 0.f) ;
-    cuComplex s2s2 = cuCmulf(s2,s2);
-
-    cuComplex one= make_cuComplex (1.f , 0.f) ;
-    cuComplex c2 = tcomplex::cuSqrtf( cuCsubf( one,s2s2) );
-   
-    float EsEs = 0.f ;
-    
-    if( s1 > 0.f){
-        EsEs = dot(p.pol, cross( p.mom, *normal))/s1; // Es component value
-        EsEs *= EsEs;
-    }
-    else
-    {   EsEs = 0.f ; }  
+    float4 RsTsRpTp = multifilm->lookup(pmtType, boundaryIdx, wavelength, c1);
    
     float3 ART ;
     ART.z = RsTsRpTp.y*EsEs + RsTsRpTp.w*(1.f - EsEs);
     ART.y = RsTsRpTp.x*EsEs + RsTsRpTp.z*(1.f - EsEs);
     ART.x = 1.f - (ART.y+ART.z);
 
-    const float u_absorb = curand_uniform(&rng) ;
-    const float u_escap = curand_uniform(&rng) ;
+    const float& A = ART.x ; 
+    const float& R = ART.y ; 
+    //const float& T = ART.z ; 
 
-    if(u_absorb < ART.x){
-         // absorbed
-         float4 RsTsRpTpNormal = multifilm -> lookup(pmtType, 0u , wavelength, 1.f ); // photon is in glass, aoi = 90deg cos_theta = 1.f
-         float3 ART_normal;
-         ART_normal.z = 0.5f*(RsTsRpTpNormal.y + RsTsRpTpNormal.w);
-         ART_normal.y = 0.5f*(RsTsRpTpNormal.x + RsTsRpTpNormal.z);
-         ART_normal.x = 1.f -(ART_normal.y + ART_normal.z) ;  
-         
-         //TODO: need to get qe.
-         float _qe = 0.3f; 
-         float escape_fac  = _qe / ART_normal.x;
 
-         if( u_escap < escape_fac ){
-              // detected
-              flag = SURFACE_DETECT; // TODO
-              return BREAK;                
-         }
-         flag = SURFACE_ABSORB;    
-         return BREAK;
-    }else if(u_absorb < (ART.x+ART.y)){
-       // reflected
-         p.mom -= 2.f * dot( p.mom, -oriented_normal)*(-oriented_normal);
-         p.pol -= 2.f * dot( p.pol, -oriented_normal)*(-oriented_normal);
+    float4 RsTsRpTpNormal = multifilm->lookup(pmtType, 0u, wavelength, 1.f ); 
+     // photon is in glass, aoi = 90deg cos_theta = 1.f
 
-         flag = BOUNDARY_REFLECT ;
-         return CONTINUE;  
-  
-    }else{
-       // transmitted
-        p.mom = normalize( (cuCrealf(c2) - c1*eta)*(-oriented_normal) + eta*p.mom );
-        p.pol = normalize((p.pol - dot(p.pol,p.mom)*p.mom));
-       flag = BOUNDARY_TRANSMIT;
-       return CONTINUE;   
+    float3 ART_normal;
+    ART_normal.z = 0.5f*(RsTsRpTpNormal.y + RsTsRpTpNormal.w); // T:0.5f*(Ts+Tp)
+    ART_normal.y = 0.5f*(RsTsRpTpNormal.x + RsTsRpTpNormal.z); // R:0.5f*(Rs+Rp)
+    ART_normal.x = 1.f -(ART_normal.y + ART_normal.z) ;        // 1.f - (R+T) 
+
+    const float& An = ART_normal.x ;  
+    const float _qe = 0.0f;   // TODO: need to get _qe 
+    const float D = _qe/An ;
+
+    /* 
+    HUH: why the complex math here ?  s1, eta are real so s2,c2 are real also 
+
+    cuComplex s2 = make_cuComplex(s1*eta, 0.f) ;
+    cuComplex s2s2 = cuCmulf(s2,s2);
+
+    cuComplex one= make_cuComplex (1.f , 0.f) ;
+    cuComplex c2 = tcomplex::cuSqrtf( cuCsubf( one,s2s2) );
+    */
+
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
+    bool tir = c2c2 < 0.f ; 
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f 
+
+    // TODO: how to handle TIR, does the TMM stack calc already handle that ? 
+
+    const float u0 = curand_uniform(&rng) ;
+    const float u1 = curand_uniform(&rng) ;
+
+    flag =  u0 < A ? 
+                      ( u1 < D ? SURFACE_DETECT : SURFACE_ABSORB )
+                   : 
+                      ( u0 < A + R ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ) 
+                   ; 
+
+
+
+    if(flag == BOUNDARY_REFLECT)
+    {
+        p.mom -= 2.f * dot( p.mom, oriented_normal)*oriented_normal ;
+        p.pol -= 2.f * dot( p.pol, oriented_normal)*oriented_normal ; // TODO: WHERE DOES THIS COME FROM ?
     }
- }
+    else if( flag == BOUNDARY_TRANSMIT )
+    {
+        p.mom = eta*p.mom + (eta*c1 - c2)*oriented_normal ;   // inherently normalized, see qsim.h:propagate_at_boundary
+        p.pol = normalize((p.pol - dot(p.pol,p.mom)*p.mom));  // TODO: WHERE DOES THIS COME FROM ?
+    }
+
+    // TODO: compare these pol with propagate_at_boundary : maybe pull out some common code 
+
+    return ( flag == SURFACE_DETECT || flag == SURFACE_ABSORB ) ? BREAK : CONTINUE ; 
+}
 
 
 
@@ -1040,17 +1162,17 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
 qsim::propagate_at_surface
 ----------------------------
 
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-| output flag         |   command        |  changed                                                |  note                                                 |
-+=====================+==================+=========================================================+=======================================================+
-|   SURFACE_ABSORB    |    BREAK         |                                                         |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-|   SURFACE_DETECT    |    BREAK         |                                                         |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-|   SURFACE_DREFLECT  |    CONTINUE      |   direction, polarization                               |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-|   SURFACE_SREFLECT  |    CONTINUE      |   direction, polarization                               |                                                       |
-+---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
++---------------------+------------------+---------------------------------------------------------+--------------+
+| output flag         |   command        |  changed                                                |  note        |
++=====================+==================+=========================================================+==============+
+|   SURFACE_ABSORB    |    BREAK         |                                                         |              |
++---------------------+------------------+---------------------------------------------------------+--------------+
+|   SURFACE_DETECT    |    BREAK         |                                                         |              |
++---------------------+------------------+---------------------------------------------------------+--------------+
+|   SURFACE_DREFLECT  |    CONTINUE      |   direction, polarization                               |              |
++---------------------+------------------+---------------------------------------------------------+--------------+
+|   SURFACE_SREFLECT  |    CONTINUE      |   direction, polarization                               |              |
++---------------------+------------------+---------------------------------------------------------+--------------+
 
 **/
 
@@ -1260,6 +1382,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
     const unsigned boundary = ctx.prd->boundary() ; 
     const unsigned identity = ctx.prd->identity() ; 
     const unsigned iindex = ctx.prd->iindex() ; 
+    const float lposcost = ctx.prd->lposcost() ; 
+
     const float3* normal = ctx.prd->normal(); 
     float cosTheta = dot(ctx.p.mom, *normal ) ;    
 
@@ -1275,7 +1399,6 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
     unsigned flag = 0 ;  
 
-    //int command = propagate_to_boundary( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ); 
     int command = propagate_to_boundary( flag, rng, ctx ); 
 #ifdef DEBUG_PIDX
     if( ctx.idx == base->pidx ) 
@@ -1284,24 +1407,34 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
     if( command == BOUNDARY )
     {
-        command = ctx.s.optical.x > 0 ? 
-                                      propagate_at_surface( flag, rng, ctx ) 
-                                  : 
+        command = ctx.s.optical.x == 0 ? 
                                       propagate_at_boundary( flag, rng, ctx ) 
+                                  : 
+                                      propagate_at_surface( flag, rng, ctx ) 
                                   ;  
+             
 
-                                      //propagate_at_surface( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ) 
-                                      //propagate_at_boundary( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ) 
-              
     }
 
     ctx.p.set_flag(flag);    // hmm could hide this ?
 
     return command ; 
 }
+/**
+Q: Where does ctx.s.optical come from ?
+A: Populated in qbnd::fill_state based on boundary and cosTheta sign to get the 
+   su_line index of the optical buffer which distinguishes surface from boundary,
+   as acted upon above. See also GBndLib::createOpticalBuffer   
+
+Q: How to implement CustomBoundary (actually CustomSurface might be better name?) "propagate_at_custom_surface ?"
+A: HMM: need 3-way split, but for local_z < 0 ordinary surface applies, 
+   so maybe effect the split within propagate_at_surface.
+
+   Actually can use the sign of prd->lposcost() which is already available, so could split here, 
+   maybe using a negated ctx.s.optical.x ?
 
 
-
+**/
 
 
 
