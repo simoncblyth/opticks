@@ -43,33 +43,3 @@ inline TCOMPLEX_METHOD cuFloatComplex tcomplex::cuSqrtf(const cuFloatComplex& a)
 }
 
 
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-
-#include <iostream>
-#include <iomanip>
-
-/*
-//
-// This symbol is already provided by scuda.h and hence gives "error redefinition" 
-// as from /usr/local/cuda/include/cuComplex.h cuFloatComplex is typedef to float2
-//
-
-inline std::ostream& operator<<(std::ostream& os, const cuFloatComplex& a)
-{
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << std::fixed << std::setprecision(3) << a.x 
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << a.y 
-       << ") "  
-       ;
-    return os; 
-}
-*/
-
-#endif
-
-

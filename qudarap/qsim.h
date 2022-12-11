@@ -29,9 +29,6 @@ TODO:
    #define QSIM_METHOD 
 #endif 
 
-
-
-
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
@@ -84,6 +81,7 @@ struct qsim
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
+    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -96,7 +94,6 @@ struct qsim
 
 
     QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
-    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
     QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
 
@@ -591,7 +588,9 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
 
     return BOUNDARY ;
 }
+#endif
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 /**
 qsim::propagate_at_boundary
 ------------------------------------------
@@ -725,7 +724,7 @@ incidence.
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
+inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const 
 {
     sphoton& p = ctx.p ; 
     const sstate& s = ctx.s ; 
@@ -734,14 +733,14 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float& n2 = s.material2.x ;   
     const float eta = n1/n2 ; 
 
-    const float3* normal = (float3*)&ctx.prd->q0.f.x ; 
+    const float3* normal = (float3*)&ctx.prd->q0.f.x ;     // geometrical outwards normal 
 
-    const float _c1 = -dot(p.mom, *normal ); 
-    const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; 
-    const float3 trans = cross(p.mom, oriented_normal) ; 
-    const float trans_length = length(trans) ;   // HMM: same as sin(theta) ?
+    const float _c1 = -dot(p.mom, *normal );                // _c1 : cos(angle_of_incidence) not yet oriented
+    const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; // oriented against incident p.mom
+    const float3 trans = cross(p.mom, oriented_normal) ;   // perpendicular to plane of incidence, S-pol direction 
+    const float trans_length = length(trans) ;             // same as sin(theta), as p.mom and oriented_normal are unit vectors
     const float c1 = fabs(_c1) ; 
-    const bool normal_incidence = trans_length < 1e-6f  ; 
+    const bool normal_incidence = trans_length < 1e-6f  ;  // p.mom parallel/anti-parallel to oriented_normal  
  
 
 #ifdef DEBUG_PIDX
@@ -762,7 +761,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
-    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // perpendicular to plane of incidence
+    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // normalized unit vector : perpendicular to plane of incidence
     const float E1_perp = dot(p.pol, A_trans);     //  E vector component perpendicular to plane of incidence, ie S polarization
     const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) ); 
     const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
@@ -814,7 +813,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     // A: NO, it is inherently normalized as derived in the following comment  
 
 
-    const float3 A_paral = normalize(cross(p.mom, A_trans));
+    const float3 A_paral = normalize(cross(p.mom, A_trans));   // new P-pol direction 
 
     p.pol =  normal_incidence ?
                                          ( reflect ?  p.pol*(n2>n1? -1.f:1.f) : p.pol )
@@ -869,6 +868,9 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 
     return CONTINUE ; 
 }
+#endif
+
+
 
 
 /**
@@ -878,6 +880,17 @@ Reflected momentum vector
 ::
 
      p.mom(new) = p.mom(old) + 2.f*c1*oriented_normal
+
+
+     PdotN = dot(p.mom(old), oriented_normal) = -c1      
+
+     "c1" is +ve, above dot product -ve as incident vector is against the normal 
+
+     p.mom(new) = p.mom(old) -2.f dot(p.mom(old), oriented_normal) * oriented_normal 
+
+     NewMomentum = OldMomentum - 2*PdotN*oriented_normal 
+
+
 
      OA = oriented_normal
 
@@ -972,6 +985,28 @@ Now is that inherently normalized ? YES
        = 1.f      ( form above   c2c2 = 1.f - eta eta ( 1.f - c1c1 ) )    # snell and trig identity 
 
 
+
+Compare transmitted vector with G4OpBoundaryProcess::DielectricDielectric
+----------------------------------------------------------------------------
+
+::
+
+    1226                 theStatus = FresnelRefraction;
+    1227 
+    1228                 if (sint1 > 0.0) {      // incident ray oblique
+    1229 
+    1230                    alpha = cost1 - cost2*(Rindex2/Rindex1);
+    1231                    NewMomentum = OldMomentum + alpha*theFacetNormal;
+    1232                    NewMomentum = NewMomentum.unit();
+
+
+    t = eta i  + (eta c1 - c2 ) n      eta = n1/n2 
+    t/eta = i + (c1 - c2/eta ) n 
+
+    Because Geant4 normalizes NewMomentum it gets away with 
+    playing fast and loose with factors of 1/eta 
+
+
 **/
 
 
@@ -1063,6 +1098,7 @@ TODO:
 
 */
 
+#if defined(__CUDACC__) || defined(__CUDABE__) 
 inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 { 
     sphoton& p = ctx.p ; 

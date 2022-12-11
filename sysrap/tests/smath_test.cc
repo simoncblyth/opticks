@@ -7,7 +7,7 @@
 #include "squad.h"
 #include "smath.h"
 
-int main(int argc, char** argv)
+void test_count_nibbles()
 {
     typedef unsigned long long ULL ; 
     static const int N = 21 ; 
@@ -48,5 +48,62 @@ int main(int argc, char** argv)
             << std::endl 
             ;
     }
+}
+
+
+/**
+test_rotateUz
+----------------
+
+Consider mom is some direction, say +Z::
+
+   (0, 0, 1)
+
+There is a circle of vectors that are perpendicular 
+to that mom, all in the XY plane, and with dot product zero::
+
+   ( cos(phi), sin(phi), 0 )    phi 0->2pi 
+
+**/
+
+void test_rotateUz()
+{
+    float3 u = normalize(make_float3( 1.f, 0.f, -1.f )); 
+
+    std::cout << " u " << u << std::endl ; 
+
+    int N = 16 ; 
+    for(int i=0 ; i <= N ; i++)
+    { 
+        float phi = 2.f*M_PIf*float(i)/float(N) ; 
+        float3 d0 = make_float3( cos(phi), sin(phi), 0.f ) ; 
+        // d0: ring of vectors in XY plane, "around" the +Z direction 
+
+        float3 d1(d0); 
+        smath::rotateUz(d1,u); 
+
+        // d1: rotated XY ring of vectors to point in direction u 
+        // So all the d1 are perpendicular to u 
+
+        std::cout 
+            << std::setw(2) << i 
+            << " d0 " << d0 
+            << " d1 " << d1 
+            << " dot(d1,u)*1e6 " << dot(d1,u)*1e6 
+            << std::endl 
+            ;         
+    }
+}
+
+
+
+int main(int argc, char** argv)
+{
+    /*
+    test_count_nibbles();  
+    */
+
+    test_rotateUz(); 
+
     return 0 ; 
 }
