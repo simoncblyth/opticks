@@ -138,7 +138,9 @@ def pvplt_viewpoint(pl, reset=False):
     pl.camera.Zoom(zoom)
 
 
-def pvplt_photon( pl, p   ):
+def pvplt_photon( pl, p, polcol="blue", polscale=1   ):
+    """
+    """
     assert p.shape == (1,4,4)
     pos = p[:,0,:3]   
     mom = p[:,1,:3]   
@@ -152,10 +154,10 @@ def pvplt_photon( pl, p   ):
 
     lpol = np.zeros( (2, 3), dtype=np.float32 )
     lpol[0] = pos[0]
-    lpol[1] = pos[0] + pol[0]
+    lpol[1] = pos[0] + pol[0]*polscale
 
     pl.add_lines( lmom, color="red" ) 
-    pl.add_lines( lpol, color="blue" ) 
+    pl.add_lines( lpol, color=polcol ) 
 
 
 

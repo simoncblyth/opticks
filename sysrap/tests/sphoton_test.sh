@@ -2,13 +2,25 @@
 
 name=sphoton_test 
 
-mkdir -p /tmp/$name 
-gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name/$name 
-[ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
+defarg="build_run"
+arg=${1:-$defarg}
 
-/tmp/$name/$name
-[ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+export FOLD=/tmp/$name
+mkdir -p $FOLD
 
+if [ "${arg/build}" != "$arg" ]; then 
+    gcc $name.cc -std=c++11 -lstdc++ \
+           -I.. \
+           -I/usr/local/cuda/include \
+           -I$OPTICKS_PREFIX/externals/glm/glm \
+           -o $FOLD/$name 
+    [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
+fi 
+
+if [ "${arg/run}" != "$arg" ]; then 
+    $FOLD/$name
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+fi 
 
 exit 0 
 

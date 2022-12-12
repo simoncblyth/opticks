@@ -272,6 +272,7 @@ set(HEADERS
     sqat4.h
     saabb.h
     stran.h
+    stmm.h 
 
     SPlace.h
     SPlaceSphere.h

@@ -118,6 +118,7 @@ JUNO max prim_idx ~3245 : so thats OK
 
    #include "scuda.h"
    #include "stran.h" 
+   #include "smath.h" 
    #include "OpticksPhoton.h"
 
    struct NP ; 
@@ -178,12 +179,15 @@ struct sphoton
     SPHOTON_METHOD unsigned flagmask_count() const ; 
     SPHOTON_METHOD std::string desc() const ; 
     SPHOTON_METHOD std::string descBase() const ; 
+    SPHOTON_METHOD std::string descPos() const ; 
+    SPHOTON_METHOD std::string descDir() const ; 
     SPHOTON_METHOD std::string descDetail() const ; 
-    SPHOTON_METHOD std::string descDigest() const ; 
     SPHOTON_METHOD std::string descFlag() const ; 
+    SPHOTON_METHOD std::string descDigest() const ; 
     SPHOTON_METHOD void ephoton() ; 
     SPHOTON_METHOD void normalize_mom_pol(); 
     SPHOTON_METHOD void transverse_mom_pol(); 
+    SPHOTON_METHOD void set_polarization(float frac_twopi); 
     SPHOTON_METHOD static sphoton make_ephoton(); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
@@ -228,19 +232,39 @@ SPHOTON_METHOD std::string sphoton::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
-SPHOTON_METHOD std::string sphoton::descBase() const 
+
+SPHOTON_METHOD std::string sphoton::descPos() const 
 {
     std::stringstream ss ; 
     ss 
         << " pos " << pos 
         << " t  " << std::setw(8) << time 
         << " " 
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+SPHOTON_METHOD std::string sphoton::descDir() const 
+{
+    std::stringstream ss ; 
+    ss 
         << " mom " << mom 
         << " iindex " << std::setw(4) << iindex 
         << " "
         << " pol " << pol 
         << " wl " << std::setw(8) << wavelength 
         << " "
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+} 
+
+SPHOTON_METHOD std::string sphoton::descBase() const 
+{
+    std::stringstream ss ; 
+    ss  << descPos()
+        << descDir()
         ;
     std::string s = ss.str(); 
     return s ; 
@@ -338,6 +362,26 @@ SPHOTON_METHOD void sphoton::transverse_mom_pol()
     }
     assert(is_transverse); 
 }
+
+
+/**
+sphoton::set_polarization
+---------------------------
+
+Start with a vector in XY plane and rotate that using smath::rotateUz
+to be transverse to mom. 
+
+**/
+
+SPHOTON_METHOD void sphoton::set_polarization(float frac_twopi)
+{
+    float phase = 2.f*M_PIf*frac_twopi ; 
+    pol.x = cosf(phase) ; 
+    pol.y = sinf(phase) ; 
+    pol.z = 0.f ;   
+    smath::rotateUz(pol, mom); // rotate pol to be transverse to mom
+}
+
 
 SPHOTON_METHOD sphoton sphoton::make_ephoton()  // static
 {

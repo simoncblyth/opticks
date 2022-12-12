@@ -20,6 +20,10 @@ Standalone compile and run with::
 #include "OpticksPhoton.hh"
 #include "sflow.h"
 
+#include "NP.hh"
+
+const char* FOLD = getenv("FOLD") ; 
+
 
 void test_generate_photon_dummy(const qsim* sim, curandStateXORWOW& rng)
 {
@@ -71,28 +75,21 @@ to that mom, all in the XY plane::
    ( cos(phi), sin(phi), 0 )    phi 0->2pi 
 
 Clearly the dot product if that and +Z is zero. 
-
-
-
-
-
-
      
 
 
 **/
 void test_propagate_at_boundary(const qsim* sim, curandStateXORWOW& rng)
 {
-    unsigned flag = 0 ;  
     float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
-
     float3 mom = normalize(make_float3(1.f, 0.f, -1.f)) ; 
-    float3 pol = make_float3(0.f, 1.f, 0.f ); // initial polarization 
 
-
-
-
-    std::cout << " dot(mom, pol) " << dot(mom, pol) << "  ( must be zero as transverse)  " << std::endl; 
+    std::cout 
+        << " test_propagate_at_boundary "
+        << " nrm " << nrm 
+        << " mom " << mom 
+        << std::endl 
+        ;
 
     quad2 prd ; 
     prd.q0.f.x = nrm.x ; 
@@ -108,36 +105,55 @@ void test_propagate_at_boundary(const qsim* sim, curandStateXORWOW& rng)
 
     sphoton& p = ctx.p ; 
     p.zero(); 
-    p.mom = mom ; 
-    p.pol = pol ; 
 
-    sphoton p0(p) ; 
-    int ctrl = sim->propagate_at_boundary(flag, rng, ctx) ; 
+    unsigned flag = 0 ;  
+    const int N = 16 ; 
 
-    std::cout 
-        << " test_propagate_at_boundary "
-        << " flag " << OpticksPhoton::Flag(flag) 
-        << " ctrl " <<  sflow::desc(ctrl) 
-        << std::endl
-        << " p0 " << p0.desc()
-        << std::endl
-        << " p  " << p.desc() 
-        << std::endl
-        ; 
+    std::vector<sphoton> pp(N*2) ; 
+
+    for(int i=0 ; i < N ; i++)
+    {   
+        float frac_twopi = float(i)/float(N)  ;   
+
+        p.mom = mom ; 
+        p.set_polarization(frac_twopi) ;  
+
+        sphoton p0(p) ;  
+        int ctrl = sim->propagate_at_boundary(flag, rng, ctx) ; 
+
+        pp[i*2+0 ] = p0 ; 
+        pp[i*2+1 ] = p ; 
+
+        std::cout 
+            << " flag " << OpticksPhoton::Flag(flag) 
+            << " ctrl " <<  sflow::desc(ctrl) 
+            << std::endl
+            << " p0 " << p0.descDir()
+            << std::endl
+            << " p  " << p.descDir() 
+            << std::endl
+            ; 
+     }
+
+     NP* a = NP::Make<float>(N,2,4,4) ; 
+     a->read2<float>( (float*)pp.data() ); 
+     a->save(FOLD, "pp.npy");  
+     std::cout << " save to " << FOLD << "/pp.npy" << std::endl; 
+
 }
 
 int main(int argc, char** argv)
 {
     qsim* sim = new qsim() ; 
     curandStateXORWOW rng(1u); 
-  
+
+    rng.set_fake(0.); // 0/1:forces transmit/reflect 
+
     /*
     test_generate_photon_dummy(sim, rng); 
     test_uniform_sphere(sim, rng);  
     */
-
     test_propagate_at_boundary(sim, rng); 
-
 
     return 0 ; 
 }

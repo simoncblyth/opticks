@@ -25,17 +25,33 @@ struct curandStateXORWOW
 
     std::uniform_real_distribution<float>   fdist ; 
     std::uniform_real_distribution<double>  ddist ; 
+    double fake ; 
 
-    curandStateXORWOW(unsigned seed_) : fdist(0,1), ddist(0,1) { engine.seed(seed_) ; }
+    curandStateXORWOW(unsigned seed_); 
 
-    float  generate_float(){  return fdist(engine) ; } 
-    double generate_double(){ return ddist(engine) ; } 
+    void set_fake(double fake_); 
+    float  generate_float(); 
+    double generate_double(); 
+
 }; 
 
+
+inline curandStateXORWOW::curandStateXORWOW(unsigned seed_) 
+    : 
+    fdist(0,1), 
+    ddist(0,1),
+    fake(-1.)
+{ 
+    engine.seed(seed_) ; 
+}
+
+inline void curandStateXORWOW::set_fake(double fake_){ fake = fake_ ; } 
+inline float  curandStateXORWOW::generate_float(){  return fake >= 0.f ? fake : fdist(engine) ; } 
+inline double curandStateXORWOW::generate_double(){ return fake >= 0. ?  fake : ddist(engine) ; } 
+
+
 typedef curandStateXORWOW curandState_t ; 
-
-float curand_uniform(curandState_t* state ){ return state->generate_float() ; }
-
+float curand_uniform(curandState_t* state ){         return state->generate_float() ; }
 double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }
 
 

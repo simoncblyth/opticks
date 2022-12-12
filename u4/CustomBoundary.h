@@ -155,6 +155,7 @@ inline const char* CustomStatus::Name(char status)
 
 
 #include "G4ThreeVector.hh"
+#include "G4TwoVector.hh"
 #include "Randomize.hh"
 
 #include "SLOG.hh"
@@ -284,23 +285,23 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     double _qe = 0.0 ; 
 
 
-    StackSpec<double> spec ; 
-    spec.d0  = 0. ; 
-    spec.d1  = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
-    spec.d2  = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
-    spec.d3 = 0. ; 
+    StackSpec<double,4> spec ; 
+    spec.ls[0].d = 0. ; 
+    spec.ls[1].d = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
+    spec.ls[2].d = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
+    spec.ls[3].d = 0. ; 
 
-    spec.n0r = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
-    spec.n0i = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
+    spec.ls[0].nr = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
+    spec.ls[0].ni = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
 
-    spec.n1r = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
-    spec.n1i = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
+    spec.ls[1].nr = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
+    spec.ls[1].ni = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
 
-    spec.n2r = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
-    spec.n2i = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
+    spec.ls[2].nr = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
+    spec.ls[2].ni = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
 
-    spec.n3r = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
-    spec.n3i = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
+    spec.ls[3].nr = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
+    spec.ls[3].ni = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
 
 
     Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
@@ -419,11 +420,18 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     // the below reflect/refract is a copy of junoPMTOpticalModel  TODO: compare with G4OpBoundaryProcess
     // looks like the convention for sign of oriented_normal cancels out for the reflection ?
 
+
+
+
     if( status == 'R' )
     {
         theStatus = FresnelReflection ;
         NewMomentum   -= 2.*(OldMomentum*oriented_normal)*oriented_normal ;
         NewPolarization -= 2.*(OldPolarization*oriented_normal)*oriented_normal ;
+
+        // Q: polarization on reflection should depend on S and P fractions (think Brewsters angle) 
+        //    polarization vector does not reflect like the momentum vector does 
+      
     }
     else if( status == 'T' )
     {
@@ -437,7 +445,11 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
         // TODO: check the oriented_normal sign convention, is it really flipped. 
 
         NewPolarization = (OldPolarization-(OldPolarization*OldMomentum)*OldMomentum).unit();
-        // HMM: WHERE DID THIS COME FROM ?
+
+        // HMM: WHERE DID THIS EXPRESSION COME FROM ? 
+        // Q: As light is transverse OldPolarization*OldMomentum is ZERO ? SO THE ABOVE BECOMES : NewPolarization = OldPolarization
+        //    Also would expect dependency on S and P fractions ? 
+
 
     }
     else if(status == 'A' || status == 'D')

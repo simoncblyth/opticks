@@ -739,9 +739,11 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; // oriented against incident p.mom
     const float3 trans = cross(p.mom, oriented_normal) ;   // perpendicular to plane of incidence, S-pol direction 
     const float trans_length = length(trans) ;             // same as sin(theta), as p.mom and oriented_normal are unit vectors
-    const float c1 = fabs(_c1) ; 
     const bool normal_incidence = trans_length < 1e-6f  ;  // p.mom parallel/anti-parallel to oriented_normal  
+    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // normalized unit vector : perpendicular to plane of incidence
+    const float E1_perp = dot(p.pol, A_trans);     // amplitude of polarization in direction perpendicular to plane of incidence, ie S polarization
  
+    const float c1 = fabs(_c1) ; 
 
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
@@ -761,14 +763,18 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
-    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // normalized unit vector : perpendicular to plane of incidence
-    const float E1_perp = dot(p.pol, A_trans);     //  E vector component perpendicular to plane of incidence, ie S polarization
+
     const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) ); 
     const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
     const float2 E2_r = make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     ) ;  // ( S:perp, P:parl )    
     const float2 RR = normalize(E2_r) ; 
     const float2 TT = normalize(E2_t) ; 
     const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
+
+    /* 
+    E1, E2_t, E2_t: incident, transmitted and reflected amplitudes in S and P directions 
+    RR, TT: normalized  
+    */
 
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
@@ -810,7 +816,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                     ;
 
     // Q: Does the new p.mom need to be normalized ?
-    // A: NO, it is inherently normalized as derived in the following comment  
+    // A: NO, it is inherently normalized as derived in the comment below
 
 
     const float3 A_paral = normalize(cross(p.mom, A_trans));   // new P-pol direction 
@@ -826,6 +832,18 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                                              
                                                    )
                                       ;
+
+
+     // Q: Above expression kinda implies A_trans and A_paral are same for reflect and transmit ?
+     // A: NO IT DOESNT,
+     //    A_trans is the same (except for normal incidence) as there is only one perpendicular 
+     //    to the plane of incidence which is the same for i,r,t.
+     //
+     //    A_paral depends on the new p.mom (is has to be orthogonal to p.mom and A_trans) 
+     //    and p.mom of course is different for r and t 
+     //    (the reflect bool is used in multiple places, not just here)
+  
+
 
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)

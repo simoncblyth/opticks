@@ -6,6 +6,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+
 #include "OpticksPhoton.h"
 
 
@@ -141,6 +142,7 @@ void test_sphotond()
 
 void test_sphoton_Get()
 {
+    std::cout << "test_sphoton_Get" << std::endl ; 
     float time_0 =  3.f ; 
     float time_1 = 13.f ; 
 
@@ -171,6 +173,8 @@ void test_sphoton_Get()
 
 void test_sphotond_Get()
 {
+    std::cout << "test_sphotond_Get" << std::endl ; 
+
     double time_0 =  3. ; 
     double time_1 = 13. ; 
 
@@ -199,6 +203,71 @@ void test_sphotond_Get()
 }
 
 
+/**
+test_make
+------------
+
+::
+
+    .      nrm
+            Z
+     mom    |         
+        \   | 
+         \  | 
+          \ | 
+           \| 
+     -------+--------- X
+          
+
+* pol:transverse to mom
+* trv:perpendicular to plane of incidence (-Y axis into page) 
+
+
+**/
+
+void test_set_polarization()
+{
+    std::cout << "test_set_polarization" << std::endl ; 
+
+    float3 nrm = make_float3(0.f, 0.f, 1.f) ; 
+    float3 mom = normalize(make_float3( 1.f, 0.f, -1.f ));
+ 
+    float3 trv = normalize(cross(mom, nrm )) ;   // -Y
+    float3 trv1 = normalize(cross(nrm, mom )) ;  // +Y
+
+    std::cout 
+        << " nrm "  << nrm << std::endl 
+        << " mom "  << mom << std::endl 
+        << " trv "  << trv << std::endl 
+        << " trv1 "  << trv1 << std::endl 
+        ;
+
+    sphoton p ; 
+    p.zero(); 
+    p.mom = mom ; 
+
+    const int N = 16 ; 
+    for(int i=0 ; i <= N ; i++)
+    {
+        float frac_twopi = float(i)/float(N)  ; 
+        p.set_polarization(frac_twopi) ; 
+
+        std::cout 
+            << p.descDir() 
+            << " frac_twopi " << std::fixed << std::setw(7) << std::setprecision(3) << frac_twopi
+            //<< " dot(p.mom,p.pol) " << std::fixed << std::setw(7) << std::setprecision(3) << dot(p.mom,p.pol)
+            << " dot(p.pol, nrm) " << std::fixed << std::setw(7) << std::setprecision(3) <<  dot(p.pol, nrm)
+            << " dot(p.pol, trv) " << std::fixed << std::setw(7) << std::setprecision(3) <<  dot(p.pol, trv)
+            << std::endl 
+            ; 
+
+        // dot(p.pol, nrm) zero where p.pol is orthogonal to the normal 
+
+    }
+
+}
+
+
 
 
 int main()
@@ -211,11 +280,12 @@ int main()
     test_sphoton_change_flagmask(); 
     test_digest(); 
     test_sphotond(); 
-    */
 
     test_sphoton_Get(); 
     test_sphotond_Get(); 
 
+    */
+    test_set_polarization(); 
 
     return 0 ; 
 }
