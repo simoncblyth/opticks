@@ -691,22 +691,25 @@ LAYR_METHOD Stack<T,N>::Stack(T wl, T minus_cos_theta, const StackSpec<T,N>& ss 
     Layr<T>& b = ll[N-1] ; 
 
     // getting from amplitude to power relations for relectance R (same material and angle) and tranmittance T
-    //  https://www.brown.edu/research/labs/mittleman/sites/brown.edu.research.labs.mittleman/files/uploads/lecture13_0.pdf
+    // https://www.brown.edu/research/labs/mittleman/sites/brown.edu.research.labs.mittleman/files/uploads/lecture13_0.pdf
 
-    complex<T> _T_s = (b.n*b.ct)/(t.n*t.ct)*norm(comp.ts) ;  
-    complex<T> _T_p = (conj(b.n)*b.ct)/(conj(t.n)*t.ct)*norm(comp.tp) ; 
-    // _T_p top and bot layers usually with real index ? so the conj above just noise ?
+    complex<T> _T_s = (b.n*b.ct)/(t.n*t.ct)*norm(comp.ts) ;  // aka n2c2/n1c1*ts*ts 
+    complex<T> _T_p = (b.n*b.ct)/(t.n*t.ct)*norm(comp.tp) ;  // aka n2c2/n1c1*tp*tp
 
-    art.R_s = norm(comp.rs) ; 
-    art.R_p = norm(comp.rp) ; 
     art.T_s = _T_s.real() ; 
     art.T_p = _T_p.real() ; 
+    art.R_s = norm(comp.rs) ;    // norm is squared magnitude, ie sum of squares of real and imag parts, so for real its just the square
+    art.R_p = norm(comp.rp) ; 
 
-    // absorption factor by subtracting reflection and transmission
-    art.A_s = one-art.R_s-art.T_s;
+    art.A_s = one-art.R_s-art.T_s;   // absorption factor by subtracting reflection and transmission
     art.A_p = one-art.R_p-art.T_p;
 
-    // average of S and P 
+    //
+    // complex<T> _T_p = (conj(b.n)*b.ct)/(conj(t.n)*t.ct)*norm(comp.tp) ; 
+    // top and bot layers assumed to always have real index only, so remove the conj 
+    //
+    //
+    // average of S and P : actually not very useful 
     art.R   = (art.R_s+art.R_p)/two ;
     art.T   = (art.T_s+art.T_p)/two ;
     art.A   = (art.A_s+art.A_p)/two ;
