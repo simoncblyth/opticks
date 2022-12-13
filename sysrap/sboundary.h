@@ -5,51 +5,6 @@ sboundary.h
 
 Riffing on qsim.h:propagate_at_boundary to assist with comparison with stmm.h 
 
-**/
-
-#include "scurand.h"
-
-struct sboundary
-{
-    sphoton& p ; 
-
-    const sstate& s ; 
-    const float& n1 ;
-    const float& n2 ;    
-    const float eta ;  
-    const float3* normal ;     // geometrical outwards normal 
-    const float _c1 ; 
-    const float orient ; 
-    const float3 trans ; 
-    const float trans_length ; 
-    const bool  normal_incidence ; 
-    const float3 A_trans ; 
-    const float E1_perp ; 
-    const float c1 ; 
-    const float c2c2 ; 
-    const bool tir ;
-    const float EdotN ; 
-    const float c2 ; 
-    const float n1c1 ; 
-    const float n2c2 ;
-    const float n2c1 ;
-    const float n1c2 ;
-    const float2 E1   ;
-    const float2 E2_t ;
-    const float2 E2_r ;
-    const float2 RR ;
-    const float2 TT ; 
-    const float TransCoeff ; 
-    const float u_reflect ;
-    const bool reflect ; 
-    const unsigned flag ; 
-
-    float3 A_paral ; 
-
-    sboundary(curandStateXORWOW& rng, sctx& ctx );  
-};
-
-/**
 comparing stmm.h with sboundary.h 
 -------------------------------------
 
@@ -98,6 +53,49 @@ From u4/CustomBoundary.h:doIt::
 
 **/
 
+#include "scurand.h"
+
+struct sboundary
+{
+    sphoton& p ; 
+
+    const sstate& s ; 
+    const float& n1 ;
+    const float& n2 ;    
+    const float eta ;  
+    const float3* normal ;     // geometrical outwards normal 
+    const float _c1 ; 
+    const float orient ; 
+    const float3 transverse ; 
+    const float transverse_length ; 
+    const bool  normal_incidence ; 
+    const float3 A_transverse ; 
+    const float E1_perp ; 
+    const float c1 ; 
+    const float c2c2 ; 
+    const bool tir ;
+    const float EdotN ; 
+    const float c2 ; 
+    const float n1c1 ; 
+    const float n2c2 ;
+    const float n2c1 ;
+    const float n1c2 ;
+    const float2 E1   ;
+    const float2 _E2_t ;
+    const float2 E2_t ;
+    const float2 E2_r ;
+    const float2 RR ;
+    const float2 TT ; 
+    const float TransCoeff ; 
+    const float u_reflect ;
+    const bool reflect ; 
+    const unsigned flag ; 
+
+    float3 A_paral ; 
+
+    sboundary(curandStateXORWOW& rng, sctx& ctx );  
+};
+
 inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx ) 
     :
     p(ctx.p),
@@ -108,11 +106,11 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
     normal((float3*)&ctx.prd->q0.f.x),
     _c1(-dot(p.mom, *normal )),
     orient(_c1 < 0.f ? -1.f : 1.f ),
-    trans(cross(p.mom, orient*(*normal))),
-    trans_length(length(trans)),
-    normal_incidence(trans_length < 1e-6f ),
-    A_trans(normal_incidence ? p.pol : trans/trans_length),
-    E1_perp(dot(p.pol, A_trans)),
+    transverse(cross(p.mom, orient*(*normal))),
+    transverse_length(length(transverse)),
+    normal_incidence(transverse_length < 1e-6f ),
+    A_transverse(normal_incidence ? p.pol : transverse/transverse_length),
+    E1_perp(dot(p.pol, A_transverse)),
     c1(fabs(_c1)),
     c2c2(1.f - eta*eta*(1.f - c1 * c1 )),   // Snells law and trig identity 
     tir(c2c2 < 0.f),
@@ -122,9 +120,10 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
     n2c2(n2*c2),
     n2c1(n2*c1),
     n1c2(n1*c2),
-    E1(normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) )),   // ( S, P )
-    E2_t(make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) )),  
-    E2_r(make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     )),
+    E1(normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_transverse) ) )),   // ( S, P )
+    _E2_t(make_float2( 2.f*n1c1/(n1c1+n2c2)   , 2.f*n1c1/(n2c1+n1c2) )),
+    E2_t(make_float2(  _E2_t.x*E1.x ,  _E2_t.y*E1.y )),  
+    E2_r(make_float2( E2_t.x - E1.x , (n2*E2_t.y/n1) - E1.y     )),
     RR(normalize(E2_r)),
     TT(normalize(E2_t)), 
     TransCoeff(tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1),
@@ -139,16 +138,16 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
                        eta*(p.mom) + (eta*c1 - c2)*orient*(*normal)
                     ;
 
-    A_paral = normalize(cross(p.mom, A_trans));   // A_paral is P-pol direction using new p.mom
+    A_paral = normalize(cross(p.mom, A_transverse));   // A_paral is P-pol direction using new p.mom
 
     p.pol =  normal_incidence 
                     ?
                        ( reflect ?  p.pol*(n2>n1? -1.f:1.f) : p.pol )
                     :
                        ( reflect ?
-                                    ( tir ?  -p.pol + 2.f*EdotN*orient*(*normal) : RR.x*A_trans + RR.y*A_paral )
+                                    ( tir ?  -p.pol + 2.f*EdotN*orient*(*normal) : RR.x*A_transverse + RR.y*A_paral )
                                  :
-                                    TT.x*A_trans + TT.y*A_paral
+                                    TT.x*A_transverse + TT.y*A_paral
                        )
                     ;
 }
@@ -161,12 +160,13 @@ inline std::ostream& operator<<(std::ostream& os, const sboundary& b)
        << std::setw(20) << " eta "          << std::setw(10) << std::fixed << std::setprecision(4) << b.eta  << std::endl 
        << std::setw(20) << " _c1 "          << std::setw(10) << std::fixed << std::setprecision(4) << b._c1  << std::endl 
        << std::setw(20) << " normal "       << std::setw(10) << std::fixed << std::setprecision(4) << *b.normal  << std::endl
-       << std::setw(20) << " trans "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b.trans  << std::endl
-       << std::setw(20) << " trans_length " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.trans_length  << std::endl
+       << std::setw(20) << " transverse "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b.transverse  << std::endl
+       << std::setw(20) << " transverse_length " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.transverse_length  << std::endl
        << std::setw(20) << " normal_incidence " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.normal_incidence  << std::endl
-       << std::setw(20) << " A_trans "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.A_trans  << std::endl
+       << std::setw(20) << " A_transverse "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.A_transverse  << std::endl
        << std::setw(20) << " E1_perp "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1_perp  << std::endl
        << std::setw(20) << " E1 "           << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1  << std::endl
+       << std::setw(20) << " _E2_t "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b._E2_t  << std::endl
        << std::setw(20) << " E2_t "         << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E2_t  << std::endl
        << std::setw(20) << " TT "           << std::setw(10) << std::fixed << std::setprecision(4) <<  b.TT  << std::endl
        << std::setw(20) << " E2_r "         << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E2_r  << std::endl
