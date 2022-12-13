@@ -22,7 +22,7 @@ struct sboundary
     const float orient ; 
     const float3 trans ; 
     const float trans_length ; 
-    bool  normal_incidence ; 
+    const bool  normal_incidence ; 
     const float3 A_trans ; 
     const float E1_perp ; 
     const float c1 ; 
@@ -53,10 +53,12 @@ struct sboundary
 comparing stmm.h with sboundary.h 
 -------------------------------------
 
-* pol comes in much later with stmm.h, how does it manage that ? 
-* by calculating the s and p coeffs and then only applying them to the actual pol as the final step 
-* in the sboundary.h expressions below that is factoring off the E1.x E1.y 
-* PERHAPS CAN FACTORIZE sboundary.h ANALOGOUSLY ?
+Q: pol comes in much later with stmm.h, how does it manage that ? 
+A: By calculating the s and p coeffs and then only applying them to the actual pol as the final step 
+
+   * in the sboundary.h expressions below that is factoring off the E1.x E1.y 
+   * PERHAPS CAN FACTORIZE sboundary.h ANALOGOUSLY ?
+
 
 From u4/CustomBoundary.h:doIt::
 
@@ -72,23 +74,27 @@ From u4/CustomBoundary.h:doIt::
     ...
     327     // E_s2 : S-vs-P power fraction : signs make no difference as squared
     328     double E_s2 = _si > 0. ? (polarization*direction.cross(oriented_normal))/_si : 0. ;
+  
+    ///
+    ///                                                                              ^^^  trans_length
+    ///                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        trans
+    ///                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ A_trans
+    ///                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ E1_perp
+    ///
+
     329     E_s2 *= E_s2;
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ POL COMES IN HERE ^^^^^^^^^^^^^^^^
+
+    ////    ^^^^^   E1_perp*E1_perp
+
     ...
     340     double fT_s = stack.art.T_s ;
     341     double fT_p = stack.art.T_p ;
     342     double fR_s = stack.art.R_s ;
     343     double fR_p = stack.art.R_p ;
     344     double one = 1.0 ;
-    345     double T = fT_s*E_s2 + fT_p*(one-E_s2);
+    345     double T = fT_s*E_s2 + fT_p*(one-E_s2);  // THIS MATCHES TransCoeff from sboundary.h 
     346     double R = fR_s*E_s2 + fR_p*(one-E_s2);
     347     double A = one - (T+R);
-
-
-
-How does TransCoeff relate to ART.T ?
------------------------------------------
-
 
 **/
 
@@ -116,7 +122,7 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
     n2c2(n2*c2),
     n2c1(n2*c1),
     n1c2(n1*c2),
-    E1(normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) )),
+    E1(normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) )),   // ( S, P )
     E2_t(make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) )),  
     E2_r(make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     )),
     RR(normalize(E2_r)),
@@ -133,7 +139,7 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
                        eta*(p.mom) + (eta*c1 - c2)*orient*(*normal)
                     ;
 
-    A_paral = normalize(cross(p.mom, A_trans));   // A_paral is P-pol direction using the new p.mom
+    A_paral = normalize(cross(p.mom, A_trans));   // A_paral is P-pol direction using new p.mom
 
     p.pol =  normal_incidence 
                     ?

@@ -410,6 +410,7 @@ struct StackSpec
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    LAYR_METHOD static StackSpec<T,N> Create2(float n1, float n2) ; 
     LAYR_METHOD void eget() ; 
 #endif
 
@@ -417,6 +418,25 @@ struct StackSpec
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+template<typename T, int N>
+LAYR_METHOD StackSpec<T,N> StackSpec<T,N>::Create2(float n1, float n2)
+{
+    assert( N == 2 ); 
+    StackSpec<T,N> ss ; 
+
+    ss.ls[0].nr = n1 ; 
+    ss.ls[0].ni = 0. ;
+    ss.ls[0].d  = 0. ;
+
+    ss.ls[1].nr = n2 ; 
+    ss.ls[1].ni = 0. ;
+    ss.ls[1].d  = 0. ;
+
+    return ss ; 
+}
+
+
 template<typename T, int N>
 LAYR_METHOD void StackSpec<T,N>::eget()  
 {

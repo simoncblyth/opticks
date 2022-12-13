@@ -326,7 +326,7 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     // E_s2 : S-vs-P power fraction : signs make no difference as squared
     double E_s2 = _si > 0. ? (polarization*direction.cross(oriented_normal))/_si : 0. ; 
-    E_s2 *= E_s2;  
+    E_s2 *= E_s2;      // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
 
     LOG(LEVEL)
         << " count " << count 
@@ -342,7 +342,7 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     double fR_s = stack.art.R_s ; 
     double fR_p = stack.art.R_p ; 
     double one = 1.0 ; 
-    double T = fT_s*E_s2 + fT_p*(one-E_s2);
+    double T = fT_s*E_s2 + fT_p*(one-E_s2);  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
     double R = fR_s*E_s2 + fR_p*(one-E_s2);
     double A = one - (T+R);
 
@@ -417,21 +417,26 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     NewMomentum = OldMomentum ; 
     NewPolarization = OldPolarization ; 
 
-    // the below reflect/refract is a copy of junoPMTOpticalModel  TODO: compare with G4OpBoundaryProcess
-    // looks like the convention for sign of oriented_normal cancels out for the reflection ?
-
-
-
+    // The below reflect/refract is a copy of junoPMTOpticalModel  
+    //
+    //    NewMomentum 
+    //        looks OK
+    //
+    //    NewPolarization 
+    //        looks to be guess(aka wrong) 
+    //        which does not follow along from the above S vs P fractions 
+    //
+    //        polarization should depend on S and P fractions (think Brewsters angle) 
+    //        polarization vector does not reflect like the momentum vector does 
+    // 
+    // comparing with G4OpBoundaryProcess in sysrap/tests/stmm_vs_sboundary_test.cc
+    //
 
     if( status == 'R' )
     {
         theStatus = FresnelReflection ;
         NewMomentum   -= 2.*(OldMomentum*oriented_normal)*oriented_normal ;
         NewPolarization -= 2.*(OldPolarization*oriented_normal)*oriented_normal ;
-
-        // Q: polarization on reflection should depend on S and P fractions (think Brewsters angle) 
-        //    polarization vector does not reflect like the momentum vector does 
-      
     }
     else if( status == 'T' )
     {

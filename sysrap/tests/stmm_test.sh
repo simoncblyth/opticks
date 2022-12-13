@@ -9,7 +9,11 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ -I.. -o $FOLD/$name
+    gcc $name.cc \
+        -std=c++11 -lstdc++ \
+           -I$OPTICKS_PREFIX/externals/glm/glm \
+           -I/usr/local/cuda/include \
+            -I.. -o $FOLD/$name
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
