@@ -93,21 +93,31 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
 
-if(PMTFastSim_FOUND)
 
-    set(PMTFastSim_TESTS
-       U4SimulateTest.cc
-       U4SimtraceTest.cc
-    )
+## HMM: its kinda confusing to not build an executable 
+## depending on the switch because when flipping the switch
+## off the old executable still runs, but ignores and changes made 
+## its better to always build the executable and have it 
+## fail with an informative when needed switches are not set 
 
-    foreach(SRC ${PMTFastSim_TESTS})
-        get_filename_component(TGT ${SRC} NAME_WE)
-        add_executable(${TGT} ${SRC})
-        target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
-        target_link_libraries(${TGT} U4 Opticks::SysRap Opticks::PMTFastSim)
-        install(TARGETS ${TGT} DESTINATION lib)
-   endforeach()
-endif()
+set(PMTFastSim_TESTS
+   U4SimulateTest.cc
+   U4SimtraceTest.cc
+)
+
+foreach(SRC ${PMTFastSim_TESTS})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+
+    target_link_libraries(${TGT} U4 Opticks::SysRap)
+
+    if(PMTFastSim_FOUND)
+       target_link_libraries(${TGT} Opticks::PMTFastSim)
+    endif()
+
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
 
 
 

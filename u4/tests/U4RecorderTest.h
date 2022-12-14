@@ -6,6 +6,8 @@ Unusual : Geant4 application in a header.
 
 **/
 
+#include <csignal>
+
 #include "G4RunManager.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
@@ -18,7 +20,6 @@ Unusual : Geant4 application in a header.
 #include "G4ParticleTable.hh"
 #include "G4ParticleGun.hh"
 #include "G4GeometryManager.hh"
-
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
@@ -133,9 +134,19 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
 
 G4VPhysicalVolume* U4RecorderTest::Construct()
 { 
-    G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(U4VolumeMaker::PV());  // sensitive to GEOM envvar 
+    LOG(info) << "[" ; 
+
+    const G4VPhysicalVolume* pv_ = U4VolumeMaker::PV() ;
+    LOG_IF(fatal, pv_ == nullptr) << " FAILED TO CREATE PV " ;  
+    assert(pv_);
+    if(pv_ == nullptr) std::raise(SIGINT) ; 
+
+    G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(pv_);  // sensitive to GEOM envvar 
     fPV = pv ; 
+    //G4Exception ("U4RecorderTest::Construct()", "000", FatalException, "FAILED TO CREATE PV");
     LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
+
+    LOG(info) << "]" ; 
     return pv ; 
 }  
 

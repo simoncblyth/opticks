@@ -5,6 +5,7 @@ U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
 
 **/
 
+
 #include "U4RecorderTest.h"
 #include "STime.hh"
 #include "SEvt.hh"
@@ -73,6 +74,7 @@ int main(int argc, char** argv)
     const char* alldir = U::FormName( "ALL", VERSION, nullptr ); 
     const char* alldir0 = U::FormName( "ALL", 0, nullptr ); 
 
+
     LOG(info) 
         << " g4state_rerun_id " << g4state_rerun_id 
         << " alldir " << alldir 
@@ -109,8 +111,8 @@ int main(int argc, char** argv)
 
 #ifdef WITH_PMTFASTSIM
     junoPMTOpticalModel::Save(savedir); 
-#endif
     InstrumentedG4OpBoundaryProcess::Save(savedir); 
+#endif
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
     fRecorder->saveRerunRand(savedir); 

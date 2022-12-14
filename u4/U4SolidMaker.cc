@@ -149,7 +149,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("LHCbRichFlatMirr", qname))            solid = U4SolidMaker::LHCbRichFlatMirr(qname) ; 
     else if(StartsWith("SphereIntersectBox", qname))          solid = U4SolidMaker::SphereIntersectBox(qname) ; 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
-    assert(solid); 
+    LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname ; 
     return solid ; 
 }
 

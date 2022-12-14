@@ -272,6 +272,10 @@ const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 }
 const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
 {
+    G4LogicalVolume* lv = LV(name) ; 
+    LOG_IF(error, lv == nullptr) << " failed to access lv for name " << name ; 
+    if(lv == nullptr) return nullptr ; 
+
     const G4VPhysicalVolume* pv = nullptr ; 
     bool grid = strstr(name, "Grid") != nullptr ; 
     bool cube = strstr(name, "Cube") != nullptr ; 
@@ -279,7 +283,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
     bool yoff = strstr(name, "Yoff") != nullptr ; 
     bool zoff = strstr(name, "Zoff") != nullptr ; 
 
-    G4LogicalVolume* lv = LV(name) ; 
 
     if(grid)      pv =   WrapLVGrid(     lv, 1, 1, 1 ); 
     else if(cube) pv =   WrapLVCube(     lv, 100., 100., 100. ); 
@@ -307,6 +310,9 @@ HMM: maybe provide PMTSim LV this way too ? Based on some prefix ?
 G4LogicalVolume*  U4VolumeMaker::LV(const char* name)
 {
     const G4VSolid* solid_  = U4SolidMaker::Make(name); 
+    LOG_IF(error, solid_==nullptr) << " failed to access solid for name " << name ; 
+    if(solid_ == nullptr) return nullptr ; 
+
     G4VSolid* solid = const_cast<G4VSolid*>(solid_); 
     const char* matname = U4Material::FindMaterialName(name) ; 
     G4Material* material = U4Material::Get( matname ? matname : U4Material::VACUUM ); 
