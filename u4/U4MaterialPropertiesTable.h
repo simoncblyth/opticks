@@ -99,11 +99,15 @@ inline std::string U4MaterialPropertiesTable::DescPropertyMap(const G4MaterialPr
 }
 inline std::string U4MaterialPropertiesTable::DescConstPropertyMap(const G4MaterialPropertiesTable* mpt )
 {
-    typedef std::map<G4int, G4double> MIF ; 
-    const MIF* mif = mpt->GetConstPropertyMap() ; 
     std::stringstream ss ; 
     ss <<  "DescConstPropertyMap " ; 
+#if G4VERSION_NUMBER < 1100
+    typedef std::map<G4int, G4double> MIF ; 
+    const MIF* mif = mpt->GetConstPropertyMap() ; 
     ss << " mif.size " << mif->size() ; 
+#else
+    ss << " NOT IMPLEMENTED YET FOR G4VERSION 1100+ " ; 
+#endif
     std::string s = ss.str(); 
     return s ; 
 }    

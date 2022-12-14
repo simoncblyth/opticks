@@ -111,3 +111,18 @@ These changes look mostly like my changes, not Hans changes to cope with lack of
 
 
 
+
+
+Added another guard as Hans pointed out another::
+
+
+    thanks for the prompt reply. I just gave it a try. There is one more place where you have to add the protection:
+
+    /data3/wenzel/newopticks_dev5/opticks/u4/U4MaterialPropertiesTable.h: In static member function ‘static std::string U4MaterialPropertiesTable::DescConstPropertyMap(const G4MaterialPropertiesTable*)’:
+    /data3/wenzel/newopticks_dev5/opticks/u4/U4MaterialPropertiesTable.h:103:27: error: ‘const class G4MaterialPropertiesTable’ has no member named ‘GetConstPropertyMap’; did you mean ‘GetConstProperty’?
+      103 |     const MIF* mif = mpt->GetConstPropertyMap() ;
+          |                           ^~~~~~~~~~~~~~~~~~~
+          |                           GetConstProperty
+
+
+
