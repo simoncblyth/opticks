@@ -2,6 +2,8 @@
 
 #include <string>
 #include <sstream>
+
+#include "G4Version.hh"
 #include "G4MaterialPropertiesTable.hh"
 
 
@@ -33,10 +35,11 @@ inline std::string U4MaterialPropertiesTable::DescMaterialPropertyNames(const G4
 
 inline std::string U4MaterialPropertiesTable::DescPropertyMap(const G4MaterialPropertiesTable* mpt )
 {
-    typedef std::map<G4int, G4MaterialPropertyVector*> MIV ; 
-    const MIV* miv = mpt->GetPropertyMap(); 
     std::stringstream ss ; 
     ss <<  "DescPropertyMap " ; 
+#if G4VERSION_NUMBER < 1100
+    typedef std::map<G4int, G4MaterialPropertyVector*> MIV ; 
+    const MIV* miv = mpt->GetPropertyMap(); 
     ss << " miv.size " << miv->size() ; 
 
     std::vector<G4String> names = mpt->GetMaterialPropertyNames(); 
@@ -88,8 +91,9 @@ inline std::string U4MaterialPropertiesTable::DescPropertyMap(const G4MaterialPr
         ss <<  vl  << ( i < nii - 1 ? " " : "" ) ;  
     }
     ss << "]" ; 
-
-
+#else
+    ss << " NOT IMPLEMENTED YET FOR G4VERSION 1100+ " ; 
+#endif
     std::string s = ss.str(); 
     return s ; 
 }
