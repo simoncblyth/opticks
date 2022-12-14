@@ -21,10 +21,43 @@ Progress
      think about how they are related to each other 
 
 
+2022 Dec
+---------
+
+* 12/13 : drawing more parallels between stmm.h and sboundary.h calcs in order to correctly get reflect and transmit polarizations in stmm.h context
+* 12/12 : comparing two layer stmm.h with sboundary.h based on qsim::propagate_to_boundary, matched TransCoeff
+* 12/10 : thinking about how to bring CustomBoundary.h to GPU, start looking into mom and pol vectors after the TMM stack
+* 12/08 : more vectorized (NumPy) way to get the seqhis histories 
+* 12/08 : make U4Touchable::ReplicaNumber implementation comprehensible, collect G4 ReplicaNumber into sphoton.h iindex
+* 12/07 : generalize Geant4 volume/solid intersect plotting to any level of transforms using U4Tree/stree in u4/tests/U4PMTFastSimGeomTest BECOMES U4SimtraceTest.cc
+* 12/06 : avoid duplication and simplify by moving jps/N4Volume.hh jfs/P4Volume.hh down to common header-only sysrap/SVolume.h
+* 12/05 : j/PMTFastSim/junoPMTOpticalModel_vs_CustomBoundaryART_propagation_time_discrepancy.rst
+* 12/05 : pull CustomBoundary.h out of InstrumentedG4OpBoundaryProcess to make it more palatable 
+* 12/04 : logging all consumption for big-bouncer with both N=0,1 geometries : DECIDE THAT ALIGNING DIFFERENT GEOM WHILE POSSIBLE PHOTON-BY-PHOTON IS KINDA POINTLESS 
+* 12/04 : add envvar control of Absorption and Scattering in U4Physics, but cannot use for big-bouncer as the different consumption makes that no longer a big bouncer
+* 12/03 : add SEvt::aux for collecting point-by-point debug info, currently SOpBoundaryProcess::get_U0 
+* 12/02 : prep machinery to do step-by-step SEvt__UU_BURN to try to keep consumption aligned between the with-fakes and natural geometry 
+* 12/02 : flipping the normal convention helps to give expected refraction, but now need to keep random consumption aligned between the old geometry with fake same material volumes and new simple geometry with no fakes 
+* 12/01 : comparing junoPMTOpticalModel::Refract with InstrumentedG4OpBoundaryProcess::CustomART : initial shakedown bugs
+
 
 2022 Nov
 ----------
 
+* 11/30 : bringing over junoPMTOpticalModel into InstrumentedG4OpBoundaryProcess::CustomART
+* 11/29 : start pivot to customizing u4/InstrumentedG4OpBoundaryProcess as seems FastSim cannot handle very simple geometry without fakes
+* 11/29 : extend sseq.h to store NSEQ:2 64 bit elements, so sseq.h now handles maxbounce of NSEQ*16 = 32 without wraparound/overwriting issues
+* 11/26 : change spho label gn field to uchar4, as need to pass FastSim ARTD flg via trackinfo for the U4Recorder to work with multiple PMTs
+* 11/25 : increase the bounce limit, add extra record plotting to xxv.sh
+* 11/25 : review U4Recorder+SEvt, add SEvt::resumePhoton in attempt to handle FastSim/SlowSim transition detected by fSuspend track status in U4Recorder
+* 11/23 : save/restore when labelling in U4Recorder::PreUserTrackingAction_Optical succeeds to allow geant4 rerunning of single photons without precooked rand
+oms by storing the g4state MixMaxRng into an NP array managed within SEvt
+* 11/22 : U4Recorder::saveOrLoadStates attempting to save and restore g4 random states, for pure optical single selected photon rerun
+* 11/22 : NP::MakeSelectCopy for array masking, eg to rerun a single generated photon
+* 11/20 : PMTFastSim integration in GeoChain for translate.sh and extg4 for xxv.sh, expand storch.h adding T_LINE
+* 11/18 : 3D plotting ModelTrigger yes/no positions : Getting familiar with FastSim in junoPMTOpticalModel
+* 11/18 : 2nd implementation of Catmull Rom spline, factoring off weights reduces the interpolation to a single matrix multiply for each segment
+* 11/17 : try Catmull-Rom spline around a circle : in principal it looks like OptiX 7.1+ curve could handle guidetube 
 * 11/15 : fast sim debug using U4PMTFastSimTest.cc 
 * 11/15 : add access to volumes from PMTFastSim via U4VolumeMaker::PV, use from u4/tests/U4PMTFastSimTest.cc
 * 11/12 : fix lots of CSG test fails, overall down to 25/507 fails

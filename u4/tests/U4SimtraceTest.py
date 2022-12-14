@@ -3,12 +3,18 @@
 U4SimtraceTest.py
 ====================
 
+::
+
+   FOCUS=0,10,185 ./U4SimtraceTest.sh ana
+
 
 """
 import os, logging, numpy as np
+log = logging.getLogger(__name__)
+
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter
+from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter, mpplt_focus_aspect
 from opticks.ana.p import * 
 
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
@@ -31,9 +37,11 @@ BFOLD = os.environ.get("BFOLD", None)
 APID = int(os.environ.get("APID", -1 ))
 BPID = int(os.environ.get("BPID", -1 ))
 
+
 TOPLINE = os.environ.get("TOPLINE","U4SimtraceTest.py")
 BOTLINE = os.environ.get("BOTLINE","%s" % FOLD )
 THIRDLINE = os.environ.get("THIRDLINE", "APID:%d BPID:%d " % (APID,BPID) )
+
 AXES = np.array(list(map(int,os.environ.get("AXES","0,2").split(","))), dtype=np.int8 )
 H,V = AXES
 
@@ -103,6 +111,15 @@ class U4SimtraceTest(RFold):
             ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
         pass
 
+
+        xlim, ylim = mpplt_focus_aspect()
+        if not xlim is None:
+            ax.set_xlim(xlim) 
+            ax.set_ylim(ylim) 
+        else:
+            log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
+        pass 
+
         self.fig = fig
         self.ax = ax
         return fig, ax
@@ -118,6 +135,20 @@ class U4SimtraceTest(RFold):
         pass
         fig.suptitle("\n".join([TOPLINE,BOTLINE,THIRDLINE]))
         fig.show()
+
+
+    def mp_onephotonplot(self, a): 
+        if a is None: return 
+        if a.pid == -1: return
+
+        #if "lin" in a.opt:
+        if True:
+            self.mp_r_lines(a) 
+        pass
+        if "nrm" in a.opt:
+            self.mp_a_normal(a) 
+        pass
+
 
     def mp_r_lines(self, f): 
         if not hasattr(f,'r'): return
@@ -187,11 +218,24 @@ class U4SimtraceTest(RFold):
 class U4SimulateTest(RFold):
     def __init__(self, f):
         self.f = f 
+
         self._r = None
         self.r = None
         self._a = None
         self.a = None
         self._pid = -1
+
+        symbol = f.symbol
+        pid = int(os.environ.get("%sPID" % symbol.upper(), "-1"))
+        opt = os.environ.get("%sOPT" % symbol.upper(), "")
+
+        log.info("U4SimulateTest.__init__  symbol %s pid %d opt %s " % (symbol, pid, opt) ) 
+        self.symbol = symbol
+        self.pid = pid
+        self.opt = opt 
+
+    def __repr__(self):
+        return "U4SimulateTest symbol %s pid %s opt %s" % ( self.symbol, self.pid, self.opt ) 
    
     def _get_pid(self):
         return self._pid
@@ -230,25 +274,10 @@ if __name__ == '__main__':
     a = U4SimulateTest.Load(AFOLD, symbol="a")
     b = U4SimulateTest.Load(BFOLD, symbol="b")
 
-    if not a is None:
-        a.pid = APID
-    pass
-    if not b is None:
-        b.pid = BPID 
-    pass
-
     if mp:
         t.mp_geoplot()
-
-        if not a is None and a.pid > -1:
-            t.mp_r_lines(a) 
-            t.mp_a_normal(a) 
-        pass
-        if not b is None and b.pid > -1:
-            t.mp_r_lines(b) 
-            t.mp_a_normal(b)
-        pass
- 
+        t.mp_onephotonplot(a)
+        t.mp_onephotonplot(b)
         t.mp_show()
     pass 
 pass

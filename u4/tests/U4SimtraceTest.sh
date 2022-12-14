@@ -30,6 +30,10 @@ export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 
 export VERSION=${N:-0}
+
+#export LAYOUT=two_pmt
+export LAYOUT=one_pmt
+
 export FOLD=$BASE/$VERSION
 
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
@@ -38,13 +42,10 @@ export APID=${APID:-0}
 #export BFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
 #export BPID=${BPID:-0}
 
-
-
-
 geomscript=$GEOM.sh 
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION
+    source $geomscript $VERSION $LAYOUT
 else
     echo $BASH_SOURCE : no gemoscript $geomscript
 fi 

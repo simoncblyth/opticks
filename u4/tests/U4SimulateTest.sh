@@ -40,9 +40,11 @@ export BeamOn=${BeamOn:-1}
 
 geomscript=$GEOM.sh 
 export VERSION=${N:-0}
+#export LAYOUT=two_pmt
+export LAYOUT=one_pmt
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION
+    source $geomscript $VERSION $LAYOUT
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
@@ -54,8 +56,8 @@ export LOC=skip
 log=${bin}.log
 logN=${bin}_$VERSION.log
 
-running_mode=SRM_G4STATE_SAVE  
-#running_mode=SRM_G4STATE_RERUN
+#running_mode=SRM_G4STATE_SAVE  
+running_mode=SRM_G4STATE_RERUN
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL$VERSION ;; 
@@ -95,17 +97,24 @@ export SEvent_MakeGensteps_num_ph=$num_ph
 export storch_FillGenstep_type=line     
 export storch_FillGenstep_radius=$radius
 
-# up +Z from line below equator
-#export storch_FillGenstep_pos=0,0,-20
-#export storch_FillGenstep_mom=0,0,1
 
-# down -Zfrom line outside Pyrex
-#export storch_FillGenstep_pos=0,0,200
-#export storch_FillGenstep_mom=0,0,-1
+if [ "$LAYOUT" == "one_pmt" ]; then 
 
-# zero line to the right, along +ve X
-export storch_FillGenstep_pos=0,0,0
-export storch_FillGenstep_mom=-1,0,0
+    # up +Z from line below equator
+    #export storch_FillGenstep_pos=0,0,-20
+    #export storch_FillGenstep_mom=0,0,1
+
+    # down -Z from line outside Pyrex
+    export storch_FillGenstep_pos=0,0,200
+    export storch_FillGenstep_mom=0,0,-1
+
+elif [ "$LAYOUT" == "two_pmt" ]; then 
+
+    # zero line to the right, along +ve X
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_mom=-1,0,0
+
+fi 
 
 
 

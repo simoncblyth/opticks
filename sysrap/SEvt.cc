@@ -503,20 +503,23 @@ SEvt* SEvt::Get(){     return INSTANCE ; }
 SEvt* SEvt::Create() { return new SEvt ; }
 
 /**
-SEvt::CreateOrLoad
--------------------
+SEvt::CreateOrLoadForRerun  REMOVED : SEE u4/tests/U4SimulateTest.cc
+---------------------------------------------------------------------
 
 HMM: when Loading for a g4state rerun, need the g4state but need to clear 
-the rest of the SEvt perhaps ? See u4/tests/U4PMTFastSimTest.cc
+the rest of the SEvt perhaps ? See u4/tests/U4SimulateTest.cc
 
-**/
-SEvt* SEvt::CreateOrLoad() 
+HMM: Rerunning single photons is rather a rare thing to do, maybe 
+eliminate this ?
+
+SEvt* SEvt::CreateOrLoadForRerun() 
 {
     int g4state_rerun_id = SEventConfig::G4StateRerun(); 
     LOG(LEVEL) << " g4state_rerun_id " << g4state_rerun_id ; 
     SEvt* evt = g4state_rerun_id == -1 ? SEvt::Create() : SEvt::Load() ; 
     return evt ; 
 }
+**/
 
 
 bool SEvt::Exists(){ return INSTANCE != nullptr ; }
@@ -537,16 +540,16 @@ sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
 
-
-SEvt* SEvt::Load()  // static 
+SEvt* SEvt::Load(const char* rel)  // static 
 {
     LOG(LEVEL) << "[" ; 
-    SEvt* se = new SEvt ; 
-    int rc = se->load() ; 
-    if(rc != 0) se->is_loadfail = true ; 
+    SEvt* evt = new SEvt ; 
+    if(rel != nullptr) evt->setReldir(rel); 
+    int rc = evt->load() ; 
+    if(rc != 0) evt->is_loadfail = true ; 
 
     LOG(LEVEL) << "]" ; 
-    return se ; 
+    return evt ; 
 }
 
 void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
@@ -636,7 +639,7 @@ void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
 
 void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : nullptr ; } // default is "ALL" 
-const char* SEvt::getReldir() const { return reldir ; }
+const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
 
 
 
@@ -1784,25 +1787,23 @@ int SEvt::load()
     return rc ;  
 }
 
+
 const char* SEvt::DefaultDir() // static
 {
     return SGeo::DefaultDir() ; 
 }
 
 
-void SEvt::save(const char* base, const char* reld1 ) 
+void SEvt::save(const char* bas, const char* rel ) 
 {
-    const char* dir = SPath::Resolve(base, reld1, DIRPATH); 
+    const char* dir = SPath::Resolve(bas, rel, DIRPATH); 
     save(dir); 
 }
-
-void SEvt::save(const char* base, const char* reld1, const char* reld2 ) 
+void SEvt::save(const char* bas, const char* rel1, const char* rel2 ) 
 {
-    const char* dir = SPath::Resolve(base, reld1, reld2,  DIRPATH); 
+    const char* dir = SPath::Resolve(bas, rel1, rel2,  DIRPATH); 
     save(dir); 
 }
-
-
 
 
 /**

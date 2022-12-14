@@ -15,7 +15,24 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ; 
 
-    SEvt* evt = SEvt::CreateOrLoad(); 
+    int g4state_rerun_id = SEventConfig::G4StateRerun();
+    bool rerun = g4state_rerun_id > -1 ;
+    const char* reldir = nullptr ; 
+
+    SEvt* evt = nullptr ; 
+
+    if(rerun == false)
+    {   
+        evt = SEvt::Create();        
+        evt->setReldir(reldir); 
+    }   
+    else
+    {   
+        evt = SEvt::Load(reldir) ;
+        evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+    }   
+
+
     if(evt == nullptr) return 0 ; 
     LOG(info) << evt->desc() ; 
     LOG(info) << evt->descComponent() ; 

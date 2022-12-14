@@ -9,6 +9,8 @@ U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
 #include "STime.hh"
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
+#include "SEventConfig.hh"
+
 #include "U4Engine.h"
 #include "U4UniformRand.h"
 
@@ -64,14 +66,33 @@ int main(int argc, char** argv)
     LOG(info) << "[ " << argv[0] << " " << STime::Now() << " VERSION " << VERSION ; 
     LOG(info) << U4Engine::Desc()  ; 
 
-    SEvt* evt = SEvt::CreateOrLoad() ; 
 
-    bool rerun = evt->is_loaded ;  
-    if(rerun) evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
+    bool rerun = g4state_rerun_id > -1 ;  
+    const char* seldir = U::FormName( "SEL", VERSION, nullptr ); 
+    const char* alldir = U::FormName( "ALL", VERSION, nullptr ); 
+    LOG(info) 
+        << " g4state_rerun_id " << g4state_rerun_id 
+        << " alldir " << alldir 
+        << " seldir " << seldir 
+        << " rerun " << rerun
+        ; 
 
-    std::string reldir = U::FormName( rerun ? "SEL" : "ALL" , VERSION, nullptr ); 
-    LOG(info) << " reldir " << reldir << " rerun " << rerun ; 
-    evt->setReldir(reldir.c_str());
+    SEvt* evt = nullptr ; 
+    if(rerun == false)
+    {
+        evt = SEvt::Create();    
+        evt->setReldir(alldir);
+    }  
+    else
+    {
+        evt = SEvt::Load(alldir) ;
+        evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+        evt->setReldir(seldir);
+        // when rerunning have to load states from alldir and then change reldir to save into seldir
+    }
+    // HMM: note how reldir at object rather then static level is a bit problematic for loading 
+
 
     SEvt::AddTorchGenstep(); 
 

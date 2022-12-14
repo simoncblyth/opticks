@@ -379,8 +379,11 @@ struct U
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
     static std::string DirName( const char* path ); 
     static std::string BaseName( const char* path ); 
-    static std::string FormName( const char* prefix, int idx, const char* ext ); 
-    static std::string FormName( const char* prefix, const char* body, const char* ext ); 
+
+    static std::string FormName_( const char* prefix, int idx, const char* ext ); 
+    static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
+    static const char* FormName(  const char* prefix, int idx, const char* ext ); 
+    static const char* FormName( const char* prefix, const char* body, const char* ext ); 
 
     static constexpr const char* DEFAULT_PATH_ARG_0 = "/tmp" ; 
     template<typename ... Args>
@@ -517,7 +520,7 @@ inline std::string U::BaseName( const char* path )
     return pos == std::string::npos ? "" : p.substr(pos+1); 
 }
 
-inline std::string U::FormName( const char* prefix, int idx, const char* ext )
+inline std::string U::FormName_( const char* prefix, int idx, const char* ext )
 {
     std::stringstream ss ; 
     if(prefix) ss << prefix ; 
@@ -527,7 +530,13 @@ inline std::string U::FormName( const char* prefix, int idx, const char* ext )
     return s ; 
 }
 
-inline std::string U::FormName( const char* prefix, const char* body, const char* ext )
+inline const char* U::FormName( const char* prefix, int idx, const char* ext )
+{
+    std::string name = FormName_(prefix, idx, ext ); 
+    return strdup(name.c_str()); 
+}
+
+inline std::string U::FormName_( const char* prefix, const char* body, const char* ext )
 {
     std::stringstream ss ; 
     if(prefix) ss << prefix ; 
@@ -535,6 +544,11 @@ inline std::string U::FormName( const char* prefix, const char* body, const char
     if(ext) ss << ext ; 
     std::string s = ss.str(); 
     return s ; 
+}
+inline const char* U::FormName( const char* prefix, const char* body, const char* ext )
+{
+    std::string name = FormName_(prefix, body, ext );  
+    return strdup(name.c_str()); 
 }
 
 

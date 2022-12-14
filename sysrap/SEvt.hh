@@ -84,7 +84,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     int cfgrc ; 
     int index ; 
-    const char* reldir ; 
+    const char* reldir ;  // HMM: perhaps static RELDIR fallback ?
 
     sphoton_selector* selector ; 
     sevent* evt ; 
@@ -147,7 +147,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static SEvt* Create() ; 
-    static SEvt* CreateOrLoad() ; 
+    //static SEvt* CreateOrLoadForRerun() ; 
 
     static bool Exists(); 
 
@@ -160,9 +160,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void AddTorchGenstep(); 
 
     static void Clear(); 
-    static SEvt* Load(); 
+    static SEvt* Load(const char* rel=nullptr); 
     static void Save() ; 
-    static void Save(const char* base, const char* reldir ); 
+    static void Save(const char* bas, const char* rel ); 
     static void Save(const char* dir); 
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 

@@ -83,6 +83,22 @@ def pvplt_simple(pl, xyz, label):
     pl.add_text( "pvplt_simple %s " % label, position="upper_left")
     pl.add_points( xyz, color="white" )     
 
+def mpplt_focus_aspect(aspect=ASPECT):
+    log.info("mpplt_focus_aspect aspect:%s FOCUS:%s " % (str(aspect),str(FOCUS)))
+    if np.all(FOCUS == 0): return None, None
+ 
+    center = FOCUS[:2] 
+    extent = FOCUS[2] if len(FOCUS) > 2 else 100 
+    diagonal  = np.array([extent*aspect, extent])
+    botleft = center - diagonal
+    topright = center + diagonal
+    log.info("mpplt_focus_aspect botleft:%s" % str(botleft))
+    log.info("mpplt_focus_aspect topright:%s" % str(topright))
+    xlim = np.array([botleft[0], topright[0]])
+    ylim = np.array([botleft[1], topright[1]])
+    return xlim, ylim 
+
+
 
 def mpplt_focus(xlim, ylim):
     """
@@ -97,21 +113,6 @@ def mpplt_focus(xlim, ylim):
     """
     aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
     log.info("mpplt_focus xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
-    if not np.all(FOCUS == 0): 
-        center = FOCUS[:2] 
-        extent = FOCUS[2] if len(FOCUS) > 2 else 100 
-        diagonal  = np.array([extent*aspect, extent])
-        botleft = center - diagonal
-        topright = center + diagonal
-        log.info("mpplt_focus botleft:%s" % str(botleft))
-        log.info("mpplt_focus topright:%s" % str(topright))
-        xlim = np.array([botleft[0], topright[0]])
-        ylim = np.array([botleft[1], topright[1]])
-    else:
-        pass
-    pass
-    return xlim, ylim 
-
 
 
 
