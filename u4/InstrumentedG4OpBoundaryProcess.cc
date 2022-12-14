@@ -197,15 +197,12 @@ char InstrumentedG4OpBoundaryProcess::getCustomBoundaryStatus() const
 {
     return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
 }
-
-
-#endif
-
-
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 {
     CustomBoundary<JPMT>::Save(fold); 
 }
+
+#endif
 
 
 InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
