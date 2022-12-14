@@ -44,10 +44,9 @@ if __name__ == '__main__':
 
     # mapping from new to old point index for PID 726 big bouncer
     b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
-    abr = np.zeros( (len(b2a), 2, 4), dtype=np.float32 )
-    for bidx,aidx in enumerate(b2a):
-        abr[bidx,0] = ar[aidx,0]
-        abr[bidx,1] = br[aidx,0]
-    pass    
-    print(repr(abr))
+    abr = np.c_[ar[b2a,0],br[:len(b2a),0]].reshape(-1,2,4)
+
+
+
+
 
