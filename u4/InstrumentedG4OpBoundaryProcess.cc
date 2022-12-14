@@ -207,10 +207,9 @@ void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 
 InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
     : 
-    G4VDiscreteProcess(processName, type),
-    SOpBoundaryProcess(processName.c_str()),
-    PostStepDoIt_count(-1)
+    G4VDiscreteProcess(processName, type)
 #ifdef WITH_PMTFASTSIM
+    ,SOpBoundaryProcess(processName.c_str())
     ,m_custom_boundary(new CustomBoundary<JPMT>(
                   NewMomentum,
                   NewPolarization,
@@ -224,6 +223,7 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
     ,m_u0(-1.)
     ,m_u0_idx(-1)
 #endif
+    ,PostStepDoIt_count(-1)
 {
     LOG(LEVEL) << " processName " << GetProcessName()  ; 
 
@@ -279,6 +279,7 @@ Wrapper to help with the spagetti mush
 
 G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+#ifdef WITH_PMTFASTSIM
     PostStepDoIt_count += 1 ;  
     spho* label = STrackInfo<spho>::GetRef(&aTrack) ; 
 
@@ -287,10 +288,12 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& 
         << " PostStepDoIt_count " << PostStepDoIt_count
         << " label.desc " << label->desc()
         ; 
-
+#endif
     G4VParticleChange* change = PostStepDoIt_(aTrack, aStep) ; 
 
+#ifdef WITH_PMTFASTSIM
     LOG(LEVEL) << "] " << PostStepDoIt_count  ; 
+#endif
     return change ; 
 }
 

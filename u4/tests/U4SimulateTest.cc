@@ -71,9 +71,12 @@ int main(int argc, char** argv)
     bool rerun = g4state_rerun_id > -1 ;  
     const char* seldir = U::FormName( "SEL", VERSION, nullptr ); 
     const char* alldir = U::FormName( "ALL", VERSION, nullptr ); 
+    const char* alldir0 = U::FormName( "ALL", 0, nullptr ); 
+
     LOG(info) 
         << " g4state_rerun_id " << g4state_rerun_id 
         << " alldir " << alldir 
+        << " alldir0 " << alldir0 
         << " seldir " << seldir 
         << " rerun " << rerun
         ; 
@@ -86,10 +89,10 @@ int main(int argc, char** argv)
     }  
     else
     {
-        evt = SEvt::Load(alldir) ;
+        evt = SEvt::Load(alldir0) ;
         evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
         evt->setReldir(seldir);
-        // when rerunning have to load states from alldir and then change reldir to save into seldir
+        // when rerunning have to load states from alldir0 and then change reldir to save into seldir
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
 

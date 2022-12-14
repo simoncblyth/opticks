@@ -3,9 +3,7 @@
 U4SimtraceTest.py
 ====================
 
-::
 
-   FOCUS=0,10,185 ./U4SimtraceTest.sh ana
 
 
 """

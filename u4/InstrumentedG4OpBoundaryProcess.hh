@@ -158,7 +158,6 @@ class U4_API InstrumentedG4OpBoundaryProcess
     ,public SOpBoundaryProcess
 #endif
 {
-        int PostStepDoIt_count ; 
 
 #ifdef DEBUG_PIDX
         static const int  PIDX ;
@@ -280,6 +279,7 @@ public:
         int    m_u0_idx ; 
         int    m_u0_idx_delta ; 
 #endif
+        int PostStepDoIt_count ; 
 
 private:
         G4double thePhotonMomentum;

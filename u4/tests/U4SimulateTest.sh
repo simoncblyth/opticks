@@ -16,6 +16,24 @@ U4SimulateTest.sh  (formerly U4PMTFastSimTest.sh)
     N=1 MODE=3 ./U4SimulateTest.sh ph  # 3D GUI with pyvista
 
 
+
+Rerunning single photons off the same g4state is a bit delicate to arrange.
+This incantation succeeds to rerun the N=0 big bouncer with N=1::
+
+    epsilon:tests blyth$ vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_SAVE
+
+    epsilon:tests blyth$ N=0 ./U4SimulateTest.sh   ## saves g4state into /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/ALL0
+
+    epsilon:tests blyth$ vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_RERUN for PID 726 
+    
+    epsilon:tests blyth$ N=1 ./U4SimulateTest.sh   ## saves to /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/SEL1
+
+After that can compare timings::
+
+    ./U4SimulateTest.sh cf 
+
+
+
 EOU
 }
 
@@ -170,6 +188,12 @@ if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
     [ "$arg" == "ncf" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
+fi 
+
+if [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
+    [ "$arg" == "naf" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_af.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE af error && exit 4
 fi 
 
 if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then

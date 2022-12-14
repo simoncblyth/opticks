@@ -20,6 +20,16 @@ Grab the custom boundary status for each point::
     In [25]: t.aux[261,:32,1,3].copy().view(np.int8)[::4].copy().view("|S32")
     Out[25]: array([b'TTTZNZRZNZA'], dtype='|S32')
 
+
+::
+
+
+    N=0 APID=726 BPID=-1 AOPT=nrm FOCUS=0,10,185 ./U4SimtraceTest.sh ana
+
+    N=1 APID=-1 BPID=726 BOPT=nrm FOCUS=0,10,185 ./U4SimtraceTest.sh ana
+
+
+
 EOU
 }
 
@@ -36,11 +46,12 @@ export LAYOUT=one_pmt
 
 export FOLD=$BASE/$VERSION
 
-export AFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
+
+export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export APID=${APID:-0}
 
-#export BFOLD=$GEOMFOLD/U4SimulateTest/ALL$VERSION
-#export BPID=${BPID:-0}
+export BFOLD=$GEOMFOLD/U4SimulateTest/SEL1
+export BPID=${BPID:-0}
 
 geomscript=$GEOM.sh 
 

@@ -27,9 +27,6 @@ pass
 PID = int(os.environ.get("PID", -1))
 if PID == -1: PID = int(os.environ.get("OPTICKS_G4STATE_RERUN", -1))
 
-# mapping from new to old point index for PID 726 big bouncer
-b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
-
 if __name__ == '__main__':
 
     print("PID : %d " % (PID))
@@ -45,10 +42,12 @@ if __name__ == '__main__':
     ar = a.record[PID]
     br = b.record[PID]
 
+    # mapping from new to old point index for PID 726 big bouncer
+    b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
     abr = np.zeros( (len(b2a), 2, 4), dtype=np.float32 )
-    for i,j in enumerate(b2a):
-        abr[i,0] = ar[j,0]
-        abr[i,1] = br[i,0]
+    for bidx,aidx in enumerate(b2a):
+        abr[bidx,0] = ar[aidx,0]
+        abr[bidx,1] = br[aidx,0]
     pass    
     print(repr(abr))
 
