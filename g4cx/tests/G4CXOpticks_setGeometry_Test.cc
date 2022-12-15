@@ -13,8 +13,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    G4CXOpticks gx ;  
-    gx.setGeometry(); 
+    G4CXOpticks::SetGeometry();  
 
     return 0 ; 
 }

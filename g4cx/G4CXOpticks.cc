@@ -52,10 +52,17 @@ Called for example from Detector framework LSExpDetectorConstruction_Opticks::Se
 
 **/
 
-void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
+G4CXOpticks* G4CXOpticks::SetGeometry()
+{
+    G4CXOpticks* g4cx = new G4CXOpticks ;
+    g4cx->setGeometry(); 
+    return g4cx ; 
+}
+G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
 {
     G4CXOpticks* g4cx = new G4CXOpticks ;
     g4cx->setGeometry(world); 
+    return g4cx ; 
 }
 
 

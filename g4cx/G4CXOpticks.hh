@@ -33,7 +33,8 @@ struct G4CX_API G4CXOpticks
 
     static G4CXOpticks* INSTANCE ; 
     static G4CXOpticks* Get(); 
-    static void SetGeometry(const G4VPhysicalVolume* world) ; 
+    static G4CXOpticks* SetGeometry() ; 
+    static G4CXOpticks* SetGeometry(const G4VPhysicalVolume* world) ; 
     static void Finalize(); 
 
     SSim*       sim ; 
@@ -45,14 +46,17 @@ struct G4CX_API G4CXOpticks
     CSGOptiX*   cx ; 
     QSim*       qs ; 
     schrono::TP t0 ; 
- 
+
+private: 
     G4CXOpticks(); 
     void init(); 
+public: 
     virtual ~G4CXOpticks(); 
 
     static std::string Desc();
     std::string desc() const ; 
 
+private: 
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
@@ -61,6 +65,7 @@ struct G4CX_API G4CXOpticks
     void setGeometry(CSGFoundry* fd); 
 
     static const bool simulate_saveEvent ; 
+public: 
     void simulate(); 
     void simtrace(); 
     void render(); 

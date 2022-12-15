@@ -74,8 +74,8 @@ export LOC=skip
 log=${bin}.log
 logN=${bin}_$VERSION.log
 
-#running_mode=SRM_G4STATE_SAVE  
-running_mode=SRM_G4STATE_RERUN
+running_mode=SRM_G4STATE_SAVE  
+#running_mode=SRM_G4STATE_RERUN
 
 case $running_mode in 
    SRM_G4STATE_SAVE)  reldir=ALL$VERSION ;; 

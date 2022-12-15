@@ -226,7 +226,7 @@ QSim::QSim()
     d_dbg(debug_ ? debug_->d_dbg : nullptr),
     cx(nullptr)
 {
-
+    LOG(LEVEL) << desc() ; 
     init(); 
 }
 
@@ -289,14 +289,15 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simulate()
 {
-   LOG_IF(error, event == nullptr) << " event null " << desc()  ; 
-   if( event == nullptr ) std::raise(SIGINT) ; 
-   if( event == nullptr ) return -1. ; 
+    LOG_IF(error, event == nullptr) << " event null " << desc()  ; 
+    if( event == nullptr ) std::raise(SIGINT) ; 
+    if( event == nullptr ) return -1. ; 
  
-   int rc = event->setGenstep() ; 
-   LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
-   double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
-   return dt ; 
+    LOG(LEVEL) << desc() ;  
+    int rc = event->setGenstep() ; 
+    LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
+    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+    return dt ; 
 }
 
 /**
@@ -311,10 +312,10 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simtrace()
 {
-   int rc = event->setGenstep(); 
-   LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
-   double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
-   return dt ; 
+    int rc = event->setGenstep(); 
+    LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
+    double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
+    return dt ; 
 }
 
 

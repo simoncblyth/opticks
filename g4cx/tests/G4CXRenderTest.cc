@@ -25,10 +25,9 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGModeRender();  
 
-    G4CXOpticks gx ;  
-    gx.setGeometry();  // sensitive to SomGDMLPath, GEOM, CFBASE
+    G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  // sensitive to SomGDMLPath, GEOM, CFBASE
 
-    gx.render();       // sensitive to MOI, EYE, LOOK, UP
+    cx->render();       // sensitive to MOI, EYE, LOOK, UP
  
     return 0 ; 
 }

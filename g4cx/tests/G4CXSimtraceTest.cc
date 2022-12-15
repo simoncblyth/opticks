@@ -22,12 +22,12 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGModeSimtrace();   
 
-    G4CXOpticks gx ;  
-    gx.setGeometry(); 
-    gx.simtrace(); 
+    G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  
+    cx->simtrace(); 
 
     cudaDeviceSynchronize(); 
-    gx.saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
+
+    cx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
  
     return 0 ; 
 }
