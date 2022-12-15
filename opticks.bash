@@ -2175,6 +2175,23 @@ opticks-f(){
 
 }
 
+opticks-py()
+{
+   : search opticks python scripts 
+
+   local str="${1:-ENV_HOME}"
+   local opt=${2:--H}
+   [ -z "$HERE" ] && opticks-scd
+
+   opticks-scd
+   find . \
+        \( \
+       -name '*.py' \
+        \) \
+       -exec grep $opt "$str" {} \;
+
+}
+
 
 opticks-rl(){ opticks-r "$1" -l ; }   
 opticks-r(){   

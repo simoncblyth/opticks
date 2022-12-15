@@ -483,6 +483,7 @@ template int      U::GetE(const char*, int );
 template unsigned U::GetE(const char*, unsigned );
 template float    U::GetE(const char*, float );
 template double   U::GetE(const char*, double );
+template char     U::GetE(const char*, char );
 
 
 

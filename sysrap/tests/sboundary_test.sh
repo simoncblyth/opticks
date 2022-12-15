@@ -1,10 +1,27 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+sboundary_test.sh
+===================
+
+::
+
+    N=160 POLSCALE=10 AOI=BREWSTER ./sboundary_test.sh 
+    N=160 POLSCALE=10 AOI=45 ./sboundary_test.sh 
+
+
+EOU
+}
 
 name=sboundary_test
 export FOLD=/tmp/$name
+
+force=R  # R/T/N
+export FORCE=${FORCE:-$force}
+
+
 mkdir -p $FOLD
 
-defarg=build_run
+defarg=build_run_ana
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
@@ -21,6 +38,7 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
+
    $FOLD/$name
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 

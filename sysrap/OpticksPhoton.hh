@@ -71,7 +71,10 @@ struct SYSRAP_API OpticksPhoton
     static constexpr const char* _DEFER_FSTRACKINFO  = "YY" ; 
 
     static bool IsTerminalFlag(const unsigned flag); 
+    static bool IsBoundaryFlag(const unsigned flag); 
+    static bool IsBulkFlag(const unsigned flag); 
     static bool IsLiveFlag(const unsigned flag); 
+
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
@@ -105,7 +108,14 @@ inline bool OpticksPhoton::IsTerminalFlag(const unsigned flag) // static
 {
     return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 }
-
+inline bool OpticksPhoton::IsBoundaryFlag(const unsigned flag) // static
+{
+    return (flag & (SURFACE_DETECT | SURFACE_ABSORB | SURFACE_DREFLECT | SURFACE_SREFLECT | BOUNDARY_REFLECT | BOUNDARY_TRANSMIT )) != 0 ; 
+}
+inline bool OpticksPhoton::IsBulkFlag(const unsigned flag) // static
+{
+    return (flag & (BULK_ABSORB | BULK_SCATTER | BULK_REEMIT | TORCH | CERENKOV | SCINTILLATION )) != 0 ; 
+}
 inline bool OpticksPhoton::IsLiveFlag(const unsigned flag) // static
 {
     return (flag & (BULK_SCATTER | BOUNDARY_TRANSMIT | BOUNDARY_REFLECT | SURFACE_DREFLECT | SURFACE_SREFLECT | BULK_REEMIT )) != 0 ;

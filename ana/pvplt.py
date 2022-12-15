@@ -139,13 +139,22 @@ def pvplt_viewpoint(pl, reset=False):
     pl.camera.Zoom(zoom)
 
 
-def pvplt_photon( pl, p, polcol="blue", polscale=1   ):
+def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False  ):
     """
+    :param p: array of shape (1,4,4)
+    :param polcol:
+    :param polscale:
+    :param wscale: when True, means that are using the wavelength to hold a polarization vector scale 
     """
     assert p.shape == (1,4,4)
     pos = p[:,0,:3]   
     mom = p[:,1,:3]   
     pol = p[:,2,:3]   
+    wav = p[:,2,3]
+
+    if wscale:
+        polscale *= wav
+    pass
 
     pl.add_points( pos, color="magenta", point_size=16.0 )
 
@@ -204,6 +213,11 @@ def pvplt_arrows( pl, pos, vec, color='yellow', factor=0.15 ):
 
 
 def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
+    """
+    :param pl: plotter
+    :param pos: (n,3) array
+    :param vec: (n,3) array
+    """
     init_pl = pl == None 
     if init_pl:
         pl = pvplt_plotter(label="pvplt_line")   
@@ -214,6 +228,8 @@ def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     vec_lines = pos_cloud.glyph(orient='vec', scale=False, factor=factor, geom=geom)
     pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
+
+
 
 
 def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white" ):
@@ -236,6 +252,12 @@ def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2, colors="red
     :param xpos: (n,3) array of positions
     :param axes: (2,)  2-tuple identifying axes to pick from the where X=0, Y=1, Z=2  
     """
+
+    if len(xpos) == 0:
+        log.info("len(xpos) zero : skip ")
+        return
+    pass  
+
     assert len(axes) == 2 
     xseg = contiguous_line_segments(xpos[:,:3]).reshape(-1,2,3)  # (n,2,3) 
     xseg2D = xseg[:,:,axes]   #  (n,2,2)    same as xseg[...,axes]  see https://numpy.org/doc/stable/user/basics.indexing.html 
