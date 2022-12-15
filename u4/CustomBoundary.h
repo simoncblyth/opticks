@@ -114,17 +114,27 @@ template type J
     * currently required to have argumentless ctor 
 
 
-TODO
-----
+WIP : polarization comparison sysrap/tests/stmm_vs_sboundary_test.sh 
+----------------------------------------------------------------------
 
-* compare the reflection and refraction (especially the polarization) 
-  implemented here (which was copied from junoPMTOpticalModel) with that which 
-  would be done by standard G4OpBoundaryProcess (and qsim.h propagate_at_boundary)
+The polarization on reflection copied from junoPMTOpticalModel is for TIR 
+(not ordinary Fresnel Reflection)
 
-  * done in sysrap/tests/stmm_vs_sboundary_test.sh 
+WIP : Can standard DielectricDielectric be used with TMM calc ?
+--------------------------------------------------------------------------------
 
-* investigate to see if the standard mom/pol impl can be reused 
-  together with the stack calc  
+Trying to reuse the standard mom/pol boundary impl together with 
+the overidden calculation of the below, done in CustomART::
+
+   theTransmittance
+   theReflectivity 
+   theEfficiency
+
+* will require restriction to specific theModel and theFinish 
+  values to avoid the code wandering off the needed path
+
+WIP : Detector Specific property rindex + thickness + qe access
+------------------------------------------------------------------
 
 * maybe make template type J accept an MPT MaterialPropertiesTable in its ctor, enabling 
   it to be implemented purely from a bunch of custom properties loading into the 
@@ -174,6 +184,217 @@ inline const char* CustomStatus::Name(char status)
 template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
 #endif
 
+/**
+CustomART
+-----------
+
+Trying to do less than CustomBoundary, instead just calculates::
+
+    theTransmittance
+    theReflectivity
+    theEfficiency 
+
+with the mechanics of deciding on R/T/A/D and 
+changing photon momentum, polarization, theStatus 
+done by the nearly "standard" G4OpBoundaryProcess.   
+
+**/
+template<typename J>
+struct CustomART
+{
+    static const constexpr plog::Severity LEVEL = debug ;  
+    J*     parameter_accessor ; 
+    int    count ; 
+    double zlocal ; 
+    double lposcost ; 
+
+    G4double& theTransmittance ;
+    G4double& theReflectivity ;
+    G4double& theEfficiency ;
+
+    const G4ThreeVector& OldMomentum ; 
+    const G4ThreeVector& OldPolarization ; 
+    const G4ThreeVector& theGlobalPoint ; 
+    const G4ThreeVector& theRecoveredNormal ; 
+    const G4double& thePhotonMomentum ; 
+
+    CustomART(
+        G4double& theTransmittance,
+        G4double& theReflectivity,
+        G4double& theEfficiency,
+        const G4ThreeVector& OldMomentum,  
+        const G4ThreeVector& OldPolarization,
+        const G4ThreeVector& theGlobalPoint,
+        const G4ThreeVector& theRecoveredNormal,
+        const G4double& thePhotonMomentum
+    );  
+
+    G4bool maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
+    void   doIt(const G4Track& aTrack, const G4Step& aStep ); 
+}; 
+
+template<typename J>
+inline CustomART<J>::CustomART(
+          G4double& theTransmittance_,
+          G4double& theReflectivity_,
+          G4double& theEfficiency_,
+    const G4ThreeVector& OldMomentum_,
+    const G4ThreeVector& OldPolarization_,
+    const G4ThreeVector& theGlobalPoint_, 
+    const G4ThreeVector& theRecoveredNormal_,
+    const G4double&      thePhotonMomentum_
+    )
+    :
+    parameter_accessor(new J),
+    count(0),
+    zlocal(-1.),
+    lposcost(-2.),
+    theTransmittance(theTransmittance_),
+    theReflectivity(theReflectivity_),
+    theEfficiency(theEfficiency_),
+    OldMomentum(OldMomentum_),
+    OldPolarization(OldPolarization_),
+    theGlobalPoint(theGlobalPoint_),
+    theRecoveredNormal(theRecoveredNormal_),
+    thePhotonMomentum(thePhotonMomentum_) 
+{
+}
+
+template<typename J>
+inline G4bool CustomART<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
+{
+    if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return false ; 
+
+    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
+    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+    zlocal = localPoint.z() ; 
+    lposcost = localPoint.cosTheta() ;  
+    // Q:What is lposcost for ?  
+    // A:Preparing for doing this on GPU, as lposcost is available there already but not zlocal 
+
+    bool zlocal_positive = zlocal > 0. ;   
+    if(zlocal_positive)  doIt(aTrack, aStep) ;
+    return zlocal_positive ; 
+}
+
+template<typename J>
+inline void CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
+{
+    G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
+    G4double orientation = minus_cos_theta < 0. ? 1. : -1.  ; 
+    G4ThreeVector oriented_normal = orientation*theRecoveredNormal ;
+
+    G4double energy = thePhotonMomentum ; 
+    G4double wavelength = twopi*hbarc/energy ;
+
+    G4double energy_eV = energy/eV ;
+    G4double wavelength_nm = wavelength/nm ; 
+
+    const G4VTouchable* touch = aTrack.GetTouchable();    
+    int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
+    // TODO: add J API to access pmtcat+qe from replicaNumber
+    int pmtcat = J::DEFAULT_CAT ; 
+    double _qe = 0.0 ; 
+
+
+    StackSpec<double,4> spec ; 
+    spec.ls[0].d = 0. ; 
+    spec.ls[1].d = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
+    spec.ls[2].d = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
+    spec.ls[3].d = 0. ; 
+
+    spec.ls[0].nr = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
+    spec.ls[0].ni = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
+
+    spec.ls[1].nr = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
+    spec.ls[1].ni = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
+
+    spec.ls[2].nr = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
+    spec.ls[2].ni = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
+
+    spec.ls[3].nr = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
+    spec.ls[3].ni = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
+
+
+    Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
+
+    // NB stack is flipped for minus_cos_theta > 0. so:
+    //
+    //    stack.ll[0] always incident side
+    //    stack.ll[3] always transmission side 
+
+    const double _si = stack.ll[0].st.real() ; 
+
+    double E_s2 = _si > 0. ? (OldPolarization*OldMomentum.cross(theRecoveredNormal))/_si : 0. ; 
+    E_s2 *= E_s2;      
+
+    // E_s2 : S-vs-P power fraction : signs make no difference as squared
+    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
+
+    LOG(LEVEL)
+        << " count " << count 
+        << " replicaNumber " << replicaNumber
+        << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
+        << " theRecoveredNormal " << theRecoveredNormal 
+        << " OldPolarization*OldMomentum.cross(theRecoveredNormal) " << OldPolarization*OldMomentum.cross(theRecoveredNormal) 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        ;    
+
+    double fT_s = stack.art.T_s ; 
+    double fT_p = stack.art.T_p ; 
+    double fR_s = stack.art.R_s ; 
+    double fR_p = stack.art.R_p ; 
+
+    double one = 1.0 ; 
+    double T = fT_s*E_s2 + fT_p*(one-E_s2);  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
+    double R = fR_s*E_s2 + fR_p*(one-E_s2);
+    double A = one - (T+R);
+
+    theTransmittance = T ; 
+    theReflectivity = R ; 
+
+    LOG(LEVEL)
+        << " count " << count 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        << " fT_s " << std::fixed << std::setw(10) << std::setprecision(5) << fT_s 
+        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
+        << " fT_p " << std::fixed << std::setw(10) << std::setprecision(5) << fT_p 
+        << " T " << std::fixed << std::setw(10) << std::setprecision(5) << T 
+        ;    
+
+    LOG(LEVEL)
+        << " count " << count 
+        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        << " fR_s " << std::fixed << std::setw(10) << std::setprecision(5) << fR_s 
+        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
+        << " fR_p " << std::fixed << std::setw(10) << std::setprecision(5) << fR_p 
+        << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R 
+        << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A 
+        ;  
+
+    // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) presumably this is due to _qe definition
+
+    Stack<double,4> stackNormal(wavelength_nm, -1. , spec ); 
+
+    double An = one - (stackNormal.art.T + stackNormal.art.R) ; 
+    double D = _qe/An;   // LOOKS STRANGE TO DIVIDE BY An 
+ 
+    theEfficiency = D ; 
+
+    LOG_IF(error, D > 1.)
+        << " ERR: D > 1. : " << D 
+        << " _qe " << _qe
+        << " An " << An
+        ;
+
+}
+
+
+
+
+
+
+
 template<typename J>
 struct CustomBoundary
 {
@@ -210,8 +431,9 @@ struct CustomBoundary
       ); 
 
     G4bool maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
-    char   doIt(const G4Track& aTrack, const G4Step& aStep ); 
+    char doIt(const G4Track& aTrack, const G4Step& aStep ); 
 };
+
 
 template<typename J>
 inline void CustomBoundary<J>::Save(const char* fold) // static
@@ -442,6 +664,10 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
         theStatus = FresnelReflection ;
         NewMomentum   -= 2.*(OldMomentum*oriented_normal)*oriented_normal ;
         NewPolarization -= 2.*(OldPolarization*oriented_normal)*oriented_normal ;
+
+       // THIS IS NOW G4OpBoundaryProcess CHANGES POLARIZATION FOR TOTAL INTERNAL REFLECTION, 
+       // NOT FRESNEL REFLECTION
+
     }
     else if( status == 'T' )
     {
