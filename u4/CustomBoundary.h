@@ -121,6 +121,11 @@ TODO
   implemented here (which was copied from junoPMTOpticalModel) with that which 
   would be done by standard G4OpBoundaryProcess (and qsim.h propagate_at_boundary)
 
+  * done in sysrap/tests/stmm_vs_sboundary_test.sh 
+
+* investigate to see if the standard mom/pol impl can be reused 
+  together with the stack calc  
+
 * maybe make template type J accept an MPT MaterialPropertiesTable in its ctor, enabling 
   it to be implemented purely from a bunch of custom properties loading into the 
   OpticalSurface : then it would be more convenient for the instance of J to 
@@ -280,7 +285,7 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     const G4VTouchable* touch = aTrack.GetTouchable();    
     int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
-    // TODO: check replicaNumber, add J API to access pmtcat+qe from replicaNumber
+    // TODO: add J API to access pmtcat+qe from replicaNumber
     int pmtcat = J::DEFAULT_CAT ; 
     double _qe = 0.0 ; 
 

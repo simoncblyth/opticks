@@ -127,9 +127,10 @@ U4StepPoint::Flag
 
 Adapted from cfg4/OpStatus.cc:OpStatus::OpPointFlag
 
-HMM: no BULK_REEMIT ? No, that starts here as BULK_ABSORB and then
-get set subsequently via history rewriting when another track comes
-along with suitable ancestry. 
+Q: Why does this never return BULK_REEMIT ? 
+A: As that always starts as BULK_ABSORB and then gets changed into BULK_REEMIT 
+   by subsequent history rewriting when another track comes along with 
+   the corresponding ancestry. 
 
 **/
 

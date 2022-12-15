@@ -34,7 +34,7 @@ elif [ "$layout" == "two_pmt" ]; then
     export U4VolumeMaker_WrapAroundItem_Water_BOXSCALE=$aspect,1,1 
 
     export ${GEOM}_GEOMWrap=AroundCircle 
-    export U4VolumeMaker_MakeTransforms_AroundCircle_radius=300
+    export U4VolumeMaker_MakeTransforms_AroundCircle_radius=250
     export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=2
     export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
 

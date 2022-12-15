@@ -58,8 +58,8 @@ export BeamOn=${BeamOn:-1}
 
 geomscript=$GEOM.sh 
 export VERSION=${N:-0}
-#export LAYOUT=two_pmt
-export LAYOUT=one_pmt
+export LAYOUT=two_pmt
+#export LAYOUT=one_pmt
 
 if [ -f "$geomscript" ]; then  
     source $geomscript $VERSION $LAYOUT
@@ -83,7 +83,7 @@ case $running_mode in
 esac
 
 
-if [ "$running_mode" == "SRM_G4STATE_RERUN" -a "$version" == "1" ]; then
+if [ "$LAYOUT" == "one_pmt" -a "$running_mode" == "SRM_G4STATE_RERUN" -a "$version" == "1" ]; then
 
    ## when using natural geometry need to apply some burns to
    ## jump ahead in a way that corresponds to the consumption 

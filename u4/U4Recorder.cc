@@ -423,6 +423,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
+    unsigned flag = U4StepPoint::Flag<T>(post) ; 
+    bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
+
+
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
     sphoton& current_photon = sev->current_ctx.p ;
@@ -432,10 +436,31 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.q0.f.x = bop->getU0() ; 
     current_aux.q0.i.w = bop->getU0_idx() ; 
 
-    const double* recoveredNormal = bop->getRecoveredNormal() ; 
-    current_aux.set_v(3, recoveredNormal, 3); 
-    char customBoundaryStatus = bop->getCustomBoundaryStatus() ; 
+    /*
+    HMM: 
+
+    1. For most step points the customBoundaryStatus is not applicable 
+       it only applies to very specfic surfaces. 
+       So getting it for every step point is kinda confusing.
+       Need to scrub it when it doesnt apply, and cannot
+       do that using is_boundary_flag. 
+       How to detect when it is relevant from here ? 
+
+    2. Similarly when not at boundary the recoveredNormal is meaningless
+
+    */
+   
+    const double* recoveredNormal = is_boundary_flag ? bop->getRecoveredNormal() : nullptr ; 
+    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+
+    char customBoundaryStatus = is_boundary_flag ? bop->getCustomBoundaryStatus() : ' ' ; 
     current_aux.q1.i.w = int(customBoundaryStatus) ; 
+
+    LOG(info) 
+        << " flag " << OpticksPhoton::Flag(flag)
+        << " is_boundary_flag " << is_boundary_flag  
+        << " customBoundaryStatus " << customBoundaryStatus 
+        ;
 
 
     const G4VTouchable* touch = track->GetTouchable();  
@@ -451,7 +476,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         sev->pointPhoton(*label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
 
-    unsigned flag = U4StepPoint::Flag<T>(post) ; 
 
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 

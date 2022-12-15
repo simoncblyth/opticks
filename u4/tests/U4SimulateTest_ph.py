@@ -36,7 +36,8 @@ if __name__ == '__main__':
 
     #pos = t.photon[:,0,:3]
     pos = t.record[:,:,0,:3].reshape(-1,3) 
-
+    q_ = t.seq[:,0]
+    q = ht.seqhis(q_)
 
     ## ReplicaNumber
     rp = t.record[...,1,3].view(np.int32) 
@@ -48,8 +49,6 @@ if __name__ == '__main__':
     print("\nlen(v_rp) : %d ## v_rp : unique array indices that reproduce original array  " % len(v_rp))
     assert len(rp) == len(v_rp) 
 
-    q_ = t.seq[:,0]
-    q = ht.seqhis(q_)
 
     qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
     quo = np.argsort(qn)[::-1]  

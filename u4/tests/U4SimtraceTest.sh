@@ -30,6 +30,15 @@ Grab the custom boundary status for each point::
 
 
 
+two_pmt::
+
+    FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+
+    APID=813 FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+
+    BPID=150 BOPT=nrm,pla BGC=yellow FOCUS=0,0,255 N=1 ./U4SimtraceTest.sh ana
+  
+
 EOU
 }
 
@@ -41,17 +50,19 @@ export BASE=$GEOMFOLD/$bin
 
 export VERSION=${N:-0}
 
-#export LAYOUT=two_pmt
-export LAYOUT=one_pmt
+export LAYOUT=two_pmt
+#export LAYOUT=one_pmt
 
 export FOLD=$BASE/$VERSION
 
-
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
-export APID=${APID:-0}
+apid=-1
+export APID=${APID:-$apid}
 
-export BFOLD=$GEOMFOLD/U4SimulateTest/SEL1
-export BPID=${BPID:-0}
+#export BFOLD=$GEOMFOLD/U4SimulateTest/SEL1
+export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1
+bpid=-1
+export BPID=${BPID:-$bpid}
 
 geomscript=$GEOM.sh 
 

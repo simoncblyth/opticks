@@ -153,9 +153,50 @@ class U4SimtraceTest(RFold):
         r = f.r 
         ax = self.ax
         mpplt_add_contiguous_line_segments(ax, r[:,0,:3], axes=(H,V), label=None )
-        if "PLAB" in os.environ:
-            self.mp_plab(f)
-        pass 
+        self.mp_plab(f)
+
+    def mp_plab(self, f, backgroundcolor=None ):
+        """
+        point labels
+        """
+        ax = self.ax
+        r = f.r
+        a = f.a 
+        ast = f.ast
+        #cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
+        hv = r[:,0,(H,V)]
+
+        if backgroundcolor == None:
+            backgroundcolor = os.environ.get("BGC", None)
+        pass
+        for i in range(len(r)):
+
+            if "idx" in f.opt:
+                plab = str(i)
+            elif "ast" in f.opt:
+                plab = chr(ast[i])
+            else:
+                plab = None
+            pass 
+            if plab is None: continue
+
+            dx,dy = 0,0
+
+            tweak = "twk" in f.opt
+            if tweak:
+                if i==2: dx,dy=-10,0
+                if i==3: dx,dy=0,-10
+                if i==4: dx,dy=-10,0
+                if i==16: dx,dy=10,-10
+            pass
+            if backgroundcolor is None:
+                ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15 )
+            else:
+                ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15, backgroundcolor=backgroundcolor )
+            pass
+        pass
+
+
 
     def mp_a_normal(self, f):
         """
@@ -170,8 +211,12 @@ class U4SimtraceTest(RFold):
         r = f.r 
         a = f.a 
         sc = float(os.environ.get("NRM","100"))
-        cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
-        assert len(cbs) == len(a)
+        #cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
+        #assert len(cbs) == len(a)
+
+        ast = f.ast 
+        assert len(ast) == len(a) == len(r)
+
 
         for i in range(len(a)):
             nrm = a[i,3,:3]  
@@ -181,37 +226,6 @@ class U4SimtraceTest(RFold):
             ax.arrow( npos[H], npos[V], sc*nrm[H], sc*nrm[V], head_width=10, head_length=10, fc='k', ec='k' )
         pass
 
-    def mp_plab(self, f, tweak=False, backgroundcolor=None ):
-        """
-        point labels
-        """
-        ax = self.ax
-        r = f.r
-        a = f.a 
-        cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
-        hv = r[:,0,(H,V)]
-
-        if backgroundcolor == None:
-            backgroundcolor = os.environ.get("BGC", None)
-        pass
-        for i in range(len(r)):
-
-            #plab = str(i)
-            plab = chr(cbs[i])
-
-            dx,dy = 0,0
-            if tweak:
-                if i==2: dx,dy=-10,0
-                if i==3: dx,dy=0,-10
-                if i==4: dx,dy=-10,0
-                if i==16: dx,dy=10,-10
-            pass
-            if backgroundcolor is None:
-                ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15 )
-            else:
-                ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15, backgroundcolor=backgroundcolor )
-            pass
-        pass
 
 class U4SimulateTest(RFold):
     def __init__(self, f):
@@ -244,21 +258,31 @@ class U4SimulateTest(RFold):
             wl = _r[:,2,3]
             r = _r[wl > 0]
             pass
-            if hasattr(f,'aux'): 
-                _a = f.aux[pid]
-                a = _a[wl > 0]
+            assert hasattr(f,'aux')
+            _a = f.aux[pid]
+            a = _a[wl > 0]
+            ast = a[:len(a),1,3].copy().view(np.int8)[::4]
             pass  
+            q = ht.seqhis(f.seq[:,0])  # ht from opticks.ana.p 
+            qpid = q[pid][0].decode("utf-8").strip()  
         else:
             _r = None
             r = None
             _a = None
             a = None
+            ast = None
+            q = None
+            qpid = None
+
         pass
         self._pid = pid
         self._r = _r
         self.r = r
         self._a = _a
         self.a = a
+        self.ast = ast
+        self.q = q 
+        self.qpid = qpid
 
     pid = property(_get_pid, _set_pid)
 
