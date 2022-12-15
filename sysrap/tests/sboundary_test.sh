@@ -8,6 +8,7 @@ sboundary_test.sh
     N=160 POLSCALE=10 AOI=BREWSTER ./sboundary_test.sh 
     N=160 POLSCALE=10 AOI=45 ./sboundary_test.sh 
 
+    N=4 POLSCALE=10 AOI=BREWSTER  ./sboundary_test.sh 
 
 EOU
 }

@@ -12,41 +12,34 @@ Explain those two, at Brewster angle::
     array([[-0.555,  0.   , -0.832,  0.   , -0.555, -0.   ,  0.832,  0.   ],
            [-0.552,  0.098, -0.828,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
            [-0.544,  0.195, -0.816,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.531,  0.29 , -0.796,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.512,  0.383, -0.769,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.489,  0.471, -0.734,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.461,  0.556, -0.692,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.429,  0.634, -0.643,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.392,  0.707, -0.588,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.352,  0.773, -0.528,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.308,  0.831, -0.462,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.261,  0.882, -0.392,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.212,  0.924, -0.318,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.161,  0.957, -0.242,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.108,  0.981, -0.162,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [-0.054,  0.995, -0.082,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
+           ..
            [ 0.   ,  1.   ,  0.   ,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
            [ 0.054,  0.995,  0.082,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.108,  0.981,  0.162,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.161,  0.957,  0.242,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.212,  0.924,  0.318,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.261,  0.882,  0.392,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.308,  0.831,  0.462,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.352,  0.773,  0.528,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.392,  0.707,  0.588,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.429,  0.634,  0.643,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.461,  0.556,  0.692,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.489,  0.471,  0.734,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.512,  0.383,  0.769,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.531,  0.29 ,  0.796,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
-           [ 0.544,  0.195,  0.816,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
            [ 0.552,  0.098,  0.828,  0.   , -0.   , -1.   ,  0.   ,  0.   ],
            [ 0.555, -0.   ,  0.832,  0.   , -0.483,  0.491,  0.725,  0.   ],
            [ 0.552, -0.098,  0.828,  0.   , -0.   ,  1.   ,  0.   ,  0.   ],
-           [ 0.544, -0.195,  0.816,  0.   , -0.   ,  1.   ,  0.   ,  0.   ],
-           [ 0.531, -0.29 ,  0.796,  0.   , -0.   ,  1.   ,  0.   ,  0.   ],
            [ 0.512, -0.383,  0.769,  0.   , -0.   ,  1.   ,  0.   ,  0.   ],
 
+
+Those are from initial pure P polarization that are forced to reflect 
+which means that even when the coeff for reflection is zero for a particulr 
+polarization are forced to calculate an outgoing polarization for it.  
+
+What happens in that situation with the calculation is that a 
+near zero length E2_r (S,P) vector gets dignified by normalization
+into a vector with highly imprecise values that gets used
+to construct the new pol::
+
+              E2_r          (-0.000,-0.000)        length(E2_r)     0.0000
+                 RR          (-0.491,-0.871)          length(RR)     1.0000
+
+
+This is not a problem with the calc, just with forcing the reflect/transmit. 
+
+
+To avoid this messing up the illustration switched to scaling the the length 
+of the polarization vector with the relevant coefficient, 
+so these polarizations that would be quashed dissappear into the origin
 
 
 """
@@ -94,9 +87,7 @@ if __name__ == '__main__':
 
 
     pvplt_viewpoint( pl ) 
-
     #ii = [0,4,8,12]        # looks like the S-pol survives unscathed, but P-pol gets folded over
-
 
 
     N = len(pp)

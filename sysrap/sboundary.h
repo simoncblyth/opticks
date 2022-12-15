@@ -176,30 +176,61 @@ inline std::ostream& operator<<(std::ostream& os, const sboundary& b)
        << std::setw(20) << " c1 "           << std::setw(10) << std::fixed << std::setprecision(4) << b.c1  << std::endl 
        << std::setw(20) << " c2c2 "           << std::setw(10) << std::fixed << std::setprecision(4) << b.c2c2  << std::endl 
        << std::setw(20) << " tir "           << std::setw(10) << b.tir  << std::endl 
-       << std::setw(20) << " c2 "           << std::setw(10) << std::fixed << std::setprecision(4) << b.c2  << std::endl 
-       << std::setw(20) << " _E2_t "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b._E2_t  << std::endl
-       << std::setw(20) << " _E2_r "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b._E2_r  << std::endl
-       << std::setw(20) << " transverse "        << std::setw(10) << std::fixed << std::setprecision(4) <<  b.transverse  << std::endl
+       << std::setw(20) << " c2 "           << std::setw(10) << std::fixed << std::setprecision(4) << b.c2  
+       << std::endl 
+       << std::setw(20) << " _E2_t "        <<  std::setw(10) << b._E2_t  
+       << std::setw(20) << " length(_E2_t) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b._E2_t)
+       << std::endl
+       << std::setw(20) << " _E2_r "        <<  std::setw(10) << b._E2_r 
+       << std::setw(20) << " length(_E2_r) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b._E2_r)
+       << std::endl
+       << std::setw(20) << " transverse "        << std::setw(10) << b.transverse
+       << std::setw(20) << " length(transverse) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.transverse)  
+       << std::endl
        << std::setw(20) << " transverse_length " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.transverse_length  << std::endl
-       << std::setw(20) << " normal_incidence " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.normal_incidence  << std::endl
-       << std::setw(20) << " A_transverse "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.A_transverse  << std::endl
-       << std::setw(20) << " E1_perp "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1_perp  << std::endl
-       << std::setw(20) << " E1 "           << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1  << std::endl
-       << std::setw(20) << " E1_chk "       << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1_chk  << std::endl
-       << std::setw(20) << " E2_t "         << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E2_t  << std::endl
-       << std::setw(20) << " E2_r "         << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E2_r  << std::endl
-       << std::setw(20) << " RR "           << std::setw(10) << std::fixed << std::setprecision(4) <<  b.RR  << std::endl
-       << std::setw(20) << " TT "           << std::setw(10) << std::fixed << std::setprecision(4) <<  b.TT  << std::endl
+       << std::setw(20) << " normal_incidence " << std::setw(10) << std::fixed << std::setprecision(4) <<  b.normal_incidence  
+       << std::endl
+       << std::setw(20) << " A_transverse "      << std::setw(10) <<  b.A_transverse  
+       << std::setw(20) << " length(A_transverse) " << std::setw(10) << std::fixed << std::setprecision(4) <<  length(b.A_transverse)  
+       << std::endl
+       << std::setw(20) << " E1_perp "      << std::setw(10) << std::fixed << std::setprecision(4) <<  b.E1_perp  
+       << std::endl
+       << std::setw(20) << " E1 "           <<  std::setw(10) << b.E1  
+       << std::setw(20) << " length(E1) "   <<  std::setw(10) << std::fixed << std::setprecision(4) << length(b.E1)
+       << std::endl
+       << std::setw(20) << " E1_chk "       << std::setw(10) << b.E1_chk  
+       << std::setw(20) << " length(E1) "   <<  std::setw(10) << std::fixed << std::setprecision(4) << length(b.E1_chk)
+       << std::endl
+       << std::setw(20) << " E2_t "         << std::setw(10)<<  b.E2_t  
+       << std::setw(20) << " length(E2_t) " << std::setw(10) << std::fixed << std::setprecision(4) <<  length(b.E2_t)  
+       << std::endl
+       << std::setw(20) << " E2_r "         << std::setw(10) << b.E2_r  
+       << std::setw(20) << " length(E2_r) " << std::setw(10) << std::fixed << std::setprecision(4) <<  length(b.E2_r)  
+       << std::endl
+       << std::setw(20) << " RR "           << std::setw(10) <<  b.RR 
+       << std::setw(20) << " length(RR) "   << std::setw(10) << std::fixed << std::setprecision(4) <<  length(b.RR)  
+       << std::endl
+       << std::setw(20) << " TT "           << std::setw(10) <<  b.TT  
+       << std::setw(20) << " length(TT) "   << std::setw(10) << std::fixed << std::setprecision(4) <<  length(b.TT)  
+       << std::endl
        << std::setw(20) << " TransCoeff "   << std::setw(10) << std::fixed << std::setprecision(4) << b.TransCoeff  << std::endl
        << std::setw(20) << " ReflectCoeff " << std::setw(10) << std::fixed << std::setprecision(4) << b.ReflectCoeff  << std::endl
        << std::setw(20) << " u_reflect "    << std::setw(10) << std::fixed << std::setprecision(4) << b.u_reflect  << std::endl
        << std::setw(20) << " reflect "      << std::setw(10) << std::fixed << std::setprecision(4) << b.reflect  << std::endl
        << std::setw(20) << " flag "         << std::setw(10) << std::fixed << std::setprecision(4) << OpticksPhoton::Flag(b.flag)  << std::endl 
        << std::setw(20) << " Coeff "        << std::setw(10) << std::fixed << std::setprecision(4) << b.Coeff  << std::endl
-       << std::setw(20) << " EdotN "        << std::setw(10) << std::fixed << std::setprecision(4) << b.EdotN  << std::endl
-       << std::setw(20) << " p.mom "        << std::setw(10) << std::fixed << std::setprecision(4) << b.p.mom  << std::endl 
-       << std::setw(20) << " A_parallel "   << std::setw(10) << std::fixed << std::setprecision(4) << b.A_parallel << std::endl
-       << std::setw(20) << " p.pol "        << std::setw(10) << std::fixed << std::setprecision(4) << b.p.pol  << std::endl 
+       << std::setw(20) << " EdotN "        << std::setw(10) << std::fixed << std::setprecision(4) << b.EdotN  
+       << std::endl
+       << std::setw(20) << " p.mom "        << std::setw(10) << b.p.mom  
+       << std::setw(20) << " length(p.mom) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.p.mom)  
+       << std::endl 
+       << std::setw(20) << " A_parallel "   << std::setw(10) << b.A_parallel 
+       << std::setw(20) << " length(A_parallel) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.A_parallel) 
+       << std::endl
+       << std::setw(20) << " p.pol "        << std::setw(10) << b.p.pol  
+       << std::setw(20) << " length(p.pol) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.p.pol)  
+       << std::endl 
+       << std::setw(20) << " dot(p.mom,p.pol) " << std::setw(10) << std::fixed << std::setprecision(4) << dot(b.p.mom,b.p.pol)  
        << std::endl 
        ;
     return os; 
