@@ -19,6 +19,7 @@ set(TEST_SOURCES
    QPropTest.cc 
    QEventTest.cc 
    QSimWithEventTest.cc 
+   QSimCreateTest.cc 
    QUTest.cc
    QTexMakerTest.cc
    QTexLookupTest.cc
