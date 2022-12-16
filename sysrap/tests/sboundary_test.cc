@@ -1,4 +1,21 @@
-// ./sboundary_test.sh
+/**
+sboundary_test.cc
+====================
+
+Build and run::
+
+    ./sboundary_test.sh
+
+
+              
+           +-st-+ 
+            \   :
+             \  ct
+              \ :
+               \:
+         -------+--------
+
+**/
 
 #include "sphoton.h"
 #include "sstate.h"
@@ -15,46 +32,51 @@ const char* FOLD = getenv("FOLD") ;
 int main(int argc, char** argv)
 {
     curandStateXORWOW rng(1u) ; 
-    const float force_reflect = 1.f ; 
-    const float force_transmit = 0.f ; 
+
+    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
+
+    const int N = U::GetEnvInt("N",16) ; 
+    float n1 = U::GetE<float>("N1", 1.f) ; 
+    float n2 = U::GetE<float>("N2", 1.5f) ; 
+    const char* AOI = U::GetEnv("AOI", "45" ); 
     const char force = U::GetE<char>("FORCE", 'N') ; 
     switch(force)
     {
-        case 'R':rng.set_fake(force_reflect) ; break ;  
-        case 'T':rng.set_fake(force_transmit) ; break ;  
+        case 'R':rng.set_fake(1.f) ; break ;  
+        case 'T':rng.set_fake(0.f) ; break ;  
     }
-    std::cout << " FORCE " << force << std::endl ;    
 
+    float aoi = 0.f ; 
+    if(strcmp(AOI, "BREWSTER") == 0)
+    {
+        aoi =  atanf(n2/n1) ; 
+    }
+    else if(strcmp(AOI, "CRITICAL") == 0)
+    {
+        assert( n2/n1 <= 1.f ); 
+        aoi = asinf(n2/n1);  
+    }
+    else
+    {
+        aoi = std::atof(AOI)*M_PIf/180.f ; 
+    }
+    float3 mom = normalize(make_float3(sinf(aoi), 0.f, -cosf(aoi))) ; 
 
-    /*
-              
-           +-st-+ 
-            \   :
-             \  ct
-              \ :
-               \:
-         -------+--------
-
-    */
-    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
-
-    float n1 = 1.f ; 
-    float n2 = 1.5f ; 
-
-    const char* BREWSTER = "BREWSTER" ; 
-    const char* AOI = U::GetEnv("AOI", BREWSTER ); 
-    bool is_brewster = strcmp(AOI, BREWSTER) == 0  ; 
-    float aoi = is_brewster ? atanf(n2/n1) : std::atof(AOI)*M_PIf/180.f ;   
 
     std::cout 
+        << " N " << N 
+        << " N1 " << n1 
+        << " N2 " << n2
         << " AOI " << AOI 
+        << " FORCE " << force 
+        << std::endl 
         << " aoi " << aoi 
         << " aoi/M_PIf " << aoi/M_PIf
         << " aoi/M_PIf*180 " << aoi/M_PIf*180.f
+        << " mom " << mom 
         << std::endl 
         ;
 
-    float3 mom = normalize(make_float3(sinf(aoi), 0.f, -cosf(aoi))) ; 
 
     quad2 prd ; 
     prd.q0.f.x = nrm.x ; 
@@ -70,7 +92,6 @@ int main(int argc, char** argv)
 
     sphoton& p = ctx.p ; 
 
-    const int N = U::GetEnvInt("N",16) ; 
     std::vector<sphoton> pp(N*2) ; 
 
     for(int i=0 ; i < N ; i++)

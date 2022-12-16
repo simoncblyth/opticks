@@ -2175,7 +2175,9 @@ opticks-f(){
 
 }
 
-opticks-py()
+opticks-py(){ XX=py opticks-xx $* ; }
+opticks-sh(){ XX=sh opticks-xx $* ; }
+opticks-xx()
 {
    : search opticks python scripts 
 
@@ -2186,7 +2188,7 @@ opticks-py()
    opticks-scd
    find . \
         \( \
-       -name '*.py' \
+       -name "*.$XX" \
         \) \
        -exec grep $opt "$str" {} \;
 

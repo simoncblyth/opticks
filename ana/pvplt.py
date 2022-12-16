@@ -139,18 +139,21 @@ def pvplt_viewpoint(pl, reset=False):
     pl.camera.Zoom(zoom)
 
 
-def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False  ):
+def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     """
     :param p: array of shape (1,4,4)
     :param polcol:
     :param polscale:
-    :param wscale: when True, means that are using the wavelength to hold a polarization vector scale 
+    :param wscale: when True, using wavelength(Coeff) as scale for polarization vector
+    :param wcut: when True, apply selection that wavelength(Coeff) must be greater than 0. 
     """
     assert p.shape == (1,4,4)
     pos = p[:,0,:3]   
     mom = p[:,1,:3]   
     pol = p[:,2,:3]   
     wav = p[:,2,3]
+
+    if wcut and wav < 1e-6: return 
 
     if wscale:
         polscale *= wav

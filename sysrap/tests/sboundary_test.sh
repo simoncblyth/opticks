@@ -14,13 +14,31 @@ EOU
 }
 
 name=sboundary_test
-export FOLD=/tmp/$name
-
-force=R  # R/T/N
-export FORCE=${FORCE:-$force}
-
-
+export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD
+
+n=16
+force=R  # R/T/N
+aoi=CRITICAL
+n1=1.5
+n2=1.0
+
+export N=${N:-$n}
+export FORCE=${FORCE:-$force}
+export AOI=${AOI:-$aoi}
+export N1=${N1:-$n1}
+export N2=${N2:-$n2}
+
+topline="opticks/sysrap/tests/sboundary_test.sh N:$N N1:$N1 N2:$N2 FORCE:$FORCE AOI $AOI "
+case $AOI in 
+   BREWSTER) topline="$topline (Polarizing angle)" ;; 
+   CRITICAL) topline="$topline (TIR: Total Internal Reflection)" ;; 
+          *) topline="$topline" ;;
+esac
+topline="$topline EYE $EYE LOOK $LOOK"
+export TOPLINE=${TOPLINE:-$topline}
+export GEOM=AOI_${AOI}
+
 
 defarg=build_run_ana
 arg=${1:-$defarg}
@@ -39,19 +57,30 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
-
    $FOLD/$name
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-
-   export AFOLD=$FOLD
-   export BFOLD=/tmp/qsim_test
-
    ${IPYTHON:-ipython} --pdb -i $name.py 
    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
+
+if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=sboundary_test
+    export CAP_STEM=$GEOM
+    case $arg in  
+       pvcap) source pvcap.sh cap  ;;  
+       mpcap) source mpcap.sh cap  ;;  
+       pvpub) source pvcap.sh env  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+    if [ "$arg" == "pvpub" -o "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
+
 
 exit 0 
 

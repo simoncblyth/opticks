@@ -58,16 +58,10 @@ cmap = mp.cm.get_cmap(CMAP)
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
-
-
     pp = t.pp
 
-    os.environ["EYE"] = "-0.707,-100,0.707"
-    os.environ["LOOK"] = "-0.707,0,0.707"
-
     polscale = float(os.environ.get("POLSCALE","1"))
-
-    label = "sboundary_test.py "
+    label = os.environ.get("TOPLINE", "sboundary_test.py")
     pl = pvplt_plotter(label=label)   
 
     lim = slice(None)
@@ -93,14 +87,18 @@ if __name__ == '__main__':
     N = len(pp)
     ii = list(range(N))  
 
+    wscale = False 
+    wcut = True 
+
     for i in ii:
 
         frac = float(i)/float(N)
         polcol = cmap(frac)
         #polcol = COLORS[ i % len(COLORS)]
-        pvplt_photon( pl, pp[i:i+1,0], polcol=polcol, polscale=polscale, wscale=True )
-        pvplt_photon( pl, pp[i:i+1,1], polcol=polcol, polscale=polscale, wscale=True )
+        pvplt_photon( pl, pp[i:i+1,0], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
+        pvplt_photon( pl, pp[i:i+1,1], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
     pass
+
 
 
     pos = np.array( [[0,0,0]] , dtype=np.float32 )
@@ -110,6 +108,6 @@ if __name__ == '__main__':
 
     cp = pl.show() 
     
-
+    print(cp)
     
 
