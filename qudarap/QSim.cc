@@ -349,20 +349,35 @@ std::string QSim::desc() const
 {
     std::stringstream ss ; 
     ss << "QSim.hh"
-       << " this 0x"            << std::hex << std::uintptr_t(this)     << std::dec  
-       << " INSTANCE 0x"        << std::hex << std::uintptr_t(INSTANCE) << std::dec  
-       << " QEvent.hh:event 0x" << std::hex << std::uintptr_t(event)    << std::dec    
-       << " qsim.h:sim 0x"      << std::hex << std::uintptr_t(sim)      << std::dec 
-       << " qsim.h:d_sim 0x"    << std::hex << std::uintptr_t(d_sim)    << std::dec 
-       << " sim->rngstate 0x"   << std::hex << std::uintptr_t(sim->rngstate) << std::dec 
-       << " sim->base 0x"       << std::hex << std::uintptr_t(sim->base)  << std::dec
-       << " sim->bnd 0x"        << std::hex << std::uintptr_t(sim->bnd)   << std::dec
-       << " sim->scint 0x"      << std::hex << std::uintptr_t(sim->scint) << std::dec
-       << " sim->cerenkov 0x"   << std::hex << std::uintptr_t(sim->cerenkov) << std::dec
+       << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec  
+       << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec  
+       << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec    
+       << " qsim.h:sim 0x"      << std::hex << std::uint64_t(sim)      << std::dec 
        ; 
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string QSim::descFull() const
+{
+    std::stringstream ss ; 
+    ss << "QSim.hh"
+       << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec  
+       << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec  
+       << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec    
+       << " qsim.h:sim 0x"      << std::hex << std::uint64_t(sim)      << std::dec 
+       << " qsim.h:d_sim 0x"    << std::hex << std::uint64_t(d_sim)    << std::dec 
+       << " sim->rngstate 0x"   << std::hex << std::uint64_t(sim->rngstate) << std::dec  // tending to SEGV on some systems
+       << " sim->base 0x"       << std::hex << std::uint64_t(sim->base)  << std::dec
+       << " sim->bnd 0x"        << std::hex << std::uint64_t(sim->bnd)   << std::dec
+       << " sim->scint 0x"      << std::hex << std::uint64_t(sim->scint) << std::dec
+       << " sim->cerenkov 0x"   << std::hex << std::uint64_t(sim->cerenkov) << std::dec
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 std::string QSim::checkComponents() const 
 {

@@ -14,6 +14,7 @@ int main(int argc, char** argv)
 
     QSim* qs = QSim::Create() ; 
     std::cout << " qs.desc " << qs->desc() << std::endl ; 
+    std::cout << " qs.descFull " << qs->descFull() << std::endl ; 
 
     return 0 ; 
 }
