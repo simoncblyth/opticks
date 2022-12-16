@@ -12,6 +12,7 @@
 #include "SEvt.hh"
 #include "SLOG.hh"
 #include "SOpBoundaryProcess.hh"
+#include "CustomStatus.h"
 
 #include "G4LogicalBorderSurface.hh"
 #include "U4Recorder.hh"
@@ -423,9 +424,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    unsigned flag = U4StepPoint::Flag<T>(post) ; 
-    bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
-
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
@@ -449,19 +447,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     2. Similarly when not at boundary the recoveredNormal is meaningless
 
     */
-   
-    const double* recoveredNormal = is_boundary_flag ? bop->getRecoveredNormal() : nullptr ; 
-    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
-
-    char customStatus = is_boundary_flag ? bop->getCustomStatus() : ' ' ; 
-    current_aux.q1.i.w = int(customStatus) ; 
-
-    LOG(info) 
-        << " flag " << OpticksPhoton::Flag(flag)
-        << " is_boundary_flag " << is_boundary_flag  
-        << " customStatus " << customStatus 
-        ;
-
 
     const G4VTouchable* touch = track->GetTouchable();  
     LOG(LEVEL) << U4Touchable::Brief(touch) ;
@@ -473,8 +458,28 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     { 
         LOG(LEVEL) << " first_point, track " << track  ; 
         U4StepPoint::Update(current_photon, pre);
+        current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(*label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
+
+    unsigned flag = U4StepPoint::Flag<T>(post) ; 
+    bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
+
+    const double* recoveredNormal = is_boundary_flag ? bop->getRecoveredNormal() : nullptr ; 
+    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+
+    char customStatus = is_boundary_flag ? bop->getCustomStatus() : 'B' ; 
+    current_aux.q1.i.w = int(customStatus) ; 
+
+    LOG(LEVEL) 
+        << " flag " << flag
+        << " " << OpticksPhoton::Flag(flag)
+        << " is_boundary_flag " << is_boundary_flag  
+        << " customStatus " << customStatus 
+        << " " << CustomStatus::Name(customStatus)
+        ;
+
+
 
 
     // DEFER_FSTRACKINFO : special flag signalling that 

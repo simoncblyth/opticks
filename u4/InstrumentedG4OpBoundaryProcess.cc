@@ -86,9 +86,8 @@
 
 
 #ifdef WITH_PMTFASTSIM
-#include "JPMT.h"
-#include "Layr.h"
 #include "CustomBoundary.h"
+#include "CustomART.h"
 #endif
 
 #include "SLOG.hh"
@@ -193,16 +192,24 @@ const double* InstrumentedG4OpBoundaryProcess::getRecoveredNormal() const
 {
     return (const double*)&theRecoveredNormal ;
 }
+
+/**
+InstrumentedG4OpBoundaryProcess::getCustomStatus
+--------------------------------------------------
+
+HMM: actually makes more sense to hold a more 
+general status within InstrumentedG4OpBoundaryProcess 
+which describes whether the custom_boundary was used or not 
+and which is informative on why custom boundary used/not-used.
+That is more relevant than the R/T/A which is already described
+by the standard theStatus. 
+
+**/
+
 char InstrumentedG4OpBoundaryProcess::getCustomStatus() const 
 {
-    return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
-    // HMM: actually makes more sense to hold a more 
-    // general status within InstrumentedG4OpBoundaryProcess 
-    // which describes whether the custom_boundary was used or not 
-    // and which is informative on why custom boundary used/not-used
-    // thats more relevant than the R/T/A which is already described
-    // by the standard status 
-
+    return theCustomStatus ; 
+    //return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
 }
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 {
@@ -237,6 +244,7 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                   OldPolarization,
                   theRecoveredNormal,
                   thePhotonMomentum))
+    ,theCustomStatus('U')
     ,m_u0(-1.)
     ,m_u0_idx(-1)
 #endif
@@ -411,6 +419,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
     pidx_dump = pidx == PIDX ; 
 #endif
     theStatus = Undefined;
+    theCustomStatus = 'B' ; 
 
     aParticleChange.Initialize(aTrack);
     aParticleChange.ProposeVelocity(aTrack.GetVelocity());
@@ -589,8 +598,6 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
     theModel = glisur;
     theFinish = polished;
 
-    G4bool CustomBoundary_doneIt = false ; 
-
     G4SurfaceType type = dielectric_dielectric;
 
     //]Defaults
@@ -710,20 +717,20 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
             }
             //]OpticalSurface.mpt.theReflectivity,theTransmittance,theEfficiency
 
-#ifdef WITH_PMTFASTSIM
             //[OpticalSurface.mpt.CustomBoundary
-
-            CustomBoundary_doneIt = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
-
-            //]OpticalSurface.mpt.CustomBoundary
+#ifdef WITH_PMTFASTSIM
+            theCustomStatus = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
+#else
+            theCustomStatus = 'X' ; 
 #endif
+            //]OpticalSurface.mpt.CustomBoundary
 
             LOG(LEVEL)
                 << " PostStepDoIt_count " << PostStepDoIt_count
                 << " theReflectivity " << theReflectivity
                 << " theEfficiency " << theEfficiency
                 << " theTransmittance " << theTransmittance
-                << " CustomBoundary_doneIt " << CustomBoundary_doneIt
+                << " theCustomStatus " << theCustomStatus
                 ; 
 
             if (aMaterialPropertiesTable->ConstPropertyExists("SURFACEROUGHNESS"))
@@ -799,7 +806,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
     //[type_switch 
 #ifdef WITH_PMTFASTSIM
-    if(CustomBoundary_doneIt) 
+    if(strchr("ARTD", theCustomStatus)!=nullptr) 
     {
         LOG(LEVEL) << "CustomBoundary_doneIt : SKIP TYPE_SWITCH " ;  
     }

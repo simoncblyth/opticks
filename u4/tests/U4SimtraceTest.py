@@ -210,7 +210,7 @@ class U4SimtraceTest(RFold):
         ax = self.ax
         r = f.r 
         a = f.a 
-        sc = float(os.environ.get("NRM","100"))
+        sc = float(os.environ.get("NRM","80"))
         #cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
         #assert len(cbs) == len(a)
 

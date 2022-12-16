@@ -34,11 +34,13 @@ two_pmt::
 
     FOCUS=0,0,255 ./U4SimtraceTest.sh ana
 
-    APID=813 FOCUS=0,0,255 ./U4SimtraceTest.sh ana
 
-    BPID=150 BOPT=nrm,pla BGC=yellow FOCUS=0,0,255 N=1 ./U4SimtraceTest.sh ana
+    N=0 APID=813 AOPT=idx BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+    N=0 APID=813 AOPT=ast BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+
+    N=1 BPID=748 BOPT=ast,nrm BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+    N=1 BPID=150 BOPT=nrm,ast BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
   
-
 EOU
 }
 
@@ -57,12 +59,12 @@ export FOLD=$BASE/$VERSION
 
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 apid=-1
-export APID=${APID:-$apid}
+export APID=${APID:-$apid}   ## NB APID for photons from ALL0
 
 #export BFOLD=$GEOMFOLD/U4SimulateTest/SEL1
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1
 bpid=-1
-export BPID=${BPID:-$bpid}
+export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
 
 geomscript=$GEOM.sh 
 
@@ -110,6 +112,26 @@ if [ "${arg/ana}" != "$arg"  ]; then
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
+
+if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=U4SimtraceTest
+    export CAP_STEM=$GEOM
+    case $arg in  
+       pvcap) source pvcap.sh cap  ;;  
+       mpcap) source mpcap.sh cap  ;;  
+       pvpub) source pvcap.sh env  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+    if [ "$arg" == "pvpub" -o "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
+
+
+
+
+
 
 exit 0 
 
