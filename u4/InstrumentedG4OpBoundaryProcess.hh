@@ -168,11 +168,11 @@ class U4_API InstrumentedG4OpBoundaryProcess
 
 public:
         static const plog::Severity LEVEL ; 
+        char theCustomStatus ; 
 
 #ifdef WITH_PMTFASTSIM
         CustomBoundary<JPMT>* m_custom_boundary ; 
         CustomART<JPMT>*      m_custom_art ; 
-        char theCustomStatus ; 
 
         double getU0() const ; 
         int getU0_idx() const ; 

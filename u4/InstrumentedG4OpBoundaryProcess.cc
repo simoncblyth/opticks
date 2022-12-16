@@ -224,6 +224,9 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
     G4VDiscreteProcess(processName, type)
 #ifdef WITH_PMTFASTSIM
     ,SOpBoundaryProcess(processName.c_str())
+#endif
+    ,theCustomStatus('U')
+#ifdef WITH_PMTFASTSIM
     ,m_custom_boundary(new CustomBoundary<JPMT>(
                   NewMomentum,
                   NewPolarization,
@@ -244,7 +247,6 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                   OldPolarization,
                   theRecoveredNormal,
                   thePhotonMomentum))
-    ,theCustomStatus('U')
     ,m_u0(-1.)
     ,m_u0_idx(-1)
 #endif
