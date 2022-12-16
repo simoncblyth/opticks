@@ -514,7 +514,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     }
 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-    assert( flag > 0 ); 
+    //assert( flag > 0 );  // SKIP ASSERT
 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
@@ -566,7 +566,7 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
             << " flag " << OpticksPhoton::Flag(flag) 
             ;     
 
-        assert( is_live_flag );  
+        //assert( is_live_flag );  SKIP ASSERT
     }
     else if( tstat == fSuspend )
     {

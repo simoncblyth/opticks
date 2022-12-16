@@ -30,7 +30,7 @@ if __name__ == '__main__':
     print(repr(t))
     print( " MODE : %d " % (MODE) )
 
-    axes = X, Z 
+    axes = 0, 2  # X,Z
     H,V = axes 
     label = LABEL 
 
@@ -103,6 +103,10 @@ if __name__ == '__main__':
         print("not plotting as MODE 0  in environ")
     elif MODE == 2:
         fig, ax = mpplt_plotter(label)
+
+        ax.set_ylim(-250,250)
+        ax.set_xlim(-500,500)
+
         ax.scatter( pos[:,H], pos[:,V], s=1 )  
         fig.show()
     elif MODE == 3:

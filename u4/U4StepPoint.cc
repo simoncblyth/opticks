@@ -193,6 +193,7 @@ unsigned U4StepPoint::BoundaryFlag(unsigned status) // BT BR NA SA SD SR DR
     {   
         case FresnelRefraction:
         case SameMaterial:
+        case Transmission:
                                flag=BOUNDARY_TRANSMIT;
                                break;
         case TotalInternalReflection:
@@ -222,7 +223,6 @@ unsigned U4StepPoint::BoundaryFlag(unsigned status) // BT BR NA SA SD SR DR
         case Undefined:
         case BackScattering:
         case NotAtBoundary:
-        case Transmission:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
         case PolishedAirReflection:
@@ -274,13 +274,17 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
 
     std::stringstream ss ; 
     ss << "U4StepPoint::Desc" 
+       << std::endl 
        << " proc " << proc
        << " procName " << procName 
        << " procNameRaw " << ( procNameRaw ? procNameRaw : "-" ) 
+       << std::endl 
        << " status " << status
        << " statusName " << statusName 
+       << std::endl 
        << " bstat " << bstat
        << " bstatName " << bstatName
+       << std::endl 
        << " flag " << flag 
        << " flagName " << flagName
        ;

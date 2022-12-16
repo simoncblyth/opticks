@@ -46,25 +46,28 @@ EOU
 
 bin=U4SimtraceTest
 
-export GEOM=hamaLogicalPMT
-export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
-export BASE=$GEOMFOLD/$bin
+layout=two_pmt  
+#layout=one_pmt
 
+apid=-1
+bpid=-1
+
+export LAYOUT=$layout
 export VERSION=${N:-0}
 
-export LAYOUT=two_pmt
-#export LAYOUT=one_pmt
+export GEOM=hamaLogicalPMT
 
-export FOLD=$BASE/$VERSION
+export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
+export BASE=$GEOMFOLD/$bin
+export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
+export SFOLD=$BASE/0
+export TFOLD=$BASE/1
 
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
-apid=-1
+export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
 export APID=${APID:-$apid}   ## NB APID for photons from ALL0
-
-#export BFOLD=$GEOMFOLD/U4SimulateTest/SEL1
-export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1
-bpid=-1
 export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
+export LOC=skip   # python ana level presentation 
 
 geomscript=$GEOM.sh 
 
@@ -73,10 +76,6 @@ if [ -f "$geomscript" ]; then
 else
     echo $BASH_SOURCE : no gemoscript $geomscript
 fi 
-
-# python ana level presentation 
-export LOC=skip
-
 
 loglevels()
 {
@@ -114,7 +113,7 @@ if [ "${arg/ana}" != "$arg"  ]; then
 fi 
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
-    export CAP_BASE=$FOLD/figs
+    export CAP_BASE=$SFOLD/figs
     export CAP_REL=U4SimtraceTest
     export CAP_STEM=$GEOM
     case $arg in  
@@ -128,10 +127,4 @@ if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "m
     fi  
 fi 
 
-
-
-
-
-
 exit 0 
-

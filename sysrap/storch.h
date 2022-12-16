@@ -255,6 +255,24 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.pol.z = 0.f ;    
         smath::rotateUz(p.pol, p.mom) ; 
     }
+    else if( gs.type == T_POINT )
+    {
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
+        p.mom = gs.mom ; 
+
+        p.pos.x = 0.f ;
+        p.pos.y = 0.f ; 
+        p.pos.z = 0.f ;   
+
+        smath::rotateUz(p.pos, p.mom) ; 
+        p.pos = p.pos + gs.pos ; // translate position after orienting the line
+
+        p.pol.x = 0.f ;
+        p.pol.y = -1.f ; 
+        p.pol.z = 0.f ;    
+        smath::rotateUz(p.pol, p.mom) ; 
+    }
 
     p.zero_flags(); 
     p.set_flag(TORCH); 

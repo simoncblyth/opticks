@@ -27,7 +27,8 @@ REVERSE = int(os.environ.get("REVERSE","0")) == 1
 size = np.array([1280, 720])
 X,Y,Z = 0,1,2
 
-FOLD = os.environ.get("FOLD", None)
+SFOLD = os.environ.get("SFOLD", None)
+TFOLD = os.environ.get("TFOLD", None)
 
 AFOLD = os.environ.get("AFOLD", None)
 BFOLD = os.environ.get("BFOLD", None)
@@ -35,9 +36,8 @@ BFOLD = os.environ.get("BFOLD", None)
 APID = int(os.environ.get("APID", -1 ))
 BPID = int(os.environ.get("BPID", -1 ))
 
-
 TOPLINE = os.environ.get("TOPLINE","U4SimtraceTest.py")
-BOTLINE = os.environ.get("BOTLINE","%s" % FOLD )
+BOTLINE = os.environ.get("BOTLINE","%s" % SFOLD )
 THIRDLINE = os.environ.get("THIRDLINE", "APID:%d BPID:%d " % (APID,BPID) )
 
 AXES = np.array(list(map(int,os.environ.get("AXES","0,2").split(","))), dtype=np.int8 )
@@ -72,22 +72,37 @@ class U4SimtraceTest(RFold):
         for i, name in enumerate(trs_names):
             sfs[name] = Fold.Load(fold.base, name, symbol="%s%0.2d" % (fold.symbol,i) )
         pass
+
+        symbol = fold.symbol
+        vol = np.array(list(map(int,list(filter(None, os.environ.get("%sVOL" % symbol.upper(), "").split(",") )) )), dtype=np.int32)  
+
         self.fold = fold 
         self.trs_names = trs_names
         self.sfs = sfs
+        self.onephotonplot = []
+        self.vol = vol 
+        self.symbol = symbol
+
 
     def mp_geoplot(self, label="U4SimtraceTest"):
 
         trs = self.fold.trs
         trs_names = self.trs_names
         sfs = self.sfs
+        vol = self.vol
 
         fig, ax = mpplt_plotter(label=label)
 
         num = len(trs_names)
         for j in range(num):
             i = num - 1 - j  if REVERSE else j
+
             soname = trs_names[i]
+
+            if len(vol) > 0 and i in vol: 
+                print(" vol skip i %d vol %s num %d soname %s " % (i,str(vol), num, soname)) 
+                continue
+
             sf = sfs[soname]
             tr = np.float32(trs[i])
             tr[:,3] = [0,0,0,1]   ## fixup 4th column, as may contain identity info
@@ -131,13 +146,23 @@ class U4SimtraceTest(RFold):
         if LOC != "skip":
             ax.legend(loc=LOC,  markerscale=4)
         pass
-        fig.suptitle("\n".join([TOPLINE,BOTLINE,THIRDLINE]))
+
+        thirdline = ""
+        for one in self.onephotonplot:
+            thirdline += one.label 
+        pass 
+    
+        # adjust the position of the title, to legibly display 4 lines      
+        TOF = float(os.environ.get("TOF","0.99")) 
+        fig.suptitle("\n".join([TOPLINE,BOTLINE,thirdline]), family="monospace", va="top", y=TOF )
         fig.show()
 
 
     def mp_onephotonplot(self, a): 
         if a is None: return 
         if a.pid == -1: return
+
+        self.onephotonplot.append(a)
 
         #if "lin" in a.opt:
         if True:
@@ -150,6 +175,7 @@ class U4SimtraceTest(RFold):
 
     def mp_r_lines(self, f): 
         if not hasattr(f,'r'): return
+        if f.r is None: return
         r = f.r 
         ax = self.ax
         mpplt_add_contiguous_line_segments(ax, r[:,0,:3], axes=(H,V), label=None )
@@ -163,7 +189,6 @@ class U4SimtraceTest(RFold):
         r = f.r
         a = f.a 
         ast = f.ast
-        #cbs = a[:len(a),1,3].copy().view(np.int8)[::4]
         hv = r[:,0,(H,V)]
 
         if backgroundcolor == None:
@@ -182,13 +207,9 @@ class U4SimtraceTest(RFold):
 
             dx,dy = 0,0
 
-            tweak = "twk" in f.opt
-            if tweak:
-                if i==2: dx,dy=-10,0
-                if i==3: dx,dy=0,-10
-                if i==4: dx,dy=-10,0
-                if i==16: dx,dy=10,-10
-            pass
+            if "pdy" in f.opt: dy = 10
+            if "ndy" in f.opt: dy = -10
+
             if backgroundcolor is None:
                 ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15 )
             else:
@@ -207,6 +228,9 @@ class U4SimtraceTest(RFold):
         """
         if not hasattr(f,'r'): return
         if not hasattr(f,'a'): return
+        if f.r is None: return
+       
+
         ax = self.ax
         r = f.r 
         a = f.a 
@@ -253,6 +277,7 @@ class U4SimulateTest(RFold):
         return self._pid
     def _set_pid(self, pid):
         f = self.f
+        symbol = self.symbol
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
             wl = _r[:,2,3]
@@ -265,6 +290,12 @@ class U4SimulateTest(RFold):
             pass  
             q = ht.seqhis(f.seq[:,0])  # ht from opticks.ana.p 
             qpid = q[pid][0].decode("utf-8").strip()  
+
+            npoi = (len(qpid)+1)//3 
+            qkey = " ".join(map(lambda _:"%0.2d"%_, range(npoi)))  
+
+            #label = "%s %sPID:%d\n%s " % (qpid, symbol.upper(), pid, qkey)
+            label = "%s\n%s" % (qpid, qkey)
         else:
             _r = None
             r = None
@@ -273,7 +304,7 @@ class U4SimulateTest(RFold):
             ast = None
             q = None
             qpid = None
-
+            label = ""
         pass
         self._pid = pid
         self._r = _r
@@ -283,6 +314,8 @@ class U4SimulateTest(RFold):
         self.ast = ast
         self.q = q 
         self.qpid = qpid
+        self.label = label
+
 
     pid = property(_get_pid, _set_pid)
 
@@ -292,15 +325,22 @@ class U4SimulateTest(RFold):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    t = U4SimtraceTest.Load(FOLD, symbol="t")
+    s = U4SimtraceTest.Load(SFOLD, symbol="s")
+    t = U4SimtraceTest.Load(TFOLD, symbol="t")
+
     a = U4SimulateTest.Load(AFOLD, symbol="a")
     b = U4SimulateTest.Load(BFOLD, symbol="b")
 
     if mp:
-        t.mp_geoplot()
-        t.mp_onephotonplot(a)
-        t.mp_onephotonplot(b)
-        t.mp_show()
+        if not s is None:
+            s.mp_geoplot()
+        pass
+        if not t is None:
+            t.mp_geoplot()
+        pass
+        s.mp_onephotonplot(a)
+        s.mp_onephotonplot(b)
+        s.mp_show()
     pass 
 pass
 

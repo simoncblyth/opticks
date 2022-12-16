@@ -110,9 +110,22 @@ radius=250
 #radius=0
 [ $num_ph -lt 11  ] && radius=0
 
+#ttype=disc
+#ttype=line
+ttype=point
+
+#pos=0,0,0
+pos=0,0,-120
+
+mom=-1,0,0
+case $VERSION in
+   0) mom=-1,0,0 ;;
+   1) mom=1,0,0  ;;
+esac
+
+
 export SEvent_MakeGensteps_num_ph=$num_ph
-#export storch_FillGenstep_type=disc
-export storch_FillGenstep_type=line     
+export storch_FillGenstep_type=$ttype
 export storch_FillGenstep_radius=$radius
 
 
@@ -129,8 +142,8 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 elif [ "$LAYOUT" == "two_pmt" ]; then 
 
     # zero line to the right, along +ve X
-    export storch_FillGenstep_pos=0,0,0
-    export storch_FillGenstep_mom=-1,0,0
+    export storch_FillGenstep_pos=$pos
+    export storch_FillGenstep_mom=$mom
 
 fi 
 

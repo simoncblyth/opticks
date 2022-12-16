@@ -721,7 +721,14 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
             //[OpticalSurface.mpt.CustomBoundary
 #ifdef WITH_PMTFASTSIM
-            theCustomStatus = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
+            //theCustomStatus = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
+            theCustomStatus = m_custom_art->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
+            if(theCustomStatus == 'Y')
+            {
+                type = dielectric_dielectric ;  
+                theModel = glisur ; 
+                theFinish = polished ;  
+            }
 #else
             theCustomStatus = 'X' ; 
 #endif
@@ -808,9 +815,27 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
     //[type_switch 
 #ifdef WITH_PMTFASTSIM
+    /*
     if(strchr("ARTD", theCustomStatus)!=nullptr) 
     {
         LOG(LEVEL) << "CustomBoundary_doneIt : SKIP TYPE_SWITCH " ;  
+    }
+    else
+    */ 
+    if( theCustomStatus == 'Y' )
+    {
+        G4double rand = G4UniformRand();
+
+        G4double A = 1. - (theReflectivity + theTransmittance) ;  
+
+        if ( rand < A )
+        {
+            DoAbsorption();
+        }
+        else
+        {
+            DielectricDielectric();
+        }
     }
     else 
 #endif
@@ -1436,7 +1461,12 @@ Sets::
 
    NewMomentum
    NewPolarization
-   theStatus
+   theStatus : TotalInternalReflection/FresnelReflection/FresnelRefraction
+
+Needs:
+
+1. theFinish = polished, to use theGlobalNormal
+2. theTransmittance > 0 to avoid using the default TransCoeff (so had to add theCustomStatus)
 
 **/
 
@@ -1519,6 +1549,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
 
         if (sint2 >= 1.0) 
         {
+            //[didi.tir
             // Simulate total internal reflection
             if (Swap) Swap = !Swap;
 
@@ -1543,6 +1574,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
                 EdotN = OldPolarization * theFacetNormal;
                 NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
             }
+            //]didi.tir
         }
         else if (sint2 < 1.0) 
         {
@@ -1594,7 +1626,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
             E2_total = E2_perp*E2_perp + E2_parl*E2_parl;
             s2 = Rindex2*cost2*E2_total;
 
-            if (theTransmittance > 0) TransCoeff = theTransmittance;
+            if (theTransmittance > 0 || theCustomStatus == 'Y') TransCoeff = theTransmittance;
             else if (cost1 != 0.0) TransCoeff = s2/s1;
             else TransCoeff = 0.0;
 
