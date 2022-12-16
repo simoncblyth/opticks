@@ -188,14 +188,18 @@ template<> std::vector<SPhoton_Debug<'B'>> SPhoton_Debug<'B'>::record = {} ;
 CustomART
 -----------
 
-Trying to do less than CustomBoundary, instead just calculates::
+Trying to do less than CustomBoundary, instead just calculate::
 
     theTransmittance
     theReflectivity
     theEfficiency 
 
-with the mechanics of deciding on R/T/A/D and 
-changing photon momentum, polarization, theStatus 
+TODO: should also probably be setting::
+   
+   type = dielectric_dielectric 
+   theFinish = polished 
+
+With everything else (deciding on ARTD, changing mom, pol, theStatus)
 done by the nearly "standard" G4OpBoundaryProcess.   
 
 **/
@@ -212,9 +216,9 @@ struct CustomART
     G4double& theReflectivity ;
     G4double& theEfficiency ;
 
+    const G4ThreeVector& theGlobalPoint ; 
     const G4ThreeVector& OldMomentum ; 
     const G4ThreeVector& OldPolarization ; 
-    const G4ThreeVector& theGlobalPoint ; 
     const G4ThreeVector& theRecoveredNormal ; 
     const G4double& thePhotonMomentum ; 
 
@@ -222,9 +226,9 @@ struct CustomART
         G4double& theTransmittance,
         G4double& theReflectivity,
         G4double& theEfficiency,
+        const G4ThreeVector& theGlobalPoint,  
         const G4ThreeVector& OldMomentum,  
         const G4ThreeVector& OldPolarization,
-        const G4ThreeVector& theGlobalPoint,
         const G4ThreeVector& theRecoveredNormal,
         const G4double& thePhotonMomentum
     );  
@@ -238,9 +242,9 @@ inline CustomART<J>::CustomART(
           G4double& theTransmittance_,
           G4double& theReflectivity_,
           G4double& theEfficiency_,
+    const G4ThreeVector& theGlobalPoint_,
     const G4ThreeVector& OldMomentum_,
     const G4ThreeVector& OldPolarization_,
-    const G4ThreeVector& theGlobalPoint_, 
     const G4ThreeVector& theRecoveredNormal_,
     const G4double&      thePhotonMomentum_
     )
@@ -252,9 +256,9 @@ inline CustomART<J>::CustomART(
     theTransmittance(theTransmittance_),
     theReflectivity(theReflectivity_),
     theEfficiency(theEfficiency_),
+    theGlobalPoint(theGlobalPoint_),
     OldMomentum(OldMomentum_),
     OldPolarization(OldPolarization_),
-    theGlobalPoint(theGlobalPoint_),
     theRecoveredNormal(theRecoveredNormal_),
     thePhotonMomentum(thePhotonMomentum_) 
 {
@@ -281,19 +285,15 @@ template<typename J>
 inline void CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 {
     G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
-    G4double orientation = minus_cos_theta < 0. ? 1. : -1.  ; 
-    G4ThreeVector oriented_normal = orientation*theRecoveredNormal ;
 
     G4double energy = thePhotonMomentum ; 
     G4double wavelength = twopi*hbarc/energy ;
-
     G4double energy_eV = energy/eV ;
     G4double wavelength_nm = wavelength/nm ; 
 
     const G4VTouchable* touch = aTrack.GetTouchable();    
     int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
-    // TODO: add J API to access pmtcat+qe from replicaNumber
-    int pmtcat = J::DEFAULT_CAT ; 
+    int pmtcat = J::DEFAULT_CAT ;    // TODO: add J API to access pmtcat+qe from replicaNumber
     double _qe = 0.0 ; 
 
 
@@ -324,9 +324,14 @@ inline void CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     //    stack.ll[3] always transmission side 
 
     const double _si = stack.ll[0].st.real() ; 
+    const double _si2 = sqrtf( 1. - minus_cos_theta*minus_cos_theta ); 
 
     double E_s2 = _si > 0. ? (OldPolarization*OldMomentum.cross(theRecoveredNormal))/_si : 0. ; 
     E_s2 *= E_s2;      
+
+    double one = 1.0 ; 
+    double S = E_s2 ; 
+    double P = one - S ; 
 
     // E_s2 : S-vs-P power fraction : signs make no difference as squared
     // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
@@ -335,49 +340,33 @@ inline void CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
         << " count " << count 
         << " replicaNumber " << replicaNumber
         << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
+        << " _si2 " << std::fixed << std::setw(10) << std::setprecision(5) << _si2 
         << " theRecoveredNormal " << theRecoveredNormal 
         << " OldPolarization*OldMomentum.cross(theRecoveredNormal) " << OldPolarization*OldMomentum.cross(theRecoveredNormal) 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
         ;    
 
-    double fT_s = stack.art.T_s ; 
-    double fT_p = stack.art.T_p ; 
-    double fR_s = stack.art.R_s ; 
-    double fR_p = stack.art.R_p ; 
-
-    double one = 1.0 ; 
-    double T = fT_s*E_s2 + fT_p*(one-E_s2);  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
-    double R = fR_s*E_s2 + fR_p*(one-E_s2);
+    double T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
+    double R = S*stack.art.R_s + P*stack.art.R_p ;
     double A = one - (T+R);
 
     theTransmittance = T ; 
-    theReflectivity = R ; 
+    theReflectivity  = R ; 
 
     LOG(LEVEL)
         << " count " << count 
-        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
-        << " fT_s " << std::fixed << std::setw(10) << std::setprecision(5) << fT_s 
-        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
-        << " fT_p " << std::fixed << std::setw(10) << std::setprecision(5) << fT_p 
+        << " S " << std::fixed << std::setw(10) << std::setprecision(5) << S 
+        << " P " << std::fixed << std::setw(10) << std::setprecision(5) << P
         << " T " << std::fixed << std::setw(10) << std::setprecision(5) << T 
+        << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R
+        << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A
         ;    
 
-    LOG(LEVEL)
-        << " count " << count 
-        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
-        << " fR_s " << std::fixed << std::setw(10) << std::setprecision(5) << fR_s 
-        << " 1-E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << (1.-E_s2)
-        << " fR_p " << std::fixed << std::setw(10) << std::setprecision(5) << fR_p 
-        << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R 
-        << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A 
-        ;  
-
     // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) presumably this is due to _qe definition
-
     Stack<double,4> stackNormal(wavelength_nm, -1. , spec ); 
 
     double An = one - (stackNormal.art.T + stackNormal.art.R) ; 
-    double D = _qe/An;   // LOOKS STRANGE TO DIVIDE BY An 
+    double D = _qe/An;   // LOOKS STRANGE TO DIVIDE BY An  : HMM MAYBE NEED TO DIVIDE BY A TOO ? 
  
     theEfficiency = D ; 
 
@@ -412,9 +401,9 @@ struct CustomBoundary
     G4ParticleChange& aParticleChange ; 
     G4OpBoundaryProcessStatus& theStatus ;
 
+    const G4ThreeVector& theGlobalPoint ; 
     const G4ThreeVector& OldMomentum ; 
     const G4ThreeVector& OldPolarization ; 
-    const G4ThreeVector& theGlobalPoint ; 
     const G4ThreeVector& theRecoveredNormal ; 
     const G4double& thePhotonMomentum ; 
 
@@ -423,9 +412,9 @@ struct CustomBoundary
         G4ThreeVector& NewPolarization,
         G4ParticleChange& aParticleChange,
         G4OpBoundaryProcessStatus& theStatus,
+        const G4ThreeVector& theGlobalPoint,
         const G4ThreeVector& OldMomentum,  
         const G4ThreeVector& OldPolarization,
-        const G4ThreeVector& theGlobalPoint,
         const G4ThreeVector& theRecoveredNormal,
         const G4double& thePhotonMomentum
       ); 
@@ -447,9 +436,9 @@ inline CustomBoundary<J>::CustomBoundary(
           G4ThreeVector& NewPolarization_,
           G4ParticleChange& aParticleChange_,
           G4OpBoundaryProcessStatus& theStatus_,
+    const G4ThreeVector& theGlobalPoint_, 
     const G4ThreeVector& OldMomentum_,
     const G4ThreeVector& OldPolarization_,
-    const G4ThreeVector& theGlobalPoint_, 
     const G4ThreeVector& theRecoveredNormal_,
     const G4double&      thePhotonMomentum_
     )
@@ -463,9 +452,9 @@ inline CustomBoundary<J>::CustomBoundary(
     NewPolarization(NewPolarization_),
     aParticleChange(aParticleChange_),
     theStatus(theStatus_),
+    theGlobalPoint(theGlobalPoint_),
     OldMomentum(OldMomentum_),
     OldPolarization(OldPolarization_),
-    theGlobalPoint(theGlobalPoint_),
     theRecoveredNormal(theRecoveredNormal_),
     thePhotonMomentum(thePhotonMomentum_) 
 {
@@ -479,6 +468,7 @@ inline G4bool CustomBoundary<J>::maybe_doIt(const char* OpticalSurfaceName, cons
 
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
     G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+
     zlocal = localPoint.z() ; 
     lposcost = localPoint.cosTheta() ; 
 

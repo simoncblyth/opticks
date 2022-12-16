@@ -87,6 +87,7 @@
 #include "SOpBoundaryProcess.hh"
 #include "JPMT.h"
 template <typename T> struct CustomBoundary ; 
+template <typename T> struct CustomART ; 
 #endif
 
 #include "G4Step.hh"
@@ -170,11 +171,12 @@ public:
 
 #ifdef WITH_PMTFASTSIM
         CustomBoundary<JPMT>* m_custom_boundary ; 
+        CustomART<JPMT>*      m_custom_art ; 
 
         double getU0() const ; 
         int getU0_idx() const ; 
         const double* getRecoveredNormal() const ; 
-        char getCustomBoundaryStatus() const ; 
+        char getCustomStatus() const ; 
 
         static void Save(const char* dir); 
 #endif

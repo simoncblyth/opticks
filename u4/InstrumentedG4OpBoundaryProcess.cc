@@ -193,9 +193,16 @@ const double* InstrumentedG4OpBoundaryProcess::getRecoveredNormal() const
 {
     return (const double*)&theRecoveredNormal ;
 }
-char InstrumentedG4OpBoundaryProcess::getCustomBoundaryStatus() const 
+char InstrumentedG4OpBoundaryProcess::getCustomStatus() const 
 {
     return m_custom_boundary ? m_custom_boundary->customStatus : '-' ; 
+    // HMM: actually makes more sense to hold a more 
+    // general status within InstrumentedG4OpBoundaryProcess 
+    // which describes whether the custom_boundary was used or not 
+    // and which is informative on why custom boundary used/not-used
+    // thats more relevant than the R/T/A which is already described
+    // by the standard status 
+
 }
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 {
@@ -215,9 +222,19 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                   NewPolarization,
                   aParticleChange,
                   theStatus,
+                  theGlobalPoint,
                   OldMomentum,
                   OldPolarization,
+                  theRecoveredNormal,
+                  thePhotonMomentum))
+
+    ,m_custom_art(new CustomART<JPMT>(
+                  theTransmittance,
+                  theReflectivity,
+                  theEfficiency,
                   theGlobalPoint,
+                  OldMomentum,
+                  OldPolarization,
                   theRecoveredNormal,
                   thePhotonMomentum))
     ,m_u0(-1.)

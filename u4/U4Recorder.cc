@@ -453,13 +453,13 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const double* recoveredNormal = is_boundary_flag ? bop->getRecoveredNormal() : nullptr ; 
     current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
 
-    char customBoundaryStatus = is_boundary_flag ? bop->getCustomBoundaryStatus() : ' ' ; 
-    current_aux.q1.i.w = int(customBoundaryStatus) ; 
+    char customStatus = is_boundary_flag ? bop->getCustomStatus() : ' ' ; 
+    current_aux.q1.i.w = int(customStatus) ; 
 
     LOG(info) 
         << " flag " << OpticksPhoton::Flag(flag)
         << " is_boundary_flag " << is_boundary_flag  
-        << " customBoundaryStatus " << customBoundaryStatus 
+        << " customStatus " << customStatus 
         ;
 
 
