@@ -465,8 +465,16 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
 
-    const double* recoveredNormal = is_boundary_flag ? bop->getRecoveredNormal() : nullptr ; 
-    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+
+    if(is_boundary_flag )
+    {
+        const double* recoveredNormal = bop->getRecoveredNormal() ; 
+        current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+    }
+    else
+    {
+        current_aux.zero_v(3, 3); 
+    }
 
     char customStatus = is_boundary_flag ? bop->getCustomStatus() : 'B' ; 
     current_aux.q1.i.w = int(customStatus) ; 

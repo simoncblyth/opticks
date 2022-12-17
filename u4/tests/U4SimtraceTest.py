@@ -14,6 +14,7 @@ from collections import OrderedDict as odict
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter, mpplt_focus_aspect
 from opticks.ana.p import * 
+from opticks.ana.eget import eintarray_  
 
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 GCOL = "grey"
@@ -74,34 +75,47 @@ class U4SimtraceTest(RFold):
         pass
 
         symbol = fold.symbol
-        vol = np.array(list(map(int,list(filter(None, os.environ.get("%sVOL" % symbol.upper(), "").split(",") )) )), dtype=np.int32)  
+
+        kvol = "%sVOL" % symbol.upper()
+        vol = eintarray_(kvol)
 
         self.fold = fold 
         self.trs_names = trs_names
         self.sfs = sfs
         self.onephotonplot = []
+        self.kvol = kvol 
         self.vol = vol 
         self.symbol = symbol
 
 
-    def mp_geoplot(self, label="U4SimtraceTest"):
+    def mp_geoplot(self, ax):
 
         trs = self.fold.trs
         trs_names = self.trs_names
         sfs = self.sfs
         vol = self.vol
+        kvol = self.kvol
 
-        fig, ax = mpplt_plotter(label=label)
-
+        vsel = len(vol) > 0   # selecting volumes by index from eg SVOL envvar
         num = len(trs_names)
+
+        if vsel:
+            print("mp_geoplot : volume selection %s vol %s num %d " % (kvol, str(vol), num )) 
+        pass
+
         for j in range(num):
             i = num - 1 - j  if REVERSE else j
 
             soname = trs_names[i]
 
-            if len(vol) > 0 and i in vol: 
-                print(" vol skip i %d vol %s num %d soname %s " % (i,str(vol), num, soname)) 
-                continue
+            if vsel:
+                if i in vol: 
+                    print(" %s PROCEED i %d soname %s " % (kvol, i, soname)) 
+                else:
+                    print(" %s SKIP    i %d soname %s " % (kvol, i, soname)) 
+                    continue
+                pass
+            pass
 
             sf = sfs[soname]
             tr = np.float32(trs[i])
@@ -133,13 +147,8 @@ class U4SimtraceTest(RFold):
             log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
         pass 
 
-        self.fig = fig
-        self.ax = ax
-        return fig, ax
 
-    def mp_show(self): 
-        fig = self.fig
-        ax = self.ax
+    def mp_show(self, ax, fig): 
 
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])
@@ -148,17 +157,34 @@ class U4SimtraceTest(RFold):
         pass
 
         thirdline = ""
-        for one in self.onephotonplot:
-            thirdline += one.label 
-        pass 
-    
+        subtitle = ""
+
+        if len(self.onephotonplot) == 2:
+            a,b = self.onephotonplot
+            thirdline = a.label 
+            subtitle  = b.label
+        else:
+            for one in self.onephotonplot:
+                thirdline += one.label 
+            pass 
+        pass
+        
         # adjust the position of the title, to legibly display 4 lines      
         TOF = float(os.environ.get("TOF","0.99")) 
-        fig.suptitle("\n".join([TOPLINE,BOTLINE,thirdline]), family="monospace", va="top", y=TOF )
+
+        #suptitle = "\n".join([TOPLINE,BOTLINE,thirdline]) 
+        suptitle = TOPLINE 
+
+        fig.suptitle(suptitle, family="monospace", va="top", y=TOF, fontweight='bold' )
+
+
+        ax.text(-0.05,  1.02, thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+        ax.text( 1.05, -0.12, subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
+
         fig.show()
 
 
-    def mp_onephotonplot(self, a): 
+    def mp_onephotonplot(self, ax, a): 
         if a is None: return 
         if a.pid == -1: return
 
@@ -166,26 +192,24 @@ class U4SimtraceTest(RFold):
 
         #if "lin" in a.opt:
         if True:
-            self.mp_r_lines(a) 
+            self.mp_r_lines(ax, a) 
         pass
         if "nrm" in a.opt:
-            self.mp_a_normal(a) 
+            self.mp_a_normal(ax, a) 
         pass
 
 
-    def mp_r_lines(self, f): 
+    def mp_r_lines(self, ax, f): 
         if not hasattr(f,'r'): return
         if f.r is None: return
         r = f.r 
-        ax = self.ax
         mpplt_add_contiguous_line_segments(ax, r[:,0,:3], axes=(H,V), label=None )
-        self.mp_plab(f)
+        self.mp_plab(ax, f)
 
-    def mp_plab(self, f, backgroundcolor=None ):
+    def mp_plab(self, ax, f, backgroundcolor=None ):
         """
         point labels
         """
-        ax = self.ax
         r = f.r
         a = f.a 
         ast = f.ast
@@ -219,7 +243,7 @@ class U4SimtraceTest(RFold):
 
 
 
-    def mp_a_normal(self, f):
+    def mp_a_normal(self, ax, f):
         """
         Access customBoundaryStatus char 
 
@@ -229,9 +253,7 @@ class U4SimtraceTest(RFold):
         if not hasattr(f,'r'): return
         if not hasattr(f,'a'): return
         if f.r is None: return
-       
 
-        ax = self.ax
         r = f.r 
         a = f.a 
         sc = float(os.environ.get("NRM","80"))
@@ -326,21 +348,22 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     s = U4SimtraceTest.Load(SFOLD, symbol="s")
+    assert not s is None
     t = U4SimtraceTest.Load(TFOLD, symbol="t")
 
     a = U4SimulateTest.Load(AFOLD, symbol="a")
     b = U4SimulateTest.Load(BFOLD, symbol="b")
 
+
+    label = "U4SimtraceTest.py"
+    fig, ax = mpplt_plotter(label=label)
+
     if mp:
-        if not s is None:
-            s.mp_geoplot()
-        pass
-        if not t is None:
-            t.mp_geoplot()
-        pass
-        s.mp_onephotonplot(a)
-        s.mp_onephotonplot(b)
-        s.mp_show()
+        s.mp_geoplot(ax)
+        if not t is None: t.mp_geoplot(ax)
+        s.mp_onephotonplot(ax, a)
+        s.mp_onephotonplot(ax, b)
+        s.mp_show(ax, fig)
     pass 
 pass
 

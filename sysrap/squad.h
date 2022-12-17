@@ -188,6 +188,7 @@ struct quad4
     void transverse_mom_pol(); 
     float* get_v(int i) const ;  
     void set_v(int i, const double* src, int n); 
+    void zero_v(int i, int n); 
 #endif
 };
 
@@ -733,6 +734,16 @@ inline void quad4::set_v(int i, const double* src, int n)
     if(v == nullptr) return ; 
     for(int j=0 ; j < n ; j++)  v[j] = float(src[j]) ; 
 }
+
+inline void quad4::zero_v(int i, int n)
+{
+    assert( n > -1 && n <= 4 ); 
+    assert( i > -1 && i < 4 ); 
+    float* v = get_v(i); 
+    for(int j=0 ; j < n ; j++)  v[j] = 0.f ; 
+}
+
+
 
 inline quad4 quad4::make_ephoton()  // static
 {

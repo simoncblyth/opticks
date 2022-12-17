@@ -27,6 +27,44 @@ def eintlist_(ekey, fallback):
     return list(map(int, filter(None, slis)))
 
 
+def intlist_(s):
+    """
+    :param s: string of form 10:21,30,31,32,40:51
+    :return ii: list of integers 
+
+    Uses np.arange one past the end convention, so "10:20" would not include 20::
+
+        In [10]: np.arange(10,20)
+        Out[10]: array([10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+
+    """
+    ii = []
+    if not s is None and len(s) > 0:
+        ee = s.split(",")
+        for e in ee:
+            if ":" in e:
+                ab = e.split(":")
+                assert len(ab) == 2 
+                a, b = list(map(int,ab))
+                for i in range(a,b):
+                    ii.append(i)
+                pass
+            else:
+                ii.append(int(e))
+            pass
+        pass 
+    pass
+    return ii
+
+def intarray_(s):
+    ii = intlist_(s)
+    return np.array(ii, dtype=np.int32 )
+
+def eintarray_(ekey, fallback=None):
+    s = os.environ.get(ekey,fallback)
+    return intarray_(s) 
+
+
 def elook_epsilon_(epsilon, ekey="LOOK"):
     if not ekey in os.environ:
          return None
