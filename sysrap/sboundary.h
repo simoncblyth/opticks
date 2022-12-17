@@ -63,7 +63,7 @@ struct sboundary
     const float& n1 ;
     const float& n2 ;    
     const float eta ;  
-    const float3* normal ;     // geometrical outwards normal 
+    const float3* normal ; // geometrical outwards normal 
     const float mct ; 
     const float orient ; 
     const float c1 ; 
@@ -87,7 +87,6 @@ struct sboundary
     const float2 E2_t ;
     const float2 _E2_r ;
     const float2 E2_r ;
-
     const float2 RR ;
     const float2 TT ; 
 
@@ -98,7 +97,6 @@ struct sboundary
     const unsigned flag ; 
     const float Coeff ; 
     const float EdotN ; 
-
     float3 A_parallel ; 
 
     sboundary(curandStateXORWOW& rng, sctx& ctx );  

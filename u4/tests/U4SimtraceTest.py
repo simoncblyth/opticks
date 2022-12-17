@@ -28,6 +28,7 @@ REVERSE = int(os.environ.get("REVERSE","0")) == 1
 size = np.array([1280, 720])
 X,Y,Z = 0,1,2
 
+FOLD = os.environ.get("FOLD", None)
 SFOLD = os.environ.get("SFOLD", None)
 TFOLD = os.environ.get("TFOLD", None)
 
@@ -152,6 +153,7 @@ class U4SimtraceTest(RFold):
 
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])
+        print("LOC : %s " % LOC)
         if LOC != "skip":
             ax.legend(loc=LOC,  markerscale=4)
         pass
@@ -347,7 +349,9 @@ class U4SimulateTest(RFold):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    s = U4SimtraceTest.Load(SFOLD, symbol="s")
+
+    fold = SFOLD if not SFOLD is None else FOLD
+    s = U4SimtraceTest.Load(fold, symbol="s")
     assert not s is None
     t = U4SimtraceTest.Load(TFOLD, symbol="t")
 

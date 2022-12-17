@@ -1,13 +1,7 @@
 #pragma once
-
-
-
-
-
-
 /**
 CustomART
------------
+===========
 
 Trying to do less than CustomBoundary, instead just calculate::
 
@@ -24,7 +18,6 @@ With everything else (deciding on ARTD, changing mom, pol, theStatus)
 done by the nearly "standard" G4OpBoundaryProcess.   
 
 **/
-
 
 #include "G4ThreeVector.hh"
 

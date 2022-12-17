@@ -52,7 +52,14 @@ layout=two_pmt
 apid=-1
 bpid=-1
 
-export LAYOUT=$layout
+
+export LAYOUT=${LAYOUT:-$layout}
+
+case $LAYOUT in 
+  one_pmt) loc="upper right" ;; 
+        *) loc="skip"        ;; 
+esac
+
 export VERSION=${N:-0}
 
 export GEOM=hamaLogicalPMT
@@ -60,14 +67,14 @@ export GEOM=hamaLogicalPMT
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
-export SFOLD=$BASE/0
-export TFOLD=$BASE/1
+#export SFOLD=$BASE/0
+#export TFOLD=$BASE/1
 
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
 export APID=${APID:-$apid}   ## NB APID for photons from ALL0
 export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
-export LOC=skip   # python ana level presentation 
+export LOC=${LOC:-$loc}      # python ana level presentation 
 
 geomscript=$GEOM.sh 
 
@@ -113,7 +120,7 @@ if [ "${arg/ana}" != "$arg"  ]; then
 fi 
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
-    export CAP_BASE=$SFOLD/figs
+    export CAP_BASE=$FOLD/figs
     export CAP_REL=U4SimtraceTest
     export CAP_STEM=$GEOM
     case $arg in  
