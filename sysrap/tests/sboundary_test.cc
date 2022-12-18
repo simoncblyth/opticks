@@ -92,12 +92,14 @@ int main(int argc, char** argv)
 
     sphoton& p = ctx.p ; 
 
-    std::vector<sphoton> pp(N*2) ; 
+    const int pnum = 3 ; 
+    std::vector<sphoton> pp(N*pnum) ; 
 
     for(int i=0 ; i < N ; i++)
     {   
-        sphoton& p0 = pp[i*2+0] ; 
-        sphoton& p1 = pp[i*2+1] ; 
+        sphoton& p0 = pp[i*3+0] ; 
+        sphoton& p1 = pp[i*3+1] ; 
+        sphoton& p2 = pp[i*3+2] ; 
 
         float frac_twopi = float(i)/float(N)  ;   
 
@@ -115,6 +117,8 @@ int main(int argc, char** argv)
         p1 = b.p ;
         p1.wavelength = b.Coeff ; 
 
+        p2 = p1 ; 
+        p2.pol = b.alt_pol ;   // p2: same as p1 but with alt_pol 
 
         std::cout
             << " b.flag " << OpticksPhoton::Flag(b.flag)
@@ -123,13 +127,15 @@ int main(int argc, char** argv)
             << std::endl
             << " p1 " << p1.descDir()
             << std::endl
+            << " p2 " << p2.descDir()
+            << std::endl
             ;
 
         std::cout << b ; 
 
      }
 
-     NP* a = NP::Make<float>(N,2,4,4) ;
+     NP* a = NP::Make<float>(N,pnum,4,4) ;
      a->read2<float>( (float*)pp.data() );
      a->save(FOLD, "pp.npy");
      std::cout << " save to " << FOLD << "/pp.npy" << std::endl;

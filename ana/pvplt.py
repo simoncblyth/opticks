@@ -233,6 +233,12 @@ def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
+def pvplt_add_line_a2b(pl, a, b, color="white", width=1):
+    lines = np.zeros( (2,3), dtype=np.float32 )
+    lines[0] = a 
+    lines[1] = b 
+    pl.add_lines( lines, color=color, width=width  )
+
 
 
 def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white" ):

@@ -451,11 +451,10 @@ inline char CustomBoundary<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
         // The bracket is flipped compared with junoPMTOpticalModel.
         // TODO: check the oriented_normal sign convention, is it really flipped. 
 
-        NewPolarization = (OldPolarization-(OldPolarization*OldMomentum)*OldMomentum).unit();
+        NewPolarization = (OldPolarization-(OldPolarization*NewMomentum)*NewMomentum).unit();
 
-        // HMM: WHERE DID THIS EXPRESSION COME FROM ? 
-        // Q: As light is transverse OldPolarization*OldMomentum is ZERO ? SO THE ABOVE BECOMES : NewPolarization = OldPolarization
-        //    Also would expect dependency on S and P fractions ? 
+        // JPOM expression:: pol = (pol-(pol*dir)*dir).unit();  // using old pol and new mom 
+        // The above just restates the JPOM expression, it does not match G4OpBoundaryProcess/qsim.h/sboundary.h  
 
 
     }

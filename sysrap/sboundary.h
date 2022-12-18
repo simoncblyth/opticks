@@ -98,6 +98,7 @@ struct sboundary
     const float Coeff ; 
     const float EdotN ; 
     float3 A_parallel ; 
+    float3 alt_pol ;  // check an alternative polarization expression  
 
     sboundary(curandStateXORWOW& rng, sctx& ctx );  
 };
@@ -150,6 +151,14 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
 
     A_parallel = normalize(cross(p.mom, A_transverse));   // A_paral is P-pol direction using new p.mom
 
+
+    alt_pol = reflect ?
+                          p.pol - 2.f*orient*dot(p.pol,*normal)*(*normal)   // opposite sign to below expression
+                      :
+                          normalize((p.pol-(dot(p.pol,p.mom)*p.mom)));      // 
+                      ;
+
+
     p.pol =  normal_incidence 
                     ?
                        ( reflect ?  p.pol*(n2>n1? -1.f:1.f) : p.pol )
@@ -160,6 +169,11 @@ inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx )
                                     TT.x*A_transverse + TT.y*A_parallel
                        )
                     ;
+
+    
+
+
+
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sboundary& b)  
@@ -229,6 +243,11 @@ inline std::ostream& operator<<(std::ostream& os, const sboundary& b)
        << std::setw(20) << " length(p.pol) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.p.pol)  
        << std::endl 
        << std::setw(20) << " dot(p.mom,p.pol) " << std::setw(10) << std::fixed << std::setprecision(4) << dot(b.p.mom,b.p.pol)  
+       << std::endl 
+       << std::setw(20) << " alt_pol "        << std::setw(10) << b.alt_pol  
+       << std::setw(20) << " length(alt_pol) " << std::setw(10) << std::fixed << std::setprecision(4) << length(b.alt_pol)  
+       << std::endl 
+       << std::setw(20) << " dot(p.mom,alt_pol) " << std::setw(10) << std::fixed << std::setprecision(4) << dot(b.p.mom,b.alt_pol)  
        << std::endl 
        ;
     return os; 

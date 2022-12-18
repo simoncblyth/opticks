@@ -22,17 +22,19 @@ force=R  # R/T/N
 aoi=CRITICAL
 n1=1.5
 n2=1.0
+b=1
 
 export N=${N:-$n}
 export FORCE=${FORCE:-$force}
 export AOI=${AOI:-$aoi}
 export N1=${N1:-$n1}
 export N2=${N2:-$n2}
+export B=${B:-$b}
 
-topline="opticks/sysrap/tests/sboundary_test.sh N:$N N1:$N1 N2:$N2 FORCE:$FORCE AOI $AOI "
+topline="opticks/sysrap/tests/sboundary_test.sh N:$N N1:$N1 N2:$N2 FORCE:$FORCE AOI $AOI B:$B "
 case $AOI in 
    BREWSTER) topline="$topline (Polarizing angle)" ;; 
-   CRITICAL) topline="$topline (TIR: Total Internal Reflection)" ;; 
+   CRITICAL) topline="$topline (TIR: Total Internal Reflection, ie no refract)" ;; 
           *) topline="$topline" ;;
 esac
 topline="$topline EYE $EYE LOOK $LOOK"
