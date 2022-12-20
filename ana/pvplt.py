@@ -27,18 +27,26 @@ import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-try:
-    import pyvista as pv
-except ImportError:
-    pv = None
+MODE = int(os.environ.get("MODE", 2 ))
+mp = None
+pv = None
+
+if MODE in [2,3]:
+    try:
+        import matplotlib as mp
+        #import matplotlib.pyplot as mp  
+    except ImportError:
+        mp = None
+    pass
 pass
 
-try:
-    import matplotlib as mp
-except ImportError:
-    mp = None
+if MODE == 3:
+    try:
+        import pyvista as pv
+    except ImportError:
+        pv = None
+    pass
 pass
-
 
 
 if not mp is None:
@@ -174,9 +182,12 @@ def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
 
 
 
+
 def pvplt_plotter(label="pvplt_plotter"):
     print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
     pl = pv.Plotter(window_size=SIZE*2 )  
+    pvplt_viewpoint(pl, reset=False)
+
     pl.show_grid()
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
@@ -187,6 +198,21 @@ def mpplt_plotter(label="mpplt_plotter"):
     fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) # 100 dpi 
     ax.set_aspect('equal')
     return fig, ax
+
+
+def plotter(label="plotter"):
+    if MODE == 2:
+        pl = mpplt_plotter(label=label)
+        assert type(pl) is tuple and len(pl) == 2  # fig, ax
+    elif MODE == 3:
+        pl = pvplt_plotter(label=label)
+    else:
+        pl = None
+    pass 
+    return pl
+
+
+
 
 
 

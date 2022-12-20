@@ -40,6 +40,13 @@ two_pmt::
 
     N=1 BPID=748 BOPT=ast,nrm BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
     N=1 BPID=150 BOPT=nrm,ast BGC=yellow FOCUS=0,0,255 ./U4SimtraceTest.sh ana
+
+
+MODE 3 pyvista 3D plotting::
+
+    MODE=3 EYE=0,-1000,0 LOOK=0,0,0 UP=0,0,1 ./U4SimtraceTest.sh ana
+
+
   
 EOU
 }

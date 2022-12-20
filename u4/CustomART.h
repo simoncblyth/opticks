@@ -17,6 +17,39 @@ TODO: should also probably be setting::
 With everything else (deciding on ARTD, changing mom, pol, theStatus)
 done by the nearly "standard" G4OpBoundaryProcess.   
 
+
+Is 2-layer (Pyrex,Vacuum) polarization direction calc applicable to 4-layer (Pyrex,ARC,PHC,Vacuum) situation ? 
+-----------------------------------------------------------------------------------------------------------------
+
+The Geant4 calculation of polarization direction for a simple
+boundary between two layers is based on continuity of E and B fields
+in S and P directions at the boundary, essentially Maxwells Eqn boundary conditions.
+Exactly the same thing yields Snells law::
+
+    n1 sin t1  = n2 sin t2 
+
+My thinking on this is that Snell's law with a bunch of layers would be::
+
+    n1 sin t1 = n2 sin t2 =  n3 sin t3 =  n4 sin t4 
+
+So the boundary conditions from 1->4 where n1 and n4 are real still gives::
+
+    n1 sin t1 = n4 sin t4
+
+Even when n2,t2,n3,t3 are complex.
+
+So by analogy that makes me think that the 2-layer polarization calculation 
+between layers 1 and 4 (as done by G4OpBoundaryProcess) 
+should still be valid even when there is a stack of extra layers 
+inbetween layer 1 and 4. 
+
+Essentially the stack calculation changes A,R,T so it changes
+how much things happen : but it doesnt change what happens. 
+So the two-layer polarization calculation from first and last layer 
+should still be valid to the situation of the stack.
+
+Do you agree with this argument ? 
+
 **/
 
 #include "G4ThreeVector.hh"
@@ -89,6 +122,23 @@ inline CustomART<J>::CustomART(
 {
 }
 
+/**
+CustomART::maybe_doIt
+------------------------
+
+
+Q:What is lposcost for ?  
+A:Preparing for doing this on GPU, as lposcost is available there already but zlocal is not, 
+  so want to check the sign of lposcost is following that of zlocal. It looks 
+  like it should:: 
+
+    157 inline double Hep3Vector::cosTheta() const {
+    158   double ptot = mag();
+    159   return ptot == 0.0 ? 1.0 : dz/ptot;
+    160 }
+
+**/
+
 template<typename J>
 inline char CustomART<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
 {
@@ -98,8 +148,6 @@ inline char CustomART<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Tra
     G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
     zlocal = localPoint.z() ; 
     lposcost = localPoint.cosTheta() ;  
-    // Q:What is lposcost for ?  
-    // A:Preparing for doing this on GPU, as lposcost is available there already but not zlocal 
 
     if(zlocal <= 0) return 'Z' ; 
 
@@ -118,27 +166,34 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     const G4VTouchable* touch = aTrack.GetTouchable();    
     int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
-    int pmtcat = J::DEFAULT_CAT ;    // TODO: add J API to access pmtcat+qe from replicaNumber
-    double _qe = 0.0 ; 
 
+    int pmtcat = J::DEFAULT_CAT ;    // TODO: add J API to access pmtcat+qe from replicaNumber
+    double _qe = 0.0 ;  
 
     StackSpec<double,4> spec ; 
-    spec.ls[0].d = 0. ; 
-    spec.ls[1].d = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
-    spec.ls[2].d = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
-    spec.ls[3].d = 0. ; 
+    {
+        // TODO: parameter_accessor should directly return StackSpec in one call
+        // with pmtcat and energy_eV arguments : which would reduce API area 
 
-    spec.ls[0].nr = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
-    spec.ls[0].ni = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
+        spec.ls[0].d = 0. ; 
+        spec.ls[1].d = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
+        spec.ls[2].d = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
+        spec.ls[3].d = 0. ; 
 
-    spec.ls[1].nr = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
-    spec.ls[1].ni = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
+        spec.ls[0].nr = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
+        spec.ls[0].ni = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
 
-    spec.ls[2].nr = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
-    spec.ls[2].ni = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
+        spec.ls[1].nr = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
+        spec.ls[1].ni = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
 
-    spec.ls[3].nr = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
-    spec.ls[3].ni = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
+        spec.ls[2].nr = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
+        spec.ls[2].ni = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
+
+        spec.ls[3].nr = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
+        spec.ls[3].ni = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
+    }
+
+
 
 
     Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  

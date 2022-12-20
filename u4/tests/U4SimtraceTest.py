@@ -12,7 +12,14 @@ log = logging.getLogger(__name__)
 
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter, mpplt_focus_aspect
+
+## HMM: should eventually split off mpplt from pvplt, but its too convenient to 
+## keep them together for now : so effectively assume both are installed 
+#from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter, mpplt_focus_aspect
+#from opticks.ana.pvplt import pvplt_plotter
+
+from opticks.ana.pvplt import *
+
 from opticks.ana.p import * 
 from opticks.ana.eget import eintarray_  
 
@@ -49,12 +56,6 @@ H,V = AXES
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
-try:
-    import matplotlib.pyplot as mp  
-except ImportError:
-    mp = None
-pass
-
 
 class RFold(object):
     @classmethod
@@ -83,13 +84,24 @@ class U4SimtraceTest(RFold):
         self.fold = fold 
         self.trs_names = trs_names
         self.sfs = sfs
-        self.onephotonplot = []
+        self.opp = []
         self.kvol = kvol 
         self.vol = vol 
         self.symbol = symbol
 
 
-    def mp_geoplot(self, ax):
+
+    def geoplot(self, pl):
+        """
+        :param pl: wither tuple of (fig,ax) for MODE 2 or pyvista pl for MODE 3
+        """
+        fig, ax = None, None
+        if MODE == 2:
+            fig, ax = pl
+        elif MODE == 2:
+            pass
+        pass 
+
 
         trs = self.fold.trs
         trs_names = self.trs_names
@@ -136,21 +148,40 @@ class U4SimtraceTest(RFold):
             if label[0] == "_": label = label[1:]   # seems labels starting "_" have special meaning to mpl, causing problems
             label = label.replace("solid","s")
 
-            ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
+            if MODE == 2:
+                ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
+            elif MODE == 3:
+                pl.add_points( gpos[:,:3], color=color, label=label)  
+            pass
         pass
 
 
-        xlim, ylim = mpplt_focus_aspect()
-        if not xlim is None:
-            ax.set_xlim(xlim) 
-            ax.set_ylim(ylim) 
-        else:
-            log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
-        pass 
+        if MODE == 2:
+            xlim, ylim = mpplt_focus_aspect()
+            if not xlim is None:
+                ax.set_xlim(xlim) 
+                ax.set_ylim(ylim) 
+            else:
+                log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
+            pass 
+        elif MODE == 3:
+            pass
+        pass
 
+    def show(self, pl ):
+        if MODE == 2:
+            self.mp_show(pl)
+        elif MODE == 3:
+            self.pv_show(pl)
+        pass
+  
+    def pv_show(self, pl):
+        cp = pl.show()
+        print(cp)
 
-    def mp_show(self, ax, fig): 
+    def mp_show(self, pl): 
 
+        fig, ax = pl
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])
         print("LOC : %s " % LOC)
@@ -161,12 +192,12 @@ class U4SimtraceTest(RFold):
         thirdline = ""
         subtitle = ""
 
-        if len(self.onephotonplot) == 2:
-            a,b = self.onephotonplot
+        if len(self.opp) == 2:
+            a,b = self.opp
             thirdline = a.label 
             subtitle  = b.label
         else:
-            for one in self.onephotonplot:
+            for one in self.opp:
                 thirdline += one.label 
             pass 
         pass
@@ -185,28 +216,30 @@ class U4SimtraceTest(RFold):
 
         fig.show()
 
+    def onephotonplot(self, pl, f): 
+        if f is None: return 
+        if f.pid == -1: return
 
-    def mp_onephotonplot(self, ax, a): 
-        if a is None: return 
-        if a.pid == -1: return
+        self.opp.append(f)
 
-        self.onephotonplot.append(a)
-
-        #if "lin" in a.opt:
-        if True:
-            self.mp_r_lines(ax, a) 
-        pass
-        if "nrm" in a.opt:
-            self.mp_a_normal(ax, a) 
-        pass
-
-
-    def mp_r_lines(self, ax, f): 
         if not hasattr(f,'r'): return
         if f.r is None: return
         r = f.r 
-        mpplt_add_contiguous_line_segments(ax, r[:,0,:3], axes=(H,V), label=None )
-        self.mp_plab(ax, f)
+        rpos = r[:,0,:3]
+
+        if MODE == 2:
+            fig, ax = pl 
+            if True:
+                mpplt_add_contiguous_line_segments(ax, rpos, axes=(H,V), label=None )
+                self.mp_plab(ax, f)
+            pass
+            if "nrm" in f.opt:
+                self.mp_a_normal(ax, f) 
+            pass
+        elif MODE == 3:
+            pass
+            pvplt_add_contiguous_line_segments(pl, rpos )
+        pass 
 
     def mp_plab(self, ax, f, backgroundcolor=None ):
         """
@@ -349,26 +382,29 @@ class U4SimulateTest(RFold):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-
     fold = SFOLD if not SFOLD is None else FOLD
+
     s = U4SimtraceTest.Load(fold, symbol="s")
     assert not s is None
     t = U4SimtraceTest.Load(TFOLD, symbol="t")
+
 
     a = U4SimulateTest.Load(AFOLD, symbol="a")
     b = U4SimulateTest.Load(BFOLD, symbol="b")
 
 
-    label = "U4SimtraceTest.py"
-    fig, ax = mpplt_plotter(label=label)
+    pl = plotter(label="U4SimtraceTest.py")  # MODE:2 (fig,ax)  MODE:3 pv plotter
 
-    if mp:
-        s.mp_geoplot(ax)
-        if not t is None: t.mp_geoplot(ax)
-        s.mp_onephotonplot(ax, a)
-        s.mp_onephotonplot(ax, b)
-        s.mp_show(ax, fig)
+    if not pl is None:
+        s.geoplot(pl)
+        if not t is None: t.geoplot(pl)
+        s.onephotonplot(pl, a)
+        s.onephotonplot(pl, b)
+        s.show(pl)
     pass 
+
+
+
 pass
 
 

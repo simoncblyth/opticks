@@ -479,6 +479,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     char customStatus = is_boundary_flag ? bop->getCustomStatus() : 'B' ; 
     current_aux.q1.i.w = int(customStatus) ; 
 
+    // TODO: collect into aux more detailed info : eg the A,R,T values 
+
     LOG(LEVEL) 
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
