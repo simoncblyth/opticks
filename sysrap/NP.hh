@@ -169,6 +169,11 @@ struct NP
     template <typename T> 
     static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
 
+    static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=','); 
+
+    static NP* LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim=',');
+
+
     // FindUnit returns last matching unit string, so more specific strings that contain earlier 
     // ones should come later in list 
     static constexpr const char* UNITS = "eV MeV nm mm cm m ns g/cm2/MeV" ; 
@@ -5064,8 +5069,6 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
         if(strlen(l) == 0) continue ; 
         if(strlen(l) > 0 && l[0] == '#') continue ; 
 
-
-
         // if a unit string is found which is preceeded by '/' remove that 
         // to regain whitespace between fields 
         //
@@ -5181,6 +5184,50 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
     return a ; 
 }
 
+inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char* cats_, char delim )
+{
+    std::vector<std::string> cats ; 
+    U::MakeVec(cats, cats_, delim );  
+
+    unsigned num_field = 0 ; 
+    std::vector<int> data ; 
+    std::string line ; 
+    std::stringstream fss(str) ;
+    while(std::getline(fss, line)) 
+    {        
+        std::istringstream iss(line);
+        std::vector<std::string> fields ; 
+        std::string field ; 
+        while( iss >> field ) fields.push_back(field) ;
+            
+        if(num_field == 0) num_field = fields.size() ; 
+        else  assert( fields.size() == num_field ); // require consistent number of fields
+
+        assert( catfield < num_field );  
+        for(unsigned i=0 ; i < num_field ; i++)
+        {   
+            const std::string& field = fields[i] ; 
+            int val =  i == catfield  ? U::Category(cats, field ) : std::atoi(field.c_str()) ;   
+            data.push_back(val); 
+        }   
+    }   
+
+    NP* a = NP::Make<int>( data );  
+    a->change_shape(-1, num_field); 
+    a->set_names(cats); 
+    return a ; 
+} 
+
+inline NP* NP::LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim  )  // static 
+{   
+    const char* str = ReadString2(path); 
+    if(str == nullptr) return nullptr ; 
+    NP* a = CategoryArrayFromString(str, catfield, cats, delim ); 
+    return a ; 
+}
+
+ 
+
 
 
 
@@ -5217,7 +5264,7 @@ inline const char* NP::ReplaceChar(const char* str, char q, char n, bool first  
     return s ; 
 }
 
-inline const char* NP::Resolve( const char* spec) 
+inline const char* NP::Resolve( const char* spec)  // TODO: rename or eliminate this as same as U::Resolve
 {
     return CountChar(spec, '.') > 1 ? ResolveProp(spec) : spec ; 
 }
@@ -5277,8 +5324,9 @@ inline const char* NP::ReadString( const char* dir, const char* name) // static
     return ReadString(path.c_str()); 
 }
 
-inline const char* NP::ReadString( const char* path )  // static
+inline const char* NP::ReadString( const char* path_ )  // static
 {
+    const char* path = U::Resolve(path_); 
     std::vector<std::string> lines ; 
     std::string line ; 
     std::ifstream ifs(path); 
@@ -5294,8 +5342,9 @@ inline const char* NP::ReadString( const char* path )  // static
     return str.empty() ? nullptr : strdup(str.c_str()) ; 
 }
 
-inline const char* NP::ReadString2(const char* path)  // static
+inline const char* NP::ReadString2(const char* path_)  // static
 {
+    const char* path = U::Resolve(path_); 
     std::ifstream ifs(path);
     std::stringstream ss ;
     ss << ifs.rdbuf();

@@ -392,8 +392,17 @@ struct U
     template<typename ... Args>
     static const char* Path( Args ... args ); 
 
+
+    template<typename T>
+    static inline void MakeVec(std::vector<T>& vec, const char* line, char delim=','); 
+
     template<typename T>
     static std::vector<T>* MakeVec(const char* line, char delim=','); 
+
+    template<typename T>
+    static int Category(const std::vector<T>& cats, const T& val ); 
+
+
 
     template<typename T>
     static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=','); 
@@ -417,6 +426,25 @@ struct U
 
 };
 
+
+
+
+template<typename T>
+inline void U::MakeVec(std::vector<T>& vec, const char* line, char delim)
+{
+    std::stringstream ss; 
+    ss.str(line);
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {   
+        std::istringstream iss(s);
+        T t ; 
+        iss >> t ; 
+        vec.push_back(t) ; 
+    }   
+}
+
+
 /**
 U::MakeVec
 ------------
@@ -429,20 +457,25 @@ template<typename T>
 inline std::vector<T>* U::MakeVec(const char* line, char delim)
 {
     if(line == nullptr) return nullptr ; 
-
     std::vector<T> vec ; 
-    std::stringstream ss; 
-    ss.str(line);
-    std::string s;
-    while (std::getline(ss, s, delim)) 
-    {   
-        std::istringstream iss(s);
-        T t ; 
-        iss >> t ; 
-        vec.push_back(t) ; 
-    }   
+    MakeVec(vec, line, delim) ; 
     return vec.size() == 0 ? nullptr : new std::vector<T>(vec) ; 
 }
+
+
+template<typename T>
+inline int U::Category(const std::vector<T>& cats, const T& val )
+{
+    int cat = std::distance( cats.begin(), std::find(cats.begin(), cats.end(), val ) );
+    if( cat == cats.size() ) cat = -1 ;  
+    return cat ; 
+}
+
+
+
+
+
+
 
 template<typename T>
 inline std::vector<T>* U::GetEnvVec(const char* ekey, const char* fallback, char delim)
