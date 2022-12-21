@@ -170,7 +170,7 @@ struct NP
     static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
 
     static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=','); 
-
+    static NP* LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim=',');
     static NP* LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim=',');
 
 
@@ -4912,9 +4912,7 @@ inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
 template <typename T> 
 inline NP* NP::LoadFromTxtFile(const char* base, const char* relp )  // static 
 {   
-    std::stringstream ss ;  
-    ss << base << "/" << relp ; 
-    std::string path = ss.str(); 
+    std::string path = form_path(base, relp); 
     NP* a = LoadFromTxtFile<T>( path.c_str()); 
     a->lpath = path ; 
     return a ; 
@@ -5218,6 +5216,11 @@ inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char
     return a ; 
 } 
 
+inline NP* NP::LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim  )  // static
+{
+    std::string path = form_path(base, relp); 
+    return NP::LoadCategoryArrayFromTxtFile(path.c_str(), catfield, cats, delim) ; 
+}
 inline NP* NP::LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim  )  // static 
 {   
     const char* str = ReadString2(path); 
