@@ -200,6 +200,9 @@ struct NP
 
     static const char* ReadString2( const char* path );
 
+    template<typename T>
+    static long LoadVec(std::vector<T>& vec, const char* path_); 
+
 
     template<typename T> T*       values() ; 
     template<typename T> const T*  cvalues() const  ; 
@@ -5187,7 +5190,7 @@ inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char
     std::vector<std::string> cats ; 
     U::MakeVec(cats, cats_, delim );  
 
-    unsigned num_field = 0 ; 
+    int num_field = 0 ; 
     std::vector<int> data ; 
     std::string line ; 
     std::stringstream fss(str) ;
@@ -5199,10 +5202,10 @@ inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char
         while( iss >> field ) fields.push_back(field) ;
             
         if(num_field == 0) num_field = fields.size() ; 
-        else  assert( fields.size() == num_field ); // require consistent number of fields
+        else  assert( int(fields.size()) == num_field ); // require consistent number of fields
 
         assert( catfield < num_field );  
-        for(unsigned i=0 ; i < num_field ; i++)
+        for(int i=0 ; i < num_field ; i++)
         {   
             const std::string& field = fields[i] ; 
             int val =  i == catfield  ? U::Category(cats, field ) : std::atoi(field.c_str()) ;   
@@ -5356,6 +5359,34 @@ inline const char* NP::ReadString2(const char* path_)  // static
 }
 
 
+/**
+NP::LoadVec
+------------
+
+Load bytes from binary file into vector that is sized accordingly. 
+The type is expected to be "char" or "unsigned char" 
+
+**/
+template<typename T>
+inline long NP::LoadVec(std::vector<T>& vec, const char* path_)
+{
+    assert( sizeof(T) == 1 ) ; 
+
+    const char* path = U::Resolve(path_); 
+    FILE *fp = fopen(path,"rb");
+
+    fseek(fp, 0L, SEEK_END);
+    long file_size = ftell(fp);
+    rewind(fp);
+
+    vec.resize(file_size); 
+
+    long bytes_read = fread(vec.data(), sizeof(T), file_size, fp );
+    fclose(fp);
+    assert( file_size == bytes_read ); 
+
+    return bytes_read ; 
+}
 
 inline std::string NP::descValues() const 
 {

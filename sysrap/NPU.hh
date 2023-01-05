@@ -467,7 +467,7 @@ template<typename T>
 inline int U::Category(const std::vector<T>& cats, const T& val )
 {
     int cat = std::distance( cats.begin(), std::find(cats.begin(), cats.end(), val ) );
-    if( cat == cats.size() ) cat = -1 ;  
+    if( cat == int(cats.size()) ) cat = -1 ;  
     return cat ; 
 }
 
