@@ -27,6 +27,14 @@ SSim* SSim::Get()
 { 
    return INSTANCE ; 
 }
+void SSim::Add(const char* k, const NP* a ) // static
+{
+   SSim* ss = Get(); 
+   LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
+   if(ss == nullptr) return ; 
+   ss->add(k, a );  
+}
+
 
 int SSim::Compare( const SSim* a , const SSim* b )
 {

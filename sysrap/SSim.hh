@@ -40,6 +40,7 @@ struct SYSRAP_API SSim
     static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
+    static void  Add(const char* k, const NP* a); 
     static SSim* Create(); 
     static const char* DEFAULT ; 
     static SSim* Load(); 
