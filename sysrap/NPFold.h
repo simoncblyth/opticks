@@ -640,7 +640,7 @@ inline int NPFold::get_num(const char* k) const
 
 inline void NPFold::save(const char* base_, const char* rel) // not const as sets savedir
 {
-    std::string base = NP::form_path(base_, rel); 
+    std::string base = U::form_path(base_, rel); 
     save(base.c_str()); 
 }
 
@@ -875,7 +875,7 @@ inline int NPFold::load(const char* base)
 }
 inline int NPFold::load(const char* base_, const char* rel0, const char* rel1) 
 {
-    std::string base = NP::form_path(base_, rel0, rel1); 
+    std::string base = U::form_path(base_, rel0, rel1); 
     return load(base.c_str()); 
 }
 

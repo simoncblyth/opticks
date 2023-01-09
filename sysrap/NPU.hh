@@ -375,6 +375,8 @@ struct U
 {
     enum { ERROR_PATH=-1, DIR_PATH=1 , FILE_PATH=2, OTHER_PATH=3 } ;   
 
+    static void sizeof_check(); 
+
     static bool EndsWith( const char* s, const char* q) ; 
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
     static std::string DirName( const char* path ); 
@@ -384,6 +386,12 @@ struct U
     static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
     static const char* FormName(  const char* prefix, int idx, const char* ext ); 
     static const char* FormName( const char* prefix, const char* body, const char* ext ); 
+
+    static std::string form_name(const char* stem, const char* ext); 
+    static std::string form_path(const char* dir, const char* name);   
+    static std::string form_path(const char* dir, const char* reldir, const char* name);   
+
+
 
     static constexpr const char* DEFAULT_PATH_ARG_0 = "/tmp" ; 
     template<typename ... Args>
@@ -400,8 +408,18 @@ struct U
     static std::vector<T>* MakeVec(const char* line, char delim=','); 
 
     template<typename T>
+    static long LoadVec(std::vector<T>& vec, const char* path_); 
+
+    template<typename T>
     static int Category(const std::vector<T>& cats, const T& val ); 
 
+    static bool StartsWith( const char* s, const char* q) ; 
+    static bool Contains(   const char* s, const char* q) ; 
+
+    template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
+
+    template<typename T> static T To( const char* a ); 
+    template<typename T> static bool ConvertsTo( const char* a ); 
 
 
     template<typename T>
@@ -427,6 +445,18 @@ struct U
 };
 
 
+
+inline void U::sizeof_check() // static 
+{
+    assert( sizeof(float) == 4  );  
+    assert( sizeof(double) == 8  );  
+
+    assert( sizeof(char) == 1 );  
+    assert( sizeof(short) == 2 );
+    assert( sizeof(int)   == 4 );
+    assert( sizeof(long)  == 8 );
+    assert( sizeof(long long)  == 8 );
+}
 
 
 template<typename T>
@@ -462,6 +492,37 @@ inline std::vector<T>* U::MakeVec(const char* line, char delim)
     return vec.size() == 0 ? nullptr : new std::vector<T>(vec) ; 
 }
 
+/**
+U::LoadVec
+------------
+
+Load bytes from binary file into vector that is sized accordingly. 
+The type is expected to be "char" or "unsigned char" 
+
+**/
+template<typename T>
+inline long U::LoadVec(std::vector<T>& vec, const char* path_)
+{
+    assert( sizeof(T) == 1 ) ; 
+
+    const char* path = U::Resolve(path_); 
+    FILE *fp = fopen(path,"rb");
+
+    fseek(fp, 0L, SEEK_END);
+    long file_size = ftell(fp);
+    rewind(fp);
+
+    vec.resize(file_size); 
+
+    long bytes_read = fread(vec.data(), sizeof(T), file_size, fp );
+    fclose(fp);
+    assert( file_size == bytes_read ); 
+
+    return bytes_read ; 
+}
+
+
+
 
 template<typename T>
 inline int U::Category(const std::vector<T>& cats, const T& val )
@@ -471,6 +532,61 @@ inline int U::Category(const std::vector<T>& cats, const T& val )
     return cat ; 
 }
 
+
+
+
+inline bool U::StartsWith( const char* s, const char* q) // static
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
+inline bool U::Contains( const char* s, const char* q) // static
+{
+    return s && q && strlen(q) <= strlen(s) && strstr(s, q) != nullptr ;
+}
+
+
+
+template <typename T> unsigned U::NumSteps( T x0, T x1, T dx )
+{
+    assert( x1 > x0 ); 
+    assert( dx > T(0.) ) ; 
+
+    unsigned ns = 0 ; 
+    for(T x=x0 ; x <= x1 ; x+=dx ) ns+=1 ; 
+    return ns ; 
+}
+
+
+template <typename T> inline T U::To( const char* a )   // static 
+{   
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;   
+    iss >> v ; 
+    return v ; 
+}
+
+// specialization for std::string as the above truncates at the first blank in the string, see tests/NP_set_meta_get_meta_test.cc  
+template<> inline std::string U::To(const char* a ) 
+{
+    std::string s(a); 
+    return s ; 
+}
+
+
+
+
+
+template <typename T> inline bool U::ConvertsTo( const char* a )   // static 
+{   
+    if( a == nullptr ) return false ; 
+    if( strlen(a) == 0) return false ; 
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;   
+    iss >> v ; 
+    return iss.fail() == false ; 
+}
 
 
 
@@ -517,6 +633,8 @@ template unsigned U::GetE(const char*, unsigned );
 template float    U::GetE(const char*, float );
 template double   U::GetE(const char*, double );
 template char     U::GetE(const char*, char );
+
+
 
 
 
@@ -584,6 +702,38 @@ inline const char* U::FormName( const char* prefix, const char* body, const char
     std::string name = FormName_(prefix, body, ext );  
     return strdup(name.c_str()); 
 }
+
+
+
+
+inline std::string U::form_name(const char* stem, const char* ext)
+{
+    std::stringstream ss ; 
+    ss << stem ; 
+    ss << ext ; 
+    return ss.str(); 
+}
+inline std::string U::form_path(const char* dir, const char* name)
+{
+    std::stringstream ss ; 
+    ss << dir ; 
+    if(name) ss << "/" << name ; 
+    return ss.str(); 
+}
+
+inline std::string U::form_path(const char* dir, const char* reldir, const char* name)
+{
+    std::stringstream ss ; 
+    ss << dir ; 
+    if(reldir) ss << "/" << reldir ; 
+    if(name) ss << "/" << name ; 
+    return ss.str(); 
+}
+
+
+
+
+
 
 
 template<typename ... Args>

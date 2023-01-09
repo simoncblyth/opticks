@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <limits>
 #include <random>
+#include <map>
 
 #include "NPU.hh"
 
@@ -49,28 +50,72 @@ struct NP
         double         f ;  
     };            
 
-    static bool StartsWith( const char* s, const char* q) ; 
-    static bool Contains(   const char* s, const char* q) ; 
-    static NP*  MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains=nullptr ); 
-    std::string descValues() const ; 
 
-    template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );  // dtype from template type
+    // STATIC CREATION METHODS 
+
+    static NP* MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains=nullptr ); 
+    static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
-    template<typename T> static NP*  Make( const std::vector<T>& src ); 
-    
-    template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // Make_ellipsis
 
+    template<typename T> static NP*  Make( const std::vector<T>& src ); 
+
+    template<typename T, typename S, typename... Args> 
+    static NP* ArrayFromVec(const std::vector<S>& v, Args ... args );   // ArrayFromVec_ellipsis
+
+    template<typename S>
+    static int VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key=true ); 
+
+    template<typename T, typename S>
+    static NP* ArrayFromMap( const std::map<int, S>& m, bool contiguous_key=true ); 
+    
+
+    template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // TODO rename ArrayFromData
 
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
-    template<typename T> static T To( const char* a ); 
-    template<typename T> static bool ConvertsTo( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
 
-    template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
+    template<typename T> static NP* Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );
+    template<typename T, typename ... Args> static NP*  Make_( Args ... shape ) ;  // Make_shape
 
-    // ctor
+    template<typename T> static NP* MakeFlat(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+
+
+
+
+
+
+    //  MEMBER FUNCTIONS 
+
+    template<typename T> const T*  cvalues() const  ; 
+    template<typename T> T*       values() ; 
+
+    char*       bytes();  
+    const char* bytes() const ;  
+
+    unsigned hdr_bytes() const ;  
+    unsigned num_items() const ;       // shape[0] 
+    unsigned num_values() const ;      // all values, product of shape[0]*shape[1]*...
+    unsigned num_itemvalues() const ;  // values after first dimension 
+    unsigned arr_bytes() const ;       // formerly num_bytes
+    unsigned item_bytes() const ;      // *item* comprises all dimensions beyond the first 
+    unsigned meta_bytes() const ;
+    void clear() ; 
+
+    void        update_headers();     
+    std::string make_header() const ; 
+    std::string make_prefix() const ; 
+    std::string make_jsonhdr() const ;
+
+    bool        decode_header() ; // sets shape based on arr header
+    bool        decode_prefix() ; // also resizes buffers ready for reading in 
+    unsigned    prefix_size(unsigned index) const ;     
+
+
+
+    // CTOR
     NP(const char* dtype_, const std::vector<int>& shape_ ); 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
@@ -80,132 +125,10 @@ struct NP
     // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
     bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) const ;  
     void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) ;   // one dimension entry left at -1 can be auto-set
-
     void change_shape_to_3D() ; 
 
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
-    static void sizeof_check(); 
-
-    template<typename T> static int DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
-
-    static int Memcmp( const NP* a, const NP* b ); 
-    static NP* Concatenate(const std::vector<NP*>& aa); 
-    static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
-
-    static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true); 
-    template<typename... Args> static NP* Combine(Args ... aa);  // Combine_ellipsis
-
-    
-
-
-
-    // load array asis 
-    static NP* Load(const char* path); 
-    static NP* Load_(const char* path); 
-    static NP* Load(const char* dir, const char* name); 
-    static NP* Load(const char* dir, const char* reldir, const char* name); 
-
-    // load float OR double array and if float(4 bytes per element) widens it to double(8 bytes per element)  
-    static NP* LoadWide(const char* path); 
-    static NP* LoadWide(const char* dir, const char* name); 
-    static NP* LoadWide(const char* dir, const char* reldir, const char* name); 
-
-    // load float OR double array and if double(8 bytes per element) narrows it to float(4 bytes per element)  
-    static NP* LoadNarrow(const char* path); 
-    static NP* LoadNarrow(const char* dir, const char* name); 
-    static NP* LoadNarrow(const char* dir, const char* reldir, const char* name); 
-
-
-    template<typename T> static NP* MakeFlat(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-    static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-
-    template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
-    //template<typename T> static void Read( const char* dir, const char* name,       T* dst ); 
-
-
-    template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-    template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-
-    template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-
-    static void WriteNames(const char* dir, const char* name,                     const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
-    static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
-    static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
-
-    static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
-    static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
-
-
-    template<typename T>
-    static void ReadKV(const char* dir, const char* name, 
-                      std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
-
-    template<typename T>
-    static void ReadKV(const char* path, 
-                       std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
-
-
-    template<typename T>
-    static T ReadKV_Value(const char* dir, const char* name, const char* key ); 
-
-    template<typename T>
-    static T ReadKV_Value(const char* spec_or_path, const char* key ); 
-
-
-    template<typename T>
-    static std::string DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra); 
-
-    template <typename T> 
-    static NP* LoadFromTxtFile(const char* path); 
-
-    template <typename T> 
-    static NP* LoadFromTxtFile(const char* base, const char* relp); 
-
-
-    template <typename T> 
-    static NP* ZEROProp(); 
-
-    template <typename T> 
-    static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
-
-    static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=','); 
-    static NP* LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim=',');
-    static NP* LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim=',');
-
-
-    // FindUnit returns last matching unit string, so more specific strings that contain earlier 
-    // ones should come later in list 
-    static constexpr const char* UNITS = "eV MeV nm mm cm m ns g/cm2/MeV" ; 
-    static char* FindUnit(const char* line, const std::vector<std::string>& units  );  
-    static void GetUnits(std::vector<std::string>& units ); 
-    static bool IsListed(const std::vector<std::string>& ls, const char* str); 
-    static std::string StringConcat(const std::vector<std::string>& ls, char delim=' ' ); 
-
-    static unsigned CountChar(const char* str, char q ); 
-    static void ReplaceCharInsitu(       char* str, char q, char n, bool first ); 
-    static const char* ReplaceChar(const char* str, char q, char n, bool first ); 
-
-    static const char* Resolve( const char* spec) ; 
-    static const char* ResolveProp(const char* spec); 
-
-
-    static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
-    static void        WriteString( const char* dir, const char* name, const char* str ); 
-    static void        WriteString( const char* path, const char* str ); 
-
-    static const char* ReadString( const char* dir, const char* reldir, const char* name);
-    static const char* ReadString( const char* dir, const char* name);
-    static const char* ReadString( const char* path );
-
-    static const char* ReadString2( const char* path );
-
-    template<typename T>
-    static long LoadVec(std::vector<T>& vec, const char* path_); 
-
-
-    template<typename T> T*       values() ; 
-    template<typename T> const T*  cvalues() const  ; 
 
     unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1, int o=-1) const ; 
@@ -264,9 +187,11 @@ struct NP
     template<typename T> bool is_allzero() const ; 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
-    template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
+
+    // BLOCK OF TEMPLATE SPECIALIZATIONS IN IMPL BELOW AT THIS POINT
 
 
+    std::string descValues() const ; 
     static NP* MakeLike(  const NP* src);  
     static void CopyMeta( NP* b, const NP* a ); 
 
@@ -274,6 +199,8 @@ struct NP
     void set_preserve_last_column_integer_annotation(); 
     bool is_preserve_last_column_integer_annotation() const ; 
     static float PreserveNarrowedDoubleInteger( double f ); 
+
+    // STATIC CONVERSION METHODS 
 
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
@@ -306,10 +233,24 @@ struct NP
     template<typename T> static NP* MakeProperty(const NP* a, unsigned hd_factor ); 
     template<typename T> static NP* MakeLookupSample(const NP* icdf_prop, unsigned ni, unsigned seed=0u, unsigned hd_factor=0u );  
     template<typename T> static NP* MakeUniform( unsigned ni, unsigned seed=0u );  
-
-
  
     NP* copy() const ; 
+
+    // load array asis 
+    static NP* Load(const char* path); 
+    static NP* Load_(const char* path); 
+    static NP* Load(const char* dir, const char* name); 
+    static NP* Load(const char* dir, const char* reldir, const char* name); 
+
+    // load float OR double array and if float(4 bytes per element) widens it to double(8 bytes per element)  
+    static NP* LoadWide(const char* dir, const char* reldir, const char* name); 
+    static NP* LoadWide(const char* dir, const char* name); 
+    static NP* LoadWide(const char* path); 
+
+    // load float OR double array and if double(8 bytes per element) narrows it to float(4 bytes per element)  
+    static NP* LoadNarrow(const char* dir, const char* reldir, const char* name); 
+    static NP* LoadNarrow(const char* dir, const char* name); 
+    static NP* LoadNarrow(const char* path); 
 
     template<typename T> int find_value_index(T value, T epsilon) const ; 
     template<typename T> T   ifind2D(T value, int jcol, int jret ) const ; 
@@ -333,7 +274,7 @@ struct NP
     template<typename T> void psplit(std::vector<T>& domain, std::vector<T>& values) const ; 
     template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
     template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
-    template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
+    //template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
 
 
     template<typename T> T    interpHD(T u, unsigned hd_factor, int item=-1 ) const ; 
@@ -342,23 +283,57 @@ struct NP
     template<typename T> T    combined_interp_3(int i,               T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> T    combined_interp_5(int i, int j, int k, T x) const ;  // requires NP::Combine of pshapes arrays 
 
-
     template<typename T> T    _combined_interp(const T* vv, unsigned niv, T x) const  ; 
 
 
     template<typename T> NP*  cumsum(int axis=0) const ; 
     template<typename T> void divide_by_last() ; 
-
-
-
-    template<typename T> void read(const T* src);
-    template<typename T> void read2(const T* src);
-    template<typename T> void write(T* dst) const ; 
-
-    template<typename T> std::string _present(T v) const ; 
-
     void fillIndexFlat(); 
     void dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ; 
+
+    std::string sstr() const ; 
+    std::string desc() const ; 
+    std::string brief() const ; 
+
+    template<typename T> std::string repr() const ; 
+
+
+    void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
+    void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
+
+    void set_names( const std::vector<std::string>& lines ) ; 
+    void get_names( std::vector<std::string>& lines ) const ; 
+
+    int  get_name_index( const char* qname ) const ;  
+    int  get_name_index( const char* qname, unsigned& count ) const ;  
+    static int NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ); 
+    
+    bool is_named_shape() const ; 
+    template<typename T> T  get_named_value( const char* qname, T fallback ) const ; 
+
+    bool has_meta() const ; 
+    static std::string               get_meta_string_(const char* metadata, const char* key);  
+    static std::string               get_meta_string( const std::string& meta, const char* key) ;  
+    template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback ); 
+
+    template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
+    template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
+
+    template<typename T> static void SetMeta(       std::string& mt, const char* key, T value ); 
+    template<typename T> void set_meta(const char* key, T value ) ;  
+    
+    std::string descMeta() const ; 
+    const char* get_lpath() const ; 
+
+
+    template<typename T> static int DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
+    static int Memcmp( const NP* a, const NP* b ); 
+
+    static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
+    static NP* Concatenate(const std::vector<NP*>& aa); 
+
+    static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true); 
+    template<typename... Args> static NP* Combine(Args ... aa);  // Combine_ellipsis
 
 
     static bool Exists(const char* base, const char* rel, const char* name);   
@@ -377,10 +352,6 @@ struct NP
     void save_meta( const char* path) const ;  
     void save_names(const char* path) const ;  
 
-    static std::string form_name(const char* stem, const char* ext); 
-    static std::string form_path(const char* dir, const char* name);   
-    static std::string form_path(const char* dir, const char* reldir, const char* name);   
-
     void save_header(const char* path);   
     void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
     void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
@@ -388,60 +359,102 @@ struct NP
     void save(const char* dir, const char* name) const ;   
     void save(const char* dir, const char* reldir, const char* name) const ;   
 
-    std::string get_jsonhdr_path() const ; // .npy -> .npj on loaded path
-    void save_jsonhdr() const ;    
     void save_jsonhdr(const char* path) const ;   
     void save_jsonhdr(const char* dir, const char* name) const ;   
 
-    std::string desc() const ; 
-    std::string brief() const ; 
-    std::string sstr() const ; 
-
-    template<typename T> std::string repr() const ; 
+    std::string get_jsonhdr_path() const ; // .npy -> .npj on loaded path
+    void save_jsonhdr() const ;    
 
 
 
-    void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
-    void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
-
-    void set_names( const std::vector<std::string>& lines ) ; 
-    void get_names( std::vector<std::string>& lines ) const ; 
-
-    int  get_name_index( const char* qname ) const ;  
-    int  get_name_index( const char* qname, unsigned& count ) const ;  
-    static int NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ); 
-    
-    bool is_named_shape() const ; 
-    template<typename T> T  get_named_value( const char* qname, T fallback ) const ; 
+    template<typename T> std::string _present(T v) const ; 
+    template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
 
 
-    static std::string               get_meta_string_(const char* metadata, const char* key);  
-    static std::string               get_meta_string( const std::string& meta, const char* key) ;  
-
-    bool has_meta() const ; 
-    template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
-    template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
-    template<typename T> void set_meta(const char* key, T value ) ;  
-
-    template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback ); 
-    template<typename T> static void SetMeta(       std::string& mt, const char* key, T value ); 
-
-    std::string descMeta() const ; 
-    const char* get_lpath() const ; 
-
-    char*       bytes();  
-    const char* bytes() const ;  
-
-    unsigned num_items() const ;       // shape[0] 
-    unsigned num_values() const ;      // all values, product of shape[0]*shape[1]*...
-    unsigned num_itemvalues() const ;  // values after first dimension 
-    unsigned arr_bytes() const ;       // formerly num_bytes
-    unsigned item_bytes() const ;      // *item* comprises all dimensions beyond the first 
-    unsigned hdr_bytes() const ;  
-    unsigned meta_bytes() const ;
+    template<typename T> void read(const T* src);
+    template<typename T> void read2(const T* src);
+    template<typename T> void write(T* dst) const ; 
 
 
-    void clear() ; 
+
+   
+
+    template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
+    template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+
+
+    static void WriteNames(const char* dir, const char* name,                     const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
+    static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
+    static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
+
+    static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
+    static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
+
+
+    template<typename T>
+    static std::string DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra); 
+
+    template<typename T>
+    static void ReadKV(const char* dir, const char* name, 
+                      std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
+
+    template<typename T>
+    static void ReadKV(const char* path, 
+                       std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extra=nullptr ) ;
+
+
+    template<typename T>
+    static T ReadKV_Value(const char* dir, const char* name, const char* key ); 
+
+    template<typename T>
+    static T ReadKV_Value(const char* spec_or_path, const char* key ); 
+
+    template <typename T> 
+    static NP* LoadFromTxtFile(const char* path); 
+
+    template <typename T> 
+    static NP* LoadFromTxtFile(const char* base, const char* relp); 
+
+    // FindUnit returns last matching unit string, so more specific strings that contain earlier 
+    // ones should come later in list 
+    static constexpr const char* UNITS = "eV MeV nm mm cm m ns g/cm2/MeV" ; 
+    static char* FindUnit(const char* line, const std::vector<std::string>& units  );  
+    static void Split(std::vector<std::string>& elems, const char* str, char delim); 
+    static void GetUnits(std::vector<std::string>& units ); 
+    static bool IsListed(const std::vector<std::string>& ls, const char* str); 
+    static std::string StringConcat(const std::vector<std::string>& ls, char delim=' ' );
+
+    template <typename T> 
+    static NP* ZEROProp(); 
+
+    template <typename T> 
+    static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
+
+    static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=','); 
+    static NP* LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim=',');
+    static NP* LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim=',');
+
+    static unsigned CountChar(const char* str, char q ); 
+    static void ReplaceCharInsitu(       char* str, char q, char n, bool first ); 
+    static const char* ReplaceChar(const char* str, char q, char n, bool first ); 
+
+    static const char* Resolve( const char* spec) ; 
+    static const char* ResolveProp(const char* spec); 
+
+
+    static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
+    static void        WriteString( const char* dir, const char* name, const char* str ); 
+    static void        WriteString( const char* path, const char* str ); 
+
+    static const char* ReadString( const char* dir, const char* reldir, const char* name);
+    static const char* ReadString( const char* dir, const char* name);
+    static const char* ReadString( const char* path );
+
+    static const char* ReadString2( const char* path );
+
+    // END OF TAIL STATICS
   
     // primary data members 
     std::vector<char> data ; 
@@ -463,91 +476,9 @@ struct NP
     int         ebyte ;   // element bytes  
     int         size ;    // number of elements from shape
 
-    void        update_headers();     
-
-    std::string make_header() const ; 
-    bool        decode_header() ; // sets shape based on arr header
-
-    std::string make_prefix() const ; 
-    bool        decode_prefix() ; // also resizes buffers ready for reading in 
-    unsigned    prefix_size(unsigned index) const ;     
-
-    std::string make_jsonhdr() const ;
 };
 
-
-inline void NP::clear()
-{
-    data.clear(); 
-    data.shrink_to_fit(); 
-    shape[0] = 0 ; 
-}
-
-
-/**
-operator<< NP : NOT a member function
----------------------------------------
-
-Write array into output stream 
-
-**/
-
-inline std::ostream& operator<<(std::ostream &os,  const NP& a) 
-{ 
-    os << a.make_prefix() ; 
-    os << a.make_header() ; 
-    os.write(a.bytes(), a.arr_bytes());
-    os << a.meta ; 
-    return os ; 
-}
-
-/**
-operator>> NP : NOT a member function
----------------------------------------
-
-Direct input stream into NP array
-
-**/
-
-inline std::istream& operator>>(std::istream& is, NP& a)     
-{
-    is.read( (char*)a._prefix.data(), net_hdr::LENGTH ) ; 
-
-    unsigned hdr_bytes_nh = a.prefix_size(0); 
-    unsigned arr_bytes_nh = a.prefix_size(1); 
-    unsigned meta_bytes_nh = a.prefix_size(2);  
-
-    if(NP::VERBOSE) std::cout 
-        << " hdr_bytes_nh " << hdr_bytes_nh 
-        << " arr_bytes_nh " << arr_bytes_nh 
-        << " meta_bytes_nh " << meta_bytes_nh 
-        << std::endl
-        ;
-
-    std::getline( is, a._hdr );  
-    a._hdr += '\n' ;     // getline consumes newline ending header but does not return it 
-    assert( hdr_bytes_nh == a._hdr.length() ); 
-
-    a.decode_header();   // resizes data array 
-
-    assert( a.arr_bytes() == arr_bytes_nh ); 
-    is.read(a.bytes(), a.arr_bytes() );
-
-    a.meta.resize(meta_bytes_nh);
-    is.read( (char*)a.meta.data(), meta_bytes_nh );
- 
-    //is.setstate(std::ios::failbit);
-    return is;
-}
-
-inline bool NP::StartsWith( const char* s, const char* q) // static
-{
-    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
-}
-inline bool NP::Contains( const char* s, const char* q) // static
-{
-    return s && q && strlen(q) <= strlen(s) && strstr(s, q) != nullptr ;
-}
+// STATIC CREATION METHODS 
 
 inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains ) // static
 {
@@ -566,7 +497,7 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
         const char* k = kv.first.c_str() ; 
         double v = kv.second ;
 
-        bool select = contains == nullptr || Contains( k, contains ) ; 
+        bool select = contains == nullptr || U::Contains( k, contains ) ; 
 
         if(VERBOSE) std::cout 
             << "NP::MakeValues " 
@@ -592,44 +523,356 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
     return vv ; 
 }
 
-
-
-template <typename T> inline T NP::To( const char* a )   // static 
-{   
-    std::string s(a);
-    std::istringstream iss(s);
-    T v ;   
-    iss >> v ; 
-    return v ; 
-}
-
-template <typename T> inline bool NP::ConvertsTo( const char* a )   // static 
-{   
-    if( a == nullptr ) return false ; 
-    if( strlen(a) == 0) return false ; 
-    std::string s(a);
-    std::istringstream iss(s);
-    T v ;   
-    iss >> v ; 
-    return iss.fail() == false ; 
-}
-
-
-
-
-
-
-
-// specialization for std::string as the above truncates at the first blank in the string, see tests/NP_set_meta_get_meta_test.cc  
-template<> inline std::string NP::To(const char* a ) 
+inline NP* NP::MakeDemo(const char* dtype, int ni, int nj, int nk, int nl, int nm, int no )
 {
-    std::string s(a); 
-    return s ; 
+    NP* a = new NP(dtype, ni, nj, nk, nl, nm, no);
+    a->fillIndexFlat(); 
+    return a ; 
+}
+
+
+template <typename T> 
+inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
+{
+    assert( x1 > x0 ); 
+    assert( nx > 0 ) ; 
+    NP* a = NP::Make<T>(nx, npayload );  // npayload default is -1
+
+    if( nx == 1 )
+    {
+        a->set<T>(x0, 0 ); 
+    }
+    else
+    {
+        for(unsigned i=0 ; i < nx ; i++) a->set<T>( x0 + (x1-x0)*T(i)/T(nx-1), i )  ; 
+    }
+    return a ; 
+}
+
+/**
+NP::MakeDiv
+-------------
+
+When applied to a 1d array the contents are assummed to be domain edges 
+that are divided by an integer multiple *mul*. For a src array of length ni 
+the output array length is::
+
+    (ni - 1)*mul + 1  
+
+When applied to a 2d array the contents are assumed to be (ni,2) with 
+(domain,value) pairs. The domain is divided as in the 1d case and values
+are filled in via linear interpolation.
+
+For example, 
+
+* mul=1 -> ni
+* mul=2 -> (ni-1)*2+1 = 2*ni-1 
+* mul=3 -> (ni-1)*3+1 = 3*ni-2 
+
+That is easier to understand in terms of the number of bins:
+
+* mul=1   ni-1 -> 1*(ni-1)
+* mul=2   ni-1 -> 2*(ni-1) 
+* mul=3   ni-1 -> 3*(ni-1) 
+
+Avoids repeating the top sub-edge of one bin that is the same as the first sub-edge 
+of the next bin by skipping the last sub-edge unless it is from the last bin. 
+
+
+         +-----------------+     2 values, 1 bin    (mul 1)
+
+         +--------+--------+     3 values, 2 bins   (mul 2)
+
+         +----+---+---+----+     5 values, 4 bins   (mul 4)
+
+         +--+-+-+-+-+-+--+-+     9 values, 8 bins   (mul 8)  
+
+**/
+
+
+template <typename T> 
+inline NP* NP::MakeDiv( const NP* src, unsigned mul  )
+{
+    assert( mul > 0 ); 
+    unsigned ndim = src->shape.size(); 
+    assert( ndim == 1 || ndim == 2 ); 
+
+    unsigned src_ni = src->shape[0] ; 
+    unsigned src_bins = src_ni - 1 ; 
+    unsigned dst_bins = src_bins*mul ;   
+
+    int dst_ni = dst_bins + 1 ; 
+    int dst_nj = ndim == 2 ? src->shape[1] : -1 ; 
+
+#ifdef DEBUG
+    std::cout 
+        << " mul " << std::setw(3) << mul
+        << " src_ni " << std::setw(3) << src_ni
+        << " src_bins " << std::setw(3) << src_bins
+        << " dst_bins " << std::setw(3) << dst_bins
+        << " dst_ni " << std::setw(3) << dst_ni
+        << " dst_nj " << std::setw(3) << dst_nj
+        << std::endl
+        ; 
+#endif
+
+    NP* dst = NP::Make<T>( dst_ni, dst_nj ); 
+    T* dst_v = dst->values<T>(); 
+
+    for(unsigned i=0 ; i < src_ni - 1 ; i++)
+    {
+        bool first_i = i == 0 ; 
+        const T s0 = src->get<T>(i,0) ; 
+        const T s1 = src->get<T>(i+1,0) ; 
+
+#ifdef DEBUG
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " first_i " << std::setw(1) << first_i 
+            << " s0 " << std::setw(10) << std::fixed << std::setprecision(4) << s0
+            << " s1 " << std::setw(10) << std::fixed << std::setprecision(4) << s1
+            << std::endl  
+            ; 
+#endif
+        for(unsigned s=0 ; s < 1+mul ; s++) // s=0,1,2,... mul 
+        {
+            bool first_s = s == 0 ; 
+            if( first_s && !first_i ) continue ;  // avoid repeating idx from bin to bin  
+
+            const T frac = T(s)/T(mul) ;    //  frac(s=0)=0  frac(s=mul)=1   
+            const T ss = s0 + (s1 - s0)*frac ;  
+            unsigned idx = i*mul + s ; 
+
+#ifdef DEBUG
+            std::cout 
+                << " s " << std::setw(3) << s 
+                << " first_s " << std::setw(1) << first_s
+                << " idx " << std::setw(3) << idx
+                << " ss " << std::setw(10) << std::fixed << std::setprecision(4) << ss 
+                << std::endl  
+                ; 
+#endif
+
+            assert( idx < dst_ni ); 
+    
+            if( dst_nj == -1 )
+            {
+                dst_v[idx] = ss ; 
+            }
+            else if( dst_nj == 2 )
+            {
+                dst_v[2*idx+0] = ss ; 
+                dst_v[2*idx+1] = src->interp<T>(ss) ; 
+            }
+        }
+    }
+    return dst ; 
+}
+
+
+template <typename T> 
+inline NP*  NP::Make( const std::vector<T>& src ) // static
+{
+    NP* a = NP::Make<T>(src.size()); 
+    a->read(src.data()); 
+    return a ; 
+}
+
+template<typename T, typename S, typename... Args> 
+inline NP* NP::ArrayFromVec(const std::vector<S>& v, Args ... itemshape )   // ArrayFromVec_ellipsis
+{
+    assert( sizeof(S) > sizeof(T) );  
+    int ni = v.size() ; 
+    int nj = sizeof(S) / sizeof(T) ; 
+
+    const T* src = (T*)v.data() ; 
+
+    std::vector<int> shape ; 
+    shape.push_back(ni) ; 
+
+    std::vector<int> itemshape_ = {itemshape...};
+
+    if(itemshape_.size() == 0 )
+    {
+        shape.push_back(nj) ; 
+    }
+    else 
+    {
+        int itemcheck = 1 ; 
+        for(unsigned i=0 ; i < itemshape_.size() ; i++)  
+        {
+            shape.push_back(itemshape_[i]) ; 
+            itemcheck *= itemshape_[i] ; 
+        }
+        assert( itemcheck == nj ); 
+    }
+
+
+    NP* a = NP::Make_<T>(shape) ; 
+    a->read2(src);  
+    return a ; 
+}
+
+
+
+template<typename S>
+inline int NP::VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key ) // static
+{
+    int ni = int(m.size()) ; 
+
+    v.clear(); 
+    v.resize(ni); 
+
+    typename std::map<int,S>::const_iterator it = m.begin()  ;
+    int k0 = it->first ; 
+
+    for(int idx=0 ; idx < ni ; idx++)
+    {   
+        int k = it->first ; 
+        v[idx] = it->second ;
+
+        if(contiguous_key) assert( k == k0 + idx );  
+        //std::cout << " k0 " << k0 << " idx " << idx << " k " << k << " v " << it->second << std::endl ;  
+
+        std::advance(it, 1);  
+    }   
+    return k0 ; 
+}
+
+
+/**
+NP::ArrayFromMap
+-------------------
+
+A vector of S structs is populated from the map in the default key order of the map. 
+An NP array is then created from the contiguous vector data.  
+
+When contiguous_key:true the map keys are required to contiguously increment
+from the first. The first key is recorded into the metadata of the array with name "k0". 
+For example with keys: 100,101,102 the k0 would be 100. 
+
+Serializing maps is most useful for contiguous_key:true as 
+map access by key can then be mimicked by simply obtaining the 
+array index by subtracting k0 from the map key.  
+
+**/
+
+template<typename T, typename S>
+inline NP* NP::ArrayFromMap( const std::map<int, S>& m, bool contiguous_key )
+{
+    assert( sizeof(S) >= sizeof(T) );
+
+    std::vector<S> v ;    
+    int k0 = NP::VecFromMap<S>( v, m, contiguous_key ); 
+    NP* a = NP::ArrayFromVec<T,S>(v) ;
+    a->set_meta<int>("k0", k0) ;
+
+    return a ;
 }
 
 
 
 
+
+
+
+
+/**
+NP::Make "Make_ellipsis"
+--------------------------
+
+This "Make_ellipsis" method combines allocation of the array and populating it 
+from the src data. This is intended to facilitate creating arrays from vectors
+of struct, by using simple template types  (int, float, double etc.. )  
+together with array item shapes appropriate to the elements of the struct. 
+For example::
+
+   struct demo { int x,y,z,w ; } ; 
+   std::vector<demo> dd ; 
+   dd.push_back( {1,2,3,4} ); 
+
+   NP* a = NP::Make<int>( (int*)dd.data() , int(dd.size()) , 4 ); 
+
+The product of the shape integers MUST correspond to the number of 
+values provided from the src data. 
+When the first int shape dimension is zero a nullptr is returned.
+
+**/
+
+template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args )   // TODO rename ArrayFromData
+{
+    std::string dtype = descr_<T>::dtype() ; 
+    std::vector<int> shape = {args...};
+    if(shape.size() > 0 && shape[0] == 0) return nullptr ; 
+    NP* a = new NP(dtype.c_str(), shape ); 
+    a->read2(src);  
+    return a ; 
+}
+
+template <typename T> 
+inline NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
+{
+    std::vector<T> src = {d0, v1, d1, v1 } ; 
+    return NP::Make<T>(src) ; 
+}
+
+template <typename T> NP* NP::FromString(const char* str, char delim)  // static 
+{   
+    std::vector<T> vec ; 
+    std::stringstream ss(str);
+    std::string s ; 
+    while(getline(ss, s, delim)) vec.push_back(U::To<T>(s.c_str()));
+    NP* a = NP::Make<T>(vec) ; 
+    return a ; 
+}
+
+template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
+{
+    std::string dtype = descr_<T>::dtype() ; 
+    NP* a = new NP(dtype.c_str(), ni_,nj_,nk_,nl_,nm_, no_) ;    
+    return a ; 
+}
+
+template<typename T, typename ... Args> NP*  NP::Make_( Args ... shape_ )   // Make_shape static 
+{
+    std::string dtype = descr_<T>::dtype() ; 
+    std::vector<int> shape = {shape_ ...};
+    NP* a = new NP(dtype.c_str(), shape ) ;    
+    return a ; 
+}
+
+template<typename T> NP* NP::MakeFlat(int ni, int nj, int nk, int nl, int nm, int no ) // static
+{
+    NP* a = NP::Make<T>(ni, nj, nk, nl, nm, no );  
+    a->fillIndexFlat(); 
+    return a ; 
+}
+
+
+
+
+//  MEMBER FUNCTIONS 
+
+template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data() ;  } 
+template<typename T> inline T*        NP::values() { return (T*)data.data() ;  } 
+
+inline char*        NP::bytes() { return (char*)data.data() ;  } 
+inline const char*  NP::bytes() const { return (char*)data.data() ;  } 
+
+inline unsigned NP::hdr_bytes() const { return _hdr.length() ; }
+inline unsigned NP::num_items() const { return shape[0] ;  }
+inline unsigned NP::num_values() const { return NPS::size(shape) ;  }
+inline unsigned NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
+inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline unsigned NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
+inline unsigned NP::meta_bytes() const { return meta.length() ; }
+
+inline void NP::clear()
+{
+    data.clear(); 
+    data.shrink_to_fit(); 
+    shape[0] = 0 ; 
+}
 
 /**
 NP::update_headers
@@ -654,7 +897,6 @@ inline void NP::update_headers()
     _hdr.assign(hdr.data(), hdr.length()); 
 }
 
-
 inline std::string NP::make_header() const 
 {
     std::string hdr =  NPU::_make_header( shape, dtype ) ;
@@ -677,14 +919,38 @@ inline std::string NP::make_jsonhdr() const
     return json ; 
 }  
 
+/**
+NP::decode_header
+-----------------------
 
-inline NP* NP::MakeDemo(const char* dtype, int ni, int nj, int nk, int nl, int nm, int no )
+Array header _hdr is parsed setting the below and data is resized.
+
+shape
+    vector of int 
+uifc
+    element type code
+ebyte 
+    element number of bytes
+size
+    number of elements 
+
+Decoding the header gives the shape of the
+data, so together with the size of the type
+know how many bytes can read from the remainder of the stream
+following the header.
+
+**/
+
+inline bool NP::decode_header()  
 {
-    NP* a = new NP(dtype, ni, nj, nk, nl, nm, no);
-    a->fillIndexFlat(); 
-    return a ; 
+    shape.clear(); 
+    std::string descr ; 
+    NPU::parse_header( shape, descr, uifc, ebyte, _hdr ) ; 
+    dtype = strdup(descr.c_str());  
+    size = NPS::size(shape);    // product of shape dimensions 
+    data.resize(size*ebyte) ;   // data is now just char 
+    return true  ; 
 }
-
 
 
 
@@ -729,38 +995,120 @@ inline bool NP::decode_prefix()
 }
 inline unsigned NP::prefix_size(unsigned index) const { return net_hdr::unpack(_prefix, index); }  
 
+
+
+
+// CTOR
+inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
+    :
+    shape(shape_),
+    dtype(strdup(dtype_)),
+    uifc(NPU::_dtype_uifc(dtype)),
+    ebyte(NPU::_dtype_ebyte(dtype)),
+    size(NPS::size(shape))
+{
+    init(); 
+}
+
+inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm, int no )
+    :
+    dtype(strdup(dtype_)),
+    uifc(NPU::_dtype_uifc(dtype)),
+    ebyte(NPU::_dtype_ebyte(dtype)),
+    size(NPS::set_shape(shape, ni,nj,nk,nl,nm,no ))
+{
+    init(); 
+}
+
+inline void NP::init()
+{
+    unsigned long long size_ = size ; 
+    unsigned long long ebyte_ = ebyte ; 
+    unsigned long long num_char = size_*ebyte_ ; 
+
+#ifdef DEBUG
+    std::cout 
+        << "NP::init"
+        << " size " << size
+        << " ebyte " << ebyte
+        << " num_char " << num_char 
+        << std::endl 
+        ;
+#endif
+
+    data.resize( num_char ) ;  // vector of char  
+    std::fill( data.begin(), data.end(), 0 );     
+    _prefix.assign(net_hdr::LENGTH, '\0' ); 
+    _hdr = make_header(); 
+}
+
+
+
+
+inline void NP::set_shape(int ni, int nj, int nk, int nl, int nm, int no)
+{
+    size = NPS::copy_shape(shape, ni, nj, nk, nl, nm, no); 
+    init(); 
+}
+inline void NP::set_shape(const std::vector<int>& src_shape)
+{
+    size = NPS::copy_shape(shape, src_shape); 
+    init(); 
+}
+
+inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm, int no) const 
+{
+    unsigned ndim = shape.size() ; 
+    return 
+           ( ni == -1 || ( ndim > 0 && int(shape[0]) == ni)) && 
+           ( nj == -1 || ( ndim > 1 && int(shape[1]) == nj)) && 
+           ( nk == -1 || ( ndim > 2 && int(shape[2]) == nk)) && 
+           ( nl == -1 || ( ndim > 3 && int(shape[3]) == nl)) && 
+           ( nm == -1 || ( ndim > 4 && int(shape[4]) == nm)) && 
+           ( no == -1 || ( ndim > 5 && int(shape[5]) == no))  
+           ;
+}
+
+
 /**
-NP::decode_header
------------------------
+NP::change_shape
+------------------
 
-Array header _hdr is parsed setting the below and data is resized.
-
-shape
-    vector of int 
-uifc
-    element type code
-ebyte 
-    element number of bytes
-size
-    number of elements 
-
-Decoding the header gives the shape of the
-data, so together with the size of the type
-know how many bytes can read from the remainder of the stream
-following the header.
+One dimension can be -1 causing it to be filled automatically.
+See tests/NPchange_shapeTest.cc
 
 **/
 
-inline bool NP::decode_header()  
+inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
 {
-    shape.clear(); 
-    std::string descr ; 
-    NPU::parse_header( shape, descr, uifc, ebyte, _hdr ) ; 
-    dtype = strdup(descr.c_str());  
-    size = NPS::size(shape);    // product of shape dimensions 
-    data.resize(size*ebyte) ;   // data is now just char 
-    return true  ; 
+    int size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm, no); 
+    assert( size == size2 ); 
 }
+inline void NP::change_shape_to_3D() 
+{
+    unsigned ndim = shape.size() ; 
+    if(VERBOSE) std::cerr << "NP::change_shape_to_3D sstr " << sstr() << std::endl ; 
+
+    if( ndim < 3 ) 
+    {   
+        std::cerr << "NP::change_shape_to_3D : ndim < 3 : must be 3 or more, not: " << ndim << std::endl ; 
+        assert(0); 
+    }   
+    else if( ndim == 3 ) 
+    {   
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim == 3, no reshaping needed " << std::endl ; 
+    }   
+    else if( ndim > 3 ) 
+    {   
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim > 3, reshaping needed, ndim: " << ndim  << std::endl ;   
+        int ni = 1 ; 
+        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
+        // scrunch up the higher dimensions          
+        change_shape(ni, shape[ndim-2], shape[ndim-1] );  
+        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : changed shape to : " << sstr() << std::endl  ; 
+    }   
+}
+
 
 
 /**
@@ -829,145 +1177,6 @@ inline void NP::set_dtype(const char* dtype_)
     std::cout << desc() << std::endl ; 
 }
 
-
-// former approach assumed data is already sized : but shape comes first 
-
-inline unsigned NP::hdr_bytes() const { return _hdr.length() ; }
-inline unsigned NP::num_items() const { return shape[0] ;  }
-inline unsigned NP::num_values() const { return NPS::size(shape) ;  }
-inline unsigned NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
-inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
-inline unsigned NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
-inline unsigned NP::meta_bytes() const { return meta.length() ; }
-
-inline char*        NP::bytes() { return (char*)data.data() ;  } 
-inline const char*  NP::bytes() const { return (char*)data.data() ;  } 
-
-
-inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
-    :
-    shape(shape_),
-    dtype(strdup(dtype_)),
-    uifc(NPU::_dtype_uifc(dtype)),
-    ebyte(NPU::_dtype_ebyte(dtype)),
-    size(NPS::size(shape))
-{
-    init(); 
-}
-
-inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm, int no )
-    :
-    dtype(strdup(dtype_)),
-    uifc(NPU::_dtype_uifc(dtype)),
-    ebyte(NPU::_dtype_ebyte(dtype)),
-    size(NPS::set_shape(shape, ni,nj,nk,nl,nm,no ))
-{
-    init(); 
-}
-
-inline void NP::init()
-{
-#ifdef OLD
-    int num_char = size*ebyte ; 
-#else
-    unsigned long long size_ = size ; 
-    unsigned long long ebyte_ = ebyte ; 
-    unsigned long long num_char = size_*ebyte_ ; 
-#endif
-
-#ifdef DEBUG
-    std::cout 
-        << "NP::init"
-        << " size " << size
-        << " ebyte " << ebyte
-        << " num_char " << num_char 
-        << std::endl 
-        ;
-#endif
-
-    data.resize( num_char ) ;  // vector of char  
-    std::fill( data.begin(), data.end(), 0 );     
-    _prefix.assign(net_hdr::LENGTH, '\0' ); 
-    _hdr = make_header(); 
-}
-
-
-
-
-inline void NP::set_shape(int ni, int nj, int nk, int nl, int nm, int no)
-{
-    size = NPS::copy_shape(shape, ni, nj, nk, nl, nm, no); 
-    init(); 
-}
-inline void NP::set_shape(const std::vector<int>& src_shape)
-{
-    size = NPS::copy_shape(shape, src_shape); 
-    init(); 
-}
-
-inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm, int no) const 
-{
-    unsigned ndim = shape.size() ; 
-    return 
-           ( ni == -1 || ( ndim > 0 && int(shape[0]) == ni)) && 
-           ( nj == -1 || ( ndim > 1 && int(shape[1]) == nj)) && 
-           ( nk == -1 || ( ndim > 2 && int(shape[2]) == nk)) && 
-           ( nl == -1 || ( ndim > 3 && int(shape[3]) == nl)) && 
-           ( nm == -1 || ( ndim > 4 && int(shape[4]) == nm)) && 
-           ( no == -1 || ( ndim > 5 && int(shape[5]) == no))  
-           ;
-}
-
-
-/**
-NP::change_shape
-------------------
-
-One dimension can be -1 causing it to be filled automatically.
-See tests/NPchange_shapeTest.cc
-
-**/
-
-inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
-{
-    int size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm, no); 
-    assert( size == size2 ); 
-}
-
-inline void NP::change_shape_to_3D() 
-{
-    unsigned ndim = shape.size() ; 
-    if(VERBOSE) std::cerr << "NP::change_shape_to_3D sstr " << sstr() << std::endl ; 
-
-    if( ndim < 3 ) 
-    {   
-        std::cerr << "NP::change_shape_to_3D : ndim < 3 : must be 3 or more, not: " << ndim << std::endl ; 
-        assert(0); 
-    }   
-    else if( ndim == 3 ) 
-    {   
-        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim == 3, no reshaping needed " << std::endl ; 
-    }   
-    else if( ndim > 3 ) 
-    {   
-        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim > 3, reshaping needed, ndim: " << ndim  << std::endl ;   
-        int ni = 1 ; 
-        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
-        // scrunch up the higher dimensions          
-        change_shape(ni, shape[ndim-2], shape[ndim-1] );  
-        if(VERBOSE) std::cerr << "NP::change_shape_to_3D : changed shape to : " << sstr() << std::endl  ; 
-    }   
-}
-
-
-
-
-
-
-
-
-template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data() ;  } 
-template<typename T> inline T*        NP::values() { return (T*)data.data() ;  } 
 
 /**
 NP::index
@@ -1337,12 +1546,9 @@ template<typename T> inline void NP::_fillIndexFlat(T offset)
 }
 
 
-
-
-
-
-
 /**
+BLOCK OF TEMPLATE SPECIALIZATIONS 
+------------------------------------
 
 specialize-types(){ cat << EOT
 float
@@ -1422,6 +1628,41 @@ template   void NP::_fillIndexFlat<unsigned long>(unsigned long) ;
 template<> inline const unsigned long long* NP::cvalues<unsigned long long>() const { return (unsigned long long*)data.data() ; }
 template<> inline       unsigned long long* NP::values<unsigned long long>()      {  return (unsigned long long*)data.data() ; }
 template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
+
+
+
+
+/**
+NP::descValues
+----------------
+
+NB the implicit double instanciation used by this method requires 
+this method to be implemented after the block of explicit cvalues specializations. 
+
+**/
+inline std::string NP::descValues() const 
+{
+    assert( shape.size() == 1 ); 
+    unsigned num_val = shape[0] ; 
+    assert( names.size() == num_val );
+    assert( ebyte == 8 );  
+    std::stringstream ss ; 
+    ss << "NP::descValues num_val " << num_val  << std::endl ; 
+    const double* vv = cvalues<double>() ; 
+    for(unsigned i=0 ; i < num_val ; i++)
+    {
+        const char* k = names[i].c_str(); 
+        ss
+            << std::setw(3) << i 
+            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << vv[i] 
+            << " k " << std::setw(60) << std::left << k << std::right 
+            <<  std::endl 
+            ;
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 /**
@@ -2075,8 +2316,6 @@ template <typename T> NP* NP::MakeLookupSample(const NP* icdf_prop, unsigned ni,
     return sample ; 
 }
 
-
-
 /**
 NP::MakeUniform
 ----------------
@@ -2097,33 +2336,69 @@ template <typename T> NP* NP::MakeUniform(unsigned ni, unsigned seed) // static
     return uu ; 
 }
 
-
-
-
-
-
-
-
-
-
 inline NP* NP::copy() const 
 {
     return MakeCopy(this); 
 }
 
 
-inline NP* NP::LoadWide(const char* dir, const char* reldir, const char* name)
+
+inline NP* NP::Load(const char* path_)
 {
-    if(!dir) return nullptr ; 
-    std::string path = form_path(dir, reldir, name); 
-    return LoadWide(path.c_str());
+    const char* path = U::Resolve(path_); 
+    if(VERBOSE) 
+        std::cerr 
+            << "[ NP::Load " 
+            << " path_ " << ( path_  ? path_ : "-" )
+            << " path " << ( path ? path : "-" )
+            << std::endl 
+            ; 
+
+    if(path == nullptr) return nullptr ; // eg when path_ starts with unsetenvvar "$TOKEN" 
+
+    bool npy_ext = U::EndsWith(path, EXT) ; 
+    NP* a = nullptr ; 
+    if(npy_ext)
+    {
+        a  = NP::Load_(path);
+    }  
+    else
+    {
+        std::vector<std::string> nms ;
+        U::DirList(nms, path, EXT);
+        std::cout
+            << "NP::Load"
+            << " path " << path
+            << " U::DirList contains nms.size " << nms.size()
+            << " EXT " << EXT
+            << std::endl
+            ;
+        a = NP::Concatenate(path, nms);
+    }
+    if(VERBOSE) std::cerr << "] NP::Load " << path << std::endl ; 
+    return a ;
 }
 
-inline NP* NP::LoadWide(const char* dir, const char* name)
+inline NP* NP::Load_(const char* path)
+{
+    if(!path) return nullptr ; 
+    NP* a = new NP() ; 
+    int rc = a->load(path) ; 
+    return rc == 0 ? a  : nullptr ; 
+}
+
+inline NP* NP::Load(const char* dir, const char* name)
 {
     if(!dir) return nullptr ; 
-    std::string path = form_path(dir, name); 
-    return LoadWide(path.c_str());
+    std::string path = U::form_path(dir, name); 
+    return Load(path.c_str());
+}
+
+inline NP* NP::Load(const char* dir, const char* reldir, const char* name)
+{
+    if(!dir) return nullptr ; 
+    std::string path = U::form_path(dir, reldir, name); 
+    return Load(path.c_str());
 }
 
 /**
@@ -2133,6 +2408,21 @@ NP::LoadWide
 Loads array and widens it to 8 bytes per element if not already wide.
 
 **/
+
+inline NP* NP::LoadWide(const char* dir, const char* reldir, const char* name)
+{
+    if(!dir) return nullptr ; 
+    std::string path = U::form_path(dir, reldir, name); 
+    return LoadWide(path.c_str());
+}
+
+inline NP* NP::LoadWide(const char* dir, const char* name)
+{
+    if(!dir) return nullptr ; 
+    std::string path = U::form_path(dir, name); 
+    return LoadWide(path.c_str());
+}
+
 inline NP* NP::LoadWide(const char* path)
 {
     if(!path) return nullptr ; 
@@ -2148,22 +2438,6 @@ inline NP* NP::LoadWide(const char* path)
     return b ; 
 }
 
-
-inline NP* NP::LoadNarrow(const char* dir, const char* reldir, const char* name)
-{
-    if(!dir) return nullptr ; 
-    std::string path = form_path(dir, reldir, name); 
-    return LoadNarrow(path.c_str());
-}
-
-inline NP* NP::LoadNarrow(const char* dir, const char* name)
-{
-    if(!dir) return nullptr ; 
-    std::string path = form_path(dir, name); 
-    return LoadNarrow(path.c_str());
-}
-
-
 /**
 NP::LoadNarrow
 ---------------
@@ -2171,6 +2445,19 @@ NP::LoadNarrow
 Loads array and narrows to 4 bytes per element if not already narrow.
 
 **/
+
+inline NP* NP::LoadNarrow(const char* dir, const char* reldir, const char* name)
+{
+    if(!dir) return nullptr ; 
+    std::string path = U::form_path(dir, reldir, name); 
+    return LoadNarrow(path.c_str());
+}
+inline NP* NP::LoadNarrow(const char* dir, const char* name)
+{
+    if(!dir) return nullptr ; 
+    std::string path = U::form_path(dir, name); 
+    return LoadNarrow(path.c_str());
+}
 inline NP* NP::LoadNarrow(const char* path)
 {
     if(!path) return nullptr ; 
@@ -2185,7 +2472,6 @@ inline NP* NP::LoadNarrow(const char* path)
 
     return b ; 
 }
-
 
 /**
 NP::find_value_index
@@ -2480,8 +2766,6 @@ template<typename T> inline T  NP::psum(unsigned column) const
     for(unsigned i=0 ; i < ni ; i++) sum += vv[nj*i+column] ;  
     return sum ; 
 }
-
-
 
 template<typename T> inline void NP::pscale_add(T scale, T add, unsigned column)
 {
@@ -3309,21 +3593,6 @@ template<typename T> inline void NP::divide_by_last()
 }
 
 
-
-
-
-inline void NP::sizeof_check() // static 
-{
-    assert( sizeof(float) == 4  );  
-    assert( sizeof(double) == 8  );  
-
-    assert( sizeof(char) == 1 );  
-    assert( sizeof(short) == 2 );
-    assert( sizeof(int)   == 4 );
-    assert( sizeof(long)  == 8 );
-    assert( sizeof(long long)  == 8 );
-}
-
 inline void NP::fillIndexFlat()
 {
     if(uifc == 'f')
@@ -3388,6 +3657,10 @@ inline void NP::dump(int i0, int i1, int j0, int j1) const
         }   
     }   
 }
+
+
+
+
 
 inline std::string NP::sstr() const 
 {
@@ -3455,7 +3728,6 @@ inline std::string NP::repr() const
 }
 
 
-
 inline void NP::set_meta( const std::vector<std::string>& lines, char delim )
 {
     std::stringstream ss ; 
@@ -3472,9 +3744,6 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
     std::string s;
     while (std::getline(ss, s, delim)) lines.push_back(s) ; 
 }
-
-
-
 
 
 inline void NP::set_names( const std::vector<std::string>& lines )
@@ -3562,6 +3831,10 @@ inline T NP::get_named_value( const char* qname, T fallback ) const
 
 
 
+inline bool NP::has_meta() const 
+{
+    return meta.empty() == false ; 
+}
 
 /**
 NP::get_meta_string_
@@ -3618,6 +3891,7 @@ inline std::string NP::get_meta_string_(const char* metadata, const char* key) /
     return value ; 
 }
 
+
 inline std::string NP::get_meta_string(const std::string& meta, const char* key) 
 {
     const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
@@ -3632,7 +3906,7 @@ template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key
     std::cout << "NP::GetMeta[" << s << "]" << std::endl ;
 #endif
     if(s.empty()) return fallback ; 
-    return To<T>(s.c_str()) ; 
+    return U::To<T>(s.c_str()) ; 
 }
 
 
@@ -3641,12 +3915,6 @@ template unsigned    NP::GetMeta<unsigned>(   const std::string& , const char*, 
 template float       NP::GetMeta<float>(      const std::string& , const char*, float ) ; 
 template double      NP::GetMeta<double>(     const std::string& , const char*, double ) ; 
 template std::string NP::GetMeta<std::string>(const std::string& , const char*, std::string ) ; 
-
-
-inline bool NP::has_meta() const 
-{
-    return meta.empty() == false ; 
-}
 
 template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
 {
@@ -3703,22 +3971,6 @@ template void     NP::SetMeta<double>(      std::string&, const char*, double );
 template void     NP::SetMeta<std::string>( std::string&, const char*, std::string ); 
 
 
-inline std::string NP::descMeta() const 
-{
-    std::stringstream ss ; 
-    ss << "NP::descMeta" 
-       << std::endl 
-       << meta 
-       << std::endl 
-       ;
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-inline const char* NP::get_lpath() const 
-{
-    return lpath.c_str() ? lpath.c_str() : "-" ; 
-}
 
 
 /**
@@ -3740,28 +3992,22 @@ template void     NP::set_meta<float>(const char*, float );
 template void     NP::set_meta<double>(const char*, double ); 
 template void     NP::set_meta<std::string>(const char*, std::string ); 
 
+inline std::string NP::descMeta() const 
+{
+    std::stringstream ss ; 
+    ss << "NP::descMeta" 
+       << std::endl 
+       << meta 
+       << std::endl 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+inline const char* NP::get_lpath() const 
+{
+    return lpath.c_str() ? lpath.c_str() : "-" ; 
+}
 
 
 template<typename T>
@@ -4015,7 +4261,6 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
     return c ; 
 }
 
-
 template<typename... Args> inline NP* NP::Combine(Args ... args)  // Combine_ellipsis
 {
     std::vector<const NP*> aa = {args...};
@@ -4024,100 +4269,14 @@ template<typename... Args> inline NP* NP::Combine(Args ... args)  // Combine_ell
 }
 
 
-
-inline NP* NP::Load(const char* path_)
-{
-    const char* path = U::Resolve(path_); 
-    if(VERBOSE) 
-        std::cerr 
-            << "[ NP::Load " 
-            << " path_ " << ( path_  ? path_ : "-" )
-            << " path " << ( path ? path : "-" )
-            << std::endl 
-            ; 
-
-    if(path == nullptr) return nullptr ; // eg when path_ starts with unsetenvvar "$TOKEN" 
-
-    bool npy_ext = U::EndsWith(path, EXT) ; 
-    NP* a = nullptr ; 
-    if(npy_ext)
-    {
-        a  = NP::Load_(path);
-    }  
-    else
-    {
-        std::vector<std::string> nms ;
-        U::DirList(nms, path, EXT);
-        std::cout
-            << "NP::Load"
-            << " path " << path
-            << " U::DirList contains nms.size " << nms.size()
-            << " EXT " << EXT
-            << std::endl
-            ;
-        a = NP::Concatenate(path, nms);
-    }
-    if(VERBOSE) std::cerr << "] NP::Load " << path << std::endl ; 
-    return a ;
-}
-
-inline NP* NP::Load_(const char* path)
-{
-    if(!path) return nullptr ; 
-    NP* a = new NP() ; 
-    int rc = a->load(path) ; 
-    return rc == 0 ? a  : NULL ; 
-}
-
-inline NP* NP::Load(const char* dir, const char* name)
-{
-    if(!dir) return nullptr ; 
-    std::string path = form_path(dir, name); 
-    return Load(path.c_str());
-}
-
-inline NP* NP::Load(const char* dir, const char* reldir, const char* name)
-{
-    if(!dir) return nullptr ; 
-    std::string path = form_path(dir, reldir, name); 
-    return Load(path.c_str());
-}
-
-
-inline std::string NP::form_name(const char* stem, const char* ext)
-{
-    std::stringstream ss ; 
-    ss << stem ; 
-    ss << ext ; 
-    return ss.str(); 
-}
-inline std::string NP::form_path(const char* dir, const char* name)
-{
-    std::stringstream ss ; 
-    ss << dir ; 
-    if(name) ss << "/" << name ; 
-    return ss.str(); 
-}
-
-inline std::string NP::form_path(const char* dir, const char* reldir, const char* name)
-{
-    std::stringstream ss ; 
-    ss << dir ; 
-    if(reldir) ss << "/" << reldir ; 
-    if(name) ss << "/" << name ; 
-    return ss.str(); 
-}
-
-
-
 inline bool NP::Exists(const char* base, const char* rel,  const char* name) // static 
 {
-    std::string path = form_path(base, rel, name); 
+    std::string path = U::form_path(base, rel, name); 
     return Exists(path.c_str()); 
 }
 inline bool NP::Exists(const char* dir, const char* name) // static 
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     return Exists(path.c_str()); 
 }
 inline bool NP::Exists(const char* path) // static 
@@ -4128,7 +4287,7 @@ inline bool NP::Exists(const char* path) // static
 
 inline int NP::load(const char* dir, const char* name)
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     return load(path.c_str()); 
 }
 
@@ -4171,6 +4330,7 @@ inline int NP::load(const char* path)
     if(VERBOSE) std::cerr << "] NP::load " << path << std::endl ; 
     return 0 ; 
 }
+
 
 inline int NP::load_string_( const char* path, const char* ext, std::string& str )
 {
@@ -4268,13 +4428,13 @@ inline void NP::save(const char* path) const
 inline void NP::save(const char* dir, const char* reldir, const char* name) const 
 {
     if(VERBOSE) std::cout << "NP::save dir [" << ( dir ? dir : "-" )  << "] reldir [" << ( reldir ? reldir : "-" )  << "] name [" << name << "]" << std::endl ; 
-    std::string path = form_path(dir, reldir, name); 
+    std::string path = U::form_path(dir, reldir, name); 
     save(path.c_str()); 
 }
 
 inline void NP::save(const char* dir, const char* name) const 
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     save(path.c_str()); 
 }
 
@@ -4287,7 +4447,7 @@ inline void NP::save_jsonhdr(const char* path) const
 
 inline void NP::save_jsonhdr(const char* dir, const char* name) const 
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     save_jsonhdr(path.c_str()); 
 }
 
@@ -4343,7 +4503,6 @@ template<>  inline std::string NP::_present(double v) const
 /**
 NP::_dump
 -----------
-
 
 **/
 template <typename T> inline void NP::_dump(int i0_, int i1_, int j0_, int j1_ ) const 
@@ -4434,258 +4593,16 @@ inline void NP::write(T* dst) const
 
 
 
-template <typename T> 
-inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
-{
-    assert( x1 > x0 ); 
-    assert( nx > 0 ) ; 
-    NP* a = NP::Make<T>(nx, npayload );  // npayload default is -1
-
-    if( nx == 1 )
-    {
-        a->set<T>(x0, 0 ); 
-    }
-    else
-    {
-        for(unsigned i=0 ; i < nx ; i++) a->set<T>( x0 + (x1-x0)*T(i)/T(nx-1), i )  ; 
-    }
-    return a ; 
-}
-
-/**
-NP::MakeDiv
--------------
-
-When applied to a 1d array the contents are assummed to be domain edges 
-that are divided by an integer multiple *mul*. For a src array of length ni 
-the output array length is::
-
-    (ni - 1)*mul + 1  
-
-When applied to a 2d array the contents are assumed to be (ni,2) with 
-(domain,value) pairs. The domain is divided as in the 1d case and values
-are filled in via linear interpolation.
-
-For example, 
-
-* mul=1 -> ni
-* mul=2 -> (ni-1)*2+1 = 2*ni-1 
-* mul=3 -> (ni-1)*3+1 = 3*ni-2 
-
-That is easier to understand in terms of the number of bins:
-
-* mul=1   ni-1 -> 1*(ni-1)
-* mul=2   ni-1 -> 2*(ni-1) 
-* mul=3   ni-1 -> 3*(ni-1) 
-
-Avoids repeating the top sub-edge of one bin that is the same as the first sub-edge 
-of the next bin by skipping the last sub-edge unless it is from the last bin. 
-
-
-         +-----------------+     2 values, 1 bin    (mul 1)
-
-         +--------+--------+     3 values, 2 bins   (mul 2)
-
-         +----+---+---+----+     5 values, 4 bins   (mul 4)
-
-         +--+-+-+-+-+-+--+-+     9 values, 8 bins   (mul 8)  
-
-**/
-
-
-template <typename T> 
-inline NP* NP::MakeDiv( const NP* src, unsigned mul  )
-{
-    assert( mul > 0 ); 
-    unsigned ndim = src->shape.size(); 
-    assert( ndim == 1 || ndim == 2 ); 
-
-    unsigned src_ni = src->shape[0] ; 
-    unsigned src_bins = src_ni - 1 ; 
-    unsigned dst_bins = src_bins*mul ;   
-
-    int dst_ni = dst_bins + 1 ; 
-    int dst_nj = ndim == 2 ? src->shape[1] : -1 ; 
-
-#ifdef DEBUG
-    std::cout 
-        << " mul " << std::setw(3) << mul
-        << " src_ni " << std::setw(3) << src_ni
-        << " src_bins " << std::setw(3) << src_bins
-        << " dst_bins " << std::setw(3) << dst_bins
-        << " dst_ni " << std::setw(3) << dst_ni
-        << " dst_nj " << std::setw(3) << dst_nj
-        << std::endl
-        ; 
-#endif
-
-    NP* dst = NP::Make<T>( dst_ni, dst_nj ); 
-    T* dst_v = dst->values<T>(); 
-
-    for(unsigned i=0 ; i < src_ni - 1 ; i++)
-    {
-        bool first_i = i == 0 ; 
-        const T s0 = src->get<T>(i,0) ; 
-        const T s1 = src->get<T>(i+1,0) ; 
-
-#ifdef DEBUG
-        std::cout 
-            << " i " << std::setw(3) << i 
-            << " first_i " << std::setw(1) << first_i 
-            << " s0 " << std::setw(10) << std::fixed << std::setprecision(4) << s0
-            << " s1 " << std::setw(10) << std::fixed << std::setprecision(4) << s1
-            << std::endl  
-            ; 
-#endif
-        for(unsigned s=0 ; s < 1+mul ; s++) // s=0,1,2,... mul 
-        {
-            bool first_s = s == 0 ; 
-            if( first_s && !first_i ) continue ;  // avoid repeating idx from bin to bin  
-
-            const T frac = T(s)/T(mul) ;    //  frac(s=0)=0  frac(s=mul)=1   
-            const T ss = s0 + (s1 - s0)*frac ;  
-            unsigned idx = i*mul + s ; 
-
-#ifdef DEBUG
-            std::cout 
-                << " s " << std::setw(3) << s 
-                << " first_s " << std::setw(1) << first_s
-                << " idx " << std::setw(3) << idx
-                << " ss " << std::setw(10) << std::fixed << std::setprecision(4) << ss 
-                << std::endl  
-                ; 
-#endif
-
-            assert( idx < dst_ni ); 
-    
-            if( dst_nj == -1 )
-            {
-                dst_v[idx] = ss ; 
-            }
-            else if( dst_nj == 2 )
-            {
-                dst_v[2*idx+0] = ss ; 
-                dst_v[2*idx+1] = src->interp<T>(ss) ; 
-            }
-        }
-    }
-    return dst ; 
-}
-
-
-template <typename T> 
-inline NP*  NP::Make( const std::vector<T>& src ) // static
-{
-    NP* a = NP::Make<T>(src.size()); 
-    a->read(src.data()); 
-    return a ; 
-}
-
-template <typename T> 
-inline NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
-{
-    std::vector<T> src = {d0, v1, d1, v1 } ; 
-    return NP::Make<T>(src) ; 
-}
-
-
-
-
-template <typename T> NP* NP::FromString(const char* str, char delim)  // static 
-{   
-    std::vector<T> vec ; 
-    std::stringstream ss(str);
-    std::string s ; 
-    while(getline(ss, s, delim)) vec.push_back(To<T>(s.c_str()));
-    NP* a = NP::Make<T>(vec) ; 
-    return a ; 
-}
-
-
-
-
-
-
-
-
-
-
-
-template <typename T> unsigned NP::NumSteps( T x0, T x1, T dx )
-{
-    assert( x1 > x0 ); 
-    assert( dx > T(0.) ) ; 
-
-    unsigned ns = 0 ; 
-    for(T x=x0 ; x <= x1 ; x+=dx ) ns+=1 ; 
-    return ns ; 
-}
-
-
-template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_, int no_ )
-{
-    std::string dtype = descr_<T>::dtype() ; 
-    NP* a = new NP(dtype.c_str(), ni_,nj_,nk_,nl_,nm_, no_) ;    
-    return a ; 
-}
-
-
-template<typename T> NP* NP::MakeFlat(int ni, int nj, int nk, int nl, int nm, int no )
-{
-    NP* a = NP::Make<T>(ni, nj, nk, nl, nm, no );  
-    a->fillIndexFlat(); 
-    return a ; 
-}
-
-
-
-
-
-
-/**
-NP::Make "Make_ellipsis"
---------------------------
-
-This "Make_ellipsis" method combines allocation of the array and populating it 
-from the src data. This is intended to facilitate creating arrays from vectors
-of struct, by using simple template types  (int, float, double etc.. )  
-together with array item shapes appropriate to the elements of the struct. 
-For example::
-
-   struct demo { int x,y,z,w ; } ; 
-   std::vector<demo> dd ; 
-   dd.push_back( {1,2,3,4} ); 
-
-   NP* a = NP::Make<int>( (int*)dd.data() , int(dd.size()) , 4 ); 
-
-The product of the shape integers MUST correspond to the number of 
-values provided from the src data. 
-When the first int shape dimension is zero a nullptr is returned.
-
-**/
-
-template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args )   // Make_ellipsis
-{
-    std::string dtype = descr_<T>::dtype() ; 
-    std::vector<int> shape = {args...};
-    if(shape.size() > 0 && shape[0] == 0) return nullptr ; 
-    NP* a = new NP(dtype.c_str(), shape ); 
-    a->read2(src);  
-    return a ; 
-}
-
-
-
 
 template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
 {
-    std::string path = form_path(dir, reldir, name); 
+    std::string path = U::form_path(dir, reldir, name); 
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ ); 
 }
 
 template <typename T> void NP::Write(const char* dir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ ); 
 }
 
@@ -4730,20 +4647,6 @@ template void NP::Write<double>(  const char*, const char*, const std::vector<do
 template void NP::Write<int>(     const char*, const char*, const std::vector<int>& ); 
 template void NP::Write<unsigned>(const char*, const char*, const std::vector<unsigned>& ); 
 
-/*
-HMM: Read not so easy to encapsulate as normally using vectors of many different types of compound types 
-
-template<typename T> void NP::Read(const char* dir, const char* name, T* dst )
-{
-    NP* a = NP::Load(dir, name); 
-    values.resize(a->shape[0])
-    memcpy( (T*)dst,    a->cvalues<T>() ,  a->arr_bytes() );
-}
-*/
-
-
-
-
 
 
 inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
@@ -4757,7 +4660,7 @@ inline void NP::WriteNames(const char* dir, const char* name, const std::vector<
 
 inline void NP::WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
-    std::string path = form_path(dir, reldir, name); 
+    std::string path = U::form_path(dir, reldir, name); 
     WriteNames(path.c_str(), names, num_names_, append ); 
 }
 
@@ -4809,10 +4712,6 @@ inline void NP::ReadNames(const char* path, std::vector<std::string>& names )
     while(std::getline(ifs, line)) names.push_back(line) ; 
 
 }
-
-
-
-
 
 template<typename T>
 inline std::string NP::DescKV(const std::vector<std::string>& keys, std::vector<T>& vals, std::vector<std::string>* extras)
@@ -4915,7 +4814,7 @@ inline T NP::ReadKV_Value(const char* spec_or_path, const char* key)
 template <typename T> 
 inline NP* NP::LoadFromTxtFile(const char* base, const char* relp )  // static 
 {   
-    std::string path = form_path(base, relp); 
+    std::string path = U::form_path(base, relp); 
     NP* a = LoadFromTxtFile<T>( path.c_str()); 
     a->lpath = path ; 
     return a ; 
@@ -4954,6 +4853,10 @@ inline NP* NP::LoadFromTxtFile(const char* spec_or_path )  // static
     return a ; 
 }
 
+
+
+
+
 /**
 NP::FindUnit
 --------------
@@ -4974,11 +4877,15 @@ inline char* NP::FindUnit(const char* line, const std::vector<std::string>& unit
     return upos ; 
 }
 
+inline void NP::Split(std::vector<std::string>& elems, const char* str, char delim)
+{
+    std::stringstream uss(str) ;
+    std::string elem ; 
+    while(std::getline(uss,elem,delim)) elems.push_back(elem) ;   
+}
 inline void NP::GetUnits(std::vector<std::string>& units ) // static
 {
-    std::stringstream uss(UNITS) ;
-    std::string unit ; 
-    while(std::getline(uss,unit,' ')) units.push_back(unit) ;   
+    Split(units, UNITS, ' '); 
 }
 inline bool NP::IsListed(const std::vector<std::string>& ls, const char* str) // static
 {
@@ -4996,6 +4903,8 @@ inline std::string NP::StringConcat(const std::vector<std::string>& ls, char del
     std::string cls = ss.str() ; 
     return cls ; 
 }
+
+
 
 template <typename T> 
 inline NP* NP::ZEROProp()  // static 
@@ -5107,7 +5016,7 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
         else if( fields.size() != num_field )
         {
             std::cerr 
-                << "NP::ArrayFromString" 
+                << "NP::LoadFromString" 
                 << " WARNING : INCONSISTENT NUMBER OF FIELDS " << std::endl 
                 << " [" << line << "]" << std::endl 
                 << " fields.size : " << fields.size() 
@@ -5125,9 +5034,9 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
         for(unsigned i=0 ; i < num_field ; i++)
         {
             const char* str = fields[i].c_str(); 
-            if(ConvertsTo<T>(str)) 
+            if(U::ConvertsTo<T>(str)) 
             {   
-                value.push_back(To<T>(str)) ; 
+                value.push_back(U::To<T>(str)) ; 
                 line_column += 1 ;  
             }
             else
@@ -5143,7 +5052,7 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
         else if( line_column != num_column )
         {
             std::cerr
-                << "NP::ArrayFromString"
+                << "NP::LoadFromString"
                 << " FATAL : INCONSISTENT NUMBER OF VALUES " << std::endl  
                 << " [" << line << "]" << std::endl 
                 << " fields.size : " << fields.size() 
@@ -5185,6 +5094,10 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
     return a ; 
 }
 
+
+
+
+
 inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char* cats_, char delim )
 {
     std::vector<std::string> cats ; 
@@ -5221,7 +5134,7 @@ inline NP* NP::CategoryArrayFromString(const char* str, int catfield, const char
 
 inline NP* NP::LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim  )  // static
 {
-    std::string path = form_path(base, relp); 
+    std::string path = U::form_path(base, relp); 
     return NP::LoadCategoryArrayFromTxtFile(path.c_str(), catfield, cats, delim) ; 
 }
 inline NP* NP::LoadCategoryArrayFromTxtFile(const char* path, int catfield, const char* cats, char delim  )  // static 
@@ -5299,13 +5212,13 @@ inline const char* NP::ResolveProp(const char* spec)
 
 inline void NP::WriteString( const char* dir, const char* reldir, const char* name, const char* str )  // static 
 {
-    std::string path = form_path(dir, reldir, name); 
+    std::string path = U::form_path(dir, reldir, name); 
     WriteString(path.c_str(), str); 
 }
 
 inline void NP::WriteString( const char* dir, const char* name, const char* str )  // static 
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     WriteString(path.c_str(), str); 
 }
 
@@ -5320,13 +5233,13 @@ inline void NP::WriteString( const char* path, const char* str )  // static
 
 inline const char* NP::ReadString( const char* dir, const char* reldir, const char* name) // static
 {
-    std::string path = form_path(dir, reldir, name); 
+    std::string path = U::form_path(dir, reldir, name); 
     return ReadString(path.c_str()); 
 }
 
 inline const char* NP::ReadString( const char* dir, const char* name) // static
 {
-    std::string path = form_path(dir, name); 
+    std::string path = U::form_path(dir, name); 
     return ReadString(path.c_str()); 
 }
 
@@ -5358,59 +5271,60 @@ inline const char* NP::ReadString2(const char* path_)  // static
     return str.empty() ? nullptr : strdup(str.c_str()) ; 
 }
 
-
 /**
-NP::LoadVec
-------------
+operator<< NP : NOT a member function
+---------------------------------------
 
-Load bytes from binary file into vector that is sized accordingly. 
-The type is expected to be "char" or "unsigned char" 
+Write array into output stream 
 
 **/
-template<typename T>
-inline long NP::LoadVec(std::vector<T>& vec, const char* path_)
-{
-    assert( sizeof(T) == 1 ) ; 
 
-    const char* path = U::Resolve(path_); 
-    FILE *fp = fopen(path,"rb");
-
-    fseek(fp, 0L, SEEK_END);
-    long file_size = ftell(fp);
-    rewind(fp);
-
-    vec.resize(file_size); 
-
-    long bytes_read = fread(vec.data(), sizeof(T), file_size, fp );
-    fclose(fp);
-    assert( file_size == bytes_read ); 
-
-    return bytes_read ; 
+inline std::ostream& operator<<(std::ostream &os,  const NP& a) 
+{ 
+    os << a.make_prefix() ; 
+    os << a.make_header() ; 
+    os.write(a.bytes(), a.arr_bytes());
+    os << a.meta ; 
+    return os ; 
 }
 
-inline std::string NP::descValues() const 
+/**
+operator>> NP : NOT a member function
+---------------------------------------
+
+Direct input stream into NP array
+
+**/
+
+inline std::istream& operator>>(std::istream& is, NP& a)     
 {
-    assert( shape.size() == 1 ); 
-    unsigned num_val = shape[0] ; 
-    assert( names.size() == num_val );
-    assert( ebyte == 8 );  
-    std::stringstream ss ; 
-    ss << "NP::descValues num_val " << num_val  << std::endl ; 
-    const double* vv = cvalues<double>() ; 
-    for(unsigned i=0 ; i < num_val ; i++)
-    {
-        const char* k = names[i].c_str(); 
-        ss
-            << std::setw(3) << i 
-            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << vv[i] 
-            << " k " << std::setw(60) << std::left << k << std::right 
-            <<  std::endl 
-            ;
-    }
-    std::string s = ss.str(); 
-    return s ; 
+    is.read( (char*)a._prefix.data(), net_hdr::LENGTH ) ; 
+
+    unsigned hdr_bytes_nh = a.prefix_size(0); 
+    unsigned arr_bytes_nh = a.prefix_size(1); 
+    unsigned meta_bytes_nh = a.prefix_size(2);  
+
+    if(NP::VERBOSE) std::cout 
+        << " hdr_bytes_nh " << hdr_bytes_nh 
+        << " arr_bytes_nh " << arr_bytes_nh 
+        << " meta_bytes_nh " << meta_bytes_nh 
+        << std::endl
+        ;
+
+    std::getline( is, a._hdr );  
+    a._hdr += '\n' ;     // getline consumes newline ending header but does not return it 
+    assert( hdr_bytes_nh == a._hdr.length() ); 
+
+    a.decode_header();   // resizes data array 
+
+    assert( a.arr_bytes() == arr_bytes_nh ); 
+    is.read(a.bytes(), a.arr_bytes() );
+
+    a.meta.resize(meta_bytes_nh);
+    is.read( (char*)a.meta.data(), meta_bytes_nh );
+ 
+    //is.setstate(std::ios::failbit);
+    return is;
 }
-
-
 
 
