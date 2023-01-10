@@ -40,7 +40,10 @@ struct SYSRAP_API SSim
     static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
+
     static void  Add(const char* k, const NP* a); 
+    static void  AddSubfold(const char* k, NPFold* f); 
+
     static SSim* Create(); 
     static const char* DEFAULT ; 
     static SSim* Load(); 
@@ -69,6 +72,8 @@ struct SYSRAP_API SSim
 
 
     void add(const char* k, const NP* a ); 
+    void add_subfold(const char* k, NPFold* f ); 
+
     const NP* get(const char* k) const ; 
     const NP* get_bnd() const ; 
     const SBnd* get_sbnd() const ; 

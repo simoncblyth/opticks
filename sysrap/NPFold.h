@@ -13,7 +13,7 @@ Primary Source Location in *np* repo (not *opticks*)
 +---------+------------------------------------------------------------------------+
 | Edit    | vi ~/np/NPFold.h                                                       |
 +---------+------------------------------------------------------------------------+
-| Test    | ~/np/tests/NPFold_..._test.cc                                          | 
+| Test    | cd ~/np/tests ; ./NPFold_..._test.sh                                   | 
 +---------+------------------------------------------------------------------------+
 | Copy    | cd ~/np ; ./cp.sh # when diff copies to  ~/opticks/sysrap/NPFold.h     |
 +---------+------------------------------------------------------------------------+
@@ -86,6 +86,7 @@ struct NPFold
     static constexpr const char* META  = "NPFold_meta.txt" ; 
 
     static bool IsNPY(const char* k); 
+    static const char* BareKey(const char* k);  // without .npy 
     static std::string FormKey(const char* k); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* relp); 
@@ -294,6 +295,13 @@ inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
     return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
 }
 
+inline const char* NPFold::BareKey(const char* k) 
+{
+    char* bk = strdup(k); 
+    if(IsNPY(bk)) bk[strlen(bk)-4] = '\0' ;  
+    return bk ; 
+}
+
 inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not present already
 {
     std::stringstream ss ; 
@@ -483,7 +491,7 @@ and for the simplicity of consistency.
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
-    std::string key = FormKey(k); 
+    std::string key = FormKey(k);  // adds .npy of not already present
     add_(key.c_str(), a ); 
 }
 
@@ -659,6 +667,19 @@ inline void NPFold::save(const char* base_, const char* rel) // not const as set
     std::string base = U::form_path(base_, rel); 
     save(base.c_str()); 
 }
+
+
+/**
+NPFold::save
+--------------
+
+ISSUE : repeated use of save for a fold with no .npy ie with only subfolds
+never truncates the index, so it just keeps growing at every save. 
+
+FIXED THIS BY NOT EARLY EXITING NP::WriteNames when kk.size is zero
+SO THE INDEX ALWAYS GETS TRUNCATED
+
+**/
 
 inline void NPFold::save(const char* base)  // not const as sets savedir
 {

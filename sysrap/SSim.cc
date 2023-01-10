@@ -25,14 +25,22 @@ const unsigned SSim::MISSING = ~0u ;
 
 SSim* SSim::Get()
 { 
-   return INSTANCE ; 
+    return INSTANCE ; 
 }
 void SSim::Add(const char* k, const NP* a ) // static
 {
-   SSim* ss = Get(); 
-   LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
-   if(ss == nullptr) return ; 
-   ss->add(k, a );  
+    SSim* ss = Get(); 
+    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
+    if(ss == nullptr) return ; 
+    ss->add(k, a );  
+}
+
+void SSim::AddSubfold(const char* k, NPFold* f) // static
+{
+    SSim* ss = Get(); 
+    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
+    if(ss == nullptr) return ; 
+    ss->add_subfold(k, f); 
 }
 
 
@@ -112,6 +120,17 @@ void SSim::add(const char* k, const NP* a )
     fold->add(k,a);  
     if(strcmp(k, BND) == 0) import_bnd(); 
 }
+
+void SSim::add_subfold(const char* k, NPFold* f )
+{
+    assert(k); 
+    LOG_IF(LEVEL, f == nullptr) << "k:" << k  << " f null " ; 
+    if(f == nullptr) return ; 
+
+    fold->add_subfold(k,f);  
+}
+
+
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
 const NP* SSim::get_bnd() const { return get(BND);  }
 const SBnd* SSim::get_sbnd() const 

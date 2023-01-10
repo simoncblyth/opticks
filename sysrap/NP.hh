@@ -4766,7 +4766,7 @@ ate : 'at end'
 
 inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
-    if(names.size() == 0) return ; 
+    // if(names.size() == 0) return ;   DONT EARLY EXIT AS MORE REASONABLE TO TRUNCATE THE FILE WHEN THERE ARE NO NAMES 
     int rc = U::MakeDirsForFile(path); 
     assert( rc == 0 ); 
 
