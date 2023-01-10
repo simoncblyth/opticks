@@ -125,18 +125,15 @@ template <typename T> NPY<T>* X4MaterialPropertyVector::Convert(const G4Material
 }
 
 
-NP* X4MaterialPropertyVector::ConvertToArray(const G4MaterialPropertyVector* vec)   // static
+NP* X4MaterialPropertyVector::ConvertToArray(const G4MaterialPropertyVector* v)   // static
 {
-    size_t num_val = vec->GetVectorLength() ; 
+    size_t num_val = v->GetVectorLength() ; 
     NP* a = NP::Make<double>( num_val, 2 );  
-    double* a_v = a->values<double>(); 
+    double* aa = a->values<double>(); 
     for(size_t i=0 ; i < num_val ; i++)
     {   
-        G4double energy = vec->Energy(i); 
-        G4double value = (*vec)[i] ;
-        a_v[2*i+0] = energy ; 
-        a_v[2*i+1] = value ; 
- 
+        aa[2*i+0] = v->Energy(i) ; 
+        aa[2*i+1] = (*v)[i] ; 
     }   
     return a ;  
 }

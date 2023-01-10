@@ -63,12 +63,20 @@ struct NP
 
     template<typename T, typename S, typename... Args> 
     static NP* ArrayFromVec(const std::vector<S>& v, Args ... args );   // ArrayFromVec_ellipsis
+    template<typename S> 
+    static void VecFromArray(std::vector<S>& v, const NP* a );
 
     template<typename S>
     static int VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key=true ); 
+    template<typename S>
+    static void MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int k0=0, bool contiguous_key=true ); 
+
 
     template<typename T, typename S>
     static NP* ArrayFromMap( const std::map<int, S>& m, bool contiguous_key=true ); 
+    template<typename S>
+    static void MapFromArray( std::map<int, S>& m, const NP* a ); 
+
     
 
     template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // TODO rename ArrayFromData
@@ -365,8 +373,6 @@ struct NP
     std::string get_jsonhdr_path() const ; // .npy -> .npj on loaded path
     void save_jsonhdr() const ;    
 
-
-
     template<typename T> std::string _present(T v) const ; 
     template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
 
@@ -375,9 +381,6 @@ struct NP
     template<typename T> void read2(const T* src);
     template<typename T> void write(T* dst) const ; 
 
-
-
-   
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
     template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
@@ -681,7 +684,7 @@ inline NP*  NP::Make( const std::vector<T>& src ) // static
 template<typename T, typename S, typename... Args> 
 inline NP* NP::ArrayFromVec(const std::vector<S>& v, Args ... itemshape )   // ArrayFromVec_ellipsis
 {
-    assert( sizeof(S) > sizeof(T) );  
+    assert( sizeof(S) >= sizeof(T) );  
     int ni = v.size() ; 
     int nj = sizeof(S) / sizeof(T) ; 
 
@@ -713,6 +716,31 @@ inline NP* NP::ArrayFromVec(const std::vector<S>& v, Args ... itemshape )   // A
     return a ; 
 }
 
+template<typename S> 
+inline void NP::VecFromArray(std::vector<S>& v, const NP* a )
+{
+   if(a == nullptr || a->shape.size() == 0 ) return ; 
+   int ni = a->shape[0] ; 
+   unsigned ib = a->item_bytes() ;   
+   bool expected_sizeof_item = sizeof(S) == ib  ; 
+
+   if(!expected_sizeof_item) 
+      std::cerr 
+          << "NP::VecFromArray"
+          << " expected_sizeof_item  " << ( expected_sizeof_item  ? "YES" : "NO" )
+          << " sizeof(S) " << sizeof(S) 
+          << " a.item_bytes " << ib
+          << " a.sstr " << a->sstr()
+          << std::endl
+          ;
+
+   assert( expected_sizeof_item ); 
+
+   v.clear() ; 
+   v.resize(ni); 
+
+   memcpy( v.data(), a->bytes(), a->arr_bytes() ); 
+}
 
 
 template<typename S>
@@ -737,6 +765,31 @@ inline int NP::VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool c
         std::advance(it, 1);  
     }   
     return k0 ; 
+}
+
+/**
+NP::MapFromVec
+----------------
+
+HMM: to support contiguous_key:false would need type S to follow 
+some convention such as keeping int keys within the first 32 bit member. 
+
+**/
+
+template<typename S>
+inline void NP::MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int k0, bool contiguous_key )
+{
+    assert( contiguous_key == true ); 
+
+    int ni = int(v.size()) ; 
+    m.clear(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const S& item = v[i] ; 
+        int key = k0 + i ;  
+        m[key] = item ; 
+    }
 }
 
 
@@ -765,9 +818,40 @@ inline NP* NP::ArrayFromMap( const std::map<int, S>& m, bool contiguous_key )
     std::vector<S> v ;    
     int k0 = NP::VecFromMap<S>( v, m, contiguous_key ); 
     NP* a = NP::ArrayFromVec<T,S>(v) ;
+
+    int ContiguousKey = contiguous_key ? 1 : 0 ; 
+
+    if(VERBOSE) std::cout 
+       << "NP::ArrayFromMap"
+       << " k0 " << k0
+       << " ContiguousKey " << ContiguousKey
+       << std::endl
+       ;
+
     a->set_meta<int>("k0", k0) ;
+    a->set_meta<int>("ContiguousKey", ContiguousKey) ;
 
     return a ;
+}
+
+template<typename S>
+inline void NP::MapFromArray( std::map<int, S>& m, const NP* a )
+{
+    if(a == nullptr || a->shape.size() == 0 ) return ; 
+
+    int k0 = a->get_meta<int>("k0"); 
+    int ContiguousKey = a->get_meta<int>("ContiguousKey") ; 
+    if(VERBOSE) std::cout 
+        << "NP::MapFromArray"
+        << " k0 " << k0
+        << " ContiguousKey " << ContiguousKey
+        << std::endl 
+        ;
+
+    std::vector<S> v ;    
+    NP::VecFromArray<S>(v, a); 
+    
+    NP::MapFromVec(m, v, k0, ContiguousKey == 1 ); 
 }
 
 

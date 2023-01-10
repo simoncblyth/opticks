@@ -3,8 +3,24 @@
 NPFold.h : collecting and persisting NP arrays keyed by relative paths
 ========================================================================
 
-This does not use other sysrap headers, other than NP, NPU 
-as it will likely be incorporated into np/NPU once matured. 
+Primary Source Location in *np* repo (not *opticks*)
+---------------------------------------------------------
+
++---------+------------------------------------------------------------------------+
+| Action  |  Command                                                               |
++=========+========================================================================+
+| Browse  | open https://github.com/simoncblyth/np/blob/master/NPFold.h            |
++---------+------------------------------------------------------------------------+
+| Edit    | vi ~/np/NPFold.h                                                       |
++---------+------------------------------------------------------------------------+
+| Test    | ~/np/tests/NPFold_..._test.cc                                          | 
++---------+------------------------------------------------------------------------+
+| Copy    | cd ~/np ; ./cp.sh # when diff copies to  ~/opticks/sysrap/NPFold.h     |
++---------+------------------------------------------------------------------------+
+
+
+Load/Save Modes
+----------------
 
 There are two load/save modes:
 

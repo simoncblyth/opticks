@@ -436,7 +436,7 @@ struct U
     static int PathType( const char* path );  // directory:1 file:2 
     static int PathType( const char* base, const char* name );  // directory:1 file:2 
 
-    static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr ); 
+    static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr, bool exclude=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static std::string Desc(const std::vector<std::string>& names); 
 
@@ -836,7 +836,13 @@ inline int U::PathType( const char* path )
     return rc ;   
 }
 
-inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext)
+/**
+U::DirList
+-----------
+
+**/
+
+inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext, bool exclude )
 {
     DIR* dir = opendir(path) ;
     if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
@@ -849,7 +855,8 @@ inline void U::DirList(std::vector<std::string>& names, const char* path, const 
         if(dot_name) continue ; 
  
         bool ext_match = ext == nullptr ? true : ( strlen(name) > strlen(ext) && strcmp(name + strlen(name) - strlen(ext), ext)==0)  ;
-        if(ext_match) names.push_back(name); 
+        if(ext_match == true  && exclude == false) names.push_back(name); 
+        if(ext_match == false && exclude == true)  names.push_back(name); 
     }   
     closedir (dir);
     std::sort( names.begin(), names.end() );  
@@ -859,6 +866,7 @@ inline void U::DirList(std::vector<std::string>& names, const char* path, const 
         << " path " << ( path ? path : "-" ) 
         << " ext " << ( ext ? ext : "-" ) 
         << " NO ENTRIES FOUND "
+        << " exclude " << exclude 
         << std::endl
         ;   
 }
