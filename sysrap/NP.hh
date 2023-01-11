@@ -53,6 +53,7 @@ struct NP
 
     // STATIC CREATION METHODS 
 
+    static NP* MakeValues( const std::vector<std::string>& keys, const std::vector<double>& vals ); 
     static NP* MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains=nullptr ); 
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
@@ -483,6 +484,16 @@ struct NP
 
 // STATIC CREATION METHODS 
 
+inline NP* NP::MakeValues( const std::vector<std::string>& keys, const std::vector<double>& vals ) // static
+{
+    assert( keys.size() == vals.size() ); 
+    if(vals.size() == 0 ) return nullptr ; 
+
+    NP* vv = NP::Make<double>( vals ) ; 
+    vv->set_names( keys );  
+    return vv ; 
+}
+
 inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains ) // static
 {
     if(VERBOSE) std::cout 
@@ -518,11 +529,8 @@ inline NP* NP::MakeValues( const std::vector<std::pair<std::string, double>>& va
         }   
     }  
     if(VERBOSE) std::cout << "NP::MakeValues vals.size " << vals.size() << std::endl ;  
-    if(vals.size() == 0 ) return nullptr ; 
 
-    NP* vv = NP::Make<double>( vals ) ; 
-    vv->set_names( nams );  
-
+    NP* vv = MakeValues(nams, vals); 
     return vv ; 
 }
 

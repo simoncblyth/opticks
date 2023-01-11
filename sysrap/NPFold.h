@@ -65,6 +65,7 @@ so loading a directory tree creates a corresponding tree of NPFold.
 #include <algorithm> 
 #include <iterator> 
 #include <vector> 
+#include <map> 
 #include <cstdlib>
 #include <cstdio>
 #include <sys/types.h>
@@ -78,26 +79,43 @@ so loading a directory tree creates a corresponding tree of NPFold.
 
 struct NPFold 
 {
+    // MEMBERS
+
+    std::vector<std::string> kk ; 
+    std::vector<const NP*>   aa ; 
+    std::string meta ; 
+    const char* savedir ; 
+    const char* loaddir ; 
+
+    std::vector<NPFold*> subfold ;  
+    std::vector<std::string> ff ;  // keys of sub-NPFold 
+
+
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* EXT = ".npy" ; 
     static constexpr const char* TOP = "/" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
     static constexpr const char* META  = "NPFold_meta.txt" ; 
+    static constexpr const char* kNP_PROP_BASE = "NP_PROP_BASE" ; 
+
 
     static bool IsNPY(const char* k); 
     static const char* BareKey(const char* k);  // without .npy 
     static std::string FormKey(const char* k); 
+
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* relp); 
-
-    static constexpr const char* kNP_PROP_BASE = "NP_PROP_BASE" ; 
     static NPFold* LoadProp(const char* rel0, const char* rel1=nullptr ); 
 
     static int Compare(const NPFold* a, const NPFold* b ); 
     static std::string DescCompare(const NPFold* a, const NPFold* b ); 
 
-    static int Compare(const FTSENT** one, const FTSENT** two); 
+
+    // CTOR
+    NPFold(); 
+    void check() const ; 
+
 
     // [subfold handling 
     void         add_subfold(const char* f, NPFold* fo ); 
@@ -120,23 +138,11 @@ struct NPFold
 
     std::string desc_subfold(const char* top="/") const ;  
     int total_items() const ; 
-
-
-    std::vector<NPFold*> subfold ;  
-    std::vector<std::string> ff ;  // for sub-NPFold 
     // ]subfold handling 
 
-    std::vector<std::string> kk ; 
-    std::vector<const NP*>   aa ; 
-    std::string meta ; 
-    const char* savedir ; 
-    const char* loaddir ; 
 
-    NPFold(); 
-
-    void check() const ; 
-    void add_(const char* k, const NP* a); 
     void add( const char* k, const NP* a); 
+    void add_(const char* k, const NP* a); 
     void set( const char* k, const NP* a); 
     void clear(); 
 
@@ -156,22 +162,21 @@ struct NPFold
     const NP* get(const char* k) const ; 
     int   get_num(const char* k) const ; 
 
-
-
     void save(const char* base, const char* rel) ; 
     void save(const char* base) ; 
     void _save_arrays(const char* base); 
     void _save_subfold_r(const char* base); 
 
-    int load(const char* base ) ; 
-    int load(const char* base, const char* rel0, const char* rel1=nullptr ) ; 
+    void load_array(const char* base, const char* relp); 
+    void load_subfold(const char* base, const char* relp);
 
+    static int FTS_Compare(const FTSENT** one, const FTSENT** two); 
     int  no_longer_used_load_fts(const char* base) ; 
     int  load_dir(const char* base) ; 
     int  load_index(const char* base) ; 
 
-    void load_array(const char* base, const char* relp); 
-    void load_subfold(const char* base, const char* relp);
+    int load(const char* base ) ; 
+    int load(const char* base, const char* rel0, const char* rel1=nullptr ) ; 
 
 
     std::string desc() const ; 
@@ -179,11 +184,41 @@ struct NPFold
     static std::string Indent(int width); 
 
     std::string brief() const ; 
+
+    // STATIC CONVERTERS
+
+    static void Import_MSD(           std::map<std::string,double>& msd, const NP* a); 
+    static NP* Serialize_MSD(   const std::map<std::string,double>& msd );  
+    static std::string Desc_MSD(const std::map<std::string,double>& msd); 
+
+    static void Import_MIMSD(            std::map<int,std::map<std::string,double>>& mimsd, const NPFold* f );  
+    static NPFold* Serialize_MIMSD(const std::map<int,std::map<std::string,double>>& mimsd); 
+    static std::string Desc_MIMSD( const std::map<int,std::map<std::string,double>>& mimsd); 
+
+
 }; 
 
 
+inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
+{
+    return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
+}
 
+inline const char* NPFold::BareKey(const char* k) 
+{
+    char* bk = strdup(k); 
+    if(IsNPY(bk)) bk[strlen(bk)-4] = '\0' ;  
+    return bk ; 
+}
 
+inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not present already
+{
+    std::stringstream ss ; 
+    ss << k ; 
+    if(!IsNPY(k)) ss << EXT ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 inline NPFold* NPFold::Load(const char* base)
 {
@@ -206,9 +241,6 @@ inline NPFold* NPFold::LoadProp(const char* rel0, const char* rel1 )
     nf->load(base ? base : "/tmp", rel0, rel1 ); 
     return nf ;  
 }
-
-
-
 
 inline int NPFold::Compare(const NPFold* a, const NPFold* b )
 {
@@ -250,6 +282,9 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b )
     return mismatch ; 
 }
 
+
+
+
 inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
 {
     int na = a ? a->num_items() : -1 ; 
@@ -277,6 +312,12 @@ inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
     return s; 
 }
 
+
+
+
+
+// CTOR
+
 inline NPFold::NPFold()
     :
     savedir(nullptr),
@@ -290,26 +331,10 @@ inline void NPFold::check() const
     assert( ff.size() == subfold.size() ); 
 }
 
-inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
-{
-    return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
-}
 
-inline const char* NPFold::BareKey(const char* k) 
-{
-    char* bk = strdup(k); 
-    if(IsNPY(bk)) bk[strlen(bk)-4] = '\0' ;  
-    return bk ; 
-}
 
-inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not present already
-{
-    std::stringstream ss ; 
-    ss << k ; 
-    if(!IsNPY(k)) ss << EXT ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
+
+
 
 
 // [ subfold handling 
@@ -604,6 +629,10 @@ inline void NPFold::clear_partial(const char* keep_keylist, char delim)
     }
 }
 
+
+
+// single level (non recursive) accessors
+
 inline int NPFold::num_items() const 
 {
     check(); 
@@ -727,11 +756,6 @@ inline void NPFold::_save_subfold_r(const char* base)  // NB recursively called 
 
 
 
-inline int NPFold::Compare(const FTSENT** one, const FTSENT** two)
-{
-    return (strcmp((*one)->fts_name, (*two)->fts_name));
-}
-
 /**
 NPFold::load_array
 --------------------
@@ -760,6 +784,14 @@ inline void NPFold::load_subfold(const char* base, const char* relp)
     assert(!IsNPY(relp)); 
     add_subfold(relp,  NPFold::Load(base, relp) ) ; 
 }
+
+
+
+inline int NPFold::FTS_Compare(const FTSENT** one, const FTSENT** two)
+{
+    return (strcmp((*one)->fts_name, (*two)->fts_name));
+}
+
 
 /**
 NPFold::no_longer_used_load_fts
@@ -790,7 +822,7 @@ inline int NPFold::no_longer_used_load_fts(const char* base_)
     char* basepath[2] {base, nullptr};
 
     // NB fs is file system hierarchy, not just one directory 
-    FTS* fs = fts_open(basepath,FTS_COMFOLLOW|FTS_NOCHDIR,&Compare);
+    FTS* fs = fts_open(basepath,FTS_COMFOLLOW|FTS_NOCHDIR,&FTS_Compare);
     if(fs == nullptr) return 1 ; 
 
     FTSENT* node = nullptr ;
@@ -889,24 +921,12 @@ How to avoid this structural difference and allow booting from property text fil
 
 inline int NPFold::load(const char* base) 
 {
-    //std::cout << "[ NPFold::load : base " << base << std::endl ; 
-
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
     if(has_meta) meta = NP::ReadString( base, META ); 
 
     bool has_index = NP::Exists(base, INDEX) ; 
     int rc = has_index ? load_index(base) : load_dir(base) ; 
-
-    /*
-    std::cout 
-        << "] NPFold::load"
-        << " base " << base
-        << " has_index " << has_index
-        << " rc " << rc
-        << std::endl
-        ;
-    */
 
     return rc ; 
 }
@@ -915,8 +935,6 @@ inline int NPFold::load(const char* base_, const char* rel0, const char* rel1)
     std::string base = U::form_path(base_, rel0, rel1); 
     return load(base.c_str()); 
 }
-
-
 
 inline std::string NPFold::desc() const  
 {
@@ -969,4 +987,142 @@ inline std::string NPFold::brief() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+// STATIC CONVERTERS
+
+
+inline void NPFold::Import_MSD( std::map<std::string, double>& msd, const NP* a) // static
+{
+    assert( a && a->uifc == 'f' && a->ebyte == 8 );
+    assert( a->shape.size() == 1 );
+    assert( a->names.size() == a->shape[0] );
+
+    const double* vv = a->cvalues<double>() ;
+    unsigned num_vals = a->shape[0] ;
+
+    for(unsigned i=0 ; i < num_vals ; i++)
+    {
+        const std::string& key = a->names[i] ;
+        const double& val = vv[i] ;
+        msd[key] = val ;
+    }
+}
+
+inline NP* NPFold::Serialize_MSD( const std::map<std::string, double>& msd ) // static
+{
+    typedef std::map<std::string, double> MSD ; 
+    MSD::const_iterator it = msd.begin(); 
+
+    std::vector<std::string> keys ; 
+    std::vector<double>      vals ; 
+
+    for(unsigned i=0 ; i < msd.size() ; i++)
+    { 
+        const std::string& key = it->first ; 
+        const double&      val = it->second ; 
+
+        keys.push_back(key);
+        vals.push_back(val); 
+
+        std::advance(it, 1);  
+    }
+ 
+    NP* a = NP::MakeValues( keys, vals ); 
+    return a ; 
+} 
+
+inline std::string NPFold::Desc_MSD(const std::map<std::string, double>& msd) // static
+{
+    std::stringstream ss ; 
+    ss << "NPFold::Desc_MSD" << std::endl ; 
+
+    typedef std::map<std::string, double> MSD ; 
+    MSD::const_iterator it = msd.begin(); 
+    for(unsigned i=0 ; i < msd.size() ; i++)
+    { 
+        const std::string& key = it->first ; 
+        const double& val = it->second ; 
+        ss << " key " << key << " val " << val << std::endl ;  
+        std::advance(it, 1);  
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+inline void NPFold::Import_MIMSD( std::map<int,std::map<std::string, double>>& mimsd, const NPFold* f ) // static
+{
+    typedef std::map<std::string, double> MSD ; 
+    typedef std::map<int, MSD> MIMSD ; 
+
+    int num_items = f->num_items();    
+    for(int idx=0 ; idx < num_items ; idx++)
+    {
+        const char* cat = f->get_key(idx); 
+        int icat = U::To<int>(cat); 
+        const NP* a = f->get_array(idx) ; 
+
+        MSD& msd = mimsd[icat] ; 
+        Import_MSD(msd, a ); 
+    }
+}
+
+
+inline NPFold* NPFold::Serialize_MIMSD(const std::map<int,std::map<std::string, double>>& mimsd ) // static
+{
+    NPFold* f = new NPFold ; 
+
+    typedef std::map<std::string, double> MSD ; 
+    typedef std::map<int, MSD> MIMSD ; 
+
+    MIMSD::const_iterator it = mimsd.begin(); 
+
+    for(unsigned i=0 ; i < mimsd.size() ; i++)
+    {
+        int icat = it->first ; 
+        const char* cat = U::FormName(icat) ; 
+        const MSD& msd = it->second ; 
+        NP* a = Serialize_MSD( msd ); 
+        f->add(cat, a );         
+
+        std::advance(it, 1); 
+    }
+    return f; 
+}
+
+inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, double>>& mimsd) // static
+{
+    std::stringstream ss ; 
+    ss << "NPFold::Desc_MIMSD" << std::endl ; 
+
+    typedef std::map<std::string, double> MSD ; 
+    typedef std::map<int, MSD> MIMSD ; 
+
+    MIMSD::const_iterator it = mimsd.begin(); 
+
+    for(unsigned i=0 ; i < mimsd.size() ; i++)
+    {
+        int cat = it->first ; 
+        const MSD& msd = it->second ; 
+        ss
+            << " cat " << cat 
+            << " msd.size " << msd.size()
+            << std::endl 
+            << Desc_MSD(msd) 
+            << std::endl 
+            ;
+
+        std::advance(it, 1); 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+
+
+
+
 
