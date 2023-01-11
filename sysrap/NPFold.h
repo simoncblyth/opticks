@@ -996,7 +996,7 @@ inline void NPFold::Import_MSD( std::map<std::string, double>& msd, const NP* a)
 {
     assert( a && a->uifc == 'f' && a->ebyte == 8 );
     assert( a->shape.size() == 1 );
-    assert( a->names.size() == a->shape[0] );
+    assert( int(a->names.size()) == a->shape[0] );
 
     const double* vv = a->cvalues<double>() ;
     unsigned num_vals = a->shape[0] ;
@@ -1054,7 +1054,6 @@ inline std::string NPFold::Desc_MSD(const std::map<std::string, double>& msd) //
 inline void NPFold::Import_MIMSD( std::map<int,std::map<std::string, double>>& mimsd, const NPFold* f ) // static
 {
     typedef std::map<std::string, double> MSD ; 
-    typedef std::map<int, MSD> MIMSD ; 
 
     int num_items = f->num_items();    
     for(int idx=0 ; idx < num_items ; idx++)
