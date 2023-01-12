@@ -9,6 +9,7 @@ in order to construct an ICDF that is saved into $TMP/QCerenkovIntegralTest
 
 #include "SPath.hh"
 #include "NP.hh"
+#include "NPX.h"
 #include "SOpticksResource.hh"
 #include "QCerenkovIntegral.hh"
 #include "QCK.hh"
@@ -118,7 +119,7 @@ void test_getS2Integral_UpperCut(const QCerenkovIntegral& ck )
 void test_getS2Integral_SplitBin( const QCerenkovIntegral& ck, const char* bis_, unsigned mul, bool dump )
 {
     LOG(info) << "[" ; 
-    const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NP::FromString<double>(bis_);     
+    const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NPX::FromString<double>(bis_);     
     NP* s2c = ck.getS2Integral_SplitBin<double>(bis, mul, dump); 
 
     int create_dirs = 2 ; // 2:dirpath 

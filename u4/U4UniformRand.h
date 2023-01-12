@@ -40,7 +40,7 @@ troubles ?
 #include <string>
 #include <iomanip>
 #include "Randomize.hh"
-#include "NP.hh"
+#include "NPX.h"
 
 struct U4UniformRand
 {
@@ -92,7 +92,7 @@ inline NP* U4UniformRand::Get(int n)
 {
     std::vector<double> uu(n) ; 
     Get(uu); 
-    return NP::Make<double>(uu) ; 
+    return NPX::Make<double>(uu) ; 
 }
 inline int U4UniformRand::Find(double u, const NP* uu)
 {

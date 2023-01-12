@@ -18,6 +18,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "NP.hh"
+#include "NPX.h"
 #include "NPFold.h"
 #include "SPath.hh"
 #include "SGeo.hh"
@@ -1409,12 +1410,12 @@ void SEvt::checkPhotonLineage(const spho& label) const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-NP* SEvt::gatherPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
-NP* SEvt::gatherPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
-NP* SEvt::gatherGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
+NP* SEvt::gatherPho0() const { return NPX::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
+NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
+NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 
-NP* SEvt::gatherGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
+NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
 NP* SEvt::gatherPhoton() const 
 { 

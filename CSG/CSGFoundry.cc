@@ -2076,6 +2076,8 @@ void CSGFoundry::saveAlt() const
 CSGFoundry::save_
 ------------------
 
+* TODO : adopt NPFold for doing this 
+
 Have observed that whilst changing geometry this can lead to "mixed" exports 
 with the contents of CSGFoundry directory containing arrays from multiple exports. 
 The inconsistency causes crashes.  
@@ -2096,7 +2098,7 @@ void CSGFoundry::save_(const char* dir_) const
     if(primname.size() > 0 ) NP::WriteNames( dir, "primname.txt", primname );
 
     if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
-    if(hasMeta())  NP::WriteString( dir, "meta.txt", meta.c_str() ); 
+    if(hasMeta())  U::WriteString( dir, "meta.txt", meta.c_str() ); 
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
     if(prim.size() > 0 ) NP::Write(dir, "prim.npy",   (float*)prim.data(), prim.size(),   4, 4 ); 
@@ -2105,6 +2107,7 @@ void CSGFoundry::save_(const char* dir_) const
     if(tran.size() > 0 ) NP::Write(dir, "tran.npy",   (float*)tran.data(), tran.size(),   4, 4 ); 
     if(itra.size() > 0 ) NP::Write(dir, "itra.npy",   (float*)itra.data(), itra.size(),   4, 4 ); 
     if(inst.size() > 0 ) NP::Write(dir, "inst.npy",   (float*)inst.data(), inst.size(),   4, 4 ); 
+
 
     if(sim)
     {
@@ -2269,6 +2272,14 @@ CSG_GGeo/run.sh
 )LITERAL" ; 
 
 
+/**
+CSGFoundry::load
+-----------------
+
+TODO: adopt NPFold 
+
+**/
+
 void CSGFoundry::load( const char* dir_ )
 {
     const char* dir = SPath::Resolve(dir_, NOOP ); 
@@ -2286,7 +2297,7 @@ void CSGFoundry::load( const char* dir_ )
     NP::ReadNames( dir, "meshname.txt", meshname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
 
-    const char* meta_str = NP::ReadString( dir, "meta.txt" ) ; 
+    const char* meta_str = U::ReadString( dir, "meta.txt" ) ; 
     if(meta_str)
     {
        meta = meta_str ; 

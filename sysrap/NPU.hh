@@ -447,6 +447,15 @@ struct U
 
     static const char* Resolve(const char* spec);   // $TOK/remainder/path.npy $TOK
 
+    static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
+    static void        WriteString( const char* dir, const char* name, const char* str ); 
+    static void        WriteString( const char* path, const char* str ); 
+
+    static const char* ReadString( const char* dir, const char* reldir, const char* name);
+    static const char* ReadString( const char* dir, const char* name);
+    static const char* ReadString( const char* path );
+
+    static const char* ReadString2( const char* path );
 };
 
 
@@ -949,6 +958,67 @@ inline const char* U::Resolve(const char* spec_)
     return strdup(path) ; 
 }
 
+
+inline void U::WriteString( const char* dir, const char* reldir, const char* name, const char* str )  // static 
+{
+    std::string path = form_path(dir, reldir, name); 
+    WriteString(path.c_str(), str); 
+}
+
+inline void U::WriteString( const char* dir, const char* name, const char* str )  // static 
+{
+    std::string path = form_path(dir, name); 
+    WriteString(path.c_str(), str); 
+}
+
+inline void U::WriteString( const char* path, const char* str )  // static 
+{
+    if(str == nullptr) return ; 
+    std::ofstream fp(path, std::ios::out);
+    fp << str ; 
+    fp.close(); 
+}
+
+
+inline const char* U::ReadString( const char* dir, const char* reldir, const char* name) // static
+{
+    std::string path = form_path(dir, reldir, name); 
+    return ReadString(path.c_str()); 
+}
+
+inline const char* U::ReadString( const char* dir, const char* name) // static
+{
+    std::string path = form_path(dir, name); 
+    return ReadString(path.c_str()); 
+}
+
+inline const char* U::ReadString( const char* path_ )  // static
+{
+    const char* path = Resolve(path_); 
+    std::vector<std::string> lines ; 
+    std::string line ; 
+    std::ifstream ifs(path); 
+    while(std::getline(ifs, line)) lines.push_back(line); 
+    unsigned num_lines = lines.size(); 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < num_lines ; i++)
+    {
+        ss << lines[i] ; 
+        if( i < num_lines - 1 ) ss << std::endl ; 
+    }
+    std::string str = ss.str(); 
+    return str.empty() ? nullptr : strdup(str.c_str()) ; 
+}
+
+inline const char* U::ReadString2(const char* path_)  // static
+{
+    const char* path = Resolve(path_); 
+    std::ifstream ifs(path);
+    std::stringstream ss ;
+    ss << ifs.rdbuf();
+    std::string str = ss.str(); 
+    return str.empty() ? nullptr : strdup(str.c_str()) ; 
+}
 
 
 

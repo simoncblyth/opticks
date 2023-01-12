@@ -76,6 +76,7 @@ so loading a directory tree creates a corresponding tree of NPFold.
 #include <iomanip>
 
 #include "NP.hh"
+#include "NPX.h"
 
 struct NPFold 
 {
@@ -186,10 +187,6 @@ struct NPFold
     std::string brief() const ; 
 
     // STATIC CONVERTERS
-
-    static void Import_MSD(           std::map<std::string,double>& msd, const NP* a); 
-    static NP* Serialize_MSD(   const std::map<std::string,double>& msd );  
-    static std::string Desc_MSD(const std::map<std::string,double>& msd); 
 
     static void Import_MIMSD(            std::map<int,std::map<std::string,double>>& mimsd, const NPFold* f );  
     static NPFold* Serialize_MIMSD(const std::map<int,std::map<std::string,double>>& mimsd); 
@@ -721,7 +718,7 @@ inline void NPFold::save(const char* base)  // not const as sets savedir
     NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX  
     _save_subfold_r(base); 
 
-    if(!meta.empty()) NP::WriteString(base, META, meta.c_str() );  
+    if(!meta.empty()) U::WriteString(base, META, meta.c_str() );  
 }
 
 inline void NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames
@@ -923,7 +920,7 @@ inline int NPFold::load(const char* base)
 {
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
-    if(has_meta) meta = NP::ReadString( base, META ); 
+    if(has_meta) meta = U::ReadString( base, META ); 
 
     bool has_index = NP::Exists(base, INDEX) ; 
     int rc = has_index ? load_index(base) : load_dir(base) ; 
@@ -992,65 +989,6 @@ inline std::string NPFold::brief() const
 // STATIC CONVERTERS
 
 
-inline void NPFold::Import_MSD( std::map<std::string, double>& msd, const NP* a) // static
-{
-    assert( a && a->uifc == 'f' && a->ebyte == 8 );
-    assert( a->shape.size() == 1 );
-    assert( int(a->names.size()) == a->shape[0] );
-
-    const double* vv = a->cvalues<double>() ;
-    unsigned num_vals = a->shape[0] ;
-
-    for(unsigned i=0 ; i < num_vals ; i++)
-    {
-        const std::string& key = a->names[i] ;
-        const double& val = vv[i] ;
-        msd[key] = val ;
-    }
-}
-
-inline NP* NPFold::Serialize_MSD( const std::map<std::string, double>& msd ) // static
-{
-    typedef std::map<std::string, double> MSD ; 
-    MSD::const_iterator it = msd.begin(); 
-
-    std::vector<std::string> keys ; 
-    std::vector<double>      vals ; 
-
-    for(unsigned i=0 ; i < msd.size() ; i++)
-    { 
-        const std::string& key = it->first ; 
-        const double&      val = it->second ; 
-
-        keys.push_back(key);
-        vals.push_back(val); 
-
-        std::advance(it, 1);  
-    }
- 
-    NP* a = NP::MakeValues( keys, vals ); 
-    return a ; 
-} 
-
-inline std::string NPFold::Desc_MSD(const std::map<std::string, double>& msd) // static
-{
-    std::stringstream ss ; 
-    ss << "NPFold::Desc_MSD" << std::endl ; 
-
-    typedef std::map<std::string, double> MSD ; 
-    MSD::const_iterator it = msd.begin(); 
-    for(unsigned i=0 ; i < msd.size() ; i++)
-    { 
-        const std::string& key = it->first ; 
-        const double& val = it->second ; 
-        ss << " key " << key << " val " << val << std::endl ;  
-        std::advance(it, 1);  
-    }
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-
 inline void NPFold::Import_MIMSD( std::map<int,std::map<std::string, double>>& mimsd, const NPFold* f ) // static
 {
     typedef std::map<std::string, double> MSD ; 
@@ -1063,7 +1001,7 @@ inline void NPFold::Import_MIMSD( std::map<int,std::map<std::string, double>>& m
         const NP* a = f->get_array(idx) ; 
 
         MSD& msd = mimsd[icat] ; 
-        Import_MSD(msd, a ); 
+        NPX::Import_MSD(msd, a ); 
     }
 }
 
@@ -1082,7 +1020,7 @@ inline NPFold* NPFold::Serialize_MIMSD(const std::map<int,std::map<std::string, 
         int icat = it->first ; 
         const char* cat = U::FormName(icat) ; 
         const MSD& msd = it->second ; 
-        NP* a = Serialize_MSD( msd ); 
+        NP* a = NPX::Serialize_MSD( msd ); 
         f->add(cat, a );         
 
         std::advance(it, 1); 
@@ -1108,7 +1046,7 @@ inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, 
             << " cat " << cat 
             << " msd.size " << msd.size()
             << std::endl 
-            << Desc_MSD(msd) 
+            << NPX::Desc_MSD(msd) 
             << std::endl 
             ;
 

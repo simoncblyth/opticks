@@ -340,6 +340,7 @@ set(HEADERS
 
     NP.hh  
     NPU.hh 
+    NPX.h 
     NPFold.h 
     SSim.hh
     SProp.hh
