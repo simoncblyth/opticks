@@ -224,7 +224,9 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     assert(world); 
     wd = world ;
 
-    sim = SSim::Create();  
+    //sim = SSim::Create();  // its created in ctor  
+    assert(sim) ; 
+
     stree* st = sim->get_tree(); 
     // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
@@ -502,3 +504,17 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }
 
+void G4CXOpticks::SaveGeometry(const char* dir) // static
+{
+    LOG_IF(error, INSTANCE==nullptr) << " INSTANCE nullptr : NOTHING TO SAVE " ; 
+    if(INSTANCE == nullptr) return ; 
+  
+    if( dir == nullptr )
+    {
+        INSTANCE->saveGeometry();  
+    }
+    else
+    {
+        INSTANCE->saveGeometry(dir); 
+    }
+}

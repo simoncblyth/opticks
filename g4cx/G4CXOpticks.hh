@@ -35,6 +35,7 @@ struct G4CX_API G4CXOpticks
     static G4CXOpticks* Get(); 
     static G4CXOpticks* SetGeometry() ; 
     static G4CXOpticks* SetGeometry(const G4VPhysicalVolume* world) ; 
+    static void SaveGeometry(const char* dir); 
     static void Finalize(); 
 
     SSim*       sim ; 
@@ -74,7 +75,7 @@ public:
 
     void saveGeometry() const ;
     void saveGeometry(const char* dir) const ; 
-
+    static void SaveGeometry(const char* dir=nullptr); 
 
 };
 
