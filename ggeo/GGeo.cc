@@ -765,12 +765,11 @@ void GGeo::save_to_dir(const char* base, const char* reldir)
 
     const char* idpath = m_ok->getIdPath(); 
 
-    LOG_IF(fatal, idpath != nullptr) 
-         << " idpath expected nullptr at this juncture, but isnt "
-         << "[" << idpath << "]"
+    LOG_IF(error, idpath != nullptr) 
+         << " default idpath : [" << idpath << "]"
+         << " is overridden : [" << dir << "]"
          ;
 
-    assert( idpath == nullptr ); 
     m_ok->setIdPath(dir); 
     save(); 
     m_ok->setIdPath(nullptr); 

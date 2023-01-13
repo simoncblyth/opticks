@@ -217,6 +217,7 @@ stem.ext
 /
 $
 $RNGDir
+$CFBaseFromGEOM/GGeo
 )LIT";
     std::stringstream ss(lines); 
     std::string line ;

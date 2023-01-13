@@ -1227,7 +1227,7 @@ void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for te
 } 
 const char* BOpticksResource::getIdPath() const 
 {
-    LOG(verbose) << "getIdPath"
+    LOG(LEVEL) << "getIdPath"
               << " idpath_tmp " << m_idpath_tmp 
               << " idpath " << m_idpath
               ; 
