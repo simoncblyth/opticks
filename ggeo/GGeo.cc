@@ -764,6 +764,12 @@ void GGeo::save_to_dir(const char* base, const char* reldir)
     LOG(LEVEL) << "[ base " << base << " dir " << dir  ; 
 
     const char* idpath = m_ok->getIdPath(); 
+
+    LOG_IF(fatal, idpath != nullptr) 
+         << " idpath expected nullptr at this juncture, but isnt "
+         << "[" << idpath << "]"
+         ;
+
     assert( idpath == nullptr ); 
     m_ok->setIdPath(dir); 
     save(); 
