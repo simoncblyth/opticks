@@ -21,7 +21,19 @@ const char* U4Debug::GetSaveDir(int eventID)
 void U4Debug::Save(int eventID)
 {
     const char* dir = GetSaveDir(eventID); 
-    LOG(LEVEL) << " eventID " << eventID << " dir " << dir ; 
+    std::cout 
+        << "U4Debug::Save"  
+        << " eventID " << eventID 
+        << " dir " << dir 
+        << " EKEY " << EKEY 
+        << std::endl
+        ; 
+
+    LOG(LEVEL) 
+        << " eventID " << eventID 
+        << " dir " << dir 
+        << " EKEY " << EKEY 
+        ; 
 
     U4Cerenkov_Debug::Save(dir);   
     U4Scintillation_Debug::Save(dir);   

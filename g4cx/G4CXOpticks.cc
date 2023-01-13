@@ -488,7 +488,8 @@ Grab that locally::
 
 void G4CXOpticks::saveGeometry() const
 {
-    const char* dir = SEventConfig::OutFold() ;  // SGeo::DefaultDir() was giving null : due to static const depending on static const
+    // SGeo::DefaultDir() was giving null : due to static const depending on static const
+    const char* dir = SEventConfig::OutFold() ;  
     LOG(LEVEL)  << "dir [" << ( dir ? dir : "-" )  ; 
     saveGeometry(dir) ; 
 }
@@ -496,6 +497,8 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(LEVEL) << "[ " << ( dir ? dir : "-" ) ; 
+    LOG(info)  << "[ " << ( dir ? dir : "-" ) ; 
+    std::cout << "G4CXOpticks::saveGeometry [ " << ( dir ? dir : "-" ) << std::endl ;
 
     if(fd) fd->save(dir) ; 
     if(gg) gg->save_to_dir(dir) ; 

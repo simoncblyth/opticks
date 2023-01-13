@@ -12,6 +12,8 @@ Saves .npy array with first 100 non-reemission records to::
 
    /tmp/U4Cerenkov_Debug.npy 
 
+Typically the Save is done from U4Debug::Save for 
+consistent handling between multiple Debug struct. 
 
 **/
 
