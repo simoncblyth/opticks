@@ -2444,7 +2444,9 @@ opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commi
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
 
 #opticks-docs-page(){     echo ${P:-index.html} ; }
-opticks-docs-page(){     echo ${P:-docs/orientation.html} ; }
+#opticks-docs-page(){     echo ${P:-docs/orientation.html} ; }
+opticks-docs-page(){     echo ${P:-docs/debug.html} ; }
+
 opticks-docs-vi(){       local page=$(opticks-docs-page) ; vi $(opticks-home)/${page/.html/.rst} ; }
 opticks-docs-remote(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/$(opticks-docs-page) ; } 
 opticks-docs-local(){    opticks-open  http://localhost/opticks/$(opticks-docs-page) ; } 

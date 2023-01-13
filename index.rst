@@ -21,6 +21,7 @@ Contents:
    docs/visualization
    docs/examples
    docs/orientation
+   docs/debug
    docs/updating_this_documentation
 
    docs/misc/opticks_event_data
