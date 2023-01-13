@@ -66,12 +66,12 @@ class GGEO_API GMeshLib
     public:
         std::string operator()( const char* arg ) const  ;
         std::string detail() const;
+        std::string desc() const;
     public:
         // methods working from the index, so work prior to loading meshes
         const char* getMeshName(unsigned aindex) const ; 
         void        getMeshNames(std::vector<std::string>& meshNames) const ;
     public:
-        std::string desc() const ; 
         unsigned    getNumMeshes() const ; 
 
         void          getMeshIndicesWithAlt(std::vector<unsigned>& indices) const ; 

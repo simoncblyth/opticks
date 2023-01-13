@@ -168,7 +168,22 @@ void GMeshLib::saveAltReferences()
         const NCSG* solid = m_solids[i];  
 
         int index = findMeshIndex(mesh); 
-        assert( unsigned(index) == i );  // not expecting same GMesh instance more than once
+        bool unique_mesh = unsigned(index) == i ;  
+
+        LOG_IF(fatal, unique_mesh == false )
+            << " not expecting same GMesh instance more than once " 
+            << " i " << i 
+            << " index " << index
+            << " unique_mesh " << unique_mesh 
+            << " mesh " << mesh 
+            << " mesh.getName() " << mesh->getName()
+            << " m_meshes.size " << m_meshes.size()
+            << " m_solids.size " << m_solids.size()
+            << std::endl 
+            << detail()            
+            ;
+
+        assert( unique_mesh  );  
 
         const GMesh* altmesh = mesh->getAlt(); 
         if(altmesh == NULL) continue ; 
@@ -808,6 +823,13 @@ std::string GMeshLib::desc() const
 {
     unsigned numMeshes = getNumMeshes(); 
     std::stringstream ss ; 
+    ss  
+       << "GMeshLib::desc"
+       << " m_meshes.size " << m_meshes.size() 
+       << " numMeshes " << numMeshes
+       << std::endl 
+       ; 
+
     for(unsigned midx=0 ; midx < numMeshes ; midx++)
     {   
         const char* mname = getMeshName(midx); 
