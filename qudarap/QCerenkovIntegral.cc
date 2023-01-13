@@ -39,8 +39,8 @@ NP* QCerenkovIntegral::Load(const char* path_)  // static
 QCerenkovIntegral::QCerenkovIntegral(const char* path_ )
     :
     path( path_ ? path_ : DEFAULT_PATH ),
-    dsrc(Load(path)),
-    src(dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc)),
+    dsrc( path ? Load(path) : nullptr ),
+    src( nullptr ),
     emn(0.),
     emx(0.),
     rmn(0.),
@@ -52,6 +52,11 @@ QCerenkovIntegral::QCerenkovIntegral(const char* path_ )
 
 void QCerenkovIntegral::init()
 {
+    LOG_IF(error, dsrc == nullptr ) << " not loaded " ; 
+    if(dsrc == nullptr) return ; 
+
+    if(dsrc) src = dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc) ; 
+
     dsrc->pscale<double>(1e6, 0u) ; //  change energy scale from MeV to eV,   1.55 to 15.5 eV
     dsrc->minmax<double>(emn, emx, 0u ); 
     dsrc->minmax<double>(rmn, rmx, 1u ); 

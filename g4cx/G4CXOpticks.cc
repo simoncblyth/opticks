@@ -500,9 +500,22 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     LOG(info)  << "[ " << ( dir ? dir : "-" ) ; 
     std::cout << "G4CXOpticks::saveGeometry [ " << ( dir ? dir : "-" ) << std::endl ;
 
-    if(fd) fd->save(dir) ; 
-    if(gg) gg->save_to_dir(dir) ; 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
+    if(fd) fd->save(dir) ; 
+
+    bool ggskip = true ; 
+    if(gg)
+    {
+        if(ggskip == false)
+        {
+            gg->save_to_dir(dir) ;   
+        } 
+        else
+        {
+            LOG(error) << "skipped saving gg " ; 
+        }
+    }
+
 
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }

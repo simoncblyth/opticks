@@ -28,6 +28,7 @@ but the headers are also copied into opticks/sysrap.
 #include <string>
 #include <vector>
 #include <cassert>
+#include <csignal>
 #include <fstream>
 #include <cstdint>
 #include <limits>
@@ -4112,6 +4113,7 @@ inline int NP::load(const char* path)
     if(fp.fail())
     {
         std::cerr << "NP::load Failed to load from path " << path << std::endl ; 
+        std::raise(SIGINT); 
         return 1 ; 
     }
 
