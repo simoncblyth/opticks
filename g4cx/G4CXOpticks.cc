@@ -507,17 +507,37 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }
 
-void G4CXOpticks::SaveGeometry(const char* dir) // static
+
+
+
+/**
+G4CXOpticks::SaveGeometry
+----------------------------
+
+Saving geometry with this method requires:
+
+1. invoking the method from your Opticks integration code, call must be after SetGeometry 
+2. define envvar configuring the directory to save into, eg::
+
+   export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM  
+
+NB this is distinct from saving when setGeometry is run as
+that is too soon to save when additional SSim information 
+is added
+
+TODO: probably remove the setGeometry save, as will usually want to 
+do it a bit later 
+
+**/
+
+void G4CXOpticks::SaveGeometry() // static
 {
     LOG_IF(error, INSTANCE==nullptr) << " INSTANCE nullptr : NOTHING TO SAVE " ; 
     if(INSTANCE == nullptr) return ; 
   
-    if( dir == nullptr )
-    {
-        INSTANCE->saveGeometry();  
-    }
-    else
-    {
-        INSTANCE->saveGeometry(dir); 
-    }
+    const char* dir = SSys::getenvvar(SaveGeometry_KEY) ;
+    LOG_IF(LEVEL, dir == nullptr ) << " not saving as envvar not set " << SaveGeometry_KEY  ;  
+    if(dir == nullptr) return ; 
+    LOG(info) << " save to dir " << dir << " configured via envvar " << SaveGeometry_KEY ; 
+    INSTANCE->saveGeometry(dir); 
 }
