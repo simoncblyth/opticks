@@ -47,6 +47,16 @@ namespace schrono
         return tt ; 
     }
 
+    inline const char* format( std::time_t tt )
+    {
+        std::tm* tm = std::localtime(&tt);
+        char buffer[32];
+        // Format: Mo, 15.06.2009 20:20:00
+        std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", tm);  
+        return strdup(buffer) ; 
+     }
+
+
 }
 
 
