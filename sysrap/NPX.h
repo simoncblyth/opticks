@@ -8,10 +8,27 @@ NPX.h : NP.hh related extras such as static converters
 
 #include "NP.hh"
 
+
 struct NPX
 {
-    static NP* MakeValues( const std::vector<std::string>& keys, const std::vector<double>& vals ); 
-    static NP* MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains=nullptr ); 
+    template<typename T>
+    static NP* MakeValues( const std::vector<std::string>& keys, const std::vector<T>& vals ); 
+    template<typename T>
+    static NP* MakeValues( const std::vector<std::pair<std::string, T>>& values, const char* contains=nullptr ); 
+    template<typename T>
+    static std::string DescValues(const NP* a); 
+
+    template<typename T>
+    struct KV
+    {
+        std::vector<std::string> kk ; 
+        std::vector<T> vv ; 
+
+        void add(const char* k, T v ){ kk.push_back(k); vv.push_back(v); }
+        NP* values() const { return MakeValues<T>(kk, vv) ; }
+    }; 
+
+
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
@@ -56,17 +73,19 @@ struct NPX
 
 
 
-inline NP* NPX::MakeValues( const std::vector<std::string>& keys, const std::vector<double>& vals ) // static
+template<typename T>
+inline NP* NPX::MakeValues( const std::vector<std::string>& keys, const std::vector<T>& vals ) // static
 {
     assert( keys.size() == vals.size() ); 
     if(vals.size() == 0 ) return nullptr ; 
 
-    NP* vv = NPX::Make<double>( vals ) ; 
+    NP* vv = NPX::Make<T>( vals ) ; 
     vv->set_names( keys );  
     return vv ; 
 }
 
-inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, double>>& values, const char* contains ) // static
+template<typename T>
+inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, T>>& values, const char* contains ) // static
 {
     if(NP::VERBOSE) std::cout 
         << "NPX::MakeValues values.size " << values.size() 
@@ -75,13 +94,13 @@ inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, double>>& v
         ;  
 
     std::vector<std::string> nams ; 
-    std::vector<double> vals ; 
+    std::vector<T> vals ; 
 
     for(unsigned i=0 ; i < values.size() ; i++)
     {   
-        const std::pair<std::string, double>& kv = values[i] ; 
+        const std::pair<std::string, T>& kv = values[i] ; 
         const char* k = kv.first.c_str() ; 
-        double v = kv.second ;
+        T v = kv.second ;
 
         bool select = contains == nullptr || U::Contains( k, contains ) ; 
 
@@ -102,8 +121,28 @@ inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, double>>& v
     }  
     if(NP::VERBOSE) std::cout << "NPX::MakeValues vals.size " << vals.size() << std::endl ;  
 
-    NP* vv = MakeValues(nams, vals); 
+    NP* vv = MakeValues<T>(nams, vals); 
     return vv ; 
+}
+
+template<typename T>
+std::string NPX::DescValues(const NP* a) // static
+{
+    std::stringstream ss ;
+    ss << std::endl << "NPX::descValues"  << std::endl ; 
+    for(unsigned i=0 ; i < a->names.size() ; i++)
+    {
+        const char* k = a->names[i].c_str(); 
+        T v = a->get_named_value<T>(k, 0) ; 
+        ss
+            << std::setw(30) << k 
+            << " : " 
+            << std::setw(10) << v 
+            << std::endl
+            ; 
+    } 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
