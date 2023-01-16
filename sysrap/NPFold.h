@@ -59,6 +59,12 @@ to loading a directory tree of .npy all into a single NPFold
 Now with load_dir each directory is loading into an NPFold
 so loading a directory tree creates a corresponding tree of NPFold. 
 
+Hid fts.h usage behind WITH_FTS as getting compilation error on Linux::
+
+    /usr/include/fts.h:41:3: error: #error "<fts.h> cannot be used with -D_FILE_OFFSET_BITS==64"
+     # error "<fts.h> cannot be used with -D_FILE_OFFSET_BITS==64"
+       ^~~~~
+
 **/
 
 #include <string>
@@ -69,7 +75,11 @@ so loading a directory tree creates a corresponding tree of NPFold.
 #include <cstdlib>
 #include <cstdio>
 #include <sys/types.h>
+
+#ifdef WITH_FTS
 #include <fts.h>
+#endif
+
 #include <cstring>
 #include <errno.h>
 #include <sstream>
@@ -171,8 +181,11 @@ struct NPFold
     void load_array(const char* base, const char* relp); 
     void load_subfold(const char* base, const char* relp);
 
+#ifdef WITH_FTS
     static int FTS_Compare(const FTSENT** one, const FTSENT** two); 
     int  no_longer_used_load_fts(const char* base) ; 
+#endif
+
     int  load_dir(const char* base) ; 
     int  load_index(const char* base) ; 
 
@@ -784,6 +797,7 @@ inline void NPFold::load_subfold(const char* base, const char* relp)
 
 
 
+#ifdef WITH_FTS
 inline int NPFold::FTS_Compare(const FTSENT** one, const FTSENT** two)
 {
     return (strcmp((*one)->fts_name, (*two)->fts_name));
@@ -843,6 +857,7 @@ inline int NPFold::no_longer_used_load_fts(const char* base_)
     fts_close(fs);
     return 0 ; 
 }
+#endif
 
 /**
 NPFold::load_dir
