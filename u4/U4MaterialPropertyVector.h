@@ -49,7 +49,7 @@ inline NP* U4MaterialPropertyVector::ConvertToArray(const G4MaterialPropertyVect
 }
 
 
-G4MaterialPropertyVector* U4MaterialPropertyVector::FromArray(const NP* a ) // static 
+inline G4MaterialPropertyVector* U4MaterialPropertyVector::FromArray(const NP* a ) // static 
 {   
     assert( a->uifc == 'f' && a->ebyte == 8 );
     
