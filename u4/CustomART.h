@@ -75,20 +75,18 @@ Do you agree with this argument ?
 
 #include "G4ThreeVector.hh"
 
-#include "SLOG.hh"
-#include "JPMT.h"
-#include "Layr.h"  // JTMM.h would be better name TODO: compare/consolidate with stmm.h 
+#include "IPMTAccessor.h"
+#include "Layr.h"  // HMM: replace with stmm.h/TMM.h TODO: compare/consolidate with stmm.h 
 #include "U4Touchable.h"
 
-template<typename J>
 struct CustomART
 {
-    static const constexpr plog::Severity LEVEL = debug ;  
     int    count ; 
     double zlocal ; 
     double lposcost ; 
 
-    J*        accessor ; 
+    const IPMTAccessor* accessor ; 
+
     G4double& theTransmittance ;
     G4double& theReflectivity ;
     G4double& theEfficiency ;
@@ -100,7 +98,7 @@ struct CustomART
     const G4double& thePhotonMomentum ; 
 
     CustomART(
-        J* accessor, 
+        const IPMTAccessor* accessor, 
         G4double& theTransmittance,
         G4double& theReflectivity,
         G4double& theEfficiency,
@@ -115,9 +113,8 @@ struct CustomART
     char doIt(const G4Track& aTrack, const G4Step& aStep ); 
 }; 
 
-template<typename J>
-inline CustomART<J>::CustomART(
-          J* accessor_, 
+inline CustomART::CustomART(
+    const IPMTAccessor* accessor_, 
           G4double& theTransmittance_,
           G4double& theReflectivity_,
           G4double& theEfficiency_,
@@ -163,8 +160,7 @@ A:Preparing for doing this on GPU, as lposcost is available there already but zl
 
 **/
 
-template<typename J>
-inline char CustomART<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
+inline char CustomART::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
 {
     if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return 'N' ; 
 
@@ -189,8 +185,7 @@ NB stack is flipped for minus_cos_theta > 0. so:
 
 **/
 
-template<typename J>
-inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
+inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
 {
     G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
 
@@ -208,10 +203,12 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     std::array<double,16> a_spec ; 
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
-
     StackSpec<double,4> spec ; 
     spec.import( a_spec ); 
-    LOG(info) << " spec " << std::endl << spec ; 
+    std::cerr << "CustomART::doIt" << " spec " << std::endl << spec << std::endl ; 
+
+    // SUSPECT: there will be significant repetition of get_stackspec 
+    // calls with same pmtcat and energy_eV : so could try caching ?
 
     Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
 
@@ -228,7 +225,8 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     double S = E_s2 ; 
     double P = one - S ; 
 
-    LOG(LEVEL)
+    std::cerr
+        << "CustomART::doIt"
         << " count " << count 
         << " pmtid " << pmtid
         << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
@@ -236,6 +234,7 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
         << " theRecoveredNormal " << theRecoveredNormal 
         << " OldPolarization*OldMomentum.cross(theRecoveredNormal) " << OldPolarization*OldMomentum.cross(theRecoveredNormal) 
         << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
+        << std::endl 
         ;    
 
     double T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
@@ -245,13 +244,15 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     theTransmittance = T ; 
     theReflectivity  = R ; 
 
-    LOG(LEVEL)
+    std::cerr
+        << "CustomART::doIt"
         << " count " << count 
         << " S " << std::fixed << std::setw(10) << std::setprecision(5) << S 
         << " P " << std::fixed << std::setw(10) << std::setprecision(5) << P
         << " T " << std::fixed << std::setw(10) << std::setprecision(5) << T 
         << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R
         << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A
+        << std::endl 
         ;    
 
     // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) presumably this is due to _qe definition
@@ -262,12 +263,17 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
  
     theEfficiency = D ; 
 
-    LOG_IF(error, D > 1.)
+    bool expect = D <= 1. ; 
+    if(!expect) std::cerr
+        << "CustomART::doIt"
+        << " FATAL "
         << " ERR: D > 1. : " << D 
         << " _qe " << _qe
         << " An " << An
+        << std::endl 
         ;
 
+    assert( expect ); 
     return 'Y' ; 
 }
 

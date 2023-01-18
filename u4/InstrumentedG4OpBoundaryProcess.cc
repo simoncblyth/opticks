@@ -86,7 +86,6 @@
 
 
 #ifdef WITH_PMTFASTSIM
-#include "CustomBoundary.h"
 #include "CustomART.h"
 #endif
 
@@ -213,13 +212,19 @@ char InstrumentedG4OpBoundaryProcess::getCustomStatus() const
 }
 void InstrumentedG4OpBoundaryProcess::Save(const char* fold) // static
 {
-    CustomBoundary<JPMT>::Save(fold); 
+    //CustomBoundary<JPMT>::Save(fold); 
 }
 
 #endif
 
 
-InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String& processName, G4ProcessType type) 
+InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(
+#ifdef WITH_PMTFASTSIM
+    const IPMTAccessor* accessor,
+#endif
+    const G4String& processName, 
+    G4ProcessType type
+    ) 
     : 
     G4VDiscreteProcess(processName, type)
 #ifdef WITH_PMTFASTSIM
@@ -227,21 +232,8 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
 #endif
     ,theCustomStatus('U')
 #ifdef WITH_PMTFASTSIM
-    /*
-    ,m_custom_boundary(new CustomBoundary<JPMT>(
-                  NewMomentum,
-                  NewPolarization,
-                  aParticleChange,
-                  theStatus,
-                  theGlobalPoint,
-                  OldMomentum,
-                  OldPolarization,
-                  theRecoveredNormal,
-                  thePhotonMomentum))
-     */
-    ,m_custom_accessor(new JPMT)
-    ,m_custom_art(new CustomART<JPMT>(
-                  m_custom_accessor,
+    ,m_custom_art(new CustomART(
+                  accessor,
                   theTransmittance,
                   theReflectivity,
                   theEfficiency,
@@ -731,6 +723,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
                 type = dielectric_dielectric ;  
                 theModel = glisur ; 
                 theFinish = polished ;  
+                // guide thru the below jungle : only when custom handling is triggered 
             }
 #else
             theCustomStatus = 'X' ; 
@@ -818,22 +811,15 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
     //[type_switch 
 #ifdef WITH_PMTFASTSIM
-    /*
-    if(strchr("ARTD", theCustomStatus)!=nullptr) 
-    {
-        LOG(LEVEL) << "CustomBoundary_doneIt : SKIP TYPE_SWITCH " ;  
-    }
-    else
-    */ 
     if( theCustomStatus == 'Y' )
     {
         G4double rand = G4UniformRand();
 
         G4double A = 1. - (theReflectivity + theTransmittance) ;  
 
-        if ( rand < A )
+        if ( rand < A )  // HMM: more normally rand > theReflectivity + theTransmittance 
         {
-            DoAbsorption();
+            DoAbsorption();   // theStatus is set to Detection/Absorption depending on a random and theEfficiency  
         }
         else
         {

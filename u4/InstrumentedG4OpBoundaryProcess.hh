@@ -85,9 +85,9 @@
 
 #ifdef WITH_PMTFASTSIM
 #include "SOpBoundaryProcess.hh"
-#include "JPMT.h"
-template <typename T> struct CustomBoundary ; 
-template <typename T> struct CustomART ; 
+
+struct IPMTAccessor ; 
+struct CustomART ; 
 #endif
 
 #include "G4Step.hh"
@@ -171,8 +171,7 @@ public:
         char theCustomStatus ; 
 
 #ifdef WITH_PMTFASTSIM
-        JPMT*                 m_custom_accessor ; 
-        CustomART<JPMT>*      m_custom_art ; 
+        CustomART*      m_custom_art ; 
 
         double getU0() const ; 
         int getU0_idx() const ; 
@@ -191,8 +190,13 @@ public:
         // Constructors and Destructor
         ////////////////////////////////
 
-        InstrumentedG4OpBoundaryProcess(const G4String& processName = "OpBoundary",
-                                     G4ProcessType type = fOptical);
+        InstrumentedG4OpBoundaryProcess(
+#ifdef WITH_PMTFASTSIM
+                 const IPMTAccessor* accessor, 
+#endif
+                 const G4String& processName = "OpBoundary",
+                 G4ProcessType type = fOptical) ;
+
         ~InstrumentedG4OpBoundaryProcess();
 
 private:

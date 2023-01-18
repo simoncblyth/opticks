@@ -2,6 +2,11 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
+#ifdef WITH_PMTFASTSIM
+#include "JPMT.h"
+#endif
+
+
 #include "SLOG.hh"
 const plog::Severity U4Physics::LEVEL = SLOG::EnvLevel("U4Physics", "DEBUG") ; 
 
@@ -198,7 +203,14 @@ void U4Physics::ConstructOp()
 
     if(G4OpBoundaryProcess_DISABLE == 0)
     {
+
+#ifdef WITH_PMTFASTSIM
+        IPMTAccessor* ipmt = dynamic_cast<IPMTAccessor*>(new JPMT) ; 
+        fBoundary = new InstrumentedG4OpBoundaryProcess(ipmt);
+#else
         fBoundary = new InstrumentedG4OpBoundaryProcess();
+#endif
+        LOG(info) << " fBoundary " << fBoundary ; 
     }
 
   auto particleIterator=GetParticleIterator();
