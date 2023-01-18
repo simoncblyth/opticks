@@ -3,6 +3,8 @@
 stmm.h : Thin/Thick Multi-layer Stack TMM "Transfer Matrix Method" A,R,T calculation 
 ======================================================================================
 
+CAUTION : probably divergence from ~/j/Layr/JPMT.h 
+
 Developed in ~/j/Layr/Layr.h, moved into syrap to assist with comparison
 with qsim.h propagate_at_boundary 
 

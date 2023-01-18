@@ -2,6 +2,7 @@
 U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
 ======================================================
 
+Note most of the Geant4 setup from U4RecorderTest.h
 
 **/
 
@@ -21,7 +22,6 @@ U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
 #include "junoPMTOpticalModel.hh"
 #include "J_PMTFASTSIM_LOG.hh"
 #endif
-
 
 struct U4SimulateTest
 {

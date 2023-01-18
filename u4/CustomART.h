@@ -56,16 +56,17 @@ Do you agree with this argument ?
 
 #include "SLOG.hh"
 #include "JPMT.h"
-#include "Layr.h"   // hmm use stmm.h  ? 
+#include "Layr.h"       // TODO: compare with stmm.h 
 #include "U4Touchable.h"
-#include "CustomStatus.h"
+
+//#include "CustomStatus.h"  // simply naming status chars, non-essential 
 
 
 template<typename J>
 struct CustomART
 {
     static const constexpr plog::Severity LEVEL = debug ;  
-    J*     parameter_accessor ; 
+    J*     accessor ; 
     int    count ; 
     double zlocal ; 
     double lposcost ; 
@@ -107,7 +108,7 @@ inline CustomART<J>::CustomART(
     const G4double&      thePhotonMomentum_
     )
     :
-    parameter_accessor(new J),
+    accessor(new J),
     count(0),
     zlocal(-1.),
     lposcost(-2.),
@@ -154,6 +155,17 @@ inline char CustomART<J>::maybe_doIt(const char* OpticalSurfaceName, const G4Tra
     return doIt(aTrack, aStep) ;
 }
 
+/**
+CustomART<J>::doIt
+--------------------
+
+NB stack is flipped for minus_cos_theta > 0. so:
+
+* stack.ll[0] always incident side
+* stack.ll[3] always transmission side 
+
+**/
+
 template<typename J>
 inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 {
@@ -165,43 +177,19 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     G4double wavelength_nm = wavelength/nm ; 
 
     const G4VTouchable* touch = aTrack.GetTouchable();    
-    int replicaNumber = U4Touchable::ReplicaNumber(touch);  // aka pmtid
+    int pmtid = U4Touchable::ReplicaNumber(touch);
 
-    int pmtcat = J::DEFAULT_CAT ;    // TODO: add J API to access pmtcat+qe from replicaNumber
-    double _qe = 0.0 ;  
+    int pmtcat = accessor->get_pmtcat( pmtid ) ; 
+    double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  
+
+    std::array<double,16> a_spec ; 
+    accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
 
     StackSpec<double,4> spec ; 
-    {
-        // TODO: parameter_accessor should directly return StackSpec in one call
-        // with pmtcat and energy_eV arguments : which would reduce API area 
+    spec.import( a_spec ); 
+    //LOG(info) << " spec " << std::endl << spec ; 
 
-        spec.ls[0].d = 0. ; 
-        spec.ls[1].d = parameter_accessor->get_thickness_nm( pmtcat, J::L1 );  
-        spec.ls[2].d = parameter_accessor->get_thickness_nm( pmtcat, J::L2 );  
-        spec.ls[3].d = 0. ; 
-
-        spec.ls[0].nr = parameter_accessor->get_rindex( pmtcat, J::L0, J::RINDEX, energy_eV );  
-        spec.ls[0].ni = parameter_accessor->get_rindex( pmtcat, J::L0, J::KINDEX, energy_eV );
-
-        spec.ls[1].nr = parameter_accessor->get_rindex( pmtcat, J::L1, J::RINDEX, energy_eV );
-        spec.ls[1].ni = parameter_accessor->get_rindex( pmtcat, J::L1, J::KINDEX, energy_eV );
-
-        spec.ls[2].nr = parameter_accessor->get_rindex( pmtcat, J::L2, J::RINDEX, energy_eV );  
-        spec.ls[2].ni = parameter_accessor->get_rindex( pmtcat, J::L2, J::KINDEX, energy_eV );  
-
-        spec.ls[3].nr = parameter_accessor->get_rindex( pmtcat, J::L3, J::RINDEX, energy_eV );  
-        spec.ls[3].ni = parameter_accessor->get_rindex( pmtcat, J::L3, J::KINDEX, energy_eV );
-    }
-
-
-
-
-    Stack<double,4> stack(      wavelength_nm, minus_cos_theta, spec );  
-
-    // NB stack is flipped for minus_cos_theta > 0. so:
-    //
-    //    stack.ll[0] always incident side
-    //    stack.ll[3] always transmission side 
+    Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
 
     const double _si = stack.ll[0].st.real() ; 
     const double _si2 = sqrtf( 1. - minus_cos_theta*minus_cos_theta ); 
@@ -209,16 +197,16 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
     double E_s2 = _si > 0. ? (OldPolarization*OldMomentum.cross(theRecoveredNormal))/_si : 0. ; 
     E_s2 *= E_s2;      
 
+    // E_s2 : S-vs-P power fraction : signs make no difference as squared
+    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
+
     double one = 1.0 ; 
     double S = E_s2 ; 
     double P = one - S ; 
 
-    // E_s2 : S-vs-P power fraction : signs make no difference as squared
-    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
-
     LOG(LEVEL)
         << " count " << count 
-        << " replicaNumber " << replicaNumber
+        << " pmtid " << pmtid
         << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
         << " _si2 " << std::fixed << std::setw(10) << std::setprecision(5) << _si2 
         << " theRecoveredNormal " << theRecoveredNormal 
@@ -258,6 +246,5 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     return 'Y' ; 
 }
-
 
 

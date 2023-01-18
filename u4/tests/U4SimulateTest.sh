@@ -20,13 +20,15 @@ U4SimulateTest.sh  (formerly U4PMTFastSimTest.sh)
 Rerunning single photons off the same g4state is a bit delicate to arrange.
 This incantation succeeds to rerun the N=0 big bouncer with N=1::
 
-    epsilon:tests blyth$ vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_SAVE
+    cd ~/opticks/u4/tests
 
-    epsilon:tests blyth$ N=0 ./U4SimulateTest.sh   ## saves g4state into /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/ALL0
+     vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_SAVE
 
-    epsilon:tests blyth$ vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_RERUN for PID 726 
+     N=0 ./U4SimulateTest.sh   ## saves g4state into /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/ALL0
+
+     vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_RERUN for PID 726 
     
-    epsilon:tests blyth$ N=1 ./U4SimulateTest.sh   ## saves to /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/SEL1
+     N=1 ./U4SimulateTest.sh   ## saves to /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/SEL1
 
 After that can compare timings::
 
@@ -83,7 +85,7 @@ case $running_mode in
 esac
 
 
-if [ "$LAYOUT" == "one_pmt" -a "$running_mode" == "SRM_G4STATE_RERUN" -a "$version" == "1" ]; then
+if [ "$LAYOUT" == "one_pmt" -a "$running_mode" == "SRM_G4STATE_RERUN" -a "$VERSION" == "1" ]; then
 
    ## when using natural geometry need to apply some burns to
    ## jump ahead in a way that corresponds to the consumption 
@@ -190,11 +192,13 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
 fi 
 
+## analysis modes beginning with n: nfs/ncf/naf/nph are NumPy only (without matplotlib and pyvista)
+
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nfs" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_fs.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE fs error && exit 3
 fi 
 
 if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then

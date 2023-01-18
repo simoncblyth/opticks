@@ -21,11 +21,13 @@ const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
-const char* SEventConfig::_G4StateSpecNotes   = " 38=2*17+4 is appropriate for MixMaxRng  " ; 
+const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ; 
 int         SEventConfig::_G4StateRerunDefault = -1 ;
+const char* SEventConfig::_MaxBounceNotes = "MaxBounceLimit:31, MaxRecordLimit:32 (see sseq.h)" ; 
  
 int SEventConfig::_MaxGenstepDefault = 1000*K ; 
 int SEventConfig::_MaxBounceDefault = 9 ; 
+
 int SEventConfig::_MaxRecordDefault = 0 ; 
 int SEventConfig::_MaxRecDefault = 0 ; 
 int SEventConfig::_MaxAuxDefault = 0 ; 
@@ -310,6 +312,9 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() 
+       << std::endl 
+       << std::setw(25) << ""
+       << std::setw(20) << " MaxBounceNotes " << " : " << _MaxBounceNotes
        << std::endl 
        << std::setw(25) << kMaxRecord
        << std::setw(20) << " MaxRecord " << " : " << MaxRecord() 

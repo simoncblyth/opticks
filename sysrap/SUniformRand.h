@@ -38,7 +38,7 @@ g4-cls Random
 #include <string>
 #include <iomanip>
 #include "Randomize.hh"
-#include "NP.hh"
+#include "NPX.h"
 
 template<typename E>
 struct SUniformRand
@@ -84,7 +84,7 @@ inline NP* SUniformRand<E>::Get(int n)
 {
     std::vector<double> uu(n) ; 
     Get(uu); 
-    return NP::Make<double>(uu) ; 
+    return NPX::Make<double>(uu) ; 
 }
 
 template<typename E>

@@ -192,6 +192,7 @@ struct SYSRAP_API SEventConfig
     static const char* _G4StateSpecDefault ; 
     static const char* _G4StateSpecNotes ; 
     static int         _G4StateRerunDefault ; 
+    static const char* _MaxBounceNotes ; 
 
     static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
