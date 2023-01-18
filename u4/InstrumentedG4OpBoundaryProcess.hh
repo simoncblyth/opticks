@@ -171,7 +171,7 @@ public:
         char theCustomStatus ; 
 
 #ifdef WITH_PMTFASTSIM
-        //CustomBoundary<JPMT>* m_custom_boundary ; 
+        JPMT*                 m_custom_accessor ; 
         CustomART<JPMT>*      m_custom_art ; 
 
         double getU0() const ; 

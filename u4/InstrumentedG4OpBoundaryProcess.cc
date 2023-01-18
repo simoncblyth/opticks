@@ -239,7 +239,9 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
                   theRecoveredNormal,
                   thePhotonMomentum))
      */
+    ,m_custom_accessor(new JPMT)
     ,m_custom_art(new CustomART<JPMT>(
+                  m_custom_accessor,
                   theTransmittance,
                   theReflectivity,
                   theEfficiency,

@@ -1,7 +1,28 @@
 #pragma once
 /**
-CustomART
-===========
+CustomART : Modifies G4OpBoundaryProcess with Custom calc of A/R/T coeffs
+===========================================================================
+
+* CustomART<JPMT> is instanciated in G4OpBoundaryProcess ctor
+* aims to provides customization with minimal code change to G4OpBoundaryProcess 
+* aims to make few detector specific assumptions by moving such specifics into 
+  the template type that provides PMT parameter access
+
+What detector/Geant4 geometry specific assumptions are made ?
+---------------------------------------------------------------
+
+1. ART customized for surfaces with names starting with '@' on local_z > 0. 
+2. pmtid obtained from Geant4 volume ReplicaNumber
+3. templated PMT Parameter accessor type fulfils an API::
+
+    get_pmtcat(int pmtid) const ; 
+    get_pmtid_qe( int pmtid, double energy) const ;  
+    get_stackspec( std::array<double, 16>& a_spec, int pmtcat, double energy_eV ) const ; 
+    // HMM: thats assuming 4 layer stack 
+ 
+
+Overview
+----------
 
 Trying to do less than CustomBoundary, instead just calculate::
 
@@ -56,21 +77,18 @@ Do you agree with this argument ?
 
 #include "SLOG.hh"
 #include "JPMT.h"
-#include "Layr.h"       // TODO: compare with stmm.h 
+#include "Layr.h"  // JTMM.h would be better name TODO: compare/consolidate with stmm.h 
 #include "U4Touchable.h"
-
-//#include "CustomStatus.h"  // simply naming status chars, non-essential 
-
 
 template<typename J>
 struct CustomART
 {
     static const constexpr plog::Severity LEVEL = debug ;  
-    J*     accessor ; 
     int    count ; 
     double zlocal ; 
     double lposcost ; 
 
+    J*        accessor ; 
     G4double& theTransmittance ;
     G4double& theReflectivity ;
     G4double& theEfficiency ;
@@ -82,6 +100,7 @@ struct CustomART
     const G4double& thePhotonMomentum ; 
 
     CustomART(
+        J* accessor, 
         G4double& theTransmittance,
         G4double& theReflectivity,
         G4double& theEfficiency,
@@ -98,6 +117,7 @@ struct CustomART
 
 template<typename J>
 inline CustomART<J>::CustomART(
+          J* accessor_, 
           G4double& theTransmittance_,
           G4double& theReflectivity_,
           G4double& theEfficiency_,
@@ -108,10 +128,10 @@ inline CustomART<J>::CustomART(
     const G4double&      thePhotonMomentum_
     )
     :
-    accessor(new J),
     count(0),
     zlocal(-1.),
     lposcost(-2.),
+    accessor(accessor_),
     theTransmittance(theTransmittance_),
     theReflectivity(theReflectivity_),
     theEfficiency(theEfficiency_),
@@ -122,6 +142,9 @@ inline CustomART<J>::CustomART(
     thePhotonMomentum(thePhotonMomentum_) 
 {
 }
+
+
+
 
 /**
 CustomART::maybe_doIt
@@ -181,13 +204,14 @@ inline char CustomART<J>::doIt(const G4Track& aTrack, const G4Step& aStep )
 
     int pmtcat = accessor->get_pmtcat( pmtid ) ; 
     double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  
+    // following the old junoPMTOpticalModel with "backwards" _qe always zero 
 
     std::array<double,16> a_spec ; 
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
 
     StackSpec<double,4> spec ; 
     spec.import( a_spec ); 
-    //LOG(info) << " spec " << std::endl << spec ; 
+    LOG(info) << " spec " << std::endl << spec ; 
 
     Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
 
