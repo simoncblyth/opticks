@@ -1,6 +1,109 @@
 running_with_more_photons
 ============================
 
+New Opticks : How to Increase the max number of photons/gensteps ?
+---------------------------------------------------------------------
+
+Setting envvars can change the defaults::
+
+    OPTICKS_MAX_GENSTEP
+    OPTICKS_MAX_PHOTON
+
+Those defaults can be overridden in the code by calling 
+**SEventConfig** static functions prior to calling 
+**G4CXOpticks::SetGeometry**::
+
+    SEventConfig::SetMaxGenstep
+    SEventConfig::SetMaxPhoton  
+
+In addition to that config it is also necessary to create 
+*QCurandState* files corresponding to the MaxPhoton you set. 
+That can be done using the *qudarap-prepare-installation* bash function::
+
+    qudarap-prepare-sizes-Linux-(){  echo ${OPTICKS_QUDARAP_RNGMAX:-1,3,10} ; }
+    qudarap-prepare-sizes-Darwin-(){ echo ${OPTICKS_QUDARAP_RNGMAX:-1,3} ; }
+    qudarap-prepare-sizes(){ $FUNCNAME-$(uname)- | tr "," "\n"  ; } 
+
+    qudarap-prepare-installation()
+    {
+       local sizes=$(qudarap-prepare-sizes)
+       local size 
+       for size in $sizes ; do  
+           QCurandState_SPEC=$size:0:0  QCurandStateTest
+           rc=$? ; [ $rc -ne 0 ] && return $rc 
+       done
+       return 0 
+    }
+
+
+Check your environment with *SEventConfigTest* binary::
+
+    epsilon:~ blyth$ SEventConfigTest 
+    test_EstimateAlloc@20: 
+    SEventConfig::Desc
+           OPTICKS_EVENT_MODE          EventMode  : Default
+         OPTICKS_RUNNING_MODE        RunningMode  : 0
+                                RunningModeLabel  : SRM_DEFAULT
+         OPTICKS_G4STATE_SPEC        G4StateSpec  : 1000:38
+                                G4StateSpecNotes  : 38=2*17+4 is appropriate for MixMaxRng
+        OPTICKS_G4STATE_RERUN       G4StateRerun  : -1
+          OPTICKS_MAX_GENSTEP         MaxGenstep  : 1000000
+           OPTICKS_MAX_PHOTON          MaxPhoton  : 1000000
+         OPTICKS_MAX_SIMTRACE        MaxSimtrace  : 1000000     MaxCurandState  : 1000000
+           OPTICKS_MAX_BOUNCE          MaxBounce  : 9
+                                  MaxBounceNotes  : MaxBounceLimit:31, MaxRecordLimit:32 (see sseq.h)
+           OPTICKS_MAX_RECORD          MaxRecord  : 0
+              OPTICKS_MAX_REC             MaxRec  : 0
+              OPTICKS_MAX_SEQ             MaxSeq  : 0
+              OPTICKS_MAX_PRD             MaxPrd  : 0
+              OPTICKS_MAX_TAG             MaxTag  : 0
+             OPTICKS_MAX_FLAT            MaxFlat  : 0
+             OPTICKS_HIT_MASK            HitMask  : 64
+                                    HitMaskLabel  : SD
+           OPTICKS_MAX_EXTENT          MaxExtent  : 1000
+             OPTICKS_MAX_TIME            MaxTime  : 10
+              OPTICKS_RG_MODE             RGMode  : 2
+                                     RGModeLabel  : simulate
+            OPTICKS_COMP_MASK           CompMask  : 262
+                                   CompMaskLabel  : genstep,photon,hit
+             OPTICKS_OUT_FOLD            OutFold  : $DefaultOutputDir
+             OPTICKS_OUT_NAME            OutName  : -
+    OPTICKS_PROPAGATE_EPSILON   PropagateEpsilon  :     0.0500
+         OPTICKS_INPUT_PHOTON        InputPhoton  : -
+
+
+New Opticks : Background on QCurandState files
+--------------------------------------------------     
+
+The QCurandState files allows using curand in the simulation 
+without having to initialize it every time. 
+This is much much faster than calling curand_init everytime.  
+If you initialized curand when simulating the performance would be 
+factors of 100 worse, because the large stack means that far fewer threads 
+can run at the same time. 
+
+* Opticks uses curand to generate randoms on device. 
+* Initializing curand requires calling curand_init, but doing that requires a lot of stack. 
+  Far more stack than is needed for ray tracing and simulation. So to avoid having to initialize 
+  curand every time, and have large stacks and few threads in flight, this is done at Opticks 
+  installation time and the resulting curandState objects are saved to file.
+
+* When simulation is done the QCurandState files are loaded and uploaded to device. 
+
+* The QCurandState files are necessary. They do not contain random numbers, they 
+  contain initialized curandState objects needed to generate random numbers on device. 
+
+I plan at some point to support splitting the QCurandState into multiple
+smaller files to avoid the inconvenience of very large > 4GB files. And also 
+to avoid having to recreate all the states when you want to extend the size. 
+
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/qudarap/QCurandState.hh
+
+
+
+Old Opticks
+--------------
 
 Not Enough RNG issue::
 

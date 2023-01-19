@@ -3,7 +3,7 @@
 QCurandState.hh : creates states
 =====================================
 
-* loading from file is handled by QRng::Load 
+* loading from file is handled separately by QRng::Load 
 
 The curandState originate on the device as a result of 
 calling curand_init and they need to be downloaded and stored
