@@ -421,6 +421,17 @@ void SEvt::setFrame_HostsideSimtrace()
     SFrameGenstep::GenerateSimtracePhotons( simtrace, genstep );
 }
 
+/**
+SEvt::setGeo
+-------------
+
+Canonical invokation is from G4CXOpticks::setGeometry 
+This connection between the SGeo geometry and SEvt is what allows 
+the appropriate instance frame to be accessed. That is vital for 
+looking up the sensor_identifier and sensor_index.  
+
+**/
+
 void SEvt::setGeo(const SGeo* cf_)
 {
     cf = cf_ ; 
@@ -2045,7 +2056,7 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
     getPhoton(lp, idx); 
 
     sframe fr ; 
-    getPhotonFrame(fr, lp); 
+    getPhotonFrame(fr, lp);   // HMM: this is just using lp.iindex
     fr.transform_w2m(lp); 
 }
 
@@ -2055,11 +2066,14 @@ SEvt::getLocalHit
 
 Canonical usage from U4HitGet::FromEvt
 
+1. copy *idx* hit from NP array into sphoton& lp struct 
+2. uses lp.iindex (instance index) to lookup the frame from the SGeo* cf geometry  
+
 **/
 
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
 {
-    getHit(lp, idx); 
+    getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
 
     sframe fr ; 
     getPhotonFrame(fr, lp); 

@@ -30,6 +30,7 @@ Contents:
    docs/misc/how_opticks_full_works
    docs/misc/material_and_surface_properties
    docs/misc/geometry_translation
+   docs/misc/running_with_more_photons
 
    docs/outdated/integration
 
