@@ -205,7 +205,10 @@ inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
     StackSpec<double,4> spec ; 
     spec.import( a_spec ); 
-    std::cerr << "CustomART::doIt" << " spec " << std::endl << spec << std::endl ; 
+
+    bool dump = false ; 
+
+    if(dump) std::cerr << "CustomART::doIt" << " spec " << std::endl << spec << std::endl ; 
 
     // SUSPECT: there will be significant repetition of get_stackspec 
     // calls with same pmtcat and energy_eV : so could try caching ?
@@ -225,7 +228,7 @@ inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
     double S = E_s2 ; 
     double P = one - S ; 
 
-    std::cerr
+    if(dump) std::cerr
         << "CustomART::doIt"
         << " count " << count 
         << " pmtid " << pmtid
@@ -244,7 +247,7 @@ inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
     theTransmittance = T ; 
     theReflectivity  = R ; 
 
-    std::cerr
+    if(dump) std::cerr
         << "CustomART::doIt"
         << " count " << count 
         << " S " << std::fixed << std::setw(10) << std::setprecision(5) << S 

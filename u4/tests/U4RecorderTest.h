@@ -1,8 +1,11 @@
 /**
-U4RecorderTest.h  : U4Action might be a better name
-========================================================
+U4RecorderTest.h  : Geant4 Application in a header : U4App.h  might be a better name
+=======================================================================================
 
-Unusual : Geant4 application in a header. 
+Note that the methods are not inlined, but that
+does not matter as this should only be included
+once into the main.  This is effectively 
+providing a Geant4 application in a single header. 
 
 **/
 

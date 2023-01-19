@@ -2,12 +2,15 @@
 U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
 ======================================================
 
-Note most of the Geant4 setup from U4RecorderTest.h
+Most of the Geant4 setup happens on instanciating U4RecorderTest  
+from U4RecorderTest.h
 
 **/
 
 
-#include "U4RecorderTest.h"
+#include "U4RecorderTest.h"    
+
+
 #include "STime.hh"
 #include "SEvt.hh"
 #include "SFastSim_Debug.hh"
@@ -17,6 +20,7 @@ Note most of the Geant4 setup from U4RecorderTest.h
 #include "U4UniformRand.h"
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
+#include "G4Material.hh"
 
 #ifdef WITH_PMTFASTSIM
 #include "junoPMTOpticalModel.hh"
@@ -119,6 +123,14 @@ int main(int argc, char** argv)
     LOG(info) << " savedir " << savedir ;  
 
     LOG(info) << "] " << argv[0] << " " << STime::Now() << " VERSION " << VERSION ; 
+
+
+    G4Material* Pyrex = G4Material::GetMaterial("Pyrex"); 
+    G4Material* Vacuum = G4Material::GetMaterial("Vacuum"); 
+
+    LOG(info) << " Pyrex " << ( Pyrex ? "Y" : "N" ) ; 
+    LOG(info) << " Vacuum " << ( Vacuum ? "Y" : "N" ) ; 
+
     return 0 ; 
 }
 

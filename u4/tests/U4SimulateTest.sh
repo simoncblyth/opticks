@@ -171,6 +171,8 @@ fi
 
 
 defarg="run_ph"
+[ -n "$BP" ] && defarg="dbg"
+
 arg=${1:-$defarg}
 
 if [ "${arg/run}" != "$arg" ]; then
