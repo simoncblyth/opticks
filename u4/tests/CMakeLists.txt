@@ -103,12 +103,14 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND
 set(PMTFastSim_TESTS
    U4SimulateTest.cc
    U4SimtraceTest.cc
+   U4PMTFastSimTest.cc
 )
 
 foreach(SRC ${PMTFastSim_TESTS})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+    target_compile_definitions( ${TGT} PRIVATE WITH_NP )    ## for _PMTSimParamData 
 
     target_link_libraries(${TGT} U4 Opticks::SysRap)
 
