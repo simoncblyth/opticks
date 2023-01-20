@@ -104,6 +104,7 @@ set(PMTFastSim_TESTS
    U4SimulateTest.cc
    U4SimtraceTest.cc
    U4PMTFastSimTest.cc
+   U4PMTAccessorTest.cc
 )
 
 foreach(SRC ${PMTFastSim_TESTS})

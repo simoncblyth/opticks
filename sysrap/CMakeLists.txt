@@ -345,6 +345,9 @@ set(HEADERS
     SSim.hh
     SProp.hh
 
+    S4MaterialPropertyVector.h
+
+
     SFastSim_Debug.hh
     SFastSimOpticalModel.hh
     STrackInfo.h

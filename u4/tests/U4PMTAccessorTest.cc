@@ -1,3 +1,12 @@
+/**
+U4PMTAccessorTest.cc
+=====================
+
+See also j/PMTFastSim/tests/PMTAccessorTest.cc that is 
+similar to this and has faster dev cycle 
+
+
+**/
 
 #include "OPTICKS_LOG.hh"
 #include "sdirect.h"
@@ -6,6 +15,9 @@
 #include "DetectorConstruction.hh"
 #include "JPMT.h"
 #include "PMTAccessor.h"
+
+#include <CLHEP/Units/SystemOfUnits.h>
+
 #endif
 
 int main(int argc, char** argv)
@@ -31,7 +43,17 @@ int main(int argc, char** argv)
     std::cout << sdirect::OutputMessage("DetectorConstruction" , out, err, VERBOSE );  
 
 
-    const PMTAccessor* acc = PMTAccessor::Create() ; 
+    const PMTSimParamData* data = PMTAccessor::LoadPMTSimParamData() ; 
+    LOG(info) << " data " << *data ; 
+
+    int pmtcat = kPMT_Hamamatsu ; 
+    double energy = 5.*CLHEP::eV ; 
+    double v = data->get_pmtcat_prop( pmtcat, "ARC_RINDEX" , energy ); 
+
+    LOG(info) << " energy " << energy << " ARC_RINDEX " << v ;  
+
+
+    const PMTAccessor* acc = PMTAccessor::Create(data) ; 
     LOG(info) << " acc " << acc->desc() ; 
 
 

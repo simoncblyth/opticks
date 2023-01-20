@@ -25,6 +25,9 @@ SDirect
 Stream redirection experiments.
 
 
+TODO: replace all use of SDirect.hh with sdirect.h 
+
+
 **/
 
 
