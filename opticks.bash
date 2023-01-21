@@ -2597,6 +2597,7 @@ okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
    
 g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
 x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
+c4-(){              . $(opticks-home)/c4/c4.bash  && c4-env $* ; }
 x4gen-(){           . $(opticks-home)/extg4/x4gen.bash  && x4gen-env $* ; }
 yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
 
@@ -2631,6 +2632,8 @@ cx(){ cd $(opticks-home)/CSGOptiX ; pwd_ ; }
 cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd_ ; }
 u4(){ cd $(opticks-home)/u4 ; pwd_ ; }
 u4t(){ cd $(opticks-home)/u4/tests ; pwd_ ; }
+c4(){ cd $(opticks-home)/c4 ; pwd_ ; }
+
 gx(){ cd $(opticks-home)/g4cx ; pwd_ ; }
 gxt(){ cd $(opticks-home)/g4cx/tests ; pwd_ ; }
 gd(){ cd $(opticks-home)/gdxml ; pwd_ ; }
