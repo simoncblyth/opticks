@@ -203,6 +203,13 @@ const char* SOpticksResource::DefaultGeometryBase()
 { 
     return SPath::Resolve("$TMP/GEOM", NOOP); 
 }
+const char* SOpticksResource::UserGEOMDir()
+{
+    return SPath::Resolve("$HOME/.opticks/GEOM", GEOM(), DIRPATH ); 
+
+}
+
+
 
 std::string SOpticksResource::Desc_DefaultOutputDir()
 {
@@ -243,6 +250,7 @@ std::string SOpticksResource::Dump()
     const char* cfbase_fg = CFBaseFromGEOM(); 
     const char* gdmlpath = GDMLPath(); 
     const char* geom = GEOM(); 
+    const char* usergeomdir = UserGEOMDir(); 
 
 
     std::stringstream ss ; 
@@ -271,6 +279,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
         << "SOpticksResource::GDMLPath()               " << ( gdmlpath ? gdmlpath : "-" ) << std::endl
         << "SOpticksResource::GEOM()                   " << ( geom ? geom : "-" ) << std::endl
+        << "SOpticksResource::UserGEOMDir()            " << ( usergeomdir ? usergeomdir : "-" ) << std::endl
         ;
 
     std::string s = ss.str(); 
@@ -448,6 +457,9 @@ const char* SOpticksResource::GDMLPathFromGEOM()
     return path ; 
 }
 
+
+
+
 const char* SOpticksResource::WrapLVForName(const char* name)
 {
     assert(name) ; 
@@ -531,7 +543,7 @@ const char* SOpticksResource::GEOMWrap(const char* geom)
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM UserGEOMDir" ; 
 
 /**
 SOpticksResource::Get
@@ -569,6 +581,8 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   CFBaseFromGeom        | GEOM gives Name, Name_CFBaseFromGeom gives dirpath  |
 +-------------------------+-----------------------------------------------------+
+|   UserGEOMDir           |  eg $HOME/.opticks/GEOM/$GEOM                       |
++-------------------------+-----------------------------------------------------+
 
 
 **/
@@ -590,6 +604,7 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "SomeGDMLPath")==0)     tok = SOpticksResource::SomeGDMLPath(); 
     else if( strcmp(key, "GDMLPath")==0)         tok = SOpticksResource::GDMLPath(); 
     else if( strcmp(key, "CFBaseFromGEOM")==0)   tok = SOpticksResource::CFBaseFromGEOM(); 
+    else if( strcmp(key, "UserGEOMDir")==0)      tok = SOpticksResource::UserGEOMDir(); 
     return tok ;  
 }
 

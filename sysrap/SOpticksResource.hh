@@ -40,6 +40,8 @@ struct SYSRAP_API SOpticksResource
     static const char* DefaultOutputDir();      // eg /tmp/blyth/opticks/GEOM/acyl/ExecutableName
     static const char* DefaultGeometryBase();   // eg /tmp/blyth/opticks/GEOM 
     static const char* DefaultGeometryDir();    // eg /tmp/blyth/opticks/GEOM/acyl
+    static const char* UserGEOMDir();           // eg $HOME/.opticks/GEOM/$GEOM 
+
 
     static std::string Desc_DefaultOutputDir();  
   

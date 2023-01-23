@@ -274,9 +274,13 @@ U4Material::MakePropertyFold_flat
 Converts the properties of all materials into a 
 NPFold with keys of form : "materialName"/"propName" 
 
-HMM: perhaps NPFold can be made to handle sub-NPFold 
-more formally than this, as clearly sometimes want to 
-just load single materials and sometimes all materials. 
+
+Note that U4Material::MakePropertyFold uses
+subfold feature additions to NPFold.h 
+which more faithfully maps the file system
+model into an in memory model. For example
+it is then natural to load single materials or 
+single properties. 
 
 **/
 

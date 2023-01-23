@@ -7,7 +7,9 @@ class G4GDMLParser ;
 struct U4GDML
 {
     static constexpr const plog::Severity LEVEL = info ; 
-    //static const G4VPhysicalVolume* Read();
+    static constexpr const char* DefaultGDMLPath = "$UserGEOMDir/origin.gdml" ;  
+
+    static const G4VPhysicalVolume* Read();
     static const G4VPhysicalVolume* Read(const char* path);
     static const G4VPhysicalVolume* Read(const char* base, const char* name);
     static void Write(const G4VPhysicalVolume* world, const char* path);
@@ -34,7 +36,7 @@ struct U4GDML
 
 
 
-
+#include "sdirect.h"
 #include "SPath.hh"
 #include "SStr.hh"
 #include "SSys.hh"
@@ -46,22 +48,22 @@ struct U4GDML
 U4GDML::Read 
 -------------
 
-TODO: the default path here needs to be standardly written when doing the Geant4 to Opticks translation 
-in order for the origin GDML to always be available for tests. 
+When geometry persisting is enabled the origin.gdml should be 
+included in the output folder. Note that this might need
+to have been GDML kludged to allow Geant4 for load it. 
 For GDML kludging see the gdxml package which loads GDML using XercesC and does 
 GDML fixups that allow Geant4 to parse the JUNO GDML. 
 
 **/
 
-//inline const G4VPhysicalVolume* U4GDML::Read()
-//{
-//    return Read("$IDPath/origin_GDMLKludge.gdml");  
-//    // HMM: hardcoded path is out of place here, especially this old path  
-//    // should come via SOpticksResource with a technique to override 
-//}
-
-inline const G4VPhysicalVolume* U4GDML::Read(const char* path)
+inline const G4VPhysicalVolume* U4GDML::Read()
 {
+    return Read(DefaultGDMLPath); 
+}
+
+inline const G4VPhysicalVolume* U4GDML::Read(const char* path_)
+{
+    const char* path = path_ ? path_ : DefaultGDMLPath ; 
     bool exists = path ? SPath::Exists(path) : false ; 
     LOG_IF(fatal, !exists) << " path invalid or does not exist [" << path << "]" ; 
     if(!exists) return nullptr ; 
@@ -78,11 +80,17 @@ inline const G4VPhysicalVolume* U4GDML::Read(const char* base, const char* name)
 }
 inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* path)
 {
+    LOG_IF(error, world == nullptr) << " world NULL " ; 
+    if(world == nullptr) return ; 
+
     U4GDML g(world) ; 
     g.write(path); 
 }
 inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* base, const char* name )
 {
+    LOG_IF(error, world == nullptr) << " world NULL " ; 
+    if(world == nullptr) return ; 
+
     U4GDML g(world) ; 
     g.write(base, name); 
 }
@@ -105,12 +113,38 @@ inline void U4GDML::read(const char* base, const char* name)
     const char* path = SPath::Resolve(base, name, NOOP); 
     read(path);  
 }
+
+/**
+U4GDML::read
+-------------
+
+Attempt to swallow the G4cout "G4GDML:" logging using sdirect.h 
+not working, something funny about G4cout ?::
+
+   g4-cls G4ios
+
+**/
+
 inline void U4GDML::read(const char* path_)
 {
     const char* path = SPath::Resolve(path_, NOOP); 
 
     parser->SetStripFlag(read_trim); 
-    parser->Read(path, read_validate); 
+
+    std::stringstream coutbuf;
+    std::stringstream cerrbuf;
+    {
+        sdirect::cout_(coutbuf.rdbuf());
+        sdirect::cerr_(cerrbuf.rdbuf());
+
+        parser->Read(path, read_validate);  // noisy code 
+
+    }
+    std::string out = coutbuf.str();
+    std::string err = cerrbuf.str();
+    bool verbose = getenv("VERBOSE") != nullptr ;  
+    std::cout << sdirect::OutputMessage("G4GDMLParser::read", out, err, verbose );
+
     const G4String setupName = "Default" ;
     world = parser->GetWorldVolume(setupName) ; 
 }
