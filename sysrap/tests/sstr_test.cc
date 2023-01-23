@@ -44,8 +44,42 @@ void test_chop()
 
 
 
+
+void test_StripTail()
+{
+
+    const char* lines = R"LIT(
+0x
+0xc0ffee
+World0xc0ffee
+World0xdeadbeef
+World0xdead0xbeef
+)LIT";
+    std::stringstream ss(lines); 
+    std::string l ;
+    while (std::getline(ss, l, '\n'))
+    {   
+        if(l.empty()) continue ; 
+        std::string s = sstr::StripTail(l, "0x") ; 
+        std::cout 
+            << " l:" << std::setw(30) << l 
+            << " s:" << std::setw(30) << s
+            << " s.size: " << s.size()
+            << " s.empty: " << s.empty()
+            << std::endl
+            ; 
+    }
+}
+
+
 int main(int argc, char** argv)
 {
+    /*
     test_chop(); 
+    */
+
+    test_StripTail(); 
+
+
     return 0 ; 
 } 

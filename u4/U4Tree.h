@@ -42,6 +42,7 @@ grow into the central header of the more direct geometry translation.
 
 #include "U4Transform.h"
 #include "U4Material.hh"
+#include "U4Surface.h"
 
 /*
 HMM: cannot have U4Tree EnvLevel because it is currently header only, 
@@ -80,6 +81,8 @@ struct U4Tree
     void convertMaterials(); 
     void convertMaterials_r(const G4VPhysicalVolume* const pv); 
     void convertMaterial(const G4Material* const mt); 
+
+    void convertSurfaces(); 
 
     void convertSolids(); 
     void convertSolids_r(const G4VPhysicalVolume* const pv); 
@@ -135,6 +138,7 @@ inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
     convertMaterials();
+    convertSurfaces();
     convertSolids();
     convertNodes(); 
 }
@@ -147,9 +151,9 @@ U4Tree::convertMaterials
 1. recursive traverse collecting material pointers from all active LV into materials vector 
    in postorder of first encounter.
 
-2. creates SSim/stree/mtfold holding properties of all active materials::
+2. creates SSim/stree/material holding properties of all active materials::
 
-    epsilon:~ blyth$ cd /Users/blyth/.opticks/GEOM/J004/CSGFoundry/SSim/stree/mtfold/Water
+    epsilon:~ blyth$ cd /Users/blyth/.opticks/GEOM/J004/CSGFoundry/SSim/stree/material/Water
     epsilon:Water blyth$ l
     total 40
      0 drwxr-xr-x   6 blyth  staff   192 Oct 11 15:50 .
@@ -160,14 +164,14 @@ U4Tree::convertMaterials
      8 -rw-rw-r--   1 blyth  staff   704 Oct 11 15:50 RINDEX.npy
 
 
-CONSIDERING : maybe relocate to SSim/mtfold ? rather than SSim/stree/mtfold ? 
+CONSIDERING : maybe relocate to SSim/material ? rather than SSim/stree/material ? 
 
 **/
 
 inline void U4Tree::convertMaterials()
 {
     convertMaterials_r(top); 
-    st->mtfold = U4Material::MakePropertyFold(materials);  
+    st->material = U4Material::MakePropertyFold(materials);  
 }
 inline void U4Tree::convertMaterials_r(const G4VPhysicalVolume* const pv)
 {
@@ -183,6 +187,14 @@ inline void U4Tree::convertMaterial(const G4Material* const mt)
     unsigned g4index = mt->GetIndex() ;  
     st->add_material( mtname, g4index  ); 
 }
+
+
+inline void U4Tree::convertSurfaces()
+{
+    st->surface = U4Surface::MakeFold(); 
+}
+
+
 
 
 /**

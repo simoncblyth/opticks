@@ -346,6 +346,8 @@ set(HEADERS
     SProp.hh
 
     S4MaterialPropertyVector.h
+    SNameOrder.h
+    S4.h 
 
 
     SFastSim_Debug.hh

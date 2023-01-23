@@ -14,6 +14,9 @@ struct sstr
     static bool Match( const char* s, const char* q, bool starting=true ); 
     static bool StartsWith( const char* s, const char* q); 
     static const char* TrimTrailing(const char* s);
+    static std::string StripTail(const std::string& name, const char* end="0x"); 
+    static std::string StripTail(const char* name, const char* end="0x"); 
+
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str ); 
@@ -46,7 +49,7 @@ inline bool sstr::StartsWith( const char* s, const char* q)
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
 
-inline const char* sstr::TrimTrailing(const char* s)
+inline const char* sstr::TrimTrailing(const char* s) // reposition null terminator to skip trailing whitespace 
 {
     char* p = strdup(s); 
     char* e = p + strlen(p) - 1 ;  
@@ -54,6 +57,26 @@ inline const char* sstr::TrimTrailing(const char* s)
     e[1] = '\0' ;
     return p ;  
 }
+
+
+
+inline std::string sstr::StripTail(const std::string& name, const char* end)  // static 
+{
+    std::string sname = name.substr(0, name.find(end)) ;
+    return sname ;
+}
+
+inline std::string sstr::StripTail(const char* name_, const char* end)  // static 
+{
+    std::string name(name_); 
+    return StripTail(name, end) ; 
+}
+
+
+
+
+
+
 
 inline void sstr::PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines)
 {

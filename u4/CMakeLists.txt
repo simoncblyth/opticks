@@ -82,6 +82,10 @@ set(HEADERS
     U4SolidMaker.hh
     U4SolidTree.hh
     U4Material.hh
+
+    U4Volume.h
+    U4Surface.h
+    U4MaterialPropertiesTable.h
     U4MaterialPropertyVector.h
 
     U4VolumeMaker.hh

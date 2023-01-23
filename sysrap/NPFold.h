@@ -173,6 +173,10 @@ struct NPFold
     const NP* get(const char* k) const ; 
     int   get_num(const char* k) const ; 
 
+    template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
+    template<typename T> void set_meta(const char* key, T value ) ;  
+ 
+
     void save(const char* base, const char* rel) ; 
     void save(const char* base) ; 
     void _save_arrays(const char* base); 
@@ -698,6 +702,35 @@ inline int NPFold::get_num(const char* k) const
     const NP* a = get(k) ; 
     return a == nullptr ? UNDEF : a->shape[0] ;   
 }
+
+
+
+template<typename T> inline T NPFold::get_meta(const char* key, T fallback) const 
+{
+    if(meta.empty()) return fallback ; 
+    return NP::GetMeta<T>( meta.c_str(), key, fallback ); 
+}
+
+template int         NPFold::get_meta<int>(const char*, int ) const ; 
+template unsigned    NPFold::get_meta<unsigned>(const char*, unsigned ) const  ; 
+template float       NPFold::get_meta<float>(const char*, float ) const ; 
+template double      NPFold::get_meta<double>(const char*, double ) const ; 
+template std::string NPFold::get_meta<std::string>(const char*, std::string ) const ; 
+
+
+template<typename T> inline void NPFold::set_meta(const char* key, T value)  
+{
+    NP::SetMeta(meta, key, value); 
+}
+
+template void     NPFold::set_meta<int>(const char*, int ); 
+template void     NPFold::set_meta<unsigned>(const char*, unsigned ); 
+template void     NPFold::set_meta<float>(const char*, float ); 
+template void     NPFold::set_meta<double>(const char*, double ); 
+template void     NPFold::set_meta<std::string>(const char*, std::string ); 
+
+
+
 
 
 

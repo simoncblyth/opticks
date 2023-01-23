@@ -179,7 +179,8 @@ struct stree
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
-    static constexpr const char* MTFOLD = "mtfold" ;
+    static constexpr const char* MATERIAL = "material" ;
+    static constexpr const char* SURFACE = "surface" ;
     static constexpr const char* FACTOR = "factor.npy" ;
     static constexpr const char* INST = "inst.npy" ; 
     static constexpr const char* IINST = "iinst.npy" ; 
@@ -210,7 +211,9 @@ struct stree
     int level ;   // verbosity 
     unsigned sensor_count ; 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
-    NPFold* mtfold ;                        // material properties
+
+    NPFold* material ; // (formerly mtfold)  material and surface properties : HMM are these out of place ? 
+    NPFold* surface ;  //                    potentially these could live within SSim ?
 
     // HMM: the stree.h inst members and methods are kinda out-of-place
     //      as CSGFoundry already has inst : so the below are looking ahead 
@@ -358,7 +361,8 @@ inline stree::stree()
     level(0),
     sensor_count(0),
     subs_freq(new sfreq),
-    mtfold(new NPFold)
+    material(new NPFold),
+    surface(new NPFold)
 {
 }
 
@@ -390,7 +394,8 @@ inline std::string stree::desc() const
        << " soname " << soname.size()
        << " subs_freq " << std::endl
        << ( subs_freq ? subs_freq->desc() : "-" )
-       << " mtfold " << ( mtfold ? mtfold->desc() : "-" )
+       << " material " << ( material ? material->desc() : "-" )
+       << " surface "  << ( surface ? surface->desc() : "-" )
        << std::endl
        ;
 
@@ -1236,7 +1241,9 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames( fold, SUBS,   subs );
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
     NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
-    if(mtfold) mtfold->save(fold, MTFOLD) ; 
+
+    if(material) material->save(fold, MATERIAL) ; 
+    if(surface) surface->save(fold,   SURFACE) ; 
 
 
     NP::Write<double>(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
@@ -1337,7 +1344,8 @@ inline void stree::load_( const char* fold )
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
     ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
-    if(mtfold) mtfold->load(fold, MTFOLD) ;
+    if(material) material->load(fold, MATERIAL) ;
+    if(surface) surface->load(fold,   SURFACE) ;
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 

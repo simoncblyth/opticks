@@ -570,6 +570,9 @@ P
 F
    Property that looks like a fractional split with a small number of values summing to 1.
 
+
+HMM: could do explicitly with metadata keys ?
+
 **/
 
 char U4Material::Classify(const NP* a)

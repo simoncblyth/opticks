@@ -1,6 +1,6 @@
 #pragma once
 /**
-U4OpticalSurfaceType.h
+U4SurfaceType.h
 =================
 
 g4-cls G4SurfaceProperty

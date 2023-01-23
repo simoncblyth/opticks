@@ -17,6 +17,8 @@ loglevels
 export GEOM=J006
 export J006_GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
+export SSim__stree_level=1 
+
 C4Test
 
 

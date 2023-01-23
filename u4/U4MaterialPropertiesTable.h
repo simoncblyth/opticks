@@ -6,13 +6,24 @@
 #include "G4Version.hh"
 #include "G4MaterialPropertiesTable.hh"
 
+#include "U4MaterialPropertyVector.h"
+#include "NPFold.h"
+
+
 
 struct U4MaterialPropertiesTable
 {
-    static std::string Desc(const G4MaterialPropertiesTable* mpt );  
+    static std::string Detail(const G4MaterialPropertiesTable* mpt );  
     static std::string DescMaterialPropertyNames(const G4MaterialPropertiesTable* mpt); 
     static std::string DescPropertyMap(const G4MaterialPropertiesTable* mpt ); 
     static std::string DescConstPropertyMap(const G4MaterialPropertiesTable* mpt ); 
+
+    static std::string Desc(const G4MaterialPropertiesTable* mpt );  
+    static void GetProperties(std::vector<std::string>& keys, std::vector<G4MaterialPropertyVector*>& props, const G4MaterialPropertiesTable* mpt ); 
+    static std::string DescProperties(const std::vector<std::string>& keys, const std::vector<G4MaterialPropertyVector*>& props ) ; 
+
+    static NPFold* MakeFold( const G4MaterialPropertiesTable* mpt ); 
+
 }; 
 
 /**
@@ -112,7 +123,7 @@ inline std::string U4MaterialPropertiesTable::DescConstPropertyMap(const G4Mater
     return s ; 
 }    
 
-inline std::string U4MaterialPropertiesTable::Desc(const G4MaterialPropertiesTable* mpt )
+inline std::string U4MaterialPropertiesTable::Detail(const G4MaterialPropertiesTable* mpt )
 {
     std::stringstream ss ; 
     ss << "U4MaterialPropertiesTable::Desc" << std::endl ; 
@@ -125,3 +136,93 @@ inline std::string U4MaterialPropertiesTable::Desc(const G4MaterialPropertiesTab
 
 
 
+
+
+inline std::string U4MaterialPropertiesTable::Desc(const G4MaterialPropertiesTable* mpt )
+{
+    std::vector<std::string> keys ; 
+    std::vector<G4MaterialPropertyVector*> props ; 
+    GetProperties(keys, props, mpt); 
+    return DescProperties(keys, props) ;  
+}
+
+
+/**
+U4MaterialPropertiesTable::GetProperties
+------------------------------------------
+
+This aims to provide an API that does not change with Geant4 version. 
+
+**/
+
+inline void U4MaterialPropertiesTable::GetProperties(
+      std::vector<std::string>& keys, 
+      std::vector<G4MaterialPropertyVector*>& props, const G4MaterialPropertiesTable* mpt )
+{
+    std::vector<G4String> names = mpt->GetMaterialPropertyNames(); 
+
+    typedef std::map<G4int, G4MaterialPropertyVector*> MIV ; 
+    const MIV* miv = mpt->GetPropertyMap(); 
+
+    for(MIV::const_iterator iv=miv->begin() ; iv != miv->end() ; iv++) 
+    {
+        G4int i = iv->first ;  
+        G4MaterialPropertyVector* v = iv->second ; 
+        const std::string& name = names[i] ; 
+
+        keys.push_back(name); 
+        props.push_back(v) ; 
+    }
+    // WHY IS THIS MESS NECESSARY TO DO SUCH AN OBVIOUS THING ?
+}
+
+inline std::string U4MaterialPropertiesTable::DescProperties(
+    const std::vector<std::string>& keys, 
+    const std::vector<G4MaterialPropertyVector*>& props ) 
+{
+    assert( keys.size() == props.size() ); 
+    unsigned num_prop = keys.size(); 
+
+    std::stringstream ss ; 
+
+    ss << "U4MaterialPropertiesTable::DescProperties" 
+       << " num_prop " << num_prop
+       << std::endl 
+       ; 
+
+    for(unsigned i=0 ; i < num_prop ; i++) 
+    {
+        const char* k = keys[i].c_str() ; 
+        const G4MaterialPropertyVector* v = props[i] ; 
+        ss
+            << " i " << std::setw(2) << i 
+            << " k " << std::setw(20) << ( k ? k : "-" )
+            << " v " << std::setw(5) << ( v ? v->GetVectorLength() : -1 ) 
+            << std::endl 
+            ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline NPFold* U4MaterialPropertiesTable::MakeFold( const G4MaterialPropertiesTable* mpt ) // static 
+{
+    std::vector<std::string> keys ; 
+    std::vector<G4MaterialPropertyVector*> props ; 
+
+    GetProperties(keys, props, mpt); 
+
+    assert( keys.size() == props.size() ); 
+    unsigned num_prop = props.size() ; 
+
+    NPFold* fold = new NPFold ; 
+    for(unsigned i=0 ; i < num_prop ; i++)
+    {
+        const char* k = keys[i].c_str() ;
+        const G4MaterialPropertyVector* v = props[i] ;
+        NP* a = U4MaterialPropertyVector::ConvertToArray( v ); 
+
+        fold->add( k, a ); 
+    }
+    return fold ; 
+}

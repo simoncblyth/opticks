@@ -226,8 +226,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     assert(world); 
     wd = world ;
 
-    //sim = SSim::Create();  // its created in ctor  
-    assert(sim) ; 
+    assert(sim && "sim instance should have been created in ctor" ); 
 
     stree* st = sim->get_tree(); 
     // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
