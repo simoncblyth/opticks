@@ -146,6 +146,8 @@ SSim::import_bnd
 
 In old GGeo workflow SSim::add with SSim::BND key is called from GGeo::convertSim_BndLib
 
+HMM: this may be a kludge mix of old and new 
+
 **/
 
 void SSim::import_bnd()

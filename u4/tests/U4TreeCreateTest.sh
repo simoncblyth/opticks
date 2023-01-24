@@ -20,7 +20,7 @@ loglevels
 export GEOM=J006
 export J006_GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
-export FOLD=/tmp/$USER/opticks/$bin/stree
+export FOLD=/tmp/$USER/opticks/$bin
 
 
 if [ "${arg/run}" != "$arg" ]; then 
@@ -28,9 +28,21 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
 
+if [ "${arg/dbg}" != "$arg" ]; then 
+    
+    case $(uname) in
+    Darwin) lldb__ $bin ;;
+    Linux)  gdb__ $bin ;;
+    esac
+
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+fi 
+
+
+
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $bin.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3
 fi 
 
 exit 0 

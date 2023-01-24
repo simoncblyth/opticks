@@ -149,8 +149,10 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "NP.hh"
+#include "NPX.h"
 #include "NPFold.h"
 
+#include "scuda.h"
 #include "snode.h"
 #include "sdigest.h"
 #include "sfreq.h"
@@ -177,6 +179,7 @@ struct stree
     static constexpr const char* MTLINE = "mtline.npy" ;
     static constexpr const char* SUNAME = "suname.txt" ;
     static constexpr const char* SUINDEX = "suindex.npy" ;
+    static constexpr const char* BD = "bd.npy" ;
 
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
@@ -199,6 +202,8 @@ struct stree
 
     std::vector<std::string> suname ;       // surface names
     std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
+    std::vector<int4>        bd ; 
+    std::vector<std::string> bdname ; 
 
     std::vector<std::string> soname ;       // unique solid names
 
@@ -1232,9 +1237,17 @@ inline void stree::save( const char* base, const char* reldir ) const
     save_(dir.c_str()); 
 }
 
+/**
+stree::save_
+--------------
+
+Use NPFold and split into serialize and save 
+
+**/
+
 inline void stree::save_( const char* fold ) const 
 {
-    if(level > 0) std::cout << "stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
+    if(level > 0) std::cout << "[ stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
@@ -1245,6 +1258,12 @@ inline void stree::save_( const char* fold ) const
 
     NP::WriteNames(    fold, SUNAME,   suname );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
+
+    NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
+    a_bd->set_names( bdname );
+    a_bd->save( fold, BD ); 
+    //NP::Write<int>(    fold, BD,      (int*)bd.data(),       bd.size(), 4  );
+
  
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
@@ -1265,6 +1284,7 @@ inline void stree::save_( const char* fold ) const
     assert( sensor_count == sensor_id.size() ); 
     NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
     NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
+    if(level > 0) std::cout << "] stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
 }
 
 inline NP* stree::make_trs() const
@@ -1313,9 +1333,12 @@ inline void stree::ImportArray( std::vector<S>& vec, const NP* a )
 
 template void stree::ImportArray<snode, int>(std::vector<snode>& , const NP* ); 
 template void stree::ImportArray<int  , int>(std::vector<int>&   , const NP* ); 
+template void stree::ImportArray<int4 , int>(std::vector<int4>&  , const NP* ); 
 template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::tmat4x4<double>>& , const NP* ); 
 template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* ); 
 template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* ); 
+
+
 
 /**
 stree::load_
@@ -1348,6 +1371,14 @@ inline void stree::load_( const char* fold )
 
     ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
     ImportArray<int, int>( suindex, NP::Load(fold, SUINDEX) );
+
+    //ImportArray<int4, int>( bnd,    NP::Load(fold, BND) ); 
+    NP* a_bd = NP::Load(fold, BD) ; 
+    assert( a_bd ); 
+    NPX::VecFromArray<int4>( bd, a_bd );  
+    a_bd->get_names( bdname );
+ 
+
     ImportArray<int, int>( mtline,  NP::Load(fold, MTLINE) );
     init_mtindex_to_mtline(); 
 

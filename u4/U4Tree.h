@@ -78,6 +78,10 @@ struct U4Tree
     std::vector<const G4LogicalSurface*> surfaces ;  // both skin and border 
     std::vector<const G4VSolid*>    solids ; 
 
+    template<typename T>
+    static int GetPointerIndex( const std::vector<const T*>& vec, const T* obj) ; 
+    template<typename T>
+    static int GetValueIndex( const std::vector<T>& vec, const T& obj) ; 
 
 
     // HMM: should really be SSim argument now ?
@@ -95,7 +99,11 @@ struct U4Tree
     void initSolid(const G4LogicalVolume* const lv); 
 
     void initNodes(); 
-    int  initNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent ); 
+    int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
+    std::string getBoundaryName(const int4& bd, char delim='/') ; 
+
+    void initBoundary(); 
+    void initBoundary_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p ); 
 
 
     //  accessors
@@ -112,6 +120,24 @@ struct U4Tree
 
     static void deprecated_Simtrace( const G4VPhysicalVolume* const top, const char* base ); 
 }; 
+
+
+template<typename T>
+inline int U4Tree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj)
+{
+    if( obj == nullptr || vec.size() == 0 ) return -1 ; 
+    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
+    return idx < vec.size() ? int(idx) : -1 ;   
+}
+
+template<typename T>
+inline int U4Tree::GetValueIndex( const std::vector<T>& vec, const T& obj)
+{
+    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
+    return idx < vec.size() ? int(idx) : -1 ;   
+}
+
+
 
 
 /**
@@ -151,6 +177,7 @@ inline void U4Tree::init()
     initSurfaces();
     initSolids();
     initNodes(); 
+    //initBoundary();
 }
 
 
@@ -216,6 +243,10 @@ inline void U4Tree::initSurfaces()
 
 
 
+
+
+
+
 /**
 U4Tree::initSolids
 ----------------------
@@ -257,7 +288,7 @@ holding structural node info and transforms.
 
 inline void U4Tree::initNodes()
 {
-    initNodes_r(top, 0, -1, -1 ); 
+    initNodes_r(top, nullptr, 0, -1, -1 ); 
 }
 
 /**
@@ -276,9 +307,34 @@ use of copyNo is detector specific.  Also not all JUNO SD
 are actually sensitive. 
 
 **/
-inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
+
+inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent )
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+    const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : nullptr ;
+
+    const G4Material* const imat_ = lv->GetMaterial() ;
+    const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
+
+    const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
+    const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
+
+    int imat = GetPointerIndex<G4Material>(materials, imat_); 
+    int omat = GetPointerIndex<G4Material>(materials, omat_); 
+    int isur = GetPointerIndex<G4LogicalSurface>(surfaces, isur_); 
+    int osur = GetPointerIndex<G4LogicalSurface>(surfaces, osur_); 
+
+    int4 bd = {omat, osur, isur, imat } ; 
+    bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ; 
+    if(new_boundary)  
+    {
+        st->bd.push_back(bd) ; 
+        std::string bdn = getBoundaryName(bd,'/') ; 
+        st->bdname.push_back(bdn.c_str()) ; 
+    }
+    int boundary = GetValueIndex<int4>( st->bd, bd ) ; 
+    assert( boundary > -1 ); 
+
 
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
@@ -296,6 +352,7 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, int depth, in
 
     int nidx = st->nds.size() ;  // 0-based node index
 
+
     snode nd ; 
 
     nd.index = nidx ;
@@ -307,11 +364,17 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, int depth, in
     nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
     nd.next_sibling = -1 ; 
     nd.lvid = lvid ; 
-    nd.copyno = copyno ; 
 
+    nd.copyno = copyno ; 
     nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
     nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
     nd.repeat_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
+
+    nd.boundary = boundary ; 
+    nd.spare31 = 0 ; 
+    nd.spare32 = 0 ; 
+    nd.spare33 = 0 ; 
+
 
     pvs.push_back(pv); 
     st->nds.push_back(nd); 
@@ -336,12 +399,97 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, int depth, in
     for (int i=0 ; i < num_child ;i++ ) 
     {
         p_sib = i_sib ;  // node index of previous child 
-        i_sib = initNodes_r( lv->GetDaughter(i), depth+1, i, nd.index ); 
+        i_sib = initNodes_r( lv->GetDaughter(i), pv, depth+1, i, nd.index ); 
         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
     }
     // within the above loop, reach back to previous sibling snode to set the sib->sib linkage, default -1
 
     return nd.index ; 
+}
+
+inline std::string U4Tree::getBoundaryName(const int4& bd, char delim)
+{
+    int omat_ = bd.x ; 
+    int osur_ = bd.y ; 
+    int isur_ = bd.z ; 
+    int imat_ = bd.w ; 
+
+    const G4Material*       omat = omat_ > -1 ? materials[omat_] : nullptr ; 
+    const G4LogicalSurface* osur = osur_ > -1 ?  surfaces[osur_] : nullptr ; 
+    const G4LogicalSurface* isur = isur_ > -1 ?  surfaces[isur_] : nullptr ; 
+    const G4Material*       imat = imat_ > -1 ? materials[imat_] : nullptr ; 
+
+    const char* omat_name = omat ? omat->GetName().c_str() : nullptr ; 
+    const char* osur_name = osur ? osur->GetName().c_str() : nullptr ; 
+    const char* isur_name = isur ? isur->GetName().c_str() : nullptr ; 
+    const char* imat_name = imat ? imat->GetName().c_str() : nullptr ; 
+ 
+    assert( omat_name ); 
+    assert( imat_name ); 
+
+    std::stringstream ss ; 
+    ss 
+       << omat_name << delim
+       << ( osur_name ? osur_name : "" ) << delim 
+       << ( isur_name ? isur_name : "" ) << delim
+       << imat_name 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+/**
+U4Tree::initBoundary
+-----------------------
+
+ACTUALLY MAKES MORE SENSE TO DO WITHIN initNodes AS CAN STORE boundary int with snode 
+
+TODO: extract bnd creation out of GBndLib X4PhysicalVolume
+
+TODO: what about the implicit surfaces
+
+
+How to handle boundary quads and specs and buffer without GGeo/X4 ?
+
+Currently using an unholy mixture of old and new:
+
+SSim::import_bnd
+GGeo::convertSim_BndLib
+
+X4PhysicalVolume::addBoundary
+   during volume traversal look for border/skin surfaces and
+   adds to GBndLib when found using the names of boundaries and surfaces 
+
+   * uses GGeo::findSkinSurface instead just use G4 (follow G4OpBoundaryProcess) 
+
+
+How to handle the bnd cleanly ? 
+
+SSim and SBnd look all setup, but they are currently relying on NP* bnd
+with "spec" names that comes from GGeo/GBndLib 
+So just need to create the bnd. 
+
+**/
+
+inline void U4Tree::initBoundary()
+{
+    initBoundary_r( top, nullptr ); 
+}
+
+inline void U4Tree::initBoundary_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
+{
+    G4LogicalSurface* Surface = U4Surface::Find( pv_p, pv ); 
+    if(Surface)
+    {
+        std::cout << "U4Tree::initBoundary_r " << pv->GetName() << std::endl ; 
+    }
+
+    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+    for(int i=0 ; i < int(lv->GetNoDaughters()) ; i++ ) initBoundary_r( lv->GetDaughter(i), pv ); 
 }
 
 

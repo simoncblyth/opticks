@@ -6,7 +6,7 @@
 
 struct snode
 {
-    static constexpr const int NV = 12 ; 
+    static constexpr const int NV = 16 ; 
 
     int index ; 
     int depth ; 
@@ -23,7 +23,10 @@ struct snode
     int sensor_index ; 
     int repeat_index ; 
 
-    // material index ... 
+    int boundary ; 
+    int spare31 ; 
+    int spare32 ; 
+    int spare33 ; 
 
     std::string desc() const ; 
 }; 
@@ -45,6 +48,7 @@ inline std::string snode::desc() const
        << " se:" << std::setw(7) << sensor_id
        << " se:" << std::setw(7) << sensor_index
        << " ri:" << std::setw(2) << repeat_index
+       << " bd:" << std::setw(2) << boundary
        ;
     std::string s = ss.str();
     return s ;

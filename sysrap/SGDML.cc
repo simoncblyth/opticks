@@ -24,9 +24,10 @@
 #include "SSys.hh"
 #include "SGDML.hh"
 
-
 std::string SGDML::GenerateName(const char* name, const void* const ptr, bool addPointerToName )
 {
+    // HUH: this could easily end up with multiple 0x... in the name 
+
     std::stringstream ss; 
     ss << name;
     if(addPointerToName) ss << ptr ; 

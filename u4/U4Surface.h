@@ -53,6 +53,8 @@ struct U4Surface
     static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ); 
     static NPFold* MakeFold(); 
 
+    static G4LogicalSurface* Find( const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV ) ;  
+
 };
 
 
@@ -292,4 +294,34 @@ inline NPFold* U4Surface::MakeFold()
     return MakeFold(surfaces) ; 
 }
 
+/**
+U4Surface::Find
+-----------------
+
+Based on G4OpBoundaryProcess::PostStepDoIt 
+
+**/
+
+inline G4LogicalSurface* U4Surface::Find( const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV ) 
+{
+    if(thePostPV == nullptr || thePrePV == nullptr ) return nullptr ;  // surface on world volume not allowed 
+    G4LogicalSurface* Surface = G4LogicalBorderSurface::GetSurface(thePrePV, thePostPV);
+    if(Surface == nullptr)
+    {
+        G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV->GetLogicalVolume();
+        if(enteredDaughter)
+        {
+            Surface = G4LogicalSkinSurface::GetSurface(thePostPV->GetLogicalVolume());
+            if(Surface == nullptr)
+                Surface = G4LogicalSkinSurface::GetSurface(thePrePV->GetLogicalVolume());
+        }    
+        else 
+        {
+            Surface = G4LogicalSkinSurface::GetSurface(thePrePV->GetLogicalVolume());
+            if(Surface == nullptr)
+                Surface = G4LogicalSkinSurface::GetSurface(thePostPV->GetLogicalVolume());
+        }    
+    }    
+    return Surface ; 
+}
 

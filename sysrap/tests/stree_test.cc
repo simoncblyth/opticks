@@ -306,10 +306,33 @@ void test_desc_sub(const stree& st)
     //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
 }
 
+void test_bd()
+{
+    std::vector<int4> bd ; 
+    bd.push_back( {0,1,2,3} ); 
+    bd.push_back( {3,2,1,0} ); 
+
+
+    const char* fold = "/tmp/stree_test" ; 
+    std::cout << "test_bnd write to " << fold << std::endl ; 
+
+    const char* BD = "bd.npy" ; 
+
+    NP::Write<int>(fold, BD, (int*)bd.data(), bd.size(), 4  );
+
+    std::vector<int4> bd1 ; 
+    stree::ImportArray<int4, int>( bd1, NP::Load(fold, BD) ); 
+
+    assert( bd1.size() == bd.size() ); 
+    assert( bd1 == bd ); 
+
+
+}
+
 int main(int argc, char** argv)
 {
-    stree st ; 
-    st.load(BASE); 
+    //stree st ; 
+    //st.load(BASE); 
 
     /*
     test_desc_sub(st); 
@@ -324,10 +347,12 @@ int main(int argc, char** argv)
     test_get_sensor_id(st); 
     test_desc_m2w_product(st); 
     test_get_ancestors(st); 
-    */
-
     test_desc_sub(st); 
     test_get_sensor_id(st); 
+    */
+
+
+    test_bnd(); 
 
 
     return 0 ; 
