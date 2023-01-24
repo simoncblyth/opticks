@@ -234,13 +234,16 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     CSGSolid* addSolid(unsigned num_prim, const char* label, int primOffset_ = -1 );
-    CSGPrim*  addPrim(int num_node, int nodeOffset_ ) ;   // former defaults meshIdx:-1, nodeOffset_:-1
+    CSGPrim*  addPrim(int num_node, int nodeOffset_ = -1 ) ;   // former defaults meshIdx:-1, nodeOffset_:-1
 
     CSGNode*  addNode(CSGNode nd, const std::vector<float4>* pl=nullptr, const Tran<double>* tr=nullptr );
     CSGNode*  addNodes(const std::vector<CSGNode>& nds );
 
     CSGNode*  addNode(AABB& bb, CSGNode nd );
     CSGNode*  addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs  ); 
+
+    CSGPrim*  addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs=nullptr ); 
+
 
     float4*   addPlan(const float4& pl );
 

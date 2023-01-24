@@ -1,4 +1,15 @@
 #pragma once
+/**
+CSGMaker.h : CSGSolidMaker.h would be a better name 
+======================================================
+
+This is fine as test code but it is not useful 
+as a utility to assist with geometry creation because 
+it assumes single solid with single prim
+whereas in reality will typically have multiple prim
+compounded in each solid. 
+
+**/
 
 struct CSGNode ; 
 struct CSGSolid ; 

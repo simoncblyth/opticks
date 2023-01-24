@@ -1404,6 +1404,10 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tr
 
 
 
+
+
+
+
 /**
 CSGFoundry::addNodes
 ----------------------
@@ -1434,7 +1438,7 @@ CSGNode*  CSGFoundry::addNode(AABB& bb, CSGNode nd )
 
 CSGNode* CSGFoundry::addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs  )
 {
-    if( trs == nullptr ) return addNodes(nds); 
+    if( trs == nullptr ) return addNodes(nds); // HUH: bb not updated  
     
     unsigned num_nd = nds.size() ; 
     unsigned num_tr = trs ? trs->size() : 0  ; 
@@ -1457,6 +1461,42 @@ CSGNode* CSGFoundry::addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::ve
 }
 
 
+
+/**
+CSGFoundry::addPrimNodes
+-------------------------
+
+Trying to make adding prim nodes more self contained
+and less fussy.  HMM: its rather difficult to do this 
+add addition to CSGSolid/CSGPrim/CSGNode has lots 
+of checks that its done in the prescribed order. 
+
+**/
+
+CSGPrim* CSGFoundry::addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs )
+{
+    unsigned num_nd = nds.size(); 
+    unsigned num_tr = trs ? trs->size() : 0 ;
+    if( num_tr > 0 ) assert( num_nd == num_tr );
+ 
+    int nodeOffset = -1 ; 
+    CSGPrim* pr = addPrim(num_nd, nodeOffset )  ; 
+
+    for(unsigned i=0 ; i < num_nd ; i++)
+    {
+        const CSGNode& nd = nds[i] ; 
+        const Tran<double>* tr = trs ? (*trs)[i] : nullptr ; 
+        std::vector<float4>* planes = nullptr ;  
+        CSGNode* n = addNode(nd, planes); 
+        if(tr)
+        {
+            bool transform_node_aabb = true ; 
+            addNodeTran(n, tr, transform_node_aabb ); 
+        } 
+        bb.include_aabb( n->AABB() );  // does this feel the transform ?
+    }
+    return pr ; 
+}  
 
 
 
@@ -1553,7 +1593,13 @@ void CSGFoundry::addTranPlaceholder()
 CSGFoundry::addNodeTran
 ------------------------
 
-Adds tranform and associates it to the CSGNode
+Adds transform and associates it to the CSGNode
+
+IS THE BELOW TRUE ?::
+
+    NB CSGNode::setTransform on freestanding CSGNode would 
+    almost certainly be a bug. For the transform association 
+    to be effective have to addTran first.
 
 **/
 
@@ -1629,9 +1675,6 @@ void CSGFoundry::addInstancePlaceholder()
 
 
 
-
-
-
 /**
 CSGFoundry::addPrim
 ---------------------
@@ -1643,7 +1686,7 @@ tran or plan needed for that prim.
 
 The nodeOffset_ argument default of -1 signifies
 to set the nodeOffset of the Prim to the count of
-preexisting Prim.  This is appropriate when are 
+preexisting node size. This is appropriate when are 
 adding new nodes.  
 
 When reusing preexisting nodes, provide a nodeOffset_ argument > -1 
@@ -1656,37 +1699,44 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
     assert( last_added_solid ); 
 
     unsigned primOffset = last_added_solid->primOffset ; 
-    unsigned numPrim = last_added_solid->numPrim ; 
+    unsigned numPrim    = last_added_solid->numPrim ; 
 
     unsigned globalPrimIdx = prim.size(); 
-    unsigned localPrimIdx = globalPrimIdx - primOffset ; 
+    unsigned localPrimIdx = globalPrimIdx - primOffset ;   // index of added prim within the currently "open" solid
+    int nodeOffset = nodeOffset_ < 0 ? int(node.size()) : nodeOffset_ ; 
 
-    bool in_range = localPrimIdx < numPrim ; 
-    LOG_IF(fatal, !in_range) 
+    bool in_global_range = globalPrimIdx < IMAX ; 
+    bool in_local_range = localPrimIdx < numPrim ; 
+
+    LOG_IF(fatal, !in_global_range )
+        << " TOO MANY addPrim CALLS "
+        << " globalPrimIdx " << globalPrimIdx  
+        << " IMAX " << IMAX
+        << " in_global_range " << in_global_range
+        ;
+    assert( in_global_range ); 
+
+    LOG_IF(fatal, !in_local_range) 
         << " TOO MANY addPrim FOR SOLID " 
         << " localPrimIdx " << localPrimIdx
         << " numPrim " << numPrim
         << " globalPrimIdx " << globalPrimIdx
-        << " (must addPrim only up to to the declared numPrim from the addSolid call) "
+        << " in_local_range " << in_local_range
+        << " (must addPrim only up to to the declared numPrim from the prior addSolid call) "
         ;
-           
-    assert( in_range ); 
+    assert( in_local_range ); 
 
-    int nodeOffset = nodeOffset_ < 0 ? int(node.size()) : nodeOffset_ ; 
 
     CSGPrim pr = {} ;
 
     pr.setNumNode(num_node) ; 
     pr.setNodeOffset(nodeOffset); 
-    //pr.setSbtIndexOffset(globalPrimIdx) ;  // <--- bug : needs to be local 
-    pr.setSbtIndexOffset(localPrimIdx) ; 
-
+    pr.setSbtIndexOffset(localPrimIdx) ;  // NB must be localPrimIdx, globalPrimIdx was a bug 
     pr.setMeshIdx(-1) ;                // metadata, that may be set by caller 
 
     pr.setTranOffset(tran.size());     // HMM are tranOffset and planOffset used now that use global referencing  ?
     pr.setPlanOffset(plan.size());     // but still handy to keep them for debugging 
 
-    assert( globalPrimIdx < IMAX ); 
     prim.push_back(pr); 
 
     last_added_prim = prim.data() + globalPrimIdx ;

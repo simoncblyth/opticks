@@ -517,6 +517,9 @@ the nodes are already added to the CSGFoundry.
           op
 
       left   right 
+
+
+
  
 **/
 
@@ -553,6 +556,10 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, unsigned op_, const C
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
+
+
+
+
 
 
 CSGSolid* CSGMaker::makeOverlapBoxSphere( const char* label, float radius, float fullside )

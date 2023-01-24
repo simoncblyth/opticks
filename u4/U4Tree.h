@@ -97,6 +97,8 @@ struct U4Tree
     void initSolids(); 
     void initSolids_r(const G4VPhysicalVolume* const pv); 
     void initSolid(const G4LogicalVolume* const lv); 
+    void initSolid(const G4VSolid* const so ); 
+
 
     void initNodes(); 
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
@@ -233,14 +235,6 @@ inline void U4Tree::initSurfaces()
 }
 
 
-/**
-U4Tree::initSolids
-----------------------
-
-Currently just collects names. 
-
-**/
-
 inline void U4Tree::initSolids()
 {
     initSolids_r(top); 
@@ -256,12 +250,49 @@ inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 {
     lvidx[lv] = lvidx.size(); 
-
-    const G4VSolid* const solid = lv->GetSolid(); 
-    G4String  soname_ = solid->GetName() ;   // returns by value, not reference
-    st->soname.push_back(soname_); 
-    solids.push_back(solid); 
+    const G4VSolid* const so = lv->GetSolid(); 
+    initSolid(so); 
 }
+
+
+
+/**
+U4Tree::initSolid
+----------------------
+
+Currently just collects names. 
+Each G4VSolid will be translated into a tree of 1 or more CSGNode
+that is managed by CSGPrim
+
+Is an intermediate CSG tree needed, or go direct to CSG ?
+
+* could bring CSGNode down to sysrap to avoid duplication ?
+
+TODO: study CSG, X4, CSG_GGeo and decide on the approach 
+
+CSG/CSGNode,CSGPrim,CSGPrimSpec
+   could easily be made headeronly and moved down to SCSGNode.h etc..
+  
+   BUT:does it make sense to create these separate from the CSGFoundry ?
+   And only add them later ? 
+
+   * CSGNode just a struct of param, so thats fine to be created
+     in isolation 
+
+   * CSGPrim is based on numNode and nodeOffset so it only 
+     makes sense in conjuction with a vector of CSGNode, 
+     that usually is CSGFoundry   
+
+**/
+
+inline void U4Tree::initSolid(const G4VSolid* const so )
+{
+    G4String soname_ = so->GetName() ; // bizarre: returns by value, not reference
+    st->soname.push_back(soname_); 
+    solids.push_back(so);
+} 
+
+
 
 /**
 U4Tree::initNodes

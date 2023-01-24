@@ -1,4 +1,11 @@
 #pragma once
+/**
+snode.h
+=========
+
+Structural node residing in stree.h and populated from Geant4 by U4Tree.h 
+
+**/
 
 #include <string>
 #include <sstream>

@@ -13,6 +13,7 @@ set(TEST_SOURCES
     CSGPrimTest.cc
     CSGSolidTest.cc
     CSGFoundryTest.cc
+    CSGFoundry_addPrimNodes_Test.cc
     CSGFoundry_getCenterExtent_Test.cc
     CSGFoundry_findSolidIdx_Test.cc
     CSGNameTest.cc
