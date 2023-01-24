@@ -1,10 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-stree_test.sh 
-===============
-
-Tool to load a persisted stree geometry for debugging. 
-
+stree_load_test.sh 
+=====================
 
 EOU
 }
@@ -12,12 +9,9 @@ EOU
 defarg="build_run_ana"
 arg=${1:-$defarg}
 
-name=stree_test 
+name=stree_load_test 
 
-export GEOM=${GEOM:-J004}
-export CFBASE=$HOME/.opticks/GEOM/$GEOM
-defbase=$CFBASE/CSGFoundry/SSim
-export BASE=${BASE:-$defbase}
+export BASE=/tmp/$USER/opticks/U4TreeCreateTest 
 export FOLD=$BASE/stree
 
 if [ ! -d "$BASE/stree" ]; then
@@ -27,7 +21,7 @@ if [ ! -d "$BASE/stree" ]; then
 fi 
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE GEOM BASE FOLD"
+    vars="BASH_SOURCE BASE FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
 fi 
 

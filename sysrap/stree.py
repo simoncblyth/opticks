@@ -25,6 +25,10 @@ class snode(object):
              ('sensor_id', '<i4'),
              ('sensor_index', '<i4'),
              ('repeat_index', '<i4'),
+             ('boundary', '<i4'),
+             ('spare31', '<i4'),
+             ('spare32', '<i4'),
+             ('spare33', '<i4')
              ] 
 
     @classmethod
@@ -232,6 +236,22 @@ class stree(object):
         ssub = self.raw_subs[nodes] 
         ssf = sfreq.CreateFromArray(ssub) 
         return ssf
+
+
+    def desc_boundary(self):
+        st = self
+        u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True ) 
+
+        lines = []
+        lines.append("desc_boundary")
+        for i in range(len(u_bd)):
+            u = u_bd[i]
+            n = n_bd[i]
+            line = " %3d : %4d : %6d : %s " % (i, u, n, st.f.bd_names[u] )
+            lines.append(line)
+        pass
+        return "\n".join(lines)
+
 
 
 if __name__ == '__main__':

@@ -28,6 +28,11 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
 
+if [ "${arg/load}" != "$arg" ]; then 
+    $bin load
+    [ $? -ne 0 ] && echo $BASH_SOURCE load error && exit 2 
+fi 
+
 if [ "${arg/dbg}" != "$arg" ]; then 
     
     case $(uname) in
@@ -35,14 +40,13 @@ if [ "${arg/dbg}" != "$arg" ]; then
     Linux)  gdb__ $bin ;;
     esac
 
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
-
 
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $bin.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 4
 fi 
 
 exit 0 

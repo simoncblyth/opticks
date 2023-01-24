@@ -331,8 +331,8 @@ void test_bd()
 
 int main(int argc, char** argv)
 {
-    //stree st ; 
-    //st.load(BASE); 
+    stree st ; 
+    st.load(BASE); 
 
     /*
     test_desc_sub(st); 
@@ -352,7 +352,7 @@ int main(int argc, char** argv)
     */
 
 
-    test_bnd(); 
+    //test_bnd(); 
 
 
     return 0 ; 

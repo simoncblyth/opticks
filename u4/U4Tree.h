@@ -100,13 +100,16 @@ struct U4Tree
 
     void initNodes(); 
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
-    std::string getBoundaryName(const int4& bd, char delim='/') ; 
-
     void initBoundary(); 
-    void initBoundary_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p ); 
-
 
     //  accessors
+
+    const G4Material*       getMaterial(int idx) const ; 
+    const G4LogicalSurface* getSurface(int idx) const ; 
+    const char* getMaterialName(int idx) const ; 
+    const char* getSurfaceName(int idx) const ; 
+    std::string getBoundaryName(const int4& bd, char delim='/') const ; 
+
     std::string              desc() const ; 
     const G4VPhysicalVolume* get_pv_(int nidx) const ; 
     const G4PVPlacement*     get_pv(int nidx) const ; 
@@ -177,7 +180,7 @@ inline void U4Tree::init()
     initSurfaces();
     initSolids();
     initNodes(); 
-    //initBoundary();
+    initBoundary();
 }
 
 
@@ -189,17 +192,6 @@ U4Tree::initMaterials
    in postorder of first encounter.
 
 2. creates SSim/stree/material holding properties of all active materials::
-
-    epsilon:~ blyth$ cd /Users/blyth/.opticks/GEOM/J004/CSGFoundry/SSim/stree/material/Water
-    epsilon:Water blyth$ l
-    total 40
-     0 drwxr-xr-x   6 blyth  staff   192 Oct 11 15:50 .
-     0 drwxr-xr-x  18 blyth  staff   576 Oct 11 15:50 ..
-    16 -rw-rw-r--   1 blyth  staff  5184 Oct 11 15:50 ABSLENGTH.npy
-     8 -rw-rw-r--   1 blyth  staff   704 Oct 11 15:50 GROUPVEL.npy
-     8 -rw-rw-r--   1 blyth  staff    38 Oct 11 15:50 NPFold_index.txt
-     8 -rw-rw-r--   1 blyth  staff   704 Oct 11 15:50 RINDEX.npy
-
 
 CONSIDERING : maybe relocate to SSim/material ? rather than SSim/stree/material ? 
 and hold the material NPFold member in SSim ? 
@@ -239,12 +231,6 @@ inline void U4Tree::initSurfaces()
         st->add_surface( sn, i ); 
     }
 }
-
-
-
-
-
-
 
 
 /**
@@ -407,36 +393,6 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     return nd.index ; 
 }
 
-inline std::string U4Tree::getBoundaryName(const int4& bd, char delim)
-{
-    int omat_ = bd.x ; 
-    int osur_ = bd.y ; 
-    int isur_ = bd.z ; 
-    int imat_ = bd.w ; 
-
-    const G4Material*       omat = omat_ > -1 ? materials[omat_] : nullptr ; 
-    const G4LogicalSurface* osur = osur_ > -1 ?  surfaces[osur_] : nullptr ; 
-    const G4LogicalSurface* isur = isur_ > -1 ?  surfaces[isur_] : nullptr ; 
-    const G4Material*       imat = imat_ > -1 ? materials[imat_] : nullptr ; 
-
-    const char* omat_name = omat ? omat->GetName().c_str() : nullptr ; 
-    const char* osur_name = osur ? osur->GetName().c_str() : nullptr ; 
-    const char* isur_name = isur ? isur->GetName().c_str() : nullptr ; 
-    const char* imat_name = imat ? imat->GetName().c_str() : nullptr ; 
- 
-    assert( omat_name ); 
-    assert( imat_name ); 
-
-    std::stringstream ss ; 
-    ss 
-       << omat_name << delim
-       << ( osur_name ? osur_name : "" ) << delim 
-       << ( isur_name ? isur_name : "" ) << delim
-       << imat_name 
-       ;
-    std::string str = ss.str(); 
-    return str ; 
-}
 
 
 
@@ -446,14 +402,11 @@ inline std::string U4Tree::getBoundaryName(const int4& bd, char delim)
 U4Tree::initBoundary
 -----------------------
 
-ACTUALLY MAKES MORE SENSE TO DO WITHIN initNodes AS CAN STORE boundary int with snode 
-
-TODO: extract bnd creation out of GBndLib X4PhysicalVolume
+Note that most of the boundary preparation happens in initNodes
+as want to store boundary int with the snode. 
 
 TODO: what about the implicit surfaces
 
-
-How to handle boundary quads and specs and buffer without GGeo/X4 ?
 
 Currently using an unholy mixture of old and new:
 
@@ -466,6 +419,13 @@ X4PhysicalVolume::addBoundary
 
    * uses GGeo::findSkinSurface instead just use G4 (follow G4OpBoundaryProcess) 
 
+float/double bnd buffer is a zip from GSurfaceLib GMaterialLib which 
+uses domain standardization and is steered by the int bd buffer 
+
+GMaterialLib/GSurfaceLib
+   standard domain and standard set of props with defaults   
+
+   * current 
 
 How to handle the bnd cleanly ? 
 
@@ -477,20 +437,65 @@ So just need to create the bnd.
 
 inline void U4Tree::initBoundary()
 {
-    initBoundary_r( top, nullptr ); 
+
+
 }
 
-inline void U4Tree::initBoundary_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
+
+
+
+
+
+inline const G4Material* U4Tree::getMaterial(int idx) const
 {
-    G4LogicalSurface* Surface = U4Surface::Find( pv_p, pv ); 
-    if(Surface)
-    {
-        std::cout << "U4Tree::initBoundary_r " << pv->GetName() << std::endl ; 
-    }
-
-    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-    for(int i=0 ; i < int(lv->GetNoDaughters()) ; i++ ) initBoundary_r( lv->GetDaughter(i), pv ); 
+    return idx > -1 ? materials[idx] : nullptr ; 
 }
+inline const G4LogicalSurface* U4Tree::getSurface(int idx) const
+{
+    return idx > -1 ? surfaces[idx] : nullptr ; 
+}
+
+/**
+getMaterialName and getSurfaceName work because the corresponding GetName 
+returns a reference G4String& so do not have to strdup to cope  with temporaries 
+that would do if GetName returned by value.  
+**/
+
+inline const char* U4Tree::getMaterialName(int idx) const 
+{
+    const G4Material* mat = getMaterial(idx); 
+    const char* name = mat ? mat->GetName().c_str() : nullptr ; 
+    return name ; 
+}
+inline const char* U4Tree::getSurfaceName(int idx) const 
+{
+    const G4LogicalSurface* sur = getSurface(idx); 
+    const char* name = sur ? sur->GetName().c_str() : nullptr ; 
+    return name ; 
+}
+
+inline std::string U4Tree::getBoundaryName(const int4& bd, char delim) const 
+{
+    const char* omat = getMaterialName(bd.x); 
+    const char* osur = getSurfaceName(bd.y);  
+    const char* isur = getSurfaceName(bd.z); 
+    const char* imat = getMaterialName(bd.w); 
+ 
+    assert( omat ); 
+    assert( imat ); 
+
+    std::stringstream ss ; 
+    ss 
+       << omat << delim
+       << ( osur ? osur : "" ) << delim 
+       << ( isur ? isur : "" ) << delim
+       << imat 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 
 

@@ -10,18 +10,29 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const G4VPhysicalVolume* world = U4VolumeMaker::PV() ; 
-    LOG_IF(error, world == nullptr) << " FAILED TO CREATE world with U4VolumeMaker::PV " ;   
-    if(world == nullptr) return 0 ; 
-
     stree* st = new stree ; 
     st->level = 1 ;  
 
-    U4Tree* tr = U4Tree::Create(st, world) ; 
-    LOG(info) << tr->desc() ; 
+    if( argc > 1 )
+    {
+        LOG(info) << " load stree from FOLD " << FOLD ; 
+        st->load(FOLD); 
+    }
+    else
+    {
+        const G4VPhysicalVolume* world = U4VolumeMaker::PV() ; 
+        LOG_IF(error, world == nullptr) << " FAILED TO CREATE world with U4VolumeMaker::PV " ;   
+        if(world == nullptr) return 0 ; 
 
-    LOG(info) << " save stree to FOLD " << FOLD ; 
-    st->save(FOLD); 
+        U4Tree* tr = U4Tree::Create(st, world) ; 
+        LOG(info) << tr->desc() ; 
+
+        LOG(info) << " save stree to FOLD " << FOLD ; 
+        st->save(FOLD); 
+    }
+
+    std::cout << st->desc() ; 
+
 
     return 0 ;  
 }

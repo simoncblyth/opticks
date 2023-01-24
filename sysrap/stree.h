@@ -222,9 +222,17 @@ struct stree
     unsigned sensor_count ; 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
 
-    NPFold* material ; // (formerly mtfold)  material and surface properties : HMM are these out of place ? 
+    NPFold* material ; // (formerly mtfold)  material and surface properties 
     NPFold* surface ;  //                    potentially these could live within SSim ?
 
+    // NB NPFold material and surface contain direct copies of the Geant4 mpt tables
+    // TODO: need to juice these NPFold inputs into equivalents of the 
+    //       GMaterialLib and GSurfaceLib buffers using standard domains and default props
+    //       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
+    //
+    //       * that can then be compared between the workflows to validate the new approach
+    //
+    //
     // HMM: the stree.h inst members and methods are kinda out-of-place
     //      as CSGFoundry already has inst : so the below are looking ahead 
     //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
@@ -1365,6 +1373,9 @@ inline void stree::load_( const char* fold )
     ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
     ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
 
+
+    if(level > 1) std::cout << "stree::load_ " << SONAME << std::endl ; 
+
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, mtname );
     NP::ReadNames( fold, SUNAME, suname );
@@ -1377,10 +1388,13 @@ inline void stree::load_( const char* fold )
     assert( a_bd ); 
     NPX::VecFromArray<int4>( bd, a_bd );  
     a_bd->get_names( bdname );
- 
 
-    ImportArray<int, int>( mtline,  NP::Load(fold, MTLINE) );
-    init_mtindex_to_mtline(); 
+    if(NP::Exists(fold, MTLINE))
+    {
+        NP* a_mtline = NP::Load(fold, MTLINE) ;  
+        ImportArray<int, int>( mtline, a_mtline );
+        init_mtindex_to_mtline(); 
+    }
 
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
@@ -1395,8 +1409,11 @@ inline void stree::load_( const char* fold )
     ImportArray<glm::tmat4x4<float>, float>(inst_f4,  NP::Load(fold, INST_F4)); 
     ImportArray<glm::tmat4x4<float>, float>(iinst_f4, NP::Load(fold, IINST_F4)); 
 
-    ImportArray<int, int>( sensor_id, NP::Load(fold, SENSOR_ID) );
-    sensor_count = sensor_id.size(); 
+    if(NP::Exists(fold, SENSOR_ID))
+    {
+        ImportArray<int, int>( sensor_id, NP::Load(fold, SENSOR_ID) );
+        sensor_count = sensor_id.size(); 
+    }
 
     ImportArray<int, int>( inst_nidx, NP::Load(fold, INST_NIDX) );
 }
