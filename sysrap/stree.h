@@ -175,6 +175,9 @@ struct stree
     static constexpr const char* MTNAME = "mtname.txt" ;
     static constexpr const char* MTINDEX = "mtindex.npy" ;
     static constexpr const char* MTLINE = "mtline.npy" ;
+    static constexpr const char* SUNAME = "suname.txt" ;
+    static constexpr const char* SUINDEX = "suindex.npy" ;
+
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
@@ -194,6 +197,8 @@ struct stree
     std::vector<int>         mtline ;     
     std::map<int,int>        mtindex_to_mtline ;  // not persisted, filled from mtindex and mtline with init_mtindex_to_mtline
 
+    std::vector<std::string> suname ;       // surface names
+    std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
 
     std::vector<std::string> soname ;       // unique solid names
 
@@ -349,6 +354,7 @@ struct stree
     std::string desc_mt() const ; 
 
     void add_material( const char* name, unsigned g4index ); 
+    void add_surface(  const char* name, unsigned idx ); 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
 
@@ -1236,6 +1242,10 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames(    fold, MTNAME,   mtname );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
+
+    NP::WriteNames(    fold, SUNAME,   suname );
+    NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
+ 
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
@@ -1333,9 +1343,11 @@ inline void stree::load_( const char* fold )
     ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
 
     NP::ReadNames( fold, SONAME, soname );
-    NP::ReadNames( fold, MTNAME, soname );
+    NP::ReadNames( fold, MTNAME, mtname );
+    NP::ReadNames( fold, SUNAME, suname );
 
     ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
+    ImportArray<int, int>( suindex, NP::Load(fold, SUINDEX) );
     ImportArray<int, int>( mtline,  NP::Load(fold, MTLINE) );
     init_mtindex_to_mtline(); 
 
@@ -1959,6 +1971,13 @@ inline void stree::add_material( const char* name, unsigned g4index )
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
 } 
+
+inline void stree::add_surface( const char* name, unsigned idx )
+{
+    suname.push_back(name); 
+    suindex.push_back(idx); 
+} 
+
 
 
 /**

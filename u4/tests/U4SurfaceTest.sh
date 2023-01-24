@@ -7,7 +7,7 @@ arg=${1:-$defarg}
 
 
 export GEOM=J006 
-export FOLD=/tmp/$bin/$GEOM
+export FOLD=/tmp/$bin/$GEOM/surface
 mkdir -p $FOLD
 
 if [ "${arg/run}" != "$arg" ]; then

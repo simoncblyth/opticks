@@ -9,12 +9,17 @@ The other members simply hold on to Geant4 pointers
 that make no sense to persist and cannot live 
 within sysrap as that does not depend on G4 headers.  
 
-Actually header only impls can live anywhere, so could move this to sysrap, 
-but are more comfortable to do that only with small highly focussed headers. 
+Actually header only impls can live anywhere, so 
+U4Tree.h could move to sysrap as S4Tree.h.  
+BUT: are more comfortable to do that only with small highly focussed headers. 
+
 Currently this header is not so big, but expect that this will 
 grow into the central header of the more direct geometry translation. 
 
-* see also sysrap/stree.h sysrap/tests/stree_test.cc
+See also:
+
+* sysrap/stree.h 
+* sysrap/tests/stree_test.cc
 
 **/
 
@@ -29,6 +34,7 @@ grow into the central header of the more direct geometry translation.
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4Material.hh"
+#include "G4LogicalSurface.hh"
 
 #include "NP.hh"
 
@@ -61,9 +67,6 @@ controlled via envvar::
 
 struct U4Tree
 {
-    static void Simtrace( const G4VPhysicalVolume* const top, const char* base ); 
-    static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
-
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
     const U4SensorIdentifier* sid ; 
@@ -72,34 +75,42 @@ struct U4Tree
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
+    std::vector<const G4LogicalSurface*> surfaces ;  // both skin and border 
     std::vector<const G4VSolid*>    solids ; 
 
+
+
     // HMM: should really be SSim argument now ?
+    static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
+    void initMaterials(); 
+    void initMaterials_r(const G4VPhysicalVolume* const pv); 
+    void initMaterial(const G4Material* const mt); 
 
-    void convertMaterials(); 
-    void convertMaterials_r(const G4VPhysicalVolume* const pv); 
-    void convertMaterial(const G4Material* const mt); 
+    void initSurfaces(); 
 
-    void convertSurfaces(); 
+    void initSolids(); 
+    void initSolids_r(const G4VPhysicalVolume* const pv); 
+    void initSolid(const G4LogicalVolume* const lv); 
 
-    void convertSolids(); 
-    void convertSolids_r(const G4VPhysicalVolume* const pv); 
-    void convertSolid(const G4LogicalVolume* const lv); 
+    void initNodes(); 
+    int  initNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent ); 
 
-    void convertNodes(); 
-    int  convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent ); 
 
+    //  accessors
+    std::string              desc() const ; 
     const G4VPhysicalVolume* get_pv_(int nidx) const ; 
     const G4PVPlacement*     get_pv(int nidx) const ; 
     int                      get_pv_copyno(int nidx) const ; 
-
     int get_nidx(const G4VPhysicalVolume* pv) const ; 
 
+    // identify
     void identifySensitive(); 
     void identifySensitiveInstances(); 
     void identifySensitiveGlobals(); 
+
+    static void deprecated_Simtrace( const G4VPhysicalVolume* const top, const char* base ); 
 }; 
 
 
@@ -123,7 +134,6 @@ inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, co
     return tr ; 
 }
 
-
 inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4SensorIdentifier* sid_ )
     :
     st(st_),
@@ -137,15 +147,15 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
 inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
-    convertMaterials();
-    convertSurfaces();
-    convertSolids();
-    convertNodes(); 
+    initMaterials();
+    initSurfaces();
+    initSolids();
+    initNodes(); 
 }
 
 
 /**
-U4Tree::convertMaterials
+U4Tree::initMaterials
 -----------------------------------
 
 1. recursive traverse collecting material pointers from all active LV into materials vector 
@@ -165,22 +175,23 @@ U4Tree::convertMaterials
 
 
 CONSIDERING : maybe relocate to SSim/material ? rather than SSim/stree/material ? 
+and hold the material NPFold member in SSim ? 
 
 **/
 
-inline void U4Tree::convertMaterials()
+inline void U4Tree::initMaterials()
 {
-    convertMaterials_r(top); 
+    initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
 }
-inline void U4Tree::convertMaterials_r(const G4VPhysicalVolume* const pv)
+inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ ) convertMaterials_r( lv->GetDaughter(i) ); 
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ ) initMaterials_r( lv->GetDaughter(i) ); 
     G4Material* mt = lv->GetMaterial() ; 
-    if(mt && (std::find(materials.begin(), materials.end(), mt) == materials.end())) convertMaterial(mt);  
+    if(mt && (std::find(materials.begin(), materials.end(), mt) == materials.end())) initMaterial(mt);  
 }
-inline void U4Tree::convertMaterial(const G4Material* const mt)
+inline void U4Tree::initMaterial(const G4Material* const mt)
 {
     materials.push_back(mt); 
     const G4String& mtname = mt->GetName() ;  
@@ -189,35 +200,43 @@ inline void U4Tree::convertMaterial(const G4Material* const mt)
 }
 
 
-inline void U4Tree::convertSurfaces()
+inline void U4Tree::initSurfaces()
 {
-    st->surface = U4Surface::MakeFold(); 
+    U4Surface::Collect(surfaces); 
+    st->surface = U4Surface::MakeFold(surfaces); 
+
+    for(unsigned i=0 ; i < surfaces.size() ; i++)
+    {
+        const G4LogicalSurface* s = surfaces[i] ;  
+        const G4String& sn = s->GetName() ;  
+        st->add_surface( sn, i ); 
+    }
 }
 
 
 
 
 /**
-U4Tree::convertSolids
+U4Tree::initSolids
 ----------------------
 
 Currently just collects names. 
 
 **/
 
-inline void U4Tree::convertSolids()
+inline void U4Tree::initSolids()
 {
-    convertSolids_r(top); 
+    initSolids_r(top); 
 }
-inline void U4Tree::convertSolids_r(const G4VPhysicalVolume* const pv)
+inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
     int num_child = int(lv->GetNoDaughters()) ;  
-    for (int i=0 ; i < num_child ;i++ ) convertSolids_r( lv->GetDaughter(i) ); 
+    for (int i=0 ; i < num_child ;i++ ) initSolids_r( lv->GetDaughter(i) ); 
 
-    if(lvidx.find(lv) == lvidx.end()) convertSolid(lv); 
+    if(lvidx.find(lv) == lvidx.end()) initSolid(lv); 
 }
-inline void U4Tree::convertSolid(const G4LogicalVolume* const lv)
+inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 {
     lvidx[lv] = lvidx.size(); 
 
@@ -228,7 +247,7 @@ inline void U4Tree::convertSolid(const G4LogicalVolume* const lv)
 }
 
 /**
-U4Tree::convertNodes
+U4Tree::initNodes
 -----------------------------
 
 Serialize the n-ary tree into nds and trs vectors within stree 
@@ -236,13 +255,13 @@ holding structural node info and transforms.
 
 **/
 
-inline void U4Tree::convertNodes()
+inline void U4Tree::initNodes()
 {
-    convertNodes_r(top, 0, -1, -1 ); 
+    initNodes_r(top, 0, -1, -1 ); 
 }
 
 /**
-U4Tree::convertNodes_r
+U4Tree::initNodes_r
 -----------------------
 
 Most of the visit is preorder before the recursive call, 
@@ -257,7 +276,7 @@ use of copyNo is detector specific.  Also not all JUNO SD
 are actually sensitive. 
 
 **/
-inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
+inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
 
@@ -317,12 +336,33 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     for (int i=0 ; i < num_child ;i++ ) 
     {
         p_sib = i_sib ;  // node index of previous child 
-        i_sib = convertNodes_r( lv->GetDaughter(i), depth+1, i, nd.index ); 
+        i_sib = initNodes_r( lv->GetDaughter(i), depth+1, i, nd.index ); 
         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
     }
     // within the above loop, reach back to previous sibling snode to set the sib->sib linkage, default -1
 
     return nd.index ; 
+}
+
+
+
+
+inline std::string U4Tree::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "U4Tree::desc" << std::endl 
+       << " st "  << ( st ? "Y" : "N" ) << std::endl 
+       << " top " << ( top ? "Y" : "N" ) << std::endl 
+       << " sid " << ( sid ? "Y" : "N" ) << std::endl 
+       << " level " << level << std::endl 
+       << " lvidx " << lvidx.size() << std::endl
+       << " pvs " << pvs.size() << std::endl 
+       << " materials " << materials.size() << std::endl 
+       << " surfaces " << surfaces.size() << std::endl 
+       << " solids " << solids.size() << std::endl 
+       ;  
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
@@ -510,15 +550,15 @@ inline void U4Tree::identifySensitiveGlobals()
 
 
 /**
-U4Tree::Simtrace
-------------------
+U4Tree::deprecated_Simtrace
+------------------------------
 
 This is too encapsulated, it gives no surface for debug/development. 
 So instead moved this functionality to U4Simtrace.h 
 
 **/
 
-inline void U4Tree::Simtrace( const G4VPhysicalVolume* const pv, const char* base )
+inline void U4Tree::deprecated_Simtrace( const G4VPhysicalVolume* const pv, const char* base )
 {
     stree st ; 
     U4Tree ut(&st, pv ) ; 

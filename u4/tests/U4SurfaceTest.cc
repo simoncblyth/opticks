@@ -3,8 +3,6 @@
 #include "U4GDML.h"
 #include "U4Surface.h"
 
-//#include "SNameOrder.h"
-
 const char* FOLD = getenv("FOLD") ; 
 
 int main(int argc, char** argv)
@@ -17,14 +15,6 @@ int main(int argc, char** argv)
     if(pv == nullptr) return 0 ; 
 
 
-    /*
-    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
-    LOG(info) <<  " tab " << tab ; 
-
-    const std::vector<G4LogicalBorderSurface*>* vec = U4Surface::PrepareBorderSurfaceVector(tab);
-    LOG(info) << SNameOrder<G4LogicalBorderSurface>::Desc(*vec) ; 
-    */
-
 
     NPFold* fold = U4Surface::MakeFold() ;  
 
@@ -32,7 +22,7 @@ int main(int argc, char** argv)
 
     if(FOLD) 
     {
-       LOG(info) << " save to FOLD " << FOLD ;  
+       LOG(info) << " save to FOLD " << FOLD  ;  
        fold->save(FOLD); 
     }
 

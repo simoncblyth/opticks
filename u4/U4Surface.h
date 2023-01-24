@@ -49,13 +49,8 @@ struct U4Surface
 
     static const std::vector<G4LogicalBorderSurface*>* PrepareBorderSurfaceVector(const G4LogicalBorderSurfaceTable* tab ); 
 
-
-    static NPFold* MakeBorderFold(); 
-    static NPFold* MakeBorderFold( const G4LogicalBorderSurfaceTable* tab); 
-
-    static NPFold* MakeSkinFold(); 
-    static NPFold* MakeSkinFold(const G4LogicalSkinSurfaceTable* tab); 
-
+    static void    Collect( std::vector<const G4LogicalSurface*>& surfaces ); 
+    static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ); 
     static NPFold* MakeFold(); 
 
 };
@@ -222,90 +217,79 @@ inline const std::vector<G4LogicalBorderSurface*>* U4Surface::PrepareBorderSurfa
 
 
 
-
-inline NPFold* U4Surface::MakeBorderFold()  // static 
-{
-    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ;
-    return MakeBorderFold(tab); 
-}
-
 /**
-U4Surface::MakeBorderFold
+U4Surface::AddBorder
 --------------------------
 
 **/
 
-inline NPFold* U4Surface::MakeBorderFold(const G4LogicalBorderSurfaceTable* tab) // static
+
+inline void U4Surface::Collect( std::vector<const G4LogicalSurface*>& surfaces )
 {
-    const std::vector<G4LogicalBorderSurface*>* vec = PrepareBorderSurfaceVector(tab); 
-    if(vec == nullptr) return nullptr ; 
+    const G4LogicalBorderSurfaceTable* border_ = G4LogicalBorderSurface::GetSurfaceTable() ;
+    const std::vector<G4LogicalBorderSurface*>* border = PrepareBorderSurfaceVector(border_); 
 
-    NPFold* fold = new NPFold ; 
-
-    for(unsigned i=0 ; i < vec->size() ; i++)
+    for(unsigned i=0 ; i < border->size() ; i++)
     {   
-        const G4LogicalBorderSurface* bs = (*vec)[i] ; 
-        const G4String& name = bs->GetName() ; 
+        G4LogicalBorderSurface* bs = (*border)[i] ; 
+        surfaces.push_back(bs) ;  
+    }   
+
+    const G4LogicalSkinSurfaceTable* skin = G4LogicalSkinSurface::GetSurfaceTable() ; 
+    for(unsigned i=0 ; i < skin->size() ; i++)
+    {   
+        G4LogicalSkinSurface* ks = (*skin)[i] ; 
+        surfaces.push_back(ks) ;  
+    }
+}
+
+inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ) // static
+{
+    NPFold* fold = new NPFold ; 
+    for(unsigned i=0 ; i < surfaces.size() ; i++)
+    {   
+        const G4LogicalSurface* ls = surfaces[i] ; 
+        const G4String& name = ls->GetName() ; 
         const char* key = name.c_str() ; 
 
-        const G4VPhysicalVolume* _pv1 = bs->GetVolume1(); 
-        const G4VPhysicalVolume* _pv2 = bs->GetVolume2(); 
-
-        const char* pv1 = S4::Name<G4VPhysicalVolume>(_pv1) ;  // these names have 0x...
-        const char* pv2 = S4::Name<G4VPhysicalVolume>(_pv2) ; 
-
-        G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(bs->GetSurfaceProperty());
+        G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
         G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
         assert(mpt); 
-
         NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
 
-        sub->set_meta<std::string>("pv1", pv1) ; 
-        sub->set_meta<std::string>("pv2", pv2) ; 
+        const G4LogicalBorderSurface* bs = dynamic_cast<const G4LogicalBorderSurface*>(ls) ; 
+        const G4LogicalSkinSurface*   ks = dynamic_cast<const G4LogicalSkinSurface*>(ls) ; 
 
+        if(bs)
+        {
+            const G4VPhysicalVolume* _pv1 = bs->GetVolume1(); 
+            const G4VPhysicalVolume* _pv2 = bs->GetVolume2(); 
+
+            const char* pv1 = S4::Name<G4VPhysicalVolume>(_pv1) ;  // these names have 0x...
+            const char* pv2 = S4::Name<G4VPhysicalVolume>(_pv2) ; 
+
+            sub->set_meta<std::string>("pv1", pv1) ; 
+            sub->set_meta<std::string>("pv2", pv2) ; 
+            sub->set_meta<std::string>("type", "Border" ); 
+        }
+        else if(ks)
+        {
+            const G4LogicalVolume* _lv = ks->GetLogicalVolume();
+            const char* lv = S4::Name<G4LogicalVolume>(_lv);   // name includes 0x...
+
+            sub->set_meta<std::string>("lv", lv ); 
+            sub->set_meta<std::string>("type", "Skin" ); 
+        }
         fold->add_subfold( key, sub );  
     }   
     return fold ; 
 }
 
-
-
-inline NPFold* U4Surface::MakeSkinFold() // static
-{
-    const G4LogicalSkinSurfaceTable* tab = G4LogicalSkinSurface::GetSurfaceTable() ; 
-    return MakeSkinFold( tab ); 
-}
-
-inline NPFold* U4Surface::MakeSkinFold(const G4LogicalSkinSurfaceTable* tab)
-{
-    NPFold* fold = new NPFold ; 
-
-    for(unsigned i=0 ; i < tab->size() ; i++)
-    {   
-        const G4LogicalSkinSurface* ks = (*tab)[i] ; 
-        const G4String& name = ks->GetName() ; 
-        const char* key = name.c_str() ; 
-
-        G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ks->GetSurfaceProperty());
-        G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
-        assert(mpt); 
-
-        const G4LogicalVolume* _lv = ks->GetLogicalVolume();
-        const char* lv = S4::Name<G4LogicalVolume>(_lv);   // name includes 0x...
-
-        NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
-        sub->set_meta<std::string>("lv", lv ); 
-
-        fold->add_subfold( key, sub );  
-    }   
-    return fold ; 
-}
-     
 inline NPFold* U4Surface::MakeFold()
 {
-    NPFold* fold = new NPFold ; 
-    fold->add_subfold("BorderSurface", MakeBorderFold() ); 
-    fold->add_subfold("SkinSurface", MakeSkinFold() ); 
-    return fold ; 
+    std::vector<const G4LogicalSurface*> surfaces ; 
+    Collect(surfaces); 
+    return MakeFold(surfaces) ; 
 }
+
 
