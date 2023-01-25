@@ -69,9 +69,6 @@ struct Tran
     static const Tran<T>* make_rotate(    const T ax, const T ay, const T az, const T angle_deg);
 
 
-
-
-
     static glm::tvec3<T>   LeastParallelAxis(const glm::tvec3<T>& a ); 
     static glm::tmat4x4<T> RotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static glm::tmat4x4<T> RotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 

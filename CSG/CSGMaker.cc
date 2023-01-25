@@ -533,7 +533,7 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, unsigned op_, const C
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
     if(meshIdx > -1) p->setMeshIdx(meshIdx);
 
-    CSGNode op = CSGNode::BooleanOperator(op_, 3); 
+    CSGNode op = CSGNode::BooleanOperator(op_, -1);  // CHANGED 3 to -1 as this is standard boolean ?
     CSGNode* n = fd->addNode(op); 
 
     fd->addNode(left); 

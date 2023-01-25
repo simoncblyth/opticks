@@ -954,6 +954,7 @@ const char* U4SolidTree::EntityTag(const G4VSolid* node_, bool move)   // static
     return EntityTag_(node); 
 }
 
+
 const char* U4SolidTree::G4Ellipsoid_          = "Ell" ; 
 const char* U4SolidTree::G4Tubs_               = "Tub" ;
 const char* U4SolidTree::G4Polycone_           = "Pol" ;
@@ -968,6 +969,7 @@ const char* U4SolidTree::G4SubtractionSolid_   = "Sub" ;
 const char* U4SolidTree::G4IntersectionSolid_  = "Int" ;
 const char* U4SolidTree::G4DisplacedSolid_     = "Dis" ;
 
+// TODO: get this functionality from U4Solid 
 
 const char* U4SolidTree::EntityTag_( const G4VSolid* solid )
 {

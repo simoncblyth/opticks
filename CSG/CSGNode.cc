@@ -169,6 +169,16 @@ CSGNode CSGNode::Union(){         return CSGNode::BooleanOperator(CSG_UNION,-1) 
 CSGNode CSGNode::Intersection(){  return CSGNode::BooleanOperator(CSG_INTERSECTION,-1) ; }
 CSGNode CSGNode::Difference(){    return CSGNode::BooleanOperator(CSG_DIFFERENCE,-1) ; }
 
+/**
+CSGNode::BooleanOperator
+-------------------------
+
+* num_sub is normally -1, for standard boolean trees
+* num_sub > 0 is used for compound "list" nodes : a more efficient approach 
+  avoid tree overheads used for some complex solids 
+
+**/
+
 CSGNode CSGNode::BooleanOperator(unsigned op, int num_sub)   // static 
 {
     assert( CSG::IsOperator((OpticksCSG_t)op) ); 

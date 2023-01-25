@@ -164,6 +164,7 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include "sstr.h"
 #include "strid.h"
 #include "sfactor.h"
+#include "snd.h"
 
 
 struct stree
@@ -211,6 +212,7 @@ struct stree
     std::vector<std::string> bdname ; 
 
     std::vector<std::string> soname ;       // unique solid names
+    std::vector<snd*>        solids ;       // transient CSG roots for each solid  
 
     std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  
@@ -222,6 +224,8 @@ struct stree
     std::vector<std::string> subs ;         // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
     std::vector<int> sensor_id ;           // updated by reorderSensors
+
+
 
     int level ;   // verbosity 
     unsigned sensor_count ; 

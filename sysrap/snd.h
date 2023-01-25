@@ -27,38 +27,45 @@ TODO: holding transforms
 #include <iomanip>
 
 #include "OpticksCSG.h"
+#include "scuda.h"
+#include "stran.h"
 
-template<typename T>
 struct snd
 {
     static constexpr const int N = 6 ; 
-    static constexpr const T zero = 0. ; 
+    static constexpr const double zero = 0. ; 
 
-    T* param ; 
-    T* aabb  ; 
-    T* planes ; 
+    double* param ; 
+    double* aabb  ; 
+    double* planes ; 
     unsigned tc ;  
 
     snd* left ; 
     snd* right ; 
     snd* parent ; 
 
-    void setParam(T x,  T y,  T z,  T w,  T z1, T z2 ); 
-    void setAABB( T x0, T y0, T z0, T x1, T y1, T z1 );
+    Tran<double>* tr ; 
+
+
+    void setParam(double x,  double y,  double z,  double w,  double z1, double z2 ); 
+    void setAABB( double x0, double y0, double z0, double x1, double y1, double z1 );
     void setTypecode( unsigned tc ); 
 
-    static std::string Desc(const T* d, int wid=8, int pre=2 ); 
+    static std::string Desc(const double* d, int wid=8, int pre=2 ); 
     std::string desc() const ; 
 
-    static snd<T> Sphere(T radius); 
-    static snd<T> ZSphere(T radius, T z1, T z2); 
+    // follow CSGNode where these param will end up 
+    static snd Sphere(double radius); 
+    static snd ZSphere(double radius, double z1, double z2); 
+    static snd Box3(double fullside); 
+    static snd Box3(double fx, double fy, double fz ); 
+    static snd Boolean( OpticksCSG_t op,  snd* l, snd* r ); 
 
 };
 
-template<typename T>
-inline void snd<T>::setParam( T x, T y, T z, T w, T z1, T z2 )
+inline void snd::setParam( double x, double y, double z, double w, double z1, double z2 )
 {
-    if(param == nullptr) param = new T[N] ; 
+    if(param == nullptr) param = new double[N] ; 
     param[0] = x ; 
     param[1] = y ; 
     param[2] = z ; 
@@ -67,10 +74,9 @@ inline void snd<T>::setParam( T x, T y, T z, T w, T z1, T z2 )
     param[5] = z2 ;
 }
 
-template<typename T>
-inline void snd<T>::setAABB( T x0, T y0, T z0, T x1, T y1, T z1 )
+inline void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
-    if(aabb == nullptr) aabb = new T[N] ; 
+    if(aabb == nullptr) aabb = new double[N] ; 
     aabb[0] = x0 ; 
     aabb[1] = y0 ; 
     aabb[2] = z0 ; 
@@ -79,13 +85,11 @@ inline void snd<T>::setAABB( T x0, T y0, T z0, T x1, T y1, T z1 )
     aabb[5] = z1 ; 
 }
 
-template<typename T>
-inline void snd<T>::setTypecode( unsigned _tc )
+inline void snd::setTypecode( unsigned _tc )
 {
     tc = _tc ; 
 }
-template<typename T>
-inline std::string snd<T>::Desc(const T* d, int wid, int pre  )
+inline std::string snd::Desc(const double* d, int wid, int pre  )
 {
     std::stringstream ss ;
     if( d == nullptr ) 
@@ -102,52 +106,77 @@ inline std::string snd<T>::Desc(const T* d, int wid, int pre  )
     return str ; 
 } 
 
-template<typename T>
-inline std::string snd<T>::desc() const 
+inline std::string snd::desc() const 
 {
     std::stringstream ss ; 
-    ss << "snd<" << ( sizeof(T) == 8 ? "double" : "float" ) << ">::desc " 
+    ss << "snd::desc " 
        << CSG::Tag(tc) 
        << " param " << Desc(param) 
        << " aabb  " << Desc(aabb )
+       << " tr " << ( tr ? "Y" : "N" )
+       << std::endl 
        ; 
+
+    if(left)  ss << "l:" << left->desc() ; 
+    if(right) ss << "r:" << right->desc() ; 
+    if(left && !right) ss << "ERROR: boolean left BUT no right " << std::endl  ; 
+    if(tr)    ss << tr->desc() ;   
 
     std::string str = ss.str(); 
     return str ; 
 }
 
-inline std::ostream& operator<<(std::ostream& os, const snd<double>& v)  
+inline std::ostream& operator<<(std::ostream& os, const snd& v)  
 {
-    os << v.desc() << std::endl ;  
-    return os; 
-}
-inline std::ostream& operator<<(std::ostream& os, const snd<float>& v)  
-{
-    os << v.desc() << std::endl ;  
+    os << v.desc() ;  
     return os; 
 }
 
-template<typename T>
-inline snd<T> snd<T>::Sphere(T radius)  // static
+inline snd snd::Sphere(double radius)  // static
 {
     assert( radius > zero ); 
-    snd<double> nd = {} ;
+    snd nd = {} ;
     nd.setParam( zero, zero, zero, radius, zero, zero );  
     nd.setAABB(  -radius, -radius, -radius,  radius, radius, radius  );  
     nd.setTypecode(CSG_SPHERE) ; 
     return nd ;
 }
 
-template<typename T>
-inline snd<T> snd<T>::ZSphere(T radius, T z1, T z2)  // static
+inline snd snd::ZSphere(double radius, double z1, double z2)  // static
 {
     assert( radius > zero ); 
     assert( z2 > z1 );  
-    snd<double> nd = {} ;
+    snd nd = {} ;
     nd.setParam( zero, zero, zero, radius, z1, z2 );  
     nd.setAABB(  -radius, -radius, z1,  radius, radius, z2  );  
     nd.setTypecode(CSG_ZSPHERE) ; 
     return nd ;
+}
+
+inline snd snd::Box3(double fullside)  // static 
+{
+    return Box3(fullside, fullside, fullside); 
+}
+inline snd snd::Box3(double fx, double fy, double fz )  // static 
+{
+    assert( fx > 0. );  
+    assert( fy > 0. );  
+    assert( fz > 0. );  
+
+    snd nd = {} ;
+    nd.setParam( fx, fy, fz, 0.f, 0.f, 0.f );  
+    nd.setAABB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
+    nd.setTypecode(CSG_BOX3) ; 
+    return nd ; 
+}
+
+inline snd snd::Boolean( OpticksCSG_t op,  snd* l, snd* r ) // static 
+{
+    snd nd = {} ;
+    nd.left = l ; 
+    nd.right = r ; 
+    nd.setTypecode( op ); 
+    return nd ; 
 }
 
 

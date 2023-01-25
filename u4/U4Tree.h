@@ -41,6 +41,7 @@ See also:
 #include "sdigest.h"
 #include "sfreq.h"
 #include "stree.h"
+
 #include "SSimtrace.h"
 
 #include "U4SensorIdentifier.h"
@@ -288,12 +289,13 @@ cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 
 inline void U4Tree::initSolid(const G4VSolid* const so )
 {
-    G4String soname_ = so->GetName() ; // bizarre: returns by value, not reference
-    st->soname.push_back(soname_); 
-    solids.push_back(so);
-
-    snd<double>* root = U4Solid::Convert(so); 
+    G4String name = so->GetName() ; // bizarre: returns by value, not reference
+    snd* root = U4Solid::Convert(so); 
     assert( root ); 
+
+    solids.push_back(so);
+    st->soname.push_back(name); 
+    st->solids.push_back(root); 
 } 
 
 

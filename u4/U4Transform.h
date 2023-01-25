@@ -3,8 +3,12 @@
 #include <array>
 #include "G4VPhysicalVolume.hh"
 #include "G4Transform3D.hh"
+#include "G4RotationMatrix.hh"
+#include "G4BooleanSolid.hh"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "glm/gtx/string_cast.hpp"
 
 struct U4Transform
 {
@@ -17,9 +21,17 @@ struct U4Transform
 
     static void GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; // MOST USED BY OPTICKS
     static void GetFrameTransform( glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; 
+    static void GetDispTransform(  glm::tmat4x4<double>& tr, const G4DisplacedSolid* disp );  
+
+
+    template<typename T>
+    static void Convert(glm::tmat4x4<T>& dst,  const std::array<T,16>& src ); 
 
     template<typename T>
     static void Convert_RotateThenTranslate(glm::tmat4x4<T>& dst,  const G4Transform3D& src ); 
+
+    template<typename T>
+    static void Convert_RotateThenTranslate(glm::tmat4x4<T>& d, const G4RotationMatrix& rot, const G4ThreeVector& tla, bool f ); 
 
     template<typename T>
     static void Convert_TranslateThenRotate(glm::tmat4x4<T>& dst,  const G4Transform3D& src ); 
@@ -63,6 +75,51 @@ inline void U4Transform::GetFrameTransform(glm::tmat4x4<double>& tr, const G4VPh
 }
 
 /**
+U4Transform::GetDispTransform
+------------------------------
+
+It looks a bit fishy using GetFrameRotation and GetObjectTranslation, 
+but looking at the impl those are both from fDirectTransform. 
+
+g4-cls G4DisplacedSolid::
+
+    240 G4RotationMatrix G4DisplacedSolid::GetFrameRotation() const
+    241 {
+    242   G4RotationMatrix InvRotation= fDirectTransform->NetRotation();
+    243   return InvRotation;
+    244 }
+
+    281 G4ThreeVector  G4DisplacedSolid::GetObjectTranslation() const
+    282 {
+    283   return fDirectTransform->NetTranslation();
+    284 }
+
+
+
+**/
+
+inline void U4Transform::GetDispTransform(glm::tmat4x4<double>& tr, const G4DisplacedSolid* disp )
+{
+    assert(disp) ; 
+    G4RotationMatrix rot = disp->GetFrameRotation(); 
+    G4ThreeVector    tla = disp->GetObjectTranslation();
+
+    //G4RotationMatrix rot = disp->GetObjectRotation(); 
+    //G4ThreeVector    tla = disp->GetFrameTranslation();
+
+    Convert_RotateThenTranslate(tr, rot, tla, true );  
+}
+
+
+template<typename T>
+inline void U4Transform::Convert(glm::tmat4x4<T>& d,  const std::array<T,16>& s ) // static
+{
+    unsigned n = Check(s);
+    assert( n == 0);
+    memcpy( glm::value_ptr(d), s.data(), sizeof(T)*16 );  
+}
+
+/**
 
 U4Transform::Convert_RotateThenTranslate
 -------------------------------------------
@@ -82,16 +139,62 @@ inline void U4Transform::Convert_RotateThenTranslate(glm::tmat4x4<T>& d,  const 
 {
     T zero(0.); 
     T one(1.); 
+
     std::array<T, 16> a = {{
              s.xx(), s.yx(), s.zx(), zero ,  
              s.xy(), s.yy(), s.zy(), zero ,
              s.xz(), s.yz(), s.zz(), zero ,    
              s.dx(), s.dy(), s.dz(), one   }} ; 
-
-    unsigned n = Check(a);
-    assert( n == 0);
-    memcpy( glm::value_ptr(d), a.data(), sizeof(T)*16 );  
+    Convert(d, a); 
 }
+
+
+/**
+U4Transform::Convert_RotateThenTranslate
+------------------------------------------
+
+Caution getting the correct transpose is always problematic...
+
+Cannot rely on G4 streamers presenting in a way that matches 
+Opticks/glm presentation of matrices.
+
+G4AffineTransform::NetRotation
+
+**/
+
+template<typename T>
+inline void U4Transform::Convert_RotateThenTranslate(glm::tmat4x4<T>& d, const G4RotationMatrix& r, const G4ThreeVector& t, bool f ) // static
+{
+    T zero(0.); 
+    T one(1.); 
+
+    if( f == false )
+    {
+        std::array<T, 16> a = {{
+                 r.xx(), r.yx(), r.zx(), zero ,  
+                 r.xy(), r.yy(), r.zy(), zero ,
+                 r.xz(), r.yz(), r.zz(), zero ,    
+                 t.x(),  t.y(),  t.z(),  one   }} ; 
+
+        Convert(d, a); 
+    }
+    else
+    {
+        std::array<T, 16> a = {{
+                 r.xx(), r.xy(), r.xz(), zero ,  
+                 r.yx(), r.yy(), r.yz(), zero ,
+                 r.zx(), r.zy(), r.zz(), zero ,    
+                 t.x(),  t.y(),  t.z(),  one   }} ; 
+
+        Convert(d, a); 
+    }
+
+}
+
+
+
+
+
 
 /**
 U4Transform::Convert_TranslateThenRotate
@@ -142,8 +245,6 @@ inline void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const 
     assert( n == 0);
     memcpy( glm::value_ptr(d), a.data(), sizeof(T)*16 );  
 }
-
-
 
 
 
