@@ -723,7 +723,8 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     n->setIndex(partIdx); 
 
     nbbox bb = comp->getBBox(partIdx); 
-    bool expect_external_bbox = CSG::ExpectExternalBBox( (OpticksCSG_t) tc ); 
+    bool expect_external_bbox = CSG::ExpectExternalBBox( (OpticksCSG_t) tc );  
+    // external bbox is expected for "higher level" solids : CSG_CONVEXPOLYHEDRON , CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
 
     if( bb.is_empty()  )
     {

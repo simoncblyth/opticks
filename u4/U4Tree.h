@@ -49,6 +49,7 @@ See also:
 #include "U4Transform.h"
 #include "U4Material.hh"
 #include "U4Surface.h"
+#include "U4Solid.h"
 
 /*
 HMM: cannot have U4Tree EnvLevel because it is currently header only, 
@@ -234,6 +235,23 @@ inline void U4Tree::initSurfaces()
     }
 }
 
+/**
+U4Tree::initSolids
+-------------------
+
+Uses postorder recursive traverse, ie the "visit" is in the 
+tail after the recursive call, to match the traverse used 
+by GDML, and hence giving the same "postorder" indices
+for the solid lvIdx.
+
+The entire volume tree is recursed, but only the 
+first occurence of each LV solid gets converted 
+(because they are all the same).
+Done this way to have consistent lvIdx soIdx indexing with GDML.
+
+cf X4PhysicalVolume::convertSolids 
+
+**/
 
 inline void U4Tree::initSolids()
 {
@@ -260,28 +278,11 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 U4Tree::initSolid
 ----------------------
 
-Currently just collects names. 
-Each G4VSolid will be translated into a tree of 1 or more CSGNode
-that is managed by CSGPrim
+Decided that a transient intermediate CSG node tree using snd.h 
+is needed, as too difficult to leap direct from G4 to CSG 
+models and a dependency fire break is advantageous. 
 
-Is an intermediate CSG tree needed, or go direct to CSG ?
-
-* could bring CSGNode down to sysrap to avoid duplication ?
-
-TODO: study CSG, X4, CSG_GGeo and decide on the approach 
-
-CSG/CSGNode,CSGPrim,CSGPrimSpec
-   could easily be made headeronly and moved down to SCSGNode.h etc..
-  
-   BUT:does it make sense to create these separate from the CSGFoundry ?
-   And only add them later ? 
-
-   * CSGNode just a struct of param, so thats fine to be created
-     in isolation 
-
-   * CSGPrim is based on numNode and nodeOffset so it only 
-     makes sense in conjuction with a vector of CSGNode, 
-     that usually is CSGFoundry   
+cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 
 **/
 
@@ -290,6 +291,9 @@ inline void U4Tree::initSolid(const G4VSolid* const so )
     G4String soname_ = so->GetName() ; // bizarre: returns by value, not reference
     st->soname.push_back(soname_); 
     solids.push_back(so);
+
+    snd<double>* root = U4Solid::Convert(so); 
+    assert( root ); 
 } 
 
 

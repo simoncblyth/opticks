@@ -182,6 +182,8 @@ set(HEADERS
     strid.h 
     sfactor.h
 
+    snd.h
+
     sdigest.h
     SDigest.hh
 

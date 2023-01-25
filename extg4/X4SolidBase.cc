@@ -203,12 +203,21 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, const Opticks* ok, bool top, in
    if( m_top ) OTHER_ID->reset() ; 
 }
 
+/**
+X4SolidBase::getHintCode
+--------------------------
+
+Gets the hint via prescence of strings within the solid name eg::
+
+    CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP, CSG_EXBB
+
+**/
 
 unsigned X4SolidBase::getHintCode() const 
 { 
     return CSG::HintCode(m_name) ; 
 }  
-bool X4SolidBase::hasHint() const
+bool X4SolidBase::hasHint() const  
 {
     return getHintCode() != CSG_ZERO ; 
 }

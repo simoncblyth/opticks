@@ -297,6 +297,10 @@ struct CSG
         std::string s(name, name+2) ; 
         return s ; 
     }
+    static std::string Tag( unsigned type )
+    {
+        return Tag((OpticksCSG_t)type); 
+    }
 
     static bool Exists( OpticksCSG_t type )
     { 

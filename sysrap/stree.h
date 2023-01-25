@@ -1,11 +1,14 @@
 #pragma once
 /**
-stree.h : explore minimal approach to geometry translation
-============================================================
+stree.h : minimal representation of the structural geometry tree
+=====================================================================
 
-See also u4/U4Tree.h that populates the stree from traversals of Geant4 volumes. 
+This is exploring a minimal approach to geometry translation
 
-* this is seeking to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
+* see also u4/U4Tree.h that populates stree.h from traversals of Geant4 volumes. 
+* stree.h is part of the attempt to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
+
+
 
 Lifecycle
 ------------
@@ -23,6 +26,8 @@ CSG_GGeo/CSG_GGeo_Convert.cc
     tree used from CSG_GGeo_Convert::addInstances to stree::lookup_sensor_identifier
     the sensor_id and sensor_index are incorporated into the CSGFoundry instances 
     (so this usage is "precache")
+
+    NB : THIS IS UNHOLY MIX OF OLD AND NEW : TO BE REPLACED
 
 ggeo/tests/GGeoLoadFromDirTest.cc
     dev of the interim stree GGeo integration for sensor info
@@ -109,7 +114,7 @@ one of them with an identity transform and the nodes within it are not contiguou
 are what is left when all the repeated subtrees have been removed : so it will 
 start from root nidx:0 and will have lots of gaps. 
 
-Actually the natural place to keep map back info for the remainder 
+Actually the natural place to keep "map-back" info for the remainder 
 is withing the CSGPrim.  Normally use of that is for identity purposes is restricted 
 because tthe CSGPrim are references from all the instances but for the remainder
 the CSGPrim are only referenced once (?). TODO: check this 
@@ -1354,6 +1359,8 @@ stree::load_
 
 This is taking 0.46s for full JUNO : which is excessive as 
 not yet being used.
+
+TODO: switch over to NPFold.h for persisting 
 
 TODO: work out how the time is split and consider pruning, 
 not everything here needs to be persisted eg 

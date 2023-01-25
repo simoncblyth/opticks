@@ -643,6 +643,8 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
 CSGNode::Make
 --------------
 
+Primary use from CSG_GGeo_Convert::convertNode
+
 NB not easy to expand to more than 6 params as q1.u.z q1.u.w are otherwise engaged 
 
 **/
@@ -652,7 +654,7 @@ CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb 
     CSGNode nd = {} ;
     nd.setTypecode(typecode) ; 
     if(param6) nd.setParam( param6 );  
-    if(aabb)    nd.setAABB( aabb );  
+    if(aabb)   nd.setAABB( aabb );  
     return nd ; 
 }
 
