@@ -165,6 +165,7 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include "strid.h"
 #include "sfactor.h"
 #include "snd.hh"
+#include "scsg.hh"
 
 
 struct stree
@@ -246,6 +247,9 @@ struct stree
     //      as CSGFoundry already has inst : so the below are looking ahead 
     //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
 
+    scsg* csg ; 
+
+
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
@@ -256,7 +260,9 @@ struct stree
 
     stree();
 
+    void init(); 
     void set_level(int level_); 
+
     std::string desc() const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
@@ -390,8 +396,16 @@ inline stree::stree()
     sensor_count(0),
     subs_freq(new sfreq),
     material(new NPFold),
-    surface(new NPFold)
+    surface(new NPFold),
+    csg(new scsg)
 {
+    init(); 
+}
+
+inline void stree::init()
+{
+    std::cout << "stree::init " << std::endl ; 
+    snd::SetPOOL(csg); 
 }
 
 inline void stree::set_level(int level_)

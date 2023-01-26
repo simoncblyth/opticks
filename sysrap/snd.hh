@@ -43,8 +43,11 @@ struct SYSRAP_API snd
     static constexpr const double zero = 0. ; 
     static scsg* POOL ; 
     static void SetPOOL( scsg* pool ); 
+
+    // HMM: maybe can remove these now that are doing hookup with stree::init
     static NPFold* Serialize(); 
     static void    Import(const NPFold* fold); 
+
     static std::string Desc();
 
     static const snd* GetND(  int idx);
@@ -89,6 +92,9 @@ struct SYSRAP_API snd
     static snd Box3(double fullside); 
     static snd Box3(double fx, double fy, double fz ); 
     static snd Boolean(int op, int l, int r ); 
+    static snd Cylinder(double radius, double z1, double z2) ;
+    static snd Cone(double r1, double z1, double r2, double z2); 
+
 };
 
 

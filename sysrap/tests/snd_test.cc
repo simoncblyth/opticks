@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "stree.h"
 #include "snd.hh"
 #include "scsg.hh"
 #include "NPFold.h"
@@ -39,11 +40,9 @@ void test_Add()
     snd::Add(c); 
 }
 
-
-
 int main(int argc, char** argv)
 {
-    snd::SetPOOL(new scsg); 
+    stree st ; 
 
     if(argc == 1) 
     {
@@ -62,7 +61,6 @@ int main(int argc, char** argv)
     }
         
     std::cout << snd::Desc() ; 
-
     return 0 ; 
 }
 

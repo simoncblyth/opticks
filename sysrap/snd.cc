@@ -1,5 +1,5 @@
 
-
+#include <iostream>
 
 #include "spa.h"
 #include "sbb.h"
@@ -154,9 +154,35 @@ snd snd::Box3(double fx, double fy, double fz )  // static
     return nd ; 
 }
 
+/**
+snd::Boolean
+--------------
+
+HMM : complex shapes do not follow : l+1 == r 
+
+**/
+
 snd snd::Boolean( int op, int l, int r ) // static 
 {
     assert( l > -1 && r > -1 );
+
+    if( l+1 != r ) 
+    {
+        std::cerr 
+            << "snd::Boolean UNEXPECTED_lr " 
+            << " l: " << l 
+            << " r: " << r 
+            << std::endl 
+            ; 
+
+        std::cerr
+            << "snd::Boolean UNEXPECTED_lr " 
+            << " left:"  << std::endl << DescND(l) << std::endl << std::endl
+            << " right:" << std::endl << DescND(r) << std::endl << std::endl 
+            ; 
+
+    }
+
     assert( l+1 == r );  
 
     snd nd = {} ;
@@ -166,5 +192,27 @@ snd snd::Boolean( int op, int l, int r ) // static
  
     return nd ; 
 }
+
+snd snd::Cylinder(double radius, double z1, double z2) // static
+{
+    assert( z2 > z1 );  
+    snd nd = {} ;
+    nd.setTC(CSG_CYLINDER); 
+    nd.setPA( 0.f, 0.f, 0.f, radius, z1, z2)  ;   
+    nd.setBB( -radius, -radius, z1, +radius, +radius, z2 );   
+    return nd ; 
+}
+
+snd snd::Cone(double r1, double z1, double r2, double z2)  // static
+{   
+    assert( z2 > z1 );
+    double rmax = fmax(r1, r2) ; 
+    snd nd = {} ;
+    nd.setTC(CSG_CONE) ;
+    nd.setPA( r1, z1, r2, z2, 0., 0. ) ;
+    nd.setBB( -rmax, -rmax, z1, rmax, rmax, z2 );
+    return nd ;
+}
+
 
 

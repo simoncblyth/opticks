@@ -102,6 +102,8 @@ struct U4Solid
 
     U4Solid( const G4VSolid* solid ); 
     void init(); 
+
+    int  add(const snd& nd); 
     void setRoot(const snd& nd); 
 
     void init_Orb(); 
@@ -117,6 +119,9 @@ struct U4Solid
     void init_UnionSolid(); 
     void init_IntersectionSolid(); 
     void init_SubtractionSolid(); 
+
+    int init_Cons_(char layer); 
+
 
     static OpticksCSG_t BooleanOperator(const G4BooleanSolid* solid ); 
     static bool  IsBoolean(   const G4VSolid* solid) ;
@@ -227,11 +232,19 @@ inline void U4Solid::init()
         std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
         assert(0); 
     }
+    else
+    {
+        std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
+    }
 }
 
+inline int U4Solid::add( const snd& nd)
+{
+    return snd::Add(nd); 
+}
 inline void U4Solid::setRoot(const snd& nd)
 {
-    root = snd::Add(nd) ; 
+    root = add(nd) ; 
 }
 
 inline void U4Solid::init_Orb()
@@ -272,13 +285,88 @@ inline void U4Solid::init_Box()
 
 inline void U4Solid::init_Tubs()
 {
+    const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(solid);
+    assert(tubs); 
+
+    double rmin = tubs->GetInnerRadius()/CLHEP::mm ; 
+    double rmax = tubs->GetOuterRadius()/CLHEP::mm ; 
+    double hz = tubs->GetZHalfLength()/CLHEP::mm ;  
+
+    snd outer = snd::Cylinder(rmax, -hz, hz );
+
+    bool has_inner = rmin > 0. ; 
+
+    if(has_inner == false)
+    {
+        setRoot(outer); 
+    }
+    else
+    {
+        int idx_outer = add(outer) ; 
+
+        bool   do_nudge_inner = true ; 
+        double nudge_inner = 0.01 ;
+        double dz = do_nudge_inner ? hz*nudge_inner : 0. ; 
+
+        snd inner = snd::Cylinder(rmin, -(hz+dz), hz+dz );  
+        int idx_inner = add(inner); 
+
+        snd nd =  snd::Boolean( CSG_DIFFERENCE, idx_outer, idx_inner ); 
+        setRoot(nd); 
+    }
+
 } 
+
 inline void U4Solid::init_Polycone()
 {
 } 
+
+inline int U4Solid::init_Cons_(char layer)
+{
+    assert( layer == 'I' || layer == 'O' ); 
+    const G4Cons* cone = dynamic_cast<const G4Cons*>(solid);
+    assert(cone);  
+
+    double rmax1    = cone->GetOuterRadiusMinusZ()/CLHEP::mm ;
+    double rmax2    = cone->GetOuterRadiusPlusZ()/CLHEP::mm  ;
+    
+    double rmin1    = cone->GetInnerRadiusMinusZ()/CLHEP::mm ;
+    double rmin2    = cone->GetInnerRadiusPlusZ()/CLHEP::mm  ;
+    
+    double hz       = cone->GetZHalfLength()/CLHEP::mm   ;
+
+    //double startPhi = cone->GetStartPhiAngle()/CLHEP::degree ;
+    //double deltaPhi = cone->GetDeltaPhiAngle()/CLHEP::degree ;
+    
+    double r1 = layer == 'I' ? rmin1 : rmax1 ;
+    double r2 = layer == 'I' ? rmin2 : rmax2 ;
+    double z1 = -hz ; 
+    double z2 = hz ;
+
+    if( r1 == 0. && r2 == 0. ) return -1 ; 
+
+    snd nd = snd::Cone( r1, z1, r2, z2 );  
+    return add(nd); 
+} 
+
 inline void U4Solid::init_Cons()
 {
-} 
+    int idx_outer = init_Cons_('O');  assert( idx_outer > -1 ); 
+    int idx_inner = init_Cons_('I');
+
+    if( idx_inner == -1 )  // no inner
+    {
+        root = idx_outer ;  
+    }
+    else
+    {
+        snd nd =  snd::Boolean( CSG_DIFFERENCE, idx_outer, idx_inner ); 
+        setRoot(nd); 
+    }
+}
+
+
+
 inline void U4Solid::init_Hype()
 {
 } 
@@ -357,7 +445,7 @@ inline const G4VSolid* U4Solid::Moved( G4RotationMatrix* rot, G4ThreeVector* tla
     {
         if(rot) *rot = disp->GetFrameRotation();
         if(tla) *tla = disp->GetObjectTranslation();  
-        // HMM: looks a bit fishy being inconsisent here : until look at g4-cls G4DisplacedSolid
+        // HMM: looks a bit fishy being inconsistent here : until look at g4-cls G4DisplacedSolid
     }
     return disp ? disp->GetConstituentMovedSolid() : node  ;
 }   
@@ -368,7 +456,7 @@ inline G4VSolid* U4Solid::Moved_( G4RotationMatrix* rot, G4ThreeVector* tla, G4V
     {
         if(rot) *rot = disp->GetFrameRotation();
         if(tla) *tla = disp->GetObjectTranslation();
-        // HMM: looks a bit fishy being inconsisent here : until look at g4-cls G4DisplacedSolid
+        // HMM: looks a bit fishy being inconsistent here : until look at g4-cls G4DisplacedSolid
     }
     return disp ? disp->GetConstituentMovedSolid() : node  ;
 }
@@ -418,11 +506,27 @@ U4Solid::init_DisplacedSolid
 ------------------------------
 
 When booleans are created with transforms the right hand side 
-gets wrapped into a DisplacedSolid. 
+gets wrapped into a DisplacedSolid.:: 
+
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Box root 57
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Box root 58
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Dis root 58
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Uni root 59
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Box root 60
+    U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Dis root 60
+
+
+* "Dis" root not incremented ? 
 
 **/
 inline void U4Solid::init_DisplacedSolid()
 {
+    const G4DisplacedSolid* disp = static_cast<const G4DisplacedSolid*>(solid);
+    assert(disp); 
+
+    glm::tmat4x4<double> xf(1.) ; 
+    U4Transform::GetDispTransform( xf, disp );     
+
     const G4VSolid* moved = Moved(solid); 
     assert(moved); 
 
@@ -432,17 +536,10 @@ inline void U4Solid::init_DisplacedSolid()
     int m = Convert( moved ); 
     assert(m > -1); 
 
-    const G4DisplacedSolid* disp = static_cast<const G4DisplacedSolid*>(solid);
-    assert(disp); 
-
-    glm::tmat4x4<double> xf(1.) ; 
-    U4Transform::GetDispTransform( xf, disp );     
-
-    snd* nd = snd::GetND_(m);
-    assert(nd);   
+    snd* nd = snd::GetND_(m);  assert(nd);   
     nd->setXF(xf); 
 
-    root = m ; 
+    root = m ; // HMM : IS THIS NEEDED ?  
 } 
 
 inline std::string U4Solid::desc() const 
