@@ -22,6 +22,14 @@ Usage requires initializing the static "pools"::
     std::vector<sxf> snd::xform = {} ; 
     std::vector<sbb> snd::aabb  = {} ; 
 
+TODO: 
+
+* its problematic that on stack expts setting Param, AABB, XForm will write into the global pool  
+* need control of pool in use + avoiding static initialization requirement, scsg.{hh,cc} ?
+* how about convexpolyhedron with planes ?
+* how about polycone ?
+* how about multi union ?
+
 **/
 
 #include <string>
@@ -109,14 +117,19 @@ struct SYSRAP_API snd
     static std::vector<sbb>   aabb ; 
     static std::vector<sxf>   xform ; 
 
-    static int Add(const snd& nd ); 
+    static int  Add(const snd& nd ); 
+    static snd* Node(int idx);  // CAUTION: dont retain snd pointers, may go stale from reallocation
+    static int  NodeXForm(int idx); 
+
     static std::string Brief(); 
     static std::string Desc(); 
     static NPFold* Serialize(); 
     static void    Import(const NPFold* fold); 
 
     template<typename T>
-    static std::string Desc(int idx, const std::vector<T>& vec); 
+    static std::string Desc_(int idx, const std::vector<T>& vec); 
+    static std::string Desc(int idx); 
+
 
     static constexpr const int N = 6 ;
     int tc ;  // typecode
@@ -130,6 +143,7 @@ struct SYSRAP_API snd
 
     void init(); 
     void setTypecode( unsigned tc ); 
+
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
     void setXForm( const glm::tmat4x4<double>& t ); 
@@ -152,6 +166,18 @@ inline int snd::Add(const snd& nd ) // static
     node.push_back(nd); 
     return p ; 
 }
+inline snd* snd::Node(int idx) // static
+{
+    assert( idx < int(node.size()) ); 
+    return idx < 0 ? nullptr : &node[idx] ; 
+}
+inline int snd::NodeXForm(int idx) 
+{
+    const snd* n = Node(idx); 
+    return n ? n->xf : -1 ; 
+}
+
+
 inline std::string snd::Brief() // static
 {
     std::stringstream ss ; 
@@ -195,16 +221,18 @@ inline void snd::Import(const NPFold* fold) // static
 
 
 template<typename T>
-inline std::string snd::Desc(int idx, const std::vector<T>& vec)   // static 
+inline std::string snd::Desc_(int idx, const std::vector<T>& vec)   // static 
 {
     int w = 3 ; 
+    int num_obj = vec.size() ; 
+
     std::stringstream ss ; 
     ss << T::NAME << ":" << std::setw(w) << idx << " " ;  
     if(idx < 0) 
     {
         ss << "(none)" ; 
     }
-    else if( idx >= vec.size() )
+    else if( idx >= num_obj )
     {
         ss << "(invalid)" ; 
     }
@@ -216,6 +244,10 @@ inline std::string snd::Desc(int idx, const std::vector<T>& vec)   // static
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline std::string snd::Desc(int idx){ return Desc_<snd>(idx, node); }
+
+
 
 inline void snd::init()
 {
@@ -270,16 +302,15 @@ inline std::string snd::brief() const
 
 inline std::string snd::desc() const 
 {
-    int w = 3 ; 
     std::stringstream ss ; 
     ss 
        << brief() << std::endl  
-       << Desc<spa>(pa, param) << std::endl  
-       << Desc<sbb>(bb, aabb ) << std::endl 
-       << Desc<sxf>(xf, xform) << std::endl 
+       << Desc_<spa>(pa, param) << std::endl  
+       << Desc_<sbb>(bb, aabb ) << std::endl 
+       << Desc_<sxf>(xf, xform) << std::endl 
        ; 
 
-    for(int i=0 ; i < nc ; i++) ss << Desc<snd>(fc+i, node) << std::endl ; 
+    for(int i=0 ; i < nc ; i++) ss << Desc_<snd>(fc+i, node) << std::endl ; 
 
     std::string str = ss.str(); 
     return str ; 

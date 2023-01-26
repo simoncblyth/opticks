@@ -212,7 +212,7 @@ struct stree
     std::vector<std::string> bdname ; 
 
     std::vector<std::string> soname ;       // unique solid names
-    std::vector<snd*>        solids ;       // transient CSG roots for each solid  
+    std::vector<int>         solids ;       // snd idx 
 
     std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  

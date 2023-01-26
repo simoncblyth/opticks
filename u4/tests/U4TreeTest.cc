@@ -1,5 +1,16 @@
 #include "OPTICKS_LOG.hh"
 
+
+#include "snd.h"
+std::vector<snd> snd::node  = {} ; 
+std::vector<spa> snd::param = {} ; 
+std::vector<sxf> snd::xform = {} ; 
+std::vector<sbb> snd::aabb  = {} ; 
+// HMM: how to avoid ? 
+
+
+
+
 #include "SPath.hh"
 #include "SSys.hh"
 #include "U4GDML.h"

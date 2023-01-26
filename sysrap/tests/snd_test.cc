@@ -7,6 +7,7 @@ std::vector<snd> snd::node  = {} ;
 std::vector<spa> snd::param = {} ; 
 std::vector<sxf> snd::xform = {} ; 
 std::vector<sbb> snd::aabb  = {} ; 
+// TODO: avoid this
 
 
 const char* FOLD = getenv("FOLD"); 
@@ -45,7 +46,7 @@ void test_Add()
 
 int main(int argc, char** argv)
 {
-    if( argc == 1 ) 
+    if(argc == 1) 
     {
         //test_empty(); 
         test_Add(); 

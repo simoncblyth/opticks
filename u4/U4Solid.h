@@ -98,7 +98,7 @@ struct U4Solid
 
     static int          Type(const G4VSolid* solid ) ;  
     static const char*  Tag( int type ) ;   
-    static snd*         Convert(const G4VSolid* solid ) ; 
+    static int          Convert(const G4VSolid* solid ) ; 
 
     U4Solid( const G4VSolid* solid ); 
     void init(); 
@@ -139,7 +139,7 @@ struct U4Solid
     // members
     const G4VSolid* solid ; 
     int             type ;
-    snd*            root ;     
+    int             root ;     
 };
 
 inline int U4Solid::Type(const G4VSolid* solid)   // static 
@@ -187,7 +187,7 @@ inline const char* U4Solid::Tag(int type)   // static
     return tag ; 
 }
 
-inline snd* U4Solid::Convert(const G4VSolid* solid) // static
+inline int U4Solid::Convert(const G4VSolid* solid) // static
 {
     U4Solid so(solid); 
     return so.root ; 
@@ -197,7 +197,7 @@ inline U4Solid::U4Solid(const G4VSolid* solid_)
     :
     solid(solid_),
     type(Type(solid)),
-    root(nullptr)
+    root(-1)
 {
     init() ; 
 }
@@ -222,7 +222,7 @@ inline void U4Solid::init()
         case _G4DisplacedSolid    : init_DisplacedSolid()        ; break ; 
     } 
 
-    if(root == nullptr)
+    if(root == -1)
     {
         std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
         assert(0); 
@@ -231,7 +231,7 @@ inline void U4Solid::init()
 
 inline void U4Solid::setRoot(const snd& nd)
 {
-    root = new snd(nd) ; 
+    root = snd::Add(nd) ; 
 }
 
 inline void U4Solid::init_Orb()
@@ -399,12 +399,13 @@ inline void U4Solid::init_BooleanSolid()
     bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
     assert( !is_left_displaced && "not expecting left displacement " );
 
-    snd* l = Convert( left ); 
-    snd* r = Convert( right ); 
+    int l = Convert( left ); 
+    int r = Convert( right ); 
 
     if(is_right_displaced) 
     {
-        assert( r->tr && "expecting transform on right displaced node " ); 
+        int r_xf = snd::NodeXForm(r) ;
+        assert( r_xf > -1  && "expecting transform on right displaced node " ); 
     }
 
     snd nd = snd::Boolean( op, l, r ); 
@@ -428,22 +429,18 @@ inline void U4Solid::init_DisplacedSolid()
     bool single_disp = dynamic_cast<const G4DisplacedSolid*>(moved) == nullptr ; 
     assert(single_disp && "only single disp is expected" );
 
-    snd* m = Convert( moved ); 
-    assert(m); 
+    int m = Convert( moved ); 
+    assert(m > -1); 
 
     const G4DisplacedSolid* disp = static_cast<const G4DisplacedSolid*>(solid);
     assert(disp); 
 
-    glm::tmat4x4<double> _tr(1.) ; 
-    U4Transform::GetDispTransform( _tr, disp );     
-    m->tr = Tran<double>::ConvertFromData(glm::value_ptr(_tr) ); 
+    glm::tmat4x4<double> xf(1.) ; 
+    U4Transform::GetDispTransform( xf, disp );     
 
-    bool dump = false ;  
-    if(dump) std::cout 
-        << "U4Solid::init_DisplacedSolid" << std::endl 
-        << " m.tr.desc " << std::endl 
-        << m->tr->desc() 
-        ; 
+    snd* nd = snd::Node(m); 
+    assert(nd);   
+    nd->setXForm(xf); 
 
     root = m ; 
 } 

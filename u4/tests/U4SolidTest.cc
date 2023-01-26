@@ -5,18 +5,27 @@
 
 #include "U4Solid.h"
 
+#include "snd.h"
+std::vector<snd> snd::node  = {} ; 
+std::vector<spa> snd::param = {} ; 
+std::vector<sxf> snd::xform = {} ; 
+std::vector<sbb> snd::aabb  = {} ; 
+// HMM: how to avoid ? 
+
+
+
 void test_Orb()
 {
     G4Orb* orb = new G4Orb("orb", 100.) ; 
-    snd* nd = U4Solid::Convert(orb); 
-    if(nd) std::cout << *nd ; 
+    int nd = U4Solid::Convert(orb); 
+    std::cout << snd::Desc(nd)  ; 
 }
 
 void test_Box()
 {
     G4Box* box = new G4Box("box", 100., 200., 300. ) ; 
-    snd* nd = U4Solid::Convert(box); 
-    if(nd) std::cout << *nd ; 
+    int nd = U4Solid::Convert(box); 
+    std::cout << snd::Desc(nd)  ; 
 }
 void test_UnionSolid()
 {
@@ -31,8 +40,8 @@ void test_UnionSolid()
     G4ThreeVector tla(50.,60.,70.);
 
     G4UnionSolid* uni = new G4UnionSolid( "orb_box", orb, box, rot, tla );  
-    snd* nd = U4Solid::Convert(uni); 
-    if(nd) std::cout << *nd ; 
+    int nd = U4Solid::Convert(uni); 
+    std::cout << snd::Desc(nd)  ; 
 }
 
 int main(int argc, char** argv)

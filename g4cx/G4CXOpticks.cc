@@ -1,6 +1,15 @@
 
 #include "SLOG.hh"
 
+#include "snd.h"
+std::vector<snd> snd::node  = {} ; 
+std::vector<spa> snd::param = {} ; 
+std::vector<sxf> snd::xform = {} ; 
+std::vector<sbb> snd::aabb  = {} ; 
+// TODO: avoid this
+
+
+
 #include "scuda.h"
 #include "sqat4.h"
 #include "sframe.h"

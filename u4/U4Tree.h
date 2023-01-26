@@ -279,8 +279,8 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 U4Tree::initSolid
 ----------------------
 
-Decided that a transient intermediate CSG node tree using snd.h 
-is needed, as too difficult to leap direct from G4 to CSG 
+Decided that intermediate CSG node tree is needed, 
+as too difficult to leap direct from G4 to CSG 
 models and a dependency fire break is advantageous. 
 
 cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
@@ -290,8 +290,8 @@ cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 inline void U4Tree::initSolid(const G4VSolid* const so )
 {
     G4String name = so->GetName() ; // bizarre: returns by value, not reference
-    snd* root = U4Solid::Convert(so); 
-    assert( root ); 
+    int root = U4Solid::Convert(so); 
+    assert( root > -1 ); 
 
     solids.push_back(so);
     st->soname.push_back(name); 

@@ -11,7 +11,7 @@ arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
-        -std=c++11 -lstdc++ \
+        -std=c++11 -lstdc++ -Wsign-compare -Wunused-variable \
         -I.. \
         -I/usr/local/cuda/include \
         -I$OPTICKS_PREFIX/externals/glm/glm \
