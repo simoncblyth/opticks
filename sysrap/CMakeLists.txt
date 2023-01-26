@@ -105,6 +105,10 @@ set(SOURCES
 
     SMath.cc
 
+    snd.cc
+    scsg.cc
+
+
     SEvent.cc
     SGenstep.cc
     SFrameGenstep.cc
@@ -182,8 +186,13 @@ set(HEADERS
     strid.h 
     sfactor.h
 
-    snd.h
-
+    snd.hh
+    scsg.hh
+ 
+    spa.h
+    sxf.h
+    sbb.h
+    
     sdigest.h
     SDigest.hh
 

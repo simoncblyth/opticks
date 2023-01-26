@@ -19,14 +19,6 @@ will be very slow and write huge amounts of output.
 #include "OPTICKS_LOG.hh"
 #include "SPath.hh"
 
-#include "snd.h"
-std::vector<snd> snd::node  = {} ; 
-std::vector<spa> snd::param = {} ; 
-std::vector<sxf> snd::xform = {} ; 
-std::vector<sbb> snd::aabb  = {} ; 
-// HMM: how to avoid ? 
-
-
 
 #include "U4VolumeMaker.hh"
 #include "U4Simtrace.h"

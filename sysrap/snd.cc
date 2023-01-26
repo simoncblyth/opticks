@@ -8,6 +8,9 @@
 #include "scsg.hh"
 #include "snd.hh"
 
+
+scsg* snd::POOL = nullptr  ; 
+
 void snd::SetPOOL( scsg* pool )
 {
     POOL = pool ; 

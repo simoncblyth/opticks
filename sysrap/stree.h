@@ -164,7 +164,7 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include "sstr.h"
 #include "strid.h"
 #include "sfactor.h"
-#include "snd.h"
+#include "snd.hh"
 
 
 struct stree

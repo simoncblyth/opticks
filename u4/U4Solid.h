@@ -33,7 +33,7 @@ U4SolidTree
 
 
 #include "scuda.h"
-#include "snd.h"
+#include "snd.hh"
 #include "stran.h"
 #include "OpticksCSG.h"
 
@@ -396,17 +396,20 @@ inline void U4Solid::init_BooleanSolid()
     G4VSolid*    right = const_cast<G4VSolid*>(boo->GetConstituentSolid(1));
 
     bool is_left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != nullptr ;
-    bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
+    //bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
     assert( !is_left_displaced && "not expecting left displacement " );
 
     int l = Convert( left ); 
     int r = Convert( right ); 
 
+    /*
     if(is_right_displaced) 
     {
         int r_xf = snd::NodeXForm(r) ;
         assert( r_xf > -1  && "expecting transform on right displaced node " ); 
     }
+    */
+ 
 
     snd nd = snd::Boolean( op, l, r ); 
     setRoot(nd);
@@ -438,7 +441,7 @@ inline void U4Solid::init_DisplacedSolid()
     glm::tmat4x4<double> xf(1.) ; 
     U4Transform::GetDispTransform( xf, disp );     
 
-    snd* nd = snd::Node(m); 
+    snd* nd = nullptr ; // snd::Node(m);   need the pool ?
     assert(nd);   
     nd->setXForm(xf); 
 
