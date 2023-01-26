@@ -2,13 +2,11 @@
 
 #include <iostream>
 
-#include "snd.h"
-std::vector<snd> snd::node  = {} ; 
-std::vector<spa> snd::param = {} ; 
-std::vector<sxf> snd::xform = {} ; 
-std::vector<sbb> snd::aabb  = {} ; 
-// TODO: avoid this
+#include "snd.hh"
+#include "scsg.hh"
+#include "NPFold.h"
 
+scsg* snd::POOL = nullptr ; 
 
 const char* FOLD = getenv("FOLD"); 
 
@@ -24,9 +22,9 @@ void test_empty()
     // NB setting param and aabb adds to the pools 
     //    even when no nodes are added 
 
-    std::cout << " a " << a << std::endl ; 
-    std::cout << " b " << b << std::endl ; 
-    std::cout << " c " << c << std::endl ; 
+    std::cout << " a " << a.desc() << std::endl ; 
+    std::cout << " b " << b.desc() << std::endl ; 
+    std::cout << " c " << c.desc() << std::endl ; 
 }
 void test_Add()
 {
@@ -46,12 +44,15 @@ void test_Add()
 
 int main(int argc, char** argv)
 {
+    scsg* POOL = new scsg ; 
+    snd::SetPOOL(POOL); 
+
     if(argc == 1) 
     {
         //test_empty(); 
         test_Add(); 
 
-        NPFold* fold = snd::Serialize() ; 
+        NPFold* fold = POOL->serialize() ; 
         std::cout << " save snd to FOLD " << FOLD << std::endl ;  
         fold->save(FOLD); 
     }
@@ -59,10 +60,10 @@ int main(int argc, char** argv)
     {
         NPFold* fold = NPFold::Load(FOLD) ; 
         std::cout << " load snd from FOLD " << FOLD << std::endl ;  
-        snd::Import(fold);  
+        POOL->import(fold);  
     }
         
-    std::cout << snd::Desc() ; 
+    std::cout << POOL->desc() ; 
 
     return 0 ; 
 }

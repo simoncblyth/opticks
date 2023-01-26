@@ -10,7 +10,7 @@ defarg="build_run_load_ana"
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc \
+    gcc $name.cc ../snd.cc ../scsg.cc \
         -std=c++11 -lstdc++ -Wsign-compare -Wunused-variable \
         -I.. \
         -I/usr/local/cuda/include \
