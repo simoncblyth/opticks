@@ -396,20 +396,17 @@ inline void U4Solid::init_BooleanSolid()
     G4VSolid*    right = const_cast<G4VSolid*>(boo->GetConstituentSolid(1));
 
     bool is_left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != nullptr ;
-    //bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
+    bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
     assert( !is_left_displaced && "not expecting left displacement " );
 
     int l = Convert( left ); 
     int r = Convert( right ); 
 
-    /*
-    if(is_right_displaced) 
-    {
-        int r_xf = snd::NodeXForm(r) ;
-        assert( r_xf > -1  && "expecting transform on right displaced node " ); 
-    }
-    */
- 
+    int l_xf = snd::GetNDXF(l);
+    int r_xf = snd::GetNDXF(r);
+
+    assert( l_xf == -1  && "NOT expecting transform on left node " ); 
+    if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
 
     snd nd = snd::Boolean( op, l, r ); 
     setRoot(nd);
@@ -441,9 +438,9 @@ inline void U4Solid::init_DisplacedSolid()
     glm::tmat4x4<double> xf(1.) ; 
     U4Transform::GetDispTransform( xf, disp );     
 
-    snd* nd = nullptr ; // snd::Node(m);   need the pool ?
+    snd* nd = snd::GetND_(m);
     assert(nd);   
-    nd->setXForm(xf); 
+    nd->setXF(xf); 
 
     root = m ; 
 } 
@@ -455,7 +452,7 @@ inline std::string U4Solid::desc() const
        << " solid " << ( solid ? "Y" : "N" )
        << " type "  << ( type ? "Y" : "N" )
        << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
-       << " root "  << ( root ? "Y" : "N" )
+       << " root "  << root
        ; 
     std::string str = ss.str(); 
     return str ; 

@@ -5,21 +5,40 @@
 #include "sbb.h"
 #include "sxf.h"
 
+#include "OpticksCSG.h"
 #include "scsg.hh"
 #include "snd.hh"
 
-
 scsg* snd::POOL = nullptr  ; 
+void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
 
-void snd::SetPOOL( scsg* pool )
-{
-    POOL = pool ; 
-}
+NPFold* snd::Serialize(){ return POOL ? POOL->serialize() : nullptr ; }  // static 
+void    snd::Import(const NPFold* fold){ assert(POOL) ; POOL->import(fold) ; } // static 
+std::string snd::Desc(){  return POOL ? POOL->desc() : "? NO POOL ?" ; } // static 
+
+
+const snd* snd::GetND(int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
+const spa* snd::GetPA(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static
+const sxf* snd::GetXF(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } // static
+const sbb* snd::GetBB(int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
+
+int snd::GetNDXF(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
+
+snd* snd::GetND_(int idx){ return POOL ? POOL->getND_(idx) : nullptr ; } // static
+spa* snd::GetPA_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // static
+sxf* snd::GetXF_(int idx){ return POOL ? POOL->getXF_(idx) : nullptr ; } // static
+sbb* snd::GetBB_(int idx){ return POOL ? POOL->getBB_(idx) : nullptr ; } // static 
+
+std::string snd::DescND( int idx){ return POOL ? POOL->descND(idx) : "-" ; } // static
+std::string snd::DescPA( int idx){ return POOL ? POOL->descPA(idx) : "-" ; } // static
+std::string snd::DescXF( int idx){ return POOL ? POOL->descXF(idx) : "-" ; } // static
+std::string snd::DescBB( int idx){ return POOL ? POOL->descBB(idx) : "-" ; } // static
+
 
 int snd::Add(const snd& nd) // static
 {
     assert( POOL && "snd::Add MUST SET snd::SetPOOL to scsg instance first" ); 
-    return POOL->addNode(nd); 
+    return POOL->addND(nd); 
 }
 
 void snd::init()
@@ -33,29 +52,29 @@ void snd::init()
     xf = -1 ; 
 }
 
-void snd::setTypecode( unsigned _tc )
+void snd::setTC(int _tc )
 {
     init(); 
     tc = _tc ; 
 }
-void snd::setParam( double x, double y, double z, double w, double z1, double z2 )
+void snd::setPA( double x, double y, double z, double w, double z1, double z2 )
 {
-    assert( POOL && "snd::setParam MUST SET snd::SetPOOL to scsg instance first" ); 
+    assert( POOL && "snd::setPA MUST SET snd::SetPOOL to scsg instance first" ); 
     spa o = { x, y, z, w, z1, z2 } ; 
-    pa = POOL->addParam(o) ; 
+    pa = POOL->addPA(o) ; 
 }
-void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double z1 )
+void snd::setBB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
-    assert( POOL && "snd::setAABB MUST SET snd::SetPOOL to scsg instance first" ); 
+    assert( POOL && "snd::setBB MUST SET snd::SetPOOL to scsg instance first" ); 
     sbb o = {x0, y0, z0, x1, y1, z1} ; 
-    bb = POOL->addAABB(o) ; 
+    bb = POOL->addBB(o) ; 
 }
-void snd::setXForm(const glm::tmat4x4<double>& t )
+void snd::setXF(const glm::tmat4x4<double>& t )
 {
-    assert( POOL && "snd::setXForm MUST SET snd::SetPOOL to scsg instance first" ); 
+    assert( POOL && "snd::setXF MUST SET snd::SetPOOL to scsg instance first" ); 
     sxf o ; 
     o.mat = t ; 
-    xf = POOL->addXForm(o) ; 
+    xf = POOL->addXF(o) ; 
 }
 
 
@@ -81,12 +100,12 @@ std::string snd::desc() const
     std::stringstream ss ; 
     ss 
        << brief() << std::endl  
-       << POOL->descPA(pa) << std::endl  
-       << POOL->descBB(bb) << std::endl 
-       << POOL->descXF(xf) << std::endl 
+       << DescPA(pa) << std::endl  
+       << DescBB(bb) << std::endl 
+       << DescXF(xf) << std::endl 
        ; 
 
-    for(int i=0 ; i < nc ; i++) ss << POOL->descND(fc+i) << std::endl ; 
+    for(int i=0 ; i < nc ; i++) ss << DescND(fc+i) << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -101,9 +120,9 @@ snd snd::Sphere(double radius)  // static
 {
     assert( radius > zero ); 
     snd nd = {} ;
-    nd.setTypecode(CSG_SPHERE) ; 
-    nd.setParam( zero, zero, zero, radius, zero, zero );  
-    nd.setAABB(  -radius, -radius, -radius,  radius, radius, radius  );  
+    nd.setTC(CSG_SPHERE) ; 
+    nd.setPA( zero, zero, zero, radius, zero, zero );  
+    nd.setBB(  -radius, -radius, -radius,  radius, radius, radius  );  
     return nd ;
 }
 
@@ -112,9 +131,9 @@ snd snd::ZSphere(double radius, double z1, double z2)  // static
     assert( radius > zero ); 
     assert( z2 > z1 );  
     snd nd = {} ;
-    nd.setTypecode(CSG_ZSPHERE) ; 
-    nd.setParam( zero, zero, zero, radius, z1, z2 );  
-    nd.setAABB(  -radius, -radius, z1,  radius, radius, z2  );  
+    nd.setTC(CSG_ZSPHERE) ; 
+    nd.setPA( zero, zero, zero, radius, z1, z2 );  
+    nd.setBB(  -radius, -radius, z1,  radius, radius, z2  );  
     return nd ;
 }
 
@@ -129,19 +148,19 @@ snd snd::Box3(double fx, double fy, double fz )  // static
     assert( fz > 0. );  
 
     snd nd = {} ;
-    nd.setTypecode(CSG_BOX3) ; 
-    nd.setParam( fx, fy, fz, 0.f, 0.f, 0.f );  
-    nd.setAABB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
+    nd.setTC(CSG_BOX3) ; 
+    nd.setPA( fx, fy, fz, 0.f, 0.f, 0.f );  
+    nd.setBB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
     return nd ; 
 }
 
-snd snd::Boolean( OpticksCSG_t op, int l, int r ) // static 
+snd snd::Boolean( int op, int l, int r ) // static 
 {
     assert( l > -1 && r > -1 );
     assert( l+1 == r );  
 
     snd nd = {} ;
-    nd.setTypecode( op ); 
+    nd.setTC( op ); 
     nd.nc = 2 ; 
     nd.fc = l ;
  

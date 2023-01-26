@@ -7,7 +7,6 @@
 #include "snd.hh"
 #include "scsg.hh"
 
-
 int test_Orb()
 {
     G4Orb* orb = new G4Orb("orb", 100.) ; 
@@ -36,19 +35,18 @@ int test_UnionSolid()
 
 int main(int argc, char** argv)
 {
-    scsg* POOL = new scsg ; 
-    snd::SetPOOL(POOL); 
+    snd::SetPOOL(new scsg); 
 
     int idx = -1 ; 
 
     idx = test_Orb(); 
-    std::cout << POOL->descND(idx); 
+    std::cout << snd::DescND(idx); 
 
     idx = test_Box(); 
-    std::cout << POOL->descND(idx); 
+    std::cout << snd::DescND(idx); 
 
     idx = test_UnionSolid(); 
-    std::cout << POOL->descND(idx); 
+    std::cout << snd::DescND(idx); 
 
 
     return 0 ; 
