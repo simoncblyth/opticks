@@ -318,15 +318,103 @@ inline int U4Solid::init_Sphere_(char layer)
     return z_slice ? snd::ZSphere( radius, zmin, zmax ) : snd::Sphere(radius ) ; 
 }
 
+
+/**
+U4Solid::init_Ellipsoid
+--------------------------
+
+Implemented using a sphere with an associated scale transform.
+The sphere radius is picked to be the ZSemiAxis with scale factors being::
+
+    ( XSemiAxis/ZSemiAxis, YSemiAxis/ZSemiAxis, ZSemiAxis/ZSemiAxis )
+    ( XSemiAxis/ZSemiAxis, YSemiAxis/ZSemiAxis, 1. )
+ 
+This means that for a PMT bulb like shape flattened in Z the scale factors might be::
+
+     ( 1.346, 1.346, 1.00 )
+
+So the underlying sphere is being expanded equally in x and y directions
+with z unscaled.   
+
+**/
+
 inline void U4Solid::init_Ellipsoid()
 {
+    const G4Ellipsoid* ellipsoid = static_cast<const G4Ellipsoid*>(solid);
+    assert(ellipsoid);
+
+    double sx = ellipsoid->GetSemiAxisMax(0)/CLHEP::mm ;
+    double sy = ellipsoid->GetSemiAxisMax(1)/CLHEP::mm ;
+    double sz = ellipsoid->GetSemiAxisMax(2)/CLHEP::mm ;
+
+    glm::tvec3<double> sc( sx/sz, sy/sz, 1. ) ;   // unity scaling in z, so z-coords are unaffected  
+    glm::tmat4x4<double> scale(1.); 
+    U4Transform::GetScaleTransform(scale, sc.x, sc.y, sc.z ); 
+
+
+    double zcut1 = ellipsoid->GetZBottomCut()/CLHEP::mm ;
+    double zcut2 = ellipsoid->GetZTopCut()/CLHEP::mm ;
+
+    double zmin = zcut1 > -sz ? zcut1 : -sz ; 
+    double zmax = zcut2 <  sz ? zcut2 :  sz ; 
+    assert( zmax > zmin ) ;  
+
+    bool upper_cut = zmax <  sz ;
+    bool lower_cut = zmin > -sz ;
+    bool zslice = lower_cut || upper_cut ;
+
+    std::cerr
+        << "U4Solid::init_Ellipsoid"
+        << " upper_cut " << upper_cut
+        << " lower_cut " << lower_cut
+        << " zcut1 " << zcut1
+        << " zcut2 " << zcut2
+        << " zmin " << zmin
+        << " zmax " << zmax
+        << " sx " << sx
+        << " sy " << sy
+        << " sz " << sz
+        << " zslice " << ( zslice ? "YES" : "NO" )
+        ;
+
+
+    if( upper_cut == false && lower_cut == false )
+    {
+        root = snd::Sphere(sz) ;
+    }
+    else if( upper_cut == true && lower_cut == true )
+    {
+        root = snd::ZSphere(sz, zmin, zmax) ;
+    }
+    else if ( upper_cut == false && lower_cut == true )   // PMT mask uses this 
+    {
+        double zmax_safe = zmax + 0.1 ;
+        root = snd::ZSphere( sz, zmin, zmax_safe )  ;
+    }
+    else if ( upper_cut == true && lower_cut == false )
+    {
+        double zmin_safe = zmin - 0.1 ; 
+        root = snd::ZSphere( sz, zmin_safe, zmax )  ;
+    }
+
+    // zmin_safe/zmax_safe use safety offset when there is no cut 
+    // this avoids rare apex(nadir) hole bug  
+    // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
+
+    snd::SetNodeXForm(root, scale );  
+
+
 }
+
+
 inline void U4Solid::init_Hype()
 {
 } 
 inline void U4Solid::init_MultiUnion()
 {
 } 
+
+
 inline void U4Solid::init_Torus()
 {
     assert(0); 
@@ -540,7 +628,14 @@ inline void U4Solid::init_BooleanSolid()
     int l_xf = snd::GetNodeXForm(l);
     int r_xf = snd::GetNodeXForm(r);
 
-    assert( l_xf == -1  && "NOT expecting transform on left node " ); 
+    if( l_xf > -1 ) std::cout 
+        << "U4Solid::init_BooleanSolid "
+        << " observe transform on left node " 
+        << " l_xf " << l_xf
+        << std::endl 
+        ; 
+
+    //assert( l_xf == -1  && "NOT expecting transform on left node " ); 
     if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
 
     root = snd::Boolean( op, l, r ); 
@@ -584,9 +679,7 @@ inline void U4Solid::init_DisplacedSolid()
 
     int m = Convert( moved ); 
     assert(m > -1); 
-
-    snd* nd = snd::GetNode_(m);  assert(nd);   
-    nd->setXForm(xf); 
+    snd::SetNodeXForm(m, xf);  
 
     root = m ;    // HMM : Dis ARE FUNNY NODES THAT JUST ACT TO HOLD THE TRANSFORM 
 } 

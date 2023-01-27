@@ -22,7 +22,7 @@ struct U4Transform
     static void GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; // MOST USED BY OPTICKS
     static void GetFrameTransform( glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; 
     static void GetDispTransform(  glm::tmat4x4<double>& tr, const G4DisplacedSolid* disp );  
-
+    static void GetScaleTransform( glm::tmat4x4<double>& tr, double sx, double sy, double sz ); 
 
     template<typename T>
     static void Convert(glm::tmat4x4<T>& dst,  const std::array<T,16>& src ); 
@@ -109,6 +109,16 @@ inline void U4Transform::GetDispTransform(glm::tmat4x4<double>& tr, const G4Disp
 
     Convert_RotateThenTranslate(tr, rot, tla, true );  
 }
+
+
+inline void U4Transform::GetScaleTransform( glm::tmat4x4<double>& tr, double sx, double sy, double sz )
+{
+    glm::tvec3<double> sc(sx, sy, sz); 
+    tr = glm::scale(glm::tmat4x4<double>(1.), sc) ; 
+}
+
+
+
 
 
 template<typename T>

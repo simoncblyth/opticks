@@ -20,13 +20,8 @@ Usage requires the scsg.hh POOL. That is now done at stree instanciation::
 
 TODO: 
 
-* EXACTLY follow the snode.h tree serialization approach 
-  using precisely same members and traversal approach 
-  as far as possible (its a little different in that have lots
-  of roots not just one)
-
+* add polycone ZNudge and tests ?
 * how about convexpolyhedron with planes ? just add spl ? 
-* how about polycone ?
 * how about multiunion ?
 
 **/
@@ -48,7 +43,7 @@ struct SYSRAP_API snd
     static scsg* POOL ; 
     static void SetPOOL( scsg* pool ); 
 
-    // HMM: maybe can remove these now that are doing hookup with stree::init
+    // HMM: maybe can remove these now that are doing scsg.hh POOL hookup with stree::init
     static NPFold* Serialize(); 
     static void    Import(const NPFold* fold); 
 
@@ -59,7 +54,9 @@ struct SYSRAP_API snd
     static const sxf* GetXForm( int idx);
     static const sbb* GetAABB(  int idx);
 
-    static int GetNodeXForm(int idx) ; 
+    static int  GetNodeXForm(int idx) ; 
+    static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
+
     //static void SetLVID(int idx, int lvid);  // label node tree 
 
     static snd* GetNode_(int idx);
@@ -73,6 +70,7 @@ struct SYSRAP_API snd
     static std::string DescAABB( int idx);
 
     static int Add(const snd& nd); 
+
 
 
     int index ; 
@@ -89,6 +87,9 @@ struct SYSRAP_API snd
     int param ; 
     int aabb ; 
     int xform ; 
+
+
+
 
     void init(); 
     std::string brief() const ; 

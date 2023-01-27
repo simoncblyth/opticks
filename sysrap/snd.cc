@@ -23,6 +23,16 @@ const sxf* snd::GetXForm(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } 
 const sbb* snd::GetAABB( int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
 
 int snd::GetNodeXForm(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
+void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
+{
+    assert(POOL); 
+    assert( idx > -1 ); 
+    snd* nd = GetNode_(idx); 
+    assert( nd); 
+    nd->setXForm(tr); 
+}
+
+
 
 snd* snd::GetNode_(int idx){  return POOL ? POOL->getND_(idx) : nullptr ; } // static
 spa* snd::GetParam_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // static
@@ -117,6 +127,9 @@ void snd::setXForm(const glm::tmat4x4<double>& t )
     sxf o ; 
     o.mat = t ; 
     xform = POOL->addXF(o) ; 
+
+    // HMM: what about changing transform ? 
+    // Currently just adds another and updates the ref, "leaking" the old. 
 }
 
 double snd::zmin() const 

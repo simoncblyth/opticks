@@ -71,12 +71,24 @@ void test_Get()
     std::cout << strid::Desc_("m2w", "w2m", "m2w_w2m", m2w, w2m, m2w_w2m ) << std::endl ; 
 }
 
+void test_GetScaleTransform()
+{
+    std::cout << "test_GetScaleTransform " << std::endl ; 
+
+    glm::tmat4x4<double> scale(1.) ;  
+
+    U4Transform::GetScaleTransform(scale, 1.5, 1.5, 1.0 ); 
+
+    std::cout << " scale " << glm::to_string(scale ) << std::endl ; 
+}
+
 
 
 int main(int argc, char** argv)
 {
     //test_Get(); 
-    test_Write(); 
+    //test_Write(); 
+    test_GetScaleTransform(); 
 
     return 0 ; 
 }
