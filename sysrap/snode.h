@@ -1,9 +1,14 @@
 #pragma once
 /**
-snode.h
-=========
+snode.h : structural "volume" nodes
+=====================================
 
-Structural node residing in stree.h and populated from Geant4 by U4Tree.h 
+snode are structural nodes residing in stree.h and populated 
+from Geant4 volumes by U4Tree.h U4Tree::initNodes_r
+
+For traversal examples see::
+
+   stree::get_children
 
 **/
 

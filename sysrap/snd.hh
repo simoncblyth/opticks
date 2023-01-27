@@ -3,27 +3,31 @@
 snd.hh : constituent CSG node in preparation
 ============================================= 
 
-snd.h intended as minimal first step, transiently holding 
-parameters of G4VSolid CSG trees for subsequent use by CSGNode::Make
+snd.h intended as minimal first step, holding parameters of 
+G4VSolid CSG trees for subsequent use by CSGNode::Make
 and providing dependency fire break between G4 and CSG 
 
-* initially thought snd.h would be transient with no persisting
-  and no role on GPU. But that is inconsistent with the rest of stree.h and also 
-  want to experiment with non-binary intersection in future, 
-  so can use snd.h as testing ground for non-binary solid persisting.  
+* snd.h instances are one-to-one related to CSG/CSGNode.h
 
-* snd.h instances are one-to-one related with CSG/CSGNode.h, 
+* initially thought snd.h would be transient with no persisting and no role on GPU. 
+  But that is inconsistent with the rest of stree.h and also want to experiment 
+  with non-binary intersection in future, so are using snd.h to test non-binary 
+  solid persisting following the same approach as snode.h structural nodes
 
-Usage requires initializing the static "pools"::
+Usage requires the scsg.hh POOL. That is now done at stree instanciation::
 
-    #include "snd.hh"
-    scsg* snd::POOL = new scsg ; 
+    snd::SetPOOL(new scsg); 
 
 TODO: 
 
+* EXACTLY follow the snode.h tree serialization approach 
+  using precisely same members and traversal approach 
+  as far as possible (its a little different in that have lots
+  of roots not just one)
+
 * how about convexpolyhedron with planes ? just add spl ? 
 * how about polycone ?
-* how about multi union ?
+* how about multiunion ?
 
 **/
 
@@ -50,51 +54,59 @@ struct SYSRAP_API snd
 
     static std::string Desc();
 
-    static const snd* GetND(  int idx);
-    static const spa* GetPA( int idx);
-    static const sxf* GetXF( int idx);
-    static const sbb* GetBB(  int idx);
+    static const snd* GetNode(  int idx);
+    static const spa* GetParam( int idx);
+    static const sxf* GetXForm( int idx);
+    static const sbb* GetAABB(  int idx);
 
-    static int GetNDXF(int idx) ; 
+    static int GetNodeXForm(int idx) ; 
 
-    static snd* GetND_(int idx);
-    static spa* GetPA_(int idx);
-    static sxf* GetXF_(int idx);
-    static sbb* GetBB_(int idx);
+    static snd* GetNode_(int idx);
+    static spa* GetParam_(int idx);
+    static sxf* GetXForm_(int idx);
+    static sbb* GetAABB_(int idx);
 
-    static std::string DescND(int idx);
-    static std::string DescPA(int idx);
-    static std::string DescXF(int idx);
-    static std::string DescBB(int idx);
+    static std::string Desc(int idx);
+    static std::string DescParam(int idx);
+    static std::string DescXForm(int idx);
+    static std::string DescAABB( int idx);
 
     static int Add(const snd& nd); 
 
-    static constexpr const int N = 6 ;
-    int tc ;  // typecode
-    int fc ;  // first_child
-    int nc ;  // num_child  
-    int pa ;  // ref param
-    int bb ;  // ref bbox
-    int xf ;  // ref transform 
+
+    int index ; 
+    int depth ; 
+    int sibdex ;  // 0-based sibling index 
+    int parent ; 
+
+    int num_child ; 
+    int first_child ; 
+    int next_sibling ; 
+    int lvid ;
+
+    int typecode ; 
+    int param ; 
+    int aabb ; 
+    int xform ; 
 
     void init(); 
-    void setTC( int tc ); 
-    void setPA( double x,  double y,  double z,  double w,  double z1, double z2 ); 
-    void setBB( double x0, double y0, double z0, double x1, double y1, double z1 );
-    void setXF( const glm::tmat4x4<double>& t ); 
-
     std::string brief() const ; 
     std::string desc() const ; 
 
-    // signatures need to match CSGNode where these param will end up 
-    static snd Sphere(double radius); 
-    static snd ZSphere(double radius, double z1, double z2); 
-    static snd Box3(double fullside); 
-    static snd Box3(double fx, double fy, double fz ); 
-    static snd Boolean(int op, int l, int r ); 
-    static snd Cylinder(double radius, double z1, double z2) ;
-    static snd Cone(double r1, double z1, double r2, double z2); 
+    void setTypecode( int tc ); 
+    void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
+    void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
+    void setXForm( const glm::tmat4x4<double>& t ); 
 
+    // signatures need to match CSGNode where these param will end up 
+    static int Boolean(int op, int l, int r ); 
+    static int Cylinder(double radius, double z1, double z2) ;
+    static int Cone(double r1, double z1, double r2, double z2); 
+    static int Sphere(double radius); 
+    static int ZSphere(double radius, double z1, double z2); 
+    static int Box3(double fullside); 
+    static int Box3(double fx, double fy, double fz ); 
+    static int Zero(double  x,  double y,  double z,  double w,  double z1, double z2); 
 };
 
 

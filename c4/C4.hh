@@ -3,17 +3,22 @@
 C4.hh : Geometry Translation without the GGeo intermediate model
 ====================================================================
 
-* C4 is short for "CSG_U4"
+* NOW LOOKING LIKE C4 PACKAGE WILL NOT BE NEEDED 
 
-* U4/U4Tree has done lots of the heavy lifting already, continue 
-  doing as much of the translation impl in U4 as possible 
-  with only the final stage that needs CSG done up here 
+  * U4Tree will soon be able to populate stree.h with all the geometry info
+  * then can populate CSGFoundry entirely from stree.h using a new "CSG/CSGFromTree" 
+  * THUS LOOKS LIKE NO NEED FOR A PACKAGE DEPENDING ON BOTH Geant4 AND CSG 
+  * AN INTERMEDIARY IS STILL NEEDED : stree.h/snd/snode EG FOR COINCIDENCE AVOIDANCE  
 
-* Also continue the pattern from U4Tree of keeping persist types
-  at lower sysrap dependency level eg SSim/stree/NP/NPFold
+    * BUT IT CAN BE MINIMAL 
+    * BENEFIT FROM PRE-KNOWLEDGE OF ENDPOINT CSG/CSGFoundry MODEL  
 
 
 ::
+
+    .     U4/U4Tree            CSG
+    Geant4  --> sysrap/stree.h --> CSG/CSGFoundry
+                 (minimal)
 
     .       C4   
     Geant4 --->  CSG/CSGFoundry 
@@ -21,6 +26,23 @@ C4.hh : Geometry Translation without the GGeo intermediate model
 
             X4      CSG_GGeo
     Geant4 --->  GGeo --->  CSG/CSGFoundry 
+                (full)
+
+
+
+
+
+
+* C4 is short for "CSG_U4"
+
+* U4/U4Tree has done lots of the heavy lifting already, continue 
+  doing as much of the translation impl in U4 as possible 
+  with only the final stage that needs CSG done up here 
+
+  * NO NEED : CAN DO IT WITHIN CSG AS ALL INFO GOES TO stree.h 
+
+* Also continue the pattern from U4Tree of keeping persist types
+  at lower sysrap dependency level eg SSim/stree/NP/NPFold
 
 
 

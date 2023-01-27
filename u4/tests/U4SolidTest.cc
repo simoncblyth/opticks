@@ -40,13 +40,13 @@ int main(int argc, char** argv)
     int idx = -1 ; 
 
     idx = test_Orb(); 
-    std::cout << snd::DescND(idx); 
+    std::cout << snd::Desc(idx); 
 
     idx = test_Box(); 
-    std::cout << snd::DescND(idx); 
+    std::cout << snd::Desc(idx); 
 
     idx = test_UnionSolid(); 
-    std::cout << snd::DescND(idx); 
+    std::cout << snd::Desc(idx); 
 
 
     return 0 ; 

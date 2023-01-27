@@ -311,7 +311,8 @@ holding structural node info and transforms.
 
 inline void U4Tree::initNodes()
 {
-    initNodes_r(top, nullptr, 0, -1, -1 ); 
+    int nidx = initNodes_r(top, nullptr, 0, -1, -1 ); 
+    assert( 0 == nidx ); 
 }
 
 /**
@@ -322,12 +323,6 @@ Most of the visit is preorder before the recursive call,
 but sibling to sibling links are done within the 
 sibling loop using the node index returned by the 
 recursive call. 
-
-Initially tried to simply use lv->GetSensitiveDetector() to 
-identify sensor nodes by that is problematic because 
-the SD is not on the volume with the copyNo and this 
-use of copyNo is detector specific.  Also not all JUNO SD
-are actually sensitive. 
 
 **/
 
@@ -400,6 +395,7 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
 
 
     pvs.push_back(pv); 
+
     st->nds.push_back(nd); 
     st->digs.push_back(dig); 
     st->m2w.push_back(tr_m2w);  
@@ -415,13 +411,14 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
 
 
     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ; 
-    // record first_child nidx into parent snode
+    // record first_child nidx into parent snode by reaching up thru the recursion levels 
 
     int p_sib = -1 ; 
     int i_sib = -1 ; 
     for (int i=0 ; i < num_child ;i++ ) 
     {
-        p_sib = i_sib ;  // node index of previous child 
+        p_sib = i_sib ;    // node index of previous child gets set for i > 0
+                           //  ch_pv ch_parent_pv ch_depth ch_sibdex ch_parent    
         i_sib = initNodes_r( lv->GetDaughter(i), pv, depth+1, i, nd.index ); 
         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
     }
@@ -582,6 +579,12 @@ inline int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const
 /**
 U4Tree::identifySensitive
 ----------------------------
+
+Initially tried to simply use lv->GetSensitiveDetector() to 
+identify sensor nodes by that is problematic because 
+the SD is not on the volume with the copyNo and this 
+use of copyNo is detector specific.  Also not all JUNO SD
+are actually sensitive. 
 
 **/
 

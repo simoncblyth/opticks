@@ -1,33 +1,25 @@
 #pragma once
 /**
-U4Solid.h : Convert G4VSolid CSG trees into transient snd<double> trees
-========================================================================
+U4Solid.h : Convert G4VSolid CSG trees into snd.hh trees
+=================================================================
 
 Canonical usage from U4Tree::initSolid
 
-Looks like can base U4Solid on X4Solid with fairly minor changes:
 
-1. NNode swapped to snd<double>
-2. no equivalent to X4SolidBase consolidate the base
-3. header-only U4Entity.h based on X4Entity.{hh,cc}   
+Priors:
 
+x4/X4Solid
+   G4VSolid->NNode 
 
+u4/U4SolidTree
+   some overlap with X4Entity, tree mechanics might be better that X4Solid 
 
+npy/NNode
+   organic mess that need to leave behind 
 
-X4Solid
-    from G4VSolid into NNode 
-
-X4SolidBase
-    does little, G4 params, mainly placeholder convert methods that assert
-
-X4Entity
-    create headeronly U4Entity.h from this 
-
-NNode
-    organic mess that need to leave behind 
-
-U4SolidTree
-    some overlap with X4Entity, tree mechanics might be better that X4Solid 
+npy/NNodeUncoincide npy/NNodeNudger
+   some of this rather complex code will 
+   need to be moved to an "sndUncoincide"
 
 **/
 
@@ -102,10 +94,6 @@ struct U4Solid
 
     U4Solid( const G4VSolid* solid ); 
     void init(); 
-
-    int  add(const snd& nd); 
-    void setRoot(const snd& nd); 
-
     void init_Orb(); 
     void init_Sphere(); 
     void init_Ellipsoid(); 
@@ -120,6 +108,7 @@ struct U4Solid
     void init_IntersectionSolid(); 
     void init_SubtractionSolid(); 
 
+    int init_Sphere_(char layer); 
     int init_Cons_(char layer); 
 
 
@@ -238,26 +227,74 @@ inline void U4Solid::init()
     }
 }
 
-inline int U4Solid::add( const snd& nd)
-{
-    return snd::Add(nd); 
-}
-inline void U4Solid::setRoot(const snd& nd)
-{
-    root = add(nd) ; 
-}
 
 inline void U4Solid::init_Orb()
 {
     const G4Orb* orb = dynamic_cast<const G4Orb*>(solid);
     assert(orb);
     double radius = orb->GetRadius()/CLHEP::mm ;
-    snd nd = snd::Sphere(radius) ; 
-    setRoot(nd); 
+    root = snd::Sphere(radius) ; 
 }
 
 inline void U4Solid::init_Sphere()
 {
+    int outer = init_Sphere_('O');  assert( outer > -1 ); 
+    int inner = init_Sphere_('I');
+    root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
+}
+
+/**
+U4Solid::init_Sphere_
+-----------------------
+
+TODO: bring over phicut handling from X4Solid 
+
+::
+
+      .       +z
+               :
+            ___:___       __ z = r,   theta = 0 
+           /   :   \
+          /    :    \
+      -x + - - : - - + +x 
+          \    :    /
+           \___:___/      __ z = -r,  theta = pi  
+               :
+              -z
+
+**/
+
+inline int U4Solid::init_Sphere_(char layer)
+{
+    assert( layer == 'I' || layer == 'O' ); 
+    const G4Sphere* sphere = dynamic_cast<const G4Sphere*>(solid);
+    assert(sphere);  
+
+    double rmax = sphere->GetOuterRadius()/CLHEP::mm ; 
+    double rmin = sphere->GetInnerRadius()/CLHEP::mm ; 
+    double radius = layer == 'I' ? rmin : rmax ;
+    if(radius == 0.) return -1 ; 
+
+    double startThetaAngle = sphere->GetStartThetaAngle()/CLHEP::radian ; 
+    double deltaThetaAngle = sphere->GetDeltaThetaAngle()/CLHEP::radian ; 
+
+    double rTheta = startThetaAngle ;
+    double lTheta = startThetaAngle + deltaThetaAngle ;
+    assert( rTheta >= 0. && rTheta <= CLHEP::pi ) ; 
+    assert( lTheta >= 0. && lTheta <= CLHEP::pi ) ; 
+
+    double zmin = radius*std::cos(lTheta) ;
+    double zmax = radius*std::cos(rTheta) ;
+    assert( zmax > zmin ) ;
+
+    bool z_slice = startThetaAngle > 0. || deltaThetaAngle < CLHEP::pi ; 
+
+    double startPhi = sphere->GetStartPhiAngle()/CLHEP::radian ;
+    double deltaPhi = sphere->GetDeltaPhiAngle()/CLHEP::radian ;
+    bool has_deltaPhi = startPhi != 0. || deltaPhi != 2.*CLHEP::pi  ;
+    assert( has_deltaPhi == false ); 
+
+    return z_slice ? snd::ZSphere( radius, zmin, zmax ) : snd::Sphere(radius ) ; 
 }
 
 inline void U4Solid::init_Ellipsoid()
@@ -278,8 +315,7 @@ inline void U4Solid::init_Box()
     float fy = 2.0*hy ;
     float fz = 2.0*hz ;
 
-    snd nd = snd::Box3(fx, fy, fz) ; 
-    setRoot(nd); 
+    root = snd::Box3(fx, fy, fz) ; 
 }
 
 
@@ -288,31 +324,27 @@ inline void U4Solid::init_Tubs()
     const G4Tubs* tubs = dynamic_cast<const G4Tubs*>(solid);
     assert(tubs); 
 
-    double rmin = tubs->GetInnerRadius()/CLHEP::mm ; 
-    double rmax = tubs->GetOuterRadius()/CLHEP::mm ; 
     double hz = tubs->GetZHalfLength()/CLHEP::mm ;  
-
-    snd outer = snd::Cylinder(rmax, -hz, hz );
-
+    double rmax = tubs->GetOuterRadius()/CLHEP::mm ; 
+    double rmin = tubs->GetInnerRadius()/CLHEP::mm ; 
     bool has_inner = rmin > 0. ; 
+
+    int outer = snd::Cylinder(rmax, -hz, hz );
+
 
     if(has_inner == false)
     {
-        setRoot(outer); 
+        root = outer ; 
     }
     else
     {
-        int idx_outer = add(outer) ; 
-
         bool   do_nudge_inner = true ; 
         double nudge_inner = 0.01 ;
         double dz = do_nudge_inner ? hz*nudge_inner : 0. ; 
 
-        snd inner = snd::Cylinder(rmin, -(hz+dz), hz+dz );  
-        int idx_inner = add(inner); 
+        int inner = snd::Cylinder(rmin, -(hz+dz), hz+dz );  
 
-        snd nd =  snd::Boolean( CSG_DIFFERENCE, idx_outer, idx_inner ); 
-        setRoot(nd); 
+        root = snd::Boolean( CSG_DIFFERENCE, outer, inner ); 
     }
 
 } 
@@ -343,26 +375,16 @@ inline int U4Solid::init_Cons_(char layer)
     double z1 = -hz ; 
     double z2 = hz ;
 
-    if( r1 == 0. && r2 == 0. ) return -1 ; 
+    bool invalid =  r1 == 0. && r2 == 0. ; 
 
-    snd nd = snd::Cone( r1, z1, r2, z2 );  
-    return add(nd); 
+    return invalid ? -1 : snd::Cone( r1, z1, r2, z2 ) ;  
 } 
 
 inline void U4Solid::init_Cons()
 {
-    int idx_outer = init_Cons_('O');  assert( idx_outer > -1 ); 
-    int idx_inner = init_Cons_('I');
-
-    if( idx_inner == -1 )  // no inner
-    {
-        root = idx_outer ;  
-    }
-    else
-    {
-        snd nd =  snd::Boolean( CSG_DIFFERENCE, idx_outer, idx_inner ); 
-        setRoot(nd); 
-    }
+    int outer = init_Cons_('O');  assert( outer > -1 ); 
+    int inner = init_Cons_('I');
+    root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
 }
 
 
@@ -490,14 +512,13 @@ inline void U4Solid::init_BooleanSolid()
     int l = Convert( left ); 
     int r = Convert( right ); 
 
-    int l_xf = snd::GetNDXF(l);
-    int r_xf = snd::GetNDXF(r);
+    int l_xf = snd::GetNodeXForm(l);
+    int r_xf = snd::GetNodeXForm(r);
 
     assert( l_xf == -1  && "NOT expecting transform on left node " ); 
     if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
 
-    snd nd = snd::Boolean( op, l, r ); 
-    setRoot(nd);
+    root = snd::Boolean( op, l, r ); 
 }
 
 
@@ -516,7 +537,10 @@ gets wrapped into a DisplacedSolid.::
     U4Solid::init SUCCEEDED desc: U4Solid::desc solid Y type Y U4Solid::Tag(type) Dis root 60
 
 
-* "Dis" root not incremented ? 
+* "Dis" root not incremented ?
+
+   * thats because Dis are "internal" nodes for the Geant4 model that just carry the transform
+     they dont actually correspond to a separate constituent   
 
 **/
 inline void U4Solid::init_DisplacedSolid()
@@ -536,10 +560,10 @@ inline void U4Solid::init_DisplacedSolid()
     int m = Convert( moved ); 
     assert(m > -1); 
 
-    snd* nd = snd::GetND_(m);  assert(nd);   
-    nd->setXF(xf); 
+    snd* nd = snd::GetNode_(m);  assert(nd);   
+    nd->setXForm(xf); 
 
-    root = m ; // HMM : IS THIS NEEDED ?  
+    root = m ;    // HMM : Dis ARE FUNNY NODES THAT JUST ACT TO HOLD THE TRANSFORM 
 } 
 
 inline std::string U4Solid::desc() const 

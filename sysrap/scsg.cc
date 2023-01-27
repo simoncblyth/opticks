@@ -49,7 +49,7 @@ sbb* scsg::getBB_(int idx) { return get_<sbb>(idx, aabb)  ; }
 int scsg::getNDXF(int idx) const  
 {
     const snd* n = getND(idx); 
-    return n ? n->xf : -1 ; 
+    return n ? n->xform : -1 ; 
 }
 
 template<typename T>
