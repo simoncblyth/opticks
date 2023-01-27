@@ -60,6 +60,7 @@ struct SYSRAP_API snd
     static const sbb* GetAABB(  int idx);
 
     static int GetNodeXForm(int idx) ; 
+    //static void SetLVID(int idx, int lvid);  // label node tree 
 
     static snd* GetNode_(int idx);
     static spa* GetParam_(int idx);
@@ -98,8 +99,18 @@ struct SYSRAP_API snd
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
     void setXForm( const glm::tmat4x4<double>& t ); 
 
+    void check_z() const ; 
+    double zmin() const ; 
+    double zmax() const ; 
+    void decrease_zmin( double dz ); 
+    void increase_zmax( double dz ); 
+    static std::string ZDesc(const std::vector<int>& prims);
+    static void ZNudgeEnds(    const std::vector<int>& prims); 
+    static void ZNudgeJoints(  const std::vector<int>& prims); 
+
     // signatures need to match CSGNode where these param will end up 
-    static int Boolean(int op, int l, int r ); 
+    static int Boolean( int op, int l, int r ); 
+    static int Compound(int type, const std::vector<int>& prims ); 
     static int Cylinder(double radius, double z1, double z2) ;
     static int Cone(double r1, double z1, double r2, double z2); 
     static int Sphere(double radius); 

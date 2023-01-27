@@ -86,6 +86,7 @@ set(HEADERS
     U4Volume.h
     U4Surface.h
     U4Solid.h
+    U4Polycone.h
     U4MaterialPropertiesTable.h
     U4MaterialPropertyVector.h
 

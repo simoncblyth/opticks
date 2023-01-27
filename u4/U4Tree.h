@@ -99,7 +99,7 @@ struct U4Tree
     void initSolids(); 
     void initSolids_r(const G4VPhysicalVolume* const pv); 
     void initSolid(const G4LogicalVolume* const lv); 
-    void initSolid(const G4VSolid* const so ); 
+    void initSolid(const G4VSolid* const so, int lvid ); 
 
 
     void initNodes(); 
@@ -180,6 +180,7 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
 inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
+
     initMaterials();
     initSurfaces();
     initSolids();
@@ -268,9 +269,10 @@ inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 }
 inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 {
-    lvidx[lv] = lvidx.size(); 
+    int lvid = lvidx.size() ;  
+    lvidx[lv] = lvid ; 
     const G4VSolid* const so = lv->GetSolid(); 
-    initSolid(so); 
+    initSolid(so, lvid); 
 }
 
 
@@ -287,11 +289,14 @@ cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 
 **/
 
-inline void U4Tree::initSolid(const G4VSolid* const so )
+inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 {
-    G4String name = so->GetName() ; // bizarre: returns by value, not reference
-    int root = U4Solid::Convert(so); 
+    assert( int(solids.size()) == lvid ); 
+
+    int root = U4Solid::Convert(so, lvid ); 
     assert( root > -1 ); 
+
+    G4String name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
 
     solids.push_back(so);
     st->soname.push_back(name); 

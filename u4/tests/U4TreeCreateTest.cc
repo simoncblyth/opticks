@@ -32,7 +32,5 @@ int main(int argc, char** argv)
     }
 
     std::cout << st->desc() ; 
-
-
     return 0 ;  
 }

@@ -119,6 +119,171 @@ void snd::setXForm(const glm::tmat4x4<double>& t )
     xform = POOL->addXF(o) ; 
 }
 
+double snd::zmin() const 
+{
+    assert( CSG::CanZNudge(typecode) ); 
+    assert( param > -1 ); 
+    const spa& pa = POOL->param[param] ; 
+    return pa.zmin(); 
+}
+
+double snd::zmax() const 
+{
+    assert( CSG::CanZNudge(typecode) ); 
+    assert( param > -1 ); 
+    const spa& pa = POOL->param[param] ; 
+    return pa.zmax(); 
+}
+
+void snd::check_z() const 
+{
+    assert( CSG::CanZNudge(typecode) ); 
+    assert( param > -1 ); 
+    assert( aabb > -1 ); 
+
+    const spa& pa = POOL->param[param] ; 
+    const sbb& bb = POOL->aabb[aabb] ; 
+
+    assert( pa.zmin() == bb.zmin() ); 
+    assert( pa.zmax() == bb.zmax() ); 
+}
+
+
+/**
+snd::decrease_zmin
+-------------------
+
+   bb.z1 +--------+ pa.z2 
+         |        |
+         |        |
+         |________|
+   bb.z0 +~~~~~~~~+ pa.z1
+
+**/
+
+void snd::decrease_zmin( double dz )
+{
+    check_z(); 
+
+    spa& pa = POOL->param[param] ; 
+    sbb& bb = POOL->aabb[aabb] ; 
+
+    pa.decrease_zmin(dz); 
+    bb.decrease_zmin(dz); 
+}
+
+/**
+snd::increase_zmax
+-------------------
+
+::
+
+   bb.z1 +~~~~~~~~+ pa.z2
+         +--------+       
+         |        |
+         |        |
+         |        |
+   bb.z0 +--------+ pa.z1
+
+**/
+
+void snd::increase_zmax( double dz )
+{
+    check_z(); 
+
+    spa& pa = POOL->param[param] ; 
+    sbb& bb = POOL->aabb[aabb] ; 
+
+    pa.increase_zmax(dz) ; 
+    bb.increase_zmax(dz) ; 
+}
+
+/**
+snd::ZDesc
+-----------
+
+   +----+
+   |    |
+   +----+
+   |    |
+   +----+
+   |    |
+   +----+
+
+**/
+
+std::string snd::ZDesc(const std::vector<int>& prims) // static
+{
+    std::stringstream ss ; 
+    ss << "snd::ZDesc" ; 
+    ss << " prims(" ;
+    for(unsigned i=0 ; i < prims.size() ; i++) ss << prims[i] << " " ; 
+    ss << ") " ;
+    ss << std::endl ;  
+
+    for(unsigned i=0 ; i < prims.size() ; i++)
+    {
+        int _a = prims[i];
+        snd& a = POOL->node[_a] ; 
+        ss << std::setw(3) << _a 
+           << ":" 
+           << " " << std::setw(10) << a.zmin() 
+           << " " << std::setw(10) << a.zmax()
+           << std::endl 
+           ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+snd::ZNudgeEnds
+-----------------
+
+CAUTION: changes geometry, only appropriate 
+for subtracted consituents eg inners 
+
+**/
+
+void snd::ZNudgeEnds(const std::vector<int>& prims) // static
+{
+    std::cout 
+       << std::endl
+       << "snd::ZNudgeEnds "
+       << std::endl
+       << ZDesc(prims)
+       << std::endl
+       ;
+
+    /*
+    for(unsigned i=1 ; i < prims.size() ; i++)
+    {
+        int _a = prims[i-1]; 
+        int _b = prims[i]; 
+
+        snd& a = POOL->node[_a] ; 
+        snd& b = POOL->node[_b] ; 
+         
+        a.check_z(); 
+        b.check_z();
+    }
+    */
+}
+
+void snd::ZNudgeJoints(const std::vector<int>& prims) // static
+{
+    std::cout 
+       << std::endl
+       << "snd::ZNudgeJoints "
+       << std::endl
+       << ZDesc(prims)
+       << std::endl
+       ;
+}
+
+
+
+
 std::string snd::desc() const 
 {
     std::stringstream ss ; 
@@ -137,7 +302,19 @@ std::string snd::desc() const
     {
         ss << Desc(ch) << std::endl ; 
         const snd& child = POOL->node[ch] ; 
-        assert( child.parent == nd.index );  
+
+        bool consistent_parent_index = child.parent == nd.index ; 
+        if(!consistent_parent_index) std::cerr 
+            << "snd::desc"
+            << " ch " << ch 
+            << " count " << count 
+            << " FAIL consistent_parent_index "
+            << " child.parent " << child.parent
+            << " nd.index " << nd.index
+            << std::endl 
+            ;
+
+        assert(consistent_parent_index);  
         count += 1 ;         
         ch = child.next_sibling ;
     }
@@ -164,6 +341,8 @@ std::ostream& operator<<(std::ostream& os, const snd& v)
 snd::Boolean
 --------------
 
+HMM: how to set depth ? Need separate traversal from root ?
+
 **/
 
 int snd::Boolean( int op, int l, int r ) // static 
@@ -179,7 +358,10 @@ int snd::Boolean( int op, int l, int r ) // static
     snd& rn = POOL->node[r] ; 
 
     ln.next_sibling = r ; 
+    ln.sibdex = 0 ; 
+
     rn.next_sibling = -1 ; 
+    rn.sibdex = 1 ; 
 
     int idx = Add(nd) ; 
 
@@ -188,6 +370,45 @@ int snd::Boolean( int op, int l, int r ) // static
 
     return idx ; 
 }
+
+int snd::Compound(int type, const std::vector<int>& prims )
+{
+    assert( type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS ); 
+
+    int num_prim = prims.size(); 
+    assert( num_prim > 0 ); 
+
+    snd nd = {} ;
+    nd.setTypecode( type ); 
+    nd.num_child = num_prim ; 
+    nd.first_child = prims[0] ;
+    int idx = Add(nd) ; 
+
+    for(int i=0 ; i < num_prim ; i++)
+    {
+        int i_sib = prims[i]; 
+        int p_sib = i > 0 ? prims[i-1] : -1 ; 
+
+        snd& i_child = POOL->node[i_sib] ; 
+        i_child.sibdex = i ; 
+        i_child.parent = idx ; 
+        i_child.next_sibling = -1 ; 
+
+        // other than for last i = num_prim-1 
+        // the next_sibling gets reset by prior "reach back" below  
+
+        if(i > 0)
+        {
+            assert( p_sib > -1 ); 
+            snd& p_child = POOL->node[p_sib] ; 
+            p_child.next_sibling = i_sib ; 
+        }
+    }
+    return idx ; 
+}
+
+
+
 
 int snd::Cylinder(double radius, double z1, double z2) // static
 {

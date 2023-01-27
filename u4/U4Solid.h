@@ -24,6 +24,7 @@ npy/NNodeUncoincide npy/NNodeNudger
 **/
 
 
+#include <set>
 #include "scuda.h"
 #include "snd.hh"
 #include "stran.h"
@@ -50,6 +51,7 @@ npy/NNodeUncoincide npy/NNodeNudger
 #include <CLHEP/Units/SystemOfUnits.h> 
 
 
+#include "U4Polycone.h"
 #include "U4Transform.h"
 
 
@@ -88,11 +90,12 @@ struct U4Solid
     static constexpr const char* G4SubtractionSolid_  = "Sub" ;
     static constexpr const char* G4DisplacedSolid_    = "Dis" ;
 
+    std::string desc() const ; 
     static int          Type(const G4VSolid* solid ) ;  
     static const char*  Tag( int type ) ;   
-    static int          Convert(const G4VSolid* solid ) ; 
+    static int          Convert(const G4VSolid* solid, int lvid=-1 ) ; 
 
-    U4Solid( const G4VSolid* solid ); 
+    U4Solid( const G4VSolid* solid, int lvid=-1 ); 
     void init(); 
     void init_Orb(); 
     void init_Sphere(); 
@@ -112,10 +115,12 @@ struct U4Solid
     int init_Cons_(char layer); 
 
 
+
     static OpticksCSG_t BooleanOperator(const G4BooleanSolid* solid ); 
     static bool  IsBoolean(   const G4VSolid* solid) ;
     static bool  IsDisplaced( const G4VSolid* solid) ;
 
+    // TODO: clean up these statics, most not needed 
     static const G4VSolid* Left(  const G4VSolid* node) ;
     static const G4VSolid* Right( const G4VSolid* node) ;  // NB the G4VSolid returned might be a G4DisplacedSolid wrapping the G4VSolid 
     static       G4VSolid* Left_(       G4VSolid* node) ;
@@ -128,13 +133,27 @@ struct U4Solid
 
     void init_BooleanSolid(); 
     void init_DisplacedSolid(); 
-    std::string desc() const ; 
 
     // members
     const G4VSolid* solid ; 
+    int             lvid ; 
     int             type ;
     int             root ;     
 };
+
+inline std::string U4Solid::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "U4Solid::desc" 
+       << " solid " << ( solid ? "Y" : "N" )
+       << " lvid "   << std::setw(3) << lvid    
+       << " type "  << std::setw(3) << type
+       << " root "  << std::setw(4) << root
+       << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 inline int U4Solid::Type(const G4VSolid* solid)   // static 
 {
@@ -181,15 +200,16 @@ inline const char* U4Solid::Tag(int type)   // static
     return tag ; 
 }
 
-inline int U4Solid::Convert(const G4VSolid* solid) // static
+inline int U4Solid::Convert(const G4VSolid* solid, int lvid ) // static
 {
-    U4Solid so(solid); 
+    U4Solid so(solid, lvid); 
     return so.root ; 
 }
 
-inline U4Solid::U4Solid(const G4VSolid* solid_)
+inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_ )
     :
     solid(solid_),
+    lvid(lvid_),
     type(Type(solid)),
     root(-1)
 {
@@ -224,6 +244,7 @@ inline void U4Solid::init()
     else
     {
         std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
+        // TODO: snd::SetLVID(root, lvid); 
     }
 }
 
@@ -300,6 +321,18 @@ inline int U4Solid::init_Sphere_(char layer)
 inline void U4Solid::init_Ellipsoid()
 {
 }
+inline void U4Solid::init_Hype()
+{
+} 
+inline void U4Solid::init_MultiUnion()
+{
+} 
+inline void U4Solid::init_Torus()
+{
+    assert(0); 
+}
+
+
 
 
 inline void U4Solid::init_Box()
@@ -307,13 +340,9 @@ inline void U4Solid::init_Box()
     const G4Box* box = dynamic_cast<const G4Box*>(solid);
     assert(box);
 
-    float hx = box->GetXHalfLength()/CLHEP::mm ;
-    float hy = box->GetYHalfLength()/CLHEP::mm ;
-    float hz = box->GetZHalfLength()/CLHEP::mm ;
-
-    float fx = 2.0*hx ;
-    float fy = 2.0*hy ;
-    float fz = 2.0*hz ;
+    double fx = 2.0*box->GetXHalfLength()/CLHEP::mm ;
+    double fy = 2.0*box->GetYHalfLength()/CLHEP::mm ;
+    double fz = 2.0*box->GetZHalfLength()/CLHEP::mm ;
 
     root = snd::Box3(fx, fy, fz) ; 
 }
@@ -349,9 +378,16 @@ inline void U4Solid::init_Tubs()
 
 } 
 
+
 inline void U4Solid::init_Polycone()
 {
-} 
+    const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
+    assert(polycone);
+    root = U4Polycone::Convert(polycone); 
+}
+
+
+
 
 inline int U4Solid::init_Cons_(char layer)
 {
@@ -387,17 +423,6 @@ inline void U4Solid::init_Cons()
     root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
 }
 
-
-
-inline void U4Solid::init_Hype()
-{
-} 
-inline void U4Solid::init_MultiUnion()
-{
-} 
-inline void U4Solid::init_Torus()
-{
-}
 
 
 
@@ -566,15 +591,4 @@ inline void U4Solid::init_DisplacedSolid()
     root = m ;    // HMM : Dis ARE FUNNY NODES THAT JUST ACT TO HOLD THE TRANSFORM 
 } 
 
-inline std::string U4Solid::desc() const 
-{
-    std::stringstream ss ; 
-    ss << "U4Solid::desc" 
-       << " solid " << ( solid ? "Y" : "N" )
-       << " type "  << ( type ? "Y" : "N" )
-       << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
-       << " root "  << root
-       ; 
-    std::string str = ss.str(); 
-    return str ; 
-}
+

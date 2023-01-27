@@ -12,6 +12,16 @@ int scsg::add_(const T& obj, std::vector<T>& vec)
     return idx ; 
 }
 
+template<>
+int scsg::add_(const snd& obj, std::vector<snd>& vec) 
+{
+    int idx = vec.size(); 
+    vec.push_back(obj); 
+    vec[idx].index = idx ;   // template specialization for snd : record the index 
+    return idx  ; 
+}
+
+
 int scsg::addND(const snd& nd) { return add_<snd>(nd, node)  ; }
 int scsg::addPA(const spa& pa) { return add_<spa>(pa, param) ; }
 int scsg::addXF(const sxf& xf) { return add_<sxf>(xf, xform) ; }

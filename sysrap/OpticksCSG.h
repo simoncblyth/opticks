@@ -368,6 +368,10 @@ struct CSG
         return  type == CSG_ZERO ; 
     }
 
+    static bool CanZNudge(int type)
+    {
+        return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_DISC || type == CSG_ZSPHERE ; 
+    }
 
     static bool IsPositiveMask( unsigned mask )
     {

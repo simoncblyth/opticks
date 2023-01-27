@@ -1733,6 +1733,7 @@ void X4Solid::convertPolycone()
     double zmin = zp[0].z ; 
     double zmax = zp[nz-1].z ; 
 
+
     double R_inner_min = *R_inner.begin() ; 
     double R_inner_max = *R_inner.begin() ; 
     for(std::set<double>::const_iterator it = R_inner.begin() ; it != R_inner.end() ; it++ ) 
@@ -1845,6 +1846,9 @@ nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* na
 
     nnode* lower = inner_prims[0] ; 
     nnode* upper = inner_prims[inner_prims.size()-1] ; 
+
+    // polycone made up of cone and cylinder so should all be znudge capable
+    // HUH: should be looping over pairs when num_prims > 2 
 
     if( lower->is_znudge_capable() &&  upper->is_znudge_capable()  )
     {

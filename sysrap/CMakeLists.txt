@@ -189,6 +189,7 @@ set(HEADERS
     snd.hh
     scsg.hh
  
+    snd_TreeBuilder.h 
     spa.h
     sxf.h
     sbb.h
