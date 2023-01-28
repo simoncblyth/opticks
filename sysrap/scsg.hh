@@ -19,6 +19,11 @@ struct NPFold ;
 
 struct SYSRAP_API scsg
 {
+    static constexpr const unsigned IMAX = 1000 ;
+
+    scsg(); 
+    void init(); 
+
     std::vector<snd> node ; 
     std::vector<spa> param ; 
     std::vector<sbb> aabb ; 

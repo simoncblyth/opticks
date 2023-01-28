@@ -1406,3 +1406,10 @@ CSGSolid* CSGMaker::makeConvexPolyhedronTetrahedron(const char* label, float ext
 }
 
 
+void CSGMaker::importTree(const stree* st)
+{
+    LOG(LEVEL) << "[" ;     
+
+    LOG(LEVEL) << "]" ;     
+}
+

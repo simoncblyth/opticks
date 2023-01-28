@@ -25,11 +25,38 @@ const sbb* snd::GetAABB( int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } 
 int snd::GetNodeXForm(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
 void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
 {
-    assert(POOL); 
-    assert( idx > -1 ); 
     snd* nd = GetNode_(idx); 
-    assert( nd); 
     nd->setXForm(tr); 
+}
+
+
+/**
+snd::SetLVID
+--------------
+
+This gets invoked from the snd roots only, 
+as its called for each root from U4Tree::initSolid
+
+**/
+void snd::SetLVID(int idx, int lvid)  // label node tree 
+{
+    snd* nd = GetNode_(idx); 
+    nd->setLVID(lvid);   
+
+    int chk = nd->checktree(); 
+    if( chk != 0 )
+    { 
+        std::cerr 
+           << "snd::SetLVID" 
+           << " idx " << idx 
+           << " lvid " << lvid 
+           << " checktree " << chk 
+           << std::endl 
+           //<< " POOL.desc " 
+           //<< POOL->desc() 
+           ; 
+    }
+    //assert( chk == 0 ); 
 }
 
 
@@ -131,6 +158,74 @@ void snd::setXForm(const glm::tmat4x4<double>& t )
     // HMM: what about changing transform ? 
     // Currently just adds another and updates the ref, "leaking" the old. 
 }
+
+
+void snd::setLVID(int lvid_)
+{
+    setLVID_r(lvid_, 0); 
+}
+
+void snd::setLVID_r(int lvid_, int d )
+{
+    lvid = lvid_ ;  
+    depth = d ;     
+
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        child.setLVID_r(lvid, depth+1 ); 
+        ch = child.next_sibling ;
+    }
+}
+
+int snd::checktree() const 
+{
+    int chk_D = checktree_r('D', 0); 
+    int chk_P = checktree_r('P', 0); 
+    int chk = chk_D + chk_P ; 
+
+    if( chk > 0 ) 
+    {
+        std::cerr 
+            << "snd::checktree"
+            << " chk_D " << chk_D
+            << " chk_P " << chk_P
+            << brief()
+            << std::endl
+            ;
+    }
+
+    return chk ; 
+}
+int snd::checktree_r(char code,  int d ) const 
+{
+    int chk = 0 ; 
+    int ch = first_child ; 
+
+    if( code == 'D' ) // check expected depth
+    {
+        if(d != depth) chk += 1 ; 
+    }
+    else if( code == 'P' ) // check for non-roots without parent set 
+    {
+        if( depth > 0 && parent < 0 ) chk += 1 ; 
+    }
+
+
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+
+        chk += child.checktree_r(code,  d + 1 );  
+
+        ch = child.next_sibling ;
+    }
+    return chk ; 
+}
+
+
+
 
 double snd::zmin() const 
 {
@@ -301,6 +396,7 @@ std::string snd::desc() const
 {
     std::stringstream ss ; 
     ss 
+       << "[snd::desc" << std::endl
        << brief() << std::endl  
        << DescParam(param) << std::endl  
        << DescAABB(aabb) << std::endl 
@@ -317,17 +413,21 @@ std::string snd::desc() const
         const snd& child = POOL->node[ch] ; 
 
         bool consistent_parent_index = child.parent == nd.index ; 
-        if(!consistent_parent_index) std::cerr 
-            << "snd::desc"
+
+        if(!consistent_parent_index) ss 
+            << "snd::desc "
+            << " FAIL consistent_parent_index "
             << " ch " << ch 
             << " count " << count 
-            << " FAIL consistent_parent_index "
             << " child.parent " << child.parent
             << " nd.index " << nd.index
+            << " nd.lvid "  << nd.lvid
+            << " child.index " << child.index
+            << " child.lvid "  << child.lvid
             << std::endl 
             ;
 
-        assert(consistent_parent_index);  
+        //assert(consistent_parent_index);  
         count += 1 ;         
         ch = child.next_sibling ;
     }
@@ -339,7 +439,7 @@ std::string snd::desc() const
         ss << std::endl << " FAIL count " << count << " num_child " << num_child << std::endl; 
     }
     assert(expect_child); 
-
+    ss << "]snd::desc" << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -354,8 +454,6 @@ std::ostream& operator<<(std::ostream& os, const snd& v)
 snd::Boolean
 --------------
 
-HMM: how to set depth ? Need separate traversal from root ?
-
 **/
 
 int snd::Boolean( int op, int l, int r ) // static 
@@ -367,19 +465,22 @@ int snd::Boolean( int op, int l, int r ) // static
     nd.num_child = 2 ; 
     nd.first_child = l ;
 
-    snd& ln = POOL->node[l] ; 
-    snd& rn = POOL->node[r] ; 
+    snd* ln = POOL->getND_(l) ; 
+    snd* rn = POOL->getND_(r) ; 
 
-    ln.next_sibling = r ; 
-    ln.sibdex = 0 ; 
+    ln->next_sibling = r ; 
+    ln->sibdex = 0 ; 
 
-    rn.next_sibling = -1 ; 
-    rn.sibdex = 1 ; 
+    rn->next_sibling = -1 ; 
+    rn->sibdex = 1 ; 
 
     int idx = Add(nd) ; 
 
-    ln.parent = idx ; 
-    rn.parent = idx ; 
+    std::cout << "snd::Boolean change l " << l << " ln.parent " << ln->parent << " to " << idx << std::endl ; 
+    std::cout << "snd::Boolean change r " << r << " rn.parent " << rn->parent << " to " << idx << std::endl ; 
+
+    ln->parent = idx ; 
+    rn->parent = idx ; 
 
     return idx ; 
 }

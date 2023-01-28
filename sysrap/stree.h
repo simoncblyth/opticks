@@ -143,6 +143,10 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
     export SSim__stree_level=2    # some logging   
     export SSim__stree_level=3    # verbose logging   
 
+When SSim not in use can also use::
+
+    export stree_level=1 
+
 
 **/
 
@@ -157,6 +161,7 @@ So the stree::set_level is invoked from SSim::init based on the envvar::
 #include "NPX.h"
 #include "NPFold.h"
 
+#include "ssys.h"
 #include "scuda.h"
 #include "snode.h"
 #include "sdigest.h"
@@ -189,6 +194,7 @@ struct stree
     static constexpr const char* BD = "bd.npy" ;
 
     static constexpr const char* SONAME = "soname.txt" ;
+    static constexpr const char* CSG = "csg" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
@@ -392,7 +398,7 @@ struct stree
 
 inline stree::stree()
     :
-    level(0),
+    level(ssys::getenvint("stree_level", 0)),
     sensor_count(0),
     subs_freq(new sfreq),
     material(new NPFold),
@@ -424,7 +430,9 @@ inline void stree::set_level(int level_)
 inline std::string stree::desc() const
 {
     std::stringstream ss ;
-    ss << "stree::desc"
+    ss 
+       << std::endl
+       << "[stree::desc"
        << " level " << level 
        << " sensor_count " << sensor_count 
        << " nds " << nds.size()
@@ -434,10 +442,24 @@ inline std::string stree::desc() const
        << " digs " << digs.size()
        << " subs " << subs.size()
        << " soname " << soname.size()
-       << " subs_freq " << std::endl
+       << std::endl
+       << " stree.desc.subs_freq " 
+       << std::endl
        << ( subs_freq ? subs_freq->desc() : "-" )
-       << " material " << ( material ? material->desc() : "-" )
-       << " surface "  << ( surface ? surface->desc() : "-" )
+       << std::endl
+       << " stree::desc.material " 
+       << std::endl
+       << ( material ? material->desc() : "-" )
+       << std::endl
+       << " stree::desc.surface "  
+       << std::endl
+       << ( surface ? surface->desc() : "-" )
+       << std::endl
+       << " stree::desc.csg "  
+       << std::endl
+       << ( csg ? csg->desc() : "-" )
+       << std::endl
+       << "]stree::desc"
        << std::endl
        ;
 
@@ -1293,8 +1315,9 @@ inline void stree::save_( const char* fold ) const
     NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
     a_bd->set_names( bdname );
     a_bd->save( fold, BD ); 
-    //NP::Write<int>(    fold, BD,      (int*)bd.data(),       bd.size(), 4  );
 
+    NPFold* fcsg = csg->serialize() ; 
+    fcsg->save( fold, CSG ); 
  
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
@@ -1413,6 +1436,9 @@ inline void stree::load_( const char* fold )
     assert( a_bd ); 
     NPX::VecFromArray<int4>( bd, a_bd );  
     a_bd->get_names( bdname );
+
+    NPFold* fcsg = NPFold::Load(fold, CSG);
+    csg->import(fcsg); 
 
     if(NP::Exists(fold, MTLINE))
     {

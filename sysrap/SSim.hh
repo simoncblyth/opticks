@@ -68,7 +68,7 @@ struct SYSRAP_API SSim
     void addFake_( const std::vector<std::string>& specs ); 
 
     NPFold* fold ; 
-    stree*  tree ; 
+    stree*  tree ;  // instanciated with SSim::SSim
 
 
     void add(const char* k, const NP* a ); 

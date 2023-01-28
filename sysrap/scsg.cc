@@ -3,6 +3,19 @@
 #include "NPFold.h"
 #include "NPX.h"
 
+scsg::scsg()
+{
+    init(); 
+}
+
+void scsg::init()
+{
+    node.reserve(IMAX);   
+    param.reserve(IMAX);   
+    xform.reserve(IMAX);   
+    aabb.reserve(IMAX);   
+}
+
 
 template<typename T>
 int scsg::add_(const T& obj, std::vector<T>& vec) 

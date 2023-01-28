@@ -56,8 +56,7 @@ struct SYSRAP_API snd
 
     static int  GetNodeXForm(int idx) ; 
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
-
-    //static void SetLVID(int idx, int lvid);  // label node tree 
+    static void SetLVID(int idx, int lvid);  // label node tree 
 
     static snd* GetNode_(int idx);
     static spa* GetParam_(int idx);
@@ -99,6 +98,12 @@ struct SYSRAP_API snd
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
     void setXForm( const glm::tmat4x4<double>& t ); 
+
+    void setLVID(int lvid_ ); 
+    void setLVID_r(int lvid_, int d ); 
+
+    int  checktree() const ; 
+    int  checktree_r(char code,  int d ) const ; 
 
     void check_z() const ; 
     double zmin() const ; 

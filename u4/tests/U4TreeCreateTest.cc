@@ -25,7 +25,8 @@ int main(int argc, char** argv)
         if(world == nullptr) return 0 ; 
 
         U4Tree* tr = U4Tree::Create(st, world) ; 
-        LOG(info) << tr->desc() ; 
+        assert( tr ); 
+        //LOG(info) << tr->desc() ; 
 
         LOG(info) << " save stree to FOLD " << FOLD ; 
         st->save(FOLD); 

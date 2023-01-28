@@ -1332,6 +1332,13 @@ void CSGFoundry::makeDemoSolids()
 {
     maker->makeDemoSolids(); 
 }
+void CSGFoundry::importTree(const stree* st)
+{
+    maker->importTree(st); 
+}
+
+
+
 
 
 CSGSolid* CSGFoundry::make(const char* name)

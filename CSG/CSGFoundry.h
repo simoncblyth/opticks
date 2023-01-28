@@ -8,6 +8,7 @@
 struct SBitSet ; 
 struct NP ; 
 struct SSim ; 
+struct stree ; 
 
 #include "scuda.h"
 #include "squad.h"
@@ -266,7 +267,11 @@ struct CSG_API CSGFoundry : public SGeo
     void     addInstancePlaceholder(); 
 
 
-    void makeDemoSolids();   // via maker
+    // via maker
+    void makeDemoSolids();  
+    void importTree(const stree* st); 
+
+
     CSGSolid* make(const char* name); 
 
 

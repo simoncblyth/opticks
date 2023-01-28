@@ -41,6 +41,7 @@ See also:
 #include "sdigest.h"
 #include "sfreq.h"
 #include "stree.h"
+#include "snd.hh"
 
 #include "SSimtrace.h"
 
@@ -295,6 +296,7 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 
     int root = U4Solid::Convert(so, lvid ); 
     assert( root > -1 ); 
+    snd::SetLVID(root, lvid ); 
 
     G4String name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
 

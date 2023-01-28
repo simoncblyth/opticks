@@ -244,7 +244,6 @@ inline void U4Solid::init()
     else
     {
         std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
-        // TODO: snd::SetLVID(root, lvid); 
     }
 }
 
