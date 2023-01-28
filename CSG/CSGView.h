@@ -1,4 +1,14 @@
 #pragma once
+/**
+CSGView.h
+==========
+
+glm based eye, look, up projection transform maths
+
+* HMM: no CSG dependency, this can and should be done at lower sysrap level
+* TODO: review users and check for duplicated functionality   
+
+**/
 
 #include <string>
 #include <glm/glm.hpp>

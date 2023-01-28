@@ -12,10 +12,9 @@
 #endif
 
 
-
 /**2
-csg_intersect_boolean.h : struct CSG
--------------------------------------------
+csg_stack.h : struct CSG_Stack, csg_push, csg_pop
+----------------------------------------------------
 
 Small stack of float4 isect (surface normals and t:distance_to_intersect).
 

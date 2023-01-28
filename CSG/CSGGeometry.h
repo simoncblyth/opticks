@@ -6,6 +6,19 @@ CSGGeometry
 CSGGeometry is a higher level wrapper for CSGFoundry which 
 avoids repetition of geometry setup, loading and querying mechanics. 
 
+
+::
+
+    epsilon:opticks blyth$ opticks-f CSGGeometry.h 
+    ./CSG/CSGGeometry.cc:#include "CSGGeometry.h"
+    ./CSG/CMakeLists.txt:    CSGGeometry.h
+    ./CSG/tests/CSGIntersectSolidTest.cc:#include "CSGGeometry.h"
+    ./CSG/tests/CSGSignedDistanceFieldTest.cc:#include "CSGGeometry.h"
+    ./CSG/tests/CSGGeometryTest.cc:#include "CSGGeometry.h"
+    ./CSG/tests/CSGGeometryFromGeocacheTest.cc:#include "CSGGeometry.h"
+    ./GeoChain/GeoChain.cc:#include "CSGGeometry.h"
+
+
 **/
 
 #include <vector>

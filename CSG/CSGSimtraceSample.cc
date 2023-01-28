@@ -90,12 +90,4 @@ int CSGSimtraceSample::intersect()
     return num_intersect ; 
 }
 
-/**
-
-
-
-           
-
-
-**/
 

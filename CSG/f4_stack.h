@@ -1,15 +1,15 @@
 #pragma once
+/**
+f4_stack.h : struct F4_Stack using float4 as micro stack
+=============================================================
 
+**/
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define F4_FUNC __forceinline__ __device__ __host__
 #else
 #    define F4_FUNC inline
 #endif
 
-
-/**
-
-**/
 
 
 struct F4_Stack 

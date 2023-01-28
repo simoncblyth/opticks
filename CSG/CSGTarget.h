@@ -1,4 +1,19 @@
 #pragma once
+/**
+CSGTarget.h : const CSGFoundry ctor argument, sframe/CE:center_extent/transform access
+========================================================================================
+
+* provides CSGFoundry::target instance budding off transform related access 
+
+::
+
+    epsilon:CSG blyth$ opticks-f CSGTarget.h 
+    ./CSG/CMakeLists.txt:    CSGTarget.h
+    ./CSG/CSGTarget.cc:#include "CSGTarget.h"
+    ./CSG/CSGTarget.h:CSGTarget.h : const CSGFoundry ctor argument, sframe/CE:center_extent/transform access
+    ./CSG/CSGFoundry.cc:#include "CSGTarget.h"
+
+**/
 
 #include "plog/Severity.h"
 

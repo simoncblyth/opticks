@@ -6,11 +6,8 @@
 #    define TRANCHE_FUNC inline
 #endif
 
-
-
-
 /**1
-csg_intersect_boolean.h : struct Tranche
+csg_tranche.h : struct Tranche
 -------------------------------------------
 
 Postorder Tranch storing a stack of slices into the postorder sequence.

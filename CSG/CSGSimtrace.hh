@@ -1,4 +1,11 @@
 #pragma once
+/**
+CSGSimtrace.hh : Geometry 2D Cross Sections
+==============================================
+
+Canonical usage from tests/CSGSimtraceTest.cc
+    
+**/
 
 #include "plog/Severity.h"
 #include <vector>

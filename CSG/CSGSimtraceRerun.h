@@ -1,4 +1,9 @@
 #pragma once
+/**
+CSGSimtraceRerun.h .cc : on CPU csg_intersect debugging
+=========================================================
+
+**/
 
 #include <array>
 #include <vector>

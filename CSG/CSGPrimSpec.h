@@ -12,6 +12,9 @@ CSGPrimSpec
 =============
 
 * *CSGPrimSpec* provides the specification to access the AABB and sbtIndexOffset of all CSGPrim of a CSGSolid.  
+
+  * HMM : maybe CSGSolidSpec would be a more appropriate name ?  
+
 * The specification includes pointers, counts and stride.
 * Instances are created for a solidIdx by CSGFoundry::getPrimSpec using CSGPrim::MakeSpec
 * Crucially *CSGPrimSpec* is used to pass the AABB for a solid to CSGOptix/GAS_Builder.

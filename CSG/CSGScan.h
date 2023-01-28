@@ -1,4 +1,10 @@
 #pragma once
+/**
+CSGScan.h : CPU testing of GPU csg_intersect impl
+==================================================
+
+
+**/
 
 #include <string>
 #include <vector>
