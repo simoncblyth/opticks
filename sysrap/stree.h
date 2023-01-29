@@ -19,7 +19,7 @@ Users of stree.h
 -------------------
 
 u4/U4Tree.h
-    heavy lifting of stree.h creation
+    heavy lifting of populating stree.h 
 
 CSG_GGeo/CSG_GGeo_Convert.cc
     stree.h/tree member obtained from "SSim::Get()->get_tree()"
@@ -226,22 +226,27 @@ struct stree
     std::vector<glm::tmat4x4<double>> gtd ; // GGeo Transform Debug, added from X4PhysicalVolume::convertStructure_r
 
 
-    std::vector<snode> nds ;                // snode info for all nodes
-    std::vector<std::string> digs ;         // per-node digest for all nodes  
-    std::vector<std::string> subs ;         // subtree digest for all nodes
+    std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
+    std::vector<std::string> digs ;        // per-node digest for all nodes  
+    std::vector<std::string> subs ;        // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
     std::vector<int> sensor_id ;           // updated by reorderSensors
 
 
 
-    int level ;   // verbosity 
+    int level ;                            // verbosity 
     unsigned sensor_count ; 
-    sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
+    sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
+                                           // subs are collected in stree::classifySubtrees
+
+    scsg*  csg ;                           // csg node trees of all solids    
+
 
     NPFold* material ; // (formerly mtfold)  material and surface properties 
     NPFold* surface ;  //                    potentially these could live within SSim ?
 
     // NB NPFold material and surface contain direct copies of the Geant4 mpt tables
+    //
     // TODO: need to juice these NPFold inputs into equivalents of the 
     //       GMaterialLib and GSurfaceLib buffers using standard domains and default props
     //       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
@@ -253,7 +258,6 @@ struct stree
     //      as CSGFoundry already has inst : so the below are looking ahead 
     //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
 
-    scsg* csg ; 
 
 
     std::vector<glm::tmat4x4<double>> inst ; 
@@ -273,6 +277,7 @@ struct stree
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
     std::string desc_sub(const char* sub) const ;
+
 
     static std::string Digest(int lvid, const glm::tmat4x4<double>& tr );
     static std::string Digest(int lvid );
@@ -401,16 +406,16 @@ inline stree::stree()
     level(ssys::getenvint("stree_level", 0)),
     sensor_count(0),
     subs_freq(new sfreq),
+    csg(new scsg),
     material(new NPFold),
-    surface(new NPFold),
-    csg(new scsg)
+    surface(new NPFold)
 {
     init(); 
 }
 
 inline void stree::init()
 {
-    std::cout << "stree::init " << std::endl ; 
+    if(level > 0) std::cout << "stree::init " << std::endl ; 
     snd::SetPOOL(csg); 
 }
 
@@ -442,12 +447,20 @@ inline std::string stree::desc() const
        << " digs " << digs.size()
        << " subs " << subs.size()
        << " soname " << soname.size()
+       << " factor " << factor.size()
        << std::endl
        << " stree.desc.subs_freq " 
        << std::endl
        << ( subs_freq ? subs_freq->desc() : "-" )
        << std::endl
-       << " stree::desc.material " 
+       << desc_factor()
+       << std::endl
+       << desc_repeat_nodes() 
+       << std::endl
+       ; 
+
+    if(level > 2) ss 
+       << "stree::desc.material " 
        << std::endl
        << ( material ? material->desc() : "-" )
        << std::endl
@@ -1294,7 +1307,7 @@ inline void stree::save( const char* base, const char* reldir ) const
 stree::save_
 --------------
 
-Use NPFold and split into serialize and save 
+TODO: Use NPFold and split into serialize and save 
 
 **/
 
@@ -1610,7 +1623,12 @@ inline void stree::disqualifyContainedRepeats()
 stree_subs_freq_ordering
 ------------------------
 
-Its necessary to use two level ordering 
+Used from stree::sortSubtrees ordering (sub, freq) based on:
+
+1. nidx obtained from stree::get_first(sub:subtree_digest)
+2. freq:frequency count 
+
+It is necessary to use two level ordering 
 to ensure that same order is achieved 
 on different machines. 
 
@@ -1832,22 +1850,13 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
 
 inline std::string stree::desc_factor() const 
 {
-    unsigned num_factor = factor.size(); 
     std::stringstream ss ; 
-    ss << "stree::desc_factor"
-       << " get_num_factor " 
-       << num_factor 
-       << std::endl 
-       ;
-
-    for(unsigned idx=0 ; idx < num_factor ; idx++) 
-    {
-        const sfactor& fac = factor[idx]; 
-        ss << fac.desc() << std::endl ; 
-    }
-    std::string s = ss.str(); 
+    ss << "stree::desc_factor" << std::endl << sfactor::Desc(factor) ; 
+    std::string s = ss.str();
     return s ; 
 }
+
+
 
 
 inline void stree::get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index ) const 
@@ -1859,6 +1868,8 @@ inline void stree::get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index 
         if( nd.repeat_index == q_repeat_index ) nodes.push_back(nidx) ; 
     }
 }
+
+
 inline void stree::get_remainder_nodes(std::vector<int>& nodes ) const 
 {
     int q_repeat_index = 0 ; 
@@ -1872,14 +1883,39 @@ inline std::string stree::desc_repeat_nodes() const
        << " num_factor " << num_factor 
        << std::endl 
        ;  
-   
+
+    int total = 0 ; 
+    int remainder = 0 ; 
+
     for(int i=0 ; i < num_factor + 1 ; i++)
     {
         int q_ridx = i ;  
         std::vector<int> nodes ; 
         get_repeat_nodes(nodes, q_ridx ); 
-        ss << " q_ridx " << std::setw(3) << q_ridx << " nodes " << std::setw(8) << nodes.size() << std::endl ; 
-    } 
+
+        int num_nodes = nodes.size() ; 
+        if(q_ridx == 0) remainder = num_nodes ; 
+
+        total += num_nodes ;  
+        ss 
+            << " q_ridx " << std::setw(3) << q_ridx 
+            << " num_nodes " << std::setw(8) << num_nodes 
+            << std::endl 
+            ; 
+    }
+
+    ss 
+        << std::setw(30) << " total     " 
+        << std::setw(8)  << total  
+        << std::endl 
+        << std::setw(30) << " remainder " 
+        << std::setw(8)  << remainder  
+        << std::endl  
+        << std::setw(30) << " total - remainder " 
+        << std::setw(8)  << (total - remainder) 
+        << std::endl 
+        ; 
+
     std::string s = ss.str(); 
     return s ; 
 }

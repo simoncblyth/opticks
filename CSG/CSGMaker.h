@@ -44,7 +44,9 @@ struct CSG_API CSGMaker
         OCYL_MIDX
     }; 
 
-    CSGFoundry* fd ; 
+    CSGFoundry*  fd ; 
+    const stree* st ; 
+
     CSGMaker( CSGFoundry* fd );  
 
     void makeDemoGrid();
@@ -144,6 +146,9 @@ struct CSG_API CSGMaker
     CSGSolid* makeConvexPolyhedronTetrahedron(const char* label="vtet", float extent=100.f);
 
     void importTree(const stree* st); 
+    void importAllSolid(); 
+    void importSolid(unsigned ridx); 
+
 
 };
 

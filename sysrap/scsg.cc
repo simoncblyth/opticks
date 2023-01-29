@@ -8,12 +8,29 @@ scsg::scsg()
     init(); 
 }
 
+/**
+scsg::init
+------------
+
+Reserving suffiencient IMAX prevents realloc of the vectors,
+however its is better to code in a way to avoid the need to 
+reserve. 
+
+DO THIS BY NOT USING POINTERS OR REFERNCES OBTAINED
+BEFORE PUSH_BACK TO A VECTOR AFTER THE PUSH_BACK.
+THAT MEANS DO THE Add LAST THING IN METHODS
+AND DO NOT STORE POINTERS
+
+**/
+
 void scsg::init()
 {
+   /*
     node.reserve(IMAX);   
     param.reserve(IMAX);   
     xform.reserve(IMAX);   
     aabb.reserve(IMAX);   
+   */ 
 }
 
 
@@ -29,7 +46,17 @@ template<>
 int scsg::add_(const snd& obj, std::vector<snd>& vec) 
 {
     int idx = vec.size(); 
+
+    const snd* ptr0_before = &vec[0] ; 
     vec.push_back(obj); 
+    const snd* ptr0_after = &vec[0] ; 
+    
+    if( ptr0_before != ptr0_after )
+    {
+        std::cerr 
+           << "scsg::add_<snd> DETECTED REALLOC AT idx " << idx << std::endl ;  
+    } 
+
     vec[idx].index = idx ;   // template specialization for snd : record the index 
     return idx  ; 
 }

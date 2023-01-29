@@ -25,6 +25,8 @@ npy/NNodeUncoincide npy/NNodeNudger
 
 
 #include <set>
+
+#include "slog.h"
 #include "scuda.h"
 #include "snd.hh"
 #include "stran.h"
@@ -135,6 +137,7 @@ struct U4Solid
     void init_DisplacedSolid(); 
 
     // members
+    plog::Severity  level ; 
     const G4VSolid* solid ; 
     int             lvid ; 
     int             type ;
@@ -145,6 +148,7 @@ inline std::string U4Solid::desc() const
 {
     std::stringstream ss ; 
     ss << "U4Solid::desc" 
+       << " level " << plog::severityToString(level)
        << " solid " << ( solid ? "Y" : "N" )
        << " lvid "   << std::setw(3) << lvid    
        << " type "  << std::setw(3) << type
@@ -208,6 +212,7 @@ inline int U4Solid::Convert(const G4VSolid* solid, int lvid ) // static
 
 inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_ )
     :
+    level(slog::envlevel("U4Solid", "DEBUG")),
     solid(solid_),
     lvid(lvid_),
     type(Type(solid)),
@@ -239,11 +244,13 @@ inline void U4Solid::init()
     if(root == -1)
     {
         std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
+        LOG(fatal) << "FAILED desc " << desc() ; 
         assert(0); 
     }
     else
     {
         std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
+        //LOG(level) << " SUCCEEDED desc: " << desc() ; 
     }
 }
 
@@ -374,8 +381,14 @@ inline void U4Solid::init_Ellipsoid()
         << " sy " << sy
         << " sz " << sz
         << " zslice " << ( zslice ? "YES" : "NO" )
+        << std::endl 
         ;
 
+    PLOGI  << "U4Solid::init_Ellipsoid : PLOGI "  ; 
+    LOG(info)  << "U4Solid::init_Ellipsoid : LOG(info) "  ; 
+    LOG(debug) << "U4Solid::init_Ellipsoid : LOG(debug) "  ; 
+    LOG(level) << "U4Solid::init_Ellipsoid : LOG(level) " ; 
+    std::cerr << slog::Desc(level) ; 
 
     if( upper_cut == false && lower_cut == false )
     {

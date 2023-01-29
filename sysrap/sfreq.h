@@ -5,6 +5,9 @@ sfreq.h : count occurrence frequencies of strings and sorts by frequencies
 
 Canonical usage is for geometry progeny digests 
 
+* subs are collected by stree::classifySubtrees
+
+
 **/
 
 #include <cassert>
@@ -118,6 +121,15 @@ inline int sfreq::find_index(const char* key) const
     return it == vsu.end() ? -1 : std::distance( vsu.begin(), it ); 
 }
 
+/**
+sfreq::add : maybe "add_unique_count" would be a better name 
+---------------------------------------------------------------
+
+Adding sub keys and counts to a vector of pairs::
+
+   (subtree_digest, freq)
+
+**/
 inline void sfreq::add(const char* key)
 {
     int idx = find_index(key); 

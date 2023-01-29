@@ -9,12 +9,17 @@ Thoughts : How difficulty to go direct Geant4 -> CSGFoundry ?
   are fairly simple containers that can easily be replaced with more modern 
   and generic approaches using NPFold/NP/NPX/SSim
 
-  * majority of the code already exists  
+  * WIP: U4Material.h .cc U4Surface.h 
+  * TODO: boundary array standardizing the data already collected by U4Material, U4Surface
+
 
 * Structure : U4Tree/stree : already covers most of whats needed (all the
   transforms and doing the factorization)
 
 * Solids : THIS IS THE MOST DIFFICULT ONE
+
+  * WIP: U4Solid snd scsg stree CSGFoundry::importTree
+  * DECIDE NO NEED FOR C4 PKG  
 
   * intricate web of translation and primitives code across x4/npy/GGeo 
   * HOW TO PROCEED : START AFRESH : CONVERTING G4VSolid trees into CSGPrim/CSGNode trees

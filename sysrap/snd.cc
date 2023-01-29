@@ -52,11 +52,11 @@ void snd::SetLVID(int idx, int lvid)  // label node tree
            << " lvid " << lvid 
            << " checktree " << chk 
            << std::endl 
-           //<< " POOL.desc " 
-           //<< POOL->desc() 
+           << " POOL.desc " 
+           << POOL->desc() 
            ; 
     }
-    //assert( chk == 0 ); 
+    assert( chk == 0 ); 
 }
 
 
@@ -474,13 +474,24 @@ int snd::Boolean( int op, int l, int r ) // static
     rn->next_sibling = -1 ; 
     rn->sibdex = 1 ; 
 
+    int idx_0 = POOL->node.size() ;  
+
+    ln->parent = idx_0 ; 
+    rn->parent = idx_0 ; 
+
     int idx = Add(nd) ; 
 
-    std::cout << "snd::Boolean change l " << l << " ln.parent " << ln->parent << " to " << idx << std::endl ; 
-    std::cout << "snd::Boolean change r " << r << " rn.parent " << rn->parent << " to " << idx << std::endl ; 
+    assert( idx_0 == idx ); 
 
-    ln->parent = idx ; 
-    rn->parent = idx ; 
+    // ln->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
+    // rn->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
+    //
+    // NB : IT WOULD BE AN INSIDIOUS BUG TO USE *ln/rn* POINTERS/REFERENCES
+    // HERE AS REALLOC WILL SOMETIMES HAPPEN WHEN DO snd::Add WHICH 
+    // WOULD INVALIDATE THE POINTERS/REFERENCES OBTAINED PRIOR TO snd::Add
+    //
+    // THE BUG MANIFESTS AS PARENT FIELDS NOT BEING SET AS THE ln/rn WOULD 
+    // NO LONGER BE POINTING INTO THE NODE VECTOR DUE TO THE REALLOCATION.
 
     return idx ; 
 }

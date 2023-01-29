@@ -81,6 +81,9 @@ struct U4Tree
     std::vector<const G4LogicalSurface*> surfaces ;  // both skin and border 
     std::vector<const G4VSolid*>    solids ; 
 
+
+
+
     template<typename T>
     static int GetPointerIndex( const std::vector<const T*>& vec, const T* obj) ; 
     template<typename T>
@@ -131,7 +134,7 @@ struct U4Tree
 
 
 template<typename T>
-inline int U4Tree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj)
+inline int U4Tree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj) // static
 {
     if( obj == nullptr || vec.size() == 0 ) return -1 ; 
     size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
@@ -139,13 +142,11 @@ inline int U4Tree::GetPointerIndex( const std::vector<const T*>& vec, const T* o
 }
 
 template<typename T>
-inline int U4Tree::GetValueIndex( const std::vector<T>& vec, const T& obj)
+inline int U4Tree::GetValueIndex( const std::vector<T>& vec, const T& obj) // static 
 {
     size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
     return idx < vec.size() ? int(idx) : -1 ;   
 }
-
-
 
 
 /**
@@ -177,6 +178,7 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
 {
     init(); 
 }
+
 
 inline void U4Tree::init()
 {
@@ -213,14 +215,15 @@ inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ ) initMaterials_r( lv->GetDaughter(i) ); 
-    G4Material* mt = lv->GetMaterial() ; 
+    G4Material* mt = lv->GetMaterial() ; // postorder visit after recursive call  
     if(mt && (std::find(materials.begin(), materials.end(), mt) == materials.end())) initMaterial(mt);  
 }
 inline void U4Tree::initMaterial(const G4Material* const mt)
 {
     materials.push_back(mt); 
-    const G4String& mtname = mt->GetName() ;  
+    const G4String& _mtname = mt->GetName() ;  
     unsigned g4index = mt->GetIndex() ;  
+    const char* mtname = _mtname.c_str();   
     st->add_material( mtname, g4index  ); 
 }
 
@@ -233,7 +236,8 @@ inline void U4Tree::initSurfaces()
     for(unsigned i=0 ; i < surfaces.size() ; i++)
     {
         const G4LogicalSurface* s = surfaces[i] ;  
-        const G4String& sn = s->GetName() ;  
+        const G4String& _sn = s->GetName() ;  
+        const char* sn = _sn.c_str(); 
         st->add_surface( sn, i ); 
     }
 }
@@ -298,7 +302,8 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
     assert( root > -1 ); 
     snd::SetLVID(root, lvid ); 
 
-    G4String name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
+    G4String _name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
+    const char* name = _name.c_str();    
 
     solids.push_back(so);
     st->soname.push_back(name); 
@@ -311,8 +316,8 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 U4Tree::initNodes
 -----------------------------
 
-Serialize the n-ary tree into nds and trs vectors within stree 
-holding structural node info and transforms. 
+Serialize the n-ary tree of structural nodes (the volumes) into nds and trs 
+vectors within stree holding structural node info and transforms. 
 
 **/
 

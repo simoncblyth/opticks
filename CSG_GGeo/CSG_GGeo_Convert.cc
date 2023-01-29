@@ -283,6 +283,10 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 CSG_GGeo_Convert::CountSolidPrim
 -----------------------------------
 
+Invoked from CSG_GGeo_Convert::convertSolid for the GParts comp from 
+each repeatIdx. Where there are no skips the count is the same as 
+GParts::getNumPrim of the comp. 
+
 **/
 
 unsigned CSG_GGeo_Convert::CountSolidPrim( const GParts* comp )

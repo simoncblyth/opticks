@@ -13,6 +13,7 @@ arg=${1:-$defarg}
 
 loglevels(){
    export U4VolumeMaker=INFO
+   export U4Solid=INFO
 }
 
 loglevels
