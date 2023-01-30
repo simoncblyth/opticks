@@ -10,8 +10,16 @@ Progress
 
 * https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
 
+1. review commit messages month by month. Although these progress notes 
+   mostly cover Opticks it is still necessary to review all the main repositories 
+   to get the full picture::
 
-1. review commit messages month by month with eg ``o ; ./month.sh -1`` 
+     o  ; ./month.sh -12  # Dec last year  
+     j  ; ./month.sh -12
+     jo ; ./month.sh -12
+     n  ; ./month.sh -12
+     e  ; ./month.sh -12
+
 2. review presentations month by month, find them with presentation-index
 3. while doing the above reviews. compile a list of topics and check 
    that the vast majority of commit messages and presentation pages 
@@ -21,9 +29,59 @@ Progress
      think about how they are related to each other 
 
 
-2022 Dec
----------
 
+2023 Jan 
+----------
+
+Work split into two:
+
+1. preparing low dependency PMT data access for use by CustomG4OpBoundaryProcess 
+
+   * Opticks+JUNO blocked 01/17 (Tue ~2 weeks ago) awaiting merge request to be granted 
+ 
+2. transition to Opticks direct geometry translation (massive code reduction is close)
+
+   
+* o : 01/28 : debug snd.hh scsg.hh failure to set parent, fixed by reserving the vectors in scsg::init
+* o : 01/27 : U4Solid::init_Ellipsoid now U4TreeCreateTest.sh gets thru all JUNO solids, Polycone Ellipsoid need testsing and ZNudge
+* o : 01/27 : U4Polycone.h requires snd.hh ZNudge mechanics, try using CSG_CONTIGUOUS snd::Compound for polycone instead of binary tree as X4Solid does
+* o : 01/27 : adopt general n-ary tree handling used with snode.h for snd.hh too, switch to int ref returns for snd statics, add U4Solid::init_Sphere
+* o : 01/26 : add Tubs and Cons, find complex snd::Boolean not following l == r+1, how to nc/fc handle that ? 
+* o : 01/26 : add snd.h persisting with referenced pools, plus generalize to non-boolean tree using fc/nc first_child/num_child
+* o : 01/25 : building out U4Solid.h
+* o : 01/24 : collect skin and border surfaces together as needed for the boundary surface index approach 
+* o : 01/23 : extend U4Surface used from U4Tree and C4 
+* o : 01/21 : new C4 package (short for CSG_U4) for direct from Geant4 to CSG geometry conversion expts
+* o : 01/20 : U4PMTAccessorTest.cc testing PMT accessor external to j/PMTFastSim
+* j : 01/20 : comparing IPMTAccessor scans from PMTAccessor and JPMT show max 1e-15 deviations
+* j : 01/20 : setup to compare PMTAccessor.h with JPMT.h profiting from PMTSimParamData persisting functionality
+
+* o : 01/19 : start PMTAccessor.h destined for monolith residence, but developed outside for fast dev cycle
+
+* o : 01/18 : start simplifying the standalone j/Layr/JPMT.h API used by u4/CustomART.h in order to converge the standalone and full APIs such that they can both be used with u4/CustomART.h
+* j : 01/18 : making the standalone JPMT.h API closer to that needed for the full non-standalone API such that u4/CustomART.h can work with both of the APIis
+
+
+* jo : 01/17 : (Tue before CNY) : branch blyth-66-low-dependency-PMT-data-access is ready for merge as it addresses the problem outlined in issue 66
+* jo : 01/12 -> 01/17 : WIP PMTSimDataSvc branch 
+* o : 01/13 : G4CXOpticks__SaveGeometry_DIR envvar control for G4CXOpticks::SaveGeometry as need to do the save later than setGeometry when have SSim additions
+* o : 01/10 : enhancements to allow NPFold.h persisting of jo:Simulation/SimSvc/PMTSimParamSvc/src/PMTSimParamData.h
+* o : 01/09 : make NP.hh decl and impl ordering consistent for ease of navigation, add NP::ArrayFromVec NP::ArrayFromMap
+* j : 01/05 : brief look at reading root files without ROOT, conclude too much effort for the problem of PMT info from .root as can use a more cunning approach for that
+
+
+2022 Dec : Simplify junoPMTOpticalModel (MultiLayer TMM) using standalone testing 
+-----------------------------------------------------------------------------------
+
+* 12/21 : NP::LoadCategoryArrayFromTxtFile NP::CategoryArrayFromString for enum arrays
+* 12/16 : pull CustomART.h CustomStatus.h out of CustomBoundary.h : rationalize theCustomStatus handling and presentation in preparation for switching from CustomBoundary.h to CustomART.h making more use of standard G4OpBoundaryProcess mom,pol changes
+* 12/16 : sboundary_test_brewster.sh sboundary_test_critical.sh : plots comparing polarizations before and after TIR and Brewster angle ref
+lection
+* 12/15 : try to do less in CustomART by reusing the mom/pol impl of G4OpBoundaryProcess::DielectricDielectric
+* 12/15 : illustrating Brewsters angle polarization using sysrap/tests/sboundary_test.sh showing color wheel polarization directions before
+ and after reflect or transmit 
+* 12/15 : make many G4CXOpticks methods private, to simplify usage : suggestions for Hans CaTS in notes/issues/Hans_QSim_segv_with_CaTS.rst
+* 12/13 : bring over the new polarization from sboundary.h into sysrap/tests/stmm_vs_sboundary_test.cc
 * 12/13 : drawing more parallels between stmm.h and sboundary.h calcs in order to correctly get reflect and transmit polarizations in stmm.h context
 * 12/12 : comparing two layer stmm.h with sboundary.h based on qsim::propagate_to_boundary, matched TransCoeff
 * 12/10 : thinking about how to bring CustomBoundary.h to GPU, start looking into mom and pol vectors after the TMM stack
@@ -43,6 +101,8 @@ Progress
 
 2022 Nov
 ----------
+
+* over in j: developed Layr/Layr.h single header TMM 
 
 * 11/30 : bringing over junoPMTOpticalModel into InstrumentedG4OpBoundaryProcess::CustomART
 * 11/29 : start pivot to customizing u4/InstrumentedG4OpBoundaryProcess as seems FastSim cannot handle very simple geometry without fakes
