@@ -400,10 +400,8 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
     nd.repeat_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
 
+    nd.repeat_ordinal = -1 ;  // changed later for instance subtrees by stree::labelFactorSubtrees
     nd.boundary = boundary ; 
-    nd.spare31 = 0 ; 
-    nd.spare32 = 0 ; 
-    nd.spare33 = 0 ; 
 
 
     pvs.push_back(pv); 
@@ -713,7 +711,7 @@ This remains rather untested as JUNO geometry does not have sensitive globals.
 inline void U4Tree::identifySensitiveGlobals()
 {
     std::vector<int> remainder ; 
-    st->get_remainder_nodes(remainder) ;   
+    st->get_remainder_nidx(remainder) ;   
 
     if(level > 0) std::cerr 
         << "[ U4Tree::identifySensitiveGlobals" 

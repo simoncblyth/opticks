@@ -16,10 +16,18 @@ Out[5]:
 
 import numpy as np
 from opticks.ana.fold import Fold
+from opticks.sysrap.stree import stree, snode
+
+np.set_printoptions(edgeitems=16)
 
 if __name__ == '__main__':
-    t = Fold.Load("$FOLD/stree", symbol="t")
-    print(repr(t))
+    f = Fold.Load("$FOLD/stree", symbol="f")
+    print(repr(f))
+
+    snode.Fields()
+
+    print(snode.Label(6,11),"\n", f.nds[f.nds[:,ri] == 1 ])
+
 
 
 

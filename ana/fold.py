@@ -83,6 +83,7 @@ class Fold(object):
 
         relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
+
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
         quiet = cls.IsQuiet(**kwa)
@@ -103,9 +104,41 @@ class Fold(object):
 
 
     SFRAME = "sframe.npy"
+    INDEX = "NPFold_index.txt" 
 
     def brief(self):
         return "Fold : symbol %s base %s " % (self.symbol, self.base) 
+
+
+    @classmethod
+    def IsFold(cls, base, name):
+        path = os.path.join(base, name)
+        index = os.path.join(path, cls.INDEX )
+        return os.path.isdir(path) and os.path.exists(index)
+
+    def get_names(self, base):
+        nn = os.listdir(base)
+        if not self.order is None:
+            sizes = list(map(lambda name:os.stat(os.path.join(base, name)).st_size, nn))
+            order = np.argsort(np.array(sizes))
+            if self.order == "descend":
+                order = order[::-1] 
+            pass
+            nn = np.array(nn)[order]  
+        pass
+
+        names = []
+        for n in nn:
+            if n.endswith(".npy") or n.endswith(".txt"):
+                names.append(n)
+            elif self.IsFold(base,n):
+                names.append(n)
+            else:
+                pass
+            pass
+        pass
+        return names
+
 
     def __init__(self, base, **kwa):
         self.base = base
@@ -124,16 +157,6 @@ class Fold(object):
             print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
         pass
 
-        names = os.listdir(base)
-
-        if not self.order is None:
-            sizes = list(map(lambda name:os.stat(os.path.join(base, name)).st_size, names))
-            order = np.argsort(np.array(sizes))
-            if self.order == "descend":
-                order = order[::-1] 
-            pass
-            names = np.array(names)[order]  
-        pass
 
         paths = []
         stems = []
@@ -141,20 +164,26 @@ class Fold(object):
         symbols = "abcdefghijklmnopqrsTuvwxyz"
         txts = {}
 
-        for i, name in enumerate(filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names)):
+        #names = filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),os.listdir(base))
+        names = self.get_names(base)
+
+        for i, name in enumerate(names):
             path = os.path.join(base, name)
             symbol = symbols[i]
-            stem = name[:-4]
+
+            if name.endswith(".npy") or name.endswith(".txt"):
+                stem = name[:-4]
+            else:
+                stem = name
+            pass
 
             paths.append(path)
             stems.append(stem)
             abbrev.append(symbol) 
 
-            is_npy = name.endswith(".npy")
-
             if name == self.SFRAME:
                 a = sframe.Load(path)
-            elif is_npy:
+            elif name.endswith(".npy"):
                 a = np.load(path)
             elif name.endswith("_meta.txt"):
                 a = NPMeta.Load(path)
@@ -162,6 +191,8 @@ class Fold(object):
             elif name.endswith(".txt"):
                 a = NPMeta.Load(path)
                 txts[name] = a
+            elif self.IsFold(base, name):
+                a = Fold(path, symbol=name)
             pass
             setattr(self, stem, a ) 
 
@@ -172,6 +203,7 @@ class Fold(object):
                 print("setting builtins symbol:%s gstem:%s" % (symbol, gstem) ) 
             pass
         pass
+
         self.paths = paths
         self.stems = stems
         self.abbrev = abbrev

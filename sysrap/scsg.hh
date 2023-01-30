@@ -37,7 +37,8 @@ struct SYSRAP_API scsg
     int addXF(const sxf& xf );
     int addBB(const sbb& bb );
 
-    // CAUTION: DO NOT RETAIN POINTERS THEY MAY GO STALE
+    // CAUTION: DO NOT RETAIN POINTERS/REFS WHILST ADDING NODES 
+    // AS REALLOC WILL SOMETIMES INVALIDATE THEM
 
     template<typename T>
     const T* get(int idx, const std::vector<T>& vec) const ; 

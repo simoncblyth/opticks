@@ -76,10 +76,9 @@ Work split into two:
 * 12/21 : NP::LoadCategoryArrayFromTxtFile NP::CategoryArrayFromString for enum arrays
 * 12/16 : pull CustomART.h CustomStatus.h out of CustomBoundary.h : rationalize theCustomStatus handling and presentation in preparation for switching from CustomBoundary.h to CustomART.h making more use of standard G4OpBoundaryProcess mom,pol changes
 * 12/16 : sboundary_test_brewster.sh sboundary_test_critical.sh : plots comparing polarizations before and after TIR and Brewster angle ref
-lection
 * 12/15 : try to do less in CustomART by reusing the mom/pol impl of G4OpBoundaryProcess::DielectricDielectric
 * 12/15 : illustrating Brewsters angle polarization using sysrap/tests/sboundary_test.sh showing color wheel polarization directions before
- and after reflect or transmit 
+ and after reflect or transmit
 * 12/15 : make many G4CXOpticks methods private, to simplify usage : suggestions for Hans CaTS in notes/issues/Hans_QSim_segv_with_CaTS.rst
 * 12/13 : bring over the new polarization from sboundary.h into sysrap/tests/stmm_vs_sboundary_test.cc
 * 12/13 : drawing more parallels between stmm.h and sboundary.h calcs in order to correctly get reflect and transmit polarizations in stmm.h context

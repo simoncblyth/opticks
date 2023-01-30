@@ -18,27 +18,25 @@ For traversal examples see::
 
 struct snode
 {
-    static constexpr const int NV = 16 ; 
+    static constexpr const int NV = 14 ; 
 
-    int index ; 
-    int depth ; 
-    int sibdex ;  // 0-based sibling index 
-    int parent ; 
+    int index ;        // 0 
+    int depth ;        // 1
+    int sibdex ;       // 2    0-based sibling index 
+    int parent ;       // 3
 
-    int num_child ; 
-    int first_child ; 
-    int next_sibling ; 
-    int lvid ;
+    int num_child ;    // 4
+    int first_child ;  // 5 
+    int next_sibling ; // 6  
+    int lvid ;         // 7
 
-    int copyno ; 
-    int sensor_id ; 
-    int sensor_index ; 
-    int repeat_index ; 
+    int copyno ;       // 8 
+    int sensor_id ;    // 9 
+    int sensor_index ; // 10  
+    int repeat_index ; // 11
 
-    int boundary ; 
-    int spare31 ; 
-    int spare32 ; 
-    int spare33 ; 
+    int repeat_ordinal ; // 12
+    int boundary ;       // 13
 
     std::string desc() const ; 
 }; 
@@ -60,6 +58,7 @@ inline std::string snode::desc() const
        << " se:" << std::setw(7) << sensor_id
        << " se:" << std::setw(7) << sensor_index
        << " ri:" << std::setw(2) << repeat_index
+       << " ro:" << std::setw(5) << repeat_ordinal
        << " bd:" << std::setw(2) << boundary
        ;
     std::string s = ss.str();

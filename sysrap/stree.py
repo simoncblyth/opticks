@@ -7,13 +7,72 @@ TODO: improve stree.py repr
 
 """
 
-import os, numpy as np, logging
+import os, numpy as np, logging, builtins
 log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold
 from opticks.sysrap.sfreq import sfreq 
 
-class snode(object):
-    DTYPE = [('index', '<i4'), 
+
+class sobject(object):
+    @classmethod
+    def Label(cls, spc=5, pfx=10):
+        prefix = " " * pfx 
+        spacer = " " * spc 
+        return prefix + spacer.join(cls.FIELD)
+
+    @classmethod
+    def Fields(cls, bi=False):
+        kls = cls.__name__
+        for i, field in enumerate(cls.FIELD):
+            setattr(cls, field, i)
+            if bi:setattr(builtins, field, i)
+        pass
+
+    @classmethod
+    def Type(cls):
+        cls.Fields()
+        kls = cls.__name__
+        print("%s.Type()" % kls )
+        for i, field in enumerate(cls.FIELD):
+            name = cls.DTYPE[i][0] 
+            fieldname = "%s.%s" % (kls, field)
+            print(" %2d : %20s : %s " % (i, fieldname, name))
+        pass
+        print("%s.Label() : " % cls.Label() )
+
+    @classmethod
+    def RecordsFromArrays(cls, a):
+        """
+        :param a: ndarray
+        :return: np.recarray
+        """
+        ra = np.core.records.fromarrays(a.T, dtype=cls.DTYPE )
+        return ra 
+
+
+
+class snd(sobject):
+    DTYPE = [
+             ('index', '<i4'), 
+             ('depth', '<i4'), 
+             ('sibdex', '<i4'), 
+             ('parent', '<i4'), 
+             ('num_child', '<i4'), 
+             ('first_child', '<i4'), 
+             ('next_sibling', '<i4'), 
+             ('lvid', '<i4'), 
+             ('typecode', '<i4'),
+             ('param', '<i4'),
+             ('aabb', '<i4'),
+             ('xform', '<i4'),
+             ] 
+
+    FIELD = "ix dp sx pt nc fc sx lv tc pm bb xf".split()
+
+
+class snode(sobject):
+    DTYPE = [
+             ('index', '<i4'), 
              ('depth', '<i4'), 
              ('sibdex', '<i4'), 
              ('parent', '<i4'), 
@@ -25,20 +84,11 @@ class snode(object):
              ('sensor_id', '<i4'),
              ('sensor_index', '<i4'),
              ('repeat_index', '<i4'),
-             ('boundary', '<i4'),
-             ('spare31', '<i4'),
-             ('spare32', '<i4'),
-             ('spare33', '<i4')
+             ('repeat_ordinal', '<i4'),
+             ('boundary', '<i4')
              ] 
 
-    @classmethod
-    def RecordsFromArrays(cls, a):
-        """
-        :param a: nodes ndarray
-        :return nds: np.recarray
-        """
-        nds = np.core.records.fromarrays(a.T, dtype=cls.DTYPE )
-        return nds 
+    FIELD = "ix dp sx pt nc fc sx lv cp se sx ri ro bd".split()
 
     @classmethod
     def Desc(cls, rec):
@@ -52,6 +102,8 @@ class snode(object):
     def Brief(cls, rec):
         return "snode ix:%7d dh:%2s nc:%5d lv:%3d se:%7d." % (rec.index, rec.depth, rec.num_child, rec.lvid, rec.sensor)
 
+
+
 class stree(object):
     @classmethod
     def MakeTxtArray(cls, lines):
@@ -63,11 +115,13 @@ class stree(object):
         sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
         sf = sfreq(sff)
         nds = snode.RecordsFromArrays(f.nds)
+        rem = snode.RecordsFromArrays(f.rem)
         soname_ = self.MakeTxtArray(f.soname.lines)
 
         self.sf = sf
         self.f = f 
         self.nds = nds 
+        self.rem = rem 
         self.raw_subs = None
         self.soname_ = soname_
 
@@ -239,17 +293,64 @@ class stree(object):
 
 
     def desc_boundary(self):
-        st = self
-        u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True ) 
-
         lines = []
         lines.append("desc_boundary")
+        st = self
+        lines.append("u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True  )") 
+        u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True ) 
+
         for i in range(len(u_bd)):
             u = u_bd[i]
             n = n_bd[i]
             line = " %3d : %4d : %6d : %s " % (i, u, n, st.f.bd_names[u] )
             lines.append(line)
         pass
+        return "\n".join(lines)
+
+    def desc_remainder(self):
+        lines = []
+        lines.append("desc_remainder")
+        st = self
+        u_lv, n_lv = np.unique( st.rem.lvid, return_counts=True  )
+        lines.append("u_lv, n_lv = np.unique( st.rem.lvid, return_counts=True  )") 
+
+        for i in range(len(u_lv)):
+            u = u_lv[i]
+            n = n_lv[i]
+            line = " %3d : %4d : %6d : %s " % (i, u, n, st.f.soname[u] )
+            lines.append(line)
+        pass
+        return "\n".join(lines)
+
+   
+    def desc_csg(self, lvid=105):
+        """
+        In [8]: snd.Label(3,8), n[n[:,snd.lv] == 105]
+        Out[8]: 
+        ('        ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf',
+         array([[483,   4,   0, 484,   0,  -1,  -1, 105, 105, 294, 294,  -1],
+                [484,   3,   0, 486,   1, 483, 485, 105,  11,  -1,  -1,  -1],
+                [485,   3,   1, 486,   0,  -1,  -1, 105, 103, 295, 295, 183],
+                [486,   2,   0, 488,   2, 484, 487, 105,   1,  -1,  -1,  -1],
+                [487,   2,   1, 488,   0,  -1,  -1, 105, 105, 296, 296, 184],
+                [488,   1,   0, 495,   2, 486, 494, 105,   1,  -1,  -1,  -1],
+                [489,   4,   0, 490,   0,  -1,  -1, 105, 105, 297, 297,  -1],
+                [490,   3,   0, 492,   1, 489, 491, 105,  11,  -1,  -1,  -1],
+                [491,   3,   1, 492,   0,  -1,  -1, 105, 103, 298, 298, 186],
+                [492,   2,   0, 494,   2, 490, 493, 105,   1,  -1,  -1,  -1],
+                [493,   2,   1, 494,   0,  -1,  -1, 105, 105, 299, 299, 187],
+                [494,   1,   1, 495,   2, 492,  -1, 105,   1,  -1,  -1, 188],
+                [495,   0,  -1,  -1,   2, 488,  -1, 105,   3,  -1,  -1,  -1]], dtype=int32))
+
+        In [9]: st.f.soname[105]
+        Out[9]: 'HamamatsuR12860Tail0x61b5500'
+        """
+        st = self 
+        n = st.f.csg.node
+        lines = []
+        lines.append("desc_csg lvid:%d st.f.soname[%d]:%s " % (lvid,lvid,st.f.soname[lvid]))
+        lines.append(snd.Label(3,8))
+        lines.append("%s" % repr(n[n[:,snd.lv] == lvid]))
         return "\n".join(lines)
 
 

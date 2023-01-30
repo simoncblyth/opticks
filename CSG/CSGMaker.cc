@@ -1444,46 +1444,134 @@ void CSGMaker::importTree(const stree* st_)
     st = st_ ; 
     assert(st); 
 
-    importAllSolid();     
+    importSolid();     
 
     LOG(LEVEL) << "]" ;     
 }
 
 
 /**
-CSGMaker::importAllSolid : "Solid" means compound Solid 
+CSGMaker::importSolid : "Solid" means compound Solid 
 ----------------------------------------------------------------
 
 After CSG_GGeo_Convert::convertAllSolid
 
 **/
 
-void CSGMaker::importAllSolid()
+void CSGMaker::importSolid()
 {
-    for(int ridx=0 ; ridx < int(1+st->get_num_factor()) ; ridx++) importSolid(ridx); 
+    for(int ridx=0 ; ridx < int(1+st->get_num_factor()) ; ridx++) 
+    {
+        std::string _rlabel = CSGSolid::MakeLabel('r',ridx) ;
+        const char* rlabel = _rlabel.c_str(); 
+
+        if( ridx == 0 )
+        {
+            importRemainderSolid(ridx, rlabel ); 
+        }
+        else
+        {
+            importFactorSolid(ridx, rlabel ); 
+        }
+    }
 }
-
+        
 /**
-CSGMaker::importSolid : "Solid" means compound Solid 
------------------------------------------------------
+CSGMaker::importRemainder : non-instanced global volumes 
+----------------------------------------------------------
 
-After CSG_GGeo_Convert::convertSolid
+cf::
+
+    CSG_GGeo_Convert::convertSolid
+    CSG_GGeo_Convert::convertPrim
 
 **/
-void CSGMaker::importSolid(unsigned ridx)
+CSGSolid* CSGMaker::importRemainderSolid(int ridx, const char* rlabel)
 {
-    std::string rlabel = CSGSolid::MakeLabel('r',ridx) ;
-   
-    std::cout << rlabel << std::endl;  
-    // HMM its tedious to loop over all nodes when need remainder counts 
-    // might as well persist remainder info into sremainder.h similar to sfactor.h
+    assert( ridx == 0 ); 
+    int num_rem = st->rem.size() ; 
 
+    LOG(LEVEL) 
+        << " ridx " << ridx 
+        << " rlabel " << rlabel 
+        << " num_rem " << num_rem 
+        ; 
 
+    CSGSolid* so = fd->addSolid(num_rem, rlabel); 
+
+    for(int i=0 ; i < num_rem ; i++)
+    {
+        const snode& nd = st->rem[i] ; 
+        int lvid = nd.lvid ; 
+
+        LOG(LEVEL) << " i " << i << " lvid " << lvid ; 
+    }
+
+    return so ; 
 }
 
+CSGSolid* CSGMaker::importFactorSolid(int ridx, const char* rlabel)
+{
+    assert( ridx > 0 ); 
+
+    int num_factor = st->factor.size() ; 
+    assert( ridx - 1 < num_factor ); 
+
+    const sfactor& sf = st->factor[ridx-1] ; 
+    int subtree = sf.subtree ; 
+
+    CSGSolid* so = fd->addSolid(subtree, rlabel); 
+
+    int q_repeat_index = ridx ; 
+    int q_repeat_ordinal = 0 ;   // just first repeat 
+
+    std::vector<int> lvids ; 
+    st->get_repeat_lvid(lvids, q_repeat_index, q_repeat_ordinal) ; 
+
+    std::vector<snode> nodes ; 
+    st->get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ; 
+
+    LOG(LEVEL) 
+        << " ridx " << ridx 
+        << " rlabel " << rlabel 
+        << " num_factor " << num_factor
+        << " lvids.size " << lvids.size() 
+        << " nodes.size " << nodes.size() 
+        << " subtree " << subtree
+        ;
+
+    assert( subtree == int(lvids.size()) ); 
+
+    for(int i=0 ; i < subtree ; i++)
+    {
+        const snode& nd = nodes[i] ; 
+        int lvid = nd.lvid ; 
+        int lvid1 = lvids[i] ; 
+
+        /**
+        // need to find the number of parts (usually thats the number of csg nodes)
+        // HMM: not so simple the stree has not been complete-binary-tree-ified
+             
+        st
+        ./stree_load_test.sh ana
+
+        In [9]: print(st.desc_csg(18))
+        desc_csg lvid:18 st.f.soname[18]:GLw1.up10_up11_FlangeI_Web_FlangeII0x59f4850 
+                ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf
+        array([[ 32,   2,   0,  34,   0,  -1,  33,  18, 110,  25,  25,  -1],
+               [ 33,   2,   1,  34,   0,  -1,  -1,  18, 110,  26,  26,   5],
+               [ 34,   1,   0,  36,   2,  32,  35,  18,   1,  -1,  -1,  -1],
+               [ 35,   1,   1,  36,   0,  -1,  -1,  18, 110,  27,  27,   6],
+               [ 36,   0,  -1,  -1,   2,  34,  -1,  18,   1,  -1,  -1,  -1]], dtype=int32)
+
+        **/
+
+        LOG(LEVEL) << " i " << i << " lvid " << lvid << " lvid1 " << lvid1 ; 
+        assert( lvid1 == lvid ); 
+    }
 
 
-
-
+    return so ; 
+}
 
 

@@ -13,7 +13,9 @@ This is exploring a minimal approach to geometry translation
 Lifecycle
 ------------
 
-Canonical stree instance is SSim member instanciated by SSim::SSim 
+* Canonical stree instance is SSim member instanciated by SSim::SSim 
+* stree is populated by U4Tree::Create
+
 
 Users of stree.h
 -------------------
@@ -182,6 +184,7 @@ struct stree
 
     static constexpr const char* RELDIR = "stree" ;
     static constexpr const char* NDS = "nds.npy" ;
+    static constexpr const char* REM = "rem.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
     static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
@@ -208,10 +211,13 @@ struct stree
     static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
+    int level ;                            // verbosity 
+
     std::vector<std::string> mtname ;       // unique material names
     std::vector<int>         mtindex ;      // G4Material::GetIndex 0-based creation indices 
     std::vector<int>         mtline ;     
-    std::map<int,int>        mtindex_to_mtline ;  // not persisted, filled from mtindex and mtline with init_mtindex_to_mtline
+    std::map<int,int>        mtindex_to_mtline ;   // filled from mtindex and mtline with init_mtindex_to_mtline 
+    // map not currently persisted (it could be using NPX.h)
 
     std::vector<std::string> suname ;       // surface names
     std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
@@ -227,45 +233,37 @@ struct stree
 
 
     std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
+    std::vector<snode> rem ;               // selection of remainder nodes
     std::vector<std::string> digs ;        // per-node digest for all nodes  
     std::vector<std::string> subs ;        // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
+
     std::vector<int> sensor_id ;           // updated by reorderSensors
-
-
-
-    int level ;                            // verbosity 
     unsigned sensor_count ; 
+
     sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
                                            // subs are collected in stree::classifySubtrees
 
-    scsg*  csg ;                           // csg node trees of all solids    
+    scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
+    NPFold* material ;                     // material properties from G4 MPTs
+    NPFold* surface ;                      // surface properties from G4 MPTs         
 
-
-    NPFold* material ; // (formerly mtfold)  material and surface properties 
-    NPFold* surface ;  //                    potentially these could live within SSim ?
-
-    // NB NPFold material and surface contain direct copies of the Geant4 mpt tables
+    // HMM would there be any advantage in these moving to SSim ? 
     //
     // TODO: need to juice these NPFold inputs into equivalents of the 
     //       GMaterialLib and GSurfaceLib buffers using standard domains and default props
     //       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
     //
     //       * that can then be compared between the workflows to validate the new approach
-    //
-    //
-    // HMM: the stree.h inst members and methods are kinda out-of-place
-    //      as CSGFoundry already has inst : so the below are looking ahead 
-    //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
-
 
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
-
     std::vector<int>                  inst_nidx ; 
+
+    // TODO: compare/consolidate stree.h inst members and methods with CSGFoundry equiv
 
 
     stree();
@@ -369,6 +367,7 @@ struct stree
     void sortSubtrees(); 
     void enumerateFactors(); 
     void labelFactorSubtrees(); 
+    void collectRemainderNodes(); 
 
     void factorize(); 
 
@@ -377,8 +376,17 @@ struct stree
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
-    void get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index ) const ; 
-    void get_remainder_nodes(std::vector<int>& nodes ) const ; 
+    static bool SelectNode( const snode& nd, int q_repeat_index, int q_repeat_ordinal ); 
+    // q_repeat_ordinal:-2 selects all repeat_ordinal
+
+    void get_repeat_field(std::vector<int>& result, char q_field , int q_repeat_index, int q_repeat_ordinal ) const ; 
+    void get_repeat_lvid( std::vector<int>& lvids, int q_repeat_index, int q_repeat_ordinal=-2 ) const ; 
+    void get_repeat_nidx( std::vector<int>& nidxs, int q_repeat_index, int q_repeat_ordinal=-2 ) const ; 
+
+    void get_remainder_nidx(std::vector<int>& nidxs ) const ; 
+ 
+    void get_repeat_node( std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const ; 
+
     std::string desc_repeat_nodes() const ;  
 
 
@@ -441,6 +449,7 @@ inline std::string stree::desc() const
        << " level " << level 
        << " sensor_count " << sensor_count 
        << " nds " << nds.size()
+       << " rem " << rem.size()
        << " m2w " << m2w.size()
        << " w2m " << w2m.size()
        << " gtd " << gtd.size()
@@ -1307,39 +1316,58 @@ inline void stree::save( const char* base, const char* reldir ) const
 stree::save_
 --------------
 
-TODO: Use NPFold and split into serialize and save 
+TODO: standardize to using NPFold.h serialize/import pattern 
+
+POSSIBLY : make saving full nds nodes optional as the 
+factorization might be made to replace the full info ? 
+
+* would need to store first subtree for each factor to do this, "fnd" factor nodes  
 
 **/
 
 inline void stree::save_( const char* fold ) const 
 {
     if(level > 0) std::cout << "[ stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
-    NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
+
+    // nodes
+    NP::Write<int>(    fold, NDS, (int*)nds.data(), nds.size(), snode::NV );
+    NP::Write<int>(    fold, REM, (int*)rem.data(), rem.size(), snode::NV );
+
+    // transforms
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
     NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
+
+    // materials
     NP::WriteNames(    fold, MTNAME,   mtname );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
+    if(material) material->save(fold, MATERIAL) ;   // HMM: consolidate ?
 
+    // surfaces
     NP::WriteNames(    fold, SUNAME,   suname );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
+    if(surface)   surface->save(fold, SURFACE) ;   // HMM: consolidate ?
 
+    // boundaries
     NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
     a_bd->set_names( bdname );
     a_bd->save( fold, BD ); 
 
+    // solids 
     NPFold* fcsg = csg->serialize() ; 
     fcsg->save( fold, CSG ); 
- 
     NP::WriteNames( fold, SONAME, soname );
+
+    // digests
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
+
+
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
     NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
 
-    if(material) material->save(fold, MATERIAL) ; 
-    if(surface) surface->save(fold,   SURFACE) ; 
+
 
 
     NP::Write<double>(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
@@ -1430,6 +1458,7 @@ inline void stree::load_( const char* fold )
     if(level > 0) std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
 
     ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
+    ImportArray<snode, int>(                  rem, NP::Load(fold, REM)); 
     ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 
     ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
     ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
@@ -1746,15 +1775,17 @@ inline void stree::labelFactorSubtrees()
             }
             else 
             {
+                // all the instances must have same number of nodes
                 assert( int(subtree.size()) == fac_subtree ); 
             }
 
-            for(unsigned i=0 ; i < subtree.size() ; i++)
+            for(unsigned j=0 ; j < subtree.size() ; j++)
             {
-                int nidx = subtree[i] ; 
+                int nidx = subtree[j] ; 
                 snode& nd = nds[nidx] ; 
                 assert( nd.index == nidx ); 
                 nd.repeat_index = repeat_index ; 
+                nd.repeat_ordinal = i ;      
             }
         }
         fac.subtree = fac_subtree ; 
@@ -1768,6 +1799,19 @@ inline void stree::labelFactorSubtrees()
     }
     if(level>0) std::cout << "] stree::labelFactorSubtrees " << std::endl ;
 }
+
+inline void stree::collectRemainderNodes()
+{
+    assert( rem.size() == 0u ); 
+    for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
+    {
+        const snode& nd = nds[nidx] ; 
+        assert( nd.index == nidx ); 
+        if( nd.repeat_index == 0 ) rem.push_back(nd) ; 
+    }
+    if(level>0) std::cout << "stree::collectRemainderNodes rem.size " << rem.size() << std::endl ;
+}
+
 
 /**
 stree::factorize
@@ -1791,6 +1835,9 @@ labelFactorSubtrees
    label all nodes of subtrees of all repeats with repeat_index, 
    leaving remainder nodes at default of zero repeat_index
 
+collectRemainderNodes
+   collect global non-instanced 
+ 
 **/
 
 inline void stree::factorize()
@@ -1801,6 +1848,7 @@ inline void stree::factorize()
     sortSubtrees(); 
     enumerateFactors(); 
     labelFactorSubtrees(); 
+    collectRemainderNodes(); 
 
     if(level>0) std::cout << desc_factor() << std::endl ;
     if(level>0) std::cout << "] stree::factorize " << std::endl ;
@@ -1859,22 +1907,111 @@ inline std::string stree::desc_factor() const
 
 
 
-inline void stree::get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index ) const 
+/**
+stree::get_repeat_field
+-------------------------
+
+::
+
+    In [9]: snode.Label(6,11), f.nds[f.nds[:,ri] == 1 ]
+    Out[9]: 
+    ('           ix      dp      sx      pt      nc      fc      sx      lv      cp      se      sx      ri      bd',
+     array([[194249,      6,  20675,  67846,      2, 194250, 194254,    122, 300000,     -1,     -1,      1,     26],
+            [194250,      7,      0, 194249,      2, 194251, 194253,    120,      0,     -1,     -1,      1,     29],
+            [194251,      8,      0, 194250,      0,     -1, 194252,    118,      0,     -1,     -1,      1,     36],
+            [194252,      8,      1, 194250,      0,     -1,     -1,    119,      0,     -1,     -1,      1,     37],
+            [194253,      7,      1, 194249,      0,     -1,     -1,    121,      0,     -1,     -1,      1,     24],
+
+            [194254,      6,  20676,  67846,      2, 194255, 194259,    122, 300001,     -1,     -1,      1,     26],
+            [194255,      7,      0, 194254,      2, 194256, 194258,    120,      0,     -1,     -1,      1,     29],
+            [194256,      8,      0, 194255,      0,     -1, 194257,    118,      0,     -1,     -1,      1,     36],
+            [194257,      8,      1, 194255,      0,     -1,     -1,    119,      0,     -1,     -1,      1,     37],
+            [194258,      7,      1, 194254,      0,     -1,     -1,    121,      0,     -1,     -1,      1,     24],
+
+            [194259,      6,  20677,  67846,      2, 194260, 194264,    122, 300002,     -1,     -1,      1,     26],
+            [194260,      7,      0, 194259,      2, 194261, 194263,    120,      0,     -1,     -1,      1,     29],
+            ...
+
+
+ADDED ro:repeat_ordinal to snode.h for convenient selecting of the repeats:: 
+
+    In [27]: snode.Label(5,10), f.nds[np.logical_and(f.nds[:,ri] == 2,f.nds[:,ro] == 0)]
+    Out[27]: 
+    ('          ix     dp     sx     pt     nc     fc     sx     lv     cp     se     sx     ri     ro     bd',
+     array([[70979,     6,  3065, 67846,     3, 70980, 70986,   117,     2,    -1,    -1,     2,     0,    26],
+            [70980,     7,     0, 70979,     0,    -1, 70981,   111,     0,    -1,    -1,     2,     0,    27],
+            [70981,     7,     1, 70979,     0,    -1, 70982,   112,     0,    -1,    -1,     2,     0,    33],
+            [70982,     7,     2, 70979,     1, 70983,    -1,   116,     0,    -1,    -1,     2,     0,    29],
+            [70983,     8,     0, 70982,     2, 70984,    -1,   115,     0,    -1,    -1,     2,     0,    30],
+            [70984,     9,     0, 70983,     0,    -1, 70985,   113,     0,    -1,    -1,     2,     0,    34],
+            [70985,     9,     1, 70983,     0,    -1,    -1,   114,     0,    -1,    -1,     2,     0,    35]], dtype=int32))
+
+
+
+**/
+
+
+inline bool stree::SelectNode( const snode& nd, int q_repeat_index, int q_repeat_ordinal ) // static
+{
+    bool all_ordinal = q_repeat_ordinal == -2 ; 
+    bool select = all_ordinal ? 
+                                nd.repeat_index == q_repeat_index 
+                              :
+                                nd.repeat_index == q_repeat_index && nd.repeat_ordinal == q_repeat_ordinal
+                              ;
+
+    return select ;  
+}
+
+inline void stree::get_repeat_field(std::vector<int>& result, char q_field , int q_repeat_index, int q_repeat_ordinal ) const 
 {
     for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
     {
         const snode& nd = nds[nidx] ; 
         assert( nd.index == nidx ); 
-        if( nd.repeat_index == q_repeat_index ) nodes.push_back(nidx) ; 
+
+        if(SelectNode(nd, q_repeat_index, q_repeat_ordinal))
+        {
+            int field = -3 ; 
+            switch(q_field)
+            {
+                case 'I': field = nd.index ; break ; 
+                case 'L': field = nd.lvid  ; break ; 
+            }
+            result.push_back(field) ; 
+        }
     }
 }
 
 
-inline void stree::get_remainder_nodes(std::vector<int>& nodes ) const 
+inline void stree::get_repeat_lvid(std::vector<int>& lvids, int q_repeat_index, int q_repeat_ordinal ) const 
+{
+    get_repeat_field(lvids, 'L', q_repeat_index, q_repeat_ordinal );  
+}
+inline void stree::get_repeat_nidx(std::vector<int>& nidxs, int q_repeat_index, int q_repeat_ordinal ) const 
+{
+    get_repeat_field(nidxs, 'I', q_repeat_index, q_repeat_ordinal );  
+}
+inline void stree::get_remainder_nidx(std::vector<int>& nodes ) const 
 {
     int q_repeat_index = 0 ; 
-    get_repeat_nodes(nodes, q_repeat_index); 
+    int q_repeat_ordinal = -2 ; 
+    get_repeat_nidx(nodes, q_repeat_index, q_repeat_ordinal); 
 }
+
+
+inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const 
+{
+    for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
+    {
+        const snode& nd = nds[nidx] ; 
+        assert( nd.index == nidx ); 
+        if(SelectNode(nd, q_repeat_index, q_repeat_ordinal)) nodes.push_back(nd); 
+    }
+}
+
+
+
 inline std::string stree::desc_repeat_nodes() const 
 {
     int num_factor = factor.size(); 
@@ -1890,10 +2027,10 @@ inline std::string stree::desc_repeat_nodes() const
     for(int i=0 ; i < num_factor + 1 ; i++)
     {
         int q_ridx = i ;  
-        std::vector<int> nodes ; 
-        get_repeat_nodes(nodes, q_ridx ); 
+        std::vector<int> nidxs ; 
+        get_repeat_nidx(nidxs, q_ridx ); 
 
-        int num_nodes = nodes.size() ; 
+        int num_nodes = nidxs.size() ; 
         if(q_ridx == 0) remainder = num_nodes ; 
 
         total += num_nodes ;  
