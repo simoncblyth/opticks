@@ -1,14 +1,16 @@
-// name=SCanvasTest ; gcc $name.cc -std=c++11 -I.. -lstdc++ -Wsign-compare -o /tmp/$name && VERBOSE=1 /tmp/$name
-#include "SCanvas.hh"
+// name=scanvasTest ; gcc $name.cc -std=c++11 -I.. -lstdc++ -Wsign-compare -o /tmp/$name && VERBOSE=1 /tmp/$name
+#include "scanvas.h"
 
 void test_draw_int()
 {
+    printf("//[test_draw_int\n"); 
+
     int xscale = 5 ; 
     int yscale = 3 ; 
     int width = 10 ; 
     int height = 5 ; 
 
-    SCanvas* c = new SCanvas(width,height,xscale,yscale); 
+    scanvas* c = new scanvas(width,height,xscale,yscale); 
 
     for(int ix=0 ; ix < width ;  ix++ )
     for(int iy=0 ; iy < height ; iy++ )
@@ -20,16 +22,19 @@ void test_draw_int()
         }
     } 
     c->print(); 
+    printf("//]test_draw_int\n"); 
 }
 
 void test_draw_txt()
 {
+    printf("//test_draw_txt\n");
+ 
     int xscale = 5 ; 
     int yscale = 3 ; 
     int width = 10 ; 
     int height = 5 ; 
 
-    SCanvas* c = new SCanvas(width,height,xscale,yscale); 
+    scanvas* c = new scanvas(width,height,xscale,yscale); 
 
     for(int ix=0 ; ix < width ;  ix++ )
     for(int iy=0 ; iy < height ; iy++ )
@@ -45,6 +50,7 @@ void test_draw_txt()
 
 void test_format_float()
 {
+    printf("//test_format_float\n");
     float offset = 5e6 ; 
 
     char tmp[16] ;
@@ -58,12 +64,14 @@ void test_format_float()
 
 void test_draw_float()
 {
+    printf("//test_draw_float\n");
+
     int xscale = 8 ; 
     int yscale = 3 ; 
     int width = 10 ; 
     int height = 5 ; 
 
-    SCanvas* c = new SCanvas(width,height,xscale,yscale); 
+    scanvas* c = new scanvas(width,height,xscale,yscale); 
 
     for(int ix=0 ; ix < width ;  ix++ )
     for(int iy=0 ; iy < height ; iy++ )
@@ -80,12 +88,14 @@ void test_draw_float()
 
 void test_resize()
 {
+    printf("//test_resize\n");
+
     int xscale = 5 ; 
     int yscale = 3 ; 
     int width = 10 ; 
     int height = 5 ; 
 
-    SCanvas* c = new SCanvas(width,height,xscale,yscale); 
+    scanvas* c = new scanvas(width,height,xscale,yscale); 
     c->drawtest(); 
     c->print(); 
 
@@ -100,13 +110,16 @@ void test_resize()
 
 int main(int argc, char** argv)
 {
-    //test_draw_int(); 
-    //test_draw_txt(); 
-    //test_resize();  
-
+    test_draw_int(); 
+    test_draw_txt(); 
     test_format_float(); 
-    //test_draw_float(); 
- 
+    test_draw_float(); 
+
+    test_resize();  
+
+    /*
+    */ 
+
     return 0 ; 
 }
 

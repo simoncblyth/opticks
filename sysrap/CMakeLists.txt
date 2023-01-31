@@ -339,7 +339,7 @@ set(HEADERS
     SPresent.h
 
     SCenterExtentGenstep.hh 
-    SCanvas.hh
+    scanvas.h
 
     OpticksGenstep.h
     OpticksPhoton.h

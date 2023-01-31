@@ -1,10 +1,22 @@
 #pragma once
-
 /**
-SCanvas : ascii "painting"
-==============================
+scanvas.h : ascii "painting" (formerly SCanvas.hh without .cc)
+==================================================================
 
 Used for rendering CSG trees by ZSolid::Draw 
+
+::
+
+    epsilon:opticks blyth$ opticks-f scanvas.h 
+    ./CSG/tests/CSGClassifyTest.cc:#include "scanvas.h"
+    ./CSG/CSGDraw.cc:#include "scanvas.h"
+    ./extg4/X4SolidTree.cc:#include "scanvas.h"
+    ./sysrap/CMakeLists.txt:    scanvas.h
+    ./sysrap/tests/scanvasTest.cc:#include "scanvas.h"
+    ./sysrap/tests/TreePruneTest.cc:#include "scanvas.h"
+    ./sysrap/scanvas.h:scanvas.h : ascii "painting" (formerly SCanvas.hh without .cc)
+    ./u4/U4SolidTree.cc:#include "scanvas.h"
+    epsilon:opticks blyth$ 
 
 **/
 
@@ -13,7 +25,7 @@ Used for rendering CSG trees by ZSolid::Draw
 #include <cstdlib>
 #include <cstdio>
 
-struct SCanvas
+struct scanvas
 {
     bool verbose ; 
     unsigned width ; 
@@ -24,7 +36,7 @@ struct SCanvas
     unsigned ny ; 
     char* c ; 
 
-    SCanvas( unsigned width, unsigned height, unsigned xscale=8, unsigned yscale=4 );  
+    scanvas( unsigned width, unsigned height, unsigned xscale=8, unsigned yscale=4 );  
     void resize(unsigned width, unsigned height);
     void clear(); 
     void drawtest(); 
@@ -40,7 +52,7 @@ struct SCanvas
 };
 
 
-inline SCanvas::SCanvas(unsigned width_, unsigned height_, unsigned xscale_, unsigned yscale_)
+inline scanvas::scanvas(unsigned width_, unsigned height_, unsigned xscale_, unsigned yscale_)
     :
     verbose(getenv("VERBOSE")!=nullptr),
     xscale(xscale_), 
@@ -52,27 +64,27 @@ inline SCanvas::SCanvas(unsigned width_, unsigned height_, unsigned xscale_, uns
     resize(width_, height_); 
 }
 
-inline void SCanvas::resize(unsigned width_, unsigned height_)
+inline void scanvas::resize(unsigned width_, unsigned height_)
 {
     width = width_ ; 
     height = height_ ; 
     nx = width*xscale+1 ;   // +1 for the newline
     ny = height*yscale  ; 
     if(verbose)
-    printf("SCanvas::resize width %d height %d nx %d ny %d nx*ny %d xscale %d yscale %d \n", width, height, nx, ny, nx*ny, xscale, yscale ); 
+    printf("scanvas::resize width %d height %d nx %d ny %d nx*ny %d xscale %d yscale %d \n", width, height, nx, ny, nx*ny, xscale, yscale ); 
     delete [] c ; 
     c  = new char[nx*ny+1] ;   // +1 for string termination
     clear(); 
 }
 
-inline void SCanvas::clear()
+inline void scanvas::clear()
 {
     for(unsigned y=0 ; y < ny ; y++) for(unsigned x=0 ; x < nx ; x++)  c[y*nx+x] = ' ' ;   
     for(unsigned y=0 ; y < ny ; y++) c[y*nx+nx-1] = '\n' ;   
     c[nx*ny] = '\0' ;  // string terminate 
 }
 
-inline void SCanvas::drawtest()
+inline void scanvas::drawtest()
 {
     for(int ix=0 ; ix < int(width) ;  ix++ )
     for(int iy=0 ; iy < int(height) ; iy++ )
@@ -87,7 +99,7 @@ inline void SCanvas::drawtest()
 
 
 
-inline void SCanvas::drawf(int ix, int iy, int dx, int dy, float val, const char* fmt )
+inline void scanvas::drawf(int ix, int iy, int dx, int dy, float val, const char* fmt )
 {
     char tmp[16] ;
     int rc = sprintf(tmp, fmt, val );
@@ -95,10 +107,14 @@ inline void SCanvas::drawf(int ix, int iy, int dx, int dy, float val, const char
     assert( expect );
     if(!expect) exit(EXIT_FAILURE) ; 
 
+    bool expect_xscale = xscale > 7 ; 
+    if(!expect_xscale) printf("scanvas::_draw expect_xscale when drawing floats an xscale of at least 8 is needed  xscale %d  \n", xscale) ; 
+
+
     _draw(ix, iy, dx, dy, tmp); 
 }
 
-inline void SCanvas::draw(int ix, int iy, int dx, int dy, int val)
+inline void scanvas::draw(int ix, int iy, int dx, int dy, int val)
 {
     char tmp[10] ;
     int rc = sprintf(tmp, "%d", val );
@@ -109,19 +125,19 @@ inline void SCanvas::draw(int ix, int iy, int dx, int dy, int val)
     _draw(ix, iy, dx, dy, tmp); 
 }
 
-inline void SCanvas::drawch(int ix, int iy, int dx, int dy, char ch)  
+inline void scanvas::drawch(int ix, int iy, int dx, int dy, char ch)  
 {
     char tmp[2]; 
     tmp[0] = ch ; 
     tmp[1] = '\0' ; 
     _draw(ix, iy, dx, dy, tmp); 
 }
-inline void SCanvas::draw(int ix, int iy, int dx, int dy, const char* txt)   
+inline void scanvas::draw(int ix, int iy, int dx, int dy, const char* txt)   
 {
     _draw(ix, iy, dx, dy, txt); 
 }
 
-inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   // 0,0 is at top left 
+inline void scanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   // 0,0 is at top left 
 {
     if( ix < 0 ) ix += width ; 
     if( iy < 0 ) iy += height ;
@@ -135,7 +151,7 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
 
     bool expect = expect_ix && expect_iy && expect_dx && expect_dy ; 
 
-    if(!expect) printf("SCanvas::_draw ix %d width %d iy %d height %d dx %d xscale %d dy %d yscale %d \n", ix, width, iy, height, dx, xscale, dy, yscale ); 
+    if(!expect) printf("scanvas::_draw ix %d width %d iy %d height %d dx %d xscale %d dy %d yscale %d \n", ix, width, iy, height, dx, xscale, dy, yscale ); 
     if(!expect) return ;  
 
     //assert(expect); 
@@ -146,14 +162,11 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     int y = iy*yscale + dy ; 
     int l = strlen(txt) ; 
 
-    bool expect_xscale = xscale > 7 ; 
-    if(!expect_xscale) printf("SCanvas::_draw expect_xscale when drawing floats an xscale of at least 8 is needed  xscale %d  \n", xscale) ; 
-
     bool expect_x =  x + l < int(nx) ; 
     bool expect_y =  y < int(ny) ; 
 
-    if(!expect_x) printf("SCanvas::_draw expect_x ERROR out of range ix %d xscale %d dx %d x %d l %d x+l %d  nx %d txt [%s] \n", ix, xscale, dx, x, l, x+l, nx, txt ); 
-    if(!expect_y) printf("SCanvas::_draw expect_y ERROR out of range y %d ny %d \n",   y, ny ); 
+    if(!expect_x) printf("scanvas::_draw expect_x ERROR out of range ix %d xscale %d dx %d x %d l %d x+l %d  nx %d txt [%s] \n", ix, xscale, dx, x, l, x+l, nx, txt ); 
+    if(!expect_y) printf("scanvas::_draw expect_y ERROR out of range y %d ny %d \n",   y, ny ); 
 
     //if(!expect_x) exit(EXIT_FAILURE); 
     //if(!expect_y) exit(EXIT_FAILURE); 
@@ -166,7 +179,7 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     int offset = y*nx + x ;  
     bool expect_offset = offset >= 0 && offset + l < int(nx*ny) ; 
 
-    if(!expect_offset) printf("SCanvas::_draw error out of range offset+l %d  nx*ny %d \n", offset+l, nx*ny ) ; 
+    if(!expect_offset) printf("scanvas::_draw error out of range offset+l %d  nx*ny %d \n", offset+l, nx*ny ) ; 
 
     //assert(expect_offset);  
     //if(!expect_offset) exit(EXIT_FAILURE); 
@@ -176,7 +189,7 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     memcpy( c + offset , txt, l );
 }
 
-inline void SCanvas::print(const char* msg) const 
+inline void scanvas::print(const char* msg) const 
 {
     if(msg) printf("%s\n", msg); 
     if(verbose) 
@@ -185,10 +198,10 @@ inline void SCanvas::print(const char* msg) const
         printf("\n%s",c);
 }
 
-inline const char* SCanvas::desc() const 
+inline const char* scanvas::desc() const 
 {
     char msg[200] ; 
-    snprintf(msg, 200, "SCanvas::desc width %d height %d xscale %d yscale %d nx %d ny %d", width, height, xscale, yscale, nx, ny ); 
+    snprintf(msg, 200, "scanvas::desc width %d height %d xscale %d yscale %d nx %d ny %d", width, height, xscale, yscale, nx, ny ); 
     return strdup(msg); 
 }
 

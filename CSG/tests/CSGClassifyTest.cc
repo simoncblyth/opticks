@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "OpticksCSG.h"
-#include "SCanvas.hh"
+#include "scanvas.h"
 
 #define DEBUG 1 
 #include "csg_classify.h"
@@ -17,7 +17,7 @@ void print_LUT( const LUT& lut, OpticksCSG_t typecode, const char* notes )
     int mx = 2 ; 
     int my = 2 ; 
 
-    SCanvas canvas(width, height, xscale, yscale );
+    scanvas canvas(width, height, xscale, yscale );
 
     canvas.draw(   0,0, mx, my, CSG::Name(typecode) ); 
 

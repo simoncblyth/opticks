@@ -11,7 +11,7 @@ CSGDraw.h
 #include <string>
 
 struct CSGQuery ; 
-struct SCanvas ; 
+struct scanvas ; 
 
 struct CSG_API CSGDraw
 {
@@ -36,7 +36,7 @@ struct CSG_API CSGDraw
     int          type ; 
     int          width ; 
     int          height ; 
-    SCanvas*     canvas ; 
+    scanvas*     canvas ; 
     bool         dump ; 
 
 };

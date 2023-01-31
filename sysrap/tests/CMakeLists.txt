@@ -103,7 +103,7 @@ set(TEST_SOURCES
    SEventTest.cc
    SThetaCutTest.cc
    SPhiCutTest.cc
-   SCanvasTest.cc 
+   scanvasTest.cc 
 
    OpticksPhotonTest.cc
    SUTest.cc

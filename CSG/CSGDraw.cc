@@ -1,7 +1,7 @@
 #include "SLOG.hh"
 #include "OpticksCSG.h"
-#include "SCanvas.hh"
 
+#include "scanvas.h"
 #include "scuda.h"
 #include "squad.h"
 
@@ -20,7 +20,7 @@ CSGDraw::CSGDraw(const CSGQuery* q_, char axis_ )
     type(q->getSelectedType()), 
     width(q->select_prim_numNode),
     height( CSG::IsTree((OpticksCSG_t)type) ? q->getSelectedTreeHeight() : 1),
-    canvas(new SCanvas(width+2, height+2, 10, 5)),
+    canvas(new scanvas(width+2, height+2, 10, 5)),
     dump(false)
 {
 }

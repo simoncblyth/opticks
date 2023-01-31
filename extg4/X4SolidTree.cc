@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include "SLOG.hh"
+#include "scanvas.h"
 
 #include "G4SolidStore.hh"
 #include "G4UnionSolid.hh"
@@ -21,7 +22,7 @@
 
 #include "G4RotationMatrix.hh"
 
-#include "SCanvas.hh"
+
 #include "X4SolidTree.hh"
 #include "G4Version.hh"
 
@@ -79,7 +80,7 @@ X4SolidTree::X4SolidTree(const G4VSolid* original_ )
     height(0), 
     extra_width(1),    // +1 for annotations to the right
     extra_height(1+1), // +1 as height zero tree is still one node, +1 for annotation  
-    canvas(  new SCanvas(width+extra_width, height+extra_height, 8, 5) ),
+    canvas(  new scanvas(width+extra_width, height+extra_height, 8, 5) ),
     names( new std::vector<std::string>),
     nameprefix(nullptr),
     inorder( new std::vector<const G4VSolid*> ),

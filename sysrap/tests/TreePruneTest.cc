@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-#include "SCanvas.hh"
+#include "scanvas.h"
 
 
 enum { 
@@ -263,7 +263,7 @@ struct tree
     int xscale ; 
     int yscale ; 
 
-    SCanvas* canvas ; 
+    scanvas* canvas ; 
     int value_order ; 
 
     std::vector<nd*> inorder ; 
@@ -364,7 +364,7 @@ tree::tree(nd* root_)
     height(maxdepth_r(root,0)),
     xscale(5),
     yscale(4),
-    canvas(new SCanvas(width,height+1,xscale,yscale)),  // +1 as a height 0 tree is still 1 node
+    canvas(new scanvas(width,height+1,xscale,yscale)),  // +1 as a height 0 tree is still 1 node
     value_order(-1)
 {
     instrument();

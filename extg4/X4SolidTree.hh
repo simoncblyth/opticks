@@ -36,7 +36,7 @@ used across compilation units (eg for tests) hence assume that
 the API_EXPORT is needed 
 **/
 
-struct SCanvas ; 
+struct scanvas ; 
 
 #ifdef PMTSIM_STANDALONE
 #include "PMTSIM_API_EXPORT.hh"
@@ -76,7 +76,7 @@ struct X4_API X4SolidTree
     unsigned height ; 
     unsigned extra_width ; 
     unsigned extra_height ; 
-    SCanvas* canvas ; 
+    scanvas* canvas ; 
     std::vector<std::string>* names ; 
     const char* nameprefix ; 
 

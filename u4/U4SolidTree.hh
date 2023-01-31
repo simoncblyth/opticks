@@ -1,5 +1,12 @@
 #pragma once
 
+#include <string>
+#include <map>
+#include <vector>
+
+#include "plog/Severity.h"
+struct scanvas ; 
+
 class G4VSolid ; 
 class G4Ellipsoid ; 
 class G4Tubs ; 
@@ -10,12 +17,6 @@ class G4Box ;
 
 #include "G4RotationMatrix.hh" 
 #include "G4ThreeVector.hh" 
-
-#include "plog/Severity.h"
-
-#include <string>
-#include <map>
-#include <vector>
 
 
 /**
@@ -29,7 +30,6 @@ used across compilation units (eg for tests) hence assume that
 the API_EXPORT is needed 
 **/
 
-struct SCanvas ; 
 
 #include "U4_API_EXPORT.hh"
 struct U4_API U4SolidTree   
@@ -62,7 +62,7 @@ struct U4_API U4SolidTree
     unsigned height ; 
     unsigned extra_width ; 
     unsigned extra_height ; 
-    SCanvas* canvas ; 
+    scanvas* canvas ; 
     std::vector<std::string>* names ; 
     const char* nameprefix ; 
 
