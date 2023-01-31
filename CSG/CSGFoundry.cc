@@ -40,6 +40,7 @@
 #include "SName.h"
 #include "CSGTarget.h"
 #include "CSGMaker.h"
+#include "CSGImport.h"
 #include "CSGCopy.h"
 
 const unsigned CSGFoundry::IMAX = 50000 ; 
@@ -74,6 +75,7 @@ CSGFoundry::CSGFoundry()
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings 
     target(new CSGTarget(this)),
     maker(new CSGMaker(this)),
+    import(new CSGImport(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
@@ -1332,19 +1334,21 @@ void CSGFoundry::makeDemoSolids()
 {
     maker->makeDemoSolids(); 
 }
-void CSGFoundry::importTree(const stree* st)
-{
-    maker->importTree(st); 
-}
-
-
-
-
-
 CSGSolid* CSGFoundry::make(const char* name)
 {
     return maker->make(name); 
 }
+
+
+
+void CSGFoundry::importTree(const stree* st)
+{
+    import->importTree(st); 
+}
+
+
+
+
 
 
 

@@ -28,6 +28,7 @@ list(APPEND SOURCES
     CSGFoundry.cc
     CSGCopy.cc
     CSGMaker.cc
+    CSGImport.cc
     CSGTarget.cc
     CSGScan.cc
     CSGView.cc
@@ -59,6 +60,7 @@ list(APPEND CSG_HEADERS
     CSGFoundry.h
     CSGCopy.h
     CSGMaker.h
+    CSGImport.h
     CSGTarget.h
     CSGScan.h
     CSGView.h

@@ -21,6 +21,7 @@ struct sframe ;
 struct SName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
+struct CSGImport ; 
 
 #include "CSGEnum.h"
 #include "CSGSolid.h"
@@ -401,6 +402,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     CSGTarget*  target ; 
     CSGMaker*   maker ; 
+    CSGImport*  import ; 
     bool        deepcopy_everynode_transform ; 
 
     CSGSolid*   last_added_solid ; 

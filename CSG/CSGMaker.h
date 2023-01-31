@@ -13,7 +13,6 @@ compounded in each solid.
 
 struct CSGNode ; 
 struct CSGSolid ; 
-struct stree ; 
 
 #include <string>
 #include <vector>
@@ -45,7 +44,6 @@ struct CSG_API CSGMaker
     }; 
 
     CSGFoundry*  fd ; 
-    const stree* st ; 
 
     CSGMaker( CSGFoundry* fd );  
 
@@ -144,12 +142,6 @@ struct CSG_API CSGMaker
 
     CSGSolid* makeConvexPolyhedronCube(       const char* label="vcub", float extent=100.f );
     CSGSolid* makeConvexPolyhedronTetrahedron(const char* label="vtet", float extent=100.f);
-
-
-    void importTree(const stree* st); 
-    void importSolid(); 
-    CSGSolid* importRemainderSolid(int ridx, const char* rlabel); 
-    CSGSolid* importFactorSolid(   int ridx, const char* rlabel); 
 
 
 };
