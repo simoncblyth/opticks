@@ -172,7 +172,7 @@ int nnode::subNum() const
 }
 void nnode::setSubNum(unsigned num) 
 {
-    assert( CSG::IsCompound(type) );  
+    assert( CSG::IsCompound(type) );   // tree or list 
     param.u.x = num ; 
 }
 

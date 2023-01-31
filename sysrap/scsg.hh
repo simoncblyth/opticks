@@ -57,6 +57,8 @@ struct SYSRAP_API scsg
     sbb* getBB_(int idx);
 
     int  getNDXF(int idx) const ; 
+    void getLVID( std::vector<snd>& nds, int lvid ) const ; 
+
 
     template<typename T>
     std::string desc_(int idx, const std::vector<T>& vec) const ; 

@@ -4,6 +4,8 @@
 #include "OpticksCSG.h"
 
 #include "stree.h"
+#include "snd.hh"
+
 #include "SSys.hh"
 #include "SLOG.hh"
 
@@ -119,7 +121,8 @@ CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
         const snode& nd = st->rem[i] ;
 
         CSGPrim* pr = importPrim( i, nd ) ;  
-        assert( pr );  
+        LOG_IF( verbose, pr == nullptr) << " pr null " ;  
+        //assert( pr );  
 
     }
 
@@ -169,7 +172,8 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
         assert( lvid1 == lvid ); 
 
         CSGPrim* pr = importPrim( i, node );  
-        assert( pr ); 
+        LOG_IF( verbose, pr == nullptr) << " pr null " ;  
+        //assert( pr ); 
     }
 
     return so ; 
@@ -179,8 +183,10 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
 
 CSGPrim* CSGImport::importPrim( int primIdx, const snode& node )  // structural node
 {
-    int lvid = node.lvid ; 
-    LOG(LEVEL) << " primIdx " << primIdx << " lvid " << lvid ; 
+    std::vector<snd> nds ; 
+    snd::GetLVID( nds, node.lvid );     
+
+    LOG(LEVEL) << " primIdx " << primIdx << " node.lvid " << node.lvid << " snd::GetLVID " << nds.size() ; 
 
     return nullptr ; 
 }
@@ -189,6 +195,11 @@ CSGPrim* CSGImport::importPrim( int primIdx, const snode& node )  // structural 
 /**
 CSGImport::importPrim
 ----------------------
+
+See::
+
+    sysrap/tests/stree_load_test.sh 
+
 
 HMM: not so simple the stree is raw n-ary tree it needs 
 some preparation before turning into CSGPrim/CSGNode
@@ -200,20 +211,63 @@ NCSG::export_tree_
 NCSG::export_list_
 NCSG::export_leaf_
 
+NCSG::export_tree_list_prepare_
+    explains subNum/subOffet in serialization 
+    of trees with list nodes
 
-PLUS REVIEW THE subnum MACHINERY FOR EXTRAS BEYOND THE COMPLETE BINARY TREE
+nnode::find_list_nodes_r
+nnode::is_list
+    CSG::IsList(type)   CSG_CONTIGUOUS or CSG_DISCONTIGUOUS or CSG_OVERLAP      
+
+nnode::subNum
+nnode::subOffset
+
+    CSG::IsCompound
+
+CSGNode re:subNum subOffset
+    Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and 
+    the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
+    Note that because subNum uses q0.u.x and subOffset used q0.u.y 
+    this should not be used for leaf nodes. 
+
+NCSG::export_tree_r
+    assumes pure binary tree serializing to 2*idx+1 2*idx+2 
+
+
+How to convert the general n-ary tree into binary-tree + subs layout ?
+-------------------------------------------------------------------------
+
+* root can be a list node or a leaf, ie zero complete binary tree nodes 
+
+* so need to examine the n-ary tree looking for how much of it 
+  is binary and pulling out non-binary nodes into list node subs 
+
+* also depends on type : a compound with 2 subs is not treated as boolean
+
+
+NOTICE HOW IT SHOULD BE EASIER NOW : AS ARE DOING THIS ALL IN 
+ONE PLACE UNLIKE OLD IMPL WHICH IS RATHER SPREAD AROUND : npy,GGeo 
+
+* THIS IS BECAUSE ARE NOW ABLE TO SERIALIZE n-ARY TREES : SO CAN DELAY 
+  THE SWITCH UNTIL LATER 
+
+* PERHAPS EVENTUALLY COULD NOT SWITCH AT ALL AND INTERSECT 
+  AGAINST THE N-ARY TREE ON GPU (THATS FOR FAR FUTURE) 
+
+
+Looking at scsg nodes with NumPy::
      
-st
-./stree_load_test.sh ana
+    st
+    ./stree_load_test.sh ana
 
-In [9]: print(st.desc_csg(18))
-desc_csg lvid:18 st.f.soname[18]:GLw1.up10_up11_FlangeI_Web_FlangeII0x59f4850 
-        ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf
-array([[ 32,   2,   0,  34,   0,  -1,  33,  18, 110,  25,  25,  -1],
-       [ 33,   2,   1,  34,   0,  -1,  -1,  18, 110,  26,  26,   5],
-       [ 34,   1,   0,  36,   2,  32,  35,  18,   1,  -1,  -1,  -1],
-       [ 35,   1,   1,  36,   0,  -1,  -1,  18, 110,  27,  27,   6],
-       [ 36,   0,  -1,  -1,   2,  34,  -1,  18,   1,  -1,  -1,  -1]], dtype=int32)
+    In [9]: print(st.desc_csg(18))
+    desc_csg lvid:18 st.f.soname[18]:GLw1.up10_up11_FlangeI_Web_FlangeII0x59f4850 
+            ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf
+    array([[ 32,   2,   0,  34,   0,  -1,  33,  18, 110,  25,  25,  -1],
+           [ 33,   2,   1,  34,   0,  -1,  -1,  18, 110,  26,  26,   5],
+           [ 34,   1,   0,  36,   2,  32,  35,  18,   1,  -1,  -1,  -1],
+           [ 35,   1,   1,  36,   0,  -1,  -1,  18, 110,  27,  27,   6],
+           [ 36,   0,  -1,  -1,   2,  34,  -1,  18,   1,  -1,  -1,  -1]], dtype=int32)
 
 **/
 

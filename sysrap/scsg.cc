@@ -102,6 +102,18 @@ int scsg::getNDXF(int idx) const
     return n ? n->xform : -1 ; 
 }
 
+void scsg::getLVID( std::vector<snd>& nds, int lvid ) const 
+{
+    int num_node = node.size(); 
+    for(int i=0 ; i < num_node ; i++)
+    {
+        const snd& nd = node[i] ; 
+        if(nd.lvid == lvid) nds.push_back(nd) ; 
+    }
+}
+
+
+
 template<typename T>
 std::string scsg::desc_(int idx, const std::vector<T>& vec) const   
 {

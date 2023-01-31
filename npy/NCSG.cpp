@@ -1239,6 +1239,9 @@ The nodes serialization is::
 The subNum for each list node is known at creation, eg nmultiunion::Create
 The subOffset for each list node is only known at serialization. 
 
+Q: What about a buffer with multiple solids, is subOffset relative or absolute ?
+A: Unknown 
+
 **/
 
 void NCSG::export_tree_list_prepare_(unsigned num_tree_nodes_)

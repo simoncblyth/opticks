@@ -26,7 +26,9 @@ TODO:
 
 **/
 
+#include <vector>
 #include <string>
+
 #include "glm/fwd.hpp"
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -57,6 +59,7 @@ struct SYSRAP_API snd
     static int  GetNodeXForm(int idx) ; 
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
     static void SetLVID(int idx, int lvid);  // label node tree 
+    static void GetLVID( std::vector<snd>& nds, int lvid ); 
 
     static snd* GetNode_(int idx);
     static spa* GetParam_(int idx);

@@ -3,6 +3,33 @@ usage(){ cat << EOU
 stree_load_test.sh 
 =====================
 
+::
+
+    epsilon:~ blyth$ st
+    /Users/blyth/opticks/sysrap/tests
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ LVID=112 ./stree_load_test.sh 
+    stree::init 
+    stree::load_ /tmp/blyth/opticks/U4TreeCreateTest/stree
+     LVID 112 num_nds 11
+     ix:  531 dp:    3 sx:    0 pt:  533     nc:    0 fc:   -1 ns:  532 lv:  112     tc:  103 pa:  319 bb:  319 xf:  208    zs
+     ix:  532 dp:    3 sx:    1 pt:  533     nc:    0 fc:   -1 ns:   -1 lv:  112     tc:  105 pa:  320 bb:  320 xf:  209    cy
+     ix:  533 dp:    2 sx:    0 pt:  535     nc:    2 fc:  531 ns:  534 lv:  112     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+     ix:  534 dp:    2 sx:    1 pt:  535     nc:    0 fc:   -1 ns:   -1 lv:  112     tc:  105 pa:  321 bb:  321 xf:  210    cy
+     ix:  535 dp:    1 sx:    0 pt:  541     nc:    2 fc:  533 ns:  540 lv:  112     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+     ix:  536 dp:    3 sx:    0 pt:  538     nc:    0 fc:   -1 ns:  537 lv:  112     tc:  103 pa:  322 bb:  322 xf:  211    zs
+     ix:  537 dp:    3 sx:    1 pt:  538     nc:    0 fc:   -1 ns:   -1 lv:  112     tc:  105 pa:  323 bb:  323 xf:  212    cy
+     ix:  538 dp:    2 sx:    0 pt:  540     nc:    2 fc:  536 ns:  539 lv:  112     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+     ix:  539 dp:    2 sx:    1 pt:  540     nc:    0 fc:   -1 ns:   -1 lv:  112     tc:  105 pa:  324 bb:  324 xf:  213    cy
+     ix:  540 dp:    1 sx:    1 pt:  541     nc:    2 fc:  538 ns:   -1 lv:  112     tc:    1 pa:   -1 bb:   -1 xf:  214    un
+     ix:  541 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  535 ns:   -1 lv:  112     tc:    3 pa:   -1 bb:   -1 xf:   -1    di
+
+
+NEXT: snd.hh/scanvas.h presentation of snd n-ary trees to assist with CSGImport::importPrim 
+
+* hmm could present as binary with separated list nodes 
+
+
 See:
 
 * notes/issues/U4Tree_stree_snd_scsg_FAIL_consistent_parent.rst
@@ -12,6 +39,8 @@ EOU
 }
 
 defarg="build_run_ana"
+[ -n "$LVID" ] && defarg="build_run" 
+
 arg=${1:-$defarg}
 
 name=stree_load_test 

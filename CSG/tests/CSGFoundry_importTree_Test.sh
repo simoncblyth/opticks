@@ -31,7 +31,7 @@ bin=CSGFoundry_importTree_Test
 export BASE=/tmp/$USER/opticks/U4TreeCreateTest
 
 loglevel(){
-   export CSGMaker=INFO
+   export CSGImport=INFO
 }
 loglevel
 

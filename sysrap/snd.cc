@@ -31,14 +31,14 @@ void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
 
 
 /**
-snd::SetLVID
---------------
+snd::SetLVID : label node tree
+----------------------------------
 
 This gets invoked from the snd roots only, 
 as its called for each root from U4Tree::initSolid
 
 **/
-void snd::SetLVID(int idx, int lvid)  // label node tree 
+void snd::SetLVID(int idx, int lvid)  // static
 {
     snd* nd = GetNode_(idx); 
     nd->setLVID(lvid);   
@@ -57,6 +57,10 @@ void snd::SetLVID(int idx, int lvid)  // label node tree
            ; 
     }
     assert( chk == 0 ); 
+}
+void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
+{ 
+    POOL->getLVID(nds, lvid); 
 }
 
 
