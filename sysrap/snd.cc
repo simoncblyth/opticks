@@ -22,6 +22,21 @@ const spa* snd::GetParam(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } 
 const sxf* snd::GetXForm(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } // static
 const sbb* snd::GetAABB( int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
 
+int snd::GetMaxDepth( int idx)
+{ 
+    const snd* nd = GetNode(idx) ; 
+    return nd ? nd->max_depth() : -1 ; 
+}
+int snd::GetNumNode( int idx)
+{ 
+    const snd* nd = GetNode(idx) ; 
+    return nd ? nd->num_node() : -1 ; 
+}
+
+
+
+
+
 int snd::GetNodeXForm(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
 void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
 {
@@ -227,6 +242,54 @@ int snd::checktree_r(char code,  int d ) const
     }
     return chk ; 
 }
+
+int snd::max_depth() const 
+{
+    return max_depth_r(0);
+}
+int snd::max_depth_r(int d) const   
+{
+    int mx = d ; 
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        mx = std::max( mx,  child.max_depth_r(d + 1) ) ; 
+        ch = child.next_sibling ;
+    }
+    return mx ; 
+}
+
+int snd::num_node() const 
+{
+    return num_node_r(0);
+}
+int snd::num_node_r(int d) const   
+{
+    int nn = 1 ;   // always at least 1 node,  HMM: no exclusion of CSG_ZERO ? 
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        nn += child.num_node_r(d + 1); 
+        ch = child.next_sibling ;
+    }
+    return nn ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

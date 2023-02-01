@@ -56,10 +56,14 @@ struct SYSRAP_API snd
     static const sxf* GetXForm( int idx);
     static const sbb* GetAABB(  int idx);
 
+    static int  GetMaxDepth(int idx) ; 
+    static int  GetNumNode(int idx) ; 
     static int  GetNodeXForm(int idx) ; 
+
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
     static void SetLVID(int idx, int lvid);  // label node tree 
     static void GetLVID( std::vector<snd>& nds, int lvid ); 
+
 
     static snd* GetNode_(int idx);
     static spa* GetParam_(int idx);
@@ -107,6 +111,13 @@ struct SYSRAP_API snd
 
     int  checktree() const ; 
     int  checktree_r(char code,  int d ) const ; 
+
+    int max_depth() const ; 
+    int max_depth_r(int d) const ; 
+
+    int num_node() const ; 
+    int num_node_r(int d) const ; 
+
 
     void check_z() const ; 
     double zmin() const ; 

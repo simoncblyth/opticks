@@ -5,8 +5,20 @@ name=snd_test
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 
+#test=save
+#test=load
+#test=max_depth
+test=num_node
+
+export TEST=${TEST:-$test} 
 
 defarg="build_run_load_ana"
+
+case $test in 
+   max_depth) defarg=build_run ;; 
+   num_node)  defarg=build_run ;; 
+esac
+
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
