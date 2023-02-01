@@ -1,4 +1,18 @@
 #pragma once
+/**
+SProp.hh
+==========
+
+::
+
+    epsilon:sysrap blyth$ opticks-f SProp.hh
+    ./sysrap/SProp.cc:#include "SProp.hh"
+    ./sysrap/CMakeLists.txt:    SProp.hh
+    ./ggeo/GGeo.cc:#include "SProp.hh"
+    ./qudarap/tests/QPropTest.cc:#include "SProp.hh"
+
+
+**/
 
 #include <vector>
 #include "SYSRAP_API_EXPORT.hh"

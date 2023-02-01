@@ -30,8 +30,8 @@ Progress
 
 
 
-2023 Jan 
-----------
+2023 Jan : NPFold/NPX map serialize, low dep PMT data branch, U4Material/U4Surface/U4Tree/U4Solid/snode/snd
+-----------------------------------------------------------------------------------------------------------------
 
 Work split into two:
 
@@ -77,8 +77,7 @@ Work split into two:
 * 12/16 : pull CustomART.h CustomStatus.h out of CustomBoundary.h : rationalize theCustomStatus handling and presentation in preparation for switching from CustomBoundary.h to CustomART.h making more use of standard G4OpBoundaryProcess mom,pol changes
 * 12/16 : sboundary_test_brewster.sh sboundary_test_critical.sh : plots comparing polarizations before and after TIR and Brewster angle ref
 * 12/15 : try to do less in CustomART by reusing the mom/pol impl of G4OpBoundaryProcess::DielectricDielectric
-* 12/15 : illustrating Brewsters angle polarization using sysrap/tests/sboundary_test.sh showing color wheel polarization directions before
- and after reflect or transmit
+* 12/15 : illustrating Brewsters angle polarization using sysrap/tests/sboundary_test.sh showing color wheel polarization directions before and after reflect or transmit
 * 12/15 : make many G4CXOpticks methods private, to simplify usage : suggestions for Hans CaTS in notes/issues/Hans_QSim_segv_with_CaTS.rst
 * 12/13 : bring over the new polarization from sboundary.h into sysrap/tests/stmm_vs_sboundary_test.cc
 * 12/13 : drawing more parallels between stmm.h and sboundary.h calcs in order to correctly get reflect and transmit polarizations in stmm.h context
@@ -98,8 +97,8 @@ Work split into two:
 * 12/01 : comparing junoPMTOpticalModel::Refract with InstrumentedG4OpBoundaryProcess::CustomART : initial shakedown bugs
 
 
-2022 Nov
-----------
+2022 Nov : standalone fastsim checks, pivot to InstrumentedG4OpBoundaryProcess::CustomART$
+---------------------------------------------------------------------------------------------
 
 * over in j: developed Layr/Layr.h single header TMM 
 
@@ -109,8 +108,7 @@ Work split into two:
 * 11/26 : change spho label gn field to uchar4, as need to pass FastSim ARTD flg via trackinfo for the U4Recorder to work with multiple PMTs
 * 11/25 : increase the bounce limit, add extra record plotting to xxv.sh
 * 11/25 : review U4Recorder+SEvt, add SEvt::resumePhoton in attempt to handle FastSim/SlowSim transition detected by fSuspend track status in U4Recorder
-* 11/23 : save/restore when labelling in U4Recorder::PreUserTrackingAction_Optical succeeds to allow geant4 rerunning of single photons without precooked rand
-oms by storing the g4state MixMaxRng into an NP array managed within SEvt
+* 11/23 : save/restore when labelling in U4Recorder::PreUserTrackingAction_Optical succeeds to allow geant4 rerunning of single photons without precooked randoms by storing the g4state MixMaxRng into an NP array managed within SEvt
 * 11/22 : U4Recorder::saveOrLoadStates attempting to save and restore g4 random states, for pure optical single selected photon rerun
 * 11/22 : NP::MakeSelectCopy for array masking, eg to rerun a single generated photon
 * 11/20 : PMTFastSim integration in GeoChain for translate.sh and extg4 for xxv.sh, expand storch.h adding T_LINE
@@ -129,8 +127,8 @@ oms by storing the g4state MixMaxRng into an NP array managed within SEvt
 * 11/03 : add ana/tests/check.sh ana/test/check.py to demonstrate basic use of ana photon history debugging machinery
 * 11/01 : QProp::Make3D allowing to scrunch up higher dimensions eg from JPMTProp into standard 3, use from qudarap/tests/QPMTPropTest.cc
 
-2022 Oct
-----------
+2022 Oct : plog/SLOG better integration, debug scintillation Birks issue, CPU/GPU complex TMM
+-------------------------------------------------------------------------------------------------
 
 * 10/29 : NPFold::load with multiple rel
 * 10/29 : improve access into tree of subfold of arrays using NPFold::find_array 
@@ -153,7 +151,7 @@ oms by storing the g4state MixMaxRng into an NP array managed within SEvt
 * 10/14 : a few more OptiX 7.5 API changes
 * 10/13 : try generalization against OptiX 700 -> 750 API change with BI::getBuildInputCPA 
 * 10/12 : move some of QCurandState down into SCurandState, aiming to tie together SEvt maxima with the number of curandState loaded
-* 10/12 : adjust cehigh extra resolution genstep grid to look for overlaps insitu at PMT bottom 
+* 10/12 : adjust cehigh extra resolution genstep grid to look for overlaps insitu at PMT bottom
 * 10/11 : tidy and document the Simtrace 2D cross-section intersect and plotting machinery
 * 10/07 : some more fields in u4/U4Scintillation_Debug.hh 
 * 10/07 : add SOpticksResource::GDMLPathFromGEOM used from G4CXOpticks::setGeometry
@@ -166,8 +164,8 @@ oms by storing the g4state MixMaxRng into an NP array managed within SEvt
 * 10/02 : LOG_IF update the rest of the active packages to work with latest plog without dangling else warnings
 * 10/01 : rest of the active projects, rename PLOG to SLOG : needed for updating to newer PLOG external 
 
-2022 Sep
----------
+2022 Sep : thin CYLINDER and CONE fixes required for new JUNO geom 
+---------------------------------------------------------------------
 
 * 09/30 : expt with plog int template argument to try to use opticks PLOG in across shared libs of external projects that do not use -fvisibility=hidden
 * 09/29 : start examples/UseFindOpticks to look into mis-behaviour of PLOG LEVEL logging from an external library
@@ -184,8 +182,8 @@ oms by storing the g4state MixMaxRng into an NP array managed within SEvt
 * 09/05 : CSG/ct.sh CSGSimtraceTest.cc for CPU running of CUDA csg intersect code with standard simtrace approach
 * 09/01 : x4t.sh now working, presenting X4Simtrace G4VSolid intersects using same simtrace approach as gxt.sh
 
-2022 Aug
-----------
+2022 Aug  : U4Tree/stree instancing, find balancing can cause missing, Simtrace check PMT and Mask
+------------------------------------------------------------------------------------------------------
 
 * 08/30 : add CEHIGH_0/1/2/3 for adding additional gensteps to provide high resolution regions of a simtrace 
 * 08/30 : X4Solid::convertEllipsoid add safety to upper and lower placeholder cuts where there is no such cut intended, to address the rare zsphere apex bug
