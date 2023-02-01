@@ -4,6 +4,7 @@
 #include "spa.h"
 #include "sbb.h"
 #include "sxf.h"
+#include "scanvas.h"
 
 #include "OpticksCSG.h"
 #include "scsg.hh"
@@ -43,6 +44,14 @@ void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
     snd* nd = GetNode_(idx); 
     nd->setXForm(tr); 
 }
+
+void snd::SetLabel(int idx, const char* label_ ) // static
+{
+    snd* nd = GetNode_(idx); 
+    nd->setLabel(label_); 
+}
+
+
 
 
 /**
@@ -117,9 +126,11 @@ void snd::init()
 
 std::string snd::brief() const 
 {
+    char l0 = label[0] ; 
     int w = 5 ; 
     std::stringstream ss ; 
-    ss 
+    ss
+       << l0  
        << " ix:" << std::setw(w) << index
        << " dp:" << std::setw(w) << depth
        << " sx:" << std::setw(w) << sibdex
@@ -177,6 +188,15 @@ void snd::setXForm(const glm::tmat4x4<double>& t )
     // HMM: what about changing transform ? 
     // Currently just adds another and updates the ref, "leaking" the old. 
 }
+
+
+void snd::setLabel( const char* label_ )
+{
+    strncpy( &label[0], label_, sizeof(label) );
+}
+
+
+
 
 
 void snd::setLVID(int lvid_)
@@ -277,14 +297,168 @@ int snd::num_node_r(int d) const
     return nn ; 
 }
 
+/**
+inorder
+------------
+
+Try to adapt X4SolidTree::inorder_r to n-ary tree 
+
+For inorder traversal of an n-ary tree need to define how to split the children. 
+
+binary:  i = 0, 1,     num_child = 2  split = 1 = num_child - 1 
+3-ary :  i = 0, 1, 2   num_child = 3  split = 2 = num_child - 1 
+
+:google:`inorder traveral of n-ary tree`
+
+https://www.geeksforgeeks.org/inorder-traversal-of-an-n-ary-tree/
+
+The inorder traversal of an N-ary tree is defined as visiting all the children
+except the last then the root and finally the last child recursively. 
+
+https://ondrej-kvasnovsky-2.gitbook.io/algorithms/data-structures/n-ary-tree
+
+A binary tree can be traversed in preorder, inorder, postorder or level-order.
+Among these traversal methods, preorder, postorder and level-order traversal
+are suitable to be extended to anN-arytree.
+
+https://stackoverflow.com/questions/23778489/in-order-tree-traversal-for-non-binary-trees
+
+**/
+
+
+void snd::inorder(std::vector<int>& order ) const 
+{
+    inorder_r(order, 0); 
+}
+
+void snd::inorder_r(std::vector<int>& order, int d ) const 
+{
+    if( num_child <= 0 )
+    {
+        order.push_back(index) ; 
+    }
+    else
+    {
+        int split = num_child - 1 ; 
+        int ch = first_child ; 
+
+        for(int i=0 ; i < split ; i++)  
+        {
+            snd& child = POOL->node[ch] ; 
+            assert( child.index == ch ); 
+            child.inorder_r( order, d+1 ); 
+            ch = child.next_sibling ;
+        }
+
+        order.push_back(index) ; 
+
+        for(int i=split ; i < num_child ; i++)
+        {
+            snd& child = POOL->node[ch] ; 
+            assert( child.index == ch ); 
+            child.inorder_r( order, d+1 ); 
+            ch = child.next_sibling ;
+        }
+    }
+}
+
+
+std::string snd::dump() const 
+{
+    std::stringstream ss ; 
+    dump_r( ss, 0 ); 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+void snd::dump_r( std::ostream& os, int d ) const 
+{
+    os << "snd::dump_r"
+       << " d " << d 
+       << brief()
+       << std::endl
+       ;  
+
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        child.dump_r( os, d+1 ); 
+        ch = child.next_sibling ;
+    }
+}
 
 
 
+std::string snd::dump2() const 
+{
+    std::stringstream ss ; 
+    dump2_r( ss, 0 ); 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+void snd::dump2_r( std::ostream& os, int d ) const 
+{
+    os << "snd::dump2_r"
+       << " d " << d 
+       << brief()
+       << std::endl
+       ;  
+
+    int ch = first_child ; 
+    for(int i=0 ; i < num_child ; i++)
+    {
+        snd& child = POOL->node[ch] ; 
+        child.dump2_r( os, d+1 ); 
+        ch = child.next_sibling ;
+    }
+}
 
 
 
+std::string snd::render() const 
+{
+    int width = num_node(); 
+    int height = max_depth(); 
 
+    std::vector<int> order ; 
+    inorder(order); 
+    assert( int(order.size()) == width ); 
 
+    scanvas canvas( width+1, height+2, 4, 2 );  
+    render_r(&canvas, order,  0); 
+
+    std::stringstream ss ; 
+    ss << "snd::render" << std::endl ; 
+    ss << canvas.c << std::endl ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+void snd::render_r(scanvas* canvas, const std::vector<int>& order, int d) const 
+{
+    int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), index )) ; 
+    assert( ordinal < int(order.size()) ); 
+
+    std::cout << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
+
+ 
+    int ix = ordinal ; 
+    int iy = depth ; 
+    char l0 = label[0] ;  
+
+    canvas->drawch( ix, iy, 0,0,  l0 );
+
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        child.render_r( canvas, order, d+1 ); 
+        ch = child.next_sibling ;
+    }
+}
+ 
 
 
 

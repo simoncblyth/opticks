@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "ssys.h"
 #include "stree.h"
 #include "snd.hh"
 #include "scsg.hh"
@@ -10,6 +11,8 @@
 
 const char* TEST = getenv("TEST"); 
 const char* FOLD = getenv("FOLD"); 
+const int TREE = ssys::getenvint("TREE", 0); 
+
 
 void do_Add()
 {
@@ -103,13 +106,6 @@ void test_num_node_(int n, int xnn)
 
 }
 
-/**
-                   g 
-            e            f
-        c       d
-     a     b
-
-**/
 
 void test_num_node()
 {
@@ -136,6 +132,182 @@ void test_num_node()
 
 
 
+/**
+              g 
+          f              e
+                     c        d
+                  a     b
+
+
+snd::render_r  ix:    6 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:    5 ns:   -1 lv:    0     tc:    1 pa:   -1 bb:   -1 xf:   -1    un   g ordinal 1
+snd::render_r  ix:    5 dp:    1 sx:    0 pt:    6     nc:    0 fc:   -1 ns:    4 lv:    0     tc:  110 pa:    3 bb:    3 xf:   -1    bo   f ordinal 0
+snd::render_r  ix:    4 dp:    1 sx:    1 pt:    6     nc:    2 fc:    2 ns:   -1 lv:    0     tc:    1 pa:   -1 bb:   -1 xf:   -1    un   e ordinal 5
+snd::render_r  ix:    2 dp:    2 sx:    0 pt:    4     nc:    2 fc:    0 ns:    3 lv:    0     tc:    1 pa:   -1 bb:   -1 xf:   -1    un   c ordinal 3
+snd::render_r  ix:    0 dp:    3 sx:    0 pt:    2     nc:    0 fc:   -1 ns:    1 lv:    0     tc:  101 pa:    0 bb:    0 xf:   -1    sp   a ordinal 2
+snd::render_r  ix:    1 dp:    3 sx:    1 pt:    2     nc:    0 fc:   -1 ns:   -1 lv:    0     tc:  101 pa:    1 bb:    1 xf:   -1    sp   b ordinal 4
+snd::render_r  ix:    3 dp:    2 sx:    1 pt:    4     nc:    0 fc:   -1 ns:   -1 lv:    0     tc:  110 pa:    2 bb:    2 xf:   -1    bo   d ordinal 6
+snd::render
+    g                           
+                                
+f                   e           
+                                
+            c           d       
+                                
+        a       b               
+
+**/
+
+int make_csgtree_0()
+{
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Boolean(CSG_UNION, a, b ) ; 
+    int d = snd::Box3(100.) ; 
+    int e = snd::Boolean(CSG_UNION, c, d ) ; 
+    int f = snd::Box3(100.) ; 
+    int g = snd::Boolean(CSG_UNION, f, e ) ; 
+
+    snd::SetLabel(a, "a"); 
+    snd::SetLabel(b, "b"); 
+    snd::SetLabel(c, "c"); 
+    snd::SetLabel(d, "d"); 
+    snd::SetLabel(e, "e"); 
+    snd::SetLabel(f, "f"); 
+    snd::SetLabel(g, "g"); 
+
+    snd::SetLVID(g, 0);  // declare root in order to set the depths
+
+    return g ; 
+}
+
+int make_csgtree_1()
+{
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Boolean(CSG_UNION, a, b ) ; 
+
+    snd::SetLabel(a, "a"); 
+    snd::SetLabel(b, "b"); 
+    snd::SetLabel(c, "c"); 
+  
+    snd::SetLVID(c, 0);  // declare root in order to set the depths
+    return c ; 
+}
+
+int make_csgtree_2()
+{
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Sphere(100.) ; 
+    std::vector<int> prims = {a,b,c} ; 
+
+    int d = snd::Compound(CSG_CONTIGUOUS, prims ) ; 
+
+    snd::SetLabel(a, "a"); 
+    snd::SetLabel(b, "b"); 
+    snd::SetLabel(c, "c"); 
+    snd::SetLabel(d, "d"); 
+  
+    snd::SetLVID(d, 0);  // declare root in order to set the depths
+    return d ; 
+}
+
+int make_csgtree_3()
+{
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Sphere(100.) ; 
+    std::vector<int> abc = {a,b,c} ; 
+    int d = snd::Compound(CSG_CONTIGUOUS, abc ) ; 
+
+    snd::SetLabel(a, "a"); 
+    snd::SetLabel(b, "b"); 
+    snd::SetLabel(c, "c"); 
+    snd::SetLabel(d, "d"); 
+
+    int e = snd::Sphere(100.) ; 
+    int f = snd::Sphere(100.) ; 
+    int g = snd::Sphere(100.) ; 
+    std::vector<int> efg = {e,f,g} ; 
+    int h = snd::Compound(CSG_CONTIGUOUS, efg ) ; 
+
+    snd::SetLabel(e, "e"); 
+    snd::SetLabel(f, "f"); 
+    snd::SetLabel(g, "g"); 
+    snd::SetLabel(h, "h"); 
+
+    int i = snd::Boolean(CSG_UNION, d, h ); 
+    snd::SetLabel(i, "i"); 
+
+    snd::SetLVID(i, 0);  // declare root in order to set the depths
+    return i ; 
+}
+
+
+
+
+
+int make_csgtree()
+{
+    int t = -1 ; 
+    switch(TREE)
+    {
+        case 0: t = make_csgtree_0() ; break ; 
+        case 1: t = make_csgtree_1() ; break ; 
+        case 2: t = make_csgtree_2() ; break ; 
+        case 3: t = make_csgtree_3() ; break ; 
+    }
+    assert( t > -1 ); 
+    return t ;    
+}
+
+
+void test_inorder()
+{
+    std::cout << "test_inorder" << std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+
+    std::vector<int> order ; 
+    nd->inorder(order); 
+
+    std::cout << " order.size " << order.size() << std::endl ; 
+
+    for(int z=0 ; z < int(order.size()) ; z++)
+    {
+         int idx = order[z] ; 
+         const snd* n = snd::GetNode(idx); 
+         std::cout << " idx " << idx ; 
+         std::cout << " n.brief " << ( n ? n->brief() : "null" ) << std::endl ;  
+
+         if(n == nullptr) continue ; 
+         std::cout << n->label << std::endl ; 
+    }
+
+}
+
+void test_dump()
+{
+    std::cout << "test_dump" << std::endl ;     
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+
+    std::cout << nd->dump() << std::endl ; 
+    std::cout << nd->dump2() << std::endl ; 
+}
+
+void test_render()
+{
+    std::cout << "test_render" << std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+
+    std::cout << nd->render() << std::endl ;  
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -145,6 +317,9 @@ int main(int argc, char** argv)
     else if(strcmp(TEST, "load")==0)      test_load(); 
     else if(strcmp(TEST, "max_depth")==0) test_max_depth() ; 
     else if(strcmp(TEST, "num_node")==0)  test_num_node() ; 
+    else if(strcmp(TEST, "inorder")==0)   test_inorder() ; 
+    else if(strcmp(TEST, "dump")==0)      test_dump() ; 
+    else if(strcmp(TEST, "render")==0)    test_render() ; 
     else std::cerr << " TEST not matched " << TEST << std::endl ; 
         
     return 0 ; 
