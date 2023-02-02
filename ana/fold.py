@@ -161,7 +161,7 @@ class Fold(object):
         paths = []
         stems = []
         abbrev = []
-        symbols = "abcdefghijklmnopqrsTuvwxyz"
+        symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         txts = {}
 
         #names = filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),os.listdir(base))
