@@ -34,7 +34,7 @@ class RSTTable(object):
 
      @classmethod
      def Render(cls, t, labels, wids, hfmt, rfmt, pre, post):
-          tab = cls.Render_(t, labels. wids, hfmt, rfmt, pre, post)
+          tab = cls.Render_(t, labels, wids, hfmt, rfmt, pre, post)
           return str(tab)
 
      @classmethod
