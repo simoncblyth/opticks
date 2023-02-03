@@ -203,6 +203,7 @@ set(HEADERS
 
     SDigestNP.hh
     SDirect.hh
+    sdirect.h
     SArrayDigest.hh
 
     SLauncher.hh

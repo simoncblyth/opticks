@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <algorithm>
 
 #include "spa.h"
 #include "sbb.h"
