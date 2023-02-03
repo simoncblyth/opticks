@@ -8,6 +8,7 @@ extract string timestamps : see stime.h for that.
 
 **/
 
+#include <cstring>
 #include <thread>
 #include <chrono>
 #include <ctime>
