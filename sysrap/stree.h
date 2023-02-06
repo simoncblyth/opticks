@@ -1458,7 +1458,17 @@ inline void stree::load_( const char* fold )
     if(level > 0) std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
 
     ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
-    ImportArray<snode, int>(                  rem, NP::Load(fold, REM)); 
+
+    if(NP::Exists(fold, REM))
+    {
+        ImportArray<snode, int>(                  rem, NP::Load(fold, REM)); 
+    }
+    else
+    {
+        std::cout << "stree:load_ MISSING REM " << REM << std::endl ;  
+    }
+
+
     ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 
     ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
     ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
@@ -1471,16 +1481,40 @@ inline void stree::load_( const char* fold )
     NP::ReadNames( fold, SUNAME, suname );
 
     ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
-    ImportArray<int, int>( suindex, NP::Load(fold, SUINDEX) );
 
+    if(NP::Exists(fold, SUINDEX))
+    {
+        ImportArray<int, int>( suindex, NP::Load(fold, SUINDEX) );
+    }
+    else
+    {
+        std::cout << "stree:load_ MISSING SUINDEX " << SUINDEX << std::endl ;  
+    }   
+    
     //ImportArray<int4, int>( bnd,    NP::Load(fold, BND) ); 
-    NP* a_bd = NP::Load(fold, BD) ; 
-    assert( a_bd ); 
-    NPX::VecFromArray<int4>( bd, a_bd );  
-    a_bd->get_names( bdname );
 
-    NPFold* fcsg = NPFold::Load(fold, CSG);
-    csg->import(fcsg); 
+    if(NP::Exists(fold, BD))
+    {
+        NP* a_bd = NP::Load(fold, BD) ; 
+        assert( a_bd ); 
+        NPX::VecFromArray<int4>( bd, a_bd );  
+        a_bd->get_names( bdname );
+    }
+    else
+    {
+        std::cout << "stree:load_ MISSING BD " << BD << std::endl ;  
+    }   
+ 
+
+    if(NP::Exists(fold, CSG))
+    {
+        NPFold* fcsg = NPFold::Load(fold, CSG);
+        csg->import(fcsg); 
+    }
+    else
+    {
+        std::cout << "stree:load_ MISSING CSG " << CSG << std::endl ;  
+    }
 
     if(NP::Exists(fold, MTLINE))
     {
@@ -1965,10 +1999,26 @@ inline bool stree::SelectNode( const snode& nd, int q_repeat_index, int q_repeat
 
 inline void stree::get_repeat_field(std::vector<int>& result, char q_field , int q_repeat_index, int q_repeat_ordinal ) const 
 {
-    for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
+    int num_nd = nds.size() ; 
+
+    int nidx_mismatch = 0 ; 
+
+    for(int nidx=0 ; nidx < num_nd ; nidx++)
     {
         const snode& nd = nds[nidx] ; 
-        assert( nd.index == nidx ); 
+
+        if(nd.index != nidx) 
+        {
+            std::cerr 
+               << "stree::get_repeat_field"
+               << " ERROR : NIDX MISMATCH : "
+               << " nidx " << nidx
+               << " nd.index " << nd.index
+               << " num_nd " << num_nd
+               << std::endl 
+               ;
+            nidx_mismatch += 1 ; 
+        }
 
         if(SelectNode(nd, q_repeat_index, q_repeat_ordinal))
         {
@@ -1981,6 +2031,21 @@ inline void stree::get_repeat_field(std::vector<int>& result, char q_field , int
             result.push_back(field) ; 
         }
     }
+
+    if( nidx_mismatch > 0 )
+    {
+        std::cerr
+            << "stree::get_repeat_field"
+            << " FATAL : NIDX MISMATCH : "
+            << " nidx_mismatch " << nidx_mismatch
+            << " num_nd " << num_nd
+            << " q_field " << q_field 
+            << " q_repeat_index " << q_repeat_index
+            << " q_repeat_ordinal " << q_repeat_ordinal
+            << std::endl 
+            ; 
+    }
+    assert( nidx_mismatch == 0 ); 
 }
 
 
@@ -2024,7 +2089,7 @@ inline std::string stree::desc_repeat_nodes() const
     int total = 0 ; 
     int remainder = 0 ; 
 
-    for(int i=0 ; i < num_factor + 1 ; i++)
+    for(int i=0 ; i < num_factor + 1 ; i++)   // NB num_factor+1 : remainder in i=0 
     {
         int q_ridx = i ;  
         std::vector<int> nidxs ; 

@@ -3,6 +3,9 @@ usage(){ cat << EOU
 stree_load_test.sh 
 =====================
 
+stree_load_test loads an stree from directory $BASE/stree
+
+
 ::
 
     epsilon:~ blyth$ st
@@ -46,12 +49,19 @@ arg=${1:-$defarg}
 name=stree_load_test 
 bin=/tmp/$name/$name 
 
-export BASE=/tmp/$USER/opticks/U4TreeCreateTest 
+
+if [ -n "$GEOM" ]; then 
+    base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
+else
+    base=/tmp/$USER/opticks/U4TreeCreateTest 
+fi   
+export BASE=${BASE:-$base}
+
 export stree_level=1 
 export FOLD=$BASE/stree
 
 if [ ! -d "$BASE/stree" ]; then
-    echo $BASH_SOURCE : BASE $BASE
+    echo $BASH_SOURCE : BASE $BASE GEOM $GEOM
     echo $BASH_SOURCE : BASE directory MUST contain an stree directory : THIS DOES NOT 
     exit 1
 fi 
