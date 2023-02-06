@@ -10,10 +10,15 @@ int main(int argc, char** argv)
     SSim::Create() ; 
 
     CSGFoundry* cf = CSGFoundry::Load() ; 
+
+    LOG(info) << " -------------------- After CSGFoundry::Load " ; 
+
     LOG(info) << cf->desc() ; 
+    LOG(info) << " -------------------- After CSGFoundry::desc " ; 
 
     stree* st = cf->sim->tree ; 
     LOG(info) << st->desc() ; 
+    LOG(info) << " -------------------- After stree::desc " ; 
 
     return 0 ; 
 }

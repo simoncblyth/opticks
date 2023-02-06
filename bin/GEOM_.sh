@@ -38,6 +38,8 @@ EOU
 #geom=J001
 #geom=J003
 #geom=J004
+#geom=J006
+geom=J007
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
@@ -79,7 +81,7 @@ EOU
 #geom=hmskTailInner
 
 
-geom=nmskSolidMask
+#geom=nmskSolidMask
 #geom=nmskSolidMaskTail
 
 #geom=nmskSolidMaskTail     ## NB no need for __U1 opt here, that is set below
@@ -152,6 +154,12 @@ elif [ "$GEOM" == "J004" ]; then
     cfbase=$HOME/.opticks/GEOM/$GEOM
     export J004_CFBaseFromGEOM=$cfbase
     export J004_GDMLPathFromGEOM=$cfbase/origin.gdml
+
+
+elif [ "$GEOM" == "J006" -o "$GEOM" == "J007" ]; then
+
+    cfbase=$HOME/.opticks/GEOM/$GEOM
+    export ${GEOM}_CFBaseFromGEOM=$cfbase
 
 elif [ "$GEOM" == "J004G" ]; then
 

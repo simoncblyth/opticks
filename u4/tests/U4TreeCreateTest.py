@@ -24,7 +24,7 @@ if __name__ == '__main__':
     f = Fold.Load("$FOLD/stree", symbol="f")
     print(repr(f))
 
-    snode.Fields()
+    snode.Fields(bi=True)  # bi:True exports field indices into builtins scope
 
     print(snode.Label(6,11),"\n", f.nds[f.nds[:,ri] == 1 ])
 

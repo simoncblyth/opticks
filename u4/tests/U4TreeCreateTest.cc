@@ -16,7 +16,8 @@ int main(int argc, char** argv)
     if( argc > 1 )
     {
         LOG(info) << " load stree from FOLD " << FOLD ; 
-        st->load(FOLD); 
+        int rc = st->load(FOLD); 
+        if(rc != 0) return rc ; 
     }
     else
     {

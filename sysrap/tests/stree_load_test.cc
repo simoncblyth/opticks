@@ -8,7 +8,8 @@ const int LVID = ssys::getenvint("LVID", -1);
 int main(int argc, char** argv)
 {
     stree st ; 
-    st.load(BASE); 
+    int rc = st.load(BASE); 
+    if( rc != 0 ) return rc ; 
     
     if( LVID > 0 )
     {

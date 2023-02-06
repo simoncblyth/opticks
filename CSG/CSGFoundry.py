@@ -118,13 +118,20 @@ class NPFold(object):
         assert 0 
 
     def load_idx(self, fold):
-        kk = open(self.IndexPath(fold),"r").read().splitlines()
+        keys = open(self.IndexPath(fold),"r").read().splitlines()
         aa = []
-        for k in kk:
+        kk = [] 
+        for k in keys:
             path = os.path.join(fold, k)
-            assert os.path.exists(path)
-            a = np.load(path)
-            aa.append(a)
+            if k.endswith(".npy"):
+                assert os.path.exists(path)
+                log.info("loading path %s k %s " % (path, k))
+                a = np.load(path)
+                aa.append(a)
+                kk.append(k)
+            else:
+                log.info("skip non .npy path %s k %s " % (path, k))
+            pass
         pass
         self.kk = kk 
         self.aa = aa
@@ -153,6 +160,7 @@ class SSim(NPFold):
     @classmethod
     def Load(cls, simbase):
         ssdir = os.path.join(simbase, "SSim")
+        log.info("SSim.Load simbase %s ssdir %s " % (simbase,ssdir))
         sim = cls(fold=ssdir) if os.path.isdir(ssdir) else None 
         return sim
 
@@ -199,9 +207,7 @@ class CSGFoundry(object):
             cfbase= os.environ["CFBASE"]
             note = "via CFBASE"
         elif "GEOM" in os.environ:
-            geom = os.environ["GEOM"]
-            rel = "GeoChain_Darwin" 
-            cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
+            cfbase = os.path.expandvars("$HOME/.opticks/GEOM/$GEOM") 
             note = "via GEOM"
         elif "OPTICKS_KEY" in os.environ:
             kd = keydir(os.environ["OPTICKS_KEY"])
@@ -429,6 +435,41 @@ class CSGFoundry(object):
             print(" %4d : %6d : %s " % (ub, ub_count, bn))
         pass 
 
+    def dumpSolid(self, ridx):
+        """
+        After CSGFoundry::dumpSolid 
+        """
+        label = self.solid[ridx,0,:4].copy().view("|S16")[0].decode("utf8") 
+        numPrim = self.solid[ridx,1,0]
+        primOffset = self.solid[ridx,1,1]
+        print("CSGFoundry.dumpSolid ridx %2d label %16s numPrim %6d primOffset %6d " % (ridx,label, numPrim, primOffset))
+
+        for so_primIdx in primOffset+np.arange(numPrim):
+
+            pr = self.prim[so_primIdx].view(np.int32)
+
+            numNode    = pr[0,0]
+            nodeOffset = pr[0,1]
+
+            meshIdx    = pr[1,1]
+            repeatIdx  = pr[1,2]
+            primIdx2   = pr[1,3]
+
+            mn = self.meshname[meshIdx] 
+
+            print(" so_primIdx %4d numNode %4d nodeOffset %4d meshIdx %3d repeatIdx %3d primIdx2 %3d : %s " % 
+                    (so_primIdx, numNode, nodeOffset, meshIdx, repeatIdx, primIdx2, mn ))
+
+            assert repeatIdx == ridx
+        pass
+
+
+    def dumpSolids(self):
+        num_solid = len(self.solid)
+        for ridx in range(num_solid):
+            self.dumpSolid(ridx)
+        pass    
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -439,5 +480,7 @@ if __name__ == '__main__':
     #cf.dump_node_boundary()
     #d = cf.primIdx_meshname_dict()
     #print(d)    
+
+    #cf.dumpSolid(1)
 
 

@@ -353,8 +353,8 @@ struct stree
     template<typename S, typename T>   // S:compound type T:atomic "transport" type
     static void ImportArray( std::vector<S>& vec, const NP* a ); 
 
-    void load_( const char* fold );
-    void load( const char* base, const char* reldir=RELDIR );
+    int load_( const char* fold );
+    int load( const char* base, const char* reldir=RELDIR );
     static stree* Load(const char* base, const char* reldir=RELDIR ); 
 
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ; 
@@ -1405,10 +1405,10 @@ inline void stree::save_trs(const char* fold) const
     trs->save(fold, TRS ); 
 }
 
-inline void stree::load( const char* base, const char* reldir ) 
+inline int stree::load( const char* base, const char* reldir ) 
 {
     std::string dir = FormPath(base, reldir ); 
-    load_(dir.c_str()); 
+    return load_(dir.c_str()); 
 }
 
 inline stree* stree::Load(const char* base, const char* reldir ) // static 
@@ -1453,11 +1453,19 @@ iinst_f4
 
 **/
 
-inline void stree::load_( const char* fold )
+inline int stree::load_( const char* fold )
 {
     if(level > 0) std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
 
-    ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
+    if(NP::Exists(fold, NDS))
+    {
+        ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
+    }
+    else
+    {
+        std::cout << "stree:load_ FATAL : MISSING NDS " << NDS << std::endl ;  
+        return 1 ; 
+    }
 
     if(NP::Exists(fold, REM))
     {
@@ -1543,6 +1551,8 @@ inline void stree::load_( const char* fold )
     }
 
     ImportArray<int, int>( inst_nidx, NP::Load(fold, INST_NIDX) );
+
+    return 0 ; 
 }
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 
