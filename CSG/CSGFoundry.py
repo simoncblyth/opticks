@@ -440,42 +440,101 @@ class CSGFoundry(object):
         label = self.solid[ridx,0,:4].copy().view("|S16")[0].decode("utf8") 
         numPrim = self.solid[ridx,1,0]
         primOffset = self.solid[ridx,1,1]
+        prs = self.prim[primOffset:primOffset+numPrim] 
+        iprs = prs.view(np.int32)
+
+        lvid = iprs[:,1,1]
+        u_lvid, x_lvid, n_lvid = np.unique( lvid, return_index=True, return_counts = True )
+        lv_one = np.all( n_lvid == 1 )
 
         lines = []
-        lines.append("CSGFoundry.descSolid ridx %2d label %16s numPrim %6d primOffset %6d " % (ridx,label, numPrim, primOffset))
+        lines.append("CSGFoundry.descSolid ridx %2d label %16s numPrim %6d primOffset %6d lv_one %d " % (ridx,label, numPrim, primOffset, lv_one))
 
         if detail:
-            for so_primIdx in primOffset+np.arange(numPrim):
-
-                pr = self.prim[so_primIdx].view(np.int32)
-
-                numNode    = pr[0,0]
-                nodeOffset = pr[0,1]
-
-                meshIdx    = pr[1,1]
-                repeatIdx  = pr[1,2]
-                primIdxLocal = pr[1,3]
-
-                mn = self.meshname[meshIdx] 
-
-                nds = self.node[nodeOffset:nodeOffset+numNode].view(np.int32)     
-                tcs  = nds[:,3,2]
-                tcn = " ".join(list(map(lambda _:"%d:%s" % (_,CSG_.desc(_)),tcs)))
-
-                lines.append(" px %4d nn %4d no %4d lv %3d pxl %3d : %50s : %s " % 
-                        (so_primIdx, numNode, nodeOffset, meshIdx, primIdxLocal, mn, tcn ))
-
-                assert repeatIdx == ridx
-
+            if lv_one: 
+                for pidx in range(primOffset, primOffset+numPrim):
+                    lines.append(self.descPrim(pidx))
+                pass
+            else:
+                x_order = np.argsort(x_lvid)  # order by prim index of first occurence of each lv 
+                for i in x_order:
+                    ulv = u_lvid[i]
+                    nlv = n_lvid[i]
+                    xlv = x_lvid[i]
+                    pidx = primOffset + xlv   # index of the 1st prim with each lv
+                    lines.append(" i %3d ulv %3d xlv %4d nlv %3d : %s  " % (i, ulv, xlv, nlv, self.descPrim(pidx))) 
+                pass
             pass
         pass
         return "\n".join(lines)
 
 
+    def descPrim(self, pidx):
+
+        pr = self.prim[pidx]
+        ipr = pr.view(np.int32)
+
+        numNode    = ipr[0,0]
+        nodeOffset = ipr[0,1]
+        repeatIdx  = ipr[1,2]
+        primIdxLocal = ipr[1,3]
+
+        lvid = ipr[1,1]
+        lvn = self.meshname[lvid] 
+
+        tcn = self.descNodeTC(nodeOffset, numNode)
+        return " pidx %4d lv %3d pxl %4d : %50s : %s " % (pidx, lvid, primIdxLocal, lvn, tcn )
+         
+
+    def descNodeTC(self, nodeOffset, numNode, sumcut=7):
+        """
+        :param nodeOffset: absolute index within self.node array 
+        :param numNode: number of contiguous nodes
+        :param sumcut: number of nodes above which a summary output is returned
+        :return str: representing CSG typecodes
+
+        (nodeOffset,numNode) will normally correspond to the node range of a single prim pidx
+
+        Output examples:: 
+
+            tcn 1:union 1:union 108:cone 105:cylinder 105:cylinder 0:zero 0:zero  
+            tcn 2:intersection 1:union 2:intersection 103:zsphere 105:cylinder 103:!zsphere 105:!cylinder 
+            tcn 3(2:intersection) 2(1:union) 4(105:cylinder) 2(103:zsphere) 4(0:zero) 
+
+        """
+        nds = self.node[nodeOffset:nodeOffset+numNode].view(np.uint32)     
+        neg = ( nds[:,3,3] & 0x80000000 ) >> 31    # complemented
+        tcs  = nds[:,3,2]
+
+        if len(tcs) > sumcut:
+            u_tc, x_tc, n_tc = np.unique(tcs, return_index=True, return_counts=True)
+            x_order = np.argsort(x_tc)  # order by index of first occurence of each typecode
+            tce = []
+            for i in x_order:
+                utc = u_tc[i]
+                ntc = n_tc[i]
+                xtc = x_tc[i]  
+                xng = neg[xtc]
+                tce.append( "%d(%d:%s%s)" % (ntc,utc,"!" if xng else "", CSG_.desc(utc) )) 
+            pass
+            tcn = " ".join(tce) 
+        else:
+            tcn = " ".join(list(map(lambda _:"%d:%s%s" % (tcs[_],"!" if neg[_] else "",CSG_.desc(tcs[_])),range(len(tcs)))))
+        pass
+
+
+
+
+        return "no %5d nn %4d tcn %s " % (nodeOffset, numNode, tcn )
+
+ 
+
     def descSolids(self, detail=True):
         num_solid = len(self.solid)
         lines = []
+        q_ridx = int(os.environ.get("RIDX", "-1"))
         for ridx in range(num_solid):
+            if q_ridx > -1 and ridx != q_ridx: continue 
             if detail:
                 lines.append("")
             pass

@@ -90,6 +90,11 @@ cx:convexpolyhedron
 
 
 * moved typecode from q2.w in order to give 6 contiguous slots for aabb
+* HMM: complement is more naturally related with typecode than transform, maybe should put them together
+
+::
+
+    complement = ( cf.node.view(np.uint32)[:,3,3] & 0x80000000 ) >> 31 
 
 
 subNum subOffset
