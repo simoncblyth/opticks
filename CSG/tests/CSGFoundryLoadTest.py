@@ -174,8 +174,9 @@ if __name__ == '__main__':
     print(expr)
     eval(expr)
 
-    #cf.dumpSolid(1)
-    cf.dumpSolids()
+    #print(cf.descSolid(1))
+    print(cf.descSolids(True))
+    print(cf.descSolids(False))
 
     
 

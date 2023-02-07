@@ -21,13 +21,9 @@
 """
 Usage example::
 
-    oxrap-;oxrap-cd cu
-    c_enums_to_python.py boolean_solid.h # check 
-    c_enums_to_python.py boolean_solid.h > boolean_solid.py 
-
-    sysrap-;sysrap-cd 
-    c_enums_to_python.py OpticksCSG.h  # check 
-    c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+    cd ~/opticks/sysrap
+    ../bin/c_enums_to_python.py OpticksCSG.h  # check 
+    ../bin/c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
 
 
 

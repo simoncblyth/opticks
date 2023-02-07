@@ -3,9 +3,7 @@ import os, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir
-
-
-
+from opticks.sysrap.OpticksCSG import CSG_
 
 
 
@@ -435,40 +433,55 @@ class CSGFoundry(object):
             print(" %4d : %6d : %s " % (ub, ub_count, bn))
         pass 
 
-    def dumpSolid(self, ridx):
+    def descSolid(self, ridx, detail=True):
         """
         After CSGFoundry::dumpSolid 
         """
         label = self.solid[ridx,0,:4].copy().view("|S16")[0].decode("utf8") 
         numPrim = self.solid[ridx,1,0]
         primOffset = self.solid[ridx,1,1]
-        print("CSGFoundry.dumpSolid ridx %2d label %16s numPrim %6d primOffset %6d " % (ridx,label, numPrim, primOffset))
 
-        for so_primIdx in primOffset+np.arange(numPrim):
+        lines = []
+        lines.append("CSGFoundry.descSolid ridx %2d label %16s numPrim %6d primOffset %6d " % (ridx,label, numPrim, primOffset))
 
-            pr = self.prim[so_primIdx].view(np.int32)
+        if detail:
+            for so_primIdx in primOffset+np.arange(numPrim):
 
-            numNode    = pr[0,0]
-            nodeOffset = pr[0,1]
+                pr = self.prim[so_primIdx].view(np.int32)
 
-            meshIdx    = pr[1,1]
-            repeatIdx  = pr[1,2]
-            primIdx2   = pr[1,3]
+                numNode    = pr[0,0]
+                nodeOffset = pr[0,1]
 
-            mn = self.meshname[meshIdx] 
+                meshIdx    = pr[1,1]
+                repeatIdx  = pr[1,2]
+                primIdxLocal = pr[1,3]
 
-            print(" so_primIdx %4d numNode %4d nodeOffset %4d meshIdx %3d repeatIdx %3d primIdx2 %3d : %s " % 
-                    (so_primIdx, numNode, nodeOffset, meshIdx, repeatIdx, primIdx2, mn ))
+                mn = self.meshname[meshIdx] 
 
-            assert repeatIdx == ridx
+                nds = self.node[nodeOffset:nodeOffset+numNode].view(np.int32)     
+                tcs  = nds[:,3,2]
+                tcn = " ".join(list(map(lambda _:"%d:%s" % (_,CSG_.desc(_)),tcs)))
+
+                lines.append(" px %4d nn %4d no %4d lv %3d pxl %3d : %50s : %s " % 
+                        (so_primIdx, numNode, nodeOffset, meshIdx, primIdxLocal, mn, tcn ))
+
+                assert repeatIdx == ridx
+
+            pass
         pass
+        return "\n".join(lines)
 
 
-    def dumpSolids(self):
+    def descSolids(self, detail=True):
         num_solid = len(self.solid)
+        lines = []
         for ridx in range(num_solid):
-            self.dumpSolid(ridx)
+            if detail:
+                lines.append("")
+            pass
+            lines.append(self.descSolid(ridx, detail=detail))
         pass    
+        return "\n".join(lines)
 
 
 if __name__ == '__main__':

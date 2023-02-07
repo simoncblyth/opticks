@@ -19,6 +19,23 @@ Note that the remainder volumes are not included in the sfactors
     sfactor index   7 freq    590 sensors      0 subtree      1 sub [3fd85f9ee7ca8882c8caa747d0eef0b3]
     sfactor index   8 freq    504 sensors      0 subtree    130 sub [7d9a644fae10bdc1899c0765077e7a33]
 
+
+    In [6]: st.f.factor[:,:4]
+    Out[6]: 
+    array([[    0, 25600, 25600,     5],
+           [    1, 12615, 12615,    11],
+           [    2,  4997,  4997,    14],
+           [    3,  2400,  2400,     6],
+           [    4,   590,     0,     1],
+           [    5,   590,     0,     1],
+           [    6,   590,     0,     1],
+           [    7,   590,     0,     1],
+           [    8,   504,   504,   130]], dtype=int32)
+
+             index  freq  sensors  subtree
+                          ???
+
+
     In [13]: f.factor[:,4:].copy().view("|S32")
     Out[13]: 
     array([[b'1af760275cafe9ea890bfa01b0acb1d1'],

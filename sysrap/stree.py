@@ -11,6 +11,7 @@ import os, numpy as np, logging, builtins
 log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold
 from opticks.sysrap.sfreq import sfreq 
+from opticks.sysrap.OpticksCSG import CSG_ 
 
 
 class sobject(object):
@@ -52,6 +53,9 @@ class sobject(object):
 
 
 class snd(sobject):
+    """
+    CSG constituent node 
+    """
     DTYPE = [
              ('index', '<i4'), 
              ('depth', '<i4'), 
@@ -71,6 +75,9 @@ class snd(sobject):
 
 
 class snode(sobject):
+    """
+    Volume structure node 
+    """
     DTYPE = [
              ('index', '<i4'), 
              ('depth', '<i4'), 
@@ -103,6 +110,18 @@ class snode(sobject):
         return "snode ix:%7d dh:%2s nc:%5d lv:%3d se:%7d." % (rec.index, rec.depth, rec.num_child, rec.lvid, rec.sensor)
 
 
+class sfactor(sobject):
+    """
+    Just handles the first four fields, not the |S32 digest 
+    """
+    DTYPE = [
+              ( 'index', '<i4'),
+              ( 'freq',  '<i4'),
+              ( 'sensors',  '<i4'),
+              ( 'subtree',  '<i4')
+            ]
+    FIELD = "ix fr se su".split()   
+
 
 class stree(object):
     @classmethod
@@ -116,12 +135,16 @@ class stree(object):
         sf = sfreq(sff)
         nds = snode.RecordsFromArrays(f.nds)
         rem = snode.RecordsFromArrays(f.rem)
+        csg = snd.RecordsFromArrays(f.csg.node[:,:12])
+        factor = sfactor.RecordsFromArrays(f.factor[:,:4])
         soname_ = self.MakeTxtArray(f.soname.lines)
 
         self.sf = sf
         self.f = f 
         self.nds = nds 
         self.rem = rem 
+        self.csg = csg 
+        self.factor = factor 
         self.raw_subs = None
         self.soname_ = soname_
 
@@ -345,13 +368,96 @@ class stree(object):
         In [9]: st.f.soname[105]
         Out[9]: 'HamamatsuR12860Tail0x61b5500'
         """
+        csg = self.get_csg(lvid)
+        lines = []
+        lines.append("desc_csg lvid:%d st.f.soname[%d]:%s " % (lvid,lvid,self.get_lv_soname(lvid)))
+        lines.append(snd.Label(3,8))
+        lines.append("%s" % repr(csg))
+        return "\n".join(lines)
+
+    def get_csg(self, lvid):
         st = self 
         n = st.f.csg.node
+        return n[n[:,snd.lv] == lvid]
+
+    def get_csg_typecode(self, lvid):
+        n = self.get_csg(lvid)
+        return n[:,snd.tc] 
+
+
+    def get_numSolid(self):
+        return 1+len(self.factor)
+
+    def get_numPrim(self, ridx):
+        return len(self.rem) if ridx == 0 else self.factor[ridx-1].subtree
+
+    def get_lvid(self, ridx):
+        """
+        :param ridx:
+        :return lvid: array of meshIdx 
+
+        In [3]: ridx = 1 ; st.nds.lvid[st.nds.repeat_index == ridx][:st.factor[ridx-1].subtree]
+        Out[3]: array([133, 131, 129, 130, 132], dtype=int32)
+
+        In [4]: ridx = 2 ; st.nds.lvid[st.nds.repeat_index == ridx][:st.factor[ridx-1].subtree]
+        Out[4]: array([128, 118, 119, 127, 126, 120, 125, 121, 122, 123, 124], dtype=int32)
+
+        In [9]: st.nds.lvid[st.nds.repeat_index == 0].shape
+        Out[9]: (3089,)
+        """
+        st = self 
+        return st.nds.lvid[st.nds.repeat_index == ridx] if ridx == 0 else st.nds.lvid[st.nds.repeat_index == ridx][:st.factor[ridx-1].subtree]
+
+    def get_lv_soname(self, lv):
+        return self.soname_[lv].decode("utf8")
+
+    def descSolid(self, ridx, detail=False):
+        """
+        cf with CSGFoundry.descSolid
+        """
+        numPrim = self.get_numPrim(ridx)
+        lvid = self.get_lvid(ridx) 
+        u_lvid, n_lvid = np.unique(lvid, return_counts=True )
+        n_lvid_one = np.all( n_lvid == 1 )
+        p_lvid = lvid if n_lvid_one else u_lvid  # present in original order when not "unique" summarizing 
+        pass
         lines = []
-        lines.append("desc_csg lvid:%d st.f.soname[%d]:%s " % (lvid,lvid,st.f.soname[lvid]))
-        lines.append(snd.Label(3,8))
-        lines.append("%s" % repr(n[n[:,snd.lv] == lvid]))
+        lines.append("stree.descSolid ridx %3d numPrim %5d lvid %s n_lvid_one %d" % (ridx, numPrim, str(lvid), n_lvid_one)) 
+        if detail:
+            lines.append("")
+            for pass_ in [0,1]:
+                for i in range(len(p_lvid)):
+                    ulv = p_lvid[i] 
+                    nlv = n_lvid[i] 
+                    lvn = self.get_lv_soname(ulv)
+                    csg = self.get_csg(ulv)
+                    tc  = self.get_csg_typecode(ulv)
+                    assert len(csg) == len(tc)
+                    tcn = " ".join(list(map(lambda _:"%d:%s"%(_,CSG_.desc(_)), tc))) 
+                    if pass_ == 1:
+                        lines.append("")
+                    pass
+                    lines.append(" lv:%3d nlv:%2d %50s csg %2d tcn %s " % (ulv, nlv, lvn, len(csg), tcn  ))  
+                    if pass_ == 1:
+                        lines.append(self.desc_csg(ulv))
+                    pass  
+                pass
+            pass
+        pass
         return "\n".join(lines)
+
+    def descSolids(self, detail=False):
+        lines = []
+        numSolid = self.get_numSolid()
+        lines.append("stree.descSolids numSolid:%d detail:%d " % (numSolid,detail) )
+        for ridx in range(numSolid):
+            lines.append(self.descSolid(ridx, detail=detail))
+            if detail:
+                lines.append("")
+            pass
+        pass
+        return "\n".join(lines)
+
 
 
 

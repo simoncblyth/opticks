@@ -361,6 +361,7 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
         st->bd.push_back(bd) ; 
         std::string bdn = getBoundaryName(bd,'/') ; 
         st->bdname.push_back(bdn.c_str()) ; 
+        // HMM: better to use higher level stree::add_boundary if can get names at stree level 
     }
     int boundary = GetValueIndex<int4>( st->bd, bd ) ; 
     assert( boundary > -1 ); 
@@ -428,11 +429,13 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     for (int i=0 ; i < num_child ;i++ ) 
     {
         p_sib = i_sib ;    // node index of previous child gets set for i > 0
-                           //  ch_pv ch_parent_pv ch_depth ch_sibdex ch_parent    
+
+        //                    ch_pv ch_parent_pv ch_depth ch_sibdex ch_parent    
         i_sib = initNodes_r( lv->GetDaughter(i), pv, depth+1, i, nd.index ); 
+
         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
+        // after first child : reach back to previous sibling snode to set the sib->sib linkage, default -1
     }
-    // within the above loop, reach back to previous sibling snode to set the sib->sib linkage, default -1
 
     return nd.index ; 
 }
@@ -517,6 +520,14 @@ inline const char* U4Tree::getSurfaceName(int idx) const
     const char* name = sur ? sur->GetName().c_str() : nullptr ; 
     return name ; 
 }
+
+/**
+U4Tree::getBoundaryName
+------------------------
+
+Can this be done at stree level ?
+
+**/
 
 inline std::string U4Tree::getBoundaryName(const int4& bd, char delim) const 
 {

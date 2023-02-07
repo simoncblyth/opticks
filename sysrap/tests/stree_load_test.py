@@ -21,14 +21,85 @@ stree_load_test.py
              30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,
              30,  30,  30,  30,  30,  30,  30,  30,  30,  30,   2,  36,   8,   8,   1,   1, 370, 220,  56,  56,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1]))
 
-
-
     
 
     In [8]: np.unique(f.nds[:,11], return_counts=True )  # repeat_index:11
     Out[8]: 
     (array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=int32),
      array([  3089, 128000,  88305,  34979,  14400,    590,    590,    590,    590,  65520]))
+
+    In [13]: np.unique( st.nds.repeat_index, return_counts=True )
+    Out[13]: 
+    (array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=int32),
+     array([  3089, 128000, 138765,  69958,  14400,    590,    590,    590,    590,  65520]))
+
+
+    In [17]: np.unique( st.nds.lvid[st.nds.repeat_index == 1], return_index=True, return_counts=True )
+    Out[17]: 
+    (array([129, 130, 131, 132, 133], dtype=int32),
+     array([2, 3, 1, 4, 0]),                        ## index starts from zero, because have selected only the one ridx 
+     array([25600, 25600, 25600, 25600, 25600]))
+
+    In [22]: st.nds.lvid[st.nds.repeat_index == 1].reshape(-1,5)
+    Out[22]: 
+    array([[133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+           [133, 131, 129, 130, 132],
+
+
+    In [8]: np.unique( st.csg.typecode, return_counts=True )
+    Out[8]: 
+    (array([  1,   2,   3,  11, 101, 103, 105, 108, 110], dtype=int32),
+     array([199,   1,  30,  20,   7,  27,  97,  10, 246]))
+
+
+
+
+
+
+    CSGFoundry.dumpSolid ridx  1 label               r1 numPrim      5 primOffset   3089 
+     so_primIdx 3089 numNode    3 nodeOffset 23207 meshIdx 133 repeatIdx   1 primIdx2   0 : PMT_3inch_pmt_solid 
+     so_primIdx 3090 numNode    1 nodeOffset 23210 meshIdx 131 repeatIdx   1 primIdx2   1 : PMT_3inch_body_solid_ell_ell_helper 
+     so_primIdx 3091 numNode    1 nodeOffset 23211 meshIdx 129 repeatIdx   1 primIdx2   2 : PMT_3inch_inner1_solid_ell_helper 
+     so_primIdx 3092 numNode    1 nodeOffset 23212 meshIdx 130 repeatIdx   1 primIdx2   3 : PMT_3inch_inner2_solid_ell_helper 
+     so_primIdx 3093 numNode    1 nodeOffset 23213 meshIdx 132 repeatIdx   1 primIdx2   4 : PMT_3inch_cntr_solid 
+
+
+
+    In [18]: np.unique( st.nds.lvid[st.nds.repeat_index == 2], return_index=True, return_counts=True )
+    Out[18]: 
+    (array([118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128], dtype=int32),
+     array([ 1,  2,  5,  7,  8,  9, 10,  6,  4,  3,  0]),
+     array([12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615]))
+
+
+    In [26]: st.f.factor[:,:4] 
+    Out[26]: 
+    array([[    0, 25600, 25600,     5],
+           [    1, 12615, 12615,    11],
+           [    2,  4997,  4997,    14],
+           [    3,  2400,  2400,     6],
+           [    4,   590,     0,     1],
+           [    5,   590,     0,     1],
+           [    6,   590,     0,     1],
+           [    7,   590,     0,     1],
+           [    8,   504,   504,   130]], dtype=int32)
+
+
+
+
+
+    In [16]: np.unique( st.nds.lvid[st.nds.repeat_index == 2], return_counts=True )
+    Out[16]: 
+    (array([118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128], dtype=int32),
+     array([12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615, 12615]))
+
+
+
 
 
     In [9]: snode.Label(6,11), f.nds[f.nds[:,ri] == 1 ]
@@ -147,6 +218,11 @@ if __name__ == '__main__':
     #test_rem(st)
 
     test_csg(st)
+
+    print("[--st.descSolids")
+    print(st.descSolids(True))
+    print(st.descSolids(False))
+    print("]--st.descSolids")
 
 
 

@@ -27,6 +27,18 @@ Requires:
 * so use envvar OPTICKS_CUDA_NVCC_DIALECT detection in cmake/Modules/OpticksCXXFlags.cmake to kludge this
 
 
+OpticksCSG.py managed as source despite needing manual regeneration after OpticksCSG.h updates
+-------------------------------------------------------------------------------------------------
+
+NB generation of OpticksCSG.py is not automated, unlike the generation of other things like status json.  
+This is because it is expedient for the generated python to be managed as a source file for simplicity.  
+It would be cleaner to generate json that a future OpticksCSG.py parses. 
+But as OpticksCSG.h updates are rare, For now just need to remember to generate manually with::
+
+    cd ~/opticks/sysrap
+    ../bin/c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+   
+
 #]=]
 
 find_package(OKConf REQUIRED CONFIG)
@@ -387,6 +399,7 @@ set(HEADERS
 
 # using absolute ANADIR avoids build environment requiring it in PATH 
 get_filename_component(ANADIR ../ana ABSOLUTE)
+get_filename_component(BINDIR ../bin ABSOLUTE)
 
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "ANADIR : ${ANADIR}")
@@ -439,6 +452,15 @@ add_custom_command(
          ${CCFL}
 )
 add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
+
+
+
+
+    
+
+
+
+
 
 
 list(APPEND HEADERS 
