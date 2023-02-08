@@ -450,7 +450,10 @@ class stree(object):
         lines = []
         numSolid = self.get_numSolid()
         lines.append("stree.descSolids numSolid:%d detail:%d " % (numSolid,detail) )
+
+        q_ridx = int(os.environ.get("RIDX","-1")) 
         for ridx in range(numSolid):
+            if q_ridx > -1 and ridx != q_ridx: continue
             lines.append(self.descSolid(ridx, detail=detail))
             if detail:
                 lines.append("")

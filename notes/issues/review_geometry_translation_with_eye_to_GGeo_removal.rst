@@ -2,6 +2,60 @@ review_geometry_translation_with_eye_to_GGeo_removal
 =======================================================
 
 
+
+
+
+
+Comparison of stree.py and CSGFoundry.py python dumping of geometry
+------------------------------------------------------------------------
+
+::
+
+
+    epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./sysrap/tests/stree_load_test.sh ana
+    epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./CSG/tests/CSGFoundryLoadTest.sh ana
+
+
+
+
+Further thoughts on CSGImport::importTree
+----------------------------------------------
+
+Further thoughts now solidifying into CSG/CSGImport.cc CSGImport::importTree
+
+CSGSolid
+    main role is to hold (numPrim, primOffset) : ie specify a contiguous range of CSGPrim
+CSGPrim
+    main role is to hold (numNode, nodeOffset) : ie specify a contiguous range of CSGNode 
+
+
+Difficulty 1 : polycone compounds
+------------------------------------
+
+X4Solid::convertPolycone uses NTreeBuilder<nnode> to 
+generate a suitably sized complete binary tree of CSG_ZERO gaps
+and then populates it with the available nodes.
+
+::
+
+    1706 void X4Solid::convertPolycone()
+    1707 {
+    ....
+    1785     std::vector<nnode*> outer_prims ;
+    1786     Polycone_MakePrims( zp, outer_prims, m_name, true  );
+    1787     bool dump = false ;
+    1788     nnode* outer = NTreeBuilder<nnode>::UnionTree(outer_prims, dump) ;
+    1789 
+
+Whilst validating the conversion (because want to do identicality check between old and new workflows) 
+will need to implement the same within snd/scsg for example steered from U4Solid::init_Polycone U4Polycone::Convert
+
+Because snd uses n-ary tree can subsequently enhance to using CSG_CONTIGUOUS 
+bringing the compound thru to the GPU. 
+
+
+
+
 Thoughts : How difficulty to go direct Geant4 -> CSGFoundry ?
 --------------------------------------------------------------
 
@@ -16,7 +70,7 @@ Thoughts : How difficulty to go direct Geant4 -> CSGFoundry ?
 * Structure : U4Tree/stree : already covers most of whats needed (all the
   transforms and doing the factorization)
 
-* Solids : THIS IS THE MOST DIFFICULT ONE
+* Solids : MOST WORK NEEDED : MADE RECENT PROGRESS WITH U4Solid
 
   * WIP: U4Solid snd scsg stree CSGFoundry::importTree
   * DECIDE NO NEED FOR C4 PKG  
@@ -38,57 +92,6 @@ Thoughts : How difficulty to go direct Geant4 -> CSGFoundry ?
     * U4SolidTree (developed for Z cutting) has lots of of general stuff 
       that could be pulled out into a U4Solid.h to handle the conversion 
 
-
-Starting Point : C4Solid : G4VSolid -> CSGPrim (which references sequence of CSGNode) 
-------------------------------------------------------------------------------------------
-    
-
-U4SolidTree 
-    G4 tree mechanics
-
-X4Solid 
-    G4VSolid param extraction 
-
-CSG_GGeo_Convert 
-    mechanics of CSGPrim/CSGNode creation : eg direct into CSGFoundry ? 
-
- 
-Review above priors and grab aspects that can kickstart C4Solid 
-
-
-
-
-Convert most G4VSolid CSG trees into CSGPrim/CSGNode : New Package CSG_U4 ?
--------------------------------------------------------------------------------
-
-::
-
-    CSGFoundry* fd = CSG_U4::Convert(world) ; 
-
-
-Do not think just about G4VSolid, as need to establish machinery for entire geometry. 
-Solids will however be most of the work. 
-
-
-CSG : SysRap     
-   CSG focus is on persisting the geometry and finding intersects with it 
-      
-U4 : Sysrap G4  
-   U4 focus is on Geant4 interface  
-
-   * U4Solid.h : provide G4VSolid tree handling and extraction of parameters 
-     (extract what can from U4SolidTree)
-
-
-CSG_U4 : CSG U4     
-
-   * CSG_U4 name follows CSG_GGeo, "C4" alias, very similar function
-
-     * same endpoint : CSGFoundry 
-     * but starting from Geant4, not GGeo 
-
-   * purely action package (like X4) no local persisting 
-   * all persisting handled by CSG/CSGFoundry 
 
    
 Solids : Central Issue : How to handle the CSG node tree ?  

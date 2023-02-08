@@ -74,6 +74,7 @@ struct SYSRAP_API snd
     static sbb* GetAABB_(int idx);
 
     static std::string Desc(int idx);
+    static std::string Render(int idx);
     static std::string DescParam(int idx);
     static std::string DescXForm(int idx);
     static std::string DescAABB( int idx);
@@ -105,6 +106,11 @@ struct SYSRAP_API snd
     std::string desc() const ; 
 
     void setTypecode( int tc ); 
+
+
+    static const char* ERROR_NO_POOL_NOTES ; 
+    static void CheckPOOL(const char* msg); 
+
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
     void setXForm( const glm::tmat4x4<double>& t ); 
@@ -124,6 +130,8 @@ struct SYSRAP_API snd
     int num_node() const ; 
     int num_node_r(int d) const ; 
 
+
+    static void Inorder(std::vector<int>& order, int idx ); 
     void inorder(std::vector<int>& nodes ) const ; 
     void inorder_r(std::vector<int>& order, int d ) const ; 
 
@@ -157,6 +165,7 @@ struct SYSRAP_API snd
     static int Box3(double fullside); 
     static int Box3(double fx, double fy, double fz ); 
     static int Zero(double  x,  double y,  double z,  double w,  double z1, double z2); 
+    static int Zero(); 
 };
 
 

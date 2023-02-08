@@ -3,10 +3,25 @@ usage(){ cat << EOU
 stree_load_test.sh 
 =====================
 
-stree_load_test loads an stree from directory $BASE/stree
+CAUTION the "ana" python script is independent from the C++ side
+with some different envvar controls.
 
+
+Python
+--------
 
 ::
+
+   GEOM=J007 RIDX=1 ./stree_load_test.sh ana
+
+Comparing with CSG/tests::
+
+   RIDX=1 ./CSGFoundryLoadTest.sh ana     
+
+
+C++
+-----
+
 
     epsilon:~ blyth$ st
     /Users/blyth/opticks/sysrap/tests
@@ -28,18 +43,16 @@ stree_load_test loads an stree from directory $BASE/stree
      ix:  541 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  535 ns:   -1 lv:  112     tc:    3 pa:   -1 bb:   -1 xf:   -1    di
 
 
-NEXT: snd.hh/scanvas.h presentation of snd n-ary trees to assist with CSGImport::importPrim 
-
-* hmm could present as binary with separated list nodes 
-
-
 See:
 
-* notes/issues/U4Tree_stree_snd_scsg_FAIL_consistent_parent.rst
+* notes/issues/U4Tree_stree_snd_scsg_FAIL_consistent_parent.rst (realloc stale pointer issue now fixed)
 
 
 EOU
 }
+
+
+SDIR=$(dirname $BASH_SOURCE)
 
 defarg="build_run_ana"
 [ -n "$LVID" ] && defarg="build_run" 
@@ -73,9 +86,9 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $(dirname $bin)
-    gcc $name.cc ../snd.cc ../scsg.cc  \
+    gcc $SDIR/$name.cc $SDIR/../snd.cc $SDIR/../scsg.cc  \
           -g -std=c++11 -lstdc++ \
-          -I.. \
+          -I$SDIR/.. \
           -I/usr/local/cuda/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o $bin
@@ -96,12 +109,12 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $SDIR/$name.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
 
 if [ "${arg/csg}" != "$arg" ]; then 
-    FOLD=$FOLD/csg ${IPYTHON:-ipython} --pdb -i ${name}_csg.py 
+    FOLD=$FOLD/csg ${IPYTHON:-ipython} --pdb -i $SDIR/${name}_csg.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
 

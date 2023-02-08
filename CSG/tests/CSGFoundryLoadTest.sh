@@ -41,7 +41,7 @@ fi
 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
+    ${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/$bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
 

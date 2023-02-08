@@ -95,6 +95,15 @@ spa* snd::GetParam_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // s
 sxf* snd::GetXForm_(int idx){ return POOL ? POOL->getXF_(idx) : nullptr ; } // static
 sbb* snd::GetAABB_(int idx){  return POOL ? POOL->getBB_(idx) : nullptr ; } // static 
 
+
+std::string snd::Render(int idx)
+{  
+    const snd* n = GetNode(idx); 
+    assert(n); 
+    return n->render(); 
+}
+
+
 std::string snd::Desc(      int idx){ return POOL ? POOL->descND(idx) : "-" ; } // static
 std::string snd::DescParam( int idx){ return POOL ? POOL->descPA(idx) : "-" ; } // static
 std::string snd::DescXForm( int idx){ return POOL ? POOL->descXF(idx) : "-" ; } // static
@@ -154,34 +163,67 @@ std::string snd::brief() const
 }
 
 
-
-
-
-
-
 void snd::setTypecode(int _tc )
 {
     init(); 
     typecode = _tc ; 
     num_child = 0 ;  // maybe changed later
 }
+
+
+
+
+const char* snd::ERROR_NO_POOL_NOTES = R"(
+snd::ERROR_NO_POOL_NOTES
+======================================
+
+The POOL static scsg instance is nullptr
+
+* MUST call snd::SetPOOL to an scsg instance before using snd 
+
+* stree instanciation will do this, so the preferred approach 
+  is to instanciate stree in the main prior to using any snd methods. 
+
+::
+
+    #include "stree.h"
+    #include "snd.hh"
+
+    int main(int argc, char** argv)
+    {
+        stree st ; 
+        int a = snd::Sphere(100.) ; 
+        return 0 ; 
+    }
+
+
+)" ; 
+
+void snd::CheckPOOL(const char* msg) // static 
+{
+    if(POOL) return ; 
+    std::cout << "snd::CheckPOOL " << msg << " FATAL " << std::endl ; 
+    std::cout <<  ERROR_NO_POOL_NOTES  ; 
+    assert( POOL ); 
+}
+
+
 void snd::setParam( double x, double y, double z, double w, double z1, double z2 )
 {
-    assert( POOL && "snd::setParam MUST SET snd::SetPOOL to scsg instance first" ); 
+    CheckPOOL("snd::setParam") ; 
     spa o = { x, y, z, w, z1, z2 } ; 
-
     param = POOL->addPA(o) ; 
 }
 void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
-    assert( POOL && "snd::setAABB MUST SET snd::SetPOOL to scsg instance first" ); 
+    CheckPOOL("snd::setAABB") ; 
     sbb o = {x0, y0, z0, x1, y1, z1} ; 
 
     aabb = POOL->addBB(o) ; 
 }
 void snd::setXForm(const glm::tmat4x4<double>& t )
 {
-    assert( POOL && "snd::setXForm MUST SET snd::SetPOOL to scsg instance first" ); 
+    CheckPOOL("snd::setXForm") ; 
     sxf o ; 
     o.mat = t ; 
     xform = POOL->addXF(o) ; 
@@ -327,6 +369,12 @@ https://stackoverflow.com/questions/23778489/in-order-tree-traversal-for-non-bin
 **/
 
 
+void snd::Inorder(std::vector<int>& order, int idx ) // static
+{
+    const snd* nd = GetNode(idx); 
+    nd->inorder(order); 
+}
+
 void snd::inorder(std::vector<int>& order ) const 
 {
     inorder_r(order, 0); 
@@ -431,7 +479,8 @@ std::string snd::render() const
     render_r(&canvas, order,  0); 
 
     std::stringstream ss ; 
-    ss << "snd::render" << std::endl ; 
+    ss << std::endl ;  
+    ss << "snd::render width " << width << " height " << height  << std::endl ; 
     ss << canvas.c << std::endl ;
     std::string str = ss.str(); 
     return str ; 
@@ -442,12 +491,16 @@ void snd::render_r(scanvas* canvas, const std::vector<int>& order, int d) const
     int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), index )) ; 
     assert( ordinal < int(order.size()) ); 
 
-    std::cout << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
+    std::cout << std::endl << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
 
  
     int ix = ordinal ; 
-    int iy = depth ; 
+    int iy = depth ;
+ 
     char l0 = label[0] ;  
+    if(l0 == '\0' ) l0 = '.' ; 
+    //l0 = '.' ; 
+   
 
     canvas->drawch( ix, iy, 0,0,  l0 );
 
@@ -696,6 +749,10 @@ std::ostream& operator<<(std::ostream& os, const snd& v)
 snd::Boolean
 --------------
 
+NB forming a boolean sets up the 
+sibling and parent node linkages 
+
+
 **/
 
 int snd::Boolean( int op, int l, int r ) // static 
@@ -836,12 +893,24 @@ int snd::Box3(double fx, double fy, double fz )  // static
     return Add(nd) ; 
 }
 
-int snd::Zero(double  x,  double y,  double z,  double w,  double z1, double z2)
+int snd::Zero(double  x,  double y,  double z,  double w,  double z1, double z2) // static 
 {
     snd nd = {} ;
     nd.setTypecode(CSG_ZERO) ; 
     nd.setParam( x, y, z, w, z1, z2 );  
     return Add(nd) ; 
 }
+
+int snd::Zero() // static
+{
+    snd nd = {} ;
+    nd.setTypecode(CSG_ZERO) ; 
+    return Add(nd) ; 
+}
+
+
+
+
+
 
 
