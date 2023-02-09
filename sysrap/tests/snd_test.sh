@@ -17,7 +17,8 @@ test=render
 #tree=0
 #tree=1
 #tree=2
-tree=3
+#tree=3
+tree=4
 
 export TEST=${TEST:-$test} 
 export TREE=${TREE:-$tree}

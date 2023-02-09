@@ -41,6 +41,7 @@ struct scanvas ;
 
 struct SYSRAP_API snd
 {
+    static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "snd" ; 
     static constexpr const double zero = 0. ; 
     static scsg* POOL ; 
@@ -59,8 +60,9 @@ struct SYSRAP_API snd
 
     static int  GetMaxDepth(int idx) ; 
     static int  GetNumNode(int idx) ; 
-    static int  GetNodeXForm(int idx) ; 
+    static void GetTypes(std::vector<int>& types, const std::vector<int>& idxs ); 
 
+    static int  GetNodeXForm(int idx) ; 
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
     static void SetLabel(    int idx , const char* label ); 
     static void SetLVID(int idx, int lvid);  // label node tree 
@@ -107,7 +109,6 @@ struct SYSRAP_API snd
 
     void setTypecode( int tc ); 
 
-
     static const char* ERROR_NO_POOL_NOTES ; 
     static void CheckPOOL(const char* msg); 
 
@@ -142,7 +143,7 @@ struct SYSRAP_API snd
     void dump2_r( std::ostream& os, int d ) const ; 
 
     std::string render() const ; 
-    void render_r(scanvas* canvas, const std::vector<int>& order, int d) const ; 
+    void render_r(scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
     
 
 
@@ -155,9 +156,16 @@ struct SYSRAP_API snd
     static void ZNudgeEnds(    const std::vector<int>& prims); 
     static void ZNudgeJoints(  const std::vector<int>& prims); 
 
-    // signatures need to match CSGNode where these param will end up 
     static int Boolean( int op, int l, int r ); 
     static int Compound(int type, const std::vector<int>& prims ); 
+
+    private:
+    static int UnionTree( const std::vector<int>& prims ); 
+    static int Contiguous(const std::vector<int>& prims ); 
+    public:
+    static int Collection(const std::vector<int>& prims );   // UnionTree OR Contiguous depending on VERSION
+
+    // signatures need to match CSGNode where these param will end up 
     static int Cylinder(double radius, double z1, double z2) ;
     static int Cone(double r1, double z1, double r2, double z2); 
     static int Sphere(double radius); 

@@ -2,22 +2,9 @@
 sndtree_test.cc
 =================
 
+::
 
-snd::render width 7 height 2
-            .                   
-                                
-    .               .           
-                                
-.       .       .       .       
-                                
-
- snd::Inorder [ 4 6 5 10 7 9 8 ]
-
-Notice that the node indices here all exceed the spheres 0,1,2,3 
-as the operator nodes and CSG_ZERO nodes are all created afterwards. 
-
-Perhaps can avoid wasting node indices by directly popping the leaves
-and using them during the build ? 
+   ./sndtree_test.sh 
 
 **/
 
@@ -27,6 +14,18 @@ and using them during the build ?
 #include "sndtree.h"
 
 #include "stree.h"
+
+void test_Inorder(int root)
+{
+    std::vector<int> order ; 
+    snd::Inorder(order, root ); 
+
+    std::cout << " snd::Inorder [ " ; 
+    for(int i=0 ; i < int(order.size()) ; i++) std::cout << order[i] << " " ; 
+    std::cout << "]" << std::endl ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -40,21 +39,13 @@ int main(int argc, char** argv)
     std::vector<int> leaves = {a,b,c,d} ; 
 
     int root = sndtree::CommonTree( leaves, CSG_UNION ); 
-    snd::SetLVID(root, 0 );  
-    // without snd::SetLVID depth is not set : so all nodes render at same depth
  
     std::cout << "root " << root << std::endl ;  
     std::cout << "snd::Render(root) " << snd::Render(root) << std::endl ; 
 
 
-    std::vector<int> order ; 
-    snd::Inorder(order, root ); 
+    test_Inorder(root); 
 
-    std::cout << " snd::Inorder [ " ; 
-    for(int i=0 ; i < int(order.size()) ; i++) std::cout << order[i] << " " ; 
-    std::cout << "]" << std::endl ; 
-
-    //  snd::Inorder [ 4 6 5 10 7 9 8 ]
 
     return 0 ; 
 }

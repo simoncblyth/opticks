@@ -186,6 +186,7 @@ inline bool U4Polycone::checkZOrder( bool z_ascending )
 }
 
 
+
 inline void U4Polycone::init()
 {
     rz.resize(num); 
@@ -237,10 +238,10 @@ inline void U4Polycone::init()
     assert( has_phi_segment == false );  
 
     std::vector<int> outer_prims ;
-    addPrims( outer_prims, true  );
+    addPrims( outer_prims, true  ); // outside:true 
     snd::ZNudgeJoints(outer_prims); 
-    int outer = snd::Compound( CSG_CONTIGUOUS, outer_prims ); 
-  
+
+    int outer = snd::Collection(outer_prims); 
  
     if( has_inner == false )
     {
@@ -258,10 +259,10 @@ inline void U4Polycone::init()
         else
         {
             std::vector<int> inner_prims ;
-            addPrims( inner_prims, false  );
-            snd::ZNudgeEnds(inner_prims);   // only for inner as expands  
+            addPrims( inner_prims, false  ); // outside:false
+            snd::ZNudgeEnds(inner_prims);    // only for inner as expands  
             snd::ZNudgeJoints(inner_prims); 
-            inner = snd::Compound( CSG_CONTIGUOUS, inner_prims ); 
+            inner = snd::Collection( inner_prims ); 
         }
         assert( inner > -1 ); 
         root = snd::Boolean(CSG_DIFFERENCE, outer, inner );  

@@ -20,6 +20,7 @@ bin=/tmp/$name/$name
 
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $(dirname $bin)
+    echo build
     gcc $SDIR/$name.cc $SDIR/../snd.cc $SDIR/../scsg.cc  \
           -g -std=c++11 -lstdc++ \
           -I$SDIR/.. \
@@ -27,6 +28,7 @@ if [ "${arg/build}" != "$arg" ]; then
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
+    echo build DONE
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 

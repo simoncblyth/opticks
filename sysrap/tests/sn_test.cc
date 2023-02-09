@@ -23,14 +23,26 @@ void test_BinaryTreeHeight()
     } 
 }
 
-void test_CommonTree()
+void test_CommonTree_0()
 {
     int num_leaves = 8 ; 
-    int op = 1 ; 
-
-    sn* root = sn::CommonTree(num_leaves, op ); 
-
+    int oper = 1 ; 
+    sn* root = sn::CommonTree(num_leaves, oper ); 
     std::cout << root->render() ; 
+}
+
+void test_CommonTree_1(int num_leaves)
+{
+    std::cout << "test_CommonTree_1 num_leaves " << num_leaves << std::endl ; 
+    std::vector<int> leaftypes ; 
+    for(int t=0 ; t < num_leaves ; t++) leaftypes.push_back( 100+t ); 
+    sn* root = sn::CommonTree(leaftypes, 1 ); 
+    std::cout << root->render() ; 
+}
+
+void test_CommonTree_1()
+{
+    for(int nl=1 ; nl < 32 ; nl++) test_CommonTree_1(nl); 
 }
 
 
@@ -39,9 +51,11 @@ int main(int argc, char** argv)
 {
     /*
     test_BinaryTreeHeight(); 
+    test_CommonTree_0(); 
+    test_CommonTree_1(); 
     */
+    test_CommonTree_1(); 
 
-    test_CommonTree(); 
 
     return 0 ; 
 }

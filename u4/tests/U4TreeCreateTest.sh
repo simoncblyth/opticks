@@ -18,8 +18,10 @@ loglevels(){
 
 loglevels
 
-export GEOM=J006
-export J006_GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+#geom=J006
+geom=J007
+export GEOM=${GEOM:-$geom}
+export ${GEOM}_GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
 export FOLD=/tmp/$USER/opticks/$bin
 

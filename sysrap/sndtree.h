@@ -3,132 +3,82 @@
 sndtree.h 
 ===========
 
-Need some of the functionality of the old NTreeBuilder for use with snd node trees 
-
-
-See tests/sndtree_test.cc
-
-snd::render width 7 height 2
-            .                   
-                                
-    .               .           
-                                
-.       .       .       .       
-                                
-
- snd::Inorder [ 4 6 5 10 7 9 8 ]
-
-Notice that the node indices here all exceed the spheres 0,1,2,3 
-as the operator nodes and CSG_ZERO nodes are all created afterwards. 
-
-Perhaps can avoid wasting node indices by directly popping the leaves
-and using them during the build ? 
-
-* Is that too constraining ? 
-* What about pruning ? 
-
-The snd approach of auto-adding snd to the POOL
-has problem of wasting nodes once things get complicated. 
-
-Its kinda like I need to build the tree in a separate scsg sandbox 
-and then only bring it over into the standard POOL when all the dirty stuff 
-like pruning etc.. is done.  
-
-But that means have two "address spaces" for node indices ? 
-How could that work ?
-
-Maybe can avoid that by setting the POOL to the SANDBOX scsg
-prior to creating the leaves even : so can do everything 
-with wild abandon about wasting nodes in the SANDBOX. 
-
-snd is using integers as pointers to nodes (because that 
-can be persisted) but unlike pointers which can be deleted 
-there is currently no way to delete the integer-pointer-nodes.  
-
-HMM BUT there could be ? That would mean updating integer refs elsewhere ?
-
-
-Note that the kinda nodes that are needed for tree creation and pruning  
-are very generic and simple (boolean is enough). So maybe just use  
-simple pointer based nd to hack out the tree. 
+Used from snd::UnionTree which is for example used by U4Polycone 
+This brings some of the functionality of the old NTreeBuilder for use with snd node trees 
 
 **/
 
 #include <cassert>
 #include <vector>
 #include "snd.hh"
+#include "sn.h"
 
 struct sndtree
 {
-    static int FindBinaryTreeHeight(int num_leaves); 
     static int CommonTree( const std::vector<int>& nodes, int op ) ; 
-    static int Build_r( int elevation, int op ); 
+    static int Build_r(sn* n, int& num_leaves_placed, const std::vector<int>& leaves, int d ); 
 }; 
 
-/**
-sndtree::FindBinaryTreeHeight
--------------------------------
-
-Return complete binary tree height sufficient for num_leaves
-        
-   height: 0, 1, 2, 3,  4,  5,  6,   7,   8,   9,   10, 
-   tprim : 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 
-
-
-                          1                                  h=0,  1    
-
-            10                        11                     h=1,  2 
-
-      100         101          110            111            h=2,  4 
-
-   1000 1001  1010  1011   1100   1101     1110  1111        h=3,  8
-        
-
-**/
-
-
-int sndtree::FindBinaryTreeHeight(int num_leaves) // static
-{
-    int  height = -1 ;
-    for(int h=0 ; h < 10 ; h++ )
-    {   
-        int tprim = 1 << h ;   
-        if( tprim >= num_leaves )
-        {   
-           height = h ; 
-           break ;
-        }   
-    }   
-    assert(height > -1 );  
-    return height ; 
-}
 
 /**
 sndtree::CommonTree
 ---------------------
 
-Start with a simple subset of NTreeBuilder hoping can avoid the more involved stuff
+Creates *snd* binary tree sufficient to hold the 
+leaves and places the leaf references into the tree.  
+
+Internally this uses the pointer based *sn* tree as a guide, 
+assisting with the dirty work of creating the complete binary tree 
+and then pruning it down to hold the leaves provided. 
+The *sn* nodes are used for this as they can easily be deleted (or leaked)
+unlike the *snd* nodes. 
+
+Constructing the *snd* tree requires calling snd::Boolean with 3 int args
+in a postorder traverse to cover children before parents.  
+The snd::Boolean call does the n-ary setup for the 2-ary boolean nodes.
 
 **/
 
-inline int sndtree::CommonTree( const std::vector<int>& nodes, int op ) // static
+inline int sndtree::CommonTree( const std::vector<int>& leaves, int op ) // static
 {
-    int num_leaves = nodes.size() ; 
-    int height = FindBinaryTreeHeight(num_leaves) ; 
-    int root = Build_r( height, op );  
+    int num_leaves = leaves.size() ; 
+    std::vector<int> leaftypes ; 
+    snd::GetTypes(leaftypes, leaves); 
+
+    sn* n = sn::CommonTree( leaftypes, op ); 
+
+    int num_leaves_placed = 0 ; 
+    int root = Build_r(n, num_leaves_placed, leaves, 0 );  
+    assert( num_leaves_placed == num_leaves );  
+
     return root ; 
 }
+
 
 /**
 sndtree::Build_r
 ------------------
 
+Postorder visit after recursive call : so children reached before parents  
+
 **/
 
-inline int sndtree::Build_r( int elevation, int op )
+inline int sndtree::Build_r(sn* n, int& num_leaves_placed, const std::vector<int>& leaves, int d )
 {
-    int l = elevation > 1 ? Build_r( elevation - 1 , op ) : snd::Zero() ; 
-    int r = elevation > 1 ? Build_r( elevation - 1 , op ) : snd::Zero() ; 
-    return snd::Boolean( op, l, r ); 
+    int N = -1 ; 
+    if( n->is_operator() )
+    {
+        int op = n->t ; 
+        int L = Build_r(n->l, num_leaves_placed, leaves, d+1) ; 
+        int R = Build_r(n->r, num_leaves_placed, leaves, d+1) ; 
+        N = snd::Boolean( op, L, R );  
+    }
+    else
+    {
+        N = leaves[num_leaves_placed] ; 
+        num_leaves_placed += 1 ; 
+    }
+    return N ; 
 }
+
 

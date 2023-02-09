@@ -244,7 +244,31 @@ int make_csgtree_3()
 }
 
 
+int make_csgtree_4()
+{
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Sphere(100.) ; 
+    int d = snd::Sphere(100.) ; 
+    int e = snd::Sphere(100.) ; 
+    int f = snd::Sphere(100.) ; 
+    int g = snd::Sphere(100.) ; 
 
+    snd::SetLabel(a, "a"); 
+    snd::SetLabel(b, "b"); 
+    snd::SetLabel(c, "c"); 
+    snd::SetLabel(d, "d"); 
+    snd::SetLabel(e, "e"); 
+    snd::SetLabel(f, "f"); 
+    snd::SetLabel(g, "g"); 
+
+    std::vector<int> prims = {a,b,c,d,e,f,g} ; 
+    int z = snd::UnionTree(prims) ; 
+    snd::SetLabel(z, "z"); 
+
+    //snd::SetLVID(z, 0);  // declare root in order to set the depths
+    return z ; 
+}
 
 
 int make_csgtree()
@@ -256,6 +280,7 @@ int make_csgtree()
         case 1: t = make_csgtree_1() ; break ; 
         case 2: t = make_csgtree_2() ; break ; 
         case 3: t = make_csgtree_3() ; break ; 
+        case 4: t = make_csgtree_4() ; break ; 
     }
     assert( t > -1 ); 
     return t ;    

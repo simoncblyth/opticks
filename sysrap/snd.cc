@@ -10,6 +10,7 @@
 #include "OpticksCSG.h"
 #include "scsg.hh"
 #include "snd.hh"
+#include "sndtree.h"
 
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
@@ -35,7 +36,17 @@ int snd::GetNumNode( int idx)
     return nd ? nd->num_node() : -1 ; 
 }
 
-
+void snd::GetTypes(std::vector<int>& types, const std::vector<int>& idxs ) // static
+{
+    int num_idx = idxs.size(); 
+    for(int i=0 ; i < num_idx ; i++)
+    {
+        int idx = idxs[i]; 
+        const snd* nd = GetNode(idx) ; 
+        types.push_back(nd->typecode) ;  
+    }
+    assert( idxs.size() == types.size() ); 
+}
 
 
 
@@ -136,7 +147,7 @@ void snd::init()
 
 std::string snd::brief() const 
 {
-    char l0 = label[0] ; 
+    char l0 = label[0] == '\0' ? '-' : label[0] ; 
     int w = 5 ; 
     std::stringstream ss ; 
     ss
@@ -475,40 +486,47 @@ std::string snd::render() const
     inorder(order); 
     assert( int(order.size()) == width ); 
 
+    int mode = width > 16 ? 0 : 1 ; 
+
     scanvas canvas( width+1, height+2, 4, 2 );  
-    render_r(&canvas, order,  0); 
+    render_r(&canvas, order, mode, 0); 
 
     std::stringstream ss ; 
     ss << std::endl ;  
     ss << "snd::render width " << width << " height " << height  << std::endl ; 
-    ss << canvas.c << std::endl ;
+    ss << std::endl << canvas.c << std::endl ;
     std::string str = ss.str(); 
     return str ; 
 }
 
-void snd::render_r(scanvas* canvas, const std::vector<int>& order, int d) const 
+void snd::render_r(scanvas* canvas, const std::vector<int>& order, int mode, int d) const 
 {
     int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), index )) ; 
     assert( ordinal < int(order.size()) ); 
 
-    std::cout << std::endl << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
-
+    std::cout << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
  
     int ix = ordinal ; 
-    int iy = depth ;
+    int iy = d ;        // using depth instead of d would require snd::SetLVID to have been called
  
     char l0 = label[0] ;  
-    if(l0 == '\0' ) l0 = '.' ; 
-    //l0 = '.' ; 
-   
-
-    canvas->drawch( ix, iy, 0,0,  l0 );
+    if(l0 == '\0' ) l0 = 'o' ; 
+  
+    if( mode == 0 )
+    {
+        canvas->drawch( ix, iy, 0,0,  l0 );
+    }
+    else if( mode == 1 )
+    {
+        canvas->drawch( ix, iy, 0,0,  l0 );
+        //canvas->draw( ix, iy, 0,0,  typecode );
+    }
 
     int ch = first_child ; 
     while( ch > -1 )
     {
         snd& child = POOL->node[ch] ; 
-        child.render_r( canvas, order, d+1 ); 
+        child.render_r( canvas, order, mode, d+1 ); 
         ch = child.next_sibling ;
     }
 }
@@ -832,6 +850,45 @@ int snd::Compound(int type, const std::vector<int>& prims )
 }
 
 
+int snd::UnionTree(const std::vector<int>& prims )
+{
+    int idx = sndtree::CommonTree( prims, CSG_UNION ); 
+    return idx ; 
+}
+
+int snd::Contiguous( const std::vector<int>& prims )
+{
+    int idx = snd::Compound( CSG_CONTIGUOUS, prims ); 
+    return idx ; 
+}
+
+
+/**
+snd::Collection
+-----------------
+
+Used for example from U4Polycone::init 
+
++-------------+-------------------+-------------------+
+|  VERSION    |  Impl             |  Notes            |
++=============+===================+===================+ 
+|     0       |  snd::UnionTree   | backward looking  | 
++-------------+-------------------+-------------------+
+|     1       |  snd::Contiguous  | forward looking   |   
++-------------+-------------------+-------------------+
+
+**/
+
+int snd::Collection( const std::vector<int>& prims ) // static
+{ 
+    int idx = -1 ; 
+    switch(VERSION)
+    {   
+        case 0: idx = UnionTree(prims)  ; break ; 
+        case 1: idx = Contiguous(prims) ; break ;
+    }   
+    return idx ; 
+}
 
 
 int snd::Cylinder(double radius, double z1, double z2) // static

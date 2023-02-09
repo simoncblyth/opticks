@@ -202,8 +202,10 @@ set(HEADERS
 
     snd.hh
     scsg.hh
+
+    sndtree.h
+    sn.h 
  
-    snd_TreeBuilder.h 
     spa.h
     sxf.h
     sbb.h
