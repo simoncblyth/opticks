@@ -263,7 +263,7 @@ int make_csgtree_4()
     snd::SetLabel(g, "g"); 
 
     std::vector<int> prims = {a,b,c,d,e,f,g} ; 
-    int z = snd::UnionTree(prims) ; 
+    int z = snd::Collection(prims) ;    // either Contiguous OR UnionTree depending on snd::VERSION 
     snd::SetLabel(z, "z"); 
 
     //snd::SetLVID(z, 0);  // declare root in order to set the depths
@@ -324,13 +324,82 @@ void test_dump()
 
 void test_render()
 {
-    std::cout << "test_render" << std::endl ;     
+    int mode = ssys::getenvint("MODE", -1); 
+    std::cout << "test_render mode " << mode  << std::endl ;     
 
     int g = make_csgtree(); 
     const snd* nd = snd::GetNode(g);
 
-    std::cout << nd->render() << std::endl ;  
+    std::cout << nd->render(mode) << std::endl ;  
+    std::cout << nd->rbrief() << std::endl ;  
 }
+
+void test_rbrief()
+{
+    std::cout << "test_rbrief" << std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+    std::cout << nd->rbrief() << std::endl ;  
+
+}
+
+
+void test_typenodes(int tc)
+{
+    std::cout << "test_typenodes tc " << tc << " " << CSG::Tag(tc) <<  std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+
+    std::vector<int> nodes ; 
+    nd->typenodes(nodes, tc ); 
+
+    std::cout << snd::Brief(nodes) ; 
+}
+
+
+
+void test_typenodes()
+{
+    test_typenodes(CSG_UNION); 
+    test_typenodes(CSG_SPHERE); 
+    test_typenodes(CSG_CONTIGUOUS); 
+}
+
+void test_typenodes_()
+{
+    std::cout << "test_typenodes_ " <<  std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetNode(g);
+
+    std::vector<int> nodes ; 
+
+    nd->typenodes_(nodes, CSG_UNION, CSG_SPHERE, CSG_CONTIGUOUS ); 
+    std::cout << "snd::DescType " << snd::DescType(CSG_UNION, CSG_SPHERE, CSG_CONTIGUOUS) << std::endl ; 
+    std::cout << snd::Brief(nodes) ; 
+    nodes.clear();
+
+    nd->typenodes_(nodes, CSG_UNION, CSG_SPHERE ); 
+    std::cout << "snd::DescType " << snd::DescType(CSG_UNION, CSG_SPHERE, CSG_CONTIGUOUS) << std::endl ; 
+    std::cout << snd::Brief(nodes) ; 
+    nodes.clear();
+
+    nd->typenodes_(nodes, CSG_UNION ); 
+    std::cout << "snd::DescType " << snd::DescType(CSG_UNION) << std::endl ; 
+    std::cout << snd::Brief(nodes) ; 
+    nodes.clear();
+
+    nd->typenodes_(nodes, CSG_SPHERE ); 
+    std::cout << "snd::DescType " << snd::DescType(CSG_SPHERE) << std::endl ; 
+    std::cout << snd::Brief(nodes) ; 
+    nodes.clear();
+
+}
+
+
+
 
 
 
@@ -345,6 +414,9 @@ int main(int argc, char** argv)
     else if(strcmp(TEST, "inorder")==0)   test_inorder() ; 
     else if(strcmp(TEST, "dump")==0)      test_dump() ; 
     else if(strcmp(TEST, "render")==0)    test_render() ; 
+    else if(strcmp(TEST, "rbrief")==0)    test_rbrief() ; 
+    else if(strcmp(TEST, "typenodes")==0) test_typenodes() ; 
+    else if(strcmp(TEST, "typenodes_")==0) test_typenodes_() ; 
     else std::cerr << " TEST not matched " << TEST << std::endl ; 
         
     return 0 ; 

@@ -10,12 +10,12 @@
 int test_Orb()
 {
     G4Orb* orb = new G4Orb("orb", 100.) ; 
-    return U4Solid::Convert(orb); 
+    return U4Solid::Convert(orb, 0, 0); 
 }
 int test_Box()
 {
     G4Box* box = new G4Box("box", 100., 200., 300. ) ; 
-    return U4Solid::Convert(box); 
+    return U4Solid::Convert(box, 0, 0); 
 }
 int test_UnionSolid()
 {
@@ -30,7 +30,7 @@ int test_UnionSolid()
     G4ThreeVector tla(50.,60.,70.);
     G4UnionSolid* uni = new G4UnionSolid( "orb_box", orb, box, rot, tla );  
 
-    return U4Solid::Convert(uni); 
+    return U4Solid::Convert(uni, 0, 0); 
 }
 
 int main(int argc, char** argv)

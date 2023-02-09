@@ -30,6 +30,7 @@ TODO:
 #include <string>
 
 #include "glm/fwd.hpp"
+#include "OpticksCSG.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 struct spa ; 
@@ -52,6 +53,7 @@ struct SYSRAP_API snd
     static void    Import(const NPFold* fold); 
 
     static std::string Desc();
+    static std::string Brief(const std::vector<int>& nodes);
 
     static const snd* GetNode(  int idx);
     static const spa* GetParam( int idx);
@@ -86,7 +88,7 @@ struct SYSRAP_API snd
 
 
     int index ; 
-    int depth ; 
+    int depth ;   // optionally set by calling SetLVID 
     int sibdex ;  // 0-based sibling index 
     int parent ; 
 
@@ -104,7 +106,12 @@ struct SYSRAP_API snd
 
 
     void init(); 
+    std::string tag() const ; 
     std::string brief() const ; 
+
+    std::string rbrief() const ; 
+    void rbrief_r(std::ostream& os, int d) const ; 
+
     std::string desc() const ; 
 
     void setTypecode( int tc ); 
@@ -122,8 +129,8 @@ struct SYSRAP_API snd
     void setLVID(int lvid_ ); 
     void setLVID_r(int lvid_, int d ); 
 
-    int  checktree() const ; 
-    int  checktree_r(char code,  int d ) const ; 
+    int checktree() const ; 
+    int checktree_r(char code,  int d ) const ; 
 
     int max_depth() const ; 
     int max_depth_r(int d) const ; 
@@ -131,10 +138,27 @@ struct SYSRAP_API snd
     int num_node() const ; 
     int num_node_r(int d) const ; 
 
+    bool is_root() const ; 
+
 
     static void Inorder(std::vector<int>& order, int idx ); 
     void inorder(std::vector<int>& nodes ) const ; 
     void inorder_r(std::vector<int>& order, int d ) const ; 
+
+    
+    template<typename ... Args> 
+    void typenodes_(  std::vector<int>& nodes, Args ... tcs ) const ; 
+    void typenodes_r_(std::vector<int>& nodes, const std::vector<OpticksCSG_t>& types, int d) const ; 
+    bool has_type(const std::vector<OpticksCSG_t>& types) const  ; 
+
+    template<typename ... Args> 
+    static std::string DescType(Args ... tcs); 
+
+    void typenodes(std::vector<int>& nodes, int tc ) const ; 
+    void typenodes_r(std::vector<int>& nodes, int tc, int d) const ; 
+
+    int get_ordinal( const std::vector<int>& order ) const ; 
+
 
     std::string dump() const ; 
     void dump_r( std::ostream& os, int d ) const ; 
@@ -142,8 +166,10 @@ struct SYSRAP_API snd
     std::string dump2() const ; 
     void dump2_r( std::ostream& os, int d ) const ; 
 
-    std::string render() const ; 
-    void render_r(scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
+    std::string render(int mode=-1) const ; 
+    void render_r( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
+    void render_v( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
+
     
 
 

@@ -12,7 +12,9 @@ bin=$FOLD/$name
 #test=num_node
 #test=inorder
 #test=dump
-test=render
+#test=render
+#test=typenodes
+test=typenodes_
 
 #tree=0
 #tree=1

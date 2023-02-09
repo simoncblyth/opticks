@@ -24,6 +24,7 @@ struct SYSRAP_API scsg
     scsg(); 
     void init(); 
 
+    int level ; 
     std::vector<snd> node ; 
     std::vector<spa> param ; 
     std::vector<sbb> aabb ; 

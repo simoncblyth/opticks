@@ -18,6 +18,47 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
 
 
 
+Consider lvid:100 base_steel which is a single polycone prim within ridx 7
+-------------------------------------------------------------------------------
+
+::
+
+    CSGImport::importPrim@201:  primIdx    0 lvid 100 snd::GetLVID   7 : base_steel0x5b335a0
+
+
+
+
+
+Hmm this stree still using contiguous::
+
+    GEOM=J007 RIDX=7 ./sysrap/tests/stree_load_test.sh ana
+
+
+     lv:100 nlv: 1                                         base_steel csg  7 tcn 105:cylinder 105:cylinder 11:contiguous 105:cylinder 105:cylinder 11:contiguous 3:difference 
+    desc_csg lvid:100 st.f.soname[100]:base_steel 
+            ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf
+    array([[444,   2,   0, 446,   0,  -1, 445, 100, 105, 272, 272,  -1,   0,   0,   0,   0],
+           [445,   2,   1, 446,   0,  -1,  -1, 100, 105, 273, 273,  -1,   0,   0,   0,   0],
+           [446,   1,   0, 450,   2, 444, 449, 100,  11,  -1,  -1,  -1,   0,   0,   0,   0],
+           [447,   2,   0, 449,   0,  -1, 448, 100, 105, 274, 274,  -1,   0,   0,   0,   0],
+           [448,   2,   1, 449,   0,  -1,  -1, 100, 105, 275, 275,  -1,   0,   0,   0,   0],
+           [449,   1,   1, 450,   2, 447,  -1, 100,  11,  -1,  -1,  -1,   0,   0,   0,   0],
+           [450,   0,  -1,  -1,   2, 446,  -1, 100,   3,  -1,  -1,  -1,   0,   0,   0,   0]], dtype=int32)
+
+    stree.descSolids numSolid:10 detail:0 
+
+
+
+
+
+    CSGFoundry.descSolid ridx  7 label               r7 numPrim      1 primOffset   3127 lv_one 1 
+     pidx 3127 lv 100 pxl    0 :                                         base_steel : no 23403 nn    7 tcn 2:intersection 1:union 2:intersection 105:cylinder 105:cylinder 105:!cylinder 105:!cylinder  
+
+
+
+
+
+
 Further thoughts on CSGImport::importTree
 ----------------------------------------------
 

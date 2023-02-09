@@ -19,6 +19,22 @@ NPFold* snd::Serialize(){ return POOL ? POOL->serialize() : nullptr ; }  // stat
 void    snd::Import(const NPFold* fold){ assert(POOL) ; POOL->import(fold) ; } // static 
 std::string snd::Desc(){  return POOL ? POOL->desc() : "? NO POOL ?" ; } // static 
 
+std::string snd::Brief(const std::vector<int>& nodes)
+{
+    int num_nodes = nodes.size();  
+    std::stringstream ss ; 
+    ss << "snd::Brief num_nodes " << num_nodes << std::endl ; 
+    for(int i=0 ; i < num_nodes ; i++)
+    {
+        int idx = nodes[i]; 
+        const snd* nd = GetNode(idx); 
+        assert( nd ); 
+        ss << std::setw(2) << i << " : " << nd->brief() << std::endl ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 const snd* snd::GetNode( int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
 const spa* snd::GetParam(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static
@@ -94,9 +110,26 @@ void snd::SetLVID(int idx, int lvid)  // static
     }
     assert( chk == 0 ); 
 }
+
+
+/**
+snd::GetLVID
+--------------
+
+Q: Is the last snd returned always root ? 
+A: As trees are created postorder and nodes get added to the POOL 
+   in creation order I think that ideed the last must always be root. 
+
+**/
+
 void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
 { 
     POOL->getLVID(nds, lvid); 
+
+    int num_nd = nds.size(); 
+    assert( num_nd > 0 ); 
+    const snd& last = nds[num_nd-1] ; 
+    assert( last.is_root() ); 
 }
 
 
@@ -145,6 +178,13 @@ void snd::init()
     xform = -1 ; 
 }
 
+
+std::string snd::tag() const
+{
+    return CSG::Tag(typecode) ; 
+}
+
+
 std::string snd::brief() const 
 {
     char l0 = label[0] == '\0' ? '-' : label[0] ; 
@@ -167,11 +207,35 @@ std::string snd::brief() const
        << " bb:" << std::setw(w) << aabb
        << " xf:" << std::setw(w) << xform
        << "    "
-       << CSG::Tag(typecode) 
+       << tag()
        ; 
     std::string str = ss.str(); 
     return str ; 
 }
+
+std::string snd::rbrief() const 
+{
+    std::stringstream ss ; 
+    ss << "snd::rbrief" << std::endl ; 
+
+    rbrief_r(ss, 0) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+void snd::rbrief_r(std::ostream& os, int d) const 
+{
+    os << brief() << std::endl ; 
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd& child = POOL->node[ch] ; 
+        child.rbrief_r(os, d+1) ; 
+        ch = child.next_sibling ;
+    }
+}
+
 
 
 void snd::setTypecode(int _tc )
@@ -317,6 +381,20 @@ int snd::checktree_r(char code,  int d ) const
     return chk ; 
 }
 
+
+/**
+snd::max_depth
+---------------
+
+Q: How to handle compound nodes CSG_CONTIGUOUS/CSG_DISCONTIGUOUS with regard to depth ?
+A: Kinda depends on the purpose of the depth ? Need separate methods max_treedepth ?
+A: As compound nodes should only hold leaves the default way to get 
+   depth should usually be correct. But there are special cases where it 
+   might not be. For example where the root node is compound the max depth
+   should be 0. Suggests should stop traversal when hit compound ? 
+
+**/
+
 int snd::max_depth() const 
 {
     return max_depth_r(0);
@@ -350,6 +428,14 @@ int snd::num_node_r(int d) const
     }
     return nn ; 
 }
+
+bool snd::is_root() const 
+{
+    return depth == 0 && parent == -1 ; 
+}
+
+
+
 
 /**
 inorder
@@ -423,6 +509,91 @@ void snd::inorder_r(std::vector<int>& order, int d ) const
 }
 
 
+
+template<typename ... Args> 
+void snd::typenodes_(std::vector<int>& nodes, Args ... tcs ) const 
+{
+    std::vector<OpticksCSG_t> types = {tcs ...};
+    typenodes_r_(nodes, types, 0 ); 
+}
+
+// NB MUST USE SYSRAP_API TO PLANT THE SYMBOLS IN THE LIB  
+template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t ) const ; 
+template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t ) const ; 
+template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t, OpticksCSG_t ) const ; 
+
+
+void snd::typenodes_r_(std::vector<int>& nodes, const std::vector<OpticksCSG_t>& types, int d) const 
+{
+    if(has_type(types)) nodes.push_back(index); 
+
+    int ch = first_child ; 
+    for(int i=0 ; i < num_child ; i++)  
+    {
+        snd& child = POOL->node[ch] ; 
+        assert( child.index == ch ); 
+        child.typenodes_r_(nodes, types, d+1 );  
+        ch = child.next_sibling ;
+    }
+}
+
+bool snd::has_type(const std::vector<OpticksCSG_t>& types) const 
+{
+    return std::find( types.begin(), types.end(), typecode ) != types.end() ; 
+}
+
+
+template<typename ... Args> 
+std::string snd::DescType(Args ... tcs)  // static
+{
+    std::vector<OpticksCSG_t> types = {tcs ...};
+    int num_tc = types.size(); 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_tc ; i++)
+    {
+        int tc = types[i]; 
+        ss << CSG::Tag(tc)  ;
+        if(i < num_tc - 1) ss << "," ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+template SYSRAP_API std::string snd::DescType(OpticksCSG_t ); 
+template SYSRAP_API std::string snd::DescType(OpticksCSG_t, OpticksCSG_t ); 
+template SYSRAP_API std::string snd::DescType(OpticksCSG_t, OpticksCSG_t, OpticksCSG_t ); 
+
+
+
+
+void snd::typenodes(std::vector<int>& nodes, int tc ) const 
+{
+    typenodes_r(nodes, tc, 0 ); 
+}
+void snd::typenodes_r(std::vector<int>& nodes, int tc, int d) const 
+{
+    if(typecode == tc ) nodes.push_back(index); 
+
+    int ch = first_child ; 
+    for(int i=0 ; i < num_child ; i++)  
+    {
+        snd& child = POOL->node[ch] ; 
+        assert( child.index == ch ); 
+        child.typenodes_r(nodes, tc, d+1 );  
+        ch = child.next_sibling ;
+    }
+}
+
+
+
+int snd::get_ordinal( const std::vector<int>& order ) const 
+{
+    int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), index )) ; 
+    return ordinal < int(order.size()) ? ordinal : -1 ; 
+}
+
+
 std::string snd::dump() const 
 {
     std::stringstream ss ; 
@@ -477,50 +648,40 @@ void snd::dump2_r( std::ostream& os, int d ) const
 
 
 
-std::string snd::render() const 
+std::string snd::render(int mode_) const 
 {
     int width = num_node(); 
     int height = max_depth(); 
+    int defmode = width > 16 ? 0 : 1 ; 
+    int mode = mode_ > -1 ? mode_ : defmode ; 
 
     std::vector<int> order ; 
     inorder(order); 
     assert( int(order.size()) == width ); 
 
-    int mode = width > 16 ? 0 : 1 ; 
-
     scanvas canvas( width+1, height+2, 4, 2 );  
     render_r(&canvas, order, mode, 0); 
 
     std::stringstream ss ; 
-    ss << std::endl ;  
-    ss << "snd::render width " << width << " height " << height  << std::endl ; 
-    ss << std::endl << canvas.c << std::endl ;
+    ss 
+       << std::endl 
+       << "snd::render"
+       << " width " << width 
+       << " height " << height  
+       << " mode " << mode  
+       << std::endl 
+       << std::endl 
+       << canvas.c 
+       << std::endl
+       ;
+
     std::string str = ss.str(); 
     return str ; 
 }
 
 void snd::render_r(scanvas* canvas, const std::vector<int>& order, int mode, int d) const 
 {
-    int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), index )) ; 
-    assert( ordinal < int(order.size()) ); 
-
-    std::cout << "snd::render_r " << brief() << " ordinal " << ordinal << std::endl ;  
- 
-    int ix = ordinal ; 
-    int iy = d ;        // using depth instead of d would require snd::SetLVID to have been called
- 
-    char l0 = label[0] ;  
-    if(l0 == '\0' ) l0 = 'o' ; 
-  
-    if( mode == 0 )
-    {
-        canvas->drawch( ix, iy, 0,0,  l0 );
-    }
-    else if( mode == 1 )
-    {
-        canvas->drawch( ix, iy, 0,0,  l0 );
-        //canvas->draw( ix, iy, 0,0,  typecode );
-    }
+    render_v(canvas, order, mode, d);   // visit in preorder 
 
     int ch = first_child ; 
     while( ch > -1 )
@@ -530,7 +691,39 @@ void snd::render_r(scanvas* canvas, const std::vector<int>& order, int mode, int
         ch = child.next_sibling ;
     }
 }
+
+
+void snd::render_v( scanvas* canvas, const std::vector<int>& order, int mode, int d ) const 
+{
+    int ordinal = get_ordinal( order ); 
+    assert( ordinal > -1 ); 
+
+    std::cout << "snd::render_v " << brief() << " ordinal " << ordinal << std::endl ;  
  
+    int ix = ordinal ; 
+    int iy = d ;        // using depth instead of d would require snd::SetLVID to have been called
+ 
+    char l0 = label[0] ;  
+    if(l0 == '\0' ) l0 = 'o' ; 
+
+    if( mode == 0 )
+    {
+        canvas->drawch( ix, iy, 0,0,  l0 );
+    }
+    else if( mode == 1 )
+    {
+        canvas->drawch( ix, iy, 0,0,  l0 );
+    }
+    else if( mode == 2 )
+    {
+        canvas->draw( ix, iy, 0,0,  typecode );
+    }
+    else if( mode == 3 )
+    {
+        std::string tc = tag(); 
+        canvas->draw( ix, iy, 0,0,  tc.c_str() );
+    }
+}
 
 
 

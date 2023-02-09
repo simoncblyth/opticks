@@ -61,9 +61,16 @@ void CSGImport::importTree(const stree* st_)
     st = st_ ; 
     assert(st); 
 
+    importNames(); 
     importSolid();     
 
     LOG(LEVEL) << "]" ;     
+}
+
+
+void CSGImport::importNames()
+{
+    st->get_soname(fd->meshname);  
 }
 
 
@@ -119,8 +126,9 @@ CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
     for(int i=0 ; i < num_rem ; i++)
     {
         const snode& nd = st->rem[i] ;
+        int lvid = nd.lvid ; 
 
-        CSGPrim* pr = importPrim( i, nd ) ;  
+        CSGPrim* pr = importPrim( i, lvid ) ;  
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         //assert( pr );  
 
@@ -171,7 +179,7 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
         int lvid1 = lvids[i] ; 
         assert( lvid1 == lvid ); 
 
-        CSGPrim* pr = importPrim( i, node );  
+        CSGPrim* pr = importPrim( i, lvid );  
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         //assert( pr ); 
     }
@@ -179,17 +187,6 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
     return so ; 
 }
 
-
-
-CSGPrim* CSGImport::importPrim( int primIdx, const snode& node )  // structural node
-{
-    std::vector<snd> nds ; 
-    snd::GetLVID( nds, node.lvid );     
-
-    LOG(LEVEL) << " primIdx " << primIdx << " node.lvid " << node.lvid << " snd::GetLVID " << nds.size() ; 
-
-    return nullptr ; 
-}
 
 
 /**
@@ -200,9 +197,66 @@ See::
 
     sysrap/tests/stree_load_test.sh 
 
-
 HMM: not so simple the stree is raw n-ary tree it needs 
 some preparation before turning into CSGPrim/CSGNode
+
+The list of CSGNode for the CSGPrim need to be in complete-binary-tree-ized 
+level order.  How to convert an n-ary tree into one of those ? 
+
+1. check if n-ary tree is 2-ary or not, collecting non-2-ary idx for subNum/subOffset handling
+
+   * for now just require num_nonbinary is zero 
+
+2. number of 2-ary compat nodes will determine complete-binary-tree-size with extras for any subs after the tree
+
+   * need to use maxdepth to decide on complete binary tree size
+
+
+**/
+
+
+CSGPrim* CSGImport::importPrim(int primIdx, int lvid) 
+{
+    std::vector<snd> nds ; 
+    snd::GetLVID( nds, lvid );     
+
+    const char* name = fd->getMeshName(lvid)  ; 
+
+    int num_nd = nds.size(); 
+    const snd& root = nds[num_nd-1] ; 
+
+    std::vector<int> nonbinary ; 
+    root.typenodes_(nonbinary, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS ); 
+    int num_nonbinary = nonbinary.size(); 
+
+    LOG(LEVEL) 
+        << " primIdx " << std::setw(4) << primIdx 
+        << " lvid "    << std::setw(3) << lvid 
+        << " num_nd "  << std::setw(3) << num_nd
+        << " num_nonbinary "  << std::setw(3) << num_nonbinary
+        << " : " 
+        << name 
+        ; 
+
+    if(lvid == 100)
+    {
+        for(int i=0 ; i < num_nd ; i++)
+        {
+            const snd& nd = nds[i];  
+            LOG(LEVEL) << nd.brief() ; 
+        }    
+        LOG(LEVEL) << std::endl << root.rbrief() ; 
+        LOG(LEVEL) << std::endl << root.render(3) ; 
+    }
+
+    assert( num_nonbinary == 0 ); 
+
+    return nullptr ; 
+}
+
+
+/**
+
 
 NCSG::export_
     writes nodetree into transport buffers 

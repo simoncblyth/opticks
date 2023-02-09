@@ -298,7 +298,7 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 {
     assert( int(solids.size()) == lvid ); 
 
-    int root = U4Solid::Convert(so, lvid ); 
+    int root = U4Solid::Convert(so, lvid, 0 ); 
     assert( root > -1 ); 
     snd::SetLVID(root, lvid ); 
 

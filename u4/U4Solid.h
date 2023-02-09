@@ -95,9 +95,10 @@ struct U4Solid
     std::string desc() const ; 
     static int          Type(const G4VSolid* solid ) ;  
     static const char*  Tag( int type ) ;   
-    static int          Convert(const G4VSolid* solid, int lvid=-1 ) ; 
+    static int          Convert(const G4VSolid* solid, int lvid, int depth ) ; 
 
-    U4Solid( const G4VSolid* solid, int lvid=-1 ); 
+    U4Solid( const G4VSolid* solid, int lvid, int depth ); 
+
     void init(); 
     void init_Orb(); 
     void init_Sphere(); 
@@ -140,20 +141,25 @@ struct U4Solid
     plog::Severity  level ; 
     const G4VSolid* solid ; 
     int             lvid ; 
+    int             depth ;   // recursion depth across different G4VSolid
     int             type ;
     int             root ;     
 };
 
 inline std::string U4Solid::desc() const 
 {
+    G4String name = solid->GetName(); 
+
     std::stringstream ss ; 
     ss << "U4Solid::desc" 
        << " level " << plog::severityToString(level)
        << " solid " << ( solid ? "Y" : "N" )
        << " lvid "   << std::setw(3) << lvid    
+       << " depth "   << std::setw(3) << depth    
        << " type "  << std::setw(3) << type
        << " root "  << std::setw(4) << root
        << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
+       << " name " << name.c_str() 
        ; 
     std::string str = ss.str(); 
     return str ; 
@@ -204,17 +210,18 @@ inline const char* U4Solid::Tag(int type)   // static
     return tag ; 
 }
 
-inline int U4Solid::Convert(const G4VSolid* solid, int lvid ) // static
+inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // static
 {
-    U4Solid so(solid, lvid); 
+    U4Solid so(solid, lvid, depth ); 
     return so.root ; 
 }
 
-inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_ )
+inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_ )
     :
     level(slog::envlevel("U4Solid", "DEBUG")),
     solid(solid_),
     lvid(lvid_),
+    depth(depth_),
     type(Type(solid)),
     root(-1)
 {
@@ -484,6 +491,8 @@ inline void U4Solid::init_Polycone()
     const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
     assert(polycone);
     root = U4Polycone::Convert(polycone); 
+
+    LOG(error) << desc() ; 
 }
 
 
@@ -634,8 +643,8 @@ inline void U4Solid::init_BooleanSolid()
     bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
     assert( !is_left_displaced && "not expecting left displacement " );
 
-    int l = Convert( left ); 
-    int r = Convert( right ); 
+    int l = Convert( left, lvid, depth+1  ); 
+    int r = Convert( right, lvid, depth+1 ); 
 
     int l_xf = snd::GetNodeXForm(l);
     int r_xf = snd::GetNodeXForm(r);
@@ -689,7 +698,7 @@ inline void U4Solid::init_DisplacedSolid()
     bool single_disp = dynamic_cast<const G4DisplacedSolid*>(moved) == nullptr ; 
     assert(single_disp && "only single disp is expected" );
 
-    int m = Convert( moved ); 
+    int m = Convert( moved, lvid, depth+1 ); 
     assert(m > -1); 
     snd::SetNodeXForm(m, xf);  
 

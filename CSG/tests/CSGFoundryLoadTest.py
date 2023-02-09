@@ -170,9 +170,9 @@ if __name__ == '__main__':
     cf = CSGFoundry.Load()
     print(repr(cf))
 
-    expr = "cf.prim.view(np.int32)[:,:2].reshape(-1,8) "
-    print(expr)
-    eval(expr)
+    #expr = "cf.prim.view(np.int32)[:,:2].reshape(-1,8) "
+    #print(expr)
+    #eval(expr)
 
     print(cf.descSolids(True))
     print(cf.descSolids(False))

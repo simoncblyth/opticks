@@ -310,6 +310,8 @@ struct stree
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
 
+    void        get_soname( std::vector<std::string>& names) const ; 
+
     int         get_num_nodes() const ; 
     const char* get_soname(int nidx) const ; 
     const char* get_sub(   int nidx) const ; 
@@ -1004,6 +1006,12 @@ inline const char* stree::get_sub_soname(const char* sub) const
 {
     int first_nidx = get_first(sub); 
     return first_nidx == -1 ? nullptr : get_soname(first_nidx ) ; 
+}
+
+inline void stree::get_soname( std::vector<std::string>& names) const 
+{
+    assert( names.size() == 0 ); 
+    for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( soname[i] ); 
 }
 
 

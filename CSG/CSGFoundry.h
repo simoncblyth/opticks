@@ -372,7 +372,7 @@ struct CSG_API CSGFoundry : public SGeo
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
 
-
+    // HMM "meshname" is historical, should be "lvname" or "soname" ?
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 

@@ -522,10 +522,7 @@ class CSGFoundry(object):
             tcn = " ".join(list(map(lambda _:"%d:%s%s" % (tcs[_],"!" if neg[_] else "",CSG_.desc(tcs[_])),range(len(tcs)))))
         pass
 
-
-
-
-        return "no %5d nn %4d tcn %s " % (nodeOffset, numNode, tcn )
+        return "no %5d nn %4d tcn %s tcs %s" % (nodeOffset, numNode, tcn, str(tcs) )
 
  
 
