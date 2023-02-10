@@ -41,9 +41,7 @@ struct CSG_API CSGImport
     CSGSolid* importRemainderSolid(int ridx, const char* rlabel); 
     CSGSolid* importFactorSolid(   int ridx, const char* rlabel); 
     CSGPrim*  importPrim( int primIdx, int lvid ); 
-
-    void     importBinNode_r(const snd* nd, int idx); 
-    CSGNode* importBinNode_v(const snd* nd, int idx); 
+    CSGNode*  importNode( int nodeIdx, const snd* nd); 
 
 }; 
 

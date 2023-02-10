@@ -51,7 +51,7 @@ std::string CSGNode::desc() const
     unsigned trIdx = gtransformIdx(); 
     bool compound = is_compound(); 
 
-    int subNum_ = compound ? subNum() : -1  ; 
+    int subNum_ = compound ? subNum() : -1  ;        
     int subOffset_ = compound ? subOffset() : -1  ; 
 
     std::stringstream ss ; 
@@ -463,7 +463,7 @@ void CSGNode::setAABBLocal()
 CSGNode CSGNode::Zero()  // static
 {
     CSGNode nd = {} ;
-    nd.setAABB(  -0.f, -0.f, -0.f,  0.f, 0.f, 0.f  ); 
+    nd.setAABB(  -0.f, -0.f, -0.f,  0.f, 0.f, 0.f  );   // HMM: is negated zero -0.f ever used for anything ? 
     nd.setTypecode(CSG_ZERO) ; 
     return nd ; 
 }
@@ -667,6 +667,7 @@ CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb 
     if(aabb)   nd.setAABB( aabb );  
     return nd ; 
 }
+
 
 
 

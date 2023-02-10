@@ -17,7 +17,8 @@ set(TEST_SOURCES
     CSGFoundry_addPrimNodes_Test.cc
     CSGFoundry_getCenterExtent_Test.cc
     CSGFoundry_findSolidIdx_Test.cc
-    CSGFoundry_importTree_Test.cc 
+
+    CSGImportTest.cc 
 
     CSGNameTest.cc
     CSGTargetTest.cc

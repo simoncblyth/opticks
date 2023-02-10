@@ -47,6 +47,7 @@ struct SYSRAP_API snd
     static constexpr const double zero = 0. ; 
     static scsg* POOL ; 
     static void SetPOOL( scsg* pool ); 
+    static int  Level(); 
 
     // HMM: maybe can remove these now that are doing scsg.hh POOL hookup with stree::init
     static NPFold* Serialize(); 
@@ -79,6 +80,11 @@ struct SYSRAP_API snd
     int getLVNumNode() const ; 
     int getLVBinNode() const ; 
     int getLVSubNode() const ; 
+
+    static void GetLVNodesComplete(std::vector<const snd*>& nds, int lvid); 
+    void getLVNodesComplete(std::vector<const snd*>& nds) const ; 
+    static void GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx); 
+
 
 
     static snd* GetNode_(int idx);

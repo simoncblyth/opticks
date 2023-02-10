@@ -1,5 +1,5 @@
 /**
-CSGMaker_importTree_Test.cc
+CSGImportTest.cc
 =============================
 
 **/
@@ -12,6 +12,7 @@ CSGMaker_importTree_Test.cc
 #include "CSGFoundry.h"
 
 const char* BASE = getenv("BASE");  
+const char* FOLD = getenv("FOLD");  
 
 int main(int argc, char** argv)
 {
@@ -24,10 +25,9 @@ int main(int argc, char** argv)
     st->load(BASE) ;  
     std::cout << st->desc() ; 
 
-
     CSGFoundry* fd = new CSGFoundry ; 
     fd->importTree( st ); 
-
+    if(FOLD) fd->save(FOLD) ; 
 
     return 0 ;  
 }

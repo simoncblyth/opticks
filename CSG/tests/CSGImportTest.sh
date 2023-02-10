@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-CSGFoundry_importTree_Test.sh : testing CSGFoundry::importTree CSGMaker::importTree
-=====================================================================================
+CSGImportTest.sh : testing CSGFoundry::importTree 
+===================================================
 
 Workflow:
 
@@ -10,10 +10,10 @@ Workflow:
    cd ~/opticks/u4/tests  # u4t 
    ./U4TreeCreateTest.sh
 
-2. Load the stree.h instance and test CSGFoundry::importTree CSGMaker::importTree::
+2. Load stree.h instance and imports with CSGFoundry::importTree then saves CSGFoundry::
 
    cd ~/opticks/CSG/tests
-   ./CSGFoundry_importTree_Test.sh
+   ./CSGImportTest.sh
 
 See also::
 
@@ -25,12 +25,25 @@ See also::
 EOU
 }
 
-bin=CSGFoundry_importTree_Test
+bin=CSGImportTest
 
 export BASE=/tmp/$USER/opticks/U4TreeCreateTest
+export FOLD=/tmp/$USER/opticks/$bin
+
+
+check=$BASE/stree/nds.npy
+if [ ! -f "$check" ]; then
+   echo $BASH_SOURCE input stree does not exist at BASE $BASE check $check 
+   exit 1 
+fi 
+
+mkdir -p $FOLD
+
 
 loglevel(){
    export CSGImport=INFO
+   export scsg_level=1
+
 }
 loglevel
 

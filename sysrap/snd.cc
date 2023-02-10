@@ -15,10 +15,13 @@
 
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
+int snd::Level(){ return POOL ? POOL->level : -1 ; } // static
 
 NPFold* snd::Serialize(){ return POOL ? POOL->serialize() : nullptr ; }  // static 
 void    snd::Import(const NPFold* fold){ assert(POOL) ; POOL->import(fold) ; } // static 
 std::string snd::Desc(){  return POOL ? POOL->desc() : "? NO POOL ?" ; } // static 
+
+
 
 std::string snd::Brief(const std::vector<int>& nodes)
 {
@@ -158,11 +161,6 @@ int snd::GetLVSubNode( int lvid ) // static
 
 
 
-
-
-
-
-
 /**
 snd::getLVNumNode
 -------------------
@@ -218,6 +216,87 @@ int snd::getLVSubNode() const
     } 
     return constituents ; 
 }
+
+
+
+/**
+snd::GetLVNodesComplete
+-------------------------
+
+As the traversal is constrained to the binary tree portion of the n-ary snd tree 
+can populate a vector of *snd* pointers in complete binary tree level order indexing
+with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r.
+
+**/
+
+
+void snd::GetLVNodesComplete(std::vector<const snd*>& nds, int lvid) // static 
+{
+    const snd* root = GetLVRoot(lvid); 
+    root->getLVNodesComplete(nds);    
+
+    int level = Level(); 
+
+    if(level > 0 && nds.size() > 8 )
+    {
+        std::cout
+            << "snd::GetLVNodesComplete"
+            << " lvid " << lvid
+            << " level " << level
+            << std::endl
+            << root->rbrief()
+            << std::endl
+            << root->render(3)
+            ;
+    }
+
+}
+
+void snd::getLVNodesComplete(std::vector<const snd*>& nds) const 
+{
+    int bn = getLVBinNode();  
+    int sn = getLVSubNode();  
+    int numParts = bn + sn ; 
+    nds.resize(numParts); 
+
+    GetLVNodesComplete_r( nds, this, 0 ); 
+}
+
+void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx)  // static
+{
+    assert( idx < int(nds.size()) ); 
+    nds[idx] = nd ; 
+
+    if( nd->num_child > 0 && nd->is_listnode() == false ) // non-list operator node
+    {
+        assert( nd->num_child == 2 ) ;
+        int ch = nd->first_child ;
+        for(int i=0 ; i < nd->num_child ; i++)
+        {
+            const snd* child = snd::GetNode(ch) ;
+            assert( child->index == ch );
+
+            int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
+
+            GetLVNodesComplete_r(nds, child, cidx );
+
+            ch = child->next_sibling ;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

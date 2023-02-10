@@ -286,3 +286,25 @@ struct CSG_API CSGNode
 };
 
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
+
+inline std::ostream& operator<<(std::ostream& os, const CSGNode& n)  
+{
+    os  
+       << std::endl 
+       << "q0 " << n.q0 << std::endl
+       << "q1 " << n.q1 << std::endl  
+       << "q2 " << n.q2 << std::endl
+       << "q3 " << n.q3 << std::endl  
+       ;   
+    return os; 
+}
+
+#endif
+
+
+
+

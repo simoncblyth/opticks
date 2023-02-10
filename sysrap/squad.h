@@ -394,6 +394,18 @@ inline const float* quad6::cdata() const { return &q0.f.x ; }
 #else
 
 
+inline std::ostream& operator<<(std::ostream& os, const quad& q)  
+{
+    os  
+       << "f " << q.f  
+       << "i " << q.i  
+       << "u " << q.u  
+       ;   
+    return os; 
+}
+
+
+
 inline std::ostream& operator<<(std::ostream& os, const quad4& v)  
 {
     os  

@@ -208,101 +208,53 @@ CSGPrim* CSGImport::importPrim(int primIdx, int lvid)
 {
     const char* name = fd->getMeshName(lvid)  ; 
 
-    const snd* root = snd::GetLVRoot(lvid);
-
-    int bn = snd::GetLVBinNode( lvid ); 
-    int sn = snd::GetLVSubNode( lvid ); 
-    int numParts = bn + sn ; 
+    std::vector<const snd*> nds ; 
+    snd::GetLVNodesComplete(nds, lvid); 
+    int numParts = nds.size(); 
 
     CSGPrim* prim = fd->addPrim( numParts );
 
-    importBinNode_r( root, 0 ); 
-
-    // if(sn > 0) importList 
-    assert( sn == 0 ); 
-
+    for(int i=0 ; i < numParts ; i++)
+    {
+        const snd* nd = nds[i]; 
+        importNode(i, nd ) ; 
+    }
 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
         << " lvid "    << std::setw(3) << lvid 
-        << " binNode " << std::setw(3) << bn 
-        << " subNode " << std::setw(3) << sn 
         << " numParts "  << std::setw(3) << numParts
         << " : " 
         << name 
         ; 
 
-    LOG_IF(LEVEL, numParts > 8 ) 
-        << std::endl 
-        << root->rbrief() 
-        << std::endl 
-        << root->render(3)
-        ; 
-
     return prim ; 
 }
 
-/**
-CSGImport::importBinNode_r
----------------------------
 
-As the traversal is constrained to the binary tree portion of the n-ary tree 
-can populate a complete binary tree just like NCSG::export_tree_r using 
-0-based complete binary tree level order indexing. 
-
-**/
-
-void CSGImport::importBinNode_r(const snd* nd, int idx)
-{
-    importBinNode_v(nd, idx);    // preorder visit ? any constraints on order ?
-
-    if( nd->num_child > 0 && nd->is_listnode() == false ) // non-list operator node
-    {    
-        assert( nd->num_child == 2 ) ;  
-        int ch = nd->first_child ; 
-        for(int i=0 ; i < nd->num_child ; i++)  
-        {    
-            const snd* child = snd::GetNode(ch) ; 
-            assert( child->index == ch ); 
-
-            int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
-
-            importBinNode_r( child, cidx );
-
-            ch = child->next_sibling ;
-        }    
-    }    
-} 
 
 /**
-CSGImport::importBinNode_v
+CSGImport::importNode
 ----------------------------
 
-HMM: need to form CSGNode from the snd data 
-
-HMM: what about the complete binary tree idx ? 
-Need to place the nodes in the idx slot, not just add them ? 
+TODO: transforms, planes, aabb 
 
 **/
 
-CSGNode* CSGImport::importBinNode_v(const snd* nd, int idx)
+CSGNode* CSGImport::importNode(int nodeIdx, const snd* nd)
 {
-    LOG(LEVEL) << " idx " << idx ; 
+    CSGNode cn = CSGNode::Zero() ; 
+    if(nd)
+    {
+        const float* aabb = nullptr ;  
+        const float* param6 = nullptr ; 
 
-    CSGNode* cn = nullptr ; 
+        cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
+    }
 
-
-    /*    
-    const float* aabb = nullptr ;  
-    std::vector<float4>* planes = nullptr ; 
-
-    CSGNode cnd = CSGNode::Make(nd->typecode, param6, aabb ) ;  
-
-    cn = fd->addNode(cnd, planes );
-
-    */
-
-    return cn ; 
+     //std::vector<float4>* planes = nullptr ; 
+    CSGNode* n = fd->addNode( cn );  
+    return n ; 
 }
 
 
