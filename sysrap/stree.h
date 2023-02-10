@@ -310,7 +310,9 @@ struct stree
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
 
-    void        get_soname( std::vector<std::string>& names) const ; 
+    void        get_meshname( std::vector<std::string>& names) const ;  // match CSGFoundry 
+    void        get_mmlabel(  std::vector<std::string>& names) const ;  // match CSGFoundry 
+
 
     int         get_num_nodes() const ; 
     const char* get_soname(int nidx) const ; 
@@ -369,12 +371,25 @@ struct stree
     void sortSubtrees(); 
     void enumerateFactors(); 
     void labelFactorSubtrees(); 
-    void collectRemainderNodes(); 
+    void collectRemainderNodes();  // HMM: Nodes is misleading, in CSGFoundry lingo would be Prim
 
     void factorize(); 
 
-    unsigned get_num_factor() const ; 
-    sfactor& get_factor(unsigned idx); 
+    int get_num_factor() const ; 
+    sfactor& get_factor_(unsigned idx) ; 
+    const sfactor& get_factor(unsigned idx) const ; 
+
+    int      get_factor_subtree(unsigned idx) const ; 
+    int      get_factor_olvid(unsigned idx) const ; 
+
+    int      get_remainder_subtree() const ; 
+    int      get_remainder_olvid() const  ; 
+
+    int      get_ridx_subtree(unsigned ridx) const ; 
+    int      get_ridx_olvid(  unsigned ridx) const ; 
+
+    int      get_num_ridx() const ;  
+
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
@@ -1008,10 +1023,28 @@ inline const char* stree::get_sub_soname(const char* sub) const
     return first_nidx == -1 ? nullptr : get_soname(first_nidx ) ; 
 }
 
-inline void stree::get_soname( std::vector<std::string>& names) const 
+inline void stree::get_meshname( std::vector<std::string>& names) const 
 {
     assert( names.size() == 0 ); 
     for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( soname[i] ); 
+}
+
+inline void stree::get_mmlabel( std::vector<std::string>& names) const 
+{
+    assert( names.size() == 0 ); 
+    int num_ridx = get_num_ridx(); 
+    for(int ridx=0 ; ridx < num_ridx ; ridx++)
+    {
+        int num_prim = get_ridx_subtree(ridx) ; 
+        int olvid = get_ridx_olvid(ridx) ; 
+
+        assert( olvid < int(soname.size()) ); 
+        const char* name = olvid == -1 ? nullptr : soname[olvid].c_str() ; 
+        std::stringstream ss ;  
+        ss << num_prim << ":" << ( name ? name : "" ) ; 
+        std::string str = ss.str(); 
+        names.push_back(str);  
+    }
 }
 
 
@@ -1813,10 +1846,24 @@ inline void stree::labelFactorSubtrees()
         get_nodes( outer_node, sub.c_str() ); 
         assert( int(outer_node.size()) ==  fac.freq ); 
 
+        int fac_olvid = -1 ; 
         int fac_subtree = -1 ; 
         for(unsigned i=0 ; i < outer_node.size() ; i++)
         {
             int outer = outer_node[i] ; 
+
+            const snode& ond = nds[outer] ; 
+
+            if( fac_olvid == -1 )
+            {
+                fac_olvid = ond.lvid ; 
+            }
+            else
+            {
+                // all the instances should have the same outer lvid
+                assert( ond.lvid == fac_olvid ); 
+            }
+
             std::vector<int> subtree ; 
             get_progeny(subtree, outer); 
             subtree.push_back(outer); 
@@ -1831,6 +1878,7 @@ inline void stree::labelFactorSubtrees()
                 assert( int(subtree.size()) == fac_subtree ); 
             }
 
+
             for(unsigned j=0 ; j < subtree.size() ; j++)
             {
                 int nidx = subtree[j] ; 
@@ -1841,6 +1889,7 @@ inline void stree::labelFactorSubtrees()
             }
         }
         fac.subtree = fac_subtree ; 
+        fac.olvid = fac_olvid ; 
 
         if(level>0) std::cout 
             << "stree::labelFactorSubtrees"
@@ -1852,7 +1901,7 @@ inline void stree::labelFactorSubtrees()
     if(level>0) std::cout << "] stree::labelFactorSubtrees " << std::endl ;
 }
 
-inline void stree::collectRemainderNodes()
+inline void stree::collectRemainderNodes() 
 {
     assert( rem.size() == 0u ); 
     for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
@@ -1907,16 +1956,67 @@ inline void stree::factorize()
 }
 
 
-inline unsigned stree::get_num_factor() const
+inline int stree::get_num_factor() const
 {
     return factor.size(); 
 }
 
-inline sfactor& stree::get_factor(unsigned idx) 
+
+inline sfactor& stree::get_factor_(unsigned idx)
 {
     assert( idx < factor.size() ); 
     return factor[idx] ; 
 }
+inline const sfactor& stree::get_factor(unsigned idx) const 
+{
+    assert( idx < factor.size() ); 
+    return factor[idx] ; 
+}
+
+inline int stree::get_factor_subtree(unsigned idx) const 
+{
+    const sfactor& fac = get_factor(idx); 
+    return fac.subtree ; 
+}
+inline int stree::get_factor_olvid(unsigned idx) const 
+{
+    const sfactor& fac = get_factor(idx); 
+    return fac.olvid ; 
+}
+
+
+
+inline int stree::get_remainder_subtree() const 
+{
+    return rem.size() ; 
+}
+inline int stree::get_remainder_olvid() const 
+{
+    if(rem.size() == 0 ) return -1 ; 
+    const snode& out = rem[0] ; 
+    return out.lvid ; 
+}
+
+
+
+inline int stree::get_ridx_subtree(unsigned ridx) const 
+{
+    return ridx == 0 ? get_remainder_subtree() : get_factor_subtree(ridx - 1 ) ; 
+}
+inline int stree::get_ridx_olvid(unsigned ridx) const 
+{
+    return ridx == 0 ? get_remainder_olvid() : get_factor_olvid(ridx - 1 ) ; 
+}
+
+
+
+
+inline int stree::get_num_ridx() const 
+{
+    return 1 + get_num_factor() ; 
+}
+
+
 
 /**
 stree::get_factor_nodes

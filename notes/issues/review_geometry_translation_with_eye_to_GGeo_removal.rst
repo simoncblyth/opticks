@@ -16,6 +16,158 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
     epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./CSG/tests/CSGFoundryLoadTest.sh ana
 
 
+
+Comparing CSGFoundry
+----------------------
+
+* lvid 93, 99 are very different : A balanced, B not  
+* A also positivized, B not 
+
+::
+
+    In [12]: A.base
+    Out[12]: '/Users/blyth/.opticks/GEOM/J007/CSGFoundry'
+
+    In [13]: B.base
+    Out[13]: '/tmp/blyth/opticks/CSGImportTest/CSGFoundry'
+
+    In [15]: A.prim.shape, B.prim.shape
+    Out[15]: ((3259, 4, 4), (3259, 4, 4))
+
+    In [16]: A.node.shape, B.node.shape
+    Out[16]: ((23547, 4, 4), (25435, 4, 4))
+
+    In [11]: np.c_[A.prim.view(np.int32)[:,0,:2],B.prim.view(np.int32)[:,0,:2]][:2200]
+    Out[11]: 
+    array([[    1,     0,     1,     0],
+           [    1,     1,     1,     1],
+           [    1,     2,     1,     2],
+           [    3,     3,     3,     3],
+           [    3,     6,     3,     6],
+           ...,
+           [    7, 14149,     7, 14149],
+           [    7, 14156,     7, 14156],
+           [    7, 14163,     7, 14163],
+           [    7, 14170,     7, 14170],
+           [    7, 14177,     7, 14177]], dtype=int32)
+
+
+    In [18]: np.c_[A.prim.view(np.int32)[:,1],B.prim.view(np.int32)[:,1]][:1000]
+    Out[18]: 
+    array([[  0, 149,   0,   0,   0,  -1,   0,   0],
+           [  1,  17,   0,   1,   1,  -1,   0,   0],
+           [  2,   2,   0,   2,   2,  -1,   0,   0],
+           [  3,   1,   0,   3,   3,  -1,   0,   0],
+           [  4,   0,   0,   4,   4,  -1,   0,   0],
+           ...,
+           [995,  45,   0, 995, 995,  -1,   0,   0],
+           [996,  45,   0, 996, 996,  -1,   0,   0],
+           [997,  45,   0, 997, 997,  -1,   0,   0],
+           [998,  45,   0, 998, 998,  -1,   0,   0],
+           [999,  45,   0, 999, 999,  -1,   0,   0]], dtype=int32)
+
+
+9 prim have mismatched numNode (8 are contiguous primIdx from ridx 0)::
+
+    In [12]: mi = np.where( A.prim.view(np.int32)[:,0,0]  != B.prim.view(np.int32)[:,0,0] ) ; mi 
+    Out[13]: (array([2375, 2376, 2377, 2378, 2379, 2380, 2381, 2382, 3126]),)
+
+    In [22]: np.c_[A.prim.view(np.int32)[mi,0],B.prim.view(np.int32)[mi,0]]
+    Out[22]: 
+    array([[[   15, 15209,  6672,     0,   127, 15209,     0,     0],
+            [   15, 15224,  6680,     0,   127, 15336,     0,     0],
+            [   15, 15239,  6688,     0,   127, 15463,     0,     0],
+            [   15, 15254,  6696,     0,   127, 15590,     0,     0],
+            [   15, 15269,  6704,     0,   127, 15717,     0,     0],
+            [   15, 15284,  6712,     0,   127, 15844,     0,     0],
+            [   15, 15299,  6720,     0,   127, 15971,     0,     0],
+            [   15, 15314,  6728,     0,   127, 16098,     0,     0],
+            [   31, 23372,  8032,     0,  1023, 24268,     0,     0]]], dtype=int32)
+
+    ## numNode much bigger for B  (is A using CSG_CONTIGUOUS?)
+    ## Looks like A is balanced but B is not. 
+    ##
+    ## B misses the tranOffset                                                          
+
+
+    In [18]: A.meshname[93]
+    Out[18]: 'solidSJReceiverFastern'
+
+    In [19]: B.meshname[93]
+    Out[19]: 'solidSJReceiverFastern0x5bc98c0'
+
+    In [21]: A.meshname[99]
+    Out[21]: 'uni1'
+
+    In [20]: B.meshname[99]
+    Out[20]: 'uni10x5a93440'
+
+
+    In [17]: np.c_[A.prim.view(np.int32)[mi,1],B.prim.view(np.int32)[mi,1]]
+    Out[17]: 
+    array([[[2375,   93,    0, 2375, 2375,   93,    0, 2375],
+            [2376,   93,    0, 2376, 2376,   93,    0, 2376],
+            [2377,   93,    0, 2377, 2377,   93,    0, 2377],
+            [2378,   93,    0, 2378, 2378,   93,    0, 2378],
+            [2379,   93,    0, 2379, 2379,   93,    0, 2379],
+            [2380,   93,    0, 2380, 2380,   93,    0, 2380],
+            [2381,   93,    0, 2381, 2381,   93,    0, 2381],
+            [2382,   93,    0, 2382, 2382,   93,    0, 2382],
+            [   0,   99,    6,    0,    0,   99,    6,    0]]], dtype=int32)
+
+    ## matched: sbtIndexOffset, meshIdx, repeatIdx, primIdx  
+
+
+    In [25]: A.node[15209:15209+15].view(np.int32)[:,3,2:]
+    Out[25]: 
+    array([[          1,           0],
+           [          1,           0],
+           [          1,           0],
+           [          1,           0],
+           [          1,           0],
+           [          2,           0],
+           [          1,           0],
+           [        110,        6673],
+           [        110,        6674],
+           [        110,        6675],
+           [        110,        6676],
+           [        105,        6677],
+           [        105, -2147476970],
+           [        110,        6679],
+           [        110,        6680]], dtype=int32)
+
+           110:box3 105:cyl 1:uni 2:intersect
+
+
+    In [26]: B.node[15209:15209+127].view(np.int32)[:,3,2:]
+    Out[26]: 
+    array([[  1,   0],
+           [  1,   0],
+           [  1,   0],
+           [  1,   0],
+           [110,   0],
+           [110,   0],
+           [110,   0],
+           [  1,   0],
+           [110,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  1,   0],
+           [110,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           [  0,   0],
+           ...
+
+
+
+
 Old workflow refs
 -------------------
 

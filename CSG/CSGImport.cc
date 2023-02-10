@@ -70,7 +70,8 @@ void CSGImport::importTree(const stree* st_)
 
 void CSGImport::importNames()
 {
-    st->get_soname(fd->meshname);  
+    st->get_mmlabel( fd->mmlabel);  
+    st->get_meshname(fd->meshname);  
 }
 
 
@@ -84,7 +85,7 @@ After CSG_GGeo_Convert::convertAllSolid
 
 void CSGImport::importSolid()
 {
-    for(int ridx=0 ; ridx < int(1+st->get_num_factor()) ; ridx++) 
+    for(int ridx=0 ; ridx < st->get_num_ridx() ; ridx++) 
     {
         std::string _rlabel = CSGSolid::MakeLabel('r',ridx) ;
         const char* rlabel = _rlabel.c_str(); 
@@ -180,6 +181,8 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
         assert( lvid1 == lvid ); 
 
         CSGPrim* pr = importPrim( i, lvid );  
+        pr->setRepeatIdx(ridx); 
+
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         //assert( pr ); 
     }
@@ -213,6 +216,8 @@ CSGPrim* CSGImport::importPrim(int primIdx, int lvid)
     int numParts = nds.size(); 
 
     CSGPrim* prim = fd->addPrim( numParts );
+    prim->setMeshIdx(lvid);
+    prim->setPrimIdx(primIdx);
 
     for(int i=0 ; i < numParts ; i++)
     {

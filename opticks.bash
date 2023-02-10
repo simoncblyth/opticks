@@ -2626,6 +2626,7 @@ pwd_(){ [ -z "$QUIET" ] && pwd  ; }
 
 # optix7 expts 
 c(){  cd $(opticks-home)/CSG ; pwd_ ; }
+ct(){ cd $(opticks-home)/CSG/tests ; pwd_ ; }
 cg(){ cd $(opticks-home)/CSG_GGeo ; pwd_ ; }
 gc(){ cd $(opticks-home)/GeoChain ; pwd_ ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd_ ; }

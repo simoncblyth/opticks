@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, re,  numpy as np, logging, datetime
+import os, sys, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir

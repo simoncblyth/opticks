@@ -668,7 +668,7 @@ inline void U4Tree::identifySensitiveInstances()
     {
         std::vector<int> outer ; 
         st->get_factor_nodes(outer, i );  // nidx of outer volumes of instances 
-        sfactor& fac = st->get_factor(i); 
+        sfactor& fac = st->get_factor_(i); 
         fac.sensors = 0  ; 
 
         for(unsigned j=0 ; j < outer.size() ; j++)

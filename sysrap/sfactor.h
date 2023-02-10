@@ -60,12 +60,13 @@ Note that the remainder volumes are not included in the sfactors
 
 struct sfactor
 {
-    static constexpr const int NV = 12 ; // sub is equivalent to 8 integer fields 
+    static constexpr const int NV = 5+8 ; // sub is equivalent to 8 integer fields 
     int      index ; 
     int      freq ; 
     int      sensors ; 
-    int      subtree ;  // counts of nodes in subtree 
-    char     sub[32] ;  // caution : no null termination (size of 8 ints)
+    int      subtree ;      // counts of nodes in subtree (numPrim in CSGFoundry lingo)
+    int      olvid ; 
+    char     sub[32] ;  // (equivalent to 8 integer fields) caution : no null termination (size of 8 ints)
 
     void        set_sub(const char* s); 
     std::string get_sub() const ; 
@@ -95,6 +96,7 @@ inline std::string sfactor::desc() const
        << " freq " << std::setw(6) << freq
        << " sensors " << std::setw(6) << sensors
        << " subtree " << std::setw(6) << subtree 
+       << " olvid " << std::setw(6) << olvid 
        << " freq*subtree " << std::setw(7) <<  freq*subtree
        << " sub [" << std::setw(32) << get_sub()  << "]" 
        ;   
