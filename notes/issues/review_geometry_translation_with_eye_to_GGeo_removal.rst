@@ -16,6 +16,187 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
     epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./CSG/tests/CSGFoundryLoadTest.sh ana
 
 
+Old workflow refs
+-------------------
+
+NCSG::export
+    writes nodetree into transport buffers 
+
+NCSG::export_tree
+NCSG::export_list
+NCSG::export_leaf
+
+NCSG::export_tree_list_prepare
+    explains subNum/subOffet in serialization 
+    of trees with list nodes
+
+nnode::find_list_nodes_r
+nnode::is_list
+    CSG::IsList(type)   CSG_CONTIGUOUS or CSG_DISCONTIGUOUS or CSG_OVERLAP      
+
+nnode::subNum
+nnode::subOffset
+
+    CSG::IsCompound
+
+CSGNode re:subNum subOffset
+    Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and 
+    the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
+    Note that because subNum uses q0.u.x and subOffset used q0.u.y 
+    this should not be used for leaf nodes. 
+
+NCSG::export_tree_r
+    assumes pure binary tree serializing to 2*idx+1 2*idx+2 
+
+
+
+
+Consider lvid:103
+---------------------
+
+::
+
+    CSGImport::importPrim@246:  primIdx 3078 lvid 103 num_nd  17 num_non_binary   0 max_binary_depth   6 : solidXJfixture0x5bbd6b0
+    snd::render_v - ix:  475 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  469 ns:   -1 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 11
+    snd::render_v - ix:  469 dp:    1 sx:    0 pt:  475     nc:    2 fc:  467 ns:  474 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 9
+    snd::render_v - ix:  467 dp:    2 sx:    0 pt:  469     nc:    2 fc:  465 ns:  468 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 7
+    snd::render_v - ix:  465 dp:    3 sx:    0 pt:  467     nc:    2 fc:  463 ns:  466 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 5
+    snd::render_v - ix:  463 dp:    4 sx:    0 pt:  465     nc:    2 fc:  461 ns:  464 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 3
+    snd::render_v - ix:  461 dp:    5 sx:    0 pt:  463     nc:    2 fc:  459 ns:  462 lv:  103     tc:    3 pa:   -1 bb:   -1 xf:   -1    di ordinal 1
+    snd::render_v - ix:  459 dp:    6 sx:    0 pt:  461     nc:    0 fc:   -1 ns:  460 lv:  103     tc:  105 pa:  281 bb:  281 xf:   -1    cy ordinal 0
+    snd::render_v - ix:  460 dp:    6 sx:    1 pt:  461     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  105 pa:  282 bb:  282 xf:   -1    cy ordinal 2
+    snd::render_v - ix:  462 dp:    5 sx:    1 pt:  463     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  283 bb:  283 xf:  170    bo ordinal 4
+    snd::render_v - ix:  464 dp:    4 sx:    1 pt:  465     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  284 bb:  284 xf:  171    bo ordinal 6
+    snd::render_v - ix:  466 dp:    3 sx:    1 pt:  467     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  285 bb:  285 xf:  172    bo ordinal 8
+    snd::render_v - ix:  468 dp:    2 sx:    1 pt:  469     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  286 bb:  286 xf:  173    bo ordinal 10
+    snd::render_v - ix:  474 dp:    1 sx:    1 pt:  475     nc:    2 fc:  472 ns:   -1 lv:  103     tc:    3 pa:   -1 bb:   -1 xf:  176    di ordinal 15
+    snd::render_v - ix:  472 dp:    2 sx:    0 pt:  474     nc:    2 fc:  470 ns:  473 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un ordinal 13
+    snd::render_v - ix:  470 dp:    3 sx:    0 pt:  472     nc:    0 fc:   -1 ns:  471 lv:  103     tc:  110 pa:  287 bb:  287 xf:   -1    bo ordinal 12
+    snd::render_v - ix:  471 dp:    3 sx:    1 pt:  472     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  288 bb:  288 xf:  174    bo ordinal 14
+    snd::render_v - ix:  473 dp:    2 sx:    1 pt:  474     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  289 bb:  289 xf:  175    bo ordinal 16
+    *CSGImport::importPrim@256: 
+    snd::rbrief
+    - ix:  475 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  469 ns:   -1 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  469 dp:    1 sx:    0 pt:  475     nc:    2 fc:  467 ns:  474 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  467 dp:    2 sx:    0 pt:  469     nc:    2 fc:  465 ns:  468 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  465 dp:    3 sx:    0 pt:  467     nc:    2 fc:  463 ns:  466 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  463 dp:    4 sx:    0 pt:  465     nc:    2 fc:  461 ns:  464 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  461 dp:    5 sx:    0 pt:  463     nc:    2 fc:  459 ns:  462 lv:  103     tc:    3 pa:   -1 bb:   -1 xf:   -1    di
+    - ix:  459 dp:    6 sx:    0 pt:  461     nc:    0 fc:   -1 ns:  460 lv:  103     tc:  105 pa:  281 bb:  281 xf:   -1    cy
+    - ix:  460 dp:    6 sx:    1 pt:  461     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  105 pa:  282 bb:  282 xf:   -1    cy
+    - ix:  462 dp:    5 sx:    1 pt:  463     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  283 bb:  283 xf:  170    bo
+    - ix:  464 dp:    4 sx:    1 pt:  465     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  284 bb:  284 xf:  171    bo
+    - ix:  466 dp:    3 sx:    1 pt:  467     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  285 bb:  285 xf:  172    bo
+    - ix:  468 dp:    2 sx:    1 pt:  469     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  286 bb:  286 xf:  173    bo
+    - ix:  474 dp:    1 sx:    1 pt:  475     nc:    2 fc:  472 ns:   -1 lv:  103     tc:    3 pa:   -1 bb:   -1 xf:  176    di
+    - ix:  472 dp:    2 sx:    0 pt:  474     nc:    2 fc:  470 ns:  473 lv:  103     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    - ix:  470 dp:    3 sx:    0 pt:  472     nc:    0 fc:   -1 ns:  471 lv:  103     tc:  110 pa:  287 bb:  287 xf:   -1    bo
+    - ix:  471 dp:    3 sx:    1 pt:  472     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  288 bb:  288 xf:  174    bo
+    - ix:  473 dp:    2 sx:    1 pt:  474     nc:    0 fc:   -1 ns:   -1 lv:  103     tc:  110 pa:  289 bb:  289 xf:  175    bo
+
+
+    snd::render width 17 height 6 mode 3
+
+                                                un                          
+                                                                            
+                                        un                      di          
+                                                                            
+                                un          bo          un          bo      
+                                                                            
+                        un          bo              bo      bo              
+                                                                            
+                un          bo                                              
+                                                                            
+        di          bo                                                      
+                                                                            
+    cy      cy                                                              
+                                                                            
+                                                                            
+
+
+    CSGImport::importNode_v@310:  idx 0
+    CSGImport::importNode_v@310:  idx 1
+    CSGImport::importNode_v@310:  idx 3
+    CSGImport::importNode_v@310:  idx 7
+    CSGImport::importNode_v@310:  idx 15
+    CSGImport::importNode_v@310:  idx 31
+    CSGImport::importNode_v@310:  idx 63
+    CSGImport::importNode_v@310:  idx 64
+    CSGImport::importNode_v@310:  idx 32
+    CSGImport::importNode_v@310:  idx 16
+    CSGImport::importNode_v@310:  idx 8
+    CSGImport::importNode_v@310:  idx 4
+    CSGImport::importNode_v@310:  idx 2
+    CSGImport::importNode_v@310:  idx 5
+    CSGImport::importNode_v@310:  idx 11
+    CSGImport::importNode_v@310:  idx 12
+    CSGImport::importNode_v@310:  idx 6
+
+::
+
+    In [7]: w = cf.prim.view(np.int32)[:,1,1] == 103
+
+    In [10]: cf.prim[w].shape
+    Out[10]: (56, 4, 4)
+
+    In [13]: cf.prim[w].view(np.int32)[:,0]
+    Out[13]: 
+    array([[  127, 16087,  7438,     0],    ## numNode, nodeOffset, tranOffset, planOffset
+           [  127, 16214,  7447,     0],
+           [  127, 16341,  7456,     0],
+           [  127, 16468,  7465,     0],
+           [  127, 16595,  7474,     0],
+           [  127, 16722,  7483,     0],
+           [  127, 16849,  7492,     0],
+
+
+    In [27]: np.c_[np.arange(127),cf.node[16087:16087+127,3,2:].view(np.int32) ]
+    Out[27]: 
+    array([[          0,           1,           0],      # i, tc, complement~gtransformIdx
+           [          1,           1,           0],
+           [          2,           2,           0],
+           [          3,           1,           0],
+           [          4,         110,        7439],
+           [          5,           1,           0],
+           [          6,         110, -2147476208],
+           [          7,           1,           0],
+           [          8,         110,        7441],
+           [          9,           0,           0],
+           [         10,           0,           0],
+           [         11,         110,        7442],
+           [         12,         110,        7443],
+           [         13,           0,           0],
+           [         14,           0,           0],
+           [         15,           1,           0],
+           [         16,         110,        7444],
+           [         17,           0,           0],
+           [         18,           0,           0],
+           [         19,           0,           0],
+           [         20,           0,           0],
+           [         21,           0,           0],
+           [         22,           0,           0],
+           [         23,           0,           0],
+
+           ...
+
+           [         28,           0,           0],
+           [         29,           0,           0],
+           [         30,           0,           0],
+           [         31,           2,           0],
+           [         32,         110,        7445],
+           [         33,           0,           0],
+           [         34,           0,           0],
+           [         35,           0,           0],
+
+           ...
+
+           [         61,           0,           0],
+           [         62,           0,           0],
+           [         63,         105,        7446],
+           [         64,         105, -2147476201],
+           [         65,           0,           0],
+           [         66,           0,           0],
+
 
 
 Consider lvid:100 base_steel which is a single polycone prim within ridx 7

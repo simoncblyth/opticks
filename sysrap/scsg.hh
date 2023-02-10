@@ -59,6 +59,7 @@ struct SYSRAP_API scsg
 
     int  getNDXF(int idx) const ; 
     void getLVID( std::vector<snd>& nds, int lvid ) const ; 
+    const snd* getLVRoot(int lvid ) const ; 
 
 
     template<typename T>

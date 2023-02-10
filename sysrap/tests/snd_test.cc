@@ -82,7 +82,42 @@ void test_max_depth()
     test_max_depth_( e, 2 );
     test_max_depth_( f, 0 );
     test_max_depth_( g, 3 );
+
 } 
+
+
+
+void test_max_binary_depth_(int n, int xdepth)
+{
+    const snd* nd = snd::GetNode(n);
+    assert( nd );  
+    assert( nd->max_binary_depth() == xdepth );  
+
+    std::cout << "test_max_binary_depth_ n " << n << " xdepth " << xdepth << std::endl ;  
+}
+
+
+void test_max_binary_depth()
+{
+    std::cout << "test_max_binary_depth" << std::endl ;     
+
+    int a = snd::Sphere(100.) ; 
+    int b = snd::Sphere(100.) ; 
+    int c = snd::Boolean(CSG_UNION, a, b ) ; 
+    int d = snd::Box3(100.) ; 
+    int e = snd::Boolean(CSG_UNION, c, d ) ; 
+    int f = snd::Box3(100.) ; 
+    int g = snd::Boolean(CSG_UNION, f, e ) ; 
+
+    test_max_binary_depth_( a, 0 ); 
+    test_max_binary_depth_( b, 0 ); 
+    test_max_binary_depth_( c, 1 ); 
+    test_max_binary_depth_( d, 0 );
+    test_max_binary_depth_( e, 2 );
+    test_max_binary_depth_( f, 0 );
+    test_max_binary_depth_( g, 3 );
+}
+
 
 
 void test_num_node_(int n, int xnn)
@@ -410,6 +445,7 @@ int main(int argc, char** argv)
     if(     strcmp(TEST, "save")==0)      test_save(); 
     else if(strcmp(TEST, "load")==0)      test_load(); 
     else if(strcmp(TEST, "max_depth")==0) test_max_depth() ; 
+    else if(strcmp(TEST, "max_binary_depth")==0) test_max_binary_depth() ; 
     else if(strcmp(TEST, "num_node")==0)  test_num_node() ; 
     else if(strcmp(TEST, "inorder")==0)   test_inorder() ; 
     else if(strcmp(TEST, "dump")==0)      test_dump() ; 

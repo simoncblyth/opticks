@@ -307,6 +307,7 @@ struct CSG
        return Name(type) != NULL ;
     }
 
+    static bool IsPrimitive(int type) { return IsPrimitive((OpticksCSG_t)type) ; }
     static bool IsPrimitive(OpticksCSG_t type)
     {
         // hmm this is fine in context of tree : but are generalizing with lists as well as trees
@@ -323,6 +324,7 @@ struct CSG
         return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
     }
 
+    static bool IsList(int type) { return IsList((OpticksCSG_t)type) ; }
     static bool IsList(OpticksCSG_t type)
     {
         return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ) ; 

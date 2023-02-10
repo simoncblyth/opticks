@@ -68,7 +68,7 @@ cx:convexpolyhedron
     |    | cx:planeIdx    | cx:planeNum    |                |                |                                                 |
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
     |    | zs:zdelta_0    | zs:zdelta_1    | boundary       | index          |                                                 |
-    |    | sl:a           | sl:b           |                |                |  sl:a,b offsets from origin                     |
+    |    | sl:a           | sl:b           |                | (absolute)     |  sl:a,b offsets from origin                     |
     | q1 | cy:z1          | cy:z2          |                |                |  cy:z2 > z1                                     |
     |    | ds:z1          | ds:z2          |                |                |                                                 |
     |    | z1()           | z2()           |                |                |                                                 |

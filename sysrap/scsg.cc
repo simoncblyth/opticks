@@ -114,6 +114,29 @@ void scsg::getLVID( std::vector<snd>& nds, int lvid ) const
     }
 }
 
+const snd* scsg::getLVRoot(int lvid ) const 
+{
+    const snd* root = nullptr ; 
+
+    int count = 0 ; 
+    int num_node = node.size(); 
+    for(int i=0 ; i < num_node ; i++)
+    {
+        const snd& nd = node[i] ; 
+        if(nd.lvid == lvid && nd.is_root()) 
+        {
+            root = &nd ; 
+            count += 1 ; 
+        }
+    }
+    assert( count <= 1 ); 
+    return root ; 
+}
+
+
+
+
+
 
 
 template<typename T>

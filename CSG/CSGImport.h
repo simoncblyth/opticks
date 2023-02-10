@@ -1,16 +1,21 @@
 #pragma once
 /**
 CSGImport.h 
-======================================================
+==============
+
+See::
+
+    sysrap/tests/stree_load_test.sh 
+    CSG/tests/CSGFoundry_importTree_Test.sh
+
 
 **/
 
 #include <string>
-
 #include "plog/Severity.h"
 
 struct stree ; 
-struct snode ; 
+struct snd ; 
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
@@ -37,8 +42,10 @@ struct CSG_API CSGImport
     CSGSolid* importFactorSolid(   int ridx, const char* rlabel); 
     CSGPrim*  importPrim( int primIdx, int lvid ); 
 
-}; 
+    void     importBinNode_r(const snd* nd, int idx); 
+    CSGNode* importBinNode_v(const snd* nd, int idx); 
 
+}; 
 
 
 

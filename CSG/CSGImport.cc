@@ -193,135 +193,116 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
 CSGImport::importPrim
 ----------------------
 
-See::
+Converting *snd/scsg* n-ary tree with compounds (eg multiunion and polycone) 
+into the CSGNode serialized binary tree with list node constituents appended using 
+subNum/subOffset referencing.   
 
-    sysrap/tests/stree_load_test.sh 
-
-HMM: not so simple the stree is raw n-ary tree it needs 
-some preparation before turning into CSGPrim/CSGNode
-
-The list of CSGNode for the CSGPrim need to be in complete-binary-tree-ized 
-level order.  How to convert an n-ary tree into one of those ? 
-
-1. check if n-ary tree is 2-ary or not, collecting non-2-ary idx for subNum/subOffset handling
-
-   * for now just require num_nonbinary is zero 
-
-2. number of 2-ary compat nodes will determine complete-binary-tree-size with extras for any subs after the tree
-
-   * need to use maxdepth to decide on complete binary tree size
+* Despite the input *snd* tree being an n-ary tree (able to hold polycone and multiunion compounds)
+  it must be traversed as a binary tree by regarding the compound nodes as effectively leaf node "primitives" 
+  in order to generate the indices into the complete binary tree serialization in level order 
 
 
 **/
 
-
 CSGPrim* CSGImport::importPrim(int primIdx, int lvid) 
 {
-    std::vector<snd> nds ; 
-    snd::GetLVID( nds, lvid );     
-
     const char* name = fd->getMeshName(lvid)  ; 
 
-    int num_nd = nds.size(); 
-    const snd& root = nds[num_nd-1] ; 
+    const snd* root = snd::GetLVRoot(lvid);
 
-    std::vector<int> nonbinary ; 
-    root.typenodes_(nonbinary, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS ); 
-    int num_nonbinary = nonbinary.size(); 
+    int bn = snd::GetLVBinNode( lvid ); 
+    int sn = snd::GetLVSubNode( lvid ); 
+    int numParts = bn + sn ; 
+
+    CSGPrim* prim = fd->addPrim( numParts );
+
+    importBinNode_r( root, 0 ); 
+
+    // if(sn > 0) importList 
+    assert( sn == 0 ); 
+
 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
         << " lvid "    << std::setw(3) << lvid 
-        << " num_nd "  << std::setw(3) << num_nd
-        << " num_nonbinary "  << std::setw(3) << num_nonbinary
+        << " binNode " << std::setw(3) << bn 
+        << " subNode " << std::setw(3) << sn 
+        << " numParts "  << std::setw(3) << numParts
         << " : " 
         << name 
         ; 
 
-    if(lvid == 100)
-    {
-        for(int i=0 ; i < num_nd ; i++)
-        {
-            const snd& nd = nds[i];  
-            LOG(LEVEL) << nd.brief() ; 
-        }    
-        LOG(LEVEL) << std::endl << root.rbrief() ; 
-        LOG(LEVEL) << std::endl << root.render(3) ; 
-    }
+    LOG_IF(LEVEL, numParts > 8 ) 
+        << std::endl 
+        << root->rbrief() 
+        << std::endl 
+        << root->render(3)
+        ; 
 
-    assert( num_nonbinary == 0 ); 
-
-    return nullptr ; 
+    return prim ; 
 }
 
-
 /**
+CSGImport::importBinNode_r
+---------------------------
 
-
-NCSG::export_
-    writes nodetree into transport buffers 
-
-NCSG::export_tree_
-NCSG::export_list_
-NCSG::export_leaf_
-
-NCSG::export_tree_list_prepare_
-    explains subNum/subOffet in serialization 
-    of trees with list nodes
-
-nnode::find_list_nodes_r
-nnode::is_list
-    CSG::IsList(type)   CSG_CONTIGUOUS or CSG_DISCONTIGUOUS or CSG_OVERLAP      
-
-nnode::subNum
-nnode::subOffset
-
-    CSG::IsCompound
-
-CSGNode re:subNum subOffset
-    Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and 
-    the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
-    Note that because subNum uses q0.u.x and subOffset used q0.u.y 
-    this should not be used for leaf nodes. 
-
-NCSG::export_tree_r
-    assumes pure binary tree serializing to 2*idx+1 2*idx+2 
-
-
-How to convert the general n-ary tree into binary-tree + subs layout ?
--------------------------------------------------------------------------
-
-* root can be a list node or a leaf, ie zero complete binary tree nodes 
-
-* so need to examine the n-ary tree looking for how much of it 
-  is binary and pulling out non-binary nodes into list node subs 
-
-* also depends on type : a compound with 2 subs is not treated as boolean
-
-
-NOTICE HOW IT SHOULD BE EASIER NOW : AS ARE DOING THIS ALL IN 
-ONE PLACE UNLIKE OLD IMPL WHICH IS RATHER SPREAD AROUND : npy,GGeo 
-
-* THIS IS BECAUSE ARE NOW ABLE TO SERIALIZE n-ARY TREES : SO CAN DELAY 
-  THE SWITCH UNTIL LATER 
-
-* PERHAPS EVENTUALLY COULD NOT SWITCH AT ALL AND INTERSECT 
-  AGAINST THE N-ARY TREE ON GPU (THATS FOR FAR FUTURE) 
-
-
-Looking at scsg nodes with NumPy::
-     
-    st
-    ./stree_load_test.sh ana
-
-    In [9]: print(st.desc_csg(18))
-    desc_csg lvid:18 st.f.soname[18]:GLw1.up10_up11_FlangeI_Web_FlangeII0x59f4850 
-            ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf
-    array([[ 32,   2,   0,  34,   0,  -1,  33,  18, 110,  25,  25,  -1],
-           [ 33,   2,   1,  34,   0,  -1,  -1,  18, 110,  26,  26,   5],
-           [ 34,   1,   0,  36,   2,  32,  35,  18,   1,  -1,  -1,  -1],
-           [ 35,   1,   1,  36,   0,  -1,  -1,  18, 110,  27,  27,   6],
-           [ 36,   0,  -1,  -1,   2,  34,  -1,  18,   1,  -1,  -1,  -1]], dtype=int32)
+As the traversal is constrained to the binary tree portion of the n-ary tree 
+can populate a complete binary tree just like NCSG::export_tree_r using 
+0-based complete binary tree level order indexing. 
 
 **/
+
+void CSGImport::importBinNode_r(const snd* nd, int idx)
+{
+    importBinNode_v(nd, idx);    // preorder visit ? any constraints on order ?
+
+    if( nd->num_child > 0 && nd->is_listnode() == false ) // non-list operator node
+    {    
+        assert( nd->num_child == 2 ) ;  
+        int ch = nd->first_child ; 
+        for(int i=0 ; i < nd->num_child ; i++)  
+        {    
+            const snd* child = snd::GetNode(ch) ; 
+            assert( child->index == ch ); 
+
+            int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
+
+            importBinNode_r( child, cidx );
+
+            ch = child->next_sibling ;
+        }    
+    }    
+} 
+
+/**
+CSGImport::importBinNode_v
+----------------------------
+
+HMM: need to form CSGNode from the snd data 
+
+HMM: what about the complete binary tree idx ? 
+Need to place the nodes in the idx slot, not just add them ? 
+
+**/
+
+CSGNode* CSGImport::importBinNode_v(const snd* nd, int idx)
+{
+    LOG(LEVEL) << " idx " << idx ; 
+
+    CSGNode* cn = nullptr ; 
+
+
+    /*    
+    const float* aabb = nullptr ;  
+    std::vector<float4>* planes = nullptr ; 
+
+    CSGNode cnd = CSGNode::Make(nd->typecode, param6, aabb ) ;  
+
+    cn = fd->addNode(cnd, planes );
+
+    */
+
+    return cn ; 
+}
+
 

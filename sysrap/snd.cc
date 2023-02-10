@@ -11,6 +11,7 @@
 #include "scsg.hh"
 #include "snd.hh"
 #include "sndtree.h"
+#include "st.h"
 
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
@@ -118,7 +119,7 @@ snd::GetLVID
 
 Q: Is the last snd returned always root ? 
 A: As trees are created postorder and nodes get added to the POOL 
-   in creation order I think that ideed the last must always be root. 
+   in creation order I think that indeed the last must always be root. 
 
 **/
 
@@ -130,6 +131,92 @@ void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
     assert( num_nd > 0 ); 
     const snd& last = nds[num_nd-1] ; 
     assert( last.is_root() ); 
+}
+
+const snd* snd::GetLVRoot( int lvid ) // static
+{
+    const snd* root = POOL->getLVRoot(lvid); 
+    return root ; 
+}
+
+int snd::GetLVNumNode( int lvid ) // static
+{
+    const snd* root = GetLVRoot(lvid); 
+    return root ? root->getLVNumNode() : -1 ; 
+}
+int snd::GetLVBinNode( int lvid ) // static
+{
+    const snd* root = GetLVRoot(lvid); 
+    return root ? root->getLVBinNode() : -1 ; 
+}
+int snd::GetLVSubNode( int lvid ) // static
+{
+    const snd* root = GetLVRoot(lvid); 
+    return root ? root->getLVSubNode() : -1 ; 
+}
+
+
+
+
+
+
+
+
+
+/**
+snd::getLVNumNode
+-------------------
+
+Returns total number of nodes that can contain 
+a complete binary tree + listnode constituents
+serialization of this node.  
+
+**/
+
+int snd::getLVNumNode() const 
+{
+    int bn = getLVBinNode() ; 
+    int sn = getLVSubNode() ; 
+    return bn + sn ; 
+}
+
+/**
+snd::getLVBinNode
+------------------
+
+Returns the number of nodes in a complete binary tree
+of height corresponding to the max_binary_depth 
+of this node. 
+**/
+
+int snd::getLVBinNode() const 
+{
+    int h = max_binary_depth(); 
+    return st::complete_binary_tree_nodes( h );  
+}
+
+/**
+snd::getLVSubNode
+-------------------
+
+Sum of children of compound nodes found beneath this node. 
+HMM: this assumes compound nodes only contain leaf nodes 
+
+**/
+int snd::getLVSubNode() const 
+{
+    int constituents = 0 ; 
+    std::vector<int> subs ; 
+    typenodes_(subs, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP );  
+    int nsub = subs.size(); 
+    for(int i=0 ; i < nsub ; i++)
+    {
+        int idx = subs[i] ; 
+        const snd* nd = GetNode(idx); 
+        assert( nd->typecode == CSG_CONTIGUOUS || nd->typecode == CSG_DISCONTIGUOUS ); 
+        constituents += nd->num_child ; 
+    } 
+    return constituents ; 
 }
 
 
@@ -179,10 +266,17 @@ void snd::init()
 }
 
 
+
+bool snd::is_listnode() const 
+{
+    return CSG::IsList(typecode); 
+}
 std::string snd::tag() const
 {
     return CSG::Tag(typecode) ; 
 }
+
+
 
 
 std::string snd::brief() const 
@@ -412,6 +506,46 @@ int snd::max_depth_r(int d) const
     return mx ; 
 }
 
+/**
+snd::max_binary_depth
+-----------------------
+
+Maximum depth of the binary compliant portion of the n-ary tree, 
+ie with listnodes not recursed and where nodes have either 0 or 2 children.  
+The listnodes are regarded as leaf node primitives.  
+
+* Despite the *snd* tree being an n-ary tree (able to hold polycone and multiunion compounds)
+  it must be traversed as a binary tree by regarding the compound nodes as effectively 
+  leaf node "primitives" in order to generate the indices into the complete binary 
+  tree serialization in level order 
+
+* hence the recursion is halted at list nodes
+
+**/
+int snd::max_binary_depth() const 
+{
+    return max_binary_depth_r(0) ; 
+}
+int snd::max_binary_depth_r(int d) const   
+{
+    int mx = d ; 
+
+    if( is_listnode() == false )
+    {
+        if( num_child > 0 ) assert( num_child == 2 ) ; 
+        int ch = first_child ; 
+        for(int i=0 ; i < num_child ; i++)  
+        {
+            snd& child = POOL->node[ch] ; 
+            assert( child.index == ch ); 
+            mx = std::max( mx,  child.max_binary_depth_r(d + 1) ) ; 
+            ch = child.next_sibling ;
+        }
+    }
+    return mx ; 
+}
+
+
 int snd::num_node() const 
 {
     return num_node_r(0);
@@ -429,7 +563,7 @@ int snd::num_node_r(int d) const
     return nn ; 
 }
 
-bool snd::is_root() const 
+bool snd::is_root() const  // NB depth gets set by calling setLVID
 {
     return depth == 0 && parent == -1 ; 
 }

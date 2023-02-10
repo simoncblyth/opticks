@@ -205,6 +205,7 @@ set(HEADERS
 
     sndtree.h
     sn.h 
+    st.h 
  
     spa.h
     sxf.h

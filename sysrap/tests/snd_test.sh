@@ -14,7 +14,8 @@ bin=$FOLD/$name
 #test=dump
 #test=render
 #test=typenodes
-test=typenodes_
+#test=typenodes_
+test=max_binary_depth
 
 #tree=0
 #tree=1

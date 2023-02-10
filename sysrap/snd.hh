@@ -70,6 +70,15 @@ struct SYSRAP_API snd
     static void SetLVID(int idx, int lvid);  // label node tree 
 
     static void GetLVID( std::vector<snd>& nds, int lvid ); 
+    static const snd* GetLVRoot( int lvid );
+ 
+    static int GetLVNumNode( int lvid ); // total nodes 
+    static int GetLVBinNode( int lvid ); // binary tree nodes
+    static int GetLVSubNode( int lvid ); // compound constituent nodes
+
+    int getLVNumNode() const ; 
+    int getLVBinNode() const ; 
+    int getLVSubNode() const ; 
 
 
     static snd* GetNode_(int idx);
@@ -106,6 +115,7 @@ struct SYSRAP_API snd
 
 
     void init(); 
+    bool is_listnode() const ; 
     std::string tag() const ; 
     std::string brief() const ; 
 
@@ -134,6 +144,10 @@ struct SYSRAP_API snd
 
     int max_depth() const ; 
     int max_depth_r(int d) const ; 
+
+    int max_binary_depth() const ;   // listnodes not recursed, listnodes regarded as leaf node primitives 
+    int max_binary_depth_r(int d) const ; 
+
 
     int num_node() const ; 
     int num_node_r(int d) const ; 
