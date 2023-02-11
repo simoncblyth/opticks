@@ -14,7 +14,7 @@ scsg::scsg()
 scsg::init
 ------------
 
-Reserving suffiencient IMAX prevents realloc of the vectors,
+Reserving sufficient IMAX prevents realloc of the vectors,
 however it is better to code in a way to avoid the need to 
 reserve in order to avoid issues happening once the total 
 number of nodes exceeds the IMAX.   
@@ -44,6 +44,16 @@ int scsg::add_(const T& obj, std::vector<T>& vec)
     vec.push_back(obj);  
     return idx ; 
 }
+
+
+/**
+scsg::add_<snd>
+----------------
+
+Template specialization for adding snd that checks for 
+realloc and auto-sets snd::index
+
+**/
 
 template<>
 int scsg::add_(const snd& obj, std::vector<snd>& vec) 
@@ -78,9 +88,15 @@ const T* scsg::get(int idx, const std::vector<T>& vec) const
 }
 const snd* scsg::getND(int idx) const { return get<snd>(idx, node)  ; }
 const spa* scsg::getPA(int idx) const { return get<spa>(idx, param) ; }
-const sxf* scsg::getXF(int idx) const { return get<sxf>(idx, xform) ; }
 const sbb* scsg::getBB(int idx) const { return get<sbb>(idx, aabb)  ; } 
+const sxf* scsg::getXF(int idx) const { return get<sxf>(idx, xform) ; }
 
+const glm::tmat4x4<double>* scsg::getXForm(int idx) const 
+{
+    const sxf* xf = getXF(idx) ; 
+    const glm::tmat4x4<double>* m = xf ? &(xf->mat) : nullptr ;  
+    return m ; 
+}
 
 
 
@@ -94,9 +110,28 @@ T* scsg::get_(int idx, std::vector<T>& vec)
 
 snd* scsg::getND_(int idx) { return get_<snd>(idx, node)  ; }
 spa* scsg::getPA_(int idx) { return get_<spa>(idx, param) ; }
-sxf* scsg::getXF_(int idx) { return get_<sxf>(idx, xform) ; }
 sbb* scsg::getBB_(int idx) { return get_<sbb>(idx, aabb)  ; } 
+sxf* scsg::getXF_(int idx) { return get_<sxf>(idx, xform) ; }
 
+
+glm::tmat4x4<double>* scsg::getXForm_(int idx) 
+{
+    sxf* xf = getXF_(idx) ; 
+    glm::tmat4x4<double>* m = xf ? &(xf->mat) : nullptr ;  
+    return m ; 
+}
+
+
+
+
+
+/**
+scsg::getNDXF : xform "pointer" for a node
+----------------------------------------------
+
+Access the idx *snd*  and return the xform *idx*
+ 
+**/
 
 int scsg::getNDXF(int idx) const  
 {
@@ -104,15 +139,43 @@ int scsg::getNDXF(int idx) const
     return n ? n->xform : -1 ; 
 }
 
-void scsg::getLVID( std::vector<snd>& nds, int lvid ) const 
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+scsg::getLVID : all nodes associated with the *lvid* root 
+------------------------------------------------------------
+
+Collect *snd* CSG nodes with snd::lvid matching *q_lvid* 
+
+**/
+
+void scsg::getLVID( std::vector<snd>& nds, int q_lvid ) const 
 {
     int num_node = node.size(); 
     for(int i=0 ; i < num_node ; i++)
     {
         const snd& nd = node[i] ; 
-        if(nd.lvid == lvid) nds.push_back(nd) ; 
+        if(nd.lvid == q_lvid) nds.push_back(nd) ; 
     }
 }
+
+/**
+scsg::getLVRoot
+----------------
+
+Returns first *snd* node for *lvid* with snd::is_root true
+
+**/
 
 const snd* scsg::getLVRoot(int lvid ) const 
 {

@@ -7,11 +7,11 @@ snd.h intended as minimal first step, holding parameters of
 G4VSolid CSG trees for subsequent use by CSGNode::Make
 and providing dependency fire break between G4 and CSG 
 
-* snd.h instances are one-to-one related to CSG/CSGNode.h
+* snd.hh instances are one-to-one related to CSG/CSGNode.h
 
-* initially thought snd.h would be transient with no persisting and no role on GPU. 
+* initially thought snd.hh would be transient with no persisting and no role on GPU. 
   But that is inconsistent with the rest of stree.h and also want to experiment 
-  with non-binary intersection in future, so are using snd.h to test non-binary 
+  with non-binary intersection in future, so are using snd.hh to test non-binary 
   solid persisting following the same approach as snode.h structural nodes
 
 Usage requires the scsg.hh POOL. That is now done at stree instanciation::
@@ -56,10 +56,17 @@ struct SYSRAP_API snd
     static std::string Desc();
     static std::string Brief(const std::vector<int>& nodes);
 
-    static const snd* GetNode(  int idx);
-    static const spa* GetParam( int idx);
-    static const sxf* GetXForm( int idx);
-    static const sbb* GetAABB(  int idx);
+    static const snd* GetND( int idx);
+    static const spa* GetPA( int idx);
+    static const sxf* GetXF( int idx);
+    static const sbb* GetBB( int idx);
+
+    static snd* GetND_(int idx);
+    static spa* GetPA_(int idx);
+    static sxf* GetXF_(int idx);
+    static sbb* GetBB_(int idx);
+
+
 
     static int  GetMaxDepth(int idx) ; 
     static int  GetNumNode(int idx) ; 
@@ -77,20 +84,14 @@ struct SYSRAP_API snd
     static int GetLVBinNode( int lvid ); // binary tree nodes
     static int GetLVSubNode( int lvid ); // compound constituent nodes
 
-    int getLVNumNode() const ; 
-    int getLVBinNode() const ; 
-    int getLVSubNode() const ; 
+    int getLVNumNode() const ;  // total nodes 
+    int getLVBinNode() const ;  // binary tree nodes (compound constituents not included) 
+    int getLVSubNode() const ;  // sub nodes : ie the compound constituents  
 
-    static void GetLVNodesComplete(std::vector<const snd*>& nds, int lvid); 
-    void getLVNodesComplete(std::vector<const snd*>& nds) const ; 
+
+    static void GetLVNodesComplete(std::vector<const snd*>& nds, int lvid); // unbalanced deep trees will have many nullptr 
+    void        getLVNodesComplete(std::vector<const snd*>& nds) const ; 
     static void GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx); 
-
-
-
-    static snd* GetNode_(int idx);
-    static spa* GetParam_(int idx);
-    static sxf* GetXForm_(int idx);
-    static sbb* GetAABB_(int idx);
 
     static std::string Desc(int idx);
     static std::string Render(int idx);
@@ -137,7 +138,21 @@ struct SYSRAP_API snd
 
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
+
+
     void setXForm( const glm::tmat4x4<double>& t ); 
+
+    static const glm::tmat4x4<double>* GetXForm(int idx) ; 
+           const glm::tmat4x4<double>* getXForm() const  ; 
+
+    static       glm::tmat4x4<double>* GetXForm_(int idx) ; 
+                 glm::tmat4x4<double>* getXForm_(); 
+
+    static void NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx ) ; 
+    void node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const ; 
+
+
+
     void setLabel( const char* l ); 
 
 
@@ -154,16 +169,29 @@ struct SYSRAP_API snd
     int max_binary_depth() const ;   // listnodes not recursed, listnodes regarded as leaf node primitives 
     int max_binary_depth_r(int d) const ; 
 
-
     int num_node() const ; 
     int num_node_r(int d) const ; 
 
     bool is_root() const ; 
+    bool is_leaf() const ; 
+    bool is_binary_leaf() const ;   // listnodes are regarded as binary leaves
 
 
     static void Inorder(std::vector<int>& order, int idx ); 
-    void inorder(std::vector<int>& nodes ) const ; 
+    void inorder(std::vector<int>& nodes ) const ;    // collects absolute snd::index from inorder traversal 
     void inorder_r(std::vector<int>& order, int d ) const ; 
+
+    static void Ancestors(std::vector<int>& nodes, int idx); 
+    void ancestors(std::vector<int>& nodes) const; 
+
+
+
+
+    void leafnodes( std::vector<int>& nodes ) const ; 
+    void leafnodes_r( std::vector<int>& nodes, int d  ) const ; 
+
+    const snd* find(char l0) const ; 
+    void find_r(std::vector<int>& nodes, char l0, int d) const ; 
 
     
     template<typename ... Args> 

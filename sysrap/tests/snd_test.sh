@@ -15,7 +15,11 @@ bin=$FOLD/$name
 #test=render
 #test=typenodes
 #test=typenodes_
-test=max_binary_depth
+#test=max_binary_depth
+#test=leafnodes
+#test=find
+#test=ancestors
+test=node_transform_product
 
 #tree=0
 #tree=1

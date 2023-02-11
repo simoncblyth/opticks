@@ -23,7 +23,15 @@
 NTreePositive
 =============
 
-Inplace positivizes the CSG tree of nodes, making 
+Canonical stack::
+
+    X4PhysicalVolume::ConvertSolid
+    X4PhysicalVolume::ConvertSolid_ 
+    X4PhysicalVolume::ConvertSolid_FromRawNode
+    NTreeProcess::init
+    NTreePositive::init 
+
+NTreePositive inplace positivizes the CSG tree of nodes, making 
 the tree easier to rearrange as all the non-commutative
 difference operators are replaced by corresponding 
 commutative unions and intersections with 
@@ -35,6 +43,12 @@ The changes effected to the tree are
 2. some complements are set on primitive nodes
 
 * python equivalent ../analytic/csg.py 
+
+
+Possible Issue : CSG_DIFFERENCE root node not positivized ?
+--------------------------------------------------------------
+
+Possibly JUNO geometry has no such G4VSolid so dont feel the issue.
 
 **/
 
@@ -61,6 +75,5 @@ class NPY_API NTreePositive
         T*                     m_root ; 
 
 };
-
 
 

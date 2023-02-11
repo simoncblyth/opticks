@@ -442,6 +442,8 @@ Then can just exclude the primitives that end up
 being complemented.
 
 * THIS IS DONE : TREES ARE NOW STANDARDLY CONVERTED TO POSITIVE FORM AT NPY LEVEL
+* Q: Where exactly ? 
+* A: See npy/NTreePositive.hpp
 
 Also previously the placeholder zero node bbox were not excluded from inclusion 
 in the CSGPrim bbox which sometimes unnecessarily increased bbox in any direction by up to to 100mm, 
@@ -696,6 +698,10 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     }
 
     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+
+    // HMM: this is not using the higher level 
+    // CSGFoundry::addNode with transform pointer argumnent 
+
 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 

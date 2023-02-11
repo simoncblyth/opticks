@@ -53,7 +53,7 @@ void test_load()
 
 void test_max_depth_(int n, int xdepth)
 {
-    const snd* nd = snd::GetNode(n);
+    const snd* nd = snd::GetND(n);
     assert( nd );  
     assert( nd->max_depth() == xdepth );  
     assert( snd::GetMaxDepth(n) == xdepth );  
@@ -89,7 +89,7 @@ void test_max_depth()
 
 void test_max_binary_depth_(int n, int xdepth)
 {
-    const snd* nd = snd::GetNode(n);
+    const snd* nd = snd::GetND(n);
     assert( nd );  
     assert( nd->max_binary_depth() == xdepth );  
 
@@ -122,7 +122,7 @@ void test_max_binary_depth()
 
 void test_num_node_(int n, int xnn)
 {
-    const snd* nd = snd::GetNode(n);
+    const snd* nd = snd::GetND(n);
 
     int nnn = nd->num_node() ; 
     int gnn = snd::GetNumNode(n) ; 
@@ -327,7 +327,7 @@ void test_inorder()
     std::cout << "test_inorder" << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
 
     std::vector<int> order ; 
     nd->inorder(order); 
@@ -337,7 +337,7 @@ void test_inorder()
     for(int z=0 ; z < int(order.size()) ; z++)
     {
          int idx = order[z] ; 
-         const snd* n = snd::GetNode(idx); 
+         const snd* n = snd::GetND(idx); 
          std::cout << " idx " << idx ; 
          std::cout << " n.brief " << ( n ? n->brief() : "null" ) << std::endl ;  
 
@@ -351,7 +351,7 @@ void test_dump()
 {
     std::cout << "test_dump" << std::endl ;     
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
 
     std::cout << nd->dump() << std::endl ; 
     std::cout << nd->dump2() << std::endl ; 
@@ -363,7 +363,7 @@ void test_render()
     std::cout << "test_render mode " << mode  << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
 
     std::cout << nd->render(mode) << std::endl ;  
     std::cout << nd->rbrief() << std::endl ;  
@@ -374,7 +374,7 @@ void test_rbrief()
     std::cout << "test_rbrief" << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
     std::cout << nd->rbrief() << std::endl ;  
 
 }
@@ -385,7 +385,7 @@ void test_typenodes(int tc)
     std::cout << "test_typenodes tc " << tc << " " << CSG::Tag(tc) <<  std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
 
     std::vector<int> nodes ; 
     nd->typenodes(nodes, tc ); 
@@ -407,7 +407,7 @@ void test_typenodes_()
     std::cout << "test_typenodes_ " <<  std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetNode(g);
+    const snd* nd = snd::GetND(g);
 
     std::vector<int> nodes ; 
 
@@ -433,6 +433,95 @@ void test_typenodes_()
 
 }
 
+void test_leafnodes()
+{
+    std::cout << "test_leafnodes " <<  std::endl ;     
+
+    int g = make_csgtree(); 
+    const snd* nd = snd::GetND(g);
+
+    std::vector<int> nodes ; 
+    nd->leafnodes(nodes); 
+
+    std::cout << " leafnodes " << nodes.size() << std::endl ; 
+    std::cout << snd::Brief(nodes) ; 
+
+    std::cout << nd->render(0) ; 
+    std::cout << nd->render(3) ; 
+}
+
+
+void test_find()
+{
+    std::cout << "test_find" <<  std::endl ;     
+
+    int z = make_csgtree(); 
+    const snd* nd = snd::GetND(z);
+
+    const snd* a = nd->find('a') ; 
+    std::cout << ( a ? a->desc() : "no-a" ) << std::endl ;  
+
+    const snd* f = nd->find('f') ; 
+    std::cout << ( f ? f->desc() : "no-f" ) << std::endl ;  
+
+
+    std::cout << nd->render(0) ; 
+    std::cout << nd->render(3) ; 
+}
+
+
+ 
+
+
+void test_ancestors()
+{
+    std::cout << "test_ancestors " <<  std::endl ;     
+
+    int iz = make_csgtree(); 
+    const snd* z = snd::GetND(iz);
+
+    std::vector<int> za ; 
+    z->ancestors(za); 
+    assert( za.size() == 0 ); 
+
+    std::cout << z->render(0) ; 
+    std::cout << z->render(3) ; 
+
+    const snd* a = z->find('a') ; 
+     
+    std::vector<int> aa ; 
+    a->ancestors(aa); 
+    assert( aa.size() > 0 ); 
+
+    std::cout << "aa:" << snd::Brief(aa) ; 
+
+    std::cout << "   a:" << a->brief() << std::endl  ; 
+
+}
+
+
+/*
+    static const glm::tmat4x4<double>* NodeTransform(int nidx); 
+    static void NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx ) ; 
+    void node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const ; 
+*/
+
+void test_node_transform_product()
+{
+    std::cout << "test_node_transform_product " <<  std::endl ;     
+
+    int iz = make_csgtree(); 
+    const snd* z = snd::GetND(iz);
+    const snd* a = z->find('a') ; 
+
+    glm::tmat4x4<double> transform(1.) ; 
+    a->node_transform_product( transform, false ); 
+    std::cout << glm::to_string(transform) << std::endl ; 
+
+}
+
+
+
 
 
 
@@ -453,6 +542,10 @@ int main(int argc, char** argv)
     else if(strcmp(TEST, "rbrief")==0)    test_rbrief() ; 
     else if(strcmp(TEST, "typenodes")==0) test_typenodes() ; 
     else if(strcmp(TEST, "typenodes_")==0) test_typenodes_() ; 
+    else if(strcmp(TEST, "leafnodes")==0)  test_leafnodes() ; 
+    else if(strcmp(TEST, "find")==0)  test_find() ; 
+    else if(strcmp(TEST, "ancestors")==0)  test_ancestors() ; 
+    else if(strcmp(TEST, "node_transform_product")==0)  test_node_transform_product() ; 
     else std::cerr << " TEST not matched " << TEST << std::endl ; 
         
     return 0 ; 

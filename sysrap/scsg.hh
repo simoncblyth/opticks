@@ -1,9 +1,8 @@
 #pragma once
 /**
-scsg.hh
-=========
+scsg.hh : pools of CSG nodes, param, bounding box and transforms
+==================================================================
 
-pools that are index referenced from the snd instances 
 
 **/
 
@@ -19,16 +18,16 @@ struct NPFold ;
 
 struct SYSRAP_API scsg
 {
-    static constexpr const unsigned IMAX = 1000 ;
-
-    scsg(); 
-    void init(); 
-
     int level ; 
     std::vector<snd> node ; 
     std::vector<spa> param ; 
     std::vector<sbb> aabb ; 
     std::vector<sxf> xform ; 
+
+    static constexpr const unsigned IMAX = 1000 ;
+
+    scsg(); 
+    void init(); 
 
     template<typename T>
     int add_(const T& obj, std::vector<T>& vec); 
@@ -44,18 +43,25 @@ struct SYSRAP_API scsg
     template<typename T>
     const T* get(int idx, const std::vector<T>& vec) const ; 
 
+    // *idx* "pointer" corresponding to each species, nothing clever here
     const snd* getND(int idx) const ; 
     const spa* getPA(int idx) const ;  
-    const sxf* getXF(int idx) const ; 
     const sbb* getBB(int idx) const ;
+    const sxf* getXF(int idx) const ; 
+
+    const glm::tmat4x4<double>* getXForm(int idx) const ; 
+
 
     template<typename T>
     T* get_(int idx, std::vector<T>& vec) ; 
 
     snd* getND_(int idx); 
     spa* getPA_(int idx);  
-    sxf* getXF_(int idx); 
     sbb* getBB_(int idx);
+    sxf* getXF_(int idx); 
+
+    glm::tmat4x4<double>* getXForm_(int idx); 
+
 
     int  getNDXF(int idx) const ; 
     void getLVID( std::vector<snd>& nds, int lvid ) const ; 

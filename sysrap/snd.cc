@@ -2,6 +2,11 @@
 #include <iostream>
 #include <algorithm>
 
+#include "glm/glm.hpp"
+#include "glm/gtx/string_cast.hpp"
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "spa.h"
 #include "sbb.h"
 #include "sxf.h"
@@ -31,7 +36,7 @@ std::string snd::Brief(const std::vector<int>& nodes)
     for(int i=0 ; i < num_nodes ; i++)
     {
         int idx = nodes[i]; 
-        const snd* nd = GetNode(idx); 
+        const snd* nd = GetND(idx); 
         assert( nd ); 
         ss << std::setw(2) << i << " : " << nd->brief() << std::endl ;  
     }
@@ -40,19 +45,27 @@ std::string snd::Brief(const std::vector<int>& nodes)
 }
 
 
-const snd* snd::GetNode( int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
-const spa* snd::GetParam(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static
-const sxf* snd::GetXForm(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } // static
-const sbb* snd::GetAABB( int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
+const snd* snd::GetND(int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
+const spa* snd::GetPA(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static
+const sxf* snd::GetXF(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } // static
+const sbb* snd::GetBB(int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
+
+snd* snd::GetND_(int idx){ return POOL ? POOL->getND_(idx) : nullptr ; } // static
+spa* snd::GetPA_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // static
+sxf* snd::GetXF_(int idx){ return POOL ? POOL->getXF_(idx) : nullptr ; } // static
+sbb* snd::GetBB_(int idx){ return POOL ? POOL->getBB_(idx) : nullptr ; } // static 
+
+
+
 
 int snd::GetMaxDepth( int idx)
 { 
-    const snd* nd = GetNode(idx) ; 
+    const snd* nd = GetND(idx) ; 
     return nd ? nd->max_depth() : -1 ; 
 }
 int snd::GetNumNode( int idx)
 { 
-    const snd* nd = GetNode(idx) ; 
+    const snd* nd = GetND(idx) ; 
     return nd ? nd->num_node() : -1 ; 
 }
 
@@ -62,7 +75,7 @@ void snd::GetTypes(std::vector<int>& types, const std::vector<int>& idxs ) // st
     for(int i=0 ; i < num_idx ; i++)
     {
         int idx = idxs[i]; 
-        const snd* nd = GetNode(idx) ; 
+        const snd* nd = GetND(idx) ; 
         types.push_back(nd->typecode) ;  
     }
     assert( idxs.size() == types.size() ); 
@@ -71,15 +84,25 @@ void snd::GetTypes(std::vector<int>& types, const std::vector<int>& idxs ) // st
 
 
 int snd::GetNodeXForm(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
+
+
+/**
+snd::SetNodeXForm
+------------------
+
+Canonical usage is from U4Solid::init_DisplacedSolid collecting boolean rhs transforms 
+
+**/
+
 void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
 {
-    snd* nd = GetNode_(idx); 
+    snd* nd = GetND_(idx); 
     nd->setXForm(tr); 
 }
 
 void snd::SetLabel(int idx, const char* label_ ) // static
 {
-    snd* nd = GetNode_(idx); 
+    snd* nd = GetND_(idx); 
     nd->setLabel(label_); 
 }
 
@@ -96,7 +119,7 @@ as its called for each root from U4Tree::initSolid
 **/
 void snd::SetLVID(int idx, int lvid)  // static
 {
-    snd* nd = GetNode_(idx); 
+    snd* nd = GetND_(idx); 
     nd->setLVID(lvid);   
 
     int chk = nd->checktree(); 
@@ -210,7 +233,7 @@ int snd::getLVSubNode() const
     for(int i=0 ; i < nsub ; i++)
     {
         int idx = subs[i] ; 
-        const snd* nd = GetNode(idx); 
+        const snd* nd = GetND(idx); 
         assert( nd->typecode == CSG_CONTIGUOUS || nd->typecode == CSG_DISCONTIGUOUS ); 
         constituents += nd->num_child ; 
     } 
@@ -273,7 +296,7 @@ void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int 
         int ch = nd->first_child ;
         for(int i=0 ; i < nd->num_child ; i++)
         {
-            const snd* child = snd::GetNode(ch) ;
+            const snd* child = snd::GetND(ch) ;
             assert( child->index == ch );
 
             int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
@@ -300,15 +323,9 @@ void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int 
 
 
 
-snd* snd::GetNode_(int idx){  return POOL ? POOL->getND_(idx) : nullptr ; } // static
-spa* snd::GetParam_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // static
-sxf* snd::GetXForm_(int idx){ return POOL ? POOL->getXF_(idx) : nullptr ; } // static
-sbb* snd::GetAABB_(int idx){  return POOL ? POOL->getBB_(idx) : nullptr ; } // static 
-
-
 std::string snd::Render(int idx)
 {  
-    const snd* n = GetNode(idx); 
+    const snd* n = GetND(idx); 
     assert(n); 
     return n->render(); 
 }
@@ -469,16 +486,77 @@ void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double
 
     aabb = POOL->addBB(o) ; 
 }
+
+/**
+snd::setXForm
+---------------
+
+Note that currently there is no way to change transform, or param or AABB. 
+Calling setXForm again will just adds another transform 
+and updates the snd::xform integer reference.
+
+That effectively leaks the old transform.  
+
+**/
 void snd::setXForm(const glm::tmat4x4<double>& t )
 {
     CheckPOOL("snd::setXForm") ; 
     sxf o ; 
     o.mat = t ; 
     xform = POOL->addXF(o) ; 
-
-    // HMM: what about changing transform ? 
-    // Currently just adds another and updates the ref, "leaking" the old. 
 }
+
+const glm::tmat4x4<double>* snd::GetXForm(int nidx)  // static
+{
+    const snd* n = GetND(nidx); 
+    return n ? n->getXForm() : nullptr ; 
+}
+const glm::tmat4x4<double>* snd::getXForm() const
+{
+    CheckPOOL("snd::getXForm") ; 
+    return POOL->getXForm(xform) ; 
+}
+
+glm::tmat4x4<double>* snd::GetXForm_(int idx)  // static
+{
+    snd* n = GetND_(idx); 
+    return n ? n->getXForm_() : nullptr ; 
+}
+glm::tmat4x4<double>* snd::getXForm_()
+{
+    CheckPOOL("snd::getXForm_") ; 
+    return POOL->getXForm_(xform) ; 
+}
+
+void snd::NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx )  // static
+{
+    std::vector<int> nodes ; 
+    Ancestors(nodes, nidx );  
+    nodes.push_back(nidx); 
+
+    int num_nodes = nodes.size();
+    glm::tmat4x4<double> prod(1.); 
+
+    for(int i=0 ; i < num_nodes ; i++ ) 
+    {
+        int nidx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>* t = GetXForm(nidx) ; 
+        if(t) prod *= *t ;           
+    }
+    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
+    memcpy( glm::value_ptr(transform), glm::value_ptr(prod), sizeof(glm::tmat4x4<double>) );
+}
+
+void snd::node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const 
+{
+    NodeTransformProduct( transform, reverse, index); 
+}
+
+
+
+
+
+
 
 
 void snd::setLabel( const char* label_ )
@@ -486,15 +564,10 @@ void snd::setLabel( const char* label_ )
     strncpy( &label[0], label_, sizeof(label) );
 }
 
-
-
-
-
 void snd::setLVID(int lvid_)
 {
     setLVID_r(lvid_, 0); 
 }
-
 void snd::setLVID_r(int lvid_, int d )
 {
     lvid = lvid_ ;  
@@ -642,10 +715,24 @@ int snd::num_node_r(int d) const
     return nn ; 
 }
 
+
 bool snd::is_root() const  // NB depth gets set by calling setLVID
 {
     return depth == 0 && parent == -1 ; 
 }
+
+bool snd::is_leaf() const
+{
+    return num_child == 0 ;
+}
+
+bool snd::is_binary_leaf() const 
+{
+    return num_child == 0 || CSG::IsList(typecode ) ; 
+}
+
+
+
 
 
 
@@ -672,7 +759,7 @@ https://ondrej-kvasnovsky-2.gitbook.io/algorithms/data-structures/n-ary-tree
 
 A binary tree can be traversed in preorder, inorder, postorder or level-order.
 Among these traversal methods, preorder, postorder and level-order traversal
-are suitable to be extended to anN-arytree.
+are suitable to be extended to an N-ary tree.
 
 https://stackoverflow.com/questions/23778489/in-order-tree-traversal-for-non-binary-trees
 
@@ -681,7 +768,7 @@ https://stackoverflow.com/questions/23778489/in-order-tree-traversal-for-non-bin
 
 void snd::Inorder(std::vector<int>& order, int idx ) // static
 {
-    const snd* nd = GetNode(idx); 
+    const snd* nd = GetND(idx); 
     nd->inorder(order); 
 }
 
@@ -720,6 +807,81 @@ void snd::inorder_r(std::vector<int>& order, int d ) const
         }
     }
 }
+
+/**
+snd::Ancestors
+---------------
+
+Collect by following parent links then reverse 
+the vector to put into root first order. 
+
+**/
+
+void snd::Ancestors(std::vector<int>& nodes, int idx)  // static 
+{
+    const snd* nd = GetND(idx) ; 
+    while( nd->parent > -1 ) 
+    {    
+        nodes.push_back(nd->parent);
+        nd = GetND(nd->parent) ; 
+    }    
+    std::reverse( nodes.begin(), nodes.end() );
+}
+
+void snd::ancestors(std::vector<int>& nodes) const
+{
+    Ancestors(nodes, index);  
+}
+
+
+
+
+
+
+
+void snd::leafnodes( std::vector<int>& nodes ) const
+{
+    leafnodes_r(nodes, 0 ); 
+}
+
+void snd::leafnodes_r( std::vector<int>& nodes, int d  ) const 
+{
+    if(is_leaf()) nodes.push_back(index); 
+
+    int ch = first_child ; 
+    for(int i=0 ; i < num_child ; i++)  
+    {
+        snd& child = POOL->node[ch] ; 
+        assert( child.index == ch ); 
+        child.leafnodes_r(nodes, d+1 );  
+        ch = child.next_sibling ;
+    }
+}
+
+
+const snd* snd::find(char l0) const 
+{
+    std::vector<int> nodes ; 
+    find_r(nodes, l0, 0) ; 
+
+    int idx = nodes.size() == 1 ? nodes[0] : -1 ;
+    return idx == -1 ? nullptr : GetND(idx) ; 
+}
+
+void snd::find_r(std::vector<int>& nodes, char l0, int d) const
+{
+    if(label[0] == l0) nodes.push_back(index); 
+
+    int ch = first_child ; 
+    for(int i=0 ; i < num_child ; i++)  
+    {
+        const snd* child = GetND(ch) ; 
+        assert( child->index == ch ); 
+        child->find_r(nodes, l0, d+1 );  
+        ch = child->next_sibling ;
+    }
+}
+
 
 
 
@@ -911,7 +1073,7 @@ void snd::render_v( scanvas* canvas, const std::vector<int>& order, int mode, in
     int ordinal = get_ordinal( order ); 
     assert( ordinal > -1 ); 
 
-    std::cout << "snd::render_v " << brief() << " ordinal " << ordinal << std::endl ;  
+    //std::cout << "snd::render_v " << brief() << " ordinal " << ordinal << std::endl ;  
  
     int ix = ordinal ; 
     int iy = d ;        // using depth instead of d would require snd::SetLVID to have been called

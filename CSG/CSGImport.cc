@@ -131,10 +131,8 @@ CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
 
         CSGPrim* pr = importPrim( i, lvid ) ;  
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
-        //assert( pr );  
-
+        assert( pr );  
     }
-
     return so ; 
 }
 
@@ -184,7 +182,7 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
         pr->setRepeatIdx(ridx); 
 
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
-        //assert( pr ); 
+        assert( pr ); 
     }
 
     return so ; 
@@ -212,12 +210,12 @@ CSGPrim* CSGImport::importPrim(int primIdx, int lvid)
     const char* name = fd->getMeshName(lvid)  ; 
 
     std::vector<const snd*> nds ; 
-    snd::GetLVNodesComplete(nds, lvid); 
+    snd::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
 
-    CSGPrim* prim = fd->addPrim( numParts );
-    prim->setMeshIdx(lvid);
-    prim->setPrimIdx(primIdx);
+    CSGPrim* pr = fd->addPrim( numParts );
+    pr->setMeshIdx(lvid);
+    pr->setPrimIdx(primIdx);
 
     for(int i=0 ; i < numParts ; i++)
     {
@@ -233,7 +231,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, int lvid)
         << name 
         ; 
 
-    return prim ; 
+    return pr ; 
 }
 
 
@@ -243,6 +241,7 @@ CSGImport::importNode
 ----------------------------
 
 TODO: transforms, planes, aabb 
+
 
 **/
 

@@ -77,7 +77,6 @@ inline std::string sstr::StripTail(const char* name_, const char* end)  // stati
 
 
 
-
 inline void sstr::PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines)
 {
     std::stringstream ss;  

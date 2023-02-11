@@ -6,9 +6,7 @@ snode.h : structural "volume" nodes
 snode are structural nodes residing in stree.h and populated 
 from Geant4 volumes by U4Tree.h U4Tree::initNodes_r
 
-For traversal examples see::
-
-   stree::get_children
+For traversal examples see *stree::get_children*
 
 **/
 

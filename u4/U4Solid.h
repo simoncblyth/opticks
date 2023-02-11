@@ -656,7 +656,10 @@ inline void U4Solid::init_BooleanSolid()
         << std::endl 
         ; 
 
-    //assert( l_xf == -1  && "NOT expecting transform on left node " ); 
+    // assert( l_xf == -1  && "NOT expecting transform on left node " ); 
+    // G4Ellipsoid is translated into a ZSphere with scale transform which may 
+    // appear on the left side of a boolean : so cannot assert no left transforms. 
+
     if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
 
     root = snd::Boolean( op, l, r ); 

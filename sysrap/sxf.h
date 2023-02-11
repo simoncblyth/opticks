@@ -1,4 +1,9 @@
 #pragma once
+/**
+sxf.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
+===================================================================
+
+**/
 
 #include <string>
 #include <sstream>

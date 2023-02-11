@@ -17,6 +17,280 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
 
 
 
+AB comparison using CSGFoundryAB.sh
+--------------------------------------
+
+::
+
+    ## rebuild and install after changes as lots of headeronly functionality 
+
+    sy      
+    om 
+    u4
+    om 
+    c
+    om 
+
+
+    u4t
+    ./U4TreeCreateTest.sh   ## Create stree from gdml
+    ct
+    ./CSGImportTest.sh      ## import stree into CSGFoundary and save 
+
+    ## TODO: combine the above two steps
+    ct
+    ./CSGFoundryAB.sh       ## compare A:old and B:new CSGFoundry 
+
+
+
+Missing itra tran and inst in B::
+
+
+  : A.SSim                                             :                 None : 4 days, 3:38:40.838511 
+  : A.solid                                            :           (10, 3, 4) : 4 days, 3:39:36.056485 
+  : A.prim                                             :         (3259, 4, 4) : 4 days, 3:39:36.057583 
+  : A.node                                             :        (23547, 4, 4) : 4 days, 3:39:36.441330 
+
+  : A.mmlabel                                          :                   10 : 4 days, 3:39:37.611860 
+  : A.primname                                         :                 3259 : 4 days, 3:39:36.056862 
+  : A.meshname                                         :                  152 : 4 days, 3:39:37.612941 
+  : A.meta                                             :                    8 : 4 days, 3:39:37.612404 
+
+  : A.itra                                             :         (8179, 4, 4) : 4 days, 3:39:37.613551 
+  : A.tran                                             :         (8179, 4, 4) : 4 days, 3:39:35.423639 
+
+  : A.inst                                             :        (48477, 4, 4) : 4 days, 3:39:37.973285 
+
+
+
+
+Where to do balancing and positivization in new workflow ?
+-------------------------------------------------------------
+
+Old::
+
+    X4PhysicalVolume::ConvertSolid
+    X4PhysicalVolume::ConvertSolid_ 
+    X4PhysicalVolume::ConvertSolid_FromRawNode
+    NTreeProcess::init
+    NTreePositive::init 
+
+
+CSG transforms : stree/scsg f.csg.xform only 240 items vs CSGFoundry A.tran with 8179 ? 
+-----------------------------------------------------------------------------------------
+
+CSGFoundry has thousands of CSG level tran,itra::
+
+  : A.itra                                             :         (8179, 4, 4) : 4 days, 3:39:37.613551 
+  : A.tran                                             :         (8179, 4, 4) : 4 days, 3:39:35.423639 
+
+scsg only has 240 xform (thats a repetition factor of 34)::
+
+    In [12]: f.csg 
+    CMDLINE:/Users/blyth/opticks/sysrap/tests/stree_load_test.py
+    csg.base:/Users/blyth/.opticks/GEOM/J007/CSGFoundry/SSim/stree/csg
+
+      : csg.node                                           :            (637, 16) : 4 days, 21:34:31.826544 
+      : csg.aabb                                           :             (387, 6) : 4 days, 21:34:31.827683 
+      : csg.xform                                          :            (240, 16) : 4 days, 21:34:31.825574 
+      : csg.NPFold_index                                   :                    4 : 4 days, 21:34:31.828374 
+      : csg.param                                          :             (387, 6) : 4 days, 21:34:31.826033 
+
+
+* presumably some kind of repetition in CSGFoundry, but elaborate on that 
+* tracing in CSGFoundry provides the explanation
+
+  * because CSGFoundry::addTran gets called from CSGFoundry::addNode are getting 
+    significant repetition of CSG level transforms due to node repetition eg from the globals 
+
+  * POTENTIAL FOR ENHANCEMENT HERE : BUT SOME RELOCATING OF GLOBALS IS DONE SOMEWHERE, SO NON-TRIVIAL  
+
+::
+
+    1366 CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr  )
+    1367 {
+    ...
+    1371     unsigned globalNodeIdx = node.size() ;
+    ...
+    1404     if(tr)
+    1405     {
+    1406         unsigned trIdx = 1u + addTran(tr);  // 1-based idx, 0 meaning None
+    1407         nd.setTransform(trIdx);
+    1408     }
+    1409 
+    1410     node.push_back(nd);
+    1411     last_added_node = node.data() + globalNodeIdx ;
+    1412     return last_added_node ;
+    1413 }
+
+
+HMM actually a lower level CSG_GGeo_Convert::convertNode is used doing much the same::
+
+     674 CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, unsigned partIdxRel )
+     675 {
+     ...
+     677     unsigned partOffset = comp->getPartOffset(primIdx) ;
+     678     unsigned partIdx = partOffset + partIdxRel ;
+     ...
+     691     const Tran<float>* tv = nullptr ; 
+     692     unsigned gtran = comp->getGTransform(partIdx);  // 1-based index, 0 means None
+     693     if( gtran > 0 )
+     694     {
+     695         glm::mat4 t = comp->getTran(gtran-1,0) ;
+     696         glm::mat4 v = comp->getTran(gtran-1,1); 
+     697         tv = new Tran<float>(t, v); 
+     698     }
+     699 
+     700     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+     701 
+     702     // HMM: this is not using the higher level 
+     703     // CSGFoundry::addNode with transform pointer argumnent 
+     704 
+
+
+Need to do something similar in CSGImport::importNode 
+BUT first need the gtransforms, snd/scsg only has local transforms so far. 
+
+::
+
+     740 /**
+     741 nnode::global_transform
+     742 ------------------------
+     743 
+     744 NB parent links are needed
+     745 
+     746 Is invoked by nnode::update_gtransforms_r from each primitive, 
+     747 whence parent links are followed up the tree until reaching root
+     748 which has no parent. Along the way transforms are collected
+     749 into the tvq vector in reverse hierarchical order from 
+     750 leaf back up to root
+     751 
+     752 If a placement transform is present on the root node, that 
+     753 is also collected. 
+     754 
+     755 * NB these are the CSG nodes, not structure nodes
+     756 
+     757 **/
+     759 const nmat4triple* nnode::global_transform(nnode* n)
+     760 {
+     761     std::vector<const nmat4triple*> tvq ;
+     762     nnode* r = NULL ;
+     763     while(n)
+     764     {
+     765         if(n->transform) tvq.push_back(n->transform);
+     766         r = n ;            // keep hold of the last non-NULL 
+     767         n = n->parent ;
+     768     }
+     769 
+     770     if(r->placement) tvq.push_back(r->placement);
+     771 
+     772 
+     773     bool reverse = true ;
+     774     const nmat4triple* gtransform= tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ;
+     775 
+     776     if(gtransform == NULL )  // make sure all primitives have a gtransform 
+     777     {
+     778         gtransform = nmat4triple::make_identity() ;
+     779     }
+     780     return gtransform ;
+     781 }
+
+
+
+More modern transform handling (for structure) in stree::get_m2w_product
+
+* need something similar for CSG snd starting with get_ancestors following parent links 
+
+
+* HMM is G4Ellipsoid scale Xform added ? YEP snd::SetNodeXForm(root, scale ); 
+
+
+::
+
+    In [15]: f.csg.node.shape
+    Out[15]: (624, 16)
+
+    In [12]: f.csg.node[:,snd.xf].min(), f.csg.node[:,snd.xf].max()   # the snd refs the xform 
+    Out[12]: (-1, 239)
+
+    In [9]: f.csg.xform.shape
+    Out[9]: (240, 16)
+
+    In [7]: np.unique( f.csg.node[:,snd.xf], return_counts=True )  # many -1 "null" but only one of 0 to 239
+    Out[7]: 
+    (array([ -1,   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36, ...
+            232, 233, 234, 235, 236, 237, 238, 239], dtype=int32),
+     array([389,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+              1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+              1,   1,   1,   1,   1,   1,   1,   1]))
+
+
+
+
+
+
+persisted stree.h looks to have lots of debugging extras not in CSGFoundry
+------------------------------------------------------------------------------ 
+
+* TODO: review U4Tree creation of the stree
+* TODO: document stree.h arrays in constexpr notes
+* TODO: make non-essentials optional in the persisted folder
+* TODO: comparing transforms with CSGFoundry ones, work out how to CSGImport 
+
+::
+
+    f.base:/Users/blyth/.opticks/GEOM/J007/CSGFoundry/SSim/stree
+
+      : f.inst                                             :        (48477, 4, 4) : 4 days, 19:50:27.711199 
+      : f.iinst                                            :        (48477, 4, 4) : 4 days, 19:51:11.766482 
+      : f.inst_f4                                          :        (48477, 4, 4) : 4 days, 19:50:15.080793 
+      : f.iinst_f4                                         :        (48477, 4, 4) : 4 days, 19:51:03.021160 
+      : f.inst_nidx                                        :             (48477,) : 4 days, 19:50:14.668612 
+
+      : f.nds                                              :         (422092, 14) : 4 days, 19:49:13.288836 
+      : f.gtd                                              :       (422092, 4, 4) : 4 days, 19:51:24.749130 
+      : f.m2w                                              :       (422092, 4, 4) : 4 days, 19:49:56.715706 
+      : f.w2m                                              :       (422092, 4, 4) : 4 days, 19:48:49.592172 
+      : f.subs                                             :               422092 : 4 days, 19:49:10.533278 
+      : f.digs                                             :               422092 : 4 days, 19:51:53.722598 
+
+      : f.rem                                              :           (3089, 14) : 4 days, 19:49:12.776762 
+      : f.factor                                           :              (9, 12) : 4 days, 19:51:53.722111 
+
+      : f.sensor_id                                        :             (46116,) : 4 days, 19:49:11.631723 
+
+      : f.csg                                              :                 None : 4 days, 19:48:49.587808 
+      : f.soname                                           :                  150 : 4 days, 19:49:11.630989 
+
+      : f.bd                                               :              (54, 4) : 4 days, 19:52:00.140095 
+      : f.bd_names                                         :                   54 : 4 days, 19:52:00.139822 
+
+      : f.surface                                          :                 None : 4 days, 19:48:49.258335 
+      : f.suname                                           :                   46 : 4 days, 19:49:10.532493 
+      : f.suindex                                          :                (46,) : 4 days, 19:49:10.532860 
+
+      : f.material                                         :                 None : 4 days, 19:48:49.587773 
+      : f.mtline                                           :                (20,) : 4 days, 19:49:56.714553 
+      : f.mtname                                           :                   20 : 4 days, 19:49:56.714169 
+      : f.mtindex                                          :                (20,) : 4 days, 19:49:56.714992 
+
+
+
+Back to ct:CSGFoundryAB.sh 
+---------------------------
+
+Extra meshname in A from the unbalanced alt (names appear twice)::
+
+    In [15]: A.meshname[149:]
+    Out[15]: ['sWorld', 'solidSJReceiverFastern', 'uni1']
+
+    In [16]: B.meshname[149:]
+    Out[16]: ['sWorld0x59dfbe0']
+
+
+* DONE: trim the 0x ref in B 
+
+
 Comparing CSGFoundry
 ----------------------
 

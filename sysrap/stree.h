@@ -164,6 +164,7 @@ When SSim not in use can also use::
 #include "NPFold.h"
 
 #include "ssys.h"
+#include "sstr.h"
 #include "scuda.h"
 #include "snode.h"
 #include "sdigest.h"
@@ -184,6 +185,7 @@ struct stree
 
     static constexpr const char* RELDIR = "stree" ;
     static constexpr const char* NDS = "nds.npy" ;
+    static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
     static constexpr const char* REM = "rem.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
@@ -204,10 +206,12 @@ struct stree
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
     static constexpr const char* FACTOR = "factor.npy" ;
+
     static constexpr const char* INST = "inst.npy" ; 
     static constexpr const char* IINST = "iinst.npy" ; 
     static constexpr const char* INST_F4 = "inst_f4.npy" ; 
     static constexpr const char* IINST_F4 = "iinst_f4.npy" ; 
+
     static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
@@ -310,6 +314,8 @@ struct stree
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
 
+    static std::string Name( const std::string& name, bool strip ); 
+    std::string get_lvid_soname(int lvid, bool strip ) const ; 
     void        get_meshname( std::vector<std::string>& names) const ;  // match CSGFoundry 
     void        get_mmlabel(  std::vector<std::string>& names) const ;  // match CSGFoundry 
 
@@ -1017,16 +1023,29 @@ inline void stree::get_sub_sonames( std::vector<std::string>& sonames ) const
     }
 }
 
+
 inline const char* stree::get_sub_soname(const char* sub) const 
 {
     int first_nidx = get_first(sub); 
     return first_nidx == -1 ? nullptr : get_soname(first_nidx ) ; 
 }
 
+
+
+inline std::string stree::Name( const std::string& name, bool strip ) // static
+{
+    return strip ? sstr::StripTail(name, "0x") : name ; 
+}
+inline std::string stree::get_lvid_soname(int lvid, bool strip) const 
+{
+    if(lvid < 0 || lvid >= int(soname.size())) return "bad_lvid" ;  
+    return Name(soname[lvid], strip) ; 
+}
+
 inline void stree::get_meshname( std::vector<std::string>& names) const 
 {
     assert( names.size() == 0 ); 
-    for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( soname[i] ); 
+    for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( Name(soname[i],true) ); 
 }
 
 inline void stree::get_mmlabel( std::vector<std::string>& names) const 
@@ -1036,12 +1055,13 @@ inline void stree::get_mmlabel( std::vector<std::string>& names) const
     for(int ridx=0 ; ridx < num_ridx ; ridx++)
     {
         int num_prim = get_ridx_subtree(ridx) ; 
-        int olvid = get_ridx_olvid(ridx) ; 
+        int olvid    = get_ridx_olvid(ridx) ; 
 
         assert( olvid < int(soname.size()) ); 
-        const char* name = olvid == -1 ? nullptr : soname[olvid].c_str() ; 
+        std::string name = get_lvid_soname(olvid, true); 
+
         std::stringstream ss ;  
-        ss << num_prim << ":" << ( name ? name : "" ) ; 
+        ss << num_prim << ":" << name ; 
         std::string str = ss.str(); 
         names.push_back(str);  
     }
@@ -1135,7 +1155,7 @@ So there is still potential for wrong direction of multiplication bugs.
 inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const 
 {
     std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx);  // nodes is in root-first-order
+    get_ancestors(nodes, nidx);  // root-first-order (from collecting parent links then reversing the vector)
     nodes.push_back(nidx); 
 
     unsigned num_nodes = nodes.size();
@@ -2248,29 +2268,17 @@ stree::add_inst
 
 Canonically invoked from U4Tree::Create 
 
+* important to only use 32 bit for identity info, so 64 bit survive narrowing 
+
+
 **/
 
 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
 {
     assert( nidx > -1 && nidx < int(nds.size()) ); 
-    const snode& nd = nds[nidx]; 
+    const snode& nd = nds[nidx];        // structural volume node
+
     int ins_idx = int(inst.size());     // follow sqat4.h::setIdentity
-
-    /*
-    TODO: include the nidx into the 4th column ints  OR keep it separately 
-
-    HMM: initial thinking is to squeeze identity info into 32 bits 
-    so it can survive being narrowed 
-
-    unsigned nidx_gidx = (( nidx & 0xffffff ) << 8 ) | ( gas_idx & 0xff ) ;  
-    union uif64_t {
-        uint64_t  u ; 
-        int64_t   i ; 
-        double    f ; 
-    };  
-    uif64_t uif ; 
-    uif.u = nidx_gidx ; 
-    */
 
     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
 
@@ -2286,8 +2294,46 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>
     iinst.push_back(tr_w2m);
 
     inst_nidx.push_back(nidx); 
-
 }
+
+/**
+stree::add_inst
+------------------
+
+
+::
+
+    In [7]: f.inst_f4[:,:,3].view(np.int32)
+    Out[7]: 
+    array([[     0,      0,     -1,     -1],
+           [     1,      1, 300000,  18116],
+           [     2,      1, 300001,  18117],
+           [     3,      1, 300002,  18118],
+           [     4,      1, 300003,  18119],
+           ...
+           [ 48472,      9,      3,    499],
+           [ 48473,      9,      0,    500],
+           [ 48474,      9,      1,    501],
+           [ 48475,      9,      2,    502],
+           [ 48476,      9,      3,    503]], dtype=int32)
+
+          # ins_idx, gas_idx,  sid    six  
+
+    In [8]: f.inst_f4.shape
+    Out[8]: (48477, 4, 4)
+
+    In [10]: f.inst_nidx
+    Out[10]: 
+    array([     0, 279688, 279693, 279698, 279703, 279708, 279713, 279718, 279723, 279728, 279733, 279738, 279743, 279748, 279753, 279758, ...,  63638,  63768,  63898,  64028,  64159,  64289,  64419,
+            64549,  64681,  64811,  64941,  65071,  65202,  65332,  65462,  65592], dtype=int32)
+
+    In [11]: f.inst_nidx.shape
+    Out[11]: (48477,)
+
+
+
+**/
+
 
 inline void stree::add_inst() 
 {
