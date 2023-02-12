@@ -1,4 +1,26 @@
 #pragma once
+/**
+stran.h : Tran
+================
+
+DONT USE THIS IN NEW CODE : ARE MIGRATING OVER TO SIMPLER stra.h  
+
+* AS FUNCTIONALITY IS NEEDED MIGRATE IT FROM HERE TO stra.h 
+
+FOLLOWING SOME INVESTIGATIONS OF GEANT4 TRANSFORM HANDLING 
+AND NOTING THAT INVERSES ARE BEING DONE AT SOURCE. 
+HAVE CONCLUDED THAT DEALING WITH TRANSFORMS TOGETHER WITH 
+THEIR INVERSES IS NOT WORTH THE EFFORT.  
+OF COURSE INVERTING SHOULD BE MINIMIZED. 
+
+
+Transform handler that creates inverse transforms at every stage  
+loosely based on NPY nmat4triple_
+
+Aim to avoid having to take the inverse eg with glm::inverse 
+which inevitably risks numerical issues.
+
+**/
 
 #include <iostream>
 #include <iomanip>
@@ -9,20 +31,9 @@
 #include <cstdlib>
 
 
-/**
-Tran
-=====
-
-Transform handler that creates inverse transforms at every stage  
-loosely based on NPY nmat4triple_
-
-Aim to avoid having to take the inverse eg with glm::inverse 
-which inevitably risks numerical issues.
-
-**/
-
 #include "sqat4.h"
 #include "NP.hh"
+
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include <glm/gtx/transform.hpp>
@@ -43,13 +54,9 @@ void TranConvert(glm::tmat4x4<D>& dst, const glm::tmat4x4<S>& src )  // static
 
 
 
-
-
 template<typename T>
 struct Tran
 {
-    // TODO: on stack ctors 
-
     static constexpr const T EPSILON = 1e-6 ; 
     static constexpr const bool VERBOSE = false ;  
 

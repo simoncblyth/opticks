@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "ssys.h"
+#include "stra.h"
 #include "stree.h"
 #include "snd.hh"
 #include "scsg.hh"
@@ -306,6 +307,26 @@ int make_csgtree_4()
 }
 
 
+
+void AddDummyTransformsVisit(int idx)
+{
+    const snd* nd = snd::GetND(idx); 
+    bool rhs = nd->is_sibdex(1) ; 
+
+    if( rhs )
+    {
+        glm::tmat4x4<double> tr = stra<double>::Translate(double(idx), 0., 100.*double(idx), 1., false );  
+        snd::SetNodeXForm(idx, tr );
+        std::cout << "AddDummyTransformsVisit idx " << idx << std::endl ; 
+    }
+}
+void AddDummyTransforms(int root)
+{
+    std::cout << "AddDummyTransforms root " << root << std::endl ; 
+    snd::PreorderTraverse(root,  std::bind( &AddDummyTransformsVisit , std::placeholders::_1 )  ); 
+}
+
+
 int make_csgtree()
 {
     int t = -1 ; 
@@ -318,8 +339,13 @@ int make_csgtree()
         case 4: t = make_csgtree_4() ; break ; 
     }
     assert( t > -1 ); 
+    AddDummyTransforms(t); 
     return t ;    
 }
+
+
+
+
 
 
 void test_inorder()
@@ -458,15 +484,15 @@ void test_find()
     int z = make_csgtree(); 
     const snd* nd = snd::GetND(z);
 
-    const snd* a = nd->find('a') ; 
-    std::cout << ( a ? a->desc() : "no-a" ) << std::endl ;  
+    int a = nd->find('a') ; 
+    std::cout << snd::Desc(a) << std::endl ;  
 
-    const snd* f = nd->find('f') ; 
-    std::cout << ( f ? f->desc() : "no-f" ) << std::endl ;  
+    int f = nd->find('f') ; 
+    std::cout << snd::Desc(f)  << std::endl ;  
 
 
-    std::cout << nd->render(0) ; 
-    std::cout << nd->render(3) ; 
+    std::cout << snd::Render(z, 0) ; 
+    std::cout << snd::Render(z, 3) ; 
 }
 
 
@@ -487,44 +513,101 @@ void test_ancestors()
     std::cout << z->render(0) ; 
     std::cout << z->render(3) ; 
 
-    const snd* a = z->find('a') ; 
+    int a = z->find('a') ; 
      
     std::vector<int> aa ; 
-    a->ancestors(aa); 
+    snd::Ancestors(a, aa); 
     assert( aa.size() > 0 ); 
 
     std::cout << "aa:" << snd::Brief(aa) ; 
 
-    std::cout << "   a:" << a->brief() << std::endl  ; 
+    std::cout << "   a:" << snd::Brief(a) << std::endl  ; 
 
 }
 
 
-/*
-    static const glm::tmat4x4<double>* NodeTransform(int nidx); 
-    static void NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx ) ; 
-    void node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const ; 
-*/
 
-void test_node_transform_product()
+void LocalVisit(int idx)
 {
-    std::cout << "test_node_transform_product " <<  std::endl ;     
+    const snd* nd = snd::GetND(idx); 
+    bool rhs = nd->is_sibdex(1) ; 
 
-    int iz = make_csgtree(); 
-    const snd* z = snd::GetND(iz);
-    const snd* a = z->find('a') ; 
+    std::cout 
+        << "LocalVisit" 
+        << " rhs " << ( rhs ? "Y" : "N" ) 
+        << " " 
+        << nd->brief() 
+        << std::endl
+        ;  
+}
+
+void test_traverse()
+{
+    std::cout << "test_traverse " <<  std::endl ;     
+    int z = make_csgtree(); 
+
+
+    std::cout << "snd::PreorderTraverse.LocalVisit" << std::endl ; 
+    snd::PreorderTraverse(z,  std::bind( &LocalVisit, std::placeholders::_1 )  ); 
+
+    std::cout << snd::Render(z, 1) ; 
+
+    std::cout << "snd::PostorderTraverse.LocalVisit" << std::endl ; 
+    snd::PostorderTraverse(z, std::bind( &LocalVisit, std::placeholders::_1 ) ); 
+}
+
+
+void test_NodeTransformProduct()
+{
+    std::cout << "test_NodeTransformProduct " <<  std::endl ;     
+
+    int z = make_csgtree(); 
+    char q = 'f' ; 
+    int n = snd::Find(z, q) ;
+
+    std::cout 
+        << " z " << z 
+        << " q " << q 
+        << " n " << n 
+        << std::endl  
+        << snd::Render(z, 0) 
+        << snd::Render(z, 1)
+        ;
 
     glm::tmat4x4<double> transform(1.) ; 
-    a->node_transform_product( transform, false ); 
+    snd::NodeTransformProduct(n, transform, false ); 
+    std::cout << glm::to_string(transform) << std::endl ; 
+
+    std::cout << snd::DescNodeTransformProduct(n, transform, false ) << std::endl ;
     std::cout << glm::to_string(transform) << std::endl ; 
 
 }
 
+void _test_GetXForm(int idx)
+{
+    const glm::tmat4x4<double>* t = snd::GetXForm(idx); 
+    std::cout 
+        << "_test_GetXForm"
+        << " idx " << std::setw(2) << idx 
+        << " t " << ( t ? "Y" : "N" )
+        << std::endl
+        ;    
 
+    if(t) std::cout << glm::to_string(*t) << std::endl ; 
+}
 
+void test_GetXForm()
+{
+    int z = make_csgtree(); 
+    snd::PreorderTraverse(z,  std::bind( &_test_GetXForm, std::placeholders::_1 )  ); 
 
+    snd::PreorderTraverse(z, [](int idx){ std::cout << snd::Brief(idx) << std::endl ; }  ); 
+    // empty capture clause : https://smartbear.com/blog/c11-tutorial-lambda-expressions-the-nuts-and-bolts/
 
-
+    NPFold* fold = snd::Serialize() ; 
+    std::cout << " save snd to FOLD " << FOLD << std::endl ;  
+    fold->save(FOLD, "GetXForm"); 
+}
 
 
 int main(int argc, char** argv)
@@ -545,7 +628,9 @@ int main(int argc, char** argv)
     else if(strcmp(TEST, "leafnodes")==0)  test_leafnodes() ; 
     else if(strcmp(TEST, "find")==0)  test_find() ; 
     else if(strcmp(TEST, "ancestors")==0)  test_ancestors() ; 
-    else if(strcmp(TEST, "node_transform_product")==0)  test_node_transform_product() ; 
+    else if(strcmp(TEST, "traverse")==0)  test_traverse() ; 
+    else if(strcmp(TEST, "NodeTransformProduct")==0)  test_NodeTransformProduct() ; 
+    else if(strcmp(TEST, "GetXForm")==0)  test_GetXForm() ; 
     else std::cerr << " TEST not matched " << TEST << std::endl ; 
         
     return 0 ; 

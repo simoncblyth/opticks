@@ -19,7 +19,9 @@ bin=$FOLD/$name
 #test=leafnodes
 #test=find
 #test=ancestors
-test=node_transform_product
+#test=traverse
+#test=NodeTransformProduct
+test=GetXForm
 
 #tree=0
 #tree=1
@@ -32,8 +34,16 @@ export TREE=${TREE:-$tree}
 
 defarg="build_run"
 case $TEST in 
-    save|load) defarg="build_run_ana"
+    save|load|GetXForm) defarg="build_run_ana" ;;
 esac
+
+case $TEST in 
+   GetXForm) ana=GetXForm ;; 
+          *) ana=$name   ;;
+esac
+
+
+
 
 arg=${1:-$defarg}
 
@@ -64,7 +74,7 @@ fi
 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $ana.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
 

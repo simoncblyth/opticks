@@ -28,6 +28,7 @@ TODO:
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "glm/fwd.hpp"
 #include "OpticksCSG.h"
@@ -54,6 +55,7 @@ struct SYSRAP_API snd
     static void    Import(const NPFold* fold); 
 
     static std::string Desc();
+    static std::string Brief(int idx);
     static std::string Brief(const std::vector<int>& nodes);
 
     static const snd* GetND( int idx);
@@ -94,7 +96,6 @@ struct SYSRAP_API snd
     static void GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx); 
 
     static std::string Desc(int idx);
-    static std::string Render(int idx);
     static std::string DescParam(int idx);
     static std::string DescXForm(int idx);
     static std::string DescAABB( int idx);
@@ -148,7 +149,8 @@ struct SYSRAP_API snd
     static       glm::tmat4x4<double>* GetXForm_(int idx) ; 
                  glm::tmat4x4<double>* getXForm_(); 
 
-    static void NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx ) ; 
+    static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& transform, bool reverse ) ; 
+    static std::string DescNodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse); 
     void node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const ; 
 
 
@@ -163,6 +165,18 @@ struct SYSRAP_API snd
     int checktree() const ; 
     int checktree_r(char code,  int d ) const ; 
 
+    static void Visit(int idx) ; 
+
+    static void PreorderTraverse(int idx, std::function<void(int)> fn ); 
+    void preorder_traverse(   std::function<void(int)> fn ) ; 
+    void preorder_traverse_r( std::function<void(int)> fn, int d) ; 
+
+    static void PostorderTraverse(int idx, std::function<void(int)> fn); 
+    void postorder_traverse(   std::function<void(int)> fn ) ; 
+    void postorder_traverse_r( std::function<void(int)> fn, int d) ; 
+
+
+
     int max_depth() const ; 
     int max_depth_r(int d) const ; 
 
@@ -175,13 +189,14 @@ struct SYSRAP_API snd
     bool is_root() const ; 
     bool is_leaf() const ; 
     bool is_binary_leaf() const ;   // listnodes are regarded as binary leaves
+    bool is_sibdex(int q_sibdex) const ; 
 
 
     static void Inorder(std::vector<int>& order, int idx ); 
     void inorder(std::vector<int>& nodes ) const ;    // collects absolute snd::index from inorder traversal 
     void inorder_r(std::vector<int>& order, int d ) const ; 
 
-    static void Ancestors(std::vector<int>& nodes, int idx); 
+    static void Ancestors(int idx, std::vector<int>& nodes); 
     void ancestors(std::vector<int>& nodes) const; 
 
 
@@ -190,7 +205,8 @@ struct SYSRAP_API snd
     void leafnodes( std::vector<int>& nodes ) const ; 
     void leafnodes_r( std::vector<int>& nodes, int d  ) const ; 
 
-    const snd* find(char l0) const ; 
+    static int Find(int idx, char l0); 
+    int find(char l0) const ; 
     void find_r(std::vector<int>& nodes, char l0, int d) const ; 
 
     
@@ -214,6 +230,8 @@ struct SYSRAP_API snd
     std::string dump2() const ; 
     void dump2_r( std::ostream& os, int d ) const ; 
 
+
+    static std::string Render(int idx, int mode=-1 ) ; 
     std::string render(int mode=-1) const ; 
     void render_r( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
     void render_v( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 

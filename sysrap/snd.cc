@@ -28,7 +28,12 @@ std::string snd::Desc(){  return POOL ? POOL->desc() : "? NO POOL ?" ; } // stat
 
 
 
-std::string snd::Brief(const std::vector<int>& nodes)
+std::string snd::Brief(int idx) // static
+{
+    const snd* nd = GetND(idx); 
+    return nd ? nd->brief() : "-" ; 
+}
+std::string snd::Brief(const std::vector<int>& nodes) // static 
 {
     int num_nodes = nodes.size();  
     std::stringstream ss ; 
@@ -323,13 +328,6 @@ void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int 
 
 
 
-std::string snd::Render(int idx)
-{  
-    const snd* n = GetND(idx); 
-    assert(n); 
-    return n->render(); 
-}
-
 
 std::string snd::Desc(      int idx){ return POOL ? POOL->descND(idx) : "-" ; } // static
 std::string snd::DescParam( int idx){ return POOL ? POOL->descPA(idx) : "-" ; } // static
@@ -528,28 +526,60 @@ glm::tmat4x4<double>* snd::getXForm_()
     return POOL->getXForm_(xform) ; 
 }
 
-void snd::NodeTransformProduct(glm::tmat4x4<double>& transform, bool reverse, int nidx )  // static
+void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse)  // static
 {
     std::vector<int> nodes ; 
-    Ancestors(nodes, nidx );  
-    nodes.push_back(nidx); 
-
+    Ancestors(root, nodes);  
+    nodes.push_back(root); 
     int num_nodes = nodes.size();
-    glm::tmat4x4<double> prod(1.); 
 
+    glm::tmat4x4<double> prod(1.); 
     for(int i=0 ; i < num_nodes ; i++ ) 
     {
-        int nidx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>* t = GetXForm(nidx) ; 
+        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>* t = GetXForm(idx) ; 
         if(t) prod *= *t ;           
     }
     assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
     memcpy( glm::value_ptr(transform), glm::value_ptr(prod), sizeof(glm::tmat4x4<double>) );
 }
 
+std::string snd::DescNodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse) // static
+{
+    std::stringstream ss ; 
+
+    std::vector<int> nodes ; 
+    Ancestors(root, nodes);  
+    nodes.push_back(root); 
+    int num_nodes = nodes.size();
+
+    ss << "snd::DescNodeTransformProduct"
+       << " root " << root 
+       << " reverse " << reverse 
+       << " num_nodes " << num_nodes
+       << std::endl 
+       ;
+
+    glm::tmat4x4<double> prod(1.); 
+    for(int i=0 ; i < num_nodes ; i++ ) 
+    {
+        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>* t = GetXForm(idx) ; 
+        ss << " i " << i << " idx " << idx << " t " << ( t ? "Y" : "N" ) << std::endl ; 
+        if(t) ss << glm::to_string( *t ) << std::endl ;    
+        if(t) prod *= *t ;           
+    }
+    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
+    memcpy( glm::value_ptr(transform), glm::value_ptr(prod), sizeof(glm::tmat4x4<double>) );
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 void snd::node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const 
 {
-    NodeTransformProduct( transform, reverse, index); 
+    NodeTransformProduct(index, transform, reverse); 
 }
 
 
@@ -626,6 +656,89 @@ int snd::checktree_r(char code,  int d ) const
     }
     return chk ; 
 }
+
+ 
+/**
+snd::Visit
+-----------
+
+Example static function that can be passed to the traverse using::
+
+    snd::PreorderTraverse(root, std::bind( &snd::Visit, std::placeholders::_1 ) );   
+
+Note that the fn above is a static member function.
+
+Although it is possible to bind to a non-static member function using "this" 
+object pointer as first argument that would not be useful with a recursive traversal 
+as the point of the traversal is to visit multiple nodes of the tree.  Using a static 
+with int argument which picks the node sidesteps this. 
+
+**/
+void snd::Visit(int idx)  // static 
+{
+    snd* nd = GetND_(idx); 
+
+    std::cout 
+        << "snd::Visit" 
+        << " idx " << std::setw(3) << idx 
+        << " : " << nd->brief() 
+        << std::endl 
+        ; 
+}
+
+
+void snd::PreorderTraverse(int idx, std::function<void(int)> fn) // static 
+{
+    snd* nd = GetND_(idx); 
+    nd->preorder_traverse( fn );  
+}
+
+void snd::preorder_traverse( std::function<void(int)> fn ) 
+{
+    preorder_traverse_r(fn, 0); 
+}
+void snd::preorder_traverse_r( std::function<void(int)> fn, int d) 
+{
+    fn(index); 
+
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd* child = GetND_(ch) ; 
+        child->preorder_traverse_r(fn,  d + 1 );  
+        ch = child->next_sibling ;
+    }
+}
+
+
+void snd::PostorderTraverse(int idx, std::function<void(int)> fn ) // static
+{
+    snd* nd = GetND_(idx); 
+    nd->postorder_traverse( fn );  
+}
+void snd::postorder_traverse( std::function<void(int)> fn ) 
+{
+    postorder_traverse_r(fn, 0); 
+}
+void snd::postorder_traverse_r( std::function<void(int)> fn, int d) 
+{
+    int ch = first_child ; 
+    while( ch > -1 )
+    {
+        snd* child = GetND_(ch) ; 
+        child->postorder_traverse_r(fn,  d + 1 );  
+        ch = child->next_sibling ;
+    }
+
+    fn(index); 
+
+}
+
+
+
+
+
+
 
 
 /**
@@ -731,6 +844,10 @@ bool snd::is_binary_leaf() const
     return num_child == 0 || CSG::IsList(typecode ) ; 
 }
 
+bool snd::is_sibdex(int q_sibdex) const 
+{
+    return sibdex == q_sibdex ; 
+}
 
 
 
@@ -817,7 +934,7 @@ the vector to put into root first order.
 
 **/
 
-void snd::Ancestors(std::vector<int>& nodes, int idx)  // static 
+void snd::Ancestors(int idx, std::vector<int>& nodes)  // static 
 {
     const snd* nd = GetND(idx) ; 
     while( nd->parent > -1 ) 
@@ -830,7 +947,7 @@ void snd::Ancestors(std::vector<int>& nodes, int idx)  // static
 
 void snd::ancestors(std::vector<int>& nodes) const
 {
-    Ancestors(nodes, index);  
+    Ancestors(index, nodes);  
 }
 
 
@@ -858,14 +975,17 @@ void snd::leafnodes_r( std::vector<int>& nodes, int d  ) const
     }
 }
 
+int snd::Find(int idx, char l0) // static
+{
+    const snd* nd = GetND(idx) ; 
+    return nd ? nd->find(l0) : -1 ; 
+} 
 
-const snd* snd::find(char l0) const 
+int snd::find(char l0) const 
 {
     std::vector<int> nodes ; 
     find_r(nodes, l0, 0) ; 
-
-    int idx = nodes.size() == 1 ? nodes[0] : -1 ;
-    return idx == -1 ? nullptr : GetND(idx) ; 
+    return nodes.size() == 1 ? nodes[0] : -1 ;
 }
 
 void snd::find_r(std::vector<int>& nodes, char l0, int d) const
@@ -1023,6 +1143,12 @@ void snd::dump2_r( std::ostream& os, int d ) const
 
 
 
+std::string snd::Render(int idx, int mode)  // static
+{  
+    const snd* n = GetND(idx); 
+    return n ? n->render(mode) : "snd::Render bad idx "; 
+}
+
 std::string snd::render(int mode_) const 
 {
     int width = num_node(); 
@@ -1068,6 +1194,24 @@ void snd::render_r(scanvas* canvas, const std::vector<int>& order, int mode, int
 }
 
 
+/**
+snd::render_v
+-----------------
++-------+--------------------------------+
+| mode  |  notes                         |
++=======+================================+
+|  0    |  first character of snd label  |        
++-------+--------------------------------+
+|  1    |  snd::index                    |
++-------+--------------------------------+
+|  2    |  snd::typecode                 |
++-------+--------------------------------+
+|  3    |  snd::typecode CSG::Tag        |
++-------+--------------------------------+
+
+**/
+
+
 void snd::render_v( scanvas* canvas, const std::vector<int>& order, int mode, int d ) const 
 {
     int ordinal = get_ordinal( order ); 
@@ -1087,7 +1231,7 @@ void snd::render_v( scanvas* canvas, const std::vector<int>& order, int mode, in
     }
     else if( mode == 1 )
     {
-        canvas->drawch( ix, iy, 0,0,  l0 );
+        canvas->draw( ix, iy, 0,0,  index );
     }
     else if( mode == 2 )
     {
