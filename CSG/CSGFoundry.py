@@ -5,6 +5,73 @@ log = logging.getLogger(__name__)
 from opticks.ana.key import keydir
 from opticks.sysrap.OpticksCSG import CSG_
 
+class CSGObject(object):
+    @classmethod
+    def Label(cls, spc=5, pfx=10):
+        prefix = " " * pfx 
+        spacer = " " * spc 
+        return prefix + spacer.join(cls.FIELD)
+
+    @classmethod
+    def Fields(cls, bi=False):
+        kls = cls.__name__
+        for i, field in enumerate(cls.FIELD):
+            setattr(cls, field, i)
+            if bi:setattr(builtins, field, i)
+        pass
+
+    @classmethod
+    def Type(cls):
+        cls.Fields()
+        kls = cls.__name__
+        print("%s.Type()" % kls )
+        for i, field in enumerate(cls.FIELD):
+            name = cls.DTYPE[i][0] 
+            fieldname = "%s.%s" % (kls, field)
+            print(" %2d : %20s : %s " % (i, fieldname, name))
+        pass
+        print("%s.Label() : " % cls.Label() )
+
+    @classmethod
+    def RecordsFromArrays(cls, a): 
+        """ 
+        :param a: ndarray
+        :return: np.recarray
+        """
+        ra = np.core.records.fromarrays(a.T, dtype=cls.DTYPE )
+        return ra  
+
+
+    
+class CSGPrim(CSGObject):
+    DTYPE = [
+             ('numNode', '<i4'),
+             ('nodeOffset', '<i4'),
+             ('tranOffset', '<i4'),
+             ('planOffset', '<i4'),
+             ('sbtIndexOffset', '<i4'),
+             ('meshIdx', '<i4'),
+             ('repeatIdx', '<i4'),
+             ('primIdx', '<i4'),
+             ]
+   
+    EXTRA = [ 
+             ('BBMin_x', '<f4'),
+             ('BBMin_y', '<f4'),
+             ('BBMin_z', '<f4'),
+             ('BBMax_x', '<f4'),
+             ('BBMax_y', '<f4'),
+             ('BBMax_z', '<f4'),
+             ('spare32', '<f4'),
+             ('spare33', '<f4'),
+             ]
+
+    FIELD = "nn no to po sb lv ri pi".split()
+    XFIELD = "nx ny nz mx my mz s2 s3".split()
+
+
+        
+
 
 
 class MM(object):
@@ -303,6 +370,9 @@ class CSGFoundry(object):
         self.mm = MM(os.path.join(fold, "mmlabel.txt"))
 
 
+
+
+
     def meshIdx(self, primIdx):
         """
         Lookup the midx of primIdx prim 
@@ -402,6 +472,9 @@ class CSGFoundry(object):
         self.age_stamp = age_stamp
         self.stamps = stamps
         self.fold = fold
+        self.pr = CSGPrim.RecordsFromArrays(self.prim[:,:2].reshape(-1,8).view(np.int32)) 
+
+
 
     def desc(self, stem):
         a = getattr(self, stem)

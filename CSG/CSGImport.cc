@@ -126,10 +126,8 @@ CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
 
     for(int i=0 ; i < num_rem ; i++)
     {
-        const snode& nd = st->rem[i] ;
-        int lvid = nd.lvid ; 
-
-        CSGPrim* pr = importPrim( i, lvid ) ;  
+        const snode& node = st->rem[i] ;
+        CSGPrim* pr = importPrim( i, node ) ;  
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         assert( pr );  
     }
@@ -154,9 +152,6 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
     int q_repeat_index = ridx ; 
     int q_repeat_ordinal = 0 ;   // just first repeat 
 
-    std::vector<int> lvids ; 
-    st->get_repeat_lvid(lvids, q_repeat_index, q_repeat_ordinal) ; 
-
     std::vector<snode> nodes ; 
     st->get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ; 
 
@@ -164,21 +159,17 @@ CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
         << " ridx " << ridx 
         << " rlabel " << rlabel 
         << " num_factor " << num_factor
-        << " lvids.size " << lvids.size() 
         << " nodes.size " << nodes.size() 
         << " subtree " << subtree
         ;
 
-    assert( subtree == int(lvids.size()) ); 
+    assert( subtree == int(nodes.size()) ); 
 
     for(int i=0 ; i < subtree ; i++)
     {
         const snode& node = nodes[i] ;   // structural node
-        int lvid = node.lvid ; 
-        int lvid1 = lvids[i] ; 
-        assert( lvid1 == lvid ); 
 
-        CSGPrim* pr = importPrim( i, lvid );  
+        CSGPrim* pr = importPrim( i, node );  
         pr->setRepeatIdx(ridx); 
 
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
@@ -205,8 +196,9 @@ subNum/subOffset referencing.
 
 **/
 
-CSGPrim* CSGImport::importPrim(int primIdx, int lvid) 
+CSGPrim* CSGImport::importPrim(int primIdx, const snode& node ) 
 {
+    int lvid = node.lvid ; 
     const char* name = fd->getMeshName(lvid)  ; 
 
     std::vector<const snd*> nds ; 
@@ -214,13 +206,14 @@ CSGPrim* CSGImport::importPrim(int primIdx, int lvid)
     int numParts = nds.size(); 
 
     CSGPrim* pr = fd->addPrim( numParts );
+
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);
 
     for(int i=0 ; i < numParts ; i++)
     {
         const snd* nd = nds[i]; 
-        importNode(i, nd ) ; 
+        importNode(i, node, nd ) ; 
     }
 
     LOG(LEVEL) 
@@ -242,10 +235,14 @@ CSGImport::importNode
 
 TODO: transforms, planes, aabb 
 
+cf CSG_GGeo_Convert::convertNode
+
+Need to
+
 
 **/
 
-CSGNode* CSGImport::importNode(int nodeIdx, const snd* nd)
+CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 {
     CSGNode cn = CSGNode::Zero() ; 
     if(nd)
@@ -256,8 +253,19 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snd* nd)
         cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
     }
 
-     //std::vector<float4>* planes = nullptr ; 
-    CSGNode* n = fd->addNode( cn );  
+    const std::vector<float4>* pl = nullptr ;  // planes
+    const Tran<double>* tv = nullptr ; 
+
+    // TODO: combine structual transform obtained via snode
+    // and CSG relative transform from snd to recreate the gtransform 
+    // from GGeo/NNode workflow
+    //
+    // glm::tmat4x4<double> t 
+    // glm::tmat4x4<double> v
+    // tv = new Tran<double>(t, v);
+
+    CSGNode* n = fd->addNode(cn, pl, tv  );    // Tran gets narrowed
+
     return n ; 
 }
 

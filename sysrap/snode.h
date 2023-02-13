@@ -6,6 +6,16 @@ snode.h : structural "volume" nodes
 snode are structural nodes residing in stree.h and populated 
 from Geant4 volumes by U4Tree.h U4Tree::initNodes_r
 
+There are no transform references in snode.h as all 
+the below vectors are populated together so the node
+index also corresponds to the other indices::
+
+   stree::nds
+   stree::digs
+   stree::m2w
+   stree::w2m
+   stree::gtd
+
 For traversal examples see *stree::get_children*
 
 **/

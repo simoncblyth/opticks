@@ -159,6 +159,7 @@ When SSim not in use can also use::
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #include "NP.hh"
 #include "NPX.h"
 #include "NPFold.h"
@@ -306,7 +307,8 @@ struct stree
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
 
     int  find_lvid(const char* soname_, bool starting=true  ) const ; 
-    void find_lvid_nodes( std::vector<int>& nodes, int lvid ) const ; 
+    void find_lvid_nodes_( std::vector<snode>& nodes, int lvid ) const ; 
+    void find_lvid_nodes(  std::vector<int>& nodes, int lvid ) const ; 
     void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting=true ) const ; 
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
@@ -331,11 +333,22 @@ struct stree
     const glm::tmat4x4<double>& get_m2w(int nidx) const ; 
     const glm::tmat4x4<double>& get_w2m(int nidx) const ; 
 
+
+
     void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
+    void get_ancestors_local( std::vector<int>& ancestors, int nidx ) const ; 
+
     void get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:false 
     std::string desc_m2w_product(int nidx, bool reverse) const ; 
 
+
+
     void get_w2m_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:true 
+
+    void get_transform(           glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const ; 
+    void get_transform_remainder( glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const ; 
+    void get_transform_instanced( glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const ; 
+
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -348,7 +361,8 @@ struct stree
     std::string desc_node_(int nidx, const sfreq* sf ) const ;
     std::string desc_node(int nidx, bool show_sub=false) const ; 
 
-    std::string desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems=10) const ;
+    std::string desc_nodes( const std::vector<int>&   nn, unsigned edgeitems=10) const ;
+    std::string desc_nodes_(const std::vector<snode>& nn, unsigned edgeitems=10) const ;
     std::string desc_ancestry(int nidx, bool show_sub=false) const ;
     std::string desc_solids() const ; 
 
@@ -959,6 +973,15 @@ inline int stree::find_lvid(const char* q_soname, bool starting ) const
     return lvid ; 
 }
 
+inline void stree::find_lvid_nodes_( std::vector<snode>& nodes, int lvid ) const 
+{
+    for(unsigned i=0 ; i < nds.size() ; i++)
+    {
+        const snode& sn = nds[i] ; 
+        assert( int(i) == sn.index ); 
+        if(sn.lvid == lvid) nodes.push_back(sn) ; 
+    }
+}
 
 inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const 
 {
@@ -1139,12 +1162,50 @@ inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
 }
 
 /**
+stree::get_ancestors_local
+-----------------------------
+
+Gets ancestors of *nide* that have the repeat_index as the *nidx* node.
+For *nidx* within the remainder nodes this is expected to start from root, nidx 0.
+For *nidx* within instanced nodes this will only include nodes within that 
+same instance. 
+
+**/
+
+
+inline void stree::get_ancestors_local( std::vector<int>& ancestors, int nidx ) const
+{
+    const snode& nd = nds[nidx] ; 
+    int ridx = nd.repeat_index ; 
+    int parent = nd.parent ; 
+    while( parent > -1 )
+    {
+        ancestors.push_back(parent);
+        const snode& pd = nds[parent] ; 
+        parent = pd.repeat_index == ridx ? pd.parent : -1 ; 
+    }
+    std::reverse( ancestors.begin(), ancestors.end() );
+}
+
+
+
+
+
+
+
+
+
+/**
 stree::get_m2w_product
 ------------------------
 
 As this uses get_ancestors (which operates via parent links) and 
 get_m2w it should work during node creation immediately after 
 the snode and m2w transforms are pushed back. 
+
+For reverse:false the multiplication order starts from the root transform 
+(always identity) down thru all the structural levels to the *nidx* structural node.    
+
 
 Note that even when things appear to be working OK, 
 bugs can still lurk as lots of the transforms in the stack are identity. 
@@ -1230,6 +1291,104 @@ inline void stree::get_w2m_product( glm::tmat4x4<double>& transform, int nidx, b
     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
 }
 
+
+
+/**
+stree::get_transform : combining structural and CSG transforms
+-------------------------------------------------------------------
+
+HMM: API is misleading, as the snd needs to be within the snode
+for the transform returned to make any sense 
+
+**/
+
+inline void stree::get_transform( glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const 
+{
+    if( node.repeat_index == 0)
+    {
+        get_transform_remainder( tr, node, nd ); 
+    }
+    else
+    {
+        get_transform_instanced( tr, node, nd ); 
+    }
+}
+
+
+/** 
+stree::get_transform_remainder
+---------------------------------
+
+potentially should do this easlier and cache
+to avoid needing to persist all ~300k node transforms 
+
+**/
+
+inline void stree::get_transform_remainder( glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const 
+{
+    assert( node.repeat_index == 0 ); 
+
+    bool reverse = false ; 
+
+    glm::tmat4x4<double> vol(1.) ; 
+    get_m2w_product( vol, node.index, reverse ); 
+
+    tr = vol ; 
+
+    if(nd)
+    { 
+        glm::tmat4x4<double> csg(1.) ;
+        snd::NodeTransformProduct(nd->index, csg, reverse );  
+        tr *= csg ;  
+    }
+}
+
+
+/** 
+stree::get_transform_instanced
+---------------------------------
+
+Need to start the ancestors list from the factor base. How to do that ?:: 
+
+    std::vector<int> nodes ; 
+    get_ancestors(nodes, nidx);  
+
+    // root-first-order (from collecting parent links then reversing the vector)
+ 
+Need to get_ancestors restricted to being with the same ridx as the nidx. 
+
+**/
+
+inline void stree::get_transform_instanced( glm::tmat4x4<double>& tr, const snode& node, const snd* nd) const 
+{
+    assert( node.repeat_index > 0 ); 
+
+    bool reverse = false ; 
+
+    glm::tmat4x4<double> vol(1.) ; 
+
+    // get_m2w_product( vol, node.index, reverse ); 
+
+    tr = vol ; 
+
+    if(nd)
+    { 
+        glm::tmat4x4<double> csg(1.) ;
+        snd::NodeTransformProduct(nd->index, csg, reverse );  
+        tr *= csg ;  
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 /**
 stree::get_nodes
 ------------------
@@ -1305,19 +1464,53 @@ inline std::string stree::desc_node(int nidx, bool show_sub) const
    return desc_node_(nidx, sf );  
 }
 
-inline std::string stree::desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems) const
+
+
+inline std::string stree::desc_nodes(const std::vector<int>& nn, unsigned edgeitems) const
 {
+    int num = nn.size(); 
     std::stringstream ss ;
-    ss << "stree::desc_nodes " << vnidx.size() << std::endl ;
-    for(unsigned i=0 ; i < vnidx.size() ; i++)
+    ss << "stree::desc_nodes " << num << std::endl ;
+    for(int i=0 ; i < num ; i++)
     {
-        if( i < edgeitems || ( i > vnidx.size() - edgeitems ))
-            ss << desc_node(vnidx[i]) << std::endl ;
-        else if( i == edgeitems ) ss << " ... " << std::endl ;
+        if( i < edgeitems || ( i > num - edgeitems ))
+        {
+            ss << desc_node(nn[i]) << std::endl ;
+        }
+        else if( i == edgeitems ) 
+        {
+            ss << " ... " << std::endl ; 
+        }
     }
     std::string s = ss.str();
     return s ;
 }
+
+// HMM: could use template specialization to avoid the duplication here
+inline std::string stree::desc_nodes_(const std::vector<snode>& nn, unsigned edgeitems) const
+{
+    int num = nn.size(); 
+    std::stringstream ss ;
+    ss << "stree::desc_nodes_ " << num << std::endl ;
+    for(int i=0 ; i < num ; i++)
+    {
+        if( i < edgeitems || ( i > num - edgeitems ))
+        {
+            ss << desc_node(nn[i].index) << std::endl ;
+        }
+        else if( i == edgeitems ) 
+        {
+            ss << " ... " << std::endl ; 
+        }
+    }
+    std::string s = ss.str();
+    return s ;
+}
+
+
+
+
+
 
 inline std::string stree::desc_ancestry(int nidx, bool show_sub) const
 {

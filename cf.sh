@@ -19,8 +19,8 @@ export RIDX=${RIDX:-$ridx}
 
 #$SDIR/sysrap/tests/stree_load_test.sh ana
 
-#$SDIR/CSG/tests/CSGFoundryLoadTest.sh ana
+$SDIR/CSG/tests/CSGFoundryLoadTest.sh ana
 
-CFBASE=/tmp/$USER/opticks/CSGImportTest $SDIR/CSG/tests/CSGFoundryLoadTest.sh ana
+#CFBASE=/tmp/$USER/opticks/CSGImportTest $SDIR/CSG/tests/CSGFoundryLoadTest.sh ana
 
 

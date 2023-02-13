@@ -49,6 +49,24 @@ std::string snd::Brief(const std::vector<int>& nodes) // static
     return str ; 
 }
 
+std::string snd::Brief_(const std::vector<snd>& nodes) // static 
+{
+    int num_nodes = nodes.size();  
+    std::stringstream ss ; 
+    ss << "snd::Brief_ num_nodes " << num_nodes << std::endl ; 
+    for(int i=0 ; i < num_nodes ; i++)
+    {
+        const snd& nd = nodes[i] ; 
+        ss << std::setw(2) << i << " : " << nd.brief() << std::endl ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
 
 const snd* snd::GetND(int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
 const spa* snd::GetPA(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static

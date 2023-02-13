@@ -161,22 +161,24 @@ Start of the node index is contiguous monotonic::
 
 import numpy as np, logging
 log = logging.getLogger(__name__)
-from opticks.CSG.CSGFoundry import CSGFoundry 
+from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim
+from opticks.ana.fold import Fold
+from opticks.sysrap.stree import stree, snode, snd
 
 np.set_printoptions(edgeitems=16)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    cf = CSGFoundry.Load()
+
+    CSGPrim.Type()
+    cf = CSGFoundry.Load()  
     print(repr(cf))
 
-    #expr = "cf.prim.view(np.int32)[:,:2].reshape(-1,8) "
-    #print(expr)
-    #eval(expr)
+    stf = Fold.Load(cf.base, "CSGFoundry/SSim/stree") 
+    st = stree(stf)
+    print(repr(st))
 
     print(cf.descSolids(True))
     print(cf.descSolids(False))
 
     
-
-

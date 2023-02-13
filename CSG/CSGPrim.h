@@ -32,11 +32,11 @@ CSGPrim : references contiguous sequence of *numNode* CSGNode starting from *nod
     | q  |      x         |      y         |     z          |      w         |  notes                                          |
     +====+================+================+================+================+=================================================+
     |    |  numNode       |  nodeOffset    | tranOffset     | planOffset     |                                                 |
-    | q0 |                |                | TODO:remove    | TODO: remove   |                                                 |
+    | q0 |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
     |    | sbtIndexOffset |  meshIdx       | repeatIdx      | primIdx        |                                                 |
-    |    |                |                |                |                |                                                 |
+    |    |                |  (lvid)        |                |                |                                                 |
     | q1 |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |

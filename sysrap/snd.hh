@@ -56,7 +56,8 @@ struct SYSRAP_API snd
 
     static std::string Desc();
     static std::string Brief(int idx);
-    static std::string Brief(const std::vector<int>& nodes);
+    static std::string Brief( const std::vector<int>& nodes);
+    static std::string Brief_(const std::vector<snd>& nodes);
 
     static const snd* GetND( int idx);
     static const spa* GetPA( int idx);

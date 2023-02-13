@@ -17,6 +17,679 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
 
 
 
+
+stree_load_test stree::get_transform
+--------------------------------------
+
+
+::
+
+    epsilon:tests blyth$ LVID=102 ./stree_load_test.sh 
+    stree::init 
+    stree::load_ /tmp/blyth/opticks/U4TreeCreateTest/stree
+     LVID 102 num_nds 3
+    - ix:  456 dp:    1 sx:    0 pt:  458     nc:    0 fc:   -1 ns:  457 lv:  102     tc:  108 pa:  279 bb:  279 xf:   -1    co
+    - ix:  457 dp:    1 sx:    1 pt:  458     nc:    0 fc:   -1 ns:   -1 lv:  102     tc:  105 pa:  280 bb:  280 xf:  169    cy
+    - ix:  458 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  456 ns:   -1 lv:  102     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+    epsilon:tests blyth$ 
+
+
+
+Getting transforms in instanced case
+----------------------------------------
+
+::
+
+    In [16]: cf.meshname[118]
+    Out[16]: 'NNVTMCPPMTsMask'
+
+    In [17]: ln = st.find_lvid_nodes(118)
+    In [18]: ln.shape
+    Out[18]: (12615,)
+
+    In [22]: np.all( np.unique(ln, return_counts=True)[1] == 1 )  ## all unique as expected
+    Out[22]: True
+
+    In [37]: st.f.m2w[ln].reshape(-1,16)   ## HMM LOOK TO BE ALL IDENTITY 
+    Out[37]: 
+    array([[1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.],
+           [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.],
+
+    In [38]: snode.Type()
+    snode.Type()
+      0 :             snode.ix : index 
+      1 :             snode.dp : depth 
+      2 :             snode.sx : sibdex 
+      3 :             snode.pt : parent 
+      4 :             snode.nc : num_child 
+      5 :             snode.fc : first_child 
+      6 :             snode.sx : next_sibling 
+      7 :             snode.lv : lvid 
+      8 :             snode.cp : copyno 
+      9 :             snode.se : sensor_id 
+     10 :             snode.sx : sensor_index 
+     11 :             snode.ri : repeat_index 
+     12 :             snode.ro : repeat_ordinal 
+     13 :             snode.bd : boundary 
+              ix     dp     sx     pt     nc     fc     sx     lv     cp     se     sx     ri     ro     bd.Label() : 
+
+
+    In [36]: snode.Label(6,11), st.f.nds[ln]
+    Out[36]: 
+    ('           ix      dp      sx      pt      nc      fc      sx      lv      cp      se      sx      ri      ro      bd',
+     array([[ 70994,      7,      0,  70993,      0,     -1,  70995,    118,      0,     -1,     -1,      2,      0,     27],
+            [ 71019,      7,      0,  71018,      0,     -1,  71020,    118,      0,     -1,     -1,      2,      1,     27],
+            [ 71044,      7,      0,  71043,      0,     -1,  71045,    118,      0,     -1,     -1,      2,      2,     27],
+            [ 71251,      7,      0,  71250,      0,     -1,  71252,    118,      0,     -1,     -1,      2,      3,     27],
+            [ 71262,      7,      0,  71261,      0,     -1,  71263,    118,      0,     -1,     -1,      2,      4,     27],
+            [ 71273,      7,      0,  71272,      0,     -1,  71274,    118,      0,     -1,     -1,      2,      5,     27],
+            [ 71284,      7,      0,  71283,      0,     -1,  71285,    118,      0,     -1,     -1,      2,      6,     27],
+            [ 71295,      7,      0,  71294,      0,     -1,  71296,    118,      0,     -1,     -1,      2,      7,     27],
+            [ 71306,      7,      0,  71305,      0,     -1,  71307,    118,      0,     -1,     -1,      2,      8,     27],
+            ...
+            [279329,      7,      0, 279328,      0,     -1, 279330,    118,      0,     -1,     -1,      2,  12609,     27],
+            [279340,      7,      0, 279339,      0,     -1, 279341,    118,      0,     -1,     -1,      2,  12610,     27],
+            [279351,      7,      0, 279350,      0,     -1, 279352,    118,      0,     -1,     -1,      2,  12611,     27],
+            [279362,      7,      0, 279361,      0,     -1, 279363,    118,      0,     -1,     -1,      2,  12612,     27],
+            [279373,      7,      0, 279372,      0,     -1, 279374,    118,      0,     -1,     -1,      2,  12613,     27],
+            [279384,      7,      0, 279383,      0,     -1, 279385,    118,      0,     -1,     -1,      2,  12614,     27]], dtype=int32))
+
+    In [39]: st.get_ancestors(70994)
+    Out[39]: [0, 65722, 65723, 65724, 67845, 67846, 70993]
+
+    In [40]: anc = st.get_ancestors(70994)
+
+    In [41]: snode.Label(6,11), st.f.nds[anc]
+    Out[41]: 
+    ('           ix      dp      sx      pt      nc      fc      sx      lv      cp      se      sx      ri      ro      bd',
+     array([[     0,      0,     -1,     -1,      2,      1,     -1,    149,      0,     -1,     -1,      0,     -1,      0],
+            [ 65722,      1,      1,      0,      1,  65723,     -1,    148,      0,     -1,     -1,      0,     -1,      1],
+            [ 65723,      2,      0,  65722,      1,  65724,     -1,    147,      0,     -1,     -1,      0,     -1,     13],
+            [ 65724,      3,      0,  65723,   4521,  65725,     -1,    146,      0,     -1,     -1,      0,     -1,     14],
+            [ 67845,      4,   2120,  65724,      1,  67846, 407692,    139,      0,     -1,     -1,      0,     -1,     16],
+            [ 67846,      5,      0,  67845,  46276,  67847,     -1,    138,      0,     -1,     -1,      0,     -1,     17],
+            [ 70993,      6,   3065,  67846,      3,  70994,  71004,    128,      2,      2,    506,      2,      0,     26]], dtype=int32))
+
+    In [42]: cf.meshname[128]
+    Out[42]: 'NNVTMCPPMTsMask_virtual'
+
+    In [43]: ln2 = st.find_lvid_nodes(128)
+
+    In [44]: ln2.shape
+    Out[44]: (12615,)
+
+    In [45]: ln2
+    Out[45]: 
+    array([ 70993,  71018,  71043,  71250,  71261,  71272,  71283,  71294,  71305,  71316,  71327,  71338,  71349,  71360,  71371,  71382, ..., 279218, 279229, 279240, 279251, 279262, 279273, 279284,
+           279295, 279306, 279317, 279328, 279339, 279350, 279361, 279372, 279383])
+
+
+    In [52]: np.set_printoptions(linewidth=250)
+
+    In [53]: st.f.m2w[ln2].reshape(-1,16)
+    Out[53]: 
+    array([[    -1.   ,      0.   ,     -0.   ,      0.   ,      0.   ,      1.   ,     -0.   ,      0.   ,      0.   ,      0.   ,     -1.   ,      0.   ,    316.078,   -882.079,  19365.   ,      1.   ],
+           [    -1.   ,      0.   ,     -0.   ,      0.   ,      0.   ,      1.   ,     -0.   ,      0.   ,      0.   ,      0.   ,     -1.   ,      0.   ,    789.63 ,    504.435,  19365.   ,      1.   ],
+           [    -1.   ,      0.   ,     -0.   ,      0.   ,      0.   ,      1.   ,     -0.   ,      0.   ,      0.   ,      0.   ,     -1.   ,      0.   ,   -667.496,    657.585,  19365.   ,      1.   ],
+           [     0.98 ,      0.17 ,      0.099,      0.   ,      0.171,     -0.985,      0.   ,      0.   ,      0.098,      0.017,     -0.995,      0.   ,  -1899.448,   -328.712,  19338.16 ,      1.   ],
+           [     0.893,      0.439,      0.099,      0.   ,      0.441,     -0.897,      0.   ,      0.   ,      0.089,      0.044,     -0.995,      0.   ,  -1729.898,   -850.533,  19338.16 ,      1.   ],
+           [     0.733,      0.673,      0.099,      0.   ,      0.676,     -0.737,      0.   ,      0.   ,      0.073,      0.067,     -0.995,      0.   ,  -1420.202,  -1303.449,  19338.16 ,      1.   ],
+           [     0.413,      0.905,      0.099,      0.   ,      0.91 ,     -0.415,      0.   ,      0.   ,      0.041,      0.09 ,     -0.995,      0.   ,   -800.787,  -1753.48 ,  19338.16 ,      1.   ]
+
+
+HMM: need to identify the ridx and the containing node in order to know where the base transform is
+
+::
+
+    In [57]: st.f.inst_nidx.shape                                                                                                                                
+    Out[57]: (48477,)
+
+    In [59]: np.where( st.f.inst_nidx == ln2[0] )[0]                                                                                                             
+    Out[59]: array([25601])
+
+    In [60]: np.where( st.f.inst_nidx == ln2[1] )[0]                                                                                                             
+    Out[60]: array([25602])
+
+    In [61]: np.where( st.f.inst_nidx == ln2[2] )[0]                                                                                                             
+    Out[61]: array([25603])
+
+
+    In [63]: st.f.inst[25601]                                                                                                                                    
+    Out[63]: 
+    array([[   -1.   ,     0.   ,    -0.   ,     0.   ],
+           [    0.   ,     1.   ,     0.   ,     0.   ],
+           [    0.   ,     0.   ,    -1.   ,     0.   ],
+           [  316.078,  -882.079, 19365.   ,     0.   ]])
+
+    In [64]: st.f.m2w[ln2[0]]                                                                                                                                    
+    Out[64]: 
+    array([[   -1.   ,     0.   ,    -0.   ,     0.   ],
+           [    0.   ,     1.   ,    -0.   ,     0.   ],
+           [    0.   ,     0.   ,    -1.   ,     0.   ],
+           [  316.078,  -882.079, 19365.   ,     1.   ]])
+
+    In [65]: st.f.inst[25602]                                                                                                                                    
+    Out[65]: 
+    array([[   -1.   ,     0.   ,    -0.   ,     0.   ],
+           [    0.   ,     1.   ,     0.   ,     0.   ],
+           [    0.   ,     0.   ,    -1.   ,     0.   ],
+           [  789.63 ,   504.435, 19365.   ,     0.   ]])
+
+    In [66]: st.f.m2w[ln2[1]]                                                                                                                                    
+    Out[66]: 
+    array([[   -1.   ,     0.   ,    -0.   ,     0.   ],
+           [    0.   ,     1.   ,    -0.   ,     0.   ],
+           [    0.   ,     0.   ,    -1.   ,     0.   ],
+           [  789.63 ,   504.435, 19365.   ,     1.   ]])
+
+
+    # first 3089 prim are for remainder ridx 0                                                                          
+    In [2]: CSGPrim.Label(), cf.prim.view(np.int32)[:,:2].reshape(-1,8)[:3089]   
+    Out[2]: 
+    ('          nn     no     to     po     sb     lv     ri     pi',
+     array([[    1,     0,     0,     0,     0,   149,     0,     0],
+            [    1,     1,     1,     0,     1,    17,     0,     1],
+            [    1,     2,     2,     0,     2,     2,     0,     2],
+            [    3,     3,     3,     0,     3,     1,     0,     3],
+            [    3,     6,     5,     0,     4,     0,     0,     4],
+            ...,
+            [  127, 22818,  7915,     0,  3082,   103,     0,  3082],
+            [  127, 22945,  7924,     0,  3083,   103,     0,  3083],
+            [  127, 23072,  7933,     0,  3084,   103,     0,  3084],
+            [    1, 23199,  7942,     0,  3085,   137,     0,  3085],
+            [    3, 23200,  7943,     0,  3086,   134,     0,  3086],
+            [    1, 23203,  7945,     0,  3087,   135,     0,  3087],
+            [    3, 23204,  7946,     0,  3088,   136,     0,  3088]], dtype=int32))
+
+
+    # last 170 prim are for the instances 
+    In [93]: cf.prim.view(np.int32)[:,:2].reshape(-1,8)[3089:].shape
+    Out[93]: (170, 8)
+
+
+    In [3]: CSGPrim.Label(), cf.prim.view(np.int32)[:,:2].reshape(-1,8)[3089:]
+    Out[3]: 
+    ('          nn     no     to     po     sb     lv     ri     pi',
+     array([[    3, 23207,  7948,     0,     0,   133,     1,     0],
+            [    1, 23210,  7950,     0,     1,   131,     1,     1],
+            [    1, 23211,  7951,     0,     2,   129,     1,     2],
+            [    1, 23212,  7952,     0,     3,   130,     1,     3],
+            [    1, 23213,  7953,     0,     4,   132,     1,     4],
+
+            [    7, 23214,  7954,     0,     0,   128,     2,     0],
+            [    7, 23221,  7957,     0,     1,   118,     2,     1],
+            [   15, 23228,  7961,     0,     2,   119,     2,     2],
+            [    1, 23243,  7967,     0,     3,   127,     2,     3],
+            ...,
+            [    1, 23542,  8174,     0,   125,     8,     9,   125],
+            [    1, 23543,  8175,     0,   126,     9,     9,   126],
+            [    1, 23544,  8176,     0,   127,     8,     9,   127],
+            [    1, 23545,  8177,     0,   128,     9,     9,   128],
+            [    1, 23546,  8178,     0,   129,     8,     9,   129]], dtype=int32))
+
+
+    In [78]: cf.node.shape                                                                                                                                       
+    Out[78]: (23547, 4, 4)
+
+
+    In [9]: CSGPrim.Label(), cf.prim[np.where( cf.pr.repeatIdx == 1 )].view(np.int32)[:,:2].reshape(-1,8)
+    Out[9]: 
+    ('          nn     no     to     po     sb     lv     ri     pi',
+     array([[    3, 23207,  7948,     0,     0,   133,     1,     0],
+            [    1, 23210,  7950,     0,     1,   131,     1,     1],
+            [    1, 23211,  7951,     0,     2,   129,     1,     2],
+            [    1, 23212,  7952,     0,     3,   130,     1,     3],
+            [    1, 23213,  7953,     0,     4,   132,     1,     4]], dtype=int32))
+
+
+
+    In [12]: cf.tran[7948:7954].reshape(-1,16)                                                                                                               
+    Out[12]: 
+    array([[1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ],
+           [1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ],
+           [1.667, 0.   , 0.   , 0.   , 0.   , 1.667, 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ],
+           [1.727, 0.   , 0.   , 0.   , 0.   , 1.727, 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ],
+           [1.727, 0.   , 0.   , 0.   , 0.   , 1.727, 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ],
+           [1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   , 0.   , 0.   , 0.   , 0.   , 1.   ]], dtype=float32)
+
+    In [10]: CSGPrim.Label(), cf.prim[np.where( cf.pr.repeatIdx == 2 )].view(np.int32)[:,:2].reshape(-1,8)
+    Out[10]: 
+    ('          nn     no     to     po     sb     lv     ri     pi',
+     array([[    7, 23214,  7954,     0,     0,   128,     2,     0],
+            [    7, 23221,  7957,     0,     1,   118,     2,     1],
+            [   15, 23228,  7961,     0,     2,   119,     2,     2],
+            [    1, 23243,  7967,     0,     3,   127,     2,     3],
+            [    1, 23244,  7968,     0,     4,   126,     2,     4],
+            [    1, 23245,  7969,     0,     5,   120,     2,     5],
+            [    1, 23246,  7970,     0,     6,   125,     2,     6],
+            [    3, 23247,  7971,     0,     7,   121,     2,     7],
+            [    3, 23250,  7973,     0,     8,   122,     2,     8],
+            [    3, 23253,  7975,     0,     9,   123,     2,     9],
+            [    1, 23256,  7977,     0,    10,   124,     2,    10]], dtype=int32))
+
+
+    In [57]: snd.Label(3,8),st.f.csg.node[st.csg.lvid == 128],st.soname_[128]                                                                    
+    Out[57]: 
+    ('        ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf',
+     array([[575,   1,   0, 578,   0,  -1, 576, 128, 105, 349, 349,  -1,   0,   0,   0,   0],
+            [576,   1,   1, 578,   0,  -1, 577, 128, 105, 350, 350,  -1,   0,   0,   0,   0],
+            [577,   1,   2, 578,   0,  -1,  -1, 128, 108, 351, 351,  -1,   0,   0,   0,   0],
+            [578,   0,  -1,  -1,   3, 575,  -1, 128,  11,  -1,  -1,  -1,   0,   0,   0,   0]], dtype=int32),
+     b'NNVTMCPPMTsMask_virtual')           ## CSG_CONTIGUOUS : no transforms
+
+
+    In [81]: cf.meshname[(128,118,119,127,126,120,125,121,122,123,124),]                                                                         
+    Out[81]: 
+    array(['NNVTMCPPMTsMask_virtual', 
+           'NNVTMCPPMTsMask', 
+           'NNVTMCPPMTTail', 
+           'NNVTMCPPMT_PMT_20inch_pmt_solid_head', 
+           'NNVTMCPPMT_PMT_20inch_body_solid_head', 
+           'NNVTMCPPMT_PMT_20inch_inner1_solid_head',
+           'NNVTMCPPMT_PMT_20inch_inner2_solid_head', 
+           'NNVTMCPPMT_PMT_20inch_edge_solid', 
+           'NNVTMCPPMT_PMT_20inch_plate_solid', 
+           'NNVTMCPPMT_PMT_20inch_tube_solid', 
+           'NNVTMCPPMT_PMT_20inch_mcp_solid'],
+          dtype=object)
+
+    In [66]: ntc = cf.node.view(np.int32)[:,3,2]
+    In [67]: ntr = cf.node.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [69]: ntc[23221:23221+7]                                      ## CSG nodes of lv 118
+    Out[69]: array([  2,   1,   2, 103, 105, 103, 105], dtype=int32)
+                  ## in   un   in   zs   cy   zs   cy
+
+    In [70]: ntr[23221:23221+7]                                                                                                                  
+    Out[70]: array([   0,    0,    0, 7958, 7959, 7960, 7961], dtype=int32)
+
+    In [73]: ntr[23221:23221+7]-1
+    Out[73]: array([  -1,   -1,   -1, 7957, 7958, 7959, 7960], dtype=int32)
+
+    In [72]: cf.tran[7957:7961]                         ## transforms on the CSG nodes of lv 118                                                                           
+    Out[72]:                                            ## ARE THESE PRODUCTS ?   
+    array([[[  1.361,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.361,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   1.   ]],
+
+           [[  1.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   , -19.4  ,   1.   ]],
+
+           [[  1.376,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.376,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   1.   ]],
+
+           [[  1.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   , -19.9  ,   1.   ]]], dtype=float32)
+
+    In [58]: snd.Label(3,8),st.f.csg.node[st.csg.lvid == 118],st.soname_[118]                                                                    
+    Out[58]: 
+    ('        ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf',
+     array([[543,   2,   0, 545,   0,  -1, 544, 118, 103, 328, 328, 203,   0,   0,   0,   0],
+            [544,   2,   1, 545,   0,  -1,  -1, 118, 105, 329, 329, 204,   0,   0,   0,   0],
+            [545,   1,   0, 549,   2, 543, 548, 118,   1,  -1,  -1,  -1,   0,   0,   0,   0],
+            [546,   2,   0, 548,   0,  -1, 547, 118, 103, 330, 330, 205,   0,   0,   0,   0],
+            [547,   2,   1, 548,   0,  -1,  -1, 118, 105, 331, 331, 206,   0,   0,   0,   0],
+            [548,   1,   1, 549,   2, 546,  -1, 118,   1,  -1,  -1, 207,   0,   0,   0,   0],
+            [549,   0,  -1,  -1,   2, 545,  -1, 118,   3,  -1,  -1,  -1,   0,   0,   0,   0]], dtype=int32),
+     b'NNVTMCPPMTsMask')
+
+    In [61]: st.f.csg.xform[203:208].reshape(-1,4,4)
+    Out[61]: 
+    array([[[  1.361,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.361,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   1.   ]],
+
+           [[  1.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   , -19.4  ,   1.   ]],
+
+           [[  1.376,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.376,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   1.   ]],
+
+           [[  1.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   , -19.9  ,   1.   ]],
+
+           [[  1.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   1.   ]]])
+
+
+
+    In [103]: LVID=128 ; st.soname_[LVID],snode.Label(6,11),stf.nds[stf.nds[:,snode.lv]==LVID]                                                   
+    Out[103]: 
+    (b'NNVTMCPPMTsMask_virtual',
+     '           ix      dp      sx      pt      nc      fc      sx      lv      cp      se      sx      ri      ro      bd',
+     array([[ 70993,      6,   3065,  67846,      3,  70994,  71004,    128,      2,      2,    506,      2,      0,     26],
+            [ 71018,      6,   3067,  67846,      3,  71019,  71029,    128,      4,      4,    508,      2,      1,     26],
+            [ 71043,      6,   3069,  67846,      3,  71044,  71054,    128,      6,      6,    510,      2,      2,     26],
+            [ 71250,      6,   3084,  67846,      3,  71251,  71261,    128,     21,     21,    525,      2,      3,     26],
+            [ 71261,      6,   3085,  67846,      3,  71262,  71272,    128,     22,     22,    526,      2,      4,     26],
+            [ 71272,      6,   3086,  67846,      3,  71273,  71283,    128,     23,     23,    527,      2,      5,     26],
+            [ 71283,      6,   3087,  67846,      3,  71284,  71294,    128,     24,     24,    528,      2,      6,     26],
+
+    In [104]: LVID=118 ; st.soname_[LVID],snode.Label(6,11),stf.nds[stf.nds[:,snode.lv]==LVID]                                                   
+    Out[104]: 
+    (b'NNVTMCPPMTsMask',
+     '           ix      dp      sx      pt      nc      fc      sx      lv      cp      se      sx      ri      ro      bd',
+     array([[ 70994,      7,      0,  70993,      0,     -1,  70995,    118,      0,     -1,     -1,      2,      0,     27],
+            [ 71019,      7,      0,  71018,      0,     -1,  71020,    118,      0,     -1,     -1,      2,      1,     27],
+            [ 71044,      7,      0,  71043,      0,     -1,  71045,    118,      0,     -1,     -1,      2,      2,     27],
+            [ 71251,      7,      0,  71250,      0,     -1,  71252,    118,      0,     -1,     -1,      2,      3,     27],
+            [ 71262,      7,      0,  71261,      0,     -1,  71263,    118,      0,     -1,     -1,      2,      4,     27],
+            [ 71273,      7,      0,  71272,      0,     -1,  71274,    118,      0,     -1,     -1,      2,      5,     27],
+
+
+
+
+Transform references from the old GGeo created CSGNode
+---------------------------------------------------------
+
+TODO : recreate tran, itra using stree.h workflow
+
+::
+
+
+    In [17]: cf
+    Out[17]: 
+    /Users/blyth/.opticks/GEOM/J007/CSGFoundry
+    min_stamp:2023-02-06 17:14:30.418383
+    max_stamp:2023-02-06 17:14:32.968029
+    age_stamp:6 days, 18:22:24.380705
+
+             node :        (23547, 4, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/node.npy 
+
+             itra :         (8179, 4, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/itra.npy 
+             tran :         (8179, 4, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/tran.npy 
+
+             prim :         (3259, 4, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/prim.npy 
+         primname :              (3259,)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/primname.txt 
+
+            solid :           (10, 3, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/solid.npy 
+          mmlabel :                (10,)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/mmlabel.txt 
+
+             inst :        (48477, 4, 4)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/inst.npy 
+
+         meshname :               (152,)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/meshname.txt 
+             meta :                 (8,)  : /Users/blyth/.opticks/GEOM/J007/CSGFoundry/meta.txt 
+
+
+    In [5]: tr = cf.node.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [18]: tr
+    Out[18]: 
+    array([   1,    2,    3,    0,    4,    5,    0,    6,    7,    8,    0,    9,   10,    0,   11,   12, ..., 8164, 8165, 8166, 8167, 8168, 8169, 8170, 8171, 8172, 8173, 8174, 8175, 8176, 8177, 8178,
+           8179], dtype=int32)
+
+    In [19]: tr[tr > 0]   ## looks monotonic when excluding the zero which mean no transform 
+    Out[19]: 
+    array([   1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11,   12,   13,   14,   15,   16, ..., 8164, 8165, 8166, 8167, 8168, 8169, 8170, 8171, 8172, 8173, 8174, 8175, 8176, 8177, 8178,
+           8179], dtype=int32)
+
+    In [20]: tr[tr > 0].shape
+    Out[20]: (8179,)
+
+    In [23]: np.all( tr[tr > 0] == np.arange(1,8180) )   ## confirmed, tr refs from the node are never duplicated 
+    Out[23]: True
+
+    In [8]: tr.min(), tr.max()
+    Out[8]: (0, 8179)
+
+    In [10]: u_tr, n_tr = np.unique(tr, return_counts=True)
+
+    In [12]: np.all( u_tr == np.arange(len(u_tr)) )
+    Out[12]: True
+
+    In [13]: np.all( n_tr[1:] == 1 )
+    Out[13]: True
+
+    In [14]: n_tr[0]  ## nodes without an associated transform
+    Out[14]: 15368
+
+    In [15]: cf.node.shape
+    Out[15]: (23547, 4, 4)
+
+    In [16]: 15368 + 8179
+    Out[16]: 23547
+
+
+Pick an lvid and see its transforms.
+
+* below manually interleaves outputs from stree_load_test.sh and CSGFoundryLoadTest.sh 
+* now added stree loading to CSGFoundryLoadTest.py so can allways see both at once
+
+::
+
+    In [27]: plv = cf.prim.view(np.int32)[:,1,1]   
+
+    In [29]: u_plv, n_plv = np.unique(plv, return_counts=True)
+
+    In [31]: u_plv.min(), u_plv.max()
+    Out[31]: (0, 149)
+
+    In [34]: cf.meshname[102]
+    Out[34]: 'solidXJanchor'
+
+    In [1]: st.find_lvid_("solidXJanchor")
+    Out[1]: array([102])
+
+    In [2]: ln = st.find_lvid_nodes(102) ; ln
+    Out[3]: 
+    array([70853, 70854, 70855, 70856, 70857, 70858, 70859, 70860, 70861, 70862, 70863, 70864, 70865, 70866, 70867, 70868, 70869, 70870, 70871, 70872, 70873, 70874, 70875, 70876, 70877, 70878, 70879,
+           70880, 70881, 70882, 70883, 70884, 70885, 70886, 70887, 70888, 70889, 70890, 70891, 70892, 70893, 70894, 70895, 70896, 70897, 70898, 70899, 70900, 70901, 70902, 70903, 70904, 70905, 70906,
+           70907, 70908])
+
+    In [4]: ln.shape
+    Out[4]: (56,)
+
+
+
+    In [46]: snd.Label(3,7),st.get_csg(102)    #  only 3 nodes : union of cylinder and cone : only one transform in the prim
+    Out[46]: 
+    ('       ix   dp   sx   pt   nc   fc   sx   lv   tc   pm   bb   xf',
+     array([[456,   1,   0, 458,   0,  -1, 457, 102, 108, 279, 279,  -1,   0,   0,   0,   0],
+            [457,   1,   1, 458,   0,  -1,  -1, 102, 105, 280, 280, 169,   0,   0,   0,   0],
+            [458,   0,  -1,  -1,   2, 456,  -1, 102,   1,  -1,  -1,  -1,   0,   0,   0,   0]], dtype=int32))
+
+
+    In [67]: st.f.csg.xform[169].reshape(4,4)   ## HMM CAN I FIND THE TRAN WITH THIS COMBINED ? YES: DONE BELOW
+    Out[67]: 
+    array([[  1. ,   0. ,   0. ,   0. ],
+           [  0. ,   1. ,   0. ,   0. ],
+           [  0. ,   0. ,   1. ,   0. ],
+           [  0. ,   0. , -11.5,   1. ]])
+
+    In [71]: cf.tran[7327] - cf.tran[7326]     ## THERE IS ROTATION : SO THIS WONT WORK 
+    Out[71]: 
+    array([[ 0.   ,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [-0.051, -1.121, 11.445,  0.   ]], dtype=float32)
+
+
+    In [73]: np.dot( st.f.csg.xform[169].reshape(4,4) , cf.tran[7326] )
+    Out[73]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.974, -1739.136, 17755.355,     1.   ]])
+
+    In [76]: np.dot( st.f.csg.xform[169].reshape(4,4), st.f.m2w[ln[0]] )  ## PRODUCT OF STRUCTURAL AND CSG TRANSFORMS
+    Out[76]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.974, -1739.136, 17755.354,     1.   ]])
+
+     CSG snd::Brief_ num_nodes 3
+     0 : - ix:  456 dp:    1 sx:    0 pt:  458     nc:    0 fc:   -1 ns:  457 lv:  102     tc:  108 pa:  279 bb:  279 xf:   -1    co
+     1 : - ix:  457 dp:    1 sx:    1 pt:  458     nc:    0 fc:   -1 ns:   -1 lv:  102     tc:  105 pa:  280 bb:  280 xf:  169    cy
+     2 : - ix:  458 dp:    0 sx:   -1 pt:   -1     nc:    2 fc:  456 ns:   -1 lv:  102     tc:    1 pa:   -1 bb:   -1 xf:   -1    un
+
+     tr dmat4x4((0.045146, 0.994203, 0.097583, 0.000000), 
+                (0.998971, -0.045363, -0.000000, 0.000000), 
+                (0.004427, 0.097482, -0.995227, 0.000000), 
+               (-78.973684, -1739.135560, 17755.354429, 1.000000))
+
+
+
+
+
+    In [74]: cf.tran[7327]
+    Out[74]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.974, -1739.136, 17755.355,     1.   ]], dtype=float32)
+
+
+    In [75]: cf.tran[7326]
+    Out[75]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.923, -1738.015, 17743.91 ,     1.   ]], dtype=float32)
+
+
+     tr dmat4x4((0.045146, 0.994203, 0.097583, 0.000000), (0.998971, -0.045363, -0.000000, 0.000000), (0.004427, 0.097482, -0.995227, 0.000000), (-78.922777, -1738.014511, 17743.909314, 1.000000))
+
+
+    In [8]: st.f.m2w[ln[0]]
+    Out[8]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,    -0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.923, -1738.015, 17743.909,     1.   ]])
+
+
+
+
+
+
+
+    In [39]: w = np.where( plv == 102)[0]
+
+    In [40]: w.shape
+    Out[40]: (56,)
+
+::
+
+    In [48]: np.arange( 7326, 7438, 2 )
+    Out[48]: 
+    array([7326, 7328, 7330, 7332, 7334, 7336, 7338, 7340, 7342, 7344, 7346, 7348, 7350, 7352, 7354, 7356, 7358, 7360, 7362, 7364, 7366, 7368, 7370, 7372, 7374, 7376, 7378, 7380, 7382, 7384, 7386, 7388,
+           7390, 7392, 7394, 7396, 7398, 7400, 7402, 7404, 7406, 7408, 7410, 7412, 7414, 7416, 7418, 7420, 7422, 7424, 7426, 7428, 7430, 7432, 7434, 7436])
+
+    In [49]: np.all( cf.prim.view(np.int32)[w,0,2] == np.arange( 7326, 7438, 2 ) )
+    Out[49]: True
+
+
+
+
+    In [11]: plv = cf.prim.view(np.int32)[:,1,1]
+    In [12]: w = np.where( plv == 102)[0]
+    In [13]: pto = cf.prim.view(np.int32)[w,0,2] ; pto   ## transform offsets for all prim that are lv 102
+    Out[14]: 
+    array([7326, 7328, 7330, 7332, 7334, 7336, 7338, 7340, 7342, 7344, 7346, 7348, 7350, 7352, 7354, 7356, 7358, 7360, 7362, 7364, 7366, 7368, 7370, 7372, 7374, 7376, 7378, 7380, 7382, 7384, 7386, 7388,
+           7390, 7392, 7394, 7396, 7398, 7400, 7402, 7404, 7406, 7408, 7410, 7412, 7414, 7416, 7418, 7420, 7422, 7424, 7426, 7428, 7430, 7432, 7434, 7436], dtype=int32)
+
+
+
+    In [15]: cf.tran[pto[0]]
+    Out[15]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.923, -1738.015, 17743.91 ,     1.   ]], dtype=float32)
+
+    In [8]: st.f.m2w[ln[0]]
+    Out[8]: 
+    array([[    0.045,     0.994,     0.098,     0.   ],
+           [    0.999,    -0.045,    -0.   ,     0.   ],
+           [    0.004,     0.097,    -0.995,     0.   ],
+           [  -78.923, -1738.015, 17743.909,     1.   ]])
+
+
+
+
+
+    In [16]: cf.tran[pto[1]]
+    Out[16]: 
+    array([[    0.045,     0.991,     0.129,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.006,     0.129,    -0.992,     0.   ],
+           [ -104.167, -2293.933, 17680.506,     1.   ]], dtype=float32)
+
+    In [9]: st.f.m2w[ln[1]]
+    Out[9]: 
+    array([[    0.045,     0.991,     0.129,     0.   ],
+           [    0.999,    -0.045,     0.   ,     0.   ],
+           [    0.006,     0.129,    -0.992,     0.   ],
+           [ -104.167, -2293.933, 17680.505,     1.   ]])
+
+
+
+
+    In [17]: cf.tran[pto[-1]]
+    Out[17]: 
+    array([[    0.548,    -0.831,     0.098,     0.   ],
+           [   -0.835,    -0.55 ,     0.   ,     0.   ],
+           [    0.054,    -0.081,    -0.995,     0.   ],
+           [ -957.729,  1452.473, 17743.91 ,     1.   ]], dtype=float32)
+
+    In [9]: st.f.m2w[ln[-1]]
+    Out[9]: 
+    array([[    0.548,    -0.831,     0.098,     0.   ],
+           [   -0.835,    -0.55 ,     0.   ,     0.   ],
+           [    0.054,    -0.081,    -0.995,     0.   ],
+           [ -957.729,  1452.473, 17743.909,     1.   ]])
+
+
+
+::
+
+    In [24]: np.c_[cf.tran[pto[:]], st.f.m2w[ln[:]]]
+    Out[24]: 
+    array([[[     0.045,      0.994,      0.098,      0.   ,      0.045,      0.994,      0.098,      0.   ],
+            [     0.999,     -0.045,      0.   ,      0.   ,      0.999,     -0.045,      0.   ,      0.   ],
+            [     0.004,      0.097,     -0.995,      0.   ,      0.004,      0.097,     -0.995,      0.   ],
+            [   -78.923,  -1738.015,  17743.91 ,      1.   ,    -78.923,  -1738.015,  17743.909,      1.   ]],
+
+           [[     0.045,      0.991,      0.129,      0.   ,      0.045,      0.991,      0.129,      0.   ],
+            [     0.999,     -0.045,      0.   ,      0.   ,      0.999,     -0.045,      0.   ,      0.   ],
+            [     0.006,      0.129,     -0.992,      0.   ,      0.006,      0.129,     -0.992,      0.   ],
+            [  -104.167,  -2293.933,  17680.506,      1.   ,   -104.167,  -2293.933,  17680.505,      1.   ]],
+
+        ...
+
+           [[     0.546,     -0.828,      0.129,      0.   ,      0.546,     -0.828,      0.129,      0.   ],
+            [    -0.835,     -0.55 ,      0.   ,      0.   ,     -0.835,     -0.55 ,      0.   ,      0.   ],
+            [     0.071,     -0.108,     -0.992,      0.   ,      0.071,     -0.108,     -0.992,      0.   ],
+            [ -1264.067,   1917.058,  17680.506,      1.   ,  -1264.067,   1917.058,  17680.505,      1.   ]],
+
+           [[     0.548,     -0.831,      0.098,      0.   ,      0.548,     -0.831,      0.098,      0.   ],
+            [    -0.835,     -0.55 ,      0.   ,      0.   ,     -0.835,     -0.55 ,      0.   ,      0.   ],
+            [     0.054,     -0.081,     -0.995,      0.   ,      0.054,     -0.081,     -0.995,      0.   ],
+            [  -957.729,   1452.473,  17743.91 ,      1.   ,   -957.729,   1452.473,  17743.909,      1.   ]]])
+
+    In [25]:                                  
+
+
+
+
+
 AB comparison using CSGFoundryAB.sh
 --------------------------------------
 
@@ -196,10 +869,291 @@ BUT first need the gtransforms, snd/scsg only has local transforms so far.
      781 }
 
 
+TODO: trace where the placement transforms come from 
+---------------------------------------------------------
+
+::
+
+     567 void GMergedMesh::mergeVolume( const GVolume* volume, bool selected)
+     568 {
+     569     const GNode* node = static_cast<const GNode*>(volume);
+     570     const GNode* base = getCurrentBase();
+     571     unsigned ridx = volume->getRepeatIndex() ; 
+     572 
+     573     GVolume* volume_ = const_cast<GVolume*>(volume);
+     574     GMatrixF* transform = base ? volume_->getRelativeTransform(base) : volume->getTransform() ;     // base relative OR global transform
+     575 
+     576     if( node == base ) assert( transform->isIdentity() );
+     577     if( ridx == 0 )    assert( base == NULL && "expecting NULL base for ridx 0" );
+     ...
+     600     bool admit = selected ;
+     601 
+     602 
+     603     if(admit)
+     604     {
+     605         mergeVolumeTransform(transform) ;        // "m_transforms[m_cur_volume]" 
+     606         mergeVolumeBBox(vertices, num_vert);     // m_bbox[m_cur_volume], m_center_extent[m_cur_volume]  
+     607         mergeVolumeIdentity(volume, selected );  // m_nodeinfo[m_cur_volume], m_identity[m_cur_volume], m_meshes[m_cur_volume]
+     608 
+     609         m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
+     610         // NB admit: must parallel what is counted in countVolume 
+     611     }
+     613     if(selected)
+     614     {
+     615         mergeVolumeVertices( num_vert, vertices, normals );  // m_vertices, m_normals
+     616 
+     617         unsigned* node_indices     = volume->getNodeIndices();
+     618         unsigned* boundary_indices = volume->getBoundaryIndices();
+     619         unsigned* sensor_indices   = volume->getSensorIndices();
+     620 
+     621         mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  ); // m_faces, m_nodes, m_boundaries, m_sensors
+     622 
+     623         GPt* pt = volume->getPt();  // analytic 
+     624         mergeVolumeAnalytic( pt, transform);     // relative or global transform as appropriate becoming the GPt placement, and collects into GMergedMesh::m_pts 
+     625 
+     626         // offsets with the flat arrays
+     627         m_cur_vertices += num_vert ;
+     628         m_cur_faces    += num_face ;
+     629     }
+     630 }
+
+
+
+
+::
+
+     916 /**
+     917 ``GMergedMesh::mergeVolumeAnalytic``
+     918 -------------------------------------
+     919 
+     920 Canonically invoked from ``GMergedMesh::mergeVolume``
+     921 
+     922 ``GPt`` instance from the volume are instanciated within ``X4PhysicalVolume::convertNode``.
+     923 
+     924 Only here does it become possible to set the placement transform into the GPt.
+     925 This collects the GPt with its placement into GPts::m_pts, 
+     926 which is then persisted into the geocache. 
+     927 
+     928 With repeated geometry one GPt instance for each GVolume is collected into GPts m_pts. 
+     929 
+     930 **/
+     931 
+     932 void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform)
+     933 {
+     934     if(!pt) return ;
+     935 
+     936     const float* data = static_cast<float*>(transform->getPointer());
+     937 
+     938     glm::mat4 placement = glm::make_mat4( data ) ;
+     939 
+     940     pt->setPlacement(placement);
+     941 
+     942     m_pts->add( pt );
+     943 }
+
+
+Placement settings have to be late, after factorization. So NNode 
+update_gtransform is way too soon::
+
+     198 /**
+     199 GParts::Create from GPts
+     200 --------------------------
+     201 
+     202 Canonically invoked from ``GGeo::deferredCreateGParts``
+     203 by ``GGeo::postLoadFromCache`` or ``GGeo::postDirectTranslation``.
+     204 
+     205 The (GPt)pt from each GVolume yields a per-volume (GParts)parts instance
+     206 that is added to the (GParts)com instance.
+     207 
+     208 ``GParts::Create`` from ``GPts`` duplicates the standard precache GParts 
+     209 in a deferred postcache manner using NCSG solids persisted with GMeshLib 
+     210 and the requisite GParts arguments (spec, placement transforms) persisted by GPts 
+     211 together with the GGeoLib merged meshes.  
+     212 
+     213 Note that GParts::applyPlacementTransform is applied to each individual 
+     214 GParts object prior to combination into a composite GParts using the placement 
+     215 transform collected into the GPt objects transported via GPts.
+     216 
+     217 GMergedMesh::mergeVolume
+     218 GMergedMesh::mergeVolumeAnalytic
+     219      combining and applying placement transform
+     220 
+     221 * GPts instances for each mergedMesh and merged from individual volume GPts. 
+     222 
+     223 * testing this with GPtsTest, using GParts::Compare 
+     224 
+     225 * notice how a combined GParts instance is contatenated from individual GParts instance for each GPt 
+     226   using the referenced NCSG 
+     227 
+     228 * there is one combined GParts instance for each GMergedMesh which concatenates together the 
+     229   analytic CSG buffers for all the "layers" of the GMergedMesh   
+     230 
+     231 **/
+     ...
+     245 GParts* GParts::Create(
+     246     const Opticks* ok,
+     247     const GPts* pts,
+     248     const std::vector<const NCSG*>& solids,
+     249     unsigned* num_mismatch_pt,
+     250     std::vector<glm::mat4>* mismatch_placements,
+     251     int imm ) // static
+     252 {
+     253     plog::Severity level = DEBUG == 0 ? LEVEL : info ;
+     254     unsigned num_pt = pts->getNumPt();
+     ...
+     266     GParts* com = new GParts() ;
+     267     com->setOpticks(ok);
+     268     com->setRepeatIndex(imm);
+     269 
+     270     unsigned verbosity = 0 ;
+     271     std::vector<unsigned> mismatch_pt ;
+     272 
+     273     for(unsigned i=0 ; i < num_pt ; i++)
+     274     {
+     275         const GPt* pt = pts->getPt(i); //  GPt holds structural tree transforms and indices collected in X4PhysicalVolume::convertNode 
+     276         int   lvIdx = pt->lvIdx ;
+     277         int   ndIdx = pt->ndIdx ;
+     278         const std::string& spec = pt->getSpec() ;
+     279         const glm::mat4& placement = pt->getPlacement() ;
+     ...
+     289         assert( lvIdx > -1 );
+     290         const NCSG* csg = unsigned(lvIdx) < solids.size() ? solids[lvIdx] : NULL ;
+     291         assert( csg );
+     292 
+     293         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx );
+     294 
+     295         unsigned num_mismatch = 0 ;
+     296         parts->applyPlacementTransform( placement, verbosity, num_mismatch );   // this changes parts:m_tran_buffer
+     297         if(num_mismatch > 0 ) RecordMismatch( mismatch_pt, mismatch_placements, placement, i, lvIdx, ndIdx, num_mismatch );
+     298 
+     299         parts->dumpTran("parts");
+     300         com->add( parts );
+     301     }
+     302 
+     303     com->dumpTran("com");
+     304     DumpMismatch( num_mismatch_pt, mismatch_pt );
+     305 
+     306     LOG(level) << "]" ;
+     307     return com ;
+     308 }
+
+
+::
+
+    1185 /**
+    1186 GParts::applyPlacementTransform
+    1187 --------------------------------
+    1188 
+    1189 1. transforms the entire m_tran_buffer with the passed transform, 
+    1190    to avoid leaving behind constituents this means that every constituent
+    1191    must have an associated transform, **even if its the identity transform**
+    1192 
+    1193 * This was formerly invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
+    1194 * Now it is invoked by GParts::Create 
+    1195 
+    1196 **/
+    1197 
+    1198 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity, unsigned& num_mismatch )
+    1199 {
+    1200     const float* data = static_cast<float*>(gtransform->getPointer());
+    1201     if(verbosity > 2)
+    1202     nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" );
+    1203     glm::mat4 placement = glm::make_mat4( data ) ;
+    1204 
+    1205     applyPlacementTransform( placement, verbosity, num_mismatch );
+    1206 }
+    1207 
+
+    1241     std::vector<unsigned> mismatch ;
+    1242 
+    1243     for(unsigned i=0 ; i < ni ; i++)
+    1244     {
+    1245         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
+    1246 
+    1247         bool match = true ;
+    1248         const nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform", match );
+    1249                               //  ^^^^^^^^^^^^^^^^^^^^^^^ SUSPECT DOUBLE NEGATIVE RE REVERSED  ^^^^^^^
+    1250 
+    1251         if(!match) mismatch.push_back(i);
+    1252 
+    1253         m_tran_buffer->setMat4Triple( ntvq, i );
+    1254     }
+
+
+::
+
+    1758 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
+    1759 {
+    ....
+    1807     GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ;
+    1808 
+    1809     //
+    1810     // Q: where is the GPt placement transform set ?
+    1811     // A: by GMergedMesh::mergeVolume/GMergedMesh::mergeVolumeAnalytic 
+    1812     //    using a base relative or global transform depending on ridx
+    1813     //
+    1814     // WHY: because before analysis and resulting "factorization" 
+    1815     //      of the geometry cannot know the appropriate placement transform to assign to he GPt
+    1816     //       
+    1817     // Local and global transform triples are collected below into GVolume with::
+    1818     //       
+    1819     //     GVolume::setLocalTransform(ltriple)
+    1820     //     GVolume::setGlobalTransform(gtriple)
+    1821     //
+    1822     //  Those are the ingredients that later are used to get the appropriate 
+    1823     //  combination of transforms.
+    1824 
+    1825 
+    1826     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);
+    1827 
+
+
+
+
+
+
+::
+
+     674 CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, unsigned partIdxRel )
+     675 {
+     676     unsigned repeatIdx = comp->getRepeatIndex();  // set in GGeo::deferredCreateGParts
+     677     unsigned partOffset = comp->getPartOffset(primIdx) ;
+     678     unsigned partIdx = partOffset + partIdxRel ;
+     679     unsigned idx = comp->getIndex(partIdx);
+     680     assert( idx == partIdx );
+     681     unsigned boundary = comp->getBoundary(partIdx); // EXPT
+     682 
+     683     std::string tag = comp->getTag(partIdx);
+     684     unsigned tc = comp->getTypeCode(partIdx);
+     685     bool is_list = CSG::IsList((OpticksCSG_t)tc) ;
+     686     int subNum = is_list ? comp->getSubNum(partIdx) : -1 ;
+     687     int subOffset = is_list ? comp->getSubOffset(partIdx) : -1 ;
+     688 
+     689 
+     690     // TODO: transform handling in double, narrowing to float at the last possible moment 
+     691     const Tran<float>* tv = nullptr ;
+     692     unsigned gtran = comp->getGTransform(partIdx);  // 1-based index, 0 means None
+     693     if( gtran > 0 )
+     694     {
+     695         glm::mat4 t = comp->getTran(gtran-1,0) ;
+     696         glm::mat4 v = comp->getTran(gtran-1,1);
+     697         tv = new Tran<float>(t, v);
+     698     }
+     699 
+     700     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+     701 
+
+
+
+
+WIP : CSG transforms
+-----------------------
+
 
 More modern transform handling (for structure) in stree::get_m2w_product
 
 * need something similar for CSG snd starting with get_ancestors following parent links 
+
 
 
 * HMM is G4Ellipsoid scale Xform added ? YEP snd::SetNodeXForm(root, scale ); 

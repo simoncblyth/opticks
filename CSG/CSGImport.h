@@ -15,7 +15,9 @@ See::
 #include "plog/Severity.h"
 
 struct stree ; 
+struct snode ; 
 struct snd ; 
+
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
@@ -40,8 +42,8 @@ struct CSG_API CSGImport
     void importSolid(); 
     CSGSolid* importRemainderSolid(int ridx, const char* rlabel); 
     CSGSolid* importFactorSolid(   int ridx, const char* rlabel); 
-    CSGPrim*  importPrim( int primIdx, int lvid ); 
-    CSGNode*  importNode( int nodeIdx, const snd* nd); 
+    CSGPrim*  importPrim( int primIdx, const snode& node ); 
+    CSGNode*  importNode( int nodeIdx, const snode& node, const snd* nd); 
 
 }; 
 
