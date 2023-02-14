@@ -91,13 +91,6 @@ const spa* scsg::getPA(int idx) const { return get<spa>(idx, param) ; }
 const sbb* scsg::getBB(int idx) const { return get<sbb>(idx, aabb)  ; } 
 const sxf* scsg::getXF(int idx) const { return get<sxf>(idx, xform) ; }
 
-const glm::tmat4x4<double>* scsg::getXForm(int idx) const 
-{
-    const sxf* xf = getXF(idx) ; 
-    const glm::tmat4x4<double>* m = xf ? &(xf->mat) : nullptr ;  
-    return m ; 
-}
-
 
 
 
@@ -114,87 +107,6 @@ sbb* scsg::getBB_(int idx) { return get_<sbb>(idx, aabb)  ; }
 sxf* scsg::getXF_(int idx) { return get_<sxf>(idx, xform) ; }
 
 
-glm::tmat4x4<double>* scsg::getXForm_(int idx) 
-{
-    sxf* xf = getXF_(idx) ; 
-    glm::tmat4x4<double>* m = xf ? &(xf->mat) : nullptr ;  
-    return m ; 
-}
-
-
-
-
-
-/**
-scsg::getNDXF : xform "pointer" for a node
-----------------------------------------------
-
-Access the idx *snd*  and return the xform *idx*
- 
-**/
-
-int scsg::getNDXF(int idx) const  
-{
-    const snd* n = getND(idx); 
-    return n ? n->xform : -1 ; 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
-scsg::getLVID : all nodes associated with the *lvid* root 
-------------------------------------------------------------
-
-Collect *snd* CSG nodes with snd::lvid matching *q_lvid* 
-
-**/
-
-void scsg::getLVID( std::vector<snd>& nds, int q_lvid ) const 
-{
-    int num_node = node.size(); 
-    for(int i=0 ; i < num_node ; i++)
-    {
-        const snd& nd = node[i] ; 
-        if(nd.lvid == q_lvid) nds.push_back(nd) ; 
-    }
-}
-
-/**
-scsg::getLVRoot
-----------------
-
-Returns first *snd* node for *lvid* with snd::is_root true
-
-**/
-
-const snd* scsg::getLVRoot(int lvid ) const 
-{
-    const snd* root = nullptr ; 
-
-    int count = 0 ; 
-    int num_node = node.size(); 
-    for(int i=0 ; i < num_node ; i++)
-    {
-        const snd& nd = node[i] ; 
-        if(nd.lvid == lvid && nd.is_root()) 
-        {
-            root = &nd ; 
-            count += 1 ; 
-        }
-    }
-    assert( count <= 1 ); 
-    return root ; 
-}
 
 
 
@@ -265,7 +177,7 @@ NPFold* scsg::serialize() const
     fold->add("node",  NPX::ArrayFromVec<int,    snd>(node)); 
     fold->add("param", NPX::ArrayFromVec<double, spa>(param)); 
     fold->add("aabb",  NPX::ArrayFromVec<double, sbb>(aabb)); 
-    fold->add("xform", NPX::ArrayFromVec<double, sxf>(xform)); 
+    fold->add("xform", NPX::ArrayFromVec<double, sxf>(xform, 2, 4, 4)); 
     return fold ; 
 }
 void scsg::import(const NPFold* fold) 
@@ -275,5 +187,59 @@ void scsg::import(const NPFold* fold)
     NPX::VecFromArray<sbb>(aabb,  fold->get("aabb")); 
     NPX::VecFromArray<sxf>(xform, fold->get("xform")); 
 }
+
+
+
+
+
+
+
+
+
+/**
+scsg::getLVID : all nodes associated with the *lvid* root 
+------------------------------------------------------------
+
+Collect *snd* CSG nodes with snd::lvid matching *q_lvid* 
+
+**/
+
+void scsg::getLVID( std::vector<snd>& nds, int q_lvid ) const 
+{
+    int num_node = node.size(); 
+    for(int i=0 ; i < num_node ; i++)
+    {
+        const snd& nd = node[i] ; 
+        if(nd.lvid == q_lvid) nds.push_back(nd) ; 
+    }
+}
+
+/**
+scsg::getLVRoot
+----------------
+
+Returns first *snd* node for *lvid* with snd::is_root true
+
+**/
+
+const snd* scsg::getLVRoot(int lvid ) const 
+{
+    const snd* root = nullptr ; 
+
+    int count = 0 ; 
+    int num_node = node.size(); 
+    for(int i=0 ; i < num_node ; i++)
+    {
+        const snd& nd = node[i] ; 
+        if(nd.lvid == lvid && nd.is_root()) 
+        {
+            root = &nd ; 
+            count += 1 ; 
+        }
+    }
+    assert( count <= 1 ); 
+    return root ; 
+}
+
 
 

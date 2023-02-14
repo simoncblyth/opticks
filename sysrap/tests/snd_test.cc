@@ -54,7 +54,7 @@ void test_load()
 
 void test_max_depth_(int n, int xdepth)
 {
-    const snd* nd = snd::GetND(n);
+    const snd* nd = snd::Get(n);
     assert( nd );  
     assert( nd->max_depth() == xdepth );  
     assert( snd::GetMaxDepth(n) == xdepth );  
@@ -90,7 +90,7 @@ void test_max_depth()
 
 void test_max_binary_depth_(int n, int xdepth)
 {
-    const snd* nd = snd::GetND(n);
+    const snd* nd = snd::Get(n);
     assert( nd );  
     assert( nd->max_binary_depth() == xdepth );  
 
@@ -123,7 +123,7 @@ void test_max_binary_depth()
 
 void test_num_node_(int n, int xnn)
 {
-    const snd* nd = snd::GetND(n);
+    const snd* nd = snd::Get(n);
 
     int nnn = nd->num_node() ; 
     int gnn = snd::GetNumNode(n) ; 
@@ -310,7 +310,7 @@ int make_csgtree_4()
 
 void AddDummyTransformsVisit(int idx)
 {
-    const snd* nd = snd::GetND(idx); 
+    const snd* nd = snd::Get(idx); 
     bool rhs = nd->is_sibdex(1) ; 
 
     if( rhs )
@@ -353,7 +353,7 @@ void test_inorder()
     std::cout << "test_inorder" << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::vector<int> order ; 
     nd->inorder(order); 
@@ -363,7 +363,7 @@ void test_inorder()
     for(int z=0 ; z < int(order.size()) ; z++)
     {
          int idx = order[z] ; 
-         const snd* n = snd::GetND(idx); 
+         const snd* n = snd::Get(idx); 
          std::cout << " idx " << idx ; 
          std::cout << " n.brief " << ( n ? n->brief() : "null" ) << std::endl ;  
 
@@ -377,7 +377,7 @@ void test_dump()
 {
     std::cout << "test_dump" << std::endl ;     
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::cout << nd->dump() << std::endl ; 
     std::cout << nd->dump2() << std::endl ; 
@@ -389,7 +389,7 @@ void test_render()
     std::cout << "test_render mode " << mode  << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::cout << nd->render(mode) << std::endl ;  
     std::cout << nd->rbrief() << std::endl ;  
@@ -400,7 +400,7 @@ void test_rbrief()
     std::cout << "test_rbrief" << std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
     std::cout << nd->rbrief() << std::endl ;  
 
 }
@@ -411,7 +411,7 @@ void test_typenodes(int tc)
     std::cout << "test_typenodes tc " << tc << " " << CSG::Tag(tc) <<  std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::vector<int> nodes ; 
     nd->typenodes(nodes, tc ); 
@@ -433,7 +433,7 @@ void test_typenodes_()
     std::cout << "test_typenodes_ " <<  std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::vector<int> nodes ; 
 
@@ -464,7 +464,7 @@ void test_leafnodes()
     std::cout << "test_leafnodes " <<  std::endl ;     
 
     int g = make_csgtree(); 
-    const snd* nd = snd::GetND(g);
+    const snd* nd = snd::Get(g);
 
     std::vector<int> nodes ; 
     nd->leafnodes(nodes); 
@@ -482,7 +482,7 @@ void test_find()
     std::cout << "test_find" <<  std::endl ;     
 
     int z = make_csgtree(); 
-    const snd* nd = snd::GetND(z);
+    const snd* nd = snd::Get(z);
 
     int a = nd->find('a') ; 
     std::cout << snd::Desc(a) << std::endl ;  
@@ -504,7 +504,7 @@ void test_ancestors()
     std::cout << "test_ancestors " <<  std::endl ;     
 
     int iz = make_csgtree(); 
-    const snd* z = snd::GetND(iz);
+    const snd* z = snd::Get(iz);
 
     std::vector<int> za ; 
     z->ancestors(za); 
@@ -529,7 +529,7 @@ void test_ancestors()
 
 void LocalVisit(int idx)
 {
-    const snd* nd = snd::GetND(idx); 
+    const snd* nd = snd::Get(idx); 
     bool rhs = nd->is_sibdex(1) ; 
 
     std::cout 
@@ -574,39 +574,52 @@ void test_NodeTransformProduct()
         << snd::Render(z, 1)
         ;
 
-    glm::tmat4x4<double> transform(1.) ; 
-    snd::NodeTransformProduct(n, transform, false ); 
-    std::cout << glm::to_string(transform) << std::endl ; 
+    glm::tmat4x4<double> t(1.) ; 
+    glm::tmat4x4<double> v(1.) ; 
+    snd::NodeTransformProduct(n, t, v, false ); 
+    std::cout << "t: " << glm::to_string(t) << std::endl ; 
+    std::cout << "v: " << glm::to_string(v) << std::endl ; 
 
-    std::cout << snd::DescNodeTransformProduct(n, transform, false ) << std::endl ;
-    std::cout << glm::to_string(transform) << std::endl ; 
+    std::cout << snd::DescNodeTransformProduct(n, t, v, false ) << std::endl ;
+    std::cout << "t: " << glm::to_string(t) << std::endl ; 
+    std::cout << "v: " << glm::to_string(v) << std::endl ; 
+
 
 }
 
-void _test_GetXForm(int idx)
+void _test_GetXF(int idx)
 {
-    const glm::tmat4x4<double>* t = snd::GetXForm(idx); 
+    const sxf* xf = snd::GetXF(idx); 
     std::cout 
-        << "_test_GetXForm"
+        << "_test_GetXF"
         << " idx " << std::setw(2) << idx 
-        << " t " << ( t ? "Y" : "N" )
+        << " xf " << ( xf ? "Y" : "N" )
         << std::endl
         ;    
 
-    if(t) std::cout << glm::to_string(*t) << std::endl ; 
+    if(xf) std::cout << xf->desc() << std::endl ; 
 }
 
-void test_GetXForm()
+void test_GetXF()
 {
     int z = make_csgtree(); 
-    snd::PreorderTraverse(z,  std::bind( &_test_GetXForm, std::placeholders::_1 )  ); 
+
+    std::cout 
+        << snd::Render(z,0) 
+        << snd::Render(z,1)
+        << snd::Render(z,2)
+        << snd::Render(z,3)
+        ; 
+
+
+    snd::PreorderTraverse(z,  std::bind( &_test_GetXF, std::placeholders::_1 )  ); 
 
     snd::PreorderTraverse(z, [](int idx){ std::cout << snd::Brief(idx) << std::endl ; }  ); 
     // empty capture clause : https://smartbear.com/blog/c11-tutorial-lambda-expressions-the-nuts-and-bolts/
 
     NPFold* fold = snd::Serialize() ; 
     std::cout << " save snd to FOLD " << FOLD << std::endl ;  
-    fold->save(FOLD, "GetXForm"); 
+    fold->save(FOLD, "GetXF"); 
 }
 
 
@@ -630,7 +643,7 @@ int main(int argc, char** argv)
     else if(strcmp(TEST, "ancestors")==0)  test_ancestors() ; 
     else if(strcmp(TEST, "traverse")==0)  test_traverse() ; 
     else if(strcmp(TEST, "NodeTransformProduct")==0)  test_NodeTransformProduct() ; 
-    else if(strcmp(TEST, "GetXForm")==0)  test_GetXForm() ; 
+    else if(strcmp(TEST, "GetXF")==0)  test_GetXF() ; 
     else std::cerr << " TEST not matched " << TEST << std::endl ; 
         
     return 0 ; 

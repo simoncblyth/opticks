@@ -30,7 +30,7 @@ std::string snd::Desc(){  return POOL ? POOL->desc() : "? NO POOL ?" ; } // stat
 
 std::string snd::Brief(int idx) // static
 {
-    const snd* nd = GetND(idx); 
+    const snd* nd = Get(idx); 
     return nd ? nd->brief() : "-" ; 
 }
 std::string snd::Brief(const std::vector<int>& nodes) // static 
@@ -41,7 +41,7 @@ std::string snd::Brief(const std::vector<int>& nodes) // static
     for(int i=0 ; i < num_nodes ; i++)
     {
         int idx = nodes[i]; 
-        const snd* nd = GetND(idx); 
+        const snd* nd = Get(idx); 
         assert( nd ); 
         ss << std::setw(2) << i << " : " << nd->brief() << std::endl ;  
     }
@@ -63,32 +63,18 @@ std::string snd::Brief_(const std::vector<snd>& nodes) // static
     return str ; 
 }
 
-
-
-
-
-
-const snd* snd::GetND(int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
-const spa* snd::GetPA(int idx){ return POOL ? POOL->getPA(idx) : nullptr ; } // static
-const sxf* snd::GetXF(int idx){ return POOL ? POOL->getXF(idx) : nullptr ; } // static
-const sbb* snd::GetBB(int idx){ return POOL ? POOL->getBB(idx) : nullptr ; } // static 
-
-snd* snd::GetND_(int idx){ return POOL ? POOL->getND_(idx) : nullptr ; } // static
-spa* snd::GetPA_(int idx){ return POOL ? POOL->getPA_(idx) : nullptr ; } // static
-sxf* snd::GetXF_(int idx){ return POOL ? POOL->getXF_(idx) : nullptr ; } // static
-sbb* snd::GetBB_(int idx){ return POOL ? POOL->getBB_(idx) : nullptr ; } // static 
-
-
+const snd* snd::Get(int idx){ return POOL ? POOL->getND(idx) : nullptr ; } // static
+      snd* snd::Get_(int idx){ return POOL ? POOL->getND_(idx) : nullptr ; } // static
 
 
 int snd::GetMaxDepth( int idx)
 { 
-    const snd* nd = GetND(idx) ; 
+    const snd* nd = Get(idx) ; 
     return nd ? nd->max_depth() : -1 ; 
 }
 int snd::GetNumNode( int idx)
 { 
-    const snd* nd = GetND(idx) ; 
+    const snd* nd = Get(idx) ; 
     return nd ? nd->num_node() : -1 ; 
 }
 
@@ -98,15 +84,30 @@ void snd::GetTypes(std::vector<int>& types, const std::vector<int>& idxs ) // st
     for(int i=0 ; i < num_idx ; i++)
     {
         int idx = idxs[i]; 
-        const snd* nd = GetND(idx) ; 
+        const snd* nd = Get(idx) ; 
         types.push_back(nd->typecode) ;  
     }
     assert( idxs.size() == types.size() ); 
 }
 
 
+/**
+snd::GetNodeXForm : xform "pointer" for a node
+----------------------------------------------
 
-int snd::GetNodeXForm(int idx){ return POOL ? POOL->getNDXF(idx) : -1 ; } // static  
+Access the idx *snd*  and return the xform *idx*
+
+This is used from U4Solid::init_BooleanSolid
+to check that xforms are associated to the left, right 
+nodes. 
+
+*/
+
+int snd::GetNodeXForm(int idx)   // static 
+{ 
+    const snd* n = Get(idx); 
+    return n ? n->xform : -1 ; 
+}
 
 
 /**
@@ -117,15 +118,165 @@ Canonical usage is from U4Solid::init_DisplacedSolid collecting boolean rhs tran
 
 **/
 
-void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& tr )
+void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t )
 {
-    snd* nd = GetND_(idx); 
-    nd->setXForm(tr); 
+    snd* nd = Get_(idx); 
+    nd->setXF(t); 
 }
+
+/**
+snd::setXF
+---------------
+
+Note that currently there is no way to change transform, or param or AABB. 
+Calling setXF again will just adds another transform 
+and updates the snd::xform integer reference, effectively leaking the old transform. 
+
+HMM if there is a transform already present (eg ellipsoid scale transform)
+the setXF actually needs to combine the transforms as was done in nnode::set_transform
+
+
+**/
+
+void snd::setXF(const glm::tmat4x4<double>& t )
+{
+    glm::tmat4x4<double> v = glm::inverse(t) ; 
+    setXF(t, v); 
+}
+void snd::setXF(const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
+{
+    sxf xf ; 
+    xf.t = t ; 
+    xf.v = v ; 
+
+    CheckPOOL("snd::setXForm") ; 
+    xform = POOL->addXF(xf) ; 
+}
+
+const sxf* snd::GetXF(int idx)  // static
+{
+    const snd* n = Get(idx); 
+    return n ? n->getXF() : nullptr ; 
+}
+sxf* snd::GetXF_(int idx)  // static
+{
+    snd* n = Get_(idx); 
+    return n ? n->getXF_() : nullptr ; 
+}
+
+const sxf* snd::getXF() const
+{
+    CheckPOOL("snd::getXF") ; 
+    return POOL->getXF(xform) ; 
+}
+sxf* snd::getXF_()
+{
+    CheckPOOL("snd::getXF_") ; 
+    return POOL->getXF_(xform) ; 
+}
+
+/**
+snd::NodeTransformProduct
+---------------------------
+
+cf nmat4triple::product
+
+
+    for(int i=0 ; i < num_nodes ; i++ ) 
+    {
+        int j = reverse ? num_nodes - 1 - i : i ;  
+        int idx = nodes[j] ; 
+
+**/
+
+void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse)  // static
+{
+    std::vector<int> nodes ; 
+    Ancestors(root, nodes);  
+    nodes.push_back(root); 
+    int num_nodes = nodes.size();
+
+    glm::tmat4x4<double> tp(1.); 
+    glm::tmat4x4<double> vp(1.); 
+
+    for(int i=0 ; i < num_nodes ; i++ ) 
+    {
+        int j = num_nodes - 1 - i ;  
+        int ii = nodes[reverse ? j : i] ; 
+        int jj = nodes[reverse ? i : j] ; 
+
+        const sxf* ixf = GetXF(ii) ; 
+        const sxf* jxf = GetXF(jj) ; 
+
+        if(ixf) tp *= ixf->t ; 
+        if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
+    }
+    memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
+    memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
+}
+
+std::string snd::DescNodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v,  bool reverse) // static
+{
+    std::stringstream ss ; 
+
+    std::vector<int> nodes ; 
+    Ancestors(root, nodes);  
+    nodes.push_back(root); 
+    int num_nodes = nodes.size();
+
+    ss << "snd::DescNodeTransformProduct"
+       << " root " << root 
+       << " reverse " << reverse 
+       << " num_nodes " << num_nodes
+       << std::endl 
+       ;
+
+    glm::tmat4x4<double> tp(1.); 
+    glm::tmat4x4<double> vp(1.); 
+
+    for(int i=0 ; i < num_nodes ; i++ ) 
+    {
+        int j = num_nodes - 1 - i ;  
+        int ii = nodes[reverse ? j : i] ; 
+        int jj = nodes[reverse ? i : j] ; 
+        const sxf* ixf = GetXF(ii) ; 
+        const sxf* jxf = GetXF(jj) ; 
+
+        ss 
+            << " i " << i 
+            << " j " << j 
+            << " ii " << ii 
+            << " jj " << jj
+            << " ixf " << ( ixf ? "Y" : "N" ) 
+            << " jxf " << ( jxf ? "Y" : "N" ) 
+            << std::endl 
+            ; 
+
+        if(ixf) tp *= ixf->t ; 
+        if(jxf) vp *= jxf->v ;  // inverse-transform product in opposite order
+    }
+ 
+    memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
+    memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+void snd::node_transform_product(glm::tmat4x4<double>& t, glm::tmat4x4<double>& v,  bool reverse ) const 
+{
+    NodeTransformProduct(index, t, v, reverse); 
+}
+
+
+
+
+
 
 void snd::SetLabel(int idx, const char* label_ ) // static
 {
-    snd* nd = GetND_(idx); 
+    snd* nd = Get_(idx); 
     nd->setLabel(label_); 
 }
 
@@ -142,7 +293,7 @@ as its called for each root from U4Tree::initSolid
 **/
 void snd::SetLVID(int idx, int lvid)  // static
 {
-    snd* nd = GetND_(idx); 
+    snd* nd = Get_(idx); 
     nd->setLVID(lvid);   
 
     int chk = nd->checktree(); 
@@ -256,7 +407,7 @@ int snd::getLVSubNode() const
     for(int i=0 ; i < nsub ; i++)
     {
         int idx = subs[i] ; 
-        const snd* nd = GetND(idx); 
+        const snd* nd = Get(idx); 
         assert( nd->typecode == CSG_CONTIGUOUS || nd->typecode == CSG_DISCONTIGUOUS ); 
         constituents += nd->num_child ; 
     } 
@@ -319,7 +470,7 @@ void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int 
         int ch = nd->first_child ;
         for(int i=0 ; i < nd->num_child ; i++)
         {
-            const snd* child = snd::GetND(ch) ;
+            const snd* child = snd::Get(ch) ;
             assert( child->index == ch );
 
             int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
@@ -359,25 +510,6 @@ int snd::Add(const snd& nd) // static
     return POOL->addND(nd); 
 }
 
-void snd::init()
-{
-    index = -1 ; 
-    depth = -1 ; 
-    sibdex = -1 ; 
-    parent = -1 ; 
-
-    num_child = -1 ; 
-    first_child = -1 ; 
-    next_sibling = -1 ; 
-    lvid = -1 ;
-
-    typecode = -1  ; 
-    param = -1 ; 
-    aabb = -1 ; 
-    xform = -1 ; 
-}
-
-
 
 bool snd::is_listnode() const 
 {
@@ -385,7 +517,7 @@ bool snd::is_listnode() const
 }
 std::string snd::tag() const
 {
-    return CSG::Tag(typecode) ; 
+    return typecode < 0 ? "negative-typecode-ERR" : CSG::Tag(typecode) ; 
 }
 
 
@@ -444,13 +576,6 @@ void snd::rbrief_r(std::ostream& os, int d) const
 
 
 
-void snd::setTypecode(int _tc )
-{
-    init(); 
-    typecode = _tc ; 
-    num_child = 0 ;  // maybe changed later
-}
-
 
 
 
@@ -502,105 +627,6 @@ void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double
 
     aabb = POOL->addBB(o) ; 
 }
-
-/**
-snd::setXForm
----------------
-
-Note that currently there is no way to change transform, or param or AABB. 
-Calling setXForm again will just adds another transform 
-and updates the snd::xform integer reference.
-
-That effectively leaks the old transform.  
-
-**/
-void snd::setXForm(const glm::tmat4x4<double>& t )
-{
-    CheckPOOL("snd::setXForm") ; 
-    sxf o ; 
-    o.mat = t ; 
-    xform = POOL->addXF(o) ; 
-}
-
-const glm::tmat4x4<double>* snd::GetXForm(int nidx)  // static
-{
-    const snd* n = GetND(nidx); 
-    return n ? n->getXForm() : nullptr ; 
-}
-const glm::tmat4x4<double>* snd::getXForm() const
-{
-    CheckPOOL("snd::getXForm") ; 
-    return POOL->getXForm(xform) ; 
-}
-
-glm::tmat4x4<double>* snd::GetXForm_(int idx)  // static
-{
-    snd* n = GetND_(idx); 
-    return n ? n->getXForm_() : nullptr ; 
-}
-glm::tmat4x4<double>* snd::getXForm_()
-{
-    CheckPOOL("snd::getXForm_") ; 
-    return POOL->getXForm_(xform) ; 
-}
-
-void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse)  // static
-{
-    std::vector<int> nodes ; 
-    Ancestors(root, nodes);  
-    nodes.push_back(root); 
-    int num_nodes = nodes.size();
-
-    glm::tmat4x4<double> prod(1.); 
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>* t = GetXForm(idx) ; 
-        if(t) prod *= *t ;           
-    }
-    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
-    memcpy( glm::value_ptr(transform), glm::value_ptr(prod), sizeof(glm::tmat4x4<double>) );
-}
-
-std::string snd::DescNodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse) // static
-{
-    std::stringstream ss ; 
-
-    std::vector<int> nodes ; 
-    Ancestors(root, nodes);  
-    nodes.push_back(root); 
-    int num_nodes = nodes.size();
-
-    ss << "snd::DescNodeTransformProduct"
-       << " root " << root 
-       << " reverse " << reverse 
-       << " num_nodes " << num_nodes
-       << std::endl 
-       ;
-
-    glm::tmat4x4<double> prod(1.); 
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>* t = GetXForm(idx) ; 
-        ss << " i " << i << " idx " << idx << " t " << ( t ? "Y" : "N" ) << std::endl ; 
-        if(t) ss << glm::to_string( *t ) << std::endl ;    
-        if(t) prod *= *t ;           
-    }
-    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
-    memcpy( glm::value_ptr(transform), glm::value_ptr(prod), sizeof(glm::tmat4x4<double>) );
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-void snd::node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const 
-{
-    NodeTransformProduct(index, transform, reverse); 
-}
-
-
 
 
 
@@ -694,7 +720,7 @@ with int argument which picks the node sidesteps this.
 **/
 void snd::Visit(int idx)  // static 
 {
-    snd* nd = GetND_(idx); 
+    snd* nd = Get_(idx); 
 
     std::cout 
         << "snd::Visit" 
@@ -707,7 +733,7 @@ void snd::Visit(int idx)  // static
 
 void snd::PreorderTraverse(int idx, std::function<void(int)> fn) // static 
 {
-    snd* nd = GetND_(idx); 
+    snd* nd = Get_(idx); 
     nd->preorder_traverse( fn );  
 }
 
@@ -722,7 +748,7 @@ void snd::preorder_traverse_r( std::function<void(int)> fn, int d)
     int ch = first_child ; 
     while( ch > -1 )
     {
-        snd* child = GetND_(ch) ; 
+        snd* child = Get_(ch) ; 
         child->preorder_traverse_r(fn,  d + 1 );  
         ch = child->next_sibling ;
     }
@@ -731,7 +757,7 @@ void snd::preorder_traverse_r( std::function<void(int)> fn, int d)
 
 void snd::PostorderTraverse(int idx, std::function<void(int)> fn ) // static
 {
-    snd* nd = GetND_(idx); 
+    snd* nd = Get_(idx); 
     nd->postorder_traverse( fn );  
 }
 void snd::postorder_traverse( std::function<void(int)> fn ) 
@@ -743,7 +769,7 @@ void snd::postorder_traverse_r( std::function<void(int)> fn, int d)
     int ch = first_child ; 
     while( ch > -1 )
     {
-        snd* child = GetND_(ch) ; 
+        snd* child = Get_(ch) ; 
         child->postorder_traverse_r(fn,  d + 1 );  
         ch = child->next_sibling ;
     }
@@ -903,7 +929,7 @@ https://stackoverflow.com/questions/23778489/in-order-tree-traversal-for-non-bin
 
 void snd::Inorder(std::vector<int>& order, int idx ) // static
 {
-    const snd* nd = GetND(idx); 
+    const snd* nd = Get(idx); 
     nd->inorder(order); 
 }
 
@@ -954,11 +980,11 @@ the vector to put into root first order.
 
 void snd::Ancestors(int idx, std::vector<int>& nodes)  // static 
 {
-    const snd* nd = GetND(idx) ; 
+    const snd* nd = Get(idx) ; 
     while( nd->parent > -1 ) 
     {    
         nodes.push_back(nd->parent);
-        nd = GetND(nd->parent) ; 
+        nd = Get(nd->parent) ; 
     }    
     std::reverse( nodes.begin(), nodes.end() );
 }
@@ -995,7 +1021,7 @@ void snd::leafnodes_r( std::vector<int>& nodes, int d  ) const
 
 int snd::Find(int idx, char l0) // static
 {
-    const snd* nd = GetND(idx) ; 
+    const snd* nd = Get(idx) ; 
     return nd ? nd->find(l0) : -1 ; 
 } 
 
@@ -1013,7 +1039,7 @@ void snd::find_r(std::vector<int>& nodes, char l0, int d) const
     int ch = first_child ; 
     for(int i=0 ; i < num_child ; i++)  
     {
-        const snd* child = GetND(ch) ; 
+        const snd* child = Get(ch) ; 
         assert( child->index == ch ); 
         child->find_r(nodes, l0, d+1 );  
         ch = child->next_sibling ;
@@ -1163,7 +1189,7 @@ void snd::dump2_r( std::ostream& os, int d ) const
 
 std::string snd::Render(int idx, int mode)  // static
 {  
-    const snd* n = GetND(idx); 
+    const snd* n = Get(idx); 
     return n ? n->render(mode) : "snd::Render bad idx "; 
 }
 
@@ -1493,6 +1519,52 @@ std::ostream& operator<<(std::ostream& os, const snd& v)
     return os; 
 }
 
+
+
+
+
+
+
+snd snd::Init(int tc)  // init 
+{
+    snd nd = {} ;
+    nd.init(); 
+    nd.typecode = tc ; 
+    nd.num_child = 0 ; 
+    return nd ; 
+}
+
+
+/**
+snd::init
+-----------
+
+**/
+
+void snd::init()
+{
+    index = -1 ; 
+    depth = -1 ; 
+    sibdex = -1 ; 
+    parent = -1 ; 
+
+    num_child = -1 ; 
+    first_child = -1 ; 
+    next_sibling = -1 ; 
+    lvid = -1 ;
+
+    typecode = -1  ; 
+    param = -1 ; 
+    aabb = -1 ; 
+    xform = -1 ; 
+}
+
+
+
+
+
+
+
 /**
 snd::Boolean
 --------------
@@ -1507,13 +1579,14 @@ int snd::Boolean( int op, int l, int r ) // static
 {
     assert( l > -1 && r > -1 );
 
-    snd nd = {} ;
-    nd.setTypecode( op ); 
+    snd nd = Init( op );   
+    assert( nd.xform == -1 );
+
     nd.num_child = 2 ; 
     nd.first_child = l ;
 
-    snd* ln = POOL->getND_(l) ; 
-    snd* rn = POOL->getND_(r) ; 
+    snd* ln = Get_(l) ; 
+    snd* rn = Get_(r) ; 
 
     ln->next_sibling = r ; 
     ln->sibdex = 0 ; 
@@ -1530,15 +1603,17 @@ int snd::Boolean( int op, int l, int r ) // static
 
     assert( idx_0 == idx ); 
 
-    // ln->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
-    // rn->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
-    //
-    // NB : IT WOULD BE AN INSIDIOUS BUG TO USE *ln/rn* POINTERS/REFERENCES
-    // HERE AS REALLOC WILL SOMETIMES HAPPEN WHEN DO snd::Add WHICH 
-    // WOULD INVALIDATE THE POINTERS/REFERENCES OBTAINED PRIOR TO snd::Add
-    //
-    // THE BUG MANIFESTS AS PARENT FIELDS NOT BEING SET AS THE ln/rn WOULD 
-    // NO LONGER BE POINTING INTO THE NODE VECTOR DUE TO THE REALLOCATION.
+    /*
+    ln->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
+    rn->parent = idx ;  // <-- INSIDIOUS BUG : DONT USE PTRS/REFS AFTER snd::Add 
+    
+    NB : IT WOULD BE AN INSIDIOUS BUG TO USE *ln/rn* POINTERS/REFERENCES
+    HERE AS REALLOC WILL SOMETIMES HAPPEN WHEN DO snd::Add WHICH 
+    WOULD INVALIDATE THE POINTERS/REFERENCES OBTAINED PRIOR TO snd::Add
+    
+    THE BUG MANIFESTS AS PARENT FIELDS NOT BEING SET AS THE ln/rn WOULD 
+    NO LONGER BE POINTING INTO THE NODE VECTOR DUE TO THE REALLOCATION.
+    */
 
     return idx ; 
 }
@@ -1550,8 +1625,7 @@ int snd::Compound(int type, const std::vector<int>& prims )
     int num_prim = prims.size(); 
     assert( num_prim > 0 ); 
 
-    snd nd = {} ;
-    nd.setTypecode( type ); 
+    snd nd = Init( type ); 
     nd.num_child = num_prim ; 
     nd.first_child = prims[0] ;
     int idx = Add(nd) ; 
@@ -1624,8 +1698,7 @@ int snd::Collection( const std::vector<int>& prims ) // static
 int snd::Cylinder(double radius, double z1, double z2) // static
 {
     assert( z2 > z1 );  
-    snd nd = {} ;
-    nd.setTypecode(CSG_CYLINDER); 
+    snd nd = Init(CSG_CYLINDER); 
     nd.setParam( 0.f, 0.f, 0.f, radius, z1, z2)  ;   
     nd.setAABB( -radius, -radius, z1, +radius, +radius, z2 );   
     return Add(nd) ; 
@@ -1635,8 +1708,7 @@ int snd::Cone(double r1, double z1, double r2, double z2)  // static
 {   
     assert( z2 > z1 );
     double rmax = fmax(r1, r2) ; 
-    snd nd = {} ;
-    nd.setTypecode(CSG_CONE) ;
+    snd nd = Init(CSG_CONE) ;
     nd.setParam( r1, z1, r2, z2, 0., 0. ) ;
     nd.setAABB( -rmax, -rmax, z1, rmax, rmax, z2 );
     return Add(nd) ;
@@ -1645,8 +1717,7 @@ int snd::Cone(double r1, double z1, double r2, double z2)  // static
 int snd::Sphere(double radius)  // static
 {
     assert( radius > zero ); 
-    snd nd = {} ;
-    nd.setTypecode(CSG_SPHERE) ; 
+    snd nd = Init(CSG_SPHERE) ; 
     nd.setParam( zero, zero, zero, radius, zero, zero );  
     nd.setAABB(  -radius, -radius, -radius,  radius, radius, radius  );  
     return Add(nd) ;
@@ -1656,8 +1727,7 @@ int snd::ZSphere(double radius, double z1, double z2)  // static
 {
     assert( radius > zero ); 
     assert( z2 > z1 );  
-    snd nd = {} ;
-    nd.setTypecode(CSG_ZSPHERE) ; 
+    snd nd = Init(CSG_ZSPHERE) ; 
     nd.setParam( zero, zero, zero, radius, z1, z2 );  
     nd.setAABB(  -radius, -radius, z1,  radius, radius, z2  );  
     return Add(nd) ;
@@ -1673,8 +1743,7 @@ int snd::Box3(double fx, double fy, double fz )  // static
     assert( fy > 0. );  
     assert( fz > 0. );  
 
-    snd nd = {} ;
-    nd.setTypecode(CSG_BOX3) ; 
+    snd nd = Init(CSG_BOX3) ; 
     nd.setParam( fx, fy, fz, 0.f, 0.f, 0.f );  
     nd.setAABB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
     return Add(nd) ; 
@@ -1682,22 +1751,15 @@ int snd::Box3(double fx, double fy, double fz )  // static
 
 int snd::Zero(double  x,  double y,  double z,  double w,  double z1, double z2) // static 
 {
-    snd nd = {} ;
-    nd.setTypecode(CSG_ZERO) ; 
+    snd nd = Init(CSG_ZERO); 
     nd.setParam( x, y, z, w, z1, z2 );  
     return Add(nd) ; 
 }
 
 int snd::Zero() // static
 {
-    snd nd = {} ;
-    nd.setTypecode(CSG_ZERO) ; 
+    snd nd = Init(CSG_ZERO); 
     return Add(nd) ; 
 }
-
-
-
-
-
 
 

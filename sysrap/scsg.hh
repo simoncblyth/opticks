@@ -3,6 +3,11 @@
 scsg.hh : pools of CSG nodes, param, bounding box and transforms
 ==================================================================
 
+Note that the *idx* "integer pointer" used in the API corresponds to the 
+relevant species node/param/aabb/xform for each method. 
+
+CAUTION: DO NOT RETAIN POINTERS/REFS WHILST ADDING NODES 
+AS REALLOC WILL SOMETIMES INVALIDATE THEM
 
 **/
 
@@ -37,20 +42,13 @@ struct SYSRAP_API scsg
     int addXF(const sxf& xf );
     int addBB(const sbb& bb );
 
-    // CAUTION: DO NOT RETAIN POINTERS/REFS WHILST ADDING NODES 
-    // AS REALLOC WILL SOMETIMES INVALIDATE THEM
-
     template<typename T>
     const T* get(int idx, const std::vector<T>& vec) const ; 
 
-    // *idx* "pointer" corresponding to each species, nothing clever here
     const snd* getND(int idx) const ; 
     const spa* getPA(int idx) const ;  
     const sbb* getBB(int idx) const ;
     const sxf* getXF(int idx) const ; 
-
-    const glm::tmat4x4<double>* getXForm(int idx) const ; 
-
 
     template<typename T>
     T* get_(int idx, std::vector<T>& vec) ; 
@@ -59,14 +57,6 @@ struct SYSRAP_API scsg
     spa* getPA_(int idx);  
     sbb* getBB_(int idx);
     sxf* getXF_(int idx); 
-
-    glm::tmat4x4<double>* getXForm_(int idx); 
-
-
-    int  getNDXF(int idx) const ; 
-    void getLVID( std::vector<snd>& nds, int lvid ) const ; 
-    const snd* getLVRoot(int lvid ) const ; 
-
 
     template<typename T>
     std::string desc_(int idx, const std::vector<T>& vec) const ; 
@@ -81,5 +71,11 @@ struct SYSRAP_API scsg
 
     NPFold* serialize() const ; 
     void    import(const NPFold* fold); 
+
+
+    // slightly less "mechanical" methods than the above 
+    void getLVID( std::vector<snd>& nds, int lvid ) const ; 
+    const snd* getLVRoot(int lvid ) const ; 
+
 };
 

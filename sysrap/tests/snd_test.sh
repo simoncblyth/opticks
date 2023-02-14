@@ -21,7 +21,7 @@ bin=$FOLD/$name
 #test=ancestors
 #test=traverse
 #test=NodeTransformProduct
-test=GetXForm
+test=GetXF
 
 #tree=0
 #tree=1
@@ -34,11 +34,11 @@ export TREE=${TREE:-$tree}
 
 defarg="build_run"
 case $TEST in 
-    save|load|GetXForm) defarg="build_run_ana" ;;
+    save|load|GetXF) defarg="build_run_ana" ;;
 esac
 
 case $TEST in 
-   GetXForm) ana=GetXForm ;; 
+      GetXF) ana=GetXF  ;; 
           *) ana=$name   ;;
 esac
 

@@ -395,6 +395,74 @@ HMM: need to identify the ridx and the containing node in order to know where th
 
 
 
+stree::get_itransform : where does the CSG transform inverse happen in old workflow
+--------------------------------------------------------------------------------------
+
+::
+
+     323 void X4Solid::convertDisplacedSolid()
+     324 {   
+     325     const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(m_solid);
+     326     G4VSolid* moved = disp->GetConstituentMovedSolid() ;
+     327     assert( dynamic_cast<G4DisplacedSolid*>(moved) == NULL ); // only a single displacement is handled
+     328     
+     329     bool top = false ;  // never top of tree : expect to always be a boolean RHS
+     330     X4Solid* xmoved = new X4Solid(moved, m_ok, top);
+     331     setDisplaced(xmoved);
+     332     
+     333     nnode* a = xmoved->getRoot();
+     334     
+     335     LOG(LEVEL)
+     336         << " a.csgname " << a->csgname()
+     337         << " a.transform " << a->transform
+     338         ;
+     339     
+     340     glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);
+     341     
+     342     bool update_global = false ;   // update happens later,  after tree completed
+     343     a->set_transform( xf_disp, update_global );
+     344     
+     345     setRoot(a);
+     346 }
+
+
+     905 void nnode::set_transform( const glm::mat4& tmat, bool update_global )
+     906 {
+     907     const nmat4triple* add_transform = new nmat4triple(tmat) ;
+     908 
+
+     30 nmat4triple::nmat4triple(const glm::mat4& t_ )
+     31     :
+     32     match(true),
+     33     t(t_),
+     34     v(nglmext::invert_trs(t, match)),
+     35     q(glm::transpose(v))
+     36 {
+
+
+     577 glm::mat4 nglmext::invert_trs( const glm::mat4& trs, bool& match )
+     578 {
+     579     bool verbose = false ;
+     580     ndeco d ;
+     581     polar_decomposition( trs, d, verbose) ;
+     582     glm::mat4 isirit = d.isirit ;
+     583     glm::mat4 i_trs = glm::inverse( trs ) ;
+     584 
+     585     NGLMCF cf(isirit, i_trs );
+     586 
+     587     if(!cf.match)
+     588     {
+     589         LOG(error) << "polar_decomposition inverse and straight inverse are mismatched " ;
+     590         LOG(error) << cf.desc("ngmlext::invert_trs");
+     591     }
+     592 
+     593     match = cf.match ;
+     594 
+     595     return isirit ;
+     596 }
+
+
+
 Transform references from the old GGeo created CSGNode
 ---------------------------------------------------------
 

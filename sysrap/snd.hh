@@ -43,6 +43,27 @@ struct scanvas ;
 
 struct SYSRAP_API snd
 {
+    int index ; 
+    int depth ;   // optionally set by calling SetLVID 
+    int sibdex ;  // 0-based sibling index 
+    int parent ; 
+
+    int num_child ; 
+    int first_child ; 
+    int next_sibling ; 
+    int lvid ;
+
+    int typecode ; 
+    int param ; 
+    int aabb ; 
+    int xform ; 
+
+    char label[16] ;   // sizeof 4 int 
+
+
+
+
+
     static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "snd" ; 
     static constexpr const double zero = 0. ; 
@@ -50,7 +71,6 @@ struct SYSRAP_API snd
     static void SetPOOL( scsg* pool ); 
     static int  Level(); 
 
-    // HMM: maybe can remove these now that are doing scsg.hh POOL hookup with stree::init
     static NPFold* Serialize(); 
     static void    Import(const NPFold* fold); 
 
@@ -59,17 +79,8 @@ struct SYSRAP_API snd
     static std::string Brief( const std::vector<int>& nodes);
     static std::string Brief_(const std::vector<snd>& nodes);
 
-    static const snd* GetND( int idx);
-    static const spa* GetPA( int idx);
-    static const sxf* GetXF( int idx);
-    static const sbb* GetBB( int idx);
-
-    static snd* GetND_(int idx);
-    static spa* GetPA_(int idx);
-    static sxf* GetXF_(int idx);
-    static sbb* GetBB_(int idx);
-
-
+    static const snd* Get( int idx);
+    static       snd* Get_(int idx);
 
     static int  GetMaxDepth(int idx) ; 
     static int  GetNumNode(int idx) ; 
@@ -77,6 +88,22 @@ struct SYSRAP_API snd
 
     static int  GetNodeXForm(int idx) ; 
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
+
+    void setXF( const glm::tmat4x4<double>& t ); 
+    void setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
+
+    static const sxf* GetXF(int idx) ; 
+    static       sxf* GetXF_(int idx) ; 
+
+    const sxf* getXF() const ; 
+    sxf*       getXF_(); 
+
+    static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) ; 
+    static std::string DescNodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) ; 
+    void node_transform_product(                          glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) const ; 
+
+
+
     static void SetLabel(    int idx , const char* label ); 
     static void SetLVID(int idx, int lvid);  // label node tree 
 
@@ -104,26 +131,6 @@ struct SYSRAP_API snd
     static int Add(const snd& nd); 
 
 
-
-    int index ; 
-    int depth ;   // optionally set by calling SetLVID 
-    int sibdex ;  // 0-based sibling index 
-    int parent ; 
-
-    int num_child ; 
-    int first_child ; 
-    int next_sibling ; 
-    int lvid ;
-
-    int typecode ; 
-    int param ; 
-    int aabb ; 
-    int xform ; 
-
-    char label[16] ;   // sizeof 4 int 
-
-
-    void init(); 
     bool is_listnode() const ; 
     std::string tag() const ; 
     std::string brief() const ; 
@@ -133,32 +140,13 @@ struct SYSRAP_API snd
 
     std::string desc() const ; 
 
-    void setTypecode( int tc ); 
 
     static const char* ERROR_NO_POOL_NOTES ; 
     static void CheckPOOL(const char* msg); 
 
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
-
-
-    void setXForm( const glm::tmat4x4<double>& t ); 
-
-    static const glm::tmat4x4<double>* GetXForm(int idx) ; 
-           const glm::tmat4x4<double>* getXForm() const  ; 
-
-    static       glm::tmat4x4<double>* GetXForm_(int idx) ; 
-                 glm::tmat4x4<double>* getXForm_(); 
-
-    static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& transform, bool reverse ) ; 
-    static std::string DescNodeTransformProduct(int root, glm::tmat4x4<double>& transform, bool reverse); 
-    void node_transform_product(glm::tmat4x4<double>& transform, bool reverse ) const ; 
-
-
-
     void setLabel( const char* l ); 
-
-
 
     void setLVID(int lvid_ ); 
     void setLVID_r(int lvid_, int d ); 
@@ -175,8 +163,6 @@ struct SYSRAP_API snd
     static void PostorderTraverse(int idx, std::function<void(int)> fn); 
     void postorder_traverse(   std::function<void(int)> fn ) ; 
     void postorder_traverse_r( std::function<void(int)> fn, int d) ; 
-
-
 
     int max_depth() const ; 
     int max_depth_r(int d) const ; 
@@ -199,8 +185,6 @@ struct SYSRAP_API snd
 
     static void Ancestors(int idx, std::vector<int>& nodes); 
     void ancestors(std::vector<int>& nodes) const; 
-
-
 
 
     void leafnodes( std::vector<int>& nodes ) const ; 
@@ -237,8 +221,6 @@ struct SYSRAP_API snd
     void render_r( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
     void render_v( scanvas* canvas, const std::vector<int>& order, int mode, int d) const ; 
 
-    
-
 
     void check_z() const ; 
     double zmin() const ; 
@@ -248,6 +230,10 @@ struct SYSRAP_API snd
     static std::string ZDesc(const std::vector<int>& prims);
     static void ZNudgeEnds(    const std::vector<int>& prims); 
     static void ZNudgeJoints(  const std::vector<int>& prims); 
+
+
+    static snd Init(int tc); 
+    void init(); 
 
     static int Boolean( int op, int l, int r ); 
     static int Compound(int type, const std::vector<int>& prims ); 

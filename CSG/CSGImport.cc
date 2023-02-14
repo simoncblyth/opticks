@@ -233,13 +233,16 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 CSGImport::importNode
 ----------------------------
 
+CAUTION: this method is less general than it first looks
+
+An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
+that is associated with the structural *snode*. 
+
 TODO: transforms, planes, aabb 
 
 cf CSG_GGeo_Convert::convertNode
 
 Need to
-
-
 **/
 
 CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
@@ -247,22 +250,20 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
     CSGNode cn = CSGNode::Zero() ; 
     if(nd)
     {
+        assert( node.lvid == nd->lvid ); 
         const float* aabb = nullptr ;  
-        const float* param6 = nullptr ; 
+        const float* param6 = nullptr ;  // TODO: get param from snd narrowed to float (or narrow inside CSGNode) 
 
         cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
     }
 
     const std::vector<float4>* pl = nullptr ;  // planes
-    const Tran<double>* tv = nullptr ; 
 
-    // TODO: combine structual transform obtained via snode
-    // and CSG relative transform from snd to recreate the gtransform 
-    // from GGeo/NNode workflow
-    //
-    // glm::tmat4x4<double> t 
-    // glm::tmat4x4<double> v
-    // tv = new Tran<double>(t, v);
+    glm::tmat4x4<double> t(1.)  ; 
+    glm::tmat4x4<double> v(1.) ; 
+    st->get_transform(t, v, node, nd ); 
+
+    Tran<double>* tv = new Tran<double>(t, v);
 
     CSGNode* n = fd->addNode(cn, pl, tv  );    // Tran gets narrowed
 
