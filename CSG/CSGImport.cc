@@ -261,7 +261,7 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 
     glm::tmat4x4<double> t(1.)  ; 
     glm::tmat4x4<double> v(1.) ; 
-    st->get_transform(t, v, node, nd ); 
+    st->get_combined_transform(t, v, node, nd, nullptr ); 
 
     Tran<double>* tv = new Tran<double>(t, v);
 

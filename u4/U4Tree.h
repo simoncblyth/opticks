@@ -412,12 +412,16 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     st->w2m.push_back(tr_w2m);  
 
 
-    glm::tmat4x4<double> tr_gtd(1.) ;          // "GGeo Transform Debug" comparison
-    st->get_m2w_product(tr_gtd, nidx, false );  // NB this must be after push back of nd and tr_m2w
-    // product of m2w transforms from root down to nidx 
 
-    st->gtd.push_back(tr_gtd);  
+    glm::tmat4x4<double> tt_gtd(1.) ;    // "GGeo Transform Debug" comparison
+    glm::tmat4x4<double> vv_gtd(1.) ;
 
+    bool local = false ; 
+    bool reverse = false ; 
+    st->get_node_product( tt_gtd, vv_gtd, nidx, local, reverse, nullptr );   
+    // product of m2w transforms from root down to nidx,  must be after push_backs of nd and tr_m2w
+
+    st->gtd.push_back(tt_gtd);  
 
 
     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ; 
