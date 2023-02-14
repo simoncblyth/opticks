@@ -383,7 +383,6 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
 
     int nidx = st->nds.size() ;  // 0-based node index
 
-
     snode nd ; 
 
     nd.index = nidx ;

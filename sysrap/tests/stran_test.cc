@@ -13,23 +13,24 @@ void test_from_string()
 
     qat4* a = qat4::from_string(a_str); 
 
-    unsigned id0[3] ;
+    int id0[4] ;
     id0[0] = 1 ; 
     id0[1] = 10 ; 
     id0[2] = 100 ; 
+    id0[3] = 1000 ; 
 
-    a->setIdentity( id0[0], id0[1], id0[2] );
+    a->setIdentity( id0[0], id0[1], id0[2], id0[3] );
 
     const qat4* i = Tran<double>::Invert( a ); 
 
-    unsigned id1[3] ; 
-    i->getIdentity( id1[0], id1[1], id1[2] ); 
+    int id1[4] ; 
+    i->getIdentity( id1[0], id1[1], id1[2], id1[3] ); 
 
 
     assert( id0[0] == id1[0] ); 
     assert( id0[1] == id1[1] ); 
     assert( id0[2] == id1[2] ); 
-
+    assert( id0[3] == id1[3] ); 
 
     Tran<double>* chk = Tran<double>::FromPair( a, i, 1e-3 ); 
 
@@ -40,8 +41,8 @@ void test_from_string()
 void test_Translate()
 {
     glm::tvec3<double> tlate(1., 2., 3.);  
-    glm::tmat4x4<double> tr = Tran<double>::Translate( tlate ); 
-    std::cout << Tran<double>::Desc(tr) << std::endl ;    
+    glm::tmat4x4<double> tr = stra<double>::Translate( tlate ); 
+    std::cout << stra<double>::Desc(tr) << std::endl ;    
 }
 
 
@@ -53,20 +54,20 @@ void test_MakeRotateA2B()
     glm::tvec3<double> a = glm::normalize(a_); 
     glm::tvec3<double> b = glm::normalize(b_); 
 
-    std::cout << " a " << Tran<double>::Desc(a) << std::endl ;    
-    std::cout << " b " << Tran<double>::Desc(b) << std::endl ;    
+    std::cout << " a " << stra<double>::Desc(a) << std::endl ;    
+    std::cout << " b " << stra<double>::Desc(b) << std::endl ;    
 
-    glm::tmat4x4<double> tr0 = Tran<double>::RotateA2B(a, b, false ); 
-    std::cout << " Tran<double>::Rotate(a,b,false) " << std::endl << Tran<double>::Desc(tr0) << std::endl ;    
+    glm::tmat4x4<double> tr0 = stra<double>::RotateA2B(a, b, false ); 
+    std::cout << " stra<double>::Rotate(a,b,false) " << std::endl << stra<double>::Desc(tr0) << std::endl ;    
 
-    glm::tmat4x4<double> tr1 = Tran<double>::RotateA2B(a, b, true ); 
-    std::cout << " Tran<double>::Rotate(a,b,true) " << std::endl << Tran<double>::Desc(tr1) << std::endl ;    
+    glm::tmat4x4<double> tr1 = stra<double>::RotateA2B(a, b, true ); 
+    std::cout << " stra<double>::Rotate(a,b,true) " << std::endl << stra<double>::Desc(tr1) << std::endl ;    
 
     glm::tvec4<double> a4(a, 0.); 
     glm::tvec4<double> b4(b, 0.); 
 
-    std::cout << std::setw(20) << " a4 " << Tran<double>::Desc(a4) << std::endl ;    
-    std::cout << std::setw(20) << " b4 " << Tran<double>::Desc(b4) << std::endl ;    
+    std::cout << std::setw(20) << " a4 " << stra<double>::Desc(a4) << std::endl ;    
+    std::cout << std::setw(20) << " b4 " << stra<double>::Desc(b4) << std::endl ;    
 
     glm::tvec4<double> tr0_a4 = tr0 * a4 ; 
     glm::tvec4<double> tr1_a4 = tr1 * a4 ; 
@@ -75,11 +76,11 @@ void test_MakeRotateA2B()
     glm::tvec4<double> a4_tr1 = a4 * tr1 ; 
 
 
-    std::cout << std::setw(20) << " tr0_a4 " << Tran<double>::Desc(tr0_a4) << std::endl ;    
-    std::cout << std::setw(20) << " tr1_a4 " << Tran<double>::Desc(tr1_a4) << " (this matches b4) " << std::endl ;    
+    std::cout << std::setw(20) << " tr0_a4 " << stra<double>::Desc(tr0_a4) << std::endl ;    
+    std::cout << std::setw(20) << " tr1_a4 " << stra<double>::Desc(tr1_a4) << " (this matches b4) " << std::endl ;    
 
-    std::cout << std::setw(20) << " a4_tr0 " << Tran<double>::Desc(a4_tr0) << " (this matches b4) " << std::endl ;    
-    std::cout << std::setw(20) << " a4_tr1 " << Tran<double>::Desc(a4_tr1) << std::endl ;    
+    std::cout << std::setw(20) << " a4_tr0 " << stra<double>::Desc(a4_tr0) << " (this matches b4) " << std::endl ;    
+    std::cout << std::setw(20) << " a4_tr1 " << stra<double>::Desc(a4_tr1) << std::endl ;    
 }
 
 /**
@@ -106,26 +107,26 @@ void test_Place()
     glm::tvec3<double> a = glm::normalize(a_); 
     glm::tvec3<double> b = glm::normalize(b_); 
 
-    std::cout << " a " << Tran<double>::Desc(a) << std::endl ;    
-    std::cout << " b " << Tran<double>::Desc(b) << std::endl ;    
-    std::cout << " c " << Tran<double>::Desc(c) << std::endl ;    
+    std::cout << " a " << stra<double>::Desc(a) << std::endl ;    
+    std::cout << " b " << stra<double>::Desc(b) << std::endl ;    
+    std::cout << " c " << stra<double>::Desc(c) << std::endl ;    
 
 
-    glm::tmat4x4<double> tr0 = Tran<double>::Place(a, b, c, false ); 
-    std::cout << " tr0 = Tran<double>::Place(a,b,c,false) " << std::endl << Tran<double>::Desc(tr0) << std::endl ;    
+    glm::tmat4x4<double> tr0 = stra<double>::Place(a, b, c, false ); 
+    std::cout << " tr0 = stra<double>::Place(a,b,c,false) " << std::endl << stra<double>::Desc(tr0) << std::endl ;    
 
-    glm::tmat4x4<double> tr1 = Tran<double>::Place(a, b, c, true ); 
-    std::cout << " tr1 = Tran<double>::Place(a,b,c,true) " << std::endl << Tran<double>::Desc(tr1) << std::endl ;    
+    glm::tmat4x4<double> tr1 = stra<double>::Place(a, b, c, true ); 
+    std::cout << " tr1 = stra<double>::Place(a,b,c,true) " << std::endl << stra<double>::Desc(tr1) << std::endl ;    
 
     glm::tvec4<double> a4(a, 1.); 
     glm::tvec4<double> b4(b, 1.); 
     glm::tvec4<double> c4(c, 1.); 
     glm::tvec4<double> e4(b+c, 1.); 
 
-    std::cout << std::setw(20) << " a4 " << Tran<double>::Desc(a4) << std::endl ;    
-    std::cout << std::setw(20) << " b4 " << Tran<double>::Desc(b4) << std::endl ;    
-    std::cout << std::setw(20) << " c4 " << Tran<double>::Desc(c4) << std::endl ;    
-    std::cout << std::setw(20) << " e4 = b + c " << Tran<double>::Desc(e4) << std::endl ;    
+    std::cout << std::setw(20) << " a4 " << stra<double>::Desc(a4) << std::endl ;    
+    std::cout << std::setw(20) << " b4 " << stra<double>::Desc(b4) << std::endl ;    
+    std::cout << std::setw(20) << " c4 " << stra<double>::Desc(c4) << std::endl ;    
+    std::cout << std::setw(20) << " e4 = b + c " << stra<double>::Desc(e4) << std::endl ;    
 
     glm::tvec4<double> tr0_a4 = tr0 * a4 ; 
     glm::tvec4<double> tr1_a4 = tr1 * a4 ; 
@@ -134,13 +135,13 @@ void test_Place()
     glm::tvec4<double> a4_tr1 = a4 * tr1 ; 
 
 
-    std::cout << std::setw(20) << " tr0_a4 " << Tran<double>::Desc(tr0_a4) << std::endl ;    
-    std::cout << std::setw(20) << " tr1_a4 " << Tran<double>::Desc(tr1_a4) << "(this gives expected e4)" << std::endl ;    
+    std::cout << std::setw(20) << " tr0_a4 " << stra<double>::Desc(tr0_a4) << std::endl ;    
+    std::cout << std::setw(20) << " tr1_a4 " << stra<double>::Desc(tr1_a4) << "(this gives expected e4)" << std::endl ;    
 
-    std::cout << std::setw(20) << " a4_tr0 " << Tran<double>::Desc(a4_tr0) << std::endl ;    
-    std::cout << std::setw(20) << " a4_tr1 " << Tran<double>::Desc(a4_tr1) << std::endl ;    
+    std::cout << std::setw(20) << " a4_tr0 " << stra<double>::Desc(a4_tr0) << std::endl ;    
+    std::cout << std::setw(20) << " a4_tr1 " << stra<double>::Desc(a4_tr1) << std::endl ;    
 
-    std::cout << std::setw(20) << " e4 = b + c  " << Tran<double>::Desc(e4) << std::endl ;    
+    std::cout << std::setw(20) << " e4 = b + c  " << stra<double>::Desc(e4) << std::endl ;    
 }
 
 
@@ -153,7 +154,7 @@ glm::tmat4x4<T> make_translate(T tx, T ty, T tz)
            0., 1., 0., 0., 
            0., 0., 1., 0., 
            tx, ty, tz, 1. }} ; 
-    glm::tmat4x4<T> tr = Tran<T>::FromData(aa.data()) ; 
+    glm::tmat4x4<T> tr = stra<T>::FromData(aa.data()) ; 
     return tr ; 
 }
 

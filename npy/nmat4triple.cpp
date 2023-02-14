@@ -267,7 +267,7 @@ const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const g
 {
     LOG(LEVEL) << "[ " << user ; 
 
-    nmat4triple perturb( txf );
+    nmat4triple perturb( txf );   // this ctor takes tvf into "t" slot and inverts txf into "v" slot 
     if(perturb.match == false)
     {
         LOG(error) << "perturb.match false : precision issue in inverse ? " ; 
@@ -284,7 +284,7 @@ const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const g
     }
     else
     {
-        triples.push_back(&perturb);
+        triples.push_back(&perturb);  // for reverse:false the perturb(txf) comes first in the product 
         triples.push_back(src);    
     }
 

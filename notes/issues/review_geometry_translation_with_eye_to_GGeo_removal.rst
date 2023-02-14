@@ -395,6 +395,59 @@ HMM: need to identify the ridx and the containing node in order to know where th
 
 
 
+combining the structural transforms with the csg transforms ?
+----------------------------------------------------------------
+
+
+
+GParts::applyPlacementTransform does::
+
+    1243     for(unsigned i=0 ; i < ni ; i++)
+    1244     {
+    1245         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
+    1247         bool match = true ;
+    1248         const nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform", match );
+    1251         if(!match) mismatch.push_back(i);
+    1253         m_tran_buffer->setMat4Triple( ntvq, i );
+       
+
+* placement is the structural transform
+
+
+    266 const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user, bool& match) // static
+    267 {
+    268     LOG(LEVEL) << "[ " << user ;
+    269 
+    270     nmat4triple perturb( txf );
+    271     if(perturb.match == false)
+    272     {
+    273         LOG(error) << "perturb.match false : precision issue in inverse ? " ;
+    274     }
+    275 
+    276     match = perturb.match ;
+    277 
+    278     std::vector<const nmat4triple*> triples ;
+    279 
+    280     if(reverse)
+    281     {
+    282         triples.push_back(src); 
+    283         triples.push_back(&perturb);
+    284     }
+    285     else
+    286     {
+    287         triples.push_back(&perturb);
+    288         triples.push_back(src); 
+    289     }
+    290 
+    291     const nmat4triple* transformed = nmat4triple::product( triples, reverse );
+    292 
+    293     LOG(LEVEL) << "] " << user ;
+    294     return transformed ;
+    295 }
+
+
+
+
 stree::get_itransform : where does the CSG transform inverse happen in old workflow
 --------------------------------------------------------------------------------------
 

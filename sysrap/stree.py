@@ -132,12 +132,12 @@ class stree(object):
 
     def __init__(self, f):
         sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
-        sf = sfreq(sff)
-        nds = snode.RecordsFromArrays(f.nds)
-        rem = snode.RecordsFromArrays(f.rem)
-        csg = snd.RecordsFromArrays(f.csg.node[:,:12])
-        factor = sfactor.RecordsFromArrays(f.factor[:,:4])
-        soname_ = self.MakeTxtArray(f.soname.lines)
+        sf = None if sff is None else sfreq(sff)
+        nds = None if f.nds is None else snode.RecordsFromArrays(f.nds)
+        rem = None if f.rem is None else snode.RecordsFromArrays(f.rem)
+        csg = None if f.csg is None else snd.RecordsFromArrays(f.csg.node[:,:12])
+        factor = None if f.factor is None else sfactor.RecordsFromArrays(f.factor[:,:4])
+        soname_ = None if len(f.soname.lines) == 0  else self.MakeTxtArray(f.soname.lines)
 
         self.sf = sf
         self.f = f 

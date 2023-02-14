@@ -61,9 +61,6 @@ struct SYSRAP_API snd
     char label[16] ;   // sizeof 4 int 
 
 
-
-
-
     static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "snd" ; 
     static constexpr const double zero = 0. ; 
@@ -87,7 +84,8 @@ struct SYSRAP_API snd
     static void GetTypes(std::vector<int>& types, const std::vector<int>& idxs ); 
 
     static int  GetNodeXForm(int idx) ; 
-    static void SetNodeXForm(int idx, const glm::tmat4x4<double>& tr );
+    static void SetNodeXForm(int idx, const glm::tmat4x4<double>& t );
+    static void SetNodeXForm(int idx, const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v );
 
     void setXF( const glm::tmat4x4<double>& t ); 
     void setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
@@ -98,9 +96,9 @@ struct SYSRAP_API snd
     const sxf* getXF() const ; 
     sxf*       getXF_(); 
 
-    static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) ; 
+    static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out ) ; 
     static std::string DescNodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) ; 
-    void node_transform_product(                          glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) const ; 
+    void node_transform_product(                          glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out ) const ; 
 
 
 

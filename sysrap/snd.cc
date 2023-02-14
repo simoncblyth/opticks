@@ -17,6 +17,7 @@
 #include "snd.hh"
 #include "sndtree.h"
 #include "st.h"
+#include "stra.h"
 
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
@@ -123,6 +124,14 @@ void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t )
     snd* nd = Get_(idx); 
     nd->setXF(t); 
 }
+void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
+{
+    snd* nd = Get_(idx); 
+    nd->setXF(t, v); 
+}
+
+
+
 
 /**
 snd::setXF
@@ -181,92 +190,78 @@ snd::NodeTransformProduct
 
 cf nmat4triple::product
 
-
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int j = reverse ? num_nodes - 1 - i : i ;  
-        int idx = nodes[j] ; 
-
 **/
 
-void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse)  // static
+void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out)  // static
 {
-    std::vector<int> nodes ; 
-    Ancestors(root, nodes);  
-    nodes.push_back(root); 
-    int num_nodes = nodes.size();
+    std::vector<int> nds ; 
+    Ancestors(root, nds);  
+    nds.push_back(root); 
+    int num_nds = nds.size();
+
+    if(out)
+    {
+        *out 
+             << std::endl 
+             << "snd::NodeTransformProduct" 
+             << " root " << root 
+             << " reverse " << reverse
+             << " num_nds " << num_nds 
+             << std::endl 
+             ;
+    }
 
     glm::tmat4x4<double> tp(1.); 
     glm::tmat4x4<double> vp(1.); 
 
-    for(int i=0 ; i < num_nodes ; i++ ) 
+    for(int i=0 ; i < num_nds ; i++ ) 
     {
-        int j = num_nodes - 1 - i ;  
-        int ii = nodes[reverse ? j : i] ; 
-        int jj = nodes[reverse ? i : j] ; 
+        int j  = num_nds - 1 - i ;  
+        int ii = nds[reverse ? j : i] ; 
+        int jj = nds[reverse ? i : j] ; 
 
         const sxf* ixf = GetXF(ii) ; 
         const sxf* jxf = GetXF(jj) ; 
+
+        if(out)
+        {
+            *out
+                << " i " << i 
+                << " j " << j 
+                << " ii " << ii 
+                << " jj " << jj
+                << " ixf " << ( ixf ? "Y" : "N" ) 
+                << " jxf " << ( jxf ? "Y" : "N" ) 
+                << std::endl 
+                ; 
+
+           if(ixf) *out << stra<double>::Desc( ixf->t, ixf->v, "(ixf.t)", "(ixf.v)" ) << std::endl ;   
+           if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;   
+        }
+
 
         if(ixf) tp *= ixf->t ; 
         if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
     }
     memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
     memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
+
+    if(out) *out << stra<double>::Desc( tp, vp , "tp", "vp" ) << std::endl ;
 }
 
 std::string snd::DescNodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v,  bool reverse) // static
 {
     std::stringstream ss ; 
-
-    std::vector<int> nodes ; 
-    Ancestors(root, nodes);  
-    nodes.push_back(root); 
-    int num_nodes = nodes.size();
-
-    ss << "snd::DescNodeTransformProduct"
-       << " root " << root 
-       << " reverse " << reverse 
-       << " num_nodes " << num_nodes
-       << std::endl 
-       ;
-
-    glm::tmat4x4<double> tp(1.); 
-    glm::tmat4x4<double> vp(1.); 
-
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int j = num_nodes - 1 - i ;  
-        int ii = nodes[reverse ? j : i] ; 
-        int jj = nodes[reverse ? i : j] ; 
-        const sxf* ixf = GetXF(ii) ; 
-        const sxf* jxf = GetXF(jj) ; 
-
-        ss 
-            << " i " << i 
-            << " j " << j 
-            << " ii " << ii 
-            << " jj " << jj
-            << " ixf " << ( ixf ? "Y" : "N" ) 
-            << " jxf " << ( jxf ? "Y" : "N" ) 
-            << std::endl 
-            ; 
-
-        if(ixf) tp *= ixf->t ; 
-        if(jxf) vp *= jxf->v ;  // inverse-transform product in opposite order
-    }
- 
-    memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
-    memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
-
+    ss << "snd::DescNodeTransformProduct" << std::endl ;
+    NodeTransformProduct( root, t, v, reverse, &ss );     
     std::string str = ss.str(); 
     return str ; 
 }
 
 
-void snd::node_transform_product(glm::tmat4x4<double>& t, glm::tmat4x4<double>& v,  bool reverse ) const 
+void snd::node_transform_product(glm::tmat4x4<double>& t, glm::tmat4x4<double>& v,  bool reverse, std::ostream* out ) const 
 {
-    NodeTransformProduct(index, t, v, reverse); 
+    NodeTransformProduct(index, t, v, reverse, out); 
 }
 
 
@@ -1525,7 +1520,7 @@ std::ostream& operator<<(std::ostream& os, const snd& v)
 
 
 
-snd snd::Init(int tc)  // init 
+snd snd::Init(int tc)  // static
 {
     snd nd = {} ;
     nd.init(); 
