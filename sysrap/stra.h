@@ -57,6 +57,14 @@ struct stra
     static glm::tmat4x4<T> RotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
 
     static glm::tmat4x4<T> Place(                 const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
+
+
+    static T Maxdiff_from_Identity(const glm::tmat4x4<T>& m); 
+    static bool IsIdentity(const glm::tmat4x4<T>& m, T epsilon=1e-6); 
+    static bool IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>& v, T epsilon=1e-6); 
+
+ 
+
 }; 
 
 
@@ -365,6 +373,38 @@ inline glm::tmat4x4<T> stra<T>::Place(const glm::tvec3<T>& a, const glm::tvec3<T
 
     return tra ; 
 }
+
+
+
+
+
+template<typename T>
+inline T stra<T>::Maxdiff_from_Identity(const glm::tmat4x4<T>& m)  
+{
+    T mxdif = 0. ; 
+    for(int j=0 ; j < 4 ; j++ ) 
+    for(int k=0 ; k < 4 ; k++ ) 
+    {
+        T val = m[j][k] ; 
+        T xval = j == k ? T(1) : T(0) ; 
+        T dif = std::abs( val - xval ) ; 
+        if(dif > mxdif) mxdif = dif ; 
+    }
+    return mxdif ; 
+}
+
+template<typename T>
+inline bool stra<T>::IsIdentity(const glm::tmat4x4<T>& m, T epsilon ) 
+{
+    T mxdif = Maxdiff_from_Identity(m); 
+    return mxdif < epsilon ; 
+} 
+
+template<typename T>
+inline bool stra<T>::IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>& v, T epsilon ) 
+{
+    return IsIdentity(t, epsilon) && IsIdentity(v, epsilon) ; 
+} 
 
 
 

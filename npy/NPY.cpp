@@ -342,8 +342,13 @@ void NPY<T>::reserve(unsigned items)
 
 
 
+/**
+NPY::updateDigests
+--------------------
 
+Updates a vector of digest strings that must all be unique 
 
+**/
 
 template <typename T>
 void NPY<T>::updateDigests()
@@ -372,19 +377,25 @@ void NPY<T>::updateDigests()
     }
 }
 
+/**
+NPY::::addItemUnique
+-----------------------
+
+Add single item from other buffer only if the item is not already present in this buffer, 
+
+* the other buffer must have the same itemsize as this buffer
+* the other buffer may of course only contain a single item, in which case item will be 0 
+
+returns the 0-based index of the newly added item if unique or the preexisting 
+item if not unique
+
+
+**/
 
 template <typename T>
 unsigned NPY<T>::addItemUnique(NPY<T>* other, unsigned item)
 {
-    // Add single item from other buffer only if the item is not already present in this buffer, 
-    // 
-    // * the other buffer must have the same itemsize as this buffer
-    // * the other buffer may of course only contain a single item, in which case item will be 0 
-    //
-    // returns the 0-based index of the newly added item if unique or the preexisting 
-    // item if not unique
-    //
- 
+
     assert(item < other->getNumItems() );
 
     updateDigests();

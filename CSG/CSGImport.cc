@@ -15,6 +15,9 @@
 
 const plog::Severity CSGImport::LEVEL = SLOG::EnvLevel("CSGImport", "DEBUG" ); 
 
+const int CSGImport::LVID = SSys::getenvint("LVID", -1); 
+const int CSGImport::NDID = SSys::getenvint("NDID", -1); 
+
 
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
@@ -85,7 +88,8 @@ After CSG_GGeo_Convert::convertAllSolid
 
 void CSGImport::importSolid()
 {
-    for(int ridx=0 ; ridx < st->get_num_ridx() ; ridx++) 
+    int num_ridx = st->get_num_ridx() ; 
+    for(int ridx=0 ; ridx < num_ridx ; ridx++) 
     {
         std::string _rlabel = CSGSolid::MakeLabel('r',ridx) ;
         const char* rlabel = _rlabel.c_str(); 
@@ -205,6 +209,19 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     snd::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
 
+
+
+    bool dump_LVID = node.lvid == LVID ; 
+    if(dump_LVID) std::cout 
+        << "CSGImport::importPrim"
+        << " node.lvid " << node.lvid
+        << " primIdx " << primIdx  
+        << " numParts " << numParts  
+        << " dump_LVID " << dump_LVID  
+        << std::endl 
+        ; 
+
+
     CSGPrim* pr = fd->addPrim( numParts );
 
     pr->setMeshIdx(lvid);
@@ -230,19 +247,11 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
 
 /**
-CSGImport::importNode
-----------------------------
-
-CAUTION: this method is less general than it first looks
+CSGImport::importNode (cf CSG_GGeo_Convert::convertNode)
+----------------------------------------------------------
 
 An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
 that is associated with the structural *snode*. 
-
-TODO: transforms, planes, aabb 
-
-cf CSG_GGeo_Convert::convertNode
-
-Need to
 **/
 
 CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
@@ -261,9 +270,44 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 
     glm::tmat4x4<double> t(1.)  ; 
     glm::tmat4x4<double> v(1.) ; 
-    st->get_combined_transform(t, v, node, nd, nullptr ); 
 
-    Tran<double>* tv = new Tran<double>(t, v);
+
+    bool dump_LVID = node.lvid == LVID ; 
+    if( dump_LVID )
+    {
+        std::cout 
+            << "CSGImport::importNode dump_LVID "
+            << " node.lvid " << node.lvid
+            << " nodeIdx " << nodeIdx 
+            << std::endl 
+            ;
+    }
+
+    bool dump_NDID = node.lvid == LVID && nodeIdx == NDID ; 
+
+    std::stringstream* ss = dump_NDID ? new std::stringstream : nullptr ; 
+
+    st->get_combined_transform(t, v, node, nd, ss ); 
+
+    if(ss) 
+    {
+        std::string str = ss->str(); 
+        std::cout 
+            << "CSGImport::importNode"
+            << " node.lvid " << node.lvid 
+            << " nodeIdx " << nodeIdx 
+            << " LVID " << LVID
+            << " NDID " << NDID 
+            << " dump_NDID " << ( dump_NDID ? "YES" : "NO" )
+            << std::endl
+            << str 
+            << std::endl
+            ;
+            
+    }
+
+
+    Tran<double>* tv = new Tran<double>(t, v) ; 
 
     CSGNode* n = fd->addNode(cn, pl, tv  );    // Tran gets narrowed
 

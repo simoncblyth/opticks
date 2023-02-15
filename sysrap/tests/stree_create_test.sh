@@ -3,6 +3,17 @@ usage(){ cat << EOU
 stree_create_test.sh 
 ======================
 
+::
+
+   ./stree_create_test.sh  
+
+build
+    standalone compile 
+run
+    create geometry from scratch and compares query results with expectations
+    then persists the geometry to file
+ana 
+    ipython loads the geometry for examination 
 
 EOU
 }

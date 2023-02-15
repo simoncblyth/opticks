@@ -70,7 +70,28 @@ class CSGPrim(CSGObject):
     XFIELD = "nx ny nz mx my mz s2 s3".split()
 
 
-        
+
+class CSGNode(CSGObject):
+    DTYPE = [
+             ('p0', '<f4'),
+             ('p1', '<f4'),
+             ('p2', '<f4'),
+             ('p3', '<f4'),
+             ('p4', '<f4'),
+             ('p5', '<f4'),
+             ('boundary', '<i4'),
+             ('index', '<i4'),
+             ('BBMin_x', '<f4'),
+             ('BBMin_y', '<f4'),
+             ('BBMin_z', '<f4'),
+             ('BBMax_x', '<f4'),
+             ('BBMax_y', '<f4'),
+             ('BBMax_z', '<f4'),
+             ('typecode','<i4'),
+             ('comptran','<i4'),
+             ]
+    FIELD = "p0 p1 p2 p3 p4 p5 bn ix nx ny nz mx my mz tc ct".split()
+ 
 
 
 
@@ -473,7 +494,8 @@ class CSGFoundry(object):
         self.stamps = stamps
         self.fold = fold
         self.pr = CSGPrim.RecordsFromArrays(self.prim[:,:2].reshape(-1,8).view(np.int32)) 
-
+        self.nf = CSGNode.RecordsFromArrays(self.node.reshape(-1,16).view(np.float32)) 
+        self.ni = CSGNode.RecordsFromArrays(self.node.reshape(-1,16).view(np.int32)) 
 
 
     def desc(self, stem):

@@ -331,19 +331,14 @@ struct stree
     int         get_lvid(  int nidx) const ; 
     int         get_copyno(int nidx) const ; 
 
-    /*
-    const glm::tmat4x4<double>& get_m2w(int nidx) const ; 
-    const glm::tmat4x4<double>& get_w2m(int nidx) const ; 
+    const snode* get_node(int nidx) const ; 
+    const snode* get_parent_node(int nidx) const ; 
+    bool         is_outer_node(int nidx) const ; 
 
-    // typically with m2w products expect reverse:false
-    void get_m2w_product(       glm::tmat4x4<double>& transform, int nidx,                      bool local  , bool reverse) const ;
-    std::string desc_m2w_product(                       int nidx, bool local  , bool reverse)const ; 
+    void         get_ancestors(std::vector<int>& ancestors, int nidx, bool local, std::ostream* out ) const ;
+    std::string desc_ancestors(                             int nidx, bool local ) const ;
 
-    // typically with w2m products expect reverse:true 
-    void get_w2m_product(       glm::tmat4x4<double>& transform, int nidx,                      bool local  , bool reverse) const ; 
-    */
 
-    void get_ancestors(       std::vector<int>& ancestors, int nidx, bool local ) const ;
     void get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx ) const ; 
     void get_node_product(   
            glm::tmat4x4<double>& m2w_, 
@@ -369,7 +364,6 @@ struct stree
 
     std::string desc_nodes( const std::vector<int>&   nn, int edgeitems=10) const ;
     std::string desc_nodes_(const std::vector<snode>& nn, int edgeitems=10) const ;
-    std::string desc_ancestry(int nidx, bool show_sub=false, bool local=false ) const ;
     std::string desc_solids() const ; 
 
     static std::string FormPath(const char* base, const char* rel ); 
@@ -1127,83 +1121,40 @@ inline int stree::get_copyno(int nidx) const
     return nidx > -1 ? nds[nidx].copyno : -1 ; 
 }
 
-
-/*
-inline const glm::tmat4x4<double>& stree::get_m2w(int nidx) const 
+inline const snode* stree::get_node(int nidx) const 
 {
-    assert( nidx > -1 && nidx < int(m2w.size())); 
-    return m2w[nidx] ; 
+    return &nds[nidx] ; 
 }
-inline const glm::tmat4x4<double>& stree::get_w2m(int nidx) const 
+inline const snode* stree::get_parent_node(int nidx) const 
 {
-    assert( nidx > -1 && nidx < int(w2m.size())); 
-    return w2m[nidx] ; 
+    const snode* n0 = &nds[nidx] ; 
+    const snode* nd = n0->parent > -1 ? &nds[n0->parent] : nullptr ; 
+    return nd ; 
 }
-inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool local, bool reverse ) const 
-{
-    std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx, local);  // root-first-order (from collecting parent links then reversing the vector)
-    nodes.push_back(nidx); 
-{
-    int num_nodes = nodes.size();
-    glm::tmat4x4<double> xform(1.); 
 
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>& t = get_m2w(idx) ; 
-        xform *= t ;           
-    }
-    memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
+/**
+stree::is_outer_node
+----------------------
+
+An outer node is either the root node with no parent
+or has a parent with a different repeat_index.
+The outer nodes correspond to base nodes of the instances. 
+
+**/
+
+inline bool stree::is_outer_node(int nidx) const 
+{
+    const snode* n = get_node(nidx); 
+    assert(n); 
+    const snode* p = get_parent_node(nidx); 
+
+    return p == nullptr ? 
+                            true  
+                         :
+                            p->repeat_index != n->repeat_index 
+                         ;
+
 }
-inline std::string stree::desc_m2w_product(int nidx, bool local, bool reverse) const 
-{
-    std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx, local); 
-    nodes.push_back(nidx); 
-    int num_nodes = nodes.size();
-
-    std::stringstream ss ; 
-    ss << "stree::desc_m2w_product"
-       << " nidx " << nidx 
-       << " local " << local
-       << " reverse " << reverse
-       << " nodes [" 
-       ; 
-    for(int i=0 ; i < num_nodes ; i++ ) ss << " " << nodes[i] ; 
-    ss << "]" << std::endl ; 
-
-    glm::tmat4x4<double> xform(1.); 
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>& t = get_m2w(idx) ; 
-        xform *= t ; 
-
-        const char* so = get_soname(idx) ; 
-        ss << " i " << i << " idx " << idx << " so " << so << std::endl ; 
-        ss << strid::Desc_("t", "xform",  t, xform ) << std::endl ; 
-    }
-    std::string s = ss.str(); 
-    return s ; 
-}
-inline void stree::get_w2m_product( glm::tmat4x4<double>& transform, int nidx, bool local, bool reverse ) const 
-{
-    std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx, local); 
-    nodes.push_back(nidx); 
-
-    glm::tmat4x4<double> xform(1.); 
-    int num_nodes = nodes.size();
-    for(int i=0 ; i < num_nodes ; i++ ) 
-    {
-        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
-        const glm::tmat4x4<double>& t = get_w2m(idx) ;  
-        xform *= t ; 
-    }
-    memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
-}
-*/
 
 
 
@@ -1228,29 +1179,76 @@ local:true
     For *nidx* within the remainder nodes this is expected to start from root, nidx 0.
     For *nidx* within instanced nodes this will only include nodes within that same instance. 
 
+
+
+Q: Judgement after collection, so does that correctly skip the outer ?  
+A: No because its recording the parent looking ahead, hence try popping the last 
+
 **/
 
-
-inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx, bool local ) const
+inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx, bool local, std::ostream* out ) const
 {
-    const snode& nd = nds[nidx] ; 
-    int ridx = nd.repeat_index ; 
-    int parent = nd.parent ; 
-    while( parent > -1 )
+    const snode* nd0 = &nds[nidx] ; 
+    const snode* nd = nd0->parent > -1 ? &nds[nd0->parent] : nullptr ; 
+
+    while(nd)
     {
-        ancestors.push_back(parent);
-        const snode& pd = nds[parent] ; 
+        if(local == false)
+        {
+            ancestors.push_back(nd->index);
+        }
+        else if( !is_outer_node(nd->index) && nd->repeat_index == nd0->repeat_index )
+        {
+            ancestors.push_back(nd->index);
+        }
 
-        parent = local == false ? 
-                                    pd.parent 
-                                :
-                                    ( pd.repeat_index == ridx ? pd.parent : -1  )
-                                ;
-
-        // judgement after collection, so does that correctly skip the outer ?  
+        nd = nd->parent > -1 ? &nds[nd->parent] : nullptr ; 
     }
     std::reverse( ancestors.begin(), ancestors.end() );
+
+    if(out) 
+    {
+        int num_ancestors = ancestors.size() ; 
+        *out 
+            << "stree::get_ancestors"
+            << " nidx " << nidx 
+            << " local " << local
+            << " nd0.repeat_index " << ( nd0 ? nd0->repeat_index : -10 ) 
+            << " nd.repeat_index "  << ( nd  ? nd->repeat_index  : -10 )
+            ;
+
+        *out 
+            << " num_ancestors " << num_ancestors
+            << " [" 
+            ; 
+        for(int i=0 ; i < num_ancestors ; i++) *out << ancestors[i] << " " ; 
+        *out << "]" << std::endl ; 
+
+        bool show_sub = true ; 
+        for(int i=0 ; i < num_ancestors ; i++) *out << desc_node(ancestors[i], show_sub) << std::endl ;
+        *out << desc_node(nidx, show_sub) << " " << std::endl ; 
+    }
+
+
 }
+
+
+inline std::string stree::desc_ancestors(int nidx, bool local) const
+{
+    std::stringstream ss ; 
+    std::vector<int> ancestors ;
+    get_ancestors(ancestors, nidx, local, &ss );
+
+    ss << "stree::desc_ancestors" << std::endl ; 
+    std::string str = ss.str(); 
+    ss << str ; 
+    std::string s = ss.str();
+    return s ; 
+}
+
+
+
+
 
 
 inline void stree::get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx ) const 
@@ -1267,14 +1265,23 @@ inline void stree::get_node_product(
                       glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse, std::ostream* out ) const 
 {
     std::vector<int> nodes ; 
-    get_ancestors(nodes, nidx, local);  // root-first-order (from collecting parent links then reversing the vector)
-    nodes.push_back(nidx); 
+    get_ancestors(nodes, nidx, local, out);  // root-first-order (from collecting parent links then reversing the vector)
+
+    bool is_local_outer = local && is_outer_node(nidx) ; 
+    if(is_local_outer == false ) nodes.push_back(nidx); 
+
     int num_nodes = nodes.size();
 
     if(out)
     {
-        *out << "stree::get_node_product"  ; 
-        *out << " num_nodes " << num_nodes << " [" ; 
+        *out << "stree::get_node_product"  
+             << " nidx " << nidx
+             << " local " << local 
+             << " reverse " << reverse 
+             << " is_local_outer " << is_local_outer
+             << " num_nodes " << num_nodes 
+             << " [" 
+             ; 
         for(int i=0 ; i < num_nodes ; i++ ) *out << " " << nodes[i] ; 
         *out << "]" << std::endl ; 
     }
@@ -1342,15 +1349,10 @@ inline std::string stree::desc_node_product( glm::tmat4x4<double>& m2w_, glm::tm
 stree::get_combined_transform : combining structural and CSG transforms
 ------------------------------------------------------------------------
 
+Canonical usage from CSGImport::importNode
+
 The CSG constituent *snd* lvid is required to directly match that of 
 the structural *snode*, not just by containment but directly.  
-
-For node.repeat_index > 0 the  *get_m2w_product_local* combines transforms of ancestors 
-restricted to being within the same ridx as the nidx. (HMM: should exclude the outer one ?) 
-
-HMM : it would be good to avoid persisting all ~300k node transforms maybe by 
-caching earlier ? 
-
 
 
 modelFrame
@@ -1391,7 +1393,6 @@ sysrap/tests/stree_create_test.cc
 
 inline void stree::get_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd, std::ostream* out ) const 
 {
-    assert( node.lvid == nd->lvid );
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer 
 
     glm::tmat4x4<double> tt(1.) ;
@@ -1405,6 +1406,7 @@ inline void stree::get_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4
 
     if(nd)
     { 
+        assert( node.lvid == nd->lvid );
         snd::NodeTransformProduct(nd->index, tc, vc, false, out );
     }
 
@@ -1483,10 +1485,12 @@ inline std::string stree::desc_node_(int nidx, const sfreq* sf) const
     const snode& nd = nds[nidx];
     const char* sub = subs[nidx].c_str();
     assert( nd.index == nidx );
+    bool is_outer = is_outer_node(nidx); 
 
     std::stringstream ss ;
     ss << depth_spacer(nd.depth) ; 
     ss << nd.desc() ;
+    ss << " ou " << ( is_outer ? "Y" : "N" ) ; 
     if(sf) ss << " " << sf->desc(sub) ;
     ss << " " << soname[nd.lvid]  ;
     std::string s = ss.str();
@@ -1545,26 +1549,6 @@ inline std::string stree::desc_nodes_(const std::vector<snode>& nn, int edgeitem
 
 
 
-
-inline std::string stree::desc_ancestry(int nidx, bool show_sub, bool local) const
-{
-    std::vector<int> ancestors ;
-    get_ancestors(ancestors, nidx, local);
-
-    std::stringstream ss ; 
-    ss << "stree::desc_ancestry nidx " << nidx << " local " << local << std::endl ;
-
-    for(unsigned i=0 ; i < ancestors.size() ; i++)
-    {
-        int ix = ancestors[i] ;
-        ss << desc_node(ix, show_sub) << std::endl ;
-    }
-    ss << std::endl ;
-    ss << desc_node(nidx, show_sub) << " " << std::endl ; 
-
-    std::string s = ss.str();
-    return s ; 
-}
 
 inline std::string stree::desc_solids() const 
 {

@@ -327,16 +327,7 @@ template<typename T>
 inline T Tran<T>::maxdiff_from_identity(char mat) const 
 {
     const glm::tmat4x4<T>& m = mat == 't' ? t : ( mat == 'v' ? v : i ) ; 
-    T mxdif = 0. ; 
-    for(int j=0 ; j < 4 ; j++ ) 
-    for(int k=0 ; k < 4 ; k++ ) 
-    {
-        T val = m[j][k] ; 
-        T xval = j == k ? T(1) : T(0) ; 
-        T dif = std::abs( val - xval ) ; 
-        if(dif > mxdif) mxdif = dif ; 
-    }
-    return mxdif ; 
+    return stra<double>::Maxdiff_from_Identity(m); 
 }
 
 template<typename T>

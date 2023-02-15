@@ -35,6 +35,415 @@ stree_load_test stree::get_transform
 
 
 
+node level semantic transform comparison
+--------------------------------------------
+
+
+After removing the identity suppression in B have one transform for every node::
+
+    In [1]: btr = b.node.view(np.int32)[:,3,3] & 0x7fffffff ; btr 
+    Out[2]: array([    1,     2,     3,     4,     5, ..., 25431, 25432, 25433, 25434, 25435], dtype=int32)
+
+    In [3]: np.arange(1,25435+1)
+    Out[3]: array([    1,     2,     3,     4,     5, ..., 25431, 25432, 25433, 25434, 25435])
+
+    In [4]: np.all( btr == np.arange(1,25435+1)  )
+    Out[4]: True
+
+    In [5]: b.tran.shape
+    Out[5]: (25435, 4, 4)
+
+    In [6]: b.node.shape
+    Out[6]: (25435, 4, 4)
+
+    In [10]: btran = b.tran[btr-1] ; btran.shape
+    Out[10]: (25435, 4, 4)
+
+
+
+    In [11]: atr = a.node.view(np.int32)[:,3,3] & 0x7fffffff  ; atr
+    Out[11]: array([   1,    2,    3,    0,    4, ..., 8175, 8176, 8177, 8178, 8179], dtype=int32)
+
+    In [12]: a.tran.shape
+    Out[12]: (8179, 4, 4)
+
+    In [13]: a.node.shape
+    Out[13]: (23547, 4, 4)
+
+    In [14]: atran = a.tran[atr-1] ; atran.shape
+    Out[14]: (23547, 4, 4)
+
+
+
+
+::
+
+    In [54]: np.c_[atran[:10], btran[:10]]
+    Out[54]: 
+    array([[[    1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+            [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+            [    0. ,     0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ],
+            [    0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ,     1. ]],
+
+           [[    1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+            [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+            [    0. ,     0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ],
+            [ 3125. ,     0. , 36750. ,     1. ,  3125. ,     0. , 36750. ,     1. ]],
+
+           [[    1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+            [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+            [    0. ,     0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ],
+            [ 3125. ,     0. , 42250. ,     1. ,  3125. ,     0. , 42250. ,     1. ]],
+
+           [[    1. ,     0. ,     0. ,     0. ,     0. ,     0. ,    -1. ,     0. ],
+            [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+            [    0. ,     0. ,     1. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+            [    0. ,   831.6,     0. ,     1. ,  3125. ,     0. , 21990. ,     1. ]],
+
+
+
+Tran rapidly get out of step::
+
+    In [46]: i0 = 100 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[46]: (0,)
+
+    In [47]: i0 = 0 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[47]: (7,)
+
+    In [48]: i0 = 100 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[48]: (0,)
+
+    In [49]: i0 = 200 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[49]: (81,)
+
+    In [50]: i0 = 300 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[50]: (100,)
+
+    In [51]: i0 = 400 ; i1 = i0+100 ; np.where( np.sum(np.abs(atran[i0:i1]-btran[i0:i1]), axis=(1,2)) > 0 )[0].shape
+    Out[51]: (100,)
+
+
+Hmm doing things at prim level more meaningful, as problems are likely focussed on certain shapes::
+
+    In [64]: np.where( a.pr.numNode != b.pr.numNode )
+    Out[64]: (array([2375, 2376, 2377, 2378, 2379, 2380, 2381, 2382, 3126]),)
+
+    In [66]: np.all( a.pr.nodeOffset[:2375] == b.pr.nodeOffset[:2375] )
+    Out[66]: True
+
+
+first prim with discrep : difference on the transform associated with the union/difference : A looks wrong
+----------------------------------------------------------------------------------------------------------------
+
+::
+
+    In [1]: checkprim(a,b,3, True)
+    ip:  3 lv:  1/  1 nn:  3/  3 no:  3/  3 mn:                 sTopRock_dome/                 sTopRock_dome 
+    Out[1]: 
+    ('np.c_[atran, btran], np.c_[atc, aco, btc, bco]',
+     array([[[    1. ,     0. ,     0. ,     0. ,     0. ,     0. ,    -1. ,     0. ],
+             [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+             [    0. ,     0. ,     1. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+             [    0. ,   831.6,     0. ,     1. ,  3125. ,     0. , 21990. ,     1. ]],
+     
+            [[    0. ,     0. ,    -1. ,     0. ,     0. ,     0. ,    -1. ,     0. ],
+             [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+             [    1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+             [ 3125. ,     0. , 21990. ,     1. ,  3125. ,     0. , 21990. ,     1. ]],
+     
+            [[    0. ,     0. ,    -1. ,     0. ,     0. ,     0. ,    -1. ,     0. ],
+             [    0. ,     1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ],
+             [    1. ,     0. ,     0. ,     0. ,     1. ,     0. ,     0. ,     0. ],
+             [ 3125. ,     0. , -7770. ,     1. ,  3125. ,     0. , -7770. ,     1. ]]], dtype=float32),
+     array([[  2,   0,   3,   0],
+            [105,   0, 105,   0],
+            [110,  -1, 110,   0]], dtype=int32))
+
+
+* ip:4,6,7,10,11,12 all have  same characteristic : difference with root node union/difference tran and A looks wrong 
+
+
+::
+
+
+    In [1]: checkprim(a,b,1115)
+    ip:1115 lv: 49/ 49 nn:  7/  7 no:6589/6589 mn:GLb1.up02_FlangeI_Web_FlangeII/GLb1.up02_FlangeI_Web_FlangeII tr* 4
+    Out[1]: 
+    ('np.c_[atran, btran], np.c_[atc, aco, btc, bco], dtran',
+     array([[[     1.   ,      0.   ,      0.   ,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.   ,      1.   ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [     0.   ,      0.   ,      1.   ,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [     0.   ,    831.6  ,      0.   ,      1.   ,  -9692.86 , -16788.525,   5852.894,      1.   ]],
+     
+            [[     1.   ,      0.   ,      0.   ,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.   ,      1.   ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [     0.   ,      0.   ,      1.   ,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [     0.   ,    831.6  ,      0.   ,      1.   ,  -9692.86 , -16788.525,   5852.894,      1.   ]],
+     
+            [[    -0.145,     -0.25 ,     -0.957,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.866,     -0.5  ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [    -0.479,     -0.829,      0.289,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [ -9600.   , -16627.688,   5796.822,      1.   ,  -9600.   , -16627.688,   5796.822,      1.   ]],
+     
+            [[    -0.145,     -0.25 ,     -0.957,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.866,     -0.5  ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [    -0.479,     -0.829,      0.289,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [ -9692.86 , -16788.525,   5852.894,      1.   ,  -9692.86 , -16788.525,   5852.894,      1.   ]],
+     
+            [[    -0.145,     -0.25 ,     -0.957,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.866,     -0.5  ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [    -0.479,     -0.829,      0.289,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [ -9785.721, -16949.363,   5908.966,      1.   ,  -9785.72 , -16949.363,   5908.966,      1.   ]],
+     
+            [[     1.   ,      0.   ,      0.   ,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.   ,      1.   ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [     0.   ,      0.   ,      1.   ,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [     0.   ,    831.6  ,      0.   ,      1.   ,  -9692.86 , -16788.525,   5852.894,      1.   ]],
+     
+            [[     1.   ,      0.   ,      0.   ,      0.   ,     -0.145,     -0.25 ,     -0.957,      0.   ],
+             [     0.   ,      1.   ,      0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+             [     0.   ,      0.   ,      1.   ,      0.   ,     -0.479,     -0.829,      0.289,      0.   ],
+             [     0.   ,    831.6  ,      0.   ,      1.   ,  -9692.86 , -16788.525,   5852.894,      1.   ]]], dtype=float32),
+     array([[  1,   0,   1,   0],
+            [  1,   0,   1,   0],
+            [110,   0, 110,   0],
+            [110,   0, 110,   0],
+            [110,   0, 110,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]], dtype=int32),
+     array([33172.617, 33172.617,     0.   ,     0.   ,     0.001, 33172.617, 33172.617], dtype=float32))
+
+
+
+
+In globals the principal difference is with the tranforms on operator nodes.
+
+In locals node that get_ancestors local:true is not stopping before the outer transform::
+
+
+    In [1]:  checkprim(a,b,3096)                                                                                                                                   
+    ip:3096 lv:119/119 nn: 15/ 15 no:23228%24124 tr*15 mn:                          NNVTMCPPMTTail/                          NNVTMCPPMTTail 
+    Out[1]: 
+
+
+
+
+importTree
+--------------
+
+A: old GGeo workflow has 8179 tran/itra for 23547 node 
+B: CSGImport has 25423 tran/itra for 25435 node
+
+Note that adding nullptr adds an identity transform, but 
+identities cannot explain the big difference as there are 
+only ~36 nodes with identity transforms. 
+
+Looks like there is suppression of the same transforms
+done at GGeo/GTransform level::
+
+    In [59]: u_bt, n_bt = np.unique( B.tran, return_counts=True, axis=0 ) ; u_bt.shape
+    Out[60]: (7931, 4, 4)
+
+    In [64]: u_at, n_at = np.unique( A.tran, return_counts=True, axis=0 ) ; u_at.shape
+    Out[65]: (7946, 4, 4)
+
+After uniquing the count is close. But note the uniqing looks to 
+have been done within each compound, as there are still duplicate transforms 
+in A, just much less than B::
+
+    In [71]: n_bt[n_bt > 1 ].shape
+    Out[71]: (2446,)
+
+    In [72]: n_at[n_at > 1 ].shape 
+    Out[72]: (151,)
+
+How to check within the original pools ? Use CSGPrim to see which tranOffset correspond to each ridx::
+
+    In [4]: a.pr.tranOffset[a.pr.repeatIdx == 0]
+    Out[4]: array([   0,    1,    2,    3,    5, ..., 7933, 7942, 7943, 7945, 7946], dtype=int32)
+
+    In [5]: a.pr.tranOffset[a.pr.repeatIdx == 1]
+    Out[5]: array([7948, 7950, 7951, 7952, 7953], dtype=int32)
+
+    In [6]: a.pr.tranOffset[a.pr.repeatIdx == 2]
+    Out[6]: array([7954, 7957, 7961, 7967, 7968, 7969, 7970, 7971, 7973, 7975, 7977], dtype=int32)
+
+    In [7]: a.pr.tranOffset[a.pr.repeatIdx == 3]
+    Out[7]: array([7978, 7981, 7985, 7991, 7995, 7999, 8000, 8003, 8005, 8007, 8009, 8011, 8013, 8014], dtype=int32)
+
+    In [8]: a.pr.tranOffset[a.pr.repeatIdx == 4]
+    Out[8]: array([8016, 8017, 8021, 8023, 8025, 8028], dtype=int32)
+
+    In [12]: a.pr.tranOffset[a.pr.repeatIdx == 5]
+    Out[12]: array([8031], dtype=int32)
+
+    In [13]: a.pr.tranOffset[a.pr.repeatIdx == 6]
+    Out[13]: array([8032], dtype=int32)
+
+    In [14]: a.pr.tranOffset[a.pr.repeatIdx == 7]
+    Out[14]: array([8042], dtype=int32)
+
+    In [15]: a.pr.tranOffset[a.pr.repeatIdx == 8]
+    Out[15]: array([8046], dtype=int32)
+
+    In [16]: a.pr.tranOffset[a.pr.repeatIdx == 9]
+    Out[16]: 
+    array([8049, 8050, 8051, 8052, 8053, 8054, 8055, 8056, 8057, 8058, 8059, 8060, 8061, 8062, 8063, 8064, 8065, 8066, 8067, 8068, 8069, 8070, 8071, 8072, 8073, 8074, 8075, 8076, 8077, 8078, 8079, 8080,
+           8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089, 8090, 8091, 8092, 8093, 8094, 8095, 8096, 8097, 8098, 8099, 8100, 8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8109, 8110, 8111, 8112,
+           8113, 8114, 8115, 8116, 8117, 8118, 8119, 8120, 8121, 8122, 8123, 8124, 8125, 8126, 8127, 8128, 8129, 8130, 8131, 8132, 8133, 8134, 8135, 8136, 8137, 8138, 8139, 8140, 8141, 8142, 8143, 8144,
+           8145, 8146, 8147, 8148, 8149, 8150, 8151, 8152, 8153, 8154, 8155, 8156, 8157, 8158, 8159, 8160, 8161, 8162, 8163, 8164, 8165, 8166, 8167, 8168, 8169, 8170, 8171, 8172, 8173, 8174, 8175, 8176,
+           8177, 8178], dtype=int32)
+
+    In [17]: a.tran.shape
+    Out[17]: (8179, 4, 4)
+
+
+
+
+All ridx 9 tran appear twice::
+
+    In [20]: np.all( np.unique(a.tran[8049:], return_counts=True, axis=0 )[1] == 2 )
+    Out[20]: True
+
+Look like next to each other::
+
+    In [22]: a.tran[8049:]
+    Out[22]: 
+    array([[[   1. ,    0. ,    0. ,    0. ],
+            [   0. ,    1. ,    0. ,    0. ],
+            [   0. ,    0. ,    1. ,    0. ],
+            [   0. ,    0. ,    0. ,    1. ]],
+
+           [[   1. ,    0. ,    0. ,    0. ],
+            [   0. ,    1. ,    0. ,    0. ],
+            [   0. ,    0. ,    1. ,    0. ],
+            [   0. ,    0. ,    0. ,    1. ]],
+
+           [[   1. ,    0. ,    0. ,    0. ],
+            [   0. ,    1. ,    0. ,    0. ],
+            [   0. ,    0. ,    1. ,    0. ],
+            [   0. , -831.6,    0. ,    1. ]],
+
+           [[   1. ,    0. ,    0. ,    0. ],
+            [   0. ,    1. ,    0. ,    0. ],
+            [   0. ,    0. ,    1. ,    0. ],
+            [   0. , -831.6,    0. ,    1. ]],
+
+
+
+Hmm still quite some duplication of transforms::
+
+    In [23]: a.tran[7978:8016]
+    Out[23]: 
+    array([[[   1.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    1.   ]],
+
+           [[   1.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    1.   ]],
+
+           [[   1.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    1.   ]],
+
+           [[   1.32 ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.32 ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    1.   ]],
+
+
+
+Old workflow has some level of repeated transform suppression, 
+but its far from perfect which makes it difficult to reproduce. 
+
+Also at some stage decided that every CSG node should get a transform.
+Maybe the duplicate transform suppression just operated at structural 
+level ?  
+
+Actually checking in some old geocache see that the duplicate suppression 
+was active but far from perfect (maybe float precision effect). 
+
+HMM: probably easiest to compare at node level by derefing the transform
+rather than compare at transform level 
+
+So that means effectively forming a transform for every node.
+
+::
+
+    In [4]: btr = b.node.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [5]: atr = a.node.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [6]: atr
+    Out[6]: array([   1,    2,    3,    0,    4, ..., 8175, 8176, 8177, 8178, 8179], dtype=int32)
+
+    In [7]: btr
+    Out[7]: array([    0,     1,     2,     3,     4, ..., 25419, 25420, 25421, 25422, 25423], dtype=int32)
+
+
+
+Transform uniquing
+--------------------
+
+
+::
+
+    220 /**
+    221 NCSGData::addUniqueTransform
+    222 ------------------------------
+    223 
+    224 Used global transforms are collected into the GTransforms
+    225 buffer and the 1-based index to the transforms is returned. 
+    226 This is invoked from NCSG::addUniqueTransform
+    227 
+    228 **/
+    230 unsigned NCSGData::addUniqueTransform( const nmat4triple* gtransform )
+    231 {
+    232     NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
+    233     gtmp->zero();
+    234     gtmp->setMat4Triple( gtransform, 0);
+    235 
+    236     NPY<float>* gtransforms = getGTransformBuffer();
+    237     assert(gtransforms);
+    238     unsigned gtransform_idx = 1 + gtransforms->addItemUnique( gtmp, 0 ) ;
+    239     delete gtmp ;
+    240 
+    241     return gtransform_idx ;
+    242 }
+
+    1081 unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
+    1082 {
+    1083     bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
+    1084 
+    1085     bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
+    1086 
+    1087     bool match = true ;
+    1088 
+    1089     const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform", match ) ;
+    1090 
+    1091     if(!match)
+    1092     {
+    1093         LOG(error) << "matrix inversion precision issue ?" ;
+    1094     }
+    1095 
+    1096     /*
+    1097     std::cout << "NCSG::addUniqueTransform"
+    1098               << " orig " << *gtransform_
+    1099               << " tlated " << *gtransform
+    1100               << " gpuoffset " << m_gpuoffset 
+    1101               << std::endl 
+    1102               ;
+    1103     */
+    1104     return m_csgdata->addUniqueTransform( gtransform );   // add to m_gtransforms
+    1105 }
+
+
+
+
 Getting transforms in instanced case
 ----------------------------------------
 

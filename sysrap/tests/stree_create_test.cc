@@ -2,8 +2,13 @@
 stree_create_test.cc
 =======================
 
-Follow the structure of u4/U4Tree.h 
+This test creates a simple geometry from scratch, following 
+the general approach of u4/U4Tree.h, and then uses that geometry to 
+compare query results with expections, for example checking::
 
+    stree::get_combined_transform 
+
+For querying with more complex loaded geometries see *stree_load_test.cc**
 **/
 
 #include <cstdlib>
@@ -14,6 +19,7 @@ Follow the structure of u4/U4Tree.h
 
 const char* FOLD = getenv("FOLD"); 
 const bool VERBOSE = ssys::getenvbool("VERBOSE"); 
+const int LVID = ssys::getenvint("LVID", 4); 
 
 struct Dummy
 {
@@ -239,9 +245,8 @@ inline int stree_create::initNodes_r( int depth, int sibdex, int parent  )
     return nd.index ;
 }
 
-void test_get_combined_transform( const stree& st )
+void test_get_combined_transform( const stree& st, int lvid )
 {
-    int lvid = 4 ; 
 
     std::vector<snode> nodes ; 
     st.find_lvid_nodes_(nodes, lvid); 
@@ -270,9 +275,7 @@ void test_get_combined_transform( const stree& st )
     const snode& node = nodes[0] ; 
 
 
-
     std::stringstream ss ; 
-
     for(int i=0 ; i < num_nds ; i++)
     {
         const snd& nd = nds[i]; 
@@ -308,7 +311,7 @@ int main(int argc, char** argv)
     stree st ; 
     stree_create stc(&st);
     st.save(FOLD); 
-    test_get_combined_transform(st); 
+    test_get_combined_transform(st, LVID); 
     return 0 ; 
 }
  

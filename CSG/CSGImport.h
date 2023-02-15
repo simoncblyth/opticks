@@ -30,6 +30,8 @@ struct CSGNode ;
 struct CSG_API CSGImport
 {
     static const plog::Severity LEVEL ; 
+    static const int LVID ; 
+    static const int NDID ; 
 
     CSGFoundry*  fd ; 
     const stree* st ; 
