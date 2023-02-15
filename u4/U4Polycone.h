@@ -46,6 +46,7 @@ After reversal::
 
 #include "G4Polycone.hh"
 #include "snd.hh"
+#include "ssys.h"
 
 struct RZ
 {
@@ -82,6 +83,7 @@ struct U4Polycone
     const G4Polycone* polycone ; 
     const G4PolyconeHistorical* ph ; 
 
+    int level ; 
     int num ; 
     std::vector<RZ> rz ;
  
@@ -109,6 +111,7 @@ inline std::string U4Polycone::desc() const
 {
     std::stringstream ss ; 
     ss << "U4Polycone::desc"
+       << " level " << level 
        << " num " << num 
        << " rz " << rz.size()
        << std::endl  
@@ -138,7 +141,6 @@ inline std::string U4Polycone::desc() const
 inline int U4Polycone::Convert( const G4Polycone* polycone )
 {
     U4Polycone upoly(polycone) ; 
-    std::cerr << "U4Polycone::Convert" << std::endl << upoly.desc() << std::endl ; 
     return upoly.root ; 
 }
 
@@ -155,6 +157,7 @@ inline void U4Polycone::GetMinMax( double& mn, double& mx, const std::set<double
 
 inline U4Polycone::U4Polycone(const G4Polycone* polycone_ ) 
     :
+    level(ssys::getenvint("U4Polycone_level",0)),
     polycone(polycone_),
     ph(polycone->GetOriginalParameters()),
     num(ph->Num_z_planes),
@@ -171,6 +174,7 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_ )
     root(-1)
 {
     init(); 
+    if(level > 0 ) std::cerr << "U4Polycone::U4Polycone" << std::endl << desc() << std::endl ; 
 }
 
 inline bool U4Polycone::checkZOrder( bool z_ascending )
@@ -212,7 +216,7 @@ inline void U4Polycone::init()
     bool all_z_descending = checkZOrder(false); 
     if(all_z_descending) 
     {
-        std::cerr 
+        if(level > 0) std::cerr 
            << "U4Polycone::init"
            << " all_z_descending detected, reversing " 
            << std::endl 
@@ -284,7 +288,7 @@ void U4Polycone::addPrims(std::vector<int>& prims,  bool outside  )
 
         if( z1 == z2 )
         {
-            std::cerr << "U4Polycone::makePrims skipping prim as z2 == z1  " ; 
+            if(level > 0) std::cerr << "U4Polycone::makePrims skipping prim as z2 == z1  " << std::endl ; 
             continue ;
         }
 

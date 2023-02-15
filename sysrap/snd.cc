@@ -154,6 +154,18 @@ void snd::setXF(const glm::tmat4x4<double>& t )
 }
 void snd::setXF(const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
+    if( xform > -1 )
+    {
+        if(Level()>-1) std::cout 
+            << "snd::setXF STOMPING"
+            << " xform " << xform 
+            << std::endl 
+            << stra<double>::Desc(t,v, "t", "v")
+            << std::endl 
+            ; 
+    }
+
+
     sxf xf ; 
     xf.t = t ; 
     xf.v = v ; 
@@ -294,7 +306,7 @@ void snd::SetLVID(int idx, int lvid)  // static
     int chk = nd->checktree(); 
     if( chk != 0 )
     { 
-        std::cerr 
+        if(Level() > 0 ) std::cerr 
            << "snd::SetLVID" 
            << " idx " << idx 
            << " lvid " << lvid 
@@ -659,7 +671,7 @@ int snd::checktree() const
 
     if( chk > 0 ) 
     {
-        std::cerr 
+        if(Level()>0) std::cerr 
             << "snd::checktree"
             << " chk_D " << chk_D
             << " chk_P " << chk_P
@@ -1419,7 +1431,8 @@ for subtracted consituents eg inners
 
 void snd::ZNudgeEnds(const std::vector<int>& prims) // static
 {
-    std::cout 
+    int level = Level(); 
+    if(level > 0) std::cout 
        << std::endl
        << "snd::ZNudgeEnds "
        << std::endl
@@ -1444,7 +1457,8 @@ void snd::ZNudgeEnds(const std::vector<int>& prims) // static
 
 void snd::ZNudgeJoints(const std::vector<int>& prims) // static
 {
-    std::cout 
+    int level = Level(); 
+    if(level > 0) std::cout 
        << std::endl
        << "snd::ZNudgeJoints "
        << std::endl

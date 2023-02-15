@@ -26,7 +26,8 @@ npy/NNodeUncoincide npy/NNodeNudger
 
 #include <set>
 
-#include "slog.h"
+//#include "slog.h"
+#include "ssys.h"
 #include "scuda.h"
 #include "snd.hh"
 #include "stran.h"
@@ -138,7 +139,7 @@ struct U4Solid
     void init_DisplacedSolid(); 
 
     // members
-    plog::Severity  level ; 
+    int             level ; 
     const G4VSolid* solid ; 
     int             lvid ; 
     int             depth ;   // recursion depth across different G4VSolid
@@ -152,7 +153,7 @@ inline std::string U4Solid::desc() const
 
     std::stringstream ss ; 
     ss << "U4Solid::desc" 
-       << " level " << plog::severityToString(level)
+       << " level " << level
        << " solid " << ( solid ? "Y" : "N" )
        << " lvid "   << std::setw(3) << lvid    
        << " depth "   << std::setw(3) << depth    
@@ -218,7 +219,7 @@ inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // stat
 
 inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_ )
     :
-    level(slog::envlevel("U4Solid", "DEBUG")),
+    level(ssys::getenvint("U4Solid_level",0)),
     solid(solid_),
     lvid(lvid_),
     depth(depth_),
@@ -251,13 +252,11 @@ inline void U4Solid::init()
     if(root == -1)
     {
         std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
-        LOG(fatal) << "FAILED desc " << desc() ; 
         assert(0); 
     }
     else
     {
-        std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
-        //LOG(level) << " SUCCEEDED desc: " << desc() ; 
+        if(level > 0 ) std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
     }
 }
 
@@ -376,7 +375,7 @@ inline void U4Solid::init_Ellipsoid()
     bool lower_cut = zmin > -sz ;
     bool zslice = lower_cut || upper_cut ;
 
-    std::cerr
+    if(level > 0) std::cerr
         << "U4Solid::init_Ellipsoid"
         << " upper_cut " << upper_cut
         << " lower_cut " << lower_cut
@@ -391,11 +390,6 @@ inline void U4Solid::init_Ellipsoid()
         << std::endl 
         ;
 
-    PLOGI  << "U4Solid::init_Ellipsoid : PLOGI "  ; 
-    LOG(info)  << "U4Solid::init_Ellipsoid : LOG(info) "  ; 
-    LOG(debug) << "U4Solid::init_Ellipsoid : LOG(debug) "  ; 
-    LOG(level) << "U4Solid::init_Ellipsoid : LOG(level) " ; 
-    std::cerr << slog::Desc(level) ; 
 
     if( upper_cut == false && lower_cut == false )
     {
@@ -492,7 +486,7 @@ inline void U4Solid::init_Polycone()
     assert(polycone);
     root = U4Polycone::Convert(polycone); 
 
-    LOG(error) << desc() ; 
+    if(level > 0 ) std::cerr << desc() ; 
 }
 
 
@@ -649,7 +643,7 @@ inline void U4Solid::init_BooleanSolid()
     int l_xf = snd::GetNodeXForm(l);
     int r_xf = snd::GetNodeXForm(r);
 
-    if( l_xf > -1 ) std::cout 
+    if( l_xf > -1 && level > 0) std::cout 
         << "U4Solid::init_BooleanSolid "
         << " observe transform on left node " 
         << " l_xf " << l_xf

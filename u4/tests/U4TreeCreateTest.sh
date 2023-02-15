@@ -12,8 +12,9 @@ defarg="run_ana"
 arg=${1:-$defarg}
 
 loglevels(){
-   export U4VolumeMaker=INFO
-   export U4Solid=INFO
+   #export U4VolumeMaker=INFO
+   #export U4Solid=INFO
+   export DUMMY=INFO
 }
 
 loglevels
