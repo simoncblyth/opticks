@@ -23,6 +23,7 @@ For traversal examples see *stree::get_children*
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 struct snode
 {
@@ -47,6 +48,9 @@ struct snode
     int boundary ;       // 13
 
     std::string desc() const ; 
+    static std::string Brief_(const std::vector<snode>& nodes ); 
+
+
 }; 
 
 
@@ -69,8 +73,16 @@ inline std::string snode::desc() const
        << " ro:" << std::setw(5) << repeat_ordinal
        << " bd:" << std::setw(2) << boundary
        ;
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
-
+inline std::string snode::Brief_(const std::vector<snode>& nodes )
+{
+    int num_nodes = nodes.size(); 
+    std::stringstream ss ;
+    ss << "snode::Brief_ num_nodes " << num_nodes << std::endl ; 
+    for(int i=0; i < num_nodes ; i++) ss << nodes[i].desc() << std::endl ; 
+    std::string str = ss.str();
+    return str ;
+}

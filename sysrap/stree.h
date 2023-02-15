@@ -1411,7 +1411,7 @@ inline void stree::get_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4
     t = tt * tc ; 
     v = vc * vv ; 
 
-    if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl ;   
+    if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl << std::endl ;   
 }
 
 inline std::string stree::desc_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd ) const 
