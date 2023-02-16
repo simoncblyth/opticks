@@ -90,6 +90,11 @@ struct SYSRAP_API snd
     void setXF( const glm::tmat4x4<double>& t ); 
     void setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
 
+    void combineXF( const glm::tmat4x4<double>& t ); 
+    void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
+
+
+
     static const sxf* GetXF(int idx) ; 
     static       sxf* GetXF_(int idx) ; 
 

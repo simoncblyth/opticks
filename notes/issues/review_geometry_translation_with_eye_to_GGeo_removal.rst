@@ -2,10 +2,6 @@ review_geometry_translation_with_eye_to_GGeo_removal
 =======================================================
 
 
-
-
-
-
 Comparison of stree.py and CSGFoundry.py python dumping of geometry
 ------------------------------------------------------------------------
 
@@ -14,8 +10,6 @@ Comparison of stree.py and CSGFoundry.py python dumping of geometry
 
     epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./sysrap/tests/stree_load_test.sh ana
     epsilon:opticks blyth$ GEOM=J007 RIDX=1 ./CSG/tests/CSGFoundryLoadTest.sh ana
-
-
 
 
 stree_load_test stree::get_transform
@@ -281,6 +275,257 @@ In locals node that get_ancestors local:true is not stopping before the outer tr
            [  0. ,   1. ,   0. ,   0. ],
            [  0. ,   0. ,   1. ,   0. ],
            [  0. , 831.6,   0. ,   1. ]], dtype=float32)
+
+
+
+
+
+transform comparison after elliposoid stomp avoidance
+--------------------------------------------------------
+
+CSGFoundryAB.sh down to 74/8179 discrepant tran/itra that are tangled with lack of tree balancing for lvid 93:solidSJReceiverFastern 99:uni1
+
+::
+
+    In [40]: a.tran.shape, b.tran.shape
+    Out[40]: ((8179, 4, 4), (8179, 4, 4))
+
+
+    In [2]: sab = np.sum(np.abs(a.tran-b.tran), axis=(1,2) )
+    In [3]: vab = np.sum(np.abs(a.itra-b.itra), axis=(1,2) )
+
+    In [5]: np.c_[a.tran, b.tran][np.where(sab > 0.05)].shape
+    Out[5]: (74, 4, 8)
+
+    In [6]: w = np.where(sab > 0.05)[0] ; w 
+    array([6672, 6673, 6674, 6675, 6676, 6677, 6678, 6679, 6680, 6681, 6682, 6683, 6684, 6685, 6686, 6687, 6688, 6689, 6690, 6691, 6692, 6693, 6694, 6695, 6696, 6697, 6698, 6699, 6700, 6701, 6702, 6703,
+           6704, 6705, 6706, 6707, 6708, 6709, 6710, 6711, 6712, 6713, 6714, 6715, 6716, 6717, 6718, 6719, 6720, 6721, 6722, 6723, 6724, 6725, 6726, 6727, 6728, 6729, 6730, 6731, 6732, 6733, 6734, 6735,
+           8032, 8033, 8034, 8035, 8036, 8037, 8038, 8039, 8040, 8041])
+
+
+    In [13]: np.all( w == np.concatenate( [np.arange(6672,6735+1), np.arange(8032,8041+1)] )  )
+    Out[13]: True
+
+    ## two contiguous stretches of transforms are discrepant 
+
+    In [15]: np.arange(6672,6735+1).shape
+    Out[15]: (64,)
+
+    In [16]: np.arange(8032,8041+1).shape
+    Out[16]: (10,)
+
+Search for the prim those transform pointers correspond to::
+
+    In [29]: b.pr.tranOffset[2375:2385]
+    Out[29]: array([6672, 6680, 6688, 6696, 6704, 6712, 6720, 6728, 6736, 6737], dtype=int32)
+
+    In [30]: a.pr.tranOffset[2375:2385]
+    Out[30]: array([6672, 6680, 6688, 6696, 6704, 6712, 6720, 6728, 6736, 6737], dtype=int32)
+
+
+    In [37]: a.pr.tranOffset[3126:3128]
+    Out[37]: array([8032, 8042], dtype=int32)
+
+    In [38]: b.pr.tranOffset[3126:3128]
+    Out[38]: array([8032, 8042], dtype=int32)
+
+
+Those prim correspond to what checkprims gives::
+
+    In [39]: checkprims(a,b)
+    ip:%(ip)3d lv:%(alv)3d%(slv)s%(blv)3d nn:%(ann)3d%(snn)s%(bnn)3d no:%(ano)3d%(sno)s%(bno)3d tr%(stran)s%(ltran)2d mn:%(amn)40s%(smn)s%(bmn)40s 
+
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2382 lv: 93/ 93 nn: 15*127 no:15314%16098 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268 tr*-1 mn:                                    uni1/                                    uni1 
+
+
+So the remaining 74 discrepant tran/itra need tree balancing first. 
+
+
+
+change to leaf only final transforms in CSGImport::importNode
+----------------------------------------------------------------
+
+* makes the tran/itra counts the same 
+
+::
+
+    ct  
+    ./CSGFoundryAB.sh 
+
+    In [16]: a.tran.shape
+    Out[16]: (8179, 4, 4)
+
+    In [17]: b.tran.shape
+    Out[17]: (8179, 4, 4)
+    
+
+    In [9]: sab = np.sum(np.abs(a.tran-b.tran), axis=(1,2) ) 
+
+    In [14]: w = np.where(sab > 0.001 )[0] ; w 
+    Out[15]: array([ 422,  425,  428,  431,  434, ..., 8037, 8038, 8039, 8040, 8041])
+        
+
+    In [20]: np.c_[a.tran, b.tran][np.where(sab > 0.05)].shape      ## big epsilon to avoid float/double diffs
+    Out[20]: (79, 4, 8)     # 79/8179 with significant diffs  (5 from ellipsoid stomp?)
+
+
+    In [22]: vab = np.sum(np.abs(a.itra-b.itra), axis=(1,2) )
+    In [25]: np.c_[a.itra, b.itra][np.where(vab > 0.05)].shape
+    Out[25]: (79, 4, 8)
+
+    In [5]: np.c_[a.tran, b.tran][np.where(sab > 0.05)].shape   ## down 5 after avoid the stomp
+    Out[5]: (74, 4, 8)
+
+
+    In [29]: np.all( np.where( sab > 0.05 )[0] == np.where( vab > 0.05 )[0] )
+    Out[29]: True
+
+
+
+
+
+    In [21]: np.c_[a.tran, b.tran][np.where(sab > 0.05)]
+    Out[21]: 
+    array([[[     0.   ,     -0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ],
+            [    -0.5  ,     -0.866,      0.   ,      0.   ,     -0.5  ,     -0.866,      0.   ,      0.   ],
+            [     0.866,     -0.5  ,     -0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+            [-15314.271,   8841.699,     52.   ,      1.   , -15289.271,   8885.   ,      0.   ,      1.   ]],
+
+           [[     0.   ,     -0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ],
+            [    -0.5  ,     -0.866,      0.   ,      0.   ,     -0.5  ,     -0.866,      0.   ,      0.   ],
+            [     0.866,     -0.5  ,     -0.   ,      0.   ,      0.866,     -0.5  ,      0.   ,      0.   ],
+            [-15314.271,   8841.699,    -52.   ,      1.   , -15304.312,   8835.949,      0.   ,      1.   ]],
+      
+           ...
+
+           [[     1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ],
+            [    -0.   ,   -164.   ,    -65.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ]],
+
+           [[     1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ,      0.   ],
+            [   115.966,   -115.966,    -65.   ,      1.   ,      0.   ,      0.   ,      0.   ,      1.   ]]], dtype=float32)
+
+    In [22]:                                                                           
+
+
+
+::
+
+    In [30]: checkprims(a,b)
+    ip:%(ip)3d lv:%(alv)3d%(slv)s%(blv)3d nn:%(ann)3d%(snn)s%(bnn)3d no:%(ano)3d%(sno)s%(bno)3d tr%(stran)s%(ltran)2d mn:%(amn)40s%(smn)s%(bmn)40s 
+
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2382 lv: 93/ 93 nn: 15*127 no:15314%16098 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268 tr*-1 mn:                                    uni1/                                    uni1 
+
+    Above two from balancing vs not  
+
+
+
+
+    ip:3107 lv:105/105 nn: 15/ 15 no:23271%24167 tr* 2 mn:                     HamamatsuR12860Tail/                     HamamatsuR12860Tail 
+    ip:3108 lv:116/116 nn: 15/ 15 no:23286%24182 tr* 1 mn:HamamatsuR12860_PMT_20inch_pmt_solid_1_4/HamamatsuR12860_PMT_20inch_pmt_solid_1_4 
+    ip:3109 lv:115/115 nn: 15/ 15 no:23301%24197 tr* 1 mn:HamamatsuR12860_PMT_20inch_body_solid_1_4/HamamatsuR12860_PMT_20inch_body_solid_1_4 
+    ip:3111 lv:114/114 nn:  7/  7 no:23317%24213 tr* 1 mn:HamamatsuR12860_PMT_20inch_inner2_solid_1_4/HamamatsuR12860_PMT_20inch_inner2_solid_1_4 
+
+
+Mismatched transforms in prim 3107,3108,3109,3111 are all from the translation stomping on an ellipsoid scale transform::
+
+    In [5]: checkprim(a,b,3108)
+    ip:3108 lv:116/116 nn: 15/ 15 no:23286%24182 tr* 1 mn:HamamatsuR12860_PMT_20inch_pmt_solid_1_4/HamamatsuR12860_PMT_20inch_pmt_solid_1_4 
+    Out[5]: 
+    ('np.c_[atran, btran], np.c_[atc, aco, btc, bco], dtran',
+     array([[[   1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ],
+             [   0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ],
+             [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+             [   0.   ,    0.   , -179.216,    1.   ,    0.   ,    0.   , -179.216,    1.   ]],
+     
+            [[   1.337,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ],
+             [   0.   ,    1.337,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ],
+             [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+             [   0.   ,    0.   ,   -5.   ,    1.   ,    0.   ,    0.   ,   -5.   ,    1.   ]],
+     
+            [[   1.337,    0.   ,    0.   ,    0.   ,    1.337,    0.   ,    0.   ,    0.   ],
+             [   0.   ,    1.337,    0.   ,    0.   ,    0.   ,    1.337,    0.   ,    0.   ],
+             [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+             [   0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ]],
+     
+            [[   1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ],
+             [   0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ],
+             [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+             [   0.   ,    0.   ,   -2.5  ,    1.   ,    0.   ,    0.   ,   -2.5  ,    1.   ]]], dtype=float32),
+     array([[  1,   0,   1,   0],
+            [  1,   0,   1,   0],
+            [108,   0, 108,   0],
+            [  1,   0,   1,   0],
+            [103,   0, 103,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [103,   0, 103,   0],
+            [105,   0, 105,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0],
+            [  0,   0,   0,   0]], dtype=int32),
+     array([0.   , 0.674, 0.   , 0.   ], dtype=float32))
+
+
+prevent ellipsoid stomping
+-----------------------------
+
+::
+
+    ./U4TreeCreateTest.sh 
+
+    [ U4Tree::Create 
+    snd::setXF STOMPING xform 182
+
+     t                                                      v                                                      t*v                                                   
+     1.0000     0.0000     0.0000     0.0000                1.0000     -0.0000    0.0000     -0.0000               1.0000     0.0000     0.0000     0.0000    
+     0.0000     1.0000     0.0000     0.0000                -0.0000    1.0000     -0.0000    0.0000                0.0000     1.0000     0.0000     0.0000    
+     0.0000     0.0000     1.0000     0.0000                0.0000     -0.0000    1.0000     -0.0000               0.0000     0.0000     1.0000     0.0000    
+     0.0000     0.0000     -5.0000    1.0000                -0.0000    0.0000     5.0000     1.0000                0.0000     0.0000     0.0000     1.0000    
+
+    snd::setXF STOMPING xform 185
+
+
+After avoiding the stomping::
+
+    In [1]: checkprims(a,b)
+    ip:%(ip)3d lv:%(alv)3d%(slv)s%(blv)3d nn:%(ann)3d%(snn)s%(bnn)3d no:%(ano)3d%(sno)s%(bno)3d tr%(stran)s%(ltran)2d mn:%(amn)40s%(smn)s%(bmn)40s 
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2382 lv: 93/ 93 nn: 15*127 no:15314%16098 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268 tr*-1 mn:                                    uni1/                                    uni1 
+
+    In [2]:                       
+
 
 
 

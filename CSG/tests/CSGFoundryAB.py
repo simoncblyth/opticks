@@ -38,6 +38,9 @@ def checkprim(a, b, ip, dump=False):
     atr = ( a.ni.comptran[ano:ano+ann] & 0x7fffffff ) - 1  
     btr = ( b.ni.comptran[bno:bno+bnn] & 0x7fffffff ) - 1 
 
+    atr = atr[atr>0]
+    btr = btr[btr>0]
+
     aco = a.ni.comptran[ano:ano+ann] >> 31
     bco = b.ni.comptran[bno:bno+bnn] >> 31
 

@@ -122,12 +122,12 @@ Canonical usage is from U4Solid::init_DisplacedSolid collecting boolean rhs tran
 void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t )
 {
     snd* nd = Get_(idx); 
-    nd->setXF(t); 
+    nd->combineXF(t); 
 }
 void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
     snd* nd = Get_(idx); 
-    nd->setXF(t, v); 
+    nd->combineXF(t, v); 
 }
 
 
@@ -152,6 +152,13 @@ void snd::setXF(const glm::tmat4x4<double>& t )
     glm::tmat4x4<double> v = glm::inverse(t) ; 
     setXF(t, v); 
 }
+void snd::combineXF(const glm::tmat4x4<double>& t )
+{
+    glm::tmat4x4<double> v = glm::inverse(t) ; 
+    combineXF(t, v); 
+}
+
+
 void snd::setXF(const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
     if( xform > -1 )
@@ -173,6 +180,35 @@ void snd::setXF(const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
     CheckPOOL("snd::setXForm") ; 
     xform = POOL->addXF(xf) ; 
 }
+
+/**
+snd::combineXF
+----------------
+
+Transform product ordering is an ad-hoc guess::
+
+    tt = prior->t * t
+    vv = v * prior->v 
+     
+**/
+
+void snd::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
+{
+    sxf* prior = getXF_(); 
+    if(prior == nullptr)
+    {
+        setXF(t,v); 
+    }
+    else
+    {
+        glm::tmat4x4<double> tt = prior->t * t ;   
+        glm::tmat4x4<double> vv = v * prior->v ;   
+
+        prior->t = tt ; 
+        prior->v = vv ; 
+    }
+}
+
 
 const sxf* snd::GetXF(int idx)  // static
 {
