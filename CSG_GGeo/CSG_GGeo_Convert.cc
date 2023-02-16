@@ -474,7 +474,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     int root_typecode  = comp->getTypeCode(root_partIdx) ; 
     int root_subNum    = comp->getSubNum(root_partIdx) ;    
     int root_subOffset = comp->getSubOffset(root_partIdx) ;  
-    bool root_is_compound = CSG::IsCompound((OpticksCSG_t)root_typecode); 
+    bool root_is_compound = CSG::IsCompound((int)root_typecode); 
 
     bool operators_only = true ; 
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
@@ -682,7 +682,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     std::string tag = comp->getTag(partIdx); 
     unsigned tc = comp->getTypeCode(partIdx);
-    bool is_list = CSG::IsList((OpticksCSG_t)tc) ; 
+    bool is_list = CSG::IsList((int)tc) ; 
     int subNum = is_list ? comp->getSubNum(partIdx) : -1 ;  
     int subOffset = is_list ? comp->getSubOffset(partIdx) : -1 ;  
 
@@ -707,7 +707,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         << " primIdx " << std::setw(4) << primIdx 
         << " partIdxRel " << std::setw(4) << partIdxRel
         << " tag " << std::setw(6) << tag
-        << " tc " << std::setw(10) << CSG::Name((OpticksCSG_t)tc) 
+        << " tc " << std::setw(10) << CSG::Name((int)tc) 
         << " tranIdx " << std::setw(4) << tranIdx
         << " is_list " << ( is_list ? "IS_LIST" : "not_list" )
         << " subNum " << std::setw(4) << subNum 
@@ -733,7 +733,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     n->setIndex(partIdx); 
 
     nbbox bb = comp->getBBox(partIdx); 
-    bool expect_external_bbox = CSG::ExpectExternalBBox( (OpticksCSG_t) tc );  
+    bool expect_external_bbox = CSG::ExpectExternalBBox( (int) tc );  
     // external bbox is expected for "higher level" solids : CSG_CONVEXPOLYHEDRON , CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
 
     if( bb.is_empty()  )

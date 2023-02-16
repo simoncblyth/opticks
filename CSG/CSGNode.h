@@ -89,19 +89,66 @@ cx:convexpolyhedron
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
 
 
+
+typecode gtransformIdx complement
+-----------------------------------
+
 * moved typecode from q2.w in order to give 6 contiguous slots for aabb
-* HMM: complement is more naturally related with typecode than transform, maybe should put them together
 
 ::
 
+    typecode = cf.node.view(np.uint32)[:,3,2]
     complement = ( cf.node.view(np.uint32)[:,3,3] & 0x80000000 ) >> 31 
+    gtransformIdx = cf.node.view(np.uint32)[:,3,3] & 0x7fffffff 
+
+* TODO: complement is naturally related with typecode (not with gtransformIdx)
+  so should put them together : could simply flip the sign of the typecode for complemented
+
+
+gtransformIdx
+    integer "pointer" into the tran and itra arrays : containing final "flat" transforms
+  
+    * final transforms are obtained from the product of structural and CSG transforms 
+    * CSGNode within instances : transform product starts inside the outer structural transform. 
+    * CSGNode within global remainder : transform product is within root (root always has identity anyhow)
+   
+    Only leaf nodes use these transforms in csg intersection, intersection onto boolean 
+    operator nodes are obtained by choosing between intersects onto leaf nodes : so any transform
+    associated with an operator node is ignored  
+
+
+**Operator nodes pick between intersect distances from their leaf nodes, they never use their own gtransforms.**
+
+
+tree transforms vs final "flat" transforms
+--------------------------------------------
+
+Must not conflate these two sets of transforms, as
+their nature and considerations for them are very different.
+
+The tree transforms, both structural and CSG, are local to the their nodes 
+and are obtained from source geometry. They are held by stree.h/snode.h/snd.hh/sxf.h
+The final flat transforms are obtained from the tree transforms via matrix products
+(see stree::get_combined_transform). 
+
+The final transforms should not be regarded as modifiable.
+Any editing such as for coincidence avoidance nudging needs 
+to be done on the tree transforms level prior to flattening, 
+eg with CSGImport::importTree. 
+This means should NOT be tempted to associate transforms
+with every CSGNode in order to allow subsequent modification. 
+
+As the flat transforms are what is on GPU it is beneficial 
+to keep the tran/itra arrays as small as possible, eg via unique-ing.
+Conversely the tree transforms do not have size concerns. 
 
 
 subNum subOffset
 ------------------
 
 Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
-Note that because subNum uses q0.u.x and subOffset used q0.u.y this should not be used for leaf nodes. 
+Note that because subNum uses q0.u.x and subOffset used q0.u.y this should not (and cannot) be used for leaf nodes. 
+
 
 **/
 

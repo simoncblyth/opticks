@@ -254,6 +254,12 @@ An assert constrains the *snd* CSG constituent to be from the shape *lvid*
 that is associated with the structural *snode*. 
 **/
 
+/*
+
+
+*/
+
+
 CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 {
     CSGNode cn = CSGNode::Zero() ; 
@@ -265,13 +271,34 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 
         cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
     }
+    int typecode = cn.typecode() ; 
 
     const std::vector<float4>* pl = nullptr ;  // planes
+    const Tran<double>* tv = nullptr ; 
 
-    glm::tmat4x4<double> t(1.)  ; 
-    glm::tmat4x4<double> v(1.) ; 
+    if( CSG::IsLeaf(typecode) )
+    {    
+        glm::tmat4x4<double> t(1.)  ; 
+        glm::tmat4x4<double> v(1.) ; 
+
+        st->get_combined_transform(t, v, node, nd, nullptr ); 
+
+        tv = new Tran<double>(t, v);  
+    }    
+
+    unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+
+    CSGNode* n = fd->addNode(cn, pl);    // Tran gets narrowed
+
+    n->setTransform(tranIdx);
+
+    return n ; 
+}
 
 
+
+
+/*
     bool dump_LVID = node.lvid == LVID ; 
     if( dump_LVID )
     {
@@ -305,13 +332,6 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
             ;
             
     }
-
-
-    Tran<double>* tv = new Tran<double>(t, v) ; 
-
-    CSGNode* n = fd->addNode(cn, pl, tv  );    // Tran gets narrowed
-
-    return n ; 
-}
+*/
 
 

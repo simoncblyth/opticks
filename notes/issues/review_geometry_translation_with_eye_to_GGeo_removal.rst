@@ -216,9 +216,20 @@ first prim with discrep : difference on the transform associated with the union/
 
 
 
+
+
+
+transforms on operator nodes
+---------------------------------
+
+
 In globals the principal difference is with the tranforms on operator nodes.
 
 In locals node that get_ancestors local:true is not stopping before the outer transform::
+
+
+    ct
+    ./CSGFoundryAB.sh 
 
 
     In [1]:  checkprim(a,b,3096)                                                                                                                                   
@@ -227,10 +238,61 @@ In locals node that get_ancestors local:true is not stopping before the outer tr
 
 
 
-in old geometry the operator nodes are referencing a non-sensical gtransform (TODO: check this) : but its never used 
+    In [2]: ip = 3096
+
+    In [3]: ann = a.pr.numNode[ip]
+
+    In [4]: bnn = b.pr.numNode[ip]
+
+    In [5]: ano = a.pr.nodeOffset[ip]
+
+    In [6]: bno = b.pr.nodeOffset[ip]
+
+    In [7]: atr = ( a.ni.comptran[ano:ano+ann] & 0x7fffffff ) - 1
+
+    In [8]: btr = ( b.ni.comptran[bno:bno+bnn] & 0x7fffffff ) - 1
+
+    In [9]: atc = a.ni.typecode[ano:ano+ann]
+
+    In [10]: btc = b.ni.typecode[bno:bno+bnn]
+
+    In [11]: atc
+    Out[11]: array([  2,   1,   2,   1, 105,   2, 105, 103, 105,   0,   0, 103, 105,   0,   0], dtype=int32)
+
+    In [12]: btc
+    Out[12]: array([  3,   1,   1,   1, 105,   1, 105, 103, 105,   0,   0, 103, 105,   0,   0], dtype=int32)
+
+    In [13]: atr
+    Out[13]: array([  -1,   -1,   -1,   -1, 7961,   -1, 7962, 7963, 7964,   -1,   -1, 7965, 7966,   -1,   -1], dtype=int32)
+
+    In [14]: btr
+    Out[14]: array([24124, 24125, 24126, 24127, 24128, 24129, 24130, 24131, 24132, 24133, 24134, 24135, 24136, 24137, 24138], dtype=int32)
+
+    In [15]: a.tran[-1]
+    Out[15]: 
+    array([[  1. ,   0. ,   0. ,   0. ],
+           [  0. ,   1. ,   0. ,   0. ],
+           [  0. ,   0. ,   1. ,   0. ],
+           [  0. , 831.6,   0. ,   1. ]], dtype=float32)
+
+    In [16]: b.tran[-1]
+    Out[16]: 
+    array([[  1. ,   0. ,   0. ,   0. ],
+           [  0. ,   1. ,   0. ,   0. ],
+           [  0. ,   0. ,   1. ,   0. ],
+           [  0. , 831.6,   0. ,   1. ]], dtype=float32)
+
+
+
+
+
+in old geometry the operator nodes are referencing a non-sensical gtransform : but its never used 
 ------------------------------------------------------------------------------------------------------------------------
 
-**Operator nodes combine intersect distances from their leaf nodes, they never use their own gtransforms.**
+Formerly thought had nonsensical operator node transforms : that was just the "-1" pointing to the last transform
+
+
+**Operator nodes pick between intersect distances from their leaf nodes, they never use their own gtransforms.**
 
 This means can substantially reduce the size of the tran/itra buffers as only leaf nodes need to 
 reference their transforms. For clarity can set the operator node transform references to zero
