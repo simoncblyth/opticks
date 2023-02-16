@@ -302,7 +302,7 @@ void NGeoTestConfig::dump(const char* msg)
     for(unsigned int i=0 ; i < n ; i++)
     {
         //char csgChar = getNode(i) ;
-        OpticksCSG_t type = getTypeCode(i) ;
+        int type = getTypeCode(i) ;
         const char* spec = getBoundary(i);
         glm::vec4 param = getParameters(i);
 
@@ -492,7 +492,7 @@ char NGeoTestConfig::getNode(unsigned int i)
 */
 
 
-OpticksCSG_t NGeoTestConfig::getTypeCode(unsigned int i)
+int NGeoTestConfig::getTypeCode(unsigned int i)
 {
     assert( i < m_nodes.size() );
     return CSG::TypeCode(m_nodes[i].c_str());

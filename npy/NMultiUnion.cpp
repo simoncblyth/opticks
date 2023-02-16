@@ -79,14 +79,14 @@ in order to be able to chop the tree into a pile of leaves without changing geom
 
 
 
-nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src )  // static 
+nmultiunion* nmultiunion::CreateFromTree( int type, const nnode* src )  // static 
 {
     LOG(LEVEL) << "[" ; 
     nnode* subtree = src->deepclone(); 
     subtree->prepareTree() ;  // sets parent links and gtransforms by multiplying the transforms 
 
     unsigned mask = subtree->get_tree_mask(); 
-    OpticksCSG_t subtree_type = CSG::MonoOperator(mask); 
+    int subtree_type = CSG::MonoOperator(mask); 
  
     if(subtree_type != CSG_UNION)
     {
@@ -128,7 +128,7 @@ nmultiunion::CreateFromList
 2. check all prim have overlap with at least one other : thats a bit difficult 
 
 **/
-nmultiunion* nmultiunion::CreateFromList( OpticksCSG_t type, std::vector<nnode*>& prim  )  // static 
+nmultiunion* nmultiunion::CreateFromList( int type, std::vector<nnode*>& prim  )  // static 
 {
     unsigned sub_num = prim.size(); 
     assert( sub_num > 0 ); 
@@ -148,7 +148,7 @@ nmultiunion* nmultiunion::CreateFromList( OpticksCSG_t type, std::vector<nnode*>
     return comp ; 
 }
 
-nmultiunion* nmultiunion::Create(OpticksCSG_t type )  // static 
+nmultiunion* nmultiunion::Create(int type )  // static 
 {
     nmultiunion* n = new nmultiunion ; 
     assert( type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS  ); 
@@ -156,7 +156,7 @@ nmultiunion* nmultiunion::Create(OpticksCSG_t type )  // static
 
     return n ; 
 }
-nmultiunion* nmultiunion::Create(OpticksCSG_t type, const nquad& param  ) // static
+nmultiunion* nmultiunion::Create(int type, const nquad& param  ) // static
 {
     nmultiunion* n = Create(type) ; 
     n->param = param ;    
@@ -173,7 +173,7 @@ of all the list-nodes within the tree.
 
 **/
 
-nmultiunion* nmultiunion::Create(OpticksCSG_t type, unsigned sub_num  )
+nmultiunion* nmultiunion::Create(int type, unsigned sub_num  )
 {
     nmultiunion* n = Create(type) ; 
     n->setSubNum(sub_num); 

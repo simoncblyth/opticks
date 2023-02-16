@@ -272,7 +272,7 @@ class GGEO_API GParts {
 
 
         static GParts* Make(const npart& pt, const char* spec);
-        static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
+        static GParts* Make(int csgflag, glm::vec4& param, const char* spec);
         static GParts* Make(const NCSG* tree, const char* spec, unsigned ndIdx );
     public:
         static GParts* Combine(std::vector<GParts*> subs );
@@ -423,8 +423,8 @@ class GGEO_API GParts {
         void setPlanBuffer(NPY<float>* plan_buffer);
 
     private:
-        void         setPrimFlag(OpticksCSG_t primflag);
-        OpticksCSG_t getPrimFlag() const ; 
+        void         setPrimFlag(int primflag);
+        int getPrimFlag() const ; 
         const char*  getPrimFlagString() const ; 
     public:
         bool isPartList() const ;
@@ -480,7 +480,7 @@ class GGEO_API GParts {
         VU                 m_plan_per_add ; 
         unsigned           m_verbosity ; 
         unsigned           m_analytic_version ; 
-        OpticksCSG_t       m_primflag ; 
+        int       m_primflag ; 
         const char*        m_medium ; 
         const NCSG*        m_csg ; 
 

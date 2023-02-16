@@ -306,7 +306,7 @@ class NPY_API NCSG {
 
     public:
         nnode*       getRoot() const ;
-        OpticksCSG_t getRootType() const ;  
+        int getRootType() const ;  
         const char*  getRootCSGName() const ;
         bool         isBox() const ; 
         bool         isBox3() const ; 
@@ -358,8 +358,8 @@ class NPY_API NCSG {
         void postimport_autoscan();
 
         nnode* import_tree_r(unsigned idx, nnode* parent=NULL);
-        nnode* import_tree_operator( unsigned idx, OpticksCSG_t typecode );
-        nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
+        nnode* import_tree_operator( unsigned idx, int typecode );
+        nnode* import_primitive( unsigned idx, int typecode );
         void import_srcplanes(nnode* node);
         void import_srcvertsfaces(nnode* node);
 

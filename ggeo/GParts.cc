@@ -419,14 +419,14 @@ GParts* GParts::Combine(std::vector<GParts*> subs)  // static
 
     GBndLib* bndlib = NULL ; 
     unsigned analytic_version = 0 ;  
-    OpticksCSG_t primflag = CSG_ZERO ; 
+    int primflag = CSG_ZERO ; 
 
 
     for(unsigned int i=0 ; i < subs.size() ; i++)
     {
         GParts* sp = subs[i];
 
-        OpticksCSG_t pf = sp->getPrimFlag();
+        int pf = sp->getPrimFlag();
 
 
         if(primflag == CSG_ZERO) 
@@ -503,7 +503,7 @@ GParts* GParts::Make(const npart& pt, const char* spec)
     return gpt ; 
 }
 
-GParts* GParts::Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
+GParts* GParts::Make(int csgflag, glm::vec4& param, const char* spec)
 {
     float size = param.w ;  
     //-------   
@@ -861,13 +861,13 @@ void GParts::init()
 
 }
 
-void GParts::setPrimFlag(OpticksCSG_t primflag)
+void GParts::setPrimFlag(int primflag)
 {
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
     m_primflag = primflag ; 
 }
 
-OpticksCSG_t GParts::getPrimFlag() const 
+int GParts::getPrimFlag() const 
 {
     return m_primflag ;
 }
@@ -1582,7 +1582,7 @@ unsigned GParts::getTypeMask(unsigned primIdx, bool operators_only) const
     {   
         unsigned partIdx = partOffset + partIdxRel ;
         unsigned tc = getTypeCode(partIdx); 
-        bool is_operator = CSG::IsOperator((OpticksCSG_t)tc) ; 
+        bool is_operator = CSG::IsOperator((int)tc) ; 
         unsigned tm = 1 << tc ; 
 
         if(operators_only)
@@ -1625,7 +1625,7 @@ void GParts::reconstructPartsPerPrim()
     {
         unsigned int nodeIndex = getNodeIndex(i);
         unsigned typ = getTypeCode(i);
-        std::string  typName = CSG::Name((OpticksCSG_t)typ);
+        std::string  typName = CSG::Name((int)typ);
  
         LOG(info) 
             << " i " << std::setw(3) << i  
@@ -1855,7 +1855,7 @@ void GParts::dumpPrim(unsigned primIdx)
             << " p " << std::setw(3) << p 
             << " partIdx " << std::setw(3) << partIdx
             << " typecode " << typecode
-            << " CSG::Name " << CSG::Name((OpticksCSG_t)typecode)
+            << " CSG::Name " << CSG::Name((int)typecode)
             ;
 
     }
@@ -1870,7 +1870,7 @@ void GParts::dumpPrim(unsigned primIdx)
         << " num_zeros "   << std::setw(5) << num_zeros
         << " num_nonzeros " << std::setw(5) << num_nonzeros
         << " primFlag "   << std::setw(5) << primFlag 
-        << " CSG::Name "  << CSG::Name((OpticksCSG_t)primFlag) 
+        << " CSG::Name "  << CSG::Name((int)primFlag) 
         << " prim "       << gformat(prim)
         ;
 }
@@ -1995,12 +1995,12 @@ unsigned GParts::getNumPrim() const
 const char* GParts::getTypeName(unsigned partIdx) const 
 {
     unsigned tc = getTypeCode(partIdx);
-    return CSG::Name((OpticksCSG_t)tc);
+    return CSG::Name((int)tc);
 }
 std::string GParts::getTag(unsigned partIdx) const 
 {
     unsigned tc = getTypeCode(partIdx);
-    return CSG::Tag((OpticksCSG_t)tc);
+    return CSG::Tag((int)tc);
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k) const 
@@ -2156,7 +2156,7 @@ unsigned GParts::getTypeCode(unsigned partIdx) const
 bool GParts::isCompound(unsigned partIdx) const 
 {
     unsigned typecode = getTypeCode(partIdx); 
-    bool is_compound = CSG::IsCompound((OpticksCSG_t)typecode); 
+    bool is_compound = CSG::IsCompound((int)typecode); 
     return is_compound ; 
 }
 
@@ -2361,7 +2361,7 @@ void GParts::dumpPart(unsigned partIdx)
     unsigned bnd = getBoundary(partIdx);
     std::string  bn = getBoundaryName(partIdx);
     const char*  tn = getTypeName(partIdx);
-    std::string csg = CSG::Name((OpticksCSG_t)tc);
+    std::string csg = CSG::Name((int)tc);
 
 
 

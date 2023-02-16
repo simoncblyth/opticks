@@ -309,7 +309,7 @@ bool nbbox::find_overlap(nbbox& overlap, const nbbox& other)
     return FindOverlap(overlap, *this, other);
 }
 
-void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity )
+void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, int op, int verbosity )
 {
 /*
 

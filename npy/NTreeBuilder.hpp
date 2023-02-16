@@ -52,13 +52,13 @@ class NPY_API NTreeBuilder
         static int FindBinaryTreeHeight(unsigned num_leaves); 
     public:
         static T* UnionTree(const std::vector<T*>& prims, bool dump ); 
-        static T* CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_, bool dump ); 
-        static T* BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_, bool dump ); 
-        static T* MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& others, OpticksCSG_t operator_, bool dump ); 
+        static T* CommonTree(const std::vector<T*>& prims, int operator_, bool dump ); 
+        static T* BileafTree(const std::vector<T*>& bileafs, int operator_, bool dump ); 
+        static T* MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& others, int operator_, bool dump ); 
         std::string desc() const ;
     private:
     private:
-        NTreeBuilder(const std::vector<T*>& subs, const std::vector<T*>& others, OpticksCSG_t operator_, NTreeBuilderMode_t mode=PRIM, bool dump=false ); 
+        NTreeBuilder(const std::vector<T*>& subs, const std::vector<T*>& others, int operator_, NTreeBuilderMode_t mode=PRIM, bool dump=false ); 
         void   init();
         unsigned getNumPrim() const ;
 
@@ -77,7 +77,7 @@ class NPY_API NTreeBuilder
         std::vector<T*>        m_subs_copy ; 
         std::vector<T*>        m_otherprim_copy ; 
 
-        OpticksCSG_t           m_operator ; 
+        int           m_operator ; 
         std::string            m_optag ; 
         NTreeBuilderMode_t     m_mode ; 
 

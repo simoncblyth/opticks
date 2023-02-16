@@ -122,7 +122,7 @@ class NPY_API NGeoTestConfig {
        glm::vec4 getParameters(unsigned int i);
        glm::mat4 getTransform(unsigned int i);
        //char      getNode(unsigned int i);  use of char codes, a workaround for dependency issue pre enum-unification ?
-       OpticksCSG_t getTypeCode(unsigned int i);
+       int getTypeCode(unsigned int i);
        std::string getNodeString(unsigned int i); 
 
        bool      getAnalytic();

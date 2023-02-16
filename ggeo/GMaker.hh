@@ -60,7 +60,7 @@ class GGEO_API GMaker {
    public:
        GMaker(Opticks* ok, GBndLib* blib, GMeshLib* meshlib );
    public:
-       GVolume* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
+       GVolume* make(unsigned int index, int typecode, glm::vec4& param, const char* spec);
    public:
        GMesh*   makeMeshFromCSG( NCSG* csg ) ; 
        GVolume* makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh ) const ; 

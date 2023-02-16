@@ -79,7 +79,7 @@ struct NPY_API nbbox
     static bool HasOverlap(const nbbox& a, const nbbox& b );
     static void SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap, int verbosity );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
-    static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity );
+    static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, int op, int verbosity );
 
     bool has_overlap(const nbbox& other);
     bool find_overlap(nbbox& overlap, const nbbox& other);

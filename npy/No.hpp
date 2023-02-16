@@ -43,7 +43,7 @@ struct NPY_API no
 
     unsigned depth ;
     unsigned subdepth ;
-    OpticksCSG_t type ; 
+    int type ; 
     bool    complement ; 
 
 
@@ -66,13 +66,13 @@ struct NPY_API no
     bool is_rzero() const ;   // !l-zero AND  r-zero
     bool is_lzero() const ;   //  l-zero AND !r-zero
 
-    static no* make_node( OpticksCSG_t type, no* left=NULL, no* right=NULL );  
-    static no* make_operator(OpticksCSG_t operator_, no* left=NULL, no* right=NULL );
+    static no* make_node( int type, no* left=NULL, no* right=NULL );  
+    static no* make_operator(int operator_, no* left=NULL, no* right=NULL );
 
 }; 
 
 
-inline no* no::make_operator(OpticksCSG_t operator_, no* left, no* right )
+inline no* no::make_operator(int operator_, no* left, no* right )
 {
     no* node = make_node(operator_, left , right );
     return node ; 

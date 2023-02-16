@@ -102,7 +102,7 @@ GGeoTest::makeVolumeFromConfig
 GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
 {
     std::string node = m_config->getNodeString(i);
-    OpticksCSG_t type = m_config->getTypeCode(i);
+    int type = m_config->getTypeCode(i);
 
     const char* spec = m_config->getBoundary(i);
     glm::vec4 param = m_config->getParameters(i);
@@ -160,7 +160,7 @@ void GGeoTest::labelPartList()
         assert(pts);
         assert(pts->isPartList());
 
-        OpticksCSG_t csgflag = volume->getCSGFlag(); 
+        int csgflag = volume->getCSGFlag(); 
         int flags = csgflag ;
 
         pts->setIndex(0u, i);

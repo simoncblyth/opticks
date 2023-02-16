@@ -450,7 +450,7 @@ void nnode::primcopy(nnode* c, const nnode* p)  // static
 
 
 
-void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
+void nnode::Init( nnode* n , int type, nnode* left, nnode* right )
 {
     n->idx = 0 ; 
     n->type = type ; 
@@ -1029,12 +1029,12 @@ void nnode::check_tree_r(const nnode* node, const nnode* parent, unsigned depth,
 
 
 
-void nnode::collect_ancestors( std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) const 
+void nnode::collect_ancestors( std::vector<const nnode*>& ancestors, int qtyp) const 
 {
     if(!parent) return ;   // start from parent to avoid collecting self
     collect_ancestors_(parent, ancestors, qtyp);
 }
-void nnode::collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) // static
+void nnode::collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, int qtyp) // static
 {
     while(n)
     {
@@ -1050,7 +1050,7 @@ void nnode::collect_connectedtype_ancestors( std::vector<const nnode*>& ancestor
     if(!parent) return ;   // start from parent to avoid collecting self
     collect_connectedtype_ancestors_(parent, ancestors, parent->type);
 }
-void nnode::collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) // static
+void nnode::collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, int qtyp) // static
 {
     while(n && n->type == qtyp)
     {
@@ -1063,27 +1063,27 @@ void nnode::collect_connectedtype_ancestors_( const nnode* n, std::vector<const 
 
 
 
-const nnode* nnode::find_one( OpticksCSG_t qtyp ) const   // returns NULL if exactly one node is not found
+const nnode* nnode::find_one( int qtyp ) const   // returns NULL if exactly one node is not found
 {
-    std::vector<OpticksCSG_t> typ = { qtyp } ; 
+    std::vector<int> typ = { qtyp } ; 
     return find_one(typ);
 }
-const nnode* nnode::find_one( OpticksCSG_t qtyp1, OpticksCSG_t qtyp2 ) const   // returns NULL if exactly one node is not found
+const nnode* nnode::find_one( int qtyp1, int qtyp2 ) const   // returns NULL if exactly one node is not found
 {
-    std::vector<OpticksCSG_t> typ = { qtyp1, qtyp2 } ; 
+    std::vector<int> typ = { qtyp1, qtyp2 } ; 
     return find_one(typ);
 }
-const nnode* nnode::find_one( std::vector<OpticksCSG_t>& qtyp ) const   // returns NULL if exactly one node is not found
+const nnode* nnode::find_one( std::vector<int>& qtyp ) const   // returns NULL if exactly one node is not found
 {
     std::vector<const nnode*> nodes ; 
     collect_nodes( nodes, qtyp );
     return nodes.size() == 1 ? nodes[0] : NULL  ; 
 }
-void nnode::collect_nodes( std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp ) const 
+void nnode::collect_nodes( std::vector<const nnode*>& nodes, std::vector<int>& qtyp ) const 
 {
     collect_nodes_r(this, nodes, qtyp );
 }
-void nnode::collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp  ) // static
+void nnode::collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<int>& qtyp  ) // static
 {
     if(std::find(qtyp.begin(), qtyp.end(), n->type ) != qtyp.end() )
     { 
@@ -1104,7 +1104,7 @@ void nnode::collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, s
 
 
 
-void nnode::collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) const 
+void nnode::collect_progeny( std::vector<const nnode*>& progeny, int xtyp ) const 
 {
     if(left && right)  // start from left/right to avoid collecting self
     {
@@ -1112,7 +1112,7 @@ void nnode::collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t xt
         collect_progeny_r(right, progeny, xtyp);
     }
 }
-void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) // static
+void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, int xtyp ) // static
 {
     if(n->type != xtyp || xtyp == CSG_ZERO)  // huh why != xtyp,  excluded type perhaps ?
     {
@@ -1145,7 +1145,7 @@ void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const
    // all progeny... eg for CSG_UNION parent this
    // will collect all operators and primitives in the union
 
-   OpticksCSG_t xtyp = parent->type ;  // exclude the operators from the monogroup
+   int xtyp = parent->type ;  // exclude the operators from the monogroup
 
    for(unsigned c=0 ; c < connectedtype.size() ; c++)
    {
@@ -1153,7 +1153,7 @@ void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const
        cu->collect_progeny( monogroup, xtyp ); 
    }  
 }
-bool nnode::is_same_monogroup(const nnode* a, const nnode* b, OpticksCSG_t op)  // static
+bool nnode::is_same_monogroup(const nnode* a, const nnode* b, int op)  // static
 {
    if(!a->parent || !b->parent || a->parent->type != op || b->parent->type != op) return false ;  
 
@@ -1228,13 +1228,13 @@ returns a mask integer holding the types of all nodes in the tree
 that meet the NNodeType criteria allowing selection of all/operators/primitives
 
 **/
-unsigned nnode::get_mask(OpticksCSG_t ntyp) const 
+unsigned nnode::get_mask(int ntyp) const 
 {
     unsigned msk = 0 ;   
     get_mask_r(this, ntyp, msk );
     return msk ; 
 }
-void nnode::get_mask_r(const nnode* node, OpticksCSG_t ntyp, unsigned& msk ) // static
+void nnode::get_mask_r(const nnode* node, int ntyp, unsigned& msk ) // static
 {
     bool collect = false ;  
     assert( node->type < CSG_UNDEFINED ); 
@@ -1256,7 +1256,7 @@ void nnode::get_mask_r(const nnode* node, OpticksCSG_t ntyp, unsigned& msk ) // 
         get_mask_r(node->right, ntyp, msk);
     }
 } 
-std::string nnode::get_mask_string(OpticksCSG_t ntyp) const 
+std::string nnode::get_mask_string(int ntyp) const 
 {
     unsigned msk = get_mask(ntyp);
     return CSG::MaskString(msk); 
@@ -1281,13 +1281,13 @@ bool nnode::is_box3() const
 
 
 
-unsigned nnode::get_count(OpticksCSG_t typ) const 
+unsigned nnode::get_count(int typ) const 
 {
     unsigned count = 0 ;
     get_count_r(this, typ, count );  
     return count ;  
 }
-void nnode::get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count) // static
+void nnode::get_count_r(const nnode* node, int typ, unsigned& count) // static
 {
     if( node->type == typ ) count += 1 ; 
 

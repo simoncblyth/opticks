@@ -157,7 +157,7 @@ void test_csgsdf()
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
         nnode* n = *it ; 
-        OpticksCSG_t type = n->type ; 
+        int type = n->type ; 
         const char* name = n->csgname();
         std::cout 
                   << " type: " << std::setw(3) << type 

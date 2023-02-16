@@ -49,7 +49,7 @@ void test_Adopt()
     for(unsigned i=0 ; i < nodes.size() ; i++)
     {   
         nnode* n = nodes[i] ; 
-        OpticksCSG_t type = n->type ; 
+        int type = n->type ; 
         const char* name = n->csgname();
         assert( type < CSG_UNDEFINED && type > 0 && name != NULL ) ; 
 

@@ -62,7 +62,7 @@ void test_Adopt()
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
         nnode* n = *it ; 
-        OpticksCSG_t type = n->type ; 
+        int type = n->type ; 
         assert( type < CSG_UNDEFINED ) ;
 
         const char* name = n->csgname();

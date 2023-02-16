@@ -149,7 +149,7 @@ bool no::is_lzero() const
 
 
 
-no* no::make_node(OpticksCSG_t type, no* left, no* right )
+no* no::make_node(int type, no* left, no* right )
 {
     no* n = new no ;   
 

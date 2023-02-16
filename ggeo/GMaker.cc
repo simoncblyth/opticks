@@ -71,7 +71,7 @@ void GMaker::init()
 }
 
 
-GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
+GVolume* GMaker::make(unsigned int /*index*/, int type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
     // for CSG triangulation need to be given the tree.. 
@@ -180,7 +180,7 @@ GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const gl
     GVolume* volume = new GVolume( ndIdx, transform, mesh, NULL, -1 );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
-    OpticksCSG_t type = csg->getRootType() ;
+    int type = csg->getRootType() ;
 
     std::string lvn = csg->getTestLVName();
     std::string pvn = csg->getTestPVName();

@@ -141,7 +141,7 @@ struct NPY_API nnode
     nnode* primclone() const ; 
     static void primcopy(nnode* c, const nnode* p) ; 
 
-    static void Init(nnode* n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
+    static void Init(nnode* n, int type, nnode* left=NULL, nnode* right=NULL);
 
     //unsigned uncoincide(unsigned verbosity);
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
@@ -277,24 +277,24 @@ struct NPY_API nnode
     void reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& trs_unscaled ) const ; 
 
 
-    const nnode* find_one( OpticksCSG_t qtyp ) const ; 
-    const nnode* find_one( OpticksCSG_t qtyp1, OpticksCSG_t qtyp2 ) const ; 
-    const nnode* find_one( std::vector<OpticksCSG_t>& qtyp ) const ;  // returns NULL if none or more than one are found
-    void collect_nodes( std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp ) const ;
-    static void collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<OpticksCSG_t>& qtyp );
+    const nnode* find_one( int qtyp ) const ; 
+    const nnode* find_one( int qtyp1, int qtyp2 ) const ; 
+    const nnode* find_one( std::vector<int>& qtyp ) const ;  // returns NULL if none or more than one are found
+    void collect_nodes( std::vector<const nnode*>& nodes, std::vector<int>& qtyp ) const ;
+    static void collect_nodes_r( const nnode* n, std::vector<const nnode*>& nodes, std::vector<int>& qtyp );
 
 
     void collect_monogroup( std::vector<const nnode*>& monogroup ) const ;
-    void collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t qtyp ) const ;
-    void collect_ancestors( std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) const ;
+    void collect_progeny( std::vector<const nnode*>& progeny, int qtyp ) const ;
+    void collect_ancestors( std::vector<const nnode*>& ancestors, int qtyp) const ;
     void collect_connectedtype_ancestors( std::vector<const nnode*>& ancestors) const ;
 
-    static void collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, OpticksCSG_t qtyp );
-    static void collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp);
-    static void collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp);
+    static void collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, int qtyp );
+    static void collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, int qtyp);
+    static void collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, int qtyp);
 
     static bool is_same_union(const nnode* a, const nnode* b) ; // static
-    static bool is_same_monogroup(const nnode* a, const nnode* b, OpticksCSG_t op) ; // static
+    static bool is_same_monogroup(const nnode* a, const nnode* b, int op) ; // static
 
 
     //std::string get_prim_mask_string() const ;
@@ -314,16 +314,16 @@ struct NPY_API nnode
     unsigned    get_tree_mask() const ;
 
     // type composition mask for the tree with input NNodeType to select ALL,OPERATORS,PRIMITIVES 
-    unsigned get_mask(OpticksCSG_t ntyp) const ;
-    static void get_mask_r(const nnode* node, OpticksCSG_t ntyp, unsigned& msk);
-    std::string get_mask_string(OpticksCSG_t ntyp) const ;
+    unsigned get_mask(int ntyp) const ;
+    static void get_mask_r(const nnode* node, int ntyp, unsigned& msk);
+    std::string get_mask_string(int ntyp) const ;
 
     // type count for the tree : eg to give the number of CSG_TORUS present in the tree
     bool has_torus() const ; 
     bool is_box3() const ; 
     bool is_box() const ; 
-    unsigned get_count(OpticksCSG_t typ) const ;
-    static void get_count_r(const nnode* node, OpticksCSG_t typ, unsigned& count);
+    unsigned get_count(int typ) const ;
+    static void get_count_r(const nnode* node, int typ, unsigned& count);
 
 
 
@@ -382,7 +382,7 @@ struct NPY_API nnode
     // ---------------------------------------------------------
 
     unsigned     idx ; 
-    OpticksCSG_t type ;  
+    int          type ;  
     nnode*       left ; 
     nnode*       right ; 
     nnode*       parent ; 
@@ -429,8 +429,8 @@ struct NPY_API nnode
     VSD* g4args ; 
 
 
-    static nnode* make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
-    static nnode* make_operator(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL );
+    static nnode* make_node(int operator_, nnode* left=NULL, nnode* right=NULL);
+    static nnode* make_operator(int operator_, nnode* left=NULL, nnode* right=NULL );
 
     void dump_g4code() const ;
     void write_g4code(const char* path) const ;
@@ -442,7 +442,7 @@ struct NPY_API nnode
 
 // TODO: get these out of header
 
-inline nnode* nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+inline nnode* nnode::make_node(int operator_, nnode* left, nnode* right )
 {
     nnode* n = new nnode ;    nnode::Init(n, operator_ , left, right ); return n ;
 }
@@ -473,7 +473,7 @@ inline ndifference* ndifference::make_difference(nnode* left, nnode* right)
     ndifference* n = new ndifference ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
-inline nnode* nnode::make_operator(OpticksCSG_t operator_, nnode* left, nnode* right )
+inline nnode* nnode::make_operator(int operator_, nnode* left, nnode* right )
 {
     nnode* node = NULL ; 
     switch(operator_) 

@@ -73,8 +73,8 @@ T* NTreeBalance<T>::create_balanced()
 
 
    // sysrap/OpticksCSG::Mask.h returns CSG_ZERO when not a UNION or INTERSECTION mono mask
-    OpticksCSG_t op = CSG::MonoOperator(op_mask) ;    
-    OpticksCSG_t hop = CSG::MonoOperator(hop_mask) ;  
+    int op = CSG::MonoOperator(op_mask) ;    
+    int hop = CSG::MonoOperator(hop_mask) ;  
 
     T* balanced = NULL ; 
 

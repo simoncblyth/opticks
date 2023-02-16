@@ -49,7 +49,7 @@ struct NPY_API npart
     void dump(const char* msg) const ;
 
     bool has_bb_zero() const ; 
-    void setTypeCode(OpticksCSG_t typecode);
+    void setTypeCode(int typecode);
     void setGTransform(unsigned gtransform_idx, bool complement=false);
     void setITransform(unsigned itransform_idx, bool complement=false);  // used by NCSG::export_srcnode
     void setBBox(const nbbox& bb);
@@ -68,7 +68,7 @@ struct NPY_API npart
     void setParam1(float x, float y, float z, float w);
 
 
-    OpticksCSG_t getTypeCode();
+    int getTypeCode();
     bool isPrimitive();   // from TypeCode
 
 

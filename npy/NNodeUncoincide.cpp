@@ -100,7 +100,7 @@ bool NNodeUncoincide::is_uncoincidable_subtraction(nnode*& a, nnode*& b)
 {
     assert(!m_node->complement); 
 
-    OpticksCSG_t type = m_node->type ; 
+    int type = m_node->type ; 
     nnode* left = m_node->left ; 
     nnode* right = m_node->right ; 
 
@@ -208,7 +208,7 @@ so should use epsilon
 
 bool NNodeUncoincide::is_uncoincidable_union(nnode*& a, nnode*& b)
 {
-    OpticksCSG_t type = m_node->type ; 
+    int type = m_node->type ; 
     if( type != CSG_UNION ) return false ; 
 
     nnode* left = m_node->left ; 

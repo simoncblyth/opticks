@@ -51,14 +51,14 @@ T* NTreeBuilder<T>::UnionTree(const std::vector<T*>& prims, bool dump )  // stat
     return CommonTree(prims, CSG_UNION, dump ) ; 
 }
 template <typename T>
-T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_, bool dump ) // static
+T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, int operator_, bool dump ) // static
 {
     std::vector<T*> otherprim ; 
     NTreeBuilder tb(prims, otherprim, operator_, PRIM, dump);  
     return tb.root() ; 
 }
 template <typename T>
-T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_, bool dump ) // static
+T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, int operator_, bool dump ) // static
 {
     std::vector<T*> otherprim ; 
     NTreeBuilder tb(bileafs, otherprim, operator_, BILEAF, dump );  
@@ -66,7 +66,7 @@ T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t oper
 }
 
 template <typename T>
-T* NTreeBuilder<T>::MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& otherprim,  OpticksCSG_t operator_, bool dump ) // static
+T* NTreeBuilder<T>::MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& otherprim,  int operator_, bool dump ) // static
 {
     NTreeBuilder tb(bileafs, otherprim, operator_, MIXED, dump );  
     return tb.root() ; 
@@ -101,7 +101,7 @@ int NTreeBuilder<T>::FindBinaryTreeHeight(unsigned num_leaves) // static
 }
 
 template <typename T>
-NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*>& otherprim, OpticksCSG_t operator_, NTreeBuilderMode_t mode, bool dump )
+NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*>& otherprim, int operator_, NTreeBuilderMode_t mode, bool dump )
     :
     m_subs(subs),
     m_otherprim(otherprim),

@@ -161,9 +161,9 @@ static const char* CSG_LAST_          = "last" ;
 
 struct CSG
 {
-    static OpticksCSG_t BooleanOperator(char op) 
+    static int BooleanOperator(char op) 
     {   
-        OpticksCSG_t typecode = CSG_ZERO ;   
+        int typecode = CSG_ZERO ;   
         switch(op)
         {   
            case 'U':  typecode = CSG_UNION         ; break ; 
@@ -174,9 +174,9 @@ struct CSG
         return typecode ;   
     }   
 
-    static OpticksCSG_t TypeCode(const char* nodename)
+    static int TypeCode(const char* nodename)
     {
-        OpticksCSG_t tc = CSG_UNDEFINED ;
+        int tc = CSG_UNDEFINED ;
         if(     strcmp(nodename, CSG_ZERO_) == 0)           tc = CSG_ZERO ;
         else if(strcmp(nodename, CSG_BOX_) == 0)            tc = CSG_BOX ;
         else if(strcmp(nodename, CSG_BOX3_) == 0)           tc = CSG_BOX3 ;
@@ -216,9 +216,9 @@ struct CSG
         return tc ;
     }
 
-    static OpticksCSG_t DeMorganSwap( OpticksCSG_t type )
+    static int DeMorganSwap( int type )
     {
-        OpticksCSG_t t = CSG_ZERO ; 
+        int t = CSG_ZERO ; 
         switch(type)
         {
             case CSG_INTERSECTION:  t = CSG_UNION         ; break ; 
@@ -229,11 +229,7 @@ struct CSG
         return t ; 
     }
 
-    static const char* Name( unsigned type )
-    {
-        return Name((OpticksCSG_t)type); 
-    }
-    static const char* Name( OpticksCSG_t type )
+    static const char* Name( int type )
     {
         const char* s = NULL ; 
         switch(type)
@@ -290,86 +286,40 @@ struct CSG
         return s ; 
     }
 
-    static std::string Tag( OpticksCSG_t type )
+    static std::string Tag(int type )
     {
         const char* name = Name(type);
         assert(strlen(name) > 2 );
         std::string s(name, name+2) ; 
         return s ; 
     }
-    static std::string Tag( unsigned type )
-    {
-        return Tag((OpticksCSG_t)type); 
-    }
+    static bool Exists(int type ) { return Name(type) != NULL ; } 
 
-    static bool Exists( OpticksCSG_t type )
-    { 
-       return Name(type) != NULL ;
-    }
 
-    static bool IsPrimitive(int type) { return IsPrimitive((OpticksCSG_t)type) ; }
-    static bool IsPrimitive(OpticksCSG_t type)
-    {
-        // hmm this is fine in context of tree : but are generalizing with lists as well as trees
-        return !(type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
-    }
 
-    static bool IsTree(OpticksCSG_t type)
-    {
-        return (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
-    }
-    // TODO: consolidate uses of these
-    static bool IsOperator(OpticksCSG_t type)
-    {
-        return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
-    }
+    static bool IsTree(int type) {      return (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; } 
+    static bool IsOperator(int type) { return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; } 
 
-    static bool IsList(int type) { return IsList((OpticksCSG_t)type) ; }
-    static bool IsList(OpticksCSG_t type)
-    {
-        return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ) ; 
-    }
+    static bool IsList(int type){ return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ) ; }
+    static bool IsCompound(int type){      return  type < CSG_LEAF && type > CSG_ZERO ; }
+    static bool IsPrimitive(int type){     return  type >= CSG_LEAF ; }
+    static bool IsLeaf(int type){          return  type >= CSG_LEAF ; }
+    static bool IsUnion(int type) {        return  type == CSG_UNION  ; } 
+    static bool IsIntersection(int type) { return  type == CSG_INTERSECTION  ; } 
+    static bool IsDifference(int type) {   return  type == CSG_DIFFERENCE  ; } 
+    static bool IsZero(int type) {         return  type == CSG_ZERO ; } 
 
-    static bool IsCompound(OpticksCSG_t type)
-    { 
-        return IsTree(type) || IsList(type) ; 
-    }
 
-    static bool IsLeaf(OpticksCSG_t type)
-    {
-        return !IsCompound(type) ;  
-    }
 
-    static bool ExpectExternalBBox(OpticksCSG_t type)
+    static bool ExpectExternalBBox(int type)
     {
         return  type == CSG_CONVEXPOLYHEDRON || type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ; 
     }
 
-    static bool IsUnbounded(OpticksCSG_t type)
+    static bool IsUnbounded(int type)
     {
         return  type == CSG_PHICUT || type == CSG_THETACUT || type == CSG_INFCYLINDER  || type == CSG_PLANE || type == CSG_SLAB ; 
     }
-
-    static bool IsUnion(OpticksCSG_t type)
-    {
-        return  type == CSG_UNION  ; 
-    }
-
-    static bool IsIntersection(OpticksCSG_t type)
-    {
-        return  type == CSG_INTERSECTION  ; 
-    }
-
-    static bool IsDifference(OpticksCSG_t type)
-    {
-        return  type == CSG_DIFFERENCE  ; 
-    }
-
-    static bool IsZero(OpticksCSG_t type)
-    {
-        return  type == CSG_ZERO ; 
-    }
-
     static bool CanZNudge(int type)
     {
         return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_DISC || type == CSG_ZSPHERE ; 
@@ -414,9 +364,9 @@ struct CSG
 
     **/
 
-    static unsigned OffsetType(OpticksCSG_t type)
+    static int OffsetType(int type)
     {
-        unsigned offset_type = CSG_ZERO ; 
+        int offset_type = CSG_ZERO ; 
         if(      type == CSG_ZERO  ) offset_type = type  ; 
         else if( CSG::IsTree(type) ) offset_type = type  ; 
         else if( CSG::IsList(type) ) offset_type = type - CSG_LIST + CSG_OFFSET_LIST  ;   // -11 + 4  = -7
@@ -424,9 +374,9 @@ struct CSG
         return offset_type ; 
     }
 
-    static unsigned TypeFromOffsetType( unsigned offsetType )
+    static int TypeFromOffsetType( int offsetType )
     {
-        unsigned type = CSG_ZERO ; 
+        int type = CSG_ZERO ; 
         if( offsetType < CSG_OFFSET_LIST )
         {
             type = offsetType ; 
@@ -442,10 +392,10 @@ struct CSG
         return type ; 
     }
 
-    static unsigned Mask(OpticksCSG_t type)
+    static unsigned Mask(int type)
     {
         // offsets aim to fold a range greater than 32 to fit within 32  without overlapping 
-        unsigned offset_type = OffsetType(type); 
+        int offset_type = OffsetType(type); 
         assert( offset_type < 32 ); 
         unsigned mask = 0x1 << offset_type  ; 
         return mask ; 
@@ -466,31 +416,27 @@ struct CSG
         std::stringstream ss ; 
         for(unsigned i=0 ; i < 32 ; i++) 
         {
-            OpticksCSG_t type = (OpticksCSG_t)TypeFromOffsetType(i) ; 
+            int type = TypeFromOffsetType(i) ; 
             unsigned typemask = Mask(type); 
  
             if((qmask & typemask) != 0 )
             {
-                ss << CSG::Name((OpticksCSG_t)(type)) << " " ;    
+                ss << CSG::Name(type) << " " ;    
             }
         }
         return ss.str();
     }
 
 
-    static bool HasPlanes(OpticksCSG_t type)
+    static bool HasPlanes(int type)
     {
         return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON || type == CSG_SEGMENT ) ; 
     }
 
-    static bool HasPlanes(unsigned type)
-    {
-         return HasPlanes((OpticksCSG_t)type); 
-    }
 
-    static unsigned HintCode(const char* name)
+    static int HintCode(const char* name)
     {
-        unsigned hintcode = CSG_ZERO ; 
+        int hintcode = CSG_ZERO ; 
         if(     strstr(name, _CSG_CONTIGUOUS)    != nullptr) hintcode = CSG_CONTIGUOUS ; 
         else if(strstr(name, _CSG_DISCONTIGUOUS) != nullptr) hintcode = CSG_DISCONTIGUOUS ; 
         else if(strstr(name, _CSG_OVERLAP)       != nullptr) hintcode = CSG_OVERLAP ; 
@@ -514,9 +460,9 @@ struct CSG
     the CSG code of the operator, otherwise return CSG_ZERO.
     **/
 
-    static OpticksCSG_t MonoOperator( unsigned mask )
+    static int MonoOperator( unsigned mask )
     {
-        OpticksCSG_t op = CSG_ZERO ; 
+        int op = CSG_ZERO ; 
         if(      Mask(CSG_UNION)        == mask ) op = CSG_UNION ; 
         else if( Mask(CSG_INTERSECTION) == mask ) op = CSG_INTERSECTION ; 
         else if( Mask(CSG_DIFFERENCE)   == mask ) op = CSG_ZERO  ;   // difference is unusable for tree manipulation so give zero

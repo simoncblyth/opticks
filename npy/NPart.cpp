@@ -46,7 +46,7 @@ unsigned npart::VERSION = 1 ;   // could become an enumerated LAYOUT bitfield if
 */
 
 
-void npart::setTypeCode(OpticksCSG_t typecode)
+void npart::setTypeCode(int typecode)
 {
     assert( TYPECODE_J == 2 && TYPECODE_K == 3 );
     q2.u.w = typecode ; 
@@ -142,9 +142,9 @@ unsigned npart::getRight()
 
 
 
-OpticksCSG_t npart::getTypeCode()
+int npart::getTypeCode()
 {
-    return (OpticksCSG_t)q2.u.w ; 
+    return (int)q2.u.w ; 
 }
 
 bool npart::isPrimitive()

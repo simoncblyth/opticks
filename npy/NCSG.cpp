@@ -474,7 +474,7 @@ void NCSG::import()
     m_csgdata->prepareForImport() ;  // from m_srctransforms to m_transforms, and get m_gtransforms ready to collect
 
     // need type of first node to distinguish tree from list   
-    OpticksCSG_t root_type  = (OpticksCSG_t)m_csgdata->getTypeCode(0);      
+    int root_type  = (int)m_csgdata->getTypeCode(0);      
     LOG(LEVEL) << " root_type " << CSG::Name(root_type) ; 
 
     if(CSG::IsTree(root_type))
@@ -511,7 +511,7 @@ void NCSG::import()
 void NCSG::import_leaf()
 {
     unsigned idx = 0 ; 
-    OpticksCSG_t root_type  = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
+    int root_type  = (int)m_csgdata->getTypeCode(idx);      
     m_root = import_primitive( idx, root_type ); 
     m_root->update_gtransforms(); 
 }
@@ -608,7 +608,7 @@ void NCSG::import_list()
 
 nnode* NCSG::import_list_node( unsigned idx ) 
 {
-    OpticksCSG_t type = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
+    int type = (int)m_csgdata->getTypeCode(idx);      
     int transform_idx = m_csgdata->getTransformIndex(idx) ;
     bool complement = m_csgdata->isComplement(idx) ; 
     bool is_list = CSG::IsList(type) ; 
@@ -662,7 +662,7 @@ nnode* NCSG::import_tree_r(unsigned idx, nnode* parent)
     if(idx >= getNumNodes()) return NULL ;  // getNumNodes is the number of serialization nodes from csgdata
     
     // from m_srcnodes     
-    OpticksCSG_t typecode = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
+    int typecode = (int)m_csgdata->getTypeCode(idx);      
     int transform_idx = m_csgdata->getTransformIndex(idx) ; 
     bool complement = m_csgdata->isComplement(idx) ; 
 
@@ -723,7 +723,7 @@ for subNum/subOffset
 
 **/
 
-nnode* NCSG::import_tree_operator( unsigned idx, OpticksCSG_t typecode )
+nnode* NCSG::import_tree_operator( unsigned idx, int typecode )
 {
     if(m_verbosity > 2)
     {
@@ -752,7 +752,7 @@ nnode* NCSG::import_tree_operator( unsigned idx, OpticksCSG_t typecode )
     return node ; 
 }
 
-nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
+nnode* NCSG::import_primitive( unsigned idx, int typecode )
 {
     // from srcnodes buffer
     nquad p0 = m_csgdata->getQuad(idx, 0);
@@ -1581,7 +1581,7 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
 
-    OpticksCSG_t typecode = pt.getTypeCode();
+    int typecode = pt.getTypeCode();
     bool is_list = CSG::IsList(typecode) ;  
     int subNum = is_list ? pt.getSubNum() : -1 ; 
     int subOffset = is_list ? pt.getSubOffset() : -1 ; 
@@ -1969,14 +1969,14 @@ std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int 
 
 std::string NCSG::getTestPVName() const 
 {
-    OpticksCSG_t type = getRootType() ;
+    int type = getRootType() ;
     const char* shapename = CSG::Name(type); 
     unsigned idx = getIndex();
     return TestVolumeName( shapename, "pv", idx);     
 }
 std::string NCSG::getTestLVName() const 
 {
-    OpticksCSG_t type = getRootType() ;
+    int type = getRootType() ;
     const char* shapename = CSG::Name(type); 
     unsigned idx = getIndex();
     return TestVolumeName( shapename, "lv", idx);     
@@ -2075,7 +2075,7 @@ const NSceneConfig* NCSG::getConfig() const { return m_config ;  }
 // from m_root 
 
 nnode*       NCSG::getRoot() const {     return m_root ;  }
-OpticksCSG_t NCSG::getRootType() const { assert(m_root); return m_root->type ; } 
+int NCSG::getRootType() const { assert(m_root); return m_root->type ; } 
 const char*  NCSG::getRootCSGName() const { return m_root ? m_root->csgname() : NULL ; }
 bool         NCSG::isBox() const {       assert( m_root ); return m_root->is_box() ;  }
 bool         NCSG::isBox3() const  {     assert( m_root ); return m_root->is_box3() ;  }

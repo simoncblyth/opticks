@@ -61,7 +61,7 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
 {
 }
 
-OpticksCSG_t GVolume::getCSGFlag() const 
+int GVolume::getCSGFlag() const 
 {
     return m_csgflag ; 
 }
@@ -221,7 +221,7 @@ const GVolume* GVolume::getOuterVolume() const
 
 
 
-void GVolume::setCSGFlag(OpticksCSG_t csgflag)
+void GVolume::setCSGFlag(int csgflag)
 {
     m_csgflag = csgflag ; 
 }
