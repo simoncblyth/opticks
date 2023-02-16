@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <cassert>
 
 #include "G4Version.hh"
 #include "G4MaterialPropertiesTable.hh"
@@ -153,11 +154,17 @@ U4MaterialPropertiesTable::GetProperties
 
 This aims to provide an API that does not change with Geant4 version. 
 
+Geant4 reference:
+
+* https://geant4.kek.jp/lxr/source/materials/include/G4MaterialPropertiesTable.hh
+* https://geant4.kek.jp/lxr/source/materials/src/G4MaterialPropertiesTable.cc
+
 **/
 
 inline void U4MaterialPropertiesTable::GetProperties(
       std::vector<std::string>& keys, 
-      std::vector<G4MaterialPropertyVector*>& props, const G4MaterialPropertiesTable* mpt )
+      std::vector<G4MaterialPropertyVector*>& props, 
+      const G4MaterialPropertiesTable* mpt )
 {
     std::vector<G4String> names = mpt->GetMaterialPropertyNames(); 
 
@@ -169,16 +176,30 @@ inline void U4MaterialPropertiesTable::GetProperties(
     {
         G4int i = iv->first ;  
         G4MaterialPropertyVector* v = iv->second ; 
-        const std::string& name = names[i] ; 
+        const char* key = names[i].c_str();   
 
-        keys.push_back(name); 
+        keys.push_back(key); 
         props.push_back(v) ; 
     }
 #else
-    std::cerr << "U4MaterialPropertiesTable::GetProperties NOT YET IMPLEMENTED IN 1100+ " << std::endl ; 
+    for(unsigned i = 0 ; i < names.size() ; i++)
+    {
+        const char* key = names[i].c_str() ; 
+        G4MaterialPropertyVector* v = mpt->GetProperty(key) ; 
+        if( v != nullptr ) 
+        {
+            keys.push_back(key);
+            props.push_back(v);  
+        }
+    }
+    // My reading of code suggests that the vector obtained from "props = mpt->GetProperties();"  
+    // will usually have lots of nullptr and will have a different length to the names vector
+    // unless absolutely all the properties are defined. 
+    // That is different behaviour to < 1100  above, so the 
+    // existance of properties is checked before adding to the vectors.
 #endif
+    assert( props.size() == keys.size() ); 
 
-    // WHY IS THIS MESS NECESSARY TO DO SUCH AN OBVIOUS THING ?
 }
 
 inline std::string U4MaterialPropertiesTable::DescProperties(
