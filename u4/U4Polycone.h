@@ -80,10 +80,10 @@ struct U4Polycone
     void init(); 
     void addPrims(std::vector<int>& prims, bool outside ); 
 
+    int level ; 
     const G4Polycone* polycone ; 
     const G4PolyconeHistorical* ph ; 
 
-    int level ; 
     int num ; 
     std::vector<RZ> rz ;
  
