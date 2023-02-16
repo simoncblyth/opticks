@@ -187,25 +187,25 @@ snd::combineXF
 
 Transform product ordering is an ad-hoc guess::
 
-    tt = prior->t * t
-    vv = v * prior->v 
+    tt = current->t * t
+    vv = v * current->v 
      
 **/
 
 void snd::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
-    sxf* prior = getXF_(); 
-    if(prior == nullptr)
+    sxf* current = getXF_(); 
+    if(current == nullptr)
     {
         setXF(t,v); 
     }
     else
     {
-        glm::tmat4x4<double> tt = prior->t * t ;   
-        glm::tmat4x4<double> vv = v * prior->v ;   
+        glm::tmat4x4<double> tt = current->t * t ;   
+        glm::tmat4x4<double> vv = v * current->v ;   
 
-        prior->t = tt ; 
-        prior->v = vv ; 
+        current->t = tt ; 
+        current->v = vv ; 
     }
 }
 

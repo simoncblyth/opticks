@@ -1,6 +1,7 @@
 #!/usr/bin/env python 
 """
-
+CSGFoundryAB.py
+=================
 
 """
 
@@ -9,8 +10,67 @@ from opticks.ana.fold import Fold
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
 
 
-def checkprim(a, b, ip, dump=False):
-    fmt = "ip:%(ip)3d " 
+def checktran(a, b, ip, order="A" ):
+    """
+    ::
+ 
+        at,bt,atran,btran,dtran = checktran(a,b,2000,"S")
+
+        # order A:asis, S:sum_sort, U:unique
+        #
+
+    """
+    ann = a.pr.numNode[ip]
+    bnn = b.pr.numNode[ip]
+
+    ano = a.pr.nodeOffset[ip]
+    bno = b.pr.nodeOffset[ip]
+
+    atr = ( a.ni.comptran[ano:ano+ann] & 0x7fffffff ) - 1  
+    btr = ( b.ni.comptran[bno:bno+bnn] & 0x7fffffff ) - 1 
+
+    at = atr[atr>-1]   # not -1 as thats done above 
+    bt = btr[btr>-1]
+
+    if len(at) == len(bt):
+        if order == "U":
+            atran = np.unique( a.tran[at], axis=0 )  
+            btran = np.unique( b.tran[bt], axis=0 )  
+        elif order == "S":
+            # sort by the sum of the 16 elements 
+            a_tran = a.tran[at]
+            b_tran = b.tran[bt]
+
+            ss_atran = np.argsort(np.sum(a_tran, axis=(1,2)))
+            ss_btran = np.argsort(np.sum(b_tran, axis=(1,2)))
+
+            atran = a_tran[ss_atran]  
+            btran = b_tran[ss_btran]  
+        elif order == "A":
+            atran = a.tran[at]   
+            btran = b.tran[bt] 
+        pass
+        dtran = np.sum( np.abs( atran - btran), axis=(1,2) ) 
+    else:
+        dtran = None
+    pass
+    return at,bt,atran,btran,dtran
+ 
+
+def checkprim(a, b, ip, dump=False, order="A"):
+    """
+    :param a: cf
+    :param b: cf
+    :param ip: prim index
+    :param dump:
+    :param order: control tran order with one of "ASIS" "SS" "U"
+
+    * A : default 
+    * S : sorting by sum of 16 elements
+    * U : apply np.unique 
+ 
+    """
+    fmt = "ip:%(ip)4d " 
     alv = a.pr.meshIdx[ip]
     blv = b.pr.meshIdx[ip]
     slv = "/" if alv == blv else "*"
@@ -24,8 +84,7 @@ def checkprim(a, b, ip, dump=False):
     ano = a.pr.nodeOffset[ip]
     bno = b.pr.nodeOffset[ip]
     sno = "/" if ano == bno  else "%"   # not "*" as this is bound to get stuck after first deviation
-    fmt += "no:%(ano)3d%(sno)s%(bno)3d " 
-
+    fmt += "no:%(ano)5d%(sno)s%(bno)5d " 
 
     anode = a.node[ano:ano+ann]  
     bnode = b.node[bno:bno+bnn]  
@@ -34,34 +93,23 @@ def checkprim(a, b, ip, dump=False):
     bmn = b.meshname[blv]
     smn = "/" if amn == bmn  else "*"
 
-
-    atr = ( a.ni.comptran[ano:ano+ann] & 0x7fffffff ) - 1  
-    btr = ( b.ni.comptran[bno:bno+bnn] & 0x7fffffff ) - 1 
-
-    atr = atr[atr>0]
-    btr = btr[btr>0]
+    atc = a.ni.typecode[ano:ano+ann]
+    btc = b.ni.typecode[bno:bno+bnn]
 
     aco = a.ni.comptran[ano:ano+ann] >> 31
     bco = b.ni.comptran[bno:bno+bnn] >> 31
 
-    atc = a.ni.typecode[ano:ano+ann]
-    btc = b.ni.typecode[bno:bno+bnn]
+    at,bt,atran,btran,dtran = checktran(a,b,ip,order=order)
 
-    atran = a.tran[atr]   
-    btran = b.tran[btr]   
-
-
-    if snn == "/":
-        dtran = np.sum( np.abs( atran - btran), axis=(1,2) ) 
+    if not dtran is None:
         wtran = np.where( dtran > 1e-2 )[0]   # large epsilon to avoid any float/double diffs
         ltran = len(wtran)
     else:
-        dtran = None
         ltran = -1 
-    pass
+    pass  
     stran = ":" if ltran == 0 else "*"
+    fmt += " %(order)s tr%(stran)s%(ltran)2d "
 
-    fmt += "tr%(stran)s%(ltran)2d "
     fmt += "mn:%(amn)40s%(smn)s%(bmn)40s "
 
 
@@ -79,7 +127,7 @@ def checkprim(a, b, ip, dump=False):
     pass
 
 
-def checkprims(a, b, ip0=-1, ip1=-1):
+def checkprims(a, b, ip0=-1, ip1=-1, order="A"):
     """
     ::
 
@@ -100,7 +148,7 @@ def checkprims(a, b, ip0=-1, ip1=-1):
         ip1 = len(a.pr.numNode)
     pass
     for i in range(ip0, ip1):
-        checkprim(a,b, i)
+        checkprim(a,b, i, order=order)
     pass
 
 

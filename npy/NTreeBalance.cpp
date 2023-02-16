@@ -54,8 +54,8 @@ bool NTreeBalance<T>::is_unable_to_balance() const
 template <typename T>
 void NTreeBalance<T>::init()
 {
-    height0 = depth_r(root,0, true);     
-    subdepth_r(root,0);     
+    height0 = depth_r(root,0, true);   // label:true sets node->depth
+    subdepth_r(root,0);                // sets node->subdepth 
 }
 
 
@@ -154,6 +154,8 @@ unsigned NTreeBalance<T>::depth_r(T* node, unsigned depth, bool label )
 NTreeBalance<T>::subdepth_r
 ------------------------------
 
+How far down can you go from each node. 
+
 Labels the nodes with the subdepth, which is 
 the max height of each node treated as a subtree::
 
@@ -192,10 +194,12 @@ void NTreeBalance<T>::subdepth_r(T* node, unsigned depth_ )
 NTreeBalance::subtrees
 ---------------------------
 
-Collect all subtrees of a particular subdepth into *subs*
-on first pass.  On second pass collect into *otherprim* 
-any primitives that are not already collected  
-either directly or as bileaf leaves within subs.
+pass:0
+    collect all subtrees of a particular subdepth into *subs*
+
+pass:1 
+    collect into *otherprim* any primitives that are not already collected  
+    either directly or as bileaf leaves within subs.
 
 **/
 
@@ -243,7 +247,7 @@ NTreeBalance<T>::is_collected
 --------------------------------
 
 Check if the argument node is already present in the subs list of subtrees 
-eitherdirectly or as first child.
+either directly or as left or right child.
 
 NB implicit assumption of maximum depth 1 of the subtrees, ie either leaf or bileaf 
 
@@ -274,11 +278,19 @@ std::string NTreeBalance<T>::operatorsDesc(unsigned minsubdepth) const
 }
 
 
+/**
+NTreeBalance::operators
+-------------------------
+
+Returns mask of CSG operators in the tree restricted to nodes with subdepth >= *minsubdepth*
+
+**/
+
 template <typename T>
 unsigned NTreeBalance<T>::operators(unsigned minsubdepth) const 
 {
    unsigned mask = 0 ;  
-   NTreeBalance<T>::operators_r(root, mask, minsubdepth);  
+   operators_r(root, mask, minsubdepth);  
    return mask ;  
 }
 
@@ -294,7 +306,7 @@ void NTreeBalance<T>::operators_r(const T* node, unsigned& mask, unsigned minsub
                 case CSG_UNION         : mask |= CSG::Mask(CSG_UNION)        ; break ; 
                 case CSG_INTERSECTION  : mask |= CSG::Mask(CSG_INTERSECTION) ; break ; 
                 case CSG_DIFFERENCE    : mask |= CSG::Mask(CSG_DIFFERENCE)   ; break ; 
-                default                : mask |= 0                         ; break ; 
+                default                : mask |= 0                           ; break ; 
             }
         }
         operators_r( node->left,  mask, minsubdepth ); 

@@ -143,7 +143,7 @@ static const char* CSG_INFCYLINDER_   = "infcylinder" ;
 static const char* CSG_OLDCYLINDER_   = "oldcylinder" ; 
 static const char* CSG_PHICUT_        = "phicut" ; 
 static const char* CSG_THETACUT_      = "thetacut" ; 
-static const char* CSG_UNDEFINED_     = "undefined" ; 
+static const char* CSG_UNDEFINED_     = "ERROR_undefined" ; 
 static const char* CSG_EXBB_          = "externalbb" ; 
 
 
@@ -281,18 +281,27 @@ struct CSG
             case CSG_ZLENS:         s = CSG_ZLENS_         ; break ; 
             case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
             case CSG_LAST:          s = CSG_LAST_          ; break ; 
-            default:                s = nullptr            ; break ;   
+            default:                s = CSG_UNDEFINED_     ; break ;   
         }
         return s ; 
     }
 
-    static std::string Tag(int type )
+    static std::string Tag(int type)
     {
         const char* name = Name(type);
         assert(strlen(name) > 2 );
         std::string s(name, name+2) ; 
         return s ; 
     }
+    static std::string Tag(int type, bool complement)
+    {
+        std::stringstream ss ; 
+        ss << ( complement ? "!" : "" ) << Tag(type); 
+        std::string str = ss.str(); 
+        return str ; 
+    }
+
+
     static bool Exists(int type ) { return Name(type) != NULL ; } 
 
 

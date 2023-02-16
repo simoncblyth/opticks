@@ -39,16 +39,22 @@ all the way to the GPU.
 #include <sstream>
 #include <cassert>
 
+#include "OpticksCSG.h"
 #include "scanvas.h"
 
 struct sn
 {
     int t ; 
+    int depth ; 
+    int subdepth ; 
+    bool complement ; 
+
     sn* l ; 
     sn* r ;     
 
-    static sn* Prim(int type) ; 
     static sn* Zero() ; 
+    static sn* Prim(int type) ; 
+    static sn* Boolean(int type, sn* left, sn* right); 
 
     bool is_primitive() const ; 
     bool is_bileaf() const ; 
@@ -66,8 +72,23 @@ struct sn
     int num_leaf() const ; 
     int num_leaf_r(int d) const ; 
 
-    int max_depth() const ; 
-    int max_depth_r(int d) const ; 
+    int maxdepth() const ; 
+    int maxdepth_r(int d) const ; 
+
+
+    void label(); 
+
+    int maxdepth_label() ; 
+    int maxdepth_label_r(int d) ; 
+
+    void subdepth_label() ; 
+    void subdepth_label_r(int d); 
+
+    unsigned operators(int minsubdepth) const ; 
+    static void Operators_r(const sn* n, unsigned& mask, int minsubdepth); 
+    bool is_positive_form() const ; 
+
+
 
 
     void postorder(std::vector<const sn*>& order ) const ; 
@@ -85,6 +106,15 @@ struct sn
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
     std::string render() const ; 
+    std::string render(int mode) const ; 
+
+    static constexpr const char* MODE_MINIMAL = "MINIMAL" ; 
+    static constexpr const char* MODE_TYPECODE = "TYPECODE" ; 
+    static constexpr const char* MODE_DEPTH = "DEPTH" ; 
+    static constexpr const char* MODE_SUBDEPTH = "SUBDEPTH" ; 
+    static constexpr const char* MODE_TYPETAG = "TYPETAG" ; 
+    static const char* rendermode(int mode); 
+
     void render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const ; 
 
     static sn* Build_r(int elevation, int op); 
@@ -101,19 +131,25 @@ struct sn
     static void Prune_r(sn* n, int d); 
     static void Check(const sn* n); 
 
+
+    void positivize() ; 
+    void positivize_r(bool negate, int d) ; 
+
 };
 
 
-
-inline sn* sn::Prim(int type)   // static
-{
-    return new sn {type, nullptr, nullptr} ; 
-}
 inline sn* sn::Zero()   // static
 {
     return Prim(0); 
 }
-
+inline sn* sn::Prim(int type)   // static
+{
+    return new sn {type, 0, 0, false, nullptr, nullptr} ; 
+}
+inline sn* sn::Boolean(int type, sn* left, sn* right)   // static
+{
+    return new sn {type, 0, 0, false, left, right} ; 
+}
 
 
 
@@ -178,19 +214,117 @@ inline int sn::num_leaf_r(int d) const
 }
 
 
-
-
-
-
-
-inline int sn::max_depth() const
+inline int sn::maxdepth() const
 {
-    return max_depth_r(0);
+    return maxdepth_r(0);
 }
-inline int sn::max_depth_r(int d) const
+inline int sn::maxdepth_r(int d) const
 {
-    return l && r ? std::max( l->max_depth_r(d+1), r->max_depth_r(d+1)) : d ; 
+    return l && r ? std::max( l->maxdepth_r(d+1), r->maxdepth_r(d+1)) : d ; 
 }
+
+
+
+inline void sn::label()
+{
+    maxdepth_label(); 
+    subdepth_label(); 
+}
+
+inline int sn::maxdepth_label() 
+{
+    return maxdepth_label_r(0);
+}
+inline int sn::maxdepth_label_r(int d)
+{
+    depth = d ; 
+    return l && r ? std::max( l->maxdepth_label_r(d+1), r->maxdepth_label_r(d+1)) : d ; 
+}
+
+
+
+/** 
+sn::subdepth_label  (based on NTreeBalance::subdepth_r)
+------------------------------------------------------------
+
+How far down can you go from each node. 
+
+Labels the nodes with the subdepth, which is 
+the max height of each node treated as a subtree::
+
+
+               3                    
+
+      [1]               2            
+
+   [0]    [0]       0          [1]    
+
+                           [0]     [0]
+
+
+bileafs are triplets of nodes with subdepths 1,0,0
+The above tree has two bileafs and one other leaf. 
+
+**/
+
+inline void sn::subdepth_label()
+{
+    subdepth_label_r(0); 
+}
+inline void sn::subdepth_label_r(int d)
+{
+    subdepth = maxdepth() ;
+    if(l && r)
+    {
+        l->subdepth_label_r(d+1);
+        r->subdepth_label_r(d+1);
+    }
+}
+
+
+
+/**
+sn::operators (based on NTreeBalance::operators)
+----------------------------------------------------
+
+Returns mask of CSG operators in the tree restricted to nodes with subdepth >= *minsubdepth*
+
+**/
+
+inline unsigned sn::operators(int minsubdepth) const 
+{
+   unsigned mask = 0 ;   
+   Operators_r(this, mask, minsubdepth);  
+   return mask ;   
+}
+
+inline void sn::Operators_r(const sn* n, unsigned& mask, int minsubdepth) // static
+{
+    if(n->l && n->r )
+    {   
+        if( n->subdepth >= minsubdepth )
+        {   
+            switch( n->t )
+            {   
+                case CSG_UNION         : mask |= CSG::Mask(CSG_UNION)        ; break ; 
+                case CSG_INTERSECTION  : mask |= CSG::Mask(CSG_INTERSECTION) ; break ; 
+                case CSG_DIFFERENCE    : mask |= CSG::Mask(CSG_DIFFERENCE)   ; break ; 
+                default                : mask |= 0                           ; break ; 
+            }   
+        }   
+        Operators_r( n->l ,  mask, minsubdepth );  
+        Operators_r( n->r , mask, minsubdepth );  
+    }   
+}
+
+inline bool sn::is_positive_form() const 
+{
+    unsigned ops = operators(0);  // minsubdepth:0 ie entire tree 
+    return (ops & CSG::Mask(CSG_DIFFERENCE)) == 0 ; 
+}
+
+
+
 
 
 
@@ -250,17 +384,25 @@ inline std::string sn::desc() const
     ss << "sn::desc"
        << " num_node " << num_node() 
        << " num_leaf " << num_leaf() 
-       << " max_depth " << max_depth() 
+       << " maxdepth " << maxdepth() 
+       << " is_positive_form " << ( is_positive_form() ? "Y" : "N" ) 
        ; 
     std::string str = ss.str();
     return str ;
 }
 
-
 inline std::string sn::render() const
 {
+    std::stringstream ss ;
+    for(int mode=0 ; mode < 4 ; mode++) ss << render(mode) << std::endl ; 
+    std::string str = ss.str();
+    return str ;
+}
+
+inline std::string sn::render(int mode) const
+{
     int width = num_node();
-    int height = max_depth();
+    int height = maxdepth();
 
     std::vector<const sn*> in ;
     inorder(in);
@@ -270,17 +412,8 @@ inline std::string sn::render() const
     postorder(post);
     assert( int(post.size()) == width );
 
-
-    int mode = width > 16 ? 0 : 1 ; // compact presentation for large trees
-
     int xscale = 3 ; 
     int yscale = 2 ; 
-
-    if(mode == 1)
-    {
-        xscale = 8 ; 
-        yscale = 4 ; 
-    } 
 
     scanvas canvas( width+1, height+2, xscale, yscale );
     render_r(&canvas, in, mode,  0);
@@ -288,34 +421,57 @@ inline std::string sn::render() const
     std::stringstream ss ;
     ss << std::endl ;
     ss << desc() << std::endl ;  
-    ss << "sn::render mode " << mode << std::endl ;
+    ss << "sn::render mode " << mode << " " << rendermode(mode) << std::endl ;
     ss << canvas.c << std::endl ;
 
-    ss << "inorder   " << desc_order(in) << std::endl ; 
-    ss << "postorder " << desc_order(post) << std::endl ; 
+    if(mode == 0 )
+    {
+        ss << "inorder   " << desc_order(in) << std::endl ; 
+        ss << "postorder " << desc_order(post) << std::endl ; 
+
+        unsigned ops = operators(0); 
+        bool pos = is_positive_form() ; 
+
+        ss << " ops = operators(0) " << ops << std::endl ; 
+        ss << " CSG::MaskDesc(ops) : " << CSG::MaskDesc(ops) << std::endl ; 
+        ss << " is_positive_form() : " << ( pos ? "YES" : "NO" ) << std::endl ;  
+    }
 
     std::string str = ss.str();
     return str ;
 }
 
-void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const
+inline const char* sn::rendermode(int mode) // static
+{
+    const char* md = nullptr ; 
+    switch(mode) 
+    {
+        case 0: md = MODE_MINIMAL  ; break ; 
+        case 1: md = MODE_TYPECODE ; break ; 
+        case 2: md = MODE_DEPTH    ; break ; 
+        case 3: md = MODE_SUBDEPTH ; break ; 
+        case 4: md = MODE_TYPETAG  ; break ; 
+    }
+    return md ; 
+}
+
+inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const
 {
     int ordinal = std::distance( order.begin(), std::find(order.begin(), order.end(), this )) ;
     assert( ordinal < int(order.size()) );
 
     int ix = ordinal ;
     int iy = d ;
+    std::string tag = CSG::Tag(t, complement); 
 
-    if(mode == 0)  // compact single char presentation 
+    switch(mode)
     {
-        char l0 = 'o' ;
-        canvas->drawch( ix, iy, 0,0,  l0 );
-    }
-    else if(mode == 1)  // typecode presentation 
-    {
-        canvas->draw( ix, iy, 0,0,  t );
+        case 0: canvas->drawch( ix, iy, 0,0, 'o' )         ; break ; 
+        case 1: canvas->draw(   ix, iy, 0,0,  t     )      ; break ; 
+        case 2: canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
+        case 3: canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
+        case 4: canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
     } 
-
 
     if(l) l->render_r( canvas, order, mode, d+1 );
     if(r) r->render_r( canvas, order, mode, d+1 );
@@ -327,7 +483,7 @@ inline sn* sn::Build_r( int elevation, int op )  // static
 {
     sn* l = elevation > 1 ? Build_r( elevation - 1 , op ) : sn::Zero() ; 
     sn* r = elevation > 1 ? Build_r( elevation - 1 , op ) : sn::Zero() ; 
-    return new sn { op, l, r } ;  
+    return sn::Boolean(op, l, r ) ;  
 }
 
 
@@ -480,6 +636,75 @@ inline void sn::Check(const sn* n) // static
     {
         std::cerr << "sn::Check ERROR detected dangling zero (see NTreeBuilder::rootprune) " << std::endl ;  
         assert(0); 
+    }
+}
+
+
+
+
+/**
+sn::positivize (base on NTreePositive::positivize_r)
+--------------------------------------------------------
+
+* https://smartech.gatech.edu/bitstream/handle/1853/3371/99-04.pdf?sequence=1&isAllowed=y
+
+* addition: union
+* subtraction: difference
+* product: intersect
+
+Tree positivization (which is not the same as normalization) 
+eliminates subtraction by propagating negations down the tree using deMorgan rules. 
+
+**/
+
+
+inline void sn::positivize()
+{
+    positivize_r(false, 0); 
+}
+inline void sn::positivize_r(bool negate, int d)
+{
+    if(l == nullptr && r == nullptr)  // primitive 
+    {   
+        if(negate) complement = !complement ; 
+    }   
+    else
+    {   
+        bool left_negate = false ; 
+        bool right_negate = false ; 
+
+        if(t == CSG_INTERSECTION || t == CSG_UNION)
+        {   
+            if(negate)                             // !( A*B ) ->  !A + !B       !(A + B) ->     !A * !B
+            {    
+                 t = CSG::DeMorganSwap(t) ;   // UNION->INTERSECTION, INTERSECTION->UNION
+                 left_negate = true ; 
+                 right_negate = true ; 
+            }   
+            else
+            {                                      //  A * B ->  A * B         A + B ->  A + B
+                 left_negate = false ;
+                 right_negate = false ;
+            }
+        }
+        else if(t == CSG_DIFFERENCE)
+        {
+            if(negate)                             //  !(A - B) -> !(A*!B) -> !A + B
+            {
+                t = CSG_UNION ;
+                left_negate = true ;
+                right_negate = false  ;
+            }
+            else
+            {
+                t = CSG_INTERSECTION ;    //    A - B ->  A * !B
+                left_negate = false ;
+                right_negate = true ;
+            }
+        }
+
+        l->positivize_r(left_negate,  d+1);
+        r->positivize_r(right_negate, d+1);
     }
 }
 

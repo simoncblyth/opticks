@@ -280,6 +280,169 @@ In locals node that get_ancestors local:true is not stopping before the outer tr
 
 
 
+examine the 74/8179 discrepant tran/itra
+------------------------------------------
+
+The number of tran/itra is the same between A and B because only leaves have final transforms.
+HMM perhaps those transforms actually might be shuffled rather than discrepant ?  
+Which would suggest the leaves are being reached in a different order as a result of balancing in A
+and not in B. 
+
+::
+
+    ct
+    ./CSGFoundryAB.sh
+
+
+The 2nd stretch of 10 looks like they might be shuffled. And the below confirms that is so
+
+    In [1]: tr = np.arange(8032,8041+1)
+    In [5]: np.c_[a.tran[tr],b.tran[tr]]
+
+    In [8]: np.unique(a.tran[tr], axis=0).shape
+    Out[8]: (9, 4, 4)
+
+    In [9]: np.unique(b.tran[tr], axis=0).shape
+    Out[9]: (9, 4, 4)
+
+    In [10]: np.c_[np.unique(a.tran[tr], axis=0),np.unique(b.tran[tr], axis=0)]
+    Out[10]: 
+    array([[[   1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+            [-164.   ,    0.   ,  -65.   ,    1.   , -164.   ,    0.   ,  -65.   ,    1.   ]],
+
+           [[   1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ,    0.   ,    0.   ,    1.   ,    0.   ],
+            [-115.966, -115.966,  -65.   ,    1.   , -115.966, -115.966,  -65.   ,    1.   ]],
+
+    In [11]: ub = np.unique(b.tran[tr], axis=0)
+    In [12]: ua = np.unique(a.tran[tr], axis=0)
+
+    In [14]: np.all( ua == ub )
+    Out[14]: True
+
+    In [16]: np.unique(a.tran[tr], return_index=True, axis=0)[1]
+    Out[16]: array([6, 7, 5, 8, 0, 4, 9, 3, 2])
+
+    In [17]: np.unique(b.tran[tr], return_index=True, axis=0)[1]
+    Out[17]: array([3, 2, 4, 1, 8, 5, 0, 6, 7])
+
+
+Check the stretch of 64
+---------------------------
+
+::
+
+    In [18]: tr = np.arange(6672,6735+1)   
+
+    In [22]: ub = np.unique(b.tran[tr], axis=0)
+
+    In [23]: ua = np.unique(a.tran[tr], axis=0)
+
+    In [24]: ua.shape
+    Out[24]: (56, 4, 4)
+
+    In [25]: ub.shape
+    Out[25]: (56, 4, 4)
+
+Doesnt match this time. But its not single prim and not instanced so more involved. ::
+
+    In [30]: checkprims(a,b)
+    ip:%(ip)3d lv:%(alv)3d%(slv)s%(blv)3d nn:%(ann)3d%(snn)s%(bnn)3d no:%(ano)3d%(sno)s%(bno)3d tr%(stran)s%(ltran)2d mn:%(amn)40s%(smn)s%(bmn)40s 
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2382 lv: 93/ 93 nn: 15*127 no:15314%16098 tr*-1 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268 tr*-1 mn:                                    uni1/                                    uni1 
+
+    In [34]: ann=15;bnn=127;ano=15209;bno=15209
+    In [35]: anode = a.node[ano:ano+ann]
+    In [36]: bnode = b.node[bno:bno+bnn]
+
+
+    In [39]: atr = anode.view(np.int32)[:,3,3] & 0x7fffffff
+    In [40]: btr = bnode.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [41]: atr
+    Out[41]: array([   0,    0,    0,    0,    0,    0,    0, 6673, 6674, 6675, 6676, 6677, 6678, 6679, 6680], dtype=int32)
+
+    In [42]: btr
+    Out[42]: 
+    array([   0,    0,    0,    0, 6673, 6674, 6675,    0, 6676,    0,    0,    0,    0,    0,    0,    0, 6677,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+           6678,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 6679,
+           6680,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0],
+          dtype=int32)
+
+
+    In [43]: at = atr[atr>0] - 1
+
+    In [44]: bt = btr[btr>0] - 1
+
+    In [45]: at               
+    Out[45]: array([6672, 6673, 6674, 6675, 6676, 6677, 6678, 6679], dtype=int32)
+
+    In [46]: bt             
+    Out[46]: array([6672, 6673, 6674, 6675, 6676, 6677, 6678, 6679], dtype=int32)
+
+    In [53]: ua = np.unique( a.tran[at], axis=0 )
+    In [54]: ub = np.unique( b.tran[bt], axis=0 )
+
+    In [59]: np.allclose( ua, ub )
+    Out[59]: True
+
+
+So the transforms of prim 2375 are confirmed to match but they are shuffled between A and B::
+
+    In [60]: np.unique( a.tran[at], return_index=True, axis=0 )[1]
+    Out[60]: array([2, 1, 4, 0, 6, 7, 3])
+
+    In [61]: np.unique( b.tran[bt], return_index=True, axis=0 )[1]
+    Out[61]: array([3, 4, 6, 5, 1, 2, 0])
+
+
+::
+
+    In [2]: checkprims(a,b,2375,2382)
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971 tr* 8 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+
+    In [4]: checkprims(a,b,-1,-1,order="S")
+    ip:%(ip)4d lv:%(alv)3d%(slv)s%(blv)3d nn:%(ann)3d%(snn)s%(bnn)3d no:%(ano)5d%(sno)s%(bno)5d      S tr%(stran)s%(ltran)2d mn:%(amn)40s%(smn)s%(bmn)40s 
+    ip:2375 lv: 93/ 93 nn: 15*127 no:15209/15209      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2376 lv: 93/ 93 nn: 15*127 no:15224%15336      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2377 lv: 93/ 93 nn: 15*127 no:15239%15463      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2378 lv: 93/ 93 nn: 15*127 no:15254%15590      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2379 lv: 93/ 93 nn: 15*127 no:15269%15717      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2380 lv: 93/ 93 nn: 15*127 no:15284%15844      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2381 lv: 93/ 93 nn: 15*127 no:15299%15971      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+    ip:2382 lv: 93/ 93 nn: 15*127 no:15314%16098      S tr: 0 mn:                  solidSJReceiverFastern/                  solidSJReceiverFastern 
+
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268      S tr* 6 mn:                                    uni1/                                    uni1 
+
+                    ## ordering by sum of 16 elements does not establish a reliable order for transforms that 
+                    ## are arranged symmetrically : but using unique shows that the transforms are shuffled
+
+    In [7]: checkprims(a,b,3126,3127,order="U")
+    ip:3126 lv: 99/ 99 nn: 31*1023 no:23372%24268      U tr: 0 mn:                                    uni1/                                    uni1 
+
+
+Have confirmed that all the transforms match.  BUT LV 93:solidSJReceiverFastern and 99:uni1 differ in that A is balanced, but not B.
+Somehow the balancing is resulting in the ordering of the primitives changing.  
+
+
+
 transform comparison after elliposoid stomp avoidance
 --------------------------------------------------------
 
