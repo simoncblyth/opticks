@@ -78,7 +78,7 @@ float distance_tree( const float3& global_position, const CSGNode* node, const f
         unsigned depth = TREE_DEPTH(nodeIdx) ;
         unsigned elevation = height - depth ; 
 
-        const CSGNode* nd = node + nodeIdx - 1 ; 
+        const CSGNode* nd = node + nodeIdx - 1 ;  // last *nd* in postorder traversal (the root) is *node* 
         OpticksCSG_t typecode = (OpticksCSG_t)nd->typecode() ;
 
         if( typecode == CSG_ZERO )
@@ -677,15 +677,15 @@ float distance_prim( const float3& global_position, const CSGNode* node, const f
     //const int numNode = node->subNum(); 
     const unsigned typecode = node->typecode() ;  
     float distance = -1.f ; 
-    if( typecode >= CSG_LEAF )
+    if( typecode >= CSG_LEAF )       // leaf nodes
     {
         distance = distance_leaf(global_position, node, plan, itra );
     } 
-    else if( typecode < CSG_NODE )
+    else if( typecode < CSG_NODE )   // boolean tree nodes
     {
         distance = distance_tree(global_position, node, plan, itra );
     }
-    else  
+    else                             // list nodes 
     {
         distance = distance_node_list( typecode, global_position, node, node, plan, itra ) ; 
     }

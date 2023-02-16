@@ -227,6 +227,30 @@ In locals node that get_ancestors local:true is not stopping before the outer tr
 
 
 
+in old geometry the operator nodes are referencing a non-sensical gtransform (TODO: check this) : but its never used 
+------------------------------------------------------------------------------------------------------------------------
+
+**Operator nodes combine intersect distances from their leaf nodes, they never use their own gtransforms.**
+
+This means can substantially reduce the size of the tran/itra buffers as only leaf nodes need to 
+reference their transforms. For clarity can set the operator node transform references to zero
+meaning no associated transform. 
+
+gtransformIdx grepping is consistent with this::
+
+    epsilon:CSG blyth$ grep gtransformIdx *.h 
+    CSGNode.h:    |    |                |                |  typecode      | gtransformIdx  |                                                 |
+    CSGNode.h:    NODE_METHOD void setComplement( bool complement ){  setTransformComplement( gtransformIdx(), complement) ; }
+    CSGNode.h:    NODE_METHOD unsigned gtransformIdx() const { return q3.u.w & 0x7fffffff ; }  //  gtransformIdx is 1-based, 0 meaning None 
+    csg_intersect_leaf.h:    const unsigned gtransformIdx = node->gtransformIdx() ; 
+    csg_intersect_leaf.h:    const qat4* q = gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;  // gtransformIdx is 1-based, 0 meaning None
+    csg_intersect_leaf.h:    const unsigned gtransformIdx = node->gtransformIdx() ; 
+    csg_intersect_leaf.h:    const qat4* q = gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;  // gtransformIdx is 1-based, 0 meaning None
+    csg_intersect_leaf.h:    printf("//[intersect_leaf typecode %d name %s gtransformIdx %d \n", typecode, CSG::Name(typecode), gtransformIdx ); 
+    csg_intersect_leaf.h:    //printf("//[intersect_leaf typecode %d name %s gtransformIdx %d \n", typecode, CSG::Name(typecode), gtransformIdx ); 
+    epsilon:CSG blyth$ 
+
+
 
 importTree
 --------------
