@@ -21,6 +21,12 @@ use a small array and plant metadata on that
 
 #include "S4.h"
 
+#if G4VERSION_NUMBER >= 1070
+#include "SNameOrder.h"
+#endif
+
+
+
 struct NPFold ; 
 
 

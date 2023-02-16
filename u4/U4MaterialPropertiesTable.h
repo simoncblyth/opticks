@@ -161,8 +161,9 @@ inline void U4MaterialPropertiesTable::GetProperties(
 {
     std::vector<G4String> names = mpt->GetMaterialPropertyNames(); 
 
+#if G4VERSION_NUMBER < 1100
     typedef std::map<G4int, G4MaterialPropertyVector*> MIV ; 
-    const MIV* miv = mpt->GetPropertyMap(); 
+    const MIV* miv = mpt->GetPropertyMap();   // <-- METHOD REMOVED IN G4 1100 
 
     for(MIV::const_iterator iv=miv->begin() ; iv != miv->end() ; iv++) 
     {
@@ -173,6 +174,10 @@ inline void U4MaterialPropertiesTable::GetProperties(
         keys.push_back(name); 
         props.push_back(v) ; 
     }
+#else
+    std::cerr << "U4MaterialPropertiesTable::GetProperties NOT YET IMPLEMENTED IN 1100+ " << std::endl ; 
+#endif
+
     // WHY IS THIS MESS NECESSARY TO DO SUCH AN OBVIOUS THING ?
 }
 
