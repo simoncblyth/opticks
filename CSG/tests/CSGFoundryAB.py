@@ -10,6 +10,56 @@ from opticks.ana.fold import Fold
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
 
 
+class CSGFoundryAB(object):
+    def __init__(self, a, b, _ip=0):
+        self.a = a 
+        self.b = b 
+        self.ip = _ip
+
+    def _set_ip(self, ip):
+        self._ip = ip 
+
+        a = self.a 
+        b = self.b 
+
+        ann = a.pr.numNode[ip]
+        bnn = b.pr.numNode[ip]
+        ano = a.pr.nodeOffset[ip]
+        bno = b.pr.nodeOffset[ip]
+        alv = a.pr.meshIdx[ip]
+        blv = b.pr.meshIdx[ip]
+        amn = a.meshname[alv]
+        bmn = b.meshname[blv]
+        anode = a.node[ano:ano+ann]  
+        bnode = b.node[bno:bno+bnn]  
+
+        atc = a.ni.typecode[ano:ano+ann]
+        btc = b.ni.typecode[bno:bno+bnn]
+
+        aco = a.ni.comptran[ano:ano+ann] >> 31
+        bco = b.ni.comptran[bno:bno+bnn] >> 31
+
+        self.alv = alv
+        self.blv = blv
+        self.amn = amn
+        self.bmn = bmn
+        self.anode = anode
+        self.bnode = bnode
+        self.atc = atc
+        self.btc = btc
+        self.aco = aco
+        self.bco = bco
+
+    def __repr__(self):
+        return "AB %d alv %s:%s blv %s:%s " % ( self._ip, self.alv, self.amn, self.blv, self.bmn )
+
+    def _get_ip(self):
+        return self._ip
+
+    ip = property(_get_ip, _set_ip) 
+
+
+
 def checktran(a, b, ip, order="A" ):
     """
     ::
@@ -56,6 +106,7 @@ def checktran(a, b, ip, order="A" ):
     pass
     return at,bt,atran,btran,dtran
  
+
 
 def checkprim(a, b, ip, dump=False, order="A"):
     """
@@ -167,5 +218,9 @@ if __name__ == '__main__':
     b = CSGFoundry.Load("$B_CFBASE", symbol="b")
     print(a.brief())
     print(b.brief())
+
+    ab = CSGFoundryAB(a,b)
+
+
 
 

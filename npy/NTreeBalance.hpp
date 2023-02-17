@@ -36,6 +36,33 @@ Ported from python:
 * ../analytic/csg.py 
 * ../analytic/treebuilder.py
 
+Issue 1 
+----------
+
+Balanced trees in complex solids sometimes turn out to be incompatible with the 
+single hit CSG intersection algorithm which relies on comparing a hit 
+onto a constituent with the rest of the entire tree (not just part of the tree
+that balanced trees make common).  
+
+https://juno.ihep.ac.cn/~blyth/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html 
+
+In principal a G4Boolean tree could be built in a balanced way in Geant4, 
+which would suffer exactly the same problem.
+
+Planned fix for these problems of complex trees is to drastically simplify the 
+tree using list nodes, avoiding the issue and improving performance because
+can use an alg more suited to the geometry. See CSG/csg_intersect_node.h
+
+Possible Issue 2
+-----------------
+
+Balancing rearranges commutative subtrees, but that does not handle transforms on operator nodes.  
+It is perhaps possible for the rearrangement to change geometry due to the 
+transforms effectively being moved around ?  This issue could be avoided by flattening 
+the CSG transforms down into the leaves such that there are no transforms 
+left on operator nodes. 
+
+
 **/
 
 template <typename T>

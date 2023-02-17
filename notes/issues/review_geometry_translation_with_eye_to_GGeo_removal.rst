@@ -439,8 +439,17 @@ So the transforms of prim 2375 are confirmed to match but they are shuffled betw
 
 
 Have confirmed that all the transforms match.  BUT LV 93:solidSJReceiverFastern and 99:uni1 differ in that A is balanced, but not B.
-Somehow the balancing is resulting in the ordering of the primitives changing.  
+Somehow the balancing is resulting in the ordering of the primitives changing which shuffles the transforms. 
 
+HOW TO COMPARE THE PRIM ORDER ?::
+
+    In [14]: ab.atc[ab.atc >0]
+    Out[14]: array([  1,   1,   2,   1,   1, 105, 105,   1,   1,   1,   1, 105, 105, 105, 105, 105, 105, 105, 105], dtype=int32)
+
+    In [15]: ab.btc[ab.btc > 0] 
+    Out[15]: array([  1,   1, 105,   1, 105,   1, 105,   1, 105,   1, 105,   1, 105,   1, 105,   3, 105, 105, 105], dtype=int32)
+
+* HMM param would help
 
 
 transform comparison after elliposoid stomp avoidance

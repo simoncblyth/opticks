@@ -3,28 +3,44 @@
 csg_intersect_node.h
 =======================
 
+This header must be included after csg_intersect_leaf.h and before csg_intersect_tree.h
+
 Providing more types of multi-union or multi-intersection allows the user to communicate 
 more precisely hence a simpler less general algorithm more suited 
 to the specific geometry can be applied. 
 
+Motivation and description in: 
+
+* https://simoncblyth.bitbucket.io/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html 
+* https://simoncblyth.github.io/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html 
+* https://juno.ihep.ac.cn/~blyth/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html 
 
 
-This header must be included after csg_intersect_leaf.h and before csg_intersect_tree.h
+CSG_DISCONTIGUOUS (possible alt names: CSG_DISJOINT, CSG_SEPERATED
+    "multi-union" that the user guarantees to have no overlap between nodes, 
+    for example a menagerie of different primitives arranged such that there are all entirely disconnected
+    (useful for modelling "holes" to be subtracted from another shape)
 
-distance_node_contiguous
+CSG_CONTIGUOUS (hmm need better name, not CSG_MULTIUNION because the constituents must be primitives)
+    "multi-union" which is expected to be mostly overlapped but ray paths with "gaps" eg from 
+    corners or L-shapes are permitted by doing the disjoint disqualification in the intersect alg
+
+CSG_OVERLAP
+    "multi-intersection" where user guarantees the compound shape has the topology of a ball with no concaves     
+    ie the paths of all possible rays crossing the geometry always find two intersects,  
+    other than tangential edge case
+
+
+distance_node_list
+
 intersect_node_contiguous
-     CSG_CONTIGUOUS shapes are multiunions that the user guarantees to have the topology of a ball  
-
-TODO: distance_node_discontiguous, intersect_node_discontiguous 
-     CSG_DISCONTIGUOUS shapes are multiunions that the user guarantees to have no overlap between nodes, 
-     (perhaps CSG_DISJOINT or CSG_SEPERATED would be better names)
-     for example a menagerie of different primitives arranged such that there are all entirely disconnected
-     from each other 
-
-
+intersect_node_discontiguous
+intersect_node_overlap
 intersect_node
-distance_node
+    switch between the above and intersect_leaf from lower level header csg_intersect_leaf.h 
 
+distance_node
+    switch between distance_node_list OR distance_leaf from lower level header csg_intersect_leaf.h 
 
 **/
 

@@ -5,6 +5,16 @@ sn.h : minimal pointer based transient binary tree node
 
 * used from sndtree.h 
 
+Usage Example
+--------------
+
+::
+
+    #include "sn.h"
+    std::map<int, sn*> sn::pool = {} ; 
+    int sn::count = 0 ; 
+
+
 Motivation
 -----------
 
@@ -25,6 +35,22 @@ pointer based *sn*. The *sn* tree is then used as a guide for the creation
 of the less flexible (from creation/deletion point of view) *snd* 
 tree that gets persisted.  
 
+
+Could snd/sn be consolidated ?
+--------------------------------
+
+There is pressure to add things from snd to sn 
+(eg param, bbox, transforms, n-ary "std::vector<sn*> child")
+such that *sn* can be a complete representation of the CSG. 
+But dont want to duplicate things.
+
+Perhaps if a way to convert active *sn* pointers into indices could be found. 
+One way to do that would be to maintain a std::map (keyed on creation index) 
+of *sn* pointers adding/deleting to the map from ctor/dtor.
+Subsequently could convert all pointers into a contiguous set of indices 
+as a final step during serialization. 
+
+
 Future
 --------
 
@@ -35,8 +61,10 @@ all the way to the GPU.
 
 **/
 
+#include <map>
 #include <vector>
 #include <sstream>
+#include <iomanip>
 #include <cassert>
 
 #include "OpticksCSG.h"
@@ -44,6 +72,19 @@ all the way to the GPU.
 
 struct sn
 {
+    static std::map<int, sn*> pool ; 
+    static int count ; 
+    static std::string Desc(); 
+
+    //static constexpr const bool LEAK = true ; 
+    static constexpr const bool LEAK = false ; 
+
+    // HMM:  its so much easier when can leak 
+    // so should not pin the serialization approach on being 
+    // able to manage every 
+
+
+    int pid ;  // pool id  
     int t ; 
     int depth ; 
     int subdepth ; 
@@ -52,9 +93,17 @@ struct sn
     sn* l ; 
     sn* r ;     
 
+    sn(int type, sn* left, sn* right);
+    ~sn(); 
+
     static sn* Zero() ; 
     static sn* Prim(int type) ; 
     static sn* Boolean(int type, sn* left, sn* right); 
+
+    void set_left( sn* left, bool copy ); 
+    void set_right( sn* right, bool copy  );
+
+
 
     bool is_primitive() const ; 
     bool is_bileaf() const ; 
@@ -85,10 +134,8 @@ struct sn
     void subdepth_label_r(int d); 
 
     unsigned operators(int minsubdepth) const ; 
-    static void Operators_r(const sn* n, unsigned& mask, int minsubdepth); 
+    void operators_r(unsigned& mask, int minsubdepth) const ; 
     bool is_positive_form() const ; 
-
-
 
 
     void postorder(std::vector<const sn*>& order ) const ; 
@@ -113,23 +160,23 @@ struct sn
     static constexpr const char* MODE_DEPTH = "DEPTH" ; 
     static constexpr const char* MODE_SUBDEPTH = "SUBDEPTH" ; 
     static constexpr const char* MODE_TYPETAG = "TYPETAG" ; 
+    static constexpr const char* MODE_PID = "PID" ; 
     static const char* rendermode(int mode); 
 
     void render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const ; 
 
-    static sn* Build_r(int elevation, int op); 
 
     static int BinaryTreeHeight(int num_leaves); 
     static int BinaryTreeHeight_1(int num_leaves); 
 
-    static sn* CommonTree(int num_leaves, int op ); 
+    static sn* ZeroTree_r(int elevation, int op); 
+    static sn* ZeroTree(int num_leaves, int op ); 
+
     static sn* CommonTree( std::vector<int>& leaftypes,  int op ); 
-
-    static void Populate(sn* root, std::vector<int>& leaftypes  ); 
-
+    void populate(std::vector<int>& leaftypes ); 
     void prune(); 
-    static void Prune_r(sn* n, int d); 
-    static void Check(const sn* n); 
+    void prune_r(int d) ; 
+    bool has_dangle() const ; 
 
 
     void positivize() ; 
@@ -138,18 +185,117 @@ struct sn
 };
 
 
+inline std::string sn::Desc()
+{
+    std::cout << "[sn::Desc"
+              << " LEAK " << ( LEAK ? "YES" : "NO" )
+              << " count " << count  
+              << " pool.size " << pool.size() 
+              << std::endl
+              ; 
+
+    std::stringstream ss ; 
+    ss << "sn::Desc"
+       << " count " << count 
+       << " pool.size " << pool.size() 
+       << std::endl
+        ; 
+
+    typedef std::map<int, sn*>::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        int key = it->first ; 
+        sn* n = it->second ;  
+
+        std::cout 
+            << "[sn::Desc"
+            << " key " << key 
+            << " n " << std::hex << uint64_t(n) << std::dec 
+            << std::endl 
+            ; 
+
+        //assert( n->pid == key ); 
+        //ss << std::setw(3) << key << " : " << n->desc() << std::endl ; 
+
+
+        std::cout << "]sn::Desc key " << key << std::endl ; 
+
+    }
+    std::string str = ss.str(); 
+
+    std::cout << "]sn::Desc" << std::endl ; 
+
+
+    return str ; 
+}
+
+
+
+// ctor
+inline sn::sn(int type, sn* left, sn* right)
+    :
+    pid(count),
+    t(type),
+    depth(0),
+    subdepth(0),
+    complement(false),
+    l(left),
+    r(right)
+{
+    pool[pid] = this ; 
+    std::cout << "sn::sn pid " << pid << std::endl ; 
+
+    count += 1 ;   
+
+    // NB USING separate static count to provide unique *pid* identifiers
+    // using pool.size would after delete/create lead to duplicated keys
+}
+
+// dtor 
+inline sn::~sn()   
+{
+    std::cout << "[ sn::~sn pid " << pid << std::endl ; 
+    delete l ; 
+    delete r ; 
+    pool.erase(pid); 
+    std::cout << "] sn::~sn pid " << pid << std::endl ; 
+}
 inline sn* sn::Zero()   // static
 {
     return Prim(0); 
 }
 inline sn* sn::Prim(int type)   // static
 {
-    return new sn {type, 0, 0, false, nullptr, nullptr} ; 
+    return new sn(type, nullptr, nullptr) ; 
 }
 inline sn* sn::Boolean(int type, sn* left, sn* right)   // static
 {
-    return new sn {type, 0, 0, false, left, right} ; 
+    return new sn(type, left, right) ; 
 }
+
+/**
+sn::set_left
+-------------
+
+HMM: new left will be from within the old left when pruning : so need to copy it first ?  
+
+**/
+
+inline void sn::set_left( sn* left, bool copy )
+{
+    sn* new_l = copy ? new sn(*left) : left ; 
+    if(!LEAK) delete l ; 
+    l = new_l ;     
+}
+
+inline void sn::set_right( sn* right, bool copy )
+{
+    sn* new_r = copy ? new sn(*right) : right ; 
+    if(!LEAK) delete r ; 
+    r = new_r ; 
+}
+
+
 
 
 
@@ -294,17 +440,17 @@ Returns mask of CSG operators in the tree restricted to nodes with subdepth >= *
 inline unsigned sn::operators(int minsubdepth) const 
 {
    unsigned mask = 0 ;   
-   Operators_r(this, mask, minsubdepth);  
+   operators_r(mask, minsubdepth);  
    return mask ;   
 }
 
-inline void sn::Operators_r(const sn* n, unsigned& mask, int minsubdepth) // static
+inline void sn::operators_r(unsigned& mask, int minsubdepth) const
 {
-    if(n->l && n->r )
+    if(l && r )
     {   
-        if( n->subdepth >= minsubdepth )
+        if( subdepth >= minsubdepth )
         {   
-            switch( n->t )
+            switch( t )
             {   
                 case CSG_UNION         : mask |= CSG::Mask(CSG_UNION)        ; break ; 
                 case CSG_INTERSECTION  : mask |= CSG::Mask(CSG_INTERSECTION) ; break ; 
@@ -312,8 +458,8 @@ inline void sn::Operators_r(const sn* n, unsigned& mask, int minsubdepth) // sta
                 default                : mask |= 0                           ; break ; 
             }   
         }   
-        Operators_r( n->l ,  mask, minsubdepth );  
-        Operators_r( n->r , mask, minsubdepth );  
+        l->operators_r( mask, minsubdepth );  
+        r->operators_r( mask, minsubdepth );  
     }   
 }
 
@@ -382,9 +528,11 @@ inline std::string sn::desc() const
 {
     std::stringstream ss ;
     ss << "sn::desc"
-       << " num_node " << num_node() 
-       << " num_leaf " << num_leaf() 
-       << " maxdepth " << maxdepth() 
+       << " pid " << std::setw(3) << pid
+       << " t " << std::setw(3) << t 
+       << " num_node " << std::setw(3) << num_node() 
+       << " num_leaf " << std::setw(3) << num_leaf() 
+       << " maxdepth " << std::setw(2) << maxdepth() 
        << " is_positive_form " << ( is_positive_form() ? "Y" : "N" ) 
        ; 
     std::string str = ss.str();
@@ -451,6 +599,7 @@ inline const char* sn::rendermode(int mode) // static
         case 2: md = MODE_DEPTH    ; break ; 
         case 3: md = MODE_SUBDEPTH ; break ; 
         case 4: md = MODE_TYPETAG  ; break ; 
+        case 5: md = MODE_PID      ; break ; 
     }
     return md ; 
 }
@@ -471,20 +620,13 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
         case 2: canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
         case 3: canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
         case 4: canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
+        case 5: canvas->draw(   ix, iy, 0,0,  pid )        ; break ;    
     } 
 
     if(l) l->render_r( canvas, order, mode, d+1 );
     if(r) r->render_r( canvas, order, mode, d+1 );
 }
 
-
-
-inline sn* sn::Build_r( int elevation, int op )  // static
-{
-    sn* l = elevation > 1 ? Build_r( elevation - 1 , op ) : sn::Zero() ; 
-    sn* r = elevation > 1 ? Build_r( elevation - 1 , op ) : sn::Zero() ; 
-    return sn::Boolean(op, l, r ) ;  
-}
 
 
 /**
@@ -530,10 +672,31 @@ inline int sn::BinaryTreeHeight_1(int q_leaves )
     return height ; 
 }
 
-inline sn* sn::CommonTree( int num_leaves, int op ) // static
+
+/**
+sn::ZeroTree_r
+---------------
+
+Recursively builds complete binary tree 
+with all operator nodes with a common *op* type 
+and all leaf nodes are sn::Zero. 
+
+**/
+
+inline sn* sn::ZeroTree_r( int elevation, int op )  // static
+{
+    sn* l = elevation > 1 ? ZeroTree_r( elevation - 1 , op ) : sn::Zero() ; 
+    sn* r = elevation > 1 ? ZeroTree_r( elevation - 1 , op ) : sn::Zero() ; 
+    sn* lr = sn::Boolean(op, l, r ) ; 
+    return lr  ;  
+}
+inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 {   
     int height = BinaryTreeHeight(num_leaves) ;
-    return Build_r( height, op );
+    std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
+    sn* root = ZeroTree_r( height, op );
+    std::cerr << "]sn::ZeroTree " << std::endl ; 
+    return root ; 
 }          
 
 
@@ -547,23 +710,34 @@ inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
     }
     else
     {
-        root = CommonTree(num_leaves, op );   
-        Populate(root, leaftypes); 
+        root = ZeroTree(num_leaves, op );   
+        std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        std::cerr << root->render(5) ; 
+        root->populate(leaftypes); 
+        std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
+        std::cerr << root->render(5) ; 
         root->prune(); 
-        Check(root);  
+        std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
+        std::cerr << root->render(5) ; 
     }
     return root ; 
 } 
 
-        
+/**
+sn::populate
+--------------
 
-inline void sn::Populate(sn* root, std::vector<int>& leaftypes )
+Replacing zeros with leaf nodes
+
+**/
+        
+inline void sn::populate(std::vector<int>& leaftypes )
 {
     int num_leaves = leaftypes.size(); 
     int num_leaves_placed = 0 ; 
 
     std::vector<sn*> order ; 
-    root->inorder_(order) ; 
+    inorder_(order) ; 
 
     int num_nodes = order.size(); 
 
@@ -575,17 +749,16 @@ inline void sn::Populate(sn* root, std::vector<int>& leaftypes )
         {
            if(n->l->is_zero() && num_leaves_placed < num_leaves)
             {
-                n->l = sn::Prim(leaftypes[num_leaves_placed]) ; 
+                n->set_left( sn::Prim(leaftypes[num_leaves_placed]), false ) ; 
                 num_leaves_placed += 1 ; 
             }    
             if(n->r->is_zero() && num_leaves_placed < num_leaves)
             {
-                n->r = sn::Prim(leaftypes[num_leaves_placed]) ;
+                n->set_right(sn::Prim(leaftypes[num_leaves_placed]), false ) ;
                 num_leaves_placed += 1 ; 
             }    
         } 
     } 
-
     assert( num_leaves_placed == num_leaves ); 
 }
 
@@ -593,50 +766,51 @@ inline void sn::Populate(sn* root, std::vector<int>& leaftypes )
 
 inline void sn::prune()
 {   
-    Prune_r(this, 0);
+    prune_r(0);
+
+    if(has_dangle())
+    {
+        std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
+    }
+
 }
 
 /**
 Based on npy/NTreeBuilder
 **/
 
-inline void sn::Prune_r(sn* n, int d)  // static
+inline void sn::prune_r(int d) 
 {   
-    if(n == nullptr) return ;
-    if(n->is_operator())
+    if(is_operator())
     {   
-        Prune_r(n->l, d+1);
-        Prune_r(n->r, d+1);
+        l->prune_r(d+1);
+        r->prune_r(d+1);
         
         // postorder visit : so both children always visited before their parents 
         
-        if(n->l->is_lrzero())         // left node is an operator which has both its left and right zero 
+        if(l->is_lrzero())         // left node is an operator which has both its left and right zero 
         {   
-            n->l = sn::Zero() ;       // prune : ie replace operator with CSG_ZERO placeholder  
+            set_left(sn::Zero(), false) ;       // prune : ie replace operator with CSG_ZERO placeholder  
         }
-        else if( n->l->is_rzero() )   // left node is an operator with left non-zero and right zero   
-        {   
-            n->l = n->l->l ;          // moving the lonely primitive up to higher elevation   
+        else if( l->is_rzero() )   // left node is an operator with left non-zero and right zero   
+        {  
+            set_left(l->l, true) ;          // moving the lonely primitive up to higher elevation   
         }
         
-        if(n->r->is_lrzero())        // right node is operator with both its left and right zero 
+        if(r->is_lrzero())        // right node is operator with both its left and right zero 
         {   
-            n->r = sn::Zero() ;      // prune
+            set_right(sn::Zero(), false) ;      // prune
         }
-        else if( n->r->is_rzero() )  // right node is operator with its left non-zero and right zero
+        else if( r->is_rzero() )  // right node is operator with its left non-zero and right zero
         {   
-            n->r = n->r->l ;         // moving the lonely primitive up to higher elevation   
+            set_right(r->l, true) ;         // moving the lonely primitive up to higher elevation   
         }
     }
 }
 
-inline void sn::Check(const sn* n) // static 
+inline bool sn::has_dangle() const  // see NTreeBuilder::rootprune
 {
-    if(n->l->is_operator() && n->r->is_zero() )
-    {
-        std::cerr << "sn::Check ERROR detected dangling zero (see NTreeBuilder::rootprune) " << std::endl ;  
-        assert(0); 
-    }
+    return is_operator() && ( r->is_zero() || l->is_zero()) ; 
 }
 
 
