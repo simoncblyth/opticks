@@ -41,9 +41,7 @@ static bool readFile( std::string& str, const char* path )
 bool PIP::OptiXVersionIsSupported()  // static
 {
     bool ok = false ; 
-#if OPTIX_VERSION == 70000
-    ok = true ; 
-#elif OPTIX_VERSION == 70500
+#if OPTIX_VERSION == 70000 || OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
     ok = true ; 
 #endif
     return ok ; 
@@ -58,23 +56,17 @@ OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
     else if(strcmp(option, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
     else if(strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
-#elif OPTIX_VERSION == 70500
+#elif OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
     if(     strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT ; 
     else if(strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
     else if(strcmp(option, "MINIMAL") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL ; 
     else if(strcmp(option, "MODERATE") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
+#else
+    LOG(fatal) << " NOT RECOGNIZED " << " option " << option  << " level " << level  
+               << " OPTIX_VERSION " << OPTIX_VERSION ; 
+    assert(0);   
 #endif
-    else 
-    {
-        LOG(fatal)
-            << " NOT RECOGNIZED "
-            << " option " << option  
-            << " level " << level  
-            << " OPTIX_VERSION " << OPTIX_VERSION
-            ;
-        assert(0);   
-    } 
     LOG(LEVEL) << " option " << option << " level " << level << " OPTIX_VERSION " << OPTIX_VERSION ;  
     return level ; 
 }
@@ -87,7 +79,7 @@ const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
         case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
         case OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO: s = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ ; break ;
         case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
-#elif OPTIX_VERSION == 70500
+#elif OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
         case OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT:  s = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT_  ; break ; 
         case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
         case OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL:  s = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL_  ; break ;
