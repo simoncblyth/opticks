@@ -1,12 +1,16 @@
 #!/bin/bash -l 
 
-name=sn_test 
-bin=/tmp/$name
+name=sn_test
+
+export FOLD=/tmp/$name
+mkdir -p $FOLD
+ 
+bin=$FOLD/$name
 defarg="build_run"
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -I.. -g -std=c++11 -lstdc++ -o $bin
+    gcc $name.cc -I.. -I$HOME/np  -g -std=c++11 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
@@ -22,6 +26,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
+
 
 exit 0 
 

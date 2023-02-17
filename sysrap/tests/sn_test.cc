@@ -11,8 +11,12 @@ https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stackt
 #include <iomanip>
 #include <cassert>
 #include "OpticksCSG.h"
-
 #include "ssys.h"
+
+#include "NP.hh"
+
+const char* FOLD = getenv("FOLD"); 
+
 
 #include "sn.h"
 std::map<int, sn*> sn::pool = {} ; 
@@ -86,7 +90,7 @@ sn* manual_tree_0()
 {
     sn* l = sn::Prim(CSG_SPHERE); 
     sn* r = sn::Prim(CSG_BOX3); 
-    sn* b = sn::Boolean(CSG_DIFFERENCE, l, r ); 
+    sn* b = sn::Create(CSG_DIFFERENCE, l, r ); 
     return b ; 
 }
 
@@ -94,21 +98,21 @@ sn* manual_tree_1()
 {
     sn* l = sn::Prim(CSG_SPHERE); 
     sn* r = sn::Prim(CSG_BOX3); 
-    sn* b = sn::Boolean(CSG_UNION, l, r ); 
+    sn* b = sn::Create(CSG_UNION, l, r ); 
     return b ; 
 }
 sn* manual_tree_2()
 {
     sn* l = manual_tree_0() ; 
     sn* r = manual_tree_1() ;  
-    sn* b = sn::Boolean(CSG_UNION, l, r ); 
+    sn* b = sn::Create(CSG_UNION, l, r ); 
     return b ; 
 }
 sn* manual_tree_3()
 {
     sn* l = manual_tree_0() ; 
     sn* r = sn::Prim(CSG_BOX3);   
-    sn* b = sn::Boolean(CSG_UNION, l, r ); 
+    sn* b = sn::Create(CSG_UNION, l, r ); 
     return b ; 
 }
 sn* manual_tree(int it)
@@ -214,7 +218,7 @@ void test_set_left()
 
     sn* l = sn::Prim(CSG_SPHERE); 
     sn* r = sn::Prim(CSG_BOX3); 
-    sn* b = sn::Boolean(CSG_UNION, l, r ); 
+    sn* b = sn::Create(CSG_UNION, l, r ); 
 
     sn* al = sn::Prim(CSG_BOX3) ; 
 
@@ -229,29 +233,63 @@ void test_set_left()
 }
 
 
+void test_Serialize()
+{
+    int it = 3 ; 
+    std::cout << "[ test_Serialize it " << it  << std::endl ; 
+
+    sn* t = manual_tree(it); 
+
+    std::cout << t->render(5) ; 
+ 
+    std::vector<_sn> buf ; 
+    sn::Serialize(buf); 
+    std::cout << sn::Desc(); 
+
+    NP* a = NP::Make<int>( buf.size(), _sn::NV ) ; 
+    a->read2<int>((int*)buf.data()); 
+
+    std::cout << " save to " << FOLD << std::endl ; 
+    a->save(FOLD, "sn.npy"); 
+
+    std::cout << "] test_Serialize buf.size() " << buf.size()  << std::endl ; 
+}
+
+void test_Import()
+{
+    std::cout << "[ test_Import " << std::endl ; 
+
+    NP* a = NP::Load(FOLD, "sn.npy");
+    assert( a->shape[1] == _sn::NV );  
+    std::vector<_sn> buf(a->shape[0]) ; 
+    a->write<int>((int*)buf.data()); 
+
+    sn* root = sn::Import(buf); 
+
+    std::cout << root->render(); 
+
+    std::cout << "] test_Import " << std::endl ; 
+}
 
 
 
 int main(int argc, char** argv)
 {
+
+    /*
     test_BinaryTreeHeight(); 
     test_ZeroTree(); 
     test_CommonTree(); 
+    //test_CommonTree(7); 
     test_label(); 
     test_positivize(); 
     test_Simple(); 
     test_set_left(); 
-
     test_pool(); 
+    */
 
-    //test_CommonTree(1);  
-    //test_CommonTree(2);  
-    //test_CommonTree(3);  
-    //test_CommonTree(4); 
-    //test_CommonTree(5); 
-    //test_CommonTree(6); 
-    //test_CommonTree(7); 
-    //test_CommonTree(8); 
+    //test_Serialize(); 
+    test_Import(); 
 
 
     return 0 ; 

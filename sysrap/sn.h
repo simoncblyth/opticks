@@ -13,6 +13,7 @@ Usage Example
     #include "sn.h"
     std::map<int, sn*> sn::pool = {} ; 
     int sn::count = 0 ; 
+    int sn::level = 0 ; 
 
 
 Motivation
@@ -44,12 +45,13 @@ There is pressure to add things from snd to sn
 such that *sn* can be a complete representation of the CSG. 
 But dont want to duplicate things.
 
-Perhaps if a way to convert active *sn* pointers into indices could be found. 
-One way to do that would be to maintain a std::map (keyed on creation index) 
-of *sn* pointers adding/deleting to the map from ctor/dtor.
-Subsequently could convert all pointers into a contiguous set of indices 
-as a final step during serialization. 
-
+In order to convert active *sn* pointers into indices 
+have explictly avoided leaking any *sn* by taking care to delete
+appropriately. This means that can use the *sn* ctor/dtor
+to add/erase update an std::map of active *sn* pointers
+keyed on a creation index.  This map allows the active 
+pointers to be converted into a contiguous set of indices 
+to facilitate serialization. 
 
 Future
 --------
@@ -70,43 +72,86 @@ all the way to the GPU.
 #include "OpticksCSG.h"
 #include "scanvas.h"
 
+
+struct _sn
+{
+    static constexpr const int NV = 5 ; 
+
+    int t ; 
+    int complement ; // could hold this in sign of t 
+    int l ; 
+    int r ; 
+    int p ; 
+
+    std::string desc() const ; 
+};
+
+inline std::string _sn::desc() const
+{
+    std::stringstream ss ; 
+    ss << "_sn::desc " 
+       << " t " << std::setw(4) << t 
+       << " c " << std::setw(1) << complement
+       << " l " << std::setw(4) << l 
+       << " r " << std::setw(4) << r 
+       << " p " << std::setw(4) << p 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+struct sn ; 
+
+struct sn_query
+{
+    const sn* q ; 
+    sn_query(const sn* q_) : q(q_) {} ;  
+    bool operator()(const std::pair<int, sn*>& p){ return q == p.second ; }  
+}; 
+
 struct sn
 {
     static std::map<int, sn*> pool ; 
     static int count ; 
     static int level ; 
     static std::string Desc(const char* msg=nullptr); 
+    static int Index(const sn* q); 
+    int index() const ; 
 
-    //static constexpr const bool LEAK = true ; 
+    static void Serialize( std::vector<_sn>& buf ) ; 
+    static void Serialize( _sn& n, const sn* p ); 
+
+    static sn* Import(                 const std::vector<_sn>& buf); 
+    static sn* Import_r(const _sn* n,  const std::vector<_sn>& buf); 
+
     static constexpr const bool LEAK = false ; 
 
-    // HMM:  its so much easier when can leak 
-    // so should not pin the serialization approach on being 
-    // able to manage every 
+    int pid ;       // (not persisted)
+    int depth ;     // (not persisted)
+    int subdepth ;  // (not persisted)
 
 
-    int pid ;  // pool id  
     int t ; 
-    int depth ; 
-    int subdepth ; 
-    bool complement ; 
-
+    int complement ; 
     sn* l ; 
     sn* r ;     
+    sn* p ; 
+
 
     sn(int type, sn* left, sn* right);
     ~sn(); 
 
+
     static sn* Zero() ; 
     static sn* Prim(int type) ; 
-    static sn* Boolean(int type, sn* left, sn* right); 
+    static sn* Create(int type, sn* left, sn* right); 
 
     sn* deepcopy() const ; 
     sn* deepcopy_r(int d) const ; 
 
     void set_left( sn* left, bool copy ); 
     void set_right( sn* right, bool copy  );
-
 
 
     bool is_primitive() const ; 
@@ -222,6 +267,121 @@ inline std::string sn::Desc(const char* msg)
     return str ; 
 }
 
+/**
+sn::Index
+-----------
+
+Contiguous index of *q* within all active nodes in creation order.
+NB this is different from the *pid* because node deletions will 
+cause gaps in the pid values whereas the indices will be contiguous. 
+
+**/
+
+inline int sn::Index(const sn* q)  // static
+{
+    if( q == nullptr ) return -1 ;     
+    sn_query query(q); 
+    size_t idx = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), query )); 
+    return idx < pool.size() ? idx : -1 ;  
+}
+inline int sn::index() const { return Index(this); }
+
+
+
+inline void sn::Serialize( std::vector<_sn>& buf )
+{
+    int tot_nodes = pool.size(); 
+    buf.resize(tot_nodes);  
+    typedef std::map<int, sn*>::const_iterator IT ; 
+
+    IT it = pool.begin(); 
+
+    std::cerr << "[ sn::Serialize tot_nodes " << tot_nodes << std::endl ; 
+    int idx = 0 ; 
+    while( it != pool.end() )
+    {
+        int key = it->first ; 
+        sn* x = it->second ;  
+
+        assert( x->pid == key ); 
+        assert( x->index() == idx ); 
+        assert( idx < tot_nodes ); 
+
+        _sn& n = buf[idx]; 
+
+        Serialize( n, x ); 
+
+        it++ ; idx++ ;  
+    }
+    std::cerr << "] sn::Serialize" << std::endl ; 
+}
+
+
+inline void sn::Serialize(_sn& n, const sn* x) // static 
+{
+    n.t = x->t ; 
+    n.complement = x->complement ;
+    n.l = Index(x->l);  
+    n.r = Index(x->r);  
+    n.p = Index(x->p);  
+}
+
+
+
+
+/**
+sn::Import
+-------------
+
+HMM: previous tree imports like NCSG::import_tree_r
+used complete binary tree ordering and ran from root down  
+
+Are here trying to bring in from bottom up, which presents
+problem for setting the refs.
+
+BUT have random access into the buf so can jump around following 
+l/r index : but need to identify the root from the _sn 
+to know where to start.  There can be multiple so cannot just pick the last. 
+
+Hence added parent to sn/_sn so can identify the roots. 
+
+**/
+
+inline sn* sn::Import(const std::vector<_sn>& buf )
+{
+    sn* root = nullptr ; 
+    int tot_nodes = buf.size() ;
+    std::cerr << "[ sn::Import tot_nodes " << tot_nodes << std::endl ; 
+    for(int idx=0 ; idx < tot_nodes ; idx++)
+    { 
+        const _sn* n = &buf[idx]; 
+        if(n->p == -1) 
+        {
+            root = Import_r( n, buf );  // Import_r from the roots 
+            root->label(); 
+        }
+    }  
+    std::cerr << "] sn::Import" << std::endl ; 
+    return root ; 
+}
+inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf)
+{
+    if(_n == nullptr) return nullptr ; 
+
+    std::cerr << "sn::Import_r " << _n->desc() << std::endl ; 
+
+    const _sn* _l = _n->l > -1 ? &buf[_n->l] : nullptr ;  
+    const _sn* _r = _n->r > -1 ? &buf[_n->r] : nullptr ;  
+
+    sn* l = Import_r( _l, buf ); 
+    sn* r = Import_r( _r, buf ); 
+    sn* n = Create( _n->t, l, r ); 
+
+    n->complement = _n->complement ; 
+
+    return n ; 
+}  
+
 
 
 // ctor
@@ -231,17 +391,20 @@ inline sn::sn(int type, sn* left, sn* right)
     t(type),
     depth(0),
     subdepth(0),
-    complement(false),
+    complement(0),
     l(left),
-    r(right)
+    r(right),
+    p(nullptr)
 {
     pool[pid] = this ; 
     if(level > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 
+    if(left && right)
+    {
+        left->p = this ; 
+        right->p = this ; 
+    }
     count += 1 ;   
-
-    // NB USING separate static count to provide unique *pid* identifiers
-    // using pool.size would after delete/create lead to duplicated keys
 }
 
 // dtor 
@@ -255,6 +418,9 @@ inline sn::~sn()
 
     if(level > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
 }
+
+
+
 inline sn* sn::Zero()   // static
 {
     return Prim(0); 
@@ -263,10 +429,12 @@ inline sn* sn::Prim(int type)   // static
 {
     return new sn(type, nullptr, nullptr) ; 
 }
-inline sn* sn::Boolean(int type, sn* left, sn* right)   // static
+inline sn* sn::Create(int type, sn* left, sn* right)   // static
 {
     return new sn(type, left, right) ; 
 }
+
+
 
 inline sn* sn::deepcopy() const 
 {
@@ -277,6 +445,8 @@ inline sn* sn::deepcopy_r(int d) const
     sn* c = new sn(*this) ;    
     c->l = l ? l->deepcopy_r(d+1) : nullptr ; 
     c->r = r ? r->deepcopy_r(d+1) : nullptr ;   
+    c->p = nullptr ; 
+
     return c ;   
 }
 
@@ -289,20 +459,25 @@ inline sn* sn::deepcopy_r(int d) const
 sn::set_left
 -------------
 
-HMM: new left will be from within the old left when pruning : so need to copy it first ?  
+As the new left will be from within the old left when pruning 
+need to deepcopy it first. 
 
 **/
 
 inline void sn::set_left( sn* left, bool copy )
 {
     sn* new_l = copy ? left->deepcopy() : left ; 
+    new_l->p = this ; 
+
     if(!LEAK) delete l ; 
-    l = new_l ;     
+    l = new_l ;
 }
 
 inline void sn::set_right( sn* right, bool copy )
 {
     sn* new_r = copy ? right->deepcopy() : right ; 
+    new_r->p = this ; 
+
     if(!LEAK) delete r ; 
     r = new_r ; 
 }
@@ -551,6 +726,7 @@ inline std::string sn::desc() const
     std::stringstream ss ;
     ss << "sn::desc"
        << " pid " << std::setw(4) << pid
+       << " idx " << std::setw(4) << index()
        << " t " << std::setw(3) << t 
        << " num_node " << std::setw(3) << num_node() 
        << " num_leaf " << std::setw(3) << num_leaf() 
@@ -564,7 +740,7 @@ inline std::string sn::desc() const
 inline std::string sn::render() const
 {
     std::stringstream ss ;
-    for(int mode=0 ; mode < 4 ; mode++) ss << render(mode) << std::endl ; 
+    for(int mode=0 ; mode < 6 ; mode++) ss << render(mode) << std::endl ; 
     std::string str = ss.str();
     return str ;
 }
@@ -643,7 +819,7 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
 
     int ix = ordinal ;
     int iy = d ;
-    std::string tag = CSG::Tag(t, complement); 
+    std::string tag = CSG::Tag(t, complement == 1); 
 
     switch(mode)
     {
@@ -719,7 +895,7 @@ inline sn* sn::ZeroTree_r( int elevation, int op )  // static
 {
     sn* l = elevation > 1 ? ZeroTree_r( elevation - 1 , op ) : sn::Zero() ; 
     sn* r = elevation > 1 ? ZeroTree_r( elevation - 1 , op ) : sn::Zero() ; 
-    sn* lr = sn::Boolean(op, l, r ) ; 
+    sn* lr = sn::Create(op, l, r ) ; 
     return lr  ;  
 }
 inline sn* sn::ZeroTree( int num_leaves, int op ) // static
@@ -877,7 +1053,15 @@ inline void sn::positivize_r(bool negate, int d)
 {
     if(l == nullptr && r == nullptr)  // primitive 
     {   
-        if(negate) complement = !complement ; 
+        if(negate) 
+        {
+            switch(complement)
+            {
+                case 0: complement = 1 ; break ; 
+                case 1: complement = 0 ; break ; 
+                default: assert(0)     ; break ; 
+            }
+        }
     }   
     else
     {   
