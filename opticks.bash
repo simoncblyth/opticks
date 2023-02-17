@@ -475,16 +475,33 @@ opticks-setup-find-config-prefix(){
    local ifs=$IFS
    IFS=: 
    for pfx in $CMAKE_PREFIX_PATH ; do 
+
       ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2>/dev/null 1>&2
       [ $? -eq 0 ] && prefix=$pfx && break    
+
       ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2>/dev/null 1>&2
       [ $? -eq 0 ] && prefix=$pfx && break    
-      # hmm more than one under the same prefix ?
+
+      ls -1 $pfx/lib*/cmake/$name/${name}Config.cmake 2>/dev/null 1>&2
+      [ $? -eq 0 ] && prefix=$pfx && break    
+
       # NB not general, doesnt find the lowercased form : but works for Geant4 and Boost 
    done 
    IFS=$ifs
    echo $prefix
 }
+
+opticks-setup-find-geant4-prefix-notes(){ cat << EON
+Hans reports that the path to Geant4Config.cmake changed with v11.1.1::
+
+  /data3/wenzel/geant4-v11.0.3-installst/lib/Geant4-11.0.3/Geant4Config.cmake
+  /data3/wenzel/geant4-v11.1.1-install/lib/cmake/Geant4/Geant4Config.cmake
+
+So add another pattern in opticks-setup-find-config-prefix to try to find that.
+
+EON
+}
+
 
 
 opticks-c(){    cd $(opticks-dir) ; }
@@ -1354,7 +1371,7 @@ opticks-geant4-prefix-notes(){ cat << EON
 
 Getting the prefix relies on find_package.py which 
 depends on PATH and CMAKE_PREFIX_PATH 
-it is far to complicated to do in the setup script.
+it is far too complicated to do in the setup script.
 
 It must be run during opticks-setup by the administrator/developer 
 that is installing opticks with the result hardcoded into the setup.
