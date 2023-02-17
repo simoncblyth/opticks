@@ -388,9 +388,9 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf)
 inline sn::sn(int type, sn* left, sn* right)
     :
     pid(count),
-    t(type),
     depth(0),
     subdepth(0),
+    t(type),
     complement(0),
     l(left),
     r(right),
