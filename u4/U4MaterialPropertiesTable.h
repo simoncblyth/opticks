@@ -188,8 +188,8 @@ inline void U4MaterialPropertiesTable::GetProperties(
         G4MaterialPropertyVector* v = mpt->GetProperty(key) ; 
         if( v != nullptr ) 
         {
-            keys.push_back(key);
-            props.push_back(v);  
+	  keys.push_back(key);
+	  props.push_back(v);  
         }
     }
     // My reading of code suggests that the vector obtained from "props = mpt->GetProperties();"  

@@ -74,7 +74,8 @@ struct sn
 {
     static std::map<int, sn*> pool ; 
     static int count ; 
-    static std::string Desc(); 
+    static int level ; 
+    static std::string Desc(const char* msg=nullptr); 
 
     //static constexpr const bool LEAK = true ; 
     static constexpr const bool LEAK = false ; 
@@ -99,6 +100,9 @@ struct sn
     static sn* Zero() ; 
     static sn* Prim(int type) ; 
     static sn* Boolean(int type, sn* left, sn* right); 
+
+    sn* deepcopy() const ; 
+    sn* deepcopy_r(int d) const ; 
 
     void set_left( sn* left, bool copy ); 
     void set_right( sn* right, bool copy  );
@@ -138,16 +142,16 @@ struct sn
     bool is_positive_form() const ; 
 
 
+    void preorder( std::vector<const sn*>& order ) const ; 
+    void inorder(  std::vector<const sn*>& order ) const ; 
     void postorder(std::vector<const sn*>& order ) const ; 
-    void postorder_r(std::vector<const sn*>& order, int d ) const ; 
 
-    void inorder(std::vector<const sn*>& order ) const ; 
-    void inorder_r(std::vector<const sn*>& order, int d ) const ; 
+    void preorder_r( std::vector<const sn*>& order, int d ) const ; 
+    void inorder_r(  std::vector<const sn*>& order, int d ) const ; 
+    void postorder_r(std::vector<const sn*>& order, int d ) const ; 
 
     void inorder_(std::vector<sn*>& order ) ; 
     void inorder_r_(std::vector<sn*>& order, int d ); 
-
-
 
 
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
@@ -185,9 +189,10 @@ struct sn
 };
 
 
-inline std::string sn::Desc()
+inline std::string sn::Desc(const char* msg)
 {
-    std::cout << "[sn::Desc"
+    if(level > 0) std::cerr << "[sn::Desc "
+              << ( msg ? msg : "-" )
               << " LEAK " << ( LEAK ? "YES" : "NO" )
               << " count " << count  
               << " pool.size " << pool.size() 
@@ -195,7 +200,8 @@ inline std::string sn::Desc()
               ; 
 
     std::stringstream ss ; 
-    ss << "sn::Desc"
+    ss << "sn::Desc "
+       << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
        << std::endl
@@ -206,25 +212,12 @@ inline std::string sn::Desc()
     {
         int key = it->first ; 
         sn* n = it->second ;  
-
-        std::cout 
-            << "[sn::Desc"
-            << " key " << key 
-            << " n " << std::hex << uint64_t(n) << std::dec 
-            << std::endl 
-            ; 
-
-        //assert( n->pid == key ); 
-        //ss << std::setw(3) << key << " : " << n->desc() << std::endl ; 
-
-
-        std::cout << "]sn::Desc key " << key << std::endl ; 
-
+        assert( n->pid == key ); 
+        ss << std::setw(3) << key << " : " << n->desc() << std::endl ; 
     }
     std::string str = ss.str(); 
 
-    std::cout << "]sn::Desc" << std::endl ; 
-
+    if(level > 0) std::cerr << "]sn::Desc" << std::endl ; 
 
     return str ; 
 }
@@ -243,7 +236,7 @@ inline sn::sn(int type, sn* left, sn* right)
     r(right)
 {
     pool[pid] = this ; 
-    std::cout << "sn::sn pid " << pid << std::endl ; 
+    if(level > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 
     count += 1 ;   
 
@@ -254,11 +247,13 @@ inline sn::sn(int type, sn* left, sn* right)
 // dtor 
 inline sn::~sn()   
 {
-    std::cout << "[ sn::~sn pid " << pid << std::endl ; 
+    if(level > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
+
     delete l ; 
     delete r ; 
     pool.erase(pid); 
-    std::cout << "] sn::~sn pid " << pid << std::endl ; 
+
+    if(level > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
 }
 inline sn* sn::Zero()   // static
 {
@@ -273,6 +268,23 @@ inline sn* sn::Boolean(int type, sn* left, sn* right)   // static
     return new sn(type, left, right) ; 
 }
 
+inline sn* sn::deepcopy() const 
+{
+    return deepcopy_r(0); 
+}
+inline sn* sn::deepcopy_r(int d) const 
+{
+    sn* c = new sn(*this) ;    
+    c->l = l ? l->deepcopy_r(d+1) : nullptr ; 
+    c->r = r ? r->deepcopy_r(d+1) : nullptr ;   
+    return c ;   
+}
+
+
+
+
+
+
 /**
 sn::set_left
 -------------
@@ -283,14 +295,14 @@ HMM: new left will be from within the old left when pruning : so need to copy it
 
 inline void sn::set_left( sn* left, bool copy )
 {
-    sn* new_l = copy ? new sn(*left) : left ; 
+    sn* new_l = copy ? left->deepcopy() : left ; 
     if(!LEAK) delete l ; 
     l = new_l ;     
 }
 
 inline void sn::set_right( sn* right, bool copy )
 {
-    sn* new_r = copy ? new sn(*right) : right ; 
+    sn* new_r = copy ? right->deepcopy() : right ; 
     if(!LEAK) delete r ; 
     r = new_r ; 
 }
@@ -473,10 +485,31 @@ inline bool sn::is_positive_form() const
 
 
 
-
+inline void sn::preorder(std::vector<const sn*>& order ) const
+{
+    preorder_r(order, 0);
+}
+inline void sn::inorder(std::vector<const sn*>& order ) const
+{
+    inorder_r(order, 0);
+}
 inline void sn::postorder(std::vector<const sn*>& order ) const
 {
     postorder_r(order, 0);
+}
+
+
+inline void sn::preorder_r(std::vector<const sn*>& order, int d ) const
+{
+    order.push_back(this); 
+    if(l) l->preorder_r(order, d+1) ; 
+    if(r) r->preorder_r(order, d+1) ; 
+}
+inline void sn::inorder_r(std::vector<const sn*>& order, int d ) const
+{
+    if(l) l->inorder_r(order, d+1) ; 
+    order.push_back(this); 
+    if(r) r->inorder_r(order, d+1) ; 
 }
 inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 {
@@ -485,17 +518,6 @@ inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
     order.push_back(this); 
 }
 
-
-inline void sn::inorder(std::vector<const sn*>& order ) const
-{
-    inorder_r(order, 0);
-}
-inline void sn::inorder_r(std::vector<const sn*>& order, int d ) const
-{
-    if(l) l->inorder_r(order, d+1) ; 
-    order.push_back(this); 
-    if(r) r->inorder_r(order, d+1) ; 
-}
 
 inline void sn::inorder_(std::vector<sn*>& order )
 {
@@ -516,7 +538,7 @@ inline std::string sn::desc_order(const std::vector<const sn*>& order ) const
     for(int i=0 ; i < int(order.size()) ; i++)
     {
         const sn* n = order[i] ; 
-        ss << n->t << " " ;  
+        ss << n->pid << " " ;  
     }
     ss << "]" ; 
     std::string str = ss.str();
@@ -528,7 +550,7 @@ inline std::string sn::desc() const
 {
     std::stringstream ss ;
     ss << "sn::desc"
-       << " pid " << std::setw(3) << pid
+       << " pid " << std::setw(4) << pid
        << " t " << std::setw(3) << t 
        << " num_node " << std::setw(3) << num_node() 
        << " num_leaf " << std::setw(3) << num_leaf() 
@@ -547,18 +569,27 @@ inline std::string sn::render() const
     return str ;
 }
 
+
+
 inline std::string sn::render(int mode) const
 {
-    int width = num_node();
-    int height = maxdepth();
+    int nn = num_node(); 
+
+    std::vector<const sn*> pre ;
+    preorder(pre);
+    assert( int(pre.size()) == nn );
 
     std::vector<const sn*> in ;
     inorder(in);
-    assert( int(in.size()) == width );
+    assert( int(in.size()) == nn );
 
     std::vector<const sn*> post ;
     postorder(post);
-    assert( int(post.size()) == width );
+    assert( int(post.size()) == nn );
+
+
+    int width = nn ;
+    int height = maxdepth();
 
     int xscale = 3 ; 
     int yscale = 2 ; 
@@ -572,9 +603,10 @@ inline std::string sn::render(int mode) const
     ss << "sn::render mode " << mode << " " << rendermode(mode) << std::endl ;
     ss << canvas.c << std::endl ;
 
-    if(mode == 0 )
+    if(mode == 0 || mode == 5)
     {
-        ss << "inorder   " << desc_order(in) << std::endl ; 
+        ss << "preorder  " << desc_order(pre)  << std::endl ; 
+        ss << "inorder   " << desc_order(in)   << std::endl ; 
         ss << "postorder " << desc_order(post) << std::endl ; 
 
         unsigned ops = operators(0); 
@@ -693,9 +725,9 @@ inline sn* sn::ZeroTree_r( int elevation, int op )  // static
 inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 {   
     int height = BinaryTreeHeight(num_leaves) ;
-    std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
+    if(level > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
     sn* root = ZeroTree_r( height, op );
-    std::cerr << "]sn::ZeroTree " << std::endl ; 
+    if(level > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
     return root ; 
 }          
 
@@ -711,14 +743,19 @@ inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
     else
     {
         root = ZeroTree(num_leaves, op );   
-        std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
-        std::cerr << root->render(5) ; 
+
+        if(level > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level > 1) std::cerr << root->render(5) ; 
+
         root->populate(leaftypes); 
-        std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
-        std::cerr << root->render(5) ; 
-        root->prune(); 
-        std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
-        std::cerr << root->render(5) ; 
+
+        if(level > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level > 1) std::cerr << root->render(5) ; 
+
+        root->prune();
+ 
+        if(level > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
 } 
@@ -770,7 +807,7 @@ inline void sn::prune()
 
     if(has_dangle())
     {
-        std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
+        if(level > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
     }
 
 }

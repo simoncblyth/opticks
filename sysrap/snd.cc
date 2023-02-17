@@ -22,6 +22,7 @@
 
 std::map<int, sn*> sn::pool = {} ; 
 int sn::count = 0 ; 
+int sn::level = 0 ; 
 
 
 scsg* snd::POOL = nullptr  ; 

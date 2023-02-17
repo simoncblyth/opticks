@@ -32,7 +32,7 @@ class G4Material ;
 class G4PVPlacement ; 
 
 #include "G4Transform3D.hh"
-
+#include "G4Types.hh"
 struct nnode ; 
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
