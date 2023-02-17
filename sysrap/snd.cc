@@ -19,6 +19,11 @@
 #include "st.h"
 #include "stra.h"
 
+
+std::map<int, sn*> sn::pool = {} ; 
+int sn::count = 0 ; 
+
+
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 
 int snd::Level(){ return POOL ? POOL->level : -1 ; } // static
