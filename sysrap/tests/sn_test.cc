@@ -19,9 +19,7 @@ const char* FOLD = getenv("FOLD");
 
 
 #include "sn.h"
-std::map<int, sn*> sn::pool = {} ; 
-int sn::count = 0 ; 
-int sn::level = 0 ; 
+sn::POOL sn::pool = {} ; 
 
 
 void test_BinaryTreeHeight()
@@ -32,7 +30,7 @@ void test_BinaryTreeHeight()
         int h0 = sn::BinaryTreeHeight(i) ; 
         int h1 = sn::BinaryTreeHeight_1(i) ; 
 
-        if(sn::level > 2) std::cout 
+        if(sn::level() > 2) std::cout 
            << " i " << std::setw(5) << i 
            << " h0 " << std::setw(5) << h0
            << " h1 " << std::setw(5) << h1
@@ -52,30 +50,30 @@ void test_ZeroTree()
     sn* root = sn::ZeroTree(num_leaves, oper ); 
     std::cout << root->render(5) ; 
 
-    if(sn::level > 1) std::cout << sn::Desc(); 
+    if(sn::level() > 1) std::cout << sn::Desc(); 
     if(!sn::LEAK) delete root ;
-    if(sn::level > 1) std::cout << sn::Desc(); 
+    if(sn::level() > 1) std::cout << sn::Desc(); 
 
     std::cout << "] test_ZeroTree num_leaves " << num_leaves << std::endl ; 
 }
 
 void test_CommonTree(int num_leaves)
 {
-    if(sn::level > 1) std::cout << "[test_CommonTree num_leaves " << num_leaves << std::endl ; 
-    if(sn::level > 1) std::cout << sn::Desc(); 
+    if(sn::level() > 1) std::cout << "[test_CommonTree num_leaves " << num_leaves << std::endl ; 
+    if(sn::level() > 1) std::cout << sn::Desc(); 
 
     std::vector<int> leaftypes ; 
     for(int t=0 ; t < num_leaves ; t++) leaftypes.push_back( CSG_LEAF+t ); 
 
     sn* root = sn::CommonTree(leaftypes, 1 ); 
-    if(sn::level > 1) std::cout << sn::Desc("CommonTree"); 
+    if(sn::level() > 1) std::cout << sn::Desc("CommonTree"); 
 
-    if(sn::level > -1) std::cout << "test_CommonTree num_leaves " << std::setw(2) << num_leaves << " root: " << root->desc() << std::endl ; 
+    if(sn::level() > -1) std::cout << "test_CommonTree num_leaves " << std::setw(2) << num_leaves << " root: " << root->desc() << std::endl ; 
 
     if(!sn::LEAK) delete root ; 
 
-    if(sn::level > 0) std::cout << sn::Desc(); 
-    if(sn::level > 1) std::cout << "]test_CommonTree num_leaves " << num_leaves << std::endl ; 
+    if(sn::level() > 0) std::cout << sn::Desc(); 
+    if(sn::level() > 1) std::cout << "]test_CommonTree num_leaves " << num_leaves << std::endl ; 
 }
 
 void test_CommonTree()
@@ -155,7 +153,7 @@ void test_positivize()
     int mode = ssys::getenvint("MODE", 4) ; 
 
     t->label(); 
-    if(sn::level > 1) std::cout << t->render(mode) ; 
+    if(sn::level() > 1) std::cout << t->render(mode) ; 
 
     t->positivize(); 
     std::cout << t->render(mode) ; 
@@ -239,12 +237,13 @@ void test_Serialize()
     std::cout << "[ test_Serialize it " << it  << std::endl ; 
 
     sn* t = manual_tree(it); 
-
     std::cout << t->render(5) ; 
+    std::cout << sn::Desc(); 
  
     std::vector<_sn> buf ; 
-    sn::Serialize(buf); 
-    std::cout << sn::Desc(); 
+    sn::pool.serialize(buf); 
+
+    delete t ; 
 
     NP* a = NP::Make<int>( buf.size(), _sn::NV ) ; 
     a->read2<int>((int*)buf.data()); 
@@ -264,9 +263,14 @@ void test_Import()
     std::vector<_sn> buf(a->shape[0]) ; 
     a->write<int>((int*)buf.data()); 
 
-    sn* root = sn::Import(buf); 
+    sn::pool.import(buf); 
 
-    std::cout << root->render(); 
+    int num_root = sn::pool.get_num_root() ; 
+    std::cout << " num_root " << num_root << std::endl ; 
+
+    sn* root = sn::pool.get_root(0) ; 
+    if(root) std::cout << root->render(5); 
+    delete root ; 
 
     std::cout << "] test_Import " << std::endl ; 
 }
@@ -275,22 +279,30 @@ void test_Import()
 
 int main(int argc, char** argv)
 {
-
     /*
+    */
     test_BinaryTreeHeight(); 
+    std::cout << sn::pool.brief("0") << std::endl ; 
     test_ZeroTree(); 
+    std::cout << sn::pool.brief("1") << std::endl ; 
     test_CommonTree(); 
+    std::cout << sn::pool.brief("2") << std::endl ; 
     //test_CommonTree(7); 
     test_label(); 
+    std::cout << sn::pool.brief("3") << std::endl ; 
     test_positivize(); 
+    std::cout << sn::pool.brief("4") << std::endl ; 
     test_Simple(); 
+    std::cout << sn::pool.brief("5") << std::endl ; 
     test_set_left(); 
+    std::cout << sn::pool.brief("6") << std::endl ; 
     test_pool(); 
-    */
+    std::cout << sn::pool.brief("7") << std::endl ; 
 
-    //test_Serialize(); 
+    test_Serialize(); 
+    std::cout << sn::pool.brief("8") << std::endl ; 
     test_Import(); 
-
+    std::cout << sn::pool.brief("9") << std::endl ; 
 
     return 0 ; 
 }

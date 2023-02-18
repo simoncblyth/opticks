@@ -11,9 +11,7 @@ Usage Example
 ::
 
     #include "sn.h"
-    std::map<int, sn*> sn::pool = {} ; 
-    int sn::count = 0 ; 
-    int sn::level = 0 ; 
+    sn::POOL sn::pool = {} ;  // initialize static pool 
 
 
 Motivation
@@ -71,6 +69,7 @@ all the way to the GPU.
 
 #include "OpticksCSG.h"
 #include "scanvas.h"
+#include "s_pool.h"
 
 
 struct _sn
@@ -83,8 +82,14 @@ struct _sn
     int r ; 
     int p ; 
 
+    bool is_root() const ; 
     std::string desc() const ; 
 };
+
+bool _sn::is_root() const 
+{
+    return p == -1 ;  
+}
 
 inline std::string _sn::desc() const
 {
@@ -101,39 +106,19 @@ inline std::string _sn::desc() const
 }
 
 
-struct sn ; 
-
-struct sn_query
-{
-    const sn* q ; 
-    sn_query(const sn* q_) : q(q_) {} ;  
-    bool operator()(const std::pair<int, sn*>& p){ return q == p.second ; }  
-}; 
-
-
 struct sn
 {
+    typedef s_pool<sn> POOL ;
+    static POOL pool ;
 
-    static std::map<int, sn*> pool ; 
-    static int count ; 
+    static int level(); 
+    static void Serialize(     _sn& p, const sn* o ); 
+    static sn*  Import(  const _sn* p, const std::vector<_sn>& buf ); 
+    static sn*  Import_r(const _sn* p, const std::vector<_sn>& buf); 
 
-
-    static int level ; 
     static std::string Desc(const char* msg=nullptr); 
-
-    static int Index(const sn* q); 
     int index() const ; 
-
-    static void Serialize( std::vector<_sn>& buf ) ; 
-    static void Serialize( _sn& n, const sn* p ); 
-
-    static sn* Import(                 const std::vector<_sn>& buf); 
-    static sn* Import_r(const _sn* n,  const std::vector<_sn>& buf); 
-
-
-
-
-
+    bool is_root() const ; 
 
     static constexpr const bool LEAK = false ; 
 
@@ -151,7 +136,6 @@ struct sn
 
     sn(int type, sn* left, sn* right);
     ~sn(); 
-
 
     static sn* Zero() ; 
     static sn* Prim(int type) ; 
@@ -173,7 +157,6 @@ struct sn
     bool is_rzero() const ;   // !l-zero AND  r-zero
     bool is_lzero() const ;   //  l-zero AND !r-zero
 
-
     int num_node() const ; 
     int num_node_r(int d) const ; 
 
@@ -182,7 +165,6 @@ struct sn
 
     int maxdepth() const ; 
     int maxdepth_r(int d) const ; 
-
 
     void label(); 
 
@@ -196,7 +178,6 @@ struct sn
     void operators_r(unsigned& mask, int minsubdepth) const ; 
     bool is_positive_form() const ; 
 
-
     void preorder( std::vector<const sn*>& order ) const ; 
     void inorder(  std::vector<const sn*>& order ) const ; 
     void postorder(std::vector<const sn*>& order ) const ; 
@@ -207,7 +188,6 @@ struct sn
 
     void inorder_(std::vector<sn*>& order ) ; 
     void inorder_r_(std::vector<sn*>& order, int d ); 
-
 
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
@@ -237,142 +217,27 @@ struct sn
     void prune_r(int d) ; 
     bool has_dangle() const ; 
 
-
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
-
 };
 
-
-inline std::string sn::Desc(const char* msg)
-{
-    if(level > 0) std::cerr << "[sn::Desc "
-              << ( msg ? msg : "-" )
-              << " LEAK " << ( LEAK ? "YES" : "NO" )
-              << " count " << count  
-              << " pool.size " << pool.size() 
-              << std::endl
-              ; 
-
-    std::stringstream ss ; 
-    ss << "sn::Desc "
-       << ( msg ? msg : "-" )
-       << " count " << count 
-       << " pool.size " << pool.size() 
-       << std::endl
-        ; 
-
-    typedef std::map<int, sn*>::const_iterator IT ; 
-    for(IT it=pool.begin() ; it != pool.end() ; it++) 
-    {
-        int key = it->first ; 
-        sn* n = it->second ;  
-        assert( n->pid == key ); 
-        ss << std::setw(3) << key << " : " << n->desc() << std::endl ; 
-    }
-    std::string str = ss.str(); 
-
-    if(level > 0) std::cerr << "]sn::Desc" << std::endl ; 
-
-    return str ; 
-}
-
-/**
-sn::Index
------------
-
-Contiguous index of *q* within all active nodes in creation order.
-NB this is different from the *pid* because node deletions will 
-cause gaps in the pid values whereas the indices will be contiguous. 
-
-**/
-
-inline int sn::Index(const sn* q)  // static
-{
-    if( q == nullptr ) return -1 ;     
-    sn_query query(q); 
-    size_t idx = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), query )); 
-    return idx < pool.size() ? idx : -1 ;  
-}
-inline int sn::index() const { return Index(this); }
-
-
-
-inline void sn::Serialize( std::vector<_sn>& buf )
-{
-    int tot_nodes = pool.size(); 
-    buf.resize(tot_nodes);  
-    typedef std::map<int, sn*>::const_iterator IT ; 
-
-    IT it = pool.begin(); 
-
-    std::cerr << "[ sn::Serialize tot_nodes " << tot_nodes << std::endl ; 
-    int idx = 0 ; 
-    while( it != pool.end() )
-    {
-        int key = it->first ; 
-        sn* x = it->second ;  
-
-        assert( x->pid == key ); 
-        assert( x->index() == idx ); 
-        assert( idx < tot_nodes ); 
-
-        _sn& n = buf[idx]; 
-
-        Serialize( n, x ); 
-
-        it++ ; idx++ ;  
-    }
-    std::cerr << "] sn::Serialize" << std::endl ; 
-}
-
+inline std::string sn::Desc(const char* msg){ return pool.desc(msg); }
+inline int         sn::index() const { return pool.index(this); }
+inline bool        sn::is_root() const { return p == nullptr ; }
+inline int         sn::level() {  return pool.level ; } // static 
 
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
     n.t = x->t ; 
     n.complement = x->complement ;
-    n.l = Index(x->l);  
-    n.r = Index(x->r);  
-    n.p = Index(x->p);  
+    n.l = pool.index(x->l);  
+    n.r = pool.index(x->r);  
+    n.p = pool.index(x->p);  
 }
 
-
-
-
-/**
-sn::Import
--------------
-
-HMM: previous tree imports like NCSG::import_tree_r
-used complete binary tree ordering and ran from root down  
-
-Are here trying to bring in from bottom up, which presents
-problem for setting the refs.
-
-BUT have random access into the buf so can jump around following 
-l/r index : but need to identify the root from the _sn 
-to know where to start.  There can be multiple so cannot just pick the last. 
-
-Hence added parent to sn/_sn so can identify the roots. 
-
-**/
-
-inline sn* sn::Import(const std::vector<_sn>& buf )
+inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
 {
-    sn* root = nullptr ; 
-    int tot_nodes = buf.size() ;
-    std::cerr << "[ sn::Import tot_nodes " << tot_nodes << std::endl ; 
-    for(int idx=0 ; idx < tot_nodes ; idx++)
-    { 
-        const _sn* n = &buf[idx]; 
-        if(n->p == -1) 
-        {
-            root = Import_r( n, buf );  // Import_r from the roots 
-            root->label(); 
-        }
-    }  
-    std::cerr << "] sn::Import" << std::endl ; 
-    return root ; 
+    return p->is_root() ? Import_r(p, buf) : nullptr ; 
 }
 inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf)
 {
@@ -386,18 +251,15 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf)
     sn* l = Import_r( _l, buf ); 
     sn* r = Import_r( _r, buf ); 
     sn* n = Create( _n->t, l, r ); 
-
     n->complement = _n->complement ; 
 
     return n ; 
 }  
 
-
-
 // ctor
 inline sn::sn(int type, sn* left, sn* right)
     :
-    pid(count),
+    pid(pool.add(this)),
     depth(0),
     subdepth(0),
     t(type),
@@ -406,27 +268,25 @@ inline sn::sn(int type, sn* left, sn* right)
     r(right),
     p(nullptr)
 {
-    pool[pid] = this ; 
-    if(level > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
+    if(pool.level > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 
     if(left && right)
     {
         left->p = this ; 
         right->p = this ; 
     }
-    count += 1 ;   
 }
 
 // dtor 
 inline sn::~sn()   
 {
-    if(level > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
+    if(pool.level > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
 
     delete l ; 
     delete r ; 
-    pool.erase(pid); 
+    pool.remove(this); 
 
-    if(level > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
+    if(pool.level > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
 }
 
 
@@ -911,9 +771,9 @@ inline sn* sn::ZeroTree_r( int elevation, int op )  // static
 inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 {   
     int height = BinaryTreeHeight(num_leaves) ;
-    if(level > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
+    if(pool.level > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
     sn* root = ZeroTree_r( height, op );
-    if(level > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
+    if(pool.level > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
     return root ; 
 }          
 
@@ -930,18 +790,18 @@ inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(level > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
-        if(level > 1) std::cerr << root->render(5) ; 
+        if(pool.level > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(pool.level > 1) std::cerr << root->render(5) ; 
 
         root->populate(leaftypes); 
 
-        if(level > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
-        if(level > 1) std::cerr << root->render(5) ; 
+        if(pool.level > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
+        if(pool.level > 1) std::cerr << root->render(5) ; 
 
         root->prune();
  
-        if(level > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
-        if(level > 1) std::cerr << root->render(5) ; 
+        if(pool.level > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(pool.level > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
 } 
@@ -993,7 +853,7 @@ inline void sn::prune()
 
     if(has_dangle())
     {
-        if(level > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
+        if(pool.level > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
     }
 
 }

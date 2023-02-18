@@ -12,7 +12,9 @@ a contiguous key.
 **/
 
 #include <cassert>
+#include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <vector>
 
@@ -37,10 +39,15 @@ struct s_pool
 
     s_pool(); 
 
+    int size() const ; 
+    int get_num_root() const ; 
+    T*  get_root(int lvid) const ; 
+    std::string brief(const char* msg=nullptr) const ; 
+    std::string desc(const char* msg=nullptr) const ; 
+
     int index(const T* q) const ; 
     int add( T* o ); 
     int remove( T* o ); 
-
 
     template<typename P>
     void serialize(   std::vector<P>& buf ) const ; 
@@ -56,6 +63,90 @@ s_pool<T>::s_pool()
     level(ssys::getenvint("s_pool_level",0))
 {
 }
+
+template<typename T>
+int s_pool<T>::size() const 
+{
+    return pool.size(); 
+}
+template<typename T>
+int s_pool<T>::get_num_root() const 
+{
+    int count_root = 0 ; 
+    typedef typename POOL::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        T* n = it->second ;  
+        if(n->is_root()) count_root += 1 ; 
+    }
+    return count_root ; 
+}
+template<typename T>
+T* s_pool<T>::get_root(int lvid) const 
+{
+    T* root = nullptr ; 
+    int count_root = 0 ; 
+    typedef typename POOL::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        T* n = it->second ;  
+        if(n->is_root()) 
+        {
+            if( lvid == count_root ) root = n ; 
+            count_root += 1 ; 
+        }
+    }
+    return root ; 
+}
+
+template<typename T>
+std::string s_pool<T>::brief(const char* msg) const 
+{
+    std::stringstream ss ; 
+    ss
+       << "s_pool::brief "
+       << ( msg ? msg : "-" )
+       << " count " << count 
+       << " pool.size " << pool.size() 
+       << " num_root " << get_num_root()
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+template<typename T>
+std::string s_pool<T>::desc(const char* msg) const 
+{
+    std::stringstream ss ; 
+    ss << "s_pool::desc "
+       << ( msg ? msg : "-" )
+       << " count " << count 
+       << " pool.size " << pool.size() 
+       << " num_root " << get_num_root()
+       << std::endl
+        ; 
+
+    typedef typename POOL::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        int key = it->first ; 
+        T* n = it->second ;  
+        ss << std::setw(3) << key << " : " << n->desc() << std::endl ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+/**
+s_pool::index
+--------------
+
+Contiguous index of *q* within all active objects in creation order.
+NB this is different from the *pid* because node deletions will 
+cause gaps in the pid values whereas the indices will be contiguous. 
+
+**/
 
 template<typename T>
 int s_pool<T>::index(const T* q) const 
@@ -79,10 +170,18 @@ int s_pool<T>::remove(T* o)
 {
     s_find<T> find(o); 
     typename POOL::iterator it = std::find_if( pool.begin(), pool.end(), find ) ; 
-    assert( it != pool.end() ); 
-    int pid = it->first ; 
-    if(level > 0) std::cerr << "s_pool::remove pid " << pid << std::endl ; 
-    pool.erase(it); 
+
+    int pid = -1 ; 
+    if( it == pool.end() )
+    {
+        if(level > 0) std::cerr << "s_pool::remove failed to find the object : already removed, double dtors ?  " << std::endl ; 
+    }
+    else
+    {
+        pid = it->first ; 
+        if(level > 0) std::cerr << "s_pool::remove pid " << pid << std::endl ; 
+        pool.erase(it); 
+    }
     return pid ; 
 } 
 
@@ -90,43 +189,18 @@ template<typename T>
 template<typename P>
 inline void s_pool<T>::serialize( std::vector<P>& buf ) const 
 {
-    int total = pool.size(); 
-    buf.resize(total);  
-    if(level > 0) std::cerr << "[ s_pool::serialize total " << total << std::endl ; 
-
-    typename POOL::const_iterator it = pool.begin() ; 
-
-    int idx = 0 ; 
-    while( it != pool.end() )
+    buf.resize(pool.size());  
+    for(typename POOL::const_iterator it=pool.begin() ; it != pool.end() ; it++)
     {
-        //int key = it->first ; 
-        T* t    = it->second ;  
-
-        int idx1 = index(t) ; 
-        assert( idx1 == idx ); 
-        assert( idx < total ); 
-
-        P& p = buf[idx]; 
-
-        P::Serialize( p, t ); 
-
-        it++ ; idx++ ;  
+        size_t idx = std::distance(pool.begin(), it ); 
+        T::Serialize( buf[idx], it->second ); 
     }
-    if(level > 0) std::cerr << "] s_pool::serialize" << std::endl ; 
 }
 
 template<typename T>
 template<typename P>
 inline void s_pool<T>::import(const std::vector<P>& buf ) 
 {
-    int total = buf.size() ;
-    if(level > 0) std::cerr << "[ s_pool::import total " << total << std::endl ; 
-    for(int idx=0 ; idx < total ; idx++)
-    { 
-        const P& p = buf[idx]; 
-        T* t = P::Import( p ); 
-        //assert(t); 
-    }  
-    if(level > 0) std::cerr << "] s_pool::import" << std::endl ; 
+    for(size_t idx=0 ; idx < buf.size() ; idx++) T::Import( &buf[idx], buf ) ; 
 }
 
