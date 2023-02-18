@@ -110,12 +110,17 @@ struct sn_query
     bool operator()(const std::pair<int, sn*>& p){ return q == p.second ; }  
 }; 
 
+
 struct sn
 {
+
     static std::map<int, sn*> pool ; 
     static int count ; 
+
+
     static int level ; 
     static std::string Desc(const char* msg=nullptr); 
+
     static int Index(const sn* q); 
     int index() const ; 
 
@@ -124,6 +129,11 @@ struct sn
 
     static sn* Import(                 const std::vector<_sn>& buf); 
     static sn* Import_r(const _sn* n,  const std::vector<_sn>& buf); 
+
+
+
+
+
 
     static constexpr const bool LEAK = false ; 
 
