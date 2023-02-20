@@ -128,7 +128,7 @@ inline std::string _sn::desc() const
 
 struct sn
 {
-    typedef s_pool<sn> POOL ;
+    typedef s_pool<sn,_sn> POOL ;
     static POOL pool ;
     static constexpr const char* NAME = "sn.npy" ; 
 

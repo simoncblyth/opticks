@@ -257,11 +257,11 @@ void test_set_left()
 }
 
 
-void test_Serialize()
+void test_Serialize_0()
 {
     int lev = 0 ; 
     int it = 3 ; 
-    if(sn::level() > lev) std::cout << "[ test_Serialize it " << it  << std::endl ; 
+    if(sn::level() > lev) std::cout << "[ test_Serialize_0 it " << it  << std::endl ; 
 
     sn* t = manual_tree(it); 
     if(sn::level() > lev) std::cout << t->render(5) ; 
@@ -272,7 +272,7 @@ void test_Serialize()
 
  
     std::vector<_sn> buf ; 
-    sn::pool.serialize(buf); 
+    sn::pool.serialize_(buf); 
 
     delete t ; 
 
@@ -286,13 +286,42 @@ void test_Serialize()
     if(sn::level() > lev) std::cout << "] test_Serialize buf.size() " << buf.size()  << std::endl ; 
     if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
 
-    check("Serialize"); 
+    check("Serialize_0"); 
 }
 
-void test_Import()
+
+
+void test_Serialize_1()
 {
     int lev = 0 ; 
-    if(sn::level() > lev) std::cout << "[ test_Import " << std::endl ; 
+    int it = 3 ; 
+    if(sn::level() > lev) std::cout << "[ test_Serialize_1 it " << it  << std::endl ; 
+
+    sn* t = manual_tree(it); 
+    if(sn::level() > lev) std::cout << t->render(5) ; 
+    if(sn::level() > lev) std::cout << sn::Desc(); 
+
+    int num_root = sn::pool.get_num_root() ; 
+    if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
+
+    NP* a = sn::pool.serialize<int>() ; 
+
+    delete t ; 
+
+    if(sn::level() > lev) std::cout << " save to " << FOLD << "/" << sn::NAME << std::endl ; 
+
+    a->save(FOLD, sn::NAME); 
+
+    check("Serialize_1"); 
+}
+
+
+
+
+void test_Import_0()
+{
+    int lev = 0 ; 
+    if(sn::level() > lev) std::cout << "[ test_Import_0 " << std::endl ; 
 
     if(sn::level() > lev) std::cout << " load from " << FOLD << "/" << sn::NAME << std::endl ; 
     NP* a = NP::Load(FOLD, sn::NAME );
@@ -300,7 +329,7 @@ void test_Import()
     std::vector<_sn> buf(a->shape[0]) ; 
     a->write<int>((int*)buf.data()); 
 
-    sn::pool.import(buf); 
+    sn::pool.import_(buf); 
 
 
     if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
@@ -314,9 +343,39 @@ void test_Import()
     if(root && sn::level() > lev) std::cout << root->render(5); 
     delete root ; 
 
-    if(sn::level() > lev) std::cout << "] test_Import " << std::endl ; 
+    if(sn::level() > lev) std::cout << "] test_Import_0 " << std::endl ; 
+    check("Import_0"); 
+}
+
+
+
+
+void test_Import_1()
+{
+    int lev = 0 ; 
+    if(sn::level() > lev) std::cout << "[ test_Import_1 " << std::endl ; 
+
+    if(sn::level() > lev) std::cout << " load from " << FOLD << "/" << sn::NAME << std::endl ; 
+    NP* a = NP::Load(FOLD, sn::NAME );
+
+    sn::pool.import<int>(a); 
+
+    int num_root = sn::pool.get_num_root() ; 
+    if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
+    if(sn::level() > lev) std::cout << sn::Desc(); 
+
+    sn* root = sn::pool.get_root(0) ; 
+    if(root && sn::level() > lev) std::cout << root->render(5); 
+    delete root ; 
+
+    if(sn::level() > lev) std::cout << "] test_Import_1 " << std::endl ; 
     check("Import"); 
 }
+
+
+
+
+
 
 
 void test_dtor_0()
@@ -487,7 +546,7 @@ void test_next_sibling()
 
 int main(int argc, char** argv)
 {
-
+    /*
 
     test_next_sibling(); 
     test_deepcopy_0(); 
@@ -523,9 +582,12 @@ int main(int argc, char** argv)
     test_set_left(); 
     test_pool(); 
 
-  
-    test_Serialize(); 
-    test_Import(); 
+    */  
+
+    //test_Serialize_0(); 
+    //test_Import_0(); 
+    test_Serialize_1(); 
+    test_Import_1(); 
 
 
     Desc(); 

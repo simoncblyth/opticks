@@ -10,7 +10,7 @@ defarg="build_run"
 arg=${1:-$defarg}
 
 opt=-DWITH_CHILD
-#export s_pool_level=2
+export s_pool_level=2
 
 
 if [ "${arg/build}" != "$arg" ]; then 

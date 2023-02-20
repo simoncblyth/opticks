@@ -3,6 +3,13 @@
 s_pool.h (alt names: sregistry.h, sbacking.h, sstore.h spersist.h)
 =======================================================================
 
+Types:
+
+* T : source type eg *sn* which can have non-value members, eg pointers and vector of pointers
+* P : persisting type eg *_sn* paired with the source type where pointers are replaced with integers 
+* S: serialization type used to form the NP.hh array, typically int but may also be float or double  
+
+
 NB after calls to *s_pool::remove* the integer keys returned by *s_pool::index* 
 will not match the *pid* returned by *s_pool::add* and *s_pool::remove*
 as the *pid* is based on a global count of additions to the pool with no accounting 
@@ -19,6 +26,7 @@ a contiguous key.
 #include <vector>
 
 #include "ssys.h"
+#include "NP.hh"
 
 
 template<typename T>
@@ -29,7 +37,7 @@ struct s_find
     bool operator()(const std::pair<int, T*>& p){ return q == p.second ; }  
 };
 
-template<typename T>    
+template<typename T, typename P>    
 struct s_pool
 {
     typedef typename std::map<int, T*> POOL ; 
@@ -50,31 +58,30 @@ struct s_pool
     int add( T* o ); 
     int remove( T* o ); 
 
-    template<typename P>
-    void serialize(   std::vector<P>& buf ) const ; 
+    void serialize_(   std::vector<P>& buf ) const ; 
+    void import_(const std::vector<P>& buf ) ; 
 
-    template<typename P>
-    void import(const std::vector<P>& buf ) ; 
+    template<typename S> NP*  serialize() const ; 
+    template<typename S> void import(const NP* a) ; 
 
-    template<typename P>
     static std::string Desc(const std::vector<P>& buf ); 
 };
 
-template<typename T>
-s_pool<T>::s_pool()
+template<typename T, typename P>
+s_pool<T,P>::s_pool()
     :
     count(0),
     level(ssys::getenvint("s_pool_level",0))
 {
 }
 
-template<typename T>
-int s_pool<T>::size() const 
+template<typename T, typename P>
+int s_pool<T,P>::size() const 
 {
     return pool.size(); 
 }
-template<typename T>
-int s_pool<T>::get_num_root() const 
+template<typename T, typename P>
+int s_pool<T,P>::get_num_root() const 
 {
     int count_root = 0 ; 
     typedef typename POOL::const_iterator IT ; 
@@ -85,8 +92,8 @@ int s_pool<T>::get_num_root() const
     }
     return count_root ; 
 }
-template<typename T>
-T* s_pool<T>::get_root(int lvid) const 
+template<typename T, typename P>
+T* s_pool<T,P>::get_root(int lvid) const 
 {
     T* root = nullptr ; 
     int count_root = 0 ; 
@@ -103,8 +110,8 @@ T* s_pool<T>::get_root(int lvid) const
     return root ; 
 }
 
-template<typename T>
-std::string s_pool<T>::brief(const char* msg) const 
+template<typename T, typename P>
+std::string s_pool<T,P>::brief(const char* msg) const 
 {
     std::stringstream ss ; 
     ss
@@ -118,8 +125,8 @@ std::string s_pool<T>::brief(const char* msg) const
     return str ; 
 }
 
-template<typename T>
-std::string s_pool<T>::desc(const char* msg) const 
+template<typename T, typename P>
+std::string s_pool<T,P>::desc(const char* msg) const 
 {
     std::stringstream ss ; 
     ss << "s_pool::desc "
@@ -152,16 +159,16 @@ cause gaps in the pid values whereas the indices will be contiguous.
 
 **/
 
-template<typename T>
-int s_pool<T>::index(const T* q) const 
+template<typename T, typename P>
+int s_pool<T, P>::index(const T* q) const 
 {
     if( q == nullptr ) return -1 ;     
     s_find<T> find(q); 
     size_t idx = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), find )); 
     return idx < pool.size() ? idx : -1 ;  
 }
-template<typename T>
-int s_pool<T>::add(T* o)
+template<typename T, typename P>
+int s_pool<T, P>::add(T* o)
 {
     int pid = count ; 
     pool[pid] = o ; 
@@ -169,8 +176,8 @@ int s_pool<T>::add(T* o)
     count += 1 ; 
     return pid ; 
 }
-template<typename T>
-int s_pool<T>::remove(T* o)
+template<typename T, typename P>
+int s_pool<T,P>::remove(T* o)
 {
     s_find<T> find(o); 
     typename POOL::iterator it = std::find_if( pool.begin(), pool.end(), find ) ; 
@@ -189,9 +196,8 @@ int s_pool<T>::remove(T* o)
     return pid ; 
 } 
 
-template<typename T>
-template<typename P>
-inline void s_pool<T>::serialize( std::vector<P>& buf ) const 
+template<typename T, typename P>
+inline void s_pool<T,P>::serialize_( std::vector<P>& buf ) const 
 {
     buf.resize(pool.size());  
     for(typename POOL::const_iterator it=pool.begin() ; it != pool.end() ; it++)
@@ -201,17 +207,43 @@ inline void s_pool<T>::serialize( std::vector<P>& buf ) const
     }
 }
 
-template<typename T>
-template<typename P>
-inline void s_pool<T>::import(const std::vector<P>& buf ) 
+template<typename T, typename P>
+inline void s_pool<T,P>::import_(const std::vector<P>& buf ) 
 {
-    if(level > 0) std::cerr << "s_pool::import buf.size " << buf.size() << std::endl ; 
+    if(level > 0) std::cerr << "s_pool::import_ buf.size " << buf.size() << std::endl ; 
     for(size_t idx=0 ; idx < buf.size() ; idx++) T::Import( &buf[idx], buf ) ; 
 }
 
-template<typename T>
-template<typename P>
-inline std::string s_pool<T>::Desc(const std::vector<P>& buf )  // static
+
+
+template<typename T, typename P>
+template<typename S>
+inline NP* s_pool<T,P>::serialize() const 
+{
+    std::vector<P> buf ; 
+    serialize_(buf); 
+
+    NP* a = NP::Make<S>( buf.size(), P::NV ) ; 
+    a->read2<S>((S*)buf.data()); 
+
+    return a ; 
+}
+
+
+template<typename T, typename P>
+template<typename S>
+inline void s_pool<T,P>::import( const NP* a ) 
+{
+    assert( a->shape[1] == P::NV );  
+
+    std::vector<P> buf(a->shape[0]) ; 
+    a->write<S>((S*)buf.data()); 
+
+    import_(buf); 
+}
+
+template<typename T, typename P>
+inline std::string s_pool<T,P>::Desc(const std::vector<P>& buf )  // static
 {
     std::stringstream ss ; 
     ss << "s_pool::Desc buf.size " <<  buf.size() << std::endl ; 
@@ -219,8 +251,6 @@ inline std::string s_pool<T>::Desc(const std::vector<P>& buf )  // static
     std::string str = ss.str(); 
     return str ; 
 }
-
-
 
 
 
