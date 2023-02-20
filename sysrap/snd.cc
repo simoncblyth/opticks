@@ -139,12 +139,12 @@ void snd::SetNodeXForm(int idx, const glm::tmat4x4<double>& t, const glm::tmat4x
 snd::setXF
 ---------------
 
-Note that currently there is no way to change transform, or param or AABB. 
 Calling setXF again will just adds another transform 
 and updates the snd::xform integer reference, effectively leaking the old transform. 
 
 HMM if there is a transform already present (eg ellipsoid scale transform)
 the setXF actually needs to combine the transforms as was done in nnode::set_transform
+so that with snd::combineXF
 
 
 **/
@@ -359,8 +359,8 @@ void snd::SetLVID(int idx, int lvid)  // static
 
 
 /**
-snd::GetLVID
---------------
+snd::GetLVID (GetLVIDNodes more appropos)
+-------------------------------------------------
 
 Q: Is the last snd returned always root ? 
 A: As trees are created postorder and nodes get added to the POOL 
@@ -389,12 +389,12 @@ int snd::GetLVNumNode( int lvid ) // static
     const snd* root = GetLVRoot(lvid); 
     return root ? root->getLVNumNode() : -1 ; 
 }
-int snd::GetLVBinNode( int lvid ) // static
+int snd::GetLVBinNode( int lvid ) // static    NumBinNode
 {
     const snd* root = GetLVRoot(lvid); 
     return root ? root->getLVBinNode() : -1 ; 
 }
-int snd::GetLVSubNode( int lvid ) // static
+int snd::GetLVSubNode( int lvid ) // static    NumSubNode
 {
     const snd* root = GetLVRoot(lvid); 
     return root ? root->getLVSubNode() : -1 ; 

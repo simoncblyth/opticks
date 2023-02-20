@@ -9,8 +9,12 @@ bin=$FOLD/$name
 defarg="build_run"
 arg=${1:-$defarg}
 
+opt=-DWITH_CHILD
+#export s_pool_level=2
+
+
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -I.. -I$HOME/np  -g -std=c++11 -lstdc++ -o $bin
+    gcc $name.cc -I.. -I$HOME/np $opt -g -std=c++11 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
