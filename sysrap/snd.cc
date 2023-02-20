@@ -18,8 +18,11 @@
 #include "sndtree.h"
 #include "st.h"
 #include "stra.h"
+#include "stv.h"
 
 sn::POOL sn::pool = {} ; 
+stv::POOL stv::pool = {} ; 
+
 
 scsg* snd::POOL = nullptr  ; 
 void snd::SetPOOL( scsg* pool ){ POOL = pool ; }  // static 

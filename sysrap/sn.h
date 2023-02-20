@@ -415,8 +415,8 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.first_child = pool.index(x->first_child());  
     n.next_sibling = pool.index(x->next_sibling()); 
 #else
-    n.left  = pool.index(x->l);  
-    n.right = pool.index(x->r);  
+    n.left  = pool.index(x->left);  
+    n.right = pool.index(x->right);  
 #endif
 
 }

@@ -1,10 +1,16 @@
 #pragma once
 /**
-sndtree.h 
+sndtree.h
 ===========
 
 Used from snd::UnionTree which is for example used by U4Polycone 
 This brings some of the functionality of the old NTreeBuilder for use with snd node trees 
+
+This is a workaround combining the inherently persistable but not very flexible
+snd.hh with the more flexible pointer based sn.h 
+
+Once sn.h persisting using s_pool.h becomes fully featued 
+this sndtree.h can be removed. 
 
 **/
 
@@ -68,9 +74,9 @@ inline int sndtree::Build_r(sn* n, int& num_leaves_placed, const std::vector<int
     int N = -1 ; 
     if( n->is_operator() )
     {
-        int op = n->t ; 
-        int L = Build_r(n->l, num_leaves_placed, leaves, d+1) ; 
-        int R = Build_r(n->r, num_leaves_placed, leaves, d+1) ; 
+        int op = n->type ; 
+        int L = Build_r(n->left,  num_leaves_placed, leaves, d+1) ; 
+        int R = Build_r(n->right, num_leaves_placed, leaves, d+1) ; 
         N = snd::Boolean( op, L, R );  
     }
     else
