@@ -49,7 +49,7 @@ struct s_pool
 
     int size() const ; 
     int get_num_root() const ; 
-    T*  get_root(int lvid) const ; 
+    T*  get_root(int idx) const ; 
 
     std::string brief(const char* msg=nullptr) const ; 
     std::string desc(const char* msg=nullptr) const ; 
@@ -88,12 +88,12 @@ int s_pool<T,P>::get_num_root() const
     for(IT it=pool.begin() ; it != pool.end() ; it++) 
     {
         T* n = it->second ;  
-        if(n->is_root()) count_root += 1 ; 
+        if(n->is_root_importable()) count_root += 1 ; 
     }
     return count_root ; 
 }
 template<typename T, typename P>
-T* s_pool<T,P>::get_root(int lvid) const 
+T* s_pool<T,P>::get_root(int idx) const 
 {
     T* root = nullptr ; 
     int count_root = 0 ; 
@@ -101,9 +101,9 @@ T* s_pool<T,P>::get_root(int lvid) const
     for(IT it=pool.begin() ; it != pool.end() ; it++) 
     {
         T* n = it->second ;  
-        if(n->is_root()) 
+        if(n->is_root_importable()) 
         {
-            if( lvid == count_root ) root = n ; 
+            if( idx == count_root ) root = n ; 
             count_root += 1 ; 
         }
     }
@@ -167,6 +167,7 @@ int s_pool<T, P>::index(const T* q) const
     size_t idx = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), find )); 
     return idx < pool.size() ? idx : -1 ;  
 }
+
 template<typename T, typename P>
 int s_pool<T, P>::add(T* o)
 {
@@ -176,6 +177,7 @@ int s_pool<T, P>::add(T* o)
     count += 1 ; 
     return pid ; 
 }
+
 template<typename T, typename P>
 int s_pool<T,P>::remove(T* o)
 {
@@ -203,6 +205,7 @@ inline void s_pool<T,P>::serialize_( std::vector<P>& buf ) const
     for(typename POOL::const_iterator it=pool.begin() ; it != pool.end() ; it++)
     {
         size_t idx = std::distance(pool.begin(), it ); 
+        if(level > 1) std::cerr << "s_pool::serialize_ " << idx << std::endl ; 
         T::Serialize( buf[idx], it->second ); 
     }
 }
@@ -213,8 +216,6 @@ inline void s_pool<T,P>::import_(const std::vector<P>& buf )
     if(level > 0) std::cerr << "s_pool::import_ buf.size " << buf.size() << std::endl ; 
     for(size_t idx=0 ; idx < buf.size() ; idx++) T::Import( &buf[idx], buf ) ; 
 }
-
-
 
 template<typename T, typename P>
 template<typename S>
@@ -228,7 +229,6 @@ inline NP* s_pool<T,P>::serialize() const
 
     return a ; 
 }
-
 
 template<typename T, typename P>
 template<typename S>
@@ -251,6 +251,5 @@ inline std::string s_pool<T,P>::Desc(const std::vector<P>& buf )  // static
     std::string str = ss.str(); 
     return str ; 
 }
-
 
 
