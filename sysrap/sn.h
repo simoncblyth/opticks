@@ -110,11 +110,12 @@ inline std::string _sn::desc() const
        << " t " << std::setw(4) << t 
        << " c " << std::setw(1) << complement
        << " p " << std::setw(4) << p 
+       << " is_root " << ( is_root() ? "YES" : "NO " ) 
 #ifdef WITH_CHILD
        << " sx " << std::setw(4) << sibdex 
        << " nc " << std::setw(4) << num_child
        << " fc " << std::setw(4) << first_child
-       << " xs " << std::setw(4) << next_sibling
+       << " ns " << std::setw(4) << next_sibling
 #else
        << " l " << std::setw(4) << l 
        << " r " << std::setw(4) << r 
@@ -129,6 +130,7 @@ struct sn
 {
     typedef s_pool<sn> POOL ;
     static POOL pool ;
+    static constexpr const char* NAME = "sn.npy" ; 
 
     static std::string Desc(const char* msg=nullptr); 
     static int level(); 
@@ -141,16 +143,15 @@ struct sn
     sn*  last_child() const ; 
     sn*  get_child(int ch) const ;
 
-#ifdef WITH_CHILD
     int  total_siblings() const ;
+    int  child_index( const sn* ch ) ; 
     int  sibling_index() const ;
     const sn*  get_sibling(int sx) const ; // returns this when sx is sibling_index
     const sn*  next_sibling() const ;      // returns nullptr when this is last 
-#endif
 
     static void Serialize(     _sn& p, const sn* o ); 
     static sn*  Import(  const _sn* p, const std::vector<_sn>& buf ); 
-    static sn*  Import_r(const _sn* p, const std::vector<_sn>& buf); 
+    static sn*  Import_r(const _sn* p, const std::vector<_sn>& buf, int d ); 
 
     //static constexpr const bool LEAK = true ; 
     static constexpr const bool LEAK = false ; 
@@ -315,17 +316,35 @@ inline sn* sn::get_child(int ch) const
 }
 
 
-#ifdef WITH_CHILD
 inline int sn::total_siblings() const
 {
+#ifdef WITH_CHILD
     return p ? int(p->child.size()) : 1 ;  // root regarded as sole sibling (single child)  
+#else
+    if(p == nullptr) return 1 ; 
+    return ( p->l && p->r ) ? 2 : -1 ;   
+#endif
 }
+
+inline int sn::child_index( const sn* ch )
+{
+#ifdef WITH_CHILD
+    size_t idx = std::distance( child.begin(), std::find( child.begin(), child.end(), ch )) ; 
+    return idx < child.size() ? idx : -1 ; 
+#else
+    int idx = -1 ; 
+    if(      ch == l ) idx = 0 ; 
+    else if( ch == r ) idx = 1 ; 
+    return idx ; 
+#endif
+}
+
 inline int sn::sibling_index() const 
 {
     int tot_sib = total_siblings() ; 
-    int sibdex = p == nullptr ? 0 : std::distance( p->child.begin(), std::find( p->child.begin(), p->child.end(), this )) ; 
+    int sibdex = p == nullptr ? 0 : p->child_index(this) ; 
 
-    std::cerr << "sn::sibling_index"
+    if(level() > 1) std::cerr << "sn::sibling_index"
               << " tot_sib " << tot_sib 
               << " sibdex " << sibdex
               << std::endl 
@@ -337,23 +356,33 @@ inline int sn::sibling_index() const
 
 inline const sn* sn::get_sibling(int sx) const     // NB this return self for appropriate sx
 {
+#ifdef WITH_CHILD
     assert( sx < total_siblings() ); 
     return p ? p->child[sx] : this ; 
+#else
+    const sn* sib = nullptr ; 
+    switch(sx)
+    {
+        case 0: sib = p ? p->l : nullptr ; break ; 
+        case 1: sib = p ? p->r : nullptr ; break ; 
+    }
+    return sib ; 
+#endif
 }
 
 inline const sn* sn::next_sibling() const
 {
     int next_sib = 1+sibling_index() ; 
     int tot_sib = total_siblings() ; 
-    std::cerr << "sn::next_sibling" 
+
+    if(level() > 1) std::cerr << "sn::next_sibling" 
               << " tot_sib " << tot_sib
               << " next_sib " << next_sib 
               << std::endl 
               ;
  
-    return next_sib < tot_sib - 1 ? get_sibling(next_sib) : nullptr ;   
+    return next_sib < tot_sib  ? get_sibling(next_sib) : nullptr ;   
 }
-#endif
 
 
 
@@ -377,33 +406,45 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
 
 inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
 {
-    return p->is_root() ? Import_r(p, buf) : nullptr ; 
+    if(level() > 0) std::cerr << "sn::Import" << std::endl ; 
+    return p->is_root() ? Import_r(p, buf, 0) : nullptr ; 
 }
 
-inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf)
+inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 {
+    if(level() > 0) std::cerr << "sn::Import_r d " << d << " " << ( _n ? _n->desc() : "(null)" ) << std::endl ; 
     if(_n == nullptr) return nullptr ; 
-    std::cerr << "sn::Import_r " << _n->desc() << std::endl ; 
 
 #ifdef WITH_CHILD
     sn* n = Create( _n->t, nullptr, nullptr );  
+    n->complement = _n->complement ; 
+
+    if(level() > 0) std::cerr << "sn::Import_r.root _n->first_child " << _n->first_child << std::endl ; 
+
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
+
+    if(level() > 0) std::cerr << "sn::Import_r.root _child " << ( _child ? "Y" :  "N" )  << std::endl ; 
+
     while( _child ) 
     {    
-        sn* ch = Import_r( _child, buf ); 
-        assert(ch); 
-        n->child.push_back(ch); 
+        sn* ch = Import_r( _child, buf, d+1 ); 
+
+        n->add_child(ch);  // push_back and sets *ch->p* to *n* 
+  
+        if(level() > 1) std::cerr << "sn::Import_r _child->next_sibling " << _child->next_sibling << std::endl ; 
+
         _child = _child->next_sibling > -1 ? &buf[_child->next_sibling] : nullptr ;
+ 
+        if(level() > 1) std::cerr << "sn::Import_r _child " << ( _child ? "Y" :  "N" )  << std::endl ; 
     }    
 #else
     const _sn* _l = _n->l > -1 ? &buf[_n->l] : nullptr ;  
     const _sn* _r = _n->r > -1 ? &buf[_n->r] : nullptr ;  
-    sn* l = Import_r( _l, buf ); 
-    sn* r = Import_r( _r, buf ); 
+    sn* l = Import_r( _l, buf, d+1 ); 
+    sn* r = Import_r( _r, buf, d+1 ); 
     sn* n = Create( _n->t, l, r ); 
-#endif
     n->complement = _n->complement ; 
-
+#endif
     return n ;  
 }  
 
@@ -438,12 +479,12 @@ inline sn::sn(int type, sn* left, sn* right)
         r->p = this ; 
     }
 #endif
-
 }
 
 #ifdef WITH_CHILD
 inline void sn::add_child( sn* ch )
 {
+    assert(ch); 
     ch->p = this ; 
     child.push_back(ch) ; 
 }

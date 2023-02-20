@@ -42,6 +42,7 @@ struct s_pool
     int size() const ; 
     int get_num_root() const ; 
     T*  get_root(int lvid) const ; 
+
     std::string brief(const char* msg=nullptr) const ; 
     std::string desc(const char* msg=nullptr) const ; 
 
@@ -54,6 +55,9 @@ struct s_pool
 
     template<typename P>
     void import(const std::vector<P>& buf ) ; 
+
+    template<typename P>
+    static std::string Desc(const std::vector<P>& buf ); 
 };
 
 template<typename T>
@@ -201,6 +205,22 @@ template<typename T>
 template<typename P>
 inline void s_pool<T>::import(const std::vector<P>& buf ) 
 {
+    if(level > 0) std::cerr << "s_pool::import buf.size " << buf.size() << std::endl ; 
     for(size_t idx=0 ; idx < buf.size() ; idx++) T::Import( &buf[idx], buf ) ; 
 }
+
+template<typename T>
+template<typename P>
+inline std::string s_pool<T>::Desc(const std::vector<P>& buf )  // static
+{
+    std::stringstream ss ; 
+    ss << "s_pool::Desc buf.size " <<  buf.size() << std::endl ; 
+    for(size_t idx=0 ; idx < buf.size() ; idx++) ss << " idx " << std::setw(3) << idx  << " : " <<  buf[idx].desc() << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
 

@@ -259,12 +259,17 @@ void test_set_left()
 
 void test_Serialize()
 {
+    int lev = 0 ; 
     int it = 3 ; 
-    if(sn::level() > 0) std::cout << "[ test_Serialize it " << it  << std::endl ; 
+    if(sn::level() > lev) std::cout << "[ test_Serialize it " << it  << std::endl ; 
 
     sn* t = manual_tree(it); 
-    if(sn::level() > 1) std::cout << t->render(5) ; 
-    if(sn::level() > 1) std::cout << sn::Desc(); 
+    if(sn::level() > lev) std::cout << t->render(5) ; 
+    if(sn::level() > lev) std::cout << sn::Desc(); 
+
+    int num_root = sn::pool.get_num_root() ; 
+    if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
+
  
     std::vector<_sn> buf ; 
     sn::pool.serialize(buf); 
@@ -274,32 +279,42 @@ void test_Serialize()
     NP* a = NP::Make<int>( buf.size(), _sn::NV ) ; 
     a->read2<int>((int*)buf.data()); 
 
-    if(sn::level() > 0) std::cout << " save to " << FOLD << std::endl ; 
-    a->save(FOLD, "sn.npy"); 
+    if(sn::level() > lev) std::cout << " save to " << FOLD << "/" << sn::NAME << std::endl ; 
+    a->save(FOLD, sn::NAME); 
 
-    if(sn::level() > 0) std::cout << "] test_Serialize buf.size() " << buf.size()  << std::endl ; 
+
+    if(sn::level() > lev) std::cout << "] test_Serialize buf.size() " << buf.size()  << std::endl ; 
+    if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
+
     check("Serialize"); 
 }
 
 void test_Import()
 {
-    if(sn::level() > 0) std::cout << "[ test_Import " << std::endl ; 
+    int lev = 0 ; 
+    if(sn::level() > lev) std::cout << "[ test_Import " << std::endl ; 
 
-    NP* a = NP::Load(FOLD, "sn.npy");
+    if(sn::level() > lev) std::cout << " load from " << FOLD << "/" << sn::NAME << std::endl ; 
+    NP* a = NP::Load(FOLD, sn::NAME );
     assert( a->shape[1] == _sn::NV );  
     std::vector<_sn> buf(a->shape[0]) ; 
     a->write<int>((int*)buf.data()); 
 
     sn::pool.import(buf); 
 
+
+    if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
+
     int num_root = sn::pool.get_num_root() ; 
-    if(sn::level() > 0) std::cout << " num_root " << num_root << std::endl ; 
+    if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
+    if(sn::level() > lev) std::cout << sn::Desc(); 
+
 
     sn* root = sn::pool.get_root(0) ; 
-    if(root) std::cout << root->render(5); 
+    if(root && sn::level() > lev) std::cout << root->render(5); 
     delete root ; 
 
-    if(sn::level() > 0) std::cout << "] test_Import " << std::endl ; 
+    if(sn::level() > lev) std::cout << "] test_Import " << std::endl ; 
     check("Import"); 
 }
 
@@ -402,7 +417,10 @@ void test_deepcopy_0()
 
     sn* ccp = c->deepcopy(); 
 
+#ifdef WITH_CHILD
     assert( ccp->child.size() == c->child.size() ); 
+#endif
+
     delete c ; 
 
     if(sn::level() > 0) std::cout << ccp->render(1) ; 
@@ -434,10 +452,44 @@ void test_deepcopy_1_leaking()
     //check("deepcopy_1_leaking"); 
 }
 
+void test_next_sibling()
+{
+    int lev = 0 ; 
+
+    sn* a = sn::Prim(100); 
+    sn* b = sn::Prim(101); 
+    sn* c = sn::Create(1, a, b ); 
+
+    int ia = a->sibling_index() ;  
+    int ib = b->sibling_index() ;  
+
+    if(sn::level() > lev) std::cerr << "test_next_sibling ia  " << ia  << std::endl ;     
+    if(sn::level() > lev) std::cerr << "test_next_sibling ib  " << ib  << std::endl ;     
+    
+    const sn* x = a->next_sibling() ; 
+    const sn* y = b->next_sibling() ; 
+    const sn* z = c->next_sibling() ; 
+
+    if(sn::level() > lev) std::cerr << "test_next_sibling x: " << ( x ? "Y" : "N" ) << std::endl ;     
+    if(sn::level() > lev) std::cerr << "test_next_sibling y: " << ( y ? "Y" : "N" ) << std::endl ;     
+    if(sn::level() > lev) std::cerr << "test_next_sibling z: " << ( z ? "Y" : "N" ) << std::endl ;     
+
+    assert( x == b ); 
+    assert( y == nullptr ); 
+    assert( z == nullptr ); 
+
+    delete c ; 
+
+    check("next_sibling"); 
+}
+
 
 
 int main(int argc, char** argv)
 {
+
+
+    test_next_sibling(); 
     test_deepcopy_0(); 
     //test_deepcopy_1_leaking(); 
 
@@ -470,6 +522,8 @@ int main(int argc, char** argv)
     test_Simple(); 
     test_set_left(); 
     test_pool(); 
+
+  
     test_Serialize(); 
     test_Import(); 
 
