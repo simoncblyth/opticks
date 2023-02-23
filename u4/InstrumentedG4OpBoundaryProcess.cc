@@ -716,14 +716,38 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
 
             //[OpticalSurface.mpt.CustomBoundary
 #ifdef WITH_PMTFASTSIM
-            //theCustomStatus = m_custom_boundary->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
-            theCustomStatus = m_custom_art->maybe_doIt( OpticalSurfaceName, aTrack, aStep );  
-            if(theCustomStatus == 'Y')
+            char osn = OpticalSurfaceName[0] ; 
+            if(  osn == '@' || osn == '#' )  // only customize specially named OpticalSurfaces 
             {
-                type = dielectric_dielectric ;  
-                theModel = glisur ; 
-                theFinish = polished ;  
-                // guide thru the below jungle : only when custom handling is triggered 
+                if( m_custom_art->local_z(aTrack) < 0. ) // lower hemi : No customization, standard boundary  
+                {
+                    theCustomStatus = 'Z' ; 
+                }
+                else if( osn == '@') //  upper hemi with name starting @ : MultiFilm ART transmit thru into PMT
+                {
+                    theCustomStatus = 'Y' ;
+     
+                    m_custom_art->doIt(aTrack, aStep) ;  // calculate theReflectivity theTransmittance theEfficiency 
+
+                    type = dielectric_dielectric ;  
+                    theModel = glisur ; 
+                    theFinish = polished ;  
+                    // guide thru the below jungle : only when custom handling is triggered 
+                }
+                else if( osn == '#' ) // upper hemi with name starting # : Traditional Detection at photocathode
+                {
+                    theCustomStatus = 'Y' ;
+
+                    type = dielectric_metal ; 
+                    theModel = glisur ; 
+                    theReflectivity = 0. ; 
+                    theTransmittance = 0. ; 
+                    theEfficiency = 1. ; 
+                }
+            }
+            else
+            {
+                theCustomStatus = 'X' ; 
             }
 #else
             theCustomStatus = 'X' ; 

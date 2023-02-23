@@ -109,8 +109,9 @@ struct CustomART
         const G4double& thePhotonMomentum
     );  
 
-    char maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
-    char doIt(const G4Track& aTrack, const G4Step& aStep ); 
+    //char maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
+    double local_z( const G4Track& aTrack ); 
+    void doIt(const G4Track& aTrack, const G4Step& aStep ); 
 }; 
 
 inline CustomART::CustomART(
@@ -140,15 +141,12 @@ inline CustomART::CustomART(
 {
 }
 
-
-
-
 /**
-CustomART::maybe_doIt
+CustomART::is_upper_z
 ------------------------
 
-
 Q:What is lposcost for ?  
+
 A:Preparing for doing this on GPU, as lposcost is available there already but zlocal is not, 
   so want to check the sign of lposcost is following that of zlocal. It looks 
   like it should:: 
@@ -158,21 +156,36 @@ A:Preparing for doing this on GPU, as lposcost is available there already but zl
     159   return ptot == 0.0 ? 1.0 : dz/ptot;
     160 }
 
+
 **/
+
+inline double CustomART::local_z( const G4Track& aTrack )
+{
+    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
+    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
+    zlocal = localPoint.z() ; 
+    lposcost = localPoint.cosTheta() ;  
+    return zlocal  ; 
+}
+
+
+/**
+CustomART::maybe_doIt
+------------------------
+
+As need to also handle traditional POM it avoids duplication 
+for the maybe_doIt branching to happen at a higher level inside CustomG4OpBoundaryProcess
 
 inline char CustomART::maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep )
 {
     if( OpticalSurfaceName == nullptr || OpticalSurfaceName[0] != '@') return 'N' ; 
 
-    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
-    zlocal = localPoint.z() ; 
-    lposcost = localPoint.cosTheta() ;  
-
-    if(zlocal <= 0) return 'Z' ; 
-
     return doIt(aTrack, aStep) ;
 }
+
+**/
+
+
 
 /**
 CustomART<J>::doIt
@@ -185,7 +198,7 @@ NB stack is flipped for minus_cos_theta > 0. so:
 
 **/
 
-inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
+inline void CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
 {
     G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
 
@@ -277,7 +290,6 @@ inline char CustomART::doIt(const G4Track& aTrack, const G4Step& aStep )
         ;
 
     assert( expect ); 
-    return 'Y' ; 
 }
 
 
