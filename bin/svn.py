@@ -222,8 +222,33 @@ class WC(object):
         return repo
 
     @classmethod
+    def detect_repo_from_cwd(cls):
+        cwd = os.getcwd()
+        home = os.environ["HOME"]
+        assert(cwd.startswith(home))
+        reldir = cwd[len(home)+1:]
+        topdir = reldir.split("/")[0]  
+
+        if topdir == "opticks":
+            repo = "opticks_git"
+        elif topdir == "junotop":
+            repo = "junosw"
+        else:
+            print("FATAL : FAILED TO DETECT REPO : RUN THIS FROM TOP DIR OF REPO ") 
+            print(" cwd %s home %s reldir %s topdir %s " % (cwd, home, reldir, topdir))
+            print("detected repo %s " % repo)
+            assert 0 
+        pass
+
+        return repo
+
+
+
+    @classmethod
     def parse_args(cls, doc):
-        repo = cls.detect_repo_from_scriptname()
+
+        repo = cls.detect_repo_from_cwd() 
+        #repo = cls.detect_repo_from_scriptname()
         defaults = {}
         if repo == "offline_svn":
             vc = "svn"
@@ -234,6 +259,15 @@ class WC(object):
             defaults["rstatcmd"] = "ssh P opticks/bin/svn.py"
             defaults["lstatcmd"] = "svn.py"
             defaults["statcmd"] = "svn status"
+        elif repo == "junosw":
+            vc = "git"
+            defaults["chdir"] = "~/junotop/junosw" 
+            defaults["rbase"] = "P:junotop/junosw" 
+            defaults["rstatpath"] = "~/rstat_junosw.txt" 
+            defaults["lstatpath"] = "~/lstat_junosw.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
+            defaults["statcmd"] = "git status --porcelain"
         elif repo == "opticks_git":
             vc = "git"
             defaults["chdir"] = "~/opticks" 
