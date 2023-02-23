@@ -34,8 +34,8 @@ geometry.  As the actual form of the BVH and its construction are proprietry to 
 it is necessary to treat this as a "black box" and adopt an experimental approach 
 to tuning.
 
-1. establish several benchmark geometries including both analytic and triangulated forms 
-   and a range of optical simulations that are similar to the intended target simulation 
+1. establish several benchmark geometries including a range of optical simulations 
+   that are similar to the intended target simulation 
    but more controllable in the sense of being able to scan the numbers of photons 
 
 2. make measurements scanning the numbers of photons up to the VRAM 
