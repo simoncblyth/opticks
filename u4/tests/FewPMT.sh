@@ -46,7 +46,7 @@ export nnvt_FastCoverMaterial=$fastcover
 export nnvt_UsePMTOpticalModel=$pom   
 export nnvt_UseNaturalGeometry=$version 
 
-
+export ${GEOM}_GEOMList=hamaLogicalPMT,nnvtLogicalPMT
 
 
 if [ "$layout" == "one_pmt" ]; then 
@@ -57,13 +57,12 @@ elif [ "$layout" == "two_pmt" ]; then
 
     export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=310  
     export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=300  
-
-    # 1280/720 = 1.7777777777777777
-    aspect=1.7777777777777
+    aspect=1.7777777777777  # 1280/720
     export U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE=$aspect,1,1
     export U4VolumeMaker_WrapAroundItem_Water_BOXSCALE=$aspect,1,1 
 
     export ${GEOM}_GEOMWrap=AroundCircle 
+
     export U4VolumeMaker_MakeTransforms_AroundCircle_radius=250
     export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=2
     export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0

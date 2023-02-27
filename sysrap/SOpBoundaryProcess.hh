@@ -1,4 +1,15 @@
 #pragma once
+/**
+SOpBoundaryProcess.hh
+=======================
+
+Used from U4Recorder::UserSteppingAction_Optical
+
+* within WITH_PMTFASTSIM InstrumentedG4OpBoundaryProcess ISA SOpBoundaryProcess
+* this uses singleton INSTANCE as backdoor access to the BoundaryProcess
+
+**/
+
 
 #include "SYSRAP_API_EXPORT.hh"
 struct SYSRAP_API SOpBoundaryProcess

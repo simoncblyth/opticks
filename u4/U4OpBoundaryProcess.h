@@ -1,4 +1,16 @@
 #pragma once
+/**
+U4OpBoundaryProcess.h
+=======================
+
+* GetStatus identifies the boundary process with type T by trying all optical processes 
+  and seeing which one has non-null dynamic_cast
+
+* assumes that the modified boundary process still has method that returns the standard enum::
+
+   G4OpBoundaryProcessStatus GetStatus() const;
+
+**/
 
 #include "U4_API_EXPORT.hh"
 struct U4_API U4OpBoundaryProcess
@@ -8,20 +20,8 @@ struct U4_API U4OpBoundaryProcess
 };
 
 #include "G4ProcessManager.hh"
-#include "InstrumentedG4OpBoundaryProcess.hh"
+#include "G4OpBoundaryProcess.hh"   // need standard enum from here even when using customized boundary process
 
-/**
-U4OpBoundaryProcess::GetStatus
---------------------------------
-
-* identifies the boundary process with type T by trying all optical processes 
-  and seeing which one has non-null dynamic_cast
-
-* assumes that the modified boundary process still has method that returns the standard enum::
-
-   G4OpBoundaryProcessStatus GetStatus() const;
-
-**/
 
 template <typename T>
 inline unsigned U4OpBoundaryProcess::GetStatus()
@@ -48,6 +48,9 @@ inline unsigned U4OpBoundaryProcess::GetStatus()
 }
 
 
+
+
+#include "InstrumentedG4OpBoundaryProcess.hh"
 template unsigned U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>() ; 
 
 

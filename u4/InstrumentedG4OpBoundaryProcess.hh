@@ -109,6 +109,12 @@ struct CustomART ;
 // Class Definition
 /////////////////////
 
+
+#include "G4OpBoundaryProcess.hh"
+
+/*
+// better to get these enum consts from standard boundary process 
+
 enum G4OpBoundaryProcessStatus {  Undefined,
                                   Transmission, FresnelRefraction,
                                   FresnelReflection, TotalInternalReflection,
@@ -142,7 +148,7 @@ enum G4OpBoundaryProcessStatus {  Undefined,
                                   GroundVM2000GlueReflection,
                                   Dichroic };
 
-
+*/
 
 #ifdef DEBUG_TAG
 #include "U4Stack.h"

@@ -408,6 +408,8 @@ will fulfil *single_bit*.
 
 HMM: but if subsequent step points failed to set a non-zero flag could get that repeated 
 
+HMM: currently relying on the boundary process being pinned down with SOpBoundaryProcess::INSTANCE 
+
 **/
 
 template <typename T>
@@ -431,8 +433,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     quad4& current_aux = sev->current_ctx.aux ; 
 
     SOpBoundaryProcess* bop = SOpBoundaryProcess::Get(); 
-    current_aux.q0.f.x = bop->getU0() ; 
-    current_aux.q0.i.w = bop->getU0_idx() ; 
+
+    if(bop)  // currently non-null only WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
+    {
+        current_aux.q0.f.x = bop->getU0() ; 
+        current_aux.q0.i.w = bop->getU0_idx() ; 
+    }
 
     /*
     HMM: 
@@ -466,9 +472,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
 
 
-    if(is_boundary_flag )
+    if(is_boundary_flag && bop)
     {
-        const double* recoveredNormal = bop->getRecoveredNormal() ; 
+        const double* recoveredNormal = bop ? bop->getRecoveredNormal() : nullptr ; 
         current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
     }
     else
@@ -476,7 +482,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         current_aux.zero_v(3, 3); 
     }
 
-    char customStatus = is_boundary_flag ? bop->getCustomStatus() : 'B' ; 
+    char customStatus = ( is_boundary_flag && bop ) ? bop->getCustomStatus() : 'B' ; 
     current_aux.q1.i.w = int(customStatus) ; 
 
     // TODO: collect into aux more detailed info : eg the A,R,T values 

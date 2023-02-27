@@ -40,7 +40,7 @@ EOU
 }
 
 bin=U4SimulateTest
-export GEOM=hamaLogicalPMT
+export GEOM=FewPMT
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
@@ -58,7 +58,7 @@ export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same
 export BeamOn=${BeamOn:-1}
 
 
-geomscript=FewPMT.sh 
+geomscript=$GEOM.sh 
 export VERSION=${N:-0}
 export LAYOUT=two_pmt
 #export LAYOUT=one_pmt
@@ -68,6 +68,9 @@ if [ -f "$geomscript" ]; then
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
+
+
+
 
 # python ana level presentation 
 export LOC=skip

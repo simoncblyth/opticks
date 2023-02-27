@@ -65,6 +65,7 @@ struct U4_API U4Recorder
 
     void PostUserTrackingAction_Optical(const G4Track*);
 
+    // HMM: anyway to hide the type here ? 
     template<typename T> void UserSteppingAction(const G4Step*);
     template<typename T> void UserSteppingAction_Optical(const G4Step*); 
 

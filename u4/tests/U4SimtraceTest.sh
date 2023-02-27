@@ -25,12 +25,13 @@ Grab the custom boundary status for each point::
 
 
 
-Q: Where is the N envvar to control natural geometry or not acted upon ?
-A: j/PMTFastSim/IGeomManager.h:IGeomManager::declProp interprets envvar to set values::
+Q: Where is the N envvar to control natural geometry acted upon ?
+A: j/PMTSim/IGeomManager.h:IGeomManager::declProp interprets envvar to set values::
 
     epsilon:tests blyth$ grep UseNaturalGeometry *.*
-    hamaLogicalPMT.sh:export hama_UseNaturalGeometry=$version 
-    epsilon:tests blyth$ 
+    FewPMT.sh:export hama_UseNaturalGeometry=$version 
+    FewPMT.sh:export nnvt_UseNaturalGeometry=$version 
+
 
 
 
@@ -84,13 +85,10 @@ esac
 export VERSION=${N:-0}
 
 export GEOM=FewPMT
-export ${GEOM}_GEOMList=hamaLogicalPMT,nnvtLogicalPMT
 
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
-#export SFOLD=$BASE/0
-#export TFOLD=$BASE/1
 
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
