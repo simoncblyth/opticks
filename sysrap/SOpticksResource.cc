@@ -540,10 +540,15 @@ const char* SOpticksResource::GEOMWrap(const char* geom)
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 
 }
 
+const char* SOpticksResource::GEOMList(){ return GEOMList( GEOM()); }
+const char* SOpticksResource::GEOMList(const char* geom)
+{
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMList")) ; 
+}
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM UserGEOMDir" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM UserGEOMDir GEOMList" ; 
 
 /**
 SOpticksResource::Get

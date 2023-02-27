@@ -3,7 +3,11 @@
 U4Touchable.h
 ================
 
-The history is from inside to outside, so "deeper" corresponds to wider volumes.
+The touchable history is from inside to outside, so "deeper" corresponds to wider volumes.
+
+A version of this is also available within the monolith at 
+
+    $JUNOTOP/junosw/Simulation/DetSimV2/SimUtil/SimUtil/S4Touchable.h 
 
 **/
 

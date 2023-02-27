@@ -7,6 +7,9 @@ does not matter as this should only be included
 once into the main.  This is effectively 
 providing a Geant4 application in a single header. 
 
+Geometry setup in U4RecorderTest::Construct is done by 
+U4VolumeMaker::PV which is controlled by the GEOM envvar.  
+
 **/
 
 #include <csignal>

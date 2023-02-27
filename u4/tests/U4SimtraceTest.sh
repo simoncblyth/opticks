@@ -3,6 +3,8 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
+
+
 ::
 
     N=0 ./U4SimtraceTest.sh 
@@ -19,6 +21,18 @@ Grab the custom boundary status for each point::
 
     In [25]: t.aux[261,:32,1,3].copy().view(np.int8)[::4].copy().view("|S32")
     Out[25]: array([b'TTTZNZRZNZA'], dtype='|S32')
+
+
+
+
+Q: Where is the N envvar to control natural geometry or not acted upon ?
+A: j/PMTFastSim/IGeomManager.h:IGeomManager::declProp interprets envvar to set values::
+
+    epsilon:tests blyth$ grep UseNaturalGeometry *.*
+    hamaLogicalPMT.sh:export hama_UseNaturalGeometry=$version 
+    epsilon:tests blyth$ 
+
+
 
 
 ::
@@ -69,7 +83,8 @@ esac
 
 export VERSION=${N:-0}
 
-export GEOM=hamaLogicalPMT
+export GEOM=FewPMT
+export ${GEOM}_GEOMList=hamaLogicalPMT,nnvtLogicalPMT
 
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
@@ -88,7 +103,7 @@ geomscript=$GEOM.sh
 if [ -f "$geomscript" ]; then  
     source $geomscript $VERSION $LAYOUT
 else
-    echo $BASH_SOURCE : no gemoscript $geomscript
+    echo $BASH_SOURCE : no geomscript $geomscript
 fi 
 
 loglevels()

@@ -50,14 +50,14 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_WrapRockWater_FACTOR   = "U4VolumeMaker_WrapRockWater_FACTOR" ; 
     static constexpr const char* U4VolumeMaker_WrapRockWater_BS1 = "U4VolumeMaker_WrapRockWater_BS1" ; 
 
-    static const G4VPhysicalVolume* Wrap( const char* name, G4LogicalVolume* lv ); 
-    static const G4VPhysicalVolume* WrapRockWater( G4LogicalVolume* lv ); 
+    static const G4VPhysicalVolume* Wrap( const char* name, std::vector<G4LogicalVolume*>& items_lv ); 
+    static const G4VPhysicalVolume* WrapRockWater( std::vector<G4LogicalVolume*>& items_lv ); 
 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE = "U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_HALFSIDE = "U4VolumeMaker_WrapAroundItem_Water_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Water_BOXSCALE" ; 
-    static const G4VPhysicalVolume* WrapAroundItem( const char* name, G4LogicalVolume* item_lv, const char* prefix ); // prefix eg AroundCircle
+    static const G4VPhysicalVolume* WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix ); // prefix eg AroundCircle
 
 
     static constexpr const char* U4VolumeMaker_WrapVacuum_HALFSIDE = "U4VolumeMaker_WrapVacuum_HALFSIDE" ; 
@@ -103,7 +103,7 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_numInRing = "U4VolumeMaker_MakeTransforms_AroundCircle_numInRing" ; 
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase = "U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase" ; 
     static const NP* MakeTransforms( const char* name, const char* prefix ); 
-    static void WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv ); 
+    static void WrapAround( const char* prefix, const NP* trs, std::vector<G4LogicalVolume*>& lvs, G4LogicalVolume* mother_lv ); 
 
 };
 

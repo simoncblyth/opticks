@@ -1,6 +1,22 @@
 
+usage(){ cat << EOU
+FewPMT.sh ( formerly hamaLogicalPMT.sh ) 
+===========================================
+
+This geomscript is sourced from::
+
+   U4SimtraceTest.sh
+   U4SimulateTest.sh
+
+
+EOU
+}
+
+
 version=${1:-0}
 layout=${2:-one_pmt}
+pom=1
+
 
 case $version in
   0) echo $BASH_SOURCE FastSim/jPOM ;;
@@ -12,11 +28,25 @@ case $layout in
   two_pmt) echo layout $layout ;; 
 esac
 
+case $pom in 
+   0) echo POM : traditional stop at photocathode PMT has no innards  ;;
+   1) echo POM : allow photons into PMT which has innards ;; 
+esac
+
+fastcover=Cheese
+
 
 ## PMTFastSim/HamamatsuR12860PMTManager declProp config 
-export hama_FastCoverMaterial=Cheese  
-export hama_UsePMTOpticalModel=1  
+
+export hama_FastCoverMaterial=$fastcover
+export hama_UsePMTOpticalModel=$pom     
 export hama_UseNaturalGeometry=$version 
+
+export nnvt_FastCoverMaterial=$fastcover
+export nnvt_UsePMTOpticalModel=$pom   
+export nnvt_UseNaturalGeometry=$version 
+
+
 
 
 if [ "$layout" == "one_pmt" ]; then 

@@ -12,6 +12,7 @@
 #include "SOpticksResource.hh"
 #include "SPath.hh"
 #include "ssys.h"
+#include "sstr.h"
 #include "SPlace.h"
 
 #include "SLOG.hh"
@@ -157,7 +158,8 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     { 
         const G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, sub ) ;  
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
-        pv = Wrap( name, lv_sub );  
+        std::vector<G4LogicalVolume*> lvs = {lv_sub} ; 
+        pv = Wrap( name, lvs );  
 
         if(ssys::getenvbool(PVG_WriteNames_Sub))
             U4Volume::WriteNames( pv, SPath::Resolve("$TMP", PVG_WriteNames_Sub, DIRPATH));  
@@ -196,17 +198,43 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
 {
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
-    bool has_manager_prefix = PMTSim::HasManagerPrefix(name) ;
-    LOG(LEVEL) << "[ WITH_PMTSIM name [" << name << "] has_manager_prefix " << has_manager_prefix ; 
-    if(has_manager_prefix) 
+    const char* geomlist = SOpticksResource::GEOMList(name);   // consult envvar name_GEOMList 
+    std::vector<std::string> names ; 
+    if( geomlist == nullptr )
     {
-        G4LogicalVolume* lv = PMTSim::GetLV(name) ; 
-        LOG_IF(fatal, lv == nullptr ) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
+        names.push_back(name); 
+    } 
+    else
+    {
+        sstr::Split(geomlist, ',', names ); 
+    }
+    int num_names = names.size(); 
+
+    LOG(LEVEL) 
+         << "[ WITH_PMTSIM"
+         << " geomlist [" << ( geomlist ? geomlist : "-" ) << "] "
+         << " name [" << name << "] "
+         << " num_names " << num_names 
+         ; 
+
+    std::vector<G4LogicalVolume*> lvs ; ; 
+
+    for(int i=0 ; i < num_names ; i++)
+    {
+        const char* n = names[i].c_str(); 
+        bool has_manager_prefix = PMTSim::HasManagerPrefix(n) ;
+        LOG(LEVEL) << "[ WITH_PMTSIM n [" << n << "] has_manager_prefix " << has_manager_prefix ; 
+        assert( has_manager_prefix ); 
+
+        G4LogicalVolume* lv = PMTSim::GetLV(n) ; 
+        LOG_IF(fatal, lv == nullptr ) << "PMTSim::GetLV returned nullptr for n [" << n << "]" ; 
         assert( lv ); 
 
-        pv = WrapRockWater( lv ) ;          
-
+        lvs.push_back(lv); 
     }
+
+    pv = Wrap( name, lvs ) ;          
+
     LOG(LEVEL) << "]" ; 
 #else
     LOG(info) << " not-WITH_PMTSIM name [" << name << "]" ; 
@@ -352,11 +380,11 @@ which when present must be one of : AroundCylinder, AroundSphere, AroundCircle
 
 **/
 
-const G4VPhysicalVolume* U4VolumeMaker::Wrap( const char* name, G4LogicalVolume* lv )
+const G4VPhysicalVolume* U4VolumeMaker::Wrap( const char* name, std::vector<G4LogicalVolume*>& items_lv )
 {
     const char* wrap = SOpticksResource::GEOMWrap(name);  
-    LOG(LEVEL) << "[ name " << name << " wrap " << ( wrap ? wrap : "-" ) ; 
-    const G4VPhysicalVolume* pv = wrap == nullptr ? WrapRockWater( lv ) : WrapAroundItem( name, lv, wrap );  
+    LOG(LEVEL) << "[ name " << name << " GEOMWrap " << ( wrap ? wrap : "-" ) ; 
+    const G4VPhysicalVolume* pv = wrap == nullptr ? WrapRockWater( items_lv ) : WrapAroundItem( name, items_lv, wrap );  
     LOG(LEVEL) << "] name " << name << " wrap " << ( wrap ? wrap : "-" ) << " pv " << ( pv ? "YES" : "NO" ) ; 
     return pv ;  
 }
@@ -385,9 +413,12 @@ U4VolumeMaker::WrapRockWater
 
 **/
 
-const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
+const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( std::vector<G4LogicalVolume*>& items_lv )
 {
-    LOG(LEVEL) << "["  ; 
+    assert( items_lv.size() >= 1 ); 
+    G4LogicalVolume* item_lv = items_lv[items_lv.size()-1] ;  
+
+    LOG(LEVEL) << "[ items_lv.size " << items_lv.size()   ; 
 
     double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
@@ -454,11 +485,14 @@ All those repeats have a "Water" box mother volume which is contained within "Ro
 
 **/
 
-const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, G4LogicalVolume* item_lv, const char* prefix )
+const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix )
 {
+    assert( items_lv.size() >= 1 ); 
+
     const NP* trs = MakeTransforms(name, prefix) ; 
 
     LOG(LEVEL) 
+        << " items_lv.size " << items_lv.size() 
         << " prefix " << prefix 
         << " trs " << ( trs ? trs->sstr() : "-" )
         ;
@@ -479,7 +513,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, G4Logi
     G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock" , nullptr, rock_boxscale );
     G4LogicalVolume*  water_lv = Box_(water_halfside, "Water", nullptr, water_boxscale );
  
-    WrapAround(prefix, trs, item_lv, water_lv );  
+    WrapAround(prefix, trs, items_lv, water_lv );  
     // item_lv placed inside water_lv once for each transform
 
     const G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
@@ -955,11 +989,13 @@ large to accommodate the lv with all the transforms applied to it.
 
 **/
 
-void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
+void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, std::vector<G4LogicalVolume*>& lvs, G4LogicalVolume* mother_lv )
 {
     unsigned num_place = trs->shape[0] ; 
     unsigned place_tr = trs->shape[1] ;   
     unsigned place_values = place_tr*4*4 ; 
+    unsigned num_lv = lvs.size(); 
+
 
     assert( trs->has_shape(num_place,place_tr,4,4) );  
     assert( place_tr == 6 );  // expected number of different options from "TR,tr,R,T,r,t"
@@ -987,6 +1023,7 @@ void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolu
 
         G4bool pMany_unused = false ; 
         G4int  pCopyNo = (i+1)*10 ; 
+        G4LogicalVolume* lv = lvs[i%num_lv] ; 
 
         const G4VPhysicalVolume* pv_n = new G4PVPlacement(rot, tla, lv, iname, mother_lv, pMany_unused, pCopyNo ); // 1st ctor
         assert( pv_n );  

@@ -25,14 +25,14 @@ find_package(CLHEP  REQUIRED CONFIG)
 # undefined symbols CLHEP::HepRandom::getTheEngine()
 find_package(OpticksXercesC REQUIRED MODULE)
 
-#find_package(PMTSim CONFIG)   ## NB : NOT REQUIRED
+find_package(PMTSim CONFIG)   ## NB : NOT REQUIRED
 #set(PMTSim_FOUND NO)
 
-find_package(PMTFastSim CONFIG)   ## NB : NOT REQUIRED
-#set(PMTFastSim_FOUND NO)
+#find_package(PMTFastSim CONFIG)   ## NB : NOT REQUIRED
+set(PMTFastSim_FOUND NO)
 
-
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND     : ${PMTSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND : ${PMTFastSim_FOUND}")
 
 
 set(SOURCES

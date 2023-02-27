@@ -86,8 +86,8 @@ struct SYSRAP_API SOpticksResource
     static const char* GEOMWrap(); 
     static const char* GEOMWrap(const char* geom); 
 
-
-
+    static const char* GEOMList(); 
+    static const char* GEOMList(const char* geom); 
 
 
 

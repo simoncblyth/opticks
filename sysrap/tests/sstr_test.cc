@@ -164,14 +164,27 @@ World0xdead0xbeef
 }
 
 
+void test_nullchar(bool flip)
+{
+    char prefix = flip ? 'X' : '\0' ;
+    std::string name ; 
+    name += prefix ; 
+    name += "hello" ; 
+
+    std::cout << "[" << name << "]" << std::endl ; 
+}
+
+
 int main(int argc, char** argv)
 {
     /*
     test_chop(); 
     test_StripTail(); 
+    test_SideBySide(); 
     */
 
-    test_SideBySide(); 
+    test_nullchar(false); 
+    test_nullchar(true); 
 
 
 

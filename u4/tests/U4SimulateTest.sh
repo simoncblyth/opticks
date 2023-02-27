@@ -58,7 +58,7 @@ export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same
 export BeamOn=${BeamOn:-1}
 
 
-geomscript=$GEOM.sh 
+geomscript=FewPMT.sh 
 export VERSION=${N:-0}
 export LAYOUT=two_pmt
 #export LAYOUT=one_pmt
