@@ -230,9 +230,13 @@ class WC(object):
         topdir = reldir.split("/")[0]  
 
         if topdir == "opticks":
-            repo = "opticks_git"
+            repo = "opticks"
         elif topdir == "junotop":
             repo = "junosw"
+        elif topdir == "j":
+            repo = "j"
+        elif topdir == "env":
+            repo = "env"
         else:
             print("FATAL : FAILED TO DETECT REPO : RUN THIS FROM TOP DIR OF REPO ") 
             print(" cwd %s home %s reldir %s topdir %s " % (cwd, home, reldir, topdir))
@@ -268,7 +272,7 @@ class WC(object):
             defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
             defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
-        elif repo == "opticks_git":
+        elif repo == "opticks":
             vc = "git"
             defaults["chdir"] = "~/opticks" 
             defaults["rbase"] = "P:opticks" 
@@ -277,7 +281,16 @@ class WC(object):
             defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
             defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
-        elif repo == "j_git":
+        elif repo == "env":
+            vc = "git"
+            defaults["chdir"] = "~/env" 
+            defaults["rbase"] = "P:env" 
+            defaults["rstatpath"] = "~/rstat_env.txt" 
+            defaults["lstatpath"] = "~/lstat_env.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
+            defaults["statcmd"] = "git status --porcelain"
+        elif repo == "j":
             vc = "git"
             defaults["chdir"] = "~/j" 
             defaults["rbase"] = "P:j" 

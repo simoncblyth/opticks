@@ -76,7 +76,7 @@ Do you agree with this argument ?
 #include "G4ThreeVector.hh"
 
 #include "IPMTAccessor.h"
-#include "Layr.h"  // HMM: replace with stmm.h/TMM.h TODO: compare/consolidate with stmm.h 
+#include "Layr.h"  
 #include "U4Touchable.h"
 
 struct CustomART
