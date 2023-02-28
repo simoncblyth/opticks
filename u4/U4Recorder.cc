@@ -408,7 +408,18 @@ will fulfil *single_bit*.
 
 HMM: but if subsequent step points failed to set a non-zero flag could get that repeated 
 
-HMM: currently relying on the boundary process being pinned down with SOpBoundaryProcess::INSTANCE 
+
+**bop info is mostly missing**
+
+*bop* only available WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
+as that ISA SOpBoundaryProcess giving access via SOpBoundaryProcess::INSTANCE 
+
+* TODO: more general way to grab the boundary process 
+
+**Track Labelling** 
+
+Q: Where is the STrackInfo labelling added to the track with FastSim ? 
+A: Labelling added to track at the tail of the FastSim DoIt, eg "jcv junoPMTOpticalModel" 
 
 **/
 
@@ -434,7 +445,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     SOpBoundaryProcess* bop = SOpBoundaryProcess::Get(); 
 
-    if(bop)  // currently non-null only WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
+    if(bop)  
     {
         current_aux.q0.f.x = bop->getU0() ; 
         current_aux.q0.i.w = bop->getU0_idx() ; 
@@ -494,9 +505,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " customStatus " << customStatus 
         << " " << CustomStatus::Name(customStatus)
         ;
-
-
-
 
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
@@ -610,9 +618,20 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
 }
 
 
-#include "InstrumentedG4OpBoundaryProcess.hh"
+#ifdef WITH_PMTSIM
 
+#include "CustomG4OpBoundaryProcess.hh"
+template void U4Recorder::UserSteppingAction<CustomG4OpBoundaryProcess>(const G4Step*) ; 
+template void U4Recorder::UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(const G4Step*) ; 
+
+#else
+
+#include "InstrumentedG4OpBoundaryProcess.hh"
 template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
+
+#endif
+
+
 
 

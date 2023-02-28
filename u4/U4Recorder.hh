@@ -3,6 +3,8 @@
 U4Recorder
 ===========
 
+This is used from test/U4RecorderTest.h (the Geant4 application in a header)
+
 U4Recorder is NOT a G4UserRunAction, G4UserEventAction, 
 ... despite having the corresponding method names. 
 

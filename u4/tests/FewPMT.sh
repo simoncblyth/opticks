@@ -15,22 +15,22 @@ EOU
 
 version=${1:-0}
 layout=${2:-one_pmt}
-pom=1
+pom=${POM:-0}
 
-
-case $version in
-  0) echo $BASH_SOURCE FastSim/jPOM ;;
-  1) echo $BASH_SOURCE InstrumentedG4OpBoundaryProcess/CustomBoundary ;;
-esac
 
 case $layout in 
   one_pmt) echo layout $layout ;; 
   two_pmt) echo layout $layout ;; 
 esac
 
+case $version in
+  0) echo $BASH_SOURCE N=0 unnatural geometry : FastSim/jPOM ;;
+  1) echo $BASH_SOURCE N=1 natural geometry : CustomBoundary ;;
+esac
+
 case $pom in 
-   0) echo POM : traditional stop at photocathode PMT has no innards  ;;
-   1) echo POM : allow photons into PMT which has innards ;; 
+   0) echo POM $pom : traditional stop at photocathode : PMT with no innards  ;;
+   1) echo POM $pom : allow photons into PMT which has innards ;; 
 esac
 
 fastcover=Cheese

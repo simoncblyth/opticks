@@ -49,8 +49,10 @@ inline unsigned U4OpBoundaryProcess::GetStatus()
 
 
 
-
+#ifdef WITH_PMTSIM
+#include "CustomG4OpBoundaryProcess.hh"
+template unsigned U4OpBoundaryProcess::GetStatus<CustomG4OpBoundaryProcess>() ; 
+#else
 #include "InstrumentedG4OpBoundaryProcess.hh"
 template unsigned U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>() ; 
-
-
+#endif

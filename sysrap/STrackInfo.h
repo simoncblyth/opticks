@@ -10,6 +10,37 @@ Required methods for T::
    T T::Fabricate(int id) ; 
 
 
+Users::
+
+    epsilon:opticks blyth$ opticks-fl STrackInfo 
+    ./sysrap/CMakeLists.txt
+    ./sysrap/STrackInfo.h
+    ./sysrap/SFastSimOpticalModel.hh
+
+    ./u4/U4Track.h
+
+    ./u4/tests/U4TrackTest.cc
+    ./u4/tests/U4TrackInfoTest.cc
+
+    ./u4/U4Recorder.cc
+         vital part of U4Recorder::PreUserTrackingAction_Optical PostUserTrackingAction_Optical
+
+    ./u4/InstrumentedG4OpBoundaryProcess.cc
+         not fully impl, seems informational only
+
+    ./u4/U4.cc
+         setting photon labels at generation 
+
+
+::
+
+    epsilon:PMTFastSim blyth$ grep STrackInfo.h *.*
+    junoPMTOpticalModel.cc:#include "STrackInfo.h"
+    junoPMTOpticalModel.rst:* instead replaced with passing the FastSim status via trackinfo with sysrap/STrackInfo.h  
+    junoPMTOpticalModelSimple.cc:#include "STrackInfo.h"
+    epsilon:PMTFastSim blyth$ 
+
+
 **/
 
 #include <string>

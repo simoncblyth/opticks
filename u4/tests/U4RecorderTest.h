@@ -42,7 +42,6 @@ U4VolumeMaker::PV which is controlled by the GEOM envvar.
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
 
-#include "InstrumentedG4OpBoundaryProcess.hh"
 
 
 struct U4RecorderTest   // HMM: U4Action would be a better name 
@@ -176,7 +175,22 @@ void U4RecorderTest::BeginOfEventAction(const G4Event* evt){     fRecorder->Begi
 void U4RecorderTest::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
 void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
+
+
+#ifdef WITH_PMTSIM
+#include "G4OpBoundaryProcess.hh"
+#include "CustomG4OpBoundaryProcess.hh"
+void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<CustomG4OpBoundaryProcess>(step); }
+
+#else
+
+#include "InstrumentedG4OpBoundaryProcess.hh"
 void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
+
+#endif
+
+
+
 
 U4RecorderTest::~U4RecorderTest()
 {

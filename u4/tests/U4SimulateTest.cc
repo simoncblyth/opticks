@@ -7,9 +7,7 @@ from U4RecorderTest.h
 
 **/
 
-
 #include "U4RecorderTest.h"    
-
 
 #include "STime.hh"
 #include "SEvt.hh"
@@ -19,7 +17,6 @@ from U4RecorderTest.h
 #include "U4Engine.h"
 #include "U4UniformRand.h"
 
-#include "InstrumentedG4OpBoundaryProcess.hh"
 #include "G4Material.hh"
 
 #ifdef WITH_PMTFASTSIM
@@ -115,7 +112,7 @@ int main(int argc, char** argv)
 
 #ifdef WITH_PMTFASTSIM
     junoPMTOpticalModel::Save(savedir); 
-    InstrumentedG4OpBoundaryProcess::Save(savedir); 
+    // InstrumentedG4OpBoundaryProcess::Save(savedir);   no longer does anything 
 #endif
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
