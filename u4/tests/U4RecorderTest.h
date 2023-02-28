@@ -142,18 +142,25 @@ G4VPhysicalVolume* U4RecorderTest::Construct()
     LOG(info) << "[" ; 
 
     const G4VPhysicalVolume* pv_ = U4VolumeMaker::PV() ;
-    LOG_IF(fatal, pv_ == nullptr) << " FAILED TO CREATE PV " ;  
-    assert(pv_);
+    LOG_IF(fatal, pv_ == nullptr) << " FAILED TO CREATE PV : CHECK GEOM envvar " ;  
     if(pv_ == nullptr) std::raise(SIGINT) ; 
 
-    G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(pv_);  // sensitive to GEOM envvar 
+    G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(pv_);  
     fPV = pv ; 
-    //G4Exception ("U4RecorderTest::Construct()", "000", FatalException, "FAILED TO CREATE PV");
     LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
 
     LOG(info) << "]" ; 
     return pv ; 
 }  
+
+/**
+U4RecorderTest::GeneratePrimaries
+------------------------------------
+
+Other that for gun running this uses U4VPrimaryGenerator::GeneratePrimaries
+which is based on SGenerate::GeneratePhotons
+
+**/
 
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 {   

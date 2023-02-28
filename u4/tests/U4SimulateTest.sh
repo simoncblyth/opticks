@@ -16,7 +16,6 @@ U4SimulateTest.sh  (formerly U4PMTFastSimTest.sh)
     N=1 MODE=3 ./U4SimulateTest.sh ph  # 3D GUI with pyvista
 
 
-
 Rerunning single photons off the same g4state is a bit delicate to arrange.
 This incantation succeeds to rerun the N=0 big bouncer with N=1::
 
@@ -122,9 +121,12 @@ ttype=point
 #pos=0,0,0
 pos=0,0,-120
 
-mom=-1,0,0
+
+## when comparing quadrants between N=0/1 VERSION 
+## it is confusing to flip direction : so keep them the same +X for now
+mom=1,0,0
 case $VERSION in
-   0) mom=-1,0,0 ;;
+   0) mom=1,0,0 ;;
    1) mom=1,0,0  ;;
 esac
 
@@ -170,8 +172,13 @@ loglevel(){
 if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then 
    echo $BASH_SOURCE : switch on logging when doing single photon RERUN
    loglevel  
+else
+   echo $BASH_SOURCE : switch on some logging anyhow : THIS WILL BE VERBOSE
+   #export junoPMTOpticalModel=INFO
+   #export CustomG4OpBoundaryProcess=INFO
 fi 
 
+#export BP=MixMaxRng::flat
 
 defarg="run_ph"
 [ -n "$BP" ] && defarg="dbg"
@@ -188,7 +195,6 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    #export BP=MixMaxRng::flat
     [ -f "$log" ] && rm $log 
     case $(uname) in 
         Darwin) lldb__ $bin ;;

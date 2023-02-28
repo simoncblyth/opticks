@@ -4,6 +4,30 @@ U4SimtraceTest.py
 ====================
 
 
+envvars
+---------
+
+FOLD, SFOLD
+    mandatory first geometry 
+TFOLD
+    optional second geometry  
+AFOLD
+    optional first simulation photon histories
+BFOLD
+    optional second simulation photon histories
+
+
+classes
+---------
+
+RFold
+   Fold loader
+
+U4SimtraceTest(RFold)
+   intersection geometry  
+
+U4SimulateTest(RFold)
+   photon histories 
 
 
 """
@@ -217,8 +241,12 @@ class U4SimtraceTest(RFold):
         fig.show()
 
     def onephotonplot(self, pl, f): 
+        """
+        :param pl:  plotting machinery 
+        :param f: photon history fold, NB pid must be set to +ve integer selecting the photon to plot anything  
+        """
         if f is None: return 
-        if f.pid == -1: return
+        if f.pid < 0: return
 
         self.opp.append(f)
 
@@ -383,14 +411,16 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     fold = SFOLD if not SFOLD is None else FOLD
-
-    s = U4SimtraceTest.Load(fold, symbol="s")
+    s = U4SimtraceTest.Load(fold, symbol="s")    # mandatory first geometry 
     assert not s is None
-    t = U4SimtraceTest.Load(TFOLD, symbol="t")
+
+    t = U4SimtraceTest.Load(TFOLD, symbol="t")   # optional second geometry 
+    ## SFOLD, TFOLD and s, t correspond to intersection geometries from U4SimtraceTest
 
 
-    a = U4SimulateTest.Load(AFOLD, symbol="a")
+    a = U4SimulateTest.Load(AFOLD, symbol="a")   # optional photon histories 
     b = U4SimulateTest.Load(BFOLD, symbol="b")
+    ## AFOLD, BFOLD and a, b are photon histories from U4SimulateTest 
 
 
     pl = plotter(label="U4SimtraceTest.py")  # MODE:2 (fig,ax)  MODE:3 pv plotter
@@ -398,8 +428,10 @@ if __name__ == '__main__':
     if not pl is None:
         s.geoplot(pl)
         if not t is None: t.geoplot(pl)
-        s.onephotonplot(pl, a)
-        s.onephotonplot(pl, b)
+
+        s.onephotonplot(pl, a)   # must set APID to int index of photon for this to do anything
+        s.onephotonplot(pl, b)   # must set BPID to int index of photon for this to do anything
+
         s.show(pl)
     pass 
 

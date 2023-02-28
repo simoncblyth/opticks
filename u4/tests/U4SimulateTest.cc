@@ -19,7 +19,9 @@ from U4RecorderTest.h
 
 #include "G4Material.hh"
 
-#ifdef WITH_PMTFASTSIM
+#ifdef WITH_PMTSIM
+#include "J_PMTSIM_LOG.hh"
+#elif WITH_PMTFASTSIM
 #include "junoPMTOpticalModel.hh"
 #include "J_PMTFASTSIM_LOG.hh"
 #endif
@@ -60,7 +62,10 @@ void U4SimulateTest::BeamOn()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-#ifdef WITH_PMTFASTSIM
+
+#ifdef WITH_PMTSIM
+    J_PMTSIM_LOG_(0); 
+#elif WITH_PMTFASTSIM
     J_PMTFASTSIM_LOG_(0); 
 #endif
 

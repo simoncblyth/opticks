@@ -102,8 +102,6 @@ inline spho spho::make_nextgen() const
 
 inline std::string spho::desc() const
 {
-    
-
     std::stringstream ss ;
     ss << "spho" ;
     if(isPlaceholder())  
@@ -125,7 +123,6 @@ inline std::string spho::desc() const
            << ")"
            ;
     }
-
     std::string s = ss.str();
     return s ;
 }

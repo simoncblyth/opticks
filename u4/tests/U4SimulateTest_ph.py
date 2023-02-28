@@ -35,9 +35,9 @@ if __name__ == '__main__':
     label = LABEL 
 
     #pos = t.photon[:,0,:3]
-    pos = t.record[:,:,0,:3].reshape(-1,3) 
-    q_ = t.seq[:,0]
-    q = ht.seqhis(q_)
+    pos = t.record[:,:,0,:3].reshape(-1,3)   # xyz : all photons, all steps
+    q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
+    q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
 
     ## ReplicaNumber
     rp = t.record[...,1,3].view(np.int32) 
@@ -56,6 +56,10 @@ if __name__ == '__main__':
     
     print("\n%s  ## unique histories qu in descending count qn order, qi first index " % expr )
     print(eval(expr))  
+
+    ws_ = 1 
+    ws = np.where( q[:,0] == qu[quo][ws_] )   # select photons with the ws_ most prolific history    
+
 
     print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
     print(repr(q[v_rp == 0]))
