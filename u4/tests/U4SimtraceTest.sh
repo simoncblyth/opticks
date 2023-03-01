@@ -3,9 +3,8 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
-
-Suggested Workflow To Find Photons to plot
----------------------------------------------
+Suggested Workflow To Find Photons to Compare and plot
+--------------------------------------------------------
 
 Use two U4SimulateTest.sh sessions for N=0 and N=1::
 
@@ -13,32 +12,25 @@ Use two U4SimulateTest.sh sessions for N=0 and N=1::
     N=0 POM=1 ./U4SimulateTest.sh    ## "a" in Simtrace session 
     N=1 POM=1 ./U4SimulateTest.sh    ## "b" in Simtrace session 
 
-One U4SimtraceTest.sh session::
+And a third U4SimtraceTest.sh session::
 
     u4t
     N=1 ./U4SimtraceTest.sh ana 
 
 Check a and b in simtrace session::
 
-    In [2]: a.f.base
-    Out[2]: '/tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL0'
-
-    In [3]: b.f.base
-    Out[3]: '/tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL1'
-
+    In [1]: a.f.base, b.f.base
+    Out[1]: 
+    ('/tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL0',
+     '/tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL1')
 
 Pick some APID, BPID expected to be similar by comparing 
-histories by looking at the first two sessions::
-
-    np.c_[np.arange(40),q[:40]] 
-
-To add photon Histories to Simtrace Geometry plot, 
-use the first two sessions to decide on APID and BPID to look at.
-Use those within a third session than keep starting and stopping. 
+histories as visible in the first two sessions (eg np.c_[np.arange(40),q[:40]] ).
+Use AOFF or BOFF to offset to make similar paths visible, eg AOFF=0,0,10
+Keep starting and stopping the third session as change APID, BPID (-ve disables):: 
 
     APID=17 BPID=7  N=1 ./U4SimtraceTest.sh ana
 
-    ## flip them -ve to turn em off 
 
 
 Examples

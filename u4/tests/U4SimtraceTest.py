@@ -243,7 +243,8 @@ class U4SimtraceTest(RFold):
     def onephotonplot(self, pl, f): 
         """
         :param pl:  plotting machinery 
-        :param f: photon history fold, NB pid must be set to +ve integer selecting the photon to plot anything  
+        :param f: expecting U4SimulateTest object with photon history, 
+                  NB pid must be set to +ve integer selecting the photon to plot anything  
         """
         if f is None: return 
         if f.pid < 0: return
@@ -252,8 +253,11 @@ class U4SimtraceTest(RFold):
 
         if not hasattr(f,'r'): return
         if f.r is None: return
+
         r = f.r 
-        rpos = r[:,0,:3]
+        off = f.off
+
+        rpos = r[:,0,:3] + off
 
         if MODE == 2:
             fig, ax = pl 
@@ -349,14 +353,17 @@ class U4SimulateTest(RFold):
         symbol = f.symbol
         pid = int(os.environ.get("%sPID" % symbol.upper(), "-1"))
         opt = os.environ.get("%sOPT" % symbol.upper(), "")
+        off_ = os.environ.get("%sOFF" % symbol.upper(), "0,0,0")
+        off = np.array(list(map(float,off_.split(","))))
 
-        log.info("U4SimulateTest.__init__  symbol %s pid %d opt %s " % (symbol, pid, opt) ) 
+        log.info("U4SimulateTest.__init__  symbol %s pid %d opt %s off %s " % (symbol, pid, opt, str(off)) ) 
         self.symbol = symbol
         self.pid = pid
         self.opt = opt 
+        self.off = off
 
     def __repr__(self):
-        return "U4SimulateTest symbol %s pid %s opt %s" % ( self.symbol, self.pid, self.opt ) 
+        return "U4SimulateTest symbol %s pid %s opt %s off %s" % ( self.symbol, self.pid, self.opt, str(self.off) ) 
    
     def _get_pid(self):
         return self._pid
@@ -366,7 +373,7 @@ class U4SimulateTest(RFold):
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
             wl = _r[:,2,3]
-            r = _r[wl > 0]
+            r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros
             pass
             assert hasattr(f,'aux')
             _a = f.aux[pid]

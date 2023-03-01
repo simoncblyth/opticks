@@ -39,7 +39,8 @@ if __name__ == '__main__':
     q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
     q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
 
-    ## ReplicaNumber
+
+    ## ReplicaNumber : but when not more than one of each type of volume this is -1
     rp = t.record[...,1,3].view(np.int32) 
     np.set_printoptions(edgeitems=50)  
 
