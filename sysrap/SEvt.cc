@@ -1782,6 +1782,36 @@ However in some circumstances such as with the B side of aligned running (U4Reco
 it is appropriate to use the override code or envvar to locate B side outputs together 
 with the A side. 
 
+
+**Override with TMP envvar rather than OPTICKS_OUT_FOLD to still have auto-bookkeeping**
+
+Note that when needing to override the default output directory it is usually 
+preferable to use TMP envvar as most of the automatic bookkeeping will still be done in that case.
+
+The below examples are with GEOM envvar set to "Pasta"
+
++--------------------------------------------+-----------------------------------------------------------+
+|   TMP envvar                               |  SEvt saveDir                                             | 
++============================================+===========================================================+
+|    undefined                               |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              | 
++--------------------------------------------+-----------------------------------------------------------+
+ 
+Only when more control of the output is needed is it appropriate to use OPTICKS_OUT_FOLD envvar.  
+
++--------------------------------------------+-----------------------------------------------------------+
+|  OPTICKS_OUT_FOLD envvar                   |  SEvt saveDir                                             | 
++============================================+===========================================================+
+|   undefined                                |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/ALL                                  |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks/GEOM/$GEOM/SEvtTest   |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+
+* see tests/SEvtTest_saveDir.sh
+
 **/
 
 

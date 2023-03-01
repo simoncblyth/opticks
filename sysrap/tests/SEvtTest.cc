@@ -135,7 +135,41 @@ void test_InputPhoton()
     tr->save( FOLD, SStr::Name("tr",ipf, ".npy" )) ;  
 
     */
+}
 
+
+/**
+test_savedir
+===============
+
+savedir1 examples::
+
+    /tmp/blyth/opticks/GEOM/SEvtTest/ALL
+    /tmp/blyth/opticks/GEOM/Cheese/SEvtTest/ALL    # when GEOM envvar is Cheese  
+
+Only after the save does the savedir get set.
+
+**/
+
+
+void test_savedir()
+{
+    SEvt* evt = SEvt::Create();
+
+    //LOG(info) << evt->desc() ;
+
+    const char* savedir0 = evt->getSaveDir() ; 
+    assert( savedir0 == nullptr ); 
+
+    evt->save(); 
+
+    const char* savedir1 = evt->getSaveDir() ; 
+    assert( savedir1 != nullptr );   
+
+    LOG(info) 
+        << " savedir0 " << ( savedir0 ? savedir0 : "(null)" )  
+        << " savedir1 " << ( savedir1 ? savedir1 : "(null)" )  
+        ; 
 }
 
 
@@ -147,9 +181,11 @@ int main(int argc, char** argv)
     /*
     test_AddGenstep(); 
     test_LifeCycle(); 
+    test_InputPhoton(); 
     */
 
-    test_InputPhoton(); 
+
+    test_savedir(); 
 
 
     return 0 ; 

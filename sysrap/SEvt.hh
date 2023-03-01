@@ -20,7 +20,8 @@ Note the distinction in the names of accessors:
 
 *get*
    cheap action, done as many times as needed, returning a pointer to 
-   already allocating memory that is separately managed, eg within NPFold
+   already allocated memory that is separately managed, eg within NPFold
+
 
 header-only INSTANCE problem 
 ------------------------------
