@@ -107,8 +107,10 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 
 #num_ph=2
 #num_ph=10
-num_ph=1000
+#num_ph=1000
 #num_ph=50000
+num_ph=100000
+#num_ph=1000000
 
 radius=250
 #radius=0

@@ -149,7 +149,8 @@ U4Engine::SaveState
 
 inline void U4Engine::SaveState( NP* states, int idx ) // static
 {
-    assert( states && states->shape.size() > 0 && idx < states->shape[0] ); 
+    assert( states && states->shape.size() > 0 ); 
+    if( idx >= states->shape[0] ) return ;  
 
     CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
     std::vector<unsigned long> state = engine->put() ; // NB: back-to-front API name 
@@ -163,7 +164,8 @@ inline void U4Engine::SaveState( NP* states, int idx ) // static
 
 inline void U4Engine::RestoreState( const NP* states, int idx ) // static
 {
-    assert( states && states->shape.size() > 0 && idx < states->shape[0] ); 
+    assert( states && states->shape.size() > 0 ); 
+    if( idx >= states->shape[0] ) return ;  
 
     unsigned niv = states->num_itemvalues() ; 
     std::vector<unsigned long> state ; 

@@ -350,7 +350,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 
 #ifndef PRODUCTION
         sseq& seq = sev->current_ctx.seq ; 
-        LOG(info) 
+        LOG_IF(info, label->id < 100 ) 
             << " l.id " << std::setw(5) << label->id
             << " seq " << seq.brief()
             ;  
