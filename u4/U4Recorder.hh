@@ -71,6 +71,13 @@ struct U4_API U4Recorder
     template<typename T> void UserSteppingAction(const G4Step*);
     template<typename T> void UserSteppingAction_Optical(const G4Step*); 
 
+    static std::vector<std::string>* FAKES ;       // envvar U4Recorder__FAKES
+    static bool                      FAKES_SKIP ;  // envvar U4Recorder__FAKES_SKIP 
+
+    static bool IsListed( const std::vector<std::string>* LIST, const char* spec ) ;
+    static bool IsFake( const char* spec ); 
+
+
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, const char* from ); 
 };
 

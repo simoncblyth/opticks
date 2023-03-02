@@ -47,12 +47,28 @@ void test_getenv_vec()
     std::cout << "IVEC " << ssys::desc_vec<int>(ivec) << std::endl ; 
 }
 
-void test_getenvvec_string()
+void test_getenvvec_string_1()
 {
     std::vector<std::string>* svec = ssys::getenv_vec<std::string>("SVEC", "A1,B2,C3,D4" ); 
     assert( svec->size() == 4 ); 
     std::cout << "SVEC " << ssys::desc_vec<std::string>(svec) << std::endl ; 
 }
+
+
+
+void test_getenvvec_string_2()
+{
+    std::vector<std::string>* svec = ssys::getenv_vec<std::string>("SVEC", "A1,B2,C3,D4" ); 
+    std::cout << "SVEC " << ssys::desc_vec<std::string>(svec) << std::endl ; 
+
+    for(int i=0 ; i < svec->size() ; i++)
+    {
+        const std::string& s = (*svec)[i] ; 
+        std::cout << "[" << s << "]" << std::endl ; 
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -60,9 +76,10 @@ int main(int argc, char** argv)
     test_popen_0(); 
     test_popen_1();
     test_getenv_vec(); 
-    test_getenvvec_string(); 
-    */
     test_getenv_(); 
+    test_getenvvec_string_1(); 
+    */
+    test_getenvvec_string_2(); 
 
  
     return 0 ; 

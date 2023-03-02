@@ -5,6 +5,7 @@
 #include "STrackInfo.h"
 #include "spho.h"
 #include "srec.h"
+#include "ssys.h"
 
 #include "NP.hh"
 #include "SPath.hh"
@@ -454,6 +455,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
     const G4Track* track = step->GetTrack(); 
     G4VPhysicalVolume* pv = track->GetVolume() ; 
+
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
     spho* label = STrackInfo<spho>::GetRef(track); 
@@ -463,22 +465,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    const G4Material* pre_mat = pre->GetMaterial(); 
-    const G4Material* post_mat = post->GetMaterial(); 
-
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    bool same_material_step = pre_mat == post_mat ; 
-
-    LOG_IF(info, label->id < 10000000 ) 
-        << " l.id " << std::setw(3) << label->id
-        << " same_material_step " << ( same_material_step ? "YES" : "NO " )
-        << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
-        << " pre/post : " << pre_mat->GetName() << "/" << post_mat->GetName()
-        << " pv " << ( pv ? pv->GetName() : "-" ) 
-        ;
-
+    std::string spec = U4Step::Spec(step) ; 
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
@@ -535,6 +525,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " " << CustomStatus::Name(customStatus)
         ;
 
+
+
+
+
+
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
     // trackinfo label 
@@ -572,9 +567,29 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
 
+
+
+
+    bool is_fake = IsFake(spec.c_str()) ; 
+
+
+    LOG_IF(info, label->id < 100 ) 
+        << " l.id " << std::setw(3) << label->id
+        << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
+        << " abbrev " << OpticksPhoton::Abbrev(flag)
+        << " spec " << spec 
+        << " is_fake " << ( is_fake ? "YES" : "NO " )
+        << " FAKES_SKIP " << ( FAKES_SKIP ? "YES" : "NO " ) 
+        ;
+
+
     if( flag == NAN_ABORT )
     {
         LOG(LEVEL) << " skip post saving for StepTooSmall label.id " << label->id  ;  
+    }
+    else if( FAKES_SKIP && is_fake  )
+    { 
+        LOG(LEVEL) << " FAKES_SKIP skip post identified as fake label.id " << label->id  ;  
     }
     else
     {
@@ -589,6 +604,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, label->id ); 
 
         sev->pointPhoton(*label);         // save SEvt::current_photon/rec/seq/prd into sevent 
+
     }
 
 
@@ -597,6 +613,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 }
 
 
+
+
+std::vector<std::string>* U4Recorder::FAKES      = ssys::getenv_vec<std::string>("U4Recorder__FAKES", "" );
+bool                      U4Recorder::FAKES_SKIP = ssys::getenvbool(             "U4Recorder__FAKES_SKIP") ;  
+
+bool U4Recorder::IsListed( const std::vector<std::string>* LIST, const char* spec )  // static 
+{
+    for(unsigned i=0 ; i < ( LIST ? LIST->size() : 0) ; i++) if(strcmp( (*LIST)[i].c_str(), spec ) == 0 ) return true ; 
+    return false ;  
+}
+bool U4Recorder::IsFake( const char* spec ){ return IsListed(FAKES, spec ) ; }
 
 
 

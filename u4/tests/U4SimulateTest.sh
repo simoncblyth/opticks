@@ -62,6 +62,8 @@ export G4FastSimulationManagerProcess_ENABLE=1
 
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
+
+
 ## u4/tests/U4SimulateTest.cc
 export BeamOn=${BeamOn:-1}
 
@@ -77,6 +79,16 @@ else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
 
+
+if [ "$VERSION" == "0" ]; then 
+    f0=Pyrex/Pyrex:AroundCircle0/hama_body_phys
+    f1=Pyrex/Pyrex:hama_body_phys/AroundCircle0
+    f2=Vacuum/Vacuum:hama_inner1_phys/hama_inner2_phys
+    f3=Vacuum/Vacuum:hama_inner2_phys/hama_inner1_phys
+    export U4Recorder__FAKES="$f0,$f1,$f2,$f3"
+    export U4Recorder__FAKES_SKIP=1
+    echo $BASH_SOURCE : U4Recorder__FAKES_SKIP ENABLED 
+fi 
 
 
 
@@ -116,8 +128,8 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 
 #num_ph=2
 #num_ph=10
-num_ph=1000      #  1k
-#num_ph=10000    # 10k
+#num_ph=1000      #  1k
+num_ph=10000    # 10k
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 

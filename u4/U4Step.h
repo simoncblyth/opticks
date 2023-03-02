@@ -43,6 +43,7 @@ struct U4Step
     static std::string BoundarySpec_(const G4Step* step ); 
     static const G4VSolid* Solid(const G4StepPoint* point ); 
     static G4LogicalSurface* GetLogicalSurface(const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV); 
+    static std::string Spec(const G4Step* step); 
 };
 
 
@@ -454,6 +455,32 @@ const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
 
 }
 
+std::string U4Step::Spec(const G4Step* step) // static
+{
+    const G4Track* track = step->GetTrack(); 
+    G4VPhysicalVolume* pv = track->GetVolume() ; 
+    G4VPhysicalVolume* next_pv = track->GetNextVolume() ; 
+
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    const G4Material* pre_mat = pre->GetMaterial(); 
+    const G4Material* post_mat = post->GetMaterial(); 
+
+    std::stringstream ss ; 
+    ss 
+       << ( pre_mat ? pre_mat->GetName() : "-" ) 
+       << "/" 
+       << ( post_mat ? post_mat->GetName() : "-" ) 
+       << ":"
+       << ( pv ? pv->GetName() : "-" ) 
+       << "/" 
+       << ( next_pv ? next_pv->GetName() : "-" ) 
+       ; 
+
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
 
 
