@@ -68,6 +68,8 @@ of other photons whilst debugging single gensteps or photons.
 Formerly used PIDX rather than EIDX but that was confusing because it
 is contrary to the normal use of PIDX to control debug printout for an idx. 
 
+This is typically used only during early stage debugging. 
+
 **/
 
 bool U4Recorder::Enabled(const spho& label)
@@ -337,8 +339,8 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 
 
     spho* label = STrackInfo<spho>::GetRef(track); 
-    assert( label && label->isDefined() );  // all photons are expected to be labelled
-    if(!Enabled(*label)) return ;  
+    assert( label && label->isDefined() && "all photons are expected to be labelled" ); 
+    if(!Enabled(*label)) return ;          // EIDX, GIDX skipping  
 
     SEvt* sev = SEvt::Get(); 
 
@@ -414,12 +416,36 @@ HMM: but if subsequent step points failed to set a non-zero flag could get that 
 *bop* only available WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
 as that ISA SOpBoundaryProcess giving access via SOpBoundaryProcess::INSTANCE 
 
-* TODO: more general way to grab the boundary process 
+* TODO: more general and less invasive way to grab the boundary process 
 
 **Track Labelling** 
 
 Q: Where is the STrackInfo labelling added to the track with FastSim ? 
 A: Labelling added to track at the tail of the FastSim DoIt, eg "jcv junoPMTOpticalModel" 
+
+**Limited Applicability Quantities**
+
+1. For most step points the customBoundaryStatus is not applicable 
+   it only applies to very specfic surfaces. 
+   So getting it for every step point is kinda confusing.
+   Need to scrub it when it doesnt apply, and cannot
+   do that using is_boundary_flag. 
+   How to detect when it is relevant from here ? 
+
+2. Similarly when not at boundary the recoveredNormal is meaningless
+
+
+**How to skip same material fakes from the FastSim-compromised-kludged-unnatural geometry ?**
+
+::
+
+          Vacuum | Vacuum
+                 |
+         -------+|+-------
+                 |
+
+
+
 
 **/
 
@@ -432,56 +458,59 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     spho* label = STrackInfo<spho>::GetRef(track); 
     assert( label->isDefined() );  
-    if(!Enabled(*label)) return ;  
+    if(!Enabled(*label)) return ;   // EIDX, GIDX skipping 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
+    const G4Material* pre_mat = pre->GetMaterial(); 
+    const G4Material* post_mat = post->GetMaterial(); 
+
+    G4ThreeVector delta = step->GetDeltaPosition(); 
+    double step_mm = delta.mag()/mm  ;   
+
+    bool same_material_step = pre_mat == post_mat ; 
+
+    LOG_IF(info, label->id < 10000000 ) 
+        << " l.id " << std::setw(3) << label->id
+        << " same_material_step " << ( same_material_step ? "YES" : "NO " )
+        << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
+        << " pre/post : " << pre_mat->GetName() << "/" << post_mat->GetName()
+        << " pv " << ( pv ? pv->GetName() : "-" ) 
+        ;
+
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
+
     sphoton& current_photon = sev->current_ctx.p ;
-    quad4& current_aux = sev->current_ctx.aux ; 
+    quad4&   current_aux    = sev->current_ctx.aux ; 
 
     SOpBoundaryProcess* bop = SOpBoundaryProcess::Get(); 
-
     if(bop)  
     {
         current_aux.q0.f.x = bop->getU0() ; 
         current_aux.q0.i.w = bop->getU0_idx() ; 
     }
 
-    /*
-    HMM: 
-
-    1. For most step points the customBoundaryStatus is not applicable 
-       it only applies to very specfic surfaces. 
-       So getting it for every step point is kinda confusing.
-       Need to scrub it when it doesnt apply, and cannot
-       do that using is_boundary_flag. 
-       How to detect when it is relevant from here ? 
-
-    2. Similarly when not at boundary the recoveredNormal is meaningless
-
-    */
-
     const G4VTouchable* touch = track->GetTouchable();  
     LOG(LEVEL) << U4Touchable::Brief(touch) ;
     current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
 
-    // first_point when single bit in the flag from genflag set in beginPhoton
+    // first_point identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
     bool first_point = current_photon.flagmask_count() == 1 ;  
     if(first_point)
     { 
         LOG(LEVEL) << " first_point, track " << track  ; 
-        U4StepPoint::Update(current_photon, pre);
+        U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
         current_aux.q1.i.w = int('F') ; 
-        sev->pointPhoton(*label);  // saves SEvt::current_photon/rec/record/prd into sevent 
+        sev->pointPhoton(*label);        // sctx::point copying current into buffers 
     }
 
-    unsigned flag = U4StepPoint::Flag<T>(post) ; 
-    bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ; 
 
+
+    unsigned flag = U4StepPoint::Flag<T>(post) ; 
+    bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
 
     if(is_boundary_flag && bop)
     {

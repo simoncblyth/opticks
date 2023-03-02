@@ -3,17 +3,25 @@ usage(){ cat << EOU
 U4SimulateTest.sh  (formerly U4PMTFastSimTest.sh)
 ===================================================
 
-::
+Covering the PMT*POM quadrants (POM:PMT Optical Model)::
 
-    N=0 ./U4SimulateTest.sh   # old geom  
-    N=1 ./U4SimulateTest.sh   # new natural geom
+    u4t
+
+    N=0 POM=0 ./U4SimulateTest.sh   # unnatural geom , traditional POM 
+    N=1 POM=0 ./U4SimulateTest.sh   # natural geom   , traditional POM
+
+    N=0 POM=1 ./U4SimulateTest.sh   # unnatural geom , multifilm POM 
+    N=1 POM=1 ./U4SimulateTest.sh   # natural geom   , multifilm POM
+
+
+Analysis loading saved results::
 
     PID=726 ./U4SimulateTest.sh nana
-
 
     N=1 MODE=0 ./U4SimulateTest.sh ph  # no GUI with NumPy 
     N=1 MODE=2 ./U4SimulateTest.sh ph  # 2D GUI with matplotlib
     N=1 MODE=3 ./U4SimulateTest.sh ph  # 3D GUI with pyvista
+
 
 
 Rerunning single photons off the same g4state is a bit delicate to arrange.
@@ -28,6 +36,7 @@ This incantation succeeds to rerun the N=0 big bouncer with N=1::
      vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_RERUN for PID 726 
     
      N=1 ./U4SimulateTest.sh   ## saves to /tmp/blyth/opticks/GEOM/hamaLogicalPMT/U4SimulateTest/SEL1
+
 
 After that can compare timings::
 
@@ -107,10 +116,10 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 
 #num_ph=2
 #num_ph=10
-#num_ph=1000
-#num_ph=50000
-num_ph=100000
-#num_ph=1000000
+num_ph=1000      #  1k
+#num_ph=10000    # 10k
+#num_ph=100000   # 100k
+#num_ph=1000000  # 1M
 
 radius=250
 #radius=0

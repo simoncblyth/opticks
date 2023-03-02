@@ -73,6 +73,8 @@ SCTX_METHOD void sctx::zero(){ *this = {} ; }
 sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/rec/seq/aux 
 -------------------------------------------------------------------------------------------
 
+Notice this is NOT writing into evt->photon, that is done at SEvt::finalPhoton
+
 **/
 
 SCTX_METHOD void sctx::point(int bounce)

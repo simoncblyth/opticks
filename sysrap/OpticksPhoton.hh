@@ -104,19 +104,19 @@ struct SYSRAP_API OpticksPhoton
 
 
 
-inline bool OpticksPhoton::IsTerminalFlag(const unsigned flag) // static
+inline bool OpticksPhoton::IsTerminalFlag(const unsigned flag) // static : AB SA SD MI 
 {
     return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 }
-inline bool OpticksPhoton::IsBoundaryFlag(const unsigned flag) // static
+inline bool OpticksPhoton::IsBoundaryFlag(const unsigned flag) // static :  SD SA DR SR BR BT  
 {
     return (flag & (SURFACE_DETECT | SURFACE_ABSORB | SURFACE_DREFLECT | SURFACE_SREFLECT | BOUNDARY_REFLECT | BOUNDARY_TRANSMIT )) != 0 ; 
 }
-inline bool OpticksPhoton::IsBulkFlag(const unsigned flag) // static
+inline bool OpticksPhoton::IsBulkFlag(const unsigned flag) // static : AB SC RE TO CK SI
 {
     return (flag & (BULK_ABSORB | BULK_SCATTER | BULK_REEMIT | TORCH | CERENKOV | SCINTILLATION )) != 0 ; 
 }
-inline bool OpticksPhoton::IsLiveFlag(const unsigned flag) // static
+inline bool OpticksPhoton::IsLiveFlag(const unsigned flag) // static : SC BT BR DR SR RE
 {
     return (flag & (BULK_SCATTER | BOUNDARY_TRANSMIT | BOUNDARY_REFLECT | SURFACE_DREFLECT | SURFACE_SREFLECT | BULK_REEMIT )) != 0 ;
 }
