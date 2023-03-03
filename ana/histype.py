@@ -77,6 +77,12 @@ class HisType(SeqType):
     @classmethod
     def Convert(cls, q):
         """
+        :param q:   uint64 (100000, 2)  : 2*64 bits (32 nibbles) of history : for 32 points of history 
+        :return qq: int8   (100000, 32) 
+
+        Place nibbles from q (2 uint64) into qq (32 int8) doubling bits as NumPy lacks an int4 dtype
+
+        HMM: would be simpler if NumPy had uint128 dtype 
 
         ::
 
@@ -95,18 +101,25 @@ class HisType(SeqType):
                    [b'TO BR BR BT BT BT BT SR SR BT BR BT SR SR SR BT BT BT BT BT BT                                  ', b'21', b'925']], dtype='|S96')
 
         """
-        s = np.zeros( (len(q), 32), dtype=np.int8 )
-        for i in np.arange(16): s[:,i]    = ( q[:,0] >> (4*i) ) & 0xf     
-        for i in np.arange(16): s[:,16+i] = ( q[:,1] >> (4*i) ) & 0xf     
-        return s 
+        qq = np.zeros( (len(q), 32), dtype=np.int8 )  # 32 bytes for each item, ie 64 nibbles 
+        for i in np.arange(16): qq[:,i]    = ( q[:,0] >> (4*i) ) & 0xf     
+        for i in np.arange(16): qq[:,16+i] = ( q[:,1] >> (4*i) ) & 0xf     
+        return qq 
 
     def __init__(self):
         flags = PhotonCodeFlags() 
         SeqType.__init__(self, flags, flags.abbrev)
 
     def seqhis(self, q):
+        """
+        :param q: uint64  (100000, 2) 
+        :return s: "|S96" (100000, 1)
+
+        ht.aflags  array([b'   ', b'CK ', b'SI ', b'MI ', b'AB ', ... , b'TO ', b'NA ', b'EX ', b'EC ', ..., dtype='|S3')
+
+        """ 
         qq = self.Convert(q)
-        return self.aflags[qq].view("|S%d" % (3*32) )
+        return self.aflags[qq].view("|S%d" % (32*3) )  # 32 point slots, 3 characters of ht.aflags abbreviations
 
 
 def test_HistoryTable(ht, seqhis):

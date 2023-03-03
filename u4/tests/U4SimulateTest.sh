@@ -85,10 +85,18 @@ if [ "$VERSION" == "0" ]; then
     f1=Pyrex/Pyrex:hama_body_phys/AroundCircle0
     f2=Vacuum/Vacuum:hama_inner1_phys/hama_inner2_phys
     f3=Vacuum/Vacuum:hama_inner2_phys/hama_inner1_phys
-    export U4Recorder__FAKES="$f0,$f1,$f2,$f3"
+
+    f4=Pyrex/Pyrex:AroundCircle1/nnvt_body_phys
+    f5=Pyrex/Pyrex:nnvt_body_phys/AroundCircle1
+    f6=Vacuum/Vacuum:nnvt_inner1_phys/nnvt_inner2_phys
+    f7=Vacuum/Vacuum:nnvt_inner2_phys/nnvt_inner1_phys
+
+    export U4Recorder__FAKES="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7"
     export U4Recorder__FAKES_SKIP=1
     echo $BASH_SOURCE : U4Recorder__FAKES_SKIP ENABLED 
 fi 
+
+export U4Recorder__PIDX_ENABLED=1 
 
 
 
@@ -122,15 +130,15 @@ fi
 ## sysrap/SEventConfig 
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
-export OPTICKS_G4STATE_RERUN=726
+#export OPTICKS_G4STATE_RERUN=726
 export OPTICKS_EVENT_MODE=StandardFullDebug
 
 
 #num_ph=2
 #num_ph=10
 #num_ph=1000      #  1k
-num_ph=10000    # 10k
-#num_ph=100000   # 100k
+#num_ph=10000    # 10k
+num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 radius=250
@@ -237,6 +245,9 @@ fi
 
 if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
     [ "$arg" == "ncf" ] && export MODE=0
+
+    export AFOLD=$BASE/ALL0
+    export BFOLD=$BASE/ALL1
     ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
 fi 

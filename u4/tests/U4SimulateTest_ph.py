@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print("\nlen(v_rp) : %d ## v_rp : unique array indices that reproduce original array  " % len(v_rp))
     assert len(rp) == len(v_rp) 
 
-
+    ## resort to uniqing the "|S96" label because NumPy lacks uint128  
     qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
     quo = np.argsort(qn)[::-1]  
     expr = "np.c_[qn,qi,qu][quo]"
