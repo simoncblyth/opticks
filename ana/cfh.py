@@ -60,6 +60,7 @@ class CFH(Ctx):
 
     * :google:`chi2 comparison of normalized histograms`
     * http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
+    * ~/opticks_refs/PoissonConsistency.pdf
 
     """
     NAMES = "lhabc".split()

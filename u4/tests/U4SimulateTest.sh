@@ -64,6 +64,9 @@ export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same
 
 
 
+
+
+
 ## u4/tests/U4SimulateTest.cc
 export BeamOn=${BeamOn:-1}
 
@@ -136,9 +139,9 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 
 #num_ph=2
 #num_ph=10
-#num_ph=1000      #  1k
+num_ph=1000      #  1k
 #num_ph=10000    # 10k
-num_ph=100000   # 100k
+#num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 radius=250
@@ -214,7 +217,18 @@ fi
 defarg="run_ph"
 [ -n "$BP" ] && defarg="dbg"
 
+
+
+
+
 arg=${1:-$defarg}
+
+if [ "$arg" == "dbg" ]; then
+   bp="CustomG4OpBoundaryProcess::DielectricMetal CustomG4OpBoundaryProcess::ChooseReflection CustomG4OpBoundaryProcess::DoAbsorption CustomG4OpBoundaryProcess::DoReflection"
+   export BP=${BP:-$bp}
+fi 
+
+
 
 if [ "${arg/run}" != "$arg" ]; then
     [ -f "$log" ] && rm $log 

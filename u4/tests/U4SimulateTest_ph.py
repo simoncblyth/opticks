@@ -94,14 +94,25 @@ if __name__ == '__main__':
     print(eval(expr))
 
     expr = " np.where( t.record[:500,:,0,2] < 0 ) "
-    print("\n%s ## look for records with -Z positions in the first half, that all start in +Z ")
+    print("\n%s ## look for records with -Z positions in the first half, that all start in +Z " % expr )
     print(eval(expr))
 
     expr = " np.where( t.record[500:,:,0,2] > 0 ) "
-    print("\n%s ## look for records with +Z positions in the second half, that all start in -Z ")
+    print("\n%s ## look for records with +Z positions in the second half, that all start in -Z " % expr )
     print(eval(expr))
 
     print("\nt.base : %s  VERSION: %d " % (t.base, VERSION))
+
+
+    pos = t.photon[:,0,:3]  
+    expr = " np.where( np.logical_and( pos[:,0] < -150, pos[:,2] > 200 )  ) "
+    print("\n%s ## common break out line, use t.photon end position to get indices " % expr )
+    print(eval(expr))
+  
+    expr = " q[np.where( np.logical_and( pos[:,0] < -150, pos[:,2] > 200 ))][:3] "
+    print("\n%s ## common break out line, use t.photon end position to get indices wline and see what the q histories are " % expr )
+    print(eval(expr))
+
 
 
     if MODE == 0:

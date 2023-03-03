@@ -290,7 +290,12 @@ def chi2(a_, b_, cut=30):
     # http://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm 
     # https://en.wikipedia.org/wiki/Propagation_of_uncertainty
     # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
+
+
     # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
+    # ~/opticks_refs/PoissonConsistency.pdf   Link now dead ?    
+    # "Testing Consistency of Two Histograms", Frank Porter, California Institute of Technology
+
     """
     a = a_.astype(np.float32)
     b = b_.astype(np.float32)
