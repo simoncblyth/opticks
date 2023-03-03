@@ -9,7 +9,7 @@
 
 #include "NP.hh"
 #include "SPath.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SEvt.hh"
 #include "SLOG.hh"
 #include "SOpBoundaryProcess.hh"
@@ -35,12 +35,13 @@
 
 const plog::Severity U4Recorder::LEVEL = SLOG::EnvLevel("U4Recorder", "DEBUG"); 
 
-const int U4Recorder::STATES = SSys::getenvint("U4Recorder_STATES",-1) ; 
-const int U4Recorder::RERUN  = SSys::getenvint("U4Recorder_RERUN",-1) ; 
+const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ; 
+const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
 
-const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
-const int U4Recorder::EIDX = SSys::getenvint("EIDX",-1) ; 
-const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
+const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
+const int U4Recorder::PIDX = ssys::getenvint("PIDX",-1) ; 
+const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ; 
+const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
 
 std::string U4Recorder::Desc()
 {
@@ -572,8 +573,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     bool is_fake = IsFake(spec.c_str()) ; 
 
-
-    LOG_IF(info, label->id < 100 ) 
+    LOG_IF(info, label->id == PIDX && PIDX_ENABLED  ) 
         << " l.id " << std::setw(3) << label->id
         << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
         << " abbrev " << OpticksPhoton::Abbrev(flag)

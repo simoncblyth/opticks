@@ -5,6 +5,7 @@
 #include "ShimG4OpAbsorption.hh"
 #include "SEvt.hh"
 #include "SLOG.hh"
+#include "ssys.h"
 #include "U4UniformRand.h"
 #include "U4Stack.h"
 
@@ -32,8 +33,10 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
 
 **/
 
-const bool ShimG4OpAbsorption::FLOAT = getenv("ShimG4OpAbsorption_FLOAT") != nullptr ;
-const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
+const bool ShimG4OpAbsorption::FLOAT = ssys::getenvbool("ShimG4OpAbsorption_FLOAT") ;
+const int  ShimG4OpAbsorption::PIDX  = ssys::getenvint("PIDX",-1); 
+const bool ShimG4OpAbsorption::PIDX_ENABLED = ssys::getenvbool("ShimG4OpAbsorption__PIDX_ENABLED") ; 
+
 
 // void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
  void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
@@ -106,7 +109,7 @@ const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX"
 
      //std::cout << "ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength " << track.GetTrackID() << std::endl ; 
 
-      if(track.GetTrackID() - 1 == PIDX)
+      if(track.GetTrackID() - 1 == PIDX && PIDX_ENABLED)
       {
            std::cout 
                << "ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength"

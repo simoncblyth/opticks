@@ -6,6 +6,7 @@
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
+#include "ssys.h"
 #include "sstate.h"
 #include "stag.h"
 #include "sevent.h"
@@ -1330,13 +1331,15 @@ HMM: this needs to be called following every random consumption ... see U4Random
 
 **/
 
+bool SEvt::PIDX_ENABLED = ssys::getenvbool("SEvt__PIDX_ENABLED") ; 
+
 void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 
     stagr& tagr = current_ctx.tagr ; 
     unsigned idx = current_ctx.idx ; 
 
-    LOG_IF(info, int(idx) == PIDX ) 
+    LOG_IF(info, PIDX_ENABLED && int(idx) == PIDX ) 
         << " idx " << idx
         << " PIDX " << PIDX
         << " tag " << tag 

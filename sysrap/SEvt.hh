@@ -276,6 +276,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void pointPhoton(const spho& sp); 
     void finalPhoton(const spho& sp); 
 
+    static bool PIDX_ENABLED ;
     void addTag(unsigned tag, float u); 
     int getTagSlot() const ; 
 

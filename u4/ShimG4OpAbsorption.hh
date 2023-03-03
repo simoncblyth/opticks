@@ -22,6 +22,8 @@ class U4_API ShimG4OpAbsorption : public G4OpAbsorption
 
         static const bool FLOAT ; 
         static const int  PIDX ; 
+        static const bool PIDX_ENABLED ;
+ 
         void ResetNumberOfInteractionLengthLeft(); 
         G4double GetMeanFreePath(const G4Track& aTrack,
                  G4double ,

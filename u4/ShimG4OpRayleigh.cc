@@ -2,6 +2,7 @@
 #include "G4PhysicalConstants.hh"
 #include "ShimG4OpRayleigh.hh"
 #include "SLOG.hh"
+#include "ssys.h"
 
 const plog::Severity ShimG4OpRayleigh::LEVEL = SLOG::EnvLevel("ShimG4OpRayleigh", "DEBUG"); 
 
@@ -25,8 +26,9 @@ ShimG4OpRayleigh::~ShimG4OpRayleigh()
 #include "SEvt.hh"
 
 
-const bool ShimG4OpRayleigh::FLOAT = getenv("ShimG4OpRayleigh_FLOAT") != nullptr ;
-const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
+const bool ShimG4OpRayleigh::FLOAT = ssys::getenvbool("ShimG4OpRayleigh__FLOAT") ;
+const int  ShimG4OpRayleigh::PIDX  = ssys::getenvint("PIDX",-1); 
+const bool ShimG4OpRayleigh::PIDX_ENABLED = ssys::getenvbool("ShimG4OpRayleigh__PIDX_ENABLED") ; 
 
 /**
 ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft
@@ -100,9 +102,8 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
           value = theNumberOfInteractionLengthLeft * currentInteractionLength ; 
      }                
 
-     //std::cout << "ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength " << track.GetTrackID() << std::endl ; 
 
-      if(track.GetTrackID() - 1  == PIDX)
+      if(track.GetTrackID() - 1  == PIDX && PIDX_ENABLED)
       {
            std::cout 
                << "ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength"

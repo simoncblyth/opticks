@@ -21,6 +21,8 @@ class U4_API ShimG4OpRayleigh : public G4OpRayleigh
 #ifdef DEBUG_TAG
         static const bool FLOAT ; 
         static const int  PIDX ; 
+        static const bool PIDX_ENABLED ; 
+
         void ResetNumberOfInteractionLengthLeft(); 
         G4double GetMeanFreePath(const G4Track& aTrack,
                  G4double ,
