@@ -458,11 +458,19 @@ const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
 std::string U4Step::Spec(const G4Step* step) // static
 {
     const G4Track* track = step->GetTrack(); 
+
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     G4VPhysicalVolume* next_pv = track->GetNextVolume() ; 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    const G4VPhysicalVolume* pre_pv = pre->GetPhysicalVolume();
+    const G4VPhysicalVolume* post_pv = post->GetPhysicalVolume();
+
+    assert( pv == pre_pv );  
+    assert( next_pv == post_pv );  
+
 
     const G4Material* pre_mat = pre->GetMaterial(); 
     const G4Material* post_mat = post->GetMaterial(); 
