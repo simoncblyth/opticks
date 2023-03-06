@@ -6,8 +6,8 @@
 #ifdef WITH_PMTSIM
 #include "G4OpBoundaryProcess.hh"
 #include "CustomG4OpBoundaryProcess.hh"
+#include "PMTSimParamSvc/PMTAccessor.h"
 #include "PMTSimParamSvc/IPMTAccessor.h"
-#include "JPMT.h"
 #elif WITH_PMTFASTSIM
 #include "JPMT.h"
 #endif
@@ -210,7 +210,7 @@ void U4Physics::ConstructOp()
     if(G4OpBoundaryProcess_DISABLE == 0)
     {
 #ifdef WITH_PMTSIM
-        IPMTAccessor* ipmt = dynamic_cast<IPMTAccessor*>(new JPMT) ; 
+        const IPMTAccessor* ipmt = PMTAccessor::Load("$PMTSimParamData_BASE/PMTSimParamData") ;
         fBoundary = new CustomG4OpBoundaryProcess(ipmt);
 #elif WITH_PMTFASTSIM
         IPMTAccessor* ipmt = dynamic_cast<IPMTAccessor*>(new JPMT) ; 

@@ -137,11 +137,15 @@ export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended s
 export OPTICKS_EVENT_MODE=StandardFullDebug
 
 
+export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
+
+
+
 #num_ph=2
 #num_ph=10
-num_ph=1000      #  1k
+#num_ph=1000      #  1k
 #num_ph=10000    # 10k
-#num_ph=100000   # 100k
+num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 radius=250

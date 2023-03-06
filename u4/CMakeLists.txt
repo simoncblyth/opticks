@@ -58,8 +58,6 @@ set(SOURCES
     Local_DsG4Scintillation.cc
 
     U4Physics.cc
-
-
 ) 
 
 set(HEADERS
@@ -137,7 +135,7 @@ target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 
 if(PMTSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
-    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM PMTSIM_STANDALONE )
+    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM PMTSIM_STANDALONE WITH_NP )
 endif()
 
 if(PMTFastSim_FOUND)
