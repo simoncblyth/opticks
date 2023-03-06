@@ -315,7 +315,7 @@ struct NPS
         int sz = 1;
         if( dim0 < shape.size() )
         {
-            for(unsigned i=dim0; i<shape.size(); ++i) sz *= shape[i] ;
+            for(unsigned d=dim0; d<shape.size(); ++d) sz *= shape[d] ;
         }
 #ifdef DEBUG_NPU
         std::cout 
@@ -445,7 +445,7 @@ struct U
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static std::string Desc(const std::vector<std::string>& names); 
 
-    static const char* Resolve(const char* spec);   // $TOK/remainder/path.npy $TOK
+    static const char* Resolve(const char* spec, const char* relp=nullptr );   // $TOK/remainder/path.npy $TOK
 
     static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
     static void        WriteString( const char* dir, const char* name, const char* str ); 
@@ -932,10 +932,12 @@ If the TOKEN envvar is not set then nullptr is returned.
 
 **/
 
-inline const char* U::Resolve(const char* spec_)
+inline const char* U::Resolve(const char* spec_, const char* relp_)
 {
     if(spec_ == nullptr) return nullptr ; 
-    char* spec = strdup(spec_); 
+
+    std::string spec_relp = form_path(spec_, relp_); 
+    char* spec = strdup(spec_relp.c_str()) ;  
 
     std::stringstream ss ; 
     if( spec[0] == '$' )
@@ -953,10 +955,14 @@ inline const char* U::Resolve(const char* spec_)
     {   
         ss << spec ; 
     }   
+
     std::string s = ss.str(); 
     const char* path = s.c_str(); 
     return strdup(path) ; 
 }
+
+
+
 
 
 inline void U::WriteString( const char* dir, const char* reldir, const char* name, const char* str )  // static 

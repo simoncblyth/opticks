@@ -115,6 +115,8 @@ struct NPFold
     static const char* BareKey(const char* k);  // without .npy 
     static std::string FormKey(const char* k); 
 
+    static NPFold* Load_(const char* base ); 
+    static const char* Resolve(const char* base_, const char* relp_=nullptr); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* relp); 
     static NPFold* LoadProp(const char* rel0, const char* rel1=nullptr ); 
@@ -234,20 +236,36 @@ inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not 
     return s ; 
 }
 
-inline NPFold* NPFold::Load(const char* base)
+inline NPFold* NPFold::Load_(const char* base )
 {
+    if(base == nullptr) return nullptr ; 
     NPFold* nf = new NPFold ; 
     nf->load(base); 
     return nf ;  
 }
-
-inline NPFold* NPFold::Load(const char* base, const char* relp)
+inline const char* NPFold::Resolve(const char* base_, const char* relp_)
 {
-    NPFold* nf = new NPFold ; 
-    nf->load(base, relp); 
-    return nf ;  
+    const char* base = U::Resolve(base_, relp_); 
+    if(base == nullptr) std::cerr 
+        << "NPFold::Resolve"
+        << " FAILED " 
+        << " base_ " << ( base_ ? base_ : "-" )
+        << " relp_ " << ( relp_ ? relp_ : "-" )
+        << " POSSIBLY UNDEFINED ENVVAR TOKEN "
+        << std::endl
+        ;
+    return base ; 
 }
-
+inline NPFold* NPFold::Load(const char* base_)
+{
+    const char* base = Resolve(base_); 
+    return Load_(base); 
+}
+inline NPFold* NPFold::Load(const char* base_, const char* relp_)
+{
+    const char* base = Resolve(base_, relp_); 
+    return Load_(base); 
+}
 inline NPFold* NPFold::LoadProp(const char* rel0, const char* rel1 )
 {
     const char* base = getenv(kNP_PROP_BASE) ; 
@@ -753,8 +771,9 @@ SO THE INDEX ALWAYS GETS TRUNCATED
 
 **/
 
-inline void NPFold::save(const char* base)  // not const as sets savedir
+inline void NPFold::save(const char* base_)  // not const as sets savedir
 {
+    const char* base = U::Resolve(base_); 
     savedir = strdup(base); 
 
     NP::WriteNames(base, INDEX, kk );  

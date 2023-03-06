@@ -4842,15 +4842,15 @@ inline NP* NP::LoadFromString(const char* str, const char* path)  // static
         unsigned line_column = 0u ;  
         for(unsigned i=0 ; i < num_field ; i++)
         {
-            const char* str = fields[i].c_str(); 
-            if(U::ConvertsTo<T>(str)) 
+            const char* fstr = fields[i].c_str(); 
+            if(U::ConvertsTo<T>(fstr)) 
             {   
-                value.push_back(U::To<T>(str)) ; 
+                value.push_back(U::To<T>(fstr)) ; 
                 line_column += 1 ;  
             }
             else
             {
-                if(!IsListed(other, str)) other.push_back(str); 
+                if(!IsListed(other, fstr)) other.push_back(fstr); 
             }
         }
    
@@ -4918,7 +4918,7 @@ inline unsigned NP::CountChar(const char* str, char q )
     char* c = (char*)str ; 
     while(*c)
     {
-        if(*c == '.') count += 1 ; 
+        if(*c == q) count += 1 ; 
         c++ ; 
     }  
     return count ; 
