@@ -16,6 +16,9 @@ U4OpBoundaryProcess.h
 struct U4_API U4OpBoundaryProcess
 {
     template <typename T>
+    static T* Get() ;
+
+    template <typename T>
     static unsigned GetStatus() ;
 };
 
@@ -24,26 +27,33 @@ struct U4_API U4OpBoundaryProcess
 
 
 template <typename T>
-inline unsigned U4OpBoundaryProcess::GetStatus()
+inline T* U4OpBoundaryProcess::Get()
 {
-    G4OpBoundaryProcessStatus status = Undefined;
+    T* bp = nullptr ; 
     G4ProcessManager* mgr = G4OpticalPhoton::OpticalPhoton()->GetProcessManager() ;
-    if(mgr) 
-    {
-        G4int npmax = mgr->GetPostStepProcessVector()->entries();
-        G4ProcessVector* pv = mgr->GetPostStepProcessVector(typeDoIt);
-        for (G4int i=0; i<npmax; i++) 
-        {
-            G4VProcess* proc = (*pv)[i];
+    assert(mgr); 
 
-            T* opProc = dynamic_cast<T*>(proc);
-            if(opProc) 
-            { 
-                status = opProc->GetStatus(); 
-                break;
-            }
+    G4int pmax = mgr ? mgr->GetPostStepProcessVector()->entries() : 0 ;
+    G4ProcessVector* pvec = mgr ? mgr->GetPostStepProcessVector(typeDoIt) : nullptr ;
+
+    for (int i=0; i < pmax ; i++) 
+    {
+        G4VProcess* p = (*pvec)[i];
+        T* t = dynamic_cast<T*>(p);
+        if(t) 
+        { 
+            bp = t ; 
+            break;
         }
     }
+    return bp ; 
+}
+
+template <typename T>
+inline unsigned U4OpBoundaryProcess::GetStatus()
+{
+    T* proc = Get<T>(); 
+    G4OpBoundaryProcessStatus status = proc ? proc->GetStatus() : Undefined ;
     return (unsigned)status ; 
 }
 

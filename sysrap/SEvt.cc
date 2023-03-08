@@ -525,13 +525,14 @@ the rest of the SEvt perhaps ? See u4/tests/U4SimulateTest.cc
 HMM: Rerunning single photons is rather a rare thing to do, maybe 
 eliminate this ?
 
-SEvt* SEvt::CreateOrLoadForRerun() 
-{
-    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
-    LOG(LEVEL) << " g4state_rerun_id " << g4state_rerun_id ; 
-    SEvt* evt = g4state_rerun_id == -1 ? SEvt::Create() : SEvt::Load() ; 
-    return evt ; 
-}
+//SEvt* SEvt::CreateOrLoadForRerun() 
+//{
+//    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
+//    LOG(LEVEL) << " g4state_rerun_id " << g4state_rerun_id ; 
+//    SEvt* evt = g4state_rerun_id == -1 ? SEvt::Create() : SEvt::Load() ; 
+//    return evt ; 
+//}
+
 **/
 
 

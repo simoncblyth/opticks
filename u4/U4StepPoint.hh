@@ -38,6 +38,10 @@ struct U4_API U4StepPoint
 
     static unsigned BoundaryFlag(unsigned status) ; 
 
+
+    template <typename T>
+    static bool IsTransportationBoundary(const G4StepPoint* point);  
+
     template <typename T>
     static unsigned Flag(const G4StepPoint* point, bool warn=true ); 
 

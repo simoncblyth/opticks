@@ -121,6 +121,17 @@ const char* U4StepPoint::ProcessDefinedStepTypeName( unsigned type ) // static
     return s ; 
 }
 
+
+template <typename T>
+bool U4StepPoint::IsTransportationBoundary(const G4StepPoint* point)
+{
+    G4StepStatus status = point->GetStepStatus()  ;
+    unsigned proc = ProcessDefinedStepType(point); 
+    return status == fGeomBoundary && proc == U4StepPoint_Transportation ; 
+}
+
+
+
 /**
 U4StepPoint::Flag
 ------------------

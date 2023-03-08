@@ -110,34 +110,6 @@ export LOC=skip
 log=${bin}.log
 logN=${bin}_$VERSION.log
 
-running_mode=SRM_G4STATE_SAVE  
-#running_mode=SRM_G4STATE_RERUN
-
-case $running_mode in 
-   SRM_G4STATE_SAVE)  reldir=ALL$VERSION ;; 
-   SRM_G4STATE_RERUN) reldir=SEL$VERSION ;; 
-esac
-
-
-if [ "$LAYOUT" == "one_pmt" -a "$running_mode" == "SRM_G4STATE_RERUN" -a "$VERSION" == "1" ]; then
-
-   ## when using natural geometry need to apply some burns to
-   ## jump ahead in a way that corresponds to the consumption 
-   ## for navigating the fake volumes in the old complex geomerty 
-
-   ./UU_BURN.sh 
-   export SEvt__UU_BURN=/tmp/UU_BURN.npy
-fi 
-
-
-## sysrap/SEventConfig 
-export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
-export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
-#export OPTICKS_G4STATE_RERUN=726
-export OPTICKS_EVENT_MODE=StandardFullDebug
-
-
-export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
 
 
 
@@ -148,30 +120,55 @@ export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
 num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
+
+
+
+if [ -n "$RERUN" ]; then 
+   export OPTICKS_G4STATE_RERUN=$RERUN
+   running_mode=SRM_G4STATE_RERUN
+else
+   running_mode=SRM_G4STATE_SAVE  
+fi 
+
+case $running_mode in 
+   SRM_G4STATE_SAVE)  reldir=ALL$VERSION ;; 
+   SRM_G4STATE_RERUN) reldir=SEL$VERSION ;; 
+esac
+
+## sysrap/SEventConfig 
+export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
+export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
+export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep state files small 
+
+# standalone access to PMT data 
+export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
+
+
+
 radius=250
 #radius=0
 [ $num_ph -lt 11  ] && radius=0
 
 #ttype=disc
-#ttype=line
-ttype=point
+ttype=line
+#ttype=point
 
-#pos=0,0,0
-pos=0,0,-120
-
-
-## when comparing quadrants between N=0/1 VERSION 
-## it is confusing to flip direction : so keep them the same +X for now
-mom=1,0,0
-case $VERSION in
-   0) mom=1,0,0 ;;
-   1) mom=1,0,0  ;;
+case $ttype in 
+  disc) pos=0,0,0 ;;
+  line) pos=0,0,0 ;;
+ point) pos=0,0,-120 ;;
 esac
+
+## initial direction
+mom=-1,0,0
 
 
 export SEvent_MakeGensteps_num_ph=$num_ph
 export storch_FillGenstep_type=$ttype
 export storch_FillGenstep_radius=$radius
+
+
 
 
 if [ "$LAYOUT" == "one_pmt" ]; then 
@@ -216,20 +213,16 @@ else
    #export CustomG4OpBoundaryProcess=INFO
 fi 
 
-#export BP=MixMaxRng::flat
 
 defarg="run_ph"
 [ -n "$BP" ] && defarg="dbg"
 
-
-
-
-
 arg=${1:-$defarg}
 
 if [ "$arg" == "dbg" ]; then
-   bp="CustomG4OpBoundaryProcess::DielectricMetal CustomG4OpBoundaryProcess::ChooseReflection CustomG4OpBoundaryProcess::DoAbsorption CustomG4OpBoundaryProcess::DoReflection"
-   export BP=${BP:-$bp}
+   bp=MixMaxRng::flat
+   #bp="CustomG4OpBoundaryProcess::DielectricMetal CustomG4OpBoundaryProcess::ChooseReflection CustomG4OpBoundaryProcess::DoAbsorption CustomG4OpBoundaryProcess::DoReflection"
+   #export BP=${BP:-$bp}
 fi 
 
 

@@ -241,7 +241,8 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         //float r = gs.radius*u_zenith ;
 
         float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
-        float r = gs.radius*2.f*(frac-0.5f) ;
+        float sfrac = 2.f*(frac-0.5f) ;     // -1 -> ~1
+        float r = gs.radius*sfrac ;        // -gs.radius -> gs.radius  (NB gets offset by gs.pos too) 
 
         p.pos.x = r ;
         p.pos.y = 0.f ; 

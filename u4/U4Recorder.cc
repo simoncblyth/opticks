@@ -33,6 +33,12 @@
 #include "SCF.h"
 #include "U4Step.h"
 
+#ifdef PMTSIM_STANDALONE
+#include "CustomART.h" 
+#include "CustomART_Debug.h" 
+#endif
+
+
 const plog::Severity U4Recorder::LEVEL = SLOG::EnvLevel("U4Recorder", "DEBUG"); 
 
 const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ; 
@@ -415,10 +421,9 @@ HMM: but if subsequent step points failed to set a non-zero flag could get that 
 
 **bop info is mostly missing**
 
-*bop* only available WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
+*bop* was formerly only available WITH_PMTFASTSIM whilst using InstrumentedG4OpBoundaryProcess
 as that ISA SOpBoundaryProcess giving access via SOpBoundaryProcess::INSTANCE 
-
-* TODO: more general and less invasive way to grab the boundary process 
+have now generalize that to work with CustomG4OpBoundaryProcess
 
 **Track Labelling** 
 
@@ -477,12 +482,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     sphoton& current_photon = sev->current_ctx.p ;
     quad4&   current_aux    = sev->current_ctx.aux ; 
 
-    SOpBoundaryProcess* bop = SOpBoundaryProcess::Get(); 
-    if(bop)  
-    {
-        current_aux.q0.f.x = bop->getU0() ; 
-        current_aux.q0.i.w = bop->getU0_idx() ; 
-    }
+
 
     const G4VTouchable* touch = track->GetTouchable();  
     LOG(LEVEL) << U4Touchable::Brief(touch) ;
@@ -503,32 +503,65 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
 
-    if(is_boundary_flag && bop)
+    if(is_boundary_flag)
     {
-        const double* recoveredNormal = bop ? bop->getRecoveredNormal() : nullptr ; 
+        T* bop = U4OpBoundaryProcess::Get<T>() ;  
+        assert(bop) ; 
+
+        char customStatus = bop ? bop->m_custom_status : 'B' ; 
+        CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
+        const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
+
+#ifdef PMTSIM_STANDALONE
+        CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
+#else
+        CustomART_Debug* cdbg = nullptr ; 
+#endif
+
+        LOG(LEVEL) 
+            << " is_boundary_flag " 
+            << is_boundary_flag 
+            << " bop " << ( bop ? "Y" : "N" ) 
+            << " cart " << ( cart ? "Y" : "N" )
+            << " cdbg " << ( cdbg ? "Y" : "N" )
+            << " bop.m_custom_status " << customStatus
+            << " CustomStatus::Name " << CustomStatus::Name(customStatus) 
+            ; 
+
+        if(cdbg && customStatus == 'Y') 
+        {
+            // much of the contents of CustomART,CustomART_Debug 
+            // only meaningful after doIt call : hence require customStatus 'Y'
+
+            current_aux.q0.f.x = cdbg->A ; 
+            current_aux.q0.f.y = cdbg->R ; 
+            current_aux.q0.f.z = cdbg->T ; 
+            current_aux.q0.f.w = cdbg->_qe ; 
+
+            current_aux.q1.f.x = cdbg->An ; 
+            current_aux.q1.f.y = cdbg->Rn ; 
+            current_aux.q1.f.z = cdbg->Tn ; 
+            current_aux.q1.f.w = cdbg->escape_fac ; 
+
+            current_aux.q2.f.x = cdbg->minus_cos_theta ;
+            current_aux.q2.f.y = cdbg->wavelength_nm  ; 
+            current_aux.q2.f.z = cdbg->pmtid ; 
+            current_aux.q2.f.w = -1. ; 
+        }
+
         current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+        current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
     }
     else
     {
         current_aux.zero_v(3, 3); 
     }
 
-    char customStatus = ( is_boundary_flag && bop ) ? bop->getCustomStatus() : 'B' ; 
-    current_aux.q1.i.w = int(customStatus) ; 
-
-    // TODO: collect into aux more detailed info : eg the A,R,T values 
-
     LOG(LEVEL) 
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
         << " is_boundary_flag " << is_boundary_flag  
-        << " customStatus " << customStatus 
-        << " " << CustomStatus::Name(customStatus)
         ;
-
-
-
-
 
 
     // DEFER_FSTRACKINFO : special flag signalling that 

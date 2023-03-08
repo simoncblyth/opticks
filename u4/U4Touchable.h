@@ -34,7 +34,7 @@ struct U4Touchable
 inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
 {
     int d = ReplicaDepth(touch);
-    return d > -1 ? touch->GetReplicaNumber(d) : -1  ;
+    return d > -1 ? touch->GetReplicaNumber(d) : d  ;
 }
 
 /**
@@ -53,7 +53,21 @@ inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
 {
     int nd = touch->GetHistoryDepth();
     int t = TouchDepth(touch); 
-    assert( t > -1 && t < nd ); 
+    bool expected = t > -1 && t < nd ; 
+   
+    /* 
+    if(!expected) std::cerr 
+        << "U4Touchable::ReplicaDepth"
+        << " UNEXPECTED "
+        << " t " << t 
+        << " nd " << nd
+        << std::endl
+        ; 
+
+    assert(expected); 
+    */
+
+    if(!expected) return -2 ; 
 
     for (int d=t ; d < nd-1; ++d ) 
     {   

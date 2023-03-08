@@ -3,9 +3,10 @@
 
 struct CustomStatus
 {
+   // TODO: check and update these 
    static constexpr const char* U_ = "Undefined" ; 
    static constexpr const char* F_ = "FirstPoint" ; 
-   static constexpr const char* X_ = "NotCompiled" ; 
+   static constexpr const char* X_ = "StandardOpticalSurface" ; 
    static constexpr const char* B_ = "StandardBoundary" ; 
    static constexpr const char* N_ = "NotCustomSurfaceName" ; 
    static constexpr const char* Z_ = "NotPositiveLocalZ" ; 
@@ -14,6 +15,7 @@ struct CustomStatus
    static constexpr const char* T_ = "CustomBoundartTransmit" ; 
    static constexpr const char* D_ = "CustomBoundaryDetect" ; 
    static constexpr const char* Y_ = "CustomARTCalc" ; 
+   static constexpr const char* H_ = "TraditionalPhotocathode" ; 
    static const char* Name(char status); 
 }; 
 
@@ -33,6 +35,7 @@ inline const char* CustomStatus::Name(char status)
        case 'T': s = T_ ; break ; 
        case 'D': s = D_ ; break ; 
        case 'Y': s = Y_ ; break ; 
+       case '-': s = H_ ; break ; 
    }
    return s ; 
 }

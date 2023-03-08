@@ -103,6 +103,10 @@ SEventConfig::G4StateRerun
 
 When rerun mode is not enabled returns -1 even when rerun id is set. 
 
+For a single photon rerun example see u4/tests/U4SimulateTest.cc 
+which uses U4Recorder::saveOrLoadStates from U4Recorder::PreUserTrackingAction_Optical
+
+
 **/
 int SEventConfig::G4StateRerun()
 { 
