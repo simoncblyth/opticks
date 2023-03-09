@@ -696,29 +696,29 @@ NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) /
 Tran::AddTransform
 ---------------------
 
-* The option string determines the meaning of the a,b,c vectors
-  and flip lowercase/UPPERCASE flip:true/FALSE
+* The option string determines the meaning of the a,b,c vectors 
+* lowercase/UPPERCASE controls flip:true/FALSE
 
++--------+-------------+------------------------------+-------------------+
+| opt    |  flip       |  impl                        |  note             |   
++========+=============+==============================+===================+
+| TR/tr  | false/true  |  stra::Place(a,b,c,flip)     |                   |
++--------+-------------+------------------------------+-------------------+
+| R/r    | false/true  |  stra::RotateA2B(a,b, flip)  | c is ignored      |
++--------+-------------+------------------------------+-------------------+
+| T/t    | false/true  |  stra::Translate(c, flip)    | a,b ignored       |
++--------+-------------+------------------------------+-------------------+
+| D/d    | false/true  |  stra::Dupe(a,b,c,flip)      |                   | 
++--------+-------------+------------------------------+-------------------+
 
-
-
-TR/tr
-    Tran::Place(a,b,c,flip)
-R/r
-    Tran::RotateA2B(a,b, flip)   c is ignored 
-T/t
-
-D
-    
+TODO: move this into stra.h 
 
 **/
-
 
 template<typename T>
 inline void Tran<T>::AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c )
 {
     for(unsigned i=0 ; i < 16 ; i++) ttk[i] = T(0.) ; // start zeroed
-
 
     if(strcmp(opt,"TR") == 0 || strcmp(opt,"tr") == 0 )
     {
@@ -742,11 +742,12 @@ inline void Tran<T>::AddTransform( T* ttk, const char* opt, const glm::tvec3<T>&
         T* src = glm::value_ptr(tr) ; 
         memcpy( ttk, src, 16*sizeof(T) ); 
     }
-    else if(strcmp(opt,"D")== 0)
+    else if(strcmp(opt,"D")== 0 || strcmp(opt, "d") == 0)
     {
-        for(int l=0 ; l < 3 ; l++) ttk[4*0+l] = a[l] ; 
-        for(int l=0 ; l < 3 ; l++) ttk[4*1+l] = b[l] ; 
-        for(int l=0 ; l < 3 ; l++) ttk[4*2+l] = c[l] ; 
+        bool flip = strcmp(opt,"d") == 0 ;
+        glm::tmat4x4<T> tr = stra<T>::Dupe(a, b, c, flip );  
+        T* src = glm::value_ptr(tr) ; 
+        memcpy( ttk, src, 16*sizeof(T) ); 
     }
     else
     {

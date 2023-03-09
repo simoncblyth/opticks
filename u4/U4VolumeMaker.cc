@@ -485,11 +485,14 @@ All those repeats have a "Water" box mother volume which is contained within "Ro
 
 **/
 
+const NP* U4VolumeMaker::TRS = nullptr ; 
+
 const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix )
 {
     assert( items_lv.size() >= 1 ); 
 
     const NP* trs = MakeTransforms(name, prefix) ; 
+    TRS = trs ; 
 
     LOG(LEVEL) 
         << " items_lv.size " << items_lv.size() 

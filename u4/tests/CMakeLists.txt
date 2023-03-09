@@ -115,6 +115,7 @@ foreach(SRC ${PMTFastSim_TESTS})
     add_executable(${TGT} ${SRC})
     target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
     target_compile_definitions( ${TGT} PRIVATE WITH_NP )    ## for _PMTSimParamData 
+    target_compile_definitions( ${TGT} PRIVATE POM_DEBUG )   
 
     target_link_libraries(${TGT} U4 Opticks::SysRap)
 

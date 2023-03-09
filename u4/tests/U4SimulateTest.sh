@@ -115,9 +115,9 @@ logN=${bin}_$VERSION.log
 
 #num_ph=2
 #num_ph=10
-#num_ph=1000      #  1k
+num_ph=1000      #  1k
 #num_ph=10000    # 10k
-num_ph=100000   # 100k
+#num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 
@@ -161,7 +161,8 @@ case $ttype in
 esac
 
 ## initial direction
-mom=-1,0,0
+mom=-1,0,0   # with two_pmt layout -X is towards NNVT
+#mom=1,0,0     # with two_pmt layout +X is towards HAMA
 
 
 export SEvent_MakeGensteps_num_ph=$num_ph

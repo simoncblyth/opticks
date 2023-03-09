@@ -118,18 +118,32 @@ if __name__ == '__main__':
 
     flagmask = t.photon[:,3,3].view(np.int32) 
     SURFACE_DETECT = 0x1 << 6 
-    whit = np.where( flagmask & SURFACE_DETECT )[0]
+    sd = flagmask & SURFACE_DETECT
+    w_sd = np.where( sd )[0]
 
-    x_pick = np.logical_and( pos[:,0] > -90, pos[:,0] < -80 )    
-    z_pick = np.logical_and( pos[:,2] >  25, pos[:,2] <  35 )    
-    xz_pick = np.logical_and( x_pick, z_pick )
-    w_xz_pick = np.where(xz_pick)[0]  
 
-    #ppos = pos[whit]
+    x_midline = np.logical_and( pos[:,0] > -251, pos[:,0] < -249 )    
+    z_midline = np.logical_and( pos[:,2] > -250, pos[:,2] <  250 )    
+    xz_midline = np.logical_and( x_midline, z_midline )
+    w_midline = np.where(xz_midline)[0]  
+
+
+    yy = t.record[:,:,0,1]
+    myy = np.max( np.abs(yy), axis=1 )     ## max absolute y of all step points for each photon
+
+    wyy0 = np.where( myy == 0. )[0]        ## photon indices that always stay in the plane
+    wyy1 = np.where( myy > 0 )[0]           ## photon indices with deviations out of plane 
+
+
+    sd0 = np.logical_and( sd, myy == 0. )   ## mask SD photons staying in plane
+
+
+    ppos0 = pos[sd0]
     #ppos = pos[wpick]
+    #ppos0 = pos[wyy0]
 
-    ppos0 = pos
-    ppos1 = pos[xz_pick]
+    #ppos1 = pos[n>7]
+    ppos1 = pos[w_midline]
 
     if MODE == 0:
         print("not plotting as MODE 0  in environ")
@@ -139,8 +153,8 @@ if __name__ == '__main__':
         ax.set_ylim(-250,250)
         ax.set_xlim(-500,500)
 
-        ax.scatter( ppos0[:,H], ppos0[:,V], s=1 )  
-        ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
+        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1 )  
+        if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
 
 
         fig.show()

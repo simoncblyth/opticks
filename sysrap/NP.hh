@@ -4218,8 +4218,9 @@ inline void NP::old_save(const char* path)  // non-const due to update_headers
     stream.write( bytes(), arr_bytes() );
 }
 
-inline void NP::save(const char* path) const 
+inline void NP::save(const char* path_) const 
 {
+    const char* path = U::Resolve(path_); 
     if(VERBOSE) std::cout << "NP::save path [" << path  << "]" << std::endl ; 
 
     int rc = U::MakeDirsForFile(path); 

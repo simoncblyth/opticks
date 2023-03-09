@@ -5,7 +5,6 @@
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 class G4Material ; 
-//class junoPMTOpticalModel ;
 
 struct NP ; 
 
@@ -57,6 +56,8 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_HALFSIDE = "U4VolumeMaker_WrapAroundItem_Water_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Water_BOXSCALE" ; 
+
+    static const NP* TRS ; 
     static const G4VPhysicalVolume* WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix ); // prefix eg AroundCircle
 
 

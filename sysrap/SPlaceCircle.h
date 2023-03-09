@@ -80,7 +80,7 @@ inline NP* SPlaceCircle::transforms(const char* opts) const
         double frac = double(j)/double(num_in_ring) ; 
         phi[j] = TWOPI*(frac_phase + frac ) ; 
     }
-    // not -1 as do not want to have both 0. and 2.pi 
+    // not num_in_ring-1 as do not want to have both 0. and 2.pi 
 
     glm::tvec3<double> a(0.,0.,1.);   // +Z axis 
 

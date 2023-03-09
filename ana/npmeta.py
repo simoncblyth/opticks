@@ -20,14 +20,18 @@ class NPMeta(object):
     @classmethod
     def AsDict(cls, lines):
         d = {}
+        key = "" 
+        d[key] = []
         for line in lines:
-            #line = item.decode(cls.ENCODING)
             dpos = line.find(":") 
             if dpos > -1:
-               key = line[:dpos]
-               val = line[dpos+1:] 
-               d[key] = val 
+                key = line[:dpos] 
+                d[key] = []
+                val = line[dpos+1:] 
+            else:
+                val = line 
             pass
+            d[key].append(val)
         pass    
         return d 
 
@@ -87,8 +91,8 @@ class NPMeta(object):
         return repr(self.d)
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+
+def test_load():
 
     path = "/tmp/t_meta.txt"
     multiline = "hello:world\nmoi:red\nmidx:green\nmord:blue\niidx:grey\nTOPLINE:yellow\nBOTLINE:red\n"
@@ -113,7 +117,33 @@ if __name__ == '__main__':
 
 
 
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
+    lines = ['PV:nnvt_body_phys',
+             'nnvt_inner1_phys',
+             'nnvt_inner2_phys',
+             'nnvt_tube_phy',
+             'nnvt_edge_phy',
+             'hama_body_phys',
+             'nnvt_plate_phy',
+             'hama_inner1_phys',
+             'hama_inner2_phys',
+             'hama_outer_edge_phy',
+             'hama_plate_phy',
+             'hama_dynode_tube_phy',
+             'hama_inner_ring_phy',
+             'MLV:nnvt_log',
+             'nnvt_body_log',
+             'nnvt_inner2_log',
+             'hama_log',
+             'hama_body_log',
+             'hama_inner2_log']
+
+    d = NPMeta.AsDict(lines)
+
+    print(d)
+     
 
 
 

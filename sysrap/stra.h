@@ -57,14 +57,11 @@ struct stra
     static glm::tmat4x4<T> RotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
 
     static glm::tmat4x4<T> Place(                 const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
-
+    static glm::tmat4x4<T> Dupe(                  const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
 
     static T Maxdiff_from_Identity(const glm::tmat4x4<T>& m); 
     static bool IsIdentity(const glm::tmat4x4<T>& m, T epsilon=1e-6); 
     static bool IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>& v, T epsilon=1e-6); 
-
- 
-
 }; 
 
 
@@ -373,6 +370,30 @@ inline glm::tmat4x4<T> stra<T>::Place(const glm::tvec3<T>& a, const glm::tvec3<T
 
     return tra ; 
 }
+
+template<typename T>
+inline glm::tmat4x4<T> stra<T>::Dupe(const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip )
+{
+    glm::tmat4x4<T> tr(1.); 
+    T* src = glm::value_ptr(tr) ; 
+
+    if( flip == false )
+    {
+        for(int l=0 ; l < 3 ; l++) src[4*0+l] = a[l] ; 
+        for(int l=0 ; l < 3 ; l++) src[4*1+l] = b[l] ; 
+        for(int l=0 ; l < 3 ; l++) src[4*2+l] = c[l] ; 
+    }
+    else
+    {
+        for(int l=0 ; l < 3 ; l++) src[4*l+0] = a[l] ; 
+        for(int l=0 ; l < 3 ; l++) src[4*l+1] = b[l] ; 
+        for(int l=0 ; l < 3 ; l++) src[4*l+2] = c[l] ; 
+    }
+    return tr ; 
+}
+
+
+
 
 
 

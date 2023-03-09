@@ -13,6 +13,7 @@ other projects together with NP.hh
 
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <cstring>
 #include <vector>
@@ -1709,5 +1710,113 @@ template<> NVIEW_METHOD unsigned nview::uint_from<double>( double f )
 }
 
 
+
+
+
+
+struct UName
+{
+    std::vector<std::string> names ;  
+
+    int get(const std::string& name) ; 
+    int add(const std::string& name) ; 
+    std::string desc() const ; 
+    std::string as_str() const ; 
+}; 
+
+inline int UName::add(const std::string& name )
+{
+    if(std::find(names.begin(), names.end(), name) == names.end()) names.push_back(name) ; 
+    return get(name);  
+}
+inline int UName::get(const std::string& name)
+{
+    size_t idx = std::distance( names.begin(), std::find(names.begin(), names.end(), name) ) ; 
+    return idx == names.size() ? -1 : idx ; 
+} 
+inline std::string UName::desc() const
+{
+    std::stringstream ss ; 
+    ss << "UName::desc" << std::endl ; 
+    for(int i=0 ; i < int(names.size()) ; i++ ) ss << std::setw(5) << i << " : " << names[i] << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+inline std::string UName::as_str() const
+{
+    int num_names = names.size(); 
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_names ; i++ ) 
+    {
+        ss << names[i] ; 
+        if( i < num_names - 1 ) ss << std::endl ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+union uc4 
+{
+    char c[4] ; 
+    unsigned u ; 
+
+    void set(const char* s4) ; 
+    std::string get() const ; 
+    std::string desc() const ; 
+}; 
+
+inline void uc4::set(const char* s4)
+{
+    for(unsigned i=0 ; i < 4 ; i++) c[i] = i < strlen(s4) ? s4[i] : '\0' ;  
+}
+inline std::string uc4::get() const 
+{
+    const char* p = &c[0] ; 
+    std::string str(p, p+4) ; 
+    return str ; 
+}
+inline std::string uc4::desc() const 
+{
+    std::stringstream ss ; 
+    ss << get() << " " << u  ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+union uc8
+{
+    char     c[8] ; 
+    uint64_t u ; 
+
+    void set(const char* s8) ; 
+    std::string get() const ; 
+    std::string desc() const ; 
+}; 
+inline void uc8::set(const char* s8)
+{
+    for(unsigned i=0 ; i < 8 ; i++) c[i] = i < strlen(s8) ? s8[i] : '\0' ;  
+}
+inline std::string uc8::get() const 
+{
+    const char* p = &c[0] ; 
+    std::string str(p, p+8) ; 
+    return str ; 
+}
+inline std::string uc8::desc() const 
+{
+    std::stringstream ss ; 
+    ss << get() << " " << u  ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 

@@ -16,15 +16,23 @@ from U4RecorderTest.h
 
 #include "U4Engine.h"
 #include "U4UniformRand.h"
+#include "U4VolumeMaker.hh"
 
 #include "G4Material.hh"
 
 #ifdef WITH_PMTSIM
+
 #include "J_PMTSIM_LOG.hh"
+#include "PMTSim.hh"
+
 #elif WITH_PMTFASTSIM
+
 #include "junoPMTOpticalModel.hh"
 #include "J_PMTFASTSIM_LOG.hh"
+
 #endif
+
+
 
 struct U4SimulateTest
 {
@@ -118,6 +126,18 @@ int main(int argc, char** argv)
 #ifdef WITH_PMTFASTSIM
     junoPMTOpticalModel::Save(savedir); 
     // InstrumentedG4OpBoundaryProcess::Save(savedir);   no longer does anything 
+#endif
+
+#if defined(WITH_PMTSIM) && defined(POM_DEBUG)
+    NP* mtda = PMTSim::ModelTrigger_Debug_Array()  ; 
+    const char* mtd = "ModelTrigger_Debug.npy" ; 
+    LOG(info) << "POM_DEBUG saving " << savedir << "/" << mtd  ; 
+    mtda->save(savedir,mtd);
+
+    const NP* TRS = U4VolumeMaker::TRS ; 
+    if(TRS) TRS->save(savedir, "TRS.npy") ; 
+#else
+    LOG(info) << "not-POM_DEBUG  "  ; 
 #endif
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
