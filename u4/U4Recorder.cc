@@ -40,6 +40,7 @@
 
 
 const plog::Severity U4Recorder::LEVEL = SLOG::EnvLevel("U4Recorder", "DEBUG"); 
+UName                U4Recorder::SPECS = {} ; 
 
 const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ; 
 const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
@@ -474,7 +475,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    std::string spec = U4Step::Spec(step) ; 
+    std::string spec_ = U4Step::Spec(step) ; 
+    const char* spec = spec_.c_str(); 
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(*label); 
@@ -549,6 +551,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             current_aux.q2.f.w = -1. ; 
         }
 
+        current_aux.q2.i.w = SPECS.add(spec) ; 
         current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
         current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
     }
@@ -604,7 +607,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
 
-    bool is_fake = IsFake(spec.c_str()) ; 
+    bool is_fake = IsFake(spec) ; 
 
     LOG_IF(info, label->id == PIDX && PIDX_ENABLED  ) 
         << " l.id " << std::setw(3) << label->id

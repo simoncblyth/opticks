@@ -485,13 +485,13 @@ All those repeats have a "Water" box mother volume which is contained within "Ro
 
 **/
 
-const NP* U4VolumeMaker::TRS = nullptr ; 
+NP* U4VolumeMaker::TRS = nullptr ; 
 
 const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix )
 {
     assert( items_lv.size() >= 1 ); 
 
-    const NP* trs = MakeTransforms(name, prefix) ; 
+    NP* trs = MakeTransforms(name, prefix) ; 
     TRS = trs ; 
 
     LOG(LEVEL) 
@@ -949,10 +949,10 @@ G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const ch
 }
 
 
-const NP* U4VolumeMaker::MakeTransforms( const char* name, const char* prefix )
+NP* U4VolumeMaker::MakeTransforms( const char* name, const char* prefix )
 {
     const char* opts = "TR,tr,R,T,r,t" ; 
-    const NP* trs = nullptr ; 
+    NP* trs = nullptr ; 
 
     if(strcmp(prefix, "AroundSphere")==0)   
     {

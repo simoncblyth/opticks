@@ -138,12 +138,15 @@ if __name__ == '__main__':
     sd0 = np.logical_and( sd, myy == 0. )   ## mask SD photons staying in plane
 
 
-    ppos0 = pos[sd0]
+    ppos0 = pos
+    #ppos0 = pos[sd0]
     #ppos = pos[wpick]
     #ppos0 = pos[wyy0]
 
     #ppos1 = pos[n>7]
-    ppos1 = pos[w_midline]
+    #ppos1 = pos[w_midline]
+    ppos1 = None
+
 
     if MODE == 0:
         print("not plotting as MODE 0  in environ")

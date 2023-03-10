@@ -26,6 +26,8 @@ class G4StepPoint ;
 struct NP ; 
 struct spho ; 
 
+#include "NPU.hh"  // UName
+
 #include "plog/Severity.h"
 #include "G4TrackStatus.hh"
 #include "U4_API_EXPORT.hh"
@@ -33,6 +35,7 @@ struct spho ;
 struct U4_API U4Recorder 
 {
     static const plog::Severity LEVEL ; 
+    static UName SPECS ;      // collect unique U4Step::Spec strings  
 
     static const int STATES ; // configures number of g4states to persist 
     static const int RERUN  ; 

@@ -22,49 +22,44 @@ void test_Place()
 {
     glm::tvec3<double> va(0,0,1) ;   // +Z
     glm::tvec3<double> vb(1,0,0) ;   // +X
-    glm::tvec3<double> vc(-250,0,0) ;   // +X
+    glm::tvec3<double> vc(-250,0,0) ;  
 
-    bool flip = false ;  
+    bool flip = true ;  
     glm::tmat4x4<double> tr = stra<double>::Place(va, vb, vc, flip ); 
     std::cout << stra<double>::Desc(tr) << std::endl ;  
+    std::cout << stra<double>::Array(tr) << std::endl << std::endl ;  
 
-    const int N = 4 ; 
+    const int N = 7 ; 
+    double sx = 254. ;  
+    double sy = 254. ;  
+    double sz = 186. ;  
 
-    std::vector<std::string> alabel(N) ; 
-    alabel[0] = "a0 +X" ; 
-    alabel[1] = "a1 +Y" ; 
-    alabel[2] = "a2 +Z" ; 
-    alabel[3] = "a3  O" ; 
-
+    std::vector<std::string> l(N) ; 
+    std::vector<std::string> m(N) ; 
     std::vector<glm::tvec4<double>> a(N) ; 
-    a[0] = {1,0,0,1 } ;  
-    a[1] = {0,1,0,1 } ;
-    a[2] = {0,0,1,1 } ;
-    a[3] = {0,0,0,1 } ;
+    std::vector<glm::tvec4<double>> b(N) ; 
 
-    std::vector<std::string> blabel(N) ; 
-    blabel[0] = "b0 = a2b * a0 " ; 
-    blabel[1] = "b1 = a2b * a1 " ; 
-    blabel[2] = "b2 = a2b * a2 " ; 
-    blabel[3] = "b3 = a2b * a3 " ; 
+    a[0] = {0,0,0,1 }  ; l[0] = "O" ; 
 
-    std::vector<glm::tvec4<double>> b(4) ; 
+    a[1] = {sx,0,0,1 }  ; l[1] = "+sx" ;  
+    a[2] = {0,sy,0,1 }  ; l[2] = "+sy" ; 
+    a[3] = {0,0,sz,1 }  ; l[3] = "+sz" ; 
+
+    a[4] = {-sx,0,0,1 } ; l[4] = "-sx" ;  
+    a[5] = {0,-sy,0,1 } ; l[5] = "-sy" ; 
+    a[6] = {0,0,-sz,1 } ; l[6] = "-sz" ; 
+
+
     for(int i=0 ; i < N ; i++) b[i] = tr * a[i] ;     
+    for(int i=0 ; i < N ; i++) m[i] = "(tr * " + l[i] + ")" ;     
 
-    for(int i=0 ; i < N ; i++) 
-    {
-        std::cout 
-            << std::setw(15) << alabel[i] 
-            << " "
-            << stra<double>::Desc(a[i]) 
-            << std::endl 
-            << std::setw(15) << blabel[i] 
-            << " "
-            << stra<double>::Desc(b[i]) 
-            << std::endl 
-            << std::endl 
-            ;
-    }
+    for(int i=0 ; i < N ; i++) std::cout 
+        << std::setw(15) << l[i] << " " 
+        << stra<double>::Desc(a[i]) 
+        << std::setw(15) << m[i] << " " 
+        << stra<double>::Desc(b[i]) 
+        << std::endl 
+        ;
 
 
 

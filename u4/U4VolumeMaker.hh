@@ -57,7 +57,7 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE" ; 
     static constexpr const char* U4VolumeMaker_WrapAroundItem_Water_BOXSCALE = "U4VolumeMaker_WrapAroundItem_Water_BOXSCALE" ; 
 
-    static const NP* TRS ; 
+    static NP* TRS ; 
     static const G4VPhysicalVolume* WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix ); // prefix eg AroundCircle
 
 
@@ -103,7 +103,7 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_radius = "U4VolumeMaker_MakeTransforms_AroundCircle_radius" ; 
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_numInRing = "U4VolumeMaker_MakeTransforms_AroundCircle_numInRing" ; 
     static constexpr const char* U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase = "U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase" ; 
-    static const NP* MakeTransforms( const char* name, const char* prefix ); 
+    static NP* MakeTransforms( const char* name, const char* prefix ); 
     static void WrapAround( const char* prefix, const NP* trs, std::vector<G4LogicalVolume*>& lvs, G4LogicalVolume* mother_lv ); 
 
 };

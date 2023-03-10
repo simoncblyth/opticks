@@ -20,13 +20,9 @@ struct SIntersect
     static void Scan(const G4VSolid* solid, const char* name, const char* basedir ); 
 
     SIntersect( const G4VSolid* solid_ ); 
+    void init(); 
     const char* desc() const ; 
 
-    static double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
-    static double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in  ); 
-    static double DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in );
-
-    void init(); 
     void scan_(); 
     void scan(); 
 

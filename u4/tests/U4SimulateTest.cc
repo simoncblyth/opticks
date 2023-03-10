@@ -17,6 +17,7 @@ from U4RecorderTest.h
 #include "U4Engine.h"
 #include "U4UniformRand.h"
 #include "U4VolumeMaker.hh"
+#include "U4Recorder.hh"
 
 #include "G4Material.hh"
 
@@ -134,8 +135,17 @@ int main(int argc, char** argv)
     LOG(info) << "POM_DEBUG saving " << savedir << "/" << mtd  ; 
     mtda->save(savedir,mtd);
 
-    const NP* TRS = U4VolumeMaker::TRS ; 
-    if(TRS) TRS->save(savedir, "TRS.npy") ; 
+    NP* TRS = U4VolumeMaker::TRS ; 
+    if(TRS) 
+    {
+        const UName& SPECS = U4Recorder::SPECS ; 
+        TRS->set_names(SPECS.names) ;     // HMM: these dont really belong together, find a better place
+        TRS->save(savedir, "TRS.npy") ; 
+    }
+
+       
+
+
 #else
     LOG(info) << "not-POM_DEBUG  "  ; 
 #endif

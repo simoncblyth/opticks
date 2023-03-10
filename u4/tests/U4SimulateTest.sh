@@ -151,8 +151,8 @@ radius=250
 [ $num_ph -lt 11  ] && radius=0
 
 #ttype=disc
-ttype=line
-#ttype=point
+#ttype=line
+ttype=point
 
 case $ttype in 
   disc) pos=0,0,0 ;;
@@ -216,6 +216,7 @@ fi
 
 
 defarg="run_ph"
+#defarg="run_mt"
 [ -n "$BP" ] && defarg="dbg"
 
 arg=${1:-$defarg}
@@ -276,6 +277,17 @@ if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i ${bin}_ph.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ph error && exit 5
 fi 
+
+if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
+    export FOLD=$BASE/$reldir
+    [ "$arg" == "nph" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_mt.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
+fi 
+
+
+
+
 
 exit 0 
 

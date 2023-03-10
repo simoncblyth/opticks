@@ -452,8 +452,19 @@ const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
     const G4LogicalVolume* lv = pv ? pv->GetLogicalVolume() : nullptr ;
     const G4VSolid* so = lv ? lv->GetSolid() : nullptr ; 
     return so ; 
-
 }
+
+/**
+U4Step::Spec
+-------------
+
+Used for fake skipping from U4Recorder::UserSteppingAction_Optical using U4Recorder::IsFake
+configured via envvars::
+
+    U4Recorder__FAKES
+    U4Recorder__FAKES_SKIP
+
+**/
 
 std::string U4Step::Spec(const G4Step* step) // static
 {

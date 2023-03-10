@@ -39,10 +39,14 @@ struct stra
 
     static std::string Desc(const T* aa, const T* bb, const T* cc, const char* al, const char* bl, const char* cl) ; 
 
-    static std::string Desc(const glm::tmat4x4<T>& tr);  // WHY WERE THESE BY VALUE ?
+    static std::string Desc(const glm::tmat4x4<T>& tr);  
     static std::string Desc(const glm::tvec4<T>& t); 
     static std::string Desc(const glm::tvec3<T>& t); 
     static std::string Desc(const T* tt, int num); 
+
+    static std::string Array(const glm::tmat4x4<T>& tr); 
+    static std::string Array(const T* tt, int num); 
+
 
     static glm::tmat4x4<T> FromData(const T* data );
 
@@ -146,6 +150,48 @@ std::string stra<T>::Desc(const T* tt, int num)
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+template<typename T>
+std::string stra<T>::Array(const glm::tmat4x4<T>& tr)
+{
+    const T* tt = glm::value_ptr(tr); 
+    return Array(tt, 16 ); 
+}
+
+template<typename T>
+std::string stra<T>::Array(const T* tt, int num)
+{
+    int w = 7 ; 
+    int p = 3 ; 
+
+    std::stringstream ss ;
+    ss << "np.array(" ;
+    if(num == 16 ) ss << "[[" ; 
+ 
+    for(int i=0 ; i < num ; i++) ss 
+        << ( i % 4 == 0 && num > 4 && i > 0 ? "],[" : ( i > 0 ? "," : "" ) ) 
+        << std::fixed << std::setw(w) << std::setprecision(p) << tt[i] 
+        ;
+
+    if(num == 16 ) ss << "]]" ; 
+    ss << ",dtype=np.float64)" ; 
+    std::string s = ss.str(); 
+
+    bool squeeze = true ; 
+    if( squeeze )
+    {
+        const char* p = s.c_str();  
+        std::stringstream zz ;  
+        for(int i=0 ; i < int(strlen(p)) ; i++) if(p[i] != ' ') zz << p[i] ;   
+        s = zz.str(); 
+    }
+    return s ; 
+}
+
+
+
+
 
 
 
