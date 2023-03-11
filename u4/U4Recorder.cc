@@ -551,7 +551,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             current_aux.q2.f.w = -1. ; 
         }
 
-        current_aux.q2.i.w = SPECS.add(spec) ; 
         current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
         current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
     }
@@ -604,16 +603,19 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
 
-
-
+    bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
 
     bool is_fake = IsFake(spec) ; 
+    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, PIDX_DUMP ) ; 
 
-    LOG_IF(info, label->id == PIDX && PIDX_ENABLED  ) 
+    current_aux.q2.i.w = st ; 
+
+    LOG_IF(info, PIDX_DUMP ) 
         << " l.id " << std::setw(3) << label->id
         << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
         << " abbrev " << OpticksPhoton::Abbrev(flag)
-        << " spec " << spec 
+        << " spec " << std::setw(50) << spec 
+        << " st " << std::setw(3) << st 
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " FAKES_SKIP " << ( FAKES_SKIP ? "YES" : "NO " ) 
         ;

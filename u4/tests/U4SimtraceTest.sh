@@ -92,19 +92,11 @@ EOU
 
 bin=U4SimtraceTest
 
-layout=two_pmt  
-#layout=one_pmt
 
 apid=-1
 bpid=-1
 
 
-export LAYOUT=${LAYOUT:-$layout}
-
-case $LAYOUT in 
-  one_pmt) loc="upper right" ;; 
-        *) loc="skip"        ;; 
-esac
 
 export VERSION=${N:-0}
 
@@ -118,15 +110,22 @@ export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
 export APID=${APID:-$apid}   ## NB APID for photons from ALL0
 export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
-export LOC=${LOC:-$loc}      # python ana level presentation 
 
 geomscript=$GEOM.sh 
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION $LAYOUT
+    source $geomscript $VERSION 
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
+
+case $LAYOUT in 
+  one_pmt) loc="upper right" ;; 
+        *) loc="skip"        ;; 
+esac
+export LOC=${LOC:-$loc}      # python ana level presentation 
+
+
 
 loglevels()
 {

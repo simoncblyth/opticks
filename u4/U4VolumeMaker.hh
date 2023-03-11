@@ -45,8 +45,9 @@ struct U4_API U4VolumeMaker
 
     // WorldBox wrappers : arranging lv variously and returning world pv 
 
-    static constexpr const char* U4VolumeMaker_WrapRockWater_HALFSIDE = "U4VolumeMaker_WrapRockWater_HALFSIDE" ; 
-    static constexpr const char* U4VolumeMaker_WrapRockWater_FACTOR   = "U4VolumeMaker_WrapRockWater_FACTOR" ; 
+    static constexpr const char* U4VolumeMaker_WrapRockWater_Rock_HALFSIDE = "U4VolumeMaker_WrapRockWater_Rock_HALFSIDE" ; 
+    static constexpr const char* U4VolumeMaker_WrapRockWater_Water_HALFSIDE = "U4VolumeMaker_WrapRockWater_Water_HALFSIDE" ; 
+    static constexpr const char* U4VolumeMaker_WrapRockWater_BOXSCALE = "U4VolumeMaker_WrapRockWater_BOXSCALE" ; 
     static constexpr const char* U4VolumeMaker_WrapRockWater_BS1 = "U4VolumeMaker_WrapRockWater_BS1" ; 
 
     static const G4VPhysicalVolume* Wrap( const char* name, std::vector<G4LogicalVolume*>& items_lv ); 

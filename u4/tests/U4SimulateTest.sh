@@ -63,24 +63,20 @@ export G4FastSimulationManagerProcess_ENABLE=1
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
 
-
-
-
-
 ## u4/tests/U4SimulateTest.cc
 export BeamOn=${BeamOn:-1}
 
-
 geomscript=$GEOM.sh 
 export VERSION=${N:-0}
-export LAYOUT=two_pmt
-#export LAYOUT=one_pmt
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION $LAYOUT
+    source $geomscript $VERSION 
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
+
+## moved LAYOUT control inside geomscript so its in common 
+## between U4SimulateTest.sh and U4SimtraceTest.sh 
 
 
 if [ "$VERSION" == "0" ]; then 
@@ -88,20 +84,22 @@ if [ "$VERSION" == "0" ]; then
     f1=Pyrex/Pyrex:hama_body_phys/AroundCircle0
     f2=Vacuum/Vacuum:hama_inner1_phys/hama_inner2_phys
     f3=Vacuum/Vacuum:hama_inner2_phys/hama_inner1_phys
-
     f4=Pyrex/Pyrex:AroundCircle1/nnvt_body_phys
     f5=Pyrex/Pyrex:nnvt_body_phys/AroundCircle1
     f6=Vacuum/Vacuum:nnvt_inner1_phys/nnvt_inner2_phys
     f7=Vacuum/Vacuum:nnvt_inner2_phys/nnvt_inner1_phys
 
-    export U4Recorder__FAKES="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7"
-    export U4Recorder__FAKES_SKIP=1
-    echo $BASH_SOURCE : U4Recorder__FAKES_SKIP ENABLED 
+    f8=Pyrex/Pyrex:nnvt_body_phys/nnvt_log_pv 
+
+    case $LAYOUT in 
+       two_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7" ;;
+       one_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,$f8" ;;
+    esac
 fi 
 
+export U4Recorder__FAKES="$fakes"
+export U4Recorder__FAKES_SKIP=1
 export U4Recorder__PIDX_ENABLED=1 
-
-
 
 # python ana level presentation 
 export LOC=skip
@@ -115,8 +113,8 @@ logN=${bin}_$VERSION.log
 
 #num_ph=2
 #num_ph=10
-num_ph=1000      #  1k
-#num_ph=10000    # 10k
+#num_ph=1000      #  1k
+num_ph=10000    # 10k
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
@@ -150,47 +148,37 @@ radius=250
 #radius=0
 [ $num_ph -lt 11  ] && radius=0
 
-#ttype=disc
-#ttype=line
-ttype=point
 
-case $ttype in 
-  disc) pos=0,0,0 ;;
-  line) pos=0,0,0 ;;
- point) pos=0,0,-120 ;;
-esac
 
-## initial direction
-mom=-1,0,0   # with two_pmt layout -X is towards NNVT
-#mom=1,0,0     # with two_pmt layout +X is towards HAMA
+if [ "$LAYOUT" == "two_pmt" ]; then
 
+    ttype=point
+    case $ttype in 
+      disc) pos=0,0,0 ;;
+      line) pos=0,0,0 ;;
+     point) pos=0,0,-120 ;;
+    esac
+
+    ## initial direction
+    mom=-1,0,0   # with two_pmt layout -X is towards NNVT
+    #mom=1,0,0     # with two_pmt layout +X is towards HAMA
+
+elif [ "$LAYOUT" == "one_pmt" ]; then 
+
+    ttype=point
+    case $ttype in 
+      disc) pos=0,0,0 ;;
+      line) pos=0,0,0 ;;
+     point) pos=0,0,100 ;;  # PMT upper mid-vacuum 
+    esac
+    mom=0,0,1     # +Z directly upwards
+fi 
 
 export SEvent_MakeGensteps_num_ph=$num_ph
 export storch_FillGenstep_type=$ttype
 export storch_FillGenstep_radius=$radius
-
-
-
-
-if [ "$LAYOUT" == "one_pmt" ]; then 
-
-    # up +Z from line below equator
-    #export storch_FillGenstep_pos=0,0,-20
-    #export storch_FillGenstep_mom=0,0,1
-
-    # down -Z from line outside Pyrex
-    export storch_FillGenstep_pos=0,0,200
-    export storch_FillGenstep_mom=0,0,-1
-
-elif [ "$LAYOUT" == "two_pmt" ]; then 
-
-    # zero line to the right, along +ve X
-    export storch_FillGenstep_pos=$pos
-    export storch_FillGenstep_mom=$mom
-
-fi 
-
-
+export storch_FillGenstep_pos=$pos
+export storch_FillGenstep_mom=$mom
 
 loglevel(){
    export U4Recorder=INFO

@@ -14,8 +14,14 @@ EOU
 
 
 version=${1:-0}
-layout=${2:-one_pmt}
 pom=${POM:-0}
+
+#layout=two_pmt  
+layout=one_pmt
+export LAYOUT=$layout
+
+## moved LAYOUT control inside geomscript so its in common 
+## between U4SimulateTest.sh and U4SimtraceTest.sh 
 
 
 case $layout in 
@@ -46,18 +52,28 @@ export nnvt_FastCoverMaterial=$fastcover
 export nnvt_UsePMTOpticalModel=$pom   
 export nnvt_UseNaturalGeometry=$version 
 
-export ${GEOM}_GEOMList=hamaLogicalPMT,nnvtLogicalPMT
 
+geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
+#geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
+#geomlist=nnvtLogicalPMT
+#geomlist=hamaLogicalPMT
+
+export ${GEOM}_GEOMList=$geomlist
+
+aspect=1.7777777777777  # 1280/720
+
+echo $BASH_SOURCE layout $layout 
 
 if [ "$layout" == "one_pmt" ]; then 
 
-   echo $BASH_SOURCE layout $layout all default U4VolumeMaker settings
+   export U4VolumeMaker_WrapRockWater_Rock_HALFSIDE=210
+   export U4VolumeMaker_WrapRockWater_Water_HALFSIDE=200
+   export U4VolumeMaker_WrapRockWater_BOXSCALE=$aspect,1,1
 
 elif [ "$layout" == "two_pmt" ]; then 
 
     export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=310  
     export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=300  
-    aspect=1.7777777777777  # 1280/720
     export U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE=$aspect,1,1
     export U4VolumeMaker_WrapAroundItem_Water_BOXSCALE=$aspect,1,1 
 

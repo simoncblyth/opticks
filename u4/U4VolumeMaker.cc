@@ -420,14 +420,18 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( std::vector<G4LogicalVolu
 
     LOG(LEVEL) << "[ items_lv.size " << items_lv.size()   ; 
 
-    double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
-    double factor   = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
+    double rock_halfside  = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_Rock_HALFSIDE , 1000.); 
+    double water_halfside = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_Water_HALFSIDE,  900. ); 
 
-    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_HALFSIDE << " " << halfside ; 
-    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_FACTOR << " " << factor ; 
+    std::vector<double>* _boxscale = ssys::getenv_vec<double>(U4VolumeMaker_WrapRockWater_BOXSCALE, "1,1,1" ); 
+    if(_boxscale) assert(_boxscale->size() == 3 ); 
+    const double* boxscale = _boxscale ? _boxscale->data() : nullptr ;  
 
-    G4LogicalVolume*  rock_lv  = Box_(factor*halfside, "Rock" );
-    G4LogicalVolume*  water_lv = Box_(1.*halfside, "Water" );
+    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_Rock_HALFSIDE << " " << rock_halfside ; 
+    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_Water_HALFSIDE << " " << water_halfside ; 
+
+    G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock",  nullptr, boxscale );
+    G4LogicalVolume*  water_lv = Box_(water_halfside, "Water", nullptr, boxscale );
  
     //const char* flip_axes = "Z" ; 
     const char* flip_axes = nullptr ; 

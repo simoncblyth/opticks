@@ -136,19 +136,17 @@ int main(int argc, char** argv)
     mtda->save(savedir,mtd);
 
     NP* TRS = U4VolumeMaker::TRS ; 
-    if(TRS) 
-    {
-        const UName& SPECS = U4Recorder::SPECS ; 
-        TRS->set_names(SPECS.names) ;     // HMM: these dont really belong together, find a better place
-        TRS->save(savedir, "TRS.npy") ; 
-    }
-
-       
-
-
+    if(TRS) TRS->save(savedir, "TRS.npy") ; 
 #else
     LOG(info) << "not-POM_DEBUG  "  ; 
 #endif
+
+
+    NP* u4r = NP::Make<int>(1) ; // dummy array providing somewhere to hang the SPECS
+    u4r->fill(0) ; 
+    u4r->set_names(U4Recorder::SPECS.names); 
+    u4r->save(savedir, "U4R.npy") ; 
+
 
     U4Recorder* fRecorder = t.rec->fRecorder ; 
     fRecorder->saveRerunRand(savedir); 

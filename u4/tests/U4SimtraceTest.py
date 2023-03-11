@@ -209,7 +209,9 @@ class U4SimtraceTest(RFold):
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])
         print("LOC : %s " % LOC)
-        if LOC != "skip":
+        if LOC == "skip" or LOC == "":
+            print("skip legend as LOC:[%s] " % LOC)
+        else:
             ax.legend(loc=LOC,  markerscale=4)
         pass
 

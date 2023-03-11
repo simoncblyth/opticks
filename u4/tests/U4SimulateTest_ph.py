@@ -15,7 +15,8 @@ from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 
 LABEL = os.environ.get("LABEL", "U4SimulateTest_ph.py" )
-VERSION =  int(os.environ.get("VERSION", "-1"))
+N =  int(os.environ.get("VERSION", "-1"))
+VERSION = N 
 MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,3]
 PID = int(os.environ.get("PID", -1))
@@ -27,10 +28,15 @@ pass
 
 if __name__ == '__main__':
 
-
     t = Fold.Load(symbol="t")
     print(repr(t))
-    print( " MODE : %d " % (MODE) )
+    print( "MODE:%d" % (MODE) )
+    print( "N:%d" % (N) )
+
+    SPECS = np.array(t.U4R_names.lines)
+    st_ = t.aux[:,:,2,3].view(np.int32)
+    st = SPECS[st_]
+
 
     axes = 0, 2  # X,Z
     H,V = axes 
@@ -64,8 +70,8 @@ if __name__ == '__main__':
     ws = np.where( q[:,0] == qu[quo][ws_] )   # select photons with the ws_ most prolific history    
 
 
-    print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
-    print(repr(q[v_rp == 0]))
+    #print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
+    #print(repr(q[v_rp == 0]))
 
     n = np.sum( seqnib_(q_), axis=1 ) 
     print("\nnp.unique(n, return_counts=True) ## occupied nibbles  ")

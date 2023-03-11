@@ -9,6 +9,31 @@ CMDLINE = " ".join(sys.argv)
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
+
+class AttrBase(object):
+    def __init__(self, symbol="t", prefix="", publish=False):
+        self.__dict__["_symbol"] = symbol
+        self.__dict__["_prefix"] = prefix
+        self.__dict__["_publish"] = publish
+
+    def __setattr__(self, name:str, value):    
+        self.__dict__[name] = value
+        key = "%s%s" % (self._prefix, name)
+        if self._publish and not name.startswith("_"):
+            print("publish key:%s " % key) 
+            setattr(builtins, key, value)
+        pass
+    pass
+ 
+    def __repr__(self):
+        lines = []
+        for k,v in self.__dict__.items():
+            line = k
+            lines.append(line)
+        pass 
+        return "\n".join(lines)
+
+
 class Fold(object):
 
     @classmethod

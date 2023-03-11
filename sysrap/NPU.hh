@@ -1716,20 +1716,43 @@ template<> NVIEW_METHOD unsigned nview::uint_from<double>( double f )
 
 struct UName
 {
+    static constexpr const char* UNSET = "UNSET" ; 
     std::vector<std::string> names ;  
+    int count ; 
 
-    int get(const std::string& name) ; 
-    int add(const std::string& name) ; 
+    UName(); 
+    int get(const char* name) ; 
+    int add(const char* name, bool dump=false) ; 
     std::string desc() const ; 
     std::string as_str() const ; 
 }; 
 
-inline int UName::add(const std::string& name )
+
+inline UName::UName()
+    :
+    count(0)
+{
+    names.push_back(UNSET); 
+}
+
+inline int UName::add(const char* name, bool dump)
 {
     if(std::find(names.begin(), names.end(), name) == names.end()) names.push_back(name) ; 
-    return get(name);  
+    int idx = get(name) ; 
+    if(dump) std::cerr 
+        << "UName::add"
+        << " idx " << std::setw(4) << idx
+        << " name " << name
+        << " count " << std::setw(5) << count 
+        << " size " << std::setw(5) << names.size()
+        << std::endl 
+        ;
+
+    //if(dump) std::cerr << desc() ; 
+    count += 1 ; 
+    return idx ;  
 }
-inline int UName::get(const std::string& name)
+inline int UName::get(const char* name)
 {
     size_t idx = std::distance( names.begin(), std::find(names.begin(), names.end(), name) ) ; 
     return idx == names.size() ? -1 : idx ; 
@@ -1737,7 +1760,12 @@ inline int UName::get(const std::string& name)
 inline std::string UName::desc() const
 {
     std::stringstream ss ; 
-    ss << "UName::desc" << std::endl ; 
+    ss << "UName::desc" 
+       << " count " << std::setw(5) << count 
+       << " size " << std::setw(5) << names.size()
+       << std::endl
+       ; 
+
     for(int i=0 ; i < int(names.size()) ; i++ ) ss << std::setw(5) << i << " : " << names[i] << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
