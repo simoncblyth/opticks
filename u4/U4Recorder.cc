@@ -10,6 +10,7 @@
 #include "NP.hh"
 #include "SPath.hh"
 #include "ssys.h"
+#include "ssolid.h"
 #include "SEvt.hh"
 #include "SLOG.hh"
 #include "SOpBoundaryProcess.hh"
@@ -360,8 +361,9 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
         transient_fSuspend_track = nullptr ;
 
 #ifndef PRODUCTION
+        bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
         sseq& seq = sev->current_ctx.seq ; 
-        LOG_IF(info, label->id < 100 ) 
+        LOG_IF(info, label->id < 100 || PIDX_DUMP ) 
             << " l.id " << std::setw(5) << label->id
             << " seq " << seq.brief()
             ;  
@@ -484,10 +486,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     sphoton& current_photon = sev->current_ctx.p ;
     quad4&   current_aux    = sev->current_ctx.aux ; 
 
-
-
     const G4VTouchable* touch = track->GetTouchable();  
-    LOG(LEVEL) << U4Touchable::Brief(touch) ;
     current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
 
     // first_point identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
@@ -499,8 +498,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(*label);        // sctx::point copying current into buffers 
     }
-
-
 
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
@@ -605,8 +602,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
 
-    bool is_fake = IsFake(spec) ; 
-    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, PIDX_DUMP ) ; 
+    unsigned fakemask = FAKES_SKIP ? ClassifyFake(step, spec, PIDX_DUMP ) : 0 ; 
+    bool is_fake = fakemask > 0 ; 
+
+    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
     current_aux.q2.i.w = st ; 
 
@@ -617,6 +616,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " spec " << std::setw(50) << spec 
         << " st " << std::setw(3) << st 
         << " is_fake " << ( is_fake ? "YES" : "NO " )
+        << " fakemask " << fakemask
+        << " DescFake " << DescFake(fakemask)
         << " FAKES_SKIP " << ( FAKES_SKIP ? "YES" : "NO " ) 
         ;
 
@@ -651,7 +652,56 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 }
 
 
+const double U4Recorder::EPSILON = 1e-4 ; 
 
+unsigned U4Recorder::ClassifyFake(const G4Step* step, const char* spec, bool dump )
+{
+    unsigned fakemask = 0 ; 
+
+    G4ThreeVector delta = step->GetDeltaPosition(); 
+    double step_mm = delta.mag()/mm  ;   
+    if(step_mm < EPSILON) fakemask |= FAKE_STEP_MM ; 
+
+    const char* fake_pv_name = "body_phys" ; 
+
+    const G4Track* track = step->GetTrack(); 
+    const G4VTouchable* touch = track->GetTouchable();  
+    const G4VPhysicalVolume* pv = track->GetVolume() ; 
+
+    const G4VPhysicalVolume* fpv0 = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
+    const G4VPhysicalVolume* fpv1 = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END ); 
+    const G4VPhysicalVolume* fpv = fpv0 ? fpv0 : fpv1 ; 
+
+    LOG_IF(info, fpv == nullptr ) << U4Touchable::Desc(touch) <<  U4Touchable::Brief(touch) ; 
+    G4LogicalVolume* flv = fpv ? fpv->GetLogicalVolume() : nullptr ; 
+    G4VSolid* fso = flv ? flv->GetSolid() : nullptr ; 
+
+    const G4AffineTransform& transform = touch->GetHistory()->GetTopTransform();
+
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    const G4ThreeVector& theGlobalPoint = post->GetPosition(); 
+    const G4ThreeVector& theGlobalDirection = post->GetMomentumDirection() ; 
+
+    G4ThreeVector theLocalPoint     = transform.TransformPoint(theGlobalPoint); 
+    G4ThreeVector theLocalDirection = transform.TransformAxis(theGlobalDirection); 
+
+    G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance( fso, theLocalPoint, theLocalDirection, dump ) ; 
+
+    if(fdist < EPSILON)    fakemask |= FAKE_FDIST ;  
+    if(IsListedFake(spec)) fakemask |= FAKE_MANUAL ;  
+
+    return fakemask ; 
+}
+
+std::string U4Recorder::DescFake(unsigned fakemask)
+{
+    std::stringstream ss ; 
+    if(fakemask & FAKE_STEP_MM) ss << FAKE_STEP_MM_ << "|" ; 
+    if(fakemask & FAKE_FDIST)   ss << FAKE_FDIST_ << "|" ; 
+    if(fakemask & FAKE_MANUAL)  ss << FAKE_MANUAL_ << "|" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 std::vector<std::string>* U4Recorder::FAKES      = ssys::getenv_vec<std::string>("U4Recorder__FAKES", "" );
 bool                      U4Recorder::FAKES_SKIP = ssys::getenvbool(             "U4Recorder__FAKES_SKIP") ;  
@@ -661,7 +711,7 @@ bool U4Recorder::IsListed( const std::vector<std::string>* LIST, const char* spe
     for(unsigned i=0 ; i < ( LIST ? LIST->size() : 0) ; i++) if(strcmp( (*LIST)[i].c_str(), spec ) == 0 ) return true ; 
     return false ;  
 }
-bool U4Recorder::IsFake( const char* spec ){ return IsListed(FAKES, spec ) ; }
+bool U4Recorder::IsListedFake( const char* spec ){ return IsListed(FAKES, spec ) ; }
 
 
 

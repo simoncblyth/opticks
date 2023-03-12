@@ -10,9 +10,17 @@
 
 struct sstr
 {
+    enum { MATCH_ALL, MATCH_START, MATCH_END } ; 
+
     static void Write(const char* path, const char* txt ); 
+
     static bool Match( const char* s, const char* q, bool starting=true ); 
-    static bool StartsWith( const char* s, const char* q); 
+    static bool Match_(     const char* s, const char* q, int mode); 
+    static bool MatchAll(   const char* s, const char* q); 
+    static bool MatchStart( const char* s, const char* q); 
+    static bool MatchEnd(   const char* s, const char* q); 
+
+
     static const char* TrimTrailing(const char* s);
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
@@ -32,6 +40,12 @@ struct sstr
     static bool Blank(const char* s ); 
     static bool All(const char* s, char q ); 
     static unsigned Count(const char* s, char q ); 
+
+
+    static int AsInt(const char* arg, int fallback=-1 ) ; 
+    static const char* ParseStringIntInt( const char* triplet, int& y, int& z, char delim=':' ); 
+
+
 };
 
 inline void sstr::Write(const char* path, const char* txt )
@@ -42,13 +56,35 @@ inline void sstr::Write(const char* path, const char* txt )
 
 inline bool sstr::Match( const char* s, const char* q, bool starting )
 {
-    return starting ? StartsWith(s, q) : strcmp(s, q) == 0 ;
+    return starting ? MatchStart(s, q) : MatchAll(s, q) == 0 ;
 }
 
-inline bool sstr::StartsWith( const char* s, const char* q)
+inline bool sstr::Match_( const char* s, const char* q, int mode )
+{
+    bool ret = false ; 
+    switch(mode)
+    {
+        case MATCH_ALL:    ret = MatchAll(  s, q) ; break ; 
+        case MATCH_START:  ret = MatchStart(s, q) ; break ; 
+        case MATCH_END:    ret = MatchEnd(  s, q) ; break ; 
+    }
+    return ret ;
+}
+
+inline bool sstr::MatchAll( const char* s, const char* q)
+{
+    return s && q && strcmp(s, q) == 0 ; 
+}
+inline bool sstr::MatchStart( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
+inline bool sstr::MatchEnd( const char* s, const char* q)
+{
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
+
 
 inline const char* sstr::TrimTrailing(const char* s) // reposition null terminator to skip trailing whitespace 
 {
@@ -186,5 +222,30 @@ inline unsigned sstr::Count( const char* s , char q )
    return count ;  
 }
 
+
+
+inline int sstr::AsInt(const char* arg, int fallback )
+{
+    char* end ;   
+    char** endptr = &end ; 
+    int base = 10 ;   
+    unsigned long ul = strtoul(arg, endptr, base); 
+    bool end_points_to_terminator = end == arg + strlen(arg) ;   
+    return end_points_to_terminator ? int(ul) : fallback ;  
+}
+
+
+inline const char* sstr::ParseStringIntInt( const char* triplet, int& y, int& z, char delim )
+{
+    std::stringstream ss; 
+    ss.str(triplet)  ;
+    std::string s;
+    std::vector<std::string> elem ; 
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+    assert(elem.size() == 3 ); 
+    y = AsInt( elem[1].c_str() ); 
+    z = AsInt( elem[2].c_str() ); 
+    return strdup(elem[0].c_str()); 
+}
 
 

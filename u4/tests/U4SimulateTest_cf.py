@@ -3,13 +3,9 @@
 U4SimulateTest_cf.py
 ========================
 
-::
+Dump step point info on two single photons from A and B::
 
-    PID = 726    
-    seqhis_(a.seq[PID,0] : ['TO BT BT BT BT SR SR BT BR BR BT SR SR SR BT BR', 'BT SR BT SA'] 
-    seqhis_(b.seq[PID,0] : ['TO BT BT SR SR BR BR SR SR SR BR SR BR SR SA', '?0?'] 
-
-
+    POM=1 N=0 APID=475 BPID=476 ./U4SimulateTest.sh cf
 
 """
 
@@ -25,23 +21,24 @@ if not NOGUI:
     from opticks.ana.pvplt import * 
 pass
 
-PID = int(os.environ.get("PID", -1))
-if PID == -1: PID = int(os.environ.get("OPTICKS_G4STATE_RERUN", -1))
+APID = int(os.environ.get("APID", -1))
+BPID = int(os.environ.get("BPID", -1))
 
 if __name__ == '__main__':
 
-    print("PID : %d " % (PID))
+    print("APID:%d" % (APID))
+    print("BPID:%d" % (BPID))
     a = Fold.Load("$AFOLD", symbol="a")
     b = Fold.Load("$BFOLD", symbol="b")
 
     #print(repr(a))
     #print(repr(b))
 
-    if PID > -1:
-        print("seqhis_(a.seq[PID,0] : %s " % seqhis_(a.seq[PID,0] ))
-        print("seqhis_(b.seq[PID,0] : %s " % seqhis_(b.seq[PID,0] ))
-        ar = a.record[PID]
-        br = b.record[PID]
+    if APID > -1 and BPID > -1:
+        print("seqhis_(a.seq[APID,0] : %s " % seqhis_(a.seq[APID,0] ))
+        print("seqhis_(b.seq[APID,0] : %s " % seqhis_(b.seq[BPID,0] ))
+        ar = a.record[APID]
+        br = b.record[BPID]
         # mapping from new to old point index for PID 726 big bouncer
         b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
         abr = np.c_[ar[b2a,0],br[:len(b2a),0]].reshape(-1,2,4)
@@ -52,8 +49,43 @@ if __name__ == '__main__':
     aq_ = a.seq[:,0]    #  shape eg (1000, 2, 2)                                                                                                                  
     bq_ = b.seq[:,0]     
 
+    an = np.sum( seqnib_(aq_), axis=1 )     ## occupied nibbles across both sets of 16 from the two 64 bit ints 
+    bn = np.sum( seqnib_(bq_), axis=1 )   
+
     aq = ht.seqhis(aq_)  # "|S96"  32 point slots * 3 chars for each abbr eg "BT " 
     bq = ht.seqhis(bq_) 
+
+
+    a_SPECS = np.array(a.U4R_names.lines)
+    a_st_ = a.aux[:,:,2,3].view(np.int32)
+    a_st = a_SPECS[a_st_]
+
+    b_SPECS = np.array(b.U4R_names.lines)
+    b_st_ = b.aux[:,:,2,3].view(np.int32)
+    b_st = b_SPECS[b_st_]
+
+
+    if APID > -1:
+        print("APID:%d" % APID)
+        exprs = "aq[APID] np.c_[a_st[APID,:an[APID]]] a.record[APID,:an[APID],0]"
+        for expr in exprs.split(): 
+            print(expr)
+            print(repr(eval(expr)))
+            print(".") 
+        pass
+    pass 
+    if BPID > -1:
+        print("BPID:%d" % BPID)
+        exprs = "bq[BPID] np.c_[b_st[APID,:bn[BPID]]] b.record[BPID,:bn[BPID],0]"
+        for expr in exprs.split(): 
+            print(expr)
+            print(repr(eval(expr))) 
+            print(".") 
+        pass
+    pass 
+
+
+
 
 
 

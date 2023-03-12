@@ -12,6 +12,7 @@ A version of this is also available within the monolith at
 **/
 
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 
@@ -22,6 +23,13 @@ A version of this is also available within the monolith at
 
 struct U4Touchable
 {
+    enum { MATCH_ALL, MATCH_START, MATCH_END } ; 
+    static bool Match(      const char* s, const char* q, int mode) ; 
+    static bool MatchAll(   const char* s, const char* q) ; 
+    static bool MatchStart( const char* s, const char* q) ; 
+    static bool MatchEnd(   const char* s, const char* q) ; 
+
+    static const G4VPhysicalVolume* FindPV( const G4VTouchable* touch, const char* qname, int mode=MATCH_ALL ); 
     static int ReplicaNumber(const G4VTouchable* touch) ; 
     static int ReplicaDepth(const G4VTouchable* touch) ; 
     static int TouchDepth(const G4VTouchable* touch ); 
@@ -30,6 +38,54 @@ struct U4Touchable
     static std::string Brief(const G4VTouchable* touch ); 
     static std::string Desc(const G4VTouchable* touch, int so_wid=20, int pv_wid=20);
 };
+
+
+inline bool U4Touchable::Match( const char* s, const char* q, int mode )
+{
+    bool ret = false ; 
+    switch(mode)
+    {   
+        case MATCH_ALL:    ret = MatchAll(  s, q) ; break ; 
+        case MATCH_START:  ret = MatchStart(s, q) ; break ; 
+        case MATCH_END:    ret = MatchEnd(  s, q) ; break ; 
+    }   
+    return ret ;
+}
+
+inline bool U4Touchable::MatchAll( const char* s, const char* q)
+{
+    return s && q && strcmp(s, q) == 0 ; 
+}
+inline bool U4Touchable::MatchStart( const char* s, const char* q)
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ; 
+}
+inline bool U4Touchable::MatchEnd( const char* s, const char* q)
+{
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ; 
+}
+
+
+inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, const char* qname, int mode )
+{
+    int nd = touch->GetHistoryDepth();
+    int count = 0 ; 
+    const G4VPhysicalVolume* qpv = nullptr ;  
+    for (int d=0 ; d < nd ; ++d ) 
+    {   
+        const G4VPhysicalVolume* dpv = touch->GetVolume(d);
+        const char* dpv_name = dpv->GetName().c_str() ;
+        if(Match(dpv_name, qname, mode))
+        {
+            qpv = dpv ; 
+            count += 1 ;
+        }
+    }
+    return qpv ; 
+} 
+
+
 
 inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
 {
@@ -125,6 +181,9 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
     }
     return false ; 
 }
+
+
+
 
 inline std::string U4Touchable::Brief(const G4VTouchable* touch )
 {

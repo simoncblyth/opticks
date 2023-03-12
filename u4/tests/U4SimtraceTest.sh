@@ -114,7 +114,7 @@ export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
 geomscript=$GEOM.sh 
 
 if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION 
+    source $geomscript 
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 

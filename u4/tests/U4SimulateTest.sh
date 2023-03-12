@@ -48,7 +48,22 @@ EOU
 }
 
 bin=U4SimulateTest
+
+export VERSION=${N:-0}
 export GEOM=FewPMT
+geomscript=$GEOM.sh 
+
+if [ -f "$geomscript" ]; then  
+    source $geomscript
+else
+    echo $BASH_SOURCE : no geomscript $geomscript
+fi 
+
+## moved LAYOUT and FAKES control inside geomscript so its in common 
+## between U4SimulateTest.sh and U4SimtraceTest.sh 
+## makes sense for everything that is very GEOM specific to be within the geomscript
+
+
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
@@ -57,48 +72,10 @@ export Local_DsG4Scintillation_DISABLE=1
 #export G4OpAbsorption_DISABLE=1
 #export G4OpRayleigh_DISABLE=1
 #export G4OpBoundaryProcess_DISABLE=1
-export G4FastSimulationManagerProcess_ENABLE=1  
-## HMM: should FastSim process be switched off for N=1 running ? 
 
 export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
-
-## u4/tests/U4SimulateTest.cc
 export BeamOn=${BeamOn:-1}
-
-geomscript=$GEOM.sh 
-export VERSION=${N:-0}
-
-if [ -f "$geomscript" ]; then  
-    source $geomscript $VERSION 
-else
-    echo $BASH_SOURCE : no geomscript $geomscript
-fi 
-
-## moved LAYOUT control inside geomscript so its in common 
-## between U4SimulateTest.sh and U4SimtraceTest.sh 
-
-
-if [ "$VERSION" == "0" ]; then 
-    f0=Pyrex/Pyrex:AroundCircle0/hama_body_phys
-    f1=Pyrex/Pyrex:hama_body_phys/AroundCircle0
-    f2=Vacuum/Vacuum:hama_inner1_phys/hama_inner2_phys
-    f3=Vacuum/Vacuum:hama_inner2_phys/hama_inner1_phys
-    f4=Pyrex/Pyrex:AroundCircle1/nnvt_body_phys
-    f5=Pyrex/Pyrex:nnvt_body_phys/AroundCircle1
-    f6=Vacuum/Vacuum:nnvt_inner1_phys/nnvt_inner2_phys
-    f7=Vacuum/Vacuum:nnvt_inner2_phys/nnvt_inner1_phys
-
-    f8=Pyrex/Pyrex:nnvt_body_phys/nnvt_log_pv 
-
-    case $LAYOUT in 
-       two_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7" ;;
-       one_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,$f8" ;;
-    esac
-fi 
-
-export U4Recorder__FAKES="$fakes"
-export U4Recorder__FAKES_SKIP=1
 export U4Recorder__PIDX_ENABLED=1 
 
 # python ana level presentation 
@@ -109,17 +86,12 @@ log=${bin}.log
 logN=${bin}_$VERSION.log
 
 
-
-
 #num_ph=2
 #num_ph=10
 #num_ph=1000      #  1k
 num_ph=10000    # 10k
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
-
-
-
 
 if [ -n "$RERUN" ]; then 
    export OPTICKS_G4STATE_RERUN=$RERUN
@@ -139,18 +111,13 @@ export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended s
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep state files small 
 
-# standalone access to PMT data 
-export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
-
-
-
-radius=250
-#radius=0
-[ $num_ph -lt 11  ] && radius=0
-
 
 
 if [ "$LAYOUT" == "two_pmt" ]; then
+
+    radius=250
+    #radius=0
+    [ $num_ph -lt 11  ] && radius=0
 
     ttype=point
     case $ttype in 
@@ -165,13 +132,14 @@ if [ "$LAYOUT" == "two_pmt" ]; then
 
 elif [ "$LAYOUT" == "one_pmt" ]; then 
 
-    ttype=point
+    radius=280   # approx PMT extents : xy -255:255, z -190:190
+    ttype=line
     case $ttype in 
       disc) pos=0,0,0 ;;
-      line) pos=0,0,0 ;;
+      line) pos=0,0,190 ;;
      point) pos=0,0,100 ;;  # PMT upper mid-vacuum 
     esac
-    mom=0,0,1     # +Z directly upwards
+    mom=0,0,-1   
 fi 
 
 export SEvent_MakeGensteps_num_ph=$num_ph

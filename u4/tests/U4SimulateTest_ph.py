@@ -80,20 +80,20 @@ if __name__ == '__main__':
     print("\nq[n > 16]  ## flag sequence of big bouncers  ")
     print(repr(q[n>16]))  
 
-    cut = 10
+    n_cut = 10
 
-    expr = "q[n > %d]" % cut 
+    expr = "q[n > %d]" % n_cut 
     print("\n%s  ## flag sequence of big bouncers  " % expr )
     print(repr(eval(expr)))  
 
-    expr = "np.c_[n,q][n>%d]" % (cut)
+    expr = "np.c_[n,q][n>%d]" % (n_cut)
     print("\n%s  ## nibble count with flag sequence of big bouncers  " % expr )
     print(eval(expr))  
 
     print("\nnp.where(n > 28)  ## find index of big bouncer " )
     print(np.where(n > 28)) 
 
-    expr = "np.c_[np.where(n>%d)[0],q[n > %d]]" % (cut,cut)
+    expr = "np.c_[np.where(n>%d)[0],q[n > %d]]" % (n_cut,n_cut)
     print("\n%s  ## show indices of multiple big bouncers together with history " % expr)
     print(eval(expr))
 
@@ -113,6 +113,8 @@ if __name__ == '__main__':
 
 
     pos = t.photon[:,0,:3]  
+    flagmask = t.photon[:,3,3].view(np.int32) 
+
     expr = " np.where( np.logical_and( pos[:,0] < -150, pos[:,2] > 200 )  ) "
     print("\n%s ## common break out line, use t.photon end position to get indices " % expr )
     print(eval(expr))
@@ -122,7 +124,6 @@ if __name__ == '__main__':
     print(eval(expr))
 
 
-    flagmask = t.photon[:,3,3].view(np.int32) 
     SURFACE_DETECT = 0x1 << 6 
     sd = flagmask & SURFACE_DETECT
     w_sd = np.where( sd )[0]

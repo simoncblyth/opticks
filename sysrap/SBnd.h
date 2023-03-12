@@ -130,7 +130,7 @@ inline void SBnd::GetMaterialPropNames(std::vector<std::string>& pnames, const c
     for(unsigned i=0 ; i < MaterialProp.size() ; i++) 
     {
         const char* name = MaterialProp[i].name ; 
-        if(sstr::StartsWith(name, skip_prefix) == false ) pnames.push_back(name) ; 
+        if(sstr::MatchStart(name, skip_prefix) == false ) pnames.push_back(name) ; 
     }
 }
 

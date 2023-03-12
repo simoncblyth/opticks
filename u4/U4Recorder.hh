@@ -75,11 +75,25 @@ struct U4_API U4Recorder
     template<typename T> void UserSteppingAction(const G4Step*);
     template<typename T> void UserSteppingAction_Optical(const G4Step*); 
 
+    static const double EPSILON ; 
+    enum { 
+        FAKE_STEP_MM = 0x1 << 0, 
+        FAKE_FDIST = 0x1 << 1, 
+        FAKE_MANUAL = 0x1 << 2  
+        }; 
+    static constexpr const char* FAKE_STEP_MM_ = "FAKE_STEP_MM" ;
+    static constexpr const char* FAKE_FDIST_ = "FAKE_FDIST" ;
+    static constexpr const char* FAKE_MANUAL_ = "FAKE_MANUAL" ;
+
+    unsigned ClassifyFake(const G4Step* step, const char* spec, bool dump); 
+    std::string DescFake(unsigned fakemask); 
+
+
     static std::vector<std::string>* FAKES ;       // envvar U4Recorder__FAKES
     static bool                      FAKES_SKIP ;  // envvar U4Recorder__FAKES_SKIP 
 
     static bool IsListed( const std::vector<std::string>* LIST, const char* spec ) ;
-    static bool IsFake( const char* spec ); 
+    static bool IsListedFake( const char* spec ); 
 
 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, const char* from ); 

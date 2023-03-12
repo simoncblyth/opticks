@@ -5,15 +5,15 @@
 #include <sstream>
 
 #include "NP.hh"
-#include "SStr.hh"
+#include "sstr.h"
 
 
 class G4VPhysicalVolume ; 
 
 struct U4Volume
 {
-    static const G4VPhysicalVolume* FindPV( const G4VPhysicalVolume* top,  const char* qname );
-    static void FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ); 
+    static const G4VPhysicalVolume* FindPV( const G4VPhysicalVolume* top,  const char* qname, int mode=sstr::MATCH_ALL );
+    static void FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth ); 
 
 
     static const G4VPhysicalVolume* FindPVSub( const G4VPhysicalVolume* top, const char* sub ); 
@@ -40,23 +40,32 @@ struct U4Volume
     static void WriteTreeNames( std::vector<const G4VPhysicalVolume*>& pvs , const char* dir, const char* name, const char* opt); 
 
     static void WriteNames( const G4VPhysicalVolume* top, const char* dir  ); 
-
-
 };
 
-inline const G4VPhysicalVolume*  U4Volume::FindPV( const G4VPhysicalVolume* start_pv,  const char* qname ) 
+/**
+U4Volume::FindPV
+------------------
+
+Find volume named *qname* at or beneath *start_pv*
+
+**/
+
+inline const G4VPhysicalVolume*  U4Volume::FindPV( const G4VPhysicalVolume* start_pv,  const char* qname, int mode  ) 
 {
     std::vector<const G4VPhysicalVolume*> pvs ; 
-    FindPV_r(start_pv, qname, pvs, 0 ); 
+    FindPV_r(start_pv, qname, mode, pvs, 0 ); 
     return pvs.size() == 1 ? pvs[0] : nullptr ; 
 }
-inline void U4Volume::FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) 
+inline void U4Volume::FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) 
 {
-    const G4String& name = pv->GetName(); 
-    if( strcmp(name.c_str(), qname) == 0 ) pvs.push_back( pv ); 
+    const G4String& name_ = pv->GetName(); 
+    const char* name = name_.c_str() ; 
+    if(sstr::Match_(name, qname, mode)) pvs.push_back( pv ); 
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindPV_r( lv->GetDaughter(i), qname, pvs, depth+1 ); 
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindPV_r( lv->GetDaughter(i), qname, mode, pvs, depth+1 ); 
 }
+
+
 
 
 
@@ -64,7 +73,7 @@ inline const G4VPhysicalVolume* U4Volume::FindPVSub( const G4VPhysicalVolume* to
 {
     int spare = -99 ; 
     int ordinal_ = -99 ; 
-    const char* q_soname = SStr::ParseStringIntInt(sub, spare, ordinal_ ); 
+    const char* q_soname = sstr::ParseStringIntInt(sub, spare, ordinal_ ); 
     assert( spare == 0 && ordinal_ > -1 );  
     unsigned ordinal = ordinal_ ; 
     unsigned count = 0 ; 
@@ -99,8 +108,7 @@ inline void U4Volume::FindPV_WithSolidName_r( const G4VPhysicalVolume* pv,  cons
     G4String soname_ = so->GetName() ;  // curiously by value 
     const char* soname = soname_.c_str(); 
 
-    //bool match = strcmp(soname, q_soname) == 0 ; 
-    bool match = SStr::StartsWith( soname, q_soname ); 
+    bool match = sstr::MatchStart( soname, q_soname ); 
 
     if(match) pvs.push_back( pv );
 
