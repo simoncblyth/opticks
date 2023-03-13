@@ -196,6 +196,7 @@ def pvplt_plotter(label="pvplt_plotter"):
 
 def mpplt_plotter(label="mpplt_plotter"):
     fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) # 100 dpi 
+    fig.suptitle(label)
     ax.set_aspect('equal')
     return fig, ax
 

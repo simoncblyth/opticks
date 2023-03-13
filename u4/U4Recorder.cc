@@ -594,16 +594,19 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             ; 
     }
 
-    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-    //assert( flag > 0 );  // SKIP ASSERT
+    
 
-    LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
+    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
+    assert( flag > 0 );  // SKIP ASSERT
 
 
     bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
 
-    unsigned fakemask = FAKES_SKIP ? ClassifyFake(step, spec, PIDX_DUMP ) : 0 ; 
-    bool is_fake = fakemask > 0 ; 
+    //bool is_transmit_flag = OpticksPhoton::IsTransmitFlag(flag); 
+    LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
+
+    unsigned fakemask = FAKES_SKIP ? ClassifyFake(step, flag, spec, PIDX_DUMP ) : 0 ; 
+    bool is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
 
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
@@ -654,13 +657,15 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 const double U4Recorder::EPSILON = 1e-4 ; 
 
-unsigned U4Recorder::ClassifyFake(const G4Step* step, const char* spec, bool dump )
+unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump )
 {
     unsigned fakemask = 0 ; 
 
+    bool is_reflect_flag = OpticksPhoton::IsReflectFlag(flag); 
+
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
-    if(step_mm < EPSILON) fakemask |= FAKE_STEP_MM ; 
+    if(step_mm < EPSILON && is_reflect_flag == false) fakemask |= FAKE_STEP_MM ; 
 
     const char* fake_pv_name = "body_phys" ; 
 

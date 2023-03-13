@@ -45,6 +45,11 @@ class ModelTrigger_Debug(AttrBase):
         next_mct  = mtd[:,4,3]
         next_norm = mtd[:,5,:3]
 
+        EInside1  = mtd[:,6,0].view(np.uint64)
+        s61       = mtd[:,6,1].view(np.uint64)
+        s62       = mtd[:,6,2].view(np.uint64)
+        s63       = mtd[:,6,3].view(np.uint64)
+
         mlv = MLV[mlv_]
         pv  = PV[pv_]
         whereAmI = WAI[whereAmI_]
@@ -111,6 +116,10 @@ class ModelTrigger_Debug(AttrBase):
         self.lnext_norm = lnext_norm
         self.gnext_pos = gnext_pos
         self.gnext_norm = gnext_norm
+        self.EInside1 = EInside1
+        self.s61 = s61
+        self.s62 = s62
+        self.s63 = s63
 
 
     def __str__(self):

@@ -107,11 +107,11 @@ if __name__ == '__main__':
     print("\n%s  ## bexpr : unique histories bqu in descending count bqn order, bqi first index " % bexpr )
     print(eval(bexpr))  
 
-    qu = np.unique(np.concatenate([aqu,bqu])) ## unique histories of both A and B in uncontrolled order
+    qu = np.unique(np.concatenate([aqu,bqu]))       ## unique histories of both A and B in uncontrolled order
     ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
 
     for i, q in enumerate(qu):
-        ai_ = np.where(aqu == q )[0]   # find indices in the a and b unique lists 
+        ai_ = np.where(aqu == q )[0]           # find indices in the a and b unique lists 
         bi_ = np.where(bqu == q )[0]   
         ai = ai_[0] if len(ai_) == 1 else -1
         bi = bi_[0] if len(bi_) == 1 else -1
@@ -131,7 +131,12 @@ if __name__ == '__main__':
     quo = qu[abxo]                     # qu ordered 
     iq = np.arange(len(qu)) 
 
-    c2,c2n,c2c = chi2( abo[:,2,0], abo[:,2,1] )   
+
+    bzero = np.where( np.logical_and( abo[:,2,0] > 10, abo[:,2,1] == 0 ) )[0]                                                                                             
+    azero = np.where( np.logical_and( abo[:,2,1] > 10, abo[:,2,0] == 0 ) )[0]                                                                                             
+
+    c2cut = int(os.environ.get("C2CUT","30")) 
+    c2,c2n,c2c = chi2( abo[:,2,0], abo[:,2,1], cut=c2cut )   
     c2sum = c2.sum()
     c2per = c2sum/c2n 
 
@@ -139,16 +144,38 @@ if __name__ == '__main__':
     siq = list(map(lambda _:"%2d" % _ , iq ))  
     sc2 = list(map(lambda _:"%7.4f" % _, c2 ))   
 
-    print( "c2sum : %10.4f c2n : %10.4f c2per: %10.4f " % ( c2sum, c2n, c2per ))  
+    print( "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut ))  
 
     sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,2,:])) 
     sabo1 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,1,:])) 
   
     #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]][:30]"
     abexpr = "np.c_[siq,quo,siq,sabo2,sc2,sabo1][:30]"  
+    subs = "[:30] [azero] [bzero]"
 
-    print("\n%s  ## abexpr : A-B comparison of unique history counts " % abexpr )
-    print(eval(abexpr))  
+    for sub in subs.split():
+        expr = "%s%s" % (abexpr, sub)
+        print("\n%s  ## A-B comparison of unique history counts " % expr )
+        print(eval(expr))  
+    pass
+
+    for _ in azero:
+        idxs = np.where( quo[_] == bq[:,0] )[0]
+        for idx in idxs[:10]:
+            viz = "u4t ; N=1 BPID=%d BOPT=idx ./U4SimtraceTest.sh ana" % idx
+            print(viz)
+        pass
+    pass
+    for _ in bzero:
+        idxs = np.where( quo[_] == aq[:,0] )[0] 
+        print(quo[_])
+        for idx in idxs[:10]:
+            viz = "u4t ; N=0 APID=%d AOPT=idx ./U4SimtraceTest.sh ana" % idx
+            print(viz)
+        pass
+        print("\n")
+    pass
+
 
 
 

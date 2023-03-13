@@ -114,6 +114,7 @@ if [ "$VERSION" == "0" ]; then
     # jPOM config
     ModelTriggerSimple=0  # default 
     ModelTriggerBuggy=1
+    export junoPMTOpticalModel__PIDX_ENABLED=1
     export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTriggerSimple
 
     export G4FastSimulationManagerProcess_ENABLE=1  

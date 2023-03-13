@@ -74,6 +74,8 @@ struct SYSRAP_API OpticksPhoton
     static bool IsBoundaryFlag(const unsigned flag); 
     static bool IsBulkFlag(const unsigned flag); 
     static bool IsLiveFlag(const unsigned flag); 
+    static bool IsReflectFlag(const unsigned flag); 
+    static bool IsTransmitFlag(const unsigned flag); 
 
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
@@ -120,7 +122,14 @@ inline bool OpticksPhoton::IsLiveFlag(const unsigned flag) // static : SC BT BR 
 {
     return (flag & (BULK_SCATTER | BOUNDARY_TRANSMIT | BOUNDARY_REFLECT | SURFACE_DREFLECT | SURFACE_SREFLECT | BULK_REEMIT )) != 0 ;
 }
-
+inline bool OpticksPhoton::IsReflectFlag(const unsigned flag) // static : BR DR SR
+{
+    return (flag & (BOUNDARY_REFLECT | SURFACE_DREFLECT | SURFACE_SREFLECT)) != 0 ;
+}
+inline bool OpticksPhoton::IsTransmitFlag(const unsigned flag) // static : BT
+{
+    return flag == BOUNDARY_TRANSMIT ; 
+}
 
 
 

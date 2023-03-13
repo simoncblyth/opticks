@@ -85,7 +85,7 @@ struct U4_API U4Recorder
     static constexpr const char* FAKE_FDIST_ = "FAKE_FDIST" ;
     static constexpr const char* FAKE_MANUAL_ = "FAKE_MANUAL" ;
 
-    unsigned ClassifyFake(const G4Step* step, const char* spec, bool dump); 
+    unsigned ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump); 
     std::string DescFake(unsigned fakemask); 
 
 
