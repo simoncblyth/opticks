@@ -31,8 +31,6 @@ Keep starting and stopping the third session as change APID, BPID (-ve disables)
 
     APID=17 BPID=7  N=1 ./U4SimtraceTest.sh ana
 
-
-
 Examples
 -----------
 
@@ -91,28 +89,20 @@ EOU
 }
 
 bin=U4SimtraceTest
-
-
 apid=-1
 bpid=-1
 
-
-
 export VERSION=${N:-0}
-
 export GEOM=FewPMT
-
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
-
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
 export APID=${APID:-$apid}   ## NB APID for photons from ALL0
 export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
 
 geomscript=$GEOM.sh 
-
 if [ -f "$geomscript" ]; then  
     source $geomscript 
 else
@@ -124,7 +114,6 @@ case $LAYOUT in
         *) loc="skip"        ;; 
 esac
 export LOC=${LOC:-$loc}      # python ana level presentation 
-
 
 
 loglevels()

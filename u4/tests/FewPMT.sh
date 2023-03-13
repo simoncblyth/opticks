@@ -114,8 +114,11 @@ if [ "$VERSION" == "0" ]; then
     # jPOM config
     ModelTriggerSimple=0  # default 
     ModelTriggerBuggy=1
+    #ModelTrigger_IMPL=$ModelTriggerSimple
+    ModelTrigger_IMPL=$ModelTriggerBuggy
+
     export junoPMTOpticalModel__PIDX_ENABLED=1
-    export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTriggerSimple
+    export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTrigger_IMPL
 
     export G4FastSimulationManagerProcess_ENABLE=1  
     ## HMM: should FastSim process be switched off for N=1 running ? 

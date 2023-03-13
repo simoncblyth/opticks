@@ -3,7 +3,6 @@
 U4SimtraceTest.py
 ====================
 
-
 envvars
 ---------
 
@@ -15,7 +14,6 @@ AFOLD
     optional first simulation photon histories
 BFOLD
     optional second simulation photon histories
-
 
 classes
 ---------
@@ -29,19 +27,12 @@ U4SimtraceTest(RFold)
 U4SimulateTest(RFold)
    photon histories 
 
-
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
-
-## HMM: should eventually split off mpplt from pvplt, but its too convenient to 
-## keep them together for now : so effectively assume both are installed 
-#from opticks.ana.pvplt import mpplt_add_contiguous_line_segments, mpplt_add_line, mpplt_plotter, mpplt_focus_aspect
-#from opticks.ana.pvplt import pvplt_plotter
-
 from opticks.ana.pvplt import *
 
 from opticks.ana.p import * 
@@ -49,10 +40,6 @@ from opticks.ana.eget import eintarray_
 
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 GCOL = "grey"
-
-#from opticks.ana.framegensteps import FrameGensteps
-#from opticks.ana.simtrace_positions import SimtracePositions
-#from opticks.ana.simtrace_plot import SimtracePlot, pv, mp
 
 SZ = float(os.environ.get("SZ",3))
 REVERSE = int(os.environ.get("REVERSE","0")) == 1
@@ -66,10 +53,26 @@ TFOLD = os.environ.get("TFOLD", None)
 AFOLD = os.environ.get("AFOLD", None)
 BFOLD = os.environ.get("BFOLD", None)
 
+
+N = int(os.environ.get("VERSION","-1")) 
 APID = int(os.environ.get("APID", -1 ))
 BPID = int(os.environ.get("BPID", -1 ))
+AOPT = os.environ.get("AOPT", "")
+BOPT = os.environ.get("BOPT", "")
 
-TOPLINE = os.environ.get("TOPLINE","U4SimtraceTest.py")
+
+topline = "N=%d " % N
+if APID > -1: topline += "APID=%d " % APID
+if len(AOPT) > 0: topline += "AOPT=%s " % AOPT
+
+if BPID > -1: topline += "BPID=%d " % BPID
+if len(BOPT) > 0: topline += "BOPT=%s " % BOPT
+
+topline += " ./U4SimtraceTest.py ana"
+
+
+
+TOPLINE = os.environ.get("TOPLINE",topline )
 BOTLINE = os.environ.get("BOTLINE","%s" % SFOLD )
 THIRDLINE = os.environ.get("THIRDLINE", "APID:%d BPID:%d " % (APID,BPID) )
 
@@ -218,15 +221,21 @@ class U4SimtraceTest(RFold):
         thirdline = ""
         subtitle = ""
 
-        if len(self.opp) == 2:
+        num_opp = len(self.opp)
+
+        if num_opp == 2:
             a,b = self.opp
             thirdline = a.label 
             subtitle  = b.label
         else:
             for one in self.opp:
+                print("one.label:%s " % one.label)
                 thirdline += one.label 
             pass 
         pass
+
+        subtitle = os.environ.get("SUBTITLE", "")
+        print("num_opp:%d subtitle:%s " % (num_opp, subtitle) )
         
         # adjust the position of the title, to legibly display 4 lines      
         TOF = float(os.environ.get("TOF","0.99")) 
@@ -235,7 +244,6 @@ class U4SimtraceTest(RFold):
         suptitle = TOPLINE 
 
         fig.suptitle(suptitle, family="monospace", va="top", y=TOF, fontweight='bold' )
-
 
         ax.text(-0.05,  1.02, thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
         ax.text( 1.05, -0.12, subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
