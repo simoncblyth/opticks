@@ -26,7 +26,9 @@ arg=${1:-run}
 
 
 #geom=BoxOfScintillator  # default 
-geom=hama_body_log
+#geom=hama_body_log
+geom=hamaLogicalPMT
+#geom=hamaBodyLog
 
 export GEOM=${GEOM:-$geom}
 export U4VolumeMaker=INFO

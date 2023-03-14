@@ -57,6 +57,22 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
+    end = t.photon[:,0,:3]
+    q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
+    q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
+    qq = ht.Convert(q_)
+    n = np.sum( seqnib_(q_), axis=1 ) 
+
+    w_sr = np.where( qq == SR )    
+    w_to = np.where( qq == TO ) 
+    w_br = np.where( qq == BR ) 
+   
+    sr_pos = t.record[tuple(w_sr[0]), tuple(w_sr[1]),0,:3]   
+    to_pos = t.record[tuple(w_to[0]), tuple(w_to[1]),0,:3]   
+    br_pos = t.record[tuple(w_br[0]), tuple(w_br[1]),0,:3]   
+
+
+
     LAYOUT = os.environ.get("LAYOUT", "")
 
     print("CMDLINE:%s" % (CMDLINE) )
@@ -72,24 +88,14 @@ if __name__ == '__main__':
     st_ = t.aux[:,:,2,3].view(np.int32)
     st = SPECS[st_]
 
-    u_st, n_st = np.unique(st, return_counts=True)
-    expr = "np.c_[n_st,u_st][np.argsort(n_st)[::-1]]"
-    print(expr)
-    print(eval(expr))
+    st_dump = False
+    if st_dump:
+        u_st, n_st = np.unique(st, return_counts=True)
+        expr = "np.c_[n_st,u_st][np.argsort(n_st)[::-1]]"
+        print(expr)
+        print(eval(expr))
+    pass
 
-    end = t.photon[:,0,:3]
-    q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
-    q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
-    qq = ht.Convert(q_)
-    n = np.sum( seqnib_(q_), axis=1 ) 
-
-    w_sr = np.where( qq == SR )    
-    w_to = np.where( qq == TO ) 
-    w_br = np.where( qq == BR ) 
-   
-    sr_pos = t.record[tuple(w_sr[0]), tuple(w_sr[1]),0,:3]   
-    to_pos = t.record[tuple(w_to[0]), tuple(w_to[1]),0,:3]   
-    br_pos = t.record[tuple(w_br[0]), tuple(w_br[1]),0,:3]   
 
 
     exprs = "q[PIDX] t.record[PIDX,:n[PIDX],0] mtd.pv[mtd.index==PIDX]"    
@@ -110,13 +116,15 @@ if __name__ == '__main__':
     mtd_upper = mtd.pos[:,2] > 1e-4   
     mtd_mid   = np.abs( mtd.pos[:,2]) < 1e-4
     mtd_lower = mtd.pos[:,2] < -1e-4   
+    mtd_pyrex  = mtd.whereAmI_ == 1 
+    mtd_vacuum = mtd.whereAmI_ == 2 
 
-    mtd_trig_vacuum = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 2 )
+    mtd_trig_vacuum = np.logical_and(mtd_trig, mtd_vacuum)
     mtd_trig_vacuum_upper = np.logical_and(mtd_trig_vacuum, mtd_upper )
     mtd_trig_vacuum_mid   = np.logical_and(mtd_trig_vacuum, mtd_mid )
     mtd_trig_vacuum_lower = np.logical_and(mtd_trig_vacuum, mtd_lower )
 
-    mtd_trig_pyrex  = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 1 )
+    mtd_trig_pyrex  = np.logical_and(mtd_trig, mtd_pyrex )
     mtd_trig_pyrex_upper = np.logical_and(mtd_trig_pyrex, mtd_upper )
     mtd_trig_pyrex_mid   = np.logical_and(mtd_trig_pyrex, mtd_mid )
     mtd_trig_pyrex_lower = np.logical_and(mtd_trig_pyrex, mtd_lower )
@@ -130,13 +138,8 @@ if __name__ == '__main__':
     mtd_mid
     mtd_lower
 
-
-
-
-
-
-
-
+    mtd_pyrex
+    mtd_vacuum
 
 
 
@@ -210,11 +213,13 @@ if __name__ == '__main__':
     #ppos0_ = "mtd.next_pos[mtd_trig] # just around upper hemi"
     #ppos0_ = "sr_pos # SR positions  "
     #ppos0_ = "to_pos # TO positions  "
-    ppos0_ = "br_pos # BR positions  "
+    #ppos0_ = "br_pos # BR positions  "
+    #ppos0_ = "mtd.pos[mtd_pyrex] #   "
+    ppos0_ = "mtd.pos[mtd_trig_pyrex] #   "
 
-    #ppos1_ = "None" 
+    ppos1_ = "None" 
     #ppos1_ = "mtd.pos[mtd_vacuum_upper]"
-    ppos1_ = "mtd.pos[mtd_trig_pyrex_lower]"
+    #ppos1_ = "mtd.pos[mtd_trig_pyrex_lower]"
     #ppos1_  = "end[xz_midline]"
     #ppos1_  = "penultimate  # photon position prior to terminal one"
     #ppos1_  = "prior  # two positions before last"

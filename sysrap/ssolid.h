@@ -57,6 +57,14 @@ inline void ssolid::GetCenterExtent( float4& ce, const G4VSolid* solid ) // stat
 }
 
 
+/**
+ssolid::Distance_
+------------------
+
+See u4/tests/G4Orb_Test.cc
+
+**/
+
 inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
 {
     in =  solid->Inside(pos) ; 

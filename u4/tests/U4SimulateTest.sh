@@ -131,11 +131,14 @@ if [ "$LAYOUT" == "two_pmt" ]; then
 
 elif [ "$LAYOUT" == "one_pmt" ]; then 
 
-    radius=280   # approx PMT extents : xy -255:255, z -190:190
+    #radius=280   # approx PMT extents : xy -255:255, z -190:190
+    radius=120    # focus on HAMA dynode
+
     ttype=line
     case $ttype in 
       disc) pos=0,0,0 ;;
-      line) pos=0,0,190 ;;
+    # line) pos=0,0,190 ;;
+      line) pos=0,0,-20 ;;
      point) pos=0,0,100 ;;  # PMT upper mid-vacuum 
     esac
     mom=0,0,-1   
