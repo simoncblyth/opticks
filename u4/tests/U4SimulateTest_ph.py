@@ -46,7 +46,8 @@ if __name__ == '__main__':
     pos = t.record[:,:,0,:3].reshape(-1,3)   # xyz : all photons, all steps
     q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
     q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
-
+    qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
+    n = np.sum( seqnib_(q_), axis=1 ) 
 
     ## ReplicaNumber : but when not more than one of each type of volume this is -1
     rp = t.record[...,1,3].view(np.int32) 
@@ -73,7 +74,6 @@ if __name__ == '__main__':
     #print("\nq[v_rp == 0]  ## history flag sequence for unique ReplicaNumber sequence 0"  )
     #print(repr(q[v_rp == 0]))
 
-    n = np.sum( seqnib_(q_), axis=1 ) 
     print("\nnp.unique(n, return_counts=True) ## occupied nibbles  ")
     print(repr(np.unique(n, return_counts=True)))
     

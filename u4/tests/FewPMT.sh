@@ -71,8 +71,8 @@ export nnvt_UsePMTOpticalModel=$pom
 export nnvt_UseNaturalGeometry=$version 
 
 
-geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
-#geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
+#geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
+geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
 #geomlist=nnvtLogicalPMT
 #geomlist=hamaLogicalPMT
 

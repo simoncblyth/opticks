@@ -351,8 +351,22 @@ class U4SimtraceTest(RFold):
 
 
 class U4SimulateTest(RFold):
+    """
+    TODO: separate and relocate for easier reuse
+    """
     def __init__(self, f):
+
+        q_ = f.seq[:,0]
+        q  = ht.seqhis(q_)  # ht from opticks.ana.p 
+        qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
+
+        n = np.sum( seqnib_(q_), axis=1 )   
+
         self.f = f 
+        self.q_ = q_
+        self.q = q
+        self.qq = qq
+        self.n = n 
 
         self._r = None
         self.r = None
@@ -379,6 +393,7 @@ class U4SimulateTest(RFold):
         return self._pid
     def _set_pid(self, pid):
         f = self.f
+        q = self.q
         symbol = self.symbol
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
@@ -390,7 +405,6 @@ class U4SimulateTest(RFold):
             a = _a[wl > 0]
             ast = a[:len(a),1,3].copy().view(np.int8)[::4]
             pass  
-            q = ht.seqhis(f.seq[:,0])  # ht from opticks.ana.p 
             qpid = q[pid][0].decode("utf-8").strip()  
 
             npoi = (len(qpid)+1)//3 
@@ -404,7 +418,6 @@ class U4SimulateTest(RFold):
             _a = None
             a = None
             ast = None
-            q = None
             qpid = None
             label = ""
         pass
@@ -414,7 +427,6 @@ class U4SimulateTest(RFold):
         self._a = _a
         self.a = a
         self.ast = ast
-        self.q = q 
         self.qpid = qpid
         self.label = label
 

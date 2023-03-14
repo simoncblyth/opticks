@@ -13,8 +13,25 @@ import os, textwrap, numpy as np
 from opticks.ana.fold import Fold, AttrBase
 from opticks.ana.p import * 
 
+BULK_ABSORB = 0x1 <<  3
 SURFACE_DETECT = 0x1 << 6 
 SURFACE_ABSORB = 0x1 << 7
+SURFACE_DREFLECT  = 0x1 << 8
+SURFACE_SREFLECT = 0x1 <<  9   
+BOUNDARY_REFLECT  = 0x1 << 10
+BOUNDARY_TRANSMIT = 0x1 << 11
+TORCH = 0x1 << 12
+
+AB = BULK_ABSORB.bit_length()
+SD = SURFACE_DETECT.bit_length()
+SA = SURFACE_ABSORB.bit_length()
+DR = SURFACE_DREFLECT.bit_length()
+SR = SURFACE_SREFLECT.bit_length()   
+BR = BOUNDARY_REFLECT.bit_length()
+BT = BOUNDARY_TRANSMIT.bit_length()
+TO = TORCH.bit_length()
+
+
 
 N = int(os.environ.get("VERSION", "-1"))
 CMDLINE = "N=%d ./U4SimulateTest.sh mt" % N
@@ -63,7 +80,17 @@ if __name__ == '__main__':
     end = t.photon[:,0,:3]
     q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
     q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
+    qq = ht.Convert(q_)
     n = np.sum( seqnib_(q_), axis=1 ) 
+
+    w_sr = np.where( qq == SR )    
+    w_to = np.where( qq == TO ) 
+    w_br = np.where( qq == BR ) 
+   
+    sr_pos = t.record[tuple(w_sr[0]), tuple(w_sr[1]),0,:3]   
+    to_pos = t.record[tuple(w_to[0]), tuple(w_to[1]),0,:3]   
+    br_pos = t.record[tuple(w_br[0]), tuple(w_br[1]),0,:3]   
+
 
     exprs = "q[PIDX] t.record[PIDX,:n[PIDX],0] mtd.pv[mtd.index==PIDX]"    
     for expr in exprs.split():
@@ -137,7 +164,7 @@ if __name__ == '__main__':
     pass
     anno = "\n".join(lines)
     print(anno)
-    os.environ["LEFTANNO"] = anno 
+    #os.environ["LEFTANNO"] = anno 
 
     idxs = np.unique(mtd.index[mtd_trig_pyrex_lower])   # photon indices 
 
@@ -177,10 +204,13 @@ if __name__ == '__main__':
     #ppos0_ = "end[w_midline]  # photons ending on midline " 
     #ppos0_ = "mtd.pos[mtd_outside] # just around upper hemi "
     #ppos0_  = "mtd.pos[mtd_trig]" 
-    ppos0_ = "mtd.pos[mtd_trig_pyrex]  # Simple:just around upper hemi, Buggy:also dynode/MCP sprinkle "
+    #ppos0_ = "mtd.pos[mtd_trig_pyrex]  # Simple:just around upper hemi, Buggy:also dynode/MCP sprinkle "
     #ppos0_ = "mtd.pos[mtd_trig_pyrex_lower] # "
     #ppos0_ = "mtd.pos[mtd_trig_vacuum] # mostly on midline, sprinkle of obliques around upper hemi "
     #ppos0_ = "mtd.next_pos[mtd_trig] # just around upper hemi"
+    #ppos0_ = "sr_pos # SR positions  "
+    #ppos0_ = "to_pos # TO positions  "
+    ppos0_ = "br_pos # BR positions  "
 
     #ppos1_ = "None" 
     #ppos1_ = "mtd.pos[mtd_vacuum_upper]"

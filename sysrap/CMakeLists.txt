@@ -428,6 +428,7 @@ add_custom_target(PythonGS ALL DEPENDS ${IGS} )
 #]=]
 
 
+## HMM:the flags change very infrequently : easier to code generate into source directories for discoverability 
 set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
 set(IPH ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
 add_custom_command(

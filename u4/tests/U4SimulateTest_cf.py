@@ -149,8 +149,8 @@ if __name__ == '__main__':
     sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,2,:])) 
     sabo1 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,1,:])) 
   
-    #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]][:30]"
-    abexpr = "np.c_[siq,quo,siq,sabo2,sc2,sabo1][:30]"  
+    #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]]"
+    abexpr = "np.c_[siq,quo,siq,sabo2,sc2,sabo1]"  
     subs = "[:30] [azero] [bzero]"
 
     for sub in subs.split():
