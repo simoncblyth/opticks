@@ -23,7 +23,6 @@ Analysis loading saved results::
     N=1 MODE=3 ./U4SimulateTest.sh ph  # 3D GUI with pyvista
 
 
-
 Rerunning single photons off the same g4state is a bit delicate to arrange.
 This incantation succeeds to rerun the N=0 big bouncer with N=1::
 
@@ -241,7 +240,20 @@ if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
 fi 
 
-
+if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$BASE/$VERSION/figs
+    export CAP_REL=U4SimulateTest
+    export CAP_STEM=$GEOM
+    case $arg in  
+       pvcap) source pvcap.sh cap  ;;  
+       mpcap) source mpcap.sh cap  ;;  
+       pvpub) source pvcap.sh env  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+    if [ "$arg" == "pvpub" -o "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
 
 
 

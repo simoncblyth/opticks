@@ -3,6 +3,48 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
+Commands
+-----------
+
+run/dbg
+    simtrace intersects against geometry 
+ana
+    presentation of simtrace intersects using python matplotlib OR pyvista
+mpcap/pvcap
+    screenshot current matplotlib/pyvista window with chrome cropped 
+mppub/pvpub
+    publication by copying matplotlib/pyvista screenshot png into presentation tree
+
+
+Workflow to add plots to presentations
+-----------------------------------------
+
+1. check matplotlib window plot and annotations are presentable::
+
+     APID=2563 AOPT=idx N=0 SUBTITLE="7:SD at vac/vac" ./U4SimtraceTest.sh ana
+
+2. whilst some part of the matplotlib window is still visible, in a separate tab run::
+
+       u4t ; ./U4SimtraceTest.sh mpcap   
+     
+   * If capture environment depends on envvars make sure that is consistent with above command
+   * NB have to click on the matplotlib window (so it must be visible before running mpcap), that 
+     turns it blue targetting the window screen capture
+
+3. publish that, coping the .png into presentation tree::
+
+     u4t ; PUB=2563_Unphysical_SD_in_vacuum ./U4SimtraceTest.sh mppub
+     ## ensure PUB is a distinct identifier
+
+4. reference the .png by copy/paste the "s5p_line" from the output of the above step 
+   into ~/env/presentation/s5_background_image.txt (use presentation-e) 
+   and reference that by adding a presentation page with matching title 
+ 
+5. it is good to include the primary commandline from step 1 in the presentation, even if 
+   not presented, in order to allow reproducing the plot 
+
+
+
 Suggested Workflow To Find Photons to Compare and plot
 --------------------------------------------------------
 

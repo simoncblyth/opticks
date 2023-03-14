@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-U4SimulateTest_mtd.py
+U4SimulateTest_mt.py
 ========================
 
 ::
@@ -16,13 +16,15 @@ from opticks.ana.p import *
 SURFACE_DETECT = 0x1 << 6 
 SURFACE_ABSORB = 0x1 << 7
 
-LABEL = os.environ.get("LABEL", "U4SimulateTest_mtd.py" )
-
 N = int(os.environ.get("VERSION", "-1"))
+CMDLINE = "N=%d ./U4SimulateTest.sh mt" % N
+
 VERSION = N  
 MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,3]
 PIDX = int(os.environ.get("PIDX", "123")) 
+
+
 
 
 if MODE > 0:
@@ -33,7 +35,6 @@ from opticks.u4.tests.ModelTrigger_Debug import ModelTrigger_Debug
 
 axes = 0, 2  # X,Z
 H,V = axes 
-label = LABEL 
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
@@ -41,6 +42,7 @@ if __name__ == '__main__':
 
     LAYOUT = os.environ.get("LAYOUT", "")
 
+    print("CMDLINE:%s" % (CMDLINE) )
     print("LAYOUT:%s" % (LAYOUT) )
     print("MODE:%d" % (MODE) )
     print("PIDX:%d" % (PIDX) )
@@ -75,16 +77,67 @@ if __name__ == '__main__':
         print(eval(expr))
     pass
 
+    mtd_outside = np.logical_and(mtd.trig == 1, mtd.EInside1 == 0 )
     
     mtd_trig = mtd.trig == 1 
-    mtd_trig_pyrex  = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 1 )
-    mtd_trig_vacuum = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 2 )
-    mtd_outside = np.logical_and(mtd.trig == 1, mtd.EInside1 == 0 )
-
     mtd_upper = mtd.pos[:,2] > 1e-4   
+    mtd_mid   = np.abs( mtd.pos[:,2]) < 1e-4
     mtd_lower = mtd.pos[:,2] < -1e-4   
+
+    mtd_trig_vacuum = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 2 )
     mtd_trig_vacuum_upper = np.logical_and(mtd_trig_vacuum, mtd_upper )
+    mtd_trig_vacuum_mid   = np.logical_and(mtd_trig_vacuum, mtd_mid )
+    mtd_trig_vacuum_lower = np.logical_and(mtd_trig_vacuum, mtd_lower )
+
+    mtd_trig_pyrex  = np.logical_and(mtd.trig == 1, mtd.whereAmI_ == 1 )
+    mtd_trig_pyrex_upper = np.logical_and(mtd_trig_pyrex, mtd_upper )
+    mtd_trig_pyrex_mid   = np.logical_and(mtd_trig_pyrex, mtd_mid )
     mtd_trig_pyrex_lower = np.logical_and(mtd_trig_pyrex, mtd_lower )
+
+    qwns = textwrap.dedent("""
+    t.photon.shape
+    mtd.pos.shape
+
+    mtd_trig
+    mtd_upper
+    mtd_mid
+    mtd_lower
+
+
+
+
+
+
+
+
+
+
+
+    mtd_trig_pyrex
+    mtd_trig_pyrex_upper
+    mtd_trig_pyrex_mid
+    mtd_trig_pyrex_lower
+
+    mtd_trig_vacuum
+    mtd_trig_vacuum_upper
+    mtd_trig_vacuum_mid
+    mtd_trig_vacuum_lower
+    """)
+
+    lines = []
+    for qwn in qwns.split("\n"): 
+        if len(qwn) == 0:
+            lines.append("")
+        elif qwn.find(".") > -1:
+            lines.append("%30s : %s" % ( qwn, eval(qwn)))
+        else:
+            num = np.count_nonzero(eval(qwn))  
+            lines.append("%30s : %d " % ( qwn, num ))
+        pass
+    pass
+    anno = "\n".join(lines)
+    print(anno)
+    os.environ["LEFTANNO"] = anno 
 
     idxs = np.unique(mtd.index[mtd_trig_pyrex_lower])   # photon indices 
 
@@ -117,29 +170,33 @@ if __name__ == '__main__':
     prior =  t.record[w_midline, tuple(nn-3), 0, :3]          
 
 
-
-
-    ppos0_ = "None"
+    #ppos0_ = "None"
     #ppos0_ = "end"
     #ppos0_ = "end[sd] # photon SD endpoints around the upper hemi"
     #ppos0_ = "end[sa] # photon SA endpoints around the upper hemi and elsewhere"
     #ppos0_ = "end[w_midline]  # photons ending on midline " 
     #ppos0_ = "mtd.pos[mtd_outside] # just around upper hemi "
     #ppos0_  = "mtd.pos[mtd_trig]" 
-    #ppos0_ = "mtd.pos[mtd_trig_pyrex]  # Simple:just around upper hemi, Buggy:also dynode/MCP sprinkle "
+    ppos0_ = "mtd.pos[mtd_trig_pyrex]  # Simple:just around upper hemi, Buggy:also dynode/MCP sprinkle "
     #ppos0_ = "mtd.pos[mtd_trig_pyrex_lower] # "
     #ppos0_ = "mtd.pos[mtd_trig_vacuum] # mostly on midline, sprinkle of obliques around upper hemi "
     #ppos0_ = "mtd.next_pos[mtd_trig] # just around upper hemi"
 
     #ppos1_ = "None" 
     #ppos1_ = "mtd.pos[mtd_vacuum_upper]"
+    ppos1_ = "mtd.pos[mtd_trig_pyrex_lower]"
     #ppos1_  = "end[xz_midline]"
     #ppos1_  = "penultimate  # photon position prior to terminal one"
-    ppos1_  = "prior  # two positions before last"
+    #ppos1_  = "prior  # two positions before last"
 
     ppos0  = eval(ppos0_)
     ppos1  = eval(ppos1_) 
-    label = "b:%s\nr:%s" % ( ppos0_, ppos1_ )
+
+    elem = []
+    elem.append(CMDLINE)
+    if not ppos0 is None: elem.append("blue:%s" % ppos0_)
+    if not ppos1 is None: elem.append("red:%s" % ppos1_)
+    label = "\n".join(elem)
 
 
     exprs = textwrap.dedent("""
@@ -174,7 +231,7 @@ if __name__ == '__main__':
         os.environ["EYE"] = "0,100,165"
         os.environ["LOOK"] = "0,0,165"
         pvplt_viewpoint(pl)
-        pl.add_points(ppos )
+        pl.add_points(ppos0)
         pl.show()
     pass
 pass

@@ -194,14 +194,53 @@ def pvplt_plotter(label="pvplt_plotter"):
     return pl 
 
 
-def mpplt_plotter(label="mpplt_plotter"):
+def mpplt_plotter(label=""):
     fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) # 100 dpi 
-    fig.suptitle(label)
     ax.set_aspect('equal')
+
+    suptitle = os.environ.get("SUPTITLE",label) 
+    subtitle = os.environ.get("SUBTITLE", "") 
+    thirdline = os.environ.get("THIRDLINE", "") 
+    leftanno  = os.environ.get("LEFTANNO", "") 
+
+    TOF = float(os.environ.get("TOF","0.99"))   # adjust the position of the title, to legibly display 4 lines      
+
+    if len(suptitle) > 0:
+        print("suptitle:%s " % (suptitle) )
+        fig.suptitle(suptitle, family="monospace", va="top", ha='left', x=0.1, y=TOF, fontweight='bold' )
+    else:
+        print("no SUPTITLE/label" )
+    pass
+
+    if len(subtitle) > 0:
+        print("subtitle:%s " % (subtitle) )
+        ax.text( 1.05, -0.12, subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
+    else:
+        print("no SUBTITLE")
+    pass
+
+    if len(thirdline) > 0:
+        print("thirdline:%s " % (thirdline) )
+        ax.text(-0.05,  1.02, thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+    else:
+        print("no THIRDLINE")
+    pass
+
+    if len(leftanno) > 0:
+        print("leftanno:%s " % (leftanno) )
+        ax.text(-0.05,  0.01, leftanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+    else:
+        print("no leftanno")
+    pass
+
+
+
+
+
     return fig, ax
 
 
-def plotter(label="plotter"):
+def plotter(label=""):
     if MODE == 2:
         pl = mpplt_plotter(label=label)
         assert type(pl) is tuple and len(pl) == 2  # fig, ax
