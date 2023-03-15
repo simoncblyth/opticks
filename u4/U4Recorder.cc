@@ -621,7 +621,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " fakemask " << fakemask
         << " DescFake " << DescFake(fakemask)
-        << " FAKES_SKIP " << ( FAKES_SKIP ? "YES" : "NO " ) 
         ;
 
 
@@ -690,10 +689,20 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     G4ThreeVector theLocalPoint     = transform.TransformPoint(theGlobalPoint); 
     G4ThreeVector theLocalDirection = transform.TransformAxis(theGlobalDirection); 
 
-    G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance( fso, theLocalPoint, theLocalDirection, dump ) ; 
+    EInside fin = kOutside ; 
+    G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin ) ; 
 
     if(fdist < EPSILON)    fakemask |= FAKE_FDIST ;  
+    if(fin == kSurface)    fakemask |= FAKE_SURFACE ; 
     if(IsListedFake(spec)) fakemask |= FAKE_MANUAL ;  
+
+    LOG_IF(info, dump) 
+        << " fdist " << fdist 
+        << " fin " << sgeomdefs::EInside_(fin)
+        << " fakemask " << fakemask
+        << " desc " << DescFake(fakemask)
+        ; 
+
 
     return fakemask ; 
 }
@@ -703,6 +712,7 @@ std::string U4Recorder::DescFake(unsigned fakemask)
     std::stringstream ss ; 
     if(fakemask & FAKE_STEP_MM) ss << FAKE_STEP_MM_ << "|" ; 
     if(fakemask & FAKE_FDIST)   ss << FAKE_FDIST_ << "|" ; 
+    if(fakemask & FAKE_SURFACE)  ss << FAKE_SURFACE_ << "|" ; 
     if(fakemask & FAKE_MANUAL)  ss << FAKE_MANUAL_ << "|" ; 
     std::string str = ss.str(); 
     return str ; 

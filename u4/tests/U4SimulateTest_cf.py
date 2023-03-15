@@ -159,21 +159,31 @@ if __name__ == '__main__':
         print(eval(expr))  
     pass
 
-    for _ in azero:
-        idxs = np.where( quo[_] == bq[:,0] )[0]
-        for idx in idxs[:10]:
-            viz = "u4t ; N=1 BPID=%d BOPT=idx ./U4SimtraceTest.sh ana" % idx
-            print(viz)
-        pass
-    pass
+    lim = slice(0,2)
+
+
+    hist_ = lambda _:_.strip().decode("utf-8")   
+
+    print("\nbzero : %s : A HIST NOT IN B (A(N=0) has extra BT until remove fakes)  \n" % (str(bzero)))
     for _ in bzero:
         idxs = np.where( quo[_] == aq[:,0] )[0] 
-        print(quo[_])
-        for idx in idxs[:10]:
+        print("bzero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( hist_(quo[_]), len(idxs), str(idxs[lim])) )
+        for idx in idxs[lim]:
             viz = "u4t ; N=0 APID=%d AOPT=idx ./U4SimtraceTest.sh ana" % idx
             print(viz)
         pass
-        print("\n")
+        print("")
+    pass
+
+    print("\nazero : %s : B HIST NOT IN A \n" % (str(azero)))
+    for _ in azero:
+        idxs = np.where( quo[_] == bq[:,0] )[0]
+        print("azero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( hist_(quo[_]), len(idxs), str(idxs[lim])) )
+        for idx in idxs[lim]:
+            viz = "u4t ; N=1 BPID=%d BOPT=idx ./U4SimtraceTest.sh ana" % idx
+            print(viz)
+        pass
+        print("")
     pass
 
 

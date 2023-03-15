@@ -31,17 +31,16 @@ BR = BOUNDARY_REFLECT.bit_length()
 BT = BOUNDARY_TRANSMIT.bit_length()
 TO = TORCH.bit_length()
 
-
-
 N = int(os.environ.get("VERSION", "-1"))
 CMDLINE = "N=%d ./U4SimulateTest.sh mt" % N
+
+GEOM = os.environ.get("GEOM", "DummyGEOM")
+GEOMList = os.environ.get("%s_GEOMList" % GEOM, "DummyGEOMList") 
 
 VERSION = N  
 MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,3]
 PIDX = int(os.environ.get("PIDX", "123")) 
-
-
 
 
 if MODE > 0:
@@ -58,19 +57,18 @@ if __name__ == '__main__':
     print(repr(t))
 
     end = t.photon[:,0,:3]
-    q_ = t.seq[:,0]    #  t.seq shape eg (1000, 2, 2)  
-    q = ht.seqhis(q_)    # history label eg b'TO BT BT SA ... lots of blankspace...'  
-    qq = ht.Convert(q_)
-    n = np.sum( seqnib_(q_), axis=1 ) 
+    q_ = t.seq[:,0]                   #  t.seq shape eg (1000, 2, 2)  
+    q = ht.seqhis(q_)                 # history label eg b'TO BT BT SA ... lots of blankspace...'  
+    qq = ht.Convert(q_)               # array of step point flags 
+    n = np.sum( seqnib_(q_), axis=1 ) # nibble count
 
-    w_sr = np.where( qq == SR )    
+    w_sr = np.where( qq == SR )       # selecting step points with SR 
     w_to = np.where( qq == TO ) 
     w_br = np.where( qq == BR ) 
    
-    sr_pos = t.record[tuple(w_sr[0]), tuple(w_sr[1]),0,:3]   
+    sr_pos = t.record[tuple(w_sr[0]), tuple(w_sr[1]),0,:3]   # step point positions of SR
     to_pos = t.record[tuple(w_to[0]), tuple(w_to[1]),0,:3]   
     br_pos = t.record[tuple(w_br[0]), tuple(w_br[1]),0,:3]   
-
 
 
     LAYOUT = os.environ.get("LAYOUT", "")
@@ -84,7 +82,7 @@ if __name__ == '__main__':
     mtd = ModelTrigger_Debug(t, symbol="mtd", publish=False)  # publish:True crashing 
     print(mtd)
 
-    SPECS = np.array(t.U4R_names.lines) 
+    SPECS = np.array(t.U4R_names.lines)     # step specification, for skip fake debugging 
     st_ = t.aux[:,:,2,3].view(np.int32)
     st = SPECS[st_]
 
@@ -95,8 +93,6 @@ if __name__ == '__main__':
         print(expr)
         print(eval(expr))
     pass
-
-
 
     exprs = "q[PIDX] t.record[PIDX,:n[PIDX],0] mtd.pv[mtd.index==PIDX]"    
     for expr in exprs.split():
@@ -129,7 +125,15 @@ if __name__ == '__main__':
     mtd_trig_pyrex_mid   = np.logical_and(mtd_trig_pyrex, mtd_mid )
     mtd_trig_pyrex_lower = np.logical_and(mtd_trig_pyrex, mtd_lower )
 
-    qwns = textwrap.dedent("""
+    
+
+    rqwns = textwrap.dedent("""
+    GEOM
+    GEOMList    
+    """) 
+
+    lqwns = textwrap.dedent("""
+    mtd.IMPL
     t.photon.shape
     mtd.pos.shape
 
@@ -154,20 +158,43 @@ if __name__ == '__main__':
     mtd_trig_vacuum_lower
     """)
 
-    lines = []
-    for qwn in qwns.split("\n"): 
+
+    llines = []
+    for qwn in lqwns.split("\n"): 
         if len(qwn) == 0:
-            lines.append("")
+            llines.append("")
         elif qwn.find(".") > -1:
-            lines.append("%30s : %s" % ( qwn, eval(qwn)))
+            llines.append("%30s : %s" % ( qwn, eval(qwn)))
         else:
             num = np.count_nonzero(eval(qwn))  
-            lines.append("%30s : %d " % ( qwn, num ))
+            llines.append("%30s : %d " % ( qwn, num ))
         pass
     pass
-    anno = "\n".join(lines)
-    print(anno)
-    #os.environ["LEFTANNO"] = anno 
+    lanno = "\n".join(llines)
+    print(lanno)
+    os.environ["LHSANNO"] = lanno 
+
+
+    rlines = []
+    for qwn in rqwns.split("\n"): 
+        if len(qwn) == 0:
+            rlines.append("")
+        elif qwn.find(".") > -1 or qwn.startswith("GEOM"):
+            rlines.append("%s : %s" % ( qwn, eval(qwn)))
+        else:
+            num = np.count_nonzero(eval(qwn))  
+            rlines.append("%30s : %d " % ( qwn, num ))
+        pass
+    pass
+    ranno = "\n".join(rlines)
+    print(ranno)
+    os.environ["RHSANNO"] = ranno 
+
+
+
+
+
+
 
     idxs = np.unique(mtd.index[mtd_trig_pyrex_lower])   # photon indices 
 
@@ -217,9 +244,9 @@ if __name__ == '__main__':
     #ppos0_ = "mtd.pos[mtd_pyrex] #   "
     ppos0_ = "mtd.pos[mtd_trig_pyrex] #   "
 
-    ppos1_ = "None" 
+    #ppos1_ = "None" 
     #ppos1_ = "mtd.pos[mtd_vacuum_upper]"
-    #ppos1_ = "mtd.pos[mtd_trig_pyrex_lower]"
+    ppos1_ = "mtd.pos[mtd_trig_pyrex_lower] # BUG : Pyrex triggers inside inner2 : UNPHYSICAL  "
     #ppos1_  = "end[xz_midline]"
     #ppos1_  = "penultimate  # photon position prior to terminal one"
     #ppos1_  = "prior  # two positions before last"

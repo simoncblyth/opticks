@@ -23,6 +23,9 @@ class ModelTrigger_Debug(AttrBase):
         WAI = np.array( ["OutOfRegion", "kInGlass   ", "kInVacuum  ", "kUnset     "] )
 
         mtd = t.ModelTrigger_Debug  
+        meta = t.ModelTrigger_Debug_meta 
+        IMPL = meta.IMPL[0]   
+
         pos  = mtd[:,0,:3]
         time = mtd[:,0,3]
 
@@ -43,7 +46,9 @@ class ModelTrigger_Debug(AttrBase):
 
         next_pos  = mtd[:,4,:3]
         next_mct  = mtd[:,4,3]
+
         next_norm = mtd[:,5,:3]
+        impl      = mtd[:,5,3].view(np.uint64)
 
         EInside1  = mtd[:,6,0].view(np.uint64)
         s61       = mtd[:,6,1].view(np.uint64)
@@ -89,6 +94,8 @@ class ModelTrigger_Debug(AttrBase):
         self.MLV = MLV
         self.WAI = WAI
         self.mtd = mtd
+        self.meta = meta
+        self.IMPL = IMPL
         self.pos = pos
         self.time = time
         self.dir = dir
@@ -104,6 +111,7 @@ class ModelTrigger_Debug(AttrBase):
         self.next_pos = next_pos
         self.next_mct = next_mct
         self.next_norm = next_norm
+        self.impl = impl
         self.mlv = mlv
         self.pv = pv
         self.whereAmI = whereAmI

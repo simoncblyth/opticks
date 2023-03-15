@@ -389,6 +389,7 @@ set(HEADERS
     SUniformRand.h
 
     sgeomdefs.h 
+    sfmt.h
     ssolid.h
     SIntersect.h
     SSimtrace.h

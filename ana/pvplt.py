@@ -201,7 +201,8 @@ def mpplt_plotter(label=""):
     suptitle = os.environ.get("SUPTITLE",label) 
     subtitle = os.environ.get("SUBTITLE", "") 
     thirdline = os.environ.get("THIRDLINE", "") 
-    leftanno  = os.environ.get("LEFTANNO", "") 
+    lhsanno  = os.environ.get("LHSANNO", "") 
+    rhsanno  = os.environ.get("RHSANNO", "") 
 
     TOF = float(os.environ.get("TOF","0.99"))   # adjust the position of the title, to legibly display 4 lines      
 
@@ -226,12 +227,24 @@ def mpplt_plotter(label=""):
         print("no THIRDLINE")
     pass
 
-    if len(leftanno) > 0:
-        print("leftanno:%s " % (leftanno) )
-        ax.text(-0.05,  0.01, leftanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+    if len(lhsanno) > 0:
+        print("lhsanno:%s " % (lhsanno) )
+        ax.text(-0.05,  0.01, lhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
-        print("no leftanno")
+        print("no lhsanno")
     pass
+
+    if len(rhsanno) > 0:
+        print("rhsanno:%s " % (rhsanno) )
+        ax.text(0.6,  0.01, rhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+    else:
+        print("no rhsanno")
+    pass
+
+
+
+
+
 
 
 

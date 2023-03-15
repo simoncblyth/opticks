@@ -62,6 +62,13 @@ fi
 ## between U4SimulateTest.sh and U4SimtraceTest.sh 
 ## makes sense for everything that is very GEOM specific to be within the geomscript
 
+_GEOMList=${GEOM}_GEOMList
+GEOMList=${!_GEOMList}
+
+vars="GEOM _GEOMList GEOMList"
+for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
+
+#exit 0
 
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
@@ -131,14 +138,17 @@ if [ "$LAYOUT" == "two_pmt" ]; then
 
 elif [ "$LAYOUT" == "one_pmt" ]; then 
 
-    #radius=280   # approx PMT extents : xy -255:255, z -190:190
-    radius=120    # focus on HAMA dynode
+    # approx PMT extents : xy -255:255, z -190:190
+    #radius=280    # too much hangover giving lots of "TO SA" "TO AB"
+    radius=260
+    #radius=120    # focus on HAMA dynode
 
     ttype=line
     case $ttype in 
       disc) pos=0,0,0 ;;
-    # line) pos=0,0,190 ;;
-      line) pos=0,0,-20 ;;
+    #line) pos=0,0,190 ;;     ## 190 grazes HAMA apex (somehow causing "TO TO SD" history)
+     line) pos=0,0,195 ;;
+    #  line) pos=0,0,-20 ;;
      point) pos=0,0,100 ;;  # PMT upper mid-vacuum 
     esac
     mom=0,0,-1   

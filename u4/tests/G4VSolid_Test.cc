@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <cassert>
 
 #include "G4ThreeVector.hh"
@@ -14,25 +15,22 @@
 #include "G4UnionSolid.hh"
 
 #include "sgeomdefs.h"
+#include "sfmt.h"
 #include "ssolid.h"
+
 #include <CLHEP/Units/SystemOfUnits.h>
+using CLHEP::mm ; 
+using CLHEP::deg ; 
 
 
-const G4VSolid* GetSolid()
+G4VSolid* MakePolycone( double r, double z0 , double z1 )
 {
-    using CLHEP::mm ; 
-    using CLHEP::deg ; 
-
-    G4double P_I_R = 254.*mm ; 
-    G4double P_I_H = 190.*mm ; 
-    G4double m2_h = 5.*mm ;  
-
     G4double phiStart = 0.00*deg ; 
     G4double phiTotal = 360.00*deg ;
     G4int numZPlanes = 2 ; 
-    G4double zPlane[] = { -m2_h            , 0.0  } ;   
-    G4double rInner[] = {  0.0             , 0.0   } ;   
-    G4double rOuter[] = {  P_I_R           , P_I_R  } ;    
+    G4double zPlane[] = { z0    , z1 } ;   
+    G4double rInner[] = {  0.0  , 0.0   } ;   
+    G4double rOuter[] = {  r    , r  } ;    
 
     G4VSolid* solid_1_2 = new G4Polycone(
                                "_1_2",
@@ -44,6 +42,24 @@ const G4VSolid* GetSolid()
                                rOuter
                                );  
 
+    return solid_1_2 ; 
+}
+
+G4VSolid* MakeUpperHemiEllipsoid( double P_I_R, double P_I_H )
+{
+    G4VSolid* solid_I = new G4Ellipsoid(
+                    "_I",
+                    P_I_R,
+                    P_I_R,
+                    P_I_H,
+                    0, // pzBottomCut -> equator
+                    P_I_H // pzTopCut -> top
+                    );  
+    return solid_I ; 
+} 
+
+G4VSolid* MakeLowerHemiEllipsoid( double P_I_R, double P_I_H )
+{
     G4VSolid* solid_III = new G4Ellipsoid(
                       "_III",
                       P_I_R,
@@ -52,129 +68,174 @@ const G4VSolid* GetSolid()
                       -P_I_H,
                       0);
 
+    return solid_III ; 
+}
 
-    G4double boolean_shift = -m2_h ;  
-    //G4double boolean_shift = 0. ;  
 
+G4VSolid* MakeInner1()
+{
+    G4double P_I_R = 254.*mm ; 
+    G4double P_I_H = 190.*mm ; 
+    return MakeUpperHemiEllipsoid( P_I_R, P_I_H ); 
+}
+
+
+G4VSolid* MakeInner2(const char* style)
+{
+    bool hemi_only = strcmp(style, "NNVT") == 0 ; 
+
+    G4double P_I_R = 254.*mm ; 
+    G4double P_I_H = 190.*mm ; 
+    G4double m2_h  = 5.*mm ;  
+
+    G4VSolid* solid_1_2 = MakePolycone( P_I_R, -m2_h, 0. ) ; 
+    G4VSolid* solid_III = MakeLowerHemiEllipsoid( P_I_R, P_I_H ); 
 
     G4VSolid* solid_1_3 = new G4UnionSolid(
                  "_1_3",
                  solid_1_2,
                  solid_III,
                  0,
-                 G4ThreeVector(0,0,boolean_shift )
+                 G4ThreeVector(0,0,-m2_h )
                  );
 
-    const G4VSolid* sso2 = solid_1_3 ; 
-    return sso2 ; 
+    return hemi_only ? solid_III : solid_1_3 ; 
 }
 
 
-std::string Format(double v, int w=10)
-{
-    std::stringstream ss ;    
-    if( v == kInfinity ) 
-    { 
-        ss << std::setw(w) << "kInfinity" ; 
-    }
-    else
-    {
-        ss << std::setw(w) << std::fixed << std::setprecision(4) << v ; 
-    }
-    std::string str = ss.str(); 
-    return str ; 
-}
 
-std::string Format(const G4ThreeVector* v)
+void DumpDist(const char* style, const char* desc)
 {
-    std::stringstream ss ;    
-    ss << *v ; 
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-int main()
-{
-    const G4VSolid* so = GetSolid(); 
     G4ThreeVector dir(0,0,1) ;  // +Z
+    G4VSolid* sol[2] ; 
+    sol[0] = MakeInner1() ; 
+    sol[1] = MakeInner2(style) ; 
 
-    for(double z=20 ; z >= -220 ; z-=5. )
+    EInside  inn[2] ; 
+    G4double d2i[2] ;
+    G4double d2o[2] ;
+    G4double dis[2] ;
+
+    double zstep = 5. ; 
+    const char* spacer = "    " ; 
+
+    std::cout
+        << std::setw(55) << ""
+        << spacer
+        << std::setw(10) << style 
+        << std::setw(20) << desc
+        << std::endl 
+        ; 
+
+    std::cout 
+        << std::setw(15) << "pos"
+        << std::setw(10) << "INNER1" 
+        << std::setw(10) << "DistToIn"
+        << std::setw(10) << "DistToOut"
+        << std::setw(10) << "Dist"
+        << spacer
+        << std::setw(10) << "INNER2" 
+        << std::setw(10) << "DistToIn"
+        << std::setw(10) << "DistToOut"
+        << std::setw(10) << "Dist"
+        << spacer
+        << std::setw(5) << "trig"
+        << std::endl 
+        ;
+
+    for(double z=20 ; z >= -300 ; z -= zstep )
     {
+        zstep = z < 10 && z > -10 ? 1. : 5. ; 
         G4ThreeVector pos(0,0,z) ; 
-        G4double d2i = so->DistanceToIn(pos, dir);
-        G4double d2o = so->DistanceToOut(pos, dir);
 
-        EInside in ; 
-        G4double dis = ssolid::Distance_(so, pos, dir, in);
+        for(int i=0 ; i < 2 ; i++)
+        {
+            d2i[i] = sol[i]->DistanceToIn(pos, dir);
+            d2o[i] = sol[i]->DistanceToOut(pos, dir); 
+            dis[i] = ssolid::Distance_( sol[i], pos, dir, inn[i] ); 
+        }
+
+        double dist1 = d2i[0] ; 
+        double dist2 = d2i[1] ;
+
+        bool trig = false ; 
+        if(dist1 == kInfinity)
+        {   
+            trig = false;
+        }   
+        else if(dist1>dist2)
+        {   
+            trig = false;
+        }   
+        else
+        {   
+            trig = true;
+        }   
+
+
         std::cout 
-            << " pos " << std::setw(15) << Format(&pos)
-            << " " << std::setw(10) << sgeomdefs::EInside_(in) 
-            << " "
-            << " d2i " << Format(d2i)
-            << " d2o " << Format(d2o) 
-            << " dis " << Format(dis) 
+            << std::setw(15) << sfmt::Format(&pos)
+            << std::setw(10) << sgeomdefs::EInside_(inn[0]) 
+            << sfmt::Format(d2i[0])
+            << sfmt::Format(d2o[0]) 
+            << sfmt::Format(dis[0])
+            << spacer
+            << std::setw(10) << sgeomdefs::EInside_(inn[1]) 
+            << sfmt::Format(d2i[1])
+            << sfmt::Format(d2o[1]) 
+            << sfmt::Format(dis[1])
+            << spacer
+            << std::setw(5) << ( trig ? "YES" : "NO " ) 
             << std::endl 
             ;  
     }
+
+
+}
+
+
+
+int main()
+{
+    DumpDist("NNVT", " INNER2: Just Lower-Hemi-Ellipsoid"); 
+    DumpDist("HAMA", " INNER2: Union of Polycone and Lower-Hemi-Ellipsoid" ); 
     return 0 ; 
 }
 
+
 /**
-Surprising DistanceToIn behaviour with booleans when inside
 
-epsilon:tests blyth$ ./G4VSolid_Test.sh 
- pos        (0,0,20)   kOutside  d2i  kInfinity d2o     0.0000 dis  kInfinity
- pos        (0,0,15)   kOutside  d2i  kInfinity d2o     0.0000 dis  kInfinity
- pos        (0,0,10)   kOutside  d2i  kInfinity d2o     0.0000 dis  kInfinity
- pos         (0,0,5)   kOutside  d2i  kInfinity d2o     0.0000 dis  kInfinity
- pos         (0,0,0)   kSurface  d2i  kInfinity d2o     0.0000 dis     0.0000
- pos        (0,0,-5)    kInside  d2i     0.0000 d2o     5.0000 dis     5.0000
- pos       (0,0,-10)    kInside  d2i     5.0000 d2o    10.0000 dis    10.0000
- pos       (0,0,-15)    kInside  d2i    10.0000 d2o    15.0000 dis    15.0000
- pos       (0,0,-20)    kInside  d2i    15.0000 d2o    20.0000 dis    20.0000
- pos       (0,0,-25)    kInside  d2i    20.0000 d2o    25.0000 dis    25.0000
- pos       (0,0,-30)    kInside  d2i    25.0000 d2o    30.0000 dis    30.0000
- pos       (0,0,-35)    kInside  d2i    30.0000 d2o    35.0000 dis    35.0000
- pos       (0,0,-40)    kInside  d2i    35.0000 d2o    40.0000 dis    40.0000
- pos       (0,0,-45)    kInside  d2i    40.0000 d2o    45.0000 dis    45.0000
- pos       (0,0,-50)    kInside  d2i    45.0000 d2o    50.0000 dis    50.0000
- pos       (0,0,-55)    kInside  d2i    50.0000 d2o    55.0000 dis    55.0000
- pos       (0,0,-60)    kInside  d2i    55.0000 d2o    60.0000 dis    60.0000
- pos       (0,0,-65)    kInside  d2i    60.0000 d2o    65.0000 dis    65.0000
- pos       (0,0,-70)    kInside  d2i    65.0000 d2o    70.0000 dis    70.0000
- pos       (0,0,-75)    kInside  d2i    70.0000 d2o    75.0000 dis    75.0000
- pos       (0,0,-80)    kInside  d2i    75.0000 d2o    80.0000 dis    80.0000
- pos       (0,0,-85)    kInside  d2i    80.0000 d2o    85.0000 dis    85.0000
- pos       (0,0,-90)    kInside  d2i    85.0000 d2o    90.0000 dis    90.0000
- pos       (0,0,-95)    kInside  d2i    90.0000 d2o    95.0000 dis    95.0000
- pos      (0,0,-100)    kInside  d2i    95.0000 d2o   100.0000 dis   100.0000
- pos      (0,0,-105)    kInside  d2i   100.0000 d2o   105.0000 dis   105.0000
- pos      (0,0,-110)    kInside  d2i   105.0000 d2o   110.0000 dis   110.0000
- pos      (0,0,-115)    kInside  d2i   110.0000 d2o   115.0000 dis   115.0000
- pos      (0,0,-120)    kInside  d2i   115.0000 d2o   120.0000 dis   120.0000
- pos      (0,0,-125)    kInside  d2i   120.0000 d2o   125.0000 dis   125.0000
- pos      (0,0,-130)    kInside  d2i   125.0000 d2o   130.0000 dis   130.0000
- pos      (0,0,-135)    kInside  d2i   130.0000 d2o   135.0000 dis   135.0000
- pos      (0,0,-140)    kInside  d2i   135.0000 d2o   140.0000 dis   140.0000
- pos      (0,0,-145)    kInside  d2i   140.0000 d2o   145.0000 dis   145.0000
- pos      (0,0,-150)    kInside  d2i   145.0000 d2o   150.0000 dis   150.0000
- pos      (0,0,-155)    kInside  d2i   150.0000 d2o   155.0000 dis   155.0000
- pos      (0,0,-160)    kInside  d2i   155.0000 d2o   160.0000 dis   160.0000
- pos      (0,0,-165)    kInside  d2i   160.0000 d2o   165.0000 dis   165.0000
- pos      (0,0,-170)    kInside  d2i   165.0000 d2o   170.0000 dis   170.0000
- pos      (0,0,-175)    kInside  d2i   170.0000 d2o   175.0000 dis   175.0000
- pos      (0,0,-180)    kInside  d2i   175.0000 d2o   180.0000 dis   180.0000
- pos      (0,0,-185)    kInside  d2i   180.0000 d2o   185.0000 dis   185.0000
- pos      (0,0,-190)    kInside  d2i   185.0000 d2o   190.0000 dis   190.0000
- pos      (0,0,-195)   kSurface  d2i     0.0000 d2o   195.0000 dis   195.0000
- pos      (0,0,-200)   kOutside  d2i     5.0000 d2o     0.0000 dis     5.0000
- pos      (0,0,-205)   kOutside  d2i    10.0000 d2o     0.0000 dis    10.0000
- pos      (0,0,-210)   kOutside  d2i    15.0000 d2o     0.0000 dis    15.0000
- pos      (0,0,-215)   kOutside  d2i    20.0000 d2o     0.0000 dis    20.0000
- pos      (0,0,-220)   kOutside  d2i    25.0000 d2o     0.0000 dis    25.0000
-epsilon:tests blyth$ 
+320 // Approximate nearest distance from the point p to the union of
+321 // two solids
+322 
+323 G4double
+324 G4UnionSolid::DistanceToIn( const G4ThreeVector& p) const
+325 {
+326 #ifdef G4BOOLDEBUG 
+327   if( Inside(p) == kInside )
+328   { 
+329     G4cout << "WARNING - Invalid call in "
+330            << "G4UnionSolid::DistanceToIn(p)" << G4endl
+331            << "  Point p is inside !" << G4endl;
+332     G4cout << "          p = " << p << G4endl;
+333     G4cerr << "WARNING - Invalid call in "
+334            << "G4UnionSolid::DistanceToIn(p)" << G4endl
+335            << "  Point p is inside !" << G4endl;
+336     G4cerr << "          p = " << p << G4endl;
+337   }
+338 #endif
+339   G4double distA = fPtrSolidA->DistanceToIn(p) ;
+340   G4double distB = fPtrSolidB->DistanceToIn(p) ;
+341   G4double safety = std::min(distA,distB) ;
+342   if(safety < 0.0) safety = 0.0 ;
+343   return safety ;
+344 }
+345 
 
 
+// note that fPtrSolidB will be a G4DisplacedSolid when there is a RHS transform 
 
 **/
+
+
 

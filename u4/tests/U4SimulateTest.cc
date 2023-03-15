@@ -25,6 +25,7 @@ from U4RecorderTest.h
 
 #include "J_PMTSIM_LOG.hh"
 #include "PMTSim.hh"
+#include "junoPMTOpticalModel.hh"
 
 #elif WITH_PMTFASTSIM
 
@@ -131,8 +132,21 @@ int main(int argc, char** argv)
 
 #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
     NP* mtda = PMTSim::ModelTrigger_Debug_Array()  ; 
+
+    const char* IMPL = nullptr ; 
+    switch(junoPMTOpticalModel::ModelTrigger_IMPL)
+    {
+       case 0: IMPL = "ModelTriggerSimple" ; break ; 
+       case 1: IMPL = "ModelTriggerBuggy"  ; break ; 
+    }
+    if(IMPL) mtda->set_meta<std::string>("IMPL", IMPL); 
+
     const char* mtd = "ModelTrigger_Debug.npy" ; 
-    LOG(info) << "POM_DEBUG saving " << savedir << "/" << mtd  ; 
+    LOG(info)
+         << " junoPMTOpticalModel::ModelTrigger_IMPL " << junoPMTOpticalModel::ModelTrigger_IMPL
+         << " IMPL " << IMPL  
+         << "POM_DEBUG saving " << savedir << "/" << mtd  
+         ; 
     mtda->save(savedir,mtd);
 
     NP* TRS = U4VolumeMaker::TRS ; 

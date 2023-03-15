@@ -72,11 +72,16 @@ export nnvt_UseNaturalGeometry=$version
 
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
-geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
+#geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
 #geomlist=nnvtLogicalPMT
-#geomlist=hamaLogicalPMT
+geomlist=hamaLogicalPMT
 
-export ${GEOM}_GEOMList=$geomlist
+export FewPMT_GEOMList=$geomlist
+
+vars="BASH_SOURCE GEOM FewPMT_GEOMList"
+for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
+
+
 
 aspect=1.7777777777777  # 1280/720
 
@@ -114,8 +119,8 @@ if [ "$VERSION" == "0" ]; then
     # jPOM config
     ModelTriggerSimple=0  # default 
     ModelTriggerBuggy=1
-    #ModelTrigger_IMPL=$ModelTriggerSimple
-    ModelTrigger_IMPL=$ModelTriggerBuggy
+    ModelTrigger_IMPL=$ModelTriggerSimple
+    #ModelTrigger_IMPL=$ModelTriggerBuggy
 
     export junoPMTOpticalModel__PIDX_ENABLED=1
     export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTrigger_IMPL
