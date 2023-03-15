@@ -16,6 +16,8 @@ struct U4_API U4VolumeMaker
 {
     static const plog::Severity LEVEL ; 
     static const char* GEOM ; 
+    static const char* METH ; 
+
     static std::string Desc(); 
     static std::string Desc( const G4ThreeVector& tla ); 
 

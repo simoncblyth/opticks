@@ -114,8 +114,6 @@ MODE 3 pyvista 3D plotting::
 
     MODE=3 EYE=0,-1000,0 LOOK=0,0,0 UP=0,0,1 ./U4SimtraceTest.sh ana
 
-
-
 Questions
 -----------
 
@@ -125,31 +123,41 @@ A: j/PMTSim/IGeomManager.h:IGeomManager::declProp interprets envvar to set value
     epsilon:tests blyth$ grep UseNaturalGeometry *.*
     FewPMT.sh:export hama_UseNaturalGeometry=$version 
     FewPMT.sh:export nnvt_UseNaturalGeometry=$version 
-
   
 EOU
 }
 
+DIR=$(dirname $BASH_SOURCE)
 bin=U4SimtraceTest
 apid=-1
 bpid=-1
+geom=FewPMT
 
 export VERSION=${N:-0}
-export GEOM=FewPMT
+export GEOM=${GEOM:-$geom}
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
+
 export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
-export APID=${APID:-$apid}   ## NB APID for photons from ALL0
-export BPID=${BPID:-$bpid}   ## NB BPID for photons from ALL1
+export APID=${APID:-$apid}                   # APID for photons from ALL0
+export BPID=${BPID:-$bpid}                   # BPID for photons from ALL1
 
-geomscript=$GEOM.sh 
+geomscript=$DIR/$GEOM.sh 
 if [ -f "$geomscript" ]; then  
     source $geomscript 
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
+
+
+_GEOMList=${GEOM}_GEOMList
+GEOMList=${!_GEOMList}
+
+echo GEOMList : $GEOMList 
+
+
 
 case $LAYOUT in 
   one_pmt) loc="upper right" ;; 
@@ -189,7 +197,7 @@ fi
 
 if [ "${arg/ana}" != "$arg"  ]; then
     [ "$arg" == "nana" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/$bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
 

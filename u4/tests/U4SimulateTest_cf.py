@@ -14,6 +14,10 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.ana.nbase import chi2  
+from opticks.u4.tests.ModelTrigger_Debug import ModelTrigger_Debug       
+
+hist_ = lambda _:_.strip().decode("utf-8")   
+
 
 NOGUI = "NOGUI" in os.environ
 MODE = int(os.environ.get("MODE", 0))
@@ -24,12 +28,23 @@ pass
 APID = int(os.environ.get("APID", -1))
 BPID = int(os.environ.get("BPID", -1))
 
+GEOM = os.environ.get("GEOM", "DummyGEOM")
+GEOMList = os.environ.get("%s_GEOMList" % GEOM, "DummyGEOMList") 
+
+
 if __name__ == '__main__':
 
     print("APID:%d" % (APID))
     print("BPID:%d" % (BPID))
     a = Fold.Load("$AFOLD", symbol="a")
     b = Fold.Load("$BFOLD", symbol="b")
+
+    amt = ModelTrigger_Debug(a, symbol="amt", publish=False)  # publish:True crashing 
+    bmt = ModelTrigger_Debug(b, symbol="bmt", publish=False)  # publish:True crashing 
+    assert( amt.IMPL == bmt.IMPL )
+    IMPL = amt.IMPL
+
+
 
     #print(repr(a))
     #print(repr(b))
@@ -65,8 +80,9 @@ if __name__ == '__main__':
     b_st = b_SPECS[b_st_]
 
 
+    PID_DESC = "Dumping PID history and step specs with record position, time"
     if APID > -1:
-        print("APID:%d" % APID)
+        print("APID:%d # %s " % (APID,PID_DESC)  )
         exprs = "aq[APID] np.c_[a_st[APID,:an[APID]]] a.record[APID,:an[APID],0]"
         for expr in exprs.split(): 
             print(expr)
@@ -75,7 +91,7 @@ if __name__ == '__main__':
         pass
     pass 
     if BPID > -1:
-        print("BPID:%d" % BPID)
+        print("BPID:%d # %s " % (BPID, PID_DESC) )
         exprs = "bq[BPID] np.c_[b_st[APID,:bn[BPID]]] b.record[BPID,:bn[BPID],0]"
         for expr in exprs.split(): 
             print(expr)
@@ -131,7 +147,7 @@ if __name__ == '__main__':
     quo = qu[abxo]                     # qu ordered 
     iq = np.arange(len(qu)) 
 
-
+    # more than 10 counts in one, but zero in the other : history dropouts are smoking guns for bugs 
     bzero = np.where( np.logical_and( abo[:,2,0] > 10, abo[:,2,1] == 0 ) )[0]                                                                                             
     azero = np.where( np.logical_and( abo[:,2,1] > 10, abo[:,2,0] == 0 ) )[0]                                                                                             
 
@@ -144,27 +160,35 @@ if __name__ == '__main__':
     siq = list(map(lambda _:"%2d" % _ , iq ))  
     sc2 = list(map(lambda _:"%7.4f" % _, c2 ))   
 
-    print( "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut ))  
+    HEADLINE = "./U4SimulateTest.sh cf ## PMT Geometry : A(N=0) Unnatural+FastSim, B(N=1) Natural+CustomBoundary  "
+    print("\n%s" % HEADLINE)
+    print("GEOM/GEOMList/IMPL : %s/%s/%s " % (GEOM, GEOMList, IMPL) )
+    print("c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut ))  
 
     sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,2,:])) 
     sabo1 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,1,:])) 
+
+    _quo = list(map(hist_, quo)) 
+    mxl = max(list(map(len, _quo)))   
+    fmt = "%-" + str(mxl) + "s"  
+    _quo = list(map(lambda _:fmt % _, _quo ))
+    _quo = np.array( _quo )  
   
     #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]]"
-    abexpr = "np.c_[siq,quo,siq,sabo2,sc2,sabo1]"  
-    subs = "[:30] [azero] [bzero]"
+    abexpr = "np.c_[siq,_quo,siq,sabo2,sc2,sabo1]"  
+    subs = "[:25] [bzero] [azero]".split()
+    descs = ["A-B history frequency chi2 comparison", "bzero: A histories not in B", "azero: B histories not in A" ] 
 
-    for sub in subs.split():
-        expr = "%s%s" % (abexpr, sub)
-        print("\n%s  ## A-B comparison of unique history counts " % expr )
+    for i in range(len(subs)):
+        expr = "%s%s" % (abexpr, subs[i])
+        print("\n%s  ## %s " % (expr, descs[i]) )
         print(eval(expr))  
     pass
 
     lim = slice(0,2)
 
 
-    hist_ = lambda _:_.strip().decode("utf-8")   
-
-    print("\nbzero : %s : A HIST NOT IN B (A(N=0) has extra BT until remove fakes)  \n" % (str(bzero)))
+    print("\nbzero : %s : A HIST NOT IN B (A(N=0) has extra BT until remove fakes)" % (str(bzero)))
     for _ in bzero:
         idxs = np.where( quo[_] == aq[:,0] )[0] 
         print("bzero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( hist_(quo[_]), len(idxs), str(idxs[lim])) )
@@ -172,10 +196,10 @@ if __name__ == '__main__':
             viz = "u4t ; N=0 APID=%d AOPT=idx ./U4SimtraceTest.sh ana" % idx
             print(viz)
         pass
-        print("")
+        if len(idxs) > 0: print("")
     pass
 
-    print("\nazero : %s : B HIST NOT IN A \n" % (str(azero)))
+    print("\nazero : %s : B HIST NOT IN A" % (str(azero)))
     for _ in azero:
         idxs = np.where( quo[_] == bq[:,0] )[0]
         print("azero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( hist_(quo[_]), len(idxs), str(idxs[lim])) )
@@ -183,7 +207,7 @@ if __name__ == '__main__':
             viz = "u4t ; N=1 BPID=%d BOPT=idx ./U4SimtraceTest.sh ana" % idx
             print(viz)
         pass
-        print("")
+        if len(idxs) > 0: print("")
     pass
 
 

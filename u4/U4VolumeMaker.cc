@@ -39,12 +39,14 @@
 
 const plog::Severity U4VolumeMaker::LEVEL = SLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
 const char* U4VolumeMaker::GEOM = ssys::getenvvar("GEOM", "BoxOfScintillator"); 
+const char* U4VolumeMaker::METH = nullptr ; 
 
 std::string U4VolumeMaker::Desc() // static
 {
     std::stringstream ss ; 
     ss << "U4VolumeMaker::Desc" ; 
-    ss << " GEOM " << GEOM ; 
+    ss << " GEOM " << ( GEOM ? GEOM : "-" ) ; 
+    ss << " METH " << ( METH ? METH : "-" ) ; 
 #ifdef WITH_PMTSIM
     ss << " WITH_PMTSIM " ; 
 #else
@@ -137,11 +139,9 @@ to take control of the geometry defining code for example in j/PMTSim.
 const char* U4VolumeMaker::PVG_WriteNames     = "U4VolumeMaker_PVG_WriteNames" ; 
 const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Sub" ; 
 
-
-
-
 const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
+    METH = "PVG_" ; 
     const char* gdmlpath = SOpticksResource::GDMLPath(name) ;   
     const char* sub = SOpticksResource::GEOMSub(name);  
 
@@ -196,6 +196,7 @@ TODO: need to generalize the wrapping
 
 const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
 {
+    METH = "PVP_" ; 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
     const char* geomlist = SOpticksResource::GEOMList(name);   // consult envvar name_GEOMList 
@@ -261,6 +262,7 @@ of the U4 lib. Could do this with header-only U4 impls.
 
 const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
 {
+    METH = "PVF_" ; 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTFASTSIM
     bool has_manager_prefix = PMTFastSim::HasManagerPrefix(name) ;
@@ -283,6 +285,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
 
 const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 {
+    METH = "PVS_" ; 
     const G4VPhysicalVolume* pv = nullptr ; 
     if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);   
     if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater();   
@@ -292,6 +295,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 }
 const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 {
+    METH = "PVL_" ; 
     if(!SStr::StartsWith(name, "List")) return nullptr  ; 
     std::vector<G4LogicalVolume*> lvs ; 
     LV(lvs, name + strlen("List") ); 
@@ -300,6 +304,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 }
 const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
 {
+    METH = "PV1_" ; 
     G4LogicalVolume* lv = LV(name) ; 
     LOG_IF(error, lv == nullptr) << " failed to access lv for name " << name ; 
     if(lv == nullptr) return nullptr ; 
@@ -310,7 +315,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
     bool xoff = strstr(name, "Xoff") != nullptr ; 
     bool yoff = strstr(name, "Yoff") != nullptr ; 
     bool zoff = strstr(name, "Zoff") != nullptr ; 
-
 
     if(grid)      pv =   WrapLVGrid(     lv, 1, 1, 1 ); 
     else if(cube) pv =   WrapLVCube(     lv, 100., 100., 100. ); 
@@ -1036,6 +1040,4 @@ void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, std::vector<G
         assert( pv_n );  
     }
 }
-
-
 

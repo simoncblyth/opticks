@@ -94,8 +94,8 @@ logN=${bin}_$VERSION.log
 
 #num_ph=2
 #num_ph=10
-#num_ph=1000      #  1k
-num_ph=10000    # 10k
+num_ph=1000      #  1k
+#num_ph=10000    # 10k
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
@@ -140,18 +140,20 @@ elif [ "$LAYOUT" == "one_pmt" ]; then
 
     # approx PMT extents : xy -255:255, z -190:190
     #radius=280    # too much hangover giving lots of "TO SA" "TO AB"
-    radius=260
+    #radius=260     # standand for line from above 
     #radius=120    # focus on HAMA dynode
+    radius=195     # for from the side check 
 
     ttype=line
     case $ttype in 
       disc) pos=0,0,0 ;;
     #line) pos=0,0,190 ;;     ## 190 grazes HAMA apex (somehow causing "TO TO SD" history)
-     line) pos=0,0,195 ;;
-    #  line) pos=0,0,-20 ;;
-     point) pos=0,0,100 ;;  # PMT upper mid-vacuum 
+    #line) pos=0,0,195 ;;     ## standard for line from above test
+     line) pos=-300,0,0 ;;    ## for side shooting from the left 
+     point) pos=0,0,100 ;;    ## PMT upper mid-vacuum 
     esac
-    mom=0,0,-1   
+    #mom=0,0,-1   
+    mom=1,0,0   
 fi 
 
 export SEvent_MakeGensteps_num_ph=$num_ph

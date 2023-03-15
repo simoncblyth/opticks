@@ -18,8 +18,6 @@ will be very slow and write huge amounts of output.
 
 #include "OPTICKS_LOG.hh"
 #include "SPath.hh"
-
-
 #include "U4VolumeMaker.hh"
 #include "U4Simtrace.h"
 
@@ -28,6 +26,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar 
+    LOG(info) << " U4VolumeMaker::Desc() " << U4VolumeMaker::Desc() ; 
     const char* base = SPath::Resolve("$FOLD", DIRPATH ) ; 
     
     U4Simtrace t(pv); 

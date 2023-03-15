@@ -34,7 +34,6 @@ log = logging.getLogger(__name__)
 from collections import OrderedDict as odict 
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
-
 from opticks.ana.p import * 
 from opticks.ana.eget import eintarray_  
 
@@ -49,17 +48,17 @@ X,Y,Z = 0,1,2
 FOLD = os.environ.get("FOLD", None)
 SFOLD = os.environ.get("SFOLD", None)
 TFOLD = os.environ.get("TFOLD", None)
-
 AFOLD = os.environ.get("AFOLD", None)
 BFOLD = os.environ.get("BFOLD", None)
 
-
 N = int(os.environ.get("VERSION","-1")) 
+GEOM = os.environ.get("GEOM", "DummyGEOM")
+GEOMList = os.environ.get("%s_GEOMList" % GEOM, "DummyGEOMList") 
+
 APID = int(os.environ.get("APID", -1 ))
 BPID = int(os.environ.get("BPID", -1 ))
 AOPT = os.environ.get("AOPT", "")
 BOPT = os.environ.get("BOPT", "")
-
 
 topline = "N=%d " % N
 if APID > -1: topline += "APID=%d " % APID
@@ -68,9 +67,7 @@ if len(AOPT) > 0: topline += "AOPT=%s " % AOPT
 if BPID > -1: topline += "BPID=%d " % BPID
 if len(BOPT) > 0: topline += "BOPT=%s " % BOPT
 
-topline += " ./U4SimtraceTest.py ana"
-
-
+topline += " ./U4SimtraceTest.py ana   # %s/%s " % (GEOM, GEOMList)
 
 TOPLINE = os.environ.get("TOPLINE",topline )
 BOTLINE = os.environ.get("BOTLINE","%s" % SFOLD )
@@ -78,7 +75,6 @@ THIRDLINE = os.environ.get("THIRDLINE", "APID:%d BPID:%d " % (APID,BPID) )
 
 AXES = np.array(list(map(int,os.environ.get("AXES","0,2").split(","))), dtype=np.int8 )
 H,V = AXES
-
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -116,8 +112,6 @@ class U4SimtraceTest(RFold):
         self.vol = vol 
         self.symbol = symbol
 
-
-
     def geoplot(self, pl):
         """
         :param pl: wither tuple of (fig,ax) for MODE 2 or pyvista pl for MODE 3
@@ -128,7 +122,6 @@ class U4SimtraceTest(RFold):
         elif MODE == 2:
             pass
         pass 
-
 
         trs = self.fold.trs
         trs_names = self.trs_names
@@ -181,7 +174,6 @@ class U4SimtraceTest(RFold):
                 pl.add_points( gpos[:,:3], color=color, label=label)  
             pass
         pass
-
 
         if MODE == 2:
             xlim, ylim = mpplt_focus_aspect()

@@ -73,19 +73,18 @@ export nnvt_UseNaturalGeometry=$version
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
-#geomlist=nnvtLogicalPMT
-geomlist=hamaLogicalPMT
+geomlist=nnvtLogicalPMT
+#geomlist=hamaLogicalPMT
 
 export FewPMT_GEOMList=$geomlist
 
-vars="BASH_SOURCE GEOM FewPMT_GEOMList"
+vars="BASH_SOURCE GEOM FewPMT_GEOMList LAYOUT"
 for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
 
 
 
 aspect=1.7777777777777  # 1280/720
 
-echo $BASH_SOURCE layout $layout 
 
 if [ "$layout" == "one_pmt" ]; then 
 
@@ -95,19 +94,19 @@ if [ "$layout" == "one_pmt" ]; then
 
 elif [ "$layout" == "two_pmt" ]; then 
 
-    export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=310  
-    export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=300  
-    export U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE=$aspect,1,1
-    export U4VolumeMaker_WrapAroundItem_Water_BOXSCALE=$aspect,1,1 
+   export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=310  
+   export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=300  
+   export U4VolumeMaker_WrapAroundItem_Rock_BOXSCALE=$aspect,1,1
+   export U4VolumeMaker_WrapAroundItem_Water_BOXSCALE=$aspect,1,1 
 
-    export ${GEOM}_GEOMWrap=AroundCircle 
+   export ${GEOM}_GEOMWrap=AroundCircle 
 
-    export U4VolumeMaker_MakeTransforms_AroundCircle_radius=250
-    export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=2
-    export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
+   export U4VolumeMaker_MakeTransforms_AroundCircle_radius=250
+   export U4VolumeMaker_MakeTransforms_AroundCircle_numInRing=2
+   export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
 
 else
-    echo $BASH_SOURCE layout $layout not handled 
+   echo $BASH_SOURCE layout $layout not handled 
 fi 
 
 # Simtrace config

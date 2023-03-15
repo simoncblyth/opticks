@@ -36,16 +36,19 @@ struct SSimtrace
 
 inline void SSimtrace::Scan(const G4VSolid* solid, const char* base )
 {
+    G4String soname_ = solid->GetName(); 
+    const char* soname = soname_.c_str() ; 
+    //LOG(LEVEL) << "[ " << soname ; 
+
     SSimtrace t ; 
     t.setSolid(solid); 
     t.simtrace(); 
 
-    G4String soname = solid->GetName(); 
-    t.evt->setReldir(soname.c_str()); 
-
+    t.evt->setReldir(soname); 
     t.saveEvent(base) ; 
-}
 
+    //LOG(LEVEL) << "] " << soname ; 
+}
 
 inline SSimtrace::SSimtrace()
     :
@@ -61,9 +64,10 @@ inline SSimtrace::~SSimtrace()
 
 inline void SSimtrace::setSolid(const G4VSolid* solid_)
 {
-    LOG(LEVEL) ; 
+    //LOG(LEVEL) << "[" ; 
     solid = solid_ ; 
     ssolid::GetCenterExtent(frame.ce, solid );   
+    //LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -75,19 +79,20 @@ SEvt::setFrame
 1. creates gensteps with SFrameGenstep::MakeCenterExtentGensteps and adds them to SEvt
 2. As frame.is_hostside_simtrace also generates simtrace "photons" 
 
+In RGModeSimtrace SEvt::setFrame adds simtrace gensteps configured via envvars
+
 **/
 
 inline void SSimtrace::simtrace()
 {
+    //LOG(LEVEL) << "[" ; 
     SEventConfig::SetRGModeSimtrace();
     frame.set_hostside_simtrace();  
 
     evt = new SEvt ; 
     evt->setFrame(frame);   
-    // in RGModeSimtrace SEvt::setFrame adds simtrace gensteps 
-    // configured via envvars
 
-    LOG(LEVEL) << " evt.simtrace.size " << evt->simtrace.size() ; 
+    //LOG(LEVEL) << " evt.simtrace.size " << evt->simtrace.size() ; 
 
     bool dump = false ; 
     for(unsigned i=0 ; i < evt->simtrace.size() ; i++)
@@ -95,11 +100,12 @@ inline void SSimtrace::simtrace()
          quad4& p = evt->simtrace[i] ; 
          ssolid::Simtrace(p, solid, dump);  
     }
+    //LOG(LEVEL) << "]" ; 
 }
 
 inline void SSimtrace::saveEvent(const char* base)
 {
-    LOG(LEVEL) ; 
+    //LOG(LEVEL) ; 
     evt->save(base);  
 }
 

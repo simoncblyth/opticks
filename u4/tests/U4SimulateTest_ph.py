@@ -17,6 +17,8 @@ from opticks.ana.p import *
 LABEL = os.environ.get("LABEL", "U4SimulateTest_ph.py" )
 N =  int(os.environ.get("VERSION", "-1"))
 VERSION = N 
+CMDLINE = "N=%d ./U4SimulateTest.sh ph" % N
+
 MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,3]
 PID = int(os.environ.get("PID", -1))
@@ -135,24 +137,38 @@ if __name__ == '__main__':
     w_midline = np.where(xz_midline)[0]  
 
 
+
+
+
+
     yy = t.record[:,:,0,1]
     myy = np.max( np.abs(yy), axis=1 )     ## max absolute y of all step points for each photon
 
     wyy0 = np.where( myy == 0. )[0]        ## photon indices that always stay in the plane
     wyy1 = np.where( myy > 0 )[0]           ## photon indices with deviations out of plane 
-
-
     sd0 = np.logical_and( sd, myy == 0. )   ## mask SD photons staying in plane
 
 
-    ppos0 = pos
-    #ppos0 = pos[sd0]
-    #ppos = pos[wpick]
-    #ppos0 = pos[wyy0]
+    #ppos0_ = "None"
+    #ppos0_ = "pos #   "
+    ppos0_ = "t.record[:,0,0,:3] # 0-position   "
 
-    #ppos1 = pos[n>7]
-    #ppos1 = pos[w_midline]
-    ppos1 = None
+    #ppos1_ = "None"
+    ppos1_ = "t.record[:,1,0,:3] # 1-position   "
+
+    #ppos2_ = "None"
+    ppos2_ = "t.record[:,2,0,:3] # 2-position   "
+
+    ppos0  = eval(ppos0_)
+    ppos1  = eval(ppos1_) 
+    ppos2  = eval(ppos2_) 
+
+    elem = []
+    elem.append(CMDLINE)
+    if not ppos0 is None: elem.append("b:%s" % ppos0_)
+    if not ppos1 is None: elem.append("r:%s" % ppos1_)
+    if not ppos2 is None: elem.append("g:%s" % ppos2_)
+    label = "\n".join(elem)
 
 
     if MODE == 0:
@@ -163,9 +179,9 @@ if __name__ == '__main__':
         ax.set_ylim(-250,250)
         ax.set_xlim(-500,500)
 
-        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1 )  
+        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1, c="b" )  
         if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
-
+        if not ppos2 is None: ax.scatter( ppos2[:,H], ppos2[:,V], s=1, c="g" )  
 
         fig.show()
     elif MODE == 3:
