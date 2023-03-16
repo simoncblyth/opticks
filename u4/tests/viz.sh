@@ -21,6 +21,11 @@ Use qi first indices of each history as APID/BPID indices to viz::
     epsilon:tests blyth$ APID=484 ./viz.sh 
 
 
+Photons with "SC" scatter out of the plane, use pyvista 3D plotting with::
+
+   MODE=3 BPID=... ./viz.sh 
+
+
 EOU
 }
 

@@ -1498,13 +1498,28 @@ NP* SEvt::gatherSimtrace() const
 }
 
 
+const char* SEvt::ENVMETA = R"LITERAL(
+SCRIPT
+CHECK
+LAYOUT
+TEST
+)LITERAL" ;
 
-
+void SEvt::AddEnvMeta( NP* a ) // static
+{
+    if(a == nullptr) return ; 
+    typedef std::pair<std::string, std::string> KV ; 
+    std::vector<KV> kvs ; 
+    ssys::getenv_(kvs, ENVMETA); 
+    a->set_meta_kv(kvs) ; 
+}
 
 
 NP* SEvt::makePhoton() const 
 {
-    return NP::Make<float>( evt->num_photon, 4, 4 ); 
+    NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
+    AddEnvMeta(p) ; 
+    return p ; 
 }
 NP* SEvt::makeRecord() const 
 { 

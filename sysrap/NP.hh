@@ -312,6 +312,10 @@ struct NP
 
     template<typename T> static void SetMeta(       std::string& mt, const char* key, T value ); 
     template<typename T> void set_meta(const char* key, T value ) ;  
+
+    template<typename T> void set_meta_kv(const std::vector<std::pair<std::string, T>>& kv ) ;  
+
+
     
     std::string descMeta() const ; 
     const char* get_lpath() const ; 
@@ -3772,6 +3776,17 @@ template void     NP::set_meta<unsigned>(const char*, unsigned );
 template void     NP::set_meta<float>(const char*, float ); 
 template void     NP::set_meta<double>(const char*, double ); 
 template void     NP::set_meta<std::string>(const char*, std::string ); 
+
+
+
+template<typename T> inline void NP::set_meta_kv(const std::vector<std::pair<std::string, T>>& kvs )
+{
+    for(int i=0 ; i < int(kvs.size()); i++) SetMeta(meta, kvs[i].first.c_str(), kvs[i].second ); 
+}
+
+
+
+
 
 inline std::string NP::descMeta() const 
 {

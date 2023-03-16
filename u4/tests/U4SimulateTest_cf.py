@@ -70,6 +70,16 @@ if __name__ == '__main__':
     aq = ht.seqhis(aq_)  # "|S96"  32 point slots * 3 chars for each abbr eg "BT " 
     bq = ht.seqhis(bq_) 
 
+    a_CHECK = a.photon_meta.CHECK[0]  
+    b_CHECK = b.photon_meta.CHECK[0]  
+    assert( a_CHECK == b_CHECK )
+    CHECK = a_CHECK
+
+    a_LAYOUT = a.photon_meta.LAYOUT[0]  
+    b_LAYOUT = b.photon_meta.LAYOUT[0]  
+    assert( a_LAYOUT == b_LAYOUT )
+    LAYOUT = a_LAYOUT
+
 
     a_SPECS = np.array(a.U4R_names.lines)
     a_st_ = a.aux[:,:,2,3].view(np.int32)
@@ -162,7 +172,7 @@ if __name__ == '__main__':
 
     HEADLINE = "./U4SimulateTest.sh cf ## PMT Geometry : A(N=0) Unnatural+FastSim, B(N=1) Natural+CustomBoundary  "
     print("\n%s" % HEADLINE)
-    print("GEOM/GEOMList/IMPL : %s/%s/%s " % (GEOM, GEOMList, IMPL) )
+    print("GEOM/GEOMList/IMPL/LAYOUT/CHECK : %s/%s/%s/%s/%s " % (GEOM, GEOMList, IMPL, LAYOUT, CHECK) )
     print("c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut ))  
 
     sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,2,:])) 

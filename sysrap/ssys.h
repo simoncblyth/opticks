@@ -11,6 +11,7 @@ ssys.h
 #include <string>
 #include <sstream>
 #include <vector>
+#include <map>
 
 struct ssys
 {
@@ -20,8 +21,21 @@ struct ssys
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
     static bool     getenvbool(const char* ekey);  
 
+
+    static bool hasenv_(const char* ekey);  
+
     template<typename T>
     static T getenv_(const char* ekey, T fallback);  
+
+    template<typename T>
+    static T parse(const char* str);  
+
+    template<typename T>
+    static void getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector<std::string>& kk ); 
+
+    template<typename T>
+    static void getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk ); 
+
 
     template<typename T>
     static std::vector<T>* make_vec(const char* line, char delim=','); 
@@ -31,6 +45,7 @@ struct ssys
 
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
+
 }; 
 
 
@@ -79,20 +94,15 @@ inline bool ssys::getenvbool( const char* ekey )
 }
 
 
-
-
-
+inline bool ssys::hasenv_(const char* ekey)
+{
+    return ekey != nullptr && ( getenv(ekey) != nullptr ) ; 
+}
 template<typename T>
 inline T ssys::getenv_(const char* ekey, T fallback)
 {
     char* v = getenv(ekey);
-    if(v == nullptr) return fallback ; 
-
-    std::string s(v);
-    std::istringstream iss(s);
-    T t ; 
-    iss >> t ; 
-    return t ; 
+    return v == nullptr ? fallback : parse<T>(v) ;  
 }
 
 template int      ssys::getenv_(const char*, int ); 
@@ -100,6 +110,55 @@ template unsigned ssys::getenv_(const char*, unsigned );
 template float    ssys::getenv_(const char*, float ); 
 template double   ssys::getenv_(const char*, double ); 
 template std::string ssys::getenv_(const char*, std::string ); 
+
+
+template<typename T>
+inline T ssys::parse(const char* str_)
+{
+    std::string str(str_);
+    std::istringstream iss(str);
+    T tval ; 
+    iss >> tval ; 
+    return tval ; 
+}
+
+template int      ssys::parse(const char*); 
+template unsigned ssys::parse(const char*); 
+template float    ssys::parse(const char*); 
+template double   ssys::parse(const char*); 
+template std::string ssys::parse(const char*); 
+
+template<typename T>
+void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector<std::string>& kk )
+{
+    typedef typename std::pair<std::string,T> KV ; 
+    for(int i=0 ; i < int(kk.size()) ; i++)
+    {
+        const char* k = kk[i].c_str() ; 
+        const char* v_ = getenv(k) ; 
+        if(v_ == nullptr) continue ; 
+
+        T v = parse<T>(v_) ; 
+        kv.push_back(KV(k,v)) ; 
+    }
+}
+
+template<typename T>
+void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
+{
+    std::vector<std::string> kk ; 
+    std::stringstream ss(kk_) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  // newlines are swallowed by getline
+    {   
+       if(line.empty()) continue ;   
+       kk.push_back(line); 
+    }
+    getenv_(kv, kk );
+}
+
+
+
 
 
 
@@ -156,6 +215,7 @@ template std::string ssys::desc_vec(const std::vector<unsigned>* , unsigned ) ;
 template std::string ssys::desc_vec(const std::vector<float>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<double>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<std::string>* , unsigned ) ; 
+
 
 
 

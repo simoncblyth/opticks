@@ -92,11 +92,14 @@ log=${bin}.log
 logN=${bin}_$VERSION.log
 
 
-#num_ph=2
+
+
+#num_ph=1
 #num_ph=10
-#num_ph=1000      #  1k
-#num_ph=10000    # 10k
-num_ph=100000   # 100k
+#num_ph=100
+#num_ph=1000      # 1k
+num_ph=10000    # 10k
+#num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 if [ -n "$RERUN" ]; then 
@@ -119,44 +122,77 @@ export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep s
 
 
 
-if [ "$LAYOUT" == "two_pmt" ]; then
+#check=rain_line
+#check=escape
+check=rain_dynode
+#check=lhs_line
+#check=lhs_reflector_point
+#check=lhs_reflector_line
+#check=rain_disc
 
-    radius=250
-    #radius=0
-    [ $num_ph -lt 11  ] && radius=0
+export CHECK=${CHECK:-$check}
 
-    ttype=point
-    case $ttype in 
-      disc) pos=0,0,0 ;;
-      line) pos=0,0,0 ;;
-     point) pos=0,0,-120 ;;
-    esac
+if [ "$LAYOUT" == "one_pmt" ]; then 
+    if [ "$CHECK" == "rain_line" ]; then
 
-    ## initial direction
-    mom=-1,0,0   # with two_pmt layout -X is towards NNVT
-    #mom=1,0,0     # with two_pmt layout +X is towards HAMA
+        ttype=line
+        #pos=0,0,190   ## 190 grazes HAMA apex, somehow causing "TO TO SD"
+        pos=0,0,195 
+        #radius=280    # 280 gives too much hangover with lots of  "TO SA" "TO AB"
+        radius=260     # standand for line from above 
+        mom=0,0,-1   
+        # approx PMT extents : xy -255:255, z -190:190
 
-elif [ "$LAYOUT" == "one_pmt" ]; then 
+    elif [ "$CHECK" == "escape" ]; then
 
-    # approx PMT extents : xy -255:255, z -190:190
-    #radius=280    # too much hangover giving lots of "TO SA" "TO AB"
-    #radius=260     # standand for line from above 
-    #radius=120    # focus on HAMA dynode
-    radius=195     # for from the side check 
+        ttype=point
+        pos=0,0,100 
+        mom=0,0,1
+        radius=0
 
-    #ttype=line
-    ttype=point
+    elif [ "$CHECK" == "rain_dynode" ]; then
 
-    case $ttype in 
-      disc) pos=0,0,0 ;;
-    #line) pos=0,0,190 ;;     ## 190 grazes HAMA apex (somehow causing "TO TO SD" history)
-    #line) pos=0,0,195 ;;     ## standard for line from above test
-     line) pos=-300,0,0 ;;    ## for side shooting from the left 
-    #point) pos=0,0,100 ;;    ## PMT upper mid-vacuum 
-     point) pos=-300,0,-10 ;; ## PMT left below cathode at Z=0, for shooting the reflector 
-    esac
-    #mom=0,0,-1   
-    mom=1,0,0   
+        ttype=line
+        radius=120    # focus on HAMA dynode
+        pos=0,0,-50
+        mom=0,0,-1
+
+    elif [ "$CHECK" == "lhs_line" ]; then
+
+        radius=195     # for from the side check 
+        pos=-300,0,0
+        mom=1,0,0
+
+    elif [ "$CHECK" == "lhs_reflector_point" ]; then
+
+        ttype=point
+        pos=-300,0,-10     ## PMT left below cathode at Z=0, for shooting the reflector 
+        mom=1,0,0
+        radius=0
+
+    elif [ "$CHECK" == "lhs_reflector_line" ]; then
+
+        ttype=line
+        radius=95
+        pos=-300,0,-95   ## line from (-300,0,0) to (-300,0,-190)
+        mom=1,0,0        
+
+    elif [ "$CHECK" == "rain_disc" ]; then
+
+        ttype=disc 
+        pos=0,0,300
+        mom=0,0,-1
+        radius=250
+
+    else
+         echo $BASH_SOURCE : ERROR LAYOUT $LAYOUT CHECK $CHECK IS NOT HANDLED
+    fi 
+
+
+elif [ "$LAYOUT" == "two_pmt" ]; then
+
+    echo $BASH_SOURCE : ERROR LAYOUT $LAYOUT CHECK $CHECK IS NOT HANDLED
+
 fi 
 
 export SEvent_MakeGensteps_num_ph=$num_ph

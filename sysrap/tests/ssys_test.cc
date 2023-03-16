@@ -1,7 +1,8 @@
-// name=ssys_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+// ./ssys_test.sh
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "ssys.h"
 
 void test_popen_0()
@@ -70,6 +71,20 @@ void test_getenvvec_string_2()
 
 
 
+void test_getenv_kv()
+{
+    typedef std::pair<std::string, std::string> KV ; 
+    std::vector<KV> kvs ; 
+    ssys::getenv_(kvs, "HOME\nCHECK\nOPTICKS_HOME"); 
+
+    for(int i=0 ; i < int(kvs.size()); i++)
+    {
+        const KV& kv = kvs[i]; 
+        std::cout << std::setw(20) << kv.first << " : " << kv.second << std::endl ; 
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -78,8 +93,10 @@ int main(int argc, char** argv)
     test_getenv_vec(); 
     test_getenv_(); 
     test_getenvvec_string_1(); 
-    */
     test_getenvvec_string_2(); 
+    */
+
+    test_getenv_kv(); 
 
  
     return 0 ; 
