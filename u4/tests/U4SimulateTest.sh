@@ -94,9 +94,9 @@ logN=${bin}_$VERSION.log
 
 #num_ph=2
 #num_ph=10
-num_ph=1000      #  1k
+#num_ph=1000      #  1k
 #num_ph=10000    # 10k
-#num_ph=100000   # 100k
+num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 if [ -n "$RERUN" ]; then 
@@ -144,13 +144,16 @@ elif [ "$LAYOUT" == "one_pmt" ]; then
     #radius=120    # focus on HAMA dynode
     radius=195     # for from the side check 
 
-    ttype=line
+    #ttype=line
+    ttype=point
+
     case $ttype in 
       disc) pos=0,0,0 ;;
     #line) pos=0,0,190 ;;     ## 190 grazes HAMA apex (somehow causing "TO TO SD" history)
     #line) pos=0,0,195 ;;     ## standard for line from above test
      line) pos=-300,0,0 ;;    ## for side shooting from the left 
-     point) pos=0,0,100 ;;    ## PMT upper mid-vacuum 
+    #point) pos=0,0,100 ;;    ## PMT upper mid-vacuum 
+     point) pos=-300,0,-10 ;; ## PMT left below cathode at Z=0, for shooting the reflector 
     esac
     #mom=0,0,-1   
     mom=1,0,0   

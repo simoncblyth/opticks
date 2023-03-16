@@ -81,6 +81,9 @@ np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 
 class RFold(object):
+    """
+    Provides a common Load method for U4SimtraceTest and U4SimulateTest objects
+    """
     @classmethod
     def Load(cls, fold, symbol="x"):
         if not fold is None and os.path.isdir(fold): 
@@ -348,11 +351,19 @@ class U4SimulateTest(RFold):
     """
     def __init__(self, f):
 
+        symbol = f.symbol
         q_ = f.seq[:,0]
         q  = ht.seqhis(q_)  # ht from opticks.ana.p 
         qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
-
         n = np.sum( seqnib_(q_), axis=1 )   
+
+        qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
+        quo = np.argsort(qn)[::-1]  
+
+        qtab_ = "np.c_[qn,qi,qu][quo]" 
+        qtab = eval(qtab_)
+        qtab_ = qtab_.replace("q","%s.q" % symbol)
+
 
         self.f = f 
         self.q_ = q_
@@ -360,13 +371,20 @@ class U4SimulateTest(RFold):
         self.qq = qq
         self.n = n 
 
+        self.qu = qu
+        self.qi = qi
+        self.qn = qn
+        self.quo = quo
+        self.qtab_ = qtab_
+        self.qtab = qtab 
+
+
         self._r = None
         self.r = None
         self._a = None
         self.a = None
         self._pid = -1
 
-        symbol = f.symbol
         pid = int(os.environ.get("%sPID" % symbol.upper(), "-1"))
         opt = os.environ.get("%sOPT" % symbol.upper(), "")
         off_ = os.environ.get("%sOFF" % symbol.upper(), "0,0,0")
@@ -442,6 +460,9 @@ if __name__ == '__main__':
     a = U4SimulateTest.Load(AFOLD, symbol="a")   # optional photon histories 
     b = U4SimulateTest.Load(BFOLD, symbol="b")
     ## AFOLD, BFOLD and a, b are photon histories from U4SimulateTest 
+
+    if not a is None: print('a',a.qtab_,"\n",a.qtab)
+    if not b is None: print('b',b.qtab_,"\n",b.qtab)
 
 
     pl = plotter(label="U4SimtraceTest.py")  # MODE:2 (fig,ax)  MODE:3 pv plotter

@@ -1,5 +1,30 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+viz.sh
+========
+
+
+Use qi first indices of each history as APID/BPID indices to viz::
+
+    In [1]: a.qtab_,a.qtab
+    Out[1]: 
+    ('np.c_[qn,qi,qu][quo]',
+     array([[b'900', b'0', b'TO BT SR BT SA                                                                                  '],
+            [b'93', b'12', b'TO BT SA                                                                                        '],
+            [b'2', b'600', b'TO BT SR BT AB                                                                                  '],
+            [b'2', b'239', b'TO BR SA                                                                                        '],
+            [b'1', b'484', b'TO BT SR BR SR BT SA                                                                            '],
+            [b'1', b'938', b'TO BT SR AB                                                                                     '],
+            [b'1', b'964', b'TO BT AB                                                                                        ']], dtype='|S96'))
+
+    epsilon:tests blyth$ APID=484 ./viz.sh 
+
+
+EOU
+}
+
+
 DIR=$(dirname $BASH_SOURCE)
 
 defarg="ana"

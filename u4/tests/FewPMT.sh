@@ -1,13 +1,18 @@
-
 usage(){ cat << EOU
-FewPMT.sh ( formerly hamaLogicalPMT.sh ) 
-===========================================
+FewPMT.sh
+==========
 
 This geomscript is sourced from::
 
    U4SimtraceTest.sh
    U4SimulateTest.sh
 
+Moved LAYOUT control here to be in common 
+between U4SimulateTest.sh and U4SimtraceTest.sh 
+
+Any geometry specific config belongs here.
+Photon generation while depending on geometry for targetting
+is sufficiently independent to make it better handled separately. 
 
 +-------------------+------------------------------+
 |  input envvars    |                              |
@@ -17,7 +22,6 @@ This geomscript is sourced from::
 | POM               |  0/1 traditional/multifilm   |
 +-------------------+------------------------------+
 
-
 +-------------------+------------------------------+
 |  output envvars   |                              |
 +===================+==============================+
@@ -26,10 +30,8 @@ This geomscript is sourced from::
 | Many envvars      | Config geometry and fakes    |
 +-------------------+------------------------------+
 
-
 EOU
 }
-
 
 version=${VERSION:-0}
 pom=${POM:-1}
@@ -37,10 +39,6 @@ pom=${POM:-1}
 #layout=two_pmt  
 layout=one_pmt
 export LAYOUT=$layout
-
-## moved LAYOUT control inside geomscript so its in common 
-## between U4SimulateTest.sh and U4SimtraceTest.sh 
-
 
 case $layout in 
   one_pmt) echo layout $layout ;; 
@@ -53,14 +51,13 @@ case $version in
 esac
 
 case $pom in 
-   0) echo POM $pom : traditional stop at photocathode : PMT with no innards  ;;
-   1) echo POM $pom : allow photons into PMT which has innards ;; 
+   0) echo $BASH_SOURCE POM $pom : traditional stop at photocathode : PMT with no innards  ;;
+   1) echo $BASH_SOURCE POM $pom : allow photons into PMT which has innards ;; 
 esac
 
 fastcover=Cheese
 
-
-## PMTFastSim/HamamatsuR12860PMTManager declProp config 
+## PMTSim declProp config of the PMTManager
 
 export hama_FastCoverMaterial=$fastcover
 export hama_UsePMTOpticalModel=$pom     
@@ -69,7 +66,6 @@ export hama_UseNaturalGeometry=$version
 export nnvt_FastCoverMaterial=$fastcover
 export nnvt_UsePMTOpticalModel=$pom   
 export nnvt_UseNaturalGeometry=$version 
-
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
@@ -82,9 +78,7 @@ vars="BASH_SOURCE GEOM FewPMT_GEOMList LAYOUT"
 for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
 
 
-
 aspect=1.7777777777777  # 1280/720
-
 
 if [ "$layout" == "one_pmt" ]; then 
 
@@ -147,6 +141,10 @@ if [ "$VERSION" == "0" ]; then
 
     export U4Recorder__FAKES="$fakes"
     export U4Recorder__FAKES_SKIP=1
+
+    ## TODO: try reducing this fake config, many should be extraneous 
+    ##       now that have FAKE_SURFACE detection in U4Recorder::ClassifyFake 
+
 fi 
 
 # standalone access to PMT data 

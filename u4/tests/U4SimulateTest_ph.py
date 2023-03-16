@@ -39,7 +39,6 @@ if __name__ == '__main__':
     st_ = t.aux[:,:,2,3].view(np.int32)
     st = SPECS[st_]
 
-
     axes = 0, 2  # X,Z
     H,V = axes 
     label = LABEL 
@@ -51,23 +50,38 @@ if __name__ == '__main__':
     qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
     n = np.sum( seqnib_(q_), axis=1 ) 
 
-    ## ReplicaNumber : but when not more than one of each type of volume this is -1
-    rp = t.record[...,1,3].view(np.int32) 
-    np.set_printoptions(edgeitems=50)  
 
-    u_rp, i_rp, v_rp, n_rp = np.unique(rp, axis=0, return_index=True, return_inverse=True, return_counts=True ) 
-    print("\nnp.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp] ## unique ReplicaNumber sequences ")
-    print(np.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp])
-    print("\nlen(v_rp) : %d ## v_rp : unique array indices that reproduce original array  " % len(v_rp))
-    assert len(rp) == len(v_rp) 
+    ReplicaNumber=False
+    if ReplicaNumber:
+        ## ReplicaNumber : but when not more than one of each type of volume this is -1
+        rp = t.record[...,1,3].view(np.int32) 
+        np.set_printoptions(edgeitems=50)  
 
-    ## resort to uniqing the "|S96" label because NumPy lacks uint128  
+        u_rp, i_rp, v_rp, n_rp = np.unique(rp, axis=0, return_index=True, return_inverse=True, return_counts=True ) 
+        print("\nnp.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp] ## unique ReplicaNumber sequences ")
+        print(np.c_[np.arange(len(i_rp)),i_rp,n_rp,u_rp])
+        print("\nlen(v_rp) : %d ## v_rp : unique array indices that reproduce original array  " % len(v_rp))
+        assert len(rp) == len(v_rp) 
+    pass
+
+    ## uniqing the "|S96" label because NumPy lacks uint128  
     qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
     quo = np.argsort(qn)[::-1]  
-    expr = "np.c_[qn,qi,qu][quo]"
+    expr_ = "np.c_[qn,qi,qu][quo]"
+    expr = eval(expr_)
+  
     
-    print("\n%s  ## unique histories qu in descending count qn order, qi first index " % expr )
-    print(eval(expr))  
+    print("\n%s  ## unique histories qu in descending count qn order, qi first index " % expr_ )
+    print(expr) 
+
+    numpystr_ = lambda _:"%5s" % _.strip().decode("utf-8")
+    int_ = lambda _:"%5d" % _
+    formatter = {'numpystr':numpystr_, 'int':int_}   
+    ## HMM: when concatenating all the types get converted to numpystr, so not much control 
+    # idea for more control of array presentation
+    print("\n",np.array2string(expr,formatter=formatter))
+
+
 
     ws_ = 1 
     ws = np.where( q[:,0] == qu[quo][ws_] )   # select photons with the ws_ most prolific history    
