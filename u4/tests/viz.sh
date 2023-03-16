@@ -42,6 +42,9 @@ elif [ -n "$APID" ]; then
     N=0 APID=$APID AOPT=idx $script $arg
 elif [ -n "$BPID" ]; then
     N=1 BPID=$BPID BOPT=idx $script $arg
+elif [ "$arg" == "runboth" ]; then
+    N=0 $script run
+    N=1 $script run
 else
     N=${N:-1} $script $arg
 fi 

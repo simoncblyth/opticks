@@ -26,6 +26,7 @@
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
 #include "U4UniformRand.h"
+#include "U4Fake.h"
 
 #include "U4Surface.h"
 #include "U4Process.h"
@@ -455,6 +456,11 @@ A: Labelling added to track at the tail of the FastSim DoIt, eg "jcv junoPMTOpti
                  |
 
 
+**current_aux**
+
+::
+
+   current_aux.q1.i.w  : ascii status integer 'F' for first
 
 
 **/
@@ -540,12 +546,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             current_aux.q1.f.x = cdbg->An ; 
             current_aux.q1.f.y = cdbg->Rn ; 
             current_aux.q1.f.z = cdbg->Tn ; 
-            current_aux.q1.f.w = cdbg->escape_fac ; 
+            current_aux.q1.f.w = cdbg->escape_fac ;  // HMM: this stomps on  ascii status integer 
 
             current_aux.q2.f.x = cdbg->minus_cos_theta ;
             current_aux.q2.f.y = cdbg->wavelength_nm  ; 
-            current_aux.q2.f.z = cdbg->pmtid ; 
-            current_aux.q2.f.w = -1. ; 
+            current_aux.q2.f.z = cdbg->pmtid ;       // HMM: q2.i.z maybe set to fakemask below
+            current_aux.q2.f.w = -1. ;               // HMM: q2.i.w gets set to step spec index  
         }
 
         current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
@@ -594,22 +600,19 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             ; 
     }
 
-    
-
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-    assert( flag > 0 );  // SKIP ASSERT
-
+    assert( flag > 0 ); 
 
     bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
 
     //bool is_transmit_flag = OpticksPhoton::IsTransmitFlag(flag); 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
-    unsigned fakemask = FAKES_SKIP ? ClassifyFake(step, flag, spec, PIDX_DUMP ) : 0 ; 
-    bool is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
-
+    unsigned fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP ) ; 
+    bool is_fake = FAKES_SKIP && fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
+    current_aux.q2.i.z = fakemask ;  // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.i.w = st ; 
 
     LOG_IF(info, PIDX_DUMP ) 
@@ -620,7 +623,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " st " << std::setw(3) << st 
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " fakemask " << fakemask
-        << " DescFake " << DescFake(fakemask)
+        << " U4Fake::Desc " << U4Fake::Desc(fakemask)
         ;
 
 
@@ -645,9 +648,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, label->id ); 
 
         sev->pointPhoton(*label);         // save SEvt::current_photon/rec/seq/prd into sevent 
-
     }
-
 
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
     LOG(LEVEL) << "]" ; 
@@ -664,7 +665,6 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
 
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
-    if(step_mm < EPSILON && is_reflect_flag == false) fakemask |= FAKE_STEP_MM ; 
 
     const char* fake_pv_name = "body_phys" ; 
 
@@ -676,7 +676,7 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     const G4VPhysicalVolume* fpv1 = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END ); 
     const G4VPhysicalVolume* fpv = fpv0 ? fpv0 : fpv1 ; 
 
-    LOG_IF(info, fpv == nullptr ) << U4Touchable::Desc(touch) <<  U4Touchable::Brief(touch) ; 
+    //LOG_IF(info, fpv == nullptr ) << U4Touchable::Desc(touch) <<  U4Touchable::Brief(touch) ; 
     G4LogicalVolume* flv = fpv ? fpv->GetLogicalVolume() : nullptr ; 
     G4VSolid* fso = flv ? flv->GetSolid() : nullptr ; 
 
@@ -692,31 +692,23 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     EInside fin = kOutside ; 
     G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin ) ; 
 
-    if(fdist < EPSILON)    fakemask |= FAKE_FDIST ;  
-    if(fin == kSurface)    fakemask |= FAKE_SURFACE ; 
-    if(IsListedFake(spec)) fakemask |= FAKE_MANUAL ;  
+
+    if(step_mm < EPSILON && is_reflect_flag == false) fakemask |= U4Fake::FAKE_STEP_MM ; 
+    if(fdist < EPSILON)    fakemask |= U4Fake::FAKE_FDIST ;  
+    if(fin == kSurface)    fakemask |= U4Fake::FAKE_SURFACE ; 
+    if(IsListedFake(spec)) fakemask |= U4Fake::FAKE_MANUAL ;  
 
     LOG_IF(info, dump) 
         << " fdist " << fdist 
         << " fin " << sgeomdefs::EInside_(fin)
         << " fakemask " << fakemask
-        << " desc " << DescFake(fakemask)
+        << " desc " << U4Fake::Desc(fakemask)
         ; 
 
 
     return fakemask ; 
 }
 
-std::string U4Recorder::DescFake(unsigned fakemask)
-{
-    std::stringstream ss ; 
-    if(fakemask & FAKE_STEP_MM) ss << FAKE_STEP_MM_ << "|" ; 
-    if(fakemask & FAKE_FDIST)   ss << FAKE_FDIST_ << "|" ; 
-    if(fakemask & FAKE_SURFACE)  ss << FAKE_SURFACE_ << "|" ; 
-    if(fakemask & FAKE_MANUAL)  ss << FAKE_MANUAL_ << "|" ; 
-    std::string str = ss.str(); 
-    return str ; 
-}
 
 std::vector<std::string>* U4Recorder::FAKES      = ssys::getenv_vec<std::string>("U4Recorder__FAKES", "" );
 bool                      U4Recorder::FAKES_SKIP = ssys::getenvbool(             "U4Recorder__FAKES_SKIP") ;  

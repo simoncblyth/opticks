@@ -32,10 +32,12 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from collections import OrderedDict as odict 
-from opticks.ana.fold import Fold
+from opticks.ana.fold import Fold, RFold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.eget import eintarray_  
+from opticks.u4.tests.U4SimulateTest import U4SimulateTest 
+
 
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 GCOL = "grey"
@@ -78,20 +80,6 @@ H,V = AXES
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
-
-
-class RFold(object):
-    """
-    Provides a common Load method for U4SimtraceTest and U4SimulateTest objects
-    """
-    @classmethod
-    def Load(cls, fold, symbol="x"):
-        if not fold is None and os.path.isdir(fold): 
-            f = Fold.Load(fold, symbol=symbol )
-        else:
-            f = None
-        pass
-        return None if f is None else cls(f)
 
 
 class U4SimtraceTest(RFold):
@@ -345,119 +333,24 @@ class U4SimtraceTest(RFold):
         pass
 
 
-class U4SimulateTest(RFold):
-    """
-    TODO: separate and relocate for easier reuse
-    """
-    def __init__(self, f):
-
-        symbol = f.symbol
-        q_ = f.seq[:,0]
-        q  = ht.seqhis(q_)  # ht from opticks.ana.p 
-        qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
-        n = np.sum( seqnib_(q_), axis=1 )   
-
-        qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
-        quo = np.argsort(qn)[::-1]  
-
-        qtab_ = "np.c_[qn,qi,qu][quo]" 
-        qtab = eval(qtab_)
-        qtab_ = qtab_.replace("q","%s.q" % symbol)
-
-
-        self.f = f 
-        self.q_ = q_
-        self.q = q
-        self.qq = qq
-        self.n = n 
-
-        self.qu = qu
-        self.qi = qi
-        self.qn = qn
-        self.quo = quo
-        self.qtab_ = qtab_
-        self.qtab = qtab 
-
-
-        self._r = None
-        self.r = None
-        self._a = None
-        self.a = None
-        self._pid = -1
-
-        pid = int(os.environ.get("%sPID" % symbol.upper(), "-1"))
-        opt = os.environ.get("%sOPT" % symbol.upper(), "")
-        off_ = os.environ.get("%sOFF" % symbol.upper(), "0,0,0")
-        off = np.array(list(map(float,off_.split(","))))
-
-        log.info("U4SimulateTest.__init__  symbol %s pid %d opt %s off %s " % (symbol, pid, opt, str(off)) ) 
-        self.symbol = symbol
-        self.pid = pid
-        self.opt = opt 
-        self.off = off
-
-    def __repr__(self):
-        return "U4SimulateTest symbol %s pid %s opt %s off %s" % ( self.symbol, self.pid, self.opt, str(self.off) ) 
-   
-    def _get_pid(self):
-        return self._pid
-    def _set_pid(self, pid):
-        f = self.f
-        q = self.q
-        symbol = self.symbol
-        if pid > -1 and hasattr(f,'record') and pid < len(f.record):
-            _r = f.record[pid]
-            wl = _r[:,2,3]
-            r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros
-            pass
-            assert hasattr(f,'aux')
-            _a = f.aux[pid]
-            a = _a[wl > 0]
-            ast = a[:len(a),1,3].copy().view(np.int8)[::4]
-            pass  
-            qpid = q[pid][0].decode("utf-8").strip()  
-
-            npoi = (len(qpid)+1)//3 
-            qkey = " ".join(map(lambda _:"%0.2d"%_, range(npoi)))  
-
-            #label = "%s %sPID:%d\n%s " % (qpid, symbol.upper(), pid, qkey)
-            label = "%s\n%s" % (qpid, qkey)
-        else:
-            _r = None
-            r = None
-            _a = None
-            a = None
-            ast = None
-            qpid = None
-            label = ""
-        pass
-        self._pid = pid
-        self._r = _r
-        self.r = r
-        self._a = _a
-        self.a = a
-        self.ast = ast
-        self.qpid = qpid
-        self.label = label
-
-
-    pid = property(_get_pid, _set_pid)
-
-
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     fold = SFOLD if not SFOLD is None else FOLD
+
+    log.info(" -- U4SimtraceTest.Load FOLD/SFOLD" )
     s = U4SimtraceTest.Load(fold, symbol="s")    # mandatory first geometry 
     assert not s is None
 
+    log.info(" -- U4SimtraceTest.Load TFOLD" )
     t = U4SimtraceTest.Load(TFOLD, symbol="t")   # optional second geometry 
     ## SFOLD, TFOLD and s, t correspond to intersection geometries from U4SimtraceTest
 
 
+    log.info(" -- U4SimulateTest.Load AFOLD" )
     a = U4SimulateTest.Load(AFOLD, symbol="a")   # optional photon histories 
+    log.info(" -- U4SimulateTest.Load BFOLD" )
     b = U4SimulateTest.Load(BFOLD, symbol="b")
     ## AFOLD, BFOLD and a, b are photon histories from U4SimulateTest 
 

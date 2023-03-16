@@ -71,10 +71,14 @@ if __name__ == '__main__':
     br_pos = t.record[tuple(w_br[0]), tuple(w_br[1]),0,:3]   
 
 
-    LAYOUT = os.environ.get("LAYOUT", "")
+    #LAYOUT = os.environ.get("LAYOUT", "")   
+    ## ana env may not match run env, making it fragile to assume so 
+    LAYOUT = t.photon_meta.LAYOUT[0]  
+    CHECK = t.photon_meta.CHECK[0]  
 
     print("CMDLINE:%s" % (CMDLINE) )
     print("LAYOUT:%s" % (LAYOUT) )
+    print("CHECK:%s" % (CHECK) )
     print("MODE:%d" % (MODE) )
     print("PIDX:%d" % (PIDX) )
     print("N:%d" % (N) )
@@ -130,6 +134,8 @@ if __name__ == '__main__':
     rqwns = textwrap.dedent("""
     GEOM
     GEOMList    
+    LAYOUT
+    CHECK
     """) 
 
     lqwns = textwrap.dedent("""
@@ -174,17 +180,10 @@ if __name__ == '__main__':
     print(lanno)
     os.environ["LHSANNO"] = lanno 
 
-
     rlines = []
     for qwn in rqwns.split("\n"): 
-        if len(qwn) == 0:
-            rlines.append("")
-        elif qwn.find(".") > -1 or qwn.startswith("GEOM"):
-            rlines.append("%s : %s" % ( qwn, eval(qwn)))
-        else:
-            num = np.count_nonzero(eval(qwn))  
-            rlines.append("%30s : %d " % ( qwn, num ))
-        pass
+        line = "" if len(qwn) == 0 else "%s : %s" % ( qwn, eval(qwn))
+        rlines.append(line)
     pass
     ranno = "\n".join(rlines)
     print(ranno)

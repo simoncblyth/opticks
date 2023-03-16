@@ -34,6 +34,23 @@ class AttrBase(object):
         return "\n".join(lines)
 
 
+
+class RFold(object):
+    """
+    Provides a common Load method for U4SimtraceTest and U4SimulateTest objects
+    """
+    @classmethod
+    def Load(cls, fold, symbol="x"):
+        if not fold is None and os.path.isdir(fold): 
+            f = Fold.Load(fold, symbol=symbol )
+        else:
+            f = None
+        pass
+        return None if f is None else cls(f)
+
+
+
+
 class Fold(object):
 
     @classmethod
@@ -132,7 +149,7 @@ class Fold(object):
     INDEX = "NPFold_index.txt" 
 
     def brief(self):
-        return "Fold : symbol %s base %s " % (self.symbol, self.base) 
+        return "Fold : symbol %30s base %s " % (self.symbol, self.base) 
 
 
     @classmethod

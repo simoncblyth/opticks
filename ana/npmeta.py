@@ -62,6 +62,8 @@ class NPMeta(object):
         return self.d.get(k, fallback)
 
     def __getattr__(self, k):
+        if not k in self.d:
+             raise AttributeError("No attribute %s " % k) 
         return self.find(k)
 
     def __getitem__(self, idx):
@@ -140,9 +142,9 @@ if __name__ == '__main__':
              'hama_body_log',
              'hama_inner2_log']
 
-    d = NPMeta.AsDict(lines)
 
-    print(d)
+    m = NPMeta(lines)
+    print(m.d)
      
 
 

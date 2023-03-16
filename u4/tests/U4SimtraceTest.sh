@@ -3,6 +3,12 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
+TODO
+------
+
+* add metadata checks that plotted U4SimulateTest photons are from a geometry matching the U4SimtraceTest geometry
+ 
+
 Commands
 -----------
 
@@ -155,15 +161,7 @@ fi
 _GEOMList=${GEOM}_GEOMList
 GEOMList=${!_GEOMList}
 
-echo GEOMList : $GEOMList 
-
-
-
-case $LAYOUT in 
-  one_pmt) loc="upper right" ;; 
-        *) loc="skip"        ;; 
-esac
-export LOC=${LOC:-$loc}      # python ana level presentation 
+echo $BASH_SOURCE GEOMList : $GEOMList 
 
 
 loglevels()

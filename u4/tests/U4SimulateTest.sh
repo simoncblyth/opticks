@@ -121,10 +121,9 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep state files small 
 
 
-
-#check=rain_line
+check=rain_line
 #check=escape
-check=rain_dynode
+#check=rain_dynode
 #check=lhs_line
 #check=lhs_reflector_point
 #check=lhs_reflector_line
@@ -180,7 +179,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
     elif [ "$CHECK" == "rain_disc" ]; then
 
         ttype=disc 
-        pos=0,0,300
+        pos=0,0,195
         mom=0,0,-1
         radius=250
 
@@ -289,10 +288,35 @@ fi
 
 if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
-    [ "$arg" == "nph" ] && export MODE=0
+    [ "$arg" == "nmt" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i ${bin}_mt.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
 fi 
+
+if [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
+    export FOLD=$BASE/$reldir
+    [ "$arg" == "nfk" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_fk.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 6
+fi 
+
+if [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
+    export FOLD=$BASE/$reldir
+    [ "$arg" == "nck" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}_ck.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 7
+fi 
+
+if [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
+    export FOLD=$BASE/$reldir
+    [ "$arg" == "n__" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i ${bin}.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 8
+fi 
+
+
+
+
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$BASE/$VERSION/figs
