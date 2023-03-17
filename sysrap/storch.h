@@ -152,7 +152,12 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
 
     const char* type = qenv(storch_FillGenstep_type, "disc" );  
-    gs.type = storchtype::Type(type);  
+    unsigned ttype = storchtype::Type(type) ; 
+    bool ttype_valid = storchtype::IsValid(ttype) ; 
+    if(!ttype_valid) printf("//storch::FillGenstep FATAL TTYPE INVALID %s:[%s][%d] \n", storch_FillGenstep_type, type, ttype ) ; 
+    assert(ttype_valid);  
+
+    gs.type = ttype ;  
     printf("//storch::FillGenstep storch_FillGenstep_type %s  gs.type %d \n", type, gs.type ); 
     gs.mode = 255 ;    //torchmode::Type("...");  
 }

@@ -28,6 +28,7 @@ struct storchtype
 
     static unsigned Type(const char* name); 
     static const char* Name(unsigned type); 
+    static bool     IsValid(unsigned type); 
 }; 
 
 inline unsigned storchtype::Type(const char* name) 
@@ -52,6 +53,11 @@ inline const char* storchtype::Name(unsigned type)
     }
     return n ; 
 }
+inline bool storchtype::IsValid(unsigned type)
+{
+    return type > T_UNDEF && type < T_LAST ; 
+}
+
 #endif
 
 

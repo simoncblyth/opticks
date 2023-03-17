@@ -122,10 +122,10 @@ export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep s
 
 
 #check=rain_disc
-check=rain_line
+#check=rain_line
 #check=escape
 #check=rain_dynode
-#check=lhs_line
+check=lhs_line
 #check=lhs_reflector_line
 #check=lhs_reflector_point
 
@@ -163,6 +163,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
     elif [ "$CHECK" == "lhs_line" ]; then
 
+        ttype=line
         radius=195     
         pos=-300,0,0   ## line from (-300,0,195) to (-300,0,-195) 
         mom=1,0,0
