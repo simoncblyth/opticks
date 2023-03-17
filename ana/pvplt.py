@@ -34,6 +34,8 @@ pv = None
 if MODE in [2,3,-2,-3]:
     try:
         import matplotlib as mp
+        # trying to control window position using  fig.canvas.manager.window
+        # might need mp.use('TkAgg')  but that crashes
         #import matplotlib.pyplot as mp  
     except ImportError:
         mp = None

@@ -258,7 +258,9 @@ class U4SimtraceTest(RFold):
         rpos = r[:,0,:3] + off
 
         if MODE == 2:
-            fig, ax = pl 
+            fig, axs = pl 
+            assert len(axs) == 1 
+            ax = axs[0]
             if True:
                 mpplt_add_contiguous_line_segments(ax, rpos, axes=(H,V), label=None )
                 self.mp_plab(ax, f)

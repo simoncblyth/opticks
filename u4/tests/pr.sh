@@ -23,7 +23,7 @@ EON
 }
 
 DIR=$(dirname $BASH_SOURCE)
-export TIGHT=1
+#export TIGHT=1
 
 #defarg="run_pr"
 defarg="pr"

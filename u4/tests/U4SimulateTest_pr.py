@@ -28,7 +28,11 @@ FLIP = int(os.environ.get("FLIP", "0")) == 1
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 
 if MODE != 0:
+
     from opticks.ana.pvplt import * 
+    WM = mp.pyplot.get_current_fig_manager()  
+else:
+    WM = None
 pass
 
 if __name__ == '__main__':
@@ -146,9 +150,15 @@ if __name__ == '__main__':
                 open(ENVOUT, "w").write(envout)
                 print(envout)
             pass
-
             fig.show()
         pass
+
+        if len(syms) > 1:
+            print("WARNING : MULTIPLE FIGS SHOWN : PROBABLY OVERLAPPED")
+        pass
+
+
+
     elif MODE == -2:
         ## TRYING TO SHOW MORE THAN ONE PLOT GIVES SUBPLOTS TOO SMALL 
         ## ITS MORE USEFUL TO POP UP TWO WINDOWS AS DONE ABOVE 

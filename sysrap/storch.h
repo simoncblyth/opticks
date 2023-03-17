@@ -139,7 +139,8 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     printf("//storch::FillGenstep storch_FillGenstep_time gs.time (%10.4f) \n", gs.time ); 
 
     qvals( gs.mom , storch_FillGenstep_mom , "0,0,1" );    
-    gs.mom = normalize(gs.mom); 
+    gs.mom = normalize(gs.mom);  
+    // maybe should skip this float normalized, relying instead on U4VPrimaryGenerator::GetPhotonParam to do the normalize ?
     printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
 
     qvals( gs.wavelength, storch_FillGenstep_wavelength, "420" ); 

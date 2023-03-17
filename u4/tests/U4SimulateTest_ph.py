@@ -190,7 +190,9 @@ if __name__ == '__main__':
     if MODE == 0:
         print("not plotting as MODE 0  in environ")
     elif MODE == 2:
-        fig, ax = mpplt_plotter(label)
+        fig, axs = mpplt_plotter(label=label)
+        assert len(axs) == 1 
+        ax = axs[0]      
 
         ax.set_ylim(-250,250)
         ax.set_xlim(-500,500)

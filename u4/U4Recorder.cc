@@ -470,7 +470,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
     const G4Track* track = step->GetTrack(); 
     G4VPhysicalVolume* pv = track->GetVolume() ; 
-
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
     spho* label = STrackInfo<spho>::GetRef(track); 
@@ -491,6 +490,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     sphoton& current_photon = sev->current_ctx.p ;
     quad4&   current_aux    = sev->current_ctx.aux ; 
+    current_aux.zero_v(3, 3);   // may be set below
 
     const G4VTouchable* touch = track->GetTouchable();  
     current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
@@ -504,70 +504,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(*label);        // sctx::point copying current into buffers 
     }
-
+    // Q: Where does the "TO" flag come from ?
+    
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
-
-    if(is_boundary_flag)
-    {
-        T* bop = U4OpBoundaryProcess::Get<T>() ;  
-        assert(bop) ; 
-
-        char customStatus = bop ? bop->m_custom_status : 'B' ; 
-        CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
-        const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
-
-#ifdef PMTSIM_STANDALONE
-        CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
-#else
-        CustomART_Debug* cdbg = nullptr ; 
-#endif
-
-        LOG(LEVEL) 
-            << " is_boundary_flag " 
-            << is_boundary_flag 
-            << " bop " << ( bop ? "Y" : "N" ) 
-            << " cart " << ( cart ? "Y" : "N" )
-            << " cdbg " << ( cdbg ? "Y" : "N" )
-            << " bop.m_custom_status " << customStatus
-            << " CustomStatus::Name " << CustomStatus::Name(customStatus) 
-            ; 
-
-        if(cdbg && customStatus == 'Y') 
-        {
-            // much of the contents of CustomART,CustomART_Debug 
-            // only meaningful after doIt call : hence require customStatus 'Y'
-
-            current_aux.q0.f.x = cdbg->A ; 
-            current_aux.q0.f.y = cdbg->R ; 
-            current_aux.q0.f.z = cdbg->T ; 
-            current_aux.q0.f.w = cdbg->_qe ; 
-
-            current_aux.q1.f.x = cdbg->An ; 
-            current_aux.q1.f.y = cdbg->Rn ; 
-            current_aux.q1.f.z = cdbg->Tn ; 
-            current_aux.q1.f.w = cdbg->escape_fac ;  // HMM: this stomps on  ascii status integer 
-
-            current_aux.q2.f.x = cdbg->minus_cos_theta ;
-            current_aux.q2.f.y = cdbg->wavelength_nm  ; 
-            current_aux.q2.f.z = cdbg->pmtid ;       // HMM: q2.i.z maybe set to fakemask below
-            current_aux.q2.f.w = -1. ;               // HMM: q2.i.w gets set to step spec index  
-        }
-
-        current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
-        current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
-    }
-    else
-    {
-        current_aux.zero_v(3, 3); 
-    }
+    if(is_boundary_flag) CollectBoundaryAux<T>(current_aux) ;  
 
     LOG(LEVEL) 
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
         << " is_boundary_flag " << is_boundary_flag  
         ;
-
 
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
@@ -605,12 +552,13 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
 
-    //bool is_transmit_flag = OpticksPhoton::IsTransmitFlag(flag); 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
     unsigned fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP ) ; 
-    bool is_fake = FAKES_SKIP && fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
-    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
+    bool is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
+    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
+
+    // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
     current_aux.q2.i.z = fakemask ;  // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.i.w = st ; 
@@ -653,6 +601,58 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
     LOG(LEVEL) << "]" ; 
 }
+
+
+template <typename T>
+void U4Recorder::CollectBoundaryAux(quad4& current_aux )  // static
+{
+    T* bop = U4OpBoundaryProcess::Get<T>() ;  
+    assert(bop) ; 
+
+    char customStatus = bop ? bop->m_custom_status : 'B' ; 
+    CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
+    const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
+
+#ifdef PMTSIM_STANDALONE
+    CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
+#else
+    CustomART_Debug* cdbg = nullptr ; 
+#endif
+
+    LOG(LEVEL) 
+        << " bop " << ( bop ? "Y" : "N" ) 
+        << " cart " << ( cart ? "Y" : "N" )
+        << " cdbg " << ( cdbg ? "Y" : "N" )
+        << " bop.m_custom_status " << customStatus
+        << " CustomStatus::Name " << CustomStatus::Name(customStatus) 
+        ; 
+
+    if(cdbg && customStatus == 'Y') 
+    {
+        // much of the contents of CustomART,CustomART_Debug 
+        // only meaningful after doIt call : hence require customStatus 'Y'
+
+        current_aux.q0.f.x = cdbg->A ; 
+        current_aux.q0.f.y = cdbg->R ; 
+        current_aux.q0.f.z = cdbg->T ; 
+        current_aux.q0.f.w = cdbg->_qe ; 
+
+        current_aux.q1.f.x = cdbg->An ; 
+        current_aux.q1.f.y = cdbg->Rn ; 
+        current_aux.q1.f.z = cdbg->Tn ; 
+        current_aux.q1.f.w = cdbg->escape_fac ;  // HMM: this stomps on  ascii status integer 
+
+        current_aux.q2.f.x = cdbg->minus_cos_theta ;
+        current_aux.q2.f.y = cdbg->wavelength_nm  ; 
+        current_aux.q2.f.z = cdbg->pmtid ;       // HMM: q2.i.z maybe set to fakemask below
+        current_aux.q2.f.w = -1. ;               // HMM: q2.i.w gets set to step spec index  
+    }
+
+    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+    current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
+}
+
+
 
 
 const double U4Recorder::EPSILON = 1e-4 ; 
