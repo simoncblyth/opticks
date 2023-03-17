@@ -151,10 +151,6 @@ if __name__ == '__main__':
     w_midline = np.where(xz_midline)[0]  
 
 
-
-
-
-
     yy = t.record[:,:,0,1]
     myy = np.max( np.abs(yy), axis=1 )     ## max absolute y of all step points for each photon
 
@@ -173,15 +169,21 @@ if __name__ == '__main__':
     #ppos2_ = "None"
     ppos2_ = "t.record[:,2,0,:3] # 2-position   "
 
+
+    #ppos3_ = "None"
+    ppos3_ = "t.photon[:,0,:3]"
+
     ppos0  = eval(ppos0_)
     ppos1  = eval(ppos1_) 
     ppos2  = eval(ppos2_) 
+    ppos3  = eval(ppos3_) 
 
     elem = []
     elem.append(CMDLINE)
     if not ppos0 is None: elem.append("b:%s" % ppos0_)
     if not ppos1 is None: elem.append("r:%s" % ppos1_)
     if not ppos2 is None: elem.append("g:%s" % ppos2_)
+    if not ppos3 is None: elem.append("c:%s" % ppos3_)
     label = "\n".join(elem)
 
 
@@ -196,6 +198,7 @@ if __name__ == '__main__':
         if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1, c="b" )  
         if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
         if not ppos2 is None: ax.scatter( ppos2[:,H], ppos2[:,V], s=1, c="g" )  
+        if not ppos3 is None: ax.scatter( ppos3[:,H], ppos3[:,V], s=1, c="c" )  
 
         fig.show()
     elif MODE == 3:

@@ -47,7 +47,15 @@ class U4SimulateTest(RFold):
 
         LAYOUT = getattr( f.photon_meta, 'LAYOUT', [] )
         LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else "NO-LAYOUT"
-        
+
+        VERSION = getattr( f.photon_meta, 'VERSION', [] )
+        VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
+        SCRIPT = os.environ.get("SCRIPT", "no-SCRIPT") 
+
+        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
+        ID = "N%d__%s__%s" % (VERSION, LAYOUT, CHECK)
+
+
 
         self.f = f 
         self.q_ = q_
@@ -65,6 +73,8 @@ class U4SimulateTest(RFold):
         self.qtab = qtab 
         self.CHECK = CHECK
         self.LAYOUT = LAYOUT
+        self.TITLE = TITLE
+        self.ID = ID
 
 
         self._r = None

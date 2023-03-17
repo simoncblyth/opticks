@@ -31,7 +31,7 @@ MODE = int(os.environ.get("MODE", 2 ))
 mp = None
 pv = None
 
-if MODE in [2,3]:
+if MODE in [2,3,-2,-3]:
     try:
         import matplotlib as mp
         #import matplotlib.pyplot as mp  
@@ -40,7 +40,7 @@ if MODE in [2,3]:
     pass
 pass
 
-if MODE == 3:
+if MODE in [3,-3]:
     try:
         import pyvista as pv
     except ImportError:
@@ -194,15 +194,9 @@ def pvplt_plotter(label="pvplt_plotter"):
     return pl 
 
 
-def mpplt_plotter(label=""):
-    fig, ax = mp.pyplot.subplots(figsize=SIZE/100.) # 100 dpi 
-    ax.set_aspect('equal')
 
+def mpplt_annotate_fig( fig, label  ):
     suptitle = os.environ.get("SUPTITLE",label) 
-    subtitle = os.environ.get("SUBTITLE", "") 
-    thirdline = os.environ.get("THIRDLINE", "") 
-    lhsanno  = os.environ.get("LHSANNO", "") 
-    rhsanno  = os.environ.get("RHSANNO", "") 
 
     TOF = float(os.environ.get("TOF","0.99"))   # adjust the position of the title, to legibly display 4 lines      
 
@@ -212,6 +206,13 @@ def mpplt_plotter(label=""):
     else:
         print("no SUPTITLE/label" )
     pass
+
+
+def mpplt_annotate_ax( ax ):
+    subtitle = os.environ.get("SUBTITLE", "") 
+    thirdline = os.environ.get("THIRDLINE", "") 
+    lhsanno  = os.environ.get("LHSANNO", "") 
+    rhsanno  = os.environ.get("RHSANNO", "") 
 
     if len(subtitle) > 0:
         print("subtitle:%s " % (subtitle) )
@@ -243,14 +244,17 @@ def mpplt_plotter(label=""):
 
 
 
-
-
-
-
-
-
-
-    return fig, ax
+def mpplt_plotter(nrows=1, ncols=1, label=""):
+    fig, axs = mp.pyplot.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi 
+    if type(axs).__name__ == 'AxesSubplot':axs=np.array([axs], dtype=np.object )
+    for ax in axs:
+        ax.set_aspect('equal')
+    pass
+    mpplt_annotate_fig(fig, label)
+    for ax in axs:
+        mpplt_annotate_ax(ax)
+    pass
+    return fig, axs
 
 
 def plotter(label=""):

@@ -46,11 +46,12 @@ After that can compare timings::
 EOU
 }
 
+DIR=$(dirname $BASH_SOURCE)
 bin=U4SimulateTest
 
 export VERSION=${N:-0}
 export GEOM=FewPMT
-geomscript=$GEOM.sh 
+geomscript=$DIR/$GEOM.sh 
 
 if [ -f "$geomscript" ]; then  
     source $geomscript
@@ -123,9 +124,10 @@ export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep s
 
 #check=rain_disc
 #check=rain_line
+#check=up_rain_line
 #check=escape
 #check=rain_dynode
-check=lhs_line
+check=lhs_window_line
 #check=lhs_reflector_line
 #check=lhs_reflector_point
 
@@ -147,6 +149,13 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         radius=260     # standand for line from above,  280 hangsover  
         mom=0,0,-1   
 
+    elif [ "$CHECK" == "up_rain_line" ]; then
+
+        ttype=line
+        radius=260
+        pos=0,0,-195  
+        mom=0,0,1        
+
     elif [ "$CHECK" == "escape" ]; then
 
         ttype=point
@@ -161,11 +170,11 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         pos=0,0,-50
         mom=0,0,-1
 
-    elif [ "$CHECK" == "lhs_line" ]; then
+    elif [ "$CHECK" == "lhs_window_line" ]; then
 
         ttype=line
-        radius=195     
-        pos=-300,0,0   ## line from (-300,0,195) to (-300,0,-195) 
+        radius=95     
+        pos=-300,0,95   ## line from (-300,0,0) to (-300,0,190) 
         mom=1,0,0
 
     elif [ "$CHECK" == "lhs_reflector_line" ]; then
@@ -240,9 +249,7 @@ if [ "${arg/run}" != "$arg" ]; then
     [ -f "$log" ] && rm $log 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-
     [ -f "$log" ] && echo $BASH_SOURCE rename log $log to logN $logN && mv $log $logN    
-    ## HMM: probably an envvar can change the logname directly ? 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
@@ -256,68 +263,114 @@ fi
 
 ## analysis modes beginning with n: nfs/ncf/naf/nph are NumPy only (without matplotlib and pyvista)
 
+## envout is used to communicate from some python scripts back into this bash script 
+## this only makes sense for single N=0, N=1 running 
+export ENVOUT=/tmp/$USER/opticks/U4SimulateTest/envout.sh
+mkdir -p $(dirname $ENVOUT)
+
+
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nfs" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_fs.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fs.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE fs error && exit 3
 fi 
 
 if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
     [ "$arg" == "ncf" ] && export MODE=0
-
     export AFOLD=$BASE/ALL0
     export BFOLD=$BASE/ALL1
-    ${IPYTHON:-ipython} --pdb -i ${bin}_cf.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
 fi 
 
 if [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
     [ "$arg" == "naf" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_af.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_af.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE af error && exit 4
 fi 
 
 if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nph" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_ph.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ph.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ph error && exit 5
 fi 
 
 if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nmt" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_mt.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_mt.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
 fi 
 
 if [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nfk" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_fk.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 6
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fk.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE fk error && exit 6
 fi 
 
 if [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "nck" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}_ck.py 
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ck.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 7
+fi 
+
+if [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
+    export AFOLD=$BASE/ALL0
+    export BFOLD=$BASE/ALL1
+    [ "$arg" == "nck" ] && export MODE=0
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_pr.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE pr error && exit 8
 fi 
 
 if [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
     export FOLD=$BASE/$reldir
     [ "$arg" == "n__" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i ${bin}.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 8
+    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 9
 fi 
 
 
+if [ -f "$ENVOUT" ]; then 
+    if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+        echo $BASH_SOURCE : detected that python wrote ENVOUT $ENVOUT : sourcing this
+        cat $ENVOUT
+        source $ENVOUT
+        env | grep ENVOUT 
+    else
+        echo $BASH_SOURCE : remove prior ENVOUT $ENVOUT 
+        rm $ENVOUT
+    fi 
+fi
+
+
+notes(){ cat << EON
+ENVOUT COMMUNICATION FROM PYTHON BACK TO BASH
+-----------------------------------------------
+
+NOTICE HOW ENVOUT COMMUNICATION RELIES ON OVERLAPPED RUNNING OF THIS BASH SCRIPT
+
+1. PYTHON PLOTTING RUNS AND WRITES THE ENVOUT FILE AND IS BLOCKING IN THE GUI SHOWING THE WINDOW. 
+
+2. THEN IN A DIFFERENT TAB THE MPCAP/MPPUB IS RUN THAT SOURCES THE ENVOUT
+   IN ORDER TO CONFIGURE CAPTURE NAMING
+
+3. FINALLY THE FIRST PYTHON PLOTTER SESSION IS EXITED THAT CLEANS UP THE ENVOUT FILE.  
+
+EON
+}
 
 
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    if [ -n "$ENVOUT_VERSION" ]; then
+        echo $BASH_SOURCE picking up ENVOUT_VERSION $ENVOUT_VERSION 
+        VERSION=$ENVOUT_VERSION
+    fi 
+
     export CAP_BASE=$BASE/$VERSION/figs
     export CAP_REL=U4SimulateTest
     export CAP_STEM=$GEOM

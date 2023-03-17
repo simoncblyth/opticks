@@ -109,7 +109,9 @@ class U4SimtraceTest(RFold):
         """
         fig, ax = None, None
         if MODE == 2:
-            fig, ax = pl
+            fig, axs = pl
+            assert len(axs) == 1 
+            ax = axs[0]
         elif MODE == 2:
             pass
         pass 
@@ -191,7 +193,10 @@ class U4SimtraceTest(RFold):
 
     def mp_show(self, pl): 
 
-        fig, ax = pl
+        fig, axs = pl
+        assert len(axs) == 1 
+        ax = axs[0]
+
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])
         print("LOC : %s " % LOC)

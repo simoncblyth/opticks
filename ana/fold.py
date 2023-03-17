@@ -41,10 +41,10 @@ class RFold(object):
     """
     @classmethod
     def Load(cls, fold, symbol="x"):
-        if not fold is None and os.path.isdir(fold): 
-            f = Fold.Load(fold, symbol=symbol )
-        else:
+        if fold is None:
             f = None
+        else: 
+            f = Fold.Load(fold, symbol=symbol )
         pass
         return None if f is None else cls(f)
 

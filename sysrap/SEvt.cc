@@ -1503,6 +1503,7 @@ SCRIPT
 CHECK
 LAYOUT
 TEST
+VERSION
 )LITERAL" ;
 
 void SEvt::AddEnvMeta( NP* a ) // static
