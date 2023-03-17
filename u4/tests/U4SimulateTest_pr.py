@@ -84,6 +84,7 @@ if __name__ == '__main__':
 
     tlabel_ = "t.TITLE"  
     tid_ = "t.ID"  
+    version_ = "t.VERSION"  
 
 
     elem = []
@@ -98,6 +99,7 @@ if __name__ == '__main__':
     ppos3 = {}
     tlabel = {}
     tid = {}
+    version = {}
 
     for i,sym in enumerate(syms):
         t = eval(sym)
@@ -107,6 +109,7 @@ if __name__ == '__main__':
         ppos3[sym] = eval(ppos3_) 
         tlabel[sym] = eval(tlabel_) 
         tid[sym] = eval(tid_) 
+        version[sym] = eval(version_) 
     pass
 
     if MODE == 0:
@@ -136,7 +139,8 @@ if __name__ == '__main__':
                                "export ENVOUT_PATH=%s" % ENVOUT,
                                "export ENVOUT_SYM=%s" % sym,
                                "export ENVOUT_TID=%s" % tid[sym],
-                               "export ENVOUT_VERSION=%s" % tid[sym],
+                               "export ENVOUT_CAP_STEM=%s" % tid[sym],
+                               "export ENVOUT_VERSION=%s" % version[sym],
                                ""
                                ]) 
                 open(ENVOUT, "w").write(envout)

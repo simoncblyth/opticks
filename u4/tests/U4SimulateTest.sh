@@ -123,11 +123,11 @@ export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep s
 
 
 #check=rain_disc
-#check=rain_line
+check=rain_line
 #check=up_rain_line
 #check=escape
 #check=rain_dynode
-check=lhs_window_line
+#check=lhs_window_line
 #check=lhs_reflector_line
 #check=lhs_reflector_point
 
@@ -353,12 +353,15 @@ ENVOUT COMMUNICATION FROM PYTHON BACK TO BASH
 
 NOTICE HOW ENVOUT COMMUNICATION RELIES ON OVERLAPPED RUNNING OF THIS BASH SCRIPT
 
-1. PYTHON PLOTTING RUNS AND WRITES THE ENVOUT FILE AND IS BLOCKING IN THE GUI SHOWING THE WINDOW. 
+1. IPYTHON PLOTTING RUNS AND WRITES THE ENVOUT FILE, POPS UP THE GUI WINDOW AND BLOCKS
 
 2. THEN IN A DIFFERENT TAB THE MPCAP/MPPUB IS RUN THAT SOURCES THE ENVOUT
    IN ORDER TO CONFIGURE CAPTURE NAMING
 
 3. FINALLY THE FIRST PYTHON PLOTTER SESSION IS EXITED THAT CLEANS UP THE ENVOUT FILE.  
+
+
+So the ENVOUT file just contains the config for the currently displayed plot. 
 
 EON
 }
@@ -371,9 +374,15 @@ if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "m
         VERSION=$ENVOUT_VERSION
     fi 
 
+    if [ -n "$ENVOUT_CAP_STEM" ]; then
+        echo $BASH_SOURCE picking up ENVOUT_CAP_STEM $ENVOUT_CAP_STEM 
+        export CAP_STEM=$ENVOUT_CAP_STEM
+    else
+        export CAP_STEM=$GEOM
+    fi 
+
     export CAP_BASE=$BASE/$VERSION/figs
     export CAP_REL=U4SimulateTest
-    export CAP_STEM=$GEOM
     case $arg in  
        pvcap) source pvcap.sh cap  ;;  
        mpcap) source mpcap.sh cap  ;;  

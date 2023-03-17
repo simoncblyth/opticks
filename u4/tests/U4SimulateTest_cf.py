@@ -15,6 +15,7 @@ from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.ana.nbase import chi2  
 from opticks.u4.tests.ModelTrigger_Debug import ModelTrigger_Debug       
+from opticks.u4.tests.U4SimulateTest import U4SimulateTest
 
 hist_ = lambda _:_.strip().decode("utf-8")   
 
@@ -36,11 +37,12 @@ if __name__ == '__main__':
 
     print("APID:%d" % (APID))
     print("BPID:%d" % (BPID))
-    a = Fold.Load("$AFOLD", symbol="a")
-    b = Fold.Load("$BFOLD", symbol="b")
 
-    amt = ModelTrigger_Debug(a, symbol="amt", publish=False)  # publish:True crashing 
-    bmt = ModelTrigger_Debug(b, symbol="bmt", publish=False)  # publish:True crashing 
+    a = U4SimulateTest.Load("$AFOLD", symbol="a")
+    b = U4SimulateTest.Load("$BFOLD", symbol="b")
+
+    amt = ModelTrigger_Debug(a.f, symbol="amt", publish=False)  # publish:True crashing 
+    bmt = ModelTrigger_Debug(b.f, symbol="bmt", publish=False)  # publish:True crashing 
     assert( amt.IMPL == bmt.IMPL )
     IMPL = amt.IMPL
 
@@ -50,10 +52,10 @@ if __name__ == '__main__':
     #print(repr(b))
 
     if APID > -1 and BPID > -1:
-        print("seqhis_(a.seq[APID,0] : %s " % seqhis_(a.seq[APID,0] ))
-        print("seqhis_(b.seq[APID,0] : %s " % seqhis_(b.seq[BPID,0] ))
-        ar = a.record[APID]
-        br = b.record[BPID]
+        print("seqhis_(a.f.seq[APID,0] : %s " % seqhis_(a.f.seq[APID,0] ))
+        print("seqhis_(b.f.seq[APID,0] : %s " % seqhis_(b.f.seq[BPID,0] ))
+        ar = a.f.record[APID]
+        br = b.f.record[BPID]
         # mapping from new to old point index for PID 726 big bouncer
         b2a = np.array([ 0,1,3,5,6,8,9,11,12,13,15,17,19 ])
         abr = np.c_[ar[b2a,0],br[:len(b2a),0]].reshape(-1,2,4)
@@ -61,8 +63,8 @@ if __name__ == '__main__':
 
     lim = slice(0,10)
 
-    aq_ = a.seq[:,0]    #  shape eg (1000, 2, 2)                                                                                                                  
-    bq_ = b.seq[:,0]     
+    aq_ = a.f.seq[:,0]    #  shape eg (1000, 2, 2)                                                                                                                  
+    bq_ = b.f.seq[:,0]     
 
     an = np.sum( seqnib_(aq_), axis=1 )     ## occupied nibbles across both sets of 16 from the two 64 bit ints 
     bn = np.sum( seqnib_(bq_), axis=1 )   
@@ -70,30 +72,33 @@ if __name__ == '__main__':
     aq = ht.seqhis(aq_)  # "|S96"  32 point slots * 3 chars for each abbr eg "BT " 
     bq = ht.seqhis(bq_) 
 
-    a_CHECK = a.photon_meta.CHECK[0]  
-    b_CHECK = b.photon_meta.CHECK[0]  
+
+    ## HMM: NEED AB OBJECT ?
+
+    a_CHECK = a.f.photon_meta.CHECK[0]  
+    b_CHECK = b.f.photon_meta.CHECK[0]  
     assert( a_CHECK == b_CHECK )
     CHECK = a_CHECK
 
-    a_LAYOUT = a.photon_meta.LAYOUT[0]  
-    b_LAYOUT = b.photon_meta.LAYOUT[0]  
+    a_LAYOUT = a.f.photon_meta.LAYOUT[0]  
+    b_LAYOUT = b.f.photon_meta.LAYOUT[0]  
     assert( a_LAYOUT == b_LAYOUT )
     LAYOUT = a_LAYOUT
 
 
-    a_SPECS = np.array(a.U4R_names.lines)
-    a_st_ = a.aux[:,:,2,3].view(np.int32)
+    a_SPECS = np.array(a.f.U4R_names.lines)
+    a_st_ = a.f.aux[:,:,2,3].view(np.int32)
     a_st = a_SPECS[a_st_]
 
-    b_SPECS = np.array(b.U4R_names.lines)
-    b_st_ = b.aux[:,:,2,3].view(np.int32)
+    b_SPECS = np.array(b.f.U4R_names.lines)
+    b_st_ = b.f.aux[:,:,2,3].view(np.int32)
     b_st = b_SPECS[b_st_]
 
 
     PID_DESC = "Dumping PID history and step specs with record position, time"
     if APID > -1:
         print("APID:%d # %s " % (APID,PID_DESC)  )
-        exprs = "aq[APID] np.c_[a_st[APID,:an[APID]]] a.record[APID,:an[APID],0]"
+        exprs = "aq[APID] np.c_[a_st[APID,:an[APID]]] a.f.record[APID,:an[APID],0]"
         for expr in exprs.split(): 
             print(expr)
             print(repr(eval(expr)))
@@ -102,7 +107,7 @@ if __name__ == '__main__':
     pass 
     if BPID > -1:
         print("BPID:%d # %s " % (BPID, PID_DESC) )
-        exprs = "bq[BPID] np.c_[b_st[APID,:bn[BPID]]] b.record[BPID,:bn[BPID],0]"
+        exprs = "bq[BPID] np.c_[b_st[APID,:bn[BPID]]] b.f.record[BPID,:bn[BPID],0]"
         for expr in exprs.split(): 
             print(expr)
             print(repr(eval(expr))) 

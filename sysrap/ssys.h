@@ -9,6 +9,7 @@ ssys.h
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <regex>
 #include <sstream>
 #include <vector>
 #include <map>
@@ -23,6 +24,10 @@ struct ssys
 
 
     static bool hasenv_(const char* ekey);  
+    static bool hastoken_(const char* ekey); 
+    static char* _getenv(const char* ekey); 
+    static char* _tokenized_getenv(const char* ekey); 
+
 
     template<typename T>
     static T getenv_(const char* ekey, T fallback);  
@@ -98,6 +103,58 @@ inline bool ssys::hasenv_(const char* ekey)
 {
     return ekey != nullptr && ( getenv(ekey) != nullptr ) ; 
 }
+
+inline bool ssys::hastoken_(const char* ekey)
+{
+    return ekey != nullptr && strlen(ekey) > 2 && ekey[0] == '$' && ekey[1] == '{' ;  
+}
+
+/**
+ssys::_getenv
+---------------
+
+This handles higher order ekey such as "${GEOM}_GEOMList" when the environmnent is::
+
+    export GEOM=FewPMT
+    export ${GEOM}_GEOMList=hamaLogicalPMT
+
+**/
+
+inline char* ssys::_getenv(const char* ekey)
+{
+    if(ekey == nullptr) return nullptr ; 
+    return !hastoken_(ekey) ? getenv(ekey) : _tokenized_getenv(ekey ) ; 
+}
+
+inline char* ssys::_tokenized_getenv(const char* ekey)
+{
+    char* ek = strdup(ekey) ; 
+    char* o = strstr(ek, "${" ); 
+    char* c = strstr(ek, "}" ); 
+    char* t = c ? c+1 : nullptr ; 
+
+    assert( o == ek && "expecting the ${ token at start of ekey "); 
+
+    o += 2 ;    // advance past "${"
+    *c = '\0' ; // terminate at position of "}" 
+
+    char* ov = getenv(o) ; 
+    std::stringstream ss ; 
+    ss << ( ov ? ov : o ) << t ; 
+    std::string str = ss.str(); 
+
+    char* k = strdup(str.c_str()) ; 
+    char* kv = getenv(k) ; 
+    return kv ? kv : k ; 
+}
+
+
+
+
+
+
+
+
 template<typename T>
 inline T ssys::getenv_(const char* ekey, T fallback)
 {
@@ -110,6 +167,8 @@ template unsigned ssys::getenv_(const char*, unsigned );
 template float    ssys::getenv_(const char*, float ); 
 template double   ssys::getenv_(const char*, double ); 
 template std::string ssys::getenv_(const char*, std::string ); 
+
+
 
 
 template<typename T>
@@ -135,7 +194,7 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector
     for(int i=0 ; i < int(kk.size()) ; i++)
     {
         const char* k = kk[i].c_str() ; 
-        const char* v_ = getenv(k) ; 
+        const char* v_ = _getenv(k) ;   // supports higher level tokenized envvars like ${GEOM}_GEOMList 
         if(v_ == nullptr) continue ; 
 
         T v = parse<T>(v_) ; 
@@ -151,6 +210,8 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
     std::string line ; 
     while (std::getline(ss, line))  // newlines are swallowed by getline
     {   
+       if(line.empty()) continue ;   
+       line = std::regex_replace(line, std::regex(R"(^\s+|\s+$)"), "");
        if(line.empty()) continue ;   
        kk.push_back(line); 
     }

@@ -75,7 +75,19 @@ void test_getenv_kv()
 {
     typedef std::pair<std::string, std::string> KV ; 
     std::vector<KV> kvs ; 
-    ssys::getenv_(kvs, "HOME\nCHECK\nOPTICKS_HOME"); 
+
+    const char* kk = R"LITERAL(
+
+    HOME
+    CHECK
+    OPTICKS_HOME
+    ${GEOM}_GEOMList 
+    
+)LITERAL" ;
+
+    //std::cout << "test_getenv_kv" << kk << std::endl ; 
+
+    ssys::getenv_(kvs, kk); 
 
     for(int i=0 ; i < int(kvs.size()); i++)
     {
@@ -83,6 +95,21 @@ void test_getenv_kv()
         std::cout << std::setw(20) << kv.first << " : " << kv.second << std::endl ; 
     }
 }
+
+void test__getenv()
+{
+    const char* k = "${GEOM}_GEOMList" ; 
+    char* v = ssys::_getenv(k) ;  
+
+    std::cout 
+        << " k " << k 
+        << " v " << ( v ? v : "-" )
+        << std::endl
+        ;
+
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -94,9 +121,10 @@ int main(int argc, char** argv)
     test_getenv_(); 
     test_getenvvec_string_1(); 
     test_getenvvec_string_2(); 
+    test__getenv(); 
     */
-
     test_getenv_kv(); 
+
 
  
     return 0 ; 

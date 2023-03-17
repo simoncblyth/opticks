@@ -52,9 +52,15 @@ class U4SimulateTest(RFold):
         VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
         SCRIPT = os.environ.get("SCRIPT", "no-SCRIPT") 
 
-        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
-        ID = "N%d__%s__%s" % (VERSION, LAYOUT, CHECK)
+        GEOM = getattr(f.photon_meta, "GEOM", [])
+        GEOM = GEOM[0] if len(GEOM) == 1 else "NO-GEOM"
 
+        GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
+        GEOMList = GEOMList[0] if len(GEOMList) == 1 else "NO-GEOMList"
+
+
+        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
+        ID = "N%d_%s_%s_%s_%s" % (VERSION, LAYOUT, GEOM, GEOMList, CHECK)
 
 
         self.f = f 
@@ -73,6 +79,10 @@ class U4SimulateTest(RFold):
         self.qtab = qtab 
         self.CHECK = CHECK
         self.LAYOUT = LAYOUT
+        self.VERSION = VERSION
+        self.SCRIPT = SCRIPT
+        self.GEOM = GEOM
+        self.GEOMList = GEOMList
         self.TITLE = TITLE
         self.ID = ID
 
