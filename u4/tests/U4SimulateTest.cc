@@ -155,10 +155,13 @@ int main(int argc, char** argv)
     LOG(info) << "not-POM_DEBUG  "  ; 
 #endif
 
+    std::string descfakes = U4Recorder::DescFakes() ; 
+    LOG(info) << descfakes ; 
 
     NP* u4r = NP::Make<int>(1) ; // dummy array providing somewhere to hang the SPECS
     u4r->fill(0) ; 
     u4r->set_names(U4Recorder::SPECS.names); 
+    u4r->set_meta<std::string>("DescFakes", descfakes ); 
     u4r->save(savedir, "U4R.npy") ; 
 
 

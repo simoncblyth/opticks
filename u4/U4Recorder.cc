@@ -666,8 +666,10 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    const char* fake_pv_name = "body_phys" ; 
 
+
+
+    const char* fake_pv_name = "body_phys" ; 
     const G4Track* track = step->GetTrack(); 
     const G4VTouchable* touch = track->GetTouchable();  
     const G4VPhysicalVolume* pv = track->GetVolume() ; 
@@ -692,11 +694,13 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     EInside fin = kOutside ; 
     G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin ) ; 
 
+    bool is_vacvac_inner1_inner2 = U4Step::IsSameMaterialPVBorder(step, "Vacuum", "inner1_phys", "inner2_phys") ; 
 
     if(step_mm < EPSILON && is_reflect_flag == false) fakemask |= U4Fake::FAKE_STEP_MM ; 
     if(fdist < EPSILON)    fakemask |= U4Fake::FAKE_FDIST ;  
     if(fin == kSurface)    fakemask |= U4Fake::FAKE_SURFACE ; 
     if(IsListedFake(spec)) fakemask |= U4Fake::FAKE_MANUAL ;  
+    if(is_vacvac_inner1_inner2) fakemask |= U4Fake::FAKE_VV_INNER12 ; 
 
     LOG_IF(info, dump) 
         << " fdist " << fdist 
@@ -719,6 +723,21 @@ bool U4Recorder::IsListed( const std::vector<std::string>* LIST, const char* spe
     return false ;  
 }
 bool U4Recorder::IsListedFake( const char* spec ){ return IsListed(FAKES, spec ) ; }
+
+std::string U4Recorder::DescFakes() // static
+{
+    std::stringstream ss ; 
+    ss << "U4Recorder::DescFakes  " << std::endl  
+       << "U4Recorder::FAKES_SKIP " << ( FAKES_SKIP ? "YES" : "NO " ) << std::endl 
+       << "U4Recorder::FAKES      " << ( FAKES      ? "YES" : "NO " ) << std::endl 
+       << "FAKES.size             " << ( FAKES ? FAKES->size() : -1 ) << std::endl 
+       ;
+
+    if(FAKES) for(int i=0 ; i < int(FAKES->size()) ; i++) ss << (*FAKES)[i] << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 

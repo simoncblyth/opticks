@@ -44,6 +44,12 @@ struct U4Step
     static const G4VSolid* Solid(const G4StepPoint* point ); 
     static G4LogicalSurface* GetLogicalSurface(const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV); 
     static std::string Spec(const G4Step* step); 
+
+
+    static bool IsSameMaterial(const G4Step* step, const char* q_matname ); 
+    static bool IsPVBorder(const G4Step* step, const char* q_pvname1, const char* q_pvname2 ); 
+    static bool IsSameMaterialPVBorder( const G4Step* step, const char* q_matname, const char* q_pvname1, const char* q_pvname2  ); 
+
 };
 
 
@@ -94,7 +100,7 @@ eg::
 )"; 
 
 
-void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx)  // static
+inline void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx)  // static
 {
     if(CF == nullptr) std::cerr << MockOpticksBoundaryIdentity_NOTE ; 
     assert(CF); 
@@ -142,7 +148,7 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
     current_photon.set_boundary( boundary);
     current_photon.identity = PackIdentity( kludge_prim_idx_, 0u) ;
 }
-unsigned U4Step::PackIdentity(unsigned prim_idx, unsigned instance_id) 
+inline unsigned U4Step::PackIdentity(unsigned prim_idx, unsigned instance_id) 
 {
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
     return identity ; 
@@ -189,7 +195,7 @@ necessary to use pre-solid or the post-solid depending on the orientation.
 **/
 
 
-int U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
+inline int U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
 {
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
@@ -241,7 +247,7 @@ int U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
 
 
 
-const char* U4Step::Name(unsigned type)
+inline const char* U4Step::Name(unsigned type)
 {
     const char* s = nullptr ; 
     switch(type)
@@ -256,7 +262,7 @@ const char* U4Step::Name(unsigned type)
     return s ; 
 } 
 
-bool U4Step::IsProblem(unsigned type)
+inline bool U4Step::IsProblem(unsigned type)
 {
     return type == U4Step_UNSET || type == U4Step_CHILD_TO_CHILD || type == U4Step_UNEXPECTED ; 
 }
@@ -317,7 +323,7 @@ U4Step::Classify
 **/
 
 
-unsigned U4Step::Classify(const G4Step* step)
+inline unsigned U4Step::Classify(const G4Step* step)
 {
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -344,7 +350,7 @@ unsigned U4Step::Classify(const G4Step* step)
 }
 
 
-bool U4Step::IsOnBoundary( const G4Step* step ) // static 
+inline bool U4Step::IsOnBoundary( const G4Step* step ) // static 
 {
     const G4StepPoint* post = step->GetPostStepPoint() ; 
     G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
@@ -370,11 +376,11 @@ enteredDaughter
  
 **/
 
-std::string U4Step::BoundarySpec(const G4Step* step ) // static
+inline std::string U4Step::BoundarySpec(const G4Step* step ) // static
 {
     return IsOnBoundary(step) ? BoundarySpec_(step) : "" ;  
 }
-std::string U4Step::BoundarySpec_(const G4Step* step) // static 
+inline std::string U4Step::BoundarySpec_(const G4Step* step) // static 
 {
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -446,7 +452,7 @@ inline G4LogicalSurface* U4Step::GetLogicalSurface(const G4VPhysicalVolume* theP
 
 
 
-const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
+inline const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
 {
     const G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
     const G4LogicalVolume* lv = pv ? pv->GetLogicalVolume() : nullptr ;
@@ -466,7 +472,7 @@ configured via envvars::
 
 **/
 
-std::string U4Step::Spec(const G4Step* step) // static
+inline std::string U4Step::Spec(const G4Step* step) // static
 {
     const G4Track* track = step->GetTrack(); 
 
@@ -502,7 +508,47 @@ std::string U4Step::Spec(const G4Step* step) // static
 }
 
 
+inline bool U4Step::IsSameMaterial(const G4Step* step, const char* q_matname ) // static
+{
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    const G4Material* pre_mat = pre->GetMaterial(); 
+    const G4Material* post_mat = post->GetMaterial(); 
+
+    const char* matname = pre_mat->GetName().c_str(); 
+    bool same_material = pre_mat == post_mat && strcmp(matname, q_matname) == 0 ; 
+
+    return same_material ;   
+}
 
 
+inline bool U4Step::IsPVBorder(const G4Step* step, const char* q_pvname1, const char* q_pvname2 ) // static
+{
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    const G4VPhysicalVolume* pre_pv = pre->GetPhysicalVolume();
+    const G4VPhysicalVolume* post_pv = post->GetPhysicalVolume();
+
+    const char* pre_pvname = pre_pv->GetName().c_str(); 
+    const char* post_pvname = post_pv->GetName().c_str(); 
+
+    bool pre_pvname1  = strstr( pre_pvname, q_pvname1 ) != nullptr ; 
+    bool pre_pvname2  = strstr( pre_pvname, q_pvname2 ) != nullptr ; 
+    bool post_pvname1 = strstr( post_pvname, q_pvname1 ) != nullptr ; 
+    bool post_pvname2 = strstr( post_pvname, q_pvname2 ) != nullptr ; 
+
+    bool is_pvborder_12 = pre_pvname1 && post_pvname2 ;  
+    bool is_pvborder_21 = pre_pvname2 && post_pvname1 ;  
+    bool is_pvborder = is_pvborder_12 || is_pvborder_21 ; 
+
+    return is_pvborder ; 
+}
+
+inline bool U4Step::IsSameMaterialPVBorder( const G4Step* step, const char* q_matname, const char* q_pvname1, const char* q_pvname2  ) // static
+{
+    return IsSameMaterial(step, q_matname) && IsPVBorder(step, q_pvname1, q_pvname2 ); 
+}
 
 

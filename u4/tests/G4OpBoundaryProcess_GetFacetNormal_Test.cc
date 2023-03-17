@@ -5,95 +5,19 @@
 #include "Randomize.hh"
 #include "NPX.h"
 
-G4ThreeVector GetFacetNormal(G4ThreeVector& smear, const G4ThreeVector& Momentum, const G4ThreeVector& Normal, G4double polish )
-{
-    G4ThreeVector FacetNormal;
-    G4double Momentum_FacetNormal = 0. ; 
-
-    if (polish < 1.0) 
-    {
-        do { 
-            do 
-            { 
-                smear.setX(2.*G4UniformRand()-1.0);
-                smear.setY(2.*G4UniformRand()-1.0);
-                smear.setZ(2.*G4UniformRand()-1.0);
-            } 
-            while (smear.mag()>1.0);     // random vector within unit sphere (not normalized)
-
-            smear = (1.-polish) * smear;   // scale it down (greatly for polish 0.999) 
-
-            FacetNormal = Normal + smear;  // perturb the Normal by the smear 
-
-            Momentum_FacetNormal = Momentum * FacetNormal ;  
-
-        } 
-        while (Momentum_FacetNormal >= 0.0);  
-
-        /** 
-        Only Momentum_FacetNormal < 0. escapes the while loop
-        ie FacetNormal must end up against the Momentum.
-        
-        Presumably this is assuming Momentum is against the Normal 
-        it would make more sense to constrain FacetNormal to 
-        staying with the same orientation as the initial one
-        not just assuming a particular orientation.  
-        **/
-
-        FacetNormal = FacetNormal.unit();
-    }    
-    else 
-    {
-        FacetNormal = Normal;
-    }    
-    return FacetNormal ; 
-}
-
-
-struct FacetNormal_Smear
-{
-    G4ThreeVector FacetNormal ; 
-    G4ThreeVector Smear ; 
-};
-
-const char* FOLD = getenv("FOLD");
-
-int main()
-{
-    G4double      polish = 0.999 ; 
-
-    G4ThreeVector Momentum(1,-1,0);  
-    G4ThreeVector Normal(0,0,1) ;    
-    G4ThreeVector Meta(polish, 0, 0); 
-
-    Momentum = Momentum.unit(); 
-    Normal = Normal.unit() ; 
-
-    std::vector<G4ThreeVector> mm(3) ;
-    mm[0] = Momentum ; 
-    mm[1] = Normal ;    
-    mm[2] = Meta ;    
-
-    const int N=1000 ; 
-    std::vector<FacetNormal_Smear> nn(N) ;   
-
-    for(int i=0 ; i < int(nn.size()) ; i++ ) 
-    {
-        FacetNormal_Smear& fns = nn[i] ;  
-        fns.FacetNormal = GetFacetNormal(fns.Smear, Momentum, Normal, polish ) ; 
-    }
-
-    NP* a = NPX::ArrayFromVec<double,FacetNormal_Smear>(nn,2,3) ; 
-    a->save(FOLD, "FacetNormal.npy" );  
-
-    NP* b = NPX::ArrayFromVec<double,G4ThreeVector>(mm) ; 
-    b->save(FOLD, "Meta.npy" );  
-
-    return 0 ; 
-}
-
-
 /**
+GetFacetNormal
+----------------
+
+Only Momentum_FacetNormal < 0. escapes the while loop
+ie FacetNormal must end up against the Momentum.
+
+Presumably this is assuming the initial Momentum is against the Normal. 
+It would make more sense to constrain FacetNormal to 
+staying with the same orientation as the initial one
+not just assuming a particular orientation.  
+
+
 Smearing with polish 0.999 results in something effectively indistingishable from specular, 
 so it just consumes randoms and does little else. 
 
@@ -125,4 +49,81 @@ so it just consumes randoms and does little else.
  [-0.000074296972  0.000283778564  0.999999956975]
 
 **/
+
+
+G4ThreeVector GetFacetNormal(G4ThreeVector& smear, const G4ThreeVector& Momentum, const G4ThreeVector& Normal, G4double polish )
+{
+    G4ThreeVector FacetNormal;
+    G4double Momentum_FacetNormal = 0. ; 
+
+    if (polish < 1.0) 
+    {
+        do { 
+            do 
+            { 
+                smear.setX(2.*G4UniformRand()-1.0);
+                smear.setY(2.*G4UniformRand()-1.0);
+                smear.setZ(2.*G4UniformRand()-1.0);
+            } 
+            while (smear.mag()>1.0);     // random vector within unit sphere (not normalized)
+
+            smear = (1.-polish) * smear;   // scale it down (greatly for polish 0.999) 
+
+            FacetNormal = Normal + smear;  // perturb the Normal by the smear 
+
+            Momentum_FacetNormal = Momentum * FacetNormal ;  
+
+        } 
+        while (Momentum_FacetNormal >= 0.0);  
+
+        FacetNormal = FacetNormal.unit();
+    }    
+    else 
+    {
+        FacetNormal = Normal;
+    }    
+    return FacetNormal ; 
+}
+
+
+struct FacetNormal_Smear
+{
+    G4ThreeVector FacetNormal ; 
+    G4ThreeVector Smear ; 
+};
+
+int main()
+{
+    G4double      polish = 0.999 ; 
+
+    G4ThreeVector Momentum(1,-1,0);  
+    G4ThreeVector Normal(0,0,1) ;    
+    G4ThreeVector Meta(polish, 0, 0); 
+
+    Momentum = Momentum.unit(); 
+    Normal = Normal.unit() ; 
+
+    std::vector<G4ThreeVector> mm(3) ;
+    mm[0] = Momentum ; 
+    mm[1] = Normal ;    
+    mm[2] = Meta ;    
+
+    const int N=1000 ; 
+    std::vector<FacetNormal_Smear> nn(N) ;   
+
+    for(int i=0 ; i < int(nn.size()) ; i++ ) 
+    {
+        FacetNormal_Smear& fns = nn[i] ;  
+        fns.FacetNormal = GetFacetNormal(fns.Smear, Momentum, Normal, polish ) ; 
+    }
+
+    NP* a = NPX::ArrayFromVec<double,FacetNormal_Smear>(nn,2,3) ; 
+    a->save("$FOLD/FacetNormal.npy" );  
+
+    NP* b = NPX::ArrayFromVec<double,G4ThreeVector>(mm) ; 
+    b->save("$FOLD/Meta.npy" );  
+
+    return 0 ; 
+}
+
 

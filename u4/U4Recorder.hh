@@ -83,6 +83,7 @@ struct U4_API U4Recorder
 
     static bool IsListed( const std::vector<std::string>* LIST, const char* spec ) ;
     static bool IsListedFake( const char* spec ); 
+    static std::string DescFakes(); 
 
 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, const char* from ); 
