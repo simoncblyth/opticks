@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
 
 
-    ws_ = 1 
+    ws_ = 0 
     ws = np.where( q[:,0] == qu[quo][ws_] )   # select photons with the ws_ most prolific history    
 
 

@@ -422,6 +422,9 @@ will fulfil *single_bit*.
 
 HMM: but if subsequent step points failed to set a non-zero flag could get that repeated 
 
+* YEP: this is happening when first post is on a fake 
+
+
 
 **bop info is mostly missing**
 
@@ -495,16 +498,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4VTouchable* touch = track->GetTouchable();  
     current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
 
-    // first_point identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
-    bool first_point = current_photon.flagmask_count() == 1 ;  
-    if(first_point)
+    // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
+    bool first_flag = current_photon.flagmask_count() == 1 ;  
+    if(first_flag)
     { 
-        LOG(LEVEL) << " first_point, track " << track  ; 
+        LOG(LEVEL) << " first_flag, track " << track  ; 
         U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(*label);        // sctx::point copying current into buffers 
     }
     // Q: Where does the "TO" flag come from ?
+    // A: See SEvt::beginPhoton
     
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
@@ -657,6 +661,45 @@ void U4Recorder::CollectBoundaryAux(quad4& current_aux )  // static
 
 const double U4Recorder::EPSILON = 1e-4 ; 
 
+
+/**
+U4Recorder::ClassifyFake
+--------------------------
+
+Think about stepping around geometry with back foot "pre" and front foot "post". 
+As take the next step the former "post" becomes the "pre" of the next step.  
+
+U4Recorder operates by setting the flag and collecting info regarding 
+"post" points of each step (pre, post) pair. The "pre" point only gets 
+collected for the first step.  
+
+Consider fake skipping a Vac/Vac coincident border::
+
+       
+                              | |                        |
+                              | |                        |
+       0----------------------1-2------------------------3---
+                              | |                        |
+                              | |                        |
+                            coincident
+                            border between 
+                            volumes
+
+Without any fake skipping would have::
+
+* 0->1 
+* 1->2
+* 2->3 
+
+With fake skipping that becomes:
+
+* 0->3 
+
+Notice that there is some conflation over whether should classify fake steps or fake points. 
+Handling fake points would be cleaner but the info of the other point might be useful, 
+so leaving asis given that current incantation seems to work. 
+
+**/
 unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump )
 {
     unsigned fakemask = 0 ; 

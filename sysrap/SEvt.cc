@@ -81,7 +81,7 @@ SEvt::SEvt()
     is_loadfail(false),
     numphoton_collected(0u),
     numphoton_genstep_max(0u)
-{ 
+{   
     init(); 
 }
 /**
@@ -1289,8 +1289,18 @@ void SEvt::pointPhoton(const spho& label)
     unsigned idx = label.id ; 
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
-    bool first_point = ctx.p.flagmask_count() == 1 ; 
     int& bounce = slot[idx] ; 
+
+    bool first_point = bounce == 0 ; 
+    bool first_flag = ctx.p.flagmask_count() == 1 ; 
+    bool fake_first = first_flag == true && first_point == false ;   
+    LOG_IF(LEVEL, fake_first) 
+        << " fake_first detected, bounce: " << bounce 
+        << " EARLY EXIT pointPhoton" 
+        << " this happens when the POST of the first step is fake "
+        << " resulting in GENFLAG being repeated as 2nd step first_flag still true "
+        ;   
+    if(fake_first) return ; 
 
 
     if(first_point == false) ctx.trace(bounce); 

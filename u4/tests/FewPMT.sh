@@ -140,6 +140,7 @@ if [ "$VERSION" == "0" ]; then
     export junoPMTOpticalModel__PIDX_ENABLED=1
     export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTrigger_IMPL
     export G4FastSimulationManagerProcess_ENABLE=1  
+
     export U4Recorder__FAKES_SKIP=1
 
     # THE BELOW MANUAL CONFIG FOR FAKE DETECTION IS NO LONGER NEEDED

@@ -75,6 +75,7 @@ GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720] )
 ASPECT = float(SIZE[0])/float(SIZE[1])  # 1280/720 = 1.7777777777777777
 
+
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
 
@@ -82,7 +83,7 @@ efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
 
 XDIST = efloat_("XDIST", "200")
 FOCUS = eary_("FOCUS", "0,0,0")
-
+SCALE = efloat_("SCALE", "1")
 
 def pvplt_simple(pl, xyz, label):
     """  
@@ -93,8 +94,8 @@ def pvplt_simple(pl, xyz, label):
     pl.add_text( "pvplt_simple %s " % label, position="upper_left")
     pl.add_points( xyz, color="white" )     
 
-def mpplt_focus_aspect(aspect=ASPECT):
-    log.info("mpplt_focus_aspect aspect:%s FOCUS:%s " % (str(aspect),str(FOCUS)))
+def mpplt_focus_aspect(aspect=ASPECT, scale=SCALE):
+    log.info("mpplt_focus_aspect aspect:%s FOCUS:%s scale:%s" % (str(aspect),str(FOCUS), scale))
     if np.all(FOCUS == 0): return None, None
  
     center = FOCUS[:2] 
@@ -104,8 +105,8 @@ def mpplt_focus_aspect(aspect=ASPECT):
     topright = center + diagonal
     log.info("mpplt_focus_aspect botleft:%s" % str(botleft))
     log.info("mpplt_focus_aspect topright:%s" % str(topright))
-    xlim = np.array([botleft[0], topright[0]])
-    ylim = np.array([botleft[1], topright[1]])
+    xlim = np.array([botleft[0], topright[0]])*scale
+    ylim = np.array([botleft[1], topright[1]])*scale
     return xlim, ylim 
 
 

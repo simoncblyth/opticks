@@ -42,6 +42,7 @@ from opticks.u4.tests.U4SimulateTest import U4SimulateTest
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
 GCOL = "grey"
 
+TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 SZ = float(os.environ.get("SZ",3))
 REVERSE = int(os.environ.get("REVERSE","0")) == 1
 size = np.array([1280, 720])
@@ -176,6 +177,12 @@ class U4SimtraceTest(RFold):
             else:
                 log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
             pass 
+
+            if TIGHT:
+                ax.axis('off')
+                fig.tight_layout()
+            pass
+
         elif MODE == 3:
             pass
         pass

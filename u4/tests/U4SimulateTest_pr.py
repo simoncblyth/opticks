@@ -154,7 +154,7 @@ if __name__ == '__main__':
         pass
 
         if len(syms) > 1:
-            print("WARNING : MULTIPLE FIGS SHOWN : PROBABLY OVERLAPPED")
+            print("WARNING : MULTIPLE FIGS SHOWN : PROBABLY WINDOWS ARE OVERLAPPED")
         pass
 
 
