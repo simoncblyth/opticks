@@ -170,7 +170,7 @@ if __name__ == '__main__':
     c2,c2n,c2c = chi2( abo[:,2,0], abo[:,2,1], cut=c2cut )   
     c2sum = c2.sum()
     c2per = c2sum/c2n 
-
+    c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d)" % ( c2sum, int(c2n), c2per, c2cut )
 
     siq = list(map(lambda _:"%2d" % _ , iq ))  
     sc2 = list(map(lambda _:"%7.4f" % _, c2 ))   
@@ -179,6 +179,7 @@ if __name__ == '__main__':
     print("\n%s" % HEADLINE)
     print("GEOM/GEOMList/IMPL/LAYOUT/CHECK : %s/%s/%s/%s/%s " % (GEOM, GEOMList, IMPL, LAYOUT, CHECK) )
     print("c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut ))  
+    print("%s" % c2desc)
 
     sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,2,:])) 
     sabo1 = list(map(lambda _:"%6d %6d" % tuple(_), abo[:,1,:])) 

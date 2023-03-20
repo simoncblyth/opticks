@@ -80,8 +80,8 @@ export nnvt_UseNaturalGeometry=$version
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
-#geomlist=nnvtLogicalPMT
-geomlist=hamaLogicalPMT
+geomlist=nnvtLogicalPMT
+#geomlist=hamaLogicalPMT
 
 export FewPMT_GEOMList=$geomlist
 

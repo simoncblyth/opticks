@@ -99,7 +99,8 @@ logN=${bin}_$VERSION.log
 #num_ph=10
 #num_ph=100
 #num_ph=1000      # 1k
-num_ph=10000    # 10k
+#num_ph=10000    # 10k
+num_ph=50000
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
@@ -122,19 +123,19 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep state files small 
 
 
-#check=rain_disc
-#check=rain_line
-#check=up_rain_line
-#check=escape
-#check=rain_dynode
-check=rain_dynode_diag
-#check=lhs_window_line
-#check=lhs_reflector_line
-#check=lhs_reflector_point
-
-export CHECK=${CHECK:-$check}
-
 if [ "$LAYOUT" == "one_pmt" ]; then 
+
+    #check=rain_disc
+    #check=rain_line
+    #check=up_rain_line
+    #check=escape
+    #check=rain_dynode
+    #check=rain_dynode_diag
+    #check=lhs_window_line
+    check=lhs_reflector_line
+    #check=lhs_reflector_point
+    export CHECK=${CHECK:-$check}  # CAUTION: this is duplicated for other layouts
+
     if [ "$CHECK" == "rain_disc" ]; then
 
         ttype=disc 
@@ -146,7 +147,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
     elif [ "$CHECK" == "rain_line" ]; then
 
         ttype=line
-        pos=0,0,195    ## 190 grazes HAMA apex, somehow causing "TO TO SD" 
+        pos=0,0,195    ## 190 grazes HAMA apex
         radius=260     # standand for line from above,  280 hangsover  
         mom=0,0,-1   
 
@@ -206,7 +207,17 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
 elif [ "$LAYOUT" == "two_pmt" ]; then
 
-    echo $BASH_SOURCE : ERROR LAYOUT $LAYOUT CHECK $CHECK IS NOT HANDLED
+    check=right_line
+    export CHECK=${CHECK:-$check}  # CAUTION: this is duplicated for other layouts
+
+    if [ "$CHECK" == "right_line" ]; then 
+        ttype=line
+        radius=250
+        pos=0,0,0   
+        mom=1,0,0        
+    else
+        echo $BASH_SOURCE : ERROR LAYOUT $LAYOUT CHECK $CHECK IS NOT HANDLED
+    fi
 
 fi 
 

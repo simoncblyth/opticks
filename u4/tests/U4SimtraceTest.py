@@ -35,7 +35,7 @@ from collections import OrderedDict as odict
 from opticks.ana.fold import Fold, RFold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
-from opticks.ana.eget import eintarray_  
+from opticks.ana.eget import eintarray_, efloatarray_
 from opticks.u4.tests.U4SimulateTest import U4SimulateTest 
 
 
@@ -223,6 +223,7 @@ class U4SimtraceTest(RFold):
             thirdline = a.label 
             subtitle  = b.label
         else:
+            ## eg "TO BT SA\n00 01 02"
             for one in self.opp:
                 print("one.label:%s " % one.label)
                 thirdline += one.label 
@@ -230,7 +231,7 @@ class U4SimtraceTest(RFold):
         pass
 
         subtitle = os.environ.get("SUBTITLE", "")
-        print("num_opp:%d subtitle:%s " % (num_opp, subtitle) )
+        print("mp_show num_opp:%d subtitle:%s " % (num_opp, subtitle) )
         
         # adjust the position of the title, to legibly display 4 lines      
         TOF = float(os.environ.get("TOF","0.99")) 
@@ -238,10 +239,20 @@ class U4SimtraceTest(RFold):
         #suptitle = "\n".join([TOPLINE,BOTLINE,thirdline]) 
         suptitle = TOPLINE 
 
+
         fig.suptitle(suptitle, family="monospace", va="top", y=TOF, fontweight='bold' )
 
-        ax.text(-0.05,  1.02, thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
-        ax.text( 1.05, -0.12, subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
+        hv_thirdline = efloatarray_("HV_THIRDLINE","-0.05,1.02") 
+        hv_subtitle = efloatarray_("HV_SUBTITLE","1.05,-0.12") 
+        assert len(hv_thirdline) == 2 
+        assert len(hv_subtitle) == 2 
+
+        ax.text( hv_thirdline[0],  hv_thirdline[1], thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+        ax.text( hv_subtitle[0],  hv_subtitle[1], subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
+
+        print("mp_show suptitle:[%s]" % suptitle ) 
+        print("mp_show thirdline:[%s] HV_THIRDLINE:%s"  % (thirdline, str(hv_thirdline)) ) 
+        print("mp_show subtitle:[%s]  HV_SUBTITLE:%s"   % (subtitle,  str(hv_subtitle)) ) 
 
         fig.show()
 
@@ -308,11 +319,14 @@ class U4SimtraceTest(RFold):
             if "pdy" in f.opt: dy = 10
             if "ndy" in f.opt: dy = -10
 
+            print("mp_plab: f.opt %s %10.4f %10.4f " % (f.opt, dx, dy))
+
             if backgroundcolor is None:
                 ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15 )
             else:
                 ax.text(dx+hv[i,0],dy+hv[i,1], plab, fontsize=15, backgroundcolor=backgroundcolor )
             pass
+            ## POINT-BY-POINT LABELS
         pass
 
 
