@@ -543,7 +543,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
-    if(is_boundary_flag) CollectBoundaryAux<T>(current_aux) ;  
+    if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
 
     LOG(LEVEL) 
         << " flag " << flag
@@ -646,7 +646,7 @@ Templated use from U4Recorder::UserSteppingAction_Optical
 **/
 
 template <typename T>
-void U4Recorder::CollectBoundaryAux(quad4& )  // static
+void U4Recorder::CollectBoundaryAux(quad4* )  // static
 {
     LOG(LEVEL) << "generic do nothing" ; 
 }
@@ -654,7 +654,7 @@ void U4Recorder::CollectBoundaryAux(quad4& )  // static
 
 #if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 template<>
-void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4& current_aux)
+void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4* current_aux)
 {
     CustomG4OpBoundaryProcess* bop = U4OpBoundaryProcess::Get<CustomG4OpBoundaryProcess>() ;  
     assert(bop) ; 
@@ -673,33 +673,35 @@ void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4& current_au
         << " bop " << ( bop ? "Y" : "N" ) 
         << " cart " << ( cart ? "Y" : "N" )
         << " cdbg " << ( cdbg ? "Y" : "N" )
+        << " current_aux " << ( current_aux ? "Y" : "N" )
         << " bop.m_custom_status " << customStatus
         << " CustomStatus::Name " << CustomStatus::Name(customStatus) 
         ; 
 
+    assert( current_aux ); 
     if(cdbg && customStatus == 'Y') 
     {
         // much of the contents of CustomART,CustomART_Debug 
         // only meaningful after doIt call : hence require customStatus 'Y'
 
-        current_aux.q0.f.x = cdbg->A ; 
-        current_aux.q0.f.y = cdbg->R ; 
-        current_aux.q0.f.z = cdbg->T ; 
-        current_aux.q0.f.w = cdbg->_qe ; 
+        current_aux->q0.f.x = cdbg->A ; 
+        current_aux->q0.f.y = cdbg->R ; 
+        current_aux->q0.f.z = cdbg->T ; 
+        current_aux->q0.f.w = cdbg->_qe ; 
 
-        current_aux.q1.f.x = cdbg->An ; 
-        current_aux.q1.f.y = cdbg->Rn ; 
-        current_aux.q1.f.z = cdbg->Tn ; 
-        current_aux.q1.f.w = cdbg->escape_fac ;  // HMM: this stomps on  ascii status integer 
+        current_aux->q1.f.x = cdbg->An ; 
+        current_aux->q1.f.y = cdbg->Rn ; 
+        current_aux->q1.f.z = cdbg->Tn ; 
+        current_aux->q1.f.w = cdbg->escape_fac ;  // HMM: this stomps on  ascii status integer 
 
-        current_aux.q2.f.x = cdbg->minus_cos_theta ;
-        current_aux.q2.f.y = cdbg->wavelength_nm  ; 
-        current_aux.q2.f.z = cdbg->pmtid ;       // HMM: q2.i.z maybe set to fakemask below
-        current_aux.q2.f.w = -1. ;               // HMM: q2.i.w gets set to step spec index  
+        current_aux->q2.f.x = cdbg->minus_cos_theta ;
+        current_aux->q2.f.y = cdbg->wavelength_nm  ; 
+        current_aux->q2.f.z = cdbg->pmtid ;       // HMM: q2.i.z maybe set to fakemask below
+        current_aux->q2.f.w = -1. ;               // HMM: q2.i.w gets set to step spec index  
     }
 
-    current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
-    current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
+    current_aux->set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+    current_aux->q3.i.w = int(customStatus) ;    // moved from q1 to q3
 }
 #endif
 
