@@ -1,8 +1,8 @@
 /**
-U4SimulateTest.cc ( formerly U4PMTFastSimTest.cc)
-======================================================
+U4SimulateTest.cc
+==================
 
-Most of the Geant4 setup happens on instanciating U4App from U4App.h
+All the Geant4 setup happens in U4App::Create from U4App.h
 
 **/
 

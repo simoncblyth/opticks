@@ -110,8 +110,24 @@ void U4Recorder::EndOfEventAction(const G4Event*){   LOG(info); }
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
 
-template<typename T>
-void U4Recorder::UserSteppingAction(const G4Step* step){ if(U4Track::IsOptical(step->GetTrack())) UserSteppingAction_Optical<T>(step); }
+
+
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
+#include "G4OpBoundaryProcess.hh"
+#include "CustomG4OpBoundaryProcess.hh"
+#else
+#include "InstrumentedG4OpBoundaryProcess.hh"
+#endif
+
+void U4Recorder::UserSteppingAction(const G4Step* step)
+{ 
+    if(!U4Track::IsOptical(step->GetTrack())) return ; 
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
+     UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(step); 
+#else
+     UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(step);
+#endif
+}
 
 /**
 U4Recorder::PreUserTrackingAction_Optical
@@ -849,13 +865,13 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
 #ifdef WITH_PMTSIM
 
 #include "CustomG4OpBoundaryProcess.hh"
-template void U4Recorder::UserSteppingAction<CustomG4OpBoundaryProcess>(const G4Step*) ; 
+//template void U4Recorder::UserSteppingAction<CustomG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(const G4Step*) ; 
 
 #else
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
-template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
+//template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 
 #endif

@@ -187,8 +187,12 @@ void U4App::BeginOfEventAction(const G4Event* evt){     fRecorder->BeginOfEventA
 void U4App::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
 void U4App::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4App::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
+void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step) ; }
 
-#ifdef WITH_PMTSIM
+/*
+try hiding template complications at U4Recorder::UserSteppingAction_Optical level 
+
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 #include "G4OpBoundaryProcess.hh"
 #include "CustomG4OpBoundaryProcess.hh"
 void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<CustomG4OpBoundaryProcess>(step); }
@@ -196,6 +200,8 @@ void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingA
 #include "InstrumentedG4OpBoundaryProcess.hh"
 void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
 #endif
+*/
+
 
 U4App::~U4App(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
 // G4GeometryManager::OpenGeometry is needed to avoid cleanup warning
