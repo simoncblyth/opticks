@@ -637,11 +637,24 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL) << "]" ; 
 }
 
+/**
+U4Recorder::CollectBoundaryAux
+-------------------------------
+
+Templated use from U4Recorder::UserSteppingAction_Optical
+
+**/
 
 template <typename T>
-void U4Recorder::CollectBoundaryAux(quad4& current_aux )  // static
+void U4Recorder::CollectBoundaryAux(quad4& )  // static
 {
-    T* bop = U4OpBoundaryProcess::Get<T>() ;  
+    LOG(LEVEL) << "generic do nothing" ; 
+}
+
+template<>
+void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4& current_aux)
+{
+    CustomG4OpBoundaryProcess* bop = U4OpBoundaryProcess::Get<CustomG4OpBoundaryProcess>() ;  
     assert(bop) ; 
 
     char customStatus = bop ? bop->m_custom_status : 'B' ; 
@@ -862,16 +875,14 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
 }
 
 
-#ifdef WITH_PMTSIM
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 
 #include "CustomG4OpBoundaryProcess.hh"
-//template void U4Recorder::UserSteppingAction<CustomG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(const G4Step*) ; 
 
 #else
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
-//template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 
 #endif
