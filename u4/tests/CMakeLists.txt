@@ -64,18 +64,18 @@ endforeach()
 
 
 #[=[
-Note that the U4RecorderTest executable also 
+Note that the U4AppTest executable also 
 needs the MOCK_CURAND macro in order to use CUDA 
 curand using code on the CPU by mocking the curand
 functions
 #]=]
 
-set(U4RecorderTest_SOURCES
-   U4RecorderTest.cc
+set(U4AppTest_SOURCES
+   U4AppTest.cc
 )
 
-set(TGT U4RecorderTest)
-add_executable(${TGT} ${U4RecorderTest_SOURCES})
+set(TGT U4AppTest)
+add_executable(${TGT} ${U4AppTest_SOURCES})
 target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
 target_compile_definitions( ${TGT} PUBLIC DEBUG_TAG ) 
 target_link_libraries(${TGT} U4)

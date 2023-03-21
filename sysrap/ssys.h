@@ -26,6 +26,8 @@ struct ssys
     static bool hasenv_(const char* ekey);  
     static bool hastoken_(const char* ekey); 
     static char* _getenv(const char* ekey); 
+    static char* replace_envvar_token(const char* ekey);  // checks for token 
+    static char* _replace_envvar_token(const char* ekey); // MUST have token    
     static char* _tokenized_getenv(const char* ekey); 
 
 
@@ -106,7 +108,7 @@ inline bool ssys::hasenv_(const char* ekey)
 
 inline bool ssys::hastoken_(const char* ekey)
 {
-    return ekey != nullptr && strlen(ekey) > 2 && ekey[0] == '$' && ekey[1] == '{' ;  
+    return ekey != nullptr && strstr(ekey, "${") != nullptr && strstr(ekey, "}") != nullptr ; 
 }
 
 /**
@@ -126,23 +128,59 @@ inline char* ssys::_getenv(const char* ekey)
     return !hastoken_(ekey) ? getenv(ekey) : _tokenized_getenv(ekey ) ; 
 }
 
-inline char* ssys::_tokenized_getenv(const char* ekey)
+/**
+ssys::replace_envvar_token
+----------------------------
+
+1. extract VAR from head of string "${VAR}rest-of-string"  
+2. construct string with the "${VAR}" replaced with its value obtained from envvar lookup, 
+   when the envvar does not exist returns eg "VARrest-of-string" 
+
+**/
+
+inline char* ssys::replace_envvar_token(const char* ekey)
 {
+    return !hastoken_(ekey) ? strdup(ekey) : _replace_envvar_token(ekey ) ; 
+}
+inline char* ssys::_replace_envvar_token(const char* ekey)
+{
+    std::stringstream ss ; 
+
     char* ek = strdup(ekey) ; 
     char* o = strstr(ek, "${" ); 
     char* c = strstr(ek, "}" ); 
     char* t = c ? c+1 : nullptr ; 
 
-    assert( o == ek && "expecting the ${ token at start of ekey "); 
+    if( o != ek )  // chars before the token
+    {
+        *o = '\0' ; // temporily terminate at the '$'
+        ss << ek ; 
+    }
 
     o += 2 ;    // advance past "${"
     *c = '\0' ; // terminate at position of "}" 
 
     char* ov = getenv(o) ; 
-    std::stringstream ss ; 
     ss << ( ov ? ov : o ) << t ; 
     std::string str = ss.str(); 
 
+    return strdup(str.c_str()) ; 
+}
+
+
+/**
+ssys::_tokenized_getenv (hmm maybe second_order_getenv better name)
+---------------------------------------------------------------------
+
+1. replace the envvar token of form ${VAR} in the ekey argument
+2. assuming the resulting string is in itself an envvar look that up, 
+   otherwise just return the unexpanded string 
+
+**/
+
+inline char* ssys::_tokenized_getenv(const char* ekey)
+{
+    std::string str = _replace_envvar_token(ekey) ;
     char* k = strdup(str.c_str()) ; 
     char* kv = getenv(k) ; 
     return kv ? kv : k ; 

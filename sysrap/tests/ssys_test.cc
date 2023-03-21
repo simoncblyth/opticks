@@ -107,8 +107,38 @@ void test__getenv()
         << std::endl
         ;
 
+}
+
+void test_replace_envvar_token()
+{
+    const char* kk = R"LITERAL(
+    HOME
+    ${HOME}_HELLO
+    WORLD_${HOME}_HELLO
+
+    ALL${VERSION}HELLO 
+    ALL${VERSIONX}HELLO 
+
+)LITERAL" ;
+
+    std::stringstream ss(kk) ; 
+    std::string str ; 
+    while (std::getline(ss, str))  // newlines are swallowed by getline
+    {   
+        if(str.empty()) continue ;   
+
+        std::string rep = ssys::replace_envvar_token(str.c_str()); 
+
+        std::cout 
+            << "[" << str << "]" 
+            << "[" << rep << "]" 
+            << std::endl
+            ; 
+    }
+
 
 }
+
 
 
 
@@ -122,10 +152,10 @@ int main(int argc, char** argv)
     test_getenvvec_string_1(); 
     test_getenvvec_string_2(); 
     test__getenv(); 
-    */
     test_getenv_kv(); 
+    */
 
-
+    test_replace_envvar_token(); 
  
     return 0 ; 
 }

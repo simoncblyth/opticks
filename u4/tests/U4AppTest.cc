@@ -1,4 +1,4 @@
-#include "U4RecorderTest.h"
+#include "U4App.h"
 
 int main(int argc, char** argv)
 { 
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
 
-    std::string desc = U4RecorderTest::Desc(); 
+    std::string desc = U4App::Desc(); 
     LOG(info) << " desc " << desc ; 
 
     SEventConfig::SetStandardFullDebug(); 
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     // to run the A-side first before this B-side in order to write the $A_FOLD/sframe.npy
     // The frame is needed for transforming input photons when using OPTICKS_INPUT_PHOTON_FRAME. 
 
-    if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
+    if(U4App::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
     if(SSys::getenvbool("DRYRUN"))
     {
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
     G4RunManager* runMgr = new G4RunManager ; 
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 
-    U4RecorderTest t(runMgr) ;  
+    U4App t(runMgr) ;  
     runMgr->BeamOn(1); 
 
 

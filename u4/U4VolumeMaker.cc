@@ -533,7 +533,11 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::v
     return rock_pv ; 
 }
 
-
+void U4VolumeMaker::SaveTransforms( const char* savedir ) // static
+{
+    NP* TRS = U4VolumeMaker::TRS ;
+    if(TRS) TRS->save(savedir, "TRS.npy") ; 
+}
 
 
 

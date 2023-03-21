@@ -330,6 +330,21 @@ void U4Recorder::saveRerunRand(const char* dir) const
     rerun_rand->save( dir, name.c_str()); 
 }
 
+void U4Recorder::SaveMeta(const char* savedir)  // static
+{
+    std::string descfakes = U4Recorder::DescFakes() ;
+    LOG(info) << descfakes ; 
+
+    NP* u4r = NP::Make<int>(1) ; // dummy array providing somewhere to hang the SPECS
+    u4r->fill(0) ; 
+    u4r->set_names(U4Recorder::SPECS.names); 
+    u4r->set_meta<std::string>("DescFakes", descfakes );  
+    u4r->save(savedir, "U4R.npy") ; 
+
+    assert(INSTANCE); 
+    INSTANCE->saveRerunRand(savedir); 
+}   
+
 /**
 U4Recorder::PostUserTrackingAction_Optical
 
@@ -844,7 +859,6 @@ template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(co
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
 
 #endif
-
 
 
 

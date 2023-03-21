@@ -515,25 +515,58 @@ NP* SEvt::gatherDomain() const
 SEvt* SEvt::Get(){     return INSTANCE ; }
 SEvt* SEvt::Create() { return new SEvt ; }
 
+
 /**
-SEvt::CreateOrLoadForRerun  REMOVED : SEE u4/tests/U4SimulateTest.cc
----------------------------------------------------------------------
+SEvt::HighLevelCreate
+----------------------
 
-HMM: when Loading for a g4state rerun, need the g4state but need to clear 
-the rest of the SEvt perhaps ? See u4/tests/U4SimulateTest.cc
+Create with bells and whistles needed by some tests such as u4/tests/U4SimulateTest/:: 
 
-HMM: Rerunning single photons is rather a rare thing to do, maybe 
-eliminate this ?
-
-//SEvt* SEvt::CreateOrLoadForRerun() 
-//{
-//    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
-//    LOG(LEVEL) << " g4state_rerun_id " << g4state_rerun_id ; 
-//    SEvt* evt = g4state_rerun_id == -1 ? SEvt::Create() : SEvt::Load() ; 
-//    return evt ; 
-//}
+1. photon rerun config by persisting G4 random states
+2. setting of reldir 
 
 **/
+
+SEvt* SEvt::HighLevelCreate() // static
+{
+    SEvt* evt = nullptr ; 
+
+    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
+    bool rerun = g4state_rerun_id > -1 ;
+
+    const char* alldir = ssys::replace_envvar_token("ALL${VERSION}") ; 
+    const char* alldir0 = "ALL0" ; 
+    const char* seldir = ssys::replace_envvar_token("SEL${VERSION}") ; 
+
+    LOG(info) 
+        << " g4state_rerun_id " << g4state_rerun_id 
+        << " alldir " << alldir 
+        << " alldir0 " << alldir0 
+        << " seldir " << seldir 
+        << " rerun " << rerun
+        ;   
+
+    if(rerun == false)
+    {   
+        evt = SEvt::Create();    
+        evt->setReldir(alldir);
+    }   
+    else
+    {   
+        evt = SEvt::Load(alldir0) ;
+        evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+        evt->setReldir(seldir);
+        // when rerunning have to load states from alldir0 and then change reldir to save into seldir
+    }
+    // HMM: note how reldir at object rather then static level is a bit problematic for loading 
+
+    SEvt::AddTorchGenstep();
+
+    return evt ; 
+}
+
+
+
 
 
 bool SEvt::Exists(){ return INSTANCE != nullptr ; }

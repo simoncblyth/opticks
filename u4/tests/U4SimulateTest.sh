@@ -80,7 +80,7 @@ export Local_DsG4Scintillation_DISABLE=1
 #export G4OpRayleigh_DISABLE=1
 #export G4OpBoundaryProcess_DISABLE=1
 
-export U4RecorderTest__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
+export U4App__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
 export BeamOn=${BeamOn:-1}
 export U4Recorder__PIDX_ENABLED=1 
@@ -126,13 +126,13 @@ export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep s
 if [ "$LAYOUT" == "one_pmt" ]; then 
 
     #check=rain_disc
-    #check=rain_line
+    check=rain_line
     #check=up_rain_line
     #check=escape
     #check=rain_dynode
     #check=rain_dynode_diag
     #check=lhs_window_line
-    check=lhs_reflector_line
+    #check=lhs_reflector_line
     #check=lhs_reflector_point
     export CHECK=${CHECK:-$check}  # CAUTION: this is duplicated for other layouts
 

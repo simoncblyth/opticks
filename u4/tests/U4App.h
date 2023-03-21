@@ -1,13 +1,13 @@
 /**
-U4RecorderTest.h  : Geant4 Application in a header : U4App.h  might be a better name
-=======================================================================================
+U4App.h  : Geant4 Application in a header (formerly misnamed U4RecorderTest.h)
+=========================================================================================
 
 Note that the methods are not inlined, but that
 does not matter as this should only be included
 once into the main.  This is effectively 
 providing a Geant4 application in a single header. 
 
-Geometry setup in U4RecorderTest::Construct is done by 
+Geometry setup in U4App::Construct is done by 
 U4VolumeMaker::PV which is controlled by the GEOM envvar.  
 
 **/
@@ -43,8 +43,7 @@ U4VolumeMaker::PV which is controlled by the GEOM envvar.
 #include "U4VPrimaryGenerator.h"
 
 
-
-struct U4RecorderTest   // HMM: U4Action would be a better name 
+struct U4App
     : 
     public G4UserRunAction,  
     public G4UserEventAction,
@@ -78,15 +77,14 @@ struct U4RecorderTest   // HMM: U4Action would be a better name
 
     void UserSteppingAction(const G4Step*);
 
-    U4RecorderTest(G4RunManager* runMgr); 
-    virtual ~U4RecorderTest(); 
+    U4App(G4RunManager* runMgr); 
+    virtual ~U4App(); 
 
 };
 
-const plog::Severity  U4RecorderTest::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
+const plog::Severity U4App::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
 
-
-std::string U4RecorderTest::Desc()
+std::string U4App::Desc()
 {
     std::string phy = U4Physics::Desc() ; 
     std::string rec = U4Recorder::Desc() ; 
@@ -97,17 +95,17 @@ std::string U4RecorderTest::Desc()
     return s ; 
 }
 
-char U4RecorderTest::PrimaryMode()
+char U4App::PrimaryMode()
 {
     char mode = '?' ; 
-    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
+    const char* mode_ = SSys::getenvvar("U4App__PRIMARY_MODE", "gun" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
     if(strcmp(mode_, "iphoton") == 0) mode = 'I' ;   // CAUTION: torch and iphoton both call U4VPrimaryGenerator::GeneratePrimaries
     return mode ;   
 }
 
-G4ParticleGun* U4RecorderTest::InitGun()
+G4ParticleGun* U4App::InitGun()
 {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle("e+");
@@ -121,7 +119,7 @@ G4ParticleGun* U4RecorderTest::InitGun()
     return gun ; 
 }
 
-U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
+U4App::U4App(G4RunManager* runMgr)
     :
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
@@ -137,7 +135,7 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     runMgr->Initialize(); 
 }
 
-G4VPhysicalVolume* U4RecorderTest::Construct()
+G4VPhysicalVolume* U4App::Construct()
 { 
     LOG(info) << "[" ; 
 
@@ -154,7 +152,7 @@ G4VPhysicalVolume* U4RecorderTest::Construct()
 }  
 
 /**
-U4RecorderTest::GeneratePrimaries
+U4App::GeneratePrimaries
 ------------------------------------
 
 Other that for gun running this uses U4VPrimaryGenerator::GeneratePrimaries
@@ -162,7 +160,7 @@ which is based on SGenerate::GeneratePhotons
 
 **/
 
-void U4RecorderTest::GeneratePrimaries(G4Event* event)
+void U4App::GeneratePrimaries(G4Event* event)
 {   
     LOG(LEVEL) << "[ fPrimaryMode " << fPrimaryMode  ; 
     switch(fPrimaryMode)
@@ -176,33 +174,23 @@ void U4RecorderTest::GeneratePrimaries(G4Event* event)
 }
 
 // pass along the message to the recorder
-void U4RecorderTest::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfRunAction(run);   }
-void U4RecorderTest::EndOfRunAction(const G4Run* run){           fRecorder->EndOfRunAction(run);     }
-void U4RecorderTest::BeginOfEventAction(const G4Event* evt){     fRecorder->BeginOfEventAction(evt); }
-void U4RecorderTest::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
-void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
-void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
-
+void U4App::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfRunAction(run);   }
+void U4App::EndOfRunAction(const G4Run* run){           fRecorder->EndOfRunAction(run);     }
+void U4App::BeginOfEventAction(const G4Event* evt){     fRecorder->BeginOfEventAction(evt); }
+void U4App::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
+void U4App::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
+void U4App::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
 
 #ifdef WITH_PMTSIM
 #include "G4OpBoundaryProcess.hh"
 #include "CustomG4OpBoundaryProcess.hh"
-void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<CustomG4OpBoundaryProcess>(step); }
-
+void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<CustomG4OpBoundaryProcess>(step); }
 #else
-
 #include "InstrumentedG4OpBoundaryProcess.hh"
-void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
-
+void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
 #endif
 
-
-
-
-U4RecorderTest::~U4RecorderTest()
-{
-    G4GeometryManager::GetInstance()->OpenGeometry(); 
-}
+U4App::~U4App(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
 
 /**
 G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
@@ -223,5 +211,4 @@ to hookup physics before the main instanciation::
     such as G4UserRunAction.
 
 **/
-
 

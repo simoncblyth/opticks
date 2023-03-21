@@ -3,7 +3,7 @@
 tests/U4Physics.hh : Not remotely reusable so consigned to tests folder together with DsG4Scintillation
 =========================================================================================================
 
-This is intended solely for use from U4RecorderTest 
+This is intended solely for use from U4AppTest 
 
 **/
 

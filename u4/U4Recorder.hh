@@ -3,13 +3,17 @@
 U4Recorder
 ===========
 
-This is used from test/U4RecorderTest.h (the Geant4 application in a header)
+This is used from tests/U4App.h (the Geant4 application in a header)
 
 U4Recorder is NOT a G4UserRunAction, G4UserEventAction, 
 ... despite having the corresponding method names. 
 
 The U4Recorder relies on the RunAction, EventAction  etc.. classes 
 calling those lifecycle methods.   
+
+
+
+
 
 **/
 
@@ -54,7 +58,11 @@ struct U4_API U4Recorder
     U4Recorder(); 
     const G4Track* transient_fSuspend_track ; 
     NP* rerun_rand ;  
+
     // NO NON-TRANSIENT MEMBERS : persisting is handled at lower level by sysrap/SEvt 
+    // MAYBE COULD HOLD THE SEvt POINTER HERE ? TO MAKE THIS EASIER TO 
+    // USE FROM AnaMgr RATHER THAN FROM MAINS 
+ 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -68,6 +76,8 @@ struct U4_API U4Recorder
     void PreUserTrackingAction_Optical(const G4Track*);
     void saveOrLoadStates(int id); 
     void saveRerunRand(const char* dir) const ; 
+    static void SaveMeta(const char* savedir); 
+
 
     void PostUserTrackingAction_Optical(const G4Track*);
 
