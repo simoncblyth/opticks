@@ -651,6 +651,8 @@ void U4Recorder::CollectBoundaryAux(quad4& )  // static
     LOG(LEVEL) << "generic do nothing" ; 
 }
 
+
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 template<>
 void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4& current_aux)
 {
@@ -699,7 +701,7 @@ void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4& current_au
     current_aux.set_v(3, recoveredNormal, 3);   // nullptr are just ignored
     current_aux.q3.i.w = int(customStatus) ;    // moved from q1 to q3
 }
-
+#endif
 
 
 
