@@ -469,11 +469,18 @@ quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
 }
 
 
+/**
+SEvt::setCompProvider
+----------------------
+
+This is called for device side running only from QEvent::init
+
+**/
 
 void SEvt::setCompProvider(const SCompProvider* provider_)
 {
     provider = provider_ ; 
-    LOG(LEVEL) << descProvider() ; 
+    LOG(fatal) << descProvider() ; 
 }
 
 bool SEvt::isSelfProvider() const {   return provider == this ; }
@@ -898,6 +905,9 @@ is being using to hold the hostside vector data pointers.
 void SEvt::hostside_running_resize()
 {
     bool is_self_provider = isSelfProvider() ; 
+
+    LOG_IF(fatal, is_self_provider == false ) << " NOT-is_self_provider " << descProvider() ;   
+
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
         << " hostside_running_resize_done " << hostside_running_resize_done

@@ -233,6 +233,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     U4Random::SetSequenceIndex(label->id); 
 
     SEvt* sev = SEvt::Get(); 
+    LOG_IF(fatal, sev == nullptr) << " SEvt::Get returned nullptr " ; 
+    assert(sev); 
 
     // Perhaps use label.gn generation for SlowSim<->FastSim transitions ?
     // BUT reemission photons can also undergo such transitions, so cannot easily reuse. 
