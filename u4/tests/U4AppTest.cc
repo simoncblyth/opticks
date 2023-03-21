@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     if(U4App::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
-    if(SSys::getenvbool("DRYRUN"))
+    if(ssys::getenvbool("DRYRUN"))
     {
         LOG(fatal) << " DRYRUN early exit " ; 
         return 0 ; 

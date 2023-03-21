@@ -3,6 +3,7 @@
 SFastSim_Debug.h
 ===========================
 
+HMM: this has been mostly replaced by ModelTrigger_Debug 
 
 **/
 

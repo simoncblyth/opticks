@@ -2,10 +2,8 @@
 U4App.h  : Geant4 Application in a header (formerly misnamed U4RecorderTest.h)
 =========================================================================================
 
-Note that the methods are not inlined, but that
-does not matter as this should only be included
-once into the main.  This is effectively 
-providing a Geant4 application in a single header. 
+Note that the methods are not inlined, but that does not matter as this should only be included
+once into the main.  This is effectively providing a Geant4 application in a single header. 
 
 Geometry setup in U4App::Construct is done by 
 U4VolumeMaker::PV which is controlled by the GEOM envvar.  
@@ -29,7 +27,7 @@ U4VolumeMaker::PV which is controlled by the GEOM envvar.
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "NP.hh"
@@ -57,6 +55,7 @@ struct U4App
     static char PrimaryMode(); 
     static G4ParticleGun* InitGun(); 
 
+    G4RunManager*         fRunMgr ;  
     char                  fPrimaryMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
@@ -80,6 +79,11 @@ struct U4App
     U4App(G4RunManager* runMgr); 
     virtual ~U4App(); 
 
+    static void SaveMeta(const char* savedir); 
+    static G4RunManager* InitRunManager(); 
+    void                 BeamOn() ;
+    static U4App*        Create(); 
+
 };
 
 const plog::Severity U4App::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
@@ -98,7 +102,7 @@ std::string U4App::Desc()
 char U4App::PrimaryMode()
 {
     char mode = '?' ; 
-    const char* mode_ = SSys::getenvvar("U4App__PRIMARY_MODE", "gun" ); 
+    const char* mode_ = ssys::getenvvar("U4App__PRIMARY_MODE", "gun" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
     if(strcmp(mode_, "iphoton") == 0) mode = 'I' ;   // CAUTION: torch and iphoton both call U4VPrimaryGenerator::GeneratePrimaries
@@ -119,20 +123,23 @@ G4ParticleGun* U4App::InitGun()
     return gun ; 
 }
 
+
+
 U4App::U4App(G4RunManager* runMgr)
     :
+    fRunMgr(runMgr),
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
     fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
     fPV(nullptr)
 {
-    runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
-    runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
-    runMgr->SetUserAction((G4UserRunAction*)this);
-    runMgr->SetUserAction((G4UserEventAction*)this);
-    runMgr->SetUserAction((G4UserTrackingAction*)this);
-    runMgr->SetUserAction((G4UserSteppingAction*)this);
-    runMgr->Initialize(); 
+    fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
+    fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
+    fRunMgr->SetUserAction((G4UserRunAction*)this);
+    fRunMgr->SetUserAction((G4UserEventAction*)this);
+    fRunMgr->SetUserAction((G4UserTrackingAction*)this);
+    fRunMgr->SetUserAction((G4UserSteppingAction*)this);
+    fRunMgr->Initialize(); 
 }
 
 G4VPhysicalVolume* U4App::Construct()
@@ -191,24 +198,41 @@ void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingA
 #endif
 
 U4App::~U4App(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
+// G4GeometryManager::OpenGeometry is needed to avoid cleanup warning
+
+
+void U4App::SaveMeta(const char* savedir) // static
+{
+    U4Recorder::SaveMeta(savedir); 
+    U4VolumeMaker::SaveTransforms(savedir) ;   
+}
+
+G4RunManager* U4App::InitRunManager()  // static
+{
+    G4VUserPhysicsList* phy = (G4VUserPhysicsList*)new U4Physics ; 
+    G4RunManager* run = new G4RunManager ; 
+    run->SetUserInitialization(phy) ; 
+    return run ; 
+}
+
+void U4App::BeamOn()
+{
+    fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
+}
+
 
 /**
-G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
+U4App::Create
+----------------
 
-    WARNING - Attempt to delete the physical volume store while geometry closed !
-    WARNING - Attempt to delete the logical volume store while geometry closed !
-    WARNING - Attempt to delete the solid store while geometry closed !
-    WARNING - Attempt to delete the region store while geometry closed !
-
-This below constraint forces instanciating G4RunManager first in order 
-to hookup physics before the main instanciation::
-
-    You are instantiating G4UserRunAction BEFORE your G4VUserPhysicsList is
-    instantiated and assigned to G4RunManager.
-    Such an instantiation is prohibited by Geant4 version 8.0. To fix this problem,
-    please make sure that your main() instantiates G4VUserPhysicsList AND
-    set it to G4RunManager before instantiating other user action classes
-    such as G4UserRunAction.
+Geant4 requires G4RunManager to be instanciated prior to the Actions 
 
 **/
+
+U4App* U4App::Create()  // static 
+{
+    G4RunManager* run = InitRunManager(); 
+    return new U4App(run); 
+}
+
 
