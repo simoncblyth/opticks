@@ -1,11 +1,9 @@
 #include "U4Physics.hh"
+#include "U4OpBoundaryProcess.h"
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
-
 #ifdef WITH_PMTSIM
-#include "G4OpBoundaryProcess.hh"
-#include "CustomG4OpBoundaryProcess.hh"
 #include "PMTSimParamSvc/PMTAccessor.h"
 #include "PMTSimParamSvc/IPMTAccessor.h"
 #elif WITH_PMTFASTSIM
@@ -134,7 +132,6 @@ void U4Physics::ConstructEM()
 
 #include "ShimG4OpAbsorption.hh"
 #include "ShimG4OpRayleigh.hh"
-#include "InstrumentedG4OpBoundaryProcess.hh"
 
 
 
@@ -251,5 +248,4 @@ void U4Physics::ConstructOp()
         }
     }
 }
-
 

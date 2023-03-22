@@ -13,7 +13,6 @@ Yes: a possibility, but that is not needed for primary functionality currently
 although it would be useful for testing ... 
 so depend on that in specific tests not generally 
  
-
 #]=]
 
 find_package(SysRap REQUIRED CONFIG)

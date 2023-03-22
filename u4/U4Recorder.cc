@@ -112,12 +112,7 @@ void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U
 
 
 
-#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
-#include "G4OpBoundaryProcess.hh"
-#include "CustomG4OpBoundaryProcess.hh"
-#else
-#include "InstrumentedG4OpBoundaryProcess.hh"
-#endif
+#include "U4OpBoundaryProcess.h"
 
 void U4Recorder::UserSteppingAction(const G4Step* step)
 { 
@@ -128,6 +123,22 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
      UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(step);
 #endif
 }
+
+
+
+/*
+template<typename T>
+void U4Recorder::UserSteppingAction<T>( const G4Step* step)
+{
+    if(!U4Track::IsOptical(step->GetTrack())) return ; 
+    UserSteppingAction_Optical<T>(step) ; 
+}
+*/
+
+
+
+
+
 
 /**
 U4Recorder::PreUserTrackingAction_Optical
@@ -543,9 +554,16 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     // Q: Where does the "TO" flag come from ?
     // A: See SEvt::beginPhoton
     
+    
+    // Q: Can the dependency on boundary process type be avoided ? 
+    // A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
+    //    could avoid some complexities but maybe just add others. Would rather not go there. 
+    //    Prefer simplicity. 
+    //
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
+
 
     LOG(LEVEL) 
         << " flag " << flag
@@ -654,6 +672,21 @@ void U4Recorder::CollectBoundaryAux(quad4* )  // static
 }
 
 
+/**
+U4Recorder::CollectBoundaryAux
+--------------------------------
+
+CAN THIS BE MOVED ELSEWHERE TO SIMPLIFY DEPS ? 
+
+Maybe move into one of::
+
+    CustomG4OpBoundaryProcess
+    CustomART
+    CustomART_Debug
+
+**/
+
+
 #if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 template<>
 void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4* current_aux)
@@ -758,9 +791,6 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
 
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
-
-
-
 
     const char* fake_pv_name = "body_phys" ; 
     const G4Track* track = step->GetTrack(); 

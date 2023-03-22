@@ -4,9 +4,6 @@ usage(){ cat << EOU
 G4OpBoundaryProcessTest.sh
 ============================
 
-
-
-
 Usage::
 
    ./G4OpBoundaryProcessTest.sh 
@@ -120,7 +117,7 @@ num=$M1
 
 nrm=0,0,1
 
-#test=propagate_at_boundary
+test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
 #test=propagate_at_boundary_s_polarized
@@ -132,7 +129,7 @@ nrm=0,0,1
 #test=propagate_at_surface
 
 #test=reflect_diffuse
-test=reflect_specular
+#test=reflect_specular
 
 
 export TEST=${TEST:-$test}

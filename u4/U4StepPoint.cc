@@ -303,19 +303,12 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
     return s ; 
 }
 
-
-#ifdef WITH_PMTSIM
-
-#include "CustomG4OpBoundaryProcess.hh"
+#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 template unsigned U4StepPoint::Flag<CustomG4OpBoundaryProcess>(const G4StepPoint*, bool ); 
 template std::string U4StepPoint::Desc<CustomG4OpBoundaryProcess>(const G4StepPoint* point); 
-
 #else
-
-#include "InstrumentedG4OpBoundaryProcess.hh"
 template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint*, bool ); 
 template std::string U4StepPoint::Desc<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* point); 
-
 #endif
 
 

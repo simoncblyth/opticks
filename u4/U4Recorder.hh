@@ -81,6 +81,8 @@ struct U4_API U4Recorder
 
 
     void PostUserTrackingAction_Optical(const G4Track*);
+
+
     void UserSteppingAction(const G4Step*);
 
     // boundary process template type
