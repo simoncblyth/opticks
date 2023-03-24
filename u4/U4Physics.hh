@@ -25,15 +25,9 @@ class G4OpAbsorption ;
 class G4OpRayleigh ;
 #endif
 
+class G4VProcess ; 
 class G4FastSimulationManagerProcess ; 
 
-#ifdef WITH_CUSTOM4
-class C4OpBoundaryProcess ; 
-#elif WITH_PMTSIM
-class CustomG4OpBoundaryProcess ; 
-#else
-class InstrumentedG4OpBoundaryProcess ; 
-#endif
 
 #include "U4_API_EXPORT.hh"
 
@@ -53,23 +47,21 @@ struct U4_API U4Physics : public G4VUserPhysicsList
     G4OpRayleigh*         fRayleigh ;
 #endif
 
-#ifdef WITH_CUSTOM4
-    C4OpBoundaryProcess*  fBoundary ;
-#elif WITH_PMTSIM
-    CustomG4OpBoundaryProcess*  fBoundary ;
-#else
-    InstrumentedG4OpBoundaryProcess*  fBoundary ;
-#endif
-
+    G4VProcess*          fBoundary ; 
     G4FastSimulationManagerProcess*   fFastSim ;  
 
     static std::string Desc(); 
+    static std::string Switches(); 
+
     U4Physics(); 
 
     void ConstructParticle();
     void ConstructProcess();
     void ConstructEM();
     void ConstructOp();
+
+    static G4VProcess* CreateBoundaryProcess(); 
+
 };
 
 

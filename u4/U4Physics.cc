@@ -3,15 +3,10 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
-#ifdef WITH_CUSTOM4
+#if defined(WITH_CUSTOM4) && defined(WITH_PMTSIM)
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
 #include "PMTSimParamSvc/PMTAccessor.h"
-#elif WITH_PMTSIM
-#include "PMTSimParamSvc/PMTAccessor.h"
-#include "PMTSimParamSvc/IPMTAccessor.h"
-#elif WITH_PMTFASTSIM
-#include "JPMT.h"
 #endif
 
 
@@ -138,8 +133,7 @@ void U4Physics::ConstructEM()
 #include "ShimG4OpRayleigh.hh"
 
 
-
-std::string U4Physics::Desc()
+std::string U4Physics::Desc()  // static 
 {
     std::stringstream ss ; 
 #ifdef DEBUG_TAG
@@ -147,9 +141,27 @@ std::string U4Physics::Desc()
     ss << "_" ; 
     ss << ( ShimG4OpRayleigh::FLOAT ? "ShimG4OpRayleigh_FLOAT" : "ShimG4OpRayleigh_ORIGINAL" ) ; 
 #endif
-    std::string s = ss.str();
-    return s ; 
+    std::string str = ss.str();
+    return str ;
 }
+
+std::string U4Physics::Switches()  // static 
+{
+    std::stringstream ss ; 
+    ss << "U4Physics::Switches" << std::endl ; 
+#if defined(WITH_CUSTOM4)
+    ss << "WITH_CUSTOM4" << std::endl ; 
+#endif
+#if defined(WITH_PMTSIM)
+    ss << "WITH_PMTSIM" << std::endl ; 
+#endif
+#if defined(DEBUG_TAG)
+    ss << "DEBUG_TAG" << std::endl ; 
+#endif
+    std::string str = ss.str();
+    return str ;
+}
+
 
 
 int U4Physics::EInt(const char* key, const char* fallback)  // static 
@@ -210,28 +222,11 @@ void U4Physics::ConstructOp()
 
     if(G4OpBoundaryProcess_DISABLE == 0)
     {
-
-#ifdef WITH_CUSTOM4
-        const PMTSimParamData* data = PMTAccessor::LoadData("$PMTSimParamData_BASE/PMTSimParamData") ; 
-        LOG(LEVEL) << "loaded PMTSimParamData  " << ( data ? "YES" : "NO" ) ; 
-        LOG_IF(LEVEL, data != nullptr ) << *data ; 
-
-        const PMTAccessor* pmt = PMTAccessor::Create(data) ; 
-        const C4IPMTAccessor* ipmt = pmt ;
-        LOG(LEVEL) << "loaded C4IPMTAccessor " ; 
-        fBoundary = new C4OpBoundaryProcess(ipmt);
-
-#elif WITH_PMTSIM
-        const IPMTAccessor* ipmt = PMTAccessor::Load("$PMTSimParamData_BASE/PMTSimParamData") ;
-        fBoundary = new CustomG4OpBoundaryProcess(ipmt);
-#elif WITH_PMTFASTSIM
-        IPMTAccessor* ipmt = dynamic_cast<IPMTAccessor*>(new JPMT) ; 
-        fBoundary = new InstrumentedG4OpBoundaryProcess(ipmt);
-#else
-        fBoundary = new InstrumentedG4OpBoundaryProcess();
-#endif
+        fBoundary = CreateBoundaryProcess(); 
         LOG(info) << " fBoundary " << fBoundary ; 
     }
+
+
 
   auto particleIterator=GetParticleIterator();
   particleIterator->reset();
@@ -262,5 +257,27 @@ void U4Physics::ConstructOp()
             if(fFastSim)    pmanager->AddDiscreteProcess(fFastSim); 
         }
     }
+}
+
+G4VProcess* U4Physics::CreateBoundaryProcess()  // static 
+{
+    G4VProcess* proc = nullptr ; 
+
+#if defined(WITH_PMTSIM) && defined(WITH_CUSTOM4)
+    const char* path = "$PMTSimParamData_BASE/PMTSimParamData" ; 
+    const PMTSimParamData* data = PMTAccessor::LoadData(path) ; 
+    LOG(LEVEL) << "load path "  << path << " giving PMTSimParamData.data: " << ( data ? "YES" : "NO" ) ; 
+    LOG_IF(LEVEL, data != nullptr ) << *data ; 
+
+    const PMTAccessor* pmt = PMTAccessor::Create(data) ; 
+    const C4IPMTAccessor* ipmt = pmt ;  
+    proc = new C4OpBoundaryProcess(ipmt);
+
+    LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_PMTSIM and WITH_CUSTOM4 " ; 
+#else
+    proc = new InstrumentedG4OpBoundaryProcess();
+    LOG(LEVEL) << "create InstrumentedG4OpBoundaryProcess : NOT (WITH_PMTSIM and WITH_CUSTOM4) " ; 
+#endif
+    return proc ; 
 }
 
