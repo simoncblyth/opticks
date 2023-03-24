@@ -76,8 +76,8 @@ export nnvt_FastCoverMaterial=$fastcover
 export hama_UsePMTOpticalModel=$pom     
 export nnvt_UsePMTOpticalModel=$pom   
 
-export hama_UseNaturalGeometry=$version 
-export nnvt_UseNaturalGeometry=$version 
+export hama_UsePMTNaturalGeometry=$version 
+export nnvt_UsePMTNaturalGeometry=$version 
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
