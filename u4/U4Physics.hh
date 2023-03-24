@@ -27,7 +27,9 @@ class G4OpRayleigh ;
 
 class G4FastSimulationManagerProcess ; 
 
-#ifdef WITH_PMTSIM
+#ifdef WITH_CUSTOM4
+class C4OpBoundaryProcess ; 
+#elif WITH_PMTSIM
 class CustomG4OpBoundaryProcess ; 
 #else
 class InstrumentedG4OpBoundaryProcess ; 
@@ -51,7 +53,9 @@ struct U4_API U4Physics : public G4VUserPhysicsList
     G4OpRayleigh*         fRayleigh ;
 #endif
 
-#ifdef WITH_PMTSIM
+#ifdef WITH_CUSTOM4
+    C4OpBoundaryProcess*  fBoundary ;
+#elif WITH_PMTSIM
     CustomG4OpBoundaryProcess*  fBoundary ;
 #else
     InstrumentedG4OpBoundaryProcess*  fBoundary ;

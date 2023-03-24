@@ -229,10 +229,13 @@ class WC(object):
         reldir = cwd[len(home)+1:]
         topdir = reldir.split("/")[0]  
 
+
         if topdir == "opticks":
             repo = "opticks"
-        elif topdir == "junotop":
+        elif reldir.startswith("junotop/junosw"):
             repo = "junosw"
+        elif reldir.startswith("junotop/junoenv"):
+            repo = "junoenv"
         elif topdir == "j":
             repo = "j"
         elif topdir == "env":
@@ -243,16 +246,14 @@ class WC(object):
             print("detected repo %s " % repo)
             assert 0 
         pass
-
+        #print("detect_repo_from_cwd home:%s reldir:%s topdir:%s repo:%s " % (home, reldir, topdir, repo))
         return repo
 
 
 
     @classmethod
     def parse_args(cls, doc):
-
         repo = cls.detect_repo_from_cwd() 
-        #repo = cls.detect_repo_from_scriptname()
         defaults = {}
         if repo == "offline_svn":
             vc = "svn"
@@ -272,6 +273,25 @@ class WC(object):
             defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
             defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
+        elif repo == "junoenv":
+            vc = "git"
+            defaults["chdir"] = "~/junotop/junoenv" 
+            defaults["rbase"] = "P:junotop/junoenv" 
+            defaults["rstatpath"] = "~/rstat_junoenv.txt" 
+            defaults["lstatpath"] = "~/lstat_junoenv.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
+            defaults["statcmd"] = "git status --porcelain"
+        elif repo == "customgeant4":
+            vc = "git"
+            defaults["chdir"] = "~/customgeant4" 
+            defaults["rbase"] = "P:customgeant4" 
+            defaults["rstatpath"] = "~/rstat_customgeant4.txt" 
+            defaults["lstatpath"] = "~/lstat_customgeant4.txt" 
+            defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
+            defaults["statcmd"] = "git status --porcelain"
+
         elif repo == "opticks":
             vc = "git"
             defaults["chdir"] = "~/opticks" 
@@ -300,6 +320,7 @@ class WC(object):
             defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
         else:
+            print("repo:%s has no defaults" % repo )
             pass
         pass
         parser = argparse.ArgumentParser(doc)

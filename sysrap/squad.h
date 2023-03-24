@@ -13,6 +13,7 @@
    #include <iomanip>
    #include <sstream>
    #include <vector>
+   #include <array>
    #include <cstring>
    #include <cassert>
 #endif
@@ -189,6 +190,8 @@ struct quad4
     float* get_v(int i) const ;  
     void set_v(int i, const double* src, int n); 
     void zero_v(int i, int n); 
+    void load(const std::array<double,16>& a ); 
+    void load(const double* src, int n); 
 #endif
 };
 
@@ -754,6 +757,25 @@ inline void quad4::zero_v(int i, int n)
     float* v = get_v(i); 
     for(int j=0 ; j < n ; j++)  v[j] = 0.f ; 
 }
+
+
+inline void quad4::load(const std::array<double,16>& a )
+{
+    for(int i=0 ; i < 4 ; i++) set_v(i, &a[4*i], 4) ; 
+}
+inline void quad4::load(const double* src, int n )
+{
+    if(src == nullptr) return ; 
+    for(int s=0 ; s < 16 ; s++) 
+    {
+        int i = s/4 ; 
+        int j = s%4 ; 
+        float* v = get_v(i) ; 
+        *(v+j) = s < n ? float(src[s]) : 0. ; 
+    }
+}
+
+
 
 
 

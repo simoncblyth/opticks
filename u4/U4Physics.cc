@@ -3,7 +3,11 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
-#ifdef WITH_PMTSIM
+#ifdef WITH_CUSTOM4
+#include "G4OpBoundaryProcess.hh"
+#include "C4OpBoundaryProcess.hh"
+#include "PMTSimParamSvc/PMTAccessor.h"
+#elif WITH_PMTSIM
 #include "PMTSimParamSvc/PMTAccessor.h"
 #include "PMTSimParamSvc/IPMTAccessor.h"
 #elif WITH_PMTFASTSIM
@@ -206,7 +210,18 @@ void U4Physics::ConstructOp()
 
     if(G4OpBoundaryProcess_DISABLE == 0)
     {
-#ifdef WITH_PMTSIM
+
+#ifdef WITH_CUSTOM4
+        const PMTSimParamData* data = PMTAccessor::LoadData("$PMTSimParamData_BASE/PMTSimParamData") ; 
+        LOG(LEVEL) << "loaded PMTSimParamData  " << ( data ? "YES" : "NO" ) ; 
+        LOG_IF(LEVEL, data != nullptr ) << *data ; 
+
+        const PMTAccessor* pmt = PMTAccessor::Create(data) ; 
+        const C4IPMTAccessor* ipmt = pmt ;
+        LOG(LEVEL) << "loaded C4IPMTAccessor " ; 
+        fBoundary = new C4OpBoundaryProcess(ipmt);
+
+#elif WITH_PMTSIM
         const IPMTAccessor* ipmt = PMTAccessor::Load("$PMTSimParamData_BASE/PMTSimParamData") ;
         fBoundary = new CustomG4OpBoundaryProcess(ipmt);
 #elif WITH_PMTFASTSIM

@@ -24,6 +24,11 @@ find_package(CLHEP  REQUIRED CONFIG)
 # undefined symbols CLHEP::HepRandom::getTheEngine()
 find_package(OpticksXercesC REQUIRED MODULE)
 
+set(Custom4_VERBOSE ON)
+find_package(Custom4 CONFIG)   ## NB : NOT REQUIRED
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND     : ${Custom4_FOUND}")
+
+
 find_package(PMTSim CONFIG)   ## NB : NOT REQUIRED
 #set(PMTSim_FOUND NO)
 
@@ -128,9 +133,13 @@ target_include_directories( ${name} PUBLIC
 target_compile_definitions( ${name} PUBLIC OPTICKS_U4 )
 target_compile_definitions( ${name} PUBLIC G4USE_STD11 ) 
 target_compile_definitions( ${name} PUBLIC STANDALONE ) 
-#target_compile_definitions( ${name} PRIVATE DEBUG_PIDX ) 
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG ) 
 
+
+if(Custom4_FOUND)
+    target_link_libraries( ${name} PUBLIC Custom4::Custom4 )
+    target_compile_definitions( ${name} PUBLIC WITH_CUSTOM4 )  # MINTING A DEF ? MAYBE COMES WITH THE TARGET ANYHOW
+endif()
 
 if(PMTSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
@@ -141,8 +150,6 @@ if(PMTFastSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
     target_compile_definitions( ${name} PUBLIC WITH_PMTFASTSIM PMTFASTSIM_STANDALONE )
 endif()
-
-
 
 
 

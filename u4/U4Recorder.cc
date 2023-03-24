@@ -35,7 +35,13 @@
 #include "SCF.h"
 #include "U4Step.h"
 
-#ifdef PMTSIM_STANDALONE
+
+#include "G4OpBoundaryProcess.hh"
+#ifdef WITH_CUSTOM4
+#include "C4OpBoundaryProcess.hh" 
+#include "C4CustomART.h" 
+#include "C4CustomART_Debug.h" 
+#elif PMTSIM_STANDALONE
 #include "CustomART.h" 
 #include "CustomART_Debug.h" 
 #endif
@@ -51,6 +57,25 @@ const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED
 const int U4Recorder::PIDX = ssys::getenvint("PIDX",-1) ; 
 const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ; 
 const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
+
+
+std::string U4Recorder::Switches()  // static 
+{
+    std::stringstream ss ; 
+    ss << "U4Recorder::Switches" << std::endl ; 
+#ifdef WITH_CUSTOM4
+    ss << "WITH_CUSTOM4" << std::endl ; 
+#endif
+#ifdef WITH_PMTSIM
+    ss << "WITH_PMTSIM" << std::endl ; 
+#endif
+#ifdef PMTSIM_STANDALONE
+    ss << "PMTSIM_STANDALONE" << std::endl ; 
+#endif
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 std::string U4Recorder::Desc()
 {
@@ -117,7 +142,10 @@ void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U
 void U4Recorder::UserSteppingAction(const G4Step* step)
 { 
     if(!U4Track::IsOptical(step->GetTrack())) return ; 
-#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
+
+#if defined(WITH_CUSTOM4)
+     UserSteppingAction_Optical<C4OpBoundaryProcess>(step); 
+#elif defined(WITH_PMTSIM)
      UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(step); 
 #else
      UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(step);
@@ -686,8 +714,37 @@ Maybe move into one of::
 
 **/
 
+#if defined(WITH_CUSTOM4)
+template<>
+void U4Recorder::CollectBoundaryAux<C4OpBoundaryProcess>(quad4* current_aux)
+{
+    C4OpBoundaryProcess* bop = U4OpBoundaryProcess::Get<C4OpBoundaryProcess>() ;  
+    assert(bop) ; 
+    assert(current_aux); 
 
-#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
+    char customStatus = bop ? bop->m_custom_status : 'B' ; 
+    C4CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
+    const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
+    C4CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
+
+    LOG(LEVEL) 
+        << " bop " << ( bop ? "Y" : "N" ) 
+        << " cart " << ( cart ? "Y" : "N" )
+        << " cdbg " << ( cdbg ? "Y" : "N" )
+        << " current_aux " << ( current_aux ? "Y" : "N" )
+        << " bop.m_custom_status " << customStatus
+        << " CustomStatus::Name " << CustomStatus::Name(customStatus) 
+        ; 
+
+    if(cdbg && customStatus == 'Y') current_aux->load( cdbg->data(), C4CustomART_Debug::N ) ;   
+    current_aux->set_v(3, recoveredNormal, 3);   // nullptr are just ignored
+    current_aux->q3.i.w = int(customStatus) ;    // moved from q1 to q3
+}
+
+#elif defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
+
+// THIS CODE IS TO BE DELETED ONCE THE ABOVE IS WORKING 
+
 template<>
 void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4* current_aux)
 {
@@ -697,12 +754,7 @@ void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4* current_au
     char customStatus = bop ? bop->m_custom_status : 'B' ; 
     CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
     const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
-
-#ifdef PMTSIM_STANDALONE
     CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
-#else
-    CustomART_Debug* cdbg = nullptr ; 
-#endif
 
     LOG(LEVEL) 
         << " bop " << ( bop ? "Y" : "N" ) 
@@ -911,16 +963,16 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag, cons
 }
 
 
-#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
 
+#if defined(WITH_CUSTOM4)
+#include "C4OpBoundaryProcess.hh"
+template void U4Recorder::UserSteppingAction_Optical<C4OpBoundaryProcess>(const G4Step*) ; 
+#elif defined(WITH_PMTSIM)
 #include "CustomG4OpBoundaryProcess.hh"
 template void U4Recorder::UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(const G4Step*) ; 
-
 #else
-
 #include "InstrumentedG4OpBoundaryProcess.hh"
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
-
 #endif
 
 

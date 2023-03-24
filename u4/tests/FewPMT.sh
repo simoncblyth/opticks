@@ -62,8 +62,8 @@ case $VERSION in
 esac
 
 case $POM in 
-   0) pom_desc="POM:$POM traditional stop at photocathode : PMT with no innards"  ;;
-   1) pom_desc="POM:$POM allow photons into PMT which has innards" ;; 
+  0) pom_desc="POM:$POM traditional stop at photocathode : PMT with no innards"  ;;
+  1) pom_desc="POM:$POM allow photons into PMT which has innards" ;; 
 esac
 
 fastcover=Cheese
@@ -71,11 +71,12 @@ fastcover=Cheese
 ## PMTSim declProp config of the PMTManager
 
 export hama_FastCoverMaterial=$fastcover
-export hama_UsePMTOpticalModel=$pom     
-export hama_UseNaturalGeometry=$version 
-
 export nnvt_FastCoverMaterial=$fastcover
+
+export hama_UsePMTOpticalModel=$pom     
 export nnvt_UsePMTOpticalModel=$pom   
+
+export hama_UseNaturalGeometry=$version 
 export nnvt_UseNaturalGeometry=$version 
 
 #geomlist=hamaLogicalPMT,nnvtLogicalPMT     # in one_pmt layout get NNVT with this 

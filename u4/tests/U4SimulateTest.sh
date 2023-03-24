@@ -247,6 +247,11 @@ else
    echo $BASH_SOURCE : switch on some logging anyhow : THIS WILL BE VERBOSE
    #export junoPMTOpticalModel=INFO
    #export CustomG4OpBoundaryProcess=INFO
+
+   export U4Physics=INFO
+   export C4OpBoundaryProcess__PIDX_ENABLED=1
+ 
+
 fi 
 
 

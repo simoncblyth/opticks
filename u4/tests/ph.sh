@@ -1,9 +1,11 @@
 #!/bin/bash -l 
 
-defarg="run_ph"
 #defarg="ph"
+defarg="run_ph"
+#defarg="dbg"
+
 arg=${1:-$defarg}
 
-N=${N:-0} ./U4SimulateTest.sh $arg
+N=${N:-1} ./U4SimulateTest.sh $arg
 
 

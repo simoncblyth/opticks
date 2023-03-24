@@ -25,6 +25,8 @@ int main(int argc, char** argv)
     int VERSION = ssys::getenvint("VERSION", 0 );  
     LOG(info) << "[ " << argv[0] << " " << STime::Now() << " VERSION " << VERSION ; 
 
+    LOG(info) << U4Recorder::Switches() ; 
+
     SEvt* evt = SEvt::HighLevelCreate(); 
     U4App* app = U4App::Create() ;  
     app->BeamOn(); 
