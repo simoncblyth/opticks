@@ -953,12 +953,11 @@ void SEvt::hostside_running_resize()
     assert( is_self_provider ); 
     hostside_running_resize_done = true ; 
 
-
      // pho and slot dont have device side equivalent arrays 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
 
-     // HMM: what about tag_slot 
+    LOG(info) << "resizing from " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
 
     if(evt->num_photon > 0) 
     { 
