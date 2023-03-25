@@ -85,8 +85,8 @@ struct U4App
 
     static void SaveMeta(const char* savedir); 
     static G4RunManager* InitRunManager(); 
-    void                 BeamOn() ;
     static U4App*        Create(); 
+    void                 BeamOn() ;
 
 };
 
@@ -127,8 +127,6 @@ G4ParticleGun* U4App::InitGun()
     return gun ; 
 }
 
-
-
 U4App::U4App(G4RunManager* runMgr)
     :
     fRunMgr(runMgr),
@@ -149,7 +147,6 @@ U4App::U4App(G4RunManager* runMgr)
 G4VPhysicalVolume* U4App::Construct()
 { 
     LOG(info) << "[" ; 
-
     const G4VPhysicalVolume* pv_ = U4VolumeMaker::PV() ;
     LOG_IF(fatal, pv_ == nullptr) << " FAILED TO CREATE PV : CHECK GEOM envvar " ;  
     if(pv_ == nullptr) std::raise(SIGINT) ; 
@@ -161,8 +158,6 @@ G4VPhysicalVolume* U4App::Construct()
     LOG(info) << "]" ; 
     return pv ; 
 }  
-
-
 
 // pass along the message to the recorder
 void U4App::BeginOfRunAction(const G4Run* run){ fRecorder->BeginOfRunAction(run);   }
@@ -212,13 +207,9 @@ void U4App::EndOfEventAction(const G4Event* event)
 #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
     PMTSim::ModelTrigger_Debug_Save(savedir) ; 
 #else
-    LOG(info) << "not-POM_DEBUG  "  ; 
+    LOG(info) << "not-(WITH_PMTSIM and POM_DEBUG)"  ; 
 #endif
-
 }
-
-
-
 
 void U4App::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4App::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
@@ -248,12 +239,6 @@ G4RunManager* U4App::InitRunManager()  // static
     return run ; 
 }
 
-void U4App::BeamOn()
-{
-    fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
-}
-
-
 /**
 U4App::Create
 ----------------
@@ -264,12 +249,14 @@ Geant4 requires G4RunManager to be instanciated prior to the Actions
 
 U4App* U4App::Create()  // static 
 {
-    SEvt* evt = SEvt::HighLevelCreate(); 
-    assert( evt ); 
-
     G4RunManager* run = InitRunManager(); 
     U4App* app = new U4App(run); 
     return app ; 
+}
+
+void U4App::BeamOn()
+{
+    fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
 }
 
 

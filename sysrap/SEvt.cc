@@ -530,7 +530,7 @@ SEvt::HighLevelCreate
 ----------------------
 
 Create with bells and whistles needed by some tests such as u4/tests/U4SimulateTest
-which is now invoked from U4App::Create
+which is now invoked from U4Recorder instanciation.
 
 1. photon rerun config by persisting G4 random states
 2. setting of reldir 

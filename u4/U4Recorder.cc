@@ -125,7 +125,8 @@ U4Recorder::U4Recorder()
     :
     eventID(-1),
     transient_fSuspend_track(nullptr),
-    rerun_rand(nullptr)
+    rerun_rand(nullptr),
+    evt(SEvt::HighLevelCreate())
 { 
     INSTANCE = this ; 
 }

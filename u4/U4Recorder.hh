@@ -30,6 +30,7 @@ class G4StepPoint ;
 struct NP ; 
 struct spho ; 
 struct quad4 ; 
+struct SEvt ; 
 
 #include "NPU.hh"  // UName
 
@@ -63,11 +64,8 @@ struct U4_API U4Recorder
     int eventID ; 
     const G4Track* transient_fSuspend_track ; 
     NP* rerun_rand ;  
+    SEvt* evt ; 
 
-    // NO NON-TRANSIENT MEMBERS : persisting is handled at lower level by sysrap/SEvt 
-    // MAYBE COULD HOLD THE SEvt POINTER HERE ? TO MAKE THIS EASIER TO 
-    // USE FROM AnaMgr RATHER THAN FROM MAINS 
- 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
