@@ -27,22 +27,11 @@ int main(int argc, char** argv)
 
     LOG(info) << U4Recorder::Switches() ; 
 
-    SEvt* evt = SEvt::HighLevelCreate(); 
     U4App* app = U4App::Create() ;  
     app->BeamOn(); 
-
-    evt->save();   // HMM: this is assuming single event running 
-    const char* savedir = evt->getSaveDir(); 
-    U4App::SaveMeta(savedir); 
-
-#if defined(WITH_PMTSIM) && defined(POM_DEBUG)
-    PMTSim::ModelTrigger_Debug_Save(savedir) ; 
-#else
-    LOG(info) << "not-POM_DEBUG  "  ; 
-#endif
     delete app ; 
 
-    LOG(info) << "] " << argv[0] << " " << STime::Now() << " VERSION " << VERSION << " savedir " << savedir ; 
+    LOG(info) << "] " << argv[0] << " " << STime::Now() << " VERSION " << VERSION << " savedir " << SEvt::GetSaveDir() ; 
     return 0 ; 
 }
 

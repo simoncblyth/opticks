@@ -59,6 +59,8 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
 
     U4Recorder(); 
+
+    int eventID ; 
     const G4Track* transient_fSuspend_track ; 
     NP* rerun_rand ;  
 

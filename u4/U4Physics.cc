@@ -269,7 +269,7 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     const char* path = "$PMTSimParamData_BASE/PMTSimParamData" ; 
     const PMTSimParamData* data = PMTAccessor::LoadData(path) ; 
     LOG(LEVEL) << "load path "  << path << " giving PMTSimParamData.data: " << ( data ? "YES" : "NO" ) ; 
-    LOG_IF(LEVEL, data != nullptr ) << *data ; 
+    //LOG_IF(LEVEL, data != nullptr ) << *data ; 
 
     const PMTAccessor* pmt = PMTAccessor::Create(data) ; 
     const C4IPMTAccessor* ipmt = pmt ;  

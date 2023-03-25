@@ -40,6 +40,10 @@ U4VolumeMaker::PV which is controlled by the GEOM envvar.
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
 
+#ifdef WITH_PMTSIM
+#include "PMTSim.hh"
+#endif
+
 
 struct U4App
     : 
@@ -63,11 +67,10 @@ struct U4App
 
     G4VPhysicalVolume* Construct(); 
 
-    void GeneratePrimaries(G4Event* evt); 
-
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
 
+    void GeneratePrimaries(G4Event* evt); 
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
 
@@ -75,6 +78,7 @@ struct U4App
     void PostUserTrackingAction(const G4Track*);
 
     void UserSteppingAction(const G4Step*);
+
 
     U4App(G4RunManager* runMgr); 
     virtual ~U4App(); 
@@ -158,6 +162,13 @@ G4VPhysicalVolume* U4App::Construct()
     return pv ; 
 }  
 
+
+
+// pass along the message to the recorder
+void U4App::BeginOfRunAction(const G4Run* run){ fRecorder->BeginOfRunAction(run);   }
+void U4App::EndOfRunAction(const G4Run* run){   fRecorder->EndOfRunAction(run);     }
+
+
 /**
 U4App::GeneratePrimaries
 ------------------------------------
@@ -170,6 +181,12 @@ which is based on SGenerate::GeneratePhotons
 void U4App::GeneratePrimaries(G4Event* event)
 {   
     LOG(LEVEL) << "[ fPrimaryMode " << fPrimaryMode  ; 
+
+    if(fPrimaryMode == 'T')
+    {
+        SEvt::AddTorchGenstep();  
+    }
+
     switch(fPrimaryMode)
     {
         case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
@@ -180,27 +197,32 @@ void U4App::GeneratePrimaries(G4Event* event)
     LOG(LEVEL) << "]" ; 
 }
 
-// pass along the message to the recorder
-void U4App::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfRunAction(run);   }
-void U4App::EndOfRunAction(const G4Run* run){           fRecorder->EndOfRunAction(run);     }
-void U4App::BeginOfEventAction(const G4Event* evt){     fRecorder->BeginOfEventAction(evt); }
-void U4App::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
+void U4App::BeginOfEventAction(const G4Event* event)
+{  
+    // TOO LATE TO SEvt::AddTorchGenstep here as GeneratePrimaries already run 
+    fRecorder->BeginOfEventAction(event); 
+}
+void U4App::EndOfEventAction(const G4Event* event)
+{   
+    fRecorder->EndOfEventAction(event);  
+
+    const char* savedir = SEvt::GetSaveDir(); 
+    SaveMeta(savedir); 
+
+#if defined(WITH_PMTSIM) && defined(POM_DEBUG)
+    PMTSim::ModelTrigger_Debug_Save(savedir) ; 
+#else
+    LOG(info) << "not-POM_DEBUG  "  ; 
+#endif
+
+}
+
+
+
+
 void U4App::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4App::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
 void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step) ; }
-
-/*
-try hiding template complications at U4Recorder::UserSteppingAction_Optical level 
-
-#if defined(WITH_PMTSIM) || defined(WITH_CUSTOM_BOUNDARY)
-#include "G4OpBoundaryProcess.hh"
-#include "CustomG4OpBoundaryProcess.hh"
-void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<CustomG4OpBoundaryProcess>(step); }
-#else
-#include "InstrumentedG4OpBoundaryProcess.hh"
-void U4App::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
-#endif
-*/
 
 
 U4App::~U4App(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
@@ -209,6 +231,11 @@ U4App::~U4App(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
 
 void U4App::SaveMeta(const char* savedir) // static
 {
+    if(savedir == nullptr)
+    {
+        LOG(error) << " NULL savedir " ; 
+        return ; 
+    }  
     U4Recorder::SaveMeta(savedir); 
     U4VolumeMaker::SaveTransforms(savedir) ;   
 }
@@ -237,8 +264,12 @@ Geant4 requires G4RunManager to be instanciated prior to the Actions
 
 U4App* U4App::Create()  // static 
 {
+    SEvt* evt = SEvt::HighLevelCreate(); 
+    assert( evt ); 
+
     G4RunManager* run = InitRunManager(); 
-    return new U4App(run); 
+    U4App* app = new U4App(run); 
+    return app ; 
 }
 
 

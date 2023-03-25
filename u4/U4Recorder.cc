@@ -17,6 +17,8 @@
 #include "CustomStatus.h"
 
 #include "G4LogicalBorderSurface.hh"
+#include "G4Event.hh"
+
 #include "U4Recorder.hh"
 #include "U4Engine.h"
 #include "U4Track.h"
@@ -121,6 +123,7 @@ U4Recorder* U4Recorder::INSTANCE = nullptr ;
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
 U4Recorder::U4Recorder()
     :
+    eventID(-1),
     transient_fSuspend_track(nullptr),
     rerun_rand(nullptr)
 { 
@@ -130,8 +133,31 @@ U4Recorder::U4Recorder()
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
 void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); }
-void U4Recorder::BeginOfEventAction(const G4Event*){ LOG(info); }
-void U4Recorder::EndOfEventAction(const G4Event*){   LOG(info); }
+
+void U4Recorder::BeginOfEventAction(const G4Event* event)
+{ 
+    eventID = event->GetEventID() ; 
+    LOG(info) << " eventID " << eventID ; 
+    SEvt::SetIndex(eventID); 
+}
+
+void U4Recorder::EndOfEventAction(const G4Event* event)
+{  
+    G4int eventID_ = event->GetEventID() ; 
+    int eidx = SEvt::GetIndex(); 
+    bool consistent_eventID = eidx == eventID_ && eventID_ == eventID  ; 
+
+    LOG(info)
+         << " eventID " << eventID 
+         << " eventID_ " << eventID_ 
+         << " eidx " << eidx 
+         << " consistent_eventID  " << ( consistent_eventID  ? "YES" : "NO " )
+         ; 
+    assert( consistent_eventID ); 
+
+    SEvt::Save(); 
+    SEvt::Clear(); 
+}
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
 
@@ -151,21 +177,6 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
      UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(step);
 #endif
 }
-
-
-
-/*
-template<typename T>
-void U4Recorder::UserSteppingAction<T>( const G4Step* step)
-{
-    if(!U4Track::IsOptical(step->GetTrack())) return ; 
-    UserSteppingAction_Optical<T>(step) ; 
-}
-*/
-
-
-
-
 
 
 /**
@@ -321,6 +332,10 @@ NB for rerunning to reproduce a selected single photon this requires:
 
 void U4Recorder::saveOrLoadStates( int id )  
 {
+    bool first_event = eventID == 0 ; 
+    LOG_IF(LEVEL, !first_event ) << " skip as not first_event eventID " << eventID ; 
+    if(!first_event) return ; 
+
     bool g4state_save = SEventConfig::IsRunningModeG4StateSave() ; 
     bool g4state_rerun = SEventConfig::IsRunningModeG4StateRerun() ; 
     bool g4state_active =  g4state_save || g4state_rerun ; 

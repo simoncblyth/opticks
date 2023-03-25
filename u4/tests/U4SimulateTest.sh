@@ -82,8 +82,10 @@ export Local_DsG4Scintillation_DISABLE=1
 
 export U4App__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 
-export BeamOn=${BeamOn:-1}
+export BeamOn=${BeamOn:-10}
 export U4Recorder__PIDX_ENABLED=1 
+export EVT=${EVT:-000}
+
 
 # python ana level presentation 
 export LOC=skip
@@ -97,10 +99,10 @@ logN=${bin}_$VERSION.log
 
 #num_ph=1
 #num_ph=10
-#num_ph=100
+num_ph=100
 #num_ph=1000      # 1k
 #num_ph=10000    # 10k
-num_ph=50000
+#num_ph=50000
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
@@ -227,12 +229,13 @@ export storch_FillGenstep_radius=$radius
 export storch_FillGenstep_pos=$pos
 export storch_FillGenstep_mom=$mom
 
+
 loglevel(){
    export U4Recorder=INFO
    export U4Physics=INFO
    export junoPMTOpticalModel=INFO
    export junoPMTOpticalModelSimple=INFO
-   #export SEvt=INFO
+   #export SEvt=INFO     ## thus is exceedingly verbose
    export SEventConfig=INFO
    export InstrumentedG4OpBoundaryProcess=INFO
    export ShimG4OpAbsorption=INFO
@@ -294,7 +297,7 @@ mkdir -p $(dirname $ENVOUT)
 
 
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "nfs" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fs.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE fs error && exit 3
@@ -302,8 +305,8 @@ fi
 
 if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
     [ "$arg" == "ncf" ] && export MODE=0
-    export AFOLD=$BASE/ALL0
-    export BFOLD=$BASE/ALL1
+    export AFOLD=$BASE/ALL0/$EVT
+    export BFOLD=$BASE/ALL1/$EVT
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_cf.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
 fi 
@@ -315,43 +318,43 @@ if [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "nph" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ph.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ph error && exit 5
 fi 
 
 if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "nmt" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_mt.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
 fi 
 
 if [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "nfk" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fk.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE fk error && exit 6
 fi 
 
 if [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "nck" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ck.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 7
 fi 
 
 if [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
-    export AFOLD=$BASE/ALL0
-    export BFOLD=$BASE/ALL1
+    export AFOLD=$BASE/ALL0/$EVT
+    export BFOLD=$BASE/ALL1/$EVT
     [ "$arg" == "nck" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_pr.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE pr error && exit 8
 fi 
 
 if [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir
+    export FOLD=$BASE/$reldir/$EVT
     [ "$arg" == "n__" ] && export MODE=0
     ${IPYTHON:-ipython} --pdb -i $DIR/${bin}.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 9

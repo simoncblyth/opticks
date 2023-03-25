@@ -189,6 +189,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     SEvt(); 
     void init(); 
 
+    static const char* GetSaveDir() ; 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
     int getTotalItems() const ; 

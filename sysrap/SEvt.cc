@@ -117,10 +117,12 @@ void SEvt::init()
     LOG(LEVEL) << descComp() ; 
 
     initInputPhoton(); 
-    initG4State(); 
+    initG4State();        // HMM: G4State not an every-event thing ? first event only ?
     LOG(LEVEL) << "]" ; 
 }
 
+
+const char* SEvt::GetSaveDir(){ return INSTANCE ? INSTANCE->getSaveDir() : nullptr ; }
 const char* SEvt::getSaveDir() const { return fold->savedir ; }
 const char* SEvt::getLoadDir() const { return fold->loaddir ; }
 int SEvt::getTotalItems() const { return fold->total_items() ; }
@@ -527,7 +529,8 @@ SEvt* SEvt::Create() { return new SEvt ; }
 SEvt::HighLevelCreate
 ----------------------
 
-Create with bells and whistles needed by some tests such as u4/tests/U4SimulateTest/:: 
+Create with bells and whistles needed by some tests such as u4/tests/U4SimulateTest
+which is now invoked from U4App::Create
 
 1. photon rerun config by persisting G4 random states
 2. setting of reldir 
@@ -567,7 +570,8 @@ SEvt* SEvt::HighLevelCreate() // static
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
 
-    SEvt::AddTorchGenstep();
+
+    // moved SEvt::AddTorchGenstep to U4App::GeneratePrimaries depending on fPrimaryMode
 
     return evt ; 
 }
@@ -656,6 +660,15 @@ void SEvt::clear_()
     flat.clear(); 
     simtrace.clear(); 
     aux.clear(); 
+
+
+    // moved here from SEvt::setNumPhoton
+    hostside_running_resize_done = false ;    
+    gather_done = false ;    // hmm perhaps should be in ::clear 
+
+
+    // try avoiding stale 
+    g4state = nullptr ; 
 }
 
 
@@ -749,7 +762,6 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
-//bool SEvt::RECORDING = true ;  // TODO: needs to be normally false, Q:what uses this ? 
 
 /**
 SEvt::addGenstep
@@ -826,10 +838,19 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     LOG_IF(debug, enabled) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
 
-    if( tot_photon != evt->num_photon )
+    bool num_photon_changed = tot_photon != evt->num_photon ; 
+
+    LOG(info) 
+        << " tot_photon " << tot_photon
+        << " evt.num_photon " << evt->num_photon
+        << " num_photon_changed " << num_photon_changed
+        ;
+
+    if(num_photon_changed)
     {
         setNumPhoton(tot_photon); 
     }
+
     return s ; 
 }
 
@@ -869,8 +890,12 @@ void SEvt::setNumPhoton(unsigned num_photon)
         << " evt->num_flat " << evt->num_flat
         ;
 
-    hostside_running_resize_done = false ;    
-    gather_done = false ;    // hmm perhaps should be in ::clear 
+
+    // moved to SEvt::clear
+    // hostside_running_resize_done = false ;    
+    // gather_done = false ;    // hmm perhaps should be in ::clear 
+
+
 }
 
 void SEvt::setNumSimtrace(unsigned num_simtrace)
