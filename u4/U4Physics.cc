@@ -7,6 +7,8 @@
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
 #include "PMTSimParamSvc/PMTAccessor.h"
+#else
+#include "InstrumentedG4OpBoundaryProcess.hh"
 #endif
 
 
