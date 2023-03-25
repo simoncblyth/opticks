@@ -823,9 +823,11 @@ sgs SEvt::addGenstep(const quad6& q_)
     unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
     if(q_numphoton > numphoton_genstep_max) numphoton_genstep_max = q_numphoton ; 
 
-    sgs s = {} ;                  // genstep summary struct 
-    s.index = genstep.size() ;    // 0-based genstep index since last clear  
-    s.photons = q_numphoton ;     // numphoton in this genstep 
+
+    sgs s = {} ;                      // genstep summary struct 
+
+    s.index = genstep.size() ;        // 0-based genstep index since last clear  
+    s.photons = q_numphoton ;         // numphoton in this genstep 
     s.offset = numphoton_collected ;  // sum numphotons from all previously collected gensteps (since last clear)
     s.gentype = q.gentype() ; 
 
@@ -844,6 +846,15 @@ sgs SEvt::addGenstep(const quad6& q_)
         << " tot_photon " << tot_photon
         << " evt.num_photon " << evt->num_photon
         << " num_photon_changed " << num_photon_changed
+        << " gs.size " << gs.size() 
+        << " genstep.size " << genstep.size()
+        << " numphoton_collected " << numphoton_collected
+        << " tot_photon " << tot_photon
+        << " s.index " << s.index
+        << " s.photons " << s.photons
+        << " s.offset " << s.offset
+        << " s.gentype " << s.gentype
+        << " s.desc " << s.desc()
         ;
 
     if(num_photon_changed)

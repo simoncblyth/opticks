@@ -41,8 +41,6 @@ After that can compare timings::
 
     ./U4SimulateTest.sh cf 
 
-
-
 EOU
 }
 
@@ -69,8 +67,6 @@ GEOMList=${!_GEOMList}
 vars="GEOM _GEOMList GEOMList"
 for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
 
-#exit 0
-
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
 ## process DISABLE/ENABLE controlling u4/tests/U4Physics.cc U4Physics::ConstructOp
@@ -84,18 +80,13 @@ export U4App__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing in
 
 export BeamOn=${BeamOn:-10}
 export U4Recorder__PIDX_ENABLED=1 
-export EVT=${EVT:-000}
-
+export EVT=${EVT:-000}       # used for FOLD envvars
 
 # python ana level presentation 
 export LOC=skip
 
-
 log=${bin}.log
 logN=${bin}_$VERSION.log
-
-
-
 
 #num_ph=1
 #num_ph=10
@@ -295,70 +286,35 @@ fi
 export ENVOUT=/tmp/$USER/opticks/U4SimulateTest/envout.sh
 mkdir -p $(dirname $ENVOUT)
 
+export FOLD=$BASE/$reldir/$EVT
+export AFOLD=$BASE/ALL0/$EVT     ## for comparisons 
+export BFOLD=$BASE/ALL1/$EVT
+
+[ "${arg:0:1}" == "n" ] && export MODE=0
 
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "nfs" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fs.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE fs error && exit 3
+    script=${bin}_fs.py  
+elif [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
+    script=${bin}_cf.py 
+elif [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
+    script=${bin}_af.py 
+elif [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
+    script=${bin}_ph.py 
+elif [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
+    script=${bin}_mt.py 
+elif [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
+    script=${bin}_fk.py 
+elif [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
+    script=${bin}_ck.py 
+elif [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
+    script=${bin}_pr.py 
+elif [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
+    script=${bin}.py 
 fi 
 
-if [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
-    [ "$arg" == "ncf" ] && export MODE=0
-    export AFOLD=$BASE/ALL0/$EVT
-    export BFOLD=$BASE/ALL1/$EVT
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_cf.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE cf error && exit 4
-fi 
+${IPYTHON:-ipython} --pdb -i $DIR/$script 
+[ $? -ne 0 ] && echo $BASH_SOURCE script $script error && exit 4
 
-if [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
-    [ "$arg" == "naf" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_af.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE af error && exit 4
-fi 
-
-if [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "nph" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ph.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ph error && exit 5
-fi 
-
-if [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "nmt" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_mt.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE mt error && exit 5
-fi 
-
-if [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "nfk" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_fk.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE fk error && exit 6
-fi 
-
-if [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "nck" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_ck.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 7
-fi 
-
-if [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
-    export AFOLD=$BASE/ALL0/$EVT
-    export BFOLD=$BASE/ALL1/$EVT
-    [ "$arg" == "nck" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}_pr.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE pr error && exit 8
-fi 
-
-if [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
-    export FOLD=$BASE/$reldir/$EVT
-    [ "$arg" == "n__" ] && export MODE=0
-    ${IPYTHON:-ipython} --pdb -i $DIR/${bin}.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ck error && exit 9
-fi 
 
 
 if [ -f "$ENVOUT" ]; then 
@@ -420,8 +376,6 @@ if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "m
         source epub.sh 
     fi  
 fi 
-
-
 
 exit 0 
 
