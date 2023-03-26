@@ -556,7 +556,9 @@ SEvt* SEvt::HighLevelCreate() // static
         << " rerun " << rerun
         ;   
 
+    // this runs early, at U4Recorder instanciation, which is before logging is setup it seems 
     std::cout
+        << "SEvt::HighLevelCreate"
         << " g4state_rerun_id " << g4state_rerun_id 
         << " alldir " << alldir 
         << " alldir0 " << alldir0 
@@ -713,7 +715,15 @@ void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
 
-void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : nullptr ; } // default is "ALL" 
+void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR  
+{ 
+    reldir = reldir_ ? strdup(reldir_) : nullptr ; 
+    std::cerr 
+        << "SEvt::setReldir"
+        << " reldir " << ( reldir ? reldir : "-" )
+        << std::endl 
+        ;
+} 
 const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
 
 
@@ -1930,10 +1940,6 @@ void SEvt::gather()
 SEvt::save
 --------------
 
-This was formerly implemented up in qudarap/QEvent but it makes no 
-sense for CPU only tests that need to save events to reach up to qudarap 
-to control persisting. 
-
 The component arrays are gathered by SEvt::gather_components
 into the NPFold and then saved. Which components to gather and save 
 are configured via SEventConfig::SetCompMask using the SComp enumeration. 
@@ -1992,7 +1998,7 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 void SEvt::save() 
 {
     const char* dir = DefaultDir(); 
-    LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
+    LOG(info) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
 int SEvt::load()
@@ -2044,6 +2050,24 @@ const char* SEvt::getOutputDir(const char* base_) const
 }
 
 
+std::string SEvt::descSaveDir(const char* dir_) const 
+{
+    const char* dir = getOutputDir(dir_); 
+    bool with_index = index != MISSING_INDEX ;  
+    std::stringstream ss ; 
+    ss << "SEvt::descOutputDir"
+       << " dir_ " << ( dir_ ? dir_ : "-" )
+       << " dir  " << ( dir  ? dir  : "-" )
+       << " reldir " << ( reldir ? reldir : "-" )
+       << " with_index " << ( with_index ? "Y" : "N" )
+       << " index " << ( with_index ? index : -1 ) 
+       << std::endl
+       ;
+    std::string str = ss.str(); 
+    return str ;  
+} 
+
+
 /**
 SEvt::save
 ------------
@@ -2064,6 +2088,7 @@ void SEvt::save(const char* dir_)
 {
     const char* dir = getOutputDir(dir_); 
     LOG(info) << " dir " << dir ; 
+    LOG(error) << descSaveDir(dir_) ; 
 
     LOG(LEVEL) << "[ gather " ; 
     gather(); 
