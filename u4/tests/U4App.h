@@ -249,6 +249,8 @@ Geant4 requires G4RunManager to be instanciated prior to the Actions
 
 U4App* U4App::Create()  // static 
 {
+    LOG(info) << U4Recorder::Switches() ; 
+
     G4RunManager* run = InitRunManager(); 
     U4App* app = new U4App(run); 
     return app ; 

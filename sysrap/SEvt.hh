@@ -236,6 +236,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     void hostside_running_resize(); 
+    void hostside_running_resize_(); 
 
     NP* gatherDomain() const ; 
 

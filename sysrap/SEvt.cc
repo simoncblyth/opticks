@@ -643,10 +643,12 @@ bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : fal
 
 void SEvt::clear_()
 {
-    genstep.clear();
-    gs.clear();
     numphoton_collected = 0u ; 
     numphoton_genstep_max = 0u ; 
+    setNumPhoton(0); 
+
+    genstep.clear();
+    gs.clear();
 
     pho0.clear(); 
     pho.clear(); 
@@ -661,14 +663,10 @@ void SEvt::clear_()
     simtrace.clear(); 
     aux.clear(); 
 
+    gather_done = false ;  
+    g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
 
-    // moved here from SEvt::setNumPhoton
-    hostside_running_resize_done = false ;    
-    gather_done = false ;    // hmm perhaps should be in ::clear 
-
-
-    // try avoiding stale 
-    g4state = nullptr ; 
+    LOG(info); 
 }
 
 
@@ -875,7 +873,18 @@ This is called from SEvt::addGenstep, updating evt.num_photon
 according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
 depending on the configured max which when zero will keep the counts zero.  
 
-Also called by QEvent::setNumPhoton prior to device side allocations. 
+Also called by QEvent::setNumPhoton prior to device side allocations. (TODO: check this)
+
+
+*hostside_running_resize_done:false*
+    signals next SEvt::beginPhoton to call SEvt::hostside_running_resize 
+
+Note that SEvt::beginPhoton is used for hostside running only (eg U4Recorder/U4SimulateTest)  
+so as gensteps are added with SEvt::addGenstep from the U4 scintillation 
+and Cerenkov collection SEvt::setNumPhoton increments the totals in sevent.h:evt 
+and sets hostside_running_resize_done:false such that at the next SEvt::beginPhoton
+which happens from the BeginOfTrackAction the std::vector grow as
+needed to accommodate the photons from the last genstep collected.   
 
 **/
 
@@ -901,12 +910,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
         << " evt->num_flat " << evt->num_flat
         ;
 
-
-    // moved to SEvt::clear
-    // hostside_running_resize_done = false ;    
-    // gather_done = false ;    // hmm perhaps should be in ::clear 
-
-
+    hostside_running_resize_done = false ;    
 }
 
 void SEvt::setNumSimtrace(unsigned num_simtrace)
@@ -926,24 +930,12 @@ SEvt::hostside_running_resize
 
 Canonically called from SEvt::beginPhoton  (also SEvt::setFrame_HostsideSimtrace)
 
-According to the num from sevent.h evt->num_photon, num_record etc.. 
-the std::vectors are resized and sevent.h evt pointers are updated to follow
-around the std::vectors as they are reallocated.
-
-This makes the hostside sevent.h:evt environment mimic the deviceside environment 
-even though deviceside uses device buffers and hostside uses std::vectors. 
-
-Notice how the same sevent.h struct that holds deviceside pointers 
-is being using to hold the hostside vector data pointers. 
-
 **/
 
 void SEvt::hostside_running_resize()
 {
     bool is_self_provider = isSelfProvider() ; 
-
     LOG_IF(fatal, is_self_provider == false ) << " NOT-is_self_provider " << descProvider() ;   
-
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
         << " hostside_running_resize_done " << hostside_running_resize_done
@@ -951,14 +943,77 @@ void SEvt::hostside_running_resize()
 
     assert( hostside_running_resize_done == false ); 
     assert( is_self_provider ); 
+
     hostside_running_resize_done = true ; 
+    hostside_running_resize_(); 
 
-     // pho and slot dont have device side equivalent arrays 
-    if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
-    if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
+    LOG(LEVEL) 
+        << " is_self_provider " << is_self_provider 
+        << std::endl 
+        << evt->desc() 
+        ; 
 
-    LOG(info) << "resizing from " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
+}
 
+/**
+SEvt::hostside_running_resize_
+--------------------------------
+
+Resize the hostside std::vectors according to the sizes from sevent.h:evt
+and update evt array pointers to follow around the std::vectors as they get reallocated.
+
+This makes the hostside sevent.h:evt environment mimic the deviceside environment 
+even though deviceside uses device buffers and hostside uses std::vectors. 
+
+Notice how the same sevent.h struct that holds deviceside pointers 
+is being using to hold the hostside vector data pointers. 
+
+
++-----------+-----------------+
+| vector    |   evt->         |
++===========+=================+
+| pho       |   num_photon    |
++-----------+-----------------+
+| slot      |   num_photon    |
++-----------+-----------------+
+| photon    |   num_photon    |
++-----------+-----------------+
+| record    |   num_record    |
++-----------+-----------------+
+| rec       |   num_rec       |
++-----------+-----------------+
+| aux       |   num_aux       |
++-----------+-----------------+
+| seq       |   num_seq       |
++-----------+-----------------+
+| prd       |   num_prd       |
++-----------+-----------------+
+| tag       |   num_tag       |
++-----------+-----------------+
+| flat      |   num_flat      |
++-----------+-----------------+
+| simtrace  |   num_simtrace  |
++-----------+-----------------+
+
+Vectors are disabled by some of the above *num* 
+being configured to zero via SEventConfig. 
+
+**/
+
+void SEvt::hostside_running_resize_()
+{
+    LOG(info) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
+
+    if(evt->num_photon > 0) 
+    { 
+         pho.resize(  evt->num_photon );  
+         // no device side equivalent array 
+    }
+    if(evt->num_photon > 0) 
+    {
+        slot.resize( evt->num_photon ); 
+         // no device side equivalent array 
+    }
     if(evt->num_photon > 0) 
     { 
         photon.resize(evt->num_photon);
@@ -1006,11 +1061,6 @@ void SEvt::hostside_running_resize()
     }
 
 
-    LOG(LEVEL) 
-        << " is_self_provider " << is_self_provider 
-        << std::endl 
-        << evt->desc() 
-        ; 
 }
 
 

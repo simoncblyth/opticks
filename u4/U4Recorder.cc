@@ -452,7 +452,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 #ifndef PRODUCTION
         bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
         sseq& seq = sev->current_ctx.seq ; 
-        LOG_IF(info, label->id < 100 || PIDX_DUMP ) 
+        LOG_IF(info, label->id < 10 || PIDX_DUMP ) 
             << " l.id " << std::setw(5) << label->id
             << " seq " << seq.brief()
             ;  
