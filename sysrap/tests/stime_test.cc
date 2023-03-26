@@ -4,12 +4,26 @@
 #include <iomanip>
 #include "stime.h"
 
-int main(int argc, char** argv)
+void test_Time()
 {
     stime::Time stamp ; 
     stime::init(&stamp);  
 
     std::cout << stime::Desc(&stamp) << std::endl ;  
+}
 
+void test_Format()
+{
+    std::cout << "stime::Stamp "  << stime::Stamp() << std::endl ; 
+    std::cout << "stime::Now    " << stime::Now() << std::endl ; 
+    std::cout << "stime::Format " << stime::Format() << std::endl ; 
+
+}
+
+
+int main(int argc, char** argv)
+{
+
+    test_Format(); 
     return 0 ; 
 }

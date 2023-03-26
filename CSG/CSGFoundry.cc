@@ -17,7 +17,10 @@
 #include "SProc.hh"
 #include "SStr.hh"
 #include "SPath.hh"
-#include "STime.hh"
+
+//#include "STime.hh"
+#include "stime.h"
+
 #include "SBitSet.hh"
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
@@ -80,7 +83,7 @@ CSGFoundry::CSGFoundry()
     last_added_solid(nullptr),
     last_added_prim(nullptr),
     sim(SSim::Get()),
-    mtime(STime::EpochSeconds()),
+    mtime(stime::EpochSeconds()),
     meta(),
     fold(nullptr),
     cfbase(nullptr),
@@ -163,7 +166,7 @@ std::string CSGFoundry::desc() const
        << " meshname " << meshname.size()
        << " mmlabel " << mmlabel.size()
        << " mtime " << mtime
-       << " mtimestamp " << STime::Format(mtime)
+       << " mtimestamp " << stime::Format(mtime)
        << " sim " << ( sim ? "Y" : "N" )
        ;
     return ss.str(); 

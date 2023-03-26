@@ -23,7 +23,8 @@
 
 
 #include "SAr.hh"
-#include "STime.hh"
+//#include "STime.hh"
+#include "stime.h"
 #include "SSys.hh"
 #include "BStr.hh"
 #include "BOpticksResource.hh"
@@ -189,7 +190,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_exename(SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
     m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
     m_runcomment(""),
-    m_runstamp(STime::EpochSeconds()),
+    m_runstamp(stime::EpochSeconds()),
     m_runlabel(""),
     m_runfolder(strdup(m_exename)),
     m_dbggdmlpath(""),

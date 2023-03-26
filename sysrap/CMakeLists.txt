@@ -244,7 +244,10 @@ set(HEADERS
     SArgs.hh
     S_freopen_redirect.hh
     S_get_option.hh
+
     STime.hh
+    stime.h
+
     SPPM.hh
     SColor.hh
     SId.hh

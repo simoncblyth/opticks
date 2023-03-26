@@ -16,6 +16,37 @@ measuring durations. See schrono.h for that.
 
 namespace stime
 {
+    inline int EpochSeconds()
+    {
+        time_t now = time(0);
+        return now ; 
+    }
+
+    constexpr const char* FMT = "%Y%m%d_%H%M%S" ; 
+ 
+    inline std::string Format(int epochseconds=0, const char* fmt=nullptr)
+    {
+        const char* ufmt = fmt == nullptr ? FMT : fmt ;  
+
+        int t = epochseconds == 0 ? EpochSeconds() : epochseconds ; 
+        time_t now(t) ;  
+        struct tm  tstruct;
+        char       buf[80];
+        tstruct = *localtime(&now);
+        strftime(buf, sizeof(buf), ufmt, &tstruct);
+        return buf ;
+    }
+
+    inline std::string Stamp()
+    {
+        return Format(0, nullptr); 
+    }
+    inline std::string Now()
+    {
+        return Format(0, "%c"); 
+    }
+
+
     inline void localtime_s(struct tm* t, const time_t* time)
     {
         ::localtime_r(time, t); 

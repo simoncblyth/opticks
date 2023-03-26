@@ -23,13 +23,14 @@
 #include "SPath.hh"
 #include <time.h>
 
+#include "stime.h"
+
+/*
 int STime::EpochSeconds()
 {
     time_t now = time(0);
     return now ; 
 }
-
-
 const char* STime::FMT = "%Y%m%d_%H%M%S" ; 
  
 std::string STime::Format(int epochseconds, const char* fmt)
@@ -55,19 +56,23 @@ std::string STime::Now()
     return STime::Format(0, "%c"); 
 }
 
+*/
+
+
+
 
 std::string STime::mtime(const char* base, const char* name)
 {
     std::stringstream ss ;  
     ss << base << "/" << name ; 
-    std::string s = ss.str(); 
-    return mtime(s.c_str());  
+    std::string str = ss.str(); 
+    return mtime(str.c_str());  
 }
 
 std::string STime::mtime(const char* path)
 {
     int mt = SPath::mtime(path);   
-    return mt > 0 ? STime::Format(mt, nullptr) : "" ;
+    return mt > 0 ? stime::Format(mt, nullptr) : "" ;
 }
 
 

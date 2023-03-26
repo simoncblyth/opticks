@@ -5,8 +5,7 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
-
-#include "STime.hh"
+#include "stime.h"
 #include "OPTICKS_LOG.hh"
 
 
@@ -25,7 +24,7 @@ int main(int argc, char** argv)
     std::cout << img.desc() << std::endl ; 
 
     std::stringstream ss ;
-    ss << "SIMGTest " << STime::Format() ; 
+    ss << "SIMGTest " << stime::Format() ; 
     std::string s = ss.str(); 
 
     img.annotate(s.c_str()); 

@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "STime.hh"
+#include "stime.h"
 #include "SSys.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -31,11 +32,11 @@
 void test_EpochSeconds()
 {
     LOG(info); 
-    int t = STime::EpochSeconds() ;      
+    int t = stime::EpochSeconds() ;      
 
-    std::cout << "STime::EpochSeconds() " << t << std::endl ; 
-    std::cout << "STime::Format(\"%c\", t) " << STime::Format(t, "%c") << std::endl;
-    std::cout << "STime::Format() " << STime::Format() << std::endl;
+    std::cout << "stime::EpochSeconds() " << t << std::endl ; 
+    std::cout << "stime::Format(\"%c\", t) " << stime::Format(t, "%c") << std::endl;
+    std::cout << "stime::Format() " << stime::Format() << std::endl;
 
 
     std::vector<std::string> fmts = { "%c", "%Y", "%m", "%D", "%d", "%H", "%M", "%Y%m%d_%H%M%S"  } ; 
@@ -43,8 +44,8 @@ void test_EpochSeconds()
     for(unsigned i=0 ; i < fmts.size() ; i++)
     {
          std::cout 
-               << "STime::Format(0,\"" << fmts[i] << "\") " 
-               <<  STime::Format(0, fmts[i].c_str()) 
+               << "stime::Format(0,\"" << fmts[i] << "\") " 
+               <<  stime::Format(0, fmts[i].c_str()) 
                << std::endl;
     }
 
@@ -65,11 +66,11 @@ void test_Stamp()
 {
     LOG(info) 
         << std::endl 
-        << " STime::Stamp() " << STime::Stamp() 
+        << " stime::Stamp() " << stime::Stamp() 
         << std::endl 
-        << " STime::Format(0,\"%c\") " << STime::Format(0,"%c") 
+        << " stime::Format(0,\"%c\") " << stime::Format(0,"%c") 
         << std::endl 
-        << " STime::Now() " << STime::Now() 
+        << " stime::Now() " << stime::Now() 
         << std::endl 
         ; 
 

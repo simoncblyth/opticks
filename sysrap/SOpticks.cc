@@ -1,5 +1,7 @@
 #include "SArgs.hh"
-#include "STime.hh"
+//#include "STime.hh"
+#include "stime.h"
+
 #include "SStr.hh"
 #include "SProc.hh"
 #include "SOpticks.hh"
@@ -67,7 +69,7 @@ std::string SOpticks::CFBaseScriptString(const char* cfbase, const char* msg )
     ss
         << "# " << msg
         << std::endl
-        << "# " << STime::Stamp()
+        << "# " << stime::Stamp()
         << std::endl
         << "export CFBASE=" << cfbase
         << std::endl
@@ -126,7 +128,7 @@ void SOpticks::WriteOutputDirScript(const char* outdir) // static
     std::stringstream ss ; 
     ss   
         << "# Opticks::writeOutputDirScript " << std::endl 
-        << "# " << STime::Stamp() << std::endl 
+        << "# " << stime::Stamp() << std::endl 
         << std::endl 
         << "export " << envvar << "=" << outdir  
         << std::endl 
