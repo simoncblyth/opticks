@@ -840,7 +840,7 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     bool num_photon_changed = tot_photon != evt->num_photon ; 
 
-    LOG(info) 
+    LOG(debug) 
         << " tot_photon " << tot_photon
         << " evt.num_photon " << evt->num_photon
         << " num_photon_changed " << num_photon_changed
