@@ -79,6 +79,11 @@ struct SYSRAP_API SLOG
     template<int IDX>
     static std::string Desc(); 
 
+
+    static std::string Banner(); 
+    std::string banner() const ; 
+
+
     static void Dump(); 
     static std::string Flags(); 
 

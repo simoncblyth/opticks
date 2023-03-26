@@ -26,7 +26,9 @@
 
 
 #include "SLOG.hh"
-#include "SSys.hh"
+#include "ssys.h"
+#include "s_time.h"
+
 #include "SProc.hh"
 #include "SOpticksResource.hh"
 #include "SASCII.hh"
@@ -76,8 +78,8 @@ std::string SLOG::Desc(plog::Logger<IDX>* logger)
        << " SLOG::MaxSeverity<IDX>(logger) " << SLOG::MaxSeverity<IDX>(logger)
        << " SLOG::MaxSeverityString<IDX>(logger) " << SLOG::MaxSeverityString<IDX>(logger)
        ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
@@ -90,6 +92,27 @@ std::string SLOG::Desc()
     plog::Logger<IDX>* lib_logger = plog::get<IDX>(); 
     return Desc(lib_logger) ; 
 }
+
+std::string SLOG::banner() const 
+{
+    const char* bin = exename() ; 
+    int VERSION = ssys::getenvint("VERSION", 0 );  
+    std::stringstream ss ; 
+    ss << "SLOG::banner" 
+       << " " << ( bin ? bin : "-" )
+       << " " << s_time::Stamp() 
+       << " " << s_time::EpochSeconds() 
+       << " V" << VERSION 
+       ;
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+std::string SLOG::Banner()
+{
+    return instance ? instance->banner() : "-" ; 
+}
+
 
 template std::string SLOG::Desc<0>(plog::Logger<0>* ) ; 
 template std::string SLOG::Desc<0>() ; 
@@ -152,7 +175,7 @@ Static initializers run very early, prior to logging being setup.
 
 plog::Severity SLOG::EnvLevel( const char* key, const char* fallback)
 {
-    const char* level = SSys::getenvvar(key, fallback);  
+    const char* level = ssys::getenvvar(key, fallback);  
     const char* upper_level = SASCII::ToUpper(level); 
     plog::Severity severity = plog::severityFromString(upper_level) ;
 
@@ -437,8 +460,8 @@ SLOG::SLOG(const char* name, const char* fallback, const char* prefix)
     ttf(new STTF),
     level(info),
     filename(_logpath()),
-    maxFileSize(SSys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
-    maxFiles(SSys::getenvint("OPTICKS_LOG_MAXFILES", 10))
+    maxFileSize(ssys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
+    maxFiles(ssys::getenvint("OPTICKS_LOG_MAXFILES", 10))
 {
     init(fallback, prefix); 
 }
@@ -449,8 +472,8 @@ SLOG::SLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     ttf(new STTF),
     level(info),
     filename(_logpath()),
-    maxFileSize(SSys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
-    maxFiles(SSys::getenvint("OPTICKS_LOG_MAXFILES", 10))
+    maxFileSize(ssys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
+    maxFiles(ssys::getenvint("OPTICKS_LOG_MAXFILES", 10))
 {
     init(fallback, prefix); 
 }

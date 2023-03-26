@@ -1,12 +1,12 @@
 SLOG : Logging Infrastructure 
 =================================
 
-This was formerly in SLOG.hh but as touching 
+This was formerly within SLOG.hh but as touching 
 that header causes a full build of everything 
-have moved docs separate. 
+have moved docs into this separate file. 
 
-new approach to initialization
----------------------------------
+Opticks initialization
+------------------------
 
 Opticks executables follow the following pattern.
 
@@ -19,9 +19,8 @@ Opticks executables follow the following pattern.
    {
        OPTICKS_LOG(argc, argv);  // pass arguments to SLOG_ macro
 
-       Opticks ok(argc, argv);
-
        //  ...  exercise Opticks  ... 
+
        return 0 ; 
    }
 

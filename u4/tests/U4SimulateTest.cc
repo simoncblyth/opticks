@@ -5,13 +5,10 @@ U4SimulateTest.cc
 All the Geant4 setup happens in U4App::Create from U4App.h
 
 TODO: incorporate J_PMTSIM_LOG_ hookup into OPTICKS_LOG
-TODO: SLOG::Banner string ?
 
 **/
 
-#include "ssys.h"
 #include "U4App.h"    
-#include "s_time.h"
 #include "SEvt.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -25,15 +22,15 @@ int main(int argc, char** argv)
 #ifdef WITH_PMTSIM
     J_PMTSIM_LOG_(0); 
 #endif
-    int VERSION = ssys::getenvint("VERSION", 0 );  
-    LOG(info) << "[ " << argv[0] << " " << s_time::Now() << " VERSION " << VERSION ; 
 
+
+    LOG(info) << SLOG::Banner() ; 
 
     U4App* app = U4App::Create() ;  
     app->BeamOn(); 
     delete app ; 
 
-    LOG(info) << "] " << argv[0] << " " << s_time::Now() << " VERSION " << VERSION << " savedir " << SEvt::GetSaveDir() ; 
+    LOG(info) << SLOG::Banner() << " " << " savedir " << SEvt::GetSaveDir() ; 
     return 0 ; 
 }
 

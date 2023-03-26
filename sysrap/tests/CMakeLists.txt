@@ -48,6 +48,7 @@ set(TEST_SOURCES
    OPTICKS_LOG_Test.cc
    sLOG_MACRO_Test.cc
    SLOG_exename_Test.cc
+   SLOG_Banner_Test.cc 
     
    reallocTest.cc
    OpticksCSGTest.cc
