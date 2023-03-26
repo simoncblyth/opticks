@@ -302,7 +302,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* gatherSimtrace() const ; 
 
     static const char* ENVMETA ; 
-    static void AddEnvMeta(NP* a ); 
+    static void AddEnvMeta(NP* a, bool dump=false ); 
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 

@@ -81,6 +81,7 @@ void test_getenv_kv()
     HOME
     CHECK
     OPTICKS_HOME
+    COMMANDLINE
     ${GEOM}_GEOMList 
     
 )LITERAL" ;
@@ -153,9 +154,10 @@ int main(int argc, char** argv)
     test_getenvvec_string_2(); 
     test__getenv(); 
     test_getenv_kv(); 
-    */
-
     test_replace_envvar_token(); 
+    */
+    test_getenv_kv(); 
+
  
     return 0 ; 
 }

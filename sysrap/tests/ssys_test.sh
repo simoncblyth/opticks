@@ -18,7 +18,7 @@ fi
 export GEOM=FewPMT
 export ${GEOM}_GEOMList=hamaLogicalPMT
 export VERSION=214
-
+export COMMANDLINE="Some-COMMANDLINE-with-spaces after the spaces start"
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin

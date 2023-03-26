@@ -721,6 +721,7 @@ void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR
     std::cerr 
         << "SEvt::setReldir"
         << " reldir " << ( reldir ? reldir : "-" )
+        << " this 0x" << std::hex << this << std::dec
         << std::endl 
         ;
 } 
@@ -1670,19 +1671,34 @@ ${GEOM}_GEOMList
 
 // HIGHER ORDER KEYS WITH TOKENS ARE HANDLED IN ssys::_getenv
 
-void SEvt::AddEnvMeta( NP* a ) // static
+void SEvt::AddEnvMeta( NP* a, bool dump ) // static
 {
     if(a == nullptr) return ; 
     typedef std::pair<std::string, std::string> KV ; 
     std::vector<KV> kvs ; 
     ssys::getenv_(kvs, ENVMETA); 
+
+    if(dump)
+    {
+        for(int i=0 ; i < int(kvs.size()) ; i++)
+        {
+            const KV& kv = kvs[i] ; 
+            std::cout 
+                << std::setw(20)  << kv.first 
+                << " : "
+                << std::setw(100) << kv.second
+                << std::endl 
+                ;
+        }
+    }
+
     a->set_meta_kv(kvs) ; 
 }
 
 NP* SEvt::makePhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
-    AddEnvMeta(p) ; 
+    AddEnvMeta(p, true) ; 
     return p ; 
 }
 
@@ -2061,6 +2077,7 @@ std::string SEvt::descSaveDir(const char* dir_) const
        << " reldir " << ( reldir ? reldir : "-" )
        << " with_index " << ( with_index ? "Y" : "N" )
        << " index " << ( with_index ? index : -1 ) 
+       << " this 0x" << std::hex << this << std::dec
        << std::endl
        ;
     std::string str = ss.str(); 

@@ -118,6 +118,7 @@ set(TEST_SOURCES
    SEvt__UU_BURN_Test.cc
 
    SEvt_Lifecycle_Test.cc
+   SEvt_AddEnvMeta_Test.cc
 
    SSimTest.cc
    SBndTest.cc
