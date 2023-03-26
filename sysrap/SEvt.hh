@@ -3,6 +3,11 @@
 SEvt.hh
 =========
 
+NB : THERE IS ALMOST ALWAYS ONLY ONE SEvt INSTANCE NO MATTER HOW MANY G4Event ARE HANDLED
+
+* HAVING MORE THAN ONE SEvt INSTANCE CAN CAUSE PERPLEXING BUGS 
+
+
 TODO : lifecycle leak checking 
 
 Q: Where is this instanciated canonically ?
