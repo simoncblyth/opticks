@@ -556,6 +556,16 @@ SEvt* SEvt::HighLevelCreate() // static
         << " rerun " << rerun
         ;   
 
+    std::cout
+        << " g4state_rerun_id " << g4state_rerun_id 
+        << " alldir " << alldir 
+        << " alldir0 " << alldir0 
+        << " seldir " << seldir 
+        << " rerun " << rerun
+        << std::endl 
+        ;   
+
+
     if(rerun == false)
     {   
         evt = SEvt::Create();    
@@ -1644,6 +1654,7 @@ TEST
 VERSION
 GEOM
 EXECUTABLE
+COMMANDLINE
 ${GEOM}_GEOMList
 )LITERAL" ;
 
@@ -1658,13 +1669,13 @@ void SEvt::AddEnvMeta( NP* a ) // static
     a->set_meta_kv(kvs) ; 
 }
 
-
 NP* SEvt::makePhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
     AddEnvMeta(p) ; 
     return p ; 
 }
+
 NP* SEvt::makeRecord() const 
 { 
     NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4 ); 
