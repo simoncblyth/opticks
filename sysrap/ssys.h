@@ -32,10 +32,11 @@ struct ssys
 
 
     template<typename T>
-    static T getenv_(const char* ekey, T fallback);  
+    static T parse(const char* str);  
+
 
     template<typename T>
-    static T parse(const char* str);  
+    static T getenv_(const char* ekey, T fallback);  
 
     template<typename T>
     static void getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector<std::string>& kk ); 
@@ -189,7 +190,30 @@ inline char* ssys::_tokenized_getenv(const char* ekey)
 
 
 
+template<typename T>
+inline T ssys::parse(const char* str_)
+{
+    std::string str(str_);
+    std::istringstream iss(str);
+    T tval ; 
+    iss >> tval ; 
+    return tval ; 
+}
 
+// template specialization for T=std::string 
+// otherwise the parsed value is truncated to the first element prior to any 
+// whitespace within the source value 
+template<>
+inline std::string ssys::parse(const char* str_)
+{
+    std::string str( str_ ? str_ : "" ) ; 
+    return str ; 
+}
+
+template int      ssys::parse(const char*); 
+template unsigned ssys::parse(const char*); 
+template float    ssys::parse(const char*); 
+template double   ssys::parse(const char*); 
 
 
 
@@ -209,21 +233,8 @@ template std::string ssys::getenv_(const char*, std::string );
 
 
 
-template<typename T>
-inline T ssys::parse(const char* str_)
-{
-    std::string str(str_);
-    std::istringstream iss(str);
-    T tval ; 
-    iss >> tval ; 
-    return tval ; 
-}
 
-template int      ssys::parse(const char*); 
-template unsigned ssys::parse(const char*); 
-template float    ssys::parse(const char*); 
-template double   ssys::parse(const char*); 
-template std::string ssys::parse(const char*); 
+
 
 template<typename T>
 void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector<std::string>& kk )
