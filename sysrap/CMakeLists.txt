@@ -246,7 +246,7 @@ set(HEADERS
     S_get_option.hh
 
     STime.hh
-    stime.h
+    s_time.h
 
     SPPM.hh
     SColor.hh

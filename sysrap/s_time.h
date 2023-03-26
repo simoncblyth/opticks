@@ -1,6 +1,6 @@
 #pragma once
 /**
-stime.h 
+s_time.h 
 ==========================================================
 
 This follows the approach of plog. 
@@ -14,7 +14,7 @@ measuring durations. See schrono.h for that.
 #include <iomanip>
 #include <sstream>
 
-namespace stime
+namespace s_time
 {
     inline int EpochSeconds()
     {

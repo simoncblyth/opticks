@@ -11,7 +11,7 @@ TODO: SLOG::Banner string ?
 
 #include "ssys.h"
 #include "U4App.h"    
-#include "stime.h"
+#include "s_time.h"
 #include "SEvt.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -26,14 +26,14 @@ int main(int argc, char** argv)
     J_PMTSIM_LOG_(0); 
 #endif
     int VERSION = ssys::getenvint("VERSION", 0 );  
-    LOG(info) << "[ " << argv[0] << " " << stime::Now() << " VERSION " << VERSION ; 
+    LOG(info) << "[ " << argv[0] << " " << s_time::Now() << " VERSION " << VERSION ; 
 
 
     U4App* app = U4App::Create() ;  
     app->BeamOn(); 
     delete app ; 
 
-    LOG(info) << "] " << argv[0] << " " << stime::Now() << " VERSION " << VERSION << " savedir " << SEvt::GetSaveDir() ; 
+    LOG(info) << "] " << argv[0] << " " << s_time::Now() << " VERSION " << VERSION << " savedir " << SEvt::GetSaveDir() ; 
     return 0 ; 
 }
 

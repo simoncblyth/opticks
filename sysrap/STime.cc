@@ -23,42 +23,7 @@
 #include "SPath.hh"
 #include <time.h>
 
-#include "stime.h"
-
-/*
-int STime::EpochSeconds()
-{
-    time_t now = time(0);
-    return now ; 
-}
-const char* STime::FMT = "%Y%m%d_%H%M%S" ; 
- 
-std::string STime::Format(int epochseconds, const char* fmt)
-{
-    const char* ufmt = fmt == NULL ? FMT : fmt ;  
-
-    int t = epochseconds == 0 ? EpochSeconds() : epochseconds ; 
-    time_t now(t) ;  
-    struct tm  tstruct;
-    char       buf[80];
-    tstruct = *localtime(&now);
-    strftime(buf, sizeof(buf), ufmt, &tstruct);
-    return buf ;
-}
-
-
-std::string STime::Stamp()
-{
-    return STime::Format(0, nullptr); 
-}
-std::string STime::Now()
-{
-    return STime::Format(0, "%c"); 
-}
-
-*/
-
-
+#include "s_time.h"
 
 
 std::string STime::mtime(const char* base, const char* name)
@@ -72,7 +37,7 @@ std::string STime::mtime(const char* base, const char* name)
 std::string STime::mtime(const char* path)
 {
     int mt = SPath::mtime(path);   
-    return mt > 0 ? stime::Format(mt, nullptr) : "" ;
+    return mt > 0 ? s_time::Format(mt, nullptr) : "" ;
 }
 
 

@@ -38,7 +38,7 @@
 #include "SProc.hh"
 #include "SArgs.hh"
 #include "STime.hh"
-#include "stime.h"
+#include "s_time.h"
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
@@ -1331,7 +1331,7 @@ std::string Opticks::geocacheScriptString(const char* msg) const
     ss
         << "# " << msg  
         << std::endl 
-        << "# " << stime::Stamp()   
+        << "# " << s_time::Stamp()   
         << std::endl 
         << "export OPTICKS_KEY=" << getKeySpec()
         << std::endl 
@@ -2170,7 +2170,7 @@ int Opticks::getRunStamp() const
 const char* Opticks::getRunDate() const 
 {
     int t = getRunStamp();
-    std::string s = stime::Format(t); 
+    std::string s = s_time::Format(t); 
     return strdup(s.c_str());
 }
 

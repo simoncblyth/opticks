@@ -312,9 +312,12 @@ elif [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
     script=${bin}.py 
 fi 
 
-${IPYTHON:-ipython} --pdb -i $DIR/$script 
-[ $? -ne 0 ] && echo $BASH_SOURCE script $script error && exit 4
-
+if [ -n "$script" ]; then 
+    ${IPYTHON:-ipython} --pdb -i $DIR/$script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE script $script error && exit 4
+else
+    echo $BASH_SOURCE no ana script is defined for arg $arg 
+fi 
 
 
 if [ -f "$ENVOUT" ]; then 
