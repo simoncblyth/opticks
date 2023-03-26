@@ -17,14 +17,19 @@ def eint_(ekey, fallback):
     return int(val)
 
 
-def eintlist_(ekey, fallback):
+def eintlist_(ekey, fallback, delim=","):
     """ 
     empty string envvar yields None
     """
     slis = os.environ.get(ekey,fallback)
     if slis is None or len(slis) == 0: return None
-    slis = slis.split(",")
+    slis = slis.split(delim)
     return list(map(int, filter(None, slis)))
+
+def eslice_(ekey, fallback):
+    ii = eintlist_(ekey, fallback, delim=":")
+    if ii is None: return slice(None)
+    return slice(*ii)
 
 
 def intlist_(s):
@@ -93,14 +98,21 @@ def elookce_(extent="10.", ekey="LOOK"):
     return ce 
 
 
-if __name__ == '__main__':
-
+def test_efloat():
     tmin0 = efloat_("TMIN",0.5)
     tmin1 = efloat_("TMIN","0.5")
     assert tmin0 == tmin1
 
-
+def test_efloatlist():
     eye0 = efloatlist_("EYE", "1,-1,1")
     print("%10.4f %10.4f %10.4f " % tuple(eye0) )
 
+
+
+
+if __name__ == '__main__':
+
+    sli = eslice_("QLIM", "0:10:1" ) 
+    a = np.arange(100)
+    print("a[sli] %s " % str(a[sli]))
     

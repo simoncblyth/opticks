@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold, RFold
 from opticks.ana.p import * 
+from opticks.ana.eget import eslice_
 
 MODE = int(os.environ.get("MODE","2"))
 if MODE > 0:
@@ -16,6 +17,9 @@ if MODE > 0:
 else:
     pass
 pass
+
+QLIM=eslice_("QLIM", "0:10")
+
 
 axes = 0, 2  # X,Z
 H,V = axes 
@@ -37,7 +41,7 @@ class U4SimulateTest(RFold):
         qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
         quo = np.argsort(qn)[::-1]  
 
-        qlim = slice(0,10)
+        qlim = QLIM
         qtab_ = "np.c_[qn,qi,qu][quo][qlim]" 
         qtab = eval(qtab_)
         qtab_ = qtab_.replace("q","%s.q" % symbol)
