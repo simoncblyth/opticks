@@ -121,12 +121,23 @@ bool U4Recorder::Enabled(const spho& label)
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
+
+
+/**
+U4Recorder::U4Recorder
+-----------------------
+
+CAUTION: LSExpDetectorConstruction_Opticks::Setup for opticksMode:2 
+will instanciate SEvt if this is not used 
+
+**/
+
 U4Recorder::U4Recorder()
     :
     eventID(-1),
     transient_fSuspend_track(nullptr),
     rerun_rand(nullptr),
-    evt(SEvt::HighLevelCreate())
+    evt(SEvt::HighLevelCreate())   
 { 
     INSTANCE = this ; 
 }

@@ -523,6 +523,7 @@ NP* SEvt::gatherDomain() const
 
 SEvt* SEvt::Get(){     return INSTANCE ; }
 SEvt* SEvt::Create() { return new SEvt ; }
+SEvt* SEvt::CreateOrReuse() { return INSTANCE ? INSTANCE : Create() ; }
 
 
 /**
@@ -721,7 +722,7 @@ void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR
     std::cerr 
         << "SEvt::setReldir"
         << " reldir " << ( reldir ? reldir : "-" )
-        << " this 0x" << std::hex << this << std::dec
+        << " this " << std::hex << this << std::dec
         << std::endl 
         ;
 } 
@@ -2077,7 +2078,7 @@ std::string SEvt::descSaveDir(const char* dir_) const
        << " reldir " << ( reldir ? reldir : "-" )
        << " with_index " << ( with_index ? "Y" : "N" )
        << " index " << ( with_index ? index : -1 ) 
-       << " this 0x" << std::hex << this << std::dec
+       << " this " << std::hex << this << std::dec
        << std::endl
        ;
     std::string str = ss.str(); 
