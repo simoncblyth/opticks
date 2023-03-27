@@ -123,6 +123,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     static int CompareBytes(const void* a, const void* b, unsigned num_bytes);
 
+    static CSGFoundry* INSTANCE ; 
+    static CSGFoundry* Get() ; 
 
     CSGFoundry();
     void init(); 

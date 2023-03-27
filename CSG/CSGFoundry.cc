@@ -67,6 +67,9 @@ void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname )
     setPrimBoundary(primIdx, bidx); 
 }
 
+CSGFoundry* CSGFoundry::INSTANCE = nullptr ; 
+CSGFoundry* CSGFoundry::Get(){ return INSTANCE ; }  // HMM SGeo base struct already has INSTANCE  
+
 CSGFoundry::CSGFoundry()
     :
     d_prim(nullptr),
@@ -93,6 +96,7 @@ CSGFoundry::CSGFoundry()
     LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
     assert(sim); 
     init(); 
+    INSTANCE = this ; 
 }
 
 /**
