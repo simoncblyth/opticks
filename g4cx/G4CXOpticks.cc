@@ -67,12 +67,15 @@ G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
 }
 
 
-
-
 void G4CXOpticks::Finalize() // static 
 {
     LOG(LEVEL) << "placeholder mimic G4Opticks " ; 
 }
+
+bool G4CXOpticks::NoGPU = false ; 
+void G4CXOpticks::SetNoGPU(){ NoGPU = true ; }  
+bool G4CXOpticks::IsNoGPU(){  return NoGPU ; }  
+
 
 
 G4CXOpticks::G4CXOpticks()
@@ -122,8 +125,8 @@ std::string G4CXOpticks::desc() const
        << " wd " << wd 
        << " gg " << gg
        << " fd " << fd
-       << " cx " << cx
-       << " qs " << qs
+       << " cx " << ( cx ? "Y" : "N" )
+       << " qs " << ( qs ? "Y" : "N" )
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -280,25 +283,46 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
         LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
 
+    LOG(LEVEL) << "[ fd " << fd ; 
+    SEvt* sev = SEvt::Get() ; 
+    if( sev == nullptr )
+    {
+        LOG(LEVEL) << " Calling SEvt::Create " ; 
+        sev = SEvt::Create() ; 
+        sev->setReldir("ALL"); 
+    }
+    else
+    {
+        LOG(LEVEL) << " Using pre-existing SEvt (happens when U4Recorder instanciated it first) " ; 
+    }
+    sev->setGeo((SGeo*)fd);   
+
+
 #ifdef __APPLE__
     LOG(fatal) << " __APPLE__ early exit " ; 
     return ; 
 #endif
-    LOG(LEVEL) << "[ fd " << fd ; 
 
-    LOG(LEVEL) << " [ new SEvt " ; 
-    SEvt* sev = new SEvt ; 
-    LOG(LEVEL) << " ] new SEvt " ; 
-    
-    sev->setReldir("ALL"); 
-    sev->setGeo((SGeo*)fd);   
+    if(NoGPU == false)
+    {
+        LOG(LEVEL) << "[ CSGOptiX::Create " ;  
+        cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
+        LOG(LEVEL) << "] CSGOptiX::Create " ;  
+    }
+    else
+    {
+        LOG(LEVEL) << " skip CSGOptiX::Create as NoGPU has been set " ;  
+    }
 
-    LOG(LEVEL) << "[ CSGOptiX::Create " ;  
-    cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
-    LOG(LEVEL) << "] CSGOptiX::Create " ;  
-    qs = cx->sim ; 
-    LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
+    qs = cx ? cx->sim : nullptr ; 
+   
+    QSim* qsg = QSim::Get()  ;  
 
+    LOG(LEVEL)  
+        << " cx " << ( cx ? "Y" : "N" ) 
+        << " qs " << ( qs ? "Y" : "N" )
+        << " QSim::Get " << ( qsg ? "Y" : "N" ) 
+        ; 
 
     LOG(LEVEL) << "] fd " << fd ; 
 }

@@ -31,15 +31,19 @@ struct G4CX_API G4CXOpticks
     static const U4SensorIdentifier* SensorIdentifier ; 
     static void SetSensorIdentifier( const U4SensorIdentifier* sid ); 
 
-    static G4CXOpticks* INSTANCE ; 
+    static G4CXOpticks* INSTANCE ;
     static G4CXOpticks* Get(); 
     static G4CXOpticks* SetGeometry() ; 
     static G4CXOpticks* SetGeometry(const G4VPhysicalVolume* world) ; 
 
     static constexpr const char* SaveGeometry_KEY = "G4CXOpticks__SaveGeometry_DIR" ; 
     static void SaveGeometry(); 
-
     static void Finalize(); 
+
+    static bool NoGPU ; 
+    static void SetNoGPU() ;  // exercise everything other than CSGOptiX
+    static bool IsNoGPU() ; 
+
 
     SSim*       sim ; 
     const U4Tree*   tr ;
