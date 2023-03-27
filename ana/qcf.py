@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+"""
+qcf.py
+======
+
+
+"""
+import os, logging, numpy as np
+from opticks.ana.nbase import chi2
+log = logging.getLogger(__name__)
+
+class QU(object):
+    def __init__(self, q, symbol="q"):
+
+        expr = "np.c_[n,x,u][o][lim]"
+        label = "uniques in descending count order with first index x"
+
+        u, x, n = np.unique(q, return_index=True, return_counts=True)
+        o = np.argsort(n)[::-1]  
+
+        self.symbol = symbol
+        self.expr = expr 
+        self.label = label
+
+        self.q = q 
+        self.uxno = u,x,n,o
+        self.u = u 
+        self.x = x 
+        self.n = n 
+        self.o = o 
+        self.lim = slice(0,10)
+
+    def _get_tab(self):
+        u,x,n,o = self.uxno
+        expr = self.expr
+        lim = self.lim 
+        return eval(expr)
+
+    tab = property(_get_tab)
+
+    def __repr__(self):
+        lines = []
+        lines.append("%s : %s : %s" % (self.symbol, self.expr, self.label))
+        lines.append(str(self.tab))
+        return "\n".join(lines)
+
+
+class QCF(object):
+    def __init__(self, aq, bq, symbol="qcf"):
+        assert( aq.shape == bq.shape ) 
+
+        aqu = QU(aq, symbol="%s.aqu" % symbol )
+        bqu = QU(bq, symbol="%s.bqu" % symbol ) 
+
+        qu = np.unique(np.concatenate([aqu.u,bqu.u]))       ## unique histories of both A and B in uncontrolled order
+        ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
+
+        for i, q in enumerate(qu):
+            ai_ = np.where(aqu.u == q )[0]           # find indices in the a and b unique lists 
+            bi_ = np.where(bqu.u == q )[0]
+            ai = ai_[0] if len(ai_) == 1 else -1
+            bi = bi_[0] if len(bi_) == 1 else -1
+
+            ab[i,0,0] = ai
+            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1
+            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0
+
+            ab[i,0,1] = bi
+            ab[i,1,1] = bqu.x[bi] if bi > -1 else -1
+            ab[i,2,1] = bqu.n[bi] if bi > -1 else 0
+        pass
+
+        abx = np.max(ab[:,2,:], axis=1 )   # max of aqn, bqn counts 
+        abxo = np.argsort(abx)[::-1]       # descending count order indices
+        abo = ab[abxo]                     # ab ordered  
+        quo = qu[abxo]                     # qu ordered 
+        iq = np.arange(len(qu))
+
+        # more than 10 counts in one, but zero in the other : history dropouts are smoking guns for bugs 
+        bzero = np.where( np.logical_and( abo[:,2,0] > 10, abo[:,2,1] == 0 ) )[0]
+        azero = np.where( np.logical_and( abo[:,2,1] > 10, abo[:,2,0] == 0 ) )[0]
+
+        c2cut = int(os.environ.get("C2CUT","30"))
+        c2,c2n,c2c = chi2( abo[:,2,0], abo[:,2,1], cut=c2cut )
+        c2sum = c2.sum()
+        c2per = c2sum/c2n
+        c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d)" % ( c2sum, int(c2n), c2per, c2cut )
+        c2label = "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut )
+
+
+        self.aq = aq
+        self.bq = bq
+        self.symbol = symbol
+        self.aqu = aqu
+        self.bqu = bqu
+        self.qu = qu
+        self.ab = ab
+        self.abx = abx
+        self.abxo = abxo
+        self.abo = abo
+        self.quo = quo
+        self.iq = iq
+        self.bzero = bzero
+        self.azero = azero
+        self.c2cut = c2cut
+        self.c2 = c2
+        self.c2n = c2n
+        self.c2c = c2c
+        self.c2sum = c2sum
+        self.c2per = c2per
+        self.c2desc = c2desc
+        self.c2label = c2label
+ 
+    def __repr__(self):
+        lines = []
+        lines.append("QCF %s " % self.symbol)
+        lines.append(self.c2label)
+        lines.append(self.c2desc)
+
+        siq = list(map(lambda _:"%2d" % _ , self.iq ))
+        sc2 = list(map(lambda _:"%7.4f" % _, self.c2 ))
+
+        sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), self.abo[:,2,:]))
+        sabo1 = list(map(lambda _:"%6d %6d" % tuple(_), self.abo[:,1,:]))
+
+        pstr_ = lambda _:_.strip().decode("utf-8")
+        _quo = list(map(pstr_, self.quo))
+        mxl = max(list(map(len, _quo)))
+        fmt = "%-" + str(mxl) + "s"
+        _quo = list(map(lambda _:fmt % _, _quo ))
+        _quo = np.array( _quo )
+
+        #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]]"
+        abexpr = "np.c_[siq,_quo,siq,sabo2,sc2,sabo1]"
+        subs = "[:25] [bzero] [azero]".split()
+        descs = ["A-B history frequency chi2 comparison", "bzero: A histories not in B", "azero: B histories not in A" ]
+
+        bzero = self.bzero
+        azero = self.azero
+
+        for i in range(len(subs)):
+            expr = "%s%s" % (abexpr, subs[i])
+            lines.append("\n%s  ## %s " % (expr, descs[i]) )
+            lines.append(str(eval(expr)))
+        pass
+        return "\n".join(lines)
+
+class QCFZero(object):
+    """
+    Presenting dropout histories in comparison : smoking gun for bugs 
+    """
+    def __init__(self, qcf, symbol="qcf0"):
+        self.qcf = qcf
+        self.bzero_viz = "u4t ; N=0 APID=%d AOPT=idx ./U4SimtraceTest.sh ana"
+        self.azero_viz = "u4t ; N=1 BPID=%d BOPT=idx ./U4SimtraceTest.sh ana"
+
+    def __repr__(self):
+        qcf = self.qcf
+        quo = qcf.quo
+        aq = qcf.aq
+        bq = qcf.bq  
+        bzero = qcf.bzero
+        azero = qcf.azero
+
+        pstr_ = lambda _:_.strip().decode("utf-8")
+
+        lines = []
+        lim = slice(0,2)
+        lines.append("\nbzero : %s : A HIST NOT IN B" % (str(bzero)))
+        for _ in bzero:
+            idxs = np.where( quo[_] == aq[:,0] )[0]
+            lines.append("bzero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( pstr_(quo[_]), len(idxs), str(idxs[lim])) )
+            for idx in idxs[lim]:
+                lines.append(self.bzero_viz % idx)
+            pass
+            if len(idxs) > 0: lines.append("")
+        pass
+
+        lines.append("\nazero : %s : B HIST NOT IN A" % (str(azero)))
+        for _ in azero:
+            idxs = np.where( quo[_] == bq[:,0] )[0]
+            lines.append("azero quo[_]:%s len(idxs):%d idxs[lim]:%s " % ( pstr_(quo[_]), len(idxs), str(idxs[lim])) )
+            for idx in idxs[lim]:
+                lines.append(self.azero_viz % idx)
+            pass
+            if len(idxs) > 0: lines.append("")
+        pass
+        return "\n".join(lines)
+
+
+def test_QU():
+    aq = np.array( ["red", "green", "blue", "blue" ], dtype="|S10" )
+    aqu = QU(aq, symbol="aqu")
+    print(aqu.tab)
+    print(aqu)
+
+def test_QCF():
+    aq = np.array( ["red", "green", "blue", "blue" ], dtype="|S10" )
+    bq = np.array( ["red", "red", "green", "blue"  ], dtype="|S10" )
+
+    qcf = QCF(aq, bq, symbol="qcf")
+    print(qcf.ab)
+    print(qcf)
+
+
+
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
+    aq = np.array( ["red", "green", "blue", "cyan" ], dtype="|S10" )
+    bq = np.array( ["red", "red", "green", "blue"  ], dtype="|S10" )
+
+    qcf = QCF(aq, bq, symbol="qcf")
+    print(qcf.ab)
+    print(qcf)
+
+    qcf0 = QCFZero(qcf, symbol="qcf0")
+    print(qcf0)
+
+
+
+
+
+

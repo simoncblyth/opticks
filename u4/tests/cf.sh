@@ -1,6 +1,7 @@
 #!/bin/bash -l 
 
-defarg="run_cf"
+#defarg="run_cf"
+defarg="cf"
 arg=${1:-$defarg}
 
 if [ "${arg/run}" != "$arg" ]; then 

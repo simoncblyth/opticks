@@ -77,8 +77,7 @@ export Local_DsG4Scintillation_DISABLE=1
 #export G4OpBoundaryProcess_DISABLE=1
 
 export U4App__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
-
-export BeamOn=${BeamOn:-10}
+export BeamOn=${BeamOn:-1}
 export U4Recorder__PIDX_ENABLED=1 
 export EVT=${EVT:-000}       # used for FOLD envvars
 
@@ -90,10 +89,10 @@ logN=${bin}_$VERSION.log
 
 #num_ph=1
 #num_ph=10
-num_ph=100
+#num_ph=100
 #num_ph=1000      # 1k
 #num_ph=10000    # 10k
-#num_ph=50000
+num_ph=50000
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
