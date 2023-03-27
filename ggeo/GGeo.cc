@@ -29,6 +29,7 @@
 #include "SStr.hh"
 #include "SLogger.hh"
 #include "SSim.hh"
+#include "SPath.hh"
 #include "sframe.h"
 #include "stree.h"
 #include "SProp.hh"
