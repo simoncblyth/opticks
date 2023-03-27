@@ -4,22 +4,35 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <vector>
 
 struct spath
 {
-    static const char* Resolve(const char* spec); 
+    static std::string _ResolvePath(const char* spec); 
+    static const char* ResolvePath(const char* spec); 
 
     template<typename ... Args>
-    static std::string Join_( Args ... args_  ); 
+    static std::string _Resolve(Args ... args ); 
+
+    template<typename ... Args>
+    static const char* Resolve(Args ... args ); 
+
+
+    template<typename ... Args>
+    static std::string _Join( Args ... args_  ); 
 
     template<typename ... Args>
     static const char* Join( Args ... args ); 
+
+    template<typename ... Args>
+    static bool Exists( Args ... args ); 
+
 };
 
 /**
-spath::Resolve
-----------------
+spath::_ResolvePath
+---------------------
 ::
 
     $TOKEN/remainder/path/name.npy   (tok_plus) 
@@ -29,7 +42,7 @@ If the TOKEN envvar is not set then nullptr is returned.
 
 **/
 
-inline const char* spath::Resolve(const char* spec_)
+inline std::string spath::_ResolvePath(const char* spec_)
 {
     if(spec_ == nullptr) return nullptr ; 
     char* spec = strdup(spec_); 
@@ -50,14 +63,47 @@ inline const char* spath::Resolve(const char* spec_)
     {
         ss << spec ; 
     }
-    std::string s = ss.str(); 
-    const char* path = s.c_str(); 
-    return strdup(path) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+inline const char* spath::ResolvePath(const char* spec_)
+{
+    std::string path = _ResolvePath(spec_) ;  
+    return strdup(path.c_str()) ; 
 }
 
 
 template<typename ... Args>
-inline std::string spath::Join_( Args ... args_  )  // static
+inline std::string spath::_Resolve( Args ... args  )  // static
+{
+    std::string spec = _Join(std::forward<Args>(args)... ); 
+    return _ResolvePath(spec.c_str()); 
+}
+
+template std::string spath::_Resolve( const char* ); 
+template std::string spath::_Resolve( const char*, const char* ); 
+template std::string spath::_Resolve( const char*, const char*, const char* ); 
+template std::string spath::_Resolve( const char*, const char*, const char*, const char* ); 
+
+
+template<typename ... Args>
+inline const char* spath::Resolve( Args ... args  )  // static
+{
+    std::string spec = _Join(std::forward<Args>(args)... ); 
+    std::string path = _ResolvePath(spec.c_str()); 
+    return strdup(path.c_str()) ; 
+}
+
+template const char* spath::Resolve( const char* ); 
+template const char* spath::Resolve( const char*, const char* ); 
+template const char* spath::Resolve( const char*, const char*, const char* ); 
+template const char* spath::Resolve( const char*, const char*, const char*, const char* ); 
+
+
+
+
+template<typename ... Args>
+inline std::string spath::_Join( Args ... args_  )  // static
 {
     std::vector<std::string> args = {args_...};
     std::vector<std::string> elem ; 
@@ -79,19 +125,36 @@ inline std::string spath::Join_( Args ... args_  )  // static
     return s ; 
 }   
 
-template std::string spath::Join_( const char*, const char* ); 
-template std::string spath::Join_( const char*, const char*, const char* ); 
-template std::string spath::Join_( const char*, const char*, const char*, const char* ); 
+template std::string spath::_Join( const char* ); 
+template std::string spath::_Join( const char*, const char* ); 
+template std::string spath::_Join( const char*, const char*, const char* ); 
+template std::string spath::_Join( const char*, const char*, const char*, const char* ); 
 
 template<typename ... Args>
-const char* spath::Join( Args ... args )  // static
+inline const char* spath::Join( Args ... args )  // static
 {
-    std::string s = Join_(args...)  ; 
+    std::string s = _Join(std::forward<Args>(args)...)  ; 
     return strdup(s.c_str()) ; 
 }   
 
+template const char* spath::Join( const char* ); 
 template const char* spath::Join( const char*, const char* ); 
 template const char* spath::Join( const char*, const char*, const char* ); 
 template const char* spath::Join( const char*, const char*, const char*, const char* ); 
+
+
+
+template<typename ... Args>
+inline bool spath::Exists(Args ... args)
+{
+    std::string path = _Resolve(std::forward<Args>(args)...) ; 
+    std::ifstream fp(path.c_str(), std::ios::in|std::ios::binary);
+    return fp.fail() ? false : true ; 
+}
+
+template bool spath::Exists( const char* ); 
+template bool spath::Exists( const char*, const char* ); 
+template bool spath::Exists( const char*, const char*, const char* ); 
+template bool spath::Exists( const char*, const char*, const char*, const char* ); 
 
 
