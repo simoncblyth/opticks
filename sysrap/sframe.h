@@ -36,11 +36,10 @@ TODO: should be using Tran<double> for transforming , might as well
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
-
+#include "spath.h"
 #include "sphoton.h"
 
 #include "NP.hh"
-#include "SPath.hh"
 
 
 struct sframe
@@ -343,8 +342,8 @@ inline void sframe::load(const char* dir, const char* name)
 }
 inline void sframe::load_(const char* path_)   // eg $A_FOLD/sframe.npy
 {
-    const char* path = SPath::Resolve(path_, NOOP);
-    bool exists = SPath::Exists(path) ;
+    const char* path = spath::Resolve(path_);
+    bool exists = spath::Exists(path) ;
     if(!exists) 
         std::cerr 
             << "sframe::load_ ERROR : non-existing" 
@@ -358,6 +357,8 @@ inline void sframe::load_(const char* path_)   // eg $A_FOLD/sframe.npy
     if( exists )
     {
         const NP* a = NP::Load(path);
+        // HMM: NP::Load now does smth similar to Resolve
+
         load(a); 
     }
 }

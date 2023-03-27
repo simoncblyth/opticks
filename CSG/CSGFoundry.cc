@@ -2905,6 +2905,8 @@ MOI lookups Meshidx-meshOrdinal-Instanceidx, examples of moi strings::
    0:0
    0
 
+The first colon delimited field can be lv index or solid name.
+
 **/
 void CSGFoundry::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
 {

@@ -137,6 +137,9 @@ Hence the ce included with the frame is the one from the full compound CSGSolid.
   and use them from a future "CSGFoundry::CreateFromSTree" to add 
   paired double precision transforms, avoiding Invert
 
+
+TODO: would be better to have sframe access from stree.h 
+
 **/
 
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
