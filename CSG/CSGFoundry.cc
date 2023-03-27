@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "SSys.hh"
+#include "ssys.h"
 #include "SSim.hh"
 #include "SProc.hh"
 #include "SStr.hh"
@@ -147,6 +148,12 @@ CMDLINE
 }
 
 
+std::string CSGFoundry::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "CSGFoundry::brief " << ( loaddir ? loaddir : "-" ) ; 
+    return ss.str(); 
+}
 std::string CSGFoundry::desc() const 
 {
     std::stringstream ss ; 
@@ -2961,7 +2968,7 @@ Grab these from remote with::
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi_or_iidx = SSys::getenvvar("MOI",sframe::DEFAULT_FRS);
+    const char* moi_or_iidx = SSys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
     return getFrame(moi_or_iidx); 
 }
 sframe CSGFoundry::getFrame(const char* frs) const 
@@ -3006,6 +3013,7 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 int CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
+
     int rc = 0 ; 
     bool looks_like_moi = SStr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
     if(looks_like_moi)
@@ -3050,6 +3058,31 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
 }
 
 
+sframe CSGFoundry::getFrameE() const 
+{
+    sframe fr ; 
+
+    if(ssys::getenvbool("INST"))
+    {
+        int INST = ssys::getenvint("INST", 0); 
+        LOG(LEVEL) << " INST " << INST ;  
+        getFrame(fr, INST ) ;  
+    }
+    else if(ssys::getenvbool("MOI"))
+    {
+        const char* MOI = ssys::getenvvar("MOI", nullptr) ; 
+        LOG(LEVEL) << " MOI " << MOI ;  
+        fr = getFrame() ; 
+    }
+    else
+    {
+        const char* ipf_ = SEventConfig::InputPhotonFrame();  // OPTICKS_INPUT_PHOTON_FRAME
+        const char* ipf = ipf_ ? ipf_ : "0" ; 
+        LOG(LEVEL) << " ipf " << ipf ;  
+        fr = getFrame(ipf); 
+    }
+    return fr ; 
+}
 
 
 

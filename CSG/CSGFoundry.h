@@ -136,6 +136,7 @@ struct CSG_API CSGFoundry : public SGeo
     void setOrigin(const CSGFoundry* origin); 
     void setElv(const SBitSet* elv); 
 
+    std::string brief() const ;
     std::string desc() const ;
     std::string descBase() const ;
     std::string descComp() const ;
@@ -337,6 +338,8 @@ struct CSG_API CSGFoundry : public SGeo
     int getFrame(sframe& fr, const char* frs ) const ; 
     int getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
     int getFrame(sframe& fr, int ins_idx ) const ; 
+
+    sframe getFrameE() const ; 
 
     // target  
     int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;

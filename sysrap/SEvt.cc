@@ -173,6 +173,8 @@ const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$
 SEvt::LoadInputPhoton
 ----------------------
 
+This is invoked by SEvt::initInputPhoton which is invoked by SEvt::init at instanciation.
+
 Resolving the input string to a path is done in one of two ways:
 
 1. if the string starts with a letter A-Za-z eg "inphoton.npy" or "RandomSpherical10.npy" 
@@ -251,10 +253,29 @@ void SEvt::setInputPhoton(NP* p)
     int numphoton = input_photon->shape[0] ; 
     assert( numphoton > 0 ); 
 }
+
+/**
+SEvt::getInputPhoton_
+----------------------
+
+This variant always provides the untransformed input photons.
+That will be nullptr unless OPTICKS_INPUT_PHOTON is defined. 
+
+**/
  
 NP* SEvt::getInputPhoton_() const { return input_photon ; }
-NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
 bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
+
+
+/**
+SEvt::getInputPhoton
+---------------------
+
+Returns the transformed input photon if present. 
+For the tranformed photons to  be present it is necessary to have called SEvt::setFrame
+
+**/
+NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
 
 
 /**
