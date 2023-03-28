@@ -206,6 +206,7 @@ unsigned SEventConfig::CompMaskAuto()
         if(MaxGenstep()>0)   mask |= SCOMP_GENSTEP ; 
         if(MaxPhoton()>0)
         {
+            mask |= SCOMP_INPHOTON ; 
             mask |= SCOMP_PHOTON ;  
             mask |= SCOMP_HIT ; 
             //mask |= SCOMP_SEED ;   // only needed for deep debugging 
