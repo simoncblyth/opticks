@@ -3063,6 +3063,20 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
 CSGFoundry::getFrameE
 -----------------------
 
+The frame and corresponding transform used can be controlled by several envvars, 
+see CSGFoundry::getFrameE. Possible envvars include:
+
++------------------------------+----------------------------+
+| envvar                       | Examples                   |
++==============================+============================+
+| INST                         |                            |
++------------------------------+----------------------------+
+| MOI                          | Hama:0:1000 NNVT:0:1000    |          
++------------------------------+----------------------------+
+| OPTICKS_INPUT_PHOTON_FRAME   |                            |
++------------------------------+----------------------------+
+
+
 The sframe::set_ekv records into frame metadata the envvar key and value 
 that picked the frame. 
 

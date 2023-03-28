@@ -26,7 +26,7 @@ loglevels(){
 env | grep =INFO
 
 
-export OPTICKS_INPUT_PHOTON=DownXZ1000_f8.npy
+#export OPTICKS_INPUT_PHOTON=DownXZ1000_f8.npy
 #export MOI=Hama:0:1000
 
 bin=G4CXOpticks_setGeometry_Test

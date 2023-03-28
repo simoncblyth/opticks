@@ -274,6 +274,21 @@ SEvt::getInputPhoton
 
 Returns the transformed input photon if present. 
 For the tranformed photons to  be present it is necessary to have called SEvt::setFrame
+That is done from on high by G4CXOpticks::setupFrame which gets invoked by G4CXOpticks::setGeometry
+
+The frame and corresponding transform used can be controlled by several envvars, 
+see CSGFoundry::getFrameE. Possible envvars include:
+
++------------------------------+----------------------------+
+| envvar                       | Examples                   |
++==============================+============================+
+| INST                         |                            |
++------------------------------+----------------------------+
+| MOI                          | Hama:0:1000 NNVT:0:1000    |          
++------------------------------+----------------------------+
+| OPTICKS_INPUT_PHOTON_FRAME   |                            |
++------------------------------+----------------------------+
+
 
 **/
 NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
