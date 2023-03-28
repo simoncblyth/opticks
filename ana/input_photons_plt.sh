@@ -17,9 +17,16 @@ EOU
 #stem=RandomSpherical100
 #stem=RandomDisc100
 #stem=UpXZ1000
-stem=DownXZ1000
+#stem=DownXZ1000
+stem=RainXZ1000
 
-path=${stem}_f4.npy
+#sufx=_f4
+sufx=_f8
+
+path=${stem}${sufx}.npy
+
+mode=3
+export MODE=${MODE:-$mode}
 
 export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$path}
 

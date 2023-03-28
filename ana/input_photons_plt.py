@@ -10,7 +10,11 @@ from opticks.ana.pvplt import *
 if __name__ == '__main__':
 
     path = InputPhotons.BasePath()  # sensitive to OPTICKS_INPUT_PHOTON eg RandomSpherical100_f4.npy
+
     p = np.load(path) 
+
+    print("path:%s p:%s" % (path, str(p.shape)) )
+
 
     pl = pvplt_plotter(label=path)
 

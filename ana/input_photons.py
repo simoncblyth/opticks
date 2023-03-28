@@ -7,7 +7,7 @@ import argparse, logging, os, json
 log = logging.getLogger(__name__)
 import numpy as np
 np.set_printoptions(linewidth=200, suppress=True, precision=3)
-from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear
+from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear, sample_linspace
 
 def vnorm(v):
     norm = np.sqrt((v*v).sum(axis=1))
@@ -243,8 +243,15 @@ class InputPhotons(object):
 
         """
         assert len(x0lim) == 2 
+        if n < 0:
+            n = -n
+            xx = sample_linspace(n, x0lim[0], x0lim[1] )
+        else:
+            xx = sample_linear(n, x0lim[0], x0lim[1] )
+        pass
+
         pos = np.zeros((n,3), dtype=cls.DTYPE )
-        pos[:,0] = sample_linear(n, x0lim[0], x0lim[1] )
+        pos[:,0] = xx
         pos[:,1] = y0
         pos[:,2] = z0
 
@@ -321,8 +328,10 @@ class InputPhotons(object):
     RD = "RandomDisc" 
     UXZ = "UpXZ"
     DXZ = "DownXZ"
+    RAINXZ = "RainXZ" 
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
+    NAMES += [RAINXZ+"100", RAINXZ+"1000" ]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -340,7 +349,7 @@ class InputPhotons(object):
             z0 = None
             xl = None
             if name.startswith(self.UXZ): 
-                num = int(name[len(self.UXZ):])
+                num = int(name[len(self.UXZ):])  # extract num following prefix
                 mom = self.Z 
                 z0 = -99.
                 xl = 49. 
@@ -352,6 +361,12 @@ class InputPhotons(object):
             else:
                 pass
             pass
+            p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
+        elif name.startswith(self.RAINXZ):
+            num = -int(name[len(self.RAINXZ):])  # extract num following prefix
+            mom = -self.Z
+            z0 = 1000. 
+            xl = 250. 
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])

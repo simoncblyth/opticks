@@ -19,6 +19,8 @@ def sample_linear(n, lo=-1., hi=1.):
     ll = mi + uu*ex      
     return ll 
 
+def sample_linspace(n, lo=-1., hi=1. ):
+    return np.linspace(lo, hi, n ) 
 
 def sample_trig(n):
     """
