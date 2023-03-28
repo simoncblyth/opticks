@@ -31,6 +31,7 @@ TODO: should be using Tran<double> for transforming , might as well
 #include <vector>
 #include <cstring>
 #include <string>
+#include <cstdlib>
 
 #include "scuda.h"
 #include "squad.h"
@@ -53,7 +54,6 @@ struct sframe
     static sframe Load_(const char* path ); 
 
 
-
     float4 ce = {} ;   // 0
     quad   q1 = {} ; 
     quad   q2 = {} ; 
@@ -65,10 +65,17 @@ struct sframe
     quad4  aux = {} ;  // 3
 
 
+    // CAUTION : ABOVE HEAD PERSISTED BY MEMCPY INTO ARRAY BELOW TAIL ADDED AS METADATA
+
     // on the edge, the above are memcpy in/out by load/save
     const char* frs = nullptr ; 
     Tran<double>* tr_m2w = nullptr ;
     Tran<double>* tr_w2m = nullptr ;
+
+    const char* ek = nullptr ; 
+    const char* ev = nullptr ; 
+    const char* ekvid = nullptr ; 
+
 
     // TODO: Tran is already (t,v,i) triplet : so can have just the one Tran 
 
@@ -88,6 +95,10 @@ struct sframe
     int num_photon() const ; 
     float gridscale() const ; 
 
+    void set_ekv( const char* k ) ;  
+    void set_ekv( const char* k, const char* v ) ;  
+    const char* form_ekvid() const ; 
+    const char* getFrameId() const ; 
 
     const char* get_frs() const ; // returns nullptr when frs is default  
     bool is_frs_default() const ; 
@@ -117,7 +128,7 @@ struct sframe
     const float* cdata() const ; 
 
     void write( float* dst, unsigned num_values ) const ;
-    NP* make_array() const ; 
+    NP* getFrameArray() const ; 
     void save(const char* dir, const char* name=NAME) const ; 
     void save_extras(const char* dir) ;  // not const as may *prepare*
 
@@ -154,6 +165,8 @@ inline void sframe::zero()
     frs = nullptr ; 
     tr_m2w = nullptr ;
     tr_w2m = nullptr ;
+    ek = nullptr ; 
+    ev = nullptr ; 
 }
 
 inline bool sframe::is_zero() const 
@@ -167,6 +180,10 @@ inline std::string sframe::desc() const
     ss << "sframe::desc"
        << " inst " << inst() 
        << " frs " << ( frs ? frs : "-" ) << std::endl 
+       << " ekvid " << ( ekvid ? ekvid : "-" )  
+       << " ek " << ( ek ? ek : "-" )
+       << " ev " << ( ev ? ev : "-" )
+       << std::endl 
        << " ce  " << ce 
        << " is_zero " << is_zero() 
        << std::endl 
@@ -245,6 +262,37 @@ inline int sframe::num_photon() const { return q2.i.z ; }
 inline float sframe::gridscale() const { return q2.f.w ; }
 
 
+inline void sframe::set_ekv( const char* k ) 
+{
+    char* v = getenv(k) ; 
+    set_ekv(k, v); 
+}
+
+inline void sframe::set_ekv( const char* k, const char* v ) 
+{
+    ek = k ? strdup(k) : nullptr ; 
+    ev = v ? strdup(v) : nullptr ; 
+    ekvid = form_ekvid(); 
+}
+
+inline const char* sframe::form_ekvid() const 
+{
+    std::stringstream ss ; 
+    ss << "sframe_" 
+       << ( ek ? ek : "ek" ) 
+       << "_" 
+       ; 
+    for(int i=0 ; i < int(ev?strlen(ev):0) ; i++) ss << ( ev[i] == ':' ? '_' : ev[i] ) ; 
+    std::string str = ss.str(); 
+    return strdup(str.c_str()); 
+}
+inline const char* sframe::getFrameId() const 
+{
+    return ekvid ; 
+}
+
+
+
 inline const char* sframe::get_frs() const
 {
     return is_frs_default() ? nullptr : frs ; 
@@ -314,17 +362,22 @@ inline void sframe::read( const float* src, unsigned num_values )
     memcpy( dst_bytes, src_bytes, num_bytes );
 }    
 
-inline NP* sframe::make_array() const 
+inline NP* sframe::getFrameArray() const 
 {
     NP* a = NP::Make<float>(NUM_4x4, 4, 4) ; 
     write( a->values<float>(), NUM_4x4*4*4 ) ; 
+
+    a->set_meta<std::string>("creator", "sframe::getFrameArray"); 
+    if(frs) a->set_meta<std::string>("frs", frs); 
+    if(ek) a->set_meta<std::string>("ek", ek); 
+    if(ev) a->set_meta<std::string>("ev", ev); 
+    if(ekvid) a->set_meta<std::string>("ekvid", ekvid); 
+
     return a ; 
 }
 inline void sframe::save(const char* dir, const char* name) const
 {
-    NP* a = make_array(); 
-    a->set_meta<std::string>("creator", "sframe::save"); 
-    if(frs) a->set_meta<std::string>("frs", frs); 
+    NP* a = getFrameArray(); 
     a->save(dir, name); 
 }
 inline void sframe::save_extras(const char* dir)

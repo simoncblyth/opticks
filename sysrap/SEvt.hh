@@ -228,6 +228,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setGeo(const SGeo* cf); 
     void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
 
+    const char* getFrameId() const ; 
+    const NP*   getFrameArray() const ; 
+    static const char* GetFrameId() ;
+    static const NP*   GetFrameArray() ;
+
 
     static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
 

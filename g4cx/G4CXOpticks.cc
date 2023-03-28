@@ -72,8 +72,12 @@ void G4CXOpticks::Finalize() // static
     LOG(LEVEL) << "placeholder mimic G4Opticks " ; 
 }
 
+#ifdef __APPLE__
+bool G4CXOpticks::NoGPU = true ; 
+#else
 bool G4CXOpticks::NoGPU = false ; 
-void G4CXOpticks::SetNoGPU(){ NoGPU = true ; }  
+#endif
+void G4CXOpticks::SetNoGPU(bool no_gpu){ NoGPU = no_gpu ; }  
 bool G4CXOpticks::IsNoGPU(){  return NoGPU ; }  
 
 
@@ -296,12 +300,6 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     }
     sev->setGeo((SGeo*)fd);   
 
-
-#ifdef __APPLE__
-    LOG(fatal) << " __APPLE__ early exit " ; 
-    return ; 
-#endif
-
     if(NoGPU == false)
     {
         LOG(LEVEL) << "[ CSGOptiX::Create " ;  
@@ -387,10 +385,9 @@ const bool G4CXOpticks::simulate_saveEvent = SSys::getenvbool("G4CXOpticks__simu
 
 void G4CXOpticks::simulate()
 {
-#ifdef __APPLE__
-     LOG(fatal) << " APPLE skip " ; 
-     return ; 
-#endif
+    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
+    if(NoGPU) return ; 
+
     LOG(LEVEL) << "[" ; 
     LOG(LEVEL) << desc() ; 
     assert(cx); 
@@ -446,10 +443,9 @@ void G4CXOpticks::simulate()
 
 void G4CXOpticks::simtrace()
 {
-#ifdef __APPLE__
-     LOG(fatal) << " APPLE skip " ; 
-     return ; 
-#endif
+    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
+    if(NoGPU) return ; 
+
     LOG(LEVEL) << "[" ; 
     assert(cx); 
     assert(qs); 
@@ -463,10 +459,9 @@ void G4CXOpticks::simtrace()
 
 void G4CXOpticks::render()
 {
-#ifdef __APPLE__
-     LOG(fatal) << " APPLE skip " ; 
-     return ; 
-#endif
+    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
+    if(NoGPU) return ; 
+
     LOG(LEVEL) << "[" ; 
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
@@ -476,10 +471,6 @@ void G4CXOpticks::render()
 
 void G4CXOpticks::saveEvent() const 
 {
-#ifdef __APPLE__
-     LOG(fatal) << " APPLE skip " ; 
-     return ; 
-#endif
     LOG(LEVEL) << "[" ; 
     SEvt* sev = SEvt::Get(); 
     if(sev == nullptr) return ; 

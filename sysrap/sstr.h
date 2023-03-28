@@ -25,6 +25,7 @@ struct sstr
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
     static std::string RemoveSpaces(const char* s);  
+    static std::string Replace(const char* s, char q, char r); 
 
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
@@ -116,6 +117,15 @@ inline std::string sstr::RemoveSpaces(const char* s) // static
     std::string str = ss.str(); 
     return str ; 
 }
+inline std::string sstr::Replace(const char* s, char q, char r) // static
+{
+    std::stringstream ss ;  
+    for(int i=0 ; i < int(strlen(s)) ; i++) ss << ( s[i] == q ? r : s[i] ) ;   
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 
 inline void sstr::PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines)

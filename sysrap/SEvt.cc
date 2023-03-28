@@ -415,6 +415,14 @@ void SEvt::setFrame(const sframe& fr )
     }   
 }
 
+const char* SEvt::getFrameId()    const { return frame.getFrameId() ; }
+const NP*   SEvt::getFrameArray() const { return frame.getFrameArray() ; }
+
+const char* SEvt::GetFrameId(){    return INSTANCE ? INSTANCE->getFrameId() : nullptr ; }
+const NP*   SEvt::GetFrameArray(){ return INSTANCE ? INSTANCE->getFrameArray() : nullptr ; } 
+
+
+
 
 /**
 SEvt::setFrame_HostsideSimtrace

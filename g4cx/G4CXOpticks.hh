@@ -41,7 +41,7 @@ struct G4CX_API G4CXOpticks
     static void Finalize(); 
 
     static bool NoGPU ; 
-    static void SetNoGPU() ;  // exercise everything other than CSGOptiX
+    static void SetNoGPU(bool no_gpu=true) ; // exercise everything other than CSGOptiX
     static bool IsNoGPU() ; 
 
 

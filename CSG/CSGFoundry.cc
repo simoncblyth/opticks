@@ -3030,7 +3030,8 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
 
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
-    LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
+    // LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
+
     LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
     return rc ; 
 }
@@ -3058,6 +3059,15 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
 }
 
 
+/**
+CSGFoundry::getFrameE
+-----------------------
+
+The sframe::set_ekv records into frame metadata the envvar key and value 
+that picked the frame. 
+
+**/
+
 sframe CSGFoundry::getFrameE() const 
 {
     sframe fr ; 
@@ -3067,12 +3077,15 @@ sframe CSGFoundry::getFrameE() const
         int INST = ssys::getenvint("INST", 0); 
         LOG(LEVEL) << " INST " << INST ;  
         getFrame(fr, INST ) ;  
+
+        fr.set_ekv("INST"); 
     }
     else if(ssys::getenvbool("MOI"))
     {
         const char* MOI = ssys::getenvvar("MOI", nullptr) ; 
         LOG(LEVEL) << " MOI " << MOI ;  
         fr = getFrame() ; 
+        fr.set_ekv("MOI"); 
     }
     else
     {
@@ -3080,6 +3093,8 @@ sframe CSGFoundry::getFrameE() const
         const char* ipf = ipf_ ? ipf_ : "0" ; 
         LOG(LEVEL) << " ipf " << ipf ;  
         fr = getFrame(ipf); 
+
+        fr.set_ekv(SEventConfig::kInputPhotonFrame, ipf ); 
     }
     return fr ; 
 }

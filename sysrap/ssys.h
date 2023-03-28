@@ -14,10 +14,14 @@ ssys.h
 #include <vector>
 #include <map>
 
+
 struct ssys
 {
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);      
     static const char* getenvvar(const char* ekey, const char* fallback); 
+    static const char* getenvvar(const char* ekey, const char* fallback, char q, char r ); 
+
+
     static int getenvint(const char* ekey, int fallback);  
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
     static bool     getenvbool(const char* ekey);  
@@ -83,6 +87,17 @@ inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
     char* val = getenv(ekey);
     return val ? val : fallback ; 
 }
+
+inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char q, char r)
+{
+     const char* v = getenvvar(ekey, fallback) ; 
+     char* vv = v ? strdup(v) : nullptr  ; 
+     for(int i=0 ; i < int(vv ? strlen(vv) : 0) ; i++) if(vv[i] == q ) vv[i] = r ;   
+     return vv ; 
+}
+
+
+
 
 inline int ssys::getenvint(const char* ekey, int fallback)
 {
