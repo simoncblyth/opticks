@@ -8,6 +8,7 @@ set(TEST_SOURCES
    G4CXSimulateTest.cc
    G4CXSimtraceTest.cc
    G4CXOpticks_setGeometry_Test.cc
+   G4CXOpticks_SetGeometry_GetInputPhoton_Test.cc
 )
 
 

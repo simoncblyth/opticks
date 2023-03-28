@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-G4CXOpticks_setGeometry_Test.sh
-===================================
+G4CXOpticks_SetGeometry_GetInputPhoton_Test.sh
+===============================================
 
 Test of geometry conversions in isolation. 
 
@@ -21,21 +21,27 @@ loglevels(){
    export CSGFoundry=INFO
    export GSurfaceLib=INFO
 }
-loglevels
+#loglevels
 
 env | grep =INFO
 
 
-bin=G4CXOpticks_setGeometry_Test
+export OPTICKS_INPUT_PHOTON=DownXZ1000_f8.npy
+#export MOI=Hama:0:1000
+
+bin=G4CXOpticks_SetGeometry_GetInputPhoton_Test
 
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
-defarg=run
+defarg=run_ana
 arg=${1:-$defarg}
 
 if [ "${arg/run}" != "$arg" ]; then 
+
     $bin
+    MOI=Hama:0:1000 $bin
+    MOI=NNVT:0:1000 $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
