@@ -94,10 +94,6 @@ G4CXOpticks::G4CXOpticks()
 
 void G4CXOpticks::init()
 {
-    // SEventConfig::Initialize();     
-    // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
-    // DONE: moved SEventConfig::Initialize to SEvt::SEvt for better "locus", hence avoiding repetition 
-
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
@@ -106,7 +102,6 @@ G4CXOpticks::~G4CXOpticks()
 {
     schrono::TP t1 = schrono::stamp(); 
     double dt = schrono::duration(t0, t1 );
-    //LOG(LEVEL) << "lifetime (s) " << std::scientific << dt << " s " ; 
     LOG(LEVEL) << "lifetime " << std::setw(10) << std::fixed << std::setprecision(3) << dt << " s " ; 
 }
 
@@ -265,14 +260,18 @@ Q: is there a more general place for SEvt hookup ?
 A: SSim could hold the SEvt together with stree ?
 
 But SEvt feels like it should be separate, 
-as the SSim focus is initialization and SEvt focis is post-init.  
+as the SSim focus is initialization and SEvt focus is post-init.  
 
 **/
 
-
 const char* G4CXOpticks::setGeometry_saveGeometry = SSys::getenvvar("G4CXOpticks__setGeometry_saveGeometry") ;
-
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
+{
+    setGeometry_(fd_); 
+    setupFrame();    // EXPT: MOVED HERE TO INITIALIZATION
+}
+
+void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 {
     fd = fd_ ; 
 
@@ -328,6 +327,44 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 }
 
 
+
+
+/**
+G4CXOpticks::setupFrame
+-------------------------
+
+The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME 
+it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+
+Called from G4CXOpticks::simulate and G4CXOpticks::simtrace
+Q: why not G4CXOpticks::render too ?
+
+Q: Can this setup be moved to initialization ? ARE TRYING TO DO THAT NOW
+A: for simulate where the frame is used for input photons 
+   that would make sense, but changing frame from render to render
+   would be useful 
+
+Q: why does cx need the frame ?
+A: the rendering viewpoint or simtrace grid is based on the frame center, extent and transforms 
+
+TODO: see if cx could consult the SEvt for the frame ?
+
+**/
+
+void G4CXOpticks::setupFrame()
+{
+    SEvt* sev = SEvt::Get();  
+    assert(sev); 
+
+    sframe fr = fd->getFrameE() ; 
+    LOG(LEVEL) << fr ; 
+
+    sev->setFrame(fr); 
+    if(cx) cx->setFrame(fr);  
+}
+
+
+
 /**
 G4CXOpticks::simulate
 ------------------------
@@ -340,15 +377,12 @@ Note that the SEvt component arrays will overrite themselves
 if the SEvt index is not incremented with "SEvt::SetIndex" 
 for each call to G4CXOpticks::simulate. 
 
-
 HMM: note that all of G4CXOpticks::simulate could be down in an SSim::simulate, 
       just needs protocol for QSim::simulate call 
 TODO: compare with B side to see if that makes sense when viewed from A and B directions 
 
-
 **/
 
-//const bool G4CXOpticks::simulate_saveEvent = true ;
 const bool G4CXOpticks::simulate_saveEvent = SSys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
 void G4CXOpticks::simulate()
@@ -363,25 +397,17 @@ void G4CXOpticks::simulate()
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
-
     SEvt* sev = SEvt::Get();  assert(sev); 
 
-    bool has_input_photon = sev->hasInputPhoton() ;
-    if(has_input_photon)
-    {
-        const char* ipf = SEventConfig::InputPhotonFrame();
-        sframe fr = fd->getFrame(ipf) ;  
-        sev->setFrame(fr); 
-    }
+    // setupFrame();   // EXPT: try moving this to being done from setGeometry
 
     unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
-    //unsigned num_photon  = sev->getNumPhotonFromGenstep(); 
     unsigned num_photon  = sev->getNumPhotonCollected(); 
 
     LOG(LEVEL) 
         << "[ num_genstep " << num_genstep
         << " num_photon " << num_photon
-        << " has_input_photon " << has_input_photon
+        << " " << sev->brief()  
         ;
 
     //]
@@ -415,6 +441,9 @@ void G4CXOpticks::simulate()
     LOG(LEVEL) << "]" ; 
 }
 
+
+
+
 void G4CXOpticks::simtrace()
 {
 #ifdef __APPLE__
@@ -425,15 +454,8 @@ void G4CXOpticks::simtrace()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 
-                           
-    SEvt* sev = SEvt::Get();  assert(sev); 
 
-    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
-    sev->setFrame(fr);   
-
-    cx->setFrame(fr);    
-    // Q: why does cx need the frame ?
-    // A: the rendering viewpoint or simtrace grid is based on the frame center, extent and transforms 
+    // setupFrame();   // EXPT: try moving this to being done from setGeometry
 
     qs->simtrace(); 
     LOG(LEVEL) << "]" ; 

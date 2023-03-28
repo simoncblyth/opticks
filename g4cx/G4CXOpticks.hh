@@ -71,7 +71,8 @@ private:
     void setGeometry(GGeo* gg); 
     static const char* setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
-
+    void setGeometry_(CSGFoundry* fd); 
+    void setupFrame(); 
     static const bool simulate_saveEvent ; 
 public: 
     void simulate(); 

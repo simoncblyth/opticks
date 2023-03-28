@@ -265,6 +265,7 @@ That will be nullptr unless OPTICKS_INPUT_PHOTON is defined.
  
 NP* SEvt::getInputPhoton_() const { return input_photon ; }
 bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
+bool SEvt::hasInputPhotonTransformed() const { return input_photon_transformed != nullptr ; }
 
 
 /**
@@ -454,6 +455,11 @@ This connection between the SGeo geometry and SEvt is what allows
 the appropriate instance frame to be accessed. That is vital for 
 looking up the sensor_identifier and sensor_index.  
 
+SGeo is a protocol for geometry access fulfilled by both GGeo
+and CSGFoundry 
+
+TODO: replace this with stree.h based approach  
+
 **/
 
 void SEvt::setGeo(const SGeo* cf_)
@@ -461,6 +467,17 @@ void SEvt::setGeo(const SGeo* cf_)
     cf = cf_ ; 
 }
 
+/**
+SEvt::setFrame
+-----------------
+
+This method asserts that SEvt::setGeo has been called 
+as that is needed to provide access to sframe via 
+the SGeo protocol base of either GGeo OR CSGFoundry
+
+TODO: replace this with stree.h based approach 
+
+**/
 void SEvt::setFrame(unsigned ins_idx)
 {
     LOG_IF(fatal, cf == nullptr) << "must SEvt::setGeo before being can access frames " ; 
@@ -472,6 +489,9 @@ void SEvt::setFrame(unsigned ins_idx)
 
     setFrame(fr); 
 }
+
+
+
 
 /**
 SEvt::MakeInputPhotonGenstep
@@ -672,6 +692,9 @@ NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : null
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
+
+
+
 
 
 
@@ -1911,13 +1934,27 @@ std::string SEvt::descFold() const
 {
     return fold->desc(); 
 }
-
+std::string SEvt::Brief() // static
+{
+    std::stringstream ss ; 
+    ss << "SEvt::Brief " 
+       << " SEvt::Exists " << ( SEvt::Exists() ? "Y" : "N" )
+       << " INSTANCE " << ( INSTANCE ? INSTANCE->brief() : "-" ) 
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+} 
 std::string SEvt::brief() const 
 {
     std::stringstream ss ; 
-    ss << "SEvt " << this ; 
-    std::string s = ss.str(); 
-    return s ; 
+    ss << "SEvt::brief " 
+       << " getIndex " << getIndex()  
+       << " hasInputPhoton " << ( hasInputPhoton() ? "Y" : "N" ) 
+       << " hasInputPhotonTransformed " << ( hasInputPhotonTransformed() ? "Y" : "N" ) 
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 std::string SEvt::desc() const 

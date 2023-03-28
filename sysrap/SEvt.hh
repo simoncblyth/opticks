@@ -213,6 +213,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getInputPhoton_() const ; 
     NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
     bool hasInputPhoton() const ; 
+    bool hasInputPhotonTransformed() const ; 
 
 
     void initG4State() ; 
@@ -224,10 +225,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
     void setFrame_HostsideSimtrace() ; 
-
-
     void setGeo(const SGeo* cf); 
-    void setFrame(unsigned ins_idx); 
+    void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
 
 
     static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
@@ -350,6 +349,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void save(const char* dir); 
     int  load(const char* dir); 
 
+    static std::string Brief() ; 
     std::string brief() const ; 
     std::string desc() const ; 
     std::string descGS() const ; 

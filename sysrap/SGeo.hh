@@ -12,6 +12,8 @@ Also used by CSG/CSGFoundry::upload to record the CFBase directory
 of the last geometry uploaded to the device in a location that
 is accessible from anywhere. (HMM: an alt approach would be to set an envvar for this ?)
 
+TODO: this needs to be replaced by stree
+
 **/
 
 #include "plog/Severity.h"
