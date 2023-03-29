@@ -1,9 +1,10 @@
-// name=spho_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+// ./spho_test.sh 
+
 
 #include <iostream>
 #include "spho.h"
 
-int main()
+void test_gen()
 {
      spho p = {} ; 
      p.id = 101 ; 
@@ -43,6 +44,12 @@ int main()
          << "p.set_gen(1), p.set_flg(1) " 
          << std::endl 
          ;  
+}
+
+
+void test_u4c()
+{
+     spho p = {} ; 
 
      p.uc4.x = 1 ; 
      p.uc4.y = 1 ; 
@@ -86,11 +93,33 @@ int main()
          << "p.uc4.x = 'Z' p.uc4.y = 'z' p.uc4.z = ' '  p.uc4.w = '_'  " 
          << std::endl 
          ;  
+}
+
+void test_serialize_load()
+{
+    spho p = { 1, 2, 3, {'a', 'b', 'c', 'd' } }; 
+
+    std::cout << "p " << p << std::endl; 
+
+    std::array<int,4> a ; 
+    p.serialize(a) ; 
+
+    spho q = {} ; 
+    q.load(a) ; 
+
+    std::cout << "q " << q << std::endl ; 
+
+}
 
 
 
-
-
+int main()
+{
+     /*
+     test_gen(); 
+     test_uc4(); 
+     */
+     test_serialize_load(); 
 
      return 0 ; 
 }

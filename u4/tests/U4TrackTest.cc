@@ -1,3 +1,7 @@
+
+#include "spho.h"
+#include "STrackInfo.h"
+
 #include "U4Track.h"
 
 int main(int argc, char** argv)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-struct spho ; 
 class G4Track ; 
 
 struct U4Track
@@ -26,9 +25,6 @@ struct U4Track
 #include <sstream>
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
-
-#include "spho.h"
-#include "STrackInfo.h"
 
 inline G4Track* U4Track::MakePhoton()
 {
@@ -82,6 +78,11 @@ inline void U4Track::SetStopAndKill(const G4Track* track)
 }
 
 
+#ifdef WITH_CUSTOM4
+#include "C4TrackInfo.h"
+#else
+#include "STrackInfo.h"
+#endif
 
 template<typename T>
 inline void U4Track::SetFabricatedLabel(const G4Track* track)
@@ -90,13 +91,22 @@ inline void U4Track::SetFabricatedLabel(const G4Track* track)
     assert( trackID >= 0 );  
     T fab = T::Fabricate(trackID); 
     G4Track* _track = const_cast<G4Track*>(track);  
+
+#ifdef WITH_CUSTOM4
+    C4TrackInfo<T>::Set(_track, fab );        
+#else
     STrackInfo<T>::Set(_track, fab );        
+#endif
 }
 
 template<typename T>
 inline std::string U4Track::Desc(const G4Track* track)
 {
+#ifdef WITH_CUSTOM4
+    T* label = C4TrackInfo<T>::GetRef(track); 
+#else
     T* label = STrackInfo<T>::GetRef(track); 
+#endif
 
     std::stringstream ss ; 
     ss << "U4Track::Desc"

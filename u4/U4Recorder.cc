@@ -43,6 +43,8 @@
 #include "C4OpBoundaryProcess.hh" 
 #include "C4CustomART.h" 
 #include "C4CustomART_Debug.h" 
+#include "C4TrackInfo.h"
+#include "C4Pho.h"
 #elif PMTSIM_STANDALONE
 #include "CustomART.h" 
 #include "CustomART_Debug.h" 
@@ -195,33 +197,6 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
 U4Recorder::PreUserTrackingAction_Optical
 -------------------------------------------
 
-**Photon Labels**
-
-Optical photon G4Track arriving here from U4 instrumented Scintillation and Cerenkov processes 
-are always labelled, having the label set at the end of the generation loop by U4::GenPhotonEnd, 
-see examples::
-
-   u4/tests/DsG4Scintillation.cc
-   u4/tests/G4Cerenkov_modified.cc
-
-However primary optical photons arising from input photons or torch gensteps
-are not labelled at generation as that is probably not possible without hacking 
-Geant4 GeneratePrimaries.
-
-* TODO: review how input photons worked within old workflow and bring that over to U4 
-  (actually might have done this at detector framework level ?)
-
-As a workaround for photon G4Track arriving at U4Recorder without labels, 
-the U4Track::SetFabricatedLabel method is below used to creates a label based entirely 
-on a 0-based track_id with genstep index set to zero. This standin for a real label 
-is only really equivalent for events with a single torch/inputphoton genstep. 
-But torch gensteps are typically used for debugging so this restriction is ok.  
-
-HMM: not easy to workaround this restriction as often will collect multiple gensteps 
-before getting around to seeing any tracks from them so cannot devine the genstep index for a track 
-by consulting gensteps collected by SEvt. YES: but this experience is from C and S gensteps, 
-not torch ones so needs some experimentation to see what approach to take. 
-
 **Reemission Rejoining**
 
 At the tail of this method SEvt::beginPhoton OR SEvt::rejoinPhoton is called
@@ -234,6 +209,22 @@ HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+    LOG(LEVEL) << "[" ; 
+    G4Track* _track = const_cast<G4Track*>(track) ; 
+    _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+
+    spho ulabel = {} ; 
+    PreUserTrackingAction_Optical_GetLabel(ulabel, track); 
+
+    bool skip = !Enabled(ulabel) ; 
+    LOG_IF( info, skip ) << " Enabled-SKIP  EIDX/GIDX " << EIDX << "/" << GIDX ;  
+    if(skip) return ; 
+
+    bool modulo = ulabel.id % 1000 == 0  ;  
+    LOG_IF(info, modulo) << " modulo : ulabel.id " << ulabel.id ; 
+
+    U4Random::SetSequenceIndex(ulabel.id); 
+
     bool resume_fSuspend = track == transient_fSuspend_track ; 
     G4TrackStatus tstat = track->GetTrackStatus(); 
     LOG(LEVEL) 
@@ -241,17 +232,67 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         << " status:" << U4TrackStatus::Name(tstat) 
         << " resume_fSuspend " << ( resume_fSuspend ? "YES" : "NO" ) 
         ;
- 
     assert( tstat == fAlive ); 
-    LOG(LEVEL) << "[" ; 
 
-    G4Track* _track = const_cast<G4Track*>(track) ; 
-    _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+    SEvt* sev = SEvt::Get(); 
+    LOG_IF(fatal, sev == nullptr) << " SEvt::Get returned nullptr " ; 
+    assert(sev); 
 
-    //std::cout << "U4Recorder::PreUserTrackingAction_Optical " << U4Process::Desc() << std::endl ; 
-    //std::cout << U4Process::Desc() << std::endl ; 
+    if(ulabel.gen() == 0)  
+    {
+        if(resume_fSuspend == false)
+        {        
+            sev->beginPhoton(ulabel);  // THIS ZEROS THE SLOT 
+        }
+        else  // resume_fSuspend:true happens following FastSim ModelTrigger:YES, DoIt
+        {
+            sev->resumePhoton(ulabel); 
+        }
+    }
+    else if( ulabel.gen() > 0 )
+    {
+        // HMM: FastSim/SlowSim transitions for reemission photons will trip this assert 
+        assert( resume_fSuspend == false ); 
+        sev->rjoinPhoton(ulabel); 
+    }
+    LOG(LEVEL) << "]" ; 
+}
 
+/**
+U4Recorder::PreUserTrackingAction_Optical_GetLabel
+---------------------------------------------------
+
+Optical photon G4Track arriving here from U4 instrumented Scintillation and Cerenkov processes 
+are always labelled, having the label set at the end of the generation loop by U4::GenPhotonEnd, 
+see examples::
+
+   u4/tests/DsG4Scintillation.cc
+   u4/tests/G4Cerenkov_modified.cc
+
+However primary optical photons arising from input photons or torch gensteps
+are not labelled at generation as that is probably not possible without hacking 
+Geant4 GeneratePrimaries.
+
+As a workaround for photon G4Track arriving at U4Recorder without labels, 
+the U4Track::SetFabricatedLabel method is below used to creates a label based entirely 
+on a 0-based track_id with genstep index set to zero. This standin for a real label 
+is only really equivalent for events with a single torch/inputphoton genstep. 
+But torch gensteps are typically used for debugging so this restriction is ok.  
+
+HMM: not easy to workaround this restriction as often will collect multiple gensteps 
+before getting around to seeing any tracks from them so cannot devine the genstep index for a track 
+by consulting gensteps collected by SEvt. YES: but this experience is from C and S gensteps, 
+not torch ones so needs some experimentation to see what approach to take. 
+
+**/
+
+void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track )
+{
+#ifdef WITH_CUSTOM4
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
+#else
     spho* label = STrackInfo<spho>::GetRef(track); 
+#endif
 
     if( label == nullptr ) // happens with torch gensteps and input photons 
     {
@@ -259,11 +300,21 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         if( rerun_id > -1 ) 
         {
             LOG(LEVEL) << " setting rerun_id " << rerun_id ; 
+            G4Track* _track = const_cast<G4Track*>(track) ; 
             U4Track::SetId(_track, rerun_id) ; 
         }
 
+#ifdef WITH_CUSTOM4
+        U4Track::SetFabricatedLabel<C4Pho>(track); 
+#else
         U4Track::SetFabricatedLabel<spho>(track); 
+#endif
+
+#ifdef WITH_CUSTOM4
+        label = C4TrackInfo<C4Pho>::GetRef(track); 
+#else
         label = STrackInfo<spho>::GetRef(track); 
+#endif
         assert(label) ; 
 
         LOG(LEVEL) 
@@ -277,49 +328,39 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
 
 
-
     assert( label && label->isDefined() );  
-    if(!Enabled(*label)) 
-    {
-       LOG(info) 
-           << "NOT-enabled" 
-           << " EIDX " << EIDX  
-           << " GIDX " << GIDX  
-           ;
-       return ;  
-    }
 
-    bool modulo = label->id % 1000 == 0  ;  
-    LOG_IF(info, modulo) << " modulo : label->id " << label->id ; 
+#ifdef WITH_CUSTOM4
+    assert( C4Pho::N == spho::N ); 
+#endif
+    std::array<int,spho::N> a_label ; 
+    label->serialize(a_label) ; 
 
-    U4Random::SetSequenceIndex(label->id); 
+    ulabel.load(a_label); 
 
-    SEvt* sev = SEvt::Get(); 
-    LOG_IF(fatal, sev == nullptr) << " SEvt::Get returned nullptr " ; 
-    assert(sev); 
-
-    // Perhaps use label.gn generation for SlowSim<->FastSim transitions ?
-    // BUT reemission photons can also undergo such transitions, so cannot easily reuse. 
-    //
-    // HMM: as this split depends only on label.gen() it could be done over in SEvt 
-    if(label->gen() == 0)  
-    {
-        if(resume_fSuspend == false)
-        {        
-            sev->beginPhoton(*label);  // THIS ZEROS THE SLOT 
-        }
-        else  // resume_fSuspend:true happens following FastSim ModelTrigger:YES, DoIt
-        {
-            sev->resumePhoton(*label); 
-        }
-    }
-    else if( label->gen() > 0 )
-    {
-        assert( resume_fSuspend == false ); // FastSim/SlowSim transitions of reemission photons not implemented 
-        sev->rjoinPhoton(*label); 
-    }
-    LOG(LEVEL) << "]" ; 
+    // serialize/load provides firebreak between C4Pho and spho
+    // so the SEvt doesnt need to depend on CUSTOM4
 }
+
+void U4Recorder::UserSteppingAction_Optical_GetLabel( spho& ulabel, const G4Track* track )
+{
+#ifdef WITH_CUSTOM4
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
+#else
+    spho* label = STrackInfo<spho>::GetRef(track); 
+#endif
+    assert( label->isDefined() );  
+
+#ifdef WITH_CUSTOM4
+    assert( C4Pho::N == spho::N ); 
+#endif
+    std::array<int,spho::N> a_label ; 
+    label->serialize(a_label) ; 
+
+    ulabel.load(a_label); 
+}
+
+
 
 /**
 U4Recorder::saveOrLoadStates to/from NP g4state array managed by SEvt
@@ -574,9 +615,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
-    spho* label = STrackInfo<spho>::GetRef(track); 
-    assert( label->isDefined() );  
-    if(!Enabled(*label)) return ;   // EIDX, GIDX skipping 
+    spho ulabel = {} ; 
+    UserSteppingAction_Optical_GetLabel( ulabel, track ); 
+
+    if(!Enabled(ulabel)) return ;   // EIDX, GIDX skipping 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -588,7 +630,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const char* spec = spec_.c_str(); 
 
     SEvt* sev = SEvt::Get(); 
-    sev->checkPhotonLineage(*label); 
+    sev->checkPhotonLineage(ulabel); 
 
     sphoton& current_photon = sev->current_ctx.p ;
     quad4&   current_aux    = sev->current_ctx.aux ; 
@@ -604,7 +646,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         LOG(LEVEL) << " first_flag, track " << track  ; 
         U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
         current_aux.q1.i.w = int('F') ; 
-        sev->pointPhoton(*label);        // sctx::point copying current into buffers 
+        sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
     }
     // Q: Where does the "TO" flag come from ?
     // A: See SEvt::beginPhoton
@@ -632,8 +674,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     if(flag == DEFER_FSTRACKINFO)
     {
-        char fstrackinfo_stat = label->uc4.w ; 
-        label->uc4.w = '_' ;   // scrub after access 
+        char fstrackinfo_stat = ulabel.uc4.w ; 
+        // label->uc4.w = '_' ;  
+        // scrub after access : HMM IS THIS NEEDED ? NOT EASY NOW THAN USE COPY: ulabel
 
         switch(fstrackinfo_stat)
         {
@@ -648,6 +691,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             << " DEFER_FSTRACKINFO " 
             << " FAILED TO GET THE FastSim status from trackinfo " 
             << " fstrackinfo_stat " << fstrackinfo_stat  
+            << " fstrackinfo_stat == '\0' " << ( fstrackinfo_stat == '\0' ? "YES" : "NO " )
             ;
 
         LOG(LEVEL) 
@@ -660,7 +704,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
     assert( flag > 0 ); 
 
-    bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
+    bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 
 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
@@ -674,7 +718,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.q2.i.w = st ; 
 
     LOG_IF(info, PIDX_DUMP ) 
-        << " l.id " << std::setw(3) << label->id
+        << " l.id " << std::setw(3) << ulabel.id
         << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
         << " abbrev " << OpticksPhoton::Abbrev(flag)
         << " spec " << std::setw(50) << spec 
@@ -687,11 +731,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     if( flag == NAN_ABORT )
     {
-        LOG(LEVEL) << " skip post saving for StepTooSmall label.id " << label->id  ;  
+        LOG(LEVEL) << " skip post saving for StepTooSmall ulabel.id " << ulabel.id  ;  
     }
     else if( FAKES_SKIP && is_fake  )
     { 
-        LOG(LEVEL) << " FAKES_SKIP skip post identified as fake label.id " << label->id  ;  
+        LOG(LEVEL) << " FAKES_SKIP skip post identified as fake ulabel.id " << ulabel.id  ;  
     }
     else
     {
@@ -703,9 +747,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
         current_photon.set_flag( flag );
 
-        if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, label->id ); 
+        if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, ulabel.id ); 
 
-        sev->pointPhoton(*label);         // save SEvt::current_photon/rec/seq/prd into sevent 
+        sev->pointPhoton(ulabel);     // save SEvt::current_photon/rec/seq/prd into sevent 
     }
 
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 

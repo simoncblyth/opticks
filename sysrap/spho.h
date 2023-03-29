@@ -21,12 +21,15 @@ resulting in potentially multiple reemission generations.
 
 **/
 
+#include <array>
 #include <string>
 
 struct _uchar4 { unsigned char x,y,z,w ; }; 
 
 struct spho
 {
+    static constexpr const int N = 4 ; 
+
     int gs ; // 0-based genstep index within the event
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
@@ -36,7 +39,6 @@ struct spho
     int flg() const ; 
     void set_gen(int gn) ; 
     void set_flg(int fg) ; 
-
 
     static spho MakePho(int gs_, int ix_, int id_ ); 
     static spho Fabricate(int track_id); 
@@ -50,13 +52,18 @@ struct spho
 
     spho make_nextgen() const ; // formerly make_reemit 
     std::string desc() const ;
+
+    const int* cdata() const ;
+    int* data();
+    void serialize( std::array<int, 4>& a ) const ; 
+    void load( const std::array<int, 4>& a ); 
+
 };
 
 
 #include <cassert>
 #include <sstream>
 #include <iomanip>
-
 
 inline int spho::gen()   const { return int(uc4.x); }
 inline int spho::flg() const {   return int(uc4.w); }
@@ -126,4 +133,38 @@ inline std::string spho::desc() const
     std::string s = ss.str();
     return s ;
 }
+
+
+
+inline int* spho::data() 
+{
+    return &gs ; 
+}
+inline const int* spho::cdata() const  
+{
+    return &gs ; 
+}
+inline void spho::serialize( std::array<int, 4>& a ) const 
+{
+    assert( a.size() == N ); 
+    const int* ptr = cdata() ; 
+    for(int i=0 ; i < N ; i++ ) a[i] = ptr[i] ;   
+}
+inline void spho::load( const std::array<int, 4>& a )
+{
+    assert( a.size() == N ); 
+    int* ptr = data() ; 
+    for(int i=0 ; i < N ; i++ ) ptr[i] = a[i] ;   
+}
+
+
+
+
+inline std::ostream& operator<<(std::ostream& os, const spho& p)  
+{
+    os << p.desc() ;   
+    return os; 
+}
+
+
 

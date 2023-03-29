@@ -77,6 +77,10 @@ struct U4_API U4Recorder
     void PostUserTrackingAction(const G4Track*);
 
     void PreUserTrackingAction_Optical(const G4Track*);
+    void PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track ); 
+    void    UserSteppingAction_Optical_GetLabel( spho& ulabel, const G4Track* track ); 
+
+
     void saveOrLoadStates(int id); 
     void saveRerunRand(const char* dir) const ; 
     static void SaveMeta(const char* savedir); 
@@ -90,6 +94,9 @@ struct U4_API U4Recorder
     // boundary process template type
     template<typename T> 
     void UserSteppingAction_Optical(const G4Step*); 
+
+
+
 
     template <typename T>
     static void CollectBoundaryAux(quad4* current_aux ); 
