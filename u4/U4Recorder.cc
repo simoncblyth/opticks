@@ -342,14 +342,23 @@ void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4T
     // so the SEvt doesnt need to depend on CUSTOM4
 }
 
-void U4Recorder::UserSteppingAction_Optical_GetLabel( spho& ulabel, const G4Track* track )
+/**
+U4Recorder::GetLabel
+----------------------
+
+Unlike the above PreUserTrackingAction_Optical_GetLabel 
+this does not handle the case of the track not being labelled. 
+
+**/
+
+void U4Recorder::GetLabel( spho& ulabel, const G4Track* track )
 {
 #ifdef WITH_CUSTOM4
     C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
 #else
     spho* label = STrackInfo<spho>::GetRef(track); 
 #endif
-    assert( label->isDefined() );  
+    assert( label && label->isDefined() && "all photons are expected to be labelled" ); 
 
 #ifdef WITH_CUSTOM4
     assert( C4Pho::N == spho::N ); 
@@ -489,23 +498,24 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     assert( is_fStopAndKill_or_fSuspend ); 
 
 
-    spho* label = STrackInfo<spho>::GetRef(track); 
-    assert( label && label->isDefined() && "all photons are expected to be labelled" ); 
-    if(!Enabled(*label)) return ;          // EIDX, GIDX skipping  
+    spho ulabel = {} ; 
+    GetLabel( ulabel, track ); 
+
+    if(!Enabled(ulabel)) return ;          // EIDX, GIDX skipping  
 
     SEvt* sev = SEvt::Get(); 
 
     if(is_fStopAndKill)
     {
         U4Random::SetSequenceIndex(-1); 
-        sev->finalPhoton(*label);  
+        sev->finalPhoton(ulabel);  
         transient_fSuspend_track = nullptr ;
 
 #ifndef PRODUCTION
-        bool PIDX_DUMP = label->id == PIDX && PIDX_ENABLED ; 
+        bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 
         sseq& seq = sev->current_ctx.seq ; 
-        LOG_IF(info, label->id < 10 || PIDX_DUMP ) 
-            << " l.id " << std::setw(5) << label->id
+        LOG_IF(info, ulabel.id < 10 || PIDX_DUMP ) 
+            << " l.id " << std::setw(5) << ulabel.id
             << " seq " << seq.brief()
             ;  
 #endif
@@ -616,7 +626,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
     spho ulabel = {} ; 
-    UserSteppingAction_Optical_GetLabel( ulabel, track ); 
+    GetLabel( ulabel, track ); 
 
     if(!Enabled(ulabel)) return ;   // EIDX, GIDX skipping 
 

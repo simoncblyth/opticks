@@ -130,25 +130,26 @@ target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )
 
-target_compile_definitions( ${name} PUBLIC OPTICKS_U4 )
-target_compile_definitions( ${name} PUBLIC G4USE_STD11 ) 
-target_compile_definitions( ${name} PUBLIC STANDALONE ) 
-target_compile_definitions( ${name} PUBLIC DEBUG_TAG ) 
+target_compile_definitions( ${name} PRIVATE OPTICKS_U4 )
+target_compile_definitions( ${name} PRIVATE G4USE_STD11 ) 
+target_compile_definitions( ${name} PRIVATE STANDALONE ) 
+target_compile_definitions( ${name} PRIVATE DEBUG_TAG ) 
 
 
 if(Custom4_FOUND)
     target_link_libraries( ${name} PUBLIC Custom4::Custom4 )
-    target_compile_definitions( ${name} PUBLIC WITH_CUSTOM4 )  # MINTING A DEF ? MAYBE COMES WITH THE TARGET ANYHOW
+    target_compile_definitions( ${name} PRIVATE WITH_CUSTOM4 )  # MINTING A DEF ? MAYBE COMES WITH THE TARGET ANYHOW
 endif()
 
 if(PMTSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
-    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM PMTSIM_STANDALONE WITH_NP )
+    target_compile_definitions( ${name} PRIVATE WITH_PMTSIM PMTSIM_STANDALONE WITH_NP )
+    ## THE DEFS CANNOT BE PUBLIC : AS CAUSE ISSUES FOR JUNOSW BUILD WITH OPTICKS
 endif()
 
 if(PMTFastSim_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
-    target_compile_definitions( ${name} PUBLIC WITH_PMTFASTSIM PMTFASTSIM_STANDALONE )
+    target_compile_definitions( ${name} PRIVATE WITH_PMTFASTSIM PMTFASTSIM_STANDALONE )
 endif()
 
 
