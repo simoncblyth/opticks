@@ -171,6 +171,10 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
 
     SEvt::Save(); 
     SEvt::Clear(); 
+
+    const char* savedir = SEvt::GetSaveDir() ; 
+    LOG(info) << " savedir " << ( savedir ? savedir : "-" );
+    SaveMeta(savedir);  
 }
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
@@ -296,38 +300,13 @@ void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4T
 
     if( label == nullptr ) // happens with torch gensteps and input photons 
     {
-        int rerun_id = SEventConfig::G4StateRerun() ;
-        if( rerun_id > -1 ) 
-        {
-            LOG(LEVEL) << " setting rerun_id " << rerun_id ; 
-            G4Track* _track = const_cast<G4Track*>(track) ; 
-            U4Track::SetId(_track, rerun_id) ; 
-        }
-
-#ifdef WITH_CUSTOM4
-        U4Track::SetFabricatedLabel<C4Pho>(track); 
-#else
-        U4Track::SetFabricatedLabel<spho>(track); 
-#endif
-
+        PreUserTrackingAction_Optical_FabricateLabel(track) ; 
 #ifdef WITH_CUSTOM4
         label = C4TrackInfo<C4Pho>::GetRef(track); 
 #else
         label = STrackInfo<spho>::GetRef(track); 
 #endif
-        assert(label) ; 
-
-        LOG(LEVEL) 
-            << " labelling photon :"
-            << " track " << track
-            << " label " << label
-            << " label.desc " << label->desc() 
-            ; 
-
-        saveOrLoadStates(label->id);  // moved here as labelling happens once per torch/input photon
     }
-
-
     assert( label && label->isDefined() );  
 
 #ifdef WITH_CUSTOM4
@@ -341,6 +320,42 @@ void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4T
     // serialize/load provides firebreak between C4Pho and spho
     // so the SEvt doesnt need to depend on CUSTOM4
 }
+
+void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel( const G4Track* track )
+{
+    int rerun_id = SEventConfig::G4StateRerun() ;
+    if( rerun_id > -1 ) 
+    {
+        LOG(LEVEL) << " setting rerun_id " << rerun_id ; 
+        G4Track* _track = const_cast<G4Track*>(track) ; 
+        U4Track::SetId(_track, rerun_id) ; 
+    }
+
+#ifdef WITH_CUSTOM4
+    U4Track::SetFabricatedLabel<C4Pho>(track); 
+#else
+    U4Track::SetFabricatedLabel<spho>(track); 
+#endif
+
+#ifdef WITH_CUSTOM4
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
+#else
+    spho* label = STrackInfo<spho>::GetRef(track); 
+#endif
+    assert(label) ; 
+
+    LOG(LEVEL) 
+        << " labelling photon :"
+        << " track " << track
+        << " label " << label
+        << " label.desc " << label->desc() 
+        ; 
+
+    saveOrLoadStates(label->id);  // moved here as labelling happens once per torch/input photon
+}
+
+
+
 
 /**
 U4Recorder::GetLabel
@@ -464,8 +479,25 @@ void U4Recorder::saveRerunRand(const char* dir) const
     rerun_rand->save( dir, name.c_str()); 
 }
 
+/**
+U4Recorder::SaveMeta
+----------------------
+
+SPECS.names 
+    added and enumerations used in UserSteppingAction_Optical
+    enumeration spec values at each point a.f.aux[:,:,2,3].view(np.int32) 
+
+With standalone testing this is called from U4App::EndOfEventAction/U4App::SaveMeta
+
+* HMM: CAN THIS BE MOVED TO U4Recorder::EndOfEventAction ? So it works with junosw ? 
+* just need the savedir  
+
+
+**/
+
 void U4Recorder::SaveMeta(const char* savedir)  // static
 {
+    if(savedir == nullptr) return ; 
     std::string descfakes = U4Recorder::DescFakes() ;
     LOG(info) << descfakes ; 
 
@@ -487,7 +519,6 @@ U4Recorder::PostUserTrackingAction_Optical
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
     LOG(LEVEL) << "[" ; 
-
     G4TrackStatus tstat = track->GetTrackStatus(); 
     LOG(LEVEL) << U4TrackStatus::Name(tstat) ; 
 
@@ -497,20 +528,16 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     LOG_IF(info, !is_fStopAndKill_or_fSuspend ) << " not is_fStopAndKill_or_fSuspend  post.tstat " << U4TrackStatus::Name(tstat) ; 
     assert( is_fStopAndKill_or_fSuspend ); 
 
-
     spho ulabel = {} ; 
     GetLabel( ulabel, track ); 
-
-    if(!Enabled(ulabel)) return ;          // EIDX, GIDX skipping  
-
-    SEvt* sev = SEvt::Get(); 
+    if(!Enabled(ulabel)) return ; // EIDX, GIDX skipping  
 
     if(is_fStopAndKill)
     {
+        SEvt* sev = SEvt::Get(); 
         U4Random::SetSequenceIndex(-1); 
         sev->finalPhoton(ulabel);  
         transient_fSuspend_track = nullptr ;
-
 #ifndef PRODUCTION
         bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 
         sseq& seq = sev->current_ctx.seq ; 
@@ -519,15 +546,11 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
             << " seq " << seq.brief()
             ;  
 #endif
-
-
     }
     else if(is_fSuspend)
     {
         transient_fSuspend_track = track ; 
     }
-
-
     LOG(LEVEL) << "]" ; 
 }
 
@@ -573,8 +596,6 @@ will fulfil *single_bit*.
 HMM: but if subsequent step points failed to set a non-zero flag could get that repeated 
 
 * YEP: this is happening when first post is on a fake 
-
-
 
 **bop info is mostly missing**
 
@@ -627,7 +648,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     spho ulabel = {} ; 
     GetLabel( ulabel, track ); 
-
     if(!Enabled(ulabel)) return ;   // EIDX, GIDX skipping 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
@@ -661,7 +681,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     // Q: Where does the "TO" flag come from ?
     // A: See SEvt::beginPhoton
     
-    
     // Q: Can the dependency on boundary process type be avoided ? 
     // A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
     //    could avoid some complexities but maybe just add others. Would rather not go there. 
@@ -670,7 +689,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
-
 
     LOG(LEVEL) 
         << " flag " << flag
@@ -681,6 +699,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
     // trackinfo label 
+    //
+    // FastSim status char "?DART" is set at the tail of junoPMTOpticalModel::DoIt
 
     if(flag == DEFER_FSTRACKINFO)
     {
@@ -725,7 +745,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
     current_aux.q2.i.z = fakemask ;  // CAUTION: stomping on cdbg.pmtid setting above  
-    current_aux.q2.i.w = st ; 
+    current_aux.q2.i.w = st ;        // CAUTION: stomping on cdbg.spare setting above  
 
     LOG_IF(info, PIDX_DUMP ) 
         << " l.id " << std::setw(3) << ulabel.id
@@ -737,7 +757,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " fakemask " << fakemask
         << " U4Fake::Desc " << U4Fake::Desc(fakemask)
         ;
-
 
     if( flag == NAN_ABORT )
     {

@@ -79,6 +79,7 @@ struct U4_API U4Recorder
     void PreUserTrackingAction_Optical(const G4Track*);
 
     void PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track ); 
+    void PreUserTrackingAction_Optical_FabricateLabel( const G4Track* track ) ; 
     void GetLabel( spho& ulabel, const G4Track* track ); 
 
 

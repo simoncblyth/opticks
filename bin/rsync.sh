@@ -36,13 +36,22 @@ if [ -n "$odir" ]; then
     for var in $vars ; do printf "%-30s : %s \n" $var "${!var}" ; done ; 
 
     mkdir -p "$to"
-    rsync -zarv --progress --include="*/" --include '*.gdml' --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
+    rsync -zarv --progress --include="*/" \
+                           --include '*.gdml' \
+                           --include="*.txt" \
+                           --include="*.log" \
+                           --include="*.npy" \
+                           --include="*.jpg" \
+                           --include="*.mp4" \
+                           --include "*.json" \
+                           --exclude="*" \
+                           "$from" "$to"
 
     [ $? -ne 0 ] && echo $BASH_SOURCE rsync fail && return 1   
 
     tto=${to%/}  # trim the trailing slash 
 
-    find $tto -name '*.json' -o -name '*.txt' -o -name '*.gdml' -print0 | xargs -0 ls -1rt 
+    find $tto -name '*.json' -o -name '*.txt' -o -name '*.log' -o -name '*.gdml' -print0 | xargs -0 ls -1rt 
     echo == $BASH_SOURCE tto $tto jpg mp4 npy 
     find $tto -name '*.jpg' -o -name '*.mp4' -o -name '*.npy' -print0 | xargs -0 ls -1rt
 

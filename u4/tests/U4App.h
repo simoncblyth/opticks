@@ -227,7 +227,7 @@ void U4App::SaveMeta(const char* savedir) // static
         LOG(error) << " NULL savedir " ; 
         return ; 
     }  
-    U4Recorder::SaveMeta(savedir); 
+    // U4Recorder::SaveMeta(savedir);   // try moving to U4Recorder::EndOfEventAction
     U4VolumeMaker::SaveTransforms(savedir) ;   
 }
 
