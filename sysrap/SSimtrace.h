@@ -77,7 +77,7 @@ SSimtrace::simtrace
 SEvt::setFrame
 
 1. creates gensteps with SFrameGenstep::MakeCenterExtentGensteps and adds them to SEvt
-2. As frame.is_hostside_simtrace also generates simtrace "photons" 
+2. as frame.is_hostside_simtrace also generates simtrace "photons" 
 
 In RGModeSimtrace SEvt::setFrame adds simtrace gensteps configured via envvars
 
@@ -85,14 +85,11 @@ In RGModeSimtrace SEvt::setFrame adds simtrace gensteps configured via envvars
 
 inline void SSimtrace::simtrace()
 {
-    //LOG(LEVEL) << "[" ; 
     SEventConfig::SetRGModeSimtrace();
     frame.set_hostside_simtrace();  
 
     evt = new SEvt ; 
     evt->setFrame(frame);   
-
-    //LOG(LEVEL) << " evt.simtrace.size " << evt->simtrace.size() ; 
 
     bool dump = false ; 
     for(unsigned i=0 ; i < evt->simtrace.size() ; i++)
@@ -100,12 +97,10 @@ inline void SSimtrace::simtrace()
          quad4& p = evt->simtrace[i] ; 
          ssolid::Simtrace(p, solid, dump);  
     }
-    //LOG(LEVEL) << "]" ; 
 }
 
 inline void SSimtrace::saveEvent(const char* base)
 {
-    //LOG(LEVEL) ; 
     evt->save(base);  
 }
 

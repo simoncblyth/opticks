@@ -153,16 +153,16 @@ ssolid::Simtrace
 Updates quad4& p in simtrace layout with intersect position onto the solid. 
 
 p.q0.f.xyz,w
-    surface normal at intersect (TODO) and intersect distance *t*
+    surface normal at intersect (UNCHECKED) and intersect distance *t*
 
 p.q1.f.xyz, w
     intersect position and "tmin" param
 
 p.q2.f.xyz
-    input position 
+    input position (assumed to be in local frame of solid)
 
 p.q3.f.xyz
-    input direction
+    input direction (assumed to be in local frame of solid)
 
 **/
 
@@ -179,9 +179,10 @@ inline void ssolid::Simtrace(quad4& p, const G4VSolid* solid, bool dump) // stat
     G4ThreeVector ipos = ori + dir*t ; 
     float tmin = 0.f ; 
 
-    p.q0.f.x = 0.f ; // TODO surface normal at intersect ? 
-    p.q0.f.y = 0.f ; 
-    p.q0.f.z = 0.f ; 
+    G4ThreeVector inrm = solid->SurfaceNormal(ipos) ; // UNCHECKED
+    p.q0.f.x = float(inrm.x()) ; 
+    p.q0.f.y = float(inrm.y()) ;
+    p.q0.f.z = float(inrm.z()) ;
     p.q0.f.w = t ; 
 
     p.q1.f.x = float(ipos.x()) ; 
