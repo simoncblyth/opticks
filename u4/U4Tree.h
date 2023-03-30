@@ -129,7 +129,10 @@ struct U4Tree
     void identifySensitiveInstances(); 
     void identifySensitiveGlobals(); 
 
-    static void deprecated_Simtrace( const G4VPhysicalVolume* const top, const char* base ); 
+    void simtrace_scan(const char* base ) const ; 
+    static void SimtraceScan( const G4VPhysicalVolume* const pv, const char* base ); 
+
+
 }; 
 
 
@@ -766,30 +769,44 @@ inline void U4Tree::identifySensitiveGlobals()
 }
 
 
-/**
-U4Tree::deprecated_Simtrace
-------------------------------
 
-This is too encapsulated, it gives no surface for debug/development. 
-So instead moved this functionality to U4Simtrace.h 
+
+/**
+U4Tree::simtrace_scan
+------------------------
+
+HMM: could use NPFold instead of saving to file after the scan of each solid ?
+(actually the simple approach probably better in terms of memory)
 
 **/
 
-inline void U4Tree::deprecated_Simtrace( const G4VPhysicalVolume* const pv, const char* base )
+inline void U4Tree::simtrace_scan(const char* base ) const 
 {
-    stree st ; 
-    U4Tree ut(&st, pv ) ; 
-    st.save_trs(base); 
-
-    assert( st.soname.size() == ut.solids.size() );  
-    for(unsigned i=0 ; i < st.soname.size() ; i++)  // over unique solid names
+    st->save_trs(base); 
+    assert( st->soname.size() == solids.size() );  
+    for(unsigned i=0 ; i < st->soname.size() ; i++)  // over unique solid names
     {   
-        const char* soname = st.soname[i].c_str(); 
-        const G4VSolid* solid = ut.solids[i] ; 
+        const char* soname = st->soname[i].c_str(); 
+        const G4VSolid* solid = solids[i] ; 
         G4String name = solid->GetName(); 
         assert( strcmp( name.c_str(), soname ) == 0 );  
         SSimtrace::Scan(solid, base) ;   
-    }   
+    } 
+}
+
+
+
+/**
+U4Tree::SimtraceScan
+-----------------------
+
+**/
+
+inline void U4Tree::SimtraceScan( const G4VPhysicalVolume* const pv, const char* base ) // static
+{
+    stree st ; 
+    U4Tree ut(&st, pv ) ; 
+    ut.simtrace_scan(base) ; 
 }
 
 

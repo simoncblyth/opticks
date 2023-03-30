@@ -16,10 +16,32 @@ will be very slow and write huge amounts of output.
 
 **/
 
+#include "G4VSolid.hh"
+
 #include "OPTICKS_LOG.hh"
-#include "SPath.hh"
+#include "stree.h"
+#include "U4Tree.h"
 #include "U4VolumeMaker.hh"
-#include "U4Simtrace.h"
+
+struct U4SimtraceTest
+{
+    stree st ; 
+    U4Tree ut ; 
+
+    U4SimtraceTest(const G4VPhysicalVolume* pv ); 
+    void scan(const char* base ); 
+}; 
+
+inline U4SimtraceTest::U4SimtraceTest(const G4VPhysicalVolume* pv )
+    :
+    ut(&st, pv)   // instanciation of U4Tree populates the stree 
+{
+}
+
+inline void U4SimtraceTest::scan(const char* base)
+{
+    ut.simtrace_scan(base) ; 
+}
 
 int main(int argc, char** argv)
 {
@@ -27,10 +49,11 @@ int main(int argc, char** argv)
 
     const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar 
     LOG(info) << " U4VolumeMaker::Desc() " << U4VolumeMaker::Desc() ; 
-    const char* base = SPath::Resolve("$FOLD", DIRPATH ) ; 
     
-    U4Simtrace t(pv); 
-    t.scan(base);  
+    U4SimtraceTest t(pv); 
+    t.scan("$FOLD");  
 
     return 0 ; 
 }
+
+
