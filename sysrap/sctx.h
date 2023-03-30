@@ -11,8 +11,30 @@ A: this state must be "thread" local, whereas the evt instance
 This is aiming to avoid non-production instrumentation costing anything 
 in production running by simply removing it from the context via the 
 PRODUCTION macro. 
-**/
 
+
+sctx::aux usually accessed via SEvt::current_aux 
+-------------------------------------------------
+
+TODO : document the current_aux content here 
+
++----+
+|    |
++====+
+| q0 |
++----+
+| q1 |
++----+
+| q2 |    
++----+
+| q3 |
++----+
+
+q2.i.z : formerly fakemask, now uc4packed from the spho label
+q2.i.w : st 
+
+
+**/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define SCTX_METHOD __device__ __forceinline__

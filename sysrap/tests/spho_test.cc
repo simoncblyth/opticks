@@ -111,15 +111,31 @@ void test_serialize_load()
 
 }
 
+/**
 
+::
+
+    In [6]: np.array( [1684234849], dtype=np.uint32 ).view("|S4")
+    Out[6]: array([b'abcd'], dtype='|S4')
+
+**/
+
+void test_uc4packed()
+{
+    spho p = { 1, 2, 3, {'a', 'b', 'c', 'd' } }; 
+
+    unsigned u4pk = p.uc4packed() ; 
+    std::cout << " u4pk " << u4pk << std::endl ; 
+}
 
 int main()
 {
      /*
      test_gen(); 
      test_uc4(); 
-     */
      test_serialize_load(); 
+     */
+     test_uc4packed(); 
 
      return 0 ; 
 }

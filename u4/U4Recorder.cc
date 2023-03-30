@@ -359,9 +359,6 @@ void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel( const G4Track* tr
     saveOrLoadStates(label->id);  // moved here as labelling happens once per torch/input photon
 }
 
-
-
-
 /**
 U4Recorder::GetLabel
 ----------------------
@@ -388,8 +385,6 @@ void U4Recorder::GetLabel( spho& ulabel, const G4Track* track )
 
     ulabel.load(a_label); 
 }
-
-
 
 /**
 U4Recorder::saveOrLoadStates to/from NP g4state array managed by SEvt
@@ -642,6 +637,30 @@ A: Labelling added to track at the tail of the FastSim DoIt, eg "jcv junoPMTOpti
    current_aux.q1.i.w  : ascii status integer 'F' for first
 
 
+**How to incorporate info from ProcessHits into the SEvt ?**
+
+g4-cls G4SteppingManager::
+
+    230 // Send G4Step information to Hit/Dig if the volume is sensitive
+    231    fCurrentVolume = fStep->GetPreStepPoint()->GetPhysicalVolume();
+    232    StepControlFlag =  fStep->GetControlFlag();
+    233    if( fCurrentVolume != 0 && StepControlFlag != AvoidHitInvocation) {
+    234       fSensitive = fStep->GetPreStepPoint()->
+    235                                    GetSensitiveDetector();
+    236       if( fSensitive != 0 ) {
+    237         fSensitive->Hit(fStep);
+    238       }
+    239    }
+    240 
+    241 // User intervention process.
+    242    if( fUserSteppingAction != 0 ) {
+    243       fUserSteppingAction->UserSteppingAction(fStep);
+    244    }
+    
+* G4VSensitive::Hit/G4VSensitive::ProcessHits happens before UserSteppingAction
+  so if plant the ProcessHits enum into the track label
+  can then copy that into the current_aux  
+
 **/
 
 template <typename T>
@@ -670,6 +689,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     sphoton& current_photon = sev->current_ctx.p ;
     quad4&   current_aux    = sev->current_ctx.aux ; 
     current_aux.zero_v(3, 3);   // may be set below
+
 
     const G4VTouchable* touch = track->GetTouchable();  
     current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
@@ -749,8 +769,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
-    current_aux.q2.i.z = fakemask ;  // CAUTION: stomping on cdbg.pmtid setting above  
-    current_aux.q2.i.w = st ;        // CAUTION: stomping on cdbg.spare setting above  
+    //current_aux.q2.i.z = fakemask ;         // CAUTION: stomping on cdbg.pmtid setting above  
+    current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
+
+    current_aux.q2.i.w = st ;                 // CAUTION: stomping on cdbg.spare setting above  
+
 
     LOG_IF(info, PIDX_DUMP ) 
         << " l.id " << std::setw(3) << ulabel.id

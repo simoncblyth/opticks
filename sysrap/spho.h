@@ -24,7 +24,13 @@ resulting in potentially multiple reemission generations.
 #include <array>
 #include <string>
 
-struct _uchar4 { unsigned char x,y,z,w ; }; 
+struct spho_uchar4 { unsigned char x,y,z,w ; }; 
+
+union spho_uuc4 { 
+    unsigned    u   ; 
+    spho_uchar4 uc4 ; 
+};
+
 
 struct spho
 {
@@ -33,11 +39,23 @@ struct spho
     int gs ; // 0-based genstep index within the event
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
-    _uchar4 uc4 ;  // uc4.x : 0-based reemission index incremented at each reemission 
 
-    int gen() const ;   // uc4.x : reemission generation
-    int flg() const ;   // uc4.w : flag 
+    spho_uchar4 uc4 ;  
+    // uc4.x : gen : 0-based reemission index incremented at each reemission 
+    // uc4.y : eph : eg junoSD_PMT_v2::ProcessHits eph enumeration 
+    // uc4.z : ext : unused
+    // uc4.w : photon point flag TO/BT/BR/SC/AB/SD/SR/... etc 
+
+    unsigned uc4packed() const ; 
+
+    int gen() const ;
+    int eph() const ; 
+    int ext() const ; 
+    int flg() const ;
+
     void set_gen(int gn) ; 
+    void set_eph(int ep) ; 
+    void set_ext(int ex) ; 
     void set_flg(int fg) ; 
 
     static spho MakePho(int gs_, int ix_, int id_ ); 
@@ -65,9 +83,21 @@ struct spho
 #include <sstream>
 #include <iomanip>
 
-inline int spho::gen()   const { return int(uc4.x); }
-inline int spho::flg() const {   return int(uc4.w); }
+inline unsigned spho::uc4packed() const
+{
+    spho_uuc4 uuc4 ; 
+    uuc4.uc4 = uc4 ; 
+    return uuc4.u ;     
+}
+
+inline int spho::gen() const { return int(uc4.x); }
+inline int spho::eph() const { return int(uc4.y); }
+inline int spho::ext() const { return int(uc4.z); }
+inline int spho::flg() const { return int(uc4.w); }
+
 inline void spho::set_gen(int gn) { uc4.x = (unsigned char)(gn) ; }
+inline void spho::set_eph(int ep) { uc4.y = (unsigned char)(ep) ; }
+inline void spho::set_ext(int ex) { uc4.z = (unsigned char)(ex) ; }
 inline void spho::set_flg(int fg) { uc4.w = (unsigned char)(fg) ; }
 
 
