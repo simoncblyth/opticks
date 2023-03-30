@@ -35,8 +35,8 @@ struct spho
     int id ; // 0-based photon identity index within the event 
     _uchar4 uc4 ;  // uc4.x : 0-based reemission index incremented at each reemission 
 
-    int gen() const ; 
-    int flg() const ; 
+    int gen() const ;   // uc4.x : reemission generation
+    int flg() const ;   // uc4.w : flag 
     void set_gen(int gn) ; 
     void set_flg(int fg) ; 
 
@@ -101,7 +101,6 @@ inline spho spho::Placeholder() // static
 }
 inline spho spho::make_nextgen() const
 {
-    // spho nextgen = {gs, ix, id, gn+1 } ;  THIS WOULD SCRUB THE REST OF THE uc4
     spho nextgen = *this ; 
     nextgen.uc4.x += 1 ; 
     return nextgen ;

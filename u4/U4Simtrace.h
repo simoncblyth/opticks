@@ -15,7 +15,7 @@ struct U4Simtrace
 
 inline U4Simtrace::U4Simtrace(const G4VPhysicalVolume* pv )
     :
-    ut(&st, pv)
+    ut(&st, pv)   // instanciation of U4Tree populates the stree 
 {
 }
 
@@ -25,6 +25,9 @@ U4Simtrace::scan
 
 HMM: could use NPFold instead of saving to file after every scan ?
 (actually the simple approach probably better in terms of memory)
+
+HMM: more flexible for this to become U4Tree.simtrace_scan method ?
+
 **/
 
 inline void U4Simtrace::scan(const char* base)

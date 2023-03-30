@@ -1286,10 +1286,31 @@ void SEvt::resumePhoton(const spho& label)
 
     unsigned idx = label.id ; 
     assert( idx < pho.size() );  
-
 }
 
 
+/**
+SEvt::rjoin_resumePhoton
+-------------------------
+
+Invoked from U4Recorder::PreUserTrackingAction_Optical for 
+reemission photons that subsequently transition from FastSim 
+back to SlowSim. 
+
+BUT as the FastSim/SlowSim transition happens inside PMT 
+will never need to do real rjoin history rewriting  ?
+
+**/
+
+void SEvt::rjoin_resumePhoton(const spho& label)
+{
+    dbg->rjoin_resumePhoton++ ; 
+    LOG(LEVEL); 
+    LOG(LEVEL) << label.desc() ; 
+
+    unsigned idx = label.id ; 
+    assert( idx < pho.size() );  
+}
 
 
 /**
@@ -1298,6 +1319,12 @@ SEvt::rjoinPhoton : only used for hostside running
 
 Called from tail of U4Recorder::PreUserTrackingAction_Optical for G4Track with 
 spho label indicating a reemission generation greater than zero.
+
+HUH: BUT THAT MEANS THIS WILL BE CALLED FOR EVERY SUBSEQUENT 
+STEP OF THE REEMISSION PHOTON NOT JUST THE FIRST THAT NEEDS REJOINING ?
+
+* SUSPECT THAT WILL GET REPEATED "RE RE RE RE" ? 
+* MAYBE NEED ANOTHER MARK TO SAY THE REJOIN WAS DONE AND DOENST NEED RE-rjoin ?
 
 Note that this will mostly be called for photons that originate from 
 scintillation gensteps BUT it will also happen for Cerenkov (and Torch) genstep 
@@ -1322,6 +1349,12 @@ void SEvt::rjoinPhoton(const spho& label)
     assert( label.isSameLineage( parent_label) ); 
     assert( label.gen() == parent_label.gen() + 1 ); 
 
+    // every G4Track has its own label but for reemission the lineage 
+    // through the generations is reflected by multiple such track labels 
+    // all having the same lineage (label.gs,label.ix,label.id) but different 
+    // reemission generations
+
+
     const sgs& _gs = get_gs(label);  
     bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype);  // SI/CK/TO 
     assert(expected_gentype);  
@@ -1331,7 +1364,8 @@ void SEvt::rjoinPhoton(const spho& label)
     unsigned parent_idx = parent_photon.idx() ; 
     assert( parent_idx == idx ); 
 
-    // replace label and current_photon
+
+    // replace pho[idx] and current_pho with the new generation label 
     pho[idx] = label ;   
     current_pho = label ; 
 
@@ -1342,7 +1376,6 @@ void SEvt::rjoinPhoton(const spho& label)
 
     if( evt->photon )
     {
-        //current_photon = photon[idx] ; 
         current_ctx.p = photon[idx] ; 
         sphoton& current_photon = current_ctx.p ; 
 
@@ -1354,7 +1387,6 @@ void SEvt::rjoinPhoton(const spho& label)
     // at truncation point and beyond cannot compare or do rejoin fixup
     if( evt->seq && prior < evt->max_seq )
     {
-        //current_seq = seq[idx] ; 
         current_ctx.seq = seq[idx] ; 
         sseq& current_seq = current_ctx.seq ; 
 
@@ -1371,8 +1403,18 @@ void SEvt::rjoinPhoton(const spho& label)
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
     } 
-    // TODO: rec  (compressed record)
+
+    // NOT: rec  (compressed record) are not handled
+    //      but no longer using that as decided full recording 
+    //      is a debugging only activity so no point in going 
+    //      to great lengths squeezing memory usage for something that 
+    //      is just used while debugging
 }
+
+
+
+
+
 
 
 void SEvt::rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const

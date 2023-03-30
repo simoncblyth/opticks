@@ -277,8 +277,11 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void beginPhoton(const spho& sp); 
     unsigned getCurrentPhotonIdx() const ; 
-    void resumePhoton(const spho& sp); 
-    void rjoinPhoton(const spho& sp); 
+
+    void resumePhoton(const spho& sp);  // FastSim->SlowSim resume 
+    void rjoinPhoton(const spho& sp);   // reemission rjoin
+    void rjoin_resumePhoton(const spho& label); // reemission rjoin AND FastSim->SlowSim resume 
+
 
     void rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const ; 
     static void ComparePhotonDump(const sphoton& a, const sphoton& b ); 

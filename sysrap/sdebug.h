@@ -12,6 +12,7 @@ struct sdebug
     int beginPhoton ;
     int rjoinPhoton ;
     int resumePhoton ;
+    int rjoin_resumePhoton ;
     int pointPhoton ;
     int finalPhoton ;
     int d12match_fail ;
@@ -32,6 +33,7 @@ struct sdebug
     int beginPhoton ;
     int rjoinPhoton ;
     int resumePhoton ;
+    int rjoin_resumePhoton ;
     int pointPhoton ;
     int finalPhoton ;
     int d12match_fail ;

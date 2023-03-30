@@ -253,11 +253,16 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
             sev->resumePhoton(ulabel); 
         }
     }
-    else if( ulabel.gen() > 0 )
+    else if( ulabel.gen() > 0 )   // HMM: thats going to stick for reemission photons 
     {
-        // HMM: FastSim/SlowSim transitions for reemission photons will trip this assert 
-        assert( resume_fSuspend == false ); 
-        sev->rjoinPhoton(ulabel); 
+        if(resume_fSuspend == false)
+        {
+            sev->rjoinPhoton(ulabel); 
+        }
+        else   // resume_fSuspend:true happens following FastSim ModelTrigger:YES, DoIt
+        {
+            sev->rjoin_resumePhoton(ulabel); 
+        }
     }
     LOG(LEVEL) << "]" ; 
 }
