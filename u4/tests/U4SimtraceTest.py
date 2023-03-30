@@ -24,7 +24,7 @@ RFold
 U4SimtraceTest(RFold)
    intersection geometry  
 
-U4SimulateTest(RFold)
+SEvt(RFold)
    photon histories 
 
 """
@@ -36,7 +36,7 @@ from opticks.ana.fold import Fold, RFold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.eget import eintarray_, efloatarray_
-from opticks.u4.tests.U4SimulateTest import U4SimulateTest 
+from opticks.sysrap.sevt import SEvt 
 
 
 COLORS = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
@@ -84,6 +84,10 @@ np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 
 class U4SimtraceTest(RFold):
+    """
+    TODO: come up with a better name for this, its more general that just one test 
+          (just like SEvt is better name than U4SimulateTest) 
+    """
     def __init__(self, fold):
         trs_names = np.loadtxt( os.path.join(fold.base, "trs_names.txt"), dtype=np.object )
         sfs = odict()
@@ -259,7 +263,7 @@ class U4SimtraceTest(RFold):
     def onephotonplot(self, pl, f): 
         """
         :param pl:  plotting machinery 
-        :param f: expecting U4SimulateTest object with photon history, 
+        :param f: expecting SEvt object with photon history, 
                   NB pid must be set to +ve integer selecting the photon to plot anything  
         """
         if f is None: return 
@@ -376,11 +380,11 @@ if __name__ == '__main__':
     ## SFOLD, TFOLD and s, t correspond to intersection geometries from U4SimtraceTest
 
 
-    log.info(" -- U4SimulateTest.Load AFOLD" )
-    a = U4SimulateTest.Load(AFOLD, symbol="a")   # optional photon histories 
-    log.info(" -- U4SimulateTest.Load BFOLD" )
-    b = U4SimulateTest.Load(BFOLD, symbol="b")
-    ## AFOLD, BFOLD and a, b are photon histories from U4SimulateTest 
+    log.info(" -- SEvt.Load AFOLD" )
+    a = SEvt.Load(AFOLD, symbol="a")   # optional photon histories 
+    log.info(" -- SEvt.Load BFOLD" )
+    b = SEvt.Load(BFOLD, symbol="b")
+    ## AFOLD, BFOLD and a, b are photon histories from SEvt 
 
     if not a is None: print('a',a.qtab_,"\n",a.qtab)
     if not b is None: print('b',b.qtab_,"\n",b.qtab)

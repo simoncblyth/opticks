@@ -17,7 +17,7 @@ from opticks.ana.nbase import chi2
 from opticks.ana.qcf import QU,QCF,QCFZero
 
 from opticks.u4.tests.ModelTrigger_Debug import ModelTrigger_Debug       
-from opticks.u4.tests.U4SimulateTest import U4SimulateTest
+from opticks.sysrap.sevt import SEvt
 
 hist_ = lambda _:_.strip().decode("utf-8")   
 
@@ -40,8 +40,8 @@ if __name__ == '__main__':
     print("APID:%d" % (APID))
     print("BPID:%d" % (BPID))
 
-    a = U4SimulateTest.Load("$AFOLD", symbol="a")
-    b = U4SimulateTest.Load("$BFOLD", symbol="b")
+    a = SEvt.Load("$AFOLD", symbol="a")
+    b = SEvt.Load("$BFOLD", symbol="b")
 
     amt = ModelTrigger_Debug(a.f, symbol="amt", publish=False)  # publish:True crashing 
     bmt = ModelTrigger_Debug(b.f, symbol="bmt", publish=False)  # publish:True crashing 

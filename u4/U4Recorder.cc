@@ -894,7 +894,6 @@ void U4Recorder::CollectBoundaryAux<CustomG4OpBoundaryProcess>(quad4* current_au
 
 
 
-const double U4Recorder::EPSILON = 1e-4 ; 
 
 
 /**
@@ -934,7 +933,24 @@ Notice that there is some conflation over whether should classify fake steps or 
 Handling fake points would be cleaner but the info of the other point might be useful, 
 so leaving asis given that current incantation seems to work. 
 
++-----------------+---------------------------------------------------------------------------+
+| enum (0x1 << n) | U4Recorder::ClassifyFake heuristics, all contribute to fakemask           |  
++=================+===========================================================================+
+| FAKE_STEP_MM    | step length less than EPSILON thats not a reflection turnaround           |
++-----------------+---------------------------------------------------------------------------+
+| FAKE_FDIST      | distance to body_phys volume in direction of photon is less than EPSILON  |
++-----------------+---------------------------------------------------------------------------+
+| FAKE_SURFACE    | body_phys solid frame localPoint EInside is kSurface (powerful)           |
++-----------------+---------------------------------------------------------------------------+
+| FAKE_MANUAL     | manual selection via spec label (not recommended anymore)                 |
++-----------------+---------------------------------------------------------------------------+
+| FAKE_VV_INNER12 | U4Step::IsSameMaterialPVBorder Vacuum inner1_phys/inner2_phys             |
++-----------------+---------------------------------------------------------------------------+
+
 **/
+
+const double U4Recorder::EPSILON = 1e-4 ; 
+
 unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump )
 {
     unsigned fakemask = 0 ; 

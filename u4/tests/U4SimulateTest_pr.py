@@ -13,7 +13,7 @@ U4SimulateTest_pr.py
 import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
-from opticks.u4.tests.U4SimulateTest import U4SimulateTest
+from opticks.sysrap.sevt import SEvt
 
 
 SCRIPT = "./U4SimulateTest.sh pr"
@@ -38,16 +38,16 @@ pass
 if __name__ == '__main__':
 
     if N == -1:
-        a = U4SimulateTest.Load("$AFOLD",symbol="a")
-        b = U4SimulateTest.Load("$BFOLD",symbol="b")
+        a = SEvt.Load("$AFOLD",symbol="a")
+        b = SEvt.Load("$BFOLD",symbol="b")
         syms = ['a','b']
     elif N == 0:
-        a = U4SimulateTest.Load("$AFOLD",symbol="a")
+        a = SEvt.Load("$AFOLD",symbol="a")
         b = None
         syms = ['a']
     elif N == 1:
         a = None
-        b = U4SimulateTest.Load("$BFOLD",symbol="b")
+        b = SEvt.Load("$BFOLD",symbol="b")
         syms = ['b']
     else:
         assert(0)

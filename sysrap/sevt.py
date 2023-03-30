@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
-U4SimulateTest.py
-====================
+sevt.py (formerly opticks.u4.tests.U4SimulateTest)
+====================================================
+
 
 """
 import os, logging, numpy as np
@@ -25,8 +26,11 @@ axes = 0, 2  # X,Z
 H,V = axes 
 
 
-class U4SimulateTest(RFold):
+class SEvt(RFold):
     """
+    Higher level wrapper for an Opticks SEvt folder of arrays
+
+
     """
     def __init__(self, f):
 
@@ -36,7 +40,7 @@ class U4SimulateTest(RFold):
         qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
         n = np.sum( seqnib_(q_), axis=1 )   
         fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
-
+        spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
 
         qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
         quo = np.argsort(qn)[::-1]  
@@ -62,6 +66,8 @@ class U4SimulateTest(RFold):
         GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
         GEOMList = GEOMList[0] if len(GEOMList) == 1 else "NO-GEOMList"
 
+        U4R_names = getattr(f, "U4R_names", None)
+        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
 
         TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
         ID = "N%d_%s_%s_%s_%s" % (VERSION, LAYOUT, GEOM, GEOMList, CHECK)
@@ -73,6 +79,7 @@ class U4SimulateTest(RFold):
         self.qq = qq
         self.n = n 
         self.fk = fk
+        self.spec = spec
 
         self.qu = qu
         self.qi = qi
@@ -87,6 +94,8 @@ class U4SimulateTest(RFold):
         self.SCRIPT = SCRIPT
         self.GEOM = GEOM
         self.GEOMList = GEOMList
+        self.SPECS = SPECS
+
         self.TITLE = TITLE
         self.ID = ID
 
@@ -102,14 +111,14 @@ class U4SimulateTest(RFold):
         off_ = os.environ.get("%sOFF" % symbol.upper(), "0,0,0")
         off = np.array(list(map(float,off_.split(","))))
 
-        log.info("U4SimulateTest.__init__  symbol %s pid %d opt %s off %s " % (symbol, pid, opt, str(off)) ) 
+        log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (symbol, pid, opt, str(off)) ) 
         self.symbol = symbol
         self.pid = pid
         self.opt = opt 
         self.off = off
 
     def __repr__(self):
-        return "U4SimulateTest symbol %s pid %s opt %s off %s" % ( self.symbol, self.pid, self.opt, str(self.off) ) 
+        return "SEvt symbol %s pid %s opt %s off %s" % ( self.symbol, self.pid, self.opt, str(self.off) ) 
    
     def _get_pid(self):
         return self._pid
@@ -155,14 +164,53 @@ class U4SimulateTest(RFold):
 
     pid = property(_get_pid, _set_pid)
 
+    def spec_(self, i):
+        """
+        ## need np.abs as detected fakes that are not skipped are negated
+        In [10]: np.c_[a.spec[5,:a.n[5]],a.SPECS[np.abs(a.spec[5,:a.n[5]])]]
+        Out[10]: 
+        array([['0', 'UNSET'],
+               ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
+               ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
+               ['3', 'AcrylicMask/Water:HamamatsuR12860pMask/pLPMT_Hamamatsu_R12860'],
+               ['4', 'Water/Pyrex:pLPMT_Hamamatsu_R12860/HamamatsuR12860_PMT_20inch_log_phys'],
+               ['-5', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_log_phys/HamamatsuR12860_PMT_20inch_body_phys'],
+               ['6', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_body_phys/HamamatsuR12860_PMT_20inch_body_phys']], dtype='<U94')
+
+        In [1]: a.spec_(5)
+        Out[1]: 
+        array([['0', 'UNSET'],
+               ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
+               ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
+               ['3', 'AcrylicMask/Water:HamamatsuR12860pMask/pLPMT_Hamamatsu_R12860'],
+               ['4', 'Water/Pyrex:pLPMT_Hamamatsu_R12860/HamamatsuR12860_PMT_20inch_log_phys'],
+               ['-5', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_log_phys/HamamatsuR12860_PMT_20inch_body_phys'],
+               ['6', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_body_phys/HamamatsuR12860_PMT_20inch_body_phys']], dtype='<U94')
+
+        In [2]: b.spec_(5)
+        Out[2]: 
+        array([['0', 'UNSET'],
+               ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
+               ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
+               ['3', 'AcrylicMask/Water:HamamatsuR12860pMask/pLPMT_Hamamatsu_R12860'],
+               ['4', 'Water/Pyrex:pLPMT_Hamamatsu_R12860/HamamatsuR12860_PMT_20inch_log_phys'],
+               ['5', 'Pyrex/Vacuum:HamamatsuR12860_PMT_20inch_log_phys/HamamatsuR12860_PMT_20inch_inner_phys']], dtype='<U93')
+
+        """
+        t = self
+        n = t.n[i]
+        spec = t.spec[i,:n]
+        return np.c_[spec,t.SPECS[np.abs(spec)]]
+
+
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     FOLD = os.environ.get("FOLD", None)
-    log.info(" -- U4SimulateTest.Load FOLD" )
-    a = U4SimulateTest.Load(FOLD, symbol="a")   # optional photon histories 
+    log.info(" -- SEvt.Load FOLD" )
+    a = SEvt.Load(FOLD, symbol="a")   # optional photon histories 
     print(a)
 
     beg_ = "a.f.record[:,0,0,:3]"

@@ -5,7 +5,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold, RFold
 from opticks.ana.p import * 
-from opticks.u4.tests.U4SimulateTest import U4SimulateTest
+from opticks.sysrap.sevt import SEvt
 
 MODE = int(os.environ.get("MODE","2"))
 if MODE > 0:
@@ -22,8 +22,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     FOLD = os.environ.get("FOLD", None)
-    log.info(" -- U4SimulateTest.Load FOLD" )
-    a = U4SimulateTest.Load(FOLD, symbol="a")   # optional photon histories 
+    log.info(" -- SEvt.Load FOLD" )
+    a = SEvt.Load(FOLD, symbol="a")   # optional photon histories 
     print(a)
 
     SPECS = np.array(a.f.U4R_names.lines)

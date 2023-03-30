@@ -37,7 +37,7 @@ class AttrBase(object):
 
 class RFold(object):
     """
-    Provides a common Load method for U4SimtraceTest and U4SimulateTest objects
+    Provides a common Load method for the objects: U4SimtraceTest and SEvt(formerly U4SimulateTest)
     """
     @classmethod
     def Load(cls, fold, symbol="x"):
