@@ -16,6 +16,8 @@ def vnorm(v):
     return v
 
 
+
+
 class InputPhotons(object):
     DEFAULT_BASE = os.path.expanduser("~/.opticks/InputPhotons")
     DTYPE = np.float64 if os.environ.get("DTYPE","np.float32") == "np.float64" else np.float32
@@ -331,7 +333,7 @@ class InputPhotons(object):
     RAINXZ = "RainXZ" 
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
-    NAMES += [RAINXZ+"100", RAINXZ+"1000" ]
+    NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k" ]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -363,11 +365,11 @@ class InputPhotons(object):
             pass
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RAINXZ):
-            num = -int(name[len(self.RAINXZ):])  # extract num following prefix
+            num = parsetail_int(name, prefix=self.RAINXZ)
             mom = -self.Z
             z0 = 1000. 
             xl = 250. 
-            p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
+            p = self.GenerateXZ(-num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    
@@ -446,11 +448,37 @@ class InputPhotons(object):
         args = parser.parse_args()
         return args 
 
+
 class InputPhotonDefaults(object):
     seed = 0 
     level = "info"
 
+
+def parsetail_int(name, prefix=""):
+    """
+    """
+    assert name.startswith(prefix)
+    tail = name[len(prefix):]
+    factor = 1
+    if tail.endswith("k"):
+        factor = 1000
+        tail = tail[:-1]
+    elif tail.endswith("M"):
+        factor = 1000000
+        tail = tail[:-1]
+    else:
+        pass
+    pass    
+    value = int(tail)*factor
+    return value 
+
+def test_parsetail_int():
+    assert parsetail_int("RainXZ1k", prefix="RainXZ") == 1000
+    assert parsetail_int("RainXZ1M", prefix="RainXZ") == 1000000
+    assert parsetail_int("RainXZ10k", prefix="RainXZ") == 10000
+
 if __name__ == '__main__':
+    #test_parsetail_int()
     args = InputPhotons.parse_args(__doc__, InputPhotons.NAMES)
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
