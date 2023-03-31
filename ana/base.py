@@ -442,9 +442,12 @@ class PhotonCodeFlags(EnumFlags):
         name2abbr = abbrev.name2abbr
         names = self.names
 
+        abbr2code = {} 
         abbr = []
-        for name in names:
-            abbr.append(name2abbr.get(name, "??"))
+        for code, name in enumerate(names):
+            abr = name2abbr.get(name, "??")
+            abbr.append(abr)
+            abbr2code[abr] = code + 1 
         pass
 
         fln = np.array(["~~"]+names) 
@@ -456,6 +459,11 @@ class PhotonCodeFlags(EnumFlags):
         self.fln = fln
         self.fla = fla
         self.ftab = ftab
+        self.abbr2code = abbr2code
+
+    def __getattr__(self, arg):
+        code = self.abbr2code.get(arg, -1)
+        return code
 
 
 

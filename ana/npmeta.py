@@ -18,6 +18,22 @@ class NPMeta(object):
     ENCODING = "utf-8"
 
     @classmethod
+    def Compare(cls, am, bm):
+        ak = am.d.keys() 
+        bk = bm.d.keys() 
+        kk = list(set(list(ak)+list(bk))) 
+        tab = np.zeros( [len(kk),2], dtype=np.int32 ) 
+        for i, k in enumerate(kk):
+            al = am.d.get(k,[])
+            bl = bm.d.get(k,[])
+            tab[i,0] = al[0] if len(al) == 1 else -1
+            tab[i,1] = bl[0] if len(bl) == 1 else -1
+        pass
+        skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
+        return np.c_[skk, tab]
+        
+
+    @classmethod
     def AsDict(cls, lines):
         d = {}
         key = "" 

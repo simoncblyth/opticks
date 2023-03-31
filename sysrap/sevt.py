@@ -11,6 +11,12 @@ log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold, RFold
 from opticks.ana.p import * 
 from opticks.ana.eget import eslice_
+from opticks.ana.base import PhotonCodeFlags
+
+pcf = PhotonCodeFlags() 
+fln = pcf.fln
+fla = pcf.fla
+
 
 MODE = int(os.environ.get("MODE","2"))
 if MODE > 0:
@@ -43,10 +49,21 @@ class SEvt(RFold):
         spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
 
         uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
-        eph = uc4[:,:,1]  # .y   
+        eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
+        ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
+
+        nosc = np.ones(len(qq), np.bool )       # start all true
+        nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
+
+        noscab = np.ones(len(qq), np.bool )     # start all true  
+        noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
+        noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
+
+
 
         qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
         quo = np.argsort(qn)[::-1]  
+
 
         qlim = QLIM
         qtab_ = "np.c_[qn,qi,qu][quo][qlim]" 
@@ -76,6 +93,10 @@ class SEvt(RFold):
         ID = "N%d_%s_%s_%s_%s" % (VERSION, LAYOUT, GEOM, GEOMList, CHECK)
 
 
+
+
+
+
         self.f = f 
         self.q_ = q_
         self.q = q
@@ -84,7 +105,12 @@ class SEvt(RFold):
         self.fk = fk
         self.spec = spec
         self.uc4 = uc4
-        self.eph = eph 
+        self.eph = eph   # ProcessHits EPH enum at step point level 
+        self.ep  = ep    # ProcessHits EPH enum at photon level  
+        self.nosc = nosc   # mask of photons without SC in their histories
+        self.noscab = noscab   # mask of photons without SC or AB in their histories
+
+
 
         self.qu = qu
         self.qi = qi
