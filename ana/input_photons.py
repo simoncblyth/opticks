@@ -333,7 +333,7 @@ class InputPhotons(object):
     RAINXZ = "RainXZ" 
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
-    NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k" ]
+    NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
 
     def generate(self, name, args):
         if args.seed > -1:
