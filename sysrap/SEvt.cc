@@ -2078,6 +2078,26 @@ void SEvt::gather()
 
 
 /**
+SEvt::AddArray
+---------------
+
+Used for addition of extra metadata arrays to be save within SEvt folder
+
+**/
+
+void SEvt::AddArray( const char* k, const NP* a )  // static
+{
+    if(INSTANCE) INSTANCE->add_array(k, a); 
+}
+void SEvt::add_array( const char* k, const NP* a )
+{
+    fold->add(k, a);  
+}
+
+
+
+
+/**
 SEvt::save
 --------------
 

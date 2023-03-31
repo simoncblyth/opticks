@@ -224,6 +224,7 @@ inline void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, c
     pairs.push_back(KV(NAN_ABORT_ , _NAN_ABORT)); 
     pairs.push_back(KV(EFFICIENCY_CULL_ , _EFFICIENCY_CULL)); 
     pairs.push_back(KV(EFFICIENCY_COLLECT_ , _EFFICIENCY_COLLECT)); 
+    pairs.push_back(KV(DEFER_FSTRACKINFO_ , _DEFER_FSTRACKINFO)); 
 
     // HMM: no _BAD_FLAG abbrev ?
 }

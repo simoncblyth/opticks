@@ -345,6 +345,12 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void gather() ;  // with on device running this downloads
 
+
+    // add extra metadata arrays to be saved within SEvt fold 
+    static void AddArray(const char* k, const NP* a ); 
+    void add_array( const char* k, const NP* a ); 
+
+
     // save methods not const as calls gather
     void save() ; 
     int  load() ; 

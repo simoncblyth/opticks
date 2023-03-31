@@ -42,6 +42,9 @@ class SEvt(RFold):
         fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
         spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
 
+        uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
+        eph = uc4[:,:,1]  # .y   
+
         qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
         quo = np.argsort(qn)[::-1]  
 
@@ -80,6 +83,8 @@ class SEvt(RFold):
         self.n = n 
         self.fk = fk
         self.spec = spec
+        self.uc4 = uc4
+        self.eph = eph 
 
         self.qu = qu
         self.qi = qi

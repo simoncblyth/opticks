@@ -85,8 +85,9 @@ struct U4_API U4Recorder
 
     void saveOrLoadStates(int id); 
     void saveRerunRand(const char* dir) const ; 
-    static void SaveMeta(const char* savedir); 
 
+    static NP* MakeMetaArray() ; 
+    static void SaveMeta(const char* savedir); 
 
     void PostUserTrackingAction_Optical(const G4Track*);
 

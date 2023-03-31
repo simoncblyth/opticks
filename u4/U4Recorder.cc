@@ -169,6 +169,8 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
          ; 
     assert( consistent_eventID ); 
 
+    SEvt::AddArray("U4R.npy", MakeMetaArray() ); 
+
     SEvt::Save(); 
     SEvt::Clear(); 
 
@@ -483,6 +485,9 @@ void U4Recorder::saveRerunRand(const char* dir) const
 U4Recorder::SaveMeta
 ----------------------
 
+This is called from U4Recorder::EndOfEventAction after saving the SEvt 
+in order to have savedir. 
+
 SPECS.names 
     added and enumerations used in UserSteppingAction_Optical
     enumeration spec values at each point a.f.aux[:,:,2,3].view(np.int32) 
@@ -493,11 +498,30 @@ With standalone testing this is called from U4App::EndOfEventAction/U4App::SaveM
 * just need the savedir  
 
 
+
+HMM this is saving extra metadata onto the SEvt savedir.
+Could instead add SEvt API for addition of metadata, 
+avoiding need to passaround savedir.
+This would make it easier to add SEvt metadata 
+from within the monolith as just need access to SEvt
+and dont need to catch it after the save. 
+
 **/
 
 void U4Recorder::SaveMeta(const char* savedir)  // static
 {
     if(savedir == nullptr) return ; 
+
+    //NP* u4r = MakeMetaArray();   // moved to EndOfEventAction
+    //u4r->save(savedir, "U4R.npy") ; 
+
+    assert(INSTANCE); 
+    INSTANCE->saveRerunRand(savedir); 
+}   
+
+
+NP* U4Recorder::MakeMetaArray() // static
+{
     std::string descfakes = U4Recorder::DescFakes() ;
     LOG(info) << descfakes ; 
 
@@ -505,11 +529,10 @@ void U4Recorder::SaveMeta(const char* savedir)  // static
     u4r->fill(0) ; 
     u4r->set_names(U4Recorder::SPECS.names); 
     u4r->set_meta<std::string>("DescFakes", descfakes );  
-    u4r->save(savedir, "U4R.npy") ; 
 
-    assert(INSTANCE); 
-    INSTANCE->saveRerunRand(savedir); 
-}   
+    return u4r ; 
+}
+
 
 /**
 U4Recorder::PostUserTrackingAction_Optical

@@ -299,13 +299,22 @@ class Abbrev(object):
         pass
         #log.info("js:%s" % js.keys() )
 
-        names = map(str,js.keys())
-        abbrs = map(str,js.values())
+        names = list(map(str,js.keys()))    # CAUTION ORDER DOES NOT MATCH PhotonCodeFlags
+        abbrs = list(map(str,js.values()))
 
         self.names = names
         self.abbrs = abbrs
         self.name2abbr = dict(zip(names, abbrs))
         self.abbr2name = dict(zip(abbrs, names))
+
+
+    def __repr__(self):
+        lines = []
+        lines.append(".names")
+        lines.extend(self.names)
+        lines.append(".abbrs")
+        lines.extend(self.abbrs)
+        return "\n".join(lines)
 
 
 class ItemList(object): # formerly ListFlags
@@ -428,15 +437,31 @@ class PhotonCodeFlags(EnumFlags):
     """
     def __init__(self):
         EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=True) 
-        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
+
+        abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
+        name2abbr = abbrev.name2abbr
+        names = self.names
+
+        abbr = []
+        for name in names:
+            abbr.append(name2abbr.get(name, "??"))
+        pass
+
+        fln = np.array(["~~"]+names) 
+        fla = np.array(["~~"]+abbr) 
+        ftab = np.c_[np.arange(len(fla)),fla,fln]
+
+        self.abbrev = abbrev   
+        self.abbr = abbr      # these abbr follow same order as names unlike abbrev.names
+        self.fln = fln
+        self.fla = fla
+        self.ftab = ftab
 
 
 
-
-if __name__ == '__main__':
+def test_basics():
     from opticks.ana.main import opticks_main
     ok = opticks_main() 
-
 
     lf = ItemList("GMaterialLib")
     print("lf:ItemList(GMaterialLib).name2code")
@@ -453,6 +478,15 @@ if __name__ == '__main__':
     phcf = PhotonCodeFlags()
     print("phcf:PhotonCodeFlags()")
     print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(phcf.name2code.items(),key=lambda kv:kv[1])]))
+
+
+
+if __name__ == '__main__':
+
+    pcf = PhotonCodeFlags() 
+    print(pcf.ftab)
+
+
 
 
 
