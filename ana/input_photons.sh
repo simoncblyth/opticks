@@ -1,27 +1,29 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 input_photons.sh
 ===================
 
-Running the script creates a selection if input photon .npy arrays
-into  ~/.opticks/InputPhotons
+Running this script creates several input photon .npy arrays 
+into the directory ~/.opticks/InputPhotons::
 
-Change the DTYPE envvar to switch beween precisions np.float32 OR np.float64
+   o   # cd ~/opticks
 
-::
+   ./ana/input_photons.sh   # create input photon arrays (non interactive)
+   ./ana/iinput_photons.sh  # create input photon arrays (interactive) 
 
-   cd ~/opticks/ana
-   ./input_photons.sh 
+Note that the python script runs twice with DTYPE envvar 
+as np.float32 and np.float64 in order to create the arrays 
+in both single and double precision. 
 
 EOU
 }
 
-export DTYPE=np.float32
-${IPYTHON:-ipython} --pdb input_photons.py -- $*
+DIR=$(dirname $BASH_SOURCE)
 
-export DTYPE=np.float64
-${IPYTHON:-ipython} --pdb input_photons.py -- $*
+dtypes="np.float32 np.float64"
+for dtype in $dtypes ; do 
+    DTYPE=$dtype ${IPYTHON:-ipython} --pdb $OPT $DIR/input_photons.py -- $*
+done
 
 ls -alst ~/.opticks/InputPhotons
 

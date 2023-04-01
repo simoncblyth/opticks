@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """
+input_photons.py 
+==================
 
 
 """
+from collections import OrderedDict as odict 
 import argparse, logging, os, json
 log = logging.getLogger(__name__)
 import numpy as np
@@ -14,8 +17,6 @@ def vnorm(v):
     norm3 = np.repeat(norm, 3).reshape(-1,3)
     v /=  norm3
     return v
-
-
 
 
 class InputPhotons(object):
@@ -439,7 +440,7 @@ class InputPhotons(object):
         json.dump(self.meta, open(json_path,"w"))
 
     def __repr__(self):
-        return "\n".join([str(self.meta),str(self.p.reshape(-1,16))])
+        return "\n".join([str(self.meta),".p %s" % self.p.dtype, str(self.p.reshape(-1,16))])
 
     @classmethod
     def parse_args(cls, doc, names):
@@ -493,6 +494,13 @@ def test_parsetail():
     assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == (1000000,230)
 
 
+def test_InwardsCubeCorners17699(ip):
+    sel = "InwardsCubeCorners17699"
+    ip0 = ip[sel] 
+    p = ip0.p 
+    m = ip0.meta
+    r = np.sqrt(np.sum(p[:,0,:3]*p[:,0,:3], axis=1 ))  # radii of start positions
+
 
 
 if __name__ == '__main__':
@@ -502,18 +510,12 @@ if __name__ == '__main__':
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
-    ip = {}
+    ip = odict()
     for name in args.names:
         ip[name] = InputPhotons(name, args)
         print(ip[name])
     pass
-
-    sel = "InwardsCubeCorners17699"
-    ip0 = ip[sel] 
-    p = ip0.p 
-    m = ip0.meta
-    r = np.sqrt(np.sum(p[:,0,:3]*p[:,0,:3], axis=1 ))  # radii of start positions
-
+    print("ip odict contains all InputPhotons")  
 
 
 
