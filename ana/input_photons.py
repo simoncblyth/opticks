@@ -331,9 +331,12 @@ class InputPhotons(object):
     UXZ = "UpXZ"
     DXZ = "DownXZ"
     RAINXZ = "RainXZ" 
+    Z230 = "_Z230_"
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
     NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
+    NAMES += [RAINXZ+Z230+"100", RAINXZ+Z230+"1000", RAINXZ+Z230+"100k", RAINXZ+Z230+"10k" ]
+
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -365,9 +368,9 @@ class InputPhotons(object):
             pass
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RAINXZ):
-            num = parsetail_int(name, prefix=self.RAINXZ)
+            num, z0 = parsetail(name, prefix=self.RAINXZ)
+            z0 = 1000. if z0 is None else z0
             mom = -self.Z
-            z0 = 1000. 
             xl = 250. 
             p = self.GenerateXZ(-num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
@@ -454,31 +457,46 @@ class InputPhotonDefaults(object):
     level = "info"
 
 
-def parsetail_int(name, prefix=""):
+def parsetail(name, prefix=""):
     """
     """
+    z0 = None
     assert name.startswith(prefix)
     tail = name[len(prefix):]
-    factor = 1
-    if tail.endswith("k"):
-        factor = 1000
-        tail = tail[:-1]
-    elif tail.endswith("M"):
-        factor = 1000000
-        tail = tail[:-1]
-    else:
-        pass
-    pass    
-    value = int(tail)*factor
-    return value 
+    elem = list(filter(None,tail.split("_"))) if tail.find("_") > -1 else [tail]
+    #print(" name:%s. tail:%s. elem:%s." % (name, tail, str(elem)) )
 
-def test_parsetail_int():
-    assert parsetail_int("RainXZ1k", prefix="RainXZ") == 1000
-    assert parsetail_int("RainXZ1M", prefix="RainXZ") == 1000000
-    assert parsetail_int("RainXZ10k", prefix="RainXZ") == 10000
+    if len(elem) > 1:
+        if elem[0][0] == 'Z':       
+           z0 = int(elem[0][1:])
+        pass
+    pass 
+    if elem[-1].endswith("k"):
+        num = int(elem[-1][:-1])*1000
+    elif elem[-1].endswith("M"):
+        num = int(elem[-1][:-1])*1000000
+    else:
+        num = int(elem[-1])
+    pass    
+    return num, z0 
+
+def test_parsetail():
+    assert parsetail("RainXZ1k", prefix="RainXZ") == (1000,None)
+    assert parsetail("RainXZ10k", prefix="RainXZ") == (10000,None)
+    assert parsetail("RainXZ1M", prefix="RainXZ") == (1000000,None)
+
+    #pt = parsetail("RainXZ_Z230_1k", prefix="RainXZ")
+    #print(pt)
+
+    assert parsetail("RainXZ_Z230_1k", prefix="RainXZ") == (1000,230)
+    assert parsetail("RainXZ_Z230_10k", prefix="RainXZ") == (10000,230)
+    assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == (1000000,230)
+
+
+
 
 if __name__ == '__main__':
-    #test_parsetail_int()
+    #test_parsetail()
     args = InputPhotons.parse_args(__doc__, InputPhotons.NAMES)
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'

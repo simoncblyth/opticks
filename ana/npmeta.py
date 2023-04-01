@@ -10,6 +10,7 @@ TODO: introspective listing of keys, rather than current needing to know whats t
 """
 
 import os, logging
+from collections import OrderedDict as odict 
 import numpy as np
 log = logging.getLogger(__name__)
 
@@ -21,21 +22,40 @@ class NPMeta(object):
     def Compare(cls, am, bm):
         ak = am.d.keys() 
         bk = bm.d.keys() 
-        kk = list(set(list(ak)+list(bk))) 
+        kk = ak if ak == bk else list(set(list(ak)+list(bk))) 
         tab = np.zeros( [len(kk),2], dtype=np.int32 ) 
+        lines = [] 
+
+        hfmt = "%-30s : %7s : %7s : %7s : %7s : %s "
+        vfmt = "%-30s : %7d : %7d : %7.3f : %7.3f : %7.3f"
+        lines.append(hfmt % ("key", "a", "b", "a/b", "b/a", "(a-b)^2/(a+b)" ))  
+
         for i, k in enumerate(kk):
+
+            if k == "": continue
             al = am.d.get(k,[])
             bl = bm.d.get(k,[])
-            tab[i,0] = al[0] if len(al) == 1 else -1
-            tab[i,1] = bl[0] if len(bl) == 1 else -1
+
+            av = float(al[0] if len(al) == 1 else -1)
+            bv = float(bl[0] if len(bl) == 1 else -1)
+
+            av_bv = 0 if bv == 0. else av/bv
+            bv_av = 0 if av == 0. else bv/av
+            c2    = 0 if av+bv == 0 else (av-bv)*(av-bv)/(av+bv)
+
+            lines.append(vfmt % ( k, av, bv, av_bv, bv_av, c2 ))
+
+            tab[i,0] = av
+            tab[i,1] = bv
         pass
-        skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
-        return np.c_[skk, tab]
+        #skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
+        #np.c_[skk, tab]
+        return "\n".join(lines) 
         
 
     @classmethod
     def AsDict(cls, lines):
-        d = {}
+        d = odict()
         key = "" 
         d[key] = []
         for line in lines:
