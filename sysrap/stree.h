@@ -1654,6 +1654,24 @@ inline void stree::save_( const char* fold ) const
     if(level > 0) std::cout << "] stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
 }
 
+/**
+stree::make_trs
+-----------------
+
+This is used from U4Tree::simtrace_scan as the basis for u4/tests/U4SimtraceTest.sh 
+
+1. HMM: this is based on GTD: "GGeo Transform Debug" so it is not future safe 
+
+   * TODO: adopt the modern equivalent of GTD, or create one if non-existing 
+
+2. saves solid names for every node of the geometry, so thats lots of
+   repeated solid names in full geometries 
+
+3. implication is that the number of nodes in the geometry 
+   matches the number of gtd and trs transforms (CHECK THAT)
+
+**/
+
 inline NP* stree::make_trs() const
 {
     NP* trs = NP::Make<double>( gtd.size(), 4, 4 ); 

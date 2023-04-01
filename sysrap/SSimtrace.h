@@ -3,6 +3,18 @@
 SSimtrace : aiming to replace X4Simtrace
 =============================================
 
+SSimtrace.h is very local centric it populates a default sframe with ce 
+from the G4VSolid.
+
+This is used from U4Tree::simtrace_scan (u4/test/U4SimtraceTest.sh)
+for all distinct solids in a geometry saving the simtrace SEvt 
+with reldir for each solid name. 
+
+In addition stree::save_trs is used to save the placement transforms 
+
+
+
+
 **/
 #include <cstring>
 #include "plog/Severity.h"

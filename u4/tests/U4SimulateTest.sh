@@ -336,6 +336,9 @@ notes(){ cat << EON
 ENVOUT COMMUNICATION FROM PYTHON BACK TO BASH
 -----------------------------------------------
 
+The U4SimulateTest_pr.py script writes ENVOUT 
+
+
 NOTICE HOW ENVOUT COMMUNICATION RELIES ON OVERLAPPED RUNNING OF THIS BASH SCRIPT
 
 1. IPYTHON PLOTTING RUNS AND WRITES THE ENVOUT FILE, POPS UP THE GUI WINDOW AND BLOCKS
@@ -345,13 +348,10 @@ NOTICE HOW ENVOUT COMMUNICATION RELIES ON OVERLAPPED RUNNING OF THIS BASH SCRIPT
 
 3. FINALLY THE FIRST PYTHON PLOTTER SESSION IS EXITED THAT CLEANS UP THE ENVOUT FILE.  
 
-
 So the ENVOUT file just contains the config for the currently displayed plot. 
 
 EON
 }
-
-
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     if [ -n "$ENVOUT_VERSION" ]; then
