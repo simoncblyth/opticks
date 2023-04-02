@@ -14,6 +14,14 @@ Although in principal this should work for any geometry it is intended to
 assist with debugging within small test geometries.  With large geometries it
 will be very slow and write huge amounts of output. 
 
+HMM: Not as general as this implies, because the gensteps pick a plane 
+in which to collect intersects : so combining those only makes sense
+when the transforms of the solids correspond. So it will work for the 
+solids of a single PMT, but will not usually work across multiple PMTs. 
+
+TODO: review the GPU simtrace approach and see if something similar 
+could be done with G4Navigator  
+
 **/
 
 #include "G4VSolid.hh"

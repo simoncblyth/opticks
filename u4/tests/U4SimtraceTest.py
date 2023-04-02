@@ -110,7 +110,7 @@ class U4SimtraceTest(RFold):
 
     def geoplot(self, pl):
         """
-        :param pl: wither tuple of (fig,ax) for MODE 2 or pyvista pl for MODE 3
+        :param pl: either tuple of (fig,ax) for MODE 2 or pyvista pl for MODE 3
         """
         fig, ax = None, None
         if MODE == 2:
@@ -137,7 +137,7 @@ class U4SimtraceTest(RFold):
         for j in range(num):
             i = num - 1 - j  if REVERSE else j
 
-            soname = trs_names[i]
+            soname = trs_names[i] ## solid name for every transform, lots of repeated solid names 
 
             if vsel:
                 if i in vol: 

@@ -48,6 +48,8 @@ set(TEST_SOURCES
    U4Hit_Debug_Test.cc 
 
    G4ThreeVectorTest.cc 
+
+   U4NavigatorTest.cc
  
 )
 
