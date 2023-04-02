@@ -71,30 +71,30 @@ class SEvt(RFold):
         qtab_ = qtab_.replace("q","%s.q" % symbol)
 
         CHECK = getattr( f.photon_meta, 'CHECK', [] )
-        CHECK = CHECK[0] if len(CHECK) == 1 else "NO-CHECK"
+        CHECK = CHECK[0] if len(CHECK) == 1 else ""
 
         LAYOUT = getattr( f.photon_meta, 'LAYOUT', [] )
-        LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else "NO-LAYOUT"
+        LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else ""
+        if LAYOUT.find(" ") > -1: LAYOUT = ""
 
         VERSION = getattr( f.photon_meta, 'VERSION', [] )
         VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
-        SCRIPT = os.environ.get("SCRIPT", "no-SCRIPT") 
+        SCRIPT = os.environ.get("SCRIPT", "") 
 
         GEOM = getattr(f.photon_meta, "GEOM", [])
-        GEOM = GEOM[0] if len(GEOM) == 1 else "NO-GEOM"
+        GEOM = GEOM[0] if len(GEOM) == 1 else ""
 
         GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
-        GEOMList = GEOMList[0] if len(GEOMList) == 1 else "NO-GEOMList"
+        GEOMList = GEOMList[0] if len(GEOMList) == 1 else ""
+        if GEOMList.endswith("GEOMList"): GEOMList = ""
 
         U4R_names = getattr(f, "U4R_names", None)
         SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
 
         TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
-        ID = "N%d_%s_%s_%s_%s" % (VERSION, LAYOUT, GEOM, GEOMList, CHECK)
 
-
-
-
+        IDE = list(filter(None,[symbol.upper(), GEOM, GEOMList, "N%d"%VERSION, LAYOUT, CHECK])) 
+        ID = "_".join(IDE)
 
 
         self.f = f 
@@ -109,8 +109,6 @@ class SEvt(RFold):
         self.ep  = ep    # ProcessHits EPH enum at photon level  
         self.nosc = nosc   # mask of photons without SC in their histories
         self.noscab = noscab   # mask of photons without SC or AB in their histories
-
-
 
         self.qu = qu
         self.qi = qi
@@ -128,6 +126,7 @@ class SEvt(RFold):
         self.SPECS = SPECS
 
         self.TITLE = TITLE
+        self.IDE = IDE
         self.ID = ID
 
 
