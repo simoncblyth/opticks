@@ -48,6 +48,10 @@ struct U4_API U4Recorder
     static constexpr int STATE_ITEMS = 2*17+4 ; // 2*17+4 is appropriate for MixMaxRng 
 
     static const bool PIDX_ENABLED ; 
+
+    static constexpr const char* EndOfRunAction_Simtrace_ = "U4Recorder__EndOfRunAction_Simtrace" ; 
+    static const bool            EndOfRunAction_Simtrace ; 
+
     static const int PIDX ;   // used to control debug printout for idx 
     static const int EIDX ;   // used to enable U4Recorder for an idx, skipping all others
     static const int GIDX ; 

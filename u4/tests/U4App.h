@@ -39,7 +39,6 @@ U4VolumeMaker::PV which is controlled by the GEOM envvar.
 #include "U4Random.hh"
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
-#include "U4Navigator.h"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -144,7 +143,6 @@ U4App::U4App(G4RunManager* runMgr)
     fRunMgr->SetUserAction((G4UserSteppingAction*)this);
     fRunMgr->Initialize(); 
 
-    U4Navigator::Check(); 
 }
 
 G4VPhysicalVolume* U4App::Construct()
@@ -163,8 +161,16 @@ G4VPhysicalVolume* U4App::Construct()
 }  
 
 // pass along the message to the recorder
-void U4App::BeginOfRunAction(const G4Run* run){ fRecorder->BeginOfRunAction(run);   }
-void U4App::EndOfRunAction(const G4Run* run){   fRecorder->EndOfRunAction(run);     }
+void U4App::BeginOfRunAction(const G4Run* run)
+{ 
+    LOG(info) ; 
+    fRecorder->BeginOfRunAction(run);   
+}
+void U4App::EndOfRunAction(const G4Run* run)
+{   
+    LOG(info); 
+    fRecorder->EndOfRunAction(run);     
+}
 
 
 /**

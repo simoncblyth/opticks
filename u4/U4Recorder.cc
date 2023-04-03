@@ -59,6 +59,9 @@ const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ;
 const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
+const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool(EndOfRunAction_Simtrace_) ; 
+
+
 const int U4Recorder::PIDX = ssys::getenvint("PIDX",-1) ; 
 const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ; 
 const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
@@ -146,8 +149,39 @@ U4Recorder::U4Recorder()
 }
 
 
-void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
-void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); U4Simtrace::EndOfRunAction() ; }
+void U4Recorder::BeginOfRunAction(const G4Run*)
+{  
+    LOG(info); 
+}
+
+/**
+U4Recorder::EndOfRunAction
+---------------------------
+
+HUH: some problem with LOG from here ? 
+
+**/
+void U4Recorder::EndOfRunAction(const G4Run*)
+{ 
+    std::cout 
+        << "[ U4Recorder::EndOfRunAction"
+        << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
+        << std::endl  
+        ;
+ 
+    if(EndOfRunAction_Simtrace) 
+    {
+        U4Simtrace::EndOfRunAction() ; 
+    }
+
+    std::cout 
+        << "] U4Recorder::EndOfRunAction"
+        << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
+        << std::endl  
+        ;
+ 
+
+}
 
 void U4Recorder::BeginOfEventAction(const G4Event* event)
 { 

@@ -90,9 +90,9 @@ logN=${bin}_$VERSION.log
 #num_ph=1
 #num_ph=10
 #num_ph=100
-#num_ph=1000      # 1k
+num_ph=1000      # 1k
 #num_ph=10000    # 10k
-num_ph=50000
+#num_ph=50000
 #num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
@@ -242,8 +242,10 @@ else
    #export CustomG4OpBoundaryProcess=INFO
 
    export U4Physics=INFO
+   export U4Recorder=INFO
+
    export C4OpBoundaryProcess__PIDX_ENABLED=1
- 
+   export U4Recorder__EndOfRunAction_Simtrace=1  
 
 fi 
 
