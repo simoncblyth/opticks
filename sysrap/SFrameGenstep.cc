@@ -119,8 +119,6 @@ SFrameGenstep::MakeCenterExtentGensteps
 
 Canonical usage is from SEvt::setFrame for simtrace running. 
 
-
-
 NOTE: changed CE_SCALE default to be 1, enabling it
 To switch off CE scaling set CE_SCALE envvar to "0" 
 
@@ -197,8 +195,6 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     NP* gs = NP::Concatenate(gsl) ; 
     LOG(LEVEL) << "] NP::Concatenate " ; 
 
-
-    //gs->set_meta<std::string>("moi", moi );
     gs->set_meta<int>("midx", fr.midx() );
     gs->set_meta<int>("mord", fr.mord() );
     gs->set_meta<int>("iidx", fr.iidx() );
@@ -694,12 +690,17 @@ void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp,
 SFrameGenstep::GenerateSimtracePhotons
 -----------------------------------------
 
+Canonical invokation is from SEvt::setFrame_HostsideSimtrace
+using the genstep created by SFrameGenstep::MakeCenterExtentGensteps
+
 **/
 
 void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep )
 {
-
-    LOG(LEVEL) << "SFrameGenstep::GenerateSimtracePhotons simtrace.size " << simtrace.size() ; 
+    LOG(LEVEL) 
+        << " genstep.size " << genstep.size() 
+        << " simtrace.size " << simtrace.size() 
+        ; 
 
     unsigned seed = 0 ; 
     SRng<float> rng(seed) ;
@@ -769,8 +770,8 @@ void SFrameGenstep::GenerateSimtracePhotons( std::vector<quad4>& simtrace, const
             {
                 p.q0.f = {0.f,0.f,0.f,0.f} ;   // intersect normal and distance
                 p.q1.f = {0.f,0.f,0.f,0.f} ;   // intersect position
-                p.q2.f = ori ;   // initial position
-                p.q3.f = dir ;   // initial direction 
+                p.q2.f = ori ;                 // initial position
+                p.q3.f = dir ;                 // initial direction 
                 p.q3.u.w = identity ;   
             } 
             else

@@ -28,10 +28,9 @@ int main(int argc, char** argv)
     const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar 
     if(pv == nullptr) return 0 ; 
 
-    G4ThreeVector position(0.,0.,0.); 
-    G4ThreeVector direction(0.,0.,1.); 
-    G4double dist = U4Navigator::Distance( position, direction ); 
-
+    G4ThreeVector pos(0.,0.,0.); 
+    G4ThreeVector dir(0.,0.,1.); 
+    G4double dist = U4Navigator::Distance( pos, dir, true  ); 
     LOG(info) << " dist " << dist  ; 
 
     return 0 ; 

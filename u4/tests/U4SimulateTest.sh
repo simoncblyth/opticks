@@ -243,9 +243,11 @@ else
 
    export U4Physics=INFO
    export U4Recorder=INFO
+   #export SEvt=INFO
 
    export C4OpBoundaryProcess__PIDX_ENABLED=1
    export U4Recorder__EndOfRunAction_Simtrace=1  
+   export SFrameGenstep=INFO
 
 fi 
 

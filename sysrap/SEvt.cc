@@ -437,8 +437,6 @@ const char* SEvt::GetFrameId(){    return INSTANCE ? INSTANCE->getFrameId() : nu
 const NP*   SEvt::GetFrameArray(){ return INSTANCE ? INSTANCE->getFrameArray() : nullptr ; } 
 
 
-
-
 /**
 SEvt::setFrame_HostsideSimtrace
 ---------------------------------
@@ -468,6 +466,8 @@ void SEvt::setFrame_HostsideSimtrace()
 
     SFrameGenstep::GenerateSimtracePhotons( simtrace, genstep );
 }
+
+
 
 /**
 SEvt::setGeo
@@ -514,6 +514,47 @@ void SEvt::setFrame(unsigned ins_idx)
 }
 
 
+
+/**
+SEvt::CreateSimtraceEvent
+---------------------------
+
+Experimental creation of a new SEvt 
+that adopts the sframe of the prior SEvt 
+and is configured for hostside Simtrace running.  
+
+The appropriate place use this method is from EndOfRunAction
+after standard (non-simtrace) usage of SEvt 
+such as saving simulation SEvt is completed.  
+
+**/
+
+SEvt* SEvt::CreateSimtraceEvent()  // static
+{
+    LOG(LEVEL) << "[" ; 
+
+    SEvt* prior = SEvt::Get();  
+    if(prior == nullptr ) return nullptr ; 
+
+    sframe& pfr = prior->frame ;   
+    pfr.set_hostside_simtrace();
+
+    pfr.ce.w = 200.f ;  // kludge : whats the proper way to config this ? 
+
+    // set_hostside_simtrace into frame which 
+    // influences the action of SEvt::setFrame  
+    // especially SEvt::setFrame_HostsideSimtrace which 
+    // generates simtrace photons
+        
+    SEventConfig::SetRGModeSimtrace();
+    SEvt* ste = new SEvt ;
+    ste->setFrame(pfr);   
+    ste->setIndex(999); 
+
+    LOG(LEVEL) << "] ste.simtrace.size " << ste->simtrace.size() ; 
+
+    return ste ; 
+}
 
 
 /**

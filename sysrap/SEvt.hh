@@ -227,6 +227,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setFrame_HostsideSimtrace() ; 
     void setGeo(const SGeo* cf); 
     void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
+    static SEvt* CreateSimtraceEvent(); 
+
 
     const char* getFrameId() const ; 
     const NP*   getFrameArray() const ; 
