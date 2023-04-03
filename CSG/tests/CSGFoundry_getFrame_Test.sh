@@ -8,7 +8,10 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 
 
 ipf=Hama:0:1000
-export OPTICKS_INPUT_PHOTON_FRAME=${OPTICKS_INPUT_PHOTON_FRAME:-$ipf}
+
+#export OPTICKS_INPUT_PHOTON_FRAME=${OPTICKS_INPUT_PHOTON_FRAME:-$ipf}
+export MOI=$ipf
+
 
 msg="=== $BASH_SOURCE :"
 bin=CSGFoundry_getFrame_Test

@@ -334,18 +334,16 @@ G4CXOpticks::setupFrame
 The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME 
 it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
 
-Called from G4CXOpticks::simulate and G4CXOpticks::simtrace
-Q: why not G4CXOpticks::render too ?
+This setupFrame was formerly called from G4CXOpticks::simulate and G4CXOpticks::simtrace
+it is now moved to G4CXOpticks::setGeometry. 
 
-Q: Can this setup be moved to initialization ? ARE TRYING TO DO THAT NOW
-A: for simulate where the frame is used for input photons 
-   that would make sense, but changing frame from render to render
-   would be useful 
+Q: why is the frame needed ?
+A: cx rendering viewpoint, input photon frame and the simtrace genstep grid 
+   are all based on the frame center, extent and transforms 
 
-Q: why does cx need the frame ?
-A: the rendering viewpoint or simtrace grid is based on the frame center, extent and transforms 
+Q: This feels like too high level to do this, should be at CSG level perhaps ? 
+   And then CSGOptix could grab the SEvt frame at its initialization. 
 
-TODO: see if cx could consult the SEvt for the frame ?
 
 **/
 
@@ -396,7 +394,6 @@ void G4CXOpticks::simulate()
 
     SEvt* sev = SEvt::Get();  assert(sev); 
 
-    // setupFrame();   // EXPT: try moving this to being done from setGeometry
 
     unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
     unsigned num_photon  = sev->getNumPhotonCollected(); 

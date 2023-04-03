@@ -539,7 +539,15 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     sframe& pfr = prior->frame ;   
     pfr.set_hostside_simtrace();
 
-    pfr.ce.w = 200.f ;  // kludge : whats the proper way to config this ? 
+    if( pfr.ce.w == 0.f )
+    {
+        pfr.ce.w = 200.f ;  
+        LOG(LEVEL) 
+            << " kludging frame extent, this happens with U4SimulateTest"
+            << " as the CSGFoundry geometry is not available causing the 
+            << " SEvt sframe to be default "
+            ;
+    }
 
     // set_hostside_simtrace into frame which 
     // influences the action of SEvt::setFrame  

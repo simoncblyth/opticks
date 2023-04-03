@@ -510,6 +510,8 @@ reference used by the EYE LOOK UP navigation controls.
 Q: CSGOptiX::setFrame is clearly needed for render but is it needed for simtrace, simulate ?
 A: Currently think that it is just a bookkeeping convenience for simtrace and not needed for simulate. 
 
+   * not anymore, at SEvt level the frame is used for input photon targetting 
+
 **/
 
 void CSGOptiX::setFrame()
@@ -561,6 +563,7 @@ void CSGOptiX::setFrame(const sframe& fr_ )
 
 #ifdef WITH_SGLM
 #else
+    // without SGLM is the old way of doing things to be eliminated
     bool autocam = true ; 
     composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
     composition->setNear(tmin); 
