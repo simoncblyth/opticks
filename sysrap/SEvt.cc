@@ -786,11 +786,9 @@ int SEvt::getIndex() const { return index ; }
 void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR  
 { 
     reldir = reldir_ ? strdup(reldir_) : nullptr ; 
-    std::cerr 
-        << "SEvt::setReldir"
+    LOG(LEVEL)
         << " reldir " << ( reldir ? reldir : "-" )
         << " this " << std::hex << this << std::dec
-        << std::endl 
         ;
 } 
 const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
@@ -1091,7 +1089,7 @@ being configured to zero via SEventConfig.
 
 void SEvt::hostside_running_resize_()
 {
-    LOG(info) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
+    LOG(LEVEL) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
 
     if(evt->num_photon > 0) 
     { 
@@ -2250,7 +2248,7 @@ void SEvt::save(const char* dir_)
 {
     const char* dir = getOutputDir(dir_); 
     LOG(info) << " dir " << dir ; 
-    LOG(error) << descSaveDir(dir_) ; 
+    LOG(LEVEL) << descSaveDir(dir_) ; 
 
     LOG(LEVEL) << "[ gather " ; 
     gather(); 

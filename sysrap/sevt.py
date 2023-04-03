@@ -41,34 +41,53 @@ class SEvt(RFold):
     def __init__(self, f):
 
         symbol = f.symbol
-        q_ = f.seq[:,0]
-        q  = ht.seqhis(q_)  # ht from opticks.ana.p 
-        qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
-        n = np.sum( seqnib_(q_), axis=1 )   
-        fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
-        spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
-
-        uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
-        eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
-        ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
-
-        nosc = np.ones(len(qq), np.bool )       # start all true
-        nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
-
-        noscab = np.ones(len(qq), np.bool )     # start all true  
-        noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
-        noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
-
-
-
-        qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
-        quo = np.argsort(qn)[::-1]  
-
-
         qlim = QLIM
         qtab_ = "np.c_[qn,qi,qu][quo][qlim]" 
-        qtab = eval(qtab_)
-        qtab_ = qtab_.replace("q","%s.q" % symbol)
+
+        if hasattr(f,'seq') and not f.seq is None: 
+            q_ = f.seq[:,0]
+            q  = ht.seqhis(q_)  # ht from opticks.ana.p 
+            qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
+            n = np.sum( seqnib_(q_), axis=1 )   
+
+            nosc = np.ones(len(qq), np.bool )       # start all true
+            nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
+
+            noscab = np.ones(len(qq), np.bool )     # start all true  
+            noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
+            noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
+
+            qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
+            quo = np.argsort(qn)[::-1]  
+
+            qtab = eval(qtab_)
+            qtab_ = qtab_.replace("q","%s.q" % symbol)
+        else:
+            q_ = None
+            q = None
+            qq = None
+            n = None
+            nosc = None
+            noscab = None
+            qu, qi, qn = None, None, None
+            quo = None
+            qtab = None 
+        pass
+
+        if hasattr(f, 'aux') and not f.aux is None: 
+            fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
+            spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
+            uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
+            eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
+            ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
+        else:
+            fk = None
+            spec = None
+            uc4 = None
+            eph = None
+            ep = None
+        pass
+
 
         CHECK = getattr( f.photon_meta, 'CHECK', [] )
         CHECK = CHECK[0] if len(CHECK) == 1 else ""

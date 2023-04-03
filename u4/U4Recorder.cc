@@ -33,6 +33,7 @@
 #include "U4Surface.h"
 #include "U4Process.h"
 #include "U4Touchable.h"
+#include "U4Simtrace.h"
 
 #include "SCF.h"
 #include "U4Step.h"
@@ -146,7 +147,7 @@ U4Recorder::U4Recorder()
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
-void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); }
+void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); U4Simtrace::EndOfRunAction() ; }
 
 void U4Recorder::BeginOfEventAction(const G4Event* event)
 { 

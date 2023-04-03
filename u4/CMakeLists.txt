@@ -100,6 +100,9 @@ set(HEADERS
     U4Engine.h
     U4Touchable.h
 
+    U4Navigator.h
+    U4Simtrace.h 
+
     U4Debug.hh
     U4Scintillation_Debug.hh
     U4Cerenkov_Debug.hh

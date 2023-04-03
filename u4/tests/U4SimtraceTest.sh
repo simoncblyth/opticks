@@ -129,6 +129,10 @@ A: j/PMTSim/IGeomManager.h:IGeomManager::declProp interprets envvar to set value
     epsilon:tests blyth$ grep UseNaturalGeometry *.*
     FewPMT.sh:export hama_UseNaturalGeometry=$version 
     FewPMT.sh:export nnvt_UseNaturalGeometry=$version 
+
+
+Q: Where is the SEventConfig::IsRGModeSimtrace flipped ?  
+
   
 EOU
 }
@@ -138,17 +142,18 @@ bin=U4SimtraceTest
 apid=-1
 bpid=-1
 geom=FewPMT
+evt=000
 
 export VERSION=${N:-0}
 export GEOM=${GEOM:-$geom}
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
 export BASE=$GEOMFOLD/$bin
 export FOLD=$BASE/$VERSION   ## controls where the executable writes geometry
-
-export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0
-export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1   # SEL1 another possibility 
-export APID=${APID:-$apid}                   # APID for photons from ALL0
-export BPID=${BPID:-$bpid}                   # BPID for photons from ALL1
+export EVT=${EVT:-$evt}
+export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0/$EVT
+export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1/$EVT   # SEL1 another possibility 
+export APID=${APID:-$apid}                        # APID for photons from ALL0
+export BPID=${BPID:-$bpid}                        # BPID for photons from ALL1
 
 geomscript=$DIR/$GEOM.sh 
 if [ -f "$geomscript" ]; then  

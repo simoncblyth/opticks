@@ -76,10 +76,8 @@ inline SSimtrace::~SSimtrace()
 
 inline void SSimtrace::setSolid(const G4VSolid* solid_)
 {
-    //LOG(LEVEL) << "[" ; 
     solid = solid_ ; 
     ssolid::GetCenterExtent(frame.ce, solid );   
-    //LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -93,21 +91,30 @@ SEvt::setFrame
 
 In RGModeSimtrace SEvt::setFrame adds simtrace gensteps configured via envvars
 
+Because SSimtrace::simtrace gets called for each solid with U4SimtraceTest.sh 
+the instanciation of SEvt here in SSimtrace::simtrace is unusual, 
+
+With simulate running SEvt is usually only ever instanciated once. 
+
 **/
 
 inline void SSimtrace::simtrace()
 {
     SEventConfig::SetRGModeSimtrace();
-    frame.set_hostside_simtrace();  
+    frame.set_hostside_simtrace(); 
+    // set_hostside_simtrace into frame which 
+    // influences the action of SEvt::setFrame  
+    // especially SEvt::setFrame_HostsideSimtrace which 
+    // generates simtrace photons
 
     evt = new SEvt ; 
-    evt->setFrame(frame);   
+    evt->setFrame(frame);    // 
 
     bool dump = false ; 
     for(unsigned i=0 ; i < evt->simtrace.size() ; i++)
     {
-         quad4& p = evt->simtrace[i] ; 
-         ssolid::Simtrace(p, solid, dump);  
+        quad4& p = evt->simtrace[i] ; 
+        ssolid::Simtrace(p, solid, dump);  
     }
 }
 

@@ -44,6 +44,7 @@ See also:
 #include "snd.hh"
 
 #include "SSimtrace.h"
+#include "SEventConfig.hh"
 
 #include "U4SensorIdentifier.h"
 #include "U4SensorIdentifierDefault.h"
@@ -778,10 +779,15 @@ U4Tree::simtrace_scan
 HMM: could use NPFold instead of saving to file after the scan of each solid ?
 (actually the simple approach probably better in terms of memory)
 
+Note that SEventConfig::RGModeLabel with U4SimtraceTest.sh 
+starts as simulate (the default) and then gets changed to 
+simtrace after the first SSimtrace::Scan call. 
+
 **/
 
 inline void U4Tree::simtrace_scan(const char* base ) const 
 {
+    LOG(info) << "[ " << SEventConfig::RGModeLabel() ; 
     st->save_trs(base); 
     assert( st->soname.size() == solids.size() );  
     for(unsigned i=0 ; i < st->soname.size() ; i++)  // over unique solid names
@@ -790,8 +796,11 @@ inline void U4Tree::simtrace_scan(const char* base ) const
         const G4VSolid* solid = solids[i] ; 
         G4String name = solid->GetName(); 
         assert( strcmp( name.c_str(), soname ) == 0 );  
+
+        LOG(info) << " i " << std::setw(3) << i << " RGMode: " << SEventConfig::RGModeLabel() ; 
         SSimtrace::Scan(solid, base) ;   
     } 
+    LOG(info) << "] " << SEventConfig::RGModeLabel() ; 
 }
 
 
