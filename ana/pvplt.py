@@ -319,25 +319,84 @@ def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
+def pvplt_frame( pl, sfr ):
+    extent = sfr.ce[3]
+    m2w = sfr.m2w  
+    pvplt_frame_(pl, extent, m2w )
+
+def pvplt_frame_(pl, e, m2w=np.eye(4) ):
+    """
+
+                 (-,+,+)
+                   +-----------+ (+,+,+)            
+        (-,-,+)    |  (+,-,+)  |
+            +----------2       |
+            |      |   |       |
+            |      |   |       | 
+            |      |   |       | 
+            |      +---|-------+ (+,+,-)      plus_y 
+            |          |            
+            0----------1       minus_y       
+       (-,-,-)      (+,-,-)         
+
+           -X         +X
+          
+
+            Z   
+            |   Y  
+            |  /
+            | /
+            |/
+            O----- X
+
+    """
+    minus_y = np.array( [
+           [-e,-e,-e], 
+           [+e,-e,-e],
+           [+e,-e,+e],
+           [-e,-e,+e],
+           [-e,-e,-e] ])
+
+    pvplt_add_contiguous_line_segments(pl, minus_y, m2w=m2w )
+
+    plus_y = minus_y.copy()
+    plus_y[:,1] = e 
+
+    pvplt_add_contiguous_line_segments(pl, plus_y, m2w=m2w )
+
+
+
+def transform_points( pos3, transform ):
+    assert len(pos3.shape) == 2 and pos3.shape[1] == 3 and pos3.shape[0] > 0
+    opos = np.ones_like( pos3, shape=(len(pos3),4 ) )
+    opos[:,:3] = pos3 
+    tpos = np.dot( opos, transform )
+    return tpos[:,:3] 
+
+
 def pvplt_add_line_a2b(pl, a, b, color="white", width=1):
     lines = np.zeros( (2,3), dtype=np.float32 )
     lines[0] = a 
     lines[1] = b 
     pl.add_lines( lines, color=color, width=width  )
 
+   
 
 
-def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white" ):
+def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white", m2w=None ):
     """
     :param pl: pyvista plotter
     :param xpos: (n,3) array of positions 
+    :param m2w: (4,4) transform array or None
     
     Adds red points at *xpos* and joins them with blue line segments using add_lines.
     This has been used only for small numbers of positions such as order less than 10 
     photon step positions.
     """
-    pl.add_points( xpos, color=point_color, render_points_as_spheres=True, point_size=point_size )        
-    xseg = contiguous_line_segments(xpos)
+    upos = xpos if m2w is None else transform_points( xpos, m2w )
+
+    pl.add_points( upos, color=point_color, render_points_as_spheres=True, point_size=point_size )        
+    xseg = contiguous_line_segments(upos)
     pl.add_lines( xseg, color=line_color )
 
 
@@ -771,7 +830,7 @@ def contiguous_line_segments( pos ):
     are all independent so they could be concatenated to draw line sequences 
     for multiple photons with a single pl.add_lines
 
-    A set of three positions (3,3):: 
+    For example, a set of three positions (3,3):: 
 
         [0, 0, 0], [1, 0, 0], [1, 1, 0]
 

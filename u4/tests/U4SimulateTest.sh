@@ -26,7 +26,7 @@ Analysis loading saved results::
 Rerunning single photons off the same g4state is a bit delicate to arrange.
 This incantation succeeds to rerun the N=0 big bouncer with N=1::
 
-    cd ~/opticks/u4/tests
+     u4t                       ## cd ~/opticks/u4/tests
 
      vi U4SimulateTest.sh      ## switch to running_mode=SRM_G4STATE_SAVE
 
@@ -90,11 +90,14 @@ logN=${bin}_$VERSION.log
 #num_ph=1
 #num_ph=10
 #num_ph=100
-num_ph=1000      # 1k
+#num_ph=1000      # 1k
 #num_ph=10000    # 10k
-#num_ph=50000
-#num_ph=100000   # 100k
+#num_ph=50000    # 50k 
+num_ph=100000   # 100k
 #num_ph=1000000  # 1M
+
+NUM_PHOTONS=${NUM_PHOTONS:-$num_ph}
+
 
 if [ -n "$RERUN" ]; then 
    export OPTICKS_G4STATE_RERUN=$RERUN
@@ -112,7 +115,7 @@ esac
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
 export OPTICKS_EVENT_MODE=StandardFullDebug
-export OPTICKS_G4STATE_SPEC=$num_ph:38       # default is only 1000:38 to keep state files small 
+export OPTICKS_G4STATE_SPEC=${NUM_PHOTONS}:38       # default is only 1000:38 to keep state files small 
 
 
 if [ "$LAYOUT" == "one_pmt" ]; then 
@@ -213,7 +216,10 @@ elif [ "$LAYOUT" == "two_pmt" ]; then
 
 fi 
 
-export SEvent_MakeGensteps_num_ph=$num_ph
+
+
+
+export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 export storch_FillGenstep_type=$ttype
 export storch_FillGenstep_radius=$radius
 export storch_FillGenstep_pos=$pos
@@ -244,12 +250,16 @@ else
    export U4Physics=INFO
    export U4Recorder=INFO
    #export SEvt=INFO
-
    export C4OpBoundaryProcess__PIDX_ENABLED=1
+fi 
+
+
+if [ -n "$SIMTRACE" ]; then
    export U4Recorder__EndOfRunAction_Simtrace=1  
    export SFrameGenstep=INFO
-
 fi 
+
+
 
 
 defarg="run_ph"
@@ -282,10 +292,12 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
 fi 
 
-## analysis modes beginning with n: nfs/ncf/naf/nph are NumPy only (without matplotlib and pyvista)
 
+
+## analysis modes beginning with n: nfs/ncf/naf/nph are NumPy only (without matplotlib and pyvista)
 ## envout is used to communicate from some python scripts back into this bash script 
 ## this only makes sense for single N=0, N=1 running 
+
 export ENVOUT=/tmp/$USER/opticks/U4SimulateTest/envout.sh
 mkdir -p $(dirname $ENVOUT)
 
@@ -352,7 +364,9 @@ NOTICE HOW ENVOUT COMMUNICATION RELIES ON OVERLAPPED RUNNING OF THIS BASH SCRIPT
 
 3. FINALLY THE FIRST PYTHON PLOTTER SESSION IS EXITED THAT CLEANS UP THE ENVOUT FILE.  
 
-So the ENVOUT file just contains the config for the currently displayed plot. 
+So the ENVOUT file just contains the config for the currently displayed plot, and 
+should only exist when a plot is being displayed. More than one plot of the same 
+type displayed at the same time is not handled. 
 
 EON
 }

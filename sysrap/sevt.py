@@ -76,13 +76,13 @@ class SEvt(RFold):
 
         if hasattr(f, 'aux') and not f.aux is None: 
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
-            spec = f.aux[:,:,2,3].view(np.int32)   ## step spec
+            spec_ = f.aux[:,:,2,3].view(np.int32)   ## step spec
             uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
             eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
             ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
         else:
             fk = None
-            spec = None
+            spec_ = None
             uc4 = None
             eph = None
             ep = None
@@ -110,6 +110,9 @@ class SEvt(RFold):
         U4R_names = getattr(f, "U4R_names", None)
         SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
 
+        spec = SPECS[spec_]
+
+
         TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
 
         IDE = list(filter(None,[symbol.upper(), GEOM, GEOMList, "N%d"%VERSION, LAYOUT, CHECK])) 
@@ -122,7 +125,6 @@ class SEvt(RFold):
         self.qq = qq
         self.n = n 
         self.fk = fk
-        self.spec = spec
         self.uc4 = uc4
         self.eph = eph   # ProcessHits EPH enum at step point level 
         self.ep  = ep    # ProcessHits EPH enum at photon level  
@@ -147,6 +149,9 @@ class SEvt(RFold):
         self.TITLE = TITLE
         self.IDE = IDE
         self.ID = ID
+
+        self.spec_ = spec_
+        self.spec = spec 
 
 
         self._r = None

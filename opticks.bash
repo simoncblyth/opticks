@@ -2689,6 +2689,7 @@ integration(){  integration- ; integration-cd $* ; }
 ## opticks misc including python analysis/debugging ##
 
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
+a(){     cd $(opticks-home)/ana ; pwd ; }
 cfh-(){             . $(opticks-home)/ana/cfh.bash && cfh-env $*  ; }
 tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
 tools-(){           . $(opticks-home)/tools/tools.bash && tools-env $*  ; }

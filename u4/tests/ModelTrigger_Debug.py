@@ -10,6 +10,13 @@ from opticks.ana.fold import Fold, AttrBase
 
 
 class ModelTrigger_Debug(AttrBase):
+    @classmethod
+    def Create(cls, t, symbol="mtd", prefix="", publish=False):
+        meta = t.ModelTrigger_Debug_meta if hasattr(t, 'ModelTrigger_Debug_meta') else None
+        mtd = t.ModelTrigger_Debug  if hasattr(t, 'ModelTrigger_Debug' ) else None
+        incomplete = (meta is None) or (mtd is None)
+        return None if incomplete else cls(t, symbol=symbol, prefix=prefix, publish=publish) 
+        
     def __init__(self, t, symbol="mtd", prefix="", publish=False ):
         """
         :param t: Fold instance
@@ -18,12 +25,13 @@ class ModelTrigger_Debug(AttrBase):
         """
         AttrBase.__init__(self, symbol=symbol, prefix=prefix, publish=publish)
 
-        PV = np.array(t.ModelTrigger_Debug_meta.PV) 
-        MLV = np.array(t.ModelTrigger_Debug_meta.MLV) 
+        meta = t.ModelTrigger_Debug_meta
+        mtd = t.ModelTrigger_Debug 
+
+        PV = np.array(meta.PV) 
+        MLV = np.array(meta.MLV) 
         WAI = np.array( ["OutOfRegion", "kInGlass   ", "kInVacuum  ", "kUnset     "] )
 
-        mtd = t.ModelTrigger_Debug  
-        meta = t.ModelTrigger_Debug_meta 
         IMPL = meta.IMPL[0]   
 
         pos  = mtd[:,0,:3]
