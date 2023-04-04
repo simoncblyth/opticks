@@ -543,8 +543,8 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     {
         pfr.ce.w = 200.f ;  
         LOG(LEVEL) 
-            << " kludging frame extent, this happens with U4SimulateTest"
-            << " as the CSGFoundry geometry is not available causing the 
+            << " kludging frame extent, this happens with U4SimulateTest "
+            << " as the CSGFoundry geometry is not available causing the "
             << " SEvt sframe to be default "
             ;
     }
