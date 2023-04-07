@@ -47,7 +47,7 @@ EOU
 DIR=$(dirname $BASH_SOURCE)
 bin=U4SimulateTest
 
-export VERSION=${N:-0}
+export VERSION=${N:-1}
 export GEOM=FewPMT
 geomscript=$DIR/$GEOM.sh 
 
@@ -91,9 +91,9 @@ logN=${bin}_$VERSION.log
 #num_ph=10
 #num_ph=100
 #num_ph=1000      # 1k
-#num_ph=10000    # 10k
+num_ph=10000    # 10k
 #num_ph=50000    # 50k 
-num_ph=100000   # 100k
+#num_ph=100000   # 100k
 #num_ph=1000000  # 1M
 
 NUM_PHOTONS=${NUM_PHOTONS:-$num_ph}

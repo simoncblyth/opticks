@@ -99,21 +99,27 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
 
+#[=[
 
-## HMM: its kinda confusing to not build an executable 
-## depending on the switch because when flipping the switch
-## off the old executable still runs, but ignores and changes made 
-## its better to always build the executable and have it 
-## fail with an informative when needed switches are not set 
+HMM: its kinda confusing to not build an executable 
+depending on switches because when flipping the switch OFF
+the old executable still runs, but it is not updated and 
+so it ignores any code changes made.
 
-set(PMTFastSim_TESTS
+It is better to always build the executable and have it 
+fail with an informative message when any needed switches 
+are not defined.  
+
+#]=]
+
+set(PMTSim_TESTS
    U4SimulateTest.cc
    U4SimtraceTest.cc
    U4PMTFastSimTest.cc
    U4PMTAccessorTest.cc
 )
 
-foreach(SRC ${PMTFastSim_TESTS})
+foreach(SRC ${PMTSim_TESTS})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
@@ -122,8 +128,10 @@ foreach(SRC ${PMTFastSim_TESTS})
 
     target_link_libraries(${TGT} U4 Opticks::SysRap)
 
-    if(PMTFastSim_FOUND)
-       target_link_libraries(${TGT} Opticks::PMTFastSim)
+    if(PMTSim_FOUND)
+       target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )   
+       target_compile_definitions( ${TGT} PRIVATE PMTSIM_STANDALONE )   
+       target_link_libraries(${TGT} Opticks::PMTSim)
     endif()
 
     install(TARGETS ${TGT} DESTINATION lib)

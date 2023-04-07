@@ -911,7 +911,12 @@ void U4Recorder::CollectBoundaryAux<C4OpBoundaryProcess>(quad4* current_aux)
     char customStatus = bop ? bop->m_custom_status : 'B' ; 
     C4CustomART* cart   = bop ? bop->m_custom_art : nullptr ; 
     const double* recoveredNormal =  bop ? (const double*)&(bop->theRecoveredNormal) : nullptr ;  
+
+#ifdef C4_DEBUG
     C4CustomART_Debug* cdbg = cart ? &(cart->dbg) : nullptr ;  
+#else
+    C4CustomART_Debug* cdbg = nullptr ; 
+#endif
 
     LOG(LEVEL) 
         << " bop " << ( bop ? "Y" : "N" ) 

@@ -12,17 +12,20 @@ TODO: incorporate J_PMTSIM_LOG_ hookup into OPTICKS_LOG
 #include "SEvt.hh"
 #include "OPTICKS_LOG.hh"
 
-#ifdef WITH_PMTSIM
+#if defined(WITH_PMTSIM) && defined(PMTSIM_STANDALONE)
 #include "J_PMTSIM_LOG.hh"
 #endif
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-#ifdef WITH_PMTSIM
-    J_PMTSIM_LOG_(0); 
-#endif
 
+#if defined(WITH_PMTSIM) && defined(PMTSIM_STANDALONE)
+    J_PMTSIM_LOG_(0); 
+    std::cout << "main: WITH_PMTSIM and PMTSIM_STANDALONE  " << std::endl ; 
+#else
+    std::cout << "main: not-( WITH_PMTSIM and PMTSIM_STANDALONE )  " << std::endl ; 
+#endif
 
     LOG(info) << SLOG::Banner() ; 
 

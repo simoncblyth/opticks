@@ -14,8 +14,6 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
-#include "sgs.h"
-#include "spho.h"
 #include "sscint.h"
 #include "OpticksGenstep.h"
 
@@ -25,9 +23,17 @@
 #include "SLOG.hh"
 #include "sscint.h"
 #include "scerenkov.h"
+#include "sgs.h"
 
-//#include "Deprecated_U4PhotonInfo.h"
+#ifdef WITH_CUSTOM4
+#include "C4GS.h"
+#include "C4Pho.h"
+#include "C4TrackInfo.h"
+#else
+#include "spho.h"
 #include "STrackInfo.h"
+#endif
+
 #include "U4.hh" 
 
 const plog::Severity U4::LEVEL = SLOG::EnvLevel("U4", "DEBUG"); 
@@ -46,14 +52,22 @@ That is like the PImpl pattern : pointer to implementation.
 * https://www.geeksforgeeks.org/pimpl-idiom-in-c-with-examples/
 * https://www.cppstories.com/2018/01/pimpl/
 
+HMM: perhapa this state belongs better within SEvt together with the full gensteps ?
+
 **/
 
-// HMM: perhapa this state belongs better within SEvt together with the full gensteps ?
 
-static spho ancestor = {} ;     // updated by U4::GenPhotonAncestor prior to the photon generation loop(s)
+#ifdef WITH_CUSTOM4
+static C4GS gs = {} ;            // updated by eg U4::CollectGenstep_DsG4Scintillation_r4695 prior to each photon generation loop 
+static C4Pho ancestor = {} ;     // updated by U4::GenPhotonAncestor prior to the photon generation loop(s)
+static C4Pho pho = {} ;          // updated by U4::GenPhotonBegin at start of photon generation loop
+static C4Pho secondary = {} ;    // updated by U4::GenPhotonEnd   at end of photon generation loop 
+#else
 static sgs gs = {} ;            // updated by eg U4::CollectGenstep_DsG4Scintillation_r4695 prior to each photon generation loop 
+static spho ancestor = {} ;     // updated by U4::GenPhotonAncestor prior to the photon generation loop(s)
 static spho pho = {} ;          // updated by U4::GenPhotonBegin at start of photon generation loop
 static spho secondary = {} ;    // updated by U4::GenPhotonEnd   at end of photon generation loop 
+#endif
 
 static bool dump = false ; 
 
@@ -151,7 +165,14 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
 
 
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
+
+#ifdef WITH_CUSTOM4
+    sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    gs = C4GS::Make(_gs.index, _gs.photons, _gs.offset, _gs.gentype );  
+#else
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+#endif
+
     //if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
     LOG(LEVEL) << gs.desc(); 
 }
@@ -255,7 +276,14 @@ void U4::CollectGenstep_G4Cerenkov_modified(
 
 
     quad6 gs_ = MakeGenstep_G4Cerenkov_modified( aTrack, aStep, numPhotons, betaInverse, pmin, pmax, maxCos, maxSin2, meanNumberOfPhotons1, meanNumberOfPhotons2 );
+
+#ifdef WITH_CUSTOM4
+    sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    gs = C4GS::Make(_gs.index, _gs.photons, _gs.offset , _gs.gentype ); 
+#else
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+#endif
+
     if(dump) std::cout << "U4::CollectGenstep_G4Cerenkov_modified " << gs.desc() << std::endl ; 
     LOG(LEVEL) << gs.desc(); 
 }
@@ -285,7 +313,11 @@ unexpected labels.
 
 void U4::GenPhotonAncestor( const G4Track* aTrack )
 {
+#ifdef WITH_CUSTOM4
+    ancestor = C4TrackInfo<C4Pho>::Get(aTrack) ; 
+#else
     ancestor = STrackInfo<spho>::Get(aTrack) ; 
+#endif
     if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;  
     LOG(LEVEL) << ancestor.desc() ; 
 }
@@ -339,7 +371,13 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 #ifdef DEBUG
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #endif
+
+#ifdef WITH_CUSTOM4
+    C4TrackInfo<C4Pho>::Set(aSecondaryTrack, secondary ); 
+#else
     STrackInfo<spho>::Set(aSecondaryTrack, secondary ); 
+#endif
+
 }
 
 

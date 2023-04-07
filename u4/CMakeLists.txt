@@ -13,6 +13,9 @@ Yes: a possibility, but that is not needed for primary functionality currently
 although it would be useful for testing ... 
 so depend on that in specific tests not generally 
  
+
+TODO: Currently find_packge Custom4 version eg 0.1.1 has no "teeth" 
+
 #]=]
 
 find_package(SysRap REQUIRED CONFIG)
@@ -25,7 +28,7 @@ find_package(CLHEP  REQUIRED CONFIG)
 find_package(OpticksXercesC REQUIRED MODULE)
 
 set(Custom4_VERBOSE ON)
-find_package(Custom4 CONFIG)   ## NB : NOT REQUIRED
+find_package(Custom4 0.1.2 CONFIG)   ## NB : NOT REQUIRED 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND     : ${Custom4_FOUND}")
 
 
