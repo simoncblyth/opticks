@@ -1,45 +1,44 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+#[=[
+U4
+===
+
+Geant4 should have found CLHEP already, but when using Randomize get 
+undefined symbols CLHEP::HepRandom::getTheEngine() so also find CLHEP.
+
+Note there there is no find_package Custom4 as that is found when 
+finding PMTSim
+
+#]=]
+
 set(name U4)
 set(desc "Geant4 Low Level Utilities")
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
-#[=[
-U4
-===
-
-HMM: depending on CSG too would allow loading CSGFoundry ? 
-Yes: a possibility, but that is not needed for primary functionality currently
-although it would be useful for testing ... 
-so depend on that in specific tests not generally 
- 
-
-TODO: Currently find_packge Custom4 version eg 0.1.1 has no "teeth" 
-
-#]=]
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 0 ======= find SysRap, G4  ")
 
 find_package(SysRap REQUIRED CONFIG)
 find_package(G4 REQUIRED MODULE)
-find_package(GDXML REQUIRED CONFIG)
 
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 1 ======= find GDXML CLHEP OpticksXercesC ")
+
+find_package(GDXML REQUIRED CONFIG)
 find_package(CLHEP  REQUIRED CONFIG) 
-# Geant4 should have found CLHEP already, but when using Randomize get 
-# undefined symbols CLHEP::HepRandom::getTheEngine()
 find_package(OpticksXercesC REQUIRED MODULE)
 
-set(Custom4_VERBOSE ON)
-find_package(Custom4 0.1.2 CONFIG)   ## NB : NOT REQUIRED 
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND     : ${Custom4_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 2 =======  find PMTSim IT SHOULD FIND Custom4 ")
+
+find_package(PMTSim CONFIG)  
+
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND       : ${PMTSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION     : ${PMTSim_VERSION}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
+
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 3 ======= completed finds " )
 
 
-find_package(PMTSim CONFIG)   ## NB : NOT REQUIRED
-#set(PMTSim_FOUND NO)
-
-#find_package(PMTFastSim CONFIG)   ## NB : NOT REQUIRED
-set(PMTFastSim_FOUND NO)
-
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND     : ${PMTSim_FOUND}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND : ${PMTFastSim_FOUND}")
 
 
 set(SOURCES
@@ -152,12 +151,6 @@ if(PMTSim_FOUND)
     target_compile_definitions( ${name} PRIVATE WITH_PMTSIM PMTSIM_STANDALONE WITH_NP )
     ## THE DEFS CANNOT BE PUBLIC : AS CAUSE ISSUES FOR JUNOSW BUILD WITH OPTICKS
 endif()
-
-if(PMTFastSim_FOUND)
-    target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
-    target_compile_definitions( ${name} PRIVATE WITH_PMTFASTSIM PMTFASTSIM_STANDALONE )
-endif()
-
 
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

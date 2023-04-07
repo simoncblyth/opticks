@@ -3,12 +3,21 @@ set(name U4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-
 #[=[
 Unlike most executables U4VPrimaryGeneratorTest 
 needs the MOCK_CURAND macro in order to use CUDA 
 curand using code on the CPU by mocking the curand
 functions
+
+HMM: its kinda confusing to not build an executable 
+depending on switches because when flipping the switch OFF
+the old executable still runs, but it is not updated and 
+so it ignores any code changes made.
+
+It is better to always build the executable and have it 
+fail with an informative message when any needed switches 
+are not defined.  
+
 #]=]
 
 set(TGT U4VPrimaryGeneratorTest)
@@ -95,22 +104,10 @@ add_executable(${TGT} ${U4HitTest_SOURCES})
 target_link_libraries(${TGT} U4 Opticks::CSG)
 install(TARGETS ${TGT} DESTINATION lib)
 
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND     : ${PMTSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND    : ${Custom4_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND : ${PMTFastSim_FOUND}")
 
-
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND ${PMTFastSim_FOUND}")
-
-#[=[
-
-HMM: its kinda confusing to not build an executable 
-depending on switches because when flipping the switch OFF
-the old executable still runs, but it is not updated and 
-so it ignores any code changes made.
-
-It is better to always build the executable and have it 
-fail with an informative message when any needed switches 
-are not defined.  
-
-#]=]
 
 set(PMTSim_TESTS
    U4SimulateTest.cc
@@ -136,8 +133,5 @@ foreach(SRC ${PMTSim_TESTS})
 
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
-
-
-
 
 
