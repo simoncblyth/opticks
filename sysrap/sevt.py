@@ -12,6 +12,9 @@ from opticks.ana.fold import Fold, RFold
 from opticks.ana.p import * 
 from opticks.ana.eget import eslice_
 from opticks.ana.base import PhotonCodeFlags
+from opticks.ana.qcf import QU,QCF,QCFZero
+from opticks.ana.npmeta import NPMeta    
+
 
 pcf = PhotonCodeFlags() 
 fln = pcf.fln
@@ -119,6 +122,13 @@ class SEvt(RFold):
         ID = "_".join(IDE)
 
 
+        w2m = f.sframe.w2m
+        gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
+        gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
+        lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
+
+
+
         self.f = f 
         self.q_ = q_
         self.q = q
@@ -153,6 +163,9 @@ class SEvt(RFold):
         self.spec_ = spec_
         self.spec = spec 
 
+        self.w2m = w2m
+        self.gpos = gpos 
+        self.lpos = lpos 
 
         self._r = None
         self.r = None
@@ -255,6 +268,46 @@ class SEvt(RFold):
         n = t.n[i]
         spec = t.spec[i,:n]
         return np.c_[spec,t.SPECS[np.abs(spec)]]
+
+
+class SAB(object):
+    def __init__(self, a, b): 
+        qcf = QCF( a.q, b.q, symbol="qcf")
+        qcf0 = QCFZero(qcf) if "ZERO" in os.environ else None
+        self.a = a 
+        self.b = b 
+        self.qcf = qcf
+        self.qcf0 = qcf0
+        self.jsdph = NPMeta.Compare( a.f.junoSD_PMT_v2_meta , b.f.junoSD_PMT_v2_meta )   
+
+    def __repr__(self):
+        a = self.a
+        b = self.b
+        qcf = self.qcf
+        qcf0 = self.qcf0
+        jsdph = self.jsdph 
+
+        lines = []
+        lines.append("SAB")
+
+        if not "BRIEF" in os.environ:
+            lines.append(str(a))
+            lines.append(repr(a.f))
+            lines.append(str(b))
+            lines.append(repr(b.f))
+            lines.append(repr(qcf.aqu))
+            lines.append(repr(qcf.bqu))
+        pass
+        lines.append(repr(qcf))
+
+        if not qcf0 is None:
+            lines.append(repr(qcf0))
+        pass
+        if not jsdph is None:
+            lines.append(str(jsdph))
+        pass
+        return "\n".join(lines)
+
 
 
 

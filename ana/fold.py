@@ -40,11 +40,11 @@ class RFold(object):
     Provides a common Load method for the objects: U4SimtraceTest and SEvt(formerly U4SimulateTest)
     """
     @classmethod
-    def Load(cls, fold, symbol="x"):
+    def Load(cls, fold, **kwa):
         if fold is None:
             f = None
         else: 
-            f = Fold.Load(fold, symbol=symbol )
+            f = Fold.Load(fold, **kwa )
         pass
         return None if f is None else cls(f)
 
@@ -193,9 +193,8 @@ class Fold(object):
         self.order = kwa.get("order", None)
         assert self.order in ["ascend", "descend", None ] 
 
-        print(self.brief())
-
         if self.quiet == False:
+            print(self.brief())
             print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
         pass
 

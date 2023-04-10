@@ -14,15 +14,14 @@ from collections import OrderedDict as odict
 import numpy as np
 log = logging.getLogger(__name__)
 
-class NPMeta(object):
 
-    ENCODING = "utf-8"
+class NPMetaCompare(object):
+    def __init__(self, am, bm):
 
-    @classmethod
-    def Compare(cls, am, bm):
         ak = am.d.keys() 
         bk = bm.d.keys() 
         kk = ak if ak == bk else list(set(list(ak)+list(bk))) 
+        skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
         tab = np.zeros( [len(kk),2], dtype=np.int32 ) 
         lines = [] 
 
@@ -48,10 +47,33 @@ class NPMeta(object):
             tab[i,0] = av
             tab[i,1] = bv
         pass
-        #skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
-        #np.c_[skk, tab]
-        return "\n".join(lines) 
-        
+
+        stab = np.c_[skk, tab]
+
+
+        self.am = am
+        self.bm = bm
+        self.kk = kk
+        self.skk = skk
+        self.tab = tab
+        self.lines = lines
+        self.stab = stab
+
+    def __str__(self):
+        return "\n".join(self.lines)
+
+    def __repr__(self):
+        lines = []
+        lines.append("skk")
+        return "\n".join(lines)
+  
+
+class NPMeta(object):
+    ENCODING = "utf-8"
+    @classmethod
+    def Compare(cls, am, bm):
+        cfm = NPMetaCompare(am,bm)
+        return cfm  
 
     @classmethod
     def AsDict(cls, lines):

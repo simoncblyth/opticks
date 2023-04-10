@@ -46,8 +46,20 @@ class QU(object):
 
 
 class QCF(object):
-    def __init__(self, aq, bq, symbol="qcf"):
-        assert( aq.shape == bq.shape ) 
+    def __init__(self, _aq, _bq, symbol="qcf"):
+        _same_shape = _aq.shape == _bq.shape
+        if not _same_shape:
+            mn = min(_aq.shape[0], _bq.shape[0])
+            msg = "a, b not same shape _aq %s _bq %s WILL LIMIT TO mn %d " % ( str(_aq.shape), str(_bq.shape), mn ) 
+            lim = slice(0, mn)
+        else:
+            lim = slice(None)
+            msg = ""
+        pass
+        aq = _aq[lim]
+        bq = _bq[lim]
+        same_shape = aq.shape == bq.shape
+        assert same_shape
 
         aqu = QU(aq, symbol="%s.aqu" % symbol )
         bqu = QU(bq, symbol="%s.bqu" % symbol ) 
@@ -87,7 +99,11 @@ class QCF(object):
         c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d)" % ( c2sum, int(c2n), c2per, c2cut )
         c2label = "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut )
 
-
+ 
+        self._aq = _aq
+        self._bq = _bq
+        self.lim = lim 
+        self.msg = msg 
         self.aq = aq
         self.bq = bq
         self.symbol = symbol
@@ -113,7 +129,8 @@ class QCF(object):
  
     def __repr__(self):
         lines = []
-        lines.append("QCF %s " % self.symbol)
+        lines.append("QCF %s : %s " % (self.symbol, self.msg))
+        lines.append("a.q %d b.q %d lim %s " % (self._aq.shape[0], self._bq.shape[0], str(self.lim)) )
         lines.append(self.c2label)
         lines.append(self.c2desc)
 
