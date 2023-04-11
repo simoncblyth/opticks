@@ -76,6 +76,7 @@ struct SYSRAP_API OpticksPhoton
     static bool IsLiveFlag(const unsigned flag); 
     static bool IsReflectFlag(const unsigned flag); 
     static bool IsTransmitFlag(const unsigned flag); 
+    static bool IsSurfaceDetectOrAbsorbFlag(const unsigned flag); 
 
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
@@ -130,6 +131,13 @@ inline bool OpticksPhoton::IsTransmitFlag(const unsigned flag) // static : BT
 {
     return flag == BOUNDARY_TRANSMIT ; 
 }
+inline bool OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(const unsigned flag) // static : SD SA
+{
+    return (flag & (SURFACE_DETECT | SURFACE_ABSORB)) != 0  ; 
+}
+
+
+
 
 
 

@@ -729,6 +729,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
     const G4Track* track = step->GetTrack(); 
     G4VPhysicalVolume* pv = track->GetVolume() ; 
+    const G4VTouchable* touch = track->GetTouchable();  
     LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
 
     spho ulabel = {} ; 
@@ -751,14 +752,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     quad4&   current_aux    = sev->current_ctx.aux ; 
     current_aux.zero_v(3, 3);   // may be set below
 
-
-#ifdef U4RECORDER_EXPENSIVE_IINDEX
-    // doing replica number search for every step is very expensive and often pointless
-    // its the kind of thing to do only for low stats or simple geometry running 
-    const G4VTouchable* touch = track->GetTouchable();  
-    current_photon.iindex = U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT);  
-#endif
-
     // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
     bool first_flag = current_photon.flagmask_count() == 1 ;  
     if(first_flag)
@@ -778,12 +771,24 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     //
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
+    bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorb(flag) ;  // SD SA
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
+
+
+#ifdef U4RECORDER_EXPENSIVE_IINDEX
+    // doing replica number search for every step is very expensive and often pointless
+    // its the kind of thing to do only for low stats or simple geometry running 
+    current_photon.iindex = U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT);  
+#else
+    current_photon.iindex = is_surface_flag ? U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT) : -2 ;  
+#endif
+
 
     LOG(LEVEL) 
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
         << " is_boundary_flag " << is_boundary_flag  
+        << " is_surface_flag " << is_surface_flag  
         ;
 
     // DEFER_FSTRACKINFO : special flag signalling that 
