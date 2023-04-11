@@ -821,11 +821,15 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
 
-    unsigned fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP ) ; 
-    bool is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
+    bool is_fake = false ; 
+    unsigned fakemask = 0 ;
+    if(FAKES_SKIP)
+    {
+       // fake detection is very expensive : only do when needed
+       fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP ) ; 
+       is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
+    }
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
-
-    // DO NOT SEE -ve AT PYTHON LEVEL AS THEY GET SKIPPED
 
     //current_aux.q2.i.z = fakemask ;         // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
