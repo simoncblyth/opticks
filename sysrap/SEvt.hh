@@ -183,6 +183,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SetIndex(int index); 
     static void UnsetIndex(); 
     static int  GetIndex(); 
+    static S4RandomArray* GetRandomArray(); 
 
     static void SetReldir(const char* reldir); 
     static const char* GetReldir(); 

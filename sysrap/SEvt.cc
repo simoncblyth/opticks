@@ -750,7 +750,7 @@ void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) IN
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
 int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
-
+S4RandomArray* SEvt::GetRandomArray(){ return INSTANCE ? INSTANCE->random_array : nullptr ; }
 
 
 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
