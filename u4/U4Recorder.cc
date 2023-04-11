@@ -771,7 +771,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     //
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
-    bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorb(flag) ;  // SD SA
+    bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
 
 
