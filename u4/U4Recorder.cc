@@ -750,7 +750,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
     const G4VTouchable* touch = track->GetTouchable();  
-    current_photon.iindex = U4Touchable::ReplicaNumber(touch); 
+    current_photon.iindex = U4Touchable::ReplicaNumber(touch);  
+    // doing replica number search for every step is rather expensive 
+    // and pointless for steps inside scintillator
+
 
     // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
     bool first_flag = current_photon.flagmask_count() == 1 ;  

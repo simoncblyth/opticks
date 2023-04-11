@@ -166,16 +166,47 @@ inline int U4Touchable::TouchDepth(const G4VTouchable* touch ) // static
     return t ; 
 }
 
+
+/**
+U4Touchable::HasMoreThanOneDaughterWithName
+---------------------------------------------
+
+When called with name lAcrylic which has num_dau 46276
+this is real expensive. 
+
+**/
+
 inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name)  // static
 {
     int num_dau = lv->GetNoDaughters();
     if(num_dau <= 1) return false ; 
+
+    bool heavy = num_dau > 45000 ;
+    if(heavy) std::cerr 
+        << "U4Touchable::HasMoreThanOneDaughterWithName"
+        << " num_dau " << num_dau 
+        << " name " << name
+        << " lv.name " << lv->GetName() 
+        << std::endl 
+        ;
+
+
     int count = 0;  
     for (int k=0; k < num_dau ; ++k)   
     {
         const G4VPhysicalVolume* kpv = lv->GetDaughter(k) ;
         const G4LogicalVolume*   klv = kpv->GetLogicalVolume() ;
         const char* klv_name = klv->GetName().c_str() ;
+
+        if(heavy) std::cerr 
+           << "U4Touchable::HasMoreThanOneDaughterWithName"
+           << " k " << k 
+           << " kpv.name " << kpv->GetName()
+           << " klv_name " << klv_name
+           << " count " << count 
+           << std::endl
+           ; 
+
         if(strcmp(name, klv_name)==0) count += 1 ;
         if(count > 1) return true ;
     }
