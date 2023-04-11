@@ -60,6 +60,7 @@ const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ;
 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
 const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool(EndOfRunAction_Simtrace_) ; 
+const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
 
 
 const int U4Recorder::PIDX = ssys::getenvint("PIDX",-1) ; 
@@ -721,6 +722,8 @@ g4-cls G4SteppingManager::
 
 **/
 
+
+
 template <typename T>
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
@@ -750,9 +753,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
     const G4VTouchable* touch = track->GetTouchable();  
-    current_photon.iindex = U4Touchable::ReplicaNumber(touch);  
+    current_photon.iindex = U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT);  
     // doing replica number search for every step is rather expensive 
-    // and pointless for steps inside scintillator
+    // and pointless for some lv names like "lAcrylic" 
 
 
     // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)

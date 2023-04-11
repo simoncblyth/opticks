@@ -52,6 +52,8 @@ struct U4_API U4Recorder
     static constexpr const char* EndOfRunAction_Simtrace_ = "U4Recorder__EndOfRunAction_Simtrace" ; 
     static const bool            EndOfRunAction_Simtrace ; 
 
+    static const char* REPLICA_NAME_SELECT ; 
+
     static const int PIDX ;   // used to control debug printout for idx 
     static const int EIDX ;   // used to enable U4Recorder for an idx, skipping all others
     static const int GIDX ; 

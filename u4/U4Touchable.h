@@ -30,8 +30,8 @@ struct U4Touchable
     static bool MatchEnd(   const char* s, const char* q) ; 
 
     static const G4VPhysicalVolume* FindPV( const G4VTouchable* touch, const char* qname, int mode=MATCH_ALL ); 
-    static int ReplicaNumber(const G4VTouchable* touch) ; 
-    static int ReplicaDepth(const G4VTouchable* touch) ; 
+    static int ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select ) ; 
+    static int ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select ) ; 
     static int TouchDepth(const G4VTouchable* touch ); 
     static bool HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name); 
 
@@ -87,9 +87,9 @@ inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, 
 
 
 
-inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
+inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select )  // static 
 {
-    int d = ReplicaDepth(touch);
+    int d = ReplicaDepth(touch, replica_name_select);
     return d > -1 ? touch->GetReplicaNumber(d) : d  ;
 }
 
@@ -99,13 +99,23 @@ U4Touchable::ReplicaDepth
 
 Starting from touch depth look outwards at (volume, mother_volume) 
 pairs checking for a depth at which the mother_volume has more than one 
-daughter with the same name as the volume. This means the volume has
+daughter with the same name as the volume. 
+
+This means the volume has
 at least one same named sibling making this the replica depth. 
 When no such depth is found return -1. 
 
+For non-null replica_name_select the name search is restricted to names 
+of logical volumes that contain the replica_name_select string. 
+Depending on the the names of the replica logical volumes 
+a suitable "replica_name_select" string (eg "PMT") 
+may dramatically speedup the search as pointless searches 
+over thousands of volumes are avoided. Of course this 
+depends on suitable naming of replica logical volumes. 
+
 **/
 
-inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
+inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select )   // static
 {
     int nd = touch->GetHistoryDepth();
     int t = TouchDepth(touch); 
@@ -137,6 +147,9 @@ inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
         assert(hierarchy); 
 
         const char* dlv_name = dlv->GetName().c_str() ; 
+        bool skip = replica_name_select && strstr(dlv_name, replica_name_select) == nullptr ; 
+        // skip:true when replica_name_select is provided but the string is not found within the dlv name 
+        if(skip) continue ; 
         if(HasMoreThanOneDaughterWithName(mlv, dlv_name)) return d ; 
     }
     return -1 ;
@@ -222,8 +235,8 @@ inline std::string U4Touchable::Brief(const G4VTouchable* touch )
     ss << "U4Touchable::Brief"
        << " HistoryDepth " << std::setw(2) <<  touch->GetHistoryDepth()
        << " TouchDepth " << std::setw(2) << TouchDepth(touch)
-       << " ReplicaDepth " << std::setw(2) << ReplicaDepth(touch)
-       << " ReplicaNumber " << std::setw(6) << ReplicaNumber(touch)
+       << " ReplicaDepth " << std::setw(2) << ReplicaDepth(touch, nullptr)
+       << " ReplicaNumber " << std::setw(6) << ReplicaNumber(touch, nullptr)
        ; 
     return ss.str(); 
 }
@@ -231,8 +244,8 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch, int so_wid, int 
 {
     int history_depth = touch->GetHistoryDepth();
     int touch_depth = TouchDepth(touch); 
-    int replica_depth = ReplicaDepth(touch); 
-    int replica_number = ReplicaNumber(touch); 
+    int replica_depth = ReplicaDepth(touch, nullptr); 
+    int replica_number = ReplicaNumber(touch, nullptr); 
 
     std::stringstream ss ; 
     ss << "U4Touchable::Desc"
