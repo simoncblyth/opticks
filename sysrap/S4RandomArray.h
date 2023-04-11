@@ -29,7 +29,7 @@ NB tests which require Geant4 in u4/tests/U4RandomArrayTest.cc
 
 struct S4RandomArray : public CLHEP::HepRandomEngine
 {
-    static constexpr const char* NAME = "S4RandomArray" ; 
+    static constexpr const char* NAME = "S4RandomArray.npy" ; 
 
     std::vector<double>      m_array ;  
     CLHEP::HepRandomEngine*  m_engine ;

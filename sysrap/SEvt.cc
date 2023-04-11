@@ -742,6 +742,8 @@ SEvt* SEvt::Load(const char* rel)  // static
 
 void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
 void SEvt::Save(){  Check() ; INSTANCE->save(); }
+void SEvt::SaveExtra( const char* name, const NP* a){  Check() ; INSTANCE->saveExtra(name, a); }
+
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
@@ -1274,6 +1276,15 @@ void SEvt::beginPhoton(const spho& label)
         << " pho.size  " << pho.size() 
         << " label " << label.desc() 
         ;  
+
+    if(!in_range) std::cerr
+        << "SEvt::beginPhoton FATAL not in_range" 
+        << " idx " << idx 
+        << " pho.size  " << pho.size() 
+        << " label " << label.desc() 
+        << std::endl 
+        ;  
+
     assert(in_range);  
 
     unsigned genflag = get_genflag(label);  
@@ -2213,6 +2224,13 @@ void SEvt::save()
     LOG(info) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
+void SEvt::saveExtra( const char* name, const NP* a  ) const 
+{
+    const char* dir = DefaultDir(); 
+    saveExtra( dir, name , a );  
+}
+
+
 int SEvt::load()
 {
     const char* dir = DefaultDir(); 
@@ -2220,6 +2238,7 @@ int SEvt::load()
     LOG(LEVEL) << "SGeo::DefaultDir " << dir << " rc " << rc ;
     return rc ;  
 }
+
 
 
 const char* SEvt::DefaultDir() // static
@@ -2318,6 +2337,19 @@ void SEvt::save(const char* dir_)
     saveFrame(dir); 
 
 }
+
+void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
+{
+    const char* dir = getOutputDir(dir_); 
+    a->save(dir, name );  
+} 
+
+
+
+
+
+
+
 int SEvt::load(const char* dir_) 
 {
     const char* dir = getOutputDir(dir_); 

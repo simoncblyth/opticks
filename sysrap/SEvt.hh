@@ -176,6 +176,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Clear(); 
     static SEvt* Load(const char* rel=nullptr); 
     static void Save() ; 
+    static void SaveExtra(const char* name, const NP* a) ; 
+
     static void Save(const char* bas, const char* rel ); 
     static void Save(const char* dir); 
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
@@ -362,6 +364,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     // save methods not const as calls gather
     void save() ; 
+    void saveExtra( const char* name, const NP* a ) const ; 
+
     int  load() ; 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
     void save(const char* base, const char* reldir ); 
@@ -370,6 +374,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     const char* getOutputDir(const char* base_=nullptr) const ; 
     std::string descSaveDir(const char* dir_) const ; 
     void save(const char* dir); 
+    void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
+
     int  load(const char* dir); 
 
     static std::string Brief() ; 
