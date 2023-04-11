@@ -40,6 +40,10 @@ set(TEST_SOURCES
    U4RandomTest.cc
    U4UniformRandTest.cc
    U4EngineTest.cc
+   U4RandomMonitorTest.cc
+   U4RandomArrayTest.cc
+
+
    U4VolumeMakerTest.cc
    U4LogTest.cc
    U4RotationMatrixTest.cc

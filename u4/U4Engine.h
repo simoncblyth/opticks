@@ -45,6 +45,11 @@ Introspect the engine::
     g4-cls MixMaxRng   ## by inspection the default engine in 10.4.2
     g4-cls RandomEngine
 
+
+NB for breakpointing to work with gdb need the CLHEP it seems::
+
+   BP=CLHEP::MixMaxRng::flat
+
 **/
 
 inline std::string U4Engine::Desc() // static
