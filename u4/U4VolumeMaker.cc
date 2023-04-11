@@ -100,6 +100,7 @@ PV1_
 const G4VPhysicalVolume* U4VolumeMaker::PV(){ return PV(GEOM); }
 const G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
 {
+    std::cerr << "U4VolumeMaker::PV name " << name << std::endl ; 
     LOG(LEVEL) << "[" << name ; 
     const G4VPhysicalVolume* pv = nullptr ; 
     if(pv == nullptr) pv = PVG_(name); 
@@ -142,10 +143,19 @@ const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Su
 const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
     METH = "PVG_" ; 
-    const char* gdmlpath = SOpticksResource::GDMLPath(name) ;   
+    const char* gdmlpath = SOpticksResource::GDMLPath(name) ;  // CAUTION this is different from GDMLPathFromGEOM  
     const char* sub = SOpticksResource::GEOMSub(name);  
-
     bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
+
+    std::cerr 
+        << "U4VolumeMaker::PVG_"
+        << " name " << name 
+        << " gdmlpath " << ( gdmlpath ? gdmlpath : "-" )
+        << " sub " << ( sub ? sub : "-" )
+        << " exists " << exists
+        << std::endl 
+        ; 
+
 
     const G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ; 
 

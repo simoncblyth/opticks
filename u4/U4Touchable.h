@@ -90,7 +90,19 @@ inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, 
 inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select )  // static 
 {
     int d = ReplicaDepth(touch, replica_name_select);
-    return d > -1 ? touch->GetReplicaNumber(d) : d  ;
+    bool found = d > -1 ; 
+    int repno = found ? touch->GetReplicaNumber(d) : d  ;
+
+#ifdef U4TOUCHABLE_DEBUG
+    if(found) std::cerr 
+        << "U4Touchable::ReplicaNumber"
+        << " found " << found
+        << " repno " << repno
+        << std::endl 
+        ;  
+#endif
+
+    return repno ;
 }
 
 /**
@@ -143,14 +155,46 @@ inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch, const char* repl
         const G4LogicalVolume* dlv = dpv->GetLogicalVolume();
         const G4LogicalVolume* mlv = mpv->GetLogicalVolume();
 
+        //const G4VSensitiveDetector* dsd = dlv->GetSensitiveDetector(); 
+        //const G4VSensitiveDetector* msd = mlv->GetSensitiveDetector(); 
+        //bool sd_skip = dsd == nullptr && msd == nullptr ; 
+
         bool hierarchy = dpv->GetMotherLogical() == mlv ; 
         assert(hierarchy); 
 
         const char* dlv_name = dlv->GetName().c_str() ; 
-        bool skip = replica_name_select && strstr(dlv_name, replica_name_select) == nullptr ; 
+        bool name_skip = replica_name_select && strstr(dlv_name, replica_name_select) == nullptr ; 
+        //bool skip = name_skip || sd_skip ; 
+
+#ifdef U4TOUCHABLE_DEBUG
+        std::cerr 
+            << "U4Touchable::ReplicaDepth"
+            << " d " << d 
+            << " nd " << nd 
+            << " dlv_name " << dlv_name
+            << " replica_name_select " << ( replica_name_select ? replica_name_select : "-" )
+            << " name_skip " << name_skip
+            << " skip " << skip
+            << std::endl 
+            ; 
+#endif
+
         // skip:true when replica_name_select is provided but the string is not found within the dlv name 
-        if(skip) continue ; 
-        if(HasMoreThanOneDaughterWithName(mlv, dlv_name)) return d ; 
+        // HMM: thats a negative way of doing things, positive approach would be more restrictive so faster
+        if(name_skip) continue ; 
+        bool found = HasMoreThanOneDaughterWithName(mlv, dlv_name) ;  
+
+#ifdef U4TOUCHABLE_DEBUG
+        if(found)std::cerr 
+            << "U4Touchable::ReplicaDepth"
+            << " d " << d 
+            << " dlv_name " << dlv_name
+            << " found " << found
+            << std::endl 
+            ;
+#endif
+
+        if(found) return d ; 
     }
     return -1 ;
 }
@@ -194,6 +238,7 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
     int num_dau = lv->GetNoDaughters();
     if(num_dau <= 1) return false ; 
 
+#ifdef U4TOUCHABLE_DEBUG
     bool heavy = num_dau > 45000 ;
     if(heavy) std::cerr 
         << "U4Touchable::HasMoreThanOneDaughterWithName"
@@ -202,6 +247,7 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
         << " lv.name " << lv->GetName() 
         << std::endl 
         ;
+#endif
 
 
     int count = 0;  
@@ -211,6 +257,7 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
         const G4LogicalVolume*   klv = kpv->GetLogicalVolume() ;
         const char* klv_name = klv->GetName().c_str() ;
 
+#ifdef U4TOUCHABLE_DEBUG
         if(heavy) std::cerr 
            << "U4Touchable::HasMoreThanOneDaughterWithName"
            << " k " << k 
@@ -219,6 +266,7 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
            << " count " << count 
            << std::endl
            ; 
+#endif
 
         if(strcmp(name, klv_name)==0) count += 1 ;
         if(count > 1) return true ;

@@ -752,11 +752,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.zero_v(3, 3);   // may be set below
 
 
+#ifdef U4RECORDER_EXPENSIVE_IINDEX
+    // doing replica number search for every step is very expensive and often pointless
+    // its the kind of thing to do only for low stats or simple geometry running 
     const G4VTouchable* touch = track->GetTouchable();  
     current_photon.iindex = U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT);  
-    // doing replica number search for every step is rather expensive 
-    // and pointless for some lv names like "lAcrylic" 
-
+#endif
 
     // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
     bool first_flag = current_photon.flagmask_count() == 1 ;  

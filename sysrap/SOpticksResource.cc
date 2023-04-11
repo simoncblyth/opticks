@@ -507,6 +507,9 @@ const char* SOpticksResource::SomeGDMLPath()
 SOpticksResource::GDMLPath
 ----------------------------
 
+TODO: consolidate with GDMLPathFromGEOM
+
+
 Converts *geom* name eg "JUNOv101" into a path by reading envvar "JUNOv101_GDMLPath" if it exists, 
 returns nullptr when the envvar does not exist or if geom is nullptr. 
 

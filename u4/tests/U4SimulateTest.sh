@@ -47,8 +47,18 @@ EOU
 DIR=$(dirname $BASH_SOURCE)
 bin=U4SimulateTest
 
+#geom=V1J008
+geom=FewPMT
+
 export VERSION=${N:-1}
-export GEOM=FewPMT
+export GEOM=${GEOM:-$geom}
+
+origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+if [ -f "$origin" ]; then
+   export ${GEOM}_GDMLPath=$origin
+   export U4VolumeMaker=INFO
+fi 
+
 geomscript=$DIR/$GEOM.sh 
 
 if [ -f "$geomscript" ]; then  

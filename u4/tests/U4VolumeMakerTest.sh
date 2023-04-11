@@ -27,11 +27,20 @@ arg=${1:-run}
 
 #geom=BoxOfScintillator  # default 
 #geom=hama_body_log
-geom=hamaLogicalPMT
+#geom=hamaLogicalPMT
 #geom=hamaBodyLog
+geom=V1J008
+
 
 export GEOM=${GEOM:-$geom}
-export U4VolumeMaker=INFO
+
+origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+if [ -f "$origin" ]; then
+   export ${GEOM}_GDMLPath=$origin
+   export U4VolumeMaker=INFO
+fi 
+
+
 
 
 vars="BASH_SOURCE arg GEOM"
