@@ -448,7 +448,7 @@ digits and + - . are used to find the floats.
 inline void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
 {
     char* val = getenv(key);
-    char* p = const_cast<char*>( val ? val : fallback ); 
+    char* p = const_cast<char*>( ( val && strlen(val) > 0)  ? val : fallback ); 
     while (*p) 
     {   
         if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' || *p == '.') vals.push_back(strtof(p, &p)) ; 
@@ -460,7 +460,7 @@ inline void qvals( std::vector<float>& vals, const char* key, const char* fallba
 inline void qvals( std::vector<long>& vals, const char* key, const char* fallback, int num_expect )
 {
     char* val = getenv(key);
-    char* p = const_cast<char*>( val ? val : fallback ); 
+    char* p = const_cast<char*>( ( val && strlen(val) > 0) ? val : fallback ); 
     while (*p) 
     {   
         if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' ) vals.push_back(strtol(p, &p, 10)) ; 
