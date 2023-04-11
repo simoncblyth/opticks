@@ -82,6 +82,7 @@ struct sdebug ;
 struct NP ; 
 struct NPFold ; 
 struct SGeo ; 
+struct S4RandomArray ;  
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -102,6 +103,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* g4state ;    // populated by U4Engine::SaveStatus
 
     const SRandom*        random ; 
+    S4RandomArray*        random_array ; 
+    // random_array
+    //      low-dep random consumption debug, usage needs Geant4  
+    //      but its useful to have somewhere to hang it  
+
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
     const SGeo*           cf ; 

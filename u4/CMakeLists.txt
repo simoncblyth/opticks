@@ -100,9 +100,6 @@ set(HEADERS
     U4StepPoint.hh
     U4Random.hh
 
-    U4RandomMonitor.h
-    U4RandomArray.h
-
     U4Engine.h
     U4Touchable.h
 

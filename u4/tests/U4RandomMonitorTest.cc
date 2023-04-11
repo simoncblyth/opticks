@@ -1,12 +1,12 @@
 #include <iostream>
 #include <iomanip>
 
-#include "U4RandomMonitor.h"
+#include "S4RandomMonitor.h"
 
 
 int main(int argc, char** argv)
 {
-    U4RandomMonitor mon ; 
+    S4RandomMonitor mon ; 
 
     for(int i=0 ; i < 10 ; i++)
     {

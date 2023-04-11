@@ -34,6 +34,9 @@
 #include "SComp.h"
 
 
+
+
+
 NP* SEvt::UU = nullptr ; 
 NP* SEvt::UU_BURN = NP::Load("$SEvt__UU_BURN") ; 
 
@@ -72,6 +75,7 @@ SEvt::SEvt()
     input_photon_transformed(nullptr),
     g4state(nullptr),
     random(nullptr),
+    random_array(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
     cf(nullptr),

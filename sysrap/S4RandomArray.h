@@ -1,7 +1,16 @@
 #pragma once
 /**
-U4RandomArray
+S4RandomArray
 =================
+
+Instanciation holds onto the current engine in m_engine and 
+replaces it with itself.  Flat calls to the engine are 
+then passed thru to the original engine and each random 
+is added to a vector.  See S4RandomMonitor.h 
+for simply logging the randoms. 
+
+NB tests which require Geant4 in u4/tests/U4RandomArrayTest.cc
+
 **/
 
 #include <vector>
@@ -18,14 +27,14 @@ U4RandomArray
 #include "CLHEP/Random/RandomEngine.h"
 #include "NPX.h"
 
-struct U4RandomArray : public CLHEP::HepRandomEngine
+struct S4RandomArray : public CLHEP::HepRandomEngine
 {
-    static constexpr const char* NAME = "U4RandomArray" ; 
+    static constexpr const char* NAME = "S4RandomArray" ; 
 
     std::vector<double>      m_array ;  
     CLHEP::HepRandomEngine*  m_engine ;
 
-    U4RandomArray(); 
+    S4RandomArray(); 
     void clear(); 
     NP* serialize() const ;  
 
@@ -41,32 +50,32 @@ struct U4RandomArray : public CLHEP::HepRandomEngine
 
 }; 
 
-inline U4RandomArray::U4RandomArray()
+inline S4RandomArray::S4RandomArray()
     :
     m_engine(CLHEP::HepRandom::getTheEngine())
 {
     CLHEP::HepRandom::setTheEngine(this); 
 }
 
-inline void U4RandomArray::clear()
+inline void S4RandomArray::clear()
 {
     m_array.clear(); 
 }
-inline NP* U4RandomArray::serialize() const 
+inline NP* S4RandomArray::serialize() const 
 {
     return NPX::ArrayFromVec<double, double>(m_array) ; 
 }
 
 
 /**
-U4RandomArray::flat
+S4RandomArray::flat
 ------------------------
 
 This is the engine method that gets invoked by G4UniformRand calls 
 
 **/
 
-inline double U4RandomArray::flat()
+inline double S4RandomArray::flat()
 {
     double d = m_engine->flat(); 
     m_array.push_back(d) ; 
@@ -75,38 +84,38 @@ inline double U4RandomArray::flat()
 
 
 /**
-U4RandomArray::flatArray
+S4RandomArray::flatArray
 ------------------------------
 
-This method and several others are required as U4RandomArray ISA CLHEP::HepRandomEngine
+This method and several others are required as S4RandomArray ISA CLHEP::HepRandomEngine
 
 **/
 
-inline void U4RandomArray::flatArray(const int size, double* vect)
+inline void S4RandomArray::flatArray(const int size, double* vect)
 {
      assert(0); 
 }
-inline void U4RandomArray::setSeed(long seed, int)
+inline void S4RandomArray::setSeed(long seed, int)
 {
     assert(0); 
 }
-inline void U4RandomArray::setSeeds(const long * seeds, int)
+inline void S4RandomArray::setSeeds(const long * seeds, int)
 {
     assert(0); 
 }
-inline void U4RandomArray::saveStatus( const char filename[]) const 
+inline void S4RandomArray::saveStatus( const char filename[]) const 
 {
     assert(0); 
 }
-inline void U4RandomArray::restoreStatus( const char filename[]) 
+inline void S4RandomArray::restoreStatus( const char filename[]) 
 {
     assert(0); 
 }
-inline void U4RandomArray::showStatus() const 
+inline void S4RandomArray::showStatus() const 
 {
     assert(0); 
 }
-inline std::string U4RandomArray::name() const 
+inline std::string S4RandomArray::name() const 
 {
     return NAME ; 
 }

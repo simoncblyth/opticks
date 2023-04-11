@@ -382,6 +382,8 @@ set(HEADERS
     S4MaterialPropertyVector.h
     SNameOrder.h
     S4.h 
+    S4RandomMonitor.h
+    S4RandomArray.h
 
 
     SFastSim_Debug.hh
