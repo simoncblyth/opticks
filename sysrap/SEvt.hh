@@ -160,6 +160,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static SEvt* Get() ; 
     static SEvt* Create() ; 
     static SEvt* CreateOrReuse() ; 
+    static SEvt* HighLevelCreateOrReuse() ; 
 
     static SEvt* HighLevelCreate(); // Create with bells-and-whistles needed by eg u4/tests/U4SimulateTest.cc
 

@@ -44,8 +44,12 @@ const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG");
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
-const char* SEvt::DEFAULT_RELDIR = "ALL" ; 
-//const SCF* SEvt::CF = SCF::Create() ;   // TODO: REMOVE 
+const char* SEvt::DEFAULT_RELDIR = "ALL" ;   
+/**
+Q: How is this changed to ALL0 ALL1 namely ALL$VERSION
+
+**/
+
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
@@ -640,7 +644,8 @@ NP* SEvt::gatherDomain() const
 
 SEvt* SEvt::Get(){     return INSTANCE ; }
 SEvt* SEvt::Create() { return new SEvt ; }
-SEvt* SEvt::CreateOrReuse() { return INSTANCE ? INSTANCE : Create() ; }
+SEvt* SEvt::CreateOrReuse() {         return INSTANCE ? INSTANCE : Create() ; }
+SEvt* SEvt::HighLevelCreateOrReuse(){ return INSTANCE ? INSTANCE : HighLevelCreate() ; }
 
 
 /**
