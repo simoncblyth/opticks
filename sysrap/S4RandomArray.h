@@ -82,6 +82,20 @@ inline double S4RandomArray::flat()
     return d ; 
 }
 
+/**
+S4RandomArray::flatArray
+-------------------------
+
+G4VEnergyLossProcess::AlongStepDoIt/G4UniversalFluctuation::SampleFluctuations needs this
+
+**/
+
+inline void S4RandomArray::flatArray(const int size, double* vect)
+{
+    m_engine->flatArray(size, vect); 
+    for(int i=0 ; i < size ; i++) m_array.push_back(vect[i]) ; 
+}
+
 
 /**
 S4RandomArray::flatArray
@@ -91,10 +105,7 @@ This method and several others are required as S4RandomArray ISA CLHEP::HepRando
 
 **/
 
-inline void S4RandomArray::flatArray(const int size, double* vect)
-{
-     assert(0); 
-}
+
 inline void S4RandomArray::setSeed(long seed, int)
 {
     assert(0); 

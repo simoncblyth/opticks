@@ -11,11 +11,18 @@ int main(int argc, char** argv)
     for(int i=0 ; i < 10 ; i++)
     {
         double u = G4UniformRand() ; 
-        std::cout << std::setw(10) << std::setprecision(5) << u << std::endl ;
+        std::cout << " u " << std::setw(10) << std::setprecision(5) << u << std::endl ;
     }
 
+    double chk[10] ; 
+    CLHEP::HepRandom::getTheEngine()->flatArray(10, &chk[0] ); 
+    for(int i=0 ; i < 10 ; i++ ) std::cout << " flatArray chk " << std::setw(10) << std::setprecision(5) << chk[i] << std::endl ; 
+
+
     NP* a = arr.serialize(); 
-    a->save("$TMP/S4RandomArrayTest/a.npy"); 
+    const char* path = "$TMP/S4RandomArrayTest/a.npy" ; 
+    std::cout << " saving " << a->sstr() << " to " << path << std::endl ; 
+    a->save(path); 
 
     return 0 ; 
 } 
