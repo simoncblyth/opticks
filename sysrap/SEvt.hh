@@ -329,6 +329,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static const char* ENVMETA ; 
     static void AddEnvMeta(NP* a, bool dump=false ); 
+    static std::string DescKV( const std::vector<std::pair<std::string, std::string>>& kvs ); 
+
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 

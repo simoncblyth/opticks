@@ -1849,34 +1849,52 @@ ${GEOM}_GEOMList
 
 // HIGHER ORDER KEYS WITH TOKENS ARE HANDLED IN ssys::_getenv
 
+/**
+SEvt::AddEnvMeta
+-----------------
+
+Invoked by SEvt::makePhoton which gets called by SEvt::gatherPhoton for every event.
+
+This collects the (key, value) pairs of the above set of standard envvars 
+into the photon array metadata. 
+
+**/
+
 void SEvt::AddEnvMeta( NP* a, bool dump ) // static
 {
     if(a == nullptr) return ; 
     typedef std::pair<std::string, std::string> KV ; 
     std::vector<KV> kvs ; 
     ssys::getenv_(kvs, ENVMETA); 
-
-    if(dump)
-    {
-        for(int i=0 ; i < int(kvs.size()) ; i++)
-        {
-            const KV& kv = kvs[i] ; 
-            std::cout 
-                << std::setw(20)  << kv.first 
-                << " : "
-                << std::setw(100) << kv.second
-                << std::endl 
-                ;
-        }
-    }
-
+    LOG_IF(info, dump) << DescKV(kvs) ; 
     a->set_meta_kv(kvs) ; 
 }
+
+std::string SEvt::DescKV( const std::vector<std::pair<std::string, std::string>>& kvs ) // static
+{
+    typedef std::pair<std::string, std::string> KV ; 
+    std::stringstream ss ; 
+    ss << "SEvt::DescKV" << std::endl ;  
+    for(int i=0 ; i < int(kvs.size()) ; i++)
+    {
+        const KV& kv = kvs[i] ; 
+        ss
+            << std::setw(20)  << kv.first 
+            << " : "
+            << std::setw(100) << kv.second
+            << std::endl 
+            ;
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 NP* SEvt::makePhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
-    AddEnvMeta(p, true) ; 
+    AddEnvMeta(p, false) ; 
     return p ; 
 }
 
@@ -2226,7 +2244,6 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 void SEvt::save() 
 {
     const char* dir = DefaultDir(); 
-    LOG(info) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
 void SEvt::saveExtra( const char* name, const NP* a  ) const 
