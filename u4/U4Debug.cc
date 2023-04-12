@@ -18,6 +18,14 @@ const char* U4Debug::GetSaveDir(int eventID)
     return SPath::Resolve(SaveDir ? SaveDir : "/tmp" , eventID, DIRPATH );  
 }
 
+/**
+U4Debug::Save
+---------------
+
+This is used for example from junoSD_PMT_v2::EndOfEvent WITH_G4CXOPTICKS_DEBUG
+
+**/
+
 void U4Debug::Save(int eventID)
 {
     const char* dir = GetSaveDir(eventID); 

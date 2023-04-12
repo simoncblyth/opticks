@@ -40,6 +40,7 @@ if [ -n "$odir" ]; then
                            --include '*.gdml' \
                            --include="*.txt" \
                            --include="*.log" \
+                           --include="*.tlog" \
                            --include="*.npy" \
                            --include="*.jpg" \
                            --include="*.mp4" \
