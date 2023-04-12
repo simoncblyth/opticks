@@ -181,6 +181,7 @@ set(HEADERS
     SStr.hh
 
     schrono.h
+    stimer.h
 
     SBnd.h
 

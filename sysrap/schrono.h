@@ -32,6 +32,19 @@ namespace schrono
         return dt ; 
     }
 
+    inline double delta( std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
+    {
+        DT _dt = t0.time_since_epoch() ; // HMM: no standard epoch ? so this might be non-absolute
+        double dt = _dt.count() ;
+        return dt ; 
+    }
+
+    inline double delta_stamp()
+    {
+        TP t0 = stamp(); 
+        return delta(t0); 
+    }
+
     inline void sleep(int seconds)
     {
         std::chrono::seconds dura(seconds);
@@ -56,6 +69,12 @@ namespace schrono
         std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", tm);  
         return strdup(buffer) ; 
      }
+
+    inline const char* format(std::chrono::time_point<std::chrono::high_resolution_clock>& t0)
+    {
+        std::time_t tt = approx_time_t(t0); 
+        return format(tt) ;   
+    }
 
 
 }
