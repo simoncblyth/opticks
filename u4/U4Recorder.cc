@@ -68,6 +68,13 @@ const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ;
 const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
 
 
+/**
+U4Recorder::Switches
+---------------------
+
+HMM: preping metadata kvs would be more useful 
+**/
+
 std::string U4Recorder::Switches()  // static 
 {
     std::stringstream ss ; 
@@ -81,6 +88,8 @@ std::string U4Recorder::Switches()  // static
 #ifdef PMTSIM_STANDALONE
     ss << "PMTSIM_STANDALONE" << std::endl ; 
 #endif
+    bool uoc = UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
+    ss << UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_ << ":" << int(uoc) << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -883,9 +892,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         sev->pointPhoton(ulabel);     // save SEvt::current_photon/rec/seq/prd into sevent 
     }
 
-    U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+    if(UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft)
+    {
+        U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+    }
+
     LOG(LEVEL) << "]" ; 
 }
+
+
+const bool U4Recorder::UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft = ssys::getenvbool(UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_) ; 
+
 
 /**
 U4Recorder::CollectBoundaryAux

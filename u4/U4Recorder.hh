@@ -105,6 +105,22 @@ struct U4_API U4Recorder
     void UserSteppingAction_Optical(const G4Step*); 
 
 
+    /**
+    export U4Recorder__UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft=1 
+
+    This setting is not appropriate for gun running. It is only appropriate with 
+    input photon running when doing optical only random aligned comparisons.
+
+    This setting makes it easier to random align Opticks and Geant4 based optical simulations
+    because it makes the Geant4 pattern of random consumption more regular. 
+    However this has side effects:
+
+    1. increases the randoms consumed by 20-30% (can check this with S4RandomArray.h) 
+    2. changes the events simulated, as the randoms consumed are changed   
+
+    **/
+    static constexpr const char* UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_ = "U4Recorder__UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft" ; 
+    static const bool UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
 
 
     template <typename T>

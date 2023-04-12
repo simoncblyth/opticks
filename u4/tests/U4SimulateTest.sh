@@ -89,6 +89,8 @@ export Local_DsG4Scintillation_DISABLE=1
 export U4App__PRIMARY_MODE=torch  # hmm seems iphoton and torch do same thing internally 
 export BeamOn=${BeamOn:-1}
 export U4Recorder__PIDX_ENABLED=1 
+#export U4Recorder__UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft=1  ## makes easier to randmn align 
+
 export EVT=${EVT:-000}       # used for FOLD envvars
 
 # python ana level presentation 
