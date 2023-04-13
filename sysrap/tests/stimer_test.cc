@@ -41,12 +41,45 @@ void test_lap()
     std::cout << " dt1 " << dt1 << std::endl ; 
 }
 
+struct Egg
+{
+   static stimer* TIMER ; 
+   double boil(int seconds) ; 
+};
+
+stimer* Egg::TIMER = new stimer ; 
+
+inline double Egg::boil(int seconds)
+{
+    TIMER->start()  ; 
+    stimer::sleep(seconds); 
+    return TIMER->done(); 
+}
+
+void test_egg()
+{
+    Egg d ; 
+
+    double dt0 = d.boil(1) ; 
+    std::cout << " dt0 " << dt0 << std::endl ; 
+
+    double dt1 = d.boil(1) ; 
+    std::cout << " dt1 " << dt1 << std::endl ; 
+
+    double dt2 = d.boil(0) ; 
+    std::cout << " dt2 " << dt2 << std::endl ; 
+}
+
+
 int main()
 {
     /**
     test_start_stop(); 
     test_done(); 
-    **/
     test_lap(); 
+    **/
+    test_egg(); 
+
+
     return 0 ; 
 }

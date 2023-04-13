@@ -83,6 +83,7 @@ struct NP ;
 struct NPFold ; 
 struct SGeo ; 
 struct S4RandomArray ;  
+struct stimer ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -148,6 +149,13 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     static constexpr const unsigned UNDEF = ~0u ; 
+
+    static stimer* TIMER ; 
+    static void TimerStart(); 
+    static void TimerStop(); 
+    static double TimerDuration(); 
+    static double TimerDone(); 
+
     static NP* UU ;  
     static NP* UU_BURN ;  
     static const plog::Severity LEVEL ; 

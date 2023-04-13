@@ -37,6 +37,10 @@ struct stimer
    double lap(); 
 
    // low level API
+   bool is_ready() const ; 
+   bool is_started() const ; 
+   bool is_stopped() const ; 
+
    void start(); 
    void stop(); 
    double duration() const ; 
@@ -65,23 +69,26 @@ inline double stimer::lap()
 }
 
 
-
+inline bool stimer::is_ready() const {   return status == UNSET || status == STOPPED ; }
+inline bool stimer::is_started() const { return status == STARTED ; }
+inline bool stimer::is_stopped() const { return status == STOPPED ; }
 
 inline void stimer::start()
 {
-    assert( status == UNSET || status == STOPPED  ); 
+    assert( is_ready()  ); 
     status = STARTED ; 
     _start = std::chrono::high_resolution_clock::now(); 
 } 
 inline void stimer::stop()
 {
-    assert( status == STARTED ); 
+    assert( is_started() ); 
     status = STOPPED ; 
     _stop  = std::chrono::high_resolution_clock::now(); 
 } 
+
 inline double stimer::duration() const 
 {
-    assert( status == STOPPED );   
+    if(!is_stopped()) return -1. ;   
     DT _dt = _stop - _start ; 
     return _dt.count(); 
 }

@@ -13,7 +13,7 @@
 #include "sctx.h"
 #include "sdebug.h"
 #include "stran.h"
-
+#include "stimer.h"
 
 #include "SLOG.hh"
 #include "SSys.hh"
@@ -33,7 +33,11 @@
 #include "OpticksPhoton.hh"
 #include "SComp.h"
 
-
+stimer* SEvt::TIMER = new stimer ;
+void SEvt::TimerStart(){ TIMER->start(); }
+void SEvt::TimerStop(){  TIMER->stop();  } 
+double SEvt::TimerDuration(){ return TIMER->duration() ; }
+double SEvt::TimerDone(){ return TIMER->done() ; }
 
 
 
