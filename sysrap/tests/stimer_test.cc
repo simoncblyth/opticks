@@ -70,6 +70,21 @@ void test_egg()
     std::cout << " dt2 " << dt2 << std::endl ; 
 }
 
+void test_desc()
+{
+    stimer* t = new stimer ; 
+    std::cout << t->desc() << std::endl ; 
+
+    t->start(); 
+    std::cout << t->desc() << std::endl ; 
+
+    stimer::sleep(1); 
+
+    t->stop(); 
+    std::cout << t->desc() << std::endl ; 
+
+}
+
 
 int main()
 {
@@ -77,8 +92,9 @@ int main()
     test_start_stop(); 
     test_done(); 
     test_lap(); 
-    **/
     test_egg(); 
+    **/
+    test_desc(); 
 
 
     return 0 ; 
