@@ -855,13 +855,15 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     }
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
 
-    //current_aux.q2.i.z = fakemask ;         // CAUTION: stomping on cdbg.pmtid setting above  
-    current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
-
+    //current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
     //current_aux.q2.i.w = st ;                  // CAUTION: stomping on cdbg.spare setting above  
+
+    current_aux.q2.i.z = fakemask ;              // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.f.w = float(fake_duration) ;  // CAUTION: stomping on cdbg.spare setting above 
 
-    LOG_IF(info, PIDX_DUMP ) 
+    bool slow_fake = fake_duration > SLOW_FAKE ; 
+
+    LOG_IF(info, PIDX_DUMP || slow_fake  ) 
         << " l.id " << std::setw(3) << ulabel.id
         << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
         << " abbrev " << OpticksPhoton::Abbrev(flag)
@@ -870,6 +872,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " fakemask " << fakemask
         << " fake_duration " << fake_duration 
+        << " slow_fake " << slow_fake
+        << " SLOW_FAKE " << SLOW_FAKE
         << " U4Fake::Desc " << U4Fake::Desc(fakemask)
         ;
 
@@ -905,6 +909,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 }
 
 
+const double U4Recorder::SLOW_FAKE = ssys::getenvdouble("U4Recorder__SLOW_FAKE", 1e-2) ; 
 const bool U4Recorder::UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft = ssys::getenvbool(UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_) ; 
 
 

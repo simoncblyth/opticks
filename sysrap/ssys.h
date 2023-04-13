@@ -3,6 +3,8 @@
 ssys.h
 ========
 
+Note that strings like "1e-9" parse ok into float/double. 
+
 **/
 
 #include <cstdlib>
@@ -24,6 +26,8 @@ struct ssys
 
     static int getenvint(const char* ekey, int fallback);  
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
+    static double   getenvdouble(const char* ekey, double fallback);  
+    static float    getenvfloat(const char* ekey, float fallback);  
     static bool     getenvbool(const char* ekey);  
 
 
@@ -115,6 +119,10 @@ inline bool ssys::getenvbool( const char* ekey )
     bool ival = val ? true : false ;
     return ival ; 
 }
+
+inline float  ssys::getenvfloat( const char* ekey, float  fallback){ return getenv_<float>(ekey,  fallback) ; }
+inline double ssys::getenvdouble(const char* ekey, double fallback){ return getenv_<double>(ekey, fallback) ; }
+
 
 
 inline bool ssys::hasenv_(const char* ekey)

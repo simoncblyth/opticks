@@ -134,6 +134,7 @@ struct U4_API U4Recorder
 
     unsigned ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump, double* duration ); 
 
+    static const double SLOW_FAKE ;                // envvar U4Recorder__SLOW_FAKE 
     static std::vector<std::string>* FAKES ;       // envvar U4Recorder__FAKES
     static bool                      FAKES_SKIP ;  // envvar U4Recorder__FAKES_SKIP 
 

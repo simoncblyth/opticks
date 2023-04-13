@@ -20,6 +20,7 @@ Usage::
 #include <cassert>
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 struct stimer
 {
@@ -75,7 +76,7 @@ inline bool stimer::is_stopped() const { return status == STOPPED ; }
 
 inline void stimer::start()
 {
-    assert( is_ready()  ); 
+    if(!is_ready()) std::cerr << "stimer::start starting again ? " << status << std::endl ;  
     status = STARTED ; 
     _start = std::chrono::high_resolution_clock::now(); 
 } 

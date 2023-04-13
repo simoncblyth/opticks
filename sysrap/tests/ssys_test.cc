@@ -140,7 +140,17 @@ void test_replace_envvar_token()
 
 }
 
+void test_getenvfloat()
+{
+    float f = ssys::getenvfloat("f",0.f) ; 
+    std::cout << "f:" << std::scientific << f << std::endl ; 
+}
 
+void test_getenvdouble()
+{
+    double d = ssys::getenvdouble("d",1e-5 ) ; 
+    std::cout << "d:" << std::scientific << d << std::endl ; 
+}
 
 
 int main(int argc, char** argv)
@@ -155,8 +165,10 @@ int main(int argc, char** argv)
     test__getenv(); 
     test_getenv_kv(); 
     test_replace_envvar_token(); 
-    */
     test_getenv_kv(); 
+    test_getenvfloat(); 
+    */
+    test_getenvdouble(); 
 
  
     return 0 ; 

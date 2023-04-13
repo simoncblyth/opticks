@@ -113,8 +113,8 @@ class SEvt(RFold):
         U4R_names = getattr(f, "U4R_names", None)
         SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
 
-        spec = SPECS[spec_]
-
+        #spec = SPECS[spec_]
+        spec = None   # stopped on for a time 
 
         TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
 
