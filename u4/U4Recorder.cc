@@ -6,6 +6,7 @@
 #include "spho.h"
 #include "srec.h"
 #include "ssys.h"
+#include "stimer.h"
 
 #include "NP.hh"
 #include "SPath.hh"
@@ -844,10 +845,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     bool is_fake = false ; 
     unsigned fakemask = 0 ;
+    double   fake_duration(-2.); 
+
     if(FAKES_SKIP)
     {
        // fake detection is very expensive : only do when needed
-       fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP ) ; 
+       fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP, &fake_duration ) ; 
        is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
     }
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
@@ -855,8 +858,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     //current_aux.q2.i.z = fakemask ;         // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
 
-    current_aux.q2.i.w = st ;                 // CAUTION: stomping on cdbg.spare setting above  
-
+    //current_aux.q2.i.w = st ;                  // CAUTION: stomping on cdbg.spare setting above  
+    current_aux.q2.f.w = float(fake_duration) ;  // CAUTION: stomping on cdbg.spare setting above 
 
     LOG_IF(info, PIDX_DUMP ) 
         << " l.id " << std::setw(3) << ulabel.id
@@ -866,6 +869,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " st " << std::setw(3) << st 
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " fakemask " << fakemask
+        << " fake_duration " << fake_duration 
         << " U4Fake::Desc " << U4Fake::Desc(fakemask)
         ;
 
@@ -1074,31 +1078,54 @@ so leaving asis given that current incantation seems to work.
 **/
 
 const double U4Recorder::EPSILON = 1e-4 ; 
+const bool U4Recorder::ClassifyFake_FindPV_r = ssys::getenvbool("U4Recorder__ClassifyFake_FindPV_r" ); 
+stimer* U4Recorder::TIMER = new stimer ; 
 
-unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump )
+unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump, double* duration )
 {
+    if(duration) TIMER->start() ; 
+
     unsigned fakemask = 0 ; 
-
-    bool is_reflect_flag = OpticksPhoton::IsReflectFlag(flag); 
-
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
+
+    // these are cheap and easy fake detection 
+    bool is_reflect_flag = OpticksPhoton::IsReflectFlag(flag); 
+    bool is_small_step   = step_mm < EPSILON && is_reflect_flag == false ; 
+    bool is_vacvac_inner1_inner2 = U4Step::IsSameMaterialPVBorder(step, "Vacuum", "inner1_phys", "inner2_phys") ; 
+
+    if(is_small_step)            fakemask |= U4Fake::FAKE_STEP_MM ; 
+    if(is_vacvac_inner1_inner2)  fakemask |= U4Fake::FAKE_VV_INNER12 ; 
+    if(IsListedFake(spec))       fakemask |= U4Fake::FAKE_MANUAL ;  
+
+
+    // the below are powerful, but expensive fake detection
 
     const char* fake_pv_name = "body_phys" ; 
     const G4Track* track = step->GetTrack(); 
     const G4VTouchable* touch = track->GetTouchable();  
     const G4VPhysicalVolume* pv = track->GetVolume() ; 
+    const char* pv_name = pv->GetName().c_str(); 
 
-    const G4VPhysicalVolume* fpv0 = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
-    const G4VPhysicalVolume* fpv1 = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END ); 
-    const G4VPhysicalVolume* fpv = fpv0 ? fpv0 : fpv1 ; 
+    const G4VPhysicalVolume* fpv = nullptr ; 
+    // finding volume by name in the touch stack is much quicker than the recursive U4Volume::FindPV
+    fpv = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
+    int maxdepth = 2 ; 
 
-    //LOG_IF(info, fpv == nullptr ) << U4Touchable::Desc(touch) <<  U4Touchable::Brief(touch) ; 
+    if( fpv == nullptr && ClassifyFake_FindPV_r ) fpv = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END, maxdepth ); 
+
+    LOG_IF(info, fpv == nullptr ) 
+         << " fpv null "
+         << " pv_name " << ( pv_name ? pv_name : "-" )
+         << " ClassifyFake_FindPV_r " << ( ClassifyFake_FindPV_r ? "YES" : "NO " )
+         << U4Touchable::Desc(touch) 
+         << U4Touchable::Brief(touch) 
+         ; 
+
     G4LogicalVolume* flv = fpv ? fpv->GetLogicalVolume() : nullptr ; 
     G4VSolid* fso = flv ? flv->GetSolid() : nullptr ; 
 
     const G4AffineTransform& transform = touch->GetHistory()->GetTopTransform();
-
     const G4StepPoint* post = step->GetPostStepPoint() ; 
     const G4ThreeVector& theGlobalPoint = post->GetPosition(); 
     const G4ThreeVector& theGlobalDirection = post->GetMomentumDirection() ; 
@@ -1109,21 +1136,18 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     EInside fin = kOutside ; 
     G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin ) ; 
 
-    bool is_vacvac_inner1_inner2 = U4Step::IsSameMaterialPVBorder(step, "Vacuum", "inner1_phys", "inner2_phys") ; 
-
-    if(step_mm < EPSILON && is_reflect_flag == false) fakemask |= U4Fake::FAKE_STEP_MM ; 
     if(fdist < EPSILON)    fakemask |= U4Fake::FAKE_FDIST ;  
     if(fin == kSurface)    fakemask |= U4Fake::FAKE_SURFACE ; 
-    if(IsListedFake(spec)) fakemask |= U4Fake::FAKE_MANUAL ;  
-    if(is_vacvac_inner1_inner2) fakemask |= U4Fake::FAKE_VV_INNER12 ; 
+
+    if(duration) *duration = TIMER->done() ; 
 
     LOG_IF(info, dump) 
         << " fdist " << fdist 
         << " fin " << sgeomdefs::EInside_(fin)
         << " fakemask " << fakemask
         << " desc " << U4Fake::Desc(fakemask)
+        << " duration " << std::scientific << ( duration ? *duration : -1. ) 
         ; 
-
 
     return fakemask ; 
 }

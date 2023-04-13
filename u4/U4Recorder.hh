@@ -31,6 +31,7 @@ struct NP ;
 struct spho ; 
 struct quad4 ; 
 struct SEvt ; 
+struct stimer ; 
 
 #include "NPU.hh"  // UName
 
@@ -128,7 +129,10 @@ struct U4_API U4Recorder
 
 
     static const double EPSILON ; 
-    unsigned ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump); 
+    static const bool ClassifyFake_FindPV_r ; 
+    static stimer* TIMER ; 
+
+    unsigned ClassifyFake(const G4Step* step, unsigned flag, const char* spec, bool dump, double* duration ); 
 
     static std::vector<std::string>* FAKES ;       // envvar U4Recorder__FAKES
     static bool                      FAKES_SKIP ;  // envvar U4Recorder__FAKES_SKIP 

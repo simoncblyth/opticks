@@ -12,8 +12,8 @@ class G4VPhysicalVolume ;
 
 struct U4Volume
 {
-    static const G4VPhysicalVolume* FindPV( const G4VPhysicalVolume* top,  const char* qname, int mode=sstr::MATCH_ALL );
-    static void FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth ); 
+    static const G4VPhysicalVolume* FindPV( const G4VPhysicalVolume* top,  const char* qname, int mode=sstr::MATCH_ALL, int maxdeth=-1 );
+    static void FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth, int maxdepth ); 
 
 
     static const G4VPhysicalVolume* FindPVSub( const G4VPhysicalVolume* top, const char* sub ); 
@@ -47,22 +47,25 @@ U4Volume::FindPV
 ------------------
 
 Find volume named *qname* at or beneath *start_pv*
+This is slow when used from stepping around in large geometries. 
+*maxdepth* when not -1 restricts the recursion depth to search
 
 **/
 
-inline const G4VPhysicalVolume*  U4Volume::FindPV( const G4VPhysicalVolume* start_pv,  const char* qname, int mode  ) 
+inline const G4VPhysicalVolume*  U4Volume::FindPV( const G4VPhysicalVolume* start_pv,  const char* qname, int mode, int maxdepth ) 
 {
     std::vector<const G4VPhysicalVolume*> pvs ; 
-    FindPV_r(start_pv, qname, mode, pvs, 0 ); 
+    FindPV_r(start_pv, qname, mode, pvs, 0, maxdepth ); 
     return pvs.size() == 1 ? pvs[0] : nullptr ; 
 }
-inline void U4Volume::FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) 
+inline void U4Volume::FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, int mode, std::vector<const G4VPhysicalVolume*>& pvs, int depth, int maxdepth ) 
 {
+    if(maxdepth > -1 && depth > maxdepth) return ;   
     const G4String& name_ = pv->GetName(); 
     const char* name = name_.c_str() ; 
     if(sstr::Match_(name, qname, mode)) pvs.push_back( pv ); 
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindPV_r( lv->GetDaughter(i), qname, mode, pvs, depth+1 ); 
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindPV_r( lv->GetDaughter(i), qname, mode, pvs, depth+1, maxdepth ); 
 }
 
 

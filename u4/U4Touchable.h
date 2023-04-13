@@ -66,6 +66,13 @@ inline bool U4Touchable::MatchEnd( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ; 
 }
 
+/**
+U4Touchable::FindPV
+---------------------
+
+Find a PV by name in the touch stack, this is much quicker than the recursive U4Volume::FindPV 
+
+**/
 
 inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, const char* qname, int mode )
 {
