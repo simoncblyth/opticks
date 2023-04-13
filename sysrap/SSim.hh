@@ -3,7 +3,12 @@
 SSim.hh : Manages input arrays for QUDARap/QSim : Using Single NPFold Member
 ==================================================================================
 
-Canonically instanciated by CSGFoundry::CSGFoundry 
+
+SSim must be instanciated with SSim::Create prior to CSGFoundry::CSGFoundry 
+
+Currently that is done from G4CXOpticks::G4CXOpticks 
+
+
 and populated by GGeo::convertSim which is for example invoked 
 during GGeo to CSGFoundry conversion within CSG_GGeo_Convert::convertSim
 
@@ -40,6 +45,7 @@ struct SYSRAP_API SSim
     static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
+    static SSim* CreateOrReuse(); 
 
     static void  Add(const char* k, const NP* a); 
     static void  AddSubfold(const char* k, NPFold* f); 
@@ -80,10 +86,6 @@ struct SYSRAP_API SSim
     void import_bnd() ; 
     stree* get_tree() const ; 
     int lookup_mtline( int mtindex ) const ; 
-
-
-    //void load(const char* base); 
-    //void save(const char* base) const ; 
 
     void save(const char* base, const char* reldir=RELDIR) const ; 
     void load(const char* base, const char* reldir=RELDIR) ; 

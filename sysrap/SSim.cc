@@ -8,7 +8,7 @@
 
 #include "SLOG.hh"
 #include "SStr.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SOpticksResource.hh"
 
 #include "SPath.hh"
@@ -17,7 +17,7 @@
 
 
 const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
-const int SSim::stree_level = SSys::getenvint("SSim__stree_level", 0) ; 
+const int SSim::stree_level = ssys::getenvint("SSim__stree_level", 0) ; 
 
 
 SSim* SSim::INSTANCE = nullptr ; 
@@ -27,18 +27,24 @@ SSim* SSim::Get()
 { 
     return INSTANCE ; 
 }
+SSim* SSim::CreateOrReuse()
+{ 
+    return INSTANCE ? INSTANCE : Create() ; 
+}
+
+
 void SSim::Add(const char* k, const NP* a ) // static
 {
     SSim* ss = Get(); 
-    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
+    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ; 
     if(ss == nullptr) return ; 
     ss->add(k, a );  
 }
 
 void SSim::AddSubfold(const char* k, NPFold* f) // static
 {
-    SSim* ss = Get(); 
-    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not intanciated yet " ; 
+    SSim* ss = CreateOrReuse(); 
+    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ; 
     if(ss == nullptr) return ; 
     ss->add_subfold(k, f); 
 }
@@ -225,7 +231,7 @@ tree.load taking 0.467s which is excessive as not yet in use
 
 **/
 
-const bool SSim::load_tree_load = SSys::getenvbool("SSim__load_tree_load") ;
+const bool SSim::load_tree_load = ssys::getenvbool("SSim__load_tree_load") ;
 void SSim::load(const char* base, const char* reldir)
 { 
     LOG(LEVEL) << "[" ; 
