@@ -35,10 +35,9 @@
 
 stimer* SEvt::TIMER = new stimer ;
 void SEvt::TimerStart(){ TIMER->start(); }
-void SEvt::TimerStop(){  TIMER->stop();  } 
-double SEvt::TimerDuration(){ return TIMER->duration() ; }
 double SEvt::TimerDone(){ return TIMER->done() ; }
-
+uint64_t SEvt::TimerStartCount(){ return TIMER->start_count() ; }
+std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 
 
 NP* SEvt::UU = nullptr ; 

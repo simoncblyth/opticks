@@ -151,10 +151,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const unsigned UNDEF = ~0u ; 
 
     static stimer* TIMER ; 
-    static void TimerStart(); 
-    static void TimerStop(); 
-    static double TimerDuration(); 
+    static void   TimerStart(); 
     static double TimerDone(); 
+    static uint64_t TimerStartCount(); 
+    static std::string TimerDesc(); 
+
 
     static NP* UU ;  
     static NP* UU_BURN ;  

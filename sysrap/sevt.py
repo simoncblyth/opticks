@@ -127,7 +127,9 @@ class SEvt(RFold):
         gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
         lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
 
-
+        metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
+        meta = getattr(f, metakey, None)
+ 
 
         self.f = f 
         self.q_ = q_
@@ -162,6 +164,9 @@ class SEvt(RFold):
 
         self.spec_ = spec_
         self.spec = spec 
+
+        self.metakey = metakey
+        self.meta = meta 
 
         self.w2m = w2m
         self.gpos = gpos 
@@ -278,14 +283,14 @@ class SAB(object):
         self.b = b 
         self.qcf = qcf
         self.qcf0 = qcf0
-        self.jsdph = NPMeta.Compare( a.f.junoSD_PMT_v2_meta , b.f.junoSD_PMT_v2_meta )   
+        self.meta = NPMeta.Compare( a.meta, b.meta  )
 
     def __repr__(self):
         a = self.a
         b = self.b
         qcf = self.qcf
         qcf0 = self.qcf0
-        jsdph = self.jsdph 
+        meta = self.meta
 
         lines = []
         lines.append("SAB")
@@ -303,8 +308,8 @@ class SAB(object):
         if not qcf0 is None:
             lines.append(repr(qcf0))
         pass
-        if not jsdph is None:
-            lines.append(str(jsdph))
+        if not meta is None:
+            lines.append(str(meta))
         pass
         return "\n".join(lines)
 

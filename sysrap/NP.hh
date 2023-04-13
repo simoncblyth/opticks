@@ -3771,6 +3771,7 @@ template<typename T> inline void NP::set_meta(const char* key, T value)
     SetMeta(meta, key, value); 
 }
 
+template void     NP::set_meta<uint64_t>(const char*, uint64_t ); 
 template void     NP::set_meta<int>(const char*, int ); 
 template void     NP::set_meta<unsigned>(const char*, unsigned ); 
 template void     NP::set_meta<float>(const char*, float ); 

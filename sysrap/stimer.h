@@ -24,6 +24,7 @@ Usage::
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <cstdint>
 #include <sstream>
 
 struct stimer
@@ -38,17 +39,23 @@ struct stimer
    static constexpr const char* ERROR_   = "ERROR  " ; 
    static constexpr const char* FORMAT_ZERO_ = "FORMAT_ZERO             " ; 
    static const char* Status(int st) ; 
-   static double EpochCount(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 ); 
+   static uint64_t EpochCount(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 ); 
+   static std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint( uint64_t epoch_count ); 
    static std::time_t ApproxTime(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 ); 
+
+   static const char* Format(uint64_t epoch_count ); 
    static const char* Format(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 ); 
-   static const char* Format( std::time_t tt ); 
+   static const char* Format(std::time_t tt ); 
 
    std::string desc() const ; 
-
 
    TP _start ; 
    TP _stop ; 
    int status = UNSET ; 
+
+   uint64_t start_count() const ; 
+   uint64_t stop_count() const ; 
+
 
    // higher level API
    static stimer* create() ; 
@@ -82,10 +89,18 @@ inline const char* stimer::Status(int st)
     return str ; 
 }
 
-inline double stimer::EpochCount(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
+inline uint64_t stimer::EpochCount(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
 {
    return t0.time_since_epoch().count(); 
 }
+inline std::chrono::time_point<std::chrono::high_resolution_clock> stimer::TimePoint( uint64_t epoch_count )
+{
+    using clock = std::chrono::high_resolution_clock ; 
+    clock::duration dur(epoch_count) ; 
+    clock::time_point t1(dur);
+    return t1 ; 
+}
+
 
 inline std::time_t stimer::ApproxTime(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
 {
@@ -96,9 +111,14 @@ inline std::time_t stimer::ApproxTime(const std::chrono::time_point<std::chrono:
     std::time_t tt =  std::chrono::system_clock::to_time_t( output );
     return tt ; 
 }
+inline const char* stimer::Format(uint64_t epoch_count )
+{
+    std::chrono::time_point<std::chrono::high_resolution_clock> tp = TimePoint(epoch_count); 
+    return Format(tp) ; 
+}
 inline const char* stimer::Format(const std::chrono::time_point<std::chrono::high_resolution_clock>& t0 )
 {
-    return EpochCount(t0) == 0. ? FORMAT_ZERO_ : Format(ApproxTime(t0)) ; 
+    return EpochCount(t0) == 0 ? FORMAT_ZERO_ : Format(ApproxTime(t0)) ; 
 }
 
 inline const char* stimer::Format( std::time_t tt )
@@ -114,13 +134,18 @@ inline std::string stimer::desc() const
     std::stringstream ss ; 
     ss << "stimer::desc"
        << " status " << Status(status)
+       << " _start " << EpochCount(_start) 
        << " start "  << Format(_start) 
+       << " _stop " << EpochCount(_stop) 
        << " stop "   << Format(_stop) 
        << " duration " << std::scientific << duration() 
        ; 
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline uint64_t stimer::start_count() const { return EpochCount(_start) ; }
+inline uint64_t stimer::stop_count() const {  return EpochCount(_stop) ; }
 
 
 inline stimer* stimer::create()
@@ -159,7 +184,6 @@ inline void stimer::stop()
     status = STOPPED ; 
     _stop  = std::chrono::high_resolution_clock::now(); 
 } 
-
 inline double stimer::duration() const 
 {
     if(!is_stopped()) return -1. ;   
