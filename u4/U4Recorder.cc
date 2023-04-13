@@ -1111,17 +1111,21 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     const G4VTouchable* touch = track->GetTouchable();  
     const G4VPhysicalVolume* pv = track->GetVolume() ; 
     const char* pv_name = pv->GetName().c_str(); 
+    bool pv_name_proceed = strstr(pv_name, "PMT") != nullptr ; 
 
-    const G4VPhysicalVolume* fpv = nullptr ; 
     // finding volume by name in the touch stack is much quicker than the recursive U4Volume::FindPV
-    fpv = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
+    const G4VPhysicalVolume* fpv = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
     int maxdepth = 2 ; 
 
-    if( fpv == nullptr && ClassifyFake_FindPV_r ) fpv = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END, maxdepth ); 
+    if( fpv == nullptr && ClassifyFake_FindPV_r && pv_name_proceed ) 
+    {
+        fpv = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END, maxdepth ); 
+    }
 
     LOG_IF(info, fpv == nullptr ) 
          << " fpv null "
          << " pv_name " << ( pv_name ? pv_name : "-" )
+         << " pv_name_proceed " << ( pv_name_proceed ? "YES" : "NO ") 
          << " ClassifyFake_FindPV_r " << ( ClassifyFake_FindPV_r ? "YES" : "NO " )
          << U4Touchable::Desc(touch) 
          << U4Touchable::Brief(touch) 
