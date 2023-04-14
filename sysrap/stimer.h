@@ -15,6 +15,21 @@ Usage::
     double dt0 = t->lap() ;   // duration between the create and the lap call
     double dt1 = t->lap() ;   // duration between this call and the last 
 
+To present the EpochCount stamps, which now standardize on microseconds (millionths of a second) use::
+
+    In [1]: np.array([1681470877922940,1681470881149639], dtype="datetime64[us]" )
+    Out[1]: array(['2023-04-14T11:14:37.922940', '2023-04-14T11:14:41.149639'], dtype='datetime64[us]')
+
+    In [7]: np.array([1681470877922940,1681470881149639], dtype=np.uint64).view("datetime64[us]")
+    Out[7]: array(['2023-04-14T11:14:37.922940', '2023-04-14T11:14:41.149639'], dtype='datetime64[us]')
+
+Or without numpy::
+
+    In [1]: from time import localtime, strftime
+    In [2]: t = 1681470877922940
+    In [3]: print(strftime('%Y-%m-%d %H:%M:%S',localtime(t/1000000)))
+    2023-04-14 12:14:37   ## NB +1hr from BST  
+
 **/
 
 #include <cassert>

@@ -3,6 +3,8 @@
 #include <vector>
 #include "stimer.h"
 
+#include "NP.hh"
+
 void test_start_stop()
 {
     stimer* t = new stimer  ; 
@@ -276,15 +278,37 @@ void test_count()
 
     uint64_t t0 = tim->start_count(); 
     uint64_t t1 = tim->stop_count(); 
-  
     std::cout 
-        << " t0 " << stimer::Format(t0) 
-        << " t1 " << stimer::Format(t1)
-        << std::endl
+        << " stimer::Format(t0) " << stimer::Format(t0) << " t0 " << t0 << std::endl 
+        << " stimer::Format(t1) " << stimer::Format(t1) << " t1 " << t1 << std::endl  
         ; 
 
 
+    NP* t = NP::Make<uint64_t>(2) ; 
+    uint64_t* tt = t->values<uint64_t>() ; 
+    tt[0] = t0 ; 
+    tt[1] = t1 ; 
+    t->save("$TTPATH"); 
 }
+
+/**
+
+
+epsilon:tests blyth$ ./stimer_test.sh 
+stimer::desc status STOPPED _start 1681480063800788 start Fri, 14.04.2023 14:47:43 _stop 1681480064801308 stop Fri, 14.04.2023 14:47:44 duration 1.000520e+00
+ stimer::Format(t0) Fri, 14.04.2023 14:47:43 t0 1681480063800788
+ stimer::Format(t1) Fri, 14.04.2023 14:47:44 t1 1681480064801308
+[1681480063800788 1681480064801308]
+
+np.c_[tt.view('datetime64[us]')]
+
+[['2023-04-14T13:47:43.800788']
+ ['2023-04-14T13:47:44.801308']]
+
+
+
+**/
+
 
 
 int main()

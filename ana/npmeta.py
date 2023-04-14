@@ -18,11 +18,11 @@ log = logging.getLogger(__name__)
 class NPMetaCompare(object):
     def __init__(self, am, bm):
 
-        ak = am.d.keys() 
-        bk = bm.d.keys() 
+        ak = list(filter(None,am.d.keys())) 
+        bk = list(filter(None,bm.d.keys()))  # avoid blank key 
         kk = ak if ak == bk else list(set(list(ak)+list(bk))) 
         skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
-        tab = np.zeros( [len(kk),2], dtype=np.uint64 ) 
+        tab = np.zeros( [len(kk),2], dtype="|U25" ) 
         lines = [] 
 
         hfmt = "%-30s : %7s : %7s : %7s : %7s : %s "
@@ -32,7 +32,6 @@ class NPMetaCompare(object):
         for i, k in enumerate(kk):
 
             if k == "": continue
-            if k == "SEvt__TimerDone": continue
             al = am.d.get(k,[])
             bl = bm.d.get(k,[])
 
@@ -51,6 +50,8 @@ class NPMetaCompare(object):
         stab = np.c_[skk, tab]
 
 
+        self.ak = ak
+        self.bk = bk
         self.am = am
         self.bm = bm
         self.kk = kk
