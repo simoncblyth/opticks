@@ -219,10 +219,40 @@ void test_TimePoint_0()
 
 }
 
+
+/**
+
+epsilon:tests blyth$ ./stimer_test.sh 
+ ecn 1681467459953485 Fri, 14.04.2023 11:17:39
+
+epsilon:tests blyth$ date
+Fri Apr 14 11:18:24 BST 2023
+
+N[blyth@localhost tests]$ ./stimer_test.sh 
+ ecn 1681467438445254316 Fri, 14.04.2023 18:17:18
+N[blyth@localhost tests]$ date
+Fri Apr 14 18:17:22 CST 2023
+
+
+**/
+
+
 void test_EpochCountNow()
 {
-    uint64_t ecn = stimer::EpochCountNow(); 
-    std::cout << " ecn " << ecn << " " << stimer::Format(ecn) << std::endl ; 
+
+    // HMM: have to divide the epoch count from Linux by 1000 to be comparable with the Darwin one
+
+    std::vector<uint64_t> ecns = { stimer::EpochCountNow(), 1681467459953485, 1681467438445254316/1000 } ; 
+
+    for(int i=0 ; i < int(ecns.size()) ; i++) 
+    {
+        uint64_t ecn = ecns[i] ; 
+        std::cout 
+            << " stimer::Format(" << ecn << ") : " << stimer::Format(ecn) 
+            << std::endl 
+            ; 
+    }
+
 }
 
 

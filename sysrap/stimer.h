@@ -39,8 +39,9 @@ struct stimer
    static constexpr const char* ERROR_   = "ERROR  " ; 
    static constexpr const char* FORMAT_ZERO_ = "FORMAT_ZERO             " ; 
    static const char* Status(int st) ; 
-   static uint64_t EpochCount(const std::chrono::time_point<std::chrono::system_clock>& t0 ); 
-   static uint64_t EpochCountNow() ;  
+   static uint64_t EpochCountAsis(const std::chrono::time_point<std::chrono::system_clock>& t0 ); 
+   static uint64_t EpochCount(const std::chrono::time_point<std::chrono::system_clock>& t0 ); // microseconds
+   static uint64_t EpochCountNow() ;  // microseconds
    static std::chrono::time_point<std::chrono::system_clock> TimePoint( uint64_t epoch_count ); 
    static std::time_t ApproxTime(const std::chrono::time_point<std::chrono::system_clock>& t0 ); 
 
@@ -90,22 +91,29 @@ inline const char* stimer::Status(int st)
     return str ; 
 }
 
-inline uint64_t stimer::EpochCount(const std::chrono::time_point<std::chrono::system_clock>& t0 )
+inline uint64_t stimer::EpochCountAsis(const std::chrono::time_point<std::chrono::system_clock>& t0 )
 {
    return t0.time_since_epoch().count(); 
 }
+inline uint64_t stimer::EpochCount(const std::chrono::time_point<std::chrono::system_clock>& t0 )
+{
+   return std::chrono::duration_cast<std::chrono::microseconds>(t0.time_since_epoch()).count() ;  
+} 
 inline uint64_t stimer::EpochCountNow()
 {
     std::chrono::time_point<std::chrono::system_clock> t0 = std::chrono::system_clock::now();
     return EpochCount(t0); 
 }
 
-inline std::chrono::time_point<std::chrono::system_clock> stimer::TimePoint( uint64_t epoch_count )
+inline std::chrono::time_point<std::chrono::system_clock> stimer::TimePoint( uint64_t epoch_count_microseconds )
 {
+    /*
     using clock = std::chrono::system_clock ; 
     clock::duration dur(epoch_count) ; 
-    clock::time_point t1(dur);
-    return t1 ; 
+    clock::time_point tp(dur);
+    */
+    std::chrono::system_clock::time_point tp{std::chrono::microseconds{epoch_count_microseconds}};
+    return tp ; 
 }
 
 
