@@ -222,26 +222,35 @@ void test_TimePoint_0()
 
 /**
 
-epsilon:tests blyth$ ./stimer_test.sh 
- ecn 1681467459953485 Fri, 14.04.2023 11:17:39
 
-epsilon:tests blyth$ date
-Fri Apr 14 11:18:24 BST 2023
+Previously has to divide the Linux epoch count 
+by 1000 to be comparable with the Darwin one.
+
+Instead of such a hack, changed EpochCount to 
+standardize on microsecond epoch counts. 
+This makes the time stamps comparable modulo 7 hours time difference. 
 
 N[blyth@localhost tests]$ ./stimer_test.sh 
- ecn 1681467438445254316 Fri, 14.04.2023 18:17:18
+ stimer::Format(1681469652582925) : Fri, 14.04.2023 18:54:12
+ stimer::Format(1681467459953485) : Fri, 14.04.2023 18:17:39
+ stimer::Format(1681467438445254) : Fri, 14.04.2023 18:17:18
 N[blyth@localhost tests]$ date
-Fri Apr 14 18:17:22 CST 2023
+Fri Apr 14 18:54:19 CST 2023
+N[blyth@localhost tests]$ 
 
+epsilon:tests blyth$ ./stimer_test.sh 
+ stimer::Format(1681469695498380) : Fri, 14.04.2023 11:54:55
+ stimer::Format(1681467459953485) : Fri, 14.04.2023 11:17:39
+ stimer::Format(1681467438445254) : Fri, 14.04.2023 11:17:18
+epsilon:tests blyth$ date
+Fri Apr 14 11:55:00 BST 2023
+epsilon:tests blyth$ 
 
 **/
 
 
 void test_EpochCountNow()
 {
-
-    // HMM: have to divide the epoch count from Linux by 1000 to be comparable with the Darwin one
-
     std::vector<uint64_t> ecns = { stimer::EpochCountNow(), 1681467459953485, 1681467438445254316/1000 } ; 
 
     for(int i=0 ; i < int(ecns.size()) ; i++) 
@@ -252,6 +261,28 @@ void test_EpochCountNow()
             << std::endl 
             ; 
     }
+
+}
+
+void test_count()
+{
+    stimer* tim = stimer::create() ;
+
+    stimer::sleep(1); 
+
+    double dur = tim->done(); 
+
+    std::cout << tim->desc() << std::endl ; 
+
+    uint64_t t0 = tim->start_count(); 
+    uint64_t t1 = tim->stop_count(); 
+  
+    std::cout 
+        << " t0 " << stimer::Format(t0) 
+        << " t1 " << stimer::Format(t1)
+        << std::endl
+        ; 
+
 
 }
 
@@ -269,8 +300,10 @@ int main()
     test_convert_2(); 
     test_convert_3(); 
     test_TimePoint_0();
-    */
     test_EpochCountNow(); 
+    */
+
+    test_count(); 
 
     return 0 ; 
 }

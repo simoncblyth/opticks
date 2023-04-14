@@ -5,7 +5,7 @@ s_time.h
 
 This follows the approach of plog. 
 Good for string time stamps, but not convenient for
-measuring durations. See schrono.h for that. 
+measuring durations. See schrono.h or stimer.h for that. 
 
 **/
 
