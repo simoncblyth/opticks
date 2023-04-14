@@ -5,7 +5,7 @@ sevt.py (formerly opticks.u4.tests.U4SimulateTest)
 
 
 """
-import os, logging, numpy as np
+import os, logging, textwrap, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold, RFold
@@ -122,10 +122,17 @@ class SEvt(RFold):
         ID = "_".join(IDE)
 
 
-        w2m = f.sframe.w2m
-        gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
-        gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
-        lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
+        if not getattr(f, "sframe", None) is None:
+            w2m = f.sframe.w2m
+            gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
+            gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
+            lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
+        else:
+            w2m = None
+            gpos = None
+            lpos = None
+        pass
+
 
         metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
         meta = getattr(f, metakey, None)
@@ -276,14 +283,28 @@ class SEvt(RFold):
 
 
 class SAB(object):
+    """
+    Comparison of pairs of SEvt 
+    """
     def __init__(self, a, b): 
-        qcf = QCF( a.q, b.q, symbol="qcf")
-        qcf0 = QCFZero(qcf) if "ZERO" in os.environ else None
+        if a.q is None or b.q is None: 
+            qcf = None
+            qcf0 = None
+        else:
+            qcf = QCF( a.q, b.q, symbol="qcf")
+            qcf0 = QCFZero(qcf) if "ZERO" in os.environ else None
+        pass
+        if a.meta is None or b.meta is None:
+            meta = None
+        else:
+            meta = NPMeta.Compare( a.meta, b.meta  )
+        pass
+
         self.a = a 
         self.b = b 
         self.qcf = qcf
         self.qcf0 = qcf0
-        self.meta = NPMeta.Compare( a.meta, b.meta  )
+        self.meta = meta
 
     def __repr__(self):
         a = self.a
@@ -300,11 +321,14 @@ class SAB(object):
             lines.append(repr(a.f))
             lines.append(str(b))
             lines.append(repr(b.f))
-            lines.append(repr(qcf.aqu))
-            lines.append(repr(qcf.bqu))
+            if not qcf is None:
+                lines.append(repr(qcf.aqu))
+                lines.append(repr(qcf.bqu))
+            pass
         pass
-        lines.append(repr(qcf))
-
+        if not qcf is None:
+            lines.append(repr(qcf))
+        pass
         if not qcf0 is None:
             lines.append(repr(qcf0))
         pass
@@ -314,6 +338,152 @@ class SAB(object):
         return "\n".join(lines)
 
 
+
+class MSAB(object):
+    """
+    Comparison of metadata across NEVT pairs of SEvt
+    Typically NEVT is small, eg 10 
+    """
+
+    EXPRS = r"""
+    np.diff(%(symbol)s.c_ttab)/1e6   # seconds between event starts
+
+    np.c_[%(symbol)s.c_ttab[0,0].view('datetime64[us]'),%(symbol)s.c_ttab[0,1].view('datetime64[us]')] # event start times (UTC)
+
+    %(symbol)s.c2tab  # c2sum, c2n, c2per for each event
+
+    %(symbol)s.c2tab[0,:].sum()/%(symbol)s.c2tab[1,:].sum() # c2per_tot
+    """
+
+    def __init__(self, NEVT, AFOLD, BFOLD, symbol="msab"):
+
+        efmt = "%0.3d"
+        assert efmt in AFOLD and efmt in BFOLD
+
+        self.symbol = symbol
+        self.exprs = list(filter(None,textwrap.dedent(self.EXPRS).split("\n")))
+
+        itabs = []
+        ftabs = []
+        ttabs = []
+
+        skk0 = None 
+        ffield0 = None
+        ifield0 = None
+        tfield0 = None
+        c2tab = np.zeros( (3, NEVT)  )
+
+        mab = {}
+
+        for i in range(NEVT):
+            a = SEvt.Load(AFOLD % i,symbol="a", quiet=True)
+            b = SEvt.Load(BFOLD % i,symbol="b", quiet=True)
+            ab = SAB(a,b)
+            mab[i] = ab 
+
+            kk = ab.meta.kk
+            skk = ab.meta.skk
+            tab = ab.meta.tab
+
+            # metadata fields that look like floats, integers, timestamps 
+            ffield = np.unique(np.where(np.char.find(tab,'.') > -1 )[0])  
+            ifield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) < 15, np.char.find(tab, '.') == -1 ))[0])
+            tfield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) > 15, np.char.find(tab, '.') == -1 ))[0])
+
+            if skk0 is None:
+                skk0 = skk
+                kk0 = kk
+                tab0 = tab
+                ffield0 = ffield
+                ifield0 = ifield
+                tfield0 = tfield
+            else:
+                assert np.all( skk == skk0 )
+                assert tab.shape == tab0.shape
+                assert np.all( ffield == ffield0 )
+                assert np.all( ifield == ifield0 )
+                assert np.all( tfield == tfield0 )
+            pass
+
+            itab = tab[ifield]
+            ftab = tab[ffield]
+            ttab = tab[tfield]
+
+            itabs.append(itab)
+            ftabs.append(ftab)
+            ttabs.append(ttab)
+
+            if not ab.qcf is None:
+                c2tab[0,i] = ab.qcf.c2sum
+                c2tab[1,i] = ab.qcf.c2n
+                c2tab[2,i] = ab.qcf.c2per
+            pass
+
+            # hmm how to present together with c2sum, c2n, c2per ?
+            if "c2desc" in os.environ:
+                fmt = " %s : %%s " % efmt 
+                print( fmt % ( i, ab.qcf.c2desc))
+            else:
+                print(repr(ab))
+            pass
+        pass
+
+        self.c2tab = c2tab
+        self.c2tab_zero = np.all( c2tab == 0. )
+
+        self.mab = mab 
+        akk = np.array( list(kk)) 
+        ikk = akk[ifield]
+        fkk = akk[ffield]
+        tkk = akk[tfield]
+       
+        c_itab = np.zeros( (itab.shape[0], itab.shape[1], NEVT ), dtype=np.uint64 )
+        for i in range(len(itabs)): 
+            c_itab[:,:,i] = itabs[i]  
+        pass
+        c_ftab = np.zeros( (ftab.shape[0], ftab.shape[1], NEVT ), dtype=np.float64 )
+        for i in range(len(ftabs)): 
+            c_ftab[:,:,i] = ftabs[i]  
+        pass
+        c_ttab = np.zeros( (ttab.shape[0], ttab.shape[1], NEVT ), dtype=np.uint64 )
+        for i in range(len(ttabs)): 
+            c_ttab[:,:,i] = ttabs[i]  
+        pass
+       
+        self.ikk = ikk
+        self.fkk = fkk
+        self.tkk = tkk
+
+        self.c_itab = c_itab
+        self.c_ftab = c_ftab
+        self.c_ttab = c_ttab
+
+    def annotab(self, tabsym, keys, nline=3):
+        """
+        Annotate a numpy array repr with keys 
+        TODO: split off into reusable AnnoTab? object 
+        """
+        expr = "%%(symbol)s.%s" % tabsym 
+        lines = []
+        lines.append("\n%s\n" % ( expr % {'symbol':self.symbol} ))
+        rawlines = repr(eval(expr % {'symbol':"self" })).split("\n")
+        for i, line in enumerate(rawlines):
+            anno = keys[i//nline] if i % nline == 0 else ""
+            lines.append("%s       %s " % (line, anno ))
+        pass
+        return "\n".join(lines)
+
+    def __repr__(self):
+        lines = []
+        lines.append(self.annotab("c_itab", self.ikk, 3)) 
+        lines.append(self.annotab("c_ftab", self.fkk, 3)) 
+        pass
+        for expr in self.exprs:
+            if "c2tab" in expr and self.c2tab_zero: continue
+            lines.append("\n%s\n" % ( expr % {'symbol':self.symbol} ))
+            lines.append(repr(eval(expr % {'symbol':"self" })))
+        pass
+        return "\n".join(lines)
 
 
 

@@ -204,13 +204,13 @@ inline bool stimer::is_stopped() const { return status == STOPPED ; }
 
 inline void stimer::start()
 {
-    if(!is_ready()) std::cerr << "stimer::start starting again ? " << desc() << std::endl ;  
+    if(!is_ready()) std::cerr << "stimer::start called when STARTED already ? " << desc() << std::endl ;  
     status = STARTED ; 
     _start = std::chrono::system_clock::now(); 
 } 
 inline void stimer::stop()
 {
-    assert( is_started() ); 
+    if(!is_started()) std::cerr << "stimer::stop called when not STARTED ? " << desc() << std::endl ;  
     status = STOPPED ; 
     _stop  = std::chrono::system_clock::now(); 
 } 
