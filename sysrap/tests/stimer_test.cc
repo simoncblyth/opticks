@@ -292,20 +292,34 @@ void test_count()
 }
 
 /**
+From BST (UTC+1) timezone the numpy presented times are corrected to UTC::
 
+    epsilon:tests blyth$ ./stimer_test.sh 
+    stimer::desc status STOPPED _start 1681480063800788 start Fri, 14.04.2023 14:47:43 _stop 1681480064801308 stop Fri, 14.04.2023 14:47:44 duration 1.000520e+00
+     stimer::Format(t0) Fri, 14.04.2023 14:47:43 t0 1681480063800788
+     stimer::Format(t1) Fri, 14.04.2023 14:47:44 t1 1681480064801308
+    [1681480063800788 1681480064801308]
 
-epsilon:tests blyth$ ./stimer_test.sh 
-stimer::desc status STOPPED _start 1681480063800788 start Fri, 14.04.2023 14:47:43 _stop 1681480064801308 stop Fri, 14.04.2023 14:47:44 duration 1.000520e+00
- stimer::Format(t0) Fri, 14.04.2023 14:47:43 t0 1681480063800788
- stimer::Format(t1) Fri, 14.04.2023 14:47:44 t1 1681480064801308
-[1681480063800788 1681480064801308]
+    np.c_[tt.view('datetime64[us]')]
 
-np.c_[tt.view('datetime64[us]')]
+    [['2023-04-14T13:47:43.800788']
+     ['2023-04-14T13:47:44.801308']]
 
-[['2023-04-14T13:47:43.800788']
- ['2023-04-14T13:47:44.801308']]
+From CST (UTC+8) timezone the numpy presented times also corrected to UTC::
 
+    N[blyth@localhost tests]$ ./stimer_test.sh 
+    stimer::desc status STOPPED _start 1681480305503105 start Fri, 14.04.2023 21:51:45 _stop 1681480306505512 stop Fri, 14.04.2023 21:51:46 duration 1.002406e+00
+     stimer::Format(t0) Fri, 14.04.2023 21:51:45 t0 1681480305503105
+     stimer::Format(t1) Fri, 14.04.2023 21:51:46 t1 1681480306505512
+    Python 3.7.7 (default, May  7 2020, 21:25:33) 
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
+    [1681480305503105 1681480306505512]
 
+    np.c_[tt.view('datetime64[us]')]
+
+    [['2023-04-14T13:51:45.503105']
+     ['2023-04-14T13:51:46.505512']]
 
 **/
 

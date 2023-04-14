@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import numpy as np
+import os, numpy as np
 
 if __name__ == '__main__':
     tt = np.load(os.environ["TTPATH"])
