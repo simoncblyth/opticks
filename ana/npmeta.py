@@ -22,7 +22,7 @@ class NPMetaCompare(object):
         bk = bm.d.keys() 
         kk = ak if ak == bk else list(set(list(ak)+list(bk))) 
         skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
-        tab = np.zeros( [len(kk),2], dtype=np.int32 ) 
+        tab = np.zeros( [len(kk),2], dtype=np.uint64 ) 
         lines = [] 
 
         hfmt = "%-30s : %7s : %7s : %7s : %7s : %s "
@@ -32,17 +32,17 @@ class NPMetaCompare(object):
         for i, k in enumerate(kk):
 
             if k == "": continue
+            if k == "SEvt__TimerDone": continue
             al = am.d.get(k,[])
             bl = bm.d.get(k,[])
 
-            av = float(al[0] if len(al) == 1 else -1)
-            bv = float(bl[0] if len(bl) == 1 else -1)
+            av = al[0] if len(al) == 1 else 0
+            bv = bl[0] if len(bl) == 1 else 0
 
-            av_bv = 0 if bv == 0. else av/bv
-            bv_av = 0 if av == 0. else bv/av
-            c2    = 0 if av+bv == 0 else (av-bv)*(av-bv)/(av+bv)
-
-            lines.append(vfmt % ( k, av, bv, av_bv, bv_av, c2 ))
+            #av_bv = 0 if bv == 0. else av/bv
+            #bv_av = 0 if av == 0. else bv/av
+            #c2    = 0 if av+bv == 0 else (av-bv)*(av-bv)/(av+bv)
+            #lines.append(vfmt % ( k, av, bv, av_bv, bv_av, c2 ))
 
             tab[i,0] = av
             tab[i,1] = bv
