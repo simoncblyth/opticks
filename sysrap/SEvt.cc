@@ -315,7 +315,7 @@ inphoton copy for each event.
 
 **/
 
-NP* SEvt::gatherInputPhoton()
+NP* SEvt::gatherInputPhoton() const 
 {
     NP* ip = getInputPhoton(); 
     NP* ipc = ip->copy(); 
