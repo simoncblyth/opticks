@@ -346,20 +346,19 @@ class MSAB(object):
     """
 
     EXPRS = r"""
-    np.diff(%(symbol)s.c_ttab)/1e6   # seconds between event starts
+    np.diff(%(sym)s.c_ttab)/1e6   # seconds between event starts
 
-    np.c_[%(symbol)s.c_ttab[0,0].view('datetime64[us]'),%(symbol)s.c_ttab[0,1].view('datetime64[us]')] # event start times (UTC)
+    np.c_[%(sym)s.c_ttab[0,0].view('datetime64[us]'),%(sym)s.c_ttab[0,1].view('datetime64[us]')] # sevt starts (UTC)
 
-    %(symbol)s.c2tab  # c2sum, c2n, c2per for each event
+    %(sym)s.c2tab  # c2sum, c2n, c2per for each event
 
-    %(symbol)s.c2tab[0,:].sum()/%(symbol)s.c2tab[1,:].sum() # c2per_tot
+    %(sym)s.c2tab[0,:].sum()/%(sym)s.c2tab[1,:].sum() # c2per_tot
     """
 
     def __init__(self, NEVT, AFOLD, BFOLD, symbol="msab"):
 
         efmt = "%0.3d"
         assert efmt in AFOLD and efmt in BFOLD
-
         self.symbol = symbol
         self.exprs = list(filter(None,textwrap.dedent(self.EXPRS).split("\n")))
 
@@ -460,13 +459,18 @@ class MSAB(object):
 
     def annotab(self, tabsym, keys, nline=3):
         """
+        :param tabsym: attribute symbol of table
+        :param keys: array of names for each table item
+        :param nline: number of lines for each table item 
+        :return str: annoted table string 
+
         Annotate a numpy array repr with keys 
         TODO: split off into reusable AnnoTab? object 
         """
-        expr = "%%(symbol)s.%s" % tabsym 
+        expr = "%%(sym)s.%s" % tabsym 
         lines = []
-        lines.append("\n%s\n" % ( expr % {'symbol':self.symbol} ))
-        rawlines = repr(eval(expr % {'symbol':"self" })).split("\n")
+        lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
+        rawlines = repr(eval(expr % {'sym':"self" })).split("\n")
         for i, line in enumerate(rawlines):
             anno = keys[i//nline] if i % nline == 0 else ""
             lines.append("%s       %s " % (line, anno ))
@@ -480,8 +484,8 @@ class MSAB(object):
         pass
         for expr in self.exprs:
             if "c2tab" in expr and self.c2tab_zero: continue
-            lines.append("\n%s\n" % ( expr % {'symbol':self.symbol} ))
-            lines.append(repr(eval(expr % {'symbol':"self" })))
+            lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
+            lines.append(repr(eval(   expr % {'sym':"self"  } )  ))
         pass
         return "\n".join(lines)
 
