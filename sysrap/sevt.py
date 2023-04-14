@@ -5,7 +5,7 @@ sevt.py (formerly opticks.u4.tests.U4SimulateTest)
 
 
 """
-import os, logging, textwrap, numpy as np
+import os, re, logging, textwrap, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold, RFold
@@ -346,13 +346,17 @@ class MSAB(object):
     """
 
     EXPRS = r"""
+
+    %(sym)s.c_ftab[0,1].sum()/%(sym)s.c_ftab[0,0].sum()  # ratio of duration totals N=1/N=0 FMT:%%10.4f
+
     np.diff(%(sym)s.c_ttab)/1e6   # seconds between event starts
 
-    np.c_[%(sym)s.c_ttab[0,0].view('datetime64[us]'),%(sym)s.c_ttab[0,1].view('datetime64[us]')] # sevt starts (UTC)
+    np.c_[%(sym)s.c_ttab[0].T].view('datetime64[us]') # SEvt start times (UTC)
 
     %(sym)s.c2tab  # c2sum, c2n, c2per for each event
 
-    %(sym)s.c2tab[0,:].sum()/%(sym)s.c2tab[1,:].sum() # c2per_tot
+    %(sym)s.c2tab[0,:].sum()/%(sym)s.c2tab[1,:].sum() # c2per_tot FMT:%%10.4f
+
     """
 
     def __init__(self, NEVT, AFOLD, BFOLD, symbol="msab"):
@@ -482,10 +486,16 @@ class MSAB(object):
         lines.append(self.annotab("c_itab", self.ikk, 3)) 
         lines.append(self.annotab("c_ftab", self.fkk, 3)) 
         pass
+        fmt_ptn = re.compile("FMT:(.*)\s*")
+ 
         for expr in self.exprs:
+            fmt_match = fmt_ptn.search(expr)
+            fmt = fmt_match.groups()[0].replace("%%","%") if not fmt_match is None else None
             if "c2tab" in expr and self.c2tab_zero: continue
             lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
-            lines.append(repr(eval(   expr % {'sym':"self"  } )  ))
+            value = eval( expr % {'sym':"self"} )
+            urep = repr(value) if fmt is None else fmt % value  
+            lines.append(urep)
         pass
         return "\n".join(lines)
 

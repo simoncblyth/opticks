@@ -231,6 +231,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     NP* getInputPhoton_() const ; 
     NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
+    NP* gatherInputPhoton() const ;   // returns a copy of the input photon array 
+
     bool hasInputPhoton() const ; 
     bool hasInputPhotonTransformed() const ; 
 

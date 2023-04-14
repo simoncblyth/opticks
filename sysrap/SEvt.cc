@@ -306,6 +306,26 @@ NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_phot
 
 
 /**
+SEvt::gatherInputPhoton
+-------------------------
+
+To avoid issues with inphoton and saving 2nd events, 
+treat the inphoton more like other arrays by having a distinct
+inphoton copy for each event. 
+
+**/
+
+NP* SEvt::gatherInputPhoton()
+{
+    NP* ip = getInputPhoton(); 
+    NP* ipc = ip->copy(); 
+    return ipc ; 
+}
+
+
+
+
+/**
 SEvt::initG4State
 -------------------
 
@@ -644,6 +664,7 @@ NP* SEvt::gatherDomain() const
     domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
     return domain ;
 }
+
 
 SEvt* SEvt::Get(){     return INSTANCE ; }
 SEvt* SEvt::Create() { return new SEvt ; }
@@ -1987,8 +2008,8 @@ NP* SEvt::gatherComponent_(unsigned comp) const
     NP* a = nullptr ; 
     switch(comp)
     {   
-        case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
-        case SCOMP_G4STATE:   a = gatherG4State()  ; break ;   
+        case SCOMP_INPHOTON:  a = gatherInputPhoton() ; break ;   
+        case SCOMP_G4STATE:   a = gatherG4State()     ; break ;   
 
         case SCOMP_GENSTEP:   a = gatherGenstep()  ; break ;   
         case SCOMP_DOMAIN:    a = gatherDomain()   ; break ;   
