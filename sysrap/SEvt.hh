@@ -199,6 +199,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
 
     void setFrame(const sframe& fr ); 
+    void addFrameGenstep(); 
 
     const char* getFrameId() const ; 
     const NP*   getFrameArray() const ; 

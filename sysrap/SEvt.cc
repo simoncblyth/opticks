@@ -418,10 +418,20 @@ const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt__setFrame_W
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
+    addFrameGenstep(); // TODO: relocate this 
+}
 
+/**
+SEvt::addFrameGenstep
+--------------------------
+
+**/
+
+void SEvt::addFrameGenstep()
+{
     if(SEventConfig::IsRGModeSimtrace())
     { 
-        const char* frs = fr.get_frs() ; // nullptr when default -1 : meaning all geometry 
+        const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry 
         if(frs)
         {
             LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::setReldir " ; 
@@ -433,7 +443,6 @@ void SEvt::setFrame(const sframe& fr )
         addGenstep(gs); 
 
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace(); 
-
     }   
     else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
     {   
