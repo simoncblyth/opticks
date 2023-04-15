@@ -198,7 +198,8 @@ void U4Recorder::BeginOfEventAction(const G4Event* event)
 { 
     eventID = event->GetEventID() ; 
     LOG(info) << " eventID " << eventID ; 
-    SEvt::SetIndex(eventID); 
+
+    SEvt::BeginOfEvent(eventID); 
 }
 
 void U4Recorder::EndOfEventAction(const G4Event* event)
@@ -219,10 +220,12 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
 
     SEvt::Save(); 
     SEvt::Clear(); 
+    // HMM: into an EndOfEvent ? 
 
     const char* savedir = SEvt::GetSaveDir() ; 
     LOG(info) << " savedir " << ( savedir ? savedir : "-" );
     SaveMeta(savedir);  
+
 }
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
@@ -540,11 +543,6 @@ SPECS.names
 
 With standalone testing this is called from U4App::EndOfEventAction/U4App::SaveMeta
 
-* HMM: CAN THIS BE MOVED TO U4Recorder::EndOfEventAction ? So it works with junosw ? 
-* just need the savedir  
-
-
-
 HMM this is saving extra metadata onto the SEvt savedir.
 Could instead add SEvt API for addition of metadata, 
 avoiding need to passaround savedir.
@@ -557,9 +555,6 @@ and dont need to catch it after the save.
 void U4Recorder::SaveMeta(const char* savedir)  // static
 {
     if(savedir == nullptr) return ; 
-
-    //NP* u4r = MakeMetaArray();   // moved to EndOfEventAction
-    //u4r->save(savedir, "U4R.npy") ; 
 
     assert(INSTANCE); 
     INSTANCE->saveRerunRand(savedir); 

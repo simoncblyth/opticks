@@ -344,7 +344,6 @@ A: cx rendering viewpoint, input photon frame and the simtrace genstep grid
 Q: This feels like too high level to do this, should be at CSG level perhaps ? 
    And then CSGOptix could grab the SEvt frame at its initialization. 
 
-
 **/
 
 void G4CXOpticks::setupFrame()

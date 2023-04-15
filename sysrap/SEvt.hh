@@ -199,6 +199,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
 
     void setFrame(const sframe& fr ); 
+    static void AddFrameGenstep(); 
     void addFrameGenstep(); 
 
     const char* getFrameId() const ; 
@@ -246,6 +247,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Save(const char* dir); 
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 
+    static void BeginOfEvent(int index); 
     static void SetIndex(int index); 
     static void UnsetIndex(); 
     static int  GetIndex(); 

@@ -418,15 +418,22 @@ const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt__setFrame_W
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
-    addFrameGenstep(); // TODO: relocate this 
+    // addFrameGenstep(); // relocated to SEvt::BeginOfEvent
 }
 
 /**
-SEvt::addFrameGenstep
---------------------------
+SEvt::AddFrameGenstep
+-----------------------
+
+This is invoked from SEvt::BeginOfEvent together with SEvt::SetIndex
+
+For hostside simtrace and input photon running this must be called 
+at the start of every event cycle to add the gensteps which trigger 
+the allocations for result vectors.  
 
 **/
 
+void SEvt::AddFrameGenstep(){ Check() ; INSTANCE->addFrameGenstep() ; } // static
 void SEvt::addFrameGenstep()
 {
     if(SEventConfig::IsRGModeSimtrace())
@@ -740,9 +747,6 @@ SEvt* SEvt::HighLevelCreate() // static
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
 
-
-    // moved SEvt::AddTorchGenstep to U4App::GeneratePrimaries depending on fPrimaryMode
-
     return evt ; 
 }
 
@@ -783,6 +787,14 @@ void SEvt::SaveExtra( const char* name, const NP* a){  Check() ; INSTANCE->saveE
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
+
+
+void SEvt::BeginOfEvent(int index)  // static
+{
+    SEvt::SetIndex(index); 
+    SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
+}
+
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }

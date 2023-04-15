@@ -12,15 +12,14 @@ int main(int argc, char** argv)
 
     bool ip = SEvt::HasInputPhoton() ; 
     sframe fr = sframe::Fabricate() ; 
+    evt->setFrame(fr); 
 
     for(int i=0 ; i < 3 ; i++)
     {
         if(!ip) SEvt::AddTorchGenstep(); 
-        evt->setFrame(fr) ; // setFrame each evt cycle as does genstep setup for input photons.  
 
-        SEvt::SetIndex(i); 
+        SEvt::BeginOfEvent(i);  // setIndex and does genstep setup for input photons
         assert( SEvt::Get() == evt ); 
-
 
         int npc = SEvt::GetNumPhotonCollected() ; 
         for(int j=0 ; j < npc ; j++)
