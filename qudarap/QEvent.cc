@@ -198,7 +198,7 @@ int QEvent::setGenstep(NP* gs_)
 
     int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
 
-    if(OpticksGenstep_::IsFrame(gencode0))
+    if(OpticksGenstep_::IsFrame(gencode0))   // OpticksGenstep_FRAME  (HMM: Obtuse, maybe change to SIMTRACE ?)
     {
         setNumSimtrace( evt->num_seed ); 
     }

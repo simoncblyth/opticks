@@ -49,8 +49,8 @@ const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 const char* SEvt::DEFAULT_RELDIR = "ALL" ;   
 /**
-Q: How is this changed to ALL0 ALL1 namely ALL$VERSION
-
+Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
+A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
 **/
 
 
@@ -122,7 +122,7 @@ void SEvt::init()
 
     LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
 
-    SEventConfig::CompList(comp); 
+    SEventConfig::CompList(comp);  // populate comp vector based on CompMask
 
     LOG(LEVEL) << " SEventConfig::CompMaskLabel "  << SEventConfig::CompMaskLabel() ; 
     LOG(LEVEL) << descComp() ; 
@@ -179,7 +179,7 @@ const char* SEvt::getSearchCFBase() const
 }
 
 
-const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
 /**
 SEvt::LoadInputPhoton
 ----------------------
@@ -189,7 +189,7 @@ This is invoked by SEvt::initInputPhoton which is invoked by SEvt::init at insta
 Resolving the input string to a path is done in one of two ways:
 
 1. if the string starts with a letter A-Za-z eg "inphoton.npy" or "RandomSpherical10.npy" 
-   it is assumed to be the name of a .npy file within the default SEvt_INPUT_PHOTON_DIR 
+   it is assumed to be the name of a .npy file within the default SEvt__INPUT_PHOTON_DIR 
    of $HOME/.opticks/InputPhotons. 
 
    Create such files with ana/input_photons.py  
@@ -265,6 +265,7 @@ void SEvt::setInputPhoton(NP* p)
     assert( numphoton > 0 ); 
 }
 
+
 /**
 SEvt::getInputPhoton_
 ----------------------
@@ -273,10 +274,8 @@ This variant always provides the untransformed input photons.
 That will be nullptr unless OPTICKS_INPUT_PHOTON is defined. 
 
 **/
- 
 NP* SEvt::getInputPhoton_() const { return input_photon ; }
 bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
-bool SEvt::hasInputPhotonTransformed() const { return input_photon_transformed != nullptr ; }
 
 
 /**
@@ -284,7 +283,7 @@ SEvt::getInputPhoton
 ---------------------
 
 Returns the transformed input photon if present. 
-For the tranformed photons to  be present it is necessary to have called SEvt::setFrame
+For the transformed photons to  be present it is necessary to have called SEvt::setFrame
 That is done from on high by G4CXOpticks::setupFrame which gets invoked by G4CXOpticks::setGeometry
 
 The frame and corresponding transform used can be controlled by several envvars, 
@@ -303,6 +302,7 @@ see CSGFoundry::getFrameE. Possible envvars include:
 
 **/
 NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
+bool SEvt::hasInputPhotonTransformed() const { return input_photon_transformed != nullptr ; }
 
 
 /**
@@ -318,11 +318,9 @@ inphoton copy for each event.
 NP* SEvt::gatherInputPhoton() const 
 {
     NP* ip = getInputPhoton(); 
-    NP* ipc = ip->copy(); 
+    NP* ipc = ip ? ip->copy() : nullptr ; 
     return ipc ; 
 }
-
-
 
 
 /**
@@ -415,7 +413,7 @@ it is necessary to call this prior to calling QSim::simulate.
 
 **/
 
-const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt_setFrame_WIDE_INPUT_PHOTON") ; 
+const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt__setFrame_WIDE_INPUT_PHOTON") ; 
 
 void SEvt::setFrame(const sframe& fr )
 {
@@ -545,6 +543,8 @@ void SEvt::setFrame(unsigned ins_idx)
 }
 
 
+//// below impl order matches decl order : KEEP IT THAT WAY 
+
 
 /**
 SEvt::CreateSimtraceEvent
@@ -606,6 +606,8 @@ May be called from SEvt::setFrame
 
 quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
 {
+    LOG(info) << " input_photon " << NP::Brief(input_photon) ;  
+
     quad6 ipgs ; 
     ipgs.zero(); 
     ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
@@ -735,10 +737,6 @@ SEvt* SEvt::HighLevelCreate() // static
     return evt ; 
 }
 
-
-
-
-
 bool SEvt::Exists(){ return INSTANCE != nullptr ; }
 void SEvt::Check()
 {
@@ -777,7 +775,6 @@ void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir)
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
 
-
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
 int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
@@ -794,7 +791,6 @@ int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFr
 int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : UNDEF ; }
 int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : UNDEF ; }
 
-
 NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
@@ -802,8 +798,14 @@ bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : fal
 
 
 
+/**
+SEvt::clear_
+---------------
 
+Set the photon counts to zero and clear the vectors. 
+Note that most of the vectors are only used with hostside running.
 
+**/
 
 void SEvt::clear_()
 {
@@ -833,13 +835,11 @@ void SEvt::clear_()
     LOG(info); 
 }
 
-
 /**
 SEvt::clear
 -------------
 
-HMM: most of the vectors are only relevant to hostside running, 
-so its kinda confusing clearing them 
+Clear vectors and the fold.
 
 **/
 
@@ -858,9 +858,6 @@ void SEvt::clear_partial(const char* keep_keylist, char delim)
     if(fold) fold->clear_partial(keep_keylist, delim ); 
     LOG(LEVEL) << "]" ; 
 }
-
-
-
 
 
 void SEvt::setIndex(int index_){ index = index_ ; }
@@ -1026,11 +1023,7 @@ sgs SEvt::addGenstep(const quad6& q_)
         << " s.desc " << s.desc()
         ;
 
-    if(num_photon_changed)
-    {
-        setNumPhoton(tot_photon); 
-    }
-
+    setNumPhoton(tot_photon); // still call when no change for reset hostside_running_resize_done:false
     return s ; 
 }
 
@@ -1044,11 +1037,11 @@ This is called from SEvt::addGenstep, updating evt.num_photon
 according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
 depending on the configured max which when zero will keep the counts zero.  
 
-Also called by QEvent::setNumPhoton prior to device side allocations. (TODO: check this)
-
+Also called by QEvent::setNumPhoton prior to device side allocations.
 
 *hostside_running_resize_done:false*
-    signals next SEvt::beginPhoton to call SEvt::hostside_running_resize 
+    signals the following SEvt::beginPhoton to call SEvt::hostside_running_resize, 
+    so allocation for hostside running happens on reaching the first photon track
 
 Note that SEvt::beginPhoton is used for hostside running only (eg U4Recorder/U4SimulateTest)  
 so as gensteps are added with SEvt::addGenstep from the U4 scintillation 
@@ -1075,7 +1068,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     evt->num_aux    = evt->max_aux    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
 
-    LOG(debug)
+    LOG(info)
         << " evt->num_photon " << evt->num_photon
         << " evt->num_tag " << evt->num_tag
         << " evt->num_flat " << evt->num_flat
@@ -1105,6 +1098,8 @@ Canonically called from SEvt::beginPhoton  (also SEvt::setFrame_HostsideSimtrace
 
 void SEvt::hostside_running_resize()
 {
+    LOG(info); 
+
     bool is_self_provider = isSelfProvider() ; 
     LOG_IF(fatal, is_self_provider == false ) << " NOT-is_self_provider " << descProvider() ;   
     LOG(LEVEL) 
@@ -1230,11 +1225,7 @@ void SEvt::hostside_running_resize_()
         simtrace.resize(evt->num_simtrace); 
         evt->simtrace = simtrace.data() ; 
     }
-
-
 }
-
-
 
 /**
 SEvt::get_gs
@@ -1282,7 +1273,8 @@ SEvt::beginPhoton : only used for hostside running eg with U4RecorderTest
 
 Canonically invoked from tail of U4Recorder::PreUserTrackingAction_Optical
 
-0. calls hostside_running_resize which resizes vectors and updates all the evt pointers
+0. for hostside_running_resize_done:false calls hostside_running_resize which resizes vectors 
+   and updates evt pointers : via the toggle this only gets done when reaching first photon of the event 
 1. determine genflag SI/CK/TO, via lookups in the sgs corresponding to the spho label
 2. zeros current_ctx and slot[label.id] (the "recording head" )
 3. start filling current_ctx.p sphoton with set_idx and set_flag  
@@ -1501,10 +1493,6 @@ void SEvt::rjoinPhoton(const spho& label)
     //      to great lengths squeezing memory usage for something that 
     //      is just used while debugging
 }
-
-
-
-
 
 
 
@@ -1732,9 +1720,6 @@ void SEvt::addTag(unsigned tag, float flat)
             ;
         assert( cursor_slot_match ); 
     }
-
-
-
 }
 
 int SEvt::getTagSlot() const 
@@ -1743,7 +1728,6 @@ int SEvt::getTagSlot() const
     const stagr& tagr = current_ctx.tagr ; 
     return tagr.slot ; 
 }
-
 
 /**
 SEvt::finalPhoton : only used for hostside running
@@ -1788,7 +1772,6 @@ void SEvt::checkPhotonLineage(const spho& label) const
 NP* SEvt::gatherPho0() const { return NPX::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
 NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
 NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
-
 
 NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
@@ -1841,7 +1824,6 @@ NP* SEvt::gatherTag() const
     p->read2( (unsigned long long*)evt->tag ); 
     return p ; 
 } 
-
 NP* SEvt::gatherFlat() const 
 { 
     if( evt->flat == nullptr ) return nullptr ; 
@@ -1849,6 +1831,19 @@ NP* SEvt::gatherFlat() const
     p->read2( (float*)evt->flat ); 
     return p ; 
 } 
+NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLOT->GS ASSOCIATION 
+{ 
+    LOG(fatal) << " not implemented for hostside running : getting this error indicates CompMask mixup " ; 
+    assert(0); 
+    return nullptr ; 
+}
+NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS 
+{ 
+    LOG(error) << " not yet implemented for hostside running : change CompMask with SEventConfig to avoid " ; 
+    //assert(0); 
+    return nullptr ; 
+}
+
 NP* SEvt::gatherSimtrace() const 
 { 
     if( evt->simtrace == nullptr ) return nullptr ; 
@@ -1975,11 +1970,7 @@ NP* SEvt::makeSimtrace() const
 }
 
 
-
-
-
 // SCompProvider methods
-
 std::string SEvt::getMeta() const 
 {
     return meta ; 
@@ -2030,24 +2021,8 @@ NP* SEvt::gatherComponent_(unsigned comp) const
 }
 
 
-NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLOT->GS ASSOCIATION 
-{ 
-    LOG(fatal) << " not implemented for hostside running : getting this error indicates CompMask mixup " ; 
-    assert(0); 
-    return nullptr ; 
-}
-NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS 
-{ 
-    LOG(error) << " not yet implemented for hostside running : avoid this error by changing CompMask with SEventConfig " ; 
-    //assert(0); 
-    return nullptr ; 
-}
-
-
-
-
 /**
-SEvt::gatherGenstep
+SEvt::saveGenstep
 -----------------
 
 The returned array takes a full copy of the genstep quad6 vector
@@ -2056,9 +2031,6 @@ The array is thus independent from quad6 vector, and hence is untouched
 by SEvt::clear 
 
 **/
-
-
-
 
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {
@@ -2072,7 +2044,6 @@ void SEvt::saveGenstepLabels(const char* dir, const char* name) const
     NP::Write<int>(dir, name, (int*)gs.data(), gs.size(), 4 ); 
 }
 
-
 std::string SEvt::descGS() const 
 {
     std::stringstream ss ; 
@@ -2080,10 +2051,6 @@ std::string SEvt::descGS() const
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
-
 
 std::string SEvt::descDir() const 
 {
@@ -2145,9 +2112,18 @@ std::string SEvt::desc() const
        << " SEventConfig::Initialize_COUNT " << SEventConfig::Initialize_COUNT 
        << std::endl
        ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+std::string SEvt::descDbg() const 
+{
+    std::stringstream ss ; 
+    ss << dbg->desc() << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 /**
 SEvt::gather
@@ -2185,7 +2161,6 @@ void SEvt::gather()
 }
 
 
-
 /**
 SEvt::AddArray
 ---------------
@@ -2202,7 +2177,6 @@ void SEvt::add_array( const char* k, const NP* a )
 {
     fold->add(k, a);  
 }
-
 
 
 
@@ -2264,7 +2238,6 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 
 **/
 
-
 void SEvt::save() 
 {
     const char* dir = DefaultDir(); 
@@ -2284,14 +2257,6 @@ int SEvt::load()
     LOG(LEVEL) << "SGeo::DefaultDir " << dir << " rc " << rc ;
     return rc ;  
 }
-
-
-
-const char* SEvt::DefaultDir() // static
-{
-    return SGeo::DefaultDir() ; 
-}
-
 
 void SEvt::save(const char* bas, const char* rel ) 
 {
@@ -2327,12 +2292,20 @@ const char* SEvt::getOutputDir(const char* base_) const
 }
 
 
+const char* SEvt::DefaultDir() // static
+{
+    return SGeo::DefaultDir() ; 
+}
+
+
+
+
 std::string SEvt::descSaveDir(const char* dir_) const 
 {
     const char* dir = getOutputDir(dir_); 
     bool with_index = index != MISSING_INDEX ;  
     std::stringstream ss ; 
-    ss << "SEvt::descOutputDir"
+    ss << "SEvt::descSaveDir"
        << " dir_ " << ( dir_ ? dir_ : "-" )
        << " dir  " << ( dir  ? dir  : "-" )
        << " reldir " << ( reldir ? reldir : "-" )
@@ -2344,6 +2317,21 @@ std::string SEvt::descSaveDir(const char* dir_) const
     std::string str = ss.str(); 
     return str ;  
 } 
+
+int SEvt::load(const char* dir_) 
+{
+    const char* dir = getOutputDir(dir_); 
+    LOG(LEVEL) << " dir " << dir ; 
+    LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
+    assert(dir); 
+
+    LOG(LEVEL) << "[ fold.load " << dir ; 
+    int rc = fold->load(dir); 
+    LOG(LEVEL) << "] fold.load " << dir ; 
+    is_loaded = true ; 
+
+    return rc ; 
+}
 
 
 /**
@@ -2381,7 +2369,6 @@ void SEvt::save(const char* dir_)
 
     saveLabels(dir); 
     saveFrame(dir); 
-
 }
 
 void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
@@ -2389,30 +2376,6 @@ void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
     const char* dir = getOutputDir(dir_); 
     a->save(dir, name );  
 } 
-
-
-
-
-
-
-
-int SEvt::load(const char* dir_) 
-{
-    const char* dir = getOutputDir(dir_); 
-    LOG(LEVEL) << " dir " << dir ; 
-    LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
-    assert(dir); 
-
-    LOG(LEVEL) << "[ fold.load " << dir ; 
-    int rc = fold->load(dir); 
-    LOG(LEVEL) << "] fold.load " << dir ; 
-    is_loaded = true ; 
-
-    return rc ; 
-}
-
-
-
 
 /**
 SEvt::saveLabels : hostside running only 
@@ -2436,24 +2399,11 @@ void SEvt::saveLabels(const char* dir) const
     LOG(LEVEL) << "] dir " << dir ; 
 }
 
-
 void SEvt::saveFrame(const char* dir) const 
 {
     LOG(LEVEL) << "[ dir " << dir ; 
     frame.save(dir); 
     LOG(LEVEL) << "] dir " << dir ; 
-}
-
-
-std::string SEvt::descComp() const 
-{
-    std::stringstream ss ; 
-    ss << "SEvt::descComp " 
-       << " comp.size " << comp.size() 
-       << " SComp::Desc " << SComp::Desc(comp)
-       ; 
-    std::string s = ss.str(); 
-    return s ; 
 }
 
 std::string SEvt::descComponent() const 
@@ -2535,8 +2485,40 @@ std::string SEvt::descComponent() const
     std::string s = ss.str(); 
     return s ; 
 }
+std::string SEvt::descComp() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt::descComp " 
+       << " comp.size " << comp.size() 
+       << " SComp::Desc " << SComp::Desc(comp)
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
-
+std::string SEvt::descVec() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt::descVec " 
+       << " comp " << comp.size()  
+       << " genstep " << genstep.size()  
+       << " gs " << gs.size()  
+       << " pho0 " << pho0.size()  
+       << " pho " << pho.size()  
+       << " slot " << slot.size()
+       << " photon " << photon.size()  
+       << " record " << record.size()  
+       << " rec " << rec.size()  
+       << " seq " << seq.size()  
+       << " prd " << prd.size()  
+       << " tag " << tag.size()  
+       << " flat " << flat.size()  
+       << " simtrace " << simtrace.size()  
+       << " aux " << aux.size()  
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 
@@ -2604,13 +2586,23 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     ht.sensor_index = fr.sensor_index(); 
 }
 
+/**
+SEvt::getPhotonFrame
+---------------------
+
+Note that this relies on the photon iindex which 
+may not be set for photons ending in some places. 
+It should always be set for photons ending on PMTs
+assuming properlay instanced geometry. 
+
+**/
+
 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const 
 {
     assert(cf); 
     cf->getFrame(fr, p.iindex); 
     fr.prepare(); 
 }
-
 
 std::string SEvt::descNum() const 
 {
@@ -2687,14 +2679,11 @@ std::string SEvt::descLocalPhoton(unsigned max_print) const
     return s ; 
 }
 
-
 std::string SEvt::descFramePhoton(unsigned max_print) const 
 {
     unsigned num_photon = getNumPhoton(); 
     unsigned num_print = std::min(max_print, num_photon) ; 
-
     bool zero_frame = frame.is_zero() ; 
-
 
     std::stringstream ss ; 
     ss << "SEvt::descFramePhoton"
@@ -2718,11 +2707,9 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
             ss << fp.desc() << std::endl  ;   
         }   
     }
-
     std::string s = ss.str(); 
     return s ; 
 }
-
 
 std::string SEvt::descFull(unsigned max_print) const
 {
@@ -2745,35 +2732,29 @@ std::string SEvt::descFull(unsigned max_print) const
 }
 
 
-
-
 /**
 SEvt::getFramePhoton SEvt::getFrameHit
 ---------------------------------------
 
-frame set by SEvt::setFrame is used to transform the photon 
+frame set by SEvt::setFrame is used to transform the photon into local "model" frame 
 
 **/
 
 void SEvt::getFramePhoton(sphoton& lp, unsigned idx) const 
 {
     getPhoton(lp, idx); 
-
-    bool zero_frame = frame.is_zero() ; 
-    LOG_IF(fatal, zero_frame) << " must setFrame before can getFramePhoton " ; 
-    assert(!zero_frame);  
-
-    frame.transform_w2m(lp); 
+    applyFrameTransform(lp); 
 }
 void SEvt::getFrameHit(sphoton& lp, unsigned idx) const 
 {
     getHit(lp, idx); 
-
+    applyFrameTransform(lp); 
+}
+void SEvt::applyFrameTransform(sphoton& lp) const 
+{
     bool zero_frame = frame.is_zero() ; 
-    LOG_IF(fatal, zero_frame) << " must setFrame before can getFrameHit " ; 
+    LOG_IF(fatal, zero_frame) << " must setFrame before can applyFrameTransform " ; 
     assert(!zero_frame);  
-
     frame.transform_w2m(lp); 
 }
-
 

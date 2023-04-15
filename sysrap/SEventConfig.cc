@@ -250,6 +250,9 @@ unsigned SEventConfig::CompMaskAuto()
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 std::string SEventConfig::CompMaskLabel(){ return SComp::Desc( _CompMask ) ; }
 
+
+
+
 void SEventConfig::CompList( std::vector<unsigned>& comps )
 {
     SComp::CompListMask(comps, CompMask() ); 

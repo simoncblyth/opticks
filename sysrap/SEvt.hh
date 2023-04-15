@@ -89,7 +89,6 @@ struct stimer ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
-
     int cfgrc ; 
     int index ; 
     const char* reldir ;  // HMM: perhaps static RELDIR fallback ?
@@ -120,7 +119,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     sframe            frame ;
 
-    std::vector<unsigned> comp ; 
+    std::vector<unsigned> comp ;  // populated based on SEventConfig::CompMask 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
 
@@ -156,21 +155,74 @@ struct SYSRAP_API SEvt : public SCompProvider
     static uint64_t TimerStartCount(); 
     static std::string TimerDesc(); 
 
-
     static NP* UU ;  
     static NP* UU_BURN ;  
     static const plog::Severity LEVEL ; 
-    static const int PIDX ; 
     static const int GIDX ; 
+    static const int PIDX ; 
     static const int MISSING_INDEX ; 
     static const char*  DEFAULT_RELDIR ; 
 
     static SEvt* INSTANCE ; 
+    SEvt(); 
+    void init(); 
+
+    static const char* GetSaveDir() ; 
+    const char* getSaveDir() const ; 
+    const char* getLoadDir() const ; 
+    int getTotalItems() const ; 
+
+    const char* getSearchCFBase() const ; 
+
+
+    static const char* INPUT_PHOTON_DIR ; 
+    static NP* LoadInputPhoton(); 
+    static NP* LoadInputPhoton(const char* ip); 
+    void initInputPhoton(); 
+    void setInputPhoton(NP* p); 
+
+    NP* getInputPhoton_() const ; 
+    bool hasInputPhoton() const ; 
+    NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
+    bool hasInputPhotonTransformed() const ; 
+
+    NP* gatherInputPhoton() const ;   // returns a copy of the input photon array 
+
+
+    void initG4State() ; 
+    NP* makeG4State() const ; 
+    void setG4State(NP* state) ; 
+    NP* gatherG4State() const ;
+    const NP* getG4State() const ;
+
+    static const bool setFrame_WIDE_INPUT_PHOTON ; 
+
+    void setFrame(const sframe& fr ); 
+
+    const char* getFrameId() const ; 
+    const NP*   getFrameArray() const ; 
+    static const char* GetFrameId() ;
+    static const NP*   GetFrameArray() ;
+ 
+    void setFrame_HostsideSimtrace() ; 
+    void setGeo(const SGeo* cf); 
+    void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
+
+    //// below decl order matches impl order : KEEP IT THAT WAY 
+
+
+    static SEvt* CreateSimtraceEvent(); 
+
+    static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
+    void setCompProvider(const SCompProvider* provider); 
+    bool isSelfProvider() const ; 
+    std::string descProvider() const ; 
+
+    NP* gatherDomain() const ; 
     static SEvt* Get() ; 
     static SEvt* Create() ; 
     static SEvt* CreateOrReuse() ; 
     static SEvt* HighLevelCreateOrReuse() ; 
-
     static SEvt* HighLevelCreate(); // Create with bells-and-whistles needed by eg u4/tests/U4SimulateTest.cc
 
     static bool Exists(); 
@@ -183,8 +235,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void AddCarrierGenstep(); 
     static void AddTorchGenstep(); 
 
-    static void Clear(); 
     static SEvt* Load(const char* rel=nullptr); 
+    static void Clear(); 
     static void Save() ; 
     static void SaveExtra(const char* name, const NP* a) ; 
 
@@ -211,73 +263,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SetInputPhoton(NP* ip); 
     static bool HasInputPhoton(); 
 
- 
-    SEvt(); 
-    void init(); 
-
-    static const char* GetSaveDir() ; 
-    const char* getSaveDir() const ; 
-    const char* getLoadDir() const ; 
-    int getTotalItems() const ; 
-
-    const char* getSearchCFBase() const ; 
-
-
-    static const char* INPUT_PHOTON_DIR ; 
-    static NP* LoadInputPhoton(); 
-    static NP* LoadInputPhoton(const char* ip); 
-    void initInputPhoton(); 
-    void setInputPhoton(NP* p); 
-
-    NP* getInputPhoton_() const ; 
-    NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
-    NP* gatherInputPhoton() const ;   // returns a copy of the input photon array 
-
-    bool hasInputPhoton() const ; 
-    bool hasInputPhotonTransformed() const ; 
-
-
-    void initG4State() ; 
-    NP* makeG4State() const ; 
-    void setG4State(NP* state) ; 
-    NP* gatherG4State() const ;
-    const NP* getG4State() const ;
-
-    static const bool setFrame_WIDE_INPUT_PHOTON ; 
-    void setFrame(const sframe& fr ); 
-    void setFrame_HostsideSimtrace() ; 
-    void setGeo(const SGeo* cf); 
-    void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
-    static SEvt* CreateSimtraceEvent(); 
-
-
-    const char* getFrameId() const ; 
-    const NP*   getFrameArray() const ; 
-    static const char* GetFrameId() ;
-    static const NP*   GetFrameArray() ;
-
-
-    static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
-
-
-    void setCompProvider(const SCompProvider* provider); 
-    bool isSelfProvider() const ; 
-    std::string descProvider() const ; 
-
-
-    void setNumPhoton(unsigned num_photon); 
-    void setNumSimtrace(unsigned num_simtrace);
-
-
-    void hostside_running_resize(); 
-    void hostside_running_resize_(); 
-
-    NP* gatherDomain() const ; 
 
     void clear_() ; 
     void clear() ; 
     void clear_partial(const char* keep_keylist, char delim=','); 
-
 
     void setIndex(int index_) ;  
     void unsetIndex() ;  
@@ -287,13 +276,18 @@ struct SYSRAP_API SEvt : public SCompProvider
     const char* getReldir() const ; 
 
     unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
-    unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear obtained by looping over collected gensteps
+    unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
     unsigned getNumPhotonCollected() const ;    // total collected photons since last clear
     unsigned getNumPhotonGenstepMax() const ;   // max photon in genstep since last clear
 
     static constexpr const unsigned G4_INDEX_OFFSET = 1000000 ; 
-    sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
+    sgs addGenstep(const quad6& q) ; 
+
+    void setNumPhoton(unsigned num_photon); 
+    void setNumSimtrace(unsigned num_simtrace);
+    void hostside_running_resize(); 
+    void hostside_running_resize_(); 
 
     const sgs& get_gs(const spho& label) const ; // lookup genstep label from photon label  
     unsigned get_genflag(const spho& label) const ; 
@@ -302,8 +296,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned getCurrentPhotonIdx() const ; 
 
     void resumePhoton(const spho& sp);  // FastSim->SlowSim resume 
-    void rjoinPhoton(const spho& sp);   // reemission rjoin
     void rjoin_resumePhoton(const spho& label); // reemission rjoin AND FastSim->SlowSim resume 
+    void rjoinPhoton(const spho& sp);   // reemission rjoin
 
 
     void rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const ; 
@@ -311,20 +305,26 @@ struct SYSRAP_API SEvt : public SCompProvider
     void rjoinPhotonCheck(const sphoton& ph) const ; 
     void rjoinSeqCheck(unsigned seq_flag) const ; 
 
-    void checkPhotonLineage(const spho& sp) const ; 
     void pointPhoton(const spho& sp); 
-    void finalPhoton(const spho& sp); 
 
     static bool PIDX_ENABLED ;
     void addTag(unsigned tag, float u); 
     int getTagSlot() const ; 
 
+    void finalPhoton(const spho& sp); 
+    void checkPhotonLineage(const spho& sp) const ; 
+    
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+///////// below methods handle gathering arrays and persisting, not array content //////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 
     NP* gatherPho0() const ;   // unordered push_back as they come 
     NP* gatherPho() const ;    // resized at genstep and slotted in 
     NP* gatherGS() const ;   // genstep labels from std::vector<sgs>  
 
-    NP* gatherGenstep() const ; 
+    NP* gatherGenstep() const ;  // from genstep vector
     NP* gatherPhoton() const ; 
     NP* gatherRecord() const ; 
     NP* gatherRec() const ; 
@@ -333,7 +333,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* gatherPrd() const ; 
     NP* gatherTag() const ; 
     NP* gatherFlat() const ; 
-
     NP* gatherSeed() const ; 
     NP* gatherHit() const ; 
     NP* gatherSimtrace() const ; 
@@ -354,53 +353,52 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* makeSimtrace() const ; 
 
 
-
     // SCompProvider methods
-
     std::string getMeta() const ; 
     NP* gatherComponent(unsigned comp) const ; 
     NP* gatherComponent_(unsigned comp) const ; 
 
-    void saveLabels(const char* dir) const ;  // formerly savePho
-    void saveFrame(const char* dir_) const ; 
-
     void saveGenstep(const char* dir) const ; 
     void saveGenstepLabels(const char* dir, const char* name="gsl.npy") const ; 
 
+    std::string descGS() const ; 
+    std::string descDir() const ; 
+    std::string descFold() const ; 
+    static std::string Brief() ; 
+    std::string brief() const ; 
+    std::string desc() const ; 
+    std::string descDbg() const ; 
 
     void gather() ;  // with on device running this downloads
-
 
     // add extra metadata arrays to be saved within SEvt fold 
     static void AddArray(const char* k, const NP* a ); 
     void add_array( const char* k, const NP* a ); 
 
 
-    // save methods not const as calls gather
+    // save methods not const as call gather
     void save() ; 
     void saveExtra( const char* name, const NP* a ) const ; 
 
     int  load() ; 
-    void save(const char* base, const char* reldir1, const char* reldir2 ); 
+
     void save(const char* base, const char* reldir ); 
+    void save(const char* base, const char* reldir1, const char* reldir2 ); 
+    const char* getOutputDir(const char* base_=nullptr) const ; 
     static const char* DefaultDir() ; 
 
-    const char* getOutputDir(const char* base_=nullptr) const ; 
     std::string descSaveDir(const char* dir_) const ; 
-    void save(const char* dir); 
-    void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
 
     int  load(const char* dir); 
 
-    static std::string Brief() ; 
-    std::string brief() const ; 
-    std::string desc() const ; 
-    std::string descGS() const ; 
-    std::string descDir() const ; 
-    std::string descFold() const ; 
+    void save(const char* dir); 
+    void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
+    void saveLabels(const char* dir) const ;  // formerly savePho
+    void saveFrame(const char* dir_) const ; 
+
     std::string descComponent() const ; 
     std::string descComp() const ; 
-
+    std::string descVec() const ; 
 
     const NP* getPhoton() const ; 
     const NP* getHit() const ; 
@@ -424,5 +422,6 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 
     void getFrameHit(   sphoton& p, unsigned idx) const ; 
+    void applyFrameTransform(sphoton& lp) const ; 
 };
 

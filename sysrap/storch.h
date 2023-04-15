@@ -110,7 +110,7 @@ struct storch
    static constexpr const char* storch_FillGenstep_wavelength = "storch_FillGenstep_wavelength" ; 
    static constexpr const char* storch_FillGenstep_radius = "storch_FillGenstep_radius" ; 
    static constexpr const char* storch_FillGenstep_type = "storch_FillGenstep_type" ; 
-   static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
+   static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump=false ) ; 
    std::string desc() const ; 
 #endif
 
@@ -127,29 +127,34 @@ storch::FillGenstep
 Canonically invoked from SEvent::MakeGensteps
 
 **/
-inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump )
 {
     gs.gentype = OpticksGenstep_TORCH ; 
     gs.numphoton = numphoton_per_genstep  ;   
 
     qvals( gs.pos , storch_FillGenstep_pos , "0,0,-90" );    
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_pos gs.pos (%10.4f %10.4f %10.4f) \n", gs.pos.x, gs.pos.y, gs.pos.z ); 
 
     qvals( gs.time, storch_FillGenstep_time, "0.0" ); 
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_time gs.time (%10.4f) \n", gs.time ); 
 
     qvals( gs.mom , storch_FillGenstep_mom , "0,0,1" );    
     gs.mom = normalize(gs.mom);  
     // maybe should skip this float normalized, relying instead on U4VPrimaryGenerator::GetPhotonParam to do the normalize ?
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
 
     qvals( gs.wavelength, storch_FillGenstep_wavelength, "420" ); 
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_wavelength gs.wavelength (%10.4f) \n", gs.wavelength  ); 
 
     gs.zenith = make_float2( 0.f, 1.f );  
     gs.azimuth = make_float2( 0.f, 1.f );  
 
     qvals( gs.radius, storch_FillGenstep_radius, "50" ); 
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
 
     const char* type = qenv(storch_FillGenstep_type, "disc" );  
@@ -159,6 +164,7 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     assert(ttype_valid);  
 
     gs.type = ttype ;  
+    if(dump)
     printf("//storch::FillGenstep storch_FillGenstep_type %s  gs.type %d \n", type, gs.type ); 
     gs.mode = 255 ;    //torchmode::Type("...");  
 }

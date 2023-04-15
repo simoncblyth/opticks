@@ -282,6 +282,7 @@ struct NP
     void fillIndexFlat(); 
     void dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ; 
 
+    static std::string Brief(const NP* a); 
     std::string sstr() const ; 
     std::string desc() const ; 
     std::string brief() const ; 
@@ -3437,7 +3438,10 @@ inline void NP::dump(int i0, int i1, int j0, int j1) const
 
 
 
-
+inline std::string NP::Brief(const NP* a)
+{
+    return a ? a->sstr() : "-" ; 
+}
 inline std::string NP::sstr() const 
 {
     std::stringstream ss ; 
