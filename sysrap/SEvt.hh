@@ -127,7 +127,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
-    std::vector<spho>  pho ;   // spho are label structs holding 4*int 
+    std::vector<spho>  pho ;   // spho are label structs holding 4*int  
+    // TODO:rename, "pho" is too difficult to find
 
 
     std::vector<int>     slot ; 

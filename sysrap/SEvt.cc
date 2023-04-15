@@ -90,7 +90,7 @@ SEvt::SEvt()
     gather_done(false),
     is_loaded(false),
     is_loadfail(false),
-    numphoton_collected(0u),
+    numphoton_collected(0u),   // updated by addGenstep
     numphoton_genstep_max(0u)
 {   
     init(); 
@@ -402,7 +402,7 @@ As it is necessary to have the geometry to provide the frame this
 is now split from eg initInputPhotons.  
 
 For simtrace and input photon running with or without a transform 
-it is necessary to call this prior to calling QSim::simulate.
+it is necessary to call this for every event. 
 
 **simtrace running**
     MakeCenterExtentGensteps based on the given frame. 
@@ -1098,8 +1098,6 @@ Canonically called from SEvt::beginPhoton  (also SEvt::setFrame_HostsideSimtrace
 
 void SEvt::hostside_running_resize()
 {
-    LOG(info); 
-
     bool is_self_provider = isSelfProvider() ; 
     LOG_IF(fatal, is_self_provider == false ) << " NOT-is_self_provider " << descProvider() ;   
     LOG(LEVEL) 
@@ -1168,7 +1166,7 @@ being configured to zero via SEventConfig.
 
 void SEvt::hostside_running_resize_()
 {
-    LOG(LEVEL) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
+    LOG(info) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
 
     if(evt->num_photon > 0) 
     { 

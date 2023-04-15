@@ -50,9 +50,6 @@ struct sframe
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
 
-    static sframe Load( const char* dir, const char* name=NAME); 
-    static sframe Load_(const char* path ); 
-
 
     float4 ce = {} ;   // 0
     quad   q1 = {} ; 
@@ -71,19 +68,20 @@ struct sframe
     const char* frs = nullptr ; 
     Tran<double>* tr_m2w = nullptr ;
     Tran<double>* tr_w2m = nullptr ;
+    // TODO: Tran is already (t,v,i) triplet : so can have just the one Tran 
 
     const char* ek = nullptr ; 
     const char* ev = nullptr ; 
     const char* ekvid = nullptr ; 
-
-
-    // TODO: Tran is already (t,v,i) triplet : so can have just the one Tran 
 
     void zero() ; 
     bool is_zero() const ; 
 
     std::string desc() const ; 
 
+    static sframe Load( const char* dir, const char* name=NAME); 
+    static sframe Load_(const char* path ); 
+    static sframe Fabricate(); 
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
     int ix0() const ; 
@@ -219,19 +217,31 @@ inline std::string sframe::desc() const
 }
 
 
-inline sframe sframe::Load(const char* dir, const char* name)
+inline sframe sframe::Load(const char* dir, const char* name) // static
 {
     sframe fr ; 
     fr.load(dir, name); 
     return fr ; 
 }
-inline sframe sframe::Load_(const char* path)
+inline sframe sframe::Load_(const char* path) // static
 {
     sframe fr ; 
     fr.load_(path); 
     return fr ; 
 }
+/**
+sframe::Fabricate
+--------------------
 
+Placeholder frame for testing 
+
+**/
+inline sframe sframe::Fabricate() // static
+{
+    sframe fr ; 
+    fr.prepare(); 
+    return fr ; 
+}
 
 
 inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
@@ -424,6 +434,12 @@ inline void sframe::load(const NP* a)
 
 
 
+/**
+sframe::prepare
+-----------------
+
+
+**/
 
 inline void sframe::prepare()
 {
