@@ -319,9 +319,9 @@ def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
-def pvplt_frame( pl, sfr ):
+def pvplt_frame( pl, sfr, local=False ):
     extent = sfr.ce[3]
-    m2w = sfr.m2w  
+    m2w = sfr.m2w if local == False else np.eye(4)  
     pvplt_frame_(pl, extent, m2w )
 
 def pvplt_frame_(pl, e, m2w=np.eye(4) ):

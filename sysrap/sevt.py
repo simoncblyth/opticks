@@ -339,6 +339,25 @@ class SAB(object):
 
 
 
+
+class KeyIdx(object):
+    def __init__(self, kk, symbol="msab.ik"):
+        self.kk = kk
+        self.symbol = symbol
+    def __getattr__(self, k):
+        wk = np.where( self.kk == k)[0]
+        return wk[0] if len(wk) == 1 else -1 
+    def __repr__(self):
+        kk = self.kk 
+        symbol = self.symbol
+        ii = np.arange(len(kk))  
+        lines = []
+        lines.append("KeyIdx %s" % symbol)
+        for i, k in enumerate(kk):
+            lines.append("%s.%s = %d " % (symbol, k, i)) 
+        pass
+        return "\n".join(lines)
+ 
 class MSAB(object):
     """
     Comparison of metadata across NEVT pairs of SEvt
@@ -347,9 +366,15 @@ class MSAB(object):
 
     EXPRS = r"""
 
+    %(sym)s.c_itab[%(sym)s.ik.YSAVE,1].sum()/%(sym)s.c_itab[%(sym)s.ik.YSAVE,0].sum()  # N=1/N=0 FMT:%%10.4f
+
+    %(sym)s.c_itab[%(sym)s.ik.YSAVE,0].sum()/%(sym)s.c_itab[%(sym)s.ik.YSAVE,1].sum()  # N=0/N=1 FMT:%%10.4f
+
     %(sym)s.c_ftab[0,1].sum()/%(sym)s.c_ftab[0,0].sum()  # ratio of duration totals N=1/N=0 FMT:%%10.4f
 
     np.diff(%(sym)s.c_ttab)/1e6   # seconds between event starts
+
+    np.diff(%(sym)s.c_ttab)[0,1].sum()/np.diff(%(sym)s.c_ttab)[0,0].sum() # ratio N=1/N=0 FMT:%%10.4f
 
     np.c_[%(sym)s.c_ttab[0].T].view('datetime64[us]') # SEvt start times (UTC)
 
@@ -359,7 +384,7 @@ class MSAB(object):
 
     """
 
-    def __init__(self, NEVT, AFOLD, BFOLD, symbol="msab"):
+    def __init__(self, NEVT, AFOLD, BFOLD, symbol="%(sym)s"):
 
         efmt = "%0.3d"
         assert efmt in AFOLD and efmt in BFOLD
@@ -439,6 +464,10 @@ class MSAB(object):
         ikk = akk[ifield]
         fkk = akk[ffield]
         tkk = akk[tfield]
+
+        ik = KeyIdx(ikk, symbol="%s.ik" % self.symbol )
+        fk = KeyIdx(fkk, symbol="%s.fk" % self.symbol )
+        tk = KeyIdx(tkk, symbol="%s.tk" % self.symbol )
        
         c_itab = np.zeros( (itab.shape[0], itab.shape[1], NEVT ), dtype=np.uint64 )
         for i in range(len(itabs)): 
@@ -457,9 +486,15 @@ class MSAB(object):
         self.fkk = fkk
         self.tkk = tkk
 
+        self.ik = ik
+        self.fk = fk
+        self.tk = tk
+
         self.c_itab = c_itab
         self.c_ftab = c_ftab
         self.c_ttab = c_ttab
+
+
 
     def annotab(self, tabsym, keys, nline=3):
         """
@@ -476,7 +511,8 @@ class MSAB(object):
         lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
         rawlines = repr(eval(expr % {'sym':"self" })).split("\n")
         for i, line in enumerate(rawlines):
-            anno = keys[i//nline] if i % nline == 0 else ""
+            j = i//nline 
+            anno = "%2d:%s" % (j,keys[j]) if i % nline == 0 else ""
             lines.append("%s       %s " % (line, anno ))
         pass
         return "\n".join(lines)
