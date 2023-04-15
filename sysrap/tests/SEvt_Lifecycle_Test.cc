@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     assert(evt); 
 
     bool ip = SEvt::HasInputPhoton() ; 
-    sframe fr = sframe::Fabricate() ; 
+    sframe fr = sframe::Fabricate(0.f,0.f,1000.f) ; 
     evt->setFrame(fr); 
 
     for(int i=0 ; i < 3 ; i++)

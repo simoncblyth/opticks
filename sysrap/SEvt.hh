@@ -196,9 +196,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* gatherG4State() const ;
     const NP* getG4State() const ;
 
-    static const bool setFrame_WIDE_INPUT_PHOTON ; 
 
     void setFrame(const sframe& fr ); 
+
+    static const bool transformInputPhoton_WIDE ; 
+    void transformInputPhoton(); 
+
     static void AddFrameGenstep(); 
     void addFrameGenstep(); 
 

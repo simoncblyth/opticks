@@ -413,13 +413,48 @@ it is necessary to call this for every event.
 
 **/
 
-const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt__setFrame_WIDE_INPUT_PHOTON") ; 
 
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
     // addFrameGenstep(); // relocated to SEvt::BeginOfEvent
+    transformInputPhoton();  
 }
+
+
+const bool SEvt::transformInputPhoton_WIDE = SSys::getenvbool("SEvt__transformInputPhoton_WIDE") ; 
+
+/**
+SEvt::transformInputPhoton
+---------------------------
+
+**/
+
+void SEvt::transformInputPhoton()
+{
+    bool proceed = SEventConfig::IsRGModeSimulate() && hasInputPhoton() ; 
+    if(!proceed) return ;    
+
+    LOG(info); 
+
+    bool normalize = true ;  // normalize mom and pol after doing the transform 
+
+    NP* ipt = frame.transform_photon_m2w( input_photon, normalize ); 
+
+    if(transformInputPhoton_WIDE)  // see notes/issues/G4ParticleChange_CheckIt_warnings.rst
+    {
+        input_photon_transformed = ipt ;
+    }
+    else
+    {
+        input_photon_transformed = ipt->ebyte == 8 ? NP::MakeNarrow(ipt) : ipt ;
+        // narrow here to prevent immediate A:B difference with Geant4 seeing double precision 
+        // and Opticks float precision 
+    }
+}
+
+
+
 
 /**
 SEvt::AddFrameGenstep
@@ -457,21 +492,7 @@ void SEvt::addFrameGenstep()
 
         addGenstep(MakeInputPhotonGenstep(input_photon, frame)); 
 
-        bool normalize = true ;  // normalize mom and pol after doing the transform 
-
-        NP* ipt = frame.transform_photon_m2w( input_photon, normalize ); 
-
-        if(setFrame_WIDE_INPUT_PHOTON)  // see notes/issues/G4ParticleChange_CheckIt_warnings.rst
-        {
-            input_photon_transformed = ipt ;
-        }
-        else
-        {
-            input_photon_transformed = ipt->ebyte == 8 ? NP::MakeNarrow(ipt) : ipt ;
-            // narrow here to prevent immediate A:B difference with Geant4 seeing double precision 
-            // and Opticks float precision 
-        }
-
+        // transformInputPhoton formerly done here, but thats too late for junosw
     }   
 }
 
@@ -616,7 +637,13 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
 SEvt::MakeInputPhotonGenstep
 -----------------------------
 
-May be called from SEvt::setFrame
+Now called from SEvt::addFrameGenstep (formerly from SEvt::setFrame)
+Note that the only thing taken from the *input_photon* is the 
+number of photons so this can work with either local or 
+transformed *input_photon*. 
+
+The m2w transform from the frame is copied into the genstep.  
+HMM: is that actually used ? Because the frame is also persisted. 
 
 **/
 

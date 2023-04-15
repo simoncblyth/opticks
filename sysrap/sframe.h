@@ -62,7 +62,7 @@ struct sframe
     quad4  aux = {} ;  // 3
 
 
-    // CAUTION : ABOVE HEAD PERSISTED BY MEMCPY INTO ARRAY BELOW TAIL ADDED AS METADATA
+    // CAUTION : ABOVE HEAD PERSISTED BY MEMCPY INTO ARRAY,  BELOW TAIL ADDED AS METADATA
 
     // on the edge, the above are memcpy in/out by load/save
     const char* frs = nullptr ; 
@@ -81,7 +81,7 @@ struct sframe
 
     static sframe Load( const char* dir, const char* name=NAME); 
     static sframe Load_(const char* path ); 
-    static sframe Fabricate(); 
+    static sframe Fabricate(float tx=0.f, float ty=0.f, float tz=0.f); 
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
     int ix0() const ; 
@@ -136,7 +136,6 @@ struct sframe
     void load_(const char* path ) ; 
     void load(const NP* a) ; 
 
-    Tran<double>* getTransform() const ; 
 
 
     void prepare();   // below are const by asserting that *prepare* has been called
@@ -146,6 +145,13 @@ struct sframe
 
     void transform_m2w( sphoton& p, bool normalize=true ) const ; 
     void transform_w2m( sphoton& p, bool normalize=true ) const ;
+
+
+    Tran<double>* getTransform() const ; 
+
+
+    void setTranslate(float x, float y, float z); 
+    void setTransform(const qat4* m2w_ ); 
 
 }; 
 
@@ -233,12 +239,13 @@ inline sframe sframe::Load_(const char* path) // static
 sframe::Fabricate
 --------------------
 
-Placeholder frame for testing 
+Placeholder frame for testing, optionally with translation transform. 
 
 **/
-inline sframe sframe::Fabricate() // static
+inline sframe sframe::Fabricate(float tx, float ty, float tz) // static
 {
     sframe fr ; 
+    fr.setTranslate(tx, ty, tz) ; 
     fr.prepare(); 
     return fr ; 
 }
@@ -502,9 +509,17 @@ inline Tran<double>* sframe::getTransform() const
     return geotran ; 
 }
 
-
-
-
+inline void sframe::setTranslate(float x, float y, float z)  // UNTESTED
+{
+    qat4 m2w(x,y,z); 
+    setTransform(&m2w); 
+}
+inline void sframe::setTransform(const qat4* m2w_ )  // UNTESTED
+{
+    const qat4* w2m_ = Tran<double>::Invert(m2w_);   
+    qat4::copy(m2w, *m2w_ );  
+    qat4::copy(w2m, *w2m_ );  
+}
 
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 {

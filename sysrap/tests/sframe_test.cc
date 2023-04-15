@@ -24,14 +24,25 @@ void test_load()
     std::cout << "b" << std::endl << b << std::endl ; 
 }
 
+void test_setTranslate()
+{
+    sframe fr ; 
+    fr.setTranslate(100.f, 200.f, 300.f) ; 
+    fr.prepare(); 
+
+    std::cout << fr << std::endl ; 
+    fr.save("$FOLD"); 
+}
+
 
 int main(int argc, char** argv)
 {
     /*
     test_save_load() ; 
-    */
-
     test_load(); 
+    */
+    test_setTranslate(); 
+
 
     return 0 ; 
 }

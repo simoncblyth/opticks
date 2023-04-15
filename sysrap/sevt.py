@@ -427,7 +427,7 @@ class MSAB(object):
                 fmt = " %s : %%s " % efmt 
                 print( fmt % ( i, ab.qcf.c2desc))
             else:
-                print(repr(ab))
+                if "DUMP" in os.environ:print(repr(ab))
             pass
         pass
 

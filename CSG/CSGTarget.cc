@@ -165,9 +165,10 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
     const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
-
     qat4::copy(fr.m2w,  t);  
     qat4::copy(fr.w2m, *v);  
+    // TODO: adopt sframe::setTransform
+
 
     const CSGSolid* solid = foundry->getSolid(gas_idx); 
     fr.ce = solid->center_extent ;  

@@ -307,7 +307,7 @@ void test_transform_aabb_inplace()
 }
 
 
-std::string desc(const char* label, const std::vector<unsigned>& uu )
+std::string desc_(const char* label, const std::vector<int>& uu )
 {
     std::stringstream ss ; 
     ss 
@@ -327,10 +327,10 @@ void test_find_unique()
 {
     std::vector<qat4> qq ; 
  
-    qat4 a ; a.setIdentity( 1, 10, 100 ); 
-    qat4 b ; b.setIdentity( 2, 20, 200 ); 
-    qat4 c ; c.setIdentity( 3, 30, 300 ); 
-    qat4 d ; d.setIdentity( 4, 40, 400 ); 
+    qat4 a ; a.setIdentity( 1, 10, 100, 0 ); 
+    qat4 b ; b.setIdentity( 2, 20, 200, 0 ); 
+    qat4 c ; c.setIdentity( 3, 30, 300, 0 ); 
+    qat4 d ; d.setIdentity( 4, 40, 400, 0 ); 
 
     qq.push_back(a) ;
 
@@ -347,13 +347,14 @@ void test_find_unique()
     qq.push_back(d) ;
 
 
-    std::vector<unsigned> ins, gas, ias ; 
-    qat4::find_unique(qq, ins, gas, ias ); 
+    std::vector<int> ins, gas, ias, idx ; 
+    qat4::find_unique(qq, ins, gas, ias, idx ); 
    
     std::cout 
-        << desc("ins", ins ) << std::endl  
-        << desc("gas", gas ) << std::endl  
-        << desc("ias", ias ) << std::endl  
+        << desc_("ins", ins ) << std::endl  
+        << desc_("gas", gas ) << std::endl  
+        << desc_("ias", ias ) << std::endl  
+        << desc_("idx", idx ) << std::endl  
         ;
 
 
@@ -380,7 +381,7 @@ void test_right_multiply_translate()
     q.q3.f.y = t.y ; 
     q.q3.f.z = t.z ; 
 
-    q.setIdentity( 42, 43, 44 ); 
+    q.setIdentity( 42, 43, 44, 45 ); 
 
     std::cout << q << std::endl ; 
 
@@ -405,7 +406,7 @@ void test_right_multiply_scale()
     q.q1.f.y = s.y ; 
     q.q2.f.z = s.z ; 
 
-    q.setIdentity( 42, 43, 44 ); 
+    q.setIdentity( 42, 43, 44, 45 ); 
 
     std::cout << q << std::endl ; 
 
@@ -432,7 +433,7 @@ void test_right_multiply_rotate()
     q.q1.f.x = st  ;   q.q1.f.y =  ct  ;  q.q1.f.z = 0.f ; 
     q.q2.f.x = 0.f ;   q.q2.f.y =  0.f ;  q.q2.f.z = 1.f ; 
 
-    q.setIdentity( 42, 43, 44 ); 
+    q.setIdentity( 42, 43, 44, 45 ); 
 
     float3 a = make_float3(0.f, 1.f, 0.f); 
     float3 b = q.right_multiply(a, 1.f ); 
@@ -641,6 +642,12 @@ void test_is_identity()
         ;
 }
 
+void test_ctor()
+{
+    qat4* a = new qat4(100., 200., 300.) ; 
+    std::cout << *a << std::endl ;   
+}
+
 int main(int argc, char** argv)
 {
     /*
@@ -662,9 +669,10 @@ int main(int argc, char** argv)
     test_quad6_ctor(); 
     test_transform(); 
     test_transform_from_qat4(); 
+    test_is_identity(); 
     */
 
-    test_is_identity(); 
+    test_ctor(); 
 
     return 0 ; 
 }
