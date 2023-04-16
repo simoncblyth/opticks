@@ -366,7 +366,9 @@ class InputPhotons(object):
     RAINXZ = "RainXZ" 
     GRIDXY = "GridXY" 
     Z230 = "_Z230"
+    Z1000 = "_Z1000"
     X700 = "_X700"
+    X1000 = "_X1000"
     R500 = "_R500" 
 
 
@@ -375,7 +377,7 @@ class InputPhotons(object):
     NAMES += [RAINXZ+Z230+"_100", RAINXZ+Z230+"_1000", RAINXZ+Z230+"_100k", RAINXZ+Z230+"_10k" ]
     NAMES += [RAINXZ+Z230+X700+"_100", RAINXZ+Z230+X700+"_1000", RAINXZ+Z230+X700+"_10k" ]
     NAMES += [UD+R500+"_10k"]
-    NAMES += [GRIDXY+X700+Z230+"_10k"] 
+    NAMES += [GRIDXY+X700+Z230+"_10k", GRIDXY+X1000+Z1000+"_40k"    ] 
 
     def generate(self, name, args):
         if args.seed > -1:

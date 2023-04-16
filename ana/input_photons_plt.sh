@@ -17,7 +17,8 @@ EOU
 #stem=RandomSpherical100
 #stem=RandomDisc100
 #stem=UniformDisc_R500_10k
-stem=GridXY_X700_Z230_10k
+#stem=GridXY_X700_Z230_10k
+stem=GridXY_X1000_Z1000_40k
 #stem=UpXZ1000
 #stem=DownXZ1000
 #stem=RainXZ1000
