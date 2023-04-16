@@ -16,10 +16,12 @@ EOU
 
 #stem=RandomSpherical100
 #stem=RandomDisc100
+#stem=UniformDisc_R500_10k
+stem=GridXY_X700_Z230_10k
 #stem=UpXZ1000
 #stem=DownXZ1000
 #stem=RainXZ1000
-stem=RainXZ_Z230_1000
+#stem=RainXZ_Z230_1000
 
 #sufx=_f4
 sufx=_f8

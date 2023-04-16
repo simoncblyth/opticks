@@ -136,8 +136,18 @@ class SEvt(RFold):
 
         metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
         meta = getattr(f, metakey, None)
- 
 
+        ipl = getattr(f.SEventConfig_meta, "InputPhoton", []) 
+        ip = ipl[0] if len(ipl)==1 else None
+
+        ipfl = getattr(f.SEventConfig_meta, "InputPhotonFrame", []) 
+        ipf = ipfl[0] if len(ipfl)==1 else None
+ 
+        ipcl = getattr(f.SEventConfig_meta, "InputPhotonCheck", []) 
+        ipc = ipc[0] if len(ipcl)==1 else None
+ 
+ 
+       
         self.f = f 
         self.q_ = q_
         self.q = q
@@ -174,6 +184,10 @@ class SEvt(RFold):
 
         self.metakey = metakey
         self.meta = meta 
+
+        self.ip = ip
+        self.ipf = ipf
+        self.ipc = ipc
 
         self.w2m = w2m
         self.gpos = gpos 

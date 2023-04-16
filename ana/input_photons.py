@@ -10,7 +10,8 @@ import argparse, logging, os, json
 log = logging.getLogger(__name__)
 import numpy as np
 np.set_printoptions(linewidth=200, suppress=True, precision=3)
-from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear, sample_linspace
+from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear, sample_linspace, sample_disc
+from opticks.ana.sample import xy_grid_coordinates
 
 def vnorm(v):
     norm = np.sqrt((v*v).sum(axis=1))
@@ -312,6 +313,36 @@ class InputPhotons(object):
         return p 
 
     @classmethod
+    def GenerateUniformDisc(cls, n, radius=100.):
+        offset = sample_disc(n, dtype=cls.DTYPE) 
+        offset[:,0] *= radius 
+        offset[:,1] *= radius 
+        p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
+        p[:,0,:3] = cls.POSITION + offset
+        p[:,0, 3] = 0.1 
+        p[:,1,:3] = -cls.Z
+        p[:,1, 3] = cls.WEIGHT 
+        p[:,2,:3] = cls.X
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
+
+    @classmethod
+    def GenerateGridXY(cls, n, X=100., Z=1000. ):
+        sn = int(np.sqrt(n)) 
+        offset = xy_grid_coordinates(nx=sn, ny=sn, sx=X, sy=X )
+        offset[:,2] = Z 
+
+        p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
+        p[:,0,:3] = cls.POSITION + offset
+        p[:,0, 3] = 0.1 
+        p[:,1,:3] = -cls.Z
+        p[:,1, 3] = cls.WEIGHT 
+        p[:,2,:3] = cls.X
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
+
+
+    @classmethod
     def CheckTransverse(cls, direction, polarization, epsilon):
         # check elements should all be very close to zero
         check1 = np.einsum('ij,ij->i',direction,polarization)  
@@ -329,18 +360,22 @@ class InputPhotons(object):
     ICC = "InwardsCubeCorners" 
     RS = "RandomSpherical" 
     RD = "RandomDisc" 
+    UD = "UniformDisc" 
     UXZ = "UpXZ"
     DXZ = "DownXZ"
     RAINXZ = "RainXZ" 
+    GRIDXY = "GridXY" 
     Z230 = "_Z230"
     X700 = "_X700"
+    R500 = "_R500" 
 
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
     NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
     NAMES += [RAINXZ+Z230+"_100", RAINXZ+Z230+"_1000", RAINXZ+Z230+"_100k", RAINXZ+Z230+"_10k" ]
     NAMES += [RAINXZ+Z230+X700+"_100", RAINXZ+Z230+X700+"_1000", RAINXZ+Z230+X700+"_10k" ]
-
+    NAMES += [UD+R500+"_10k"]
+    NAMES += [GRIDXY+X700+Z230+"_10k"] 
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -372,11 +407,18 @@ class InputPhotons(object):
             pass
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RAINXZ):
-            num, z0, xl = parsetail(name, prefix=self.RAINXZ)
-            z0 = 1000. if z0 is None else z0
-            xl = 250.  if xl is None else xl 
+            d = parsetail(name, prefix=self.RAINXZ)
+            z0 = 1000. if d['Z'] is None else d['Z']
+            xl = 250.  if d['X'] is None else d['X']
+            num = d['N']
             mom = -self.Z
             p = self.GenerateXZ(-num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
+        elif name.startswith(self.UD):
+            d = parsetail(name, prefix=self.UD)
+            p = self.GenerateUniformDisc(d["N"], radius=d["R"]) 
+        elif name.startswith(self.GRIDXY):
+            d = parsetail(name, prefix=self.GRIDXY)
+            p = self.GenerateGridXY(d["N"], X=d["X"], Z=d["Z"]) 
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    
@@ -464,9 +506,7 @@ class InputPhotonDefaults(object):
 def parsetail(name, prefix=""):
     """
     """
-    z0 = None
-    xl = None
-
+    d = { 'N':None,'X':None, 'Y':None, 'Z':None, 'R':None }
     assert name.startswith(prefix)
     tail = name[len(prefix):]
     elem = np.array(list(filter(None,tail.split("_"))) if tail.find("_") > -1 else [tail])
@@ -474,10 +514,8 @@ def parsetail(name, prefix=""):
 
     if len(elem) > 1:
         for e in elem[:-1]:
-           if e[0] == 'Z':       
-               z0 = int(e[1:])
-           elif e[0] == 'X':
-               xl = int(e[1:])
+           if e[0] in 'XYZR':       
+               d[e[0]] = int(e[1:])
            pass 
         pass
     pass 
@@ -488,27 +526,27 @@ def parsetail(name, prefix=""):
     else:
         num = int(elem[-1])
     pass    
-    return num, z0, xl  
+    assert not num is None
+    d['N'] = num
+    return d  
 
 def test_parsetail():
     print("test_parsetail")
 
-    assert parsetail("RainXZ1k", prefix="RainXZ") == (1000,None, None)
-    assert parsetail("RainXZ10k", prefix="RainXZ") == (10000,None, None)
-    assert parsetail("RainXZ1M", prefix="RainXZ") == (1000000,None, None)
+    assert parsetail("RainXZ1k", prefix="RainXZ") == dict(N=1000,X=None,Y=None,Z=None,R=None)
+    assert parsetail("RainXZ10k", prefix="RainXZ") == dict(N=10000,X=None,Y=None,Z=None,R=None)
+    assert parsetail("RainXZ1M", prefix="RainXZ") == dict(N=1000000,X=None,Y=None,Z=None,R=None)
 
     #pt = parsetail("RainXZ_Z230_1k", prefix="RainXZ")
     #print(pt)
 
-    assert parsetail("RainXZ_Z230_1k", prefix="RainXZ") == (1000,230, None)
-    assert parsetail("RainXZ_Z230_10k", prefix="RainXZ") == (10000,230, None)
-    assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == (1000000,230, None)
+    assert parsetail("RainXZ_Z230_1k", prefix="RainXZ") == dict(N=1000,X=None,Y=None,Z=230,R=None)
+    assert parsetail("RainXZ_Z230_10k", prefix="RainXZ") == dict(N=10000,X=None,Y=None,Z=230,R=None)
+    assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == dict(N=1000000,X=None,Y=None,Z=230,R=None)
 
-    assert parsetail("RainXZ_Z230_X250_1k", prefix="RainXZ") == (1000,230, 250)
-    assert parsetail("RainXZ_Z230_X500_10k", prefix="RainXZ") == (10000,230, 500)
-    assert parsetail("RainXZ_Z230_X1000_1M", prefix="RainXZ") == (1000000,230, 1000)
-
-
+    assert parsetail("RainXZ_Z230_X250_1k", prefix="RainXZ") == dict(N=1000,X=250,Y=None,Z=230,R=None)
+    assert parsetail("RainXZ_Z230_X500_10k", prefix="RainXZ") == dict(N=10000,X=500,Y=None,Z=230,R=None)
+    assert parsetail("RainXZ_Z230_X1000_1M", prefix="RainXZ") == dict(N=1000000,X=1000,Y=None,Z=230,R=None)
 
 
 
