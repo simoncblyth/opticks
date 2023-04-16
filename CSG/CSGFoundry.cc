@@ -3094,8 +3094,9 @@ sframe CSGFoundry::getFrameE() const
 
         fr.set_ekv("INST"); 
     }
-    else if(ssys::getenvbool("MOI"))
+    else if(ssys::getenvbool("MOI"))  
     {
+        // TODO: get rid of MOI, as doing almost same as OPTICKS_INPUT_PHOTON_FRAME
         const char* MOI = ssys::getenvvar("MOI", nullptr) ; 
         LOG(LEVEL) << " MOI " << MOI ;  
         fr = getFrame() ; 

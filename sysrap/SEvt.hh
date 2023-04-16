@@ -381,6 +381,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     // add extra metadata arrays to be saved within SEvt fold 
     static void AddArray(const char* k, const NP* a ); 
     void add_array( const char* k, const NP* a ); 
+    static void AddEventConfigArray() ; 
 
 
     // save methods not const as call gather

@@ -842,6 +842,7 @@ inline int U::MakeDirs( const char* dirpath_, int mode_ )
 
 inline int U::MakeDirsForFile( const char* filepath, int mode_ )
 {
+    if(filepath == nullptr) return 1 ; 
     std::string dirpath = U::DirName(filepath); 
     return MakeDirs(dirpath.c_str(), mode_ );  
 }

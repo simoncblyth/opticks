@@ -3,6 +3,7 @@
 #include <vector>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
+struct NP ; 
 
 /**
 SEventConfig
@@ -112,7 +113,6 @@ struct SYSRAP_API SEventConfig
 
     static const char* G4StateSpec(); 
     static int         G4StateRerun(); 
-    static int         G4StateRerun_GetEnabledId() ;
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
@@ -248,6 +248,10 @@ struct SYSRAP_API SEventConfig
     static int Initialize_COUNT ; 
     static int Initialize(); 
     static uint64_t EstimateAlloc(); 
+
+    static constexpr const char* NAME = "SEventConfig.npy" ; 
+    static NP* Serialize(); 
+    static void Save(const char* dir) ; 
 
 }; 
  

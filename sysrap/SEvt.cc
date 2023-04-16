@@ -2224,6 +2224,12 @@ void SEvt::add_array( const char* k, const NP* a )
     fold->add(k, a);  
 }
 
+void SEvt::AddEventConfigArray() // static
+{
+    AddArray( SEventConfig::NAME, SEventConfig::Serialize() ); 
+}
+
+
 
 
 /**

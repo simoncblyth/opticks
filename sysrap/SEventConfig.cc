@@ -497,3 +497,69 @@ uint64_t SEventConfig::EstimateAlloc()
     return tot ; 
 }
 
+
+NP* SEventConfig::Serialize() // static
+{
+    NP* meta = NP::Make<int>(1) ; 
+
+    const char* em = EventMode(); 
+    if(em)  meta->set_meta<std::string>("EventMode", em );  
+
+    meta->set_meta<int>("RunningMode", RunningMode() );  
+
+    const char* rml = RunningModeLabel(); 
+    if(rml) meta->set_meta<std::string>("RunningModeLabel", rml );  
+
+    const char* g4s = G4StateSpec() ; 
+    if(g4s) meta->set_meta<std::string>("G4StateSpec", g4s ); 
+ 
+    meta->set_meta<int>("G4StateRerun", G4StateRerun() ); 
+    meta->set_meta<int>("MaxGenstep", MaxGenstep() );  
+    meta->set_meta<int>("MaxPhoton", MaxPhoton() );  
+    meta->set_meta<int>("MaxSimtrace", MaxSimtrace() );  
+    meta->set_meta<int>("MaxCurandState", MaxCurandState() );  
+
+    meta->set_meta<int>("MaxBounce", MaxBounce() );  
+    meta->set_meta<int>("MaxRecord", MaxRecord() );  
+    meta->set_meta<int>("MaxRec", MaxRec() );  
+    meta->set_meta<int>("MaxAux", MaxAux() );  
+    meta->set_meta<int>("MaxSeq", MaxSeq() );  
+    meta->set_meta<int>("MaxPrd", MaxPrd() );  
+    meta->set_meta<int>("MaxTag", MaxTag() );  
+    meta->set_meta<int>("MaxFlat", MaxFlat() );  
+    meta->set_meta<float>("MaxExtent", MaxExtent() );  
+    meta->set_meta<float>("MaxTime", MaxTime() );  
+
+    const char* of = OutFold() ; 
+    if(of) meta->set_meta<std::string>("OutFold", of );  
+
+    const char* on = OutName() ; 
+    if(on) meta->set_meta<std::string>("OutName", on );  
+
+    meta->set_meta<unsigned>("HitMask", HitMask() );  
+    meta->set_meta<unsigned>("CompMask", CompMask() );  
+    meta->set_meta<float>("PropagateEpsilon", PropagateEpsilon() );  
+
+    const char* ip  = InputPhoton() ;  
+    if(ip)  meta->set_meta<std::string>("InputPhoton", ip );  
+
+    const char* ipf = InputPhotonFrame() ;  
+    if(ipf) meta->set_meta<std::string>("InputPhotonFrame", ipf );  
+
+    meta->set_meta<int>("RGMode", RGMode() ); 
+
+    const char* rgml = RGModeLabel() ;  
+    if(rgml) meta->set_meta<std::string>("RGModeLabel", rgml );  
+
+    meta->set_meta<std::string>("CompMaskLabel", CompMaskLabel()); 
+
+    return meta ; 
+}
+
+void SEventConfig::Save(const char* dir ) // static 
+{
+    if(dir == nullptr) return ; 
+    NP* meta =Serialize(); 
+    meta->save(dir, NAME ); 
+}
+

@@ -217,6 +217,7 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
     assert( consistent_eventID ); 
 
     SEvt::AddArray("U4R.npy", MakeMetaArray() ); 
+    SEvt::AddEventConfigArray(); 
 
     SEvt::Save(); 
     SEvt::Clear(); 

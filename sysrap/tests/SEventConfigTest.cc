@@ -26,10 +26,6 @@ void test_EstimateAlloc()
 }
 
 
-
-
-
-
 /**
 
 epsilon:sysrap blyth$ SEventConfigTest 
@@ -111,6 +107,20 @@ void test_SetDefault()
         ; 
 }
 
+
+
+
+
+void test_Save()
+{
+    SEventConfig::Save("$FOLD"); 
+}
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -124,9 +134,11 @@ int main(int argc, char** argv)
     test_CompMaskAuto(); 
     test_SetCompMaskAuto(); 
     test_SetDefault(); 
+    test_EstimateAlloc(); 
     */
 
-    test_EstimateAlloc(); 
+    test_Save(); 
+
 
     return 0 ; 
 }
