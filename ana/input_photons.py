@@ -332,11 +332,14 @@ class InputPhotons(object):
     UXZ = "UpXZ"
     DXZ = "DownXZ"
     RAINXZ = "RainXZ" 
-    Z230 = "_Z230_"
+    Z230 = "_Z230"
+    X700 = "_X700"
+
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
     NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
-    NAMES += [RAINXZ+Z230+"100", RAINXZ+Z230+"1000", RAINXZ+Z230+"100k", RAINXZ+Z230+"10k" ]
+    NAMES += [RAINXZ+Z230+"_100", RAINXZ+Z230+"_1000", RAINXZ+Z230+"_100k", RAINXZ+Z230+"_10k" ]
+    NAMES += [RAINXZ+Z230+X700+"_100", RAINXZ+Z230+X700+"_1000", RAINXZ+Z230+X700+"_10k" ]
 
 
     def generate(self, name, args):
@@ -369,10 +372,10 @@ class InputPhotons(object):
             pass
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RAINXZ):
-            num, z0 = parsetail(name, prefix=self.RAINXZ)
+            num, z0, xl = parsetail(name, prefix=self.RAINXZ)
             z0 = 1000. if z0 is None else z0
+            xl = 250.  if xl is None else xl 
             mom = -self.Z
-            xl = 250. 
             p = self.GenerateXZ(-num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
@@ -462,14 +465,20 @@ def parsetail(name, prefix=""):
     """
     """
     z0 = None
+    xl = None
+
     assert name.startswith(prefix)
     tail = name[len(prefix):]
-    elem = list(filter(None,tail.split("_"))) if tail.find("_") > -1 else [tail]
+    elem = np.array(list(filter(None,tail.split("_"))) if tail.find("_") > -1 else [tail])
     #print(" name:%s. tail:%s. elem:%s." % (name, tail, str(elem)) )
 
     if len(elem) > 1:
-        if elem[0][0] == 'Z':       
-           z0 = int(elem[0][1:])
+        for e in elem[:-1]:
+           if e[0] == 'Z':       
+               z0 = int(e[1:])
+           elif e[0] == 'X':
+               xl = int(e[1:])
+           pass 
         pass
     pass 
     if elem[-1].endswith("k"):
@@ -479,19 +488,28 @@ def parsetail(name, prefix=""):
     else:
         num = int(elem[-1])
     pass    
-    return num, z0 
+    return num, z0, xl  
 
 def test_parsetail():
-    assert parsetail("RainXZ1k", prefix="RainXZ") == (1000,None)
-    assert parsetail("RainXZ10k", prefix="RainXZ") == (10000,None)
-    assert parsetail("RainXZ1M", prefix="RainXZ") == (1000000,None)
+    print("test_parsetail")
+
+    assert parsetail("RainXZ1k", prefix="RainXZ") == (1000,None, None)
+    assert parsetail("RainXZ10k", prefix="RainXZ") == (10000,None, None)
+    assert parsetail("RainXZ1M", prefix="RainXZ") == (1000000,None, None)
 
     #pt = parsetail("RainXZ_Z230_1k", prefix="RainXZ")
     #print(pt)
 
-    assert parsetail("RainXZ_Z230_1k", prefix="RainXZ") == (1000,230)
-    assert parsetail("RainXZ_Z230_10k", prefix="RainXZ") == (10000,230)
-    assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == (1000000,230)
+    assert parsetail("RainXZ_Z230_1k", prefix="RainXZ") == (1000,230, None)
+    assert parsetail("RainXZ_Z230_10k", prefix="RainXZ") == (10000,230, None)
+    assert parsetail("RainXZ_Z230_1M", prefix="RainXZ") == (1000000,230, None)
+
+    assert parsetail("RainXZ_Z230_X250_1k", prefix="RainXZ") == (1000,230, 250)
+    assert parsetail("RainXZ_Z230_X500_10k", prefix="RainXZ") == (10000,230, 500)
+    assert parsetail("RainXZ_Z230_X1000_1M", prefix="RainXZ") == (1000000,230, 1000)
+
+
+
 
 
 def test_InwardsCubeCorners17699(ip):
@@ -502,9 +520,7 @@ def test_InwardsCubeCorners17699(ip):
     r = np.sqrt(np.sum(p[:,0,:3]*p[:,0,:3], axis=1 ))  # radii of start positions
 
 
-
-if __name__ == '__main__':
-    #test_parsetail()
+def main():
     args = InputPhotons.parse_args(__doc__, InputPhotons.NAMES)
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -515,7 +531,18 @@ if __name__ == '__main__':
         ip[name] = InputPhotons(name, args)
         print(ip[name])
     pass
-    print("ip odict contains all InputPhotons")  
+    return ip 
+
+
+if __name__ == '__main__':
+    if "PARSETAIL" in os.environ:
+        test_parsetail()
+    else:
+        ip = main()
+        print("ip odict contains all InputPhotons instances ")  
+        print(ip.keys())
+    pass
+   
 
 
 

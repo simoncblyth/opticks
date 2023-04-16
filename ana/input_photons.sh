@@ -19,11 +19,17 @@ EOU
 }
 
 DIR=$(dirname $BASH_SOURCE)
+script=$DIR/input_photons.py
 
 dtypes="np.float32 np.float64"
 for dtype in $dtypes ; do 
-    DTYPE=$dtype ${IPYTHON:-ipython} --pdb $OPT $DIR/input_photons.py -- $*
+    DTYPE=$dtype ${IPYTHON:-ipython} --pdb $OPT $script -- $*
 done
 
 ls -alst ~/.opticks/InputPhotons
+
+
+if [ -z "$OPT" ]; then
+   echo $BASH_SOURCE : for interactive access use : ./iinput_photons.sh : for tests use :  ./test_input_photons.sh 
+fi 
 
