@@ -212,7 +212,8 @@ unsigned SEventConfig::CompMaskAuto()
             //mask |= SCOMP_SEED ;   // only needed for deep debugging 
         }
         if(MaxRecord()>0)    mask |= SCOMP_RECORD ; 
-        if(MaxRec()>0)       mask |= SCOMP_REC ; 
+        //if(MaxRec()>0)       mask |= SCOMP_REC ;   
+        // have not been using compressed record for a long time, so avoid the overhead
         if(MaxAux()>0)       mask |= SCOMP_AUX ; 
         if(MaxSeq()>0)       mask |= SCOMP_SEQ ; 
         if(MaxPrd()>0)       mask |= SCOMP_PRD ; 

@@ -247,11 +247,14 @@ def mpplt_annotate_ax( ax ):
 
 
 
-def mpplt_plotter(nrows=1, ncols=1, label=""):
+def mpplt_plotter(nrows=1, ncols=1, label="", equal=True):
     fig, axs = mp.pyplot.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi 
     if type(axs).__name__ == 'AxesSubplot':axs=np.array([axs], dtype=np.object )
-    for ax in axs:
-        ax.set_aspect('equal')
+
+    if equal:
+        for ax in axs:
+            ax.set_aspect('equal')
+        pass
     pass
     mpplt_annotate_fig(fig, label)
     for ax in axs:
