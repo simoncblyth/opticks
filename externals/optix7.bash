@@ -36,6 +36,19 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+NVIDIA Ai Denoiser
+--------------------
+
+* https://github.com/DeclanRussell/NvidiaAIDenoiser
+
+OptiX 7 and SDF
+------------------
+
+
+* https://is.muni.cz/th/j1hte/Master_Thesis.pdf
+* ~/opticks_refs/OptiX7_SDF_Daria_Vasilenko_Brno_Master_Thesis.pdf
+
+
 Versions
 ----------
 

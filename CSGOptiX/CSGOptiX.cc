@@ -6,7 +6,7 @@ This code contains two branches for old (OptiX < 7) and new (OptiX 7+) API
 
 Branched aspects:
 
-1. OptiX7Test.cu vs OptiX6Test.cu  
+1. CSGOptiX7.cu vs CSGOptiX6.cu  
 2. Ctx/SBT/PIP  vs Six
 3. new workflow uses uploaded params extensively from CUDA device code, 
    old workflow with *Six* uses hostside params to populate the optix context 
@@ -162,6 +162,8 @@ CSGOptiX::InitGeo
 CSGFoundry not const as upload sets device pointers
 CSGOptiX::InitGeo currently takes 20s for full JUNO geometry, 
 where the total gxs.sh running time for one event is 24s. 
+
+HMM:that was optimized down to under 1s, by removal of some unused stree.h stuff ?
 
 **/
 

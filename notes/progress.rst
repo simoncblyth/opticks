@@ -710,9 +710,6 @@ JUNO/Opticks infrastructure integration
 * CSG_GGeo dumping to see whats happening with r8 and the ginormous bbox, CSGNode.desc needs complement
 * exclude bbox from complemented leaf nodes with only intersect ancestry from contributing to the CSGPrim bbox
 * exclude the zero nodes bbox from inclusion into the CSGPrim bbox, giving ridx:8 the expected bbox from p40 of 
- 
-  * https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210712.html 
-  * https://localhost/env/presentation/juno_opticks_20210712.html 
 
 * formalizing CSGOptiXSimulate a bit
 * add gridscale to concentate the genstep grid on the target geometry

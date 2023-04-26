@@ -1045,8 +1045,8 @@ sgs SEvt::addGenstep(const quad6& q_)
     s.offset = numphoton_collected ;  // sum numphotons from all previously collected gensteps (since last clear)
     s.gentype = q.gentype() ; 
 
-    gs.push_back(s) ; 
-    genstep.push_back(q) ; 
+    gs.push_back(s) ;      // summary labels 
+    genstep.push_back(q) ; // actual genstep params
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
 
 

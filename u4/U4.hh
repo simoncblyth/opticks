@@ -13,8 +13,9 @@ that allow photons to be generated on GPU.
 Optical Photon Labelling
 ----------------------------
 
-In pure Opticks running (opticksMode:1) there is no Geant4 generation loop, 
-only in validation running (opticksMode:3) where both CPU and GPU propagations are done 
+In pure Opticks running (junosw/opticksMode:1) there is no Geant4 generation loop, 
+only in validation running (junosw/opticksMode:3) where both CPU and GPU propagations are done 
+and instrumented Geant4 running (junosw/opticksMode:2) 
 does generation loop monitoring become relevant and useful. 
 Geant4 generation loop photon labelling is done using the API::
 
@@ -27,7 +28,19 @@ is stored using G4VUserTrackInformation, via U4PhotonInfo.
 The label identifies exactly the originating photon and genstep 
 and how many reemission generations have been undergone. 
 
-* HMM: pure opticksMode:1 running does not provide such labels currently 
+Note about opticksMode
+-------------------------
+
+There is no Opticks API accepting an opticksMode argument, 
+nevetheless integrations of Opticks with detector simulation 
+frameworks will often find it useful to implement an opticksMode
+in order to assist with controlling Opticks and comparing 
+it with Geant4.  
+
+Photon labels
+---------------
+
+TODO: check junosw/opticksMode:1 running, are the labels provided ?
  
 Example of labels with {gs,ix,id,gx} ::
 

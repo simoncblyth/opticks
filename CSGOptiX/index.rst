@@ -332,7 +332,7 @@ Binding.h
 PIP.h
     OptiX render pipeline creation from ptx file
 
-OptiX7Test.cu
+CSGOptiX7.cu
     compiled into ptx that gets loaded by PIP to create the GPU pipeline, with OptiX 7 entry points::
     
     __raygen__rg

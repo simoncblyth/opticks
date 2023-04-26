@@ -2755,11 +2755,14 @@ template void CSGFoundry::loadArray( std::vector<qat4>& , const char* , const ch
 CSGFoundry::upload
 --------------------
 
+Canonical invokation from CSGOptiX::Create/CSGOptiX::InitGeo which is done by G4CXOpticks::setGeometry 
+
 Notice that the solid, inst and tran are not uploaded, as they are not needed on GPU. 
 The reason is that the solid feeds into the GAS, the inst into the IAS and the tran 
 are not needed because the inverse transforms are all that is needed.
 
-This currently taking 20s for full JUNO, where total runtime for one event is 24s. 
+This currently taking 20s for full JUNO, where total runtime for one event is 24s.
+TODO: recall this was optimized down to under 1s, check this. 
 
 **/
 

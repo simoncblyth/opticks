@@ -172,6 +172,7 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
 #else
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
 #endif
+    // gs is private static genstep label 
 
     //if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
     LOG(LEVEL) << gs.desc(); 
@@ -283,6 +284,8 @@ void U4::CollectGenstep_G4Cerenkov_modified(
 #else
     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
 #endif
+    // gs is primate static genstep label 
+    // TODO: avoid the duplication betweek C and S with common SetGenstep private method
 
     if(dump) std::cout << "U4::CollectGenstep_G4Cerenkov_modified " << gs.desc() << std::endl ; 
     LOG(LEVEL) << gs.desc(); 
@@ -298,7 +301,7 @@ void U4::CollectGenstep_G4Cerenkov_modified(
 U4::GenPhotonAncestor
 ----------------------
 
-NB calling this prior to generation loops to get the ancestor spho.h label 
+NB this is called prior to generation loops to get the ancestor spho.h label 
 
 This label is needed for BOTH Scintillation and Cerenkov in order for photon G4Track 
 labelling done by U4::GenPhotonEnd to work. 
