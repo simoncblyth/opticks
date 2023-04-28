@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os, numpy as np
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
 
 MODE = int(os.environ.get("MODE","2")) 
 PIDX = int(os.environ.get("PIDX","-1")) 
@@ -27,6 +28,12 @@ class ModelTrigger_Debug(AttrBase):
 
         meta = t.ModelTrigger_Debug_meta
         mtd = t.ModelTrigger_Debug 
+        
+        if mtd is None or mtd.shape[0] == 0:
+            log.fatal("loaded SEvt has missing or empty ModelTrigger_Debug mtd.shape:%s" % (str(mtd.shape)))
+            log.fatal("Ensure are using SEvt created whilst running with the old FastSim POM active, eg with N=0 ")
+        pass   
+
 
         PV = np.array(meta.PV) 
         MLV = np.array(meta.MLV) 

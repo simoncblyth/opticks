@@ -6,13 +6,14 @@ U4SimulateTest_mt.py
 ::
 
     u4t
-    ./U4SimulateTest.sh mtd
+    ./U4SimulateTest.sh mt
 
 """
 import os, textwrap, numpy as np
 from opticks.ana.fold import Fold, AttrBase
 from opticks.ana.p import * 
 
+# TODO: these should be coming from standard place, not duplicate
 BULK_ABSORB = 0x1 <<  3
 SURFACE_DETECT = 0x1 << 6 
 SURFACE_ABSORB = 0x1 << 7
@@ -34,6 +35,7 @@ TO = TORCH.bit_length()
 N = int(os.environ.get("VERSION", "-1"))
 CMDLINE = "N=%d ./U4SimulateTest.sh mt" % N
 
+TEST = os.environ.get("TEST", "Manual")
 GEOM = os.environ.get("GEOM", "DummyGEOM")
 GEOMList = os.environ.get("%s_GEOMList" % GEOM, "DummyGEOMList") 
 
@@ -76,6 +78,7 @@ if __name__ == '__main__':
     LAYOUT = t.photon_meta.LAYOUT[0]  
     CHECK = t.photon_meta.CHECK[0]  
 
+    print("TEST:%s" % (TEST) )
     print("CMDLINE:%s" % (CMDLINE) )
     print("LAYOUT:%s" % (LAYOUT) )
     print("CHECK:%s" % (CHECK) )
@@ -86,11 +89,16 @@ if __name__ == '__main__':
     mtd = ModelTrigger_Debug(t, symbol="mtd", publish=False)  # publish:True crashing 
     print(mtd)
 
-    SPECS = np.array(t.U4R_names.lines)     # step specification, for skip fake debugging 
-    st_ = t.aux[:,:,2,3].view(np.int32)
-    st = SPECS[st_]
+    if 'SPECS' in os.environ:
+        SPECS = np.array(t.U4R_names.lines)     # step specification, for skip fake debugging 
+        st_ = t.aux[:,:,2,3].view(np.int32)
+        st = SPECS[st_]
+        st_dump = True
+    else:
+        SPEC, st_, st = None, None, None
+        st_dump = False
+    pass  
 
-    st_dump = False
     if st_dump:
         u_st, n_st = np.unique(st, return_counts=True)
         expr = "np.c_[n_st,u_st][np.argsort(n_st)[::-1]]"
@@ -98,17 +106,18 @@ if __name__ == '__main__':
         print(eval(expr))
     pass
 
-    exprs = "q[PIDX] t.record[PIDX,:n[PIDX],0] mtd.pv[mtd.index==PIDX]"    
-    for expr in exprs.split():
+    exprs = r"""
+    q[PIDX] 
+    t.record[PIDX,:n[PIDX],0] 
+    mtd.pv[mtd.index==PIDX]
+    np.unique(mtd.whereAmI[mtd.trig==1],return_counts=True)
+    """    
+    exprs_ = list(filter(None,textwrap.dedent(exprs).split("\n")))
+    for expr in exprs_:
         print("\n%s ## " % expr)
         print(eval(expr))
     pass
 
-    exprs = "np.unique(mtd.whereAmI[mtd.trig==1],return_counts=True)"   
-    for expr in exprs.split():
-        print("\n%s ## " % expr)
-        print(eval(expr))
-    pass
 
     mtd_outside = np.logical_and(mtd.trig == 1, mtd.EInside1 == 0 )
     
@@ -136,6 +145,7 @@ if __name__ == '__main__':
     GEOMList    
     LAYOUT
     CHECK
+    TEST 
     """) 
 
     lqwns = textwrap.dedent("""
@@ -178,7 +188,10 @@ if __name__ == '__main__':
     pass
     lanno = "\n".join(llines)
     print(lanno)
-    os.environ["LHSANNO"] = lanno 
+
+    if not "NANNO" in os.environ:
+        os.environ["LHSANNO"] = lanno 
+    pass
 
     rlines = []
     for qwn in rqwns.split("\n"): 
@@ -187,8 +200,9 @@ if __name__ == '__main__':
     pass
     ranno = "\n".join(rlines)
     print(ranno)
-    os.environ["RHSANNO"] = ranno 
-
+    if not "NANNO" in os.environ:
+        os.environ["RHSANNO"] = ranno 
+    pass
 
 
 
@@ -201,8 +215,7 @@ if __name__ == '__main__':
     sd = flagmask & SURFACE_DETECT != 0 
     sa = flagmask & SURFACE_ABSORB != 0 
 
-    ## HMM: this is specific to midline of the left hand PMT in two_pmt
-
+    ## branch on layout as coordinates are specific to each (eg midline of the left hand PMT in two_pmt)
     if LAYOUT == "two_pmt":
         x_midline = np.logical_and( end[:,0] > -251, end[:,0] < -249 )    
         z_midline = np.logical_and( end[:,2] > -250, end[:,2] <  250 )    
@@ -232,7 +245,7 @@ if __name__ == '__main__':
     #ppos0_ = "end[sa] # photon SA endpoints around the upper hemi and elsewhere"
     #ppos0_ = "end[w_midline]  # photons ending on midline " 
     #ppos0_ = "mtd.pos[mtd_outside] # just around upper hemi "
-    #ppos0_  = "mtd.pos[mtd_trig]" 
+    ppos0_  = "mtd.pos[mtd_trig]" 
     #ppos0_ = "mtd.pos[mtd_trig_pyrex]  # Simple:just around upper hemi, Buggy:also dynode/MCP sprinkle "
     #ppos0_ = "mtd.pos[mtd_trig_pyrex_lower] # "
     #ppos0_ = "mtd.pos[mtd_trig_vacuum] # mostly on midline, sprinkle of obliques around upper hemi "
@@ -241,22 +254,40 @@ if __name__ == '__main__':
     #ppos0_ = "to_pos # TO positions  "
     #ppos0_ = "br_pos # BR positions  "
     #ppos0_ = "mtd.pos[mtd_pyrex] #   "
-    ppos0_ = "mtd.pos[mtd_trig_pyrex] #   "
+    #ppos0_ = "mtd.pos[mtd_trig_pyrex] #   "
 
     #ppos1_ = "None" 
-    #ppos1_ = "mtd.pos[mtd_vacuum_upper]"
+    #ppos1_ = "mtd.pos[mtd_trig_vacuum_upper]"
+    #ppos1_ = "mtd.next_pos[mtd_trig_vacuum_upper]"
     ppos1_ = "mtd.pos[mtd_trig_pyrex_lower] # BUG : Pyrex triggers inside inner2 : UNPHYSICAL  "
     #ppos1_  = "end[xz_midline]"
     #ppos1_  = "penultimate  # photon position prior to terminal one"
     #ppos1_  = "prior  # two positions before last"
 
+    ppos2_ = "None"
+
+
+    if TEST == "quiver":
+        qsel = "mtd_trig_vacuum_upper"
+        #qsel = "np.where(mtd_trig_vacuum_upper)[0][:10]"   
+        #qsel = "mtd_trig"
+        ppos0_ = "mtd.pos[%(qsel)s] #QUIVER "  % locals()
+        ppos1_ = "mtd.dir[%(qsel)s] #QUIVER "  % locals()
+        ppos2_ = "mtd.next_pos[%(qsel)s] #QUIVER " % locals()
+    else:
+        print("using default ppos0_ ppos1_ ppos2_ exprs ")
+    pass 
+
+
     ppos0  = eval(ppos0_)
     ppos1  = eval(ppos1_) 
+    ppos2  = eval(ppos2_) 
 
     elem = []
     elem.append(CMDLINE)
     if not ppos0 is None: elem.append("blue:%s" % ppos0_)
     if not ppos1 is None: elem.append("red:%s" % ppos1_)
+    if not ppos2 is None: elem.append("green:%s" % ppos2_)
     label = "\n".join(elem)
 
 
@@ -278,15 +309,24 @@ if __name__ == '__main__':
     if MODE == 0:
         print("not plotting as MODE 0  in environ")
     elif MODE == 2:
-        fig, ax = mpplt_plotter(label=label)
-
+        fig, axs = mpplt_plotter(label=label)
+        ax = axs[0]
         ax.set_ylim(-250,250)
         ax.set_xlim(-500,500)
 
-        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1 )  
-        if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
-
+        if "#QUIVER" in ppos0_ and "#QUIVER" in ppos1_ and "#QUIVER" in ppos2_:
+            assert not ppos0 is None
+            assert not ppos1 is None
+            assert not ppos2 is None
+            ax.quiver( ppos0[:,H], ppos0[:,V],  ppos1[:,H], ppos1[:,V], units="width", width=0.0002, scale=10.0 )
+            ax.scatter( ppos0[:,H], ppos0[:,V], s=1, c="r") 
+            ax.scatter( ppos2[:,H], ppos2[:,V], s=1, c="g") 
+        else:
+            if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1 )  
+            if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
+        pass
         fig.show()
+
     elif MODE == 3:
         pl = pvplt_plotter(label)
         os.environ["EYE"] = "0,100,165"

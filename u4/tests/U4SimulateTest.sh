@@ -50,7 +50,7 @@ bin=U4SimulateTest
 #geom=V1J008
 geom=FewPMT
 
-export VERSION=${N:-1}
+export VERSION=${N:-0}
 export GEOM=${GEOM:-$geom}
 
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml

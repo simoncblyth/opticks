@@ -35,9 +35,14 @@ if __name__ == '__main__':
     print( "MODE:%d" % (MODE) )
     print( "N:%d" % (N) )
 
-    SPECS = np.array(t.U4R_names.lines)
-    st_ = t.aux[:,:,2,3].view(np.int32)
-    st = SPECS[st_]
+    if 'SPECS' in os.environ:
+        SPECS = np.array(t.U4R_names.lines)
+        st_ = t.aux[:,:,2,3].view(np.int32)
+        st = SPECS[st_]   # get out of bounds, when using st_ for other checks
+    else:
+        SPEC, st_, st = None, None, None
+    pass
+
 
     axes = 0, 2  # X,Z
     H,V = axes 
