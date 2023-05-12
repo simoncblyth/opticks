@@ -1,7 +1,7 @@
 #pragma once
 /**
-salloc.h
-===========
+salloc.h : debug out of memory errors on device
+=================================================
 
 This is used to debug out of memory errors on device. 
 

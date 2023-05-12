@@ -126,3 +126,24 @@ Push to github::
     epsilon:simoncblyth.bitbucket.io blyth$ 
 
 
+
+
+Argh, something didnt work, got email on push::
+
+    The page build failed for the `master` branch with the following error:
+
+    Unable to sync pages directory. Please try again later.
+
+    For information on troubleshooting Jekyll see:
+
+     https://docs.github.com/articles/troubleshooting-jekyll-builds
+
+    If you have any questions you can submit a request at https://support.github.com/contact?page_build_id=441803331&repo_id=553516581&tags=dotcom-pages
+
+
+But despite that the slides update was made. 
+
+
+
+
+

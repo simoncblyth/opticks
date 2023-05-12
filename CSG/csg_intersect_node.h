@@ -148,8 +148,13 @@ Example of a contiguous union shape composed of constituent boxes::
   [this assumes non-complemented constituents]
   (this is because EXIT is shielded by the corresponding ENTER) 
 
-  * -> compound intersect is the closest ENTER
+  * -> compound intersect is the closest ENTER (that fulfils t_min)
 
+  * HMM: notice that having a t_min that eats into that external intersect
+    makes the starting point effectively t_min ahead (so outside/inside talk
+    needs to bear that in mind) 
+
+  * WHAT IS RELEVANT IS THE OUTSIDE/INSIDE OF THE +t_min EFFECTIVE START POINT
 
 * when *ANY* EXIT states are obtained from first intersects this means 
   are inside the CONTIGUOUS compound
@@ -342,7 +347,7 @@ of envelope prevents the two pass approach ?
    
 1. *first pass* : find furthest first exit 
 
-   A: X2 : this is the furthest first exit 
+   A: X2 : this is the furthest (and only) first exit 
    B: E1
    C: E3
    D: E5
@@ -365,7 +370,18 @@ of envelope prevents the two pass approach ?
 
    * first exits always qualify as potential intersects, it is only exits after an enter that may be disjoint 
      and require contiguity checking before can qualify as candidate intersect
-    
+   
+
+
+SORTING NETWORKS, BITONIC SORT REFS
+
+Need to sort a small number of distances
+
+* https://en.wikipedia.org/wiki/Sorting_network
+* https://en.wikipedia.org/wiki/Bitonic_sorter
+* https://www.cs.kent.edu/~batcher/sort.pdf
+* ~/opticks_refs/batcher_bitonic_sort.pdf
+ 
 
 
 **/
@@ -426,6 +442,11 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 #endif
 
     // 2. when no Exits are outside the compound which makes the intersect simply the closest enter, so return it
+    //
+    // TODO: the below looks like it breaks the t_min scan-ability requirement : need to check t_min earlier ? 
+    // HMM: actually it might well be OK as intersect_leaf is doing the t_min checking already, so the 
+    //      the too late t_min check here is doing nothing other than being mis-leading
+    //
     if(exit_count == 0) 
     {
         bool valid_intersect = nearest_enter.w > t_min && nearest_enter.w < RT_DEFAULT_MAX ; 
@@ -469,8 +490,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
                 // TODO: very wasteful enter_count and isub usually very small values, 
                 //       could pack them together perhaps ?
-
-
+                //
+                // HMM: could have fixed resources for a shape using a num_sub array 
+                //
                 // HMM: trying to do two levels of indirection at once doesnt work with the indirect sort, hence have to use the aux
 
 #ifdef DEBUG
@@ -499,7 +521,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
     // insertionSortIndirectSentinel : 
     // 4. order the enter indices so that they would make enter ascend 
-    // see SysRap/tests/sorting/insertionSortIndirect.sh to understand the sort 
+    // see sysrap/tests/sorting/insertionSortIndirect.sh to understand the sort 
     // ordering the idx (isub indices) to make the enter values ascend 
 
 #ifdef DEBUG
@@ -541,7 +563,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
  
     // *2nd pass* : loop over enters in t order  
     // only find exits for Enters that qualify as contiguous (thus excluding disjoint subs)
-    // where the qualification is based on the farthest_exit.w 
+    // where the qualification is based on the farthest_exit.w, which is updated 
+    // as each exit is found. 
     //
     // I think that because the enters are t ordered there is no need for rerunning this
     // despite each turn of the loop potentially pushing the envelope of permissible enters
@@ -557,14 +580,17 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         //float tminAdvanced = enter[i] + propagate_epsilon ;    // <= without ordered enters get internal spurious 
         float tminAdvanced = enter[idx[i]] + propagate_epsilon ; 
 
-        int isub = aux[idx[i]];  // rather than shuffling aux, can just use it a fixed mapping from enter index to isub index 
+        int isub = aux[idx[i]];  // rather than shuffling aux, are just the mapping from enter index to isub index 
         const CSGNode* sub_node = root+offset_sub+isub ; 
 
 #ifdef DEBUG
         printf("//intersect_node_contiguous i/enter_count/isub %d/%d/%d tminAdvanced %10.4f farthest_exit.w %10.4f  \n", i, enter_count, isub, tminAdvanced, farthest_exit.w ); 
 #endif
 
-        if(tminAdvanced < farthest_exit.w) 
+        // note that discontiguous constituents will not enter into farthest_exit 
+        // (should call "farthest_contiguous_exit")
+
+        if(tminAdvanced < farthest_exit.w)  // enter[idx[i]]+propagate_epsilon < "farthest_contiguous_exit" so far    
         {  
             if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
             {

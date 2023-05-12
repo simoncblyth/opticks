@@ -61,7 +61,7 @@ To sort an array of size n in ascending order:
 
 **/
 
-#include "NP.hh"
+#include "NPX.h"
 #include <iomanip>
 
 
@@ -317,7 +317,7 @@ void dump( const int* idx, const float* enter, int count, const int* aux, const 
 
 void test_small()
 {
-    NP* e = NP::FromString<float>("10 110 -20 120 30 130 -10"); 
+    NP* e = NPX::FromString<float>("10 110 -20 120 30 130 -10"); 
     float* enter = e->values<float>(); 
     int enter_count = e->shape[0]; 
 
@@ -353,7 +353,7 @@ NP* make_idx(int n)
 
 void test_small_isub()
 {
-    NP* v = NP::FromString<float>("-1 -2 -3 -4 -5 -6 -7 -8 -9 -10 10 110 20 120 30 130 43"); 
+    NP* v = NPX::FromString<float>("-1 -2 -3 -4 -5 -6 -7 -8 -9 -10 10 110 20 120 30 130 43"); 
     float* vals = v->values<float>(); 
     int  vals_count = v->shape[0]; 
 
@@ -406,9 +406,9 @@ void test_small_isub()
 
 int main(int argc, char** argv)
 {
-    //test_insertionSortIndirect("/tmp"); 
+    test_insertionSortIndirect("/tmp"); 
     //test_small();  
-    test_small_isub();  
+    //test_small_isub();  
 
     return 0 ; 
 }

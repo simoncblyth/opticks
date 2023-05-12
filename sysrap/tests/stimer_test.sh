@@ -5,6 +5,7 @@ name=stimer_test
 export FOLD=/tmp/$name
 export TTPATH=$FOLD/tt.npy
 
+
 mkdir -p $FOLD 
 bin=$FOLD/$name
 

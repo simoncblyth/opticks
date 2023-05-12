@@ -103,7 +103,7 @@ struct _sn
     std::string desc() const ; 
 };
 
-bool _sn::is_root_importable() const 
+inline bool _sn::is_root_importable() const 
 {
     return parent == -1 ;  
 }

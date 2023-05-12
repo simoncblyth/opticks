@@ -1,7 +1,7 @@
 #pragma once
 /**
-SDir.h : header only directory listing paths with supplied ext 
-=================================================================
+SDir.h : header only dirent.h directory listing paths with supplied ext 
+=========================================================================
 
 **/
 

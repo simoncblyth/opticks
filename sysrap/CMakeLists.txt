@@ -182,6 +182,7 @@ set(HEADERS
 
     schrono.h
     stimer.h
+    stamp.h 
 
     SBnd.h
 

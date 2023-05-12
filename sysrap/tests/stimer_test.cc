@@ -251,7 +251,7 @@ epsilon:tests blyth$
 **/
 
 
-void test_EpochCountNow()
+void test_EpochCountNow_0()
 {
     std::vector<uint64_t> ecns = { stimer::EpochCountNow(), 1681467459953485, 1681467438445254316/1000 } ; 
 
@@ -265,6 +265,17 @@ void test_EpochCountNow()
     }
 
 }
+
+void test_EpochCountNow_1()
+{
+    static const int N = 100000 ; 
+    NP* t = NP::Make<uint64_t>(N) ; 
+    uint64_t* tt = t->values<uint64_t>() ; 
+    for(int i=0 ; i < N ; i++) tt[i] = stimer::EpochCountNow() ;   
+    t->save("$TTPATH"); 
+}
+
+
 
 void test_count()
 {
@@ -338,10 +349,11 @@ int main()
     test_convert_2(); 
     test_convert_3(); 
     test_TimePoint_0();
-    test_EpochCountNow(); 
+    test_EpochCountNow_0(); 
+    test_count(); 
     */
 
-    test_count(); 
+    test_EpochCountNow_1(); 
 
     return 0 ; 
 }
