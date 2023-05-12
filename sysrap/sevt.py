@@ -83,12 +83,31 @@ class SEvt(RFold):
             uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
             eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
             ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
+
+            t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 
+            t0 = t[:,0].min()
+            tt = t.copy() 
+            tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros 
         else:
             fk = None
             spec_ = None
             uc4 = None
             eph = None
             ep = None
+            t = None
+            t0 = None
+            tt = None
+        pass
+
+        # photon level beginPhoton endPhoton time stamps from the sup quad4 
+        if hasattr(f,'sup') and not f.sup is None:
+            s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()
+            s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()
+            ss = s1 - s0 
+        else:
+            s0 = None
+            s1 = None
+            ss = None
         pass
 
 
@@ -159,6 +178,14 @@ class SEvt(RFold):
         self.ep  = ep    # ProcessHits EPH enum at photon level  
         self.nosc = nosc   # mask of photons without SC in their histories
         self.noscab = noscab   # mask of photons without SC or AB in their histories
+        self.t = t 
+        self.t0 = t0 
+        self.tt = tt 
+
+        self.s0 = s0
+        self.s1 = s1
+        self.ss = ss
+
 
         self.qu = qu
         self.qi = qi

@@ -28,6 +28,8 @@ could be done with G4Navigator
 
 #include "OPTICKS_LOG.hh"
 #include "stree.h"
+#include "SEventConfig.hh"
+
 #include "U4Tree.h"
 #include "U4VolumeMaker.hh"
 
@@ -54,6 +56,8 @@ inline void U4SimtraceTest::scan(const char* base)
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    SEventConfig::SetRGModeSimtrace(); 
 
     const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar 
     LOG(info) << " U4VolumeMaker::Desc() " << U4VolumeMaker::Desc() ; 

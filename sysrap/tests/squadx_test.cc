@@ -1,4 +1,4 @@
-// name=squadx_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
+// ./squadx_test.sh 
 
 #include <iostream>
 #include <iomanip>

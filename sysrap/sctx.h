@@ -69,6 +69,7 @@ struct sctx
     sseq seq ; 
     stagr tagr ; 
     quad4 aux ; 
+    quad4 sup ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -142,6 +143,7 @@ A: unsure, currently thats done in SEvt::finalPhoton
 SCTX_METHOD void sctx::end()
 {
     if(evt->seq)  evt->seq[idx] = seq ; 
+    if(evt->sup)  evt->sup[idx] = sup ; 
 #ifdef DEBUG_TAG
     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
     if(evt->flat) evt->flat[idx] = tagr.flat ;

@@ -78,6 +78,7 @@ inline void SSimtrace::setSolid(const G4VSolid* solid_)
 {
     solid = solid_ ; 
     ssolid::GetCenterExtent(frame.ce, solid );   
+    LOG(LEVEL) << " frame.ce.w " << frame.ce.w ;  
 }
 
 /**
@@ -110,8 +111,11 @@ inline void SSimtrace::simtrace()
     evt = new SEvt ; 
     evt->setFrame(frame);    // 
 
+    unsigned num_simtrace = evt->simtrace.size() ;   
+    LOG(LEVEL) << " num_simtrace " << num_simtrace ; 
+
     bool dump = false ; 
-    for(unsigned i=0 ; i < evt->simtrace.size() ; i++)
+    for(unsigned i=0 ; i < num_simtrace ; i++)
     {
         quad4& p = evt->simtrace[i] ; 
         ssolid::Simtrace(p, solid, dump);  

@@ -335,6 +335,8 @@ elif [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
     script=${bin}_ck.py 
 elif [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
     script=${bin}_pr.py 
+elif [ "${arg/tt}" != "$arg" -o "${arg/ntt}" != "$arg" ]; then
+    script=${bin}_tt.py 
 elif [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
     script=${bin}.py 
 fi 

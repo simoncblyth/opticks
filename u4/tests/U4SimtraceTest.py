@@ -149,11 +149,18 @@ class U4SimtraceTest(RFold):
             pass
 
             sf = sfs[soname]
+
+            if not getattr(sf, 'simtrace', None) is None:
+                _lpos = sf.simtrace[:,1].copy()
+                _lpos[:,3] = 1
+            else:
+                 print("missing simtrace for soname:%s " % soname)
+                 continue
+            pass
+            
+
             tr = np.float32(trs[i])
             tr[:,3] = [0,0,0,1]   ## fixup 4th column, as may contain identity info
-
-            _lpos = sf.simtrace[:,1].copy()
-            _lpos[:,3] = 1
 
             dori = np.sqrt(np.sum(_lpos[:,:3]*_lpos[:,:3],axis=1))
             lpos = _lpos[dori>0]    # exclude points at local origin, misses 

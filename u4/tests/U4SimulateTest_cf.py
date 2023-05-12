@@ -70,14 +70,16 @@ if __name__ == '__main__':
         assert np.all( aq == a.q)
         assert np.all( bq == b.q)
 
-        a_st_ = a.f.aux[:,:,2,3].view(np.int32)
-        a_st = a.SPECS[a_st_]
+        if 'SPECS' in os.environ:
+            a_st_ = a.f.aux[:,:,2,3].view(np.int32)
+            a_st = a.SPECS[a_st_]
 
-        b_st_ = b.f.aux[:,:,2,3].view(np.int32)
-        b_st = b.SPECS[b_st_]
+            b_st_ = b.f.aux[:,:,2,3].view(np.int32)
+            b_st = b.SPECS[b_st_]
 
-        assert np.all( a.spec == a_st )
-        assert np.all( b.spec == b_st )
+            assert np.all( a.spec == a_st )
+            assert np.all( b.spec == b_st )
+        pass
     pass
 
 

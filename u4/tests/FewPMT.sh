@@ -49,7 +49,7 @@ is sufficiently independent to make it better handled separately.
 EOU
 }
 
-version=${VERSION:-0}
+version=${VERSION:-1}
 pom=${POM:-1}
 
 #layout=two_pmt  
@@ -143,29 +143,7 @@ if [ "$VERSION" == "0" ]; then
     export G4FastSimulationManagerProcess_ENABLE=1  
 
     export U4Recorder__FAKES_SKIP=1
-
-    # THE BELOW MANUAL CONFIG FOR FAKE DETECTION IS NO LONGER NEEDED
-    # FOLLOWING U4Recorder::ClassifyFake ADDITIONS
-    # ESPECIALLY FAKE_SURFACE AND FAKE_VV_INNER12 CHECKS.
-    #
-    # f0=Pyrex/Pyrex:AroundCircle0/hama_body_phys
-    # f1=Pyrex/Pyrex:hama_body_phys/AroundCircle0
-    # f2=Vacuum/Vacuum:hama_inner1_phys/hama_inner2_phys
-    # f3=Vacuum/Vacuum:hama_inner2_phys/hama_inner1_phys
-    # f4=Pyrex/Pyrex:AroundCircle1/nnvt_body_phys
-    # f5=Pyrex/Pyrex:nnvt_body_phys/AroundCircle1
-    # f6=Vacuum/Vacuum:nnvt_inner1_phys/nnvt_inner2_phys
-    # f7=Vacuum/Vacuum:nnvt_inner2_phys/nnvt_inner1_phys
-    #
-    # f8=Pyrex/Pyrex:nnvt_body_phys/nnvt_log_pv 
-    # f9=Pyrex/Pyrex:nnvt_log_pv/nnvt_body_phys
-    #
-    # case $LAYOUT in 
-    #    two_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7" ;;
-    #    one_pmt) fakes="$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,$f8,$f9" ;;
-    # esac
-    # export U4Recorder__FAKES="$fakes"
-    #
+    # export U4Recorder__FAKES="$fakes"  formerly used manual config of fakes skipping
 fi 
 
 # standalone access to PMT data 

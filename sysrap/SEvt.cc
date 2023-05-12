@@ -3,6 +3,9 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "squadx.h"
+#include "stamp.h"
+
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
@@ -876,6 +879,7 @@ void SEvt::clear_()
     flat.clear(); 
     simtrace.clear(); 
     aux.clear(); 
+    sup.clear(); 
 
     gather_done = false ;  
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
@@ -1110,6 +1114,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     evt->num_seq    = evt->max_seq   > 0 ? evt->num_photon : 0 ;
     evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;
     evt->num_flat   = evt->max_flat == 1 ? evt->num_photon : 0 ;
+    evt->num_sup    = evt->max_sup   > 0 ? evt->num_photon : 0 ;
 
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
@@ -1246,6 +1251,11 @@ void SEvt::hostside_running_resize_()
         aux.resize(evt->num_aux); 
         evt->aux = aux.data() ; 
     }
+    if(evt->num_sup > 0) 
+    {
+        sup.resize(evt->num_sup); 
+        evt->sup = sup.data() ; 
+    }
     if(evt->num_seq > 0) 
     {
         seq.resize(evt->num_seq); 
@@ -1365,6 +1375,9 @@ void SEvt::beginPhoton(const spho& label)
 
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
+
+    quadx4& xsup = (quadx4&)ctx.sup ;  
+    xsup.q0.w.x = stamp::Now(); 
 
 
     ctx.idx = idx ;  
@@ -1672,6 +1685,12 @@ void SEvt::pointPhoton(const spho& label)
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
     sctx& ctx = current_ctx ; 
+
+#ifndef PRODUCTION
+    quad4& aux = current_ctx.aux ;
+    quadx4& auxx = (quadx4&)aux ;  
+    auxx.q3.w.x = stamp::Now() ;  // shoe-horn uint64_t time stamp into aux 
+#endif
     assert( ctx.idx == idx ); 
     int& bounce = slot[idx] ; 
 
@@ -1797,6 +1816,9 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
 
+    quadx4& xsup = (quadx4&)ctx.sup ;  
+    xsup.q0.w.y = stamp::Now(); 
+
     ctx.end();   // copies seq into evt->seq[idx] (and tag, flat when DEBUG_TAG)
     evt->photon[idx] = ctx.p ;
 }
@@ -1848,6 +1870,13 @@ NP* SEvt::gatherAux() const
     NP* r = makeAux(); 
     r->read2( (float*)evt->aux ); 
     return r ; 
+} 
+NP* SEvt::gatherSup() const 
+{ 
+    if( evt->sup == nullptr ) return nullptr ; 
+    NP* p = makeSup(); 
+    p->read2( (float*)evt->sup ); 
+    return p ; 
 } 
 NP* SEvt::gatherSeq() const 
 { 
@@ -1980,6 +2009,12 @@ NP* SEvt::makeAux() const
     NP* r = NP::Make<float>( evt->num_photon, evt->max_aux, 4, 4 ); 
     return r ; 
 }
+NP* SEvt::makeSup() const 
+{ 
+    NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
+    return p ; 
+}
+
 NP* SEvt::makeSeq() const 
 {
     return NP::Make<unsigned long long>( evt->num_seq, 2, sseq::NSEQ );  
@@ -2054,6 +2089,7 @@ NP* SEvt::gatherComponent_(unsigned comp) const
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;   
         case SCOMP_REC:       a = gatherRec()      ; break ;   
         case SCOMP_AUX:       a = gatherAux()      ; break ;   
+        case SCOMP_SUP:       a = gatherSup()      ; break ;   
         case SCOMP_SEQ:       a = gatherSeq()      ; break ;   
         case SCOMP_PRD:       a = gatherPrd()      ; break ;   
         case SCOMP_TAG:       a = gatherTag()      ; break ;   
@@ -2467,6 +2503,7 @@ std::string SEvt::descComponent() const
     const NP* record   = fold->get(SComp::Name(SCOMP_RECORD)) ; 
     const NP* rec      = fold->get(SComp::Name(SCOMP_REC)) ;  
     const NP* aux      = fold->get(SComp::Name(SCOMP_REC)) ;  
+    const NP* sup      = fold->get(SComp::Name(SCOMP_SUP)) ;  
     const NP* seq      = fold->get(SComp::Name(SCOMP_SEQ)) ; 
     const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
     const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
@@ -2490,7 +2527,6 @@ std::string SEvt::descComponent() const
        << std::setw(30) << "SEventConfig::MaxGenstep" 
        << std::setw(20) << SEventConfig::MaxGenstep()
        << std::endl
-
        << std::setw(20) << "photon" << " " 
        << std::setw(20) << ( photon ? photon->sstr() : "-" ) 
        << " "
@@ -2508,6 +2544,12 @@ std::string SEvt::descComponent() const
        << " " 
        << std::setw(30) << "SEventConfig::MaxAux"
        << std::setw(20) << SEventConfig::MaxAux()
+       << std::endl
+       << std::setw(20) << "sup" << " " 
+       << std::setw(20) << ( sup ? sup->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxSup"
+       << std::setw(20) << SEventConfig::MaxSup()
        << std::endl
        << std::setw(20) << "rec" << " " 
        << std::setw(20) << ( rec ? rec->sstr() : "-" ) 
@@ -2577,6 +2619,7 @@ std::string SEvt::descVec() const
 const NP* SEvt::getPhoton() const { return fold->get(SComp::PHOTON_) ; }
 const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
 const NP* SEvt::getAux() const {    return fold->get(SComp::AUX_) ; }
+const NP* SEvt::getSup() const {    return fold->get(SComp::SUP_) ; }
 
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    

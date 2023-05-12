@@ -857,6 +857,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_aux.q2.i.z = fakemask ;              // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.f.w = float(fake_duration) ;  // CAUTION: stomping on cdbg.spare setting above 
 
+
+
+
+
     bool slow_fake = fake_duration > SLOW_FAKE ; 
 
     LOG_IF(info, PIDX_DUMP || slow_fake  ) 

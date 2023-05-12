@@ -279,6 +279,7 @@ set(HEADERS
     tcomplex.h
     s_mock_curand.h
     squad.h
+    squadx.h
 
     sphoton.h
     sphit.h 

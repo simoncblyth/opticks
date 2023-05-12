@@ -141,6 +141,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<sflat>   flat ; 
     std::vector<quad4>   simtrace ; 
     std::vector<quad4>   aux ; 
+    std::vector<quad4>   sup ; 
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -336,6 +337,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* gatherRecord() const ; 
     NP* gatherRec() const ; 
     NP* gatherAux() const ; 
+    NP* gatherSup() const ; 
     NP* gatherSeq() const ; 
     NP* gatherPrd() const ; 
     NP* gatherTag() const ; 
@@ -353,6 +355,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* makeRecord() const ; 
     NP* makeRec() const ; 
     NP* makeAux() const ; 
+    NP* makeSup() const ; 
     NP* makeSeq() const ; 
     NP* makePrd() const ; 
     NP* makeTag() const ; 
@@ -411,6 +414,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     const NP* getPhoton() const ; 
     const NP* getHit() const ; 
     const NP* getAux() const ; 
+    const NP* getSup() const ; 
 
     unsigned getNumPhoton() const ; 
     unsigned getNumHit() const ; 
