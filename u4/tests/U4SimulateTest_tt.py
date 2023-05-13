@@ -29,7 +29,6 @@ FLIP = int(os.environ.get("FLIP", "0")) == 1
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 
 if MODE != 0:
-
     from opticks.ana.pvplt import * 
     WM = mp.pyplot.get_current_fig_manager()  
 else:
@@ -91,8 +90,44 @@ if __name__ == '__main__':
     pass
 
 
+    label = "tt"
+
+    fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
+    ax = axs[0]
+
+    e_ = "%(sym)s.s1 - %(sym)s.s0"
+   
+
+    bins = np.logspace( np.log10(0.1),np.log10(500.0), 25 ) 
+
+    h = {} 
+    for sym in syms: 
+        e = e_ % locals() 
+        h[sym] = np.histogram( eval(e) , bins=bins )   
+        ax.plot( h[sym][1][:-1], h[sym][0], label=e  )
+    pass
+    ax.legend()
+    fig.show()
 
 
+
+    print("compare first and last point stamp range with beginPhoton endPhoton range")
+    for sym in syms:
+        nn_ = "np.arange( %(sym)s.n.min(), %(sym)s.n.max()+1, dtype=np.uint64 )" % locals() 
+        print(nn_)
+        nn = eval(nn_)
+        for n in nn:  
+            n_1 = int(n - 1)
+            w_ = "np.where( %(sym)s.n == %(n)s )[0]" % locals()
+            w = eval(w_)
+            expr_ = "np.c_[%(sym)s.t[w,%(n_1)s] - %(sym)s.t[w,0], %(sym)s.ss[w], %(sym)s.ss[w] - %(sym)s.t[w,%(n_1)s] + %(sym)s.t[w,0] ]" % locals()
+            expr = eval(expr_)
+            print(w_)
+            print(expr_)
+            print(expr)
+        pass
+    pass
+            
 
 
 

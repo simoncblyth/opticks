@@ -84,31 +84,15 @@ class SEvt(RFold):
             eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
             ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
 
-            t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 
-            t0 = t[:,0].min()
-            tt = t.copy() 
-            tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros 
         else:
             fk = None
             spec_ = None
             uc4 = None
             eph = None
             ep = None
-            t = None
-            t0 = None
-            tt = None
         pass
 
-        # photon level beginPhoton endPhoton time stamps from the sup quad4 
-        if hasattr(f,'sup') and not f.sup is None:
-            s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()
-            s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()
-            ss = s1 - s0 
-        else:
-            s0 = None
-            s1 = None
-            ss = None
-        pass
+        self.init_timestamp(f)
 
 
         CHECK = getattr( f.photon_meta, 'CHECK', [] )
@@ -178,13 +162,6 @@ class SEvt(RFold):
         self.ep  = ep    # ProcessHits EPH enum at photon level  
         self.nosc = nosc   # mask of photons without SC in their histories
         self.noscab = noscab   # mask of photons without SC or AB in their histories
-        self.t = t 
-        self.t0 = t0 
-        self.tt = tt 
-
-        self.s0 = s0
-        self.s1 = s1
-        self.ss = ss
 
 
         self.qu = qu
@@ -237,8 +214,53 @@ class SEvt(RFold):
         self.opt = opt 
         self.off = off
 
+    def init_timestamp(self, f):
+        """
+        The timestamps come from sysrap/stamp.h and are datetime64[us] (UTC) compliant 
+
+        """
+
+        ee = np.array([f.photon_meta.t_BeginOfEvent, f.photon_meta.t_EndOfEvent], dtype=np.uint64 ).squeeze()
+
+        if hasattr(f, 'aux') and not f.aux is None: 
+            t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 
+        else:
+            t = None
+        pass
+        # photon level beginPhoton endPhoton time stamps from the sup quad4 
+        if hasattr(f,'sup') and not f.sup is None:
+            s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()
+            s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()
+            ss = s1 - s0      # endPhoton - beginPhoton 
+        else:
+            s0 = None
+            s1 = None
+            ss = None
+        pass
+        if not t is None and not s0 is None:
+            t0 = s0.min()
+            tt = t.copy() 
+            tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros 
+        else:
+            t0 = None
+            tt = None
+        pass 
+
+        self.ee = ee    # array of BeginOfEvent EndOfEvent time stamps (UTC epoch)
+        self.t = t      # array of photon step point time stamps (UTC epoch)
+        self.t0 = t0    # scalar : event minimum time stamp (which is minimum s0:beginPhoton timestamp)
+        self.tt = tt    # array of photon step point time stamps relative to t0 
+        self.s0 = s0    # array of beginPhoton time stamps (UTC epoch)
+        self.s1 = s1    # array of endPhoton time stamps (UTC epoch)
+        self.ss = ss    # array of endPhoton-beginPhoton time stamp differences 
+
+
+
+
+
     def __repr__(self):
-        return "SEvt symbol %s pid %s opt %s off %s" % ( self.symbol, self.pid, self.opt, str(self.off) ) 
+        fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 
+        return fmt % ( self.symbol, self.pid, self.opt, str(self.off), self.symbol, self.f.base ) 
    
     def _get_pid(self):
         return self._pid

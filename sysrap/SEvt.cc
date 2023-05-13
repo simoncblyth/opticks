@@ -77,6 +77,8 @@ SEvt::SEvt()
     :
     cfgrc(SEventConfig::Initialize()),  
     index(MISSING_INDEX),
+    t_BeginOfEvent(0),
+    t_EndOfEvent(0),
     reldir(DEFAULT_RELDIR),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
@@ -828,6 +830,7 @@ Called for example from U4Recorder::BeginOfEventAction
 
 void SEvt::BeginOfEvent(int index)  // static
 {
+    INSTANCE->t_BeginOfEvent = stamp::Now(); 
     LOG(LEVEL) << " index " << index ; 
     SEvt::SetIndex(index); 
     SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
@@ -844,6 +847,7 @@ Called for example from U4Recorder::EndOfEventAction
 
 void SEvt::EndOfEvent(int index) // static 
 {
+    INSTANCE->t_EndOfEvent = stamp::Now(); 
     LOG(LEVEL) << " index " << index ; 
     assert( index == SEvt::GetIndex() );  
 
@@ -1877,11 +1881,17 @@ NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.s
 
 NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
+
+
 NP* SEvt::gatherPhoton() const 
 { 
     if( evt->photon == nullptr ) return nullptr ; 
     NP* p = makePhoton(); 
     p->read2( (float*)evt->photon ); 
+
+    p->set_meta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
+    p->set_meta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
+
     return p ; 
 } 
 NP* SEvt::gatherRecord() const 

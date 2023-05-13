@@ -91,6 +91,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 {
     int cfgrc ; 
     int index ; 
+    uint64_t t_BeginOfEvent ; 
+    uint64_t t_EndOfEvent ; 
+
     const char* reldir ;  // HMM: perhaps static RELDIR fallback ?
 
     sphoton_selector* selector ; 
