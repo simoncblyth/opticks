@@ -22,7 +22,9 @@ struct ssolid
 {
     static void GetCenterExtent( float4& ce,             const G4VSolid* solid );  
     static void GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid );  
-    static G4double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ); 
+    static G4double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in, 
+             G4ThreeVector* isect=nullptr  
+         ); 
     static G4double DistanceMultiUnionNoVoxels_(
                           const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ); 
 
@@ -65,7 +67,9 @@ See u4/tests/G4Orb_Test.cc
 
 **/
 
-inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
+inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in, 
+        G4ThreeVector* isect
+     ) // static
 {
     in =  solid->Inside(pos) ; 
     G4double t = kInfinity ; 
@@ -76,6 +80,7 @@ inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& po
         case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ; 
         default:  assert(0) ; 
     }
+    if( t != kInfinity && isect != nullptr ) *isect = pos+t*dir ; 
     return t ; 
 }
 

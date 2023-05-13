@@ -183,6 +183,7 @@ class U4SimtraceTest(RFold):
 
             if MODE == 2:
                 ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
+
             elif MODE == 3:
                 pl.add_points( gpos[:,:3], color=color, label=label)  
             pass
@@ -197,6 +198,16 @@ class U4SimtraceTest(RFold):
                 log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
             pass 
 
+            if 'POINT' in os.environ:
+                point = efloatarray_("POINT", "0,0,0").reshape(-1,3)
+                ax.scatter( point[:,H], point[:,V], s=SZ, color="red", label="POINT" )
+            pass
+
+            if 'LINE' in os.environ:
+                line = efloatarray_("LINE", "1,2,3,10,20,30,100,200,300").reshape(-1,3)
+                ax.plot( line[:,H], line[:,V], "ro-" )
+            pass
+
             if TIGHT:
                 ax.axis('off')
                 fig.tight_layout()
@@ -205,6 +216,10 @@ class U4SimtraceTest(RFold):
         elif MODE == 3:
             pass
         pass
+
+
+
+
 
     def show(self, pl ):
         if MODE == 2:

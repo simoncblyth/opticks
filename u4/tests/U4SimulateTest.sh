@@ -91,6 +91,10 @@ export BeamOn=${BeamOn:-1}
 export U4Recorder__PIDX_ENABLED=1 
 #export U4Recorder__UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft=1  ## makes easier to randmn align 
 
+export U4Recorder__ClassifyFake_FindPV_r=1  ## this is slow, but it finds fakes better, use in standalone testing 
+
+
+
 export EVT=${EVT:-000}       # used for FOLD envvars
 
 # python ana level presentation 

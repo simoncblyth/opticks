@@ -254,7 +254,11 @@ HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+    //std::cout << "[ U4Recorder::PreUserTrackingAction_Optical " << std::endl ;
     LOG(LEVEL) << "[" ; 
+    LOG(info) << "[" ; 
+    // HUH: this logging not appearing 
+
     G4Track* _track = const_cast<G4Track*>(track) ; 
     _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
 
@@ -306,6 +310,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         }
     }
     LOG(LEVEL) << "]" ; 
+    LOG(info) << "]" ; 
+    //std::cout << "] U4Recorder::PreUserTrackingAction_Optical " << std::endl ;
 }
 
 /**
@@ -765,6 +771,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     //    Prefer simplicity. 
     //
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
+
+    bool is_fastsim_flag = flag == DEFER_FSTRACKINFO ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
     bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
@@ -782,6 +790,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL) 
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
+        << " is_fastsim_flag " << is_fastsim_flag  
         << " is_boundary_flag " << is_boundary_flag  
         << " is_surface_flag " << is_surface_flag  
         ;
@@ -792,7 +801,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     //
     // FastSim status char "?DART" is set at the tail of junoPMTOpticalModel::DoIt
 
-    if(flag == DEFER_FSTRACKINFO)
+    if(is_fastsim_flag)
     {
         char fstrackinfo_stat = ulabel.uc4.w ; 
         // label->uc4.w = '_' ;  
@@ -825,9 +834,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     assert( flag > 0 ); 
 
     bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 
-
-    LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
-
     bool is_fake = false ; 
     unsigned fakemask = 0 ;
     double   fake_duration(-2.); 
@@ -839,6 +845,23 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
        is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
     }
     int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
+
+
+    if(PIDX_DUMP) 
+    {
+        std::cout 
+            << "U4Recorder::UserSteppingAction_Optical" 
+            << " PIDX " << PIDX 
+            << " post " << U4StepPoint::DescPositionTime(post) 
+            << " is_fastsim_flag " << is_fastsim_flag 
+            << " FAKES_SKIP " << FAKES_SKIP 
+            << " is_fake " << is_fake
+            << " fakemask " << fakemask 
+            << std::endl 
+            ; 
+        LOG(LEVEL) << U4StepPoint::DescPositionTime(post) ;  
+    }
+
 
     //current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
     //current_aux.q2.i.w = st ;                  // CAUTION: stomping on cdbg.spare setting above  
@@ -1100,7 +1123,11 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
     const G4VTouchable* touch = track->GetTouchable();  
     const G4VPhysicalVolume* pv = track->GetVolume() ; 
     const char* pv_name = pv->GetName().c_str(); 
-    bool pv_name_proceed = strstr(pv_name, "PMT") != nullptr ; 
+    bool pv_name_proceed = 
+         strstr(pv_name, "PMT")  != nullptr ||
+         strstr(pv_name, "nnvt") != nullptr ||
+         strstr(pv_name, "hama") != nullptr 
+         ; 
 
     // finding volume by name in the touch stack is much quicker than the recursive U4Volume::FindPV
     const G4VPhysicalVolume* fpv = U4Touchable::FindPV(touch, fake_pv_name, U4Touchable::MATCH_END );  
@@ -1111,14 +1138,18 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
         fpv = U4Volume::FindPV( pv, fake_pv_name, sstr::MATCH_END, maxdepth ); 
     }
 
-    LOG_IF(info, fpv == nullptr ) 
-         << " fpv null "
-         << " pv_name " << ( pv_name ? pv_name : "-" )
-         << " pv_name_proceed " << ( pv_name_proceed ? "YES" : "NO ") 
-         << " ClassifyFake_FindPV_r " << ( ClassifyFake_FindPV_r ? "YES" : "NO " )
-         << U4Touchable::Desc(touch) 
-         << U4Touchable::Brief(touch) 
-         ; 
+    //LOG_IF(info, fpv == nullptr ) 
+    // this is happening a lot 
+    if(dump && fpv == nullptr) std::cout
+        << "U4Recorder::ClassifyFake"   
+        << " fpv null "
+        << " pv_name " << ( pv_name ? pv_name : "-" )
+        << " pv_name_proceed " << ( pv_name_proceed ? "YES" : "NO ") 
+        << " ClassifyFake_FindPV_r " << ( ClassifyFake_FindPV_r ? "YES" : "NO " )
+        << U4Touchable::Desc(touch) 
+        << U4Touchable::Brief(touch) 
+        << std::endl 
+        ; 
 
     G4LogicalVolume* flv = fpv ? fpv->GetLogicalVolume() : nullptr ; 
     G4VSolid* fso = flv ? flv->GetSolid() : nullptr ; 
@@ -1130,21 +1161,30 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
 
     G4ThreeVector theLocalPoint     = transform.TransformPoint(theGlobalPoint); 
     G4ThreeVector theLocalDirection = transform.TransformAxis(theGlobalDirection); 
+    G4ThreeVector theLocalIntersect(0.,0.,0.)  ; 
 
     EInside fin = kOutside ; 
-    G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin ) ; 
+    G4double fdist = fso == nullptr ? kInfinity : ssolid::Distance_( fso, theLocalPoint, theLocalDirection, fin, &theLocalIntersect ) ; 
+
 
     if(fdist < EPSILON)    fakemask |= U4Fake::FAKE_FDIST ;  
     if(fin == kSurface)    fakemask |= U4Fake::FAKE_SURFACE ; 
 
     if(duration) *duration = TIMER->done() ; 
 
-    LOG_IF(info, dump) 
-        << " fdist " << fdist 
+    //LOG_IF(info, dump) 
+    if(dump) std::cout 
+        << "U4Recorder::ClassifyFake"   
+        << " fdist " << ( fdist == kInfinity ? -1. : fdist )  
         << " fin " << sgeomdefs::EInside_(fin)
+        << " fso " << ( fso ? fso->GetName() : "-" )
+        << " theLocalPoint " << theLocalPoint     
+        << " theLocalDirection " << theLocalDirection     
+        << " theLocalIntersect " << theLocalIntersect     
         << " fakemask " << fakemask
         << " desc " << U4Fake::Desc(fakemask)
         << " duration " << std::scientific << ( duration ? *duration : -1. ) 
+        << std::endl 
         ; 
 
     return fakemask ; 
