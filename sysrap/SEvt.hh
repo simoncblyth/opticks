@@ -252,6 +252,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 
     static void BeginOfEvent(int index); 
+    static void EndOfEvent(int index); 
     static void SetIndex(int index); 
     static void UnsetIndex(); 
     static int  GetIndex(); 

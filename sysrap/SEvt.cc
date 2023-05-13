@@ -818,12 +818,40 @@ void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir)
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
 
+/**
+SEvt::BeginOfEvent
+-------------------
+
+Called for example from U4Recorder::BeginOfEventAction
+
+**/
 
 void SEvt::BeginOfEvent(int index)  // static
 {
+    LOG(LEVEL) << " index " << index ; 
     SEvt::SetIndex(index); 
     SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
 }
+
+/**
+SEvt::EndOfEvent
+-----------------
+
+Called for example from U4Recorder::EndOfEventAction
+
+**/
+
+
+void SEvt::EndOfEvent(int index) // static 
+{
+    LOG(LEVEL) << " index " << index ; 
+    assert( index == SEvt::GetIndex() );  
+
+    SEvt::Save(); 
+    SEvt::Clear(); 
+}
+
+
 
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
@@ -1121,7 +1149,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     evt->num_aux    = evt->max_aux    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
 
-    LOG(info)
+    LOG(LEVEL)
         << " evt->num_photon " << evt->num_photon
         << " evt->num_tag " << evt->num_tag
         << " evt->num_flat " << evt->num_flat
@@ -1129,6 +1157,12 @@ void SEvt::setNumPhoton(unsigned num_photon)
 
     hostside_running_resize_done = false ;    
 }
+
+/**
+SEvt::setNumSimtrace
+---------------------
+
+**/
 
 void SEvt::setNumSimtrace(unsigned num_simtrace)
 {

@@ -88,11 +88,19 @@ class U4SimtraceTest(RFold):
     TODO: come up with a better name for this, its more general that just one test 
           (just like SEvt is better name than U4SimulateTest) 
     """
+
+    def __repr__(self):
+        return "U4SimtraceTest %s:%s " % (self.symbol, self.fold.base)
+
     def __init__(self, fold):
+        """
+        Note the container fold Loads subfold for each of the trs_names 
+        """
         trs_names = np.loadtxt( os.path.join(fold.base, "trs_names.txt"), dtype=np.object )
+
         sfs = odict()
         for i, name in enumerate(trs_names):
-            sfs[name] = Fold.Load(fold.base, name, symbol="%s%0.2d" % (fold.symbol,i) )
+            sfs[name] = Fold.Load(fold.base, name,"000",  symbol="%s%0.2d" % (fold.symbol,i) )
         pass
 
         symbol = fold.symbol
@@ -378,9 +386,10 @@ if __name__ == '__main__':
 
     fold = SFOLD if not SFOLD is None else FOLD
 
-    log.info(" -- U4SimtraceTest.Load FOLD/SFOLD" )
+    log.info(" -- U4SimtraceTest.Load FOLD/SFOLD fold:%s" % fold  )
     s = U4SimtraceTest.Load(fold, symbol="s")    # mandatory first geometry 
     assert not s is None
+
 
     log.info(" -- U4SimtraceTest.Load TFOLD" )
     t = U4SimtraceTest.Load(TFOLD, symbol="t")   # optional second geometry 

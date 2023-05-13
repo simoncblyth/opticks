@@ -205,23 +205,12 @@ void U4Recorder::BeginOfEventAction(const G4Event* event)
 void U4Recorder::EndOfEventAction(const G4Event* event)
 {  
     G4int eventID_ = event->GetEventID() ; 
-    int eidx = SEvt::GetIndex(); 
-    bool consistent_eventID = eidx == eventID_ && eventID_ == eventID  ; 
-
-    LOG(info)
-         << " eventID " << eventID 
-         << " eventID_ " << eventID_ 
-         << " eidx " << eidx 
-         << " consistent_eventID  " << ( consistent_eventID  ? "YES" : "NO " )
-         ; 
-    assert( consistent_eventID ); 
+    assert( eventID == eventID_ ); 
 
     SEvt::AddArray("U4R.npy", MakeMetaArray() ); 
     SEvt::AddEventConfigArray(); 
 
-    SEvt::Save(); 
-    SEvt::Clear(); 
-    // HMM: into an EndOfEvent ? 
+    SEvt::EndOfEvent(eventID_);  // does SEvt::Save SEvt::Clear
 
     const char* savedir = SEvt::GetSaveDir() ; 
     LOG(info) << " savedir " << ( savedir ? savedir : "-" );

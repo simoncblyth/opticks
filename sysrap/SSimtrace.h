@@ -13,7 +13,28 @@ with reldir for each solid name.
 In addition stree::save_trs is used to save the placement transforms 
 
 
+Quick Check of simtrace positions
+----------------------------------
 
+For a quick check of simtrace positions, run the below from an SEvt folder::
+
+    ~/opticks/sysrap/tests/SSimtrace_check.sh  
+
+That runs something like the below with ipython::
+
+    #!/usr/bin/env python
+    import os, numpy as np, matplotlib.pyplot as plt 
+    SIZE = np.array([1280, 720])
+
+    title = os.getcwd()
+    s = np.load("simtrace.npy")
+    lpos = s[:,1,:3]
+    
+    fig,ax = plt.subplots(figsize=SIZE/100)
+    ax.set_aspect('equal')
+    fig.suptitle(title)
+    ax.scatter( lpos[:,0], lpos[:,2] )
+    fig.show() 
 
 **/
 #include <cstring>
@@ -110,6 +131,8 @@ inline void SSimtrace::simtrace()
 
     evt = new SEvt ; 
     evt->setFrame(frame);    // 
+
+    SEvt::BeginOfEvent(0); 
 
     unsigned num_simtrace = evt->simtrace.size() ;   
     LOG(LEVEL) << " num_simtrace " << num_simtrace ; 
