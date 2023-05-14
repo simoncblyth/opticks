@@ -115,8 +115,12 @@ class Fold(object):
 
     @classmethod
     def Load(cls, *args, **kwa):
-
+        """
+        :param kwa: "parent=True" loads the parent folder  
+        """
         reldir = kwa.pop("reldir", None) 
+        parent = kwa.pop("parent", False) 
+
         if len(args) == 0:
             args = list(filter(None, [os.environ["FOLD"], reldir])) 
         pass
@@ -129,8 +133,9 @@ class Fold(object):
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
         quiet = cls.IsQuiet(**kwa)
-
-        fold = cls(base, **kwa) if os.path.isdir(base) else None
+        
+        ubase = os.path.dirname(base) if parent else base
+        fold = cls(ubase, **kwa) if os.path.isdir(ubase) else None
         if fold is None and quiet == False:
             log.error("failed to load from base [%s]" % base )
         pass

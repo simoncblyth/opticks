@@ -16,10 +16,10 @@ int main(int argc, char** argv)
 
     std::string desc = U4App::Desc(); 
     LOG(info) << " desc " << desc ; 
+    SEvt::SetReldir(desc.c_str() ); 
 
     SEventConfig::SetStandardFullDebug(); 
     SEvt sev ;    // SEvt must be instanciated before QEvent
-    sev.setReldir( desc.c_str() ); 
     const char* outdir = sev.getOutputDir(); 
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 

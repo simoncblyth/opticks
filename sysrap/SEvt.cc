@@ -50,7 +50,6 @@ const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG");
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
-const char* SEvt::DEFAULT_RELDIR = "ALL" ;   
 /**
 Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
 A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
@@ -79,7 +78,6 @@ SEvt::SEvt()
     index(MISSING_INDEX),
     t_BeginOfEvent(0),
     t_EndOfEvent(0),
-    reldir(DEFAULT_RELDIR),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
@@ -242,13 +240,13 @@ The default "SEventConfig::InputPhoton()" is nullptr meaning no input photons.
 This can be changed by setting an envvar in the script that runs the executable, eg::
 
    export OPTICKS_INPUT_PHOTON=CubeCorners.npy
-   export OPTICKS_INPUT_PHOTON=$HOME/reldir/path/to/inphoton.npy
+   export OPTICKS_INPUT_PHOTON=$HOME/somedir/path/to/inphoton.npy
  
 Or within the code of the executable, typically in the main prior to SEvt instanciation, 
 using eg::
 
    SEventConfig::SetInputPhoton("CubeCorners.npy")
-   SEventConfig::SetInputPhoton("$HOME/reldir/path/to/inphoton.npy")
+   SEventConfig::SetInputPhoton("$HOME/somedir/path/to/inphoton.npy")
 
 When non-null it is resolved into a path and the array loaded at SEvt instanciation
 by SEvt::LoadInputPhoton
@@ -481,8 +479,8 @@ void SEvt::addFrameGenstep()
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry 
         if(frs)
         {
-            LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::setReldir " ; 
-            setReldir(frs);  
+            LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::SetReldir " ; 
+            SEvt::SetReldir(frs);  
         }
   
         NP* gs = SFrameGenstep::MakeCenterExtentGensteps(frame);  
@@ -732,6 +730,8 @@ which is now invoked from U4Recorder instanciation.
 1. photon rerun config by persisting G4 random states
 2. setting of reldir 
 
+HMM: perhaps reldir should be static, above the individual SEvt instance level ? 
+
 **/
 
 SEvt* SEvt::HighLevelCreate() // static
@@ -767,14 +767,14 @@ SEvt* SEvt::HighLevelCreate() // static
 
     if(rerun == false)
     {   
+        SEvt::SetReldir(alldir); 
         evt = SEvt::Create();    
-        evt->setReldir(alldir);
     }   
     else
     {   
+        SEvt::SetReldir(seldir); 
         evt = SEvt::Load(alldir0) ;
         evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
-        evt->setReldir(seldir);
         // when rerunning have to load states from alldir0 and then change reldir to save into seldir
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
@@ -803,8 +803,10 @@ void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
 SEvt* SEvt::Load(const char* rel)  // static 
 {
     LOG(LEVEL) << "[" ; 
+
+    if(rel != nullptr) SetReldir(rel); 
+
     SEvt* evt = new SEvt ; 
-    if(rel != nullptr) evt->setReldir(rel); 
     int rc = evt->load() ; 
     if(rc != 0) evt->is_loadfail = true ; 
 
@@ -819,6 +821,35 @@ void SEvt::SaveExtra( const char* name, const NP* a){  Check() ; INSTANCE->saveE
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
+
+
+
+
+uint64_t SEvt::T_BeginOfRun = 0 ; 
+uint64_t SEvt::T_EndOfRun = 0 ; 
+void SEvt::BeginOfRun(){ T_BeginOfRun = stamp::Now(); } // static 
+void SEvt::EndOfRun()  { T_EndOfRun   = stamp::Now(); } // static 
+
+/**
+SEvt::SaveRunMeta
+-------------------
+
+May be called for example from U4Recorder::EndOfRunAction
+
+**/
+
+void SEvt::SaveRunMeta(const char* base)
+{
+    const char* dir = RunDir(base); 
+    NP* m = NP::Make<float>(1); 
+    m->set_meta<uint64_t>("T_BeginOfRun", T_BeginOfRun );
+    m->set_meta<uint64_t>("T_EndOfRun",   T_EndOfRun );  
+    m->save(dir, "run.npy") ; 
+}
+
+
+
+
 
 /**
 SEvt::BeginOfEvent
@@ -865,8 +896,27 @@ S4RandomArray* SEvt::GetRandomArray(){ return INSTANCE ? INSTANCE->random_array 
 
 
 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
+
+const char* SEvt::DEFAULT_RELDIR = "ALL" ;   
+const char* SEvt::RELDIR = nullptr ; 
+void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
+const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
+/*
 void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
+
+void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR  
+{ 
+    reldir = reldir_ ? strdup(reldir_) : nullptr ; 
+    LOG(LEVEL)
+        << " reldir " << ( reldir ? reldir : "-" )
+        << " this " << std::hex << this << std::dec
+        ;
+} 
+const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
+
+*/
+
 
 int SEvt::GetNumPhotonCollected(){    return INSTANCE ? INSTANCE->getNumPhotonCollected() : UNDEF ; }
 int SEvt::GetNumPhotonGenstepMax(){   return INSTANCE ? INSTANCE->getNumPhotonGenstepMax() : UNDEF ; }
@@ -947,17 +997,6 @@ void SEvt::clear_partial(const char* keep_keylist, char delim)
 void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
-
-void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR  
-{ 
-    reldir = reldir_ ? strdup(reldir_) : nullptr ; 
-    LOG(LEVEL)
-        << " reldir " << ( reldir ? reldir : "-" )
-        << " this " << std::hex << this << std::dec
-        ;
-} 
-const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
-
 
 
 unsigned SEvt::getNumGenstepFromGenstep() const 
@@ -1891,9 +1930,14 @@ NP* SEvt::gatherPhoton() const
 
     p->set_meta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
     p->set_meta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
-
+    p->set_meta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
+    // T_EndOfRun cannot be saved here, it might be saved if SEvt::SaveRunMeta is called
     return p ; 
 } 
+
+
+
+
 NP* SEvt::gatherRecord() const 
 { 
     if( evt->record == nullptr ) return nullptr ; 
@@ -2344,7 +2388,7 @@ with the A side.
 Note that when needing to override the default output directory it is usually 
 preferable to use TMP envvar as most of the automatic bookkeeping will still be done in that case.
 
-The below examples are with GEOM envvar set to "Pasta"
+The below examples are with GEOM envvar set to "Pasta" and "FewPMT" with different executables:
 
 +--------------------------------------------+-----------------------------------------------------------+
 |   TMP envvar                               |  SEvt saveDir                                             | 
@@ -2352,6 +2396,8 @@ The below examples are with GEOM envvar set to "Pasta"
 |    undefined                               |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
 +--------------------------------------------+-----------------------------------------------------------+
 |   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              | 
++--------------------------------------------+-----------------------------------------------------------+
+|   undefined                                |   /tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL0/000  |
 +--------------------------------------------+-----------------------------------------------------------+
  
 Only when more control of the output is needed is it appropriate to use OPTICKS_OUT_FOLD envvar.  
@@ -2415,6 +2461,7 @@ const char* SEvt::getOutputDir(const char* base_) const
 {
     const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
     bool with_index = index != MISSING_INDEX ;  
+    const char* reldir = GetReldir() ; 
     const char* dir = with_index ? 
                                 SPath::Resolve(base, reldir, index, DIRPATH ) 
                              :
@@ -2422,6 +2469,23 @@ const char* SEvt::getOutputDir(const char* base_) const
                              ;
     return dir ;  
 }
+
+/**
+SEvt::RunDir
+--------------
+
+Directory without event index, used for run level metadata. 
+
+**/
+
+const char* SEvt::RunDir( const char* base_ )  // static
+{
+    const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
+    const char* reldir = GetReldir() ; 
+    const char* dir = SPath::Resolve(base, reldir, DIRPATH ); 
+    return dir ; 
+}
+
 
 
 const char* SEvt::DefaultDir() // static
@@ -2435,6 +2499,7 @@ const char* SEvt::DefaultDir() // static
 std::string SEvt::descSaveDir(const char* dir_) const 
 {
     const char* dir = getOutputDir(dir_); 
+    const char* reldir = GetReldir() ; 
     bool with_index = index != MISSING_INDEX ;  
     std::stringstream ss ; 
     ss << "SEvt::descSaveDir"

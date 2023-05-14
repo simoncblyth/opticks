@@ -94,8 +94,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     uint64_t t_BeginOfEvent ; 
     uint64_t t_EndOfEvent ; 
 
-    const char* reldir ;  // HMM: perhaps static RELDIR fallback ?
-
     sphoton_selector* selector ; 
     sevent* evt ; 
     sdebug* dbg ; 
@@ -166,7 +164,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int GIDX ; 
     static const int PIDX ; 
     static const int MISSING_INDEX ; 
-    static const char*  DEFAULT_RELDIR ; 
 
     static SEvt* INSTANCE ; 
     SEvt(); 
@@ -254,6 +251,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Save(const char* dir); 
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 
+    static uint64_t T_BeginOfRun ; 
+    static uint64_t T_EndOfRun ; 
+    static void BeginOfRun(); 
+    static void EndOfRun(); 
+    static void SaveRunMeta(const char* base=nullptr); 
+
     static void BeginOfEvent(int index); 
     static void EndOfEvent(int index); 
     static void SetIndex(int index); 
@@ -261,8 +264,14 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int  GetIndex(); 
     static S4RandomArray* GetRandomArray(); 
 
+    static const char*  DEFAULT_RELDIR ; 
+    static const char* RELDIR ; 
     static void SetReldir(const char* reldir); 
     static const char* GetReldir(); 
+
+    //void setReldir(const char* reldir_) ;  
+    //const char* getReldir() const ; 
+
 
     static int GetNumPhotonCollected(); 
     static int GetNumPhotonGenstepMax(); 
@@ -283,9 +292,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setIndex(int index_) ;  
     void unsetIndex() ;  
     int getIndex() const ; 
-
-    void setReldir(const char* reldir_) ;  
-    const char* getReldir() const ; 
 
     unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
     unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
@@ -400,6 +406,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     void save(const char* base, const char* reldir ); 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
     const char* getOutputDir(const char* base_=nullptr) const ; 
+
+    static const char* RunDir( const char* base_=nullptr ); 
     static const char* DefaultDir() ; 
 
     std::string descSaveDir(const char* dir_) const ; 

@@ -162,6 +162,7 @@ U4Recorder::U4Recorder()
 
 void U4Recorder::BeginOfRunAction(const G4Run*)
 {  
+    SEvt::BeginOfRun(); 
     LOG(info); 
 }
 
@@ -174,6 +175,9 @@ HUH: some problem with LOG from here ?
 **/
 void U4Recorder::EndOfRunAction(const G4Run*)
 { 
+    SEvt::EndOfRun(); 
+    SEvt::SaveRunMeta(); 
+
     std::cout 
         << "[ U4Recorder::EndOfRunAction"
         << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
@@ -190,7 +194,7 @@ void U4Recorder::EndOfRunAction(const G4Run*)
         << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
         << std::endl  
         ;
- 
+
 
 }
 

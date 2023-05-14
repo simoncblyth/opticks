@@ -31,6 +31,15 @@ pass
 if __name__ == '__main__':
 
     t = Fold.Load(symbol="t")
+    tp = Fold.Load(symbol="tp", parent=True)
+
+    if not tp is None:
+        rr = np.array([tp.run_meta.T_BeginOfRun, tp.run_meta.T_EndOfRun], dtype=np.uint64 ) 
+        rre_ = "np.c_[rr.view(\"datetime64[us]\")]" 
+        print(rre_)
+        print(eval(rre_))
+    pass
+
     print(repr(t))
     print( "MODE:%d" % (MODE) )
     print( "N:%d" % (N) )

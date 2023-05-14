@@ -22,9 +22,9 @@ int main(int argc, char** argv)
     SEvt* evt = nullptr ; 
 
     if(rerun == false)
-    {   
+    {  
+        SEvt::SetReldir(reldir);  
         evt = SEvt::Create();        
-        evt->setReldir(reldir); 
     }   
     else
     {   
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     if(evt->is_loaded)
     {
-        evt->setReldir("SEvtLoadTest"); 
+        SEvt::SetReldir("SEvtLoadTest"); 
         evt->clear_partial("g4state"); 
         evt->save(); 
     }

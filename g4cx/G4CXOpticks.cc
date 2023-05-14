@@ -292,7 +292,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     {
         LOG(LEVEL) << " Calling SEvt::Create " ; 
         sev = SEvt::Create() ; 
-        sev->setReldir("ALL"); 
+        // formerly setReldir to "ALL" but thats now default, and SEvt::RELDIR now static 
     }
     else
     {
