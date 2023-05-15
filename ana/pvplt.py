@@ -62,7 +62,7 @@ else:
     Ellipse = None
 pass 
 
-from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
+from opticks.ana.eget import efloatlist_, efloatarray_, elookce_, elook_epsilon_, eint_
 from opticks.ana.axes import Axes, X,Y,Z
 
 themes = ["default", "dark", "paraview", "document" ]
@@ -232,15 +232,16 @@ def mpplt_annotate_ax( ax ):
     pass
 
     if len(lhsanno) > 0:
-        print("lhsanno:%s " % (lhsanno) )
+        #print("lhsanno:%s " % (lhsanno) )
         ax.text(-0.05,  0.01, lhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
         print("no lhsanno")
     pass
 
     if len(rhsanno) > 0:
-        print("rhsanno:%s " % (rhsanno) )
-        ax.text(0.6,  0.01, rhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+        rhsanno_pos = efloatarray_("RHSANNO_POS","0.6,0.01")
+        #print("rhsanno:%s " % (rhsanno) )
+        ax.text(rhsanno_pos[0], rhsanno_pos[1], rhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
         print("no rhsanno")
     pass

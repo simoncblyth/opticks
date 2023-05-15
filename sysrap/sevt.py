@@ -42,6 +42,17 @@ class SEvt(RFold):
 
     """
     def __init__(self, f):
+        """
+        :param f: Fold instance 
+        """
+        run_base = os.path.dirname(f.base)
+        run_path = os.path.join( run_base, "run.npy" )
+        fp = Fold.Load(run_base) if os.path.exists(run_path) else None
+        if not fp is None and getattr(fp,'run_meta', None) != None:
+            rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
+        else:
+            rr = None
+        pass
 
         symbol = f.symbol
         qlim = QLIM
@@ -152,6 +163,9 @@ class SEvt(RFold):
  
        
         self.f = f 
+        self.fp = fp 
+        self.rr = rr   # T_BeginOfRun, T_EndOfRun
+
         self.q_ = q_
         self.q = q
         self.qq = qq

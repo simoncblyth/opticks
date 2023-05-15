@@ -142,8 +142,11 @@ if [ "$VERSION" == "0" ]; then
     export junoPMTOpticalModel__ModelTrigger_IMPL=$ModelTrigger_IMPL
     export G4FastSimulationManagerProcess_ENABLE=1  
 
-    export U4Recorder__FAKES_SKIP=1
-    # export U4Recorder__FAKES="$fakes"  formerly used manual config of fakes skipping
+    #export U4Recorder__FAKES_SKIP=1
+    #export U4Recorder__ClassifyFake_FindPV_r=1  ## this is slow, but it finds fakes better, use in standalone testing 
+    ## export U4Recorder__FAKES="$fakes"  formerly used manual config of fakes skipping
+
+
 fi 
 
 # standalone access to PMT data 

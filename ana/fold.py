@@ -38,6 +38,8 @@ class AttrBase(object):
 class RFold(object):
     """
     Provides a common Load method for the objects: U4SimtraceTest and SEvt(formerly U4SimulateTest)
+
+    The loaded Fold instance is passed as ctor argument specialized class instances. 
     """
     @classmethod
     def Load(cls, fold, **kwa):
@@ -47,8 +49,6 @@ class RFold(object):
             f = Fold.Load(fold, **kwa )
         pass
         return None if f is None else cls(f)
-
-
 
 
 class Fold(object):
