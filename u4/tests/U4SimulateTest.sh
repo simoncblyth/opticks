@@ -323,32 +323,33 @@ export BFOLD=$BASE/ALL1/$EVT
 [ "${arg:0:1}" == "n" ] && export MODE=0
 
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
-    script=${bin}_fs.py  
+    script=$DIR/${bin}_fs.py  
 elif [ "${arg/cf}" != "$arg" -o "${arg/ncf}" != "$arg" ]; then
-    script=${bin}_cf.py 
+    script=$DIR/${bin}_cf.py 
 elif [ "${arg/af}" != "$arg" -o "${arg/naf}" != "$arg" ]; then
-    script=${bin}_af.py 
+    script=$DIR/${bin}_af.py 
 elif [ "${arg/ph}" != "$arg" -o "${arg/nph}" != "$arg" ]; then
-    script=${bin}_ph.py 
+    script=$DIR/${bin}_ph.py 
 elif [ "${arg/mt}" != "$arg" -o "${arg/nmt}" != "$arg" ]; then
-    script=${bin}_mt.py 
+    script=$DIR/${bin}_mt.py 
 elif [ "${arg/fk}" != "$arg" -o "${arg/nfk}" != "$arg" ]; then
-    script=${bin}_fk.py 
+    script=$DIR/${bin}_fk.py 
 elif [ "${arg/ck}" != "$arg" -o "${arg/nck}" != "$arg" ]; then
-    script=${bin}_ck.py 
+    script=$DIR/${bin}_ck.py 
 elif [ "${arg/pr}" != "$arg" -o "${arg/npr}" != "$arg" ]; then
-    script=${bin}_pr.py 
+    script=$DIR/${bin}_pr.py 
 elif [ "${arg/tt}" != "$arg" -o "${arg/ntt}" != "$arg" ]; then
-    script=${bin}_tt.py 
+    script=$OPTICKS_HOME/sysrap/sevt_tt.py 
 elif [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
-    script=${bin}.py 
+    script=$DIR/${bin}.py 
 fi 
 
-if [ -n "$script" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $DIR/$script 
+
+if [ -n "$script" -a -f "$script" ]; then 
+    ${IPYTHON:-ipython} --pdb -i $script 
     [ $? -ne 0 ] && echo $BASH_SOURCE script $script error && exit 4
 else
-    echo $BASH_SOURCE no ana script is defined for arg $arg 
+    echo $BASH_SOURCE no ana script $script is defined OR does not exist for arg $arg 
 fi 
 
 

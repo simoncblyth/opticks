@@ -93,6 +93,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     int index ; 
     uint64_t t_BeginOfEvent ; 
     uint64_t t_EndOfEvent ; 
+    uint64_t t_LastPoint ; 
 
     sphoton_selector* selector ; 
     sevent* evt ; 

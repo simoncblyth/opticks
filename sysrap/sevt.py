@@ -243,12 +243,14 @@ class SEvt(RFold):
         pass
         # photon level beginPhoton endPhoton time stamps from the sup quad4 
         if hasattr(f,'sup') and not f.sup is None:
-            s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()
-            s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()
+            s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()  # SEvt::beginPhoton (xsup.q0.w.x)
+            s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q0.w.y)
+            sp = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) SEvt::pointPhoton t_LastPoint 
             ss = s1 - s0      # endPhoton - beginPhoton 
         else:
             s0 = None
             s1 = None
+            sp = None
             ss = None
         pass
         if not t is None and not s0 is None:
@@ -266,10 +268,8 @@ class SEvt(RFold):
         self.tt = tt    # array of photon step point time stamps relative to t0 
         self.s0 = s0    # array of beginPhoton time stamps (UTC epoch)
         self.s1 = s1    # array of endPhoton time stamps (UTC epoch)
+        self.sp = sp    # array of lastPoint time stamps (UTC epoch)
         self.ss = ss    # array of endPhoton-beginPhoton time stamp differences 
-
-
-
 
 
     def __repr__(self):

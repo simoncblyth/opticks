@@ -1,15 +1,59 @@
 #!/usr/bin/env python
 """
-U4SimulateTest_tt.py
-========================
+sevt_tt.py (formerly u4/tests/U4SimulateTest_tt.py)
+======================================================
 
+
+PLOT types
+-------------
+
+STAMP
+   time stamp illustration
+ 
+   STAMP_TT=200000,5000 
+      control time window of STAMP plot in microseconds [us]
+   STAMP_ANNO=1  
+      enable photon index and history annotation  
+
+PHO_AVG
+   average beginPhoton->endPhoton CPU time vs photon point count  
+
+PHO_HIS
+   histogram of beginPhoton->endPhoton CPU times
+
+PHO_N
+   A, B photon step point counts 
+
+
+Dev Notes
+------------
+
+HMM: for reusability, its tempting to 
+just relocate this into sysrap/tests/tt.py 
+as a runnable python script which is used from 
+wherever with bash level envvars controlling the events 
+to be loaded rather than doing python dev to 
+bring in functionality at python level. 
+
+When is this bash in control approach appropriate 
+as opposed to moving into sevt.py ?  
+
+The level of generality determines what is appropriate
+If the functionality really is general and likely 
+to be usable from all over the place then it belongs 
+into sevt.py with python control and flexibility of use.
+
+However if only likely to use functionality from a few places
+pointing at differnt events that doing 
+at bash level seems appropriate and avoids python 
+module development. 
+  
 ::
 
     u4t
     ./U4SimulateTest.sh tt
-    ./U4SimulateTest.sh ntt
 
-    PLOT=STAMP ~/opticks/u4/tests/tt.sh 
+    PLOT=STAMP   ~/opticks/u4/tests/tt.sh 
     PLOT=PHO_HIS ~/opticks/u4/tests/tt.sh 
     PLOT=PHO_AVG ~/opticks/u4/tests/tt.sh 
 
@@ -18,6 +62,7 @@ U4SimulateTest_tt.py
 import os, numpy as np, textwrap
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
+from opticks.ana.eget import efloatarray_
 from opticks.sysrap.sevt import SEvt
 
 
@@ -32,6 +77,8 @@ MODE =  int(os.environ.get("MODE", "2"))
 assert MODE in [0,2,-2,3,-3]
 FLIP = int(os.environ.get("FLIP", "0")) == 1 
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
+STAMP_TT = efloatarray_("STAMP_TT", "162307,3000") # "t0,dt"  microseconds 1M=1s 
+
 
 PLOT = os.environ.get("PLOT", None)
 
@@ -72,40 +119,46 @@ if __name__ == '__main__':
     if not b is None:print(repr(b))
 
 
-    EXPRS = r"""
-    %(sym)s
-    %(sym)s.symbol 
-    w
-    %(sym)s.q[w]
-    %(sym)s.n[w]
-    np.diff(%(sym)s.tt[w])
-    np.c_[%(sym)s.t[w].view("datetime64[us]")] 
-    """ 
+    if PLOT == "EXPRS":
+        EXPRS = r"""
+        %(sym)s
+        %(sym)s.symbol 
+        w
+        %(sym)s.q[w]
+        %(sym)s.n[w]
+        np.diff(%(sym)s.tt[w])
+        np.c_[%(sym)s.t[w].view("datetime64[us]")] 
+        """ 
 
-    for sym in syms:
+        for sym in syms:
 
-        n = eval("%(sym)s.n" % locals() ) 
-        ww = np.where( n > 24)[0] 
-   
-        for w in ww:
-            for e_ in textwrap.dedent(EXPRS).split("\n"):
-                e = e_ % locals()
-                print(e) 
-                if len(e) == 0 or e[0] == "#": continue
-                print(eval(e))
+            n = eval("%(sym)s.n" % locals() ) 
+            ww = np.where( n > 24)[0] 
+       
+            for w in ww:
+                for e_ in textwrap.dedent(EXPRS).split("\n"):
+                    e = e_ % locals()
+                    print(e) 
+                    if len(e) == 0 or e[0] == "#": continue
+                    print(eval(e))
+                pass
             pass
         pass
     pass
 
 
-    label = "tt"
-
+    # needs: syms, a, b  
 
     if PLOT == "PHO_HIS":
-        fig, axs = mpplt_plotter(nrows=1, ncols=1, label=PLOT, equal=False)
+        msg = "histogram of beginPhoton->endPhoton CPU times"
+        label = "%s : %s" % (PLOT, msg)
+        fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
         e_ = "%(sym)s.s1 - %(sym)s.s0  # PHO_HIS "
-        bins = np.logspace( np.log10(0.1),np.log10(500.0), 25 ) 
+        
+        #bins = np.logspace( np.log10(0.1),np.log10(500.0), 25 ) 
+        bins = np.linspace( 0, 500, 50 )
+
         h = {} 
         for sym in syms: 
             e = e_ % locals() 
@@ -117,39 +170,42 @@ if __name__ == '__main__':
     pass
 
 
-    HEAD = "np.c_["
-    TAIL = "]"
-    FIELDS = list(filter(None,textwrap.dedent(r"""
-    %(sym)s.s1[w] -  %(sym)s.s0[w]                          # beginPhoton->endPhoton
-    %(sym)s.t[w,0] - %(sym)s.s0[w]                          # beginPhoton->firstPoint 
-    %(sym)s.t[w,%(n_1)s] - %(sym)s.t[w,0]                   # firstPoint->lastPoint 
-    %(sym)s.s1[w] - %(sym)s.t[w,%(n_1)s]                    # lastPoint->endPhoton
-    """).split("\n")))
+    if PLOT == "TABLE":
 
-    LABELS = list(map(lambda _:_[_.find("#")+1:], FIELDS))
-    FIELDS = list(map(lambda _:_[:_.find("#")].strip(), FIELDS))  
-    
-    print("compare first and last point stamp range with beginPhoton endPhoton range")
+        HEAD = "np.c_["
+        TAIL = "]"
+        FIELDS = list(filter(None,textwrap.dedent(r"""
+        %(sym)s.s1[w] -  %(sym)s.s0[w]                          # beginPhoton->endPhoton
+        %(sym)s.t[w,0] - %(sym)s.s0[w]                          # beginPhoton->firstPoint 
+        %(sym)s.t[w,%(n_1)s] - %(sym)s.t[w,0]                   # firstPoint->lastPoint 
+        %(sym)s.s1[w] - %(sym)s.t[w,%(n_1)s]                    # lastPoint->endPhoton
+        """).split("\n")))
 
-    nn = np.arange(2,33)
-    for n in nn:  
-        n_1 = int(n - 1)
-        for sym in syms:
-            w_ = "np.where( %(sym)s.n == %(n)s )[0]" % locals()
-            w = eval(w_)
-            expr__ = "".join([HEAD, ",".join(FIELDS), TAIL ])
-            expr_ = expr__ % locals()
-            expr = eval(expr_)
-            label = " ".join(LABELS)
-            if len(expr) == 0: continue 
+        LABELS = list(map(lambda _:_[_.find("#")+1:], FIELDS))
+        FIELDS = list(map(lambda _:_[:_.find("#")].strip(), FIELDS))  
+        
+        print("compare first and last point stamp range with beginPhoton endPhoton range")
 
-            print(expr_)
-            print(w_)
-            print(label)
-            print(expr)
+        nn = np.arange(2,33)
+        for n in nn:  
+            n_1 = int(n - 1)
+            for sym in syms:
+                w_ = "np.where( %(sym)s.n == %(n)s )[0]" % locals()
+                w = eval(w_)
+                expr__ = "".join([HEAD, ",".join(FIELDS), TAIL ])
+                expr_ = expr__ % locals()
+                expr = eval(expr_)
+                label = " ".join(LABELS)
+                if len(expr) == 0: continue 
+
+                print(expr_)
+                print(w_)
+                print(label)
+                print(expr)
+            pass
         pass
-    pass
-          
+    pass        
+      
 
     print(" average photonBegin->photonEnd for different step counts ") 
     ssa = np.zeros((33,len(syms),3), dtype=np.float64 )
@@ -170,29 +226,32 @@ if __name__ == '__main__':
     print(eval(expr_))
 
 
+    if PLOT == "PHO_AVG":
+        EXPRS_ = r"""
+        np.diff(%(sym)s.rr)[0]/1e6                 # Run
+        np.diff(%(sym)s.ee)[0]/1e6                 # Evt
+        np.sum(%(sym)s.ss)/1e6                     # Pho 
+        np.sum(%(sym)s.ss)/np.diff(%(sym)s.ee)[0]  # Pho/Evt
+        """
+        EXPRS = list(filter(None, textwrap.dedent(EXPRS_).split("\n")))
 
-    EXPRS_ = r"""
-    np.diff(%(sym)s.rr)[0]/1e6                 # Run
-    np.diff(%(sym)s.ee)[0]/1e6                 # Evt
-    np.sum(%(sym)s.ss)/1e6                     # Pho 
-    np.sum(%(sym)s.ss)/np.diff(%(sym)s.ee)[0]  # Pho/Evt
-    """
-    EXPRS = list(filter(None, textwrap.dedent(EXPRS_).split("\n")))
-
-    rlines = [] 
-    for i,sym in enumerate(syms):
-        for expr_ in EXPRS:
-            label = expr_[expr_.find("#")+1:] if expr_.find("#") > -1 else ""
-            expr_ = expr_.split("#")[0].strip()
-            expr = expr_ % locals()
-            print(expr) 
-            val = eval(expr)
-            rlines.append("%30s : %8.3f : %s " % ( expr, val, label  ))
+        rlines = [] 
+        for i,sym in enumerate(syms):
+            for expr_ in EXPRS:
+                label = expr_[expr_.find("#")+1:] if expr_.find("#") > -1 else ""
+                expr_ = expr_.split("#")[0].strip()
+                expr = expr_ % locals()
+                print(expr) 
+                val = eval(expr)
+                rlines.append("%30s : %8.3f : %s " % ( expr, val, label  ))
+            pass
+            rlines.append("") 
         pass
-        rlines.append("") 
+        ranno = "\n".join(rlines)
+    else:
+        ranno = "no-ranno"
     pass
-
-    ranno = "\n".join(rlines)
+ 
 
     if PLOT == "PHO_AVG":
 
@@ -272,16 +331,20 @@ if __name__ == '__main__':
 
 
     if PLOT == "PHO_SCAT":
+        msg = "scatter plot of beginPhoton->endPhoton CPU time vs step point count"
+        label = "%s : %s" % (PLOT, msg)
 
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
+
+        ax.set_ylim(0,1000)
 
         for i,sym in enumerate(syms):
             x_ = "%(sym)s.n.astype(np.float64)" % locals() 
             y_ = "%(sym)s.ss" % locals() 
             x = eval(x_)
             y = eval(y_)
-            if i == 1: x += 0.4
+            if i == 1: x += 0.2
 
             ax.scatter( x[x<16], y[x<16], s=2 )
         pass
@@ -289,9 +352,30 @@ if __name__ == '__main__':
         fig.show()
     pass
 
+
+    """ 
+    STAMP NOTES
+
+    HMM: how to annotate the stamp plot with photon indices ?
+
+    For comparibility between A and B it makes more 
+    sense to select based on time stamps rather than photon indices. 
+
+    To find time range with big bouncers::
+        
+         a.s0[np.where(a.n > 20)]-a.ee[0] 
+
+    """
     if PLOT == "STAMP":
 
         label = "STAMP : A(left), B(right) : timestamps BeginPhoton,EndPhoton,PointPhoton " 
+
+        t0 = STAMP_TT[0]
+        t1 = STAMP_TT[0]+STAMP_TT[1] 
+        subtitle = "STAMP_TT: %s t0:%d t1:%d " % ( str(STAMP_TT),t0,t1)
+
+        #os.environ["SUBTITLE"] = subtitle 
+        os.environ["THIRDLINE"] = subtitle 
 
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
@@ -300,24 +384,20 @@ if __name__ == '__main__':
         #sl = slice(1040,1550,1) 
         sl = slice(None)
 
-        ## a.s0[np.where(a.n > 20)]-a.ee[0]   find time range with big bouncer
-        t0 = 162407 - 100 
-        t1 = t0 + 3000
-
-
-        # HMM: need to select based on time stamps, not photon indices
-        # a.s0[np.logical_and( a.s0 < a.s0[0], a.s0 > a.s0[0]-100 )]   
-
         s0_ = {}
         s1_ = {}
         tt_ = {}
+        wt_ = {}
+
         s0 = {}
         s1 = {}
         tt = {} 
+        wt = {} 
 
         sz = 0.01 
         xx = {'a':[-0.5, -sz], 'b':[sz,0.5] }
         zz = {'a':[-0.2, -sz], 'b':[sz,0.2] }
+        yy = {'a':-0.25, 'b':0.20 }
 
         for i, sym in enumerate(syms): 
             r0 = eval("%(sym)s.rr[0]" % locals())
@@ -327,6 +407,8 @@ if __name__ == '__main__':
             s0_[sym] = "%(sym)s.s0[sl] - %(sym)s.ee[0] # beginPhoton " % locals()
             s1_[sym] = "%(sym)s.s1[sl] - %(sym)s.ee[0] # endPhoton " % locals()
             tt_[sym] = "%(sym)s.t[sl][%(sym)s.t[sl]>0] - %(sym)s.ee[0]  # pointPhoton" % locals()
+            # tt selects > 0 to avoid unfilled zeros
+           
 
             s0[sym] = eval(s0_[sym])
             s1[sym] = eval(s1_[sym])
@@ -339,12 +421,24 @@ if __name__ == '__main__':
             for j in range(len(qwns)):
                 q = qwns[j]
                 t = eval("%(q)s[\"%(sym)s\"]" % locals()) 
+                w = eval("np.where(np.logical_and(t > t0, t < t1 ))[0]")
+                # selects photon indices of times within the time window 
+
                 xmin,xmax = zz[sym] if q == "tt" else xx[sym]
                 ax.hlines( t[np.logical_and(t > t0, t < t1 )], xmin, xmax, cols[j], label=labs[j] )
+
+                if q == "s0" and "STAMP_ANNO" in os.environ:
+                    for k in range(len(w)):
+                        his = eval("%(sym)s.q[w[%(k)s]][0].decode(\"utf-8\").strip()" % locals())  
+                        ax.text( yy[sym], t[w[k]], "%s : %d : %s "% (sym.upper(), w[k], his)  )
+                    pass
+                pass
             pass
         pass
 
-        ax.legend()
+        if "STAMP_LEGEND" in os.environ:
+            ax.legend()
+        pass
         fig.show()
     pass
     if not ENVOUT is None and not PLOT is None:
