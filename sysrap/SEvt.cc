@@ -78,6 +78,7 @@ SEvt::SEvt()
     index(MISSING_INDEX),
     t_BeginOfEvent(0),
     t_EndOfEvent(0),
+    t_PenultimatePoint(0),
     t_LastPoint(0),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
@@ -1765,6 +1766,7 @@ void SEvt::pointPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
 
 #ifndef PRODUCTION
+    t_PenultimatePoint = t_LastPoint ; 
     t_LastPoint = stamp::Now() ;  
     quad4& aux = current_ctx.aux ;
     quadx4& auxx = (quadx4&)aux ;  
@@ -1897,7 +1899,8 @@ void SEvt::finalPhoton(const spho& label)
 
     quadx4& xsup = (quadx4&)ctx.sup ;  
     xsup.q0.w.y = stamp::Now();   
-    xsup.q1.w.x = t_LastPoint ; 
+    xsup.q1.w.x = t_PenultimatePoint ; 
+    xsup.q1.w.y = t_LastPoint ; 
 
     ctx.end();   // copies seq into evt->seq[idx] (and tag, flat when DEBUG_TAG)
     evt->photon[idx] = ctx.p ;

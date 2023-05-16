@@ -245,13 +245,17 @@ class SEvt(RFold):
         if hasattr(f,'sup') and not f.sup is None:
             s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()  # SEvt::beginPhoton (xsup.q0.w.x)
             s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q0.w.y)
-            sp = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) SEvt::pointPhoton t_LastPoint 
             ss = s1 - s0      # endPhoton - beginPhoton 
+            f0 = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) t_PenultimatePoint 
+            f1 = f.sup[:,1,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.y) t_LastPoint 
+            ff = f1 - f0      # LastPoint - PenultimatePoint 
         else:
             s0 = None
             s1 = None
-            sp = None
             ss = None
+            f0 = None
+            f1 = None
+            ff = None
         pass
         if not t is None and not s0 is None:
             t0 = s0.min()
@@ -266,11 +270,14 @@ class SEvt(RFold):
         self.t = t      # array of photon step point time stamps (UTC epoch)
         self.t0 = t0    # scalar : event minimum time stamp (which is minimum s0:beginPhoton timestamp)
         self.tt = tt    # array of photon step point time stamps relative to t0 
+
         self.s0 = s0    # array of beginPhoton time stamps (UTC epoch)
         self.s1 = s1    # array of endPhoton time stamps (UTC epoch)
-        self.sp = sp    # array of lastPoint time stamps (UTC epoch)
-        self.ss = ss    # array of endPhoton-beginPhoton time stamp differences 
+        self.ss = ss    # array of endPhoton-beginPhoton timestamp differences 
 
+        self.f0 = f0    # array of PenultimatePoint timestamps (UTC epoch)
+        self.f1 = f1    # array of LastPoint timestamps (UTC epoch)
+        self.ff = ff    # array of LastPoint-PenultimatePoint timestamp differences
 
     def __repr__(self):
         fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 
