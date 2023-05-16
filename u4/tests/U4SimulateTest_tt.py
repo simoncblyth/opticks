@@ -205,16 +205,28 @@ if __name__ == '__main__':
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
 
-        sl = slice(2,16) 
+        #sl = slice(2,16) 
+        sl = slice(None) 
         style = {'a':"ro-", 'b':"bo-" }
         fitstyle = {'a':"r:", 'b':"b:" }
 
         mc = np.zeros( (len(syms), 2), dtype=np.float64 )
 
         for i,sym in enumerate(syms):
-            x = ssa[sl,i,0] - 2
-            y = ssa[sl,i,2]
+            x_ = ssa[sl,i,0] - 2
+            n_ = ssa[sl,i,1]
+            y_ = ssa[sl,i,2]
+            w = np.where( n_ > 0)[0]
+             
+            x = x_[w]
+            y = y_[w]
+
             ax.plot( x, y , style[sym], label="%(sym)s : avg(ss) vs n-2  " % locals() )
+
+
+            wf = np.where( n_ > 10)[0]  ## only fit points with some stats
+            x = x_[wf]
+            y = y_[wf]
 
             A = np.vstack([x, np.ones(len(x))]).T
             m, c = np.linalg.lstsq(A, y, rcond=None)[0]
@@ -233,6 +245,30 @@ if __name__ == '__main__':
         print("ranno")
         print(ranno)
     pass
+
+
+    if PLOT == "PHO_N":
+        a_n, a_nc = np.unique(a.n, return_counts=True) 
+        b_n, b_nc = np.unique(b.n, return_counts=True) 
+
+         
+        msg = "consistent when fakes are skipped"
+        msg = "much more in A when fakes not skipped"
+        label = "PHO_N : A(N=0),B(N=1) photon step counts : %s " % msg  
+        fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
+        ax = axs[0]
+        ax.set_yscale("log")
+        #ax.plot( a_n, a_nc, "ro", label="A"  )
+        #ax.plot( b_n, b_nc, "bo", label="B" )
+
+        ax.errorbar( a_n, a_nc,yerr=np.sqrt(a_nc.astype(np.float64)),fmt="ro-", label="A"  )
+        ax.errorbar( b_n, b_nc,yerr=np.sqrt(b_nc.astype(np.float64)),fmt="bo-", label="B" )
+
+        ax.legend()
+        fig.show()
+    pass 
+
+
 
 
     if PLOT == "PHO_SCAT":
