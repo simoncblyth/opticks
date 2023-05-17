@@ -155,7 +155,7 @@ struct sevent
     sflat*   flat ;     
     quad4*   simtrace ;   //QEvent::device_alloc_simtrace
     quad4*   aux ; 
-    quad4*   sup ; 
+    quad6*   sup ; 
 
     //] counts and pointers 
 

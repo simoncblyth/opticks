@@ -251,11 +251,15 @@ class SEvt(RFold):
             f1 = f.sup[:,1,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.y) t_LastPoint 
             ff = f1 - f0      # LastPoint - PenultimatePoint 
 
-            h0 = f.sup[:,2,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp (xsup.q2.w.x)  
-            h1 = f.sup[:,2,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp (xsup.q2.w.y)
-            hh = h1 - h0      # timestamp range of SEvt::AddProcessHitsStamp calls
+            h0 = f.sup[:,2,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(0) (xsup.q2.w.x)  
+            h1 = f.sup[:,2,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(0) (xsup.q2.w.y)
+            hh = h1 - h0                      # timestamp range of SEvt::AddProcessHitsStamp(0) calls
             hc = f.sup[:,3,0].view(np.int32) 
 
+            i0 = f.sup[:,4,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.x)  
+            i1 = f.sup[:,4,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.y)
+            ii = i1 - i0                      # timestamp range of SEvt::AddProcessHitsStamp(1) calls
+            ic = f.sup[:,5,0].view(np.int32) 
         else:
             s0 = None
             s1 = None
@@ -269,6 +273,11 @@ class SEvt(RFold):
             h1 = None
             hh = None
             hc = None
+
+            i0 = None
+            i1 = None
+            ii = None
+            ic = None
         pass
         if not t is None and not s0 is None:
             t0 = s0.min()
@@ -292,10 +301,16 @@ class SEvt(RFold):
         self.f1 = f1    # array of LastPoint timestamps (UTC epoch)
         self.ff = ff    # array of LastPoint-PenultimatePoint timestamp differences
 
-        self.h0 = h0    # array of SEvt::AddProcessHitsStamp range begin (UTC epoch)
-        self.h1 = h1    # array of SEvt::AddProcessHitsStamp range end (UTC epoch)
-        self.hh = hh    # array of SEvt::AddProcessHitsStamp ranges (microseconds [us]) 
-        self.hc = hc    # array of SEvt::AddProcessHitsStamp call counts for each photon
+        self.h0 = h0    # array of SEvt::AddProcessHitsStamp(0) range begin (UTC epoch)
+        self.h1 = h1    # array of SEvt::AddProcessHitsStamp(0) range end (UTC epoch)
+        self.hh = hh    # array of SEvt::AddProcessHitsStamp(0) ranges (microseconds [us]) 
+        self.hc = hc    # array of SEvt::AddProcessHitsStamp(0) call counts for each photon
+
+        self.i0 = i0    # array of SEvt::AddProcessHitsStamp(1) range begin (UTC epoch)
+        self.i1 = i1    # array of SEvt::AddProcessHitsStamp(1) range end (UTC epoch)
+        self.ii = ii    # array of SEvt::AddProcessHitsStamp(1) ranges (microseconds [us]) 
+        self.ic = ic    # array of SEvt::AddProcessHitsStamp(1) call counts for each photon
+
 
     def __repr__(self):
         fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 

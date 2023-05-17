@@ -53,6 +53,7 @@ struct srec ;
 struct sseq ; 
 struct stagr ;  
 struct quad4 ; 
+struct quad6 ; 
 #endif
 
 struct sctx
@@ -69,7 +70,7 @@ struct sctx
     sseq seq ; 
     stagr tagr ; 
     quad4 aux ; 
-    quad4 sup ; 
+    quad6 sup ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

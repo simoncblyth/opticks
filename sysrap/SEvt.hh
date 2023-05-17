@@ -144,7 +144,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<sflat>   flat ; 
     std::vector<quad4>   simtrace ; 
     std::vector<quad4>   aux ; 
-    std::vector<quad4>   sup ; 
+    std::vector<quad6>   sup ; 
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -333,8 +333,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void finalPhoton(const spho& sp); 
 
-    static void AddProcessHitsStamp(); 
-    void addProcessHitsStamp() ; 
+    static void AddProcessHitsStamp(int p); 
+    void addProcessHitsStamp(int p) ; 
 
     void checkPhotonLineage(const spho& sp) const ; 
     

@@ -77,7 +77,6 @@ from opticks.sysrap.sevt import SEvt
 
 SCRIPT = "./U4SimulateTest.sh tt"
 os.environ["SCRIPT"] = SCRIPT 
-ENVOUT = os.environ.get("ENVOUT", None)
 LABEL = os.environ.get("LABEL", "U4SimulateTest_tt.py" )
 
 
@@ -91,6 +90,9 @@ STAMP_TT = efloatarray_("STAMP_TT", "162307,3000") # "t0,dt"  microseconds 1M=1s
 
 PLOT = os.environ.get("PLOT", None)
 
+ENVOUT = os.environ.get("ENVOUT", None)
+CAP_STEM = PLOT
+CAP_BASE = None # set below to a.f.base or b.f.base
 
 if MODE != 0:
     from opticks.ana.pvplt import * 
@@ -123,6 +125,15 @@ if __name__ == '__main__':
     else:
         assert(0)
     pass
+
+    ## CAP_BASE is passed via ENVOUT to the invoking bash script
+    ## to control where the figs folder with screen captures should be 
+    if not a is None:
+        CAP_BASE = a.f.base
+    elif not b is None:
+        CAP_BASE = b.f.base
+    pass
+
 
     if not a is None:print(repr(a))
     if not b is None:print(repr(b))
@@ -397,16 +408,20 @@ if __name__ == '__main__':
         s1_ = {}
         tt_ = {}
         wt_ = {}
+        h0_ = {}
+        h1_ = {}
 
         s0 = {}
         s1 = {}
         tt = {} 
         wt = {} 
+        h0 = {}
+        h1 = {}
 
         sz = 0.01 
         xx = {'a':[-0.5, -sz], 'b':[sz,0.5] }
         zz = {'a':[-0.2, -sz], 'b':[sz,0.2] }
-        yy = {'a':-0.25, 'b':0.20 }
+        yy = {'a':-0.5, 'b':0.20 }
 
         for i, sym in enumerate(syms): 
             r0 = eval("%(sym)s.rr[0]" % locals())
@@ -417,15 +432,22 @@ if __name__ == '__main__':
             s1_[sym] = "%(sym)s.s1[sl] - %(sym)s.ee[0] # endPhoton " % locals()
             tt_[sym] = "%(sym)s.t[sl][%(sym)s.t[sl]>0] - %(sym)s.ee[0]  # pointPhoton" % locals()
             # tt selects > 0 to avoid unfilled zeros
-           
+          
+            h0_[sym] = "%(sym)s.h0[sl] - %(sym)s.ee[0]" % locals()
+            h1_[sym] = "%(sym)s.h1[sl] - %(sym)s.ee[0]" % locals()
+            ## selecting on greater than zero messes up the indices, so cannot do that  
+            ## instead just rely on exclusion of crazy times for unfilled cases
 
             s0[sym] = eval(s0_[sym])
             s1[sym] = eval(s1_[sym])
             tt[sym] = eval(tt_[sym])
+            h0[sym] = eval(h0_[sym])
+            h1[sym] = eval(h1_[sym])
 
-            labs = [s0_[sym], s1_[sym], tt_[sym]]
-            cols = "r b g".split()
-            qwns = "s0 s1 tt".split()
+
+            labs = [s0_[sym], s1_[sym], tt_[sym], h0_[sym], h1_[sym]]
+            cols = "r b g c m".split()
+            qwns = "s0 s1 tt h0 h1".split()
             assert len(cols) == len(qwns)   
             for j in range(len(qwns)):
                 q = qwns[j]
@@ -442,6 +464,13 @@ if __name__ == '__main__':
                         ax.text( yy[sym], t[w[k]], "%s : %d : %s "% (sym.upper(), w[k], his)  )
                     pass
                 pass
+
+                if q == "h0" and "STAMP_ANNO" in os.environ:
+                    for k in range(len(w)):
+                        hc = eval("%(sym)s.hc[w[%(k)s]]" % locals())
+                        ax.text( yy[sym], t[w[k]], "%s : %d : %d "% (sym.upper(), w[k], hc)  )
+                    pass
+                pass
             pass
         pass
 
@@ -450,10 +479,11 @@ if __name__ == '__main__':
         pass
         fig.show()
     pass
-    if not ENVOUT is None and not PLOT is None:
+    if not ENVOUT is None and not CAP_STEM is None and not CAP_BASE is None:
         envout = "\n".join([
                        "export ENVOUT_PATH=%s" % ENVOUT,
-                       "export ENVOUT_CAP_STEM=%s" % PLOT,
+                       "export ENVOUT_CAP_STEM=%s" % CAP_STEM,
+                       "export ENVOUT_CAP_BASE=%s" % CAP_BASE,
                        ""
                        ]) 
         open(ENVOUT, "w").write(envout)

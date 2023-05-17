@@ -32,9 +32,14 @@ int main(int argc, char** argv)
             evt->pointPhoton(label); 
             evt->pointPhoton(label); 
 
-            evt->addProcessHitsStamp(); 
-            evt->addProcessHitsStamp(); 
-            evt->addProcessHitsStamp(); 
+            evt->addProcessHitsStamp(0); 
+            evt->addProcessHitsStamp(1); 
+
+            evt->addProcessHitsStamp(0); 
+            evt->addProcessHitsStamp(1); 
+
+            evt->addProcessHitsStamp(1); 
+
 
             evt->pointPhoton(label); 
 

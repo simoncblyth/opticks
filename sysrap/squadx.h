@@ -29,6 +29,14 @@ struct quadx4
     quadx q3 ;
 }; 
 
-
+struct quadx6
+{ 
+    quadx q0 ; 
+    quadx q1 ; 
+    quadx q2 ; 
+    quadx q3 ;
+    quadx q4 ;
+    quadx q5 ;
+}; 
 
 

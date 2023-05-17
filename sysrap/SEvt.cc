@@ -1455,7 +1455,7 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
-    quadx4& xsup = (quadx4&)ctx.sup ;  
+    quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.x = stamp::Now(); 
 
 
@@ -1897,7 +1897,7 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
 
-    quadx4& xsup = (quadx4&)ctx.sup ;  
+    quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.y = stamp::Now();   
     xsup.q1.w.x = t_PenultimatePoint ; 
     xsup.q1.w.y = t_LastPoint ; 
@@ -1924,38 +1924,47 @@ is up to the user to call this from the right place.
 
 **/
 
-void SEvt::AddProcessHitsStamp(){ INSTANCE->addProcessHitsStamp() ; } // static
-void SEvt::addProcessHitsStamp()
+void SEvt::AddProcessHitsStamp(int p){ INSTANCE->addProcessHitsStamp(p) ; } // static
+void SEvt::addProcessHitsStamp(int p)
 {
     uint64_t now = stamp::Now();
-    quad4&  sup  = current_ctx.sup ;  
-    quadx4& xsup = (quadx4&)current_ctx.sup ;  
-    uint64_t& h0 = xsup.q2.w.x ;    
-    uint64_t& h1 = xsup.q2.w.y ; 
-    unsigned& count = sup.q3.u.x ; 
+    quad6&  sup  = current_ctx.sup ;  
+    quadx6& xsup = (quadx6&)current_ctx.sup ;  
 
-    count += 1 ; 
+    uint64_t* h0 = nullptr ; 
+    uint64_t* h1 = nullptr ; 
+    unsigned* hc = nullptr ; 
 
-    if(h0 == 0) 
+    switch(p)
     {
-        h0 = now ; 
+       case 0: { h0 = &xsup.q2.w.x ; h1 = &xsup.q2.w.y ; hc = &sup.q3.u.x ;} ; break ; 
+       case 1: { h0 = &xsup.q4.w.x ; h1 = &xsup.q4.w.y ; hc = &sup.q5.u.w ;} ; break ; 
+    } 
+    assert( hc && h0 && h1 ); 
+
+    *hc += 1 ; 
+
+    if(*h0 == 0) 
+    {
+        *h0 = now ; 
     }
-    else if(h1 == 0)
+    else if(*h1 == 0)
     {
-        h1 = now ;  
+        *h1 = now ;  
     }
-    else if( h0 > 0 && h1 > 0 )
+    else if( *h0 > 0 && *h1 > 0 )
     {
-        h1 = now ;  
+        *h1 = now ;  
     }
 
     /*
     std::cout 
         << "SEvt::addProcessHitsStamp" 
-        << " nw " << now 
-        << " h0 " << h0 
-        << " h1 " << h1 
-        << " cn " << count 
+        << " p " << p 
+        << " now " << now 
+        << " h0 " << *h0 
+        << " h1 " << *h1 
+        << " hc " << *hc
         << std::endl 
         ; 
     */
@@ -2162,7 +2171,7 @@ NP* SEvt::makeAux() const
 }
 NP* SEvt::makeSup() const 
 { 
-    NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
+    NP* p = NP::Make<float>( evt->num_photon, 6, 4 ); 
     return p ; 
 }
 
