@@ -260,6 +260,9 @@ class SEvt(RFold):
             i1 = f.sup[:,4,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.y)
             ii = i1 - i0                      # timestamp range of SEvt::AddProcessHitsStamp(1) calls
             ic = f.sup[:,5,0].view(np.int32) 
+
+            hi0 = i0 - h0
+            hi1 = i1 - h1
         else:
             s0 = None
             s1 = None
@@ -278,6 +281,9 @@ class SEvt(RFold):
             i1 = None
             ii = None
             ic = None
+
+            hi0 = None
+            hi1 = None
         pass
         if not t is None and not s0 is None:
             t0 = s0.min()
@@ -311,6 +317,8 @@ class SEvt(RFold):
         self.ii = ii    # array of SEvt::AddProcessHitsStamp(1) ranges (microseconds [us]) 
         self.ic = ic    # array of SEvt::AddProcessHitsStamp(1) call counts for each photon
 
+        self.hi0 = hi0  # array of range begin SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0)  
+        self.hi1 = hi1  # array of range end   SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0) 
 
     def __repr__(self):
         fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 

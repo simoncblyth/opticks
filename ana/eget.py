@@ -2,8 +2,9 @@
 
 import os, numpy as np
 
-efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
-efloatlist_ = lambda ekey,fallback="":list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
+string2float_ = lambda s:float(s.replace("k","000")) 
+efloat_ = lambda ekey, fallback:string2float_(os.environ.get(ekey,fallback))
+efloatlist_ = lambda ekey,fallback="":list(map(string2float_, filter(None, os.environ.get(ekey,fallback).split(","))))
 efloatarray_ = lambda ekey,fallback="":np.array( efloatlist_(ekey, fallback)) 
 
 def eint_(ekey, fallback):
