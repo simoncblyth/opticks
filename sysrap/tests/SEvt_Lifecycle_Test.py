@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
-import numpy as np
+import os, numpy as np
+from opticks.sysrap.sevt import SEvt 
 from opticks.ana.fold import Fold
 
 if __name__ == '__main__':
-    f = Fold.Load(symbol="f")
-    print(repr(f))
+    if "OLD" in os.environ:
+        f = Fold.Load(symbol="f")
+        print(repr(f))
+    else:
+        a = SEvt.Load("$FOLD",symbol="a")
+        print(repr(a))
+    pass
 

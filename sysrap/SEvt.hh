@@ -332,6 +332,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     int getTagSlot() const ; 
 
     void finalPhoton(const spho& sp); 
+
+    static void AddProcessHitsStamp(); 
+    void addProcessHitsStamp() ; 
+
     void checkPhotonLineage(const spho& sp) const ; 
     
 ////////////////////////////////////////////////////////////////////////////////////////////

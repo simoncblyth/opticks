@@ -27,6 +27,18 @@ int main(int argc, char** argv)
             int track_id = j ; 
             spho label = spho::Fabricate(track_id);  
             evt->beginPhoton(label);  
+
+            evt->pointPhoton(label); 
+            evt->pointPhoton(label); 
+            evt->pointPhoton(label); 
+
+            evt->addProcessHitsStamp(); 
+            evt->addProcessHitsStamp(); 
+            evt->addProcessHitsStamp(); 
+
+            evt->pointPhoton(label); 
+
+            evt->finalPhoton(label) ;  // sctx::end copies {seq,sup} into sevent arrays 
         }
 
         std::cout << evt->descVec() << std::endl ; 

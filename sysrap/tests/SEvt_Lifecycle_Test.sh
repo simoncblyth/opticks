@@ -16,6 +16,8 @@ arg=${1:-$defarg}
 
 export OPTICKS_INPUT_PHOTON=RainXZ100_f4.npy
 export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_MAX_BOUNCE=31 
+
 
 evt=001
 export EVT=${EVT:-$evt}

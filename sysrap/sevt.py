@@ -91,10 +91,10 @@ class SEvt(RFold):
         if hasattr(f, 'aux') and not f.aux is None: 
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
             spec_ = f.aux[:,:,2,3].view(np.int32)   ## step spec
-            uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,32,4) ## see sysrap/spho.h c4/C4Pho.h 
+            max_point = f.aux.shape[1]   # instead of hardcoding typical values like 32 or 10, use array shape
+            uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,max_point,4) ## see sysrap/spho.h c4/C4Pho.h 
             eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
             ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
-
         else:
             fk = None
             spec_ = None
@@ -246,16 +246,29 @@ class SEvt(RFold):
             s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()  # SEvt::beginPhoton (xsup.q0.w.x)
             s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q0.w.y)
             ss = s1 - s0      # endPhoton - beginPhoton 
+
             f0 = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) t_PenultimatePoint 
             f1 = f.sup[:,1,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.y) t_LastPoint 
             ff = f1 - f0      # LastPoint - PenultimatePoint 
+
+            h0 = f.sup[:,2,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp (xsup.q2.w.x)  
+            h1 = f.sup[:,2,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp (xsup.q2.w.y)
+            hh = h1 - h0      # timestamp range of SEvt::AddProcessHitsStamp calls
+            hc = f.sup[:,3,0].view(np.int32) 
+
         else:
             s0 = None
             s1 = None
             ss = None
+
             f0 = None
             f1 = None
             ff = None
+
+            h0 = None
+            h1 = None
+            hh = None
+            hc = None
         pass
         if not t is None and not s0 is None:
             t0 = s0.min()
@@ -278,6 +291,11 @@ class SEvt(RFold):
         self.f0 = f0    # array of PenultimatePoint timestamps (UTC epoch)
         self.f1 = f1    # array of LastPoint timestamps (UTC epoch)
         self.ff = ff    # array of LastPoint-PenultimatePoint timestamp differences
+
+        self.h0 = h0    # array of SEvt::AddProcessHitsStamp range begin (UTC epoch)
+        self.h1 = h1    # array of SEvt::AddProcessHitsStamp range end (UTC epoch)
+        self.hh = hh    # array of SEvt::AddProcessHitsStamp ranges (microseconds [us]) 
+        self.hc = hc    # array of SEvt::AddProcessHitsStamp call counts for each photon
 
     def __repr__(self):
         fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 

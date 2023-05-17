@@ -1902,9 +1902,66 @@ void SEvt::finalPhoton(const spho& label)
     xsup.q1.w.x = t_PenultimatePoint ; 
     xsup.q1.w.y = t_LastPoint ; 
 
-    ctx.end();   // copies seq into evt->seq[idx] (and tag, flat when DEBUG_TAG)
-    evt->photon[idx] = ctx.p ;
+    ctx.end();   // copies {seq,sup} into evt->{seq,sup}[idx] (and tag, flat when DEBUG_TAG)
+    evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?
 }
+
+
+
+/**
+SEvt::AddProcessHitsStamp
+---------------------------
+
+As ProcessHits may be called multiple
+times for each photon this records the 
+timestamp range of those calls and the count. 
+
+Note that this relies on being zeroed for each photon. 
+
+Also note that the only thing specific to "ProcessHits"
+is the convention of where to store the stamp range. It 
+is up to the user to call this from the right place. 
+
+**/
+
+void SEvt::AddProcessHitsStamp(){ INSTANCE->addProcessHitsStamp() ; } // static
+void SEvt::addProcessHitsStamp()
+{
+    uint64_t now = stamp::Now();
+    quad4&  sup  = current_ctx.sup ;  
+    quadx4& xsup = (quadx4&)current_ctx.sup ;  
+    uint64_t& h0 = xsup.q2.w.x ;    
+    uint64_t& h1 = xsup.q2.w.y ; 
+    unsigned& count = sup.q3.u.x ; 
+
+    count += 1 ; 
+
+    if(h0 == 0) 
+    {
+        h0 = now ; 
+    }
+    else if(h1 == 0)
+    {
+        h1 = now ;  
+    }
+    else if( h0 > 0 && h1 > 0 )
+    {
+        h1 = now ;  
+    }
+
+    /*
+    std::cout 
+        << "SEvt::addProcessHitsStamp" 
+        << " nw " << now 
+        << " h0 " << h0 
+        << " h1 " << h1 
+        << " cn " << count 
+        << std::endl 
+        ; 
+    */
+}
+
+
 
 void SEvt::checkPhotonLineage(const spho& label) const 
 {
@@ -2724,6 +2781,7 @@ std::string SEvt::descVec() const
        << " flat " << flat.size()  
        << " simtrace " << simtrace.size()  
        << " aux " << aux.size()  
+       << " sup " << sup.size()  
        ; 
     std::string s = ss.str(); 
     return s ; 

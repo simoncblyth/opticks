@@ -3,6 +3,15 @@
 sevt_tt.py (formerly u4/tests/U4SimulateTest_tt.py)
 ======================================================
 
+Python script (not module) usage from two bash scripts
+--------------------------------------------------------
+
+::
+
+    PLOT=STAMP STAMP_ANNO=1 STAMP_LEGEND=1 ~/opticks/u4/tests/tt.sh 
+
+    PLOT=STAMP STAMP_TT=90000,5000 STAMP_ANNO=1 ~/j/ntds/ntds.sh tt 
+
 
 PLOT types
 -------------

@@ -246,6 +246,16 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
 U4Recorder::PreUserTrackingAction_Optical
 -------------------------------------------
 
+1. access photon label from the G4Track
+   or fabricate the label if there is none. 
+   Scintillation and Cerenkov photons should always already 
+   have labels associated, but torch gensteps or input photons 
+   do not thus labels are created and associated here. 
+ 
+2. photon label is passed along to the appropriate SEvt methods, 
+   such as beginPhoton, resumePhoton, rjoinPhoton, rjoin_resumePhoton
+
+
 **Reemission Rejoining**
 
 At the tail of this method SEvt::beginPhoton OR SEvt::rejoinPhoton is called
