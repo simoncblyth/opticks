@@ -410,6 +410,8 @@ if __name__ == '__main__':
         wt_ = {}
         h0_ = {}
         h1_ = {}
+        i0_ = {}
+        i1_ = {}
 
         s0 = {}
         s1 = {}
@@ -417,6 +419,8 @@ if __name__ == '__main__':
         wt = {} 
         h0 = {}
         h1 = {}
+        i0 = {}
+        i1 = {}
 
         sz = 0.01 
         xx = {'a':[-0.5, -sz], 'b':[sz,0.5] }
@@ -428,26 +432,35 @@ if __name__ == '__main__':
             #if i == 1:continue
             print( "sym:%s r0:%10.3f " % (sym, r0))
 
+            tt_[sym] = "%(sym)s.t[sl][%(sym)s.t[sl]>0] - %(sym)s.ee[0]  # pointPhoton" % locals()
+            # tt selects > 0 to avoid unfilled zeros : CAUTION MESSES WITH INDICES
+
             s0_[sym] = "%(sym)s.s0[sl] - %(sym)s.ee[0] # beginPhoton " % locals()
             s1_[sym] = "%(sym)s.s1[sl] - %(sym)s.ee[0] # endPhoton " % locals()
-            tt_[sym] = "%(sym)s.t[sl][%(sym)s.t[sl]>0] - %(sym)s.ee[0]  # pointPhoton" % locals()
-            # tt selects > 0 to avoid unfilled zeros
-          
+
             h0_[sym] = "%(sym)s.h0[sl] - %(sym)s.ee[0]" % locals()
             h1_[sym] = "%(sym)s.h1[sl] - %(sym)s.ee[0]" % locals()
+
+            i0_[sym] = "%(sym)s.i0[sl] - %(sym)s.ee[0]" % locals()
+            i1_[sym] = "%(sym)s.i1[sl] - %(sym)s.ee[0]" % locals()
+
             ## selecting on greater than zero messes up the indices, so cannot do that  
             ## instead just rely on exclusion of crazy times for unfilled cases
 
+            tt[sym] = eval(tt_[sym])
+
             s0[sym] = eval(s0_[sym])
             s1[sym] = eval(s1_[sym])
-            tt[sym] = eval(tt_[sym])
+
             h0[sym] = eval(h0_[sym])
             h1[sym] = eval(h1_[sym])
 
+            i0[sym] = eval(i0_[sym])
+            i1[sym] = eval(i1_[sym])
 
-            labs = [s0_[sym], s1_[sym], tt_[sym], h0_[sym], h1_[sym]]
-            cols = "r b g c m".split()
-            qwns = "s0 s1 tt h0 h1".split()
+            labs = [s0_[sym], s1_[sym], tt_[sym], h0_[sym], h1_[sym], i0_[sym], i1_[sym]]
+            cols = "r b g c m c m".split()
+            qwns = "s0 s1 tt h0 h1 i0 i1".split()
             assert len(cols) == len(qwns)   
             for j in range(len(qwns)):
                 q = qwns[j]
@@ -464,11 +477,16 @@ if __name__ == '__main__':
                         ax.text( yy[sym], t[w[k]], "%s : %d : %s "% (sym.upper(), w[k], his)  )
                     pass
                 pass
-
                 if q == "h0" and "STAMP_ANNO" in os.environ:
                     for k in range(len(w)):
                         hc = eval("%(sym)s.hc[w[%(k)s]]" % locals())
-                        ax.text( yy[sym], t[w[k]], "%s : %d : %d "% (sym.upper(), w[k], hc)  )
+                        ax.text( yy[sym], t[w[k]], "%s.h0 : %d : %d "% (sym.upper(), w[k], hc)  )
+                    pass
+                pass
+                if q == "i0" and "STAMP_ANNO" in os.environ:
+                    for k in range(len(w)):
+                        ic = eval("%(sym)s.ic[w[%(k)s]]" % locals())
+                        ax.text( yy[sym], t[w[k]], "%s.i0 : %d : %d "% (sym.upper(), w[k], ic)  )
                     pass
                 pass
             pass

@@ -1938,7 +1938,7 @@ void SEvt::addProcessHitsStamp(int p)
     switch(p)
     {
        case 0: { h0 = &xsup.q2.w.x ; h1 = &xsup.q2.w.y ; hc = &sup.q3.u.x ;} ; break ; 
-       case 1: { h0 = &xsup.q4.w.x ; h1 = &xsup.q4.w.y ; hc = &sup.q5.u.w ;} ; break ; 
+       case 1: { h0 = &xsup.q4.w.x ; h1 = &xsup.q4.w.y ; hc = &sup.q5.u.x ;} ; break ; 
     } 
     assert( hc && h0 && h1 ); 
 
