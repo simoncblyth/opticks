@@ -12,6 +12,8 @@ Python script (not module) usage from two bash scripts
 
     PLOT=STAMP STAMP_TT=90000,5000 STAMP_ANNO=1 ~/j/ntds/ntds.sh tt 
 
+    PLOT=PHO_AVG ~/j/ntds/ntds.sh tt 
+
 
 PLOT types
 -------------
@@ -388,16 +390,15 @@ if __name__ == '__main__':
     """
     if PLOT == "STAMP":
 
-        label = "STAMP : A(left), B(right) : timestamps BeginPhoton,EndPhoton,PointPhoton " 
 
         t0 = STAMP_TT[0]
         t1 = STAMP_TT[0]+STAMP_TT[1] 
         stt = os.environ.get("STAMP_TT","-") 
 
-        subtitle = "STAMP_TT=%s #  (t0,t1):(%d,%d) " % (stt,t0,t1)
+        label = "A:lhs, B:rhs :  STAMP_TT=%s #  (t0,t1):(%d,%d)  " % (stt,t0,t1)
 
         #os.environ["SUBTITLE"] = subtitle 
-        os.environ["THIRDLINE"] = subtitle 
+        #os.environ["THIRDLINE"] = subtitle 
 
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
@@ -429,6 +430,29 @@ if __name__ == '__main__':
         zz = {'a':[-0.2, -sz], 'b':[sz,0.2] }
         yy = {'a':-0.5, 'b':0.20 }
 
+        qwns = "s0 s1 t h0 h1 i0 i1".split()
+        q_expr = "%(sym)s.%(q)s[sl] - %(sym)s.ee[0]" 
+
+        print(" (t0,t1)  (%(t0)d,%(t1)d) " % locals() )
+
+        for i, sym in enumerate(syms): 
+            print("sym:%s" % sym)
+            for j in range(len(qwns)):
+                q = qwns[j]
+                expr = q_expr % locals()
+                t = eval(expr) 
+                w = eval("np.where(np.logical_and(t > t0, t < t1 ))[0]")
+                ws = str(w.shape)
+                qmn = t.min()
+                qmx = t.max()
+                fmt = " %(q)2s  %(expr)22s : (%(qmn)8d,%(qmx)8d) : ws:%(ws)s "  
+                print( fmt % locals() )
+            pass
+        pass
+
+        print(" when all the ws are 0: adjust the time range to find some stamps")
+
+
         for i, sym in enumerate(syms): 
             r0 = eval("%(sym)s.rr[0]" % locals())
             #if i == 1:continue
@@ -438,17 +462,17 @@ if __name__ == '__main__':
             ## so instead just rely on exclusion of crazy times for unfilled cases
 
             cols = "r b g c m c m".split()
-            qwns = "s0 s1 t h0 h1 i0 i1".split()
             assert len(cols) == len(qwns) 
   
             for j in range(len(qwns)):
                 q = qwns[j]
-                expr = "%(sym)s.%(q)s[sl] - %(sym)s.ee[0]" % locals()
+                expr = q_expr % locals()
                 t = eval(expr) 
                 w = eval("np.where(np.logical_and(t > t0, t < t1 ))[0]")
                 # photon indices of times within time window 
                 kk = list(range(len(w)))  
                 xmin,xmax = zz[sym] if q == "t" else xx[sym]
+
                 ax.hlines( t[np.logical_and(t > t0, t < t1 )], xmin, xmax, cols[j], label=expr )
 
                 if "STAMP_ANNO" in os.environ:
