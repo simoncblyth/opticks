@@ -1,6 +1,6 @@
 #pragma once
 
-template<int> struct SProfile ; 
+template<int N> struct SProfile ; 
 
 struct SProfile_test
 {

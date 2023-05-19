@@ -106,6 +106,14 @@ class SEvt(RFold):
         self.init_timestamp(f)
 
 
+        if hasattr(f,'photon') and not f.photon is None:
+            iix = f.photon[:,1,3].view(np.int32) 
+        else:
+            iix = None
+        pass
+        self.iix = iix        
+
+
         CHECK = getattr( f.photon_meta, 'CHECK', [] )
         CHECK = CHECK[0] if len(CHECK) == 1 else ""
 
@@ -235,6 +243,22 @@ class SEvt(RFold):
         """
 
         ee = np.array([f.photon_meta.t_BeginOfEvent, f.photon_meta.t_EndOfEvent], dtype=np.uint64 ).squeeze()
+
+        if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None: 
+            pf = f.junoSD_PMT_v2_SProfile
+            pfmx = np.max(pf[:,1:], axis=1 )
+            pfmi = pf[:,1]
+            pfr = pfmx - pfmi
+        else:
+            pf = None 
+            pfmx = None
+            pfmi = None
+            pfr = None
+        pass
+        self.pf = pf  ## CAUTION: multiple ProcessHits calls per photon, so not in photon index order 
+        self.pfmx = pfmx
+        self.pfmi = pfmi
+        self.pfr  = pfr 
 
         if hasattr(f, 'aux') and not f.aux is None: 
             t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 

@@ -30,6 +30,8 @@ struct U4Touchable
     static bool MatchEnd(   const char* s, const char* q) ; 
 
     static const G4VPhysicalVolume* FindPV( const G4VTouchable* touch, const char* qname, int mode=MATCH_ALL ); 
+
+    static int ImmediateReplicaNumber(const G4VTouchable* touch ); 
     static int ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select ) ; 
     static int ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select ) ; 
     static int TouchDepth(const G4VTouchable* touch ); 
@@ -92,6 +94,37 @@ inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, 
     return qpv ; 
 } 
 
+/**
+U4Touchable::ImmediateReplicaNumber
+-------------------------------------
+
+This is used from U4Recorder::UserSteppingAction_Optical 
+for step points classified as SURFACE_DETECT "SD". 
+
+Gets ReplicaNumber of parent or grandparent volume 
+in the touch history. Using the (sometimes incorrect)
+heuristic that ReplicaNumber zero is not valid.   
+However that would normally result in getting a zero
+in anycase. 
+
+Actually it would be better to arrange the ReplicaNumbers 
+of singleton volumes that are sensitive or containers of sensitive
+volumes to adopt ReplicaNumber -1 in order to distinguish from 
+valid zeros. 
+
+Calling this on the touchable from a G4Track that has just stepped 
+onto a sensitive volume, eg within ProcessHits, would be 
+expected to obtain the ReplicaNumber (aka pmtID) for several
+common ways to organize PMT geometry hierarchy. 
+
+**/
+
+inline int U4Touchable::ImmediateReplicaNumber(const G4VTouchable* touch )
+{
+    int copyNo = touch->GetReplicaNumber(1);
+    if(copyNo <= 0) copyNo = touch->GetReplicaNumber(2); 
+    return copyNo ; 
+}
 
 
 inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select )  // static 

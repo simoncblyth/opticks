@@ -77,6 +77,7 @@ struct SYSRAP_API OpticksPhoton
     static bool IsReflectFlag(const unsigned flag); 
     static bool IsTransmitFlag(const unsigned flag); 
     static bool IsSurfaceDetectOrAbsorbFlag(const unsigned flag); 
+    static bool IsSurfaceDetectFlag(const unsigned flag); 
 
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
@@ -135,6 +136,11 @@ inline bool OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(const unsigned flag) // s
 {
     return (flag & (SURFACE_DETECT | SURFACE_ABSORB)) != 0  ; 
 }
+inline bool OpticksPhoton::IsSurfaceDetectFlag(const unsigned flag) // static : SD
+{
+    return flag == SURFACE_DETECT ; 
+}
+
 
 
 

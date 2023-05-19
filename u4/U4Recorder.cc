@@ -789,9 +789,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool is_fastsim_flag = flag == DEFER_FSTRACKINFO ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
     bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
+    bool is_detect_flag = OpticksPhoton::IsSurfaceDetectFlag(flag) ;  // SD 
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
 
-
+/*
 #ifdef U4RECORDER_EXPENSIVE_IINDEX
     // doing replica number search for every step is very expensive and often pointless
     // its the kind of thing to do only for low stats or simple geometry running 
@@ -799,6 +800,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 #else
     current_photon.iindex = is_surface_flag ? U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT) : -2 ;  
 #endif
+*/
+    current_photon.iindex = is_detect_flag ? U4Touchable::ImmediateReplicaNumber(touch) : -2 ;  
+    
+
 
 
     LOG(LEVEL) 

@@ -63,8 +63,13 @@ def py_transform_1(ip, m2w):
 
 if __name__ == '__main__':
     t = Fold.Load()
+    print("t.base:%s " % t.base) 
     print(t)
     print(repr(t))
+
+    print("t.sframe")
+    print(repr(t.sframe))
+
 
     m2w = t.m2w[0] 
     ip = t.ip          # local frame input photons 
