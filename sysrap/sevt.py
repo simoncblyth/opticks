@@ -39,20 +39,29 @@ class SEvt(RFold):
     """
     Higher level wrapper for an Opticks SEvt folder of arrays
 
-
+    WIP: Concatenation of multiple SEvt, starting from Fold concatenation
     """
+    def load_runmeta(self, base):
+        """
+        HMM the run meta should be same for all of concatenated SEvts
+        """
+        rr = None
+        fp = None
+        if not base is None:
+            run_base = os.path.dirname(base)
+            run_path = os.path.join( run_base, "run.npy" )
+            fp = Fold.Load(run_base) if os.path.exists(run_path) else None
+            if not fp is None and getattr(fp,'run_meta', None) != None:
+                rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
+            pass
+        pass
+        return rr, fp
+
     def __init__(self, f):
         """
         :param f: Fold instance 
         """
-        run_base = os.path.dirname(f.base)
-        run_path = os.path.join( run_base, "run.npy" )
-        fp = Fold.Load(run_base) if os.path.exists(run_path) else None
-        if not fp is None and getattr(fp,'run_meta', None) != None:
-            rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
-        else:
-            rr = None
-        pass
+        rr, fp = self.load_runmeta(f.base) if not f.base is None else None, None
 
         symbol = f.symbol
         qlim = QLIM
@@ -241,8 +250,11 @@ class SEvt(RFold):
         The timestamps come from sysrap/stamp.h and are datetime64[us] (UTC) compliant 
 
         """
-
-        ee = np.array([f.photon_meta.t_BeginOfEvent, f.photon_meta.t_EndOfEvent], dtype=np.uint64 ).squeeze()
+        if hasattr(f, 'photon_meta') and not f.photon_meta is None:
+            ee = np.array([f.photon_meta.t_BeginOfEvent, f.photon_meta.t_EndOfEvent], dtype=np.uint64 ).squeeze()
+        else:
+            ee = None
+        pass 
 
         if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None: 
             pf = f.junoSD_PMT_v2_SProfile

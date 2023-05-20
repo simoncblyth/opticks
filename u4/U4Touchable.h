@@ -32,6 +32,9 @@ struct U4Touchable
     static const G4VPhysicalVolume* FindPV( const G4VTouchable* touch, const char* qname, int mode=MATCH_ALL ); 
 
     static int ImmediateReplicaNumber(const G4VTouchable* touch ); 
+    static int AncestorReplicaNumber(const G4VTouchable* touch, int d=1 ); 
+
+
     static int ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select ) ; 
     static int ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select ) ; 
     static int TouchDepth(const G4VTouchable* touch ); 
@@ -123,6 +126,30 @@ inline int U4Touchable::ImmediateReplicaNumber(const G4VTouchable* touch )
 {
     int copyNo = touch->GetReplicaNumber(1);
     if(copyNo <= 0) copyNo = touch->GetReplicaNumber(2); 
+    return copyNo ; 
+}
+
+/**
+U4Touchable::AncestorReplicaNumber
+-----------------------------------
+
+Loops over ancestors starting from d (default d=1 corresponds to parent) 
+looking for ReplicaNumber > 0 in the history to return.
+
+* NB AGAIN NASTY PRAGMATIC ASSUMPTION THAT copyNo ZERO IS INVALID
+* IT WOULD BE AN ADVANTAGE FOR DEFAULT COPYNUMBER TO BE -1 (NOT 0)
+
+**/
+
+inline int U4Touchable::AncestorReplicaNumber(const G4VTouchable* touch, int d )
+{
+    int depth = touch->GetHistoryDepth();
+    int copyNo = -1 ; 
+    while( copyNo <= 0 && d < depth )  
+    {
+        copyNo = touch->GetReplicaNumber(d);
+        d++ ; 
+    }
     return copyNo ; 
 }
 
@@ -334,6 +361,8 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch, int so_wid, int 
     int touch_depth = TouchDepth(touch); 
     int replica_depth = ReplicaDepth(touch, nullptr); 
     int replica_number = ReplicaNumber(touch, nullptr); 
+    int immediate_replica_number = ImmediateReplicaNumber(touch);
+    int ancestor_replica_number = AncestorReplicaNumber(touch);
 
     std::stringstream ss ; 
     ss << "U4Touchable::Desc"
@@ -341,6 +370,8 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch, int so_wid, int 
        << " TouchDepth " << std::setw(2) << touch_depth 
        << " ReplicaDepth " << std::setw(2) << replica_depth
        << " ReplicaNumber " << std::setw(6) << replica_number 
+       << " ImmediateReplicaNumber " << std::setw(6) << immediate_replica_number 
+       << " AncestorReplicaNumber " << std::setw(6) << ancestor_replica_number 
        << std::endl 
        ; 
 

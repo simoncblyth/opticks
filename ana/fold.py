@@ -37,15 +37,18 @@ class AttrBase(object):
 
 class RFold(object):
     """
+    This is used by SEvt(RFold) 
+
     Provides a common Load method for the objects: U4SimtraceTest and SEvt(formerly U4SimulateTest)
 
     The loaded Fold instance is passed as ctor argument specialized class instances. 
     """
     @classmethod
     def Load(cls, fold, **kwa):
-        if fold is None:
-            f = None
-        else: 
+        if fold is None: return None
+        if int(kwa.get("NEVT",0)) > 0:
+            f = Fold.LoadConcat(fold,**kwa) 
+        else:
             f = Fold.Load(fold, **kwa )
         pass
         return None if f is None else cls(f)
@@ -114,12 +117,26 @@ class Fold(object):
         return quiet 
 
     @classmethod
+    def LoadConcat(cls, *args, **kwa0):
+        kwa = kwa0.copy() 
+        NEVT = kwa.pop("NEVT", 0) 
+        log.info("LoadConcat NEVT %s " % NEVT) 
+        ff = {}
+        for evt in range(NEVT):
+            kwa["evt"] = evt
+            ff[evt] = cls.Load(*args, **kwa)
+        pass
+        fc = Fold.Concatenate(ff, **kwa0)
+        return fc
+
+    @classmethod
     def Load(cls, *args, **kwa):
         """
         :param kwa: "parent=True" loads the parent folder  
         """
         reldir = kwa.pop("reldir", None) 
         parent = kwa.pop("parent", False) 
+        evt = kwa.pop("evt", None) 
 
         if len(args) == 0:
             args = list(filter(None, [os.environ["FOLD"], reldir])) 
@@ -133,7 +150,10 @@ class Fold(object):
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
         quiet = cls.IsQuiet(**kwa)
-        
+
+        if not evt is None:
+            base = base % evt 
+        pass 
         ubase = os.path.dirname(base) if parent else base
         fold = cls(ubase, **kwa) if os.path.isdir(ubase) else None
         if fold is None and quiet == False:
@@ -156,14 +176,22 @@ class Fold(object):
     def brief(self):
         return "Fold : symbol %30s base %s " % (self.symbol, self.base) 
 
-
     @classmethod
     def IsFold(cls, base, name):
+        """
+        :param base:
+        :param name:
+        :return bool: True when indexpath:base/name/NPFold_index.txt exists
+        """
         path = os.path.join(base, name)
-        index = os.path.join(path, cls.INDEX )
-        return os.path.isdir(path) and os.path.exists(index)
+        indexpath = os.path.join(path, cls.INDEX )
+        return os.path.isdir(path) and os.path.exists(indexpath)
 
     def get_names(self, base):
+        """
+        :param base: directory path 
+        :return names: list of names that are either .txt .npy or subfold
+        """
         nn = os.listdir(base)
         if not self.order is None:
             sizes = list(map(lambda name:os.stat(os.path.join(base, name)).st_size, nn))
@@ -193,6 +221,7 @@ class Fold(object):
         self.quiet = self.IsQuiet(**kwa)
         self.symbol = kwa.get("symbol", "t")
         self.relbase = kwa.get("relbase")
+        self.is_concat = kwa.get("is_concat", False)
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
         self.order = kwa.get("order", None)
@@ -203,29 +232,31 @@ class Fold(object):
             print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
         pass
 
+        self.paths = []
+        self.stems = []
+        self.abbrev = []
+        self.txts = {}
 
-        paths = []
-        stems = []
-        abbrev = []
+        if base is None or self.is_concat:
+            log.info("not loading as base None or is_concat")
+        else:
+            self.load()
+        pass
+
+
+    def load(self):
+        base = self.base
         symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        txts = {}
+        self.names = self.get_names(base)
 
-        #names = filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),os.listdir(base))
-        names = self.get_names(base)
-
-        for i, name in enumerate(names):
+        for i, name in enumerate(self.names):
             path = os.path.join(base, name)
             symbol = symbols[i]
+            stem = name[:-4] if name.endswith(".npy") or name.endswith(".txt") else name
 
-            if name.endswith(".npy") or name.endswith(".txt"):
-                stem = name[:-4]
-            else:
-                stem = name
-            pass
-
-            paths.append(path)
-            stems.append(stem)
-            abbrev.append(symbol) 
+            self.paths.append(path)
+            self.stems.append(stem)
+            self.abbrev.append(symbol) 
 
             if name == self.SFRAME:
                 a = sframe.Load(path)
@@ -233,10 +264,10 @@ class Fold(object):
                 a = np.load(path)
             elif name.endswith("_meta.txt"):
                 a = NPMeta.Load(path)
-                txts[name] = a 
+                self.txts[name] = a 
             elif name.endswith(".txt"):
                 a = NPMeta.Load(path)
-                txts[name] = a
+                self.txts[name] = a
             elif self.IsFold(base, name):
                 a = Fold(path, symbol=name)
             pass
@@ -250,12 +281,72 @@ class Fold(object):
             pass
         pass
 
-        self.paths = paths
-        self.stems = stems
-        self.abbrev = abbrev
-        self.txts = txts
+    @classmethod
+    def CommonNames(cls, ff):
+        """
+        Currently asserts that all Fold instances contain the same names and stems
+
+        :param ff: dictionary holding Fold instances keyed by integers specifying order
+        :return names, stems: two lists of common names and stems present in all Fold instances
+        """
+        names = []             
+        stems = []
+        for k,v in ff.items():
+            if len(names) == 0:
+                names = v.names
+            else:
+                assert names == v.names
+            pass
+            if len(stems) == 0:
+                stems = v.stems
+            else:
+                assert stems == v.stems
+            pass
+        pass
+        return names, stems
+
+    @classmethod
+    def Concatenate(cls, ff, **kwa0):
+        """
+        :param ff: dictionary holding Fold instances keyed by integers specifying order
+        :return f: Fold instance created by concatenating the ff Fold arrays
+        """
+        kwa = kwa0.copy()
+        kwa["is_concat"] = True 
+
+        names, stems = cls.CommonNames(ff)
+        assert len(names) == len(stems)
+        kk = list(ff.keys())
+        log.info("Concatenating %d Fold into one " % len(kk))
+
+        
+
+        fc = Fold(None, **kwa )
+        fc.names = names
+        fc.stems = stems 
+        fc.paths = []
+        for i in range(len(stems)):
+            name = names[i]
+            stem = stems[i]
+            if name.endswith(".npy") and not stem == "sframe":
+                aa = []
+                for k in kk:
+                    f = ff[k]
+                    a = getattr(f, stem, None)
+                    assert not a is None
+                    aa.append(a)
+                pass
+                setattr(fc, stem, np.concatenate(tuple(aa)) )
+            pass
+        pass
+        fc.ff = ff
+        return fc 
 
     def desc(self):
+        """
+        for is_concat:True cannot assume there are .npy files 
+
+        """
         now_stamp = datetime.datetime.now()
         l = []
         l.append(self.symbol)
@@ -265,10 +356,10 @@ class Fold(object):
         l.append("")
         stamps = []
 
-        for i in range(len(self.paths)):
-            path = self.paths[i]
-            stem = self.stems[i]
-            abbrev = self.abbrev[i]
+        for i in range(len(self.stems)):
+            stem = self.stems[i] 
+            path = self.paths[i] if i < len(self.paths) else None
+            abbrev = self.abbrev[i] if i < len(self.abbrev) else None
 
             a = getattr(self, stem)
 
@@ -277,19 +368,20 @@ class Fold(object):
             name = "%s%s" % (stem,ext)
             aname = "%s.%s" % (self.symbol,stem)
 
-            if os.path.exists(path):
+            sh = str(len(a)) if ext == ".txt" else str(a.shape)
+            abbrev_ = abbrev if self.globals else " " 
+
+            line = "%1s : %-50s : %20s :" % ( abbrev_, aname, sh )
+            if not path is None and os.path.exists(path):
                 st = os.stat(path)
                 stamp = datetime.datetime.fromtimestamp(st.st_ctime)
                 age_stamp = now_stamp - stamp
                 stamps.append(stamp)
-                sh = str(len(a)) if ext == ".txt" else str(a.shape)
-                abbrev_ = abbrev if self.globals else " " 
-                line = "%1s : %-50s : %20s : %s " % ( abbrev_, aname, sh, age_stamp )
-                l.append(line)
+                line += " %s " % age_stamp
             else:
-                msg = "ERROR non-existing path for : stem %s kls %s ext %s name %s aname %s path %s " % (stem, kls, ext, name, aname, path )
-                l.append(msg)
+                line += " NO path " 
             pass
+            l.append(line)
         pass
         l.append("")
 
@@ -324,5 +416,11 @@ class Fold(object):
 
 if __name__  == '__main__':
     pass
+    logging.basicConfig(level=logging.INFO)
+    NEVT = int(os.environ.get("NEVT",3))
+    fc = Fold.LoadConcat(NEVT=NEVT, symbol="fc")
+    print(repr(fc))
+
+
 
 

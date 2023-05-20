@@ -15,25 +15,31 @@ Python script (not module) usage from two bash scripts
     PLOT=PHO_AVG ~/j/ntds/ntds.sh tt 
 
 
-PLOT types
--------------
+PLOT envvar selects what to plot
+----------------------------------
 
-STAMP
+PLOT=STAMP
    time stamp illustration
  
    STAMP_TT=200000,5000 
+   STAMP_TT=200k,5k 
       control time window of STAMP plot in microseconds [us]
+
    STAMP_ANNO=1  
       enable photon index and history annotation  
 
-PHO_AVG
+PLOT=PHO_AVG
    average beginPhoton->endPhoton CPU time vs photon point count  
 
-PHO_HIS
+PLOT=PHO_HIS
    histogram of beginPhoton->endPhoton CPU times
 
-PHO_N
-   A, B photon step point counts 
+   PLOT=PHO_HIS ~/j/ntds/ntds.sh tt
+
+PLOT=PHO_N
+   A, B photon step point counts (fakes must be skipped in A to get a match)
+
+   PLOT=PHO_N ~/j/ntds/ntds.sh tt
 
 
 Dev Notes
@@ -70,7 +76,8 @@ module development.
 
 
 """
-import os, numpy as np, textwrap
+import os, numpy as np, textwrap, logging
+log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.ana.eget import efloatarray_
@@ -89,7 +96,7 @@ FLIP = int(os.environ.get("FLIP", "0")) == 1
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 STAMP_TT = efloatarray_("STAMP_TT", "162307,3000") # "t0,dt"  microseconds 1M=1s 
 
-
+NEVT = int(os.environ.get("NEVT", 0))
 PLOT = os.environ.get("PLOT", None)
 
 ENVOUT = os.environ.get("ENVOUT", None)
@@ -104,24 +111,25 @@ else:
 pass
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
     print("AFOLD:%s" % os.environ.get("AFOLD", "-"))
     print("BFOLD:%s" % os.environ.get("BFOLD", "-"))
     print("N:%d " % N )
 
     if N == -1:
-        a = SEvt.Load("$AFOLD",symbol="a")
-        b = SEvt.Load("$BFOLD",symbol="b")
+        a = SEvt.Load("$AFOLD",symbol="a", NEVT=NEVT)
+        b = SEvt.Load("$BFOLD",symbol="b", NEVT=NEVT)
         syms = ['a','b']
         evts = [a,b]
     elif N == 0:
-        a = SEvt.Load("$AFOLD",symbol="a")
+        a = SEvt.Load("$AFOLD",symbol="a", NEVT=NEVT)
         b = None
         syms = ['a']
         evts = [a,]
     elif N == 1:
         a = None
-        b = SEvt.Load("$BFOLD",symbol="b")
+        b = SEvt.Load("$BFOLD",symbol="b", NEVT=NEVT)
         syms = ['b']
         evts = [b,]
     else:
@@ -172,7 +180,7 @@ if __name__ == '__main__':
     # needs: syms, a, b  
 
     if PLOT == "PHO_HIS":
-        msg = "histogram of beginPhoton->endPhoton CPU times"
+        msg = "histogram of beginPhoton->endPhoton durations"
         label = "%s : %s" % (PLOT, msg)
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]
@@ -279,8 +287,9 @@ if __name__ == '__main__':
 
         os.environ["RHSANNO"] = ranno
         os.environ["RHSANNO_POS"]="0.45,-0.02"
+        cut = 10 
 
-        label = "PHO_AVG : average beginPhoton->endPhoton CPU time [us] vs (step point count - 2) " 
+        label = "PHO_AVG : average beginPhoton->endPhoton duration [us] vs (step point count - 2)   # stat_cut:%d " % cut
         print(label)
 
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
@@ -293,11 +302,12 @@ if __name__ == '__main__':
 
         mc = np.zeros( (len(syms), 2), dtype=np.float64 )
 
+
         for i,sym in enumerate(syms):
-            x_ = ssa[sl,i,0] - 2
+            x_ = ssa[sl,i,0] - 2   # step point count - 2 (so starts from 0)
             n_ = ssa[sl,i,1]
             y_ = ssa[sl,i,2]
-            w = np.where( n_ > 0)[0]
+            w = np.where( n_ > cut)[0]
              
             x = x_[w]
             y = y_[w]

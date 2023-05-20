@@ -801,7 +801,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_photon.iindex = is_surface_flag ? U4Touchable::ReplicaNumber(touch, REPLICA_NAME_SELECT) : -2 ;  
 #endif
 */
-    current_photon.iindex = is_detect_flag ? U4Touchable::ImmediateReplicaNumber(touch) : -2 ;  
+    current_photon.iindex = is_detect_flag ? 
+              U4Touchable::ImmediateReplicaNumber(touch) 
+              :  
+              U4Touchable::AncestorReplicaNumber(touch) 
+              ;  
     
 
 
