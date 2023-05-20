@@ -96,7 +96,7 @@ FLIP = int(os.environ.get("FLIP", "0")) == 1
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 STAMP_TT = efloatarray_("STAMP_TT", "162307,3000") # "t0,dt"  microseconds 1M=1s 
 
-NEVT = int(os.environ.get("NEVT", 0))
+NEVT = int(os.environ.get("NEVT", 0))  # when NEVT>0 SEvt.LoadConcat loads and concatenates the SEvt
 PLOT = os.environ.get("PLOT", None)
 
 ENVOUT = os.environ.get("ENVOUT", None)
@@ -259,9 +259,9 @@ if __name__ == '__main__':
     if PLOT == "PHO_AVG":
         EXPRS_ = r"""
         np.diff(%(sym)s.rr)[0]/1e6                 # Run
-        np.diff(%(sym)s.ee)[0]/1e6                 # Evt
+        %(sym)s.ee[-1]/1e6                         # Evt
         np.sum(%(sym)s.ss)/1e6                     # Pho 
-        np.sum(%(sym)s.ss)/np.diff(%(sym)s.ee)[0]  # Pho/Evt
+        np.sum(%(sym)s.ss)/%(sym)s.ee[-1]          # Pho/Evt
         """
         EXPRS = list(filter(None, textwrap.dedent(EXPRS_).split("\n")))
 
@@ -272,7 +272,12 @@ if __name__ == '__main__':
                 expr_ = expr_.split("#")[0].strip()
                 expr = expr_ % locals()
                 print(expr) 
-                val = eval(expr)
+                try:
+                    val = eval(expr)
+                except ValueError:
+                    log.fatal("FAILED EVAL : %s " % expr )
+                    val = -1.0
+                pass
                 rlines.append("%30s : %8.3f : %s " % ( expr, val, label  ))
             pass
             rlines.append("") 

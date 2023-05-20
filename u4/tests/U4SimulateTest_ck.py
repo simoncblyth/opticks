@@ -7,7 +7,7 @@ U4SimulateTest_ck.py
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.fold import Fold, RFold
+from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.sysrap.sevt import SEvt
 

@@ -34,26 +34,6 @@ class AttrBase(object):
         return "\n".join(lines)
 
 
-
-class RFold(object):
-    """
-    This is used by SEvt(RFold) 
-
-    Provides a common Load method for the objects: U4SimtraceTest and SEvt(formerly U4SimulateTest)
-
-    The loaded Fold instance is passed as ctor argument specialized class instances. 
-    """
-    @classmethod
-    def Load(cls, fold, **kwa):
-        if fold is None: return None
-        if int(kwa.get("NEVT",0)) > 0:
-            f = Fold.LoadConcat(fold,**kwa) 
-        else:
-            f = Fold.Load(fold, **kwa )
-        pass
-        return None if f is None else cls(f)
-
-
 class Fold(object):
 
     @classmethod
@@ -127,6 +107,7 @@ class Fold(object):
             ff[evt] = cls.Load(*args, **kwa)
         pass
         fc = Fold.Concatenate(ff, **kwa0)
+        fc.ff = ff 
         return fc
 
     @classmethod
@@ -142,7 +123,6 @@ class Fold(object):
             args = list(filter(None, [os.environ["FOLD"], reldir])) 
         pass
 
-        log.debug("Fold.Load args %s " % str(args))
 
         relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
@@ -151,13 +131,15 @@ class Fold(object):
         base = os.path.expandvars(base) 
         quiet = cls.IsQuiet(**kwa)
 
+        log.info("Fold.Load args %s quiet:%d" % (str(args), quiet))
+
         if not evt is None:
             base = base % evt 
         pass 
         ubase = os.path.dirname(base) if parent else base
         fold = cls(ubase, **kwa) if os.path.isdir(ubase) else None
-        if fold is None and quiet == False:
-            log.error("failed to load from base [%s]" % base )
+        if fold is None:
+            log.error("Fold.Load FAILED for base [%s]" % base )
         pass
         if quiet == False:
             print(repr(fold))
@@ -318,10 +300,15 @@ class Fold(object):
         assert len(names) == len(stems)
         kk = list(ff.keys())
         log.info("Concatenating %d Fold into one " % len(kk))
+       
+        bases = []
+        for k in kk: 
+            f = ff[k]
+            bases.append(f.base)
+        pass
+        base = bases
 
-        
-
-        fc = Fold(None, **kwa )
+        fc = Fold(base, **kwa )
         fc.names = names
         fc.stems = stems 
         fc.paths = []
@@ -339,7 +326,6 @@ class Fold(object):
                 setattr(fc, stem, np.concatenate(tuple(aa)) )
             pass
         pass
-        fc.ff = ff
         return fc 
 
     def desc(self):
@@ -360,18 +346,24 @@ class Fold(object):
             stem = self.stems[i] 
             path = self.paths[i] if i < len(self.paths) else None
             abbrev = self.abbrev[i] if i < len(self.abbrev) else None
+            abbrev_ = abbrev if self.globals else " " 
+            aname = "%s.%s" % (self.symbol,stem)
+            line = "%1s : %-50s :" % ( abbrev_, aname )
 
             a = getattr(self, stem)
 
-            kls = a.__class__.__name__
-            ext = ".txt" if kls == 'NPMeta' else ".npy"
-            name = "%s%s" % (stem,ext)
-            aname = "%s.%s" % (self.symbol,stem)
+            if a is None:
+                line += " NO ATTR "
+            else:
+                kls = a.__class__.__name__
+                ext = ".txt" if kls == 'NPMeta' else ".npy"
+                name = "%s%s" % (stem,ext)
 
-            sh = str(len(a)) if ext == ".txt" else str(a.shape)
-            abbrev_ = abbrev if self.globals else " " 
+                sh = str(len(a)) if ext == ".txt" else str(a.shape)
+                line += " %20s :" % ( sh )
+            pass
 
-            line = "%1s : %-50s : %20s :" % ( abbrev_, aname, sh )
+
             if not path is None and os.path.exists(path):
                 st = os.stat(path)
                 stamp = datetime.datetime.fromtimestamp(st.st_ctime)

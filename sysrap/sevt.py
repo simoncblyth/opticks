@@ -8,7 +8,7 @@ sevt.py (formerly opticks.u4.tests.U4SimulateTest)
 import os, re, logging, textwrap, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.fold import Fold, RFold
+from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.ana.eget import eslice_
 from opticks.ana.base import PhotonCodeFlags
@@ -35,34 +35,200 @@ axes = 0, 2  # X,Z
 H,V = axes 
 
 
-class SEvt(RFold):
+class SEvt(object):
     """
     Higher level wrapper for an Opticks SEvt folder of arrays
 
     WIP: Concatenation of multiple SEvt, starting from Fold concatenation
     """
-    def load_runmeta(self, base):
-        """
-        HMM the run meta should be same for all of concatenated SEvts
-        """
-        rr = None
-        fp = None
-        if not base is None:
-            run_base = os.path.dirname(base)
-            run_path = os.path.join( run_base, "run.npy" )
-            fp = Fold.Load(run_base) if os.path.exists(run_path) else None
-            if not fp is None and getattr(fp,'run_meta', None) != None:
-                rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
-            pass
+    @classmethod
+    def Load(cls, *args, **kwa):
+        NEVT = int(kwa.get("NEVT",0))
+        log.info("SEvt.Load NEVT:%d " % NEVT)
+        if NEVT > 0:
+            f = cls.LoadConcat(*args,**kwa) 
+        else:
+            f = Fold.Load(*args, **kwa )
         pass
-        return rr, fp
+        return None if f is None else cls(f)
+
+    @classmethod
+    def LoadConcat(cls, *args, **kwa):
+        """
+        HMM maybe should load the separate SEvt and then concat those, 
+        rather than trying to concat at the lower Fold level 
+        """
+        NEVT = int(kwa.get("NEVT",0))
+        assert NEVT > 0
+        f = Fold.LoadConcat(*args, **kwa) 
+        assert hasattr(f, 'ff') 
+        return f 
 
     def __init__(self, f):
         """
         :param f: Fold instance 
         """
-        rr, fp = self.load_runmeta(f.base) if not f.base is None else None, None
+        self.f = f 
+        self.symbol = f.symbol
+        self._r = None
+        self.r = None
+        self._a = None
+        self.a = None
+        self._pid = -1
 
+        self.init_run(f) 
+        self.init_meta(f)
+        self.init_photon_meta(f)
+        self.init_U4R_names(f)
+        self.init_photon(f)
+        self.init_record_sframe(f)
+        self.init_SEventConfig_meta(f)
+        self.init_seq(f)
+        self.init_aux(f) 
+        self.init_ee(f)    ## handling of concatenated SEvt is done currently only for ee
+        self.init_aux_t(f)
+        self.init_sup(f)
+        self.init_junoSD_PMT_v2_SProfile(f)
+        self.init_env(f)
+
+    @classmethod
+    def CommonRunBase(cls, f):
+        """
+        :param f: Fold instance
+        :return urun_base: str
+        """
+        run_bases = []
+        if type(f.base) is str:
+            run_base = os.path.dirname(f.base)
+            run_bases.append(run_base)
+        elif type(f.base) is list:
+            for base in f.base:
+                run_base = os.path.dirname(base)
+                if not run_base in run_bases:
+                    run_bases.append(run_base)
+                pass  
+        else:
+            pass
+        pass
+        assert len(run_bases) == 1 
+        urun_base = run_bases[0]
+        return urun_base
+
+    def init_run(self, f):
+        """
+        HMM the run meta should be same for all of concatenated SEvts
+        """
+        urun_base = self.CommonRunBase(f)
+        urun_path = os.path.join( urun_base, "run.npy" )
+        fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
+        if not fp is None and getattr(fp,'run_meta', None) != None:
+            rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
+        else:
+            rr = np.array([0,0], dtype=np.uint64 ) 
+        pass
+        self.fp = fp 
+        self.rr = rr   # T_BeginOfRun, T_EndOfRun
+
+    def init_env(self, f):
+        """
+        """
+        pid = int(os.environ.get("%sPID" % f.symbol.upper(), "-1"))
+        opt = os.environ.get("%sOPT" % f.symbol.upper(), "")
+        off_ = os.environ.get("%sOFF" % f.symbol.upper(), "0,0,0")
+        off = np.array(list(map(float,off_.split(","))))
+        log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (f.symbol, pid, opt, str(off)) ) 
+
+        self.pid = pid
+        self.opt = opt 
+        self.off = off
+
+    def init_meta(self, f):
+        """
+        """
+        metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
+        meta = getattr(f, metakey, None)
+        self.metakey = metakey
+        self.meta = meta 
+
+    def init_photon_meta(self, f):
+        """
+        """
+        CHECK = getattr( f.photon_meta, 'CHECK', [] )
+        CHECK = CHECK[0] if len(CHECK) == 1 else ""
+
+        LAYOUT = getattr( f.photon_meta, 'LAYOUT', [] )
+        LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else ""
+        if LAYOUT.find(" ") > -1: LAYOUT = ""
+
+        VERSION = getattr( f.photon_meta, 'VERSION', [] )
+        VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
+        SCRIPT = os.environ.get("SCRIPT", "") 
+
+        GEOM = getattr(f.photon_meta, "GEOM", [])
+        GEOM = GEOM[0] if len(GEOM) == 1 else ""
+
+        GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
+        GEOMList = GEOMList[0] if len(GEOMList) == 1 else ""
+        if GEOMList.endswith("GEOMList"): GEOMList = ""
+
+        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
+        IDE = list(filter(None,[f.symbol.upper(), GEOM, GEOMList, "N%d"%VERSION, LAYOUT, CHECK])) 
+        ID = "_".join(IDE)
+
+        self.CHECK = CHECK
+        self.LAYOUT = LAYOUT
+        self.VERSION = VERSION
+        self.SCRIPT = SCRIPT
+        self.GEOM = GEOM
+        self.GEOMList = GEOMList
+        self.TITLE = TITLE
+        self.IDE = IDE
+        self.ID = ID
+
+    def init_U4R_names(self, f):
+        U4R_names = getattr(f, "U4R_names", None)
+        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
+        self.SPECS = SPECS
+
+    def init_photon(self, f):
+        if hasattr(f,'photon') and not f.photon is None:
+            iix = f.photon[:,1,3].view(np.int32) 
+        else:
+            iix = None
+        pass
+        self.iix = iix        
+
+    def init_record_sframe(self, f):
+        if not getattr(f, "sframe", None) is None:
+            w2m = f.sframe.w2m
+            gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
+            gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
+            lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
+        else:
+            w2m = None
+            gpos = None
+            lpos = None
+        pass
+        self.w2m = w2m
+        self.gpos = gpos 
+        self.lpos = lpos 
+
+    def init_SEventConfig_meta(self, f):
+        ipl = getattr(f.SEventConfig_meta, "InputPhoton", []) 
+        ip = ipl[0] if len(ipl)==1 else None
+
+        ipfl = getattr(f.SEventConfig_meta, "InputPhotonFrame", []) 
+        ipf = ipfl[0] if len(ipfl)==1 else None
+ 
+        ipcl = getattr(f.SEventConfig_meta, "InputPhotonCheck", []) 
+        ipc = ipc[0] if len(ipcl)==1 else None
+
+        self.ip = ip
+        self.ipf = ipf
+        self.ipc = ipc
+
+
+    def init_seq(self, f):
         symbol = f.symbol
         qlim = QLIM
         qtab_ = "np.c_[qn,qi,qu][quo][qlim]" 
@@ -97,6 +263,24 @@ class SEvt(RFold):
             qtab = None 
         pass
 
+        self.q_ = q_
+        self.q = q
+        self.qq = qq
+        self.n = n 
+        self.nosc = nosc   # mask of photons without SC in their histories
+        self.noscab = noscab   # mask of photons without SC or AB in their histories
+
+        self.qu = qu
+        self.qi = qi
+        self.qn = qn
+
+        self.quo = quo
+        self.qtab = qtab 
+
+        self.qlim = qlim
+        self.qtab_ = qtab_
+
+    def init_aux(self, f):
         if hasattr(f, 'aux') and not f.aux is None: 
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
             spec_ = f.aux[:,:,2,3].view(np.int32)   ## step spec
@@ -110,151 +294,47 @@ class SEvt(RFold):
             uc4 = None
             eph = None
             ep = None
+            t = None
         pass
-
-        self.init_timestamp(f)
-
-
-        if hasattr(f,'photon') and not f.photon is None:
-            iix = f.photon[:,1,3].view(np.int32) 
-        else:
-            iix = None
-        pass
-        self.iix = iix        
-
-
-        CHECK = getattr( f.photon_meta, 'CHECK', [] )
-        CHECK = CHECK[0] if len(CHECK) == 1 else ""
-
-        LAYOUT = getattr( f.photon_meta, 'LAYOUT', [] )
-        LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else ""
-        if LAYOUT.find(" ") > -1: LAYOUT = ""
-
-        VERSION = getattr( f.photon_meta, 'VERSION', [] )
-        VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
-        SCRIPT = os.environ.get("SCRIPT", "") 
-
-        GEOM = getattr(f.photon_meta, "GEOM", [])
-        GEOM = GEOM[0] if len(GEOM) == 1 else ""
-
-        GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
-        GEOMList = GEOMList[0] if len(GEOMList) == 1 else ""
-        if GEOMList.endswith("GEOMList"): GEOMList = ""
-
-        U4R_names = getattr(f, "U4R_names", None)
-        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
-
-        #spec = SPECS[spec_]
-        spec = None   # stopped on for a time 
-
-        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
-
-        IDE = list(filter(None,[symbol.upper(), GEOM, GEOMList, "N%d"%VERSION, LAYOUT, CHECK])) 
-        ID = "_".join(IDE)
-
-
-        if not getattr(f, "sframe", None) is None:
-            w2m = f.sframe.w2m
-            gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
-            gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
-            lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
-        else:
-            w2m = None
-            gpos = None
-            lpos = None
-        pass
-
-
-        metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
-        meta = getattr(f, metakey, None)
-
-        ipl = getattr(f.SEventConfig_meta, "InputPhoton", []) 
-        ip = ipl[0] if len(ipl)==1 else None
-
-        ipfl = getattr(f.SEventConfig_meta, "InputPhotonFrame", []) 
-        ipf = ipfl[0] if len(ipfl)==1 else None
- 
-        ipcl = getattr(f.SEventConfig_meta, "InputPhotonCheck", []) 
-        ipc = ipc[0] if len(ipcl)==1 else None
- 
- 
-       
-        self.f = f 
-        self.fp = fp 
-        self.rr = rr   # T_BeginOfRun, T_EndOfRun
-
-        self.q_ = q_
-        self.q = q
-        self.qq = qq
-        self.n = n 
         self.fk = fk
+        self.spec_ = spec_
         self.uc4 = uc4
         self.eph = eph   # ProcessHits EPH enum at step point level 
         self.ep  = ep    # ProcessHits EPH enum at photon level  
-        self.nosc = nosc   # mask of photons without SC in their histories
-        self.noscab = noscab   # mask of photons without SC or AB in their histories
 
+    def init_ee(self, f):
+        """
+        microsecond[us] timestamps (UTC epoch) [BeginOfEvent,EndOfEvent,Begin2End] 
 
-        self.qu = qu
-        self.qi = qi
-        self.qn = qn
-        self.quo = quo
-        self.qlim = qlim
-        self.qtab_ = qtab_
-        self.qtab = qtab 
-        self.CHECK = CHECK
-        self.LAYOUT = LAYOUT
-        self.VERSION = VERSION
-        self.SCRIPT = SCRIPT
-        self.GEOM = GEOM
-        self.GEOMList = GEOMList
-        self.SPECS = SPECS
+        For concatenated SEvt the total of all the EndOfEvent-BeginOfEvent 
+        is placed into ee[-1]
+        """
+        with_photon_meta = hasattr(f, 'photon_meta') and not f.photon_meta is None
+        with_ff = hasattr(f, 'ff')
+        log.info("init_ee with_photon_meta:%d with_ff:%d" % (with_photon_meta, with_ff))
+        if with_photon_meta:
+            boe = np.uint64(f.photon_meta.t_BeginOfEvent[0])
+            eoe = np.uint64(f.photon_meta.t_EndOfEvent[0])
+            b2e = eoe-boe
+        else:
+            kk = f.ff.keys()
+            boe = np.uint64(0)
+            eoe = np.uint64(0)
+            b2e = np.uint64(0)
+            for k in kk:
+                fk = f.ff[k]
+                k_boe = np.uint64(fk.photon_meta.t_BeginOfEvent[0])
+                k_eoe = np.uint64(fk.photon_meta.t_EndOfEvent[0])
+                k_b2e = np.uint64(k_eoe-k_boe)
+                b2e += k_b2e  
+            pass
+        pass 
+        self.ee = np.array([boe, eoe, b2e], dtype=np.uint64 )
 
-        self.TITLE = TITLE
-        self.IDE = IDE
-        self.ID = ID
-
-        self.spec_ = spec_
-        self.spec = spec 
-
-        self.metakey = metakey
-        self.meta = meta 
-
-        self.ip = ip
-        self.ipf = ipf
-        self.ipc = ipc
-
-        self.w2m = w2m
-        self.gpos = gpos 
-        self.lpos = lpos 
-
-        self._r = None
-        self.r = None
-        self._a = None
-        self.a = None
-        self._pid = -1
-
-        pid = int(os.environ.get("%sPID" % symbol.upper(), "-1"))
-        opt = os.environ.get("%sOPT" % symbol.upper(), "")
-        off_ = os.environ.get("%sOFF" % symbol.upper(), "0,0,0")
-        off = np.array(list(map(float,off_.split(","))))
-
-        log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (symbol, pid, opt, str(off)) ) 
-        self.symbol = symbol
-        self.pid = pid
-        self.opt = opt 
-        self.off = off
-
-    def init_timestamp(self, f):
+    def init_junoSD_PMT_v2_SProfile(self, f):
         """
         The timestamps come from sysrap/stamp.h and are datetime64[us] (UTC) compliant 
-
         """
-        if hasattr(f, 'photon_meta') and not f.photon_meta is None:
-            ee = np.array([f.photon_meta.t_BeginOfEvent, f.photon_meta.t_EndOfEvent], dtype=np.uint64 ).squeeze()
-        else:
-            ee = None
-        pass 
 
         if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None: 
             pf = f.junoSD_PMT_v2_SProfile
@@ -272,12 +352,20 @@ class SEvt(RFold):
         self.pfmi = pfmi
         self.pfr  = pfr 
 
+
+
+    def init_aux_t(self, f):
         if hasattr(f, 'aux') and not f.aux is None: 
             t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 
         else:
             t = None
         pass
-        # photon level beginPhoton endPhoton time stamps from the sup quad4 
+        self.t = t      # array of photon step point time stamps (UTC epoch)
+
+    def init_sup(self, f):
+        """
+        photon level beginPhoton endPhoton time stamps from the sup quad4 
+        """
         if hasattr(f,'sup') and not f.sup is None:
             s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()  # SEvt::beginPhoton (xsup.q0.w.x)
             s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q0.w.y)
@@ -321,17 +409,15 @@ class SEvt(RFold):
             hi0 = None
             hi1 = None
         pass
-        if not t is None and not s0 is None:
+        if not getattr(self, 't', None) is None and not s0 is None:
             t0 = s0.min()
-            tt = t.copy() 
+            tt = self.t.copy() 
             tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros 
         else:
             t0 = None
             tt = None
         pass 
 
-        self.ee = ee    # array of BeginOfEvent EndOfEvent time stamps (UTC epoch)
-        self.t = t      # array of photon step point time stamps (UTC epoch)
         self.t0 = t0    # scalar : event minimum time stamp (which is minimum s0:beginPhoton timestamp)
         self.tt = tt    # array of photon step point time stamps relative to t0 
 
@@ -365,7 +451,7 @@ class SEvt(RFold):
     def _set_pid(self, pid):
         f = self.f
         q = self.q
-        symbol = self.symbol
+        symbol = self.f.symbol
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
             wl = _r[:,2,3]

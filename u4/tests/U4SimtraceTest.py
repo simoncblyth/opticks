@@ -15,16 +15,13 @@ AFOLD
 BFOLD
     optional second simulation photon histories
 
-classes
----------
+"sibling" classes
+--------------------
 
-RFold
-   Fold loader
-
-U4SimtraceTest(RFold)
+U4SimtraceTest
    intersection geometry  
 
-SEvt(RFold)
+SEvt
    photon histories 
 
 """
@@ -32,7 +29,7 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from collections import OrderedDict as odict 
-from opticks.ana.fold import Fold, RFold
+from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.eget import eintarray_, efloatarray_
@@ -83,11 +80,21 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 
-class U4SimtraceTest(RFold):
+class U4SimtraceTest(object):
     """
     TODO: come up with a better name for this, its more general that just one test 
           (just like SEvt is better name than U4SimulateTest) 
     """
+    @classmethod
+    def Load(cls, fold, **kwa):
+        if fold is None: return None
+        if int(kwa.get("NEVT",0)) > 0:
+            f = Fold.LoadConcat(fold,**kwa) 
+        else:
+            f = Fold.Load(fold, **kwa )
+        pass
+        return None if f is None else cls(f)
+
 
     def __repr__(self):
         return "U4SimtraceTest %s:%s " % (self.symbol, self.fold.base)
