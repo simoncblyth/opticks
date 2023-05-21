@@ -42,6 +42,7 @@ double SEvt::TimerDone(){ return TIMER->done() ; }
 uint64_t SEvt::TimerStartCount(){ return TIMER->start_count() ; }
 std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 
+NP* SEvt::RUN_META = NP::Make<float>(1) ; 
 
 NP* SEvt::UU = nullptr ; 
 NP* SEvt::UU_BURN = NP::Load("$SEvt__UU_BURN") ; 
@@ -832,6 +833,20 @@ uint64_t SEvt::T_EndOfRun = 0 ;
 void SEvt::BeginOfRun(){ T_BeginOfRun = stamp::Now(); } // static 
 void SEvt::EndOfRun()  { T_EndOfRun   = stamp::Now(); } // static 
 
+
+template<typename T>
+void SEvt::SetRunMeta(const char* k, T v )
+{
+    RUN_META->set_meta<T>(k, v ); 
+}
+
+template void SEvt::SetRunMeta<int>(      const char*, int  );
+template void SEvt::SetRunMeta<uint64_t>( const char*, uint64_t  );
+template void SEvt::SetRunMeta<unsigned>( const char*, unsigned  );
+template void SEvt::SetRunMeta<float>(    const char*, float  );
+template void SEvt::SetRunMeta<double>(   const char*, double  );
+
+
 /**
 SEvt::SaveRunMeta
 -------------------
@@ -842,12 +857,12 @@ May be called for example from U4Recorder::EndOfRunAction
 
 void SEvt::SaveRunMeta(const char* base)
 {
+    SetRunMeta<uint64_t>("T_BeginOfRun", T_BeginOfRun ); 
+    SetRunMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  
     const char* dir = RunDir(base); 
-    NP* m = NP::Make<float>(1); 
-    m->set_meta<uint64_t>("T_BeginOfRun", T_BeginOfRun );
-    m->set_meta<uint64_t>("T_EndOfRun",   T_EndOfRun );  
-    m->save(dir, "run.npy") ; 
+    RUN_META->save(dir, "run.npy") ; 
 }
+
 
 
 

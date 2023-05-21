@@ -176,6 +176,8 @@ HUH: some problem with LOG from here ?
 void U4Recorder::EndOfRunAction(const G4Run*)
 { 
     SEvt::EndOfRun(); 
+
+    SEvt::SetRunMeta<int>("FAKES_SKIP", int(FAKES_SKIP) ); 
     SEvt::SaveRunMeta(); 
 
     std::cout 
@@ -197,6 +199,10 @@ void U4Recorder::EndOfRunAction(const G4Run*)
 
 
 }
+
+
+
+
 
 void U4Recorder::BeginOfEventAction(const G4Event* event)
 { 
