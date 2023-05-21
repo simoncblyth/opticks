@@ -763,9 +763,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    std::string spec_ = U4Step::Spec(step) ; 
-    const char* spec = spec_.c_str(); 
-
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(ulabel); 
 
@@ -867,13 +864,18 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     unsigned fakemask = 0 ;
     double   fake_duration(-2.); 
 
-    if(FAKES_SKIP)
+    int st = -2 ;   
+
+    if(FAKES_SKIP && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) )
     {
        // fake detection is very expensive : only do when needed
-       fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP, &fake_duration ) ; 
-       is_fake = fakemask > 0 && ( flag == BOUNDARY_TRANSMIT || flag == BOUNDARY_REFLECT ) ; 
+
+        std::string spec_ = U4Step::Spec(step) ;  // ctrl-c sampling suspect slow
+        const char* spec = spec_.c_str(); 
+        fakemask = ClassifyFake(step, flag, spec, PIDX_DUMP, &fake_duration ) ; 
+        is_fake = fakemask > 0 ; 
+        st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
     }
-    int st = ( is_fake ? -1 : 1 )*SPECS.add(spec, false ) ;   
 
 
     if(PIDX_DUMP) 
@@ -908,7 +910,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         << " l.id " << std::setw(3) << ulabel.id
         << " step_mm " << std::fixed << std::setw(10) << std::setprecision(4) << step_mm 
         << " abbrev " << OpticksPhoton::Abbrev(flag)
-        << " spec " << std::setw(50) << spec 
         << " st " << std::setw(3) << st 
         << " is_fake " << ( is_fake ? "YES" : "NO " )
         << " fakemask " << fakemask
