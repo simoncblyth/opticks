@@ -154,7 +154,10 @@ render()
 }
 
 
-# skip the render when running with PUB defined
+# skip the render when running with PUB defined 
+# as in that case the ouputs are just copied 
+# from temporary dirs into the publication tree
+
 if [ -z "$PUB" ]; then
     if [ -n "$ARGLIST" ] ; then 
         echo $msg MOI $MOI ARGLIST $ARGLIST
@@ -171,7 +174,8 @@ fi
 
 relative_stem(){
    local jpg=$1
-  
+
+   # HMM:geocache is very old world   
    local geocache=${OPTICKS_GEOCACHE_PREFIX:-$HOME/.opticks}/geocache/
    local oktmp=/tmp/$USER/opticks/
 

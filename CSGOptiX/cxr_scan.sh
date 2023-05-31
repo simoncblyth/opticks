@@ -3,8 +3,9 @@ usage(){ cat << EOU
 cxr_scan.sh
 ==============
 
-Repeats a script such as cxr_overview.sh with EMM
-envvar variation to change enabledmergedmesh. 
+Repeats a script such as cxr_overview.sh with EMM or ELV
+envvar variation to change enabledmergedmesh(coarse) 
+or enabledlv(fine) 
 
 On GPU workstation::
 
