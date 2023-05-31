@@ -287,6 +287,33 @@ class Fold(object):
         pass
         return names, stems
 
+
+    @classmethod
+    def BaseLabel(cls, base, shorten=False):
+        """
+        Example baselabel and shortened baselabel::
+
+             /tmp/blyth/opticks/GEOM/R0J008/ntds2/ALL0/00[0,1,2,3,4,5,6,7,8,9]
+             R0J008/ntds2/ALL0
+
+        """
+        label = "BaseLabel:unexpected-base-type"
+        if type(base) is str:
+            label = base
+        elif type(base) is list:
+            pfx = os.path.commonprefix(base) 
+            tail = []
+            for _ in base:
+                tail.append(_[len(pfx):])
+            pass
+            label = "%s[%s]" % ( pfx, ",".join(tail)) 
+        pass
+
+        if shorten and "GEOM" in label:
+            label = os.path.dirname(label.split("GEOM")[1][1:])    
+        pass
+        return label 
+
     @classmethod
     def Concatenate(cls, ff, **kwa0):
         """
@@ -307,6 +334,7 @@ class Fold(object):
             bases.append(f.base)
         pass
         base = bases
+        baselabel = cls.BaseLabel(bases) 
 
         fc = Fold(base, **kwa )
         fc.names = names
@@ -327,6 +355,11 @@ class Fold(object):
             pass
         pass
         return fc 
+
+    def _get_baselabel(self):
+        return self.BaseLabel(self.base, shorten=True)
+
+    baselabel = property(_get_baselabel)
 
     def desc(self):
         """
