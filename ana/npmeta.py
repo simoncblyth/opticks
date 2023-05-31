@@ -20,7 +20,7 @@ class NPMetaCompare(object):
 
         ak = list(filter(None,am.d.keys())) 
         bk = list(filter(None,bm.d.keys()))  # avoid blank key 
-        kk = ak if ak == bk else list(set(list(ak)+list(bk))) 
+        kk = ak if ak == bk else list(set(list(ak)+list(bk)))   ## common keys 
         skk = np.array( list(map(lambda _:"%30s"%_, kk )), dtype="|S30" )
         tab = np.zeros( [len(kk),2], dtype="|U25" ) 
         lines = [] 

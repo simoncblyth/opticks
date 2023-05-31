@@ -96,8 +96,8 @@ FLIP = int(os.environ.get("FLIP", "0")) == 1
 TIGHT = int(os.environ.get("TIGHT", "0")) == 1 
 STAMP_TT = efloatarray_("STAMP_TT", "162307,3000") # "t0,dt"  microseconds 1M=1s 
 
-NEVT = int(os.environ.get("NEVT", 0))  # when NEVT>0 SEvt.LoadConcat loads and concatenates the SEvt
 PLOT = os.environ.get("PLOT", None)
+NEVT = int(os.environ.get("NEVT", 0))  # when NEVT>0 SEvt.LoadConcat loads and concatenates the SEvt
 
 ENVOUT = os.environ.get("ENVOUT", None)
 CAP_STEM = PLOT
@@ -109,6 +109,43 @@ if MODE != 0:
 else:
     WM = None
 pass
+
+
+
+def GetAnnotation(title, EXPRS_, syms):
+    EXPRS = list(filter(None, textwrap.dedent(EXPRS_).split("\n")))
+
+    rlines = [] 
+    rlines.append(title)
+
+    for i,sym in enumerate(syms):
+        for expr_ in EXPRS:
+            label = expr_[expr_.find("#"):] if expr_.find("#") > -1 else ""
+            expr_ = expr_.split("#")[0].strip()
+            expr = expr_ % locals()
+            print(expr) 
+            try:
+                val = eval(expr)
+            except ValueError:
+                log.fatal("FAILED EVAL : %s " % expr )
+                val = "?"
+            pass
+            fmt_ = {}
+            fmt_["str"] = "%30s : %s : %s "  
+            fmt_["int"] = "%30s : %8d : %s "  
+            fmt_["float"] = "%30s : %8.3f : %s "  
+            fmt_[""] = fmt_["float"]
+
+            if type(val) is list: val = " ".join(val)
+            fmt = fmt_.get(type(val).__name__, fmt_["float"] )
+            rlines.append(fmt % ( expr, val, label  ))
+        pass
+        rlines.append("") 
+    pass
+    ranno = "\n".join(rlines)
+    return ranno
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -144,6 +181,8 @@ if __name__ == '__main__':
         CAP_BASE = b.f.base
     pass
 
+    # concatenated SEvt have list of bases 
+    if type(CAP_BASE) is list: CAP_BASE = CAP_BASE[0]
 
     if not a is None:print(repr(a))
     if not b is None:print(repr(b))
@@ -238,63 +277,47 @@ if __name__ == '__main__':
       
 
     print(" average photonBegin->photonEnd for different step counts ") 
-    ssa = np.zeros((33,len(syms),3), dtype=np.float64 )
+    ssa = np.zeros((33,len(syms),4), dtype=np.float64 )
     for n in range(33):
         for i,sym in enumerate(syms):
             w_ = "np.where( %(sym)s.n == %(n)s )[0]" % locals()
             w = eval(w_)
             nw = len(w)
-            expr_ = "np.average( %(sym)s.ss[%(sym)s.n == %(n)s ])" % locals() 
+            ss_ = "%(sym)s.ss[%(sym)s.n == %(n)s ]" % locals()
+            ss = eval(ss_) 
+
             ssa[n,i,0] = n
             ssa[n,i,1] = nw
-            ssa[n,i,2] = eval(expr_) if nw > 0 else 0.
+
+            if len(ss) == 0: continue
+
+            ssa[n,i,2] = np.average(ss)
+            ssa[n,i,3] = np.std(ss, ddof=1)/np.sqrt(np.size(ss)) 
         pass
     pass
 
-    expr_ = "np.c_[ssa.reshape(-1,6)]"
+
+    expr_ = "np.c_[ssa.reshape(-1,8)]"
     print(expr_)
     print(eval(expr_))
 
-
     if PLOT == "PHO_AVG":
         EXPRS_ = r"""
+        %(sym)s.f.baselabel                        #
+        %(sym)s.FAKES_SKIP                         # from run_meta 
         np.diff(%(sym)s.rr)[0]/1e6                 # Run
         %(sym)s.ee[-1]/1e6                         # Evt
         np.sum(%(sym)s.ss)/1e6                     # Pho 
         np.sum(%(sym)s.ss)/%(sym)s.ee[-1]          # Pho/Evt
         """
-        EXPRS = list(filter(None, textwrap.dedent(EXPRS_).split("\n")))
-
-        rlines = [] 
-        for i,sym in enumerate(syms):
-            for expr_ in EXPRS:
-                label = expr_[expr_.find("#")+1:] if expr_.find("#") > -1 else ""
-                expr_ = expr_.split("#")[0].strip()
-                expr = expr_ % locals()
-                print(expr) 
-                try:
-                    val = eval(expr)
-                except ValueError:
-                    log.fatal("FAILED EVAL : %s " % expr )
-                    val = -1.0
-                pass
-                rlines.append("%30s : %8.3f : %s " % ( expr, val, label  ))
-            pass
-            rlines.append("") 
-        pass
-        ranno = "\n".join(rlines)
-    else:
-        ranno = "no-ranno"
-    pass
- 
-
-    if PLOT == "PHO_AVG":
-
-        os.environ["RHSANNO"] = ranno
+        title = "sevt_tt.PHO_AVG.table NEVT:%(NEVT)d ## " % locals()
+        ranno = GetAnnotation(title, EXPRS_, syms )
+        os.environ["RHSANNO"] = "\n".join(filter(lambda line:line.find("##")==-1, ranno.split("\n")))
         os.environ["RHSANNO_POS"]="0.45,-0.02"
-        cut = 10 
 
-        label = "PHO_AVG : average beginPhoton->endPhoton duration [us] vs (step point count - 2)   # stat_cut:%d " % cut
+        cut = 10 
+        labelx = "stat_cut:%(cut)d NEVT:%(NEVT)d " % locals()
+        label = "PHO_AVG : average beginPhoton->endPhoton duration [us] vs (step point count - 2)   # " + labelx 
         print(label)
 
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
@@ -305,6 +328,7 @@ if __name__ == '__main__':
         style = {'a':"ro-", 'b':"bo-" }
         fitstyle = {'a':"r:", 'b':"b:" }
 
+
         mc = np.zeros( (len(syms), 2), dtype=np.float64 )
 
 
@@ -312,12 +336,20 @@ if __name__ == '__main__':
             x_ = ssa[sl,i,0] - 2   # step point count - 2 (so starts from 0)
             n_ = ssa[sl,i,1]
             y_ = ssa[sl,i,2]
+            ye_ = ssa[sl,i,3]
+
             w = np.where( n_ > cut)[0]
              
             x = x_[w]
             y = y_[w]
+            ye = ye_[w] 
 
-            ax.plot( x, y , style[sym], label="%(sym)s : avg(ss) vs n-2  " % locals() )
+            label = "%(sym)s : avg(ss) vs n-2  " % locals()
+
+            #ax.plot( x, y , style[sym], label=label )
+
+            ax.errorbar( x, y,yerr=ye, fmt=style[sym], label=label  )
+
 
 
             wf = np.where( n_ > 10)[0]  ## only fit points with some stats
@@ -344,12 +376,22 @@ if __name__ == '__main__':
 
 
     if PLOT == "PHO_N":
+
+        EXPRS_ = r"""
+        %(sym)s.f.baselabel                        #
+        %(sym)s.FAKES_SKIP                         # from run_meta 
+        """
+        title = "sevt_tt.PHO_N.table NEVT:%(NEVT)d ## " % locals()
+        ranno0 = GetAnnotation(title, EXPRS_, syms )
+        ranno = "\n".join(filter(lambda line:line.find("##")==-1, ranno0.split("\n")))
+        os.environ["RHSANNO"] = ranno
+        os.environ["RHSANNO_POS"]="0.1,-0.02"
+
         a_n, a_nc = np.unique(a.n, return_counts=True) 
         b_n, b_nc = np.unique(b.n, return_counts=True) 
-
          
-        msg = "consistent when fakes are skipped"
-        msg = "much more in A when fakes not skipped"
+        #msg = "consistent when fakes are skipped"
+        msg = "much more in A when fakes not skipped : NEVT:%(NEVT)d" % locals()
         label = "PHO_N : A(N=0),B(N=1) photon step counts : %s " % msg  
         fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
         ax = axs[0]

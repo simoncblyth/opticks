@@ -121,13 +121,20 @@ class SEvt(object):
         urun_base = self.CommonRunBase(f)
         urun_path = os.path.join( urun_base, "run.npy" )
         fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
-        if not fp is None and getattr(fp,'run_meta', None) != None:
-            rr = np.array([fp.run_meta.T_BeginOfRun, fp.run_meta.T_EndOfRun], dtype=np.uint64 ).squeeze()
-        else:
-            rr = np.array([0,0], dtype=np.uint64 ) 
-        pass
+        has_run_meta = not fp is None and getattr(fp,'run_meta', None) != None
+
+        rr_ = [fp.run_meta.T_BeginOfRun[0], fp.run_meta.T_EndOfRun[0]] if has_run_meta else [0,0]
+        rr = np.array(rr_, dtype=np.uint64 )
+
         self.fp = fp 
         self.rr = rr   # T_BeginOfRun, T_EndOfRun
+
+        qwns = ["FAKES_SKIP",]
+        for qwn in qwns:
+            mval = list(map(int,getattr(fp.run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"])) 
+            setattr(self, qwn, mval[0] )
+        pass  
+
 
     def init_env(self, f):
         """
@@ -334,8 +341,22 @@ class SEvt(object):
     def init_junoSD_PMT_v2_SProfile(self, f):
         """
         The timestamps come from sysrap/stamp.h and are datetime64[us] (UTC) compliant 
-        """
 
+        pf
+            uint64_t microsecond timestamps collected by SProfile.h 
+        pfr  
+            uint64_t (last - first) timestamp difference for each SProfile (currently ProcessHits call)  
+
+
+        More than 10% of time spent in ProcessHits::
+
+            In [16]: np.sum(a.pfr)/a.ee[-1]
+            Out[16]: 0.10450881266649384
+
+            In [17]: np.sum(b.pfr)/b.ee[-1]
+            Out[17]: 0.11134881257006096
+
+        """
         if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None: 
             pf = f.junoSD_PMT_v2_SProfile
             pfmx = np.max(pf[:,1:], axis=1 )
@@ -642,6 +663,8 @@ class MSAB(object):
         ftabs = []
         ttabs = []
 
+        first = True
+        kk0 = None
         skk0 = None 
         ffield0 = None
         ifield0 = None
@@ -650,13 +673,29 @@ class MSAB(object):
 
         mab = {}
 
+        print("NEVT:%d" % NEVT)
+        assert( NEVT > 0 )
+
         for i in range(NEVT):
-            a = SEvt.Load(AFOLD % i,symbol="a", quiet=True)
-            b = SEvt.Load(BFOLD % i,symbol="b", quiet=True)
+
+            afold = AFOLD % i
+            bfold = BFOLD % i
+            a = SEvt.Load(afold,symbol="a", quiet=True)
+            b = SEvt.Load(bfold,symbol="b", quiet=True)
+            if a is None:
+                log.fatal("FAILED TO LOAD SEVT A FROM AFOLD: %s " % afold )
+            pass
+            if b is None:
+                log.fatal("FAILED TO LOAD SEVT B FROM BFOLD: %s " % bfold )
+            pass
+
             ab = SAB(a,b)
             mab[i] = ab 
 
+
             kk = ab.meta.kk
+            #print("ab.meta.kk (A,B common keys):%s" % str(kk))
+
             skk = ab.meta.skk
             tab = ab.meta.tab
 
@@ -665,7 +704,8 @@ class MSAB(object):
             ifield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) < 15, np.char.find(tab, '.') == -1 ))[0])
             tfield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) > 15, np.char.find(tab, '.') == -1 ))[0])
 
-            if skk0 is None:
+            if first:
+                first = False
                 skk0 = skk
                 kk0 = kk
                 tab0 = tab
@@ -674,6 +714,7 @@ class MSAB(object):
                 tfield0 = tfield
             else:
                 assert np.all( skk == skk0 )
+                assert kk == kk0
                 assert tab.shape == tab0.shape
                 assert np.all( ffield == ffield0 )
                 assert np.all( ifield == ifield0 )
@@ -703,11 +744,12 @@ class MSAB(object):
             pass
         pass
 
+
         self.c2tab = c2tab
         self.c2tab_zero = np.all( c2tab == 0. )
 
         self.mab = mab 
-        akk = np.array( list(kk)) 
+        akk = np.array( list(kk0)) 
         ikk = akk[ifield]
         fkk = akk[ffield]
         tkk = akk[tfield]
