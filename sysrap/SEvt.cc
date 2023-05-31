@@ -2127,6 +2127,8 @@ Invoked by SEvt::makePhoton which gets called by SEvt::gatherPhoton for every ev
 This collects the (key, value) pairs of the above set of standard envvars 
 into the photon array metadata. 
 
+HMM: maybe makes for sense for this to go into run rather than photon metadata 
+
 **/
 
 void SEvt::AddEnvMeta( NP* a, bool dump ) // static
