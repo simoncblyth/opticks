@@ -66,6 +66,7 @@ TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state
 #include "SCAM.h"
 #include "SBAS.h"
 #include "sframe.h"
+#include "NP.hh"
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -256,8 +257,10 @@ struct SYSRAP_API SGLM
     float get_focal_basis() const ; 
 
 
+    void writeDesc(const char* dir, const char* name=nullptr) const ; 
     std::string desc() const ; 
     std::string descLog() const ; 
+
 
     void addlog( const char* label, float value       ) ; 
     void addlog( const char* label, const char* value ) ; 
@@ -362,6 +365,15 @@ void SGLM::update()
     addlog("SGLM::update", "]"); 
 }
 
+
+
+void SGLM::writeDesc(const char* dir, const char* name_) const 
+{
+    const char* name = name_ ? name_ : "SGLM__writeDesc.log" ; 
+    std::string ds = desc() ; 
+    NP::WriteString(dir, name, ds );      
+}
+
 std::string SGLM::desc() const 
 {
     std::stringstream ss ; 
@@ -377,6 +389,8 @@ std::string SGLM::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
 
 void SGLM::dump() const 
 {

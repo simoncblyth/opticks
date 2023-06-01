@@ -937,8 +937,8 @@ void CSGOptiX::render_snap( const char* name_ )
 
 #ifdef WITH_SGLM
     sglm->fr.save( outdir ); 
+    sglm->writeDesc( outdir, "CSGOptiX__render_snap.log" ); 
 #endif
-
 
 }
 

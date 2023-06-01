@@ -380,6 +380,8 @@ struct NP
     static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
     static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
 
+    static void WriteString(const char* dir, const char* name, const std::string& str, bool append=false ); 
+
     static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
     static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
 
@@ -4536,8 +4538,29 @@ inline void NP::WriteNames(const char* path, const std::vector<std::string>& nam
     std::ofstream stream(path, mode );
     for( unsigned i=0 ; i < num_names ; i++) stream << names[i] << std::endl ; 
     stream.close(); 
-
 }
+
+inline void NP::WriteString(const char* dir, const char* name, const std::string& str, bool append ) // static
+{
+    std::string path_ = U::form_path(dir, name); 
+    const char* path = path_.c_str(); 
+    const char* xpath = U::Resolve(path); 
+
+    std::cout 
+       << "NP::WriteString"
+       << " path " << ( path ? path : "-" )
+       << " xpath " << ( xpath ? xpath : "-" )
+       << " str.size " << str.size() 
+       << std::endl
+       ;
+
+    std::ios_base::openmode mode = std::ios::out|std::ios::binary ; 
+    if(append) mode |= std::ios::app ;
+    std::ofstream stream(xpath, mode );
+    stream << str << std::endl ; 
+    stream.close(); 
+}
+
 
 inline void NP::ReadNames(const char* dir, const char* name, std::vector<std::string>& names )
 {
