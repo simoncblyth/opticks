@@ -174,6 +174,14 @@ struct qat4
             q3.f.x == 0.f && q3.f.y == 0.f && q3.f.z == 0.f && q3.f.w == 1.f ; 
     }
 
+    QAT4_METHOD bool is_zero() const 
+    {
+        return 
+            q0.f.x == 0.f && q0.f.y == 0.f && q0.f.z == 0.f && q0.f.w == 0.f  &&
+            q1.f.x == 0.f && q1.f.y == 0.f && q1.f.z == 0.f && q1.f.w == 0.f  && 
+            q2.f.x == 0.f && q2.f.y == 0.f && q2.f.z == 0.f && q2.f.w == 0.f  && 
+            q3.f.x == 0.f && q3.f.y == 0.f && q3.f.z == 0.f && q3.f.w == 0.f ; 
+    }
 
     QAT4_METHOD qat4(float tx, float ty, float tz) 
     {

@@ -65,6 +65,7 @@ TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state
 #include "SCenterExtentFrame.h"
 #include "SCAM.h"
 #include "SBAS.h"
+#include "sframe.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -78,6 +79,7 @@ struct SYSRAP_API SGLM
     static constexpr const char* kLOOK = "LOOK" ; 
     static constexpr const char* kUP = "UP" ; 
     static constexpr const char* kZOOM = "ZOOM" ; 
+    static constexpr const char* kTMIN = "TMIN" ; 
     static constexpr const char* kCAM = "CAM" ; 
     static constexpr const char* kNEARFAR = "NEARFAR" ; 
     static constexpr const char* kFOCAL = "FOCAL" ; 
@@ -91,6 +93,7 @@ struct SYSRAP_API SGLM
     static glm::vec4 UP ; 
 
     static float ZOOM ; 
+    static float TMIN ; 
     static int   CAM ; 
     static int   NEARFAR ; 
     static int   FOCAL ; 
@@ -103,6 +106,7 @@ struct SYSRAP_API SGLM
     static void SetLOOK( float x, float y, float z ); 
     static void SetUP( float x, float y, float z ); 
     static void SetZOOM( float v ); 
+    static void SetTMIN( float v ); 
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
@@ -124,6 +128,7 @@ struct SYSRAP_API SGLM
     static std::string Present(const float v, int wid=10, int prec=3);
     static std::string Present(const glm::vec3& v, int wid=10, int prec=3);
     static std::string Present(const glm::vec4& v, int wid=10, int prec=3);
+    static std::string Present(const float4& v,    int wid=10, int prec=3);
     static std::string Present(const glm::mat4& m, int wid=10, int prec=3);
 
     template<typename T> static std::string Present_(const glm::tmat4x4<T>& m, int wid=10, int prec=3);
@@ -143,8 +148,10 @@ struct SYSRAP_API SGLM
     std::string descInput() const ; 
 
     SGLM(); 
+    void initCE(); 
 
-    glm::vec4 ce ;
+    sframe fr ;    // CAUTION: SEvt also holds an SFrame for input photon targetting 
+    //glm::vec4 ce ;
 
     // modes
     int  cam ; 
@@ -152,8 +159,8 @@ struct SYSRAP_API SGLM
     int  focal ;  
 
     // manual input matrices
-    const qat4* m2w ; 
-    const qat4* w2m ; 
+    //const qat4* m2w ; 
+    //const qat4* w2m ; 
     bool rtp_tangential ; 
 
     // ~1.5+3 quad4
@@ -173,8 +180,10 @@ struct SYSRAP_API SGLM
 
     std::vector<std::string> log ; 
 
-    void set_ce(  float x, float y, float z, float w ); 
-    void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
+    float tmin_abs() const ; 
+    void set_frame( const sframe& fr ); 
+    //void set_ce(  float x, float y, float z, float w ); 
+    //void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
     void set_rtp_tangential( bool rtp_tangential_ ); 
 
     void updateModelMatrix();  // depends on ce, unless valid m2w and w2m matrices provided
@@ -269,6 +278,7 @@ glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1") ;
 glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1") ; 
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0") ; 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1"); 
+float      SGLM::TMIN = EValue<float>(kTMIN, "0.1"); 
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ; 
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
@@ -279,6 +289,7 @@ void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z =
 void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
 void SGLM::SetZOOM( float v ){ ZOOM = v ; }
+void SGLM::SetTMIN( float v ){ TMIN = v ; }
 void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
@@ -292,12 +303,11 @@ const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
 
 SGLM::SGLM() 
     :
-    ce(CE),
     cam(CAM),
     nearfar(NEARFAR),
     focal(FOCAL),
-    m2w(nullptr),
-    w2m(nullptr),
+    //m2w(nullptr),
+    //w2m(nullptr),
     rtp_tangential(false),
     model2world(1.f), 
     world2model(1.f),
@@ -316,9 +326,18 @@ SGLM::SGLM()
     projection(1.f),
     world2clip(1.f)
 {
+    initCE(); 
     addlog("SGLM::SGLM", "ctor"); 
     update(); 
     INSTANCE = this ; 
+}
+
+void SGLM::initCE()
+{
+    fr.ce.x = CE.x ; 
+    fr.ce.y = CE.y ; 
+    fr.ce.z = CE.z ; 
+    fr.ce.w = CE.w ; 
 }
 
 void SGLM::update()  
@@ -374,13 +393,30 @@ std::string SGLM::descInput() const
 {
     std::stringstream ss ; 
     ss << "SGLM::descInput" << std::endl ; 
-    ss << std::setw(25) << " sglm.ce "  << Present( ce )   << std::endl ; 
+    ss << std::setw(25) << " sglm.fr.ce "  << Present( fr.ce )   << std::endl ; 
     ss << std::setw(25) << " sglm.cam " << cam << std::endl ; 
     ss << std::setw(25) << " SCAM::Name(sglm.cam) " << SCAM::Name(cam) << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
 
+float SGLM::tmin_abs() const
+{
+    // TMIN: is "tmin_model" from TMIN envvar with default of 0.1 (units of extent) 
+    return fr.ce.w*TMIN ; 
+}
+
+void SGLM::set_frame( const sframe& fr_ )
+{
+    fr = fr_ ; 
+    //set_ce(fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w ); 
+    //set_m2w(fr.m2w, fr.w2m);
+    update();  
+    set_near_abs(tmin_abs()) ;
+    update();
+}
+
+/*
 void SGLM::set_ce( float x, float y, float z, float w )
 {
     ce.x = x ; 
@@ -389,6 +425,8 @@ void SGLM::set_ce( float x, float y, float z, float w )
     ce.w = w ; 
     addlog("set_ce", ce.w);
 }
+*/
+
 
 void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
@@ -396,12 +434,15 @@ void SGLM::set_rtp_tangential(bool rtp_tangential_ )
     addlog("set_rtp_tangential", rtp_tangential );
 }
 
+/*
 void SGLM::set_m2w( const qat4* m2w_, const qat4* w2m_ )
 {
     m2w = m2w_ ; 
     w2m = w2m_ ; 
     addlog("set_m2w", "and w2m");
 }
+*/
+
 
 /**
 SGLM::updateModelMatrix
@@ -415,28 +456,28 @@ void SGLM::updateModelMatrix()
 {
     updateModelMatrix_branch = 0 ; 
 
-    bool m2w_valid = m2w && m2w->is_identity() == false ;
-    bool w2m_valid = w2m && w2m->is_identity() == false ;
+    bool m2w_valid = fr.m2w.is_zero() == false ;
+    bool w2m_valid = fr.w2m.is_zero() == false ;
 
     if( m2w_valid && w2m_valid )
     {
         updateModelMatrix_branch = 1 ; 
-        model2world = glm::make_mat4x4<float>(m2w->cdata());
-        world2model = glm::make_mat4x4<float>(w2m->cdata());
+        model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
+        world2model = glm::make_mat4x4<float>(fr.w2m.cdata());
     }
     else if( rtp_tangential )
     {
         updateModelMatrix_branch = 2 ; 
-        SCenterExtentFrame<double> cef( ce.x, ce.y, ce.z, ce.w, rtp_tangential );
+        SCenterExtentFrame<double> cef( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w, rtp_tangential );
         model2world = cef.model2world ;
         world2model = cef.world2model ;
     }
     else
     {
         updateModelMatrix_branch = 3 ; 
-        glm::vec3 tr(ce.x, ce.y, ce.z) ;  
-        glm::vec3 sc(ce.w, ce.w, ce.w) ; 
-        glm::vec3 isc(1.f/ce.w, 1.f/ce.w, 1.f/ce.w) ; 
+        glm::vec3 tr(fr.ce.x, fr.ce.y, fr.ce.z) ;  
+        glm::vec3 sc(fr.ce.w, fr.ce.w, fr.ce.w) ; 
+        glm::vec3 isc(1.f/fr.ce.w, 1.f/fr.ce.w, 1.f/fr.ce.w) ; 
 
         model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
         world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
@@ -479,7 +520,7 @@ float SGLM::get_nearfar_basis() const
     switch(nearfar)
     {
         case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
-        case BAS_EXTENT:     basis = ce.w                ; break ; 
+        case BAS_EXTENT:     basis = fr.ce.w             ; break ; 
         case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU
         case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
     }
@@ -500,7 +541,7 @@ float SGLM::get_focal_basis() const
     switch(focal)
     {
         case BAS_MANUAL:     basis = focal_manual        ; break ; 
-        case BAS_EXTENT:     basis = ce.w                ; break ; 
+        case BAS_EXTENT:     basis = fr.ce.w             ; break ; 
         case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU
         case BAS_NEARABS:    basis = get_near_abs()      ; break ; 
     }
@@ -531,7 +572,7 @@ std::string SGLM::descBasis() const
     ss << "SGLM::descBasis" << std::endl ; 
     ss << std::setw(wid) << " sglm.get_nearfar_mode " << get_nearfar_mode()  << std::endl ; 
     ss << std::setw(wid) << " sglm.nearfar_manual "   << Present( nearfar_manual ) << std::endl ; 
-    ss << std::setw(wid) << " sglm.ce.w  "     << Present( ce.w )  << std::endl ; 
+    ss << std::setw(wid) << " sglm.fr.ce.w  "     << Present( fr.ce.w )  << std::endl ; 
     ss << std::setw(wid) << " sglm.getGazeLength  " << Present( getGazeLength() ) << std::endl ; 
     ss << std::setw(wid) << " sglm.get_nearfar_basis " << Present( get_nearfar_basis() ) << std::endl ; 
     ss << std::endl ; 
@@ -818,6 +859,9 @@ inline std::string SGLM::Present(std::vector<T>& vec) // static
     return ss.str();
 }
 
+
+
+
 inline void SGLM::GetEVec(glm::vec3& v, const char* key, const char* fallback ) // static 
 {
     std::vector<float> vec ; 
@@ -898,6 +942,7 @@ inline std::string SGLM::Present(const glm::vec3& v, int wid, int prec)
     return s; 
 }
 
+
 inline std::string SGLM::Present(const glm::vec4& v, int wid, int prec)
 {
     std::stringstream ss ; 
@@ -908,6 +953,20 @@ inline std::string SGLM::Present(const glm::vec4& v, int wid, int prec)
     std::string s = ss.str(); 
     return s; 
 }
+
+inline std::string SGLM::Present(const float4& v, int wid, int prec)
+{
+    std::stringstream ss ; 
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.x << " " ; 
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.y << " " ; 
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.z << " " ; 
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.w << " " ; 
+    std::string s = ss.str(); 
+    return s; 
+}
+
+
+
 
 
 inline std::string SGLM::Present(const glm::mat4& m, int wid, int prec)

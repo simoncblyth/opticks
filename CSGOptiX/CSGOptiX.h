@@ -121,7 +121,7 @@ private:
     void initCtx(); 
     void initPIP(); 
     void initSBT(); 
-    void initFrame();
+    void initFrameBuffer();
     void initCheckSim(); 
     void initStack(); 
     void initParams();
@@ -136,7 +136,7 @@ private:
     void setFrame(); 
     void setFrame(const char* moi);
     void setFrame(const float4& ce); 
-    void setFrame(const sframe& fr); 
+    void setFrame(const sframe& fr_); 
 
 
     void prepareRenderParam(); 

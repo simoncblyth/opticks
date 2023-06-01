@@ -302,7 +302,7 @@ void CSGOptiX::init()
     initCtx();
     initPIP();
     initSBT();
-    initFrame(); 
+    initFrameBuffer(); 
     initCheckSim(); 
     initStack(); 
     initParams(); 
@@ -345,7 +345,7 @@ void CSGOptiX::initSBT()
     LOG(LEVEL) << "]" ; 
 }
 
-void CSGOptiX::initFrame()
+void CSGOptiX::initFrameBuffer()
 {
     LOG(LEVEL) << "[" ; 
     frame = new Frame(params->width, params->height, params->depth) ; 
@@ -544,45 +544,55 @@ TODO: eliminate, SEvt already holds sframe, it should hold sglm too ?
 
 void CSGOptiX::setFrame(const sframe& fr_ )
 {
-    //fr = fr_ ; 
-    const float4& ce = fr_.ce ; 
-    const qat4* m2w = &fr_.m2w ; 
-    const qat4* w2m = &fr_.w2m ; 
+    sglm->set_frame(fr_); 
+
+    /*
+    // Moved the below into SGLM::set_frame
+
+    const float4& ce = rfr.ce ; 
+    const qat4* m2w = &rfr.m2w ; 
+    const qat4* w2m = &rfr.w2m ; 
 
     LOG(LEVEL) << "[" ; 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
 
-    // HMM:SGLM::set_frame ?
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
     sglm->update();  
     sglm->set_near_abs(tmin) ; 
     sglm->update();  
 
+    */
+
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
+
+
+    const float4& ce = sglm->fr.ce ; 
+    const qat4& m2w = sglm->fr.m2w ; 
+    const qat4& w2m = sglm->fr.w2m ; 
 
 
 #ifdef WITH_SGLM
 #else
     // without SGLM is the old way of doing things to be eliminated
     bool autocam = true ; 
-    composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
-    composition->setNear(tmin); 
+    composition->setCenterExtent(ce, autocam, &m2w, &w2m );  // model2world view setup 
+    composition->setNear(sglm->tmin_abs()); 
     LOG(info) << std::endl << composition->getCameraDesc() ;  
 #endif
 
     LOG(LEVEL) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
-        << " tmin_model " << tmin_model
-        << " tmin " << tmin 
-        << " m2w " << m2w
-        << " w2m " << w2m
+        << " sglm.TMIN " << sglm->TMIN
+        << " sglm.tmin_abs " << sglm->tmin_abs() 
+        << " sglm.m2w.is_zero " << m2w.is_zero()
+        << " sglm.w2m.is_zero " << w2m.is_zero()
         ; 
 
-    LOG_IF(LEVEL, m2w) << "m2w " << *m2w ; 
-    LOG_IF(LEVEL, w2m) << "w2m " << *w2m ; 
+    LOG(LEVEL) << "m2w " << m2w ; 
+    LOG(LEVEL) << "w2m " << w2m ; 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -607,7 +617,7 @@ void CSGOptiX::prepareRenderParam()
     float length ; 
 
 #ifdef WITH_SGLM
-    extent = sglm->ce.w ; 
+    extent = sglm->fr.ce.w ; 
     eye = sglm->e ; 
     U = sglm->u ; 
     V = sglm->v ; 
@@ -632,7 +642,7 @@ void CSGOptiX::prepareRenderParam()
         LOG(LEVEL)
             << std::endl 
             << std::setw(20) << " extent "     << extent << std::endl 
-            << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
+            << std::setw(20) << " sglm.fr.ce.w "  << sglm->fr.ce.w << std::endl 
             << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
             << std::setw(20) << " comp.length"   << length 
             << std::endl 
@@ -719,7 +729,7 @@ A: not from device code it seems : only by using the hostside params to
 void CSGOptiX::prepareParam()
 {
 #ifdef WITH_SGLM
-    const glm::vec4& ce = sglm->ce ;   
+    const float4& ce = sglm->fr.ce ;   
 #else
     const glm::vec4& ce = composition->getCenterExtent();   
 #endif

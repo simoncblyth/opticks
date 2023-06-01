@@ -100,10 +100,13 @@ struct sframe
 
     const char* get_frs() const ; // returns nullptr when frs is default  
     bool is_frs_default() const ; 
+
     void set_midx_mord_iidx(int midx, int mord, int iidx); 
     int midx() const ; 
     int mord() const ; 
     int iidx() const ; 
+
+   
 
 
     void set_inst(int inst); 
@@ -177,6 +180,9 @@ inline bool sframe::is_zero() const
 {
     return ce.x == 0. && ce.y == 0. && ce.z == 0. && ce.w == 0. ; 
 }
+
+
+
 
 inline std::string sframe::desc() const 
 {
