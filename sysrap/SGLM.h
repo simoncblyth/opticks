@@ -198,6 +198,7 @@ struct SYSRAP_API SGLM
     float get_near_abs() const ;  
     float get_far_abs() const ;  
 
+    std::string descFrame() const ; 
     std::string descBasis() const ; 
 
     // world frame View converted from static model frame
@@ -360,7 +361,9 @@ std::string SGLM::desc() const
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
     ss << descProjection() << std::endl ; 
+    ss << descFrame() << std::endl ; 
     ss << descBasis() << std::endl ; 
+    ss << descLog() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -411,8 +414,12 @@ void SGLM::set_frame( const sframe& fr_ )
     fr = fr_ ; 
     //set_ce(fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w ); 
     //set_m2w(fr.m2w, fr.w2m);
+
+    float tma = tmin_abs() ; 
+    addlog("set_frame.tma", tma);
+
     update();  
-    set_near_abs(tmin_abs()) ;
+    set_near_abs(tma) ;
     update();
 }
 
@@ -565,6 +572,11 @@ float SGLM::get_near_abs() const { return near*get_nearfar_basis() ; }
 float SGLM::get_far_abs() const { return   far*get_nearfar_basis() ; }
 
 
+std::string SGLM::descFrame() const 
+{
+    return fr.desc(); 
+}
+
 std::string SGLM::descBasis() const 
 {
     int wid = 25 ; 
@@ -599,6 +611,7 @@ void SGLM::updateELU() // eye, look, up, gaze into world frame
 std::string SGLM::descLog() const
 {
     std::stringstream ss ; 
+    ss << "SGLM::descLog" << std::endl ; 
     for(unsigned i=0 ; i < log.size() ; i++) ss << log[i] << std::endl ; 
     std::string s = ss.str(); 
     return s ; 

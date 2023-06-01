@@ -45,10 +45,18 @@ export LOGDIR=$BASE
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
+LOG=$bin.log
+
 vars="GEOM TMIN LOGDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 if [ "${arg/run}" != "$arg" ]; then
+
+   if [ -f "$LOG" ]; then 
+       echo $BASH_SOURCE : run : delete prior LOG $LOG 
+       rm "$LOG" 
+   fi 
+
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
@@ -56,5 +64,4 @@ fi
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 fi 
-
 
