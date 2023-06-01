@@ -523,6 +523,7 @@ void CSGOptiX::setFrame()
 
 void CSGOptiX::setFrame(const char* frs)
 {
+    LOG(LEVEL) << " frs " << frs ; 
     sframe fr ; 
     foundry->getFrame(fr, frs) ; 
     setFrame(fr); 
@@ -870,6 +871,8 @@ which slows down the debug cycle of looking at quick renders
 whilst changing transforms. 
 
 TODO: make the isect creation and writing configurable, perhaps using SEvt ? 
+
+TODO: optionally save frame and config metadata together with the render
 
 **/
 

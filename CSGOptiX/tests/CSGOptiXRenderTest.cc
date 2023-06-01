@@ -33,6 +33,7 @@ CFBASE
 #include "SPath.hh"
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEventConfig.hh"
 #include "SOpticksResource.hh"
@@ -83,7 +84,7 @@ struct CSGOptiXRenderTest
     std::vector<std::string> args ; 
 
     void initCX(); 
-    void initSS(); 
+    void initSolidSelection(); 
     void initArgs(); 
 
     void setFrame(const char* moi); 
@@ -109,7 +110,7 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
     initCX(); 
-    initSS(); 
+    initSolidSelection(); 
     initArgs(); 
 }
 
@@ -121,7 +122,7 @@ void CSGOptiXRenderTest::initCX()
     assert(expect); 
 }
 
-void CSGOptiXRenderTest::initSS()
+void CSGOptiXRenderTest::initSolidSelection()
 {
     if( solid_selection == nullptr  ) return ; 
 
@@ -148,10 +149,12 @@ void CSGOptiXRenderTest::initArgs()
     if( arglist && arglist->size() > 0 )
     {    
         std::copy(arglist->begin(), arglist->end(), std::back_inserter(args));
+        LOG(info) << " using arglist from SGeoConfig::Arglist " ; 
     }
     else
     {
-        args.push_back(default_arg);   // default_arg is value of MOI envvar 
+        args.push_back(default_arg);   
+        LOG(info) << " using default_arg from MOI envvar " ; 
     }
 
     LOG(info) 
@@ -194,11 +197,18 @@ iidx -2
 iidx -3
     rtp tangential frame calulated by SCenterExtentFrame
 
+
+HMM CSGOptiX::initRender in RenderMode now automatically calls setFrame
+
+
 **/
 void CSGOptiXRenderTest::setFrame(const char* moi)
 {
     cx->setFrame(moi);  
 }
+
+
+
 
 
 
@@ -218,13 +228,17 @@ int main(int argc, char** argv)
     LOG(info) << " getenv.CAMERATYPE " << getenv("CAMERATYPE") ; 
 
 #ifdef WITH_SGLM
+    LOG(info) << " WITH_SGLM : not using Opticks " ; 
 #else
+    LOG(info) << " not-WITH_SGLM : calling Opticks::Configure  " ; 
     Opticks::Configure(argc, argv);  
 #endif
 
     const char* outdir = SEventConfig::OutDir(); 
     SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
 
+
+    SSim::Create(); 
 
     CSGOptiXRenderTest t; 
 
@@ -248,6 +262,7 @@ int main(int argc, char** argv)
         for(unsigned i=0 ; i < t.args.size() ; i++)
         {
             const char* arg = t.args[i].c_str(); 
+            LOG(info) << " arg:" << ( arg ? arg : "-" ) ; 
             t.setFrame(arg); 
             t.render_snap(arg); 
         }

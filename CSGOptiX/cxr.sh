@@ -62,7 +62,7 @@ sla=             # solid_label selection
 icam=0           # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 zoom=1.0
-size=1280,720,1
+ize=1280,720,1
 sizescale=1.5
 
 [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 

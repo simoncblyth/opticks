@@ -1,6 +1,9 @@
 #!/usr/bin/env python
-
 """
+CSGOptiXRenderTest.py
+=======================
+
+Selects slice rectangles from isect arrays::
 
     epsilon:CSGOptiX blyth$ i tests/CSGOptiXRenderTest.py 
        a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
@@ -18,10 +21,7 @@ Selecting vertical strip 3 pixels wide and 21 pixels high in the middle of the f
 Selecting 3x3 square in middle, happens to make an "H"::
 
     DYDX=1,1 i tests/CSGOptiXRenderTest.py
-
-
     DYDX=4,4 i tests/CSGOptiXRenderTest.py
-
 
 """
 
@@ -81,12 +81,5 @@ if __name__ == '__main__':
     axs[0].imshow( a_result ) 
     axs[1].imshow( b_result )
     fig.show()
-
-
-
-
-
-
-
 
 

@@ -126,7 +126,7 @@ void SOpticks::WriteOutputDirScript(const char* outdir) // static
 
     std::stringstream ss ; 
     ss   
-        << "# Opticks::writeOutputDirScript " << std::endl 
+        << "# SOpticks::WriteOutputDirScript " << std::endl 
         << "# " << s_time::Stamp() << std::endl 
         << std::endl 
         << "export " << envvar << "=" << outdir  
