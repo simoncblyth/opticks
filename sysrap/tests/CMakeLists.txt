@@ -85,6 +85,7 @@ set(TEST_SOURCES
    CheckGeoTest.cc
 
    SGLMTest.cc
+
    SConstantTest.cc
    SLabelCacheTest.cc
 

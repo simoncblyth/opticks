@@ -69,8 +69,10 @@ struct SYSRAP_API SEventConfig
 
     static const char* OutDir( const char* reldir); 
     static const char* OutPath( const char* reldir, const char* stem, int index, const char* ext ); 
+
     static const char* OutDir(); 
     static const char* OutPath( const char* stem, int index, const char* ext ); 
+    static std::string DescOutPath(  const char* stem, int index, const char* ext ) ; 
 
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 

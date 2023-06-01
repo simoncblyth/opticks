@@ -128,16 +128,16 @@ int main(int argc, char** argv)
     SEventConfig::Initialize(); 
 
     /*
-    test_Desc(); 
     test_OutPath(); 
     test_CompList(); 
     test_CompMaskAuto(); 
     test_SetCompMaskAuto(); 
     test_SetDefault(); 
     test_EstimateAlloc(); 
+    test_Save(); 
     */
 
-    test_Save(); 
+    test_Desc(); 
 
 
     return 0 ; 

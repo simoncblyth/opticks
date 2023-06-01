@@ -915,19 +915,31 @@ void CSGOptiX::render_snap( const char* name_ )
 
     const char* topline = SSys::getenvvar("TOPLINE", SProc::ExecutableName() ); 
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
+    const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(name, -1, ".jpg" );
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_ ); 
     const char* botline = bottom_line.c_str() ; 
 
+    LOG(LEVEL)
+          << SEventConfig::DescOutPath(name, -1, ".jpg" );
+          ;  
+ 
     LOG(LEVEL)  
           << " name " << name 
           << " outpath " << outpath 
+          << " outdir " << ( outdir ? outdir : "-" )
           << " dt " << dt 
           << " topline [" <<  topline << "]"
           << " botline [" <<  botline << "]"
           ; 
 
     snap(outpath, botline, topline  );   
+
+#ifdef WITH_SGLM
+    sglm->fr.save( outdir ); 
+#endif
+
+
 }
 
 

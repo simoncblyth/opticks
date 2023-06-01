@@ -394,6 +394,11 @@ std::string SEventConfig::Desc()
 SEventConfig::OutDir SEventConfig::OutPath
 --------------------------------------------
 
+Expecting the below as the OutName defaults to nullptr::
+
+   $TMP/GEOM/$GEOM/ExecutableName
+
+
 Q: Are these methods used ? 
 A: YES by CSGOptiX::render_snap
 
@@ -406,7 +411,7 @@ TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpt
 
 **/
 
-const char* SEventConfig::OutDir()
+const char* SEventConfig::OutDir()  
 {
     return SPath::Resolve( OutFold(), OutName(), DIRPATH ); 
 }
@@ -414,6 +419,26 @@ const char* SEventConfig::OutPath( const char* stem, int index, const char* ext 
 {
      return SPath::Make( OutFold(), OutName(), stem, index, ext, FILEPATH);  // HMM: an InPath would use NOOP to not create the dir
 }
+
+std::string SEventConfig::DescOutPath(  const char* stem, int index, const char* ext ) 
+{
+    const char* path = OutPath(stem, index, ext ) ; 
+    std::stringstream ss ; 
+    ss << "SEventConfig::DescOutPath" << std::endl 
+       << " stem " << ( stem ? stem : "-" )
+       << " index " << index
+       << " ext " << ( ext ? ext : "-" )
+       << std::endl 
+       << " OutFold " << OutFold() 
+       << " OutName " << OutName() 
+       << std::endl 
+       << " OutPath " <<  path 
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 const char* SEventConfig::OutDir(const char* reldir)
 {

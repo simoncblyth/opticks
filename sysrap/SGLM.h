@@ -151,22 +151,16 @@ struct SYSRAP_API SGLM
     void initCE(); 
 
     sframe fr ;    // CAUTION: SEvt also holds an SFrame for input photon targetting 
-    //glm::vec4 ce ;
 
     // modes
     int  cam ; 
     int  nearfar ;
     int  focal ;  
-
-    // manual input matrices
-    //const qat4* m2w ; 
-    //const qat4* w2m ; 
     bool rtp_tangential ; 
 
     // ~1.5+3 quad4
-
  
-    // derived matrices depending on ce 
+    // derived matrices depending on ce from fr 
     glm::mat4 model2world ; 
     glm::mat4 world2model ; 
     int updateModelMatrix_branch ; 
@@ -184,8 +178,6 @@ struct SYSRAP_API SGLM
     void set_frame( const sframe& fr ); 
     const char* get_frame_name() const ; 
 
-    //void set_ce(  float x, float y, float z, float w ); 
-    //void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
     void set_rtp_tangential( bool rtp_tangential_ ); 
 
     void updateModelMatrix();  // depends on ce, unless valid m2w and w2m matrices provided
@@ -309,8 +301,6 @@ SGLM::SGLM()
     cam(CAM),
     nearfar(NEARFAR),
     focal(FOCAL),
-    //m2w(nullptr),
-    //w2m(nullptr),
     rtp_tangential(false),
     model2world(1.f), 
     world2model(1.f),
@@ -331,17 +321,35 @@ SGLM::SGLM()
 {
     initCE(); 
     addlog("SGLM::SGLM", "ctor"); 
-    update(); 
+    update(); // HMM: kinda pointless as will be run later ? 
     INSTANCE = this ; 
 }
 
-void SGLM::initCE()
+void SGLM::initCE()  
 {
     fr.ce.x = CE.x ; 
     fr.ce.y = CE.y ; 
     fr.ce.z = CE.z ; 
     fr.ce.w = CE.w ; 
 }
+
+/**
+SGLM::update
+--------------
+
+Currently called from: 
+
+1. ctor (acts as default, normally overridden)
+2. SGLM::set_frame
+3. SGLM::set_frame 
+
+**HUH: why twice from set_frame ?**
+
+* probably due to get_nearfar_basis depending on gazelength?
+* TODO: think about dependency order of the calc, maybe can avoid 
+
+**/
+
 
 void SGLM::update()  
 {
@@ -414,15 +422,19 @@ float SGLM::tmin_abs() const
 void SGLM::set_frame( const sframe& fr_ )
 {
     fr = fr_ ; 
+
+    //using the sframe avoids need for these ?
     //set_ce(fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w ); 
     //set_m2w(fr.m2w, fr.w2m);
 
     float tma = tmin_abs() ; 
-    addlog("set_frame.tma", tma);
-
+    addlog("set_frame.tma.1", tma);
     update();  
+
     set_near_abs(tma) ;
-    update();
+
+    addlog("set_frame.tma.2", tma);
+    update();   // WHY TWO UPDATES ? 
 }
 
 const char* SGLM::get_frame_name() const 
@@ -432,32 +444,12 @@ const char* SGLM::get_frame_name() const
 
 
 
-/*
-void SGLM::set_ce( float x, float y, float z, float w )
-{
-    ce.x = x ; 
-    ce.y = y ; 
-    ce.z = z ; 
-    ce.w = w ; 
-    addlog("set_ce", ce.w);
-}
-*/
-
 
 void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
     rtp_tangential = rtp_tangential_ ; 
     addlog("set_rtp_tangential", rtp_tangential );
 }
-
-/*
-void SGLM::set_m2w( const qat4* m2w_, const qat4* w2m_ )
-{
-    m2w = m2w_ ; 
-    w2m = w2m_ ; 
-    addlog("set_m2w", "and w2m");
-}
-*/
 
 
 /**
@@ -536,8 +528,8 @@ float SGLM::get_nearfar_basis() const
     switch(nearfar)
     {
         case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
-        case BAS_EXTENT:     basis = fr.ce.w             ; break ; 
-        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU
+        case BAS_EXTENT:     basis = fr.ce.w             ; break ;  // only after setFrame 
+        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU (default)
         case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
     }
     return basis ;  
