@@ -25,6 +25,8 @@ EOU
 defarg=run_info
 arg=${1:-$defarg}
 
+export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
+
 pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
@@ -47,7 +49,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR"
+vars="GEOM TMIN LOGDIR OPTICKS_HASH"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 if [ "${arg/run}" != "$arg" ]; then

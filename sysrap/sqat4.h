@@ -174,6 +174,16 @@ struct qat4
             q3.f.x == 0.f && q3.f.y == 0.f && q3.f.z == 0.f && q3.f.w == 1.f ; 
     }
 
+    QAT4_METHOD bool is_identity(float eps) const 
+    {
+        return 
+            std::abs(q0.f.x-1.f)<eps && std::abs(q0.f.y)    <eps && std::abs(q0.f.z) < eps     && std::abs(q0.f.w) < eps  &&
+            std::abs(q1.f.x)<eps     && std::abs(q1.f.y-1.f)<eps && std::abs(q1.f.z) < eps     && std::abs(q1.f.w) < eps  &&
+            std::abs(q2.f.x)<eps     && std::abs(q2.f.y)<eps     && std::abs(q2.f.z-1.f) < eps && std::abs(q2.f.w) < eps  &&
+            std::abs(q3.f.x)<eps     && std::abs(q3.f.y)<eps     && std::abs(q3.f.z) < eps     && std::abs(q3.f.w-1.f) < eps ;
+    }
+
+
     QAT4_METHOD bool is_zero() const 
     {
         return 

@@ -49,7 +49,7 @@ struct sframe
     static constexpr const char* DEFAULT_FRS = "-1" ; 
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
-
+    static constexpr const float EPSILON = 1e-5 ; 
 
     float4 ce = {} ;   // 0
     quad   q1 = {} ; 

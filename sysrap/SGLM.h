@@ -463,8 +463,8 @@ void SGLM::updateModelMatrix()
 {
     updateModelMatrix_branch = 0 ; 
 
-    bool m2w_valid = fr.m2w.is_zero() == false ;
-    bool w2m_valid = fr.w2m.is_zero() == false ;
+    bool m2w_valid = fr.m2w.is_identity(sframe::EPSILON) == false ;
+    bool w2m_valid = fr.w2m.is_identity(sframe::EPSILON) == false ;
 
     if( m2w_valid && w2m_valid )
     {
