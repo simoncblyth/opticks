@@ -22,6 +22,9 @@ TODO: dump the frame for debugging and save view config with renders
 EOU
 }
 
+defarg=run_info
+arg=${1:-$defarg}
+
 pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
@@ -35,15 +38,23 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 export TMIN=${TMIN:-$tmin}
 
 # as a file is written in pwd need to cd 
-export TMPDIR=/tmp/$USER/opticks
-export LOGDIR=$TMPDIR/$pkg/$bin
+
+
+BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
+export LOGDIR=$BASE
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
 vars="GEOM TMIN LOGDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
-$bin
+if [ "${arg/run}" != "$arg" ]; then
+   $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+fi 
 
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+fi 
 
 

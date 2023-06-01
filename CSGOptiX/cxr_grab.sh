@@ -33,13 +33,15 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi 
 
 if [ "${arg/open}" != "$arg" ]; then 
-    echo $BASH_SOURCE open : list jpg and json from base $base in reverse time order
+    echo $BASH_SOURCE open : list jpg/json/log from base $base in reverse time order
 
     jpgs=($(ls -1t $(find $base -name '*.jpg')))
     jsons=($(ls -1t $(find $base -name '*.json')))
+    logs=($(ls -1t $(find $base -name '*.log')))
 
     for jpg in ${jpgs[*]}   ; do echo $jpg  ; done  
     for json in ${jsons[*]} ; do echo $json ; done  
+    for log in ${logs[*]}   ; do echo $log ; done  
 
     open ${jpgs[0]}
     # pretty print the json 
@@ -48,8 +50,8 @@ if [ "${arg/open}" != "$arg" ]; then
 fi 
 
 if [ "${arg/clean}" != "$arg" ]; then 
-    echo $BASH_SOURCE clean : delete jpg and json found in base $base
-    files=$(find $base -name '*.jpg' -o -name '*.json')
+    echo $BASH_SOURCE clean : delete jpg/json/log found in base $base
+    files=$(find $base -name '*.jpg' -o -name '*.json' -o -name '*.log')
     for file in ${files[*]} ; do 
        echo file $file 
     done 
