@@ -60,11 +60,9 @@ if [ "${arg/run}" != "$arg" ]; then
        echo $BASH_SOURCE : run : delete prior LOG $LOG 
        rm "$LOG" 
    fi 
-
    $bin
 
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-
    # HMM: rename the log using the hash or some input var ? 
 fi 
 
