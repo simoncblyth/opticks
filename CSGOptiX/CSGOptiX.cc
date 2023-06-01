@@ -296,6 +296,10 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 
 void CSGOptiX::init()
 {
+#ifdef WITH_SGLM
+    sglm->addlog("CSGOptiX::init", "start"); 
+#endif
+
     LOG(LEVEL) 
         << "[" 
         << " raygenmode " << raygenmode
@@ -899,7 +903,12 @@ TODO: optionally save frame and config metadata together with the render
 
 void CSGOptiX::render_snap( const char* name_ )
 {
+#ifdef WITH_SGLM
+    sglm->addlog("CSGOptiX::render_snap", name_ ); 
     const char* frame_name = sglm->get_frame_name() ; 
+#else
+    const char* frame_name = "no-sglm" ; 
+#endif
     const char* name = name_ ? name_ : frame_name ; 
 
     double dt = render();  
