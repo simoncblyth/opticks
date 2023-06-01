@@ -47,6 +47,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "SCAM.h"
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
+#include "SSim.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
@@ -129,6 +130,17 @@ int CSGOptiX::Version()
 #endif
     return vers ; 
 }
+
+void CSGOptiX::RenderMain() // static
+{
+    SEventConfig::SetRGMode("render"); 
+    SSim::Create(); 
+    
+    CSGFoundry* fd = CSGFoundry::Load(); 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
+    cx->render_snap(); 
+}
+
 
 const char* CSGOptiX::Desc()
 {

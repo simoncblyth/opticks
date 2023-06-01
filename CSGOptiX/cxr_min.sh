@@ -28,12 +28,14 @@ arg=${1:-$defarg}
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
 pkg=CSGOptiX
-bin=CSGOptiXRenderTest
+#bin=CSGOptiXRenderTest
+bin=CSGOptiXRdrTest
 
 geom=V0J008
 tmin=0.5
+moi=sWorld:0:0
 
-
+export MOI=${MOI:-$moi}
 export CSGOptiX=INFO
 export GEOM=${GEOM:-$geom}
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM

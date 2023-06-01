@@ -24,7 +24,10 @@ arg=${1:-$defarg}
 geom=V0J008
 GEOM=${GEOM:-$geom}
 
-base=/tmp/$USER/opticks/GEOM/$GEOM/CSGOptiXRenderTest
+#bin=CSGOptiXRenderTest
+bin=CSGOptiXRdrTest
+
+base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 echo rsync GEOM $GEOM base $base
 
 if [ "${arg/grab}" != "$arg" ]; then 
