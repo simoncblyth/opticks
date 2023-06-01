@@ -246,7 +246,6 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     composition(ok->getComposition()),
 #endif
     sglm(new SGLM),   // instanciate always to allow view matrix comparisons
-    moi("-1"),
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
@@ -888,7 +887,8 @@ TODO: optionally save frame and config metadata together with the render
 
 void CSGOptiX::render_snap( const char* name_ )
 {
-    const char* name = name_ ? name_ : SStr::Format("cx%s", moi ) ; 
+    const char* frame_name = sglm->get_frame_name() ; 
+    const char* name = name_ ? name_ : frame_name ; 
 
     double dt = render();  
 

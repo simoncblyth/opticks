@@ -1,6 +1,6 @@
 /**
-CSGOptiXRdrTest : more minimal version of CSGOptiXRenderTest
-==============================================================
+CSGOptiXRdrTest : minimal variant of CSGOptiXRenderTest for debugging single renders
+======================================================================================
 
 
 **/
@@ -12,7 +12,6 @@ CSGOptiXRdrTest : more minimal version of CSGOptiXRenderTest
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -21,10 +20,7 @@ int main(int argc, char** argv)
     
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
- 
-
-
-
+    cx->render_snap(); 
 
     return 0 ;
 }

@@ -65,7 +65,6 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 #endif
     SGLM*             sglm ; 
 
-    const char*       moi ; 
     const char*       flight ; 
     const CSGFoundry* foundry ; 
     const char*       prefix ; 

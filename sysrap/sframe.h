@@ -101,6 +101,9 @@ struct sframe
     const char* get_frs() const ; // returns nullptr when frs is default  
     bool is_frs_default() const ; 
 
+    static constexpr const char* DEFAULT_NAME = "sframe_default_name" ;  
+    const char* get_name() const ; // returns nullptr when frs is default  
+
     void set_midx_mord_iidx(int midx, int mord, int iidx); 
     int midx() const ; 
     int mord() const ; 
@@ -323,6 +326,11 @@ inline const char* sframe::get_frs() const
 inline bool sframe::is_frs_default() const 
 {
     return frs != nullptr && strcmp(frs, DEFAULT_FRS) == 0 ; 
+}
+inline const char* sframe::get_name() const 
+{
+    const char* f = get_frs(); 
+    return f ? f : DEFAULT_NAME ; 
 }
 
 inline void sframe::set_midx_mord_iidx(int midx, int mord, int iidx)

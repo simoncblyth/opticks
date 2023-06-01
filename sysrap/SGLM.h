@@ -182,6 +182,8 @@ struct SYSRAP_API SGLM
 
     float tmin_abs() const ; 
     void set_frame( const sframe& fr ); 
+    const char* get_frame_name() const ; 
+
     //void set_ce(  float x, float y, float z, float w ); 
     //void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
     void set_rtp_tangential( bool rtp_tangential_ ); 
@@ -422,6 +424,13 @@ void SGLM::set_frame( const sframe& fr_ )
     set_near_abs(tma) ;
     update();
 }
+
+const char* SGLM::get_frame_name() const 
+{
+    return fr.get_name(); 
+}
+
+
 
 /*
 void SGLM::set_ce( float x, float y, float z, float w )
