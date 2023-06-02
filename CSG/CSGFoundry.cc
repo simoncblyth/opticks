@@ -282,7 +282,7 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
         }
         else
         {
-            const std::string& mname = getMeshName(midx); 
+            const char* mname = getMeshName(midx); 
             LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
             pname.push_back(mname);  
         }
@@ -314,6 +314,8 @@ CSGFoundry::findMeshIndex
 SName::findIndex uses "name starts with query string" matching
 so names like HamamatsuR12860sMask_virtual0x5f50520
 can be matched without the pointer suffix. 
+
+HMM: but there are duplicate prefixes, so this aint a good approach 
 
 **/
 
@@ -374,8 +376,8 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
        << std::endl 
        ; 
 
-    ss << "INCLUDE:" << include_pos.size() << std::endl << std::endl ;  
-    for(unsigned i=0 ; i < include_pos.size() ; i++)
+    ss << "INCLUDE:" << num_include << std::endl << std::endl ;  
+    for(unsigned i=0 ; i < num_include ; i++)
     {
         const unsigned& p = include_pos[i] ; 
         const char* mn = getMeshName(p) ; 

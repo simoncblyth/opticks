@@ -64,7 +64,7 @@ zoom=1.0
 size=1280,720,1
 sizescale=1.5
 
-[ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 
+# [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop : BUT are usually just grabbing from remote
 
 export CVD=${CVD:-$cvd}    # --cvd 
 export EMM=${EMM:-$emm}    # -e 

@@ -38,7 +38,7 @@ cxr_overview.sh
     Iidx 
        instance index      
 
-    [tested Dec 2021]
+    [tested Jun 2023]
 
 cxr_scan.sh
     runs one of the other scripts (default cxr_overview.sh) multiple times with different values
@@ -82,7 +82,7 @@ cxr_solids.sh
 cxr_view.sh
     sets MOI viewpoint (sWaterTube) deep within geometry and invokes ./cxr.sh 
 
-    [tested Dec 2021]
+    [tested Jun 2023]
 
 cxr_views.sh
     multiple invokations of cxr_view.sh varying EMM to change included geometry

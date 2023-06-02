@@ -11,25 +11,9 @@
 
 const char* FOLD = getenv("FOLD") ; 
 
-int main(int argc, char** argv)
+
+int test_InputPhoton(SEvt& sev, const sframe& fr )
 {
-    OPTICKS_LOG(argc, argv); 
-
-    SSim::Create(); 
-    const CSGFoundry* fd = CSGFoundry::Load();
-    std::cout << " fd.brief " << fd->brief() << std::endl ;
-    std::cout << " fd.desc  " << fd->desc() << std::endl ;
-
-    sframe fr = fd->getFrameE() ;  // via INST, MOI, OPTICKS_INPUT_PHOTON_FRAME "ipf"
-
-    int INST = ssys::getenvint("INST",-1) ; 
-    if(INST > -1) std::cout <<  "INST" << INST << std::endl << fd->descInstance(INST) << std::endl ; 
-    std::cout << "fr" << fr << std::endl ;   
-
-    fr.save(FOLD); 
-    fr.save_extras(FOLD); 
-
-    SEvt sev ;  
     NP* ip = sev.getInputPhoton_(); 
     if(ip == nullptr) return 0 ;  
 
@@ -49,5 +33,33 @@ int main(int argc, char** argv)
     ipt2->save(FOLD, "ipt2.npy"); 
 
     return 0 ; 
+}
+
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    SSim::Create(); 
+    const CSGFoundry* fd = CSGFoundry::Load();
+    std::cout << " fd.brief " << fd->brief() << std::endl ;
+    std::cout << " fd.desc  " << fd->desc() << std::endl ;
+
+    sframe fr = fd->getFrameE() ;  // via INST, MOI, OPTICKS_INPUT_PHOTON_FRAME "ipf"
+
+    int INST = ssys::getenvint("INST",-1) ; 
+    if(INST > -1) std::cout <<  "INST" << INST << std::endl << fd->descInstance(INST) << std::endl ; 
+    std::cout << "fr" << fr << std::endl ;   
+
+    fr.save(FOLD); 
+    fr.save_extras(FOLD); 
+
+    SEvt sev ;  
+
+    int rc = test_InputPhoton(sev, fr ); 
+
+    return rc ; 
 }
 

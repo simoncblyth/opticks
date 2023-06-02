@@ -203,6 +203,7 @@ DIR=$(dirname $BASH_SOURCE)
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 
+escale=extent
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 emm=t0           # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
@@ -212,6 +213,7 @@ tmin=0.4
 cam=0
 quality=90
 
+export ESCALE=${ESCALE:-$escale}
 export MOI=${MOI:-$moi}
 export EMM=${EMM:-$emm}
 export ZOOM=${ZOOM:-$zoom}

@@ -13,10 +13,6 @@ Examples::
     OPTICKS_INPUT_PHOTON_FRAME=PMT_20inch_veto:0:1000 ~/opticks/csg/tests/CSGFoundry_getFrame_Test.sh 
 
 
-
-
-
-
 EOU
 }
 
@@ -25,8 +21,8 @@ DIR=$(dirname $BASH_SOURCE)
 
 source $DIR/../../bin/OPTICKS_INPUT_PHOTON.sh 
 
-geom=V0J008
-export GEOM=${GEOM:-$geom}
+source ~/.opticks/GEOM/GEOM.sh  # sets GEOM envvar, edit with GEOM bash function
+
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 
 
