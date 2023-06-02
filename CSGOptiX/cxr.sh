@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-
 cxr.sh : basis for higher level render scripts using CSGOptiXRenderTest
 =========================================================================
 
@@ -42,11 +41,8 @@ if [ -n "$CFNAME" ]; then
         echo $msg TO CREATE NON-STANDARD geometries use \"gc \; GEOM=$(basename $CFNAME) ./run.sh\"  
         return 1
     fi
-elif [ -n "$CFBASE" ]; then 
-    echo $msg CFBASE $CFBASE is defined : using asis 
 else
-    unset CFBASE
-    CFNAME=CSG_GGeo
+    export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 fi 
 
 pkg=CSGOptiX
@@ -62,7 +58,7 @@ sla=             # solid_label selection
 icam=0           # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 zoom=1.0
-ize=1280,720,1
+size=1280,720,1
 sizescale=1.5
 
 [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 
@@ -126,10 +122,16 @@ fi
 DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
-render-cmd(){ cat << EOC
+old-render-cmd(){ cat << EOC
 $GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --sizescale "$SIZESCALE" --solid_label "$SLA" $* 
 EOC
 }   
+# modern Opticks executables dont parse commandlines, they read envvars 
+
+render-cmd(){ cat << EOC
+$GDB $bin 
+EOC
+} 
 
 render()
 {

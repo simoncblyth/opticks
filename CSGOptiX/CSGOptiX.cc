@@ -131,6 +131,15 @@ int CSGOptiX::Version()
     return vers ; 
 }
 
+
+/**
+CSGOptiX::RenderMain
+----------------------
+
+Used by minimal render tests/CSGOptiXRdrTest.cc  
+
+**/
+
 void CSGOptiX::RenderMain() // static
 {
     SEventConfig::SetRGMode("render"); 

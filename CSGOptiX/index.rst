@@ -14,10 +14,14 @@ TODO
 --------------------------------------------------------------------------------------------------------
 
 cxr.sh
-    script that runs the CSGOptiXRender executable
+    script that runs the CSGOptiXRenderTest executable
     this is a basis script that most of the below scripts invoke after setting controlling envvars 
 
     [not intended to be used bare, this script is invoked from other scripts]
+
+cxr_min.sh 
+    minimal variant using CSGOptixRdrTest executable which just invokes CSGOptiX::RenderMain 
+    [tested Jun 2023]
 
 cxr_overview.sh
     overview viewpoint by targeting the entire geomery  

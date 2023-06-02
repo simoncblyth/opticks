@@ -45,9 +45,28 @@ On laptop::
 EOU
 }
 
+DIR=$(dirname $BASH_SOURCE)
+
+geom=V1J008
+export GEOM=${GEOM:-$geom}  
+cfd=$HOME/.opticks/GEOM/$GEOM/CSGFoundry
+
+if [ ! -f "$cfd/mmlabel.txt" ]; then 
+   echo $BASH_SOURCE : ERROR cfd $cfd GEOM $GEOM   
+   exit 1 
+fi 
+
+
+nmm=$(wc -l < $cfd/mmlabel.txt)
+nlv=$(wc -l < $cfd/meshname.txt)
+nmm=$(( $nmm - 1 ))
+nlv=$(( $nlv - 1 ))
 # NMM and NLV are maximum index, not counts, so they need to be num-1    
-nmm=${NMM:-9}   # geometry specific 
-nlv=${NLV:-140}
+
+NMM=${NMM:-$nmm}   # geometry specific 
+NLV=${NLV:-$nlv}
+
+
 ## hmm could generate a metadata bash script to provide this kinda thing in the geocache
 
 
@@ -57,16 +76,16 @@ export SCANNER="cxr_scan.sh"
 scan-emm-()
 {
     echo "t0"        # ALL 
-    for e in $(seq 0 $nmm) ; do echo  "$e," ; done    # enabling each solid one-by-one
-    for e in $(seq 0 $nmm) ; do echo "t$e," ; done    # disabling each solid one-by-one
-    for e in $(seq 0 $nmm) ; do echo "t8,$e" ; done   # disabling 8 and each solid one by-by-one
+    for e in $(seq 0 $NMM) ; do echo  "$e," ; done    # enabling each solid one-by-one
+    for e in $(seq 0 $NMM) ; do echo "t$e," ; done    # disabling each solid one-by-one
+    for e in $(seq 0 $NMM) ; do echo "t8,$e" ; done   # disabling 8 and each solid one by-by-one
     echo "1,2,3,4"   # ONLY PMTs
 }
 
 scan-elv-()
 {
-    for e in $(seq 0 $nlv) ; do echo "t$e" ; done    # disabling each midx one-by-one
-    for e in $(seq 0 $nlv) ; do echo "$e" ; done     # enabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
 scan-emm()
@@ -85,7 +104,7 @@ scan-elv()
     for e in $(scan-elv-) 
     do 
         echo $e 
-        ELV=$e ./$script.sh $*
+        ELV=$e $DIR/$script.sh $*
     done 
 }
 

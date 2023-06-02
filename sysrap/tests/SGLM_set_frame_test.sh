@@ -31,6 +31,7 @@ EOU
 defarg="build_run_info_cat_diff"
 arg=${1:-$defarg}
 
+br="------------------------------------------------------------------------------"
 msg="=== $BASH_SOURCE :"
 name=SGLM_set_frame_test 
 bin=/tmp/$name
@@ -41,7 +42,8 @@ export BASE=${BASE:-$base}
 
 tmin=0.5
 #eye=1000,1000,1000
-eye=3.7878,3.7878,3.7878
+#eye=3.7878,3.7878,3.7878
+eye=-1,-1,0
 
 #escale=asis
 escale=extent
@@ -71,15 +73,20 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/cat}" != "$arg" ]; then
-    cat $DESC_PATH
     ls -l $DESC_PATH
     echo $BASH_SOURCE : cat 
+    echo $br
+    cat $DESC_PATH
+    echo $br
 fi 
 
 if [ "${arg/diff}" != "$arg" ]; then 
     cmd="( cd $BASE && diff $DESC_REF $DESC_NAME)"
-    echo $BASH_SOURCE diff : $cmd
+    echo $BASH_SOURCE diff 
+    echo $cmd
+    echo $br
     eval $cmd
+    echo $br
 fi 
 
 if [ "${arg/info}" != "$arg" ]; then 

@@ -34,6 +34,8 @@ JUNO (trunk:Mar 2, 2022)
 EOU
 }
 
+DIR=$(dirname $BASH_SOURCE)
+
 escale=extent
 moi=-1
 tmin=0.4
@@ -70,12 +72,10 @@ stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM stamp $stamp version $version done" 
-export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
+export BOTLINE=" GEOM $GEOM RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
 
 vars="stamp version TOPLINE BOTLINE"
 for var in $vars ; do printf "%20s : %s \n" $var "${!var}" ; done
 
-
-source ./cxr.sh  
-
+source $DIR/cxr.sh  
 

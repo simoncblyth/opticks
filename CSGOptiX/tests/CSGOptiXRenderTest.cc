@@ -2,6 +2,8 @@
 CSGOptiXRenderTest
 ====================
 
+For a simpler alternative see CSGOptiXRdrTest
+
 This executable is typically run via cxr_*.sh specialized bash scripts 
 each dedicated to different types of renders. 
 The scripts control what this executable does and where it writes via envvars.  

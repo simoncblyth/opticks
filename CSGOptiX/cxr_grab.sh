@@ -24,11 +24,18 @@ arg=${1:-$defarg}
 geom=V0J008
 GEOM=${GEOM:-$geom}
 
-#bin=CSGOptiXRenderTest
-bin=CSGOptiXRdrTest
+bin=CSGOptiXRenderTest
+#bin=CSGOptiXRdrTest
 
+if [ "$bin" == "CSGOptiXRdrTest" ]; then 
 base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
-echo rsync GEOM $GEOM base $base
+else
+base=/tmp/$USER/opticks/CSGOptiX/$bin/SCVD1/70000/-1/
+fi
+
+vars="GEOM bin base"
+for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+
 
 if [ "${arg/grab}" != "$arg" ]; then 
     echo $BASH_SOURCE grabbing from remote 
