@@ -19,6 +19,11 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
+GEOM(){ 
+  : opticks/opticks.bash
+  vi ~/.opticks/GEOM/GEOM.sh ; 
+}
+
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 

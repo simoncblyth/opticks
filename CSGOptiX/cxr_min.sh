@@ -37,6 +37,8 @@ DONE: added saving of SGLM::desc for debugging view issues
 EOU
 }
 
+DIR=$(dirname $BASH_SOURCE)
+
 defarg=run_info
 arg=${1:-$defarg}
 
@@ -46,7 +48,9 @@ pkg=CSGOptiX
 #bin=CSGOptiXRenderTest
 bin=CSGOptiXRdrTest
 
-geom=V0J008
+source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
+
+
 tmin=0.5
 
 moi=-1
@@ -64,7 +68,8 @@ escale=extent
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
 export MOI=${MOI:-$moi}
-export GEOM=${GEOM:-$geom}
+
+
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 export TMIN=${TMIN:-$tmin}
 
@@ -75,7 +80,8 @@ export TOPLINE=${TOPLINE:-$topline}
 export CSGOptiX=INFO
 # as a file is written in pwd need to cd 
 
-BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
+base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
+export BASE=${BASE:-$base}
 export LOGDIR=$BASE
 mkdir -p $LOGDIR 
 cd $LOGDIR 
@@ -100,4 +106,12 @@ fi
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 fi 
+
+
+if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" ]; then
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+fi 
+
+
+
 
