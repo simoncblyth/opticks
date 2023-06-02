@@ -35,7 +35,6 @@ as the static initialization would have happened already
 
 TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
 
-
 TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
       would be best to group that for clarity 
 
@@ -84,11 +83,12 @@ struct SYSRAP_API SGLM
     static constexpr const char* kCAM = "CAM" ; 
     static constexpr const char* kNEARFAR = "NEARFAR" ; 
     static constexpr const char* kFOCAL = "FOCAL" ; 
+    static constexpr const char* kESCALE = "ESCALE" ; 
 
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
 
-    static glm::vec4 CE ;    
+    static glm::vec4 CE ; // WHY CE? THIS IS GEOMETRY NOT VIEW RELATED : PROBABLY FOR WITHOUT GEOM TEST ?
     static glm::vec4 EYE ; 
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 
@@ -98,8 +98,7 @@ struct SYSRAP_API SGLM
     static int   CAM ; 
     static int   NEARFAR ; 
     static int   FOCAL ; 
-
-    // ~1.5 quad4
+    static int   ESCALE ; 
 
     static void SetWH( int width, int height ); 
     static void SetCE( float x, float y, float z, float extent ); 
@@ -111,6 +110,7 @@ struct SYSRAP_API SGLM
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
+    static void SetESCALE( const char* escale ); 
 
     // querying of static defaults 
     static std::string DescInput() ; 
@@ -120,6 +120,133 @@ struct SYSRAP_API SGLM
     static const char* CAM_Label() ; 
     static const char* NEARFAR_Label() ; 
     static const char* FOCAL_Label() ; 
+    static const char* ESCALE_Label() ; 
+
+
+    // member methods
+    std::string descInput() const ; 
+
+    SGLM(); 
+
+    sframe fr ;  // CAUTION: SEvt also holds an SFrame for input photon targetting 
+    void set_frame( const sframe& fr ); 
+    const char* get_frame_name() const ; 
+    float extent() const ; 
+    float tmin_abs() const ; 
+
+    bool rtp_tangential ; 
+    void set_rtp_tangential( bool rtp_tangential_ ); 
+ 
+    // matrices taken from fr or derived from ce when fr only holds identity
+    glm::mat4 model2world ; 
+    glm::mat4 world2model ; 
+    int updateModelMatrix_branch ; 
+
+    void updateModelMatrix();  // depends on ce, unless non-identity m2w and w2m matrices provided in frame
+    std::string descModelMatrix() const ; 
+
+    // world frame View converted from static model frame
+    glm::vec3 eye ;  
+    glm::vec3 look ; 
+    glm::vec3 up ; 
+    glm::vec3 gaze ; 
+
+    float     get_escale_() const ; 
+    glm::mat4 get_escale() const ; 
+    void updateELU();   // depends on CE and EYE, LOOK, UP 
+    float getGazeLength() const ; 
+    std::string descELU() const ; 
+
+    void updateNear(); 
+    std::string descNear() const ; 
+
+    // results from updateEyeSpace
+
+    glm::vec3 forward_ax ; 
+    glm::vec3 right_ax ; 
+    glm::vec3 top_ax ; 
+    glm::mat4 rot_ax ;  
+    glm::mat4 world2camera ; 
+    glm::mat4 camera2world ; 
+
+    void updateEyeSpace(); 
+    std::string descEyeSpace() const ; 
+
+    // results from updateEyeBasis
+    glm::vec3 u ; 
+    glm::vec3 v ; 
+    glm::vec3 w ; 
+    glm::vec3 e ; 
+    void updateEyeBasis(); 
+    static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
+    std::string descEyeBasis() const ; 
+
+
+
+
+
+
+
+    // modes
+    int  cam ; 
+    int  nearfar ;
+    int  focal ;  
+
+    float nearfar_manual ; 
+    float focal_manual ; 
+    float near ; 
+    float far ; 
+
+
+    std::vector<std::string> log ; 
+
+
+    void set_near( float near_ ); 
+    void set_far( float far_ ); 
+    void set_near_abs( float near_abs_ ); 
+    void set_far_abs(  float far_abs_ ); 
+
+    float get_near() const ;  
+    float get_far() const ;  
+    float get_near_abs() const ;  
+    float get_far_abs() const ;  
+
+    std::string descFrame() const ; 
+    std::string descBasis() const ; 
+
+
+    glm::mat4 projection ; 
+    glm::mat4 world2clip ; 
+
+
+
+    void updateProjection(); 
+    std::string descProjection() const ; 
+
+
+    void set_nearfar_mode(const char* mode); 
+    void set_focal_mode(const char* mode); 
+
+    const char* get_nearfar_mode() const ; 
+    const char* get_focal_mode() const ; 
+
+    void set_nearfar_manual(float nearfar_manual_); 
+    void set_focal_manual(float focal_manual_); 
+
+    float get_nearfar_basis() const ; 
+    float get_focal_basis() const ; 
+
+
+    void writeDesc(const char* dir, const char* name=nullptr) const ; 
+    std::string desc() const ; 
+
+
+    void dump() const ; 
+    void update(); 
+    void addlog( const char* label, float value       ) ; 
+    void addlog( const char* label, const char* value ) ; 
+    std::string descLog() const ; 
+
 
     template <typename T> static T ato_( const char* a );
     template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
@@ -143,129 +270,6 @@ struct SYSRAP_API SGLM
     static glm::vec4 EVec4(const char* key, const char* fallback, float missing=1.f ); 
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
-
-
-    // member methods
-    std::string descInput() const ; 
-
-    SGLM(); 
-    //void initCE(); 
-
-    sframe fr ;    // CAUTION: SEvt also holds an SFrame for input photon targetting 
-
-    // modes
-    int  cam ; 
-    int  nearfar ;
-    int  focal ;  
-    bool rtp_tangential ; 
-
-    // ~1.5+3 quad4
- 
-    // derived matrices depending on ce from fr 
-    glm::mat4 model2world ; 
-    glm::mat4 world2model ; 
-    int updateModelMatrix_branch ; 
-
-    float nearfar_manual ; 
-    float focal_manual ; 
-    float near ; 
-    float far ; 
-
-    // ~1.5+3+3 quad4
-
-    std::vector<std::string> log ; 
-
-    float tmin_abs() const ; 
-    void set_frame( const sframe& fr ); 
-    const char* get_frame_name() const ; 
-
-    void set_rtp_tangential( bool rtp_tangential_ ); 
-
-    void updateModelMatrix();  // depends on ce, unless valid m2w and w2m matrices provided
-
-    void set_near( float near_ ); 
-    void set_far( float far_ ); 
-    void set_near_abs( float near_abs_ ); 
-    void set_far_abs(  float far_abs_ ); 
-
-    float get_near() const ;  
-    float get_far() const ;  
-    float get_near_abs() const ;  
-    float get_far_abs() const ;  
-
-    std::string descFrame() const ; 
-    std::string descBasis() const ; 
-
-    // world frame View converted from static model frame
-    glm::vec3 eye ;  
-    glm::vec3 look ; 
-    glm::vec3 up ; 
-    glm::vec3 gaze ; 
-
-    // 1.5 +3+3+1
-
-    void updateELU();   // depends on CE and EYE, LOOK, UP 
-    std::string descELU() const ; 
-
-    // results from updateEyeSpace
-
-    glm::vec3 forward_ax ; 
-    glm::vec3 right_ax ; 
-    glm::vec3 top_ax ; 
-    glm::mat4 rot_ax ;  
-    glm::mat4 world2camera ; 
-    glm::mat4 camera2world ; 
-
-    // 1.5 +3+3+1+4   ~13 quad4 
-
-
-
-    void updateEyeSpace(); 
-    std::string descEyeSpace() const ; 
-
-    // results from updateEyeBasis
-    glm::vec3 u ; 
-    glm::vec3 v ; 
-    glm::vec3 w ; 
-    glm::vec3 e ; 
-    void updateEyeBasis(); 
-    static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
-    std::string descEyeBasis() const ; 
-
-
-    glm::mat4 projection ; 
-    glm::mat4 world2clip ; 
-
-    // ~16 quad4 
-
-    float getGazeLength() const ; 
-
-    void updateProjection(); 
-    std::string descProjection() const ; 
-
-
-    void set_nearfar_mode(const char* mode); 
-    void set_focal_mode(const char* mode); 
-
-    const char* get_nearfar_mode() const ; 
-    const char* get_focal_mode() const ; 
-
-    void set_nearfar_manual(float nearfar_manual_); 
-    void set_focal_manual(float focal_manual_); 
-
-    float get_nearfar_basis() const ; 
-    float get_focal_basis() const ; 
-
-
-    void writeDesc(const char* dir, const char* name=nullptr) const ; 
-    std::string desc() const ; 
-    std::string descLog() const ; 
-
-
-    void addlog( const char* label, float value       ) ; 
-    void addlog( const char* label, const char* value ) ; 
-    void dump() const ; 
-    void update(); 
 };
 
 SGLM* SGLM::INSTANCE = nullptr ; 
@@ -280,94 +284,62 @@ float      SGLM::TMIN = EValue<float>(kTMIN, "0.1");
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ; 
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
+int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "asis") ; 
 
-void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
-void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
-void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
-void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
-void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
-void SGLM::SetZOOM( float v ){ ZOOM = v ; }
-void SGLM::SetTMIN( float v ){ TMIN = v ; }
-void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
-void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
-void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
+inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
+inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
+inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
+inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
+inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
+inline void SGLM::SetZOOM( float v ){ ZOOM = v ; }
+inline void SGLM::SetTMIN( float v ){ TMIN = v ; }
+inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
+inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
+inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
 
-int SGLM::Width(){  return WH.x ; }
-int SGLM::Height(){ return WH.y ; }
-float SGLM::Aspect() { return float(WH.x)/float(WH.y) ; } 
-const char* SGLM::CAM_Label(){ return SCAM::Name(CAM) ; }
-const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }
-const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
+inline int SGLM::Width(){  return WH.x ; }
+inline int SGLM::Height(){ return WH.y ; }
+inline float SGLM::Aspect() { return float(WH.x)/float(WH.y) ; } 
+inline const char* SGLM::CAM_Label(){ return SCAM::Name(CAM) ; }
+inline const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }
+inline const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
+inline const char* SGLM::ESCALE_Label(){   return SBAS::Name(ESCALE) ; }
 
-SGLM::SGLM() 
+inline SGLM::SGLM() 
     :
-    cam(CAM),
-    nearfar(NEARFAR),
-    focal(FOCAL),
     rtp_tangential(false),
     model2world(1.f), 
     world2model(1.f),
     updateModelMatrix_branch(-1), 
-
+    eye(   0.f,0.f,0.f),
+    look(  0.f,0.f,0.f),
+    up(    0.f,0.f,0.f),
+    gaze(  0.f,0.f,0.f),
+    forward_ax(0.f,0.f,0.f),
+    right_ax(0.f,0.f,0.f),
+    top_ax(0.f,0.f,0.f),
+    rot_ax(1.f),
+    world2camera(1.f),
+    camera2world(1.f),
+    u(0.f,0.f,0.f),
+    v(0.f,0.f,0.f),
+    w(0.f,0.f,0.f),
+    e(0.f,0.f,0.f),
+    cam(CAM),
+    nearfar(NEARFAR),
+    focal(FOCAL),
     nearfar_manual(0.f),
     focal_manual(0.f),
 
     near(0.1f),   // units of get_nearfar_basis
     far(5.f),     // units of get_nearfar_basis
 
-    forward_ax(0.f,0.f,0.f),
-    right_ax(0.f,0.f,0.f),
-    top_ax(0.f,0.f,0.f),
-    rot_ax(1.f),
     projection(1.f),
     world2clip(1.f)
 {
-    //initCE(); 
     addlog("SGLM::SGLM", "ctor"); 
-    update(); // HMM: kinda pointless as will be run later ? 
     INSTANCE = this ; 
 }
-
-/*
-// not needed CSGFoundry::getFrame sets ip the ce  
-void SGLM::initCE()  
-{
-    fr.ce.x = CE.x ; 
-    fr.ce.y = CE.y ; 
-    fr.ce.z = CE.z ; 
-    fr.ce.w = CE.w ; 
-}
-*/
-
-/**
-SGLM::update
---------------
-
-Currently called from: 
-
-1. ctor (acts as default, normally overridden)
-2. SGLM::set_frame
-3. SGLM::set_frame 
-
-**HUH: why twice from set_frame ?**
-
-* probably due to get_nearfar_basis depending on gazelength?
-* TODO: think about dependency order of the calc, maybe can avoid 
-
-**/
-
-
-void SGLM::update()  
-{
-    addlog("SGLM::update", "["); 
-    updateModelMatrix(); 
-    updateELU(); 
-    updateEyeSpace(); 
-    updateEyeBasis(); 
-    updateProjection(); 
-    addlog("SGLM::update", "]"); 
-}
-
 
 
 void SGLM::writeDesc(const char* dir, const char* name_) const 
@@ -380,21 +352,20 @@ void SGLM::writeDesc(const char* dir, const char* name_) const
 std::string SGLM::desc() const 
 {
     std::stringstream ss ; 
+    ss << descFrame() << std::endl ; 
     ss << DescInput() << std::endl ; 
     ss << descInput() << std::endl ; 
+    ss << descModelMatrix() << std::endl ; 
     ss << descELU() << std::endl ; 
+    ss << descNear() << std::endl ; 
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
     ss << descProjection() << std::endl ; 
-    ss << descFrame() << std::endl ; 
     ss << descBasis() << std::endl ; 
     ss << descLog() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
 void SGLM::dump() const 
 {
     std::cout << desc() << std::endl ; 
@@ -408,6 +379,7 @@ std::string SGLM::DescInput() // static
     ss << std::setw(15) << kCAM << " " << CAM_Label() << std::endl ; 
     ss << std::setw(15) << kNEARFAR << " " << NEARFAR_Label() << std::endl ; 
     ss << std::setw(15) << kFOCAL   << " " << FOCAL_Label() << std::endl ; 
+    ss << std::setw(15) << kESCALE  << " " << ESCALE_Label() << std::endl ; 
     ss << std::setw(15) << kWH    << Present( WH )   << " Aspect " << Aspect() << std::endl ; 
     ss << std::setw(15) << kCE    << Present( CE )   << std::endl ; 
     ss << std::setw(15) << kEYE   << Present( EYE )  << std::endl ; 
@@ -430,37 +402,41 @@ std::string SGLM::descInput() const
     return s ; 
 }
 
-float SGLM::tmin_abs() const
-{
-    // TMIN: is "tmin_model" from TMIN envvar with default of 0.1 (units of extent) 
-    return fr.ce.w*TMIN ; 
-}
+/**
+SGLM::set_frame
+-----------------
 
-void SGLM::set_frame( const sframe& fr_ )
+Avoided former kludge double call of update by repositioning updateNear 
+according to its dependency on gazelength. 
+
+**/
+
+inline void SGLM::set_frame( const sframe& fr_ )
 {
     fr = fr_ ; 
-
-    //using the sframe avoids need for these ?
-    //set_ce(fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w ); 
-    //set_m2w(fr.m2w, fr.w2m);
-
-    float tma = tmin_abs() ; 
-    addlog("set_frame.tma.1", tma);
-    update();  
-
-    set_near_abs(tma) ;
-
-    addlog("set_frame.tma.2", tma);
-    update();   // WHY TWO UPDATES ? 
+    update(); 
 }
 
-const char* SGLM::get_frame_name() const 
+inline const char* SGLM::get_frame_name() const 
 {
     return fr.get_name(); 
 }
 
+inline float SGLM::extent() const {   return fr.ce.w ; }
+inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
 
 
+void SGLM::update()  
+{
+    addlog("SGLM::update", "["); 
+    updateModelMatrix(); 
+    updateELU(); 
+    updateNear(); 
+    updateEyeSpace(); 
+    updateEyeBasis(); 
+    updateProjection(); 
+    addlog("SGLM::update", "]"); 
+}
 
 void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
@@ -468,12 +444,23 @@ void SGLM::set_rtp_tangential(bool rtp_tangential_ )
     addlog("set_rtp_tangential", rtp_tangential );
 }
 
-
 /**
 SGLM::updateModelMatrix
 ------------------------
 
-Called by SGLM::update. The matrices are set based on center--extent OR directly from the set_m2w matrices 
+Called by SGLM::update. 
+
+updateModelMatrix_branch:1
+    used when the transforms are not identity, 
+    just take model2world and world2model from sframe m2w w2m  
+
+updateModelMatrix_branch:2
+    used for rtp_tangential:true (not default) 
+    TODO: this calc now done in CSGTarget::getFrameComponents 
+    does it need to be here too ?
+
+updateModelMatrix_branch:3
+    cookup matrix from fr.ce alone, ignoring the frame transforms 
 
 **/
 
@@ -481,10 +468,10 @@ void SGLM::updateModelMatrix()
 {
     updateModelMatrix_branch = 0 ; 
 
-    bool m2w_valid = fr.m2w.is_identity(sframe::EPSILON) == false ;
-    bool w2m_valid = fr.w2m.is_identity(sframe::EPSILON) == false ;
+    bool m2w_not_identity = fr.m2w.is_identity(sframe::EPSILON) == false ;
+    bool w2m_not_identity = fr.w2m.is_identity(sframe::EPSILON) == false ;
 
-    if( m2w_valid && w2m_valid )
+    if( m2w_not_identity && w2m_not_identity )
     {
         updateModelMatrix_branch = 1 ; 
         model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
@@ -511,142 +498,68 @@ void SGLM::updateModelMatrix()
 }
 
 
-void SGLM::addlog( const char* label, float value )
-{
-    std::stringstream ss ;  
-    ss << std::setw(25) << label << " : " << std::setw(10) << std::fixed << std::setprecision(3) << value ;  
-    std::string s = ss.str(); 
-    log.push_back(s); 
-}
-
-void SGLM::addlog( const char* label, const char* value )
-{
-    std::stringstream ss ;  
-    ss << std::setw(25) << label << " : " << value ;  
-    std::string s = ss.str(); 
-    log.push_back(s); 
-}
-
-
-
-void SGLM::set_nearfar_mode(const char* mode){    addlog("set_nearfar_mode",  mode) ; nearfar = SBAS::Type(mode) ; }
-void SGLM::set_focal_mode(  const char* mode){    addlog("set_focal_mode",    mode) ; focal   = SBAS::Type(mode) ; }
-
-const char* SGLM::get_nearfar_mode() const { return SBAS::Name(nearfar) ; } 
-const char* SGLM::get_focal_mode() const {   return SBAS::Name(focal) ; } 
-
-void SGLM::set_nearfar_manual(float nearfar_manual_ ){ addlog("set_nearfar_manual", nearfar_manual_ ) ; nearfar_manual = nearfar_manual_  ; }
-void SGLM::set_focal_manual(float focal_manual_ ){     addlog("set_focal_manual", focal_manual_ )     ; focal_manual = focal_manual_  ; }
-
-
-float SGLM::get_nearfar_basis() const 
-{ 
-    float basis = 0.f ; 
-    switch(nearfar)
-    {
-        case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
-        case BAS_EXTENT:     basis = fr.ce.w             ; break ;  // only after setFrame 
-        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU (default)
-        case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
-    }
-    return basis ;  
-}
-
-/**
-SGLM::get_focal_basis
-----------------------
-
-BAS_NEARABS problematic as 
-
-**/
-
-float SGLM::get_focal_basis() const 
-{ 
-    float basis = 0.f ; 
-    switch(focal)
-    {
-        case BAS_MANUAL:     basis = focal_manual        ; break ; 
-        case BAS_EXTENT:     basis = fr.ce.w             ; break ; 
-        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU
-        case BAS_NEARABS:    basis = get_near_abs()      ; break ; 
-    }
-    return basis ;  
-}
 
 
 
 
-void SGLM::set_near( float near_ ){ near = near_ ; addlog("set_near", near); }
-void SGLM::set_far(  float far_ ){  far = far_   ; addlog("set_far", far);   }
-
-float SGLM::get_near() const  { return near ; }  
-float SGLM::get_far()  const  { return far  ; }  
-
-// CAUTION: depends on get_nearfar_basis
-void SGLM::set_near_abs( float near_abs_ ){ addlog("set_near_abs", near_abs_) ; set_near( near_abs_/get_nearfar_basis() ) ; }
-void SGLM::set_far_abs(  float far_abs_ ){  addlog("set_far_abs", far_abs_)   ; set_far(  far_abs_/get_nearfar_basis()  ) ; }
-
-float SGLM::get_near_abs() const { return near*get_nearfar_basis() ; }
-float SGLM::get_far_abs() const { return   far*get_nearfar_basis() ; }
-
-
-std::string SGLM::descFrame() const 
-{
-    return fr.desc(); 
-}
-
-std::string SGLM::descBasis() const 
-{
-    int wid = 25 ; 
-    std::stringstream ss ; 
-    ss << "SGLM::descBasis" << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_nearfar_mode " << get_nearfar_mode()  << std::endl ; 
-    ss << std::setw(wid) << " sglm.nearfar_manual "   << Present( nearfar_manual ) << std::endl ; 
-    ss << std::setw(wid) << " sglm.fr.ce.w  "     << Present( fr.ce.w )  << std::endl ; 
-    ss << std::setw(wid) << " sglm.getGazeLength  " << Present( getGazeLength() ) << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_nearfar_basis " << Present( get_nearfar_basis() ) << std::endl ; 
-    ss << std::endl ; 
-    ss << std::setw(wid) << " sglm.near  "     << Present( near )  << " (units of nearfar basis) " << std::endl ; 
-    ss << std::setw(wid) << " sglm.far   "     << Present( far )   << " (units of nearfar basis) " << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_near_abs  " << Present( get_near_abs() ) << " near*get_nearfar_basis() " << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_far_abs  " << Present( get_far_abs() )   << " far*get_nearfar_basis() " << std::endl ; 
-    ss << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_focal_mode " << get_focal_mode()  << std::endl ; 
-    ss << std::setw(wid) << " sglm.get_focal_basis " << Present( get_focal_basis() ) << std::endl ; 
-    ss << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-void SGLM::updateELU() // eye, look, up, gaze into world frame 
-{
-    eye  = glm::vec3( model2world * EYE ) ; 
-    look = glm::vec3( model2world * LOOK ) ; 
-    up   = glm::vec3( model2world * UP ) ; 
-    gaze = glm::vec3( model2world * (LOOK - EYE) ) ;    
-}
-
-std::string SGLM::descLog() const
+std::string SGLM::descModelMatrix() const 
 {
     std::stringstream ss ; 
-    ss << "SGLM::descLog" << std::endl ; 
-    for(unsigned i=0 ; i < log.size() ; i++) ss << log[i] << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
- 
-std::string SGLM::descELU() const 
-{
-    std::stringstream ss ; 
-    ss << "SGLM::descELU" << std::endl ; 
+    ss << "SGLM::descModelMatrix" << std::endl ; 
     ss << " sglm.model2world \n" << Present( model2world ) << std::endl ; 
     ss << " sglm.world2model \n" << Present( world2model ) << std::endl ; 
     ss << " sglm.updateModelMatrix_branch " << updateModelMatrix_branch << std::endl ; 
     ss << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+float SGLM::get_escale_() const 
+{
+    float escale = 0.f ; 
+    switch(ESCALE)
+    {
+        case BAS_EXTENT: escale = extent() ; break ; 
+        case BAS_ASIS:   escale = 1.f      ; break ; 
+    }  
+    return escale ; 
+}
+
+glm::mat4 SGLM::get_escale() const 
+{
+    float f = get_escale_(); 
+    glm::vec3 sc(f,f,f) ; 
+    glm::mat4 esc = glm::scale(glm::mat4(1.0), sc);
+    return esc ; 
+}
+
+
+void SGLM::updateELU() // eye, look, up, gaze from model frame (extent units?) into world frame 
+{
+    glm::mat4 escale = get_escale(); 
+    eye  = glm::vec3( model2world * escale * EYE ) ; 
+    look = glm::vec3( model2world * escale * LOOK ) ; 
+    up   = glm::vec3( model2world * escale * UP ) ; 
+    gaze = glm::vec3( model2world * escale * (LOOK - EYE) ) ;    
+}
+
+float SGLM::getGazeLength() const { return glm::length(gaze) ; }   // must be after updateELU 
+
+
+std::string SGLM::descELU() const 
+{
+    glm::mat4 escale = get_escale(); 
+    std::stringstream ss ; 
+    ss << "SGLM::descELU" << std::endl ; 
     ss << std::setw(15) << " sglm.EYE "  << Present( EYE )  << std::endl ; 
     ss << std::setw(15) << " sglm.LOOK " << Present( LOOK ) << std::endl ; 
     ss << std::setw(15) << " sglm.UP "   << Present( UP )   << std::endl ; 
     ss << std::setw(15) << " sglm.GAZE " << Present( LOOK-EYE ) << std::endl ; 
+    ss << std::endl ; 
+    ss << std::setw(15) << " sglm.EYE*escale "  << Present( EYE*escale )  << std::endl ; 
+    ss << std::setw(15) << " sglm.LOOK*escale " << Present( LOOK*escale ) << std::endl ; 
+    ss << std::setw(15) << " sglm.UP*escale "   << Present( UP*escale )   << std::endl ; 
+    ss << std::setw(15) << " sglm.GAZE*escale " << Present( (LOOK-EYE)*escale ) << std::endl ; 
     ss << std::endl ; 
     ss << std::setw(15) << " sglm.eye "  << Present( eye )  << std::endl ; 
     ss << std::setw(15) << " sglm.look " << Present( look ) << std::endl ; 
@@ -656,6 +569,32 @@ std::string SGLM::descELU() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+/**
+SGLM::updateNear
+------------------
+
+As the basis needs gazelength, this must be done after updateELU
+but isnt there still a problem of basis consistency between tmin_abs and set_near_abs ? 
+For example extent scaling vs gazelength scaling ? 
+
+**/
+void SGLM::updateNear() 
+{
+    float tma = tmin_abs() ; 
+    addlog("updateNear.tma", tma);
+    set_near_abs(tma) ;  
+}
+std::string SGLM::descNear() const
+{
+    std::stringstream ss ; 
+    ss << "SGLM::descNear" << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 /**
 SGLM::updateEyeSpace
@@ -720,62 +659,6 @@ std::string SGLM::descEyeSpace() const
 }
 
 
-float SGLM::getGazeLength() const { return glm::length(gaze) ; }   // must be after updateELU 
-
-void SGLM::updateProjection()
-{
-    float fsc = get_focal_basis() ;
-    float fscz = fsc/ZOOM  ; 
-
-    float aspect = Aspect(); 
-    float left   = -aspect*fscz ;
-    float right  =  aspect*fscz ;
-    float bottom = -fscz ;
-    float top    =  fscz ;
-
-    float near_abs   = get_near_abs() ; 
-    float far_abs    = get_far_abs()  ; 
-
-    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
-    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
-}
-
-
-
-
-std::string SGLM::descProjection() const 
-{
-    float fsc = get_focal_basis() ;
-    float fscz = fsc/ZOOM  ; 
-    float aspect = Aspect(); 
-    float left   = -aspect*fscz ;
-    float right  =  aspect*fscz ;
-    float bottom = -fscz ;
-    float top    =  fscz ;
-    float near_abs   = get_near_abs() ; 
-    float far_abs    = get_far_abs()  ; 
-
-    int wid = 25 ; 
-    std::stringstream ss ;
-    ss << "SGLM::descProjection" << std::endl ; 
-    ss << std::setw(wid) << "Aspect" << Present(aspect) << std::endl ;  
-    ss << std::setw(wid) << "get_focal_basis" << Present(fsc) << std::endl ;  
-    ss << std::setw(wid) << "get_focal_basis/ZOOM" << Present(fscz) << std::endl ;  
-    ss << std::setw(wid) << "ZOOM" << Present(ZOOM) << std::endl ;  
-    ss << std::setw(wid) << "left"   << Present(left) << std::endl ;  
-    ss << std::setw(wid) << "right"  << Present(right) << std::endl ;  
-    ss << std::setw(wid) << "top"    << Present(top) << std::endl ;  
-    ss << std::setw(wid) << "bottom" << Present(bottom) << std::endl ;  
-    ss << std::setw(wid) << "get_near_abs" << Present(near_abs) << std::endl ;  
-    ss << std::setw(wid) << "get_far_abs" << Present(far_abs) << std::endl ;  
-
-    ss << std::setw(wid) << "near" << Present(near) << std::endl ;  
-    ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
-    ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
-    ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
 
 
 /**
@@ -785,6 +668,9 @@ SGLM::updateEyeBasis
 NB this uses the *camera2world* matrix obtained from SGLM::updateEyeSpace
 with the same OpenGL eye frame convention to yield a scaled set of basis
 vectors.  
+
+The u,v,w,e, vectors are used from CSGOptiX::prepareRenderParam 
+for setting up the raytrace render params. 
 
 **/
 
@@ -849,6 +735,194 @@ std::string SGLM::DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const gl
 
 
 
+
+
+
+
+
+void SGLM::set_nearfar_mode(const char* mode){    addlog("set_nearfar_mode",  mode) ; nearfar = SBAS::Type(mode) ; }
+void SGLM::set_focal_mode(  const char* mode){    addlog("set_focal_mode",    mode) ; focal   = SBAS::Type(mode) ; }
+
+const char* SGLM::get_nearfar_mode() const { return SBAS::Name(nearfar) ; } 
+const char* SGLM::get_focal_mode() const {   return SBAS::Name(focal) ; } 
+
+void SGLM::set_nearfar_manual(float nearfar_manual_ ){ addlog("set_nearfar_manual", nearfar_manual_ ) ; nearfar_manual = nearfar_manual_  ; }
+void SGLM::set_focal_manual(float focal_manual_ ){     addlog("set_focal_manual", focal_manual_ )     ; focal_manual = focal_manual_  ; }
+
+/**
+SGLM::get_focal_basis
+----------------------
+
+BAS_NEARABS problematic as 
+
+**/
+
+float SGLM::get_focal_basis() const 
+{ 
+    float basis = 0.f ; 
+    switch(focal)
+    {
+        case BAS_MANUAL:     basis = focal_manual        ; break ; 
+        case BAS_EXTENT:     basis = fr.ce.w             ; break ; 
+        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU
+        case BAS_NEARABS:    basis = get_near_abs()      ; break ; 
+    }
+    return basis ;  
+}
+
+void SGLM::set_near( float near_ ){ near = near_ ; addlog("set_near", near); }
+void SGLM::set_far(  float far_ ){  far = far_   ; addlog("set_far", far);   }
+float SGLM::get_near() const  { return near ; }  
+float SGLM::get_far()  const  { return far  ; }  
+
+/**
+SGLM::get_nearfar_basis
+-------------------------
+
+Default is gazelength
+
+**/
+
+float SGLM::get_nearfar_basis() const 
+{ 
+    float basis = 0.f ; 
+    switch(nearfar)
+    {
+        case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
+        case BAS_EXTENT:     basis = extent()            ; break ;  // only after setFrame 
+        case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU (default)
+        case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
+    }
+    return basis ;  
+}
+
+
+// CAUTION: depends on get_nearfar_basis
+void SGLM::set_near_abs( float near_abs_ )
+{ 
+    float nfb = get_nearfar_basis() ; 
+    float nab = near_abs_/nfb ; 
+    addlog("set_near_abs.arg", near_abs_) ; 
+    addlog("set_near_abs.nfb", nfb ); 
+    addlog("set_near_abs.nab", nab ); 
+    set_near( nab ) ; 
+}
+void SGLM::set_far_abs(  float far_abs_ ){  addlog("set_far_abs", far_abs_)   ; set_far(  far_abs_/get_nearfar_basis()  ) ; }
+
+float SGLM::get_near_abs() const { return near*get_nearfar_basis() ; }
+float SGLM::get_far_abs() const { return   far*get_nearfar_basis() ; }
+
+
+std::string SGLM::descFrame() const 
+{
+    return fr.desc(); 
+}
+
+std::string SGLM::descBasis() const 
+{
+    int wid = 25 ; 
+    std::stringstream ss ; 
+    ss << "SGLM::descBasis" << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_nearfar_mode " << get_nearfar_mode()  << std::endl ; 
+    ss << std::setw(wid) << " sglm.nearfar_manual "   << Present( nearfar_manual ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.fr.ce.w  "     << Present( fr.ce.w )  << std::endl ; 
+    ss << std::setw(wid) << " sglm.getGazeLength  " << Present( getGazeLength() ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_nearfar_basis " << Present( get_nearfar_basis() ) << std::endl ; 
+    ss << std::endl ; 
+    ss << std::setw(wid) << " sglm.near  "     << Present( near )  << " (units of nearfar basis) " << std::endl ; 
+    ss << std::setw(wid) << " sglm.far   "     << Present( far )   << " (units of nearfar basis) " << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_near_abs  " << Present( get_near_abs() ) << " near*get_nearfar_basis() " << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_far_abs  " << Present( get_far_abs() )   << " far*get_nearfar_basis() " << std::endl ; 
+    ss << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_focal_mode " << get_focal_mode()  << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_focal_basis " << Present( get_focal_basis() ) << std::endl ; 
+    ss << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+ 
+void SGLM::updateProjection()
+{
+    float fsc = get_focal_basis() ;
+    float fscz = fsc/ZOOM  ; 
+
+    float aspect = Aspect(); 
+    float left   = -aspect*fscz ;
+    float right  =  aspect*fscz ;
+    float bottom = -fscz ;
+    float top    =  fscz ;
+
+    float near_abs   = get_near_abs() ; 
+    float far_abs    = get_far_abs()  ; 
+
+    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
+    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
+}
+
+
+
+
+std::string SGLM::descProjection() const 
+{
+    float fsc = get_focal_basis() ;
+    float fscz = fsc/ZOOM  ; 
+    float aspect = Aspect(); 
+    float left   = -aspect*fscz ;
+    float right  =  aspect*fscz ;
+    float bottom = -fscz ;
+    float top    =  fscz ;
+    float near_abs   = get_near_abs() ; 
+    float far_abs    = get_far_abs()  ; 
+
+    int wid = 25 ; 
+    std::stringstream ss ;
+    ss << "SGLM::descProjection" << std::endl ; 
+    ss << std::setw(wid) << "Aspect" << Present(aspect) << std::endl ;  
+    ss << std::setw(wid) << "get_focal_basis" << Present(fsc) << std::endl ;  
+    ss << std::setw(wid) << "get_focal_basis/ZOOM" << Present(fscz) << std::endl ;  
+    ss << std::setw(wid) << "ZOOM" << Present(ZOOM) << std::endl ;  
+    ss << std::setw(wid) << "left"   << Present(left) << std::endl ;  
+    ss << std::setw(wid) << "right"  << Present(right) << std::endl ;  
+    ss << std::setw(wid) << "top"    << Present(top) << std::endl ;  
+    ss << std::setw(wid) << "bottom" << Present(bottom) << std::endl ;  
+    ss << std::setw(wid) << "get_near_abs" << Present(near_abs) << std::endl ;  
+    ss << std::setw(wid) << "get_far_abs" << Present(far_abs) << std::endl ;  
+
+    ss << std::setw(wid) << "near" << Present(near) << std::endl ;  
+    ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
+    ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
+    ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+inline void SGLM::addlog( const char* label, float value )
+{
+    std::stringstream ss ;  
+    ss << std::setw(25) << label << " : " << std::setw(10) << std::fixed << std::setprecision(3) << value ;  
+    std::string s = ss.str(); 
+    log.push_back(s); 
+}
+
+inline void SGLM::addlog( const char* label, const char* value )
+{
+    std::stringstream ss ;  
+    ss << std::setw(25) << label << " : " << value ;  
+    std::string s = ss.str(); 
+    log.push_back(s); 
+}
+
+inline std::string SGLM::descLog() const
+{
+    std::stringstream ss ; 
+    ss << "SGLM::descLog" << std::endl ; 
+    for(unsigned i=0 ; i < log.size() ; i++) ss << log[i] << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 

@@ -40,8 +40,15 @@ base=/tmp/$USER/opticks/GEOM/V0J008/CSGOptiXRdrTest
 export BASE=${BASE:-$base}
 
 tmin=0.5
-export TMIN=${TMIN:-$tmin}
+#eye=1000,1000,1000
+eye=3.7878,3.7878,3.7878
 
+#escale=asis
+escale=extent
+
+export TMIN=${TMIN:-$tmin}
+export EYE=${EYE:-$eye}
+export ESCALE=${ESCALE:-$escale}
 
 DESC_REF=CSGOptiX__render_snap.log
 DESC_NAME=SGLM_set_frame_test.log
@@ -70,7 +77,7 @@ if [ "${arg/cat}" != "$arg" ]; then
 fi 
 
 if [ "${arg/diff}" != "$arg" ]; then 
-    cmd="diff $BASE/$DESC_REF $BASE/$DESC_NAME"
+    cmd="( cd $BASE && diff $DESC_REF $DESC_NAME)"
     echo $BASH_SOURCE diff : $cmd
     eval $cmd
 fi 

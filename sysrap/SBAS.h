@@ -5,7 +5,7 @@ SBAS.h : Basis mode used by SGLM
 **/
 
 
-enum { BAS_MANUAL, BAS_EXTENT, BAS_GAZELENGTH, BAS_NEARABS } ;  
+enum { BAS_MANUAL, BAS_EXTENT, BAS_GAZELENGTH, BAS_NEARABS, BAS_ASIS } ;  
 
 
 #ifndef __CUDACC__
@@ -21,6 +21,7 @@ struct SBAS
     static constexpr const char* EXTENT_ = "extent" ;
     static constexpr const char* GAZELENGTH_ = "gazelength" ;
     static constexpr const char* NEARABS_ = "nearabs" ;
+    static constexpr const char* ASIS_ = "asis" ;
     static int EGet(const char* ekey, const char* fallback);   
 };
 
@@ -46,7 +47,8 @@ inline const char* SBAS::Name(int cam )
         case BAS_MANUAL:     s = MANUAL_     ; break ;
         case BAS_EXTENT:     s = EXTENT_     ; break ;
         case BAS_GAZELENGTH: s = GAZELENGTH_ ; break ;
-        case BAS_NEARABS:    s = NEARABS_ ; break ;
+        case BAS_NEARABS:    s = NEARABS_    ; break ;
+        case BAS_ASIS:       s = ASIS_       ; break ;
     }
     return s ; 
 }
@@ -57,6 +59,7 @@ inline int SBAS::Type(const char* name)
     if(strcmp(name,EXTENT_) == 0 )     type = BAS_EXTENT ;
     if(strcmp(name,GAZELENGTH_) == 0 ) type = BAS_GAZELENGTH ;
     if(strcmp(name,NEARABS_) == 0 )    type = BAS_NEARABS ;
+    if(strcmp(name,ASIS_) == 0 )       type = BAS_ASIS ;
     return type ;
 }
 #endif

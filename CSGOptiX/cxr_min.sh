@@ -33,13 +33,28 @@ bin=CSGOptiXRdrTest
 
 geom=V0J008
 tmin=0.5
-moi=sWorld:0:0
+#moi=sWorld:0:0
+moi=NNVT:0:0
 
+#eye=1000,1000,1000
+#escale=asis
+
+eye=3.7878,3.7878,3.7878
+escale=extent
+
+export ESCALE=${ESCALE:-$escale}
+export EYE=${EYE:-$eye}
 export MOI=${MOI:-$moi}
 export CSGOptiX=INFO
 export GEOM=${GEOM:-$geom}
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 export TMIN=${TMIN:-$tmin}
+
+
+topline="EYE=$EYE TMIN=$TMIN MOI=$MOI ~/opticks/CSGOptiX/cxr_min.sh" 
+
+export TOPLINE=${TOPLINE:-$topline}
+
 
 # as a file is written in pwd need to cd 
 
