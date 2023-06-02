@@ -193,6 +193,15 @@ Mid chimney fixture::
 EOU
 }
 
+case $(uname) in 
+  Linux) defarg="run" ;;
+  Darwin) defarg="grab_open" ;; 
+esac
+arg=${1:-$defarg}
+
+DIR=$(dirname $BASH_SOURCE)
+source $HOME/.opticks/GEOM/GEOM.sh 
+
 
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
@@ -235,7 +244,7 @@ version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE LOOK $LOOK UP $UP      EMM $EMM  $stamp  $version " 
 
-source ./cxr.sh     
+source $DIR/cxr.sh $arg     
 
 exit 0
 

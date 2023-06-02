@@ -39,24 +39,26 @@ EOU
 
 DIR=$(dirname $BASH_SOURCE)
 
-defarg=run_info
+case $(uname) in
+   Linux) defarg=run_info ;;
+   Darwin) defarg=grab_open ;;
+esac
+
 arg=${1:-$defarg}
 
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
 pkg=CSGOptiX
-#bin=CSGOptiXRenderTest
 bin=CSGOptiXRdrTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
-
 tmin=0.5
 
-moi=-1
+#moi=-1
 #moi=sWorld:0:0
 #moi=NNVT:0:0
-#moi=NNVT:0:50
+moi=NNVT:0:50
 
 #eye=1000,1000,1000
 #escale=asis
@@ -108,7 +110,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 
-if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" ]; then
+if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 fi 
 

@@ -45,6 +45,9 @@ else
     export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 fi 
 
+defarg="run"
+arg=${1:-$defarg}
+
 pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
@@ -87,7 +90,10 @@ esac
 
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
-optix_version=$(CSGOptiXVersion 2>/dev/null)
+case $(uname) in 
+   Darwin) optix_version=70000 ;; 
+   Linux)  optix_version=$(CSGOptiXVersion 2>/dev/null) ;;
+esac
 
 
 # the OPTICKS_RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
@@ -108,6 +114,9 @@ export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$optix_version
 export OPTICKS_OUT_NAME=$MOI
 # envvars used by SEventConfig::OutPath 
 
+export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
+
+
 vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
@@ -122,16 +131,12 @@ fi
 DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
-old-render-cmd(){ cat << EOC
-$GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --sizescale "$SIZESCALE" --solid_label "$SLA" $* 
-EOC
-}   
+#obsolete-render-cmd(){ cat << EOC
 # modern Opticks executables dont parse commandlines, they read envvars 
+# $GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --sizescale "$SIZESCALE" --solid_label "$SLA" $* 
+#EOC
+# }   
 
-render-cmd(){ cat << EOC
-$GDB $bin 
-EOC
-} 
 
 render()
 {
@@ -140,7 +145,7 @@ render()
    pwd
 
    local log=$bin.log
-   local cmd=$(render-cmd $*) 
+   local cmd="$GDB $bin" 
    echo $cmd
 
    printf "\n\n\n$cmd\n\n\n" >> $log 
@@ -154,24 +159,6 @@ render()
 
    return $rc
 }
-
-
-# skip the render when running with PUB defined 
-# as in that case the ouputs are just copied 
-# from temporary dirs into the publication tree
-
-if [ -z "$PUB" ]; then
-    if [ -n "$ARGLIST" ] ; then 
-        echo $msg MOI $MOI ARGLIST $ARGLIST
-        render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
-        rc=$?
-    else
-        render $*                               ## single MOI via envvar 
-        rc=$?
-    fi
-else
-    rc=0
-fi
 
 
 relative_stem(){
@@ -191,17 +178,19 @@ relative_stem(){
    echo $rel 
 }
 
-if [ $rc -eq 0 ]; then 
+
+publish()
+{
+    : copy outputs from tmpdirs into the publication tree
 
     source CSGOptiXRenderTest_OUTPUT_DIR.sh || return 1  
-    outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
+    local outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
 
     if [ -n "$outdir" ]; then 
         ls -1rt `find $outdir -name '*.jpg' `
         jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
         echo $msg jpg $jpg 
         ls -l $jpg
-
 
         [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
 
@@ -238,9 +227,27 @@ if [ $rc -eq 0 ]; then
     else
         echo $msg outdir not defined 
     fi 
-else
-    echo $msg non-zero RC from render 
+}
+
+
+
+if [ "$arg" == "run" ]; then
+
+    # ARGLIST needs rejig as no longer parsing args 
+    #    render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
+
+    render ## single MOI via envvar 
+
+elif [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "grab_open" ]; then 
+
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+
+elif [ "$arg" == "pub" ]; then 
+
+    publish 
+
 fi 
+
 
 
 

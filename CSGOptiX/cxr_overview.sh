@@ -36,6 +36,13 @@ EOU
 
 DIR=$(dirname $BASH_SOURCE)
 
+case $(uname) in 
+  Linux) defarg="run" ;;
+  Darwin) defarg="grab_open" ;; 
+esac
+arg=${1:-$defarg}
+
+
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 escale=extent
@@ -79,5 +86,5 @@ export BOTLINE=" GEOM $GEOM RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNE
 vars="stamp version TOPLINE BOTLINE"
 for var in $vars ; do printf "%20s : %s \n" $var "${!var}" ; done
 
-source $DIR/cxr.sh  
+source $DIR/cxr.sh $arg
 
