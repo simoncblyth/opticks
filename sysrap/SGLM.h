@@ -417,16 +417,12 @@ inline void SGLM::set_frame( const sframe& fr_ )
     update(); 
 }
 
-inline const char* SGLM::get_frame_name() const 
-{
-    return fr.get_name(); 
-}
-
+inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
 inline float SGLM::extent() const {   return fr.ce.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
 
 
-void SGLM::update()  
+inline void SGLM::update()  
 {
     addlog("SGLM::update", "["); 
     updateModelMatrix(); 
@@ -438,7 +434,7 @@ void SGLM::update()
     addlog("SGLM::update", "]"); 
 }
 
-void SGLM::set_rtp_tangential(bool rtp_tangential_ )
+inline void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
     rtp_tangential = rtp_tangential_ ; 
     addlog("set_rtp_tangential", rtp_tangential );
@@ -464,7 +460,7 @@ updateModelMatrix_branch:3
 
 **/
 
-void SGLM::updateModelMatrix()
+inline void SGLM::updateModelMatrix()
 {
     updateModelMatrix_branch = 0 ; 
 
@@ -483,13 +479,22 @@ void SGLM::updateModelMatrix()
         SCenterExtentFrame<double> cef( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w, rtp_tangential );
         model2world = cef.model2world ;
         world2model = cef.world2model ;
+        // HMM: these matrix might have extent scaling already ? 
     }
     else
     {
         updateModelMatrix_branch = 3 ; 
         glm::vec3 tr(fr.ce.x, fr.ce.y, fr.ce.z) ;  
-        glm::vec3 sc(fr.ce.w, fr.ce.w, fr.ce.w) ; 
-        glm::vec3 isc(1.f/fr.ce.w, 1.f/fr.ce.w, 1.f/fr.ce.w) ; 
+
+        float f = 1.f ; // get_escale_() ; 
+        assert( f > 0.f ); 
+        glm::vec3 sc(f, f, f) ; 
+        glm::vec3 isc(1.f/f, 1.f/f, 1.f/f) ; 
+        // for consistency with the transforms from sframe.h 
+        // need to not include the escale here : its done below in 
+        // SGLM::updateELU
+
+        addlog("updateModelMatrix.3.fabricate", f );
 
         model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
         world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 

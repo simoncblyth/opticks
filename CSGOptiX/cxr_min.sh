@@ -1,9 +1,16 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-cxr_min.sh
-===========
+cxr_min.sh : minimal executable and script for shakedown
+============================================================
 
-Shakedown cxr.sh scripts using this minimal approach. 
+See also:
+
+cxr_grab.sh 
+   rsync pull from workstation to laptop 
+     
+sysrap/tests/SGLM_set_frame_test.sh 
+   fast standalone SGLM::set_frame cycling using persisted sframe 
+
 
 ::
 
@@ -11,12 +18,20 @@ Shakedown cxr.sh scripts using this minimal approach.
     EYE=0.3,0.3,0.3 TMIN=0.1 ./cxr_min.sh
 
 
-    EYE=10,10,10 TMIN=0.5 MOI=Hama:0:0 ./cxr_min.sh    ## invisible 
-    EYE=100,100,100 TMIN=0.1 MOI=Hama:0:1000 ./cxr_min.sh 
+FIXED Issue : EYE inputs not being extent scaled
+-----------------------------------------------------
+
+The transition to using the transforms from sframe.h 
+revealed a difference in the matrix expections, 
+where the difference was extent scaling. This made
+it tedious to find good viewpoints.::
+
+    EYE=10,10,10 TMIN=0.5 MOI=Hama:0:0 ./cxr_min.sh        ## invisible 
+    EYE=100,100,100 TMIN=0.1 MOI=Hama:0:1000 ./cxr_min.sh  ## mostly inviz
     EYE=1000,1000,1000 TMIN=0.5 MOI=NNVT:0:0 ./cxr_min.sh  ## makes sense
 
-HUH: suspect problem with frame targetting messing up extent units
-TODO: dump the frame for debugging and save view config with renders
+DONE: added saving of SGLM::desc for debugging view issues
+
     
 
 EOU
@@ -33,31 +48,32 @@ bin=CSGOptiXRdrTest
 
 geom=V0J008
 tmin=0.5
+
+moi=-1
 #moi=sWorld:0:0
-moi=NNVT:0:0
+#moi=NNVT:0:0
+#moi=NNVT:0:50
 
 #eye=1000,1000,1000
 #escale=asis
 
-eye=3.7878,3.7878,3.7878
+#eye=3.7878,3.7878,3.7878
+eye=-1,-1,0
 escale=extent
 
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
 export MOI=${MOI:-$moi}
-export CSGOptiX=INFO
 export GEOM=${GEOM:-$geom}
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 export TMIN=${TMIN:-$tmin}
 
-
-topline="EYE=$EYE TMIN=$TMIN MOI=$MOI ~/opticks/CSGOptiX/cxr_min.sh" 
-
+topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ~/opticks/CSGOptiX/cxr_min.sh" 
 export TOPLINE=${TOPLINE:-$topline}
 
 
+export CSGOptiX=INFO
 # as a file is written in pwd need to cd 
-
 
 BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 export LOGDIR=$BASE
@@ -66,7 +82,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR OPTICKS_HASH"
+vars="GEOM TMIN LOGDIR OPTICKS_HASH TOPLINE"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 if [ "${arg/run}" != "$arg" ]; then

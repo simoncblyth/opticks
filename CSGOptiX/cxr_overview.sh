@@ -34,12 +34,15 @@ JUNO (trunk:Mar 2, 2022)
 EOU
 }
 
+escale=extent
 moi=-1
 tmin=0.4
 eye=-0.6,0,0,1
 icam=0
 zoom=1.5
 
+
+export ESCALE=${ESCALE:-$escale}
 export MOI=${MOI:-$moi} 
 export TMIN=${TMIN:-$tmin} 
 export EYE=${EYE:-$eye}

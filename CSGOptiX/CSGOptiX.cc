@@ -549,11 +549,15 @@ void CSGOptiX::setFrame(const float4& ce )
     fr_.ce = ce ;      
     setFrame(fr_); 
 }
+
 /**
 CSGOptiX::setFrame
 --------------------
 
-TODO: eliminate, SEvt already holds sframe, it should hold sglm too ?
+Note that SEvt already holds an sframe used for input photon transformation, 
+the sframe here is used for raytrace rendering.  Could perhaps rehome sglm 
+into SEvt and use a single sframe for both input photon transformation 
+and rendering ?
 
 **/
 
@@ -561,28 +565,7 @@ void CSGOptiX::setFrame(const sframe& fr_ )
 {
     sglm->set_frame(fr_); 
 
-    /*
-    // Moved the below into SGLM::set_frame
-
-    const float4& ce = rfr.ce ; 
-    const qat4* m2w = &rfr.m2w ; 
-    const qat4* w2m = &rfr.w2m ; 
-
-    LOG(LEVEL) << "[" ; 
-
-    float extent = ce.w ; 
-    float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
-
-    sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
-    sglm->set_m2w(m2w, w2m);
-    sglm->update();  
-    sglm->set_near_abs(tmin) ; 
-    sglm->update();  
-
-    */
-
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
-
 
     const float4& ce = sglm->fr.ce ; 
     const qat4& m2w = sglm->fr.m2w ; 
