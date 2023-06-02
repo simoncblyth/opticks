@@ -92,6 +92,14 @@ bool SBitSet::all() const { return count() == num_bits ; }
 bool SBitSet::any() const { return count() > 0  ; }
 bool SBitSet::none() const { return count() == 0  ; }
 
+/**
+SBitSet::get_pos
+-----------------
+
+Append to *pos* vector bit indices that are set OR notset 
+depending on *value* bool.  
+
+**/
 void SBitSet::get_pos( std::vector<unsigned>& pos, bool value) const 
 {
     for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i] == value) pos.push_back(i) ; 

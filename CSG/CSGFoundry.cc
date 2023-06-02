@@ -358,8 +358,8 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
 {
     std::vector<unsigned> include_pos ; 
     std::vector<unsigned> exclude_pos ; 
-    elv->get_pos(include_pos, true ); 
-    elv->get_pos(exclude_pos, false); 
+    elv->get_pos(include_pos, true );   // bit indices set 
+    elv->get_pos(exclude_pos, false);   // bit indices notset 
 
     unsigned num_include = include_pos.size()  ; 
     unsigned num_exclude = exclude_pos.size()  ; 
@@ -369,8 +369,8 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     std::stringstream ss ;  
     ss << "CSGFoundry::descELV" 
        << " elv.num_bits " << num_bits 
-       << " include " << num_include
-       << " exclude " << num_exclude
+       << " num_include " << num_include
+       << " num_exclude " << num_exclude
        << std::endl 
        ; 
 
@@ -378,14 +378,14 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     for(unsigned i=0 ; i < include_pos.size() ; i++)
     {
         const unsigned& p = include_pos[i] ; 
-        const std::string& mn = getMeshName(p) ; 
-        int midx = findMeshIndex(mn.c_str()); 
+        const char* mn = getMeshName(p) ; 
+        int midx = findMeshIndex(mn); 
         //assert( int(p) == midx );  
 
         ss 
-            << std::setw(3) << p << ":" 
-            << std::setw(3) << midx << ":" 
-            << mn << std::endl 
+            << "p:" << std::setw(3) << p << ":" 
+            << "midx:" << std::setw(3) << midx << ":" 
+            << "mn:" << mn << std::endl 
             ;  
     }
 
@@ -393,14 +393,14 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     for(unsigned i=0 ; i < exclude_pos.size() ; i++)
     {
         const unsigned& p = exclude_pos[i] ; 
-        const std::string& mn = getMeshName(p) ; 
-        int midx = findMeshIndex(mn.c_str()); 
+        const char* mn = getMeshName(p) ; 
+        int midx = findMeshIndex(mn); 
         //assert( int(p) == midx );  
 
         ss 
-           << std::setw(3) << p << ":" 
-           << std::setw(3) << midx << ":" 
-           << mn << std::endl 
+           << "p:" << std::setw(3) << p << ":" 
+           << "midx:" << std::setw(3) << midx << ":" 
+           << "mn:" << mn << std::endl 
            ;  
     }
 
