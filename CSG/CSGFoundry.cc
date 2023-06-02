@@ -3045,7 +3045,6 @@ int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
 }
 
 
-
 int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
 {
     int rc = 0 ; 
@@ -3167,7 +3166,7 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4*
     }
     else
     {
-        rc = target->getCenterExtent(ce, midx, mord, iidxg, m2w, w2m );   
+        rc = target->getFrameComponents(ce, midx, mord, iidxg, m2w, w2m );   
     }
 
     if( rc != 0 )

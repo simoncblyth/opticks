@@ -18,113 +18,12 @@ CSGTarget::CSGTarget( const CSGFoundry* foundry_ )
 }
 
 
-/**
-CSGTarget::getFrame
-----------------------
-
-Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
-A: see notes with CSGFoundry::getFrame
-
-**/
-
-int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
-{
-    fr.set_midx_mord_iidx( midx, mord, iidxg ); 
-    int rc = getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
-    LOG(LEVEL) << " midx " << midx << " mord " << mord << " iidxg " << iidxg << " rc " << rc ; 
-    return rc ; 
-}
-
 
 /**
-CSGTarget::getCenterExtent  HMM rename getCenterExtentAndFrameTransforms ?
------------------------------------------------------------------------------
+CSGTarget::getFrame "getFrameFromInstanceLookup"
+-------------------------------------------------
 
-Used by CSGFoundry::getCenterExtent
-
-*ce*
-    center-extent float4 set when return code is zero
-*midx*
-    solid (aka mesh) index : identify the shape
-*mord*
-    solid (aka mesh) ordinal : pick between shapes when there are more than one, used with global(non-instanced) geometry 
-*iidx*
-    instance index, >-1 for global instance, -1 for local non-instanced 
-
-
-
-2022-01-03 15:06:16.746 INFO  [5325503] [CSGTarget::getLocalCenterExtent@91]  midx 88 mord 10 prim.size 64 mord_in_range 1
-2022-01-03 15:06:16.746 INFO  [5325503] [CSGTarget::getLocalCenterExtent@109]  lce (-17336.020,-4160.728,-809.117,66.045) 
-
-
--2:world2model_rtpw : scale down and rotate    ( world2model = irotate * iscale * itranslate ) 
-
- MOI solidXJfixture:10:-2 midx 88 mord 10 iidx -2 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (-0.015, 0.001, 0.004, 0.000) (-0.004, 0.000,-0.015, 0.000) (-0.001,-0.015, 0.000, 0.000) (-270.221,-0.000, 0.000, 1.000) 
-
--3:model2world_rtpw : scale up and rotate      ( model2world = translate * scale * rotate )
-
- MOI solidXJfixture:10:-3 midx 88 mord 10 iidx -3 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (-64.155,-15.397,-2.994, 0.000) ( 2.912, 0.699,-65.977, 0.000) (15.413,-64.221, 0.000, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
-
--4:world2model_xyzw : uniform scaling down only, no rotation
-
- MOI solidXJfixture:10:-4 midx 88 mord 10 iidx -4 gce (-17336.020,-4160.728,-809.117,66.045) 
- q ( 0.015, 0.000, 0.000, 0.000) ( 0.000, 0.015, 0.000, 0.000) ( 0.000, 0.000, 0.015, 0.000) (262.489,62.999,12.251, 1.000) 
-
--5:model2world_xyzw  : uniform scaling up only, no rotation
-
- MOI solidXJfixture:10:-5 midx 88 mord 10 iidx -5 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (66.045, 0.000, 0.000, 0.000) ( 0.000,66.045, 0.000, 0.000) ( 0.000, 0.000,66.045, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
-
-
-**/
-
-int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* m2w, qat4* w2m ) const 
-{
-    LOG(LEVEL) << " (midx mord iidxg) " << "(" << midx << " " << mord << " " << iidxg << ") " ;  
-    if( iidxg == -1 )
-    {
-        // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidxg == -1 SO THIS WILL NOT BE CALLED 
-        // HMM: maybe not that branch is for midx -1 ? 
-
-        LOG(info) << "(iidxg == -1) qptr transform will not be set, typically defaulting to identity " ; 
-        int lrc = getLocalCenterExtent(ce, midx, mord); 
-        if(lrc != 0) return 1 ; 
-    }
-    else if( iidxg == -2 || iidxg == -3 )
-    {
-        LOG(info) << "(iidxg == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
-        int lrc = getLocalCenterExtent(ce, midx, mord); 
-        if(lrc != 0) return 1 ; 
-
-        if( iidxg == -2 )
-        {
-            SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
-            m2w->read_narrow(cef_xyzw.model2world_data); 
-            w2m->read_narrow(cef_xyzw.world2model_data); 
-        }
-        else if( iidxg == -3 )
-        {
-            SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
-            m2w->read_narrow(cef_rtpw.model2world_data); 
-            w2m->read_narrow(cef_rtpw.world2model_data);  
-        }
-    }
-    else
-    {
-        int grc = getGlobalCenterExtent(ce, midx, mord, iidxg, m2w, w2m ); 
-        // TODO: paired transforms also ?
-        //  HMM: the m2w here populated is from the (midx, mord, iidxg) instance transform, with identity info 
-        if(grc != 0) return 2 ;
-    }
-    return 0 ; 
-}
-
-
-/**
-CSGTarget::getFrame
----------------------
+* TODO: avoid this inverting the "m2w" instance transform to give w2m 
 
 Note that there are typically multiple CSGPrim within the compound CSGSolid
 and that the inst_idx corresponds to the entire compound CSGSolid (aka GMergedMesh).
@@ -136,7 +35,6 @@ Hence the ce included with the frame is the one from the full compound CSGSolid.
 * TODO: move the stree.h inst/iinst members and methods into CSGFoundry
   and use them from a future "CSGFoundry::CreateFromSTree" to add 
   paired double precision transforms, avoiding Invert
-
 
 TODO: would be better to have sframe access from stree.h 
 
@@ -178,9 +76,114 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 
 
 
+/**
+CSGTarget::getFrame
+----------------------
+
+Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
+A: see notes with CSGFoundry::getFrame
+
+**/
+
+int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
+{
+    fr.set_midx_mord_iidx( midx, mord, iidxg ); 
+    int rc = getFrameComponents( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
+    LOG(LEVEL) << " midx " << midx << " mord " << mord << " iidxg " << iidxg << " rc " << rc ; 
+    return rc ; 
+}
+
 
 /**
-CSGTarget::getLocalCenterExtent : finds the (midx,mord) CSGPrim and returns its CE
+CSGTarget::getFrameComponents
+-------------------------------
+
+Used by CSGFoundry::getCenterExtent
+
+*ce*
+    center-extent float4 set when return code is zero
+*midx*
+    solid (aka mesh) index : identify the shape
+*mord*
+    solid (aka mesh) ordinal : pick between shapes when there are more than one, used with global(non-instanced) geometry 
+*iidx*
+    instance index, >-1 for global instance, -1 for local non-instanced 
+
+
+
+2022-01-03 15:06:16.746 INFO  [5325503] [CSGTarget::getLocalCenterExtent@91]  midx 88 mord 10 prim.size 64 mord_in_range 1
+2022-01-03 15:06:16.746 INFO  [5325503] [CSGTarget::getLocalCenterExtent@109]  lce (-17336.020,-4160.728,-809.117,66.045) 
+
+
+-2:world2model_rtpw : scale down and rotate    ( world2model = irotate * iscale * itranslate ) 
+
+ MOI solidXJfixture:10:-2 midx 88 mord 10 iidx -2 gce (-17336.020,-4160.728,-809.117,66.045) 
+ q (-0.015, 0.001, 0.004, 0.000) (-0.004, 0.000,-0.015, 0.000) (-0.001,-0.015, 0.000, 0.000) (-270.221,-0.000, 0.000, 1.000) 
+
+-3:model2world_rtpw : scale up and rotate      ( model2world = translate * scale * rotate )
+
+ MOI solidXJfixture:10:-3 midx 88 mord 10 iidx -3 gce (-17336.020,-4160.728,-809.117,66.045) 
+ q (-64.155,-15.397,-2.994, 0.000) ( 2.912, 0.699,-65.977, 0.000) (15.413,-64.221, 0.000, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
+
+-4:world2model_xyzw : uniform scaling down only, no rotation
+
+ MOI solidXJfixture:10:-4 midx 88 mord 10 iidx -4 gce (-17336.020,-4160.728,-809.117,66.045) 
+ q ( 0.015, 0.000, 0.000, 0.000) ( 0.000, 0.015, 0.000, 0.000) ( 0.000, 0.000, 0.015, 0.000) (262.489,62.999,12.251, 1.000) 
+
+-5:model2world_xyzw  : uniform scaling up only, no rotation
+
+ MOI solidXJfixture:10:-5 midx 88 mord 10 iidx -5 gce (-17336.020,-4160.728,-809.117,66.045) 
+ q (66.045, 0.000, 0.000, 0.000) ( 0.000,66.045, 0.000, 0.000) ( 0.000, 0.000,66.045, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
+
+
+**/
+
+int CSGTarget::getFrameComponents(float4& ce, int midx, int mord, int iidxg, qat4* m2w, qat4* w2m ) const 
+{
+    LOG(LEVEL) << " (midx mord iidxg) " << "(" << midx << " " << mord << " " << iidxg << ") " ;  
+    if( iidxg == -1 )
+    {
+        // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidxg == -1 SO THIS WILL NOT BE CALLED 
+        // HMM: maybe not that branch is for midx -1 ? 
+
+        LOG(info) << "(iidxg == -1) qptr transform will not be set, typically defaulting to identity " ; 
+        int lrc = getLocalCenterExtent(ce, midx, mord); 
+        if(lrc != 0) return 1 ; 
+    }
+    else if( iidxg == -2 || iidxg == -3 )
+    {
+        LOG(info) << "(iidxg == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
+        int lrc = getLocalCenterExtent(ce, midx, mord); 
+        if(lrc != 0) return 1 ; 
+
+        if( iidxg == -2 )
+        {
+            SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
+            m2w->read_narrow(cef_xyzw.model2world_data); 
+            w2m->read_narrow(cef_xyzw.world2model_data); 
+        }
+        else if( iidxg == -3 )
+        {
+            SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
+            m2w->read_narrow(cef_rtpw.model2world_data); 
+            w2m->read_narrow(cef_rtpw.world2model_data);  
+        }
+    }
+    else
+    {
+        int grc = getGlobalCenterExtent(ce, midx, mord, iidxg, m2w, w2m ); 
+        // TODO: paired transforms also ?
+        //  HMM: the m2w here populated is from the (midx, mord, iidxg) instance transform, with identity info 
+        if(grc != 0) return 2 ;
+    }
+    return 0 ; 
+}
+
+
+
+
+/**
+CSGTarget::getLocalCenterExtent : lookup (midx,mord) CSGPrim and returns its CE
 -------------------------------------------------------------------------------------
 
 Collects prim matching the *midx* and selects the *mord* ordinal one
@@ -222,12 +225,9 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
 CSGTarget::getGlobalCenterExtent
 ---------------------------------
 
-1. first find the MORD-inal prim *lpr* which has MIDX for its midx
+1. getInstanceTransform from (midx, mord, iidx) giving m2w
+2. invert m2w giving w2m 
 
-   * midx corresponds to GGeo lvIdx or soIdx
-
-2. use the prim to lookup indices for the solid(gas_idx) and prim 
-3. collect instance transforms matching the *gas_idx*
 4. select the *iidx* instance transform to construct a global-prim *gpr* 
 5. fill in *gce* with the global center-extren from  
 
@@ -293,6 +293,10 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
     q.clearIdentity();    // clearIdentity sets the (3,3) 1. : needed before doing any transforming 
 
+    // TODO: could incorporate this identity into the sframe ? 
+
+
+
 
     const CSGPrim* lpr = foundry->getMeshPrim(midx, mord);  
 
@@ -343,11 +347,11 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
 }
 
 /**
-CSGTarget::getInstanceTransform
----------------------------------
+CSGTarget::getInstanceTransform (midx,mord) CSGPrim -> repeatIdx -> which with iidx -> instance transform  
+------------------------------------------------------------------------------------------------------------
 
-1. *getMeshPrim* finds the (midx, mord) CSGPrim which gives the repeatIdx (aka:gas_idx or compound solid index) 
-2. *getInstanceGAS* finds the (gas_idx, iidx) instance transform 
+1. *CSGFoundry::getMeshPrim* finds the (midx, mord) CSGPrim which gives the repeatIdx (aka:gas_idx or compound solid index) 
+2. *CSGFoundry::getInstanceGAS* finds the (gas_idx, iidx) instance transform 
 
 This method avoids duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
 
@@ -378,9 +382,4 @@ const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const
     const qat4* qi = foundry->getInstanceGAS(gas_idx, iidx ); 
     return qi ; 
 }
-
-
-
-
-
 

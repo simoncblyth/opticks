@@ -149,7 +149,7 @@ struct SYSRAP_API SGLM
     std::string descInput() const ; 
 
     SGLM(); 
-    void initCE(); 
+    //void initCE(); 
 
     sframe fr ;    // CAUTION: SEvt also holds an SFrame for input photon targetting 
 
@@ -322,12 +322,14 @@ SGLM::SGLM()
     projection(1.f),
     world2clip(1.f)
 {
-    initCE(); 
+    //initCE(); 
     addlog("SGLM::SGLM", "ctor"); 
     update(); // HMM: kinda pointless as will be run later ? 
     INSTANCE = this ; 
 }
 
+/*
+// not needed CSGFoundry::getFrame sets ip the ce  
 void SGLM::initCE()  
 {
     fr.ce.x = CE.x ; 
@@ -335,6 +337,7 @@ void SGLM::initCE()
     fr.ce.z = CE.z ; 
     fr.ce.w = CE.w ; 
 }
+*/
 
 /**
 SGLM::update
