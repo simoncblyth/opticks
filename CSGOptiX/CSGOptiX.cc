@@ -40,6 +40,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
+#include "SCVD.h"
 #include "SProc.hh"
 #include "SGLM.h"
 #include "NP.hh"
@@ -142,6 +143,7 @@ Used by minimal render tests/CSGOptiXRdrTest.cc
 
 void CSGOptiX::RenderMain() // static
 {
+    SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("render"); 
     SSim::Create(); 
     

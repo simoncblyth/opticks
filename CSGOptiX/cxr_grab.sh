@@ -30,6 +30,7 @@ bin=CSGOptiXRenderTest
 if [ "$bin" == "CSGOptiXRdrTest" ]; then 
 base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 else
+#base=/tmp/$USER/opticks/CSGOptiX/$bin/SCVD0/70000/-1/
 base=/tmp/$USER/opticks/CSGOptiX/$bin/SCVD1/70000/-1/
 fi
 

@@ -32,6 +32,7 @@ CFBASE
 #include <cstdlib>
 #include <csignal>
 
+#include "SCVD.h"
 #include "SPath.hh"
 #include "SStr.hh"
 #include "SSys.hh"
@@ -224,6 +225,7 @@ void CSGOptiXRenderTest::render_snap(const char* namestem)
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("render"); 
 
     LOG(info) << " getenv.CAM " << getenv("CAM") ; 

@@ -47,8 +47,7 @@ EOU
 
 DIR=$(dirname $BASH_SOURCE)
 
-geom=V1J008
-export GEOM=${GEOM:-$geom}  
+source $HOME/.opticks/GEOM/GEOM.sh 
 cfd=$HOME/.opticks/GEOM/$GEOM/CSGFoundry
 
 if [ ! -f "$cfd/mmlabel.txt" ]; then 

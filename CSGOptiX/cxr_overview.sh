@@ -36,6 +36,8 @@ EOU
 
 DIR=$(dirname $BASH_SOURCE)
 
+source $HOME/.opticks/GEOM/GEOM.sh 
+
 escale=extent
 moi=-1
 tmin=0.4
