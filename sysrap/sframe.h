@@ -45,7 +45,7 @@ TODO: should be using Tran<double> for transforming , might as well
 
 struct sframe
 {
-    static constexpr const char* NAME = "sframe.npy" ; 
+    static constexpr const char* NAME = "sframe" ;  // formerly with .npy, now splitting ext for easier stem changes
     static constexpr const char* DEFAULT_FRS = "-1" ; 
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
@@ -406,10 +406,11 @@ inline NP* sframe::getFrameArray() const
 
     return a ; 
 }
-inline void sframe::save(const char* dir, const char* name) const
+inline void sframe::save(const char* dir, const char* name_ ) const
 {
+    std::string name = U::form_name( name_ , ".npy" ) ; 
     NP* a = getFrameArray(); 
-    a->save(dir, name); 
+    a->save(dir, name.c_str()); 
 }
 inline void sframe::save_extras(const char* dir)
 {
@@ -419,9 +420,10 @@ inline void sframe::save_extras(const char* dir)
 }
 
 
-inline void sframe::load(const char* dir, const char* name) 
+inline void sframe::load(const char* dir, const char* name_ ) 
 {
-    const NP* a = NP::Load(dir, name); 
+    std::string name = U::form_name( name_ , ".npy" ) ; 
+    const NP* a = NP::Load(dir, name.c_str() ); 
     load(a); 
 }
 inline void sframe::load_(const char* path_)   // eg $A_FOLD/sframe.npy

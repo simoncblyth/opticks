@@ -145,6 +145,8 @@ private:
 
  private: 
     double launch(); 
+ private: 
+    const char* getRenderStemDefault() const ; 
  public: 
     void render_snap(const char* name=nullptr); 
  public: 

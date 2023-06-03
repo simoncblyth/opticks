@@ -63,37 +63,26 @@ struct CSGOptiXRenderTest
     CSGOptiXRenderTest() ; 
 
 #ifdef WITH_SGLM
-    static constexpr const char* VARIANT = "SGLM" ;    
 #else
-    static constexpr const char* VARIANT = "Comp" ;    
     Opticks*    ok ; 
 #endif
 
     const char* solid_selection ; 
 
-    CSGFoundry* fdl    ; // as loaded
-    const SBitSet* elv ; 
-
     CSGFoundry* fd ;  // possibly with selection applied
     CSGOptiX*   cx ; 
 
     const char* flight ; 
-
     float4      ce ; 
-    qat4*       m2w ; 
-    qat4*       w2m ; 
 
     const char* default_arg ; 
     std::vector<std::string> args ; 
 
-    void initCX(); 
     void initSolidSelection(); 
     void initArgs(); 
 
-    void setFrame(const char* moi); 
     void setFrame_sla(); 
 
-    void render_snap(const char* namestem);
 };
 
 
@@ -108,22 +97,12 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates 
     flight(SGeoConfig::FlightConfig()),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
-    m2w(qat4::identity()),
-    w2m(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
-    initCX(); 
     initSolidSelection(); 
     initArgs(); 
 }
 
-void CSGOptiXRenderTest::initCX()
-{
-    assert(cx); 
-    bool expect =  cx->raygenmode == 0 ;  
-    LOG_IF(fatal, !expect) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
-    assert(expect); 
-}
 
 void CSGOptiXRenderTest::initSolidSelection()
 {
@@ -183,43 +162,6 @@ void CSGOptiXRenderTest::setFrame_sla()
 
 
 
-/**
-CSGOptiXRenderTest::setFrame
-------------------------------------
-
-HMM: solid selection leads to creation of an IAS referencing each of the 
-     selected solids so for generality should be using IAS targetting 
-
-For global geometry which typically uses default iidx of 0 there is special 
-handling of iidx -1/-2/-3 implemented in CSGTarget::getCenterExtent
-
-
-iidx -2
-    ordinary xyzw frame calulated by SCenterExtentFrame
-
-iidx -3
-    rtp tangential frame calulated by SCenterExtentFrame
-
-
-HMM CSGOptiX::initRender in RenderMode now automatically calls setFrame
-
-
-**/
-void CSGOptiXRenderTest::setFrame(const char* moi)
-{
-    cx->setFrame(moi);  
-}
-
-
-
-
-
-
-void CSGOptiXRenderTest::render_snap(const char* namestem)
-{
-    std::string name = SStr::Format("%s_%s", VARIANT, namestem ); 
-    cx->render_snap(name.c_str()); 
-}
 
 
 int main(int argc, char** argv)
@@ -251,13 +193,13 @@ int main(int argc, char** argv)
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
         LOG(info) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
         t.setFrame_sla(); 
-        t.render_snap(arg); 
+        t.cx->render_snap(); 
     }
     else if( t.flight )
     {
         const char* arg = t.args[0].c_str(); 
         LOG(info) << " t.flight arg " << arg  ; 
-        t.setFrame(arg); 
+        t.cx->setFrame(arg); 
         t.cx->render_flightpath(); 
     }
     else
@@ -267,8 +209,8 @@ int main(int argc, char** argv)
         {
             const char* arg = t.args[i].c_str(); 
             LOG(info) << " arg:" << ( arg ? arg : "-" ) ; 
-            t.setFrame(arg); 
-            t.render_snap(arg); 
+            t.cx->setFrame(arg); 
+            t.cx->render_snap(); 
         }
     }
     return 0 ; 

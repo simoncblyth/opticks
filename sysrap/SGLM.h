@@ -237,7 +237,7 @@ struct SYSRAP_API SGLM
     float get_focal_basis() const ; 
 
 
-    void writeDesc(const char* dir, const char* name=nullptr) const ; 
+    void writeDesc(const char* dir, const char* name="SGLM__writeDesc", const char* ext=".log" ) const ; 
     std::string desc() const ; 
 
 
@@ -342,11 +342,12 @@ inline SGLM::SGLM()
 }
 
 
-void SGLM::writeDesc(const char* dir, const char* name_) const 
+void SGLM::writeDesc(const char* dir, const char* name_ , const char* ext_ ) const 
 {
-    const char* name = name_ ? name_ : "SGLM__writeDesc.log" ; 
     std::string ds = desc() ; 
-    NP::WriteString(dir, name, ds );      
+    const char* name = name_ ? name_ : "SGLM__writeDesc" ; 
+    const char* ext  = ext_ ? ext_ : ".log" ; 
+    NP::WriteString(dir, name, ext,  ds );      
 }
 
 std::string SGLM::desc() const 

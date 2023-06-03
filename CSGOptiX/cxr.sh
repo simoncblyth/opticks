@@ -233,8 +233,9 @@ publish()
 
 if [ "$arg" == "run" ]; then
 
+    # effectively multiple MOI via the arglist 
     # ARGLIST needs rejig as no longer parsing args 
-    #    render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
+    #    render --arglist $ARGLIST $*            
 
     render ## single MOI via envvar 
 

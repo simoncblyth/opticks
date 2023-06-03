@@ -881,6 +881,32 @@ const char* CSGOptiX::getDefaultSnapPath() const
 }
 
 
+
+
+/**
+CSGOptiX::getRenderStemDefault
+--------------------------------
+
+Old opticks has "--nameprefix" argument, this aims to 
+do similar with NAMEPREFIX envvar. 
+
+**/
+const char* CSGOptiX::getRenderStemDefault() const 
+{
+    std::stringstream ss ; 
+    ss << SSys::getenvvar("NAMEPREFIX","nonamepfx") ; 
+    ss << "_" ; 
+#ifdef WITH_SGLM
+    ss << sglm->get_frame_name() ; 
+#else
+    ss << "nosglm" ; 
+#endif
+    
+    std::string str = ss.str(); 
+    return strdup(str.c_str()); 
+}
+
+
 /**
 CSGOptiX::render_snap
 ------------------------
@@ -895,31 +921,28 @@ TODO: optionally save frame and config metadata together with the render
 
 **/
 
-void CSGOptiX::render_snap( const char* name_ )
+void CSGOptiX::render_snap( const char* stem_ )
 {
+    const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
 #ifdef WITH_SGLM
-    sglm->addlog("CSGOptiX::render_snap", name_ ); 
-    const char* frame_name = sglm->get_frame_name() ; 
-#else
-    const char* frame_name = "no-sglm" ; 
+    sglm->addlog("CSGOptiX::render_snap", stem ); 
 #endif
-    const char* name = name_ ? name_ : frame_name ; 
 
     double dt = render();  
 
     const char* topline = SSys::getenvvar("TOPLINE", SProc::ExecutableName() ); 
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
-    const char* outpath = SEventConfig::OutPath(name, -1, ".jpg" );
+    const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_ ); 
     const char* botline = bottom_line.c_str() ; 
 
     LOG(LEVEL)
-          << SEventConfig::DescOutPath(name, -1, ".jpg" );
+          << SEventConfig::DescOutPath(stem, -1, ".jpg" );
           ;  
  
     LOG(LEVEL)  
-          << " name " << name 
+          << " stem " << stem 
           << " outpath " << outpath 
           << " outdir " << ( outdir ? outdir : "-" )
           << " dt " << dt 
@@ -930,8 +953,8 @@ void CSGOptiX::render_snap( const char* name_ )
     snap(outpath, botline, topline  );   
 
 #ifdef WITH_SGLM
-    sglm->fr.save( outdir ); 
-    sglm->writeDesc( outdir, "CSGOptiX__render_snap.log" ); 
+    sglm->fr.save( outdir, stem ); 
+    sglm->writeDesc( outdir, stem, ".log" ); 
 #endif
 
 }
