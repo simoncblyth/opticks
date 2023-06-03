@@ -40,19 +40,44 @@ are first set *true* and the comma delimited bit positions provided are set to *
 Otherwise without the complement token all bit positions are first set *false*
 and the bit positions provided are set to *true*.
 
+Examples with num_bits:8 for brevity:
+
++-------+--------------------+---------------------------------+
+| spec  | bits (num_bits:8)  |  notes                          |
++=======+====================+=================================+
+|  t    |  11111111          | num_bits all set                |
++-------+--------------------+---------------------------------+
+|       |  00000000          | blank string spec               |
++-------+--------------------+---------------------------------+
+|  t0   |  01111111          |                                 |
++-------+--------------------+---------------------------------+
+|  0    |  10000000          |                                 | 
++-------+--------------------+---------------------------------+
+|  1    |  01000000          |                                 |
++-------+--------------------+---------------------------------+
+|  0,2  |  10100000          |                                 |
++-------+--------------------+---------------------------------+
+|  t0,2 |  01011111          |                                 |
++-------+--------------------+---------------------------------+
+
+* see SBitSetTest for more examples 
+
+TODO: unify the spec approach used by ELV and EMM (EMM uses
+a similar but different approach that will cause confusion)
+
 **/
 
 void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
 {
-    bool complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ;     // str_ starts with ~ or t 
-    int postcomp =  complement ? 1 : 0 ;                                        // offset to skip the complement first character                     
+    bool complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ; // str_ starts with ~ or t 
+    for(unsigned i=0 ; i < num_bits ; i++) bits[i] = complement ? true : false ; 
+
+    int postcomp =  complement ? 1 : 0 ;  // offset to skip the complement first character                     
     const char* spec_ = spec + postcomp ; 
 
     std::vector<int> pos ; 
     char delim = ',' ; 
     SStr::ISplit( spec_, pos, delim );  
-
-    for(unsigned i=0 ; i < num_bits ; i++) bits[i] = complement ? true : false ; 
 
     for(unsigned i=0 ; i < pos.size() ; i++)
     {

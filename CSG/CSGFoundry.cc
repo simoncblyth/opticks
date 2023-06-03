@@ -2495,6 +2495,9 @@ CSGFoundry*  CSGFoundry::MakeDemo()
 CSGFoundry::ELVString
 -----------------------
 
+This is used from CSGFoundry::ELV to create the SBitSet of included/excluded LV.
+
+
 String configuring dynamic shape selection of form : t110,117,134 or null when 
 there is no selection.  The value is obtained from either:
 
@@ -2541,6 +2544,12 @@ const char* CSGFoundry::ELVString(const SName* id)
 
     return elv ; 
 }
+
+/**
+CSGFoundry::ELV
+----------------
+
+**/
 
 const SBitSet* CSGFoundry::ELV(const SName* id)
 {
@@ -2594,17 +2603,31 @@ CSGFoundry* CSGFoundry::Load() // static
     return dst ; 
 }
 
+/**
+CSGFoundry::CopySelect
+-------------------------
+
+This is used from the argumentless CSGFoundry::Load
+
+Using CSGCopy::Select creates a partial geometry with some solids 
+included/excluded according to the elv SBitSet specification, that 
+is normally configured by ELV envvar. 
+
+The SSim pointer from the loaded src instance, 
+overriding the empty dst SSim instance. 
+
+**/
+
 CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 {
     LOG(LEVEL) << "[" ; 
     assert(elv);
-    LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
+    LOG(LEVEL) << elv->desc() << std::endl << src->descELV(elv) ; 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
     dst->setOrigin(src); 
     dst->setElv(elv); 
     dst->setOverrideSim(src->sim);   
-    // pass the SSim pointer from the loaded src instance, 
-    // overriding the empty dst SSim instance 
+
     LOG(LEVEL) << "]" ; 
     return dst ; 
 }

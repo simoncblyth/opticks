@@ -28,6 +28,14 @@ CSGFoundry* CSGCopy::Clone(const CSGFoundry* src )
     return cpy.dst ; 
 }
 
+/**
+CSGCopy::Select
+------------------
+
+Used from CSGFoundry::CopySelect 
+
+**/
+
 CSGFoundry* CSGCopy::Select(const CSGFoundry* src, const SBitSet* elv )
 {
     CSGCopy cpy(src, elv); 

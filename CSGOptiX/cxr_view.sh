@@ -222,6 +222,7 @@ export TMIN=${TMIN:-$tmin}
 export CAM=${CAM:-$cam} 
 export QUALITY=${QUALITY:-$quality} 
 
+#sla? is solid label 
 nameprefix=cxr_view_${sla}_
 
 if [ -n "$EYE" ]; then 

@@ -42,8 +42,7 @@ case $(uname) in
 esac
 arg=${1:-$defarg}
 
-
-source $HOME/.opticks/GEOM/GEOM.sh 
+source $HOME/.opticks/GEOM/GEOM.sh  # exports GEOM envvar selecting geometry 
 
 escale=extent
 moi=-1
@@ -65,7 +64,7 @@ export OPTICKS_GEOM=cxr_overview
 
 #[ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 
-emm_all=t0        # tilde zero     : (without comma so this is whole number spec)  meaning ALL
+emm_all=t0        # tilde zero     : (without comma so this is whole number spec)  meaning ~0 (ie 0xffffffff...) for ALL
 emm_noglobal=t0,  # tilde 0-th bit : (with comma meaning single bitindex spec) meaning exclude solid 0 (global) 
 emm_no8=t8,       # tilde 8-th bit : exclude solid 8 
 emm=$emm_all

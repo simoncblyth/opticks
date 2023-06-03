@@ -246,6 +246,10 @@ elif [ "$arg" == "pub" ]; then
 
     publish 
 
+elif [ "$arg" == "info" ]; then 
+
+    vars="TMPDIR LOGDIR NAMEPREFIX"
+    for var in $vars ; do printf " %20s : %s \n" "$var" "${!var}" ; done
 fi 
 
 
