@@ -210,7 +210,7 @@ emm=t0           # "t0" : tilde zero meaning all       "t0," : exclude bit 0 glo
 zoom=1
 eye=-1,-1,-1,1
 tmin=0.4
-cam=0
+icam=0
 quality=90
 
 export ESCALE=${ESCALE:-$escale}
@@ -219,7 +219,8 @@ export EMM=${EMM:-$emm}
 export ZOOM=${ZOOM:-$zoom}
 export EYE=${EYE:-$eye}
 export TMIN=${TMIN:-$tmin} 
-export CAM=${CAM:-$cam} 
+#export CAM=${CAM:-$cam}    ## getting SCAM error on TOPLINE
+export ICAM=${ICAM:-$icam}
 export QUALITY=${QUALITY:-$quality} 
 
 #sla? is solid label 

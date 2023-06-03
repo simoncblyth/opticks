@@ -58,6 +58,10 @@ CFBASE
 #include "CSGCopy.h"
 #include "CSGOptiX.h"
 
+
+const plog::Severity LEVEL = debug ; 
+
+
 struct CSGOptiXRenderTest
 {
     CSGOptiXRenderTest() ; 
@@ -131,19 +135,13 @@ void CSGOptiXRenderTest::initArgs()
     if( arglist && arglist->size() > 0 )
     {    
         std::copy(arglist->begin(), arglist->end(), std::back_inserter(args));
-        LOG(info) << " using arglist from SGeoConfig::Arglist " ; 
+        LOG(LEVEL) << " using arglist from SGeoConfig::Arglist " ; 
     }
     else
     {
         args.push_back(default_arg);   
-        LOG(info) << " using default_arg from MOI envvar " ; 
+        //LOG(LEVEL) << " using default_arg from MOI envvar " ; 
     }
-
-    LOG(info) 
-        << " default_arg " << default_arg
-        << " arglist->size " << ( arglist ? arglist->size() : 0 ) 
-        << " args.size " << args.size()
-        ;
 }
 
 void CSGOptiXRenderTest::setFrame_sla()
@@ -151,7 +149,7 @@ void CSGOptiXRenderTest::setFrame_sla()
     assert( solid_selection ); 
     fd->gasCE(ce, cx->solid_selection );    
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " solid_selection " << solid_selection
         << " cx.solid_selection.size " << cx->solid_selection.size()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
@@ -162,21 +160,16 @@ void CSGOptiXRenderTest::setFrame_sla()
 
 
 
-
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("render"); 
 
-    LOG(info) << " getenv.CAM " << getenv("CAM") ; 
-    LOG(info) << " getenv.CAMERATYPE " << getenv("CAMERATYPE") ; 
-
 #ifdef WITH_SGLM
-    LOG(info) << " WITH_SGLM : not using Opticks " ; 
+    //LOG(LEVEL) << " WITH_SGLM : not using Opticks " ; 
 #else
-    LOG(info) << " not-WITH_SGLM : calling Opticks::Configure  " ; 
+    LOG(fatal) << " not-WITH_SGLM : calling Opticks::Configure  " ; 
     Opticks::Configure(argc, argv);  
 #endif
 
@@ -191,24 +184,24 @@ int main(int argc, char** argv)
     if( t.solid_selection )
     {
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
-        LOG(info) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
+        LOG(LEVEL) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
         t.setFrame_sla(); 
         t.cx->render_snap(); 
     }
     else if( t.flight )
     {
         const char* arg = t.args[0].c_str(); 
-        LOG(info) << " t.flight arg " << arg  ; 
+        LOG(LEVEL) << " t.flight arg " << arg  ; 
         t.cx->setFrame(arg); 
         t.cx->render_flightpath(); 
     }
     else
     {
-        LOG(info) << " t.args.size " << t.args.size()  ; 
+        //LOG(LEVEL) << " t.args.size " << t.args.size()  ; 
         for(unsigned i=0 ; i < t.args.size() ; i++)
         {
             const char* arg = t.args[i].c_str(); 
-            LOG(info) << " arg:" << ( arg ? arg : "-" ) ; 
+            //LOG(LEVEL) << " arg:" << ( arg ? arg : "-" ) ; 
             t.cx->setFrame(arg); 
             t.cx->render_snap(); 
         }

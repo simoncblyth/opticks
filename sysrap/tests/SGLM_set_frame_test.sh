@@ -52,6 +52,9 @@ export TMIN=${TMIN:-$tmin}
 export EYE=${EYE:-$eye}
 export ESCALE=${ESCALE:-$escale}
 
+## TODO: update for NAMEPREFIX handling changes in CSGOptiX::render_snap 
+## NATURAL PLACE TO DO THAT IS FROM WITHIN THE SCRIPTS THAT SET THE NAMEPREFIX
+
 DESC_REF=CSGOptiX__render_snap.log
 DESC_NAME=SGLM_set_frame_test.log
 DESC_PATH=$BASE/$DESC_NAME

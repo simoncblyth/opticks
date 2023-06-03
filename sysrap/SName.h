@@ -475,7 +475,17 @@ inline int SName::parseArg(const char* arg, unsigned& count) const
         }
     }
 
-    if(dump || idx == fallback) std::cout << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all << std::endl ; 
+    /*
+    if(dump || idx == fallback) std::cout 
+        << "SName::parseArg"
+        << " arg " << arg 
+        << " idx " << idx 
+        << " count " << count 
+        << " is_all " << is_all 
+        << std::endl 
+        ;
+    */
+ 
     return idx ; 
 }
 

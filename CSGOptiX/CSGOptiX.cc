@@ -950,6 +950,8 @@ void CSGOptiX::render_snap( const char* stem_ )
           << " botline [" <<  botline << "]"
           ; 
 
+    LOG(info) << " outpath " << outpath  << " botline " << botline ; 
+
     snap(outpath, botline, topline  );   
 
 #ifdef WITH_SGLM

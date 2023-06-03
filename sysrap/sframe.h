@@ -47,6 +47,8 @@ struct sframe
 {
     static constexpr const char* NAME = "sframe" ;  // formerly with .npy, now splitting ext for easier stem changes
     static constexpr const char* DEFAULT_FRS = "-1" ; 
+    static constexpr const char* DEFAULT_NAME = "ALL" ;  
+
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
     static constexpr const float EPSILON = 1e-5 ; 
@@ -101,7 +103,6 @@ struct sframe
     const char* get_frs() const ; // returns nullptr when frs is default  
     bool is_frs_default() const ; 
 
-    static constexpr const char* DEFAULT_NAME = "sframe_default_name" ;  
     const char* get_name() const ; // returns nullptr when frs is default  
 
     void set_midx_mord_iidx(int midx, int mord, int iidx); 

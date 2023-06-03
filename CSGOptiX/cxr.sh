@@ -146,7 +146,7 @@ render()
 
    local log=$bin.log
    local cmd="$GDB $bin" 
-   echo $cmd
+   echo ==== $BASH_SOURCE $FUNCNAME : $cmd
 
    printf "\n\n\n$cmd\n\n\n" >> $log 
 
@@ -155,7 +155,7 @@ render()
 
    printf "\n\n\nRC $rc\n\n\n" >> $log 
 
-   echo $msg rc $rc
+   echo ==== $BASH_SOURCE $FUNCNAME : $cmd : rc $rc
 
    return $rc
 }
