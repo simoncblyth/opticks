@@ -27,6 +27,8 @@ Examples::
    PUB=simple_transform_check EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
 
 
+TODO: former support for "--arglist" "--solid_label" "--sizescale" "--size" needs rejig as no longer parse args
+
 EOU
 }
 
@@ -102,6 +104,7 @@ export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 
 reldir=top_${TOP}_
 export OPTICKS_RELDIR=${OPTICKS_RELDIR:-$reldir}  
+## TODO: the RELDIR is being ignored 
 
 
 export TMPDIR=/tmp/$USER/opticks
@@ -117,8 +120,12 @@ export OPTICKS_OUT_NAME=$MOI
 export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
 
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
-for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+if [ -z "$SCANNER" ]; then 
+
+   vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
+   for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+
+fi 
 
 
 if [ -n "$DEBUG" ]; then 
@@ -131,22 +138,19 @@ fi
 DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
-#obsolete-render-cmd(){ cat << EOC
-# modern Opticks executables dont parse commandlines, they read envvars 
-# $GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --sizescale "$SIZESCALE" --solid_label "$SLA" $* 
-#EOC
-# }   
-
 
 render()
 {
    local msg="=== $FUNCNAME :"
-   which $bin
-   pwd
 
    local log=$bin.log
    local cmd="$GDB $bin" 
-   echo ==== $BASH_SOURCE $FUNCNAME : $cmd
+
+   if [ -z "$SCANNER" ]; then
+      which $bin
+      pwd
+      echo ==== $BASH_SOURCE $FUNCNAME : $cmd
+   fi 
 
    printf "\n\n\n$cmd\n\n\n" >> $log 
 
@@ -155,8 +159,10 @@ render()
 
    printf "\n\n\nRC $rc\n\n\n" >> $log 
 
-   echo ==== $BASH_SOURCE $FUNCNAME : $cmd : rc $rc
-
+   if [ -z "$SCANNER" ]; then
+       echo ==== $BASH_SOURCE $FUNCNAME : $cmd : rc $rc
+   fi
+ 
    return $rc
 }
 
@@ -233,11 +239,7 @@ publish()
 
 if [ "$arg" == "run" ]; then
 
-    # effectively multiple MOI via the arglist 
-    # ARGLIST needs rejig as no longer parsing args 
-    #    render --arglist $ARGLIST $*            
-
-    render ## single MOI via envvar 
+    render 
 
 elif [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "grab_open" ]; then 
 

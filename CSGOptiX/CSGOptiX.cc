@@ -860,15 +860,21 @@ const CSGFoundry* CSGOptiX::getFoundry() const
     return foundry ; 
 }
 
-std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
+std::string CSGOptiX::AnnotationTime( double dt )  // static 
 {
     std::stringstream ss ; 
     ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
+{
+    std::stringstream ss ; 
+    ss << AnnotationTime(dt) ; 
     if(bot_line) ss << std::setw(30) << " " << bot_line ; 
     if(extra) ss << " " << extra ; 
-
-    std::string anno = ss.str(); 
-    return anno ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 const char* CSGOptiX::getDefaultSnapPath() const 
@@ -950,7 +956,7 @@ void CSGOptiX::render_snap( const char* stem_ )
           << " botline [" <<  botline << "]"
           ; 
 
-    LOG(info) << " outpath " << outpath  << " botline " << botline ; 
+    LOG(info) << outpath  << " : " << AnnotationTime(dt) ; 
 
     snap(outpath, botline, topline  );   
 

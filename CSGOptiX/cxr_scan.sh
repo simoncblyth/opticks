@@ -83,16 +83,14 @@ scan-emm-()
 
 scan-elv-()
 {
-    #for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
-    for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    #for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
 scan-emm()
 {
     local e 
-    for e in $(scan-emm-) 
-    do 
-        echo $e 
+    for e in $(scan-emm-) ; do 
         EMM=$e ./$script.sh $*
     done 
 }
@@ -100,9 +98,7 @@ scan-emm()
 scan-elv()
 {
     local e 
-    for e in $(scan-elv-) 
-    do 
-        echo $e 
+    for e in $(scan-elv-) ; do 
         ELV=$e $DIR/$script.sh $*
     done 
 }
