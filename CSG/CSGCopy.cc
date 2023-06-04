@@ -322,6 +322,8 @@ CSGCopy::copySolidInstances
 As some solids may disappear as a result of Prim selection 
 it is necessary to change potentially all the inst solid references. 
 
+See ~/j/issues/cxr_scan_cxr_overview_ELV_scan_out_of_range_error.rst
+
 **/
 
 void CSGCopy::copySolidInstances()

@@ -54,7 +54,7 @@ pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
 # defaults 
-cvd=1            # default GPU to use
+cvd=0            # default GPU to use
 emm=t0           # what to include in the GPU geometry : default to t0 ie ~0 which means everything 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
