@@ -346,7 +346,7 @@ void CSGOptiX::initCtx()
 #if OPTIX_VERSION < 70000
 #else
     ctx = new Ctx ; 
-    LOG(LEVEL) << " ctx.desc " << ctx->desc() ; 
+    LOG(info) << std::endl << ctx->desc() ; 
 #endif
     LOG(LEVEL) << "]" ; 
 }

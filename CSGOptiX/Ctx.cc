@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
 
 #include "Ctx.h"
 
@@ -13,6 +14,7 @@
 #include "OPTIX_CHECK.h"
 #include "Properties.h"
 
+#include "ssys.h"
 #include "SLOG.hh"
 
 const plog::Severity Ctx::LEVEL = SLOG::EnvLevel("Ctx", "DEBUG") ; 
@@ -28,9 +30,11 @@ void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void
 
 Ctx::Ctx()
     :
+    device(ssys::getenvint("CTX_DEVICE",0)),
     props(nullptr)
 {
-    CUDA_CHECK( cudaFree( 0 ) ); 
+    CUDA_CHECK(cudaSetDevice(device));
+    CUDA_CHECK(cudaFree( 0 ) ); 
 
     CUcontext cuCtx = 0;  // zero means take the current context
     OPTIX_CHECK( optixInit() );
@@ -42,9 +46,20 @@ Ctx::Ctx()
     props = new Properties ;   // instanciation gets the properties
 }
 
+
 std::string Ctx::desc() const 
 {
-    return props->desc(); 
-}
+    std::stringstream ss ; 
+    ss
+        << "Ctx::desc" << std::endl 
+        << std::setw(40) << "device" 
+        << " : "
+        << std::setw(10) <<  device
+        << std::endl 
+        << props->desc()
+        ;
 
+    std::string str = ss.str(); 
+    return str ; 
+}
 

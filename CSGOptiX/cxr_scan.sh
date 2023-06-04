@@ -66,10 +66,10 @@ NMM=${NMM:-$nmm}   # geometry specific
 NLV=${NLV:-$nlv}
 
 
-## hmm could generate a metadata bash script to provide this kinda thing in the geocache
+#script=cxr_view
+script=cxr_overview
+export SCRIPT=${SCRIPT:-$script}
 
-
-script=${SCRIPT:-cxr_overview}
 export SCANNER="cxr_scan.sh"
 
 scan-emm-()
@@ -91,7 +91,7 @@ scan-emm()
 {
     local e 
     for e in $(scan-emm-) ; do 
-        EMM=$e ./$script.sh $*
+        EMM=$e $DIR/$SCRIPT.sh $*
     done 
 }
 
@@ -99,7 +99,7 @@ scan-elv()
 {
     local e 
     for e in $(scan-elv-) ; do 
-        ELV=$e $DIR/$script.sh $*
+        ELV=$e $DIR/$SCRIPT.sh $*
     done 
 }
 

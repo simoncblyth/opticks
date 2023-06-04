@@ -49,6 +49,31 @@ OptiX 7 and SDF
 * ~/opticks_refs/OptiX7_SDF_Daria_Vasilenko_Brno_Master_Thesis.pdf
 
 
+Selecting between GPUs
+------------------------
+
+https://forums.developer.nvidia.com/t/optixdevicecreatecontext-error-code-7051/231856/2
+
+droettger
+Moderator
+Oct 26
+
+The OptiX 7 API doesn’t know about multiple GPUs. You need to make sure the
+proper CUDA context is selected per device before doing any OptiX operation as
+m001 explained.
+
+For OptiX 7 examples using multiple GPUs, have a look into the SDK examples
+optixMultiGPU and optixNVlink.
+
+For more advanced OptiX 7 examples explicitly showing multi-GPU workload
+distribution with different buffer allocation methods, CUDA peer-to-peer data
+sharing via NVLINK or PCI-E bus, and different OpenGL interop methods detecting
+which active GPU runs the OpenGL implementation, have a look here and read the
+repository’s README.md carefully:
+https://forums.developer.nvidia.com/t/optix-advanced-samples-on-github/48410/4
+2
+
+
 Versions
 ----------
 

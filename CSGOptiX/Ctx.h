@@ -17,6 +17,7 @@ struct Ctx
     static OptixDeviceContext context ;
     static void log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */); 
 
+    int device ; 
     Properties* props  ; 
     Ctx(); 
 
