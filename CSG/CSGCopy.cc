@@ -96,11 +96,16 @@ to implementing Prim selection so must not descend to very low level cloning.
 * When selecting numPrim will sometimes be less in dst, sometimes even zero, 
   so need to count selected Prim before adding the solid.
 
+* ALSO selections can change the number of solids 
+
 **/
 
 void CSGCopy::copy()
 { 
     CSGFoundry::CopyNames(dst, src );  
+    // No accounting for selection changing the number of names
+    // as these are LV level names. The LV idx are regarded as 
+    // external and unchanged no matter the selection, unlike gas_idx. 
  
     for(unsigned i=0 ; i < sNumSolid ; i++)
     {
@@ -339,7 +344,10 @@ void CSGCopy::copySolidInstances()
         if( dSolidIdx > -1 )
         {
             const float* tr16 = ins->cdata(); 
-            dst->addInstance(tr16,  gas_idx, sensor_identifier, sensor_index ); 
+            //dst->addInstance(tr16,  gas_idx, sensor_identifier, sensor_index ); 
+            dst->addInstance(tr16,  dSolidIdx, sensor_identifier, sensor_index ); 
+            //                     ^^^^^^^^^^^  try to fix gas_refs going stale on selection 
+
         }
     }
 }

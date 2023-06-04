@@ -408,6 +408,17 @@ void CSGOptiX::initParams()
 {
     params->device_alloc(); 
 }
+
+/**
+CSGOptiX::initGeometry
+------------------------
+
+Notice that the geometry must be uploaded to GPU before calling this.  
+The SBT::setFoundry kicks off the creation of the NVIDIA OptiX geometry
+from the uploaded CSGFoundry with SBT::createGeom. 
+
+**/
+
 void CSGOptiX::initGeometry()
 {
     LOG(LEVEL) << "[" ; 

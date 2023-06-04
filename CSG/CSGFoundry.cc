@@ -236,6 +236,17 @@ unsigned CSGFoundry::getNumSolidLabel() const
 {
     return mmlabel.size() ; 
 }
+
+/**
+CSGFoundry::CopyNames
+-----------------------
+
+Note that there is no accounting for selections to changing the used
+meshnames as the LV are regarded as fixed external things no matter 
+what selection is applied. 
+
+**/
+
 void CSGFoundry::CopyNames( CSGFoundry* dst, const CSGFoundry* src ) // static
 {
     CopyMeshName( dst, src ); 

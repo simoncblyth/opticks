@@ -22,20 +22,6 @@
 
 #include "SLOG.hh"
 
-/**
-IAS_Builder::Build
---------------------
-
-Converts *ias_inst* a vector of geometry identity instrumented transforms into
-a vector of OptixInstance. The instance.sbtOffset are set using SBT::getOffset
-for the gas_idx and with prim_idx:0 indicating the outer prim(aka layer) 
-of the GAS.
-
-Canonically invoked during CSGOptiX instanciation, from stack::
-
-    CSGOptiX::CSGOptiX/CSGOptiX::init/CSGOptiX::initGeometry/SBT::setFoundry/SBT::createGeom/SBT::createIAS
-
-**/
 
 const plog::Severity IAS_Builder::LEVEL = SLOG::EnvLevel("IAS_Builder", "DEBUG"); 
 
@@ -67,7 +53,7 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
         const qat4& q = ias_inst[i] ;   
         int ins_idx,  gasIdx, sensor_identifier, sensor_index ; 
         q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
-        const GAS& gas = sbt->getGAS(gasIdx); 
+        const GAS& gas = sbt->getGAS(gasIdx);  // susceptible to out-of-range errors for stale gas_idx 
         
         bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 
         unsigned sbtOffset = found ? gasIdx_sbtOffset.at(gasIdx) : sbt->getOffset(gasIdx, prim_idx ) ;
@@ -97,6 +83,15 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
 /**
 IAS_Builder::Build
 ----------------------
+
+Converts *ias_inst* a vector of geometry identity instrumented transforms into
+a vector of OptixInstance. The instance.sbtOffset are set using SBT::getOffset
+for the gas_idx and with prim_idx:0 indicating the outer prim(aka layer) 
+of the GAS.
+
+Canonically invoked during CSGOptiX instanciation, from stack::
+
+    CSGOptiX::CSGOptiX/CSGOptiX::init/CSGOptiX::initGeometry/SBT::setFoundry/SBT::createGeom/SBT::createIAS
 
 
 **/

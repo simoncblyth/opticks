@@ -332,7 +332,11 @@ void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
-    LOG(LEVEL) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
+    LOG(LEVEL) 
+        << " ias_idx " << ias_idx 
+        << " num_inst " << num_inst 
+        << " num_ias_inst(getNumInstancesIAS) " << num_ias_inst
+        ;  
 
     std::vector<qat4> inst ; 
     foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
@@ -348,7 +352,8 @@ SBT::dumpIAS
 
 ins_idx flatly proceeds across the entire instanced geometry (actually the IAS but there is only one of those)
 
-* the flat ins_idx can be used to lookup the tranform and its instrumented geometry info (gas_idx, ias_idx) from the instances vector
+* the flat ins_idx can be used to lookup the tranform and its instrumented geometry info (gas_idx, ias_idx) 
+  from the instances vector
 * so bit packing the gas_idx into GPU side instanceId would be just a convenience to avoid having to do that lookup, 
   better to keep things as simple as possible GPU side and just provide CSGFoundry API to do that lookup 
   from the unadorned flat:: 

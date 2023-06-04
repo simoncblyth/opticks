@@ -12,7 +12,14 @@ EOU
 
 
 bin=CSGFoundryLoadTest
-source $OPTICKS_HOME/bin/GEOM_.sh 
+#source $OPTICKS_HOME/bin/GEOM_.sh 
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+GDIR=$HOME/.opticks/GEOM/$GEOM
+if [ -d "$GDIR" ]; then
+   export ${GEOM}_CFBaseFromGEOM=$GDIR
+fi 
+
 
 export SSim__load_tree_load=1 
 
