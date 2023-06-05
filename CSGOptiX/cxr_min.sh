@@ -64,7 +64,8 @@ moi=NNVT:0:50
 #escale=asis
 
 #eye=3.7878,3.7878,3.7878
-eye=-1,-1,0
+#eye=-1,-1,0
+eye=-1,-1,3
 escale=extent
 
 export ESCALE=${ESCALE:-$escale}
@@ -78,8 +79,8 @@ export TMIN=${TMIN:-$tmin}
 topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ~/opticks/CSGOptiX/cxr_min.sh" 
 export TOPLINE=${TOPLINE:-$topline}
 
-
-export CSGOptiX=INFO
+export CSGFoundry=INFO 
+#export CSGOptiX=INFO
 # as a file is written in pwd need to cd 
 
 base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
