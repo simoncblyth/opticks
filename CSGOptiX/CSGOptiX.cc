@@ -144,11 +144,11 @@ Used by minimal render tests/CSGOptiXRdrTest.cc
 
 void CSGOptiX::RenderMain() // static
 {
-    //SCVD::ConfigureVisibleDevices();   not working anymore
+    //SCVD::ConfigureVisibleDevices(); // not working anymore : instead doing equivalent in bash script 
 
     scontext sctx ; 
-    LOG(info) << sctx.desc() ; 
-    LOG(info) << sctx.brief() ; 
+    LOG(LEVEL) << sctx.desc() ; 
+    LOG(LEVEL) << sctx.brief() ; 
 
     SEventConfig::SetRGMode("render"); 
     SSim::Create(); 
@@ -888,8 +888,8 @@ std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* e
 {
     std::stringstream ss ; 
     ss << AnnotationTime(dt) ; 
+    if(extra) ss << " " << extra << " " ; 
     if(bot_line) ss << std::setw(30) << " " << bot_line ; 
-    if(extra) ss << " " << extra ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -957,7 +957,11 @@ void CSGOptiX::render_snap( const char* stem_ )
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
-    std::string bottom_line = CSGOptiX::Annotation(dt, botline_ ); 
+
+    std::string sctx = scontext::Brief(); 
+    const char* extra = sctx.c_str() ; 
+
+    std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 
 
     LOG(LEVEL)

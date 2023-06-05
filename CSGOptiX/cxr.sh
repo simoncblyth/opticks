@@ -68,7 +68,7 @@ sizescale=1.5
 
 # [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop : BUT are usually just grabbing from remote
 
-export CVD=${CVD:-$cvd}    # --cvd 
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
 export EMM=${EMM:-$emm}    # -e 
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
@@ -122,7 +122,7 @@ export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
 
 if [ -z "$SCANNER" ]; then 
 
-   vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
+   vars="CVD CUDA_VISIBLE_DEVICES EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
    for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 fi 

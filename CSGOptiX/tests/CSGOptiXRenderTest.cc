@@ -32,7 +32,9 @@ CFBASE
 #include <cstdlib>
 #include <csignal>
 
-#include "SCVD.h"
+//#include "SCVD.h"
+#include "scontext.h"
+
 #include "SPath.hh"
 #include "SStr.hh"
 #include "SSys.hh"
@@ -163,7 +165,11 @@ void CSGOptiXRenderTest::setFrame_sla()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    SCVD::ConfigureVisibleDevices(); 
+    // SCVD::ConfigureVisibleDevices();   // not working anymore
+
+    scontext sctx ; 
+    //LOG(LEVEL) << sctx.brief() ; 
+
     SEventConfig::SetRGMode("render"); 
 
 #ifdef WITH_SGLM

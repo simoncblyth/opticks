@@ -5,6 +5,7 @@
 
 struct scontext
 {
+    static scontext* INSTANCE ; 
     static constexpr const bool VERBOSE = false ; 
 
     scontext(); 
@@ -13,6 +14,10 @@ struct scontext
 
     std::string desc() const ; 
     std::string brief() const ; 
+
+    static scontext* Get() ; 
+    static std::string Desc() ; 
+    static std::string Brief() ; 
 };
 
 /**
@@ -21,8 +26,12 @@ cf the former optixrap/OContext.cc OContext::initDevices
 
 **/
 
+scontext* scontext::INSTANCE = nullptr ; 
+
 inline scontext::scontext()
 {
+    INSTANCE = this ; 
+
     //SCVD::ConfigureVisibleDevices();  
     // Seems the CVD->CUDA_VISIBLE_DEVICES promotion in code no longer impacts CUDA.
     // Perhaps the CUDA runtime/driver is reading the CUDA_VISIBLE_DEVICES envvar earlier ?
@@ -60,6 +69,22 @@ inline std::string scontext::brief() const
 {
     return sdevice::Brief(visible_devices) ; 
 }
+
+
+inline scontext* scontext::Get()
+{
+    return INSTANCE ; 
+}
+inline std::string scontext::Desc() 
+{
+    return INSTANCE ? INSTANCE->desc() : "-" ; 
+}
+inline std::string scontext::Brief() 
+{
+    return INSTANCE ? INSTANCE->brief() : "-" ; 
+}
+
+
 
 
 
