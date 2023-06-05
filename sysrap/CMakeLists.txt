@@ -189,6 +189,7 @@ set(HEADERS
 
     SPath.hh
     spath.h 
+    sdirectory.h
 
     sdevice.h
     scontext.h

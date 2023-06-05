@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sdevice.h"
+#include "SCVD.h"
 
 struct scontext
 {
@@ -21,6 +22,12 @@ cf the former optixrap/OContext.cc OContext::initDevices
 
 inline scontext::scontext()
 {
+    //SCVD::ConfigureVisibleDevices();  
+    // Seems the CVD->CUDA_VISIBLE_DEVICES promotion in code no longer impacts CUDA.
+    // Perhaps the CUDA runtime/driver is reading the CUDA_VISIBLE_DEVICES envvar earlier ?
+    // Before this sets it. 
+
+
     if(VERBOSE) std::cout << "[scontext::scontext" << std::endl ; 
 
     const char* dirpath = spath::ResolvePath("$HOME/.opticks/scontext") ; 

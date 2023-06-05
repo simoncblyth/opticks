@@ -3,6 +3,12 @@
 SCVD.hh : promotes CVD envvar into CUDA_VISIBLE_DEVICES
 ===========================================================
 
+HMM : this has stopped working, maybe the CUDA_VISIBLE_DEVICES
+envvar is being read by CUDA runtime/driver earlier 
+so changes made here make no difference ?
+
+
+
 The advantage of using the short CVD envvar instead of the underlying CUDA_VISIBLE_DEVICES
 is that Opticks then manages its use and can overrride and incorporate results in bookkeeping. 
 
@@ -43,8 +49,12 @@ struct SCVD
 
 
 const char* SCVD::CVD_DEFAULT = "0" ; 
-const char* SCVD::CVD = getenv("CVD"); 
-inline const char* SCVD::Get(){ return CVD == nullptr ? CVD_DEFAULT : CVD ; }
+const char* SCVD::CVD = nullptr ;
+inline const char* SCVD::Get()
+{
+   if(CVD == nullptr) CVD = getenv("CVD") ;   
+   return CVD == nullptr ? CVD_DEFAULT : CVD ; 
+}
 
 
 const char* SCVD::LABEL = nullptr ; 

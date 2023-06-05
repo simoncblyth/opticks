@@ -16,8 +16,9 @@ Simplfied version of the former cudarap/CDevice.cu
 
 struct sdevice 
 {
+    static constexpr const char* CVD = "CUDA_VISIBLE_DEVICES" ; 
+    static constexpr const char* FILENAME = "sdevice.bin" ; 
     static constexpr bool VERBOSE = false ; 
-
     static int VISIBLE_COUNT ; 
 
     int ordinal ; 
@@ -39,10 +40,7 @@ struct sdevice
     const char* brief() const ;
     const char* desc() const ; 
 
-    static const char* CVD ; 
-    static const char* FILENAME ; 
     static int Size(); 
-
     static void Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave=false ); 
     static void Collect(std::vector<sdevice>& devices, bool ordinal_from_index=false ); 
     static int FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all );
@@ -72,8 +70,6 @@ struct sdevice
 
 
 int sdevice::VISIBLE_COUNT = 0 ; 
-
-const char* sdevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
 
 const char* sdevice::brief() const 
 {
@@ -280,7 +276,7 @@ void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool n
     }
     else
     {
-        std::cerr << "sdevice::Visible with cvd " << cvd << std::endl ; 
+        if(VERBOSE) std::cerr << "sdevice::Visible with cvd " << cvd << std::endl ; 
         Load(all,  dirpath); 
 
         for(unsigned i=0 ; i < visible.size() ; i++)
@@ -301,7 +297,7 @@ sdevice::FindIndexOfMatchingDevice
 int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all )
 {
     int index = -1 ; 
-    std::cout 
+    if(VERBOSE) std::cout 
          << "sdevice::FindIndexOfMatchingDevice"
          << " d " << d.desc() 
          << " all.size " << all.size()
@@ -312,7 +308,8 @@ int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdev
     {
         const sdevice& a = all[i] ; 
         bool m = a.matches(d) ; 
-        std::cout
+        if(VERBOSE) std::cout
+            << "sdevice::FindIndexOfMatchingDevice"
             << " a " << a.desc()
             << " m " << m 
             << std::endl 
@@ -324,13 +321,12 @@ int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdev
            break ; 
         } 
     }
-    std::cout << " index : " << index << std::endl ;  
+    if(VERBOSE) std::cout << "sdevice::FindIndexOfMatchingDevice  index : " << index << std::endl ;  
     return index ; 
 }
 
 
 
-const char* sdevice::FILENAME = "sdevice.bin" ; 
 
 std::string sdevice::Path(const char* dirpath)
 {
