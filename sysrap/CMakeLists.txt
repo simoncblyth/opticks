@@ -190,6 +190,9 @@ set(HEADERS
     SPath.hh
     spath.h 
 
+    sdevice.h
+    scontext.h
+
     SSeq.hh
     STranche.hh
     SVec.hh

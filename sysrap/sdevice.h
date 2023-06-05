@@ -12,9 +12,11 @@ Simplfied version of the former cudarap/CDevice.cu
 #include <string>
 #include <vector>
 #include <iostream>
+#include <string>
 
 struct sdevice 
 {
+    static constexpr bool VERBOSE = false ; 
 
     static int VISIBLE_COUNT ; 
 
@@ -46,14 +48,11 @@ struct sdevice
     static int FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all );
 
     static std::string Path(const char* dirpath); 
-    static void Dump(const std::vector<sdevice>& devices, const char* msg ); 
     static void Save(const std::vector<sdevice>& devices, const char* dirpath); 
     static void Load(      std::vector<sdevice>& devices, const char* dirpath); 
 
-    static void PrepDir(const char* dirpath); 
-    static std::string Brief( const std::vector<sdevice>& devices ); 
-
-
+    static std::string Brief(const std::vector<sdevice>& devices ); 
+    static std::string Desc( const std::vector<sdevice>& devices ); 
 };
 
 
@@ -68,11 +67,11 @@ struct sdevice
 #include <fstream>
 
 #include <cuda_runtime_api.h>
-
+#include "sdirectory.h"
+#include "spath.h"
 
 
 int sdevice::VISIBLE_COUNT = 0 ; 
-
 
 const char* sdevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
 
@@ -133,7 +132,7 @@ void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
 {
     int devCount;
     cudaGetDeviceCount(&devCount);
-    std::cout << "cudaGetDeviceCount : " << devCount << std::endl ; 
+    if(VERBOSE) std::cout << "sdevice::Collect cudaGetDeviceCount : " << devCount << std::endl ; 
 
     for (int i = 0; i < devCount; ++i)
     {   
@@ -170,15 +169,15 @@ void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
 int sdevice::Size() 
 {
     return 
-        sizeof(int) +   // ordinal
-        sizeof(int) +   // index
+        sizeof(int) +       // ordinal
+        sizeof(int) +       // index
         sizeof(char)*256 +  // name 
-        sizeof(char)*16 +     // uuid
-        sizeof(int) +     // major 
-        sizeof(int) +     // minor 
-        sizeof(int) +   // compute_capability
-        sizeof(int) +   // multiProcessorCount 
-        sizeof(size_t) ;   // totalGlobalMem
+        sizeof(char)*16 +   // uuid
+        sizeof(int) +       // major 
+        sizeof(int) +       // minor 
+        sizeof(int) +       // compute_capability
+        sizeof(int) +       // multiProcessorCount 
+        sizeof(size_t) ;    // totalGlobalMem
 }
 void sdevice::write( std::ostream& out ) const
 {
@@ -199,7 +198,6 @@ void sdevice::write( std::ostream& out ) const
     out.write(buffer, size);   
     assert( p - buffer == size ); 
     delete [] buffer ; 
-
 }
 
 void sdevice::read( std::istream& in )
@@ -255,6 +253,8 @@ not CUDA.
 
 void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave)
 {
+    if(VERBOSE) std::cout << "[sdevice::Visible" << std::endl ;
+
     char* cvd = getenv(CVD); 
     bool no_cvd = cvd == NULL ;  
     std::vector<sdevice> all ; 
@@ -264,11 +264,19 @@ void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool n
 
     VISIBLE_COUNT = visible.size() ; 
 
+    if(VERBOSE) std::cerr << "sdevice::Visible no_cvd:" << no_cvd << std::endl ; 
+
     if( no_cvd )
     {
-        std::cerr << "sdevice::Visible no_cvd " << std::endl ; 
-        if(!nosave)
-        Save( visible, dirpath );      
+        if(nosave == false && dirpath != nullptr)
+        {
+            if(VERBOSE) std::cerr 
+                << "sdevice::Visible no_cvd save to " 
+                << ( dirpath ? dirpath : "-" ) 
+                << std::endl 
+                ; 
+            Save( visible, dirpath );      
+        }
     }
     else
     {
@@ -281,6 +289,7 @@ void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool n
             v.ordinal = FindIndexOfMatchingDevice( v, all );   
         }
     }
+    if(VERBOSE) std::cout << "]sdevice::Visible" << std::endl ;
 }
 
 /**
@@ -320,16 +329,6 @@ int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdev
 }
 
 
-void sdevice::Dump( const std::vector<sdevice>& devices, const char* msg )
-{
-    std::cout << msg << "[" << Brief(devices) << "]" << std::endl  ; 
-    for(unsigned i=0 ; i < devices.size() ; i++)
-    {
-        const sdevice& d = devices[i] ; 
-        std::cout << d.desc() << std::endl ;    
-    }  
-}
-
 
 const char* sdevice::FILENAME = "sdevice.bin" ; 
 
@@ -342,16 +341,16 @@ std::string sdevice::Path(const char* dirpath)
 }
 
 
-void sdevice::PrepDir(const char* dirpath)
-{
-    //mkdirp(dirpath, 0777);
-}
 
-void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath)
+void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
 {
+    const char* dirpath = spath::ResolvePath(dirpath_) ; 
+    int rc = sdirectory::MakeDirs(dirpath, 0); 
+    assert(rc == 0); 
+
+
     std::string path = Path(dirpath); 
-    //PrepDir(dirpath); 
-    std::cout << "path " << path << std::endl ; 
+    if(VERBOSE) std::cout << "sdevice::Save path " << path << std::endl ; 
 
     std::ofstream out(path.c_str(), std::ofstream::binary);
     if(out.fail())
@@ -370,9 +369,10 @@ void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath)
 void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath)
 {
     std::string path = Path(dirpath); 
-    std::cout
-        << "dirpath " << dirpath 
-        << "path " << path 
+    if(VERBOSE) std::cout
+        << "sdevice::Load"
+        << " dirpath " << dirpath 
+        << " path " << path 
         << std::endl 
         ; 
     std::ifstream in(path.c_str(), std::ofstream::binary);
@@ -406,6 +406,19 @@ std::string sdevice::Brief( const std::vector<sdevice>& devices )
         if( i < devices.size() - 1 ) ss << ' ' ;
     }   
     return ss.str(); 
+}
+
+std::string sdevice::Desc( const std::vector<sdevice>& devices )
+{
+    std::stringstream ss ; 
+    ss << "[" << Brief(devices) << "]" << std::endl  ; 
+    for(unsigned i=0 ; i < devices.size() ; i++)
+    {
+        const sdevice& d = devices[i] ; 
+        ss << d.desc() << std::endl ;    
+    }  
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
