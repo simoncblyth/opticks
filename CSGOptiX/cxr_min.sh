@@ -83,6 +83,9 @@ export CSGFoundry=INFO
 #export CSGOptiX=INFO
 # as a file is written in pwd need to cd 
 
+cvd=0 
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
+
 base=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 export BASE=${BASE:-$base}
 export LOGDIR=$BASE
@@ -91,8 +94,12 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR OPTICKS_HASH TOPLINE"
+vars="GEOM TMIN LOGDIR OPTICKS_HASH TOPLINE CVD CUDA_VISIBLE_DEVICES"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+
+
+
+
 
 if [ "${arg/run}" != "$arg" ]; then
 

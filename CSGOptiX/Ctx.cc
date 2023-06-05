@@ -30,7 +30,6 @@ void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void
 
 Ctx::Ctx()
     :
-    //device(ssys::getenvint("CTX_DEVICE",0)),
     props(nullptr)
 {
     //CUDA_CHECK(cudaSetDevice(device)); // TOO LATE TO DO THIS HERE AS GEOM ALREADY UPLOADED
@@ -52,10 +51,6 @@ std::string Ctx::desc() const
     std::stringstream ss ; 
     ss
         << "Ctx::desc" << std::endl 
-        //<< std::setw(40) << "device" 
-        //<< " : "
-        //<< std::setw(10) <<  device
-        //<< std::endl 
         << props->desc()
         ;
 

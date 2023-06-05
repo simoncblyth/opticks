@@ -10,7 +10,24 @@ scontext_test.sh
 
 ::
 
+
     N[blyth@localhost tests]$ ./scontext_test.sh 
+    0:TITAN_V 1:TITAN_RTX
+    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=1 ./scontext_test.sh 
+    1:TITAN_RTX
+    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=0 ./scontext_test.sh 
+    0:TITAN_V
+    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=1 ./scontext_test.sh 
+    1:TITAN_RTX
+    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=0,1 ./scontext_test.sh 
+    0:TITAN_V 1:TITAN_RTX
+    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=1,0 ./scontext_test.sh 
+    1:TITAN_RTX 0:TITAN_V
+    N[blyth@localhost tests]$ 
+
+
+
+    N[blyth@localhost tests]$ VERBOSE=1 ./scontext_test.sh 
     scontext::desc
     all_devices
     [0:TITAN_V 1:TITAN_RTX]
@@ -22,7 +39,7 @@ scontext_test.sh
     idx/ord/mpc/cc:1/1/72/75  23.652 GB  TITAN RTX
 
 
-    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=0 ./scontext_test.sh 
+    N[blyth@localhost tests]$ VERBOSE=1 CUDA_VISIBLE_DEVICES=0 ./scontext_test.sh 
     scontext::desc
     all_devices
     [0:TITAN_V 1:TITAN_RTX]
@@ -32,7 +49,7 @@ scontext_test.sh
     [0:TITAN_V]
     idx/ord/mpc/cc:0/0/80/70  11.784 GB  TITAN V
 
-    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=1 ./scontext_test.sh 
+    N[blyth@localhost tests]$ VERBOSE=1 CUDA_VISIBLE_DEVICES=1 ./scontext_test.sh 
     scontext::desc
     all_devices
     [0:TITAN_V 1:TITAN_RTX]
@@ -42,7 +59,7 @@ scontext_test.sh
     [1:TITAN_RTX]
     idx/ord/mpc/cc:0/1/72/75  23.652 GB  TITAN RTX
 
-    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=1,0 ./scontext_test.sh 
+    N[blyth@localhost tests]$ VERBOSE=1 CUDA_VISIBLE_DEVICES=1,0 ./scontext_test.sh 
     scontext::desc
     all_devices
     [0:TITAN_V 1:TITAN_RTX]
@@ -53,7 +70,7 @@ scontext_test.sh
     idx/ord/mpc/cc:0/1/72/75  23.652 GB  TITAN RTX
     idx/ord/mpc/cc:1/0/80/70  11.784 GB  TITAN V
 
-    N[blyth@localhost tests]$ CUDA_VISIBLE_DEVICES=0,1 ./scontext_test.sh 
+    N[blyth@localhost tests]$ VERBOSE=1 CUDA_VISIBLE_DEVICES=0,1 ./scontext_test.sh 
     scontext::desc
     all_devices
     [0:TITAN_V 1:TITAN_RTX]

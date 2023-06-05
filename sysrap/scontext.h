@@ -12,6 +12,7 @@ struct scontext
     std::vector<sdevice> all_devices ;    
 
     std::string desc() const ; 
+    std::string brief() const ; 
 };
 
 /**
@@ -54,5 +55,12 @@ inline std::string scontext::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline std::string scontext::brief() const 
+{
+    return sdevice::Brief(visible_devices) ; 
+}
+
+
 
 
