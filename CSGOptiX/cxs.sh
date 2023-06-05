@@ -83,6 +83,12 @@ if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$ce_scale" -o -z "$gridsc
     exit 1     
 fi 
 
+
+cvd=0
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
+export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
+
+
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
@@ -159,7 +165,7 @@ if [ -n "$cfbase" ]; then
     export CFBASE=${CFBASE:-$cfbase}   ## setting CFBASE only appropriate for non-standard geometry 
 fi 
 
-export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$CVDLabel/$(CSGOptiXVersion)
 
 botline="MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE"
 

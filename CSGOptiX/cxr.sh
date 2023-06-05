@@ -69,6 +69,8 @@ sizescale=1.5
 # [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop : BUT are usually just grabbing from remote
 
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
+export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
+
 export EMM=${EMM:-$emm}    # -e 
 export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL  
 export EYE=${EYE:-$eye}    # evar:EYE 
@@ -79,6 +81,7 @@ export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
 export SIZE=${SIZE:-$size} 
 export SIZESCALE=${SIZESCALE:-$sizescale} 
+
 
 
 # okc Composition/Camera::Camera needs CAMERATYPE integer 
@@ -93,7 +96,7 @@ esac
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
 case $(uname) in 
-   Darwin) optix_version=70000 ;; 
+   Darwin) optix_version=70000 ;;   ## HMM: assuming remote using that version
    Linux)  optix_version=$(CSGOptiXVersion 2>/dev/null) ;;
 esac
 
@@ -113,7 +116,7 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 
 
-export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$optix_version
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$CVDLabel/$optix_version
 export OPTICKS_OUT_NAME=$MOI
 # envvars used by SEventConfig::OutPath 
 

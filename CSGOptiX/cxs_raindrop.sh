@@ -43,6 +43,11 @@ EOU
 
 export GEOM=BoxedSphere
 
+cvd=0
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
+export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
+
+
 case $(uname) in 
    Linux)  argdef=run  ;;
    Darwin) argdef=ana  ;;
@@ -56,15 +61,12 @@ if [ "$(uname)" == "Darwin" ]; then
     if [ "$arg" == "dru" -o "$arg" == "dan" ]; then  
         echo $msg dru or dan mode is local Darwin running and analysis 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM
-        #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
     else
         echo $msg run or ana mode handles Linux generated results grabbed from remote 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
-        #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/SCVD0/70000
     fi 
 else
     export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
-    #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 fi 
 
 export FOLD=$CFBASE_LOCAL   ## grab fails when add the bin dir here 
