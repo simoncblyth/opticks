@@ -40,8 +40,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
-#include "SCVD.h"
-#include "scontext.h"
 #include "SProc.hh"
 #include "SGLM.h"
 #include "NP.hh"
@@ -144,12 +142,6 @@ Used by minimal render tests/CSGOptiXRdrTest.cc
 
 void CSGOptiX::RenderMain() // static
 {
-    //SCVD::ConfigureVisibleDevices(); // not working anymore : instead doing equivalent in bash script 
-
-    scontext sctx ; 
-    LOG(LEVEL) << sctx.desc() ; 
-    LOG(LEVEL) << sctx.brief() ; 
-
     SEventConfig::SetRGMode("render"); 
     SSim::Create(); 
     
@@ -958,8 +950,8 @@ void CSGOptiX::render_snap( const char* stem_ )
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
 
-    std::string sctx = scontext::Brief(); 
-    const char* extra = sctx.c_str() ; 
+    const char* extra = SSim::GetContextBrief(); 
+    LOG(info) << " extra " << extra ; 
 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 

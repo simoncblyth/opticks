@@ -5,6 +5,7 @@
 #include "squad.h"
 #include "sdigest.h"
 #include "stree.h"
+#include "scontext.h"
 
 #include "SLOG.hh"
 #include "SStr.hh"
@@ -23,10 +24,18 @@ const int SSim::stree_level = ssys::getenvint("SSim__stree_level", 0) ;
 SSim* SSim::INSTANCE = nullptr ; 
 const unsigned SSim::MISSING = ~0u ; 
 
-SSim* SSim::Get()
-{ 
-    return INSTANCE ; 
+SSim* SSim::Get(){ return INSTANCE ; }
+scontext* SSim::GetContext(){ return INSTANCE ? INSTANCE->sctx : nullptr ; }
+
+const char* SSim::GetContextBrief() // static 
+{
+    scontext* sctx = GetContext(); 
+    std::string sctx_brief = sctx ? sctx->Brief() : "no-sctx" ; 
+    const char* extra = sctx_brief.c_str() ; 
+    return strdup(extra) ; 
 }
+
+
 SSim* SSim::CreateOrReuse()
 { 
     return INSTANCE ? INSTANCE : Create() ; 
@@ -104,6 +113,7 @@ SSim* SSim::Load(const char* base, const char* reldir)
 
 SSim::SSim()
     :
+    sctx(new scontext),
     fold(new NPFold),
     tree(new stree)
 {
@@ -114,6 +124,9 @@ void SSim::init()
 {
     INSTANCE = this ; 
     tree->set_level(stree_level); 
+
+    LOG(info) << sctx->desc() ;     
+    LOG(info) << sctx->brief() ;     
 }
 
 

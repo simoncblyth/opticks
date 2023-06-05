@@ -24,6 +24,7 @@ struct NP ;
 struct NPFold ; 
 struct SBnd ; 
 struct stree ; 
+struct scontext ; 
 
 #include <vector>
 #include <string>
@@ -45,6 +46,8 @@ struct SYSRAP_API SSim
     static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
+    static scontext* GetContext(); 
+    static const char* GetContextBrief(); 
     static SSim* CreateOrReuse(); 
 
     static void  Add(const char* k, const NP* a); 
@@ -73,6 +76,8 @@ struct SYSRAP_API SSim
 
     void addFake_( const std::vector<std::string>& specs ); 
 
+
+    scontext* sctx ; 
     NPFold* fold ; 
     stree*  tree ;  // instanciated with SSim::SSim
 

@@ -165,10 +165,6 @@ void CSGOptiXRenderTest::setFrame_sla()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    // SCVD::ConfigureVisibleDevices();   // not working anymore
-
-    scontext sctx ; 
-    //LOG(LEVEL) << sctx.brief() ; 
 
     SEventConfig::SetRGMode("render"); 
 
