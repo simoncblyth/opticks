@@ -344,7 +344,7 @@ void CSGOptiX::initCtx()
 #if OPTIX_VERSION < 70000
 #else
     ctx = new Ctx ; 
-    LOG(info) << std::endl << ctx->desc() ; 
+    LOG(LEVEL) << std::endl << ctx->desc() ; 
 #endif
     LOG(LEVEL) << "]" ; 
 }
@@ -869,18 +869,18 @@ const CSGFoundry* CSGOptiX::getFoundry() const
     return foundry ; 
 }
 
-std::string CSGOptiX::AnnotationTime( double dt )  // static 
+std::string CSGOptiX::AnnotationTime( double dt, const char* extra )  // static 
 {
     std::stringstream ss ; 
     ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;
+    if(extra) ss << " " << extra << " " ; 
     std::string str = ss.str(); 
     return str ; 
 }
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
 {
     std::stringstream ss ; 
-    ss << AnnotationTime(dt) ; 
-    if(extra) ss << " " << extra << " " ; 
+    ss << AnnotationTime(dt, extra) ; 
     if(bot_line) ss << std::setw(30) << " " << bot_line ; 
     std::string str = ss.str(); 
     return str ; 
@@ -949,10 +949,7 @@ void CSGOptiX::render_snap( const char* stem_ )
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
-
-    const char* extra = SSim::GetContextBrief(); 
-    LOG(info) << " extra " << extra ; 
-
+    const char* extra = SSim::GetContextBrief();  // scontext::brief giving GPU name 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 
 
@@ -969,7 +966,7 @@ void CSGOptiX::render_snap( const char* stem_ )
           << " botline [" <<  botline << "]"
           ; 
 
-    LOG(info) << outpath  << " : " << AnnotationTime(dt) ; 
+    LOG(info) << outpath  << " : " << AnnotationTime(dt, extra)  ; 
 
     snap(outpath, botline, topline  );   
 
@@ -1065,6 +1062,10 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     {
         js["cfmeta"] = foundry->meta ; 
     }
+
+
+    const char* extra = SSim::GetContextBrief(); 
+    js["scontext"] = extra ? extra : "-" ; 
 
     const std::vector<double>& t = launch_times ;
     if( t.size() > 0 )

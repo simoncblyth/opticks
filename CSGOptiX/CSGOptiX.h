@@ -158,7 +158,7 @@ private:
     double simulate();    
  public: 
     const CSGFoundry* getFoundry() const ; 
-    static std::string AnnotationTime( double dt ); 
+    static std::string AnnotationTime( double dt, const char* extra=nullptr ); 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
     const char* getDefaultSnapPath() const ; 
     void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base

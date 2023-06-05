@@ -56,7 +56,7 @@ inline scontext::scontext()
 inline std::string scontext::desc() const 
 {
     std::stringstream ss ; 
-    ss << "scontext::desc" << std::endl ; 
+    ss << "scontext::desc [" << brief() << "]" << std::endl ; 
     ss << "all_devices" << std::endl ; 
     ss << sdevice::Desc(all_devices) ; 
     ss << "visible_devices" << std::endl ; 

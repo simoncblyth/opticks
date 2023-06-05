@@ -1,4 +1,5 @@
 #include <map>
+#include <csignal>
 
 #include "NPFold.h"
 #include "scuda.h"
@@ -81,7 +82,7 @@ std::string SSim::DescCompare( const SSim* a , const SSim* b )
 
 SSim* SSim::Create()
 {
-    LOG_IF(LEVEL, INSTANCE) << "replacing SSim::INSTANCE" ; 
+    LOG_IF(fatal, INSTANCE) << "replacing SSim::INSTANCE" ; 
     new SSim ; 
     return INSTANCE ;  
 }
@@ -125,8 +126,7 @@ void SSim::init()
     INSTANCE = this ; 
     tree->set_level(stree_level); 
 
-    LOG(info) << sctx->desc() ;     
-    LOG(info) << sctx->brief() ;     
+    LOG(LEVEL) << sctx->desc() ;     
 }
 
 
