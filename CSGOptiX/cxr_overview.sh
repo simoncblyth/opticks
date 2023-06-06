@@ -11,6 +11,21 @@ cxr_overview.sh
    EMM=0, ./cxr_overview.sh 
    EMM=1, ./cxr_overview.sh 
 
+   CVD=1 ./cxr_overview.sh jstab
+
+   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 ./cxr_overview.sh jstab 
+
+   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 SNAP_ARGS="--jpg --out --outpath=/tmp/time_ordered_jpg.txt" ./cxr_overview.sh jstab
+   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 SNAP_ARGS="--txt --out --outpath=/tmp/time_ordered_txt.txt" ./cxr_overview.sh jstab
+
+   open -n $(cat /tmp/time_ordered_jpg.txt)   ## open all jpg in time order 
+   vim -R /tmp/time_ordered_txt.txt           ## view txt table to see the ELV exclusion names
+
+   epsilon:~ blyth$ cp /tmp/time_ordered_txt.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_txt.txt
+   epsilon:~ blyth$ cp /tmp/time_ordered_jpg.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_jpg.txt
+
+
+
 
 
 * cxr_overview.sh render times with JUNO 

@@ -223,10 +223,11 @@ class SnapScan(object):
         """ 
         log.info("globptn %s " % globptn )
         raw_paths = glob.glob(globptn) 
-        log.info("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
-        paths = filter(lambda p:Snap.is_valid(p), raw_paths)  # seems all paths are for now valid
+        log.info("globptn raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
+        paths = list(filter(lambda p:Snap.is_valid(p), raw_paths))  # seems all paths are for now valid
+        log.info("after is_valid filter len(paths): %d " % len(paths))
         snaps = list(map(Snap,paths))
-        snaps = sorted(snaps, key=lambda s:s.av, reverse=reverse)
+        snaps = list(sorted(snaps, key=lambda s:s.av, reverse=reverse))
         return snaps
 
     @classmethod
@@ -265,19 +266,12 @@ class SnapScan(object):
             pass
         pass
         lim_snaps = snaps[:SNAP_LIMIT]
-        log.info(" all_snaps %d selectspec %s snaps %d SNAP_LIMIT %d lim_snaps %d " % (len(all_snaps), selectspec, len(snaps), SNAP_LIMIT, len(lim_snaps) ))
+        log.info("all_snaps %d selectspec %s snaps %d SNAP_LIMIT %d lim_snaps %d " % (len(all_snaps), selectspec, len(snaps), SNAP_LIMIT, len(lim_snaps) ))
         return lim_snaps
 
 
     @classmethod
-    def Create(cls, globptn, reverse, selectmode, selectspec, candle):
-        
-        #base = os.path.expandvars(os.path.dirname(globptn)) 
-        #cfdigest = CSGFoundry.FindDigest(base)
-        #cfdir = CSGFoundry.FindDirUpTree(base)
-
-        cfdigest = "no-cfdigest"
-
+    def GEOMInfo(cls):
         cfptn = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry"
         cfdir = os.path.expandvars(cfptn)  
         log.info("cfptn %s cfdir %s " % (cfptn, cfdir) ) 
@@ -290,12 +284,24 @@ class SnapScan(object):
         log.info("meshname_path %s " % meshname_path ) 
         lv = LV(meshname_path)
 
+        return mm, lv
+
+
+    @classmethod
+    def Create(cls, globptn, reverse, selectmode, selectspec, candle):
+        """
+        :param globptn:
+        :param reverse: bool
+        :param selectmode: str from 
+        :param selectspec: str from 
+        :param candle:
+        """
         elv_mode = globptn.find("elv") > -1
-        sc = cls(globptn, mm, lv, candle=candle, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
-        return sc 
+        ss = cls(globptn, candle=candle, elv_mode=elv_mode, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
+        return ss 
 
     # SnapScan
-    def __init__(self, globptn, mm=None, lv=None, candle="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None, reverse=False, selectmode="elv", selectspec=""):
+    def __init__(self, globptn, candle="1,2,3,4", elv_mode=False, reverse=False, selectmode="elv", selectspec=""):
         """
         :param globptn: eg 
        
@@ -303,11 +309,11 @@ class SnapScan(object):
             cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg
  
         """
+
+        mm,lv = self.GEOMInfo()
         self.mm = mm
         self.lv = lv
         self.elv_mode = elv_mode
-        self.cfdigest = cfdigest
-        self.cfdir = cfdir 
 
         all_snaps = self.MakeSnaps(globptn, reverse=reverse)
         s_candle = None
@@ -317,6 +323,7 @@ class SnapScan(object):
                 s_candle = s
             pass  
         pass
+        log.info("all_snaps:%d " % len(all_snaps))
 
         # filter out the double emm
 
@@ -328,15 +335,21 @@ class SnapScan(object):
             snaps = all_snaps
         pass
 
+        log.info("after selectmode:%s selectspec:%s snaps:%d " % (selectmode, selectspec, len(snaps)))
+
         for idx, s in enumerate(snaps):
             s.idx = idx
         pass
         self.snaps = snaps
+        self.all_snaps = all_snaps
 
         if s_candle is None:
             s_candle = DummyCandleSnap()
         pass  
         self.candle = s_candle 
+
+      
+
 
     def label(self, enabled):
         return self.lv.label(enabled) if self.elv_mode else self.mm.label(enabled)
@@ -382,6 +395,9 @@ class SnapScan(object):
     def pagejpg(self): 
         return "\n".join(list(map(lambda s:s.pagejpg(),self.snaps)))
 
+
+def edef(key, fallback):
+    return os.environ.get(key,fallback)
         
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
@@ -397,12 +413,13 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--cpjpg", action="store_true", help="List cp commands to place into presentation repo" ) 
     parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
     parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
+    parser.add_argument(  "--txt", action="store_true", help="Dump table in TXT format" ) 
     parser.add_argument(  "--snaps", action="store_true", help="Debug: just create SnapScan " ) 
     parser.add_argument(  "--outpath", default="/tmp/ana_snap.txt", help="Path where to write output" )
     parser.add_argument(  "--out" , action="store_true", default=False, help="Enable saving output to *outpath*" )
     parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
     parser.add_argument(  "--selectmode",  default="elv", help="SnapScan selection mode" )
-    parser.add_argument(  "--selectspec",  default="not_elv_t", help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
+    parser.add_argument(  "--selectspec",  default=edef("SELECTSPEC","not_elv_t"), help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
     parser.add_argument(  "--candle",  default="t", help="Enabled setting to use as the reference candle for relative column in the table" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -421,7 +438,7 @@ if __name__ == '__main__':
     ss = SnapScan.Create(args.globptn, args.reverse, args.selectmode, args.selectspec, args.candle) 
 
     out = None
-    if args.jpg:
+    if args.jpg:    # list jpg paths in time order 
         out = str(ss.jpg())
     elif args.refjpg:
         out = str(ss.refjpg(args.refjpgpfx))
@@ -437,6 +454,8 @@ if __name__ == '__main__':
         out = str(ss.snaps)
     elif args.rst:
         out = str(ss.rst_table())
+    elif args.txt:
+        out = str(ss) 
     else:
         out = str(ss) 
     pass

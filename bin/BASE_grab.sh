@@ -62,13 +62,13 @@ fi
 if [ "${arg/jstab}" != "$arg" ]; then 
 
     echo $BASH_SOURCE jstab     
-    jsons=($(ls -1t $(find $BASE -name '*.json')))
-    for json in ${jsons[*]} ; do echo $json ; done  
+    #jsons=($(ls -1t $(find $BASE -name '*.json')))
+    #for json in ${jsons[*]} ; do echo $json ; done  
 
     globptn="$BASE/cxr_overview*elv*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
-    ${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" 
+    ${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
 fi 
 
 
