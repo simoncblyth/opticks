@@ -83,8 +83,9 @@ scan-emm-()
 
 scan-elv-()
 {
-    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
-    #for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
+    #for e in $(seq 0 $NLV) ; do echo "t103,$e" ; done  # disabling slowest midx:103 solidXJfixture and then each midx one-by-one
+    #for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
 scan-emm()

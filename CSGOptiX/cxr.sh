@@ -248,6 +248,10 @@ elif [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "grab_open" ]; then
 
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 
+elif [ "$arg" == "jstab" ]; then 
+
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+
 elif [ "$arg" == "pub" ]; then 
 
     publish 

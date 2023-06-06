@@ -91,7 +91,7 @@ class Snap(object):
         self.jpg = jpg_path
         self.path = json_path 
         self.av = js['av'] 
-        self.argline = js['argline']
+        self.argline = js.get('argline', "no-argline")
 
         dstem = self.ParseStem(jpg_stem)
 
@@ -99,9 +99,9 @@ class Snap(object):
         emm = dstem.get("emm", None)
         moi = dstem.get("moi", None)
 
-        if not emm is None:
-            assert js["emm"] == emm
-        pass 
+        #if not emm is None:
+        #    assert js["emm"] == emm
+        #pass 
 
         self.elv = elv
         self.emm = emm 
@@ -271,10 +271,16 @@ class SnapScan(object):
 
     @classmethod
     def Create(cls, globptn, reverse, selectmode, selectspec, candle):
-        base = os.path.expandvars(os.path.dirname(globptn)) 
-        cfdigest = CSGFoundry.FindDigest(base)
-        cfdir = CSGFoundry.FindDirUpTree(base)
-        log.info("cfdir %s cfdigest %s " % (cfdir, cfdigest) ) 
+        
+        #base = os.path.expandvars(os.path.dirname(globptn)) 
+        #cfdigest = CSGFoundry.FindDigest(base)
+        #cfdir = CSGFoundry.FindDirUpTree(base)
+
+        cfdigest = "no-cfdigest"
+
+        cfptn = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry"
+        cfdir = os.path.expandvars(cfptn)  
+        log.info("cfptn %s cfdir %s " % (cfptn, cfdir) ) 
 
         mmlabel_path = os.path.join(cfdir, "mmlabel.txt")
         log.info("mmlabel_path %s " % mmlabel_path ) 

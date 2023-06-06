@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-grabsnap.sh
-=============
+OBSOLETE grabsnap.sh : now moving to ../bin/BASE_grab.sh jstab 
+=================================================================
 
 Making table from .json sidecars grabbed from remote::
 

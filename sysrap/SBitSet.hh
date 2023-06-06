@@ -17,9 +17,11 @@ just a collection of booleans.
 #include <vector>
 #include <string>
 #include "SYSRAP_API_EXPORT.hh"
+struct SName ; 
 
 struct SYSRAP_API SBitSet 
 {
+    static std::string Brief( const SBitSet* elv, const SName* id ); 
     static SBitSet*   Create( unsigned num_bits, const char* ekey, const char* fallback ); 
     static SBitSet*   Create( unsigned num_bits, const char* spec); 
     static void        Parse( unsigned num_bits, bool* bits      , const char* spec ); 

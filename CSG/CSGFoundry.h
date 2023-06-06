@@ -98,6 +98,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     static CSGFoundry* MakeDemo(); 
 
+    const char* descELV() const ; 
     static const char* ELVString(const SName* id); 
     static const SBitSet* ELV(const SName* id); 
 

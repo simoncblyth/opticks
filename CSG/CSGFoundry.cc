@@ -2501,6 +2501,25 @@ CSGFoundry*  CSGFoundry::MakeDemo()
     return fd ; 
 }
 
+/**
+CSGFoundry::descELV
+---------------------
+
+TODO: short description of the partial geometry, midx and names of the included when an only 
+or the excluded midx and name when an exclusion geometry. To be included into CSGFoundry 
+metadata and copied into render metadata for table presentation. 
+
+**/
+
+const char* CSGFoundry::descELV() const 
+{
+    std::string str = SBitSet::Brief(elv, id ); 
+    return strdup(str.c_str()) ; 
+}
+
+
+
+
 
 /**
 CSGFoundry::ELVString

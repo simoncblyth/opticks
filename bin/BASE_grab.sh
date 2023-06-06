@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 BASE_grab.sh 
 ==============
@@ -12,7 +11,6 @@ Usage::
 
 EOU
 }
-
 
 vars="BASE"
 for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -47,8 +45,10 @@ if [ "${arg/open}" != "$arg" ]; then
     else
         echo $BASH_SOURCE : ERROR no json0 $json0 in BASE $BASE 
     fi 
-
 fi 
+
+
+
 
 if [ "${arg/clean}" != "$arg" ]; then 
     echo $BASH_SOURCE clean : delete jpg/json/log found in BASE $BASE
@@ -57,3 +57,19 @@ if [ "${arg/clean}" != "$arg" ]; then
        echo file $file 
     done 
 fi 
+
+
+if [ "${arg/jstab}" != "$arg" ]; then 
+
+    echo $BASH_SOURCE jstab     
+    jsons=($(ls -1t $(find $BASE -name '*.json')))
+    for json in ${jsons[*]} ; do echo $json ; done  
+
+    globptn="$BASE/cxr_overview*elv*.jpg"
+    refjpgpfx="/env/presentation/cxr/cxr_overview"
+
+    ${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" 
+fi 
+
+
+

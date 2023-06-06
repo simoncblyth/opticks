@@ -5,7 +5,15 @@
 #include "SBitSet.hh"
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SName.h"
 
+std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
+{
+    std::stringstream ss ; 
+    ss << "SBitSet::Brief" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallback )
