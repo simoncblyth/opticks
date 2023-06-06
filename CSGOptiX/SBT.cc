@@ -242,7 +242,7 @@ void SBT::createGAS_Standard()
         }
         else
         {
-            LOG(error) << " emm skip " << gas_idx ; 
+            LOG(LEVEL) << " emm skip " << gas_idx ; 
         }
     }
     LOG(LEVEL) << descGAS() ; 

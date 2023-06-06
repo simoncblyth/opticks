@@ -25,6 +25,9 @@ cxr_overview.sh
    epsilon:~ blyth$ cp /tmp/time_ordered_jpg.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_jpg.txt
 
 
+   SCAN=scan-emm CVD=1 ./cxr_overview.sh  
+
+
 
 
 

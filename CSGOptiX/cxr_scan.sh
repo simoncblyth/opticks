@@ -89,7 +89,6 @@ scan-elv-()
 
 scan-emm()
 {
-    export SCAN=scan-emm
     local e 
     for e in $(scan-emm-) ; do 
         EMM=$e $DIR/$SCRIPT.sh $*
@@ -98,14 +97,19 @@ scan-emm()
 
 scan-elv()
 {
-    export SCAN=scan-elv
     local e 
     for e in $(scan-elv-) ; do 
         ELV=$e $DIR/$SCRIPT.sh $*
     done 
 }
 
-#scan-elv
-scan-emm
+scan=scan-elv
+scan=scan-emm
+export SCAN=${SCAN:-$scan}
 
+if [ "$scan" == "scan-emm" ]; then
+   scan-emm
+elif [ "$scan" == "scan-elv" ]; then
+   scan-elv
+fi 
 

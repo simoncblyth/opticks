@@ -81,7 +81,7 @@ class Snap(object):
         m = cls.PTN.match(jpg_stem)
         return m.groupdict() if not m is None else {}
 
-    def __init__(self, jpg_path):
+    def __init__(self, jpg_path, selectmode="elv" ):
         json_path = jpg_path.replace(".jpg", ".json")
         jpg_stem = os.path.splitext(os.path.basename(jpg_path))[0]
         log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
@@ -99,20 +99,12 @@ class Snap(object):
         emm = dstem.get("emm", None)
         moi = dstem.get("moi", None)
 
-        #if not emm is None:
-        #    assert js["emm"] == emm
-        #pass 
-
+        self.dstem = dstem  
         self.elv = elv
         self.emm = emm 
         self.moi = moi
-
-        if not elv is None:
-            enabled = elv
-        else:
-            enabled = emm
-        pass
-        self.enabled = enabled
+        self.selectmode = selectmode
+        self.enabled = elv if selectmode == "elv" else emm 
 
         # below are set by SnapScan after sorting
         self.sc = None   
@@ -216,7 +208,7 @@ class Snap(object):
 
 class SnapScan(object):
     @classmethod
-    def MakeSnaps(cls, globptn, reverse=False):
+    def MakeSnaps(cls, globptn, reverse=False, selectmode="elv"):
         """
         * resolve the globptn into a sorted list of paths, typically of jpg renders
         * order is based on Snap.av obtained from the sidecar json file
@@ -226,12 +218,15 @@ class SnapScan(object):
         log.info("globptn raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = list(filter(lambda p:Snap.is_valid(p), raw_paths))  # seems all paths are for now valid
         log.info("after is_valid filter len(paths): %d " % len(paths))
-        snaps = list(map(Snap,paths))
+        snaps = list(map(lambda p:Snap(p,selectmode=selectmode),paths))
         snaps = list(sorted(snaps, key=lambda s:s.av, reverse=reverse))
         return snaps
 
     @classmethod
     def SelectSnaps_imm(cls, all_snaps, selectspec):
+        """
+        Selection of snaps based on the imm list of ints for each snap
+        """
         snaps = []
         for s in all_snaps:  
             #print(s.imm)
@@ -292,30 +287,26 @@ class SnapScan(object):
         """
         :param globptn:
         :param reverse: bool
-        :param selectmode: str from 
-        :param selectspec: str from 
+        :param selectmode: "imm" or "elv" or "all"
+        :param selectspec: argument depending on selectmode
         :param candle:
         """
-        elv_mode = globptn.find("elv") > -1
-        ss = cls(globptn, candle=candle, elv_mode=elv_mode, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
+        ss = cls(globptn, candle=candle, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
         return ss 
 
     # SnapScan
-    def __init__(self, globptn, candle="1,2,3,4", elv_mode=False, reverse=False, selectmode="elv", selectspec=""):
+    def __init__(self, globptn, candle="1,2,3,4", reverse=False, selectmode="elv", selectspec=""):
         """
         :param globptn: eg 
-       
-        /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/CSGOptiXRenderTest/
-            cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg
- 
         """
 
         mm,lv = self.GEOMInfo()
         self.mm = mm
         self.lv = lv
-        self.elv_mode = elv_mode
+        self.selectmode = selectmode
+        self.selectspec = selectspec
 
-        all_snaps = self.MakeSnaps(globptn, reverse=reverse)
+        all_snaps = self.MakeSnaps(globptn, reverse=reverse, selectmode=selectmode)
         s_candle = None
         for s in all_snaps:
             s.sc = self
@@ -327,10 +318,12 @@ class SnapScan(object):
 
         # filter out the double emm
 
-        if selectmode == "imm":
-            snaps = self.SelectSnaps_imm(all_snaps, selectspec)
-        elif selectmode == "elv":
+        if self.selectmode in ["imm","emm"]:
+            snaps = self.SelectSnaps_imm(all_snaps, selectspec)  # based on imm list of ints 
+        elif self.selectmode == "elv":
             snaps = self.SelectSnaps_elv(all_snaps, selectspec)
+        elif self.selectmode == "all":
+            snaps = all_snaps
         else:
             snaps = all_snaps
         pass
@@ -352,7 +345,7 @@ class SnapScan(object):
 
 
     def label(self, enabled):
-        return self.lv.label(enabled) if self.elv_mode else self.mm.label(enabled)
+        return self.lv.label(enabled) if self.selectmode == "elv" else self.mm.label(enabled)
 
     def table(self):
         table = np.empty([len(self.snaps),len(Snap.LABELS)], dtype=np.object ) 
@@ -418,7 +411,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--outpath", default="/tmp/ana_snap.txt", help="Path where to write output" )
     parser.add_argument(  "--out" , action="store_true", default=False, help="Enable saving output to *outpath*" )
     parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
-    parser.add_argument(  "--selectmode",  default="elv", help="SnapScan selection mode" )
+    parser.add_argument(  "--selectmode",  default=edef("SELECTMODE","elv"), help="SnapScan selection mode" )
     parser.add_argument(  "--selectspec",  default=edef("SELECTSPEC","not_elv_t"), help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
     parser.add_argument(  "--candle",  default="t", help="Enabled setting to use as the reference candle for relative column in the table" )
     args = parser.parse_args()
