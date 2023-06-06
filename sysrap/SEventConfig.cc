@@ -394,18 +394,11 @@ std::string SEventConfig::Desc()
 SEventConfig::OutDir SEventConfig::OutPath
 --------------------------------------------
 
+Used by CSGOptiX::render_snap
+
 Expecting the below as the OutName defaults to nullptr::
 
    $TMP/GEOM/$GEOM/ExecutableName
-
-
-Q: Are these methods used ? 
-A: YES by CSGOptiX::render_snap
-
-::
-
-    const char* outpath = SEventConfig::OutPath(name, -1, ".jpg" );
-
 
 TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpticksResource::Get tokens not vice versa 
 

@@ -70,7 +70,6 @@ NLV=${NLV:-$nlv}
 script=cxr_overview
 export SCRIPT=${SCRIPT:-$script}
 
-export SCANNER="cxr_scan.sh"
 
 scan-emm-()
 {
@@ -90,6 +89,7 @@ scan-elv-()
 
 scan-emm()
 {
+    export SCAN=scan-emm
     local e 
     for e in $(scan-emm-) ; do 
         EMM=$e $DIR/$SCRIPT.sh $*
@@ -98,12 +98,14 @@ scan-emm()
 
 scan-elv()
 {
+    export SCAN=scan-elv
     local e 
     for e in $(scan-elv-) ; do 
         ELV=$e $DIR/$SCRIPT.sh $*
     done 
 }
 
-scan-elv
+#scan-elv
+scan-emm
 
 

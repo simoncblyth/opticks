@@ -97,9 +97,9 @@ stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM stamp $stamp version $version done" 
-export BOTLINE=" GEOM $GEOM RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
+export BOTLINE=" GEOM $GEOM RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCAN $SCAN "
 
-if [ -z "$SCANNER" ]; then 
+if [ -z "$SCAN" ]; then 
    vars="stamp version TOPLINE BOTLINE"
    for var in $vars ; do printf "%20s : %s \n" $var "${!var}" ; done
 fi

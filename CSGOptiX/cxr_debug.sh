@@ -35,7 +35,7 @@ stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_debug.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
-export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
+export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCAN $SCAN "
 
 
 source $OPTICKS_HOME/bin/geocache_hookup.sh

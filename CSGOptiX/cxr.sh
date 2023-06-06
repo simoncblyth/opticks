@@ -118,12 +118,22 @@ cd $LOGDIR
 
 export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$CVDLabel/$optix_version
 export OPTICKS_OUT_NAME=$MOI
-# envvars used by SEventConfig::OutPath 
-
+if [ -n "$SCAN" ]; then
+    OPTICKS_OUT_NAME=$OPTICKS_OUT_NAME/$SCAN
+fi 
 export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
 
 
-if [ -z "$SCANNER" ]; then 
+# SEventConfig::OutDir 
+#    $OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME  (should be same as BASE)
+# 
+# SEventConfig::OutPath
+#    SEventConfig::OutDir()/stem... 
+#
+
+
+
+if [ -z "$SCAN" ]; then 
 
    vars="CVD CUDA_VISIBLE_DEVICES EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
    for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
@@ -149,7 +159,7 @@ render()
    local log=$bin.log
    local cmd="$GDB $bin" 
 
-   if [ -z "$SCANNER" ]; then
+   if [ -z "$SCAN" ]; then
       which $bin
       pwd
       echo ==== $BASH_SOURCE $FUNCNAME : $cmd
@@ -162,7 +172,7 @@ render()
 
    printf "\n\n\nRC $rc\n\n\n" >> $log 
 
-   if [ -z "$SCANNER" ]; then
+   if [ -z "$SCAN" ]; then
        echo ==== $BASH_SOURCE $FUNCNAME : $cmd : rc $rc
    fi
  
