@@ -69,7 +69,7 @@ arg=${1:-$defarg}
 source $HOME/.opticks/GEOM/GEOM.sh  # exports GEOM envvar selecting geometry 
 
 escale=extent
-moi=-1
+moi=ALL       # formerly -1
 tmin=0.4
 eye=-0.6,0,0,1
 icam=0
@@ -96,7 +96,6 @@ emm=$emm_all
 elv=t
 export EMM=${EMM:-$emm}
 export ELV=${ELV:-$elv}
-
 ## CAUTION: EMM(SBit) and ELV(SBitSet) lingos similar, but not the same. TODO: unify them  
 
 export NAMEPREFIX=cxr_overview_emm_${EMM}_elv_${ELV}_moi_      # MOI gets appended by the executable

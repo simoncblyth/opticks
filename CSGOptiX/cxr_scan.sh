@@ -106,8 +106,9 @@ scan-elv()
     done 
 }
 
-#scan=scan-elv
-scan=scan-emm
+scan=scan-elv
+#scan=scan-emm
+unset SCAN
 export SCAN=${SCAN:-$scan}
 
 if [ "$scan" == "scan-emm" ]; then

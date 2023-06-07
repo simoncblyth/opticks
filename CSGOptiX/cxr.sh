@@ -114,7 +114,10 @@ export OPTICKS_RELDIR=${OPTICKS_RELDIR:-$reldir}
 # 2. remove the CSGOptiX pkg above the bin
 #   N[blyth@localhost opticks]$ mv CSGOptiX/CSGOptiXRenderTest GEOM/V1J008/
 
-export TMPDIR=/tmp/$USER/opticks/GEOM/$GEOM
+
+
+export PBAS=/tmp/$USER/opticks/  # NB TRAILING SLASH 
+export TMPDIR=${PBAS}GEOM/$GEOM
 export LOGDIR=$TMPDIR/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
@@ -126,7 +129,7 @@ if [ -n "$SCAN" ]; then
     OPTICKS_OUT_NAME=$OPTICKS_OUT_NAME/$SCAN
 fi 
 export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
-
+export PPFX=$BASE/${NAMEPREFIX}_${MOI}
 
 # SEventConfig::OutDir 
 #    $OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME  (should be same as BASE)
@@ -184,75 +187,6 @@ render()
 }
 
 
-relative_stem(){
-   local jpg=$1
-
-   # HMM:geocache is very old world   
-   local geocache=${OPTICKS_GEOCACHE_PREFIX:-$HOME/.opticks}/geocache/
-   local oktmp=/tmp/$USER/opticks/
-
-   local rel 
-   case $jpg in 
-      ${geocache}*)  rel=${jpg/$geocache/} ;;
-      ${oktmp}*)     rel=${jpg/$oktmp/} ;; 
-   esac 
-   rel=${rel/\.jpg}
-
-   echo $rel 
-}
-
-
-publish()
-{
-    : copy outputs from tmpdirs into the publication tree
-
-    source CSGOptiXRenderTest_OUTPUT_DIR.sh || return 1  
-    local outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
-
-    if [ -n "$outdir" ]; then 
-        ls -1rt `find $outdir -name '*.jpg' `
-        jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
-        echo $msg jpg $jpg 
-        ls -l $jpg
-
-        [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
-
-        if [ -n "$jpg" -a "$(uname)" == "Darwin" -a -n "$PUB" ]; then 
-
-            if [ "$PUB" == "1" ]; then 
-                ext=""    ## use PUB=1 to debug the paths 
-            else
-                ext="_${PUB}" 
-            fi 
-
-            rel=$(relative_stem $jpg)
-            s5p=/env/presentation/${rel}${ext}.jpg
-            pub=$HOME/simoncblyth.bitbucket.io$s5p
-
-            echo $msg jpg $jpg
-            echo $msg rel $rel
-            echo $msg ext $ext
-            echo $msg pub $pub
-            echo $msg s5p $s5p 1280px_720px 
-            mkdir -p $(dirname $pub)
-
-            if [ -f "$pub" ]; then 
-                echo $msg published path exists already : NOT COPYING : set PUB to an ext string to distinguish the name or more permanently arrange for a different path   
-            elif [ "$ext" == "" ]; then 
-                echo $msg skipping copy : to do the copy you must set PUB to some descriptive string rather than just using PUB=1
-            else
-                echo $msg copying jpg to pub 
-                cp $jpg $pub
-                echo $msg add s5p to s5_background_image.txt
-            fi 
-        fi 
-
-    else
-        echo $msg outdir not defined 
-    fi 
-}
-
-
 
 if [ "$arg" == "run" ]; then
 
@@ -266,9 +200,11 @@ elif [ "$arg" == "jstab" ]; then
 
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 
-elif [ "$arg" == "pub" ]; then 
+elif [ "$arg" == "pub" -o "$arg" == "list" ]; then 
 
-    publish 
+    echo PBAS $PBAS
+    echo PPFX $PPFX
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 
 elif [ "$arg" == "info" ]; then 
 

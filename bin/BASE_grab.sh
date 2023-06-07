@@ -71,5 +71,56 @@ if [ "${arg/jstab}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
 fi 
 
+if [ "${arg/pub}" != "$arg" -o "${arg/list}" != "$arg"  ]; then
 
+   echo $BASH_SOURCE pub PPFX $PPFX PBAS $PBAS
+
+   nbas=${#PBAS}       ## PBAS is the head of the paths to be removed eg /tmp/$USER/opticks/
+   npfx=${#PPFX}       ## PPFX is path prefix of the files of interest starting with PBAS
+   rpfx=${PPFX:$nbas}  ## PPFX with PBAS removed giving relative prefix 
+
+   echo $PBAS \# PBAS
+   echo $PPFX \# PPFX
+   echo $rpfx \# rpfx
+   echo $npfx \# npfx
+   echo $nbas \# nbas
+
+   if [ $nbas -eq 0 -o $npfx -eq 0 ]; then  
+       echo $BASH_SOURCE : missing PBAS $PBAS or PPFX $PPFX
+   else
+       paths=($(ls -1t ${PPFX}*))
+
+       for path in ${paths[*]} ; do 
+           ext=${path:$npfx}    ## ext is the path beyond ppfx eg: .jpg .json .log .npy _meta.txt 
+           rel=${path:$nbas}
+           path2=${PBAS}${rpfx}${ext}
+           if [ "$path2" == "$path" ]; then 
+               match=Y
+           else
+               match=N
+           fi
+           printf "%-100s : %10s : %s \n" "$rel" "$ext" "$match"  
+
+           if [ "${arg/pub}" != "$arg" -a "$ext" == ".jpg" ]; then 
+               s5r=${rpfx}_${PUB:-MISSING_PUB}${ext}
+               s5p=/env/presentation/${s5r}
+               s5d=$(dirname $s5p)
+
+               cmds=("mkdir -p $s5d"  "cp $path $s5p" "echo s5p $s5r 1280px_720px")
+               for cmd in "${cmds[@]}" ; do echo "$cmd" ; done 
+
+               if [ ${#PUB} -gt 1  ]; then
+                   for cmd in "${cmds[@]}" 
+                   do 
+                       echo "$cmd"
+                       eval "$cmd"
+                       [ $? -ne 0 ] && echo $BASH_SOURCE ERROR FROM cmd "$cmd" && exit 1  
+                   done 
+               else
+                   echo rerun with PUB defined to eval the above commands 
+               fi
+           fi
+       done  
+   fi 
+fi
 

@@ -207,6 +207,7 @@ escale=extent
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 emm=t0           # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
+elv=t
 zoom=1
 eye=-1,-1,-1,1
 tmin=0.4
@@ -216,6 +217,9 @@ quality=90
 export ESCALE=${ESCALE:-$escale}
 export MOI=${MOI:-$moi}
 export EMM=${EMM:-$emm}
+export ELV=${ELV:-$elv}
+## CAUTION: EMM(SBit) and ELV(SBitSet) lingos similar, but not the same. TODO: unify them  
+
 export ZOOM=${ZOOM:-$zoom}
 export EYE=${EYE:-$eye}
 export TMIN=${TMIN:-$tmin} 
@@ -224,7 +228,7 @@ export ICAM=${ICAM:-$icam}
 export QUALITY=${QUALITY:-$quality} 
 
 #sla? is solid label 
-nameprefix=cxr_view_${sla}_
+nameprefix=cxr_view_emm_${EMM}_elv_${ELV}
 
 if [ -n "$EYE" ]; then 
    nameprefix=${nameprefix}_eye_${EYE}_
@@ -241,12 +245,12 @@ fi
 
 
 export NAMEPREFIX=$nameprefix               # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
-export OPTICKS_RELDIR=cam_${CAM}_${EMM}
+export OPTICKS_RELDIR=cam_${CAM}_${EMM}   # ignored ?
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
-export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE LOOK $LOOK UP $UP      EMM $EMM  $stamp  $version " 
+export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE LOOK $LOOK UP $UP      EMM $EMM ELV $ELV  $stamp  $version " 
 
 source $DIR/cxr.sh $arg     
 
