@@ -3007,12 +3007,19 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
 
 std::string SEvt::descInputPhoton() const 
 {
+    const char* ip = SEventConfig::InputPhoton() ; 
+    const char* ipf = SEventConfig::InputPhotonFrame() ; 
+    int c1 = 35 ; 
+
+    const char* div = " : " ; 
     std::stringstream ss ; 
     ss << "SEvt::descInputPhoton" << std::endl ;
-    ss << std::setw(30) << " hasInputPhoton " << ( hasInputPhoton() ? "YES" : "NO " ) << std::endl ;  
-    ss << std::setw(30) << " input_photon "   << ( input_photon ? input_photon->sstr() : "-" )     << std::endl ;  
-    ss << std::setw(30) << " input_photon.lpath " << ( input_photon ? input_photon->get_lpath() : "--" ) << std::endl ; 
-    ss << std::setw(30) << " hasInputPhotonTransformed " << ( hasInputPhotonTransformed() ? "YES" : "NO " ) ;  
+    ss << std::setw(c1) << " SEventConfig::InputPhoton "      << div << ( ip  ? ip  : "-" ) << std::endl ; 
+    ss << std::setw(c1) << " SEventConfig::InputPhotonFrame " << div << ( ipf ? ipf : "-" ) << std::endl ; 
+    ss << std::setw(c1) << " hasInputPhoton " << div << ( hasInputPhoton() ? "YES" : "NO " ) << std::endl ;  
+    ss << std::setw(c1) << " input_photon "   << div << ( input_photon ? input_photon->sstr() : "-" )     << std::endl ;  
+    ss << std::setw(c1) << " input_photon.lpath " << div << ( input_photon ? input_photon->get_lpath() : "--" ) << std::endl ; 
+    ss << std::setw(c1) << " hasInputPhotonTransformed " << div << ( hasInputPhotonTransformed() ? "YES" : "NO " ) ;  
     std::string s = ss.str(); 
     return s ; 
 }
