@@ -66,8 +66,9 @@ NMM=${NMM:-$nmm}   # geometry specific
 NLV=${NLV:-$nlv}
 
 
-#script=cxr_view
-script=cxr_overview
+script=cxr_view
+#script=cxr_overview
+unset SCRIPT
 export SCRIPT=${SCRIPT:-$script}
 
 
@@ -75,18 +76,18 @@ scan-emm-()
 {
     #echo "t0"        # ALL 
     #for e in $(seq 0 $NMM) ; do echo  "$e," ; done    # enabling each solid one-by-one
-    #for e in $(seq 0 $NMM) ; do echo "t$e," ; done    # disabling each solid one-by-one
+    for e in $(seq 0 $NMM) ; do echo "t$e," ; done    # disabling each solid one-by-one
     #for e in $(seq 0 $NMM) ; do echo "t8,$e" ; done   # disabling 8 and each solid one by-by-one
     #echo "1,2,3,4"   # ONLY PMTs
 
-    for e in $(seq 0 $NMM) ; do echo "t0,$e" ; done   # disabling 0 and each solid one by-by-one
+    #for e in $(seq 0 $NMM) ; do echo "t0,$e" ; done   # disabling 0 and each solid one by-by-one
 }
 
 scan-elv-()
 {
     #for e in $(seq 0 $NLV) ; do echo "t103,$e" ; done  # disabling slowest midx:103 solidXJfixture and then each midx one-by-one
-    #for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
-    for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    #for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
 scan-emm()

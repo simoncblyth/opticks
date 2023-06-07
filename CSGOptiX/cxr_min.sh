@@ -7,6 +7,7 @@ See also:
 
 cxr_grab.sh 
    rsync pull from workstation to laptop 
+   NOT USING ANYMORE : NOW DO grab HANDLING IN EACH SCRIPT TO CUSTOMIZE DIRS
      
 sysrap/tests/SGLM_set_frame_test.sh 
    fast standalone SGLM::set_frame cycling using persisted sframe 
@@ -48,7 +49,6 @@ arg=${1:-$defarg}
 
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
-pkg=CSGOptiX
 bin=CSGOptiXRdrTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
@@ -98,9 +98,6 @@ vars="GEOM TMIN LOGDIR OPTICKS_HASH TOPLINE CVD CUDA_VISIBLE_DEVICES"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 
-
-
-
 if [ "${arg/run}" != "$arg" ]; then
 
    if [ -f "$LOG" ]; then 
@@ -110,7 +107,6 @@ if [ "${arg/run}" != "$arg" ]; then
    $bin
 
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-   # HMM: rename the log using the hash or some input var ? 
 fi 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -121,7 +117,6 @@ fi
 if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 fi 
-
 
 
 
