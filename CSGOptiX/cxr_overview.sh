@@ -25,9 +25,14 @@ cxr_overview.sh
    epsilon:~ blyth$ cp /tmp/time_ordered_jpg.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_jpg.txt
 
 
-   SCAN=scan-emm CVD=1 ./cxr_overview.sh  
+   SCAN=scan-emm CVD=1 ./cxr_overview.sh      ## from laptop this grabs from workstation 
 
+   SCAN=scan-emm SELECTSPEC=all SELECTMODE=all CVD=1 SNAP_ARGS="--jpg --out --outpath=/tmp/emm_jpg.txt" ./cxr_overview.sh jstab
+   SCAN=scan-emm SELECTSPEC=all SELECTMODE=all CVD=1 SNAP_ARGS="--txt --out --outpath=/tmp/emm_txt.txt" ./cxr_overview.sh jstab
 
+   open -n $(cat /tmp/emm_jpg.txt)    ## to avoid Preview.app splitting into multiple windows exit Preview.app first 
+   vim -R /tmp/emm_txt.txt
+   cp /tmp/emm_txt.txt ~/j/issues/cxr_scan_cxr_overview_scan_emm.txt 
 
 
 
