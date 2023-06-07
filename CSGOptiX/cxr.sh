@@ -54,7 +54,7 @@ pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
 # defaults 
-cvd=0            # default GPU to use
+cvd=1            # default GPU to use  0:TITAN V 1:TITAN RTX
 emm=t0           # what to include in the GPU geometry : default to t0 ie ~0 which means everything 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
@@ -109,14 +109,18 @@ reldir=top_${TOP}_
 export OPTICKS_RELDIR=${OPTICKS_RELDIR:-$reldir}  
 ## TODO: the RELDIR is being ignored 
 
+# changed layout
+# 1. add GEOM/$GEOM at top 
+# 2. remove the CSGOptiX pkg above the bin
+#   N[blyth@localhost opticks]$ mv CSGOptiX/CSGOptiXRenderTest GEOM/V1J008/
 
-export TMPDIR=/tmp/$USER/opticks
-export LOGDIR=$TMPDIR/$pkg/$bin
+export TMPDIR=/tmp/$USER/opticks/GEOM/$GEOM
+export LOGDIR=$TMPDIR/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
 
-export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$CVDLabel/$optix_version
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$bin/$CVDLabel/$optix_version
 export OPTICKS_OUT_NAME=$MOI
 if [ -n "$SCAN" ]; then
     OPTICKS_OUT_NAME=$OPTICKS_OUT_NAME/$SCAN

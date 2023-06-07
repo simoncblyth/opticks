@@ -19,9 +19,58 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
+GEOM_TEMPLATE(){ cat << EOT
+#!/bin/bash -l 
+notes(){ cat << EON
+~/.opticks/GEOM/GEOM.sh
+=========================
+
+* THIS IS NOT UNDER SOURCE CONTROL BECAUSE IT IDENTIFIES A SPECIFIC GEOM 
+* NB keeping this as minimal as possible 
+* JUST EXPORT THE DEFAULT GEOM : NOTHING MORE 
+* any associated utility functions such as scp/grab/vi 
+  should be kept under source control in the opticks.bash GEOM bash function 
+
+EON
+}
+
+#geom=V0J008
+#geom=V1J008
+geom=V1J009
+export GEOM=\${GEOM:-\$geom}
+#
+EOT
+}
+
 GEOM(){ 
-  : opticks/opticks.bash
-  vi ~/.opticks/GEOM/GEOM.sh ; 
+  : opticks/opticks.bash GEOM vi/grab/scp
+
+  local script=.opticks/GEOM/GEOM.sh 
+ 
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script 
+     GEOM_TEMPLATE > $HOME/$script
+  fi 
+
+  source $HOME/$script 
+  base=.opticks/GEOM/$GEOM
+
+  local defarg="vi"
+  local arg=${1:-$defarg} 
+
+  if [ "$arg" == "vi" ]; then 
+     cmd="vi $HOME/$script"  
+  elif [ "$arg" == "grab" ]; then  
+     echo $BASH_SOURCE : $arg : rsync GEOM $GEOM base $base
+     source $OPTICKS_HOME/bin/rsync.sh $base
+  elif [ "$arg" == "scp" ]; then  
+     cmd="scp $HOME/$script P:$script"
+  else
+     cmd="echo expecting arg to be one of vi/grab/scp not $arg" 
+  fi 
+  echo $cmd
+  eval $cmd
+
 }
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
