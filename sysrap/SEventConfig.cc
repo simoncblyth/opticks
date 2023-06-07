@@ -18,6 +18,7 @@
 
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ; 
 
+int         SEventConfig::_IntegrationModeDefault = -1 ;
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
@@ -57,7 +58,7 @@ const char* SEventConfig::_InputPhotonDefault = nullptr ;
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ; 
 
 
-
+int         SEventConfig::_IntegrationMode = SSys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
 const char* SEventConfig::_EventMode = SSys::getenvvar(kEventMode, _EventModeDefault ); 
 int SEventConfig::_RunningMode = SRM::Type(SSys::getenvvar(kRunningMode, _RunningModeDefault)); 
 const char* SEventConfig::_G4StateSpec  = SSys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
@@ -88,6 +89,7 @@ const char* SEventConfig::_InputPhoton = SSys::getenvvar(kInputPhoton, _InputPho
 const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
 
 
+int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
 const char* SEventConfig::EventMode(){ return _EventMode ; }
 
 
@@ -157,6 +159,7 @@ const char* SEventConfig::StandardFullDebug = "StandardFullDebug" ;
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 
+void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
 void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
 void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; Check() ; }
@@ -281,6 +284,8 @@ const int SEventConfig::LIMIT = 32 ;
 
 void SEventConfig::Check()
 {
+   assert( _IntegrationMode >= -1 && _IntegrationMode <= 3 ); 
+
    assert( _MaxBounce >  0 && _MaxBounce <  LIMIT ) ;  
    assert( _MaxRecord >= 0 && _MaxRecord <= LIMIT ) ; 
    assert( _MaxRec    >= 0 && _MaxRec    <= LIMIT ) ; 
@@ -296,6 +301,9 @@ std::string SEventConfig::Desc()
 {
     std::stringstream ss ; 
     ss << "SEventConfig::Desc" << std::endl 
+       << std::setw(25) << kIntegrationMode
+       << std::setw(20) << " IntegrationMode " << " : " << IntegrationMode() 
+       << std::endl 
        << std::setw(25) << kEventMode
        << std::setw(20) << " EventMode " << " : " << EventMode() 
        << std::endl 

@@ -77,6 +77,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
 
+    static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
     static constexpr const char* kEventMode = "OPTICKS_EVENT_MODE" ; 
     static constexpr const char* kRunningMode = "OPTICKS_RUNNING_MODE" ; 
     static constexpr const char* kG4StateSpec = "OPTICKS_G4STATE_SPEC" ; 
@@ -106,6 +107,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
 
 
+    static int         IntegrationMode(); 
     static const char* EventMode(); 
 
     static int         RunningMode(); 
@@ -155,6 +157,7 @@ struct SYSRAP_API SEventConfig
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
 
+    static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State 
     static void SetG4StateSpec(const char* spec); 
@@ -192,6 +195,7 @@ struct SYSRAP_API SEventConfig
     static void SetCompMaskAuto(); 
     static unsigned CompMaskAuto() ; 
 
+    static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
     static const char* _RunningModeDefault ; 
     static const char* _G4StateSpecDefault ; 
@@ -223,6 +227,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonFrameDefault ; 
 
 
+    static int         _IntegrationMode ; 
     static const char* _EventMode ; 
     static int         _RunningMode ; 
     static const char* _G4StateSpec ; 

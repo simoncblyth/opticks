@@ -3014,6 +3014,7 @@ std::string SEvt::descInputPhoton() const
     const char* div = " : " ; 
     std::stringstream ss ; 
     ss << "SEvt::descInputPhoton" << std::endl ;
+    ss << std::setw(c1) << " SEventConfig::IntegrationMode "  << div << SEventConfig::IntegrationMode() << std::endl ; 
     ss << std::setw(c1) << " SEventConfig::InputPhoton "      << div << ( ip  ? ip  : "-" ) << std::endl ; 
     ss << std::setw(c1) << " SEventConfig::InputPhotonFrame " << div << ( ipf ? ipf : "-" ) << std::endl ; 
     ss << std::setw(c1) << " hasInputPhoton " << div << ( hasInputPhoton() ? "YES" : "NO " ) << std::endl ;  
