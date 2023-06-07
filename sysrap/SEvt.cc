@@ -2340,7 +2340,6 @@ std::string SEvt::Brief() // static
     ss << "SEvt::Brief " 
        << " SEvt::Exists " << ( SEvt::Exists() ? "Y" : "N" )
        << " INSTANCE " << ( INSTANCE ? INSTANCE->brief() : "-" ) 
-       << std::endl 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -2692,6 +2691,7 @@ void SEvt::saveFrame(const char* dir) const
     LOG(LEVEL) << "] dir " << dir ; 
 }
 
+
 std::string SEvt::descComponent() const 
 {
     const NP* genstep  = fold->get(SComp::Name(SCOMP_GENSTEP)) ; 
@@ -3005,6 +3005,24 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
     return s ; 
 }
 
+std::string SEvt::descInputPhoton() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt::descInputPhoton" << std::endl ;
+    ss << std::setw(30) << " hasInputPhoton " << ( hasInputPhoton() ? "YES" : "NO " ) << std::endl ;  
+    ss << std::setw(30) << " input_photon "   << ( input_photon ? input_photon->sstr() : "-" )     << std::endl ;  
+    ss << std::setw(30) << " input_photon.lpath " << ( input_photon ? input_photon->get_lpath() : "--" ) << std::endl ; 
+    ss << std::setw(30) << " hasInputPhotonTransformed " << ( hasInputPhotonTransformed() ? "YES" : "NO " ) ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
+std::string SEvt::DescInputPhoton() // static
+{
+    return INSTANCE ? INSTANCE->descInputPhoton() : "-" ; 
+}
+
+
+
 std::string SEvt::descFull(unsigned max_print) const
 {
     std::stringstream ss ; 
@@ -3013,6 +3031,7 @@ std::string SEvt::descFull(unsigned max_print) const
     ss << descDir() << std::endl ;  
     ss << descNum() << std::endl ; 
     ss << descComponent() << std::endl ; 
+    ss << descInputPhoton() << std::endl ; 
 
     ss << descPhoton(max_print) << std::endl ; 
     ss << descLocalPhoton(max_print) << std::endl ; 

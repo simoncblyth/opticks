@@ -454,6 +454,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descPhoton(unsigned max_print=10) const ; 
     std::string descLocalPhoton(unsigned max_print=10) const ; 
     std::string descFramePhoton(unsigned max_print=10) const ; 
+    std::string descInputPhoton() const ; 
+    static std::string DescInputPhoton() ; 
     std::string descFull(unsigned max_print=10) const ; 
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 
