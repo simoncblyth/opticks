@@ -27,7 +27,7 @@ class Cat(object):
         self.dupes = False        
 
     def _set_selection(self, q):
-        if len(q) == 0: return
+        if len(q) == 0 or q == "ALL": return
         self._selection = map(int, q.split(","))
     def _get_selection(self):
         return self._selection

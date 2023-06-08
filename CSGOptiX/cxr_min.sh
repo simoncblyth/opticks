@@ -60,7 +60,9 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to
 #moi=NNVT:0:0
 #moi=NNVT:0:50
 #moi=NNVT:0:1000
-moi=PMT_20inch_veto:0:1000
+#moi=PMT_20inch_veto:0:1000
+moi=sChimneyAcrylic 
+
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
@@ -70,13 +72,16 @@ eye=-1,-1,3
 
 zoom=1
 tmin=0.5
+icam=0
 
 #escale=asis
 escale=extent
 
 case $moi in 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
-   NNVT:0:1000) eye=1,0,5 ; zoom=2 ;; 
+   NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
+   sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
+   NEW_sChimneyAcrylic) eye=-30,0,5 ; tmin=25 ; icam=1 ;; 
 esac
 
 export MOI=${MOI:-$moi}
@@ -84,6 +89,7 @@ export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
 export ZOOM=${ZOOM:-$zoom}
 export TMIN=${TMIN:-$tmin}
+export ICAM=${ICAM:-$icam}
 
 nameprefix=cxr_min_
 nameprefix=${nameprefix}_eye_${EYE}_
@@ -93,7 +99,7 @@ nameprefix=${nameprefix}_tmin_${TMIN}_
 # moi appended within CSGOptiX::render_snap ?
 export NAMEPREFIX=$nameprefix
 
-topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM ~/opticks/CSGOptiX/cxr_min.sh " 
+topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM ICAM=$ICAM ~/opticks/CSGOptiX/cxr_min.sh " 
 export TOPLINE=${TOPLINE:-$topline}
 
 #export CSGFoundry=INFO 
@@ -105,15 +111,13 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 export PBAS=/tmp/$USER/opticks/   # note trailing slash 
 export BASE=${PBAS}GEOM/$GEOM/$bin
-export PPFX=${BASE}/${NAMEPREFIX}_${MOI}
-
 export LOGDIR=$BASE
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR BASE PBAS PPFX NAMEPREFIX OPTICKS_HASH TOPLINE CVD CUDA_VISIBLE_DEVICES"
+vars="GEOM TMIN LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE CVD CUDA_VISIBLE_DEVICES"
 #for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 
@@ -137,8 +141,6 @@ if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "gra
 fi 
 
 if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-    echo PBAS $PBAS
-    echo PPFX $PPFX
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 fi 
 

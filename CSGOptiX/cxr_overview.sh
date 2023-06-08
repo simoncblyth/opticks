@@ -3,6 +3,15 @@ usage(){ cat << EOU
 cxr_overview.sh
 ================
 
+For some views its good to remove large container volumes::
+
+    epsilon:CSGOptiX blyth$ ~/opticks/bin/lvn.sh 142,143,94
+    /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/meshname.txt
+    142  143  sBottomRock
+    143  144  sWorld
+    94   95   sTarget
+
+
 ::
 
    GDB=gdb    ./cxr_overview.sh 

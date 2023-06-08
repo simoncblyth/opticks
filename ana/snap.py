@@ -299,7 +299,6 @@ class SnapScan(object):
         """
         :param globptn: eg 
         """
-
         mm,lv = self.GEOMInfo()
         self.mm = mm
         self.lv = lv
@@ -341,9 +340,6 @@ class SnapScan(object):
         pass  
         self.candle = s_candle 
 
-      
-
-
     def label(self, enabled):
         return self.lv.label(enabled) if self.selectmode == "elv" else self.mm.label(enabled)
 
@@ -358,7 +354,7 @@ class SnapScan(object):
         t = self.table()
 
         labels = Snap.LABELS 
-        labels[-1] += " " + self.cfdigest[:8]
+        #labels[-1] += " " + self.cfdigest[:8]
 
         rst = RSTTable.Render(t, labels, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
         return rst 

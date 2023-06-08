@@ -221,7 +221,6 @@ export ELV=${ELV:-$elv}
 export ZOOM=${ZOOM:-$zoom}
 export EYE=${EYE:-$eye}
 export TMIN=${TMIN:-$tmin} 
-#export CAM=${CAM:-$cam}    ## getting SCAM error on TOPLINE
 export ICAM=${ICAM:-$icam}
 export QUALITY=${QUALITY:-$quality} 
 

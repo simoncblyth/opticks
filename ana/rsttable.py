@@ -157,7 +157,8 @@ class RSTTable(object):
          lines.append(self.divider(self.wids, "="))
          for i in range(nrow):
              line = rfmt % tuple(self.t[i])
-             key = self.t[i,0].strip()
+             #key = self.t[i,0].strip()
+             key = self.t[i,0]  # now an int ?
              color = self.colormap.get(key, None)  if hasattr(self, "colormap") else None
              lines.append(self.color_line(line, color))
              lines.append(self.divider(self.wids,"-"))   

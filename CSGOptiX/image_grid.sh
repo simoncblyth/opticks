@@ -46,7 +46,16 @@ make_image_grid()
 }
 
 
-make_image_grid "image_grid_elv_scan" /tmp/ana_snap.txt 
+
+jpglist=$HOME/j/issues/scan_elv_jpg_select.txt
+JPGLIST=${JPGLIST:-$jpglist}
+GRIDSTEM=$(basename $JPGLIST)
+
+if [ -f "$JPGLIST" ]; then 
+    make_image_grid "$GRIDSTEM" $JPGLIST
+else
+    echo $BASH_SOURCE : MISSING REQUIRED JPGLIST $JPGLIST 
+fi 
 
 
 

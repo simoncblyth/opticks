@@ -21,35 +21,6 @@ if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $BASE
 fi 
 
-if [ "${arg/open}" != "$arg" ]; then 
-    echo $BASH_SOURCE open : list jpg/json/log from BASE $BASE in reverse time order
-
-    jpgs=($(ls -1t $(find $BASE -name '*.jpg')))
-    jsons=($(ls -1t $(find $BASE -name '*.json')))
-    logs=($(ls -1t $(find $BASE -name '*.log')))
-
-    for jpg in ${jpgs[*]}   ; do echo $jpg  ; done  
-    for json in ${jsons[*]} ; do echo $json ; done  
-    for log in ${logs[*]}   ; do echo $log ; done  
-
-    jpg0="${jpgs[0]}"
-    if [ -f "$jpg0" ]; then 
-        open $jpg0
-    else
-        echo $BASH_SOURCE : ERROR no jpg0 $jpg0 in BASE $BASE 
-    fi 
-
-    json0="${jsons[0]}"
-    if [ -f "$json0" ]; then 
-        python -c "import json ; js=json.load(open(\"$json0\")) ; print(json.dumps(js, indent=4))" 
-    else
-        echo $BASH_SOURCE : ERROR no json0 $json0 in BASE $BASE 
-    fi 
-fi 
-
-
-
-
 if [ "${arg/clean}" != "$arg" ]; then 
     echo $BASH_SOURCE clean : delete jpg/json/log found in BASE $BASE
     files=$(find $BASE -name '*.jpg' -o -name '*.json' -o -name '*.log')
@@ -57,7 +28,6 @@ if [ "${arg/clean}" != "$arg" ]; then
        echo file $file 
     done 
 fi 
-
 
 if [ "${arg/jstab}" != "$arg" ]; then 
 
@@ -68,41 +38,100 @@ if [ "${arg/jstab}" != "$arg" ]; then
     globptn="$BASE/cxr_overview*elv*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
-    ${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+    ${IPYTHON:-ipython} --pdb  $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
 fi 
+
+
+
+
+if [ "${arg/open}" != "$arg" ]; then 
+    echo $BASH_SOURCE open : list jpg/json/log from BASE $BASE in reverse time order
+
+    jpgs=($(ls -1t $(find $BASE -name '*.jpg')))
+    jsons=($(ls -1t $(find $BASE -name '*.json')))
+    logs=($(ls -1t $(find $BASE -name '*.log')))
+
+    if [ -n "$VERBOSE" ]; then 
+        echo $BASH_SOURCE open : jpg 
+        for jpg in ${jpgs[*]}   ; do echo $jpg  ; done  
+
+        #echo $BASH_SOURCE open : json 
+        #for json in ${jsons[*]} ; do echo $json ; done  
+
+        #echo $BASH_SOURCE open : log
+        #for log in ${logs[*]}   ; do echo $log ; done  
+    fi 
+
+    item=0
+    ITEM=${ITEM:-$item}
+
+    if [ "$ITEM" == "ALL" ]; then 
+        echo $BASH_SOURCE open : ITEM $ITEM 
+        open -n ${jpgs[*]}
+    else
+        jpgx="${jpgs[$ITEM]}"
+        if [ -f "$jpgx" ]; then 
+            echo $BASH_SOURCE open : jpgx $jpgx ITEM $ITEM
+            open $jpgx
+        else
+            echo $BASH_SOURCE : ERROR no jpgx $jpgx ITEM $ITEM in BASE $BASE 
+        fi 
+
+        echo $BASH_SOURCE open : jsonx $jsonx ITEM $ITEM
+        jsonx="${jsons[$ITEM]}"
+        if [ -f "$jsonx" ]; then 
+            python -c "import json ; js=json.load(open(\"$jsonx\")) ; print(json.dumps(js, indent=4))" 
+        else
+            echo $BASH_SOURCE : ERROR no jsonx $jsonx in BASE $BASE ITEM $ITEM 
+        fi 
+    fi
+fi 
+
 
 if [ "${arg/pub}" != "$arg" -o "${arg/list}" != "$arg"  ]; then
 
-   echo $BASH_SOURCE pub PPFX $PPFX PBAS $PBAS
+   PBAS=${BASE/GEOM*}  # portion of BASE prior to GEOM eg "/tmp/$USER/opticks/"  
+   nbas=${#PBAS}    
+   RBAS=${BASE:$nbas}  # BASE with PBAS removed giving relative prefix starting with GEOM
+   echo $BASH_SOURCE pub BASE $BASE PBAS $PBAS nbas $nbas
 
-   nbas=${#PBAS}       ## PBAS is the head of the paths to be removed eg /tmp/$USER/opticks/
-   npfx=${#PPFX}       ## PPFX is path prefix of the files of interest starting with PBAS
-   rpfx=${PPFX:$nbas}  ## PPFX with PBAS removed giving relative prefix 
+   echo $BASE \#BASE
+   echo $PBAS \#PBAS
+   echo $RBAS \#RBAS
+   echo $nbas \#nbas
 
-   echo $PBAS \# PBAS
-   echo $PPFX \# PPFX
-   echo $rpfx \# rpfx
-   echo $npfx \# npfx
-   echo $nbas \# nbas
-
-   if [ $nbas -eq 0 -o $npfx -eq 0 ]; then  
-       echo $BASH_SOURCE : missing PBAS $PBAS or PPFX $PPFX
+   if [ $nbas -eq 0 ]; then  
+       echo $BASH_SOURCE : ERROR UNEXPECTED nbas $nbas FOR BASE $BASE PBAS $PBAS 
    else
-       paths=($(ls -1t ${PPFX}*))
+       allpaths=($(ls -1t ${BASE}/*.jpg))
 
-       for path in ${paths[*]} ; do 
-           ext=${path:$npfx}    ## ext is the path beyond ppfx eg: .jpg .json .log .npy _meta.txt 
+       if [ "$ITEM" == "ALL" ]; then 
+           paths=(${allpaths[@]})
+       else
+           paths=(${allpaths[$ITEM]})
+       fi  
+
+       idx=0 
+       for path in ${paths[@]} ; do 
+           nam=$(basename $path)   
+           stem=${nam//.jpg*}
+           ext=.jpg
            rel=${path:$nbas}
-           path2=${PBAS}${rpfx}${ext}
+           path2=${PBAS}${RBAS}/${stem}${ext}
            if [ "$path2" == "$path" ]; then 
                match=Y
            else
                match=N
+               echo pp $path
+               echo p2 $path2
            fi
-           printf "%-100s : %10s : %s \n" "$rel" "$ext" "$match"  
+           printf "%3d : %s : %-100s \n" "$idx" "$match" "$path" 
 
-           if [ "${arg/pub}" != "$arg" -a "$ext" == ".jpg" ]; then 
-               s5r=${rpfx}_${PUB:-MISSING_PUB}${ext}
+           idx=$(( $idx + 1 ))
+
+
+           if [ "${arg/pub}" != "$arg" ]; then 
+               s5r=${RBAS}/${stem}_${PUB:-MISSING_PUB}${ext}
                s5p=/env/presentation/${s5r}
                s5d=$(dirname $s5p)
 
@@ -121,6 +150,7 @@ if [ "${arg/pub}" != "$arg" -o "${arg/list}" != "$arg"  ]; then
                fi
            fi
        done  
+       echo select with ITEM=0 ITEM=1 ... OR ITEM=ALL
    fi 
 fi
 

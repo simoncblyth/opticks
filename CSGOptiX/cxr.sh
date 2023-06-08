@@ -129,7 +129,7 @@ if [ -n "$SCAN" ]; then
     OPTICKS_OUT_NAME=$OPTICKS_OUT_NAME/$SCAN
 fi 
 export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
-export PPFX=$BASE/${NAMEPREFIX}_${MOI}
+
 
 # SEventConfig::OutDir 
 #    $OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME  (should be same as BASE)
@@ -202,8 +202,6 @@ elif [ "$arg" == "jstab" ]; then
 
 elif [ "$arg" == "pub" -o "$arg" == "list" ]; then 
 
-    echo PBAS $PBAS
-    echo PPFX $PPFX
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 
 elif [ "$arg" == "info" ]; then 
