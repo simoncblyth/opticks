@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 image_grid.sh
 ===============

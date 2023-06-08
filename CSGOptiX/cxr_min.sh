@@ -75,7 +75,7 @@ tmin=0.5
 escale=extent
 
 case $moi in 
-   PMT_20inch_veto:0:1000) eye=-1,-1,5 ; tmin=0.4  ;;
+   PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;; 
 esac
 
@@ -96,7 +96,7 @@ export NAMEPREFIX=$nameprefix
 topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM ~/opticks/CSGOptiX/cxr_min.sh " 
 export TOPLINE=${TOPLINE:-$topline}
 
-export CSGFoundry=INFO 
+#export CSGFoundry=INFO 
 #export CSGOptiX=INFO
 # as a file is written in pwd need to cd 
 

@@ -8,32 +8,35 @@ cxr_overview.sh
    GDB=gdb    ./cxr_overview.sh 
    GDB=lldb__ ./cxr_overview.sh 
 
+On workstation, make renders::
+
    EMM=0, ./cxr_overview.sh 
    EMM=1, ./cxr_overview.sh 
 
+From laptop, grab renders and metadata from workstation::
+
+   SCAN=scan-emm CVD=1 ./cxr_overview.sh  
+   SCAN=scan-elv CVD=1 ./cxr_overview.sh 
+
+On laptop, create time ordered lists of jpgs and txt tables::
+
    CVD=1 ./cxr_overview.sh jstab
 
-   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 ./cxr_overview.sh jstab 
+   CVD=1 SELECTSPEC=all SCAN=scan-elv SNAP_LIMIT=512 SNAP_ARGS="--jpg --out --outpath=/tmp/elv_jpg.txt" ./cxr_overview.sh jstab
+   CVD=1 SELECTSPEC=all SCAN=scan-elv SNAP_LIMIT=512 SNAP_ARGS="--txt --out --outpath=/tmp/elv_txt.txt" ./cxr_overview.sh jstab
 
-   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 SNAP_ARGS="--jpg --out --outpath=/tmp/time_ordered_jpg.txt" ./cxr_overview.sh jstab
-   CVD=1 SELECTSPEC=all SNAP_LIMIT=512 SNAP_ARGS="--txt --out --outpath=/tmp/time_ordered_txt.txt" ./cxr_overview.sh jstab
-
-   open -n $(cat /tmp/time_ordered_jpg.txt)   ## open all jpg in time order 
-   vim -R /tmp/time_ordered_txt.txt           ## view txt table to see the ELV exclusion names
-
-   epsilon:~ blyth$ cp /tmp/time_ordered_txt.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_txt.txt
-   epsilon:~ blyth$ cp /tmp/time_ordered_jpg.txt ~/j/issues/cxr_scan_cxr_overview_time_ordered_jpg.txt
+   open -n $(cat /tmp/elv_jpg.txt)   ## open all jpg in time order 
+   vim -R /tmp/elv_txt.txt           ## view txt table to see the ELV exclusion names
 
 
-   SCAN=scan-emm CVD=1 ./cxr_overview.sh      ## from laptop this grabs from workstation 
-   SCAN=scan-elv CVD=1 ./cxr_overview.sh      ## from laptop this grabs from workstation 
-
-   SCAN=scan-emm SELECTSPEC=all SELECTMODE=all CVD=1 SNAP_ARGS="--jpg --out --outpath=/tmp/emm_jpg.txt" ./cxr_overview.sh jstab
-   SCAN=scan-emm SELECTSPEC=all SELECTMODE=all CVD=1 SNAP_ARGS="--txt --out --outpath=/tmp/emm_txt.txt" ./cxr_overview.sh jstab
+   CVD=1 SELECTSPEC=all SELECTMODE=all SCAN=scan-emm SNAP_ARGS="--jpg --out --outpath=/tmp/emm_jpg.txt" ./cxr_overview.sh jstab
+   CVD=1 SELECTSPEC=all SELECTMODE=all SCAN=scan-emm SNAP_ARGS="--txt --out --outpath=/tmp/emm_txt.txt" ./cxr_overview.sh jstab
 
    open -n $(cat /tmp/emm_jpg.txt)    ## to avoid Preview.app splitting into multiple windows exit Preview.app first 
    vim -R /tmp/emm_txt.txt
    cp /tmp/emm_txt.txt ~/j/issues/cxr_scan_cxr_overview_scan_emm.txt 
+
+
 
 
 

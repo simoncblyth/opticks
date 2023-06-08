@@ -15,8 +15,6 @@ usage(){ cat << EOU
 
 
 
-
-
    MOI=sWorld EYE=0,0.6,0.4 TMIN=0.4 ./cxr_view.sh
 
 
