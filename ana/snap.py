@@ -409,7 +409,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
     parser.add_argument(  "--selectmode",  default=edef("SELECTMODE","elv"), help="SnapScan selection mode" )
     parser.add_argument(  "--selectspec",  default=edef("SELECTSPEC","not_elv_t"), help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
-    parser.add_argument(  "--candle",  default="t", help="Enabled setting to use as the reference candle for relative column in the table" )
+    parser.add_argument(  "--candle",  default=edef("CANDLE","t"), help="Enabled setting to use as the reference candle for relative column in the table" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
