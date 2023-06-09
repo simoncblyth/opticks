@@ -335,13 +335,15 @@ The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME
 it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
 
 This setupFrame was formerly called from G4CXOpticks::simulate and G4CXOpticks::simtrace
-it is now moved to G4CXOpticks::setGeometry. 
+it is now moved to G4CXOpticks::setGeometry to facilitate transformation 
+of input photons. 
 
 Q: why is the frame needed ?
 A: cx rendering viewpoint, input photon frame and the simtrace genstep grid 
    are all based on the frame center, extent and transforms 
 
-Q: This feels like too high level to do this, should be at CSG level perhaps ? 
+Q: Given the sframe and SEvt are from sysrap it feels too high level to do this here, 
+   should be at CSG or sysrap level perhaps ? 
    And then CSGOptix could grab the SEvt frame at its initialization. 
 
 **/

@@ -3,13 +3,19 @@
 sctx.h : holding "thread local" state
 =========================================
 
+Canonical usage from GPU and CPU: 
+
+1. CSGOptiX/CSGOptiX7.cu:simulate 
+2. sysrap/SEvt::pointPhoton
+
+
 Q: why not keep such state in sevent.h *evt* ?
 A: this state must be "thread" local, whereas the evt instance 
    is shared by all threads and always saves into (idx, bounce) 
    slotted locations   
 
-This is aiming to avoid non-production instrumentation costing anything 
-in production running by simply removing it from the context via the 
+This avoids non-production instrumentation costing anything 
+in production by simply removing it from the context via the 
 PRODUCTION macro. 
 
 
@@ -70,7 +76,9 @@ struct sctx
     sseq seq ; 
     stagr tagr ; 
     quad4 aux ; 
-    quad6 sup ; 
+    quad6 sup ;
+    // NB these are heavy : important to test with and without PRODUCTION 
+    // as these are expected to be rather expensive  
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -98,6 +106,8 @@ sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/re
 -------------------------------------------------------------------------------------------
 
 Notice this is NOT writing into evt->photon, that is done at SEvt::finalPhoton
+The reason for this split is that photon arrays are always needed 
+but the others record/rec/seq/aux are for debugging only. 
 
 **/
 

@@ -7,6 +7,42 @@ everything else should be located elsewhere : mostly in qudarap: sevent, qsim
 or the sysrap basis types sphoton quad4 quad2 etc.. where the code is reusable 
 and more easily tested. 
 
+Functions 
+-----------
+
+trace
+    populate quad2 prd by call to optixTrace
+
+make_color
+    minimal normal "shader"
+
+render
+    raygen function : calling trace and "shading" pixels
+
+simulate
+    raygen function : qsim::generate_photon, bounce while loop, qsim::propagate
+
+    * ifndef PRODUCTION sctx::trace sctx::point record the propagation point-by-point 
+
+simtrace
+    raygen function : qsim.h generate_photon_simtrace, trace, sevent::add_simtrace
+
+__raygen__rg
+    calls one of the above raygen functions depending on params.raygenmode 
+
+setPayload
+    mechanics of communication when not using WITH_PRD
+
+__miss_ms
+    default quad2 prd OR payload for rays that miss 
+
+__closesthit__ch
+    populate quad2 prd OR payload for rays that intersect    
+
+__intersection__is
+    converts OptiX HitGroupData into corresponding CSGNode and calls intersect_prim
+    giving float4 isect: (normal_at_intersect, distance) 
+
 **/
 
 #include <optix.h>
@@ -162,13 +198,19 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         prd
     );
 
-    float3 position = origin + direction*prd->distance() ;
     const float3* normal = prd->normal();  
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
     unsigned index = idx.y * params.width + idx.x ;
 
-    if(params.pixels) params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
-    if(params.isect)  params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
+    if(params.pixels) 
+    {
+        params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
+    }
+    if(params.isect)  
+    {
+        float3 position = origin + direction*prd->distance() ;
+        params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
+    }
 }
  
 /**
@@ -199,12 +241,12 @@ COMPARE WITH qsim::mock_propagate
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
-    sevent* evt      = params.evt ; 
+    sevent* evt = params.evt ; 
     if (launch_idx.x >= evt->num_photon) return;
 
     unsigned idx = launch_idx.x ;  // aka photon_idx
     unsigned genstep_idx = evt->seed[idx] ; 
-    const quad6& gs     = evt->genstep[genstep_idx] ; 
+    const quad6& gs = evt->genstep[genstep_idx] ; 
      
     qsim* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
@@ -347,7 +389,8 @@ __miss__ms
 
 * missing "normal" is somewhat render specific and this is used for 
   all raygenmode but Miss should never happen with real simulations 
-* Miss can happen with simple geometry testing however
+* Miss can happen with simple geometry testing however when shoot 
+  rays from outside the "world"
 
 **/
 

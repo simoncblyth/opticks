@@ -1,13 +1,12 @@
 #pragma once
 /**
-SGLM : Header Only OpenGL viz projection maths 
-=================================================
+SGLM : Header Only Viz Math giving ray tracing basis and rasterization projection transforms
+===============================================================================================
 
-This is the starting point for a simple single header 
-replacement of a boatload of classes used by okc. 
+Critical use for ray trace rendering in CSGOptiX::prepareRenderParam
 
-* Composition, View, Camera, ...
-
+SGLM.h is a single header that is replacing a boatload of classes 
+used by old OpticksCore okc : Composition, View, Camera, ...
 Using this aims to enable CSGOptiX to drop dependency
 on okc, npy, brap and instead depend only on QUDARap, SysRap, CSG. 
 
@@ -88,7 +87,7 @@ struct SYSRAP_API SGLM
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
 
-    static glm::vec4 CE ; // WHY CE? THIS IS GEOMETRY NOT VIEW RELATED : PROBABLY FOR WITHOUT GEOM TEST ?
+    static glm::vec4 CE ; // WHY CE? CE IS GEOMETRY NOT VIEW RELATED : PROBABLY FOR WITHOUT GEOM TEST ?
     static glm::vec4 EYE ; 
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 

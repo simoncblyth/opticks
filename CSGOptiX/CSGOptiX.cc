@@ -776,7 +776,7 @@ void CSGOptiX::prepareParam()
 CSGOptiX::launch
 -------------------
 
-For what happens next, see OptiX7Test.cu::__raygen__rg OR OptiX6Test.cu::raygen
+For what happens next, see CSGOptiX7.cu::__raygen__rg OR CSGOptiX6.cu::raygen
 Depending on params.raygenmode the "render" or "simulate" method is called. 
  
 **/
@@ -845,7 +845,7 @@ are retaining the distinct methods up here.
 *render* is also still needed to fulfil SRenderer protocol base 
 
 The *simulate* and *simtrace*  are typically invoked from QSim::simulate 
-and QSim::simtrace
+and QSim::simtrace using the SCSGOptiX.h protocol. 
 
 **/
 double CSGOptiX::render()

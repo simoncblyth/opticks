@@ -4,7 +4,7 @@ qsim.h : GPU side struct prepared CPU side by QSim.hh
 ========================================================
 
 qsim.h replaces the OptiX 6 context in a CUDA-centric way.
-Canonical use is from CSGOptiX/OptiX7Test.cu:simulate 
+Canonical use is from CSGOptiX/CSGOptiX7.cu:simulate 
 
 * qsim.h instance is uploaded once only at CSGOptiX instanciation 
   as this encompasses the physics not the event-by-event info.
@@ -669,11 +669,10 @@ This is apparent from reflected direction vector::
 
       *direction + 2.0f*c1*surface_normal
 
-
 The standard normal vector at an intersection position on the surface of a shape 
 is defined to be rigidly oriented outwards away from the shape.  
-This definition is used by *fill_state* to order determine proparties 
-if this material m1 and the next material m2 on the other side of the boundary.   
+This definition is used by *fill_state* in order to determine proparties 
+of this material m1 and the next material m2 on the other side of the boundary.   
 
 The below math assumes that the photon direction is always against the normal 
 such that the sign of c1 is +ve. Having -ve c1 leads to non-sensical -ve TranCoeff
@@ -714,7 +713,7 @@ is not quite 1.f but the cross product does give an exactly zero vector which gi
 A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
 
 Solution is to judge normal incidence based on trans_length as that is what the 
-calulation actually needs to be non-zero in order to be able to normalize trans to give A_trans.
+calculation actually needs to be non-zero in order to be able to normalize trans to give A_trans.
 
 However using "bool normal_incidence = trans_length == 0.f" also problematic
 as it means would be using very small trans vectors to define A_trans and this
