@@ -13,6 +13,7 @@ set(SINGLE_SOURCES
     CSGOptiXSimTest.cc
     CXRaindropTest.cc
     CSGOptiXTest.cc 
+    CSGOptiXSMTest.cc
 )
 
 foreach(SRC ${SINGLE_SOURCES})

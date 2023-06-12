@@ -289,6 +289,9 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simulate()
 {
+    std::cout << "QSim::simulate" << std::endl ; 
+
+    LOG(LEVEL); 
     LOG_IF(error, event == nullptr) << " event null " << desc()  ; 
     if( event == nullptr ) std::raise(SIGINT) ; 
     if( event == nullptr ) return -1. ; 

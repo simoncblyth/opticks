@@ -146,6 +146,7 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 int QEvent::setGenstep()  // onto device
 {
+    LOG(LEVEL); 
     NP* gs = SEvt::GatherGenstep(); // TODO: review memory handling  
     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
     LOG_IF(fatal, gs == nullptr ) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
@@ -214,6 +215,15 @@ int QEvent::setGenstep(NP* gs_)
     return 0 ; 
 }
 
+/**
+QEvent::device_alloc_genstep
+------------------------------
+
+Allocates memory for genstep and seed, keeping device pointers within
+the hostside sevent.h "evt->genstep" "evt->seed"
+
+**/
+
 void QEvent::device_alloc_genstep()
 {
     LOG(LEVEL) << " device_alloc genstep and seed " ; 
@@ -237,6 +247,8 @@ narrowed here prior to upload.
 
 void QEvent::setInputPhoton()
 {
+    LOG(LEVEL); 
+ 
     input_photon = SEvt::GetInputPhoton(); 
     LOG_IF(fatal, input_photon == nullptr) 
         << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
@@ -375,7 +387,15 @@ void QEvent::gatherPhoton(NP* p) const
     bool expected_shape =  p->has_shape(evt->num_photon, 4, 4) ; 
     LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert(expected_shape ); 
-    QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
+    int rc = QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
+
+    LOG_IF(fatal, rc != 0) 
+         << " evt->photon " << ( evt->photon ? "Y" : "N" ) 
+         << " evt->num_photon " <<  evt->num_photon
+         ;
+
+    if(rc != 0) std::raise(SIGINT) ; 
+
     LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ; 
 }
 
@@ -642,6 +662,8 @@ when collecting records : that is ok as running with records is regarded as debu
 
 void QEvent::setNumPhoton(unsigned num_photon )
 {
+    LOG(LEVEL); 
+
     sev->setNumPhoton(num_photon); 
     if( evt->photon == nullptr ) device_alloc_photon();  
     uploadEvt(); 
@@ -657,7 +679,8 @@ void QEvent::setNumSimtrace(unsigned num_simtrace)
 QEvent::device_alloc_photon
 ----------------------------
 
-HMM: record buffer should be : evt->max_record * evt->max_photon ? 
+Buffers are allocated on device and the device pointers are collected 
+into hostside sevent.h "evt" 
 
 **/
 

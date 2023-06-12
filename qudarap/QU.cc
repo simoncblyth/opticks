@@ -326,27 +326,37 @@ template void   QU::device_free<sphoton>(sphoton*) ;
 
 
 template<typename T>
-void QU::copy_device_to_host( T* h, T* d,  unsigned num_items)
+int QU::copy_device_to_host( T* h, T* d,  unsigned num_items)
 {
+    if( d == nullptr ) std::cerr 
+        << "QU::copy_device_to_host"
+        << " ERROR : device pointer is null "
+        << std::endl 
+        ;
+
+    if( d == nullptr ) return 1 ;  
+
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
+
+    return 0 ; 
 }
 
 
-template void QU::copy_device_to_host<int>(  int* h, int* d,  unsigned num_items);
-template void QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num_items);
-template void QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
-template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);
-template void QU::copy_device_to_host<quad2>( quad2* h, quad2* d,  unsigned num_items);
-template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
-template void QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
-template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
-template void QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
-template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
-template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
-template void QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
-template void QU::copy_device_to_host<sflat>( sflat* h, sflat* d,  unsigned num_items);
-template void QU::copy_device_to_host<curandState>( curandState* h, curandState* d,  unsigned num_items);
+template int QU::copy_device_to_host<int>(  int* h, int* d,  unsigned num_items);
+template int QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num_items);
+template int QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
+template int QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);
+template int QU::copy_device_to_host<quad2>( quad2* h, quad2* d,  unsigned num_items);
+template int QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
+template int QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
+template int QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
+template int QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
+template int QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
+template int QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
+template int QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
+template int QU::copy_device_to_host<sflat>( sflat* h, sflat* d,  unsigned num_items);
+template int QU::copy_device_to_host<curandState>( curandState* h, curandState* d,  unsigned num_items);
 
 
 /**

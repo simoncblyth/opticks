@@ -162,20 +162,32 @@ Used by minimal simulate tests/CSGOptiXSMTest.cc
 void CSGOptiX::SimulateMain() // static
 {
     SEventConfig::SetRGMode("simulate"); 
-    SSim::Create(); 
+
+    SEvt* sev = new SEvt ; 
+    assert(sev); 
+
+    //SSim::Create(); 
+    const SSim* ssim = SSim::Load() ;   // HMM: Does CSGFoundry::Load do this anyhow ?
+    assert(ssim);  
     
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-
     LOG(info) << cx->desc(); 
+
+    sframe fr = fd->getFrameE() ; 
+    LOG(LEVEL) << fr ; 
+    sev->setFrame(fr); 
+    cx->setFrame(fr);  
+
+    LOG(info) << "===================== SEvt::BeginOfEvent " ; 
+    SEvt::BeginOfEvent(0); 
+
+    QSim* qs = cx->sim ;
+    qs->simulate();     
+    // NB: not cx->simulate TODO: make it more difficult to make such a mistake 
+
+    SEvt::EndOfEvent(0); 
 }
-
-
-
-
-
-
-
 
 
 const char* CSGOptiX::Desc()
@@ -221,6 +233,14 @@ void CSGOptiX::InitGeo(  CSGFoundry* fd )
     fd->upload(); 
     LOG(LEVEL) << "]" ; ; 
 }
+
+/**
+CSGOptiX::InitSim
+-------------------
+
+Instanciation of QSim/QEvent requires an SEvt instance 
+
+**/
 
 void CSGOptiX::InitSim( const SSim* ssim  )
 {
@@ -508,7 +528,7 @@ TODO: eliminate params->evt to make more use of the qsim.h encapsulation
 
 void CSGOptiX::initSimulate() 
 {
-
+    LOG(LEVEL) ; 
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
@@ -756,6 +776,7 @@ Per-event simulate setup invoked just prior to optix launch
 
 void CSGOptiX::prepareSimulateParam()  
 {
+    LOG(LEVEL); 
 }
 
 /**
@@ -828,13 +849,15 @@ double CSGOptiX::launch()
     typedef std::chrono::duration<double> DT ;
     TP t0 = std::chrono::high_resolution_clock::now();
 
-#if OPTIX_VERSION < 70000
-    LOG(info) 
+    LOG(LEVEL) 
+         << " raygenmode " << raygenmode
+         << " SRG::Name(raygenmode) " << SRG::Name(raygenmode)
          << " width " << width 
          << " height " << height 
          << " depth " << depth
          ;
 
+#if OPTIX_VERSION < 70000
     assert( width <= 1000000 ); 
     six->launch(width, height, depth ); 
 #else
@@ -853,7 +876,8 @@ double CSGOptiX::launch()
     launch_times.push_back(dt);  
 
     LOG(LEVEL) 
-          << " (width, height, depth) ( " << params->width << "," << params->height << "," << params->depth << ")"  
+          << " (params.width, params.height, params.depth) ( " 
+          << params->width << "," << params->height << "," << params->depth << ")"  
           << std::fixed << std::setw(7) << std::setprecision(4) << dt  
           ; 
     return dt ; 
@@ -887,6 +911,7 @@ double CSGOptiX::simtrace()
 }  
 double CSGOptiX::simulate()
 { 
+    LOG(info); 
     assert(raygenmode == SRG_SIMULATE) ; 
     return launch()  ;
 }   

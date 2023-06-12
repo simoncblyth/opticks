@@ -206,7 +206,11 @@ class SEvt(object):
         self.iix = iix        
 
     def init_record_sframe(self, f):
-        if not getattr(f, "sframe", None) is None:
+
+        with_sframe = not getattr(f, "sframe", None) is None
+        with_record = not getattr(f, "record", None) is None
+
+        if with_sframe and with_record:
             w2m = f.sframe.w2m
             gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
             gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
@@ -316,14 +320,14 @@ class SEvt(object):
         For concatenated SEvt the total of all the EndOfEvent-BeginOfEvent 
         is placed into ee[-1]
         """
-        with_photon_meta = hasattr(f, 'photon_meta') and not f.photon_meta is None
-        with_ff = hasattr(f, 'ff')
+        with_photon_meta = not getattr(f, 'photon_meta', None) is None 
+        with_ff = not getattr(f, 'ff', None) is None 
         log.info("init_ee with_photon_meta:%d with_ff:%d" % (with_photon_meta, with_ff))
         if with_photon_meta:
             boe = np.uint64(f.photon_meta.t_BeginOfEvent[0])
             eoe = np.uint64(f.photon_meta.t_EndOfEvent[0])
             b2e = eoe-boe
-        else:
+        elif with_ff:
             kk = f.ff.keys()
             boe = np.uint64(0)
             eoe = np.uint64(0)
@@ -335,6 +339,8 @@ class SEvt(object):
                 k_b2e = np.uint64(k_eoe-k_boe)
                 b2e += k_b2e  
             pass
+        else:
+            boe, eoe, b2e = 0,0,0 
         pass 
         self.ee = np.array([boe, eoe, b2e], dtype=np.uint64 )
 

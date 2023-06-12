@@ -51,7 +51,7 @@ struct QUDARAP_API QU
     static void device_free_and_alloc(T** dd, unsigned num_items );  // dd : pointer-to-device-pointer
 
     template <typename T>
-    static void copy_device_to_host( T* h, T* d,  unsigned num_items);
+    static int copy_device_to_host( T* h, T* d,  unsigned num_items);
 
     template <typename T>
     static void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
