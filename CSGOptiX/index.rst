@@ -9,7 +9,6 @@ TODO
 * cxs paths need to keep the digest at pub stage 
 
 
-
 3D render scripts (most using the OptiX 7 CSG,CSGOptiX machinery, a few using pre7 OpSnapTest,OptiXRap) 
 --------------------------------------------------------------------------------------------------------
 
@@ -46,7 +45,7 @@ cxr_scan.sh
     via the "-e" option which is short for --enabledmergedmesh which feeds into a bitset 
     queryable by Opticks::isEnabledMergedMesh  
 
-    [tested Dec 2021]
+    [tested Jun 2023]
 
 cxr_table.sh
     rst table creation using snap.py 

@@ -53,6 +53,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static CSGOptiX*   Get(); 
     static int         Version(); 
     static void        RenderMain();  // used by tests/CSGOptiXRdrTest.cc 
+    static void        SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
     static const char* Desc(); 
 
     static const char* TOP ; 

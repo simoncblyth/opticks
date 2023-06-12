@@ -151,6 +151,33 @@ void CSGOptiX::RenderMain() // static
 }
 
 
+/**
+CSGOptiX::SimulateMain
+------------------------
+
+Used by minimal simulate tests/CSGOptiXSMTest.cc  
+
+**/
+
+void CSGOptiX::SimulateMain() // static
+{
+    SEventConfig::SetRGMode("simulate"); 
+    SSim::Create(); 
+    
+    CSGFoundry* fd = CSGFoundry::Load(); 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
+
+    LOG(info) << cx->desc(); 
+}
+
+
+
+
+
+
+
+
+
 const char* CSGOptiX::Desc()
 {
     std::stringstream ss ; 
