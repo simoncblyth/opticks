@@ -79,6 +79,7 @@ struct SYSRAP_API SGLM
     static constexpr const char* kUP = "UP" ; 
     static constexpr const char* kZOOM = "ZOOM" ; 
     static constexpr const char* kTMIN = "TMIN" ; 
+    static constexpr const char* kTMAX = "TMAX" ; 
     static constexpr const char* kCAM = "CAM" ; 
     static constexpr const char* kNEARFAR = "NEARFAR" ; 
     static constexpr const char* kFOCAL = "FOCAL" ; 
@@ -94,6 +95,7 @@ struct SYSRAP_API SGLM
 
     static float ZOOM ; 
     static float TMIN ; 
+    static float TMAX ; 
     static int   CAM ; 
     static int   NEARFAR ; 
     static int   FOCAL ; 
@@ -106,6 +108,7 @@ struct SYSRAP_API SGLM
     static void SetUP( float x, float y, float z ); 
     static void SetZOOM( float v ); 
     static void SetTMIN( float v ); 
+    static void SetTMAX( float v ); 
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
@@ -132,6 +135,7 @@ struct SYSRAP_API SGLM
     const char* get_frame_name() const ; 
     float extent() const ; 
     float tmin_abs() const ; 
+    float tmax_abs() const ; 
 
     bool rtp_tangential ; 
     void set_rtp_tangential( bool rtp_tangential_ ); 
@@ -156,8 +160,8 @@ struct SYSRAP_API SGLM
     float getGazeLength() const ; 
     std::string descELU() const ; 
 
-    void updateNear(); 
-    std::string descNear() const ; 
+    void updateNearAndFar(); 
+    std::string descNearAndFar() const ; 
 
     // results from updateEyeSpace
 
@@ -280,6 +284,7 @@ glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1") ;
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0") ; 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1"); 
 float      SGLM::TMIN = EValue<float>(kTMIN, "0.1"); 
+float      SGLM::TMAX = EValue<float>(kTMAX, "100.0"); 
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ; 
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
@@ -292,6 +297,7 @@ inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; 
 inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
 inline void SGLM::SetZOOM( float v ){ ZOOM = v ; }
 inline void SGLM::SetTMIN( float v ){ TMIN = v ; }
+inline void SGLM::SetTMAX( float v ){ TMAX = v ; }
 inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
@@ -325,7 +331,7 @@ inline SGLM::SGLM()
     w(0.f,0.f,0.f),
     e(0.f,0.f,0.f),
     cam(CAM),
-    nearfar(NEARFAR),
+    nearfar(NEARFAR),   // gazelength default
     focal(FOCAL),
     nearfar_manual(0.f),
     focal_manual(0.f),
@@ -357,7 +363,7 @@ std::string SGLM::desc() const
     ss << descInput() << std::endl ; 
     ss << descModelMatrix() << std::endl ; 
     ss << descELU() << std::endl ; 
-    ss << descNear() << std::endl ; 
+    ss << descNearAndFar() << std::endl ; 
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
     ss << descProjection() << std::endl ; 
@@ -406,7 +412,7 @@ std::string SGLM::descInput() const
 SGLM::set_frame
 -----------------
 
-Avoided former kludge double call of update by repositioning updateNear 
+Avoided former kludge double call of update by repositioning updateNearAndFar 
 according to its dependency on gazelength. 
 
 **/
@@ -418,16 +424,17 @@ inline void SGLM::set_frame( const sframe& fr_ )
 }
 
 inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
+
 inline float SGLM::extent() const {   return fr.ce.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
-
+inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent might not be the basis ?
 
 inline void SGLM::update()  
 {
     addlog("SGLM::update", "["); 
     updateModelMatrix(); 
     updateELU(); 
-    updateNear(); 
+    updateNearAndFar(); 
     updateEyeSpace(); 
     updateEyeBasis(); 
     updateProjection(); 
@@ -577,24 +584,29 @@ std::string SGLM::descELU() const
 
 
 /**
-SGLM::updateNear
-------------------
+SGLM::updateNearAndFar
+--------------------------
 
 As the basis needs gazelength, this must be done after updateELU
 but isnt there still a problem of basis consistency between tmin_abs and set_near_abs ? 
 For example extent scaling vs gazelength scaling ? 
 
 **/
-void SGLM::updateNear() 
+void SGLM::updateNearAndFar() 
 {
-    float tma = tmin_abs() ; 
-    addlog("updateNear.tma", tma);
-    set_near_abs(tma) ;  
+    float tmi = tmin_abs() ; 
+    addlog("updateNearAndFar.tmi", tmi);
+    set_near_abs(tmi) ;  
+
+    float tmx = tmax_abs() ; 
+    addlog("updateNearAndFar.tmx", tmx);
+    set_far_abs(tmx) ;  
+
 }
-std::string SGLM::descNear() const
+std::string SGLM::descNearAndFar() const
 {
     std::stringstream ss ; 
-    ss << "SGLM::descNear" << std::endl ; 
+    ss << "SGLM::descNearAndFar" << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -812,9 +824,30 @@ void SGLM::set_near_abs( float near_abs_ )
     addlog("set_near_abs.nab", nab ); 
     set_near( nab ) ; 
 }
-void SGLM::set_far_abs(  float far_abs_ ){  addlog("set_far_abs", far_abs_)   ; set_far(  far_abs_/get_nearfar_basis()  ) ; }
+void SGLM::set_far_abs(  float far_abs_ )
+{  
+    float nfb = get_nearfar_basis() ; 
+    float fab = far_abs_/nfb ; 
+    addlog("set_far_abs.arg", far_abs_)   ; 
+    set_far( fab ) ; 
+}
 
+/**
+SGLM::get_near_abs
+--------------------
+
+Used from CSGOptiX::prepareRenderParam for tmin 
+
+**/
 float SGLM::get_near_abs() const { return near*get_nearfar_basis() ; }
+
+/**
+SGLM::get_far_abs
+--------------------
+
+Used from CSGOptiX::prepareRenderParam for tmax 
+
+**/
 float SGLM::get_far_abs() const { return   far*get_nearfar_basis() ; }
 
 

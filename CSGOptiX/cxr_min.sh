@@ -80,7 +80,8 @@ escale=extent
 case $moi in 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
-   sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
+   UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
+   sChimneyAcrylic) eye=-10,0,0 ; tmin=0.1 ; zoom=0.5 ;; 
    NEW_sChimneyAcrylic) eye=-30,0,5 ; tmin=25 ; icam=1 ;; 
 esac
 
