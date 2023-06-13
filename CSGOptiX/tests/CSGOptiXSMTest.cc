@@ -1,6 +1,6 @@
 /**
-CSGOptiXSMTest 
-===============
+CSGOptiXSMTest : used from cxs_min.sh 
+=========================================
 
 **/
 

@@ -10,14 +10,12 @@ Default SEvt being saved into::
 EOU
 }
 
-
-REALPATH=$(find $PWD -name cxs_min.sh)
-DIR=$(dirname $REALPATH)
-
+REALPATH=$(find $PWD -name $(basename $BASH_SOURCE)) # absolute path
+REALDIR=$(dirname $REALPATH)
 
 case $(uname) in
-   #Linux) defarg=run_info ;;
-   Linux) defarg=dbg_info ;;
+   Linux) defarg=run_info ;;
+   #Linux) defarg=dbg_info ;;
    #Darwin) defarg=grab_open ;;
    Darwin) defarg=run_info ;;
 esac
@@ -36,7 +34,8 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
 export BASE=$GDIR/$bin   # rsync special cases paths starting with . 
 export EVT=${EVT:-000}
 export FOLD=$HOME/$GDIR/$bin/ALL/$EVT
-export LOGDIR=$BASE
+export LOGDIR=$HOME/$BASE
+
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
@@ -65,9 +64,15 @@ export QEvent=INFO
 export QSim=INFO
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES"
-#for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR FOLD"
 
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+fi 
+
+if [ "${arg/fold}" != "$arg" ]; then
+    echo $FOLD
+fi 
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 
@@ -88,9 +93,6 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
-if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
-fi 
 
 if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
@@ -101,11 +103,7 @@ if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    script=$DIR/cxs_min.py
-    echo script $script
-    ${IPYTHON:-ipython} --pdb -i $script
+    ${IPYTHON:-ipython} --pdb -i $REALDIR/cxs_min.py
 fi 
-
-
 
 
