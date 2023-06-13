@@ -152,8 +152,6 @@ void CSGOptiX::RenderMain() // static
 
 void CSGOptiX::SimtraceMain()
 {
-    // HMM: simtrace needs SEvt 
-
     SEventConfig::SetRGMode("simtrace"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
@@ -166,38 +164,20 @@ CSGOptiX::SimulateMain
 
 Used by minimal simulate tests/CSGOptiXSMTest.cc  
 
+Note that the former SEvt setup and frame hookup 
+done on the main is now moved into CSGFoundry::AfterLoadOrCreate
+
+Also try moving SEvt::BeginOfEvent SEvt::EndOfEvent into QSim
+
 **/
 
 void CSGOptiX::SimulateMain() // static
 {
     SEventConfig::SetRGMode("simulate"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
-
-    /*
-    Try moving SEvt setup and frame hookup into CSGFoundry::AfterLoadOrCreate
-
-    SEvt* sev = new SEvt ; 
-
-    // HMM: the below frame setup cannot be done at SEvt level because it needs the geometry.. 
-    // HMM: could however auto hookup frame with preexisting SEvt once geometry becomes available  
-    // HMM: SO it could be done at CSGFoundry level 
-    // HMM: what about after live translation ?
-
-    sframe fr = fd->getFrameE() ; 
-    LOG(LEVEL) << fr ; 
-    sev->setFrame(fr); // now only needs to be done once to transform input photons
-    */
-
-
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-
-    SEvt::BeginOfEvent(0);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
-
     cx->simulate();     
-
-    SEvt::EndOfEvent(0);   // SEvt save and clear  
 }
-
 
 
 const char* CSGOptiX::Desc()

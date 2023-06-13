@@ -350,6 +350,8 @@ Q: Given the sframe and SEvt are from sysrap it feels too high level to do this 
 
 void G4CXOpticks::setupFrame()
 {
+    // TODO: see CSGFoundry::AfterLoadOrCreate for auto frame hookup
+  
     SEvt* sev = SEvt::Get();  
     assert(sev); 
 
@@ -392,6 +394,9 @@ void G4CXOpticks::simulate()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
+
+
+    // TODO: most of this should be happening at lower level, not up here 
 
     SEvt* sev = SEvt::Get();  assert(sev); 
 

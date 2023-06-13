@@ -268,9 +268,10 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static void SaveRunMeta(const char* base=nullptr ); 
 
-    static void BeginOfEvent(int index); 
-    static void EndOfEvent(int index); 
+    static void BeginOfEvent(int index=-1); 
+    static void EndOfEvent(int index=-1); 
     static void SetIndex(int index); 
+    static void IncrementIndex(); 
     static void UnsetIndex(); 
     static int  GetIndex(); 
     static S4RandomArray* GetRandomArray(); 
@@ -301,6 +302,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void clear_partial(const char* keep_keylist, char delim=','); 
 
     void setIndex(int index_) ;  
+    void incrementIndex() ;  
     void unsetIndex() ;  
     int getIndex() const ; 
 

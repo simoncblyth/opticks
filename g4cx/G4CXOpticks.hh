@@ -6,6 +6,9 @@ Temporarily : G4CXOpticks, Aiming to replace G4Opticks
 * KEEP THIS MINIMAL : PROVIDING TOP LEVEL INTERFACE AND COORDINARION 
 * EVERYTHING THAT CAN BE IMPLEMENTED AT LOWER LEVELS SHOULD BE IMPLEMENTED AT LOWER LEVELS 
 
+  * IN THIS REGARD THE THREE PRIMARY METHODS simulate/simtrace/render ALL NEED OVERHAUL  
+    TO INSTEAD RELAY ON CSGOptiX LEVEL 
+
 HMM: instanciating CSGOptiX instanciates QSim for raygenmode other than zero 
 and that needs the upload of QSim components first ?
 

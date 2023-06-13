@@ -902,8 +902,18 @@ Called for example from U4Recorder::BeginOfEventAction
 void SEvt::BeginOfEvent(int index)  // static
 {
     INSTANCE->t_BeginOfEvent = stamp::Now(); 
-    LOG(LEVEL) << " index " << index ; 
-    SEvt::SetIndex(index); 
+
+    if(index > -1) 
+    {
+        LOG(LEVEL) << " index " << index ; 
+        SEvt::SetIndex(index); 
+    }
+    else
+    {
+        SEvt::IncrementIndex(); 
+        LOG(LEVEL) << " incrementIndex to: " << index ; 
+    }
+
     SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
 }
 
@@ -919,8 +929,12 @@ Called for example from U4Recorder::EndOfEventAction
 void SEvt::EndOfEvent(int index) // static 
 {
     INSTANCE->t_EndOfEvent = stamp::Now(); 
-    LOG(LEVEL) << " index " << index ; 
-    assert( index == SEvt::GetIndex() );  
+
+    if( index > -1 )
+    {
+        LOG(LEVEL) << " index " << index ; 
+        assert( index == SEvt::GetIndex() );  
+    }
 
     SEvt::Save(); 
     SEvt::Clear(); 
@@ -930,6 +944,7 @@ void SEvt::EndOfEvent(int index) // static
 
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
+void SEvt::IncrementIndex(){    assert(INSTANCE) ; INSTANCE->incrementIndex() ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
 int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
 S4RandomArray* SEvt::GetRandomArray(){ return INSTANCE ? INSTANCE->random_array : nullptr ; }
@@ -1048,6 +1063,11 @@ void SEvt::clear_partial(const char* keep_keylist, char delim)
 
 
 void SEvt::setIndex(int index_){ index = index_ ; }
+void SEvt::incrementIndex()
+{
+    int new_index = index == MISSING_INDEX ? 0 : index + 1 ; 
+    setIndex(new_index); 
+}
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
 
