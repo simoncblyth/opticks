@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
     SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
    
-    SEvt evt ; 
+    SEvt* evt = new SEvt ; 
  
     CSGFoundry* fd = CSGFoundry::Load(); 
 
@@ -60,24 +60,22 @@ int main(int argc, char** argv)
 
     std::cout << "[ main fr" << std::endl << fr << std::endl << "] main fr" << std::endl  ; 
 
-    evt.setFrame(fr);   // adds CE gensteps
+    evt->setFrame(fr);   // formerly this added CE gensteps, now need to SEvt::BeginOfEvent ?
 
  
     CSGOptiX* cx = CSGOptiX::Create(fd); 
-    QSim* qs = cx->sim ; 
 
     cx->setFrame(fr);    
 
-    // This seems funny as cx has fd which has the fr already : so could be automatic ?  
+    // This seems funny as cx has fd which is the source of the fr : so could be automatic ?  
     // Not so easy as which frame to use depends on running mode and user input 
     // so best to not hide it. 
 
-
-    qs->simtrace();  
+    cx->simtrace();  
 
     cudaDeviceSynchronize(); 
 
-    evt.save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
+    evt->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
 
  
     return 0 ; 

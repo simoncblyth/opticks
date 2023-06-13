@@ -52,8 +52,13 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static CSGOptiX*   INSTANCE ; 
     static CSGOptiX*   Get(); 
     static int         Version(); 
-    static void        RenderMain();  // used by tests/CSGOptiXRdrTest.cc 
+
+
+    static void        RenderMain();    // used by tests/CSGOptiXRdrTest.cc 
+    static void        SimtraceMain();  // used by tests/CSGOptiXTMTest.cc
     static void        SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
+
+
     static const char* Desc(); 
 
     static const char* TOP ; 
@@ -149,12 +154,13 @@ private:
  private: 
     const char* getRenderStemDefault() const ; 
  public: 
-    void   render(const char* name=nullptr);   // formerly render_snap
+    double render(const char* name=nullptr);   // formerly render_snap
+    double simtrace(); 
     double simulate(); 
  private: 
     // these launch  methods fulfil SCSGOptix protocal base
+    // the latter two get invoked from QSim::simtrace QSim::simulate following genstep uploading   
     double render_launch();   
-    // these methods get invoked from QSim::simtrace QSim::simulate following genstep uploading   
     double simtrace_launch(); 
     double simulate_launch();    
  public: 

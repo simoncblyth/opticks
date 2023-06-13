@@ -1,5 +1,5 @@
 /**
-CSGOptiXRdrTest : minimal variant of CSGOptiXRenderTest for debugging single renders
+CSGOptiXRMTest : minimal variant of CSGOptiXRenderTest for debugging single renders
 ======================================================================================
 
 **/

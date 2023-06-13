@@ -1,23 +1,42 @@
 CSGOptiX/tests
 ==================
 
-Rendering 
------------
 
-CSGOptiXRdrTest.cc
+Overview
+---------
+
+The minimal mains aim to rationalize API and make 
+render/simtrace/simulate APIs more consistent. 
+Long term aiming to replace the old tests. 
+
+
+Minimal Main tests using CSGOptiX::RenderMain SimtraceMain SimulateMain
+--------------------------------------------------------------------------
+
+CSGOptiXSMTest.cc
+   CSGOptiX::SimulateMain used by cxs_min.sh
+   reviving simulation, quick cycle preparation for opticksMode 1,3 in junosw
+
+CSGOptiXTMTest.cc
+   CSGOptiX::SimtraceMain
+   WIP: reviving simtrace
+
+CSGOptiXRMTest.cc
+   CSGOptiX::RenderMain used by cxr_min.sh 
+
+
+Old Rendering 
+---------------
+
 CSGOptiXRenderTest.cc
 
-Simtrace 2D
---------------
+Old Simtrace 2D
+-----------------
 
 CSGOptiXSimtraceTest.cc
 
-Simulation
-------------
-
-CSGOptiXSMTest.cc
-   reviving simulation, quick cycle preparation for opticksMode 1,3 in junosw
-   used by cxs_min.sh  
+Old Simulation
+---------------
 
 CSGOptiXSimTest.cc
    CarrierGenstep QSim::simulate call 

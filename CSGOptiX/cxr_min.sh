@@ -49,7 +49,7 @@ arg=${1:-$defarg}
 
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
-bin=CSGOptiXRdrTest
+bin=CSGOptiXRMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to load

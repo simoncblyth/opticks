@@ -138,6 +138,8 @@ CSGOptiX::RenderMain
 
 Used by minimal render tests/CSGOptiXRdrTest.cc  
 
+HMM: how practical is going modeless ? 
+
 **/
 
 void CSGOptiX::RenderMain() // static
@@ -147,6 +149,17 @@ void CSGOptiX::RenderMain() // static
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
     cx->render(); 
 }
+
+void CSGOptiX::SimtraceMain()
+{
+    // HMM: simtrace needs SEvt 
+
+    SEventConfig::SetRGMode("simtrace"); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
+    cx->simtrace(); 
+}
+
 
 
 /**
@@ -167,9 +180,10 @@ void CSGOptiX::SimulateMain() // static
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
 
+
     // HMM: the below frame setup cannot be done at SEvt level because it needs the geometry.. 
     // HMM: could however auto hookup frame with preexisting SEvt once geometry becomes available  
-    // SO it could be done a CSGFoundry level 
+    // SO it could be done at CSGFoundry level 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
     sev->setFrame(fr); // now only needs to be done once to transform input photons
@@ -184,6 +198,7 @@ void CSGOptiX::SimulateMain() // static
 
     SEvt::EndOfEvent(0);   // SEvt save and clear  
 }
+
 
 
 const char* CSGOptiX::Desc()
@@ -547,6 +562,30 @@ double CSGOptiX::simulate()
     double dt = sim->simulate() ;
     return dt ; 
 }
+
+/**
+CSGOptiX::simtrace
+--------------------
+
+NB the distinction between this and simtrace_launch, this 
+uses QSim::simtrace to do genstep setup prior to calling 
+CSGOptiX::simtrace_launch via the SCSGOptiX.h protocol
+
+**/
+
+double CSGOptiX::simtrace()
+{
+    assert(sim); 
+    double dt = sim->simtrace() ;
+    return dt ; 
+}
+
+
+
+
+
+
+
 
 const char* CSGOptiX::TOP = "i0" ; 
 const char* CSGOptiX::Top()
@@ -991,7 +1030,7 @@ CSGOptiX::render  (formerly render_snap)
 -------------------------------------------
 **/
 
-void CSGOptiX::render( const char* stem_ )
+double CSGOptiX::render( const char* stem_ )
 {
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
 #ifdef WITH_SGLM
@@ -1030,6 +1069,7 @@ void CSGOptiX::render( const char* stem_ )
     sglm->writeDesc( outdir, stem, ".log" ); 
 #endif
 
+    return dt ; 
 }
 
 
