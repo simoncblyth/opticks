@@ -133,12 +133,22 @@ int CSGOptiX::Version()
 
 
 /**
-CSGOptiX::RenderMain
-----------------------
+CSGOptiX::RenderMain CSGOptiX::SimtraceMain CSGOptiX::SimulateMain
+---------------------------------------------------------------------
 
-Used by minimal render tests/CSGOptiXRdrTest.cc  
+These three mains are use by the minimal main tests::
 
-HMM: how practical is going modeless ? 
+    tests/CSGOptiXRMTest.cc 
+    tests/CSGOptiXTMTest.cc 
+    tests/CSGOptiXSMTest.cc 
+
+Note that the former SEvt setup and frame hookup 
+done in the main is now moved into CSGFoundry::AfterLoadOrCreate
+
+Also try moving SEvt::BeginOfEvent SEvt::EndOfEvent into QSim
+
+Note that currently rendering persisting does not use SEvt in the
+same way as simtrace and simulate, but it could do in future. 
 
 **/
 
@@ -146,39 +156,41 @@ void CSGOptiX::RenderMain() // static
 {
     SEventConfig::SetRGMode("render"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->render(); 
 }
-
 void CSGOptiX::SimtraceMain()
 {
     SEventConfig::SetRGMode("simtrace"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->simtrace(); 
 }
-
-/**
-CSGOptiX::SimulateMain
-------------------------
-
-Used by minimal simulate tests/CSGOptiXSMTest.cc  
-
-Note that the former SEvt setup and frame hookup 
-done on the main is now moved into CSGFoundry::AfterLoadOrCreate
-
-Also try moving SEvt::BeginOfEvent SEvt::EndOfEvent into QSim
-
-**/
-
 void CSGOptiX::SimulateMain() // static
 {
     SEventConfig::SetRGMode("simulate"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-    cx->simulate();     
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;
+    cx->simulate(); 
 }
 
+/**
+CSGOptiX::Main
+----------------
+
+This "proceed" approach means that a single executable 
+does very different things depending on the RGMode envvar. 
+That is not convenient for bookkeeping based on executable names 
+so instead use three separate executables that each use the 
+corresponing Main static method. 
+
+**/
+void CSGOptiX::Main() // static
+{
+    CSGFoundry* fd = CSGFoundry::Load(); 
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;
+    cx->proceed(); 
+}
 
 const char* CSGOptiX::Desc()
 {
@@ -559,6 +571,17 @@ double CSGOptiX::simtrace()
     return dt ; 
 }
 
+double CSGOptiX::proceed()
+{
+    double dt = -1. ; 
+    switch(SEventConfig::RGMode())
+    {
+        case SRG_SIMULATE: dt = simulate() ; break ; 
+        case SRG_RENDER:   dt = render()   ; break ; 
+        case SRG_SIMTRACE: dt = simtrace() ; break ; 
+    }
+    return dt ; 
+}
 
 
 

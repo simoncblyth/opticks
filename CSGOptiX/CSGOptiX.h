@@ -57,7 +57,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static void        RenderMain();    // used by tests/CSGOptiXRdrTest.cc 
     static void        SimtraceMain();  // used by tests/CSGOptiXTMTest.cc
     static void        SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
-
+    static void        Main(); 
 
     static const char* Desc(); 
 
@@ -157,6 +157,7 @@ private:
     double render(const char* name=nullptr);   // formerly render_snap
     double simtrace(); 
     double simulate(); 
+    double proceed(); 
  private: 
     // these launch  methods fulfil SCSGOptix protocal base
     // the latter two get invoked from QSim::simtrace QSim::simulate following genstep uploading   

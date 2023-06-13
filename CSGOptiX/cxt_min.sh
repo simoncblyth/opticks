@@ -1,11 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-cxs_min.sh : minimal executable and script for shakedown
-============================================================
-
-Default SEvt being saved into:: 
-
-    /home/blyth/.opticks/GEOM/V1J009/CSGOptiXSMTest/ALL/000/
+cxt_min.sh : Simtrace minimal executable and script for shakedown
+===================================================================
 
 EOU
 }
@@ -23,7 +19,7 @@ arg=${1:-$defarg}
 
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
-bin=CSGOptiXSMTest
+bin=CSGOptiXTMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
@@ -39,14 +35,6 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 LOG=$bin.log
 
-
-#ipho=RainXZ_Z230_1000_f8.npy
-ipho=RainXZ_Z230_10k_f8.npy
-#ipho=RainXZ_Z230_100k_f8.npy
-#ipho=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
-#ipho=GridXY_X700_Z230_10k_f8.npy 
-#ipho=GridXY_X1000_Z1000_40k_f8.npy
-
 #moi=-1
 #moi=sWorld:0:0
 #moi=NNVT:0:0
@@ -56,19 +44,12 @@ moi=NNVT:0:1000
 #moi=sChimneyAcrylic 
 
 # SEventConfig
-export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$ipho};
-export OPTICKS_INPUT_PHOTON_FRAME=${MOI:-$moi}
-export OPTICKS_EVENT_MODE=StandardFullDebug
-export OPTICKS_MAX_BOUNCE=31
-
-
-# investigate double call to clear
-# see ~/opticks/notes/issues/SEvt__clear_double_call.rst
-#export SEvt__DEBUG_CLEAR=1
+export MOI=${MOI:-$moi}
+#export OPTICKS_EVENT_MODE=StandardFullDebug
+#export OPTICKS_MAX_BOUNCE=31
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
-
 
 logging(){ 
     export CSGOptiX=INFO
@@ -78,11 +59,10 @@ logging(){
 #logging
 
 
-
 vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ "${arg/fold}" != "$arg" ]; then
@@ -92,7 +72,7 @@ fi
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 
    if [ -f "$LOG" ]; then 
-       echo $BASH_SOURCE : run : delete prior LOG $LOG 
+       echo $BASH_SOURCE : run/dbg : delete prior LOG $LOG 
        rm "$LOG" 
    fi 
 
@@ -114,7 +94,7 @@ if [ "${arg/grab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/cxs_min.py
+    ${IPYTHON:-ipython} --pdb -i $REALDIR/cxt_min.py
 fi 
 
 
