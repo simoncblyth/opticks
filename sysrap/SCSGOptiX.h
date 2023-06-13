@@ -11,9 +11,9 @@ needing to depend on CSGOptiX package.
 
 struct SCSGOptiX 
 {
-    virtual double render() = 0 ;
-    virtual double simtrace() = 0 ;
-    virtual double simulate() = 0 ;
+    virtual double render_launch() = 0 ;
+    virtual double simtrace_launch() = 0 ;
+    virtual double simulate_launch() = 0 ;
     virtual double launch() = 0 ;
 };
 

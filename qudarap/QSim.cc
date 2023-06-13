@@ -303,7 +303,7 @@ double QSim::simulate()
     int rc = event->setGenstep() ; 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
-    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+    double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
 
     return dt ; 
 }
@@ -322,7 +322,7 @@ double QSim::simtrace()
 {
     int rc = event->setGenstep(); 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
-    double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
+    double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
     return dt ; 
 }
 

@@ -33,12 +33,6 @@ CXRaindropTest.cc
    Geometry specific 
 
 
-Generic
-----------
-
-CSGOptiXTest.cc
-
-
 Utility 
 --------------
 

@@ -150,13 +150,12 @@ private:
     const char* getRenderStemDefault() const ; 
  public: 
     void render_snap(const char* name=nullptr); 
- public: 
-    // these methods fulfil SCSGOptix protocal base
-    double render();   
  private: 
+    // these launch  methods fulfil SCSGOptix protocal base
+    double render_launch();   
     // these methods get invoked from QSim::simtrace QSim::simulate following genstep uploading   
-    double simtrace(); 
-    double simulate();    
+    double simtrace_launch(); 
+    double simulate_launch();    
  public: 
     const CSGFoundry* getFoundry() const ; 
     static std::string AnnotationTime( double dt, const char* extra=nullptr ); 

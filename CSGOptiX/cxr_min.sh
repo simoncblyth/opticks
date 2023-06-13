@@ -101,7 +101,9 @@ nameprefix=${nameprefix}_tmin_${TMIN}_
 export NAMEPREFIX=$nameprefix
 
 topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM ICAM=$ICAM ~/opticks/CSGOptiX/cxr_min.sh " 
+botline="$(date)"
 export TOPLINE=${TOPLINE:-$topline}
+export BOTLINE=${BOTLINE:-$botline}
 
 #export CSGFoundry=INFO 
 #export CSGOptiX=INFO
@@ -118,7 +120,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE CVD CUDA_VISIBLE_DEVICES"
+vars="GEOM TMIN LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
 #for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 
@@ -134,7 +136,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then

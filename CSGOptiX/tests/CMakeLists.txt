@@ -12,7 +12,6 @@ set(SINGLE_SOURCES
     CSGOptiXSimulateTest.cc
     CSGOptiXSimTest.cc
     CXRaindropTest.cc
-    CSGOptiXTest.cc 
     CSGOptiXSMTest.cc
 )
 

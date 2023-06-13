@@ -165,18 +165,17 @@ void CSGOptiX::SimulateMain() // static
 
     SEvt* sev = new SEvt ; 
     assert(sev); 
-
-    //SSim::Create(); 
-    //const SSim* ssim = SSim::Load() ;   // CSGFoundry::Loads standard SSim 
-    //assert(ssim);  
     
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-    LOG(info) << cx->desc(); 
+
+    // HMM: the below frame setup cannot be done at SEvt level because it needs the geometry.. 
+    // HMM: could however auto hookup frame with preexisting SEvt once geometry becomes available  
 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
     sev->setFrame(fr);   // now only needs to be done once to transform input photons
+
 
     // cx->setFrame(fr);   // into the SGLM.h instance,  WIP: checking not needed for sim ?
 
@@ -185,7 +184,8 @@ void CSGOptiX::SimulateMain() // static
 
     QSim* qs = cx->sim ;
     qs->simulate();     
-    // NB: not cx->simulate TODO: make it more difficult to make such a mistake 
+    // NB: not cx->simulate 
+    // WIP: avoid the trap 
 
     SEvt::EndOfEvent(0); 
 }
@@ -886,13 +886,12 @@ double CSGOptiX::launch()
 
 
 /**
-CSGOptiX::render CSGOptiX::simtrace CSGOptiX::simulate
----------------------------------------------------------
+CSGOptiX::render_launch CSGOptiX::simtrace_launch CSGOptiX::simulate_launch
+--------------------------------------------------------------------------------
 
-CAUTION : *simulate* and *simtrace*  MUST BE invoked from QSim::simulate 
-and QSim::simtrace using the SCSGOptiX.h protocol. This is because genstep 
-preparations are needed. 
-
+CAUTION : *simulate_launch* and *simtrace_launch*  
+MUST BE invoked from QSim::simulate and QSim::simtrace using the SCSGOptiX.h protocol. 
+This is because genstep preparations are needed prior to launch. 
 
 These three methods currently all call *CSGOptiX::launch* 
 with params.raygenmode switch function inside OptiX7Test.cu:__raygen__rg 
@@ -902,19 +901,18 @@ are retaining the distinct methods up here.
 *render* is also still needed to fulfil SRenderer protocol base 
 
 **/
-double CSGOptiX::render()
+double CSGOptiX::render_launch()
 {  
     assert(raygenmode == SRG_RENDER) ; 
     return launch() ; 
 }   
-double CSGOptiX::simtrace()
+double CSGOptiX::simtrace_launch()
 { 
     assert(raygenmode == SRG_SIMTRACE) ; 
     return launch() ; 
 }  
-double CSGOptiX::simulate()
+double CSGOptiX::simulate_launch()
 { 
-    LOG(info); 
     assert(raygenmode == SRG_SIMULATE) ; 
     return launch()  ;
 }   
@@ -998,7 +996,7 @@ void CSGOptiX::render_snap( const char* stem_ )
     sglm->addlog("CSGOptiX::render_snap", stem ); 
 #endif
 
-    double dt = render();  
+    double dt = render_launch();  
 
     const char* topline = SSys::getenvvar("TOPLINE", SProc::ExecutableName() ); 
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
