@@ -27,7 +27,8 @@ import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-MODE = int(os.environ.get("MODE", 2 ))
+MODE_ = os.environ.get("MODE", "3" )
+MODE = int(MODE_)
 mp = None
 pv = None
 

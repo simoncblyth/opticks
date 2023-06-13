@@ -5,13 +5,17 @@ from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
-MODE =  int(os.environ.get("MODE", "2"))
+MODE = int(os.environ.get("MODE","3")) 
+
 if MODE in [2,3]:
-    from opticks.ana.pvplt import *
+    from opticks.ana.pvplt import *   
+    # HMM this import overrides MODE, so need to keep defaults the same 
 pass
 
-
 if __name__ == '__main__':
+
+    print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
+
     t = Fold.Load(symbol="t")
     print(repr(t))
 

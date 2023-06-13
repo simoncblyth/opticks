@@ -160,8 +160,6 @@ void CSGOptiX::SimtraceMain()
     cx->simtrace(); 
 }
 
-
-
 /**
 CSGOptiX::SimulateMain
 ------------------------
@@ -173,25 +171,26 @@ Used by minimal simulate tests/CSGOptiXSMTest.cc
 void CSGOptiX::SimulateMain() // static
 {
     SEventConfig::SetRGMode("simulate"); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
+
+    /*
+    Try moving SEvt setup and frame hookup into CSGFoundry::AfterLoadOrCreate
 
     SEvt* sev = new SEvt ; 
-    assert(sev); 
-    
-    CSGFoundry* fd = CSGFoundry::Load(); 
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-
 
     // HMM: the below frame setup cannot be done at SEvt level because it needs the geometry.. 
     // HMM: could however auto hookup frame with preexisting SEvt once geometry becomes available  
-    // SO it could be done at CSGFoundry level 
+    // HMM: SO it could be done at CSGFoundry level 
+    // HMM: what about after live translation ?
+
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
     sev->setFrame(fr); // now only needs to be done once to transform input photons
+    */
 
 
-    // cx->setFrame(fr);   // into the SGLM.h instance,  WIP: checking not needed for sim ?
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
 
-    LOG(info) << "===================== SEvt::BeginOfEvent " ; 
     SEvt::BeginOfEvent(0);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     cx->simulate();     

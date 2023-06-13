@@ -16,8 +16,7 @@ REALDIR=$(dirname $REALPATH)
 case $(uname) in
    Linux) defarg=run_info ;;
    #Linux) defarg=dbg_info ;;
-   #Darwin) defarg=grab_open ;;
-   Darwin) defarg=run_info ;;
+   Darwin) defarg=grab_ana ;;
 esac
 
 arg=${1:-$defarg}

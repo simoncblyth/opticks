@@ -2612,7 +2612,7 @@ CSGFoundry::Load
 -------------------
 
 This argumentless Load method is special, unlike other methods 
-it provides dynamic prim selection based in the ELV envvar which uses
+it provides dynamic prim selection based on the ELV envvar which uses
 CSGFoundry::CopySelect to dynamically create a CSGFoundry based
 on the elv SBitSet
 
@@ -2646,9 +2646,13 @@ CSGFoundry* CSGFoundry::Load() // static
         dst->saveAlt() ; 
     }
 
+    AfterLoadOrCreate(); 
+
     LOG(LEVEL) << "] argumentless " ; 
     return dst ; 
 }
+
+
 
 /**
 CSGFoundry::CopySelect
@@ -3190,6 +3194,33 @@ sframe CSGFoundry::getFrameE() const
 
 
 
+/**
+CSGFoundry::AfterLoadOrCreate
+-------------------------------
+
+Called from some high level methods eg: CSGFoundry::Load
+
+**/
+
+void CSGFoundry::AfterLoadOrCreate() // static
+{
+    CSGFoundry* fd = CSGFoundry::Get(); 
+    SEvt* sv = SEvt::CreateOrReuse() ; 
+
+    bool frame_hookup = fd != nullptr && sv != nullptr ;  
+
+    LOG(LEVEL)
+         << " fd " << ( fd ? "Y" : "N" )  
+         << " sv " << ( sv ? "Y" : "N" )
+         << " frame_hookup " << ( frame_hookup ? "Y" : "N" ) 
+         ;    
+
+    if(!frame_hookup) return ; 
+
+    sframe fr = fd->getFrameE() ; 
+    LOG(LEVEL) << fr ; 
+    sv->setFrame(fr);      // now only needs to be done once to transform input photons
+}
 
 
 /**
@@ -3309,5 +3340,8 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
         pr->scaleAABB_(scale); 
     } 
 }
+
+
+
 
 

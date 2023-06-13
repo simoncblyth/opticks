@@ -341,6 +341,8 @@ struct CSG_API CSGFoundry : public SGeo
     int getFrame(sframe& fr, int ins_idx ) const ; 
 
     sframe getFrameE() const ; 
+    static void AfterLoadOrCreate(); 
+
 
     // target  
     int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
