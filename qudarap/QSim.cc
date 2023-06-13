@@ -285,21 +285,26 @@ QSim::simulate
 Canonically invoked from G4CXOpticks::simulate
 Collected genstep are uploaded and the CSGOptiX kernel is launched to generate and propagate. 
 
+NB the surprising fact that this calls CSGOptiX::simulate (using a protocol), 
+that seems funny dependency-wise but its needed for genstep preparation prior to 
+the launch. 
+
 **/
 
 double QSim::simulate()
 {
-    std::cout << "QSim::simulate" << std::endl ; 
-
     LOG(LEVEL); 
-    LOG_IF(error, event == nullptr) << " event null " << desc()  ; 
+
+    LOG_IF(error, event == nullptr) << " QEvent:event null " << desc()  ; 
     if( event == nullptr ) std::raise(SIGINT) ; 
     if( event == nullptr ) return -1. ; 
  
     LOG(LEVEL) << desc() ;  
     int rc = event->setGenstep() ; 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
+
     double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+
     return dt ; 
 }
 

@@ -19,7 +19,7 @@
 #include "stimer.h"
 
 #include "SLOG.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SStr.hh"
 #include "NP.hh"
 #include "NPX.h"
@@ -48,9 +48,12 @@ NP* SEvt::UU = nullptr ;
 NP* SEvt::UU_BURN = NP::Load("$SEvt__UU_BURN") ; 
 
 const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG"); 
-const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
-const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
+const int SEvt::GIDX = ssys::getenvint("GIDX",-1) ;
+const int SEvt::PIDX = ssys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
+const int SEvt::DEBUG_CLEAR = ssys::getenvint("SEvt__DEBUG_CLEAR",-1) ;
+
+
 /**
 Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
 A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
@@ -97,7 +100,8 @@ SEvt::SEvt()
     is_loaded(false),
     is_loadfail(false),
     numphoton_collected(0u),   // updated by addGenstep
-    numphoton_genstep_max(0u)
+    numphoton_genstep_max(0u),
+    clear_count(0)
 {   
     init(); 
 }
@@ -185,7 +189,7 @@ const char* SEvt::getSearchCFBase() const
 }
 
 
-const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+const char* SEvt::INPUT_PHOTON_DIR = ssys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
 /**
 SEvt::LoadInputPhoton
 ----------------------
@@ -407,8 +411,6 @@ SEvt::setFrame
 As it is necessary to have the geometry to provide the frame this 
 is now split from eg initInputPhotons.  
 
-For simtrace and input photon running with or without a transform 
-it is necessary to call this for every event. 
 
 **simtrace running**
     MakeCenterExtentGensteps based on the given frame. 
@@ -417,18 +419,25 @@ it is necessary to call this for every event.
     MakeInputPhotonGenstep and m2w (model-2-world) 
     transforms the photons using the frame transform
 
+
+
+Formerly(?) for simtrace and input photon running with or without a transform 
+it was necessary to call this for every event due to the former call to addFrameGenstep, 
+but now that the genstep setup is moved to SEvt::BeginOfEvent it is only needed 
+to call this for each frame, usually once only. 
+
 **/
 
 
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
-    // addFrameGenstep(); // relocated to SEvt::BeginOfEvent
+    // former call to addFrameGenstep() is relocated to SEvt::BeginOfEvent
     transformInputPhoton();  
 }
 
 
-const bool SEvt::transformInputPhoton_WIDE = SSys::getenvbool("SEvt__transformInputPhoton_WIDE") ; 
+const bool SEvt::transformInputPhoton_WIDE = ssys::getenvbool("SEvt__transformInputPhoton_WIDE") ; 
 
 /**
 SEvt::transformInputPhoton
@@ -439,9 +448,8 @@ SEvt::transformInputPhoton
 void SEvt::transformInputPhoton()
 {
     bool proceed = SEventConfig::IsRGModeSimulate() && hasInputPhoton() ; 
+    LOG(LEVEL) << " proceed " << ( proceed ? "YES" : "NO " ) ; 
     if(!proceed) return ;    
-
-    LOG(info); 
 
     bool normalize = true ;  // normalize mom and pol after doing the transform 
 
@@ -655,7 +663,7 @@ HMM: is that actually used ? Because the frame is also persisted.
 
 quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
 {
-    LOG(info) << " input_photon " << NP::Brief(input_photon) ;  
+    LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;  
 
     quad6 ipgs ; 
     ipgs.zero(); 
@@ -677,7 +685,7 @@ This is called for device side running only from QEvent::init
 void SEvt::setCompProvider(const SCompProvider* provider_)
 {
     provider = provider_ ; 
-    LOG(fatal) << descProvider() ; 
+    LOG(LEVEL) << descProvider() ; 
 }
 
 bool SEvt::isSelfProvider() const {   return provider == this ; }
@@ -816,6 +824,21 @@ SEvt* SEvt::Load(const char* rel)  // static
     LOG(LEVEL) << "]" ; 
     return evt ; 
 }
+
+
+/**
+SEvt::Clear
+-------------
+
+SEvt::Clear is invoked in two situations:
+
+1. from QEvent::setGenstep after SEvt::GatherGenstep to prepare 
+   for further genstep collection, this is done immediately prior to 
+   simulation launches
+
+2. from SEvt::EndOfEvent immediately after SEvt::Save
+
+**/
 
 void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
 void SEvt::Save(){  Check() ; INSTANCE->save(); }
@@ -961,6 +984,18 @@ void SEvt::clear_()
 {
     numphoton_collected = 0u ; 
     numphoton_genstep_max = 0u ; 
+    clear_count += 1 ; 
+
+    if(DEBUG_CLEAR > 0)
+    {
+        LOG(info) 
+           << " DEBUG_CLEAR " << DEBUG_CLEAR
+           << " clear_count " << clear_count 
+           ; 
+        std::raise(SIGINT);  
+    }
+
+
     setNumPhoton(0); 
 
     genstep.clear();
@@ -983,7 +1018,8 @@ void SEvt::clear_()
     gather_done = false ;  
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
 
-    LOG(info); 
+
+    
 }
 
 /**

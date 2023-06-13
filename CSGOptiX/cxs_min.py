@@ -34,7 +34,8 @@ if __name__ == '__main__':
     pass
 
     #pp = e.f.inphoton[:,0,:3]
-    pp = e.f.photon[:,0,:3]
+    #pp = e.f.photon[:,0,:3]
+    pp = e.f.record[:,:,0,:3].reshape(-1,3)
 
     gpos = np.ones( [len(pp), 4 ] )
     gpos[:,:3] = pp

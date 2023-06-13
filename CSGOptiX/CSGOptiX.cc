@@ -143,7 +143,7 @@ Used by minimal render tests/CSGOptiXRdrTest.cc
 void CSGOptiX::RenderMain() // static
 {
     SEventConfig::SetRGMode("render"); 
-    SSim::Create(); 
+    // SSim::Create();  // WIP: check if needed, can defer until CSGFoundry::Load anyhow 
     
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
@@ -167,8 +167,8 @@ void CSGOptiX::SimulateMain() // static
     assert(sev); 
 
     //SSim::Create(); 
-    const SSim* ssim = SSim::Load() ;   // HMM: Does CSGFoundry::Load do this anyhow ?
-    assert(ssim);  
+    //const SSim* ssim = SSim::Load() ;   // CSGFoundry::Loads standard SSim 
+    //assert(ssim);  
     
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
@@ -176,8 +176,9 @@ void CSGOptiX::SimulateMain() // static
 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
-    sev->setFrame(fr); 
-    cx->setFrame(fr);  
+    sev->setFrame(fr);   // now only needs to be done once to transform input photons
+
+    // cx->setFrame(fr);   // into the SGLM.h instance,  WIP: checking not needed for sim ?
 
     LOG(info) << "===================== SEvt::BeginOfEvent " ; 
     SEvt::BeginOfEvent(0); 
@@ -618,8 +619,8 @@ void CSGOptiX::setFrame(const float4& ce )
 }
 
 /**
-CSGOptiX::setFrame
---------------------
+CSGOptiX::setFrame into the SGLM.h instance
+----------------------------------------------
 
 Note that SEvt already holds an sframe used for input photon transformation, 
 the sframe here is used for raytrace rendering.  Could perhaps rehome sglm 
@@ -888,15 +889,17 @@ double CSGOptiX::launch()
 CSGOptiX::render CSGOptiX::simtrace CSGOptiX::simulate
 ---------------------------------------------------------
 
+CAUTION : *simulate* and *simtrace*  MUST BE invoked from QSim::simulate 
+and QSim::simtrace using the SCSGOptiX.h protocol. This is because genstep 
+preparations are needed. 
+
+
 These three methods currently all call *CSGOptiX::launch* 
 with params.raygenmode switch function inside OptiX7Test.cu:__raygen__rg 
 As it is likely better to instead have multiple raygen entry points 
 are retaining the distinct methods up here. 
 
 *render* is also still needed to fulfil SRenderer protocol base 
-
-The *simulate* and *simtrace*  are typically invoked from QSim::simulate 
-and QSim::simtrace using the SCSGOptiX.h protocol. 
 
 **/
 double CSGOptiX::render()

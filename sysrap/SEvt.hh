@@ -128,6 +128,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     unsigned           numphoton_collected ;    // avoid looping over all gensteps for every genstep
     unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
+    int                clear_count ; 
 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int  
@@ -167,6 +168,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int GIDX ; 
     static const int PIDX ; 
     static const int MISSING_INDEX ; 
+    static const int DEBUG_CLEAR ; 
+
 
     static SEvt* INSTANCE ; 
     SEvt(); 

@@ -63,6 +63,7 @@ std::string CSGFoundry::descComp() const
 
 void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname ) 
 {
+    assert( sim ); 
     int bidx = sim->getBndIndex(bname); 
     assert( bidx > -1 ); 
     setPrimBoundary(primIdx, bidx); 
@@ -70,6 +71,15 @@ void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname )
 
 CSGFoundry* CSGFoundry::INSTANCE = nullptr ; 
 CSGFoundry* CSGFoundry::Get(){ return INSTANCE ; }  // HMM SGeo base struct already has INSTANCE  
+
+
+/**
+CSGFoundry::CSGFoundry
+------------------------
+
+
+
+**/
 
 CSGFoundry::CSGFoundry()
     :
@@ -94,8 +104,14 @@ CSGFoundry::CSGFoundry()
     origin(nullptr),
     elv(nullptr)
 {
-    LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
-    assert(sim); 
+
+    {
+       // LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
+       // assert(sim); 
+       // HUH: why when it can be loaded ? 
+       // Especially as sim just a passive passenger from CSGFoundry pov 
+    }
+
     init(); 
     INSTANCE = this ; 
 }
@@ -354,6 +370,7 @@ int CSGFoundry::getMeshIndexWithName(const char* qname, bool startswith) const
 
 int CSGFoundry::lookup_mtline(int mtindex) const 
 {
+    assert(sim); 
     return sim->lookup_mtline(mtindex) ;  
 }
 

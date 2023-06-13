@@ -38,13 +38,15 @@ export LOGDIR=$HOME/$BASE
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
-
 LOG=$bin.log
 
 
-
-ipho=RainXZ_Z230_10k_f8.npy;
-export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$ipho};
+#ipho=RainXZ_Z230_1000_f8.npy
+ipho=RainXZ_Z230_10k_f8.npy
+#ipho=RainXZ_Z230_100k_f8.npy
+#ipho=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
+#ipho=GridXY_X700_Z230_10k_f8.npy 
+#ipho=GridXY_X1000_Z1000_40k_f8.npy
 
 #moi=-1
 #moi=sWorld:0:0
@@ -54,14 +56,28 @@ moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
 #moi=sChimneyAcrylic 
 
+# SEventConfig
+export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$ipho};
 export OPTICKS_INPUT_PHOTON_FRAME=${MOI:-$moi}
+export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_MAX_BOUNCE=31
+
+
+# investigate double call to clear
+# see ~/opticks/notes/issues/SEvt__clear_double_call.rst
+#export SEvt__DEBUG_CLEAR=1
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
-#export CSGOptiX=INFO
-export QEvent=INFO 
-export QSim=INFO
+
+logging(){ 
+    export CSGOptiX=INFO
+    export QEvent=INFO 
+    export QSim=INFO
+}
+#logging
+
 
 
 vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR FOLD"
