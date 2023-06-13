@@ -463,7 +463,7 @@ void G4CXOpticks::render()
     LOG(LEVEL) << "[" ; 
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
-    cx->render_snap() ; 
+    cx->render() ; 
     LOG(LEVEL) << "]" ; 
 }
 

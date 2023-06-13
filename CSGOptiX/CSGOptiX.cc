@@ -143,11 +143,9 @@ Used by minimal render tests/CSGOptiXRdrTest.cc
 void CSGOptiX::RenderMain() // static
 {
     SEventConfig::SetRGMode("render"); 
-    // SSim::Create();  // WIP: check if needed, can defer until CSGFoundry::Load anyhow 
-    
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;  // uploads fd and then instanciates 
-    cx->render_snap(); 
+    cx->render(); 
 }
 
 
@@ -171,23 +169,20 @@ void CSGOptiX::SimulateMain() // static
 
     // HMM: the below frame setup cannot be done at SEvt level because it needs the geometry.. 
     // HMM: could however auto hookup frame with preexisting SEvt once geometry becomes available  
-
+    // SO it could be done a CSGFoundry level 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
-    sev->setFrame(fr);   // now only needs to be done once to transform input photons
+    sev->setFrame(fr); // now only needs to be done once to transform input photons
 
 
     // cx->setFrame(fr);   // into the SGLM.h instance,  WIP: checking not needed for sim ?
 
     LOG(info) << "===================== SEvt::BeginOfEvent " ; 
-    SEvt::BeginOfEvent(0); 
+    SEvt::BeginOfEvent(0);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
-    QSim* qs = cx->sim ;
-    qs->simulate();     
-    // NB: not cx->simulate 
-    // WIP: avoid the trap 
+    cx->simulate();     
 
-    SEvt::EndOfEvent(0); 
+    SEvt::EndOfEvent(0);   // SEvt save and clear  
 }
 
 
@@ -536,6 +531,22 @@ void CSGOptiX::initSimulate()
     params->tmax = 1000000.f ; 
 }
 
+
+/**
+CSGOptiX::simulate
+--------------------
+
+NB the distinction between this and simulate_launch, this 
+uses QSim::simulate to do genstep setup prior to calling 
+CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
+
+**/
+double CSGOptiX::simulate()
+{
+    assert(sim); 
+    double dt = sim->simulate() ;
+    return dt ; 
+}
 
 const char* CSGOptiX::TOP = "i0" ; 
 const char* CSGOptiX::Top()
@@ -976,20 +987,11 @@ const char* CSGOptiX::getRenderStemDefault() const
 
 
 /**
-CSGOptiX::render_snap
-------------------------
-
-Currently this is producing a large isect.npy file
-which slows down the debug cycle of looking at quick renders
-whilst changing transforms. 
-
-TODO: make the isect creation and writing configurable, perhaps using SEvt ? 
-
-TODO: optionally save frame and config metadata together with the render
-
+CSGOptiX::render  (formerly render_snap)
+-------------------------------------------
 **/
 
-void CSGOptiX::render_snap( const char* stem_ )
+void CSGOptiX::render( const char* stem_ )
 {
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
 #ifdef WITH_SGLM

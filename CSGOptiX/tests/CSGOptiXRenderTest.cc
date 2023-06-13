@@ -188,7 +188,7 @@ int main(int argc, char** argv)
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
         LOG(LEVEL) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
         t.setFrame_sla(); 
-        t.cx->render_snap(); 
+        t.cx->render(); 
     }
     else if( t.flight )
     {
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
             const char* arg = t.args[i].c_str(); 
             //LOG(LEVEL) << " arg:" << ( arg ? arg : "-" ) ; 
             t.cx->setFrame(arg); 
-            t.cx->render_snap(); 
+            t.cx->render(); 
         }
     }
     return 0 ; 
