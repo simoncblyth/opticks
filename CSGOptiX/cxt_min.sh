@@ -6,7 +6,9 @@ cxt_min.sh : Simtrace minimal executable and script for shakedown
 EOU
 }
 
-REALPATH=$(find $PWD -name $(basename $BASH_SOURCE)) # absolute path
+REALNAME=$(basename $BASH_SOURCE)
+REALSTEM=${REALNAME/.sh}
+REALPATH=$(find $PWD -name $REALNAME) # absolute path
 REALDIR=$(dirname $REALPATH)
 
 case $(uname) in
@@ -28,7 +30,6 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
 
 export BASE=$GDIR/$bin   # rsync special cases paths starting with . 
 export EVT=${EVT:-000}
-export FOLD=$HOME/$GDIR/$bin/ALL/$EVT
 export LOGDIR=$HOME/$BASE
 
 mkdir -p $LOGDIR 
@@ -48,6 +49,11 @@ export MOI=${MOI:-$moi}
 #export OPTICKS_EVENT_MODE=StandardFullDebug
 #export OPTICKS_MAX_BOUNCE=31
 
+## HMM: simtrace replaced ALL with the MOI value  MAYBE: STANDARDIZE ON ALL ?
+export FOLD=$HOME/$GDIR/$bin/$MOI/$EVT
+
+
+
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
@@ -59,7 +65,7 @@ logging(){
 #logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR REALNAME REALSTEM FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -88,13 +94,11 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
-
 if [ "${arg/grab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/cxt_min.py
+    ${IPYTHON:-ipython} --pdb -i $REALDIR/$REALSTEM.py
 fi 
-
 

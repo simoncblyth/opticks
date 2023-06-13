@@ -182,7 +182,7 @@ This "proceed" approach means that a single executable
 does very different things depending on the RGMode envvar. 
 That is not convenient for bookkeeping based on executable names 
 so instead use three separate executables that each use the 
-corresponing Main static method. 
+corresponding Main static method. 
 
 **/
 void CSGOptiX::Main() // static
