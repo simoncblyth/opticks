@@ -25,7 +25,7 @@
 
 
 
-#include "SSys.hh"
+#include "ssys.h"
 #include "SStr.hh"
 #include "SLogger.hh"
 #include "SSim.hh"
@@ -205,7 +205,7 @@ GGeo::GGeo(Opticks* ok, bool live)
 #ifdef OLD_SCENE
    m_gscene(NULL),
 #endif
-   m_save_mismatch_placements(SSys::getenvbool("OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS")),
+   m_save_mismatch_placements(ssys::getenvbool("OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS")),
    m_dump(NULL),
    m_gen(nullptr),
    m_placeholder_last(0)
@@ -617,6 +617,8 @@ for live running or from okg4/tests/OKX4Test.cc main for geocache-create.
 **/
 
 
+bool GGeo__postDirectTranslation_save = ssys::getenvbool("GGeo__postDirectTranslation_save") ; 
+
 void GGeo::postDirectTranslation()
 {
     LOG(LEVEL) << "[" ; 
@@ -628,9 +630,21 @@ void GGeo::postDirectTranslation()
     blib->fillMaterialLineMap();
     LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ; 
 
-    LOG(LEVEL) << "( GGeo::save " ; 
-    save();
-    LOG(LEVEL) << ") GGeo::save " ; 
+
+    if( GGeo__postDirectTranslation_save )
+    {
+        // HMM: this save is a bit surprising and tends to end up in different 
+        // dir tree from the CSGFoundry geometry
+        LOG(info) << "GGeo__postDirectTranslation_save" ; 
+
+        LOG(LEVEL) << "( GGeo::save " ; 
+        save();
+        LOG(LEVEL) << ") GGeo::save " ; 
+    }
+    else
+    {
+        LOG(info) << "NOT SAVING : SAVE BY DEFINING ENVVAR: GGeo__postDirectTranslation_save "  ; 
+    }
 
 
     deferred();  
@@ -797,7 +811,7 @@ Example call stack from integrated WITH_G4CXOPTICKS running::
 
 **/
 
-
+bool GGeo__save_SIGINT = ssys::getenvbool("GGeo__save_SIGINT") ; 
 
 void GGeo::save()
 {
@@ -807,10 +821,20 @@ void GGeo::save()
         prepare();
     }   
 
+
+
     std::string s = m_geolib->summary("GGeo::save");
     LOG(LEVEL) << std::endl << s ; 
 
     const char* idpath = m_ok->getIdPath() ;
+    LOG(info) << " idpath " << ( idpath ? idpath : "-" ) ; 
+
+    if(GGeo__save_SIGINT)
+    {
+        LOG(info) << "GGeo__save_SIGINT" ; 
+        std::raise(SIGINT); 
+    }
+
     if( idpath == nullptr ) 
     {
          LOG(LEVEL) << "cannot save as no idpath set" ; 
@@ -890,7 +914,7 @@ void GGeo::saveCacheMeta() const
 void GGeo::saveGLTF() const 
 {
 #ifdef WITH_YOCTOGLRAP
-    int root = SSys::getenvint( "GLTF_ROOT", 3147 );  
+    int root = ssys::getenvint( "GLTF_ROOT", 3147 );  
     const char* gltfpath = m_ok->getGLTFPath(); 
     m_ok->profile("_GGeo::saveGLTF"); 
     GGeoGLTF::Save(this, gltfpath, root );  
@@ -1594,8 +1618,8 @@ void GGeo::deferredCreateGParts()
     unsigned nmm = m_geolib->getNumMergedMesh(); 
     const char* base = m_ok->DebugGPartsPath(); 
 
-    int GGeo_deferredCreateGParts_SKIP = SSys::getenvint("GGeo_deferredCreateGParts_SKIP", -1 ); 
-    int GParts_debug = SSys::getenvint("GParts_debug", ~0u ); 
+    int GGeo_deferredCreateGParts_SKIP = ssys::getenvint("GGeo_deferredCreateGParts_SKIP", -1 ); 
+    int GParts_debug = ssys::getenvint("GParts_debug", ~0u ); 
 
 
     if(GGeo_deferredCreateGParts_SKIP != -1) 
@@ -2587,7 +2611,7 @@ void GGeo::convertSim_Prop(SSim* sim) const
 void GGeo::convertSim_MultiFilm(SSim* sim) const 
 {
     const char* defpath = "/tmp/debug_multi_film_table/all_table.npy" ; 
-    const char* path = SSys::getenvvar("SSIM_MULTIFILM_PATH", defpath); 
+    const char* path = ssys::getenvvar("SSIM_MULTIFILM_PATH", defpath); 
     if(NP::Exists(path))
     {
         const NP* multifilm = NP::Load(path);  
