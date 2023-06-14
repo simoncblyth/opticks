@@ -81,10 +81,24 @@ void G4CXOpticks::SetNoGPU(bool no_gpu){ NoGPU = no_gpu ; }
 bool G4CXOpticks::IsNoGPU(){  return NoGPU ; }  
 
 
+/**
+G4CXOpticks::G4CXOpticks
+--------------------------
+
+HMM: sim in GX ctor seems out of place, shouldnt that be coming from CSGFoundry ?
+
+* part of reason is need to get stree from SSim during conversion before CSGFoundry ctor 
+* maybe CSGFoundry should be adopting any preexisting SSim 
+
+* HMM: is this is an argument for SSim to live with SEvt rather than with the geometry ?
+* NO : constant nature of SSim makes saving it with the geometry make a lot of sense, 
+  so best to stay with the geometry
+
+**/
 
 G4CXOpticks::G4CXOpticks()
     :
-    sim(SSim::Create()),      // HMM: is there a better place to do this frm lower level ?
+    sim(SSim::Create()),   
     tr(nullptr),
     wd(nullptr),
     gg(nullptr),
@@ -279,7 +293,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 {
     fd = fd_ ; 
 
-    if( setGeometry_saveGeometry )
+    if( setGeometry_saveGeometry != nullptr )
     {
         LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
         saveGeometry(setGeometry_saveGeometry); 
@@ -537,6 +551,7 @@ void G4CXOpticks::saveGeometry() const
 }
 void G4CXOpticks::saveGeometry(const char* dir_) const
 {
+    LOG(LEVEL) << " dir_ " << dir_ ; 
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(LEVEL) << "[ " << ( dir ? dir : "-" ) ; 
     LOG(info)  << "[ " << ( dir ? dir : "-" ) ; 
