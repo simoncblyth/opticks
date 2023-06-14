@@ -18,7 +18,7 @@
  */
 
  
-#include "SSys.hh"
+#include "ssys.h"
 #include "BFile.hh"
 #include "BStr.hh"
 #include "BResource.hh"
@@ -68,7 +68,7 @@ void BFile::dumpOpticksPathPrefix(const char* msg)
 
 void BFile::setOpticksPathPrefixFromEnv(const char* envvar)
 {
-    const char* prefix = SSys::getenvvar(envvar);
+    const char* prefix = ssys::getenvvar(envvar);
     if(prefix)
     {
         setOpticksPathPrefix(prefix);
@@ -105,7 +105,7 @@ defaults to /tmp/<username>/opticks
 
 std::string BFile::UserTmpDir()
 {
-    const char* tmp = SSys::getenvvar(OPTICKS_USER_TMP_KEY) ;
+    const char* tmp = ssys::getenvvar(OPTICKS_USER_TMP_KEY) ;
     if(tmp) return tmp ; 
     return usertmpdir("/tmp", "opticks", NULL ) ; 
 }
@@ -145,7 +145,7 @@ std::string BFile::usertmpdir(const char* base, const char* sub, const char* rel
 {
     fs::path p(base) ; 
 
-    const char* user = SSys::username(); 
+    const char* user = ssys::username(); 
 
     if(user) p /= user ;
     if(sub) p /= sub ; 
@@ -270,10 +270,10 @@ const char* BFile::OPTICKS_USER_TMP_KEY  = "TMP" ;
 std::string BFile::ResolveKey( const char* _key )
 {
     bool is_home = strcmp(_key, "HOME") == 0  ; 
-    bool has_home_override = SSys::getenvvar(OPTICKS_USER_HOME_KEY) != NULL ; 
+    bool has_home_override = ssys::getenvvar(OPTICKS_USER_HOME_KEY) != NULL ; 
     const char* key = is_home && has_home_override ? OPTICKS_USER_HOME_KEY  : _key ;   
 
-    const char* envvar = SSys::getenvvar(key) ;
+    const char* envvar = ssys::getenvvar(key) ;
     std::string evalue ; 
 
     if( IsAllowedEnvvar(key) )
@@ -825,8 +825,15 @@ std::string BFile::preparePath(const char* path_, bool create )
 }
 
 
+bool BFile__preparePath_SIGINT = ssys::getenvbool("BFile__preparePath_SIGINT") ; 
+
 std::string BFile::preparePath(const char* dir_, const char* name, bool create )
 {
+    if(BFile__preparePath_SIGINT)
+    {
+         LOG(info) << "BFile__preparePath_SIGINT" ; 
+         std::raise(SIGINT); 
+    }
 
     std::string dir = BFile::FormPath(dir_) ; 
     fs::path fdir(dir.c_str());
@@ -913,7 +920,7 @@ std::size_t BFile::FileSize( const char* path_ )
 
 const char* BFile::ResolveScript(const char* script_name, const char* fallback_directory)
 {
-    std::string path = SSys::Which(script_name); 
+    std::string path = ssys::which(script_name); 
     if(path.empty() && fallback_directory != NULL)
     {
         path = FormPath(fallback_directory, script_name);   

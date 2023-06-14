@@ -24,6 +24,21 @@ void test_popen_1()
     std::cout << ssys::popen("md5 -q -s hello") << std::endl ; 
 }
 
+void test_username()
+{
+    std::cout << "ssys::username [" << ssys::username() << "]" << std::endl ; 
+}
+void test_which ()
+{
+    std::cout << "ssys::which(\"md5\") [" << ssys::which("md5") << "]" << std::endl ; 
+}
+
+
+
+
+
+
+
 void test_getenv_()
 {
     int i = ssys::getenv_<int>("i",0) ; 
@@ -167,8 +182,10 @@ int main(int argc, char** argv)
     test_replace_envvar_token(); 
     test_getenv_kv(); 
     test_getenvfloat(); 
-    */
     test_getenvdouble(); 
+    */
+    test_username(); 
+    test_which(); 
 
  
     return 0 ; 

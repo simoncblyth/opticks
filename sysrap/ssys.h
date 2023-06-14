@@ -14,12 +14,19 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <regex>
 #include <sstream>
 #include <vector>
+#include <iostream>
 #include <map>
 
 
 struct ssys
 {
+    static constexpr const bool VERBOSE = false ; 
+
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);      
+    static std::string popen(const char* cmda, const char* cmdb, bool chomp=true, int* rc=nullptr); 
+    static std::string which(const char* script); 
+
+    static const char* getenvvar(const char* ekey ); 
     static const char* getenvvar(const char* ekey, const char* fallback); 
     static const char* getenvvar(const char* ekey, const char* fallback, char q, char r ); 
 
@@ -62,6 +69,8 @@ struct ssys
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
 
+    static const char* username(); 
+
 }; 
 
 
@@ -86,12 +95,51 @@ inline std::string ssys::popen(const char* cmd, bool chomp, int* rc)
     return s ; 
 }
 
+inline std::string ssys::popen(const char* cmda, const char* cmdb, bool chomp, int* rc)
+{
+    std::stringstream ss ; 
+    if(cmda) ss << cmda ; 
+    ss << " " ; 
+    if(cmdb) ss << cmdb ; 
+
+    std::string s = ss.str(); 
+    return popen(s.c_str(), chomp, rc ); 
+}
+
+
+
+
+
+inline std::string ssys::which(const char* script)
+{
+    bool chomp = true ; 
+    int rc(0); 
+    std::string path = ssys::popen("which 2>/dev/null", script, chomp, &rc );
+
+    if(VERBOSE) std::cerr
+         << " script " << script
+         << " path " << path 
+         << " rc " << rc
+         << std::endl 
+         ;
+
+    std::string empty ; 
+    return rc == 0 ? path : empty ; 
+}
+
+
+
+
+inline const char* ssys::getenvvar(const char* ekey)
+{
+    char* val = getenv(ekey);
+    return val ; 
+}
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
 {
     char* val = getenv(ekey);
     return val ? val : fallback ; 
 }
-
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char q, char r)
 {
      const char* v = getenvvar(ekey, fallback) ; 
@@ -348,6 +396,17 @@ template std::string ssys::desc_vec(const std::vector<unsigned>* , unsigned ) ;
 template std::string ssys::desc_vec(const std::vector<float>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<double>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<std::string>* , unsigned ) ; 
+
+inline const char* ssys::username()
+{
+#ifdef _MSC_VER
+    const char* user = ssys::getenvvar("USERNAME", "no-USERNAME") ;
+#else
+    const char* user = ssys::getenvvar("USER", "no-USER" ) ;
+#endif
+    return user ? user : "ssys-username-undefined" ; 
+}
+
 
 
 
