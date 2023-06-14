@@ -291,6 +291,19 @@ class SEvt(object):
         self.qlim = qlim
         self.qtab_ = qtab_
 
+    def minimal_qtab(self):
+        """
+        :return qtab: history table in descending count order 
+        """
+        e = self
+        uq,iq,nq = np.unique(e.q, return_index=True, return_counts=True) 
+        oq = np.argsort(nq)[::-1]  
+        expr ="np.c_[nq,iq,uq][oq][:10]"   
+        qtab = eval(expr)
+        log.info("minimal_qtab : %s " % expr)
+        print(qtab)
+        return qtab
+
     def init_aux(self, f):
         if hasattr(f, 'aux') and not f.aux is None: 
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled

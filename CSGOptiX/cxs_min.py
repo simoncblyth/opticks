@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import os, numpy as np
-from opticks.ana.fold import Fold
+import os, logging, numpy as np
 from opticks.sysrap.sevt import SEvt
 
+log = logging.getLogger(__name__)
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
 
@@ -13,14 +13,14 @@ if MODE in [2,3]:
 pass
 
 if __name__ == '__main__':
-
+    logging.basicConfig(level=logging.INFO)
     print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
-
-    t = Fold.Load(symbol="t")
-    print(repr(t))
 
     e = SEvt.Load(symbol="e")
     print(repr(e))
+
+    qtab = e.minimal_qtab()
+
 
     label = e.f.base
 
