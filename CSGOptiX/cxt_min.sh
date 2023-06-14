@@ -36,11 +36,11 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 LOG=$bin.log
 
-#moi=-1
+moi=ALL
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
-moi=NNVT:0:1000
+#moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
 #moi=sChimneyAcrylic 
 
@@ -53,6 +53,8 @@ export MOI=${MOI:-$moi}
 export FOLD=$HOME/$GDIR/$bin/$MOI/$EVT
 
 
+#export CEGS=16:0:9:1000   # XZ default 
+export CEGS=16:9:0:1000    # try XY 
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}

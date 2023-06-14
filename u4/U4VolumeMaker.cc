@@ -398,6 +398,7 @@ const G4VPhysicalVolume* U4VolumeMaker::Wrap( const char* name, std::vector<G4Lo
 {
     const char* wrap = SOpticksResource::GEOMWrap(name);  
     LOG(LEVEL) << "[ name " << name << " GEOMWrap " << ( wrap ? wrap : "-" ) ; 
+    std::cerr << "U4VolumeMaker::Wrap "  << "[ name " << name << " GEOMWrap " << ( wrap ? wrap : "-" ) << std::endl ; 
     const G4VPhysicalVolume* pv = wrap == nullptr ? WrapRockWater( items_lv ) : WrapAroundItem( name, items_lv, wrap );  
     LOG(LEVEL) << "] name " << name << " wrap " << ( wrap ? wrap : "-" ) << " pv " << ( pv ? "YES" : "NO" ) ; 
     return pv ;  
@@ -433,9 +434,12 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( std::vector<G4LogicalVolu
     G4LogicalVolume* item_lv = items_lv[items_lv.size()-1] ;  
 
     LOG(LEVEL) << "[ items_lv.size " << items_lv.size()   ; 
+    std::cerr << "[ items_lv.size " << items_lv.size() << std::endl  ; 
 
     double rock_halfside  = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_Rock_HALFSIDE , 1000.); 
     double water_halfside = ssys::getenv_<double>(U4VolumeMaker_WrapRockWater_Water_HALFSIDE,  900. ); 
+
+
 
     std::vector<double>* _boxscale = ssys::getenv_vec<double>(U4VolumeMaker_WrapRockWater_BOXSCALE, "1,1,1" ); 
     if(_boxscale) assert(_boxscale->size() == 3 ); 
@@ -443,6 +447,10 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( std::vector<G4LogicalVolu
 
     LOG(LEVEL) << U4VolumeMaker_WrapRockWater_Rock_HALFSIDE << " " << rock_halfside ; 
     LOG(LEVEL) << U4VolumeMaker_WrapRockWater_Water_HALFSIDE << " " << water_halfside ; 
+
+    std::cerr << U4VolumeMaker_WrapRockWater_Rock_HALFSIDE << " " << rock_halfside << std::endl ; 
+    std::cerr << U4VolumeMaker_WrapRockWater_Water_HALFSIDE << " " << water_halfside << std::endl ; 
+
 
     G4LogicalVolume*  rock_lv  = Box_(rock_halfside,  "Rock",  nullptr, boxscale );
     G4LogicalVolume*  water_lv = Box_(water_halfside, "Water", nullptr, boxscale );

@@ -131,6 +131,8 @@ which makes the config available from python.
 
 **/
 
+const char* SFrameGenstep::CEGS_XY = "16:9:0:1000" ;  
+const char* SFrameGenstep::CEGS_XZ = "16:0:9:1000" ;  // default 
 
 NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 {
@@ -139,7 +141,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
     // CSGGenstep::init
     std::vector<int> cegs ; 
-    GetGridConfig(cegs, "CEGS", ':', "16:0:9:1000" ); 
+    GetGridConfig(cegs, "CEGS", ':', CEGS_XZ ); 
     fr.set_grid(cegs, gridscale); 
 
     std::vector<float3> ce_offset ; 

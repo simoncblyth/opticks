@@ -71,6 +71,9 @@ struct SYSRAP_API SFrameGenstep
 
     static void GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback ); 
 
+    static const char* CEGS_XY ; 
+    static const char* CEGS_XZ ;  // default 
+
     static NP* MakeCenterExtentGensteps(sframe& fr); 
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) ;
 

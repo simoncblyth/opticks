@@ -35,6 +35,7 @@ export GProperty_SIGINT=1
 export GGeo__save_SIGINT=1
 
 export G4CXOpticks__setGeometry_saveGeometry=~/.opticks/GEOM/$GEOM
+export U4VolumeMaker=INFO
 
 
 loglevels(){

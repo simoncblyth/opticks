@@ -55,20 +55,20 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to load
 
 
-#moi=-1
+moi=ALL
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
 #moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
-moi=sChimneyAcrylic 
+#moi=sChimneyAcrylic 
 
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
-#eye=-1,-1,0
+eye=-1,-1,0
 #eye=-1,-1,3
-eye=-1,-1,3
+#eye=-1,-1,3
 
 zoom=1
 tmin=0.5
@@ -78,6 +78,7 @@ icam=0
 escale=extent
 
 case $moi in 
+   ALL) eye=0,1.5,0 ; tmin=0.1 ; zoom=1.2 ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
    UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
