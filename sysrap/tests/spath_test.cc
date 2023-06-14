@@ -7,7 +7,12 @@
 
 void test_ResolvePath()
 {
-    std::vector<std::string> specs = {"$HOME/hello.npy", "$HOME" } ; 
+    std::vector<std::string> specs = {
+        "$HOME/hello.npy", 
+        "$HOME", 
+        "$HOME/red/green/blue$HOME",
+        "$HOME/red/green/blue$HOME/cyan/magenta"
+         } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++)
     { 
@@ -70,8 +75,9 @@ int main(int argc, char** argv)
     test_ResolvePath(); 
     test_Resolve(); 
     test_Exists(); 
-    */
     test_Exists2(); 
+    */
+    test_ResolvePath(); 
 
 
     return 0 ; 

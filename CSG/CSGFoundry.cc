@@ -2546,55 +2546,32 @@ This is used from CSGFoundry::ELV to create the SBitSet of included/excluded LV.
 
 
 String configuring dynamic shape selection of form : t110,117,134 or null when 
-there is no selection.  The value is obtained from either:
+there is no selection.  The value is obtained from:
 
-1. SGeoConfig::ELVSelection() which defaults to the OPTICKS_ELV_SELECTION envvar value 
-   and can be changed by the SGeoConfig::SetELVSelection static, a comma delimited list of 
-   mesh names is expected, for example: 
-   "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x"
+* SGeoConfig::ELVSelection() which defaults to the OPTICKS_ELV_SELECTION envvar value 
+  and can be changed by the SGeoConfig::SetELVSelection static, a comma delimited list of 
+  mesh names is expected, for example: 
+  "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x"
 
-   If any of the names are not found in the geometry the selection request is ignored.   
-
-2. ELV envvar which is expected to be a comma delimited list of mesh indices, eg "t110,117,134"
-
-
-HMM: could detect the indices or names form in use and parse accordingly, then would only need one envvar
-or simply remove the lower level ELV form or obfuscate it with a long envvar key 
+  If any of the names are not found in the geometry the selection request is ignored.   
 
 **/
 
 const char* CSGFoundry::ELVString(const SName* id)
 {
-    const char* elv_selection_ = SGeoConfig::ELVSelection() ; 
-    const char* elv = nullptr ; 
-    if( elv_selection_ )
-    {
-        bool has_names = id->hasNames(elv_selection_);  
-        if(has_names)
-        {
-            elv = id->getIDXListFromNames(elv_selection_, ',', "t" ); 
-        }
-        else
-        {
-            LOG(fatal) << "geometry does not have all the elv_selection_ names [" << elv_selection_ << "] NO SELECTION WILL BE APPLIED " ; 
-        }
-    }
-    else
-    {
-        elv = SSys::getenvvar("ELV", nullptr ); 
-    }
-
+    const char* elv = SGeoConfig::ELVSelection(id) ; 
     LOG(LEVEL) 
-        << " elv_selection_ " << elv_selection_
         << " elv " << elv
         ; 
-
+    
     return elv ; 
 }
 
 /**
 CSGFoundry::ELV
 ----------------
+
+Sensitive to OPTICKS_ELV_SELECTION
 
 **/
 

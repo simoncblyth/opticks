@@ -18,6 +18,7 @@ struct SName ;
 struct SYSRAP_API SGeoConfig
 {
     static const plog::Severity LEVEL ; 
+    static constexpr const bool VERBOSE = false ; 
     static std::string Desc(); 
     static std::string DescEMM(); 
 
@@ -45,12 +46,14 @@ struct SYSRAP_API SGeoConfig
     static const char* _CXSkipLV_IDXList ; 
 
     static unsigned long long EnabledMergedMesh() ; 
-    static const char* ELVSelection(); 
     static const char* SolidSelection(); 
     static const char* FlightConfig(); 
     static const char* ArglistPath(); 
     static const char* CXSkipLV(); 
     static const char* CXSkipLV_IDXList(); 
+    static const char* ELVSelection(); 
+    static const char* ELVSelection(const SName* id);
+
 
     static void SetCXSkipLV_IDXList(const SName* id); 
 

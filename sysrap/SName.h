@@ -16,14 +16,15 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 #include <iomanip>
 #include <fstream>
 
-#include "SPath.hh"
-#include "SStr.hh"
+#include "spath.h"
+#include "sstr.h"
 
 
 enum { SName_EXACT, SName_START, SName_CONTAIN } ; 
 
 struct SName
 {
+    static constexpr const bool VERBOSE = false ; 
     static constexpr const char* EXACT = "EXACT" ; 
     static constexpr const char* START = "START" ; 
     static constexpr const char* CONTAIN = "CONTAIN" ; 
@@ -32,7 +33,10 @@ struct SName
     static const char* QLabel(unsigned qtype); 
     static const char* QTypeLabel(char qt); 
     static bool Match( const char* n, const char* q, unsigned qtype ); 
+
     static SName* Load(const char* path); 
+    static constexpr const char* GEOMLoadPath = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ;  
+    static SName* GEOMLoad(); 
 
     static constexpr const char* parseArg_ALL = "ALL" ; 
     static const bool dump = false ; 
@@ -60,7 +64,7 @@ struct SName
     void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const ; 
 
     bool hasName(  const char* q ) const ; 
-    bool hasNames( const char* qq, char delim=',' ) const ; 
+    bool hasNames( const char* qq, char delim=',', const char* prefix=nullptr ) const ; 
     bool hasNames( const std::vector<std::string>& qq ) const ; 
 
 
@@ -81,7 +85,17 @@ struct SName
 
 inline SName* SName::Load(const char* path_)
 {
-    const char* path = SPath::Resolve(path_, NOOP); 
+    const char* path = spath::ResolvePath(path_); 
+    if(path == nullptr) 
+    {
+        std::cerr 
+            << "SName::Load FAILED to ResolvePath [" 
+            << ( path_ ? path_ : "-" ) 
+            << std::endl
+            ; 
+        return nullptr ; 
+    }
+
     typedef std::vector<std::string> VS ; 
     VS* names = new VS ; 
 
@@ -92,6 +106,8 @@ inline SName* SName::Load(const char* path_)
     SName* id = new SName(*names) ; 
     return id ;
 }
+
+inline SName* SName::GEOMLoad(){ return Load(GEOMLoadPath); }
 
 
 inline SName::SName( const std::vector<std::string>& name_ )
@@ -268,7 +284,7 @@ inline int SName::findIndex(const char* starting, unsigned& count, int max_count
     for(unsigned i=0 ; i < name.size() ; i++)
     {   
         const std::string& k = name[i] ;
-        if( SStr::StartsWith( k.c_str(), starting ))  
+        if( sstr::MatchStart( k.c_str(), starting ))  
         {   
             if(count == 0) result = i ; 
             count += 1 ;  
@@ -298,7 +314,17 @@ the names to be found, as they will often not be there.
 
 inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const 
 {
-    for(unsigned i=0 ; i < qq.size() ; i++)
+    unsigned nqq = qq.size(); 
+
+    if(VERBOSE) std::cerr
+        << "SName::findIndicesFromNames"
+        << " qq.size " << nqq
+        << std::endl
+        ;
+
+    if(VERBOSE) for(unsigned i=0 ; i < nqq ; i++ ) std::cerr << qq[i] << std::endl ; 
+
+    for(unsigned i=0 ; i < nqq ; i++)
     {   
         const char* q = qq[i].c_str(); 
         int idx = findIndex(q) ;  
@@ -313,10 +339,19 @@ inline bool SName::hasName(  const char* q ) const
     bool has = idx > -1 ; 
     return has ; 
 }
-inline bool SName::hasNames( const char* qq_, char delim ) const 
+inline bool SName::hasNames( const char* qq_, char delim, const char* prefix ) const 
 {
+    const char* uqq = qq_ + ( prefix ? strlen(prefix) : 0 ) ; 
+    if(VERBOSE) std::cerr 
+        << "SName::hasNames.qq.d.p "
+        << " prefix " << ( prefix ? prefix : "-" )
+        << " qq_ " << ( qq_ ? qq_ : "-" )
+        << " uqq " << ( uqq ? uqq : "-" )
+        << std::endl
+        ;
+
     std::vector<std::string> qq; 
-    SStr::Split(qq_, delim, qq); 
+    sstr::Split(uqq, delim, qq); 
     return hasNames(qq); 
 }
 inline bool SName::hasNames( const std::vector<std::string>& qq ) const 
@@ -324,6 +359,13 @@ inline bool SName::hasNames( const std::vector<std::string>& qq ) const
     std::vector<unsigned> idxs ; 
     findIndicesFromNames(idxs, qq); 
     bool has_all = qq.size() == idxs.size() ; 
+    if(VERBOSE) std::cerr 
+        << "SName::hasNames.qq "
+        << " qq.size " << qq.size()
+        << " idxs.size " << idxs.size()
+        << " has_all " << has_all
+        << std::endl 
+        ;
     return has_all ; 
 }
 
@@ -369,8 +411,8 @@ inline bool SName::Match( const char* n, const char* q, unsigned qtype ) // stat
     switch( qtype )
     {
         case SName_EXACT:   match = strcmp(n,q) == 0       ; break ;  // n exactly matches q string  
-        case SName_START:   match = SStr::StartsWith(n,q)  ; break ;  // n starts with q string  
-        case SName_CONTAIN: match = SStr::Contains(n,q)    ; break ;  // n contains the q string
+        case SName_START:   match = sstr::MatchStart(n,q)  ; break ;  // n starts with q string  
+        case SName_CONTAIN: match = sstr::Contains(n,q)    ; break ;  // n contains the q string
     }
     return match ; 
 }
@@ -388,8 +430,9 @@ inline void SName::findIndices(std::vector<unsigned>& idxs, const char* q, char 
 
 inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix) const 
 {
+    const char* unames = prefix == nullptr ?  names_ : names_ + strlen(prefix ) ;  
     std::vector<std::string> names ; 
-    SStr::Split(names_, delim, names); 
+    sstr::Split(unames, delim, names); 
     return getIDXListFromNames( names, prefix ); 
 }
 inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix ) const 
@@ -528,7 +571,7 @@ SName::ParseSOPR
 
 inline void SName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ ) // static
 {
-    const char* sopr = SStr::ReplaceChars(sopr_, "_", ':'); 
+    const char* sopr = sstr::ReplaceChars(sopr_, "_", ':'); 
 
     std::stringstream ss; 
     ss.str(sopr)  ;

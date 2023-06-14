@@ -20,12 +20,17 @@ struct sstr
     static bool MatchStart( const char* s, const char* q); 
     static bool MatchEnd(   const char* s, const char* q); 
 
+    static bool Contains(   const char* s_ , const char* q_); 
+
 
     static const char* TrimTrailing(const char* s);
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
     static std::string RemoveSpaces(const char* s);  
     static std::string Replace(const char* s, char q, char r); 
+
+    static const char* ReplaceChars(const char* str, const char* repl, char to ); 
+
 
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
@@ -76,6 +81,19 @@ inline bool sstr::MatchAll( const char* s, const char* q)
 {
     return s && q && strcmp(s, q) == 0 ; 
 }
+
+/**
+sstr::MatchStart (NB this can replace SStr::StartsWith with same args)
+-------------------------------------------------------------------------
+
+The 2nd query string must be less than or equal to the length of the first string and 
+all the characters of the query string must match with the first string in order 
+to return true.::
+
+                    s              q  
+   sstr::MatchStart("hello/world", "hello") == true 
+
+**/
 inline bool sstr::MatchStart( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
@@ -85,6 +103,15 @@ inline bool sstr::MatchEnd( const char* s, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+
+inline bool sstr::Contains( const char* s_ , const char* q_ )
+{       
+    std::string s(s_); 
+    std::string q(q_);  
+    return s.find(q) != std::string::npos ;
+}
+
+
 
 
 inline const char* sstr::TrimTrailing(const char* s) // reposition null terminator to skip trailing whitespace 
@@ -124,6 +151,13 @@ inline std::string sstr::Replace(const char* s, char q, char r) // static
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline const char* sstr::ReplaceChars(const char* str, const char* repl, char to )
+{
+    char* s = strdup(str);  
+    for(unsigned i=0 ; i < strlen(s) ; i++) if(strchr(repl, s[i]) != nullptr) s[i] = to ;
+    return s ; 
+}   
 
 
 

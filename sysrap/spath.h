@@ -9,6 +9,9 @@
 
 struct spath
 {
+    static constexpr const bool VERBOSE = false ; 
+
+    static std::string _ResolvePath0(const char* spec); 
     static std::string _ResolvePath(const char* spec); 
     static const char* ResolvePath(const char* spec); 
 
@@ -31,8 +34,8 @@ struct spath
 };
 
 /**
-spath::_ResolvePath
----------------------
+spath::_ResolvePath0 : old impl that only works for tokens at start of spec
+-----------------------------------------------------------------------------
 ::
 
     $TOKEN/remainder/path/name.npy   (tok_plus) 
@@ -42,9 +45,9 @@ If the TOKEN envvar is not set then nullptr is returned.
 
 **/
 
-inline std::string spath::_ResolvePath(const char* spec_)
+inline std::string spath::_ResolvePath0(const char* spec_)
 {
-    if(spec_ == nullptr) return nullptr ; 
+    if(spec_ == nullptr) return "" ; 
     char* spec = strdup(spec_); 
 
     std::stringstream ss ; 
@@ -55,7 +58,7 @@ inline std::string spath::_ResolvePath(const char* spec_)
         bool tok_plus =  sep && end && sep != end ;  
         if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
         char* pfx = getenv(spec+1) ; 
-        if(pfx == nullptr) return nullptr ;  
+        if(pfx == nullptr) return "" ;  
         if(tok_plus) *sep = '/' ;            // put back the slash 
         ss << pfx << ( sep ? sep : "" ) ; 
     }
@@ -66,9 +69,69 @@ inline std::string spath::_ResolvePath(const char* spec_)
     std::string str = ss.str(); 
     return str ; 
 }
+
+/**
+spath::_ResolvePath
+----------------------
+
+Try to work with multiple tokens, eg::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt
+
+**/
+
+inline std::string spath::_ResolvePath(const char* spec_)
+{
+    if(spec_ == nullptr) return "" ; 
+    char* spec = strdup(spec_); 
+
+    std::stringstream ss ; 
+    int speclen = int(strlen(spec)) ;  
+    char* end = strchr(spec, '\0' ); 
+    int i = 0 ; 
+
+    if(VERBOSE) std::cout << " spec " << spec << " speclen " << speclen << std::endl ; 
+
+    while( i < speclen )
+    {
+        if(VERBOSE) std::cout << " i " << i << " spec[i] " << spec[i] << std::endl ;   
+        if( spec[i] == '$' )
+        {
+            char* p = spec + i ; 
+            char* sep = strchr( p, '/' ) ; // first slash after token   
+            bool tok_plus =  sep && end && sep != end ;  
+            if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
+            char* val = getenv(p+1) ;  // skip '$'
+            int toklen = int(strlen(p)) ;  // strlen("TOKEN")  no need for +1 as already at '$'  
+            if(VERBOSE) std::cout << " toklen " << toklen << std::endl ;  
+            if(val == nullptr) 
+            {
+                std::cerr 
+                    << "spath::_ResolvePath token [" 
+                    << p+1 
+                    << "] does not resolve " 
+                    << std::endl 
+                    ; 
+                return "" ;    // all tokens must resolve 
+            }
+            if(tok_plus) *sep = '/' ;            // put back the slash 
+            ss << val  ; 
+
+            i += toklen ;   // skip over the token 
+        }
+        else
+        {
+           ss << spec[i] ; 
+           i += 1 ; 
+        }
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 inline const char* spath::ResolvePath(const char* spec_)
 {
-    std::string path = _ResolvePath(spec_) ;  
+    std::string path = _ResolvePath(spec_) ;
     return strdup(path.c_str()) ; 
 }
 

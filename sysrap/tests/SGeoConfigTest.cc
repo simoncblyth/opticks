@@ -37,20 +37,38 @@ void test_CXSkipLV(const SName* id)
     } 
 }
 
+void test_ELVSelection(const SName* id )
+{
+    const char* elv = SGeoConfig::ELVSelection(id) ; 
+    std::cout 
+        << " test_ELVSelection " 
+        << std::endl 
+        << " elv " << ( elv ? elv : "-" )
+        << std::endl 
+        ;
+
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SName* id = SName::Load("$CFBase/CSGFoundry/meshname.txt"); 
+    //const char* idp = "$CFBase/CSGFoundry/meshname.txt" ; 
+    const char* idp = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ; 
+
+    SName* id = SName::Load(idp); 
     std::cout << id->detail() << std::endl ; 
 
+    /*
     SGeoConfig::GeometrySpecificSetup(id); 
     LOG(info) << SGeoConfig::Desc() ; 
     LOG(info) << SGeoConfig::DescEMM() ; 
-
     test_Arglist(); 
     test_CXSkipLV(id); 
+    */
+
+    test_ELVSelection(id); 
 
     return 0 ; 
 }

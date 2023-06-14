@@ -1,10 +1,12 @@
-// name=SName_test ; gcc $name.cc -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name 
+// ./SName_test.sh
 #include <iostream>
 #include <iomanip>
 #include <cstring>
 #include <string>
 
-int main(int argc, char** argv)
+#include "SName.h"
+
+void test_args(int argc, char** argv)
 {
     const char* name = argv[0] ;     
     char* sname = strdup(name); 
@@ -25,7 +27,28 @@ int main(int argc, char** argv)
              << std::endl 
              ; 
     }
+}
+
+void test_Load()
+{
+    const char* idp = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ; 
+    SName* id = SName::Load(idp); 
+    std::cout << id->detail() << std::endl ; 
+}
+
+void test_GEOMLoad()
+{
+    SName* id = SName::GEOMLoad(); 
+    std::cout << id->detail() << std::endl ; 
+}
+
+int main(int argc, char** argv)
+{
+    /*
+    test_args(argc, argv); 
+    test_Load(); 
+    */
+    test_GEOMLoad(); 
 
     return 0 ; 
-
 }

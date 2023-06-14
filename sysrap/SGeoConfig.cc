@@ -31,15 +31,57 @@ void SGeoConfig::SetArglistPath(   const char* ap){  _ArglistPath    = ap ? strd
 void SGeoConfig::SetCXSkipLV(      const char* cx){  _CXSkipLV       = cx ? strdup(cx) : nullptr ; }
 
 unsigned long long SGeoConfig::EnabledMergedMesh(){  return _EMM ; } 
-const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
 const char* SGeoConfig::SolidSelection(){ return _SolidSelection ; }
 const char* SGeoConfig::FlightConfig(){   return _FlightConfig ; }
 const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
 const char* SGeoConfig::CXSkipLV(){       return _CXSkipLV ? _CXSkipLV : "" ; }
 const char* SGeoConfig::CXSkipLV_IDXList(){  return _CXSkipLV_IDXList ? _CXSkipLV_IDXList : "" ; }
 
+const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
+const char* SGeoConfig::ELVSelection(const SName* id )
+{
+    const char* elv_selection_ = ELVSelection() ; 
+    const char* elv = nullptr ; 
+    char delim = ',' ; 
 
+    if(VERBOSE) std::cerr 
+        << "SGeoConfig::ELVSelection"
+        << " elv_selection_ " << ( elv_selection_ ? elv_selection_ : "-" )
+        << std::endl 
+        ;
 
+    if( elv_selection_ )
+    {   
+        bool with_flip = elv_selection_[0] == '~' || elv_selection_[0] == 't' ;  
+        const char* prefix = with_flip ? "t" : nullptr ; 
+
+        if(VERBOSE) std::cerr 
+            << "SGeoConfig::ELVSelection"
+            << " with_flip " << ( with_flip ? "Y" : "N" )
+            << " prefix " << ( prefix ? prefix : "-" )
+            << " strlen(prefix) " << ( prefix ? strlen(prefix) : 0 ) 
+            << std::endl
+            ;
+
+        bool has_names = id->hasNames(elv_selection_, delim, prefix );  
+
+        if(VERBOSE) std::cerr
+            << "SGeoConfig::ELVSelection" 
+            << " after has_names " << ( has_names ? "Y" : "N" )
+            << std::endl 
+            ;
+
+        if(has_names)
+        {    
+            elv = id->getIDXListFromNames(elv_selection_, delim, prefix ); 
+        }    
+        else 
+        {    
+            elv = elv_selection_ ;  // eg when just numbers 
+        }    
+    }    
+    return elv ;  
+}
 
 
 std::string SGeoConfig::Desc()

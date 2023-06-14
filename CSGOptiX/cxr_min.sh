@@ -72,13 +72,13 @@ eye=-1,-1,0
 
 zoom=1
 tmin=0.5
-icam=0
+cam=perspective
 
 #escale=asis
 escale=extent
 
 case $moi in 
-   ALL) eye=0,1.5,0 ; tmin=0.1 ; zoom=1.2 ;; 
+   ALL) eye=0,2.0,0 ; tmin=2.0 ; zoom=1.2 ; cam=orthographic ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
    UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
@@ -91,7 +91,7 @@ export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
 export ZOOM=${ZOOM:-$zoom}
 export TMIN=${TMIN:-$tmin}
-export ICAM=${ICAM:-$icam}
+export CAM=${CAM:-$cam}
 
 nameprefix=cxr_min_
 nameprefix=${nameprefix}_eye_${EYE}_
@@ -101,7 +101,7 @@ nameprefix=${nameprefix}_tmin_${TMIN}_
 # moi appended within CSGOptiX::render_snap ?
 export NAMEPREFIX=$nameprefix
 
-topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM ICAM=$ICAM ~/opticks/CSGOptiX/cxr_min.sh " 
+topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM CAM=$CAM ~/opticks/CSGOptiX/cxr_min.sh " 
 botline="$(date)"
 export TOPLINE=${TOPLINE:-$topline}
 export BOTLINE=${BOTLINE:-$botline}

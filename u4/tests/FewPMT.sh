@@ -111,7 +111,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
    export U4VolumeMaker_WrapRockWater_Rock_HALFSIDE=210
    export U4VolumeMaker_WrapRockWater_Water_HALFSIDE=200
-   export U4VolumeMaker_WrapRockWater_BOXSCALE=$aspect,1,1
+   export U4VolumeMaker_WrapRockWater_BOXSCALE=$aspect,$aspect,1
 
 elif [ "$LAYOUT" == "two_pmt" ]; then 
 
