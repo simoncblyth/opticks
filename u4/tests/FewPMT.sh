@@ -49,12 +49,16 @@ is sufficiently independent to make it better handled separately.
 EOU
 }
 
-version=${VERSION:-1}
-pom=${POM:-1}
-
+version=1
+pom=1 
 #layout=two_pmt  
 layout=one_pmt
-export LAYOUT=$layout
+
+VERSION=${VERSION:-$version}
+POM=${POM:-$pom}
+LAYOUT=${LAYOUT:-$layout}
+
+export LAYOUT
 
 case $VERSION in
   0) version_desc="N=0 unnatural geometry : FastSim/jPOM" ;;
@@ -103,13 +107,13 @@ esac
 export LOC=${LOC:-$loc}      # python ana level presentation, a bit out-of-place ?
 
 
-if [ "$layout" == "one_pmt" ]; then 
+if [ "$LAYOUT" == "one_pmt" ]; then 
 
    export U4VolumeMaker_WrapRockWater_Rock_HALFSIDE=210
    export U4VolumeMaker_WrapRockWater_Water_HALFSIDE=200
    export U4VolumeMaker_WrapRockWater_BOXSCALE=$aspect,1,1
 
-elif [ "$layout" == "two_pmt" ]; then 
+elif [ "$LAYOUT" == "two_pmt" ]; then 
 
    export U4VolumeMaker_WrapAroundItem_Rock_HALFSIDE=310  
    export U4VolumeMaker_WrapAroundItem_Water_HALFSIDE=300  
@@ -123,7 +127,7 @@ elif [ "$layout" == "two_pmt" ]; then
    export U4VolumeMaker_MakeTransforms_AroundCircle_fracPhase=0
 
 else
-   echo $BASH_SOURCE layout $layout not handled 
+   echo $BASH_SOURCE LAYOUT $LAYOUT not handled 
 fi 
 
 # Simtrace config
@@ -145,7 +149,6 @@ if [ "$VERSION" == "0" ]; then
     #export U4Recorder__FAKES_SKIP=1
     #export U4Recorder__ClassifyFake_FindPV_r=1  ## this is slow, but it finds fakes better, use in standalone testing 
     ## export U4Recorder__FAKES="$fakes"  formerly used manual config of fakes skipping
-
 
 fi 
 

@@ -143,6 +143,7 @@ apid=-1
 bpid=-1
 geom=FewPMT
 evt=000
+eye=0,1000,0   # +Y 1000mm
 
 export VERSION=${N:-0}
 export GEOM=${GEOM:-$geom}
@@ -154,6 +155,8 @@ export AFOLD=$GEOMFOLD/U4SimulateTest/ALL0/$EVT
 export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1/$EVT   # SEL1 another possibility 
 export APID=${APID:-$apid}                        # APID for photons from ALL0
 export BPID=${BPID:-$bpid}                        # BPID for photons from ALL1
+export EYE=${EYE:-$eye}       # not extent scaled, just mm
+ 
 
 geomscript=$DIR/$GEOM.sh 
 if [ -f "$geomscript" ]; then  
