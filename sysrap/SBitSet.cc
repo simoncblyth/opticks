@@ -77,11 +77,15 @@ a similar but different approach that will cause confusion)
 
 void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
 {
-    bool complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ; // str_ starts with ~ or t 
-    for(unsigned i=0 ; i < num_bits ; i++) bits[i] = complement ? true : false ; 
+    bool with_complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ; // str_ starts with ~ or t 
+    for(unsigned i=0 ; i < num_bits ; i++) bits[i] = with_complement ? true : false ; 
 
-    int postcomp =  complement ? 1 : 0 ;  // offset to skip the complement first character                     
-    const char* spec_ = spec + postcomp ; 
+    bool with_colon = strlen(spec) >= 2 && spec[1] == ':' ;  
+
+    int post_complement =  with_complement ? 1 : 0 ;  // offset to skip the complement first character                     
+    int post_colon =  with_colon ? 1 : 0 ;  
+
+    const char* spec_ = spec + post_complement + post_colon ; 
 
     std::vector<int> pos ; 
     char delim = ',' ; 
@@ -95,7 +99,7 @@ void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
         unsigned upos = upos_ ;  
         assert( upos < num_bits ); 
 
-        bits[upos] = complement ? false : true ;    
+        bits[upos] = with_complement ? false : true ;    
     }
 }     
 

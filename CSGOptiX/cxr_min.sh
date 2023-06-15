@@ -18,6 +18,8 @@ sysrap/tests/SGLM_set_frame_test.sh
     EYE=0.2,0.2,0.2 TMIN=0.1 ./cxr_min.sh
     EYE=0.3,0.3,0.3 TMIN=0.1 ./cxr_min.sh
 
+    ELV=t:Water_solid,Rock_solid  ./cxr_min.sh    # with colon not working 
+
 
 FIXED Issue : EYE inputs not being extent scaled
 -----------------------------------------------------
@@ -73,12 +75,13 @@ eye=-1,-1,0
 zoom=1
 tmin=0.5
 cam=perspective
+#cam=orthographic
 
 #escale=asis
 escale=extent
 
 case $moi in 
-   ALL) eye=0,2.0,0 ; tmin=2.0 ; zoom=1.2 ; cam=orthographic ;; 
+   ALL) eye=0,2.0,0 ; tmin=2.0 ; zoom=1.2 ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
    UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
