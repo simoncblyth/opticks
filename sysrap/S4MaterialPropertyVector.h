@@ -3,6 +3,13 @@
 S4MaterialPropertyVector.h
 ============================
 
+This provides serialization of int, string keyed maps of 
+G4MaterialPropertyVector into NPFold as well as the 
+import of the NPFold back into maps. 
+
+Hence this facilitates the saving and loading of maps of 
+material properties to/from directory trees using NPFold persistency. 
+
 It simplifies dependencies for this functionality to be available 
 from sysrap rather than from u4, so this struct clones u4/U4MaterialPropertyVector.h 
 
@@ -17,6 +24,7 @@ from sysrap rather than from u4, so this struct clones u4/U4MaterialPropertyVect
 struct S4MaterialPropertyVector
 {
     static NP* ConvertToArray(const G4MaterialPropertyVector* vec);
+    static G4MaterialPropertyVector* Load(const char* path);
     static G4MaterialPropertyVector* FromArray(const NP* prop);
     static G4MaterialPropertyVector* Make_V(double value); 
     static std::string Desc_V(const G4MaterialPropertyVector* v); 
@@ -46,6 +54,11 @@ inline NP* S4MaterialPropertyVector::ConvertToArray(const G4MaterialPropertyVect
     return a ;   
 }
 
+inline G4MaterialPropertyVector* S4MaterialPropertyVector::Load(const char* path ) // static 
+{    
+    const NP* a = NP::Load(path); 
+    return a ? FromArray(a) : nullptr ; 
+}
 
 inline G4MaterialPropertyVector* S4MaterialPropertyVector::FromArray(const NP* a ) // static 
 {   

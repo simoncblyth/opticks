@@ -374,6 +374,8 @@ struct NPS
 
 struct U
 {
+    static constexpr const bool VERBOSE = false ; 
+
     enum { ERROR_PATH=-1, DIR_PATH=1 , FILE_PATH=2, OTHER_PATH=3 } ;   
 
     static void sizeof_check(); 
@@ -446,7 +448,8 @@ struct U
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static std::string Desc(const std::vector<std::string>& names); 
 
-    static const char* Resolve(const char* spec, const char* relp=nullptr );   // $TOK/remainder/path.npy $TOK
+    static const char* Resolve0(const char* spec, const char* relp=nullptr );   // $TOK/remainder/path.npy 
+    static const char* Resolve( const char* spec, const char* relp=nullptr );   // $TOK/remainder/$ANOTHER/path.npy 
 
     static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
     static void        WriteString( const char* dir, const char* name, const char* str ); 
@@ -922,8 +925,8 @@ inline std::string U::Desc(const std::vector<std::string>& names)
 
 
 /**
-U::Resolve
-----------------
+U::Resolve0 : Old impl that only replaces tokens in first path element
+-----------------------------------------------------------------------
 
 ::
 
@@ -934,7 +937,7 @@ If the TOKEN envvar is not set then nullptr is returned.
 
 **/
 
-inline const char* U::Resolve(const char* spec_, const char* relp_)
+inline const char* U::Resolve0(const char* spec_, const char* relp_)
 {
     if(spec_ == nullptr) return nullptr ; 
 
@@ -958,10 +961,77 @@ inline const char* U::Resolve(const char* spec_, const char* relp_)
         ss << spec ; 
     }   
 
-    std::string s = ss.str(); 
-    const char* path = s.c_str(); 
+    std::string str = ss.str(); 
+    const char* path = str.c_str(); 
     return strdup(path) ; 
 }
+
+/**
+U::Resolve
+------------
+
+NB similar to sysrap/spath.h spath::_ResolvePath 
+
+This resolves spec with multiple tokens, eg::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt/PMTSimParamData/MPT
+
+**/
+
+inline const char* U::Resolve(const char* spec_, const char* relp_)
+{
+    if(spec_ == nullptr) return nullptr ; 
+    std::string spec_relp = form_path(spec_, relp_); 
+    char* spec = strdup(spec_relp.c_str()) ;  
+
+    std::stringstream ss ; 
+    int speclen = int(strlen(spec)) ;  
+    char* end = strchr(spec, '\0' ); 
+    int i = 0 ; 
+
+    if(VERBOSE) std::cout << " spec " << spec << " speclen " << speclen << std::endl ; 
+
+    while( i < speclen )
+    {
+        if(VERBOSE) std::cout << " i " << i << " spec[i] " << spec[i] << std::endl ;   
+        if( spec[i] == '$' )
+        {
+            char* p = spec + i ; 
+            char* sep = strchr( p, '/' ) ; // first slash after token   
+            bool tok_plus =  sep && end && sep != end ;  
+            if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
+            char* val = getenv(p+1) ;  // skip '$'
+            int toklen = int(strlen(p)) ;  // strlen("TOKEN")  no need for +1 as already at '$'  
+            if(VERBOSE) std::cout << " toklen " << toklen << std::endl ;  
+            if(val == nullptr) 
+            {
+                std::cerr 
+                    << "U::Resolve token [" 
+                    << p+1 
+                    << "] does not resolve " 
+                    << std::endl 
+                    ; 
+                return "" ;    // all tokens must resolve 
+            }
+            if(tok_plus) *sep = '/' ;            // put back the slash 
+            ss << val  ; 
+
+            i += toklen ;   // skip over the token 
+        }
+        else
+        {
+           ss << spec[i] ; 
+           i += 1 ; 
+        }
+    }
+    std::string str = ss.str(); 
+    const char* path = str.c_str(); 
+    return strdup(path) ; 
+}
+
+
+
+
 
 
 
