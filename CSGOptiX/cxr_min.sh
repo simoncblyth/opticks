@@ -106,9 +106,12 @@ botline="$(date)"
 export TOPLINE=${TOPLINE:-$topline}
 export BOTLINE=${BOTLINE:-$botline}
 
-#export CSGFoundry=INFO 
-#export CSGOptiX=INFO
-# as a file is written in pwd need to cd 
+logging(){
+    export CSGFoundry=INFO 
+    export CSGOptiX=INFO
+}
+#logging 
+
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
@@ -122,22 +125,18 @@ cd $LOGDIR
 LOG=$bin.log
 
 vars="GEOM TMIN LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
-#for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
 
 if [ "${arg/run}" != "$arg" ]; then
-
    if [ -f "$LOG" ]; then 
        echo $BASH_SOURCE : run : delete prior LOG $LOG 
        rm "$LOG" 
    fi 
    $bin
-
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-fi 
-
-if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then

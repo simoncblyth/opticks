@@ -32,6 +32,7 @@
 
 #include "SStr.hh"
 #include "SPath.hh"
+#include "spath.h"
 #include "SLOG.hh"
 
 
@@ -105,12 +106,20 @@ const char* SStr::Load(const char* path_ )
     return strdup(txt.c_str()) ; 
 }
 
+/**
+SStr::LoadList
+----------------
+
+Interprets the arg as either a filepath with lines to be loaded
+or a comma delimited string to be split into lines.   
+
+**/
 
 void SStr::LoadList(const char* arg, std::vector<std::string>& lines, char delim  )
 {
     if(arg == nullptr) return ; 
 
-    if(SPath::LooksLikePath(arg) && delim == '\n' )  // eg starts with slash
+    if(spath::LooksLikePath(arg) && delim == '\n' )  // eg starts with slash
     {   
         std::ifstream ifs(arg);
         std::string line;

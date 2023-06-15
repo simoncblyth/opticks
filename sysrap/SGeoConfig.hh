@@ -34,7 +34,7 @@ struct SYSRAP_API SGeoConfig
     static constexpr const char* kELVSelection_desc = "string control of included/excluded meshes, DYNAMIC NATURE MAKES PROBLEMATIC FOR LONG LIVED SKIPS  " ; 
     static constexpr const char* kSolidSelection_desc = "CSGFoundry debug control" ; 
     static constexpr const char* kFlightConfig_desc = "NEEDS REVIIVING IN NEW WORKFLOW TO WORK WITH SGLM NOT Composition" ; 
-    static constexpr const char* kArglistPath_desc = "generic path to a list of arguments used by some times" ; 
+    static constexpr const char* kArglistPath_desc = "generic path to a list of arguments used by some tests" ; 
     static constexpr const char* kCXSkipLV_desc = "non-dynamic LV skipping in CSG_GGeo_Convert, PREFERABLE FOR LONG-LIVED SKIPS" ; 
 
     static unsigned long long _EMM ; 
@@ -53,6 +53,7 @@ struct SYSRAP_API SGeoConfig
     static const char* CXSkipLV_IDXList(); 
     static const char* ELVSelection(); 
     static const char* ELVSelection(const SName* id);
+    static const char* ELVPrefix(const char* elvarg); 
 
 
     static void SetCXSkipLV_IDXList(const SName* id); 

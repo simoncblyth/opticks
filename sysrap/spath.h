@@ -31,6 +31,7 @@ struct spath
     template<typename ... Args>
     static bool Exists( Args ... args ); 
 
+    static bool LooksLikePath(const char* arg); 
 };
 
 /**
@@ -219,5 +220,14 @@ template bool spath::Exists( const char* );
 template bool spath::Exists( const char*, const char* ); 
 template bool spath::Exists( const char*, const char*, const char* ); 
 template bool spath::Exists( const char*, const char*, const char*, const char* ); 
+
+
+inline bool spath::LooksLikePath(const char* arg)
+{
+    if(!arg) return false ;
+    if(strlen(arg) < 2) return false ; 
+    return arg[0] == '/' || arg[0] == '$' ; 
+}
+
 
 

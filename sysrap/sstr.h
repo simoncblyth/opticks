@@ -18,6 +18,7 @@ struct sstr
     static bool Match_(     const char* s, const char* q, int mode); 
     static bool MatchAll(   const char* s, const char* q); 
     static bool MatchStart( const char* s, const char* q); 
+    static bool StartsWith( const char* s, const char* q); 
     static bool MatchEnd(   const char* s, const char* q); 
 
     static bool Contains(   const char* s_ , const char* q_); 
@@ -98,6 +99,15 @@ inline bool sstr::MatchStart( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
+inline bool sstr::StartsWith( const char* s, const char* q)  // synonym for sstr::MatchStart
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
+
+
+
+
+
 inline bool sstr::MatchEnd( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;

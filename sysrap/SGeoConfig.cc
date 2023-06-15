@@ -6,7 +6,10 @@
 #include <cstring>
 
 #include "ssys.h"
-#include "SStr.hh"   // TODO: sstr.h 
+
+#include "SStr.hh"   // TODO: eliminate in favor of sstr.h
+#include "sstr.h"
+
 #include "SBit.hh"   // TODO: sbit.h 
 #include "SGeoConfig.hh"
 #include "SName.h"
@@ -40,10 +43,6 @@ const char* SGeoConfig::CXSkipLV_IDXList(){  return _CXSkipLV_IDXList ? _CXSkipL
 /**
 SGeoConfig::ELVSelection
 --------------------------
-
-Note the problem for solids with names starting with "t".
-TODO: adopt "t:" prefix for the tilde modifier. 
-
 **/
 
 const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
@@ -61,12 +60,10 @@ const char* SGeoConfig::ELVSelection(const SName* id )
 
     if( elv_selection_ )
     {   
-        bool with_flip = elv_selection_[0] == '~' || elv_selection_[0] == 't' ;  
-        const char* prefix = with_flip ? "t" : nullptr ; 
+        const char* prefix = ELVPrefix(elv_selection_); 
 
         if(VERBOSE) std::cerr 
             << "SGeoConfig::ELVSelection"
-            << " with_flip " << ( with_flip ? "Y" : "N" )
             << " prefix " << ( prefix ? prefix : "-" )
             << " strlen(prefix) " << ( prefix ? strlen(prefix) : 0 ) 
             << std::endl
@@ -90,6 +87,38 @@ const char* SGeoConfig::ELVSelection(const SName* id )
         }    
     }    
     return elv ;  
+}
+
+
+
+/**
+SGeoConfig::ELVPrefix
+-----------------------
+
+As the above ELVSelection has a problem for solids 
+with names starting with "t" are starting to transition
+to separate the modifier from the list of ints or solid names. 
+
+TODO: adopt "t:" prefix for the tilde modifier. 
+
+*/
+
+
+const char* SGeoConfig::ELVPrefix(const char* elvarg)
+{
+    if(elvarg == nullptr) return nullptr ; 
+    if(strlen(elvarg) == 0) return nullptr ;
+
+    std::string prefix ; 
+    if(sstr::StartsWith(elvarg, "t:") || sstr::StartsWith(elvarg, "~:"))
+    {
+        prefix.assign("t:") ; 
+    }
+    else if( sstr::StartsWith(elvarg,"t" ) || sstr::StartsWith(elvarg,"~") )
+    {
+        prefix.assign("t") ; 
+    }
+    return prefix.empty() ? nullptr : strdup(prefix.c_str()) ; 
 }
 
 
@@ -136,7 +165,7 @@ std::string SGeoConfig::DescEMM()
 
 std::vector<std::string>*  SGeoConfig::Arglist() 
 {
-    return SStr::LoadList( _ArglistPath, '\n' );  
+    return SStr::LoadList( _ArglistPath, '\n' );   // TODO: sstr
 }
 
 
@@ -187,7 +216,7 @@ bool SGeoConfig::IsCXSkipLV(int lv) // static
 {
     if( _CXSkipLV_IDXList == nullptr ) return false ; 
     std::vector<int> cxskip ;
-    SStr::ISplit(_CXSkipLV_IDXList, cxskip, ','); 
+    SStr::ISplit(_CXSkipLV_IDXList, cxskip, ',');   // TODO: sstr
     return std::count( cxskip.begin(), cxskip.end(), lv ) == 1 ;   
 }
 
