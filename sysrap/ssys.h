@@ -17,6 +17,8 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <iostream>
 #include <map>
 
+#include "sstr.h"
+
 
 struct ssys
 {
@@ -127,17 +129,38 @@ inline std::string ssys::which(const char* script)
     return rc == 0 ? path : empty ; 
 }
 
+/**
+ssys::getenvvar
+----------------
 
+For ekey with a comma such as "OPTICKS_ELV_SELECTION,ELV" the 
+envvars are checked in order and the first to yield a value 
+is returned.:: 
 
+    OPTICKS_ELV_SELECTION=greetings ELV=hello ./ssys_test.sh 
+    test_getenvvar ekey OPTICKS_ELV_SELECTION,ELV val greetings
+
+    OPTICKS_ELV_SELECTION_=greetings ELV=hello ./ssys_test.sh 
+    test_getenvvar ekey OPTICKS_ELV_SELECTION,ELV val hello
+
+**/
 
 inline const char* ssys::getenvvar(const char* ekey)
 {
+    std::vector<std::string> keys ; 
+    sstr::Split(ekey, ',', keys) ; 
     char* val = getenv(ekey);
+    for(unsigned i=0 ; i < keys.size() ; i++)
+    {
+        const char* key = keys[i].c_str(); 
+        val = getenv(key) ; 
+        if( val != nullptr ) break ; 
+    }
     return val ; 
 }
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
 {
-    char* val = getenv(ekey);
+    const char* val = getenvvar(ekey);
     return val ? val : fallback ; 
 }
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char q, char r)

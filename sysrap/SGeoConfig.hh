@@ -22,8 +22,8 @@ struct SYSRAP_API SGeoConfig
     static std::string Desc(); 
     static std::string DescEMM(); 
 
-    static constexpr const char* kEMM            = "EMM" ; 
-    static constexpr const char* kELVSelection   = "OPTICKS_ELV_SELECTION" ; 
+    static constexpr const char* kEMM            = "OPTICKS_EMM_SELECTION,EMM" ; 
+    static constexpr const char* kELVSelection   = "OPTICKS_ELV_SELECTION,ELV" ; 
     static constexpr const char* kSolidSelection = "OPTICKS_SOLID_SELECTION" ; 
     static constexpr const char* kFlightConfig   = "OPTICKS_FLIGHT_CONFIG" ; 
     static constexpr const char* kArglistPath    = "OPTICKS_ARGLIST_PATH" ; 

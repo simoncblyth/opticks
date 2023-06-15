@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <cstring>
 
-#include "SSys.hh"
-#include "SStr.hh"
-#include "SBit.hh"
+#include "ssys.h"
+#include "SStr.hh"   // TODO: sstr.h 
+#include "SBit.hh"   // TODO: sbit.h 
 #include "SGeoConfig.hh"
 #include "SName.h"
 
@@ -17,12 +17,12 @@ const plog::Severity SGeoConfig::LEVEL = SLOG::EnvLevel("SGeoConfig", "DEBUG");
 
 
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
-const char* SGeoConfig::_ELVSelection   = SSys::getenvvar(kELVSelection, nullptr ); 
-const char* SGeoConfig::_SolidSelection = SSys::getenvvar(kSolidSelection, nullptr ); 
-const char* SGeoConfig::_FlightConfig   = SSys::getenvvar(kFlightConfig  , nullptr ); 
-const char* SGeoConfig::_ArglistPath    = SSys::getenvvar(kArglistPath  , nullptr ); 
-const char* SGeoConfig::_CXSkipLV       = SSys::getenvvar(kCXSkipLV  , nullptr ); 
-const char* SGeoConfig::_CXSkipLV_IDXList = SSys::getenvvar(kCXSkipLV_IDXList, nullptr ); 
+const char* SGeoConfig::_ELVSelection   = ssys::getenvvar(kELVSelection, nullptr ); 
+const char* SGeoConfig::_SolidSelection = ssys::getenvvar(kSolidSelection, nullptr ); 
+const char* SGeoConfig::_FlightConfig   = ssys::getenvvar(kFlightConfig  , nullptr ); 
+const char* SGeoConfig::_ArglistPath    = ssys::getenvvar(kArglistPath  , nullptr ); 
+const char* SGeoConfig::_CXSkipLV       = ssys::getenvvar(kCXSkipLV  , nullptr ); 
+const char* SGeoConfig::_CXSkipLV_IDXList = ssys::getenvvar(kCXSkipLV_IDXList, nullptr ); 
 
 void SGeoConfig::SetELVSelection(  const char* es){  _ELVSelection   = es ? strdup(es) : nullptr ; }
 void SGeoConfig::SetSolidSelection(const char* ss){  _SolidSelection = ss ? strdup(ss) : nullptr ; }
@@ -36,6 +36,15 @@ const char* SGeoConfig::FlightConfig(){   return _FlightConfig ; }
 const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
 const char* SGeoConfig::CXSkipLV(){       return _CXSkipLV ? _CXSkipLV : "" ; }
 const char* SGeoConfig::CXSkipLV_IDXList(){  return _CXSkipLV_IDXList ? _CXSkipLV_IDXList : "" ; }
+
+/**
+SGeoConfig::ELVSelection
+--------------------------
+
+Note the problem for solids with names starting with "t".
+TODO: adopt "t:" prefix for the tilde modifier. 
+
+**/
 
 const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
 const char* SGeoConfig::ELVSelection(const SName* id )
@@ -186,6 +195,8 @@ bool SGeoConfig::IsCXSkipLV(int lv) // static
 /**
 SGeoConfig::GeometrySpecificSetup
 -----------------------------------
+
+TODO: compare GPU performance with and without these virtual skips  
 
 This is invoked from:
 

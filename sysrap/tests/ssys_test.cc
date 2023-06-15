@@ -167,6 +167,19 @@ void test_getenvdouble()
     std::cout << "d:" << std::scientific << d << std::endl ; 
 }
 
+void test_getenvvar()
+{
+    const char* ekey = "OPTICKS_ELV_SELECTION,ELV" ; 
+    const char* val = ssys::getenvvar(ekey) ; 
+    std::cout 
+        << "test_getenvvar"
+        << " ekey " << ( ekey ? ekey : "-" )
+        << " val " << ( val ? val : "-" )
+        << std::endl
+        ;
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -183,9 +196,11 @@ int main(int argc, char** argv)
     test_getenv_kv(); 
     test_getenvfloat(); 
     test_getenvdouble(); 
-    */
     test_username(); 
     test_which(); 
+    */
+
+    test_getenvvar(); 
 
  
     return 0 ; 
