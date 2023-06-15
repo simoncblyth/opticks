@@ -50,7 +50,7 @@ if __name__ == '__main__':
     H,V = 0,2 
   
     if MODE == 2:
-        ax.scatter( upos[:,H], upos[:,V] )
+        ax.scatter( upos[:,H], upos[:,V], s=0.1 )
         # TODO: needs set_xlim set_ylim 
     elif MODE == 3:
         pl.add_points(upos[:,:3])

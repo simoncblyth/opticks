@@ -81,7 +81,7 @@ cam=perspective
 escale=extent
 
 case $moi in 
-   ALL) eye=0,2.0,0 ; tmin=2.0 ; zoom=1.2 ;; 
+   ALL) eye=0,2.0,0 ; tmin=1.75 ; zoom=2.0 ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
    NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
    UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 

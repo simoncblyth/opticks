@@ -40,8 +40,9 @@ cd $LOGDIR
 LOG=$bin.log
 
 
+ipho=RainXZ_Z195_1000_f8.npy
 #ipho=RainXZ_Z230_1000_f8.npy
-ipho=RainXZ_Z230_10k_f8.npy
+#ipho=RainXZ_Z230_10k_f8.npy
 #ipho=RainXZ_Z230_100k_f8.npy
 #ipho=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
 #ipho=GridXY_X700_Z230_10k_f8.npy 

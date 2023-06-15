@@ -54,7 +54,8 @@ export FOLD=$HOME/$GDIR/$bin/$MOI/$EVT
 
 
 #export CEGS=16:0:9:1000   # XZ default 
-export CEGS=16:9:0:1000    # try XY 
+export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
+#export CEGS=16:9:0:1000    # try XY 
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}

@@ -366,6 +366,7 @@ class InputPhotons(object):
     RAINXZ = "RainXZ" 
     GRIDXY = "GridXY" 
     Z230 = "_Z230"
+    Z195 = "_Z195"
     Z1000 = "_Z1000"
     X700 = "_X700"
     X1000 = "_X1000"
@@ -375,6 +376,7 @@ class InputPhotons(object):
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
     NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
     NAMES += [RAINXZ+Z230+"_100", RAINXZ+Z230+"_1000", RAINXZ+Z230+"_100k", RAINXZ+Z230+"_10k" ]
+    NAMES += [RAINXZ+Z195+"_100", RAINXZ+Z195+"_1000", RAINXZ+Z195+"_100k", RAINXZ+Z195+"_10k" ]
     NAMES += [RAINXZ+Z230+X700+"_100", RAINXZ+Z230+X700+"_1000", RAINXZ+Z230+X700+"_10k" ]
     NAMES += [UD+R500+"_10k"]
     NAMES += [GRIDXY+X700+Z230+"_10k", GRIDXY+X1000+Z1000+"_40k"    ] 
