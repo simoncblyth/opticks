@@ -6,10 +6,9 @@ cxt_min.sh : Simtrace minimal executable and script for shakedown
 EOU
 }
 
+REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 REALNAME=$(basename $BASH_SOURCE)
 REALSTEM=${REALNAME/.sh}
-REALPATH=$(find $PWD -name $REALNAME) # absolute path
-REALDIR=$(dirname $REALPATH)
 
 case $(uname) in
    Linux) defarg=run_info ;;
@@ -68,7 +67,7 @@ logging(){
 #logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR REALNAME REALSTEM FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR REALNAME REALSTEM FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

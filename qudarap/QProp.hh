@@ -9,6 +9,18 @@ and differing domain values
 
 See ~/np/tests/NPInterp.py for prototyping the linear interpolation 
 
+QProp vs textures
+---------------------
+
+GPU texture interpolation does something very similar to qprop::interpolate 
+but QProp has the advantage that it can handle multiple properties all with 
+different numbers of items. This removes the need with textures to  establish 
+a common domain and pre-interpolate everything to use that domain. 
+
+The QProp approach is very close to what Geant4 does, the texture approach 
+is likely faster but takes more effort to setup and probably requires fine
+textures to reproduce the Geant4 results. 
+
 **/
 
 #include <vector>

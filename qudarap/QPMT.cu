@@ -36,15 +36,14 @@ __global__ void _QPMT_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, un
     const unsigned& nk = qpmt<T>::NUM_PROP ; 
 
     //printf("//_QPMT_interpolate ni %d nj %d nk %d \n", ni, nj, nk ); 
- 
     // cf the CPU equivalent NP::combined_interp_5
 
     for(int i=0 ; i < ni ; i++)
     for(int j=0 ; j < nj ; j++)
     for(int k=0 ; k < nk ; k++) 
     {
-        int iprop = i*nj*nk+j*nk+k ;        // linearized higher dimensions 
-        int index = iprop * domain_width + ix ;
+        int iprop = i*nj*nk+j*nk+k ;            // linearized higher dimensions 
+        int index = iprop * domain_width + ix ; // output index into lookup 
 
         T value = pmt->rindex_prop->interpolate(iprop, energy_eV ); 
 

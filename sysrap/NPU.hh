@@ -1011,7 +1011,7 @@ inline const char* U::Resolve(const char* spec_, const char* relp_)
                     << "] does not resolve " 
                     << std::endl 
                     ; 
-                return "" ;    // all tokens must resolve 
+                return nullptr ;    // all tokens must resolve 
             }
             if(tok_plus) *sep = '/' ;            // put back the slash 
             ss << val  ; 

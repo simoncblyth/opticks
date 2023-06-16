@@ -10,8 +10,7 @@ WIP: get this to work with the FewPMT geometry coming from PMTSim
 EOU
 }
 
-REALPATH=$(find $PWD -name $(basename $BASH_SOURCE))
-REALDIR=$(dirname $REALPATH)  
+REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
 
 #source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
@@ -56,7 +55,7 @@ bin=G4CXOpticks_setGeometry_Test
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
-vars="REALPATH REALDIR GEOM FOLD bin geomscript"
+vars="REALDIR GEOM FOLD bin geomscript"
 
 defarg=info_dbg
 arg=${1:-$defarg}

@@ -27,13 +27,15 @@ struct QUDARAP_API QPMT
 {
     static const plog::Severity LEVEL ; 
 
-    const NP* src_thickness ;  
-    const NP* thickness ;  
-
     const NP* src_rindex ;  
+    const NP* src_thickness ;  
+
     const NP* rindex3 ;  
     const NP* rindex ;  
     const QProp<T>* rindex_prop ; 
+
+    const NP* thickness ;  
+
 
     qpmt<T>* pmt ; 
     qpmt<T>* d_pmt ; 
@@ -61,14 +63,14 @@ would survive which would cause most of the interpolations to fail
 template<typename T>
 inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_ )
     :
-    src_thickness(thickness_),
-    thickness(NP::MakeWithType<T>(thickness_)),
     src_rindex(rindex_),
-    rindex3(  NP::MakeCopy3D(src_rindex)),
-    rindex(   NP::MakeWithType<T>(rindex3)),
+    src_thickness(thickness_),
+    rindex3(  NP::MakeCopy3D(src_rindex)),   // make copy and change shape to 3D
+    rindex(   NP::MakeWithType<T>(rindex3)), // adopt template type, potentially narrowing
     rindex_prop(new QProp<T>(rindex)),  
-    pmt(new qpmt<T>()),
-    d_pmt(nullptr)
+    thickness(NP::MakeWithType<T>(thickness_)),
+    pmt(new qpmt<T>()),        // hostside qpmt.h instance 
+    d_pmt(nullptr)             // devices pointer set in init
 {
     init(); 
 }
@@ -83,8 +85,11 @@ inline void QPMT<T>::init()
     assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
     assert( thickness->has_shape(ni, nj, 1 )); 
 
+    // populate hostside qpmt.h instance with device side pointers 
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
     pmt->thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); 
+
+    // upload the hostside qpmt.h instance to GPU
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  
     // getting above line to link required template instanciation at tail of qpmt.h 
 }

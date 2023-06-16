@@ -25,7 +25,7 @@ extern void QPMT_interpolate(
 QPMT::interpolate
 -------------------
 
-lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2: RINDEX, KINDEX)  
+lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2) (RINDEX, KINDEX)  
 arrange that as three in kernel nested for loops (24 props) 
 with the energy domain passed in as input so the parallelism is over the energy 
 
@@ -70,15 +70,12 @@ NP* QPMT<T>::interpolate( const NP* domain ) const
     return lookup ; 
 }
 
-
 template<typename T>
 NP* QPMT<T>::interpolate() const 
 {
     NP* domain = NP::Linspace<T>( 1.55, 15.50, 1550-155+1 ); //  np.linspace( 1.55, 15.50, 1550-155+1 )  
     return interpolate(domain) ; 
 }
-
-
 
 // found the below can live in header, when headeronly 
 //#pragma GCC diagnostic push
@@ -88,6 +85,3 @@ template struct QUDARAP_API QPMT<float>;
 template struct QUDARAP_API QPMT<double>;
 //#pragma GCC diagnostic pop
  
-
-
-

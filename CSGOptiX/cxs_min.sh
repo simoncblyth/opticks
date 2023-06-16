@@ -10,8 +10,7 @@ Default SEvt being saved into::
 EOU
 }
 
-REALPATH=$(find $PWD -name $(basename $BASH_SOURCE)) # absolute path
-REALDIR=$(dirname $REALPATH)
+REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 case $(uname) in
    Linux) defarg=run_info ;;
@@ -80,7 +79,7 @@ logging(){
 
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALPATH REALDIR FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 

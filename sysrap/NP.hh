@@ -2128,8 +2128,9 @@ inline NP* NP::Load(const char* path_)
     if(VERBOSE) 
         std::cerr 
             << "[ NP::Load " 
-            << " path_ " << ( path_  ? path_ : "-" )
-            << " path " << ( path ? path : "-" )
+            << " path_ [" << ( path_  ? path_ : "-" ) << "]"
+            << " path [" << ( path ? path : "-" ) << "]" 
+            << " int(strlen(path)) " << ( path ? int(strlen(path)) : -1 )
             << std::endl 
             ; 
 
