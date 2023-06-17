@@ -446,6 +446,9 @@ struct U
 
     static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr, bool exclude=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
+    static void Split(const char* str, char delim,   std::vector<std::string>& elem); 
+    static int FindIndex(const std::vector<std::string>& names, const char* name);
+
     static std::string Desc(const std::vector<std::string>& names); 
 
     static const char* Resolve0(const char* spec, const char* relp=nullptr );   // $TOK/remainder/path.npy 
@@ -914,6 +917,24 @@ inline void U::Trim(std::vector<std::string>& names, const char* ext)
         name = name.substr(0, strlen(n) - strlen(ext));
     }
 }
+
+inline void U::Split(const char* str, char delim,   std::vector<std::string>& elem)
+{
+    std::stringstream ss; 
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+}
+
+inline int U::FindIndex(const std::vector<std::string>& names, const char* name) // static
+{
+    size_t idx = std::distance( names.begin(), std::find( names.begin(), names.end(), name ));
+    return idx >= names.size() ? -1  : int(idx) ;
+}
+
+
+
+
 
 inline std::string U::Desc(const std::vector<std::string>& names)
 {

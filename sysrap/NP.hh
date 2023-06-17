@@ -248,6 +248,17 @@ struct NP
 
 
     bool is_pshaped() const ; 
+    template<typename T> bool is_pconst() const ; 
+    template<typename T> bool is_pconst_dumb() const ;  // constant prop with more that 2 items
+    template<typename T> T    pconst(T fallback=-1) const ; 
+
+    template<typename T>
+    static NP* MakePCopyNotDumb(const NP* a); 
+
+    template<typename T>
+    static NP* MakePConst( T dl, T dr, T vc ); 
+
+
     template<typename T> T    plhs(unsigned column ) const ;  
     template<typename T> T    prhs(unsigned column ) const ;  
     template<typename T> int  pfindbin(const T value, unsigned column, bool& in_range ) const ;  
@@ -420,7 +431,7 @@ struct NP
     static std::string StringConcat(const std::vector<std::string>& ls, char delim=' ' );
 
     template <typename T> 
-    static NP* ZEROProp(); 
+    static NP* ZEROProp(T dscale=1.); 
 
     template <typename T> 
     static NP* LoadFromString(const char* str, const char* path_for_debug_messages=nullptr ); 
@@ -2368,6 +2379,84 @@ inline bool NP::is_pshaped() const
     bool property_shaped = shape.size() == 2 && shape[1] == 2 && shape[0] > 1 ;
     return property_shaped ;  
 }
+
+template<typename T>
+inline bool NP::is_pconst() const
+{
+    if(!is_pshaped()) return false ; 
+    const T* vv = cvalues<T>(); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+    const T v0 = vv[0*nj+nj-1] ; 
+    int num_equal = 0 ;  
+    for(int i=0 ; i < ni ; i++) num_equal += vv[i*nj+nj-1] == v0 ? 1 : 0 ; 
+    return num_equal == ni ; 
+}
+
+/**
+NP::is_pconst_dumb
+-------------------
+
+A dumb property is one that uses more than two energy points
+to represent a constant value. 
+
+**/
+template<typename T>
+inline bool NP::is_pconst_dumb() const 
+{
+    return is_pconst<T>() && shape[0] > 2 ;  
+}
+
+
+template<typename T>
+inline T NP::pconst(T fallback) const
+{
+    if(!is_pconst<T>()) return fallback ; 
+    int nj = shape[1] ; 
+    const T* vv = cvalues<T>(); 
+    const T v0 = vv[0*nj+nj-1] ; 
+    return v0 ; 
+}
+
+template<typename T>
+inline NP* NP::MakePCopyNotDumb(const NP* a) // static
+{
+    assert( a && a->is_pshaped() ); 
+    NP* r = nullptr ; 
+
+    if(a->is_pconst_dumb<T>()) 
+    {
+        T dl = a->plhs<T>(0) ; 
+        T dr = a->prhs<T>(0) ; 
+        T vc = a->pconst<T>(-1) ; 
+        r = MakePConst<T>(dl, dr, vc ); 
+    }
+    else
+    {
+        r = MakeCopy(a);     
+    }
+    return r ; 
+}
+
+template<typename T>
+inline NP* NP::MakePConst( T dl, T dr, T vc ) // static
+{
+    int ni = 2 ; 
+    int nj = 2 ; 
+
+    NP* p = NP::Make<T>(ni,nj) ; 
+    T*  pp = p->values<T>() ; 
+
+    pp[0*nj+0] = dl ; 
+    pp[0*nj+1] = vc ; 
+    pp[1*nj+0] = dr ; 
+    pp[1*nj+1] = vc ; 
+
+    return p ; 
+}
+
+
+
 
 
 template<typename T> inline T NP::plhs(unsigned column) const 
@@ -4773,13 +4862,15 @@ inline std::string NP::StringConcat(const std::vector<std::string>& ls, char del
 
 
 template <typename T> 
-inline NP* NP::ZEROProp()  // static 
+inline NP* NP::ZEROProp(T dscale)  // static 
 { 
-    return NP::LoadFromString<T>(R"(
+    NP* a = NP::LoadFromString<T>(R"(
     1.55     *eV    0.0
     15.5     *eV    0.0
 )" ); 
 
+   a->pscale(dscale, 0); 
+   return a ; 
 }
 
 

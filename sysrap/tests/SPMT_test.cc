@@ -2,7 +2,8 @@
 
 int main(int argc, char** argv)
 {
-    SPMT* pmt = SPMT::Create(); 
+    SPMT* pmt = SPMT::Load(); 
+
     std::cout << pmt->desc() << std::endl ; 
 
     pmt->save("$FOLD"); 

@@ -69,6 +69,7 @@ struct NPX
     static NP* Serialize_MSD(   const std::map<std::string,double>& msd );  
     static std::string Desc_MSD(const std::map<std::string,double>& msd); 
 
+    static NP* ArrayFromEnumMap( const std::map<int, std::string>& catMap) ; 
 }; 
 
 
@@ -612,5 +613,23 @@ inline std::string NPX::Desc_MSD(const std::map<std::string, double>& msd) // st
     std::string s = ss.str(); 
     return s ; 
 }
+
+inline NP* NPX::ArrayFromEnumMap( const std::map<int, std::string>& catMap) 
+{
+    unsigned num_cat = catMap.size() ; 
+    NP* a = NP::Make<int>(num_cat); 
+    int* aa = a->values<int>() ; 
+    typedef std::map<int, std::string> MIS ; 
+    MIS::const_iterator it = catMap.begin(); 
+
+    for(unsigned i=0 ; i < num_cat ; i++)
+    {
+        aa[i] = it->first ; 
+        a->names.push_back(it->second) ; 
+        std::advance(it, 1);  
+    }
+    return a ; 
+}
+
 
  
