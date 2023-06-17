@@ -64,19 +64,41 @@ After JPMT.h reordering and scale fixes::
 """
 import numpy as np
 from opticks.ana.fold import Fold
+import matplotlib.pyplot as plt
+
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
-    s = Fold.Load("/tmp/JPMTTest", symbol="s")
-    print(repr(s))
-
-    a = t.rindex
-    b = s.jpmt_rindex
+    #s = Fold.Load("/tmp/JPMTTest", symbol="s")
+    #print(repr(s))
+    #a = t.rindex
+    #b = s.jpmt_rindex
 
     #expr = "a.reshape(-1,2)[:,0]"
     #print(expr) 
     #print(eval(expr)) 
+
+
+    qi = t.test.get_pmtid_qe
+    qc = t.test.get_pmtcat_qe
+    ct = t.test.get_pmtcat 
+
+    fig, ax = plt.subplots(1, figsize=[12.8, 7.2] )
+
+    for i in range(3):
+        ax.plot( qc[i,:,0], qc[i,:,1], label="qc[%d]"%i ) 
+    pass
+    ax.legend()    
+
+    #for pmtid in range(25): 
+    #    ax.plot( qi[pmtid,:,0], qi[pmtid,:,1], label=pmtid ) 
+    #pass
+
+
+
+    fig.show()
+
 pass
 

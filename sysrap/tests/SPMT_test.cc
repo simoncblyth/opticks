@@ -8,5 +8,8 @@ int main(int argc, char** argv)
 
     pmt->save("$FOLD"); 
 
+    NPFold* f = pmt->make_testfold(); 
+    f->save("$FOLD/test") ; 
+
     return 0 ; 
 }

@@ -64,7 +64,11 @@ struct SPMT
 {
 
     struct LCQS { int lc ; float qs ; } ; 
- 
+
+    static constexpr const float EN0 = 1.55 ; 
+    //static constexpr const float EN1 = 15.5 ; 
+    static constexpr const float EN1 = 4.20 ; 
+    static constexpr const int   NEN = 420 - 155 + 1 ; 
 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt" ; 
@@ -88,6 +92,26 @@ struct SPMT
 
     std::string desc() const ; 
     void save(const char* dir) const ; 
+
+    float get_energy(int j, int nj) const ; 
+
+    int   get_pmtcat(int pmtid) const ; 
+    NP*   get_pmtcat() const ; 
+
+    float get_qescale(int pmtid) const ; 
+    NP*   get_qescale() const ; 
+
+    void  get_lcqs( int& lc, float& qs, int pmtid ) const ; 
+    NP*   get_lcqs() const ; 
+
+    float get_pmtcat_qe(int cat, float energy_eV) const ; 
+    NP*   get_pmtcat_qe() const ; 
+
+    float get_pmtid_qe(int pmtid, float energy_eV) const ; 
+    NP*   get_pmtid_qe() const ; 
+
+    NPFold* make_testfold() const ; 
+
 
     const NPFold* jpmt ; 
     const NPFold* PMT_RINDEX ;       // PyrexRINDEX and VacuumRINDEX 
@@ -434,3 +458,161 @@ inline void SPMT::save(const char* dir) const
 }
 
 
+inline float SPMT::get_energy(int j, int nj) const
+{
+    float fr = float(j)/float(nj-1) ; 
+    float en = EN0*(1.f-fr) + EN1*fr ; 
+    return en ; 
+}
+
+/**
+SPMT::get_pmtcat
+-------------------
+
+For pmtid (0->17612-1) returns 0, 1 or 2 corresponding to NNVT, HAMA, NNVT_HiQE
+
+**/
+
+inline int SPMT::get_pmtcat(int pmtid) const 
+{
+    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    const int* lcqs_i = lcqs->cvalues<int>() ; 
+    return lcqs_i[pmtid*2+0] ; 
+}
+inline NP* SPMT::get_pmtcat() const 
+{
+    NP* a = NP::Make<int>( NUM_LPMT ) ; 
+    int* aa = a->values<int>(); 
+    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_pmtcat(i) ; 
+    return a ; 
+}
+
+inline float SPMT::get_qescale(int pmtid) const 
+{
+    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    const float* lcqs_f = lcqs->cvalues<float>() ; 
+    return lcqs_f[pmtid*2+1] ; 
+}
+inline NP* SPMT::get_qescale() const 
+{
+    NP* a = NP::Make<float>( NUM_LPMT ) ; 
+    float* aa = a->values<float>(); 
+    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_qescale(i) ; 
+    return a ; 
+}
+
+inline void SPMT::get_lcqs(int& lc, float& qs, int pmtid) const 
+{
+    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    const int*   lcqs_i = lcqs->cvalues<int>() ; 
+    const float* lcqs_f = lcqs->cvalues<float>() ; 
+    lc = lcqs_i[pmtid*2+0] ; 
+    qs = lcqs_f[pmtid*2+1] ; 
+}
+inline NP* SPMT::get_lcqs() const 
+{
+    int ni = NUM_LPMT ; 
+    int nj = 2 ; 
+    NP* a = NP::Make<int>(ni, nj) ; 
+    int* ii   = a->values<int>() ; 
+    float* ff = a->values<float>() ; 
+    for(int i=0 ; i < ni ; i++) get_lcqs( ii[i*nj+0], ff[i*nj+1], i ); 
+    return a ; 
+}
+
+
+
+inline float SPMT::get_pmtcat_qe(int cat, float energy_eV) const 
+{ 
+    assert( cat == 0 || cat == 1 || cat == 2 );  
+    return qeshape->combined_interp_3( cat, energy_eV ) ;  
+}
+inline NP* SPMT::get_pmtcat_qe() const
+{
+    int ni = 3 ;  
+    int nj = NEN ; 
+    int nk = 2 ; 
+
+    NP* a = NP::Make<float>(ni, nj, nk) ; 
+    float* aa = a->values<float>(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        for(int j=0 ; j < nj ; j++)
+        {
+            float en = get_energy(j, nj );  
+            aa[i*nj*nk+j*nk+0] = en ; 
+            aa[i*nj*nk+j*nk+1] = get_pmtcat_qe(i, en) ; 
+        }
+    }
+    return a ; 
+}
+
+/**
+SPMT::get_pmtid_qe
+--------------------
+
+::
+
+    q = t.test.get_pmtid_qe
+
+    In [21]: q.shape
+    Out[21]: (17612, 266, 2)
+
+    In [22]: np.argmax(q[:,:,0], axis=1)
+    Out[22]: array([265, 265, 265, 265, 265, ..., 265, 265, 265, 265, 265])
+
+    In [23]: np.argmax(q[:,:,1], axis=1)
+    Out[23]: array([163, 163, 163, 163, 163, ..., 163, 163, 163, 163, 163])
+
+* surprised that max qe at same energy for all 17612 pmtid ? 
+
+**/
+
+inline float SPMT::get_pmtid_qe(int pmtid, float energy_eV) const
+{
+    int cat(-1) ; 
+    float qe_scale(-1.f) ; 
+
+    get_lcqs(cat, qe_scale, pmtid); 
+
+    assert( cat == 0 || cat == 1 || cat == 2 ); 
+    assert( qe_scale > 0.f ); 
+
+    float qe = get_pmtcat_qe(cat, energy_eV);
+    qe *= qe_scale ; 
+
+    return qe ; 
+}
+
+inline NP* SPMT::get_pmtid_qe() const 
+{
+    int ni = NUM_LPMT ;  
+    int nj = NEN ; 
+    int nk = 2 ; 
+
+    NP* a = NP::Make<float>(ni, nj, nk) ; 
+    float* aa = a->values<float>(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        for(int j=0 ; j < nj ; j++)
+        {
+            float en = get_energy(j, nj );  
+            aa[i*nj*nk+j*nk+0] = en ; 
+            aa[i*nj*nk+j*nk+1] = get_pmtid_qe(i, en) ; 
+        }
+    }
+    return a ; 
+}
+
+inline NPFold* SPMT::make_testfold() const 
+{
+    NPFold* f = new NPFold ; 
+    f->add("get_pmtcat", get_pmtcat() ); 
+    f->add("get_qescale", get_qescale() ); 
+    f->add("get_lcqs", get_lcqs() ); 
+    f->add("get_pmtcat_qe", get_pmtcat_qe() ); 
+    f->add("get_pmtid_qe", get_pmtid_qe() ); 
+    return f ; 
+}
