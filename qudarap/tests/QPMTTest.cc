@@ -45,9 +45,12 @@ struct QPMTTest
 {
     const QPMT<T>& qpmt ; 
     NP* domain ; 
-    NP* interp ; 
+    NP* rindex_interp ; 
+    NP* qeshape_interp ; 
 
     QPMTTest(const QPMT<T>& qpmt ); 
+    void rindex_test(); 
+    //void qeshape_test(); 
     void save() const ; 
 };
 
@@ -56,39 +59,72 @@ QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     :
     qpmt(qpmt_),
     domain(NP::Linspace<T>( 1.55, 15.5, 1550-155+1 )),
-    interp(qpmt.interpolate(domain))
+    rindex_interp(nullptr),
+    qeshape_interp(nullptr)
 {
+}
+
+template<typename T>
+void QPMTTest<T>::rindex_test()
+{
+    rindex_interp = qpmt.rindex_interpolate(domain);   
 }
 
 template<typename T>
 void QPMTTest<T>::save() const 
 {
     qpmt.save("$FOLD") ; 
-    interp->save("$FOLD/interp.npy" ); 
     domain->save("$FOLD/domain.npy" ); 
+    if(rindex_interp) rindex_interp->save("$FOLD/rindex_interp.npy" ); 
+    if(qeshape_interp) qeshape_interp->save("$FOLD/qeshape_interp.npy" ); 
 }
 
 
 #include <cuda_runtime.h>
+
+#ifdef WITH_JPMT
 #include "JPMT.h"
+#else
+#include "SPMT.h"
+#endif
+
+
 #include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef WITH_JPMT
+    std::cout << "QPMTTest.cc : WITH_JPMT " << std::endl ; 
+    JPMT pmt ; 
+    std::cout << pmt.desc() << std::endl ;
+    pmt.save("$FOLD") ; 
+    const NP* rindex = pmt.rindex ; 
+    const NP* thickness = pmt.thickness ;
+    const NP* qeshape = pmt.qeshape ;  
+    const NP* lcqs = pmt.lcqs ;        // nullptr
+#else
+    std::cout << "QPMTTest.cc : NOT-WITH_JPMT " << std::endl ; 
+    SPMT* pmt = SPMT::Load();
+    if(pmt == nullptr)
+    {
+        std::cout << "QPMTTest.cc FAILED TO SPMT::Load ? IS GEOM envvar defined ? " << std::endl ; 
+        return 1 ; 
+    }
 
-    JPMT jpmt ; 
-    std::cout << jpmt.desc() << std::endl ;
-    jpmt.save("$FOLD") ; 
-    const NP* rindex = jpmt.rindex ; 
-    const NP* thickness = jpmt.thickness ;
+    const NP* rindex = pmt->rindex ; 
+    const NP* thickness = pmt->thickness ;
+    const NP* qeshape = pmt->qeshape ;  
+    const NP* lcqs = pmt->lcqs ; 
+#endif
 
-
-    QPMT<float> qpmt(rindex, thickness) ; 
+    QPMT<float> qpmt(rindex, thickness, qeshape, lcqs ) ; 
     std::cout << qpmt.desc() << std::endl ; 
 
     QPMTTest<float> t(qpmt); 
+    t.rindex_test(); 
+ 
     cudaDeviceSynchronize();
     t.save();  
 

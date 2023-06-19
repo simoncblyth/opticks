@@ -11,6 +11,8 @@ EOU
 REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=QPMTTest
 
+source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar 
+
 defarg="run_ana"
 arg=${1:-$defarg}
 
@@ -20,11 +22,15 @@ logging(){
 logging
 
 export FOLD=/tmp/$name
-vars="REALDIR FOLD name"
+vars="REALDIR FOLD GEOM name"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi
+
+if [ "${arg/build}" != "$arg" ]; then  
+   echo $BASH_SOURCE : ERROR : QPMTTest IS BUILT BY STANDARD OM : NOT THIS SCRIPT && exit 1 
+fi 
  
 if [ "${arg/run}" != "$arg" ]; then  
     $name

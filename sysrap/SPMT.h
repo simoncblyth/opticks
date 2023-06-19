@@ -13,27 +13,23 @@ Aims
    * DONE : (rindex,thickness) matches JPMT after ordering and scale fixes
    * TODO : include some names in source metadata (in _PMTSimParamData?) 
      to makes the order more explicit 
+   * DONE : compared get_stackspec scan from JPMT and SPMT 
 
-2. DONE : make minimal (if any) use of junosw code. 
-
-3. prepare the inputs to QPMT.h including PMT info arrays to be uploaded to GPU 
-
-   * form a (17612,4) array (pmtcat,qescale,spare,pmtidx) 
-
+2. DONE :  (17612,2) PMT info arrays with [pmtcat 0/1/2, qescale]
+3. TODO : update QPMT.hh/qpmt.h to upload the SPMT.h arrays and test them on device
 
 
 Related developments
 ---------------------
 
-* jcv PMTSimParamData    # core of PMTSimParamSvc
-* jcv PMTSimParamSvc     # code that fills the core
-* jcv _PMTSimParamData   # code that serializes the core into NPFold 
-
-
-* j/Layr/JPMT.h 
+* jcv PMTSimParamSvc     # junosw code that populates the below data core
+* jcv PMTSimParamData    # PMT data core knocked out from PMTSimParamSvc for low dependency PMT data access
+* jcv _PMTSimParamData   # code that serializes the PMT data core into NPFold 
+* SPMT.h                 # summarize PMT data into arrays for GPU upload 
+* QPMT.hh                # CPU QProp setup, uploads
+* qpmt.h                 # on GPU use of PMT data  
+* j/Layr/JPMT.h          # earlier incarnation using "dirty" NP_PROP_BASE approach 
 * j/Layr/JPMTTest.sh
-
-  * loads the props into JPMT and dumps  
 
 * Simulation/SimSvc/PMTSimParamSvc/PMTSimParamSvc/tests/PMTSimParamData.sh 
 
@@ -43,6 +39,7 @@ Related developments
 
   * _PMTSimParamData::Load from "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt/PMTSimParamData"
   * test a few simple queries against the loaded PMTSimParamData 
+  * does _PMTSimParamData::Scan_pmtid_qe 
 
 * Simulation/SimSvc/PMTSimParamSvc/PMTSimParamSvc/tests/PMTAccessor_test.sh
 
@@ -59,15 +56,19 @@ Related developments
 **/
 
 #include "NPFold.h"
+#include <cstdio>
+#include "scuda.h"
+#include "squad.h"
 
 struct SPMT
 {
+    enum { L0, L1, L2, L3 } ; 
+    enum { RINDEX, KINDEX } ; 
 
     struct LCQS { int lc ; float qs ; } ; 
 
     static constexpr const float EN0 = 1.55 ; 
-    //static constexpr const float EN1 = 15.5 ; 
-    static constexpr const float EN1 = 4.20 ; 
+    static constexpr const float EN1 = 4.20 ;  // 15.5 
     static constexpr const int   NEN = 420 - 155 + 1 ; 
 
     static constexpr const bool VERBOSE = false ; 
@@ -80,8 +81,7 @@ struct SPMT
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
     // because there is no consistent naming convention have to do these dirty things 
 
-
-    static SPMT* Load(const char* path=PATH); 
+    static SPMT* Load(const char* path=nullptr); 
     SPMT(const NPFold* jpmt); 
 
     void init(); 
@@ -94,6 +94,15 @@ struct SPMT
     void save(const char* dir) const ; 
 
     float get_energy(int j, int nj) const ; 
+
+    float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
+    NP* get_rindex() const ; 
+
+    float get_thickness_nm(int cat, int layr) const ; 
+    NP* get_thickness_nm() const ; 
+
+    void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
+    NP*  get_stackspec() const ; 
 
     int   get_pmtcat(int pmtid) const ; 
     NP*   get_pmtcat() const ; 
@@ -124,17 +133,21 @@ struct SPMT
     std::vector<const NP*> v_qeshape ; 
     std::vector<LCQS>      v_lcqs ; ; 
 
-    NP* rindex ;     // (num_pmtcat, num_layer, num_prop,  num_energies ~15 , num_payload:2 )    # payload is (energy, value)  
-    NP* thickness ;  // (num_pmtcat, num_layer, num_payload:1 )
+    NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
+    NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
+    NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
+    NP* lcqs ;      // (NUM_LPMT, 2)
+
     float* tt ; 
-    NP* qeshape ;    // (num_pmtcat, num_energies ~15, num_payload:2 ) 
-    NP* lcqs ; 
 };
 
-inline SPMT* SPMT::Load(const char* path)
+inline SPMT* SPMT::Load(const char* path_)
 {
-    NPFold* f = NPFold::Load(path) ; 
-    return new SPMT(f) ; 
+    const char* path = path_ != nullptr ? path_ : PATH ;  
+    NPFold* fold = NPFold::Load(path) ; 
+    if(VERBOSE) printf("SPMT::Load path %s \n", ( path == nullptr ? "path-null" : path ) );  
+    if(VERBOSE) printf("SPMT::Load fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );  
+    return fold == nullptr ? nullptr : new SPMT(fold) ; 
 }
 
 inline SPMT::SPMT(const NPFold* jpmt_)
@@ -148,9 +161,9 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     v_lcqs(NUM_LPMT),
     rindex(nullptr), 
     thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
-    tt(thickness->values<float>()),
     qeshape(nullptr),
-    lcqs(nullptr)
+    lcqs(nullptr),
+    tt(thickness->values<float>())
 {
     init(); 
 }
@@ -186,6 +199,7 @@ Fixed this with NP::MakePCopyNotDumb
 
 inline void SPMT::init_rindex_thickness()
 {
+    if(MPT == nullptr || CONST == nullptr) return ; 
     int MPT_sub = MPT->get_num_subfold() ; 
     int CONST_items = CONST->num_items() ; 
 
@@ -250,6 +264,7 @@ NB selects just the relevant 3 PMTCAT
 
 inline void SPMT::init_qeshape()
 {
+    if(QEshape == nullptr) return ; 
     int QEshape_items = QEshape->num_items() ; 
     if(VERBOSE) std::cout << "SPMT::init_qeshape QEshape_items : " << QEshape_items << std::endl ; 
 
@@ -357,7 +372,7 @@ inline void SPMT::init_lcqs()
     assert( qeScale->shape[0] > NUM_LPMT ); 
     const double* qeScale_v = qeScale->cvalues<double>(); 
 
-    std::cout 
+    if(VERBOSE) std::cout 
        << "SPMT::init_lcqs" << std::endl 
        << " lpmtCat " << ( lpmtCat ? lpmtCat->sstr() : "-" ) << std::endl
        << " qeScale " << ( qeScale ? qeScale->sstr() : "-" ) << std::endl
@@ -369,10 +384,9 @@ inline void SPMT::init_lcqs()
 }
 
 /**
-SPMT::TranslateCat
---------------------
+SPMT::TranslateCat : 0,1,3 => 0,1,2 
+--------------------------------------
 
-Translates 0,1,3 into 0,1,2 
 
 ::
 
@@ -388,19 +402,6 @@ Translates 0,1,3 into 0,1,2
 
     In [5]: np.unique(t.lcqs[:,0], return_counts=True)
     Out[5]: (array([0, 1, 2], dtype=int32), array([2720, 4997, 9895]))
-
-
-
-
-
-    In [30]: t.lpmtCat[:200].T
-    Out[30]: 
-    array([[1, 1, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 1, 3, 3, 3, 3, 3, 3, 1, 3]], dtype=int32)
-
-
 
 
 **/
@@ -463,6 +464,105 @@ inline float SPMT::get_energy(int j, int nj) const
     float fr = float(j)/float(nj-1) ; 
     float en = EN0*(1.f-fr) + EN1*fr ; 
     return en ; 
+}
+
+
+
+inline float SPMT::get_rindex(int cat, int layr, int prop, float energy_eV) const 
+{ 
+    assert( cat == 0 || cat == 1 || cat == 2 );  
+    assert( layr == 0 || layr == 1 || layr == 2 || layr == 3 ); 
+    assert( prop == 0 || prop == 1 ); 
+    return rindex->combined_interp_5( cat, layr, prop,  energy_eV ) ;  
+}
+
+inline NP* SPMT::get_rindex() const 
+{
+    int ni = 3 ;  // pmtcat [0,1,2]
+    int nj = 4 ;  // layers [0,1,2,3] 
+    int nk = 2 ;  // props [0,1] (RINDEX,KINDEX) 
+    int nl = NEN ; // energies [0..NEN-1]
+    int nn = 2 ;   // payload [energy_eV,rindex_value]
+
+    NP* a = NP::Make<float>(ni,nj,nk,nl,nn) ; 
+    float* aa = a->values<float>(); 
+
+    for(int i=0 ; i < ni ; i++) 
+    for(int j=0 ; j < nj ; j++) 
+    for(int k=0 ; k < nk ; k++) 
+    for(int l=0 ; l < nl ; l++)
+    {
+        float en = get_energy(l, nl ); 
+        float ri = get_rindex(i, j, k, en) ; 
+        int idx = i*nj*nk*nl*nn+j*nk*nl*nn+k*nl*nn+l*nn ; 
+        aa[idx+0] = en ; 
+        aa[idx+1] = ri ; 
+    }
+    return a ; 
+}
+
+
+
+float SPMT::get_thickness_nm(int cat, int lay) const 
+{
+    assert( cat == 0 || cat == 1 || cat == 2 ); 
+    assert( lay == 0 || lay == 1 || lay == 2 || lay == 3 ); 
+    return tt[cat*NUM_LAYER+lay] ; 
+}
+
+NP* SPMT::get_thickness_nm() const 
+{
+    int ni = NUM_PMTCAT ; 
+    int nj = NUM_LAYER ; 
+    int nk = 1 ; 
+    NP* a = NP::Make<float>(ni, nj, nk ); 
+    float* aa = a->values<float>(); 
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    {
+        int idx = i*NUM_LAYER + j ; 
+        aa[idx] = get_thickness_nm(i, j); 
+    }
+    return a ; 
+}
+
+void SPMT::get_stackspec( quad4& spec, int cat, float energy_eV) const
+{
+    spec.zero(); 
+    spec.q0.f.x = get_rindex( cat, L0, RINDEX, energy_eV ); 
+
+    spec.q1.f.x = get_rindex(       cat, L1, RINDEX, energy_eV ); 
+    spec.q1.f.y = get_rindex(       cat, L1, KINDEX, energy_eV ); 
+    spec.q1.f.z = get_thickness_nm( cat, L1 ); 
+
+    spec.q2.f.x = get_rindex(       cat, L2, RINDEX, energy_eV ); 
+    spec.q2.f.y = get_rindex(       cat, L2, KINDEX, energy_eV ); 
+    spec.q2.f.z = get_thickness_nm( cat, L2 ); 
+
+    spec.q3.f.x = get_rindex( cat, L3, RINDEX, energy_eV ); 
+    //spec.q3.f.x = 1.f ; // Vacuum, so could just set to 1.f  
+}
+
+NP* SPMT::get_stackspec() const 
+{
+    int ni = NUM_PMTCAT ; 
+    int nj = NEN ; 
+    int nk = 4 ; 
+    int nl = 4 ; 
+
+    NP* a = NP::Make<float>(ni, nj, nk, nl ); 
+    float* aa = a->values<float>(); 
+ 
+    quad4 spec ; 
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    {
+       float en = get_energy(j, nj ); 
+       get_stackspec(spec, i, en ); 
+       int idx = i*nj*nk*nl + j*nk*nl ; 
+       memcpy( aa+idx, spec.cdata(), nk*nl*sizeof(float) );  
+    }
+    return a ; 
 }
 
 /**
@@ -548,6 +648,8 @@ inline NP* SPMT::get_pmtcat_qe() const
     return a ; 
 }
 
+
+
 /**
 SPMT::get_pmtid_qe
 --------------------
@@ -595,13 +697,12 @@ inline NP* SPMT::get_pmtid_qe() const
     float* aa = a->values<float>(); 
 
     for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
     {
-        for(int j=0 ; j < nj ; j++)
-        {
-            float en = get_energy(j, nj );  
-            aa[i*nj*nk+j*nk+0] = en ; 
-            aa[i*nj*nk+j*nk+1] = get_pmtid_qe(i, en) ; 
-        }
+        float en = get_energy(j, nj );  
+        int idx = i*nj*nk+j*nk ; 
+        aa[idx+0] = en ; 
+        aa[idx+1] = get_pmtid_qe(i, en) ; 
     }
     return a ; 
 }
@@ -614,5 +715,8 @@ inline NPFold* SPMT::make_testfold() const
     f->add("get_lcqs", get_lcqs() ); 
     f->add("get_pmtcat_qe", get_pmtcat_qe() ); 
     f->add("get_pmtid_qe", get_pmtid_qe() ); 
+    f->add("get_rindex", get_rindex() ); 
+    f->add("get_thickness_nm", get_thickness_nm() ); 
+    f->add("get_stackspec", get_stackspec() ); 
     return f ; 
 }

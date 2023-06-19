@@ -71,10 +71,17 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
-    #s = Fold.Load("/tmp/JPMTTest", symbol="s")
-    #print(repr(s))
+    s = Fold.Load("/tmp/JPMTTest", symbol="s")
+    print(repr(s))
     #a = t.rindex
     #b = s.jpmt_rindex
+
+    # compare stackspec between JPMT and SPMT 
+    a = t.test.get_stackspec
+    b = s.test.get_stackspec
+    ab = np.abs(a-b)   
+    print(" ab.max %s " % ab.max() )
+
 
     #expr = "a.reshape(-1,2)[:,0]"
     #print(expr) 

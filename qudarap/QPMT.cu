@@ -11,8 +11,8 @@ QPMT.cu
 
 
 /**
-_QPMT_interpolate
--------------------
+_QPMT_rindex_interpolate
+---------------------------
 
 max_iprop::
 
@@ -20,10 +20,14 @@ max_iprop::
    =  ni*nj*nk - nj*nk + nj*nk - nk + nk - 1 
    =  ni*nj*nk - 1 
 
+
+HMM: not so easy to generalize from rindex to also do qeshape
+because of the different array shapes 
+
 **/
 
 template <typename T>
-__global__ void _QPMT_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, unsigned domain_width )
+__global__ void _QPMT_rindex_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, unsigned domain_width )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
@@ -54,7 +58,7 @@ __global__ void _QPMT_interpolate( qpmt<T>* pmt, T* lookup , const T* domain, un
 }
 
 
-template <typename T> extern void QPMT_interpolate(
+template <typename T> extern void QPMT_rindex_interpolate(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
     qpmt<T>* pmt, 
@@ -63,9 +67,9 @@ template <typename T> extern void QPMT_interpolate(
     unsigned domain_width
 )
 {
-    _QPMT_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
+    _QPMT_rindex_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
 } 
 
-template void QPMT_interpolate(dim3, dim3, qpmt<double>*, double*, const double*, unsigned ) ; 
-template void QPMT_interpolate(dim3, dim3, qpmt<float>*,  float*,  const float* , unsigned ) ; 
+template void QPMT_rindex_interpolate(dim3, dim3, qpmt<double>*, double*, const double*, unsigned ) ; 
+template void QPMT_rindex_interpolate(dim3, dim3, qpmt<float>*,  float*,  const float* , unsigned ) ; 
 

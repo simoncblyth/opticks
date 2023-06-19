@@ -29,7 +29,10 @@ struct qpmt
     static constexpr const int NUM_PROP = 2 ; 
 
     qprop<T>* rindex_prop ;
+    qprop<T>* qeshape_prop ;
+
     T*        thickness ; 
+    T*        lcqs ; 
 }; 
 
 

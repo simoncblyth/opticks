@@ -13,6 +13,7 @@ bin=$FOLD/$name
 
 export FOLD 
 
+CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
 vars="arg name REALDIR GEOM"
 
@@ -21,7 +22,11 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
-    gcc $REALDIR/$name.cc -I.. -g -std=c++11 -lstdc++ -o $bin
+    gcc $REALDIR/$name.cc \
+           -I.. \
+           -I$CUDA_PREFIX/include \
+           -g -std=c++11 -lstdc++ \
+           -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 

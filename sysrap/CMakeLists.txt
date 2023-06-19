@@ -297,6 +297,8 @@ set(HEADERS
     sframe.h
     SCSGOptiX.h 
 
+    SPMT.h 
+
     storchtype.h
 
     storch.h

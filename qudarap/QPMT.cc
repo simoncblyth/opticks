@@ -3,15 +3,20 @@
 #include <vector_types.h>
 
 #include "SLOG.hh"
+#include "NP.hh"
 #include "QPMT.hh"
 
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
+template<typename T>
+const NP* QPMT<T>::EDOMAIN = NP::Linspace<T>( 1.55, 15.50, 1550-155+1 ); //  np.linspace( 1.55, 15.50, 1550-155+1 )  
+
+
 // NB this cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
-extern void QPMT_interpolate(
+extern void QPMT_rindex_interpolate(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
@@ -22,8 +27,8 @@ extern void QPMT_interpolate(
 
 
 /**
-QPMT::interpolate
--------------------
+QPMT::rindex_interpolate
+--------------------------
 
 lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2) (RINDEX, KINDEX)  
 arrange that as three in kernel nested for loops (24 props) 
@@ -34,7 +39,7 @@ So the shape of the lookup output is  (3,4,2, domain_width )
 **/
 
 template<typename T>
-NP* QPMT<T>::interpolate( const NP* domain ) const 
+NP* QPMT<T>::rindex_interpolate( const NP* domain ) const 
 {
     assert( domain->shape.size() == 1 && domain->shape[0] > 0 ); 
     unsigned domain_width = domain->shape[0] ; 
@@ -55,13 +60,13 @@ NP* QPMT<T>::interpolate( const NP* domain ) const
         << " num_lookup " << num_lookup 
         ;
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::interpolate::d_lookup") ;
+    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::rindex_interpolate::d_lookup") ;
    
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, domain_width, 512u ); 
     
-    QPMT_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
+    QPMT_rindex_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
 
     QU::copy_device_to_host_and_free<T>( lookup->values<T>(), d_lookup, num_lookup );
 
@@ -71,11 +76,7 @@ NP* QPMT<T>::interpolate( const NP* domain ) const
 }
 
 template<typename T>
-NP* QPMT<T>::interpolate() const 
-{
-    NP* domain = NP::Linspace<T>( 1.55, 15.50, 1550-155+1 ); //  np.linspace( 1.55, 15.50, 1550-155+1 )  
-    return interpolate(domain) ; 
-}
+NP* QPMT<T>::rindex_interpolate() const { return rindex_interpolate(EDOMAIN) ; }
 
 // found the below can live in header, when headeronly 
 //#pragma GCC diagnostic push
