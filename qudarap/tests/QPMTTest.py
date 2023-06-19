@@ -13,33 +13,81 @@ w2e_ = lambda w:hc_eVnm/w
 SIZE = np.array([1280, 720]) 
 
 class QPMTTest(object):
+
+    NAMES = "NNVT HAMA NNVTHiQE".split()
+
     def __init__(self, t):
         self.t = t 
-    def present_interpolated_rindex(self):
+        e = t.domain
+        #e0,e1 = 2.3, 3.3
+        e0,e1 = 1.55, 4.3
+        w0,w1 = e2w_(e0), e2w_(e1)
+
+        se = np.logical_and( e >= e0, e <= e1 ) 
+
+        self.se = se 
+        self.e0 = e0
+        self.e1 = e1
+        self.w0 = w0
+        self.w1 = w1
+
+    def present_qeshape_interp(self):
         t = self.t 
-
-        prop_ni = t.rindex[:,-1,-1].view(np.int32)  
-        #names = t.rindex_names.lines 
-        names = "NNVT HAMA NNVTHiQE".split()
-
+        se = self.se  
         e = t.domain
 
-        v0 = -0.1
-        v1 = 3.2
+        interp = t.qeshape_interp  
+        print(interp.shape)
 
-        e0 = 2.3
-        e1 = 3.3
+        prop_ni = t.qeshape[:,-1,-1].view(np.int32)  
 
-        w0 = e2w_(e0)
-        w1 = e2w_(e1)
+        v0,v1 = 0.0,0.38
 
-        s = np.logical_and( e >= e0, e <= e1 ) 
+        assert len(interp.shape) == 2, interp.shape 
 
-        # (3, 4, 2, 1396)
-        ni = t.interp.shape[0]  # pmtcat
-        nj = t.interp.shape[1]  # layers
-        nk = t.interp.shape[2]  # props
+        ni = interp.shape[0]  # pmtcat
+        nj = interp.shape[1]  # energy
 
+        title = "opticks/qudarap/tests/QPMTTest.sh : qeshape GPU interpolation lines and values "
+
+        fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
+        fig.suptitle(title)
+
+        for i in range(ni):
+            ax = axs[i]
+            ax.set_ylim( v0, v1 )
+            v = interp[i] 
+            name = self.NAMES[i]
+            label = "%s qeshape" % name 
+            ax.set_xlabel("energy [eV]")
+            ax.plot( e[se], v[se], label=label ) 
+            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left 
+
+            p_e = t.qeshape[i,:prop_ni[i],0] 
+            p_v = t.qeshape[i,:prop_ni[i],1] 
+            p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
+
+            ax.scatter( p_e[p_s], p_v[p_s] )
+        pass
+        fig.show()
+
+
+    def present_rindex_interp(self):
+        t = self.t 
+        se = self.se  
+        e = t.domain
+
+        prop_ni = t.rindex[:,-1,-1].view(np.int32)  
+
+        v0,v1 = -0.1,3.2
+
+        interp = t.rindex_interp  # (3, 4, 2, 1396)
+
+        assert len(interp.shape) == 4, interp.shape 
+
+        ni = interp.shape[0]  # pmtcat
+        nj = interp.shape[1]  # layers
+        nk = interp.shape[2]  # props
 
         title = "opticks/qudarap/tests/QPMTTest.sh : PMT layer refractive index interpolations on GPU  "
 
@@ -51,7 +99,7 @@ class QPMTTest(object):
             ax = axs[i]
             ax.set_ylim( v0, v1 )
 
-            name = names[i]
+            name = self.NAMES[i]
             #ax.set_title(name)
             ax.set_xlabel("energy [eV]")
 
@@ -62,18 +110,18 @@ class QPMTTest(object):
             for j in range(nj):
                 if j in [0,3]: continue   # skip layers 0,3 Pyrex,Vacuum 
                 for k in range(nk):
-                    v = t.interp[i,j,k]  
+                    v = interp[i,j,k]  
                     iprop = i*nj*nk + j*nk + k 
 
                     label = "L%d %sINDEX" % ( j, "R" if k == 0 else "K" )
 
-                    ax.plot( e[s], v[s], label=label ) 
+                    ax.plot( e[se], v[se], label=label ) 
 
                     p_ni = prop_ni[iprop]
                     p_e = t.rindex[iprop,:p_ni,0] 
                     p_v = t.rindex[iprop,:p_ni,1] 
 
-                    p_s = np.logical_and( p_e >= e0, p_e <= e1 )
+                    p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
                     ax.scatter( p_e[p_s], p_v[p_s] )
                 pass
             pass
@@ -90,7 +138,15 @@ if __name__ == '__main__':
     print(repr(t))
 
     pt = QPMTTest(t)
-    pt.present_interpolated_rindex()
+
+    PLOT = os.environ.get("PLOT", "rindex")
+    if PLOT == "rindex":
+        pt.present_rindex_interp()
+    elif PLOT == "qeshape":
+        pt.present_qeshape_interp()
+    else:
+        print("PLOT:%s not handled " % PLOT)
+    pass
 
 
 

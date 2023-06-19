@@ -44,13 +44,15 @@ template<typename T>
 struct QPMTTest
 {
     const QPMT<T>& qpmt ; 
+
     NP* domain ; 
     NP* rindex_interp ; 
     NP* qeshape_interp ; 
 
     QPMTTest(const QPMT<T>& qpmt ); 
+
     void rindex_test(); 
-    //void qeshape_test(); 
+    void qeshape_test(); 
     void save() const ; 
 };
 
@@ -58,7 +60,7 @@ template<typename T>
 QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     :
     qpmt(qpmt_),
-    domain(NP::Linspace<T>( 1.55, 15.5, 1550-155+1 )),
+    domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
     rindex_interp(nullptr),
     qeshape_interp(nullptr)
 {
@@ -69,12 +71,18 @@ void QPMTTest<T>::rindex_test()
 {
     rindex_interp = qpmt.rindex_interpolate(domain);   
 }
+template<typename T>
+void QPMTTest<T>::qeshape_test()
+{
+    qeshape_interp = qpmt.qeshape_interpolate(domain);   
+}
+
 
 template<typename T>
 void QPMTTest<T>::save() const 
 {
     qpmt.save("$FOLD") ; 
-    domain->save("$FOLD/domain.npy" ); 
+    domain->save("$FOLD/domain.npy"); 
     if(rindex_interp) rindex_interp->save("$FOLD/rindex_interp.npy" ); 
     if(qeshape_interp) qeshape_interp->save("$FOLD/qeshape_interp.npy" ); 
 }
@@ -124,6 +132,7 @@ int main(int argc, char** argv)
 
     QPMTTest<float> t(qpmt); 
     t.rindex_test(); 
+    t.qeshape_test(); 
  
     cudaDeviceSynchronize();
     t.save();  

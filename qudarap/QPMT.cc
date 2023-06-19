@@ -9,10 +9,6 @@
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
-template<typename T>
-const NP* QPMT<T>::EDOMAIN = NP::Linspace<T>( 1.55, 15.50, 1550-155+1 ); //  np.linspace( 1.55, 15.50, 1550-155+1 )  
-
-
 // NB this cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
@@ -25,10 +21,37 @@ extern void QPMT_rindex_interpolate(
     unsigned domain_width
 );
 
+template <typename T>
+extern void QPMT_qeshape_interpolate(
+    dim3 numBlocks,
+    dim3 threadsPerBlock,
+    qpmt<T>* pmt,
+    T* lookup,
+    const T* domain,
+    unsigned domain_width
+);
+
+
+template<typename T>
+NP* QPMT<T>::MakeLookup(int etype, unsigned domain_width )   // static
+{
+    const int& ni = qpmt<T>::NUM_CAT ; 
+    const int& nj = qpmt<T>::NUM_LAYR ; 
+    const int& nk = qpmt<T>::NUM_PROP ;  
+    NP* lookup = nullptr ; 
+    switch(etype)
+    {
+       case RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
+       case QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
+    }
+    return lookup ; 
+}
+
+
 
 /**
-QPMT::rindex_interpolate
---------------------------
+QPMT::interpolate
+--------------------
 
 lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2) (RINDEX, KINDEX)  
 arrange that as three in kernel nested for loops (24 props) 
@@ -39,34 +62,41 @@ So the shape of the lookup output is  (3,4,2, domain_width )
 **/
 
 template<typename T>
-NP* QPMT<T>::rindex_interpolate( const NP* domain ) const 
+NP* QPMT<T>::interpolate(int etype, const NP* domain ) const 
 {
     assert( domain->shape.size() == 1 && domain->shape[0] > 0 ); 
     unsigned domain_width = domain->shape[0] ; 
-    
+
+    NP* lookup = MakeLookup(etype, domain_width ); 
+    unsigned domain_width_1 = lookup->shape[lookup->shape.size()-1] ; 
+    assert( domain_width == domain_width_1 ); 
+
     T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), domain_width ) ; 
 
-    const int& ni = qpmt<T>::NUM_CAT ; 
-    const int& nj = qpmt<T>::NUM_LAYR ; 
-    const int& nk = qpmt<T>::NUM_PROP ;  
-
-    NP* lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; 
-    unsigned num_lookup = lookup->num_values() ; 
+   unsigned num_lookup = lookup->num_values() ; 
 
     LOG(LEVEL) 
+        << " etype " << etype 
         << " domain " << domain->sstr()
         << " domain_width " << domain_width 
         << " lookup " << lookup->sstr()
         << " num_lookup " << num_lookup 
         ;
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::rindex_interpolate::d_lookup") ;
+    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::interpolate::d_lookup") ;
    
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, domain_width, 512u ); 
     
-    QPMT_rindex_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
+    if( etype == RINDEX )
+    {
+        QPMT_rindex_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
+    }
+    else if( etype == QESHAPE )
+    {
+        QPMT_qeshape_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
+    }
 
     QU::copy_device_to_host_and_free<T>( lookup->values<T>(), d_lookup, num_lookup );
 
@@ -76,7 +106,10 @@ NP* QPMT<T>::rindex_interpolate( const NP* domain ) const
 }
 
 template<typename T>
-NP* QPMT<T>::rindex_interpolate() const { return rindex_interpolate(EDOMAIN) ; }
+NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpolate(RINDEX, domain) ; }
+
+template<typename T>
+NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(QESHAPE, domain) ; }
 
 // found the below can live in header, when headeronly 
 //#pragma GCC diagnostic push

@@ -11,12 +11,12 @@ Aims
    thickness info loaded by JPMT.h. 
 
    * DONE : (rindex,thickness) matches JPMT after ordering and scale fixes
-   * TODO : include some names in source metadata (in _PMTSimParamData?) 
-     to makes the order more explicit 
+   * TODO : include some pmtcat names in source metadata (in _PMTSimParamData?) 
+            to makes the order more explicit 
    * DONE : compared get_stackspec scan from JPMT and SPMT 
 
 2. DONE :  (17612,2) PMT info arrays with [pmtcat 0/1/2, qescale]
-3. TODO : update QPMT.hh/qpmt.h to upload the SPMT.h arrays and test them on device
+3. DONE : update QPMT.hh/qpmt.h to upload the SPMT.h arrays and test them on device
 
 
 Related developments
@@ -48,9 +48,9 @@ Related developments
 
 * qudarap/tests/QPMTTest.sh 
 
-  * currently used JPMT NP_PROP_BASE loading rindex and thickness
-  * TODO: add in SPMT.h source rather than JPMT 
-  * on GPU interpolation check using QPMT
+  * formerl used JPMT NP_PROP_BASE loading rindex and thickness, not qeshape and lcqs
+  * DONE: add in SPMT.h rather than JPMT and extend to include qeshape and lcqs
+  * DONE: on GPU interpolation check using QPMT
 
 
 **/
@@ -98,6 +98,9 @@ struct SPMT
     float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
     NP* get_rindex() const ; 
 
+    float get_qeshape(int cat, float energy_eV) const ; 
+    NP* get_qeshape() const ; 
+
     float get_thickness_nm(int cat, int layr) const ; 
     NP* get_thickness_nm() const ; 
 
@@ -134,9 +137,9 @@ struct SPMT
     std::vector<LCQS>      v_lcqs ; ; 
 
     NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
-    NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
     NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
     NP* lcqs ;      // (NUM_LPMT, 2)
+    NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
 
     float* tt ; 
 };
@@ -160,9 +163,9 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     QEshape(        PMTSimParamData ? PMTSimParamData->get_subfold("QEshape") : nullptr ),
     v_lcqs(NUM_LPMT),
     rindex(nullptr), 
-    thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
     qeshape(nullptr),
     lcqs(nullptr),
+    thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
     tt(thickness->values<float>())
 {
     init(); 
@@ -502,6 +505,37 @@ inline NP* SPMT::get_rindex() const
 }
 
 
+inline float SPMT::get_qeshape(int cat, float energy_eV) const 
+{ 
+    assert( cat == 0 || cat == 1 || cat == 2 );  
+    return qeshape->combined_interp_3( cat, energy_eV ) ;  
+}
+
+inline NP* SPMT::get_qeshape() const 
+{
+    int ni = 3 ;   // pmtcat [0,1,2]
+    int nj = NEN ; // energies [0..NEN-1]
+    int nk = 2 ;   // payload [energy_eV,qeshape_value]
+
+    NP* a = NP::Make<float>(ni,nj,nk) ; 
+    float* aa = a->values<float>(); 
+
+    for(int i=0 ; i < ni ; i++) 
+    for(int j=0 ; j < nj ; j++) 
+    {
+        float en = get_energy(j, nj ); 
+        float qe = get_qeshape(i, en) ; 
+        int idx = i*nj*nk+j*nk ; 
+        aa[idx+0] = en ; 
+        aa[idx+1] = qe ; 
+    }
+    return a ; 
+}
+
+
+
+
+
 
 float SPMT::get_thickness_nm(int cat, int lay) const 
 {
@@ -716,6 +750,7 @@ inline NPFold* SPMT::make_testfold() const
     f->add("get_pmtcat_qe", get_pmtcat_qe() ); 
     f->add("get_pmtid_qe", get_pmtid_qe() ); 
     f->add("get_rindex", get_rindex() ); 
+    f->add("get_qeshape", get_qeshape() ); 
     f->add("get_thickness_nm", get_thickness_nm() ); 
     f->add("get_stackspec", get_stackspec() ); 
     return f ; 

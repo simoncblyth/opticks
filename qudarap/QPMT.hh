@@ -25,8 +25,9 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 template<typename T>
 struct QUDARAP_API QPMT
 {
+    enum { RINDEX, QESHAPE } ; 
+
     static const plog::Severity LEVEL ; 
-    static const NP* EDOMAIN ; 
 
     const NP* src_rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
     const NP* src_thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )  
@@ -48,12 +49,17 @@ struct QUDARAP_API QPMT
     qpmt<T>* d_pmt ; 
 
     QPMT( const NP* rindex, const NP* thickness, const NP* qeshape, const NP* lcqs );     
+
     void init(); 
     void save(const char* base) const ; 
     std::string desc() const ; 
 
+    NP* interpolate(int etype, const NP* domain) const ; 
     NP* rindex_interpolate(const NP* domain) const ; 
-    NP* rindex_interpolate() const ; 
+    NP* qeshape_interpolate(const NP* domain) const ; 
+
+    static NP* MakeLookup(int etype, unsigned domain_width ); 
+
 };
 
 /**
@@ -136,6 +142,7 @@ inline void QPMT<T>::save(const char* base) const
     rindex_prop->a->save(base, "rindex_prop_a.npy" );  
 
     qeshape_prop->a->save(base, "qeshape_prop_a.npy" );  
+
 }
 
 template<typename T>
