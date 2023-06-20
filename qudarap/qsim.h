@@ -47,8 +47,8 @@ TODO:
 #ifndef PRODUCTION
 #include "srec.h"
 #include "sseq.h"
-#ifdef DEBUG_TAG
 #include "stag.h"
+#ifdef DEBUG_TAG
 #define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
 #endif
 #endif

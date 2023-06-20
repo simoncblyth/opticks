@@ -18,12 +18,6 @@ qpmt.h
 #include "QUDARAP_API_EXPORT.hh"
 #endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QPMT_METHOD __device__
-#else
-   #define QPMT_METHOD 
-#endif 
-
 
 template <typename T> struct qprop ;
 
@@ -35,9 +29,11 @@ template<typename T>
 struct qpmt
 {
     // curious not defined in device code when use unsigned ?
-    static constexpr const int NUM_CAT = 3 ;   // ni
-    static constexpr const int NUM_LAYR = 4 ;  // nj
-    static constexpr const int NUM_PROP = 2 ;  // nk 
+    //static constexpr const int NUM_CAT = 3 ;   // ni
+    //static constexpr const int NUM_LAYR = 4 ;  // nj
+    //static constexpr const int NUM_PROP = 2 ;  // nk 
+
+    enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2 } ;  
 
     enum { L0, L1, L2, L3 } ; 
     enum { RINDEX, KINDEX } ; 

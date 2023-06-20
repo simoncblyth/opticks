@@ -32,22 +32,6 @@ extern void QPMT_qeshape_interpolate(
 );
 
 
-template<typename T>
-NP* QPMT<T>::MakeLookup(int etype, unsigned domain_width )   // static
-{
-    const int& ni = qpmt<T>::NUM_CAT ; 
-    const int& nj = qpmt<T>::NUM_LAYR ; 
-    const int& nk = qpmt<T>::NUM_PROP ;  
-    NP* lookup = nullptr ; 
-    switch(etype)
-    {
-       case RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
-       case QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
-    }
-    return lookup ; 
-}
-
-
 
 /**
 QPMT::interpolate
@@ -105,17 +89,11 @@ NP* QPMT<T>::interpolate(int etype, const NP* domain ) const
     return lookup ; 
 }
 
-template<typename T>
-NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpolate(RINDEX, domain) ; }
-
-template<typename T>
-NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(QESHAPE, domain) ; }
-
 // found the below can live in header, when headeronly 
 //#pragma GCC diagnostic push
 //#pragma GCC diagnostic ignored "-Wattributes"
 // quell warning: type attributes ignored after type is already defined [-Wattributes]
 template struct QUDARAP_API QPMT<float>;
-template struct QUDARAP_API QPMT<double>;
+//template struct QUDARAP_API QPMT<double>;
 //#pragma GCC diagnostic pop
  

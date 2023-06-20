@@ -5,12 +5,11 @@ from opticks.ana.fold import Fold
 
 hc_eVnm = 1239.84198433200208455673 
 
-
-
 e2w_ = lambda e:hc_eVnm/e
 w2e_ = lambda w:hc_eVnm/w
 
 SIZE = np.array([1280, 720]) 
+SCRIPT = os.environ.get("SCRIPT", "unknown-SCRIPT")
 
 class QPMTTest(object):
 
@@ -30,6 +29,8 @@ class QPMTTest(object):
         self.e1 = e1
         self.w0 = w0
         self.w1 = w1
+        self.title_prefix = "%s : %s " % ( SCRIPT, t.base )
+
 
     def present_qeshape_interp(self):
         t = self.t 
@@ -48,7 +49,7 @@ class QPMTTest(object):
         ni = interp.shape[0]  # pmtcat
         nj = interp.shape[1]  # energy
 
-        title = "opticks/qudarap/tests/QPMTTest.sh : qeshape GPU interpolation lines and values "
+        title = "%s : qeshape GPU interpolation lines and values " % self.title_prefix
 
         fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
         fig.suptitle(title)
@@ -89,7 +90,7 @@ class QPMTTest(object):
         nj = interp.shape[1]  # layers
         nk = interp.shape[2]  # props
 
-        title = "opticks/qudarap/tests/QPMTTest.sh : PMT layer refractive index interpolations on GPU  "
+        title = "%s : PMT layer refractive index interpolations on GPU  " % self.title_prefix
 
         fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
         fig.suptitle(title)

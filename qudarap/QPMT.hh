@@ -51,6 +51,8 @@ struct QUDARAP_API QPMT
     QPMT( const NP* rindex, const NP* thickness, const NP* qeshape, const NP* lcqs );     
 
     void init(); 
+    static NP* MakeLookup(int etype, unsigned domain_width ); 
+
     void save(const char* base) const ; 
     std::string desc() const ; 
 
@@ -58,7 +60,6 @@ struct QUDARAP_API QPMT
     NP* rindex_interpolate(const NP* domain) const ; 
     NP* qeshape_interpolate(const NP* domain) const ; 
 
-    static NP* MakeLookup(int etype, unsigned domain_width ); 
 
 };
 
@@ -125,6 +126,25 @@ inline void QPMT<T>::init()
     // getting above line to link required template instanciation at tail of qpmt.h 
 }
 
+
+template<typename T>
+inline NP* QPMT<T>::MakeLookup(int etype, unsigned domain_width )   // static
+{
+    const int& ni = qpmt<T>::NUM_CAT ; 
+    const int& nj = qpmt<T>::NUM_LAYR ; 
+    const int& nk = qpmt<T>::NUM_PROP ;  
+    NP* lookup = nullptr ; 
+    switch(etype)
+    {
+       case RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
+       case QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
+    }
+    return lookup ; 
+}
+
+
+
+
 template<typename T>
 inline void QPMT<T>::save(const char* base) const 
 {
@@ -165,4 +185,12 @@ inline std::string QPMT<T>::desc() const
     std::string s = ss.str(); 
     return s ;
 }
+
+template<typename T>
+inline NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpolate(RINDEX, domain) ; }
+
+template<typename T>
+inline NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(QESHAPE, domain) ; }
+
+
 
