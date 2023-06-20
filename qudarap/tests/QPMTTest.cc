@@ -108,7 +108,6 @@ void QPMTTest<T>::save() const
 #include "SPMT.h"
 #endif
 
-
 #include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
