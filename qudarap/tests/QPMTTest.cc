@@ -48,11 +48,14 @@ struct QPMTTest
     NP* domain ; 
     NP* rindex_interp ; 
     NP* qeshape_interp ; 
+    NP* stackspec_interp ; 
 
     QPMTTest(const QPMT<T>& qpmt ); 
 
     void rindex_test(); 
     void qeshape_test(); 
+    void stackspec_test(); 
+
     void save() const ; 
 };
 
@@ -62,7 +65,8 @@ QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     qpmt(qpmt_),
     domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
     rindex_interp(nullptr),
-    qeshape_interp(nullptr)
+    qeshape_interp(nullptr),
+    stackspec_interp(nullptr)
 {
 }
 
@@ -76,6 +80,13 @@ void QPMTTest<T>::qeshape_test()
 {
     qeshape_interp = qpmt.qeshape_interpolate(domain);   
 }
+template<typename T>
+void QPMTTest<T>::stackspec_test()
+{
+    stackspec_interp = qpmt.stackspec_interpolate(domain);   
+}
+
+
 
 
 template<typename T>
@@ -85,6 +96,7 @@ void QPMTTest<T>::save() const
     domain->save("$FOLD/domain.npy"); 
     if(rindex_interp) rindex_interp->save("$FOLD/rindex_interp.npy" ); 
     if(qeshape_interp) qeshape_interp->save("$FOLD/qeshape_interp.npy" ); 
+    if(stackspec_interp) stackspec_interp->save("$FOLD/stackspec_interp.npy" ); 
 }
 
 
@@ -131,8 +143,10 @@ int main(int argc, char** argv)
     std::cout << qpmt.desc() << std::endl ; 
 
     QPMTTest<float> t(qpmt); 
+
     t.rindex_test(); 
     t.qeshape_test(); 
+    t.stackspec_test(); 
  
     cudaDeviceSynchronize();
     t.save();  

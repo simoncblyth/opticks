@@ -67,9 +67,17 @@ struct SPMT
 
     struct LCQS { int lc ; float qs ; } ; 
 
+    /*
     static constexpr const float EN0 = 1.55 ; 
     static constexpr const float EN1 = 4.20 ;  // 15.5 
     static constexpr const int   NEN = 420 - 155 + 1 ; 
+    */
+
+    static constexpr const float EN0 = 1.55 ; 
+    static constexpr const float EN1 = 15.5 ; 
+    static constexpr const int   NEN = 1550 - 155 + 1 ; 
+    // NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )
+
 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt" ; 

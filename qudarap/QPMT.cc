@@ -33,6 +33,10 @@ with the energy domain passed in as input so the parallelism is over the energy
 
 So the shape of the lookup output is  (3,4,2, domain_width )   
 
+
+HMM: for testing get_stackspec can this be generalized to the 
+lookup type being quad4 ? 
+
 **/
 
 template<typename T>
@@ -42,8 +46,19 @@ NP* QPMT<T>::interpolate(int etype, const NP* domain ) const
     unsigned domain_width = domain->shape[0] ; 
 
     NP* lookup = MakeLookup(etype, domain_width ); 
-    unsigned domain_width_1 = lookup->shape[lookup->shape.size()-1] ; 
+
+    unsigned domain_width_1 = 0 ; 
+
+    if( etype == qpmt<T>::RINDEX || etype == qpmt<T>::QESHAPE )
+    {
+        domain_width_1 = lookup->shape[lookup->shape.size()-1] ; 
+    } 
+    else if ( etype == qpmt<T>::STACKSPEC )
+    {
+        domain_width_1 = lookup->shape[lookup->shape.size()-3] ;  // (4,4) payload
+    }
     assert( domain_width == domain_width_1 ); 
+
 
     T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), domain_width ) ; 
 

@@ -68,17 +68,18 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    t = Fold.Load(symbol="t")
-    print(repr(t))
-
-    s = Fold.Load("/tmp/JPMTTest", symbol="s")
+    s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
-    #a = t.rindex
-    #b = s.jpmt_rindex
+
+    j = Fold.Load("$JFOLD", symbol="j")
+    print(repr(j))
+
+    #a = s.rindex
+    #b = j.jpmt_rindex
 
     # compare stackspec between JPMT and SPMT 
-    a = t.test.get_stackspec
-    b = s.test.get_stackspec
+    a = s.test.get_stackspec
+    b = j.test.get_stackspec
     ab = np.abs(a-b)   
     print(" ab.max %s " % ab.max() )
 
@@ -88,9 +89,9 @@ if __name__ == '__main__':
     #print(eval(expr)) 
 
 
-    qi = t.test.get_pmtid_qe
-    qc = t.test.get_pmtcat_qe
-    ct = t.test.get_pmtcat 
+    qi = s.test.get_pmtid_qe
+    qc = s.test.get_pmtcat_qe
+    ct = s.test.get_pmtcat 
 
     fig, ax = plt.subplots(1, figsize=[12.8, 7.2] )
 
@@ -102,8 +103,6 @@ if __name__ == '__main__':
     #for pmtid in range(25): 
     #    ax.plot( qi[pmtid,:,0], qi[pmtid,:,1], label=pmtid ) 
     #pass
-
-
 
     fig.show()
 

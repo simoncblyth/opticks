@@ -30,7 +30,7 @@ struct qpmt
 {
     enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2 } ;  
     enum { L0, L1, L2, L3 } ; 
-    enum { RINDEX, KINDEX, QESHAPE } ; 
+    enum { RINDEX, KINDEX, QESHAPE, STACKSPEC } ; 
 
     qprop<T>* rindex_prop ;
     qprop<T>* qeshape_prop ;

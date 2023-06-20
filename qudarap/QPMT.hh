@@ -57,6 +57,7 @@ struct QUDARAP_API QPMT
     NP* interpolate(int etype, const NP* domain) const ; 
     NP* rindex_interpolate(const NP* domain) const ; 
     NP* qeshape_interpolate(const NP* domain) const ; 
+    NP* stackspec_interpolate(const NP* domain) const ; 
 
 
 };
@@ -134,8 +135,9 @@ inline NP* QPMT<T>::MakeLookup(int etype, unsigned domain_width )   // static
     NP* lookup = nullptr ; 
     switch(etype)
     {
-       case qpmt<T>::RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
-       case qpmt<T>::QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
+       case qpmt<T>::RINDEX:    lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
+       case qpmt<T>::QESHAPE:   lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
+       case qpmt<T>::STACKSPEC: lookup = NP::Make<T>( ni, domain_width, 4, 4  )  ; break ; 
     }
     return lookup ; 
 }
@@ -190,5 +192,7 @@ inline NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpol
 template<typename T>
 inline NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(qpmt<T>::QESHAPE, domain) ; }
 
+template<typename T>
+inline NP* QPMT<T>::stackspec_interpolate(const NP* domain) const { return interpolate(qpmt<T>::STACKSPEC, domain) ; }
 
 

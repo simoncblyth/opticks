@@ -11,7 +11,9 @@ FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-export FOLD 
+export SFOLD=/tmp/$name 
+export JFOLD=/tmp/JPMTTest
+
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
