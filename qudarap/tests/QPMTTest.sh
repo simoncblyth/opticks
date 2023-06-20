@@ -8,6 +8,9 @@ NB : standard qudarap/om builds the QPMTTest binary, not this script
 EOU
 }
 
+SCRIPT=$(basename $BASH_SOURCE)
+export SCRIPT
+
 REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=QPMTTest
 

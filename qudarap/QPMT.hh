@@ -25,8 +25,6 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 template<typename T>
 struct QUDARAP_API QPMT
 {
-    enum { RINDEX, QESHAPE } ; 
-
     static const plog::Severity LEVEL ; 
 
     const NP* src_rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
@@ -136,8 +134,8 @@ inline NP* QPMT<T>::MakeLookup(int etype, unsigned domain_width )   // static
     NP* lookup = nullptr ; 
     switch(etype)
     {
-       case RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
-       case QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
+       case qpmt<T>::RINDEX:  lookup = NP::Make<T>( ni, nj, nk, domain_width ) ; break ; 
+       case qpmt<T>::QESHAPE: lookup = NP::Make<T>( ni,         domain_width ) ; break ; 
     }
     return lookup ; 
 }
@@ -187,10 +185,10 @@ inline std::string QPMT<T>::desc() const
 }
 
 template<typename T>
-inline NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpolate(RINDEX, domain) ; }
+inline NP* QPMT<T>::rindex_interpolate(const NP* domain) const { return interpolate(qpmt<T>::RINDEX, domain) ; }
 
 template<typename T>
-inline NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(QESHAPE, domain) ; }
+inline NP* QPMT<T>::qeshape_interpolate(const NP* domain) const { return interpolate(qpmt<T>::QESHAPE, domain) ; }
 
 
 

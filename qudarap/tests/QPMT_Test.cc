@@ -66,8 +66,6 @@ void QPMT_Test<T>::save() const
 
 int main(int argc, char** argv)
 {
-    //assert(0 && "ABANDONED FOR NOW : SEE NOTE IN QPMT_Test.sh " ); 
-
     OPTICKS_LOG(argc, argv); 
 
 #ifdef WITH_JPMT

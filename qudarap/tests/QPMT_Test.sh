@@ -25,7 +25,7 @@ source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar
 
 
 
-defarg="run_ana"
+defarg="build_run_ana"
 arg=${1:-$defarg}
 
 logging(){

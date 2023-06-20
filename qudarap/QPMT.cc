@@ -12,25 +12,15 @@ const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG");
 // NB this cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
-extern void QPMT_rindex_interpolate(
+extern void QPMT_interpolate(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
+    int etype, 
     T* lookup,
     const T* domain,
     unsigned domain_width
 );
-
-template <typename T>
-extern void QPMT_qeshape_interpolate(
-    dim3 numBlocks,
-    dim3 threadsPerBlock,
-    qpmt<T>* pmt,
-    T* lookup,
-    const T* domain,
-    unsigned domain_width
-);
-
 
 
 /**
@@ -73,14 +63,7 @@ NP* QPMT<T>::interpolate(int etype, const NP* domain ) const
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, domain_width, 512u ); 
     
-    if( etype == RINDEX )
-    {
-        QPMT_rindex_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
-    }
-    else if( etype == QESHAPE )
-    {
-        QPMT_qeshape_interpolate(numBlocks, threadsPerBlock, d_pmt, d_lookup, d_domain, domain_width );
-    }
+    QPMT_interpolate(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, domain_width );
 
     QU::copy_device_to_host_and_free<T>( lookup->values<T>(), d_lookup, num_lookup );
 

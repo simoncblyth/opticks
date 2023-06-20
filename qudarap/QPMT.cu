@@ -38,9 +38,11 @@ __global__ void _QPMT_rindex_interpolate( qpmt<T>* pmt, T* lookup , const T* dom
     //printf("//_QPMT_interpolate domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
 
     // wierd unsigned/int diff between qpmt.h and here ? to get it to compile fo device
-    const unsigned& ni = qpmt<T>::NUM_CAT ; 
-    const unsigned& nj = qpmt<T>::NUM_LAYR ; 
-    const unsigned& nk = qpmt<T>::NUM_PROP ; 
+    // switching to enum rather than constexpr const avoids the wierdness
+
+    const int& ni = qpmt<T>::NUM_CAT ; 
+    const int& nj = qpmt<T>::NUM_LAYR ; 
+    const int& nk = qpmt<T>::NUM_PROP ; 
 
     //printf("//_QPMT_interpolate ni %d nj %d nk %d \n", ni, nj, nk ); 
     // cf the CPU equivalent NP::combined_interp_5
@@ -69,7 +71,7 @@ __global__ void _QPMT_qeshape_interpolate( qpmt<T>* pmt, T* lookup , const T* do
 
     //printf("//_QPMT_interpolate domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
 
-    const unsigned& ni = qpmt<T>::NUM_CAT ; 
+    const int& ni = qpmt<T>::NUM_CAT ; 
 
     for(int i=0 ; i < ni ; i++)
     {
@@ -81,34 +83,28 @@ __global__ void _QPMT_qeshape_interpolate( qpmt<T>* pmt, T* lookup , const T* do
 
 
 
-template <typename T> extern void QPMT_rindex_interpolate(
+template <typename T> extern void QPMT_interpolate(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
     qpmt<T>* pmt, 
+    int etype, 
     T* lookup, 
     const T* domain, 
     unsigned domain_width
 )
 {
-    _QPMT_rindex_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
+    if( etype == qpmt<T>::RINDEX )
+    {
+        _QPMT_rindex_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
+    }
+    else if( etype == qpmt<T>::QESHAPE )
+    {
+        _QPMT_qeshape_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
+    }
+
 } 
 
-template void QPMT_rindex_interpolate(dim3, dim3, qpmt<double>*, double*, const double*, unsigned ) ; 
-template void QPMT_rindex_interpolate(dim3, dim3, qpmt<float>*,  float*,  const float* , unsigned ) ; 
+//template void QPMT_interpolate(dim3, dim3, qpmt<double>*, int etype, double*, const double*, unsigned ) ; 
+template void QPMT_interpolate(dim3, dim3, qpmt<float>*,  int etype, float*,  const float* , unsigned ) ; 
 
-
-template <typename T> extern void QPMT_qeshape_interpolate(
-    dim3 numBlocks, 
-    dim3 threadsPerBlock, 
-    qpmt<T>* pmt, 
-    T* lookup, 
-    const T* domain, 
-    unsigned domain_width
-)
-{
-    _QPMT_qeshape_interpolate<T><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
-} 
-
-template void QPMT_qeshape_interpolate(dim3, dim3, qpmt<double>*, double*, const double*, unsigned ) ; 
-template void QPMT_qeshape_interpolate(dim3, dim3, qpmt<float>*,  float*,  const float* , unsigned ) ; 
 
