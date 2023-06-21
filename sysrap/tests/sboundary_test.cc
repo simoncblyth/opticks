@@ -95,17 +95,17 @@ int main(int argc, char** argv)
     const int pnum = 3 ; 
     std::vector<sphoton> pp(N*pnum) ; 
 
-    for(int i=0 ; i < N ; i++)
+    for(int i=0 ; i < N ; i++)  // loop over N photons with different polarization directions 
     {   
         sphoton& p0 = pp[i*3+0] ; 
         sphoton& p1 = pp[i*3+1] ; 
         sphoton& p2 = pp[i*3+2] ; 
 
-        float frac_twopi = float(i)/float(N)  ;   
+        float frac_twopi = float(i)/float(N); // does not reach 1. to avoid including both 0 and 2pi  
 
         p.zero(); 
 
-        p.mom = mom ; 
+        p.mom = mom ;                     // all N with same momentum direction 
         p.set_polarization(frac_twopi) ;
         p.time = frac_twopi ; 
 

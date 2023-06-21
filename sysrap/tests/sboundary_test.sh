@@ -24,7 +24,7 @@ n1=1.5
 n2=1.0
 b=1
 
-export N=${N:-$n}
+export N=${N:-$n}               # polarization directions 
 export FORCE=${FORCE:-$force}
 export AOI=${AOI:-$aoi}
 export N1=${N1:-$n1}

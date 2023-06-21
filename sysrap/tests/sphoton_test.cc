@@ -269,6 +269,88 @@ void test_set_polarization()
 
 
 
+/**
+test_dot_pol_cross_mom_nrm
+----------------------------
+
+
+    mom      nrm 
+       .      |
+         .    |
+           .  |
+             .|
+     ---------+----------
+
+* mom and nrm vectors define the plane of incidence, they lie within it 
+* pol is transverse to mom, so there is a circle of possible directions including 
+
+  * transverse to plane of incidence (S polarized) 
+  * within the plane of incidence (P polarized) 
+  * combination of S and P polarizations by 
+    sweeping the pol vector around the mom vector
+    whilst staying transverse to the mom vector
+
+
+**/
+
+
+void test_dot_pol_cross_mom_nrm()
+{
+    printf("// test_dot_pol_cross_mom_nrm \n"); 
+
+    float3 nrm = normalize(make_float3(0.f, 0.f, 1.f)) ; 
+    float3 mom = normalize(make_float3(1.f, 0.f, -1.f ));
+    float3 tra = cross( mom, nrm ) ; 
+    float ltr = length(tra) ; 
+    float mct = dot(mom,nrm) ; 
+    float llmm = ltr*ltr + mct*mct ; 
+
+    std::cout 
+        << " nrm "  << nrm << std::endl 
+        << " mom "  << mom << std::endl 
+        << " tra "  << tra << std::endl 
+        << " mct "  << mct << std::endl 
+        << " ltr "  << ltr << std::endl 
+        << " llmm "  << llmm << std::endl 
+        ;
+
+    sphoton p ; 
+    p.zero(); 
+    p.mom = mom ; 
+
+
+    const int N = 128 ; 
+
+    NP* a = NP::Make<float>(N, 4); 
+    float* aa = a->values<float>(); 
+
+    for(int i=0 ; i < N ; i++)
+    {
+        float frac_twopi = float(i)/float(N)  ; 
+        p.set_polarization(frac_twopi) ; 
+
+        float pot = dot( p.pol, tra ) ; 
+
+        float check_transverse = dot(p.mom,p.pol) ; 
+        assert( std::abs(check_transverse) < 1e-6f ) ; 
+
+        std::cout 
+            << p.descDir() 
+            << " frac_twopi " << std::fixed << std::setw(7) << std::setprecision(3) << frac_twopi
+            << " pot " << std::fixed << std::setw(7) << std::setprecision(3) << pot
+            << " pot/mct " << std::fixed << std::setw(7) << std::setprecision(3) << pot/mct
+            << std::endl 
+            ; 
+
+        aa[i*4+0] = frac_twopi ; 
+        aa[i*4+1] = pot ; 
+        aa[i*4+2] = pot/mct ; 
+    }
+    a->save("$FOLD/test_dot_pol_cross_mom_nrm.npy"); 
+} 
+
+
+
 
 int main()
 {
@@ -283,9 +365,10 @@ int main()
 
     test_sphoton_Get(); 
     test_sphotond_Get(); 
+    test_set_polarization(); 
 
     */
-    test_set_polarization(); 
+    test_dot_pol_cross_mom_nrm(); 
 
     return 0 ; 
 }

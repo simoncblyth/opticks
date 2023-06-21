@@ -74,22 +74,26 @@ struct SPMT
 
     struct LCQS { int lc ; float qs ; } ; 
 
-    
-    static constexpr const float EN0 = 1.55 ; 
-    static constexpr const float EN1 = 4.20 ;  // 15.5 
-    static constexpr const int   NEN = 420 - 155 + 1 ; 
+    static constexpr const float MCT0 = -1.f ; 
+    static constexpr const float MCT1 = +1.f ; 
+    static constexpr const int   N_MCT = 5 ;     
+    static constexpr const int   N_SPOL = 5 ; 
+
+    static constexpr const float EN0 = 1.55f ; 
+    static constexpr const float EN1 = 4.20f ;  // 15.5 
+    static constexpr const int   N_EN = 420 - 155 + 1 ; 
     
 
     /*
-    static constexpr const float EN0 = 2.55 ; 
-    static constexpr const float EN1 = 3.55 ; 
-    static constexpr const int   NEN = 2 ; 
+    static constexpr const float EN0 = 2.55f ; 
+    static constexpr const float EN1 = 3.55f ; 
+    static constexpr const int   N_EN = 2 ; 
     */
 
     /*
-    static constexpr const float EN0 = 1.55 ; 
-    static constexpr const float EN1 = 15.5 ; 
-    static constexpr const int   NEN = 1550 - 155 + 1 ; 
+    static constexpr const float EN0 = 1.55f ; 
+    static constexpr const float EN1 = 15.5f ; 
+    static constexpr const int   N_EN = 1550 - 155 + 1 ; 
     // NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )
     */
 
@@ -120,10 +124,9 @@ struct SPMT
     std::string desc() const ; 
     void save(const char* dir) const ; 
 
+    float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
     float get_minus_cos_theta(int k, int nk ) const ;
-    float get_dot_pol_cross_mom_nrm(int l, int nl) const  ; 
-
 
     float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
     NP* get_rindex() const ; 
@@ -173,7 +176,7 @@ struct SPMT
     std::vector<const NP*> v_qeshape ; 
     std::vector<LCQS>      v_lcqs ; ; 
 
-    NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
+    NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, N_EN, 2:[energy,value] )
     NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
     NP* lcqs ;      // (NUM_LPMT, 2)
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
@@ -499,25 +502,25 @@ inline void SPMT::save(const char* dir) const
     lcqs->save(dir, "lcqs.npy"); 
 }
 
+inline float SPMT::get_frac(int i, int ni) const
+{
+   return float(i)/float(ni-1) ; 
+}
 
 inline float SPMT::get_energy(int j, int nj) const
 {
     assert( j < nj ); 
-    float fr = float(j)/float(nj-1) ; 
+    float fr = get_frac(j, nj); 
     float en = EN0*(1.f-fr) + EN1*fr ; 
     return en ; 
 }
 inline float SPMT::get_minus_cos_theta(int k, int nk ) const 
 {
     assert( k < nk ); 
-    return -1.f ; 
+    float fr = get_frac(k, nk); 
+    float mct = MCT0*(1.f-fr) + MCT1*fr ; 
+    return mct ; 
 }
-inline float SPMT::get_dot_pol_cross_mom_nrm(int l, int nl) const 
-{
-    assert( l < nl ); 
-    return 0.f ; 
-}
-
 
 inline float SPMT::get_rindex(int cat, int layr, int prop, float energy_eV) const 
 { 
@@ -532,7 +535,7 @@ inline NP* SPMT::get_rindex() const
     int ni = 3 ;  // pmtcat [0,1,2]
     int nj = 4 ;  // layers [0,1,2,3] 
     int nk = 2 ;  // props [0,1] (RINDEX,KINDEX) 
-    int nl = NEN ; // energies [0..NEN-1]
+    int nl = N_EN ; // energies [0..N_EN-1]
     int nn = 2 ;   // payload [energy_eV,rindex_value]
 
     NP* a = NP::Make<float>(ni,nj,nk,nl,nn) ; 
@@ -562,7 +565,7 @@ inline float SPMT::get_qeshape(int cat, float energy_eV) const
 inline NP* SPMT::get_qeshape() const 
 {
     int ni = 3 ;   // pmtcat [0,1,2]
-    int nj = NEN ; // energies [0..NEN-1]
+    int nj = N_EN ; // energies [0..N_EN-1]
     int nk = 2 ;   // payload [energy_eV,qeshape_value]
 
     NP* a = NP::Make<float>(ni,nj,nk) ; 
@@ -671,6 +674,9 @@ void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
 SPMT::get_ARTE : TMM MultiLayerStack calculation using complex rindex, thickness, ...
 ---------------------------------------------------------------------------------------
 
+TODO: backwards _qe is not yet zeroed 
+
+
 Output:ARTE float4
     theAbsorption,theReflectivity,theTransmittance,theEfficiency
 
@@ -688,11 +694,21 @@ minus_cos_theta
     obtain from dot(mom,nrm) OR OldPolarization*theRecoveredNormal 
 
     * expresses the angle of incidence of the photon onto the surface 
+    * -1.f:forward normal incidence 
+    *  0.f:skimming incidence
+    * +1.f:backward normal incidence
 
 dot_pol_cross_mom_nrm
-    obtain from dot(pol,cross(mom,nrm)) OR (OldPolarization*OldMomentum.cross(theRecoveredNormal)) 
-
-    * expresses the degree of S vs P polarization of the incident photon, having large impact on results 
+    
+    * dot(pol,cross(mom,nrm)) in float3 form 
+    * OldPolarization*OldMomentum.cross(theRecoveredNormal) in G4ThreeVector form 
+    * expresses degree of S vs P polarization of the incident photon
+    * pol,mom,nrm all expected to be normalized vectors
+    * cross(mom,nrm) vector is transverse to plane of incidence which contains mom and nrm by definition
+    * cross(mom,nrm) has magnitude sine(angle_between_mom_and_nrm)   
+    * cross(mom,nrm) becomes zero at normal incidence, but S/P have no meaning in that case anyhow
+    * dot(pol,cross(mom,nrm)) value is cosine(angle_between_pol_and_transverse_vector)*sine(angle_between_mom_and_nrm)
+    * NB when testing the value of dot_pol_cross_mom_nrm needs to be consistent with minus_cos_theta
 
 **/
 
@@ -738,22 +754,27 @@ inline void SPMT::get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus
     const float A = S*stack.art.A_s + P*stack.art.A_p ;
     //const float A1 = one - (T+R);  // note that A1 matches A 
 
-    Stack<float,4> stackNormal(wavelength_nm, -1.f , ss );
-    float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
+    float E = 0.f ; 
+    if(minus_cos_theta < 0.f ) // backwards _qe is zero, so E is zero 
+    {
+        Stack<float,4> stackNormal(wavelength_nm, -1.f , ss );
+        float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
+        E = _qe/An ;     // aka theEfficiency and escape_fac   
+    }
 
-    ARTE.x = A ;          // aka theAbsorption
-    ARTE.y = R/(1.f-A) ;  // aka theReflectivity
-    ARTE.z = T/(1.f-A)  ; // aka theTransmittance
-    ARTE.w = _qe/An ;     // aka theEfficiency and escape_fac   
+    ARTE.x = A ;         // aka theAbsorption
+    ARTE.y = R/(1.f-A) ; // aka theReflectivity
+    ARTE.z = T/(1.f-A) ; // aka theTransmittance
+    ARTE.w = E ; 
 }
 
 inline NP* SPMT::get_ARTE() const 
 {
     int ni = NUM_LPMT ; 
     //int ni = 10 ;
-    int nj = NEN ; 
+    int nj = N_EN ; 
     int nk = N_MCT ; 
-    int nl = N_DPCMN ; 
+    int nl = N_SPOL ; 
     int nn = 4 ; 
 
     NP* a = NP::Make<float>(ni, nj, nk, nl, nn ); 
@@ -773,7 +794,8 @@ inline NP* SPMT::get_ARTE() const
               float minus_cos_theta = get_minus_cos_theta(k, nk );  
               for(int l=0 ; l < nl ; l++)
               {
-                  float dot_pol_cross_mom_nrm = get_dot_pol_cross_mom_nrm(l, nl) ; 
+                  float s_pol_frac = get_frac(l, nl) ; 
+                  float dot_pol_cross_mom_nrm = minus_cos_theta*s_pol_frac ; 
                   get_ARTE(ARTE, pmtid, energy_eV, minus_cos_theta, dot_pol_cross_mom_nrm ); 
                   int idx = i*nj*nk*nl*nn + j*nk*nl*nn + k*nl*nn + l*nn ; 
 
@@ -825,7 +847,7 @@ void SPMT::get_stackspec( quad4& spec, int cat, float energy_eV) const
 NP* SPMT::get_stackspec() const 
 {
     int ni = NUM_PMTCAT ; 
-    int nj = NEN ; 
+    int nj = N_EN ; 
     int nk = 4 ; 
     int nl = 4 ; 
 
@@ -909,7 +931,7 @@ inline float SPMT::get_pmtcat_qe(int cat, float energy_eV) const
 inline NP* SPMT::get_pmtcat_qe() const
 {
     int ni = 3 ;  
-    int nj = NEN ; 
+    int nj = N_EN ; 
     int nk = 2 ; 
 
     NP* a = NP::Make<float>(ni, nj, nk) ; 
@@ -972,7 +994,7 @@ inline float SPMT::get_pmtid_qe(int pmtid, float energy_eV) const
 inline NP* SPMT::get_pmtid_qe() const 
 {
     int ni = NUM_LPMT ;  
-    int nj = NEN ; 
+    int nj = N_EN ; 
     int nk = 2 ; 
 
     NP* a = NP::Make<float>(ni, nj, nk) ; 

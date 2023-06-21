@@ -41,6 +41,9 @@ void test_cross()
     printf("// A_trans (%10.7f, %10.7f, %10.7f) \n", A_trans.x, A_trans.y, A_trans.z ); 
 }
 
+
+
+
 void test_indexed()
 {
     float4 v = make_float4( 0.f , 1.f, 2.f, 3.f ); 
@@ -81,14 +84,15 @@ void test_efloat3n()
 int main()
 {
     /*
-    test_crosss(); 
+    test_cross(); 
     test_indexed();  
-    */
 
     test_efloat(); 
     test_efloat3(); 
     test_efloat4(); 
     test_efloat3n(); 
+    */
+    test_cross(); 
 
 
     return 0 ; 
