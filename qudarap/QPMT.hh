@@ -118,8 +118,13 @@ inline void QPMT<T>::init()
 
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
     pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;  
-    pmt->thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); 
-    pmt->lcqs = lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values() ) : nullptr ; 
+
+    T* d_thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); ; 
+    pmt->thickness = d_thickness ; 
+
+    T* d_lcqs =  lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values() ) : nullptr ; 
+    pmt->lcqs = d_lcqs ; 
+    pmt->i_lcqs = (int*)d_lcqs ; 
 
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  
     // getting above line to link required template instanciation at tail of qpmt.h 

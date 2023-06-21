@@ -60,23 +60,42 @@ Related developments
 #include "scuda.h"
 #include "squad.h"
 
+#ifdef WITH_CUSTOM4
+#include "C4MultiLayrStack.h"
+#endif
+
+
 struct SPMT
 {
+    static constexpr const float hc_eVnm = 1239.84198433200208455673  ; 
+
     enum { L0, L1, L2, L3 } ; 
     enum { RINDEX, KINDEX } ; 
 
     struct LCQS { int lc ; float qs ; } ; 
 
-    /*
+    
     static constexpr const float EN0 = 1.55 ; 
     static constexpr const float EN1 = 4.20 ;  // 15.5 
     static constexpr const int   NEN = 420 - 155 + 1 ; 
+    
+
+    /*
+    static constexpr const float EN0 = 2.55 ; 
+    static constexpr const float EN1 = 3.55 ; 
+    static constexpr const int   NEN = 2 ; 
     */
 
+    /*
     static constexpr const float EN0 = 1.55 ; 
     static constexpr const float EN1 = 15.5 ; 
     static constexpr const int   NEN = 1550 - 155 + 1 ; 
     // NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )
+    */
+
+
+    static constexpr const int N_MCT = 1 ; 
+    static constexpr const int N_DPCMN = 1 ; 
 
 
     static constexpr const bool VERBOSE = false ; 
@@ -102,6 +121,9 @@ struct SPMT
     void save(const char* dir) const ; 
 
     float get_energy(int j, int nj) const ; 
+    float get_minus_cos_theta(int k, int nk ) const ;
+    float get_dot_pol_cross_mom_nrm(int l, int nl) const  ; 
+
 
     float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
     NP* get_rindex() const ; 
@@ -111,6 +133,13 @@ struct SPMT
 
     float get_thickness_nm(int cat, int layr) const ; 
     NP* get_thickness_nm() const ; 
+
+    void get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const ;  // EXPT
+
+#ifdef WITH_CUSTOM4
+    void get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
+    NP*  get_ARTE() const ; 
+#endif
 
     void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
     NP*  get_stackspec() const ; 
@@ -457,6 +486,7 @@ inline std::string SPMT::desc() const
     ss << "qeshape " << ( qeshape ? qeshape->sstr() : "-" ) << std::endl ; 
     ss << "lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl ; 
 
+
     std::string str = ss.str(); 
     return str ; 
 }
@@ -472,11 +502,21 @@ inline void SPMT::save(const char* dir) const
 
 inline float SPMT::get_energy(int j, int nj) const
 {
+    assert( j < nj ); 
     float fr = float(j)/float(nj-1) ; 
     float en = EN0*(1.f-fr) + EN1*fr ; 
     return en ; 
 }
-
+inline float SPMT::get_minus_cos_theta(int k, int nk ) const 
+{
+    assert( k < nk ); 
+    return -1.f ; 
+}
+inline float SPMT::get_dot_pol_cross_mom_nrm(int l, int nl) const 
+{
+    assert( l < nl ); 
+    return 0.f ; 
+}
 
 
 inline float SPMT::get_rindex(int cat, int layr, int prop, float energy_eV) const 
@@ -567,6 +607,203 @@ NP* SPMT::get_thickness_nm() const
     }
     return a ; 
 }
+
+/**
+SPMT::get_pmtid_stackspec
+---------------------------
+
+Expt with using "spare" fourth column .w spec slots to hold onto calculation 
+intermediates to provide a working context, avoiding API 
+contortions or repeated lookups. 
+
+   +----+-------------+----------+------------+-------------+-------------+
+   |    |    x        |   y      |  z         |  w          |  Notes      |
+   +====+=============+==========+============+=============+=============+
+   | q0 | rindex      |  0.f     | 0.f        | i:pmtcat    | Pyrex       | 
+   +----+-------------+----------+------------+-------------+-------------+         
+   | q1 | rindex      | kindex   | thickness  | f:qe_scale  | ARC         |
+   +----+-------------+----------+------------+-------------+-------------+         
+   | q2 | rindex      | kindex   | thickness  | f:qe        | PHC         |
+   +----+-------------+----------+------------+-------------+-------------+
+   | q3 | rindex 1.f  |  0.f     | 0.f        | f:_qe       | Vacuum      |         
+   +----+-------------+----------+------------+-------------+-------------+
+
+
+1. lookup pmtcat, qe_scale for the pmtid
+2. using pmtcat and energy_eV do rindex,kindex interpolation and thickness lookups
+
+**/
+void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
+{
+    spec.zero(); 
+    int& cat = spec.q0.i.w ; 
+    float& qe_scale = spec.q1.f.w ; 
+    float& qe = spec.q2.f.w ; 
+    float& _qe = spec.q3.f.w ; 
+
+    get_lcqs(cat, qe_scale, pmtid);
+
+    assert( cat > -1 && cat < NUM_PMTCAT ); 
+    assert( qe_scale > 0.f ); 
+
+    qe = get_pmtcat_qe(cat, energy_eV ) ; // qeshape interpolation 
+    _qe = qe*qe_scale ; 
+
+    assert( _qe > 0.f && _qe < 1.f ); 
+    
+
+    spec.q0.f.x = get_rindex( cat, L0, RINDEX, energy_eV ); 
+
+    spec.q1.f.x = get_rindex(       cat, L1, RINDEX, energy_eV ); 
+    spec.q1.f.y = get_rindex(       cat, L1, KINDEX, energy_eV ); 
+    spec.q1.f.z = get_thickness_nm( cat, L1 ); 
+
+    spec.q2.f.x = get_rindex(       cat, L2, RINDEX, energy_eV ); 
+    spec.q2.f.y = get_rindex(       cat, L2, KINDEX, energy_eV ); 
+    spec.q2.f.z = get_thickness_nm( cat, L2 ); 
+
+    spec.q3.f.x = 1.f ; // Vacuum
+}
+
+
+#ifdef WITH_CUSTOM4
+/**
+SPMT::get_ARTE : TMM MultiLayerStack calculation using complex rindex, thickness, ...
+---------------------------------------------------------------------------------------
+
+Output:ARTE float4
+    theAbsorption,theReflectivity,theTransmittance,theEfficiency
+
+pmtid
+    integer in range 0->NUM_LPMT-1 eg NUM_LPMT 17612 
+    
+    * used to lookup pmtcat 0,1,2 and qe_scale 
+
+energy_eV
+    float in range 1.55 to 15.5 
+
+    * used for rindex, kindex, qeshape interpolated property lookups 
+
+minus_cos_theta
+    obtain from dot(mom,nrm) OR OldPolarization*theRecoveredNormal 
+
+    * expresses the angle of incidence of the photon onto the surface 
+
+dot_pol_cross_mom_nrm
+    obtain from dot(pol,cross(mom,nrm)) OR (OldPolarization*OldMomentum.cross(theRecoveredNormal)) 
+
+    * expresses the degree of S vs P polarization of the incident photon, having large impact on results 
+
+**/
+
+inline void SPMT::get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
+{
+    quad4 spec ; 
+    get_pmtid_stackspec(spec, pmtid, energy_eV); 
+
+    const float& _qe = spec.q3.f.w ; 
+    const float wavelength_nm = hc_eVnm/energy_eV ; 
+
+    // HMM: annoying shuffling : allows C4MultiLayerStack.h very independent
+    StackSpec<float,4> ss ;
+
+    ss.ls[0].nr = spec.q0.f.x ; 
+
+    ss.ls[1].nr = spec.q1.f.x ; 
+    ss.ls[1].ni = spec.q1.f.y ; 
+    ss.ls[1].d  = spec.q1.f.z ;
+ 
+    ss.ls[2].nr = spec.q2.f.x ; 
+    ss.ls[2].ni = spec.q2.f.y ; 
+    ss.ls[2].d  = spec.q2.f.z ;
+
+    ss.ls[3].nr = spec.q3.f.x ; 
+ 
+
+    Stack<float,4> stack(wavelength_nm, minus_cos_theta, ss );
+
+    const float _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
+    float E_s2 = _si > 0.f ? dot_pol_cross_mom_nrm/_si : 0.f ;
+    E_s2 *= E_s2;
+
+    // E_s2 : S-vs-P power fraction : signs make no difference as squared
+    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
+
+    const float one = 1.f ;
+    const float S = E_s2 ;
+    const float P = one - S ;
+
+    const float T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
+    const float R = S*stack.art.R_s + P*stack.art.R_p ;
+    const float A = S*stack.art.A_s + P*stack.art.A_p ;
+    //const float A1 = one - (T+R);  // note that A1 matches A 
+
+    Stack<float,4> stackNormal(wavelength_nm, -1.f , ss );
+    float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
+
+    ARTE.x = A ;          // aka theAbsorption
+    ARTE.y = R/(1.f-A) ;  // aka theReflectivity
+    ARTE.z = T/(1.f-A)  ; // aka theTransmittance
+    ARTE.w = _qe/An ;     // aka theEfficiency and escape_fac   
+}
+
+inline NP* SPMT::get_ARTE() const 
+{
+    int ni = NUM_LPMT ; 
+    //int ni = 10 ;
+    int nj = NEN ; 
+    int nk = N_MCT ; 
+    int nl = N_DPCMN ; 
+    int nn = 4 ; 
+
+    NP* a = NP::Make<float>(ni, nj, nk, nl, nn ); 
+
+    if(VERBOSE) std::cout << "SPMT::get_ARTE " << a->sstr() << std::endl ; 
+
+    float* aa = a->values<float>(); 
+    float4 ARTE ;  
+    for(int i=0 ; i < ni ; i++)
+    {
+        int pmtid = i ; 
+        for(int j=0 ; j < nj ; j++)
+        {
+           float energy_eV = get_energy(j, nj ); 
+           for(int k=0 ; k < nk ; k++)
+           {
+              float minus_cos_theta = get_minus_cos_theta(k, nk );  
+              for(int l=0 ; l < nl ; l++)
+              {
+                  float dot_pol_cross_mom_nrm = get_dot_pol_cross_mom_nrm(l, nl) ; 
+                  get_ARTE(ARTE, pmtid, energy_eV, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+                  int idx = i*nj*nk*nl*nn + j*nk*nl*nn + k*nl*nn + l*nn ; 
+
+                  aa[idx+0] = ARTE.x ; 
+                  aa[idx+1] = ARTE.y ; 
+                  aa[idx+2] = ARTE.z ; 
+                  aa[idx+3] = ARTE.w ; 
+
+                  if(VERBOSE) std::cout 
+                      << "SPMT::get_ARTE"
+                      << " i " << std::setw(5) << i 
+                      << " j " << std::setw(5) << j 
+                      << " k " << std::setw(5) << k 
+                      << " l " << std::setw(5) << l 
+                      << " idx " << std::setw(10) << idx 
+                      << " ARTE " << ARTE 
+                      << std::endl 
+                      ; 
+                  
+              } 
+           }
+        }
+    }
+    return a ; 
+}
+#endif
+
+
+
+
 
 void SPMT::get_stackspec( quad4& spec, int cat, float energy_eV) const
 {
@@ -729,6 +966,9 @@ inline float SPMT::get_pmtid_qe(int pmtid, float energy_eV) const
     return qe ; 
 }
 
+
+
+
 inline NP* SPMT::get_pmtid_qe() const 
 {
     int ni = NUM_LPMT ;  
@@ -749,6 +989,7 @@ inline NP* SPMT::get_pmtid_qe() const
     return a ; 
 }
 
+
 inline NPFold* SPMT::make_testfold() const 
 {
     NPFold* f = new NPFold ; 
@@ -761,5 +1002,8 @@ inline NPFold* SPMT::make_testfold() const
     f->add("get_qeshape", get_qeshape() ); 
     f->add("get_thickness_nm", get_thickness_nm() ); 
     f->add("get_stackspec", get_stackspec() ); 
+#ifdef WITH_CUSTOM4
+    f->add("get_ARTE", get_ARTE() ); 
+#endif
     return f ; 
 }

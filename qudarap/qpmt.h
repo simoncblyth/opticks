@@ -28,7 +28,7 @@ template <typename T> struct qprop ;
 template<typename T>
 struct qpmt
 {
-    enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2 } ;  
+    enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2, NUM_LPMT = 17612 } ;  
     enum { L0, L1, L2, L3 } ; 
     enum { RINDEX, KINDEX, QESHAPE, STACKSPEC } ; 
 
@@ -37,15 +37,40 @@ struct qpmt
 
     T*        thickness ; 
     T*        lcqs ; 
+    int*      i_lcqs ;  // int* "view" of lcqs memory
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QPMT_METHOD void get_stackspec( quad4& spec, int cat, T energy_eV ); 
+    // follow SPMT.h API 
+    QPMT_METHOD int  get_pmtcat(  int pmtid ) const  ; 
+    QPMT_METHOD T    get_qescale( int pmtid ) const  ; 
+    QPMT_METHOD T    get_pmtcat_qe( int pmtcat, T energy_eV ) const ; 
+
+    QPMT_METHOD void get_stackspec( quad4& spec, int cat, T energy_eV ) const ; 
 #endif
 }; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+
 template<typename T>
-inline QPMT_METHOD void qpmt<T>::get_stackspec( quad4& spec, int cat, T energy_eV )
+inline QPMT_METHOD int qpmt<T>::get_pmtcat( int pmtid ) const 
+{
+    return pmtid < NUM_LPMT && pmtid > -1 ? i_lcqs[pmtid*2+0] : -2 ; 
+}
+template<typename T>
+inline QPMT_METHOD T qpmt<T>::get_qescale( int pmtid ) const 
+{
+    return pmtid < NUM_LPMT && pmtid > -1 ? lcqs[pmtid*2+1] : -2.f ; 
+}
+template<typename T>
+inline QPMT_METHOD T qpmt<T>::get_pmtcat_qe( int pmtcat, T energy_eV ) const 
+{
+    return pmtcat > -1 && pmtcat < NUM_CAT ? qeshape_prop->interpolate( pmtcat, energy_eV ) : -1.f ; 
+}
+
+
+
+template<typename T>
+inline QPMT_METHOD void qpmt<T>::get_stackspec( quad4& spec, int cat, T energy_eV ) const 
 {
     const unsigned idx = cat*NUM_LAYR*NUM_PROP ; 
     const unsigned idx0 = idx + L0*NUM_PROP ; 

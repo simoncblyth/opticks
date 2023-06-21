@@ -27,6 +27,8 @@ if [ "${arg/build}" != "$arg" ]; then
     gcc $REALDIR/$name.cc \
            -I.. \
            -I$CUDA_PREFIX/include \
+           -I$HOME/customgeant4 \
+           -DWITH_CUSTOM4 \
            -g -std=c++11 -lstdc++ \
            -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 

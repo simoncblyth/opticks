@@ -71,6 +71,13 @@ if __name__ == '__main__':
     s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
 
+    expr = "s.test.get_ARTE.squeeze()"
+    print(expr)
+    a = eval(expr)
+    print(a)
+
+
+if 0:
     j = Fold.Load("$JFOLD", symbol="j")
     print(repr(j))
 

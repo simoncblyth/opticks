@@ -7,10 +7,10 @@ int main(int argc, char** argv)
 
     std::cout << pmt->desc() << std::endl ; 
 
-    pmt->save("$FOLD"); 
+    pmt->save("$SFOLD"); 
 
     NPFold* f = pmt->make_testfold(); 
-    f->save("$FOLD/test") ; 
+    f->save("$SFOLD/test") ; 
 
     return 0 ; 
 }
