@@ -6,6 +6,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "ssys.h"
 
 #include "OpticksPhoton.h"
 
@@ -299,27 +300,38 @@ void test_dot_pol_cross_mom_nrm()
     printf("// test_dot_pol_cross_mom_nrm \n"); 
 
     float3 nrm = normalize(make_float3(0.f, 0.f, 1.f)) ; 
-    float3 mom = normalize(make_float3(1.f, 0.f, -1.f ));
+
+    //float3 mom = normalize(make_float3(1.f, 0.f, -1.f ));  // 45 degrees
+    //float3 mom = normalize(make_float3(2.f, 0.f, -1.f ));  // shallower
+    float3 mom = normalize(make_float3(1.f, 0.f, -2.f ));    // steeper
+
+
     float3 tra = cross( mom, nrm ) ; 
     float ltr = length(tra) ; 
     float mct = dot(mom,nrm) ; 
-    float llmm = ltr*ltr + mct*mct ; 
+    float st = sqrt( 1.f - mct*mct ); 
+    float llmm = ltr*ltr + mct*mct ;   // tis close to 1.f 
 
-    std::cout 
-        << " nrm "  << nrm << std::endl 
-        << " mom "  << mom << std::endl 
-        << " tra "  << tra << std::endl 
-        << " mct "  << mct << std::endl 
-        << " ltr "  << ltr << std::endl 
-        << " llmm "  << llmm << std::endl 
+    std::stringstream ss ; 
+    ss
+        << " nrm "  << nrm 
+        << " mom "  << mom 
+        << " tra "  << tra 
+        << " mct "  << mct 
+        << " st "  << st 
+        << " ltr "  << ltr 
+        << " llmm "  << llmm
         ;
+
+    std::string str = ss.str(); 
+    std::cout << str << std::endl ; 
+    
 
     sphoton p ; 
     p.zero(); 
     p.mom = mom ; 
 
-
-    const int N = 128 ; 
+    const int N = ssys::getenvint("N", 16)  ; 
 
     NP* a = NP::Make<float>(N, 4); 
     float* aa = a->values<float>(); 
@@ -328,23 +340,26 @@ void test_dot_pol_cross_mom_nrm()
     {
         float frac_twopi = float(i)/float(N)  ; 
         p.set_polarization(frac_twopi) ; 
+        float check_pol_mom_transverse = dot(p.mom,p.pol) ; 
+        assert( std::abs(check_pol_mom_transverse) < 1e-6f ) ; 
 
-        float pot = dot( p.pol, tra ) ; 
-
-        float check_transverse = dot(p.mom,p.pol) ; 
-        assert( std::abs(check_transverse) < 1e-6f ) ; 
+        float pot = dot( p.pol, tra ) ;  // value is cos(pol-trans-angle)*sin(mom-nrm-angle)
+        float pot_st = pot/st ;   // this is spol_frac which stays in range from -1. to 1. 
+        float pot_mct = pot/mct ; // some unholy combination that is not constrained to -1. to 1. 
 
         std::cout 
             << p.descDir() 
             << " frac_twopi " << std::fixed << std::setw(7) << std::setprecision(3) << frac_twopi
             << " pot " << std::fixed << std::setw(7) << std::setprecision(3) << pot
-            << " pot/mct " << std::fixed << std::setw(7) << std::setprecision(3) << pot/mct
+            << " pot_mct " << std::fixed << std::setw(7) << std::setprecision(3) << pot_mct
+            << " pot_st " << std::fixed << std::setw(7) << std::setprecision(3) << pot_st
             << std::endl 
             ; 
 
         aa[i*4+0] = frac_twopi ; 
         aa[i*4+1] = pot ; 
-        aa[i*4+2] = pot/mct ; 
+        aa[i*4+2] = pot_mct ; 
+        aa[i*4+3] = pot_st ; 
     }
     a->save("$FOLD/test_dot_pol_cross_mom_nrm.npy"); 
 } 

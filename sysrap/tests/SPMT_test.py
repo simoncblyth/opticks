@@ -1,80 +1,91 @@
 #!/usr/bin/env python
 """
-
-
-SPMT pmtcat order is by numerical enum value 000,001,003::
-
-    006 enum PMT_CATEGORY {
-      7   kPMT_Unknown=-1,
-      8   kPMT_NNVT,          # 000
-      9   kPMT_Hamamatsu,     # 001
-     10   kPMT_HZC,
-     11   kPMT_NNVT_HighQE    # 003
-     12 };
-
-
-JPMT order is HAMA, NNVT, NNVTMCP_HiQE::
-
-    In [2]: s.jpmt_rindex_names
-    Out[2]: 
-    R12860
-    NNVTMCP
-    NNVTMCP_HiQE
-
-
-Comparing JPMT with SPMT see ordering flip 0<->1 and 1e3 scale difference::
-
-    In [13]:  s.jpmt_thickness.T
-    Out[13]: 
-    array([[[ 0.  ,  0.  ,  0.  ],
-            [36.49, 40.  , 10.24],
-            [21.13, 20.58, 18.73],
-            [ 0.  ,  0.  ,  0.  ]]])
-
-    In [14]: t.thickness.T
-    Out[14]: 
-    array([[[    0.,     0.,     0.],
-            [40000., 36490., 10240.],
-            [20580., 21130., 18730.],
-            [    0.,     0.,     0.]]])
-
-
-    In [10]: np.allclose( a[0],b[1] )
-    Out[10]: True
-
-    In [11]: np.allclose( a[1],b[0] )
-    Out[11]: True
-
-    In [9]: np.allclose( a[2],b[2] )
-    Out[9]: True
-
-
-After JPMT.h reordering and scale fixes::
-
-    In [6]: np.allclose( a, b )
-    Out[6]: True
-
-    In [7]: np.abs(a-b).max()
-    Out[7]: 4.440892098500626e-16
-
-    In [5]: np.abs( s.jpmt_thickness - t.thickness ).max()
-    Out[5]: 3.552713678800501e-15
-
+SPMT_test.py
+==============
 
 """
-import numpy as np
+import os, numpy as np
 from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
-
+SIZE = np.array([1280,720])
 
 if __name__ == '__main__':
     s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
 
-    expr = "s.test.get_ARTE.squeeze()"
-    print(expr)
-    a = eval(expr)
-    print(a)
+    f = s.get_ARTE
+    print("f:s.get_ARTE") 
+    print(repr(f))
+
+    args = f.args.squeeze()
+    spec = f.spec.squeeze()
+    ss = f.ss.squeeze()
+    ARTE = f.ARTE.squeeze()
+
+    stack = f.stack.squeeze()
+    ll = f.ll.squeeze() 
+    comp = f.comp.squeeze() 
+    art = f.art.squeeze() 
+
+    nstack = f.nstack.squeeze()
+    nll = f.nll.squeeze() 
+    ncomp = f.ncomp.squeeze() 
+    nart = f.nart.squeeze() 
+
+    #_art = nart  # corresponds to just the -1 point in the mct scan  
+    _art = art
+
+
+    Rs = _art[...,0,0]
+    Rp = _art[...,0,1]
+    Ts = _art[...,0,2]
+    Tp = _art[...,0,3]
+
+    As = _art[...,1,0]
+    Ap = _art[...,1,1]
+    R_ = _art[...,1,2]
+    T_ = _art[...,1,3]
+      
+    A_ = _art[...,2,0]
+    A_R_T = _art[...,2,1]
+    wl    = _art[...,2,2] 
+    mct   = _art[...,2,3]
+
+    xx  = _art[...,3,0]
+    yy  = _art[...,3,1]
+    zz  = _art[...,3,2]
+    ww  = _art[...,3,3]
+
+    pmtid = 0 
+
+    opt = os.environ.get("OPT", "A_,R_,T_,As,Rs,Ts,Ap,Rp,Tp")
+    title = "SPMT_test pmtid %d OPT %s " % (pmtid, opt) 
+    fig, ax = plt.subplots(1, figsize=SIZE/100.)
+    fig.suptitle(title)
+
+
+    if "A_" in opt:ax.plot(  mct, A_, label="A_" )
+    if "R_" in opt:ax.plot(  mct, R_, label="R_" )
+    if "T_" in opt:ax.plot(  mct, T_, label="T_" )
+    if "A_R_T" in opt:ax.plot( mct, A_R_T, label="A_R_T") 
+
+    if "As" in opt:ax.plot(  mct, As, label="As" )
+    if "Rs" in opt:ax.plot(  mct, Rs, label="Rs" )
+    if "Ts" in opt:ax.plot(  mct, Ts, label="Ts" )
+
+    if "Ap" in opt:ax.plot(  mct, Ap, label="Ap" )
+    if "Rp" in opt:ax.plot(  mct, Rp, label="Rp" )
+    if "Tp" in opt:ax.plot(  mct, Tp, label="Tp" )
+
+    if "xx" in opt:ax.plot(  mct, xx, label="xx" )
+    if "yy" in opt:ax.plot(  mct, yy, label="yy" )
+    if "zz" in opt:ax.plot(  mct, zz, label="zz" )
+    if "ww" in opt:ax.plot(  mct, ww, label="ww" )
+
+
+
+    ax.legend()
+    fig.show()
 
 
 if 0:

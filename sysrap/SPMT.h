@@ -1,4 +1,3 @@
-#pragma once
 /**
 SPMT.h : summarize PMTSimParamData NPFold into the few arrays needed on GPU
 ============================================================================
@@ -59,6 +58,7 @@ Related developments
 #include <cstdio>
 #include "scuda.h"
 #include "squad.h"
+#include "ssys.h"
 
 #ifdef WITH_CUSTOM4
 #include "C4MultiLayrStack.h"
@@ -74,15 +74,15 @@ struct SPMT
 
     struct LCQS { int lc ; float qs ; } ; 
 
-    static constexpr const float MCT0 = -1.f ; 
-    static constexpr const float MCT1 = +1.f ; 
-    static constexpr const int   N_MCT = 5 ;     
-    static constexpr const int   N_SPOL = 5 ; 
-
+    /*
     static constexpr const float EN0 = 1.55f ; 
     static constexpr const float EN1 = 4.20f ;  // 15.5 
     static constexpr const int   N_EN = 420 - 155 + 1 ; 
-    
+    */    
+
+    static constexpr const float EN0 = 2.81f ; 
+    static constexpr const float EN1 = 2.81f ; 
+    static constexpr const int   N_EN = 1 ; 
 
     /*
     static constexpr const float EN0 = 2.55f ; 
@@ -94,20 +94,22 @@ struct SPMT
     static constexpr const float EN0 = 1.55f ; 
     static constexpr const float EN1 = 15.5f ; 
     static constexpr const int   N_EN = 1550 - 155 + 1 ; 
-    // NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )
     */
-
-
-    static constexpr const int N_MCT = 1 ; 
-    static constexpr const int N_DPCMN = 1 ; 
-
 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt" ; 
-    static constexpr int NUM_PMTCAT = 3 ; 
-    static constexpr int NUM_LAYER = 4 ; 
-    static constexpr int NUM_PROP = 2 ; 
-    static constexpr int NUM_LPMT = 17612 ; 
+
+    static constexpr int NUM_PMTCAT = 3 ; // (NNVT, HAMA, NNVT_HiQE)
+    static constexpr int NUM_LAYER = 4 ;  // (Pyrex, ARC, PHC, Vacuum) 
+    static constexpr int NUM_PROP = 2 ;   // (RINDEX,KINDEX) real and imaginary parts of the index
+
+    static constexpr const int NUM_LPMT = 17612 ;  // N_LPMT must be less than or equal to NUM_LPMT  
+
+    // below three can be changed via envvars
+    static const int N_LPMT ;  
+    static const int N_MCT ;     
+    static const int N_SPOL ; 
+ 
     static constexpr const char* QEshape_PMTCAT_NAMES = "QEshape_NNVT.npy,QEshape_R12860.npy,QEshape_NNVT_HiQE.npy" ; 
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
     // because there is no consistent naming convention have to do these dirty things 
@@ -140,8 +142,23 @@ struct SPMT
     void get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const ;  // EXPT
 
 #ifdef WITH_CUSTOM4
-    void get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
-    NP*  get_ARTE() const ; 
+
+    struct SPMTData
+    {
+        float4             args ;   // (1,4)
+        float4             ARTE ;   // (1,4) 
+        quad4              spec ;   // (4,4) 
+        StackSpec<float,4> ss ;     // (4,4) 
+        Stack<float,4>     stack ;        // (44,4)
+        Stack<float,4>     stackNormal ;  // (44,4)
+                                    // --------
+                                    // (98,4)
+
+        const float* cdata() const { return &args.x ; }
+    };
+
+    void get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
+    NPFold* get_ARTE() const ; 
 #endif
 
     void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
@@ -178,11 +195,17 @@ struct SPMT
 
     NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, N_EN, 2:[energy,value] )
     NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
-    NP* lcqs ;      // (NUM_LPMT, 2)
+    NP* lcqs ;      // (N_LPMT, 2)
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
 
     float* tt ; 
 };
+
+
+const int SPMT::N_LPMT = ssys::getenvint("N_LPMT", 1 ); // 10 LPMT default for fast scanning  
+const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  1 );  // "AOI" (actually mct) scan points from -1. to 1. 
+const int SPMT::N_SPOL = ssys::getenvint("N_SPOL", 1 ); // polarization scan points from S-pol to P-pol 
+
 
 inline SPMT* SPMT::Load(const char* path_)
 {
@@ -201,7 +224,7 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     MPT(            PMTSimParamData ? PMTSimParamData->get_subfold("MPT")   : nullptr ),
     CONST(          PMTSimParamData ? PMTSimParamData->get_subfold("CONST") : nullptr ),
     QEshape(        PMTSimParamData ? PMTSimParamData->get_subfold("QEshape") : nullptr ),
-    v_lcqs(NUM_LPMT),
+    v_lcqs(N_LPMT),
     rindex(nullptr), 
     qeshape(nullptr),
     lcqs(nullptr),
@@ -407,21 +430,22 @@ inline void SPMT::init_lcqs()
 {
     const NP* lpmtCat = PMTSimParamData->get("lpmtCat") ;   
     assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 ); 
-    assert( lpmtCat->shape[0] == NUM_LPMT ); 
+    //assert( lpmtCat->shape[0] == N_LPMT );  // not true with reduced N_LPMT via envvar 
     const int* lpmtCat_v = lpmtCat->cvalues<int>(); 
 
     const NP* qeScale = PMTSimParamData->get("qeScale") ;   
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 ); 
-    assert( qeScale->shape[0] > NUM_LPMT ); 
+    assert( qeScale->shape[0] > N_LPMT );  // HUH ?
     const double* qeScale_v = qeScale->cvalues<double>(); 
 
-    if(VERBOSE) std::cout 
+    //if(VERBOSE) 
+    std::cout 
        << "SPMT::init_lcqs" << std::endl 
        << " lpmtCat " << ( lpmtCat ? lpmtCat->sstr() : "-" ) << std::endl
        << " qeScale " << ( qeScale ? qeScale->sstr() : "-" ) << std::endl
        ; 
 
-    for(int i=0 ; i < NUM_LPMT ; i++ ) v_lcqs[i] = { TranslateCat(lpmtCat_v[i]), float(qeScale_v[i]) } ; 
+    for(int i=0 ; i < N_LPMT ; i++ ) v_lcqs[i] = { TranslateCat(lpmtCat_v[i]), float(qeScale_v[i]) } ; 
     lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ; 
 
 }
@@ -496,15 +520,17 @@ inline std::string SPMT::desc() const
 
 inline void SPMT::save(const char* dir) const
 {
+    std::cout << "[ SPMT::save " << dir << std::endl ; 
     rindex->save(dir, "rindex.npy"); 
     thickness->save(dir, "thickness.npy"); 
     qeshape->save(dir, "qeshape.npy"); 
     lcqs->save(dir, "lcqs.npy"); 
+    std::cout << "] SPMT::save " << dir << std::endl ; 
 }
 
 inline float SPMT::get_frac(int i, int ni) const
 {
-   return float(i)/float(ni-1) ; 
+   return ni == 1 ? 0.f : float(i)/float(ni-1) ; 
 }
 
 inline float SPMT::get_energy(int j, int nj) const
@@ -518,6 +544,8 @@ inline float SPMT::get_minus_cos_theta(int k, int nk ) const
 {
     assert( k < nk ); 
     float fr = get_frac(k, nk); 
+    float MCT0 = -1.f ; 
+    float MCT1 =  1.f ; 
     float mct = MCT0*(1.f-fr) + MCT1*fr ; 
     return mct ; 
 }
@@ -532,6 +560,8 @@ inline float SPMT::get_rindex(int cat, int layr, int prop, float energy_eV) cons
 
 inline NP* SPMT::get_rindex() const 
 {
+    std::cout << "SPMT::get_rindex " << std::endl ; 
+
     int ni = 3 ;  // pmtcat [0,1,2]
     int nj = 4 ;  // layers [0,1,2,3] 
     int nk = 2 ;  // props [0,1] (RINDEX,KINDEX) 
@@ -564,6 +594,8 @@ inline float SPMT::get_qeshape(int cat, float energy_eV) const
 
 inline NP* SPMT::get_qeshape() const 
 {
+    std::cout << "SPMT::get_qeshape " << std::endl ; 
+
     int ni = 3 ;   // pmtcat [0,1,2]
     int nj = N_EN ; // energies [0..N_EN-1]
     int nk = 2 ;   // payload [energy_eV,qeshape_value]
@@ -597,6 +629,7 @@ float SPMT::get_thickness_nm(int cat, int lay) const
 
 NP* SPMT::get_thickness_nm() const 
 {
+    std::cout << "SPMT::get_thickness_nm " << std::endl ; 
     int ni = NUM_PMTCAT ; 
     int nj = NUM_LAYER ; 
     int nk = 1 ; 
@@ -635,14 +668,20 @@ contortions or repeated lookups.
 1. lookup pmtcat, qe_scale for the pmtid
 2. using pmtcat and energy_eV do rindex,kindex interpolation and thickness lookups
 
+Note that the rindex, kindex and thickness only depend on the pmtcat. 
+However the fourth column qe related values do depend on pmtid with 
+differences coming in via the qe_scale. 
+
 **/
 void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
 {
     spec.zero(); 
+
     int& cat = spec.q0.i.w ; 
     float& qe_scale = spec.q1.f.w ; 
     float& qe = spec.q2.f.w ; 
-    float& _qe = spec.q3.f.w ; 
+    float& _qe = spec.q3.f.w ;   
+    // above are refs to locations currently all holding zero
 
     get_lcqs(cat, qe_scale, pmtid);
 
@@ -652,7 +691,20 @@ void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
     qe = get_pmtcat_qe(cat, energy_eV ) ; // qeshape interpolation 
     _qe = qe*qe_scale ; 
 
-    assert( _qe > 0.f && _qe < 1.f ); 
+    bool expected_range = _qe > 0.f && _qe < 1.f ; 
+
+    if(!expected_range) std::cout 
+        << "SPMT::get_pmtid_stackspec"
+        << " expected_range " << ( expected_range ? "YES" : "NO " )
+        << " pmtid " << pmtid 
+        << " energy_eV " << energy_eV 
+        << " qe " << qe  
+        << " qe_scale " << qe_scale  
+        << " _qe " << _qe 
+        << std::endl 
+        ; 
+
+    assert( expected_range ); 
     
 
     spec.q0.f.x = get_rindex( cat, L0, RINDEX, energy_eV ); 
@@ -674,14 +726,11 @@ void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
 SPMT::get_ARTE : TMM MultiLayerStack calculation using complex rindex, thickness, ...
 ---------------------------------------------------------------------------------------
 
-TODO: backwards _qe is not yet zeroed 
-
-
 Output:ARTE float4
     theAbsorption,theReflectivity,theTransmittance,theEfficiency
 
 pmtid
-    integer in range 0->NUM_LPMT-1 eg NUM_LPMT 17612 
+    integer in range 0->N_LPMT-1 eg N_LPMT 17612 
     
     * used to lookup pmtcat 0,1,2 and qe_scale 
 
@@ -710,18 +759,35 @@ dot_pol_cross_mom_nrm
     * dot(pol,cross(mom,nrm)) value is cosine(angle_between_pol_and_transverse_vector)*sine(angle_between_mom_and_nrm)
     * NB when testing the value of dot_pol_cross_mom_nrm needs to be consistent with minus_cos_theta
 
+**NB : LAST TWO ARGS ARE RELATED**
+
+dot_pol_cross_mom_nrm includes cross(mom,nrm) and minus_cos_theta is dot(mom,nrm) 
+so one incorporates the cross product and the other is the dot product 
+of the same two vectors. Hence care is needed to prepare correctly 
+related arguments when test scanning the API.
+
 **/
 
-inline void SPMT::get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
+inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
 {
-    quad4 spec ; 
-    get_pmtid_stackspec(spec, pmtid, energy_eV); 
+    get_pmtid_stackspec(pd.spec, pmtid, energy_eV); 
+
+    float4& args = pd.args ; 
+    float4& ARTE = pd.ARTE ; 
+    quad4& spec = pd.spec ; 
+    StackSpec<float,4>& ss = pd.ss ;
+    Stack<float,4>& stack = pd.stack ; 
+    Stack<float,4>& stackNormal = pd.stackNormal ; 
+
+    args.x = pmtid ; 
+    args.y = energy_eV ; 
+    args.z = minus_cos_theta ; 
+    args.w = dot_pol_cross_mom_nrm ; 
 
     const float& _qe = spec.q3.f.w ; 
     const float wavelength_nm = hc_eVnm/energy_eV ; 
-
     // HMM: annoying shuffling : allows C4MultiLayerStack.h very independent
-    StackSpec<float,4> ss ;
+
 
     ss.ls[0].nr = spec.q0.f.x ; 
 
@@ -736,7 +802,8 @@ inline void SPMT::get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus
     ss.ls[3].nr = spec.q3.f.x ; 
  
 
-    Stack<float,4> stack(wavelength_nm, minus_cos_theta, ss );
+    stack.calc(wavelength_nm, minus_cos_theta, ss );
+
 
     const float _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
     float E_s2 = _si > 0.f ? dot_pol_cross_mom_nrm/_si : 0.f ;
@@ -754,55 +821,134 @@ inline void SPMT::get_ARTE(float4& ARTE, int pmtid, float energy_eV, float minus
     const float A = S*stack.art.A_s + P*stack.art.A_p ;
     //const float A1 = one - (T+R);  // note that A1 matches A 
 
-    float E = 0.f ; 
-    if(minus_cos_theta < 0.f ) // backwards _qe is zero, so E is zero 
-    {
-        Stack<float,4> stackNormal(wavelength_nm, -1.f , ss );
-        float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
-        E = _qe/An ;     // aka theEfficiency and escape_fac   
-    }
+    stack.art.xx = A ; 
+    stack.art.yy = R ; 
+    stack.art.zz = T ; 
+    stack.art.ww = S ; 
+    
+    // backwards _qe is set to zero (this is for +ve minus_cos_theta) 
+    // so could skip stackNormal.calc for backwards incidence after debugged 
 
+    stackNormal.calc(wavelength_nm, -1.f , ss );
+    float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
+    float E = minus_cos_theta < 0.f ? _qe/An : 0.f ;  // aka theEfficiency and escape_fac 
+    
     ARTE.x = A ;         // aka theAbsorption
     ARTE.y = R/(1.f-A) ; // aka theReflectivity
     ARTE.z = T/(1.f-A) ; // aka theTransmittance
     ARTE.w = E ; 
 }
 
-inline NP* SPMT::get_ARTE() const 
+inline NPFold* SPMT::get_ARTE() const 
 {
-    int ni = NUM_LPMT ; 
-    //int ni = 10 ;
+    NPFold* fold = new NPFold ; 
+    SPMTData pd ; 
+
+    int ni = N_LPMT ; 
     int nj = N_EN ; 
     int nk = N_MCT ; 
     int nl = N_SPOL ; 
-    int nn = 4 ; 
 
-    NP* a = NP::Make<float>(ni, nj, nk, nl, nn ); 
+    std::cout << "[ SPMT::get_ARTE "  << std::endl ; 
 
-    if(VERBOSE) std::cout << "SPMT::get_ARTE " << a->sstr() << std::endl ; 
+    NP* args  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
+    NP* ARTE  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
+    NP* spec  = NP::Make<float>(ni, nj, nk, nl, 4, 4 ); 
+    NP* ss    = NP::Make<float>(ni, nj, nk, nl, 4, 4 ); 
 
-    float* aa = a->values<float>(); 
-    float4 ARTE ;  
+    // Make_ allows arbitrary dimensions     
+    NP* stack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
+    NP* ll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ; 
+    NP* comp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
+    NP* art   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
+
+    NP* nstack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
+    NP* nll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ; 
+    NP* ncomp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
+    NP* nart   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
+
+
+    assert( sizeof(pd.stack)/sizeof(float) == 44*4 ); 
+
+    fold->add("args", args);
+    fold->add("ARTE", ARTE);
+    fold->add("spec", spec);
+    fold->add("ss", ss);
+
+    fold->add("stack", stack);
+    fold->add("ll", ll);
+    fold->add("comp", comp);
+    fold->add("art", art);
+
+    fold->add("nstack", nstack);
+    fold->add("nll", nll);
+    fold->add("ncomp", ncomp);
+    fold->add("nart", nart);
+ 
+ 
+    std::cout << "SPMT::get_ARTE args " << args->sstr() << std::endl ; 
+
+    float* args_v = args->values<float>(); 
+    float* ARTE_v = ARTE->values<float>(); 
+    float* spec_v = spec->values<float>() ; 
+    float* ss_v   = ss->values<float>() ; 
+
+    float* stack_v = stack->values<float>() ; 
+    float* ll_v    = ll->values<float>() ; 
+    float* comp_v  = comp->values<float>() ; 
+    float* art_v   = art->values<float>() ; 
+
+    float* nstack_v = nstack->values<float>() ; 
+    float* nll_v    = nll->values<float>() ; 
+    float* ncomp_v  = ncomp->values<float>() ; 
+    float* nart_v   = nart->values<float>() ; 
+
+
     for(int i=0 ; i < ni ; i++)
     {
         int pmtid = i ; 
+        if( i % 100 == 0 ) std::cout << "SPMT::get_ARTE pmtid " << pmtid << std::endl ; 
         for(int j=0 ; j < nj ; j++)
         {
            float energy_eV = get_energy(j, nj ); 
            for(int k=0 ; k < nk ; k++)
            {
               float minus_cos_theta = get_minus_cos_theta(k, nk );  
+              float sin_theta = sqrt( 1.f - minus_cos_theta*minus_cos_theta ); 
+
               for(int l=0 ; l < nl ; l++)
               {
                   float s_pol_frac = get_frac(l, nl) ; 
-                  float dot_pol_cross_mom_nrm = minus_cos_theta*s_pol_frac ; 
-                  get_ARTE(ARTE, pmtid, energy_eV, minus_cos_theta, dot_pol_cross_mom_nrm ); 
-                  int idx = i*nj*nk*nl*nn + j*nk*nl*nn + k*nl*nn + l*nn ; 
+                  float dot_pol_cross_mom_nrm = sin_theta*s_pol_frac ; 
 
-                  aa[idx+0] = ARTE.x ; 
-                  aa[idx+1] = ARTE.y ; 
-                  aa[idx+2] = ARTE.z ; 
-                  aa[idx+3] = ARTE.w ; 
+                  get_ARTE(pd, pmtid, energy_eV, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+
+                  int idx = i*nj*nk*nl*4 + j*nk*nl*4 + k*nl*4 + l*4 ; 
+
+                  int args_idx = idx ; 
+                  int ARTE_idx = idx ; 
+                  int spec_idx = idx*4 ; 
+                  int ss_idx   = idx*4 ; 
+
+                  int stack_idx = idx*44 ; 
+                  int ll_idx    = idx*4*4*2 ; // 32 
+                  int comp_idx  = idx*1*4*2 ; //  8
+                  int art_idx   = idx*4 ;     //  4
+
+                  memcpy( args_v + args_idx,  &pd.args.x, sizeof(float)*4 ); 
+                  memcpy( ARTE_v + ARTE_idx,  &pd.ARTE.x, sizeof(float)*4 ); 
+                  memcpy( spec_v + spec_idx,   pd.spec.cdata(), sizeof(float)*4*4 ); 
+                  memcpy( ss_v   + ss_idx  ,   pd.ss.cdata(),   sizeof(float)*4*4 ); 
+
+                  memcpy( stack_v + stack_idx, pd.stack.cdata(),      sizeof(float)*44*4 ); 
+                  memcpy( ll_v   + ll_idx,   pd.stack.ll[0].cdata(),  sizeof(float)*32*4 ); 
+                  memcpy( comp_v + comp_idx, pd.stack.comp.cdata(),   sizeof(float)*8*4 ); 
+                  memcpy( art_v  + art_idx,  pd.stack.art.cdata(),    sizeof(float)*4*4 ); 
+
+                  memcpy( nstack_v + stack_idx, pd.stackNormal.cdata(),      sizeof(float)*44*4 ); 
+                  memcpy( nll_v   + ll_idx,   pd.stackNormal.ll[0].cdata(),  sizeof(float)*32*4 ); 
+                  memcpy( ncomp_v + comp_idx, pd.stackNormal.comp.cdata(),   sizeof(float)*8*4 ); 
+                  memcpy( nart_v  + art_idx,  pd.stackNormal.art.cdata(),    sizeof(float)*4*4 ); 
 
                   if(VERBOSE) std::cout 
                       << "SPMT::get_ARTE"
@@ -810,8 +956,7 @@ inline NP* SPMT::get_ARTE() const
                       << " j " << std::setw(5) << j 
                       << " k " << std::setw(5) << k 
                       << " l " << std::setw(5) << l 
-                      << " idx " << std::setw(10) << idx 
-                      << " ARTE " << ARTE 
+                      << " args_idx " << std::setw(10) << args_idx 
                       << std::endl 
                       ; 
                   
@@ -819,7 +964,8 @@ inline NP* SPMT::get_ARTE() const
            }
         }
     }
-    return a ; 
+    std::cout << "] SPMT::get_ARTE " << std::endl ; 
+    return fold ; 
 }
 #endif
 
@@ -852,6 +998,8 @@ NP* SPMT::get_stackspec() const
     int nl = 4 ; 
 
     NP* a = NP::Make<float>(ni, nj, nk, nl ); 
+    std::cout << "[ SPMT::get_stackspec " << a->sstr() << std::endl ; 
+
     float* aa = a->values<float>(); 
  
     quad4 spec ; 
@@ -863,6 +1011,7 @@ NP* SPMT::get_stackspec() const
        int idx = i*nj*nk*nl + j*nk*nl ; 
        memcpy( aa+idx, spec.cdata(), nk*nl*sizeof(float) );  
     }
+    std::cout << "] SPMT::get_stackspec " << a->sstr() << std::endl ; 
     return a ; 
 }
 
@@ -876,35 +1025,37 @@ For pmtid (0->17612-1) returns 0, 1 or 2 corresponding to NNVT, HAMA, NNVT_HiQE
 
 inline int SPMT::get_pmtcat(int pmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    assert( pmtid >= 0 && pmtid < N_LPMT );  
     const int* lcqs_i = lcqs->cvalues<int>() ; 
     return lcqs_i[pmtid*2+0] ; 
 }
 inline NP* SPMT::get_pmtcat() const 
 {
-    NP* a = NP::Make<int>( NUM_LPMT ) ; 
+    std::cout << "SPMT::get_pmtcat " << std::endl ; 
+    NP* a = NP::Make<int>( N_LPMT ) ; 
     int* aa = a->values<int>(); 
-    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_pmtcat(i) ; 
+    for(int i=0 ; i < N_LPMT ; i++) aa[i] = get_pmtcat(i) ; 
     return a ; 
 }
 
 inline float SPMT::get_qescale(int pmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    assert( pmtid >= 0 && pmtid < N_LPMT );  
     const float* lcqs_f = lcqs->cvalues<float>() ; 
     return lcqs_f[pmtid*2+1] ; 
 }
 inline NP* SPMT::get_qescale() const 
 {
-    NP* a = NP::Make<float>( NUM_LPMT ) ; 
+    std::cout << "SPMT::get_qescale " << std::endl ; 
+    NP* a = NP::Make<float>( N_LPMT ) ; 
     float* aa = a->values<float>(); 
-    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_qescale(i) ; 
+    for(int i=0 ; i < N_LPMT ; i++) aa[i] = get_qescale(i) ; 
     return a ; 
 }
 
 inline void SPMT::get_lcqs(int& lc, float& qs, int pmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < NUM_LPMT );  
+    assert( pmtid >= 0 && pmtid < N_LPMT );  
     const int*   lcqs_i = lcqs->cvalues<int>() ; 
     const float* lcqs_f = lcqs->cvalues<float>() ; 
     lc = lcqs_i[pmtid*2+0] ; 
@@ -912,7 +1063,8 @@ inline void SPMT::get_lcqs(int& lc, float& qs, int pmtid) const
 }
 inline NP* SPMT::get_lcqs() const 
 {
-    int ni = NUM_LPMT ; 
+    std::cout << "SPMT::get_lcqs " << std::endl ; 
+    int ni = N_LPMT ; 
     int nj = 2 ; 
     NP* a = NP::Make<int>(ni, nj) ; 
     int* ii   = a->values<int>() ; 
@@ -930,6 +1082,7 @@ inline float SPMT::get_pmtcat_qe(int cat, float energy_eV) const
 }
 inline NP* SPMT::get_pmtcat_qe() const
 {
+    std::cout << "SPMT::get_pmtcat_qe " << std::endl ; 
     int ni = 3 ;  
     int nj = N_EN ; 
     int nk = 2 ; 
@@ -993,7 +1146,8 @@ inline float SPMT::get_pmtid_qe(int pmtid, float energy_eV) const
 
 inline NP* SPMT::get_pmtid_qe() const 
 {
-    int ni = NUM_LPMT ;  
+    std::cout << "SPMT::get_pmtid_qe " << std::endl ; 
+    int ni = N_LPMT ;  
     int nj = N_EN ; 
     int nk = 2 ; 
 
@@ -1014,18 +1168,38 @@ inline NP* SPMT::get_pmtid_qe() const
 
 inline NPFold* SPMT::make_testfold() const 
 {
+    std::cout << "[ SPMT::make_testfold " << std::endl ; 
+
+    NP* _get_pmtcat = get_pmtcat() ; 
+    NP* _get_qescale = get_qescale() ;
+    NP* _get_lcqs = get_lcqs() ;
+    NP* _get_pmtcat_qe = get_pmtcat_qe() ; 
+    NP* _get_pmtid_qe = get_pmtid_qe() ; 
+    NP* _get_rindex = get_rindex() ; 
+    NP* _get_qeshape = get_qeshape() ; 
+    NP* _get_thickness_nm = get_thickness_nm() ; 
+    NP* _get_stackspec = get_stackspec() ; 
+
+
     NPFold* f = new NPFold ; 
-    f->add("get_pmtcat", get_pmtcat() ); 
-    f->add("get_qescale", get_qescale() ); 
-    f->add("get_lcqs", get_lcqs() ); 
-    f->add("get_pmtcat_qe", get_pmtcat_qe() ); 
-    f->add("get_pmtid_qe", get_pmtid_qe() ); 
-    f->add("get_rindex", get_rindex() ); 
-    f->add("get_qeshape", get_qeshape() ); 
-    f->add("get_thickness_nm", get_thickness_nm() ); 
-    f->add("get_stackspec", get_stackspec() ); 
+
+/*
+    f->add("get_pmtcat", _get_pmtcat ); 
+    f->add("get_qescale", _get_qescale ); 
+    f->add("get_lcqs", _get_lcqs ); 
+    f->add("get_pmtcat_qe", _get_pmtcat_qe ); 
+    f->add("get_pmtid_qe", _get_pmtid_qe ); 
+    f->add("get_rindex", _get_rindex ); 
+    f->add("get_qeshape", _get_qeshape ); 
+    f->add("get_thickness_nm", _get_thickness_nm ); 
+    f->add("get_stackspec", _get_stackspec ); 
+*/
+
 #ifdef WITH_CUSTOM4
-    f->add("get_ARTE", get_ARTE() ); 
+    NPFold* _get_ARTE = get_ARTE() ;  
+    f->add_subfold("get_ARTE", _get_ARTE ); 
 #endif
+
+    std::cout << "] SPMT::make_testfold " << std::endl ; 
     return f ; 
 }
