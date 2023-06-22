@@ -84,6 +84,12 @@ struct SPMT
     static constexpr const float EN1 = 2.81f ; 
     static constexpr const int   N_EN = 1 ; 
 
+    static constexpr const float WL0 = 440.f ; 
+    static constexpr const float WL1 = 440.f ; 
+    static constexpr const int   N_WL = 1 ; 
+
+
+
     /*
     static constexpr const float EN0 = 2.55f ; 
     static constexpr const float EN1 = 3.55f ; 
@@ -128,6 +134,7 @@ struct SPMT
 
     float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
+    float get_wavelength(int j, int nj) const ; 
     float get_minus_cos_theta(int k, int nk ) const ;
 
     float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
@@ -157,7 +164,10 @@ struct SPMT
         const float* cdata() const { return &args.x ; }
     };
 
-    void get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
+    void annotate( NP* art ) const ; 
+
+
+    void get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
     NPFold* get_ARTE() const ; 
 #endif
 
@@ -540,6 +550,16 @@ inline float SPMT::get_energy(int j, int nj) const
     float en = EN0*(1.f-fr) + EN1*fr ; 
     return en ; 
 }
+
+inline float SPMT::get_wavelength(int j, int nj) const
+{
+    assert( j < nj ); 
+    float fr = get_frac(j, nj); 
+    float wl = WL0*(1.f-fr) + WL1*fr ; 
+    return wl ; 
+}
+
+
 inline float SPMT::get_minus_cos_theta(int k, int nk ) const 
 {
     assert( k < nk ); 
@@ -768,8 +788,9 @@ related arguments when test scanning the API.
 
 **/
 
-inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
+inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
 {
+    const float energy_eV = hc_eVnm/wavelength_nm ; 
     get_pmtid_stackspec(pd.spec, pmtid, energy_eV); 
 
     float4& args = pd.args ; 
@@ -785,7 +806,6 @@ inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus
     args.w = dot_pol_cross_mom_nrm ; 
 
     const float& _qe = spec.q3.f.w ; 
-    const float wavelength_nm = hc_eVnm/energy_eV ; 
     // HMM: annoying shuffling : allows C4MultiLayerStack.h very independent
 
 
@@ -832,12 +852,38 @@ inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float energy_eV, float minus
     stackNormal.calc(wavelength_nm, -1.f , ss );
     float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
     float E = minus_cos_theta < 0.f ? _qe/An : 0.f ;  // aka theEfficiency and escape_fac 
-    
+    //float E = 0.f ; 
+
     ARTE.x = A ;         // aka theAbsorption
     ARTE.y = R/(1.f-A) ; // aka theReflectivity
     ARTE.z = T/(1.f-A) ; // aka theTransmittance
     ARTE.w = E ; 
 }
+
+
+/**
+SPMT::annotate
+----------------
+
+Calling this tickles some bug sprinkling nan across the arrays 
+
+HUH : its not happening any more ?  HMM something flakey waiting to strike. 
+
+**/
+
+inline void SPMT::annotate( NP* art ) const 
+{
+    std::string title = "SPMT.title"  ; 
+    std::string brief = "SPMT.brief" ; 
+    std::string name = "SPMT.name" ; 
+    std::string label = "SPMT.label" ; 
+
+    art->set_meta<std::string>("title", title ); 
+    art->set_meta<std::string>("brief", brief ); 
+    art->set_meta<std::string>("name", name ); 
+    art->set_meta<std::string>("label", label ); 
+}
+
 
 inline NPFold* SPMT::get_ARTE() const 
 {
@@ -845,7 +891,7 @@ inline NPFold* SPMT::get_ARTE() const
     SPMTData pd ; 
 
     int ni = N_LPMT ; 
-    int nj = N_EN ; 
+    int nj = N_WL ; 
     int nk = N_MCT ; 
     int nl = N_SPOL ; 
 
@@ -867,6 +913,7 @@ inline NPFold* SPMT::get_ARTE() const
     NP* ncomp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
     NP* nart   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
 
+    annotate(art); 
 
     assert( sizeof(pd.stack)/sizeof(float) == 44*4 ); 
 
@@ -910,7 +957,7 @@ inline NPFold* SPMT::get_ARTE() const
         if( i % 100 == 0 ) std::cout << "SPMT::get_ARTE pmtid " << pmtid << std::endl ; 
         for(int j=0 ; j < nj ; j++)
         {
-           float energy_eV = get_energy(j, nj ); 
+           float wavelength_nm = get_wavelength(j, nj ); 
            for(int k=0 ; k < nk ; k++)
            {
               float minus_cos_theta = get_minus_cos_theta(k, nk );  
@@ -921,7 +968,7 @@ inline NPFold* SPMT::get_ARTE() const
                   float s_pol_frac = get_frac(l, nl) ; 
                   float dot_pol_cross_mom_nrm = sin_theta*s_pol_frac ; 
 
-                  get_ARTE(pd, pmtid, energy_eV, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+                  get_ARTE(pd, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
 
                   int idx = i*nj*nk*nl*4 + j*nk*nl*4 + k*nl*4 + l*4 ; 
 
@@ -940,15 +987,15 @@ inline NPFold* SPMT::get_ARTE() const
                   memcpy( spec_v + spec_idx,   pd.spec.cdata(), sizeof(float)*4*4 ); 
                   memcpy( ss_v   + ss_idx  ,   pd.ss.cdata(),   sizeof(float)*4*4 ); 
 
-                  memcpy( stack_v + stack_idx, pd.stack.cdata(),      sizeof(float)*44*4 ); 
-                  memcpy( ll_v   + ll_idx,   pd.stack.ll[0].cdata(),  sizeof(float)*32*4 ); 
-                  memcpy( comp_v + comp_idx, pd.stack.comp.cdata(),   sizeof(float)*8*4 ); 
-                  memcpy( art_v  + art_idx,  pd.stack.art.cdata(),    sizeof(float)*4*4 ); 
+                  memcpy( stack_v + stack_idx,  pd.stack.cdata(),        sizeof(float)*44*4 ); 
+                  memcpy( ll_v    + ll_idx,     pd.stack.ll[0].cdata(),  sizeof(float)*32*4 ); 
+                  memcpy( comp_v  + comp_idx,   pd.stack.comp.cdata(),   sizeof(float)*8*4 ); 
+                  memcpy( art_v   + art_idx,    pd.stack.art.cdata(),    sizeof(float)*4*4 ); 
 
-                  memcpy( nstack_v + stack_idx, pd.stackNormal.cdata(),      sizeof(float)*44*4 ); 
-                  memcpy( nll_v   + ll_idx,   pd.stackNormal.ll[0].cdata(),  sizeof(float)*32*4 ); 
-                  memcpy( ncomp_v + comp_idx, pd.stackNormal.comp.cdata(),   sizeof(float)*8*4 ); 
-                  memcpy( nart_v  + art_idx,  pd.stackNormal.art.cdata(),    sizeof(float)*4*4 ); 
+                  memcpy( nstack_v + stack_idx,  pd.stackNormal.cdata(),        sizeof(float)*44*4 ); 
+                  memcpy( nll_v    + ll_idx,     pd.stackNormal.ll[0].cdata(),  sizeof(float)*32*4 ); 
+                  memcpy( ncomp_v  + comp_idx,   pd.stackNormal.comp.cdata(),   sizeof(float)*8*4 ); 
+                  memcpy( nart_v   + art_idx,    pd.stackNormal.art.cdata(),    sizeof(float)*4*4 ); 
 
                   if(VERBOSE) std::cout 
                       << "SPMT::get_ARTE"

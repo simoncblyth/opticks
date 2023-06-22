@@ -9,7 +9,7 @@ int main(int argc, char** argv)
     pmt->save("$SFOLD"); 
 
     NPFold* f = pmt->get_ARTE(); 
-    f->save("$SFOLD/get_ARTE") ; 
+    f->save("$SFOLD/get_ARTE/xscan") ; 
 
     return 0 ; 
 }

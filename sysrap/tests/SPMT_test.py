@@ -8,14 +8,23 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
+np.set_printoptions(edgeitems=16) 
 
 if __name__ == '__main__':
     s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
 
-    f = s.get_ARTE
-    print("f:s.get_ARTE") 
+    f = Fold.Load("$SFOLD/get_ARTE/xscan", symbol="f")
     print(repr(f))
+
+    qwns = "args spec ss ARTE stack ll comp art nstack nll ncomp nart".split()
+    for qwn in qwns:
+        q = getattr(f, qwn, None)
+        expr = "np.where( np.isnan(f.%s) ) " % qwn  
+        print(expr)
+        print(eval(expr))
+    pass
+
 
     args = f.args.squeeze()
     spec = f.spec.squeeze()
@@ -59,7 +68,7 @@ if __name__ == '__main__':
     pmtid = 0 
 
     opt = os.environ.get("OPT", "A_,R_,T_,As,Rs,Ts,Ap,Rp,Tp")
-    title = "SPMT_test pmtid %d OPT %s " % (pmtid, opt) 
+    title = "%s : pmtid %d OPT %s " % (s.base, pmtid, opt) 
     fig, ax = plt.subplots(1, figsize=SIZE/100.)
     fig.suptitle(title)
 

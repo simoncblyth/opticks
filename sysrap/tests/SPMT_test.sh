@@ -1,4 +1,15 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+SPMT_test.sh
+===============
+
+::
+
+    N_MCT=900 N_SPOL=2  ./SPMT_test.sh  
+
+EOU
+}
+
 
 REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
 source $HOME/.opticks/GEOM/GEOM.sh 
@@ -11,7 +22,7 @@ FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-export SFOLD=/tmp/$name 
+export SFOLD=/tmp/$name
 export JFOLD=/tmp/JPMTTest
 
 
