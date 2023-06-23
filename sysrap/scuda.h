@@ -2781,6 +2781,29 @@ inline std::ostream& operator<<(std::ostream& os, const float4& v)
     return os; 
 }
 
+inline std::ostream& operator<<(std::ostream& os, const double4& v)
+{
+    int w = 8 ; 
+    os 
+       << "(" 
+       << std::setw(w) << std::fixed << std::setprecision(4) << v.x 
+       << "," 
+       << std::setw(w) << std::fixed << std::setprecision(4) << v.y
+       << "," 
+       << std::setw(w) << std::fixed << std::setprecision(4) << v.z 
+       << "," 
+       << std::setw(w) << std::fixed << std::setprecision(4) << v.w 
+       << ") "  
+       ;
+    return os; 
+}
+
+
+
+
+
+
+
 
 
 

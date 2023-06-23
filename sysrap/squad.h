@@ -1,4 +1,25 @@
 #pragma once
+/**
+squad.h 
+=========
+
+This builds on CUDA types and functions and scuda.h that extends those::
+
+    /usr/local/cuda/include/vector_types.h
+    /usr/local/cuda/include/vector_functions.h
+    /usr/local/cuda/include/vector_functions.hpp
+
+The vector types include::
+
+    float4
+    int4
+    uint4   
+
+    double4 
+    longlong4 
+    ulonglong4
+
+**/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define SQUAD_METHOD __host__ __device__ __forceinline__
@@ -32,6 +53,13 @@ union quad
     float4 f ; 
     int4   i ; 
     uint4  u ; 
+};
+
+union dquad
+{
+    double4    f ; 
+    longlong4  i ; 
+    ulonglong4 u ; 
 };
 
 union hquad
@@ -143,6 +171,36 @@ SQUAD_METHOD void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
 
 
+
+struct dquad4 
+{ 
+    dquad q0 ; 
+    dquad q1 ; 
+    dquad q2 ; 
+    dquad q3 ;
+
+    SQUAD_METHOD void zero();
+    SQUAD_METHOD double* data() ;
+    SQUAD_METHOD const double* cdata() const ;
+};
+
+SQUAD_METHOD void dquad4::zero() 
+{
+    q0.u.x = 0 ; q0.u.y = 0 ; q0.u.z = 0 ; q0.u.w = 0 ; 
+    q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
+    q2.u.x = 0 ; q2.u.y = 0 ; q2.u.z = 0 ; q2.u.w = 0 ; 
+    q3.u.x = 0 ; q3.u.y = 0 ; q3.u.z = 0 ; q3.u.w = 0 ; 
+} 
+
+SQUAD_METHOD double*       dquad4::data() {         return &q0.f.x ;  }
+SQUAD_METHOD const double* dquad4::cdata() const  { return &q0.f.x ;  }
+
+
+
+
+
+
+
 struct quad4 
 { 
     quad q0 ; 
@@ -188,10 +246,10 @@ struct quad4
     void normalize_mom_pol(); 
     void transverse_mom_pol(); 
     float* get_v(int i) const ;  
-    void set_v(int i, const double* src, int n); 
+    void set_v(int i, const double* src, int n);  // narrowing 
     void zero_v(int i, int n); 
-    void load(const std::array<double,16>& a ); 
-    void load(const double* src, int n); 
+    void load(const std::array<double,16>& a );   // narrowing 
+    void load(const double* src, int n);          // narrowing 
 #endif
 };
 
@@ -409,6 +467,17 @@ inline std::ostream& operator<<(std::ostream& os, const quad& q)
 
 
 
+inline std::ostream& operator<<(std::ostream& os, const dquad& q)  
+{
+    os  
+       << "f " << q.f  
+    //   << "i " << q.i  
+    //   << "u " << q.u  
+       ;   
+    return os; 
+}
+
+
 inline std::ostream& operator<<(std::ostream& os, const quad4& v)  
 {
     os  
@@ -419,6 +488,27 @@ inline std::ostream& operator<<(std::ostream& os, const quad4& v)
        ;   
     return os; 
 }
+
+
+inline std::ostream& operator<<(std::ostream& os, const dquad4& v)  
+{
+    os 
+       << std::endl  
+       << v.q0.f 
+       << std::endl 
+       << v.q1.f 
+       << std::endl 
+       << v.q2.f 
+       << std::endl  
+       << v.q3.f 
+       << std::endl 
+       ;   
+    return os; 
+}
+
+
+
+
 
 
 inline std::ostream& operator<<(std::ostream& os, const quad6& v)  
@@ -740,7 +830,7 @@ inline float* quad4::get_v(int i) const
     return v ; 
 }
 
-inline void quad4::set_v(int i, const double* src, int n)
+inline void quad4::set_v(int i, const double* src, int n) // narrowing 
 {
     if(src == nullptr) return ; 
     assert( n > -1 && n <= 4 ); 

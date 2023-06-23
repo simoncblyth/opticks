@@ -148,7 +148,7 @@ struct SPMT
     float get_thickness_nm(int cat, int layr) const ; 
     NP* get_thickness_nm() const ; 
 
-    void get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const ;  // EXPT
+    void get_lpmtid_stackspec( quad4& spec, int lpmtid, float energy_eV) const ;  // EXPT
 
 #ifdef WITH_CUSTOM4
 
@@ -708,7 +708,7 @@ However the fourth column qe related values do depend on pmtid with
 differences coming in via the qe_scale. 
 
 **/
-void SPMT::get_pmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
+void SPMT::get_lpmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
 {
     spec.zero(); 
 
@@ -803,26 +803,33 @@ related arguments when test scanning the API.
 
 **/
 
-inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const
+inline void SPMT::get_ARTE(
+    SPMTData& pd, 
+    int   lpmtid, 
+    float wavelength_nm, 
+    float minus_cos_theta, 
+    float dot_pol_cross_mom_nrm ) const
 {
     const float energy_eV = hc_eVnm/wavelength_nm ; 
-    get_pmtid_stackspec(pd.spec, pmtid, energy_eV); 
+    get_lpmtid_stackspec(pd.spec, lpmtid, energy_eV); 
 
+    // references into SPMTData 
     float4& args = pd.args ; 
     float4& ARTE = pd.ARTE ; 
     quad4& spec = pd.spec ; 
     StackSpec<float,4>& ss = pd.ss ;
     Stack<float,4>& stack = pd.stack ; 
     Stack<float,4>& stackNormal = pd.stackNormal ; 
+    const float& _qe = spec.q3.f.w ; 
 
-    args.x = pmtid ; 
+
+    args.x = lpmtid ; 
     args.y = energy_eV ; 
     args.z = minus_cos_theta ; 
     args.w = dot_pol_cross_mom_nrm ; 
 
-    const float& _qe = spec.q3.f.w ; 
-    // HMM: annoying shuffling : allows C4MultiLayerStack.h very independent
 
+    // HMM: annoying shuffling : allows C4MultiLayerStack.h to stay very independent
 
     ss.ls[0].nr = spec.q0.f.x ; 
 
@@ -837,8 +844,10 @@ inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float m
     ss.ls[3].nr = spec.q3.f.x ; 
  
 
-    stack.calc(wavelength_nm, minus_cos_theta, ss );
+    stack.calc(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss );
 
+    /*
+    NOW INCORPORATED THE BELOW INTO stack.calc
 
     const float _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
     float E_s2 = _si > 0.f ? dot_pol_cross_mom_nrm/_si : 0.f ;
@@ -860,12 +869,25 @@ inline void SPMT::get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float m
     stack.art.yy = R ; 
     stack.art.zz = T ; 
     stack.art.ww = S ; 
-    
+    */ 
+
+    // the below A,R,T  now incorporatws S_pol frac obtained from (minus_cos_theta, dot_pol_cross_mom_nrm )
+    const float& A = stack.art.A ; 
+    const float& R = stack.art.R ; 
+    const float& T = stack.art.T ; 
+
     // backwards _qe is set to zero (this is for +ve minus_cos_theta) 
     // so could skip stackNormal.calc for backwards incidence after debugged 
 
-    stackNormal.calc(wavelength_nm, -1.f , ss );
-    float An = 1.f - (stackNormal.art.T + stackNormal.art.R) ;
+
+    // TODO: try reusing the above stack instance for the normal calc
+    //       to avoid needing to double the memory with another fat stack instance 
+
+    stackNormal.calc(wavelength_nm, -1.f , 0.f, ss );
+
+    float An = 1.f - (stackNormal.art.T_av + stackNormal.art.R_av ) ;  
+    // TODO: compare An with stackNormal.art.A_av 
+
     float E = minus_cos_theta < 0.f ? _qe/An : 0.f ;  // aka theEfficiency and escape_fac 
     //float E = 0.f ; 
 

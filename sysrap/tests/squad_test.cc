@@ -25,6 +25,19 @@ void test_load_data()
     std::cout << p << std::endl ; 
 }
 
+void test_dquad4()
+{
+    dquad4 dq4 ; 
+    dq4.zero(); 
+
+    assert( sizeof(dq4) == sizeof(double)*16 ); 
+
+    std::cout << "dq4.d0.f " << dq4.q0.f  << std::endl ; 
+
+    std::cout << "dq4      " << dq4 << std::endl ; 
+
+    std::cout << "dq4.q0   " << dq4.q0 << std::endl ; 
+}
 
 
 
@@ -32,8 +45,9 @@ int main()
 {
     /*
     test_load_array(); 
-    */
     test_load_data(); 
+    */
+    test_dquad4(); 
 
     return 0 ; 
 }
