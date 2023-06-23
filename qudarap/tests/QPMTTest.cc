@@ -24,8 +24,8 @@ by having NP* rindex, thickness ctor args to QPMT
 avoiding the coupling with the NP_PROP_BASE  based 
 JPMT that are seeking to replace. 
 
-Moving from JPMT from text props to SSim/jpmt NPFold
------------------------------------------------------
+Moving from JPMT from text props to SSim/jpmt NPFold based SPMT.h 
+----------------------------------------------------------------------
 
 Whats missing from JPMT approach is contiguous pmt index array 
 with category and qe_scale so can start from pmtid and get the pmtcat
@@ -35,68 +35,108 @@ and the qe for an energy.::
     ./Simulation/SimSvc/PMTSimParamSvc/PMTSimParamSvc/_PMTSimParamData.h
 
 
+
+Find some lpmtid with lpmtcat == 0 
+-------------------------------------
+
+::
+
+    In [30]: np.where( t.src_lcqs[:,0] == 0 )[0]
+    Out[30]: array([   55,    98,   137,   267,   368, ..., 17255, 17327, 17504, 17526, 17537])
+
+    In [31]: np.where( t.src_lcqs[:,0] == 0 )[0].shape
+    Out[31]: (2720,)
  
 **/
 
+#include "ssys.h"
+#include "NPX.h"
 #include "QPMT.hh"
 
 template<typename T>
 struct QPMTTest
 {
+    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611" ; 
+
     const QPMT<T>& qpmt ; 
 
+    const char* lpmtid_list ; 
+    NP* lpmtid ; 
     NP* domain ; 
-    NP* rindex_interp ; 
-    NP* qeshape_interp ; 
-    NP* stackspec_interp ; 
+
+    NP* lpmtcat_rindex ; 
+    NP* lpmtcat_qeshape ; 
+    NP* lpmtcat_stackspec ; 
+
+    NP* lpmtid_stackspec ; 
+
+    // HMM: switch to NPFold ? 
+
 
     QPMTTest(const QPMT<T>& qpmt ); 
 
-    void rindex_test(); 
-    void qeshape_test(); 
-    void stackspec_test(); 
+    void lpmtcat_rindex_test(); 
+    void lpmtcat_qeshape_test(); 
+    void lpmtcat_stackspec_test(); 
 
-    void save() const ; 
+    void lpmtid_stackspec_test(); 
+
+    void save(const char* base) const ; 
 };
 
 template<typename T>
 QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     :
     qpmt(qpmt_),
+    lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612) 
+    lpmtid(NPX::FromString<int>(lpmtid_list,',')), 
     domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
-    rindex_interp(nullptr),
-    qeshape_interp(nullptr),
-    stackspec_interp(nullptr)
+    lpmtcat_rindex(nullptr),
+    lpmtcat_qeshape(nullptr),
+    lpmtcat_stackspec(nullptr),
+    lpmtid_stackspec(nullptr)
 {
 }
 
 template<typename T>
-void QPMTTest<T>::rindex_test()
+void QPMTTest<T>::lpmtcat_rindex_test()
 {
-    rindex_interp = qpmt.rindex_interpolate(domain);   
+    lpmtcat_rindex = qpmt.lpmtcat_rindex(domain);   
 }
 template<typename T>
-void QPMTTest<T>::qeshape_test()
+void QPMTTest<T>::lpmtcat_qeshape_test()
 {
-    qeshape_interp = qpmt.qeshape_interpolate(domain);   
+    lpmtcat_qeshape = qpmt.lpmtcat_qeshape(domain);   
 }
 template<typename T>
-void QPMTTest<T>::stackspec_test()
+void QPMTTest<T>::lpmtcat_stackspec_test()
 {
-    stackspec_interp = qpmt.stackspec_interpolate(domain);   
+    lpmtcat_stackspec = qpmt.lpmtcat_stackspec(domain);   
+}
+
+
+
+template<typename T>
+void QPMTTest<T>::lpmtid_stackspec_test()
+{
+    lpmtid_stackspec = qpmt.lpmtid_stackspec(domain, lpmtid);   
 }
 
 
 
 
+
+
 template<typename T>
-void QPMTTest<T>::save() const 
+void QPMTTest<T>::save(const char* base) const 
 {
-    qpmt.save("$FOLD") ; 
-    domain->save("$FOLD/domain.npy"); 
-    if(rindex_interp) rindex_interp->save("$FOLD/rindex_interp.npy" ); 
-    if(qeshape_interp) qeshape_interp->save("$FOLD/qeshape_interp.npy" ); 
-    if(stackspec_interp) stackspec_interp->save("$FOLD/stackspec_interp.npy" ); 
+    qpmt.save(base) ; 
+    domain->save(base, "domain.npy"); 
+    lpmtid->save(base, "lpmtid.npy"); 
+    if(lpmtcat_rindex) lpmtcat_rindex->save(base, "lpmtcat_rindex.npy" ); 
+    if(lpmtcat_qeshape) lpmtcat_qeshape->save(base, "lpmtcat_qeshape.npy" ); 
+    if(lpmtcat_stackspec) lpmtcat_stackspec->save(base, "lpmtcat_stackspec.npy" ); 
+    if(lpmtid_stackspec) lpmtid_stackspec->save(base, "lpmtid_stackspec.npy" ); 
 }
 
 
@@ -143,12 +183,16 @@ int main(int argc, char** argv)
 
     QPMTTest<float> t(qpmt); 
 
-    t.rindex_test(); 
-    t.qeshape_test(); 
-    t.stackspec_test(); 
+    /*
+    t.lpmtcat_rindex_test(); 
+    t.lpmtcat_qeshape_test(); 
+    t.lpmtcat_stackspec_test(); 
+    */
+
+    t.lpmtid_stackspec_test(); 
  
     cudaDeviceSynchronize();
-    t.save();  
+    t.save("$FOLD");  
 
     return 0 ; 
 }

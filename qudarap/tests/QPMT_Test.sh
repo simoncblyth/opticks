@@ -3,6 +3,9 @@ usage(){ cat << EOU
 QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh 
 ==============================================================================================
 
+* standalone builds are useful for testing and to see exactly
+  what are depending on 
+
 * note that the build is using libSysRap, it would be lower level to 
   directly operate from the sysrap sources : but the tree of dependencies
   needs pruning to make that workable in addition to making more of 

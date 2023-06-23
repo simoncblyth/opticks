@@ -152,16 +152,20 @@ struct SPMT
 
 #ifdef WITH_CUSTOM4
 
+    /**
+    SPMTData : Full calculation details for debugging 
+    ----------------------------------------------------
+    **/
     struct SPMTData
     {
-        float4             args ;   // (1,4)
-        float4             ARTE ;   // (1,4) 
-        quad4              spec ;   // (4,4) 
-        StackSpec<float,4> ss ;     // (4,4) 
+        float4             args ;         //  (1,4)
+        float4             ARTE ;         //  (1,4) 
+        quad4              spec ;         //  (4,4) 
+        StackSpec<float,4> ss ;           //  (4,4) 
         Stack<float,4>     stack ;        // (44,4)
         Stack<float,4>     stackNormal ;  // (44,4)
-                                    // --------
-                                    // (98,4)
+                                          // ------
+                                          // (98,4)
 
         const float* cdata() const { return &args.x ; }
     };

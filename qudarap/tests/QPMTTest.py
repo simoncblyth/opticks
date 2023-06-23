@@ -32,12 +32,12 @@ class QPMTTest(object):
         self.title_prefix = "%s : %s " % ( SCRIPT, t.base )
 
 
-    def present_qeshape_interp(self):
+    def present_lpmtcat_qeshape(self):
         t = self.t 
         se = self.se  
         e = t.domain
 
-        interp = t.qeshape_interp  
+        interp = t.lpmtcat_qeshape  
         print(interp.shape)
 
         prop_ni = t.qeshape[:,-1,-1].view(np.int32)  
@@ -73,7 +73,7 @@ class QPMTTest(object):
         fig.show()
 
 
-    def present_rindex_interp(self):
+    def present_lpmtcat_rindex(self):
         t = self.t 
         se = self.se  
         e = t.domain
@@ -82,7 +82,7 @@ class QPMTTest(object):
 
         v0,v1 = -0.1,3.2
 
-        interp = t.rindex_interp  # (3, 4, 2, 1396)
+        interp = t.lpmtcat_rindex  # (3, 4, 2, 1396)
 
         assert len(interp.shape) == 4, interp.shape 
 
@@ -138,13 +138,34 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
+    expect_lpmtcat = t.src_lcqs[t.lpmtid,0] 
+    lpmtcat = t.lpmtid_stackspec[:,:,0,3].view(np.int32)    
+    assert( np.all( lpmtcat[:,0] == expect_lpmtcat ) )
+
+
+    lpmtid = t.lpmtid
+    lpmtid_lpmtcat = np.max(t.lpmtid_stackspec[:,:,0,3].view(np.int32), axis=1)
+    lpmtid_qe_scale = np.max(t.lpmtid_stackspec[:,:,1,3], axis=1)
+    lpmtid_qe_shape = np.max(t.lpmtid_stackspec[:,:,2,3], axis=1)
+    lpmtid_qe = np.max(t.lpmtid_stackspec[:,:,3,3], axis=1)
+
+    expr = "np.c_[lpmtid,lpmtid_lpmtcat,lpmtid_qe_scale,lpmtid_qe_shape,lpmtid_qe]"
+    lpmtid_tab = eval(expr)
+    print("lpmtid_tab:%s\n%s" % ( expr,  lpmtid_tab))
+    print(" note the qe_shape factor depends only on lpmtcat, the others have lpmtid dependency ") 
+    print(" also note the qe_shape factor for lpmtcat 0:NNVT and 2:NNVT_HiQE are the same, diff from 1:HAMA  ")
+
+if 0:
     pt = QPMTTest(t)
+
+    
+
 
     PLOT = os.environ.get("PLOT", "rindex")
     if PLOT == "rindex":
-        pt.present_rindex_interp()
+        pt.present_lpmtcat_rindex()
     elif PLOT == "qeshape":
-        pt.present_qeshape_interp()
+        pt.present_lpmtcat_qeshape()
     else:
         print("PLOT:%s not handled " % PLOT)
     pass
