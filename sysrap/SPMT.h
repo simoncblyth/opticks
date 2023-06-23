@@ -135,7 +135,9 @@ struct SPMT
     float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
     float get_wavelength(int j, int nj) const ; 
-    float get_minus_cos_theta(int k, int nk ) const ;
+
+    float get_minus_cos_theta_linear_angle(int k, int nk ) const ;
+    float get_minus_cos_theta_linear_cosine(int k, int nk ) const ;
 
     float get_rindex(int cat, int layr, int prop, float energy_eV) const ; 
     NP* get_rindex() const ; 
@@ -559,8 +561,17 @@ inline float SPMT::get_wavelength(int j, int nj) const
     return wl ; 
 }
 
+inline float SPMT::get_minus_cos_theta_linear_angle(int k, int nk) const 
+{
+    assert( k < nk ); 
+    float theta_frac = get_frac(k, nk); 
+    float max_theta_pi = 1.f ; 
+    float theta = theta_frac*max_theta_pi*M_PI ; 
+    float mct = -cos(theta) ;  
+    return mct ; 
+}
 
-inline float SPMT::get_minus_cos_theta(int k, int nk ) const 
+inline float SPMT::get_minus_cos_theta_linear_cosine(int k, int nk) const 
 {
     assert( k < nk ); 
     float fr = get_frac(k, nk); 
@@ -885,6 +896,15 @@ inline void SPMT::annotate( NP* art ) const
 }
 
 
+/**
+SPMT::get_ARTE
+----------------
+
+Scan over (pmtid, wl, mct, spol )
+
+
+**/
+
 inline NPFold* SPMT::get_ARTE() const 
 {
     NPFold* fold = new NPFold ; 
@@ -960,7 +980,7 @@ inline NPFold* SPMT::get_ARTE() const
            float wavelength_nm = get_wavelength(j, nj ); 
            for(int k=0 ; k < nk ; k++)
            {
-              float minus_cos_theta = get_minus_cos_theta(k, nk );  
+              float minus_cos_theta = get_minus_cos_theta_linear_angle(k, nk );  
               float sin_theta = sqrt( 1.f - minus_cos_theta*minus_cos_theta ); 
 
               for(int l=0 ; l < nl ; l++)
