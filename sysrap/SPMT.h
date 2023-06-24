@@ -160,12 +160,11 @@ struct SPMT
     {
         float4             args ;         //  (1,4)
         float4             ARTE ;         //  (1,4) 
+        float4             extra ;        //  (1,4) 
         quad4              spec ;         //  (4,4) 
-        StackSpec<float,4> ss ;           //  (4,4) 
         Stack<float,4>     stack ;        // (44,4)
-        Stack<float,4>     stackNormal ;  // (44,4)
                                           // ------
-                                          // (98,4)
+                                          // (51,4)
 
         const float* cdata() const { return &args.x ; }
     };
@@ -784,7 +783,7 @@ minus_cos_theta
 
 dot_pol_cross_mom_nrm
     
-    * dot(pol,cross(mom,nrm)) in float3 form 
+    * dot(pol,cross(mom,nrm)) where pol, mom and nrm are all normalized float3 vectors
     * OldPolarization*OldMomentum.cross(theRecoveredNormal) in G4ThreeVector form 
     * expresses degree of S vs P polarization of the incident photon
     * pol,mom,nrm all expected to be normalized vectors
@@ -794,12 +793,18 @@ dot_pol_cross_mom_nrm
     * dot(pol,cross(mom,nrm)) value is cosine(angle_between_pol_and_transverse_vector)*sine(angle_between_mom_and_nrm)
     * NB when testing the value of dot_pol_cross_mom_nrm needs to be consistent with minus_cos_theta
 
-**NB : LAST TWO ARGS ARE RELATED**
+**NB : minus_cos_theta AND dot_pol_cross_mom_nrm ARGS ARE RELATED**
 
 dot_pol_cross_mom_nrm includes cross(mom,nrm) and minus_cos_theta is dot(mom,nrm) 
 so one incorporates the cross product and the other is the dot product 
 of the same two vectors. Hence care is needed to prepare correctly 
 related arguments when test scanning the API.
+
+S_pol incorporation
+~~~~~~~~~~~~~~~~~~~~~~
+
+* stack.art.A,R,T now incorporatws S_pol frac obtained from (minus_cos_theta, dot_pol_cross_mom_nrm )
+
 
 **/
 
@@ -813,89 +818,52 @@ inline void SPMT::get_ARTE(
     const float energy_eV = hc_eVnm/wavelength_nm ; 
     get_lpmtid_stackspec(pd.spec, lpmtid, energy_eV); 
 
-    // references into SPMTData 
-    float4& args = pd.args ; 
-    float4& ARTE = pd.ARTE ; 
-    quad4& spec = pd.spec ; 
-    StackSpec<float,4>& ss = pd.ss ;
-    Stack<float,4>& stack = pd.stack ; 
-    Stack<float,4>& stackNormal = pd.stackNormal ; 
-    const float& _qe = spec.q3.f.w ; 
+    const float* ss = pd.spec.cdata() ; 
+    const float& _qe = ss[15] ; 
 
+    pd.args.x = lpmtid ; 
+    pd.args.y = energy_eV ; 
+    pd.args.z = minus_cos_theta ; 
+    pd.args.w = dot_pol_cross_mom_nrm ; 
 
-    args.x = lpmtid ; 
-    args.y = energy_eV ; 
-    args.z = minus_cos_theta ; 
-    args.w = dot_pol_cross_mom_nrm ; 
+    if( minus_cos_theta < 0.f ) // only ingoing photons 
+    {
+        pd.stack.calc(wavelength_nm, -1.f, 0.f, ss, 16u );
+        pd.ARTE.w = _qe/pd.stack.art.A ;  // aka theEfficiency and escape_fac, no mct dep 
 
+        pd.extra.x = 1.f - (pd.stack.art.T_av + pd.stack.art.R_av ) ;  // old An
+        pd.extra.y = pd.stack.art.A_av ; 
+        pd.extra.z = pd.stack.art.A   ; 
+        pd.extra.w = pd.stack.art.A_s ; 
+    }
+    else
+    {
+        pd.ARTE.w = 0.f ;  
+    } 
 
-    // HMM: annoying shuffling : allows C4MultiLayerStack.h to stay very independent
+    pd.stack.calc(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );
 
-    ss.ls[0].nr = spec.q0.f.x ; 
+    const float& A = pd.stack.art.A ; 
+    const float& R = pd.stack.art.R ; 
+    const float& T = pd.stack.art.T ; 
 
-    ss.ls[1].nr = spec.q1.f.x ; 
-    ss.ls[1].ni = spec.q1.f.y ; 
-    ss.ls[1].d  = spec.q1.f.z ;
- 
-    ss.ls[2].nr = spec.q2.f.x ; 
-    ss.ls[2].ni = spec.q2.f.y ; 
-    ss.ls[2].d  = spec.q2.f.z ;
-
-    ss.ls[3].nr = spec.q3.f.x ; 
- 
-
-    stack.calc(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss );
-
-    /*
-    NOW INCORPORATED THE BELOW INTO stack.calc
-
-    const float _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
-    float E_s2 = _si > 0.f ? dot_pol_cross_mom_nrm/_si : 0.f ;
-    E_s2 *= E_s2;
-
-    // E_s2 : S-vs-P power fraction : signs make no difference as squared
-    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
-
-    const float one = 1.f ;
-    const float S = E_s2 ;
-    const float P = one - S ;
-
-    const float T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
-    const float R = S*stack.art.R_s + P*stack.art.R_p ;
-    const float A = S*stack.art.A_s + P*stack.art.A_p ;
-    //const float A1 = one - (T+R);  // note that A1 matches A 
-
-    stack.art.xx = A ; 
-    stack.art.yy = R ; 
-    stack.art.zz = T ; 
-    stack.art.ww = S ; 
-    */ 
-
-    // the below A,R,T  now incorporatws S_pol frac obtained from (minus_cos_theta, dot_pol_cross_mom_nrm )
-    const float& A = stack.art.A ; 
-    const float& R = stack.art.R ; 
-    const float& T = stack.art.T ; 
-
-    // backwards _qe is set to zero (this is for +ve minus_cos_theta) 
-    // so could skip stackNormal.calc for backwards incidence after debugged 
-
-
-    // TODO: try reusing the above stack instance for the normal calc
-    //       to avoid needing to double the memory with another fat stack instance 
-
-    stackNormal.calc(wavelength_nm, -1.f , 0.f, ss );
-
-    float An = 1.f - (stackNormal.art.T_av + stackNormal.art.R_av ) ;  
-    // TODO: compare An with stackNormal.art.A_av 
-
-    float E = minus_cos_theta < 0.f ? _qe/An : 0.f ;  // aka theEfficiency and escape_fac 
-    //float E = 0.f ; 
-
-    ARTE.x = A ;         // aka theAbsorption
-    ARTE.y = R/(1.f-A) ; // aka theReflectivity
-    ARTE.z = T/(1.f-A) ; // aka theTransmittance
-    ARTE.w = E ; 
+    pd.ARTE.x = A ;         // aka theAbsorption
+    pd.ARTE.y = R/(1.f-A) ; // aka theReflectivity
+    pd.ARTE.z = T/(1.f-A) ; // aka theTransmittance
 }
+
+
+/**
+stack::calc notes
+-------------------
+
+0. backwards _qe is set to zero (+ve minus_cos_theta, ie mom with nrm) 
+1. DONE : compare An with stackNormal.art.A_av 
+2. DONE : remove _av as at normal incidence S/P are meaningless and give same values anyhow, 
+3. DONE : removed stackNormal.calc for minus_cos_theta > 0.f 
+4. DONE : even better get rid of stackNormal by reusing the one stack instance
+
+**/
 
 
 /**
@@ -945,8 +913,8 @@ inline NPFold* SPMT::get_ARTE() const
 
     NP* args  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
     NP* ARTE  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
+    NP* extra = NP::Make<float>(ni, nj, nk, nl, 4 ); 
     NP* spec  = NP::Make<float>(ni, nj, nk, nl, 4, 4 ); 
-    NP* ss    = NP::Make<float>(ni, nj, nk, nl, 4, 4 ); 
 
     // Make_ allows arbitrary dimensions     
     NP* stack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
@@ -954,10 +922,12 @@ inline NPFold* SPMT::get_ARTE() const
     NP* comp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
     NP* art   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
 
+    /*
     NP* nstack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
     NP* nll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ; 
     NP* ncomp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
     NP* nart   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
+    */
 
     annotate(art); 
 
@@ -965,37 +935,39 @@ inline NPFold* SPMT::get_ARTE() const
 
     fold->add("args", args);
     fold->add("ARTE", ARTE);
+    fold->add("extra",extra );
     fold->add("spec", spec);
-    fold->add("ss", ss);
 
     fold->add("stack", stack);
     fold->add("ll", ll);
     fold->add("comp", comp);
     fold->add("art", art);
 
+    /*
     fold->add("nstack", nstack);
     fold->add("nll", nll);
     fold->add("ncomp", ncomp);
     fold->add("nart", nart);
- 
+    */
  
     std::cout << "SPMT::get_ARTE args " << args->sstr() << std::endl ; 
 
     float* args_v = args->values<float>(); 
     float* ARTE_v = ARTE->values<float>(); 
-    float* spec_v = spec->values<float>() ; 
-    float* ss_v   = ss->values<float>() ; 
+    float* extra_v = extra->values<float>() ; 
+    float* spec_v  = spec->values<float>() ; 
 
     float* stack_v = stack->values<float>() ; 
     float* ll_v    = ll->values<float>() ; 
     float* comp_v  = comp->values<float>() ; 
     float* art_v   = art->values<float>() ; 
 
+    /*
     float* nstack_v = nstack->values<float>() ; 
     float* nll_v    = nll->values<float>() ; 
     float* ncomp_v  = ncomp->values<float>() ; 
     float* nart_v   = nart->values<float>() ; 
-
+    */
 
     for(int i=0 ; i < ni ; i++)
     {
@@ -1020,28 +992,30 @@ inline NPFold* SPMT::get_ARTE() const
 
                   int args_idx = idx ; 
                   int ARTE_idx = idx ; 
+                  int extra_idx = idx ; 
                   int spec_idx = idx*4 ; 
-                  int ss_idx   = idx*4 ; 
 
                   int stack_idx = idx*44 ; 
                   int ll_idx    = idx*4*4*2 ; // 32 
                   int comp_idx  = idx*1*4*2 ; //  8
                   int art_idx   = idx*4 ;     //  4
 
-                  memcpy( args_v + args_idx,  &pd.args.x, sizeof(float)*4 ); 
-                  memcpy( ARTE_v + ARTE_idx,  &pd.ARTE.x, sizeof(float)*4 ); 
+                  memcpy( args_v + args_idx,   &pd.args.x, sizeof(float)*4 ); 
+                  memcpy( ARTE_v + ARTE_idx,   &pd.ARTE.x, sizeof(float)*4 ); 
+                  memcpy( extra_v + extra_idx, &pd.extra.x,   sizeof(float)*4 ); 
                   memcpy( spec_v + spec_idx,   pd.spec.cdata(), sizeof(float)*4*4 ); 
-                  memcpy( ss_v   + ss_idx  ,   pd.ss.cdata(),   sizeof(float)*4*4 ); 
 
                   memcpy( stack_v + stack_idx,  pd.stack.cdata(),        sizeof(float)*44*4 ); 
                   memcpy( ll_v    + ll_idx,     pd.stack.ll[0].cdata(),  sizeof(float)*32*4 ); 
                   memcpy( comp_v  + comp_idx,   pd.stack.comp.cdata(),   sizeof(float)*8*4 ); 
                   memcpy( art_v   + art_idx,    pd.stack.art.cdata(),    sizeof(float)*4*4 ); 
 
+                  /*
                   memcpy( nstack_v + stack_idx,  pd.stackNormal.cdata(),        sizeof(float)*44*4 ); 
                   memcpy( nll_v    + ll_idx,     pd.stackNormal.ll[0].cdata(),  sizeof(float)*32*4 ); 
                   memcpy( ncomp_v  + comp_idx,   pd.stackNormal.comp.cdata(),   sizeof(float)*8*4 ); 
                   memcpy( nart_v   + art_idx,    pd.stackNormal.art.cdata(),    sizeof(float)*4*4 ); 
+                  */
 
                   if(VERBOSE) std::cout 
                       << "SPMT::get_ARTE"

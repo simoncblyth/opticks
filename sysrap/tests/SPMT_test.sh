@@ -28,7 +28,7 @@ export JFOLD=/tmp/JPMTTest
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
-vars="arg name REALDIR GEOM"
+vars="arg name REALDIR GEOM FOLD SFOLD JFOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 

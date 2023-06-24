@@ -10,6 +10,62 @@ import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
 np.set_printoptions(edgeitems=16) 
 
+
+def compare_stack_vs_stackNormal(f):
+    """
+    """
+    print("\ncompare_stack_vs_stackNormal f.base : %s " % f.base)
+
+    if getattr(f,"nart", None) == None:
+        print("NO nart SKIP")
+        return 
+    pass 
+
+    art = f.art.squeeze() 
+    nart = f.nart.squeeze() 
+
+    comp = f.comp.squeeze() 
+    ncomp = f.ncomp.squeeze() 
+
+    ll = f.ll.squeeze() 
+    nll = f.nll.squeeze() 
+
+
+    # 1. check ncomp is repeated ncomp[0] as stackNormal fixes mct at -1.f
+    fab_ncomp = np.zeros_like(ncomp)  
+    fab_ncomp[:] = ncomp[0]    
+    assert np.all( fab_ncomp == ncomp )
+
+    assert np.all( ncomp[:] == ncomp[0] ) # IS THIS TOTALLY SAME AS ABOVE ?
+
+
+    # 2. check comp[0] == ncomp[0] as comp scan starts at mct -1
+    assert np.all( comp[0] == ncomp[0] ) 
+
+    fab_nart = np.zeros_like(nart)
+    fab_nart[:] = nart[0]
+    assert np.all( fab_nart == nart )
+
+    assert np.all( nart[:] == nart[0] )  # IS THIS TOTALLY SAME AS ABOVE ?
+    assert np.all( nll[:] == nll[0] )  # IS THIS TOTALLY SAME AS ABOVE ?
+
+
+
+
+
+def check_nan(f):
+    print("\ncheck_nan f.base %s " % f.base)
+    qwns = "args spec extra ARTE stack ll comp art nstack nll ncomp nart".split()
+    for qwn in qwns:
+        q = getattr(f, qwn, None)
+        if q is None: continue
+        expr = "np.where( np.isnan(f.%s.ravel()) )[0]" % qwn  
+        nan = eval(expr)
+        print(" %-50s : %s " % (expr,eval(expr)))
+    pass
+
+
+
 if __name__ == '__main__':
     s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
@@ -17,18 +73,13 @@ if __name__ == '__main__':
     f = Fold.Load("$SFOLD/get_ARTE/xscan", symbol="f")
     print(repr(f))
 
-    qwns = "args spec ss ARTE stack ll comp art nstack nll ncomp nart".split()
-    for qwn in qwns:
-        q = getattr(f, qwn, None)
-        expr = "np.where( np.isnan(f.%s) ) " % qwn  
-        print(expr)
-        print(eval(expr))
-    pass
+    compare_stack_vs_stackNormal(f)
+    check_nan(f)
 
 
     args = f.args.squeeze()
     spec = f.spec.squeeze()
-    ss = f.ss.squeeze()
+    extra = f.extra.squeeze()
     ARTE = f.ARTE.squeeze()
 
     stack = f.stack.squeeze()
@@ -36,61 +87,66 @@ if __name__ == '__main__':
     comp = f.comp.squeeze() 
     art = f.art.squeeze() 
 
-    nstack = f.nstack.squeeze()
-    nll = f.nll.squeeze() 
-    ncomp = f.ncomp.squeeze() 
-    nart = f.nart.squeeze() 
+    #nstack = f.nstack.squeeze()
+    #nll = f.nll.squeeze() 
+    #ncomp = f.ncomp.squeeze() 
+    #nart = f.nart.squeeze() 
+
+
+    
+
 
     #_art = nart  # corresponds to just the -1 point in the mct scan  
     _art = art
 
 
-    Rs = _art[...,0,0]
-    Rp = _art[...,0,1]
-    Ts = _art[...,0,2]
-    Tp = _art[...,0,3]
+    As   = _art[...,0,0]
+    Ap   = _art[...,0,1]
+    Aa   = _art[...,0,2]
+    A_   = _art[...,0,3]
 
-    As = _art[...,1,0]
-    Ap = _art[...,1,1]
-    R_ = _art[...,1,2]
-    T_ = _art[...,1,3]
-      
-    A_ = _art[...,2,0]
-    A_R_T = _art[...,2,1]
-    wl    = _art[...,2,2] 
-    mct   = _art[...,2,3]
+    Rs   = _art[...,1,0]
+    Rp   = _art[...,1,1]
+    Ra   = _art[...,1,2]
+    R_   = _art[...,1,3]
 
-    xx  = _art[...,3,0]
-    yy  = _art[...,3,1]
-    zz  = _art[...,3,2]
-    ww  = _art[...,3,3]
+    Ts   = _art[...,2,0]
+    Tp   = _art[...,2,1]
+    Ta   = _art[...,2,2]
+    T_   = _art[...,2,3]
+
+    SF     = _art[...,3,0]
+    wl     = _art[...,3,1] 
+    ARTa   = _art[...,3,2]
+    mct    = _art[...,3,3]
+
 
     pmtid = 0 
 
-    opt = os.environ.get("OPT", "A_,R_,T_,As,Rs,Ts,Ap,Rp,Tp")
+    opt = os.environ.get("OPT", "A_,R_,T_,As,Rs,Ts,Ap,Rp,Tp,Aa,Ra,Ta")
     title = "%s : pmtid %d OPT %s " % (s.base, pmtid, opt) 
     fig, ax = plt.subplots(1, figsize=SIZE/100.)
     fig.suptitle(title)
 
-
-    if "A_" in opt:ax.plot(  mct, A_, label="A_" )
-    if "R_" in opt:ax.plot(  mct, R_, label="R_" )
-    if "T_" in opt:ax.plot(  mct, T_, label="T_" )
-    if "A_R_T" in opt:ax.plot( mct, A_R_T, label="A_R_T") 
-
     if "As" in opt:ax.plot(  mct, As, label="As" )
-    if "Rs" in opt:ax.plot(  mct, Rs, label="Rs" )
-    if "Ts" in opt:ax.plot(  mct, Ts, label="Ts" )
-
     if "Ap" in opt:ax.plot(  mct, Ap, label="Ap" )
+    if "Aa" in opt:ax.plot(  mct, Aa, label="Aa" )
+    if "A_" in opt:ax.plot(  mct, A_, label="A_" )
+
+    if "Rs" in opt:ax.plot(  mct, Rs, label="Rs" )
     if "Rp" in opt:ax.plot(  mct, Rp, label="Rp" )
+    if "Ra" in opt:ax.plot(  mct, Ra, label="Ra" )
+    if "R_" in opt:ax.plot(  mct, R_, label="R_" )
+
+    if "Ts" in opt:ax.plot(  mct, Ts, label="Ts" )
     if "Tp" in opt:ax.plot(  mct, Tp, label="Tp" )
+    if "Ta" in opt:ax.plot(  mct, Ta, label="Ta" )
+    if "T_" in opt:ax.plot(  mct, T_, label="T_" )
 
-    if "xx" in opt:ax.plot(  mct, xx, label="xx" )
-    if "yy" in opt:ax.plot(  mct, yy, label="yy" )
-    if "zz" in opt:ax.plot(  mct, zz, label="zz" )
-    if "ww" in opt:ax.plot(  mct, ww, label="ww" )
-
+    if "SF" in opt:ax.plot(  mct, SF, label="SF") 
+    if "wl" in opt:ax.plot(  mct, wl, label="wl" )
+    if "ARTa" in opt:ax.plot(  mct, ARTa, label="ARTa" )
+    if "mct" in opt:ax.plot(  mct, mct, label="mct" )
 
 
     ax.legend()
