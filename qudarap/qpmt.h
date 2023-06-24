@@ -25,12 +25,19 @@ template <typename T> struct qprop ;
 #include "squad.h"
 #include "qprop.h"
 
+#ifdef WITH_CUSTOM4
+#include "C4MultiLayrStack.h"
+#endif
+
 template<typename T>
 struct qpmt
 {
     enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2, NUM_LPMT = 17612 } ;  
     enum { L0, L1, L2, L3 } ; 
     enum { RINDEX, KINDEX, QESHAPE, LPMTCAT_STACKSPEC, LPMTID_STACKSPEC } ; 
+
+    static constexpr const T hc_eVnm = 1239.84198433200208455673  ;
+    static constexpr const T zero = 0. ; 
 
     qprop<T>* rindex_prop ;
     qprop<T>* qeshape_prop ;
@@ -47,6 +54,11 @@ struct qpmt
 
     QPMT_METHOD void get_lpmtcat_stackspec( quad4& spec, int pmtcat, T energy_eV ) const ; 
     QPMT_METHOD void get_lpmtid_stackspec(  quad4& spec, int pmtid,  T energy_eV ) const ; 
+
+#ifdef WITH_CUSTOM4
+    QPMT_METHOD void get_lpmtid_ARTE(float4& ARTE, int lpmtid, T wavelength_nm, T minus_cos_theta, T dot_pol_cross_mom_nrm ) const ; 
+#endif
+
 #endif
 }; 
 
@@ -118,9 +130,46 @@ inline QPMT_METHOD void qpmt<T>::get_lpmtid_stackspec( quad4& spec, int lpmtid, 
     get_lpmtcat_stackspec( spec, lpmtcat, energy_eV ); 
 }
 
+#ifdef WITH_CUSTOM4
+template<>
+inline QPMT_METHOD void qpmt<float>::get_lpmtid_ARTE( 
+    float4& ARTE, 
+    int lpmtid, 
+    float wavelength_nm, 
+    float minus_cos_theta, 
+    float dot_pol_cross_mom_nrm ) const 
+{
+    const float energy_eV = hc_eVnm/wavelength_nm ; 
 
+    quad4 spec ; 
+    get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
 
+    const float* ss = spec.cdata() ;
+    const float& _qe = ss[15] ;
 
+    Stack<float,4> stack ;  
+
+    if( minus_cos_theta < zero )
+    {
+        stack.calc(wavelength_nm, -1.f, 0.f, ss, 16u );
+        ARTE.w = _qe/stack.art.A ; 
+    }
+    else
+    {
+        ARTE.w = 0.f ;  
+    }
+
+    stack.calc(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );
+   
+    const float& A = stack.art.A ; 
+    const float& R = stack.art.R ; 
+    const float& T = stack.art.T ; 
+ 
+    ARTE.x = A ;         // aka theAbsorption
+    ARTE.y = R/(1.f-A) ; // aka theReflectivity
+    ARTE.z = T/(1.f-A) ; // aka theTransmittance
+}
+#endif
 
 #endif
 
