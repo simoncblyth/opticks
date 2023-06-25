@@ -62,13 +62,16 @@ struct QPMTTest
 
     const char* lpmtid_list ; 
     NP* lpmtid ; 
-    NP* domain ; 
+    NP* energy_eV_domain ; 
+    NP* mct_domain ; 
 
     NP* lpmtcat_rindex ; 
     NP* lpmtcat_qeshape ; 
     NP* lpmtcat_stackspec ; 
 
     NP* lpmtid_stackspec ; 
+    NP* lpmtid_ART ; 
+    NP* lpmtid_ARTE ; 
 
     // HMM: switch to NPFold ? 
 
@@ -80,6 +83,8 @@ struct QPMTTest
     void lpmtcat_stackspec_test(); 
 
     void lpmtid_stackspec_test(); 
+    void lpmtid_ART_test(); 
+    void lpmtid_ARTE_test(); 
 
     void save(const char* base) const ; 
 };
@@ -90,28 +95,32 @@ QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     qpmt(qpmt_),
     lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612) 
     lpmtid(NPX::FromString<int>(lpmtid_list,',')), 
-    domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
+    energy_eV_domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
+    mct_domain(NP::Linspace<T>(-1.0, 1.0, 180+1 )),
     lpmtcat_rindex(nullptr),
     lpmtcat_qeshape(nullptr),
     lpmtcat_stackspec(nullptr),
-    lpmtid_stackspec(nullptr)
+    lpmtid_stackspec(nullptr),
+    lpmtid_ART(nullptr),
+    lpmtid_ARTE(nullptr)
+
 {
 }
 
 template<typename T>
 void QPMTTest<T>::lpmtcat_rindex_test()
 {
-    lpmtcat_rindex = qpmt.lpmtcat_rindex(domain);   
+    lpmtcat_rindex = qpmt.lpmtcat_rindex(energy_eV_domain);   
 }
 template<typename T>
 void QPMTTest<T>::lpmtcat_qeshape_test()
 {
-    lpmtcat_qeshape = qpmt.lpmtcat_qeshape(domain);   
+    lpmtcat_qeshape = qpmt.lpmtcat_qeshape(energy_eV_domain);   
 }
 template<typename T>
 void QPMTTest<T>::lpmtcat_stackspec_test()
 {
-    lpmtcat_stackspec = qpmt.lpmtcat_stackspec(domain);   
+    lpmtcat_stackspec = qpmt.lpmtcat_stackspec(energy_eV_domain);   
 }
 
 
@@ -119,11 +128,19 @@ void QPMTTest<T>::lpmtcat_stackspec_test()
 template<typename T>
 void QPMTTest<T>::lpmtid_stackspec_test()
 {
-    lpmtid_stackspec = qpmt.lpmtid_stackspec(domain, lpmtid);   
+    lpmtid_stackspec = qpmt.lpmtid_stackspec(energy_eV_domain, lpmtid);   
 }
 
-
-
+template<typename T>
+void QPMTTest<T>::lpmtid_ART_test()
+{
+    lpmtid_ART = qpmt.lpmtid_ART(mct_domain, lpmtid);   
+}
+template<typename T>
+void QPMTTest<T>::lpmtid_ARTE_test()
+{
+    lpmtid_ARTE = qpmt.lpmtid_ARTE(mct_domain, lpmtid);   
+}
 
 
 
@@ -131,12 +148,15 @@ template<typename T>
 void QPMTTest<T>::save(const char* base) const 
 {
     qpmt.save(base) ; 
-    domain->save(base, "domain.npy"); 
+    energy_eV_domain->save(base, "energy_eV_domain.npy"); 
+    mct_domain->save(base, "mct_domain.npy"); 
     lpmtid->save(base, "lpmtid.npy"); 
     if(lpmtcat_rindex) lpmtcat_rindex->save(base, "lpmtcat_rindex.npy" ); 
     if(lpmtcat_qeshape) lpmtcat_qeshape->save(base, "lpmtcat_qeshape.npy" ); 
     if(lpmtcat_stackspec) lpmtcat_stackspec->save(base, "lpmtcat_stackspec.npy" ); 
     if(lpmtid_stackspec) lpmtid_stackspec->save(base, "lpmtid_stackspec.npy" ); 
+    if(lpmtid_ART) lpmtid_ART->save(base, "lpmtid_ART.npy" ); 
+    if(lpmtid_ARTE) lpmtid_ARTE->save(base, "lpmtid_ARTE.npy" ); 
 }
 
 
@@ -187,9 +207,13 @@ int main(int argc, char** argv)
     t.lpmtcat_rindex_test(); 
     t.lpmtcat_qeshape_test(); 
     t.lpmtcat_stackspec_test(); 
-    */
 
     t.lpmtid_stackspec_test(); 
+    t.lpmtid_ART_test(); 
+    t.lpmtid_ARTE_test(); 
+    */
+
+    t.lpmtid_ART_test(); 
  
     cudaDeviceSynchronize();
     t.save("$FOLD");  

@@ -66,6 +66,9 @@ struct QUDARAP_API QPMT
     NP* lpmtcat_stackspec( const NP* domain) const ; 
 
     NP* lpmtid_stackspec( const NP* domain, const NP* lpmtid ) const ; 
+    NP* lpmtid_ART(  const NP* domain, const NP* lpmtid ) const ; 
+    NP* lpmtid_ARTE( const NP* domain, const NP* lpmtid ) const ; 
+
 
 };
 
@@ -165,15 +168,11 @@ inline NP* QPMT<T>::MakeLookup_lpmtid(int etype, unsigned num_domain, unsigned n
     switch(etype)
     {
        case qpmt<T>::LPMTID_STACKSPEC: lookup = NP::Make<T>( ni, nj, 4, 4  )  ; break ; 
+       case qpmt<T>::LPMTID_ART:       lookup = NP::Make<T>( ni, nj, 4, 4  )  ; break ; 
+       case qpmt<T>::LPMTID_ARTE:      lookup = NP::Make<T>( ni, nj, 4  )     ; break ; 
     }
     return lookup ; 
 }
-
-
-
-
-
-
 
 
 template<typename T>
@@ -241,6 +240,16 @@ template<typename T>
 inline NP* QPMT<T>::lpmtid_stackspec(const NP* domain, const NP* lpmtid) const 
 { 
     return lpmtid_(qpmt<T>::LPMTID_STACKSPEC, domain, lpmtid) ; 
+}
+template<typename T>
+inline NP* QPMT<T>::lpmtid_ART(const NP* domain, const NP* lpmtid) const 
+{ 
+    return lpmtid_(qpmt<T>::LPMTID_ART, domain, lpmtid) ; 
+}
+template<typename T>
+inline NP* QPMT<T>::lpmtid_ARTE(const NP* domain, const NP* lpmtid) const 
+{ 
+    return lpmtid_(qpmt<T>::LPMTID_ARTE, domain, lpmtid) ; 
 }
 
 

@@ -18,7 +18,7 @@ QPMT::interpolate
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
-// NB this cannot be extern "C" as need C++ name mangling for template types
+// NB these cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
 extern void QPMT_lpmtcat(

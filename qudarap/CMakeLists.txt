@@ -12,13 +12,15 @@ set(LIBS  )
 find_package(SysRap REQUIRED CONFIG)
 set(LIBS ${LIBS} Opticks::SysRap)  
 
-#find_package(OpticksCore REQUIRED CONFIG) 
-#set(LIBS ${LIBS} Opticks::OpticksCore)
-# OpticksCore currently needed for OpticksEvent OpticksGenstep enum 
-# used by tests/QSimWithEventTest.cc
-# are moving in direction of reducing this dependency 
-# down to Sysrap as the use of OpticksCore is minimal
-# and its useful for testing for qudarap to be usable with little dependency 
+find_package(Custom4 CONFIG)
+# see eg $OPTICKS_PREFIX/lib/Custom4-0.1.4/Custom4Config.cmake
+# for the setup that a successful find does, including setting WITH_CUSTOM4
+
+if(Custom4_FOUND)
+   set(LIBS ${LIBS} Custom4::Custom4)  
+endif()
+
+
 
 
 set(OpticksCUDA_VERBOSE ON)
@@ -169,6 +171,22 @@ target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
+
+#[=[
+
+WITH_THRUST compile definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* WITH_THRUST is needed for Custom4 on GPU complex math functions used by qpmt.h 
+
+* However Custom4 also used on CPU without WITH_THRUST (eg by junosw), so 
+  the WITH_THRUST definition must be PRIVATE to avoid interference with other
+  Custom4 usage
+
+#]=]
+
+target_compile_definitions( ${name} PRIVATE WITH_THRUST )
+
 #target_compile_definitions( ${name} PRIVATE DEBUG_TIME )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
