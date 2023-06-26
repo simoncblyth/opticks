@@ -202,7 +202,7 @@ template<typename T>
 void QTex<T>::uploadMeta()
 {
     // not doing this automatically as will need to add some more meta 
-    d_meta = QU::UploadArray<quad4>(meta, 1 );  
+    d_meta = QU::UploadArray<quad4>(meta, 1, "QTex::uploadMeta" );  
 }
 
 /**

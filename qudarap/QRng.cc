@@ -142,12 +142,14 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
 
 void QRng::upload()
 {
-    qr->rng_states = QU::UploadArray<curandState>(rng_states, rngmax ) ;   
+    const char* label_0 = "QRng::upload/rng_states" ; 
+    qr->rng_states = QU::UploadArray<curandState>(rng_states, rngmax, label_0 ) ;   
 
     free(rng_states); 
     rng_states = nullptr ; 
 
-    d_qr = QU::UploadArray<qrng>(qr, 1 ); 
+    const char* label_1 = "QRng::upload/d_qr" ; 
+    d_qr = QU::UploadArray<qrng>(qr, 1, label_1 ); 
 }
 
 
@@ -188,7 +190,8 @@ void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahe
 
     QRng_generate<T>(numBlocks, threadsPerBlock, d_uu, ni, nv, qr->rng_states, skipahead_ ); 
 
-    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv );
+    const char* label = "QRng::generate" ; 
+    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv, label );
 }
 
 
@@ -209,13 +212,15 @@ extern void QRng_generate_2(dim3, dim3, qrng*, unsigned, T*, unsigned, unsigned 
 template<typename T>
 void QRng::generate_2( T* uu, unsigned ni, unsigned nv, unsigned event_idx )
 {
-    T* d_uu = QU::device_alloc<T>(ni*nv, "QRng::generate_2:ni*nv");
+    const char* label = "QRng::generate_2:ni*nv" ; 
+
+    T* d_uu = QU::device_alloc<T>(ni*nv, label );
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 
     QRng_generate_2<T>(numBlocks, threadsPerBlock, d_qr, event_idx, d_uu, ni, nv ); 
 
-    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv );
+    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv, label );
 }
 
 

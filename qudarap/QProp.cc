@@ -127,11 +127,11 @@ QProp::upload
 template<typename T>
 void QProp<T>::upload()
 {
-    prop->pp = QU::device_alloc<T>(nv,"QProp<T>::uploadProps:nv") ; 
+    prop->pp = QU::device_alloc<T>(nv,"QProp::upload/pp") ; 
     prop->height = ni ;   
     prop->width =  nj*nk ;
     QU::copy_host_to_device<T>( prop->pp, pp, nv ); 
-    d_prop = QU::UploadArray<qprop<T>>(prop, 1 );  
+    d_prop = QU::UploadArray<qprop<T>>(prop, 1, "QProp::upload/d_prop");  
 }
 
 
@@ -228,7 +228,9 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned 
     T* d_domain = QU::device_alloc<T>(domain_width, "QProp<T>::lookup:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width  ); 
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup,"QProp<T>::lookup:num_lookup") ; 
+    const char* label = "QProp<T>::lookup:num_lookup" ; 
+
+    T* d_lookup = QU::device_alloc<T>(num_lookup,label) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -242,7 +244,7 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned 
         QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, iprop, domain_width );  
     }
 
-    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup ); 
+    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup, label ); 
      
     LOG(LEVEL) << "]" ; 
 }

@@ -49,7 +49,7 @@ void QCurandState::alloc()
 { 
     cs->states = QU::device_alloc_zero<curandState>(cs->num,"QCurandState::QCurandState/curandState") ; 
     LOG(info) << "after alloc" ; 
-    d_cs = QU::UploadArray<qcurandstate>(cs, 1 );    
+    d_cs = QU::UploadArray<qcurandstate>(cs, 1, "QCurandState::alloc/qcurandstate" );    
     LOG(info) << "after upload" ; 
 }
 void QCurandState::create() 

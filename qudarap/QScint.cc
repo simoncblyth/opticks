@@ -38,7 +38,7 @@ QScint::QScint(const NP* icdf, unsigned hd_factor )
     src( icdf->ebyte == 4 ? icdf : NP::MakeNarrow(dsrc) ), 
     tex(MakeScintTex(src, hd_factor)),
     scint(MakeInstance(tex)),
-    d_scint(QU::UploadArray<qscint>(scint, 1))
+    d_scint(QU::UploadArray<qscint>(scint, 1, "QScint::QScint/d_scint"))
 {
     INSTANCE = this ; 
 }

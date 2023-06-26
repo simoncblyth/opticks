@@ -262,7 +262,7 @@ void QSim::init()
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ; 
     sim->scint = scint ? scint->d_scint : nullptr ; 
 
-    d_sim = QU::UploadArray<qsim>(sim, 1 );  
+    d_sim = QU::UploadArray<qsim>(sim, 1, "QSim::init.sim" );  
 
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
@@ -502,11 +502,13 @@ void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_o
 
     unsigned num_rng = ni_tranche*nv ;  
 
-    T* d_seq = QU::device_alloc<T>(num_rng, "QSim::rng_sequence:num_rng"); 
+    const char* label = "QSim::rng_sequence:num_rng" ; 
+
+    T* d_seq = QU::device_alloc<T>(num_rng, label ); 
 
     QSim_rng_sequence<T>(numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset );  
 
-    QU::copy_device_to_host_and_free<T>( seq, d_seq, num_rng ); 
+    QU::copy_device_to_host_and_free<T>( seq, d_seq, num_rng, label ); 
 }
 
 
@@ -613,7 +615,8 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 
     NP* w = NP::Make<float>(num_wavelength) ; 
 
-    QU::copy_device_to_host_and_free<float>( (float*)w->bytes(), d_wavelength, num_wavelength ); 
+    const char* label = "QSim::scint_wavelength" ; 
+    QU::copy_device_to_host_and_free<float>( (float*)w->bytes(), d_wavelength, num_wavelength, label ); 
 
     LOG(LEVEL) << "]" ; 
 
@@ -656,7 +659,9 @@ NP* QSim::dbg_gs_generate(unsigned num_photon, unsigned type )
     QSim_dbg_gs_generate(numBlocks, threadsPerBlock, d_sim, d_dbg, d_photon, num_photon, type );  
 
     NP* p = NP::Make<float>(num_photon, 4, 4); 
-    QU::copy_device_to_host_and_free<sphoton>( (sphoton*)p->bytes(), d_photon, num_photon ); 
+    const char* label = "QSim::dbg_gs_generate" ; 
+
+    QU::copy_device_to_host_and_free<sphoton>( (sphoton*)p->bytes(), d_photon, num_photon, label ); 
     return p ; 
 }
 
@@ -725,7 +730,8 @@ void QSim::fill_state_0(quad6* state, unsigned num_state)
 
     QSim_fill_state_0(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg  );  
 
-    QU::copy_device_to_host_and_free<quad6>( state, d_state, num_state ); 
+    const char* label = "QSim::fill_state_0" ; 
+    QU::copy_device_to_host_and_free<quad6>( state, d_state, num_state, label ); 
 }
 
 
@@ -749,7 +755,8 @@ void QSim::fill_state_1(sstate* state, unsigned num_state)
 
     QSim_fill_state_1(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg );  
 
-    QU::copy_device_to_host_and_free<sstate>( state, d_state, num_state ); 
+    const char* label = "QSim::fill_state_1" ; 
+    QU::copy_device_to_host_and_free<sstate>( state, d_state, num_state, label ); 
 }
 
 
@@ -776,7 +783,9 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    quad* d_q = QU::device_alloc<quad>(num_quad, "QSim::quad_launch_generate:num_quad") ; 
+    const char* label = "QSim::quad_launch_generate:num_quad" ; 
+
+    quad* d_q = QU::device_alloc<quad>(num_quad, label ) ; 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_quad, threads_per_block ); 
@@ -786,7 +795,7 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
     NP* q = NP::Make<float>( num_quad, 4 ); 
     quad* qq = (quad*)q->bytes(); 
 
-    QU::copy_device_to_host_and_free<quad>( qq, d_q, num_quad ); 
+    QU::copy_device_to_host_and_free<quad>( qq, d_q, num_quad, label ); 
 
     return q ; 
 }
@@ -818,7 +827,9 @@ NP* QSim::photon_launch_generate(unsigned num_photon, unsigned type )
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon, "QSim::photon_launch_generate:num_photon") ; 
+    const char* label = "QSim::photon_launch_generate:num_photon" ; 
+
+    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon, label ) ; 
     QU::device_memset<sphoton>(d_photon, 0, num_photon); 
 
     unsigned threads_per_block = 512 ;  
@@ -829,7 +840,7 @@ NP* QSim::photon_launch_generate(unsigned num_photon, unsigned type )
     NP* p = NP::Make<float>(num_photon, 4, 4); 
     sphoton* photon = (sphoton*)p->bytes() ; 
 
-    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon ); 
+    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon, label ); 
 
     return p ; 
 }
@@ -850,14 +861,16 @@ void QSim::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned t
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    sphoton* d_photon = QU::UploadArray<sphoton>(photon, num_photon );  
+    const char* label_0 = "QSim::photon_launch_mutate/d_photon" ; 
+    sphoton* d_photon = QU::UploadArray<sphoton>(photon, num_photon, label_0 );  
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
     QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
 
-    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon ); 
+    const char* label_1 = "QSim::photon_launch_mutate" ; 
+    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon, label_1 ); 
 }
  
  
@@ -903,7 +916,8 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     int num_photon = event->getNumPhoton(); 
     assert( num_photon == num_p ); 
 
-    quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd );  
+    const char* label = "QSim::mock_propagate/d_prd" ; 
+    quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
     // prd non-standard so appropriate to upload here 
 
     int rc = event->setGenstep(); 
@@ -943,14 +957,16 @@ NP* QSim::boundary_lookup_all(unsigned width, unsigned height )
 
     configureLaunch(width, height ); 
 
-    quad* d_lookup = QU::device_alloc<quad>(num_lookup, "QSim::boundary_lookup_all:num_lookup" ) ; 
+    const char* label = "QSim::boundary_lookup_all:num_lookup" ; 
+
+    quad* d_lookup = QU::device_alloc<quad>(num_lookup, label ) ; 
     QSim_boundary_lookup_all(numBlocks, threadsPerBlock, d_sim, d_lookup, width, height );  
 
     assert( height % 8 == 0 );  
     unsigned num_bnd = height/8 ;   
 
     NP* l = NP::Make<float>( num_bnd, 4, 2, width, 4 ); 
-    QU::copy_device_to_host_and_free<quad>( (quad*)l->bytes(), d_lookup, num_lookup ); 
+    QU::copy_device_to_host_and_free<quad>( (quad*)l->bytes(), d_lookup, num_lookup, label ); 
 
     LOG(LEVEL) << "]" ; 
 
@@ -976,14 +992,16 @@ NP* QSim::boundary_lookup_line( float* domain, unsigned num_lookup, unsigned lin
 
     QU::copy_host_to_device<float>( d_domain, domain, num_lookup ); 
 
-    quad* d_lookup = QU::device_alloc<quad>(num_lookup, "QSim::boundary_lookup_line:num_lookup") ; 
+    const char* label = "QSim::boundary_lookup_line:num_lookup" ; 
+
+    quad* d_lookup = QU::device_alloc<quad>(num_lookup, label ) ; 
 
     QSim_boundary_lookup_line(numBlocks, threadsPerBlock, d_sim, d_lookup, d_domain, num_lookup, line, k );  
 
 
     NP* l = NP::Make<float>( num_lookup, 4 ); 
 
-    QU::copy_device_to_host_and_free<quad>( (quad*)l->bytes(), d_lookup, num_lookup ); 
+    QU::copy_device_to_host_and_free<quad>( (quad*)l->bytes(), d_lookup, num_lookup, label  ); 
 
     QU::device_free<float>( d_domain ); 
 
@@ -1090,7 +1108,9 @@ void QSim::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_wid
     T* d_domain = QU::device_alloc<T>(domain_width, "QSim::prop_lookup_onebyone:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width ); 
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup, "QSim::prop_lookup_onebyone:num_lookup") ; 
+    const char* label = "QSim::prop_lookup_onebyone:num_lookup" ; 
+
+    T* d_lookup = QU::device_alloc<T>(num_lookup, label ) ; 
 
     // separate launches for each pid
     for(unsigned ipid=0 ; ipid < num_pids ; ipid++)
@@ -1099,7 +1119,7 @@ void QSim::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_wid
         QSim_prop_lookup_one<T>(numBlocks, threadsPerBlock, d_sim, d_lookup, d_domain, domain_width, num_pids, pid, ipid );  
     }
 
-    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup ); 
+    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup, label  ); 
 
     QU::device_free<T>( d_domain ); 
 
@@ -1135,7 +1155,9 @@ void QSim::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned wid
     //const float * c_sample = sample; 
     quad2* d_sample = QU::device_alloc<quad2>(size, "QSim::multifilm_lookup_all:size" ) ;
     
-    quad2* d_result = QU::device_alloc<quad2>(size, "QSim::multifilm_lookup_all:size") ;
+    const char* label = "QSim::multifilm_lookup_all:size" ; 
+
+    quad2* d_result = QU::device_alloc<quad2>(size, label ) ;
     LOG(LEVEL)
        <<" copy_host_to_device<quad2>( d_sample, sample , size) before";
     QU::copy_host_to_device<quad2>( d_sample, sample , size);
@@ -1143,7 +1165,7 @@ void QSim::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned wid
        <<" copy_host_to_device<quad2>( d_sample, sample , size) after";
 
     QSim_multifilm_lookup_all(numBlocks, threadsPerBlock, d_sim, d_sample, d_result, width, height );  
-    QU::copy_device_to_host_and_free<quad2>( result , d_result , size); 
+    QU::copy_device_to_host_and_free<quad2>( result , d_result , size, label ); 
     QU::device_free<quad2>(d_sample);
     
     cudaDeviceSynchronize();

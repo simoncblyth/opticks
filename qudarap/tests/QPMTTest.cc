@@ -51,6 +51,7 @@ Find some lpmtid with lpmtcat == 0
 
 #include "ssys.h"
 #include "NPX.h"
+#include "NPFold.h"
 #include "QPMT.hh"
 
 template<typename T>
@@ -63,30 +64,14 @@ struct QPMTTest
     const char* lpmtid_list ; 
     NP* lpmtid ; 
     NP* energy_eV_domain ; 
+    int num_mct ; 
     NP* mct_domain ; 
-
-    NP* lpmtcat_rindex ; 
-    NP* lpmtcat_qeshape ; 
-    NP* lpmtcat_stackspec ; 
-
-    NP* lpmtid_stackspec ; 
-    NP* lpmtid_ART ; 
-    NP* lpmtid_ARTE ; 
-
-    // HMM: switch to NPFold ? 
 
 
     QPMTTest(const QPMT<T>& qpmt ); 
 
-    void lpmtcat_rindex_test(); 
-    void lpmtcat_qeshape_test(); 
-    void lpmtcat_stackspec_test(); 
+    NPFold* make_qscan(); 
 
-    void lpmtid_stackspec_test(); 
-    void lpmtid_ART_test(); 
-    void lpmtid_ARTE_test(); 
-
-    void save(const char* base) const ; 
 };
 
 template<typename T>
@@ -96,68 +81,32 @@ QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612) 
     lpmtid(NPX::FromString<int>(lpmtid_list,',')), 
     energy_eV_domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
-    mct_domain(NP::Linspace<T>(-1.0, 1.0, 180+1 )),
-    lpmtcat_rindex(nullptr),
-    lpmtcat_qeshape(nullptr),
-    lpmtcat_stackspec(nullptr),
-    lpmtid_stackspec(nullptr),
-    lpmtid_ART(nullptr),
-    lpmtid_ARTE(nullptr)
-
+    num_mct(ssys::getenvint("NUM_MCT",181)),
+    mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))
 {
 }
-
-template<typename T>
-void QPMTTest<T>::lpmtcat_rindex_test()
-{
-    lpmtcat_rindex = qpmt.lpmtcat_rindex(energy_eV_domain);   
-}
-template<typename T>
-void QPMTTest<T>::lpmtcat_qeshape_test()
-{
-    lpmtcat_qeshape = qpmt.lpmtcat_qeshape(energy_eV_domain);   
-}
-template<typename T>
-void QPMTTest<T>::lpmtcat_stackspec_test()
-{
-    lpmtcat_stackspec = qpmt.lpmtcat_stackspec(energy_eV_domain);   
-}
-
 
 
 template<typename T>
-void QPMTTest<T>::lpmtid_stackspec_test()
+NPFold* QPMTTest<T>::make_qscan()
 {
-    lpmtid_stackspec = qpmt.lpmtid_stackspec(energy_eV_domain, lpmtid);   
+    NPFold* qscan = new NPFold ; 
+
+    qscan->add("energy_eV_domain", energy_eV_domain ) ; 
+    qscan->add("mct_domain", mct_domain ) ; 
+    qscan->add("lpmtid", lpmtid ) ; 
+
+    qscan->add("lpmtcat_rindex", qpmt.lpmtcat_rindex(energy_eV_domain) ) ; 
+    qscan->add("lpmtcat_qeshape", qpmt.lpmtcat_qeshape(energy_eV_domain) ) ; 
+    //qscan->add("lpmtcat_stackspec", qpmt.lpmtcat_stackspec(energy_eV_domain) ) ; 
+    //qscan->add("lpmtid_stackspec", qpmt.lpmtid_stackspec(energy_eV_domain) ) ; 
+
+    qscan->add("lpmtid_ART", qpmt.lpmtid_ART(mct_domain, lpmtid) ) ; 
+    qscan->add("lpmtid_ARTE", qpmt.lpmtid_ARTE(mct_domain, lpmtid) ) ; 
+
+    return qscan ; 
 }
 
-template<typename T>
-void QPMTTest<T>::lpmtid_ART_test()
-{
-    lpmtid_ART = qpmt.lpmtid_ART(mct_domain, lpmtid);   
-}
-template<typename T>
-void QPMTTest<T>::lpmtid_ARTE_test()
-{
-    lpmtid_ARTE = qpmt.lpmtid_ARTE(mct_domain, lpmtid);   
-}
-
-
-
-template<typename T>
-void QPMTTest<T>::save(const char* base) const 
-{
-    qpmt.save(base) ; 
-    energy_eV_domain->save(base, "energy_eV_domain.npy"); 
-    mct_domain->save(base, "mct_domain.npy"); 
-    lpmtid->save(base, "lpmtid.npy"); 
-    if(lpmtcat_rindex) lpmtcat_rindex->save(base, "lpmtcat_rindex.npy" ); 
-    if(lpmtcat_qeshape) lpmtcat_qeshape->save(base, "lpmtcat_qeshape.npy" ); 
-    if(lpmtcat_stackspec) lpmtcat_stackspec->save(base, "lpmtcat_stackspec.npy" ); 
-    if(lpmtid_stackspec) lpmtid_stackspec->save(base, "lpmtid_stackspec.npy" ); 
-    if(lpmtid_ART) lpmtid_ART->save(base, "lpmtid_ART.npy" ); 
-    if(lpmtid_ARTE) lpmtid_ARTE->save(base, "lpmtid_ARTE.npy" ); 
-}
 
 
 #include <cuda_runtime.h>
@@ -198,25 +147,17 @@ int main(int argc, char** argv)
     const NP* lcqs = pmt->lcqs ; 
 #endif
 
-    QPMT<float> qpmt(rindex, thickness, qeshape, lcqs ) ; 
-    std::cout << qpmt.desc() << std::endl ; 
+    QPMT<float> qp(rindex, thickness, qeshape, lcqs ) ; 
+    std::cout << qp.desc() << std::endl ; 
 
-    QPMTTest<float> t(qpmt); 
+    NPFold* qpf = qp.get_fold(); 
+    qpf->save("$FOLD/qpmt"); 
 
-    /*
-    t.lpmtcat_rindex_test(); 
-    t.lpmtcat_qeshape_test(); 
-    t.lpmtcat_stackspec_test(); 
-
-    t.lpmtid_stackspec_test(); 
-    t.lpmtid_ART_test(); 
-    t.lpmtid_ARTE_test(); 
-    */
-
-    t.lpmtid_ART_test(); 
+    QPMTTest<float> qpt(qp); 
+    NPFold* qscan = qpt.make_qscan(); 
  
     cudaDeviceSynchronize();
-    t.save("$FOLD");  
+    qscan->save("$FOLD/qscan");  
 
     return 0 ; 
 }

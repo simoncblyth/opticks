@@ -145,10 +145,25 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
     F spec[16] ; 
     get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
 
+    // DEBUG: CHECK INTERMEDIATE SPEC
+    //for(int i=0 ; i < 16 ; i++ ) art16[i] = spec[i]  ; 
+    //for(int i=0 ; i < 16 ; i++ ) art16[i] = energy_eV  ; 
+
     Stack<F,4> stack(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, spec, 16u );
     const F* stack_art = stack.art.cdata() ; 
 
     for(int i=0 ; i < 16 ; i++ ) art16[i] = stack_art[i] ; 
+
+    /*
+    // DEBUG: CHECK INPUTS
+    for(int i=0 ; i < 16 ; i++ ) art16[i] = 0.f ; 
+    art16[0] = lpmtid ; 
+    art16[1] = wavelength_nm ;
+    art16[2] = minus_cos_theta ; 
+    art16[3] = dot_pol_cross_mom_nrm ; 
+    art16[4] = energy_eV ;  
+    */
+
 }
 
 

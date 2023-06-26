@@ -43,6 +43,7 @@ if [ "${arg/build}" != "$arg" ]; then
            -g -std=c++11 -lstdc++ \
            -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
+    echo $BASH_SOURCE : build OK 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then

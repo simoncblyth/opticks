@@ -104,7 +104,7 @@ QCerenkov::QCerenkov(const char* fold_ )
     tex(nullptr),
     look(nullptr),
     cerenkov(MakeInstance()),
-    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1))
+    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1, "QCerenkov::QCerenkov/d_cerenkov.1"))
 {
     init(); 
 }
@@ -119,7 +119,7 @@ QCerenkov::QCerenkov()
     tex(nullptr),
     look(nullptr),
     cerenkov(MakeInstance()),
-    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1))
+    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1,"QCerenkov::QCerenkov/d_cerenkov.0"))
 {
     init(); 
 }

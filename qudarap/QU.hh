@@ -22,7 +22,7 @@ struct QUDARAP_API QU
     static std::string rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset );
 
     template <typename T>
-    static T* UploadArray(const T* array, unsigned num_items ) ;    
+    static T* UploadArray(const T* array, unsigned num_items, const char* label ) ;    
 
     template <typename T>
     static T* DownloadArray(const T* array, unsigned num_items ) ;    
@@ -54,7 +54,7 @@ struct QUDARAP_API QU
     static int copy_device_to_host( T* h, T* d,  unsigned num_items);
 
     template <typename T>
-    static void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
+    static void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items, const char* label );
 
     template <typename T>
     static void copy_host_to_device( T* d, const T* h,  unsigned num_items);

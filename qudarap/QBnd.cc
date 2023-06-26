@@ -72,7 +72,7 @@ QBnd::QBnd(const NP* buf)
     sbn(new SBnd(src)),
     tex(MakeBoundaryTex(src)),
     bnd(MakeInstance(tex, buf->names)),
-    d_bnd(QU::UploadArray<qbnd>(bnd,1))
+    d_bnd(QU::UploadArray<qbnd>(bnd,1,"QBnd::QBnd/d_bnd"))
 {
     INSTANCE = this ; 
 } 

@@ -46,7 +46,7 @@ void QBase::init()
 {
     INSTANCE = this ; 
     LOG(LEVEL) << "[ QU::UploadArray " ; 
-    d_base = QU::UploadArray<qbase>(base,1) ; 
+    d_base = QU::UploadArray<qbase>(base,1, "QBase::init/d_base") ; 
     LOG(LEVEL) << "] QU::UploadArray : takes ~0.25-0.3s : appearing in analog timings as it is first GPU contact " ; 
 }
 

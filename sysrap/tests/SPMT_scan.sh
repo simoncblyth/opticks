@@ -4,7 +4,7 @@ SPMT_scan.sh
 ==============
 
 HUH getting nan again with N_MCT=900 N_SPOL=2 scan.
-Cannot reproduce the issue, added np.isnan checks
+Cannot reproduce the nan issue, added np.isnan checks
 to keep lookout for this. 
 
 EOU

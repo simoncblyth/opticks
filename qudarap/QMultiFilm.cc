@@ -58,7 +58,7 @@ void QMultiFilm::uploadMultifilmlut()
         multifilm->nnvt_highqe_meta[i]= tex_nnvt_highqe[i]->d_meta ;
         multifilm->hama_meta[i]       = tex_hama[i]       ->d_meta ; 
     }
-    d_multifilm = QU::UploadArray<qmultifilm>(multifilm, 1 );
+    d_multifilm = QU::UploadArray<qmultifilm>(multifilm, 1,"QMultiFilm::uploadMultifilmlut" );
 }
 
 

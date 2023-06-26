@@ -18,6 +18,67 @@ QPMT::interpolate
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
+
+
+
+
+/**
+QPMT::init
+------------
+
+1. populate hostside qpmt.h instance with device side pointers 
+2. upload the hostside qpmt.h instance to GPU
+
+**/
+
+
+template<typename T>
+inline void QPMT<T>::init()
+{
+    const int& ni = qpmt<T>::NUM_CAT ; 
+    const int& nj = qpmt<T>::NUM_LAYR ; 
+    const int& nk = qpmt<T>::NUM_PROP ; 
+
+    assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
+    assert( src_thickness->has_shape(ni, nj, 1 )); 
+
+    pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
+    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;  
+
+    init_thickness(); 
+    init_lcqs(); 
+
+    d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u, "QPMT::init/d_pmt" ) ;  
+    // getting above line to link required template instanciation at tail of qpmt.h 
+}
+
+template<typename T>
+inline void QPMT<T>::init_thickness()
+{
+    const char* label = "QPMT::init_thickness/d_thickness" ; 
+    T* d_thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values(), label ); ; 
+    pmt->thickness = d_thickness ; 
+}
+
+template<typename T>
+inline void QPMT<T>::init_lcqs()
+{
+    LOG(LEVEL) 
+       << " src_lcqs " << ( src_lcqs ? src_lcqs->sstr() : "-" )
+       << " lcqs " << ( lcqs ? lcqs->sstr() : "-" )
+       ;
+
+    const char* label = "QPMT::init_lcqs/d_lcqs" ; 
+    T* d_lcqs = lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values(), label) : nullptr ; 
+    pmt->lcqs = d_lcqs ; 
+    pmt->i_lcqs = (int*)d_lcqs ;   // HMM: would cause issues with T=double  
+}
+
+
+
+
+
+
 // NB these cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
@@ -48,7 +109,6 @@ extern void QPMT_lpmtid(
 template<typename T>
 void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) const 
 {
-
     assert( domain->shape.size() == 1 && domain->shape[0] > 0 ); 
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_domain_1 = 0 ; 
@@ -86,8 +146,8 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
     lpmtcat_check(etype, domain, lookup) ; 
     unsigned num_lookup = lookup->num_values() ; 
 
-    const T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), num_domain ) ; 
-
+    const char* label_0 = "QPMT::lpmtcat_/d_domain" ; 
+    const T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), num_domain, label_0 ) ; 
 
     LOG(LEVEL) 
         << " etype " << etype 
@@ -106,7 +166,8 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
     
     QPMT_lpmtcat(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
 
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup );
+    const char* label_1 = "QPMT::lpmtcat_" ; 
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label_1 );
     cudaDeviceSynchronize();  
 
     return lookup ; 
@@ -120,23 +181,48 @@ NP* QPMT<T>::lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
     unsigned num_lpmtid = lpmtid->shape[0] ; 
 
     NP* lookup = MakeLookup_lpmtid(etype, num_domain, num_lpmtid ); 
-
     unsigned num_lookup = lookup->num_values() ; 
+
+    LOG(LEVEL) 
+        << " etype " << etype 
+        << " domain " << domain->sstr()
+        << " lpmtid " << lpmtid->sstr()
+        << " num_domain " << num_domain 
+        << " num_lpmtid " << num_lpmtid 
+        << " lookup " << lookup->sstr()
+        << " num_lookup " << num_lookup 
+        ;
+
     T* h_lookup = lookup->values<T>() ; 
     T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::lpmtid::d_lookup") ;
  
     assert( lpmtid->uifc == 'i' && lpmtid->ebyte == 4 ); 
 
-    const T*   d_domain = QU::UploadArray<T>(   domain->cvalues<T>(), num_domain ) ; 
-    const int* d_lpmtid = QU::UploadArray<int>( lpmtid->cvalues<int>(), num_lpmtid ) ; 
+    const char* label_0 = "QPMT::lpmtid_/d_domain" ; 
+    const T*   d_domain = QU::UploadArray<T>(domain->cvalues<T>(),num_domain,label_0) ; 
+
+    const char* label_1 = "QPMT::lpmtid_/d_lpmtid" ; 
+    const int* d_lpmtid = QU::UploadArray<int>( lpmtid->cvalues<int>(), num_lpmtid, label_1 ) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u ); 
     
-    QPMT_lpmtid(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain, d_lpmtid, num_lpmtid );
+    QPMT_lpmtid(
+        numBlocks, 
+        threadsPerBlock, 
+        d_pmt, 
+        etype, 
+        d_lookup, 
+        d_domain, 
+        num_domain, 
+        d_lpmtid, 
+        num_lpmtid );
 
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup );
+    cudaDeviceSynchronize();  
+
+    const char* label = "QPMT::lpmtid_" ; 
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );
     cudaDeviceSynchronize();  
 
     return lookup ; 

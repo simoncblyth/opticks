@@ -70,7 +70,7 @@ qdebug* QDebug::MakeInstance()   // static
 QDebug::QDebug()
     :
     dbg(MakeInstance()),
-    d_dbg(QU::UploadArray<qdebug>(dbg, 1 ))
+    d_dbg(QU::UploadArray<qdebug>(dbg, 1, "QDebug::QDebug/d_dbg" ))
 {
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 

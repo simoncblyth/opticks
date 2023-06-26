@@ -99,36 +99,41 @@ Allocate on device and copy from host to device
 **/
 
 template <typename T>
-T* QU::UploadArray(const T* array, unsigned num_items ) // static
+T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // static
 {
+    LOG(LEVEL) 
+       << " num_items " << num_items
+       << " label " << ( label ? label : "-" )
+       ;
+
     T* d_array = nullptr ; 
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_items*sizeof(T) )); 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, sizeof(T)*num_items, cudaMemcpyHostToDevice )); 
     return d_array ; 
 }
 
-template float*         QU::UploadArray<float>(const float* array, unsigned num_items) ;
-template double*        QU::UploadArray<double>(const double* array, unsigned num_items) ;
-template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items) ;
-template int*           QU::UploadArray<int>(const int* array, unsigned num_items) ;
-template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items) ;
-template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items) ;
-template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items) ;
-template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
-template qcurandstate*  QU::UploadArray<qcurandstate>(const qcurandstate* array, unsigned num_items) ;
-template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items) ;
-template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
-template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
-template qpmt<float>*   QU::UploadArray<qpmt<float>>(const qpmt<float>* array, unsigned num_items) ;
-template qpmt<double>*  QU::UploadArray<qpmt<double>>(const qpmt<double>* array, unsigned num_items) ;
-template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items) ;
-template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
-template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items) ;
-template sevent*        QU::UploadArray<sevent>(const sevent* array, unsigned num_items) ;
-template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
-template qscint*        QU::UploadArray<qscint>(const qscint* array, unsigned num_items) ;
-template qcerenkov*     QU::UploadArray<qcerenkov>(const qcerenkov* array, unsigned num_items) ;
-template qbase*         QU::UploadArray<qbase>(const qbase* array, unsigned num_items) ;
+template float*         QU::UploadArray<float>(const float* array, unsigned num_items, const char* label ) ;
+template double*        QU::UploadArray<double>(const double* array, unsigned num_items, const char* label) ;
+template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items, const char* label) ;
+template int*           QU::UploadArray<int>(const int* array, unsigned num_items, const char* label) ;
+template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items, const char* label) ;
+template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items, const char* label) ;
+template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items, const char* label) ;
+template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items, const char* label) ;
+template qcurandstate*  QU::UploadArray<qcurandstate>(const qcurandstate* array, unsigned num_items, const char* label) ;
+template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items, const char* label) ;
+template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items, const char* label) ;
+template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items, const char* label) ;
+template qpmt<float>*   QU::UploadArray<qpmt<float>>(const qpmt<float>* array, unsigned num_items, const char* label) ;
+template qpmt<double>*  QU::UploadArray<qpmt<double>>(const qpmt<double>* array, unsigned num_items, const char* label) ;
+template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items, const char* label) ;
+template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items, const char* label) ;
+template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items, const char* label) ;
+template sevent*        QU::UploadArray<sevent>(const sevent* array, unsigned num_items, const char* label) ;
+template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items, const char* label) ;
+template qscint*        QU::UploadArray<qscint>(const qscint* array, unsigned num_items, const char* label) ;
+template qcerenkov*     QU::UploadArray<qcerenkov>(const qcerenkov* array, unsigned num_items, const char* label) ;
+template qbase*         QU::UploadArray<qbase>(const qbase* array, unsigned num_items, const char* label) ;
 
 
 /**
@@ -368,34 +373,59 @@ QU::copy_device_to_host_and_free
 * Summary: when you get cudaMemcpy copyback errors look for infinite loops in kernels
 * Find the problem by doing things like adding loop limiters
 
+
+Normally the problem is not related to the copying but rather some issue
+with the kernel being called. So start by doing "binary" search
+simplifying the kernel to find where the issue is.  
+
 When a kernel misbehaves, such as going into an infinite loop for example, the
-connection to the GPU might timeout. Subsequent attempts to copyback arrays that 
+connection to the GPU will typically timeout. Subsequent attempts to copyback arrays that 
 should have been written by the kernel would then fail during the cudaMemcpy 
 presumably because the CUDA context is lost as a result of the timeout making 
 all the device pointers invalid. The copyback is the usual thing to fail because 
 it is the normally the first thing to use the stale pointers after the kernel launch. 
 
+Debug tip 1 : check kernel inputs 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Instead of doing whatever computation in the kernel, 
+populate the output array with the inputs. 
+This checks both having expected inputs at the kernel 
+and the copy out machinery. 
+
+Debug tip 2 : check intermediate kernel results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Intead of doing the full kernel calculation, check the 
+first half of the calculation by copying intermediate 
+results into the output array. 
+
+
 **/
 
 template<typename T>
-void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)
+void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items, const char* label)
 {
     size_t size = num_items*sizeof(T) ; 
-    LOG(info) << "copy " << num_items << " sizeof(T) " << sizeof(T) ;  
+    LOG(info) 
+        << "copy " << num_items 
+        << " sizeof(T) " << sizeof(T) 
+        << " label " << ( label ? label : "-" )
+        ;  
 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d) ); 
 }
 
 
-template void QU::copy_device_to_host_and_free<float>(  float* h, float* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<double>( double* h, double* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<quad>( quad* h, quad* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<quad2>( quad2* h, quad2* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<sstate>( sstate* h, sstate* d,  unsigned num_items);
+template void QU::copy_device_to_host_and_free<float>(  float* h, float* d,  unsigned num_items, const char* label );
+template void QU::copy_device_to_host_and_free<double>( double* h, double* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<quad>( quad* h, quad* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<quad2>( quad2* h, quad2* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<sphoton>( sphoton* h, sphoton* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<sstate>( sstate* h, sstate* d,  unsigned num_items, const char* label);
 
 
 

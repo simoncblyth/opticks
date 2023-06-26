@@ -210,11 +210,11 @@ __global__ void _QPMT_lpmtid_ART(
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
 
-    // HMM: get all these from domain ? 
+    //printf("//_QPMT_lpmtid_ART ix %d num_lpmtid %d \n", ix, num_lpmtid ); 
+
     F minus_cos_theta = domain[ix] ; 
     F wavelength_nm = 440.f ; 
     F dot_pol_cross_mom_nrm = 0.f ;    
-
 
     const int& ni = num_lpmtid ; 
     const int& nj = domain_width ; 
@@ -282,6 +282,8 @@ template <typename F> extern void QPMT_lpmtid(
     unsigned num_lpmtid
 )
 {
+    printf("//QPMT_lpmtid etype %d domain_width %d num_lpmtid %d \n", etype, domain_width, num_lpmtid); 
+
     if( etype == qpmt<F>::LPMTID_STACKSPEC )
     {
          _QPMT_lpmtid_stackspec<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width, lpmtid, num_lpmtid ) ; 

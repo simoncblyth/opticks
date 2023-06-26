@@ -239,7 +239,7 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     MPT(            PMTSimParamData ? PMTSimParamData->get_subfold("MPT")   : nullptr ),
     CONST(          PMTSimParamData ? PMTSimParamData->get_subfold("CONST") : nullptr ),
     QEshape(        PMTSimParamData ? PMTSimParamData->get_subfold("QEshape") : nullptr ),
-    v_lcqs(N_LPMT),
+    v_lcqs(NUM_LPMT),
     rindex(nullptr), 
     qeshape(nullptr),
     lcqs(nullptr),
@@ -375,94 +375,46 @@ inline void SPMT::init_qeshape()
 SPMT::init_lcqs
 -----------------
 
-jcv _PMTSimParamData::
+1. get lpmtCat, qeScale arrays from PMTSimParamData
+2. check appropriate sizes with info for all NUM_LPMT 17612 
+3. populate v_lcqs vector of LCQS struct holding int:lc 
+   "local 0/1/2 pmtcat" and float:qeScale
+4. convert the vector of LCQS struct into lcqs array 
 
-    217     NP* pmtID = NPX::ArrayFromVec<int, int>(data.m_all_pmtID) ;
-    218     NP* qeScale = NPX::ArrayFromVec<double,double>(data.m_all_pmtID_qe_scale) ;
-    219     NP* lpmtCat = NPX::ArrayFromMap<int, int>(data.m_map_pmt_category) ;
-    220     NP* pmtCat = NPX::ArrayFromDiscoMap<int>(data.m_all_pmt_category) ;
-    221     NP* pmtCatVec = NPX::ArrayFromVec<int, int>(data.m_all_pmt_catvec) ;
-
-jcv PMTSimParamSvc::
-
-     613 bool PMTSimParamSvc::init_PMTParamSvc()
-     614 {
-     615     int num_lpmt = m_PMTParamSvc->get_NTotal_CD_LPMT() ;
-     616     for(int i = 0 ; i < num_lpmt ; i++)
-     617     {
-     618         int pmtid = kOFFSET_CD_LPMT + i ;
-     619         int cat = m_PMTParamSvc->getPMTCategory(pmtid) ;
-     620         m_map_pmt_category[i] = cat ;
-     621     }
-     622 
-     623     m_PmtTotal_WP = m_PMTParamSvc->get_NTotal_WP_LPMT() ;
-     624 
-     625 
-     626    return true;
-     627 
-     628 }
-
-     /// m_map_pmt_category is a pointless map : contiguous key and base key 0 
-
-::
-
-    In [7]: t.lpmtCat.shape
-    Out[7]: (17612, 1)
-
-    In [8]: t.lpmtCat[:,0]
-    Out[8]: array([1, 1, 3, 1, 3, ..., 1, 1, 1, 1, 1], dtype=int32)
-
-    In [9]: np.unique( t.lpmtCat[:,0], return_counts=True )
-    Out[9]: (array([0, 1, 3], dtype=int32), array([2720, 4997, 9895]))
-
-    In [16]: t.qeScale[17600:17612,0]
-    Out[16]: array([1.083, 1.024, 1.095, 1.033, 1.097, 1.031, 1.052, 1.041, 1.048, 1.044, 1.037, 1.076])
-
-    In [17]: t.qeScale[17612:,0]
-    Out[17]: array([1.099, 1.099, 1.099, 1.099, 1.099, ..., 1.032, 0.975, 1.005, 1.005, 1.044])
-
-    In [18]: t.qeScale.shape
-    Out[18]: (45612, 1)
-
-    In [19]: 17612+2400+25600
-    Out[19]: 45612
-
-    In [22]: np.all( t.qeScale[17612:17612+2400,0] == t.qeScale[17612,0] )
-    Out[22]: True
-
-    In [24]: t.qeScale[17612+2400:17612+2400+25600].T
-    Out[24]: array([[1.022, 1.049, 0.982, 0.977, 1.008, ..., 1.032, 0.975, 1.005, 1.005, 1.044]])
-
-
-
-    In [7]: t.lcqs[:,1].view(np.float32)
-    Out[7]: array([1.025, 1.062, 1.401, 1.036, 1.286, ..., 1.041, 1.048, 1.044, 1.037, 1.076], dtype=float32)
+NB EVEN WHEN REDUCING ACTIVE LPMT STILL NEED TO CARRY FORWARD 
+INFO FOR ALL 17612 LPMT
 
 **/
-
 
 inline void SPMT::init_lcqs()
 {
     const NP* lpmtCat = PMTSimParamData->get("lpmtCat") ;   
     assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 ); 
-    //assert( lpmtCat->shape[0] == N_LPMT );  // not true with reduced N_LPMT via envvar 
+    assert( lpmtCat->shape[0] == NUM_LPMT ); 
     const int* lpmtCat_v = lpmtCat->cvalues<int>(); 
 
     const NP* qeScale = PMTSimParamData->get("qeScale") ;   
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 ); 
-    assert( qeScale->shape[0] > N_LPMT );  // HUH ?
+    assert( qeScale->shape[0] >= NUM_LPMT );  // SPMT, WPMT info after LPMT 
     const double* qeScale_v = qeScale->cvalues<double>(); 
+
+    for(int i=0 ; i < NUM_LPMT ; i++ )
+    {
+        v_lcqs[i] = { TranslateCat(lpmtCat_v[i]), float(qeScale_v[i]) } ; 
+    }
+    lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ; 
 
     //if(VERBOSE) 
     std::cout 
        << "SPMT::init_lcqs" << std::endl 
+       << " NUM_LPMT " << NUM_LPMT << std::endl 
        << " lpmtCat " << ( lpmtCat ? lpmtCat->sstr() : "-" ) << std::endl
        << " qeScale " << ( qeScale ? qeScale->sstr() : "-" ) << std::endl
+       << " lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl 
        ; 
 
-    for(int i=0 ; i < N_LPMT ; i++ ) v_lcqs[i] = { TranslateCat(lpmtCat_v[i]), float(qeScale_v[i]) } ; 
-    lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ; 
-
+    assert( lcqs->shape[0] == NUM_LPMT );
+    assert( NUM_LPMT == 17612 );  
 }
 
 /**
@@ -922,13 +874,6 @@ inline NPFold* SPMT::get_ARTE() const
     NP* comp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
     NP* art   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
 
-    /*
-    NP* nstack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
-    NP* nll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ; 
-    NP* ncomp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
-    NP* nart   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
-    */
-
     annotate(art); 
 
     assert( sizeof(pd.stack)/sizeof(float) == 44*4 ); 
@@ -943,13 +888,6 @@ inline NPFold* SPMT::get_ARTE() const
     fold->add("comp", comp);
     fold->add("art", art);
 
-    /*
-    fold->add("nstack", nstack);
-    fold->add("nll", nll);
-    fold->add("ncomp", ncomp);
-    fold->add("nart", nart);
-    */
- 
     std::cout << "SPMT::get_ARTE args " << args->sstr() << std::endl ; 
 
     float* args_v = args->values<float>(); 
@@ -961,13 +899,6 @@ inline NPFold* SPMT::get_ARTE() const
     float* ll_v    = ll->values<float>() ; 
     float* comp_v  = comp->values<float>() ; 
     float* art_v   = art->values<float>() ; 
-
-    /*
-    float* nstack_v = nstack->values<float>() ; 
-    float* nll_v    = nll->values<float>() ; 
-    float* ncomp_v  = ncomp->values<float>() ; 
-    float* nart_v   = nart->values<float>() ; 
-    */
 
     for(int i=0 ; i < ni ; i++)
     {

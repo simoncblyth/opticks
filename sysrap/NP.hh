@@ -77,6 +77,8 @@ struct NP
 
 
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
+    template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); 
+
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  ); 
 
     template<typename T> static NP* Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );
@@ -575,7 +577,7 @@ template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
 
 template <typename T> 
-inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
+inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload )  // static
 {
     assert( x1 > x0 ); 
     assert( nx > 0 ) ; 
@@ -591,6 +593,33 @@ inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload )
     }
     return a ; 
 }
+
+/**
+NP::MinusCosThetaLinearAngle
+------------------------------
+
+Returns array of nx values from -1 to 1 whwre the 
+spacing is calculated to make the steps linear 
+in the angle. For example with nx=181 the -cos(theta)
+values will be provided at integer degrees from 0. to 180. 
+
+**/
+
+template<typename T> NP* NP::MinusCosThetaLinearAngle(int nx) // static
+{
+    NP* a = NP::Make<T>(nx); 
+    T* aa = a->values<T>(); 
+    for(int i=0 ; i < nx ; i++) 
+    {
+        T frac = T(i)/T(nx-1) ;
+        T theta = frac*M_PI ; 
+        aa[i] = -cos(theta) ; 
+    }    
+    return a ; 
+}
+
+
+
 
 /**
 NP::MakeDiv

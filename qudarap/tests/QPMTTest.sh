@@ -21,6 +21,7 @@ arg=${1:-$defarg}
 
 logging(){
    export QPMT=INFO
+   export QU=INFO
 }
 logging
 

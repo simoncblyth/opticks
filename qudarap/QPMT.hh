@@ -15,7 +15,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 **/
 
 #include "plog/Severity.h"
-#include "NP.hh"
+#include "NPFold.h"
 
 #include "qpmt.h"
 #include "QProp.hh"
@@ -46,13 +46,16 @@ struct QUDARAP_API QPMT
     qpmt<T>* pmt ; 
     qpmt<T>* d_pmt ; 
 
-    QPMT( const NP* rindex, const NP* thickness, const NP* qeshape, const NP* lcqs );     
+    QPMT(const NP* rindex, const NP* thickness, const NP* qeshape, const NP* lcqs);     
 
     void init(); 
+    void init_thickness(); 
+    void init_lcqs(); 
+
     static NP* MakeLookup_lpmtcat(int etype, unsigned num_domain ); 
     static NP* MakeLookup_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid ); 
 
-    void save(const char* base) const ; 
+    NPFold* get_fold() const ; 
     std::string desc() const ; 
 
     // .cc 
@@ -106,39 +109,6 @@ inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_, const NP* qeshape
     init(); 
 }
 
-/**
-QPMT::init
-------------
-
-1. populate hostside qpmt.h instance with device side pointers 
-2. upload the hostside qpmt.h instance to GPU
-
-**/
-
-
-template<typename T>
-inline void QPMT<T>::init()
-{
-    const int& ni = qpmt<T>::NUM_CAT ; 
-    const int& nj = qpmt<T>::NUM_LAYR ; 
-    const int& nk = qpmt<T>::NUM_PROP ; 
-
-    assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
-    assert( src_thickness->has_shape(ni, nj, 1 )); 
-
-    pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
-    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;  
-
-    T* d_thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values() ); ; 
-    pmt->thickness = d_thickness ; 
-
-    T* d_lcqs =  lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values() ) : nullptr ; 
-    pmt->lcqs = d_lcqs ; 
-    pmt->i_lcqs = (int*)d_lcqs ; 
-
-    d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u ) ;  
-    // getting above line to link required template instanciation at tail of qpmt.h 
-}
 
 
 template<typename T>
@@ -176,23 +146,24 @@ inline NP* QPMT<T>::MakeLookup_lpmtid(int etype, unsigned num_domain, unsigned n
 
 
 template<typename T>
-inline void QPMT<T>::save(const char* base) const 
+inline NPFold* QPMT<T>::get_fold() const 
 {
-    src_thickness->save(base, "src_thickness.npy" );  
-    src_rindex->save(base, "src_rindex.npy" );  
-    src_qeshape->save(base, "src_qeshape.npy" );  
-    if(src_lcqs) src_lcqs->save(base, "src_lcqs.npy" );  
+    NPFold* fold = new NPFold ; 
 
-    thickness->save(base, "thickness.npy" );  
-    qeshape->save(base, "qeshape.npy" );  
-    if(lcqs) lcqs->save(base, "lcqs.npy" );  
+    fold->add("src_thickness", src_thickness ); 
+    fold->add("src_rindex", src_rindex ); 
+    fold->add("src_qeshape", src_qeshape ); 
+    fold->add("src_lcqs", src_lcqs ); 
 
-    rindex3->save(base, "rindex3.npy" );  
-    rindex->save(base, "rindex.npy" );  
-    rindex_prop->a->save(base, "rindex_prop_a.npy" );  
+    fold->add("thickness", thickness ); 
+    fold->add("rindex", rindex ); 
+    fold->add("qeshape", qeshape ); 
+    fold->add("lcqs", lcqs ); 
 
-    qeshape_prop->a->save(base, "qeshape_prop_a.npy" );  
+    fold->add("rindex_prop_a", rindex_prop->a ); 
+    fold->add("qeshape_prop_a", qeshape_prop->a ); 
 
+    return fold ; 
 }
 
 template<typename T>
