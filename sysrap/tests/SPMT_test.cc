@@ -8,8 +8,8 @@ int main(int argc, char** argv)
     std::cout << pmt->desc() << std::endl ; 
     pmt->save("$SFOLD"); 
 
-    NPFold* f = pmt->get_ARTE(); 
-    f->save("$SFOLD/get_ARTE/sscan") ; 
+    NPFold* f = pmt->make_sscan(); 
+    f->save("$SFOLD/sscan") ; 
 
     return 0 ; 
 }

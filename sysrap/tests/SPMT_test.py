@@ -70,7 +70,7 @@ if __name__ == '__main__':
     s = Fold.Load("$SFOLD", symbol="s")
     print(repr(s))
 
-    f = Fold.Load("$SFOLD/get_ARTE/xscan", symbol="f")
+    f = Fold.Load("$SFOLD/sscan", symbol="f")
     print(repr(f))
 
     compare_stack_vs_stackNormal(f)
@@ -87,38 +87,26 @@ if __name__ == '__main__':
     comp = f.comp.squeeze() 
     art = f.art.squeeze() 
 
-    #nstack = f.nstack.squeeze()
-    #nll = f.nll.squeeze() 
-    #ncomp = f.ncomp.squeeze() 
-    #nart = f.nart.squeeze() 
 
+    As   = art[...,0,0]
+    Ap   = art[...,0,1]
+    Aa   = art[...,0,2]
+    A_   = art[...,0,3]
 
-    
+    Rs   = art[...,1,0]
+    Rp   = art[...,1,1]
+    Ra   = art[...,1,2]
+    R_   = art[...,1,3]
 
+    Ts   = art[...,2,0]
+    Tp   = art[...,2,1]
+    Ta   = art[...,2,2]
+    T_   = art[...,2,3]
 
-    #_art = nart  # corresponds to just the -1 point in the mct scan  
-    _art = art
-
-
-    As   = _art[...,0,0]
-    Ap   = _art[...,0,1]
-    Aa   = _art[...,0,2]
-    A_   = _art[...,0,3]
-
-    Rs   = _art[...,1,0]
-    Rp   = _art[...,1,1]
-    Ra   = _art[...,1,2]
-    R_   = _art[...,1,3]
-
-    Ts   = _art[...,2,0]
-    Tp   = _art[...,2,1]
-    Ta   = _art[...,2,2]
-    T_   = _art[...,2,3]
-
-    SF     = _art[...,3,0]
-    wl     = _art[...,3,1] 
-    ARTa   = _art[...,3,2]
-    mct    = _art[...,3,3]
+    SF     = art[...,3,0]
+    wl     = art[...,3,1] 
+    ARTa   = art[...,3,2]
+    mct    = art[...,3,3]
 
 
     pmtid = 0 

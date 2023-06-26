@@ -173,7 +173,7 @@ struct SPMT
 
 
     void get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
-    NPFold* get_ARTE() const ; 
+    NPFold* make_sscan() const ; 
 #endif
 
     void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
@@ -843,15 +843,14 @@ inline void SPMT::annotate( NP* art ) const
 
 
 /**
-SPMT::get_ARTE
-----------------
+SPMT::make_sscan
+-----------------
 
 Scan over (pmtid, wl, mct, spol )
 
-
 **/
 
-inline NPFold* SPMT::get_ARTE() const 
+inline NPFold* SPMT::make_sscan() const 
 {
     NPFold* fold = new NPFold ; 
     SPMTData pd ; 
@@ -861,7 +860,7 @@ inline NPFold* SPMT::get_ARTE() const
     int nk = N_MCT ; 
     int nl = N_SPOL ; 
 
-    std::cout << "[ SPMT::get_ARTE "  << std::endl ; 
+    std::cout << "[ SPMT::make_sscan "  << std::endl ; 
 
     NP* args  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
     NP* ARTE  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
@@ -1168,34 +1167,22 @@ inline NPFold* SPMT::make_testfold() const
 {
     std::cout << "[ SPMT::make_testfold " << std::endl ; 
 
-    NP* _get_pmtcat = get_pmtcat() ; 
-    NP* _get_qescale = get_qescale() ;
-    NP* _get_lcqs = get_lcqs() ;
-    NP* _get_pmtcat_qe = get_pmtcat_qe() ; 
-    NP* _get_pmtid_qe = get_pmtid_qe() ; 
-    NP* _get_rindex = get_rindex() ; 
-    NP* _get_qeshape = get_qeshape() ; 
-    NP* _get_thickness_nm = get_thickness_nm() ; 
-    NP* _get_stackspec = get_stackspec() ; 
-
-
     NPFold* f = new NPFold ; 
 
 /*
-    f->add("get_pmtcat", _get_pmtcat ); 
-    f->add("get_qescale", _get_qescale ); 
-    f->add("get_lcqs", _get_lcqs ); 
-    f->add("get_pmtcat_qe", _get_pmtcat_qe ); 
-    f->add("get_pmtid_qe", _get_pmtid_qe ); 
-    f->add("get_rindex", _get_rindex ); 
-    f->add("get_qeshape", _get_qeshape ); 
-    f->add("get_thickness_nm", _get_thickness_nm ); 
-    f->add("get_stackspec", _get_stackspec ); 
+    f->add("get_pmtcat", get_pmtcat() ); 
+    f->add("get_qescale", get_qescale() ); 
+    f->add("get_lcqs", get_lcqs() ); 
+    f->add("get_pmtcat_qe", get_pmtcat_qe() ); 
+    f->add("get_pmtid_qe", get_pmtid_qe() ); 
+    f->add("get_rindex", get_rindex() ); 
+    f->add("get_qeshape", get_qeshape() ); 
+    f->add("get_thickness_nm", get_thickness_nm() ); 
+    f->add("get_stackspec", get_stackspec() ); 
 */
 
 #ifdef WITH_CUSTOM4
-    NPFold* _get_ARTE = get_ARTE() ;  
-    f->add_subfold("get_ARTE", _get_ARTE ); 
+    f->add_subfold("sscan", make_sscan() ); 
 #endif
 
     std::cout << "] SPMT::make_testfold " << std::endl ; 
