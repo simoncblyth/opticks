@@ -6,10 +6,11 @@ int main(int argc, char** argv)
     if(pmt == nullptr) return 1 ; 
 
     std::cout << pmt->desc() << std::endl ; 
-    pmt->save("$SFOLD"); 
+    NPFold* spmt = pmt->get_fold(); 
+    spmt->save("$SFOLD/spmt"); 
 
-    NPFold* f = pmt->make_sscan(); 
-    f->save("$SFOLD/sscan") ; 
+    NPFold* sscan = pmt->make_sscan(); 
+    sscan->save("$SFOLD/sscan") ; 
 
     return 0 ; 
 }

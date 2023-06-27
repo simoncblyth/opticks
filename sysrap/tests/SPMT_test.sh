@@ -3,9 +3,18 @@ usage(){ cat << EOU
 SPMT_test.sh
 ===============
 
-::
+For AOI scanning use::
 
-    N_MCT=900 N_SPOL=2  ./SPMT_test.sh  
+    ./SPMT_scan.sh 
+
+That does something like::
+
+    N_MCT=900 N_SPOL=1  ./SPMT_test.sh  
+
+Note dependency on GEOM envvar, which is used 
+to SPMT::Load the PMT info NPFold from::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt
 
 EOU
 }

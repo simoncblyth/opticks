@@ -67,7 +67,7 @@ def check_nan(f):
 
 
 if __name__ == '__main__':
-    s = Fold.Load("$SFOLD", symbol="s")
+    s = Fold.Load("$SFOLD/spmt", symbol="s")
     print(repr(s))
 
     f = Fold.Load("$SFOLD/sscan", symbol="f")

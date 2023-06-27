@@ -109,16 +109,16 @@ struct SPMT
     static constexpr int NUM_LAYER = 4 ;  // (Pyrex, ARC, PHC, Vacuum) 
     static constexpr int NUM_PROP = 2 ;   // (RINDEX,KINDEX) real and imaginary parts of the index
 
-    static constexpr const int NUM_LPMT = 17612 ;  // N_LPMT must be less than or equal to NUM_LPMT  
+    static constexpr const int NUM_LPMT = 17612 ; 
 
     // below three can be changed via envvars
-    static const int N_LPMT ;  
+    static const int N_LPMT ;   // N_LPMT must be less than or equal to NUM_LPMT
     static const int N_MCT ;     
     static const int N_SPOL ; 
  
     static constexpr const char* QEshape_PMTCAT_NAMES = "QEshape_NNVT.npy,QEshape_R12860.npy,QEshape_NNVT_HiQE.npy" ; 
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
-    // because there is no consistent naming convention have to do these dirty things 
+    // because there is no consistently used naming convention have to do these dirty things 
 
     static SPMT* Load(const char* path=nullptr); 
     SPMT(const NPFold* jpmt); 
@@ -130,7 +130,8 @@ struct SPMT
     static int TranslateCat(int lpmtcat); 
 
     std::string desc() const ; 
-    void save(const char* dir) const ; 
+
+    NPFold* get_fold() const ; 
 
     float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
@@ -171,7 +172,6 @@ struct SPMT
 
     void annotate( NP* art ) const ; 
 
-
     void get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
     NPFold* make_sscan() const ; 
 #endif
@@ -206,11 +206,11 @@ struct SPMT
 
     std::vector<const NP*> v_rindex ;
     std::vector<const NP*> v_qeshape ; 
-    std::vector<LCQS>      v_lcqs ; ; 
+    std::vector<LCQS>      v_lcqs ;    // NUM_LPMT  
 
     NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, N_EN, 2:[energy,value] )
     NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
-    NP* lcqs ;      // (N_LPMT, 2)
+    NP* lcqs ;      // (NUM_LPMT, 2)
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value ) 
 
     float* tt ; 
@@ -249,6 +249,21 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     init(); 
 }
 
+
+/**
+SPMT::init
+-----------
+
+Converts PMTSimParamData NPFold into arrays ready 
+for upload to GPU (by QPMT) with various changes:
+
+1. only 3 LPMT categories selected
+2. energy domain scaled to use eV
+3. layer thickness changed to use nm
+4. arrays are narrowed from double to float 
+
+**/
+
 inline void SPMT::init()
 {
     init_rindex_thickness(); 
@@ -260,9 +275,11 @@ inline void SPMT::init()
 SPMT::init_rindex_thickness
 ------------------------------
 
-Note similarity to JPMT::init_rindex_thickness
-
-Notice stupid vacuum rindex::
+1. this is similar to JPMT::init_rindex_thickness
+2. energy domain is scaled to use eV units prior to narrowing from double to float 
+3. thickness values are scaled to use nm, not m  
+4. originally there was dumb vacuum rindex with (4,2) for a constant.
+   Fixed this to (2,2) with NP::MakePCopyNotDumb. Before the fix::
 
     In [19]: t.rindex[0,3]
     Out[19]: 
@@ -272,9 +289,6 @@ Notice stupid vacuum rindex::
             [15.5 ,  1.  ],
             [ 0.  ,  0.  ],
             [ 0.  ,  0.  ],
-
-
-Fixed this with NP::MakePCopyNotDumb
 
 **/
 
@@ -339,7 +353,10 @@ inline void SPMT::init_rindex_thickness()
 SPMT::init_qeshape
 -------------------
 
-NB selects just the relevant 3 PMTCAT 
+1. selects just the LPMT relevant 3 PMTCAT 
+2. energy domain scaled to use eV whilst still in double 
+   and before combination to avoid stomping on last column int 
+   (HMM NP::Combine may have special handling to preserve that now?)
 
 **/
 
@@ -360,9 +377,6 @@ inline void SPMT::init_qeshape()
 
         NP* vc = v->copy(); 
         vc->pscale(1e6, 0);  // MeV to eV 
-        // domain scale whilst still double and before combination
-        // to avoid stomping on last column int 
-
         NP* vn = NP::MakeWithType<float>(vc);   // narrow 
 
         v_qeshape.push_back(vn) ;
@@ -381,8 +395,7 @@ SPMT::init_lcqs
    "local 0/1/2 pmtcat" and float:qeScale
 4. convert the vector of LCQS struct into lcqs array 
 
-NB EVEN WHEN REDUCING ACTIVE LPMT STILL NEED TO CARRY FORWARD 
-INFO FOR ALL 17612 LPMT
+NB EVEN WHEN TESTING WITH REDUCED N_LPMT STILL NEED TO INCLUDE INFO FOR ALL 17612 LPMT
 
 **/
 
@@ -420,7 +433,6 @@ inline void SPMT::init_lcqs()
 /**
 SPMT::TranslateCat : 0,1,3 => 0,1,2 
 --------------------------------------
-
 
 ::
 
@@ -485,15 +497,16 @@ inline std::string SPMT::desc() const
     return str ; 
 }
 
-inline void SPMT::save(const char* dir) const
+inline NPFold* SPMT::get_fold() const 
 {
-    std::cout << "[ SPMT::save " << dir << std::endl ; 
-    rindex->save(dir, "rindex.npy"); 
-    thickness->save(dir, "thickness.npy"); 
-    qeshape->save(dir, "qeshape.npy"); 
-    lcqs->save(dir, "lcqs.npy"); 
-    std::cout << "] SPMT::save " << dir << std::endl ; 
+    NPFold* fold = new NPFold ; 
+    fold->add("rindex", rindex) ; 
+    fold->add("thickness", thickness) ;
+    fold->add("qeshape", qeshape) ;
+    fold->add("lcqs", lcqs) ;
+    return fold ; 
 }
+
 
 inline float SPMT::get_frac(int i, int ni) const
 {
@@ -830,15 +843,14 @@ HUH : its not happening any more ?  HMM something flakey waiting to strike.
 
 inline void SPMT::annotate( NP* art ) const 
 {
-    std::string title = "SPMT.title"  ; 
-    std::string brief = "SPMT.brief" ; 
-    std::string name = "SPMT.name" ; 
-    std::string label = "SPMT.label" ; 
+    std::vector<std::pair<std::string, std::string>> kvs ; 
 
-    art->set_meta<std::string>("title", title ); 
-    art->set_meta<std::string>("brief", brief ); 
-    art->set_meta<std::string>("name", name ); 
-    art->set_meta<std::string>("label", label ); 
+    kvs["title"] = "SPMT.title" ; 
+    kvs["brief"] = "SPMT.brief" ; 
+    kvs["name"] = "SPMT.name" ; 
+    kvs["label"] = "SPMT.label" ; 
+
+    art->set_meta_kv<std::string>(kvs); 
 }
 
 
@@ -869,9 +881,15 @@ inline NPFold* SPMT::make_sscan() const
 
     // Make_ allows arbitrary dimensions     
     NP* stack = NP::Make_<float>(ni, nj, nk, nl, 44, 4 ); 
-    NP* ll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ; 
-    NP* comp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ; 
-    NP* art   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ; 
+    NP* ll    = NP::Make_<float>(ni, nj, nk, nl, 4, 4, 4, 2) ;  // (32,4)   4*4*2 = 32
+    NP* comp  = NP::Make_<float>(ni, nj, nk, nl, 1, 4, 4, 2) ;  // ( 8,4)   4*2 =  8  
+    NP* art   = NP::Make_<float>(ni, nj, nk, nl, 4, 4) ;        // ( 4,4)
+                                                                // --------
+                                                                //  (44,4) 
+
+    // stack is composed of (ll,comp,art) but its not easy to use because 
+    // those have different shapes, hence also split them into separate 
+    // (ll,comp,art) arrays for easier querying 
 
     annotate(art); 
 
@@ -939,13 +957,6 @@ inline NPFold* SPMT::make_sscan() const
                   memcpy( ll_v    + ll_idx,     pd.stack.ll[0].cdata(),  sizeof(float)*32*4 ); 
                   memcpy( comp_v  + comp_idx,   pd.stack.comp.cdata(),   sizeof(float)*8*4 ); 
                   memcpy( art_v   + art_idx,    pd.stack.art.cdata(),    sizeof(float)*4*4 ); 
-
-                  /*
-                  memcpy( nstack_v + stack_idx,  pd.stackNormal.cdata(),        sizeof(float)*44*4 ); 
-                  memcpy( nll_v    + ll_idx,     pd.stackNormal.ll[0].cdata(),  sizeof(float)*32*4 ); 
-                  memcpy( ncomp_v  + comp_idx,   pd.stackNormal.comp.cdata(),   sizeof(float)*8*4 ); 
-                  memcpy( nart_v   + art_idx,    pd.stackNormal.art.cdata(),    sizeof(float)*4*4 ); 
-                  */
 
                   if(VERBOSE) std::cout 
                       << "SPMT::get_ARTE"
