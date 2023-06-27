@@ -40,10 +40,10 @@ class QPMTTest(object):
         self.w0 = w0
         self.w1 = w1
 
-    def present_lpmtcat_qeshape(self):
+    def present_qeshape(self):
         t = self.t 
         se = self.se  
-        e = t.energy_eV_domain
+        e = t.qscan.energy_eV_domain
         a = t.qscan.lpmtcat_qeshape
         if a is None: return
 
@@ -71,8 +71,8 @@ class QPMTTest(object):
             ax.plot( e[se], v[se], label=label ) 
             ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left 
 
-            p_e = t.qeshape[i,:prop_ni[i],0] 
-            p_v = t.qeshape[i,:prop_ni[i],1] 
+            p_e = t.qpmt.qeshape[i,:prop_ni[i],0] 
+            p_v = t.qpmt.qeshape[i,:prop_ni[i],1] 
             p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
 
             ax.scatter( p_e[p_s], p_v[p_s] )
@@ -80,7 +80,7 @@ class QPMTTest(object):
         fig.show()
 
 
-    def present_lpmtcat_rindex(self):
+    def present_rindex(self):
         t = self.t 
 
         a = t.qscan.lpmtcat_rindex
@@ -88,9 +88,9 @@ class QPMTTest(object):
         assert len(a.shape) == 4, a.shape 
 
         se = self.se  
-        e = t.energy_eV_domain
+        e = t.qscan.energy_eV_domain
 
-        prop_ni = t.rindex[:,-1,-1].view(np.int32)  
+        prop_ni = t.qpmt.rindex[:,-1,-1].view(np.int32)  
         v0,v1 = -0.1,3.2
 
         ni = a.shape[0]  # pmtcat
@@ -126,8 +126,8 @@ class QPMTTest(object):
                     ax.plot( e[se], v[se], label=label ) 
 
                     p_ni = prop_ni[iprop]
-                    p_e = t.rindex[iprop,:p_ni,0] 
-                    p_v = t.rindex[iprop,:p_ni,1] 
+                    p_e = t.qpmt.rindex[iprop,:p_ni,0] 
+                    p_v = t.qpmt.rindex[iprop,:p_ni,1] 
 
                     p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
                     ax.scatter( p_e[p_s], p_v[p_s] )
@@ -138,19 +138,21 @@ class QPMTTest(object):
         fig.show()
 
 
-    def present_lpmtid_ART(self):
+    def present_art(self):
         """
-
-        In [5]: t.lpmtid_ART.shape
-        Out[5]: (9, 181, 4, 4)
+        In [2]: t.qscan.art.shape
+        Out[2]: (9, 181, 4, 4)
         """
 
         t = self.t 
         lpmtid = t.qscan.lpmtid[PMTIDX] 
 
-        a = t.qscan.lpmtid_ART
-        if a is None: return 
-        art = a[PMTIDX]
+        all_art = t.qscan.art
+        if all_art is None: 
+            print("present_art : ABORT t.qscan.art is None ") 
+            return 
+        pass
+        art = all_art[PMTIDX]
         mct = t.qscan.mct_domain
 
         consistent = len(art) == len(mct)
@@ -212,11 +214,7 @@ class QPMTTest(object):
         ax.legend()
         fig.show()
             
-
-
-
-
-        
+       
 
     def check_lpmtcat(self):
         t = self.t 
@@ -244,17 +242,17 @@ if __name__ == '__main__':
     print(repr(t))
     pt = QPMTTest(t)
 
-    #plot = "lpmtcat_rindex"
-    #plot = "lpmtcat_qeshape"
-    plot = "lpmtid_ART"
+    #plot = "rindex"
+    #plot = "qeshape"
+    plot = "art"
 
     PLOT = os.environ.get("PLOT", plot )
-    if PLOT == "lpmtcat_rindex":
-        pt.present_lpmtcat_rindex()
-    elif PLOT == "lpmtcat_qeshape":
-        pt.present_lpmtcat_qeshape()
-    elif PLOT == "lpmtid_ART":
-        pt.present_lpmtid_ART()
+    if PLOT == "rindex":
+        pt.present_rindex()
+    elif PLOT == "qeshape":
+        pt.present_qeshape()
+    elif PLOT == "art":
+        pt.present_art()
     else:
         print("PLOT:%s not handled " % PLOT)
     pass

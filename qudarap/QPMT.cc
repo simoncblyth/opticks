@@ -18,10 +18,6 @@ QPMT::interpolate
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
-
-
-
-
 /**
 QPMT::init
 ------------
@@ -35,9 +31,9 @@ QPMT::init
 template<typename T>
 inline void QPMT<T>::init()
 {
-    const int& ni = qpmt<T>::NUM_CAT ; 
-    const int& nj = qpmt<T>::NUM_LAYR ; 
-    const int& nk = qpmt<T>::NUM_PROP ; 
+    const int& ni = qpmt_NUM_CAT ; 
+    const int& nj = qpmt_NUM_LAYR ; 
+    const int& nk = qpmt_NUM_PROP ; 
 
     assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
     assert( src_thickness->has_shape(ni, nj, 1 )); 
@@ -75,10 +71,6 @@ inline void QPMT<T>::init_lcqs()
 }
 
 
-
-
-
-
 // NB these cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
@@ -93,7 +85,7 @@ extern void QPMT_lpmtcat(
 );
 
 template <typename T>
-extern void QPMT_lpmtid(
+extern void QPMT_mct_lpmtid(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
@@ -113,11 +105,11 @@ void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) cons
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_domain_1 = 0 ; 
 
-    if( etype == qpmt<T>::RINDEX || etype == qpmt<T>::QESHAPE )
+    if( etype == qpmt_RINDEX || etype == qpmt_QESHAPE )
     {
         num_domain_1 = lookup->shape[lookup->shape.size()-1] ; 
     } 
-    else if ( etype == qpmt<T>::LPMTCAT_STACKSPEC )
+    else if ( etype == qpmt_CATSPEC )
     {
         num_domain_1 = lookup->shape[lookup->shape.size()-3] ;  // (4,4) payload
     }
@@ -174,8 +166,14 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 }
 
 
+/**
+QPMT::mct_lpmtid_
+-------------------
+
+**/
+
 template<typename T>
-NP* QPMT<T>::lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const 
+NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const 
 {
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_lpmtid = lpmtid->shape[0] ; 
@@ -198,17 +196,17 @@ NP* QPMT<T>::lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
  
     assert( lpmtid->uifc == 'i' && lpmtid->ebyte == 4 ); 
 
-    const char* label_0 = "QPMT::lpmtid_/d_domain" ; 
+    const char* label_0 = "QPMT::mct_lpmtid_/d_domain" ; 
     const T*   d_domain = QU::UploadArray<T>(domain->cvalues<T>(),num_domain,label_0) ; 
 
-    const char* label_1 = "QPMT::lpmtid_/d_lpmtid" ; 
+    const char* label_1 = "QPMT::mct_lpmtid_/d_lpmtid" ; 
     const int* d_lpmtid = QU::UploadArray<int>( lpmtid->cvalues<int>(), num_lpmtid, label_1 ) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u ); 
     
-    QPMT_lpmtid(
+    QPMT_mct_lpmtid(
         numBlocks, 
         threadsPerBlock, 
         d_pmt, 
@@ -221,14 +219,12 @@ NP* QPMT<T>::lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     cudaDeviceSynchronize();  
 
-    const char* label = "QPMT::lpmtid_" ; 
+    const char* label = "QPMT::mct_lpmtid_" ; 
     QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );
     cudaDeviceSynchronize();  
 
     return lookup ; 
 }
-
-
 
 // found the below can live in header, when headeronly 
 //#pragma GCC diagnostic push

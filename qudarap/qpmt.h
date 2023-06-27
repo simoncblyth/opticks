@@ -29,12 +29,30 @@ template <typename T> struct qprop ;
 #include "C4MultiLayrStack.h"
 #endif
 
+enum { 
+  qpmt_RINDEX,
+  qpmt_KINDEX,
+  qpmt_QESHAPE,
+  qpmt_CATSPEC,
+  qpmt_SPEC,
+  qpmt_ART,
+  qpmt_COMP,
+  qpmt_LL,
+  qpmt_ARTE
+};  
+
+enum {
+  qpmt_NUM_CAT = 3, 
+  qpmt_NUM_LAYR = 4, 
+  qpmt_NUM_PROP = 2, 
+  qpmt_NUM_LPMT = 17612 
+} ;  
+ 
+
 template<typename F>
 struct qpmt
 {
-    enum { NUM_CAT = 3, NUM_LAYR = 4, NUM_PROP = 2, NUM_LPMT = 17612 } ;  
     enum { L0, L1, L2, L3 } ; 
-    enum { RINDEX, KINDEX, QESHAPE, LPMTCAT_STACKSPEC, LPMTID_STACKSPEC, LPMTID_ART, LPMTID_ARTE } ; 
 
     static constexpr const F hc_eVnm = 1239.84198433200208455673  ;
     static constexpr const F zero = 0. ; 
@@ -58,8 +76,11 @@ struct qpmt
     QPMT_METHOD void get_lpmtid_stackspec(  F* spec16, int pmtid,  F energy_eV ) const ; 
 
 #ifdef WITH_CUSTOM4
-    QPMT_METHOD void get_lpmtid_ART( F* art16, int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
-    QPMT_METHOD void get_lpmtid_ARTE(F* arte4, int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
+    QPMT_METHOD void get_lpmtid_SPEC(F* spec_16 , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
+    QPMT_METHOD void get_lpmtid_LL(  F* ll_128  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
+    QPMT_METHOD void get_lpmtid_COMP(F* comp_32 , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
+    QPMT_METHOD void get_lpmtid_ART( F* art_16  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
+    QPMT_METHOD void get_lpmtid_ARTE(F* arte_4  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
 #endif
 
 #endif
@@ -70,26 +91,26 @@ struct qpmt
 template<typename F>
 inline QPMT_METHOD int qpmt<F>::get_lpmtcat( int pmtid ) const 
 {
-    return pmtid < NUM_LPMT && pmtid > -1 ? i_lcqs[pmtid*2+0] : -2 ; 
+    return pmtid < qpmt_NUM_LPMT && pmtid > -1 ? i_lcqs[pmtid*2+0] : -2 ; 
 }
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_qescale( int pmtid ) const 
 {
-    return pmtid < NUM_LPMT && pmtid > -1 ? lcqs[pmtid*2+1] : -2.f ; 
+    return pmtid < qpmt_NUM_LPMT && pmtid > -1 ? lcqs[pmtid*2+1] : -2.f ; 
 }
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_lpmtcat_qe( int lpmtcat, F energy_eV ) const 
 {
-    return lpmtcat > -1 && lpmtcat < NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ; 
+    return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ; 
 }
 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F energy_eV ) const 
 {
-    const unsigned idx = lpmtcat*NUM_LAYR*NUM_PROP ; 
-    const unsigned idx0 = idx + L0*NUM_PROP ; 
-    const unsigned idx1 = idx + L1*NUM_PROP ; 
-    const unsigned idx2 = idx + L2*NUM_PROP ; 
+    const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP ; 
+    const unsigned idx0 = idx + L0*qpmt_NUM_PROP ; 
+    const unsigned idx1 = idx + L1*qpmt_NUM_PROP ; 
+    const unsigned idx2 = idx + L2*qpmt_NUM_PROP ; 
 
     spec[0*4+0] = rindex_prop->interpolate( idx0+0u, energy_eV ); 
     spec[0*4+1] = zero ; 
@@ -97,11 +118,11 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F 
 
     spec[1*4+0] = rindex_prop->interpolate( idx1+0u, energy_eV ); 
     spec[1*4+1] = rindex_prop->interpolate( idx1+1u, energy_eV ); 
-    spec[1*4+2] = thickness[lpmtcat*NUM_LAYR+L1] ;
+    spec[1*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L1] ;
 
     spec[2*4+0] = rindex_prop->interpolate( idx2+0u, energy_eV ); 
     spec[2*4+1] = rindex_prop->interpolate( idx2+1u, energy_eV ); 
-    spec[2*4+2] = thickness[lpmtcat*NUM_LAYR+L2] ;
+    spec[2*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L2] ;
 
     spec[3*4+0] = one ;  // Vacuum RINDEX
     spec[3*4+1] = zero ; 
@@ -131,10 +152,9 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
 
 #ifdef WITH_CUSTOM4
 
-
 template<typename F>
-inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
-    F* art16,   
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_SPEC(
+    F* spec_16,   
     int lpmtid, 
     F wavelength_nm, 
     F minus_cos_theta, 
@@ -145,27 +165,64 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
     F spec[16] ; 
     get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
 
-    // DEBUG: CHECK INTERMEDIATE SPEC
-    //for(int i=0 ; i < 16 ; i++ ) art16[i] = spec[i]  ; 
-    //for(int i=0 ; i < 16 ; i++ ) art16[i] = energy_eV  ; 
+    for(int i=0 ; i < 16 ; i++ ) spec_16[i] = spec[i] ; 
+}
+
+template<typename F>
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_LL(
+    F* ll_128,   
+    int lpmtid, 
+    F wavelength_nm, 
+    F minus_cos_theta, 
+    F dot_pol_cross_mom_nrm ) const 
+{
+    const F energy_eV = hc_eVnm/wavelength_nm ; 
+
+    F spec[16] ; 
+    get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
+
+    Stack<F,4> stack(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, spec, 16u );
+    const F* stack_ll = stack.ll[0].cdata() ; 
+
+    for(int i=0 ; i < 128 ; i++ ) ll_128[i] = stack_ll[i] ; 
+}
+
+template<typename F>
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_COMP(
+    F* comp_32,   
+    int lpmtid, 
+    F wavelength_nm, 
+    F minus_cos_theta, 
+    F dot_pol_cross_mom_nrm ) const 
+{
+    const F energy_eV = hc_eVnm/wavelength_nm ; 
+
+    F spec[16] ; 
+    get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
+
+    Stack<F,4> stack(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, spec, 16u );
+    const F* stack_comp = stack.comp.cdata() ; 
+    for(int i=0 ; i < 32 ; i++ ) comp_32[i] = stack_comp[i] ; 
+}
+
+template<typename F>
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
+    F* art_16,   
+    int lpmtid, 
+    F wavelength_nm, 
+    F minus_cos_theta, 
+    F dot_pol_cross_mom_nrm ) const 
+{
+    const F energy_eV = hc_eVnm/wavelength_nm ; 
+
+    F spec[16] ; 
+    get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
 
     Stack<F,4> stack(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, spec, 16u );
     const F* stack_art = stack.art.cdata() ; 
 
-    for(int i=0 ; i < 16 ; i++ ) art16[i] = stack_art[i] ; 
-
-    /*
-    // DEBUG: CHECK INPUTS
-    for(int i=0 ; i < 16 ; i++ ) art16[i] = 0.f ; 
-    art16[0] = lpmtid ; 
-    art16[1] = wavelength_nm ;
-    art16[2] = minus_cos_theta ; 
-    art16[3] = dot_pol_cross_mom_nrm ; 
-    art16[4] = energy_eV ;  
-    */
-
+    for(int i=0 ; i < 16 ; i++ ) art_16[i] = stack_art[i] ; 
 }
-
 
 
 template<typename F>

@@ -63,6 +63,10 @@ struct QPMTTest
 
     const char* lpmtid_list ; 
     NP* lpmtid ; 
+    int num_lpmtid ; 
+    NP* lpmtcat ; 
+    int num_lpmtcat ; 
+
     NP* energy_eV_domain ; 
     int num_mct ; 
     NP* mct_domain ; 
@@ -74,18 +78,29 @@ struct QPMTTest
 
 };
 
+
+/**
+QPMTTest::QPMTTest
+--------------------
+
+np.linspace( 1.55, 15.50, 1550-155+1 )  
+
+**/
+
 template<typename T>
 QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     :
     qpmt(qpmt_),
     lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612) 
     lpmtid(NPX::FromString<int>(lpmtid_list,',')), 
-    energy_eV_domain(NP::Linspace<T>( 1.55, 15.50, 1550-155+1 )), //  np.linspace( 1.55, 15.50, 1550-155+1 )  
-    num_mct(ssys::getenvint("NUM_MCT",181)),
+    num_lpmtid(lpmtid->shape[0]),
+    lpmtcat(NP::Make<int>(num_lpmtid)),
+    num_lpmtcat(qpmt.get_lpmtcat(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)),
+    energy_eV_domain(NP::Linspace<T>(1.55,15.50,1550-155+1)), 
+    num_mct(ssys::getenvint("NUM_MCT",900)),   // 181
     mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))
 {
 }
-
 
 template<typename T>
 NPFold* QPMTTest<T>::make_qscan()
@@ -94,19 +109,21 @@ NPFold* QPMTTest<T>::make_qscan()
 
     qscan->add("energy_eV_domain", energy_eV_domain ) ; 
     qscan->add("mct_domain", mct_domain ) ; 
-    qscan->add("lpmtid", lpmtid ) ; 
+    qscan->add("lpmtid",  lpmtid ) ; 
+    qscan->add("lpmtcat", lpmtcat ) ; 
 
-    qscan->add("lpmtcat_rindex", qpmt.lpmtcat_rindex(energy_eV_domain) ) ; 
-    qscan->add("lpmtcat_qeshape", qpmt.lpmtcat_qeshape(energy_eV_domain) ) ; 
-    //qscan->add("lpmtcat_stackspec", qpmt.lpmtcat_stackspec(energy_eV_domain) ) ; 
-    //qscan->add("lpmtid_stackspec", qpmt.lpmtid_stackspec(energy_eV_domain) ) ; 
+    qscan->add("lpmtcat_rindex",    qpmt.lpmtcat_(qpmt_RINDEX,  energy_eV_domain) ) ; 
+    qscan->add("lpmtcat_qeshape",   qpmt.lpmtcat_(qpmt_QESHAPE, energy_eV_domain) ) ; 
+    qscan->add("lpmtcat_stackspec", qpmt.lpmtcat_(qpmt_CATSPEC, energy_eV_domain) ) ; 
 
-    qscan->add("lpmtid_ART", qpmt.lpmtid_ART(mct_domain, lpmtid) ) ; 
-    qscan->add("lpmtid_ARTE", qpmt.lpmtid_ARTE(mct_domain, lpmtid) ) ; 
+    qscan->add("spec", qpmt.mct_lpmtid_(qpmt_SPEC, mct_domain, lpmtid) ) ; 
+    qscan->add("art" , qpmt.mct_lpmtid_(qpmt_ART , mct_domain, lpmtid) ) ; 
+    qscan->add("arte", qpmt.mct_lpmtid_(qpmt_ARTE, mct_domain, lpmtid) ) ; 
+    qscan->add("comp", qpmt.mct_lpmtid_(qpmt_COMP, mct_domain, lpmtid) ) ; 
+    qscan->add("ll",   qpmt.mct_lpmtid_(qpmt_LL  , mct_domain, lpmtid) ) ; 
 
     return qscan ; 
 }
-
 
 
 #include <cuda_runtime.h>

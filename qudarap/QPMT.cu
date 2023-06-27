@@ -56,9 +56,9 @@ __global__ void _QPMT_lpmtcat_rindex( qpmt<F>* pmt, F* lookup , const F* domain,
     // wierd unsigned/int diff between qpmt.h and here ? to get it to compile fo device
     // switching to enum rather than constexpr const avoids the wierdness
 
-    const int& ni = qpmt<F>::NUM_CAT ; 
-    const int& nj = qpmt<F>::NUM_LAYR ; 
-    const int& nk = qpmt<F>::NUM_PROP ; 
+    const int& ni = qpmt_NUM_CAT ; 
+    const int& nj = qpmt_NUM_LAYR ; 
+    const int& nk = qpmt_NUM_PROP ; 
 
     //printf("//_QPMT_lpmtcat_rindex ni %d nj %d nk %d \n", ni, nj, nk ); 
     // cf the CPU equivalent NP::combined_interp_5
@@ -87,7 +87,7 @@ __global__ void _QPMT_lpmtcat_qeshape( qpmt<F>* pmt, F* lookup , const F* domain
 
     //printf("//_QPMT_lpmtcat_qeshape domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
 
-    const int& ni = qpmt<F>::NUM_CAT ; 
+    const int& ni = qpmt_NUM_CAT ; 
 
     for(int i=0 ; i < ni ; i++)
     {
@@ -108,7 +108,7 @@ __global__ void _QPMT_lpmtcat_stackspec( qpmt<F>* pmt, F* lookup , const F* doma
 
     //printf("//_QPMT_lpmtcat_stackspec domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
 
-    const int& ni = qpmt<F>::NUM_CAT ; 
+    const int& ni = qpmt_NUM_CAT ; 
     const int& nj = domain_width ; 
     const int  nk = 16 ; 
     const int&  j = ix ; 
@@ -134,15 +134,15 @@ template <typename F> extern void QPMT_lpmtcat(
     unsigned domain_width
 )
 {
-    if( etype == qpmt<F>::RINDEX )
+    if( etype == qpmt_RINDEX )
     {
         _QPMT_lpmtcat_rindex<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
     }
-    else if( etype == qpmt<F>::QESHAPE )
+    else if( etype == qpmt_QESHAPE )
     {
         _QPMT_lpmtcat_qeshape<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
     }
-    else if( etype == qpmt<F>::LPMTCAT_STACKSPEC )
+    else if( etype == qpmt_CATSPEC )
     {
         _QPMT_lpmtcat_stackspec<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; 
     }
@@ -198,9 +198,12 @@ __global__ void _QPMT_lpmtid_stackspec(
 
 
 
-template <typename F>
-__global__ void _QPMT_lpmtid_ART( 
+// templated payload size P as it needs to be a compile time constant
+
+template <typename F, int P>
+__global__ void _QPMT_mct_lpmtid( 
     qpmt<F>* pmt, 
+    int etype, 
     F* lookup , 
     const F* domain, 
     unsigned domain_width,
@@ -210,67 +213,50 @@ __global__ void _QPMT_lpmtid_ART(
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
 
-    //printf("//_QPMT_lpmtid_ART ix %d num_lpmtid %d \n", ix, num_lpmtid ); 
+    //printf("//_QPMT_mct_lpmtid ix %d num_lpmtid %d P %d \n", ix, num_lpmtid, P ); 
 
     F minus_cos_theta = domain[ix] ; 
     F wavelength_nm = 440.f ; 
-    F dot_pol_cross_mom_nrm = 0.f ;    
-
-    const int& ni = num_lpmtid ; 
-    const int& nj = domain_width ; 
-
-    const int  nk = 16 ; // 4*4 stack.art payload values  
-    const int&  j = ix ; 
-
-    F art[nk] ;  
-
-    for(int i=0 ; i < ni ; i++)  // over num_lpmtid
-    {
-        int pmtid = lpmtid[i] ; 
-        int index = i*nj*nk + j*nk  ; 
-        pmt->get_lpmtid_ART(art, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
-        for( int k=0 ; k < nk ; k++) lookup[index+k] = art[k] ;  
-    }
-}
-
-
-
-template <typename F>
-__global__ void _QPMT_lpmtid_ARTE( 
-    qpmt<F>* pmt, 
-    F* lookup , 
-    const F* domain, 
-    unsigned domain_width,
-    const int* lpmtid,
-    unsigned num_lpmtid )
-{
-    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
-    if (ix >= domain_width ) return;
-
-    F minus_cos_theta = domain[ix] ; 
-    F wavelength_nm = 440.f ; 
-    F dot_pol_cross_mom_nrm = 0.f ;    
-
+    F dot_pol_cross_mom_nrm = 0.f ; // SPOL zero is pure P polarized 
 
     const int& ni = num_lpmtid ; 
     const int& nj = domain_width ;   // minus_cos_theta values "AOI"
-
-    const int  nk = 4 ; // 4 ARTE payload values  
     const int&  j = ix ; 
 
-    F arte[nk] ;  
+    F payload[P] ;  
 
     for(int i=0 ; i < ni ; i++)  // over num_lpmtid
     {
         int pmtid = lpmtid[i] ; 
-        int index = i*nj*nk + j*nk  ; 
-        pmt->get_lpmtid_ARTE(arte, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
-        for( int k=0 ; k < nk ; k++) lookup[index+k] = arte[k] ;  
+        int index = i*nj*P + j*P  ; 
+
+        if( etype == qpmt_SPEC ) 
+        {
+            pmt->get_lpmtid_SPEC(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+        }
+        else if( etype == qpmt_LL )
+        {
+            pmt->get_lpmtid_LL(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+        }
+        else if( etype == qpmt_COMP )
+        {
+            pmt->get_lpmtid_COMP(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+        }
+        else if( etype == qpmt_ART )
+        {
+            pmt->get_lpmtid_ART(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+        }
+        else if( etype == qpmt_ARTE ) 
+        {
+            pmt->get_lpmtid_ARTE(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+        }
+
+        for( int k=0 ; k < P ; k++) lookup[index+k] = payload[k] ;  
     }
 }
 
 
-template <typename F> extern void QPMT_lpmtid(
+template <typename F> extern void QPMT_mct_lpmtid(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
     qpmt<F>* pmt, 
@@ -282,35 +268,31 @@ template <typename F> extern void QPMT_lpmtid(
     unsigned num_lpmtid
 )
 {
-    printf("//QPMT_lpmtid etype %d domain_width %d num_lpmtid %d \n", etype, domain_width, num_lpmtid); 
+    printf("//QPMT_mct_lpmtid etype %d domain_width %d num_lpmtid %d \n", etype, domain_width, num_lpmtid); 
 
-    if( etype == qpmt<F>::LPMTID_STACKSPEC )
+    switch(etype)
     {
-         _QPMT_lpmtid_stackspec<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width, lpmtid, num_lpmtid ) ; 
-    }
-    else if( etype == qpmt<F>::LPMTID_ART )
-    {
-         _QPMT_lpmtid_ART<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width, lpmtid, num_lpmtid ) ; 
-    }
-    else if( etype == qpmt<F>::LPMTID_ARTE )
-    {
-         _QPMT_lpmtid_ARTE<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width, lpmtid, num_lpmtid ) ; 
-    }
-    else
-    {
-         printf("//QPMT_lpmtid etype unhandled \n"); 
+        case qpmt_SPEC: 
+           _QPMT_mct_lpmtid<F,16><<<numBlocks,threadsPerBlock>>>( 
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ; 
+
+        case qpmt_ART:  
+           _QPMT_mct_lpmtid<F,16><<<numBlocks,threadsPerBlock>>>( 
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ; 
+
+        case qpmt_COMP: 
+           _QPMT_mct_lpmtid<F,32><<<numBlocks,threadsPerBlock>>>( 
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ; 
+
+        case qpmt_LL: 
+           _QPMT_mct_lpmtid<F,128><<<numBlocks,threadsPerBlock>>>( 
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ; 
+
+        case qpmt_ARTE:
+           _QPMT_mct_lpmtid<F,4><<<numBlocks,threadsPerBlock>>>( 
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ; 
     }
 }
 
-template void QPMT_lpmtid(
-   dim3, 
-   dim3, 
-   qpmt<float>*, 
-   int etype, 
-   float*,  
-   const float* , 
-   unsigned,
-   const int*, 
-   unsigned
- ); 
+template void QPMT_mct_lpmtid<float>(   dim3, dim3, qpmt<float>*, int etype, float*,  const float* , unsigned, const int*, unsigned); 
 

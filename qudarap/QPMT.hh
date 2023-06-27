@@ -41,7 +41,7 @@ struct QUDARAP_API QPMT
    
     const NP* thickness ;  
     const NP* lcqs ;  
-
+    const int* i_lcqs ;  // CPU side lpmtid -> lpmtcat 0/1/2
 
     qpmt<T>* pmt ; 
     qpmt<T>* d_pmt ; 
@@ -52,26 +52,19 @@ struct QUDARAP_API QPMT
     void init_thickness(); 
     void init_lcqs(); 
 
-    static NP* MakeLookup_lpmtcat(int etype, unsigned num_domain ); 
-    static NP* MakeLookup_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid ); 
-
     NPFold* get_fold() const ; 
     std::string desc() const ; 
 
+    int  get_lpmtcat( int lpmtid ) const ; 
+    int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
+
+    static NP* MakeLookup_lpmtcat(int etype, unsigned num_domain ); 
+    static NP* MakeLookup_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid ); 
+
     // .cc 
     void lpmtcat_check( int etype, const NP* domain, const NP* lookup) const ; 
-    NP* lpmtcat_( int etype, const NP* domain) const ; 
-    NP* lpmtid_(  int etype, const NP* domain, const NP* lpmtid) const ; 
-
-    // inlines
-    NP* lpmtcat_rindex(const NP* domain) const ; 
-    NP* lpmtcat_qeshape(const NP* domain) const ; 
-    NP* lpmtcat_stackspec( const NP* domain) const ; 
-
-    NP* lpmtid_stackspec( const NP* domain, const NP* lpmtid ) const ; 
-    NP* lpmtid_ART(  const NP* domain, const NP* lpmtid ) const ; 
-    NP* lpmtid_ARTE( const NP* domain, const NP* lpmtid ) const ; 
-
+    NP*  lpmtcat_( int etype, const NP* domain) const ; 
+    NP*  mct_lpmtid_(  int etype, const NP* domain, const NP* lpmtid) const ; 
 
 };
 
@@ -103,46 +96,13 @@ inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_, const NP* qeshape
     qeshape_prop(new QProp<T>(qeshape)),  
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
+    i_lcqs( (int*)lcqs->cvalues<T>() ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
     pmt(new qpmt<T>()),                    // hostside qpmt.h instance 
     d_pmt(nullptr)                         // devices pointer set in init
 {
     init(); 
 }
 
-
-
-template<typename T>
-inline NP* QPMT<T>::MakeLookup_lpmtcat(int etype, unsigned num_domain )   // static
-{
-    const int& ni = qpmt<T>::NUM_CAT ; 
-    const int& nj = qpmt<T>::NUM_LAYR ; 
-    const int& nk = qpmt<T>::NUM_PROP ;  
-    NP* lookup = nullptr ; 
-    switch(etype)
-    {
-       case qpmt<T>::RINDEX:    lookup = NP::Make<T>( ni, nj, nk, num_domain ) ; break ; 
-       case qpmt<T>::QESHAPE:   lookup = NP::Make<T>( ni,         num_domain ) ; break ; 
-       case qpmt<T>::LPMTCAT_STACKSPEC: lookup = NP::Make<T>( ni, num_domain, 4, 4  )  ; break ; 
-    }
-    return lookup ; 
-}
-
-
-template<typename T>
-inline NP* QPMT<T>::MakeLookup_lpmtid(int etype, unsigned num_domain, unsigned num_lpmtid )   // static
-{
-    const int ni = num_lpmtid ; 
-    const int nj = num_domain ;
- 
-    NP* lookup = nullptr ; 
-    switch(etype)
-    {
-       case qpmt<T>::LPMTID_STACKSPEC: lookup = NP::Make<T>( ni, nj, 4, 4  )  ; break ; 
-       case qpmt<T>::LPMTID_ART:       lookup = NP::Make<T>( ni, nj, 4, 4  )  ; break ; 
-       case qpmt<T>::LPMTID_ARTE:      lookup = NP::Make<T>( ni, nj, 4  )     ; break ; 
-    }
-    return lookup ; 
-}
 
 
 template<typename T>
@@ -188,39 +148,84 @@ inline std::string QPMT<T>::desc() const
 }
 
 /**
+QPMT::get_lpmtcat
+------------------
 
-QPMT::lpmtcat_rindex
-QPMT::lpmtcat_qeshape
-QPMT::lpmtcat_stackspec
-
+CPU side lookup of lpmtcat from lpmtid using i_lcqs array. 
 
 **/
 
-
 template<typename T>
-inline NP* QPMT<T>::lpmtcat_rindex(const NP* domain) const { return lpmtcat_(qpmt<T>::RINDEX, domain) ; }
-
-template<typename T>
-inline NP* QPMT<T>::lpmtcat_qeshape(const NP* domain) const { return lpmtcat_(qpmt<T>::QESHAPE, domain) ; }
-
-template<typename T>
-inline NP* QPMT<T>::lpmtcat_stackspec(const NP* domain) const { return lpmtcat_(qpmt<T>::LPMTCAT_STACKSPEC, domain) ; }
-
-
-template<typename T>
-inline NP* QPMT<T>::lpmtid_stackspec(const NP* domain, const NP* lpmtid) const 
-{ 
-    return lpmtid_(qpmt<T>::LPMTID_STACKSPEC, domain, lpmtid) ; 
+inline int QPMT<T>::get_lpmtcat( int lpmtid ) const 
+{
+    assert( lpmtid > -1 && lpmtid < qpmt_NUM_LPMT ); 
+    const int& lpmtcat = i_lcqs[lpmtid*2+0] ; 
+    return lpmtcat ; 
 }
 template<typename T>
-inline NP* QPMT<T>::lpmtid_ART(const NP* domain, const NP* lpmtid) const 
-{ 
-    return lpmtid_(qpmt<T>::LPMTID_ART, domain, lpmtid) ; 
+inline int QPMT<T>::get_lpmtcat( int* lpmtcat_, const int* lpmtid_, int num_lpmtid ) const
+{
+    for(int i=0 ; i < num_lpmtid ; i++)
+    {
+        int lpmtid = lpmtid_[i] ; 
+        int lpmtcat = get_lpmtcat(lpmtid) ; 
+        lpmtcat_[i] = lpmtcat ; 
+    }
+    return num_lpmtid ; 
 }
+
+
+
+
+
+
+
+
+
+
+
+/**
+QPMT::MakeLookup_lpmtcat
+-------------------------
+
+HMM: this is mainly for testing, perhaps put in QPMTTest ? 
+
+**/
+
 template<typename T>
-inline NP* QPMT<T>::lpmtid_ARTE(const NP* domain, const NP* lpmtid) const 
-{ 
-    return lpmtid_(qpmt<T>::LPMTID_ARTE, domain, lpmtid) ; 
+inline NP* QPMT<T>::MakeLookup_lpmtcat(int etype, unsigned num_domain )   // static
+{
+    const int& ni = qpmt_NUM_CAT ; 
+    const int& nj = qpmt_NUM_LAYR ; 
+    const int& nk = qpmt_NUM_PROP ;  
+    NP* lookup = nullptr ; 
+    switch(etype)
+    {
+       case qpmt_RINDEX:  lookup = NP::Make<T>( ni, nj, nk, num_domain ) ; break ; 
+       case qpmt_QESHAPE: lookup = NP::Make<T>( ni,         num_domain ) ; break ; 
+       case qpmt_CATSPEC: lookup = NP::Make<T>( ni, num_domain, 4, 4  )  ; break ; 
+    }
+    return lookup ; 
 }
+
+
+template<typename T>
+inline NP* QPMT<T>::MakeLookup_lpmtid(int etype, unsigned num_domain, unsigned num_lpmtid )   // static
+{
+    const int ni = num_lpmtid ; 
+    const int nj = num_domain ;
+ 
+    NP* lookup = nullptr ; 
+    switch(etype)
+    {
+       case qpmt_SPEC: lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ; 
+       case qpmt_ART:  lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ; 
+       case qpmt_COMP: lookup = NP::Make<T>( ni, nj, 1, 4, 4, 2 )  ; break ; 
+       case qpmt_LL:   lookup = NP::Make<T>( ni, nj, 4, 4, 4, 2 )  ; break ; 
+       case qpmt_ARTE: lookup = NP::Make<T>( ni, nj, 4  )          ; break ; 
+    }
+    return lookup ; 
+}
+
 
 
