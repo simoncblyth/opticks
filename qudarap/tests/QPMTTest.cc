@@ -145,10 +145,7 @@ int main(int argc, char** argv)
     JPMT pmt ; 
     std::cout << pmt.desc() << std::endl ;
     pmt.save("$FOLD") ; 
-    const NP* rindex = pmt.rindex ; 
-    const NP* thickness = pmt.thickness ;
-    const NP* qeshape = pmt.qeshape ;  
-    const NP* lcqs = pmt.lcqs ;        // nullptr
+    const NPFold* pf = pmt.get_fold(); 
 #else
     std::cout << "QPMTTest.cc : NOT-WITH_JPMT " << std::endl ; 
     SPMT* pmt = SPMT::Load();
@@ -157,14 +154,11 @@ int main(int argc, char** argv)
         std::cout << "QPMTTest.cc FAILED TO SPMT::Load ? IS GEOM envvar defined ? " << std::endl ; 
         return 1 ; 
     }
+    const NPFold* pf = pmt->get_fold(); 
 
-    const NP* rindex = pmt->rindex ; 
-    const NP* thickness = pmt->thickness ;
-    const NP* qeshape = pmt->qeshape ;  
-    const NP* lcqs = pmt->lcqs ; 
 #endif
 
-    QPMT<float> qp(rindex, thickness, qeshape, lcqs ) ; 
+    QPMT<float> qp(pf) ; 
     std::cout << qp.desc() << std::endl ; 
 
     NPFold* qpf = qp.get_fold(); 

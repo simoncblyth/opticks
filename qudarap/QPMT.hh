@@ -46,7 +46,7 @@ struct QUDARAP_API QPMT
     qpmt<T>* pmt ; 
     qpmt<T>* d_pmt ; 
 
-    QPMT(const NP* rindex, const NP* thickness, const NP* qeshape, const NP* lcqs);     
+    QPMT(const NPFold* pf);     
 
     void init(); 
     void init_thickness(); 
@@ -83,12 +83,12 @@ QPMT::QPMT
 **/
 
 template<typename T>
-inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_, const NP* qeshape_, const NP* lcqs_ )
+inline QPMT<T>::QPMT(const NPFold* pf )
     :
-    src_rindex(rindex_),
-    src_thickness(thickness_),
-    src_qeshape(qeshape_),
-    src_lcqs(lcqs_),
+    src_rindex(pf->get("rindex")),
+    src_thickness(pf->get("thickness")),
+    src_qeshape(pf->get("qeshape")),
+    src_lcqs(pf->get_optional("lcqs")),
     rindex3(  NP::MakeCopy3D(src_rindex)),   // make copy and change shape to 3D
     rindex(   NP::MakeWithType<T>(rindex3)), // adopt template type, potentially narrowing
     rindex_prop(new QProp<T>(rindex)),  
@@ -96,7 +96,7 @@ inline QPMT<T>::QPMT(const NP* rindex_ , const NP* thickness_, const NP* qeshape
     qeshape_prop(new QProp<T>(qeshape)),  
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
-    i_lcqs( (int*)lcqs->cvalues<T>() ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
+    i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
     pmt(new qpmt<T>()),                    // hostside qpmt.h instance 
     d_pmt(nullptr)                         // devices pointer set in init
 {

@@ -2,8 +2,19 @@
 QPMT.cc
 ==========
 
-QPMT::interpolate
-    prep (etype, domain) kernel calls 
+QPMT::init
+QPMT::init_thickness 
+QPMT::init_lcqs
+    prep hostside qpmt.h instance and upload to device at d_pmt 
+
+QPMT::lpmtcat_check
+    check domain and lookup shape consistency 
+
+QPMT::lpmtcat_
+   interface in .cc to kernel launcher QPMT_lpmtcat in .cu   
+
+QPMT::mct_lpmtid_
+   interface in .cc to kernel launcher QPMT_mct_lpmtid in .cu   
 
 
 **/
@@ -26,7 +37,6 @@ QPMT::init
 2. upload the hostside qpmt.h instance to GPU
 
 **/
-
 
 template<typename T>
 inline void QPMT<T>::init()
@@ -122,12 +132,19 @@ void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) cons
 QPMT::lpmtcat_
 --------------------
 
-lookup needs to energy_eV scan all pmt cat (3), layers (4) and props (2) (RINDEX, KINDEX)  
-arrange that as three in kernel nested for loops (24 props) 
-with the energy domain passed in as input so the parallelism is over the energy 
+1. create hostside lookup array for the output 
+2. upload domain array to d_domain
+3. allocate lookup array at d_lookup
+4. invoke QPMT_lpmtcat launch 
+5. copy d_lookup to h_lookup 
 
+For some etype the lookup contains an energy_eV scans for all pmt cat (3), 
+layers (4) and props (2) (RINDEX, KINDEX). 
 So the shape of the lookup output is  (3,4,2, domain_width )   
 
+Those are populated with nested loops (24 props) in the kernel 
+with the energy domain passed in as input. Parallelism is over the energy.
+ 
 **/
 
 template<typename T>
@@ -170,6 +187,13 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 QPMT::mct_lpmtid_
 -------------------
 
+1. create lookup output array with shape depending on etype
+2. allocate d_lookup on device
+3. upload domain to d_domain
+4. upload lpmtid to d_lpmtid 
+5. invoke launch QPMT_mct_lpmtid
+6. download d_lookup to h_lookup
+
 **/
 
 template<typename T>
@@ -180,6 +204,19 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     NP* lookup = MakeLookup_lpmtid(etype, num_domain, num_lpmtid ); 
     unsigned num_lookup = lookup->num_values() ; 
+
+    if( etype == qpmt_ART )
+    {
+        std::vector<std::pair<std::string, std::string>> kvs = 
+        {    
+            { "title", "QPMT.title" }, 
+            { "brief", "QPMT.brief" }, 
+            { "name",  "QPMT.name"  },   
+            { "label", "QPMT.label" }
+        };   
+        lookup->set_meta_kv<std::string>(kvs); 
+    }
+
 
     LOG(LEVEL) 
         << " etype " << etype 

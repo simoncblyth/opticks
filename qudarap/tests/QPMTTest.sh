@@ -5,6 +5,14 @@ QPMTTest
 
 NB : standard qudarap/om builds the QPMTTest binary, not this script
 
+::
+
+   OPT=A_,Aa,As,Ap ./QPMTTest.sh ana
+   OPT=R_,Ra,Rs,Rp ./QPMTTest.sh ana
+
+   OPT=R_,Ra,Rs,Rp,A_,Aa,As,Ap,T_,Ta,Ts,Tp ./QPMTTest.sh ana
+
+
 EOU
 }
 

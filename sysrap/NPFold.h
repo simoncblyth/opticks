@@ -179,6 +179,7 @@ struct NPFold
     bool has_key(const char* k) const ; 
 
     const NP* get(const char* k) const ; 
+    const NP* get_optional(const char* k) const ; 
     int   get_num(const char* k) const ; 
 
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
@@ -734,6 +735,23 @@ inline const NP* NPFold::get(const char* k) const
     int idx = find(k) ; 
     return idx == UNDEF ? nullptr : aa[idx] ; 
 }
+
+/**
+NPFold::get_optional
+---------------------
+
+For now just the same as NPFold::get but in future 
+could assert that NPFold::get finds something whereas get_optional
+is allowed to return nullptr.  
+
+**/
+inline const NP* NPFold::get_optional(const char* k) const 
+{
+    return get(k); 
+}
+
+
+
 
 
 /**

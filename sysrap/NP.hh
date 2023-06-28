@@ -77,8 +77,9 @@ struct NP
 
 
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
-    template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); 
-
+    template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
+                         static NP* SqrtOneMinusSquare( const NP* a ); 
+     
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  ); 
 
     template<typename T> static NP* Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );
@@ -611,13 +612,37 @@ template<typename T> NP* NP::MinusCosThetaLinearAngle(int nx) // static
     T* aa = a->values<T>(); 
     for(int i=0 ; i < nx ; i++) 
     {
-        T frac = T(i)/T(nx-1) ;
+        T frac = nx == 1 ? T(0) : T(i)/T(nx-1) ;
         T theta = frac*M_PI ; 
         aa[i] = -cos(theta) ; 
     }    
     return a ; 
 }
 
+NP* NP::SqrtOneMinusSquare( const NP* a ) // static
+{
+    assert( a->uifc == 'f' );   
+    assert( a->ebyte == 4 || a->ebyte == 8  );   
+    assert( a->shape.size() == 1 ); 
+    int num = a->shape[0] ; 
+
+    NP* b = NP::MakeLike(a); 
+    assert( b->ebyte == a->ebyte ); 
+
+    if( a->ebyte == 8 )
+    {
+        const double* aa = a->cvalues<double>(); 
+        double* bb = b->values<double>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = sqrt(1.  - aa[i]*aa[i]) ; 
+    }
+    else if( a->ebyte == 4 )
+    {
+        const float* aa = a->cvalues<float>(); 
+        float* bb = b->values<float>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = sqrt(1.f - aa[i]*aa[i]) ; 
+    }
+    return b ; 
+}
 
 
 

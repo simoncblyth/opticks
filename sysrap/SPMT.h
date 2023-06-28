@@ -149,7 +149,12 @@ struct SPMT
     float get_thickness_nm(int cat, int layr) const ; 
     NP* get_thickness_nm() const ; 
 
+
     void get_lpmtid_stackspec( quad4& spec, int lpmtid, float energy_eV) const ;  // EXPT
+
+    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611" ; 
+    static const NP* Make_LPMTID_LIST(); 
+
 
 #ifdef WITH_CUSTOM4
 
@@ -173,14 +178,21 @@ struct SPMT
     void annotate( NP* art ) const ; 
 
     void get_ARTE(SPMTData& pd, int pmtid, float wavelength_nm, float minus_cos_theta, float dot_pol_cross_mom_nrm ) const ; 
+
+
     NPFold* make_sscan() const ; 
 #endif
 
     void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
     NP*  get_stackspec() const ; 
 
-    int   get_pmtcat(int pmtid) const ; 
-    NP*   get_pmtcat() const ; 
+    //int  get_pmtcat(int pmtid) const ; 
+    //NP*  get_pmtcat() const ; 
+    int  get_lpmtcat( int lpmtid ) const ; 
+    int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
+    NP*  get_lpmtcat() const ; 
+    NP*  get_lpmtcat(const NP* lpmtid) const ; 
+
 
     float get_qescale(int pmtid) const ; 
     NP*   get_qescale() const ; 
@@ -835,22 +847,28 @@ stack::calc notes
 SPMT::annotate
 ----------------
 
-Calling this tickles some bug sprinkling nan across the arrays 
-
-HUH : its not happening any more ?  HMM something flakey waiting to strike. 
-
 **/
 
 inline void SPMT::annotate( NP* art ) const 
 {
-    std::vector<std::pair<std::string, std::string>> kvs ; 
-
-    kvs["title"] = "SPMT.title" ; 
-    kvs["brief"] = "SPMT.brief" ; 
-    kvs["name"] = "SPMT.name" ; 
-    kvs["label"] = "SPMT.label" ; 
+    std::vector<std::pair<std::string, std::string>> kvs = 
+    {
+        { "title", "SPMT.title" }, 
+        { "brief", "SPMT.brief" }, 
+        { "name",  "SPMT.name"  }, 
+        { "label", "SPMT.label" }
+    }; 
 
     art->set_meta_kv<std::string>(kvs); 
+}
+
+
+
+inline const NP* SPMT::Make_LPMTID_LIST()  // static 
+{ 
+    const char* lpmtid_list = ssys::getenvvar("LPMTID_LIST", LPMTID_LIST) ; 
+    const NP* lpmtid = NPX::FromString<int>(lpmtid_list,','); 
+    return lpmtid ; 
 }
 
 
@@ -858,19 +876,39 @@ inline void SPMT::annotate( NP* art ) const
 SPMT::make_sscan
 -----------------
 
-Scan over (pmtid, wl, mct, spol )
+Scan over (lpmtid, wl, mct, spol )
+
+Potentially could scan over any of (ni,nj,nk,nl)
+so should add arrays of the ranges which will have 
+only one value when not scanned over.
 
 **/
+
 
 inline NPFold* SPMT::make_sscan() const 
 {
     NPFold* fold = new NPFold ; 
+
+    const NP* lpmtid_domain = Make_LPMTID_LIST() ; 
+    const NP* lpmtcat_domain = get_lpmtcat( lpmtid_domain );  
+    const NP* mct_domain = NP::MinusCosThetaLinearAngle<float>( N_MCT ); 
+    const NP* st_domain = NP::SqrtOneMinusSquare(mct_domain) ; 
+
+    std::cout << " N_MCT " << N_MCT << std::endl ; 
+    std::cout << " mct_domain.desc " << mct_domain->desc() << std::endl ; 
+
+    fold->add("lpmtid_domain", lpmtid_domain); 
+    fold->add("lpmtcat_domain", lpmtcat_domain); 
+    fold->add("mct_domain", mct_domain ); 
+    fold->add("st_domain", st_domain ); 
+
     SPMTData pd ; 
 
-    int ni = N_LPMT ; 
+    int ni = lpmtid_domain->shape[0] ; 
     int nj = N_WL ; 
     int nk = N_MCT ; 
     int nl = N_SPOL ; 
+
 
     std::cout << "[ SPMT::make_sscan "  << std::endl ; 
 
@@ -907,6 +945,10 @@ inline NPFold* SPMT::make_sscan() const
 
     std::cout << "SPMT::get_ARTE args " << args->sstr() << std::endl ; 
 
+    const int* lpmtid_domain_v = lpmtid_domain->cvalues<int>(); 
+    const float* mct_domain_v = mct_domain->cvalues<float>(); 
+    const float* st_domain_v = st_domain->cvalues<float>(); 
+
     float* args_v = args->values<float>(); 
     float* ARTE_v = ARTE->values<float>(); 
     float* extra_v = extra->values<float>() ; 
@@ -919,22 +961,39 @@ inline NPFold* SPMT::make_sscan() const
 
     for(int i=0 ; i < ni ; i++)
     {
-        int pmtid = i ; 
-        if( i % 100 == 0 ) std::cout << "SPMT::get_ARTE pmtid " << pmtid << std::endl ; 
+        int lpmtid = lpmtid_domain_v[i] ; 
+        if( i % 100 == 0 ) std::cout << "SPMT::get_ARTE lpmtid " << lpmtid << std::endl ; 
         for(int j=0 ; j < nj ; j++)
         {
            float wavelength_nm = get_wavelength(j, nj ); 
            for(int k=0 ; k < nk ; k++)
            {
-              float minus_cos_theta = get_minus_cos_theta_linear_angle(k, nk );  
-              float sin_theta = sqrt( 1.f - minus_cos_theta*minus_cos_theta ); 
+              float minus_cos_theta = mct_domain_v[k] ; 
+              float sin_theta = st_domain_v[k] ; 
+              {
+                  float minus_cos_theta_0 = get_minus_cos_theta_linear_angle(k, nk );  
+                  float minus_cos_theta_diff = std::abs( minus_cos_theta - minus_cos_theta_0 ); 
+                  assert( minus_cos_theta_diff < 1e-6 ); 
+                  float sin_theta_0 = sqrt( 1.f - minus_cos_theta*minus_cos_theta ); 
+                  float sin_theta_diff = std::abs(sin_theta - sin_theta_0)  ; 
+                  bool sin_theta_expect = sin_theta_diff < 1e-6 ; 
+                  if(!sin_theta_expect) std::cout 
+                      << " k " << k 
+                      << " minus_cos_theta " << std::setw(10) << std::fixed << std::setprecision(5) << minus_cos_theta 
+                      << " sin_theta " << std::setw(10) << std::fixed << std::setprecision(5) << sin_theta 
+                      << " sin_theta_0 " << std::setw(10) << std::fixed << std::setprecision(5) << sin_theta_0 
+                      << " sin_theta_diff " << std::setw(10) << std::fixed << std::setprecision(5) << sin_theta_diff 
+                      << std::endl 
+                      ;
+                  assert( sin_theta_expect ); 
+              }
 
               for(int l=0 ; l < nl ; l++)
               {
                   float s_pol_frac = get_frac(l, nl) ; 
                   float dot_pol_cross_mom_nrm = sin_theta*s_pol_frac ; 
 
-                  get_ARTE(pd, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
+                  get_ARTE(pd, lpmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm ); 
 
                   int idx = i*nj*nk*nl*4 + j*nk*nl*4 + k*nl*4 + l*4 ; 
 
@@ -1024,55 +1083,77 @@ NP* SPMT::get_stackspec() const
 }
 
 /**
-SPMT::get_pmtcat
+SPMT::get_lpmtcat
 -------------------
 
-For pmtid (0->17612-1) returns 0, 1 or 2 corresponding to NNVT, HAMA, NNVT_HiQE
+For lpmtid (0->17612-1) returns 0, 1 or 2 corresponding to NNVT, HAMA, NNVT_HiQE
 
 **/
 
-inline int SPMT::get_pmtcat(int pmtid) const 
+inline int SPMT::get_lpmtcat(int lpmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < N_LPMT );  
+    assert( lpmtid >= 0 && lpmtid < NUM_LPMT );  
     const int* lcqs_i = lcqs->cvalues<int>() ; 
-    return lcqs_i[pmtid*2+0] ; 
+    return lcqs_i[lpmtid*2+0] ; 
 }
-inline NP* SPMT::get_pmtcat() const 
+inline int SPMT::get_lpmtcat( int* lpmtcat_ , const int* lpmtid_ , int num ) const 
 {
-    std::cout << "SPMT::get_pmtcat " << std::endl ; 
-    NP* a = NP::Make<int>( N_LPMT ) ; 
+    for(int i=0 ; i < num ; i++)
+    {
+        int lpmtid = lpmtid_[i] ;
+        int lpmtcat = get_lpmtcat(lpmtid) ;
+        lpmtcat_[i] = lpmtcat ;
+    }
+    return num ;
+}
+
+
+inline NP* SPMT::get_lpmtcat(const NP* lpmtid ) const 
+{
+    assert( lpmtid->shape.size() == 1 ); 
+    int num = lpmtid->shape[0] ; 
+    NP* lpmtcat = NP::Make<int>(num);  
+    int num2 = get_lpmtcat( lpmtcat->values<int>(), lpmtid->cvalues<int>(), num ) ; 
+    assert( num2 == num ); 
+    return lpmtcat ; 
+}
+
+inline NP* SPMT::get_lpmtcat() const 
+{
+    std::cout << "SPMT::get_lpmtcat " << std::endl ; 
+    NP* a = NP::Make<int>( NUM_LPMT ) ; 
     int* aa = a->values<int>(); 
-    for(int i=0 ; i < N_LPMT ; i++) aa[i] = get_pmtcat(i) ; 
+    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_lpmtcat(i) ; 
     return a ; 
 }
 
-inline float SPMT::get_qescale(int pmtid) const 
+inline float SPMT::get_qescale(int lpmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < N_LPMT );  
+    assert( lpmtid >= 0 && lpmtid < NUM_LPMT );  
     const float* lcqs_f = lcqs->cvalues<float>() ; 
-    return lcqs_f[pmtid*2+1] ; 
+    return lcqs_f[lpmtid*2+1] ; 
 }
 inline NP* SPMT::get_qescale() const 
 {
     std::cout << "SPMT::get_qescale " << std::endl ; 
-    NP* a = NP::Make<float>( N_LPMT ) ; 
+    NP* a = NP::Make<float>( NUM_LPMT ) ; 
     float* aa = a->values<float>(); 
-    for(int i=0 ; i < N_LPMT ; i++) aa[i] = get_qescale(i) ; 
+    for(int i=0 ; i < NUM_LPMT ; i++) aa[i] = get_qescale(i) ; 
     return a ; 
 }
 
-inline void SPMT::get_lcqs(int& lc, float& qs, int pmtid) const 
+inline void SPMT::get_lcqs(int& lc, float& qs, int lpmtid) const 
 {
-    assert( pmtid >= 0 && pmtid < N_LPMT );  
+    assert( lpmtid >= 0 && lpmtid < NUM_LPMT );  
     const int*   lcqs_i = lcqs->cvalues<int>() ; 
     const float* lcqs_f = lcqs->cvalues<float>() ; 
-    lc = lcqs_i[pmtid*2+0] ; 
-    qs = lcqs_f[pmtid*2+1] ; 
+    lc = lcqs_i[lpmtid*2+0] ; 
+    qs = lcqs_f[lpmtid*2+1] ; 
 }
 inline NP* SPMT::get_lcqs() const 
 {
     std::cout << "SPMT::get_lcqs " << std::endl ; 
-    int ni = N_LPMT ; 
+    int ni = NUM_LPMT ; 
     int nj = 2 ; 
     NP* a = NP::Make<int>(ni, nj) ; 
     int* ii   = a->values<int>() ; 

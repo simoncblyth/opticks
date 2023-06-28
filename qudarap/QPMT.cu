@@ -14,9 +14,14 @@ QPMT_lpmtcat
 _QPMT_lpmtid_stackspec
     kernel funcs taking (qpmt,lookup,domain,domain_width,lpmtid,num_lpmtid) args 
 
-QPMT_lpmtid
-    CPU entry point to launch above kernels controlled by etype 
+_QPMT_mct_lpmtid
+    payload size P templated kernel function with domain and lpmtid array inputs
 
+    * within lpmtid loop calls qpmt.h method depending on etype 
+    * etype : (qpmt_SPEC qpmt_LL qpmt_COMP qpmt_ART qpmt_ARTE)
+    
+QPMT_mct_lpmtid
+    CPU entry point to launch above kernel passing etype
 
 
 **/
