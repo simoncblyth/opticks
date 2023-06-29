@@ -314,7 +314,7 @@ U4Material::MakePropertyFold
 ------------------------------
 
 Canonically invoked from U4Tree::convertMaterials
-with result going into st.mtfold
+with result going into st.material
 
 **/
 
@@ -326,10 +326,10 @@ NPFold* U4Material::MakePropertyFold()
     GetMaterialNames(matnames); 
     for(unsigned i=0 ; i < matnames.size() ; i++)
     { 
-        const char* material = matnames[i].c_str(); 
-        const G4Material* mat = G4Material::GetMaterial(material) ; 
+        const char* matname = matnames[i].c_str(); 
+        const G4Material* mat = G4Material::GetMaterial(matname) ; 
         NPFold* matfold = MakePropertyFold(mat) ; 
-        fold->add_subfold( material, matfold ); 
+        fold->add_subfold( matname, matfold ); 
     }  
     return fold ; 
 }

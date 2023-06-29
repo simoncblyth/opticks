@@ -373,6 +373,8 @@ void GMaterialLib::addDirect(GMaterial* mat)
 GMaterialLib::createStandardMaterial
 -------------------------------------
 
+Called from GMaterialLib::add collecting the standardized into m_materials
+
 Standardization of material(and surface) properties is done to prepare
 these for inclusion into a GPU texture. Standardization involves:
 

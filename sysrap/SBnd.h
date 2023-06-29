@@ -50,6 +50,8 @@ struct SBnd
     static constexpr const unsigned MISSING = ~0u ;
     const std::vector<std::string>& bnames ; 
 
+    // TODO: replace MaterialProp with sprop_Material from sprop.h 
+
     static constexpr std::array<SBndProp, 8> MaterialProp = 
     {{
         { 0,0,"RINDEX" },

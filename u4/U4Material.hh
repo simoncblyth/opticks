@@ -1,4 +1,11 @@
 #pragma once
+/**
+U4Material.hh
+=================
+
+HMM: make this header-only .h ?
+
+**/
 
 #include <vector>
 #include <string>

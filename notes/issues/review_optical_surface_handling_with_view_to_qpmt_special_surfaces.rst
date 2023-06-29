@@ -232,6 +232,57 @@ TODO : U4Tree::initBoundary reimplement GBndLib::createBufferForTex2d GBndLib::c
 * U4Tree::initBoundary NEEDED NOW, as makes no sense to make changes for special surface enum in old GGeo world plus U4Tree world 
 
 
+* U4Tree::initMaterial has no domain standardization, just Geant4 property conversion
+  
+  * this is more involved that first appears ... need GMaterialLib::createStandardMaterial
+
+
+WIP : investigate with sysrap/tests/stree_mat_test.sh 
+--------------------------------------------------------
+
+::
+
+    epsilon:tests blyth$ l /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/
+    total 20416
+        0 drwxr-xr-x   6 blyth  staff       192 Jun 15 19:34 jpmt
+        8 -rw-rw-r--   1 blyth  staff        34 Jun 15 19:34 NPFold_index.txt
+        8 -rw-rw-r--   1 blyth  staff       109 Jun 15 19:34 icdf_meta.txt
+        8 -rw-rw-r--   1 blyth  staff         3 Jun 15 19:34 icdf_names.txt
+      200 -rw-rw-r--   1 blyth  staff     98432 Jun 15 19:34 icdf.npy
+        8 -rw-rw-r--   1 blyth  staff      3520 Jun 15 19:34 optical.npy
+        8 -rw-rw-r--   1 blyth  staff        69 Jun 15 19:34 bnd_meta.txt
+        8 -rw-rw-r--   1 blyth  staff      2734 Jun 15 19:34 bnd_names.txt
+    20168 -rw-rw-r--   1 blyth  staff  10325392 Jun 15 19:34 bnd.npy
+        0 drwxr-xr-x  28 blyth  staff       896 Jun  7 14:17 stree
+        0 drwxr-xr-x  12 blyth  staff       384 Jun  7 14:17 .
+        0 drwxr-xr-x  13 blyth  staff       416 Jun  7 14:17 ..
+
+
+
+
+Note difference between the old bnd_names.txt and new stree/bd_names.txt wrt Implicit_RINDEX_NoRINDEX
+-------------------------------------------------------------------------------------------------------
+
+* :doc:`stree_bd_names_and_Implicit_RINDEX_NoRINDEX`
+
+
+Q: How to add perfect surface in direct workflow ?
+-----------------------------------------------------
+
+1st: need to develop the addition of standard material and surfaces
+---------------------------------------------------------------------
+
+Thats reimplementing GMaterialLib::createStandardMaterial
+
+
+
+
+
+
+
+
+
+
 TODO : generalize optical.x to carry special surface enum (plenty of bits available)
 ---------------------------------------------------------------------------------------
 

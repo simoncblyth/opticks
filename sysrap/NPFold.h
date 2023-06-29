@@ -211,6 +211,7 @@ struct NPFold
     static std::string Indent(int width); 
 
     std::string brief() const ; 
+    std::string stats() const ; 
 
     // STATIC CONVERTERS
 
@@ -1094,13 +1095,24 @@ inline std::string NPFold::brief() const
     std::stringstream ss ; 
     if(loaddir) ss << " loaddir:" << loaddir ; 
     if(savedir) ss << " savedir:" << savedir ; 
+    ss << stats() ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string NPFold::stats() const 
+{
+    std::stringstream ss ; 
     ss <<  " subfold " << subfold.size() ; 
     ss << " ff " << ff.size() ; 
     ss << " kk " << kk.size() ; 
     ss << " aa " << aa.size() ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+
+
 
 
 // STATIC CONVERTERS

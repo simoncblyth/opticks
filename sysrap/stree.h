@@ -176,6 +176,7 @@ When SSim not in use can also use::
 #include "snd.hh"
 #include "scsg.hh"
 #include "stra.h"
+#include "smaterial.h"
 
 
 struct stree
@@ -254,13 +255,15 @@ struct stree
     NPFold* material ;                     // material properties from G4 MPTs
     NPFold* surface ;                      // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
 
-    // HMM would there be any advantage in these moving to SSim ? 
-    //
-    // TODO: need to juice these NPFold inputs into equivalents of the 
-    //       GMaterialLib and GSurfaceLib buffers using standard domains and default props
-    //       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
-    //
-    //       * that can then be compared between the workflows to validate the new approach
+    NP* mat ; 
+    NP* sur ; 
+
+    /**
+    TODO: need to juice these NPFold inputs into equivalents of the 
+    GMaterialLib and GSurfaceLib buffers using standard domains and default props
+    which then can be interleaved into the bnd array equivalent of GBndLib buffer 
+    that can then be compared between the workflows to validate the new approach
+    **/
 
 
     std::vector<glm::tmat4x4<double>> inst ; 
@@ -366,7 +369,6 @@ struct stree
     std::string desc_nodes_(const std::vector<snode>& nn, int edgeitems=10) const ;
     std::string desc_solids() const ; 
 
-    static std::string FormPath(const char* base, const char* rel ); 
 
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
@@ -436,6 +438,12 @@ struct stree
 
     void get_mtindex_range(int& mn, int& mx ) const ; 
     std::string desc_mt() const ; 
+    std::string desc_bd() const ; 
+
+    NP* create_mat() const ; 
+    NP* create_sur() const ; 
+    NP* create_bnd() const ; 
+
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface(  const char* name, unsigned idx ); 
@@ -445,6 +453,15 @@ struct stree
 };
 
 
+/**
+stree::stree
+--------------
+
+
+Q: why empty NPFold material and surface instead of nullptr ?
+
+**/
+
 
 inline stree::stree()
     :
@@ -453,7 +470,9 @@ inline stree::stree()
     subs_freq(new sfreq),
     csg(new scsg),
     material(new NPFold),
-    surface(new NPFold)
+    surface(new NPFold),
+    mat(nullptr),
+    sur(nullptr)
 {
     init(); 
 }
@@ -1567,21 +1586,10 @@ inline std::string stree::desc_solids() const
 }
 
 
-
-
-
-inline std::string stree::FormPath(const char* base, const char* rel ) // static
-{
-    std::stringstream ss ;    
-    ss << base << "/" << rel ; 
-    std::string dir = ss.str();   
-    return dir ; 
-}
-
 inline void stree::save( const char* base, const char* reldir ) const 
 {
-    std::string dir = FormPath(base, reldir); 
-    save_(dir.c_str()); 
+    const char* dir = U::Resolve(base, reldir); 
+    save_(dir); 
 }
 
 /**
@@ -1697,8 +1705,8 @@ inline void stree::save_trs(const char* fold) const
 
 inline int stree::load( const char* base, const char* reldir ) 
 {
-    std::string dir = FormPath(base, reldir ); 
-    return load_(dir.c_str()); 
+    const char* dir = U::Resolve(base, reldir ); 
+    return load_(dir); 
 }
 
 inline stree* stree::Load(const char* base, const char* reldir ) // static 
@@ -2686,15 +2694,141 @@ inline std::string stree::desc_mt() const
             ;
     }
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+/**
+stree::desc_bd
+----------------
+
+Previously thought the bd info was still coming from the old GGeo workflow
+and getting persisted into SSim/stree, but looking at U4Tree::initNodes_r 
+that is not the case::
+
+    375     int4 bd = {omat, osur, isur, imat } ;
+    376     bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ;
+    377     if(new_boundary)
+    378     {
+    379         st->bd.push_back(bd) ;
+    380         std::string bdn = getBoundaryName(bd,'/') ;
+    381         st->bdname.push_back(bdn.c_str()) ;
+    382         // HMM: better to use higher level stree::add_boundary if can get names at stree level 
+    383     }
+    384     int boundary = GetValueIndex<int4>( st->bd, bd ) ;
+    385     assert( boundary > -1 );
+
+The bnd and optical buffer are still coming from GGeo, not the bd int4 and bdname. 
+SO .. can use bd to assist with forming those...
+
+BUT U4Tree::initNodes_r  LACKS ADDITION OF IMPLICIT SURFACES 
+that causes difference between SSim/stree/bd_names.txt and SSim/bnd_names.txt
+
+* ~/opticks/notes/issues/stree_bd_names_and_Implicit_RINDEX_NoRINDEX.rst
+
+**/
+
+inline std::string stree::desc_bd() const 
+{
+    std::stringstream ss ; 
+    ss << "stree::desc_bd"
+       << " bd.size " << bd.size()
+       << " bdname.size " << bdname.size()
+       << std::endl 
+       ; 
+
+    assert( bd.size() == bdname.size() ); 
+
+    int num_bd = bd.size() ; 
+    for(int i=0 ; i < num_bd ; i++)
+    {
+        const std::string& bdn = bdname[i] ; 
+        const int4& bdi = bd[i] ;  
+        ss << std::setw(4) << i 
+           << "("
+           << std::setw(3) << bdi.x 
+           << " "
+           << std::setw(3) << bdi.y 
+           << " "
+           << std::setw(3) << bdi.z 
+           << " "
+           << std::setw(3) << bdi.w 
+           << ") "
+           << bdn
+           << std::endl 
+           ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+/**
+stree::create_mat
+------------------
+
+The aim of the mat array is to enable recreation of the 
+bnd buffer without using GGeo. So need to create an array 
+with shape suitable for zipping together with the sur array
+to form the bnd array.
+
+Hence need mat shape::
+
+  (~20:num_mat, 2:num_payload_cat, num_wavelength_samples, 4:payload_values ) 
+
+
+Old bnd buffer::
+
+    GBndLib::createBufferForTex2d
+    -------------------------------
+
+    GBndLib double buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
+    pulling together data based on the indices for the materials and surfaces 
+    from the m_bnd guint4 buffer
+
+    Typical dimensions : (128, 4, 2, 39, 4)   
+
+               128 : boundaries, 
+                 4 : mat-or-sur for each boundary  
+                 2 : payload-categories corresponding to NUM_FLOAT4
+                39 : wavelength samples
+                 4 : double4-values
+
+    The only dimension that can easily be extended is the middle payload-categories one, 
+    the low side is constrained by layout needed to OptiX tex2d<float4> as this 
+    buffer is memcpy into the texture buffer
+    high side is constained by not wanting to change texture line indices 
+
+    The 39 wavelength samples is historical. There is a way to increase this
+    to 1nm FINE_DOMAIN binning.
+
+
+
+
+
+**/
+
+inline NP* stree::create_mat() const 
+{
+    return smaterial::create(mtname, material) ; 
+}
+inline NP* stree::create_sur() const 
+{
+    return nullptr ; 
+}
+inline NP* stree::create_bnd() const 
+{
+    return nullptr ; 
+}
+
 
 
 
 /**
 stree::add_material
 ----------------------
+
+Canonically called from U4Tree::initMaterials_r/U4Tree::initMaterial
 
 g4index is the Geant4 creation index obtained from G4Material::GetIndex
 

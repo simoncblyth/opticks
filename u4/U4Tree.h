@@ -83,7 +83,8 @@ struct U4Tree
     std::vector<const G4VSolid*>    solids ; 
 
 
-
+    static const G4MaterialPropertyVector* GetRINDEX(   const G4Material* mt ); 
+    static const G4MaterialPropertyVector* GetProperty( const G4Material* mt, int index ); 
 
     template<typename T>
     static int GetPointerIndex( const std::vector<const T*>& vec, const T* obj) ; 
@@ -109,7 +110,7 @@ struct U4Tree
 
     void initNodes(); 
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
-    void initBoundary(); 
+    void initBoundary();  // EMPTY IMPL
 
     //  accessors
 
@@ -135,6 +136,19 @@ struct U4Tree
 
 
 }; 
+
+
+inline const G4MaterialPropertyVector* U4Tree::GetRINDEX(  const G4Material* mt ) // static
+{
+    return GetProperty(mt, kRINDEX ); 
+}
+inline const G4MaterialPropertyVector* U4Tree::GetProperty(const G4Material* mt, int index ) // static
+{
+    G4MaterialPropertiesTable* mpt = mt ? mt->GetMaterialPropertiesTable() : nullptr ;
+    const G4MaterialPropertyVector* mpv = mpt ? mpt->GetProperty(index) : nullptr ;    
+    return mpv ; 
+}
+
 
 
 template<typename T>
@@ -354,6 +368,21 @@ but sibling to sibling links are done within the
 sibling loop using the node index returned by the 
 recursive call. 
 
+Issue : omits to do the equivalent of X4PhysicalVolume::convertImplicitSurfaces_r 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* see ~/opticks/notes/issues/stree_bd_names_and_Implicit_RINDEX_NoRINDEX.rst
+* causes difference between SSim/bnd_names.txt and SSim/stree/bd_names.txt
+
+All transparent materials like Scintillator, Acrylic, Water should have RINDEX property. 
+Some absorbing materials like Tyvek might not have RINDEX property as 
+lazy Physicists sometimes rely on sloppy Geant4 implicit behavior 
+which causes fStopAndKill at the RINDEX->NoRINDEX boundary
+as if there was a perfect absorbing surface there.  
+
+To mimic the implicit surface Geant4 behaviour with Opticks on GPU 
+it is necessary to add explicit perfect absorber surfaces. 
+
 **/
 
 inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent )
@@ -366,6 +395,24 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
 
     const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
     const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
+
+    const G4MaterialPropertyVector* irindex = GetRINDEX( imat_ ) ; 
+    const G4MaterialPropertyVector* orindex = GetRINDEX( omat_ ) ; 
+
+    bool implicit_io = irindex == nullptr && orindex != nullptr ; 
+    bool implicit_oi = irindex != nullptr && orindex == nullptr ; 
+    bool implicit = implicit_io || implicit_oi ; 
+
+    if(implicit) std::cerr 
+        << "U4Tree::initNodes_r"
+        << " implicit_io " << implicit_io
+        << " implicit_oi " << implicit_oi
+        << " imat_ " << imat_  
+        << " omat_ " << omat_  
+        << std::endl 
+        ;
+     
+    // TODO: complete implicit handling, fabricating perfect absorber surface when needed 
 
     int imat = GetPointerIndex<G4Material>(materials, imat_); 
     int omat = GetPointerIndex<G4Material>(materials, omat_); 
