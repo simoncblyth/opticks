@@ -499,7 +499,8 @@ How to handle the bnd cleanly ?
 
 SSim and SBnd look all setup, but they are currently relying on NP* bnd
 with "spec" names that comes from GGeo/GBndLib 
-So just need to create the bnd. 
+
+So just need to create the bnd and the optical buffer ? 
 
 **/
 

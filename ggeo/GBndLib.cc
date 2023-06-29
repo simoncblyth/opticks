@@ -1171,6 +1171,9 @@ NPY<double>* GBndLib::createBufferForTex2d()
 GBndLib::createOpticalBuffer
 -----------------------------
 
+The optical buffer carries uint4 payload for every material/surface of every 
+unique (omat,osur,isur,imat) boundary of the geometry. 
+
 The optical buffer provides an easy way to access 1-based material and surface indices
 starting from a texture line index. Crucially when there is no associated surface the 
 surface index gives 0.  
@@ -1203,17 +1206,22 @@ of an intersect::
      286     s.index.z = optical[su_line].u.x ; // su index
      287     s.index.w = 0u ;                   // avoid undefined memory comparison issues
 
+
+Q: Is there a direct geometry workflow (U4Tree/stree.h etc..) equivalent to this yet ? Where is is ?
+A: NOT YET IMPLEMENTED U4Tree::initBoundary CURRENTLY EMPTY 
+
+Note the primary thing in the optical buffer is the .x index
+
 **/
 
 NPY<unsigned>* GBndLib::createOpticalBuffer()
 {
-
     bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
     // hmm, the bnd itself is zero-based
 
     unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_MATSUR ;    // om-os-is-im
-    unsigned int nk = 4 ;             // THIS 4 IS NOT RELATED TO NUM_PROP
+    unsigned int nj = NUM_MATSUR ;    // 4: om-os-is-im
+    unsigned int nk = 4 ;             // 4: from uint4 payload size, NOT RELATED NUM_PROP
 
     NPY<unsigned>* optical = NPY<unsigned>::make( ni, nj, nk) ;
     optical->zero(); 

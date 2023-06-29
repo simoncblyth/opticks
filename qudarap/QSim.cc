@@ -125,7 +125,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
     else
     {
-       // TODO: combine the below as optical and bnd MUST travel together 
+       // note that QOptical and QBnd are tightly coupled, perhaps add constraints to tie them together
         QOptical* qopt = new QOptical(optical); 
         LOG(LEVEL) << qopt->desc(); 
 

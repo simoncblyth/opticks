@@ -258,6 +258,7 @@ inline void U4Surface::Collect( std::vector<const G4LogicalSurface*>& surfaces )
 U4Surface::MakeFold
 --------------------
 
+Canonical usage from U4Tree::initSurfaces creating the stree::surface NPFold. 
 
 **/
 
@@ -277,7 +278,7 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
         NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
 
         const char* osn = os->GetName().c_str() ; 
-        sub->set_meta<std::string>("osn", osn) ;  // ADDED for specials handling 
+        sub->set_meta<std::string>("OpticalSurfaceName", osn) ;  // ADDED for specials handling 
 
         const G4LogicalBorderSurface* bs = dynamic_cast<const G4LogicalBorderSurface*>(ls) ; 
         const G4LogicalSkinSurface*   ks = dynamic_cast<const G4LogicalSkinSurface*>(ls) ; 

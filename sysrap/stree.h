@@ -252,7 +252,7 @@ struct stree
 
     scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
     NPFold* material ;                     // material properties from G4 MPTs
-    NPFold* surface ;                      // surface properties from G4 MPTs         
+    NPFold* surface ;                      // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
 
     // HMM would there be any advantage in these moving to SSim ? 
     //
