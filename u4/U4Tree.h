@@ -232,9 +232,23 @@ inline void U4Tree::initMaterial(const G4Material* const mt)
 }
 
 
+/**
+U4Tree::initSurfaces
+----------------------
+
+1. U4Surface::Collect G4LogicalBorderSurface, G4LogicalSkinSurface pointers 
+   into *surfaces* vector of G4LogicalSurface
+
+2. Create stree::surface NPFold with U4Surface::MakeFold with all the 
+   surface properties
+
+2. collect surface indices and names into stree with with stree::add_surface 
+
+**/
+
 inline void U4Tree::initSurfaces()
 {
-    U4Surface::Collect(surfaces); 
+    U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
 
     for(unsigned i=0 ; i < surfaces.size() ; i++)

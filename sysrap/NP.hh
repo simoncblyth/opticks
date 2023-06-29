@@ -606,7 +606,7 @@ values will be provided at integer degrees from 0. to 180.
 
 **/
 
-template<typename T> NP* NP::MinusCosThetaLinearAngle(int nx) // static
+template<typename T> inline NP* NP::MinusCosThetaLinearAngle(int nx) // static
 {
     NP* a = NP::Make<T>(nx); 
     T* aa = a->values<T>(); 
@@ -619,7 +619,7 @@ template<typename T> NP* NP::MinusCosThetaLinearAngle(int nx) // static
     return a ; 
 }
 
-NP* NP::SqrtOneMinusSquare( const NP* a ) // static
+inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
 {
     assert( a->uifc == 'f' );   
     assert( a->ebyte == 4 || a->ebyte == 8  );   

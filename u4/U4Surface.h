@@ -226,8 +226,11 @@ inline const std::vector<G4LogicalBorderSurface*>* U4Surface::PrepareBorderSurfa
 
 
 /**
-U4Surface::AddBorder
---------------------------
+U4Surface::Collect 
+---------------------
+
+Collects G4LogicalBorderSurface and G4LogicalSkinSurface pointers
+into vector of G4LogicalSurface. 
 
 **/
 
@@ -251,6 +254,13 @@ inline void U4Surface::Collect( std::vector<const G4LogicalSurface*>& surfaces )
     }
 }
 
+/**
+U4Surface::MakeFold
+--------------------
+
+
+**/
+
 inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ) // static
 {
     NPFold* fold = new NPFold ; 
@@ -261,9 +271,13 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
         const char* key = name.c_str() ; 
 
         G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
+
         G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
         assert(mpt); 
         NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
+
+        const char* osn = os->GetName().c_str() ; 
+        sub->set_meta<std::string>("osn", osn) ;  // ADDED for specials handling 
 
         const G4LogicalBorderSurface* bs = dynamic_cast<const G4LogicalBorderSurface*>(ls) ; 
         const G4LogicalSkinSurface*   ks = dynamic_cast<const G4LogicalSkinSurface*>(ls) ; 
