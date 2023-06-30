@@ -1,34 +1,51 @@
 #pragma once
+/**
+sdomain.h
+===========
+
+
+Regarding hc_eVnm see U4PhysicalConstantsTest, 
+there is slight difference from smath.h float value : could be arising from CLHEP version difference
+
+**/
+
 
 #include <string>
 #include <sstream>
 #include <cassert>
 #include <iomanip>
 
+#include "NPFold.h"
+
+
 struct sdomain
 {
     static constexpr double hc_eVnm = 1239.84198433200208455673 ; 
-    // see U4PhysicalConstantsTest : there is slight difference from smath.h float value : could be arising from CLHEP version difference
     static constexpr const double    DOMAIN_LOW  = 60. ; 
     static constexpr const double    DOMAIN_HIGH = 820. ; 
-    static constexpr const double    DOMAIN_STEP = 20. ; 
-    static constexpr const unsigned DOMAIN_LENGTH = 39 ; 
+    static constexpr const double    COARSE_DOMAIN_STEP = 20. ; 
+    static constexpr const int       COARSE_DOMAIN_LENGTH = 39 ; 
+    static constexpr const double    FINE_DOMAIN_STEP = 1. ; 
+    static constexpr const int       FINE_DOMAIN_LENGTH = 761 ;  // 820-60+1   
+
     static constexpr const char     DOMAIN_TYPE = 'F' ;   // 'C'
-    static constexpr const double   FINE_DOMAIN_STEP = 1. ; 
-    static constexpr const unsigned FINE_DOMAIN_LENGTH = 761 ; 
- 
-    static constexpr double   DomainStep(){   return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_STEP    : DOMAIN_STEP ; }
-    static constexpr unsigned DomainLength(){  return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_LENGTH : DOMAIN_LENGTH ; }
+
+    static constexpr double DomainStep(){   return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_STEP    : COARSE_DOMAIN_STEP ; }
+    static constexpr int    DomainLength(){  return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_LENGTH : COARSE_DOMAIN_LENGTH ; }
 
     sdomain(); 
 
-    static std::string Desc(const double* vv, unsigned length, unsigned edge); 
+    const NP* get_wavelength_nm() const ; 
+    const NP* get_energy_eV() const ; 
+    NPFold* get_fold() const ; 
+
+    static std::string Desc(const double* vv, int length, int edge); 
     std::string desc() const ; 
 
-    unsigned length ; 
+    int length ; 
     double step ; 
     double* wavelength_nm ; 
-    double* energy_eV ; 
+    double* energy_eV ;      // HMM: energy_eV  is descending following ascending wavelength_nm 
 };
 
 inline sdomain::sdomain()
@@ -38,18 +55,36 @@ inline sdomain::sdomain()
     wavelength_nm(new double[length]),
     energy_eV(new double[length])
 {
-    for(unsigned i=0 ; i < length ; i++) wavelength_nm[i] = DOMAIN_LOW + step*double(i) ; 
+    for(int i=0 ; i < length ; i++) wavelength_nm[i] = DOMAIN_LOW + step*double(i) ; 
     assert( wavelength_nm[0] == DOMAIN_LOW ); 
     assert( wavelength_nm[length-1] == DOMAIN_HIGH ); 
-
-    for(unsigned i=0 ; i < length ; i++) energy_eV[i] = hc_eVnm/wavelength_nm[i] ; 
+    for(int i=0 ; i < length ; i++) energy_eV[i] = hc_eVnm/wavelength_nm[i] ; 
 }
 
-inline std::string sdomain::Desc(const double* vv, unsigned length, unsigned edge) 
+
+inline const NP* sdomain::get_wavelength_nm() const 
+{
+    return NP::MakeFromValues<double>( wavelength_nm, length ) ; 
+}
+inline const NP* sdomain::get_energy_eV() const 
+{
+    return NP::MakeFromValues<double>( energy_eV, length ) ; 
+}
+inline NPFold* sdomain::get_fold() const 
+{
+    NPFold* fold = new NPFold ; 
+    fold->add("wavelength_nm", get_wavelength_nm() ); 
+    fold->add("energy_eV", get_energy_eV() ); 
+    return fold ;  
+}
+
+
+
+inline std::string sdomain::Desc(const double* vv, int length, int edge) 
 {
     std::stringstream ss ; 
     ss << "(" ; 
-    for(unsigned i=0 ; i < length ; i++) 
+    for(int i=0 ; i < length ; i++) 
     {
         if( i < edge || i > length - edge )
             ss << std::fixed << std::setw(10) << std::setprecision(5) << vv[i] << " " ; 
@@ -62,7 +97,7 @@ inline std::string sdomain::Desc(const double* vv, unsigned length, unsigned edg
 }
 inline std::string sdomain::desc() const
 {
-    unsigned edge = 5 ; 
+    int edge = 5 ; 
     std::stringstream ss ; 
     ss 
         << "sdomain::desc"

@@ -28,13 +28,20 @@ a multiline constexpr string instead of the array.
 #include <string>
 #include <vector>
 #include <array>
+#include <iomanip>
+#include <cassert>
+
 #include "sstr.h"
 
 struct sprop
 {
+    enum { NUM_PAYLOAD_GRP = 2, NUM_PAYLOAD_VAL = 4, NUM_MATSUR = 4  } ;
+
     int  group ; 
     int  prop ;  
     char name[16] ; 
+    double def ; 
+
     std::string desc() const ; 
     bool parse(const char* str) ; 
     bool match(int g, int v) const ; 
@@ -49,14 +56,16 @@ struct sprop
 inline std::string sprop::desc() const 
 {
     std::stringstream ss ; 
-    ss << "(" << group << "," << prop << ") " << name ; 
+    ss << "(" << group << "," << prop << ") " 
+       << std::setw(20) << name 
+       << "[" << std::setw(15) << std::scientific << def << "]"  ; 
     std::string s = ss.str(); 
     return s ; 
 }
 inline bool sprop::parse(const char* str) 
 {
     std::stringstream ss(str) ; 
-    ss >> group >> prop >> name ; 
+    ss >> group >> prop >> name >> def ; 
     if (ss.fail()) return false ; 
     return true ; 
 }
@@ -102,62 +111,11 @@ inline const sprop* sprop::FindProp(const std::vector<sprop>& prop, const char* 
 }
 inline const sprop* sprop::Find(const std::vector<sprop>& prop, int g, int v)
 {
+    assert( g > -1 && g < NUM_PAYLOAD_GRP ); 
+    assert( v > -1 && v < NUM_PAYLOAD_VAL ); 
     const sprop* p = nullptr ; 
     for(unsigned i=0 ; i < prop.size() ; i++) if(prop[i].match(g,v)) p = &prop[i] ; 
     return p ; 
 }
-
-
-
-struct sprop_Material
-{
-    enum { NUM_PAYLOAD_GRP = 2, NUM_PAYLOAD_VAL = 4 } ;
-
-    static constexpr const char* SPEC = R"(
-    0 0 RINDEX
-    0 1 ABSLENGTH
-    0 2 RAYLEIGH
-    0 3 REEMISSIONPROB
-    1 0 GROUPVEL
-    1 1 SPARE11
-    1 2 SPARE12
-    1 3 SPARE13
-    )" ;
-
-    std::vector<sprop> PROP ; 
-
-    sprop_Material(); 
-
-    std::string desc() const ; 
-    void getNames(std::vector<std::string>& pnames, const char* skip_prefix="SPARE") const ; 
-    const sprop* findProp(const char* pname) const ; 
-    const sprop* get(int g, int p) const ; 
-};
-
-inline sprop_Material::sprop_Material()
-{
-    sprop::Parse(PROP, SPEC); 
-}
-inline std::string sprop_Material::desc() const 
-{
-    return sprop::Desc(PROP); 
-}
-inline void sprop_Material::getNames(std::vector<std::string>& pnames, const char* skip_prefix ) const 
-{
-    sprop::GetNames(pnames, PROP, skip_prefix);  
-}
-inline const sprop* sprop_Material::findProp(const char* pname) const 
-{
-    return sprop::FindProp(PROP, pname); 
-}
-inline const sprop* sprop_Material::get(int g, int v) const 
-{
-    assert( g > -1 && g < NUM_PAYLOAD_GRP ); 
-    assert( v > -1 && v < NUM_PAYLOAD_VAL ); 
-    return sprop::Find(PROP, g, v) ; 
-}
-
-
-
 
 

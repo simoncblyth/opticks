@@ -1,9 +1,8 @@
-// name=sprop_test ; gcc $name.cc -I.. -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name 
+// ./sproplist_test.sh 
 
 #include <iostream>
 #include <iomanip>
-#include "sprop.h"
-
+#include "sproplist.h"
 
 void test_sprop_parse(const char* str)
 {
@@ -13,37 +12,42 @@ void test_sprop_parse(const char* str)
 
 void test_sprop_parse()
 {
-    const char* str0 = "   2 3 RINDEX   " ; 
+    const char* str0 = "   2 3 RINDEX 1.0  " ; 
     const char* str1 = "   2 3 " ; 
     test_sprop_parse(str0); 
     test_sprop_parse(str1); 
 }
 
-
-int main(int argc, char** argv)
+void test_sproplist_Material()
 {
-    sprop_Material pm ; 
-    std::cout << "sprop_Material::desc" << std::endl << pm.desc() ; 
+    const sproplist* pm = sproplist::Material() ; 
+    std::cout << "pm.desc" << std::endl << pm->desc() ; 
 
     std::vector<std::string> names ; 
-    pm.getNames(names) ; 
+    pm->getNames(names) ; 
 
     std::cout << "names.size " << names.size() << std::endl ; 
     for(size_t i=0 ; i < names.size() ; i++) 
     {
         const char* name = names[i].c_str(); 
-        const sprop* prop = pm.findProp(name) ; 
+        const sprop* prop = pm->findProp(name) ; 
         std::cout << std::setw(20) << name << " : " << prop->desc() << std::endl ; 
     }
 
-    for(int g=0 ; g < sprop_Material::NUM_PAYLOAD_GRP ; g++)
+    for(int g=0 ; g < sprop::NUM_PAYLOAD_GRP ; g++)
     {
-        for(int v=0 ; v < sprop_Material::NUM_PAYLOAD_VAL ; v++)
+        for(int v=0 ; v < sprop::NUM_PAYLOAD_VAL ; v++)
         {
-            const sprop* prop = pm.get(g,v) ; 
+            const sprop* prop = pm->get(g,v) ; 
             std::cout << " pm.get(" << g << "," << v << ") " << prop->desc() << std::endl ; 
         }
     }
+}
+
+
+int main(int argc, char** argv)
+{
+    test_sproplist_Material(); 
 
     return 0 ; 
 }

@@ -75,7 +75,9 @@ struct NP
 
     // STATIC CREATION METHODS 
 
-
+    template<typename T> static NP* MakeFromValues( const T* vals, int num_vals ); 
+    template<typename T> static int ALength(  T x0, T x1, T st ); 
+    template<typename T> static NP* ARange(   T x0, T x1, T st ); 
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
                          static NP* SqrtOneMinusSquare( const NP* a ); 
@@ -575,6 +577,58 @@ template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
 
 // STATIC CREATION METHODS 
+
+template<typename T> 
+inline NP* NP::MakeFromValues( const T* vals, int num_vals )
+{
+    NP* a = NP::Make<T>(num_vals) ; 
+    T* aa = a->values<T>(); 
+    for(int i=0 ; i < num_vals ; i++) aa[i] = vals[i] ; 
+    return a ; 
+}
+
+template <typename T>
+inline int NP::ALength(T x0, T x1, T dx) // static
+{
+    T x = x0 ; 
+    int n = 0 ; 
+    while( x < x1 )  // "<=" OR "<" ?  Follow np.arange 
+    {   
+       x += dx ;
+       n++ ; 
+    }   
+    return n ; 
+}
+
+/**
+NP::ARange
+-------------
+
+This follows NumPy np.arange in not giving end values. 
+If you want to hit an end value use NP::Linspace.   
+
+::
+
+    In [6]: a = np.arange(10,100,10,dtype=np.float32) ; a
+    Out[6]: array([10., 20., 30., 40., 50., 60., 70., 80., 90.], dtype=float32)
+
+    In [7]: a.shape
+    Out[7]: (9,)
+
+**/
+
+
+template<typename T> 
+inline NP* NP::ARange( T x0, T x1, T dx ) // static
+{
+    assert( x1 > x0 ); 
+    assert( dx > 0. ) ; 
+    int ni = ALength(x0,x1,dx) ; 
+    NP* a = NP::Make<T>(ni) ; 
+    T* aa = a->values<T>() ;  
+    for(int i=0 ; i < ni ; i++ ) aa[i] = x0 + T(i)*dx ; 
+    return a ; 
+}
 
 
 template <typename T> 

@@ -176,11 +176,24 @@ void SSim::import_bnd()
     const NP* bnd = get_bnd(); 
     assert(bnd) ; 
     const std::vector<std::string>& bnames = bnd->names ; 
-    SBnd::FillMaterialLine( tree, bnames ); 
+
+    std::vector<int>& mtline = tree->mtline ; 
+    const std::vector<int>& mtindex = tree->mtindex ; 
+    const std::vector<std::string>& mtname = tree->mtname ; 
+    
+    SBnd::FillMaterialLine( mtline, mtindex, mtname, bnames ); 
+    //SBnd::FillMaterialLine( tree, bnames ); 
+
+    tree->init_mtindex_to_mtline() ; // fills (int,int) map 
 
     LOG(LEVEL) << tree->desc_mt() ; 
     LOG(LEVEL) << "]" ;  
 }
+
+
+
+
+
 
 
 

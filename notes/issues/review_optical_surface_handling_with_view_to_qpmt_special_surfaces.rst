@@ -269,18 +269,7 @@ Note difference between the old bnd_names.txt and new stree/bd_names.txt wrt Imp
 Q: How to add perfect surface in direct workflow ?
 -----------------------------------------------------
 
-1st: need to develop the addition of standard material and surfaces
----------------------------------------------------------------------
-
-Thats reimplementing GMaterialLib::createStandardMaterial
-
-
-
-
-
-
-
-
+* :doc:`mat_sur_bnd_optical_direct_without_GGeo_X4`
 
 
 TODO : generalize optical.x to carry special surface enum (plenty of bits available)

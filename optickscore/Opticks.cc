@@ -171,7 +171,7 @@ glm::vec4 Opticks::GetCoarseDomainSpec()   // formerly getDefaultDomainSpec
 
     bd.x = sdomain::DOMAIN_LOW ;
     bd.y = sdomain::DOMAIN_HIGH ;
-    bd.z = sdomain::DOMAIN_STEP ;
+    bd.z = sdomain::COARSE_DOMAIN_STEP ;
     bd.w = sdomain::DOMAIN_HIGH - sdomain::DOMAIN_LOW ;
 
     return bd ; 

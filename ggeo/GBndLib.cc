@@ -1078,7 +1078,7 @@ NPY<double>* GBndLib::createBufferForTex2d()
     unsigned int nm = 4 ; 
 
 
-    assert( nl == sdomain::DOMAIN_LENGTH || nl == sdomain::FINE_DOMAIN_LENGTH ) ;
+    assert( nl == sdomain::COARSE_DOMAIN_LENGTH || nl == sdomain::FINE_DOMAIN_LENGTH ) ;
     bool fine = nl == sdomain::FINE_DOMAIN_LENGTH ;
     glm::vec4 dom = fine ? Opticks::GetFineDomainSpec() : Opticks::GetCoarseDomainSpec()  ;
 

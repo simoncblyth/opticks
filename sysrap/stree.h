@@ -176,7 +176,7 @@ When SSim not in use can also use::
 #include "snd.hh"
 #include "scsg.hh"
 #include "stra.h"
-#include "smaterial.h"
+#include "sstandard.h"
 
 
 struct stree
@@ -442,8 +442,7 @@ struct stree
 
     NP* create_mat() const ; 
     NP* create_sur() const ; 
-    NP* create_bnd() const ; 
-
+    NP* create_bnd( const NP* _mat, const NP* _sur) const ; 
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface(  const char* name, unsigned idx ); 
@@ -2810,15 +2809,17 @@ Old bnd buffer::
 
 inline NP* stree::create_mat() const 
 {
-    return smaterial::create(mtname, material) ; 
+    return sstandard::mat(mtname, material) ; 
 }
 inline NP* stree::create_sur() const 
 {
-    return nullptr ; 
+    return sstandard::sur(suname, surface) ; 
 }
-inline NP* stree::create_bnd() const 
+inline NP* stree::create_bnd(const NP* _mat, const NP* _sur) const 
 {
-    return nullptr ; 
+    const NP* m = _mat ? _mat : create_mat(); 
+    const NP* s = _sur ? _sur : create_sur(); 
+    return sstandard::bnd(bd, bdname, m , s ); 
 }
 
 
@@ -2860,7 +2861,7 @@ live creation or from stree::load_ when loading a persisted stree.
 inline void stree::init_mtindex_to_mtline()
 {
     bool consistent = mtindex.size() == mtline.size() ;
-    if(!consistent) std::cerr << "must use SBnd::fillMaterialLine once have bnd specs" << std::endl ; 
+    if(!consistent) std::cerr << "must use SBnd::FillMaterialLine once have bnd specs" << std::endl ; 
     assert(consistent); 
     for(unsigned i=0 ; i < mtindex.size() ; i++) mtindex_to_mtline[mtindex[i]] = mtline[i] ;  
 }

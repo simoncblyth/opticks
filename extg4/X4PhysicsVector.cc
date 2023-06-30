@@ -158,6 +158,19 @@ T X4PhysicsVector<T>::_hc_eVnm()  // 1239.84...
     return h_Planck*c_light/(eV*nm) ; 
 }
 
+/**
+X4PhysicsVector::getInterpolatedValues
+---------------------------------------
+
+Each of the domain wavelength_nm values is converted 
+into energy_eV which is used by the m_vec G4PhysicsVector::Value 
+to get an interpolated value stored into the new array. 
+Thus the energy domain is swapped out for a different 
+interpolated wavelength domain.  Notice that no reversal 
+is needed because the wavelength_nm array is just directing 
+a bunch of interpolation Value calls to the m_vec. 
+
+**/
 
 template <typename T>
 T* X4PhysicsVector<T>::getInterpolatedValues(T* wavelength_nm, size_t n, T hc_eVnm_ ) const
@@ -170,7 +183,7 @@ T* X4PhysicsVector<T>::getInterpolatedValues(T* wavelength_nm, size_t n, T hc_eV
     {
         T wl_nm = wavelength_nm[i] ; 
         T en_eV = hc_eVnm/wl_nm ; 
-        T value = m_vec->Value(en_eV*eV); 
+        T value = m_vec->Value(en_eV*eV);     // eV = electronvolt = 1.e-6  "g4-cls SystemOfUnits" 
         a[i] = value ;
 
         /*

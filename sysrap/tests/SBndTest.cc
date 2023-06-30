@@ -5,6 +5,8 @@
 #include "SSim.hh"
 #include "SBnd.h"
 #include "SPath.hh"
+#include "sproplist.h"
+
 #include "NPFold.h"
     
 void test_descBoundary(const SBnd& sb)
@@ -155,11 +157,6 @@ void test_getPropertyGroup(const SBnd& sb)
 }
 
 
-void test_DescMaterialProp()
-{
-    std::cout << SBnd::DescMaterialProp() << std::endl ; 
-}
-
 /**
 test_getProperty_Q
 -------------------
@@ -194,9 +191,13 @@ void test_getProperty_Q(const SBnd& sb)
 
 void test_getProperty(const SBnd& sb)
 {
+    const sproplist* pl = sproplist::Material(); 
+
     std::vector<std::string> pnames ; 
-    SBnd::GetMaterialPropNames(pnames); 
-    //for(unsigned i=0 ; i < pnames.size() ; i++) std::cout << pnames[i] << std::endl ; 
+    //SBnd::GetMaterialPropNames(pnames); 
+    pl->getNames(pnames) ; 
+
+    for(unsigned i=0 ; i < pnames.size() ; i++) std::cout << pnames[i] << std::endl ; 
 
     std::vector<std::string> mnames ; 
     sb.getMaterialNames(mnames);     

@@ -60,7 +60,7 @@ GDomain<T>* GDomain<T>::MakeDefaultDomain()  // static
 template <typename T>
 GDomain<T>* GDomain<T>::MakeCoarseDomain()  // static
 {
-    return  new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::DOMAIN_STEP ); 
+    return  new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::COARSE_DOMAIN_STEP ); 
 }
 
 template <typename T>

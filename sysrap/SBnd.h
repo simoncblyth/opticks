@@ -22,26 +22,8 @@ Principal user QBnd.hh
 
 #include "NP.hh"
 #include "sstr.h"
-#include "stree.h"
 #include "sdigest.h"
-
-
-struct SBndProp
-{
-    int  group ; 
-    int  prop ;  
-    char name[16] ; 
-    std::string desc() const ; 
-}; 
-
-inline std::string SBndProp::desc() const 
-{
-    std::stringstream ss ; 
-    ss << "(" << group << "," << prop << ") " << name ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
-
+#include "sproplist.h"
 
 struct SBnd
 {
@@ -49,24 +31,6 @@ struct SBnd
 
     static constexpr const unsigned MISSING = ~0u ;
     const std::vector<std::string>& bnames ; 
-
-    // TODO: replace MaterialProp with sprop_Material from sprop.h 
-
-    static constexpr std::array<SBndProp, 8> MaterialProp = 
-    {{
-        { 0,0,"RINDEX" },
-        { 0,1,"ABSLENGTH" },
-        { 0,2,"RAYLEIGH" },
-        { 0,3,"REEMISSIONPROB" },
-        { 1,0,"GROUPVEL" },
-        { 1,1,"SPARE11"  },
-        { 1,2,"SPARE12"  },
-        { 1,3,"SPARE13"  },
-    }};
-    static std::string DescMaterialProp(); 
-    static void GetMaterialPropNames(std::vector<std::string>& pnames, const char* skip_prefix="SPARE"); 
-    static const SBndProp* FindMaterialProp(const char* pname); 
-
 
     SBnd(const NP* src_); 
 
@@ -103,46 +67,20 @@ struct SBnd
     void getProperty(std::vector<T>& out, const char* qname, const char* propname ) const ; 
 
 
-    static void FillMaterialLine( stree* st, const std::vector<std::string>& specs ); 
-    void fillMaterialLine( stree* st ); 
+    static void FillMaterialLine( 
+         std::vector<int>& mtline, 
+         const std::vector<int>& mtindex,
+         const std::vector<std::string>& mtname, 
+         const std::vector<std::string>& specs 
+    ); 
+
 
     static void GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim='\n' ); 
 
+    NP* reconstruct_mat() const ; 
+    NP* reconstruct_sur() const ; 
+
 };
-
-
-/**
-SBnd::DescMaterialProp
------------------------
-
-Returns string tabulating the standard properties. 
-
-**/
-
-inline std::string SBnd::DescMaterialProp() // static 
-{
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < MaterialProp.size() ; i++)  ss << MaterialProp[i].desc() << std::endl; 
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-inline void SBnd::GetMaterialPropNames(std::vector<std::string>& pnames, const char* skip_prefix ) // static
-{
-    for(unsigned i=0 ; i < MaterialProp.size() ; i++) 
-    {
-        const char* name = MaterialProp[i].name ; 
-        if(sstr::MatchStart(name, skip_prefix) == false ) pnames.push_back(name) ; 
-    }
-}
-
-
-inline const SBndProp* SBnd::FindMaterialProp(const char* pname) // static
-{
-    const SBndProp* prop = nullptr ; 
-    for(unsigned i=0 ; i < MaterialProp.size() ; i++) if(strcmp(MaterialProp[i].name, pname)==0) prop = &MaterialProp[i] ; 
-    return prop ; 
-}
 
 
 inline SBnd::SBnd(const NP* src_)
@@ -246,7 +184,7 @@ SBnd::getBoundaryLine
 -----------------------
 
 The boundary spec allows to obtain the boundary index, 
-the boundary line returned is : 4*boundary_idex + j 
+the boundary line returned is : 4*boundary_index + j 
 
 **/
 
@@ -456,9 +394,9 @@ For example with a source bnd array of shape  (44, 4, 2, 761, 4, )
 the expected spawned property group  array shape depends on the value of k:
 
 k=-1
-     (2, 761, 4,)   eight property vaulues across wavelength domain
+     (2, 761, 4,)   eight property values across wavelength domain
 k=0
-     (761, 4)       four property vaulues across wavelength domain 
+     (761, 4)       four property values across wavelength domain 
 k=1
      (761, 4)
 
@@ -494,8 +432,11 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
     int boundary, species ; 
     bool found_qname = findName(boundary, species, qname); 
     assert(found_qname); 
- 
-    const SBndProp* bp = FindMaterialProp(propname); 
+
+    //const SBndProp* bp = FindMaterialProp(propname); 
+
+    const sproplist* pm = sproplist::Material(); 
+    const sprop* bp = pm->findProp(propname) ; 
     assert(bp); 
 
     int group = bp->group ; 
@@ -510,34 +451,36 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
 SBnd::FillMaterialLine
 -----------------------
 
+Used from SSim::import_bnd
+
 Uses the "specs" boundary name list to convert 
 all the stree::mtname into st->mtline 
 
 These mtline are used to lookup material properties
 from the boundary texture array. 
 
+Previously used an stree argument to access mtline, mtindex, mtname
+but as that is the only stree dependenct of SBnd.h gave moved that 
+up to SSim::import_bnd
+
 **/
 
-inline void SBnd::FillMaterialLine( stree* st, const std::vector<std::string>& specs )
+inline void SBnd::FillMaterialLine( 
+     std::vector<int>& mtline, 
+     const std::vector<int>& mtindex,
+     const std::vector<std::string>& mtname, 
+     const std::vector<std::string>& specs )
 {
-    if(st == nullptr) return ; 
-    assert( st->mtindex.size() == st->mtname.size() );  
-    unsigned num_mt = st->mtindex.size() ; 
+    assert( mtindex.size() == mtname.size() );  
+    int num_mt = mtindex.size() ; 
+    mtline.clear(); 
 
-    st->mtline.clear(); 
-    for(unsigned i=0 ; i < num_mt ; i++)
+    for(int i=0 ; i < num_mt ; i++)
     {
-        const char* mtname = st->mtname[i].c_str() ; 
-        int mtline = GetMaterialLine(mtname, specs) ;  // unsigned ~0u "MISSING" becomes int -1 
-        st->mtline.push_back(mtline); 
-        //int mtindex = st->mtindex[i] ; 
+        const char* mt = mtname[i].c_str() ; 
+        int mt_line = GetMaterialLine(mt, specs) ;  // unsigned ~0u "MISSING" becomes int -1 
+        mtline.push_back(mt_line); 
     }
-
-    st->init_mtindex_to_mtline() ;
-}
-inline void SBnd::fillMaterialLine( stree* st )
-{
-    FillMaterialLine(st, bnames);    
 }
 
 
@@ -549,5 +492,20 @@ inline void SBnd::GetSpecsFromString( std::vector<std::string>& specs , const ch
     while (std::getline(ss, s, delim)) if(!sstr::Blank(s.c_str())) specs.push_back(s) ;
     std::cout << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
 }
+
+inline NP* SBnd::reconstruct_mat() const 
+{
+
+    
+
+
+    return nullptr ; 
+}
+inline NP* SBnd::reconstruct_sur() const 
+{
+    return nullptr ; 
+}
+
+
 
 

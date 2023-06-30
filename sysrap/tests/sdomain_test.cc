@@ -1,4 +1,4 @@
-// name=sdomain_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+// ./sdomain_test.sh 
 
 #include <iostream>
 #include "sdomain.h"
@@ -9,6 +9,9 @@ int main()
 
     sdomain dom ; 
     std::cout << dom.desc() << std::endl ; 
+
+    NPFold* fold = dom.get_fold() ; 
+    fold->save("$FOLD") ;    
 
     return 0 ; 
 }

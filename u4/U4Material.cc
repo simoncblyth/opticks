@@ -11,6 +11,8 @@
 #include "SSim.hh"
 #include "SBnd.h"
 #include "sdomain.h"
+#include "sproplist.h"
+
 #include "NPFold.h"
 #include "NP.hh"
 #include "SLOG.hh"
@@ -544,7 +546,7 @@ NP* U4Material::MakePropertyArray( double value )
 
     NP* a = NP::Make<double>(sdom.length, 2); 
     double* vv = a->values<double>(); 
-    for(unsigned i=0 ; i < sdom.length ; i++)
+    for(int i=0 ; i < sdom.length ; i++)
     {
         vv[i*2+0] = dom[i] ; 
         vv[i*2+1] = value  ; 
@@ -799,8 +801,10 @@ void U4Material::LoadBnd(const char* ssimdir)
     std::vector<std::string> mnames ; 
     sb->getMaterialNames(mnames );
 
+    const sproplist* pl = sproplist::Material(); 
+
     std::vector<std::string> pnames ; 
-    SBnd::GetMaterialPropNames(pnames); 
+    pl->getNames(pnames); 
 
     sdomain sdom ;  
     std::vector<double> dom(sdom.energy_eV, sdom.energy_eV+sdom.length) ; 
