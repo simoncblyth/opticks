@@ -61,7 +61,7 @@ struct U4_API U4Material
     static G4MaterialPropertyVector* MakeProperty( double value ); 
     static G4MaterialPropertyVector* MakeProperty(const NP* a); 
     static NP* MakePropertyArray( double value ); 
-
+    static NP* MakeStandardArray(std::vector<const G4Material*>& mats); 
 
     static char Classify(const NP* a); 
     static std::string Desc(const char* key, const NP* a ); 

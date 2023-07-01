@@ -48,7 +48,7 @@ inline sidxname::sidxname(int idx_, const char* n )
    idx(idx_)
 {
    int max = sizeof(name) - 1 ; 
-   bool ok = strlen(n) <= max ; 
+   bool ok = int(strlen(n)) <= max ; 
    if(!ok) std::cerr 
         << "sidxname::sidxname"
         << " strlen(n) " << strlen(n)

@@ -7,8 +7,10 @@ U4TreeCreateTest.sh
 EOU
 }
 
+REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+
 bin=U4TreeCreateTest 
-defarg="run_ana"
+defarg="info_run_ana"
 arg=${1:-$defarg}
 
 loglevels(){
@@ -19,17 +21,32 @@ loglevels(){
 
 loglevels
 
-#geom=J006
-geom=J007
-export GEOM=${GEOM:-$geom}
-export ${GEOM}_GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
+source $HOME/.opticks/GEOM/GEOM.sh
+gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+
+if [ ! -f "$gdmlpath" ]; then
+   echo $BASH_SOURCE : ERROR GEOM $GEOM LACKS gdmlpath $gdmlpath 
+   exit 1 
+fi 
+export ${GEOM}_GDMLPath=$gdmlpath
 export FOLD=/tmp/$USER/opticks/$bin
+script=$REALDIR/$bin.py 
 
+vars="BASH_SOURCE REALDIR bin GEOM gdmlpath FOLD script"
+
+
+if [ "${arg/info}" != "$arg" ]; then 
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+fi 
+
+if [ "${arg/build}" != "$arg" ]; then 
+    echo $BASH_SOURCE : FATAL bin $bin IS BUILD BY STANDARD u4 OM : NOT THIS SCRIPT && exit 1
 fi 
 
 if [ "${arg/load}" != "$arg" ]; then 
@@ -47,10 +64,9 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 
-
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 4
+    ${IPYTHON:-ipython} --pdb -i $script
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
 
 exit 0 

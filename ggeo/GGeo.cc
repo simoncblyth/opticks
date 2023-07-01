@@ -2536,6 +2536,8 @@ void GGeo::convertSim() const
 GGeo::convertSim_BndLib
 ------------------------
 
+Invoked by GGeo::convertSim
+
 Migrated down from CSG_GGeo_Convert::convertBndLib
 
 **/
@@ -2564,8 +2566,18 @@ void GGeo::convertSim_BndLib(SSim* sim) const
 
         LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
 
+         
         sim->add(SSim::BND, bnd ); 
         sim->add(SSim::OPTICAL, optical ); 
+
+ 
+        // OLD WORKFLOW ADDITION TO CHECK NEW WORKFLOW 
+        GMaterialLib* mlib = getMaterialLib(); 
+        GSurfaceLib*  slib = getSurfaceLib(); 
+        NP* oldmat = mlib->getBuf();
+        NP* oldsur = slib->getBuf();
+        sim->add(SSim::OLDMAT, oldmat ); 
+        sim->add(SSim::OLDSUR, oldsur ); 
     }    
     else 
     {    

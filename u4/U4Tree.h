@@ -228,6 +228,8 @@ inline void U4Tree::initMaterials()
 {
     initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
+    st->mat = U4Material::MakeStandardArray(materials) ; 
+
 }
 inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 {
@@ -264,6 +266,7 @@ inline void U4Tree::initSurfaces()
 {
     U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
+    st->sur = U4Surface::MakeStandardArray(surfaces) ; 
 
     for(unsigned i=0 ; i < surfaces.size() ; i++)
     {
@@ -396,6 +399,7 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
     const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
 
+    /*
     const G4MaterialPropertyVector* irindex = GetRINDEX( imat_ ) ; 
     const G4MaterialPropertyVector* orindex = GetRINDEX( omat_ ) ; 
 
@@ -411,6 +415,7 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
         << " omat_ " << omat_  
         << std::endl 
         ;
+    */
      
     // TODO: complete implicit handling, fabricating perfect absorber surface when needed 
 

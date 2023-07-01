@@ -140,6 +140,21 @@ inline NP* sstandard::sur( const std::vector<std::string>& names, const NPFold* 
     return create(pl, names, fold ); 
 }
 
+/**
+sstandard::create
+--------------------
+
+This operates from the NPFold props using NP interpolation. 
+
+Perhaps it will be easier to operate at U4Tree level using Geant4 interpolation
+with::
+
+   U4Material::MakeStandardArray
+   U4Surface::MakeStandardArray
+ 
+
+**/
+
 inline NP* sstandard::create(const sproplist* pl, const std::vector<std::string>& names, const NPFold* fold )
 { 
     sdomain dom ; 

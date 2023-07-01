@@ -352,6 +352,9 @@ NPFold* U4Material::MakePropertyFold(std::vector<const G4Material*>& mats)
 }
 
 
+
+
+
 NPFold* U4Material::MakePropertyFold(const G4Material* mat )
 {
     NPFold* fold = new NPFold ; 
@@ -531,13 +534,13 @@ G4MaterialPropertyVector* U4Material::MakeProperty(const NP* a)  // static
     return mpv ; 
 }
 
-G4MaterialPropertyVector* U4Material::MakeProperty( double value )
+G4MaterialPropertyVector* U4Material::MakeProperty( double value ) // static
 {
     NP* a = MakePropertyArray(value); 
     return MakeProperty(a); 
 }
 
-NP* U4Material::MakePropertyArray( double value )
+NP* U4Material::MakePropertyArray( double value ) // static 
 {
     sdomain sdom ;  
     std::vector<double> dom(sdom.energy_eV, sdom.energy_eV+sdom.length) ; 
@@ -551,6 +554,55 @@ NP* U4Material::MakePropertyArray( double value )
         vv[i*2+0] = dom[i] ; 
         vv[i*2+1] = value  ; 
     }
+    return a ; 
+}
+
+NP* U4Material::MakeStandardArray(std::vector<const G4Material*>& mats) // static
+{
+    sdomain dom ; 
+    const sproplist* pl = sproplist::Material() ; 
+        
+    int ni = mats.size() ;
+    int nj = sprop::NUM_PAYLOAD_GRP ; 
+    int nk = dom.length ; 
+    int nl = sprop::NUM_PAYLOAD_VAL ; 
+
+    NP* a = NP::Make<double>(ni, nj, nk, nl ); 
+    double* aa = a->values<double>() ; 
+
+    std::vector<std::string> names ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const G4Material* mat = mats[i] ; 
+        const G4String& name = mat->GetName() ; 
+        names.push_back(name.c_str()) ; 
+        G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+        if( mpt == nullptr ) std::cerr << "U4Material::MakeStandardArray NO MPT " << name << std::endl ; 
+
+        for(int j=0 ; j < nj ; j++)           // payload groups
+        {
+            for(int k=0 ; k < nk ; k++)       // energy or wavelength domain 
+            {
+                double energy_eV = dom.energy_eV[k] ;
+                double energy = energy_eV * eV ; 
+
+                for(int l=0 ; l < nl ; l++)   // payload values             
+                { 
+                    const sprop* p = pl->get(j,l) ;
+                    assert( p );
+
+                    const char* key = p->name ;
+                    G4MaterialPropertyVector* prop = mpt ? mpt->GetProperty(key) : nullptr ; 
+                    double value = prop ? prop->Value(energy) : p->def ; 
+
+                    int index = i*nj*nk*nl + j*nk*nl + k*nl + l ;
+                    aa[index] = value ; 
+                }
+            } 
+        }
+    }
+    a->set_names(names) ; 
     return a ; 
 }
 

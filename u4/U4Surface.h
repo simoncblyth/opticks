@@ -21,6 +21,9 @@ use a small array and plant metadata on that
 
 #include "S4.h"
 
+#include "sdomain.h"
+#include "sproplist.h"
+
 #if G4VERSION_NUMBER >= 1070
 #include "SNameOrder.h"
 #endif
@@ -58,6 +61,8 @@ struct U4Surface
     static void    Collect( std::vector<const G4LogicalSurface*>& surfaces ); 
     static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ); 
     static NPFold* MakeFold(); 
+
+    static NP* MakeStandardArray(const std::vector<const G4LogicalSurface*>& surfaces ) ; 
 
     static G4LogicalSurface* Find( const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV ) ;  
 
@@ -314,6 +319,60 @@ inline NPFold* U4Surface::MakeFold()
     Collect(surfaces); 
     return MakeFold(surfaces) ; 
 }
+
+inline NP* U4Surface::MakeStandardArray(const std::vector<const G4LogicalSurface*>& surfaces ) // static
+{
+    sdomain dom ; 
+    const sproplist* pl = sproplist::Surface() ; 
+        
+    int ni = surfaces.size() ;
+    int nj = sprop::NUM_PAYLOAD_GRP ; 
+    int nk = dom.length ; 
+    int nl = sprop::NUM_PAYLOAD_VAL ; 
+
+    NP* a = NP::Make<double>(ni, nj, nk, nl ); 
+    double* aa = a->values<double>() ; 
+
+    std::vector<std::string> names ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const G4LogicalSurface* ls = surfaces[i] ; 
+        const G4String& name = ls->GetName() ; 
+        names.push_back(name.c_str()) ; 
+
+        G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
+        G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
+        assert( mpt ); 
+        //if( mpt == nullptr ) std::cerr << "U4Surface::MakeStandardArray NO MPT " << name << std::endl ; 
+
+        for(int j=0 ; j < nj ; j++)           // payload groups
+        {
+            for(int k=0 ; k < nk ; k++)       // energy or wavelength domain 
+            {
+                double energy_eV = dom.energy_eV[k] ;
+                double energy = energy_eV * eV ; 
+
+                for(int l=0 ; l < nl ; l++)   // payload values             
+                { 
+                    const sprop* p = pl->get(j,l) ;
+                    assert( p );
+
+                    const char* key = p->name ;
+                    G4MaterialPropertyVector* prop = mpt ? mpt->GetProperty(key) : nullptr ; 
+                    double value = prop ? prop->Value(energy) : p->def ; 
+
+                    int index = i*nj*nk*nl + j*nk*nl + k*nl + l ;
+                    aa[index] = value ; 
+                }
+            } 
+        }
+    }
+    a->set_names(names) ; 
+    return a ; 
+}
+
+
 
 /**
 U4Surface::Find

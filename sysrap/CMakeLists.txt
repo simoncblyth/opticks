@@ -204,9 +204,12 @@ set(HEADERS
     sfreq.h 
     snode.h
     stree.h 
+
     sstandard.h
     sprop.h 
     sproplist.h 
+    sidxname.h 
+
     strid.h 
     sfactor.h
 

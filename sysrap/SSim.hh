@@ -42,6 +42,9 @@ struct SYSRAP_API SSim
     static constexpr const char* ICDF = "icdf.npy" ;
     static constexpr const char* PROPCOM = "propcom.npy" ;
     static constexpr const char* MULTIFILM = "multifilm.npy" ;
+    static constexpr const char* OLDMAT = "oldmat.npy" ; 
+    static constexpr const char* OLDSUR = "oldsur.npy" ; 
+
  
     static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 

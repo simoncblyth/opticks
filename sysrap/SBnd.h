@@ -576,7 +576,7 @@ inline NP* SBnd::mat_from_bd(const NP* bd) const
     // 0. check bd array is as expected
 
     assert( bd && bd->uifc == 'i' && bd->shape.size() == 2 && bd->shape[1] == 4 ) ; 
-    assert( bd->names.size() == bd->shape[0] ); 
+    assert( int(bd->names.size()) == bd->shape[0] ); 
     const int* bd_v = bd->cvalues<int>();  
 
     // 1. check consistency between bd (num_bd, 4) int pointers
@@ -584,7 +584,7 @@ inline NP* SBnd::mat_from_bd(const NP* bd) const
 
     const std::vector<int>& bnd_sh = bnd->shape ; 
     assert( bnd && bnd->uifc == 'f' && bnd->ebyte == 8 ); 
-    assert( bnd_sh.size() == 5 ) ; 
+    assert( int(bnd_sh.size()) == 5 ) ; 
     assert( bnd_sh[0] == bd->shape[0] );
     const double* bnd_v = bnd->cvalues<double>() ; 
 

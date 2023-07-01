@@ -208,6 +208,8 @@ struct stree
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
+    static constexpr const char* MAT = "mat.npy" ;
+    static constexpr const char* SUR = "sur.npy" ;
     static constexpr const char* FACTOR = "factor.npy" ;
 
     static constexpr const char* INST = "inst.npy" ; 
@@ -252,18 +254,19 @@ struct stree
                                            // subs are collected in stree::classifySubtrees
 
     scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
-    NPFold* material ;                     // material properties from G4 MPTs
-    NPFold* surface ;                      // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
-
-    NP* mat ; 
-    NP* sur ; 
+    NPFold* material ;   // material properties from G4 MPTs
+    NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
 
     /**
-    TODO: need to juice these NPFold inputs into equivalents of the 
-    GMaterialLib and GSurfaceLib buffers using standard domains and default props
-    which then can be interleaved into the bnd array equivalent of GBndLib buffer 
-    that can then be compared between the workflows to validate the new approach
+    WIP: mat, sur 
+       standarized property arrays aiming to replace the old workflow
+       GMaterialLib and GSurfaceLib buffers using standard domains and default props
+       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
+       that can then be compared between the workflows to validate the new approach
     **/
+
+    NP* mat ;   // populated by U4Tree::initMaterials using U4Material::MakeStandardArray 
+    NP* sur ;   // populated by U4Tree::initSurfaces using U4Surface::MakeStandardArray   
 
 
     std::vector<glm::tmat4x4<double>> inst ; 
@@ -440,8 +443,13 @@ struct stree
     std::string desc_mt() const ; 
     std::string desc_bd() const ; 
 
+    /*
+    // rethinking these : doing instead up in U4Tree
+
     NP* create_mat() const ; 
     NP* create_sur() const ; 
+    */
+
     NP* create_bnd( const NP* _mat, const NP* _sur) const ; 
 
     void add_material( const char* name, unsigned g4index ); 
@@ -1621,12 +1629,15 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames(    fold, MTNAME,   mtname );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
-    if(material) material->save(fold, MATERIAL) ;   // HMM: consolidate ?
+    if(material) material->save(fold, MATERIAL) ;
+    if(mat) mat->save(fold, MAT) ;
+    
 
     // surfaces
     NP::WriteNames(    fold, SUNAME,   suname );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
-    if(surface)   surface->save(fold, SURFACE) ;   // HMM: consolidate ?
+    if(surface) surface->save(fold, SURFACE) ;
+    if(sur) sur->save(fold, SUR) ;
 
     // boundaries
     NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
@@ -1835,6 +1846,9 @@ inline int stree::load_( const char* fold )
     ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
     if(material) material->load(fold, MATERIAL) ;
     if(surface) surface->load(fold,   SURFACE) ;
+
+    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ; 
+    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ; 
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
@@ -2802,11 +2816,6 @@ Old bnd buffer::
     to 1nm FINE_DOMAIN binning.
 
 
-
-
-
-**/
-
 inline NP* stree::create_mat() const 
 {
     return sstandard::mat(mtname, material) ; 
@@ -2815,11 +2824,13 @@ inline NP* stree::create_sur() const
 {
     return sstandard::sur(suname, surface) ; 
 }
+**/
+
+
+
 inline NP* stree::create_bnd(const NP* _mat, const NP* _sur) const 
 {
-    const NP* m = _mat ? _mat : create_mat(); 
-    const NP* s = _sur ? _sur : create_sur(); 
-    return sstandard::bnd(bd, bdname, m , s ); 
+    return sstandard::bnd(bd, bdname, _mat , _sur ); 
 }
 
 
