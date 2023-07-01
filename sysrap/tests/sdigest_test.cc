@@ -25,6 +25,26 @@ When comparing with digests from files beware of the newline::
      i   3 : 5d41402abc4b2a76b9719d911017c592
 
 
+::
+
+    In [6]: import hashlib
+    In [7]: hashlib.md5(b"hello").hexdigest()
+    Out[7]: '5d41402abc4b2a76b9719d911017c592'
+
+    In [12]: a = np.array(b"hello", dtype="|S5" )
+    In [13]: a.data
+    Out[13]: <memory at 0x16ab67d60>
+    In [14]: hashlib.md5(a.data).hexdigest()
+    Out[14]: '5d41402abc4b2a76b9719d911017c592'
+
+    In [15]: a2 = np.array([b"hello", b"world"], dtype="|S5" )
+    In [16]: a2 
+    Out[16]: array([b'hello', b'world'], dtype='|S5')
+    In [17]: a2[0].data
+    Out[17]: <memory at 0x16aaddef0>
+    In [18]: hashlib.md5(a2[0].data).hexdigest()
+    Out[18]: '5d41402abc4b2a76b9719d911017c592'
+
 **/
 
 #include <cassert>

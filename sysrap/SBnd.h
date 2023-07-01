@@ -19,20 +19,24 @@ Principal user QBnd.hh
 #include <vector>
 #include <array>
 #include <sstream>
+#include <set>
 
 #include "NP.hh"
 #include "sstr.h"
 #include "sdigest.h"
 #include "sproplist.h"
+#include "sidxname.h"
+
+
 
 struct SBnd
 {
-    const NP* src ; 
+    const NP* bnd ; 
 
     static constexpr const unsigned MISSING = ~0u ;
     const std::vector<std::string>& bnames ; 
 
-    SBnd(const NP* src_); 
+    SBnd(const NP* bnd_); 
 
     std::string getItemDigest( int i, int j, int w=8 ) const ;
     std::string descBoundary() const ;
@@ -77,25 +81,28 @@ struct SBnd
 
     static void GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim='\n' ); 
 
-    NP* reconstruct_mat() const ; 
+
+
+    NP* bd_from_optical(const NP* op ) const ; 
+    NP* mat_from_bd(const NP* bd) const ; 
     NP* reconstruct_sur() const ; 
 
 };
 
 
-inline SBnd::SBnd(const NP* src_)
+inline SBnd::SBnd(const NP* bnd_)
     :
-    src(src_),
-    bnames(src->names)
+    bnd(bnd_),
+    bnames(bnd->names)
 {
     unsigned num_bnames = bnames.size() ; 
-    if( num_bnames == 0 ) std::cerr << "SBnd::SBnd no names from src " << ( src ? src->sstr() : "-" ) << std::endl ; 
+    if( num_bnames == 0 ) std::cerr << "SBnd::SBnd no names from bnd " << ( bnd ? bnd->sstr() : "-" ) << std::endl ; 
     //assert(num_bnames > 0 ); 
 }
 
 inline std::string SBnd::getItemDigest( int i, int j, int w ) const 
 {
-    return sdigest::Item(src, i, j, w );   // formerly SSim::GetItemDigest 
+    return sdigest::Item(bnd, i, j, w );   // formerly SSim::GetItemDigest 
 }
 inline std::string SBnd::descBoundary() const
 {
@@ -314,10 +321,16 @@ inline std::string SBnd::DescDigest(const NP* bnd, int w )  // static
 
 inline std::string SBnd::desc() const 
 {
-    return DescDigest(src,8) ;
+    return DescDigest(bnd,8) ;
 }
 
+/**
+SBnd::getMaterialNames
+-----------------------
 
+HMM: name order not the original one 
+
+**/
 
 inline void SBnd::getMaterialNames( std::vector<std::string>& names ) const 
 {
@@ -407,7 +420,7 @@ inline NP* SBnd::getPropertyGroup(const char* qname, int k) const
     int i, j ; 
     bool found = findName(i, j, qname); 
     assert(found); 
-    return src->spawn_item(i,j,k);  
+    return bnd->spawn_item(i,j,k);  
 }
 
 /**
@@ -427,7 +440,7 @@ SBnd::getProperty
 template<typename T>
 inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char* propname ) const 
 {
-    assert( sizeof(T) == src->ebyte ); 
+    assert( sizeof(T) == bnd->ebyte ); 
 
     int boundary, species ; 
     bool found_qname = findName(boundary, species, qname); 
@@ -443,7 +456,7 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
     int prop = bp->prop  ; 
     int wavelength = -1 ;   // slice dimension 
 
-    src->slice(out, boundary, species, group, wavelength, prop );  
+    bnd->slice(out, boundary, species, group, wavelength, prop );  
 }
 
 
@@ -493,19 +506,176 @@ inline void SBnd::GetSpecsFromString( std::vector<std::string>& specs , const ch
     std::cout << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
 }
 
-inline NP* SBnd::reconstruct_mat() const 
+
+
+/**
+SBnd::bd_from_optical
+----------------------
+
+Hmm, but the bd is new. For reconstruction of old_mat from the old_bnd
+I need to use an old_bd. Can recreate that by folding first column of old_optical 
+and subtracting 1.::
+
+    bd = np.array( t.old_optical[:,0].reshape(-1,4), dtype=np.int32 ) - 1 
+
+**/
+
+inline NP* SBnd::bd_from_optical(const NP* op ) const 
 {
+    assert( op && op->uifc == 'u' && op->shape.size() == 2 && op->shape[1] == 4 ) ; 
+    int num_op = op->shape[0] ; 
+    assert( num_op % 4 == 0 ); 
+    int num_bd = num_op / 4 ; 
 
-    
+    const unsigned* op_v = op->cvalues<unsigned>() ; 
+    int ni = num_bd ; 
+    int nj = 4 ; 
 
+    NP* bd = NP::Make<int>(ni, nj) ;  
+    int* bd_v = bd->values<int>() ; 
 
-    return nullptr ; 
+    for(int i=0 ; i < ni ; i++) 
+    for(int j=0 ; j < nj ; j++)
+    {
+        int src_index = (i*nj + j)*4 ;
+        int dst_index = i*nj + j ;  
+        bd_v[dst_index] = int(op_v[src_index]) - 1 ; 
+    }
+    bd->set_names(bnd->names) ; 
+    return bd ; 
 }
+
+
+/**
+SBnd::mat_from_bd
+-----------------------
+
+Creating mat from bd obtained from optical 1st column and bnd array 
+is of course the wrong order. Typically the converse is done 
+the bnd is created by interleaving together the mat and sur arrays. 
+However in the old GGeo/X4 workflow the mat and sur arrays were not 
+persisted with the bnd being created directly.
+
+Hence to facilitate development of mat,sur and bnd in new workflow
+it is useful to reconstruct what the old workflow mat and sur would 
+actually have been by pulling apart the old bnd and putting it together
+to form what the missing old mat and sur would have been. 
+
+When this is applied to an old bnd the old mat it provides can 
+be compared with new mat from stree::create_mat which uses sstandard::mat
+
+No gaps for materials, all mt indices in the bd int4 vector form contiguous range::
+
+    In [19]: np.unique( np.hstack( (t.bd[:,0], t.bd[:,3]) ) )
+    Out[19]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], dtype=int32)
+
+**/
+
+inline NP* SBnd::mat_from_bd(const NP* bd) const 
+{
+    // 0. check bd array is as expected
+
+    assert( bd && bd->uifc == 'i' && bd->shape.size() == 2 && bd->shape[1] == 4 ) ; 
+    assert( bd->names.size() == bd->shape[0] ); 
+    const int* bd_v = bd->cvalues<int>();  
+
+    // 1. check consistency between bd (num_bd, 4) int pointers
+    //    and bnd data eg (53, 4, 2, 761, 4, )
+
+    const std::vector<int>& bnd_sh = bnd->shape ; 
+    assert( bnd && bnd->uifc == 'f' && bnd->ebyte == 8 ); 
+    assert( bnd_sh.size() == 5 ) ; 
+    assert( bnd_sh[0] == bd->shape[0] );
+    const double* bnd_v = bnd->cvalues<double>() ; 
+
+
+    // 2. first bd pass to find the number of material indices
+
+    int ni = bd->shape[0] ; 
+    int nj = 4 ; 
+
+    std::set<sidxname, sidxname_ordering> mm ;  
+    for(int i=0 ; i < ni ; i++)
+    {
+        int omat = bd_v[i*nj+0] ; 
+        int imat = bd_v[i*nj+3] ; 
+
+        const char* bdn = bd->names[i].c_str() ; 
+        std::vector<std::string> elem ; 
+        sstr::Split(bdn, '/', elem );  
+        const char* omat_ = elem[0].c_str(); 
+        const char* imat_ = elem[3].c_str(); 
+
+        sidxname om(omat,omat_) ; 
+        sidxname im(imat,imat_) ; 
+
+        mm.insert(om); 
+        mm.insert(im); 
+    }
+
+    std::vector<sidxname> vmm(mm.begin(),mm.end()) ; 
+    int num_mt = vmm.size() ;
+
+    // 3. assert that bd (omat,imat) contains contiguous set of material indices
+
+    for(int i=0 ; i < num_mt ; i++) assert( i == vmm[i].idx ) ; 
+    for(int i=0 ; i < num_mt ; i++) std::cout << vmm[i].desc() << std::endl; 
+
+    std::vector<std::string> names ; 
+    for(int i=0 ; i < num_mt ; i++)
+    {
+        names.push_back( vmm[i].name ) ;  // HMM null termination ?
+    }
+
+    std::cout 
+        << "SBnd::mat_from_bd"
+        << " bd->names.size " << bd->names.size() 
+        << " bnd->names.size " << bnd->names.size() 
+        << " bnd->shape[0] " << bnd->shape[0]
+        << " bnd->sstr() " << bnd->sstr()
+        << " ni " << ni 
+        << std::endl 
+        ; 
+
+
+    // 4. prep mat array 
+
+    int np = bnd_sh[2]*bnd_sh[3]*bnd_sh[4] ; // num payload values for mat (or sur)
+
+    NP* mat = NP::Make<double>(num_mt,bnd_sh[2], bnd_sh[3], bnd_sh[4] ) ; 
+    mat->set_names(names) ; 
+
+    double* mat_v = mat->values<double>(); 
+
+    // 4. second bd pass to populate reconstructed mat array 
+    //    (note that each mat may be written multiple times
+    //     but that doesnt matter as all the same)
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        int omat = bd_v[i*nj+0] ; 
+        assert( omat > -1 && omat < num_mt ); 
+        for(int p=0 ; p < np ; p++) mat_v[omat*np+p] = bnd_v[(i*4+0)*np+p] ; 
+
+        int imat = bd_v[i*nj+3] ; 
+        assert( imat > -1 && imat < num_mt ); 
+        for(int p=0 ; p < np ; p++) mat_v[imat*np+p] = bnd_v[(i*4+3)*np+p] ; 
+    }
+
+    return mat ; 
+}
+
+
+/**
+Quite a few gaps for surfaces, not all surfaces are referenced from the bd int4 vector:: 
+
+    In [20]: np.unique( np.hstack( (t.bd[:,1], t.bd[:,2]) ) )
+    Out[20]: array([-1,  0,  1,  2,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 33, 34, 35, 36, 37, 38, 39], dtype=int32)
+
+**/
+
 inline NP* SBnd::reconstruct_sur() const 
 {
     return nullptr ; 
 }
-
-
-
 
