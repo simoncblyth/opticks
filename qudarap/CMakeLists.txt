@@ -12,12 +12,18 @@ set(LIBS  )
 find_package(SysRap REQUIRED CONFIG)
 set(LIBS ${LIBS} Opticks::SysRap)  
 
+
+set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
+
+message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
+
 # see eg $OPTICKS_PREFIX/lib/Custom4-0.1.4/Custom4Config.cmake
 # for the setup that a successful find does, including setting WITH_CUSTOM4
 
 if(Custom4_FOUND)
    set(LIBS ${LIBS} Custom4::Custom4)  
+else()
 endif()
 
 

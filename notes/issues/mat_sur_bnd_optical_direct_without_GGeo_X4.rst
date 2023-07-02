@@ -1063,3 +1063,15 @@ array([[  -0.002,  308.898,  308.9  ],
        [  -0.018, 8674.696, 8674.713]])
 
 
+
+Building Opticks qu needs updated c4
+---------------------------------------
+
+HMM. Need to bump the version. 
+
+::
+
+   N[blyth@localhost junoenv]$ bash junoenv libs all custom4
+
+
+
