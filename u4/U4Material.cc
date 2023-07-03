@@ -591,6 +591,9 @@ NP* U4Material::MakeStandardArray(
 
     std::vector<std::string> names ; 
 
+    typedef std::map<std::string,int> SI ; 
+    SI override_count ; 
+
     for(int i=0 ; i < ni ; i++)
     {
         const G4Material* mat = mats[i] ; 
@@ -638,6 +641,7 @@ NP* U4Material::MakeStandardArray(
                     int prop_idx = j*nl + l ; 
                     const char* spec = specs[prop_idx].c_str() ; 
                     bool has_override = prop_override.count(spec) > 0 ; 
+                    if(has_override) override_count[spec] += 1 ; 
 
                     G4PhysicsVector* prop = has_override ? prop_override.at(spec) : mpt_prop ; 
                     double value = prop ? prop->Value(energy) : p->def ; 
@@ -649,6 +653,13 @@ NP* U4Material::MakeStandardArray(
         }
     }
     a->set_names(names) ; 
+   
+    std::stringstream oc ;  
+    for(SI::const_iterator it=override_count.begin() ; it != override_count.end() ; it++)
+        oc << it->first << ":" << it->second << "," ; 
+    std::string oc_report = oc.str();
+    a->set_meta<std::string>("override_count", oc_report ); 
+
     return a ; 
 }
 

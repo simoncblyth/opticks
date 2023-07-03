@@ -175,7 +175,7 @@ void test_BndNames()
     LOG(info) << " path " << path ; 
 }
 
-void test_MakeStandardArray()
+void test_MakeStandardArray_prop_override()
 {
     const char* spec = "Water/RAYLEIGH" ; 
 
@@ -193,6 +193,22 @@ void test_MakeStandardArray()
         << " value " << value 
         << std::endl 
         ; 
+
+}
+
+void test_MakeStandardArray_override_count()
+{
+    typedef std::map<std::string,int> SI ; 
+    SI oc ; 
+
+    oc["Water/RAYLEIGH"] += 1 ; 
+    oc["Water/RAYLEIGH"] += 1 ; 
+    oc["vetoWater/RAYLEIGH"] += 1 ; 
+
+    for(SI::const_iterator it=oc.begin() ; it != oc.end() ; it++)
+    {
+        std::cout << it->first << " : " << it->second << std::endl ; 
+    }
 
 }
 
@@ -216,7 +232,8 @@ int main(int argc, char** argv)
     test_BndNames(); 
     */
 
-    test_MakeStandardArray(); 
+    //test_MakeStandardArray_prop_override(); 
+    test_MakeStandardArray_override_count(); 
 
 
      
