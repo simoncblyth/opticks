@@ -119,6 +119,7 @@ set(HEADERS
     Local_DsG4Scintillation.hh
     U4Physics.hh
 
+    U4Process.h
     U4PhysicsTable.h
     U4PhysicsVector.h
 
