@@ -13,37 +13,33 @@ int main(int argc, char** argv)
     //std::cout << "st.desc" << std::endl << st.desc() << std::endl ; 
 
     std::cout << "st.material.desc" << std::endl << st.material->desc() << std::endl ; 
-
     std::cout << "st.desc_mt" << std::endl << st.desc_mt() << std::endl; 
 
-
     std::cout << "st.surface.desc" << std::endl << st.surface->desc() << std::endl ; 
-
     std::cout << "st.desc_bd" << std::endl << st.desc_bd() << std::endl; 
 
 
-    const NP* _mat = st.create_mat() ; 
-    const NP* _sur = st.create_sur() ; 
-    const NP* _bnd = st.create_bnd(_mat, _sur); 
-
-    const NP* _old_bnd = NP::Load(base, "bnd.npy"); 
-    const NP* _old_optical = NP::Load(base, "optical.npy"); 
-
-    NP* _bd = NPX::ArrayFromVec<int,int4>(st.bd, 4) ; 
-    _bd->set_names(st.bdname) ; 
-
 
     NPFold* fold = new NPFold ; 
-    fold->add("mat", _mat ); 
-    fold->add("sur", _sur ); 
-    fold->add("bnd", _bnd ); 
-    fold->add("bd",  _bd ); 
 
+    // arrays directly under SSim all from old X4/GGeo workflow
+    const NP* _oldmat = NP::Load(base, "oldmat.npy"); 
+    const NP* _oldsur = NP::Load(base, "oldsur.npy"); 
+    const NP* _oldbnd = NP::Load(base, "bnd.npy"); 
+    const NP* _oldoptical = NP::Load(base, "optical.npy"); 
 
-    fold->add("old_bnd", _old_bnd ); 
-    fold->add("old_optical", _old_optical ); 
+    fold->add("oldmat", _oldmat ); 
+    fold->add("oldsur", _oldsur ); 
+    fold->add("oldbnd", _oldbnd ); 
+    fold->add("oldoptical", _oldoptical ); 
+
+    // U4Material::MakeStandardArray, U4Material::MakeStandardSurface
+    fold->add("mat", st.mat ); 
+    fold->add("sur", st.sur ); 
+    fold->add("bnd", st.make_bnd() ); 
+    fold->add("bd",  st.make_bd()  ); 
+
     fold->save("$FOLD"); 
-
  
     return 0 ; 
 }

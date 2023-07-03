@@ -4,6 +4,10 @@
 U4Process.h : Cherry Picking from cfg4/CProcessManager
 ================================================================
 
+Process identification relies on the processes using 
+their default names, for example from "g4-cls G4OpRayleigh"
+the default process name is "OpRayleigh". 
+
 **/
 
 #include <cassert>
@@ -34,6 +38,8 @@ struct U4Process
     static constexpr const char* OpRayleigh_ = "OpRayleigh" ; 
     static constexpr const char* OpBoundary_ = "OpBoundary" ; 
 
+    template<typename T> static T* Get() ; 
+
     static const char* Name(const G4VProcess* proc); 
     static unsigned ProcessType(const char* name); 
     static bool IsKnownProcess(unsigned type); 
@@ -44,7 +50,48 @@ struct U4Process
     static std::string Desc(); 
 
     static void ClearNumberOfInteractionLengthLeft(const G4Track& aTrack, const G4Step& aStep); 
+
 };
+
+/**
+U4Process::Get
+----------------
+
+Find a process of the OpticalPhoton process manager 
+with the template type. If none of the processes 
+are able to be dynamically cast to the template 
+type then nullptr is returned. Usage::
+
+     G4OpRayleigh* p = U4Process::Get<G4OpRayleigh>() ; 
+
+
+**/
+
+template<typename T>
+inline T* U4Process::Get()
+{
+    G4ProcessManager* mgr = GetManager(); 
+    assert(mgr); 
+    G4ProcessVector* procv = mgr->GetProcessList() ;
+    G4int n = procv->entries() ;
+
+    T* p = nullptr ; 
+    int count = 0 ; 
+
+    for(int i=0 ; i < n ; i++)
+    {   
+        G4VProcess* proc = (*procv)[i] ; 
+        T* proc_ = dynamic_cast<T*>(proc) ; 
+        if(proc_ != nullptr)
+        {
+            p = proc_ ; 
+            count += 1 ; 
+        }
+    }
+    assert( count == 0 || count == 1 ); 
+    return p ; 
+}
+
 
 inline const char* U4Process::Name(const G4VProcess* proc)
 {

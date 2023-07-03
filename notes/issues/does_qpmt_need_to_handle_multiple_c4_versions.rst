@@ -9,8 +9,17 @@ bother but c4 Stack calc is used both in CPU and GPU.
 This suggests it might be best to have c4 version branching. 
 
 But the API change only has impact within C4CustomART.h 
-from point of view of junosw just beed to bump the 
-version and rebuild. 
+from point of view of junosw just need to bump the 
+version and rebuild there is no need to branch on 
+version at all because the change is all within C4. 
+
+For Opticks use of C4 from qu/u4/gx could branch 
+on Stack API version, but I have no interest in 
+the keeping the old API operational. 
+Just need to check that the bump (
+which just rearranges where the polarization customization 
+is done and halfs resource usage by Stack reuse) 
+did not change results. 
 
 
 Issue on workstation

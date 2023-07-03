@@ -557,6 +557,15 @@ NP* U4Material::MakePropertyArray( double value ) // static
     return a ; 
 }
 
+/**
+U4Material::MakeStandardArray
+-----------------------------
+
+Canonically invoked from U4Tree::initMaterials
+
+**/
+
+
 NP* U4Material::MakeStandardArray(std::vector<const G4Material*>& mats) // static
 {
     sdomain dom ; 

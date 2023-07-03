@@ -518,6 +518,145 @@ bd diff
     Water///Steel							Water///Steel
 
 
+
+Why lots of constant GROUPVEL ?
+---------------------------------
+
+::
+
+    In [33]: np.all( t.oldmat[1,1,:,0] == t.oldmat[1,1,0,0] )
+    Out[33]: True
+
+    In [34]: t.oldmat[1,1,0,0]
+    Out[34]: 299.792458
+
+
+Changed the sproplist.h default but need to rerun U4Tree creation 
+back on workstation. So kludge that::
+
+    In [7]: np.where( t.mat == 300. )
+    Out[7]: 
+    (array([ 1,  1,  1,  1,  1, ..., 15, 15, 15, 15, 15]),
+     array([1, 1, 1, 1, 1, ..., 1, 1, 1, 1, 1]),
+     array([  0,   1,   2,   3,   4, ..., 756, 757, 758, 759, 760]),
+     array([0, 0, 0, 0, 0, ..., 0, 0, 0, 0, 0]))
+
+    In [8]: t.mat[np.where( t.mat == 300. )] = 299.792458
+
+::
+
+    In [13]: np.array(t.mat_names)[np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])]
+    Out[13]: array(['LS', 'Acrylic', 'AcrylicMask', 'Vacuum', 'Pyrex', 'Water', 'vetoWater'], dtype='<U18')
+
+
+
+::
+
+    np.all( np.array( t.mat_names) == np.array( t.oldmat_names ))  
+    True
+    t.mat.shape == t.oldmat.shape
+    True
+    np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])
+    [ 4 11 14 17 18 19]
+    np.array(t.mat_names)[np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])] 
+    ['LS' 'Acrylic' 'AcrylicMask' 'Pyrex' 'Water' 'vetoWater']
+    np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
+    [[      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.891       0.09        0.         49.062       0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.018       0.          0.         47.025       0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.002       0.          0.         47.025       0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.          0.          0.          0.          0.          0.          0.   ]
+     [      0.          0.001       0.          0.          4.898       0.          0.          0.   ]
+     [      0.          0.051 1763077.672       0.          8.413       0.          0.          0.   ]
+     [      0.          0.051       0.          0.          8.413       0.          0.          0.   ]]
+
+         RINDEX     ABSLENGTH  RAYLEIGH   REEMISSIONPROB   GROUPVEL 
+
+    In [1]: np.array(t.mat_names)[19]
+    Out[1]: 'vetoWater'
+
+
+Comparing GROUPVEL plots between oldmat and mat : clearly related but different bin handling 
+---------------------------------------------------------------------------------------------
+
+::
+    
+    st
+    ./stree_mat_test.sh 
+
+    GROUPVEL 4 LS 
+    GROUPVEL 11 Acrylic 
+    GROUPVEL 14 AcrylicMask 
+    GROUPVEL 17 Pyrex 
+    GROUPVEL 18 Water 
+    GROUPVEL 19 vetoWater 
+
+
+
+
+
+Water RAYLEIGH is very discrepant 
+----------------------------------
+
+::
+
+    In [3]: np.all( t.mat[18,0,:,2] == 1e6 ) ## Water : NEED TO TAP INTO Water/RAYLEIGH SPECIAL CASING 
+    Out[3]: True
+
+    In [5]: np.all( t.mat[19,0,:,2] == 1e6 ) ## VetoWater 
+    Out[5]: True
+
+    In [7]: t.oldmat[18,0,:,2]   ## this is Geant4 special cased Water RAYLEIGH
+    Out[7]: 
+    array([    283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,
+               283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     283.98 ,     284.422,     327.186,     368.908,     409.623,     449.37 ,     488.181,     526.09 ,     563.127,
+               599.322,     634.705,     669.3  ,     703.136,     736.236,     768.624,     800.323,     831.354,     861.739,     891.498,     920.649,     949.212,     977.203,    1004.64 ,
+              1031.539,    1057.915,    1083.784,    1109.161,    1134.059,    1158.491,    1182.471,    1206.011,    1229.123,    1251.819,    1274.109,    1296.005,    1317.516,    1338.654,
+
+
+    In [6]: np.all( t.oldmat[19,0,:,2] == 1e6 )   ## HMM vetoWater RAYLEIGH is constant, unlike Water 
+    Out[6]: True                                  ## that looks like junosw bug  
+
+
+
+
+TODO : review X4MaterialWater X4OpRayleigh and do something similar in U4Water.h
+------------------------------------------------------------------------------------
+
+
+
+Nature of GROUPVEL diff : Looks like different calc
+-----------------------------------------------------
+
+::
+
+
+    In [13]: np.c_[t.mat[4,1,:,0]-t.oldmat[4,1,:,0], t.mat[4,1,:,0], t.oldmat[4,1,:,0] ][140:160]
+    Out[13]: 
+    array([[ 10.999, 182.723, 171.723],
+           [ 23.781, 182.241, 158.46 ],
+           [ 23.076, 181.764, 158.688],
+           [ 22.377, 181.292, 158.915],
+           [ 21.684, 180.824, 159.14 ],
+           [ 20.998, 180.362, 159.364],
+           [ 20.318, 179.903, 159.586],
+           [ 19.643, 179.449, 159.806],
+
+
+
+
 mat diff
 ----------
 

@@ -26,6 +26,8 @@ struct U4PhysicalConstants
     static constexpr const char*  _unit_nm = "unit_nm" ; 
     static constexpr const double unit_nm = nm ; 
 
+    static constexpr const char* _c_light_mm_per_ns = "c_light_mm_per_ns" ; 
+    static constexpr const double c_light_mm_per_ns = c_light*mm/ns ; 
 
     static constexpr const char*  _BirksConstant1_v0 = "BirksConstant1_v0" ; 
     static constexpr const double BirksConstant1_v0 = 12.05e3*g/cm2/MeV ;  // from $JUNOTOP/data/Simulation/DetSim/Material/LS/ConstantProperty 
@@ -66,6 +68,7 @@ struct U4PhysicalConstants
 
 void U4PhysicalConstants::Get( std::vector<std::string>& labels, std::vector<double>& values) 
 {
+    labels.push_back( _c_light_mm_per_ns )     ;  values.push_back(c_light_mm_per_ns) ; 
     labels.push_back( _hc_eVnm)                ;  values.push_back(hc_eVnm) ; 
     labels.push_back( _twopi_hbarc )           ;  values.push_back(twopi_hbarc) ; 
     labels.push_back( _twopi_hbarc_eVnm )      ;  values.push_back(twopi_hbarc_eVnm) ; 

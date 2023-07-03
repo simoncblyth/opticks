@@ -35,6 +35,7 @@ See also:
 #include "G4PVPlacement.hh"
 #include "G4Material.hh"
 #include "G4LogicalSurface.hh"
+#include "G4OpRayleigh.hh"
 
 #include "NP.hh"
 
@@ -42,6 +43,7 @@ See also:
 #include "sfreq.h"
 #include "stree.h"
 #include "snd.hh"
+#include "sdomain.h"
 
 #include "SSimtrace.h"
 #include "SEventConfig.hh"
@@ -53,6 +55,7 @@ See also:
 #include "U4Material.hh"
 #include "U4Surface.h"
 #include "U4Solid.h"
+#include "U4PhysicsTable.h"
 
 /*
 HMM: cannot have U4Tree EnvLevel because it is currently header only, 
@@ -96,6 +99,8 @@ struct U4Tree
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
+    void initDomain(); 
+    void initRayleigh();   
     void initMaterials(); 
     void initMaterials_r(const G4VPhysicalVolume* const pv); 
     void initMaterial(const G4Material* const mt); 
@@ -202,6 +207,8 @@ inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
 
+    initDomain(); 
+    initRayleigh(); 
     initMaterials();
     initSurfaces();
     initSolids();
@@ -209,10 +216,18 @@ inline void U4Tree::init()
     initBoundary();
 }
 
+inline void U4Tree::initDomain()
+{
+    sdomain dom ; 
+    st->wavelength = dom.get_wavelength_nm() ; 
+    st->energy = dom.get_energy_eV() ; 
+}
 
 /**
 U4Tree::initMaterials
------------------------------------
+-----------------------
+
+Canonically invoked from U4Tree::init 
 
 1. recursive traverse collecting material pointers from all active LV into materials vector 
    in postorder of first encounter.
@@ -229,8 +244,23 @@ inline void U4Tree::initMaterials()
     initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
     st->mat = U4Material::MakeStandardArray(materials) ; 
-
 }
+
+inline void U4Tree::initRayleigh()
+{
+    U4PhysicsTable<G4OpRayleigh> tab ; 
+
+    std::cerr 
+        << "U4Tree::initRayleigh" 
+        << std::endl 
+        << tab.desc() 
+        << std::endl 
+        ;
+
+    st->rayleigh = tab.tab ; 
+}
+
+
 inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;

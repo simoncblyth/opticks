@@ -2,15 +2,21 @@
 
 import numpy as np, textwrap
 from opticks.ana.fold import Fold
+import matplotlib.pyplot as plt
+SIZE = np.array([1280,720])
 
-def Vacuum_kludge(ff):
+def Vacuum_kludge(ff, names=["mat","oldmat"]):
     for f in ff:
         print("Vacuum_kludge %s " % f.base)
-        if np.all( f.mat[16,0,:,1] == 1e9 ):
-            print("Vacuum 1e9 kludge reduce to 1e6 : because it causes obnoxious presentation")
-            f.mat[16,0,:,1] = 1e6 
-        else:
-            print("Not doing Vacuum kludge")
+        for m in names:
+            q = getattr(f, m, None)
+            if q is None: continue
+            if np.all( q[16,0,:,1] == 1e9 ):
+                print("%s : Vacuum 1e9 kludge reduce to 1e6 " % q )
+                q[16,0,:,1] = 1e6 
+            else:
+                print("%s : Not doing Vacuum kludge" % q)
+            pass
         pass
     pass
 
@@ -19,7 +25,65 @@ def Vacuum_kludge(ff):
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
+    Vacuum_kludge([t])
 
+
+    t.mat[np.where( t.mat == 300. )] = 299.792458  # GROUPVEL default kludge 
+    ab = np.abs( t.mat - t.oldmat ) 
+
+    EXPR = """
+    np.all( np.array( t.mat_names) == np.array( t.oldmat_names ))  
+    t.mat.shape == t.oldmat.shape
+    np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])
+    np.array(t.mat_names)[np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])] 
+    np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
+    #  RINDEX     ABSLENGTH  RAYLEIGH   REEMISSIONPROB   GROUPVEL 
+    np.c_[np.arange(len(t.mat_names)),np.array(t.mat_names)] 
+    """
+
+    for expr in list(filter(None,textwrap.dedent(EXPR).split("\n"))):
+        print(expr)
+        if expr[0] == "#": continue
+        print(eval(expr))
+    pass
+
+    wl = np.linspace(60.,820.,761)
+
+    qwns="mat oldmat".split()
+
+    MM = [4,11,14,17,18,19]
+
+    for M in MM:
+        MAT = t.mat_names[M]
+
+        title = "GROUPVEL %d %s " % (M, MAT) 
+        print(title)
+
+        fig, ax = plt.subplots(1, figsize=SIZE/100.)
+        fig.suptitle(title)
+
+        for qwn in qwns:
+            a = getattr(t, qwn, None)
+            assert not a is None
+
+            RINDEX = a[M,0,:,0]
+            ABSLENGTH = a[M,0,:,1]
+            RAYLEIGH = a[M,0,:,2]
+            REEMISSIONPROB = a[M,0,:,3]
+            GROUPVEL = a[M,1,:,0]   
+
+            ax.plot( wl, GROUPVEL , label="GROUPVEL %s" % qwn )
+        pass
+
+        ax.legend()
+        fig.show()
+    pass
+
+ 
+
+
+
+if 0:
     o = Fold.Load("/tmp/SBnd_test", symbol="o")
     print(repr(o))
 

@@ -25,11 +25,12 @@ struct sproplist
     0 1 ABSLENGTH       1e6
     0 2 RAYLEIGH        1e6
     0 3 REEMISSIONPROB  0.
-    1 0 GROUPVEL        300.0
+    1 0 GROUPVEL        299.792458
     1 1 SPARE11         0.
     1 2 SPARE12         0.
     1 3 SPARE13         0.
     )" ;
+    // default GROUPVEL set to c_light_mm_per_ns, see U4PhysicalConstants.h 
 
     static constexpr const char* SURFACE = R"(
     0 0 EFFICIENCY      -2

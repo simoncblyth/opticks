@@ -210,6 +210,11 @@ struct stree
     static constexpr const char* SURFACE = "surface" ;
     static constexpr const char* MAT = "mat.npy" ;
     static constexpr const char* SUR = "sur.npy" ;
+
+    static constexpr const char* WAVELENGTH = "wavelength.npy" ;
+    static constexpr const char* ENERGY = "energy.npy" ;
+    static constexpr const char* RAYLEIGH = "rayleigh.npy" ;
+
     static constexpr const char* FACTOR = "factor.npy" ;
 
     static constexpr const char* INST = "inst.npy" ; 
@@ -267,7 +272,9 @@ struct stree
 
     NP* mat ;   // populated by U4Tree::initMaterials using U4Material::MakeStandardArray 
     NP* sur ;   // populated by U4Tree::initSurfaces using U4Surface::MakeStandardArray   
-
+    NP* wavelength ;  // from sdomain::get_wavelength_nm
+    NP* energy ;      // from sdomain::get_energy_eV 
+    NP* rayleigh ;    // populated by U4Tree::initRayleigh
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
@@ -373,9 +380,12 @@ struct stree
     std::string desc_solids() const ; 
 
 
+
+
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
 
+    NP* make_bd() const ; 
     NP* make_trs() const ; 
     void save_trs(const char* fold) const ; 
 
@@ -445,12 +455,11 @@ struct stree
 
     /*
     // rethinking these : doing instead up in U4Tree
-
     NP* create_mat() const ; 
     NP* create_sur() const ; 
     */
 
-    NP* create_bnd( const NP* _mat, const NP* _sur) const ; 
+    NP* make_bnd() const ; 
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface(  const char* name, unsigned idx ); 
@@ -479,7 +488,10 @@ inline stree::stree()
     material(new NPFold),
     surface(new NPFold),
     mat(nullptr),
-    sur(nullptr)
+    sur(nullptr),
+    wavelength(nullptr),
+    energy(nullptr),
+    rayleigh(nullptr)
 {
     init(); 
 }
@@ -1593,6 +1605,7 @@ inline std::string stree::desc_solids() const
 }
 
 
+
 inline void stree::save( const char* base, const char* reldir ) const 
 {
     const char* dir = U::Resolve(base, reldir); 
@@ -1625,13 +1638,18 @@ inline void stree::save_( const char* fold ) const
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
     NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
 
+
+    // domain 
+    if(wavelength) wavelength->save(fold, WAVELENGTH) ;
+    if(energy) energy->save(fold, ENERGY) ;
+    if(rayleigh) rayleigh->save(fold, RAYLEIGH) ;
+
     // materials
     NP::WriteNames(    fold, MTNAME,   mtname );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
     if(material) material->save(fold, MATERIAL) ;
     if(mat) mat->save(fold, MAT) ;
-    
 
     // surfaces
     NP::WriteNames(    fold, SUNAME,   suname );
@@ -1640,8 +1658,7 @@ inline void stree::save_( const char* fold ) const
     if(sur) sur->save(fold, SUR) ;
 
     // boundaries
-    NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
-    a_bd->set_names( bdname );
+    NP* a_bd = make_bd() ; 
     a_bd->save( fold, BD ); 
 
     // solids 
@@ -1671,6 +1688,26 @@ inline void stree::save_( const char* fold ) const
     NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
     if(level > 0) std::cout << "] stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
 }
+
+
+/**
+stree::make_bd
+----------------
+
+Create array of shape (num_bd, 4) holding int "pointers"
+to (omat,osur,isur,imat)
+
+**/
+
+inline NP* stree::make_bd() const 
+{
+    NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
+    a_bd->set_names( bdname );
+    return a_bd ; 
+}
+
+
+
 
 /**
 stree::make_trs
@@ -1844,11 +1881,16 @@ inline int stree::load_( const char* fold )
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
     ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
+
+    if(NP::Exists(fold,WAVELENGTH)) wavelength = NP::Load(fold, WAVELENGTH); 
+    if(NP::Exists(fold,ENERGY)) energy = NP::Load(fold, ENERGY); 
+    if(NP::Exists(fold,RAYLEIGH)) rayleigh = NP::Load(fold, RAYLEIGH); 
+
     if(material) material->load(fold, MATERIAL) ;
     if(surface) surface->load(fold,   SURFACE) ;
 
-    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ; 
-    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ; 
+    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ;  // created by U4Tree::initMaterials
+    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ;  // created by U4Tree::initSurfaces
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
@@ -2827,10 +2869,9 @@ inline NP* stree::create_sur() const
 **/
 
 
-
-inline NP* stree::create_bnd(const NP* _mat, const NP* _sur) const 
+inline NP* stree::make_bnd() const 
 {
-    return sstandard::bnd(bd, bdname, _mat , _sur ); 
+    return sstandard::bnd(bd, bdname, mat , sur ); 
 }
 
 

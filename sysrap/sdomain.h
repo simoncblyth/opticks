@@ -7,6 +7,8 @@ sdomain.h
 Regarding hc_eVnm see U4PhysicalConstantsTest, 
 there is slight difference from smath.h float value : could be arising from CLHEP version difference
 
+Wavelength fine domain np.linspace(60,820,761)
+
 **/
 
 
@@ -35,8 +37,8 @@ struct sdomain
 
     sdomain(); 
 
-    const NP* get_wavelength_nm() const ; 
-    const NP* get_energy_eV() const ; 
+    NP* get_wavelength_nm() const ; 
+    NP* get_energy_eV() const ; 
     NPFold* get_fold() const ; 
 
     static std::string Desc(const double* vv, int length, int edge); 
@@ -62,11 +64,11 @@ inline sdomain::sdomain()
 }
 
 
-inline const NP* sdomain::get_wavelength_nm() const 
+inline NP* sdomain::get_wavelength_nm() const 
 {
     return NP::MakeFromValues<double>( wavelength_nm, length ) ; 
 }
-inline const NP* sdomain::get_energy_eV() const 
+inline NP* sdomain::get_energy_eV() const 
 {
     return NP::MakeFromValues<double>( energy_eV, length ) ; 
 }

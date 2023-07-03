@@ -63,6 +63,8 @@ set(TEST_SOURCES
    G4ThreeVectorTest.cc 
 
    U4NavigatorTest.cc
+
+   U4PhysicsTableTest.cc 
  
 )
 
