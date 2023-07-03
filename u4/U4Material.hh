@@ -9,6 +9,8 @@ HMM: make this header-only .h ?
 
 #include <vector>
 #include <string>
+#include <map>
+
 #include "plog/Severity.h"
 
 struct NP ; 
@@ -61,7 +63,10 @@ struct U4_API U4Material
     static G4MaterialPropertyVector* MakeProperty( double value ); 
     static G4MaterialPropertyVector* MakeProperty(const NP* a); 
     static NP* MakePropertyArray( double value ); 
-    static NP* MakeStandardArray(std::vector<const G4Material*>& mats); 
+    static NP* MakeStandardArray(
+          std::vector<const G4Material*>& mats,
+          const std::map<std::string,G4PhysicsVector*>& prop_override
+       ); 
 
     static char Classify(const NP* a); 
     static std::string Desc(const char* key, const NP* a ); 

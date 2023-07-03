@@ -87,6 +87,8 @@ struct U4Tree
     std::vector<const G4LogicalSurface*> surfaces ;  // both skin and border 
     std::vector<const G4VSolid*>    solids ; 
 
+    U4PhysicsTable<G4OpRayleigh>* rayleigh_table ; 
+
 
     static const G4MaterialPropertyVector* GetRINDEX(   const G4Material* mt ); 
     static const G4MaterialPropertyVector* GetProperty( const G4Material* mt, int index ); 
@@ -102,6 +104,8 @@ struct U4Tree
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
     void initDomain(); 
+
+    static U4PhysicsTable<G4OpRayleigh>* CreateRayleighTable(); 
     void initRayleigh();   
     void initMaterials(); 
     void initMaterials_r(const G4VPhysicalVolume* const pv); 
@@ -199,7 +203,8 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
     st(st_),
     top(top_),
     sid(sid_ ? sid_ : new U4SensorIdentifierDefault),
-    level(st->level)
+    level(st->level),
+    rayleigh_table(CreateRayleighTable())
 {
     init(); 
 }
@@ -239,14 +244,41 @@ Canonically invoked from U4Tree::init
 CONSIDERING : maybe relocate to SSim/material ? rather than SSim/stree/material ? 
 and hold the material NPFold member in SSim ? 
 
+
+The creation of the standard *stree::mat* array using U4Material::MakeStandardArray
+gets most material properties from the MPTs of the materials. However 
+as G4OpRayleigh does some sneaky generation of RAYLEIGH scatter props
+in its physics table some overrides are done getting Water/RAYLEIGH
+from rayleigh_table.    
+
 **/
 
 inline void U4Tree::initMaterials()
 {
     initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
-    st->mat = U4Material::MakeStandardArray(materials) ; 
+
+
+    G4PhysicsVector* prop = rayleigh_table->find("Water") ;  
+    assert( prop ); 
+    std::map<std::string, G4PhysicsVector*> prop_override ; 
+    prop_override["Water/RAYLEIGH"] = prop ; 
+
+    st->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
 }
+
+
+inline U4PhysicsTable<G4OpRayleigh>* U4Tree::CreateRayleighTable() // static
+{
+    G4OpRayleigh* proc = new G4OpRayleigh ; 
+
+    G4ParticleDefinition* OpticalPhoton = G4OpticalPhoton::Definition() ; 
+    proc->BuildPhysicsTable(*OpticalPhoton); 
+
+    U4PhysicsTable<G4OpRayleigh>* tab = new U4PhysicsTable<G4OpRayleigh>(proc) ; 
+    return tab ; 
+}
+
 
 /**
 U4Tree::initRayleigh
@@ -262,28 +294,12 @@ just to get access to its physics table.
 
 inline void U4Tree::initRayleigh()
 {
-    G4OpRayleigh* proc = new G4OpRayleigh ; 
-
-    G4ParticleDefinition* OpticalPhoton = G4OpticalPhoton::Definition() ; 
-    proc->BuildPhysicsTable(*OpticalPhoton); 
-
-    U4PhysicsTable<G4OpRayleigh> tab(proc) ; 
-    NP* arr = tab.tab ; 
-
-    std::vector<std::string> names ; 
-    U4MaterialTable::GetMaterialNames(names); 
-    if(arr) arr->set_names(names) ; 
-
     std::cerr 
         << "U4Tree::initRayleigh" 
-        << std::endl 
-        << tab.desc() 
-        << std::endl 
-        << " material names " << names.size()
-        << std::endl 
+        << ( rayleigh_table ? rayleigh_table->desc() : "-" ) 
         ;
 
-    st->rayleigh = arr ; 
+    st->rayleigh = rayleigh_table ? rayleigh_table->tab : nullptr  ; 
 }
 
 

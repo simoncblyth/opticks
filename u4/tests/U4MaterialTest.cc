@@ -9,6 +9,7 @@
 
 
 #include "U4Material.hh"
+#include "U4PhysicsVector.h"
 #include "G4Material.hh"
 #include "Randomize.hh"
 
@@ -174,6 +175,27 @@ void test_BndNames()
     LOG(info) << " path " << path ; 
 }
 
+void test_MakeStandardArray()
+{
+    const char* spec = "Water/RAYLEIGH" ; 
+
+    std::map<std::string, G4PhysicsVector*> prop_override ; 
+    prop_override[spec] = U4PhysicsVector::CreateConst(101.); 
+
+    bool do_override = prop_override.count(spec) > 0 ; 
+
+    G4PhysicsVector* prop = do_override ? prop_override[spec] : nullptr ; 
+    G4double value = prop ? prop->Value(3.*eV) : 0. ;  
+
+    std::cout 
+        << "spec " << spec 
+        << " do_override " << (do_override ? "Y" : "N" ) 
+        << " value " << value 
+        << std::endl 
+        ; 
+
+}
+
 
 int main(int argc, char** argv)
 {
@@ -191,9 +213,10 @@ int main(int argc, char** argv)
     test_LoadOri(); 
     test_LoadOri_remove_material_property(); 
     test_LoadBnd(); 
+    test_BndNames(); 
     */
 
-    test_BndNames(); 
+    test_MakeStandardArray(); 
 
 
      

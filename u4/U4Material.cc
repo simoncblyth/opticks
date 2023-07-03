@@ -563,10 +563,20 @@ U4Material::MakeStandardArray
 
 Canonically invoked from U4Tree::initMaterials
 
+Hmm this is just accessing the MPT of each material and 
+getting the standard properties or defaults when not present.
+
+But this approach is discrepant for Water which has its 
+RAYLEIGH property derived from RINDEX with the physics table 
+of G4OpRayleigh process. 
+
+So need to override the source of some props. 
+
 **/
 
-
-NP* U4Material::MakeStandardArray(std::vector<const G4Material*>& mats) // static
+NP* U4Material::MakeStandardArray(
+    std::vector<const G4Material*>& mats, 
+    const std::map<std::string,G4PhysicsVector*>& prop_override ) // static
 {
     sdomain dom ; 
     const sproplist* pl = sproplist::Material() ; 
@@ -589,6 +599,28 @@ NP* U4Material::MakeStandardArray(std::vector<const G4Material*>& mats) // stati
         G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
         if( mpt == nullptr ) std::cerr << "U4Material::MakeStandardArray NO MPT " << name << std::endl ; 
 
+
+        std::array<std::string,8> specs ; 
+        assert( nj*nl == 8 );  
+        for(int j=0 ; j < nj ; j++)  // payload groups
+        {
+            for(int l=0 ; l < nl ; l++)   // payload values             
+            {
+                const sprop* p = pl->get(j,l) ;
+                assert( p );
+                const char* key = p->name ;
+
+                int prop_idx = j*nl + l ; 
+
+                std::stringstream ss ;  
+                ss << name << "/" << key ; 
+                std::string spec_ = ss.str() ; // eg "Water/RAYLEIGH" 
+                const char* spec = spec_.c_str(); 
+                specs[prop_idx] = spec ;  
+            }
+        } 
+
+
         for(int j=0 ; j < nj ; j++)           // payload groups
         {
             for(int k=0 ; k < nk ; k++)       // energy or wavelength domain 
@@ -599,10 +631,15 @@ NP* U4Material::MakeStandardArray(std::vector<const G4Material*>& mats) // stati
                 for(int l=0 ; l < nl ; l++)   // payload values             
                 { 
                     const sprop* p = pl->get(j,l) ;
-                    assert( p );
-
                     const char* key = p->name ;
-                    G4MaterialPropertyVector* prop = mpt ? mpt->GetProperty(key) : nullptr ; 
+
+                    G4PhysicsVector* mpt_prop = ( mpt ? mpt->GetProperty(key) : nullptr ); 
+
+                    int prop_idx = j*nl + l ; 
+                    const char* spec = specs[prop_idx].c_str() ; 
+                    bool has_override = prop_override.count(spec) > 0 ; 
+
+                    G4PhysicsVector* prop = has_override ? prop_override.at(spec) : mpt_prop ; 
                     double value = prop ? prop->Value(energy) : p->def ; 
 
                     int index = i*nj*nk*nl + j*nk*nl + k*nl + l ;

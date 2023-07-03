@@ -1,14 +1,27 @@
 #pragma once
 
+#include "G4PhysicsOrderedFreeVector.hh"
 #include "G4PhysicsVector.hh"
 #include "G4PhysicsTable.hh"
+#include "G4SystemOfUnits.hh"
+
 #include "NP.hh"
 
 struct U4PhysicsVector
 {
+    static G4PhysicsOrderedFreeVector* CreateConst(double value); 
+
     static NP* ConvertToArray(const G4PhysicsVector* prop) ;   
     static NP* CreateCombinedArray( const G4PhysicsTable* table ); 
 }; 
+
+
+G4PhysicsOrderedFreeVector* U4PhysicsVector::CreateConst(double value)
+{
+    G4double Energies[2] = { 1.55*eV , 15.5*eV } ; 
+    G4double Values[2]   = { value, value } ; 
+    return new G4PhysicsOrderedFreeVector(Energies, Values, 2 ) ; 
+}
 
 /**
 

@@ -11,7 +11,7 @@ Aiming to integrate QPMT/qpmt into QSim.
 To do this need to create a surface type enum and change the 
 optical buffer. 
 
-BUT : optical+bnd buffers are still coming from old workflow
+BUT : optical+bnd(sur+mat) buffers are still coming from old workflow
 (actually it kinda unholy mixture of old and new currently).
 As do not want to do any significant dev in old workflow anymore
 it means need to bring mat/sur/bnd/optical handling into new workflow.
@@ -73,8 +73,8 @@ sysrap/NP.hh
 Thats reimplementing GMaterialLib::createStandardMaterial
 
 
-Surface props, conversion where ?
-------------------------------------
+Surface props, conversion where : review the old workflow
+-----------------------------------------------------------
 
 ::
 
@@ -630,11 +630,8 @@ Water RAYLEIGH is very discrepant
     Out[6]: True                                  ## that looks like junosw bug  
 
 
-
-
-TODO : review X4MaterialWater X4OpRayleigh and do something similar in U4Water.h
-------------------------------------------------------------------------------------
-
+DONE : review X4MaterialWater X4OpRayleigh and do something similar in U4PhysicsTable U4Tree::initRayleigh
+----------------------------------------------------------------------------------------------------------
 
 HMM U4Tree instanciation too soon to grab the physics table maybe ?::
 
@@ -649,6 +646,232 @@ HMM U4Tree instanciation too soon to grab the physics table maybe ?::
     2023-07-03 19:20:37.602 INFO  [214268] [G4CXOpticks::setGeometry@242]  G4VPhysicalVolume world 0x59f3530
     python: /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Process.h:74: static T* U4Process::Get() [with T = G4OpRayleigh]: Assertion `mgr' failed.
     [New Thread 0x7fff9ffff700 (LWP 214332)]
+
+
+So now using throwaway G4OpRayleigh::
+
+    262 inline void U4Tree::initRayleigh()
+    263 {
+    264     G4OpRayleigh* proc = new G4OpRayleigh ;
+    265 
+    266     G4ParticleDefinition* OpticalPhoton = G4OpticalPhoton::Definition() ;
+    267     proc->BuildPhysicsTable(*OpticalPhoton);
+    268 
+    269     U4PhysicsTable<G4OpRayleigh> tab(proc) ;
+    270 
+    271     std::cerr
+    272         << "U4Tree::initRayleigh"
+    273         << std::endl
+    274         << tab.desc()
+    275         << std::endl
+    276         ;
+    277 
+    278     st->rayleigh = tab.tab ;
+    279 }
+    280 
+
+
+WIP : Now how to use the rayleigh physics table to avoid discrepant Water ?
+------------------------------------------------------------------------------
+
+Trying to use a prop_override map to do this::
+
+    256 inline void U4Tree::initMaterials()
+    257 {
+    258     initMaterials_r(top);
+    259     st->material = U4Material::MakePropertyFold(materials);
+    260 
+    261 
+    262     G4PhysicsVector* prop = rayleigh_table->find("Water") ;
+    263     assert( prop );
+    264     std::map<std::string, G4PhysicsVector*> prop_override ;
+    265     prop_override["Water/RAYLEIGH"] = prop ;
+    266 
+    267     st->mat = U4Material::MakeStandardArray(materials, prop_override) ;
+    268 }
+
+
+
+
+Examine the rayleigh physics table rayleigh.npy
+--------------------------------------------------
+
+::
+
+    st 
+    ./stree_mat_test.sh 
+
+
+    In [13]: np.unique(np.where(t.rayleigh > 0. )[0])
+    Out[13]: array([ 1,  2, 14, 37])
+
+    ## ONLY MATERIALS WITH RAYLEIGH PROP OR CALLED "Water"
+
+    In [20]: t.rayleigh.shape
+    Out[20]: (43, 37, 2)
+
+    In [17]: np.where( t.rayleigh[:,-1,-1].view(np.int64) > 0 )
+    Out[17]: (array([ 1,  2, 14, 37]),)
+
+    In [25]: t.rayleigh[:,-1,-1].view(np.int64)[np.array([1,  2, 14, 37])]
+    Out[25]: array([11, 11, 11, 36])
+
+
+
+    In [14]: np.array(t.rayleigh_names)[np.unique(np.where(t.rayleigh > 0. )[0])]
+    Out[14]: array(['LS', 'LAB', 'Mylar', 'Water'], dtype='<U22')
+
+Why only those 4 ? Because LS, LAB and Mylar have RAYLEIGH and Water has RINDEX and is Geant4 
+special cased::
+
+    epsilon:~ blyth$ find $NP_PROP_BASE -name RAYLEIGH
+    /Users/blyth/junotop/data/Simulation/DetSim/Material/LAB/RAYLEIGH
+    /Users/blyth/junotop/data/Simulation/DetSim/Material/Mylar/RAYLEIGH
+    /Users/blyth/junotop/data/Simulation/DetSim/Material/LS/RAYLEIGH
+    epsilon:~ blyth$ 
+
+    epsilon:tests blyth$ find $NP_PROP_BASE -name RAYLEIGH -exec wc -l {} \;
+          11 /Users/blyth/junotop/data/Simulation/DetSim/Material/LAB/RAYLEIGH
+          11 /Users/blyth/junotop/data/Simulation/DetSim/Material/Mylar/RAYLEIGH
+          11 /Users/blyth/junotop/data/Simulation/DetSim/Material/LS/RAYLEIGH
+    epsilon:tests blyth$ 
+
+
+    epsilon:~ blyth$ wc -l  /Users/blyth/junotop/data/Simulation/DetSim/Material/Water/RINDEX 
+          36 /Users/blyth/junotop/data/Simulation/DetSim/Material/Water/RINDEX
+
+    epsilon:~ blyth$ wc -l  /Users/blyth/junotop/data/Simulation/DetSim/Material/vetoWater/RINDEX 
+          36 /Users/blyth/junotop/data/Simulation/DetSim/Material/vetoWater/RINDEX
+
+    epsilon:~ blyth$ diff /Users/blyth/junotop/data/Simulation/DetSim/Material/Water/RINDEX /Users/blyth/junotop/data/Simulation/DetSim/Material/vetoWater/RINDEX
+    epsilon:~ blyth$ 
+
+
+
+::
+
+    epsilon:~ blyth$ cat /Users/blyth/junotop/data/Simulation/DetSim/Material/LS/RAYLEIGH
+    1.55                *eV   500                 *m    
+    1.7714              *eV   300                 *m    
+    2.102               *eV   170                 *m    
+    2.255               *eV   100                 *m    
+    2.531               *eV   62                  *m    
+    2.884               *eV   42                  *m    
+    3.024               *eV   30                  *m    
+    4.133               *eV   7.6                 *m    
+    6.2                 *eV   0.85                *m    
+    10.33               *eV   0.85                *m    
+    15.5                *eV   0.85                *m    
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$ cat /Users/blyth/junotop/data/Simulation/DetSim/Material/LAB/RAYLEIGH
+    1.55                *eV   500                 *m    
+    1.7714              *eV   300                 *m    
+    2.102               *eV   170                 *m    
+    2.255               *eV   100                 *m    
+    2.531               *eV   62                  *m    
+    2.884               *eV   42                  *m    
+    3.024               *eV   30                  *m    
+    4.133               *eV   7.6                 *m    
+    6.2                 *eV   0.85                *m    
+    10.33               *eV   0.85                *m    
+    15.5                *eV   0.85                *m    
+ 
+
+::
+
+    In [35]: a = t.rayleigh[1,:t.rayleigh[1,-1,-1].view(np.int64)]      
+
+    In [41]: a[:,1]/a[0,1]*500
+    Out[41]: array([500.  , 300.  , 170.  , 100.  ,  62.  ,  42.  ,  30.  ,   7.6 ,   0.85,   0.85,   0.85])
+
+
+RAYLEIGH scaling : from files to physics table : to mm and scale factor
+--------------------------------------------------------------------------
+
+
+HUH, looks like a constant scale factor different. YEP::
+
+    N[blyth@localhost data]$ cat Simulation/DetSim/Material/LS/scale
+    ...
+    RayleighLenBefore 42.0
+    RayleighLenAfter  27.0
+
+
+::
+
+    In [53]: 1000*27/42
+    Out[53]: 642.8571428571429     # scale factor from file to table 
+
+    In [54]: 1./(1000*27/42)
+    Out[54]: 0.0015555555555555555
+
+
+
+    In [43]: sc = 500./a[0,1]
+
+    In [47]: sc
+    Out[47]: 0.0015555555555555553
+
+    In [48]: a[:,1]
+    Out[48]: array([321428.571, 192857.143, 109285.714,  64285.714,  39857.143,  27000.   ,  19285.714,   4885.714,    546.429,    546.429,    546.429])
+
+    In [49]: a[:,1]*sc  ## scaling whats in the physics table back to whats in the file
+    Out[49]: array([500.  , 300.  , 170.  , 100.  ,  62.  ,  42.  ,  30.  ,   7.6 ,   0.85,   0.85,   0.85])
+
+    In [50]: 1/sc
+    Out[50]: 642.857142857143
+
+::
+
+    In [29]: t.rayleigh[1,:t.rayleigh[1,-1,-1].view(np.int64)]
+    Out[29]: 
+    array([[     0.   , 321428.571],
+           [     0.   , 192857.143],
+           [     0.   , 109285.714],
+           [     0.   ,  64285.714],
+           [     0.   ,  39857.143],
+           [     0.   ,  27000.   ],
+           [     0.   ,  19285.714],
+           [     0.   ,   4885.714],
+           [     0.   ,    546.429],
+           [     0.   ,    546.429],
+           [     0.   ,    546.429]])
+
+::
+
+    epsilon:~ blyth$ 
+    epsilon:~ blyth$ cat /Users/blyth/junotop/data/Simulation/DetSim/Material/Mylar/RAYLEIGH
+    1.55 *eV  100.000000  *cm 
+    1.7714 *eV  100.000000  *cm 
+    2.102 *eV  100.000000  *cm 
+    2.255 *eV  100.000000  *cm 
+    2.531 *eV  100.000000  *cm 
+    2.884 *eV  100.000000  *cm 
+    3.024 *eV  100.000000  *cm 
+    4.133 *eV  100.000000  *cm 
+    6.2 *eV  100.000000  *cm 
+    10.33 *eV  100.000000  *cm 
+    15.5 *eV  100.000000  *cm 
+
+
+This matches, just converted to mm::
+
+    In [34]: t.rayleigh[14,:t.rayleigh[14,-1,-1].view(np.int64)]
+    Out[34]: 
+    array([[   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.],
+           [   0., 1000.]])
+
+
 
 
 

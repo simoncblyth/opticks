@@ -42,6 +42,7 @@ flexibility, allowing running from U4Tree::initRayleigh::
 
 #include "U4Process.h"
 #include "U4PhysicsVector.h"
+#include "U4MaterialTable.h"
 
 template<typename T>
 struct U4PhysicsTable
@@ -49,9 +50,13 @@ struct U4PhysicsTable
     T*              proc ; 
     G4PhysicsTable* table ; 
     NP*             tab ; 
+    std::vector<std::string> names ; 
 
     static NP* Convert(T* proc_=nullptr); 
     U4PhysicsTable(T* proc_=nullptr); 
+
+    int              find_index(const char* name) ; // with T=G4OpRayleigh this is matname
+    G4PhysicsVector* find(const char* name) ; 
 
     std::string desc() const ; 
 };
@@ -71,7 +76,30 @@ inline U4PhysicsTable<T>::U4PhysicsTable(T* proc_)
     table(proc ? proc->GetPhysicsTable() : nullptr),
     tab(table ? U4PhysicsVector::CreateCombinedArray(table) : nullptr)
 {
+    U4MaterialTable::GetMaterialNames(names); 
+    if(tab) tab->set_names(names) ; 
 }
+
+
+template<typename T>
+inline int U4PhysicsTable<T>::find_index(const char* name)
+{
+    size_t idx = std::distance( names.begin(), std::find( names.begin(), names.end(), name ) ) ; 
+    return idx < names.size() ? int(idx) : -1 ; 
+}
+
+template<typename T>
+inline G4PhysicsVector* U4PhysicsTable<T>::find(const char* name)
+{
+    int idx = find_index(name); 
+    if( idx < 0 ) return nullptr ; 
+
+    int entries = table ? int(table->entries()) : 0 ; 
+    assert( idx < entries ); 
+
+    return (*table)(idx) ; 
+}
+
 
 template<typename T>
 inline std::string U4PhysicsTable<T>::desc() const 

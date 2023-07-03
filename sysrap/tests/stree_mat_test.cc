@@ -39,6 +39,9 @@ int main(int argc, char** argv)
     fold->add("bnd", st.make_bnd() ); 
     fold->add("bd",  st.make_bd()  ); 
 
+    fold->add("rayleigh",  st.rayleigh  ); 
+
+
     fold->save("$FOLD"); 
  
     return 0 ; 
