@@ -271,7 +271,7 @@ inline void U4Tree::initRayleigh()
     NP* arr = tab.tab ; 
 
     std::vector<std::string> names ; 
-    U4MaterialTable::GetMaterialNames(names)
+    U4MaterialTable::GetMaterialNames(names); 
     if(arr) arr->set_names(names) ; 
 
     std::cerr 
