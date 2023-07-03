@@ -18,7 +18,7 @@ HMM same as U4MaterialPropertyVector::ConvertToArray( const G4MaterialPropertyVe
 
 inline NP* U4PhysicsVector::ConvertToArray(const G4PhysicsVector* prop) // static 
 {
-    size_t num_val = prop->GetVectorLength() ; 
+    size_t num_val = prop ? prop->GetVectorLength() : 0 ; 
     NP* a = NP::Make<double>( num_val, 2 );
     double* a_v = a->values<double>(); 
     for(size_t i=0 ; i < num_val ; i++)
@@ -34,11 +34,15 @@ inline NP* U4PhysicsVector::ConvertToArray(const G4PhysicsVector* prop) // stati
 inline NP* U4PhysicsVector::CreateCombinedArray( const G4PhysicsTable* table )
 {
     if(table == nullptr) return nullptr ; 
-    if(table->size() == 0) return nullptr ; 
+    size_t entries = table->entries() ; 
+    if(entries == 0) return nullptr ; 
+
+    const G4PhysicsTable& tab = *table ; 
+
     std::vector<const NP*> aa ; 
-    for(size_t i=0 ; i < table->size() ; i++)
+    for(size_t i=0 ; i < entries ; i++)
     {
-        G4PhysicsVector* vec = (*table)[i] ; 
+        G4PhysicsVector* vec = tab(i) ; 
         const NP* a = ConvertToArray(vec) ; 
         aa.push_back(a);  
     }
