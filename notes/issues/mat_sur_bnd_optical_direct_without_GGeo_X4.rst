@@ -690,6 +690,23 @@ Trying to use a prop_override map to do this::
     267     st->mat = U4Material::MakeStandardArray(materials, prop_override) ;
     268 }
 
+::
+
+    epsilon:stree blyth$ cat rayleigh_meta.txt
+    Preserve_Last_Column_Integer_Annotation:1
+    epsilon:stree blyth$ cat mat_meta.txt
+    override_count:Water/RAYLEIGH:761,
+    epsilon:stree blyth$ 
+
+
+After prop_override left with very small sawtooth RAYLEIGH diff on large values 
+------------------------------------------------------------------------------------------------
+
+* not of concern, interpolation/domain technicalites with little impact 
+
+::
+
+    epsilon:tests blyth$ PLOT=DIFF_RAYLEIGH ./stree_mat_test.sh ana
 
 
 

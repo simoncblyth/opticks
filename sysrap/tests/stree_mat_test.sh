@@ -3,6 +3,24 @@ usage(){ cat << EOU
 stree_mat_test.sh 
 =====================
 
+::
+
+   DOM=ensel4 PLOT=GROUPVEL ./stree_mat_test.sh ana
+   DOM=ensel4 PLOT=DIFF_GROUPVEL ./stree_mat_test.sh ana
+
+   ## small diff with bizarre wiggles
+   ## looks like oldmat,newmat GROUPVEL calc slightly diff
+   ## can just use the new one 
+
+   DOM=ensel4 PLOT=RAYLEIGH ./stree_mat_test.sh ana
+   DOM=ensel4 PLOT=DIFF_RAYLEIGH ./stree_mat_test.sh ana
+   ## small sawtooth interpolation diff on large values, tecnicality  
+
+   DOM=ensel4 PLOT=ABSLENGTH ./stree_mat_test.sh ana
+   DOM=ensel4 PLOT=DIFF_ABSLENGTH ./stree_mat_test.sh ana
+   ## small diffs on large values, technicality  
+
+
 EOU
 }
 

@@ -27,8 +27,11 @@ if __name__ == '__main__':
     print(repr(t))
     Vacuum_kludge([t])
 
+    BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim"
 
-    t.mat[np.where( t.mat == 300. )] = 299.792458  # GROUPVEL default kludge 
+
+    ## t.mat[np.where( t.mat == 300. )] = 299.792458  # GROUPVEL default kludge 
+
     ab = np.abs( t.mat - t.oldmat ) 
 
     EXPR = """
@@ -47,41 +50,125 @@ if __name__ == '__main__':
         print(eval(expr))
     pass
 
-    wl = np.linspace(60.,820.,761)
 
+    rayleigh_Water_idx = np.where( np.array(t.rayleigh_names)  == "Water" )[0][0] 
+    rayleigh_Water_ = t.rayleigh[rayleigh_Water_idx]
+    rayleigh_Water_ni = rayleigh_Water_[-1,-1].view(np.int64)
+    rayleigh_Water = rayleigh_Water_[:rayleigh_Water_ni]
+
+    #wl = np.linspace(60.,820.,761)
+    wl = t.wavelength 
+    en = t.energy 
+
+    doms = {"wl":wl, "en":en }
+    DOM = os.environ.get("DOM", "en")
+    dom = doms[DOM[:2]]
+
+    if DOM == "ensel4":
+        sel = np.where( dom < 4 )
+    else:
+        sel = slice(None)
+    pass
+  
+    plot = "RINDEX"
+    #plot = "GROUPVEL"
+    #plot = "RAYLEIGH"
+    #plot = "ABSLENGTH"
+
+    PLOT = os.environ.get("PLOT", plot)
     qwns="mat oldmat".split()
 
     MM = [4,11,14,17,18,19]
 
+    prop = {}
+    prop["RINDEX"] = (0,0)
+    prop["ABSLENGTH"] = (0,1)
+    prop["RAYLEIGH"] = (0,2)
+    prop["REEMISSIONPROB"] = (0,3)
+    prop["GROUPVEL"] = (1,0)
+
     for M in MM:
         MAT = t.mat_names[M]
 
-        title = "GROUPVEL %d %s " % (M, MAT) 
+        title = "PLOT:%s DOM:%s M:%d MAT:%s " % (PLOT,DOM, M, MAT) 
         print(title)
 
         fig, ax = plt.subplots(1, figsize=SIZE/100.)
         fig.suptitle(title)
 
-        for qwn in qwns:
-            a = getattr(t, qwn, None)
-            assert not a is None
+        if PLOT.split("_")[0] == "DIFF":
+            a = getattr(t, qwns[0], None)
+            b = getattr(t, qwns[1], None)
+            p = prop.get(PLOT.split("_")[1], None)
+            aq = a[M,p[0],:,p[1]]
+            bq = b[M,p[0],:,p[1]]
+            abq = aq - bq
 
-            RINDEX = a[M,0,:,0]
-            ABSLENGTH = a[M,0,:,1]
-            RAYLEIGH = a[M,0,:,2]
-            REEMISSIONPROB = a[M,0,:,3]
-            GROUPVEL = a[M,1,:,0]   
+            label = "%s %s" % (PLOT, "%s-%s" % (qwns[0],qwns[1]) )            
+            ax.plot( dom[sel], abq[sel] , label=label )
 
-            ax.plot( wl, GROUPVEL , label="GROUPVEL %s" % qwn )
+            if PLOT == "DIFF_RAYLEIGH" and DOM[:2] == "en" and MAT == "Water":
+
+                rayleigh_Water_en = rayleigh_Water[:,0]*1e6
+                if DOM == "ensel4":
+                    rayleigh_Water_ensel = np.where(rayleigh_Water_en < 4 )
+                else:
+                    rayleigh_Water_ensel = slice(None)
+                pass
+                for xc in rayleigh_Water_en[rayleigh_Water_ensel]:
+                    ax.axvline(x=xc)
+                pass
+            pass
+        else:        
+            for qwn in qwns:
+                a = getattr(t, qwn, None)
+                assert not a is None
+                p = prop.get(PLOT, None)
+                assert not p is None
+                aq = a[M,p[0],:,p[1]]
+                label = "%s %s" % (PLOT, qwn)            
+
+                ax.plot( dom[sel], aq[sel], label=label )
+
+                REL = "stree/material/%(MAT)s/%(PLOT)s.npy" % locals()
+                path = os.path.expandvars(os.path.join(BASE,REL))  
+
+                if DOM[:2] == "en" and os.path.exists(path):
+                    meas = np.load(path)
+                    meas_en = meas[:,0]*1e6
+                    meas_va = meas[:,1]
+                    if DOM == "ensel4":
+                        meas_sel = np.where(meas_en < 4 )
+                    else:
+                        meas_sel = slice(None)
+                    pass
+                    ax.scatter( meas_en[meas_sel], meas_va[meas_sel], label="meas" )
+                pass
+
+                RID = "stree/material/%(MAT)s/RINDEX.npy" % locals()
+                ri_path = os.path.expandvars(os.path.join(BASE,RID))  
+
+                if DOM[:2] == "en" and os.path.exists(ri_path):
+                    ri = np.load(ri_path)
+                    ri_en = ri[:,0]*1e6
+                    ri_va = ri[:,1] 
+                    if DOM == "ensel4":
+                        ri_ensel = np.where(ri_en < 4)
+                    else:
+                        ri_ensel = slice(None)
+                    pass
+                    for xc in ri_en[ri_ensel]:
+                        ax.axvline(x=xc)
+                    pass
+                pass
+                #if PLOT == "RAYLEIGH" and DOM[:2] == "en" and MAT == "Water":
+                #    ax.scatter( rayleigh_Water[:,0]*1e6, rayleigh_Water[:,1], label="rayleigh_Water") 
+                #pass
+            pass
         pass
-
         ax.legend()
         fig.show()
     pass
-
- 
-
-
 
 if 0:
     o = Fold.Load("/tmp/SBnd_test", symbol="o")

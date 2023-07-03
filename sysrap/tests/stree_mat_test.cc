@@ -40,6 +40,8 @@ int main(int argc, char** argv)
     fold->add("bd",  st.make_bd()  ); 
 
     fold->add("rayleigh",  st.rayleigh  ); 
+    fold->add("energy",  st.energy ); 
+    fold->add("wavelength",  st.wavelength ); 
 
 
     fold->save("$FOLD"); 
