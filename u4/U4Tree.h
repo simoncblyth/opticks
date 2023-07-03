@@ -36,6 +36,7 @@ See also:
 #include "G4Material.hh"
 #include "G4LogicalSurface.hh"
 #include "G4OpRayleigh.hh"
+#include "G4OpticalPhoton.hh"
 
 #include "NP.hh"
 
@@ -261,6 +262,10 @@ just to get access to its physics table.
 inline void U4Tree::initRayleigh()
 {
     G4OpRayleigh* proc = new G4OpRayleigh ; 
+
+    G4ParticleDefinition* OpticalPhoton = G4OpticalPhoton::Definition() ; 
+    proc->BuildPhysicsTable(*OpticalPhoton); 
+
     U4PhysicsTable<G4OpRayleigh> tab(proc) ; 
 
     std::cerr 
