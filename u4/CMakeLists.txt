@@ -122,6 +122,7 @@ set(HEADERS
     U4Process.h
     U4PhysicsTable.h
     U4PhysicsVector.h
+    U4MaterialTable.h
 
 )
 

@@ -57,6 +57,7 @@ See also:
 #include "U4Surface.h"
 #include "U4Solid.h"
 #include "U4PhysicsTable.h"
+#include "U4MaterialTable.h"
 
 /*
 HMM: cannot have U4Tree EnvLevel because it is currently header only, 
@@ -267,15 +268,22 @@ inline void U4Tree::initRayleigh()
     proc->BuildPhysicsTable(*OpticalPhoton); 
 
     U4PhysicsTable<G4OpRayleigh> tab(proc) ; 
+    NP* arr = tab.tab ; 
+
+    std::vector<std::string> names ; 
+    U4MaterialTable::GetMaterialNames(names)
+    if(arr) arr->set_names(names) ; 
 
     std::cerr 
         << "U4Tree::initRayleigh" 
         << std::endl 
         << tab.desc() 
         << std::endl 
+        << " material names " << names.size()
+        << std::endl 
         ;
 
-    st->rayleigh = tab.tab ; 
+    st->rayleigh = arr ; 
 }
 
 
