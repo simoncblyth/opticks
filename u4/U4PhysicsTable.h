@@ -21,17 +21,19 @@ So can peruse the physics table and use it as appropriate.
 
 "g4-cls G4PhysicsTable" ISA : std::vector<G4PhysicsVector*>
 
-Usage, to convert entire table::
 
-    NP* tab = U4PhysicsTable<G4OpRayleigh>::Convert(); 
+When called without a process argument U4PhysicsTable
+attempts access the process from process manager. 
+This approach requires this to be run after physics setup.::
 
-To get single vectors::
+    NP* tab = U4PhysicsTable<G4OpRayleigh>::Convert();  
 
-    U4PhysicsTable<G4OpRayleigh> t ; 
+Directly passing a process instance gives more 
+flexibility, allowing running from U4Tree::initRayleigh::
 
-    *(t.table) 
+    NP* tab = U4PhysicsTable<G4OpRayleigh>::Convert(new G4OpRayleigh); 
 
-   
+
 **/
 
 #include <string>
@@ -48,23 +50,24 @@ struct U4PhysicsTable
     G4PhysicsTable* table ; 
     NP*             tab ; 
 
-    static NP* Convert(); 
-    U4PhysicsTable(); 
+    static NP* Convert(T* proc_=nullptr); 
+    U4PhysicsTable(T* proc_=nullptr); 
+
     std::string desc() const ; 
 };
 
 template<typename T>
-inline NP* U4PhysicsTable<T>::Convert()
+inline NP* U4PhysicsTable<T>::Convert(T* proc)
 {
-    U4PhysicsTable<T> table ; 
+    U4PhysicsTable<T> table(proc) ; 
     if(table.tab == nullptr) std::cerr << table.desc() ; 
     return table.tab ; 
 }
 
 template<typename T>
-inline U4PhysicsTable<T>::U4PhysicsTable()
+inline U4PhysicsTable<T>::U4PhysicsTable(T* proc_)
     :
-    proc(U4Process::Get<T>()),
+    proc(proc_ ? proc_ : U4Process::Get<T>()),
     table(proc ? proc->GetPhysicsTable() : nullptr),
     tab(table ? U4PhysicsVector::CreateCombinedArray(table) : nullptr)
 {

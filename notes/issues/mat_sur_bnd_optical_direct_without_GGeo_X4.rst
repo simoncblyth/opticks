@@ -636,6 +636,21 @@ TODO : review X4MaterialWater X4OpRayleigh and do something similar in U4Water.h
 ------------------------------------------------------------------------------------
 
 
+HMM U4Tree instanciation too soon to grab the physics table maybe ?::
+
+
+    tup Opticks 
+    LSExpDetectorConstruction::setupOpticks ekey LSExpDetectorConstruction__setupOpticks_pmtscan no pmtscan 
+    2023-07-03 19:20:35.609 INFO  [214268] [LSExpDetectorConstruction_Opticks::Setup@33] [ WITH_G4CXOPTICKS opticksMode 2 sd 0x5bd4f20
+    Missing separate debuginfo for /lib64/libcuda.so.1
+    Try: yum --enablerepo='*debug*' install /usr/lib/debug/.build-id/3e/1e7dd516361182d263c7713bd47eaa498bf0cd.debug
+    2023-07-03 19:20:37.601 INFO  [214268] [G4CXOpticks::init@116] CSGOptiX::Desc Version 7 PTXNAME CSGOptiX7 GEO_PTXNAME -
+    G4CXOpticks::desc sim 0x7514200 tr 0 wd 0 gg 0 fd 0 cx N qs N
+    2023-07-03 19:20:37.602 INFO  [214268] [G4CXOpticks::setGeometry@242]  G4VPhysicalVolume world 0x59f3530
+    python: /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Process.h:74: static T* U4Process::Get() [with T = G4OpRayleigh]: Assertion `mgr' failed.
+    [New Thread 0x7fff9ffff700 (LWP 214332)]
+
+
 
 Nature of GROUPVEL diff : Looks like different calc
 -----------------------------------------------------

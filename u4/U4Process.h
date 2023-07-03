@@ -71,7 +71,11 @@ template<typename T>
 inline T* U4Process::Get()
 {
     G4ProcessManager* mgr = GetManager(); 
-    assert(mgr); 
+    if(mgr == nullptr)
+    {
+        std::cerr << "U4Process::Get FAILED : MAYBE DO THIS LATER " << std::endl ; 
+        return nullptr ; 
+    }
     G4ProcessVector* procv = mgr->GetProcessList() ;
     G4int n = procv->entries() ;
 

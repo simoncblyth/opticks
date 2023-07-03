@@ -246,9 +246,22 @@ inline void U4Tree::initMaterials()
     st->mat = U4Material::MakeStandardArray(materials) ; 
 }
 
+/**
+U4Tree::initRayleigh
+---------------------
+
+Trying to find pre-existing G4OpRayleigh process
+with the argumentless U4PhysicsTable ctor fails 
+when U4Tree instanciation happens where it does currently.  
+As a workaround try passing in a throwaway G4OpRayleigh 
+just to get access to its physics table. 
+
+**/
+
 inline void U4Tree::initRayleigh()
 {
-    U4PhysicsTable<G4OpRayleigh> tab ; 
+    G4OpRayleigh* proc = new G4OpRayleigh ; 
+    U4PhysicsTable<G4OpRayleigh> tab(proc) ; 
 
     std::cerr 
         << "U4Tree::initRayleigh" 
