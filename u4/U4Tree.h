@@ -551,8 +551,11 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     const G4Material* const imat_ = lv->GetMaterial() ;
     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
 
-    const std::string& inam_ = pv->GetName() ; 
-    const std::string& onam_ = pv_p ? pv_p->GetName() : pv->GetName() ;  
+    const char* imatn = imat_->GetName().c_str() ; 
+    const char* omatn = omat_->GetName().c_str() ; 
+
+    const std::string& inam = pv->GetName() ; 
+    const std::string& onam = pv_p ? pv_p->GetName() : pv->GetName() ;  
 
     const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
     const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
@@ -567,7 +570,8 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     if(implicit_outwards || implicit_inwards)  
     {
         bool flip = implicit_inwards ; 
-        std::string implicit_ = S4::ImplicitBorderSurfaceName(inam_, onam_, flip );  
+        //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
+        std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
         const char* implicit = implicit_.c_str(); 
 
         bool new_implicit = GetValueIndex<std::string>( st->implicit, implicit ) == -1 ;  

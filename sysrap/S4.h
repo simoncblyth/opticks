@@ -18,6 +18,15 @@ struct S4
 
     static std::string Strip( const std::string& name );
 
+    // verbose variant for debugging 
+    static std::string ImplicitBorderSurfaceName( 
+          const std::string& pv1, 
+          const char* mat1, 
+          const std::string& pv2,
+          const char* mat2, 
+          bool flip=false 
+       ); 
+
     static std::string ImplicitBorderSurfaceName( 
           const std::string& pv1, 
           const std::string& pv2, 
@@ -46,6 +55,40 @@ inline std::string S4::Strip( const std::string& name )
     std::string sname = name.substr(0, name.find("0x")) ;
     return sname ; 
 }
+
+inline std::string S4::ImplicitBorderSurfaceName( 
+          const std::string& pv1, 
+          const char* mat1, 
+          const std::string& pv2,
+          const char* mat2, 
+          bool flip 
+       )
+{
+    std::string spv1 = Strip(pv1); 
+    std::string spv2 = Strip(pv2); 
+    std::stringstream ss ; 
+    ss << "Implicit" ; 
+ 
+    if( flip == false )
+    {
+        ss 
+            << "__RINDEX__" << spv1 << "__" << mat1 
+            << "__NoRINDEX__" << spv2 << "__" << mat2 
+            ; 
+    }
+    else
+    {
+        ss 
+            << "__RINDEX__" << spv2 << "__" << mat2 
+            << "__NoRINDEX__" << spv1 << "__" << mat1 
+            ; 
+    } 
+    std::string str = ss.str();
+    return str ; 
+}
+
+
+
 
 inline std::string S4::ImplicitBorderSurfaceName( 
           const std::string& pv1, 

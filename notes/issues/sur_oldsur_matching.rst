@@ -179,6 +179,7 @@ HMM : getting 107 implicits...
 
 Must be some bug, surely there cannot be so many materials without RINDEX. 
 
+
 ::
 
     epsilon:stree blyth$ head -30 /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree/implicit.txt 
@@ -266,5 +267,49 @@ Must be some bug, surely there cannot be so many materials without RINDEX.
     Material/photocathode_MCP20inch/RINDEX
     Material/photocathode/RINDEX
     epsilon:DetSim blyth$ 
+
+
+::
+
+    epsilon:stree blyth$ cat mtname_no_rindex.txt
+    Rock
+    Galactic
+    Steel
+    Tyvek
+    Scintillator
+    TiO2Coating
+    Adhesive
+    Aluminium
+    LatticedShellSteel
+    StrutSteel
+    CDReflectorSteel
+
+    epsilon:stree blyth$ pwd
+    /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree
+
+    epsilon:stree blyth$ cat mtname.txt
+    Air
+    Rock                ##
+    Galactic            ##
+    Steel               ##
+    LS                  
+    Tyvek               ## 
+    Scintillator        ##
+    TiO2Coating         ##
+    Adhesive            ##
+    Aluminium           ##
+    LatticedShellSteel  ##
+    Acrylic
+    PE_PA
+    StrutSteel          ## 
+    AcrylicMask
+    CDReflectorSteel    ##
+    Vacuum
+    Pyrex
+    Water
+    vetoWater
+    epsilon:stree blyth$ 
+
+
 
 
