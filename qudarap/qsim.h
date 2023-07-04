@@ -1227,6 +1227,52 @@ qsim::propagate_at_surface
 |   SURFACE_SREFLECT  |    CONTINUE      |   direction, polarization                               |              |
 +---------------------+------------------+---------------------------------------------------------+--------------+
 
+Action depens on s.surface float4 params::
+
++---------------+---------------------+----------------------------------+
+| s.surface.x   | detect fraction     |                                  |
++---------------+---------------------+----------------------------------+
+| s.surface.y   | absorb fraction     |                                  |
++---------------+---------------------+----------------------------------+
+| s.surface.z   | reflect specular    | NOT USED AS ALL FOUR SUM TO 1.   |               
++---------------+---------------------+----------------------------------+
+| s.surface.w   | reflect diffuse     |                                  |
++---------------+---------------------+----------------------------------+
+
+Excluding technical alignment burns a single u_surface random is throw
+to decide on what happens at the surface according to the float4 probabilities 
+that are assumed to sum to unity::
+  
+   +-------------------+-------------------+---------------------+------------------------+ 
+   |                   |                   |                     |                        | 
+   |  absorb           |  detect           |  reflect_diffuse_   |  "reflect_specular_"   |
+   0--SURFACE_ABSORB---|--SURFACE_DETECT---|--SURFACE_DREFLECT---|--SURFACE_SREFLECT------1
+   |  s.surface.y      |  s.surface.x      |  s.surface.w        |  s.surface.z           | 
+   |                   |                   |                     |                        | 
+   +-------------------+-------------------+---------------------+------------------------+ 
+
+Refs::
+ 
+    GSurfaceLib::propertyName
+    GSurfaceLib::createStandardSurface
+
+Different types of surface are modelled by changing the four values, 
+in such a way that they always sum to unity::
+
+    In [20]: t.oldsur.shape                                                                                          
+    Out[20]: (46, 2, 761, 4)
+
+    In [21]: t.oldsur[:,0,:].shape  ## pick payload group 0 
+    Out[21]: (46, 761, 4)
+
+    assert np.all( np.sum(t.oldsur[:,0,:], axis=2) == 1. ) 
+
+The s.surface float4 is filled by qbnd::fill_state via::
+
+    const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;
+    s.surface = boundary_lookup(wavelength,su_line,0) ; 
+    s.optical = optical[su_line].u ; 
+
 **/
 
 inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)

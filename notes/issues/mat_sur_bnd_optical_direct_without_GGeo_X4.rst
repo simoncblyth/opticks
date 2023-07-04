@@ -73,8 +73,55 @@ sysrap/NP.hh
 Thats reimplementing GMaterialLib::createStandardMaterial
 
 
-Surface props, conversion where : review the old workflow
------------------------------------------------------------
+Review oldsur
+----------------
+
+::
+
+    st
+    ./stree_mat_test.sh ana 
+
+    In [13]: t.oldsur.shape
+    Out[13]: (46, 2, 761, 4)
+
+    In [12]: np.all( t.oldsur[:,1] == -1 )   ## SECOND PAYLOAD GROUP FOR SURFACES IS UNUSED
+    Out[12]: True
+
+    In [16]: t.oldsur[:,0,:].shape
+    Out[16]: (46, 761, 4)
+
+    In [17]: np.sum(t.oldsur[:,0,:], axis=2)
+    Out[17]: 
+    array([[1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           ...,
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.],
+           [1., 1., 1., 1., 1., ..., 1., 1., 1., 1., 1.]])
+
+    In [18]: np.sum(t.oldsur[:,0,:], axis=2).shape
+    Out[18]: (46, 761)
+
+    ## sum of the surface float4 payload value "probabilities" is always unity 
+
+    In [19]: np.all( np.sum(t.oldsur[:,0,:], axis=2) == 1. )  
+    Out[19]: True
+
+
+
+Q: Where are the X4/GGeo surface probabilities prepared ?
+------------------------------------------------------------
+
+
+
+
+Old X4/GGeo workflow higher level surface prep
+--------------------------------------------------
 
 ::
 
@@ -181,67 +228,6 @@ Surface props, conversion where : review the old workflow
      42     
      43     LOG(LEVEL) << "]" ;
      44 }
-
-
-
-
-ANSWERED : Where is old source of the standard wavelength domain ? Is it same as sdomain.h ? YES sdomain is used by GDomain
------------------------------------------------------------------------------------------------------------------------------
-
-::
-
-    epsilon:ggeo blyth$ opticks-f GetDefaultDomain
-    ./extg4/tests/X4PhysicsVectorTest.cc:    GDomain<double>* dom = GDomain<double>::GetDefaultDomain() ; 
-    ./extg4/X4MaterialPropertiesTable.cc:    GDomain<double>* dom = GDomain<double>::GetDefaultDomain(); 
-    ./ggeo/GDomain.cc:GDomain<T>* GDomain<T>::GetDefaultDomain()  // static
-    ./ggeo/GPropertyLib.cc:    return GDomain<double>::GetDefaultDomain(); 
-    ./ggeo/GPropertyLib.cc:        m_standard_domain = GDomain<double>::GetDefaultDomain(); 
-    ./ggeo/GSkinSurface.cc:    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
-    ./ggeo/GDomain.hh:     static GDomain<T>* GetDefaultDomain() ; 
-    ./ggeo/GMaterial.cc:    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
-    ./ggeo/GPropertyMap.cc:        standard_domain = GDomain<T>::GetDefaultDomain();
-    ./ggeo/GBorderSurface.cc:    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
-    epsilon:opticks blyth$ 
-
-
-
-::
-
-     38 template <typename T>
-     39 GDomain<T>* GDomain<T>::GetDefaultDomain()  // static
-     40 {
-     41     if(fDefaultDomain == NULL)
-     42     {
-     43         fDefaultDomain = MakeDefaultDomain();
-     44     }
-     45     return fDefaultDomain ;
-     46 }
-     47 
-     48 template <typename T>
-     49 GDomain<T>* GDomain<T>::MakeDefaultDomain()  // static
-     50 {
-     51     GDomain<T>* domain = nullptr ;
-     52     switch(sdomain::DOMAIN_TYPE)
-     53     {
-     54         case 'F': domain = MakeFineDomain() ; break ;
-     55         case 'C': domain = MakeCoarseDomain() ; break ;
-     56     }
-     57     return domain ;
-     58 }
-     59 
-     60 template <typename T>
-     61 GDomain<T>* GDomain<T>::MakeCoarseDomain()  // static
-     62 {
-     63     return  new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::DOMAIN_STEP );
-     64 }
-     65 
-     66 template <typename T>
-     67 GDomain<T>* GDomain<T>::MakeFineDomain()  // static
-     68 {
-     69     return new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::FINE_DOMAIN_STEP );
-     70 }
-     71 
-     72 
 
 
 
@@ -671,7 +657,7 @@ So now using throwaway G4OpRayleigh::
     280 
 
 
-WIP : Now how to use the rayleigh physics table to avoid discrepant Water ?
+DONE : Now how to use the rayleigh physics table to avoid discrepant Water ?
 ------------------------------------------------------------------------------
 
 Trying to use a prop_override map to do this::

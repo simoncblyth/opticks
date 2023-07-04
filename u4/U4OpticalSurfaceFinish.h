@@ -17,6 +17,9 @@ Only finish types used by active geometries have any hope of being supported.
 
 struct U4OpticalSurfaceFinish
 {
+    static bool IsPolished(unsigned finish); 
+    static bool IsGround(  unsigned finish); 
+
     static const char* Name(unsigned finish); 
     static unsigned   Finish(const char* name);
    
@@ -28,6 +31,14 @@ struct U4OpticalSurfaceFinish
     static constexpr const char* groundbackpainted_    = "groundbackpainted" ;     // same as 'ground' but with a back-paint
 }; 
 
+inline bool U4OpticalSurfaceFinish::IsPolished(unsigned finish)
+{
+    return finish == polished || finish == polishedfrontpainted || finish == polishedbackpainted ; 
+}
+inline bool U4OpticalSurfaceFinish::IsGround(unsigned finish)
+{
+    return finish == ground || finish == groundfrontpainted || finish == groundbackpainted ; 
+}
 inline const char* U4OpticalSurfaceFinish::Name(unsigned finish)
 {
     const char* n = nullptr ; 
