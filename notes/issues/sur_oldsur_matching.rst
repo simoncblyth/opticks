@@ -129,3 +129,48 @@ Trying to add implicit handling
     (gdb) 
 
 
+Another assert
+---------------
+
+::
+    (gdb) bt
+    #0  0x00007ffff696e387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff696fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff69671a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6967252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffd2ea878c in U4Tree::initNodes_r (this=0x794ed70, pv=0x5a9a590, pv_p=0x5a04ab0, depth=3, sibdex=0, 
+        parent=65723) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:573
+    #5  0x00007fffd2ea9031 in U4Tree::initNodes_r (this=0x794ed70, pv=0x5a04ab0, pv_p=0x5a04b10, depth=2, sibdex=0, 
+        parent=65722) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:663
+    #6  0x00007fffd2ea9031 in U4Tree::initNodes_r (this=0x794ed70, pv=0x5a04b10, pv_p=0x59f3600, depth=1, sibdex=1, 
+        parent=0) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:663
+    #7  0x00007fffd2ea9031 in U4Tree::initNodes_r (this=0x794ed70, pv=0x59f3600, pv_p=0x0, depth=0, sibdex=-1, 
+        parent=-1) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:663
+    #8  0x00007fffd2ea831c in U4Tree::initNodes (this=0x794ed70)
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:476
+    #9  0x00007fffd2ea77db in U4Tree::init (this=0x794ed70)
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:226
+    #10 0x00007fffd2ea7711 in U4Tree::U4Tree (this=0x794ed70, st_=0x794e8d0, top_=0x59f3600, sid_=0x0)
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:213
+    #11 0x00007fffd2ea74fa in U4Tree::Create (st=0x794e8d0, top=0x59f3600, sid=0x0)
+
+
+
+    (gdb) f 4
+    #4  0x00007fffd2ea878c in U4Tree::initNodes_r (this=0x794ed70, pv=0x5a9a590, pv_p=0x5a04ab0, depth=3, sibdex=0, 
+        parent=65723) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:573
+    573	            assert(isur == -1 );
+    (gdb) list
+    568	    if( implicit_idx > -1 )
+    569	    {
+    570	        int num_surfaces = surfaces.size() ; 
+    571	        if(implicit_outwards) // from imat to omat : isur is relevant 
+    572	        {
+    573	            assert(isur == -1 );
+    574	            isur = num_surfaces + implicit_idx ; 
+    575	        }
+    576	        else if(implicit_inwards) // from omat to imat : osur is relevant
+    577	        {
+    (gdb) 
+
+
