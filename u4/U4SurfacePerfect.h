@@ -23,8 +23,14 @@ struct U4SurfacePerfect
     double  reflect_specular ; 
     double  reflect_diffuse ; 
 
+    double sum() const ; 
     std::string desc() const ; 
 }; 
+
+inline double U4SurfacePerfect::sum() const 
+{
+    return detect + absorb + reflect_specular + reflect_diffuse ; 
+}
 
 inline std::string U4SurfacePerfect::desc() const 
 {

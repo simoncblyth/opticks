@@ -188,19 +188,12 @@ inline void U4SurfaceArray::addPerfect(int i, const U4SurfacePerfect& perfect )
     names.push_back(perfect.name.c_str()) ; 
     for(int k=0 ; k < nk ; k++)  // energy/wavelength domain 
     {
-        D4 d4 ; 
-        d4.x = perfect.detect ; 
-        d4.y = perfect.absorb ; 
-        d4.z = perfect.reflect_specular ; 
-        d4.w = perfect.reflect_diffuse ; 
-
-        double d4_sum = d4.x + d4.y + d4.z + d4.w ; 
-        assert( std::abs( d4_sum - 1. ) < 1e-9 ); 
+        assert( std::abs( perfect.sum() - 1. ) < 1e-9 ); 
         int index = i*nj*nk*nl + j*nk*nl + k*nl ;
-        sur_v[index+0] = d4.x ;
-        sur_v[index+1] = d4.y ;
-        sur_v[index+2] = d4.z ;
-        sur_v[index+3] = d4.w ;
+        sur_v[index+0] = perfect.detect ;
+        sur_v[index+1] = perfect.absorb ;
+        sur_v[index+2] = perfect.reflect_specular ;
+        sur_v[index+3] = perfect.reflect_diffuse ;
     }
 }
 
