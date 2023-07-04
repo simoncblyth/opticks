@@ -195,6 +195,7 @@ struct stree
     static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
     static constexpr const char* TRS = "trs.npy" ;  // optional, when use save_trs
     static constexpr const char* MTNAME = "mtname.txt" ;
+    static constexpr const char* MTNAME_NO_RINDEX = "mtname_no_rindex.txt" ;
     static constexpr const char* MTINDEX = "mtindex.npy" ;
     static constexpr const char* MTLINE = "mtline.npy" ;
     static constexpr const char* SUNAME = "suname.txt" ;
@@ -229,6 +230,7 @@ struct stree
     int level ;                            // verbosity 
 
     std::vector<std::string> mtname ;       // unique material names
+    std::vector<std::string> mtname_no_rindex ; 
     std::vector<int>         mtindex ;      // G4Material::GetIndex 0-based creation indices 
     std::vector<int>         mtline ;     
     std::map<int,int>        mtindex_to_mtline ;   // filled from mtindex and mtline with init_mtindex_to_mtline 
@@ -1655,6 +1657,7 @@ inline void stree::save_( const char* fold ) const
 
     // materials
     NP::WriteNames(    fold, MTNAME,   mtname );
+    NP::WriteNames(    fold, MTNAME_NO_RINDEX,   mtname_no_rindex );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
     if(material) material->save(fold, MATERIAL) ;
@@ -1842,6 +1845,7 @@ inline int stree::load_( const char* fold )
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, mtname );
+    NP::ReadNames( fold, MTNAME_NO_RINDEX, mtname_no_rindex );
     NP::ReadNames( fold, SUNAME, suname );
     NP::ReadNames( fold, IMPLICIT, implicit );
 
@@ -2732,6 +2736,7 @@ inline std::string stree::desc_mt() const
     std::stringstream ss ; 
     ss << "stree::desc_mt"
        << " mtname " << mtname.size()
+       << " mtname_no_rindex " << mtname_no_rindex.size()
        << " mtindex " << mtindex.size()
        << " mtline " << mtline.size()
        << " mtindex.mn " << mn 
@@ -2901,7 +2906,7 @@ g4index is the Geant4 creation index obtained from G4Material::GetIndex
 
 inline void stree::add_material( const char* name, unsigned g4index )
 {
-    unsigned idx = mtname.size() ; 
+    //unsigned idx = mtname.size() ; 
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
    

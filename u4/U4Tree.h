@@ -113,6 +113,8 @@ struct U4Tree
     static U4PhysicsTable<G4OpRayleigh>* CreateRayleighTable(); 
     void initRayleigh();   
     void initMaterials(); 
+    void initMaterials_NoRINDEX(); 
+
     void initMaterials_r(const G4VPhysicalVolume* const pv); 
     void initMaterial(const G4Material* const mt); 
 
@@ -221,6 +223,8 @@ inline void U4Tree::init()
     initDomain(); 
     initRayleigh(); 
     initMaterials();
+    initMaterials_NoRINDEX(); 
+
     initSurfaces();
     initSolids();
     initNodes(); 
@@ -271,6 +275,21 @@ inline void U4Tree::initMaterials()
     prop_override["Water/RAYLEIGH"] = prop ; 
 
     st->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
+}
+
+inline void U4Tree::initMaterials_NoRINDEX()
+{
+    int num_materials = materials.size() ; 
+    for(int i=0 ; i < num_materials ; i++)
+    {
+        const G4Material* mt = materials[i] ;    
+        const G4MaterialPropertyVector* rindex = GetRINDEX( mt ) ; 
+        if( rindex == nullptr )
+        {
+            const char* mtn = mt->GetName().c_str(); 
+            st->mtname_no_rindex.push_back(mtn) ; 
+        }
+    }
 }
 
 

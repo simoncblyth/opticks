@@ -174,3 +174,97 @@ Another assert
     (gdb) 
 
 
+HMM : getting 107 implicits...
+----------------------------------
+
+Must be some bug, surely there cannot be so many materials without RINDEX. 
+
+::
+
+    epsilon:stree blyth$ head -30 /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree/implicit.txt 
+    Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock
+    Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox
+    Implicit_RINDEX_NoRINDEX_pExpHall_pPoolCover
+    Implicit_RINDEX_NoRINDEX_lUpperChimney_phys_pUpperChimneySteel
+    Implicit_RINDEX_NoRINDEX_lUpperChimney_phys_pUpperChimneyTyvek
+    Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_0_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_1_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_2_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_3_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_0_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_1_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_2_f_
+    Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_3_f_
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up10_up11_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up09_up10_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up08_up09_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up07_up08_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up06_up07_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLw1.up05_up06_HBeam_phys
+    ...
+
+
+    epsilon:stree blyth$ tail -30  /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree/implicit.txt 
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A03_B04_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A04_B05_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A05_B06_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A06_B07_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.B01_B01_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.B03_B03_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.B05_B05_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A03_A03_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_ZC2.A05_A05_HBeam_phys
+    Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pCentralDetector
+    Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector
+    Implicit_RINDEX_NoRINDEX_pInnerWater_lSteel_phys
+    Implicit_RINDEX_NoRINDEX_pInnerWater_lSteel2_phys
+    Implicit_RINDEX_NoRINDEX_pInnerWater_lFasteners_phys
+    Implicit_RINDEX_NoRINDEX_pInnerWater_lUpper_phys
+    Implicit_RINDEX_NoRINDEX_pLPMT_Hamamatsu_R12860_HamamatsuR12860pMaskTail
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_plate_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_outer_edge_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_inner_edge_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_inner_ring_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_dynode_tube_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_grid_phy
+    Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_shield_phy
+    Implicit_RINDEX_NoRINDEX_pLPMT_NNVT_MCPPMT_NNVTMCPPMTpMaskTail
+    Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_edge_phy
+    Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_plate_phy
+    Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_tube_phy
+    Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_mcp_phy
+    Implicit_RINDEX_NoRINDEX_PMT_3inch_log_phys_PMT_3inch_cntr_phys
+    Implicit_RINDEX_NoRINDEX_lLowerChimney_phys_pLowerChimneySteel
+    epsilon:stree blyth$ 
+
+
+::
+
+    epsilon:DetSim blyth$ find Material -name RINDEX 
+    Material/Pyrex/RINDEX
+    Material/photocathode_Ham20inch/RINDEX
+    Material/ETFE/RINDEX
+    Material/FEP/RINDEX
+    Material/VacuumT/RINDEX
+    Material/AcrylicMask/RINDEX
+    Material/Water/RINDEX
+    Material/photocathode_HZC9inch/RINDEX
+    Material/Vacuum/RINDEX
+    Material/LAB/RINDEX
+    Material/vetoWater/RINDEX
+    Material/Air/RINDEX
+    Material/photocathode_MCP8inch/RINDEX
+    Material/MineralOil/RINDEX
+    Material/PA/RINDEX
+    Material/Mylar/RINDEX
+    Material/Acrylic/RINDEX
+    Material/PE_PA/RINDEX
+    Material/LS/RINDEX
+    Material/photocathode_3inch/RINDEX
+    Material/photocathode_Ham8inch/RINDEX
+    Material/photocathode_MCP20inch/RINDEX
+    Material/photocathode/RINDEX
+    epsilon:DetSim blyth$ 
+
+
