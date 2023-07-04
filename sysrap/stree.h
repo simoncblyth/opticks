@@ -2904,7 +2904,12 @@ inline void stree::add_material( const char* name, unsigned g4index )
     unsigned idx = mtname.size() ; 
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
-    assert( idx == g4index ); 
+   
+    // assert( idx == g4index );   NOT FULFILLED
+    // 
+    // Only G4Material referenced from G4LogicalVolume 
+    // are added, so the g4index does not match the 
+    // idx from mtname. 
 } 
 
 inline const char* stree::get_material_name( int idx ) const 

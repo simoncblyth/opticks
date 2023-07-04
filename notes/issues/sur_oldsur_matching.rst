@@ -107,6 +107,9 @@ Observation : no significant diff in payload group 0 of the 40 sur in common
 Trying to add implicit handling 
 ---------------------------------
 
+* to try to fix the below, moved surface name collection earlier 
+  and moved to using stree::get_boundary_name 
+
 ::
 
     (gdb) f 3
