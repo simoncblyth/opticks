@@ -464,8 +464,13 @@ struct stree
     NP* make_bnd() const ; 
 
     void add_material( const char* name, unsigned g4index ); 
-    void add_surface(  const char* name, unsigned idx ); 
-    void add_surface(const std::vector<std::string>& names  ); 
+    const char* get_material_name(int idx) const ; 
+
+    void add_surface( const char* name ); 
+    const char* get_surface_name(int idx) const ; 
+    void add_surface( const std::vector<std::string>& names  ); 
+
+    std::string get_boundary_name( const int4& bd, char delim ) const ; 
 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
@@ -2896,26 +2901,61 @@ g4index is the Geant4 creation index obtained from G4Material::GetIndex
 
 inline void stree::add_material( const char* name, unsigned g4index )
 {
+    unsigned idx = mtname.size() ; 
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
+    assert( idx == g4index ); 
 } 
 
-inline void stree::add_surface( const char* name, unsigned idx )
+inline const char* stree::get_material_name( int idx ) const 
 {
+    assert( idx < int(mtname.size()) ); 
+    return idx > -1 ? mtname[idx].c_str() : nullptr ; 
+}
+
+
+inline void stree::add_surface( const char* name )
+{
+    int idx = suname.size() ; 
     suname.push_back(name); 
     suindex.push_back(idx); 
 } 
+inline const char* stree::get_surface_name( int idx ) const 
+{
+    assert( idx < int(suname.size()) ); 
+    return idx > -1 ? suname[idx].c_str() : nullptr ; 
+}
+
 
 inline void stree::add_surface(const std::vector<std::string>& names  )
 {
     for(unsigned i=0 ; i < names.size() ; i++) 
     {    
         const char* sn = names[i].c_str() ; 
-        add_surface( sn, i ); 
+        add_surface( sn ); 
     }    
 } 
 
+inline std::string stree::get_boundary_name( const int4& bd, char delim ) const 
+{
+    const char* omat = get_material_name( bd.x ); 
+    const char* osur = get_surface_name( bd.y ); 
+    const char* isur = get_surface_name( bd.z ); 
+    const char* imat = get_material_name( bd.w ); 
 
+    assert( omat ); 
+    assert( imat ); 
+
+    std::stringstream ss ;
+    ss   
+       << omat << delim
+       << ( osur ? osur : "" ) << delim 
+       << ( isur ? isur : "" ) << delim
+       << imat 
+       ;    
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 

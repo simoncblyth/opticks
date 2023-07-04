@@ -37,9 +37,9 @@ struct U4SurfaceArray
     struct D4 { double x,y,z,w ; } ;
 
     sdomain dom ; 
-    int num_surfaces ; 
-    int num_implicits ; 
-    int num_perfects ; 
+    int num_surface ; 
+    int num_implicit ; 
+    int num_perfect ; 
     int ni ; 
     int nj ; 
     int nk ; 
@@ -51,9 +51,10 @@ struct U4SurfaceArray
     std::vector<std::string> names ; 
 
     U4SurfaceArray(
-        const std::vector<const G4LogicalSurface*>& surfaces, 
-        const std::vector<std::string>& implicits, 
-        const std::vector<U4SurfacePerfect>& perfects  ); 
+        const std::vector<const G4LogicalSurface*>& surface, 
+        const std::vector<std::string>& implicit, 
+        const std::vector<U4SurfacePerfect>& perfect  
+        ); 
 
     void addSurface( int i, const G4LogicalSurface* ls); 
     void addImplicit(int i, const char* name); 
@@ -64,14 +65,14 @@ struct U4SurfaceArray
 
 
 inline U4SurfaceArray::U4SurfaceArray(
-        const std::vector<const G4LogicalSurface*>& surfaces, 
-        const std::vector<std::string>& implicits, 
-        const std::vector<U4SurfacePerfect>& perfects  )
+        const std::vector<const G4LogicalSurface*>& surface, 
+        const std::vector<std::string>& implicit, 
+        const std::vector<U4SurfacePerfect>& perfect  )
     :
-    num_surfaces(surfaces.size()),
-    num_implicits(implicits.size()),
-    num_perfects(perfects.size()),
-    ni(num_surfaces + num_implicits + num_perfects),
+    num_surface(surface.size()),
+    num_implicit(implicit.size()),
+    num_perfect(perfect.size()),
+    ni(num_surface + num_implicit + num_perfect),
     nj(sprop::NUM_PAYLOAD_GRP),
     nk(dom.length),
     nl(sprop::NUM_PAYLOAD_VAL),
@@ -81,20 +82,20 @@ inline U4SurfaceArray::U4SurfaceArray(
 {
     for(int i=0 ; i < ni ; i++)
     {
-        if( i < num_surfaces )
+        if( i < num_surface )
         {
-            const G4LogicalSurface* ls = surfaces[i] ; 
+            const G4LogicalSurface* ls = surface[i] ; 
             addSurface(i, ls); 
         }
-        else if( i < num_surfaces + num_implicits )
+        else if( i < num_surface + num_implicit )
         {
-            const std::string& implicit = implicits[i-num_surfaces] ; 
-            addImplicit(i, implicit.c_str()); 
+            const std::string& impl = implicit[i-num_surface] ; 
+            addImplicit(i, impl.c_str()); 
         }
-        else if( i < num_surfaces + num_implicits + num_perfects )
+        else if( i < num_surface + num_implicit + num_perfect )
         {
-            const U4SurfacePerfect& perfect = perfects[i-num_surfaces-num_implicits] ; 
-            addPerfect(i, perfect); 
+            const U4SurfacePerfect& perf = perfect[i-num_surface-num_implicit] ; 
+            addPerfect(i, perf); 
         }
     }
     sur->set_names(names) ; 
@@ -197,20 +198,20 @@ are on boundary of a material with RINDEX and one without RINDEX.
 
 inline void U4SurfaceArray::addImplicit(int i, const char* name)
 {
-    U4SurfacePerfect implicit = { name, 0., 1., 0., 0. } ; 
-    addPerfect(i, implicit); 
+    U4SurfacePerfect impl = { name, 0., 1., 0., 0. } ; 
+    addPerfect(i, impl ); 
 }
-inline void U4SurfaceArray::addPerfect(int i, const U4SurfacePerfect& perfect )
+inline void U4SurfaceArray::addPerfect(int i, const U4SurfacePerfect& perf )
 {
-    names.push_back(perfect.name.c_str()) ; 
+    names.push_back(perf.name.c_str()) ; 
     for(int k=0 ; k < nk ; k++)  // energy/wavelength domain 
     {
-        assert( std::abs( perfect.sum() - 1. ) < 1e-9 ); 
+        assert( std::abs( perf.sum() - 1. ) < 1e-9 ); 
         int index = i*nj*nk*nl + j*nk*nl + k*nl ;
-        sur_v[index+0] = perfect.detect ;
-        sur_v[index+1] = perfect.absorb ;
-        sur_v[index+2] = perfect.reflect_specular ;
-        sur_v[index+3] = perfect.reflect_diffuse ;
+        sur_v[index+0] = perf.detect ;
+        sur_v[index+1] = perf.absorb ;
+        sur_v[index+2] = perf.reflect_specular ;
+        sur_v[index+3] = perf.reflect_diffuse ;
     }
 }
 

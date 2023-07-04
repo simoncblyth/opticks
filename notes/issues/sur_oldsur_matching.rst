@@ -103,3 +103,26 @@ Observation : no significant diff in payload group 0 of the 40 sur in common
     In [35]: np.abs( a[:40,0,:,:]-b[:40,0,:,:] ).max()
     Out[35]: 6.100014653676045e-07
 
+
+Trying to add implicit handling 
+---------------------------------
+
+::
+
+    (gdb) f 3
+    #3  0x00007fffd2ea845e in U4Tree::initNodes_r (this=0x794f290, pv=0x59ffec0, pv_p=0x59f5230, depth=3, sibdex=0, 
+        parent=5) at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:573
+    573	        std::string bdn = getBoundaryName(bd,'/') ; 
+    (gdb) f 2
+    #2  0x00007fffd2ea8eb5 in U4Tree::getBoundaryName[abi:cxx11](int4 const&, char) const (this=0x794f290, bd=..., 
+        delim=47 '/') at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:751
+    751	    const char* isur = getSurfaceName(bd.z); 
+    (gdb) f 1
+    #1  0x00007fffd2ea8e23 in U4Tree::getSurfaceName (this=0x794f290, idx=41)
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/U4/U4Tree.h:735
+    735	    const char* name = sur ? sur->GetName().c_str() : nullptr ; 
+    (gdb) p sur 
+    $1 = (const G4LogicalSurface *) 0x8
+    (gdb) 
+
+

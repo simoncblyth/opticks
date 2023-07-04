@@ -134,9 +134,6 @@ struct U4Tree
 
     const G4Material*       getMaterial(int idx) const ; 
     const G4LogicalSurface* getSurface(int idx) const ; 
-    const char* getMaterialName(int idx) const ; 
-    const char* getSurfaceName(int idx) const ; 
-    std::string getBoundaryName(const int4& bd, char delim='/') const ; 
 
     std::string              desc() const ; 
     const G4VPhysicalVolume* get_pv_(int nidx) const ; 
@@ -349,6 +346,14 @@ inline void U4Tree::initSurfaces()
     U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
 
+    int num_surfaces = surfaces.size() ; 
+    for(int i=0 ; i < num_surfaces ; i++)
+    {
+        const G4LogicalSurface* ls = surfaces[i] ; 
+        const G4String& name_ = ls->GetName() ; 
+        const char* name = name_.c_str(); 
+        st->add_surface(name);  
+    }
 }
 
 /**
@@ -363,14 +368,22 @@ this within initSurfaces
 
 inline void U4Tree::initSurfaces_Serialize()
 {
-    std::vector<U4SurfacePerfect> perfects ; 
-    U4SurfacePerfect::Get(perfects); 
-    const std::vector<std::string>& implicit = st->implicit ; 
+    std::vector<U4SurfacePerfect> perfect ; 
+    U4SurfacePerfect::Get(perfect);
 
-    U4SurfaceArray serialize(surfaces, implicit, perfects) ;   
-    NP* sur = serialize.sur ; 
-    st->sur = sur ; 
-    st->add_surface( sur->names ); 
+    U4SurfaceArray serialize(surfaces, st->implicit, perfect) ;   
+    st->sur = serialize.sur ; 
+
+    for(int i=0 ; i < serialize.num_perfect ; i++)
+    {
+        const U4SurfacePerfect& perf = perfect[i] ; 
+        const char* name = perf.name.c_str() ; 
+        st->add_surface( name );   
+    }
+
+    // ITS TOO LATE ADD IMPLICIT NAMES HERE 
+    // AS THOSE ARE NEEDED FOR stree::get_boundary_name 
+    // CAN ADD PERFECTS AS THOSE ARE JUST FOR TESTING
 }
 
 
@@ -447,7 +460,7 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 
 /**
 U4Tree::initNodes
------------------------------
+-----------------
 
 Serialize the n-ary tree of structural nodes (the volumes) into nds and trs 
 vectors within stree holding structural node info and transforms. 
@@ -534,11 +547,14 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     if(implicit_outwards || implicit_inwards)  
     {
         bool flip = implicit_inwards ; 
-        std::string implicit = S4::ImplicitBorderSurfaceName(inam_, onam_, flip );  
+        std::string implicit_ = S4::ImplicitBorderSurfaceName(inam_, onam_, flip );  
+        const char* implicit = implicit_.c_str(); 
+
         bool new_implicit = GetValueIndex<std::string>( st->implicit, implicit ) == -1 ;  
         if(new_implicit)
         {
-            st->implicit.push_back(implicit.c_str()) ;   
+            st->implicit.push_back(implicit) ;   
+            st->add_surface(implicit);   
         }
         implicit_idx = GetValueIndex<std::string>( st->implicit, implicit ) ; 
     }
@@ -564,13 +580,12 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
         }
     }
 
-
     int4 bd = {omat, osur, isur, imat } ; 
     bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ; 
     if(new_boundary)  
     {
         st->bd.push_back(bd) ; 
-        std::string bdn = getBoundaryName(bd,'/') ; 
+        std::string bdn = st->get_boundary_name(bd,'/') ; 
         st->bdname.push_back(bdn.c_str()) ; 
         // HMM: better to use higher level stree::add_boundary if can get names at stree level 
     }
@@ -716,59 +731,6 @@ inline const G4LogicalSurface* U4Tree::getSurface(int idx) const
 {
     return idx > -1 ? surfaces[idx] : nullptr ; 
 }
-
-/**
-getMaterialName and getSurfaceName work because the corresponding GetName 
-returns a reference G4String& so do not have to strdup to cope  with temporaries 
-that would do if GetName returned by value.  
-**/
-
-inline const char* U4Tree::getMaterialName(int idx) const 
-{
-    const G4Material* mat = getMaterial(idx); 
-    const char* name = mat ? mat->GetName().c_str() : nullptr ; 
-    return name ; 
-}
-inline const char* U4Tree::getSurfaceName(int idx) const 
-{
-    const G4LogicalSurface* sur = getSurface(idx); 
-    const char* name = sur ? sur->GetName().c_str() : nullptr ; 
-    return name ; 
-}
-
-/**
-U4Tree::getBoundaryName
-------------------------
-
-Can this be done at stree level ?
-
-**/
-
-inline std::string U4Tree::getBoundaryName(const int4& bd, char delim) const 
-{
-    const char* omat = getMaterialName(bd.x); 
-    const char* osur = getSurfaceName(bd.y);  
-    const char* isur = getSurfaceName(bd.z); 
-    const char* imat = getMaterialName(bd.w); 
- 
-    assert( omat ); 
-    assert( imat ); 
-
-    std::stringstream ss ; 
-    ss 
-       << omat << delim
-       << ( osur ? osur : "" ) << delim 
-       << ( isur ? isur : "" ) << delim
-       << imat 
-       ;
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-
-
 
 inline std::string U4Tree::desc() const 
 {
