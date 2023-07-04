@@ -54,7 +54,11 @@ See also:
 
 #include "U4Transform.h"
 #include "U4Material.hh"
+
 #include "U4Surface.h"
+#include "U4SurfacePerfect.h"
+#include "U4SurfaceArray.h"
+
 #include "U4Solid.h"
 #include "U4PhysicsTable.h"
 #include "U4MaterialTable.h"
@@ -334,12 +338,20 @@ U4Tree::initSurfaces
 
 **/
 
+
 inline void U4Tree::initSurfaces()
 {
     U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
-    st->sur = U4Surface::MakeStandardArray(surfaces) ; 
 
+    std::vector<U4SurfacePerfect> perfects ; 
+    U4SurfacePerfect::Get(perfects); 
+
+    U4SurfaceArray serialize(surfaces, perfects) ;   
+    NP* sur = serialize.sur ; 
+    st->sur = sur ; 
+
+    // HMM: can just add names from the 
     for(unsigned i=0 ; i < surfaces.size() ; i++)
     {
         const G4LogicalSurface* s = surfaces[i] ;  
@@ -347,6 +359,7 @@ inline void U4Tree::initSurfaces()
         const char* sn = _sn.c_str(); 
         st->add_surface( sn, i ); 
     }
+    // HMM: need to add perfects and implicits with stree::add_surface ?
 }
 
 /**

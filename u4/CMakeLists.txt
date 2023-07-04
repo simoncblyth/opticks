@@ -124,7 +124,8 @@ set(HEADERS
     U4PhysicsVector.h
     U4MaterialTable.h
     U4OpticalSurfaceFinish.h
-
+    U4SurfacePerfect.h
+    U4SurfaceArray.h 
 )
 
 
