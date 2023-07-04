@@ -52,20 +52,24 @@ struct U4SurfaceArray
 
     U4SurfaceArray(
         const std::vector<const G4LogicalSurface*>& surfaces, 
+        const std::vector<std::string>& implicits, 
         const std::vector<U4SurfacePerfect>& perfects  ); 
 
-    void addSurface(int i, const G4LogicalSurface* ls); 
-    void addImplicit(int i); 
-    void addPerfect(int i, const U4SurfacePerfect& perfect ); 
+    void addSurface( int i, const G4LogicalSurface* ls); 
+    void addImplicit(int i, const char* name); 
+    void addPerfect( int i, const U4SurfacePerfect& perfect ); 
 };
+
+
 
 
 inline U4SurfaceArray::U4SurfaceArray(
         const std::vector<const G4LogicalSurface*>& surfaces, 
+        const std::vector<std::string>& implicits, 
         const std::vector<U4SurfacePerfect>& perfects  )
     :
     num_surfaces(surfaces.size()),
-    num_implicits(0),
+    num_implicits(implicits.size()),
     num_perfects(perfects.size()),
     ni(num_surfaces + num_implicits + num_perfects),
     nj(sprop::NUM_PAYLOAD_GRP),
@@ -84,7 +88,8 @@ inline U4SurfaceArray::U4SurfaceArray(
         }
         else if( i < num_surfaces + num_implicits )
         {
-            addImplicit(i); 
+            const std::string& implicit = implicits[i-num_surfaces] ; 
+            addImplicit(i, implicit.c_str()); 
         }
         else if( i < num_surfaces + num_implicits + num_perfects )
         {
@@ -180,8 +185,20 @@ inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
     }
 }
 
-inline void U4SurfaceArray::addImplicit(int i)
+/**
+U4SurfaceArray::addImplicit
+----------------------------
+
+Implicits are perfect absorbers that mimic within Opticks on GPU
+the implicit fStopAndKill absorption that Geant4 does when photons 
+are on boundary of a material with RINDEX and one without RINDEX.  
+
+**/
+
+inline void U4SurfaceArray::addImplicit(int i, const char* name)
 {
+    U4SurfacePerfect implicit = { name, 0., 1., 0., 0. } ; 
+    addPerfect(i, implicit); 
 }
 inline void U4SurfaceArray::addPerfect(int i, const U4SurfacePerfect& perfect )
 {

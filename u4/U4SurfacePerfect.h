@@ -43,6 +43,8 @@ inline std::string U4SurfacePerfect::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+
 inline void U4SurfacePerfect::Get(std::vector<U4SurfacePerfect>& perfects) // static
 {
     U4SurfacePerfect perfectDetectSurface   = { "perfectDetectSurface",   1., 0., 0., 0. } ; 

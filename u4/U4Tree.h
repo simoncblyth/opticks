@@ -88,8 +88,9 @@ struct U4Tree
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
-    std::vector<const G4LogicalSurface*> surfaces ;  // both skin and border 
+    std::vector<const G4LogicalSurface*> surfaces ;   // both skin and border 
     std::vector<const G4VSolid*>    solids ; 
+
 
     U4PhysicsTable<G4OpRayleigh>* rayleigh_table ; 
 
@@ -125,6 +126,8 @@ struct U4Tree
 
     void initNodes(); 
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
+
+    void initSurfaces_Serialize(); 
     void initBoundary();  // EMPTY IMPL
 
     //  accessors
@@ -224,7 +227,9 @@ inline void U4Tree::init()
     initSurfaces();
     initSolids();
     initNodes(); 
-    initBoundary();
+    initSurfaces_Serialize();
+
+    initBoundary(); // Currently EMPTY IMPL
 }
 
 inline void U4Tree::initDomain()
@@ -344,23 +349,31 @@ inline void U4Tree::initSurfaces()
     U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
 
+}
+
+/**
+U4Tree::initSurfaces_Serialize
+-------------------------------
+
+As this requires to run after implicit are 
+collected in initNodes it is too soon to do 
+this within initSurfaces
+
+**/
+
+inline void U4Tree::initSurfaces_Serialize()
+{
     std::vector<U4SurfacePerfect> perfects ; 
     U4SurfacePerfect::Get(perfects); 
+    const std::vector<std::string>& implicit = st->implicit ; 
 
-    U4SurfaceArray serialize(surfaces, perfects) ;   
+    U4SurfaceArray serialize(surfaces, implicit, perfects) ;   
     NP* sur = serialize.sur ; 
     st->sur = sur ; 
-
-    // HMM: can just add names from the 
-    for(unsigned i=0 ; i < surfaces.size() ; i++)
-    {
-        const G4LogicalSurface* s = surfaces[i] ;  
-        const G4String& _sn = s->GetName() ;  
-        const char* sn = _sn.c_str(); 
-        st->add_surface( sn, i ); 
-    }
-    // HMM: need to add perfects and implicits with stree::add_surface ?
+    st->add_surface( sur->names ); 
 }
+
+
 
 /**
 U4Tree::initSolids
@@ -439,6 +452,10 @@ U4Tree::initNodes
 Serialize the n-ary tree of structural nodes (the volumes) into nds and trs 
 vectors within stree holding structural node info and transforms. 
 
+Q: Is the surfaces vector complete before this runs ?
+A: YES, U4Tree::initSurfaces collects the vector of surfaces before initNodes
+   runs, so can rely on not meeting new standard surfaces in initNodes.  
+
 **/
 
 inline void U4Tree::initNodes()
@@ -446,6 +463,8 @@ inline void U4Tree::initNodes()
     int nidx = initNodes_r(top, nullptr, 0, -1, -1 ); 
     assert( 0 == nidx ); 
 }
+
+
 
 /**
 U4Tree::initNodes_r
@@ -471,6 +490,25 @@ as if there was a perfect absorbing surface there.
 To mimic the implicit surface Geant4 behaviour with Opticks on GPU 
 it is necessary to add explicit perfect absorber surfaces. 
 
+First try at implicit handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+HMM: want to mint only the minimum number of implicits
+so need to define a name that captures the desired identity 
+and only collect more implicits when they have different names. 
+
+Implicit border surface "directionality" is always 
+from the material with RINDEX to the material without RINDEX 
+
+U4SurfaceArray is assuming the implicits all appear together
+after standard surfaces and before perfects. 
+All standard surfaces are collected in initSurfaces so 
+have a constant base of surfaces ontop of which to 
+add implicits. 
+
+When an implicit is detected the osur or isur is 
+changed accordingly.   
+
 **/
 
 inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent )
@@ -481,33 +519,51 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     const G4Material* const imat_ = lv->GetMaterial() ;
     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
 
+    const std::string& inam_ = pv->GetName() ; 
+    const std::string& onam_ = pv_p ? pv_p->GetName() : pv->GetName() ;  
+
     const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
     const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
 
-    /*
-    const G4MaterialPropertyVector* irindex = GetRINDEX( imat_ ) ; 
-    const G4MaterialPropertyVector* orindex = GetRINDEX( omat_ ) ; 
+    const G4MaterialPropertyVector* i_rindex = GetRINDEX( imat_ ) ; 
+    const G4MaterialPropertyVector* o_rindex = GetRINDEX( omat_ ) ; 
 
-    bool implicit_io = irindex == nullptr && orindex != nullptr ; 
-    bool implicit_oi = irindex != nullptr && orindex == nullptr ; 
-    bool implicit = implicit_io || implicit_oi ; 
-
-    if(implicit) std::cerr 
-        << "U4Tree::initNodes_r"
-        << " implicit_io " << implicit_io
-        << " implicit_oi " << implicit_oi
-        << " imat_ " << imat_  
-        << " omat_ " << omat_  
-        << std::endl 
-        ;
-    */
+    int  implicit_idx = -1 ; 
+    bool implicit_outwards = i_rindex != nullptr && o_rindex == nullptr ; 
+    bool implicit_inwards  = o_rindex != nullptr && i_rindex == nullptr ;  
+    if(implicit_outwards || implicit_inwards)  
+    {
+        bool flip = implicit_inwards ; 
+        std::string implicit = S4::ImplicitBorderSurfaceName(inam_, onam_, flip );  
+        bool new_implicit = GetValueIndex<std::string>( st->implicit, implicit ) == -1 ;  
+        if(new_implicit)
+        {
+            st->implicit.push_back(implicit.c_str()) ;   
+        }
+        implicit_idx = GetValueIndex<std::string>( st->implicit, implicit ) ; 
+    }
      
-    // TODO: complete implicit handling, fabricating perfect absorber surface when needed 
 
     int imat = GetPointerIndex<G4Material>(materials, imat_); 
     int omat = GetPointerIndex<G4Material>(materials, omat_); 
     int isur = GetPointerIndex<G4LogicalSurface>(surfaces, isur_); 
     int osur = GetPointerIndex<G4LogicalSurface>(surfaces, osur_); 
+
+    if( implicit_idx > -1 )
+    {
+        int num_surfaces = surfaces.size() ; 
+        if(implicit_outwards) // from imat to omat : isur is relevant 
+        {
+            assert(isur == -1 );
+            isur = num_surfaces + implicit_idx ; 
+        }
+        else if(implicit_inwards) // from omat to imat : osur is relevant
+        {
+            assert(osur == -1 );
+            osur = num_surfaces + implicit_idx ; 
+        }
+    }
+
 
     int4 bd = {omat, osur, isur, imat } ; 
     bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ; 

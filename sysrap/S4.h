@@ -11,9 +11,21 @@ After X4.hh
 
 struct S4
 {
+    static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX_" ; 
+
     static const char* Name( const std::string& name );
     template<typename T> static const char* Name( const T* const obj );
+
+    static std::string Strip( const std::string& name );
+
+    static std::string ImplicitBorderSurfaceName( 
+          const std::string& pv1, 
+          const std::string& pv2, 
+          bool flip=false 
+       );  
 };
+
+
 
 inline const char* S4::Name( const std::string& name )
 {
@@ -29,3 +41,30 @@ inline const char* S4::Name( const T* const obj )
 }
 
 
+inline std::string S4::Strip( const std::string& name )
+{
+    std::string sname = name.substr(0, name.find("0x")) ;
+    return sname ; 
+}
+
+inline std::string S4::ImplicitBorderSurfaceName( 
+          const std::string& pv1, 
+          const std::string& pv2,
+          bool flip 
+       )
+{
+    std::string spv1 = Strip(pv1); 
+    std::string spv2 = Strip(pv2); 
+    std::stringstream ss ; 
+    ss << IMPLICIT_PREFIX ; 
+    if( flip == false )
+    {
+        ss << spv1 << "_" << spv2 ; 
+    }
+    else
+    {
+        ss << spv2 << "_" << spv1 ;
+    } 
+    std::string str = ss.str();
+    return str ; 
+}

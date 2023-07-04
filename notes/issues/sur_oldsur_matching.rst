@@ -43,7 +43,9 @@ Issue 1 : oldsur has 6 more surfaces : 2:Implicits 4:perfects
 
     In [18]: a[40:]
     Out[18]: 
-    array(['Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock', 'Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox', 
+    array([
+         'Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock', 
+         'Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox', 
          'perfectDetectSurface', 
          'perfectAbsorbSurface', 
          'perfectSpecularSurface',

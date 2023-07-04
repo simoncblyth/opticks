@@ -198,6 +198,7 @@ struct stree
     static constexpr const char* MTINDEX = "mtindex.npy" ;
     static constexpr const char* MTLINE = "mtline.npy" ;
     static constexpr const char* SUNAME = "suname.txt" ;
+    static constexpr const char* IMPLICIT = "implicit.txt" ;
     static constexpr const char* SUINDEX = "suindex.npy" ;
     static constexpr const char* BD = "bd.npy" ;
 
@@ -237,6 +238,7 @@ struct stree
     std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
     std::vector<int4>        bd ; 
     std::vector<std::string> bdname ; 
+    std::vector<std::string> implicit ;  // names of implicit surfaces
 
     std::vector<std::string> soname ;       // unique solid names
     std::vector<int>         solids ;       // snd idx 
@@ -463,6 +465,8 @@ struct stree
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface(  const char* name, unsigned idx ); 
+    void add_surface(const std::vector<std::string>& names  ); 
+
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
 
@@ -1653,7 +1657,9 @@ inline void stree::save_( const char* fold ) const
 
     // surfaces
     NP::WriteNames(    fold, SUNAME,   suname );
+    NP::WriteNames(    fold, IMPLICIT, implicit );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
+
     if(surface) surface->save(fold, SURFACE) ;
     if(sur) sur->save(fold, SUR) ;
 
@@ -1832,6 +1838,7 @@ inline int stree::load_( const char* fold )
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, mtname );
     NP::ReadNames( fold, SUNAME, suname );
+    NP::ReadNames( fold, IMPLICIT, implicit );
 
     ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
 
@@ -2898,6 +2905,17 @@ inline void stree::add_surface( const char* name, unsigned idx )
     suname.push_back(name); 
     suindex.push_back(idx); 
 } 
+
+inline void stree::add_surface(const std::vector<std::string>& names  )
+{
+    for(unsigned i=0 ; i < names.size() ; i++) 
+    {    
+        const char* sn = names[i].c_str() ; 
+        add_surface( sn, i ); 
+    }    
+} 
+
+
 
 
 
