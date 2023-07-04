@@ -593,8 +593,8 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
     {
         int num_surfaces = surfaces.size() ; 
         if(implicit_outwards) // from imat to omat : isur is relevant 
-        {
-            //assert(isur == -1 );
+        { 
+            //assert(isur == -1 );          // only 2 of these
             if( isur != -1 ) std::cerr 
                 << "U4Tree::initNodes_r"
                 << " changing isur from " << isur 
@@ -604,11 +604,13 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
                 << std::endl 
                 ;
 
+            st->implicit_isur.push_back( {omat, osur, isur, imat} );  
             isur = num_surfaces + implicit_idx ; 
+            st->implicit_isur.push_back( {omat, osur, isur, imat} );  
         }
         else if(implicit_inwards) // from omat to imat : osur is relevant
         {
-            //assert(osur == -1 );
+            //assert(osur == -1 );           // loads of these
             if( osur != -1 ) std::cerr 
                 << "U4Tree::initNodes_r"
                 << " changing osur from " << osur 
@@ -618,7 +620,10 @@ inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhys
                 << std::endl 
                 ;
 
+            st->implicit_osur.push_back( {omat, osur, isur, imat} );  
             osur = num_surfaces + implicit_idx ; 
+            st->implicit_osur.push_back( {omat, osur, isur, imat} );  
+
         }
     }
 

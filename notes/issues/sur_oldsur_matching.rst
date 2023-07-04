@@ -312,4 +312,18 @@ Must be some bug, surely there cannot be so many materials without RINDEX.
 
 
 
+Only 2 isur implicits, loads of osur implicits
+------------------------------------------------
+
+::
+
+    U4Material::MakeStandardArray NO MPT Aluminium
+    U4Tree::initNodes_r changing isur from 2 to 53 num_surfaces 40 implicit_idx 13
+    U4Tree::initNodes_r changing osur from 0 to 126 num_surfaces 40 implicit_idx 86
+    U4Tree::initNodes_r changing isur from 1 to 127 num_surfaces 40 implicit_idx 87
+    U4Tree::initNodes_r changing osur from 33 to 128 num_surfaces 40 implicit_idx 88
+    U4Tree::initNodes_r changing osur from 33 to 128 num_surfaces 40 implicit_idx 88
+    U4Tree::initNodes_r changing osur from 33 to 128 num_surfaces 40 implicit_idx 88
+    U4Tree::initNodes_r changing osur from 33 to 128 num_surfaces 40 implicit_idx 88
+    U4Tree::initNodes_r changing osur from 33 to 128 num_surfaces 40 implicit_idx 88
 

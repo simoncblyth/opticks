@@ -200,6 +200,10 @@ struct stree
     static constexpr const char* MTLINE = "mtline.npy" ;
     static constexpr const char* SUNAME = "suname.txt" ;
     static constexpr const char* IMPLICIT = "implicit.txt" ;
+
+    static constexpr const char* IMPLICIT_ISUR = "implicit_isur.npy" ;
+    static constexpr const char* IMPLICIT_OSUR = "implicit_osur.npy" ;
+
     static constexpr const char* SUINDEX = "suindex.npy" ;
     static constexpr const char* BD = "bd.npy" ;
 
@@ -241,6 +245,10 @@ struct stree
     std::vector<int4>        bd ; 
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
+
+    std::vector<int4>        implicit_isur ; 
+    std::vector<int4>        implicit_osur ; 
+
 
     std::vector<std::string> soname ;       // unique solid names
     std::vector<int>         solids ;       // snd idx 
@@ -1675,6 +1683,12 @@ inline void stree::save_( const char* fold ) const
     NP* a_bd = make_bd() ; 
     a_bd->save( fold, BD ); 
 
+    NP* _implicit_isur = NPX::ArrayFromVec<int, int4>( implicit_isur );  
+    NP* _implicit_osur = NPX::ArrayFromVec<int, int4>( implicit_osur );  
+    _implicit_isur->save(fold, IMPLICIT_ISUR ); 
+    _implicit_osur->save(fold, IMPLICIT_OSUR ); 
+
+
     // solids 
     NPFold* fcsg = csg->serialize() ; 
     fcsg->save( fold, CSG ); 
@@ -1873,6 +1887,18 @@ inline int stree::load_( const char* fold )
     {
         std::cout << "stree:load_ MISSING BD " << BD << std::endl ;  
     }   
+
+    if(NP::Exists(fold, IMPLICIT_ISUR ))
+    {
+        NP* a_implicit_isur = NP::Load(fold, IMPLICIT_ISUR ) ; 
+        NPX::VecFromArray<int4>( implicit_isur, a_implicit_isur );  
+    }
+
+    if(NP::Exists(fold, IMPLICIT_OSUR ))
+    {
+        NP* a_implicit_osur = NP::Load(fold, IMPLICIT_OSUR ) ; 
+        NPX::VecFromArray<int4>( implicit_osur, a_implicit_osur );  
+    }
  
 
     if(NP::Exists(fold, CSG))
