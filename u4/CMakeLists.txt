@@ -123,6 +123,7 @@ set(HEADERS
     U4PhysicsTable.h
     U4PhysicsVector.h
     U4MaterialTable.h
+    U4OpticalSurfaceFinish.h
 
 )
 
