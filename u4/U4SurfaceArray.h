@@ -34,6 +34,7 @@ Formerly did this in U4Surface::MakeStandardArray
 
 struct U4SurfaceArray
 {
+    static constexpr const double UNSET = -1. ; 
     struct D4 { double x,y,z,w ; } ;
 
     sdomain dom ; 
@@ -62,8 +63,6 @@ struct U4SurfaceArray
 };
 
 
-
-
 inline U4SurfaceArray::U4SurfaceArray(
         const std::vector<const G4LogicalSurface*>& surface, 
         const std::vector<std::string>& implicit, 
@@ -80,6 +79,8 @@ inline U4SurfaceArray::U4SurfaceArray(
     sur(NP::Make<double>(ni, nj, nk, nl )),
     sur_v(sur->values<double>()) 
 {
+    sur->fill<double>(UNSET); // matching X4/GGeo 
+
     for(int i=0 ; i < ni ; i++)
     {
         if( i < num_surface )
@@ -100,6 +101,7 @@ inline U4SurfaceArray::U4SurfaceArray(
     }
     sur->set_names(names) ; 
 }
+
 
 inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
 {
