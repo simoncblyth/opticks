@@ -50,7 +50,7 @@ inline void U4SurfacePerfect::Get(std::vector<U4SurfacePerfect>& perfects) // st
     U4SurfacePerfect perfectDetectSurface   = { "perfectDetectSurface",   1., 0., 0., 0. } ; 
     U4SurfacePerfect perfectAbsorbSurface   = { "perfectAbsorbSurface",   0., 1., 0., 0. } ; 
     U4SurfacePerfect perfectSpecularSurface = { "perfectSpecularSurface", 0., 0., 1., 0. } ; 
-    U4SurfacePerfect perfectDiffuseSurface  = { "perfectSpecularSurface", 0., 0., 0., 1. } ; 
+    U4SurfacePerfect perfectDiffuseSurface  = { "perfectDiffuseSurface",  0., 0., 0., 1. } ; 
 
     perfects.push_back(perfectDetectSurface) ; 
     perfects.push_back(perfectAbsorbSurface) ; 

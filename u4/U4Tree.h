@@ -525,7 +525,7 @@ changed accordingly.
 **/
 
 
-struct U4TreeBorder
+struct U4TreeBorder // TODO: think of a better name for this 
 {
     stree* st ; 
     int num_surfaces ; 
@@ -588,10 +588,19 @@ inline U4TreeBorder::U4TreeBorder(
 {
 }
 
+/**
+U4TreeBorder::get_override_idx
+-------------------------------
+
+When debugging use alternate verbose implicit name.
+
+**/
+
 inline int U4TreeBorder::get_override_idx(bool flip)
 {
-    //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
-    std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
+    std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
+    //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
+
     const char* implicit = implicit_.c_str(); 
 
     int implicit_idx = stree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
@@ -612,7 +621,12 @@ U4TreeBorder::has_osur_override
 Only returns true when:
 
 1. materials are RINDEX->NoRINDEX 
-2. AND no surface defined already 
+2. AND no corresponding surface defined already 
+
+The old X4/GGeo workflow does similar to 
+this in X4PhysicalVolume::convertImplicitSurfaces_r
+but in addition that workflow skips osur, doing only isur
+for no valid reason that I can find/recall. 
 
 **/
 

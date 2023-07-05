@@ -20,6 +20,8 @@ rather than as an implicit.
 
 MAYBE : Just dont implicit override when pre-existing surface ?
 
+* this is what X4/GGeo does
+
 
 Thoughts
 -----------
@@ -1409,5 +1411,27 @@ Temporarily comment osur to try to match X4/GGeo
      662     int4 bd = {omat, osur, isur, imat } ;
      663     //if(border.has_osur_override(bd)) border.do_osur_override(bd);  // temporarily skip
      664     if(border.has_isur_override(bd)) border.do_isur_override(bd);
+
+
+Oops one unexpected name diff::
+
+      oldsun = np.array(t.oldsur_names)     
+      sun = np.array(s.sur_names)     
+
+
+      ['NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf', 'NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf'],
+       ['NNVTMaskOpticalSurface', 'NNVTMaskOpticalSurface'],
+       ['Steel_surface', 'Steel_surface'],
+       ['Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock', 'Implicit__RINDEX__pDomeAir__Air__NoRINDEX__pDomeRock__Rock'],
+       ['Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox', 'Implicit__RINDEX__pExpHall__Air__NoRINDEX__pExpRockBox__Rock'],
+       ['perfectDetectSurface', 'perfectDetectSurface'],
+       ['perfectAbsorbSurface', 'perfectAbsorbSurface'],
+       ['perfectSpecularSurface', 'perfectSpecularSurface'],
+       ['perfectDiffuseSurface', 'perfectSpecularSurface']], dtype='<U60')
+
+    In [12]: np.where( oldsun!= sun)
+    Out[12]: (array([40, 41, 45]),)
+
+
 
 
