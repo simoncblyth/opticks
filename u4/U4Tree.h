@@ -605,17 +605,28 @@ inline int U4TreeBorder::get_override_idx(bool flip)
     return num_surfaces + implicit_idx ;
 }
 
+/**
+U4TreeBorder::has_osur_override
+--------------------------------
+
+Only returns true when:
+
+1. materials are RINDEX->NoRINDEX 
+2. AND no surface defined already 
+
+**/
+
 inline bool U4TreeBorder::has_osur_override( const int4& bd ) const 
 {
-    //const int& osur = bd.y ; 
-    //return osur == -1 && implicit_osur == true ;  
-    return implicit_osur == true ;    // check old logic with new code
+    const int& osur = bd.y ; 
+    return osur == -1 && implicit_osur == true ;  
+    //return implicit_osur == true ;    // old logic, giving too many overrides 
 }
 inline bool U4TreeBorder::has_isur_override( const int4& bd ) const 
 {
-    //const int& isur = bd.z ; 
-    //return isur == -1 && implicit_isur == true ;  
-    return implicit_isur == true ;   // check old logic with new code
+    const int& isur = bd.z ; 
+    return isur == -1 && implicit_isur == true ;  
+    //return implicit_isur == true ;   // old logic, giving too many overrides
 }
 inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
 {
