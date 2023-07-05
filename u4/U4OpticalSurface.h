@@ -16,6 +16,7 @@ class G4OpticalSurface ;
 
 struct U4OpticalSurface
 {
+    static G4OpticalSurface* FromLogical(G4LogicalSurface* Surface ); 
     static std::string Desc(const G4OpticalSurface* surf) ; 
 };
 
@@ -23,7 +24,14 @@ struct U4OpticalSurface
 #include "U4OpticalSurfaceModel.h"
 #include "U4OpticalSurfaceFinish.h"
 
-std::string U4OpticalSurface::Desc(const G4OpticalSurface* surf)
+
+inline G4OpticalSurface* U4OpticalSurface::FromLogical(G4LogicalSurface* Surface )
+{
+    G4OpticalSurface* OpticalSurface = Surface ? dynamic_cast<G4OpticalSurface*>(Surface->GetSurfaceProperty()) : nullptr ;
+    return OpticalSurface ; 
+}
+
+inline std::string U4OpticalSurface::Desc(const G4OpticalSurface* surf)
 {
     G4SurfaceType type = surf->GetType();        // dielectric_metal,dielectric_dielectric 
     G4OpticalSurfaceModel model = surf->GetModel();     // glisur,unified,.. 

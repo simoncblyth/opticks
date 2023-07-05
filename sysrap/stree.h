@@ -9,6 +9,9 @@ This is exploring a minimal approach to geometry translation
 * stree.h is part of the attempt to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
 
 
+TODO: stree fold getting messy, split off mat/sur/bnd into subfold ?
+------------------------------------------------------------------------
+
 
 Lifecycle
 ------------

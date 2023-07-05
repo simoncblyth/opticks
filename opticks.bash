@@ -55,8 +55,11 @@ GEOM(){
   source $HOME/$script 
   base=.opticks/GEOM/$GEOM
 
+  local args="vi/grab/scp/cd/ss/st/info"
+  local geomdir=$HOME/.opticks/GEOM/$GEOM/CSGFoundry 
   local defarg="vi"
   local arg=${1:-$defarg} 
+  local vars="FUNCNAME defarg arg args script base GEOM geomdir" 
 
   if [ "$arg" == "vi" ]; then 
      cmd="vi $HOME/$script"  
@@ -65,8 +68,17 @@ GEOM(){
      source $OPTICKS_HOME/bin/rsync.sh $base
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
+  elif [ "$arg" == "cd" ]; then  
+     cmd="cd $geomdir"
+  elif [ "$arg" == "ss" ]; then  
+     cmd="cd $geomdir/SSim"
+  elif [ "$arg" == "st" ]; then  
+     cmd="cd $geomdir/SSim/stree"
+  elif [ "$arg" == "info" ]; then  
+     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+     cmd="echo -n"
   else
-     cmd="echo expecting arg to be one of vi/grab/scp not $arg" 
+     cmd="echo expecting arg to be one of $args not $arg" 
   fi 
   echo $cmd
   eval $cmd

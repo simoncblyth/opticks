@@ -19,7 +19,10 @@ use a small array and plant metadata on that
 #include "G4Version.hh"
 #include "G4Material.hh"
 
+#include "U4SurfaceType.h"
 #include "U4OpticalSurfaceFinish.h"
+#include "U4OpticalSurfaceModel.h"
+
 #include "U4SurfacePerfect.h"
 #include "S4.h"
 
@@ -277,12 +280,24 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
 
         G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
 
+        G4SurfaceType theType = os->GetType();
+        G4OpticalSurfaceModel theModel = os->GetModel();
+        G4OpticalSurfaceFinish theFinish = os->GetFinish();       
+        const char* osn = os->GetName().c_str() ; 
         G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
-        assert(mpt); 
+
+        assert(mpt);  
         NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
 
-        const char* osn = os->GetName().c_str() ; 
-        sub->set_meta<std::string>("OpticalSurfaceName", osn) ;  // ADDED for specials handling 
+        sub->set_meta<std::string>("OpticalSurfaceName", osn) ; 
+        sub->set_meta<std::string>("TypeName", U4SurfaceType::Name(theType)) ; 
+        sub->set_meta<std::string>("ModelName", U4OpticalSurfaceModel::Name(theModel)) ; 
+        sub->set_meta<std::string>("FinishName", U4OpticalSurfaceFinish::Name(theFinish)) ; 
+
+        sub->set_meta<int>("Type", theType) ; 
+        sub->set_meta<int>("Model", theModel) ; 
+        sub->set_meta<int>("Finish", theFinish) ; 
+
 
         const G4LogicalBorderSurface* bs = dynamic_cast<const G4LogicalBorderSurface*>(ls) ; 
         const G4LogicalSkinSurface*   ks = dynamic_cast<const G4LogicalSkinSurface*>(ls) ; 
@@ -351,4 +366,6 @@ inline G4LogicalSurface* U4Surface::Find( const G4VPhysicalVolume* thePrePV, con
     }    
     return Surface ; 
 }
+
+
 
