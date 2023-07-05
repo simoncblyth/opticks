@@ -314,6 +314,12 @@ struct stree
     static std::string Digest(int lvid, const glm::tmat4x4<double>& tr );
     static std::string Digest(int lvid );
 
+    template<typename T>
+    static int GetPointerIndex( const std::vector<const T*>& vec, const T* obj) ; 
+    template<typename T>
+    static int GetValueIndex( const std::vector<T>& vec, const T& obj) ; 
+
+
     void get_children(std::vector<int>& children, int nidx) const ;   // immediate children
     void get_progeny( std::vector<int>& progeny, int nidx ) const ;   // recursively get children and all their children and so on... 
     std::string desc_progeny(int nidx) const ; 
@@ -483,7 +489,9 @@ struct stree
     const char* get_surface_name(int idx) const ; 
     void add_surface( const std::vector<std::string>& names  ); 
 
-    std::string get_boundary_name( const int4& bd, char delim ) const ; 
+    int add_boundary( const int4& bd_ ); 
+
+    std::string get_boundary_name( const int4& bd_, char delim ) const ; 
 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
@@ -702,6 +710,26 @@ inline std::string stree::Digest(int lvid ) // static
 {
     return sdigest::Int(lvid);
 }
+
+
+template<typename T>
+inline int stree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj) // static
+{
+    if( obj == nullptr || vec.size() == 0 ) return -1 ; 
+    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
+    return idx < vec.size() ? int(idx) : -1 ;   
+}
+
+template<typename T>
+inline int stree::GetValueIndex( const std::vector<T>& vec, const T& obj) // static 
+{
+    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
+    return idx < vec.size() ? int(idx) : -1 ;   
+}
+
+
+
+
 
 
 inline void stree::get_children( std::vector<int>& children , int nidx ) const
@@ -2975,12 +3003,26 @@ inline void stree::add_surface(const std::vector<std::string>& names  )
     }    
 } 
 
-inline std::string stree::get_boundary_name( const int4& bd, char delim ) const 
+inline int stree::add_boundary( const int4& bd_ )
 {
-    const char* omat = get_material_name( bd.x ); 
-    const char* osur = get_surface_name( bd.y ); 
-    const char* isur = get_surface_name( bd.z ); 
-    const char* imat = get_material_name( bd.w ); 
+    int boundary = GetValueIndex<int4>( bd, bd_ ) ; 
+    if(boundary == -1)  // new boundary 
+    {
+        bd.push_back(bd_) ; 
+        std::string bdn = get_boundary_name(bd_,'/') ; 
+        bdname.push_back(bdn.c_str()) ; 
+        boundary = GetValueIndex<int4>( bd, bd_ ) ; 
+    }
+    return boundary ; 
+}
+
+
+inline std::string stree::get_boundary_name( const int4& bd_, char delim ) const 
+{
+    const char* omat = get_material_name( bd_.x ); 
+    const char* osur = get_surface_name( bd_.y ); 
+    const char* isur = get_surface_name( bd_.z ); 
+    const char* imat = get_material_name( bd_.w ); 
 
     assert( omat ); 
     assert( imat ); 

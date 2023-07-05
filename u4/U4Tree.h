@@ -98,11 +98,6 @@ struct U4Tree
     static const G4MaterialPropertyVector* GetRINDEX(   const G4Material* mt ); 
     static const G4MaterialPropertyVector* GetProperty( const G4Material* mt, int index ); 
 
-    template<typename T>
-    static int GetPointerIndex( const std::vector<const T*>& vec, const T* obj) ; 
-    template<typename T>
-    static int GetValueIndex( const std::vector<T>& vec, const T& obj) ; 
-
 
     // HMM: should really be SSim argument now ?
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
@@ -167,21 +162,6 @@ inline const G4MaterialPropertyVector* U4Tree::GetProperty(const G4Material* mt,
 }
 
 
-
-template<typename T>
-inline int U4Tree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj) // static
-{
-    if( obj == nullptr || vec.size() == 0 ) return -1 ; 
-    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
-    return idx < vec.size() ? int(idx) : -1 ;   
-}
-
-template<typename T>
-inline int U4Tree::GetValueIndex( const std::vector<T>& vec, const T& obj) // static 
-{
-    size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj )); 
-    return idx < vec.size() ? int(idx) : -1 ;   
-}
 
 
 /**
@@ -574,8 +554,11 @@ struct U4TreeBorder
         const G4VPhysicalVolume* const pv_p 
         ); 
 
-    void init(); 
-    void maybe_implicit_override( int4& bd ); 
+    int get_override_idx(bool flip); 
+    bool has_osur_override( const int4& bd ) const ; 
+    bool has_isur_override( const int4& bd ) const ; 
+    void do_osur_override( int4& bd ) ; 
+    void do_isur_override( int4& bd ) ; 
 
 }; 
 
@@ -603,134 +586,76 @@ inline U4TreeBorder::U4TreeBorder(
     implicit_isur(i_rindex != nullptr && o_rindex == nullptr),   // now just supects 
     implicit_osur(o_rindex != nullptr && i_rindex == nullptr)
 {
-    init(); 
 }
 
-/**
-HMM: what about 2 implicits at once ? Its highly unlikely, very broken geom.
-
-TODO : finesse implicit judgement based on preexisting surfaceMPT + finish  
-
-Suspect should only set implicits when there is no 
-corresponding preexisting surface. 
-
-That would mean moving the init into the maybe ...
-Also split isur from osur judgement 
-
-**/
-
-inline void U4TreeBorder::init()
+inline int U4TreeBorder::get_override_idx(bool flip)
 {
-    implicit_idx = -1 ; 
+    //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
+    std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
+    const char* implicit = implicit_.c_str(); 
 
-    if(implicit_isur || implicit_osur )  
+    int implicit_idx = stree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
+    if(implicit_idx == -1)  // new implicit 
     {
-        bool flip = implicit_osur ; 
-        //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
-        std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
-        const char* implicit = implicit_.c_str(); 
-
-        bool new_implicit = U4Tree::GetValueIndex<std::string>( st->implicit, implicit ) == -1 ;  
-        if(new_implicit)
-        {
-            st->implicit.push_back(implicit) ;   
-            st->add_surface(implicit);   
-        }
-        implicit_idx = U4Tree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
+        st->implicit.push_back(implicit) ;   
+        st->add_surface(implicit);   
+        implicit_idx = stree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
     }
+    assert( implicit_idx > -1 ); 
+    return num_surfaces + implicit_idx ;
 }
 
-inline void U4TreeBorder::maybe_implicit_override( int4& bd )
+inline bool U4TreeBorder::has_osur_override( const int4& bd ) const 
 {
+    //const int& osur = bd.y ; 
+    //return osur == -1 && implicit_osur == true ;  
+    return implicit_osur == true ;    // check old logic with new code
+}
+inline bool U4TreeBorder::has_isur_override( const int4& bd ) const 
+{
+    //const int& isur = bd.z ; 
+    //return isur == -1 && implicit_isur == true ;  
+    return implicit_isur == true ;   // check old logic with new code
+}
+inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
+{
+    st->implicit_osur.push_back(bd);  
     int& osur = bd.y ; 
+    osur = get_override_idx(true); 
+    st->implicit_osur.push_back(bd);  
+}
+inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : outwards
+{
+    st->implicit_isur.push_back(bd); 
     int& isur = bd.z ; 
-
-    if( implicit_idx > -1 )
-    {
-        if(implicit_isur) // from imat to omat : outwards
-        { 
-            if( isur != -1 ) std::cerr 
-                << "U4TreeBorder::maybe_implicit_override"
-                << " changing isur from " << isur 
-                << " to " << ( num_surfaces + implicit_idx )
-                << " num_surfaces " << num_surfaces 
-                << " border.implicit_idx " << implicit_idx
-                << std::endl 
-                ;
-
-            st->implicit_isur.push_back(bd);  
-            isur = num_surfaces + implicit_idx ; 
-            st->implicit_isur.push_back(bd);  
-        }
-        else if(implicit_osur) // from omat to imat : inwards
-        {
-            //assert(osur == -1 );           // loads of these
-            if( osur != -1 ) std::cerr 
-                << "U4TreeBorder::maybe_implicit_override"
-                << " changing osur from " << osur 
-                << " to " << ( num_surfaces + implicit_idx )
-                << " num_surfaces " << num_surfaces 
-                << " implicit_idx " << implicit_idx
-                << std::endl 
-                ;
-
-            st->implicit_osur.push_back(bd);  
-            osur = num_surfaces + implicit_idx ; 
-            st->implicit_osur.push_back(bd);  
-        }
-    }
+    isur = get_override_idx(false); 
+    st->implicit_isur.push_back(bd); 
 }
 
 
 
-
-inline int U4Tree::initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent )
+inline int U4Tree::initNodes_r( 
+    const G4VPhysicalVolume* const pv, 
+    const G4VPhysicalVolume* const pv_p, 
+    int depth, 
+    int sibdex, 
+    int parent )
 {
-
     U4TreeBorder border(st, num_surfaces, pv, pv_p) ; 
-
-    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-/*
-    const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : nullptr ;
-
-    const G4Material* const imat_ = lv->GetMaterial() ;
-    const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
-
-    const char* imatn = imat_->GetName().c_str() ; 
-    const char* omatn = omat_->GetName().c_str() ; 
-
-    const std::string& inam = pv->GetName() ; 
-    const std::string& onam = pv_p ? pv_p->GetName() : pv->GetName() ;  
-
-    const G4LogicalSurface* const osur_ = U4Surface::Find( pv_p, pv ); 
-    const G4LogicalSurface* const isur_ = U4Surface::Find( pv  , pv_p ); 
-
-    const G4MaterialPropertyVector* i_rindex = GetRINDEX( imat_ ) ; 
-    const G4MaterialPropertyVector* o_rindex = GetRINDEX( omat_ ) ; 
-*/
-
-
    
-    int imat = GetPointerIndex<G4Material>(materials, border.imat_); 
-    int omat = GetPointerIndex<G4Material>(materials, border.omat_); 
-    int isur = GetPointerIndex<G4LogicalSurface>(surfaces, border.isur_); 
-    int osur = GetPointerIndex<G4LogicalSurface>(surfaces, border.osur_); 
+    int imat = stree::GetPointerIndex<G4Material>(materials, border.imat_); 
+    int omat = stree::GetPointerIndex<G4Material>(materials, border.omat_); 
+    int isur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.isur_); 
+    int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.osur_); 
 
     int4 bd = {omat, osur, isur, imat } ; 
-    border.maybe_implicit_override(bd) ; 
+    if(border.has_osur_override(bd)) border.do_osur_override(bd); 
+    if(border.has_isur_override(bd)) border.do_isur_override(bd); 
 
-    bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ; 
-    if(new_boundary)  
-    {
-        st->bd.push_back(bd) ; 
-        std::string bdn = st->get_boundary_name(bd,'/') ; 
-        st->bdname.push_back(bdn.c_str()) ; 
-        // HMM: better to use higher level stree::add_boundary if can get names at stree level 
-    }
-    int boundary = GetValueIndex<int4>( st->bd, bd ) ; 
+    int boundary = st->add_boundary(bd) ; 
     assert( boundary > -1 ); 
-
-
+   
+    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
 

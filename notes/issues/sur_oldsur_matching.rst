@@ -18,7 +18,30 @@ In summary need to be able to predict when NoRINDEX is not
 a problem, in which case need to treat as ordinary surface 
 rather than as an implicit. 
 
+MAYBE : Just dont implicit override when pre-existing surface ?
 
+
+Thoughts
+-----------
+
+When the original osur is -1 there is no problem, because 
+when there is no preexisting surface adding the implicit should do 
+what is required in making Opticks behave like Geant4. 
+
+Where there is a preexisting osur it is a potential problem 
+for the Geant4 simulation because it will not be honoured 
+due to NoRINDEX fStopAndKill.  
+
+* THIS NEEDS CONFIRMATION FOR SPECIFIC SURFACES AS DEPENDS ON DETAILS: FINISH, Surface MPT RINDEX etc..
+
+* BASICALLY I NEED TO PREDICT WHAT G4OpBoundaryProcess WILL DO 
+  IN ORDER TO CORRECTLY ASSIGN IMPLICITS 
+
+
+However in the sense of matching Opticks to Geant4 it is 
+not a problem because its easy for Opticks to match the 
+NoRINDEX fStopAndKill with the implicit surface. 
+ 
 
 
 g4-cls G4OpBoundaryProcess : RINDEX-NoRINDEX fStopAndKill aint so black and white
@@ -106,12 +129,267 @@ Properties relevant to G4OpBoundaryProcess::
 
 
 
-NEXT : U4Tree::initSurfaces : collect full surface metadata
+DONE : U4Tree::initSurfaces : collect full surface metadata
 -------------------------------------------------------------
 
 * will allow to constrain the surface details to study to only those in use
 
 
+Finish : ground for most metals,  polishedfrontpainted with "mirror" in name, otherwise polished 
+----------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:surface blyth$ pwd
+    /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree/surface
+
+    epsilon:surface blyth$ grep FinishName */NPFold_meta.txt
+
+    CDInnerTyvekSurface/NPFold_meta.txt:FinishName:ground
+    CDTyvekSurface/NPFold_meta.txt:FinishName:ground
+    HamamatsuMaskOpticalSurface/NPFold_meta.txt:FinishName:ground
+    NNVTMaskOpticalSurface/NPFold_meta.txt:FinishName:ground
+    Steel_surface/NPFold_meta.txt:FinishName:ground
+    Strut2AcrylicOpSurface/NPFold_meta.txt:FinishName:ground
+    StrutAcrylicOpSurface/NPFold_meta.txt:FinishName:ground
+    UpperChimneyTyvekSurface/NPFold_meta.txt:FinishName:ground
+    VETOTyvekSurface/NPFold_meta.txt:FinishName:ground
+
+    HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:FinishName:polishedfrontpainted
+    NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:FinishName:polishedfrontpainted
+    PMT_20inch_mirror_logsurf1/NPFold_meta.txt:FinishName:polishedfrontpainted
+    PMT_20inch_mirror_logsurf2/NPFold_meta.txt:FinishName:polishedfrontpainted
+    PMT_20inch_veto_mirror_logsurf1/NPFold_meta.txt:FinishName:polishedfrontpainted
+    PMT_20inch_veto_mirror_logsurf2/NPFold_meta.txt:FinishName:polishedfrontpainted
+
+    HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_grid_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_inner_edge_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_inner_ring_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_outer_edge_opsurface/NPFold_meta.txt:FinishName:polished
+    HamamatsuR12860_PMT_20inch_shield_opsurface/NPFold_meta.txt:FinishName:polished
+    NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface/NPFold_meta.txt:FinishName:polished
+    NNVTMCPPMT_PMT_20inch_mcp_opsurface/NPFold_meta.txt:FinishName:polished
+    NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NPFold_meta.txt:FinishName:polished
+    NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface/NPFold_meta.txt:FinishName:polished
+    PMT_20inch_photocathode_logsurf1/NPFold_meta.txt:FinishName:polished
+    PMT_20inch_photocathode_logsurf2/NPFold_meta.txt:FinishName:polished
+    PMT_20inch_veto_photocathode_logsurf1/NPFold_meta.txt:FinishName:polished
+    PMT_20inch_veto_photocathode_logsurf2/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf1/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf2/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf3/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf4/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf5/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf6/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf7/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_absorb_logsurf8/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_photocathode_logsurf1/NPFold_meta.txt:FinishName:polished
+    PMT_3inch_photocathode_logsurf2/NPFold_meta.txt:FinishName:polished
+
+
+ModelName : struts etc.. unified, PMT glisur
+-----------------------------------------------------
+
+::
+
+    epsilon:surface blyth$ grep ModelName */NPFold_meta.txt
+    CDInnerTyvekSurface/NPFold_meta.txt:ModelName:unified
+    CDTyvekSurface/NPFold_meta.txt:ModelName:unified
+    HamamatsuMaskOpticalSurface/NPFold_meta.txt:ModelName:unified
+    NNVTMaskOpticalSurface/NPFold_meta.txt:ModelName:unified
+    Steel_surface/NPFold_meta.txt:ModelName:unified
+    Strut2AcrylicOpSurface/NPFold_meta.txt:ModelName:unified
+    StrutAcrylicOpSurface/NPFold_meta.txt:ModelName:unified
+    UpperChimneyTyvekSurface/NPFold_meta.txt:ModelName:unified
+    VETOTyvekSurface/NPFold_meta.txt:ModelName:unified
+
+
+unified is that prob_sl, prob_ss, prob_bs guff used by::
+
+    410           if ( theModel == unified ) {
+     411                  PropertyPointer =
+     412                  aMaterialPropertiesTable->GetProperty(kSPECULARLOBECONSTANT);
+     413                  if (PropertyPointer) {
+     414                          prob_sl =
+     415                          PropertyPointer->Value(thePhotonMomentum);
+     416                  } else {
+     417                          prob_sl = 0.0;
+     418                  }
+     419 
+     420                  PropertyPointer =
+     421                  aMaterialPropertiesTable->GetProperty(kSPECULARSPIKECONSTANT);
+     422              if (PropertyPointer) {
+     423                          prob_ss =
+     424                          PropertyPointer->Value(thePhotonMomentum);
+     425                  } else {
+     426                          prob_ss = 0.0;
+     427                  }
+     428 
+     429                  PropertyPointer =
+     430                  aMaterialPropertiesTable->GetProperty(kBACKSCATTERCONSTANT);
+     431                  if (PropertyPointer) {
+     432                          prob_bs =
+     433                          PropertyPointer->Value(thePhotonMomentum);
+     434                  } else {
+     435                          prob_bs = 0.0;
+     436                  }
+     437               }
+     438            }
+
+
+::
+
+      |-----prob_ss-------|---prob_sl--------|------prob_bs--------|  
+
+          SpikeReflection     LobeReflection    BackScattering
+
+When all three prob are zero, as I expect will happen will get : LambertianReflection
+
+
+
+::
+
+    301 inline
+    302 void G4OpBoundaryProcess::ChooseReflection()
+    303 {
+    304                  G4double rand = G4UniformRand();
+    305                  if ( rand >= 0.0 && rand < prob_ss ) {
+    306                     theStatus = SpikeReflection;
+    307                     theFacetNormal = theGlobalNormal;
+    308                  }
+    309                  else if ( rand >= prob_ss &&
+    310                            rand <= prob_ss+prob_sl) {
+    311                     theStatus = LobeReflection;
+    312                  }
+    313                  else if ( rand > prob_ss+prob_sl &&
+    314                            rand < prob_ss+prob_sl+prob_bs ) {
+    315                     theStatus = BackScattering;
+    316                  }
+    317                  else {
+    318                     theStatus = LambertianReflection;
+    319                  }
+    320 }
+
+
+
+    HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_grid_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_inner_edge_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_inner_ring_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_outer_edge_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_shield_opsurface/NPFold_meta.txt:ModelName:glisur
+
+    NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface/NPFold_meta.txt:ModelName:glisur
+    NNVTMCPPMT_PMT_20inch_mcp_opsurface/NPFold_meta.txt:ModelName:glisur
+    NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NPFold_meta.txt:ModelName:glisur
+    NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface/NPFold_meta.txt:ModelName:glisur
+    NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:ModelName:glisur
+
+    PMT_20inch_mirror_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_mirror_logsurf2/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_photocathode_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_photocathode_logsurf2/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_veto_mirror_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_veto_mirror_logsurf2/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_veto_photocathode_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_20inch_veto_photocathode_logsurf2/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf2/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf3/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf4/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf5/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf6/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf7/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_absorb_logsurf8/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_photocathode_logsurf1/NPFold_meta.txt:ModelName:glisur
+    PMT_3inch_photocathode_logsurf2/NPFold_meta.txt:ModelName:glisur
+
+
+TypeName : all dielectric_metal
+-----------------------------------
+
+::
+
+    epsilon:surface blyth$ grep TypeName */NPFold_meta.txt
+
+    CDInnerTyvekSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    CDTyvekSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuMaskOpticalSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_grid_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_inner_edge_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_inner_ring_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_outer_edge_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:TypeName:dielectric_metal
+    HamamatsuR12860_PMT_20inch_shield_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMCPPMT_PMT_20inch_mcp_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NPFold_meta.txt:TypeName:dielectric_metal
+    NNVTMaskOpticalSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_mirror_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_mirror_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_photocathode_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_photocathode_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_veto_mirror_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_veto_mirror_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_veto_photocathode_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_20inch_veto_photocathode_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf3/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf4/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf5/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf6/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf7/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_absorb_logsurf8/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_photocathode_logsurf1/NPFold_meta.txt:TypeName:dielectric_metal
+    PMT_3inch_photocathode_logsurf2/NPFold_meta.txt:TypeName:dielectric_metal
+    Steel_surface/NPFold_meta.txt:TypeName:dielectric_metal
+    Strut2AcrylicOpSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    StrutAcrylicOpSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    UpperChimneyTyvekSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    VETOTyvekSurface/NPFold_meta.txt:TypeName:dielectric_metal
+    epsilon:surface blyth$ 
+
+
+dielectric_metal
+-----------------
+
+::
+
+     718 void G4OpBoundaryProcess::DielectricMetal()
+     719 {
+     720         G4int n = 0;
+     721         G4double rand, PdotN, EdotN;
+     722         G4ThreeVector A_trans, A_paral;
+     723 
+     724         do {
+     725 
+     726            n++;
+     727 
+     728            rand = G4UniformRand();
+     729            if ( rand > theReflectivity && n == 1 ) {
+     730               if (rand > theReflectivity + theTransmittance) {
+     731                 DoAbsorption();
+     732               } else {
+
+     /// theTransmittance nomally zero : so the below bizarre fall thru Transmission
+     /// doesnt happen : > theReflectivity on dielectric_metal causes DoAbsorption 
+
+     733                 theStatus = Transmission;
+     734                 NewMomentum = OldMomentum;
+     735                 NewPolarization = OldPolarization;
+     736               }
+     737               break;
+     738            }
+     739            else {
 
 
 
@@ -466,14 +744,14 @@ before and after the implicit swaps.
 
 
 
-isur : implicit_isur.reshape(-1,8) : "outwards" implicits
------------------------------------------------------------
+isur : s.implicit_isur.reshape(-1,8) : "outwards" implicits
+-------------------------------------------------------------
 
 ::
 
     In [85]: isur = s.implicit_isur.reshape(-1,8) ; isur                                                                         
 
-    In [91]: isur                                                                                                                
+    In [91]: isur
     Out[91]: 
     array([[  1,  -1,  -1,   0,   1,  -1,  40,   0],
            [  1,  -1,  -1,   0,   1,  -1,  41,   0],
@@ -527,7 +805,7 @@ The bd int4 (omat,osur,isur,imat) before and after implicit swaps.
 The osur column changes in every case, as that is the implicit_inwards requirement 
 that triggers the collection::
 
-    In [22]: osur = s.implicit_osur.reshape(-1,8) ; iosur
+    In [22]: osur = s.implicit_osur.reshape(-1,8) ; osur
     Out[22]: 
     array([[  0,  -1,  -1,   3,   0,  42,  -1,   3],
            [  0,  -1,  -1,   3,   0,  43,  -1,   3],
@@ -542,6 +820,25 @@ that triggers the collection::
            [ 18,  39,  39,   3,  18, 147,  39,   3]], dtype=int32)
 
 
+After rearrange code, check get same::
+
+    In [2]: osur = s.implicit_osur.reshape(-1,8) ; osur
+    Out[2]: 
+    array([[  0,  -1,  -1,   3,   0,  42,  -1,   3],
+           [  0,  -1,  -1,   3,   0,  43,  -1,   3],
+           [  0,  -1,  -1,   5,   0,  44,  -1,   5],
+           [  0,  -1,  -1,   9,   0,  45,  -1,   9],
+           [  0,  -1,  -1,   9,   0,  46,  -1,   9],
+           ...,
+           [ 18,  -1,  -1,   3,  18, 146,  -1,   3],
+           [ 18,  -1,  -1,   3,  18, 146,  -1,   3],
+           [ 18,  -1,  -1,   3,  18, 146,  -1,   3],
+           [ 18,  -1,  -1,   3,  18, 146,  -1,   3],
+           [ 18,  39,  39,   3,  18, 147,  39,   3]], dtype=int32)
+
+    In [3]: osur.shape
+    Out[3]: (133640, 8)
+
 ::
 
     In [23]: osur.shape
@@ -549,24 +846,7 @@ that triggers the collection::
 
 
 
-When the original osur is -1 there is no problem, because 
-when there is no preexisting surface adding the implicit should do 
-what is required in making Opticks behave like Geant4. 
 
-Where there is a preexisting osur it is a potential problem 
-for the Geant4 simulation because it will not be honoured 
-due to NoRINDEX fStopAndKill.  
-
-* THIS NEEDS CONFIRMATION FOR SPECIFIC SURFACES AS DEPENDS ON DETAILS: FINISH, Surface MPT RINDEX etc..
-
-* BASICALLY I NEED TO PREDICT WHAT G4OpBoundaryProcess WILL DO 
-  IN ORDER TO CORRECTLY ASSIGN IMPLICITS 
-
-
-However in the sense of matching Opticks to Geant4 it is 
-not a problem because its easy for Opticks to match the 
-NoRINDEX fStopAndKill with the implicit surface. 
- 
 
 Examine counts of the 104 unique osur swaps::
 
