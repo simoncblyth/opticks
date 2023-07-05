@@ -660,7 +660,7 @@ inline int U4Tree::initNodes_r(
     int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.osur_); 
 
     int4 bd = {omat, osur, isur, imat } ; 
-    if(border.has_osur_override(bd)) border.do_osur_override(bd); 
+    //if(border.has_osur_override(bd)) border.do_osur_override(bd);  // temporarily skip
     if(border.has_isur_override(bd)) border.do_isur_override(bd); 
 
     int boundary = st->add_boundary(bd) ; 

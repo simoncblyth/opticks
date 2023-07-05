@@ -1112,3 +1112,302 @@ TODO : add finish etc.. to surface metadata::
 
 
 
+
+After change the U4TreeBorder logic
+--------------------------------------
+
+::
+
+     619 inline bool U4TreeBorder::has_osur_override( const int4& bd ) const
+     620 {
+     621     const int& osur = bd.y ;
+     622     return osur == -1 && implicit_osur == true ;
+     623     //return implicit_osur == true ;    // old logic, giving too many overrides 
+     624 }
+     625 inline bool U4TreeBorder::has_isur_override( const int4& bd ) const
+     626 {
+     627     const int& isur = bd.z ;
+     628     return isur == -1 && implicit_isur == true ;
+     629     //return implicit_isur == true ;   // old logic, giving too many overrides
+     630 }
+     631 inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
+     632 {
+     633     st->implicit_osur.push_back(bd);
+     634     int& osur = bd.y ;
+     635     osur = get_override_idx(true);
+     636     st->implicit_osur.push_back(bd);
+     637 }
+     638 inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : outwards
+     639 {
+     640     st->implicit_isur.push_back(bd);
+     641     int& isur = bd.z ;
+     642     isur = get_override_idx(false);
+     643     st->implicit_isur.push_back(bd);
+     644 }
+
+
+::
+
+    epsilon:tests blyth$ ./stree_sur_test.sh 
+                       BASH_SOURCE : ./stree_sur_test.sh 
+                              BASE : /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim 
+                              FOLD : /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SS
+
+
+    osur.shape
+    (29997, 8)
+    u_osur.shape
+    (87, 8)
+    isur.shape
+    (2, 8)
+    u_isur.shape
+    (2, 8)
+
+
+
+    np.c_[n_osur,i_osur,u_osur]
+    [[    1     0     0    -1    -1     3     0    42    -1     3]
+     [    1     1     0    -1    -1     3     0    43    -1     3]
+
+    In [7]: mtn[np.array([0,3])]
+    Out[7]: array(['Air', 'Steel'], dtype='<U18')
+
+    In [12]: np.c_[sun[np.arange(42,44)]]
+    Out[12]: 
+    array([['Implicit__RINDEX__pExpHall__Air__NoRINDEX__pPoolCover__Steel'],
+           ['Implicit__RINDEX__lUpperChimney_phys__Air__NoRINDEX__pUpperChimneySteel__Steel']], dtype='<U101')
+
+
+    [    1     2     0    -1    -1     5     0    44    -1     5]
+
+    In [8]: mtn[np.array([0,5])]
+    Out[8]: array(['Air', 'Tyvek'], dtype='<U18')
+
+    In [13]: np.c_[sun[np.arange(44,45)]]
+    Out[13]: array([['Implicit__RINDEX__lUpperChimney_phys__Air__NoRINDEX__pUpperChimneyTyvek__Tyvek']], dtype='<U101')
+
+
+    [   63     3     0    -1    -1     9     0    45    -1     9]
+    [   63     4     0    -1    -1     9     0    46    -1     9]
+    [   63     5     0    -1    -1     9     0    47    -1     9]
+    [   63     6     0    -1    -1     9     0    48    -1     9]
+    [   63     7     0    -1    -1     9     0    49    -1     9]
+    [   63     8     0    -1    -1     9     0    50    -1     9]
+    [   63     9     0    -1    -1     9     0    51    -1     9]
+    [   63    10     0    -1    -1     9     0    52    -1     9]
+
+    In [6]: mtn[np.array([0,9])]
+    Out[6]: array(['Air', 'Aluminium'], dtype='<U18')    
+
+    In [14]: np.c_[sun[np.arange(45,53)] 
+    Out[14]: 
+    array([['Implicit__RINDEX__pPlane_0_ff___Air__NoRINDEX__pPanel_0_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_0_ff___Air__NoRINDEX__pPanel_1_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_0_ff___Air__NoRINDEX__pPanel_2_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_0_ff___Air__NoRINDEX__pPanel_3_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_1_ff___Air__NoRINDEX__pPanel_0_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_1_ff___Air__NoRINDEX__pPanel_1_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_1_ff___Air__NoRINDEX__pPanel_2_f___Aluminium'],
+           ['Implicit__RINDEX__pPlane_1_ff___Air__NoRINDEX__pPanel_3_f___Aluminium']], dtype='<U101')
+
+
+
+    [  590  2627    18    -1    -1     3    18   125    -1     3]
+    [  590  3217    18    -1    -1     3    18   126    -1     3]
+    [  590  3807    18    -1    -1     3    18   127    -1     3]
+    [25600  4397    18    -1    -1     3    18   128    -1     3]
+
+    In [9]: mtn[np.array([18,3])]
+    Out[9]: array(['Water', 'Steel'], dtype='<U18')
+
+    In [15]: np.c_[sun[np.arange(125,129)]]
+    Out[15]: 
+    array([['Implicit__RINDEX__pInnerWater__Water__NoRINDEX__lSteel_phys__Steel'],
+           ['Implicit__RINDEX__pInnerWater__Water__NoRINDEX__lFasteners_phys__Steel'],
+           ['Implicit__RINDEX__pInnerWater__Water__NoRINDEX__lUpper_phys__Steel'],
+           ['Implicit__RINDEX__PMT_3inch_log_phys__Water__NoRINDEX__PMT_3inch_cntr_phys__Steel']], dtype='<U101')
+
+
+    [   10   507    19    -1    -1    10    19    53    -1    10]
+    [   30   517    19    -1    -1    10    19    54    -1    10]
+    [   30   547    19    -1    -1    10    19    55    -1    10]
+    [   30   577    19    -1    -1    10    19    56    -1    10]
+    [   30   607    19    -1    -1    10    19    57    -1    10]
+    [   30   637    19    -1    -1    10    19    58    -1    10]
+    [   30   667    19    -1    -1    10    19    59    -1    10]
+    [   30   697    19    -1    -1    10    19    60    -1    10]
+    [   30   727    19    -1    -1    10    19    61    -1    10]
+    [   30   757    19    -1    -1    10    19    62    -1    10]
+    [   30   787    19    -1    -1    10    19    63    -1    10]
+    [   30   817    19    -1    -1    10    19    64    -1    10]
+    [   30   847    19    -1    -1    10    19    65    -1    10]
+    [   30   877    19    -1    -1    10    19    66    -1    10]
+    [   30   907    19    -1    -1    10    19    67    -1    10]
+    [   30   937    19    -1    -1    10    19    68    -1    10]
+    [   30   967    19    -1    -1    10    19    69    -1    10]
+    [   30   997    19    -1    -1    10    19    70    -1    10]
+    [   30  1027    19    -1    -1    10    19    71    -1    10]
+    [   30  1057    19    -1    -1    10    19    72    -1    10]
+    [   30  1087    19    -1    -1    10    19    73    -1    10]
+    [   10  1117    19    -1    -1    10    19    74    -1    10]
+    [   30  1127    19    -1    -1    10    19    75    -1    10]
+    [   30  1157    19    -1    -1    10    19    76    -1    10]
+    [   30  1187    19    -1    -1    10    19    77    -1    10]
+    [   30  1217    19    -1    -1    10    19    78    -1    10]
+    [   30  1247    19    -1    -1    10    19    79    -1    10]
+    [   30  1277    19    -1    -1    10    19    80    -1    10]
+    [   30  1307    19    -1    -1    10    19    81    -1    10]
+    [   30  1337    19    -1    -1    10    19    82    -1    10]
+    [   30  1367    19    -1    -1    10    19    83    -1    10]
+    [   30  1397    19    -1    -1    10    19    84    -1    10]
+    [   30  1427    19    -1    -1    10    19    85    -1    10]
+    [   30  1457    19    -1    -1    10    19    86    -1    10]
+    [   30  1487    19    -1    -1    10    19    87    -1    10]
+    [   30  1517    19    -1    -1    10    19    88    -1    10]
+    [   30  1547    19    -1    -1    10    19    89    -1    10]
+    [   30  1577    19    -1    -1    10    19    90    -1    10]
+    [   30  1607    19    -1    -1    10    19    91    -1    10]
+    [   30  1637    19    -1    -1    10    19    92    -1    10]
+    [   30  1667    19    -1    -1    10    19    93    -1    10]
+    [   30  1697    19    -1    -1    10    19    94    -1    10]
+    [   30  1727    19    -1    -1    10    19    95    -1    10]
+    [   30  1757    19    -1    -1    10    19    96    -1    10]
+    [   30  1787    19    -1    -1    10    19    97    -1    10]
+    [   30  1817    19    -1    -1    10    19    98    -1    10]
+    [   30  1847    19    -1    -1    10    19    99    -1    10]
+    [   30  1877    19    -1    -1    10    19   100    -1    10]
+    [   30  1907    19    -1    -1    10    19   101    -1    10]
+    [   30  1937    19    -1    -1    10    19   102    -1    10]
+    [   30  1967    19    -1    -1    10    19   103    -1    10]
+    [   30  1997    19    -1    -1    10    19   104    -1    10]
+    [   30  2027    19    -1    -1    10    19   105    -1    10]
+    [   30  2057    19    -1    -1    10    19   106    -1    10]
+    [   30  2087    19    -1    -1    10    19   107    -1    10]
+    [   30  2117    19    -1    -1    10    19   108    -1    10]
+    [   30  2147    19    -1    -1    10    19   109    -1    10]
+    [   30  2177    19    -1    -1    10    19   110    -1    10]
+    [   30  2207    19    -1    -1    10    19   111    -1    10]
+    [   30  2237    19    -1    -1    10    19   112    -1    10]
+    [   30  2267    19    -1    -1    10    19   113    -1    10]
+    [   30  2297    19    -1    -1    10    19   114    -1    10]
+    [   30  2327    19    -1    -1    10    19   115    -1    10]
+    [   30  2357    19    -1    -1    10    19   116    -1    10]
+    [   30  2387    19    -1    -1    10    19   117    -1    10]
+    [   30  2417    19    -1    -1    10    19   118    -1    10]
+    [   30  2447    19    -1    -1    10    19   119    -1    10]
+    [   30  2477    19    -1    -1    10    19   120    -1    10]
+    [   30  2507    19    -1    -1    10    19   121    -1    10]
+    [   30  2537    19    -1    -1    10    19   122    -1    10]
+    [   30  2567    19    -1    -1    10    19   123    -1    10]
+    [   30  2597    19    -1    -1    10    19   124    -1    10]]
+
+    In [16]: mtn[np.array([19,10])]
+    Out[16]: array(['vetoWater', 'LatticedShellSteel'], dtype='<U18')
+
+    In [17]: np.c_[sun[np.arange(53,125)]]
+    Out[17]: 
+    array([['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up10_up11_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up09_up10_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up08_up09_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up07_up08_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up06_up07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up05_up06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up04_up05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up03_up04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up02_up03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.up01_up02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw2.equ_up01_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw2.equ_bt01_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw3.bt01_bt02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw3.bt02_bt03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw2.bt03_bt04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw2.bt04_bt05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt05_bt06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt06_bt07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt07_bt08_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt08_bt09_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt09_bt10_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLw1.bt10_bt11_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb3.up11_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb4.up10_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb3.up09_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.up08_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.up07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.up06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.up05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.up04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.up03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.up02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.up01_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.equ_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.bt01_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.bt02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.bt03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb2.bt04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.bt05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.bt06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.bt07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb1.bt08_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb3.bt09_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb3.bt10_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GLb3.bt11_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A01_02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A02_03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A03_04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A04_05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A05_06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.A06_07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B01_02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B02_03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B03_04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B04_05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B05_06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__GZ1.B06_07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A02_B02_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A03_B03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A04_B04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A05_B05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A06_B06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A02_B03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A03_B04_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A04_B05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A05_B06_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A06_B07_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.B01_B01_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.B03_B03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.B05_B05_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A03_A03_HBeam_phys__LatticedShellSteel'],
+           ['Implicit__RINDEX__pOuterWaterPool__vetoWater__NoRINDEX__ZC2.A05_A05_HBeam_phys__LatticedShellSteel']], dtype='<U101')
+
+    In [18]:                    
+
+
+
+
+
+    np.c_[n_isur,i_isur,u_isur]
+    [[ 1  0  1 -1 -1  0  1 -1 40  0]
+     [ 1  1  1 -1 -1  0  1 -1 41  0]]
+
+    In [18]: mtn[np.array([1,0])]
+    Out[18]: array(['Rock', 'Air'], dtype='<U18')
+
+    In [19]: np.c_[sun[np.arange(40,42)]]
+    Out[19]: 
+    array([['Implicit__RINDEX__pDomeAir__Air__NoRINDEX__pDomeRock__Rock'],
+           ['Implicit__RINDEX__pExpHall__Air__NoRINDEX__pExpRockBox__Rock']], dtype='<U101')
+
+
+
+
+
+Temporarily comment osur to try to match X4/GGeo 
+------------------------------------------------------
+
+::
+
+     662     int4 bd = {omat, osur, isur, imat } ;
+     663     //if(border.has_osur_override(bd)) border.do_osur_override(bd);  // temporarily skip
+     664     if(border.has_isur_override(bd)) border.do_isur_override(bd);
+
+
