@@ -340,7 +340,9 @@ inline NPFold* U4Surface::MakeFold()
 U4Surface::Find
 -----------------
 
-Based on G4OpBoundaryProcess::PostStepDoIt 
+Looks for a border or skin surface in the same way 
+as G4OpBoundaryProcess::PostStepDoIt which the code
+is based on. 
 
 **/
 
