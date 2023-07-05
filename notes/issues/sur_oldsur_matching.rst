@@ -1498,4 +1498,296 @@ Small diffs only in payload group 0::
            [0.   , 0.   , 0.   , 0.   ]])
 
 
+NEXT : where is X4/GGeo optical array formed ? re-impl in U4Tree/stree
+------------------------------------------------------------------------------------
+
+Trace back from QOptical/QSim::
+
+::
+
+     119     const NP* optical = ssim->get(SSim::OPTICAL);
+     120     const NP* bnd = ssim->get(SSim::BND);
+     121 
+     122     if( optical == nullptr && bnd == nullptr )
+     123     {
+     124         LOG(error) << " optical and bnd null  SSim::OPTICAL " << SSim::OPTICAL << " SSim::BND " << SSim::BND  ;
+     125     }
+     126     else
+     127     {
+     128        // note that QOptical and QBnd are tightly coupled, perhaps add constraints to tie them together
+     129         QOptical* qopt = new QOptical(optical);
+     130         LOG(LEVEL) << qopt->desc();
+     131 
+     132         QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
+     133         LOG(LEVEL) << qbnd->desc();
+     134     }
+
+
+
+    2545 void GGeo::convertSim_BndLib(SSim* sim) const
+    2546 {
+    2547     LOG(LEVEL) << "[" ;
+    2548     GBndLib* blib = getBndLib();
+    2549 
+    2550     bool can_create = blib->canCreateBuffer() ;
+    2551     NP* bnd = nullptr ;
+    2552     NP* optical = nullptr ;
+    2553 
+    2554     if( can_create )
+    2555     {
+    2556         blib->createDynamicBuffers();
+    2557         // hmm perhaps this is done already on loading now ?
+    2558         bnd = blib->getBuf();
+    2559 
+    2560         LOG(LEVEL) << " bnd.desc " << bnd->desc() ;
+    2561 
+    2562         optical = blib->getOpticalBuf();
+    2563 
+    2564         const std::vector<std::string>& bndnames = blib->getNameList();
+    2565         bnd->set_names( bndnames );
+    2566 
+    2567         LOG(LEVEL) << " bnd.set_names " << bndnames.size() ;
+    2568 
+    2569     
+    2570         sim->add(SSim::BND, bnd );
+    2571         sim->add(SSim::OPTICAL, optical );
+
+
+GBndLib::getOpticalBuf::
+
+     313 NPY<unsigned int>* GBndLib::getOpticalBuffer() const
+     314 {
+     315     return m_optical_buffer ;
+     316 }   
+
+     323 NP* GBndLib::getOpticalBuf() const
+     324 {
+     325     assert( m_optical_buffer );
+     326     
+     327     NP* optical = m_optical_buffer->spawn() ;
+     328     std::string shape0 = optical->sstr() ;  
+     329     
+     330     assert( optical->shape.size() == 3 );
+     331     
+     332     unsigned ni = optical->shape[0] ;
+     333     unsigned nj = optical->shape[1] ;
+     334     unsigned nk = optical->shape[2] ;
+     335 
+     336     assert( ni > 0 && nj == 4 && nk == 4 );
+     337 
+     338     optical->change_shape( ni*nj , nk );
+     339     LOG(LEVEL) << " changed optical shape from " << shape0  << " -> " << optical->sstr() ;
+     340 
+     341     return optical ;
+     342 }
+
+     208 void GBndLib::createDynamicBuffers()
+     209 {
+     210     // there is not much difference between this and doing a close ??? 
+     211 
+     212     GItemList* names = createNames();     // added Aug 21, 2018
+     213     setNames(names);
+     214 
+     215     NPY<double>* buf = createBuffer();  // createBufferForTex2d
+     216     setBuffer(buf);
+     217 
+     218     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
+     219     setOpticalBuffer(optical_buffer);
+     220 
+
+
+Material side easy, surface side needs some additional info passing::
+
+
+    1225     NPY<unsigned>* optical = NPY<unsigned>::make( ni, nj, nk) ;
+    1226     optical->zero();
+    1227 
+    1228     unsigned* odat = optical->getValues();
+    1229 
+    1230     for(unsigned i=0 ; i < ni ; i++)      // over bnd
+    1231     {
+    1232         const guint4& bnd = m_bnd[i] ;
+    1233 
+    1234         for(unsigned j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
+    1235         {   
+    1236             unsigned offset = nj*nk*i+nk*j ;
+    1237             
+    1238             if(j == IMAT || j == OMAT)    // 0 or 3   
+    1239             {   
+    1240                 unsigned midx = bnd[j] ; // "bd.x" "bd.w" in modern lingo 
+    1241                 assert(midx != UNSET);
+    1242                 
+    1243                 odat[offset+0] = one_based ? midx + 1 : midx  ;
+    1244                 odat[offset+1] = 0u ;
+    1245                 odat[offset+2] = 0u ;
+    1246                 odat[offset+3] = 0u ;
+    1247             
+    1248             }
+    1249             else if(j == ISUR || j == OSUR)    // 1 or 2 
+    1250             {
+    1251                 unsigned sidx = bnd[j] ;
+    1252                 if(sidx != UNSET)
+    1253                 {
+    1254                     guint4 os = m_slib->getOpticalSurface(sidx) ;
+    1255 
+    1256                     odat[offset+0] = one_based ? sidx + 1 : sidx  ;
+    1257                  // TODO: enum these
+    1258                     odat[offset+1] = os.y ; 
+    1259                     odat[offset+2] = os.z ; 
+    1260                     odat[offset+3] = os.w ; 
+    1261 
+    1262                 }
+    1263             }
+    1264         }
+    1265     }
+    1266     return optical ; 
+    1267 
+
+
+::
+
+     664 guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
+     665 {
+     666     GPropertyMap<double>* surf = getSurface(i);
+     667     guint4 os = createOpticalSurface(surf);
+     668     os.x = i ;
+     669     return os ;
+     670 }
+
+     655 guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<double>* src)
+     656 {
+     657    assert(src->isSkinSurface() || src->isBorderSurface() || src->isTestSurface());
+     658    GOpticalSurface* os = src->getOpticalSurface();
+     659    assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
+     660    guint4 optical = os->getOptical();
+     661    return optical ;
+
+
+Hmm this is some really old code::
+
+    185 guint4 GOpticalSurface::getOptical() const
+    186 {
+    187    guint4 optical ;
+    188    optical.x = UINT_MAX ; //  place holder
+    189    optical.y = boost::lexical_cast<unsigned int>(getType());
+    190    optical.z = boost::lexical_cast<unsigned int>(getFinish());
+    191 
+    192    const char* value = getValue();
+    193    float percent = boost::lexical_cast<float>(value)*100.f ;   // express as integer percentage 
+    194    unsigned upercent = unsigned(percent) ;   // rounds down 
+    195 
+    196    optical.w = upercent ;
+    197 
+    198    return optical ;
+    199 }
+
+Only index used GPU side. 
+
+
+Examine old optical
+---------------------
+
+::
+
+    In [9]: t.base
+    Out[9]: '/Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim'
+
+    In [7]: op = t.optical.reshape( len(t.optical)//4, 4, 4 )
+
+    In [8]: op.shape
+    Out[8]: (53, 4, 4)
+
+    In [12]: len(t.bnd)
+    Out[12]: 53
+
+    In [15]: op[:,0]  # omat + 1 in 1st column 
+    Out[15]: 
+    array([[ 3,  0,  0,  0],
+           [ 3,  0,  0,  0],
+           [ 2,  0,  0,  0],
+           [ 2,  0,  0,  0],
+        ...
+
+    In [17]: op[:,3]   # imat + 1 in 1st column 
+    Out[17]: 
+    array([[ 3,  0,  0,  0],
+           [ 2,  0,  0,  0],
+           [ 3,  0,  0,  0],
+           [ 1,  0,  0,  0],
+           [ 2,  0,  0,  0],
+
+
+    In [23]: op[:,2]      # isur
+    Out[23]: 
+    array([[  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [ 41,   1,   1, 100],        ## WHERE ARE THESE COMING FROM FOR IMPLICITS ??
+           [  0,   0,   0,   0],
+           [ 42,   1,   1, 100],        ## PLACEHOLDERS FROM GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX
+           [  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           ...
+
+           [ 38,   0,   1,  99],
+           [ 38,   0,   1,  99],
+           [ 23,   0,   0, 100],
+           [ 25,   0,   0, 100],
+           [  0,   0,   0,   0],
+           [ 40,   0,   3,  20],
+           [  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [ 19,   0,   0, 100],
+           [ 21,   0,   1,  99]], dtype=uint32)
+
+::
+
+    185 /**
+    186 GOpticalSurface::getOptical
+    187 ------------------------------
+    188 
+    189 +---------------+---------------------------+--------------------------+-------------------+   
+    190 | .x idx+1 ?    |  .y  type                 |  .z  finish              |  .w value_percent |
+    191 +===============+===========================+==========================+===================+
+    192 |               |                           |                          |                   |
+    193 |               | 0:dielectric_metal        | 0:polished               |                   |
+    194 |               | 1:dielectric_dielectric   | 1:polishedfrontpainted   |                   |
+    195 |               |                           | 3:ground                 |                   | 
+    196 |               |                           |                          |                   |
+    197 +---------------+---------------------------+--------------------------+-------------------+
+    198 
+    199 **/
+
+::
+
+     717 void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 )
+     718 {
+     719     GBorderSurface* prior_bs = findBorderSurface(pv1, pv2);
+     720     if( prior_bs != nullptr )
+     721     {
+     722         LOG(fatal)
+     723             << " pv1 " << pv1
+     724             << " pv2 " << pv2
+     725             << " prior_bs " << prior_bs
+     726             << " there is a prior GBorderSurface from pv1->pv2 "
+     727             ;
+     728         assert(0);
+     729     }
+     730 
+     731 
+     732     std::string spv1 = SGDML::Strip(pv1);
+     733     std::string spv2 = SGDML::Strip(pv2);
+     734     std::stringstream ss ;
+     735     ss << "Implicit_RINDEX_NoRINDEX_" << spv1 << "_" << spv2 ;
+     736     std::string s = ss.str();
+     737     const char* name = s.c_str();
+     738 
+     739     // placeholders
+     740     const char* type = "1" ;
+     741     const char* model = "1" ;
+     742     const char* finish = "1" ;
+     743     const char* value = "1" ;
+     744     GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
+     745 
 

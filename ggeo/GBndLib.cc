@@ -311,7 +311,6 @@ void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
 }
 
 NPY<unsigned int>* GBndLib::getOpticalBuffer() const 
-
 {
     return m_optical_buffer ;
 }
@@ -1238,7 +1237,7 @@ NPY<unsigned>* GBndLib::createOpticalBuffer()
 
             if(j == IMAT || j == OMAT)    // 0 or 3   
             {
-                unsigned midx = bnd[j] ;
+                unsigned midx = bnd[j] ; // "bd.x" "bd.w" in modern lingo 
                 assert(midx != UNSET);
 
                 odat[offset+0] = one_based ? midx + 1 : midx  ; 

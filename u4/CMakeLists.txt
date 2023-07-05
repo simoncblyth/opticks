@@ -79,13 +79,16 @@ set(HEADERS
     U4GDML.h
     U4Transform.h
     U4Tree.h
+    U4TreeBorder.h
 
     U4SensorIdentifier.h
     U4SensorIdentifierDefault.h
 
     U4SolidMaker.hh
     U4SolidTree.hh
+
     U4Material.hh
+    U4Mat.h 
 
     U4Volume.h
     U4Surface.h

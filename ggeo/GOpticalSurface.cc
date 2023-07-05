@@ -182,6 +182,23 @@ GOpticalSurface* GOpticalSurface::create(const char* name, guint4 optical )
 }
 
 
+/**
+GOpticalSurface::getOptical
+------------------------------
+
++---------------+---------------------------+--------------------------+-------------------+   
+| .x idx+1 ?    |  .y  type                 |  .z  finish              |  .w value_percent |
++===============+===========================+==========================+===================+
+|               |                           |                          |                   |
+|               | 0:dielectric_metal        | 0:polished               |                   |
+|               | 1:dielectric_dielectric   | 1:polishedfrontpainted   |                   |
+|               |                           | 3:ground                 |                   | 
+|               |                           |                          |                   |
++---------------+---------------------------+--------------------------+-------------------+
+
+**/
+
+
 guint4 GOpticalSurface::getOptical() const 
 {
    guint4 optical ; 

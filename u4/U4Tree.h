@@ -54,6 +54,7 @@ See also:
 
 #include "U4Transform.h"
 #include "U4Material.hh"
+#include "U4Mat.h"
 
 #include "U4Surface.h"
 #include "U4SurfacePerfect.h"
@@ -62,6 +63,8 @@ See also:
 #include "U4Solid.h"
 #include "U4PhysicsTable.h"
 #include "U4MaterialTable.h"
+#include "U4TreeBorder.h"
+
 
 /*
 HMM: cannot have U4Tree EnvLevel because it is currently header only, 
@@ -93,11 +96,6 @@ struct U4Tree
 
     std::vector<const G4VSolid*>    solids ; 
     U4PhysicsTable<G4OpRayleigh>* rayleigh_table ; 
-
-
-    static const G4MaterialPropertyVector* GetRINDEX(   const G4Material* mt ); 
-    static const G4MaterialPropertyVector* GetProperty( const G4Material* mt, int index ); 
-
 
     // HMM: should really be SSim argument now ?
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
@@ -145,21 +143,7 @@ struct U4Tree
 
     void simtrace_scan(const char* base ) const ; 
     static void SimtraceScan( const G4VPhysicalVolume* const pv, const char* base ); 
-
-
 }; 
-
-
-inline const G4MaterialPropertyVector* U4Tree::GetRINDEX(  const G4Material* mt ) // static
-{
-    return GetProperty(mt, kRINDEX ); 
-}
-inline const G4MaterialPropertyVector* U4Tree::GetProperty(const G4Material* mt, int index ) // static
-{
-    G4MaterialPropertiesTable* mpt = mt ? mt->GetMaterialPropertiesTable() : nullptr ;
-    const G4MaterialPropertyVector* mpv = mpt ? mpt->GetProperty(index) : nullptr ;    
-    return mpv ; 
-}
 
 
 
@@ -249,11 +233,10 @@ inline void U4Tree::initMaterials()
     initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
 
-
-    G4PhysicsVector* prop = rayleigh_table->find("Water") ;  
-    assert( prop ); 
     std::map<std::string, G4PhysicsVector*> prop_override ; 
-    prop_override["Water/RAYLEIGH"] = prop ; 
+
+    G4PhysicsVector* Water_RAYLEIGH = rayleigh_table->find("Water") ;  
+    if(Water_RAYLEIGH) prop_override["Water/RAYLEIGH"] = Water_RAYLEIGH ; 
 
     st->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
 }
@@ -264,7 +247,7 @@ inline void U4Tree::initMaterials_NoRINDEX()
     for(int i=0 ; i < num_materials ; i++)
     {
         const G4Material* mt = materials[i] ;    
-        const G4MaterialPropertyVector* rindex = GetRINDEX( mt ) ; 
+        const G4MaterialPropertyVector* rindex = U4Mat::GetRINDEX( mt ) ; 
         if( rindex == nullptr )
         {
             const char* mtn = mt->GetName().c_str(); 
@@ -364,6 +347,13 @@ As this requires to run after implicit are
 collected in initNodes it is too soon to do 
 this within initSurfaces
 
+Its too late to add implicit names
+here because they are needed by stree::get_boundary_name 
+
+Uncertain regarding the perfects, 
+Maybe will need to add them earlier too, 
+once develop a test that uses them. 
+
 **/
 
 inline void U4Tree::initSurfaces_Serialize()
@@ -380,10 +370,6 @@ inline void U4Tree::initSurfaces_Serialize()
         const char* name = perf.name.c_str() ; 
         st->add_surface( name );   
     }
-
-    // ITS TOO LATE ADD IMPLICIT NAMES HERE 
-    // AS THOSE ARE NEEDED FOR stree::get_boundary_name 
-    // CAN ADD PERFECTS AS THOSE ARE JUST FOR TESTING
 }
 
 
@@ -477,8 +463,6 @@ inline void U4Tree::initNodes()
     assert( 0 == nidx ); 
 }
 
-
-
 /**
 U4Tree::initNodes_r
 -----------------------
@@ -488,175 +472,7 @@ but sibling to sibling links are done within the
 sibling loop using the node index returned by the 
 recursive call. 
 
-Issue : omits to do the equivalent of X4PhysicalVolume::convertImplicitSurfaces_r 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* see ~/opticks/notes/issues/stree_bd_names_and_Implicit_RINDEX_NoRINDEX.rst
-* causes difference between SSim/bnd_names.txt and SSim/stree/bd_names.txt
-
-All transparent materials like Scintillator, Acrylic, Water should have RINDEX property. 
-Some absorbing materials like Tyvek might not have RINDEX property as 
-lazy Physicists sometimes rely on sloppy Geant4 implicit behavior 
-which causes fStopAndKill at the RINDEX->NoRINDEX boundary
-as if there was a perfect absorbing surface there.  
-
-To mimic the implicit surface Geant4 behaviour with Opticks on GPU 
-it is necessary to add explicit perfect absorber surfaces. 
-
-First try at implicit handling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-HMM: want to mint only the minimum number of implicits
-so need to define a name that captures the desired identity 
-and only collect more implicits when they have different names. 
-
-Implicit border surface "directionality" is always 
-from the material with RINDEX to the material without RINDEX 
-
-U4SurfaceArray is assuming the implicits all appear together
-after standard surfaces and before perfects. 
-All standard surfaces are collected in initSurfaces so 
-have a constant base of surfaces ontop of which to 
-add implicits. 
-
-When an implicit is detected the osur or isur is 
-changed accordingly.   
-
 **/
-
-
-struct U4TreeBorder // TODO: think of a better name for this 
-{
-    stree* st ; 
-    int num_surfaces ; 
-
-    const G4LogicalVolume* const lv ; 
-    const G4LogicalVolume* const lv_p ;  
-    const G4Material* const imat_ ; 
-    const G4Material* const omat_ ; 
-    const char* imatn ; 
-    const char* omatn ; 
-    const std::string& inam ; 
-    const std::string& onam ; 
-    const G4LogicalSurface* const osur_ ; 
-    const G4LogicalSurface* const isur_ ;  
-    const G4MaterialPropertyVector* i_rindex ; 
-    const G4MaterialPropertyVector* o_rindex ; 
-
-    int  implicit_idx ; 
-    bool implicit_isur ; 
-    bool implicit_osur ; 
-
-    U4TreeBorder(
-        stree* st_, 
-        int num_surfaces_, 
-        const G4VPhysicalVolume* const pv, 
-        const G4VPhysicalVolume* const pv_p 
-        ); 
-
-    int get_override_idx(bool flip); 
-    bool has_osur_override( const int4& bd ) const ; 
-    bool has_isur_override( const int4& bd ) const ; 
-    void do_osur_override( int4& bd ) ; 
-    void do_isur_override( int4& bd ) ; 
-
-}; 
-
-inline U4TreeBorder::U4TreeBorder(
-        stree* st_, 
-        int num_surfaces_, 
-        const G4VPhysicalVolume* const pv, 
-        const G4VPhysicalVolume* const pv_p )
-    :
-    st(st_),
-    num_surfaces(num_surfaces_),
-    lv(pv->GetLogicalVolume()),
-    lv_p(pv_p ? pv_p->GetLogicalVolume() : lv),
-    imat_(lv->GetMaterial()),
-    omat_(lv_p ? lv_p->GetMaterial() : imat_), // top omat -> imat 
-    imatn(imat_->GetName().c_str()),
-    omatn(omat_->GetName().c_str()),
-    inam(pv->GetName()), 
-    onam(pv_p ? pv_p->GetName() : inam), 
-    osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface
-    isur_(U4Surface::Find( pv  , pv_p )),
-    i_rindex(U4Tree::GetRINDEX( imat_ )), 
-    o_rindex(U4Tree::GetRINDEX( omat_ )),
-    implicit_idx(-1),
-    implicit_isur(i_rindex != nullptr && o_rindex == nullptr),   // now just supects 
-    implicit_osur(o_rindex != nullptr && i_rindex == nullptr)
-{
-}
-
-/**
-U4TreeBorder::get_override_idx
--------------------------------
-
-When debugging use alternate verbose implicit name.
-
-**/
-
-inline int U4TreeBorder::get_override_idx(bool flip)
-{
-    std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );  
-    //std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );  
-
-    const char* implicit = implicit_.c_str(); 
-
-    int implicit_idx = stree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
-    if(implicit_idx == -1)  // new implicit 
-    {
-        st->implicit.push_back(implicit) ;   
-        st->add_surface(implicit);   
-        implicit_idx = stree::GetValueIndex<std::string>( st->implicit, implicit ) ; 
-    }
-    assert( implicit_idx > -1 ); 
-    return num_surfaces + implicit_idx ;
-}
-
-/**
-U4TreeBorder::has_osur_override
---------------------------------
-
-Only returns true when:
-
-1. materials are RINDEX->NoRINDEX 
-2. AND no corresponding surface defined already 
-
-The old X4/GGeo workflow does similar to 
-this in X4PhysicalVolume::convertImplicitSurfaces_r
-but in addition that workflow skips osur, doing only isur
-for no valid reason that I can find/recall. 
-
-**/
-
-inline bool U4TreeBorder::has_osur_override( const int4& bd ) const 
-{
-    const int& osur = bd.y ; 
-    return osur == -1 && implicit_osur == true ;  
-    //return implicit_osur == true ;    // old logic, giving too many overrides 
-}
-inline bool U4TreeBorder::has_isur_override( const int4& bd ) const 
-{
-    const int& isur = bd.z ; 
-    return isur == -1 && implicit_isur == true ;  
-    //return implicit_isur == true ;   // old logic, giving too many overrides
-}
-inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
-{
-    st->implicit_osur.push_back(bd);  
-    int& osur = bd.y ; 
-    osur = get_override_idx(true); 
-    st->implicit_osur.push_back(bd);  
-}
-inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : outwards
-{
-    st->implicit_isur.push_back(bd); 
-    int& isur = bd.z ; 
-    isur = get_override_idx(false); 
-    st->implicit_isur.push_back(bd); 
-}
-
 
 
 inline int U4Tree::initNodes_r( 
@@ -674,7 +490,16 @@ inline int U4Tree::initNodes_r(
     int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.osur_); 
 
     int4 bd = {omat, osur, isur, imat } ; 
-    //if(border.has_osur_override(bd)) border.do_osur_override(bd);  // temporarily skip
+
+    //bool do_osur = true ; 
+    bool do_osur = false  ; 
+    /**
+    do_osur:false 
+         reduces implicits a lot, which is convenient for initial testing
+         BUT will need them once start Geant4 matching 
+    **/
+
+    if(do_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
     if(border.has_isur_override(bd)) border.do_isur_override(bd); 
 
     int boundary = st->add_boundary(bd) ; 

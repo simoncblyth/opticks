@@ -283,6 +283,11 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
         G4SurfaceType theType = os->GetType();
         G4OpticalSurfaceModel theModel = os->GetModel();
         G4OpticalSurfaceFinish theFinish = os->GetFinish();       
+
+        // cf X4OpticalSurface::Convert
+        G4double ModelValue = theModel == glisur ? os->GetPolish() : os->GetSigmaAlpha() ;
+        assert( ModelValue >= 0. && ModelValue <= 1. );
+
         const char* osn = os->GetName().c_str() ; 
         G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
 
@@ -297,6 +302,7 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
         sub->set_meta<int>("Type", theType) ; 
         sub->set_meta<int>("Model", theModel) ; 
         sub->set_meta<int>("Finish", theFinish) ; 
+        sub->set_meta<double>("ModelValue", ModelValue ) ; 
 
 
         const G4LogicalBorderSurface* bs = dynamic_cast<const G4LogicalBorderSurface*>(ls) ; 

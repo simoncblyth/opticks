@@ -3,8 +3,18 @@
 U4OpticalSurfaceFinish.h
 ===========================
 
-Basis G4OpticalSurfaceFinish enum { polished, polishedfrontpainted, ... }
-is defined in G4OpticalSurface.hh
+Basis G4OpticalSurfaceFinish enum is defined in G4OpticalSurface.hh::
+
+     62 enum G4OpticalSurfaceFinish
+     63 {
+     64    polished,                    // smooth perfectly polished surface
+     65    polishedfrontpainted,        // smooth top-layer (front) paint
+     66    polishedbackpainted,         // same is 'polished' but with a back-paint
+     67 
+     68    ground,                      // rough surface
+     69    groundfrontpainted,          // rough top-layer (front) paint
+     70    groundbackpainted,           // same as 'ground' but with a back-paint
+     71 
 
 Note that the 6 finish types are only the first of 30 or so.
 Only finish types used by active geometries have any hope of being supported. 

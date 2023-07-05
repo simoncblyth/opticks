@@ -19,7 +19,6 @@ int main(int argc, char** argv)
     std::cout << "st.desc_bd" << std::endl << st.desc_bd() << std::endl; 
 
 
-
     NPFold* fold = new NPFold ; 
 
     // arrays directly under SSim all from old X4/GGeo workflow
@@ -38,11 +37,11 @@ int main(int argc, char** argv)
     fold->add("sur", st.sur ); 
     fold->add("bnd", st.make_bnd() ); 
     fold->add("bd",  st.make_bd()  ); 
+    fold->add("optical",  st.make_optical()  ); 
 
     fold->add("rayleigh",  st.rayleigh  ); 
     fold->add("energy",  st.energy ); 
     fold->add("wavelength",  st.wavelength ); 
-
 
     fold->save("$FOLD"); 
  

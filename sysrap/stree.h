@@ -474,28 +474,23 @@ struct stree
     std::string desc_mt() const ; 
     std::string desc_bd() const ; 
 
-    /*
-    // rethinking these : doing instead up in U4Tree
-    NP* create_mat() const ; 
-    NP* create_sur() const ; 
-    */
-
     NP* make_bnd() const ; 
 
     void add_material( const char* name, unsigned g4index ); 
-    const char* get_material_name(int idx) const ; 
-
     void add_surface( const char* name ); 
-    const char* get_surface_name(int idx) const ; 
     void add_surface( const std::vector<std::string>& names  ); 
 
     int add_boundary( const int4& bd_ ); 
 
+    const char* get_material_name(int idx) const ; 
+    const char* get_surface_name(int idx) const ; 
     std::string get_boundary_name( const int4& bd_, char delim ) const ; 
+
+    NPFold* get_surface_subfold(int idx) const ; 
+    NP* make_optical() const ; 
 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
-
 };
 
 
@@ -2974,12 +2969,6 @@ inline void stree::add_material( const char* name, unsigned g4index )
     // idx from mtname. 
 } 
 
-inline const char* stree::get_material_name( int idx ) const 
-{
-    assert( idx < int(mtname.size()) ); 
-    return idx > -1 ? mtname[idx].c_str() : nullptr ; 
-}
-
 
 inline void stree::add_surface( const char* name )
 {
@@ -2987,11 +2976,6 @@ inline void stree::add_surface( const char* name )
     suname.push_back(name); 
     suindex.push_back(idx); 
 } 
-inline const char* stree::get_surface_name( int idx ) const 
-{
-    assert( idx < int(suname.size()) ); 
-    return idx > -1 ? suname[idx].c_str() : nullptr ; 
-}
 
 
 inline void stree::add_surface(const std::vector<std::string>& names  )
@@ -3017,11 +3001,19 @@ inline int stree::add_boundary( const int4& bd_ )
 }
 
 
+inline const char* stree::get_material_name( int idx ) const 
+{
+    return idx > -1 &&  idx < int(mtname.size()) ? mtname[idx].c_str() : nullptr ; 
+}
+inline const char* stree::get_surface_name( int idx ) const 
+{
+    return idx > -1 && idx < int(suname.size()) ? suname[idx].c_str() : nullptr ; 
+}
 inline std::string stree::get_boundary_name( const int4& bd_, char delim ) const 
 {
     const char* omat = get_material_name( bd_.x ); 
-    const char* osur = get_surface_name( bd_.y ); 
-    const char* isur = get_surface_name( bd_.z ); 
+    const char* osur = get_surface_name(  bd_.y ); 
+    const char* isur = get_surface_name(  bd_.z ); 
     const char* imat = get_material_name( bd_.w ); 
 
     assert( omat ); 
@@ -3029,15 +3021,80 @@ inline std::string stree::get_boundary_name( const int4& bd_, char delim ) const
 
     std::stringstream ss ;
     ss   
-       << omat << delim
-       << ( osur ? osur : "" ) << delim 
-       << ( isur ? isur : "" ) << delim
+       << omat 
+       << delim
+       << ( osur ? osur : "" ) 
+       << delim 
+       << ( isur ? isur : "" ) 
+       << delim
        << imat 
-       ;    
+       ;
+    
     std::string str = ss.str(); 
     return str ; 
 }
 
+
+
+/**
+stree::get_surface_subfold
+---------------------------
+
+HMM: the implicit and perfect names will be found, 
+but there will not be a subfold for them 
+
+**/
+inline NPFold* stree::get_surface_subfold(int idx) const 
+{
+    const char* sn = get_surface_name(idx); 
+    assert(sn) ; 
+    NPFold* sub = surface->get_subfold(sn) ;  
+    return sub ; 
+}
+   
+/**
+stree::make_optical
+---------------------
+
+Use NPFold* surface metadata and std::vector<int4>& bd 
+to create the optical array. 
+
+**/
+inline NP* stree::make_optical() const 
+{
+    int ni = bd.size() ; 
+    int nj = 4 ; 
+    int nk = 4 ; 
+
+    NP* op = NP::Make<int>(ni, nj, nk); 
+    int* op_v = op->values<int>(); 
+
+    for(int i=0 ; i < ni ; i++)       // over bd 
+    {
+        const int4& bd_ = bd[i] ; 
+        for(int j=0 ; j < nj ; j++)   // over (omat,osur,isur,imat)
+        {
+            int idx = -2 ; 
+            switch(j)
+            {
+                case 0: idx = bd_.x ; break ;   
+                case 1: idx = bd_.y ; break ;   
+                case 2: idx = bd_.z ; break ;   
+                case 3: idx = bd_.w ; break ;   
+            }
+
+            bool is_surf = j == 1 || j == 2 ; 
+            NPFold* surf = ( is_surf && idx > -1 ) ? get_surface_subfold(idx) : nullptr ;
+ 
+            int op_index = i*nj*nk + j*nk ;
+            op_v[op_index+0] = idx > -1  ? idx + 1 : 0 ; 
+            op_v[op_index+1] = surf ? surf->get_meta<int>("Type",-1)                     : 0 ; 
+            op_v[op_index+2] = surf ? surf->get_meta<int>("Finish", -1 )                 : 0 ; 
+            op_v[op_index+3] = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : 0 ; 
+        }
+    }
+    return op ; 
+}
 
 
 /**
