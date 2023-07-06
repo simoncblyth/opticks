@@ -38,11 +38,16 @@ class GGEO_API GSkinSurface : public GPropertyMap<double> {
       void init();
   public:
       void setSkinSurface(const char* vol);
+      void setSkinSurfaceLV(void* lv);
 
       const char* getSkinSurfaceVol() const ;
-      bool matches(const char* lv) const ;
+      const void* getSkinSurfaceLV() const ;
+
+      bool matches(const char* lvn) const ;
+      bool matchesLV(const void* lv) const ;
   private:
       const char*  m_skinsurface_vol ;  
+      void*        m_skinsurface_lv ;  
 
 };
 

@@ -1481,6 +1481,26 @@ GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const
     return ss ;
 }
 
+
+GSkinSurface* GSurfaceLib::findSkinSurfaceLV(const void* lv) const 
+{
+    GSkinSurface* ss = NULL ; 
+    for(unsigned int i=0 ; i < m_skin_surfaces.size() ; i++ )
+    {
+         GSkinSurface* s = m_skin_surfaces[i];
+         if(s->matchesLV(lv))   
+         {
+            ss = s ; 
+            break ; 
+         } 
+    }
+    return ss ;
+}
+
+
+
+
+
 void GSurfaceLib::dumpSkinSurface(const char* msg) const
 {
     LOG(LEVEL) << msg ; 

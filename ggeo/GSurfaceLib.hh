@@ -216,8 +216,12 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
 
 
 
-       GSkinSurface*       findSkinSurface(const char* lv) const ;
+       GSkinSurface*       findSkinSurface(const char* lvn) const ;
+       GSkinSurface*       findSkinSurfaceLV(const void* lv) const ;
+
        void                dumpSkinSurface(const char* msg="GSurfaceLib::dumpSkinSurface") const ;
+
+
 
        GBorderSurface*     findBorderSurface(const char* pv1, const char* pv2) const ;
        void                dumpRawSkinSurface(const char* name) const ;

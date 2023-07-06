@@ -74,7 +74,7 @@ struct U4TreeBorder
         ); 
 
     std::string desc() const ; 
-    bool is_debug_border() const ; 
+    bool is_flagged() const ; 
 
     int  get_override_idx(bool flip); 
     bool has_osur_override( const int4& bd ) const ; 
@@ -131,7 +131,7 @@ std::string U4TreeBorder::desc() const
     return str ; 
 }
 
-bool U4TreeBorder::is_debug_border() const 
+bool U4TreeBorder::is_flagged() const 
 {
     return _isolid && strcmp(_isolid, "sStrutBallhead") == 0 ;  
 }

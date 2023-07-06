@@ -886,8 +886,13 @@ GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* 
 
 GSkinSurface* X4PhysicalVolume::findSkinSurfaceOK( const G4LogicalVolume* const lv) const 
 {
+    /* 
     const char* _lv = X4::Name( lv ) ; 
     GSkinSurface* sk = _lv ? m_slib->findSkinSurface(_lv) : nullptr ;  
+    return sk ; 
+    */
+
+    GSkinSurface* sk = lv ? m_slib->findSkinSurfaceLV(lv) : nullptr ;  
     return sk ; 
 }
 

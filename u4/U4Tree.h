@@ -491,10 +491,10 @@ inline int U4Tree::initNodes_r(
 
     int4 bd = {omat, osur, isur, imat } ; 
 
-    if(border.is_debug_border())
+    if(border.is_flagged())
     {
         std::cout 
-            << "U4Tree::initNodes_r" << std::endl 
+            << "U4Tree::initNodes_r border.is_flagged " << std::endl 
             << " (omat,osur,isur,imat) " << bd << std::endl 
             << border.desc()
             << std::endl 

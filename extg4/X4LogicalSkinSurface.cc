@@ -51,14 +51,15 @@ GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, cha
     const G4LogicalVolume* lv = src->GetLogicalVolume();
 
    
-    /*
     LOG(fatal) 
          << " X4::Name(lv)  " << X4::Name(lv)
          << " X4::BaseNameAsis(lv) " << X4::BaseNameAsis(lv)
          ; 
-    */
+
+    //void* lv_addr = (void*)lv ;  
 
     dst->setSkinSurface(  X4::BaseNameAsis(lv) ) ; 
+    dst->setSkinSurfaceLV( (void*)lv ); 
 
 
     return dst ; 

@@ -59,24 +59,42 @@ void GSkinSurface::setSkinSurface(const char* vol)
     m_skinsurface_vol = strdup(vol);
 }
 
+void GSkinSurface::setSkinSurfaceLV(void* lv)
+{
+    m_skinsurface_lv = lv ; 
+}
+
+
+
+
 
 const char* GSkinSurface::getSkinSurfaceVol() const 
 {
     return m_skinsurface_vol ; 
 }
-
+const void* GSkinSurface::getSkinSurfaceLV() const 
+{
+    return m_skinsurface_lv ; 
+}
 
 /*
-bool GSkinSurface::matches(const char* lv) const 
+bool GSkinSurface::matches(const char* lvn) const 
 {
-    return strncmp(m_skinsurface_vol, lv, strlen(lv)) == 0; 
+    return strncmp(m_skinsurface_vol, lvn, strlen(lvn)) == 0; 
 }
 */
 
-bool GSkinSurface::matches(const char* lv) const 
+bool GSkinSurface::matches(const char* lvn) const 
 {
-    return strcmp(m_skinsurface_vol, lv) == 0; 
+    return strcmp(m_skinsurface_vol, lvn) == 0; 
 }
+
+bool GSkinSurface::matchesLV(const void* lv) const 
+{
+    return m_skinsurface_lv == lv ;  
+}
+
+
 
 
 
