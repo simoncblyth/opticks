@@ -1791,3 +1791,145 @@ Examine old optical
      744     GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
      745 
 
+
+
+stree::make_optical
+--------------------
+
+::
+
+    st
+    ./stree_mat_test.sh 
+
+    In [9]: oop = t.oldoptical.reshape( len(t.oldoptical)//4, 4, 4)
+
+    In [10]: oop.shape
+    Out[10]: (53, 4, 4)
+
+    In [11]: op = t.optical
+    In [12]: op.shape
+    Out[12]: (52, 4, 4)
+
+
+investigate num bnd diff
+-------------------------
+
+::
+
+    st
+    ./stree_mat_test.sh 
+
+    obn = np.array(t.oldbnd_names)
+    oop = t.oldoptical.reshape(-1,4,4).view(np.int32)  
+    assert len(obn) == len(oop)   
+
+    bn = np.array(t.bnd_names)
+    op = t.optical
+    assert len(bn) == len(op)
+        
+One more bnd in old::
+
+    In [8]: len(bn)
+    Out[8]: 52
+
+    In [9]: len(obn)
+    Out[9]: 53
+
+::
+
+    In [7]: np.c_[obn[20:30],bn[20:30]]       ## gets out of step at 25 
+    Out[7]: 
+    array([['Acrylic///LS', 'Acrylic///LS'],
+           ['LS///Acrylic', 'LS///Acrylic'],
+           ['LS///PE_PA', 'LS///PE_PA'],
+           ['Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel', 'Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel'],
+           ['Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel', 'Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel'],
+           ['Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/Steel', 'Water///Steel'],
+           ['Water///Steel', 'Water///Water'],
+           ['Water///Water', 'Water///AcrylicMask'],
+           ['Water///AcrylicMask', 'Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel'],
+           ['Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel', 'Water///Pyrex']], dtype='<U122')
+
+    In [8]:                   
+
+::
+
+    In [10]: np.all( obn[:25] == bn[:25] )
+    Out[10]: True
+
+    In [11]: np.all( obn[26:] == bn[25:] )
+    Out[11]: True
+
+
+HMM : maybe old geom not feeling the noxj ? 
+
+* hows that possible, the old+new geom conversions happen together ? 
+
+Also missing surface metadata::
+
+    In [1]: op.reshape(-1,16)[:10]
+    Out[1]: 
+    array([[ 3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0],
+           [ 3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0],
+           [ 2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0],
+           [ 2,  0,  0,  0,  0,  0,  0,  0, 41,  0,  0,  0,  1,  0,  0,  0],
+           [ 2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0],
+           [ 2,  0,  0,  0,  0,  0,  0,  0, 42,  0,  0,  0,  1,  0,  0,  0],
+           [ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  0,  0,  0],
+           [ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0],
+           [ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0],
+           [ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0]], dtype=int32)
+
+    In [2]: oop.reshape(-1,16)[:10]
+    Out[2]: 
+    array([[  3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0],
+           [  3,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0],
+           [  2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   3,   0,   0,   0],
+           [  2,   0,   0,   0,   0,   0,   0,   0,  41,   1,   1, 100,   1,   0,   0,   0],
+           [  2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,   0,   0,   0],
+           [  2,   0,   0,   0,   0,   0,   0,   0,  42,   1,   1, 100,   1,   0,   0,   0],
+           [  1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   4,   0,   0,   0],
+           [  1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0],
+           [  1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   5,   0,   0,   0],
+           [  1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   0,   0,   0]], dtype=int32)
+
+Actually those "1 1 100" are implicit surface placeholders. 
+
+Difference in ModelValuePercent::
+
+    In [8]: np.where( op[:25] != oop[:25] )
+    Out[8]: 
+    (array([15, 17, 18, 23, 23, 24, 24]),
+     array([2, 1, 2, 1, 2, 1, 2]),
+     array([3, 3, 3, 3, 3, 3, 3]))
+
+
+    In [16]: w2 = np.where( op[25:] != oop[26:] )
+
+    In [17]: op[25:][w2]
+    Out[17]: array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=int32)
+
+    In [18]:                                                                                                                      
+
+    In [18]: oop[26:][w2]
+    Out[18]: 
+    array([ 20,  20,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  20,  20,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 100, 100, 100, 100,  20,  20, 100, 100,
+            99,  99], dtype=int32)
+
+
+Huh missing ModelValue::
+
+    epsilon:surface blyth$ cat CDTyvekSurface/NPFold_meta.txt 
+    OpticalSurfaceName:CDTyvekOpticalSurface
+    TypeName:dielectric_metal
+    ModelName:unified
+    FinishName:ground
+    Type:0
+    Model:1
+    Finish:3
+    pv1:pOuterWaterPool
+    pv2:pCentralDetector
+    type:Border
+    epsilon:surface blyth$ 
+
+

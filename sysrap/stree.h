@@ -180,6 +180,7 @@ When SSim not in use can also use::
 #include "scsg.hh"
 #include "stra.h"
 #include "sstandard.h"
+#include "smatsur.h"
 
 
 struct stree
@@ -189,6 +190,7 @@ struct stree
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
 
+    static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ;
     static constexpr const char* RELDIR = "stree" ;
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
@@ -3059,6 +3061,10 @@ stree::make_optical
 Use NPFold* surface metadata and std::vector<int4>& bd 
 to create the optical array. 
 
+
+
+TODO: adopt smatsur.h enum in 2nd column to identify Material/Surface type
+
 **/
 inline NP* stree::make_optical() const 
 {
@@ -3074,6 +3080,8 @@ inline NP* stree::make_optical() const
         const int4& bd_ = bd[i] ; 
         for(int j=0 ; j < nj ; j++)   // over (omat,osur,isur,imat)
         {
+            int op_index = i*nj*nk + j*nk ;
+
             int idx = -2 ; 
             switch(j)
             {
@@ -3083,14 +3091,60 @@ inline NP* stree::make_optical() const
                 case 3: idx = bd_.w ; break ;   
             }
 
-            bool is_surf = j == 1 || j == 2 ; 
-            NPFold* surf = ( is_surf && idx > -1 ) ? get_surface_subfold(idx) : nullptr ;
- 
-            int op_index = i*nj*nk + j*nk ;
-            op_v[op_index+0] = idx > -1  ? idx + 1 : 0 ; 
-            op_v[op_index+1] = surf ? surf->get_meta<int>("Type",-1)                     : 0 ; 
-            op_v[op_index+2] = surf ? surf->get_meta<int>("Finish", -1 )                 : 0 ; 
-            op_v[op_index+3] = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : 0 ; 
+            bool is_mat = j == 0 || j == 3 ; 
+            bool is_sur = j == 1 || j == 2 ; 
+
+            if(is_mat)
+            {
+                assert( idx > -1 );   // omat,imat must always be present
+                op_v[op_index+0] = idx + 1 ; 
+                op_v[op_index+1] = 0 ; 
+                op_v[op_index+2] = 0 ; 
+                op_v[op_index+3] = 0 ; 
+            }
+            else if(is_sur)
+            {
+                const char* sn = get_surface_name(idx); 
+                NPFold* surf = idx > -1  ? get_surface_subfold(idx) : nullptr ;
+                bool is_implicit = sn && strncmp(sn, IMPLICIT_PREFIX, strlen(IMPLICIT_PREFIX) ) == 0 ; 
+                int Type = -2 ; 
+                int Finish = -2 ; 
+                int ModelValuePercent = -2 ; 
+
+                if( is_implicit )
+                {
+                    assert( surf == nullptr ) ;  // not expecting to find surf for implicits 
+                    Type = 1 ; 
+                    Finish = 1 ; 
+                    ModelValuePercent = 100 ;  // placeholders to match old_optical ones
+                }
+                else
+                {
+                    //int missing = -2 ;  // better to use -2, but to match old_optical use zero
+                    int missing = 0 ; 
+
+                    Type              = surf ? surf->get_meta<int>("Type",-1) : missing ;
+                    Finish            = surf ? surf->get_meta<int>("Finish", -1 ) : missing ;
+                    ModelValuePercent = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : missing ; 
+                }
+
+                std::cout 
+                    << " bnd:i "   << std::setw(3) << i 
+                    << " sur:idx " << std::setw(3) << idx 
+                    << " Type " << std::setw(2) << Type
+                    << " Finish " << std::setw(2) << Finish
+                    << " MVP " << std::setw(3) << ModelValuePercent
+                    << " surf " << ( surf ? "YES" : "NO " )
+                    << " impl " << ( is_implicit ? "YES" : "NO " )
+                    << " sn " << ( sn ? sn : "-" ) 
+                    << std::endl 
+                    ; 
+
+                op_v[op_index+0] = idx + 1 ; 
+                op_v[op_index+1] = Type ;  
+                op_v[op_index+2] = Finish ; 
+                op_v[op_index+3] = ModelValuePercent ; 
+            }
         }
     }
     return op ; 

@@ -12,12 +12,22 @@ def Vacuum_kludge(ff, names=["mat","oldmat"]):
             q = getattr(f, m, None)
             if q is None: continue
             if np.all( q[16,0,:,1] == 1e9 ):
-                print("%s : Vacuum 1e9 kludge reduce to 1e6 " % q )
+                print("%s : Vacuum 1e9 kludge reduce to 1e6 " % m )
                 q[16,0,:,1] = 1e6 
             else:
-                print("%s : Not doing Vacuum kludge" % q)
+                print("%s : Not doing Vacuum kludge " % m )
             pass
         pass
+    pass
+
+
+def eprint(exprs):
+    print("eprint(\"\"\"%s\"\"\")" % exprs  )
+    for expr in list(filter(None,textwrap.dedent(exprs).split("\n"))):
+        print(expr)
+        if expr[0] in " #": continue
+        print(eval(expr))
+        print("\n")        
     pass
 
 
@@ -26,30 +36,35 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
     Vacuum_kludge([t])
-
-    BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim"
-
-
-    ## t.mat[np.where( t.mat == 300. )] = 299.792458  # GROUPVEL default kludge 
-
     ab = np.abs( t.mat - t.oldmat ) 
 
-    EXPR = """
+    obn = np.array(t.oldbnd_names)
+    oop = t.oldoptical.reshape(-1,4,4).view(np.int32)  
+    assert len(obn) == len(oop)   
+
+    bn = np.array(t.bnd_names)
+    op = t.optical
+    assert len(bn) == len(op)
+    
+
+
+    eprint("""
     np.all( np.array( t.mat_names) == np.array( t.oldmat_names ))  
     t.mat.shape == t.oldmat.shape
     np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])
     np.array(t.mat_names)[np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])] 
-    np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
+
     #  RINDEX     ABSLENGTH  RAYLEIGH   REEMISSIONPROB   GROUPVEL 
+    np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
     np.c_[np.arange(len(t.mat_names)),np.array(t.mat_names)] 
     """
+    )
 
-    for expr in list(filter(None,textwrap.dedent(EXPR).split("\n"))):
-        print(expr)
-        if expr[0] == "#": continue
-        print(eval(expr))
-    pass
 
+if 0:
+    BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim"
+
+    ## t.mat[np.where( t.mat == 300. )] = 299.792458  # GROUPVEL default kludge 
 
     rayleigh_Water_idx = np.where( np.array(t.rayleigh_names)  == "Water" )[0][0] 
     rayleigh_Water_ = t.rayleigh[rayleigh_Water_idx]
