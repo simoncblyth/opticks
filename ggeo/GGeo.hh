@@ -400,6 +400,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void dumpSkinSurface(const char* msg="GGeo::dumpSkinSurface") const ;
         void dumpRawSkinSurface(const char* name=NULL) const ;
         void dumpRawBorderSurface(const char* name=NULL) const ;
+        void dumpSurfaces(const char* msg="GGeo::dumpSurfaces" ) const ; 
     public:
     public:
         GPropertyMap<double>* findMaterial(const char* shortname) const ;

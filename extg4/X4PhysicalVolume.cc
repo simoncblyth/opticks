@@ -237,6 +237,8 @@ void X4PhysicalVolume::postConvert() const
     // too soon for sensor dumping as instances not yet formed, see GGeo::postDirectTranslationDump 
     //m_ggeo->dumpSensorVolumes("X4PhysicalVolume::postConvert"); 
 
+    m_ggeo->dumpSurfaces("X4PhysicalVolume::postConvert" ); 
+
 }
 
 
@@ -817,8 +819,8 @@ GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* c
          surf = dynamic_cast<GPropertyMap<double>*>(sk); 
 
 #ifdef X4_DEBUG_OPTICAL
-         G4VSolid* first_so = first_lv->GetSolid() ; 
-         G4String first_so_name = first_so->GetName() ; 
+         G4VSolid* first_so = first_lv ? first_lv->GetSolid() : nullptr ; 
+         G4String first_so_name = first_so ? first_so->GetName() : "-" ; 
          if(strcmp(first_so_name.c_str(), "sStrutBallhead") == 0 )
          {
              std::cout 
@@ -839,8 +841,8 @@ GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* c
          surf = dynamic_cast<GPropertyMap<double>*>(sk); 
 
 #ifdef X4_DEBUG_OPTICAL
-         G4VSolid* second_so = second_lv->GetSolid() ; 
-         G4String second_so_name = second_so->GetName() ; 
+         G4VSolid* second_so = second_lv ? second_lv->GetSolid() : nullptr ; 
+         G4String second_so_name = second_so ? second_so->GetName() : "-"  ; 
          if(strcmp(second_so_name.c_str(), "sStrutBallhead") == 0 )
          {
              std::cout 

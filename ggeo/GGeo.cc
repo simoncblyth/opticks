@@ -1416,12 +1416,15 @@ void GGeo::dumpRawSkinSurface(const char* name) const
 {
     m_surfacelib->dumpRawSkinSurface(name); 
 }
-
 void GGeo::dumpRawBorderSurface(const char* name) const 
 {
     m_surfacelib->dumpRawBorderSurface(name); 
 }
 
+void GGeo::dumpSurfaces(const char* msg) const
+{
+    m_surfacelib->dumpSurfaces(msg); 
+}
 
 
 

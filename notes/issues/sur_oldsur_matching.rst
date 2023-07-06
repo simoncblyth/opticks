@@ -2226,6 +2226,9 @@ The new way bases material index on position of G4Material pointer in a vector::
 
 Old way might be based on the string name of the material ?
 
+HMM : mat unlikely to go wrong as simpler. More likely a problem 
+with surface assignment.
+
 
 
 
@@ -2261,5 +2264,45 @@ Old way might be based on the string name of the material ?
      _lv_p      lInnerWater0x5a9b930
      _so_name   sStrutBallhead
      _so_p_name sInnerWater
+
+
+
+
+YEP : skin surface is found based ONLY on the name of the lv, so duplicate named LV 
+may explain the issue:: 
+
+    0885 GSkinSurface* X4PhysicalVolume::findSkinSurfaceOK( const G4LogicalVolume* const lv) const
+     886 {
+     887     const char* _lv = X4::Name( lv ) ;
+     888     GSkinSurface* sk = _lv ? m_slib->findSkinSurface(_lv) : nullptr ;
+     889     return sk ;
+     890 }
+
+    1469 GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const
+    1470 {
+    1471     GSkinSurface* ss = NULL ;
+    1472     for(unsigned int i=0 ; i < m_skin_surfaces.size() ; i++ )
+    1473     {
+    1474          GSkinSurface* s = m_skin_surfaces[i];
+    1475          if(s->matches(lv))   
+    1476          {
+    1477             ss = s ;
+    1478             break ; 
+    1479          }  
+    1480     }    
+    1481     return ss ;
+    1482 }   
+
+    076 bool GSkinSurface::matches(const char* lv) const
+     77 {
+     78     return strcmp(m_skinsurface_vol, lv) == 0;
+     79 }
+
+    057 void GSkinSurface::setSkinSurface(const char* vol)
+     58 {
+     59     m_skinsurface_vol = strdup(vol);
+     60 }
+     61 
+
 
 
