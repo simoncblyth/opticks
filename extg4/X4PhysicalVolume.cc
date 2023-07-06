@@ -1545,10 +1545,36 @@ elements of the boundary quad.
  
 **/
 
+bool X4PhysicalVolume::IsDebugBoundary( const char* omat, const char* osur, const char* isur, const char* imat )
+{
+    return omat && osur && isur && imat 
+        && 
+        strcmp(omat, "Water") == 0  
+        &&   
+        strcmp(osur, "StrutAcrylicOpSurface" ) == 0 
+        &&   
+        strcmp(isur, "StrutAcrylicOpSurface" ) == 0  
+        &&   
+        strcmp(imat, "Steel") == 0  
+        ;    
+}
+
 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
 {
     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
+
+
+
+    const G4VSolid* const so = lv->GetSolid() ; 
+    const G4VSolid* const so_p = lv_p ? lv_p->GetSolid() : nullptr ; 
+    
+    G4String so_name = so->GetName() ; 
+    G4String so_p_name = so_p ? so_p->GetName() : "-" ; 
+    const char* _so_name = so_name.c_str(); 
+    const char* _so_p_name = so_p_name.c_str(); 
+
+
 
     // GDMLName adds pointer suffix to the object name, returns null when object is null : eg parent of world 
 
@@ -1692,6 +1718,33 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
         const char* osur = osur_ ? osur_->getName() : nullptr ; 
         const char* isur = isur_ ? isur_->getName() : nullptr ; 
 #endif
+
+        bool match = IsDebugBoundary( omat, osur, isur, imat ); 
+        if(match) 
+        {
+            std::cout 
+                << "X4PhysicalVolume::addBoundary"
+                << " IsDebugBoundary "
+                << " omat " << omat 
+                << " osur " << osur
+                << " isur " << isur
+                << " imat " << imat
+                << std::endl 
+                ;
+         
+            std::cout
+                << "X4PhysicalVolume::addBoundary" << std::endl 
+                << " _pv        " << _pv  << std::endl 
+                << " _pv_p      " << _pv_p  << std::endl
+                << " _lv        " << _lv  << std::endl 
+                << " _lv_p      " << _lv_p  << std::endl 
+                << " _so_name   " << _so_name << std::endl 
+                << " _so_p_name " << _so_p_name << std::endl 
+                ;
+
+            std::raise(SIGINT) ;
+        }
+
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
     else if( g_sslv && !g_sslv_p )   // skin surface on this volume but not parent : set both osur and isur to this 

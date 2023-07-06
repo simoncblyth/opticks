@@ -2090,4 +2090,57 @@ TODO :  add some debug that std::raise(SIGINT) on adding that bnd.
 
 
 
+::
+
+    (gdb) bt
+    #0  0x00007ffff741e4fb in raise () from /lib64/libpthread.so.0
+    #1  0x00007fffd1997b39 in GBndLib::addBoundary (this=0xd501440, omat=0x1787f770 "Water", 
+        osur=0x107b3730 "StrutAcrylicOpSurface", isur=0x107b3730 "StrutAcrylicOpSurface", imat=0x1787f7b0 "Steel")
+        at /data/blyth/junotop/opticks/ggeo/GBndLib.cc:508
+    #2  0x00007fffd240cb62 in X4PhysicalVolume::addBoundary (this=0x7fffffff4090, pv=0x5b18270, pv_p=0x5a9bba0)
+        at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1695
+    #3  0x00007fffd240ce39 in X4PhysicalVolume::convertNode (this=0x7fffffff4090, pv=0x5b18270, parent=0x176475a0, depth=6, 
+        pv_p=0x5a9bba0, recursive_select=@0x7fffffff378f: false) at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1771
+    #4  0x00007fffd240bc17 in X4PhysicalVolume::convertStructure_r (this=0x7fffffff4090, pv=0x5b18270, parent=0x176475a0, 
+        depth=6, sibdex=591, parent_nidx=67846, parent_pv=0x5a9bba0, recursive_select=@0x7fffffff378f: false)
+        at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1452
+    #5  0x00007fffd240c02d in X4PhysicalVolume::convertStructure_r (this=0x7fffffff4090, pv=0x5a9bba0, parent=0x17644a40, 
+        depth=5, sibdex=0, parent_nidx=67845, parent_pv=0x5a9bd50, recursive_select=@0x7fffffff378f: false)
+        at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1515
+    #6  0x00007fffd240c02d in X4PhysicalVolume::convertStructure_r (this=0x7fffffff4090, pv=0x5a9bd50, parent=0x17083960, 
+        depth=4, sibdex=2120, parent_nidx=65724, parent_pv=0x5a9a200, recursive_select=@0x7fffffff378f: false)
+        at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1515
+    #7  0x00007fffd240c02d in X4PhysicalVolume::convertStructure_r (this=0x7fffffff4090, pv=0x5a9a200, parent=0x17082a30, 
+        depth=3, sibdex=0, parent_nidx=65723, parent_pv=0x5a04720, recursive_select=@0x7fffffff378f: false)
+        at /data/blyth/junotop/opticks/extg4/X4PhysicalVolume.cc:1515
+    #8  0x00007fffd240c02d in X4PhysicalVolume::convertStructure_r (this=0x7fffffff4090, pv=0x5a04720, parent=0x17081c50, 
+        depth=2, sibdex=0, parent_nidx=65722, parent_pv=0x5a04780, recursive_select=@0x7fffffff378f: false)
+
+
+::
+
+
+    (gdb) p _pv_p
+    $14 = 0x1787f730 "pInnerWater0x5a9bba0"
+
+    (gdb) p _lv_p
+    $15 = 0x1787f8d0 "lInnerWater0x5a9ae00"
+
+
+
+    (gdb) p _pv
+    $13 = 0x1787f710 "lSteel_phys0x5b18270"
+
+    (gdb) p _lv
+    $16 = 0x1787f8b0 "lSteel0x5b181c0"
+
+
+    (gdb) p omat
+    $17 = 0x1787f770 "Water"
+
+    (gdb) p imat
+    $18 = 0x1787f7b0 "Steel"
+
+
+
 

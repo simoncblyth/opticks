@@ -161,6 +161,8 @@ class X4_API X4PhysicalVolume : public X4Named
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         static GVolume* MakePlaceholderNode(); 
 
+
+        static bool IsDebugBoundary( const char* omat, const char* osur, const char* isur, const char* imat ) ; 
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
 
     private:
