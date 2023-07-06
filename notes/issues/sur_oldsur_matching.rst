@@ -1964,4 +1964,18 @@ Split off investigations into the extra bnd
 
 * :doc:`old_workflow_finds_extra_lSteel_skin_surface`
 
+That fixed it::
+
+    In [1]: oop.shape
+    Out[1]: (52, 4, 4)
+
+    In [2]: op.shape
+    Out[2]: (52, 4, 4)
+
+    In [3]: np.all( oop == op )
+    Out[3]: True
+
+    In [7]: np.all( obn == bn )
+    Out[7]: True
+
 

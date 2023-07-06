@@ -1,8 +1,12 @@
 old_workflow_finds_extra_lSteel_skin_surface
 ===============================================
 
-TODO : work out why get one extra bnd in oldoptical
+DONE : work out why get one extra bnd in oldoptical
 ------------------------------------------------------
+
+* it was due to finding skin surfaces by lv name not lv pointer
+  together with duplicate lv name "lSteel"  in the geometry 
+
 
 ::
 

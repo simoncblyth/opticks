@@ -237,7 +237,7 @@ void X4PhysicalVolume::postConvert() const
     // too soon for sensor dumping as instances not yet formed, see GGeo::postDirectTranslationDump 
     //m_ggeo->dumpSensorVolumes("X4PhysicalVolume::postConvert"); 
 
-    m_ggeo->dumpSurfaces("X4PhysicalVolume::postConvert" ); 
+    //m_ggeo->dumpSurfaces("X4PhysicalVolume::postConvert" ); 
 
 }
 
@@ -799,7 +799,7 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 }
 
 
-#define X4_DEBUG_OPTICAL 1 
+//#define X4_DEBUG_OPTICAL 1 
 
 
 GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
@@ -883,6 +883,15 @@ GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* 
     }
     return bs ; 
 }
+
+/**
+X4PhysicalVolume::findSkinSurfaceOK
+--------------------------------------
+
+Changed to using GSurfaceLib::findSkinSurfaceLV, NOT: GSurfaceLib::findSkinSurface,
+to avoid notes/issues/old_workflow_finds_extra_lSteel_skin_surface.rst
+
+**/
 
 GSkinSurface* X4PhysicalVolume::findSkinSurfaceOK( const G4LogicalVolume* const lv) const 
 {

@@ -475,6 +475,8 @@ recursive call.
 **/
 
 
+//#define U4_OPTICAL_DEBUG 1 
+
 inline int U4Tree::initNodes_r( 
     const G4VPhysicalVolume* const pv, 
     const G4VPhysicalVolume* const pv_p, 
@@ -491,6 +493,7 @@ inline int U4Tree::initNodes_r(
 
     int4 bd = {omat, osur, isur, imat } ; 
 
+#ifdef U4_OPTICAL_DEBUG
     if(border.is_flagged())
     {
         std::cout 
@@ -500,6 +503,8 @@ inline int U4Tree::initNodes_r(
             << std::endl 
             ;
     }
+#endif
+
 
     bool do_osur = false  ; 
     /**

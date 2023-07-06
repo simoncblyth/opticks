@@ -125,7 +125,7 @@ std::string U4TreeBorder::desc() const
        << " imat " << imat << std::endl 
        << " osolid " << osolid << std::endl 
        << " isolid " << isolid << std::endl 
-       << " is_debug_border " << ( is_debug_border() ? "YES" : "NO " ) 
+       << " is_flagged " << ( is_flagged() ? "YES" : "NO " ) 
        ;
     std::string str = ss.str(); 
     return str ; 
