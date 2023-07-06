@@ -120,12 +120,12 @@ inline U4TreeBorder::U4TreeBorder(
 std::string U4TreeBorder::desc() const 
 {
     std::stringstream ss ; 
-    ss << "U4TreeBorder::desc"
+    ss << "U4TreeBorder::desc" << std::endl 
        << " omat " << omat << std::endl 
        << " imat " << imat << std::endl 
        << " osolid " << osolid << std::endl 
        << " isolid " << isolid << std::endl 
-       << " is_debug_border " << ( is_debug_border() ? "YES" : "NO " )
+       << " is_debug_border " << ( is_debug_border() ? "YES" : "NO " ) 
        ;
     std::string str = ss.str(); 
     return str ; 

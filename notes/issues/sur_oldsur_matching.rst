@@ -2176,7 +2176,12 @@ TODO :  add some debug that std::raise(SIGINT) on adding that bnd.
     ./Simulation/DetSimV2/CentralDetector/src/StrutBallheadAcrylicConstruction.cc:        solidStrut  =new  G4Orb("sStrutBallhead",
     epsilon:junosw blyth$ 
 
-::
+
+HMM there is no optical surface here... its looking like 
+the error is an incorrectly detected optical surface in old workflow ?.
+
+Maybe there is some problem of different LV with the same name "lSteel" 
+that causes skin surface confusion in X4/GGeo ?::
 
     113 void
     114 StrutBallheadAcrylicConstruction::initMaterials() {
@@ -2223,5 +2228,38 @@ Old way might be based on the string name of the material ?
 
 
 
+
+::
+
+    U4TreeBorder::desc 
+     omat Water
+     imat Steel
+     osolid sInnerWater
+     isolid sStrutBallhead
+     is_debug_border YES
+     U4Tree::initNodes_r
+     (omat,osur,isur,imat) (    18,    -1,    -1,     3) 
+
+
+
+
+
+     _so_p_name sInnerWater
+    X4PhysicalVolume::addBoundary IsDebugBoundary  omat Water osur StrutAcrylicOpSurface isur StrutAcrylicOpSurface imat Steel
+    X4PhysicalVolume::addBoundary
+     _pv        lSteel_phys0x5b19530
+     _pv_p      pInnerWater0x5a9c6d0
+     _lv        lSteel0x5b18cf0
+     _lv_p      lInnerWater0x5a9b930
+     _so_name   sStrutBallhead
+     _so_p_name sInnerWater
+    X4PhysicalVolume::addBoundary IsDebugBoundary  omat Water osur StrutAcrylicOpSurface isur StrutAcrylicOpSurface imat Steel
+    X4PhysicalVolume::addBoundary
+     _pv        lSteel_phys0x5b19610
+     _pv_p      pInnerWater0x5a9c6d0
+     _lv        lSteel0x5b18cf0
+     _lv_p      lInnerWater0x5a9b930
+     _so_name   sStrutBallhead
+     _so_p_name sInnerWater
 
 

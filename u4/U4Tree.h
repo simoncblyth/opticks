@@ -497,6 +497,7 @@ inline int U4Tree::initNodes_r(
             << "U4Tree::initNodes_r" << std::endl 
             << " (omat,osur,isur,imat) " << bd << std::endl 
             << border.desc()
+            << std::endl 
             ;
     }
 

@@ -797,7 +797,7 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 }
 
 
-
+#define X4_DEBUG_OPTICAL 1 
 
 
 GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
@@ -810,17 +810,51 @@ GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* c
      const G4VPhysicalVolume* const first  = first_skin_priority ? a : b ; 
      const G4VPhysicalVolume* const second = first_skin_priority ? b : a ; 
 
-     if(surf == NULL)
+     if(surf == nullptr)
      {
-         GSkinSurface* sk = findSkinSurfaceOK( first ? first->GetLogicalVolume() : NULL );
+         G4LogicalVolume* first_lv = first ? first->GetLogicalVolume() : nullptr ; 
+         GSkinSurface* sk = findSkinSurfaceOK( first_lv );
          surf = dynamic_cast<GPropertyMap<double>*>(sk); 
+
+#ifdef X4_DEBUG_OPTICAL
+         G4VSolid* first_so = first_lv->GetSolid() ; 
+         G4String first_so_name = first_so->GetName() ; 
+         if(strcmp(first_so_name.c_str(), "sStrutBallhead") == 0 )
+         {
+             std::cout 
+                 << "X4PhysicalVolume::findSurfaceOK"
+                 << " first_so_name " << first_so_name
+                 << " surf " << ( surf ? "YES" : "NO " )
+                 << std::endl 
+                 ;   
+         }
+#endif
+
      }
 
-     if(surf == NULL)
+     if(surf == nullptr)
      {
-         GSkinSurface* sk = findSkinSurfaceOK( second ? second->GetLogicalVolume() : NULL );
+         G4LogicalVolume* second_lv = second ? second->GetLogicalVolume() : nullptr ; 
+         GSkinSurface* sk = findSkinSurfaceOK( second_lv );
          surf = dynamic_cast<GPropertyMap<double>*>(sk); 
+
+#ifdef X4_DEBUG_OPTICAL
+         G4VSolid* second_so = second_lv->GetSolid() ; 
+         G4String second_so_name = second_so->GetName() ; 
+         if(strcmp(second_so_name.c_str(), "sStrutBallhead") == 0 )
+         {
+             std::cout 
+                 << "X4PhysicalVolume::findSurfaceOK"
+                 << " second_so_name " << second_so_name
+                 << " surf " << ( surf ? "YES" : "NO " )
+                 << std::endl 
+                 ;   
+         }
+#endif
+
      }
+
+
      return surf ; 
 }
 
@@ -834,12 +868,7 @@ GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* 
     {
         bs = m_slib->findBorderSurface(pv1, pv2) ;  
 
-        //bool pInnerWater = SStr::StartsWith(pv1, "pInnerWater") || SStr::StartsWith(pv2, "pInnerWater") ; 
-        //bool pCentralDetector = SStr::StartsWith(pv1, "pCentralDetector") || SStr::StartsWith(pv2, "pCentralDetector") ; 
-        //bool dump = pInnerWater || pCentralDetector ;   
-        //bool dump = bs != nullptr ;  
         bool dump = false ; 
-    
         if(dump)
         {
             LOG(LEVEL) 
