@@ -3058,12 +3058,38 @@ inline NPFold* stree::get_surface_subfold(int idx) const
 stree::make_optical
 ---------------------
 
-Use NPFold* surface metadata and std::vector<int4>& bd 
-to create the optical array. 
+The optical buffer int4 payload has entries for both materials and surfaces. 
+Array shape at creation and as persisted::
 
+                  int4 payload
+                  |
+     (num_bnd, 4, 4)
+               |
+             (omat,osur,isur,imat)             
 
+Shape at point of use on GPU combines the first two dimensions to give "line" 
+access to materials and surfaces::
 
-TODO: adopt smatsur.h enum in 2nd column to identify Material/Surface type
+     (num_bnd*4, 4 ) 
+
+The former optical buffer int4 payloads for materials and surfaces:
+
++------------------+---------------+---------------------------+--------------------------+-------------------+   
+|                  | .x            |  .y                       |  .z                      |  .w               |
++==================+===============+===========================+==========================+===================+
+| MATERIAL LINES   |   idx+1       |  UNUSED                   | UNUSED                   |  UNUSED           |
++------------------+---------------+---------------------------+--------------------------+-------------------+
+| SURFACE LINES    |               | type                      | finish                   |  value_percent    |
+|                  |   idx+1       | 0:dielectric_metal        | 0:polished               |                   |
+|                  |               | 1:dielectric_dielectric   | 1:polishedfrontpainted   |                   |
+|                  |               |                           | 3:ground                 |                   | 
+|                  |               +---------------------------+--------------------------+-------------------+
+|                  |               |  THESE THREE COLUMNS WERE NEVER USED ON DEVICE                           |
++------------------+---------------+---------------------------+--------------------------+-------------------+
+
+Q: How come those columns not used on device ?
+A: Because that info is used on CPU to prepare the surface entries 
+   of the bnd array, accessed on device via the boundary texture. 
 
 **/
 inline NP* stree::make_optical() const 
@@ -3110,6 +3136,7 @@ inline NP* stree::make_optical() const
                 int Type = -2 ; 
                 int Finish = -2 ; 
                 int ModelValuePercent = -2 ; 
+                int ems = -1 ; 
 
                 if( is_implicit )
                 {
@@ -3126,6 +3153,10 @@ inline NP* stree::make_optical() const
                     Type              = surf ? surf->get_meta<int>("Type",-1) : missing ;
                     Finish            = surf ? surf->get_meta<int>("Finish", -1 ) : missing ;
                     ModelValuePercent = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : missing ; 
+
+                    std::string OpticalSurfaceName = surf ? surf->get_meta<std::string>("OpticalSurfaceName", "") : "" ; 
+                    char OpticalSurfaceName0 = *OpticalSurfaceName.c_str() ;                     
+                    ems = smatsur::TypeFromChar(OpticalSurfaceName0) ; 
                 }
 
                 std::cout 
@@ -3136,6 +3167,8 @@ inline NP* stree::make_optical() const
                     << " MVP " << std::setw(3) << ModelValuePercent
                     << " surf " << ( surf ? "YES" : "NO " )
                     << " impl " << ( is_implicit ? "YES" : "NO " )
+                    << " ems " << ems
+                    << " emsn " << smatsur::Name(ems) 
                     << " sn " << ( sn ? sn : "-" ) 
                     << std::endl 
                     ; 

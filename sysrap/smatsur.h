@@ -15,6 +15,10 @@ enum {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <cstring>
+#include <cassert>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 struct smatsur
 {
@@ -23,10 +27,48 @@ struct smatsur
     static constexpr const char* Surface_zplus_sensor_A  = "Surface_zplus_sensor_A" ; 
     static constexpr const char* Surface_zplus_sensor_CustomART  = "Surface_zplus_sensor_CustomART" ; 
 
+    static int TypeFromChar(char OpticalSurfaceName0); 
+    static std::string Desc(); 
     static int Type(const char* name); 
     static const char* Name(int type); 
 };
 
+
+inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
+{
+    int type = -1  ;
+    switch(OpticalSurfaceName0)
+    {
+        case '\0': type = smatsur_Material                       ; break ;  
+        case '@':  type = smatsur_Surface_zplus_sensor_CustomART ; break ; 
+        case '#':  type = smatsur_Surface_zplus_sensor_A         ; break ; 
+        default:   type = smatsur_Surface                        ; break ; 
+    }
+    return type ; 
+}
+
+inline std::string smatsur::Desc() 
+{
+    char cc[4] = { '\0', 'X', '#', '@' } ; 
+    std::stringstream ss ; 
+    ss << "smatsur::Desc" << std::endl ; 
+    for(int i=0 ; i < 4 ; i++)
+    {
+       char c = cc[i] ;  
+       int type = TypeFromChar(c) ; 
+       const char* name = Name(type) ;  
+       int type2 = Type(name) ; 
+       assert( type == type2 ); 
+       ss 
+           << " c " << std::setw(3) << ( c == '\0' ? '0' : c ) 
+           << " type " << std::setw(2) << type
+           << " name " << name 
+           << std::endl 
+           ;
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 inline int smatsur::Type(const char* name)
 {
