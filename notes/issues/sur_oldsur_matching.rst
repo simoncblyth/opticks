@@ -2143,4 +2143,85 @@ TODO :  add some debug that std::raise(SIGINT) on adding that bnd.
 
 
 
+::
+
+    X4PhysicalVolume::addBoundary IsDebugBoundary  omat Water osur StrutAcrylicOpSurface isur StrutAcrylicOpSurface imat Steel
+    X4PhysicalVolume::addBoundary
+     _pv        lSteel_phys0x5b18640
+     _pv_p      pInnerWater0x5a9bf70
+     _lv        lSteel0x5b18590
+     _lv_p      lInnerWater0x5a9b1d0
+     _so_name   sStrutBallhead
+     _so_p_name sInnerWater
+    [New Thread 0x7fff9ffff700 (LWP 114833)]
+
+    Program received signal SIGINT, Interrupt.
+
+
+    (gdb) c
+    Continuing.
+    X4PhysicalVolume::addBoundary IsDebugBoundary  omat Water osur StrutAcrylicOpSurface isur StrutAcrylicOpSurface imat Steel
+    X4PhysicalVolume::addBoundary
+     _pv        lSteel_phys0x5b186d0
+     _pv_p      pInnerWater0x5a9bf70
+     _lv        lSteel0x5b18590
+     _lv_p      lInnerWater0x5a9b1d0
+     _so_name   sStrutBallhead
+     _so_p_name sInnerWater
+
+
+::
+
+    epsilon:opticks blyth$ jgr sStrutBallhead
+    ./Simulation/DetSimV2/CentralDetector/src/StrutBallheadAcrylicConstruction.cc:        solidStrut  =new  G4Orb("sStrutBallhead",
+    epsilon:junosw blyth$ 
+
+::
+
+    113 void
+    114 StrutBallheadAcrylicConstruction::initMaterials() {
+    115     Steel = G4Material::GetMaterial("Steel");
+    116 }
+    117 
+    118 void
+    119 StrutBallheadAcrylicConstruction::makeStrutLogical() {
+    120         solidStrut  =new  G4Orb("sStrutBallhead",
+    121                                 m_rad);
+    122 
+    123 
+    124         logicStrut = new G4LogicalVolume(
+    125                         solidStrut,
+    126                         Steel,
+    127                         "lSteel",
+    128                         0,
+    129                         0,
+    130                         0);
+
+
+
+The new way bases material index on position of G4Material pointer in a vector::
+
+    486 
+    487     int omat = stree::GetPointerIndex<G4Material>(      materials, border.omat_);
+    488     int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces,  border.osur_);
+    489     int isur = stree::GetPointerIndex<G4LogicalSurface>(surfaces,  border.isur_);
+    490     int imat = stree::GetPointerIndex<G4Material>(      materials, border.imat_);
+    491 
+    492     int4 bd = {omat, osur, isur, imat } ;
+    493 
+
+
+    0712 template<typename T>
+     713 inline int stree::GetPointerIndex( const std::vector<const T*>& vec, const T* obj) // static
+     714 {
+     715     if( obj == nullptr || vec.size() == 0 ) return -1 ;
+     716     size_t idx = std::distance( vec.begin(), std::find(vec.begin(), vec.end(), obj ));
+     717     return idx < vec.size() ? int(idx) : -1 ;
+     718 }
+
+Old way might be based on the string name of the material ?
+
+
+
+
 

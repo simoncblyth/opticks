@@ -125,14 +125,15 @@ which can be changed via envvar OPTICKS_SGDML_PREFIX_G4Material
 template<typename T>
 const char* X4::BaseName( const T* const obj )
 {    
-    if(obj == NULL) return NULL ; 
-    const std::string& name = obj->GetName();
+    if(obj == nullptr) return nullptr ; 
+    const std::string& name = obj->GetName();  
+    // HMM: this would not work with G4VSolid 
     return BaseName_(name, nullptr);
 }
 
 template<> X4_API const char* X4::BaseName( const G4Material* const obj )
 {
-    if(obj == NULL) return NULL ; 
+    if(obj == nullptr) return nullptr ; 
     const std::string& name = obj->GetName();
     const char* prefix = PREFIX_G4Material ; 
     LOG(LEVEL) << "G4Material template specialization using prefix " << prefix ;   

@@ -48,15 +48,20 @@ struct U4TreeBorder
     const G4LogicalVolume* const lv_p ;  
     const G4Material* const imat_ ; 
     const G4Material* const omat_ ; 
-    const char* imatn ; 
-    const char* omatn ; 
+    const char* imat ; 
+    const char* omat ; 
+    const G4VSolid* isolid_ ; 
+    const G4VSolid* osolid_ ;
+    G4String isolid ; // unavoidable, because G4VSolid::GetName returns by value 
+    G4String osolid ; 
+    const char* _isolid ;  
+    const char* _osolid ; 
     const std::string& inam ; 
     const std::string& onam ; 
     const G4LogicalSurface* const osur_ ; 
     const G4LogicalSurface* const isur_ ;  
     const G4MaterialPropertyVector* i_rindex ; 
     const G4MaterialPropertyVector* o_rindex ; 
-
     int  implicit_idx ; 
     bool implicit_isur ; 
     bool implicit_osur ; 
@@ -68,11 +73,15 @@ struct U4TreeBorder
         const G4VPhysicalVolume* const pv_p 
         ); 
 
-    int get_override_idx(bool flip); 
+    std::string desc() const ; 
+    bool is_debug_border() const ; 
+
+    int  get_override_idx(bool flip); 
     bool has_osur_override( const int4& bd ) const ; 
     bool has_isur_override( const int4& bd ) const ; 
     void do_osur_override( int4& bd ) ; 
     void do_isur_override( int4& bd ) ; 
+
 
 }; 
 
@@ -88,8 +97,14 @@ inline U4TreeBorder::U4TreeBorder(
     lv_p(pv_p ? pv_p->GetLogicalVolume() : lv),
     imat_(lv->GetMaterial()),
     omat_(lv_p ? lv_p->GetMaterial() : imat_), // top omat -> imat 
-    imatn(imat_->GetName().c_str()),
-    omatn(omat_->GetName().c_str()),
+    imat(imat_->GetName().c_str()),
+    omat(omat_->GetName().c_str()),
+    isolid_(lv->GetSolid()),
+    osolid_(lv_p->GetSolid()),
+    isolid(isolid_->GetName()),
+    osolid(osolid_->GetName()),
+    _isolid(isolid.c_str()),
+    _osolid(osolid.c_str()),
     inam(pv->GetName()), 
     onam(pv_p ? pv_p->GetName() : inam), 
     osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface
@@ -101,6 +116,28 @@ inline U4TreeBorder::U4TreeBorder(
     implicit_osur(o_rindex != nullptr && i_rindex == nullptr)
 {
 }
+
+std::string U4TreeBorder::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "U4TreeBorder::desc"
+       << " omat " << omat << std::endl 
+       << " imat " << imat << std::endl 
+       << " osolid " << osolid << std::endl 
+       << " isolid " << isolid << std::endl 
+       << " is_debug_border " << ( is_debug_border() ? "YES" : "NO " )
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+bool U4TreeBorder::is_debug_border() const 
+{
+    return _isolid && strcmp(_isolid, "sStrutBallhead") == 0 ;  
+}
+
+
+
 
 /**
 U4TreeBorder::get_override_idx

@@ -484,14 +484,22 @@ inline int U4Tree::initNodes_r(
 {
     U4TreeBorder border(st, num_surfaces, pv, pv_p) ; 
    
-    int imat = stree::GetPointerIndex<G4Material>(materials, border.imat_); 
-    int omat = stree::GetPointerIndex<G4Material>(materials, border.omat_); 
-    int isur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.isur_); 
-    int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces, border.osur_); 
+    int omat = stree::GetPointerIndex<G4Material>(      materials, border.omat_); 
+    int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces,  border.osur_); 
+    int isur = stree::GetPointerIndex<G4LogicalSurface>(surfaces,  border.isur_); 
+    int imat = stree::GetPointerIndex<G4Material>(      materials, border.imat_); 
 
     int4 bd = {omat, osur, isur, imat } ; 
 
-    //bool do_osur = true ; 
+    if(border.is_debug_border())
+    {
+        std::cout 
+            << "U4Tree::initNodes_r" << std::endl 
+            << " (omat,osur,isur,imat) " << bd << std::endl 
+            << border.desc()
+            ;
+    }
+
     bool do_osur = false  ; 
     /**
     do_osur:false 

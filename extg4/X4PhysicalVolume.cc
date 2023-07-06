@@ -1742,7 +1742,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
                 << " _so_p_name " << _so_p_name << std::endl 
                 ;
 
-            std::raise(SIGINT) ;
+            //std::raise(SIGINT) ;
         }
 
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
