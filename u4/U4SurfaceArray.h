@@ -34,6 +34,7 @@ Formerly did this in U4Surface::MakeStandardArray
 
 struct U4SurfaceArray
 {
+    static constexpr const bool VERBOSE = false ; 
     static constexpr const double UNSET = -1. ; 
     struct D4 { double x,y,z,w ; } ;
 
@@ -133,7 +134,7 @@ inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
         
     bool is_sensor = max_effi > 0. ; 
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "U4SurfaceArray::addSurface"
         << " name " << std::setw(30) << name
         << " max_effi " << std::setw(10) << std::fixed << std::setprecision(4) << max_effi
