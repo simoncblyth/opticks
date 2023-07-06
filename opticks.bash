@@ -42,6 +42,43 @@ export GEOM=\${GEOM:-\$geom}
 EOT
 }
 
+GEOM_help(){ cat << EOH
+GEOM_help : bash function help
+================================
+
+NB the GEOM.sh script is distinct from the bash function.
+The GEOM.sh script is not keep in a repository as the 
+GEOM envvar is private to each user. 
+
+
+GEOM vi
+    edit GEOM.sh script that sets GEOM envvar
+
+GEOM grab 
+    rsync remote GEOM directory to local 
+
+GEOM scp 
+    scp GEOM.sh script to remote
+  
+GEOM cd
+     change directory to the GEOM dir
+
+GEOM ss
+     change directory to the GEOM/SSim dir
+
+GEOM st
+     change directory to the GEOM/SSim/stree dir
+
+GEOM info 
+     dump variables of the GEOM bash function
+
+GEOM help
+     show this usage message
+
+EOH
+}
+
+
 GEOM(){ 
   : opticks/opticks.bash GEOM vi/grab/scp
 
@@ -64,8 +101,7 @@ GEOM(){
   if [ "$arg" == "vi" ]; then 
      cmd="vi $HOME/$script"  
   elif [ "$arg" == "grab" ]; then  
-     echo $BASH_SOURCE : $arg : rsync GEOM $GEOM base $base
-     source $OPTICKS_HOME/bin/rsync.sh $base
+     cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
   elif [ "$arg" == "cd" ]; then  
@@ -74,6 +110,8 @@ GEOM(){
      cmd="cd $geomdir/SSim"
   elif [ "$arg" == "st" ]; then  
      cmd="cd $geomdir/SSim/stree"
+  elif [ "$arg" == "help" ]; then  
+     cmd="GEOM_help"
   elif [ "$arg" == "info" ]; then  
      for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
      cmd="echo -n"

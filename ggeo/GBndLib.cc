@@ -20,6 +20,7 @@
 
 #include <climits>
 #include <cassert>
+#include <csignal>
 #include <algorithm>
 #include <sstream>
 #include <iostream>
@@ -484,12 +485,28 @@ Only unique bnd are collected and the index of the bnd is returned.
 **/
 unsigned GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
 {
-    LOG(LEVEL) 
+
+    bool match = omat && osur && isur && imat && 
+        strcmp(omat, "Water") == 0  
+        && 
+        strcmp(osur, "StrutAcrylicOpSurface" ) == 0 
+        &&
+        strcmp(isur, "StrutAcrylicOpSurface" ) == 0  
+        &&
+        strcmp(imat, "Steel") == 0  
+        ; 
+
+
+
+    LOG(match ? fatal : LEVEL) 
         << " omat " << ( omat ? omat : "-" )  
         << " osur " << ( osur ? osur : "-" ) 
         << " isur " << ( isur ? isur : "-" ) 
         << " imat " << ( imat ? imat : "-" )  
         ;
+
+    if(match) std::raise(SIGINT) ; 
+
 
     guint4 bnd = add(omat, osur, isur, imat);
     unsigned boundary = index(bnd) ; 

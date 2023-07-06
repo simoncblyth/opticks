@@ -1865,6 +1865,11 @@ HMM : maybe old geom not feeling the noxj ?
 
 * hows that possible, the old+new geom conversions happen together ? 
 
+
+DONE : Getting oldoptical and optical to have same content, modulo the extra 1 in oop
+------------------------------------------------------------------------------------------
+
+
 Also missing surface metadata::
 
     In [1]: op.reshape(-1,16)[:10]
@@ -1931,5 +1936,158 @@ Huh missing ModelValue::
     pv2:pCentralDetector
     type:Border
     epsilon:surface blyth$ 
+
+    epsilon:surface blyth$ grep Model */NPFold_meta.txt
+    CDInnerTyvekSurface/NPFold_meta.txt:ModelName:unified
+    CDInnerTyvekSurface/NPFold_meta.txt:Model:1
+    CDTyvekSurface/NPFold_meta.txt:ModelName:unified
+    CDTyvekSurface/NPFold_meta.txt:Model:1
+    HamamatsuMaskOpticalSurface/NPFold_meta.txt:ModelName:unified
+    HamamatsuMaskOpticalSurface/NPFold_meta.txt:Model:1
+    HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/NPFold_meta.txt:Model:0
+    HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/NPFold_meta.txt:ModelName:glisur
+    HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/NPFold_meta.txt:Model:0
+    HamamatsuR12860_PMT_20inch_grid_opsurface/NPFold_meta.txt:ModelName:glisur
+
+Fixed that::
+
+    In [2]: np.where( op[:25] != oop[:25] )
+    Out[2]: (array([], dtype=int64), array([], dtype=int64), array([], dtype=int64))
+
+    In [3]: np.where( op[25:] != oop[26:] )
+    Out[3]: (array([], dtype=int64), array([], dtype=int64), array([], dtype=int64))
+
+
+TODO : work out why get one extra bnd in oldoptical
+------------------------------------------------------
+
+::
+
+    Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/Steel
+
+Note already have 2 very similar bnd, that are in agreement between old and new::
+
+    Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel
+    Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel
+
+::
+
+    In [7]: np.c_[obn[20:30],bn[20:30]]       ## gets out of step at 25 
+    Out[7]: 
+    array([['Acrylic///LS', 'Acrylic///LS'],
+           ['LS///Acrylic', 'LS///Acrylic'],
+           ['LS///PE_PA', 'LS///PE_PA'],
+           ['Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel', 'Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel'],
+           ['Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel', 'Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel'],
+           ['Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/Steel', 'Water///Steel'],
+           ['Water///Steel', 'Water///Water'],
+           ['Water///Water', 'Water///AcrylicMask'],
+           ['Water///AcrylicMask', 'Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel'],
+           ['Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel', 'Water///Pyrex']], dtype='<U122')
+
+    In [8]:                   
+
+
+
+
+
+
+
+
+
+
+::
+
+    In [4]: op.shape
+    Out[4]: (52, 4, 4)
+
+    In [5]: oop.shape
+    Out[5]: (53, 4, 4)
+
+
+::
+
+    epsilon:tests blyth$ jgr StrutAcrylicOpSurface
+    ./Simulation/DetSimV2/CentralDetector/src/StrutAcrylicConstruction.cc:    new G4LogicalSkinSurface("StrutAcrylicOpSurface", logicStrut, strut_optical_surface);
+    epsilon:junosw blyth$ 
+
+
+::
+
+    jcv StrutAcrylicConstruction
+
+
+
+    166 void
+    167 StrutAcrylicConstruction::initMaterials() {
+    168     Steel = G4Material::GetMaterial("StrutSteel");
+    169 }
+    170 
+    171 void
+    172 StrutAcrylicConstruction::makeStrutLogical() {
+    173         solidStrut = new G4Tubs(
+    174                         "sStrut",
+    175                         m_radStrut_in,
+    176                         m_radStrut_out,
+    177                         m_lengthStrut/2,
+    178                         0*deg,
+    179                         360*deg);
+    180 
+    181 
+    182         logicStrut = new G4LogicalVolume(
+    183                         solidStrut,
+    184                         Steel,
+    185                         "lSteel",
+    186                         0,
+    187                         0,
+    188                         0);
+
+
+
+
+    198 void
+    199 StrutAcrylicConstruction::makeStrutOpSurface() {
+    200     G4OpticalSurface *strut_optical_surface = new G4OpticalSurface("opStrutAcrylic");
+    201     strut_optical_surface->SetMaterialPropertiesTable(Steel->GetMaterialPropertiesTable());
+    202     strut_optical_surface->SetModel(unified);
+    203     strut_optical_surface->SetType(dielectric_metal);
+    204     strut_optical_surface->SetFinish(ground);
+    205     strut_optical_surface->SetSigmaAlpha(0.2);
+    206 
+    207     new G4LogicalSkinSurface("StrutAcrylicOpSurface", logicStrut, strut_optical_surface);
+    208 }
+
+
+Note StrutAcrylicConstruction uses StrutSteel so does not correspond to the extra bnd which is just "Steel".
+
+TODO :  add some debug that std::raise(SIGINT) on adding that bnd. 
+
+* thats in X4PhysicalVolume::addBoundary
+
+
+::
+
+    In [18]: oop[25]
+    Out[18]:
+    array([[19,  0,  0,  0],
+           [34,  0,  3, 20],
+           [34,  0,  3, 20],
+           [ 4,  0,  0,  0]], dtype=int32)
+
+    In [19]: oop[:,0,0].min()
+    Out[19]: 1
+
+    In [20]: np.array(t.oldmat_names)[19-1]
+    Out[20]: 'Water'
+
+    In [21]: np.array(t.oldmat_names)[4-1]
+    Out[21]: 'Steel'
+
+    In [22]: np.array(t.oldsur_names)[34-1]
+    Out[22]: 'StrutAcrylicOpSurface'
+
+
+
 
 
