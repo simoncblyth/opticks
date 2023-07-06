@@ -3136,7 +3136,7 @@ inline NP* stree::make_optical() const
                 int Type = -2 ; 
                 int Finish = -2 ; 
                 int ModelValuePercent = -2 ; 
-                int ems = -1 ; 
+                std::string OSN = "-" ; 
 
                 if( is_implicit )
                 {
@@ -3144,6 +3144,7 @@ inline NP* stree::make_optical() const
                     Type = 1 ; 
                     Finish = 1 ; 
                     ModelValuePercent = 100 ;  // placeholders to match old_optical ones
+                    OSN = "X" ;  // HMM: should Implicit be classified as ordinary Surface ? 
                 }
                 else
                 {
@@ -3153,12 +3154,11 @@ inline NP* stree::make_optical() const
                     Type              = surf ? surf->get_meta<int>("Type",-1) : missing ;
                     Finish            = surf ? surf->get_meta<int>("Finish", -1 ) : missing ;
                     ModelValuePercent = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : missing ; 
-
-                    std::string OpticalSurfaceName = surf ? surf->get_meta<std::string>("OpticalSurfaceName", "") : "" ; 
-                    char OpticalSurfaceName0 = *OpticalSurfaceName.c_str() ;                     
-                    ems = smatsur::TypeFromChar(OpticalSurfaceName0) ; 
+                    OSN = surf ? surf->get_meta<std::string>("OpticalSurfaceName", "-") : "-" ; 
                 }
 
+                char OSN0 = *OSN.c_str() ;                     
+                int ems = smatsur::TypeFromChar(OSN0) ; 
                 std::cout 
                     << " bnd:i "   << std::setw(3) << i 
                     << " sur:idx " << std::setw(3) << idx 
@@ -3167,6 +3167,8 @@ inline NP* stree::make_optical() const
                     << " MVP " << std::setw(3) << ModelValuePercent
                     << " surf " << ( surf ? "YES" : "NO " )
                     << " impl " << ( is_implicit ? "YES" : "NO " )
+                    << " osn0 " << ( OSN0 == '\0' ? '0' : OSN0 ) 
+                    << " OSN " << OSN 
                     << " ems " << ems
                     << " emsn " << smatsur::Name(ems) 
                     << " sn " << ( sn ? sn : "-" ) 

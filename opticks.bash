@@ -57,6 +57,9 @@ GEOM vi
 GEOM grab 
     rsync remote GEOM directory to local 
 
+GEOM get 
+    synonym for grab  
+
 GEOM scp 
     scp GEOM.sh script to remote
   
@@ -100,7 +103,7 @@ GEOM(){
 
   if [ "$arg" == "vi" ]; then 
      cmd="vi $HOME/$script"  
-  elif [ "$arg" == "grab" ]; then  
+  elif [ "$arg" == "grab" -o "$arg" == "get" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"

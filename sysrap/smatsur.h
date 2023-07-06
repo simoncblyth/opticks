@@ -6,10 +6,11 @@ smatsur.h : "ems" : enumeration of Material and Surface types
 **/
 
 enum {
-    smatsur_Material = 0, 
-    smatsur_Surface  = 1,
-    smatsur_Surface_zplus_sensor_A = 2,
-    smatsur_Surface_zplus_sensor_CustomART = 3 
+    smatsur_Material                       = 0, 
+    smatsur_NoSurface                      = 1,
+    smatsur_Surface                        = 2,
+    smatsur_Surface_zplus_sensor_A         = 3,
+    smatsur_Surface_zplus_sensor_CustomART = 4 
 };
  
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -23,6 +24,7 @@ enum {
 struct smatsur
 {
     static constexpr const char* Material = "Material" ; 
+    static constexpr const char* NoSurface  = "NoSurface" ; 
     static constexpr const char* Surface  = "Surface" ; 
     static constexpr const char* Surface_zplus_sensor_A  = "Surface_zplus_sensor_A" ; 
     static constexpr const char* Surface_zplus_sensor_CustomART  = "Surface_zplus_sensor_CustomART" ; 
@@ -40,6 +42,7 @@ inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
     switch(OpticalSurfaceName0)
     {
         case '\0': type = smatsur_Material                       ; break ;  
+        case '-':  type = smatsur_NoSurface                      ; break ;  
         case '@':  type = smatsur_Surface_zplus_sensor_CustomART ; break ; 
         case '#':  type = smatsur_Surface_zplus_sensor_A         ; break ; 
         default:   type = smatsur_Surface                        ; break ; 
@@ -49,10 +52,11 @@ inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
 
 inline std::string smatsur::Desc() 
 {
-    char cc[4] = { '\0', 'X', '#', '@' } ; 
+    const int N = 5 ; 
+    char cc[N] = { '\0', '-', 'X', '#', '@' } ; 
     std::stringstream ss ; 
     ss << "smatsur::Desc" << std::endl ; 
-    for(int i=0 ; i < 4 ; i++)
+    for(int i=0 ; i < N ; i++)
     {
        char c = cc[i] ;  
        int type = TypeFromChar(c) ; 
@@ -74,6 +78,7 @@ inline int smatsur::Type(const char* name)
 {
     int type = -1  ;
     if(strcmp(name,Material)==0)                       type = smatsur_Material ;
+    if(strcmp(name,NoSurface)==0)                      type = smatsur_NoSurface ;
     if(strcmp(name,Surface)==0)                        type = smatsur_Surface ;
     if(strcmp(name,Surface_zplus_sensor_A)==0)         type = smatsur_Surface_zplus_sensor_A ;
     if(strcmp(name,Surface_zplus_sensor_CustomART)==0) type = smatsur_Surface_zplus_sensor_CustomART ;
@@ -86,6 +91,7 @@ inline const char* smatsur::Name(int type)
     switch(type)
     {
         case smatsur_Material:                        n = Material                       ; break ;
+        case smatsur_NoSurface:                       n = NoSurface                      ; break ;
         case smatsur_Surface:                         n = Surface                        ; break ;
         case smatsur_Surface_zplus_sensor_A:          n = Surface_zplus_sensor_A         ; break ;
         case smatsur_Surface_zplus_sensor_CustomART:  n = Surface_zplus_sensor_CustomART ; break ;

@@ -3,10 +3,10 @@
 
 int main(int argc, char** argv)
 {
-    const char* base = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ; 
+    const char* ssbase = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ; 
 
     stree st ; 
-    int rc = st.load(base); 
+    int rc = st.load(ssbase); 
     if( rc != 0 ) return rc ; 
 
     
@@ -19,29 +19,39 @@ int main(int argc, char** argv)
     std::cout << "st.desc_bd" << std::endl << st.desc_bd() << std::endl; 
 
 
-    NPFold* fold = new NPFold ; 
-
     // arrays directly under SSim all from old X4/GGeo workflow
-    const NP* _oldmat = NP::Load(base, "oldmat.npy"); 
-    const NP* _oldsur = NP::Load(base, "oldsur.npy"); 
-    const NP* _oldbnd = NP::Load(base, "bnd.npy"); 
-    const NP* _oldoptical = NP::Load(base, "optical.npy"); 
+    const NP* _oldmat = NP::Load(ssbase, "oldmat.npy"); 
+    const NP* _oldsur = NP::Load(ssbase, "oldsur.npy"); 
+    const NP* _oldbnd = NP::Load(ssbase, "bnd.npy"); 
+    const NP* _oldoptical = NP::Load(ssbase, "optical.npy"); 
+
+
+    // TODO: these should be auto-created 
+    const NP* bnd = st.make_bnd() ;  
+    const NP* bd  = st.make_bd() ; 
+    const NP* optical = st.make_optical() ;  
+
+
+    NPFold* fold = new NPFold ; 
 
     fold->add("oldmat", _oldmat ); 
     fold->add("oldsur", _oldsur ); 
     fold->add("oldbnd", _oldbnd ); 
     fold->add("oldoptical", _oldoptical ); 
 
-    // U4Material::MakeStandardArray, U4Material::MakeStandardSurface
+    // TODO: tidy these into fold populated by stree::save 
+    // then can eliminate this executable can just 
+    // directly load from the persisted GEOM 
+ 
     fold->add("mat", st.mat ); 
     fold->add("sur", st.sur ); 
-    fold->add("bnd", st.make_bnd() ); 
-    fold->add("bd",  st.make_bd()  ); 
-    fold->add("optical",  st.make_optical()  ); 
-
     fold->add("rayleigh",  st.rayleigh  ); 
     fold->add("energy",  st.energy ); 
     fold->add("wavelength",  st.wavelength ); 
+
+    fold->add("bnd", bnd ); 
+    fold->add("bd",  bd  ); 
+    fold->add("optical",  optical  ); 
 
     fold->save("$FOLD"); 
  
