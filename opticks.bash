@@ -37,7 +37,7 @@ EON
 #geom=V0J008
 #geom=V1J008
 geom=V1J009
-export GEOM=\${GEOM:-\$geom}
+export GEOM=\$geom
 #
 EOT
 }

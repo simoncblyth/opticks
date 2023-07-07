@@ -2834,6 +2834,10 @@ Canonically called from U4Tree::initMaterials_r/U4Tree::initMaterial
 
 g4index is the Geant4 creation index obtained from G4Material::GetIndex
 
+Note that not all G4Material are added, only G4Material that are 
+referenced from G4LogicalVolume are added, 
+so the g4index might not match the idx from mtname. 
+
 **/
 
 inline void stree::add_material( const char* name, unsigned g4index )
@@ -2841,14 +2845,8 @@ inline void stree::add_material( const char* name, unsigned g4index )
     //unsigned idx = mtname.size() ; 
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
-   
     // assert( idx == g4index );   NOT FULFILLED
-    // 
-    // Only G4Material referenced from G4LogicalVolume 
-    // are added, so the g4index does not match the 
-    // idx from mtname. 
 } 
-
 
 inline void stree::add_surface( const char* name )
 {
@@ -2939,7 +2937,8 @@ inline NPFold* stree::get_surface_subfold(int idx) const
 stree::initStandard
 ----------------------
 
-Called from U4Tree::initStandard
+Called from U4Tree::initStandard after most of 
+the conversion is done with mat and sur arrays prepared. 
 
 **/
 

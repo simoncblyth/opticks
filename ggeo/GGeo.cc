@@ -2532,7 +2532,7 @@ void GGeo::convertSim() const
     convertSim_BndLib(sim); 
     convertSim_ScintillatorLib(sim); 
     convertSim_Prop(sim); 
-    convertSim_MultiFilm(sim); 
+    //convertSim_MultiFilm(sim); 
 }
 
 /**
@@ -2551,28 +2551,27 @@ void GGeo::convertSim_BndLib(SSim* sim) const
     GBndLib* blib = getBndLib(); 
 
     bool can_create = blib->canCreateBuffer() ; 
-    NP* bnd = nullptr ; 
-    NP* optical = nullptr ; 
+    NP* oldbnd = nullptr ; 
+    NP* oldoptical = nullptr ; 
 
     if( can_create )
     {    
         blib->createDynamicBuffers();  
         // hmm perhaps this is done already on loading now ?
-        bnd = blib->getBuf(); 
+        oldbnd = blib->getBuf(); 
 
-        LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
+        LOG(LEVEL) << " oldbnd.desc " << oldbnd->desc() ; 
 
-        optical = blib->getOpticalBuf();  
+        oldoptical = blib->getOpticalBuf();  
 
         const std::vector<std::string>& bndnames = blib->getNameList(); 
-        bnd->set_names( bndnames );   
+        oldbnd->set_names( bndnames );   
 
         LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
 
          
-        sim->add(SSim::BND, bnd ); 
-        sim->add(SSim::OPTICAL, optical ); 
-
+        sim->add(SSim::OLDBND, oldbnd ); 
+        sim->add(SSim::OLDOPTICAL, oldoptical ); 
  
         // OLD WORKFLOW ADDITION TO CHECK NEW WORKFLOW 
         GMaterialLib* mlib = getMaterialLib(); 
@@ -2595,7 +2594,7 @@ void GGeo::convertSim_ScintillatorLib(SSim* sim) const
 
     LOG(LEVEL) << " icdf " << ( icdf ? icdf->sstr() : "-" ) ; 
 
-    sim->add(SSim::ICDF, icdf); 
+    sim->add(SSim::OLDICDF, icdf); 
 }
 
 /**
@@ -2614,7 +2613,7 @@ void GGeo::convertSim_Prop(SSim* sim) const
     {
         LOG(LEVEL) << " path exists " << path ;  
         const NP* propcom = SProp::MockupCombination(path);
-        sim->add(SSim::PROPCOM, propcom); 
+        sim->add(SSim::OLDPROPCOM, propcom); 
     }
     else
     {
@@ -2623,6 +2622,7 @@ void GGeo::convertSim_Prop(SSim* sim) const
 }
 
 
+/*
 void GGeo::convertSim_MultiFilm(SSim* sim) const 
 {
     const char* defpath = "/tmp/debug_multi_film_table/all_table.npy" ; 
@@ -2633,7 +2633,7 @@ void GGeo::convertSim_MultiFilm(SSim* sim) const
         sim->add(SSim::MULTIFILM, multifilm ); 
     }
 }
-
+*/
 
 
 

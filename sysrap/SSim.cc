@@ -167,6 +167,9 @@ In old GGeo workflow SSim::add with SSim::BND key is called from GGeo::convertSi
 
 HMM: this may be a kludge mix of old and new 
 
+
+TODO: THIS FEELS OUT OF PLACE, SHOULD BE IN stree.h OR sstandard.h 
+
 **/
 
 void SSim::import_bnd()
@@ -182,18 +185,12 @@ void SSim::import_bnd()
     const std::vector<std::string>& mtname = tree->mtname ; 
     
     SBnd::FillMaterialLine( mtline, mtindex, mtname, bnames ); 
-    //SBnd::FillMaterialLine( tree, bnames ); 
 
     tree->init_mtindex_to_mtline() ; // fills (int,int) map 
 
     LOG(LEVEL) << tree->desc_mt() ; 
     LOG(LEVEL) << "]" ;  
 }
-
-
-
-
-
 
 
 

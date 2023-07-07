@@ -472,10 +472,6 @@ all the stree::mtname into st->mtline
 These mtline are used to lookup material properties
 from the boundary texture array. 
 
-Previously used an stree argument to access mtline, mtindex, mtname
-but as that is the only stree dependenct of SBnd.h gave moved that 
-up to SSim::import_bnd
-
 **/
 
 inline void SBnd::FillMaterialLine( 

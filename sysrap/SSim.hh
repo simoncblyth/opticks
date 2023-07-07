@@ -37,11 +37,17 @@ struct SYSRAP_API SSim
     static const int stree_level ; 
 
     static constexpr const char* RELDIR = "SSim" ; 
-    static constexpr const char* BND = "bnd.npy" ; 
-    static constexpr const char* OPTICAL = "optical.npy" ;
+    //static constexpr const char* MULTIFILM = "multifilm.npy" ;
+
     static constexpr const char* ICDF = "icdf.npy" ;
     static constexpr const char* PROPCOM = "propcom.npy" ;
-    static constexpr const char* MULTIFILM = "multifilm.npy" ;
+    static constexpr const char* BND = "bnd.npy" ; 
+    static constexpr const char* OPTICAL = "optical.npy" ;
+
+    static constexpr const char* OLDICDF = "oldicdf.npy" ;
+    static constexpr const char* OLDPROPCOM = "oldpropcom.npy" ;
+    static constexpr const char* OLDBND = "oldbnd.npy" ; 
+    static constexpr const char* OLDOPTICAL = "oldoptical.npy" ;
     static constexpr const char* OLDMAT = "oldmat.npy" ; 
     static constexpr const char* OLDSUR = "oldsur.npy" ; 
 

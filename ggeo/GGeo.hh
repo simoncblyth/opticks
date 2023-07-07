@@ -446,7 +446,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void convertSim_BndLib(SSim* sim) const ; 
         void convertSim_ScintillatorLib(SSim* sim) const ; 
         void convertSim_Prop(SSim* sim) const ; 
-        void convertSim_MultiFilm(SSim* sim) const ; 
+        //void convertSim_MultiFilm(SSim* sim) const ; 
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);

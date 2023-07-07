@@ -26,8 +26,6 @@ int main(int argc, char** argv)
     const NP* _oldoptical = NP::Load(ssbase, "optical.npy"); 
 
 
-    // st.postinit();  // abnormal call : prior to remaking GEOM 
-
 
     NPFold* fold = new NPFold ; 
 
@@ -37,19 +35,14 @@ int main(int argc, char** argv)
     fold->add("oldoptical", _oldoptical ); 
 
 
-
-    // TODO: group these 8 into fold populated by stree::save 
-    // then can eliminate this executable can just 
-    // directly load from the persisted GEOM 
- 
-    fold->add("mat", st.mat ); 
-    fold->add("sur", st.sur ); 
-    fold->add("rayleigh",  st.rayleigh  ); 
-    fold->add("energy",  st.energy ); 
-    fold->add("wavelength",  st.wavelength ); 
-    fold->add("bnd", st.bnd ); 
-    fold->add("bd",  st.bd  ); 
-    fold->add("optical",  st.optical  ); 
+    fold->add("mat",         st.standard->mat ); 
+    fold->add("sur",         st.standard->sur ); 
+    fold->add("rayleigh",    st.standard->rayleigh  ); 
+    fold->add("energy",      st.standard->energy ); 
+    fold->add("wavelength",  st.standard->wavelength ); 
+    fold->add("bnd",         st.standard->bnd ); 
+    fold->add("bd",          st.standard->bd  ); 
+    fold->add("optical",     st.standard->optical  ); 
 
 
 
