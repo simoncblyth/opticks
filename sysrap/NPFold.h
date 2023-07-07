@@ -155,6 +155,14 @@ struct NPFold
         const char* keys, 
         char delim=',' ) const ;  
 
+    const void     find_subfold_with_all_keys(
+        std::vector<const NPFold*>& subs, 
+        std::vector<std::string>& names, 
+        const char* keys, 
+        char delim=',' ) const ;  
+
+
+
 
     static int Traverse_r(const NPFold* nd, std::string nd_path, 
           std::vector<const NPFold*>& folds, 
@@ -501,6 +509,26 @@ inline const void NPFold::find_subfold_with_all_keys(
         if(sub->has_all_keys(keys_, delim)) subs.push_back(sub) ; 
     }
 }  
+
+inline const void NPFold::find_subfold_with_all_keys(
+    std::vector<const NPFold*>& subs, 
+    std::vector<std::string>&   names, 
+    const char* keys_, 
+    char delim ) const 
+{
+    int num_sub = get_num_subfold(); 
+    for(int i=0 ; i < num_sub ; i++)
+    {
+        const NPFold* sub = get_subfold(i) ; 
+        const char* name = get_subfold_key(i) ;  
+        if(sub->has_all_keys(keys_, delim)) 
+        {
+            subs.push_back(sub) ;
+            names.push_back(name) ;  
+        }
+    }
+} 
+
 
 
 

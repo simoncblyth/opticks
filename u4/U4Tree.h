@@ -264,13 +264,30 @@ WIP: juice X4Scintillator to populate st->standard->icdf
 inline void U4Tree::initScintillator()
 {
     std::vector<const NPFold*> subs ; 
-    st->material->find_subfold_with_all_keys( subs, SCINTILLATOR_PROPS ); 
+    std::vector<std::string> names ; 
+    st->material->find_subfold_with_all_keys( subs, names, SCINTILLATOR_PROPS ); 
 
     int num_subs = subs.size(); 
+    int num_names = names.size() ; 
+    assert( num_subs == num_names ); 
+    if( num_subs == 0 ) return ; 
+
+    const char* name = num_names > 0 ? names[0].c_str() : nullptr ;     
+    const NPFold* sub = num_subs > 0 ? subs[0] : nullptr ; 
+
+    const NP* fast = sub ? sub->get("FASTCOMPONENT") : nullptr ;
+    const NP* slow = sub ? sub->get("SLOWCOMPONENT") : nullptr ; 
+    const NP* reem = sub ? sub->get("REEMISSIONPROB") : nullptr ; 
+
     std::cout 
         << "U4Tree::initScintillator"
         << " num_subs " << num_subs 
+        << " num_names " << num_names 
+        << " name " << ( name ? name : "-" )
         << " with " << SCINTILLATOR_PROPS 
+        << " reem " << ( reem ? reem->sstr() : "-" )
+        << " fast " << ( fast ? fast->sstr() : "-" )
+        << " slow " << ( slow ? slow->sstr() : "-" )
         << std::endl 
         ;
 
