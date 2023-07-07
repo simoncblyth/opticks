@@ -110,6 +110,8 @@ struct U4Tree
     void initMaterials_r(const G4VPhysicalVolume* const pv); 
     void initMaterial(const G4Material* const mt); 
 
+    static constexpr const char* SCINTILLATOR_PROPS = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ; 
+    void initScintillator(); 
     void initSurfaces(); 
 
     void initSolids(); 
@@ -188,6 +190,8 @@ inline void U4Tree::init()
     initMaterials();
     initMaterials_NoRINDEX(); 
 
+    initScintillator();  // WIP 
+
     initSurfaces();
     initSolids();
     initNodes(); 
@@ -247,6 +251,31 @@ inline void U4Tree::initMaterials_NoRINDEX()
         }
     }
 }
+
+
+/**
+U4Tree::initScintillator
+--------------------------
+
+WIP: juice X4Scintillator to populate st->standard->icdf 
+
+**/
+
+inline void U4Tree::initScintillator()
+{
+    std::vector<const NPFold*> subs ; 
+    st->material->find_subfold_with_all_keys( subs, SCINTILLATOR_PROPS ); 
+
+    int num_subs = subs.size(); 
+    std::cout 
+        << "U4Tree::initScintillator"
+        << " num_subs " << num_subs 
+        << " with " << SCINTILLATOR_PROPS 
+        << std::endl 
+        ;
+
+}
+
 
 
 inline U4PhysicsTable<G4OpRayleigh>* U4Tree::CreateRayleighTable() // static

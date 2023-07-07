@@ -22,8 +22,8 @@ int main(int argc, char** argv)
     // arrays directly under SSim all from old X4/GGeo workflow
     const NP* _oldmat = NP::Load(ssbase, "oldmat.npy"); 
     const NP* _oldsur = NP::Load(ssbase, "oldsur.npy"); 
-    const NP* _oldbnd = NP::Load(ssbase, "bnd.npy"); 
-    const NP* _oldoptical = NP::Load(ssbase, "optical.npy"); 
+    const NP* _oldbnd = NP::Load(ssbase, "oldbnd.npy"); 
+    const NP* _oldoptical = NP::Load(ssbase, "oldoptical.npy"); 
 
 
 

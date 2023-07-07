@@ -101,6 +101,8 @@ struct sstandard
     static constexpr const char* BND = "bnd.npy" ;
     static constexpr const char* OPTICAL = "optical.npy" ;
 
+    static constexpr const char* ICDF = "icdf.npy" ;
+
     const sdomain* dom ; 
 
     const NP* wavelength ; 
@@ -111,6 +113,9 @@ struct sstandard
     const NP* bd ; 
     const NP* bnd ; 
     const NP* optical ;  
+
+    const NP* icdf ; 
+   
 
     sstandard(); 
 
@@ -161,7 +166,8 @@ inline sstandard::sstandard()
     sur(nullptr), 
     bd(nullptr), 
     bnd(nullptr), 
-    optical(nullptr)   
+    optical(nullptr),
+    icdf(nullptr)
 {
 }
 
@@ -208,6 +214,8 @@ NPFold* sstandard::make_fold() const
     fold->add(BND,     bnd ); 
     fold->add(OPTICAL, optical );  
 
+    if(icdf) fold->add(ICDF, icdf) ; 
+
     return fold ; 
 }
 
@@ -229,6 +237,8 @@ void sstandard::load(const char* base, const char* rel )
     bd = fold->get(BD); 
     bnd = fold->get(BND); 
     optical = fold->get(OPTICAL); 
+
+    icdf = fold->get(ICDF); 
 }
  
 
@@ -387,11 +397,6 @@ inline NP* sstandard::make_optical(
     }
     return op ; 
 }
-
-
-
-
-
 
 
 

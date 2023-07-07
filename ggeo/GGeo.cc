@@ -2587,6 +2587,16 @@ void GGeo::convertSim_BndLib(SSim* sim) const
     }    
 }
 
+/**
+GGeo::convertSim_ScintillatorLib
+----------------------------------
+
+Looks like now coming from 
+
+X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF
+
+**/
+
 void GGeo::convertSim_ScintillatorLib(SSim* sim) const 
 {
     GScintillatorLib* slib = getScintillatorLib();
