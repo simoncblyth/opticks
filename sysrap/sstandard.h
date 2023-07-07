@@ -1,32 +1,53 @@
 #pragma once
 /**
-sstandard.h
-============
+sstandard.h : standard domain arrays
+========================================
 
-NB this is part of the new workflow with no X4/GGeo dependency. 
-
-Creates standardized "mat" and "sur" arrays with  
+This houses standardized "mat" and "sur" arrays with  
 material/surface properties interpolated onto a standard 
 energy/wavelength domain. 
 
-Items from the mat and sur arrays are zipped 
-together to form the "bnd" or boundary array. 
-The shape of the mat array:
+mat
+    populated by U4Tree::initMaterials using U4Material::MakeStandardArray 
+    aiming to replace X4/GGeo workflow GMaterialLib buffer.
+    The shape of the mat array::
 
-  (~20:num_mat, 2:num_payload_cat, num_wavelength_samples, 4:payload_values ) 
+      (~20:num_mat, 2:num_payload_cat, num_wavelength_samples, 4:payload_values ) 
 
-Example shapes::
+sur
+    populated by U4Tree::initSurfaces_Serialize using U4SurfaceArray.h 
+    aiming to replace X4/GGeo workflow GSurfaceLib buffer
 
-    mat    (20, 2, 761, 4)
-    sur    (40, 2, 761, 4)
-    bnd (53, 4, 2, 761, 4)
+bnd
+    interleaved mat and sur array items 
+    Example shapes::
 
-The (2,761,4) is considered the payload comprising 
-two payload groups and payload quad at interpolated at 
-761 domain energies/wavelenths. 
+        mat    (20, 2, 761, 4)
+        sur    (40, 2, 761, 4)
+        bnd (53, 4, 2, 761, 4)
 
-This payload shape is used to allow the bnd values 
-to be accessed a float4 GPU texture. 
+    The (2,761,4) is considered the payload comprising 
+    two payload groups and payload quad at 761 interpolated 
+    domain energies/wavelenths. 
+    This payload shape is used to allow the bnd values 
+    to be accessed via a float4 GPU texture. 
+
+bd 
+   (omat,osur,isur,imat) int pointers  
+
+optical
+   material and surface param 
+
+wavelength
+   from sdomain::get_wavelength_nm
+
+energy
+   from sdomain::get_energy_eV 
+
+rayleigh
+   populated by U4Tree::initRayleigh
+   
+
 
 
 In the old X4/GGeo workflow, the bnd buffer was created with::
@@ -67,22 +88,56 @@ In the old X4/GGeo workflow, the bnd buffer was created with::
 #include "snam.h"
 
 struct sstandard
-{
+{ 
     static constexpr const bool VERBOSE = true ; 
     static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ;
 
-    static NP* bd(
+    static constexpr const char* WAVELENGTH = "wavelength.npy" ;
+    static constexpr const char* ENERGY = "energy.npy" ;
+    static constexpr const char* RAYLEIGH = "rayleigh.npy" ;
+    static constexpr const char* MAT = "mat.npy" ;
+    static constexpr const char* SUR = "sur.npy" ;
+    static constexpr const char* BD = "bd.npy" ;
+    static constexpr const char* BND = "bnd.npy" ;
+    static constexpr const char* OPTICAL = "optical.npy" ;
+
+    const sdomain* dom ; 
+
+    const NP* wavelength ; 
+    const NP* energy ; 
+    const NP* rayleigh ; 
+    const NP* mat ; 
+    const NP* sur ; 
+    const NP* bd ; 
+    const NP* bnd ; 
+    const NP* optical ;  
+
+    sstandard(); 
+
+    void deferred_init(
+        const std::vector<int4>& vbd,
+        const std::vector<std::string>& bdname,
+        const std::vector<std::string>& suname,
+        const NPFold* surface
+    );
+
+    NPFold* make_fold() const ; 
+    void save(const char* base, const char* rel ); 
+    void load(const char* base, const char* rel ); 
+
+
+    static NP* make_bd(
         const std::vector<int4>& vbd, 
         const std::vector<std::string>& bdname
     ); 
 
-    static NP* optical(
+    static NP* make_optical(
         const std::vector<int4>& vbd, 
         const std::vector<std::string>& suname, 
         const NPFold* surface 
     ); 
 
-    static NP* bnd(
+    static NP* make_bnd(
         const std::vector<int4>& vbd, 
         const std::vector<std::string>& bdname, 
         const NP* mat, 
@@ -96,16 +151,96 @@ struct sstandard
 };
 
 
+inline sstandard::sstandard()
+    :
+    dom(nullptr),
+    wavelength(nullptr),
+    energy(nullptr),
+    rayleigh(nullptr),
+    mat(nullptr),
+    sur(nullptr), 
+    bd(nullptr), 
+    bnd(nullptr), 
+    optical(nullptr)   
+{
+}
+
 
 /**
-sstandard::bd
----------------
+sstandard::deferred_init
+--------------------------
+
+NB deferred init called from stree::initStandard 
+after mat and sur have been filled. 
+
+**/
+
+inline void sstandard::deferred_init(
+        const std::vector<int4>& vbd,
+        const std::vector<std::string>& bdname,
+        const std::vector<std::string>& suname,
+        const NPFold* surface
+    )   
+{
+    dom = new sdomain ; 
+
+    wavelength = dom->get_wavelength_nm() ; 
+    energy = dom->get_energy_eV() ; 
+
+    bd      = make_bd(     vbd, bdname ); 
+    bnd     = make_bnd(    vbd, bdname, mat, sur ) ; 
+    optical = make_optical(vbd, suname, surface) ; 
+}
+
+
+NPFold* sstandard::make_fold() const 
+{
+    NPFold* fold = new NPFold ; 
+
+    fold->add(WAVELENGTH , wavelength ); 
+    fold->add(ENERGY,      energy ); 
+
+    fold->add(RAYLEIGH,    rayleigh ); 
+    fold->add(MAT ,    mat ); 
+    fold->add(SUR ,    sur ); 
+
+    fold->add(BD,      bd ); 
+    fold->add(BND,     bnd ); 
+    fold->add(OPTICAL, optical );  
+
+    return fold ; 
+}
+
+void sstandard::save(const char* base, const char* rel )
+{
+    NPFold* fold = make_fold(); 
+    fold->save(base, rel); 
+}
+
+void sstandard::load(const char* base, const char* rel )
+{
+    NPFold* fold = NPFold::Load(base, rel) ; 
+
+    wavelength = fold->get(WAVELENGTH); 
+    energy = fold->get(ENERGY); 
+    rayleigh = fold->get(RAYLEIGH); 
+    mat = fold->get(MAT); 
+    sur = fold->get(SUR); 
+    bd = fold->get(BD); 
+    bnd = fold->get(BND); 
+    optical = fold->get(OPTICAL); 
+}
+ 
+
+/**
+sstandard::make_bd
+-------------------
 
 Create array of shape (num_bd, 4) holding int "pointers" to (omat,osur,isur,imat)
 
 **/
 
-NP* sstandard::bd( const std::vector<int4>& vbd, const std::vector<std::string>& bdname )
+inline NP* sstandard::make_bd( const std::vector<int4>& vbd, const std::vector<std::string>& bdname )
 {
     NP* a_bd = NPX::ArrayFromVec<int, int4>( vbd );  
     a_bd->set_names( bdname );
@@ -113,8 +248,8 @@ NP* sstandard::bd( const std::vector<int4>& vbd, const std::vector<std::string>&
 }
 
 /**
-sstandard::optical
--------------------
+sstandard::make_optical
+-------------------------
 
 The optical buffer int4 payload has entries for both materials and surfaces. 
 Array shape at creation and as persisted::
@@ -151,7 +286,7 @@ A: Because that info is used on CPU to prepare the surface entries
 
 **/
 
-inline NP* sstandard::optical(
+inline NP* sstandard::make_optical(
      const std::vector<int4>& vbd, 
      const std::vector<std::string>& suname, 
      const NPFold* surface )
@@ -262,11 +397,15 @@ inline NP* sstandard::optical(
 
 
 /**
-sstandard::bnd
-----------------
+sstandard::make_bnd
+---------------------
 **/
 
-inline NP* sstandard::bnd( const std::vector<int4>& vbd, const std::vector<std::string>& bdname, const NP* mat, const NP* sur )
+inline NP* sstandard::make_bnd( 
+    const std::vector<int4>& vbd, 
+    const std::vector<std::string>& bdname, 
+    const NP* mat, 
+    const NP* sur )
 {
     assert( mat->shape.size() == 4 ); 
     assert( sur->shape.size() == 4 ); 

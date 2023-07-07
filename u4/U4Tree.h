@@ -101,7 +101,6 @@ struct U4Tree
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
-    void initDomain(); 
 
     static U4PhysicsTable<G4OpRayleigh>* CreateRayleighTable(); 
     void initRayleigh();   
@@ -123,7 +122,7 @@ struct U4Tree
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
 
     void initSurfaces_Serialize(); 
-    void postinit(); 
+    void initStandard(); 
 
     //  accessors
 
@@ -185,7 +184,6 @@ inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
 
-    initDomain(); 
     initRayleigh(); 
     initMaterials();
     initMaterials_NoRINDEX(); 
@@ -195,15 +193,9 @@ inline void U4Tree::init()
     initNodes(); 
     initSurfaces_Serialize();
 
-    postinit(); 
+    initStandard(); 
 }
 
-inline void U4Tree::initDomain()
-{
-    sdomain dom ; 
-    st->wavelength = dom.get_wavelength_nm() ; 
-    st->energy = dom.get_energy_eV() ; 
-}
 
 /**
 U4Tree::initMaterials
@@ -238,7 +230,7 @@ inline void U4Tree::initMaterials()
     G4PhysicsVector* Water_RAYLEIGH = rayleigh_table->find("Water") ;  
     if(Water_RAYLEIGH) prop_override["Water/RAYLEIGH"] = Water_RAYLEIGH ; 
 
-    st->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
+    st->standard->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
 }
 
 inline void U4Tree::initMaterials_NoRINDEX()
@@ -288,7 +280,7 @@ inline void U4Tree::initRayleigh()
         << ( rayleigh_table ? rayleigh_table->desc() : "-" ) 
         ;
 
-    st->rayleigh = rayleigh_table ? rayleigh_table->tab : nullptr  ; 
+    st->standard->rayleigh = rayleigh_table ? rayleigh_table->tab : nullptr  ; 
 }
 
 
@@ -383,7 +375,7 @@ inline void U4Tree::initSurfaces_Serialize()
     }
 
     U4SurfaceArray serialize(surfaces, st->implicit, perfect) ;   
-    st->sur = serialize.sur ; 
+    st->standard->sur = serialize.sur ; 
 
 }
 
@@ -628,12 +620,8 @@ inline int U4Tree::initNodes_r(
 
 
 /**
-U4Tree::postinit
-------------------
-
-Note that most of the boundary preparation happens in initNodes
-as want to store boundary int with the snode. 
-
+U4Tree::initStandard
+----------------------
 
 Currently in transition from using an unholy mixture of old and new:
 
@@ -663,9 +651,9 @@ So just need to create the bnd and the optical buffer ?
 
 **/
 
-inline void U4Tree::postinit()
+inline void U4Tree::initStandard()
 {
-    st->postinit(); 
+    st->initStandard(); 
 }
 
 

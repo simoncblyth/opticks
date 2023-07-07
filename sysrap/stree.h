@@ -9,7 +9,7 @@ This is exploring a minimal approach to geometry translation
 * stree.h is part of the attempt to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
 
 
-TODO: stree fold getting messy, split off mat/sur/bnd into subfold ?
+WIP : stree fold getting messy, split off mat/sur/bnd into sstandard ?
 ------------------------------------------------------------------------
 
 
@@ -219,20 +219,11 @@ struct stree
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
+    static constexpr const char* FACTOR = "factor.npy" ;
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
+    static constexpr const char* STANDARD = "standard" ;
 
-    static constexpr const char* BD = "bd.npy" ;
-    static constexpr const char* MAT = "mat.npy" ;
-    static constexpr const char* SUR = "sur.npy" ;
-    static constexpr const char* BND = "bnd.npy" ;
-    static constexpr const char* OPTICAL = "optical.npy" ;
-
-    static constexpr const char* WAVELENGTH = "wavelength.npy" ;
-    static constexpr const char* ENERGY = "energy.npy" ;
-    static constexpr const char* RAYLEIGH = "rayleigh.npy" ;
-
-    static constexpr const char* FACTOR = "factor.npy" ;
 
     static constexpr const char* INST = "inst.npy" ; 
     static constexpr const char* IINST = "iinst.npy" ; 
@@ -283,37 +274,18 @@ struct stree
                                            // subs are collected in stree::classifySubtrees
 
     scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
-
-
-    NP* wavelength ;  // from sdomain::get_wavelength_nm
-    NP* energy ;      // from sdomain::get_energy_eV 
-    NP* rayleigh ;    // populated by U4Tree::initRayleigh
+    sstandard* standard ;    // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
 
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
 
-    /**
-    mat, sur 
-       standarized property arrays aiming to replace the old workflow
-       GMaterialLib and GSurfaceLib buffers using standard domains and default props
-       which then can be interleaved into the bnd array equivalent of GBndLib buffer 
-       that can then be compared between the workflows to validate the new approach
-    **/
-
-    NP* mat ;   // populated by U4Tree::initMaterials using U4Material::MakeStandardArray 
-    NP* sur ;   // populated by U4Tree::initSurfaces_Serialize using U4SurfaceArray.h 
-    NP* bd ; 
-    NP* bnd ; 
-    NP* optical ; 
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
     std::vector<int>                  inst_nidx ; 
-
     // TODO: compare/consolidate stree.h inst members and methods with CSGFoundry equiv
-
 
     stree();
 
@@ -488,10 +460,7 @@ struct stree
     std::string desc_mt() const ; 
     std::string desc_bd() const ; 
 
-    NP* make_bd() const ; 
-    NP* make_bnd() const ; 
-    NP* make_optical() const ; 
-    void postinit() ; 
+    void initStandard() ; 
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface( const char* name ); 
@@ -514,9 +483,17 @@ struct stree
 stree::stree
 --------------
 
-
 Q: why empty NPFold material and surface instead of nullptr ?
 
+
+     wavelength(nullptr),
+     energy(nullptr),
+     rayleigh(nullptr),
+     mat(nullptr),
+     sur(nullptr),
+     bd(nullptr),
+     bnd(nullptr),
+     optical(nullptr)
 **/
 
 
@@ -526,16 +503,9 @@ inline stree::stree()
     sensor_count(0),
     subs_freq(new sfreq),
     csg(new scsg),
-    wavelength(nullptr),
-    energy(nullptr),
-    rayleigh(nullptr),
+    standard(new sstandard),
     material(new NPFold),
-    surface(new NPFold),
-    mat(nullptr),
-    sur(nullptr),
-    bd(nullptr),
-    bnd(nullptr),
-    optical(nullptr)
+    surface(new NPFold)
 {
     init(); 
 }
@@ -545,6 +515,7 @@ inline void stree::init()
     if(level > 0) std::cout << "stree::init " << std::endl ; 
     snd::SetPOOL(csg); 
 }
+
 
 inline void stree::set_level(int level_)
 {
@@ -1702,19 +1673,13 @@ inline void stree::save_( const char* fold ) const
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
     NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
 
-
-    // domain 
-    if(wavelength) wavelength->save(fold, WAVELENGTH) ;
-    if(energy) energy->save(fold, ENERGY) ;
-    if(rayleigh) rayleigh->save(fold, RAYLEIGH) ;
-
     // materials
     NP::WriteNames(    fold, MTNAME,   mtname );
     NP::WriteNames(    fold, MTNAME_NO_RINDEX,   mtname_no_rindex );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
 
-    if(material) material->save(fold, MATERIAL) ;
+    if(material) material->save(fold, MATERIAL) ; // material from U4Tree::initMaterials
     if(surface)  surface->save(fold, SURFACE) ;
 
     // surfaces
@@ -1722,12 +1687,8 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames(    fold, IMPLICIT, implicit );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
 
-    if(mat)     mat->save(fold, MAT) ;
-    if(sur)     sur->save(fold, SUR) ;
-    if(bd)      bd->save(fold, BD) ; 
-    if(bnd)     bnd->save(fold, BND) ; 
-    if(optical) optical->save(fold, OPTICAL) ;
- 
+
+    if(standard) standard->save(fold, STANDARD) ; 
 
 #ifdef DEBUG_IMPLICIT
     NP* _implicit_isur = NPX::ArrayFromVec<int, int4>( implicit_isur );  
@@ -1906,19 +1867,16 @@ inline int stree::load_( const char* fold )
         std::cout << "stree:load_ MISSING SUINDEX " << SUINDEX << std::endl ;  
     }   
     
-    //ImportArray<int4, int>( bnd,    NP::Load(fold, BND) ); 
 
-    if(NP::Exists(fold, BD))
+    if(standard) 
     {
-        bd = NP::Load(fold, BD) ; 
-        assert( bd ); 
-        NPX::VecFromArray<int4>( vbd, bd );  
-        bd->get_names( bdname );
+        standard->load( fold, STANDARD); 
+
+        assert( standard->bd ); 
+        NPX::VecFromArray<int4>( vbd, standard->bd );  
+        standard->bd->get_names( bdname );
     }
-    else
-    {
-        std::cout << "stree:load_ MISSING BD " << BD << std::endl ;  
-    }   
+
 
 #ifdef DEBUG_IMPLICIT
     if(NP::Exists(fold, IMPLICIT_ISUR ))
@@ -1958,18 +1916,8 @@ inline int stree::load_( const char* fold )
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
     ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
 
-    if(NP::Exists(fold,WAVELENGTH)) wavelength = NP::Load(fold, WAVELENGTH); 
-    if(NP::Exists(fold,ENERGY)) energy = NP::Load(fold, ENERGY); 
-    if(NP::Exists(fold,RAYLEIGH)) rayleigh = NP::Load(fold, RAYLEIGH); 
-
     if(material) material->load(fold, MATERIAL) ;
     if(surface) surface->load(fold,   SURFACE) ;
-
-    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ;
-    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ;
-    if(NP::Exists(fold, BD))  bd = NP::Load(fold, BD) ;
-    if(NP::Exists(fold, BND)) bnd = NP::Load(fold, BND) ;
-    if(NP::Exists(fold, OPTICAL)) optical = NP::Load(fold, OPTICAL) ;
 
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
@@ -2838,30 +2786,6 @@ inline std::string stree::desc_mt() const
 stree::desc_bd
 ----------------
 
-Previously thought the bd info was still coming from the old GGeo workflow
-and getting persisted into SSim/stree, but looking at U4Tree::initNodes_r 
-that is not the case::
-
-    375     int4 bd = {omat, osur, isur, imat } ;
-    376     bool new_boundary = GetValueIndex<int4>( st->bd, bd ) == -1 ;
-    377     if(new_boundary)
-    378     {
-    379         st->bd.push_back(bd) ;
-    380         std::string bdn = getBoundaryName(bd,'/') ;
-    381         st->bdname.push_back(bdn.c_str()) ;
-    382         // HMM: better to use higher level stree::add_boundary if can get names at stree level 
-    383     }
-    384     int boundary = GetValueIndex<int4>( st->bd, bd ) ;
-    385     assert( boundary > -1 );
-
-The bnd and optical buffer are still coming from GGeo, not the bd int4 and bdname. 
-SO .. can use bd to assist with forming those...
-
-BUT U4Tree::initNodes_r  LACKS ADDITION OF IMPLICIT SURFACES 
-that causes difference between SSim/stree/bd_names.txt and SSim/bnd_names.txt
-
-* ~/opticks/notes/issues/stree_bd_names_and_Implicit_RINDEX_NoRINDEX.rst
-
 **/
 
 inline std::string stree::desc_bd() const 
@@ -2900,34 +2824,6 @@ inline std::string stree::desc_bd() const
 
 
 
-inline NP* stree::make_bd() const 
-{
-    return sstandard::bd(vbd, bdname) ; 
-}
-inline NP* stree::make_optical() const 
-{
-    return sstandard::optical(vbd, suname, surface ); 
-}
-inline NP* stree::make_bnd() const 
-{
-    return sstandard::bnd(vbd, bdname, mat , sur ); 
-}
-
-/**
-stree::postinit
----------------------
-
-Canonically invoked from U4Tree::postinit after most of the 
-Geant4 to Opticks geometry conversion is done. 
-
-**/
-
-inline void stree::postinit()
-{
-    bd = make_bd() ; 
-    optical = make_optical() ;
-    bnd = make_bnd() ; 
-}
 
 
 /**
@@ -3037,6 +2933,19 @@ inline NPFold* stree::get_surface_subfold(int idx) const
     assert(sn) ; 
     NPFold* sub = surface->get_subfold(sn) ;  
     return sub ; 
+}
+
+/**
+stree::initStandard
+----------------------
+
+Called from U4Tree::initStandard
+
+**/
+
+inline void stree::initStandard()
+{
+    standard->deferred_init( vbd, bdname, suname, surface ); 
 }
 
 /**
