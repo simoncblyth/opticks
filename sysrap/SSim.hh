@@ -39,17 +39,22 @@ struct SYSRAP_API SSim
     static constexpr const char* RELDIR = "SSim" ; 
     //static constexpr const char* MULTIFILM = "multifilm.npy" ;
 
-    static constexpr const char* ICDF = "icdf.npy" ;
-    static constexpr const char* PROPCOM = "propcom.npy" ;
-    static constexpr const char* BND = "bnd.npy" ; 
+
+    // these have new alternatives from stree/sstandard
+    static constexpr const char* BND     = "bnd.npy" ; 
     static constexpr const char* OPTICAL = "optical.npy" ;
 
-    static constexpr const char* OLDICDF = "oldicdf.npy" ;
+    // TODO: create these in new workflow, currently only in old
+    static constexpr const char* ICDF    = "icdf.npy" ;
+    static constexpr const char* PROPCOM = "propcom.npy" ;
+
+    // arrays from X4/GGeo workflow are prefixed with old 
+    static constexpr const char* OLDICDF    = "oldicdf.npy" ;
     static constexpr const char* OLDPROPCOM = "oldpropcom.npy" ;
-    static constexpr const char* OLDBND = "oldbnd.npy" ; 
+    static constexpr const char* OLDBND     = "oldbnd.npy" ; 
     static constexpr const char* OLDOPTICAL = "oldoptical.npy" ;
-    static constexpr const char* OLDMAT = "oldmat.npy" ; 
-    static constexpr const char* OLDSUR = "oldsur.npy" ; 
+    static constexpr const char* OLDMAT     = "oldmat.npy" ; 
+    static constexpr const char* OLDSUR     = "oldsur.npy" ; 
 
  
     static const unsigned       MISSING ; 
