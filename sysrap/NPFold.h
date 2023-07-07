@@ -122,9 +122,11 @@ struct NPFold
     static std::string FormKey(const char* k); 
 
     static NPFold* Load_(const char* base ); 
-    static const char* Resolve(const char* base_, const char* relp_=nullptr); 
+    static const char* Resolve(const char* base_, const char* rel1_=nullptr, const char* rel2_=nullptr); 
     static NPFold* Load(const char* base); 
-    static NPFold* Load(const char* base, const char* relp); 
+    static NPFold* Load(const char* base, const char* rel ); 
+    static NPFold* Load(const char* base, const char* rel1, const char* rel2 ); 
+
     static NPFold* LoadProp(const char* rel0, const char* rel1=nullptr ); 
 
     static int Compare(const NPFold* a, const NPFold* b ); 
@@ -280,14 +282,15 @@ inline NPFold* NPFold::Load_(const char* base )
     nf->load(base); 
     return nf ;  
 }
-inline const char* NPFold::Resolve(const char* base_, const char* relp_)
+inline const char* NPFold::Resolve(const char* base_, const char* rel1_, const char* rel2_ )
 {
-    const char* base = U::Resolve(base_, relp_); 
+    const char* base = U::Resolve(base_, rel1_, rel2_ ); 
     if(base == nullptr) std::cerr 
         << "NPFold::Resolve"
         << " FAILED " 
         << " base_ " << ( base_ ? base_ : "-" )
-        << " relp_ " << ( relp_ ? relp_ : "-" )
+        << " rel1_ " << ( rel1_ ? rel1_ : "-" )
+        << " rel2_ " << ( rel2_ ? rel2_ : "-" )
         << " POSSIBLY UNDEFINED ENVVAR TOKEN "
         << std::endl
         ;
@@ -298,11 +301,20 @@ inline NPFold* NPFold::Load(const char* base_)
     const char* base = Resolve(base_); 
     return Load_(base); 
 }
-inline NPFold* NPFold::Load(const char* base_, const char* relp_)
+inline NPFold* NPFold::Load(const char* base_, const char* rel_)
 {
-    const char* base = Resolve(base_, relp_); 
+    const char* base = Resolve(base_, rel_); 
     return Load_(base); 
 }
+inline NPFold* NPFold::Load(const char* base_, const char* rel1_, const char* rel2_ )
+{
+    const char* base = Resolve(base_, rel1_, rel2_ ); 
+    return Load_(base); 
+}
+
+
+
+
 inline NPFold* NPFold::LoadProp(const char* rel0, const char* rel1 )
 {
     const char* base = getenv(kNP_PROP_BASE) ; 

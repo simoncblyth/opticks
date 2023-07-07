@@ -4048,14 +4048,16 @@ inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsign
         const T bv = bb[b_nj*i+b_column] ; 
         av_sum += av ; 
         bv_sum += bv ; 
-        std::cout 
+
+        bool is_diff = std::abs(av-bv) > epsilon ; 
+        if(is_diff) std::cout 
             << std::setw(4) << i 
             << " a " << std::setw(10) << std::fixed << std::setprecision(4) << av 
             << " b " << std::setw(10) << std::fixed << std::setprecision(4) << bv 
             << " a-b " << std::setw(10) << std::fixed << std::setprecision(4) << av-bv
             << std::endl 
             ;
-        if(std::abs(av-bv) > epsilon) mismatch += 1 ;  
+        if(is_diff) mismatch += 1 ;  
     }
     std::cout 
         << std::setw(4) << "sum" 

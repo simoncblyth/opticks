@@ -60,6 +60,8 @@ See also:
 #include "U4SurfacePerfect.h"
 #include "U4SurfaceArray.h"
 
+#include "U4Scint.h"
+
 #include "U4Solid.h"
 #include "U4PhysicsTable.h"
 #include "U4MaterialTable.h"
@@ -96,6 +98,8 @@ struct U4Tree
 
     std::vector<const G4VSolid*>    solids ; 
     U4PhysicsTable<G4OpRayleigh>* rayleigh_table ; 
+    U4Scint*               scint ;         
+
 
     // HMM: should really be SSim argument now ?
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
@@ -110,8 +114,7 @@ struct U4Tree
     void initMaterials_r(const G4VPhysicalVolume* const pv); 
     void initMaterial(const G4Material* const mt); 
 
-    static constexpr const char* SCINTILLATOR_PROPS = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ; 
-    void initScintillator(); 
+    void initScint(); 
     void initSurfaces(); 
 
     void initSolids(); 
@@ -176,7 +179,8 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
     sid(sid_ ? sid_ : new U4SensorIdentifierDefault),
     level(st->level),
     num_surfaces(-1),
-    rayleigh_table(CreateRayleighTable())
+    rayleigh_table(CreateRayleighTable()),
+    scint(nullptr)
 {
     init(); 
 }
@@ -190,7 +194,7 @@ inline void U4Tree::init()
     initMaterials();
     initMaterials_NoRINDEX(); 
 
-    initScintillator();  // WIP 
+    initScint();
 
     initSurfaces();
     initSolids();
@@ -254,43 +258,18 @@ inline void U4Tree::initMaterials_NoRINDEX()
 
 
 /**
-U4Tree::initScintillator
---------------------------
-
-WIP: juice X4Scintillator to populate st->standard->icdf 
+U4Tree::initScint
+------------------
 
 **/
 
-inline void U4Tree::initScintillator()
+inline void U4Tree::initScint()
 {
-    std::vector<const NPFold*> subs ; 
-    std::vector<std::string> names ; 
-    st->material->find_subfold_with_all_keys( subs, names, SCINTILLATOR_PROPS ); 
-
-    int num_subs = subs.size(); 
-    int num_names = names.size() ; 
-    assert( num_subs == num_names ); 
-    if( num_subs == 0 ) return ; 
-
-    const char* name = num_names > 0 ? names[0].c_str() : nullptr ;     
-    const NPFold* sub = num_subs > 0 ? subs[0] : nullptr ; 
-
-    const NP* fast = sub ? sub->get("FASTCOMPONENT") : nullptr ;
-    const NP* slow = sub ? sub->get("SLOWCOMPONENT") : nullptr ; 
-    const NP* reem = sub ? sub->get("REEMISSIONPROB") : nullptr ; 
-
-    std::cout 
-        << "U4Tree::initScintillator"
-        << " num_subs " << num_subs 
-        << " num_names " << num_names 
-        << " name " << ( name ? name : "-" )
-        << " with " << SCINTILLATOR_PROPS 
-        << " reem " << ( reem ? reem->sstr() : "-" )
-        << " fast " << ( fast ? fast->sstr() : "-" )
-        << " slow " << ( slow ? slow->sstr() : "-" )
-        << std::endl 
-        ;
-
+    scint = U4Scint::Create(st->material) ; 
+    if(scint) 
+    {
+        st->standard->icdf = scint->icdf ; 
+    }
 }
 
 

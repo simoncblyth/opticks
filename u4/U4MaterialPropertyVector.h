@@ -6,13 +6,11 @@ U4MaterialPropertyVector.h
 NB there is also a sysrap clone of this  S4MaterialPropertyVector.h
 that is convenient to allow only depending on sysrap rather than u4 
 
-TODO: migrate to using this clone and remove U4MaterialPropertyVector.h 
-
+TODO: migrate to using this clone and remove X4MaterialPropertyVector.h 
 
 After X4MaterialPropertyVector.hh
 
 **/
-
 
 
 #include "G4MaterialPropertyVector.hh"

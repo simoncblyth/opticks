@@ -451,8 +451,11 @@ struct U
 
     static std::string Desc(const std::vector<std::string>& names); 
 
-    static const char* Resolve0(const char* spec, const char* relp=nullptr );   // $TOK/remainder/path.npy 
-    static const char* Resolve( const char* spec, const char* relp=nullptr );   // $TOK/remainder/$ANOTHER/path.npy 
+    static const char* Resolve0(const char* spec, const char* relp=nullptr ); 
+    // $TOK/remainder/path.npy 
+
+    static const char* Resolve( const char* spec, const char* rel1=nullptr, const char* rel2=nullptr ); 
+    // $TOK/remainder/$ANOTHER/path.npy 
 
     static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
     static void        WriteString( const char* dir, const char* name, const char* str ); 
@@ -999,10 +1002,10 @@ This resolves spec with multiple tokens, eg::
 
 **/
 
-inline const char* U::Resolve(const char* spec_, const char* relp_)
+inline const char* U::Resolve(const char* spec_, const char* rel1_, const char* rel2_ )
 {
     if(spec_ == nullptr) return nullptr ; 
-    std::string spec_relp = form_path(spec_, relp_); 
+    std::string spec_relp = form_path(spec_, rel1_, rel2_ ); 
     char* spec = strdup(spec_relp.c_str()) ;  
 
     std::stringstream ss ; 
