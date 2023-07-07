@@ -5,7 +5,7 @@ U4SurfaceArray.h
 
 Formerly did this in U4Surface::MakeStandardArray
 
-* needs to follow the intent of GSurfaceLib::createStandardSurface
+* this is a reimplementation follow the intent of GSurfaceLib::createStandardSurface
 * for surfaces only payload group zero is filled with four payload
   probabilities that sum to one::
 
@@ -13,7 +13,6 @@ Formerly did this in U4Surface::MakeStandardArray
 
 * EFFICIENCY, REFLECTIVITY and specular/diffuse optical surface nature 
   are inputs to setting the four probabilities that must sum to 1. 
-
 
 **/
 
@@ -46,11 +45,10 @@ struct U4SurfaceArray
     int nj ; 
     int nk ; 
     int nl ; 
-    int j  ;  // payload group 
+    int j  ;  // 0:payload group 
 
     NP* sur ; 
     double* sur_v ; 
-    std::vector<std::string> names ; 
 
     U4SurfaceArray(
         const std::vector<const G4LogicalSurface*>& surface, 
@@ -100,14 +98,42 @@ inline U4SurfaceArray::U4SurfaceArray(
             addPerfect(i, perf); 
         }
     }
-    sur->set_names(names) ; 
+    assert( int(sur->names.size()) == ni ); 
 }
 
+
+
+
+/**
+U4SurfaceArray::addSurface
+----------------------------
+
+Payload values::
+
+   detect
+   absorb 
+   reflect_specular 
+   reflect_diffuse
+
+depend on REFLECTIVITY and EFFICIENCY properties. 
+BUT, there is not a one-to-one relationship between 
+the properties and the content of the sur array. 
+
+Rather there is dependency on the surface being a sensor 
+(having any efficiency greater than zero) and also 
+the U4OpticalSurfaceFinish::IsPolished specular nature.
+Those inputs determine what is filled into the payload 
+slots that all add to one and are treated as probabilities. 
+
+Note assumption that sensors do not reflect, this is old traditional POM 
+for more involved modelling need to use special surfaces, see smatsur.h. 
+ 
+**/
 
 inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
 {
     const G4String& name = ls->GetName() ; 
-    names.push_back(name.c_str()) ; 
+    sur->names.push_back(name.c_str()) ; 
 
     G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
     unsigned finish = os->GetFinish() ;
@@ -151,9 +177,7 @@ inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
         double effi = EFFICIENCY ? EFFICIENCY->Value(energy) : 0. ; 
         double refl = REFLECTIVITY ? REFLECTIVITY->Value(energy) : 0. ; 
 
-        // note assumption that sensors dont reflect, this is old traditional POM 
-        // for more involved modelling need to use special surfaces 
-        D4 d4 ; 
+       D4 d4 ; 
 
         if( is_sensor )   
         {
@@ -194,8 +218,10 @@ U4SurfaceArray::addImplicit
 ----------------------------
 
 Implicits are perfect absorbers that mimic within Opticks on GPU
-the implicit fStopAndKill absorption that Geant4 does when photons 
-are on boundary of a material with RINDEX and one without RINDEX.  
+the implicit fStopAndKill absorption behaviour of Geant4 when 
+photons reach a boundary from a material with RINDEX property
+to a material without RINDEX property.
+Typically this is photons hitting non-transparent materials. 
 
 **/
 
@@ -204,9 +230,19 @@ inline void U4SurfaceArray::addImplicit(int i, const char* name)
     U4SurfacePerfect impl = { name, 0., 1., 0., 0. } ; 
     addPerfect(i, impl ); 
 }
+
+/**
+U4SurfaceArray::addPerfect
+----------------------------
+
+Perfect surfaces are used for debugging and unrealistic tests.  
+They have constant properties across the energy/wavelength domain. 
+
+**/
+
 inline void U4SurfaceArray::addPerfect(int i, const U4SurfacePerfect& perf )
 {
-    names.push_back(perf.name.c_str()) ; 
+    sur->names.push_back(perf.name.c_str()) ; 
     for(int k=0 ; k < nk ; k++)  // energy/wavelength domain 
     {
         assert( std::abs( perf.sum() - 1. ) < 1e-9 ); 

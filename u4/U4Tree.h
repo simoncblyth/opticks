@@ -123,7 +123,7 @@ struct U4Tree
     int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
 
     void initSurfaces_Serialize(); 
-    void initBoundary();  // EMPTY IMPL
+    void postinit(); 
 
     //  accessors
 
@@ -195,7 +195,7 @@ inline void U4Tree::init()
     initNodes(); 
     initSurfaces_Serialize();
 
-    initBoundary(); // Currently EMPTY IMPL
+    postinit(); 
 }
 
 inline void U4Tree::initDomain()
@@ -347,12 +347,25 @@ As this requires to run after implicit are
 collected in initNodes it is too soon to do 
 this within initSurfaces
 
-Its too late to add implicit names
-here because they are needed by stree::get_boundary_name 
+Its too late to add implicit names here because 
+they are needed by stree::get_boundary_name 
 
-Uncertain regarding the perfects, 
-Maybe will need to add them earlier too, 
-once develop a test that uses them. 
+Regarding the perfects, expect will need to add them 
+earlier too, once develop a test geometry that uses them. 
+Moved perfect name collection before serialize
+HMM: tis unclear where they should be added ?
+
+**What are perfect surfaces used for ?**
+
+Vaguely recall that the purpose of the named perfect 
+surfaces is with simple CSGFoundry forged geometries 
+that piggyback off other (usually full) geometries 
+for their material and surface properties. 
+Hence there is no ordering problem as entire geometries are 
+loaded and reused for the piggyback. 
+
+All that is needed is to plant the perfects for 
+subsequent reuse within the test geomerty.  
 
 **/
 
@@ -361,15 +374,17 @@ inline void U4Tree::initSurfaces_Serialize()
     std::vector<U4SurfacePerfect> perfect ; 
     U4SurfacePerfect::Get(perfect);
 
-    U4SurfaceArray serialize(surfaces, st->implicit, perfect) ;   
-    st->sur = serialize.sur ; 
-
-    for(int i=0 ; i < serialize.num_perfect ; i++)
+    int num_perfect = perfect.size(); 
+    for(int i=0 ; i < num_perfect ; i++)
     {
         const U4SurfacePerfect& perf = perfect[i] ; 
         const char* name = perf.name.c_str() ; 
         st->add_surface( name );   
     }
+
+    U4SurfaceArray serialize(surfaces, st->implicit, perfect) ;   
+    st->sur = serialize.sur ; 
+
 }
 
 
@@ -472,6 +487,23 @@ but sibling to sibling links are done within the
 sibling loop using the node index returned by the 
 recursive call. 
 
+The initial bd int4 (omat,osur,isur,imat) may have 
+osur and isur overrides that add implicit surfaces when 
+no prior surface is present and material properties are 
+RINDEX->NoRINDEX. 
+
+Implicit surfaces are needed for Opticks to reproduce Geant4 fStopAndKill 
+behavior using additional perfect absorber surfaces in the Opticks 
+geometry model that are not present in the Geant4 geometry model. 
+
+From the Opticks point of view implicits and perfects are
+just handled as standard surfaces with sur entries. 
+
+do_osur:false 
+    reduces the number of implicits a lot, 
+    which is convenient for initial testing
+    BUT will need them once start Geant4 matching 
+
 **/
 
 
@@ -505,14 +537,8 @@ inline int U4Tree::initNodes_r(
     }
 #endif
 
-
+    // overrides add implicit surfaces when no prior surface and see RINDEX->NoRINDEX 
     bool do_osur = false  ; 
-    /**
-    do_osur:false 
-         reduces implicits a lot, which is convenient for initial testing
-         BUT will need them once start Geant4 matching 
-    **/
-
     if(do_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
     if(border.has_isur_override(bd)) border.do_isur_override(bd); 
 
@@ -602,16 +628,14 @@ inline int U4Tree::initNodes_r(
 
 
 /**
-U4Tree::initBoundary
------------------------
+U4Tree::postinit
+------------------
 
 Note that most of the boundary preparation happens in initNodes
 as want to store boundary int with the snode. 
 
-TODO: what about the implicit surfaces
 
-
-Currently using an unholy mixture of old and new:
+Currently in transition from using an unholy mixture of old and new:
 
 SSim::import_bnd
 GGeo::convertSim_BndLib
@@ -639,10 +663,9 @@ So just need to create the bnd and the optical buffer ?
 
 **/
 
-inline void U4Tree::initBoundary()
+inline void U4Tree::postinit()
 {
-
-
+    st->postinit(); 
 }
 
 

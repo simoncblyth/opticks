@@ -26,10 +26,15 @@ int main(int argc, char** argv)
     const NP* _oldoptical = NP::Load(ssbase, "optical.npy"); 
 
 
+
+    st.postinit();  // abnormal call : prior to remaking GEOM 
+
+    /*
     // TODO: these should be auto-created 
     const NP* bnd = st.make_bnd() ;  
     const NP* bd  = st.make_bd() ; 
     const NP* optical = st.make_optical() ;  
+    */ 
 
 
     NPFold* fold = new NPFold ; 
@@ -49,9 +54,9 @@ int main(int argc, char** argv)
     fold->add("energy",  st.energy ); 
     fold->add("wavelength",  st.wavelength ); 
 
-    fold->add("bnd", bnd ); 
-    fold->add("bd",  bd  ); 
-    fold->add("optical",  optical  ); 
+    fold->add("bnd", st.bnd ); 
+    fold->add("bd",  st.bd  ); 
+    fold->add("optical",  st.optical  ); 
 
     fold->save("$FOLD"); 
  

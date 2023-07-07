@@ -181,6 +181,7 @@ When SSim not in use can also use::
 #include "stra.h"
 #include "sstandard.h"
 #include "smatsur.h"
+#include "snam.h"
 
 
 struct stree
@@ -190,7 +191,6 @@ struct stree
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
 
-    static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ;
     static constexpr const char* RELDIR = "stree" ;
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
@@ -206,11 +206,13 @@ struct stree
     static constexpr const char* SUNAME = "suname.txt" ;
     static constexpr const char* IMPLICIT = "implicit.txt" ;
 
+#ifdef DEBUG_IMPLICIT
     static constexpr const char* IMPLICIT_ISUR = "implicit_isur.npy" ;
     static constexpr const char* IMPLICIT_OSUR = "implicit_osur.npy" ;
+#endif
+
 
     static constexpr const char* SUINDEX = "suindex.npy" ;
-    static constexpr const char* BD = "bd.npy" ;
 
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* CSG = "csg" ;
@@ -219,8 +221,12 @@ struct stree
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
+
+    static constexpr const char* BD = "bd.npy" ;
     static constexpr const char* MAT = "mat.npy" ;
     static constexpr const char* SUR = "sur.npy" ;
+    static constexpr const char* BND = "bnd.npy" ;
+    static constexpr const char* OPTICAL = "optical.npy" ;
 
     static constexpr const char* WAVELENGTH = "wavelength.npy" ;
     static constexpr const char* ENERGY = "energy.npy" ;
@@ -247,13 +253,14 @@ struct stree
 
     std::vector<std::string> suname ;       // surface names
     std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
-    std::vector<int4>        bd ; 
+    std::vector<int4>        vbd ; 
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
+#ifdef DEBUG_IMPLICIT
     std::vector<int4>        implicit_isur ; 
     std::vector<int4>        implicit_osur ; 
-
+#endif
 
     std::vector<std::string> soname ;       // unique solid names
     std::vector<int>         solids ;       // snd idx 
@@ -276,11 +283,17 @@ struct stree
                                            // subs are collected in stree::classifySubtrees
 
     scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
+
+
+    NP* wavelength ;  // from sdomain::get_wavelength_nm
+    NP* energy ;      // from sdomain::get_energy_eV 
+    NP* rayleigh ;    // populated by U4Tree::initRayleigh
+
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
 
     /**
-    WIP: mat, sur 
+    mat, sur 
        standarized property arrays aiming to replace the old workflow
        GMaterialLib and GSurfaceLib buffers using standard domains and default props
        which then can be interleaved into the bnd array equivalent of GBndLib buffer 
@@ -288,10 +301,10 @@ struct stree
     **/
 
     NP* mat ;   // populated by U4Tree::initMaterials using U4Material::MakeStandardArray 
-    NP* sur ;   // populated by U4Tree::initSurfaces using U4Surface::MakeStandardArray   
-    NP* wavelength ;  // from sdomain::get_wavelength_nm
-    NP* energy ;      // from sdomain::get_energy_eV 
-    NP* rayleigh ;    // populated by U4Tree::initRayleigh
+    NP* sur ;   // populated by U4Tree::initSurfaces_Serialize using U4SurfaceArray.h 
+    NP* bd ; 
+    NP* bnd ; 
+    NP* optical ; 
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
@@ -408,7 +421,6 @@ struct stree
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
 
-    NP* make_bd() const ; 
     NP* make_trs() const ; 
     void save_trs(const char* fold) const ; 
 
@@ -476,7 +488,10 @@ struct stree
     std::string desc_mt() const ; 
     std::string desc_bd() const ; 
 
+    NP* make_bd() const ; 
     NP* make_bnd() const ; 
+    NP* make_optical() const ; 
+    void postinit() ; 
 
     void add_material( const char* name, unsigned g4index ); 
     void add_surface( const char* name ); 
@@ -489,7 +504,6 @@ struct stree
     std::string get_boundary_name( const int4& bd_, char delim ) const ; 
 
     NPFold* get_surface_subfold(int idx) const ; 
-    NP* make_optical() const ; 
 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
@@ -512,13 +526,16 @@ inline stree::stree()
     sensor_count(0),
     subs_freq(new sfreq),
     csg(new scsg),
+    wavelength(nullptr),
+    energy(nullptr),
+    rayleigh(nullptr),
     material(new NPFold),
     surface(new NPFold),
     mat(nullptr),
     sur(nullptr),
-    wavelength(nullptr),
-    energy(nullptr),
-    rayleigh(nullptr)
+    bd(nullptr),
+    bnd(nullptr),
+    optical(nullptr)
 {
     init(); 
 }
@@ -1696,26 +1713,28 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames(    fold, MTNAME_NO_RINDEX,   mtname_no_rindex );
     NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
     NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
+
     if(material) material->save(fold, MATERIAL) ;
-    if(mat) mat->save(fold, MAT) ;
+    if(surface)  surface->save(fold, SURFACE) ;
 
     // surfaces
     NP::WriteNames(    fold, SUNAME,   suname );
     NP::WriteNames(    fold, IMPLICIT, implicit );
     NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
 
-    if(surface) surface->save(fold, SURFACE) ;
-    if(sur) sur->save(fold, SUR) ;
+    if(mat)     mat->save(fold, MAT) ;
+    if(sur)     sur->save(fold, SUR) ;
+    if(bd)      bd->save(fold, BD) ; 
+    if(bnd)     bnd->save(fold, BND) ; 
+    if(optical) optical->save(fold, OPTICAL) ;
+ 
 
-    // boundaries
-    NP* a_bd = make_bd() ; 
-    a_bd->save( fold, BD ); 
-
+#ifdef DEBUG_IMPLICIT
     NP* _implicit_isur = NPX::ArrayFromVec<int, int4>( implicit_isur );  
     NP* _implicit_osur = NPX::ArrayFromVec<int, int4>( implicit_osur );  
     _implicit_isur->save(fold, IMPLICIT_ISUR ); 
     _implicit_osur->save(fold, IMPLICIT_OSUR ); 
-
+#endif
 
     // solids 
     NPFold* fcsg = csg->serialize() ; 
@@ -1746,21 +1765,6 @@ inline void stree::save_( const char* fold ) const
 }
 
 
-/**
-stree::make_bd
-----------------
-
-Create array of shape (num_bd, 4) holding int "pointers"
-to (omat,osur,isur,imat)
-
-**/
-
-inline NP* stree::make_bd() const 
-{
-    NP* a_bd = NPX::ArrayFromVec<int, int4>( bd );  
-    a_bd->set_names( bdname );
-    return a_bd ; 
-}
 
 
 
@@ -1906,16 +1910,17 @@ inline int stree::load_( const char* fold )
 
     if(NP::Exists(fold, BD))
     {
-        NP* a_bd = NP::Load(fold, BD) ; 
-        assert( a_bd ); 
-        NPX::VecFromArray<int4>( bd, a_bd );  
-        a_bd->get_names( bdname );
+        bd = NP::Load(fold, BD) ; 
+        assert( bd ); 
+        NPX::VecFromArray<int4>( vbd, bd );  
+        bd->get_names( bdname );
     }
     else
     {
         std::cout << "stree:load_ MISSING BD " << BD << std::endl ;  
     }   
 
+#ifdef DEBUG_IMPLICIT
     if(NP::Exists(fold, IMPLICIT_ISUR ))
     {
         NP* a_implicit_isur = NP::Load(fold, IMPLICIT_ISUR ) ; 
@@ -1927,7 +1932,8 @@ inline int stree::load_( const char* fold )
         NP* a_implicit_osur = NP::Load(fold, IMPLICIT_OSUR ) ; 
         NPX::VecFromArray<int4>( implicit_osur, a_implicit_osur );  
     }
- 
+#endif 
+
 
     if(NP::Exists(fold, CSG))
     {
@@ -1959,8 +1965,12 @@ inline int stree::load_( const char* fold )
     if(material) material->load(fold, MATERIAL) ;
     if(surface) surface->load(fold,   SURFACE) ;
 
-    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ;  // created by U4Tree::initMaterials
-    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ;  // created by U4Tree::initSurfaces
+    if(NP::Exists(fold, MAT)) mat = NP::Load(fold, MAT) ;
+    if(NP::Exists(fold, SUR)) sur = NP::Load(fold, SUR) ;
+    if(NP::Exists(fold, BD))  bd = NP::Load(fold, BD) ;
+    if(NP::Exists(fold, BND)) bnd = NP::Load(fold, BND) ;
+    if(NP::Exists(fold, OPTICAL)) optical = NP::Load(fold, OPTICAL) ;
+
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
@@ -2858,27 +2868,27 @@ inline std::string stree::desc_bd() const
 {
     std::stringstream ss ; 
     ss << "stree::desc_bd"
-       << " bd.size " << bd.size()
+       << " vbd.size " << vbd.size()
        << " bdname.size " << bdname.size()
        << std::endl 
        ; 
 
-    assert( bd.size() == bdname.size() ); 
+    assert( vbd.size() == bdname.size() ); 
 
-    int num_bd = bd.size() ; 
+    int num_bd = vbd.size() ; 
     for(int i=0 ; i < num_bd ; i++)
     {
         const std::string& bdn = bdname[i] ; 
-        const int4& bdi = bd[i] ;  
+        const int4& bd_ = vbd[i] ;  
         ss << std::setw(4) << i 
            << "("
-           << std::setw(3) << bdi.x 
+           << std::setw(3) << bd_.x 
            << " "
-           << std::setw(3) << bdi.y 
+           << std::setw(3) << bd_.y 
            << " "
-           << std::setw(3) << bdi.z 
+           << std::setw(3) << bd_.z 
            << " "
-           << std::setw(3) << bdi.w 
+           << std::setw(3) << bd_.w 
            << ") "
            << bdn
            << std::endl 
@@ -2889,63 +2899,35 @@ inline std::string stree::desc_bd() const
 }
 
 
-/**
-stree::create_mat
-------------------
 
-The aim of the mat array is to enable recreation of the 
-bnd buffer without using GGeo. So need to create an array 
-with shape suitable for zipping together with the sur array
-to form the bnd array.
-
-Hence need mat shape::
-
-  (~20:num_mat, 2:num_payload_cat, num_wavelength_samples, 4:payload_values ) 
-
-
-Old bnd buffer::
-
-    GBndLib::createBufferForTex2d
-    -------------------------------
-
-    GBndLib double buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
-    pulling together data based on the indices for the materials and surfaces 
-    from the m_bnd guint4 buffer
-
-    Typical dimensions : (128, 4, 2, 39, 4)   
-
-               128 : boundaries, 
-                 4 : mat-or-sur for each boundary  
-                 2 : payload-categories corresponding to NUM_FLOAT4
-                39 : wavelength samples
-                 4 : double4-values
-
-    The only dimension that can easily be extended is the middle payload-categories one, 
-    the low side is constrained by layout needed to OptiX tex2d<float4> as this 
-    buffer is memcpy into the texture buffer
-    high side is constained by not wanting to change texture line indices 
-
-    The 39 wavelength samples is historical. There is a way to increase this
-    to 1nm FINE_DOMAIN binning.
-
-
-inline NP* stree::create_mat() const 
+inline NP* stree::make_bd() const 
 {
-    return sstandard::mat(mtname, material) ; 
+    return sstandard::bd(vbd, bdname) ; 
 }
-inline NP* stree::create_sur() const 
+inline NP* stree::make_optical() const 
 {
-    return sstandard::sur(suname, surface) ; 
+    return sstandard::optical(vbd, suname, surface ); 
 }
-**/
-
-
 inline NP* stree::make_bnd() const 
 {
-    return sstandard::bnd(bd, bdname, mat , sur ); 
+    return sstandard::bnd(vbd, bdname, mat , sur ); 
 }
 
+/**
+stree::postinit
+---------------------
 
+Canonically invoked from U4Tree::postinit after most of the 
+Geant4 to Opticks geometry conversion is done. 
+
+**/
+
+inline void stree::postinit()
+{
+    bd = make_bd() ; 
+    optical = make_optical() ;
+    bnd = make_bnd() ; 
+}
 
 
 /**
@@ -2991,13 +2973,15 @@ inline void stree::add_surface(const std::vector<std::string>& names  )
 
 inline int stree::add_boundary( const int4& bd_ )
 {
-    int boundary = GetValueIndex<int4>( bd, bd_ ) ; 
+    int boundary = GetValueIndex<int4>( vbd, bd_ ) ; 
     if(boundary == -1)  // new boundary 
     {
-        bd.push_back(bd_) ; 
+        int num_bd_check = vbd.size();  
         std::string bdn = get_boundary_name(bd_,'/') ; 
+        vbd.push_back(bd_) ; 
         bdname.push_back(bdn.c_str()) ; 
-        boundary = GetValueIndex<int4>( bd, bd_ ) ; 
+        boundary = GetValueIndex<int4>( vbd, bd_ ) ; 
+        assert( num_bd_check == boundary );  
     }
     return boundary ; 
 }
@@ -3005,11 +2989,11 @@ inline int stree::add_boundary( const int4& bd_ )
 
 inline const char* stree::get_material_name( int idx ) const 
 {
-    return idx > -1 &&  idx < int(mtname.size()) ? mtname[idx].c_str() : nullptr ; 
+    return snam::get(mtname, idx) ; 
 }
 inline const char* stree::get_surface_name( int idx ) const 
 {
-    return idx > -1 && idx < int(suname.size()) ? suname[idx].c_str() : nullptr ; 
+    return snam::get(suname, idx) ; 
 }
 inline std::string stree::get_boundary_name( const int4& bd_, char delim ) const 
 {
@@ -3042,8 +3026,9 @@ inline std::string stree::get_boundary_name( const int4& bd_, char delim ) const
 stree::get_surface_subfold
 ---------------------------
 
-HMM: the implicit and perfect names will be found, 
-but there will not be a subfold for them 
+Note that implicit and perfect names will be found
+in the suname vector but there is no corresponding 
+subfold for them, hence no metadata. 
 
 **/
 inline NPFold* stree::get_surface_subfold(int idx) const 
@@ -3053,138 +3038,6 @@ inline NPFold* stree::get_surface_subfold(int idx) const
     NPFold* sub = surface->get_subfold(sn) ;  
     return sub ; 
 }
-   
-/**
-stree::make_optical
----------------------
-
-The optical buffer int4 payload has entries for both materials and surfaces. 
-Array shape at creation and as persisted::
-
-                  int4 payload
-                  |
-     (num_bnd, 4, 4)
-               |
-             (omat,osur,isur,imat)             
-
-Shape at point of use on GPU combines the first two dimensions to give "line" 
-access to materials and surfaces::
-
-     (num_bnd*4, 4 ) 
-
-The former optical buffer int4 payloads for materials and surfaces:
-
-+------------------+---------------+---------------------------+--------------------------+-------------------+   
-|                  | .x            |  .y                       |  .z                      |  .w               |
-+==================+===============+===========================+==========================+===================+
-| MATERIAL LINES   |   idx+1       |  UNUSED                   | UNUSED                   |  UNUSED           |
-+------------------+---------------+---------------------------+--------------------------+-------------------+
-| SURFACE LINES    |               | type                      | finish                   |  value_percent    |
-|                  |   idx+1       | 0:dielectric_metal        | 0:polished               |                   |
-|                  |               | 1:dielectric_dielectric   | 1:polishedfrontpainted   |                   |
-|                  |               |                           | 3:ground                 |                   | 
-|                  |               +---------------------------+--------------------------+-------------------+
-|                  |               |  THESE THREE COLUMNS WERE NEVER USED ON DEVICE                           |
-+------------------+---------------+---------------------------+--------------------------+-------------------+
-
-Q: How come those columns not used on device ?
-A: Because that info is used on CPU to prepare the surface entries 
-   of the bnd array, accessed on device via the boundary texture. 
-
-**/
-inline NP* stree::make_optical() const 
-{
-    int ni = bd.size() ; 
-    int nj = 4 ; 
-    int nk = 4 ; 
-
-    NP* op = NP::Make<int>(ni, nj, nk); 
-    int* op_v = op->values<int>(); 
-
-    for(int i=0 ; i < ni ; i++)       // over bd 
-    {
-        const int4& bd_ = bd[i] ; 
-        for(int j=0 ; j < nj ; j++)   // over (omat,osur,isur,imat)
-        {
-            int op_index = i*nj*nk + j*nk ;
-
-            int idx = -2 ; 
-            switch(j)
-            {
-                case 0: idx = bd_.x ; break ;   
-                case 1: idx = bd_.y ; break ;   
-                case 2: idx = bd_.z ; break ;   
-                case 3: idx = bd_.w ; break ;   
-            }
-
-            bool is_mat = j == 0 || j == 3 ; 
-            bool is_sur = j == 1 || j == 2 ; 
-
-            if(is_mat)
-            {
-                assert( idx > -1 );   // omat,imat must always be present
-                op_v[op_index+0] = idx + 1 ; 
-                op_v[op_index+1] = 0 ; 
-                op_v[op_index+2] = 0 ; 
-                op_v[op_index+3] = 0 ; 
-            }
-            else if(is_sur)
-            {
-                const char* sn = get_surface_name(idx); 
-                NPFold* surf = idx > -1  ? get_surface_subfold(idx) : nullptr ;
-                bool is_implicit = sn && strncmp(sn, IMPLICIT_PREFIX, strlen(IMPLICIT_PREFIX) ) == 0 ; 
-                int Type = -2 ; 
-                int Finish = -2 ; 
-                int ModelValuePercent = -2 ; 
-                std::string OSN = "-" ; 
-
-                if( is_implicit )
-                {
-                    assert( surf == nullptr ) ;  // not expecting to find surf for implicits 
-                    Type = 1 ; 
-                    Finish = 1 ; 
-                    ModelValuePercent = 100 ;  // placeholders to match old_optical ones
-                    OSN = "X" ;  // HMM: should Implicit be classified as ordinary Surface ? 
-                }
-                else
-                {
-                    //int missing = -2 ;  // better to use -2, but to match old_optical use zero
-                    int missing = 0 ; 
-
-                    Type              = surf ? surf->get_meta<int>("Type",-1) : missing ;
-                    Finish            = surf ? surf->get_meta<int>("Finish", -1 ) : missing ;
-                    ModelValuePercent = surf ? int(100.*surf->get_meta<double>("ModelValue", 0.)) : missing ; 
-                    OSN = surf ? surf->get_meta<std::string>("OpticalSurfaceName", "-") : "-" ; 
-                }
-
-                char OSN0 = *OSN.c_str() ;                     
-                int ems = smatsur::TypeFromChar(OSN0) ; 
-                std::cout 
-                    << " bnd:i "   << std::setw(3) << i 
-                    << " sur:idx " << std::setw(3) << idx 
-                    << " Type " << std::setw(2) << Type
-                    << " Finish " << std::setw(2) << Finish
-                    << " MVP " << std::setw(3) << ModelValuePercent
-                    << " surf " << ( surf ? "YES" : "NO " )
-                    << " impl " << ( is_implicit ? "YES" : "NO " )
-                    << " osn0 " << ( OSN0 == '\0' ? '0' : OSN0 ) 
-                    << " OSN " << OSN 
-                    << " ems " << ems
-                    << " emsn " << smatsur::Name(ems) 
-                    << " sn " << ( sn ? sn : "-" ) 
-                    << std::endl 
-                    ; 
-
-                op_v[op_index+0] = idx + 1 ; 
-                op_v[op_index+1] = Type ;  
-                op_v[op_index+2] = Finish ; 
-                op_v[op_index+3] = ModelValuePercent ; 
-            }
-        }
-    }
-    return op ; 
-}
-
 
 /**
 stree::init_mtindex_to_mtline
@@ -3193,6 +3046,7 @@ stree::init_mtindex_to_mtline
 Canonically invoked from SSim::import_bnd/SBnd::FillMaterialLine following 
 live creation or from stree::load_ when loading a persisted stree.  
 
+TODO: suspect this complication can be avoided using NPX.h load/save of maps ?
 **/
 
 inline void stree::init_mtindex_to_mtline()

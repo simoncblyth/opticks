@@ -210,6 +210,7 @@ set(HEADERS
     sproplist.h 
     sidxname.h 
 
+    snam.h 
     smatsur.h 
 
 

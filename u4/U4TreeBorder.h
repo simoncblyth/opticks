@@ -195,17 +195,29 @@ inline bool U4TreeBorder::has_isur_override( const int4& bd ) const
 }
 inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
 {
+#ifdef DEBUG_IMPLICIT
     st->implicit_osur.push_back(bd);  
+#endif
     int& osur = bd.y ; 
     osur = get_override_idx(true); 
+#ifdef DEBUG_IMPLICIT
     st->implicit_osur.push_back(bd);  
+#endif
 }
 inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : outwards
 {
+#ifdef DEBUG_IMPLICIT
     st->implicit_isur.push_back(bd); 
+#endif
     int& isur = bd.z ; 
     isur = get_override_idx(false); 
+#ifdef DEBUG_IMPLICIT
     st->implicit_isur.push_back(bd); 
+#endif
 }
+
+
+
+
 
 
