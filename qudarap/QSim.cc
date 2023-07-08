@@ -116,12 +116,12 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     LOG(LEVEL) << rng->desc(); 
 
-    const NP* optical = ssim->get(SSim::OPTICAL); 
-    const NP* bnd = ssim->get(SSim::BND); 
+    const NP* optical = ssim->get(snam::OPTICAL); 
+    const NP* bnd = ssim->get(snam::BND); 
 
     if( optical == nullptr && bnd == nullptr )
     {
-        LOG(error) << " optical and bnd null  SSim::OPTICAL " << SSim::OPTICAL << " SSim::BND " << SSim::BND  ; 
+        LOG(error) << " optical and bnd null  snam::OPTICAL " << snam::OPTICAL << " snam::BND " << snam::BND  ; 
     }
     else
     {
@@ -136,7 +136,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     QDebug* debug_ = new QDebug ; 
     LOG(LEVEL) << debug_->desc() ; 
 
-    const NP* propcom = ssim->get(SSim::PROPCOM); 
+    const NP* propcom = ssim->get(snam::PROPCOM); 
     if( propcom )
     {
         LOG(LEVEL) << "[ QProp " ; 
@@ -147,14 +147,14 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
     else
     {
-        LOG(LEVEL) << "  propcom null, SSim::PROPCOM " <<  SSim::PROPCOM ;   
+        LOG(LEVEL) << "  propcom null, snam::PROPCOM " <<  snam::PROPCOM ;   
     }
 
 
-    const NP* icdf = ssim->get(SSim::ICDF); 
+    const NP* icdf = ssim->get(snam::ICDF); 
     if( icdf == nullptr )
     {
-        LOG(error) << " icdf null, SSim::ICDF " << SSim::ICDF ; 
+        LOG(error) << " icdf null, snam::ICDF " << snam::ICDF ; 
     }
     else
     {
@@ -178,10 +178,10 @@ void QSim::UploadComponents( const SSim* ssim  )
 
 
 /*
-    const NP* multifilm = ssim->get(SSim::MULTIFILM); 
+    const NP* multifilm = ssim->get(snam::MULTIFILM); 
     if(multifilm == nullptr)
     {
-        LOG(LEVEL) << " multifilm null, SSim::MULTIFILM " << SSim::MULTIFILM ;
+        LOG(LEVEL) << " multifilm null, snam::MULTIFILM " << snam::MULTIFILM ;
     }
     else
     {

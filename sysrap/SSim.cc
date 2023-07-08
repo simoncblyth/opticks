@@ -235,6 +235,14 @@ CSGFoundry/SSim/
 CSGFoundry/SSim/stree/
     contains stree arrays 
 
+
+
+**stree integration ?**
+
+HMM: maybe stree should provide an NPFold 
+thats a subfold of the top SSim fold ? That 
+would make this save more standard. 
+
 **/
 
 void SSim::save(const char* base, const char* reldir) const 

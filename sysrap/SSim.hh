@@ -18,6 +18,15 @@ using NPFold functionality.
 The SSim instance provides the input arrays to QSim
 which does the uploading to the device. 
 
+
+HMM : Transitionally : How best to switch between alternate arrays ? 
+-----------------------------------------------------------------------
+
+* better to globally switch from the old "GGeo" fold or the default ?
+
+
+
+
 **/
 
 struct NP ; 

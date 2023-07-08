@@ -3,49 +3,27 @@
 
 int main(int argc, char** argv)
 {
-    const char* ssbase = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ; 
+    const char* ss = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ; 
 
-    stree st ; 
-    int rc = st.load(ssbase); 
+    stree t ; 
+    int rc = t.load(ss); 
     if( rc != 0 ) return rc ; 
 
-    
-    //std::cout << "st.desc" << std::endl << st.desc() << std::endl ; 
+    //std::cout << "t.desc" << std::endl << t.desc() << std::endl ; 
 
-    std::cout << "st.material.desc" << std::endl << st.material->desc() << std::endl ; 
-    std::cout << "st.desc_mt" << std::endl << st.desc_mt() << std::endl; 
+    std::cout << "t.material.desc" << std::endl << t.material->desc() << std::endl ; 
+    std::cout << "t.desc_mt" << std::endl << t.desc_mt() << std::endl; 
 
-    std::cout << "st.surface.desc" << std::endl << st.surface->desc() << std::endl ; 
-    std::cout << "st.desc_bd" << std::endl << st.desc_bd() << std::endl; 
-
-
-    // arrays directly under SSim all from old X4/GGeo workflow
-    const NP* _oldmat = NP::Load(ssbase, "oldmat.npy"); 
-    const NP* _oldsur = NP::Load(ssbase, "oldsur.npy"); 
-    const NP* _oldbnd = NP::Load(ssbase, "oldbnd.npy"); 
-    const NP* _oldoptical = NP::Load(ssbase, "oldoptical.npy"); 
+    std::cout << "t.surface.desc" << std::endl << t.surface->desc() << std::endl ; 
+    std::cout << "t.desc_bd" << std::endl << t.desc_bd() << std::endl; 
 
 
+    NPFold* gg = NPFold::Load(ss, "GGeo") ;  
+    NPFold* st = NPFold::Load(ss, "stree/standard") ;  
 
     NPFold* fold = new NPFold ; 
-
-    fold->add("oldmat", _oldmat ); 
-    fold->add("oldsur", _oldsur ); 
-    fold->add("oldbnd", _oldbnd ); 
-    fold->add("oldoptical", _oldoptical ); 
-
-
-    fold->add("mat",         st.standard->mat ); 
-    fold->add("sur",         st.standard->sur ); 
-    fold->add("rayleigh",    st.standard->rayleigh  ); 
-    fold->add("energy",      st.standard->energy ); 
-    fold->add("wavelength",  st.standard->wavelength ); 
-    fold->add("bnd",         st.standard->bnd ); 
-    fold->add("bd",          st.standard->bd  ); 
-    fold->add("optical",     st.standard->optical  ); 
-
-
-
+    fold->add_subfold("gg", gg ); 
+    fold->add_subfold("st", st ); 
     fold->save("$FOLD"); 
  
     return 0 ; 

@@ -2569,6 +2569,8 @@ void GGeo::convertSim_BndLib() const
         LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
 
         optical = blib->getOpticalBuf();  
+        optical->change_shape(-1,4,4) ;  
+        // July 2023 : changed to match U4Tree/stree workflow shape
 
         const std::vector<std::string>& bndnames = blib->getNameList(); 
         bnd->set_names( bndnames );   

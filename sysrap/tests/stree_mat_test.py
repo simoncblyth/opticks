@@ -5,7 +5,7 @@ from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
 
-def Vacuum_kludge(ff, names=["mat","oldmat"]):
+def Vacuum_kludge(ff, names=["mat"]):
     for f in ff:
         print("Vacuum_kludge %s " % f.base)
         for m in names:
@@ -35,28 +35,35 @@ def eprint(exprs):
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
-    Vacuum_kludge([t])
-    ab = np.abs( t.mat - t.oldmat ) 
 
-    obn = np.array(t.oldbnd_names)
-    oop = t.oldoptical.reshape(-1,4,4).view(np.int32)  
-    assert len(obn) == len(oop)   
+    a = t.gg    # old X4/GGeo NPFold
+    b = t.st    # new U4/stree NPFold 
 
-    bn = np.array(t.bnd_names)
-    op = t.optical
-    assert len(bn) == len(op)
+    Vacuum_kludge([a,b])
+    ab = np.abs( a.mat - b.mat ) 
+
+    abn = np.array(a.bnd_names)
+    aop = a.optical.reshape(-1,4,4).view(np.int32)  
+    assert len(abn) == len(aop)   
+
+    bbn = np.array(b.bnd_names)
+    bop = b.optical
+    assert len(bbn) == len(bop)
     
 
 
     eprint("""
-    np.all( np.array( t.mat_names) == np.array( t.oldmat_names ))  
-    t.mat.shape == t.oldmat.shape
-    np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])
-    np.array(t.mat_names)[np.unique(np.where( np.abs(t.mat - t.oldmat) > 1e-3 )[0])] 
+    np.all( np.array( a.mat_names) == np.array( b.mat_names ))  
+    a.mat.shape == b.mat.shape
+    np.unique(np.where( np.abs(a.mat - b.mat) > 1e-3 )[0])
+    np.array(a.mat_names)[np.unique(np.where( np.abs(a.mat - b.mat) > 1e-3 )[0])] 
 
     #  RINDEX     ABSLENGTH  RAYLEIGH   REEMISSIONPROB   GROUPVEL 
     np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
-    np.c_[np.arange(len(t.mat_names)),np.array(t.mat_names)] 
+    np.c_[np.arange(len(a.mat_names)),np.array(a.mat_names)] 
+
+    np.all( a.icdf == b.icdf )   
+
     """
     )
 
