@@ -408,7 +408,7 @@ inline NP* sstandard::make_bnd(
     for(int d=1 ; d < 4 ; d++) assert( mat->shape[d] == sur->shape[d] ) ; 
 
     assert( mat->shape[1] == sprop::NUM_PAYLOAD_GRP ); 
-    int num_wl_domain = mat->shape[2] ; 
+    int num_domain = mat->shape[2] ; 
     assert( mat->shape[3] == sprop::NUM_PAYLOAD_VAL ); 
 
     const double* mat_v = mat->cvalues<double>(); 
@@ -431,11 +431,12 @@ inline NP* sstandard::make_bnd(
     int ni = num_bnd ;                // ~53                 
     int nj = sprop::NUM_MATSUR ;      //   4  (omat,osur,isur,imat)
     int nk = sprop::NUM_PAYLOAD_GRP ; //   2
-    int nl = num_wl_domain ;          // 761  fine domain
+    int nl = num_domain ;             // 761  fine domain
     int nn = sprop::NUM_PAYLOAD_VAL ; //   4
     int np = nk*nl*nn ;               // 2*761*4  number of payload values for one mat/sur 
 
     NP* bnd_ = NP::Make<double>(ni, nj, nk, nl, nn ); 
+    bnd_->fill<double>(-1.) ; // trying to match X4/GGeo unfilled 
     bnd_->set_names( bdname ); 
     double* bnd_v = bnd_->values<double>() ; 
 

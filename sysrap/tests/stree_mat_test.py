@@ -49,7 +49,13 @@ if __name__ == '__main__':
     bbn = np.array(b.bnd_names)
     bop = b.optical
     assert len(bbn) == len(bop)
+
     
+    a.bnd[np.where( a.bnd == 1e9 )] = 1e6 
+    b.bnd[np.where( b.bnd == 1e9 )] = 1e6 
+
+    # tracking down where missing sur entry within bnd diff of 1. is coming from 
+    ab = a.bnd[:,1,0,0,0] - b.bnd[:,1,0,0,0]   # osur check    
 
 
     eprint("""
