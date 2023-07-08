@@ -101,14 +101,11 @@ class NPMeta(object):
         lines = open(path, "r").read().splitlines()
         return cls(lines) 
 
-        #txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
-        #t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
-        #if t.shape == (): ## prevent one line file behaving different from multiline 
-        #    a = np.zeros(1, dtype=txt_dtype)
-        #    a[0] = cls(str(t))   
-        #else:
-        #    a = cls(t)     
-        #pass
+    @classmethod
+    def LoadAsArray(cls, path):
+        name = os.path.basename(path)
+        lines = open(path, "r").read().splitlines()
+        return np.array(lines) 
 
     def __init__(self, lines):
         self.lines = lines  

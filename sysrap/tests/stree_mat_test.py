@@ -5,21 +5,6 @@ from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
 
-def Vacuum_kludge(ff, names=["mat"]):
-    for f in ff:
-        print("Vacuum_kludge %s " % f.base)
-        for m in names:
-            q = getattr(f, m, None)
-            if q is None: continue
-            if np.all( q[16,0,:,1] == 1e9 ):
-                print("%s : Vacuum 1e9 kludge reduce to 1e6 " % m )
-                q[16,0,:,1] = 1e6 
-            else:
-                print("%s : Not doing Vacuum kludge " % m )
-            pass
-        pass
-    pass
-
 
 def eprint(exprs):
     print("eprint(\"\"\"%s\"\"\")" % exprs  )
@@ -39,8 +24,13 @@ if __name__ == '__main__':
     a = t.gg    # old X4/GGeo NPFold
     b = t.st    # new U4/stree NPFold 
 
-    Vacuum_kludge([a,b])
-    ab = np.abs( a.mat - b.mat ) 
+    # kludge to avoid obnoxious array presentation 
+    # when have very large values 
+    a.mat[np.where( a.mat == 1e9 )] = 1e6 
+    b.mat[np.where( b.mat == 1e9 )] = 1e6 
+    a.bnd[np.where( a.bnd == 1e9 )] = 1e6 
+    b.bnd[np.where( b.bnd == 1e9 )] = 1e6 
+
 
     abn = np.array(a.bnd_names)
     aop = a.optical.reshape(-1,4,4).view(np.int32)  
@@ -51,24 +41,59 @@ if __name__ == '__main__':
     assert len(bbn) == len(bop)
 
     
-    a.bnd[np.where( a.bnd == 1e9 )] = 1e6 
-    b.bnd[np.where( b.bnd == 1e9 )] = 1e6 
-
     # tracking down where missing sur entry within bnd diff of 1. is coming from 
     ab = a.bnd[:,1,0,0,0] - b.bnd[:,1,0,0,0]   # osur check    
 
 
     eprint("""
-    np.all( np.array( a.mat_names) == np.array( b.mat_names ))  
+    np.all( a.mat_names == b.mat_names )  
+    np.all( a.sur_names == b.sur_names ) 
+    np.all( a.bnd_names == b.bnd_names )  
+
     a.mat.shape == b.mat.shape
     np.unique(np.where( np.abs(a.mat - b.mat) > 1e-3 )[0])
-    np.array(a.mat_names)[np.unique(np.where( np.abs(a.mat - b.mat) > 1e-3 )[0])] 
+    a.mat_names[np.unique(np.where( np.abs(a.mat - b.mat) > 1e-3 )[0])] 
 
     #  RINDEX     ABSLENGTH  RAYLEIGH   REEMISSIONPROB   GROUPVEL 
-    np.max(ab, axis=2).reshape(-1,8)   # max deviation across wavelength domain 
-    np.c_[np.arange(len(a.mat_names)),np.array(a.mat_names)] 
+    np.max(np.abs(a.mat - b.mat), axis=2).reshape(-1,8)   # max deviation across wavelength domain 
+    np.c_[np.arange(a.mat_names.size),a.mat_names] 
 
     np.all( a.icdf == b.icdf )   
+    np.all( a.optical == b.optical )  
+    np.where( np.abs(a.sur - b.sur) > 1e-6 )   
+
+    np.unique(np.where( np.abs( a.bnd - b.bnd ) > 1e-4 )[1])  ## only omat and imat 
+
+    # payload group 0 has small discreps for ABSLENGTH and RAYLEIGH 
+    np.unique(np.where( np.abs( a.mat[:,0,:,:] - b.mat[:,0,:,:]) > 1e-4 )[2])
+
+    # payload group 1 has discreps in GROUPVEL 
+    np.unique(np.where( np.abs( a.mat[:,1,:,:] - b.mat[:,1,:,:]) > 1e-4 )[2]) 
+
+    # max absolute discrepancies in ABSLENGTH for each material
+    np.c_[a.mat_names,  np.max( np.abs( a.mat[:,0,:,1]-b.mat[:,0,:,1]), axis=1 ) ] 
+
+    # max relative difference from 1. in ABSLENGTH for each material 
+    np.c_[a.mat_names, np.max( np.abs( (a.mat[:,0,:,1]/b.mat[:,0,:,1]) - 1. ), axis=1 ) ]
+
+
+    # max absolute discrepancies in RAYLEIGH for each material
+    np.c_[a.mat_names,  np.max( np.abs( a.mat[:,0,:,2]-b.mat[:,0,:,2]), axis=1 ) ] 
+
+    # max relative difference from 1. in RAYLEIGH for each material 
+    np.c_[a.mat_names, np.max( np.abs( (a.mat[:,0,:,2]/b.mat[:,0,:,2]) - 1. ), axis=1 ) ]
+
+
+    # max absolute discrepancies in GROUPVEL for each material
+    np.c_[a.mat_names,  np.max( np.abs( a.mat[:,1,:,0]-b.mat[:,1,:,0]), axis=1 ) ] 
+
+    # max relative difference from 1. in GROUPVEL for each material
+    np.c_[a.mat_names,  np.max( np.abs( a.mat[:,1,:,0]/b.mat[:,1,:,0] - 1.), axis=1 ) ] 
+
+    # substantial diffs in GROUPVEL : comparing plots 
+    # seems to indicate a calculation difference wrt bin handling 
+    # new way is coming more directly from Geant4 so simply adopt the new
+
 
     """
     )

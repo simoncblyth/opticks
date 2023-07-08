@@ -198,6 +198,9 @@ class Fold(object):
 
 
     def __init__(self, base, **kwa):
+        """
+        Fold ctor
+        """
         self.base = base
         self.kwa = kwa 
         self.quiet = self.IsQuiet(**kwa)
@@ -248,7 +251,7 @@ class Fold(object):
                 a = NPMeta.Load(path)
                 self.txts[name] = a 
             elif name.endswith(".txt"):
-                a = NPMeta.Load(path)
+                a = NPMeta.LoadAsArray(path)
                 self.txts[name] = a
             elif self.IsFold(base, name):
                 a = Fold(path, symbol=name)

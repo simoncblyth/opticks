@@ -403,6 +403,9 @@ inline NP* U4Scint::CreateGeant4InterpolatedInverseCDF(
        bool energy_not_wavelength
 )   // static
 {
+
+    assert( material_name ); 
+
     G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
     double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
 
@@ -410,6 +413,7 @@ inline NP* U4Scint::CreateGeant4InterpolatedInverseCDF(
     // hmm more extensible (eg for Cerenkov [BetaInverse,u,payload] icdf)  
     // with the 3 for the different resolutions to be in the payload rather than as separate items ?
     // would of course use 4 to map to float4 after narrowing 
+
 
     NP* icdf = NP::Make<double>(3, num_bins, 1);  
     icdf->fill<double>(0.); 
@@ -425,10 +429,8 @@ inline NP* U4Scint::CreateGeant4InterpolatedInverseCDF(
     assert( hd_factor == 10 || hd_factor == 20 ); 
     double edge = 1./double(hd_factor) ;  
 
-    if(material_name)
-    {
-        icdf->set_meta<std::string>("name", material_name ); 
-    }
+    icdf->names.push_back(material_name) ;  // match X4/GGeo 
+    icdf->set_meta<std::string>("name", material_name ); 
 
     icdf->set_meta<std::string>("creator", "X4Scintillation::CreateGeant4InterpolatedInverseCDF" ); 
     icdf->set_meta<int>("hd_factor", hd_factor ); 

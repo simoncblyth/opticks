@@ -1,26 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-stree_mat_test.sh 
+stree_desc_test.sh 
 =====================
-
-
-::
-
-   DOM=ensel4 PLOT=GROUPVEL ./stree_mat_test.sh ana
-   DOM=ensel4 PLOT=DIFF_GROUPVEL ./stree_mat_test.sh ana
-
-   ## small diff with bizarre wiggles
-   ## looks like oldmat,newmat GROUPVEL calc slightly diff
-   ## can just use the new one 
-
-   DOM=ensel4 PLOT=RAYLEIGH ./stree_mat_test.sh ana
-   DOM=ensel4 PLOT=DIFF_RAYLEIGH ./stree_mat_test.sh ana
-   ## small sawtooth interpolation diff on large values, tecnicality  
-
-   DOM=ensel4 PLOT=ABSLENGTH ./stree_mat_test.sh ana
-   DOM=ensel4 PLOT=DIFF_ABSLENGTH ./stree_mat_test.sh ana
-   ## small diffs on large values, technicality  
-
 
 EOU
 }
@@ -28,21 +9,19 @@ EOU
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
-defarg="build_run_ana"
+#defarg="build_run_ana"
+defarg="build_run"
 arg=${1:-$defarg}
 
-name=stree_mat_test 
+name=stree_desc_test 
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name 
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-
 export stree_level=1 
 
-
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
-
 
 if [ "${arg/info}" != "$arg" ]; then 
     vars="BASH_SOURCE BASE FOLD"
