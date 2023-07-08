@@ -32,9 +32,9 @@
 template <typename T> class NPY ;
 #include "NConfigurable.hpp"
 
-struct SSim ; 
 struct sframe ; 
 struct stree ; 
+struct NPFold ; 
 
 class NLookup ; 
 class BMeta ;
@@ -443,10 +443,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         void convertSim() const  ; 
     private:
-        void convertSim_BndLib(SSim* sim) const ; 
-        void convertSim_ScintillatorLib(SSim* sim) const ; 
-        void convertSim_Prop(SSim* sim) const ; 
-        //void convertSim_MultiFilm(SSim* sim) const ; 
+        void convertSim_BndLib() const ; 
+        void convertSim_ScintillatorLib() const ; 
+        void convertSim_Prop() const ; 
+        //void convertSim_MultiFilm() const ; 
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
@@ -456,6 +456,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     private:
         static GGeo*                  fInstance ; 
         stree*                        m_tree ; 
+        NPFold*                       m_fold ; 
         SLogger*                      m_log ; 
         Opticks*                      m_ok ;  
         bool                          m_enabled_legacy_g4dae ; 

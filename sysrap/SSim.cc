@@ -137,7 +137,7 @@ void SSim::add(const char* k, const NP* a )
     if(a == nullptr) return ; 
 
     fold->add(k,a);  
-    if(strcmp(k, BND) == 0) import_bnd(); 
+    if(strcmp(k, snam::BND) == 0) import_bnd(); 
 }
 
 void SSim::add_subfold(const char* k, NPFold* f )
@@ -151,7 +151,7 @@ void SSim::add_subfold(const char* k, NPFold* f )
 
 
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
-const NP* SSim::get_bnd() const { return get(BND);  }
+const NP* SSim::get_bnd() const { return get(snam::BND);  }
 const SBnd* SSim::get_sbnd() const 
 { 
     const NP* bnd = get_bnd(); 
@@ -294,7 +294,7 @@ metadata names list associated with the bnd.npy array.
 
 const char* SSim::getBndName(unsigned bidx) const 
 {
-    const NP* bnd = fold->get(BND); 
+    const NP* bnd = fold->get(snam::BND); 
     bool valid = bnd && bidx < bnd->names.size() ; 
     if(!valid) return nullptr ; 
     const std::string& name = bnd->names[bidx] ; 
@@ -303,7 +303,7 @@ const char* SSim::getBndName(unsigned bidx) const
 int SSim::getBndIndex(const char* bname) const
 {
     unsigned count = 0 ;  
-    const NP* bnd = fold->get(BND); 
+    const NP* bnd = fold->get(snam::BND); 
     int bidx = bnd->get_name_index(bname, count ); 
     bool bname_found = count == 1 && bidx > -1  ;
 
@@ -345,8 +345,8 @@ void SSim::addFake_( const std::vector<std::string>& specs )
     LOG_IF(fatal, !has_optical) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  
     assert(has_optical);  
 
-    const NP* optical = fold->get(OPTICAL); 
-    const NP* bnd = fold->get(BND); 
+    const NP* optical = fold->get(snam::OPTICAL); 
+    const NP* bnd = fold->get(snam::BND); 
  
     NP* opticalplus = nullptr ; 
     NP* bndplus = nullptr ; 
@@ -354,8 +354,8 @@ void SSim::addFake_( const std::vector<std::string>& specs )
     Add( &opticalplus, &bndplus, optical, bnd, specs ); 
 
     //NOTE: are leaking the old ones 
-    fold->set(OPTICAL, opticalplus); 
-    fold->set(BND,     bndplus); 
+    fold->set(snam::OPTICAL, opticalplus); 
+    fold->set(snam::BND,     bndplus); 
 }
 
 
@@ -664,16 +664,16 @@ void SSim::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
 
 bool SSim::hasOptical() const 
 {
-    const NP* optical = get(OPTICAL); 
-    const NP* bnd = get(BND); 
+    const NP* optical = get(snam::OPTICAL); 
+    const NP* bnd = get(snam::BND); 
     bool has_optical = optical != nullptr && bnd != nullptr ; 
     return has_optical ; 
 }
 
 std::string SSim::descOptical() const 
 {
-    const NP* optical = get(OPTICAL); 
-    const NP* bnd = get(BND); 
+    const NP* optical = get(snam::OPTICAL); 
+    const NP* bnd = get(snam::BND); 
 
     if(optical == nullptr && bnd == nullptr) return "SSim::descOptical null" ; 
     return DescOptical(optical, bnd); 

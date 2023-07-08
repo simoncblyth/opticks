@@ -30,6 +30,7 @@ struct scontext ;
 #include <string>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
+#include "snam.h" 
 
 struct SYSRAP_API SSim
 {
@@ -37,24 +38,7 @@ struct SYSRAP_API SSim
     static const int stree_level ; 
 
     static constexpr const char* RELDIR = "SSim" ; 
-    //static constexpr const char* MULTIFILM = "multifilm.npy" ;
 
-
-    // these have new alternatives from stree/sstandard
-    static constexpr const char* BND     = "bnd.npy" ; 
-    static constexpr const char* OPTICAL = "optical.npy" ;
-
-    // TODO: create these in new workflow, currently only in old
-    static constexpr const char* ICDF    = "icdf.npy" ;
-    static constexpr const char* PROPCOM = "propcom.npy" ;
-
-    // arrays from X4/GGeo workflow are prefixed with old 
-    static constexpr const char* OLDICDF    = "oldicdf.npy" ;
-    static constexpr const char* OLDPROPCOM = "oldpropcom.npy" ;
-    static constexpr const char* OLDBND     = "oldbnd.npy" ; 
-    static constexpr const char* OLDOPTICAL = "oldoptical.npy" ;
-    static constexpr const char* OLDMAT     = "oldmat.npy" ; 
-    static constexpr const char* OLDSUR     = "oldsur.npy" ; 
 
  
     static const unsigned       MISSING ; 

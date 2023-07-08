@@ -34,6 +34,7 @@
 #include "stree.h"
 #include "SProp.hh"
 #include "NP.hh"
+#include "NPFold.h"
 
 #include "BOpticksResource.hh"
 #include "BStr.hh"
@@ -171,6 +172,7 @@ live=true instanciation only used from G4Opticks::translateGeometry
 GGeo::GGeo(Opticks* ok, bool live)
   :
    m_tree(nullptr),
+   m_fold(new NPFold), 
    m_log(new SLogger("GGeo::GGeo","",verbose)),
    m_ok(ok ? ok : Opticks::Instance() ), 
    m_enabled_legacy_g4dae(m_ok ? m_ok->isEnabledLegacyG4DAE() : false),   // --enabled_legacy_g4dae
@@ -2525,14 +2527,18 @@ collecting arrays such as "bnd" from GGeo
 
 void GGeo::convertSim() const 
 {
+    assert(m_fold); 
+
+    convertSim_BndLib(); 
+    convertSim_ScintillatorLib(); 
+    convertSim_Prop(); 
+    //convertSim_MultiFilm(); 
+
     SSim* sim = SSim::Get();
     LOG_IF(fatal, sim == nullptr) << "SSim should have been created by CSGFoundry::CSGFoundry " ; 
     assert(sim);  
 
-    convertSim_BndLib(sim); 
-    convertSim_ScintillatorLib(sim); 
-    convertSim_Prop(sim); 
-    //convertSim_MultiFilm(sim); 
+    sim->add_subfold("GGeo", m_fold ); 
 }
 
 /**
@@ -2545,41 +2551,40 @@ Migrated down from CSG_GGeo_Convert::convertBndLib
 
 **/
 
-void GGeo::convertSim_BndLib(SSim* sim) const 
+void GGeo::convertSim_BndLib() const 
 {
     LOG(LEVEL) << "[" ; 
     GBndLib* blib = getBndLib(); 
 
     bool can_create = blib->canCreateBuffer() ; 
-    NP* oldbnd = nullptr ; 
-    NP* oldoptical = nullptr ; 
+    NP* bnd = nullptr ; 
+    NP* optical = nullptr ; 
 
     if( can_create )
     {    
         blib->createDynamicBuffers();  
         // hmm perhaps this is done already on loading now ?
-        oldbnd = blib->getBuf(); 
+        bnd = blib->getBuf(); 
 
-        LOG(LEVEL) << " oldbnd.desc " << oldbnd->desc() ; 
+        LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
 
-        oldoptical = blib->getOpticalBuf();  
+        optical = blib->getOpticalBuf();  
 
         const std::vector<std::string>& bndnames = blib->getNameList(); 
-        oldbnd->set_names( bndnames );   
+        bnd->set_names( bndnames );   
 
         LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
 
-         
-        sim->add(SSim::OLDBND, oldbnd ); 
-        sim->add(SSim::OLDOPTICAL, oldoptical ); 
+        m_fold->add(snam::BND, bnd ); 
+        m_fold->add(snam::OPTICAL, optical ); 
  
         // OLD WORKFLOW ADDITION TO CHECK NEW WORKFLOW 
         GMaterialLib* mlib = getMaterialLib(); 
         GSurfaceLib*  slib = getSurfaceLib(); 
-        NP* oldmat = mlib->getBuf();
-        NP* oldsur = slib->getBuf();
-        sim->add(SSim::OLDMAT, oldmat ); 
-        sim->add(SSim::OLDSUR, oldsur ); 
+        NP* mat = mlib->getBuf();
+        NP* sur = slib->getBuf();
+        m_fold->add(snam::MAT, mat ); 
+        m_fold->add(snam::SUR, sur ); 
     }    
     else 
     {    
@@ -2597,14 +2602,14 @@ X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF
 
 **/
 
-void GGeo::convertSim_ScintillatorLib(SSim* sim) const 
+void GGeo::convertSim_ScintillatorLib() const 
 {
     GScintillatorLib* slib = getScintillatorLib();
     NP* icdf = slib->getBuf();   // assuming 1 scintillator
 
     LOG(LEVEL) << " icdf " << ( icdf ? icdf->sstr() : "-" ) ; 
 
-    sim->add(SSim::OLDICDF, icdf); 
+    m_fold->add(snam::ICDF, icdf); 
 }
 
 /**
@@ -2613,7 +2618,7 @@ GGeo::convertSim_Prop : This is experimental
 
 **/
 
-void GGeo::convertSim_Prop(SSim* sim) const 
+void GGeo::convertSim_Prop() const 
 {
     //const char* idpath = m_ok->getIdPath() ;
     const char* path_ = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ; 
@@ -2623,7 +2628,7 @@ void GGeo::convertSim_Prop(SSim* sim) const
     {
         LOG(LEVEL) << " path exists " << path ;  
         const NP* propcom = SProp::MockupCombination(path);
-        sim->add(SSim::OLDPROPCOM, propcom); 
+        m_fold->add(snam::PROPCOM, propcom); 
     }
     else
     {
@@ -2633,14 +2638,14 @@ void GGeo::convertSim_Prop(SSim* sim) const
 
 
 /*
-void GGeo::convertSim_MultiFilm(SSim* sim) const 
+void GGeo::convertSim_MultiFilm() const 
 {
     const char* defpath = "/tmp/debug_multi_film_table/all_table.npy" ; 
     const char* path = ssys::getenvvar("SSIM_MULTIFILM_PATH", defpath); 
     if(NP::Exists(path))
     {
         const NP* multifilm = NP::Load(path);  
-        sim->add(SSim::MULTIFILM, multifilm ); 
+        m_fold->add(snam::MULTIFILM, multifilm ); 
     }
 }
 */

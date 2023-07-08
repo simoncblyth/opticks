@@ -36,7 +36,7 @@ void test_findName()
 
 
     const SSim* sim = SSim::Load(); 
-    const NP* bnd = sim->get(SSim::BND); 
+    const NP* bnd = sim->get(snam::BND); 
     std::cout << " bnd " << bnd->sstr() << std::endl ; 
     std::cout << " bnd.names " << bnd->names.size() << std::endl ; 
 

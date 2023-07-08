@@ -91,18 +91,6 @@ struct sstandard
 { 
     static constexpr const bool VERBOSE = true ; 
     static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ;
-
-    static constexpr const char* WAVELENGTH = "wavelength.npy" ;
-    static constexpr const char* ENERGY = "energy.npy" ;
-    static constexpr const char* RAYLEIGH = "rayleigh.npy" ;
-    static constexpr const char* MAT = "mat.npy" ;
-    static constexpr const char* SUR = "sur.npy" ;
-    static constexpr const char* BD = "bd.npy" ;
-    static constexpr const char* BND = "bnd.npy" ;
-    static constexpr const char* OPTICAL = "optical.npy" ;
-
-    static constexpr const char* ICDF = "icdf.npy" ;
-
     const sdomain* dom ; 
 
     const NP* wavelength ; 
@@ -203,18 +191,18 @@ NPFold* sstandard::make_fold() const
 {
     NPFold* fold = new NPFold ; 
 
-    fold->add(WAVELENGTH , wavelength ); 
-    fold->add(ENERGY,      energy ); 
+    fold->add(snam::WAVELENGTH , wavelength ); 
+    fold->add(snam::ENERGY,      energy ); 
 
-    fold->add(RAYLEIGH,    rayleigh ); 
-    fold->add(MAT ,    mat ); 
-    fold->add(SUR ,    sur ); 
+    fold->add(snam::RAYLEIGH,    rayleigh ); 
+    fold->add(snam::MAT ,    mat ); 
+    fold->add(snam::SUR ,    sur ); 
 
-    fold->add(BD,      bd ); 
-    fold->add(BND,     bnd ); 
-    fold->add(OPTICAL, optical );  
+    fold->add(snam::BD,      bd ); 
+    fold->add(snam::BND,     bnd ); 
+    fold->add(snam::OPTICAL, optical );  
 
-    if(icdf) fold->add(ICDF, icdf) ; 
+    fold->add(snam::ICDF, icdf) ; 
 
     return fold ; 
 }
@@ -229,16 +217,15 @@ void sstandard::load(const char* base, const char* rel )
 {
     NPFold* fold = NPFold::Load(base, rel) ; 
 
-    wavelength = fold->get(WAVELENGTH); 
-    energy = fold->get(ENERGY); 
-    rayleigh = fold->get(RAYLEIGH); 
-    mat = fold->get(MAT); 
-    sur = fold->get(SUR); 
-    bd = fold->get(BD); 
-    bnd = fold->get(BND); 
-    optical = fold->get(OPTICAL); 
-
-    icdf = fold->get(ICDF); 
+    wavelength = fold->get(snam::WAVELENGTH); 
+    energy = fold->get(snam::ENERGY); 
+    rayleigh = fold->get(snam::RAYLEIGH); 
+    mat = fold->get(snam::MAT); 
+    sur = fold->get(snam::SUR); 
+    bd = fold->get(snam::BD); 
+    bnd = fold->get(snam::BND); 
+    optical = fold->get(snam::OPTICAL); 
+    icdf = fold->get(snam::ICDF); 
 }
  
 
