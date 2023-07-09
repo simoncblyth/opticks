@@ -142,6 +142,14 @@ A: It populates mtline. HMM what uses that ?
 
 void SSim::add(const char* k, const NP* a )
 { 
+    LOG(info) 
+        << " suspect this no longer used, checking that " 
+        << " k " << k 
+        << " a " << ( a ? a->sstr() : "-" )
+        ;
+
+    std::raise(SIGINT); 
+
     assert(k); 
     LOG_IF(LEVEL, a == nullptr) << "k:" << k  << " a null " ; 
     if(a == nullptr) return ; 

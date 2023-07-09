@@ -673,12 +673,19 @@ inline int NPFold::total_items() const
 /**
 NPFold::add
 ------------
+
+When *k* ends with ".txt" the key is changed to ".npy"
+to simplify handling of empty NPX::Holder arrays. 
+
+Previously only did that for "a->is_empty()" but 
+as also need the change on find decided its simpler
+to always do that. 
+
 **/
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
-    bool change_txt_to_npy = a->is_empty() ; 
-    // HMM: perhaps simpler to always do this, not just for empties ? 
+    bool change_txt_to_npy = true ; 
     std::string key = FormKey(k, change_txt_to_npy ); 
     add_(key.c_str(), a ); 
 }
