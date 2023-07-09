@@ -17,13 +17,10 @@
 #include "SSim.hh"
 #include "SBnd.h"
 
-
 const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
 const int SSim::stree_level = ssys::getenvint("SSim__stree_level", 0) ; 
 
-
 SSim* SSim::INSTANCE = nullptr ; 
-const unsigned SSim::MISSING = ~0u ; 
 
 SSim* SSim::Get(){ return INSTANCE ; }
 scontext* SSim::GetContext(){ return INSTANCE ? INSTANCE->sctx : nullptr ; }
@@ -35,7 +32,6 @@ const char* SSim::GetContextBrief() // static
     const char* extra = sctx_brief.c_str() ; 
     return strdup(extra) ; 
 }
-
 
 SSim* SSim::CreateOrReuse()
 { 
@@ -115,7 +111,8 @@ SSim* SSim::Load(const char* base, const char* reldir)
 SSim::SSim()
     :
     sctx(new scontext),
-    fold(new NPFold),
+    topfold(new NPFold),
+    fold(topfold),
     tree(new stree)
 {
     init(); 
@@ -129,6 +126,19 @@ void SSim::init()
     LOG(LEVEL) << sctx->desc() ;     
 }
 
+/**
+SSim::add
+-----------
+
+Not keen on adding one-by-one anymore. 
+Its cleaner to collect NPFold externally them add_subfold. 
+So need to move stree::import_bnd to prior to 
+it being needed, not on collection. 
+
+Q: Why is stree::import_bnd needed here ? Can it be deferred ?
+A: It populates mtline. HMM what uses that ?
+
+**/
 
 void SSim::add(const char* k, const NP* a )
 { 
@@ -137,7 +147,13 @@ void SSim::add(const char* k, const NP* a )
     if(a == nullptr) return ; 
 
     fold->add(k,a);  
-    if(strcmp(k, snam::BND) == 0) import_bnd(); 
+
+    // dont like : should be elsewhere 
+    if(strcmp(k, snam::BND) == 0) tree->import_bnd(a); 
+
+    // actually SSim::add could be just transitional while still using GGeo
+    // normally SSim used to get 
+
 }
 
 void SSim::add_subfold(const char* k, NPFold* f )
@@ -158,46 +174,7 @@ const SBnd* SSim::get_sbnd() const
     return bnd ? new SBnd(bnd) : nullptr  ;  
 }
 
-
-/**
-SSim::import_bnd
-------------------
-
-In old GGeo workflow SSim::add with SSim::BND key is called from GGeo::convertSim_BndLib
-
-HMM: this may be a kludge mix of old and new 
-
-
-TODO: THIS FEELS OUT OF PLACE, SHOULD BE IN stree.h OR sstandard.h 
-
-**/
-
-void SSim::import_bnd()
-{
-    LOG(LEVEL) << "[" ;  
-
-    const NP* bnd = get_bnd(); 
-    assert(bnd) ; 
-    const std::vector<std::string>& bnames = bnd->names ; 
-
-    std::vector<int>& mtline = tree->mtline ; 
-    const std::vector<int>& mtindex = tree->mtindex ; 
-    const std::vector<std::string>& mtname = tree->mtname ; 
-    
-    SBnd::FillMaterialLine( mtline, mtindex, mtname, bnames ); 
-
-    tree->init_mtindex_to_mtline() ; // fills (int,int) map 
-
-    LOG(LEVEL) << tree->desc_mt() ; 
-    LOG(LEVEL) << "]" ;  
-}
-
-
-
-stree* SSim::get_tree() const 
-{
-    return tree ; 
-}
+stree* SSim::get_tree() const { return tree ; }
 
 /**
 SSim::lookup_mtline
@@ -248,8 +225,13 @@ would make this save more standard.
 void SSim::save(const char* base, const char* reldir) const 
 { 
     const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
-    fold->save(dir); 
-    tree->save(dir, stree::RELDIR); 
+
+    NPFold* f_tree = tree->serialize() ; 
+    topfold->add_subfold( stree::RELDIR, f_tree ); 
+
+    topfold->save(dir); 
+
+    //tree->save(dir, stree::RELDIR); 
 }
 
 
@@ -268,9 +250,9 @@ void SSim::load(const char* base, const char* reldir)
     LOG(LEVEL) << "[" ; 
     const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
 
-    LOG(LEVEL) << "[ fold.load [" << dir << "]" ; 
-    fold->load(dir) ;   
-    LOG(LEVEL) << "] fold.load [" << dir << "]" ; 
+    LOG(LEVEL) << "[ topfold.load [" << dir << "]" ; 
+    topfold->load(dir) ;   
+    LOG(LEVEL) << "] topfold.load [" << dir << "]" ; 
 
     if(load_tree_load)
     {
@@ -289,7 +271,7 @@ void SSim::load(const char* base, const char* reldir)
 
 
 
-std::string SSim::desc() const { return fold->desc() ; }
+std::string SSim::desc() const { return topfold->desc() ; }
 
 /**
 SSim::getBndName
@@ -306,7 +288,7 @@ const char* SSim::getBndName(unsigned bidx) const
     bool valid = bnd && bidx < bnd->names.size() ; 
     if(!valid) return nullptr ; 
     const std::string& name = bnd->names[bidx] ; 
-    return name.c_str()  ;  // no need for strdup as it lives in  NP metadata 
+    return name.c_str()  ;  // no need for strdup as it lives in NP vector 
 }
 int SSim::getBndIndex(const char* bname) const
 {
@@ -350,11 +332,11 @@ Fabricates boundaries and appends them to the bnd and optical arrays
 void SSim::addFake_( const std::vector<std::string>& specs )
 {  
     bool has_optical = hasOptical(); 
-    LOG_IF(fatal, !has_optical) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  
+    LOG_IF(fatal, !has_optical) << " optical+bnd are required " ;
     assert(has_optical);  
 
     const NP* optical = fold->get(snam::OPTICAL); 
-    const NP* bnd = fold->get(snam::BND); 
+    const NP* bnd     = fold->get(snam::BND); 
  
     NP* opticalplus = nullptr ; 
     NP* bndplus = nullptr ; 
@@ -377,7 +359,12 @@ specification.
 
 **/
 
-void SSim::Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ) // static 
+void SSim::Add( 
+    NP** opticalplus, 
+    NP** bndplus, 
+    const NP* optical, 
+    const NP* bnd, 
+    const std::vector<std::string>& specs ) // static 
 {
     *opticalplus = AddOptical(optical, bnd->names, specs ); 
     *bndplus = AddBoundary( bnd, specs );     
@@ -403,12 +390,15 @@ which shoild only ever happen for surfaces.
 
 **/
 
-NP* SSim::AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs )
+NP* SSim::AddOptical( 
+    const NP* optical, 
+    const std::vector<std::string>& bnames, 
+    const std::vector<std::string>& specs )
 {
     unsigned ndim = optical->shape.size() ; 
+    assert( ndim == 2 ); 
     unsigned num_bnd = bnames.size() ; 
     unsigned num_add = specs.size()  ; 
-    assert( ndim == 2 ); 
     unsigned ni = optical->shape[0] ; 
     unsigned nj = optical->shape[1] ; 
     assert( 4*num_bnd == ni ); 
@@ -627,7 +617,9 @@ bnd with shape (44, 4, 2, 761, 4, )::
 
 **/
 
-void SSim::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ) // static 
+void SSim::GetPerfectValues( 
+    std::vector<float>& values, 
+    unsigned nk, unsigned nl, unsigned nm, const char* name ) // static 
 {
     LOG(LEVEL) << name << " nk " << nk << " nl " << nl << " nm " << nm ; 
 
@@ -669,7 +661,6 @@ void SSim::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
     }
 } 
 
-
 bool SSim::hasOptical() const 
 {
     const NP* optical = get(snam::OPTICAL); 
@@ -677,6 +668,7 @@ bool SSim::hasOptical() const
     bool has_optical = optical != nullptr && bnd != nullptr ; 
     return has_optical ; 
 }
+
 
 std::string SSim::descOptical() const 
 {
@@ -689,7 +681,12 @@ std::string SSim::descOptical() const
 
 std::string SSim::DescOptical(const NP* optical, const NP* bnd )
 {
-    bool consistent = optical->shape[0] == bnd->shape[0]*4 && bnd->shape[0] == int(bnd->names.size())  ;   
+    int num_bnd = bnd->shape[0] ; 
+    int num_bnd_names = bnd->names.size() ; 
+    assert( num_bnd == num_bnd_names ); 
+
+    int num_optical = optical->shape[0] ; 
+    bool consistent = num_optical == num_bnd*4  ; 
 
     typedef std::map<unsigned, std::string> MUS ; 
     MUS surf ; 
@@ -698,7 +695,7 @@ std::string SSim::DescOptical(const NP* optical, const NP* bnd )
     ss << "SSim::DescOptical"
        << " optical " << optical->sstr() 
        << " bnd " << bnd->sstr() 
-       << " bnd.names " << bnd->names.size()
+       << " num_bnd_names " << num_bnd_names
        << " consistent " << ( consistent ? "YES" : "NO:ERROR" )   
        << std::endl 
        ;   

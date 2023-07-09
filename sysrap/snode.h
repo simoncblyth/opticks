@@ -49,8 +49,6 @@ struct snode
 
     std::string desc() const ; 
     static std::string Brief_(const std::vector<snode>& nodes ); 
-
-
 }; 
 
 

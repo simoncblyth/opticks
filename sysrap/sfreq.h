@@ -18,7 +18,7 @@ Canonical usage is for geometry progeny digests
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include "NP.hh"
+#include "NPFold.h"
 
 struct sfreq_matchkey 
 {
@@ -68,7 +68,6 @@ struct sfreq
     size_t get_maxkeylen() const ; 
     int get_total() const ; 
 
-
     NP* make_key() const ; 
     NP* make_val() const ; 
     void import_key_val( const NP* key, const NP* val); 
@@ -78,6 +77,10 @@ struct sfreq
 
     void load(const char* dir); 
     void load(const char* dir, const char* reldir); 
+
+    NPFold* serialize() const ; 
+    void import(const NPFold* fold); 
+
 };
 
 
@@ -227,7 +230,14 @@ inline int sfreq::get_total() const
 
 
 
+
 /**
+sfreq::make_key
+-----------------
+
+HMM: this uses an awkward approach of using a char array.
+Alternate would be to just use set_names on the val array.  
+
 In [5]: t.key.view("|S5").ravel()
 Out[5]: array([b'blue', b'red', b'green'], dtype='|S5')
 
@@ -289,36 +299,47 @@ inline void sfreq::import_key_val( const NP* key, const NP* val)
 
 
 
-// TODO: standardize to using NPFold.h  serialize/import pattern 
 inline void sfreq::save(const char* dir) const 
 {
     if(vsu.size() == 0) return ; 
-    const NP* key = make_key(); 
-    const NP* val = make_val(); 
-    key->save( dir, KEY) ; 
-    val->save( dir, VAL) ; 
+
+    NPFold* fold = serialize() ; 
+    fold->save(dir); 
 }
 
 inline void sfreq::save(const char* dir, const char* reldir) const 
 {
     if(vsu.size() == 0) return ; 
-    const NP* key = make_key(); 
-    const NP* val = make_val(); 
-    key->save( dir, reldir, KEY) ; 
-    val->save( dir, reldir, VAL) ; 
+    NPFold* fold = serialize() ; 
+    fold->save(dir, reldir); 
 }
 
 inline void sfreq::load(const char* dir)
 {
-    NP* key = NP::Load(dir, KEY); 
-    NP* val = NP::Load(dir, VAL); 
-    import_key_val(key, val); 
+    NPFold* fold = NPFold::Load(dir) ; 
+    import(fold); 
 }
 inline void sfreq::load(const char* dir, const char* reldir)
 {
-    NP* key = NP::Load(dir, reldir, KEY); 
-    NP* val = NP::Load(dir, reldir, VAL); 
+    NPFold* fold = NPFold::Load(dir, reldir); 
+    import(fold); 
+}
+
+
+inline NPFold* sfreq::serialize() const 
+{
+    NPFold* fold = new NPFold ; 
+    fold->add( KEY, make_key() ); 
+    fold->add( VAL, make_val() ); 
+    return fold ; 
+}
+
+inline void sfreq::import(const NPFold* fold)
+{
+    const NP* key = fold->get(KEY) ; 
+    const NP* val = fold->get(VAL);  
     import_key_val(key, val); 
 }
+
 
 

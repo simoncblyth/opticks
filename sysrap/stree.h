@@ -83,6 +83,26 @@ TODO Overview
 * solids nsphere ncone etc... into a more uniform direct to CSGPrim approach 
 
 
+
+WIP: standardize to using NPFold.h serialize/import pattern 
+
+
+Optimization ideas
+--------------------
+
+Work out how the time is split and consider pruning, 
+not everything needs to be persisted eg 
+
+gtd
+inst_f4
+iinst_f4 
+
+POSSIBLY : make saving full nds nodes optional as the 
+factorization might be made to replace the full info ? 
+
+
+
+
 TODO : mapping from "factorized" instances back to origin PV and vice-versa 
 -----------------------------------------------------------------------------
 
@@ -182,6 +202,7 @@ When SSim not in use can also use::
 #include "sstandard.h"
 #include "smatsur.h"
 #include "snam.h"
+#include "SBnd.h"
 
 
 struct stree
@@ -248,11 +269,6 @@ struct stree
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
-#ifdef DEBUG_IMPLICIT
-    std::vector<int4>        implicit_isur ; 
-    std::vector<int4>        implicit_osur ; 
-#endif
-
     std::vector<std::string> soname ;       // unique solid names
     std::vector<int>         solids ;       // snd idx 
 
@@ -293,6 +309,7 @@ struct stree
     void set_level(int level_); 
 
     std::string desc() const ;
+    std::string desc_size(char div='\n') const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
     std::string desc_sub(const char* sub) const ;
@@ -387,21 +404,34 @@ struct stree
     std::string desc_nodes_(const std::vector<snode>& nn, int edgeitems=10) const ;
     std::string desc_solids() const ; 
 
-
+    NP* make_trs() const ; 
+    void save_trs(const char* fold) const ; 
 
 
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
+    void old_save_( const char* fold ) const ;
+    NPFold* serialize() const ; 
 
-    NP* make_trs() const ; 
-    void save_trs(const char* fold) const ; 
 
     template<typename S, typename T>   // S:compound type T:atomic "transport" type
     static void ImportArray( std::vector<S>& vec, const NP* a ); 
 
-    int load_( const char* fold );
-    int load( const char* base, const char* reldir=RELDIR );
+    static void ImportNames( std::vector<std::string>& names, const NP* a ); 
+
+
     static stree* Load(const char* base, const char* reldir=RELDIR ); 
+    static stree* OldLoad(const char* base, const char* reldir=RELDIR ); 
+
+    int load( const char* base, const char* reldir=RELDIR );
+    int oldload( const char* base, const char* reldir=RELDIR );
+
+    int load_( const char* fold );
+    int oldload_( const char* fold );
+
+    void postload(); 
+    void import(const NPFold* fold); 
+
 
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ; 
     static std::string Desc(const std::vector<int>& a, unsigned edgeitems=10 ) ; 
@@ -474,6 +504,7 @@ struct stree
 
     NPFold* get_surface_subfold(int idx) const ; 
 
+    void import_bnd(const NP* bnd); 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
 };
@@ -530,6 +561,42 @@ inline void stree::set_level(int level_)
     } 
 }
 
+inline std::string stree::desc_size(char div) const
+{
+    std::stringstream ss ;
+    ss 
+       << std::endl
+       << "[stree::desc_size" << div
+       << " mtname " << mtname.size() << div 
+       << " mtname_no_rindex " << mtname_no_rindex.size() << div 
+       << " mtindex " << mtindex.size() << div 
+       << " mtline " << mtline.size() << div 
+       << " mtindex_to_mtline " << mtindex_to_mtline.size() << div 
+       << " suname " << suname.size() << div 
+       << " suindex " << suindex.size() << div 
+       << " vbd " << vbd.size() << div 
+       << " bdname " << bdname.size() << div 
+       << " implicit " << implicit.size() << div 
+       << " soname " << soname.size() << div 
+       << " solids " << solids.size() << div 
+       << " sensor_count " << sensor_count << div
+       << " nds " << nds.size() << div
+       << " rem " << rem.size() << div 
+       << " m2w " << m2w.size() << div
+       << " w2m " << w2m.size() << div
+       << " gtd " << gtd.size() << div
+       << " digs " << digs.size() << div
+       << " subs " << subs.size() << div
+       << " soname " << soname.size() << div
+       << " factor " << factor.size() << div
+       << std::endl
+       ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
 inline std::string stree::desc() const
 {
     std::stringstream ss ;
@@ -537,17 +604,7 @@ inline std::string stree::desc() const
        << std::endl
        << "[stree::desc"
        << " level " << level 
-       << " sensor_count " << sensor_count 
-       << " nds " << nds.size()
-       << " rem " << rem.size()
-       << " m2w " << m2w.size()
-       << " w2m " << w2m.size()
-       << " gtd " << gtd.size()
-       << " digs " << digs.size()
-       << " subs " << subs.size()
-       << " soname " << soname.size()
-       << " factor " << factor.size()
-       << std::endl
+       << desc_size() 
        << " stree.desc.subs_freq " 
        << std::endl
        << ( subs_freq ? subs_freq->desc() : "-" )
@@ -575,8 +632,8 @@ inline std::string stree::desc() const
        << std::endl
        ;
 
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -1640,96 +1697,6 @@ inline std::string stree::desc_solids() const
 }
 
 
-
-inline void stree::save( const char* base, const char* reldir ) const 
-{
-    const char* dir = U::Resolve(base, reldir); 
-    save_(dir); 
-}
-
-/**
-stree::save_
---------------
-
-TODO: standardize to using NPFold.h serialize/import pattern 
-
-POSSIBLY : make saving full nds nodes optional as the 
-factorization might be made to replace the full info ? 
-
-* would need to store first subtree for each factor to do this, "fnd" factor nodes  
-
-**/
-
-inline void stree::save_( const char* fold ) const 
-{
-    if(level > 0) std::cout << "[ stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
-
-    // nodes
-    NP::Write<int>(    fold, NDS, (int*)nds.data(), nds.size(), snode::NV );
-    NP::Write<int>(    fold, REM, (int*)rem.data(), rem.size(), snode::NV );
-
-    // transforms
-    NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
-    NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
-    NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
-
-    // materials
-    NP::WriteNames(    fold, MTNAME,   mtname );
-    NP::WriteNames(    fold, MTNAME_NO_RINDEX,   mtname_no_rindex );
-    NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
-    NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
-
-    if(material) material->save(fold, MATERIAL) ; // material from U4Tree::initMaterials
-    if(surface)  surface->save(fold, SURFACE) ;
-
-    // surfaces
-    NP::WriteNames(    fold, SUNAME,   suname );
-    NP::WriteNames(    fold, IMPLICIT, implicit );
-    NP::Write<int>(    fold, SUINDEX, (int*)suindex.data(),  suindex.size() );
-
-
-    if(standard) standard->save(fold, STANDARD) ; 
-
-#ifdef DEBUG_IMPLICIT
-    NP* _implicit_isur = NPX::ArrayFromVec<int, int4>( implicit_isur );  
-    NP* _implicit_osur = NPX::ArrayFromVec<int, int4>( implicit_osur );  
-    _implicit_isur->save(fold, IMPLICIT_ISUR ); 
-    _implicit_osur->save(fold, IMPLICIT_OSUR ); 
-#endif
-
-    // solids 
-    NPFold* fcsg = csg->serialize() ; 
-    fcsg->save( fold, CSG ); 
-    NP::WriteNames( fold, SONAME, soname );
-
-    // digests
-    NP::WriteNames( fold, DIGS,   digs );
-    NP::WriteNames( fold, SUBS,   subs );
-
-
-    if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
-    NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
-
-
-
-
-    NP::Write<double>(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
-    NP::Write<double>(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
-    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
-    NP::Write<float>(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-    NP::Write<float>(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
-
-    assert( sensor_count == sensor_id.size() ); 
-    NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
-    NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
-    if(level > 0) std::cout << "] stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
-}
-
-
-
-
-
-
 /**
 stree::make_trs
 -----------------
@@ -1771,18 +1738,160 @@ inline void stree::save_trs(const char* fold) const
     trs->save(fold, TRS ); 
 }
 
-inline int stree::load( const char* base, const char* reldir ) 
+
+
+
+
+
+
+
+
+inline void stree::save( const char* base, const char* reldir ) const 
 {
-    const char* dir = U::Resolve(base, reldir ); 
-    return load_(dir); 
+    const char* dir = U::Resolve(base, reldir); 
+    save_(dir); 
+}
+inline void stree::save_( const char* dir ) const 
+{
+    NPFold* fold = serialize() ; 
+    fold->save(dir) ;  
 }
 
-inline stree* stree::Load(const char* base, const char* reldir ) // static 
+inline void stree::old_save_( const char* dir ) const 
 {
-    stree* st = new stree ; 
-    st->load(base, reldir); 
-    return st ; 
+    if(level > 0) std::cout << "[ stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
+
+    // nodes
+    NP::Write<int>(    dir, NDS, (int*)nds.data(), nds.size(), snode::NV );
+    NP::Write<int>(    dir, REM, (int*)rem.data(), rem.size(), snode::NV );
+
+    // transforms
+    NP::Write<double>( dir, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
+    NP::Write<double>( dir, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
+    NP::Write<double>( dir, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
+
+    // materials
+    NP::WriteNames(    dir, MTNAME,   mtname );
+    NP::WriteNames(    dir, MTNAME_NO_RINDEX,   mtname_no_rindex );
+
+    NP::Write<int>(    dir, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
+    NP::Write<int>(    dir, MTLINE,  (int*)mtline.data(),   mtline.size() );
+
+    if(material) material->save(dir, MATERIAL) ; // material from U4Tree::initMaterials
+    if(surface)  surface->save(dir, SURFACE) ;
+
+    // surfaces
+    NP::WriteNames(    dir, SUNAME,   suname );
+    NP::WriteNames(    dir, IMPLICIT, implicit );
+    NP::Write<int>(    dir, SUINDEX, (int*)suindex.data(),  suindex.size() );
+
+
+    NPFold* f_standard = standard->serialize() ; 
+    f_standard->save( dir, STANDARD ); 
+
+    // solids 
+    NPFold* f_csg = csg->serialize() ; 
+    f_csg->save( dir, CSG ); 
+
+
+    NP::WriteNames( dir, SONAME, soname );
+
+    // digests
+    NP::WriteNames( dir, DIGS,   digs );
+    NP::WriteNames( dir, SUBS,   subs );
+
+
+    if(subs_freq) subs_freq->save(dir, SUBS_FREQ);
+
+    NP::Write<int>(dir, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
+
+
+    NP::Write<double>(dir,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write<double>(dir,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
+    NP::Write<float>(dir,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
+    NP::Write<float>(dir,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+
+    assert( sensor_count == sensor_id.size() ); 
+    NP::Write<int>(    dir, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
+    NP::Write<int>(    dir, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
+    if(level > 0) std::cout << "] stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
 }
+
+inline NPFold* stree::serialize() const 
+{
+    NPFold* fold = new NPFold ; 
+
+    NP* _nds = NPX::ArrayFromVec<int,snode>( nds, snode::NV ) ; 
+    NP* _rem = NPX::ArrayFromVec<int,snode>( rem, snode::NV ) ; 
+    NP* _m2w = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( m2w, 4, 4 ) ; 
+    NP* _w2m = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( w2m, 4, 4 ) ; 
+    NP* _gtd = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( gtd, 4, 4 ) ; 
+
+    fold->add( NDS, _nds ); 
+    fold->add( REM, _rem );
+    fold->add( M2W, _m2w );
+    fold->add( W2M, _w2m );
+    fold->add( GTD, _gtd );
+
+    NP* _mtname = NPX::Holder(mtname) ; 
+    NP* _mtname_no_rindex = NPX::Holder(mtname_no_rindex) ; 
+    NP* _mtindex = NPX::ArrayFromVec<int,int>( mtindex ); 
+    NP* _mtline = NPX::ArrayFromVec<int,int>( mtline ); 
+
+
+    fold->add( MTNAME,  _mtname ); 
+    fold->add( MTNAME_NO_RINDEX,  _mtname_no_rindex ); 
+    fold->add( MTINDEX, _mtindex ); 
+    fold->add( MTLINE , _mtline ); 
+
+    if(material) fold->add_subfold( MATERIAL, material );  
+    if(surface)  fold->add_subfold( SURFACE,  surface );  
+
+
+    fold->add( SUNAME,   NPX::Holder(suname) ); 
+    fold->add( IMPLICIT, NPX::Holder(implicit) ); 
+    fold->add( SUINDEX,  NPX::ArrayFromVec<int,int>( suindex )  ); 
+
+    NPFold* f_standard = standard->serialize() ; 
+    fold->add_subfold( STANDARD, f_standard ); 
+
+    NPFold* f_csg = csg->serialize() ; 
+    fold->add_subfold( CSG, f_csg ); 
+
+    fold->add( SONAME, NPX::Holder(soname) ); 
+
+    fold->add( DIGS, NPX::Holder(digs) ); 
+    fold->add( SUBS, NPX::Holder(subs) ); 
+
+    NPFold* f_subs_freq = subs_freq->serialize() ; 
+    fold->add_subfold( SUBS_FREQ, f_subs_freq ); 
+
+    NP* _factor = NPX::ArrayFromVec<int,sfactor>( factor, sfactor::NV ); 
+
+    NP* _inst = NPX::ArrayFromVec<double, glm::tmat4x4<double>>( inst, 4, 4) ; 
+    NP* _iinst = NPX::ArrayFromVec<double, glm::tmat4x4<double>>( iinst, 4, 4) ; 
+
+    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
+    NP* _inst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_f4, 4, 4) ; 
+    NP* _iinst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( iinst_f4, 4, 4) ; 
+
+    NP* _inst_nidx = NPX::ArrayFromVec<int,int>( inst_nidx ) ; 
+    NP* _sensor_id = NPX::ArrayFromVec<int,int>( sensor_id ) ; 
+
+    fold->add( FACTOR, _factor ); 
+    fold->add( INST,   _inst ); 
+    fold->add( IINST,   _iinst ); 
+    fold->add( INST_F4,   _inst_f4 ); 
+    fold->add( IINST_F4,   _iinst_f4 ); 
+    fold->add( INST_NIDX,   _inst_nidx ); 
+    fold->add( SENSOR_ID,   _sensor_id ); 
+
+    return fold ; 
+}
+
+
+
 
 template<typename S, typename T>
 inline void stree::ImportArray( std::vector<S>& vec, const NP* a )
@@ -1799,29 +1908,59 @@ template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::
 template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* ); 
 template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* ); 
 
-
-
-/**
-stree::load_
----------------
-
-This is taking 0.46s for full JUNO : which is excessive as 
-not yet being used.
-
-TODO: switch over to NPFold.h for persisting 
-
-TODO: work out how the time is split and consider pruning, 
-not everything here needs to be persisted eg 
-
-gtd
-inst_f4
-iinst_f4 
-
-**/
-
-inline int stree::load_( const char* fold )
+inline void stree::ImportNames( std::vector<std::string>& names, const NP* a ) // static 
 {
-    if(level > 0) std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
+    if( a == nullptr )
+    {
+        std::cerr << "stree::ImportNames a is null " << std::endl ; 
+        return ;  
+    }
+    a->get_names(names); 
+}
+
+
+
+
+
+inline stree* stree::Load(const char* base, const char* reldir ) // static 
+{
+    stree* st = new stree ; 
+    st->load(base, reldir); 
+    return st ; 
+}
+inline stree* stree::OldLoad(const char* base, const char* reldir ) // static 
+{
+    stree* st = new stree ; 
+    st->oldload(base, reldir); 
+    return st ; 
+}
+
+
+inline int stree::load( const char* base, const char* reldir ) 
+{
+    const char* dir = U::Resolve(base, reldir ); 
+    int rc = load_(dir); 
+    postload(); 
+    return rc ; 
+}
+inline int stree::oldload( const char* base, const char* reldir ) 
+{
+    const char* dir = U::Resolve(base, reldir ); 
+    int rc = oldload_(dir); 
+    postload(); 
+    return rc ; 
+}
+
+
+inline int stree::load_( const char* dir )
+{
+    NPFold* fold = NPFold::Load(dir) ; 
+    import(fold); 
+    return 0 ; 
+}
+inline int stree::oldload_( const char* fold )
+{
+    if(level > 0) std::cout << "stree::oldload_ " << ( fold ? fold : "-" ) << std::endl ; 
 
     if(NP::Exists(fold, NDS))
     {
@@ -1875,23 +2014,9 @@ inline int stree::load_( const char* fold )
         assert( standard->bd ); 
         NPX::VecFromArray<int4>( vbd, standard->bd );  
         standard->bd->get_names( bdname );
+
+        import_bnd( standard->bnd ); 
     }
-
-
-#ifdef DEBUG_IMPLICIT
-    if(NP::Exists(fold, IMPLICIT_ISUR ))
-    {
-        NP* a_implicit_isur = NP::Load(fold, IMPLICIT_ISUR ) ; 
-        NPX::VecFromArray<int4>( implicit_isur, a_implicit_isur );  
-    }
-
-    if(NP::Exists(fold, IMPLICIT_OSUR ))
-    {
-        NP* a_implicit_osur = NP::Load(fold, IMPLICIT_OSUR ) ; 
-        NPX::VecFromArray<int4>( implicit_osur, a_implicit_osur );  
-    }
-#endif 
-
 
     if(NP::Exists(fold, CSG))
     {
@@ -1914,11 +2039,11 @@ inline int stree::load_( const char* fold )
     NP::ReadNames( fold, SUBS,   subs );
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
+
     ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
 
     if(material) material->load(fold, MATERIAL) ;
     if(surface) surface->load(fold,   SURFACE) ;
-
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
@@ -1935,6 +2060,73 @@ inline int stree::load_( const char* fold )
 
     return 0 ; 
 }
+
+
+inline void stree::postload()
+{
+
+
+
+}
+
+
+inline void stree::import(const NPFold* fold)
+{
+    ImportArray<snode, int>( nds,                  fold->get(NDS) );
+    ImportArray<snode, int>( rem,                  fold->get(REM) ); 
+    ImportArray<glm::tmat4x4<double>, double>(m2w, fold->get(M2W) ); 
+    ImportArray<glm::tmat4x4<double>, double>(w2m, fold->get(W2M) ); 
+    ImportArray<glm::tmat4x4<double>, double>(gtd, fold->get(GTD) ); 
+
+    ImportNames( soname,            fold->get(SONAME) ); 
+    ImportNames( mtname,            fold->get(MTNAME) );
+    ImportNames( mtname_no_rindex,  fold->get(MTNAME_NO_RINDEX) );
+    ImportNames( suname,            fold->get(SUNAME) );
+    ImportNames( implicit,          fold->get(IMPLICIT) );
+
+    ImportArray<int, int>( mtindex, fold->get(MTINDEX) );
+    ImportArray<int, int>( suindex, fold->get(SUINDEX) );
+  
+    NPFold* f_standard = fold->get_subfold(STANDARD) ; 
+    standard->import(f_standard); 
+
+    assert( standard->bd ); 
+    NPX::VecFromArray<int4>( vbd, standard->bd );  
+    standard->bd->get_names( bdname );
+
+    assert( standard->bnd ); 
+    import_bnd( standard->bnd ); 
+
+ 
+    NPFold* f_csg = fold->get_subfold(CSG);
+    csg->import(f_csg); 
+ 
+    ImportArray<int, int>( mtline, fold->get(MTLINE) );
+    init_mtindex_to_mtline(); 
+
+    ImportNames( digs, fold->get(DIGS) ); 
+    ImportNames( subs, fold->get(SUBS) ); 
+
+    NPFold* f_subs_freq = fold->get_subfold(SUBS_FREQ) ; 
+    subs_freq->import(f_subs_freq); 
+
+    ImportArray<sfactor, int>( factor, fold->get(FACTOR) ); 
+
+    material = fold->get_subfold( MATERIAL) ;
+    surface  = fold->get_subfold( SURFACE ) ;
+
+    ImportArray<glm::tmat4x4<double>, double>(inst,   fold->get(INST)); 
+    ImportArray<glm::tmat4x4<double>, double>(iinst,  fold->get(IINST)); 
+    ImportArray<glm::tmat4x4<float>, float>(inst_f4,  fold->get(INST_F4)); 
+    ImportArray<glm::tmat4x4<float>, float>(iinst_f4, fold->get(IINST_F4)); 
+
+    ImportArray<int, int>( sensor_id, fold->get(SENSOR_ID) );
+    sensor_count = sensor_id.size(); 
+ 
+    ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
+}
+
+
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 
 {
@@ -2947,6 +3139,37 @@ inline void stree::initStandard()
     standard->deferred_init( vbd, bdname, suname, surface ); 
 }
 
+
+/**
+stree::import_bnd
+-------------------
+
+Moved from SSim::import_bnd 
+
+**/
+
+inline void stree::import_bnd(const NP* bnd)
+{
+    assert(bnd) ; 
+    const std::vector<std::string>& bnames = bnd->names ; 
+
+    assert( mtname.size() == mtname.size() ); 
+    
+    SBnd::FillMaterialLine( mtline, mtindex, mtname, bnames ); 
+
+    init_mtindex_to_mtline() ; // fills (int,int) map 
+
+    std::cerr 
+        << "stree::import_bnd" 
+        << " bnd " << bnd->sstr()
+        << " desc_mt " 
+        << std::endl 
+        << desc_mt() 
+        << std::endl 
+        ; 
+}
+
+
 /**
 stree::init_mtindex_to_mtline
 ------------------------------
@@ -2960,7 +3183,14 @@ TODO: suspect this complication can be avoided using NPX.h load/save of maps ?
 inline void stree::init_mtindex_to_mtline()
 {
     bool consistent = mtindex.size() == mtline.size() ;
-    if(!consistent) std::cerr << "must use SBnd::FillMaterialLine once have bnd specs" << std::endl ; 
+    if(!consistent) std::cerr 
+        << "stree::init_mtindex_to_mtline"
+        << " mtindex.size " << mtindex.size()
+        << " mtline.size " << mtline.size()
+        << " : must use SBnd::FillMaterialLine once have bnd specs" 
+        << std::endl 
+        ;
+ 
     assert(consistent); 
     for(unsigned i=0 ; i < mtindex.size() ; i++) mtindex_to_mtline[mtindex[i]] = mtline[i] ;  
 }

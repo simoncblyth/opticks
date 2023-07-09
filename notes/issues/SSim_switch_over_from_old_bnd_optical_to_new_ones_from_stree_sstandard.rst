@@ -60,3 +60,21 @@ Just now added the OLD prefix to make clear whats happening::
 
 
 
+update stree persisting to use NPFold
+------------------------------------------
+
+::
+
+    In [14]: getattr(st, "mtname.txt")
+    Out[14]: array([], dtype=int32)
+
+    In [15]: getattr(st, "mtname.txt_names")
+    Out[15]: 
+    array(['Air', 'Rock', 'Galactic', 'Steel', 'LS', 'Tyvek', 'Scintillator', 'TiO2Coating', 'Adhesive', 'Aluminium', 'LatticedShellSteel', 'Acrylic', 'PE_PA', 'StrutSteel', 'AcrylicMask',
+           'CDReflectorSteel', 'Vacuum', 'Pyrex', 'Water', 'vetoWater'], dtype='<U18')
+
+
+
+
+
+

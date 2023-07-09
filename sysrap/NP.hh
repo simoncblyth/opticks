@@ -184,7 +184,7 @@ struct NP
     template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0 ) ; 
 
     template<typename T> bool is_allzero() const ; 
-
+    bool is_empty() const ; 
 
 
     std::string descValues() const ; 
@@ -1527,7 +1527,10 @@ template<typename T> inline bool NP::is_allzero() const
     return allzero ; 
 }
 
-
+inline bool NP::is_empty() const 
+{
+    return shape.size() > 0 && shape[0] == 0 ; 
+}
 
 
 /**

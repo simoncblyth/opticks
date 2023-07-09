@@ -106,7 +106,8 @@ struct NPFold
 
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
-    static constexpr const char* EXT = ".npy" ; 
+    static constexpr const char* DOT_NPY = ".npy" ;  // formerly EXT
+    static constexpr const char* DOT_TXT = ".txt" ; 
     static constexpr const char* TOP = "/" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
     static constexpr const char* META  = "NPFold_meta.txt" ; 
@@ -115,11 +116,12 @@ struct NPFold
 
 
     static bool IsNPY(const char* k); 
+    static bool IsTXT(const char* k); 
     static bool HasSuffix( const char* k, const char* s ); 
     static bool HasPrefix( const char* k, const char* p ); 
 
     static const char* BareKey(const char* k);  // without .npy 
-    static std::string FormKey(const char* k); 
+    static std::string FormKey(const char* k, bool change_txt_to_npy ); 
 
     static NPFold* Load_(const char* base ); 
     static const char* Resolve(const char* base_, const char* rel1_=nullptr, const char* rel2_=nullptr); 
@@ -145,6 +147,7 @@ struct NPFold
     const char*  get_subfold_key(unsigned idx) const ; 
     int          get_subfold_idx(const char* f) const ; 
     NPFold*      get_subfold(const char* f) const ; 
+    bool         has_subfold(const char* f) const ; 
 
 
     const NP*      find_array(const char* apath) const ; 
@@ -242,10 +245,10 @@ struct NPFold
 }; 
 
 
-inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
-{
-    return HasSuffix(k, EXT) ; 
-}
+inline bool NPFold::IsNPY(const char* k) { return HasSuffix(k, DOT_NPY) ; }
+inline bool NPFold::IsTXT(const char* k) { return HasSuffix(k, DOT_TXT) ; }
+
+
 inline bool NPFold::HasSuffix(const char* k, const char* s ) 
 {
     return k && s && strlen(k) >= strlen(s) && strncmp( k + strlen(k) - strlen(s), s, strlen(s)) == 0 ; 
@@ -255,22 +258,60 @@ inline bool NPFold::HasPrefix( const char* k, const char* p )
     return k && p && strlen(p) <= strlen(k) && strncmp(k, p, strlen(p)) == 0 ;  
 }
 
+/**
+NPFold::BareKey
+----------------
+
+For keys ending with DOT_NPY ".npy" or DOT_TXT ".txt"
+this returns the key without the extension. 
+
+**/
+
 inline const char* NPFold::BareKey(const char* k) 
 {
     char* bk = strdup(k); 
-    if(IsNPY(bk)) bk[strlen(bk)-4] = '\0' ;  
+    if(IsNPY(bk) || IsTXT(bk)) bk[strlen(bk)-4] = '\0' ;  
     return bk ; 
 }
 
 
+/**
+NPFold::FormKey
+-----------------
 
+If added keys do not end with the DOT_NPY ".npy" then the DOT_NPY is added prior to collection. 
 
+Note that even when collecting arrays created from txt files, such as with SProp.h
+where files would have no extension (or .txt extension) it is still appropriate 
+to add the DOT_NPY .npy  to the NPFold in preparation for subsequent saving 
+and for the simplicity of consistency. 
 
-inline std::string NPFold::FormKey(const char* k) // adds .npy extension if not present already
+Empty arrays with argument key ending with .txt are assumed 
+to be NPX::Holder placeholder arrays that act to carry vectors 
+of strings in the array names metadata. The extension is 
+swapped to .npy for more standard handling. 
+
+**/
+
+inline std::string NPFold::FormKey(const char* k, bool change_txt_to_npy) 
 {
     std::stringstream ss ; 
-    ss << k ; 
-    if(!IsNPY(k)) ss << EXT ; 
+
+    bool is_npy = IsNPY(k); 
+    bool is_txt = IsTXT(k); 
+
+    if(change_txt_to_npy && is_txt)  
+    {
+        const char* bk = BareKey(k) ; 
+        ss << bk << DOT_NPY ; 
+    }
+    else
+    {
+        ss << k ; 
+        if(!is_npy) ss << DOT_NPY ; 
+    }
+
+
     std::string s = ss.str(); 
     return s ; 
 }
@@ -433,6 +474,9 @@ inline NPFold* NPFold::get_subfold(unsigned idx) const
 {
     return idx < subfold.size() ? subfold[idx] : nullptr ; 
 }
+
+
+
 inline const char* NPFold::get_subfold_key(unsigned idx) const 
 {
     return idx < ff.size() ? ff[idx].c_str() : nullptr ; 
@@ -447,7 +491,11 @@ inline NPFold* NPFold::get_subfold(const char* f) const
     int idx = get_subfold_idx(f) ; 
     return idx == UNDEF ? nullptr : get_subfold(idx) ; 
 }
-
+inline bool NPFold::has_subfold(const char* f) const 
+{
+    int idx = get_subfold_idx(f) ; 
+    return idx != UNDEF ;  
+}
 
 
 /**
@@ -625,18 +673,13 @@ inline int NPFold::total_items() const
 /**
 NPFold::add
 ------------
-
-If added keys do not end with the EXT ".npy" then the EXT is added prior to collection. 
-Note that even when collecting arrays created from txt files, such as with SProp.h
-where files would have no extension (or .txt extension) it is still appropriate 
-to add the .npy EXT to the NPFold in preparation for subsequent saving 
-and for the simplicity of consistency. 
-
 **/
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
-    std::string key = FormKey(k);  // adds .npy of not already present
+    bool change_txt_to_npy = a->is_empty() ; 
+    // HMM: perhaps simpler to always do this, not just for empties ? 
+    std::string key = FormKey(k, change_txt_to_npy ); 
     add_(key.c_str(), a ); 
 }
 
@@ -644,7 +687,7 @@ inline void NPFold::add(const char* k, const NP* a)
 NPFold::add_
 --------------
 
-This lower level method does not add EXT to keys
+This lower level method does not add DOT_NPY to keys
 
 **/
 inline void NPFold::add_(const char* k, const NP* a) 
@@ -695,7 +738,7 @@ inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keyl
     std::stringstream ss; 
     ss.str(keylist)  ;
     std::string s;
-    while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str())); 
+    while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str(),false)); 
 }
 
 
@@ -781,14 +824,15 @@ inline const NP* NPFold::get_array(unsigned idx) const
 NPFold::find
 -------------
 
-If the query key *k* does not end with the EXT ".npy" then that is added before searching.
+If the query key *k* does not end with the DOT_NPY ".npy" then that is added before searching.
 
 std::find returns iterator to the first match
 
 **/
 inline int NPFold::find(const char* k) const
 {
-    std::string key = FormKey(k); 
+    bool change_txt_to_npy = true ; 
+    std::string key = FormKey(k, change_txt_to_npy); 
     size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), key.c_str() )) ; 
     return idx < kk.size() ? idx : UNDEF ; 
 }

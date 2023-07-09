@@ -38,6 +38,9 @@ struct NPX
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
 
+    static NP* Holder( const std::vector<std::string>& names ); 
+
+
     template<typename T, typename S, typename... Args> 
     static NP* ArrayFromVec(const std::vector<S>& v, Args ... args );   // ArrayFromVec_ellipsis
     template<typename S> 
@@ -127,7 +130,7 @@ inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, T>>& values
 }
 
 template<typename T>
-std::string NPX::DescValues(const NP* a) // static
+inline std::string NPX::DescValues(const NP* a) // static
 {
     std::stringstream ss ;
     ss << std::endl << "NPX::descValues"  << std::endl ; 
@@ -193,7 +196,8 @@ When the first int shape dimension is zero a nullptr is returned.
 
 **/
 
-template<typename T, typename... Args> NP* NPX::Make(const T* src, Args ... args )   // TODO rename ArrayFromData
+template<typename T, typename... Args> 
+inline NP* NPX::Make(const T* src, Args ... args )   // TODO rename ArrayFromData
 {
     std::string dtype = descr_<T>::dtype() ; 
     std::vector<int> shape = {args...};
@@ -204,7 +208,8 @@ template<typename T, typename... Args> NP* NPX::Make(const T* src, Args ... args
 }
 
 
-template <typename T> NP* NPX::FromString(const char* str, char delim)  // static 
+template <typename T> 
+inline NP* NPX::FromString(const char* str, char delim)  // static 
 {   
     std::vector<T> vec ; 
     std::stringstream ss(str);
@@ -213,6 +218,18 @@ template <typename T> NP* NPX::FromString(const char* str, char delim)  // stati
     NP* a = Make<T>(vec) ; 
     return a ; 
 }
+
+
+
+inline NP* NPX::Holder( const std::vector<std::string>& names )
+{
+    NP* a = NP::Make<int>(0) ; 
+    a->set_names(names) ; 
+    return a ; 
+}
+
+
+
 
 
 /**

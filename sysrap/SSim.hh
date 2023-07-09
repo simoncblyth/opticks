@@ -3,12 +3,9 @@
 SSim.hh : Manages input arrays for QUDARap/QSim : Using Single NPFold Member
 ==================================================================================
 
-
 SSim must be instanciated with SSim::Create prior to CSGFoundry::CSGFoundry 
 
 Currently that is done from G4CXOpticks::G4CXOpticks 
-
-
 and populated by GGeo::convertSim which is for example invoked 
 during GGeo to CSGFoundry conversion within CSG_GGeo_Convert::convertSim
 
@@ -21,10 +18,6 @@ which does the uploading to the device.
 
 HMM : Transitionally : How best to switch between alternate arrays ? 
 -----------------------------------------------------------------------
-
-* better to globally switch from the old "GGeo" fold or the default ?
-
-
 
 
 **/
@@ -43,14 +36,15 @@ struct scontext ;
 
 struct SYSRAP_API SSim
 {
+    scontext* sctx ; 
+    NPFold*   topfold ; 
+    NPFold*   fold ;    // starts as topfold
+    stree*    tree ;    // instanciated with SSim::SSim
+
+
     static const plog::Severity LEVEL ; 
     static const int stree_level ; 
-
     static constexpr const char* RELDIR = "SSim" ; 
-
-
- 
-    static const unsigned       MISSING ; 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
     static scontext* GetContext(); 
@@ -60,59 +54,75 @@ struct SYSRAP_API SSim
     static void  Add(const char* k, const NP* a); 
     static void  AddSubfold(const char* k, NPFold* f); 
 
-    static SSim* Create(); 
-    static const char* DEFAULT ; 
-    static SSim* Load(); 
-    static SSim* Load(const char* base, const char* rel=RELDIR ); 
-    static SSim* Load_(const char* dir); 
-
     static int Compare( const SSim* a , const SSim* b ) ; 
     static std::string DescCompare( const SSim* a , const SSim* b ); 
 
+    static SSim* Create(); 
+    static const char* DEFAULT ; 
+    static SSim* Load(); 
+    static SSim* Load_(const char* dir); 
+    static SSim* Load(const char* base, const char* rel=RELDIR ); 
 
-    static void Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ); 
-    static NP*  AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs ) ; 
-    static NP*  AddBoundary( const NP* src, const std::vector<std::string>& specs ); 
-    static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
-    static std::string DescOptical(const NP* optical, const NP* bnd ); 
-    static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
-    bool   findName( int& i, int& j, const char* qname ) const ; 
-
-    template<typename ... Args>
-    void addFake( Args ... args ); 
-
-    void addFake_( const std::vector<std::string>& specs ); 
-
-
-    scontext* sctx ; 
-    NPFold* fold ; 
-    stree*  tree ;  // instanciated with SSim::SSim
+private:
+    SSim(); 
+    void init(); 
+public:
 
 
     void add(const char* k, const NP* a ); 
     void add_subfold(const char* k, NPFold* f ); 
 
+
     const NP* get(const char* k) const ; 
     const NP* get_bnd() const ; 
     const SBnd* get_sbnd() const ; 
-    void import_bnd() ; 
     stree* get_tree() const ; 
     int lookup_mtline( int mtindex ) const ; 
 
     void save(const char* base, const char* reldir=RELDIR) const ; 
-    void load(const char* base, const char* reldir=RELDIR) ; 
     static const bool load_tree_load ;   
+    void load(const char* base, const char* reldir=RELDIR) ; 
 
     std::string desc() const ; 
-    std::string descOptical() const ; 
-    bool hasOptical() const ; 
-
     const char* getBndName(unsigned bidx) const ; 
     int getBndIndex(const char* bname) const ; 
 
-private:
-    SSim(); 
-    void init(); 
+
+    template<typename ... Args> void addFake( Args ... args ); 
+    void addFake_( const std::vector<std::string>& specs ); 
+
+    static void Add( 
+        NP** opticalplus, 
+        NP** bndplus, 
+        const NP* optical, 
+        const NP* bnd,  
+        const std::vector<std::string>& specs 
+        ); 
+
+    static NP*  AddOptical( 
+        const NP* optical, 
+        const std::vector<std::string>& bnames, 
+        const std::vector<std::string>& specs 
+        ) ; 
+
+    static NP*  AddBoundary( 
+        const NP* src, 
+        const std::vector<std::string>& specs 
+        ); 
+
+    static void GetPerfectValues( 
+        std::vector<float>& values, 
+        unsigned nk, unsigned nl, unsigned nm, const char* name 
+        ); 
+
+    bool hasOptical() const ; 
+    std::string descOptical() const ; 
+    static std::string DescOptical(const NP* optical, const NP* bnd ); 
+
+    static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
+    bool   findName( int& i, int& j, const char* qname ) const ; 
+
+
 };
 
 

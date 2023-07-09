@@ -114,7 +114,9 @@ struct sstandard
         const NPFold* surface
     );
 
-    NPFold* make_fold() const ; 
+    NPFold* serialize() const ; 
+    void import(const NPFold* fold ); 
+
     void save(const char* base, const char* rel ); 
     void load(const char* base, const char* rel ); 
 
@@ -187,7 +189,7 @@ inline void sstandard::deferred_init(
 }
 
 
-NPFold* sstandard::make_fold() const 
+inline NPFold* sstandard::serialize() const 
 {
     NPFold* fold = new NPFold ; 
 
@@ -207,25 +209,32 @@ NPFold* sstandard::make_fold() const
     return fold ; 
 }
 
-void sstandard::save(const char* base, const char* rel )
+inline void sstandard::import(const NPFold* fold )
 {
-    NPFold* fold = make_fold(); 
-    fold->save(base, rel); 
-}
-
-void sstandard::load(const char* base, const char* rel )
-{
-    NPFold* fold = NPFold::Load(base, rel) ; 
-
     wavelength = fold->get(snam::WAVELENGTH); 
     energy = fold->get(snam::ENERGY); 
+
     rayleigh = fold->get(snam::RAYLEIGH); 
     mat = fold->get(snam::MAT); 
     sur = fold->get(snam::SUR); 
+
     bd = fold->get(snam::BD); 
     bnd = fold->get(snam::BND); 
     optical = fold->get(snam::OPTICAL); 
+
     icdf = fold->get(snam::ICDF); 
+}
+
+inline void sstandard::save(const char* base, const char* rel )
+{
+    NPFold* fold = serialize(); 
+    fold->save(base, rel); 
+}
+
+inline void sstandard::load(const char* base, const char* rel )
+{
+    NPFold* fold = NPFold::Load(base, rel) ; 
+    import(fold) ; 
 }
  
 
