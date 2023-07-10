@@ -32,7 +32,11 @@ struct sdomain
 
     static constexpr const char     DOMAIN_TYPE = 'F' ;   // 'C'
 
+    static constexpr double DomainLow(){    return DOMAIN_LOW ; }
+    static constexpr double DomainHigh(){   return DOMAIN_HIGH ; }
     static constexpr double DomainStep(){   return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_STEP    : COARSE_DOMAIN_STEP ; }
+    static constexpr double DomainRange(){  return DOMAIN_HIGH - DOMAIN_LOW ; }
+
     static constexpr int    DomainLength(){  return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_LENGTH : COARSE_DOMAIN_LENGTH ; }
 
     sdomain(); 
@@ -48,6 +52,7 @@ struct sdomain
     double step ; 
     double* wavelength_nm ; 
     double* energy_eV ;      // HMM: energy_eV  is descending following ascending wavelength_nm 
+    double* spec4 ; 
 };
 
 inline sdomain::sdomain()
@@ -55,13 +60,20 @@ inline sdomain::sdomain()
     length(DomainLength()),
     step(DomainStep()),
     wavelength_nm(new double[length]),
-    energy_eV(new double[length])
+    energy_eV(new double[length]),
+    spec4(new double[4])
 {
     for(int i=0 ; i < length ; i++) wavelength_nm[i] = DOMAIN_LOW + step*double(i) ; 
     assert( wavelength_nm[0] == DOMAIN_LOW ); 
     assert( wavelength_nm[length-1] == DOMAIN_HIGH ); 
     for(int i=0 ; i < length ; i++) energy_eV[i] = hc_eVnm/wavelength_nm[i] ; 
+
+    spec4[0] = DomainLow(); 
+    spec4[1] = DomainHigh();
+    spec4[2] = DomainStep(); 
+    spec4[3] = DomainRange(); 
 }
+
 
 
 inline NP* sdomain::get_wavelength_nm() const 

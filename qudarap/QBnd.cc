@@ -121,7 +121,9 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     assert( nm == 4 ); 
 
     unsigned nx = nl ;           // wavelength samples
-    unsigned ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
+    unsigned ny = ni*nj*nk ;     
+    // ny : total number of properties from all (two) float4 property 
+    // groups of all (4) species in all (~123) boundaries 
 
     const float* values = buf->cvalues<float>(); 
 

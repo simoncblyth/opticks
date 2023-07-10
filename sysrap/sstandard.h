@@ -444,9 +444,17 @@ inline NP* sstandard::make_bnd(
     int nn = sprop::NUM_PAYLOAD_VAL ; //   4
     int np = nk*nl*nn ;               // 2*761*4  number of payload values for one mat/sur 
 
+
     NP* bnd_ = NP::Make<double>(ni, nj, nk, nl, nn ); 
     bnd_->fill<double>(-1.) ; // trying to match X4/GGeo unfilled 
     bnd_->set_names( bdname ); 
+
+    // metadata needed by QBnd::MakeBoundaryTex
+    bnd_->set_meta<float>("domain_low",  sdomain::DomainLow() ); 
+    bnd_->set_meta<float>("domain_high", sdomain::DomainHigh() ); 
+    bnd_->set_meta<float>("domain_step", sdomain::DomainStep() ); 
+    bnd_->set_meta<float>("domain_range", sdomain::DomainRange() ); 
+
     double* bnd_v = bnd_->values<double>() ; 
 
     for(int i=0 ; i < ni ; i++)
