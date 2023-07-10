@@ -3180,9 +3180,10 @@ inline void stree::import_bnd(const NP* bnd)
 
     // fill (int,int) map from the mtline and mtindex vectors 
     init_mtindex_to_mtline() ; 
-
-    std::cerr 
+    
+    if( level > 1 ) std::cerr 
         << "stree::import_bnd" 
+        << " level > 1 [" << level << "]" 
         << " bnd " << bnd->sstr()
         << " desc_mt " 
         << std::endl 

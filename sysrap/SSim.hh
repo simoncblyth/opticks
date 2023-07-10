@@ -52,6 +52,7 @@ struct SYSRAP_API SSim
     static constexpr const char* RELDIR = "SSim" ; 
     static constexpr const char* EXTRA = "extra" ;
     static constexpr const char* JPMT_RELP = "extra/jpmt" ; 
+    static constexpr const char* RELP_DEFAULT = "stree/standard" ; 
 
  
     static SSim* INSTANCE ; 

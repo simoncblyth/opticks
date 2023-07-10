@@ -45,7 +45,7 @@ std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 NP* SEvt::RUN_META = NP::Make<float>(1) ; 
 
 NP* SEvt::UU = nullptr ; 
-NP* SEvt::UU_BURN = NP::Load("$SEvt__UU_BURN") ; 
+NP* SEvt::UU_BURN = nullptr ; // NP::Load("$SEvt__UU_BURN") ; 
 
 const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = ssys::getenvint("GIDX",-1) ;

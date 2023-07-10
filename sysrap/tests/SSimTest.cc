@@ -3,12 +3,20 @@
 #include "SOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
-
 void test_Load()
 {
     SSim* sim = SSim::Load(); 
     std::cout << ( sim ? sim->desc() : "-" ) ;  
 }
+
+void test_Load_get()
+{
+    SSim* sim = SSim::Load(); 
+    const NP* optical = sim->get(snam::OPTICAL); 
+    std::cout << " optical " << ( optical ? optical->sstr() : "-" ) << std::endl ; 
+}
+
+
 
 void test_findName()
 {
@@ -115,6 +123,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
    
     /*
+    test_Load(); 
     test_findName(); 
     test_addFake();     
     test_addFake_ellipsis();     
@@ -122,7 +131,7 @@ int main(int argc, char** argv)
     test_Create(); 
     */
 
-    test_Load(); 
+    test_Load_get(); 
 
 
     return 0 ; 

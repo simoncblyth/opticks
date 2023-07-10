@@ -103,7 +103,7 @@ SSim* SSim::Load(const char* base, const char* reldir)
 
 SSim::SSim()
     :
-    relp(ssys::getenvvar("SSim__RELP", "standard/stree")), // alt: "extra/GGeo"
+    relp(ssys::getenvvar("SSim__RELP", RELP_DEFAULT )), // alt: "extra/GGeo"
     sctx(new scontext),
     top(nullptr),
     extra(nullptr),
@@ -157,7 +157,15 @@ const NP* SSim::get(const char* k) const
 { 
     assert( top ); 
     const NPFold* f = top->find_subfold( relp ); 
-    return f->get(k); 
+    if( f == nullptr ) std::cerr
+        << "SSim::get"
+        << " relp[" << ( relp ? relp : "-" ) << "]" 
+        << " k[" << ( k ? k : "-" ) << "]" 
+        << " f null "
+        << std::endl 
+        ;
+
+    return f ? f->get(k) : nullptr ; 
 }
 void SSim::set(const char* k, const NP* a) 
 {
