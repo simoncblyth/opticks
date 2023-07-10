@@ -231,6 +231,7 @@ QSim::QSim()
     prd(QPrd::Get()),
     debug_(QDebug::Get()), 
     prop(QProp<float>::Get()),
+    pmt(QPMT<float>::Get()),
     multifilm(QMultiFilm::Get()),
     sim(nullptr),
     d_sim(nullptr),
@@ -273,6 +274,7 @@ void QSim::init()
     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ; 
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ; 
     sim->scint = scint ? scint->d_scint : nullptr ; 
+    sim->pmt = pmt ? pmt->d_pmt : nullptr ; 
 
     d_sim = QU::UploadArray<qsim>(sim, 1, "QSim::init.sim" );  
 

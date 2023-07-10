@@ -76,6 +76,7 @@ struct qpmt
     QPMT_METHOD void get_lpmtid_stackspec(  F* spec16, int pmtid,  F energy_eV ) const ; 
 
 #ifdef WITH_CUSTOM4
+    // _SPEC doesnt use last two args
     QPMT_METHOD void get_lpmtid_SPEC(F* spec_16 , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
     QPMT_METHOD void get_lpmtid_LL(  F* ll_128  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
     QPMT_METHOD void get_lpmtid_COMP(F* comp_32 , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ; 
@@ -152,8 +153,22 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
 
 #ifdef WITH_CUSTOM4
 
+/**
+qpmt::get_lpmtid_SPEC
+-----------------------
+
+Gets the inputs to the TMM stack calculation 
+customized for particular lpmtid. 
+
+1. HMM: this does not use the last two args 
+2. HMM: has to convert wavelength_nm to energy_eV 
+   for every photon... could convert to wavelength domain CPU side 
+   to avoid the need to do that 
+
+**/
+
 template<typename F>
-inline QPMT_METHOD void qpmt<F>::get_lpmtid_SPEC(
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_SPEC(  
     F* spec_16,   
     int lpmtid, 
     F wavelength_nm, 
@@ -162,11 +177,23 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_SPEC(
 {
     const F energy_eV = hc_eVnm/wavelength_nm ; 
 
+    /*
     F spec[16] ; 
     get_lpmtid_stackspec( spec, lpmtid, energy_eV ); 
-
     for(int i=0 ; i < 16 ; i++ ) spec_16[i] = spec[i] ; 
+    */
+
+    get_lpmtid_stackspec( spec_16, lpmtid, energy_eV ); 
+
 }
+
+/**
+qpmt::get_lpmtid_LL
+----------------------
+
+Full details of all the TMM layers for debugging. 
+
+**/
 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_LL(
@@ -187,6 +214,14 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_LL(
     for(int i=0 ; i < 128 ; i++ ) ll_128[i] = stack_ll[i] ; 
 }
 
+/**
+qpmt::get_lpmtid_COMP
+----------------------
+
+Full details of the composite TMM layer for debugging. 
+
+**/
+
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_COMP(
     F* comp_32,   
@@ -204,6 +239,15 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_COMP(
     const F* stack_comp = stack.comp.cdata() ; 
     for(int i=0 ; i < 32 ; i++ ) comp_32[i] = stack_comp[i] ; 
 }
+
+/**
+qpmt::get_lpmtid_ART
+----------------------
+
+4x4 ART matrix with A,R,T for S/P/av/actual polarizations 
+
+**/
+
 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
@@ -224,6 +268,18 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ART(
     for(int i=0 ; i < 16 ; i++ ) art_16[i] = stack_art[i] ; 
 }
 
+/**
+qpmt::get_lpmtid_ARTE
+-----------------------
+
+lpmtid and polarization customized TMM calc of::
+
+   theAbsorption
+   theReflectivity
+   theTransmittance
+   theEfficiency 
+
+**/
 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(

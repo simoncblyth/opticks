@@ -61,6 +61,7 @@ TODO:
 #include "qbnd.h"
 #include "qscint.h"
 #include "qcerenkov.h"
+#include "qpmt.h"
 #include "tcomplex.h"
 
 struct curandStateXORWOW ; 
@@ -75,6 +76,7 @@ struct qsim
     qmultifilm*         multifilm;
     qcerenkov*          cerenkov ; 
     qscint*             scint ; 
+    qpmt<float>*        pmt ; 
 
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
@@ -123,7 +125,8 @@ struct qsim
         bnd(nullptr),
         multifilm(nullptr),
         cerenkov(nullptr),
-        scint(nullptr)
+        scint(nullptr),
+        pmt(nullptr)
     {
     }
 #endif
@@ -671,7 +674,7 @@ This is apparent from reflected direction vector::
 
 The standard normal vector at an intersection position on the surface of a shape 
 is defined to be rigidly oriented outwards away from the shape.  
-This definition is used by *fill_state* in order to determine proparties 
+This definition is used by *fill_state* in order to determine properties 
 of this material m1 and the next material m2 on the other side of the boundary.   
 
 The below math assumes that the photon direction is always against the normal 

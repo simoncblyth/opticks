@@ -59,6 +59,7 @@ struct QUDARAP_API QPMT
     NPFold* serialize() const ;  // formerly get_fold
     std::string desc() const ; 
 
+    // CPU side lpmtcat lookups 
     int  get_lpmtcat( int lpmtid ) const ; 
     int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
 
@@ -102,12 +103,13 @@ inline QPMT<T>::QPMT(const NPFold* pf )
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
     i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
-    pmt(new qpmt<T>()),                    // hostside qpmt.h instance 
-    d_pmt(nullptr)                         // devices pointer set in init
+    pmt(new qpmt<T>()),                    // host-side qpmt.h instance 
+    d_pmt(nullptr)                         // device-side pointer set at upload in init
 {
     init(); 
 }
 
+// init in .cc
 
 
 template<typename T>

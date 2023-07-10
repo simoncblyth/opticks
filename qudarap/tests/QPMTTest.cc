@@ -92,10 +92,10 @@ QPMTTest<T>::QPMTTest(const QPMT<T>& qpmt_ )
     :
     qpmt(qpmt_),
     lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612) 
-    lpmtid(NPX::FromString<int>(lpmtid_list,',')), 
+    lpmtid(NPX::FromString<int>(lpmtid_list,',')),            // create array from string 
     num_lpmtid(lpmtid->shape[0]),
     lpmtcat(NP::Make<int>(num_lpmtid)),
-    num_lpmtcat(qpmt.get_lpmtcat(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)),
+    num_lpmtcat(qpmt.get_lpmtcat(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)), // CPU side lookups
     energy_eV_domain(NP::Linspace<T>(1.55,15.50,1550-155+1)), 
     num_mct(ssys::getenvint("NUM_MCT",900)),   // 181
     mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))

@@ -11,9 +11,9 @@ QSim
 
 The canonical QSim instance is instanciated with CSGOptiX::CSGOptiX
 
-QSim is mostly constant and needs initializing once only 
-corresponding to the geometry and the physics process
-implementations.  
+QSim is mostly constant and needs initializing once only, as 
+it corresponds to physics and fixed parameters of the detector, 
+making it analogous to the CSGFoundry geometry. 
 
 Contrast with the QEvent with a very different event-by-event lifecycle  
 
@@ -27,6 +27,7 @@ struct SSim ;
 template <typename T> struct QTex ; 
 template <typename T> struct QBuf ; 
 template <typename T> struct QProp ; 
+template <typename T> struct QPMT ; 
 
 struct qsim ; 
 
@@ -73,6 +74,7 @@ struct QUDARAP_API QSim
     const QDebug*    debug_ ; 
 
     const QProp<float>*  prop ; 
+    const QPMT<float>*   pmt ; 
     const QMultiFilm*    multifilm ;
 
     qsim*             sim ;  
@@ -101,7 +103,8 @@ public:
     std::string descFull() const ; 
     std::string checkComponents() const ; 
 
-    // TODO: relocate non-essential methods elsewhere into testing  ?
+
+    // TODO: relocate non-essential methods into tests  ?
     
     NP* duplicate_dbg_ephoton(unsigned num_photon); 
 

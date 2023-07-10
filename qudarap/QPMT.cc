@@ -64,6 +64,7 @@ QPMT::init
 
 1. populate hostside qpmt.h instance with device side pointers 
 2. upload the hostside qpmt.h instance to GPU
+3. retain d_pmt pointer to use in launches
 
 **/
 
@@ -72,9 +73,11 @@ inline void QPMT<T>::init()
 {
     INSTANCE = this ; 
 
-    const int& ni = qpmt_NUM_CAT ; 
-    const int& nj = qpmt_NUM_LAYR ; 
-    const int& nk = qpmt_NUM_PROP ; 
+    const int ni = qpmt_NUM_CAT ;   // 3:NNVT/HAMA/NNVT_HiQE
+    const int nj = qpmt_NUM_LAYR ;  // 4:Pyrex/ARC/PHC/Vacuum
+    const int nk = qpmt_NUM_PROP ;  // 2:RINDEX/KINDEX 
+                                    // -----------------
+                                    // 3*4*2 = 24
 
     assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
     assert( src_thickness->has_shape(ni, nj, 1 )); 
@@ -166,7 +169,7 @@ QPMT::lpmtcat_
 1. create hostside lookup array for the output 
 2. upload domain array to d_domain
 3. allocate lookup array at d_lookup
-4. invoke QPMT_lpmtcat launch 
+4. invoke QPMT_lpmtcat launch using d_pmt pointer argument  
 5. copy d_lookup to h_lookup 
 
 For some etype the lookup contains an energy_eV scans for all pmt cat (3), 
