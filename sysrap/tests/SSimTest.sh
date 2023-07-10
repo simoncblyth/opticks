@@ -1,17 +1,29 @@
 #!/bin/bash -l 
 
+source $HOME/.opticks/GEOM/GEOM.sh 
+#unset GEOM # check without 
 
-opticks_key_remote_dir=$(opticks-key-remote-dir) 
-CGREL=${CGREL:-CSG_GGeo}
-xbase=$opticks_key_remote_dir/$CGREL
-cfbase=$HOME/$xbase
+bin=SSimTest
+defarg="info_run"
+arg=${1:-$defarg}
 
-echo $cfbase
+vars="BASH_SOURCE bin GEOM FOLD"
 
-export CFBASE=$cfbase
-export FOLD=$CFBASE/CSGFoundry/SSim
+if [ "${arg/info}" != "$arg" ]; then 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
 
-${IPYTHON:-ipython} --pdb -i SSimTest.py 
+if [ "${arg/run}" != "$arg" ]; then 
+   $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
+fi
 
+if [ "${arg/dbg}" != "$arg" ]; then 
+   case $(uname) in 
+      Darwin) lldb__ $bin ;;
+      Linux)   gdb__ $bin ;; 
+   esac
+   [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
+fi
 
-
+exit 0 

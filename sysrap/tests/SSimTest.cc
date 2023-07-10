@@ -7,7 +7,7 @@
 void test_Load()
 {
     SSim* sim = SSim::Load(); 
-    std::cout << sim->desc() ;  
+    std::cout << ( sim ? sim->desc() : "-" ) ;  
 }
 
 void test_findName()
@@ -115,14 +115,14 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
    
     /*
-    test_Load(); 
     test_findName(); 
     test_addFake();     
     test_addFake_ellipsis();     
     test_get_bnd(); 
+    test_Create(); 
     */
 
-    test_Create(); 
+    test_Load(); 
 
 
     return 0 ; 

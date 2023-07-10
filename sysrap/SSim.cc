@@ -11,9 +11,9 @@
 #include "SLOG.hh"
 #include "SStr.hh"
 #include "ssys.h"
-#include "SOpticksResource.hh"
+#include "spath.h"
 
-#include "SPath.hh"
+#include "SOpticksResource.hh"
 #include "SSim.hh"
 #include "SBnd.h"
 #include "SPMT.h"
@@ -77,20 +77,21 @@ SSim* SSim::Create()
 
 
 /**
-SSim::Load from $CFBase/CSGFoundry/SSim : so assumes already persisted geometry  
----------------------------------------------------------------------------------
+SSim::Load from persisted geometry  : used for testing 
+-------------------------------------------------------
  
 **/
 
-const char* SSim::DEFAULT = "$CFBaseFromGEOM/CSGFoundry" ; 
+//const char* SSim::DEFAULT = "$CFBaseFromGEOM/CSGFoundry" ; 
+const char* SSim::DEFAULT = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ; 
 
 SSim* SSim::Load(){ return Load_(DEFAULT) ; }
 
 SSim* SSim::Load_(const char* base_)
 {
-    const char* base = SPath::Resolve(base_ ? base_ : DEFAULT, NOOP); 
+    const char* base = spath::Resolve(base_ ? base_ : DEFAULT ); 
     SSim* sim = new SSim ; 
-    sim->load(base);  
+    sim->load(base);    // reldir defaults to "SSim"
     return sim ; 
 }
 SSim* SSim::Load(const char* base, const char* reldir)
@@ -254,7 +255,7 @@ void SSim::save(const char* base, const char* reldir) const
     LOG_IF(fatal, top == nullptr) << " top null : MUST serialize before save  " ;  
     assert( top != nullptr ) ; 
 
-    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+    const char* dir = spath::Resolve(base, reldir) ;  
     top->save(dir); 
 }
 
@@ -271,7 +272,7 @@ tree.load taking 0.467s which is excessive as not yet in use
 void SSim::load(const char* base, const char* reldir)
 { 
     LOG(LEVEL) << "[" ; 
-    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+    const char* dir = spath::Resolve(base, reldir) ;  
 
     LOG_IF(fatal, top != nullptr)  << " top is NOT nullptr : cannot SSim::load into pre-serialized instance " ;  
 

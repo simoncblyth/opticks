@@ -2068,6 +2068,15 @@ inline int stree::oldload_( const char* fold )
 
 inline void stree::import(const NPFold* fold)
 {
+    if( fold == nullptr )
+    {
+        std::cerr 
+            << "stree::import"
+            << " : ERROR : null fold " 
+            << std::endl ; 
+        return ; 
+    }
+
     ImportArray<snode, int>( nds,                  fold->get(NDS) );
     ImportArray<snode, int>( rem,                  fold->get(REM) ); 
     ImportArray<glm::tmat4x4<double>, double>(m2w, fold->get(M2W) ); 

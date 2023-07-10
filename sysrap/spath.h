@@ -75,7 +75,7 @@ inline std::string spath::_ResolvePath0(const char* spec_)
 spath::_ResolvePath
 ----------------------
 
-Try to work with multiple tokens, eg::
+This works with multiple tokens, eg::
 
     $HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt
 

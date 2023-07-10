@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 QSimTest.sh
 =============
@@ -15,9 +14,10 @@ QSimTest.sh
 EOU
 }
 
-
+bin=QSimTest 
 arg=${1:-run_ana}
 
+source $HOME/.opticks/GEOM/GEOM.sh
 msg="=== $BASH_SOURCE :"
 
 
@@ -134,15 +134,23 @@ source ephoton.sh         # branching on TEST inside ephoton.sh
 source eprd.sh
 
 
+vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM"
 
+if [ "${arg/info}" != "$arg" ]; then 
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+fi
 
 if [ "${arg/run}" != "$arg" ]; then 
-   QSimTest
+   $bin 
    [ $? -ne 0 ] && echo $msg run error && exit 1 
+fi 
 
-elif [ "${arg/dbg}" != "$arg" ]; then 
-   lldb__ QSimTest
-   [ $? -ne 0 ] && echo $msg run error && exit 1 
+if [ "${arg/dbg}" != "$arg" ]; then 
+   case $(uname) in
+     Darwin) lldb__ $bin ;;
+     Linux)  gdb__  $bin ;;
+   esac
+   [ $? -ne 0 ] && echo $msg dbg error && exit 2 
 fi
 
 
