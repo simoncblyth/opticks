@@ -103,7 +103,7 @@ struct SPMT
     */
 
     static constexpr const bool VERBOSE = false ; 
-    static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt" ; 
+    static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ; 
 
     static constexpr int NUM_PMTCAT = 3 ; // (NNVT, HAMA, NNVT_HiQE)
     static constexpr int NUM_LAYER = 4 ;  // (Pyrex, ARC, PHC, Vacuum) 
@@ -317,7 +317,7 @@ inline void SPMT::init_rindex_thickness()
 
     for(int i=0 ; i < NUM_PMTCAT ; i++)
     {
-        const char* name = MPT->get_subfold_key(i) ; 
+        //const char* name = MPT->get_subfold_key(i) ; 
         NPFold* pmtcat = MPT->get_subfold(i);
         const NP* pmtconst = CONST->get_array(i); 
 
@@ -413,6 +413,7 @@ NB EVEN WHEN TESTING WITH REDUCED N_LPMT STILL NEED TO INCLUDE INFO FOR ALL 1761
 
 inline void SPMT::init_lcqs()
 {
+    assert( PMTSimParamData ); 
     const NP* lpmtCat = PMTSimParamData->get("lpmtCat") ;   
     assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 ); 
     assert( lpmtCat->shape[0] == NUM_LPMT ); 

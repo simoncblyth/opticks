@@ -29,6 +29,35 @@ QPMT::mct_lpmtid_
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = SLOG::EnvLevel("QPMT", "DEBUG"); 
 
+template<typename T>
+const QPMT<T>* QPMT<T>::INSTANCE = nullptr ; 
+
+template<typename T>
+const QPMT<T>* QPMT<T>::Get(){ return INSTANCE ;  }
+
+
+
+template<typename T>
+inline std::string QPMT<T>::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << "QPMT<" << ( sizeof(T) == 4 ? "float" : "double" ) << "> " ; 
+#ifdef WITH_CUSTOM4
+    ss << "WITH_CUSTOM4 " ; 
+#else
+    ss << "NOT:WITH_CUSTOM4 " ; 
+#endif
+    ss << " INSTANCE:" << ( INSTANCE ? "YES" : "NO " ) << " " ; 
+    if(INSTANCE) ss << INSTANCE->desc() ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
 /**
 QPMT::init
 ------------
@@ -41,6 +70,8 @@ QPMT::init
 template<typename T>
 inline void QPMT<T>::init()
 {
+    INSTANCE = this ; 
+
     const int& ni = qpmt_NUM_CAT ; 
     const int& nj = qpmt_NUM_LAYR ; 
     const int& nk = qpmt_NUM_PROP ; 
@@ -151,7 +182,7 @@ template<typename T>
 NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const 
 {
     unsigned num_domain = domain->shape[0] ; 
-    NP* lookup = MakeLookup_lpmtcat(etype, num_domain ); 
+    NP* lookup = MakeArray_lpmtcat(etype, num_domain ); 
     lpmtcat_check(etype, domain, lookup) ; 
     unsigned num_lookup = lookup->num_values() ; 
 
@@ -202,7 +233,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_lpmtid = lpmtid->shape[0] ; 
 
-    NP* lookup = MakeLookup_lpmtid(etype, num_domain, num_lpmtid ); 
+    NP* lookup = MakeArray_lpmtid(etype, num_domain, num_lpmtid ); 
     unsigned num_lookup = lookup->num_values() ; 
 
     if( etype == qpmt_ART )
@@ -242,7 +273,8 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u ); 
-    
+   
+#ifdef WITH_CUSTOM4
     QPMT_mct_lpmtid(
         numBlocks, 
         threadsPerBlock, 
@@ -255,6 +287,11 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
         num_lpmtid );
 
     cudaDeviceSynchronize();  
+
+#else
+    LOG(fatal) << " QPMT::mct_lpmtid_ requires compilation WITH_CUSTOM4 " ; 
+    assert(0) ; 
+#endif
 
     const char* label = "QPMT::mct_lpmtid_" ; 
     QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );

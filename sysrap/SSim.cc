@@ -16,6 +16,7 @@
 #include "SPath.hh"
 #include "SSim.hh"
 #include "SBnd.h"
+#include "SPMT.h"
 
 const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
 const int SSim::stree_level = ssys::getenvint("SSim__stree_level", 0) ; 
@@ -207,6 +208,25 @@ const SBnd* SSim::get_sbnd() const
     const NP* bnd = get_bnd(); 
     return bnd ? new SBnd(bnd) : nullptr  ;  
 }
+
+
+const NPFold* SSim::get_jpmt() const 
+{
+    const NPFold* f = top ? top->find_subfold(JPMT_RELP) : nullptr ; 
+    return f ; 
+}
+const SPMT* SSim::get_spmt() const 
+{
+    const NPFold* jpmt = get_jpmt(); 
+    return jpmt ? new SPMT(jpmt) : nullptr ; 
+}
+const NPFold* SSim::get_spmt_f() const 
+{
+    const SPMT* spmt = get_spmt() ;
+    const NPFold* spmt_f = spmt->get_fold() ;
+    return spmt_f ; 
+}
+
 
 
 void SSim::add_extra_subfold(const char* k, NPFold* f )

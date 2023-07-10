@@ -33,7 +33,7 @@
 #include "QState.hh"
 #include "QSimLaunch.hh"
 #include "QDebug.hh"
-
+#include "QPMT.hh"
 
 #include "QSim.hh"
 
@@ -175,6 +175,14 @@ void QSim::UploadComponents( const SSim* ssim  )
     {
         LOG(LEVEL) << " skip QCerenkov for simtrace running " ;   
     }
+
+
+
+    const NPFold* spmt_f = ssim->get_spmt_f() ; 
+    QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ; 
+
+    LOG(info) << QPMT<float>::Desc(); 
+    LOG(info) << ( qpmt ? qpmt->desc() : "no-qpmt" ) ; 
 
 
 /*

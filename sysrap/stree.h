@@ -8,9 +8,11 @@ This is exploring a minimal approach to geometry translation
 * see also u4/U4Tree.h that populates stree.h from traversals of Geant4 volumes. 
 * stree.h is part of the attempt to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
 
+WIP : stree fold getting messy
+--------------------------------
 
-WIP : stree fold getting messy, split off mat/sur/bnd into sstandard ?
-------------------------------------------------------------------------
+* DONE : split off mat/sur/bnd into sstandard 
+* TODO : split off structural transforms, nodes etc.. into subfold 
 
 
 Lifecycle

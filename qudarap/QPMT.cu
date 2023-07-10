@@ -31,6 +31,7 @@ QPMT_mct_lpmtid
 #include "qpmt.h"
 #include "qprop.h"
 
+
 /**
 _QPMT_lpmtcat_rindex
 ---------------------------
@@ -202,9 +203,9 @@ __global__ void _QPMT_lpmtid_stackspec(
 }
 
 
+#ifdef WITH_CUSTOM4
 
 // templated payload size P as it needs to be a compile time constant
-
 template <typename F, int P>
 __global__ void _QPMT_mct_lpmtid( 
     qpmt<F>* pmt, 
@@ -232,8 +233,8 @@ __global__ void _QPMT_mct_lpmtid(
 
     for(int i=0 ; i < ni ; i++)  // over num_lpmtid
     {
-        int pmtid = lpmtid[i] ; 
         int index = i*nj*P + j*P  ; 
+        int pmtid = lpmtid[i] ; 
 
         if( etype == qpmt_SPEC ) 
         {
@@ -300,4 +301,5 @@ template <typename F> extern void QPMT_mct_lpmtid(
 }
 
 template void QPMT_mct_lpmtid<float>(   dim3, dim3, qpmt<float>*, int etype, float*,  const float* , unsigned, const int*, unsigned); 
+#endif
 

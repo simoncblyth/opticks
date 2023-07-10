@@ -1,26 +1,25 @@
 #pragma once
 /**
-SSim.hh : Manages input arrays for QUDARap/QSim : Using Single NPFold Member
+SSim.hh : Manages input arrays for QUDARap/QSim : Using NPFold plumbing
 ==================================================================================
+
+The SSim instance provides the input arrays to QSim
+which does the uploading to the device. 
+Currently the SSim instance is persisted within CSGFoundry/SSim 
+using NPFold functionality.  
+
+Initially SSim might seem like an extraneous wrapper on top of stree.h 
+but on listing features it is clear that the extra layer is worthwhile.
+
+1. SSim.hh singleton, so stree.h/U4Tree.h can stay headeronly  
+2. collection of extra NPFold (eg jpmt and GGeo) unrelated to stree.h
+3. switching between alternate array sources so QSim need not know those details 
 
 SSim must be instanciated with SSim::Create prior to CSGFoundry::CSGFoundry 
 Currently that is done from G4CXOpticks::G4CXOpticks 
 
 With the old X4/GGeo workflow GGeo::convertSim which is for example invoked 
 during GGeo to CSGFoundry conversion within CSG_GGeo_Convert::convertSim
-
-
-
-
-Currently the SSim instance is persisted within CSGFoundry/SSim 
-using NPFold functionality.  
-
-The SSim instance provides the input arrays to QSim
-which does the uploading to the device. 
-
-
-HMM : Transitionally : How best to switch between alternate arrays ? 
------------------------------------------------------------------------
 
 
 **/
@@ -30,12 +29,14 @@ struct NPFold ;
 struct SBnd ; 
 struct stree ; 
 struct scontext ; 
+struct SPMT ; 
 
 #include <vector>
 #include <string>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 #include "snam.h" 
+
 
 struct SYSRAP_API SSim
 {
@@ -50,6 +51,8 @@ struct SYSRAP_API SSim
     static const int stree_level ; 
     static constexpr const char* RELDIR = "SSim" ; 
     static constexpr const char* EXTRA = "extra" ;
+    static constexpr const char* JPMT_RELP = "extra/jpmt" ; 
+
  
     static SSim* INSTANCE ; 
     static SSim* Get(); 
@@ -86,6 +89,9 @@ public:
     const char* getBndName(unsigned bidx) const ; 
     int getBndIndex(const char* bname) const ; 
     const SBnd* get_sbnd() const ; 
+    const NPFold* get_jpmt() const ;   // raw PMT info 
+    const SPMT*   get_spmt() const ;   // struct that summarizes PMT info  
+    const NPFold* get_spmt_f() const ; // fold with summarized PMT info 
 public:
     void add_extra_subfold(const char* k, NPFold* f ); 
 

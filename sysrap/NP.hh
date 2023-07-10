@@ -290,7 +290,7 @@ struct NP
     template<typename T> T    combined_interp_3(int i,               T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> T    combined_interp_5(int i, int j, int k, T x) const ;  // requires NP::Combine of pshapes arrays 
 
-    template<typename T> T    _combined_interp(const T* vv, unsigned niv, T x) const  ; 
+    template<typename T> T    _combined_interp(const T* vv, int niv, T x) const  ; 
 
 
     template<typename T> NP*  cumsum(int axis=0) const ; 
@@ -3389,10 +3389,10 @@ qudarap/qprop.h qprop<T>::interpolate
 
 template<typename T> inline T NP::combined_interp_3(int i, T x) const  
 {
-    unsigned ndim = shape.size() ; 
+    int ndim = shape.size() ; 
     assert( ndim == 3 && shape[ndim-1] >= 2 && i < shape[0] && shape[1] > 1 ); 
 
-    unsigned stride = shape[ndim-2]*shape[ndim-1] ; 
+    int stride = shape[ndim-2]*shape[ndim-1] ; 
     const T* vv = cvalues<T>() + i*stride ; 
 
     return _combined_interp<T>( vv, stride, x ); 
@@ -3414,20 +3414,20 @@ Example array layout for complex refractive index::
 
 template<typename T> inline T NP::combined_interp_5(int i, int j, int k, T x) const  
 {
-    unsigned ndim = shape.size() ; 
+    int ndim = shape.size() ; 
     assert( ndim == 5 ); 
-    unsigned ni = shape[0] ; 
-    unsigned nj = shape[1] ; 
-    unsigned nk = shape[2] ; 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+    int nk = shape[2] ; 
     assert( i < ni && j < nj && k < nk ); 
 
-    unsigned nl = shape[ndim-2] ; 
-    unsigned nm = shape[ndim-1] ; 
+    int nl = shape[ndim-2] ; 
+    int nm = shape[ndim-1] ; 
     assert( nl > 1 );   // require more than one domain items  
     assert( nm == 2 ); 
 
-    unsigned stride = shape[ndim-2]*shape[ndim-1] ; 
-    unsigned iprop = i*nj*nk+j*nk+k ;   
+    int stride = shape[ndim-2]*shape[ndim-1] ; 
+    int iprop = i*nj*nk+j*nk+k ;   
     // maximum:  (ni-1)*nj*nk + (nj-1)*nk + (nk-1) = ni*nj*nk - nj*nk + nj*nk - nk + nk - 1 = ni*nj*nk - 1 
     
     const T* vv = cvalues<T>() + iprop*stride ; 
@@ -3448,14 +3448,14 @@ last column.
 
 **/
 
-template<typename T> inline T NP::_combined_interp(const T* vv, unsigned niv, T x) const  
+template<typename T> inline T NP::_combined_interp(const T* vv, int niv, T x) const  
 {
-    unsigned ndim = shape.size() ; 
-    unsigned ni = nview::int_from<T>( *(vv+niv-1) ) ; // NPU.hh:nview 
-    unsigned nj = shape[ndim-1] ;  // normally 2 with (dom, val)
+    int ndim = shape.size() ; 
+    int ni = nview::int_from<T>( *(vv+niv-1) ) ; // NPU.hh:nview 
+    int nj = shape[ndim-1] ;  // normally 2 with (dom, val)
 
-    unsigned jdom = 0 ;       // 1st payload slot is "domain"
-    unsigned jval = nj - 1 ;  // last payload slot is "value", normally 1  
+    int jdom = 0 ;       // 1st payload slot is "domain"
+    int jval = nj - 1 ;  // last payload slot is "value", normally 1  
 
     int lo = 0 ;
     int hi = ni-1 ;

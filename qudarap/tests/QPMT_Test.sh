@@ -3,6 +3,10 @@ usage(){ cat << EOU
 QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh 
 ==============================================================================================
 
+* CAUTION : this has fallen behind the om built QPMTTest.sh 
+
+  * currently lacking WITH_CUSTOM4 
+
 * standalone builds are useful for testing and to see exactly
   what are depending on 
 
@@ -70,6 +74,7 @@ if [ "${arg/build}" != "$arg" ]; then
         cci=$REALFOLD/$cc.cc
         cco=$FOLD/${cc}_cc.o  
         gcc -c $cci \
+        -g \
         -std=c++11 \
         -I.. \
         -I$OPTICKS_PREFIX/include/SysRap \
@@ -88,6 +93,7 @@ if [ "${arg/build}" != "$arg" ]; then
          $FOLD/QPMT_cc.o \
          $FOLD/QProp_cc.o \
          $FOLD/QU_cc.o \
+         -g \
         -std=c++11 -lstdc++ \
         -I.. \
         -I$OPTICKS_PREFIX/include/SysRap \

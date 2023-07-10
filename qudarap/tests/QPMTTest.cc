@@ -140,28 +140,32 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    const NPFold* pmtf = nullptr ;  
+
 #ifdef WITH_JPMT
     std::cout << "QPMTTest.cc : WITH_JPMT " << std::endl ; 
-    JPMT pmt ; 
-    std::cout << pmt.desc() << std::endl ;
+    JPMT jpmt ; 
+    std::cout << jpmt.desc() << std::endl ;
     pmt.save("$FOLD") ; 
-    const NPFold* pf = pmt.get_fold(); 
+    pmtf = jpmt.get_fold(); 
 #else
     std::cout << "QPMTTest.cc : NOT-WITH_JPMT " << std::endl ; 
-    SPMT* pmt = SPMT::Load();
-    if(pmt == nullptr)
+    SPMT* spmt = SPMT::Load();
+    if(spmt == nullptr)
     {
         std::cout << "QPMTTest.cc FAILED TO SPMT::Load ? IS GEOM envvar defined ? " << std::endl ; 
         return 1 ; 
     }
-    const NPFold* pf = pmt->get_fold(); 
-
+    pmtf = spmt->get_fold(); 
 #endif
 
-    QPMT<float> qp(pf) ; 
-    std::cout << qp.desc() << std::endl ; 
+    std::cout << " Before: " << QPMT<float>::Desc() << std::endl ; 
 
-    NPFold* qpf = qp.get_fold(); 
+
+    QPMT<float> qp(pmtf) ; 
+    std::cout << " After: " << QPMT<float>::Desc() << std::endl ; 
+
+    NPFold* qpf = qp.serialize(); 
     qpf->save("$FOLD/qpmt"); 
 
     QPMTTest<float> qpt(qp); 
@@ -169,6 +173,8 @@ int main(int argc, char** argv)
  
     cudaDeviceSynchronize();
     qscan->save("$FOLD/qscan");  
+
+    std::cout << " Final: " << QPMT<float>::Desc() << std::endl ; 
 
     return 0 ; 
 }

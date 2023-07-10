@@ -26,6 +26,10 @@ template<typename T>
 struct QUDARAP_API QPMT
 {
     static const plog::Severity LEVEL ; 
+    static const QPMT<T>*    INSTANCE ; 
+    static const QPMT<T>*    Get(); 
+
+    static std::string Desc(); 
 
     const NP* src_rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
     const NP* src_thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )  
@@ -52,14 +56,14 @@ struct QUDARAP_API QPMT
     void init_thickness(); 
     void init_lcqs(); 
 
-    NPFold* get_fold() const ; 
+    NPFold* serialize() const ;  // formerly get_fold
     std::string desc() const ; 
 
     int  get_lpmtcat( int lpmtid ) const ; 
     int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
 
-    static NP* MakeLookup_lpmtcat(int etype, unsigned num_domain ); 
-    static NP* MakeLookup_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid ); 
+    static NP* MakeArray_lpmtcat(int etype, unsigned num_domain ); 
+    static NP* MakeArray_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid ); 
 
     // .cc 
     void lpmtcat_check( int etype, const NP* domain, const NP* lookup) const ; 
@@ -67,6 +71,7 @@ struct QUDARAP_API QPMT
     NP*  mct_lpmtid_(  int etype, const NP* domain, const NP* lpmtid) const ; 
 
 };
+
 
 /**
 QPMT::QPMT
@@ -106,7 +111,7 @@ inline QPMT<T>::QPMT(const NPFold* pf )
 
 
 template<typename T>
-inline NPFold* QPMT<T>::get_fold() const 
+inline NPFold* QPMT<T>::serialize() const  // formerly get_fold
 {
     NPFold* fold = new NPFold ; 
 
@@ -131,7 +136,8 @@ inline std::string QPMT<T>::desc() const
 {
     int w = 30 ; 
     std::stringstream ss ; 
-    ss << "QPMT::desc"
+    ss 
+       << "QPMT::desc" 
        << std::endl
        << std::setw(w) << "rindex "    << rindex->sstr() << std::endl
        << std::setw(w) << "qeshape " << qeshape->sstr() << std::endl
@@ -185,7 +191,7 @@ inline int QPMT<T>::get_lpmtcat( int* lpmtcat_, const int* lpmtid_, int num_lpmt
 
 
 /**
-QPMT::MakeLookup_lpmtcat
+QPMT::MakeArray_lpmtcat
 -------------------------
 
 HMM: this is mainly for testing, perhaps put in QPMTTest ? 
@@ -193,7 +199,7 @@ HMM: this is mainly for testing, perhaps put in QPMTTest ?
 **/
 
 template<typename T>
-inline NP* QPMT<T>::MakeLookup_lpmtcat(int etype, unsigned num_domain )   // static
+inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // static
 {
     const int& ni = qpmt_NUM_CAT ; 
     const int& nj = qpmt_NUM_LAYR ; 
@@ -210,7 +216,7 @@ inline NP* QPMT<T>::MakeLookup_lpmtcat(int etype, unsigned num_domain )   // sta
 
 
 template<typename T>
-inline NP* QPMT<T>::MakeLookup_lpmtid(int etype, unsigned num_domain, unsigned num_lpmtid )   // static
+inline NP* QPMT<T>::MakeArray_lpmtid(int etype, unsigned num_domain, unsigned num_lpmtid )   // static
 {
     const int ni = num_lpmtid ; 
     const int nj = num_domain ;
