@@ -2538,7 +2538,7 @@ void GGeo::convertSim() const
     LOG_IF(fatal, sim == nullptr) << "SSim should have been created by CSGFoundry::CSGFoundry " ; 
     assert(sim);  
 
-    sim->add_subfold("GGeo", m_fold ); 
+    SSim::AddExtraSubfold("GGeo", m_fold); 
 }
 
 /**
