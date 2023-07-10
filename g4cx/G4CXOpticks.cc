@@ -254,6 +254,8 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
 
     GGeo* gg_ = X4Geo::Translate(wd) ; 
+
+
     setGeometry(gg_); 
 }
 
@@ -289,9 +291,28 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     setupFrame();    // EXPT: MOVED HERE TO INITIALIZATION
 }
 
+
+/**
+G4CXOpticks::setGeometry_
+---------------------------
+
+Has side-effect of calling SSim::serialize. 
+Unclear where exactly SSim::serialize needs to happen 
+for sure it must be after U4Tree::Create and before QSim 
+instanciation within CSGOptiX::Create 
+
+Note would be better to encapsulate this SSim handling 
+within U4Tree.h but reluctant currently as U4Tree.h is  
+header only and SSim.hh is not. 
+ 
+**/
+
 void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 {
     fd = fd_ ; 
+
+   sim->serialize() ;  
+
 
     if( setGeometry_saveGeometry != nullptr )
     {

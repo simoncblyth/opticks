@@ -101,7 +101,6 @@ struct U4Tree
     U4Scint*               scint ;         
 
 
-    // HMM: should really be SSim argument now ?
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
