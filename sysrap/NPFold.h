@@ -152,6 +152,8 @@ struct NPFold
 
     const NP*      find_array(const char* apath) const ; 
     const NP*      find_array(const char* base, const char* name) const ; 
+
+    NPFold*        find_subfold_(const char* fpath) const  ; 
     const NPFold*  find_subfold(const char* fpath) const  ; 
 
 
@@ -520,8 +522,13 @@ inline const NP* NPFold::find_array(const char* base, const char* name) const
     const NPFold* fold = find_subfold(base); 
     return fold ? fold->get(name) : nullptr  ; 
 }
+ 
 
-
+inline NPFold* NPFold::find_subfold_(const char* qpath) const 
+{
+    const NPFold* f = find_subfold(qpath) ; 
+    return const_cast<NPFold*>(f) ; 
+}
 
 /**
 NPFold::find_subfold using full subfold qpath, start path is "" 

@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     int rc(0); 
 
     stree a ; 
-    rc = a.oldload(ss); 
+    rc = a.load(ss); 
     if( rc != 0 ) return rc ; 
 
     std::cout << "a.desc" << std::endl << a.desc_size() << std::endl ; 

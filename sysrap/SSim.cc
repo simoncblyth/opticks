@@ -38,27 +38,18 @@ SSim* SSim::CreateOrReuse()
     return INSTANCE ? INSTANCE : Create() ; 
 }
 
-
-void SSim::Add(const char* k, const NP* a ) // static
-{
-    SSim* ss = Get(); 
-    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ; 
-    if(ss == nullptr) return ; 
-    ss->add(k, a );  
-}
-
-void SSim::AddSubfold(const char* k, NPFold* f) // static
+void SSim::AddExtraSubfold(const char* k, NPFold* f) // static
 {
     SSim* ss = CreateOrReuse(); 
     LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ; 
     if(ss == nullptr) return ; 
-    ss->add_subfold(k, f); 
+    ss->add_extra_subfold(k, f); 
 }
 
 
 int SSim::Compare( const SSim* a , const SSim* b )
 {
-    return ( a && b ) ? NPFold::Compare(a->fold, b->fold ) : -1 ;    
+    return ( a && b ) ? NPFold::Compare(a->top, b->top) : -1 ;    
 }
 
 std::string SSim::DescCompare( const SSim* a , const SSim* b )
@@ -68,7 +59,7 @@ std::string SSim::DescCompare( const SSim* a , const SSim* b )
        << " a " << ( a ? "Y" : "N" )
        << " b " << ( b ? "Y" : "N" )
        << std::endl 
-       << ( ( a && b ) ? NPFold::DescCompare( a->fold, b->fold ) : "-" )  
+       << ( ( a && b ) ? NPFold::DescCompare( a->top, b->top ) : "-" )  
        << std::endl 
        ; 
     std::string s = ss.str();
@@ -110,9 +101,10 @@ SSim* SSim::Load(const char* base, const char* reldir)
 
 SSim::SSim()
     :
+    relp(ssys::getenvvar("SSim__RELP", "standard/stree")), // alt: "extra/GGeo"
     sctx(new scontext),
-    topfold(new NPFold),
-    fold(topfold),
+    top(nullptr),
+    extra(nullptr),
     tree(new stree)
 {
     init(); 
@@ -122,67 +114,13 @@ void SSim::init()
 {
     INSTANCE = this ; 
     tree->set_level(stree_level); 
-
     LOG(LEVEL) << sctx->desc() ;     
 }
 
-/**
-SSim::add
------------
 
-Not keen on adding one-by-one anymore. 
-Its cleaner to collect NPFold externally them add_subfold. 
-So need to move stree::import_bnd to prior to 
-it being needed, not on collection. 
-
-Q: Why is stree::import_bnd needed here ? Can it be deferred ?
-A: It populates mtline. HMM what uses that ?
-
-**/
-
-void SSim::add(const char* k, const NP* a )
-{ 
-    LOG(info) 
-        << " suspect this no longer used, checking that " 
-        << " k " << k 
-        << " a " << ( a ? a->sstr() : "-" )
-        ;
-
-    std::raise(SIGINT); 
-
-    assert(k); 
-    LOG_IF(LEVEL, a == nullptr) << "k:" << k  << " a null " ; 
-    if(a == nullptr) return ; 
-
-    fold->add(k,a);  
-
-    // dont like : should be elsewhere 
-    if(strcmp(k, snam::BND) == 0) tree->import_bnd(a); 
-
-    // actually SSim::add could be just transitional while still using GGeo
-    // normally SSim used to get 
-
-}
-
-void SSim::add_subfold(const char* k, NPFold* f )
-{
-    assert(k); 
-    LOG_IF(LEVEL, f == nullptr) << "k:" << k  << " f null " ; 
-    if(f == nullptr) return ; 
-
-    fold->add_subfold(k,f);  
-}
-
-
-const NP* SSim::get(const char* k) const { return fold->get(k);  }
-const NP* SSim::get_bnd() const { return get(snam::BND);  }
-const SBnd* SSim::get_sbnd() const 
-{ 
-    const NP* bnd = get_bnd(); 
-    return bnd ? new SBnd(bnd) : nullptr  ;  
-}
 
 stree* SSim::get_tree() const { return tree ; }
+
 
 /**
 SSim::lookup_mtline
@@ -203,83 +141,31 @@ int SSim::lookup_mtline( int mtindex ) const
 }
 
 
-
 /**
-SSim::save
+SSim::desc
 ------------
 
-Cannonical usage from CSGFoundry::save_ with:: 
-
-    sim->save(dir, SSim::RELDIR)
-
-So: 
-
-CSGFoundry/SSim/  
-    contains SSim arrays
-
-CSGFoundry/SSim/stree/
-    contains stree arrays 
-
-
-
-**stree integration ?**
-
-HMM: maybe stree should provide an NPFold 
-thats a subfold of the top SSim fold ? That 
-would make this save more standard. 
+This and the following accessors require serialization to populate top 
 
 **/
 
-void SSim::save(const char* base, const char* reldir) const 
+std::string SSim::desc() const { return top ? top->desc() : "-" ; }
+
+const NP* SSim::get(const char* k) const 
 { 
-    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
-
-    NPFold* f_tree = tree->serialize() ; 
-    topfold->add_subfold( stree::RELDIR, f_tree ); 
-
-    topfold->save(dir); 
-
-    //tree->save(dir, stree::RELDIR); 
+    assert( top ); 
+    const NPFold* f = top->find_subfold( relp ); 
+    return f->get(k); 
+}
+void SSim::set(const char* k, const NP* a) 
+{
+    assert( top ); 
+    NPFold* f = top->find_subfold_( relp ); 
+    f->set( k, a );   
 }
 
 
-
-/**
-SSim::load
-------------
-
-tree.load taking 0.467s which is excessive as not yet in use
-
-**/
-
-const bool SSim::load_tree_load = ssys::getenvbool("SSim__load_tree_load") ;
-void SSim::load(const char* base, const char* reldir)
-{ 
-    LOG(LEVEL) << "[" ; 
-    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
-
-    LOG(LEVEL) << "[ topfold.load [" << dir << "]" ; 
-    topfold->load(dir) ;   
-    LOG(LEVEL) << "] topfold.load [" << dir << "]" ; 
-
-    if(load_tree_load)
-    {
-        LOG(LEVEL) << "[ tree.load " ; 
-        tree->load(dir, stree::RELDIR); 
-        LOG(LEVEL) << "] tree.load " ; 
-    }
-    else
-    {
-        LOG(LEVEL) << " not loading stree.h yet (still comes from GGeo?) : to enable test loading define SSim__load_tree_load " ;  
-    }
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-
-
-std::string SSim::desc() const { return topfold->desc() ; }
+const NP* SSim::get_bnd() const {  return get(snam::BND);  }
 
 /**
 SSim::getBndName
@@ -292,7 +178,7 @@ metadata names list associated with the bnd.npy array.
 
 const char* SSim::getBndName(unsigned bidx) const 
 {
-    const NP* bnd = fold->get(snam::BND); 
+    const NP* bnd = get_bnd(); 
     bool valid = bnd && bidx < bnd->names.size() ; 
     if(!valid) return nullptr ; 
     const std::string& name = bnd->names[bidx] ; 
@@ -301,7 +187,7 @@ const char* SSim::getBndName(unsigned bidx) const
 int SSim::getBndIndex(const char* bname) const
 {
     unsigned count = 0 ;  
-    const NP* bnd = fold->get(snam::BND); 
+    const NP* bnd = get_bnd(); 
     int bidx = bnd->get_name_index(bname, count ); 
     bool bname_found = count == 1 && bidx > -1  ;
 
@@ -314,6 +200,102 @@ int SSim::getBndIndex(const char* bname) const
 
     assert( bname_found ); 
     return bidx ; 
+}
+
+const SBnd* SSim::get_sbnd() const 
+{ 
+    const NP* bnd = get_bnd(); 
+    return bnd ? new SBnd(bnd) : nullptr  ;  
+}
+
+
+void SSim::add_extra_subfold(const char* k, NPFold* f )
+{
+    assert(k); 
+    LOG_IF(LEVEL, f == nullptr) << "k:" << k  << " f null " ; 
+    if(f == nullptr) return ; 
+
+    if( extra == nullptr ) extra = new NPFold ; 
+    extra->add_subfold(k,f);  
+}
+
+/**
+SSim::save
+------------
+
+Canonical usage from CSGFoundry::save_ with:: 
+
+    sim->save(dir, SSim::RELDIR)
+
+**/
+
+void SSim::save(const char* base, const char* reldir) const  
+{ 
+    LOG_IF(fatal, top == nullptr) << " top null : MUST serialize before save  " ;  
+    assert( top != nullptr ) ; 
+
+    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+    top->save(dir); 
+}
+
+
+
+/**
+SSim::load
+------------
+
+tree.load taking 0.467s which is excessive as not yet in use
+
+**/
+
+void SSim::load(const char* base, const char* reldir)
+{ 
+    LOG(LEVEL) << "[" ; 
+    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+
+    LOG_IF(fatal, top != nullptr)  << " top is NOT nullptr : cannot SSim::load into pre-serialized instance " ;  
+
+    top = new NPFold ; 
+
+    LOG(LEVEL) << "[ top.load [" << dir << "]" ; 
+
+    top->load(dir) ;   
+
+    LOG(LEVEL) << "] top.load [" << dir << "]" ; 
+
+    NPFold* f_tree = top->get_subfold( stree::RELDIR ) ; 
+    tree->import( f_tree ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+/**
+SSim::serialize
+-----------------
+
+NPFold layout::
+
+   SSim/extra  
+   SSim/stree
+
+**/
+
+void SSim::serialize()
+{
+    LOG(LEVEL) << "[" ; 
+    LOG_IF(fatal, top != nullptr)  << " top non-null : cannot serialize twice " ;  
+    assert( top == nullptr ); 
+    top = new NPFold ;  
+    NPFold* f_tree = tree->serialize() ;
+    top->add_subfold( stree::RELDIR, f_tree ); 
+
+    if( extra ) 
+    {
+        top->add_subfold( EXTRA, extra ); 
+    }
+
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -343,8 +325,8 @@ void SSim::addFake_( const std::vector<std::string>& specs )
     LOG_IF(fatal, !has_optical) << " optical+bnd are required " ;
     assert(has_optical);  
 
-    const NP* optical = fold->get(snam::OPTICAL); 
-    const NP* bnd     = fold->get(snam::BND); 
+    const NP* optical = get(snam::OPTICAL); 
+    const NP* bnd     = get(snam::BND); 
  
     NP* opticalplus = nullptr ; 
     NP* bndplus = nullptr ; 
@@ -352,8 +334,8 @@ void SSim::addFake_( const std::vector<std::string>& specs )
     Add( &opticalplus, &bndplus, optical, bnd, specs ); 
 
     //NOTE: are leaking the old ones 
-    fold->set(snam::OPTICAL, opticalplus); 
-    fold->set(snam::BND,     bndplus); 
+    set(snam::OPTICAL, opticalplus); 
+    set(snam::BND,     bndplus); 
 }
 
 

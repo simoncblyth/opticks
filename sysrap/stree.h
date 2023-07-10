@@ -421,15 +421,14 @@ struct stree
 
 
     static stree* Load(const char* base, const char* reldir=RELDIR ); 
-    static stree* OldLoad(const char* base, const char* reldir=RELDIR ); 
+    //static stree* OldLoad(const char* base, const char* reldir=RELDIR ); 
 
     int load( const char* base, const char* reldir=RELDIR );
-    int oldload( const char* base, const char* reldir=RELDIR );
+    //int oldload( const char* base, const char* reldir=RELDIR );
 
     int load_( const char* fold );
-    int oldload_( const char* fold );
+    //int oldload_( const char* fold );
 
-    void postload(); 
     void import(const NPFold* fold); 
 
 
@@ -1928,29 +1927,27 @@ inline stree* stree::Load(const char* base, const char* reldir ) // static
     st->load(base, reldir); 
     return st ; 
 }
+inline int stree::load( const char* base, const char* reldir ) 
+{
+    const char* dir = U::Resolve(base, reldir ); 
+    int rc = load_(dir); 
+    return rc ; 
+}
+
+/*
 inline stree* stree::OldLoad(const char* base, const char* reldir ) // static 
 {
     stree* st = new stree ; 
     st->oldload(base, reldir); 
     return st ; 
 }
-
-
-inline int stree::load( const char* base, const char* reldir ) 
-{
-    const char* dir = U::Resolve(base, reldir ); 
-    int rc = load_(dir); 
-    postload(); 
-    return rc ; 
-}
 inline int stree::oldload( const char* base, const char* reldir ) 
 {
     const char* dir = U::Resolve(base, reldir ); 
     int rc = oldload_(dir); 
-    postload(); 
     return rc ; 
 }
-
+*/
 
 inline int stree::load_( const char* dir )
 {
@@ -1958,6 +1955,10 @@ inline int stree::load_( const char* dir )
     import(fold); 
     return 0 ; 
 }
+
+
+
+/*
 inline int stree::oldload_( const char* fold )
 {
     if(level > 0) std::cout << "stree::oldload_ " << ( fold ? fold : "-" ) << std::endl ; 
@@ -2028,12 +2029,12 @@ inline int stree::oldload_( const char* fold )
         std::cout << "stree:load_ MISSING CSG " << CSG << std::endl ;  
     }
 
-    if(NP::Exists(fold, MTLINE))
-    {
-        NP* a_mtline = NP::Load(fold, MTLINE) ;  
-        ImportArray<int, int>( mtline, a_mtline );
-        init_mtindex_to_mtline(); 
-    }
+    //if(NP::Exists(fold, MTLINE))
+    //{
+    //    NP* a_mtline = NP::Load(fold, MTLINE) ;  
+    //    ImportArray<int, int>( mtline, a_mtline );
+    //    init_mtindex_to_mtline(); 
+    //}
 
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
@@ -2060,14 +2061,7 @@ inline int stree::oldload_( const char* fold )
 
     return 0 ; 
 }
-
-
-inline void stree::postload()
-{
-
-
-
-}
+*/
 
 
 inline void stree::import(const NPFold* fold)
@@ -2097,12 +2091,26 @@ inline void stree::import(const NPFold* fold)
     assert( standard->bnd ); 
     import_bnd( standard->bnd ); 
 
+    /*
+    const NP* _mtline = fold->get(MTLINE) ; 
+    std::cout 
+        << "stree::import"
+        << " _mtline " << ( _mtline ? _mtline->sstr() : "-" ) 
+        << std::endl
+        ; 
  
+    ImportArray<int, int>( mtline, _mtline );
+    // _mtline is empty so this stomps of the 
+    // one done by import_bnd/init_mtindex_to_mtline
+
+    init_mtindex_to_mtline();   
+    // NO : THIS IS DONE BY import_bnd
+    */
+
+
     NPFold* f_csg = fold->get_subfold(CSG);
     csg->import(f_csg); 
- 
-    ImportArray<int, int>( mtline, fold->get(MTLINE) );
-    init_mtindex_to_mtline(); 
+
 
     ImportNames( digs, fold->get(DIGS) ); 
     ImportNames( subs, fold->get(SUBS) ); 
@@ -3153,11 +3161,14 @@ inline void stree::import_bnd(const NP* bnd)
     assert(bnd) ; 
     const std::vector<std::string>& bnames = bnd->names ; 
 
-    assert( mtname.size() == mtname.size() ); 
-    
+    assert( mtline.size() == 0 ); 
+    assert( mtname.size() == mtindex.size() ); 
+
+    // for each mtname use bnd->names to fill the mtline vector
     SBnd::FillMaterialLine( mtline, mtindex, mtname, bnames ); 
 
-    init_mtindex_to_mtline() ; // fills (int,int) map 
+    // fill (int,int) map from the mtline and mtindex vectors 
+    init_mtindex_to_mtline() ; 
 
     std::cerr 
         << "stree::import_bnd" 

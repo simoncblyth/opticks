@@ -4,10 +4,13 @@ SSim.hh : Manages input arrays for QUDARap/QSim : Using Single NPFold Member
 ==================================================================================
 
 SSim must be instanciated with SSim::Create prior to CSGFoundry::CSGFoundry 
-
 Currently that is done from G4CXOpticks::G4CXOpticks 
-and populated by GGeo::convertSim which is for example invoked 
+
+With the old X4/GGeo workflow GGeo::convertSim which is for example invoked 
 during GGeo to CSGFoundry conversion within CSG_GGeo_Convert::convertSim
+
+
+
 
 Currently the SSim instance is persisted within CSGFoundry/SSim 
 using NPFold functionality.  
@@ -36,23 +39,25 @@ struct scontext ;
 
 struct SYSRAP_API SSim
 {
+    const char* relp ; 
     scontext* sctx ; 
-    NPFold*   topfold ; 
-    NPFold*   fold ;    // starts as topfold
+    NPFold*   top ; 
+    NPFold*   extra ;  
     stree*    tree ;    // instanciated with SSim::SSim
 
 
     static const plog::Severity LEVEL ; 
     static const int stree_level ; 
     static constexpr const char* RELDIR = "SSim" ; 
+    static constexpr const char* EXTRA = "extra" ;
+ 
     static SSim* INSTANCE ; 
     static SSim* Get(); 
     static scontext* GetContext(); 
     static const char* GetContextBrief(); 
     static SSim* CreateOrReuse(); 
 
-    static void  Add(const char* k, const NP* a); 
-    static void  AddSubfold(const char* k, NPFold* f); 
+    static void  AddExtraSubfold(const char* k, NPFold* f); 
 
     static int Compare( const SSim* a , const SSim* b ) ; 
     static std::string DescCompare( const SSim* a , const SSim* b ); 
@@ -67,26 +72,36 @@ private:
     SSim(); 
     void init(); 
 public:
-
-
-    void add(const char* k, const NP* a ); 
-    void add_subfold(const char* k, NPFold* f ); 
-
-
-    const NP* get(const char* k) const ; 
-    const NP* get_bnd() const ; 
-    const SBnd* get_sbnd() const ; 
     stree* get_tree() const ; 
     int lookup_mtline( int mtindex ) const ; 
-
-    void save(const char* base, const char* reldir=RELDIR) const ; 
-    static const bool load_tree_load ;   
-    void load(const char* base, const char* reldir=RELDIR) ; 
-
+public:
+    // top NPFold must be populated with SSim::serialize 
+    // prior to these accessors working 
     std::string desc() const ; 
+
+    const NP* get(const char* k) const ; 
+    void      set(const char* k, const NP* a) ; 
+
+    const NP* get_bnd() const ; 
     const char* getBndName(unsigned bidx) const ; 
     int getBndIndex(const char* bname) const ; 
+    const SBnd* get_sbnd() const ; 
+public:
+    void add_extra_subfold(const char* k, NPFold* f ); 
 
+public:
+    void save(const char* base, const char* reldir=RELDIR) const ; 
+    void load(const char* base, const char* reldir=RELDIR) ; 
+    void serialize(); 
+
+public:
+
+    /**
+    TODO: MOST OF THE BELOW ARE DETAILS THAT ARE 
+    ONLY RELEVANT TO TEST GEOMETRIES HENCE THEY 
+    SHOULD BE RELOCATED ELSEWHERE, AND THE API 
+    UP HERE SLIMMED DOWN DRASTICALLY 
+    **/
 
     template<typename ... Args> void addFake( Args ... args ); 
     void addFake_( const std::vector<std::string>& specs ); 
