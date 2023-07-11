@@ -411,15 +411,12 @@ SEvt::setFrame
 As it is necessary to have the geometry to provide the frame this 
 is now split from eg initInputPhotons.  
 
-
 **simtrace running**
     MakeCenterExtentGensteps based on the given frame. 
 
 **simulate inputphoton running**
     MakeInputPhotonGenstep and m2w (model-2-world) 
     transforms the photons using the frame transform
-
-
 
 Formerly(?) for simtrace and input photon running with or without a transform 
 it was necessary to call this for every event due to the former call to addFrameGenstep, 
@@ -435,6 +432,13 @@ void SEvt::setFrame(const sframe& fr )
     // former call to addFrameGenstep() is relocated to SEvt::BeginOfEvent
     transformInputPhoton();  
 }
+
+void SEvt::setFramePlaceholder()
+{
+    sframe fr = sframe::Fabricate(0.f,0.f,0.f); 
+    setFrame(fr); 
+}
+
 
 
 const bool SEvt::transformInputPhoton_WIDE = ssys::getenvbool("SEvt__transformInputPhoton_WIDE") ; 

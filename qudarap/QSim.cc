@@ -180,7 +180,7 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     const NPFold* spmt_f = ssim->get_spmt_f() ; 
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ; 
-
+    LOG_IF(LEVEL, qpmt == nullptr ) << " NO QPMT instance " ; 
     LOG(LEVEL) << QPMT<float>::Desc(); 
 
 
@@ -910,7 +910,6 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
 {
     const NP* p = SEvt::GetInputPhoton(); 
     assert(p); 
-
     int num_p = p->shape[0] ; 
 
     assert( num_p > 0 ); 
@@ -929,6 +928,8 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     const char* label = "QSim::mock_propagate/d_prd" ; 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
     // prd non-standard so appropriate to upload here 
+
+    SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
 
     int rc = event->setGenstep(); 
     assert( rc == 0 ); 

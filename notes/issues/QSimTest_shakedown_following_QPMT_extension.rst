@@ -153,6 +153,56 @@ Hmm, input photon issue maybe::
 
 
 HMM looks like QEvent::setGenstep never called... where does thap normally 
-happen ? 
+happen ?  Appears the consistency check should be after the setGenstep call in QSim::mock_propagate. 
+
+::
+
+    2023-07-11 19:24:26.756 INFO  [139071] [QSimTest::mock_propagate@476]  num 8 p (8, 4, 4, )
+    2023-07-11 19:24:26.756 INFO  [139071] [QSimTest::mock_propagate@481]  bounce_max 4
+    2023-07-11 19:24:26.756 INFO  [139071] [QSimTest::mock_propagate@484]  prd (8, 4, 2, 4, )
+    2023-07-11 19:24:26.756 INFO  [139071] [QEvent::setGenstep@159] 
+    2023-07-11 19:24:26.756 FATAL [139071] [QEvent::setGenstep@162] Must SEvt::AddGenstep before calling QEvent::setGenstep 
+    QSimTest: /data/blyth/junotop/opticks/qudarap/QSim.cc:934: void QSim::mock_propagate(const NP*, unsigned int): Assertion `rc == 0' failed.
+    ./QSimTest.sh: line 145: 139071 Aborted                 (core dumped) $bin
+    === eprd.sh : run error
+    N[blyth@localhost tests]$ 
+
+
+Hmm probably changes to input photon genstep tee up are 
+not yet accomodated by QSim::mock_propagate. 
+
+TODO : review how input photons handled in ordinary running, then bring over similar to mock_propagate
+
+::
+
+     407 /**
+     408 SEvt::setFrame
+     409 ------------------
+     410 
+     411 As it is necessary to have the geometry to provide the frame this 
+     412 is now split from eg initInputPhotons.  
+     413 
+     414 **simtrace running**
+     415     MakeCenterExtentGensteps based on the given frame. 
+     416 
+     417 **simulate inputphoton running**
+     418     MakeInputPhotonGenstep and m2w (model-2-world) 
+     419     transforms the photons using the frame transform
+     420 
+     421 Formerly(?) for simtrace and input photon running with or without a transform 
+     422 it was necessary to call this for every event due to the former call to addFrameGenstep, 
+     423 but now that the genstep setup is moved to SEvt::BeginOfEvent it is only needed 
+     424 to call this for each frame, usually once only. 
+     425 
+     426 **/
+     427 
+     428 
+     429 void SEvt::setFrame(const sframe& fr )
+     430 {
+     431     frame = fr ;
+     432     // former call to addFrameGenstep() is relocated to SEvt::BeginOfEvent
+     433     transformInputPhoton();  
+     434 }   
+
 
 

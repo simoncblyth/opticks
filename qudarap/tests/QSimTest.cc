@@ -475,7 +475,18 @@ void QSimTest::mock_propagate()
     NP* p   = qs->duplicate_dbg_ephoton(num); 
     LOG(info) << " num " << num << " p " << ( p ? p->sstr() : "-" ) ; 
 
-    SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
+
+    SEVt* evt = SEvt::Get(); 
+    assert( evt ); 
+    evt->setInputPhoton(p);  
+    evt->setFramePlaceholder() ; 
+
+    // HMM: previously SEvt::setInputPhoton also added input photon genstep 
+    // but it seems no longer the case ... HMM thats something 
+    // to do with needing geometry for the frame transform ? 
+
+
+
 
     int bounce_max = SEventConfig::MaxBounce(); 
     LOG(info) << " bounce_max " << bounce_max ; 

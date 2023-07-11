@@ -205,6 +205,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     void setFrame(const sframe& fr ); 
+    void setFramePlaceholder(); 
 
     static const bool transformInputPhoton_WIDE ; 
     void transformInputPhoton(); 
