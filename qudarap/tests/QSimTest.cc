@@ -473,6 +473,7 @@ void QSimTest::mock_propagate()
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
     NP* p   = qs->duplicate_dbg_ephoton(num); 
+    LOG(info) << " num " << num << " p " << ( p ? p->sstr() : "-" ) ; 
 
     SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
 
@@ -480,6 +481,8 @@ void QSimTest::mock_propagate()
     LOG(info) << " bounce_max " << bounce_max ; 
 
     NP* prd = qs->prd->duplicate_prd(num, bounce_max);  
+    LOG(info) << " prd " << ( prd ? prd->sstr() : "-" ) ; 
+
     prd->save(dir, "prd.npy"); 
 
     qs->mock_propagate( prd, type ); 
@@ -688,7 +691,6 @@ int main(int argc, char** argv)
     QSim::UploadComponents(ssim);   // instanciates things like QBnd
 
     QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
-
 
     SEvt evt ; 
 

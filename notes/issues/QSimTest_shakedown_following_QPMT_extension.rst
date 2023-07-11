@@ -1,6 +1,10 @@
 QSimTest_shakedown_following_QPMT_extension
 ============================================
 
+mock_propagate shakedown
+----------------------------
+
+
 ::
 
    ./QSimTest.sh 
@@ -92,6 +96,9 @@ After fixing that::
     (gdb) 
 
 
+
+The hardcoded mock boundaries need updating for current geom::
+
     (gdb) f 8
     #8  0x000000000041a969 in main (argc=1, argv=0x7fffffff5168) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:690
     690	    QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
@@ -110,5 +117,38 @@ After fixing that::
         at /data/blyth/junotop/ExternalLibs/opticks/head/include/SysRap/SBnd.h:165
     165	        assert( bidx != MISSING ); 
     (gdb) 
+
+
+
+Hmm, input photon issue maybe::
+
+    (gdb) bt
+    #0  0x00007ffff5462387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff5463a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff545b1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff545b252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7777caa in QSim::mock_propagate (this=0x90f74b0, prd=0x90f8380, type=35)
+        at /data/blyth/junotop/opticks/qudarap/QSim.cc:931
+    #5  0x00000000004196ec in QSimTest::mock_propagate (this=0x7fffffff4bc0)
+        at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:485
+    #6  0x000000000041a69b in QSimTest::main (this=0x7fffffff4bc0) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:670
+    #7  0x000000000041a99e in main (argc=1, argv=0x7fffffff5588) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:696
+    (gdb) f 6 
+    #6  0x000000000041a69b in QSimTest::main (this=0x7fffffff4bc0) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:670
+    670	                                                mock_propagate()              ; break ; 
+    (gdb) f 5
+    #5  0x00000000004196ec in QSimTest::mock_propagate (this=0x7fffffff4bc0)
+        at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:485
+    485	    qs->mock_propagate( prd, type ); 
+    (gdb) f 4
+    #4  0x00007ffff7777caa in QSim::mock_propagate (this=0x90f74b0, prd=0x90f8380, type=35)
+        at /data/blyth/junotop/opticks/qudarap/QSim.cc:931
+    931	    assert( num_photon == num_p ); 
+    (gdb) p num_photon
+    $1 = 0
+    (gdb) p num_p
+    $2 = 8
+    (gdb) 
+
 
 

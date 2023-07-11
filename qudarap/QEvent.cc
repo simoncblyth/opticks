@@ -54,6 +54,14 @@ Instanciation allocates device buffers with sizes configured by SEventConfig
 * As selector is only needed CPU side it is not down in sevent.h 
   but it could be in SEvt.hh 
 
+Holds:
+
+* SEvt.hh:sev 
+* sevent.h:evt
+* sevent.h:d_evt
+* NP.hh:gs
+* NP.hh:input_photon
+
 **/
 
 QEvent::QEvent()

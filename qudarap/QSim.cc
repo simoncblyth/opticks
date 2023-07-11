@@ -893,8 +893,8 @@ extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsi
 
 
 /**
-QSim::mock_propagate_launch_mutate
-------------------------------------
+QSim::mock_propagate
+----------------------
 
 * number of prd must be a multiple of the number of photon, ratio giving bounce_max 
 * number of record must be a multiple of the number of photon, ratio giving record_max 
@@ -919,16 +919,27 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
+    int num_photon = event->getNumPhoton(); 
+    bool consistent_num_photon = num_photon == num_p ; 
 
     LOG(LEVEL) 
          << "["
          << " num_p " << num_p
+         << " QEvent::getNumPhoton " << num_photon
+         << " consistent_num_photon " << ( consistent_num_photon ? "YES" : "NO " )
          << " num_prd " << num_prd 
          << " prd " << prd->sstr() 
          ;
 
-    int num_photon = event->getNumPhoton(); 
-    assert( num_photon == num_p ); 
+    LOG_IF(fatal, !consistent_num_photon)
+         << "["
+         << " num_p " << num_p
+         << " QEvent::getNumPhoton " << num_photon
+         << " consistent_num_photon " << ( consistent_num_photon ? "YES" : "NO " )
+         << " num_prd " << num_prd 
+         << " prd " << prd->sstr() 
+         ;
+    assert(consistent_num_photon); 
 
     const char* label = "QSim::mock_propagate/d_prd" ; 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  

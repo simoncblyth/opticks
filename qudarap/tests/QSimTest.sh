@@ -117,7 +117,7 @@ esac
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 
-setloglevels()
+loglevels()
 {
     #export QBnd=INFO
     export SEvent=INFO
@@ -125,8 +125,7 @@ setloglevels()
     export SEvt=INFO
     export QEvent=INFO
 }
-setloglevels
-
+loglevels
 
 
 source fill_state.sh 
@@ -155,8 +154,7 @@ fi
 
 
 
-
-relative_stem(){
+relative_stem(){   ## THIS IS USING OBSOLETE GEOCACHE PATHS 
    local img=$1
    
    local geocache=${OPTICKS_GEOCACHE_PREFIX:-$HOME/.opticks}/geocache/
