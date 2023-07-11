@@ -15,7 +15,7 @@ def reconstruct_mt(t):
     to make less obnoxious reduce that :   mt[16,0,:,1] = 1.e+06  
     """
 
-    bd_ = "np.array( t.optical[:,0].reshape(-1,4), dtype=np.int32 ) - 1"
+    bd_ = "np.array( t.optical[:,:,0], dtype=np.int32 ) - 1"
     bd = eval(bd_)
 
     print( bd_ )
@@ -27,9 +27,8 @@ def reconstruct_mt(t):
     mbd[:,1] = -1    # scrub the osur,isur pointers
     mbd[:,2] = -1  
 
-    lines = t.bnd_names.lines
-    name_bd = np.zeros( (len(lines), 4 ), dtype="|S50" )
-    for i in range(len(name_bd)): name_bd[i] = lines[i].split("/")
+    name_bd = np.zeros( (len(t.bnd_names), 4 ), dtype="|S50" )
+    for i in range(len(name_bd)): name_bd[i] = t.bnd_names[i].split("/")
     assert name_bd.shape == bd.shape
 
 

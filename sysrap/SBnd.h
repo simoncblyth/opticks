@@ -154,7 +154,7 @@ inline void SBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char
     assert( bnd_idx.size() == 0 ); 
 
     std::vector<std::string> bnd ; 
-    sstr::Split(bnd_sequence,delim, bnd ); 
+    sstr::SplitTrim(bnd_sequence,delim, bnd ); 
 
     for(unsigned i=0 ; i < bnd.size() ; i++)
     {
@@ -303,6 +303,7 @@ inline std::string SBnd::DescDigest(const NP* bnd, int w )  // static
     assert( int(names.size()) == ni ); 
 
     std::stringstream ss ; 
+    ss << "SBnd::DescDigest" << std::endl ; 
     for(int i=0 ; i < ni ; i++)
     {
         ss << std::setw(3) << i << " " ; 
@@ -518,12 +519,21 @@ and subtracting 1.::
 
 inline NP* SBnd::bd_from_optical(const NP* op ) const 
 {
+
+    /* 
+    //old optical was unsigned:( num_bd*4, 4 )
     assert( op && op->uifc == 'u' && op->shape.size() == 2 && op->shape[1] == 4 ) ; 
     int num_op = op->shape[0] ; 
     assert( num_op % 4 == 0 ); 
     int num_bd = num_op / 4 ; 
+    */
 
-    const unsigned* op_v = op->cvalues<unsigned>() ; 
+    // new optical is int:(num_bd, 4, 4)  
+    assert( op && op->uifc == 'i' && op->shape.size() == 3 && op->shape[1] == 4 && op->shape[2] == 4 ) ; 
+    int num_bd = op->shape[0] ; 
+
+
+    const int* op_v = op->cvalues<int>() ; 
     int ni = num_bd ; 
     int nj = 4 ; 
 

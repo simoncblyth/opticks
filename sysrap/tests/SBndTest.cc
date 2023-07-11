@@ -247,8 +247,9 @@ int main(int argc, char** argv)
     test_getPropertyGroup(sb);
     test_DescMaterialProp();
     test_getProperty_Q(sb);
-    */
     test_getProperty(sb);
+    */
+    test_getBoundaryIndices_0(sb);
 
     return 0 ; 
 }

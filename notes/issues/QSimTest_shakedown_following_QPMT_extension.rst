@@ -74,3 +74,41 @@ New bnd misses some metadata::
 
 
 
+After fixing that::
+
+
+    (gdb) bt
+    #0  0x00007ffff5463387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff5464a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff545c1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff545c252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff77cf547 in SBnd::getBoundaryIndices (this=0x8b1ada0, bnd_idx=..., 
+        bnd_sequence=0x7ffff78622e8 "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum", delim=44 ',')
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/SysRap/SBnd.h:165
+    #5  0x00007ffff77ce802 in QPrd::init (this=0x8b28e30) at /data/blyth/junotop/opticks/qudarap/QPrd.cc:51
+    #6  0x00007ffff77ce3c1 in QPrd::QPrd (this=0x8b28e30) at /data/blyth/junotop/opticks/qudarap/QPrd.cc:28
+    #7  0x0000000000419e7c in QSimTest::EventConfig (type=35) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:567
+    #8  0x000000000041a969 in main (argc=1, argv=0x7fffffff5168) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:690
+    (gdb) 
+
+
+    (gdb) f 8
+    #8  0x000000000041a969 in main (argc=1, argv=0x7fffffff5168) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:690
+    690	    QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
+    (gdb) f 7
+    #7  0x0000000000419e7c in QSimTest::EventConfig (type=35) at /data/blyth/junotop/opticks/qudarap/tests/QSimTest.cc:567
+    567	        QPrd* prd = new QPrd ; 
+    (gdb) f 6
+    #6  0x00007ffff77ce3c1 in QPrd::QPrd (this=0x8b28e30) at /data/blyth/junotop/opticks/qudarap/QPrd.cc:28
+    28	    init(); 
+    (gdb) f 5
+    #5  0x00007ffff77ce802 in QPrd::init (this=0x8b28e30) at /data/blyth/junotop/opticks/qudarap/QPrd.cc:51
+    51	    sbn->getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
+    (gdb) f 4
+    #4  0x00007ffff77cf547 in SBnd::getBoundaryIndices (this=0x8b1ada0, bnd_idx=..., 
+        bnd_sequence=0x7ffff78622e8 "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum", delim=44 ',')
+        at /data/blyth/junotop/ExternalLibs/opticks/head/include/SysRap/SBnd.h:165
+    165	        assert( bidx != MISSING ); 
+    (gdb) 
+
+

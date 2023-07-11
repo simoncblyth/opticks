@@ -45,10 +45,19 @@ std::string QPrd::desc() const
 
 void QPrd::init()
 {
-    const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
+    const char* bnd_fallback = R"LITERAL(
+    Acrylic///LS
+    Water///Acrylic
+    Water///Pyrex
+    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    )LITERAL" ;  
+
+    // bnd name changed 
+    // Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum
+
     const char* bnd_sequence = SSys::getenvvar("QPRD_BND", bnd_fallback );  
     LOG(LEVEL) << " QPRD_BND " << bnd_sequence ; 
-    sbn->getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
+    sbn->getBoundaryIndices( bnd_idx, bnd_sequence, '\n' ); 
 
     const char* nrmt_fallback = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,1,400" ; 
     qvals( nrmt, "QPRD_NRMT", nrmt_fallback, true ); 

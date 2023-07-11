@@ -23,8 +23,10 @@ struct sstr
 
     static bool Contains(   const char* s_ , const char* q_); 
 
-
+    static const char* TrimLeading(const char* s);
     static const char* TrimTrailing(const char* s);
+    static const char* Trim(const char* s); // both leading and trailing 
+
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
     static std::string RemoveSpaces(const char* s);  
@@ -34,7 +36,9 @@ struct sstr
 
 
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
-    static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
+    static void Split(     const char* str, char delim,   std::vector<std::string>& elem ); 
+    static void SplitTrim( const char* str, char delim,   std::vector<std::string>& elem ); 
+
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str ); 
     static void chop( char** head, char** tail, const char* delim, const char* str ); 
 
@@ -122,8 +126,12 @@ inline bool sstr::Contains( const char* s_ , const char* q_ )
 }
 
 
-
-
+inline const char* sstr::TrimLeading(const char* s)
+{
+    char* p = strdup(s); 
+    while( *p && ( *p == ' ' || *p == '\n' )) p++ ; 
+    return p ; 
+}
 inline const char* sstr::TrimTrailing(const char* s) // reposition null terminator to skip trailing whitespace 
 {
     char* p = strdup(s); 
@@ -132,6 +140,18 @@ inline const char* sstr::TrimTrailing(const char* s) // reposition null terminat
     e[1] = '\0' ;
     return p ;  
 }
+inline const char* sstr::Trim(const char* s)  // trim leading and trailing whitespace 
+{
+    char* p = strdup(s); 
+    char* e = p + strlen(p) - 1 ; 
+    while(e > p && ( *e == ' ' || *e == '\n' )) e-- ;
+    *(e+1) = '\0' ;
+    while( *p && ( *p == ' ' || *p == '\n')) p++ ; 
+    return p ; 
+}
+
+
+
 
 
 
@@ -202,6 +222,16 @@ inline void sstr::Split( const char* str, char delim,   std::vector<std::string>
     std::string s;
     while (std::getline(ss, s, delim)) elem.push_back(s) ; 
 }
+
+inline void sstr::SplitTrim( const char* str, char delim,   std::vector<std::string>& elem )
+{
+    std::stringstream ss; 
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(Trim(s.c_str())) ; 
+}
+
+
 
 template<typename T>
 inline void sstr::split( std::vector<T>& elem, const char* str, char delim )
