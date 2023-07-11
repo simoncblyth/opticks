@@ -12,9 +12,7 @@
 
 #include "SBnd.h"
 
-
 const plog::Severity QPrd::LEVEL = SLOG::EnvLevel("QPrd", "DEBUG") ; 
-
 const QPrd* QPrd::INSTANCE = nullptr ; 
 const QPrd* QPrd::Get(){ return INSTANCE ; }
 
@@ -29,46 +27,46 @@ QPrd::QPrd()
     INSTANCE = this ; 
 }
 
-std::string QPrd::desc() const 
-{
-    std::stringstream ss ; 
-    ss << "QPrd.sbn.descBoundaryIndices" << std::endl ; 
-    ss << sbn->descBoundaryIndices( bnd_idx ); 
-    ss << "QPrd.nrmt" << std::endl ;  
-    for(unsigned i=0 ; i < nrmt.size() ; i++ ) ss << nrmt[i] << std::endl ;  
-    ss << "QPrd.prd" << std::endl ;  
-    for(unsigned i=0 ; i < prd.size() ; i++ )  ss << prd[i].desc() << std::endl ;  
-    std::string s = ss.str(); 
-    return s ; 
-}
-
 
 void QPrd::init()
 {
-    const char* bnd_fallback = R"LITERAL(
-    Acrylic///LS
-    Water///Acrylic
-    Water///Pyrex
-    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
-    )LITERAL" ;  
+    populate_prd(); 
+}
 
-    // bnd name changed 
-    // Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum
+/**
+QPrd::populate_prd
+--------------------
 
-    const char* bnd_sequence = SSys::getenvvar("QPRD_BND", bnd_fallback );  
+Sensitive to envvars QPRD_BND and QPRD_NRMT
+
+**/
+
+void QPrd::populate_prd()
+{
+    const char* bnd_sequence = SSys::getenvvar("QPRD_BND", QPRD_BND_DEFAULT );  
     LOG(LEVEL) << " QPRD_BND " << bnd_sequence ; 
     sbn->getBoundaryIndices( bnd_idx, bnd_sequence, '\n' ); 
 
-    const char* nrmt_fallback = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,1,400" ; 
-    qvals( nrmt, "QPRD_NRMT", nrmt_fallback, true ); 
+    qvals( nrmt, "QPRD_NRMT", QPRD_NRMT_DEFAULT, true ); 
 
-    unsigned num_prd = bnd_idx.size() ; 
-    assert( num_prd == nrmt.size() ); 
+    int num_bnd_idx = bnd_idx.size() ; 
+    int num_nrmt = nrmt.size() ; 
+
+    bool consistent = num_bnd_idx == num_nrmt ; 
+    LOG_IF(fatal, !consistent )    
+        << " number of QPRD_BND mock boundaries "
+        << " and QPRD_NRMT mock (normal,distance) must be the same "
+        << " num_bnd_idx " << num_bnd_idx
+        << " num_nrmt " << num_nrmt 
+        ;
+    assert(consistent); 
+
 
     LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ; 
 
+    int num_prd = num_bnd_idx ; 
     prd.resize(num_prd);  // vector of quad2
-    for(unsigned i=0 ; i < num_prd ; i++)
+    for(int i=0 ; i < num_prd ; i++)
     {
         quad2& pr = prd[i] ; 
         pr.zero(); 
@@ -78,10 +76,6 @@ void QPrd::init()
     }
 }
 
-unsigned QPrd::getNumBounce() const 
-{
-    return bnd_idx.size(); 
-}
 
 
 
@@ -95,31 +89,44 @@ the prd is wrapped within the photon.
 
 **/
 
-NP* QPrd::duplicate_prd(unsigned num_photon, unsigned num_bounce) const 
+NP* QPrd::duplicate_prd(int num_photon, int num_bounce) const 
 {
-    unsigned num_prd = prd.size(); 
-    unsigned ni = num_photon ; 
-    unsigned nj = num_bounce ; 
+    int num_prd = prd.size(); 
+    int ni = num_photon ; 
+    int nj = num_bounce ; 
+
     LOG(LEVEL) 
         << " ni:num_photon " << num_photon
         << " nj:num_bounce " << num_bounce
         << " num_prd " << num_prd 
         ;
 
-
     NP* a_prd = NP::Make<float>(ni, nj, 2, 4 ); 
-
     quad2* prd_v = (quad2*)a_prd->values<float>();  
-    for(unsigned i=0 ; i < ni ; i++)
-    {
-        for(unsigned j=0 ; j < nj ; j++) 
-        {
-             prd_v[i*nj+j] = prd[j % num_prd] ;   // wrap the prd if not enough   
-        }
-    }    
+
+    for(int i=0 ; i < ni ; i++)
+        for(int j=0 ; j < nj ; j++) 
+            prd_v[i*nj+j] = prd[j % num_prd] ; // wrap prd into array when not enough   
+
     return a_prd ; 
 }
 
+std::string QPrd::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "QPrd.sbn.descBoundaryIndices" << std::endl ; 
+    ss << sbn->descBoundaryIndices( bnd_idx ); 
+    ss << "QPrd.nrmt" << std::endl ;  
+    for(int i=0 ; i < int(nrmt.size()) ; i++ ) ss << nrmt[i] << std::endl ;  
+    ss << "QPrd.prd" << std::endl ;  
+    for(int i=0 ; i < int(prd.size()) ; i++ )  ss << prd[i].desc() << std::endl ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
 
+int QPrd::getNumBounce() const 
+{
+    return bnd_idx.size(); 
+}
 
 

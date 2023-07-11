@@ -71,10 +71,10 @@ struct QSimTest
 
 
     void generate_photon(); 
-    void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
+    void getStateNames(std::vector<std::string>& names, int num_state) const ; 
 
     void fill_state(unsigned version); 
-    void save_state( const char* subfold, const float* data, unsigned num_state  ); 
+    void save_state( const char* subfold, const float* data, int num_state  ); 
 
     void photon_launch_generate(); 
     void photon_launch_mutate(); 
@@ -427,7 +427,7 @@ void QSimTest::fill_state(unsigned version)
 }
 
 
-void QSimTest::save_state( const char* subfold, const float* data, unsigned num_state  )
+void QSimTest::save_state( const char* subfold, const float* data, int num_state  )
 {
     std::vector<std::string> names ; 
     getStateNames(names, num_state); 
@@ -441,10 +441,10 @@ void QSimTest::save_state( const char* subfold, const float* data, unsigned num_
 }
 
 
-void QSimTest::getStateNames(std::vector<std::string>& names, unsigned num_state) const 
+void QSimTest::getStateNames(std::vector<std::string>& names, int num_state) const 
 {
-    unsigned* idx = new unsigned[num_state] ; 
-    for(unsigned i=0 ; i < num_state ; i++) idx[i] = i ; 
+    int* idx = new int[num_state] ; 
+    for(int i=0 ; i < num_state ; i++) idx[i] = i ; 
     qs->bnd->sbn->getBoundarySpec(names, idx, num_state ); 
     delete [] idx ; 
 }
@@ -488,7 +488,9 @@ void QSimTest::mock_propagate()
     int bounce_max = SEventConfig::MaxBounce(); 
     LOG(info) << " bounce_max " << bounce_max ; 
 
-    NP* prd = qs->prd->duplicate_prd(num, bounce_max);  
+    const QPrd* qprd = qs->prd ; 
+
+    NP* prd = qprd->duplicate_prd(num, bounce_max);  
     LOG(info) << " prd " << ( prd ? prd->sstr() : "-" ) ; 
 
     prd->save(dir, "prd.npy"); 

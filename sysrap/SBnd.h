@@ -33,25 +33,26 @@ struct SBnd
 {
     const NP* bnd ; 
 
-    static constexpr const unsigned MISSING = ~0u ;
+    //static constexpr const unsigned MISSING = ~0u ;
+    static constexpr const int MISSING = -1 ;
     const std::vector<std::string>& bnames ; 
 
     SBnd(const NP* bnd_); 
 
     std::string getItemDigest( int i, int j, int w=8 ) const ;
     std::string descBoundary() const ;
-    unsigned getNumBoundary() const ;
-    const char* getBoundarySpec(unsigned idx) const ;
-    void        getBoundarySpec(std::vector<std::string>& names, const unsigned* idx , unsigned num_idx ) const ;
+    int getNumBoundary() const ;
+    const char* getBoundarySpec(int idx) const ;
+    void        getBoundarySpec(std::vector<std::string>& names, const int* idx , int num_idx ) const ;
 
-    unsigned    getBoundaryIndex(const char* spec) const ;
+    int    getBoundaryIndex(const char* spec) const ;
 
-    void        getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ;
-    std::string descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const ;
+    void        getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ;
+    std::string descBoundaryIndices( const std::vector<int>& bnd_idx ) const ;
 
-    unsigned    getBoundaryLine(const char* spec, unsigned j) const ;
-    static unsigned GetMaterialLine( const char* material, const std::vector<std::string>& specs );
-    unsigned    getMaterialLine( const char* material ) const ;
+    int    getBoundaryLine(const char* spec, int j) const ;
+    static int GetMaterialLine( const char* material, const std::vector<std::string>& specs );
+    int    getMaterialLine( const char* material ) const ;
 
     static std::string DescDigest(const NP* bnd, int w=16) ; 
 
@@ -95,7 +96,7 @@ inline SBnd::SBnd(const NP* bnd_)
     bnd(bnd_),
     bnames(bnd->names)
 {
-    unsigned num_bnames = bnames.size() ; 
+    int num_bnames = bnames.size() ; 
     if( num_bnames == 0 ) std::cerr << "SBnd::SBnd no names from bnd " << ( bnd ? bnd->sstr() : "-" ) << std::endl ; 
     //assert(num_bnames > 0 ); 
 }
@@ -107,38 +108,38 @@ inline std::string SBnd::getItemDigest( int i, int j, int w ) const
 inline std::string SBnd::descBoundary() const
 {
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    for(int i=0 ; i < int(bnames.size()) ; i++) 
        ss << std::setw(2) << i << " " << bnames[i] << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 } 
 
 
-inline unsigned SBnd::getNumBoundary() const
+inline int SBnd::getNumBoundary() const
 {
     return bnames.size(); 
 }
-inline const char* SBnd::getBoundarySpec(unsigned idx) const 
+inline const char* SBnd::getBoundarySpec(int idx) const 
 {
-    assert( idx < bnames.size() );  
+    assert( idx < int(bnames.size()) );  
     const std::string& s = bnames[idx]; 
     return s.c_str(); 
 }
-inline void SBnd::getBoundarySpec(std::vector<std::string>& names, const unsigned* idx , unsigned num_idx ) const 
+inline void SBnd::getBoundarySpec(std::vector<std::string>& names, const int* idx , int num_idx ) const 
 {
-    for(unsigned i=0 ; i < num_idx ; i++)
+    for(int i=0 ; i < num_idx ; i++)
     {   
-        unsigned index = idx[i] ;   
+        int index = idx[i] ;   
         const char* spec = getBoundarySpec(index);   // 0-based 
         names.push_back(spec); 
     }   
 } 
 
 
-inline unsigned SBnd::getBoundaryIndex(const char* spec) const 
+inline int SBnd::getBoundaryIndex(const char* spec) const 
 {
-    unsigned idx = MISSING ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    int idx = MISSING ; 
+    for(int i=0 ; i < int(bnames.size()) ; i++) 
     {
         if(spec && strcmp(bnames[i].c_str(), spec) == 0) 
         {
@@ -149,18 +150,18 @@ inline unsigned SBnd::getBoundaryIndex(const char* spec) const
     return idx ;  
 }
 
-inline void SBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim ) const 
+inline void SBnd::getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim ) const 
 {
     assert( bnd_idx.size() == 0 ); 
 
     std::vector<std::string> bnd ; 
     sstr::SplitTrim(bnd_sequence,delim, bnd ); 
 
-    for(unsigned i=0 ; i < bnd.size() ; i++)
+    for(int i=0 ; i < int(bnd.size()) ; i++)
     {
         const char* spec = bnd[i].c_str(); 
         if(strlen(spec) == 0) continue ;  
-        unsigned bidx = getBoundaryIndex(spec); 
+        int bidx = getBoundaryIndex(spec); 
         if( bidx == MISSING ) std::cerr << " i " << i << " invalid spec [" << spec << "]" << std::endl ;      
         assert( bidx != MISSING ); 
 
@@ -168,12 +169,13 @@ inline void SBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char
     }
 }
 
-inline std::string SBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 
+inline std::string SBnd::descBoundaryIndices( const std::vector<int>& bnd_idx ) const 
 {
+    int num_bnd_idx = bnd_idx.size() ; 
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < bnd_idx.size() ; i++)
+    for(int i=0 ; i < num_bnd_idx ; i++)
     {
-        unsigned bidx = bnd_idx[i] ;  
+        int bidx = bnd_idx[i] ;  
         const char* spec = getBoundarySpec(bidx); 
         ss
             << " i " << std::setw(3) << i 
@@ -195,11 +197,12 @@ the boundary line returned is : 4*boundary_index + j
 
 **/
 
-inline unsigned SBnd::getBoundaryLine(const char* spec, unsigned j) const 
+inline int SBnd::getBoundaryLine(const char* spec, int j) const 
 {
-    unsigned idx = getBoundaryIndex(spec); 
+    int num_bnames = bnames.size() ;
+    int idx = getBoundaryIndex(spec); 
     bool is_missing = idx == MISSING ; 
-    bool is_valid = !is_missing && idx < bnames.size() ;
+    bool is_valid = !is_missing && idx < num_bnames ;
 
     if(!is_valid) 
     {
@@ -214,7 +217,7 @@ inline unsigned SBnd::getBoundaryLine(const char* spec, unsigned j) const
     }
 
     assert( is_valid ); 
-    unsigned line = 4*idx + j ;    
+    int line = 4*idx + j ;    
     return line ;  
 }
 
@@ -227,10 +230,10 @@ The first omat or imat line matching the *material* argument is returned.
 
 **/
 
-inline unsigned SBnd::GetMaterialLine( const char* material, const std::vector<std::string>& specs ) // static
+inline int SBnd::GetMaterialLine( const char* material, const std::vector<std::string>& specs ) // static
 {
-    unsigned line = MISSING ; 
-    for(unsigned i=0 ; i < specs.size() ; i++) 
+    int line = MISSING ; 
+    for(int i=0 ; i < int(specs.size()) ; i++) 
     {
         std::vector<std::string> elem ; 
         sstr::Split(specs[i].c_str(), '/', elem );  
@@ -260,7 +263,7 @@ returning the first found.
 
 **/
 
-inline unsigned SBnd::getMaterialLine( const char* material ) const
+inline int SBnd::getMaterialLine( const char* material ) const
 {
     return GetMaterialLine(material, bnames);
 }
@@ -335,7 +338,7 @@ HMM: name order not the original one
 
 inline void SBnd::getMaterialNames( std::vector<std::string>& names ) const 
 {
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    for(int i=0 ; i < int(bnames.size()) ; i++) 
     {
         std::vector<std::string> elem ; 
         sstr::Split(bnames[i].c_str(), '/', elem );  
@@ -349,7 +352,7 @@ inline void SBnd::getMaterialNames( std::vector<std::string>& names ) const
 inline std::string SBnd::DescNames( std::vector<std::string>& names ) 
 {
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << std::endl ; 
+    for(int i=0 ; i < int(names.size()) ; i++) ss << names[i] << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }

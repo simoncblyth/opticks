@@ -16,6 +16,7 @@ EOU
 
 bin=QSimTest 
 arg=${1:-run_ana}
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 source $HOME/.opticks/GEOM/GEOM.sh
 msg="=== $BASH_SOURCE :"
@@ -132,12 +133,19 @@ source fill_state.sh
 source ephoton.sh         # branching on TEST inside ephoton.sh 
 source eprd.sh
 
+export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/000
 
-vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM"
+vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM SDIR EBASE"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi
+
+if [ "${arg/grab}" != "$arg" ]; then 
+    echo $BASH_SOURCE EBASE $EBASE
+    source $SDIR/../../bin/rsync.sh $EBASE
+fi 
+
 
 if [ "${arg/run}" != "$arg" ]; then 
    $bin 
@@ -180,7 +188,8 @@ if [ "${arg/ana}" != "$arg" ]; then
 
     if [ -f "$script" ]; then
 
-        export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
+        #export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
+        export FOLD=$EBASE
 
         export EYE=-1,-1,1 
         export LOOK=0,0,0

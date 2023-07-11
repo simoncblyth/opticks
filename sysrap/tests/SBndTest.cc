@@ -42,18 +42,18 @@ void test_getBoundarySpec(const SBnd& sb)
 void test_getBoundaryLine(SBnd& sb)
 {
     const char* spec = SSys::getenvvar("QCTX_SPEC", "Acrylic///LS" );
-    unsigned idx = sb.getBoundaryIndex(spec);
+    int idx = sb.getBoundaryIndex(spec);
     if( idx == SBnd::MISSING )
     {
         LOG(error) << " SBnd MISSING spec " << spec ;
         return ; 
     }
 
-    unsigned num_boundary = sb.getNumBoundary();
+    int num_boundary = sb.getNumBoundary();
 
     enum { IMAT = 3 } ;
-    unsigned line = sb.getBoundaryLine(spec, IMAT);
-    unsigned xline = idx*4 + IMAT ;
+    int line = sb.getBoundaryLine(spec, IMAT);
+    int xline = idx*4 + IMAT ;
     LOG(info)
         << " spec " << spec 
         << " idx " << idx
@@ -63,8 +63,8 @@ void test_getBoundaryLine(SBnd& sb)
     
     assert( xline == line ); 
         
-    unsigned line_max = (num_boundary-1)*4 + IMAT ;
-    unsigned linek_max = 2*line_max + 1 ;
+    int line_max = (num_boundary-1)*4 + IMAT ;
+    int linek_max = 2*line_max + 1 ;
 
     LOG(info)
         << " line_max " << line_max
@@ -100,7 +100,7 @@ void test_getBoundaryIndices_0(const SBnd& sb)
     const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );
     LOG(info) << " bnd_sequence " << bnd_sequence ;
 
-    std::vector<unsigned> bnd_idx ;
+    std::vector<int> bnd_idx ;
     sb.getBoundaryIndices( bnd_idx, bnd_sequence, ',' );
     LOG(info) << "sb.descBoundaryIndices" << std::endl << sb.descBoundaryIndices( bnd_idx );
 }
@@ -118,7 +118,7 @@ Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocat
     const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );
     LOG(info) << " bnd_sequence " << bnd_sequence ;
 
-    std::vector<unsigned> bnd_idx ;
+    std::vector<int> bnd_idx ;
     sb.getBoundaryIndices( bnd_idx, bnd_sequence, '\n' );
     LOG(info) << "sb.descBoundaryIndices" << std::endl << sb.descBoundaryIndices( bnd_idx );
 }
