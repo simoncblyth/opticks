@@ -430,8 +430,7 @@ inline void SPMT::init_lcqs()
     }
     lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ; 
 
-    //if(VERBOSE) 
-    std::cout 
+    if(VERBOSE) std::cout 
        << "SPMT::init_lcqs" << std::endl 
        << " NUM_LPMT " << NUM_LPMT << std::endl 
        << " lpmtCat " << ( lpmtCat ? lpmtCat->sstr() : "-" ) << std::endl

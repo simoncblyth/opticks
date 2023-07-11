@@ -49,6 +49,7 @@ sevent* QEvent::getDevicePtr() const
 QEvent::QEvent
 ----------------
 
+Canonical QEvent instance resides within QSim and is instanciated by QSim::QSim.
 Instanciation allocates device buffers with sizes configured by SEventConfig
 
 * As selector is only needed CPU side it is not down in sevent.h 
@@ -75,6 +76,7 @@ QEvent::QEvent()
     upload_count(0),
     meta()
 {
+    LOG(LEVEL); 
     INSTANCE = this ; 
     init(); 
 }

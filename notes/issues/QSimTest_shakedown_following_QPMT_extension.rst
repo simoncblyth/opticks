@@ -152,3 +152,7 @@ Hmm, input photon issue maybe::
 
 
 
+HMM looks like QEvent::setGenstep never called... where does thap normally 
+happen ? 
+
+

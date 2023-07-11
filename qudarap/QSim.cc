@@ -181,8 +181,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     const NPFold* spmt_f = ssim->get_spmt_f() ; 
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ; 
 
-    LOG(info) << QPMT<float>::Desc(); 
-    LOG(info) << ( qpmt ? qpmt->desc() : "no-qpmt" ) ; 
+    LOG(LEVEL) << QPMT<float>::Desc(); 
 
 
 /*
@@ -919,17 +918,24 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
-    int num_photon = event->getNumPhoton(); 
-    bool consistent_num_photon = num_photon == num_p ; 
 
     LOG(LEVEL) 
          << "["
          << " num_p " << num_p
-         << " QEvent::getNumPhoton " << num_photon
-         << " consistent_num_photon " << ( consistent_num_photon ? "YES" : "NO " )
          << " num_prd " << num_prd 
          << " prd " << prd->sstr() 
          ;
+
+    const char* label = "QSim::mock_propagate/d_prd" ; 
+    quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
+    // prd non-standard so appropriate to upload here 
+
+    int rc = event->setGenstep(); 
+    assert( rc == 0 ); 
+
+    // MOVED THIS CONSISTENCY CHECK AFTER setGenstep 
+    int num_photon = event->getNumPhoton(); 
+    bool consistent_num_photon = num_photon == num_p ; 
 
     LOG_IF(fatal, !consistent_num_photon)
          << "["
@@ -941,12 +947,7 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
          ;
     assert(consistent_num_photon); 
 
-    const char* label = "QSim::mock_propagate/d_prd" ; 
-    quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
-    // prd non-standard so appropriate to upload here 
 
-    int rc = event->setGenstep(); 
-    assert( rc == 0 ); 
 
     assert( event->upload_count > 0 ); 
 

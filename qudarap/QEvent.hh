@@ -74,7 +74,8 @@ public:
     std::string       meta ; 
 
 public:
-    int setGenstep();
+    int setGenstep();  // PRIMARY ACTION OF QEvent 
+
 private:
     int  setGenstep(NP* gs);
     void device_alloc_genstep(); 
