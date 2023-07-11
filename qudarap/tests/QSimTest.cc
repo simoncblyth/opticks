@@ -476,7 +476,7 @@ void QSimTest::mock_propagate()
     LOG(info) << " num " << num << " p " << ( p ? p->sstr() : "-" ) ; 
 
 
-    SEVt* evt = SEvt::Get(); 
+    SEvt* evt = SEvt::Get(); 
     assert( evt ); 
     evt->setInputPhoton(p);  
     evt->setFramePlaceholder() ; 
