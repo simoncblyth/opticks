@@ -3,6 +3,7 @@ import os, sys, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir
+from opticks.ana.fold import Fold
 from opticks.sysrap.OpticksCSG import CSG_
 
 class CSGObject(object):
@@ -173,7 +174,11 @@ class LV(object):
 
     
 
-class NPFold(object):
+class Deprecated_NPFold(object):
+    """
+    HMM opticks.ana.fold.Fold looks more developed than this 
+    TODO: eliminate all use of this 
+    """
     INDEX = "NPFold_index.txt"
 
     @classmethod
@@ -185,16 +190,15 @@ class NPFold(object):
         return os.path.exists(cls.IndexPath(fold))
 
     @classmethod
-    def namelist_to_namedict(cls, namelist):
-        nd = {} 
-        if not namelist is None:
-            nd = dict(zip(range(len(namelist)),list(map(str,namelist)))) 
-        pass
-        return nd
+    def Load(cls, *args, **kwa):
+        return cls(*args, **kwa)
 
-    def __init__(self, fold):
+    def __init__(self, *args, **kwa):
+        fold = os.path.join(*args) 
         self.fold = fold
-        if self.HasIndex(fold):
+        self.has_index = self.HasIndex(fold)
+
+        if self.has_index:
             self.load_idx(fold)
         else:
             self.load_fts(fold)
@@ -207,6 +211,9 @@ class NPFold(object):
         keys = open(self.IndexPath(fold),"r").read().splitlines()
         aa = []
         kk = [] 
+        ff = []
+        subfold = []
+
         for k in keys:
             path = os.path.join(fold, k)
             if k.endswith(".npy"):
@@ -221,6 +228,10 @@ class NPFold(object):
         pass
         self.kk = kk 
         self.aa = aa
+        self.ff = ff 
+        self.subfold = subfold 
+        self.keys = keys 
+
 
     def find(self, k):
         return self.kk.index(k) if k in self.kk else -1 
@@ -241,17 +252,22 @@ class NPFold(object):
         return "\n".join(lines) 
         
 
-class SSim(NPFold):
+class Deprecated_SSim(object):
+    """
+    HMM: this adds little on top of ana.fold.Fold 
+    TODO: get rid of it 
+    """
     BND = "bnd.npy"
+
+
     @classmethod
     def Load(cls, simbase):
         ssdir = os.path.join(simbase, "SSim")
         log.info("SSim.Load simbase %s ssdir %s " % (simbase,ssdir))
-        sim = cls(fold=ssdir) if os.path.isdir(ssdir) else None 
+        sim = Fold.Load(ssdir) if os.path.isdir(ssdir) else None 
         return sim
 
     def __init__(self, fold):
-        NPFold.__init__(self, fold) 
         if self.has_key(self.BND):
             bnpath = os.path.join(fold, "bnd_names.txt")
             assert os.path.exists(bnpath)
@@ -259,7 +275,7 @@ class SSim(NPFold):
             self.bnd_names = bnd_names
         pass
         if hasattr(self, 'bnd_names'):  # names list from NP bnd.names metadata 
-             bndnamedict = NPFold.namelist_to_namedict(self.bnd_names)
+             bndnamedict = SSim.namelist_to_namedict(self.bnd_names)
         else:
              bndnamedict = {}
         pass
@@ -271,6 +287,16 @@ class SSim(NPFold):
 class CSGFoundry(object):
     FOLD = os.path.expandvars("$TMP/CSG_GGeo/CSGFoundry")
     FMT = "   %10s : %20s  : %s "
+
+
+    @classmethod
+    def namelist_to_namedict(cls, namelist):
+        nd = {} 
+        if not namelist is None:
+            nd = dict(zip(range(len(namelist)),list(map(str,namelist)))) 
+        pass
+        return nd
+
 
     @classmethod
     def CFBase(cls):
@@ -378,19 +404,21 @@ class CSGFoundry(object):
 
     def __init__(self, fold):
         self.load(fold)
-        self.meshnamedict = NPFold.namelist_to_namedict(self.meshname)
+        self.meshnamedict = self.namelist_to_namedict(self.meshname)
         self.primIdx_meshname_dict = self.make_primIdx_meshname_dict()  
 
-        self.sim = SSim.Load(fold)
-
         self.mokname = "zero one two three four five six seven eight nine".split()
-        self.moknamedict = NPFold.namelist_to_namedict(self.mokname)
+        self.moknamedict = self.namelist_to_namedict(self.mokname)
         self.insnamedict = {}
 
         self.lv = LV(os.path.join(fold, "meshname.txt"))
         self.mm = MM(os.path.join(fold, "mmlabel.txt"))
 
-
+        sim = Fold.Load(fold, "SSim") 
+        bdn = sim.stree.standard.bnd_names 
+        if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
+        pass  
+        self.sim = sim
 
 
 

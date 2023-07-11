@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 import os, numpy as np
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)  
+# non-standard logging config location to catch logging from CSGFoundry
+# OK because this is a "main" script 
+
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
@@ -12,30 +18,12 @@ if __name__ == '__main__':
     t = Fold.Load()
     PIDX = int(os.environ.get("PIDX","-1"))
 
-
     p = t.photon
     r = t.record
     seq = t.seq
     prd = t.prd
     h = t.hit if hasattr(t,"hit") else None
     h_meta = t.hit_meta 
-
-    """
-    # no longer bothering with compressed records
-    domain = t.domain
-    post_center, post_extent, polw_center, polw_extent = domain[0]  
-    hitmask = int(t.domain_meta.d["hitmask"])  
-    c = t.rec
-    if not c is None:
-        # domain compression means these should fit into -1:1 
-        c_post_ = c[:,:,0].astype(np.float32)/32767.0
-        c_polw_ = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.
-
-        # then scale that back to originals that should be close to full step records 
-        c_post = c_post_*post_extent + post_center   
-        c_polw = c_polw_*polw_extent + polw_center 
-    pass
-    """
 
     ## HMM:makes more sense to put this meta data on the domain, for when no hits
     #pyhit = hit__(p, hitmask)  # hits selected in python 
@@ -52,15 +40,14 @@ if __name__ == '__main__':
 
         r_cells = make_record_cells( r ) 
 
-        r_poly = pv.PolyData() 
-        r_poly.points = r_pos
-        r_poly.lines = r_cells 
-        r_poly["flag_label"] = r_flag_label
-
-        r_tube = r_poly.tube(radius=1) 
-
         PLOT = "PLOT" in os.environ
         if PLOT:
+            r_poly = pv.PolyData() 
+            r_poly.points = r_pos
+            r_poly.lines = r_cells 
+            r_poly["flag_label"] = r_flag_label
+            r_tube = r_poly.tube(radius=1) 
+
             pl = pvplt_plotter()
             pl.add_mesh( r_tube )
             pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
@@ -78,26 +65,29 @@ if __name__ == '__main__':
         if PIDX > -1: print("PIDX %d " % PIDX) 
 
         if not r is None:
-            print("r[i,:,:3]")
+            print("r[%(i)d,:,:3]" % locals()) 
             print(r[i,:,:3]) 
             print("\n\nbflagdesc_(r[i,j])")
             for j in range(len(r[i])):
-                print(bflagdesc_(r[i,j])  ) 
+                expr = "bflagdesc_(r[%(i)d,%(j)d])" % locals()
+                print(expr)
+                print(eval(expr))
             pass
         pass
 
         print("\n") 
         print("p")
         print("\n".join(a[i]))
-        print(bflagdesc_(p[i])) 
+
+        expr = "bflagdesc_(p[%(i)d]) " % locals()
+        print(expr) 
+        print(eval(expr)) 
         print("\n") 
 
         if not seq is None:
             print(seqhis_(seq[i,0])) 
             print("\n") 
         pass
-
-
         print("\n\n") 
     pass
 
