@@ -904,6 +904,8 @@ using common QEvent functionality
 
 TODO: move non-CUDA needing stuff down to SEvt? 
 
+TODO : split off prd prep and upload into separate method
+
 **/
 
 void QSim::mock_propagate( const NP* prd, unsigned type )
@@ -911,7 +913,6 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     const NP* p = SEvt::GetInputPhoton(); 
     assert(p); 
     int num_p = p->shape[0] ; 
-
     assert( num_p > 0 ); 
     assert( prd->has_shape( num_p, -1, 2, 4 ) );    // TODO: evt->max_record checking 
     assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
@@ -929,7 +930,7 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
     // prd non-standard so appropriate to upload here 
 
-    SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
+
 
     int rc = event->setGenstep(); 
     assert( rc == 0 ); 

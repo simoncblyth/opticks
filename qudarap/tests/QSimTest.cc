@@ -485,9 +485,6 @@ void QSimTest::mock_propagate()
     // but it seems no longer the case ... HMM thats something 
     // to do with needing geometry for the frame transform ? 
 
-
-
-
     int bounce_max = SEventConfig::MaxBounce(); 
     LOG(info) << " bounce_max " << bounce_max ; 
 
@@ -496,13 +493,12 @@ void QSimTest::mock_propagate()
 
     prd->save(dir, "prd.npy"); 
 
+
+    SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
+
     qs->mock_propagate( prd, type ); 
 
-    //const QEvent* event = qs->event ; 
-    //unsigned num_hit = event->getNumHit(); 
-    //LOG(info) << " num_hit " << num_hit ;
-
-    SEvt::Save(dir); 
+    SEvt::EndOfEvent(0) ;    // saves and clears 
 
     LOG(info) << "]" ; 
 }
