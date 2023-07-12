@@ -415,7 +415,6 @@ struct stree
 
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
-    //void old_save_( const char* fold ) const ;
     NPFold* serialize() const ; 
 
 
@@ -426,14 +425,9 @@ struct stree
 
 
     static stree* Load(const char* base, const char* reldir=RELDIR ); 
-    //static stree* OldLoad(const char* base, const char* reldir=RELDIR ); 
 
     int load( const char* base, const char* reldir=RELDIR );
-    //int oldload( const char* base, const char* reldir=RELDIR );
-
     int load_( const char* fold );
-    //int oldload_( const char* fold );
-
     void import(const NPFold* fold); 
 
 
@@ -1761,70 +1755,6 @@ inline void stree::save_( const char* dir ) const
     fold->save(dir) ;  
 }
 
-/*
-inline void stree::old_save_( const char* dir ) const 
-{
-    if(level > 0) std::cout << "[ stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
-
-    // nodes
-    NP::Write<int>(    dir, NDS, (int*)nds.data(), nds.size(), snode::NV );
-    NP::Write<int>(    dir, REM, (int*)rem.data(), rem.size(), snode::NV );
-
-    // transforms
-    NP::Write<double>( dir, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
-    NP::Write<double>( dir, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
-    NP::Write<double>( dir, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
-
-    // materials
-    NP::WriteNames(    dir, MTNAME,   mtname );
-    NP::WriteNames(    dir, MTNAME_NO_RINDEX,   mtname_no_rindex );
-
-    NP::Write<int>(    dir, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
-    NP::Write<int>(    dir, MTLINE,  (int*)mtline.data(),   mtline.size() );
-
-    if(material) material->save(dir, MATERIAL) ; // material from U4Tree::initMaterials
-    if(surface)  surface->save(dir, SURFACE) ;
-
-    // surfaces
-    NP::WriteNames(    dir, SUNAME,   suname );
-    NP::WriteNames(    dir, IMPLICIT, implicit );
-    NP::Write<int>(    dir, SUINDEX, (int*)suindex.data(),  suindex.size() );
-
-
-    NPFold* f_standard = standard->serialize() ; 
-    f_standard->save( dir, STANDARD ); 
-
-    // solids 
-    NPFold* f_csg = csg->serialize() ; 
-    f_csg->save( dir, CSG ); 
-
-
-    NP::WriteNames( dir, SONAME, soname );
-
-    // digests
-    NP::WriteNames( dir, DIGS,   digs );
-    NP::WriteNames( dir, SUBS,   subs );
-
-
-    if(subs_freq) subs_freq->save(dir, SUBS_FREQ);
-
-    NP::Write<int>(dir, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
-
-
-    NP::Write<double>(dir,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
-    NP::Write<double>(dir,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
-    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
-    NP::Write<float>(dir,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-    NP::Write<float>(dir,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
-
-    assert( sensor_count == sensor_id.size() ); 
-    NP::Write<int>(    dir, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
-    NP::Write<int>(    dir, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
-    if(level > 0) std::cout << "] stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
-}
-*/
-
-
 inline NPFold* stree::serialize() const 
 {
     NPFold* fold = new NPFold ; 
@@ -1944,21 +1874,6 @@ inline int stree::load( const char* base, const char* reldir )
     return rc ; 
 }
 
-/*
-inline stree* stree::OldLoad(const char* base, const char* reldir ) // static 
-{
-    stree* st = new stree ; 
-    st->oldload(base, reldir); 
-    return st ; 
-}
-inline int stree::oldload( const char* base, const char* reldir ) 
-{
-    const char* dir = U::Resolve(base, reldir ); 
-    int rc = oldload_(dir); 
-    return rc ; 
-}
-*/
-
 inline int stree::load_( const char* dir )
 {
     NPFold* fold = NPFold::Load(dir) ; 
@@ -1967,111 +1882,6 @@ inline int stree::load_( const char* dir )
 }
 
 
-
-/*
-inline int stree::oldload_( const char* fold )
-{
-    if(level > 0) std::cout << "stree::oldload_ " << ( fold ? fold : "-" ) << std::endl ; 
-
-    if(NP::Exists(fold, NDS))
-    {
-        ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
-    }
-    else
-    {
-        std::cout << "stree:load_ FATAL : MISSING NDS " << NDS << std::endl ;  
-        return 1 ; 
-    }
-
-    if(NP::Exists(fold, REM))
-    {
-        ImportArray<snode, int>(                  rem, NP::Load(fold, REM)); 
-    }
-    else
-    {
-        std::cout << "stree:load_ MISSING REM " << REM << std::endl ;  
-    }
-
-
-    ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 
-    ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
-    ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
-
-
-    if(level > 1) std::cout << "stree::load_ " << SONAME << std::endl ; 
-
-    NP::ReadNames( fold, SONAME, soname );
-    NP::ReadNames( fold, MTNAME, mtname );
-    NP::ReadNames( fold, MTNAME_NO_RINDEX, mtname_no_rindex );
-    NP::ReadNames( fold, SUNAME, suname );
-    NP::ReadNames( fold, IMPLICIT, implicit );
-
-    ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
-
-    if(NP::Exists(fold, SUINDEX))
-    {
-        ImportArray<int, int>( suindex, NP::Load(fold, SUINDEX) );
-    }
-    else
-    {
-        std::cout << "stree:load_ MISSING SUINDEX " << SUINDEX << std::endl ;  
-    }   
-    
-
-    if(standard) 
-    {
-        standard->load( fold, STANDARD); 
-
-        assert( standard->bd ); 
-        NPX::VecFromArray<int4>( vbd, standard->bd );  
-        standard->bd->get_names( bdname );
-
-        import_bnd( standard->bnd ); 
-    }
-
-    if(NP::Exists(fold, CSG))
-    {
-        NPFold* fcsg = NPFold::Load(fold, CSG);
-        csg->import(fcsg); 
-    }
-    else
-    {
-        std::cout << "stree:load_ MISSING CSG " << CSG << std::endl ;  
-    }
-
-    //if(NP::Exists(fold, MTLINE))
-    //{
-    //    NP* a_mtline = NP::Load(fold, MTLINE) ;  
-    //    ImportArray<int, int>( mtline, a_mtline );
-    //    init_mtindex_to_mtline(); 
-    //}
-
-    NP::ReadNames( fold, DIGS,   digs );
-    NP::ReadNames( fold, SUBS,   subs );
-
-    if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
-
-    ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
-
-    if(material) material->load(fold, MATERIAL) ;
-    if(surface) surface->load(fold,   SURFACE) ;
-
-    ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
-    ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
-    ImportArray<glm::tmat4x4<float>, float>(inst_f4,  NP::Load(fold, INST_F4)); 
-    ImportArray<glm::tmat4x4<float>, float>(iinst_f4, NP::Load(fold, IINST_F4)); 
-
-    if(NP::Exists(fold, SENSOR_ID))
-    {
-        ImportArray<int, int>( sensor_id, NP::Load(fold, SENSOR_ID) );
-        sensor_count = sensor_id.size(); 
-    }
-
-    ImportArray<int, int>( inst_nidx, NP::Load(fold, INST_NIDX) );
-
-    return 0 ; 
-}
-*/
 
 
 inline void stree::import(const NPFold* fold)
@@ -2149,6 +1959,8 @@ inline void stree::import(const NPFold* fold)
 
     ImportArray<int, int>( sensor_id, fold->get(SENSOR_ID) );
     sensor_count = sensor_id.size(); 
+    ImportNames( sensor_name, fold->get(SENSOR_NAME) ); 
+
  
     ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
 }
