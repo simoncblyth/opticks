@@ -8,10 +8,8 @@ This was moved from QPrd
 Dummy per-ray-data enabling pure-CUDA (no OptiX, no geometry) 
 testing of propagation using QSimTest MOCK_PROPAGATE.
 
-MUST be instanciated after QBnd 
-
 The basis vectors of are obtained
-from envvars QPRD_BND and QPRD_NRMT
+from envvars SPRD_BND and SPRD_NRMT
 which have defaults. 
 
     boundary_idx
@@ -85,7 +83,7 @@ inline void SPrd::init()
 SPrd::populate_prd
 --------------------
 
-Sensitive to envvars QPRD_BND and QPRD_NRMT
+Sensitive to envvars SPRD_BND and SPRD_NRMT
 
 **/
 
@@ -122,9 +120,6 @@ inline void SPrd::populate_prd()
         pr.set_identity( (i+1)*100 ); 
     }
 }
-
-
-
 
 /**
 SPrd::duplicate_prd

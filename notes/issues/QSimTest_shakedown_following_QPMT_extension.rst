@@ -284,7 +284,7 @@ Can see that by grepping the gdml::
 
 
 
-WIP : apply sevt.py machinery to mock_propagate
+DONE : apply sevt.py machinery to mock_propagate
 --------------------------------------------------------
 
 ::
@@ -305,68 +305,16 @@ WIP : apply sevt.py machinery to mock_propagate
 
 
 
-
 DONE : prd[1] not same as the rest ? Because that prd is saved per step and photon idx 1 expired with AB
 --------------------------------------------------------------------------------------------------------------
 
 ::
-
-    In [15]: np.all(  t.f.prd[0] == t.f.prd[2] )
-    Out[15]: True
-
-    In [20]: np.all(  t.f.prd[0] == t.f.prd[7] )
-    Out[20]: True
-
-    In [21]: np.all(  t.f.prd[0] == t.f.prd[1] )
-    Out[21]: False
-
-    In [22]: t.f.prd[0]
-    Out[22]:
-    array([[[  0.,   0.,   1., 100.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   1., 200.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   1., 300.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   1., 400.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   0.,   0.],
-            [  0.,   0.,   0.,   0.]]], dtype=float32)
-
-    In [23]: t.f.prd[1]
-    Out[23]:
-    array([[[  0.,   0.,   1., 100.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   1., 200.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   1., 300.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   0.,   0.],
-            [  0.,   0.,   0.,   0.]],
-
-           [[  0.,   0.,   0.,   0.],
-            [  0.,   0.,   0.,   0.]]], dtype=float32)
 
     In [24]: t.q
     Out[24]:
     array([[b'TO BT BT BT SR                                                                                  '],
            [b'TO BT BT AB                                                                                     '],
            [b'TO BT BT BT SR                                                                                  '],
-           [b'TO BT BT BT SR                                                                                  '],
-           [b'TO BT BT BT SR                                                                                  '],
-           [b'TO BT BT BT SR                                                                                  '],
-           [b'TO BT BT BT SR                                                                                  '],
-           [b'TO BT BT BT SR                                                                                  ']], dtype='|S96')
-
-    In [25]:
-
 
 
 

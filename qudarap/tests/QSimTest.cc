@@ -490,7 +490,7 @@ void QSimTest::mock_propagate()
     NP* prd = sprd->duplicate_prd(num, bounce_max);  
     LOG(info) << " prd " << ( prd ? prd->sstr() : "-" ) ; 
 
-    SEvt::AddArray("prd0", prd );  
+    // SEvt::AddArray("prd0", prd );    too soon, need to do after QEvent::setGenstep
 
     SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
 

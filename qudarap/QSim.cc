@@ -930,8 +930,12 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
 
     quad2* d_prd = UploadMockPRD(prd) ; 
 
-    int rc = event->setGenstep(); 
+    int rc = event->setGenstep();   
     assert( rc == 0 ); 
+
+    SEvt::AddArray("prd0", prd );  
+    // NB QEvent::setGenstep calls SEvt::Clear so this addition 
+    // must be after that to succeed in being added to SEvt saved arrays
 
     int num_photon = event->getNumPhoton(); 
     bool consistent_num_photon = num_photon == num_ip ; 

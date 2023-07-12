@@ -24,6 +24,10 @@ if [ "$(uname)" == "Darwin" ]; then
    #export PLOT=1
 fi 
 
+if [ -n "$BP" ]; then 
+   defarg="dbg"
+fi 
+
 arg=${1:-$defarg}
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 

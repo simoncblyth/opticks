@@ -1047,10 +1047,16 @@ SEvt::clear
 
 Clear vectors and the fold.
 
+Note this is called by QEvent::setGenstep 
+so when adding input arrays make sure to do so 
+after the genstep setup. 
+
 **/
 
 void SEvt::clear()
 {
+    LOG(info) << "SEvt::clear" ; 
+
     LOG(LEVEL) << "[" ; 
     clear_(); 
     if(fold) fold->clear(); 
@@ -2489,6 +2495,8 @@ Used for addition of extra metadata arrays to be save within SEvt folder
 
 void SEvt::AddArray( const char* k, const NP* a )  // static
 {
+    LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
+    assert(INSTANCE) ; 
     if(INSTANCE) INSTANCE->add_array(k, a); 
 }
 void SEvt::add_array( const char* k, const NP* a )
