@@ -25,6 +25,9 @@ U4SensorIdentifierDefault::getInstanceIdentity
 
 Canonically used from U4Tree::identifySensitiveInstances
 
+The argument *instance_outer_pv* is recursively traversed
+
+
 **/
 
 inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
@@ -39,7 +42,8 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     int sensor_id = num_sd == 0 ? -1 : copyno ; 
 
     //bool dump = copyno < 10 ; 
-    bool dump = false ; 
+    //bool dump = false ; 
+    bool dump = true ; 
     if(dump) std::cout 
         << "U4SensorIdentifierDefault::getIdentity" 
         << " copyno " << copyno
@@ -52,7 +56,18 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     return sensor_id ; 
 }
 
-inline void U4SensorIdentifierDefault::FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth )
+/**
+U4SensorIdentifierDefault::FindSD_r
+-------------------------------------
+
+Recursive traverse collecting pv pointers for pv with associated SensitiveDetector. 
+
+**/
+
+inline void U4SensorIdentifierDefault::FindSD_r( 
+    std::vector<const G4VPhysicalVolume*>& sdpv , 
+    const G4VPhysicalVolume* pv, 
+    int depth )
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;

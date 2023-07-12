@@ -103,7 +103,7 @@ quad2
     +------------+------------+------------+---------------+
 
 
-lposcost
+f:lposcost
     Local position cos(theta) of intersect, 
     canonically calculated in CSGOptiX7.cu:__intersection__is
     normalize_z(ray_origin + isect.w*ray_direction )
@@ -113,6 +113,34 @@ lposcost
     which is likely onto an ellipsoid or a box or anything 
     to provide a standard way of giving a z-polar measure.
 
+u:iindex
+    see cx:CSGOptiX7.cu:__closesthit__ch 
+    0-based index within IAS (optixGetInstanceIndex)
+
+u:identity
+    see cx:CSGOptiX7.cu:__closesthit__ch 
+    (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )
+
+    prim_idx:optixGetPrimitiveIndex 
+        see cx:GAS_Builder::MakeCustomPrimitivesBI_11N  
+        (1+index-of-CSGPrim within CSGSolid/GAS)
+    
+    instance_id:optixGetInstanceId  
+        user supplied instanceId, within identity are 
+        restricted to 16 bits::
+
+            In [1]: 0xffff
+            Out[1]: 65535
+
+        * sy:sqat4::get_IAS_OptixInstance_instanceId
+        * cx:IAS_Builder::CollectInstances
+
+        This was *ins_idx*, changed July 2023 to *sensor_identifier* as need lpmtid for QPMT.  
+
+u:boundary
+    crucial bnd index representing unique (omat,osur,isur,imat) 
+    material/surface sandwich 
+    
 **/
 struct quad2
 { 

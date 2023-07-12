@@ -91,7 +91,7 @@ When WITH_PRD macro is defined only 2 32-bit payload values are used to
 pass the 64-bit  pointer, otherwise more payload and attributes values 
 are used to pass the contents IS->CH->RG. 
 
-See __closesthit__ch to see where the payload p0-p5 comes from.
+See __closesthit__ch to see where the payload p0-p7 comes from.
 **/
 
 static __forceinline__ __device__ void trace(

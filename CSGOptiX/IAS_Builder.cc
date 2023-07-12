@@ -14,7 +14,8 @@
 
 #include "Ctx.h"
 
-//#include "InstanceId.h"
+//#include "InstanceId.h"  not in use due to bit limits 
+
 #include "GAS.h"
 #include "IAS.h"
 #include "IAS_Builder.h"
@@ -36,6 +37,10 @@ of doing this caching the result in the gasIdx_sbtOffset brings
 the time down to zero. 
 
 HMM: Could make better use of instanceId, eg with bitpack gas_idx, ias_idx ?
+See note in InstanceId.h its not so easy due to bit limits.  
+
+But it doesnt matter much as can just do lookups CPU side based 
+on simple indices from GPU side. 
 
 **/
 
@@ -53,6 +58,8 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
         const qat4& q = ias_inst[i] ;   
         int ins_idx,  gasIdx, sensor_identifier, sensor_index ; 
         q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
+        unsigned instanceId = q.get_IAS_OptixInstance_instanceId() ; 
+
         const GAS& gas = sbt->getGAS(gasIdx);  // susceptible to out-of-range errors for stale gas_idx 
         
         bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 
@@ -65,12 +72,12 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
                 << " gasIdx " << std::setw(3) << gasIdx 
                 << " sbtOffset " << std::setw(6) << sbtOffset 
                 << " gasIdx_sbtOffset.size " << std::setw(3) << gasIdx_sbtOffset.size()
+                << " instanceId " << instanceId
                 ;
         }
-
         OptixInstance instance = {} ; 
         q.copy_columns_3x4( instance.transform ); 
-        instance.instanceId = ins_idx ;  
+        instance.instanceId = instanceId ;  
         instance.sbtOffset = sbtOffset ;            
         instance.visibilityMask = 255;
         instance.flags = flags ;

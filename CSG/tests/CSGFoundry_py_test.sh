@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 
-
 name=CSGFoundry_py_test
 source $HOME/.opticks/GEOM/GEOM.sh 
 

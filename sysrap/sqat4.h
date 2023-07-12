@@ -349,6 +349,26 @@ struct qat4
         sensor_identifier = q2.i.w ; 
         sensor_index      = q3.i.w  ; 
     }
+
+    /**
+    sqat4::get_IAS_OptixInstance_instanceId
+    ----------------------------------------
+
+    Canonical use by IAS_Builder::CollectInstances
+
+    * July 2023 : QPMT needs lpmtid GPU side so changing from ins_idx to sensor_identifier
+    * HMM: there are -1 in there, which as unsigned becomes  ~0u 
+
+    **/
+
+    QAT4_METHOD unsigned get_IAS_OptixInstance_instanceId() const 
+    {
+        //const unsigned& ins_idx = q0.u.w ;  
+        //return ins_idx ; 
+        const unsigned& sensor_identifier = q2.u.w ; 
+        return sensor_identifier ; 
+    }
+
     QAT4_METHOD void setIdentity(int ins_idx, int gas_idx, int sensor_identifier, int sensor_index )
     {
         q0.i.w = ins_idx ;             // formerly unsigned and "+ 1"

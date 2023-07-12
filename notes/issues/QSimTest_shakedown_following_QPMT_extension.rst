@@ -318,16 +318,280 @@ DONE : prd[1] not same as the rest ? Because that prd is saved per step and phot
 
 
 
-TODO : mock_propagate SD as prelim to qpmt.h landings
+WIP : mock_propagate SD as prelim to qpmt.h landings
 -------------------------------------------------------
+
+
+
+qsim::mock_propagate looks very similar to qsim::simulate by design. 
+
+::
+
+    1429 inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
+    1430 {
+    1431     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
+    1432 
+    1433     qsim* sim = this ;
+    1434 
+    1435     sctx ctx = {} ;
+    1436     ctx.p = p ;     // Q: Why is this different from CSGOptiX7.cu:simulate ? A: Presumably due to input photon. 
+    1437     ctx.evt = evt ;
+    1438     ctx.idx = idx ;
+    1439 
+    1440     int command = START ;
+    1441     int bounce = 0 ;
+    1442 #ifndef PRODUCTION
+    1443     ctx.point(bounce);
+    1444 #endif
+    1445 
+    1446     while( bounce < evt->max_bounce )
+    1447     {
+    1448         ctx.prd = mock_prd + (evt->max_bounce*idx+bounce) ;
+    1449         if( ctx.prd->boundary() == 0xffffu ) break ;   // SHOULD NEVER HAPPEN : propagate can do nothing meaningful without      a boundary 
+    1450 #ifndef PRODUCTION
+    1451         ctx.trace(bounce);
+    1452 #endif
+    1453 
+    1454 #ifdef DEBUG_PIDX
+    1455         if(idx == base->pidx)
+    1456         printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n",
+    1457              idx, bounce, evt->max_bounce, ctx.prd->q0.f.x, ctx.prd->q0.f.y, ctx.prd->q0.f.z, ctx.prd->q0.f.w );
+    1458 #endif
+    1459         command = sim->propagate(bounce, rng, ctx );
+    1460         bounce++;
+    1461 #ifndef PRODUCTION
+    1462         ctx.point(bounce);
+    1463 #endif
+    1464         if(command == BREAK) break ;
+    1465     }
+    1466 #ifndef PRODUCTION
+    1467     ctx.end();
+    1468 #endif
+    1469     evt->photon[idx] = ctx.p ;
+    1470 }
+
+
+
+HMM: how to get mock_propagate to mimmick upper hemi actions ? Need to mock 
+more of the prd quad2::
+
+    1482 inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx )
+    1483 {
+    1484     const unsigned boundary = ctx.prd->boundary() ;
+    1485     const unsigned identity = ctx.prd->identity() ;
+    1486     const unsigned iindex = ctx.prd->iindex() ;
+    1487     const float lposcost = ctx.prd->lposcost() ;
+    1488 
+    1489     const float3* normal = ctx.prd->normal();
+    1490     float cosTheta = dot(ctx.p.mom, *normal ) ;
+    1491 
+
+
+::
+
+    093 /**
+     94 quad2
+     95 -------
+     96 
+     97 ::
+     98 
+     99     +------------+------------+------------+---------------+
+    100     | f:normal_x | f:normal_y | f:normal_z | f:distance    |
+    101     +------------+------------+------------+---------------+
+    102     | f:lposcost | u:iindex   | u:identity | u:boundary    |
+    103     +------------+------------+------------+---------------+
+    104 
+    105 
+    106 lposcost
+    107     Local position cos(theta) of intersect, 
+    108     canonically calculated in CSGOptiX7.cu:__intersection__is
+    109     normalize_z(ray_origin + isect.w*ray_direction )
+    110     where normalize_z is v.z/sqrtf(dot(v, v)) 
+    111 
+    112     This is kinda imagining a sphere thru the intersection point 
+    113     which is likely onto an ellipsoid or a box or anything 
+    114     to provide a standard way of giving a z-polar measure.
+    115 
+    116 **/
+
+
+
+WIP : need lpmtid GPU side for QPMT
+---------------------------------------
+
+::
+
+    ct ; ./CSGFoundry_py_test.sh
+
+    cf.inst[:,:,3].view(np.int32)
+    [[    0     0    -1    -1]
+     [    1     1     0     0]
+     [    2     1     1     1]
+     [    3     1     2     2]
+     [    4     1     3     3]
+     ...
+     [48472     9    -1    -1]
+     [48473     9    -1    -1]
+     [48474     9    -1    -1]
+     [48475     9    -1    -1]
+     [48476     9    -1    -1]]
+
+    In [1]: cf.inst.shape
+    Out[1]: (48477, 4, 4)
+
+    In [2]: sensor_identifier = cf.inst[:,2,3].view(np.int32) ; sensor_identifier
+    Out[2]: array([-1,  0,  1,  2,  3, ..., -1, -1, -1, -1, -1], dtype=int32)
+
+
+    In [1]: np.where( sensor_identifier == -1 )
+    Out[1]: (array([    0, 25601, 25602, 25603, 25604, ..., 48472, 48473, 48474, 48475, 48476]),)
+
+    In [2]: np.where( sensor_identifier == -1 )[0] 
+    Out[2]: array([    0, 25601, 25602, 25603, 25604, ..., 48472, 48473, 48474, 48475, 48476])
+
+    In [3]: np.where( sensor_identifier == -1 )[0].size
+    Out[3]: 20477
+
+    In [4]: np.where( sensor_index == -1 )[0].size
+    Out[4]: 20477
+
+    In [5]: sensor_identifier.size
+    Out[5]: 48477
+
+    In [6]: np.where( np.logical_and( sensor_identifier == sensor_index, sensor_index > 0 ) )
+    Out[6]: (array([2, 3, 4]),)
+
+
+WIP : Not getting expected sensor_id
+---------------------------------------
+
+::
+
+    cf.inst[:,:,3].view(np.int32)
+    [[    0     0    -1    -1]
+     [    1     1     0     0]
+     [    2     1     1     1]
+     [    3     1     2     2]
+     [    4     1     3     3]
+     ...
+     [48472     9    -1    -1]
+     [48473     9    -1    -1]
+     [48474     9    -1    -1]
+     [48475     9    -1    -1]
+     [48476     9    -1    -1]]
+    (sid.min(), sid.max())
+    (-1, 309883)
+    (six.min(), six.max())
+    (-1, 27999)
+    np.c_[ugas,ngas,cf.mmlabel] 
+    [[0 1 '2977:sWorld']
+     [1 25600 '5:PMT_3inch_pmt_solid']
+     [2 12615 '9:NNVTMCPPMTsMask_virtual']
+     [3 4997 '12:HamamatsuR12860sMask_virtual']
+     [4 2400 '6:mask_PMT_20inch_vetosMask_virtual']
+     [5 590 '1:sStrutBallhead']
+     [6 590 '1:uni1']
+     [7 590 '1:base_steel']
+     [8 590 '1:uni_acrylic1']
+     [9 504 '130:sPanel']]
+    np.c_[np.unique(sid[gas==0],return_counts=True)]     
+    [[-1  1]]
+    np.c_[np.unique(sid[gas==1],return_counts=True)]     
+    [[     0    127]
+     [     1    127]
+     [     2    127]
+     [     3    127]
+     [     4      1]
+     ...
+     [307479      1]
+     [307480      1]
+     [307481      1]
+     [307482      1]
+     [307483      1]]
+    np.c_[np.unique(sid[gas==2],return_counts=True)]     
+    [[   -1 12615]]
+    np.c_[np.unique(sid[gas==3],return_counts=True)]     
+    [[  -1 4997]]
+    np.c_[np.unique(sid[gas==4],return_counts=True)]     
+    [[307484      1]
+     [307485      1]
+     [307486      1]
+     [307487      1]
+     [307488      1]
+     ...
+     [309879      1]
+     [309880      1]
+     [309881      1]
+     [309882      1]
+     [309883      1]]
+    np.c_[np.unique(sid[gas==5],return_counts=True)]     
+    [[ -1 590]]
+    np.c_[np.unique(sid[gas==6],return_counts=True)]     
+    [[ -1 590]]
+    np.c_[np.unique(sid[gas==7],return_counts=True)]     
+    [[ -1 590]]
+    np.c_[np.unique(sid[gas==8],return_counts=True)]     
+    [[ -1 590]]
+    np.c_[np.unique(sid[gas==9],return_counts=True)]     
+    [[ -1 504]]
+
+    In [1]:                    
+
+
+::
+
+     40 const U4SensorIdentifier* G4CXOpticks::SensorIdentifier = nullptr ;
+     41 void G4CXOpticks::SetSensorIdentifier( const U4SensorIdentifier* sid ){ SensorIdentifier = sid ; }  // static 
+
+
+::
+
+    240 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
+    241 {
+    242     LOG(LEVEL) << " G4VPhysicalVolume world " << world ;
+    243     assert(world);
+    244     wd = world ;
+    245 
+    246     assert(sim && "sim instance should have been created in ctor" );
+    247 
+    248     stree* st = sim->get_tree();
+    249     // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
+    250     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
+    251 
+    252 
+    253     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
+    254     Opticks::Configure("--gparts_transform_offset --allownokey" );
+    255 
+    256     GGeo* gg_ = X4Geo::Translate(wd) ;
+    257 
+    258 
+    259     setGeometry(gg_);
+    260 }
+
+::
+
+    104     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr );
+    105     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr );
+    106     void init();
+
+
+    174 inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4SensorIdentifier* sid_ )
+    175     :
+    176     st(st_),
+    177     top(top_),
+    178     sid(sid_ ? sid_ : new U4SensorIdentifierDefault),
+    179     level(st->level),
+    180     num_surfaces(-1),
+    181     rayleigh_table(CreateRayleighTable()),
+    182     scint(nullptr)
+    183 {
+    184     init();
+    185 }
 
 
 
 TODO : mock qpmt.h landings with ART 4x4 collection into aux 
 ---------------------------------------------------------------
-
-
-
 
 
 
