@@ -3,7 +3,8 @@
 qdebug.h
 ==========
 
-Instanciation managed from QSim  : HMM no reason for this to be in QUDARap, could be down in sysrap
+Instanciation managed from QSim/QDebug 
+HMM no reason for this to be in QUDARap, could be down in sysrap
 
 **/
 
@@ -12,17 +13,13 @@ Instanciation managed from QSim  : HMM no reason for this to be in QUDARap, coul
 #include "sphoton.h"
 #include "sscint.h"
 #include "scerenkov.h"
-
 #include "sstate.h"
-#include "qprd.h"
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QDEBUG_METHOD __device__
 #else
    #define QDEBUG_METHOD 
 #endif 
-
 
 
 struct qdebug

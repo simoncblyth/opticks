@@ -62,15 +62,22 @@ GEOM get
 
 GEOM scp 
     scp GEOM.sh script to remote
+
+GEOM top
+     change directory to : \$GEOM dir
   
-GEOM cd
-     change directory to the GEOM dir
+GEOM cf
+     change directory to : \$GEOM/CSGFoundry 
 
 GEOM ss
-     change directory to the GEOM/SSim dir
+     change directory to : \$GEOM/CSGFoundry/SSim
 
 GEOM st
-     change directory to the GEOM/SSim/stree dir
+     change directory to : \$GEOM/CSGFoundry/SSim/stree
+
+
+GEOM origin
+     vim -R origin.gdml on top dir 
 
 GEOM info 
      dump variables of the GEOM bash function
@@ -95,8 +102,9 @@ GEOM(){
   source $HOME/$script 
   base=.opticks/GEOM/$GEOM
 
-  local args="vi/grab/scp/cd/ss/st/info"
-  local geomdir=$HOME/.opticks/GEOM/$GEOM/CSGFoundry 
+  local args="vi/grab/scp/top/cf/ss/st/info"
+  local geomdir=$HOME/.opticks/GEOM/$GEOM
+  local cfdir=$geomdir/CSGFoundry 
   local defarg="vi"
   local arg=${1:-$defarg} 
   local vars="FUNCNAME defarg arg args script base GEOM geomdir" 
@@ -107,12 +115,16 @@ GEOM(){
      cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
-  elif [ "$arg" == "cd" ]; then  
+  elif [ "$arg" == "top" ]; then  
      cmd="cd $geomdir"
+  elif [ "$arg" == "cf" ]; then  
+     cmd="cd $geomdir/CSGFoundry"
   elif [ "$arg" == "ss" ]; then  
-     cmd="cd $geomdir/SSim"
+     cmd="cd $geomdir/CSGFoundry/SSim"
   elif [ "$arg" == "st" ]; then  
-     cmd="cd $geomdir/SSim/stree"
+     cmd="cd $geomdir/CSGFoundry/SSim/stree"
+  elif [ "$arg" == "origin" ]; then  
+     cmd="cd $geomdir ; vim -R origin.gdml"
   elif [ "$arg" == "help" ]; then  
      cmd="GEOM_help"
   elif [ "$arg" == "info" ]; then  

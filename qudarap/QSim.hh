@@ -37,7 +37,6 @@ struct QRng ;
 struct QScint ;
 struct QCerenkov ;
 struct QBnd ; 
-struct QPrd ; 
 struct QMultiFilm;
 struct QOptical ; 
 struct QEvent ; 
@@ -69,7 +68,6 @@ struct QUDARAP_API QSim
     const QScint*    scint ; 
     const QCerenkov* cerenkov ; 
     const QBnd*      bnd ; 
-    const QPrd*      prd ; 
     const QOptical*  optical ; 
     const QDebug*    debug_ ; 
 
@@ -104,10 +102,7 @@ public:
     std::string checkComponents() const ; 
 
 
-    // TODO: relocate non-essential methods into tests  ?
-    
-    NP* duplicate_dbg_ephoton(unsigned num_photon); 
-
+    // TODO: relocate non-essential methods into tests or elsewhere
 
     char getScintTexFilterMode() const ;
 
@@ -148,6 +143,8 @@ public:
 
     void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
 
+
+    static quad2* UploadMockPRD(const NP* prd); 
     void mock_propagate(const NP* prd, unsigned type ); 
 
     unsigned getBoundaryTexWidth() const ;

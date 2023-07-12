@@ -27,6 +27,7 @@ during GGeo to CSGFoundry conversion within CSG_GGeo_Convert::convertSim
 struct NP ; 
 struct NPFold ; 
 struct SBnd ; 
+struct SPrd ; 
 struct stree ; 
 struct scontext ; 
 struct SPMT ; 
@@ -90,6 +91,9 @@ public:
     const char* getBndName(unsigned bidx) const ; 
     int getBndIndex(const char* bname) const ; 
     const SBnd* get_sbnd() const ; 
+    const SPrd* get_sprd() const ; 
+
+
     const NPFold* get_jpmt() const ;   // raw PMT info 
     const SPMT*   get_spmt() const ;   // struct that summarizes PMT info  
     const NPFold* get_spmt_f() const ; // fold with summarized PMT info 

@@ -186,6 +186,7 @@ set(HEADERS
     stamp.h 
 
     SBnd.h
+    SPrd.h
 
     SPath.hh
     spath.h 

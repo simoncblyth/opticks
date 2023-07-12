@@ -25,7 +25,6 @@
 #include "QScint.hh"
 #include "QCerenkov.hh"
 #include "QBnd.hh"
-#include "QPrd.hh"
 #include "QProp.hh"
 #include "QMultiFilm.hh"
 #include "QEvent.hh"
@@ -227,7 +226,6 @@ QSim::QSim()
     scint(QScint::Get()),
     cerenkov(QCerenkov::Get()),
     bnd(QBnd::Get()),
-    prd(QPrd::Get()),
     debug_(QDebug::Get()), 
     prop(QProp<float>::Get()),
     pmt(QPMT<float>::Get()),
@@ -347,21 +345,6 @@ double QSim::simtrace()
 }
 
 
-
-NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
-{
-    NP* ph = NP::Make<float>(num_photon, 4, 4 );
-    sphoton* pp  = (sphoton*)ph->bytes(); 
-    for(unsigned i=0 ; i < num_photon ; i++)
-    {   
-        sphoton p = dbg->p  ;  // start from ephoton 
-        p.pos.y = float(i)*100.f ; 
-        pp[i] = p ;   
-    }    
-    return ph ; 
-}
-
-
 qsim* QSim::getDevicePtr() const 
 {
     return d_sim ; 
@@ -417,7 +400,6 @@ std::string QSim::checkComponents() const
     ss << " scint      " << ( scint ? "Y" : "N" )  << std::endl ; 
     ss << " cerenkov   " << ( cerenkov ? "Y" : "N" )  << std::endl ;  
     ss << " bnd        " << ( bnd ? "Y" : "N" )  << std::endl ; 
-    ss << " prd        " << ( prd ? "Y" : "N" )  << std::endl ; 
     ss << " prop       " << ( prop ? "Y" : "N" )  << std::endl ; 
     ss << " multifilm  " << ( multifilm ? "Y" : "N" )  << std::endl  ; 
     ss << " sim        " << ( sim ? "Y" : "N" )  << std::endl ; 
@@ -892,23 +874,15 @@ extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsi
 
 
 /**
-QSim::mock_propagate
-----------------------
+QSim::UploadMockPRD
+---------------------
 
-* number of prd must be a multiple of the number of photon, ratio giving bounce_max 
-* number of record must be a multiple of the number of photon, ratio giving record_max 
-* HMM: this is an obtuse way to get bounce_max and record_max 
-
-Aiming to replace the above with a simpler and less duplicitous version by 
-using common QEvent functionality 
-
-TODO: move non-CUDA needing stuff down to SEvt? 
-
-TODO : split off prd prep and upload into separate method
+Caution this returns a device pointer.
 
 **/
 
-void QSim::mock_propagate( const NP* prd, unsigned type )
+
+quad2* QSim::UploadMockPRD(const NP* prd) // static
 {
     const NP* p = SEvt::GetInputPhoton(); 
     assert(p); 
@@ -926,30 +900,50 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
          << " prd " << prd->sstr() 
          ;
 
-    const char* label = "QSim::mock_propagate/d_prd" ; 
+    const char* label = "QSim::UploadMockPRD/d_prd" ; 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
     // prd non-standard so appropriate to upload here 
 
+    return d_prd ; 
+}
 
+
+
+/**
+QSim::mock_propagate
+----------------------
+
+* number of prd must be a multiple of the number of photon, ratio giving bounce_max 
+* number of record must be a multiple of the number of photon, ratio giving record_max 
+* HMM: this is an obtuse way to get bounce_max and record_max 
+
+Aiming to replace the above with a simpler and less duplicitous version by 
+using common QEvent functionality 
+
+**/
+
+void QSim::mock_propagate( const NP* prd, unsigned type )
+{
+    const NP* ip = SEvt::GetInputPhoton(); 
+    int num_ip = ip ? ip->shape[0] : 0 ; 
+    assert( num_ip > 0 ); 
+
+    quad2* d_prd = UploadMockPRD(prd) ; 
 
     int rc = event->setGenstep(); 
     assert( rc == 0 ); 
 
-    // MOVED THIS CONSISTENCY CHECK AFTER setGenstep 
     int num_photon = event->getNumPhoton(); 
-    bool consistent_num_photon = num_photon == num_p ; 
+    bool consistent_num_photon = num_photon == num_ip ; 
 
     LOG_IF(fatal, !consistent_num_photon)
          << "["
-         << " num_p " << num_p
+         << " num_ip " << num_ip
          << " QEvent::getNumPhoton " << num_photon
          << " consistent_num_photon " << ( consistent_num_photon ? "YES" : "NO " )
-         << " num_prd " << num_prd 
          << " prd " << prd->sstr() 
          ;
     assert(consistent_num_photon); 
-
-
 
     assert( event->upload_count > 0 ); 
 

@@ -189,6 +189,7 @@ struct sphoton
     SPHOTON_METHOD void transverse_mom_pol(); 
     SPHOTON_METHOD void set_polarization(float frac_twopi); 
     SPHOTON_METHOD static sphoton make_ephoton(); 
+    SPHOTON_METHOD static NP*     make_ephoton_array(int num_photon); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
 
@@ -389,6 +390,34 @@ SPHOTON_METHOD sphoton sphoton::make_ephoton()  // static
     p.ephoton(); 
     return p ; 
 }
+
+/**
+sphoton::make_ephoton_array
+-----------------------------
+
+Formerly QSim::duplicate_dbg_ephoton
+
+This is called from QSimTest::mock_propagate
+
+**/
+
+SPHOTON_METHOD NP* sphoton::make_ephoton_array(int num_photon) // static
+{
+    sphoton ep ; 
+    ep.ephoton() ; 
+
+    NP* ph = NP::Make<float>(num_photon, 4, 4 );
+    sphoton* pp  = (sphoton*)ph->bytes(); 
+    for(int i=0 ; i < num_photon ; i++)
+    {   
+        sphoton p = ep  ;  // start from ephoton 
+        p.pos.y = float(i)*100.f ; 
+        pp[i] = p ;   
+    }    
+    return ph ; 
+}
+
+
 
 SPHOTON_METHOD std::string sphoton::digest(unsigned numval) const  
 {

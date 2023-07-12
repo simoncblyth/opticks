@@ -16,6 +16,7 @@
 #include "SOpticksResource.hh"
 #include "SSim.hh"
 #include "SBnd.h"
+#include "SPrd.h"
 #include "SPMT.h"
 
 const plog::Severity SSim::LEVEL = SLOG::EnvLevel("SSim", "DEBUG"); 
@@ -217,6 +218,12 @@ const SBnd* SSim::get_sbnd() const
     const NP* bnd = get_bnd(); 
     return bnd ? new SBnd(bnd) : nullptr  ;  
 }
+const SPrd* SSim::get_sprd() const 
+{ 
+    const NP* bnd = get_bnd(); 
+    return bnd ? new SPrd(bnd) : nullptr  ;  
+}
+
 
 
 const NPFold* SSim::get_jpmt() const 

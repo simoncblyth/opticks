@@ -15,7 +15,16 @@ EOU
 }
 
 bin=QSimTest 
-arg=${1:-run_ana}
+
+defarg=run_ana
+
+if [ "$(uname)" == "Darwin" ]; then
+   defarg="run_ana"
+   #defarg="ana"
+   #export PLOT=1
+fi 
+
+arg=${1:-$defarg}
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 source $HOME/.opticks/GEOM/GEOM.sh

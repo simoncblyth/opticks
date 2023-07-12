@@ -15,15 +15,17 @@ QSimTest.cc
 #include "squad.h"
 #include "SSys.hh"
 #include "SPath.hh"
+
 #include "SSim.hh"
 #include "SBnd.h"
+#include "SPrd.h"
+
 #include "SEvt.hh"
 #include "NP.hh"
 #include "sstate.h"
 
 #include "QRng.hh"
 #include "QBnd.hh"
-#include "QPrd.hh"
 #include "QProp.hh"
 #include "QSim.hh"
 #include "QSimLaunch.hh"
@@ -41,9 +43,10 @@ struct QSimTest
 {
     static const char* FOLD ; 
     static const plog::Severity LEVEL ; 
-    static void  EventConfig(unsigned type);  // must be run after SEvt is instanciated
+    static void  EventConfig(unsigned type, const SPrd* prd);  // must be run after SEvt is instanciated
     static unsigned Num(int argc, char** argv); 
 
+    const SPrd* sprd ; 
     QSim* qs ; 
     unsigned type ;  // QSimLaunch type 
     unsigned num ; 
@@ -51,7 +54,7 @@ struct QSimTest
     const char* dir ; 
     int rc ; 
 
-    QSimTest(unsigned type, unsigned num ); 
+    QSimTest(unsigned type, unsigned num, const SPrd* sprd ); 
     void main(); 
 
     static const bool rng_sequence_PRECOOKED ; 
@@ -96,8 +99,9 @@ const plog::Severity QSimTest::LEVEL = SLOG::EnvLevel("QSimTest", "INFO");
 const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
 
 
-QSimTest::QSimTest(unsigned type_, unsigned num_)
+QSimTest::QSimTest(unsigned type_, unsigned num_, const SPrd* sprd_)
     :
+    sprd(sprd_),
     qs(QSim::Create()),
     type(type_),
     num(num_),
@@ -472,29 +476,21 @@ void QSimTest::mock_propagate()
     LOG(info) << "[" ; 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
-    NP* p   = qs->duplicate_dbg_ephoton(num); 
+    NP* p = sphoton::make_ephoton_array(num); 
     LOG(info) << " num " << num << " p " << ( p ? p->sstr() : "-" ) ; 
-
 
     SEvt* evt = SEvt::Get(); 
     assert( evt ); 
     evt->setInputPhoton(p);  
     evt->setFramePlaceholder() ; 
 
-    // HMM: previously SEvt::setInputPhoton also added input photon genstep 
-    // but it seems no longer the case ... HMM thats something 
-    // to do with needing geometry for the frame transform ? 
-
     int bounce_max = SEventConfig::MaxBounce(); 
     LOG(info) << " bounce_max " << bounce_max ; 
 
-    const QPrd* qprd = qs->prd ; 
-
-    NP* prd = qprd->duplicate_prd(num, bounce_max);  
+    NP* prd = sprd->duplicate_prd(num, bounce_max);  
     LOG(info) << " prd " << ( prd ? prd->sstr() : "-" ) ; 
 
-    prd->save(dir, "prd.npy"); 
-
+    SEvt::AddArray("prd0", prd );  
 
     SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
 
@@ -567,7 +563,7 @@ must be done prior to QEvent::init which happens when QSim is instanciated.
 
 **/
 
-void QSimTest::EventConfig(unsigned type )  // static
+void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
 {
     SEvt* sev = SEvt::Get();
     LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
@@ -576,7 +572,6 @@ void QSimTest::EventConfig(unsigned type )  // static
     LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 
     if( type == MOCK_PROPAGATE )
     {
-        QPrd* prd = new QPrd ; 
         LOG(LEVEL) << prd->desc() ;  
         int maxbounce = prd->getNumBounce(); 
 
@@ -696,14 +691,15 @@ int main(int argc, char** argv)
     int type = QSimLaunch::Type(testname); 
     unsigned num = QSimTest::Num(argc, argv); 
 
-    SSim* ssim = SSim::Load(); 
-    QSim::UploadComponents(ssim);   // instanciates things like QBnd
+    SSim* sim = SSim::Load(); 
+    QSim::UploadComponents(sim);   // instanciates things like QBnd
+    const SPrd* prd = sim->get_sprd() ; 
 
-    QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
+    QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
     SEvt evt ; 
 
-    QSimTest qst(type, num)  ; 
+    QSimTest qst(type, num, prd)  ; 
     qst.main(); 
 
     cudaDeviceSynchronize();

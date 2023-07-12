@@ -129,6 +129,10 @@ def mpplt_focus(xlim, ylim):
 
 
 def pvplt_viewpoint(pl, reset=False):
+    """
+    https://github.com/pyvista/pyvista-support/issues/40
+    
+    """
     eye = eary_("EYE",  "1,1,1.")
     look = eary_("LOOK", "0,0,0")    
     up = eary_("UP", "0,0,1")

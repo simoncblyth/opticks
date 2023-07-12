@@ -21,16 +21,15 @@ const QDebug* QDebug::INSTANCE = nullptr ;
 const QDebug* QDebug::Get(){ return INSTANCE ; }
 
 /**
-QDebug::QDebug
-----------------
+QDebug::MakeInstance
+------------------------
+
+qdebug.h contains miscellaneous used by fill_state testing 
 
 **/
 
-
 qdebug* QDebug::MakeInstance()   // static
 {
-   // miscellaneous used by fill_state testing 
-
     qdebug* dbg = new qdebug ; 
 
     float cosTheta = 0.5f ; 
@@ -44,7 +43,7 @@ qdebug* QDebug::MakeInstance()   // static
     // quad2: mocking prd per-ray-data result of optix trace calls 
     dbg->prd = quad2::make_eprd() ;  // see qudarap/tests/eprd.sh 
     
-    dbg->p.ephoton() ; 
+    dbg->p.ephoton() ;   // sphoton::ephoton 
  
     sscint& scint_gs = dbg->scint_gs ; 
     sscint::FillGenstep( scint_gs, 0, 100 ); 

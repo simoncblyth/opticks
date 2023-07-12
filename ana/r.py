@@ -20,6 +20,10 @@ def make_record_cells(r):
            [ 5, 30, 31, 32, 33, 34],
            [ 5, 35, 36, 37, 38, 39]])
 
+    This is used for PolyData line connectivity arrays 
+
+    https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.PolyData.html
+
     """
     assert r.ndim == 4   
     assert r.shape[2:] == (4,4)

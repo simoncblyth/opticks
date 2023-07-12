@@ -1,9 +1,8 @@
 QSimTest_shakedown_following_QPMT_extension
 ============================================
 
-mock_propagate shakedown
-----------------------------
-
+FIXED lack of metadata in new bnd
+-----------------------------------
 
 ::
 
@@ -78,6 +77,10 @@ New bnd misses some metadata::
 
 
 
+
+FIXED : Outdated bnd name in QPrd defaults
+------------------------------------------------
+
 After fixing that::
 
 
@@ -118,6 +121,10 @@ The hardcoded mock boundaries need updating for current geom::
     165	        assert( bidx != MISSING ); 
     (gdb) 
 
+
+
+FIXED : Changes to input photon setup were not handled by mock_propagate
+------------------------------------------------------------------------------
 
 
 Hmm, input photon issue maybe::
@@ -171,7 +178,9 @@ happen ?  Appears the consistency check should be after the setGenstep call in Q
 Hmm probably changes to input photon genstep tee up are 
 not yet accomodated by QSim::mock_propagate. 
 
-TODO : review how input photons handled in ordinary running, then bring over similar to mock_propagate
+
+DONE : review how input photons handled in ordinary running, then bring over similar to mock_propagate
+---------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -203,6 +212,174 @@ TODO : review how input photons handled in ordinary running, then bring over sim
      432     // former call to addFrameGenstep() is relocated to SEvt::BeginOfEvent
      433     transformInputPhoton();  
      434 }   
+
+
+
+
+
+DONE : Checking bnd surface names : why no specials ? Because prefixes on opticalsurface NOT skinsurface/bordersurface
+------------------------------------------------------------------------------------------------------------------------
+
+Can see that by grepping the gdml::
+
+    GEOM top 
+
+    epsilon:V1J009 blyth$ grep @Hama origin.gdml
+        <opticalsurface finish="1" model="0" name="@HamamatsuR12860_PMT_20inch_Mirror_opsurf" type="0" value="0.999">
+        <skinsurface name="HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf" surfaceproperty="@HamamatsuR12860_PMT_20inch_Mirror_opsurf">
+    epsilon:V1J009 blyth$ grep @NNVT origin.gdml
+        <opticalsurface finish="1" model="0" name="@NNVTMCPPMT_PMT_20inch_Mirror_opsurf" type="0" value="0.999">
+        <skinsurface name="NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf" surfaceproperty="@NNVTMCPPMT_PMT_20inch_Mirror_opsurf">
+    epsilon:V1J009 blyth$ grep \#NNVT origin.gdml
+    epsilon:V1J009 blyth$ grep \#Hama origin.gdml
+
+
+::
+
+
+    GEOM top 
+
+    epsilon:V1J009 blyth$ grep opticalsurface origin.gdml | grep name
+        <opticalsurface finish="3" model="1" name="UpperChimneyTyvekOpticalSurface" type="0" value="0.2">
+        <opticalsurface finish="3" model="1" name="opStrutAcrylic" type="0" value="0.2">
+        <opticalsurface finish="3" model="1" name="opStrut2Acrylic" type="0" value="0.2">
+        <opticalsurface finish="3" model="1" name="opHamamatsuMask" type="0" value="0.2">
+        <opticalsurface finish="1" model="0" name="@HamamatsuR12860_PMT_20inch_Mirror_opsurf" type="0" value="0.999">
+        <opticalsurface finish="0" model="0" name="plateOpSurface" type="0" value="0.999">
+        <opticalsurface finish="3" model="1" name="opNNVTMask" type="0" value="0.2">
+        <opticalsurface finish="1" model="0" name="@NNVTMCPPMT_PMT_20inch_Mirror_opsurf" type="0" value="0.999">
+        <opticalsurface finish="0" model="0" name="plateOpSurface" type="0" value="0.999">
+        <opticalsurface finish="0" model="0" name="Photocathode_opsurf_3inch" type="0" value="1">
+        <opticalsurface finish="0" model="0" name="Absorb_opsurf" type="0" value="1">
+        <opticalsurface finish="3" model="1" name="ChimneySteelOpticalSurface" type="0" value="0.2">
+        <opticalsurface finish="3" model="1" name="CDInnerTyvekOpticalSurface" type="0" value="0.2">
+        <opticalsurface finish="0" model="0" name="Photocathode_opsurf" type="0" value="1">
+        <opticalsurface finish="1" model="0" name="Mirror_opsurf" type="0" value="0.999">
+        <opticalsurface finish="3" model="1" name="CDTyvekOpticalSurface" type="0" value="0.2">
+    epsilon:V1J009 blyth$ 
+
+::
+
+    In [9]: np.c_[cf.sim.stree.suname[np.char.startswith(cf.sim.stree.suname, "Hama")]]
+    Out[9]: 
+    array([['HamamatsuR12860_PMT_20inch_dynode_plate_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_inner_ring_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_outer_edge_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_inner_edge_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_dynode_tube_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_grid_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_shield_opsurface'],
+           ['HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf'],
+           ['HamamatsuMaskOpticalSurface']], dtype='<U54')
+
+    In [10]: np.c_[cf.sim.stree.suname[np.char.startswith(cf.sim.stree.suname, "NNVT")]]
+    Out[10]: 
+    array([['NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface'],
+           ['NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface'],
+           ['NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface'],
+           ['NNVTMCPPMT_PMT_20inch_mcp_opsurface'],
+           ['NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf'],
+           ['NNVTMaskOpticalSurface']], dtype='<U54')
+
+
+
+
+WIP : apply sevt.py machinery to mock_propagate
+--------------------------------------------------------
+
+::
+
+    In [1]: t
+    Out[1]: SEvt symbol t pid -1 opt  off [0. 0. 0.] t.f.base /tmp/blyth/opticks/GEOM/V1J009/QSimTest/ALL/000 
+
+    In [2]: t.q 
+    Out[2]: 
+    array([[b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT AB                                                                                     '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  ']], dtype='|S96')
+
+
+
+
+DONE : prd[1] not same as the rest ? Because that prd is saved per step and photon idx 1 expired with AB
+--------------------------------------------------------------------------------------------------------------
+
+::
+
+    In [15]: np.all(  t.f.prd[0] == t.f.prd[2] )
+    Out[15]: True
+
+    In [20]: np.all(  t.f.prd[0] == t.f.prd[7] )
+    Out[20]: True
+
+    In [21]: np.all(  t.f.prd[0] == t.f.prd[1] )
+    Out[21]: False
+
+    In [22]: t.f.prd[0]
+    Out[22]:
+    array([[[  0.,   0.,   1., 100.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   1., 200.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   1., 300.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   1., 400.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   0.,   0.],
+            [  0.,   0.,   0.,   0.]]], dtype=float32)
+
+    In [23]: t.f.prd[1]
+    Out[23]:
+    array([[[  0.,   0.,   1., 100.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   1., 200.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   1., 300.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   0.,   0.],
+            [  0.,   0.,   0.,   0.]],
+
+           [[  0.,   0.,   0.,   0.],
+            [  0.,   0.,   0.,   0.]]], dtype=float32)
+
+    In [24]: t.q
+    Out[24]:
+    array([[b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT AB                                                                                     '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  '],
+           [b'TO BT BT BT SR                                                                                  ']], dtype='|S96')
+
+    In [25]:
+
+
+
+
+TODO : mock_propagate SD as prelim to qpmt.h landings
+-------------------------------------------------------
+
+
+
+TODO : mock qpmt.h landings with ART 4x4 collection into aux 
+---------------------------------------------------------------
+
+
+
 
 
 

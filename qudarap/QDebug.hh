@@ -1,4 +1,18 @@
 #pragma once
+/**
+QDebug.hh : manages qdebug.h instance
+============================================
+
+The hostside qdebug.h instance *dbg* is populated by QDebug::MakeInstance
+then uploaded to the device *d_dbg* by QDebug::QDebug 
+
+qdebug avoids having to play pass the parameter thru multiple levels of calls  
+to get values onto the device 
+
+Notice how NOT using pointers in qdebug provides a simple plain old struct way 
+to get structured info onto the device. 
+
+**/
 
 struct qdebug ; 
 
@@ -7,20 +21,6 @@ struct qdebug ;
 #include "plog/Severity.h"
 #include "QUDARAP_API_EXPORT.hh"
 
-/**
-QDebug
-=======
-
-*dbg* is a host side qdebug.h instance that is populated by QDebug::MakeInstance
-then uploaded to the device *d_dbg* by QDebug::QDebug 
-
-qdebug avoids having to play pass the parameter thru multiple levels of calls  
-to get values onto the device 
-
-Notice how not using pointers in qdebug provides a simple plain old struct way 
-to get structured info onto the device. 
-
-**/
 
 struct QUDARAP_API QDebug
 {

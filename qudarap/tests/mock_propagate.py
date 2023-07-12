@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, numpy as np
+import os, numpy as np, textwrap
 import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)  
@@ -12,12 +12,22 @@ from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.r import * 
 
+from opticks.sysrap.sevt import SEvt
+
+
 
 if __name__ == '__main__':
 
-    t = Fold.Load()
-    PIDX = int(os.environ.get("PIDX","-1"))
+    #t = Fold.Load()
+    t = SEvt.Load(symbol="t", NEVT=0)
 
+    PIDX = int(os.environ.get("PIDX","-1"))
+    FONT_SIZE= int(os.environ.get("FONT_SIZE","36"))
+    FACTOR = float(os.environ.get("FACTOR","60"))
+
+
+
+if 0:
     p = t.photon
     r = t.record
     seq = t.seq
@@ -38,20 +48,43 @@ if __name__ == '__main__':
 
         r_flag_label = hm.label( r_flag )
 
-        r_cells = make_record_cells( r ) 
+        r_cells = make_record_cells( r )
+        # indices into flattened records 
+
+
+        ## try heuristic to arrange viewpoint and scale 
+        ## HMM: how to automate picking the view ? 
+        ## tuple: camera location, focus point, viewup vector
+
+        r_pos_max = np.max( r_pos, axis=0 )  
+        r_pos_min = np.min( r_pos, axis=0 )  
+        r_pos_rng = r_pos_max - r_pos_min
+        r_pos_avg = np.average(r_pos, axis=0 ) 
+        r_pos_vec = np.array( [-1,0,0], dtype=np.float32  )
+        r_pos_scale = r_pos_rng.max()
+        camloc = r_pos_avg + r_pos_scale*r_pos_vec
+        camera_position = [camloc, r_pos_avg, (0,0,1)]
+        os.environ["ZOOM"] = "%g" % (1./r_pos_scale )
+
 
         PLOT = "PLOT" in os.environ
         if PLOT:
             r_poly = pv.PolyData() 
             r_poly.points = r_pos
-            r_poly.lines = r_cells 
+            r_poly.lines = r_cells.ravel()  ## line connectivity array
+
             r_poly["flag_label"] = r_flag_label
             r_tube = r_poly.tube(radius=1) 
 
             pl = pvplt_plotter()
             pl.add_mesh( r_tube )
-            pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
-            pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
+            pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=FACTOR )
+
+            pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=FONT_SIZE )
+
+            pl.camera_position = camera_position
+
+
             pl.show() 
         pass
     pass
@@ -89,6 +122,19 @@ if __name__ == '__main__':
             print("\n") 
         pass
         print("\n\n") 
+    pass
+
+
+    EXPR = list(filter(None,textwrap.dedent(r"""
+    np.c_[cf.sim.stree.standard.bnd_names]
+    np.all( cf.sim.stree.standard.bnd_names == cf.sim.extra.GGeo.bnd_names )  
+    np.c_[cf.sim.stree.suname[np.char.startswith(cf.sim.stree.suname, "Hama")]]
+    np.c_[cf.sim.stree.suname[np.char.startswith(cf.sim.stree.suname, "NNVT")]]
+    """).split("\n")))
+
+    for expr in EXPR:
+        print(expr)
+        print(eval(expr))
     pass
 
 
