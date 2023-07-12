@@ -589,6 +589,101 @@ WIP : Not getting expected sensor_id
     185 }
 
 
+Add sensor name dumping
+--------------------------
+
+Original sensor_id look OK, so maybe issue with reordering ::
+
+    U4SensorIdentifierDefault::getIdentity copyno 325590 num_sd 2 sensor_id 325590 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325591 num_sd 2 sensor_id 325591 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325592 num_sd 2 sensor_id 325592 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325593 num_sd 2 sensor_id 325593 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325594 num_sd 2 sensor_id 325594 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325595 num_sd 2 sensor_id 325595 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325596 num_sd 2 sensor_id 325596 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325597 num_sd 2 sensor_id 325597 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325598 num_sd 2 sensor_id 325598 pvn PMT_3inch_log_phys
+    U4SensorIdentifierDefault::getIdentity copyno 325599 num_sd 2 sensor_id 325599 pvn PMT_3inch_log_phys
+
+    U4SensorIdentifierDefault::getIdentity copyno 2 num_sd 2 sensor_id 2 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 4 num_sd 2 sensor_id 4 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 6 num_sd 2 sensor_id 6 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 21 num_sd 2 sensor_id 21 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 22 num_sd 2 sensor_id 22 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 23 num_sd 2 sensor_id 23 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 24 num_sd 2 sensor_id 24 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 25 num_sd 2 sensor_id 25 pvn pLPMT_NNVT_MCPPMT
+    ...
+    U4SensorIdentifierDefault::getIdentity copyno 17586 num_sd 2 sensor_id 17586 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 17587 num_sd 2 sensor_id 17587 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 17588 num_sd 2 sensor_id 17588 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 17589 num_sd 2 sensor_id 17589 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 17590 num_sd 2 sensor_id 17590 pvn pLPMT_NNVT_MCPPMT
+    U4SensorIdentifierDefault::getIdentity copyno 0 num_sd 2 sensor_id 0 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 1 num_sd 2 sensor_id 1 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 3 num_sd 2 sensor_id 3 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 5 num_sd 2 sensor_id 5 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 7 num_sd 2 sensor_id 7 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 8 num_sd 2 sensor_id 8 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 9 num_sd 2 sensor_id 9 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 10 num_sd 2 sensor_id 10 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 11 num_sd 2 sensor_id 11 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 12 num_sd 2 sensor_id 12 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 13 num_sd 2 sensor_id 13 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 14 num_sd 2 sensor_id 14 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 15 num_sd 2 sensor_id 15 pvn pLPMT_Hamamatsu_R12860
+    ...
+    U4SensorIdentifierDefault::getIdentity copyno 17606 num_sd 2 sensor_id 17606 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 17607 num_sd 2 sensor_id 17607 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 17608 num_sd 2 sensor_id 17608 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 17609 num_sd 2 sensor_id 17609 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 17610 num_sd 2 sensor_id 17610 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 17611 num_sd 2 sensor_id 17611 pvn pLPMT_Hamamatsu_R12860
+    U4SensorIdentifierDefault::getIdentity copyno 30000 num_sd 2 sensor_id 30000 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30001 num_sd 2 sensor_id 30001 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30002 num_sd 2 sensor_id 30002 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30003 num_sd 2 sensor_id 30003 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30004 num_sd 2 sensor_id 30004 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30005 num_sd 2 sensor_id 30005 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30006 num_sd 2 sensor_id 30006 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 30007 num_sd 2 sensor_id 30007 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    ...
+    U4SensorIdentifierDefault::getIdentity copyno 32389 num_sd 2 sensor_id 32389 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32390 num_sd 2 sensor_id 32390 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32391 num_sd 2 sensor_id 32391 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32392 num_sd 2 sensor_id 32392 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32393 num_sd 2 sensor_id 32393 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32394 num_sd 2 sensor_id 32394 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32395 num_sd 2 sensor_id 32395 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32396 num_sd 2 sensor_id 32396 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32397 num_sd 2 sensor_id 32397 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32398 num_sd 2 sensor_id 32398 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 32399 num_sd 2 sensor_id 32399 pvn mask_PMT_20inch_vetolMaskVirtual_phys
+    U4SensorIdentifierDefault::getIdentity copyno 0 num_sd 64 sensor_id 0 pvn pPanel_0_f_
+    U4SensorIdentifierDefault::getIdentity copyno 1 num_sd 64 sensor_id 1 pvn pPanel_1_f_
+    U4SensorIdentifierDefault::getIdentity copyno 2 num_sd 64 sensor_id 2 pvn pPanel_2_f_
+    U4SensorIdentifierDefault::getIdentity copyno 3 num_sd 64 sensor_id 3 pvn pPanel_3_f_
+    U4SensorIdentifierDefault::getIdentity copyno 0 num_sd 64 sensor_id 0 pvn pPanel_0_f_
+    ...
+    U4SensorIdentifierDefault::getIdentity copyno 3 num_sd 64 sensor_id 3 pvn pPanel_3_f_
+    U4SensorIdentifierDefault::getIdentity copyno 0 num_sd 64 sensor_id 0 pvn pPanel_0_f_
+    U4SensorIdentifierDefault::getIdentity copyno 1 num_sd 64 sensor_id 1 pvn pPanel_1_f_
+    U4SensorIdentifierDefault::getIdentity copyno 2 num_sd 64 sensor_id 2 pvn pPanel_2_f_
+    U4SensorIdentifierDefault::getIdentity copyno 3 num_sd 64 sensor_id 3 pvn pPanel_3_f_
+    U4SensorIdentifierDefault::getIdentity copyno 0 num_sd 64 sensor_id 0 pvn pPanel_0_f_
+    U4SensorIdentifierDefault::getIdentity copyno 1 num_sd 64 sensor_id 1 pvn pPanel_1_f_
+    U4SensorIdentifierDefault::getIdentity copyno 2 num_sd 64 sensor_id 2 pvn pPanel_2_f_
+    U4SensorIdentifierDefault::getIdentity copyno 3 num_sd 64 sensor_id 3 pvn pPanel_3_f_
+    stree::add_inst i   0 gas_idx   1 nodes.size   25600
+    stree::add_inst i   1 gas_idx   2 nodes.size   12615
+
+
+
+
+
+
+
+
 
 TODO : mock qpmt.h landings with ART 4x4 collection into aux 
 ---------------------------------------------------------------

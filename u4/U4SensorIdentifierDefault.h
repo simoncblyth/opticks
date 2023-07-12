@@ -43,10 +43,9 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     int sensor_id = num_sd == 0 ? -1 : copyno ; 
 
     //bool dump = copyno < 10 ; 
-    //bool dump = false ; 
+    bool dump = false ; 
     //bool dump = true ;
-    bool dump = num_sd > 0 ; 
-
+    //bool dump = num_sd > 0 ; 
  
     if(dump) std::cout 
         << "U4SensorIdentifierDefault::getIdentity" 
