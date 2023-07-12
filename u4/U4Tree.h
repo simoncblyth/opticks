@@ -814,12 +814,16 @@ inline void U4Tree::identifySensitiveInstances()
         {
             int nidx = outer[j] ; 
             const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
+            const char* pvn = nullptr ; 
             int sensor_id = sid->getInstanceIdentity(pv) ;  
             int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
             if(sensor_id > -1 ) 
             {
                 st->sensor_count += 1 ;  // count over all factors  
                 fac.sensors += 1 ;   // count sensors for each factor  
+
+                pvn = pv->GetName().c_str() ; 
+                st->sensor_name.push_back( pvn ); 
             }
             snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 

@@ -254,6 +254,7 @@ struct stree
     static constexpr const char* IINST_F4 = "iinst_f4.npy" ; 
 
     static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
+    static constexpr const char* SENSOR_NAME = "sensor_name.npy" ; 
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     int level ;                            // verbosity 
@@ -287,6 +288,8 @@ struct stree
 
     std::vector<int> sensor_id ;           // updated by reorderSensors
     unsigned sensor_count ; 
+    std::vector<std::string> sensor_name ; 
+
 
     sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
                                            // subs are collected in stree::classifySubtrees
@@ -412,7 +415,7 @@ struct stree
 
     void save_( const char* fold ) const ;
     void save( const char* base, const char* reldir=RELDIR ) const ;
-    void old_save_( const char* fold ) const ;
+    //void old_save_( const char* fold ) const ;
     NPFold* serialize() const ; 
 
 
@@ -1758,6 +1761,7 @@ inline void stree::save_( const char* dir ) const
     fold->save(dir) ;  
 }
 
+/*
 inline void stree::old_save_( const char* dir ) const 
 {
     if(level > 0) std::cout << "[ stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
@@ -1818,6 +1822,8 @@ inline void stree::old_save_( const char* dir ) const
     NP::Write<int>(    dir, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
     if(level > 0) std::cout << "] stree::save_ " << ( dir ? dir : "-" ) << std::endl ; 
 }
+*/
+
 
 inline NPFold* stree::serialize() const 
 {
@@ -1879,6 +1885,7 @@ inline NPFold* stree::serialize() const
 
     NP* _inst_nidx = NPX::ArrayFromVec<int,int>( inst_nidx ) ; 
     NP* _sensor_id = NPX::ArrayFromVec<int,int>( sensor_id ) ; 
+    NP* _sensor_name = NPX::Holder(sensor_name); 
 
     fold->add( FACTOR, _factor ); 
     fold->add( INST,   _inst ); 
@@ -1887,6 +1894,7 @@ inline NPFold* stree::serialize() const
     fold->add( IINST_F4,   _iinst_f4 ); 
     fold->add( INST_NIDX,   _inst_nidx ); 
     fold->add( SENSOR_ID,   _sensor_id ); 
+    fold->add( SENSOR_NAME, _sensor_name ); 
 
     return fold ; 
 }

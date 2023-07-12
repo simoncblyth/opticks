@@ -32,6 +32,7 @@ The argument *instance_outer_pv* is recursively traversed
 
 inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {
+    const char* pvn = instance_outer_pv ? instance_outer_pv->GetName().c_str() : "-" ; 
     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(instance_outer_pv) ;
     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
 
@@ -43,12 +44,16 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
 
     //bool dump = copyno < 10 ; 
     //bool dump = false ; 
-    bool dump = true ; 
+    //bool dump = true ;
+    bool dump = num_sd > 0 ; 
+
+ 
     if(dump) std::cout 
         << "U4SensorIdentifierDefault::getIdentity" 
         << " copyno " << copyno
         << " num_sd " << num_sd
         << " sensor_id " << sensor_id 
+        << " pvn " << ( pvn ? pvn : "-" )
         << std::endl 
         ;      
 
