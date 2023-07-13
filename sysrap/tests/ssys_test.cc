@@ -179,6 +179,20 @@ void test_getenvvar()
         ;
 }
 
+void test_is_listed()
+{
+    std::vector<std::string> names = {"red", "green", "blue" } ; 
+    const std::vector<std::string>* nn = &names ; 
+
+    assert( ssys::is_listed(nn, "red")   == true ); 
+    assert( ssys::is_listed(nn, "green") == true ); 
+    assert( ssys::is_listed(nn, "blue")  == true ); 
+    assert( ssys::is_listed(nn, "cyan")  == false ); 
+
+    assert( ssys::is_listed(nullptr, "blue") == false ); 
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -198,9 +212,10 @@ int main(int argc, char** argv)
     test_getenvdouble(); 
     test_username(); 
     test_which(); 
-    */
-
     test_getenvvar(); 
+    */
+    test_is_listed(); 
+
 
  
     return 0 ; 

@@ -19,6 +19,8 @@
 
 #include <iomanip>
 
+
+#include "ssys.h"
 #include "SGDML.hh"
 #include "SStr.hh"
 
@@ -47,6 +49,8 @@
 
 
 const plog::Severity GSurfaceLib::LEVEL = SLOG::EnvLevel("GSurfaceLib", "DEBUG") ; 
+
+std::vector<std::string>* GSurfaceLib::SENSOR_SURFACE_LIST = ssys::getenv_vec<std::string>("GSurfaceLib__SENSOR_SURFACE_LIST", "" );          
 
 
 // surface
@@ -897,9 +901,11 @@ void GSurfaceLib::collectSensorIndices()
     {
         GPropertyMap<double>* surf = m_surfaces[i] ;
         const char* sn = surf->getName() ; 
-        bool is_sensor = surf->isSensor() ; 
+        bool is_sensor_0 = surf->isSensor() ; 
+        bool is_listed = ssys::is_listed( SENSOR_SURFACE_LIST, sn );  
+        bool is_sensor = is_sensor_0 || is_listed ; 
 
-        if(is_sensor)
+        if(is_sensor )
         {
             addSensorIndex(i); 
             assert( isSensorIndex(i) == true ) ; 
@@ -908,11 +914,11 @@ void GSurfaceLib::collectSensorIndices()
 
         LOG(LEVEL) 
             << " i " << i  
+            << " is_sensor_0 " << ( is_sensor_0 ? "YES" : "NO " ) 
+            << " is_listed " << ( is_listed ? "YES" : "NO " ) 
             << " is_sensor " << ( is_sensor ? "YES" : "NO " ) 
             << " sn " << sn 
             ;
-
-
     }
 
     LOG(LEVEL) 

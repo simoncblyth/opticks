@@ -62,6 +62,8 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* propertyName(unsigned int k);
        // 4 standard surface property names : interleaved into float4 wavelength texture
   public:
+        static std::vector<std::string>* SENSOR_SURFACE_LIST ; // GSurfaceLib__SENSOR_SURFACE_LIST 
+  public:
        static const char* detect ;
        static const char* absorb ;
        static const char* reflect_specular ;

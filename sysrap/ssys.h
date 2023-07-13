@@ -71,8 +71,8 @@ struct ssys
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
 
+    static bool is_listed( const std::vector<std::string>* vec, const char* name ); 
     static const char* username(); 
-
 }; 
 
 
@@ -397,7 +397,8 @@ template std::vector<unsigned>* ssys::getenv_vec(const char*, const char*, char)
 template std::vector<float>*    ssys::getenv_vec(const char*, const char*, char);
 template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char);
 template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char);
- 
+
+
 
 template<typename T>
 inline std::string ssys::desc_vec( const std::vector<T>* vec, unsigned edgeitems  )
@@ -419,6 +420,13 @@ template std::string ssys::desc_vec(const std::vector<unsigned>* , unsigned ) ;
 template std::string ssys::desc_vec(const std::vector<float>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<double>* , unsigned ) ; 
 template std::string ssys::desc_vec(const std::vector<std::string>* , unsigned ) ; 
+
+
+inline bool ssys::is_listed( const std::vector<std::string>* nn, const char* name ) // static 
+{
+    return nn && std::distance( nn->begin(), std::find( nn->begin(), nn->end(), name ) ) < int(nn->size()) ;  
+}
+
 
 inline const char* ssys::username()
 {

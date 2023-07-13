@@ -1224,12 +1224,7 @@ unsigned U4Recorder::ClassifyFake(const G4Step* step, unsigned flag, const char*
 std::vector<std::string>* U4Recorder::FAKES      = ssys::getenv_vec<std::string>("U4Recorder__FAKES", "" );
 bool                      U4Recorder::FAKES_SKIP = ssys::getenvbool(             "U4Recorder__FAKES_SKIP") ;  
 
-bool U4Recorder::IsListed( const std::vector<std::string>* LIST, const char* spec )  // static 
-{
-    for(unsigned i=0 ; i < ( LIST ? LIST->size() : 0) ; i++) if(strcmp( (*LIST)[i].c_str(), spec ) == 0 ) return true ; 
-    return false ;  
-}
-bool U4Recorder::IsListedFake( const char* spec ){ return IsListed(FAKES, spec ) ; }
+bool U4Recorder::IsListedFake( const char* spec ){ return ssys::is_listed(FAKES, spec ) ; }
 
 std::string U4Recorder::DescFakes() // static
 {
