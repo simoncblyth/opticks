@@ -892,11 +892,13 @@ inline void stree::reorderSensors()
 inline void stree::reorderSensors_r(int nidx)
 {
     snode& nd = nds[nidx] ; 
+
     if( nd.sensor_id > -1 )
     {
         nd.sensor_index = sensor_count ; 
         sensor_count += 1 ; 
     }
+
     std::vector<int> children ;
     get_children(children, nidx);
     for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i]);
@@ -904,10 +906,10 @@ inline void stree::reorderSensors_r(int nidx)
 
 
 /**
-stree::get_sensor_id
-----------------------
+stree::get_sensor_id from snode nds
+-------------------------------------
 
-List *sensor_id* obtained by iterating over all *nds* of the geometry.
+List *nd.sensor_id* obtained by iterating over all *nds* of the geometry.
 As the *nds* vector is in preorder traversal order, the order of 
 the *sensor_id* should correspond to *sensor_index* from 0 to num_sensor-1. 
 
@@ -1008,12 +1010,12 @@ stree::lookup_sensor_identifier
 ---------------------------------
 
 The arg_sensor_identifier array is resized to match arg_sensor_index and 
-populated with sensor_id values. 
+populated with sensor_id values from the stree::sensor_id. 
 
 **/
 
 inline void stree::lookup_sensor_identifier( 
-       std::vector<int>& arg_sensor_identifier, 
+             std::vector<int>& arg_sensor_identifier, 
        const std::vector<int>& arg_sensor_index, 
        bool one_based_index, 
        bool verbose, 
@@ -1031,10 +1033,10 @@ inline void stree::lookup_sensor_identifier(
     arg_sensor_identifier.resize(arg_sensor_index.size()); 
 
     unsigned num_lookup = arg_sensor_index.size() ; 
-
     for(unsigned i=0 ; i < num_lookup ; i++)
     {   
-        int s_index = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ;  // "correct" 1-based to be 0-based 
+        int s_index = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ; 
+        // "correct" 1-based to be 0-based 
         bool s_index_inrange = s_index > -1 && s_index < int(sensor_id.size()) ; 
         int s_identifier = s_index_inrange ? sensor_id[s_index] : -1 ; 
 

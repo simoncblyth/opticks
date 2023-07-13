@@ -33,6 +33,8 @@ The argument *instance_outer_pv* is recursively traversed
 inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {
     const char* pvn = instance_outer_pv ? instance_outer_pv->GetName().c_str() : "-" ; 
+    bool has_PMT_pvn = strstr(pvn, "PMT") != nullptr  ;  
+
     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(instance_outer_pv) ;
     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
 
@@ -40,10 +42,19 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     FindSD_r(sdpv, instance_outer_pv, 0 );  
 
     unsigned num_sd = sdpv.size() ; 
-    int sensor_id = num_sd == 0 ? -1 : copyno ; 
+    bool is_sensor = num_sd > 0 && has_PMT_pvn  ; 
 
-    //bool dump = copyno < 10 ; 
-    bool dump = false ; 
+    bool is_interesting_copyno = 
+            (( copyno -      0 ) < 100) || 
+            (( 17612  - copyno ) < 100) ||
+            (( copyno -  30000 ) < 100) ||
+            ((  32400 -  copyno) < 100) ||
+            (( copyno - 300000 ) < 100) || 
+            (( 325600 - copyno ) < 100)  ;   
+            
+
+    bool dump = is_sensor && is_interesting_copyno ; 
+    //bool dump = false ; 
     //bool dump = true ;
     //bool dump = num_sd > 0 ; 
  
@@ -51,13 +62,14 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
         << "U4SensorIdentifierDefault::getIdentity" 
         << " copyno " << copyno
         << " num_sd " << num_sd
-        << " sensor_id " << sensor_id 
+        << " is_sensor " << is_sensor
         << " pvn " << ( pvn ? pvn : "-" )
+        << " has_PMT_pvn " << ( has_PMT_pvn ? "YES" : "NO " ) 
         << std::endl 
         ;      
 
 
-    return sensor_id ; 
+    return is_sensor ? copyno : -1  ; 
 }
 
 /**

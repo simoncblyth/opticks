@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <csignal>
 #include <sstream>
 #include <fstream>
 
@@ -515,6 +516,8 @@ void SBT::createIAS_Selection()
 
 void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
 {
+    std::raise(SIGINT);  // not expecting this to get called
+
     unsigned num_select = solid_selection.size() ; 
     assert( num_select > 0 ); 
     float mxe = foundry->getMaxExtent(solid_selection); 
