@@ -47,6 +47,7 @@ list(APPEND SOURCES
 )
     
 #    CSGGenstep.cc
+#    CSG_stree_Convert.h 
 
 list(APPEND CSG_HEADERS
     CSGNode.h 
@@ -58,7 +59,6 @@ list(APPEND CSG_HEADERS
 
 
     CSGFoundry.h
-    CSG_stree_Convert.h 
 
     CSGCopy.h
     CSGMaker.h

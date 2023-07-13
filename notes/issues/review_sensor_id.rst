@@ -15,20 +15,25 @@ Overview
 
   * SMOKING GUN : AS OLD/NEW MUST HAVE SAME IDEA OF SENSORS 
 
-* WIP : WHY IS GGEO STILL INVOLVED FOR SENSORS ? 
+* WHY IS GGEO STILL INVOLVED FOR SENSORS ? 
+
+  * GGeo is still involved for everything, as still going via CSG_GGeo_Convert 
+
 * WIP : HMM GGeo has its own stree ? 
 * TODO : compare old and new inst and then switch to the new 
 
   * how to switch to U4Tree.h/stree.h inst ?  
   * CSGOptiX::Create just uploads the CSGFoundry fd 
   * CSGFoundry fd is still created with CSG_GGeo_Convert 
-  * start thinking about going from stree in CSG/CSG_stree_Convert.h 
-    and CSG/tests/CSG_stree_Convert_test.sh 
 
 
-
-TODO : create CSGFoundry from stree eliminating GGeo 
+WIP : create CSGFoundry from stree eliminating GGeo 
 -------------------------------------------------------
+
+Thinking of going direct from stree to CSGFoundry in::
+
+   CSG/CSG_stree_Convert.h 
+   CSG/tests/CSG_stree_Convert_test.sh 
 
 
 
