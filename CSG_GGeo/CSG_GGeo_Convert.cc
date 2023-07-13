@@ -366,7 +366,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
         const char* mname = foundry->getName(meshIdx);      //  
         bool cxskip = SGeoConfig::IsCXSkipLV(meshIdx); 
         
-        LOG(LEVEL) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
+        LOG(debug) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
         if(cxskip) 
         {
             LOG(error) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
@@ -458,7 +458,7 @@ and should be removed as are now always using absolute tran and plan addressing
 
 CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(debug) << "[" ; 
 
     unsigned numPrim = comp->getNumPrim();  // size of prim_buffer
     assert( primIdx < numPrim ); 
@@ -482,7 +482,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     nbbox xbb = comp->getBBox(primIdx);  
     bool has_xbb = xbb.is_empty() == false ; 
 
-    LOG(LEVEL)
+    LOG(debug)
         << " primIdx " << std::setw(4) << primIdx
         << " meshIdx " << std::setw(4) << meshIdx
         << " numParts " << std::setw(4) << numParts
@@ -495,7 +495,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " has_xbb " << has_xbb
         ;
 
-    LOG(LEVEL) << "GParts::getBBox(primIdx) xbb " << xbb.desc() ; 
+    LOG(debug) << "GParts::getBBox(primIdx) xbb " << xbb.desc() ; 
 
 
     assert( foundry->last_added_solid ); 
@@ -555,7 +555,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     // HMM: usually numParts is the number of tree nodes : but not always following introduction of list-nodes
     // TODO: fix the conversion to pass along the subNum from GGeo level 
 
-    LOG(LEVEL) 
+    LOG(debug) 
         << " meshIdx " << std::setw(4) << meshIdx 
         << " numParts " << std::setw(4) << numParts
         << " root_subNum " << std::setw(4) << root_subNum
@@ -589,7 +589,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     }
 
 
-    LOG(LEVEL)
+    LOG(debug)
         << " ridx " << std::setw(2) << last_ridx
         << " primIdx " << std::setw(3) << primIdx 
         << " numParts " << std::setw(3) << numParts 
@@ -599,7 +599,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     if( has_xbb == false )
     {
         const float* bb_data = bb.data(); 
-        LOG(LEVEL)
+        LOG(debug)
             << " has_xbb " << has_xbb 
             << " (using self defined BB for prim) "
             << " AABB \n" << AABB::Desc(bb_data) 
@@ -617,7 +617,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         prim->setAABB( xbb.min.x, xbb.min.y, xbb.min.z, xbb.max.x, xbb.max.y, xbb.max.z ); 
     }
 
-    LOG(LEVEL) << "]" ; 
+    //LOG(LEVEL) << "]" ; 
     return prim ; 
 }
 
@@ -703,7 +703,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     // CSGFoundry::addNode with transform pointer argumnent 
 
 
-    LOG(LEVEL) 
+    LOG(debug) 
         << " primIdx " << std::setw(4) << primIdx 
         << " partIdxRel " << std::setw(4) << partIdxRel
         << " tag " << std::setw(6) << tag

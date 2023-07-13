@@ -11,6 +11,7 @@ struct U4SensorIdentifierDefault : public U4SensorIdentifier
     int getGlobalIdentity(const G4VPhysicalVolume* pv ) const ; 
     int getInstanceIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ; 
     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );  
+    static bool IsInterestingCopyNo( int copyno ); 
 }; 
 
 
@@ -30,6 +31,21 @@ The argument *instance_outer_pv* is recursively traversed
 
 **/
 
+inline bool U4SensorIdentifierDefault::IsInterestingCopyNo( int copyno )
+{
+    return 
+        copyno > -1 && 
+           (
+            (std::abs( copyno -      0 ) < 100) || 
+            (std::abs( copyno -  17612 ) < 100) ||
+            (std::abs( copyno -  30000 ) < 100) ||
+            (std::abs( copyno -  32400 ) < 100) ||
+            (std::abs( copyno - 300000 ) < 100) || 
+            (std::abs( copyno - 325600 ) < 100)  
+           )
+        ;   
+}
+
 inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {
     const char* pvn = instance_outer_pv ? instance_outer_pv->GetName().c_str() : "-" ; 
@@ -44,15 +60,7 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     unsigned num_sd = sdpv.size() ; 
     bool is_sensor = num_sd > 0 && has_PMT_pvn  ; 
 
-    bool is_interesting_copyno = 
-            (( copyno -      0 ) < 100) || 
-            (( 17612  - copyno ) < 100) ||
-            (( copyno -  30000 ) < 100) ||
-            ((  32400 -  copyno) < 100) ||
-            (( copyno - 300000 ) < 100) || 
-            (( 325600 - copyno ) < 100)  ;   
-            
-
+    bool is_interesting_copyno = IsInterestingCopyNo(copyno) ; 
     bool dump = is_sensor && is_interesting_copyno ; 
     //bool dump = false ; 
     //bool dump = true ;

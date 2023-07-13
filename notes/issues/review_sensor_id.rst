@@ -122,12 +122,11 @@ Suspect the the additional TT SD are messing up the indexing.::
 
 Need to restrict what is treated as sensor, to avoid the unexpected pPanel 
 messing up the indexing. 
+Added "PMT" in name restriction to U4SensorIdentifierDefault.h  
 
 
-
-
-
-::
+Before the change clearly messed up s_identifier repeating (0,1,2,3,0,1,2,3,...) 
+presumably from the 4 pPanel::
 
     2023-07-13 17:28:51.652 INFO  [264380] [CSG_GGeo_Convert::addInstances@226]  repeatIdx 1 num_inst 25600 nmm 10
     2023-07-13 17:28:51.652 INFO  [264380] [CSG_GGeo_Convert::addInstances@229]  iid 25600,5,4
@@ -483,5 +482,39 @@ Original sensor_id look OK, so maybe issue with reordering ::
     Out[41]: 46116
 
 
+
+
+
+
+
+::
+
+    2023-07-13 18:05:41.046 INFO  [278292] [CSG_GGeo_Convert::addInstances@229]  iid 2400,6,4
+    2023-07-13 18:05:41.047 INFO  [278292] [CSG_GGeo_Convert::addInstances@236]  sensor_index.size 2400
+    stree::lookup_sensor_identifier.0 arg_sensor_identifier.size 0 arg_sensor_index.size 2400 sensor_id.size 45612 edge 10
+    stree::lookup_sensor_identifier.1 i   0 s_index   25600 s_index_inrange 1 s_identifier  307988 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   1 s_index   25601 s_index_inrange 1 s_identifier  307989 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   2 s_index   25602 s_index_inrange 1 s_identifier  307990 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   3 s_index   25603 s_index_inrange 1 s_identifier  307991 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   4 s_index   25604 s_index_inrange 1 s_identifier  307992 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   5 s_index   25605 s_index_inrange 1 s_identifier  307993 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   6 s_index   25606 s_index_inrange 1 s_identifier  307994 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   7 s_index   25607 s_index_inrange 1 s_identifier  307995 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   8 s_index   25608 s_index_inrange 1 s_identifier  307996 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i   9 s_index   25609 s_index_inrange 1 s_identifier  307997 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i  10 ... 
+    stree::lookup_sensor_identifier.1 i 2391 s_index   27991 s_index_inrange 1 s_identifier  310379 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2392 s_index   27992 s_index_inrange 1 s_identifier  310380 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2393 s_index   27993 s_index_inrange 1 s_identifier  310381 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2394 s_index   27994 s_index_inrange 1 s_identifier  310382 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2395 s_index   27995 s_index_inrange 1 s_identifier  310383 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2396 s_index   27996 s_index_inrange 1 s_identifier  310384 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2397 s_index   27997 s_index_inrange 1 s_identifier  310385 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2398 s_index   27998 s_index_inrange 1 s_identifier  310386 sensor_id.size   45612
+    stree::lookup_sensor_identifier.1 i 2399 s_index   27999 s_index_inrange 1 s_identifier  310387 sensor_id.size   45612
+    2023-07-13 18:05:41.048 INFO  [278292] [CSG_GGeo_Convert::addInstances@243]  sensor_id.size 2400
+    2023-07-13 18:05:41.048 INFO  [278292] [CSG_GGeo_Convert::addInstances@244] stree::DescSensor num_sensor 2400
+     i       0 s_index   25601 s_identifier  307988
+     i       1 s_index   25602 s_identifier  307989
 
 
