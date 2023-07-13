@@ -15,8 +15,21 @@ Overview
 
   * SMOKING GUN : AS OLD/NEW MUST HAVE SAME IDEA OF SENSORS 
 
+* WIP : WHY IS GGEO STILL INVOLVED FOR SENSORS ? 
 * WIP : HMM GGeo has its own stree ? 
 * TODO : compare old and new inst and then switch to the new 
+
+  * how to switch to U4Tree.h/stree.h inst ?  
+  * CSGOptiX::Create just uploads the CSGFoundry fd 
+  * CSGFoundry fd is still created with CSG_GGeo_Convert 
+  * start thinking about going from stree in CSG/CSG_stree_Convert.h 
+    and CSG/tests/CSG_stree_Convert_test.sh 
+
+
+
+TODO : create CSGFoundry from stree eliminating GGeo 
+-------------------------------------------------------
+
 
 
 Issue : Unexpected qat4.h sensor info. 
@@ -281,7 +294,7 @@ Seems the GGeo::isSensor is no longer working as needed
 
 
 * so how can GGeo identify sensor surfaces ? As this is GGeo code which has not long to live 
-  can just kludge it based on "photocathode" in the name 
+  can just kludge it based on "photocathode" in the name perhaps.  
 
 
 GGeo::postDirectTranslation

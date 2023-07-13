@@ -311,7 +311,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 {
     fd = fd_ ; 
 
-   sim->serialize() ;  
+    sim->serialize() ;  
 
 
     if( setGeometry_saveGeometry != nullptr )

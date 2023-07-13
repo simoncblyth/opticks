@@ -214,7 +214,9 @@ struct stree
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
 
+    static constexpr const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ;  // default 
     static constexpr const char* RELDIR = "stree" ;
+
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
     static constexpr const char* REM = "rem.npy" ;
@@ -424,7 +426,7 @@ struct stree
     static void ImportNames( std::vector<std::string>& names, const NP* a ); 
 
 
-    static stree* Load(const char* base, const char* reldir=RELDIR ); 
+    static stree* Load(const char* base=BASE , const char* reldir=RELDIR ); 
 
     int load( const char* base, const char* reldir=RELDIR );
     int load_( const char* fold );

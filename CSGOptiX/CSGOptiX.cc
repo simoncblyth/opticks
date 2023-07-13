@@ -272,7 +272,7 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
     InitSim(fd->sim); 
-    InitGeo(fd); 
+    InitGeo(fd);   // uploads geometry 
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
 

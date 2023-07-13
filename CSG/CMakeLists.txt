@@ -58,6 +58,8 @@ list(APPEND CSG_HEADERS
 
 
     CSGFoundry.h
+    CSG_stree_Convert.h 
+
     CSGCopy.h
     CSGMaker.h
     CSGImport.h
