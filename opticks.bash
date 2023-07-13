@@ -102,9 +102,11 @@ GEOM(){
   source $HOME/$script 
   base=.opticks/GEOM/$GEOM
 
+
   local args="vi/grab/scp/top/cf/ss/st/info"
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
+  local ggeo=/tmp/$USER/opticks/GGeo 
   local defarg="vi"
   local arg=${1:-$defarg} 
   local vars="FUNCNAME defarg arg args script base GEOM geomdir" 
@@ -113,6 +115,8 @@ GEOM(){
      cmd="vi $HOME/$script"  
   elif [ "$arg" == "grab" -o "$arg" == "get" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
+  elif [ "$arg" == "ggeo" ]; then  
+     cmd="source $OPTICKS_HOME/bin/rsync.sh $ggeo"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
   elif [ "$arg" == "top" ]; then  

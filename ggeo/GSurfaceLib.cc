@@ -889,6 +889,10 @@ properties.
 void GSurfaceLib::collectSensorIndices()
 {
     unsigned ni = getNumSurfaces();
+    LOG(LEVEL) << " ni " << ni ;
+
+    int sensor_surface_count(0);  
+
     for(unsigned i=0 ; i < ni ; i++)
     {
         GPropertyMap<double>* surf = m_surfaces[i] ;
@@ -897,8 +901,22 @@ void GSurfaceLib::collectSensorIndices()
         {
             addSensorIndex(i); 
             assert( isSensorIndex(i) == true ) ; 
+            sensor_surface_count += 1 ; 
+            const char* sn = surf->getName() ; 
+
+            LOG(LEVEL) 
+                << " i " << i  
+                << " is_sensor "
+                << " sn " << sn 
+                ;
         }
     }
+
+    LOG(LEVEL) 
+        << " ni " << ni 
+        << " sensor_surface_count " << sensor_surface_count 
+        ;
+
 }
 
 

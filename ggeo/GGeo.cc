@@ -645,7 +645,7 @@ void GGeo::postDirectTranslation()
     }
     else
     {
-        LOG(info) << "NOT SAVING : SAVE BY DEFINING ENVVAR: GGeo__postDirectTranslation_save "  ; 
+        LOG(info) << "NOT SAVING : TO ENABLE : export GGeo__postDirectTranslation_save=1 "  ; 
     }
 
 

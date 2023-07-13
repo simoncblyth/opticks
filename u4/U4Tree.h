@@ -21,6 +21,22 @@ See also:
 * sysrap/stree.h 
 * sysrap/tests/stree_test.cc
 
+logging
+---------
+
+Cannot have U4Tree SLOG::EnvLevel because is currently header only, 
+and cannot easily init a static in header only situation in C++11, 
+With C++17 can supposedly do this easily with "inline static". See
+
+https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
+
+Pragmatic workaround for runtime logging level is to 
+adopt the log level int from SSim st.level which is 
+controlled via envvar::
+
+    export SSim__stree_level=1   # 0:one 1:minimal 2:some 3:verbose 4:extreme
+
+
 **/
 
 
@@ -68,21 +84,6 @@ See also:
 #include "U4MaterialTable.h"
 #include "U4TreeBorder.h"
 
-
-/*
-HMM: cannot have U4Tree EnvLevel because it is currently header only, 
-and cannot easily init a static in header only situation in C++11, 
-With C++17 can supposedly do this easily with "inline static". See
-
-https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
-
-Pragmatic workaround for runtime logging level is to 
-adopt the log level int from stree st.level which is 
-controlled via envvar::
-
-    export SSim__stree_level=1   # 0:one 1:minimal 2:some 3:verbose 4:extreme
-
-*/
 
 struct U4Tree
 {
@@ -897,8 +898,6 @@ inline void U4Tree::identifySensitiveGlobals()
         nd.sensor_id = sensor_id ; 
         nd.sensor_index = sensor_index ; 
         nd.sensor_name = sensor_name ; 
-  
-
 
  
         if(level > 1) std::cerr

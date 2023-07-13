@@ -1601,6 +1601,43 @@ one_based_index:false
     implies zero based index, 
     convention is that valid indices begin at 0, with -1 meaning non-a-valid index
 
+
+::
+
+    In [1]: np.load("GGeo/GMergedMesh/1/placement_iidentity.npy").shape
+    Out[1]: (25600, 5, 4)
+
+    In [2]: np.load("GGeo/GMergedMesh/2/placement_iidentity.npy").shape
+    Out[2]: (12615, 9, 4)
+
+    In [3]: np.load("GGeo/GMergedMesh/3/placement_iidentity.npy").shape
+    Out[3]: (4997, 12, 4)
+
+    In [4]: np.load("GGeo/GMergedMesh/4/placement_iidentity.npy").shape
+    Out[4]: (2400, 6, 4)
+
+    In [5]: np.load("GGeo/GMergedMesh/5/placement_iidentity.npy").shape
+    Out[5]: (590, 1, 4)
+
+    In [6]: np.load("GGeo/GMergedMesh/6/placement_iidentity.npy").shape
+    Out[6]: (590, 1, 4)
+
+    In [7]: np.load("GGeo/GMergedMesh/7/placement_iidentity.npy").shape
+    Out[7]: (590, 1, 4)
+
+    In [8]: np.load("GGeo/GMergedMesh/8/placement_iidentity.npy").shape
+    Out[8]: (590, 1, 4)
+
+    In [9]: np.load("GGeo/GMergedMesh/9/placement_iidentity.npy").shape
+    Out[9]: (504, 130, 4)
+
+    In [10]: np.load("GGeo/GMergedMesh/0/placement_iidentity.npy").shape
+    Out[10]: (1, 2977, 4)
+
+
+This loops over the middle nj dimension looking for a non-zero 3rd column. 
+
+
 **/
 
 void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid, bool one_based_index ) // static

@@ -60,9 +60,9 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     unsigned num_sd = sdpv.size() ; 
     bool is_sensor = num_sd > 0 && has_PMT_pvn  ; 
 
-    bool is_interesting_copyno = IsInterestingCopyNo(copyno) ; 
-    bool dump = is_sensor && is_interesting_copyno ; 
-    //bool dump = false ; 
+    //bool is_interesting_copyno = IsInterestingCopyNo(copyno) ; 
+    //bool dump = is_sensor && is_interesting_copyno ; 
+    bool dump = false ; 
     //bool dump = true ;
     //bool dump = num_sd > 0 ; 
  

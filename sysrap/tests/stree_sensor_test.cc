@@ -81,10 +81,10 @@ int main(int argc, char** argv)
 
     /*
     test_sensor_id( st ); 
-    test_lookup_sensor_identifier( st );  
     test_desc_repeat_nodes(st); 
     */
 
+    test_lookup_sensor_identifier( st );  
 
 
     return 0 ; 
