@@ -129,7 +129,7 @@ class GGEO_API GPropertyMap {
       bool isBorderSurface() const ;
 
       bool isMaterial() const ;
-      bool hasNonZeroProperty(const char* pname) ;
+      bool hasNonZeroProperty(const char* pname) const ;
 
       void setOriginalDomain(); 
       bool hasOriginalDomain() const ; 
@@ -141,7 +141,7 @@ class GGEO_API GPropertyMap {
   public:
 
       void setSensor(bool sensor=true); // set in AssimpGGeo::convertSensors
-      bool isSensor();  // non-zero "EFFICIENCY" or "detect" property
+      bool isSensor() const ;  // non-zero "EFFICIENCY" or "detect" property
 
       void setValid(bool valid=true);
       bool isValid();

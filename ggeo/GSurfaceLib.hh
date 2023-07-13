@@ -137,6 +137,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void dump(unsigned int index);
        std::string desc() const ; 
    public:
+       static bool IsSensorOrListed(const GPropertyMap<double>* surf ) ; 
        void collectSensorIndices();
    public:
        // concretization of GPropertyLib

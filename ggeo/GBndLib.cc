@@ -675,6 +675,31 @@ void GBndLib::countSensorBoundary(unsigned boundary)
     m_sensor_count += 1 ; 
 }
 
+std::string GBndLib::descSensorBoundary() const
+{  
+    unsigned ni = getNumBnd();
+
+    std::stringstream ss ; 
+    ss << "GBndLib::descSensorBoundary"
+       << " ni " << ni 
+       ; 
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned boundary = i ; 
+        const guint4& bnd = m_bnd[boundary] ;
+        ss << description(bnd) 
+           << " isb " << isSensorBoundary(boundary) 
+           << std::endl
+           ; 
+    } 
+
+    std::string str = ss.str();
+    return str ; 
+}
+
+
+
 /**
 GBndLib::getSensorCount (precache)
 ------------------------------------

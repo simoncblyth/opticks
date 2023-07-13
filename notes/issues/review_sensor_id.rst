@@ -14,6 +14,7 @@ Overview
 * DONE : examine GGeo : find that MM 2,3 lack any sensor_id : SMOKING GUN 
 
   * SMOKING GUN : AS OLD/NEW MUST HAVE SAME IDEA OF SENSORS 
+  * reason established : it is the PMT geometry change
 
 * WHY IS GGEO STILL INVOLVED FOR SENSORS ? 
 
@@ -25,6 +26,39 @@ Overview
   * how to switch to U4Tree.h/stree.h inst ?  
   * CSGOptiX::Create just uploads the CSGFoundry fd 
   * CSGFoundry fd is still created with CSG_GGeo_Convert 
+
+
+WIP : GGeo has an stree ? Is that same instance as SSim ? NO
+-----------------------------------------------------------------
+
+Its foreign to GGeo::
+
+     159 void GGeo::setTree(stree* tree){ m_tree = tree ; }
+     160 stree* GGeo::getTree() const {  return m_tree ; }
+
+
+::
+
+    epsilon:issues blyth$ opticks-f setTree 
+    ./extg4/X4PhysicalVolume.cc:    m_ggeo->setTree(m_tree); 
+    ./sysrap/stree.h:    GGeo:m_tree with setTree/getTree : but treated as foreign member, only GGeo::save saves it 
+    ./sysrap/stree.h:    X4PhysicalVolume::convertStructure creates stree.h and setTree into GGeo 
+    ./ggeo/GGeo.hh:        void setTree(stree* tree) ; 
+    ./ggeo/GGeo.cc:void GGeo::setTree(stree* tree){ m_tree = tree ; }
+
+
+
+But it is distinct from the SSim/stree::
+
+    1401 void X4PhysicalVolume::convertStructure()
+    1402 {
+    1403     assert(m_top) ;
+    1404     LOG(LEVEL) << "[ creating large tree of GVolume instances" ;
+    1405 
+    1406     m_tree = new stree ;
+    1407     m_ggeo->setTree(m_tree);
+
+
 
 
 WIP : create CSGFoundry from stree eliminating GGeo 
@@ -41,6 +75,9 @@ Issue : Unexpected qat4.h sensor info.
 -------------------------------------------
 
 ::
+
+    ct ; ./CSGFoundry_py_test.sh 
+
 
      16 if __name__ == '__main__':
      17     cf = CSGFoundry.Load()
@@ -119,6 +156,37 @@ Issue : Unexpected qat4.h sensor info.
 
 
 
+Adding GSurfaceLib__SENSOR_SURFACE_LIST didnt move the needle
+----------------------------------------------------------------
+
+So add "GBndLib::descSensorBoundary" to see whats happening. 
+
+
+X4PhysicalVolume::
+
+    2035     ///////// sensor decision for the volume happens here  ////////////////////////
+    2036     //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
+    2037 
+    2038     bool is_sensor = m_blib->isSensorBoundary(boundary) ; // this means that isurf/osurf has non-zero EFFICIENCY property 
+    2039     unsigned sensorIndex = GVolume::SENSOR_UNSET ;
+    2040     if(is_sensor)
+    2041     {
+    2042         sensorIndex = 1 + m_blib->getSensorCount() ;  // 1-based index
+    2043         m_blib->countSensorBoundary(boundary);
+    2044     }
+    2045     volume->setSensorIndex(sensorIndex);   // must set to GVolume::SENSOR_UNSET for non-sensors, for sensor_indices array  
+    2046 
+    2047     ///////////////////////////////////////////////////////////////////////////
+
+
+     663 bool GBndLib::isSensorBoundary(unsigned boundary) const
+     664 {
+     665     const guint4& bnd = m_bnd[boundary];
+     666     bool osur_sensor = m_slib->isSensorIndex(bnd[OSUR]);
+     667     bool isur_sensor = m_slib->isSensorIndex(bnd[ISUR]);
+     668     bool is_sensor = osur_sensor || isur_sensor ;
+     669     return is_sensor ;
+     670 }
 
 
 
@@ -129,6 +197,9 @@ GGeo iid
 ::
 
     GEOM ggeo
+
+
+    cd /tmp/blyth/opticks
 
 
     In [1]: np.load("GGeo/GMergedMesh/1/placement_iidentity.npy").shape
@@ -300,6 +371,124 @@ Seems the GGeo::isSensor is no longer working as needed
 
 * so how can GGeo identify sensor surfaces ? As this is GGeo code which has not long to live 
   can just kludge it based on "photocathode" in the name perhaps.  
+
+Added envvar sensitivity::
+
+    export GSurfaceLib__SENSOR_SURFACE_LIST=HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf,NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf
+
+
+Before using that::
+
+    2023-07-14 02:40:30.326 INFO  [348012] [GSurfaceLib::collectSensorIndices@896]  ni 46
+    2023-07-14 02:40:30.326 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 0 is_sensor_0 NO  is_listed NO  is_sensor NO  sn CDTyvekSurface
+    2023-07-14 02:40:30.326 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 1 is_sensor_0 NO  is_listed NO  is_sensor NO  sn CDInnerTyvekSurface
+    2023-07-14 02:40:30.326 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 2 is_sensor_0 NO  is_listed NO  is_sensor NO  sn VETOTyvekSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 3 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_photocathode_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 4 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_photocathode_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 5 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_mirror_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 6 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_mirror_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 7 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_dynode_plate_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 8 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_inner_ring_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 9 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_outer_edge_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 10 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_inner_edge_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 11 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_dynode_tube_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 12 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_grid_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 13 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_shield_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 14 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 15 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 16 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 17 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_opsurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 18 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_veto_photocathode_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 19 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_veto_photocathode_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 20 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_veto_mirror_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 21 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_veto_mirror_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 22 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_3inch_photocathode_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 23 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_3inch_photocathode_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 24 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf1
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 25 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf2
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 26 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf3
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 27 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf4
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 28 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf5
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 29 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf6
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 30 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf7
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 31 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf8
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 32 is_sensor_0 NO  is_listed NO  is_sensor NO  sn UpperChimneyTyvekSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 33 is_sensor_0 NO  is_listed NO  is_sensor NO  sn StrutAcrylicOpSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 34 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Strut2AcrylicOpSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 35 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 36 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuMaskOpticalSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 37 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 38 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMaskOpticalSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 39 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Steel_surface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 40 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 41 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 42 is_sensor_0 YES is_listed NO  is_sensor YES sn perfectDetectSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 43 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectAbsorbSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 44 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectSpecularSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@915]  i 45 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectDiffuseSurface
+    2023-07-14 02:40:30.327 INFO  [348012] [GSurfaceLib::collectSensorIndices@924]  ni 46 sensor_surface_count 7
+
+
+Added to jxv/ntds bash function::
+
+    2023-07-14 02:50:54.291 INFO  [348306] [GSurfaceLib::collectSensorIndices@896]  ni 46
+    2023-07-14 02:50:54.291 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 0 is_sensor_0 NO  is_listed NO  is_sensor NO  sn CDTyvekSurface
+    2023-07-14 02:50:54.291 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 1 is_sensor_0 NO  is_listed NO  is_sensor NO  sn CDInnerTyvekSurface
+    2023-07-14 02:50:54.291 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 2 is_sensor_0 NO  is_listed NO  is_sensor NO  sn VETOTyvekSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 3 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_photocathode_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 4 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_photocathode_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 5 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_mirror_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 6 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_mirror_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 7 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_dynode_plate_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 8 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_inner_ring_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 9 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_outer_edge_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 10 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_inner_edge_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 11 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_dynode_tube_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 12 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_grid_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 13 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuR12860_PMT_20inch_shield_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 14 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 15 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 16 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 17 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMCPPMT_PMT_20inch_mcp_opsurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 18 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_veto_photocathode_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 19 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_20inch_veto_photocathode_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 20 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_veto_mirror_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 21 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_20inch_veto_mirror_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 22 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_3inch_photocathode_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 23 is_sensor_0 YES is_listed NO  is_sensor YES sn PMT_3inch_photocathode_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 24 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf1
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 25 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf2
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 26 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf3
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 27 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf4
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 28 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf5
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 29 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf6
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 30 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf7
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 31 is_sensor_0 NO  is_listed NO  is_sensor NO  sn PMT_3inch_absorb_logsurf8
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 32 is_sensor_0 NO  is_listed NO  is_sensor NO  sn UpperChimneyTyvekSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 33 is_sensor_0 NO  is_listed NO  is_sensor NO  sn StrutAcrylicOpSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 34 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Strut2AcrylicOpSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 35 is_sensor_0 NO  is_listed YES is_sensor YES sn HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 36 is_sensor_0 NO  is_listed NO  is_sensor NO  sn HamamatsuMaskOpticalSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 37 is_sensor_0 NO  is_listed YES is_sensor YES sn NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 38 is_sensor_0 NO  is_listed NO  is_sensor NO  sn NNVTMaskOpticalSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 39 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Steel_surface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 40 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 41 is_sensor_0 NO  is_listed NO  is_sensor NO  sn Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 42 is_sensor_0 YES is_listed NO  is_sensor YES sn perfectDetectSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 43 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectAbsorbSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 44 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectSpecularSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@915]  i 45 is_sensor_0 NO  is_listed NO  is_sensor NO  sn perfectDiffuseSurface
+    2023-07-14 02:50:54.292 INFO  [348306] [GSurfaceLib::collectSensorIndices@924]  ni 46 sensor_surface_count 9
+
+
+That is with the envvar::
+
+    export GSurfaceLib__SENSOR_SURFACE_LIST=HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf,NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf
+
+
+
+
+
 
 
 GGeo::postDirectTranslation

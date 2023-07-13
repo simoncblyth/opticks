@@ -879,6 +879,24 @@ GItemList* GSurfaceLib::createNames()
     return names ; 
 }
 
+bool GSurfaceLib::IsSensorOrListed(const GPropertyMap<double>* surf ) // static
+{
+    const char* sn = surf->getName() ; 
+    bool is_sensor_0 = surf->isSensor() ; 
+    bool is_listed = ssys::is_listed( SENSOR_SURFACE_LIST, sn );  
+    bool is_sensor = is_sensor_0 || is_listed ; 
+
+    LOG(LEVEL) 
+        << " is_sensor_0 " << ( is_sensor_0 ? "YES" : "NO " ) 
+        << " is_listed " << ( is_listed ? "YES" : "NO " ) 
+        << " is_sensor " << ( is_sensor ? "YES" : "NO " ) 
+        << " sn " << sn 
+        ;
+
+    return is_sensor ; 
+}
+
+
 
 /**
 GSurfaceLib::collectSensorIndices
@@ -900,11 +918,8 @@ void GSurfaceLib::collectSensorIndices()
     for(unsigned i=0 ; i < ni ; i++)
     {
         GPropertyMap<double>* surf = m_surfaces[i] ;
-        const char* sn = surf->getName() ; 
-        bool is_sensor_0 = surf->isSensor() ; 
-        bool is_listed = ssys::is_listed( SENSOR_SURFACE_LIST, sn );  
-        bool is_sensor = is_sensor_0 || is_listed ; 
 
+        bool is_sensor = IsSensorOrListed(surf) ; 
         if(is_sensor )
         {
             addSensorIndex(i); 
@@ -912,13 +927,6 @@ void GSurfaceLib::collectSensorIndices()
             sensor_surface_count += 1 ; 
         }
 
-        LOG(LEVEL) 
-            << " i " << i  
-            << " is_sensor_0 " << ( is_sensor_0 ? "YES" : "NO " ) 
-            << " is_listed " << ( is_listed ? "YES" : "NO " ) 
-            << " is_sensor " << ( is_sensor ? "YES" : "NO " ) 
-            << " sn " << sn 
-            ;
     }
 
     LOG(LEVEL) 
@@ -940,6 +948,7 @@ void GSurfaceLib::dumpSurfaces(const char* msg, unsigned edgeitems )
         const char* name = surf->getShortName() ;
         const char* type = surf->getType() ; 
         bool is_sensor = surf->isSensor() ; 
+        bool is_sensor_or_listed = IsSensorOrListed(surf) ; 
 
         bool edge = i < edgeitems || i > ni - edgeitems ;  
         if(!edge) continue ; 
@@ -947,6 +956,7 @@ void GSurfaceLib::dumpSurfaces(const char* msg, unsigned edgeitems )
         std::cout 
              << " index : " << std::setw(2) << i 
              << " is_sensor : " << ( is_sensor ? "Y" : "N" )
+             << " is_sensor_or_listed : " << ( is_sensor_or_listed ? "Y" : "N" )
              << " type : " << std::setw(20) << type
              << " name : " << std::setw(50) << name
              ;  

@@ -239,6 +239,10 @@ void X4PhysicalVolume::postConvert() const
 
     //m_ggeo->dumpSurfaces("X4PhysicalVolume::postConvert" ); 
 
+
+    LOG(info) << m_blib->descSensorBoundary() ; 
+
+
 }
 
 

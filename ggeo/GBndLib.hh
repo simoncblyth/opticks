@@ -117,6 +117,7 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        bool isSensorBoundary(unsigned boundary) const ;
        void countSensorBoundary(unsigned boundary);
+       std::string descSensorBoundary() const ; 
        unsigned getSensorCount() const ; 
        std::string getSensorBoundaryReport() const ;
   public:

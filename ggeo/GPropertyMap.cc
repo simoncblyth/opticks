@@ -286,7 +286,7 @@ const char*  GPropertyMap<T>::detect = "detect" ;
 
 
 template <class T>
-bool GPropertyMap<T>::isSensor()
+bool GPropertyMap<T>::isSensor() const 
 {
     return hasNonZeroProperty(EFFICIENCY) || hasNonZeroProperty(detect) ; 
 }
@@ -796,7 +796,7 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix
 }
 
 template <typename T>
-bool GPropertyMap<T>::hasNonZeroProperty(const char* pname) 
+bool GPropertyMap<T>::hasNonZeroProperty(const char* pname) const 
 {
     if(!hasProperty(pname)) return false ; 
     GProperty<T>* prop = getProperty(pname);
