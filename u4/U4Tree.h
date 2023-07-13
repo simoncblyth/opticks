@@ -43,6 +43,7 @@ See also:
 #include "sdigest.h"
 #include "sfreq.h"
 #include "stree.h"
+#include "suniquename.h"
 #include "snd.hh"
 #include "sdomain.h"
 
@@ -817,17 +818,21 @@ inline void U4Tree::identifySensitiveInstances()
             const char* pvn = nullptr ; 
             int sensor_id = sid->getInstanceIdentity(pv) ;  
             int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
+            int sensor_name = -1 ; 
+
             if(sensor_id > -1 ) 
             {
                 st->sensor_count += 1 ;  // count over all factors  
                 fac.sensors += 1 ;   // count sensors for each factor  
 
                 pvn = pv->GetName().c_str() ; 
-                st->sensor_name.push_back( pvn ); 
+                sensor_name = suniquename::Add(pvn, st->sensor_name ) ; 
             }
             snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 
             nd.sensor_index = sensor_index ; 
+            nd.sensor_name = sensor_name ; 
+      
 
             if(level > 1) std::cerr
                 << "U4Tree::identifySensitiveInstances"

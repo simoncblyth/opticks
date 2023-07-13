@@ -27,7 +27,7 @@ For traversal examples see *stree::get_children*
 
 struct snode
 {
-    static constexpr const int NV = 14 ; 
+    static constexpr const int NV = 15 ; 
 
     int index ;        // 0 
     int depth ;        // 1
@@ -46,6 +46,7 @@ struct snode
 
     int repeat_ordinal ; // 12
     int boundary ;       // 13
+    int sensor_name ;    // 14 
 
     std::string desc() const ; 
     static std::string Brief_(const std::vector<snode>& nodes ); 
@@ -70,6 +71,7 @@ inline std::string snode::desc() const
        << " ri:" << std::setw(2) << repeat_index
        << " ro:" << std::setw(5) << repeat_ordinal
        << " bd:" << std::setw(2) << boundary
+       << " sn:" << std::setw(2) << sensor_name 
        ;
     std::string str = ss.str();
     return str ;

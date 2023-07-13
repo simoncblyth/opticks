@@ -50,5 +50,7 @@ if __name__ == '__main__':
         print(eval(expr))
     pass
 
+    sid2 = cf.sim.stree.sensor_id[:,0]  
+
      
 

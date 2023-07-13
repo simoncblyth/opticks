@@ -205,6 +205,7 @@ set(HEADERS
     sfreq.h 
     snode.h
     stree.h 
+    suniquename.h 
 
     sstandard.h
     sprop.h 

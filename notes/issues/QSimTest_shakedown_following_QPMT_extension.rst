@@ -678,14 +678,46 @@ Original sensor_id look OK, so maybe issue with reordering ::
     stree::add_inst i   1 gas_idx   2 nodes.size   12615
 
 
+::
+
+    In [1]: sid.shape
+    Out[1]: (48477,)
+
+    In [2]: sid2.shape
+    Out[2]: (46116,)
+
+    In [3]: 48477 - 46116
+    Out[3]: 2361
+
+
+    In [26]: sid2[504:504+17612]
+    Out[26]: array([    0,     1,     2,     3,     4, ..., 17607, 17608, 17609, 17610, 17611], dtype=int32)
+
+    In [27]: np.all( np.arange(17612) == sid2[504:504+17612] )
+    Out[27]: True
+
+    In [34]: sid2[504+17612:504+17612+25600+1]
+    Out[34]: array([300000, 300001, 300002, 300003, 300004, ..., 325596, 325597, 325598, 325599,  30000], dtype=int32)
+
+    In [38]: sid2[504+17612+25600:504+17612+25600+2400]
+    Out[38]: array([30000, 30001, 30002, 30003, 30004, ..., 32395, 32396, 32397, 32398, 32399], dtype=int32)
+
+
+    In [39]: 17612+25600+2400
+    Out[39]: 45612
+
+    In [40]: sid2.shape
+    Out[40]: (46116,)
+
+    In [41]: 17612+25600+2400+504
+    Out[41]: 46116
 
 
 
 
 
 
-
-TODO : mock qpmt.h landings with ART 4x4 collection into aux 
+TODO : mock qpmt.h landings with ART 4x4 collection into aux
 ---------------------------------------------------------------
 
 
