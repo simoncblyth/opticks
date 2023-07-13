@@ -4,7 +4,6 @@
 #include <iostream>
 #include "stree.h"
 
-const char* BASE = getenv("BASE");  
 
 void test_lookup_sensor_identifier( const stree& st )
 {
@@ -53,13 +52,14 @@ void test_sensor_id( const stree& st )
     std::cout << " st.sensor_id.size " << st.sensor_id.size() << std::endl ; 
     std::cout << " st.sensor_id[st.sensor_id.size()-1] " << st.sensor_id[st.sensor_id.size()-1] << std::endl ; 
 
-    // using std::vector "[]" does not range check and does not give any error, returning "garbage" values 
+    std::cout << " std::vector [] does not range check and does not give any error, returning \"garbage\" values " << std::endl ; 
     std::cout << " st.sensor_id[st.sensor_id.size()] " << st.sensor_id[st.sensor_id.size()] << std::endl ; 
     std::cout << " st.sensor_id[st.sensor_id.size()+1] " << st.sensor_id[st.sensor_id.size()+1] << std::endl ; 
     std::cout << " st.sensor_id[st.sensor_id.size()+1000] " << st.sensor_id[st.sensor_id.size()+1000] << std::endl ; 
     std::cout << " st.sensor_id[st.sensor_id.size()+1001] " << st.sensor_id[st.sensor_id.size()+1001] << std::endl ; 
 
-    // using std::vector ".at" does range check and throws : libc++abi.dylib: terminating with uncaught exception of type std::out_of_range: vector
+    // std::vector ".at" range checks and throws 
+    //      : libc++abi.dylib: terminating with uncaught exception of type std::out_of_range: vector
     //std::cout << " st.sensor_id.at(st.sensor_id.size()) " << st.sensor_id.at(st.sensor_id.size()) << std::endl ; 
 }
 
@@ -74,18 +74,18 @@ int main(int argc, char** argv)
 {
     stree st ; 
     st.level = 2 ; 
-    st.load(BASE); 
+    st.load("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim") ; 
 
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
     std::cout << "st.desc_sensor_id()" << std::endl << st.desc_sensor_id() << std::endl ; 
 
     /*
-    test_lookup_sensor_identifier( st );  
     test_sensor_id( st ); 
+    test_lookup_sensor_identifier( st );  
+    test_desc_repeat_nodes(st); 
     */
 
 
-    test_desc_repeat_nodes(st); 
 
     return 0 ; 
 }

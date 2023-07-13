@@ -518,3 +518,46 @@ Original sensor_id look OK, so maybe issue with reordering ::
      i       1 s_index   25602 s_identifier  307989
 
 
+
+stree_py_test.sh 
+-------------------
+
+::
+
+    In [12]: np.c_[np.unique(f.nds[:,14], return_counts=True)]
+    Out[12]:
+    array([[    -1,   2864],
+           [     0, 363880],  ## THAT SHOULD BE 25600 : UNSET ZERO DEFAULT PROBABLY  
+           [     1,  12615],
+           [     2,   4997],
+           [     3,   2400]])
+
+    In [21]: np.c_[np.unique(st.nds.sensor_name, return_counts=True )]
+    Out[21]: 
+    array([[    -1,   2864],
+           [     0, 363880],
+           [     1,  12615],
+           [     2,   4997],
+           [     3,   2400]])
+
+
+Omitted to set snode::sensor_name for the remainder in  U4Tree::identifySensitiveGlobals
+
+
+
+
+
+
+    In [14]: f.sensor_name_names
+    Out[14]: array(['PMT_3inch_log_phys', 'pLPMT_NNVT_MCPPMT', 'pLPMT_Hamamatsu_R12860', 'mask_PMT_20inch_vetolMaskVirtual_phys'], dtype='<U37')
+
+    In [15]: np.c_[f.sensor_name_names]
+    Out[15]:
+    array([['PMT_3inch_log_phys'],
+           ['pLPMT_NNVT_MCPPMT'],
+           ['pLPMT_Hamamatsu_R12860'],
+           ['mask_PMT_20inch_vetolMaskVirtual_phys']], dtype='<U37')
+
+
+
+

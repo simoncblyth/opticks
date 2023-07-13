@@ -1878,6 +1878,7 @@ inline int stree::load( const char* base, const char* reldir )
 
 inline int stree::load_( const char* dir )
 {
+    if(level > 0) std::cerr << "stree::load_ " << ( dir ? dir : "-" ) << std::endl ; 
     NPFold* fold = NPFold::Load(dir) ; 
     import(fold); 
     return 0 ; 

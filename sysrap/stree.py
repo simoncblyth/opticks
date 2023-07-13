@@ -92,10 +92,11 @@ class snode(sobject):
              ('sensor_index', '<i4'),
              ('repeat_index', '<i4'),
              ('repeat_ordinal', '<i4'),
-             ('boundary', '<i4')
+             ('boundary', '<i4'),
+             ('sensor_name', '<i4')
              ] 
 
-    FIELD = "ix dp sx pt nc fc sx lv cp se sx ri ro bd".split()
+    FIELD = "ix dp sx pt nc fc sx lv cp se sx ri ro bd sn".split()
 
     @classmethod
     def Desc(cls, rec):
@@ -130,17 +131,22 @@ class stree(object):
         ta = np.array( lines, dtype="|S%d" % maxlen )
         return ta  
 
-    def __init__(self, f):
-        sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
+    def __init__(self, f, symbol="st"):
+
+        #sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
+        sff = f.subs_freq
+
         sf = None if sff is None else sfreq(sff)
         nds = None if f.nds is None else snode.RecordsFromArrays(f.nds)
         rem = None if f.rem is None else snode.RecordsFromArrays(f.rem)
         csg = None if f.csg is None else snd.RecordsFromArrays(f.csg.node[:,:12])
         factor = None if f.factor is None else sfactor.RecordsFromArrays(f.factor[:,:4])
-        soname_ = None if len(f.soname.lines) == 0  else self.MakeTxtArray(f.soname.lines)
+        #soname_ = None if len(f.soname.lines) == 0  else self.MakeTxtArray(f.soname.lines)
+        soname_ = f.soname_names
 
         self.sf = sf
         self.f = f 
+        self.symbol = symbol
         self.nds = nds 
         self.rem = rem 
         self.csg = csg 
