@@ -215,6 +215,11 @@ This handles the mapping between sensor_index and sensor_identifier
 as passes the sensor info to CSGFoundry for inclusion into the 
 instance transforms 4th column. 
 
+
+THIS IS FRAGILE BECAUSE IT REQUIRES BOTH WORKFLOWS
+TO AGREE ON SENSORS, TODO: ADD ASSERTS CHECKING 
+THAT AGREEMENT 
+
 **/
 
 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )

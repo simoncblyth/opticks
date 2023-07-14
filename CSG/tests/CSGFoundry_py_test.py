@@ -30,17 +30,16 @@ if __name__ == '__main__':
     (six.min(), six.max())
     np.c_[ugas,ngas,cf.mmlabel] 
 
-    np.c_[np.unique(sid[gas==0],return_counts=True)]     
-    np.c_[np.unique(sid[gas==1],return_counts=True)]     
-    np.c_[np.unique(sid[gas==2],return_counts=True)]     
-    np.c_[np.unique(sid[gas==3],return_counts=True)]     
-    np.c_[np.unique(sid[gas==4],return_counts=True)]     
-    np.c_[np.unique(sid[gas==5],return_counts=True)]     
-    np.c_[np.unique(sid[gas==6],return_counts=True)]     
-    np.c_[np.unique(sid[gas==7],return_counts=True)]     
-    np.c_[np.unique(sid[gas==8],return_counts=True)]     
-    np.c_[np.unique(sid[gas==9],return_counts=True)]     
-
+    sid[gas==0].size,np.c_[np.unique(sid[gas==0],return_counts=True)]     
+    sid[gas==1].size,np.c_[np.unique(sid[gas==1],return_counts=True)]     
+    sid[gas==2].size,np.c_[np.unique(sid[gas==2],return_counts=True)]     
+    sid[gas==3].size,np.c_[np.unique(sid[gas==3],return_counts=True)]     
+    sid[gas==4].size,np.c_[np.unique(sid[gas==4],return_counts=True)]     
+    sid[gas==5].size,np.c_[np.unique(sid[gas==5],return_counts=True)]     
+    sid[gas==6].size,np.c_[np.unique(sid[gas==6],return_counts=True)]     
+    sid[gas==7].size,np.c_[np.unique(sid[gas==7],return_counts=True)]     
+    sid[gas==8].size,np.c_[np.unique(sid[gas==8],return_counts=True)]     
+    sid[gas==9].size,np.c_[np.unique(sid[gas==9],return_counts=True)]     
 
     """).split("\n")))
 

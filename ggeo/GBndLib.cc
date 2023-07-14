@@ -704,7 +704,7 @@ Using kludge manual control of the sensor boundaries, eg::
    EOL
    )
 
-White spaces in the string are suppressed by ssys::getenv_vec 
+Whitespace lines in the string are suppressed by ssys::getenv_vec 
 
 **/
 

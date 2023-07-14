@@ -20,7 +20,7 @@ Overview
 
   * GGeo is still involved for everything, as still going via CSG_GGeo_Convert 
 
-* WIP : HMM GGeo has its own stree ? 
+* NOTE : GGeo has its own separate stree ? Used for old/new comparison presumably. 
 * TODO : compare old and new inst and then switch to the new 
 
   * how to switch to U4Tree.h/stree.h inst ?  
@@ -202,6 +202,8 @@ stree::postcreate reporting
      boundary  50 b+1  51 sensor_count   2400 Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
                           sensor_total 131051
 
+     // TOO MANY 
+
 
 HMM : getting far too many sensors in X4/GGeo
 --------------------------------------------------
@@ -235,6 +237,36 @@ Manually pick sensor boundaries and impl GBndLib__SENSOR_BOUNDARY_LIST
     )
 
 
+HUH not getting all expected. Only get first.  AHHA need delim newline. 
+
+Now it looks like both workflows have the same sensors
+---------------------------------------------------------
+
+::
+
+    50 (17,19,18,16) isb 1
+    51 (17,21,20,16) isb 0
+    GBndLib::getSensorBoundaryReport
+    GBndLib::getSensorBoundaryReport
+    GBndLib__SENSOR_BOUNDARY_LIST.eval
+    [    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+        Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+        Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+        Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum]
+    GBndLib__SENSOR_BOUNDARY_LIST YES
+     num_SENSOR_BOUNDARY_LIST 4
+      0 : [Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum]
+      1 : [Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum]
+      2 : [Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum]
+      3 : [Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum]
+     boundary  30 b+1  31 sensor_count   4997 Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+     boundary  39 b+1  40 sensor_count  12615 Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+     boundary  44 b+1  45 sensor_count  25600 Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+     boundary  50 b+1  51 sensor_count   2400 Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+                          sensor_total  45612
+
+
+
 
 
 
@@ -250,6 +282,76 @@ Wrinkle on running from GDML... the Geant4 looses SD association
 so cannot test sensor handling from GDML.
 This is likely the reason for some of the peculiarities of the 
 old workflow. 
+
+
+Where was that sensor interference between the workflows ?
+------------------------------------------------------------
+
+THIS NEEDS SOME ASSERTS : TO MATCH OLD/NEW SENSORS 
+
+::
+
+     220 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     221 {
+     222     unsigned nmm = ggeo->getNumMergedMesh();
+     223     assert( repeatIdx < nmm );
+     224     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+     225     unsigned num_inst = mm->getNumITransforms() ;
+     226     LOG(LEVEL) << " repeatIdx " << repeatIdx << " num_inst " << num_inst << " nmm " << nmm  ;
+     227 
+     228     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer();
+     229     LOG(LEVEL) << " iid " << ( iid ? iid->getShapeString() : "-"  ) ;
+     230 
+     231     assert(tree);
+     232 
+     233     bool one_based_index = true ;   // CAUTION : OLD WORLD 1-based sensor_index 
+     234     std::vector<int> sensor_index ;
+     235     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index );
+     236     LOG(LEVEL) << " sensor_index.size " << sensor_index.size() ;
+     237 
+     238 
+     239     bool lookup_verbose = LEVEL == info ;
+     240     std::vector<int> sensor_id ;
+     241     tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index, lookup_verbose );
+     242 
+     243     LOG(LEVEL) << " sensor_id.size " << sensor_id.size() ;
+     244     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ;
+     245 
+     246     unsigned ni = iid->getShape(0);
+     247     unsigned nj = iid->getShape(1);
+     248     unsigned nk = iid->getShape(2);
+     249     assert( ni == sensor_index.size() );
+     250     assert( num_inst == sensor_index.size() );
+     251     assert( num_inst == sensor_id.size() );
+     252     assert( nk == 4 );
+     253    
+     254     LOG(LEVEL)
+     255         << " repeatIdx " << repeatIdx
+     256         << " num_inst (GMergedMesh::getNumITransforms) " << num_inst
+     257         << " iid " << ( iid ? iid->getShapeString() : "-"  )
+     258         << " ni " << ni
+     259         << " nj " << nj
+     260         << " nk " << nk
+     261         ;
+     262 
+     263     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+     264 
+     265     for(unsigned i=0 ; i < num_inst ; i++)
+     266     {
+     267         int s_identifier = sensor_id[i] ;
+     268         int s_index_1 = sensor_index[i] ;    // 1-based sensor index, 0 meaning not-a-sensor 
+     269         int s_index_0 = s_index_1 - 1 ;      // 0-based sensor index, -1 meaning not-a-sensor
+     270         // this simple correction relies on consistent invalid index, see GMergedMesh::Get3DFouthColumnNonZero
+     271 
+     272         glm::mat4 it = mm->getITransform_(i);
+     273    
+     274         const float* tr16 = glm::value_ptr(it) ;
+     275         unsigned gas_idx = repeatIdx ;
+     276         foundry->addInstance(tr16, gas_idx, s_identifier, s_index_0 );
+     277     }
+     278 }
+
+
 
 
 G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?
@@ -298,11 +400,11 @@ Local G4CXOpticks_setGeometry_Test.sh cycles to investigate
 
 
 
-WIP : saved GGeo not going into expected dir
+FIXED : saved GGeo not going into expected dir
 -----------------------------------------------
 
 
-WIP : x4/GGeo has an stree ? Is that same instance as SSim ? NO
+DONE : x4/GGeo has an stree ? Is that same instance as SSim ? NO
 -----------------------------------------------------------------
 
 The x4/stree looks to be a way to compare old/new by comparing x4/stree with u4/stree.  
@@ -363,7 +465,7 @@ Collects snode and transforms into the x4 stree::
 
 
 
-WIP : create CSGFoundry from stree eliminating GGeo 
+GOAL : create CSGFoundry from stree eliminating GGeo 
 -------------------------------------------------------
 
 Thinking of going direct from stree to CSGFoundry in::
@@ -455,6 +557,98 @@ Issue : Unexpected qat4.h sensor info.
     [[ -1 590]]
     np.c_[np.unique(sid[gas==9],return_counts=True)]     
     [[ -1 504]]
+
+
+
+FIXED : Now getting expected sensor info in CSGFoundry inst 
+--------------------------------------------------------------
+
+::
+
+    ct ; ./CSGFoundry_py_test.sh
+
+    ...
+
+    (sid.min(), sid.max())
+    (-1, 325599)
+    (six.min(), six.max())
+    (-1, 45611)
+    np.c_[ugas,ngas,cf.mmlabel] 
+    [[0 1 '2977:sWorld']
+     [1 25600 '5:PMT_3inch_pmt_solid']
+     [2 12615 '9:NNVTMCPPMTsMask_virtual']
+     [3 4997 '12:HamamatsuR12860sMask_virtual']
+     [4 2400 '6:mask_PMT_20inch_vetosMask_virtual']
+     [5 590 '1:sStrutBallhead']
+     [6 590 '1:uni1']
+     [7 590 '1:base_steel']
+     [8 590 '1:uni_acrylic1']
+     [9 504 '130:sPanel']]
+    sid[gas==0].size,np.c_[np.unique(sid[gas==0],return_counts=True)]     
+    (1, array([[-1,  1]]))
+    sid[gas==1].size,np.c_[np.unique(sid[gas==1],return_counts=True)]     
+    (25600, array([[300000,      1],
+           [300001,      1],
+           [300002,      1],
+           [300003,      1],
+           [300004,      1],
+           ...,
+           [325595,      1],
+           [325596,      1],
+           [325597,      1],
+           [325598,      1],
+           [325599,      1]]))
+    sid[gas==2].size,np.c_[np.unique(sid[gas==2],return_counts=True)]     
+    (12615, array([[    2,     1],
+           [    4,     1],
+           [    6,     1],
+           [   21,     1],
+           [   22,     1],
+           ...,
+           [17586,     1],
+           [17587,     1],
+           [17588,     1],
+           [17589,     1],
+           [17590,     1]]))
+    sid[gas==3].size,np.c_[np.unique(sid[gas==3],return_counts=True)]     
+    (4997, array([[    0,     1],
+           [    1,     1],
+           [    3,     1],
+           [    5,     1],
+           [    7,     1],
+           ...,
+           [17607,     1],
+           [17608,     1],
+           [17609,     1],
+           [17610,     1],
+           [17611,     1]]))
+    sid[gas==4].size,np.c_[np.unique(sid[gas==4],return_counts=True)]     
+    (2400, array([[30000,     1],
+           [30001,     1],
+           [30002,     1],
+           [30003,     1],
+           [30004,     1],
+           ...,
+           [32395,     1],
+           [32396,     1],
+           [32397,     1],
+           [32398,     1],
+           [32399,     1]]))
+    sid[gas==5].size,np.c_[np.unique(sid[gas==5],return_counts=True)]     
+    (590, array([[ -1, 590]]))
+    sid[gas==6].size,np.c_[np.unique(sid[gas==6],return_counts=True)]     
+    (590, array([[ -1, 590]]))
+    sid[gas==7].size,np.c_[np.unique(sid[gas==7],return_counts=True)]     
+    (590, array([[ -1, 590]]))
+    sid[gas==8].size,np.c_[np.unique(sid[gas==8],return_counts=True)]     
+    (590, array([[ -1, 590]]))
+    sid[gas==9].size,np.c_[np.unique(sid[gas==9],return_counts=True)]     
+    (504, array([[ -1, 504]]))
+
+    In [1]:                                 
+
+
+
 
 
 
