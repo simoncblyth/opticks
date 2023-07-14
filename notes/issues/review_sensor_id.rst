@@ -206,13 +206,14 @@ stree::postcreate reporting
 HMM : getting far too many sensors in X4/GGeo
 --------------------------------------------------
 
-Looks like need to be more specific by bnd selection instead of surface selection::
+Looks like need to be more specific by bnd selection instead of surface selection. As 
+the below is selecting too many::
 
     export GSurfaceLib__SENSOR_SURFACE_LIST=HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf,NNVTMCPPMT_PMT_20in     ch_photocathode_mirror_logsurf
 
 
-Manually pick sensor boundaries
-----------------------------------
+Manually pick sensor boundaries and impl GBndLib__SENSOR_BOUNDARY_LIST
+------------------------------------------------------------------------
 
 ::
 

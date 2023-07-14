@@ -385,7 +385,7 @@ inline std::vector<T>* ssys::make_vec(const char* line, char delim )
 }
 
 template<typename T>
-inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim)
+inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim )
 {
     assert(fallback); 
     char* line = getenv(ekey);
@@ -393,11 +393,11 @@ inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, 
 }
 
 
-template std::vector<int>*      ssys::getenv_vec(const char*, const char*, char);
-template std::vector<unsigned>* ssys::getenv_vec(const char*, const char*, char);
-template std::vector<float>*    ssys::getenv_vec(const char*, const char*, char);
-template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char);
-template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char);
+template std::vector<int>*      ssys::getenv_vec(const char*, const char*, char );
+template std::vector<unsigned>* ssys::getenv_vec(const char*, const char*, char );
+template std::vector<float>*    ssys::getenv_vec(const char*, const char*, char );
+template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char );
+template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char );
 
 
 

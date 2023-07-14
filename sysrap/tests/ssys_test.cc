@@ -225,7 +225,11 @@ void test_getenv_vec_multiline()
     )LITERAL" ;
 
     const char* ekey = "MULTILINE" ; 
-    std::vector<std::string>* v = ssys::getenv_vec<std::string>(ekey, fallback, '\n') ; 
+
+    //char delim = ',' ; 
+    char delim = '\n' ; 
+
+    std::vector<std::string>* v = ssys::getenv_vec<std::string>(ekey, fallback, delim) ; 
     int num_elem = v ? v->size() : 0 ; 
 
     const char* eval = getenv(ekey) ; 
@@ -241,6 +245,15 @@ void test_getenv_vec_multiline()
 
     for(int i=0 ; i < num_elem ; i++) 
         std::cout << std::setw(3) << i << " : [" << (*v)[i] << "]" << std::endl ; 
+}
+
+void test_getenv_multiline()
+{
+    const char* ekey = "MULTILINE" ; 
+    const char* eval = getenv(ekey) ; 
+
+    std::cout << "test_getenv_multiline[" << std::endl ; 
+    std::cout << "[" << ( eval ? eval : "-" ) << "]" << std::endl ; 
 }
 
 
@@ -264,6 +277,7 @@ int main(int argc, char** argv)
     test_getenvvar(); 
     test_is_listed(); 
     test_make_vec(); 
+    test_getenv_multiline(); 
     */
     test_getenv_vec_multiline(); 
 

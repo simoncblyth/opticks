@@ -686,7 +686,7 @@ Canonically invoked from X4PhysicalVolume::convertNode
 
 
 std::vector<std::string>* 
-GBndLib::SENSOR_BOUNDARY_LIST = ssys::getenv_vec<std::string>("GBndLib__SENSOR_BOUNDARY_LIST", "" );
+GBndLib::SENSOR_BOUNDARY_LIST = ssys::getenv_vec<std::string>("GBndLib__SENSOR_BOUNDARY_LIST", "", '\n' );
 
 /**
 GBndLib::isSensorBoundary
@@ -771,7 +771,25 @@ unsigned GBndLib::getSensorCount() const
 
 std::string GBndLib::getSensorBoundaryReport() const 
 {
+    int num_SENSOR_BOUNDARY_LIST = ( SENSOR_BOUNDARY_LIST ? int(SENSOR_BOUNDARY_LIST->size()) : 0 ) ; 
+
+    const char* eval = getenv("GBndLib__SENSOR_BOUNDARY_LIST") ; 
+
+
     std::stringstream ss ; 
+
+    ss << "GBndLib::getSensorBoundaryReport" << std::endl ; 
+    ss << "GBndLib__SENSOR_BOUNDARY_LIST.eval" << std::endl  ; 
+    ss << "[" << ( eval ? eval : "-" ) << "]" << std::endl ;   
+    ss << "GBndLib__SENSOR_BOUNDARY_LIST " << ( SENSOR_BOUNDARY_LIST ? "YES" : "NO " ) << std::endl ; 
+    ss << " num_SENSOR_BOUNDARY_LIST " << num_SENSOR_BOUNDARY_LIST << std::endl ; 
+    if(SENSOR_BOUNDARY_LIST)
+    {
+        for(int i=0 ; i < num_SENSOR_BOUNDARY_LIST ; i++ ) 
+            ss << std::setw(3) << i << " : [" << (*SENSOR_BOUNDARY_LIST)[i] << "]" << std::endl ;        
+    }
+
+
     typedef std::map<unsigned, unsigned>::const_iterator IT ; 
 
     unsigned sensor_total = 0 ; 
