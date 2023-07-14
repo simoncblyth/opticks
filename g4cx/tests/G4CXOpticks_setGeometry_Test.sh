@@ -23,6 +23,7 @@ origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 if [ -f "$origin" ]; then
     export ${GEOM}_GDMLPathFromGEOM=$origin
     ## see G4CXOpticks::setGeometry 
+    ## BUT : GDML looses SD : SO NOT SO USEFUL RUNNING FROM GDML
 fi 
 
 

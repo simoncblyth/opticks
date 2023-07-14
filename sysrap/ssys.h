@@ -367,14 +367,15 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
 
 
 template<typename T>
-inline std::vector<T>* ssys::make_vec(const char* line, char delim)
+inline std::vector<T>* ssys::make_vec(const char* line, char delim )
 {
     std::vector<T>* vec = new std::vector<T>() ; 
     std::stringstream ss;  
     ss.str(line);
     std::string s;
     while (std::getline(ss, s, delim)) 
-    {    
+    {   
+        if(delim == '\n' && sstr::IsWhitespace(s)) continue ; 
         std::istringstream iss(s);
         T t ;  
         iss >> t ;  

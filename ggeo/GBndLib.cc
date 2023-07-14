@@ -35,6 +35,7 @@
 #include "NPY.hpp"
 #include "Opticks.hh"
 #include "sdomain.h"
+#include "ssys.h"
 
 
 #include "GVector.hh"
@@ -683,7 +684,38 @@ Canonically invoked from X4PhysicalVolume::convertNode
 
 **/
 
+
+std::vector<std::string>* 
+GBndLib::SENSOR_BOUNDARY_LIST = ssys::getenv_vec<std::string>("GBndLib__SENSOR_BOUNDARY_LIST", "" );
+
+/**
+GBndLib::isSensorBoundary
+---------------------------
+
+Using kludge manual control of the sensor boundaries, eg::
+
+   export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL
+
+      Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+      Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+      Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+      Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+
+   EOL
+   )
+
+White spaces in the string are suppressed by ssys::getenv_vec 
+
+**/
+
 bool GBndLib::isSensorBoundary(unsigned boundary) const 
+{
+    std::string bname = shortname(boundary); 
+    const char* bn = bname.c_str(); 
+    return ssys::is_listed( SENSOR_BOUNDARY_LIST, bn );
+}
+
+bool GBndLib::isSensorBoundaryOld(unsigned boundary) const 
 {
     const guint4& bnd = m_bnd[boundary];
     bool osur_sensor = m_slib->isSensorIndex(bnd[OSUR]); 

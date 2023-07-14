@@ -13,6 +13,29 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 
+
+export MULTILINE=$(cat << EOV
+
+red
+green
+blue
+cyan
+magenta
+   yellow
+   pink 
+
+   puce
+
+    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+
+
+EOV
+)
+
+
 #i=-1 u=2 f=101.3 d=-202.5 /tmp/$name
 
 export GEOM=FewPMT

@@ -2039,6 +2039,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     ///////// sensor decision for the volume happens here  ////////////////////////
     //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
     ////// HMM : SOMEWHAT OBTUSE GETTING SOMETHING FROM BOUNDARY WITHIN THE NODE VISIT 
+    ////// AHHA : MAYBE BECAUSE WHEN RUNNING FROM GDML THE Geant4 GEOM LOOSES THE SD ASSOCIATION 
 
     bool is_sensor = m_blib->isSensorBoundary(boundary) ; // this means that isurf/osurf has non-zero EFFICIENCY property 
     unsigned sensorIndex = GVolume::SENSOR_UNSET ; 

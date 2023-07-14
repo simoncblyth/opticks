@@ -65,12 +65,190 @@ CSG_GGeo_Convert::Translate
 
 
 
-Cycling on the conversion
-----------------------------
+stree::postcreate reporting
+-------------------------------
+
+::
+
+    [stree::postcreate
+    stree::desc_sensor
+     sensor_id.size 45612
+     sensor_count 45612
+     sensor_name.size 4
+    sensor_name[
+    PMT_3inch_log_phys
+    pLPMT_NNVT_MCPPMT
+    pLPMT_Hamamatsu_R12860
+    mask_PMT_20inch_vetolMaskVirtual_phys
+    ]
+    [stree::desc_sensor_nd
+     edge          0
+     num_nd        386756
+     num_nd_sensor 45612
+     nidx  70853 count      0 sensor_id      0 sensor_index      0 sensor_name      2
+     nidx  70865 count      1 sensor_id      1 sensor_index      1 sensor_name      2
+     nidx  70877 count      2 sensor_id      2 sensor_index      2 sensor_name      1
+     nidx  70886 count      3 sensor_id      3 sensor_index      3 sensor_name      2
+     nidx  70898 count      4 sensor_id      4 sensor_index      4 sensor_name      1
+     nidx  70907 count      5 sensor_id      5 sensor_index      5 sensor_name      2
+     nidx  70919 count      6 sensor_id      6 sensor_index      6 sensor_name      1
+     nidx  70928 count      7 sensor_id      7 sensor_index      7 sensor_name      2
+     nidx  70940 count      8 sensor_id      8 sensor_index      8 sensor_name      2
+     nidx  70952 count      9 sensor_id      9 sensor_index      9 sensor_name      2
+
+     // note the order of sensors is not first one type and then the other ...
+     // as are picking them up from the node traverse...  hmm that due to reorderSensors ?
+     ...
+
+     nidx 244268 count  17605 sensor_id  17605 sensor_index  17605 sensor_name      2
+     nidx 244280 count  17606 sensor_id  17606 sensor_index  17606 sensor_name      2
+     nidx 244292 count  17607 sensor_id  17607 sensor_index  17607 sensor_name      2
+     nidx 244304 count  17608 sensor_id  17608 sensor_index  17608 sensor_name      2
+     nidx 244316 count  17609 sensor_id  17609 sensor_index  17609 sensor_name      2
+     nidx 244328 count  17610 sensor_id  17610 sensor_index  17610 sensor_name      2
+     nidx 244340 count  17611 sensor_id  17611 sensor_index  17611 sensor_name      2
+     nidx 244352 count  17612 sensor_id 300000 sensor_index  17612 sensor_name      0
+     nidx 244357 count  17613 sensor_id 300001 sensor_index  17613 sensor_name      0
+     nidx 244362 count  17614 sensor_id 300002 sensor_index  17614 sensor_name      0
+     nidx 244367 count  17615 sensor_id 300003 sensor_index  17615 sensor_name      0
+     nidx 244372 count  17616 sensor_id 300004 sensor_index  17616 sensor_name      0
+     nidx 244377 count  17617 sensor_id 300005 sensor_index  17617 sensor_name      0
+     nidx 244382 count  17618 sensor_id 300006 sensor_index  17618 sensor_name      0
+     nidx 244387 count  17619 sensor_id 300007 sensor_index  17619 sensor_name      0
+     ....
+     nidx 372322 count  43206 sensor_id 325594 sensor_index  43206 sensor_name      0
+     nidx 372327 count  43207 sensor_id 325595 sensor_index  43207 sensor_name      0
+     nidx 372332 count  43208 sensor_id 325596 sensor_index  43208 sensor_name      0
+     nidx 372337 count  43209 sensor_id 325597 sensor_index  43209 sensor_name      0
+     nidx 372342 count  43210 sensor_id 325598 sensor_index  43210 sensor_name      0
+     nidx 372347 count  43211 sensor_id 325599 sensor_index  43211 sensor_name      0
+     nidx 372356 count  43212 sensor_id  30000 sensor_index  43212 sensor_name      3
+     nidx 372362 count  43213 sensor_id  30001 sensor_index  43213 sensor_name      3
+     nidx 372368 count  43214 sensor_id  30002 sensor_index  43214 sensor_name      3
+     nidx 372374 count  43215 sensor_id  30003 sensor_index  43215 sensor_name      3
+     nidx 372380 count  43216 sensor_id  30004 sensor_index  43216 sensor_name      3
+     nidx 372386 count  43217 sensor_id  30005 sensor_index  43217 sensor_name      3
+     ....
+     nidx 386684 count  45600 sensor_id  32388 sensor_index  45600 sensor_name      3
+     nidx 386690 count  45601 sensor_id  32389 sensor_index  45601 sensor_name      3
+     nidx 386696 count  45602 sensor_id  32390 sensor_index  45602 sensor_name      3
+     nidx 386702 count  45603 sensor_id  32391 sensor_index  45603 sensor_name      3
+     nidx 386708 count  45604 sensor_id  32392 sensor_index  45604 sensor_name      3
+     nidx 386714 count  45605 sensor_id  32393 sensor_index  45605 sensor_name      3
+     nidx 386720 count  45606 sensor_id  32394 sensor_index  45606 sensor_name      3
+     nidx 386726 count  45607 sensor_id  32395 sensor_index  45607 sensor_name      3
+     nidx 386732 count  45608 sensor_id  32396 sensor_index  45608 sensor_name      3
+     nidx 386738 count  45609 sensor_id  32397 sensor_index  45609 sensor_name      3
+     nidx 386744 count  45610 sensor_id  32398 sensor_index  45610 sensor_name      3
+     nidx 386750 count  45611 sensor_id  32399 sensor_index  45611 sensor_name      3
+    ]stree::desc_sensor_nd
+    stree::desc_sensor_id sensor_id.size 45612
+    [
+          0 sid        0
+          1 sid        1
+          2 sid        2
+          3 sid        3
+          4 sid        4
+          5 sid        5
+          6 sid        6
+          7 sid        7
+          8 sid        8
+          9 sid        9
+    ...
+      17611 sid    17611
+      17612 sid   300000
+      17613 sid   300001
+      17614 sid   300002
+      43211 sid   325599
+      43212 sid    30000
+      43213 sid    30001
+      43214 sid    30002
+      45603 sid    32391
+      45604 sid    32392
+      45605 sid    32393
+      45606 sid    32394
+      45607 sid    32395
+      45608 sid    32396
+      45609 sid    32397
+      45610 sid    32398
+      45611 sid    32399
+    ]]stree::postcreate
+
+
+    2023-07-14 22:23:43.608 INFO  [389797] [X4PhysicalVolume::postConvert@243] GBndLib::descSensorBoundary ni 52 sensor_count 131051
+      0 ( 2,-1,-1, 2) isb 0
+      1 ( 2,-1,-1, 1) isb 0
+      2 ( 1,-1,-1, 2) isb 0
+      3 ( 1,-1,40, 0) isb 0
+      4 ( 1,-1,-1, 1) isb 0
+      5 ( 1,-1,41, 0) isb 0
+      6 ( 0,-1,-1, 3) isb 0
+
+    GBndLib::getSensorBoundaryReport
+     boundary  30 b+1  31 sensor_count   4997 Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+     boundary  31 b+1  32 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  32 b+1  33 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_outer_edge_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  33 b+1  34 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_inner_edge_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  34 b+1  35 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_inner_ring_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  35 b+1  36 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_dynode_tube_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  36 b+1  37 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_grid_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  37 b+1  38 sensor_count   4997 Vacuum/HamamatsuR12860_PMT_20inch_shield_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  39 b+1  40 sensor_count  12615 Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+     boundary  40 b+1  41 sensor_count  12615 Vacuum/NNVTMCPPMT_PMT_20inch_mcp_edge_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  41 b+1  42 sensor_count  12615 Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  42 b+1  43 sensor_count  12615 Vacuum/NNVTMCPPMT_PMT_20inch_mcp_tube_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  43 b+1  44 sensor_count  12615 Vacuum/NNVTMCPPMT_PMT_20inch_mcp_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel
+     boundary  44 b+1  45 sensor_count  25600 Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+     boundary  50 b+1  51 sensor_count   2400 Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+                          sensor_total 131051
+
+
+HMM : getting far too many sensors in X4/GGeo
+--------------------------------------------------
+
+Looks like need to be more specific by bnd selection instead of surface selection::
+
+    export GSurfaceLib__SENSOR_SURFACE_LIST=HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf,NNVTMCPPMT_PMT_20in     ch_photocathode_mirror_logsurf
+
+
+Manually pick sensor boundaries
+----------------------------------
+
+::
+
+    epsilon:standard blyth$ cat bnd_names.txt | grep Pyrex | grep Vacuum 
+    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+    Pyrex/PMT_3inch_absorb_logsurf2/PMT_3inch_absorb_logsurf1/Vacuum
+    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+    Pyrex/PMT_20inch_veto_mirror_logsurf2/PMT_20inch_veto_mirror_logsurf1/Vacuum
+    epsilon:standard blyth$ 
+
+    export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL
+    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+    EOL
+    )
+
+
+
+
+
+Cycling on the conversion : with gxt G4CXOpticks_setGeometry_Test.sh
+-----------------------------------------------------------------------
 
 ::
 
    gxt ; ./G4CXOpticks_setGeometry_Test.sh
+
+
+Wrinkle on running from GDML... the Geant4 looses SD association
+so cannot test sensor handling from GDML.
+This is likely the reason for some of the peculiarities of the 
+old workflow. 
 
 
 G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?

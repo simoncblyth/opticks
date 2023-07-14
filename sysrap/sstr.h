@@ -56,6 +56,7 @@ struct sstr
     static int AsInt(const char* arg, int fallback=-1 ) ; 
     static const char* ParseStringIntInt( const char* triplet, int& y, int& z, char delim=':' ); 
 
+    static bool IsWhitespace(const std::string& s ); 
 
 };
 
@@ -332,4 +333,8 @@ inline const char* sstr::ParseStringIntInt( const char* triplet, int& y, int& z,
     return strdup(elem[0].c_str()); 
 }
 
+inline bool sstr::IsWhitespace(const std::string& str )
+{
+    return str.find_first_not_of(" \t\n\v\f\r") == std::string::npos ; 
+}
 

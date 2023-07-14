@@ -116,7 +116,9 @@ class GGEO_API GBndLib : public GPropertyLib {
        void   getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const ;
        bool isSameMaterialBoundary(unsigned boundary) const ;
   public:
+       static std::vector<std::string>* SENSOR_BOUNDARY_LIST ;
        bool isSensorBoundary(unsigned boundary) const ;
+       bool isSensorBoundaryOld(unsigned boundary) const ;
        void countSensorBoundary(unsigned boundary);
        std::string descSensorBoundary() const ; 
        unsigned getSensorCount() const ; 

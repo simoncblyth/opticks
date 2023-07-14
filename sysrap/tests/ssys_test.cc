@@ -192,7 +192,56 @@ void test_is_listed()
     assert( ssys::is_listed(nullptr, "blue") == false ); 
 }
 
+void test_make_vec()
+{
+    const char* line = R"LITERAL(
+    red
+    green
+    blue
+    )LITERAL" ;
 
+    std::vector<std::string>* v = ssys::make_vec<std::string>(line, '\n') ; 
+    int num_elem = v ? v->size() : 0 ; 
+
+    std::cout 
+        << "test_make_vec"
+        << " num_elem " << num_elem 
+        << " line[" 
+        << std::endl 
+        << line 
+        << std::endl 
+        ;
+
+    for(int i=0 ; i < num_elem ; i++) 
+        std::cout << std::setw(3) << i << " : [" << (*v)[i] << "]" << std::endl ; 
+}
+
+void test_getenv_vec_multiline()
+{
+    const char* fallback = R"LITERAL(
+    red
+    green
+    blue
+    )LITERAL" ;
+
+    const char* ekey = "MULTILINE" ; 
+    std::vector<std::string>* v = ssys::getenv_vec<std::string>(ekey, fallback, '\n') ; 
+    int num_elem = v ? v->size() : 0 ; 
+
+    const char* eval = getenv(ekey) ; 
+
+    std::cout 
+        << "test_getenv_vec_multiline" 
+        << std::endl 
+        << " ekey " << ekey 
+        << std::endl 
+        << " eval [" << ( eval ? eval : "-" ) << "]" 
+        << std::endl 
+        ; 
+
+    for(int i=0 ; i < num_elem ; i++) 
+        std::cout << std::setw(3) << i << " : [" << (*v)[i] << "]" << std::endl ; 
+}
 
 
 int main(int argc, char** argv)
@@ -213,9 +262,10 @@ int main(int argc, char** argv)
     test_username(); 
     test_which(); 
     test_getenvvar(); 
-    */
     test_is_listed(); 
-
+    test_make_vec(); 
+    */
+    test_getenv_vec_multiline(); 
 
  
     return 0 ; 
