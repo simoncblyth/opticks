@@ -1294,6 +1294,12 @@ unsigned GGeo::getSensorIdentityStandin(unsigned sensorIndex) const
     return m_nodelib->getSensorIdentityStandin(sensorIndex); 
 }
 
+
+
+
+
+
+
 const GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
 {
     return m_nodelib->getSensorVolume(sensorIndex) ; 
@@ -1947,6 +1953,10 @@ unsigned GGeo::getNumPlacements(unsigned ridx) const
 unsigned GGeo::getNumVolumes(unsigned ridx) const 
 {
     return m_geolib->getNumVolumes(ridx); 
+}
+void GGeo::getAllSensorIndex(std::vector<int>& all_sensor_index, bool one_based_index ) const 
+{
+    m_geolib->getAllSensorIndex(all_sensor_index, one_based_index );  
 }
 
 

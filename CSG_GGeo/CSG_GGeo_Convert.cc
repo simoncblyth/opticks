@@ -88,12 +88,10 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     init(); 
 }
 
-
-
-
-
 void CSG_GGeo_Convert::init()
 {
+    Check_GGeo_stree_consistency(ggeo, tree); 
+
     ggeo->getMeshNames(foundry->meshname); 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
     // boundary names now travel with the NP bnd.names 
@@ -203,22 +201,32 @@ void CSG_GGeo_Convert::convertSim()
 
 /**
 CSG_GGeo_Convert::addInstances
----------------------------------
+--------------------------------
 
-Invoked from tail of CSG_GGeo_Convert::convertSolid which 
+1. access mm and iid (instanced identity buffer) of the ridx 
+2. use GMergedMesh::getInstancedIdentityBuffer_SensorIndex to collect sensor_index for the mm 
+3. use stree::lookup_sensor_identifier to lookup the sensor_id of each sensor_index 
+4. loop over num_inst of the mm calling CSGFoundry::addInstance for each passing 
+   in the transform and the sensor identity info 
+
+This is Invoked from tail of CSG_GGeo_Convert::convertSolid which 
 gets called for all repeatIdx, including global repeatIdx 0 
 
-Notice the flattening effect, this is consolidating the 
+Notice the flattening effect, in combination this  is consolidating the 
 transforms from all GMergedMesh into one foundry->inst vector of qat4.
 
 This handles the mapping between sensor_index and sensor_identifier
 as passes the sensor info to CSGFoundry for inclusion into the 
 instance transforms 4th column. 
 
-
 THIS IS FRAGILE BECAUSE IT REQUIRES BOTH WORKFLOWS
-TO AGREE ON SENSORS, TODO: ADD ASSERTS CHECKING 
-THAT AGREEMENT 
+TO AGREE ON SENSORS, 
+
+TODO: ADD ASSERTS CHECKING THAT AGREEMENT
+
+* cannot do this at single ridx level  
+* needs some GGeo level sensor info calls that 
+  can be compared with stree sensor info 
 
 **/
 
@@ -233,7 +241,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
     LOG(LEVEL) << " iid " << ( iid ? iid->getShapeString() : "-"  ) ;  
 
-    assert(tree); 
+    assert(tree);  // this is SSim/tree not the GGeo/tree 
 
     bool one_based_index = true ;   // CAUTION : OLD WORLD 1-based sensor_index 
     std::vector<int> sensor_index ;   
@@ -251,6 +259,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned ni = iid->getShape(0); 
     unsigned nj = iid->getShape(1); 
     unsigned nk = iid->getShape(2); 
+
     assert( ni == sensor_index.size() ); 
     assert( num_inst == sensor_index.size() ); 
     assert( num_inst == sensor_id.size() ); 
@@ -282,6 +291,21 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     }
 }
 
+void CSG_GGeo_Convert::Check_GGeo_stree_consistency(const GGeo* gg, const stree* st ) // static 
+{
+    bool one_based_index = true ; 
+    std::vector<int> gg_all_sensor_index ; 
+    gg->getAllSensorIndex(gg_all_sensor_index, one_based_index ); 
+
+    int gg_all_sensor_index_num = gg_all_sensor_index.size() ; 
+    int st_all_sensor_id_num = st ? st->sensor_id.size() : -1 ; 
+
+    LOG(info) 
+        << " gg_all_sensor_index_num " << gg_all_sensor_index_num
+        << " st_all_sensor_id_num " << st_all_sensor_id_num
+        ; 
+
+}
 
 
 /**

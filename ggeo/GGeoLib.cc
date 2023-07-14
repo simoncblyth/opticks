@@ -455,6 +455,22 @@ std::string GGeoLib::summary(const char* msg) const
     return s ; 
 }
 
+void GGeoLib::getAllSensorIndex( std::vector<int>& all_sensor_index, bool one_based_index ) const 
+{
+    all_sensor_index.clear(); 
+
+    int nmm = getNumMergedMesh();
+
+    for(int i=0 ; i < nmm ; i++)
+    {
+        const GMergedMesh* mm = getMergedMesh(i);
+        std::vector<int> sensor_index ; 
+        mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
+
+        all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
+    }
+
+}
 
 
 

@@ -103,6 +103,7 @@ class GGEO_API GGeoLib {
         unsigned     getNodeIndex(unsigned ridx, unsigned pidx, unsigned oidx) const ;
     public:
         std::string summary(const char* msg="GGeoLib::summary") const ;
+        void getAllSensorIndex( std::vector<int>& all_sensor_index, bool one_based_index=true ) const ; 
 
         unsigned     getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned index) const ;

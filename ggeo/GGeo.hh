@@ -278,6 +278,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void           addVolume(const GVolume* volume);
    public:
         unsigned int   getNumVolumes() const ;
+
+
         const GNode*   getNode(unsigned index) const ; 
         NPY<float>*    getTransforms() const ;
         NPY<float>*    getInverseTransforms() const ;
@@ -292,8 +294,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         unsigned   getNumRepeats() const ; 
         unsigned   getNumPlacements(unsigned ridx) const ;
         unsigned   getNumVolumes(unsigned ridx) const ;
+        void       getAllSensorIndex(std::vector<int>& all_sensor_index, bool one_based_index=true ) const ;  
         void       dumpShape(const char* msg="GGeo::dumpShape") const ; 
-
     public:
         // via GNodeLib
         unsigned getNumTransforms() const ; 
@@ -312,7 +314,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         unsigned       getNumSensorVolumes() const ;                    // pre-cache and post-cache
         glm::uvec4     getSensorIdentity(unsigned sensorIndex) const ;  // pre-cache and post-cache
         unsigned       getSensorIdentityStandin(unsigned sensorIndex) const ;  // pre-cache and post-cache
-
+    public:
         const GVolume* getSensorVolume(unsigned sensorIndex) const ;    // pre-cache only 
         std::string    reportSensorVolumes(const char* msg) const ; 
         void           dumpSensorVolumes(const char* msg) const ; 

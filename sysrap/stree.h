@@ -1134,6 +1134,8 @@ stree::lookup_sensor_identifier
 The arg_sensor_identifier array is resized to match arg_sensor_index and 
 populated with sensor_id values from the stree::sensor_id. 
 
+This is used from CSG_GGeo_Convert::addInstances
+
 **/
 
 inline void stree::lookup_sensor_identifier( 
@@ -1161,6 +1163,7 @@ inline void stree::lookup_sensor_identifier(
         // "correct" 1-based to be 0-based 
         bool s_index_inrange = s_index > -1 && s_index < int(sensor_id.size()) ; 
         int s_identifier = s_index_inrange ? sensor_id[s_index] : -1 ; 
+        arg_sensor_identifier[i] = s_identifier ; 
 
         if(verbose)
         {
@@ -1185,10 +1188,8 @@ inline void stree::lookup_sensor_identifier(
                     << std::endl 
                     ;
             }
-        }
-
-        arg_sensor_identifier[i] = s_identifier ; 
-    }   
+        }      // verbose
+    }          // over num_lookup
 } 
 
 
