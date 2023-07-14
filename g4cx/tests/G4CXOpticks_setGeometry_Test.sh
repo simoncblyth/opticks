@@ -12,12 +12,19 @@ EOU
 
 REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
 
-#source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
-source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
+source $HOME/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
 case $GEOM in 
    FewPMT) geomscript=$REALDIR/../../u4/tests/FewPMT.sh ;;
 esac
+
+
+origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+if [ -f "$origin" ]; then
+    export ${GEOM}_GDMLPathFromGEOM=$origin
+    ## see G4CXOpticks::setGeometry 
+fi 
+
 
 if [ -n "$geomscript" -a -f "$geomscript" ]; then 
     echo $BASH_SOURCE : GEOM $GEOM : sourcing geomscript $geomscript
@@ -31,10 +38,12 @@ fi
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
 #export BFile__preparePath_SIGINT=1
-export GGeo__save_SIGINT=1
+#export GGeo__save_SIGINT=1
 
-export G4CXOpticks__setGeometry_saveGeometry=~/.opticks/GEOM/$GEOM
-export U4VolumeMaker=INFO
+#savedir=~/.opticks/GEOM/$GEOM
+savedir=/tmp/GEOM/$GEOM
+export G4CXOpticks__setGeometry_saveGeometry=$savedir
+export G4CXOpticks__saveGeometry_saveGGeo=1
 
 
 loglevels(){
@@ -44,8 +53,9 @@ loglevels(){
    #export SOpticksResource=INFO
    export CSGFoundry=INFO
    export GSurfaceLib=INFO
+   export U4VolumeMaker=INFO
 }
-loglevels
+#loglevels
 
 env | grep =INFO
 
@@ -55,7 +65,7 @@ bin=G4CXOpticks_setGeometry_Test
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
-vars="REALDIR GEOM FOLD bin geomscript"
+vars="REALDIR GEOM FOLD bin geomscript savedir"
 
 defarg=info_dbg
 arg=${1:-$defarg}

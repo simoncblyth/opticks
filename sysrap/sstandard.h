@@ -89,7 +89,7 @@ In the old X4/GGeo workflow, the bnd buffer was created with::
 
 struct sstandard
 { 
-    static constexpr const bool VERBOSE = true ; 
+    static constexpr const bool VERBOSE = false ; 
     static constexpr const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ;
     const sdomain* dom ; 
 
@@ -430,7 +430,7 @@ inline NP* sstandard::make_bnd(
     int4 mn ; 
     int4 mx ;
     column_range(mn, mx, vbd ); 
-    std::cout << " sstandard::bnd mn " << mn << " mx " << mx << std::endl ;  
+    if(VERBOSE) std::cout << " sstandard::bnd mn " << mn << " mx " << mx << std::endl ;  
 
     assert( mx.x < num_mat ); 
     assert( mx.y < num_sur ); 

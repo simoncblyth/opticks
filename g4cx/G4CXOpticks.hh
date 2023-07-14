@@ -76,7 +76,7 @@ private:
     void setGeometry(CSGFoundry* fd); 
     void setGeometry_(CSGFoundry* fd); 
     void setupFrame(); 
-    static const bool simulate_saveEvent ; 
+    static const bool simulate_saveEvent ; // G4CXOpticks__simulate_saveEvent
 public: 
     void simulate(); 
     void simtrace(); 
@@ -84,6 +84,7 @@ public:
 
     void saveEvent() const ; 
 
+    static const bool saveGeometry_saveGGeo ; // G4CXOpticks__saveGeometry_saveGGeo 
     void saveGeometry() const ;
     void saveGeometry(const char* dir) const ; 
 

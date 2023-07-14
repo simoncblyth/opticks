@@ -87,24 +87,36 @@ controlled via envvar::
 
 struct U4Tree
 {
-    stree* st ; 
-    const G4VPhysicalVolume* const top ; 
-    const U4SensorIdentifier* sid ; 
-    int level ;    // use export SSim__stree_level=1  will control this 
+    friend struct U4SimtraceTest ; // for U4Tree ctor  
+
+    stree*                                      st ; 
+    const G4VPhysicalVolume* const              top ; 
+    const U4SensorIdentifier*                   sid ; 
+    int                                         level ;    
+    // export SSim__stree_level=1 controls this 
 
     std::map<const G4LogicalVolume* const, int> lvidx ;
-    std::vector<const G4VPhysicalVolume*> pvs ; 
-    std::vector<const G4Material*>  materials ; 
-    std::vector<const G4LogicalSurface*> surfaces ;   // both skin and border 
-    int num_surfaces ; 
+    std::vector<const G4VPhysicalVolume*>       pvs ; 
+    std::vector<const G4Material*>              materials ; 
+    std::vector<const G4LogicalSurface*>        surfaces ;   // both skin and border 
+    int                                         num_surfaces ; 
+    std::vector<const G4VSolid*>                solids ; 
+    U4PhysicsTable<G4OpRayleigh>*               rayleigh_table ; 
+    U4Scint*                                    scint ;         
 
-    std::vector<const G4VSolid*>    solids ; 
-    U4PhysicsTable<G4OpRayleigh>* rayleigh_table ; 
-    U4Scint*               scint ;         
+    static U4Tree* Create( 
+        stree* st, 
+        const G4VPhysicalVolume* const top, 
+        const U4SensorIdentifier* sid=nullptr 
+        ); 
 
+private:
+    U4Tree(
+        stree* st, 
+        const G4VPhysicalVolume* const top=nullptr, 
+        const U4SensorIdentifier* sid=nullptr 
+        ); 
 
-    static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
-    U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
     void init(); 
 
     static U4PhysicsTable<G4OpRayleigh>* CreateRayleighTable(); 
@@ -123,15 +135,19 @@ struct U4Tree
     void initSolid(const G4LogicalVolume* const lv); 
     void initSolid(const G4VSolid* const so, int lvid ); 
 
-
     void initNodes(); 
-    int  initNodes_r( const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p, int depth, int sibdex, int parent ); 
+    int  initNodes_r( 
+        const G4VPhysicalVolume* const pv, 
+        const G4VPhysicalVolume* const pv_p,
+        int depth, 
+        int sibdex, 
+        int parent 
+        ); 
 
     void initSurfaces_Serialize(); 
     void initStandard(); 
 
-    //  accessors
-
+public:   //  accessors
     const G4Material*       getMaterial(int idx) const ; 
     const G4LogicalSurface* getSurface(int idx) const ; 
 
@@ -141,11 +157,13 @@ struct U4Tree
     int                      get_pv_copyno(int nidx) const ; 
     int get_nidx(const G4VPhysicalVolume* pv) const ; 
 
-    // identify
+private:
+    // identifySensitive called from U4Tree::Create
     void identifySensitive(); 
     void identifySensitiveInstances(); 
     void identifySensitiveGlobals(); 
 
+public:
     void simtrace_scan(const char* base ) const ; 
     static void SimtraceScan( const G4VPhysicalVolume* const pv, const char* base ); 
 }; 
@@ -159,21 +177,37 @@ U4Tree::Create
 
 Canonically invoked from G4CXOpticks::setGeometry
 
+HMM: can these be moved into U4Tree ctor now ? 
+
 **/
-inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
+inline U4Tree* U4Tree::Create( 
+    stree* st, 
+    const G4VPhysicalVolume* const top, 
+    const U4SensorIdentifier* sid 
+    ) 
 {
     if(st->level > 0) std::cout << "[ U4Tree::Create " << std::endl ; 
-    U4Tree* tr = new U4Tree(st, top, sid ) ;
+
+    U4Tree* tree = new U4Tree(st, top, sid ) ;
 
     st->factorize(); 
-    tr->identifySensitive(); 
+
+    tree->identifySensitive(); 
+
     st->add_inst(); 
 
     if(st->level > 0) std::cout << "] U4Tree::Create " << std::endl ; 
-    return tr ; 
+
+    st->postcreate() ;  
+
+    return tree ; 
 }
 
-inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4SensorIdentifier* sid_ )
+inline U4Tree::U4Tree(
+    stree* st_, 
+    const G4VPhysicalVolume* const top_,  
+    const U4SensorIdentifier* sid_ 
+    )
     :
     st(st_),
     top(top_),
@@ -186,6 +220,11 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
     init(); 
 }
 
+/**
+U4Tree::init
+--------------
+
+**/
 
 inline void U4Tree::init()
 {
@@ -212,20 +251,19 @@ U4Tree::initMaterials
 
 Canonically invoked from U4Tree::init 
 
-1. recursive traverse collecting material pointers from all active LV into materials vector 
-   in postorder of first encounter.
+1. recursive traverse collecting material pointers from all active 
+   LV into materials vector in postorder of first encounter.
 
-2. creates SSim/stree/material holding properties of all active materials::
+2. creates SSim/stree/material holding properties of all active materials
 
-CONSIDERING : maybe relocate to SSim/material ? rather than SSim/stree/material ? 
-and hold the material NPFold member in SSim ? 
+3. creates standard *mat* array using U4Material::MakeStandardArray 
+   from the MPT of the materials, with an override for Water/RAYLEIGH
+   from the rayleigh_table. The override is needed as G4OpRayleigh
+   calculates RAYLEIGH scattering lengths from RINDEX for materials named
+   "Water". 
 
-
-The creation of the standard *stree::mat* array using U4Material::MakeStandardArray
-gets most material properties from the MPTs of the materials. However 
-as G4OpRayleigh does some sneaky generation of RAYLEIGH scatter props
-in its physics table some overrides are done getting Water/RAYLEIGH
-from rayleigh_table.    
+NOTE THAT MATERIALS NAMED "vetoWater" ARE NOT SPECIAL CASED
+SO THERE WILL BE MUCH LESS SCATTERING IN "vetoWater" THAN IN "Water"
 
 **/
 
@@ -248,12 +286,9 @@ inline void U4Tree::initMaterials_NoRINDEX()
     for(int i=0 ; i < num_materials ; i++)
     {
         const G4Material* mt = materials[i] ;    
+        const char* mtn = mt->GetName().c_str(); 
         const G4MaterialPropertyVector* rindex = U4Mat::GetRINDEX( mt ) ; 
-        if( rindex == nullptr )
-        {
-            const char* mtn = mt->GetName().c_str(); 
-            st->mtname_no_rindex.push_back(mtn) ; 
-        }
+        if(rindex == nullptr) st->mtname_no_rindex.push_back(mtn) ; 
     }
 }
 
@@ -273,7 +308,17 @@ inline void U4Tree::initScint()
     }
 }
 
+/**
+U4Tree::CreateRayleighTable
+----------------------------
 
+Trying to find pre-existing G4OpRayleigh process
+with the argumentless U4PhysicsTable ctor fails 
+when U4Tree instanciation happens where it does currently.  
+As a workaround pass in a throwaway G4OpRayleigh 
+just to get access to its physics table. 
+
+**/
 
 inline U4PhysicsTable<G4OpRayleigh>* U4Tree::CreateRayleighTable() // static
 {
@@ -291,19 +336,18 @@ inline U4PhysicsTable<G4OpRayleigh>* U4Tree::CreateRayleighTable() // static
 U4Tree::initRayleigh
 ---------------------
 
-Trying to find pre-existing G4OpRayleigh process
-with the argumentless U4PhysicsTable ctor fails 
-when U4Tree instanciation happens where it does currently.  
-As a workaround try passing in a throwaway G4OpRayleigh 
-just to get access to its physics table. 
+Retain pointer from rayleigh_table formed in ctor into 
+stree.standard.rayleigh
 
 **/
 
 inline void U4Tree::initRayleigh()
 {
-    std::cerr 
+    if(level > 0) std::cerr 
         << "U4Tree::initRayleigh" 
+        << " rayleigh_table " << std::endl  
         << ( rayleigh_table ? rayleigh_table->desc() : "-" ) 
+        << std::endl 
         ;
 
     st->standard->rayleigh = rayleigh_table ? rayleigh_table->tab : nullptr  ; 
@@ -313,9 +357,15 @@ inline void U4Tree::initRayleigh()
 inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ ) initMaterials_r( lv->GetDaughter(i) ); 
-    G4Material* mt = lv->GetMaterial() ; // postorder visit after recursive call  
-    if(mt && (std::find(materials.begin(), materials.end(), mt) == materials.end())) initMaterial(mt);  
+    int num_child = int(lv->GetNoDaughters()) ;  
+    for (int i=0 ; i < num_child ;i++ ) initMaterials_r( lv->GetDaughter(i) ); 
+
+    // postorder visit after recursive call  
+    G4Material* mt = lv->GetMaterial() ; 
+    assert(mt);  
+
+    std::vector<const G4Material*>& m = materials ;  
+    if(std::find(m.begin(), m.end(), mt) == m.end()) initMaterial(mt);  
 }
 inline void U4Tree::initMaterial(const G4Material* const mt)
 {
@@ -361,9 +411,9 @@ inline void U4Tree::initSurfaces()
 U4Tree::initSurfaces_Serialize
 -------------------------------
 
-As this requires to run after implicit are 
-collected in initNodes it is too soon to do 
-this within initSurfaces
+As this requires to run after implicit surfaces are 
+collected in initNodes it is too soon to do this 
+within initSurfaces
 
 Its too late to add implicit names here because 
 they are needed by stree::get_boundary_name 
@@ -435,6 +485,7 @@ inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
     int num_child = int(lv->GetNoDaughters()) ;  
     for (int i=0 ; i < num_child ;i++ ) initSolids_r( lv->GetDaughter(i) ); 
 
+    // postorder visit after recursive call 
     if(lvidx.find(lv) == lvidx.end()) initSolid(lv); 
 }
 inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
@@ -444,8 +495,6 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
     const G4VSolid* const so = lv->GetSolid(); 
     initSolid(so, lvid); 
 }
-
-
 
 /**
 U4Tree::initSolid
@@ -467,7 +516,8 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
     assert( root > -1 ); 
     snd::SetLVID(root, lvid ); 
 
-    G4String _name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
+    G4String _name = so->GetName() ; 
+    // bizarre: G4VSolid::GetName returns by value, not reference
     const char* name = _name.c_str();    
 
     solids.push_back(so);
@@ -534,6 +584,8 @@ inline int U4Tree::initNodes_r(
     int sibdex, 
     int parent )
 {
+    // preorder visit before recursive call 
+
     U4TreeBorder border(st, num_surfaces, pv, pv_p) ; 
    
     int omat = stree::GetPointerIndex<G4Material>(      materials, border.omat_); 
@@ -544,25 +596,25 @@ inline int U4Tree::initNodes_r(
     int4 bd = {omat, osur, isur, imat } ; 
 
 #ifdef U4_OPTICAL_DEBUG
-    if(border.is_flagged())
-    {
-        std::cout 
-            << "U4Tree::initNodes_r border.is_flagged " << std::endl 
-            << " (omat,osur,isur,imat) " << bd << std::endl 
-            << border.desc()
-            << std::endl 
-            ;
-    }
+    if(border.is_flagged()) std::cout 
+        << "U4Tree::initNodes_r border.is_flagged " << std::endl 
+        << " (omat,osur,isur,imat) " << bd << std::endl 
+        << border.desc()
+        << std::endl 
+        ;
 #endif
 
-    // overrides add implicit surfaces when no prior surface and see RINDEX->NoRINDEX 
-    bool do_osur = false  ; 
+    bool do_osur = false ; // **THIS NEEDS TO BE ENABLED FOR GEANT4 MATCHING** 
+    bool do_isur = true ;  
+    // overrides add implicit surfaces when no prior surface and RINDEX->NoRINDEX 
     if(do_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
-    if(border.has_isur_override(bd)) border.do_isur_override(bd); 
+    if(do_isur && border.has_isur_override(bd)) border.do_isur_override(bd); 
 
     int boundary = st->add_boundary(bd) ; 
     assert( boundary > -1 ); 
    
+
+
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
@@ -588,18 +640,21 @@ inline int U4Tree::initNodes_r(
     nd.parent = parent ;  
 
     nd.num_child = num_child ; 
-    nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
+    nd.first_child = -1 ;  // gets changed inplace from lower recursion level 
     nd.next_sibling = -1 ; 
     nd.lvid = lvid ; 
 
     nd.copyno = copyno ; 
-    nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
-    nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
-    nd.repeat_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
-
-    nd.repeat_ordinal = -1 ;  // changed later for instance subtrees by stree::labelFactorSubtrees
     nd.boundary = boundary ; 
 
+    nd.sensor_id = -1 ;    
+    nd.sensor_index = -1 ;  
+    nd.sensor_name = -1 ; 
+    // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
+
+    nd.repeat_index = 0 ;   
+    nd.repeat_ordinal = -1 ;  
+    // changed for instance subtrees by stree::labelFactorSubtrees, remainder left 0/-1 
 
     pvs.push_back(pv); 
 
@@ -609,14 +664,15 @@ inline int U4Tree::initNodes_r(
     st->w2m.push_back(tr_w2m);  
 
 
-
-    glm::tmat4x4<double> tt_gtd(1.) ;    // "GGeo Transform Debug" comparison
+    // "GGeo Transform Debug" comparison
+    glm::tmat4x4<double> tt_gtd(1.) ;   
     glm::tmat4x4<double> vv_gtd(1.) ;
 
     bool local = false ; 
     bool reverse = false ; 
     st->get_node_product( tt_gtd, vv_gtd, nidx, local, reverse, nullptr );   
-    // product of m2w transforms from root down to nidx,  must be after push_backs of nd and tr_m2w
+    // product of m2w transforms from root down to nidx,  
+    // must be after push_backs of nd and tr_m2w
 
     st->gtd.push_back(tt_gtd);  
 
@@ -628,13 +684,15 @@ inline int U4Tree::initNodes_r(
     int i_sib = -1 ; 
     for (int i=0 ; i < num_child ;i++ ) 
     {
-        p_sib = i_sib ;    // node index of previous child gets set for i > 0
+        p_sib = i_sib ;    
+        // node index of previous child gets set for i > 0
 
         //                    ch_pv ch_parent_pv ch_depth ch_sibdex ch_parent    
         i_sib = initNodes_r( lv->GetDaughter(i), pv, depth+1, i, nd.index ); 
 
         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
-        // after first child : reach back to previous sibling snode to set the sib->sib linkage, default -1
+        // after first child, reach back to previous sibling snode 
+        // to set the sib->sib linkage, default -1
     }
 
     return nd.index ; 
@@ -649,7 +707,8 @@ inline int U4Tree::initNodes_r(
 U4Tree::initStandard
 ----------------------
 
-Currently in transition from using an unholy mixture of old and new:
+Have now transitioned from a former unholy mixture of old and new.
+But still in validation stage, so retain the below old notes for now. 
 
 SSim::import_bnd
 GGeo::convertSim_BndLib
@@ -742,27 +801,53 @@ inline int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const
 U4Tree::identifySensitive
 ----------------------------
 
+This is called from U4Tree::Create after U4Tree instanciation
+and stree::factorize is called, but before stree::add_inst. 
+
 Initially tried to simply use lv->GetSensitiveDetector() to 
 identify sensor nodes by that is problematic because 
 the SD is not on the volume with the copyNo and this 
 use of copyNo is detector specific.  Also not all JUNO SD
 are actually sensitive. 
 
+
+1. identifySensitiveInstances : sets stree/snode sensor fields 
+   of instance outer volume nodes
+
+2. identifySensitiveGlobals : sets stree/snode sensor field
+   of remainder nodes identified as sensitive 
+   (none expected when using U4SensorIdentifierDefault) 
+
+3. stree::reorderSensors
+
+   * recursive nd traverse setting nd.sensor_index
+   * nd loop collecting nd.sensor_id to update stree::sensor_id 
+
+
 **/
 
 inline void U4Tree::identifySensitive()
 {
-    if(level > 0) std::cerr << "[ U4Tree::identifySensitive " << std::endl ; 
+    if(level > 0) std::cerr 
+        << "[ U4Tree::identifySensitive " 
+        << std::endl 
+        ; 
+
     st->sensor_count = 0 ; 
 
-    identifySensitiveInstances(); 
+    identifySensitiveInstances();  
     identifySensitiveGlobals(); 
-    st->reorderSensors();  // change nd.sensor_index to facilitate comparison with GGeo
 
-    if(level > 0) std::cerr << "] U4Tree::identifySensitive st.sensor_count " << st->sensor_count << std::endl ; 
+    st->reorderSensors(); 
+    // change nd.sensor_index to facilitate comparison with GGeo
+
+
+    if(level > 0) std::cerr 
+        << "] U4Tree::identifySensitive"
+        << " st.sensor_count " << st->sensor_count 
+        << std::endl
+        ; 
 }
-
-
 
 /**
 U4Tree::identifySensitiveInstances
@@ -771,7 +856,7 @@ U4Tree::identifySensitiveInstances
 Canonically invoked from U4Tree::Create after stree factorization
 and before instance creation. 
 
-This uses stree/sfactor to get node indices of the outer
+This uses stree/sfactor to get node indices of the outer 
 volumes of all instances. These together with U4SensorIdentifier/sid
 allow sensor_id and sensor_index results (-1 when not sensors) 
 to be added into the stree/snode. 
@@ -782,16 +867,9 @@ are inserted into the instance transform fourth column.
 NOTE that the nd.sensor_index may be subsequently changed by 
 stree::reorderSensors
 
-TODO: 
 
-This is assuming a full geometry with instances found, 
-but what about a geometry where nothing got instanced and 
-everything is in the remainder. Or a geometry with some sensors 
-in remainder and some in factors
-
-Need a way to traverse the tree from the root and skip the 
-factored subtrees : easy way to do that is to label the tree with the ridx. 
-
+NB changes made to U4Tree::identifySensitiveInstances should
+usually be made in tandem with U4Tree::identifySensitiveGlobals
 
 **/
 
@@ -808,7 +886,9 @@ inline void U4Tree::identifySensitiveInstances()
     for(unsigned i=0 ; i < num_factor ; i++)
     {
         std::vector<int> outer ; 
-        st->get_factor_nodes(outer, i );  // nidx of outer volumes of instances 
+        st->get_factor_nodes(outer, i);  
+        // nidx of outer volumes of the instances for each factor
+ 
         sfactor& fac = st->get_factor_(i); 
         fac.sensors = 0  ; 
 
@@ -825,14 +905,14 @@ inline void U4Tree::identifySensitiveInstances()
             if(sensor_id > -1 ) 
             {
                 st->sensor_count += 1 ;  // count over all factors  
-                fac.sensors += 1 ;   // count sensors for each factor  
+                fac.sensors += 1 ;       // count sensors for each factor  
                 sensor_name = suniquename::Add(pvn, st->sensor_name ) ; 
             }
+
             snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 
             nd.sensor_index = sensor_index ; 
             nd.sensor_name = sensor_name ; 
-      
 
             if(level > 1) std::cerr
                 << "U4Tree::identifySensitiveInstances"
@@ -941,7 +1021,7 @@ inline void U4Tree::simtrace_scan(const char* base ) const
     {   
         const char* soname = st->soname[i].c_str(); 
         const G4VSolid* solid = solids[i] ; 
-        G4String name = solid->GetName(); 
+        G4String name = solid->GetName();  // bizarre by value 
         assert( strcmp( name.c_str(), soname ) == 0 );  
 
         LOG(info) << " i " << std::setw(3) << i << " RGMode: " << SEventConfig::RGModeLabel() ; 

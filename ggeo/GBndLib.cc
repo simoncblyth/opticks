@@ -566,9 +566,31 @@ unsigned int GBndLib::index(const guint4& bnd) const
     return i == e ? UNSET : std::distance(b, i) ; 
 }
 
+std::string GBndLib::brief(const guint4& bnd) const
+{
+    unsigned idx = index(bnd) ;
+    unsigned omat = bnd[OMAT] ;
+    unsigned osur = bnd[OSUR] ;
+    unsigned isur = bnd[ISUR] ;
+    unsigned imat = bnd[IMAT] ;
+
+    std::stringstream ss ; 
+    ss 
+       << std::setw(3) << idx 
+       << " (" 
+       << std::setw(2) << omat << ","
+       << std::setw(2) << ( osur == UNSET ? -1 : (int)osur ) << ","
+       << std::setw(2) << ( isur == UNSET ? -1 : (int)isur ) << ","
+       << std::setw(2) << imat 
+       << ")" 
+       ;
+    std::string str = ss.str(); 
+    return str;
+}
+
 std::string GBndLib::description(const guint4& bnd) const
 {
-    unsigned int idx = index(bnd) ;
+    unsigned idx = index(bnd) ;
     std::string tag = idx == UNSET ? "-" : boost::lexical_cast<std::string>(idx) ; 
 
     unsigned omat = bnd[OMAT] ;
@@ -592,7 +614,8 @@ std::string GBndLib::description(const guint4& bnd) const
        << std::setw(2) << imat 
        << ")" 
        ;
-    return ss.str();
+    std::string str = ss.str(); 
+    return str;
 }
 
 std::string GBndLib::shortname(unsigned boundary) const 
@@ -682,17 +705,21 @@ std::string GBndLib::descSensorBoundary() const
     std::stringstream ss ; 
     ss << "GBndLib::descSensorBoundary"
        << " ni " << ni 
+       << " sensor_count " << m_sensor_count 
+       << std::endl 
        ; 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
         unsigned boundary = i ; 
         const guint4& bnd = m_bnd[boundary] ;
-        ss << description(bnd) 
+        ss << brief(bnd) 
            << " isb " << isSensorBoundary(boundary) 
            << std::endl
            ; 
     } 
+    ss << "GBndLib::getSensorBoundaryReport" << std::endl ; 
+    ss << getSensorBoundaryReport() ; 
 
     std::string str = ss.str();
     return str ; 

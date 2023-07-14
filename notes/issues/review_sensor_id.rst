@@ -28,14 +28,110 @@ Overview
   * CSGFoundry fd is still created with CSG_GGeo_Convert 
 
 
-WIP : GGeo has an stree ? Is that same instance as SSim ? NO
+U4Tree/stree overview wrt inst and sensor info
+------------------------------------------------
+
+Everything done in U4Tree::Create from Geant4 traversals 
+thru to adding inst with sensor info to stree with stree::add_inst 
+
+* all looks fine and dandy 
+
+
+U4Tree::Create
+    Geant4 -> stree 
+
+CSG_stree_Convert::Translate (INTENDED)
+     stree -> CSGFoundry 
+
+
+
+X4/GGeo overview wrt inst and sensor info
+--------------------------------------------
+
+Two step with GGeo model in the middle. 
+
+
+X4Geo::Translate
+   Geant4 -> GGeo
+
+   All the heavy lifting done by X4PhysicalVolume instanciation 
+
+   X4PhysicalVolume::convertNode 
+        sensor decision captured with GVolume::setSensorIndex   
+
+
+CSG_GGeo_Convert::Translate
+   GGeo -> CSGFoundry  
+
+
+
+Cycling on the conversion
+----------------------------
+
+::
+
+   gxt ; ./G4CXOpticks_setGeometry_Test.sh
+
+
+G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?
+--------------------------------------------------------------------------------
+
+::
+
+    243 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
+    244 {
+    245     LOG(LEVEL) << " G4VPhysicalVolume world " << world ;
+    246     assert(world);
+    247     wd = world ;
+    248 
+    249     assert(sim && "sim instance should have been created in ctor" );
+    250     stree* st = sim->get_tree();
+    251 
+    252     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
+    253 
+    254     /**
+    255     AIMING TO ELIMINATE GGeo, DEV IN CSG/tests/CSG_stree_Convert.h, ENABLING: 
+    256     CSGFoundry* fd_ = CSG_stree_Convert::Translate( st );  
+    257     setGeometry(fd_)
+    258     **/
+    259 
+    260     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
+    261     Opticks::Configure("--gparts_transform_offset --allownokey" );
+    262     GGeo* gg_ = X4Geo::Translate(wd) ;
+    263 
+    264     setGeometry(gg_);
+    265 }
+    266 void G4CXOpticks::setGeometry(GGeo* gg_)
+    267 {
+    268     LOG(LEVEL);
+    269     gg = gg_ ;
+    270 
+    271     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ;
+    272     setGeometry(fd_);
+    273 }
+
+
+
+
+
+Local G4CXOpticks_setGeometry_Test.sh cycles to investigate
+-------------------------------------------------------------
+
+
+
+WIP : saved GGeo not going into expected dir
+-----------------------------------------------
+
+
+WIP : x4/GGeo has an stree ? Is that same instance as SSim ? NO
 -----------------------------------------------------------------
 
-Its foreign to GGeo::
+The x4/stree looks to be a way to compare old/new by comparing x4/stree with u4/stree.  
+
+Its foreign to GGeo, but tacked on in order to get saved presumably::
 
      159 void GGeo::setTree(stree* tree){ m_tree = tree ; }
      160 stree* GGeo::getTree() const {  return m_tree ; }
-
 
 ::
 
@@ -57,6 +153,33 @@ But it is distinct from the SSim/stree::
     1405 
     1406     m_tree = new stree ;
     1407     m_ggeo->setTree(m_tree);
+
+
+Collects snode and transforms into the x4 stree::
+
+    X4PhysicalVolume::convertStructure_r
+
+    1533 
+    1534      snode nd ;
+    1535      nd.index = nidx ;
+    1536      nd.depth = depth ;
+    1537      nd.sibdex = sibdex ;
+    1538      nd.parent = parent_nidx ;
+    1539 
+    1540      nd.num_child = num_child ;
+    1541      nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
+    1542      nd.next_sibling = -1 ;
+    1543      nd.lvid = lvid ;
+    1544      nd.copyno = copyno ;
+    1545 
+    1546      nd.sensor_id = -1 ;
+    1547      nd.sensor_index = -1 ;
+    1548    
+    1549      m_tree->nds.push_back(nd);
+    1550      m_tree->m2w.push_back(tr_m2w);
+    1551      m_tree->gtd.push_back(tr_gtd);
+    1552      
+
 
 
 

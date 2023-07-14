@@ -600,8 +600,7 @@ NP* U4Material::MakeStandardArray(
         const G4String& name = mat->GetName() ; 
         names.push_back(name.c_str()) ; 
         G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
-        if( mpt == nullptr ) std::cerr << "U4Material::MakeStandardArray NO MPT " << name << std::endl ; 
-
+        LOG_IF(LEVEL, mpt == nullptr ) << "U4Material::MakeStandardArray NO MPT " << name ; 
 
         std::array<std::string,8> specs ; 
         assert( nj*nl == 8 );  

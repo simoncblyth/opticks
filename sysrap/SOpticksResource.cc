@@ -446,6 +446,20 @@ const char* SOpticksResource::CFBaseFromGEOM()
     return path ; 
 }
 
+/**
+SOpticksResource::GDMLPathFromGEOM
+------------------------------------
+
+Used for example from the argumentless G4CXOpticks::setGeometry
+
+Assumes a GEOM envvar, and looks for 2nd order envvar 
+that starts with the GEOM value::
+
+    export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+
+
+**/
+
 const char* SOpticksResource::GDMLPathFromGEOM()
 {
     const char* geom = GEOM(); 

@@ -48,6 +48,8 @@ struct U4SimtraceTest
 inline U4SimtraceTest::U4SimtraceTest(const G4VPhysicalVolume* pv )
     :
     ut(&st, pv)   // instanciation of U4Tree populates the stree 
+    // NOTE : DIRECT USE OF U4Tree CTOR IS NON-STANDARD
+    // NORMALLY SHOULD USE VIA U4Tree::Create 
 {
 }
 

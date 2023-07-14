@@ -29,11 +29,13 @@ Maybe will need to add some casts too.
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "ssys.h" 
 #include "NPFold.h"
 #include "U4MaterialPropertyVector.h"
 
 struct U4Scint
 {
+    static constexpr const bool VERBOSE = false ; 
     static constexpr const char* PROPS = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ; 
     static U4Scint* Create(const NPFold* materials ); 
 
@@ -54,7 +56,10 @@ struct U4Scint
     const G4MaterialPropertyVector* ScintillationIntegral ; 
 
     const NP* icdf ; 
+
+    const int num_wlsamp ;  
     const NP* wlsamp ; 
+
 
     U4Scint(const NPFold* fold, const char* name); 
     void init(); 
@@ -63,7 +68,7 @@ struct U4Scint
     NPFold* make_fold() const ; 
     void save(const char* base, const char* rel=nullptr ) const ; 
 
-    NP* createWavelengthSamples( int num_samples=1000000 ); 
+    NP* createWavelengthSamples( int num_samples ); 
     NP* createGeant4InterpolatedInverseCDF( 
         int num_bins=4096, 
         int hd_factor=20, 
@@ -118,6 +123,7 @@ inline U4Scint::U4Scint(const NPFold* scint_, const char* name_)
     theSlowLightVector(U4MaterialPropertyVector::FromArray(slow)),
     ScintillationIntegral(Integral(theFastLightVector)),
     icdf(nullptr),
+    num_wlsamp(ssys::getenvint("U4Scint__num_wlsamp", 0)),
     wlsamp(nullptr)
 {
     init(); 
@@ -136,7 +142,7 @@ inline void U4Scint::init()
     int num_bins = 4096 ; 
     int hd_factor = 20 ; 
     icdf = createGeant4InterpolatedInverseCDF(num_bins, hd_factor, name) ;
-    wlsamp = createWavelengthSamples() ; 
+    wlsamp = createWavelengthSamples(num_wlsamp) ; 
 }
 
 
@@ -165,7 +171,7 @@ inline NPFold* U4Scint::make_fold() const
     fold->add("slow", slow) ; 
     fold->add("reem", reem) ; 
     fold->add("icdf", icdf) ; 
-    fold->add("wlsamp", wlsamp) ; 
+    if(wlsamp) fold->add("wlsamp", wlsamp) ; 
     return fold ; 
 }
 
@@ -270,6 +276,8 @@ inline NP* U4Scint::CreateWavelengthSamples(
     const G4MaterialPropertyVector* ScintillatorIntegral_, 
     int num_samples )
 {
+    if(num_samples == 0) return nullptr ; 
+
     G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ; 
 
     double mx = ScintillatorIntegral->GetMaxValue() ;  
@@ -432,13 +440,14 @@ inline NP* U4Scint::CreateGeant4InterpolatedInverseCDF(
     icdf->names.push_back(material_name) ;  // match X4/GGeo 
     icdf->set_meta<std::string>("name", material_name ); 
 
-    icdf->set_meta<std::string>("creator", "X4Scintillation::CreateGeant4InterpolatedInverseCDF" ); 
+    icdf->set_meta<std::string>("creator", "U4Scint::CreateGeant4InterpolatedInverseCDF" ); 
     icdf->set_meta<int>("hd_factor", hd_factor ); 
     icdf->set_meta<int>("num_bins", num_bins ); 
     icdf->set_meta<double>("edge", edge ); 
 
 
-    std::cerr
+    if(VERBOSE) std::cerr
+        << "U4Scint::CreateGeant4InterpolatedInverseCDF" 
         << " num_bins " << num_bins
         << " hd_factor " << hd_factor
         << " mx " << std::fixed << std::setw(10) << std::setprecision(4) << mx

@@ -8,7 +8,8 @@ Test of geometry conversions in isolation.
 EOU
 }
 
-source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
+#source $(dirname $BASH_SOURCE)/../../bin/GEOM_.sh   # change the geometry with geom_ 
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1

@@ -6,7 +6,8 @@
 #include "sqat4.h"
 #include "sframe.h"
 
-#include "SSys.hh"
+#include "ssys.h"
+
 #include "SEvt.hh"
 #include "SSim.hh"
 #include "SGeo.hh"
@@ -161,17 +162,17 @@ void G4CXOpticks::setGeometry()
 {
     LOG(LEVEL) << " argumentless " ; 
 
-    if(SSys::hasenvvar(SOpticksResource::OpticksGDMLPath_))
+    if(ssys::hasenv_(SOpticksResource::OpticksGDMLPath_))
     {
         LOG(LEVEL) << " OpticksGDMLPath " ; 
         setGeometry(SOpticksResource::OpticksGDMLPath()); 
     }
-    else if(SSys::hasenvvar(SOpticksResource::SomeGDMLPath_))
+    else if(ssys::hasenv_(SOpticksResource::SomeGDMLPath_))
     {
         LOG(LEVEL) << " SomeGDMLPath " ; 
         setGeometry(SOpticksResource::SomeGDMLPath()); 
     }
-    else if(SSys::hasenvvar(SOpticksResource::CFBASE_))
+    else if(ssys::hasenv_(SOpticksResource::CFBASE_))
     {
         LOG(LEVEL) << " CFBASE " ; 
         setGeometry(CSGFoundry::Load()); 
@@ -192,14 +193,16 @@ void G4CXOpticks::setGeometry()
     }
     else if(SOpticksResource::GDMLPathFromGEOM())
     {
+        // may load GDML directly if "${GEOM}_GDMLPathFromGEOM" is defined
         LOG(LEVEL) << "[ GDMLPathFromGEOM " ; 
         setGeometry(SOpticksResource::GDMLPathFromGEOM()) ; 
         LOG(LEVEL) << "] GDMLPathFromGEOM " ; 
     }
-    else if(SSys::hasenvvar("GEOM"))
+    else if(ssys::hasenv_("GEOM"))
     {
+       // this may load GDML using U4VolumeMaker::PVG if "${GEOM}_GDMLPath" is defined   
         LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
-        setGeometry( U4VolumeMaker::PV() );  // this may load GDML using U4VolumeMaker::PVG if "GEOM"_GDMLPath is defined   
+        setGeometry( U4VolumeMaker::PV() );  
     }
     else
     {
@@ -244,31 +247,47 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     wd = world ;
 
     assert(sim && "sim instance should have been created in ctor" ); 
-
     stree* st = sim->get_tree(); 
-    // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
+
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
 
+    /**
+    AIMING TO ELIMINATE GGeo, DEV IN CSG/tests/CSG_stree_Convert.h, ENABLING: 
+    CSGFoundry* fd_ = CSG_stree_Convert::Translate( st );  
+    setGeometry(fd_)
+    **/
   
     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
-
     GGeo* gg_ = X4Geo::Translate(wd) ; 
-
 
     setGeometry(gg_); 
 }
-
-
 void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
     gg = gg_ ; 
 
- 
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
 }
+
+/**
+NOTE THE TWO STEP::
+
+X4Geo::Translate
+    Geant4 -> GGeo 
+
+    All the heavy lifting done by X4PhysicalVolume instanciation 
+
+
+CSG_GGeo_Convert::Translate
+    GGeo -> CSG  
+
+
+**/
+
+
 
 /**
 G4CXOpticks::setGeometry
@@ -284,7 +303,7 @@ as the SSim focus is initialization and SEvt focus is post-init.
 
 **/
 
-const char* G4CXOpticks::setGeometry_saveGeometry = SSys::getenvvar("G4CXOpticks__setGeometry_saveGeometry") ;
+const char* G4CXOpticks::setGeometry_saveGeometry = ssys::getenvvar("G4CXOpticks__setGeometry_saveGeometry") ;
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     setGeometry_(fd_); 
@@ -417,7 +436,7 @@ TODO: compare with B side to see if that makes sense when viewed from A and B di
 
 **/
 
-const bool G4CXOpticks::simulate_saveEvent = SSys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
+const bool G4CXOpticks::simulate_saveEvent = ssys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
 void G4CXOpticks::simulate()
 {
@@ -570,6 +589,10 @@ void G4CXOpticks::saveGeometry() const
     LOG(LEVEL)  << "dir [" << ( dir ? dir : "-" )  ; 
     saveGeometry(dir) ; 
 }
+
+
+const bool G4CXOpticks::saveGeometry_saveGGeo = ssys::getenvbool("G4CXOpticks__saveGeometry_saveGGeo");
+
 void G4CXOpticks::saveGeometry(const char* dir_) const
 {
     LOG(LEVEL) << " dir_ " << dir_ ; 
@@ -581,16 +604,18 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
     if(fd) fd->save(dir) ; 
 
-    bool ggskip = true ; 
     if(gg)
     {
-        if(ggskip == false)
+        if(saveGeometry_saveGGeo)
         {
             gg->save_to_dir(dir) ;   
         } 
         else
         {
-            LOG(error) << "skipped saving gg " ; 
+            LOG(error) 
+               << "skipped saving GGeo, enable with :"  << std::endl 
+               << "export G4CXOpticks__saveGeometry_saveGGeo=1 "
+               ; 
         }
     }
 
@@ -626,9 +651,11 @@ void G4CXOpticks::SaveGeometry() // static
     LOG_IF(error, INSTANCE==nullptr) << " INSTANCE nullptr : NOTHING TO SAVE " ; 
     if(INSTANCE == nullptr) return ; 
   
-    const char* dir = SSys::getenvvar(SaveGeometry_KEY) ;
+    const char* dir = ssys::getenvvar(SaveGeometry_KEY) ;
     LOG_IF(LEVEL, dir == nullptr ) << " not saving as envvar not set " << SaveGeometry_KEY  ;  
     if(dir == nullptr) return ; 
     LOG(info) << " save to dir " << dir << " configured via envvar " << SaveGeometry_KEY ; 
     INSTANCE->saveGeometry(dir); 
 }
+
+

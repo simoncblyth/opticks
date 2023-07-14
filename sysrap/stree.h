@@ -340,7 +340,14 @@ struct stree
 
     void reorderSensors(); 
     void reorderSensors_r(int nidx); 
-    void get_sensor_id( std::vector<int>& sensor_id ) const ; 
+    void get_sensor_id( std::vector<int>& arg_sensor_id ) const ; 
+
+    void postcreate() const ; 
+
+    std::string desc_sensor() const ; 
+    int get_num_nd_sensor() const ; 
+    std::string desc_sensor_nd(int edge) const ; 
+
     std::string desc_sensor_id(unsigned edge=10) const ; 
     static std::string DescSensor( const std::vector<int>& sensor_id, const std::vector<int>& sensor_idx, unsigned edge=10 ); 
 
@@ -477,7 +484,6 @@ struct stree
     void get_repeat_node( std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const ; 
 
     std::string desc_repeat_nodes() const ;  
-
 
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx ); 
@@ -868,13 +874,17 @@ inline void stree::traverse_r(int nidx, int depth, int sibdex) const
 stree::reorderSensors : changes nd.sensor_index across entire tree
 ----------------------------------------------------------------------
 
+Invoked from U4Tree::identifySensitive
+
+1. recursive node traverse changing nd.sensor_index 
+   into preorder traverse order
+
+2. node loop collecting nd.sensor_id and updating 
+   stree::sensor_id vector
+
+
 This attempts to mimic the preorder traverse sensor order 
 used by GGeo/CSG_GGeo to facilitate comparison. 
-
-When invoked this changes the nd.sensor_index compared 
-to the initial ordering of U4Tree::identifySensitiveInstances
-
-Note that this yields a 0-based sensor index. 
 
 HMM: I expect the same thing could be done by simply iterating over nds
 as the snode are collected in preorder ? 
@@ -883,14 +893,36 @@ as the snode are collected in preorder ?
 
 inline void stree::reorderSensors()
 {
-    if(level > 0) std::cout << "[ stree::reorderSensors" << std::endl ; 
+    if(level > 0) std::cout 
+        << "[ stree::reorderSensors" 
+        << std::endl
+        ; 
+
     sensor_count = 0 ; 
     reorderSensors_r(0); 
-    if(level > 0) std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
 
+    if(level > 0) std::cout 
+        << "] stree::reorderSensors"
+        << " sensor_count " << sensor_count 
+        << std::endl 
+        ; 
+
+    // change sensor_id vector by looping over 
+    // all nodes collecting it when > -1 
     get_sensor_id(sensor_id); 
+
     assert( sensor_count == sensor_id.size() ); 
 }
+
+/**
+stree::reorderSensors_r
+------------------------
+
+For nodes with sensor_id > -1 change the sensor_index 
+into a 0-based preorder traversal count index. 
+
+**/
+
 inline void stree::reorderSensors_r(int nidx)
 {
     snode& nd = nds[nidx] ; 
@@ -917,15 +949,103 @@ the *sensor_id* should correspond to *sensor_index* from 0 to num_sensor-1.
 
 **/
 
-inline void stree::get_sensor_id( std::vector<int>& sensor_id ) const 
+inline void stree::get_sensor_id( std::vector<int>& arg_sensor_id ) const 
 {
-    sensor_id.clear(); 
+    arg_sensor_id.clear(); 
     for(unsigned nidx=0 ; nidx < nds.size() ; nidx++)
     {
         const snode& nd = nds[nidx] ; 
-        if( nd.sensor_id > -1 ) sensor_id.push_back(nd.sensor_id) ; 
+        if( nd.sensor_id > -1 ) arg_sensor_id.push_back(nd.sensor_id) ; 
     }
 }
+
+/**
+stree::postcreate
+------------------
+
+Called for reporting from U4Tree::Create 
+
+**/
+
+inline void stree::postcreate() const 
+{
+    std::cout << "[stree::postcreate" << std::endl ;  
+
+    std::cout << desc_sensor() ; 
+    std::cout << desc_sensor_nd(0) ; 
+    std::cout << desc_sensor_id(10) ; 
+
+    std::cout << "]stree::postcreate" << std::endl ;  
+}
+
+inline std::string stree::desc_sensor() const 
+{
+    std::stringstream ss ; 
+    ss << "stree::desc_sensor" << std::endl 
+       << " sensor_id.size " << sensor_id.size() << std::endl 
+       << " sensor_count " << sensor_count << std::endl 
+       << " sensor_name.size " << sensor_name.size() << std::endl 
+       ; 
+     
+    ss << "sensor_name[" << std::endl  ; 
+    for(int i=0; i < int(sensor_name.size()) ; i++) ss << sensor_name[i].c_str() << std::endl ; 
+    ss << "]" << std::endl  ; 
+    std::string str = ss.str(); 
+    return str ;  
+}
+
+inline int stree::get_num_nd_sensor() const 
+{
+    int num_nd = nds.size() ; 
+    int num_nd_sensor = 0 ; 
+    for(int nidx=0 ; nidx < num_nd ; nidx++) if(nds[nidx].sensor_id > -1) num_nd_sensor += 1 ; 
+    return num_nd_sensor ; 
+}
+
+
+inline std::string stree::desc_sensor_nd(int edge) const 
+{
+    int num_nd = nds.size() ; 
+    int num_nd_sensor = get_num_nd_sensor() ; 
+
+    std::stringstream ss ; 
+    ss << "[stree::desc_sensor_nd" << std::endl ; 
+    ss << " edge          " << edge << std::endl ; 
+    ss << " num_nd        " << num_nd << std::endl ; 
+    ss << " num_nd_sensor " << num_nd_sensor << std::endl ; 
+
+    int count = 0 ; 
+
+    for(int nidx=0 ; nidx < num_nd ; nidx++)
+    {
+        const snode& nd = nds[nidx] ; 
+        if( nd.sensor_id > -1 ) 
+        { 
+            if( edge == 0 || count < edge || count > num_nd_sensor - edge ) 
+            {
+                ss 
+                    << " nidx " << std::setw(6) << nidx     
+                    << " count " << std::setw(6) << count     
+                    << " sensor_id " << std::setw(6) << nd.sensor_id
+                    << " sensor_index " << std::setw(6) << nd.sensor_index
+                    << " sensor_name " << std::setw(6) << nd.sensor_name
+                    << std::endl
+                    ;
+            }
+            else if( count == edge )  
+            {
+                 ss << "..." << std::endl ; 
+            }
+            count += 1 ; 
+        }
+
+    }
+    ss << "]stree::desc_sensor_nd" << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 inline std::string stree::desc_sensor_id(unsigned edge) const 
 {
@@ -1558,17 +1678,24 @@ inline std::string stree::desc_combined_transform( glm::tmat4x4<double>& t, glm:
 }
 
 /**
-stree::get_nodes
-------------------
+stree::get_nodes : node indices of nodes with *sub* subtree digest
+---------------------------------------------------------------------
 
 Collects node indices of all nodes with the subtree digest provided in the argument. 
-So the "outer volume" nodes are returned. 
+This simply matches against the subs vector that contains subtree digest 
+strings for all nodes in node order. 
+
+Hence when providing the *sub* digest of factor subtrees this 
+will return the node indices of all "outer volume" nodes 
+of that factor.  This is done by stree::get_factor_nodes
 
 **/
 
 inline void stree::get_nodes(std::vector<int>& nodes, const char* sub) const
 {
-    for(unsigned i=0 ; i < subs.size() ; i++) if(strcmp(subs[i].c_str(), sub)==0) nodes.push_back(int(i)) ;
+    for(unsigned i=0 ; i < subs.size() ; i++) 
+        if(strcmp(subs[i].c_str(), sub)==0) 
+            nodes.push_back(int(i)) ;
 }
 
 inline void stree::get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const
@@ -2384,21 +2511,27 @@ inline int stree::get_ridx_olvid(unsigned ridx) const
     return ridx == 0 ? get_remainder_olvid() : get_factor_olvid(ridx - 1 ) ; 
 }
 
-
-
-
 inline int stree::get_num_ridx() const 
 {
     return 1 + get_num_factor() ; 
 }
 
-
-
 /**
-stree::get_factor_nodes
---------------------------
+stree::get_factor_nodes : collect outer volume node indices of *idx* factor (0-based)
+--------------------------------------------------------------------------------------
 
-Get node indices of the *idx* factor (0-based)
+Q: Is factor idx 0 the global remainder OR is it the first instance factor ?
+A: First instance (judging by get_num_ridx, get_ridx_olvid) the remainder
+   is treated separately from the factors. 
+
+Used by U4Tree::identifySensitiveInstances
+
+1. lookup the subtree digest for factor idx
+2. get nodes that match that substree digest
+
+As the factor digests are from the outer volume nodes 
+this provides node indices of the outer volumes of 
+that the factor. 
 
 **/
 
@@ -2412,14 +2545,12 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
     get_nodes(nodes, sub.c_str() );  
 
     bool consistent = int(nodes.size()) == freq ; 
-    if(!consistent) 
-        std::cerr 
-            << "stree::get_factor_nodes INCONSISTENCY"
-            << " nodes.size " << nodes.size()
-            << " freq " << freq 
-            << std::endl 
-            ;
-
+    if(!consistent) std::cerr 
+        << "stree::get_factor_nodes INCONSISTENCY"
+        << " nodes.size " << nodes.size()
+        << " freq " << freq 
+        << std::endl 
+        ;
     assert(consistent );   
 }
 
@@ -2624,17 +2755,37 @@ stree::add_inst
 
 Canonically invoked from U4Tree::Create 
 
-* important to only use 32 bit for identity info, so 64 bit survive narrowing 
+1. lookup snode from nidx
+2. encode snode identity info into transform fourth columns
+3. collect transforms into inst, iinst vectors and nidx into inst_nidx
+
+* NB restrict to 32 bit of identity info, so it survives narrowing 
+
+
+idea : bitpack (nidx, gas_idx) into 4th column ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* nidx is very useful for debug
+* gas_idx is usually small (currently ~10 for JUNO)
+
+::
+
+    In [5]: 0xfffff, 0xfff
+    Out[5]: (1048575, 4095)
 
 
 **/
 
-inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
+inline void stree::add_inst( 
+    glm::tmat4x4<double>& tr_m2w,  
+    glm::tmat4x4<double>& tr_w2m, 
+    int gas_idx, 
+    int nidx )
 {
     assert( nidx > -1 && nidx < int(nds.size()) ); 
-    const snode& nd = nds[nidx];        // structural volume node
+    const snode& nd = nds[nidx];    // structural volume node
 
-    int ins_idx = int(inst.size());     // follow sqat4.h::setIdentity
+    int ins_idx = int(inst.size()); // follow sqat4.h::setIdentity
 
     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
 

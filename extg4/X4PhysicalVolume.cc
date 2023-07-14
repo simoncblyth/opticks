@@ -1407,7 +1407,7 @@ void X4PhysicalVolume::convertStructure()
     assert(m_top) ;
     LOG(LEVEL) << "[ creating large tree of GVolume instances" ; 
 
-    m_tree = new stree ; 
+    m_tree = new stree ;   // HMM: m_tree is a spy from the future 
     m_ggeo->setTree(m_tree); 
     
 
@@ -2038,6 +2038,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     ///////// sensor decision for the volume happens here  ////////////////////////
     //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
+    ////// HMM : SOMEWHAT OBTUSE GETTING SOMETHING FROM BOUNDARY WITHIN THE NODE VISIT 
 
     bool is_sensor = m_blib->isSensorBoundary(boundary) ; // this means that isurf/osurf has non-zero EFFICIENCY property 
     unsigned sensorIndex = GVolume::SENSOR_UNSET ; 

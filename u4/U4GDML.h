@@ -143,7 +143,7 @@ inline void U4GDML::read(const char* path_)
     std::string out = coutbuf.str();
     std::string err = cerrbuf.str();
     bool verbose = getenv("VERBOSE") != nullptr ;  
-    std::cout << sdirect::OutputMessage("G4GDMLParser::read", out, err, verbose );
+    std::cout << sdirect::OutputMessage("U4GDML::read", out, err, verbose );
 
     const G4String setupName = "Default" ;
     world = parser->GetWorldVolume(setupName) ; 

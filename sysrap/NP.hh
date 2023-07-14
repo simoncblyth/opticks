@@ -4062,7 +4062,8 @@ inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsign
             ;
         if(is_diff) mismatch += 1 ;  
     }
-    std::cout 
+    if(mismatch > 0) std::cout 
+        << "NP::DumpCompare "
         << std::setw(4) << "sum" 
         << " a " << std::setw(10) << std::fixed << std::setprecision(4) << av_sum 
         << " b " << std::setw(10) << std::fixed << std::setprecision(4) << bv_sum 

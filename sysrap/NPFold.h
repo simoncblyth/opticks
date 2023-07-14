@@ -984,7 +984,13 @@ inline void NPFold::_save_arrays(const char* base) // using the keys with .npy e
         const NP* a = aa[i] ; 
         if( a == nullptr )
         {
-            std::cout << " base " << base << " k " << k << " ERROR MISSING ARRAY FOR KEY " << std::endl ;   
+            if(VERBOSE) std::cerr 
+                << "NPFold::_save_arrays"
+                << " base " << base 
+                << " k " << k 
+                << " ERROR MISSING ARRAY FOR KEY " 
+                << std::endl 
+                ;   
         }
         else
         { 

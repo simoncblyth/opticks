@@ -3,12 +3,6 @@
 gx.py : examine geometry from G4CXOpticks::saveGeometry 
 ==========================================================
 
-
-::
-
-
-
-
 """
 
 import numpy as np

@@ -101,6 +101,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        unsigned getNumBnd() const ;
        void closeConstituents();
   public:
+       std::string brief(const guint4& bnd) const ;
        std::string description(const guint4& bnd) const ;
        std::string shortname(const guint4& bnd) const ;
        std::string shortname(unsigned boundary) const ;
