@@ -34,6 +34,12 @@ add implicits.
 When an implicit is detected the osur or isur is 
 changed accordingly.   
 
+Confusing and pointless osur from absorbers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+see ~/opticks/notes/issues/optical_ems_4_getting_too_many_from_non_sensor_Vacuum_Steel_borders.rst
+
+
 **/
 
 #include "U4Mat.h"
