@@ -119,23 +119,28 @@ u:iindex
 
 u:identity
     see cx:CSGOptiX7.cu:__closesthit__ch 
-    (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )
 
-    prim_idx:optixGetPrimitiveIndex 
-        see cx:GAS_Builder::MakeCustomPrimitivesBI_11N  
-        (1+index-of-CSGPrim within CSGSolid/GAS)
-    
-    instance_id:optixGetInstanceId  
-        user supplied instanceId, within identity are 
-        restricted to 16 bits::
+    FROM July 2023
+        instance_id which is *sensor_identifier* (as need lpmtid for QPMT).  
 
-            In [1]: 0xffff
-            Out[1]: 65535
+    FORMERLY
+        (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )
 
-        * sy:sqat4::get_IAS_OptixInstance_instanceId
-        * cx:IAS_Builder::CollectInstances
+        prim_idx:optixGetPrimitiveIndex 
+            see cx:GAS_Builder::MakeCustomPrimitivesBI_11N  
+            (1+index-of-CSGPrim within CSGSolid/GAS)
+        
+        instance_id:optixGetInstanceId  
+            user supplied instanceId, within identity are 
+            restricted to 16 bits::
 
-        This was *ins_idx*, changed July 2023 to *sensor_identifier* as need lpmtid for QPMT.  
+                In [1]: 0xffff
+                Out[1]: 65535
+
+            * sy:sqat4::get_IAS_OptixInstance_instanceId
+            * cx:IAS_Builder::CollectInstances
+
+
 
 u:boundary
     crucial bnd index representing unique (omat,osur,isur,imat) 

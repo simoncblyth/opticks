@@ -4,7 +4,7 @@ QSimTest_shakedown_following_QPMT_extension
 Context
 ---------
 
-* next :doc:`review_sensor_id`
+* next :doc:`review_sensor_id` (FIXED sensor info) 
 
 
 FIXED lack of metadata in new bnd
@@ -423,8 +423,87 @@ more of the prd quad2::
 
 
 
-TODO : mock qpmt.h landings with ART 4x4 collection into aux
----------------------------------------------------------------
+TODO : mock qsim.h/qpmt.h landings with ART 4x4 collection into aux
+------------------------------------------------------------------------
+
+
+DONE : cx/CSGOptiX7.cu need full instance_id in the identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    447 extern "C" __global__ void __closesthit__ch()
+    448 {
+    449     unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
+    450     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build 
+    451     unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    452 
+    453     //unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
+    454     unsigned identity = instance_id ;  // CHANGED July 2023, as now carrying sensor_identifier, see sysrap/sqat4.h 
+    455 
+
+
+
+DONE :  change optical buf Payload_Y to the ems enum
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+sysrap/sstandard.h::
+
+    365                 char OSN0 = *OSN.c_str() ;
+    366                 int ems = smatsur::TypeFromChar(OSN0) ;
+    367 
+    368                 int Payload_Y = ems ;  
+    369                 //int Payload_Y = Type ; 
+
+::
+
+    039 inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
+     40 {
+     41     int type = -1  ;
+     42     switch(OpticalSurfaceName0)
+     43     {
+     44         case '\0': type = smatsur_Material                       ; break ;
+     45         case '-':  type = smatsur_NoSurface                      ; break ;
+     46         case '@':  type = smatsur_Surface_zplus_sensor_CustomART ; break ;
+     47         case '#':  type = smatsur_Surface_zplus_sensor_A         ; break ;
+     48         default:   type = smatsur_Surface                        ; break ;
+     49     }
+     50     return type ;
+     51 }
+
+
+
+
+WIP : qsim.h qsim::propagate needs to branch on that enum 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 1st check consistency of optical.x and optical.y  
+
+::
+
+    1482 inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx )
+    1483 {
+    ...
+    1484     const unsigned boundary = ctx.prd->boundary() ;
+    1485     const unsigned identity = ctx.prd->identity() ;
+    1486     const unsigned iindex = ctx.prd->iindex() ;
+    1487     const float lposcost = ctx.prd->lposcost() ;
+    1488 
+
+    1509 
+    1510     if( command == BOUNDARY )
+    1511     {
+    1512         command = ctx.s.optical.x == 0 ?
+    1513                                       propagate_at_boundary( flag, rng, ctx )
+    1514                                   :
+    1515                                       propagate_at_surface( flag, rng, ctx )
+    1516                                   ; 
+    1517 
+    1518 
+    1519     }
+
 
 
 

@@ -365,8 +365,8 @@ inline NP* sstandard::make_optical(
                 char OSN0 = *OSN.c_str() ;                     
                 int ems = smatsur::TypeFromChar(OSN0) ; 
 
-                //int Payload_Y = ems ; 
-                int Payload_Y = Type ; 
+                int Payload_Y = ems ; 
+                //int Payload_Y = Type ; 
 
                 if(VERBOSE) std::cout 
                     << " bnd:i "   << std::setw(3) << i 

@@ -1,5 +1,5 @@
-review_sensor_id
-====================
+review_sensor_id : COMPLETED AFTER OLD WORKFLOW FIX FOR NEW PMT GEOMETRY 
+===========================================================================
 
 Context
 ----------
@@ -14,7 +14,9 @@ Overview
 * DONE : examine GGeo : find that MM 2,3 lack any sensor_id : SMOKING GUN 
 
   * SMOKING GUN : AS OLD/NEW MUST HAVE SAME IDEA OF SENSORS 
-  * reason established : it is the PMT geometry change
+  * reason established : it is the PMT geometry change 
+  * Added CSG_GGeo_Convert::CheckConsistent that is enforced 
+    from CSG_GGeo_Convert::init  
 
 * WHY IS GGEO STILL INVOLVED FOR SENSORS ? 
 
@@ -23,7 +25,7 @@ Overview
 * NOTE : GGeo has its own separate stree ? Used for old/new comparison presumably. 
 * TODO : compare old and new inst and then switch to the new 
 
-  * how to switch to U4Tree.h/stree.h inst ?  
+  * how to switch to U4Tree.h/stree.h inst ?  Need to complete CSG/tests/CSG_stree_Convert.h  
   * CSGOptiX::Create just uploads the CSGFoundry fd 
   * CSGFoundry fd is still created with CSG_GGeo_Convert 
 
@@ -353,8 +355,8 @@ THIS NEEDS SOME ASSERTS : TO MATCH OLD/NEW SENSORS
 
 
 
-GGeo stree consistency check
-------------------------------
+FIXED : GGeo stree consistency check : needed to require sensor_idx > 0 
+--------------------------------------------------------------------------
 
 ::
 
@@ -498,26 +500,27 @@ HMM probably mis-interpretation of unfilled zero::
     In [26]: np.max(f[:,:,3], axis=1 )
     Out[26]:
     array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ...
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=uint32)
 
-In [27]: np.count_nonzero( np.max(f[:,:,3], axis=1 )  )                                                                                                      
-Out[27]: 0
-
-
+    In [27]: np.count_nonzero( np.max(f[:,:,3], axis=1 )  )
+    Out[27]: 0
 
 
 
 
 G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?
 --------------------------------------------------------------------------------
+
+The two workflows (X4/GGeo and U4Tree/stree) 
+are invoked from G4CXOpticks and some info passing is done using new sensor 
+info from the old.  Thats messy and only admissable as the old workflow will 
+be eliminated as soon as its possible to do so. 
+
+Moving to new workflow (enabling removal of X4/GGeo) requires completion of::
+
+    CSGFoundry* fd_ = CSG_stree_Convert::Translate( st ); 
+
 
 ::
 
@@ -559,6 +562,8 @@ G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?
 
 Local G4CXOpticks_setGeometry_Test.sh cycles to investigate
 -------------------------------------------------------------
+
+Limited utility as GDML looses sensor info. 
 
 
 
@@ -637,8 +642,8 @@ Thinking of going direct from stree to CSGFoundry in::
 
 
 
-Issue : Unexpected qat4.h sensor info. 
--------------------------------------------
+Issue : Unexpected qat4.h sensor info.  (NOW FIXED, SEE BELOW)
+-----------------------------------------------------------------
 
 ::
 
@@ -965,8 +970,8 @@ GGeo iid
 
 
 
-Seems the GGeo::isSensor is no longer working as needed
-----------------------------------------------------------
+Seems the GGeo::isSensor is no longer working as needed (WAS DUE TO THE NEW PMT GEOMETRY)
+---------------------------------------------------------------------------------------------
 
 ::
 
@@ -1186,7 +1191,7 @@ GGeo::postDirectTranslation
 
 
 
-WIP : trace where qat4 inst identity info comes from
+DONE : trace where qat4 inst identity info comes from
 -----------------------------------------------------------
 
 ::
@@ -1249,7 +1254,7 @@ YUK, old/new mismash is handling the sensor_id::
 HMM this is relying on the single mm sensor index from old workflow
 having the same meaning as the sensor index used in the new workflow. 
 
-Suspect the the additional TT SD are messing up the indexing.::
+Suspect the the additional TT SD are messing up the indexing. (ACTUALLY NO, THE ISSUE WAS FROM NEW PMT GEOM)::
 
     epsilon:stree blyth$ GEOM st
     cd /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree
@@ -1400,12 +1405,33 @@ WIP : need lpmtid GPU side for QPMT
     Out[6]: (array([2, 3, 4]),)
 
 
+AFTER THE FIX::
+
+    In [1]: sensor_identifier = cf.inst[:,2,3].view(np.int32) ; sensor_identifier
+    Out[1]: array([    -1, 300000, 300001, 300002, 300003, ...,     -1,     -1,     -1,     -1,     -1], dtype=int32)
+
+    In [2]: sensor_identifier.shape
+    Out[2]: (48477,)
+
+    In [3]: np.where( sensor_identifier == -1 )[0].size
+    Out[3]: 2865
+
+    In [4]: np.where( sensor_identifier > -1 )[0].size
+    Out[4]: 45612
+
+
+    In [5]: 590*4+504+1
+    Out[5]: 2865
+
+    In [6]: 25600+12615+4997+2400
+    Out[6]: 45612
 
 
 
 
-WIP : Not getting expected sensor_id
----------------------------------------
+
+FIXED : Not getting expected sensor_id
+-----------------------------------------
 
 ::
 
@@ -1778,7 +1804,7 @@ When restrict to sensor nodes get expected counts::
 
 
 
-WIP : Check U4Tree.h/stree.h snode::sensor_id/name/index
+DONE : Check U4Tree.h/stree.h snode::sensor_id/name/index
 -----------------------------------------------------------
 
 
