@@ -90,7 +90,10 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 
 void CSG_GGeo_Convert::init()
 {
-    LOG(info) << DescConsistency(ggeo, tree); 
+    int consistent = CheckConsistent(ggeo, tree) ; 
+    LOG_IF(fatal, consistent != 0 ) << DescConsistent(ggeo, tree); 
+    LOG(info) << DescConsistent(ggeo, tree); 
+    assert( consistent == 0 ); 
 
     ggeo->getMeshNames(foundry->meshname); 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
@@ -291,7 +294,22 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     }
 }
 
-std::string CSG_GGeo_Convert::DescConsistency(const GGeo* gg, const stree* st ) // static 
+
+int CSG_GGeo_Convert::CheckConsistent(const GGeo* gg, const stree* st ) // static 
+{
+    bool one_based_index = true ; 
+    std::vector<int> gg_all_sensor_index ; 
+    gg->getAllSensorIndex(gg_all_sensor_index, one_based_index ); 
+
+    int gg_all_sensor_index_num = gg_all_sensor_index.size() ; 
+    int st_all_sensor_id_num = st ? st->sensor_id.size() : -1 ; 
+
+    int rc = 0 ; 
+    if( gg_all_sensor_index_num != st_all_sensor_id_num ) rc += 1000 ; 
+    return rc ; 
+}
+
+std::string CSG_GGeo_Convert::DescConsistent(const GGeo* gg, const stree* st ) // static 
 {
     bool one_based_index = true ; 
     std::vector<int> gg_all_sensor_index ; 
@@ -301,7 +319,7 @@ std::string CSG_GGeo_Convert::DescConsistency(const GGeo* gg, const stree* st ) 
     int st_all_sensor_id_num = st ? st->sensor_id.size() : -1 ; 
 
     std::stringstream ss ; 
-    ss << "CSG_GGeo_Convert::DescConsistency"
+    ss << "CSG_GGeo_Convert::DescConsistent"
         << " gg_all_sensor_index_num " << gg_all_sensor_index_num
         << " st_all_sensor_id_num " << st_all_sensor_id_num
         << std::endl  

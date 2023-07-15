@@ -45,7 +45,9 @@ struct CSG_GGEO_API CSG_GGeo_Convert
     void convertAllSolid();
     CSGSolid* convertSolid(unsigned repeatIdx );
     void addInstances(unsigned repeatIdx );
-    static std::string DescConsistency(const GGeo* gg, const stree* st ); 
+
+    static int CheckConsistent(const GGeo* gg, const stree* st ); 
+    static std::string DescConsistent(const GGeo* gg, const stree* st ); 
 
 
     CSGPrim*  convertPrim(const GParts* comp, unsigned primIdx );
