@@ -346,6 +346,8 @@ struct stree
 
     std::string desc_sensor() const ; 
     int get_num_nd_sensor() const ; 
+    void get_sensor_nidx( std::vector<int>& sensor_nidx ) const ; 
+
     std::string desc_sensor_nd(int edge) const ; 
 
     std::string desc_sensor_id(unsigned edge=10) const ; 
@@ -1002,43 +1004,72 @@ inline int stree::get_num_nd_sensor() const
     return num_nd_sensor ; 
 }
 
+inline void stree::get_sensor_nidx( std::vector<int>& sensor_nidx ) const 
+{
+    int num_nd = nds.size() ; 
+    for(int nidx=0 ; nidx < num_nd ; nidx++) 
+        if(nds[nidx].sensor_id > -1 ) 
+            sensor_nidx.push_back(nidx) ; 
+}
+
 
 inline std::string stree::desc_sensor_nd(int edge) const 
 {
     int num_nd = nds.size() ; 
     int num_nd_sensor = get_num_nd_sensor() ; 
 
+    std::vector<int> sensor_nidx ; 
+    get_sensor_nidx(sensor_nidx); 
+
+    int num_sid = sensor_nidx.size() ; 
+    assert( num_sid == num_nd_sensor ); 
+
     std::stringstream ss ; 
     ss << "[stree::desc_sensor_nd" << std::endl ; 
-    ss << " edge          " << edge << std::endl ; 
-    ss << " num_nd        " << num_nd << std::endl ; 
-    ss << " num_nd_sensor " << num_nd_sensor << std::endl ; 
+    ss << " edge            " << edge << std::endl ; 
+    ss << " num_nd          " << num_nd << std::endl ; 
+    ss << " num_nd_sensor   " << num_nd_sensor << std::endl ; 
+    ss << " num_sid         " << num_sid << std::endl ; 
 
-    int count = 0 ; 
+    int offset = -1 ;  
 
-    for(int nidx=0 ; nidx < num_nd ; nidx++)
+    for(int i=0 ; i < num_sid ; i++)
     {
-        const snode& nd = nds[nidx] ; 
-        if( nd.sensor_id > -1 ) 
-        { 
-            if( edge == 0 || count < edge || count > num_nd_sensor - edge ) 
-            {
-                ss 
-                    << " nidx " << std::setw(6) << nidx     
-                    << " count " << std::setw(6) << count     
-                    << " sensor_id " << std::setw(6) << nd.sensor_id
-                    << " sensor_index " << std::setw(6) << nd.sensor_index
-                    << " sensor_name " << std::setw(6) << nd.sensor_name
-                    << std::endl
-                    ;
-            }
-            else if( count == edge )  
-            {
-                 ss << "..." << std::endl ; 
-            }
-            count += 1 ; 
-        }
+        int nidx = sensor_nidx[i] ; 
+        int n_nidx = i < num_sid - 1 ? sensor_nidx[i+1] : sensor_nidx[i] ;  
 
+        const snode& nd = nds[nidx] ;
+        const snode& n_nd = nds[n_nidx] ; 
+
+        int sid = nd.sensor_id ;  
+        int n_sid = n_nd.sensor_id ;  
+
+        assert( sid > -1 ); 
+        assert( n_sid > -1 ); 
+
+        bool head = i < edge ; 
+        bool tail = (i > (num_sid - edge)) ;  
+        bool tran = std::abs(n_sid - sid) > 1 ; 
+
+        if(tran) offset=0 ; 
+        bool tran_post = offset > -1 && offset < 4 ; 
+
+        if(head || tail || tran || tran_post) 
+        {
+            ss 
+                << " nidx " << std::setw(6) << nidx     
+                << " i " << std::setw(6) << i     
+                << " sensor_id " << std::setw(6) << nd.sensor_id
+                << " sensor_index " << std::setw(6) << nd.sensor_index
+                << " sensor_name " << std::setw(6) << nd.sensor_name
+                << std::endl
+                ;
+        }
+        else if(i == edge) 
+        {
+            ss << "..." << std::endl ; 
+        }
+        offset += 1 ; 
     }
     ss << "]stree::desc_sensor_nd" << std::endl ; 
     std::string str = ss.str(); 

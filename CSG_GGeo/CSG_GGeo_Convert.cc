@@ -90,7 +90,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 
 void CSG_GGeo_Convert::init()
 {
-    Check_GGeo_stree_consistency(ggeo, tree); 
+    LOG(info) << DescConsistency(ggeo, tree); 
 
     ggeo->getMeshNames(foundry->meshname); 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
@@ -291,7 +291,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     }
 }
 
-void CSG_GGeo_Convert::Check_GGeo_stree_consistency(const GGeo* gg, const stree* st ) // static 
+std::string CSG_GGeo_Convert::DescConsistency(const GGeo* gg, const stree* st ) // static 
 {
     bool one_based_index = true ; 
     std::vector<int> gg_all_sensor_index ; 
@@ -300,11 +300,17 @@ void CSG_GGeo_Convert::Check_GGeo_stree_consistency(const GGeo* gg, const stree*
     int gg_all_sensor_index_num = gg_all_sensor_index.size() ; 
     int st_all_sensor_id_num = st ? st->sensor_id.size() : -1 ; 
 
-    LOG(info) 
+    std::stringstream ss ; 
+    ss << "CSG_GGeo_Convert::DescConsistency"
         << " gg_all_sensor_index_num " << gg_all_sensor_index_num
         << " st_all_sensor_id_num " << st_all_sensor_id_num
+        << std::endl  
         ; 
 
+    ss << gg->descAllSensorIndex() << std::endl ; 
+
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

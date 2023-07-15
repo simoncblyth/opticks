@@ -1958,6 +1958,10 @@ void GGeo::getAllSensorIndex(std::vector<int>& all_sensor_index, bool one_based_
 {
     m_geolib->getAllSensorIndex(all_sensor_index, one_based_index );  
 }
+std::string GGeo::descAllSensorIndex() const 
+{
+    return m_geolib->descAllSensorIndex() ; 
+}
 
 
 void GGeo::dumpNode(unsigned nidx) const 

@@ -295,6 +295,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         unsigned   getNumPlacements(unsigned ridx) const ;
         unsigned   getNumVolumes(unsigned ridx) const ;
         void       getAllSensorIndex(std::vector<int>& all_sensor_index, bool one_based_index=true ) const ;  
+        std::string descAllSensorIndex() const ; 
         void       dumpShape(const char* msg="GGeo::dumpShape") const ; 
     public:
         // via GNodeLib

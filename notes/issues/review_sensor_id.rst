@@ -353,6 +353,17 @@ THIS NEEDS SOME ASSERTS : TO MATCH OLD/NEW SENSORS
 
 
 
+GGeo stree consistency check
+------------------------------
+
+::
+
+    2023-07-15 03:12:02.679 INFO  [446636] [G4CXOpticks::setGeometry@268] 
+    2023-07-15 03:12:02.690 INFO  [446636] [CSG_GGeo_Convert::Check_GGeo_stree_consistency@303]  gg_all_sensor_index_num 48477 st_all_sensor_id_num 45612
+    2023-07-15 03:12:03.543 INFO  [446636] [G4CXOpticks::setGeometry_@343] [ fd 0x164774d50
+
+
+
 
 G4CXOpticks : how are the two workflows coordinated ? How to jump to new one ?
 --------------------------------------------------------------------------------

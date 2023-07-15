@@ -460,7 +460,6 @@ void GGeoLib::getAllSensorIndex( std::vector<int>& all_sensor_index, bool one_ba
     all_sensor_index.clear(); 
 
     int nmm = getNumMergedMesh();
-
     for(int i=0 ; i < nmm ; i++)
     {
         const GMergedMesh* mm = getMergedMesh(i);
@@ -469,8 +468,32 @@ void GGeoLib::getAllSensorIndex( std::vector<int>& all_sensor_index, bool one_ba
 
         all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
     }
-
 }
+
+std::string GGeoLib::descAllSensorIndex() const 
+{
+    std::vector<int> all_sensor_index ; 
+    bool one_based_index = true ; 
+
+    int nmm = getNumMergedMesh();
+    std::stringstream ss ; 
+    ss << "GGeoLib::descAllSensorIndex"
+       << " nmm " << nmm
+       ; 
+
+    for(int i=0 ; i < nmm ; i++)
+    {
+        const GMergedMesh* mm = getMergedMesh(i);
+        std::vector<int> sensor_index ; 
+        mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
+        ss << "( " << i << " : " << sensor_index.size() << ")" ;  
+        all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
+        ss << " all[ " << all_sensor_index.size() << "]" << std::endl ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 
