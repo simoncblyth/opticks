@@ -16,5 +16,5 @@ if __name__ == '__main__':
     st = stree(f, symbol="st")
     print(repr(st))
 
-
+    print("f:fold f.base %s   st:stree " % f.base )
 

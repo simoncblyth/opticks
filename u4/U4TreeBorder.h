@@ -58,10 +58,13 @@ struct U4TreeBorder
     const char* _osolid ; 
     const std::string& inam ; 
     const std::string& onam ; 
-    const G4LogicalSurface* const osur_ ; 
-    const G4LogicalSurface* const isur_ ;  
+
     const G4MaterialPropertyVector* i_rindex ; 
     const G4MaterialPropertyVector* o_rindex ; 
+
+    const G4LogicalSurface* const osur_ ; 
+    const G4LogicalSurface* const isur_ ;  
+
     int  implicit_idx ; 
     bool implicit_isur ; 
     bool implicit_osur ; 
@@ -107,12 +110,12 @@ inline U4TreeBorder::U4TreeBorder(
     _osolid(osolid.c_str()),
     inam(pv->GetName()), 
     onam(pv_p ? pv_p->GetName() : inam), 
-    osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface
-    isur_(U4Surface::Find( pv  , pv_p )),
     i_rindex(U4Mat::GetRINDEX( imat_ )), 
     o_rindex(U4Mat::GetRINDEX( omat_ )),
+    osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface
+    isur_( i_rindex == nullptr ? nullptr : U4Surface::Find( pv  , pv_p )), // disable isur from absorbers without RINDEX
     implicit_idx(-1),
-    implicit_isur(i_rindex != nullptr && o_rindex == nullptr),   // now just supects 
+    implicit_isur(i_rindex != nullptr && o_rindex == nullptr),  
     implicit_osur(o_rindex != nullptr && i_rindex == nullptr)
 {
 }
