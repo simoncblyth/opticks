@@ -43,6 +43,8 @@ TODO:
 #include "scurand.h"
 #include "sevent.h"
 #include "sstate.h"
+#include "smatsur.h"
+
 
 #ifndef PRODUCTION
 #include "srec.h"
@@ -83,7 +85,7 @@ struct qsim
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
-    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const ; 
+    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance=-1.f ) const ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -97,7 +99,8 @@ struct qsim
 
     QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
-    QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_surface(           unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_surface_CustomART( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
 
     QSIM_METHOD void    reflect_diffuse(                       curandStateXORWOW& rng, sctx& ctx );
     QSIM_METHOD void    reflect_specular(                      curandStateXORWOW& rng, sctx& ctx );
@@ -726,7 +729,7 @@ incidence.
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const 
+inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance ) const 
 {
     sphoton& p = ctx.p ; 
     const sstate& s = ctx.s ; 
@@ -771,7 +774,11 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     const float2 E2_r = make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     ) ;  // ( S:perp, P:parl )    
     const float2 RR = normalize(E2_r) ; 
     const float2 TT = normalize(E2_t) ; 
-    const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
+    const float TransCoeff = theTransmittance >= 0.f ? 
+                                                           theTransmittance 
+                                                     :
+                                                           ( tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ) 
+                                                     ; 
 
     /* 
     E1, E2_t, E2_t: incident, transmitted and reflected amplitudes in S and P directions 
@@ -1105,6 +1112,7 @@ qsim::propagate_at_multifilm
 -------------------------------
 
 based on https://juno.ihep.ac.cn/trac/browser/offline/trunk/Simulation/DetSimV2/PMTSim/src/junoPMTOpticalModel.cc 
+which follows a flawed approach to polarization 
 
 Rs: s-component reflect probability
 Ts: s-component transmit probability
@@ -1314,6 +1322,56 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
     return action ; 
 }
 
+/**
+qsim::propagate_at_surface_CustomART
+-------------------------------------
+
+This method needs to return action BREAK/CONTINUE and set one of four corresponding flag values. 
+
+     action = BREAK ; 
+     flag = SURFACE_DETECT ; 
+     flag = SURFACE_ABSORB ; 
+
+     action = CONTINUE ; 
+     flag = BOUNDARY_TRANSMIT ; 
+     flag = BOUNDARY_REFLECT ; 
+ 
+**/
+
+inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
+{
+    const sphoton& p = ctx.p ; 
+    const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal 
+    int lpmtid = ctx.prd->identity() ;  
+    float minus_cos_theta = dot(p.mom, *normal); 
+    float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
+
+    float ARTE[4] ; 
+    pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
+
+    const float& theAbsorption = ARTE[0]; 
+    //const float& theReflectivity = ARTE[1]; 
+    const float& theTransmittance = ARTE[2]; 
+    const float& theEfficiency = ARTE[3]; 
+
+    float u_theAbsorption = curand_uniform(&rng);
+    int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
+     
+    if( action == BREAK )
+    {
+        float u_theEfficiency = curand_uniform(&rng) ; 
+        flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;  
+    }
+    else
+    {
+        // HMM : need to do most of propagate_at_boundary 
+        // but using the CustomART theTransmittance as the TransCoeff 
+        propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
+    } 
+    return action ; 
+}
+
+
 
 /**
 qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
@@ -1475,7 +1533,36 @@ qsim::propagate : one "bounce" propagate_to_boundary/propagate_at_boundary
 
 This is canonically invoked from within the bounce loop of CSGOptiX/OptiX7Test.cu:simulate 
 
-TODO: missing needs to return BREAK   
+Formerly thought "MISSING needs to return BREAK" but MISSING 
+intersects only happen with "broken" test geometry so no need to be 
+concerned with that. 
+
+z-plus special sensor surfaces 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The two kinds of z-plus sensor surfaces need to fallback to ordinary 
+surface handling for z-minus, when lposcost < 0.f at lower z-hemi.  
+Initially thought would need to use optical.z to refer to 
+the fallback and call qbnd::fill_state again. 
+But of course that is wrong, the osur/isur surface references 
+already provide the z-minus fallback.
+Hence can implement the fallback using standard surface branch
+with no change to qbnd::fill_state. 
+For z-plus with lposcost > 0.f upper z-hemi simply ignore 
+the s.surface
+
+traditional POM special surface : smatsur_Surface_zplus_sensor_A
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+HMM: could use standard surface handling for this but with perfect
+detector surface swapped in.  
+
+
+TMM multilayer POM special surface : smatsur_Surface_zplus_sensor_CustomART
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here need to wheel in qpmt.h to do the stack calc following C4CustomART::doIt
+
 
 **/
 
@@ -1484,7 +1571,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
     const unsigned boundary = ctx.prd->boundary() ; 
     const unsigned identity = ctx.prd->identity() ; 
     const unsigned iindex = ctx.prd->iindex() ; 
-    const float lposcost = ctx.prd->lposcost() ; 
+    const float lposcost = ctx.prd->lposcost() ;  // local frame intersect position cosine theta 
 
     const float3* normal = ctx.prd->normal(); 
     float cosTheta = dot(ctx.p.mom, *normal ) ;    
@@ -1507,15 +1594,47 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
     printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", ctx.idx, bounce, command, flag, ctx.s.optical.x  );   
 #endif
 
+/**
     if( command == BOUNDARY )
     {
+
         command = ctx.s.optical.x == 0 ? 
                                       propagate_at_boundary( flag, rng, ctx ) 
                                   : 
                                       propagate_at_surface( flag, rng, ctx ) 
                                   ;  
-             
 
+    }
+**/ 
+
+
+    if( command == BOUNDARY )
+    {
+        int ems = ctx.s.optical.y ; 
+
+        if( ems == smatsur_NoSurface )
+        {
+            command = propagate_at_boundary( flag, rng, ctx ) ; 
+        }
+        else if( ems == smatsur_Surface )
+        {
+            command = propagate_at_surface( flag, rng, ctx ) ; 
+        }
+        else if( lposcost < 0.f )  
+        {
+            command = propagate_at_surface( flag, rng, ctx ) ; 
+        }
+        else if( ems == smatsur_Surface_zplus_sensor_A )
+        {
+            float u_surface_burn = curand_uniform(&rng);  // for random alignment 
+            flag = SURFACE_DETECT ; 
+            command = BREAK ; 
+            // above is possible, but more difficult for random alignment 
+        }
+        else if( ems == smatsur_Surface_zplus_sensor_CustomART )
+        {
+            command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+        }
     }
 
     ctx.p.set_flag(flag);    // hmm could hide this ?

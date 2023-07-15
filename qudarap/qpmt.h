@@ -318,6 +318,10 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
     arte4[0] = A ;         // aka theAbsorption
     arte4[1] = R/(one-A) ; // aka theReflectivity
     arte4[2] = T/(one-A) ; // aka theTransmittance
+
+    // Q: Does theReflectivity+theTransmittace = 1.f ?
+    // A: 
+
 }
 
 #endif
