@@ -466,7 +466,14 @@ void GGeoLib::getAllSensorIndex( std::vector<int>& all_sensor_index, bool one_ba
         std::vector<int> sensor_index ; 
         mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
 
-        all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
+        int num_sensor_index = sensor_index.size(); 
+        for(int i=0 ; i < num_sensor_index  ; i++)
+        {
+            int idx = sensor_index[i] ; 
+            if(idx > 0) all_sensor_index.push_back(idx) ; 
+        }
+        // WRONG: NEED TO SKIP ZEROS 
+        //all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
     }
 }
 
@@ -487,7 +494,17 @@ std::string GGeoLib::descAllSensorIndex() const
         std::vector<int> sensor_index ; 
         mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
         ss << "( " << i << " : " << sensor_index.size() << ")" ;  
-        all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
+
+        // WRONG: NEED TO SKIP ZEROS 
+        //all_sensor_index.insert( all_sensor_index.end(), sensor_index.begin(), sensor_index.end() );  
+
+        int num_sensor_index = sensor_index.size(); 
+        for(int i=0 ; i < num_sensor_index  ; i++)
+        {
+            int idx = sensor_index[i] ; 
+            if(idx > 0) all_sensor_index.push_back(idx) ; 
+        }
+
         ss << " all[ " << all_sensor_index.size() << "]" << std::endl ;  
     }
     std::string str = ss.str(); 

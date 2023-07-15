@@ -359,8 +359,159 @@ GGeo stree consistency check
 ::
 
     2023-07-15 03:12:02.679 INFO  [446636] [G4CXOpticks::setGeometry@268] 
-    2023-07-15 03:12:02.690 INFO  [446636] [CSG_GGeo_Convert::Check_GGeo_stree_consistency@303]  gg_all_sensor_index_num 48477 st_all_sensor_id_num 45612
+    2023-07-15 03:12:02.690 INFO  [446636] [CSG_GGeo_Convert::Check_GGeo_stree_consistency@303]  gg_all_sensor_index_num 
+        48477 st_all_sensor_id_num 45612
+
     2023-07-15 03:12:03.543 INFO  [446636] [G4CXOpticks::setGeometry_@343] [ fd 0x164774d50
+
+HUH::
+
+    In [1]: 48477-45612
+    Out[1]: 2865
+
+
+Add GGeoLib::descAllSensorIndex to try to understand this. 
+
+::
+
+    2023-07-15 16:30:52.201 INFO  [13500] [GInstancer::dumpRepeatCandidates@464]  num_repcan 9 dmax 20
+     pdig 2045a3a096e210d85fa8c0fee27a6e7e ndig  25600 nprog      4 placements  25600 n PMT_3inch_log_phys
+     pdig 59a6b124a905fd704848d326a988234d ndig  12615 nprog      8 placements  12615 n pLPMT_NNVT_MCPPMT
+     pdig 1724c642d955694e387fa6fc24425bed ndig   4997 nprog     11 placements   4997 n pLPMT_Hamamatsu_R12860
+     pdig 1a5adaf138632937e4bc8a04e8787be3 ndig   2400 nprog      5 placements   2400 n mask_PMT_20inch_vetolMaskVirtual_phys
+     pdig ed3d2c21991e3bef5e069713af9fa6ca ndig    590 nprog      0 placements    590 n lSteel_phys
+     pdig ac627ab1ccbdb62ec96e702f07f6425b ndig    590 nprog      0 placements    590 n lFasteners_phys
+     pdig f899139df5e1059396431415e770c6dd ndig    590 nprog      0 placements    590 n lUpper_phys
+     pdig 38b3eff8baf56627478ec76a704e9b52 ndig    590 nprog      0 placements    590 n lAddition_phys
+     pdig 4c29bcd2a52a397de5036b415af92efe ndig    504 nprog    129 placements    504 n pPanel_0_f_
+    2023-07-15 16:31:12.204 INFO  [13500] [GGeo::postDirectTranslation@648] NOT SAVING : TO ENABLE : export GGeo__postDirectTranslation_save=1 
+    2023-07-15 16:31:12.820 INFO  [13500] [G4CXOpticks::setGeometry@268] 
+    2023-07-15 16:31:12.825 INFO  [13500] [CSG_GGeo_Convert::init@93] CSG_GGeo_Convert::DescConsistency gg_all_sensor_index_num 48477 st_all_sensor_id_num 45612
+    GGeoLib::descAllSensorIndex nmm 10
+    ( 0 : 1) all[ 1]
+    ( 1 : 25600) all[ 25601]
+    ( 2 : 12615) all[ 38216]
+    ( 3 : 4997) all[ 43213]
+    ( 4 : 2400) all[ 45613]
+    ( 5 : 590) all[ 46203]
+    ( 6 : 590) all[ 46793]
+    ( 7 : 590) all[ 47383]
+    ( 8 : 590) all[ 47973]
+    ( 9 : 504) all[ 48477]
+
+HMM non sensor mm are giving indices::
+
+    In [2]: 590*4+504+1
+    Out[2]: 2865
+
+HMM probably mis-interpretation of unfilled zero::
+
+    In [1]: a = np.load("GMergedMesh/0/placement_iidentity.npy")
+
+    In [2]: a.shape
+    Out[2]: (1, 2977, 4)
+
+    In [3]: a[0,:,3]
+    Out[3]: array([0, 0, 0, ..., 0, 0, 0], dtype=uint32)
+
+    In [4]: a[0,:,3].max()
+    Out[4]: 0
+
+
+
+    In [5]: b = np.load("GMergedMesh/1/placement_iidentity.npy")
+
+    In [6]: b.shape
+    Out[6]: (25600, 5, 4)
+
+    In [7]: b[:,:,3]
+    Out[7]:
+    array([[    0,     0, 17613,     0,     0],
+           [    0,     0, 17614,     0,     0],
+           [    0,     0, 17615,     0,     0],
+           ...,
+           [    0,     0, 43210,     0,     0],
+           [    0,     0, 43211,     0,     0],
+           [    0,     0, 43212,     0,     0]], dtype=uint32)
+
+    In [8]: b[0]
+    Out[8]:
+    array([[  244352, 16777216,  8323098,        0],
+           [  244353, 16777217,  8192029,        0],
+           [  244354, 16777218,  8060972,    17613],
+           [  244355, 16777219,  8126509,        0],
+           [  244356, 16777220,  8257561,        0]], dtype=uint32)
+
+    In [9]: np.max( b[:,:,3], axis=1 )
+    Out[9]: array([17613, 17614, 17615, ..., 43210, 43211, 43212], dtype=uint32)
+
+    In [14]: np.count_nonzero(np.max( b[:,:,3], axis=1 ))
+    Out[14]: 25600
+
+
+
+    In [10]: c = np.load("GMergedMesh/2/placement_iidentity.npy")
+
+    In [11]: c.shape
+    Out[11]: (12615, 9, 4)
+
+    In [12]: np.max( c[:,:,3], axis=1 )
+    Out[12]: array([    3,     5,     7, ..., 17589, 17590, 17591], dtype=uint32)
+
+    In [13]: np.count_nonzero(np.max( c[:,:,3], axis=1 ))
+    Out[13]: 12615
+
+
+    In [15]: d = np.load("GMergedMesh/3/placement_iidentity.npy")
+
+    In [16]: d.shape
+    Out[16]: (4997, 12, 4)
+
+    In [17]: np.max( d[:,:,3], axis=1 )
+    Out[17]: array([    1,     2,     4, ..., 17610, 17611, 17612], dtype=uint32)
+
+    In [18]: np.count_nonzero(np.max( d[:,:,3], axis=1 ))
+    Out[18]: 4997
+
+
+    In [19]: e = np.load("GMergedMesh/4/placement_iidentity.npy")
+
+    In [20]: e.shape
+    Out[20]: (2400, 6, 4)
+
+    In [21]: np.max( e[:,:,3], axis=1 )
+    Out[21]: array([43213, 43214, 43215, ..., 45610, 45611, 45612], dtype=uint32)
+
+    In [22]: np.count_nonzero(np.max( e[:,:,3], axis=1 ))
+    Out[22]: 2400
+
+
+
+    In [23]: f = np.load("GMergedMesh/5/placement_iidentity.npy")
+
+    In [24]: f.shape
+    Out[24]: (590, 1, 4)
+
+    In [25]: f[0]
+    Out[25]: array([[   68493, 83886080,  6422553,        0]], dtype=uint32)
+
+    In [26]: np.max(f[:,:,3], axis=1 )
+    Out[26]:
+    array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=uint32)
+
+In [27]: np.count_nonzero( np.max(f[:,:,3], axis=1 )  )                                                                                                      
+Out[27]: 0
+
+
 
 
 
