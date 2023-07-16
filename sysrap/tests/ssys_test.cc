@@ -256,6 +256,35 @@ void test_getenv_multiline()
     std::cout << "[" << ( eval ? eval : "-" ) << "]" << std::endl ; 
 }
 
+void test_fillvec()
+{
+    std::vector<int> vec ; 
+    ssys::fill_vec<int>(vec, "10,20,-30,40,50", ',' ); 
+    assert( vec.size() == 5 && vec[0] == 10 && vec[4] == 50 ); 
+}
+
+void test_fill_vec()
+{
+    std::vector<int> vec ; 
+    ssys::fill_vec<int>(vec, "10,20,-30,40,50", ',' ); 
+    assert( vec.size() == 5 && vec[0] == 10 && vec[4] == 50 ); 
+}
+
+
+template<typename T>
+void test_fill_evec()
+{
+    std::vector<T> vec ; 
+    ssys::fill_evec<T>(vec, "EVEC", "10,20,-30,40,50", ',' ); 
+
+    int num = vec.size() ; 
+
+    std::cout << "EVEC [" ; 
+    for(int i=0 ; i < num ; i++ ) std::cout << vec[i] << " " ; 
+    std::cout << " ] " << num << std::endl ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -278,8 +307,15 @@ int main(int argc, char** argv)
     test_is_listed(); 
     test_make_vec(); 
     test_getenv_multiline(); 
-    */
     test_getenv_vec_multiline(); 
+    test_fill_vec(); 
+    */
+
+    test_fill_evec<int>(); 
+    test_fill_evec<float>(); 
+    test_fill_evec<double>(); 
+    test_fill_evec<std::string>(); 
+
 
  
     return 0 ; 

@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     unsigned num_photon = 8 ; 
     unsigned num_bounce = 6 ; 
-    NP* prd = sprd->duplicate_prd(num_photon, num_bounce); 
+    NP* prd = sprd->mock_prd(num_photon, num_bounce); 
 
     prd->dump(); 
     prd->save("$FOLD/prd.npy"); 

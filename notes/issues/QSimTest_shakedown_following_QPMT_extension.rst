@@ -625,7 +625,7 @@ FIXED : Too many optical ems 4
 
 
 
-WIP : switch qsim::propagate to branch on the ems smatsur.h enum
+DONE : first cut qsim::propagate branching on the smatsur.h enum
 ------------------------------------------------------------------------
 
 ::
@@ -682,5 +682,12 @@ WIP : switch qsim::propagate to branch on the ems smatsur.h enum
     1519     }
 
 
+
+DONE : added lposcost and identity mockup to SPrd.h 
+-----------------------------------------------------
+
+
+WIP : mock propagate testing the extended qsim.h 
+----------------------------------------------------
 
 

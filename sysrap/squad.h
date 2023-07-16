@@ -931,7 +931,12 @@ inline std::string quad2::desc() const
     std::stringstream ss ;
     ss 
         << " nrmt " << q0.f  
-        << " flag " << q1.i 
+        << " lpct " << q1.f.x 
+        << " flag (" 
+        << std::setw(5) << q1.i.y << " "  
+        << std::setw(5) << q1.i.z << " "
+        << std::setw(5) << q1.i.w << " "
+        << ")" 
         ;
     std::string s = ss.str();
     return s ;

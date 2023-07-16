@@ -61,12 +61,19 @@ struct ssys
     template<typename T>
     static void getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk ); 
 
+    template<typename T>
+    static void fill_vec( std::vector<T>& vec, const char* line, char delim=',' ); 
+
+    template<typename T>
+    static void fill_evec( std::vector<T>& vec, const char* ekey, const char* fallback, char delim ); 
+
 
     template<typename T>
     static std::vector<T>* make_vec(const char* line, char delim=','); 
 
     template<typename T>
     static std::vector<T>* getenv_vec(const char* ekey, const char* fallback, char delim=','); 
+
 
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
@@ -363,13 +370,9 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
 
 
 
-
-
-
 template<typename T>
-inline std::vector<T>* ssys::make_vec(const char* line, char delim )
+inline void ssys::fill_vec( std::vector<T>& vec, const char* line, char delim )
 {
-    std::vector<T>* vec = new std::vector<T>() ; 
     std::stringstream ss;  
     ss.str(line);
     std::string s;
@@ -379,10 +382,46 @@ inline std::vector<T>* ssys::make_vec(const char* line, char delim )
         std::istringstream iss(s);
         T t ;  
         iss >> t ;  
-        vec->push_back(t) ; 
+        vec.push_back(t) ; 
     }    
+}
+
+template void ssys::fill_vec( std::vector<int>&         , const char*, char );
+template void ssys::fill_vec( std::vector<unsigned>&    , const char*, char );
+template void ssys::fill_vec( std::vector<float>&       , const char*, char );
+template void ssys::fill_vec( std::vector<double>&      , const char*, char );
+template void ssys::fill_vec( std::vector<std::string>& , const char*, char );
+
+
+
+template<typename T>
+inline void ssys::fill_evec(std::vector<T>& vec, const char* ekey, const char* fallback, char delim )
+{
+    assert(fallback); 
+    char* line_ = getenv(ekey);
+    const char* line = line_ ? line_ : fallback ; 
+    fill_vec<T>( vec, line, delim ); 
+} 
+
+template void ssys::fill_evec( std::vector<int>&         , const char*, const char*, char );
+template void ssys::fill_evec( std::vector<unsigned>&    , const char*, const char*, char );
+template void ssys::fill_evec( std::vector<float>&       , const char*, const char*, char );
+template void ssys::fill_evec( std::vector<double>&      , const char*, const char*, char );
+template void ssys::fill_evec( std::vector<std::string>& , const char*, const char*, char );
+
+
+template<typename T>
+inline std::vector<T>* ssys::make_vec(const char* line, char delim )
+{
+    std::vector<T>* vec = new std::vector<T>() ; 
+    fill_vec<T>( *vec, line, delim ); 
     return vec ; 
 }
+
+
+
+
+
 
 template<typename T>
 inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim )
@@ -398,6 +437,14 @@ template std::vector<unsigned>* ssys::getenv_vec(const char*, const char*, char 
 template std::vector<float>*    ssys::getenv_vec(const char*, const char*, char );
 template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char );
 template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char );
+
+
+
+
+
+
+
+
 
 
 
