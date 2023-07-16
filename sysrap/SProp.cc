@@ -3,8 +3,10 @@
 #include "SLOG.hh"
 
 #include "NP.hh"
-#include "SPath.hh"
 #include "SProp.hh"
+
+#include "spath.h"
+
 
 
 const plog::Severity SProp::LEVEL = SLOG::EnvLevel("SProp", "DEBUG"); 
@@ -25,12 +27,13 @@ Also the properties are narrowed to float when the template type is float.
 **/
 
 
-const NP* SProp::MockupCombination(const char* path_ )  // static 
+const NP* SProp::MockupCombination(const char* base, const char* relp )  // static 
 {
-    const char* path = SPath::Resolve(path_ , NOOP); 
+    const char* path = spath::Resolve(base, relp); 
     LOG(LEVEL) 
-        << "path_ " << path_  
-        << "path " << path  
+        << " base " << base  
+        << " relp " << relp  
+        << " spath::Resolve to path " << path  
         ;
 
     if( path == nullptr ) return nullptr ;  // malformed path ?
@@ -102,16 +105,10 @@ const NP* SProp::NarrowCombine(const std::vector<const NP*>& aa )   // static
     return com ;  
 }
 
-
-
 const NP* SProp::Combine(const std::vector<const NP*>& aa )   // static
 {
     LOG(LEVEL) << " not-narrowing retaining double " ; 
     NP* com = NP::Combine(aa) ;
     return com ;  
 }
-
-
-
-
 

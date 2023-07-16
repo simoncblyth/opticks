@@ -54,8 +54,9 @@ Related developments
 
 **/
 
-#include "NPFold.h"
 #include <cstdio>
+
+#include "NPFold.h"
 #include "scuda.h"
 #include "squad.h"
 #include "ssys.h"
@@ -131,7 +132,7 @@ struct SPMT
 
     std::string desc() const ; 
 
-    NPFold* get_fold() const ; 
+    NPFold* serialize() const ;  // formerly get_fold
 
     float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
@@ -186,8 +187,6 @@ struct SPMT
     void get_stackspec( quad4& spec, int cat, float energy_eV) const ; 
     NP*  get_stackspec() const ; 
 
-    //int  get_pmtcat(int pmtid) const ; 
-    //NP*  get_pmtcat() const ; 
     int  get_lpmtcat( int lpmtid ) const ; 
     int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
     NP*  get_lpmtcat() const ; 
@@ -509,7 +508,7 @@ inline std::string SPMT::desc() const
     return str ; 
 }
 
-inline NPFold* SPMT::get_fold() const 
+inline NPFold* SPMT::serialize() const   // formerly get_fold 
 {
     NPFold* fold = new NPFold ; 
     fold->add("rindex", rindex) ; 

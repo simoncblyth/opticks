@@ -15,6 +15,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 **/
 
 #include "plog/Severity.h"
+#include "NP.hh"
 #include "NPFold.h"
 
 #include "qpmt.h"
@@ -50,16 +51,19 @@ struct QUDARAP_API QPMT
     qpmt<T>* pmt ; 
     qpmt<T>* d_pmt ; 
 
+    // .h 
     QPMT(const NPFold* pf);     
 
+    // .cc
     void init(); 
     void init_thickness(); 
     void init_lcqs(); 
 
+    // .h 
     NPFold* serialize() const ;  // formerly get_fold
     std::string desc() const ; 
 
-    // CPU side lpmtcat lookups 
+    // .h : CPU side lpmtcat lookups 
     int  get_lpmtcat( int lpmtid ) const ; 
     int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ; 
 
@@ -181,15 +185,6 @@ inline int QPMT<T>::get_lpmtcat( int* lpmtcat_, const int* lpmtid_, int num_lpmt
     }
     return num_lpmtid ; 
 }
-
-
-
-
-
-
-
-
-
 
 
 /**

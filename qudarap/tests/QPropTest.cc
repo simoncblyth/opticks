@@ -1,5 +1,3 @@
-#include "SPath.hh"
-#include "SOpticksResource.hh"
 #include "NP.hh"
 
 #include "SProp.hh"
@@ -37,12 +35,16 @@ void test_lookup(const QProp<T>& qp, T x0, T x1, T nx, const char* fold, const c
     LOG(info) << "save to " << fold << "/" << reldir  ; 
 }
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const NP* propcom = SProp::MockupCombination("$CFBaseFromGEOM/GGeo/GScintillatorLib/LS_ori/RINDEX.npy");
+    //const char* BASE = "$CFBaseFromGEOM" ; 
+    const char* BASE = "$HOME/.opticks/GEOM/$GEOM" ; 
+    const char* RELP = "GGeo/GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    const NP* propcom = SProp::MockupCombination( BASE, RELP);
+
+    LOG(info) << " propcom " << ( propcom ? propcom->sstr() : "-" ) ; 
 
     unsigned nx = 1601u ; 
     //unsigned nx = 161u ; 
@@ -52,7 +54,6 @@ int main(int argc, char** argv)
 
     //QProp<double> qpd(propcom) ; 
     //test_lookup<double>(qpd, 0., 16., nx , FOLD, "double" );
-
 
     return 0 ; 
 }

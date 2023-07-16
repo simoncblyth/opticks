@@ -52,8 +52,6 @@ struct QUDARAP_API QProp
     qprop<T>* prop ; 
     qprop<T>* d_prop ; 
 
-    // scrunch the high dimensions yielding (num_prop, num_energy, 2)
-    //static QProp<T>* Make3D( const NP* a );  
     QProp(const NP* a); 
 
     virtual ~QProp(); 
@@ -67,7 +65,6 @@ struct QUDARAP_API QProp
     void lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned domain_width ) const ; 
     void lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char* reldir=nullptr ) const ; 
 
-    //void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const ;
 };
 
 

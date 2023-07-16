@@ -1,9 +1,14 @@
-#include <cuda_runtime.h>
 #include "SLOG.hh"
 #include "NP.hh"
 
+#if defined(MOCK_CURAND)
+#else
+
+#include <cuda_runtime.h>
 #include "QUDA_CHECK.h"
 #include "QU.hh"
+
+#endif
 
 #include "QProp.hh"
 #include "qprop.h"
@@ -127,19 +132,29 @@ QProp::upload
 template<typename T>
 void QProp<T>::upload()
 {
-    prop->pp = QU::device_alloc<T>(nv,"QProp::upload/pp") ; 
     prop->height = ni ;   
-    prop->width =  nj*nk ;
+    prop->width  = nj*nk ;
+
+#if defined(MOCK_CURAND)
+    prop->pp = pp ; 
+    d_prop = nullptr ; 
+#else
+    prop->pp = QU::device_alloc<T>(nv,"QProp::upload/pp") ; 
     QU::copy_host_to_device<T>( prop->pp, pp, nv ); 
     d_prop = QU::UploadArray<qprop<T>>(prop, 1, "QProp::upload/d_prop");  
-}
+#endif
 
+
+}
 
 template<typename T>
 void QProp<T>::cleanup()
 {
+#if defined(MOCK_CURAND)
+#else
     QUDA_CHECK(cudaFree(prop->pp)); 
     QUDA_CHECK(cudaFree(d_prop)); 
+#endif
 }
 
 template<typename T>
@@ -192,6 +207,9 @@ void QProp<T>::dump() const
 
 
 
+
+#if defined(MOCK_CURAND)
+#else
 // NB this cannot be extern "C" as need C++ name mangling for template types
 
 template <typename T>
@@ -204,6 +222,11 @@ extern void QProp_lookup(
     unsigned iprop, 
     unsigned domain_width
 ); 
+
+#endif
+
+
+
 
 /**
 QProp::lookup
@@ -225,6 +248,12 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned 
         << " num_lookup " << num_lookup
         ; 
 
+#if defined(MOCK_CURAND)
+
+
+
+
+#else
     T* d_domain = QU::device_alloc<T>(domain_width, "QProp<T>::lookup:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width  ); 
 
@@ -245,10 +274,11 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned 
     }
 
     QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup, label ); 
-     
+#endif     
+
+
     LOG(LEVEL) << "]" ; 
 }
-
 
 
 
@@ -285,30 +315,11 @@ void QProp<T>::lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char
 
 
 
-
-
-
-/**
-template<typename T>
-void QProp<T>::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const 
-{
-    threadsPerBlock.x = 512 ; 
-    threadsPerBlock.y = 1 ; 
-    threadsPerBlock.z = 1 ; 
- 
-    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
-    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
-    numBlocks.z = 1 ; 
-}
-**/
-
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 // quell warning: type attributes ignored after type is already defined [-Wattributes]
 template struct QUDARAP_API QProp<float>;
 template struct QUDARAP_API QProp<double>;
 #pragma GCC diagnostic pop
-
 
 

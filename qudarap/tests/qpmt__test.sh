@@ -8,6 +8,7 @@ Testing GPU side code on CPU using MOCK_CURAND
 EOU
 }
 
+source $HOME/.opticks/GEOM/GEOM.sh 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=qpmt__test 
 

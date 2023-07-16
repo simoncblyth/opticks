@@ -140,14 +140,14 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const NPFold* pmtf = nullptr ;  
+    const NPFold* pmt_f = nullptr ;  
 
 #ifdef WITH_JPMT
     std::cout << "QPMTTest.cc : WITH_JPMT " << std::endl ; 
     JPMT jpmt ; 
     std::cout << jpmt.desc() << std::endl ;
     pmt.save("$FOLD") ; 
-    pmtf = jpmt.get_fold(); 
+    pmt_f = jpmt.serialize(); 
 #else
     std::cout << "QPMTTest.cc : NOT-WITH_JPMT " << std::endl ; 
     SPMT* spmt = SPMT::Load();
@@ -156,13 +156,13 @@ int main(int argc, char** argv)
         std::cout << "QPMTTest.cc FAILED TO SPMT::Load ? IS GEOM envvar defined ? " << std::endl ; 
         return 1 ; 
     }
-    pmtf = spmt->get_fold(); 
+    pmt_f = spmt->serialize(); 
 #endif
 
     std::cout << " Before: " << QPMT<float>::Desc() << std::endl ; 
 
 
-    QPMT<float> qp(pmtf) ; 
+    QPMT<float> qp(pmt_f) ; 
     std::cout << " After: " << QPMT<float>::Desc() << std::endl ; 
 
     NPFold* qpf = qp.serialize(); 

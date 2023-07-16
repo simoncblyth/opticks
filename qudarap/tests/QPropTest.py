@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """
-::
- 
-    ipython -i QPropTest.py 
+QPropTest.py
+===============
 
+::
+
+    ./QPropTest.sh ana 
 
 """
 import logging 
@@ -60,8 +62,8 @@ class QPropTest(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    #reldir = "float"
-    reldir = "double"
+    reldir = "float"
+    #reldir = "double"
     t = QPropTest(reldir)  
     t.plot()
 

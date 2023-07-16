@@ -239,7 +239,7 @@ const SPMT* SSim::get_spmt() const
 const NPFold* SSim::get_spmt_f() const 
 {
     const SPMT* spmt = get_spmt() ;
-    const NPFold* spmt_f = spmt->get_fold() ;
+    const NPFold* spmt_f = spmt->serialize() ;
     return spmt_f ; 
 }
 

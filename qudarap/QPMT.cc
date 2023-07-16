@@ -23,7 +23,6 @@ QPMT::mct_lpmtid_
 #include <vector_types.h>
 
 #include "SLOG.hh"
-#include "NP.hh"
 #include "QPMT.hh"
 
 template<typename T>
