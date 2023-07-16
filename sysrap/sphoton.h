@@ -189,7 +189,7 @@ struct sphoton
     SPHOTON_METHOD void transverse_mom_pol(); 
     SPHOTON_METHOD void set_polarization(float frac_twopi); 
     SPHOTON_METHOD static sphoton make_ephoton(); 
-    SPHOTON_METHOD static NP*     make_ephoton_array(int num_photon); 
+    SPHOTON_METHOD static NP* make_ephoton_array(int num_photon); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
 

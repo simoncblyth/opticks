@@ -690,4 +690,68 @@ DONE : added lposcost and identity mockup to SPrd.h
 WIP : mock propagate testing the extended qsim.h 
 ----------------------------------------------------
 
+::
+
+    qt 
+    ./QSimTest.sh
+
+
+    In [1]: t
+    Out[1]: SEvt symbol t pid -1 opt  off [0. 0. 0.] t.f.base /tmp/blyth/opticks/GEOM/V1J009/QSimTest/ALL/000
+
+    In [2]: t.q
+    Out[2]:
+    array([[b'TO BT BT BT AB                                                                                  '],
+           [b'TO BT BT AB                                                                                     '],
+           [b'TO BT BT BT SD                                                                                  '],
+           [b'TO BT BT BT BT                                                                                  '],
+           [b'TO BT BT BT BR                                                                                  '],
+           [b'TO BT BT BT BT                                                                                  '],
+           [b'TO BT BT BT SA                                                                                  '],
+           [b'TO BT BT BT SA                                                                                  ']], dtype='|S96')
+
+
+
+
+
+
+::
+
+    PIDX=2 ./QSimTest.sh 
+    ...
+
+    //qsim.propagate_at_boundary idx 2 TransCoeff     0.9979 n1c1     1.4779 n2c2     1.3492 E2_t (    0.0000,    1.0455) A_trans (    0.0000,    1.0000,    0.0000) 
+    //qsim.propagate_at_boundary idx 2 u_boundary_burn     0.5237 u_reflect     0.9206 TransCoeff     0.9979 reflect 0 
+    //qsim.propagate_at_boundary idx 2 reflect 0 tir 0 TransCoeff     0.9979 u_reflect     0.9206 
+    //qsim.propagate_at_boundary idx 2 mom_1 (    0.0000     0.0000     1.0000) 
+    //qsim.propagate_at_boundary idx 2 pol_1 (    0.0000     1.0000     0.0000) 
+    //qsim.mock_propagate idx 2 bounce 3 evt.max_bounce 4 prd.q0.f.xyzw (    0.0000     0.0000    -1.0000   400.0000) 
+    //qsim.propagate idx 2 bnc 3 cosTheta    -1.0000 dir (    0.0000     0.0000     1.0000) nrm (    0.0000     0.0000    -1.0000) 
+    //qsim.propagate_to_boundary[ idx 2 u_absorption 0.30163988 logf(u_absorption) -1.19852138 absorption_length  1999.2292 absorption_distance 2396.118896 
+    //qsim.propagate idx 2 bounce 3 command 3 flag 0 s.optical.x 38 
+    //qsim.propagate_at_surface_CustomART idx 2 lpmtid 1001 mct  -1.000 ARTE[   0.476   0.220   0.780   0.436] 
+    2023-07-16 15:55:22.382 INFO  [3054721] [SEvt::save@2709]  dir /tmp/blyth/opticks/GEOM/V1J009/QSimTest/ALL/000
+    2023-07-16 15:55:22.389 INFO  [3054721] [SEvt::clear@1058] SEvt::clear
+
+
+    PIDX=3 ./QSimTest.sh 
+    ...
+
+    //qsim.propagate_to_boundary[ idx 3 u_absorption 0.04417918 logf(u_absorption) -3.11950135 absorption_length  1999.2292 absorption_distance 6236.598145 
+    //qsim.propagate idx 3 bounce 3 command 3 flag 0 s.optical.x 38 
+    //qsim.propagate_at_surface_CustomART idx 3 lpmtid 1001 mct  -1.000 ARTE[   0.476   0.220   0.780   0.436] 
+    //qsim.propagate_at_boundary idx 3 nrm   (    0.0000     0.0000    -1.0000) 
+    //qsim.propagate_at_boundary idx 3 mom_0 (    0.0000     0.0000     1.0000) 
+    //qsim.propagate_at_boundary idx 3 pol_0 (    0.0000     1.0000     0.0000) 
+    //qsim.propagate_at_boundary idx 3 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 3 normal_incidence 1 p.pol (    0.0000,    1.0000,    0.0000) p.mom (    0.0000,    0.0000,    1.0000) o_normal (    0.0000,    0.0000,   -1.0000)
+    //qsim.propagate_at_boundary idx 3 TransCoeff     0.7800 n1c1     1.4779 n2c2     1.0000 E2_t (    0.0000,    1.1929) A_trans (    0.0000,    1.0000,    0.0000) 
+    //qsim.propagate_at_boundary idx 3 u_boundary_burn     0.9660 u_reflect     0.3781 TransCoeff     0.7800 reflect 0 
+    //qsim.propagate_at_boundary idx 3 reflect 0 tir 0 TransCoeff     0.7800 u_reflect     0.3781 
+    //qsim.propagate_at_boundary idx 3 mom_1 (    0.0000     0.0000     1.0000) 
+    //qsim.propagate_at_boundary idx 3 pol_1 (    0.0000     1.0000     0.0000) 
+    2023-07-16 15:58:07.919 INFO  [3057116] [SEvt::save@2709]  dir /tmp/blyth/opticks/GEOM/V1J009/QSimTest/ALL/000
+    2023-07-16 15:58:07.930 INFO  [3057116] [SEvt::clear@1058] SEvt::clear
+
+
 

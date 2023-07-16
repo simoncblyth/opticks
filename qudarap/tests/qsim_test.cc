@@ -1,6 +1,6 @@
 /**
-qsim_test.cc : CPU tests of qsim.h CUDA code using mocking 
-==============================================================
+qsim_test.cc : CPU tests of qsim.h CUDA code using MOCK_CURAND mocking 
+========================================================================
 
 Standalone compile and run with::
 
@@ -76,8 +76,6 @@ to that mom, all in the XY plane::
 
 Clearly the dot product if that and +Z is zero. 
      
-
-
 **/
 void test_propagate_at_boundary(const qsim* sim, curandStateXORWOW& rng)
 {
@@ -139,8 +137,65 @@ void test_propagate_at_boundary(const qsim* sim, curandStateXORWOW& rng)
      a->read2<float>( (float*)pp.data() ); 
      a->save(FOLD, "pp.npy");  
      std::cout << " save to " << FOLD << "/pp.npy" << std::endl; 
+}
+
+
+/**
+test_propagate_at_surface_CustomART
+-------------------------------------
+
+HMM need to get qpmt.h sim->pmt operational for this to work
+... investigating that over in qpmt__test.sh  
+
+**/
+
+void test_propagate_at_surface_CustomART(const qsim* sim, curandStateXORWOW& rng)
+{
+    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
+    float distance = 0.1f ; 
+
+    float lposcost = 0.5f ; 
+    int identity = 1001 ; 
+    int boundary = 38 ; 
+
+    float3 mom = normalize(make_float3(1.f, 0.f, -1.f)) ; 
+
+    std::cout 
+        << " test_propagate_at_surface_CustomART "
+        << " nrm " << nrm 
+        << " mom " << mom 
+        << std::endl 
+        ;
+
+    quad2 prd ; 
+    prd.q0.f.x = nrm.x ; 
+    prd.q0.f.y = nrm.y ; 
+    prd.q0.f.z = nrm.z ;  
+    prd.q0.f.w = distance ; 
+
+    prd.q1.f.x = lposcost ; 
+    prd.q1.u.z = identity ; 
+    prd.q1.u.w = boundary ; 
+
+
+    sctx ctx ; 
+    ctx.prd = &prd ; 
+
+    sstate& s = ctx.s ; 
+    s.material1.x = 1.0f ; 
+    s.material2.x = 1.5f ; 
+
+    sphoton& p = ctx.p ; 
+    p.zero(); 
+
+    unsigned flag = 0 ;  
+
+    int ctrl = sim->propagate_at_surface_CustomART(flag, rng, ctx) ; 
+
 
 }
+
+
 
 int main(int argc, char** argv)
 {
@@ -148,12 +203,14 @@ int main(int argc, char** argv)
     curandStateXORWOW rng(1u); 
 
     rng.set_fake(0.); // 0/1:forces transmit/reflect 
-
     /*
     test_generate_photon_dummy(sim, rng); 
     test_uniform_sphere(sim, rng);  
-    */
     test_propagate_at_boundary(sim, rng); 
+    */
+
+    test_propagate_at_surface_CustomART(sim, rng); 
+
 
     return 0 ; 
 }

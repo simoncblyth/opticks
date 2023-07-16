@@ -85,23 +85,30 @@ struct qsim
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
-    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance=-1.f ) const ; 
 #endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) 
     QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
-
-
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD void rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx ); 
-
-
     QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+#endif
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance=-1.f ) const ; 
+#endif
+
+#if defined(__CUDACC__) || defined(__CUDABE__) 
     QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
     QSIM_METHOD int     propagate_at_surface(           unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
-    QSIM_METHOD int     propagate_at_surface_CustomART( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+#endif
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+    QSIM_METHOD int     propagate_at_surface_CustomART( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const ; 
+#endif
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
     QSIM_METHOD void    reflect_diffuse(                       curandStateXORWOW& rng, sctx& ctx );
     QSIM_METHOD void    reflect_specular(                      curandStateXORWOW& rng, sctx& ctx );
 
@@ -109,13 +116,8 @@ struct qsim
     QSIM_METHOD int     propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ); 
 
     QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, curandStateXORWOW& rng, sctx& ctx ); 
-
-
     QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-
-
-
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -595,7 +597,6 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     return BOUNDARY ;
 }
 #endif
-
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 /**
 qsim::propagate_at_boundary
@@ -1321,24 +1322,17 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
     }
     return action ; 
 }
+#endif
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 /**
 qsim::propagate_at_surface_CustomART
 -------------------------------------
 
-This method needs to return action BREAK/CONTINUE and set one of four corresponding flag values. 
-
-     action = BREAK ; 
-     flag = SURFACE_DETECT ; 
-     flag = SURFACE_ABSORB ; 
-
-     action = CONTINUE ; 
-     flag = BOUNDARY_TRANSMIT ; 
-     flag = BOUNDARY_REFLECT ; 
  
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
+inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, curandStateXORWOW& rng, sctx& ctx) const
 {
     const sphoton& p = ctx.p ; 
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal 
@@ -1371,7 +1365,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     return action ; 
 }
 
-
+#endif
+#if defined(__CUDACC__) || defined(__CUDABE__) 
 
 /**
 qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection

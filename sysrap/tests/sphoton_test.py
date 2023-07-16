@@ -5,11 +5,9 @@ from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
 
-if __name__ == '__main__':
-    t = Fold.Load(symbol="t")
-    print(repr(t))
-    a = t.test_dot_pol_cross_mom_nrm     
 
+
+def test_dot_pol_cross_mom_nrm(a):
     title = "test_dot_pol_cross_mom_nrm"
     fig, ax = plt.subplots(1, figsize=SIZE/100.)
     fig.suptitle(title)
@@ -24,6 +22,17 @@ if __name__ == '__main__':
     ax.legend()
     fig.show()
 
+
+
+
+if __name__ == '__main__':
+    t = Fold.Load(symbol="t")
+    print(repr(t))
+
+    a = t.test_dot_pol_cross_mom_nrm     
+    if not a is None:
+       test_dot_pol_cross_mom_nrm(a)
+    pass 
 pass
 
 

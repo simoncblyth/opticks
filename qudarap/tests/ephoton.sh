@@ -80,9 +80,6 @@ ephoton-mock_propagate(){
     ephoton-set $post ${momw},${polw} $flag 
 }
 
-
-
-
 ephoton-default(){
     ephoton-unset 
     echo $msg TEST $TEST : unset environment : will use C++ defaults in quad4::ephoton for p0

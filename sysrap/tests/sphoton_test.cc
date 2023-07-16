@@ -36,6 +36,19 @@ void test_ephoton()
     p.ephoton(); 
     std::cout << p.desc() << std::endl ; 
 }
+void test_make_ephoton_array()
+{
+    NP* p = sphoton::make_ephoton_array(8); 
+    std::cout 
+        << " p " << ( p ? p->sstr() : "-" ) 
+        << std::endl 
+        << " p.repr " << ( p ? p->repr<float>() : "-" )
+        << std::endl 
+        ; 
+    p->save("$FOLD/test_make_ephoton_array.npy") ; 
+}
+
+
 
 void test_sphoton_selector()
 {
@@ -381,9 +394,11 @@ int main()
     test_sphoton_Get(); 
     test_sphotond_Get(); 
     test_set_polarization(); 
+    test_dot_pol_cross_mom_nrm(); 
 
     */
-    test_dot_pol_cross_mom_nrm(); 
+
+    test_make_ephoton_array(); 
 
     return 0 ; 
 }

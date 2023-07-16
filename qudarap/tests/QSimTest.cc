@@ -477,7 +477,6 @@ void QSimTest::mock_propagate()
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
     NP* p = sphoton::make_ephoton_array(num); 
-    LOG(info) << " num " << num << " p " << ( p ? p->sstr() : "-" ) ; 
 
     SEvt* evt = SEvt::Get(); 
     assert( evt ); 
@@ -485,12 +484,18 @@ void QSimTest::mock_propagate()
     evt->setFramePlaceholder() ; 
 
     int bounce_max = SEventConfig::MaxBounce(); 
-    LOG(info) << " bounce_max " << bounce_max ; 
-
     NP* prd = sprd->mock_prd(num, bounce_max);  
-    LOG(info) << " prd " << ( prd ? prd->sstr() : "-" ) ; 
 
-    // SEvt::AddArray("prd0", prd );    too soon, need to do after QEvent::setGenstep
+    LOG(info) 
+        << " num " << num 
+        << " p " << ( p ? p->sstr() : "-" ) 
+        << " bounce_max " << bounce_max 
+        << " prd " << ( prd ? prd->sstr() : "-" ) 
+        ; 
+
+    // SEvt::AddArray("prd0", prd ); 
+    // its too soon to SEvt::AddArray here, must be after the QEvent::setGenstep 
+    // which calls SEvt::Clear (done in QSim::mock_propagate)
 
     SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
 

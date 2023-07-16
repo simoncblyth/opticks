@@ -42,7 +42,7 @@ struct NP ;
 struct SPrd
 {
     static constexpr const bool VERBOSE = true ; 
-    static constexpr const char* SPRD_NRMT_DEFAULT = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,1,400" ; 
+    static constexpr const char* SPRD_NRMT_DEFAULT = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,-1,400" ; 
     static constexpr const char* SPRD_LPOSCOST_DEFAULT = "0,0,0,0.5" ; 
     static constexpr const char* SPRD_IDENTITY_DEFAULT = "0,0,0,1001" ; 
     static constexpr const char* SPRD_BND_DEFAULT = R"LITERAL(

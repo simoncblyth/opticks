@@ -27,7 +27,7 @@ struct qprop
     unsigned width ; 
     unsigned height ; 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     QPROP_METHOD T  interpolate( unsigned iprop, T x );  
 #else
     qprop()
@@ -42,7 +42,7 @@ struct qprop
 }; 
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 
 /**
 qprop<T>::interpolate

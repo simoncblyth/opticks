@@ -8,6 +8,10 @@ QSimTest.sh
     ./QSimTest.sh 
         run the executable and invoke the python script  
 
+    PIDX=2 ./QSimTest.sh
+        assuming QUDARap was compiled with DEBUG_PIDX this
+        provides debug output for the provided photon id 
+
     TEST=fill_state_cf ./QSimTest.sh ana
         just invoke the analysis script for the named TEST 
 
@@ -133,17 +137,18 @@ export NRM=${NRM:-$nrm}
 
 loglevels()
 {
-    #export QBnd=INFO
     #export SEvent=INFO
-    #export QSim=INFO
     #export SEvt=INFO
-    export QEvent=INFO
+    #export QBnd=INFO
+    #export QSim=INFO
+    #export QEvent=INFO
+    export QNonExisting=INFO 
 }
 loglevels
 
 
 source fill_state.sh 
-source ephoton.sh         # branching on TEST inside ephoton.sh 
+source ephoton.sh    # branching on TEST inside ephoton.sh 
 source eprd.sh
 
 export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/000
@@ -158,7 +163,6 @@ if [ "${arg/grab}" != "$arg" ]; then
     echo $BASH_SOURCE EBASE $EBASE
     source $SDIR/../../bin/rsync.sh $EBASE
 fi 
-
 
 if [ "${arg/run}" != "$arg" ]; then 
    $bin 

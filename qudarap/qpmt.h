@@ -66,7 +66,7 @@ struct qpmt
     F*        lcqs ; 
     int*      i_lcqs ;  // int* "view" of lcqs memory
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     // loosely follow SPMT.h 
     QPMT_METHOD int  get_lpmtcat(  int pmtid ) const  ; 
     QPMT_METHOD F    get_qescale( int pmtid ) const  ; 
@@ -87,7 +87,7 @@ struct qpmt
 #endif
 }; 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 
 template<typename F>
 inline QPMT_METHOD int qpmt<F>::get_lpmtcat( int pmtid ) const 
@@ -330,7 +330,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
 
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 #else
 template struct QUDARAP_API qpmt<float>;
 //template struct QUDARAP_API qpmt<double>;

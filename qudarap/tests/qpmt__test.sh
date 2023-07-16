@@ -1,14 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-qsim_test.sh
+qpmt__test.sh
 ==============
 
+Testing GPU side code on CPU using MOCK_CURAND 
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-name=qsim_test 
+name=qpmt__test 
 
 defarg="build_run"
 arg=${1:-$defarg}
@@ -66,8 +67,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg ana error && exit 4
 fi
 
-
 exit 0 
-
 
 
