@@ -1,3 +1,13 @@
+/**
+QProp_test.cc : CPU version of the CUDA QPropTest.cc
+=======================================================
+
+Usage::
+
+    ./QProp_test.sh 
+
+**/
+
 #include "SPropMockup.h"
 #include "QPropTest.h"
 
@@ -5,7 +15,6 @@ int main()
 {
     const NP* propcom = SPropMockup::CombinationDemo();
     std::cout << " propcom " << ( propcom ? propcom->sstr() : "-" ) << std::endl ; 
-
 
     //int nx = 161 ; 
     int nx = 1601 ; 

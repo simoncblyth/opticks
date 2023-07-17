@@ -7,7 +7,7 @@ template <typename T>
 struct QPropTest
 {
     static constexpr const char* RELDIR = sizeof(T) == 8 ? "double" : "float" ; 
-    const QProp<T> qp ; 
+    const QProp<T>* qprop ; 
     int nx ; 
     const NP* a ; 
     const NP* x ; 
@@ -22,11 +22,11 @@ struct QPropTest
 template <typename T>
 inline QPropTest<T>::QPropTest( const NP* propcom, T x0, T x1, int nx_ )
     :
-    qp(propcom),
+    qprop(new QProp<T>(propcom)),
     nx(nx_),
-    a(qp.a), 
+    a(qprop->a), 
     x(NP::Linspace<T>( x0, x1, nx )),
-    y(NP::Make<T>(qp.ni, nx ))
+    y(NP::Make<T>(qprop->ni, nx ))
 {
 }
 
@@ -47,7 +47,7 @@ nx lookups in x0->x1 inclusive for each property yielding nx*qp.ni values.
 template <typename T>
 inline void QPropTest<T>::lookup()
 {
-    qp.lookup(y->values<T>(), x->cvalues<T>(), qp.ni, nx );
+    qprop->lookup(y->values<T>(), x->cvalues<T>(), qprop->ni, nx );
 }
 
 template <typename T>

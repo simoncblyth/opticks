@@ -2636,20 +2636,8 @@ GGeo::convertSim_Prop : This is experimental
 
 void GGeo::convertSim_Prop() const 
 {
-    //const char* idpath = m_ok->getIdPath() ;
-    const char* path_ = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ; 
-    const char* path = SPath::Resolve(path_ , NOOP);
-
-    if(NP::Exists(path))
-    {
-        LOG(LEVEL) << " path exists " << path ;  
-        const NP* propcom = SPropMockup::Combination(path);
-        m_fold->add(snam::PROPCOM, propcom); 
-    }
-    else
-    {
-        LOG(LEVEL) << " NO SUCH path " << path ;  
-    }
+    const NP* propcom = SPropMockup::CombinationDemo();
+    m_fold->add(snam::PROPCOM, propcom); 
 }
 
 

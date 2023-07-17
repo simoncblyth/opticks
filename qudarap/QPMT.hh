@@ -15,12 +15,16 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 **/
 
 #include "plog/Severity.h"
-#include "NP.hh"
 #include "NPFold.h"
 
 #include "qpmt.h"
 #include "QProp.hh"
+
+#ifdef MOCK_CURAND
+#else
 #include "QU.hh"
+#endif
+
 #include "QUDARAP_API_EXPORT.hh"
 
 template<typename T>
