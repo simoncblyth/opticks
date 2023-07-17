@@ -23,12 +23,14 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
+
+
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc \
+    gcc $name.cc ../QProp.cc  \
        -g -std=c++11 -lstdc++ \
        -DMOCK_CURAND \
        -I.. \
-       -I$OPTICKS_PREFIX/include/SysRap  \
+       -I../../sysrap \
        -I$CUDA_PREFIX/include \
        -I$OPTICKS_PREFIX/externals/glm/glm \
        -I$OPTICKS_PREFIX/externals/plog/include \

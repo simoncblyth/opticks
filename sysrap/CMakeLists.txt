@@ -143,7 +143,6 @@ set(SOURCES
 
     SEvt.cc
     SSim.cc
-    SProp.cc
 
     SFastSim_Debug.cc
     SFastSimOpticalModel.cc
@@ -399,7 +398,7 @@ set(HEADERS
     NPX.h 
     NPFold.h 
     SSim.hh
-    SProp.hh
+    SPropMockup.h
 
     S4MaterialPropertyVector.h
     SNameOrder.h

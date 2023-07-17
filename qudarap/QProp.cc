@@ -1,21 +1,26 @@
-#include "SLOG.hh"
 #include "NP.hh"
 
 #if defined(MOCK_CURAND)
+#include "plog/Severity.h"
 #else
-
+#include "SLOG.hh"
 #include <cuda_runtime.h>
 #include "QUDA_CHECK.h"
 #include "QU.hh"
-
 #endif
 
 #include "QProp.hh"
 #include "qprop.h"
 
 
+#if defined(MOCK_CURAND)
+template<typename T>
+const plog::Severity QProp<T>::LEVEL = plog::info ; 
+#else
 template<typename T>
 const plog::Severity QProp<T>::LEVEL = SLOG::EnvLevel("QProp", "DEBUG"); 
+#endif
+
 
 template<typename T>
 const QProp<T>* QProp<T>::INSTANCE = nullptr ; 
@@ -102,11 +107,15 @@ void QProp<T>::init()
     assert( nv == ni*nj*nk ) ; 
 
     bool type_consistent = a->ebyte == sizeof(T) ; 
+
+#ifdef MOCK_CURAND
+#else
     LOG_IF(fatal, !type_consistent) 
         << " type_consistent FAIL " 
         << " sizeof(T) " << sizeof(T)
         << " a.ebyte " << a->ebyte
         ; 
+#endif
     assert( type_consistent );  
 
     //dump(); 
@@ -136,14 +145,13 @@ void QProp<T>::upload()
     prop->width  = nj*nk ;
 
 #if defined(MOCK_CURAND)
-    prop->pp = pp ; 
+    prop->pp = const_cast<T*>(pp) ; 
     d_prop = nullptr ; 
 #else
     prop->pp = QU::device_alloc<T>(nv,"QProp::upload/pp") ; 
     QU::copy_host_to_device<T>( prop->pp, pp, nv ); 
     d_prop = QU::UploadArray<qprop<T>>(prop, 1, "QProp::upload/d_prop");  
 #endif
-
 
 }
 
@@ -181,7 +189,11 @@ std::string QProp<T>::desc() const
 template<typename T>
 void QProp<T>::dump() const 
 {
+#ifdef MOCK_CURAND
+    std::cout << desc() << std::endl ; 
+#else
     LOG(info) << desc() ; 
+#endif
     for(unsigned i=0 ; i < ni ; i++)
     {
         for(unsigned j=0 ; j < nj ; j++)
@@ -239,27 +251,36 @@ Note that this is doing separate CUDA launches for each property
 template<typename T>
 void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned domain_width ) const 
 {
-    unsigned num_lookup = num_prop*domain_width ; 
-
-    LOG(LEVEL) 
-        << "["
-        << " num_prop " << num_prop
-        << " domain_width " << domain_width
-        << " num_lookup " << num_lookup
-        ; 
+    int ni = num_prop ; 
+    int nj = domain_width ; 
+    int nv = ni*nj ; 
 
 #if defined(MOCK_CURAND)
 
+    std::cout << "MOCK_CURAND QProp::lookup needs impl " << std::endl ; 
 
-
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    {
+        int idx = i*nj + j ; 
+        lookup[idx] = prop->interpolate( i, domain[j] ) ;  
+    }
 
 #else
+    LOG(LEVEL) 
+        << "["
+        << " num_prop(ni) " << num_prop
+        << " domain_width(nj) " << domain_width
+        << " num_lookup(nv=ni*nj) " << nv
+        ; 
+
+
     T* d_domain = QU::device_alloc<T>(domain_width, "QProp<T>::lookup:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width  ); 
 
     const char* label = "QProp<T>::lookup:num_lookup" ; 
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup,label) ; 
+    T* d_lookup = QU::device_alloc<T>(nv,label) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -268,16 +289,17 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned num_prop, unsigned 
     unsigned threads_per_block = 512u ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, domain_width, threads_per_block ); 
 
-    for(unsigned iprop=0 ; iprop < num_prop ; iprop++)
+    for(int i=0 ; i < ni ; i++)
     {
-        QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, iprop, domain_width );  
+        QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, i, domain_width );  
     }
 
-    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup, label ); 
+    QU::copy_device_to_host_and_free<T>( lookup, d_lookup, nv, label ); 
+
+    LOG(LEVEL) << "]" ; 
 #endif     
 
 
-    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -308,10 +330,16 @@ void QProp<T>::lookup_scan(T x0, T x1, unsigned nx, const char* fold, const char
     x->save(fold, reldir, "domain.npy"); 
     y->save(fold, reldir, "lookup.npy"); 
 
+#ifdef MOCK_CURAND
+    std::cout 
+        << "QProp::lookup_scan" 
+        << " save to " << fold << "/" << reldir 
+        << std::endl 
+        ; 
+#else
     LOG(info) << "save to " << fold << "/" << reldir  ; 
+#endif
 }
-
-
 
 
 

@@ -35,9 +35,7 @@ template <typename T> extern void QProp_lookup(
 } 
 
 
-
 template void QProp_lookup(dim3, dim3, qprop<double>*, double*, double const*, unsigned int, unsigned int) ; 
 template void QProp_lookup(dim3, dim3, qprop<float>*, float*, float const*, unsigned int, unsigned int) ; 
-
 
 

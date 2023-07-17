@@ -32,7 +32,7 @@
 #include "SPath.hh"
 #include "sframe.h"
 #include "stree.h"
-#include "SProp.hh"
+#include "SPropMockup.h"  
 #include "NP.hh"
 #include "NPFold.h"
 
@@ -2643,7 +2643,7 @@ void GGeo::convertSim_Prop() const
     if(NP::Exists(path))
     {
         LOG(LEVEL) << " path exists " << path ;  
-        const NP* propcom = SProp::MockupCombination(path);
+        const NP* propcom = SPropMockup::Combination(path);
         m_fold->add(snam::PROPCOM, propcom); 
     }
     else
