@@ -3,10 +3,6 @@ usage(){ cat << EOU
 QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh 
 ==============================================================================================
 
-* CAUTION : this has fallen behind the om built QPMTTest.sh 
-
-  * currently lacking WITH_CUSTOM4 
-
 * standalone builds are useful for testing and to see exactly
   what are depending on 
 
@@ -30,8 +26,6 @@ bin=$FOLD/$name
 
 source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar 
 
-
-
 defarg="build_run_ana"
 arg=${1:-$defarg}
 
@@ -41,7 +35,11 @@ logging(){
 logging
 
 
-CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
+custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/0.1.6
+CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
+
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name"
 
@@ -62,6 +60,9 @@ if [ "${arg/build}" != "$arg" ]; then
         nvcc -c $cui \
              -std=c++11 -lstdc++ \
              -I.. \
+             -DWITH_THRUST \
+             -DWITH_CUSTOM4 \
+             -I$CUSTOM4_PREFIX/include/Custom4 \
              -I$OPTICKS_PREFIX/include/SysRap \
              -o $cuo
         [ $? -ne 0 ] && echo $BASH_SOURCE : nvcc compile error cu $cu  && exit 1
@@ -77,6 +78,9 @@ if [ "${arg/build}" != "$arg" ]; then
         -g \
         -std=c++11 \
         -I.. \
+        -DWITH_CUSTOM4 \
+        -DWITH_THRUST \
+        -I$CUSTOM4_PREFIX/include/Custom4 \
         -I$OPTICKS_PREFIX/include/SysRap \
         -I$OPTICKS_PREFIX/include/OKConf \
         -I$OPTICKS_PREFIX/externals/plog/include \
@@ -96,6 +100,9 @@ if [ "${arg/build}" != "$arg" ]; then
          -g \
         -std=c++11 -lstdc++ \
         -I.. \
+        -DWITH_CUSTOM4 \
+        -DWITH_THRUST \
+        -I$CUSTOM4_PREFIX/include/Custom4 \
         -I$OPTICKS_PREFIX/include/SysRap \
         -I$OPTICKS_PREFIX/include/OKConf \
         -I$OPTICKS_PREFIX/externals/plog/include \
