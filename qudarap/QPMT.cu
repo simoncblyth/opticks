@@ -58,7 +58,6 @@ __global__ void _QPMT_lpmtcat_rindex( qpmt<F>* pmt, F* lookup , const F* domain,
     F energy_eV = domain[ix] ; 
 
     //printf("//_QPMT_rindex domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV ); 
-
     // wierd unsigned/int diff between qpmt.h and here ? to get it to compile fo device
     // switching to enum rather than constexpr const avoids the wierdness
 
@@ -204,7 +203,6 @@ __global__ void _QPMT_lpmtid_stackspec(
 
 
 #ifdef WITH_CUSTOM4
-
 // templated payload size P as it needs to be a compile time constant
 template <typename F, int P>
 __global__ void _QPMT_mct_lpmtid( 

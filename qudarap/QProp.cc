@@ -146,7 +146,7 @@ void QProp<T>::upload()
 
 #if defined(MOCK_CURAND)
     prop->pp = const_cast<T*>(pp) ; 
-    d_prop = nullptr ; 
+    d_prop = prop ; 
 #else
     prop->pp = QU::device_alloc<T>(nv,"QProp::upload/pp") ; 
     QU::copy_host_to_device<T>( prop->pp, pp, nv ); 

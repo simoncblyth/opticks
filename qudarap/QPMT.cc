@@ -19,17 +19,20 @@ QPMT::mct_lpmtid_
 
 **/
 
+#include "SLOG.hh"
 
 #ifdef MOCK_CURAND
 #else
 #include <cuda_runtime.h>
-#include "SLOG.hh"
 #endif
 
 #include <vector_types.h>
 #include "QPMT.hh"
 
+
 #ifdef MOCK_CURAND
+#include "QPMT_MOCK.h"
+
 template<typename T>
 const plog::Severity QPMT<T>::LEVEL = plog::info ; 
 #else
@@ -86,13 +89,14 @@ inline void QPMT<T>::init()
     assert( src_thickness->has_shape(ni, nj, 1 )); 
 
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
-    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;  
+    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
 
     init_thickness(); 
     init_lcqs(); 
 
 
 #ifdef MOCK_CURAND
+    d_pmt = pmt ; 
 #else
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u, "QPMT::init/d_pmt" ) ;  
     // getting above line to link required template instanciation at tail of qpmt.h 
@@ -107,12 +111,12 @@ inline void QPMT<T>::init_thickness()
     const char* label = "QPMT::init_thickness/d_thickness" ; 
 
 #ifdef MOCK_CURAND
-    pmt->thickness = thickness->cvalues<T>() ; 
+    T* d_thickness = const_cast<T*>(thickness->cvalues<T>()) ; 
 #else
     T* d_thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values(), label ); ; 
-    pmt->thickness = d_thickness ; 
 #endif
 
+    pmt->thickness = d_thickness ; 
 
 }
 
@@ -127,7 +131,7 @@ inline void QPMT<T>::init_lcqs()
     const char* label = "QPMT::init_lcqs/d_lcqs" ; 
 
 #ifdef MOCK_CURAND
-    T* d_lcqs = lcqs ? lcqs->cvalues<T>() : nullptr ; 
+    T* d_lcqs = lcqs ? const_cast<T*>(lcqs->cvalues<T>()) : nullptr ; 
 #else
     T* d_lcqs = lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values(), label) : nullptr ; 
 #endif
@@ -139,6 +143,28 @@ inline void QPMT<T>::init_lcqs()
 
 
 #ifdef MOCK_CURAND
+
+template <typename F>
+extern void QPMT_lpmtcat_MOCK(
+    qpmt<F>* pmt,
+    int etype, 
+    F* lookup,
+    const F* domain,
+    unsigned domain_width 
+);
+
+template <typename T>
+extern void QPMT_mct_lpmtid_MOCK(
+    qpmt<T>* pmt,
+    int etype, 
+    T* lookup,
+    const T* domain,
+    unsigned domain_width,
+    const int* lpmtid, 
+    unsigned num_lpmtid 
+);
+
+
 #else
 // NB these cannot be extern "C" as need C++ name mangling for template types
 template <typename T>
@@ -165,6 +191,8 @@ extern void QPMT_mct_lpmtid(
     unsigned num_lpmtid 
 );
 #endif
+
+
 
 
 template<typename T>
@@ -239,7 +267,7 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 #endif   
 
 #ifdef MOCK_CURAND
-    std::cout << "  QPMT::lpmtcat_ MISSING MOCK_CURAND impl " << std::endl ; 
+    QPMT_lpmtcat_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain );  
 #else
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -324,15 +352,16 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 #endif
 
 
+#ifdef WITH_CUSTOM4
+
 #ifdef MOCK_CURAND
-    std::cout << "QPMT::mct_lpmtid  MISSING MOCK_CURAND impl " << std::endl ; 
+    QPMT_mct_lpmtid_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain, d_lpmtid, num_lpmtid ); 
 #else
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u ); 
    
-#ifdef WITH_CUSTOM4
     QPMT_mct_lpmtid(
         numBlocks, 
         threadsPerBlock, 
@@ -346,17 +375,15 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     cudaDeviceSynchronize();  
 
+    const char* label = "QPMT::mct_lpmtid_" ; 
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );
+    cudaDeviceSynchronize();  
+#endif
+
 #else
     LOG(fatal) << " QPMT::mct_lpmtid_ requires compilation WITH_CUSTOM4 " ; 
     assert(0) ; 
 #endif
-
-    const char* label = "QPMT::mct_lpmtid_" ; 
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );
-    cudaDeviceSynchronize();  
-
-#endif
-
 
     return lookup ; 
 }

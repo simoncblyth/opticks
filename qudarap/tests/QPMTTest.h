@@ -3,6 +3,12 @@
 QPMTTest.h
 =============
 
+NB this header is used by three QPMT tests:
+
+1. standard om built QPMTTest (CUDA)
+2. standalone QPMT_Test.sh built QPMT_Test (CUDA) 
+3. standalone QPMT_MockTest.sh built QPMT_MockTest (MOCK_CURAND using CPU only)
+
 **/
 
 template <typename T> struct QPMT ; 

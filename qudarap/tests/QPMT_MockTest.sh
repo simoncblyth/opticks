@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-qpmt__test.sh
-==============
+QPMT_MockTest.sh 
+==================
 
 Testing GPU side code on CPU using MOCK_CURAND 
 
@@ -10,9 +10,9 @@ EOU
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-name=qpmt__test 
+name=QPMT_MockTest
 
-defarg="build_run"
+defarg="build_run_ana"
 arg=${1:-$defarg}
 
 export FOLD=/tmp/$name
@@ -33,7 +33,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc \
+    gcc $name.cc ../QPMT.cc ../QProp.cc \
        -g \
        -std=c++11 -lstdc++ \
        -DMOCK_CURAND \
@@ -64,7 +64,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $SDIR/$name.py
+    ${IPYTHON:-ipython} --pdb -i $SDIR/QPMTTest.py
     [ $? -ne 0 ] && echo $msg ana error && exit 4
 fi
 
