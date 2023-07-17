@@ -97,12 +97,12 @@ QPMT::QPMT
 **/
 
 template<typename T>
-inline QPMT<T>::QPMT(const NPFold* pf )
+inline QPMT<T>::QPMT(const NPFold* jpmt )
     :
-    src_rindex(pf->get("rindex")),
-    src_thickness(pf->get("thickness")),
-    src_qeshape(pf->get("qeshape")),
-    src_lcqs(pf->get_optional("lcqs")),
+    src_rindex(   jpmt->get("rindex")),
+    src_thickness(jpmt->get("thickness")),
+    src_qeshape(  jpmt->get("qeshape")),
+    src_lcqs(     jpmt->get_optional("lcqs")),
     rindex3(  NP::MakeCopy3D(src_rindex)),   // make copy and change shape to 3D
     rindex(   NP::MakeWithType<T>(rindex3)), // adopt template type, potentially narrowing
     rindex_prop(new QProp<T>(rindex)),  
@@ -118,8 +118,6 @@ inline QPMT<T>::QPMT(const NPFold* pf )
 }
 
 // init in .cc
-
-
 template<typename T>
 inline NPFold* QPMT<T>::serialize() const  // formerly get_fold
 {

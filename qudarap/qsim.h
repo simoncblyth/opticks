@@ -1328,7 +1328,6 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
 /**
 qsim::propagate_at_surface_CustomART
 -------------------------------------
-
  
 **/
 
@@ -1340,8 +1339,17 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     float minus_cos_theta = dot(p.mom, *normal); 
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
 
+#ifdef MOCK_CURAND
+    printf("//qsim::propagate_at_surface_CustomART minus_cos_theta:%7.3f dot_pol_cross_mom_nrm:%7.3f \n",
+         minus_cos_theta, dot_pol_cross_mom_nrm  ); 
+#endif
+
     float ARTE[4] ; 
     pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
+
+#ifdef MOCK_CURAND
+    printf("//qsim::propagate_at_surface_CustomART ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n", ARTE[0], ARTE[1], ARTE[2], ARTE[3] );  
+#endif
 
     const float& theAbsorption = ARTE[0]; 
     //const float& theReflectivity = ARTE[1]; 

@@ -1,14 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-qsim_test.sh
-==============
-
+QSim_MockTest.sh
+==================
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-name=qsim_test 
+name=QSim_MockTest
+
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 defarg="build_run"
 arg=${1:-$defarg}
@@ -32,6 +33,8 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
+       ../QPMT.cc \
+       ../QProp.cc \
        -g \
        -std=c++11 -lstdc++ \
        -DMOCK_CURAND \

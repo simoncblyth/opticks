@@ -35,6 +35,9 @@ struct SBnd
 
     //static constexpr const unsigned MISSING = ~0u ;
     static constexpr const int MISSING = -1 ;
+
+    static constexpr const char* EXAMPLE = "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum" ;
+
     const std::vector<std::string>& bnames ; 
 
     SBnd(const NP* bnd_); 

@@ -35,19 +35,9 @@ const NPFold* get_jpmt_fold()
 {
     const NPFold* pmt_f = nullptr ;  
 #ifdef WITH_JPMT
-    JPMT jpmt ; 
-    std::cout << jpmt.desc() << std::endl ;
-    pmt_f = jpmt.serialize(); 
+    pmt_f = JPMT::Serialize(); 
 #else
-    SPMT* spmt = SPMT::Load();
-
-    if(spmt == nullptr) std::cout 
-        << "get_jpmt_fold : FAILED TO SPMT::Load"
-        << "  IS GEOM envvar defined ? " 
-        << std::endl
-        ; 
-
-    pmt_f = spmt ? spmt->serialize() : nullptr ; 
+    pmt_f = SPMT::Serialize() ; 
 #endif
     return pmt_f ; 
 }

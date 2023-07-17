@@ -297,12 +297,21 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
     const F* ss = spec ;
     const F& _qe = spec[15] ;
 
+#ifdef MOCK_CURAND
+    printf("//qpmt::get_lpmtid_ARTE lpmtid %d energy_eV %7.3f _qe %7.3f \n", lpmtid, energy_eV, _qe ); 
+#endif
+
+
     Stack<F,4> stack ; 
 
     if( minus_cos_theta < zero )
     {
         stack.calc(wavelength_nm, -one, zero, ss, 16u );
         arte4[3] = _qe/stack.art.A ; 
+
+#ifdef MOCK_CURAND
+        printf("//qpmt::get_lpmtid_ARTE stack.art.A %7.3f _qe/stack.art.A %7.3f \n", stack.art.A, arte4[3] ); 
+#endif
     }
     else
     {
@@ -310,17 +319,32 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
     }
 
     stack.calc(wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );
-   
+
     const F& A = stack.art.A ; 
     const F& R = stack.art.R ; 
     const F& T = stack.art.T ; 
+
+#ifdef MOCK_CURAND
+    std::cout << "stack.calc.2 " << std::endl ; 
+    std::cout << " wavelength_nm " << wavelength_nm << std::endl ; 
+    std::cout << " minus_cos_theta " << minus_cos_theta << std::endl ; 
+    std::cout << " dot_pol_cross_mom_nrm " << dot_pol_cross_mom_nrm << std::endl ; 
+    std::cout << stack << std::endl ; 
+#endif
+
  
     arte4[0] = A ;         // aka theAbsorption
     arte4[1] = R/(one-A) ; // aka theReflectivity
     arte4[2] = T/(one-A) ; // aka theTransmittance
 
     // Q: Does theReflectivity+theTransmittace = 1.f ?
-    // A: 
+    // A: YES, by construction because A+R+T = one (triplet prob) 
+    //    
+    //    so : R+T=one-A
+    //
+    //    R+T
+    //    ----- = one 
+    //    one-A
 
 }
 

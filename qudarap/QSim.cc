@@ -1,10 +1,12 @@
 
 #include <csignal>
 #include "SLOG.hh"
-#include "SSys.hh"
+
+#include "ssys.h"
+#include "spath.h"
+
 #include "SEvt.hh"
 #include "SSim.hh"
-#include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "SEventConfig.hh"
@@ -570,7 +572,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
 
         rng_sequence( values, ni_tranche_size, nv, id_offset );  
          
-        const char* path = SPath::Resolve(dir, reldir.c_str(), name.c_str(), FILEPATH ); 
+        const char* path = spath::Resolve(dir, reldir.c_str(), name.c_str() ); 
         seq->save(path); 
     }
 }
@@ -597,7 +599,7 @@ extern void QSim_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qsim*
 NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 {
 
-    bool qsim_disable_hd = SSys::getenvbool("QSIM_DISABLE_HD"); 
+    bool qsim_disable_hd = ssys::getenvbool("QSIM_DISABLE_HD"); 
     hd_factor = qsim_disable_hd ? 0u : scint->tex->getHDFactor() ; 
     // HMM: perhaps get this from sim rather than occupying an argument slot  
     LOG(LEVEL) << "[" << " qsim_disable_hd " << qsim_disable_hd << " hd_factor " << hd_factor ; 

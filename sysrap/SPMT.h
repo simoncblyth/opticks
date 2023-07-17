@@ -121,6 +121,7 @@ struct SPMT
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
     // because there is no consistently used naming convention have to do these dirty things 
 
+    static const NPFold* Serialize(const char* path=nullptr);   
     static SPMT* Load(const char* path=nullptr); 
     SPMT(const NPFold* jpmt); 
 
@@ -232,6 +233,13 @@ const int SPMT::N_LPMT = ssys::getenvint("N_LPMT", 1 ); // 10 LPMT default for f
 const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  1 );  // "AOI" (actually mct) scan points from -1. to 1. 
 const int SPMT::N_SPOL = ssys::getenvint("N_SPOL", 1 ); // polarization scan points from S-pol to P-pol 
 
+
+inline const NPFold* SPMT::Serialize(const char* path) // static 
+{
+    SPMT* spmt = SPMT::Load(path); 
+    const NPFold* fold = spmt ? spmt->serialize() : nullptr ;  
+    return fold ; 
+}
 
 inline SPMT* SPMT::Load(const char* path_)
 {

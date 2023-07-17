@@ -13,7 +13,7 @@ QSimTest.cc
 #include "SEventConfig.hh"
 #include "scuda.h"
 #include "squad.h"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SPath.hh"
 
 #include "SSim.hh"
@@ -106,7 +106,7 @@ QSimTest::QSimTest(unsigned type_, unsigned num_, const SPrd* sprd_)
     type(type_),
     num(num_),
     subfold(QSimLaunch::Name(type)),
-    dir(SPath::Resolve(FOLD, subfold, DIRPATH)),
+    dir(SPath::Resolve("$FOLD", subfold, DIRPATH)),
     rc(0)
 {
 }
@@ -126,7 +126,7 @@ Default dir is $TMP/QSimTest/rng_sequence leading to npy paths like::
 **/
 
 
-const bool QSimTest::rng_sequence_PRECOOKED = SSys::getenvbool("QSimTest__rng_sequence_PRECOOKED") ; 
+const bool QSimTest::rng_sequence_PRECOOKED = ssys::getenvbool("QSimTest__rng_sequence_PRECOOKED") ; 
 
 void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
 {
@@ -382,7 +382,7 @@ void QSimTest::dbg_gs_generate()
 
 void QSimTest::generate_photon()
 {
-    const char* gs_config = SSys::getenvvar("GS_CONFIG", "torch" ); 
+    const char* gs_config = ssys::getenvvar("GS_CONFIG", "torch" ); 
 
     LOG(info) << "[ gs_config " << gs_config ; 
     const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
@@ -600,7 +600,7 @@ void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
 unsigned QSimTest::Num(int argc, char** argv)
 {
     unsigned M1   = 1000000u ; // 1 million 
-    unsigned num_default = SSys::getenvunsigned("NUM", M1 )  ;   
+    unsigned num_default = ssys::getenvunsigned("NUM", M1 )  ;   
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
     return num ; 
 }
@@ -608,8 +608,8 @@ unsigned QSimTest::Num(int argc, char** argv)
 void QSimTest::main()
 {
     unsigned K100 =  100000u ; // default 100k usable with any GPU 
-    int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", K100 ); 
-    int print_id = SSys::getenvint("PINDEX", -1 ); 
+    int ni_tranche_size = ssys::getenvint("NI_TRANCHE_SIZE", K100 ); 
+    int print_id = ssys::getenvint("PINDEX", -1 ); 
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
 
@@ -692,7 +692,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* testname = SSys::getenvvar("TEST", "hemisphere_s_polarized"); 
+    const char* testname = ssys::getenvvar("TEST", "hemisphere_s_polarized"); 
     int type = QSimLaunch::Type(testname); 
     unsigned num = QSimTest::Num(argc, argv); 
 

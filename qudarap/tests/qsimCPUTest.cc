@@ -2,17 +2,15 @@
 qsimCPUTest.cc
 ================
 
-Testing GPU code on CPU is a stretch, would need to 
-mock tex2D and curand.
+Testing GPU code on CPU requires mocking 
+of CUDA API, especially tex2D lookups 
+and curand random generation. 
 
+There are now lots of examples of curand mocking, 
+search for MOCK_CURAND. Initial expts in sysrap/s_mock_curand.h 
 
-More realistic is testing QUDARap code intended to be 
-used with OptiX 7 with CUDA alone.  That is 
-what many of the QUDARap tests do.
-
-HMM: actually mocking curand_uniform is straightforward see sysrap/s_mock_curand.h 
-
-Also mocking tex2D lookups not so difficult see starting point sysrap/s_mock_texture.h 
+Mocking tex2D lookups is not so common.
+Some expts in sysrap/s_mock_texture.h 
 
 **/
 
