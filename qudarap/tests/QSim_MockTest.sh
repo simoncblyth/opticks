@@ -38,6 +38,7 @@ if [ "${arg/build}" != "$arg" ]; then
        -g \
        -std=c++11 -lstdc++ \
        -DMOCK_CURAND \
+       -DMOCK_CURAND_DEBUG \
        -DWITH_CUSTOM4 \
        -I.. \
        -I$OPTICKS_PREFIX/include/SysRap  \

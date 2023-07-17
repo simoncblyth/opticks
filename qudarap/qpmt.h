@@ -72,6 +72,10 @@ struct qpmt
     QPMT_METHOD F    get_qescale( int pmtid ) const  ; 
     QPMT_METHOD F    get_lpmtcat_qe( int pmtcat, F energy_eV ) const ; 
 
+    QPMT_METHOD F    get_lpmtcat_rindex(    int lpmtcat, int layer, int prop, F energy_eV ) const ; 
+    QPMT_METHOD F    get_lpmtcat_rindex_wl( int lpmtcat, int layer, int prop, F wavelength_nm ) const ; 
+
+
     QPMT_METHOD void get_lpmtcat_stackspec( F* spec16, int pmtcat, F energy_eV ) const ; 
     QPMT_METHOD void get_lpmtid_stackspec(  F* spec16, int pmtid,  F energy_eV ) const ; 
 
@@ -104,6 +108,22 @@ inline QPMT_METHOD F qpmt<F>::get_lpmtcat_qe( int lpmtcat, F energy_eV ) const
 {
     return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ; 
 }
+
+
+template<typename F>
+inline QPMT_METHOD F qpmt<F>::get_lpmtcat_rindex( int lpmtcat, int layer, int prop, F energy_eV ) const 
+{
+    const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP + layer*qpmt_NUM_PROP + prop ; 
+    return rindex_prop->interpolate( idx, energy_eV ) ; 
+}
+template<typename F>
+inline QPMT_METHOD F qpmt<F>::get_lpmtcat_rindex_wl( int lpmtcat, int layer, int prop, F wavelength_nm ) const 
+{
+    const F energy_eV = hc_eVnm/wavelength_nm ; 
+    return get_lpmtcat_rindex(lpmtcat, layer, prop, energy_eV ); 
+}
+
+
 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F energy_eV ) const 
@@ -297,7 +317,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
     const F* ss = spec ;
     const F& _qe = spec[15] ;
 
-#ifdef MOCK_CURAND
+#ifdef MOCK_CURAND_DEBUG
     printf("//qpmt::get_lpmtid_ARTE lpmtid %d energy_eV %7.3f _qe %7.3f \n", lpmtid, energy_eV, _qe ); 
 #endif
 
@@ -309,7 +329,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
         stack.calc(wavelength_nm, -one, zero, ss, 16u );
         arte4[3] = _qe/stack.art.A ; 
 
-#ifdef MOCK_CURAND
+#ifdef MOCK_CURAND_DEBUG
         printf("//qpmt::get_lpmtid_ARTE stack.art.A %7.3f _qe/stack.art.A %7.3f \n", stack.art.A, arte4[3] ); 
 #endif
     }
@@ -324,12 +344,12 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ARTE(
     const F& R = stack.art.R ; 
     const F& T = stack.art.T ; 
 
-#ifdef MOCK_CURAND
-    std::cout << "stack.calc.2 " << std::endl ; 
-    std::cout << " wavelength_nm " << wavelength_nm << std::endl ; 
-    std::cout << " minus_cos_theta " << minus_cos_theta << std::endl ; 
-    std::cout << " dot_pol_cross_mom_nrm " << dot_pol_cross_mom_nrm << std::endl ; 
-    std::cout << stack << std::endl ; 
+#ifdef MOCK_CURAND_DEBUG
+    std::cout << "//qpmt::get_lpmtid_ARTE stack.calc.2 " << std::endl ; 
+    std::cout << "//qpmt::get_lpmtid_ARTE wavelength_nm " << wavelength_nm << std::endl ; 
+    std::cout << "//qpmt::get_lpmtid_ARTE minus_cos_theta " << minus_cos_theta << std::endl ; 
+    std::cout << "//qpmt::get_lpmtid_ARTE dot_pol_cross_mom_nrm " << dot_pol_cross_mom_nrm << std::endl ; 
+    std::cout << "//qpmt::get_lpmtid_ARTE " << stack << std::endl ; 
 #endif
 
  

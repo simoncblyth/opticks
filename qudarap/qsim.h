@@ -1339,15 +1339,20 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     float minus_cos_theta = dot(p.mom, *normal); 
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
 
-#ifdef MOCK_CURAND
-    printf("//qsim::propagate_at_surface_CustomART minus_cos_theta:%7.3f dot_pol_cross_mom_nrm:%7.3f \n",
-         minus_cos_theta, dot_pol_cross_mom_nrm  ); 
+#ifdef MOCK_CURAND_DEBUG
+    float3 cross_mom_nrm = cross(p.mom, *normal) ; 
+    printf("//qsim::propagate_at_surface_CustomART p.mom                 (%7.3f %7.3f %7.3f) \n", p.mom.x, p.mom.y, p.mom.z );  
+    printf("//qsim::propagate_at_surface_CustomART p.pol                 (%7.3f %7.3f %7.3f) \n", p.pol.x, p.pol.y, p.pol.z );  
+    printf("//qsim::propagate_at_surface_CustomART normal                (%7.3f %7.3f %7.3f) \n", normal->x, normal->y, normal->z );  
+    printf("//qsim::propagate_at_surface_CustomART cross_mom_nrm         (%7.3f %7.3f %7.3f) \n", cross_mom_nrm.x, cross_mom_nrm.y, cross_mom_nrm.z );  
+    printf("//qsim::propagate_at_surface_CustomART dot_pol_cross_mom_nrm: %7.3f \n", dot_pol_cross_mom_nrm ); 
+    printf("//qsim::propagate_at_surface_CustomART minus_cos_theta        %7.3f \n", minus_cos_theta ); 
 #endif
 
     float ARTE[4] ; 
     pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
 
-#ifdef MOCK_CURAND
+#ifdef MOCK_CURAND_DEBUG
     printf("//qsim::propagate_at_surface_CustomART ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n", ARTE[0], ARTE[1], ARTE[2], ARTE[3] );  
 #endif
 

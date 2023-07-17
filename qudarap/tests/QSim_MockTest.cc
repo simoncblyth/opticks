@@ -26,6 +26,7 @@ Standalone compile and run with::
 #include "OpticksPhoton.hh"
 
 #include "QPMT.hh"
+#include "qpmt.h"
 #include "qsim.h"
 
 struct QSim_MockTest
@@ -208,12 +209,19 @@ inline void QSim_MockTest::propagate_at_surface_CustomART()
     float3 pos = make_float3( 0.f, 0.f, 0.f ); 
     float3 mom = normalize(make_float3(1.f, 0.f, -1.f)); 
     float3 pol = normalize(make_float3(0.f, 1.f,  0.f)); 
+    const float wavelength_nm = 440.f ; 
+
+    // lpmtcat doesnt matter as Pyrex is same for all of them 
+    float n0 = sim->pmt->get_lpmtcat_rindex_wl( 0, 0, 0, wavelength_nm ); 
+    float n3 = sim->pmt->get_lpmtcat_rindex_wl( 0, 3, 0, wavelength_nm ); 
 
     std::cout 
         << "QSim_MockTest::propagate_at_surface_CustomART "
         << " boundary " << boundary 
         << " nrm " << nrm 
         << " mom " << mom 
+        << " n0 " << std::fixed << std::setw(10) << std::setprecision(4) << n0 
+        << " n3 " << std::fixed << std::setw(10) << std::setprecision(4) << n3 
         << std::endl 
         ;
 
@@ -230,25 +238,20 @@ inline void QSim_MockTest::propagate_at_surface_CustomART()
 
     sctx ctx ; 
     ctx.prd = &prd ; 
+    ctx.s.material1.x = n0 ;  // Pyrex RINDEX
+    ctx.s.material2.x = n3 ;  // Vacuum RINDEX 
 
-    sstate& s = ctx.s ; 
-    s.material1.x = 1.5f ; 
-    s.material2.x = 1.0f ; 
-    // HMM: THAT IS INCONSISTENT WITH THE STACK CALC 
-    // TODO: fish them from where ? 
-
-    sphoton& p = ctx.p ; 
-    p.zero(); 
-    p.pos = pos ; 
-    p.mom = mom ; 
-    p.pol = pol ; 
-    p.wavelength = 440.f ; 
+    ctx.p.zero(); 
+    ctx.p.pos = pos ; 
+    ctx.p.mom = mom ; 
+    ctx.p.pol = pol ; 
+    ctx.p.wavelength = wavelength_nm ; 
 
     unsigned flag = 0 ;  
     int ctrl = sim->propagate_at_surface_CustomART(flag, rng, ctx) ; 
  
     std::cout 
-        << " QSim_MockTest::propagate_at_surface_CustomART "
+        << "QSim_MockTest::propagate_at_surface_CustomART "
         << " flag " << flag << " : " << OpticksPhoton::Flag(flag) 
         << " ctrl " << ctrl << " : " << sflow::desc(ctrl)  
         << std::endl 
