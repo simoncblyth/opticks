@@ -3,8 +3,6 @@
 #include <sstream>
 #include <map>
 
-#include "SStr.hh"
-#include "SSim.hh"
 #include "SBnd.h"
 #include "NP.hh"
 

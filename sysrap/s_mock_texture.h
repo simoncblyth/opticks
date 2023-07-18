@@ -1,18 +1,11 @@
 #pragma once
-
 /**
 s_mock_texture : exploring CUDA texture lookup API on CPU
 =============================================================
 
-HMM: cudaTextureObject_t is probably typedef to unsigned long 
-so its just an "int" pointer. 
+The cudaTextureObject_t just probably typedef to unsigned long 
+so its an "int" pointer. 
 
-TODO:
-
-* MockTextureManager needs API to collect cudaTextureObject_t indices and 
-  associated NP array pointers to be used for the lookup
-
-* NP arrays need to be the same ones uploaded to create the actual textures 
 
 **/
 
@@ -20,10 +13,8 @@ TODO:
 #include <iomanip>
 
 #include <vector_types.h>
-
 #include "NP.hh"
 #include "scuda.h"
-
 
 struct MockTexture
 {

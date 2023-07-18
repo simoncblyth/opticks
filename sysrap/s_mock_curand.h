@@ -3,6 +3,9 @@
 s_mock_curand.h
 =================
 
+This is conditionally included by scurand.h 
+
+
 Mocking *curand_uniform* enables code developed for use 
 with the standard CUDA *curand_uniform* to be tested on CPU without change, 
 other than switching headers. 

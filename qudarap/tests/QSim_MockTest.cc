@@ -20,7 +20,9 @@ Standalone compile and run with::
 #include "stag.h"
 #include "sflow.h"
 #include "sphoton.h"
-#include "scurand.h"    // this brings in s_mock_curand.h for CPU 
+#include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
+#include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
+
 #include "SPMT.h"
 #include "SBnd.h"
 #include "OpticksPhoton.hh"
@@ -50,6 +52,8 @@ struct QSim_MockTest
     void uniform_sphere();
     void propagate_at_boundary();
     void propagate_at_surface_CustomART();   
+    void fill_state(); 
+
 };
 
 inline QSim_MockTest::QSim_MockTest()
@@ -75,6 +79,10 @@ inline void QSim_MockTest::init()
 
     sim->pmt = qpmt->d_pmt ; 
     rng.set_fake(0.); // 0/1:forces transmit/reflect 
+
+    sim->bnd = nullptr ;  
+
+
 }
 
 inline std::string QSim_MockTest::desc() const
@@ -161,7 +169,7 @@ inline void QSim_MockTest::propagate_at_boundary()
     s.material1.x = 1.0f ; 
     s.material2.x = 1.5f ; 
     // The two RINDEX are the only state needed for propagate_at_boundary  
-    // TODO: get these in mocked up way from the bnd texture 
+    // TODO: get these in mocked up way from the bnd texture using the wavelength 
 
 
     sphoton& p = ctx.p ; 
@@ -262,12 +270,27 @@ inline void QSim_MockTest::propagate_at_surface_CustomART()
         ;
 }
 
+inline void QSim_MockTest::fill_state()
+{
+    float wavelength_nm = 440.f ; 
+    float cosTheta = -1.f ; 
+    int boundary = bnd_idx ; 
+
+    sctx ctx ; 
+    ctx.p.wavelength = wavelength_nm ; 
+    ctx.idx = 0 ; 
+
+    sim->bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx );
+}
+
+
 int main(int argc, char** argv)
 {
     QSim_MockTest t ; 
     std::cout << t.desc() ; 
     //t.propagate_at_surface_CustomART() ; 
-    t.propagate_at_boundary() ; 
+    //t.propagate_at_boundary() ; 
+    t.fill_state() ; 
 
     return 0 ; 
 }

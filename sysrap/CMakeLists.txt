@@ -290,10 +290,15 @@ set(HEADERS
     SName.h 
 
     scuda.h
-    scurand.h  
     smath.h 
     tcomplex.h
+
     s_mock_curand.h
+    scurand.h  
+
+    s_mock_texture.h
+    stexture.h  
+
     squad.h
     squadx.h
 

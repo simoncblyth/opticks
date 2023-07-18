@@ -6,7 +6,7 @@
 #else
    #define SCURAND_METHOD 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
    #include "s_mock_curand.h"
 #endif
 
@@ -15,13 +15,13 @@
 template <typename T>
 struct scurand
 {
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
    static SCURAND_METHOD T uniform( curandStateXORWOW* rng );  
 #endif
 };
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
 template<> inline float scurand<float>::uniform( curandStateXORWOW* rng ) 
 { 
