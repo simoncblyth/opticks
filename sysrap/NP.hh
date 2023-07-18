@@ -292,6 +292,8 @@ struct NP
 
     template<typename T> T    _combined_interp(const T* vv, int niv, T x) const  ; 
 
+    template<typename T> static T FractionalRange( T x, T x0, T x1 ); 
+
 
     template<typename T> NP*  cumsum(int axis=0) const ; 
     template<typename T> void divide_by_last() ; 
@@ -3455,7 +3457,7 @@ template<typename T> inline T NP::_combined_interp(const T* vv, int niv, T x) co
     int nj = shape[ndim-1] ;  // normally 2 with (dom, val)
 
     int jdom = 0 ;       // 1st payload slot is "domain"
-    int jval = nj - 1 ;  // last payload slot is "value", normally 1  
+    int jval = nj - 1 ;  // last payload slot is "value", with nj 2 (typical) that is 1  
 
     int lo = 0 ;
     int hi = ni-1 ;
@@ -3476,6 +3478,30 @@ template<typename T> inline T NP::_combined_interp(const T* vv, int niv, T x) co
     return y ; 
 }
 
+/**
+NP::FractionalRange
+---------------------
+
+Return fraction of x within range x0 to x1 or 0 below and 1 above the range. 
+
++-------------------+-------------+
+| x <= x0           | T(0)        |
++-------------------+-------------+
+| x >= x1           | T(1)        |
++-------------------+-------------+
+| x0 < x < x1       | T(0->1)     |  
++-------------------+-------------+
+ 
+**/
+
+template<typename T> inline T NP::FractionalRange( T x, T x0, T x1 )  // static 
+{
+    assert( x1 > x0 ); 
+    if( x <= x0 ) return T(0) ; 
+    if( x >= x1 ) return T(1) ; 
+    T xf = (x-x0)/(x1-x0) ;    
+    return xf ; 
+}
 
 
 

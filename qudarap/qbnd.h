@@ -108,7 +108,7 @@ inline QBND_METHOD float4 qbnd::boundary_lookup( float nm, unsigned line, unsign
     float fx = (nm - nm0)/nms ;  
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
-    unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
+    unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;    // 2*line+k (0/1)
     float y = (float(iy)+0.5f)/float(ny) ; 
 
 

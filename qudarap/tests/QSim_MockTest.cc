@@ -160,9 +160,13 @@ inline void QSim_MockTest::propagate_at_boundary()
     sstate& s = ctx.s ; 
     s.material1.x = 1.0f ; 
     s.material2.x = 1.5f ; 
+    // The two RINDEX are the only state needed for propagate_at_boundary  
+    // TODO: get these in mocked up way from the bnd texture 
+
 
     sphoton& p = ctx.p ; 
     p.zero(); 
+    p.wavelength = 440.f ; 
 
     unsigned flag = 0 ;  
     const int N = 16 ; 
@@ -211,7 +215,7 @@ inline void QSim_MockTest::propagate_at_surface_CustomART()
     float3 pol = normalize(make_float3(0.f, 1.f,  0.f)); 
     const float wavelength_nm = 440.f ; 
 
-    // lpmtcat doesnt matter as Pyrex is same for all of them 
+    // lpmtcat doesnt matter as Pyrex and Vacuum are same for all of them 
     float n0 = sim->pmt->get_lpmtcat_rindex_wl( 0, 0, 0, wavelength_nm ); 
     float n3 = sim->pmt->get_lpmtcat_rindex_wl( 0, 3, 0, wavelength_nm ); 
 
@@ -262,7 +266,9 @@ int main(int argc, char** argv)
 {
     QSim_MockTest t ; 
     std::cout << t.desc() ; 
-    t.propagate_at_surface_CustomART() ; 
+    //t.propagate_at_surface_CustomART() ; 
+    t.propagate_at_boundary() ; 
+
     return 0 ; 
 }
 
