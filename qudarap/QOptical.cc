@@ -1,21 +1,25 @@
 
-#include <cuda_runtime.h>
 #include <sstream>
 
-#include "SStr.hh"
 #include "scuda.h"
 #include "squad.h"
-
-#include "QUDA_CHECK.h"
 #include "NP.hh"
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+#include <cuda_runtime.h>
+#include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "QBuf.hh"
+#include "SLOG.hh"
+#endif
+
 #include "QOptical.hh"
 
-#include "SLOG.hh"
-
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 const plog::Severity QOptical::LEVEL = SLOG::EnvLevel("QOptical", "DEBUG");
+#endif
 
 const QOptical* QOptical::INSTANCE = nullptr ; 
 const QOptical* QOptical::Get(){ return INSTANCE ; }
@@ -23,11 +27,24 @@ const QOptical* QOptical::Get(){ return INSTANCE ; }
 QOptical::QOptical(const NP* optical_)
     :
     optical(optical_),
-    buf(QBuf<unsigned>::Upload(optical)),
-    d_optical((quad*)buf->d)
+    buf(nullptr),
+    d_optical(nullptr)
+{
+    init();
+} 
+
+void QOptical::init()
 {
     INSTANCE = this ; 
-} 
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+    d_optical = const_cast<NP*>(optical)->values<quad>(); 
+#else
+    buf = QBuf<unsigned>::Upload(optical) ; 
+    d_optical = (quad*)buf->d ; 
+#endif
+}
+
 
 std::string QOptical::desc() const
 {
@@ -38,6 +55,11 @@ std::string QOptical::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+void QOptical::check() const {}
+#else
 
 // from QOptical.cu
 extern "C" void QOptical_check(dim3 numBlocks, dim3 threadsPerBlock, quad* optical, unsigned width, unsigned height ); 
@@ -59,5 +81,5 @@ void QOptical::check() const
 
     LOG(LEVEL) << "]" ; 
 }
-
+#endif
 

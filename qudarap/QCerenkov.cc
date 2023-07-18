@@ -77,7 +77,7 @@ qcerenkov* QCerenkov::MakeInstance() // static
 
     qcerenkov* ck = new qcerenkov ; 
     ck->base = base->d_base ;  
-    ck->bnd = bnd->d_bnd ;  
+    ck->bnd = bnd->d_qb ;  
     ck->prop = prop ? prop->d_prop : nullptr ; 
     return ck ; 
 }

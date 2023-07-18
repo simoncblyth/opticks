@@ -125,6 +125,7 @@ struct NP
     bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) const ;  
     void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) ;   // one dimension entry left at -1 can be auto-set
     void change_shape_to_3D() ; 
+    void reshape( const std::vector<int>& new_shape ); // product of shape before and after must be the same  
 
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
@@ -1105,6 +1106,10 @@ inline void NP::change_shape_to_3D()
     }   
 }
 
+inline void NP::reshape( const std::vector<int>& new_shape )
+{
+    NPS::reshape(shape, new_shape); 
+}
 
 
 /**

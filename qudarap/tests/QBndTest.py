@@ -5,7 +5,7 @@ QBndTest.py
 
 ::
  
-   ipython -i tests/QBndTest.py
+   ./QBndTest.sh 
  
 
 """
@@ -29,10 +29,16 @@ def test_cf(src, dst):
 
 
 if __name__ == '__main__':
+    f = Fold.Load(symbol="f")
+    print(repr(f))
 
-    t = Fold.Load("$TMP/QBndTest/Add")
-    src = t.src    
-    dst = t.dst    
+    f.src[np.where(f.src == 1e9)] = 1e6 
+    f.dst[np.where(f.dst == 1e9)] = 1e6 
+
+    a = f.src    
+    b = f.dst    
+
+    assert( np.all( a == b ))
 
 
 

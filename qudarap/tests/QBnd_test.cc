@@ -1,21 +1,14 @@
-/**
-QBndTest.cc
-------------
-
-**/
-
-#include "scuda.h"
-#include "NPFold.h"
+#include "NP.hh"
 #include "QBnd.hh"
 
-int main(int argc, char** argv)
+int main()
 {
     NP* bnd = NP::Load("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd.npy") ; 
     std::cout << " bnd " << ( bnd ? bnd->sstr() : "-" ) << std::endl ; 
     if(bnd == nullptr) return 1 ; 
 
     QBnd qb(bnd) ; 
-    qb.save("/tmp/$USER/opticks/QBndTest"); 
+    qb.save("$FOLD"); 
 
     return 0 ; 
 }

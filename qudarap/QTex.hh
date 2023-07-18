@@ -1,18 +1,24 @@
 #pragma once
 /**
-QTex
-=====
+QTex.hh
+========
 
 
 **/
 #include <string>
 #include <cstddef>
+#include "scuda.h"
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 #include <texture_types.h>
+#endif
+
+
 struct quad4 ; 
 union quad ; 
 
 #include "QUDARAP_API_EXPORT.hh"
-
 
 template<typename T>
 struct QUDARAP_API QTex
@@ -24,10 +30,11 @@ struct QUDARAP_API QTex
     bool         normalizedCoords ; 
     const void*  origin ;  // typically an NP array 
 
-
-
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     cudaArray*   cuArray ; 
     cudaChannelFormatDesc channelDesc ;
+#endif
     cudaTextureObject_t texObj ;
 
     quad4*              meta ; 
@@ -37,6 +44,7 @@ struct QUDARAP_API QTex
 
     void     setMetaDomainX( const quad* domx ); 
     void     setMetaDomainY( const quad* domy ); 
+    void     uploadMeta(); 
 
     void           setOrigin(const void* origin_) ; 
     const void*    getOrigin() const ; 
@@ -52,13 +60,13 @@ struct QUDARAP_API QTex
     void init(); 
     std::string desc() const ; 
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     void createArray(); 
     void uploadToArray(); 
-    void uploadMeta(); 
-
     void createTextureObject(); 
+#endif
+
 };
-
-
 
 

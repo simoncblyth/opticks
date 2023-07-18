@@ -269,7 +269,7 @@ void QSim::init()
     sim->base = base ? base->d_base : nullptr ; 
     sim->evt = event ? event->getDevicePtr() : nullptr ; 
     sim->rngstate = rng ? rng->qr->rng_states : nullptr ; 
-    sim->bnd = bnd ? bnd->d_bnd : nullptr ; 
+    sim->bnd = bnd ? bnd->d_qb : nullptr ; 
     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ; 
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ; 
     sim->scint = scint ? scint->d_scint : nullptr ; 

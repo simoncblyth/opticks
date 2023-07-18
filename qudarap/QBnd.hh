@@ -23,7 +23,12 @@ TODO: consider combine QBnd and QOptical into QOpticalBnd or incorporating
 
 #include <vector>
 #include <string>
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 #include "plog/Severity.h"
+#endif
+
 #include "QUDARAP_API_EXPORT.hh"
 
 union quad ; 
@@ -33,15 +38,19 @@ struct qbnd ;
 
 template <typename T> struct QTex ; 
 struct NP ; 
+struct NPFold ; 
 struct SBnd ; 
 
 struct QUDARAP_API QBnd
 {
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     static const plog::Severity LEVEL ;
+#endif
     static const QBnd*          INSTANCE ; 
     static const QBnd*          Get(); 
 
-    static qbnd* MakeInstance( const QTex<float4>* tex, const std::vector<std::string>& names ); 
+    static qbnd* MakeInstance(const QTex<float4>* tex, const std::vector<std::string>& names ); 
 
     const NP*      dsrc ;  
     const NP*      src ;  
@@ -49,18 +58,24 @@ struct QUDARAP_API QBnd
 
     QTex<float4>*  tex ; 
 
-    qbnd*          bnd ; 
-    qbnd*          d_bnd ; 
+    qbnd*          qb ;    // formerly bnd 
+    qbnd*          d_qb ;  // formerly d_bnd
 
     QBnd(const NP* buf); 
+    void init(); 
 
     std::string desc() const ; 
-    static QTex<float4>* MakeBoundaryTex(const NP* buf ) ;
-    void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
-    NP*  lookup();
-    void lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height );
-    void dump(   quad* lookup, unsigned num_lookup, unsigned edgeitems=10 );
+    static QTex<float4>* MakeBoundaryTex(const NP* buf ) ;
+    static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    static std::string DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, unsigned width, unsigned height ); 
+
+    NP*  lookup() const ;
+    NPFold* serialize() const ; 
+    void save(const char* dir) const ; 
+
+    void lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height ) const ;
+    static std::string Dump(   quad* lookup, unsigned num_lookup, unsigned edgeitems=10 );
 
 };
 

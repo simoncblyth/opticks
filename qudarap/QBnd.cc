@@ -5,24 +5,32 @@
 
 #include "SBnd.h"
 #include "NP.hh"
+#include "NPFold.h"
 
 #include "scuda.h"
 #include "squad.h"
 
-#include "QUDA_CHECK.h"
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+#include "QUDA_CHECK.h"
 #include "QU.hh"
+#include "SLOG.hh"
+#endif
+
 #include "QTex.hh"
 #include "QOptical.hh"
 #include "QBnd.hh"
-#include "SBnd.h"
 
 #include "qbnd.h"
 
-#include "SDigestNP.hh"
-#include "SLOG.hh"
 
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 const plog::Severity QBnd::LEVEL = SLOG::EnvLevel("QBnd", "DEBUG"); 
+#endif
+
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
@@ -37,21 +45,27 @@ static method used from QBnd::QBnd using the bnd array spec names
 
 qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>& names )
 {
-    qbnd* bnd = new qbnd ; 
+    qbnd* qb = new qbnd ; 
 
-    bnd->boundary_tex = tex->texObj ; 
-    bnd->boundary_meta = tex->d_meta ; 
-    bnd->boundary_tex_MaterialLine_Water = SBnd::GetMaterialLine("Water", names) ; 
-    bnd->boundary_tex_MaterialLine_LS    = SBnd::GetMaterialLine("LS", names) ; 
+    qb->boundary_tex = tex->texObj ; 
+    qb->boundary_meta = tex->d_meta ; 
+    qb->boundary_tex_MaterialLine_Water = SBnd::GetMaterialLine("Water", names) ; 
+    qb->boundary_tex_MaterialLine_LS    = SBnd::GetMaterialLine("LS", names) ; 
 
     const QOptical* optical = QOptical::Get() ; 
     //assert( optical ); 
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     LOG(LEVEL) << " optical " << ( optical ? optical->desc() : "MISSING" ) ; 
+#endif
 
-    bnd->optical = optical ? optical->d_optical : nullptr ; 
 
-    assert( bnd->boundary_meta != nullptr ); 
-    return bnd ; 
+
+    qb->optical = optical ? optical->d_optical : nullptr ; 
+
+    assert( qb->boundary_meta != nullptr ); 
+    return qb ; 
 }
 
 
@@ -69,12 +83,21 @@ QBnd::QBnd(const NP* buf)
     src(NP::MakeNarrowIfWide(buf)),
     sbn(new SBnd(src)),
     tex(MakeBoundaryTex(src)),
-    bnd(MakeInstance(tex, buf->names)),
-    d_bnd(QU::UploadArray<qbnd>(bnd,1,"QBnd::QBnd/d_bnd"))
+    qb(MakeInstance(tex, buf->names)),
+    d_qb(nullptr)
 {
-    INSTANCE = this ; 
+    init(); 
 } 
 
+void QBnd::init()
+{
+    INSTANCE = this ; 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+    d_qb = qb ;  
+#else
+    d_qb = QU::UploadArray<qbnd>(qb,1,"QBnd::QBnd/d_qb") ; 
+#endif
+}
 
 
 /**
@@ -115,7 +138,10 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     unsigned nl = buf->shape[3];  // (39 or 761)   number of wavelength samples of the property
     unsigned nm = buf->shape[4];  // (4)    number of prop within the float4
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     LOG(LEVEL) << " buf " << ( buf ? buf->desc() : "-" ) ;  
+#endif
     assert( nm == 4 ); 
 
     unsigned nx = nl ;           // wavelength samples
@@ -132,7 +158,11 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
 
     bool buf_has_meta = buf->has_meta() ;
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     LOG_IF(fatal, !buf_has_meta) << " buf_has_meta FAIL : domain metadata is required to create texture  buf.desc " << buf->desc() ;  
+#endif
     assert( buf_has_meta ); 
 
     quad domainX ; 
@@ -141,12 +171,15 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     domainX.f.z = buf->get_meta<float>("domain_step",  0.f ); 
     domainX.f.w = buf->get_meta<float>("domain_range", 0.f ); 
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     LOG(LEVEL)
         << " domain_low " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.x  
         << " domain_high " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.y  
         << " domain_step " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.z 
         << " domain_range " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.w  
         ;
+#endif
 
     assert( domainX.f.y > domainX.f.x ); 
     assert( domainX.f.z > 0.f ); 
@@ -166,21 +199,14 @@ std::string QBnd::desc() const
        << " tex " << ( tex ? tex->desc() : "-" )
        << " tex " << tex 
        ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
-void QBnd::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+std::string QBnd::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
-    threadsPerBlock.x = 16 ; 
-    threadsPerBlock.y = 16 ; 
-    threadsPerBlock.z = 1 ; 
- 
-    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
-    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
-    numBlocks.z = 1 ; 
-
-    LOG(LEVEL) 
+    std::stringstream ss ; 
+    ss
         << " width " << std::setw(7) << width 
         << " height " << std::setw(7) << height 
         << " width*height " << std::setw(7) << width*height 
@@ -197,9 +223,24 @@ void QBnd::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
         << std::setw(3) << numBlocks.z << " "
         << ")" 
         ;
+
+    std::string str = ss.str(); 
+    return str ; 
 }
 
-NP* QBnd::lookup()
+
+void QBnd::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static 
+{
+    threadsPerBlock.x = 16 ; 
+    threadsPerBlock.y = 16 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ; 
+}
+
+NP* QBnd::lookup() const 
 {
     unsigned width = tex->width ; 
     unsigned height = tex->height ; 
@@ -210,25 +251,61 @@ NP* QBnd::lookup()
     quad* out_ = (quad*)out->values<float>(); 
     lookup( out_ , num_lookup, width, height ); 
 
+    out->reshape(src->shape); 
+
     return out ; 
 }
 
-// from QBnd.cu
-extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
-
-void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
+NPFold* QBnd::serialize() const 
 {
-    LOG(LEVEL) << "[" ; 
+    NPFold* f = new NPFold ; 
+    f->add("src", src ); 
+    f->add("dst", lookup() ); 
+    return f ; 
+}
 
+void QBnd::save(const char* dir) const 
+{
+    NPFold* f = serialize(); 
+    f->save(dir); 
+}
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+
+// from QBnd.cu
+extern "C" void QBnd_lookup_0(
+    dim3 numBlocks, 
+    dim3 threadsPerBlock, 
+    cudaTextureObject_t texObj, 
+    quad4* meta, 
+    quad* lookup, 
+    unsigned num_lookup, 
+    unsigned width, 
+    unsigned height 
+    ); 
+
+#endif
+
+
+void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height ) const 
+{
     if( tex->d_meta == nullptr )
     {
         tex->uploadMeta();    // TODO: not a good place to do this, needs to be more standard
     }
     assert( tex->d_meta != nullptr && "must QTex::uploadMeta() before lookups" );
 
+
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+    ConfigureLaunch( numBlocks, threadsPerBlock, width, height ); 
+
+    std::cout << DescLaunch( numBlocks, threadsPerBlock, width, height ) << std::endl ; 
 
     size_t size = num_lookup*sizeof(quad) ;  
 
@@ -240,18 +317,20 @@ void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned h
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>(lookup), d_lookup, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_lookup) ); 
 
-    LOG(LEVEL) << "]" ; 
+#endif
+
 }
 
-void QBnd::dump( quad* lookup, unsigned num_lookup, unsigned edgeitems )
+std::string QBnd::Dump( quad* lookup, unsigned num_lookup, unsigned edgeitems ) // static 
 {
-    LOG(LEVEL); 
+    std::stringstream ss ; 
+
     for(unsigned i=0 ; i < num_lookup ; i++)
     {
         if( i < edgeitems || i > num_lookup - edgeitems)
         {
             quad& props = lookup[i] ;  
-            std::cout 
+            ss
                 << std::setw(10) << i 
                 << std::setw(10) << std::fixed << std::setprecision(3) << props.f.x 
                 << std::setw(10) << std::fixed << std::setprecision(3) << props.f.y
@@ -261,5 +340,7 @@ void QBnd::dump( quad* lookup, unsigned num_lookup, unsigned edgeitems )
                 ; 
         }
     }
+    std::string str = ss.str(); 
+    return str ; 
 }
 

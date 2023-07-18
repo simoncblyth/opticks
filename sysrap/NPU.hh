@@ -258,6 +258,19 @@ struct NPS
         return copy_shape(shp, ni_, nj_, nk_, nl_, nm_, no_ ); 
     }
 
+    static int product(const std::vector<int>& src )
+    {
+        int nd = src.size(); 
+        int prod = 1 ; 
+        for(int i=0 ; i < nd ; i++) prod *= src[i] ; 
+        return prod ; 
+    }
+    static void reshape(std::vector<int>& dst, const std::vector<int>& src )
+    {
+        assert( product(dst) == product(src) ); 
+        dst = src ; 
+    }
+
     static std::string desc(const std::vector<int>& shape)
     {
         std::stringstream ss ; 

@@ -12,7 +12,12 @@ This is closely related to QBnd
 **/
 
 #include <string>
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 #include "plog/Severity.h"
+#endif
+
 #include "QUDARAP_API_EXPORT.hh"
 
 union quad ; 
@@ -21,11 +26,17 @@ template <typename T> struct QBuf ;
 
 struct QUDARAP_API QOptical
 {
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     static const plog::Severity LEVEL ;
+#endif
     static const QOptical*      INSTANCE ; 
     static const QOptical*      Get(); 
 
     QOptical(const NP* optical);
+    void init(); 
+
     std::string desc() const ; 
     void check() const ; 
 

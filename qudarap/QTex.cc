@@ -2,14 +2,18 @@
 #include <sstream>
 #include <cstring>
 #include <cassert>
+#include <iostream>
 
 #include "scuda.h"
 #include "squad.h"
 
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 #include <cuda_runtime.h>
-#include <iostream>
 #include "cudaCheckErrors.h"
 #include "QU.hh"
+#endif
+
 #include "QTex.hh"
 
 
@@ -22,9 +26,11 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     filterMode(filterMode_),
     normalizedCoords(normalizedCoords_), 
     origin(nullptr),
-
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     cuArray(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
+#endif
     texObj(0),
     meta(new quad4),
     d_meta(nullptr)
@@ -68,22 +74,25 @@ bool QTex<T>::getNormalizedCoords() const
 }
 
 
-
-
-
 template<typename T>
 QTex<T>::~QTex()
 {
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     cudaDestroyTextureObject(texObj);
     cudaFreeArray(cuArray);
+#endif
 }
 
 template<typename T>
 void QTex<T>::init()
 {
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
     createArray();   // cudaMallocArray using channelDesc for T 
     uploadToArray();
     createTextureObject();
+#endif
 
     meta->q0.u.x = width ; 
     meta->q0.u.y = height ; 
@@ -111,6 +120,28 @@ void QTex<T>::setMetaDomainY( const quad* domy )
 }
 
 
+/**
+QTex:uploadMeta
+------------------
+
+Not doing this automatically as will need to add some more meta 
+
+**/
+
+template<typename T>
+void QTex<T>::uploadMeta()
+{
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+    d_meta = meta ; 
+#else
+    d_meta = QU::UploadArray<quad4>(meta, 1, "QTex::uploadMeta" );  
+#endif
+}
+
+
+
+
+
 template<typename T>
 std::string QTex<T>::desc() const
 {
@@ -127,6 +158,10 @@ std::string QTex<T>::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
 
 template<typename T>
 void QTex<T>::createArray()
@@ -196,15 +231,6 @@ void QTex<T>::uploadToArray()
 
 
 
-
-
-template<typename T>
-void QTex<T>::uploadMeta()
-{
-    // not doing this automatically as will need to add some more meta 
-    d_meta = QU::UploadArray<quad4>(meta, 1, "QTex::uploadMeta" );  
-}
-
 /**
 
 normalized:false
@@ -233,7 +259,8 @@ void QTex<T>::createTextureObject()
     switch(filterMode)
     {
         case 'L': texDesc.filterMode = cudaFilterModeLinear ; break ; 
-        case 'P': texDesc.filterMode = cudaFilterModePoint  ; break ;  // ModePoint: switches off interpolation, necessary with with char texture  
+        case 'P': texDesc.filterMode = cudaFilterModePoint  ; break ;  
+        // cudaFilterModePoint: switches off interpolation, necessary with char texture  
     }
 
     texDesc.readMode = cudaReadModeElementType;  // return data of the type of the underlying buffer
@@ -243,7 +270,7 @@ void QTex<T>::createTextureObject()
     cudaCreateTextureObject(&texObj, &resDesc, &texDesc, NULL);
 }
 
-
+#endif
 
 
 

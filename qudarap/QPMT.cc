@@ -21,7 +21,7 @@ QPMT::mct_lpmtid_
 
 #include "SLOG.hh"
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #else
 #include <cuda_runtime.h>
 #endif
@@ -30,7 +30,7 @@ QPMT::mct_lpmtid_
 #include "QPMT.hh"
 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #include "QPMT_MOCK.h"
 
 template<typename T>
@@ -95,7 +95,7 @@ inline void QPMT<T>::init()
     init_lcqs(); 
 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     d_pmt = pmt ; 
 #else
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u, "QPMT::init/d_pmt" ) ;  
@@ -110,7 +110,7 @@ inline void QPMT<T>::init_thickness()
 {
     const char* label = "QPMT::init_thickness/d_thickness" ; 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     T* d_thickness = const_cast<T*>(thickness->cvalues<T>()) ; 
 #else
     T* d_thickness = QU::UploadArray<T>(thickness->cvalues<T>(), thickness->num_values(), label ); ; 
@@ -130,7 +130,7 @@ inline void QPMT<T>::init_lcqs()
 
     const char* label = "QPMT::init_lcqs/d_lcqs" ; 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     T* d_lcqs = lcqs ? const_cast<T*>(lcqs->cvalues<T>()) : nullptr ; 
 #else
     T* d_lcqs = lcqs ? QU::UploadArray<T>(lcqs->cvalues<T>(), lcqs->num_values(), label) : nullptr ; 
@@ -142,7 +142,7 @@ inline void QPMT<T>::init_lcqs()
 
 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
 template <typename F>
 extern void QPMT_lpmtcat_MOCK(
@@ -244,7 +244,7 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 
     const char* label_0 = "QPMT::lpmtcat_/d_domain" ; 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     const T* d_domain = domain->cvalues<T>() ; 
 #else
     const T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), num_domain, label_0 ) ; 
@@ -260,13 +260,13 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 
     T* h_lookup = lookup->values<T>() ; 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     T* d_lookup = h_lookup ;  
 #else
     T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::lpmtcat::d_lookup") ;
 #endif   
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QPMT_lpmtcat_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain );  
 #else
     dim3 numBlocks ; 
@@ -332,7 +332,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     T* h_lookup = lookup->values<T>() ; 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     T* d_lookup = h_lookup ; 
 #else
     T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::lpmtid::d_lookup") ;
@@ -340,7 +340,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
  
     assert( lpmtid->uifc == 'i' && lpmtid->ebyte == 4 ); 
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     const T*   d_domain = domain->cvalues<T>() ; 
     const int* d_lpmtid = lpmtid->cvalues<int>() ; 
 #else
@@ -354,7 +354,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
 #ifdef WITH_CUSTOM4
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QPMT_mct_lpmtid_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain, d_lpmtid, num_lpmtid ); 
 #else
 

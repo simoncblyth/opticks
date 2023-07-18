@@ -203,7 +203,4 @@ inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wav
     //printf("//qsim.fill_state \n"); 
 }
 
-
-
-
 #endif

@@ -20,7 +20,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 #include "qpmt.h"
 #include "QProp.hh"
 
-#ifdef MOCK_CURAND
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #else
 #include "QU.hh"
 #endif

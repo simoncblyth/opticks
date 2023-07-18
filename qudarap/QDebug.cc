@@ -52,7 +52,7 @@ qdebug* QDebug::MakeInstance()   // static
 
     const QBnd* qb = QBnd::Get() ; 
 
-    unsigned cerenkov_matline = qb ? qb->bnd->boundary_tex_MaterialLine_LS : 0 ;   
+    unsigned cerenkov_matline = qb ? qb->qb->boundary_tex_MaterialLine_LS : 0 ;   
 
     LOG_IF(error, qb == nullptr) 
          << "AS NO QBnd at QDebug::MakeInstance the qdebug cerenkov genstep is using default matline of zero " << std::endl 
