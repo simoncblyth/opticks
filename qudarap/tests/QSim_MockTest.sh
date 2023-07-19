@@ -3,6 +3,10 @@ usage(){ cat << EOU
 QSim_MockTest.sh
 ==================
 
+Note that unlike the standard Opticks CMake build
+this script finds Custom4 without consulting 
+the CMAKE_PREFIX_PATH 
+
 EOU
 }
 
@@ -31,7 +35,14 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi
 
-
+if [ "${arg/check}" != "$arg" ]; then
+    path="${CUSTOM4_PREFIX}/include/Custom4/C4CustomART.h"
+    if [ -f "$path" ]; then
+       echo $BASH_SOURCE : path $path : EXISTS
+    else
+       echo $BASH_SOURCE : path $path : DOES NOT EXIST
+    fi 
+fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
