@@ -18,8 +18,16 @@ find_package(Custom4 CONFIG)
 
 message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
 
-# see eg $OPTICKS_PREFIX/lib/Custom4-0.1.4/Custom4Config.cmake
-# for the setup that a successful find does, including setting WITH_CUSTOM4
+#[=[
+A successful find of Custom4 runs some CMake config, see::
+
+    epsilon:qudarap blyth$ cat ${OPTICKS_PREFIX}_externals/custom4/0.1.6/lib/Custom4-0.1.6/Custom4Config.cmake | grep WITH
+    set(Custom4_DEFINITIONS -DWITH_CUSTOM4 )
+          INTERFACE_COMPILE_DEFINITIONS "WITH_CUSTOM4"
+
+#]=]
+
+
 
 if(Custom4_FOUND)
    set(LIBS ${LIBS} Custom4::Custom4)  

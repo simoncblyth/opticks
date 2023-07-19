@@ -301,11 +301,13 @@ QPMT::mct_lpmtid_
 template<typename T>
 NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const 
 {
+
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_lpmtid = lpmtid->shape[0] ; 
 
     NP* lookup = MakeArray_lpmtid(etype, num_domain, num_lpmtid ); 
-    unsigned num_lookup = lookup->num_values() ; 
+    unsigned num_lookup = lookup->num_values() ;
+
 
     if( etype == qpmt_ART )
     {
@@ -330,6 +332,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
         << " num_lookup " << num_lookup 
         ;
 
+#ifdef WITH_CUSTOM4
     T* h_lookup = lookup->values<T>() ; 
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
@@ -352,7 +355,6 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 #endif
 
 
-#ifdef WITH_CUSTOM4
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QPMT_mct_lpmtid_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain, d_lpmtid, num_lpmtid ); 
