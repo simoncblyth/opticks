@@ -10,7 +10,9 @@ enum {
     smatsur_NoSurface                      = 1,
     smatsur_Surface                        = 2,
     smatsur_Surface_zplus_sensor_A         = 3,
-    smatsur_Surface_zplus_sensor_CustomART = 4 
+    smatsur_Surface_zplus_sensor_CustomART = 4,
+    smatsur_Surface_zminus                 = 5
+ 
 };
  
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -23,11 +25,12 @@ enum {
 
 struct smatsur
 {
-    static constexpr const char* Material = "Material" ; 
-    static constexpr const char* NoSurface  = "NoSurface" ; 
-    static constexpr const char* Surface  = "Surface" ; 
-    static constexpr const char* Surface_zplus_sensor_A  = "Surface_zplus_sensor_A" ; 
+    static constexpr const char* Material                        = "Material" ; 
+    static constexpr const char* NoSurface                       = "NoSurface" ; 
+    static constexpr const char* Surface                         = "Surface" ; 
+    static constexpr const char* Surface_zplus_sensor_A          = "Surface_zplus_sensor_A" ; 
     static constexpr const char* Surface_zplus_sensor_CustomART  = "Surface_zplus_sensor_CustomART" ; 
+    static constexpr const char* Surface_zminus                  = "Surface_zminus" ; 
 
     static int TypeFromChar(char OpticalSurfaceName0); 
     static std::string Desc(); 
@@ -45,6 +48,7 @@ inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
         case '-':  type = smatsur_NoSurface                      ; break ;  
         case '@':  type = smatsur_Surface_zplus_sensor_CustomART ; break ; 
         case '#':  type = smatsur_Surface_zplus_sensor_A         ; break ; 
+        case '!':  type = smatsur_Surface_zminus                 ; break ; 
         default:   type = smatsur_Surface                        ; break ; 
     }
     return type ; 
@@ -52,8 +56,8 @@ inline int smatsur::TypeFromChar(char OpticalSurfaceName0)
 
 inline std::string smatsur::Desc() 
 {
-    const int N = 5 ; 
-    char cc[N] = { '\0', '-', 'X', '#', '@' } ; 
+    const int N = 6 ; 
+    char cc[N] = { '\0', '-', 'X', '#', '@', '!' } ; 
     std::stringstream ss ; 
     ss << "smatsur::Desc" << std::endl ; 
     for(int i=0 ; i < N ; i++)
@@ -82,6 +86,7 @@ inline int smatsur::Type(const char* name)
     if(strcmp(name,Surface)==0)                        type = smatsur_Surface ;
     if(strcmp(name,Surface_zplus_sensor_A)==0)         type = smatsur_Surface_zplus_sensor_A ;
     if(strcmp(name,Surface_zplus_sensor_CustomART)==0) type = smatsur_Surface_zplus_sensor_CustomART ;
+    if(strcmp(name,Surface_zminus)==0)                 type = smatsur_Surface_zminus ;
     return type ; 
 }
 
@@ -95,6 +100,7 @@ inline const char* smatsur::Name(int type)
         case smatsur_Surface:                         n = Surface                        ; break ;
         case smatsur_Surface_zplus_sensor_A:          n = Surface_zplus_sensor_A         ; break ;
         case smatsur_Surface_zplus_sensor_CustomART:  n = Surface_zplus_sensor_CustomART ; break ;
+        case smatsur_Surface_zminus:                  n = Surface_zminus                 ; break ;
     }
     return n ; 
 }

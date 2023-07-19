@@ -31,6 +31,8 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi
 
+
+
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
        ../QPMT.cc \
@@ -38,18 +40,19 @@ if [ "${arg/build}" != "$arg" ]; then
        ../QBnd.cc \
        ../QTex.cc \
        ../QProp.cc \
+       ../QBase.cc \
        -g \
        -std=c++11 -lstdc++ \
+       -DDEBUG_PIDX \
        -DMOCK_CURAND \
        -DMOCK_CURAND_DEBUG \
        -DMOCK_TEXTURE \
-       -DWITH_CUSTOM4 \
        -I.. \
        -I$OPTICKS_PREFIX/include/SysRap  \
-       -I$CUSTOM4_PREFIX/include/Custom4 \
        -I$CUDA_PREFIX/include \
        -I$OPTICKS_PREFIX/externals/glm/glm \
        -I$OPTICKS_PREFIX/externals/plog/include \
+       -DWITH_CUSTOM4 -I$CUSTOM4_PREFIX/include/Custom4 \
        -o $bin 
 
     [ $? -ne 0 ] && echo $msg build error && exit 1 

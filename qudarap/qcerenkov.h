@@ -39,7 +39,7 @@ struct qcerenkov
     qbnd*  bnd ;  
     qprop<float>*  prop ;  
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QCERENKOV_METHOD void generate( sphoton& p,  curandStateXORWOW& rng, const quad6& gs    , int idx, int genstep_id ) const ;
 
     template<typename T>
@@ -51,7 +51,7 @@ struct qcerenkov
 
 };
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, curandStateXORWOW& rng, const quad6& _gs, int idx, int gsid ) const 
 {
     //printf("//qcerenkov::generate idx %d \n", idx ); 

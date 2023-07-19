@@ -35,9 +35,13 @@ struct ssys
 
     static int getenvint(const char* ekey, int fallback);  
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
+    static unsigned getenvunsigned_fallback_max(const char* ekey );  
+
     static double   getenvdouble(const char* ekey, double fallback);  
     static float    getenvfloat(const char* ekey, float fallback);  
     static bool     getenvbool(const char* ekey);  
+
+
 
 
     static bool hasenv_(const char* ekey);  
@@ -191,6 +195,12 @@ inline unsigned ssys::getenvunsigned(const char* ekey, unsigned fallback)
     int ival = getenvint(ekey, int(fallback)); 
     return ival > -1 ? ival : fallback ; 
 }
+inline unsigned ssys::getenvunsigned_fallback_max(const char* ekey)
+{
+    return getenvunsigned(ekey, std::numeric_limits<unsigned>::max() ); 
+}
+
+
 inline bool ssys::getenvbool( const char* ekey )
 {
     char* val = getenv(ekey);

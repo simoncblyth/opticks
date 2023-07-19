@@ -915,6 +915,14 @@ quad2* QSim::UploadMockPRD(const NP* prd) // static
 QSim::mock_propagate
 ----------------------
 
+TODO: rename this, the "mock" is confusing, 
+its mock in the sense of not using any geometry... 
+but it does use CUDA.  
+
+Unlike other uses of "mock" which convey not using CUDA 
+via the MOCK_CURAND MOCK_TEXTURE MOCK_CUDA mechnism.
+
+
 * number of prd must be a multiple of the number of photon, ratio giving bounce_max 
 * number of record must be a multiple of the number of photon, ratio giving record_max 
 * HMM: this is an obtuse way to get bounce_max and record_max 

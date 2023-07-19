@@ -1,21 +1,30 @@
 #include <sstream>
 #include <limits>
 
-#include "SSys.hh"
+#include "ssys.h"
+
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+#else
 #include "SLOG.hh"
 #include "QU.hh"
+#endif
 
 #include "QBase.hh"
 #include "qbase.h"
 
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+const plog::Severity QBase::LEVEL = plog::info ; 
+#else
 const plog::Severity QBase::LEVEL = SLOG::EnvLevel("QBase", "DEBUG"); 
+#endif
+
 const QBase* QBase::INSTANCE = nullptr ; 
 const QBase* QBase::Get(){ return INSTANCE ; }
 
 qbase* QBase::MakeInstance() // static 
 {
     qbase* base = new qbase ; 
-    base->pidx = SSys::getenvunsigned_fallback_max("PIDX") ; 
+    base->pidx = ssys::getenvunsigned_fallback_max("PIDX") ; 
     return base ; 
 }
 
@@ -45,9 +54,16 @@ Tried changing the visible devices but seems to make no difference::
 void QBase::init()
 {
     INSTANCE = this ; 
+
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+    d_base = base ; 
+#else
     LOG(LEVEL) << "[ QU::UploadArray " ; 
     d_base = QU::UploadArray<qbase>(base,1, "QBase::init/d_base") ; 
     LOG(LEVEL) << "] QU::UploadArray : takes ~0.25-0.3s : appearing in analog timings as it is first GPU contact " ; 
+#endif
+
+
 }
 
 std::string QBase::desc() const 

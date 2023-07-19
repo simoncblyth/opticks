@@ -3,7 +3,6 @@
 qscint.h
 ==================
 
-
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -25,7 +24,7 @@ struct qscint
     quad4*              scint_meta ; // HUH: not used ? 
     unsigned            hd_factor ; 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QSCINT_METHOD void    generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, int photon_id, int genstep_id ) const ; 
     QSCINT_METHOD void    reemit(   sphoton& p, curandStateXORWOW& rng, float scintillationTime) const ;
     QSCINT_METHOD void    momw_polw(sphoton& p, curandStateXORWOW& rng) const ; 
@@ -41,7 +40,7 @@ struct qscint
 }; 
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
 #include "sscint.h"
 
@@ -51,7 +50,12 @@ qscint::generate_photon
 
 **/
 
-inline QSCINT_METHOD void qscint::generate(sphoton& p, curandStateXORWOW& rng, const quad6& _gs, int photon_id, int genstep_id ) const 
+inline QSCINT_METHOD void qscint::generate(
+    sphoton& p, 
+    curandStateXORWOW& rng, 
+    const quad6& _gs, 
+    int photon_id, 
+    int genstep_id ) const 
 {
     momw_polw(p, rng ); 
 

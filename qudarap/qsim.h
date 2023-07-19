@@ -83,32 +83,39 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) 
     QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
+#endif
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )  || defined(MOCK_CUDA)
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD void rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
 #endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
-    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance=-1.f ) const ; 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
+    QSIM_METHOD int     propagate_at_boundary(        unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance=-1.f ) const ; 
+    QSIM_METHOD int     propagate_at_boundary_with_T( unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance ) const ; 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) 
     QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
-    QSIM_METHOD int     propagate_at_surface(           unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
 #endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
+    QSIM_METHOD int     propagate_at_surface(           unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_surface_Detect(    unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const ; 
+#if defined( WITH_CUSTOM4 )
     QSIM_METHOD int     propagate_at_surface_CustomART( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ) const ; 
 #endif
+#endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     QSIM_METHOD void    reflect_diffuse(                       curandStateXORWOW& rng, sctx& ctx );
     QSIM_METHOD void    reflect_specular(                      curandStateXORWOW& rng, sctx& ctx );
 
@@ -167,7 +174,7 @@ inline QSIM_METHOD float3 qsim::uniform_sphere(const float u0, const float u1)
 }
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
 /**
 qsim::uniform_sphere
 ---------------------
@@ -194,6 +201,10 @@ inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, unsigned boun
     float4 value = multifilm->lookup(pmtType, boundary, nm, aoi);
     return value;
 }
+
+#endif
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA) 
 
 /**
 qsim::lambertian_direction following G4LambertianRand 
@@ -391,9 +402,14 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
         if(u1 < 0.5f ) cosTheta = -cosTheta ; 
         // could use uniform_sphere here : but not doing so to follow G4OpRayleigh more closely 
 
+
         float sinPhi ; 
         float cosPhi ; 
+#if defined(MOCK_CURAND ) || defined(MOCK_CUDA)
+        __sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
+#else
         sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
+#endif
        
         direction.x = sinTheta * cosPhi;
         direction.y = sinTheta * sinPhi;
@@ -409,7 +425,12 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
 
         if(dot(polarization, polarization) == 0.f )
         {
+
+#if defined( MOCK_CURAND ) || defined(MOCK_CUDA)
+            __sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
+#else
             sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
+#endif
 
             polarization.x = cosPhi ;
             polarization.y = sinPhi ;
@@ -455,7 +476,10 @@ qsim::propagate_to_boundary
 +---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
 
 
-TODO: whilst in measurement iteration try changing to a single return, not loads of them, by setting command and returning that 
+TODO: 
+   whilst in measurement iteration try changing the four "return" 
+   in the below into a single return: by setting command variable 
+   and returning that 
 
 **/
 
@@ -597,7 +621,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     return BOUNDARY ;
 }
 #endif
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
 /**
 qsim::propagate_at_boundary
 ------------------------------------------
@@ -813,8 +837,8 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d u_boundary_burn %10.4f u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
-              ctx.idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  ); 
+    printf("//qsim.propagate_at_boundary idx %d u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
+              ctx.idx,  u_reflect, TransCoeff, reflect  ); 
     }
 #endif 
 
@@ -896,7 +920,107 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 
     return CONTINUE ; 
 }
+/**
+qsim::propagate_at_boundary_with_T
+------------------------------------
+
+Variant of qsim::propagate_at_boundary where a value of theTransmittance 
+is passed in as an argument (eg from CustomART calculation) rather then 
+calculated here. 
+
+HMM: was hoping that passing in theTransmittance would afford some 
+simplifications, but it seems almost no simplification is possible 
+as need to calculate everything anyhow for the polarization. 
+
+Given that this is almost exactly the same as qsim::propagate_at_boundary
+and no simplification is afforded, might as well just keep using that
+and leave this just for testing. 
+
+**/
+
+inline QSIM_METHOD int qsim::propagate_at_boundary_with_T(unsigned& flag, curandStateXORWOW& rng, sctx& ctx, float theTransmittance ) const 
+{
+    sphoton& p = ctx.p ; 
+    const sstate& s = ctx.s ; 
+
+    const float& n1 = s.material1.x ;
+    const float& n2 = s.material2.x ;   
+    const float eta = n1/n2 ; 
+
+    const float3* normal = (float3*)&ctx.prd->q0.f.x ;     // geometrical outwards normal 
+
+    const float _c1 = -dot(p.mom, *normal );                // _c1 : cos(angle_of_incidence) not yet oriented
+    const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; // oriented against incident p.mom
+    const float3 trans = cross(p.mom, oriented_normal) ;   // perpendicular to plane of incidence, S-pol direction 
+    const float trans_length = length(trans) ;             // same as sin(theta), as p.mom and oriented_normal are unit vectors
+    const bool normal_incidence = trans_length < 1e-6f  ;  // p.mom parallel/anti-parallel to oriented_normal  
+    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // normalized unit vector : perpendicular to plane of incidence
+    const float E1_perp = dot(p.pol, A_trans);     // amplitude of polarization in direction perpendicular to plane of incidence, ie S polarization
+ 
+    const float c1 = fabs(_c1) ; 
+
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
+    bool tir = c2c2 < 0.f ; 
+    const float EdotN = dot(p.pol, oriented_normal ) ;  // used for TIR polarization
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
+    const float n1c1 = n1*c1 ;
+    const float n2c2 = n2*c2 ; 
+    const float n2c1 = n2*c1 ; 
+    const float n1c2 = n1*c2 ; 
+
+    const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) ); 
+    const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
+    const float2 E2_r = make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     ) ;  // ( S:perp, P:parl )    
+    const float2 RR = normalize(E2_r) ; 
+    const float2 TT = normalize(E2_t) ; 
+
+
+/*
+    const float TransCoeff = theTransmittance >= 0.f ? 
+                                                           theTransmittance 
+                                                     :
+                                                           ( tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ) 
+                                                     ; 
+*/
+
+    const float& TransCoeff = theTransmittance ; 
+
+    const float u_reflect = curand_uniform(&rng) ;
+    bool reflect = u_reflect > TransCoeff  ;
+
+    p.mom = reflect
+                    ?
+                       p.mom + 2.0f*c1*oriented_normal
+                    :
+                       eta*(p.mom) + (eta*c1 - c2)*oriented_normal
+                    ;
+
+
+    const float3 A_paral = normalize(cross(p.mom, A_trans));   // new P-pol direction 
+
+    p.pol =  normal_incidence ?
+                                         ( reflect ?  p.pol*(n2>n1? -1.f:1.f) : p.pol )
+                                      : 
+                                         ( reflect ?
+                                                   ( tir ?  -p.pol + 2.f*EdotN*oriented_normal : RR.x*A_trans + RR.y*A_paral )
+
+                                                   :
+                                                       TT.x*A_trans + TT.y*A_paral 
+                                             
+                                                   )
+                                      ;
+
+    flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
+
+
+    return CONTINUE ; 
+}
+
 #endif
+
+
+
+
 
 
 
@@ -1220,8 +1344,10 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     return ( flag == SURFACE_DETECT || flag == SURFACE_ABSORB ) ? BREAK : CONTINUE ; 
 }
 
+#endif
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
           
 /**
 qsim::propagate_at_surface
@@ -1322,9 +1448,18 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
     }
     return action ; 
 }
-#endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+
+inline QSIM_METHOD int qsim::propagate_at_surface_Detect(unsigned& flag, curandStateXORWOW& rng, sctx& ctx) const
+{
+    float u_surface_burn = curand_uniform(&rng);  // for random alignment 
+    flag = SURFACE_DETECT ; 
+    return BREAK ; 
+}
+
+
+#if defined(WITH_CUSTOM4)
+
 /**
 qsim::propagate_at_surface_CustomART
 -------------------------------------
@@ -1371,15 +1506,16 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     }
     else
     {
-        // HMM : need to do most of propagate_at_boundary 
-        // but using the CustomART theTransmittance as the TransCoeff 
         propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
     } 
     return action ; 
 }
+#endif
 
 #endif
-#if defined(__CUDACC__) || defined(__CUDABE__) 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)  || defined(MOCK_CURAND) || defined(MOCK_CUDA) 
 
 /**
 qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
@@ -1540,6 +1676,10 @@ qsim::propagate : one "bounce" propagate_to_boundary/propagate_at_boundary
 -----------------------------------------------------------------------------
 
 This is canonically invoked from within the bounce loop of CSGOptiX/OptiX7Test.cu:simulate 
+after tracing (or mock tracing) has populated ctx.prd
+
+MISSING intersects
+~~~~~~~~~~~~~~~~~~~
 
 Formerly thought "MISSING needs to return BREAK" but MISSING 
 intersects only happen with "broken" test geometry so no need to be 
@@ -1569,8 +1709,17 @@ detector surface swapped in.
 TMM multilayer POM special surface : smatsur_Surface_zplus_sensor_CustomART
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here need to wheel in qpmt.h to do the stack calc following C4CustomART::doIt
+Enabling special surface handling is controlled by ctx.optical.y "ems" enum 
+which wheels in the qpmt.h stack calc following C4CustomART::doIt 
+for CustomART special surfaces. 
 
+Prior to supporting special surfaces, within the command == BOUNDARY used::
+
+    command = ctx.s.optical.x == 0 ? 
+                                      propagate_at_boundary( flag, rng, ctx ) 
+                                  : 
+                                      propagate_at_surface( flag, rng, ctx ) 
+                                  ;  
 
 **/
 
@@ -1596,29 +1745,24 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
     unsigned flag = 0 ;  
 
-    int command = propagate_to_boundary( flag, rng, ctx ); 
+    int command = propagate_to_boundary( flag, rng, ctx );  
+    /**
+    command possibilities:
+
+    1. CONTINUE (eg scatter)
+    2. BREAK (eg absorb) 
+    3. BOUNDARY 
+
+    **/
+
 #ifdef DEBUG_PIDX
     if( ctx.idx == base->pidx ) 
     printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", ctx.idx, bounce, command, flag, ctx.s.optical.x  );   
 #endif
 
-/**
     if( command == BOUNDARY )
     {
-
-        command = ctx.s.optical.x == 0 ? 
-                                      propagate_at_boundary( flag, rng, ctx ) 
-                                  : 
-                                      propagate_at_surface( flag, rng, ctx ) 
-                                  ;  
-
-    }
-**/ 
-
-
-    if( command == BOUNDARY )
-    {
-        int ems = ctx.s.optical.y ; 
+        const int& ems = ctx.s.optical.y ; 
 
         if( ems == smatsur_NoSurface )
         {
@@ -1628,25 +1772,27 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         {
             command = propagate_at_surface( flag, rng, ctx ) ; 
         }
-        else if( lposcost < 0.f )  
+        else if( lposcost < 0.f )  // could combine with prior, but handy for debug to keep separate
         {
+#ifdef DEBUG_PIDX
+            if( ctx.idx == base->pidx ) 
+            printf("//qsim.propagate (lposcost < 0.f) idx %d bounce %d command %d flag %d ems %d \n", 
+                     ctx.idx, bounce, command, flag, ems  );   
+#endif           
             command = propagate_at_surface( flag, rng, ctx ) ; 
         }
         else if( ems == smatsur_Surface_zplus_sensor_A )
         {
-            float u_surface_burn = curand_uniform(&rng);  // for random alignment 
-            flag = SURFACE_DETECT ; 
-            command = BREAK ; 
-            // above is possible, but more difficult for random alignment 
+            command = propagate_at_surface_Detect( flag, rng, ctx ) ; 
         }
         else if( ems == smatsur_Surface_zplus_sensor_CustomART )
         {
+#if defined(WITH_CUSTOM4)
             command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+#endif
         }
     }
-
-    ctx.p.set_flag(flag);    // hmm could hide this ?
-
+    ctx.p.set_flag(flag);   
     return command ; 
 }
 /**
@@ -1655,13 +1801,11 @@ A: Populated in qbnd::fill_state based on boundary and cosTheta sign to get the
    su_line index of the optical buffer which distinguishes surface from boundary,
    as acted upon above. See also GBndLib::createOpticalBuffer   
 
-Q: How to implement CustomBoundary (actually CustomSurface might be better name?) "propagate_at_custom_surface ?"
-A: HMM: need 3-way split, but for local_z < 0 ordinary surface applies, 
-   so maybe effect the split within propagate_at_surface.
-
-   Actually can use the sign of prd->lposcost() which is already available, so could split here, 
-   maybe using a negated ctx.s.optical.x ?
-
+Q: Can the big "if" above be changed into a switch ?
+A: YES, but non-trivially and probably confusingly. This is because 
+   the special surface handling condition needs to be after the possibiliy 
+   of fallback to ordinary surface handling for "lposcost < 0.f" and also 
+   ordinary NoSurface must be possible no matter the lposcost value. 
 
 **/
 
@@ -1783,7 +1927,12 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, curandStateXORW
     float u0 = curand_uniform(&rng); 
 
     float sinPhi, cosPhi;
+
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+    __sincosf(2.f*M_PIf*u0,&sinPhi,&cosPhi);
+#else
     sincosf(2.f*M_PIf*u0,&sinPhi,&cosPhi);
+#endif
 
     float u1 = curand_uniform(&rng); 
     float cosTheta = 2.f*u1 - 1.f ; 

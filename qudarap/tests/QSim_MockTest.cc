@@ -21,6 +21,8 @@ Standalone compile and run with::
 #include "sflow.h"
 #include "sphoton.h"
 #include "sstate.h"
+#include "scerenkov.h"
+
 #include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
 #include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
 
@@ -28,6 +30,7 @@ Standalone compile and run with::
 #include "SBnd.h"
 #include "OpticksPhoton.hh"
 
+#include "QBase.hh"
 #include "QPMT.hh"
 #include "QBnd.hh"
 #include "QOptical.hh"
@@ -47,6 +50,7 @@ struct QSim_MockTest
     const NP* optical ; 
     const NP* bnd ; 
 
+    const QBase*    q_base ; 
     const QOptical* q_optical ; 
     const QBnd*     q_bnd ; 
 
@@ -58,6 +62,7 @@ struct QSim_MockTest
     qsim* sim ; 
 
     QSim_MockTest(); 
+
     void init(); 
     std::string desc() const; 
 
@@ -66,14 +71,16 @@ struct QSim_MockTest
 
     void propagate_at_boundary_manual();
 
-    void setup_prd( quad2& prd ); 
-    void setup_photon( sphoton& p);
+    void setup_prd(    quad2& prd ); 
+    void setup_photon( sphoton& p );
 
+#ifdef WITH_CUSTOM4
     void propagate_at_surface_CustomART_manual();   
+#endif
 
     void fill_state(); 
     void propagate_at_boundary();
-
+    void propagate();
 
 };
 
@@ -82,9 +89,10 @@ inline QSim_MockTest::QSim_MockTest()
     rng(1u),
     optical(NP::Load(BASE, "optical.npy")),
     bnd(    NP::Load(BASE, "bnd.npy")),
+    q_base( new QBase ),
     q_optical(optical ? new QOptical(optical) : nullptr), 
     q_bnd(    bnd     ? new QBnd(bnd)         : nullptr), 
-    s_bnd(bnd ? new SBnd(bnd) : nullptr),
+    s_bnd(    bnd     ? new SBnd(bnd)         : nullptr),
     boundary(s_bnd ? s_bnd->getBoundaryIndex(BND) : -1),
     jpmt(SPMT::Serialize()),
     q_pmt( jpmt ? new QPMT<float>( jpmt ) : nullptr),  
@@ -101,11 +109,11 @@ inline void QSim_MockTest::init()
     assert( boundary > -1 ); 
     assert( q_pmt ); 
 
-    rng.set_fake(0.); // 0/1:forces transmit/reflect 
+    //rng.set_fake(0.); // 0/1:forces transmit/reflect 
 
+    sim->base = q_base ? q_base->d_base : nullptr ;
     sim->bnd = q_bnd->d_qb ;  
     sim->pmt = q_pmt->d_pmt ; 
-
 
 }
 
@@ -253,6 +261,7 @@ inline void QSim_MockTest::propagate_at_boundary()
     std::cout << "p0 " << p << std::endl ; 
    
     float cosTheta = -dot( p.mom, *prd.normal() ); 
+
     sim->bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx );
 
 
@@ -293,6 +302,8 @@ inline void QSim_MockTest::setup_photon( sphoton& p)
     p.wavelength = 440.f ; 
 }
 
+
+#ifdef WITH_CUSTOM4
 
 /**
 QSim_MockTest::propagate_at_surface_CustomART_manual
@@ -341,6 +352,9 @@ inline void QSim_MockTest::propagate_at_surface_CustomART_manual()
         << std::endl 
         ;
 }
+#endif 
+
+
 
 inline void QSim_MockTest::fill_state()
 {
@@ -369,6 +383,36 @@ inline void QSim_MockTest::fill_state()
 }
 
 
+/**
+QSim_MockTest::propagate
+--------------------------
+
+Does qsim::propagate_to_boundary and branches to the 
+appropriate qsim::propagate_at_boundary method. 
+
+**/
+
+inline void QSim_MockTest::propagate()
+{
+    quad2 prd ; 
+    setup_prd(prd) ; 
+
+    sctx ctx ; 
+    ctx.idx = 0 ; 
+    ctx.prd = &prd ; 
+
+    sphoton& p = ctx.p ; 
+    setup_photon(p); 
+
+    int bounce = 0 ; 
+
+    sphoton p0(p) ; 
+    sim->propagate(bounce, rng, ctx );
+    sphoton p1(p) ; 
+
+    std::cout << "p0 " << p0 << std::endl ; 
+    std::cout << "p1 " << p1 << std::endl ; 
+}
 
 
 int main(int argc, char** argv)
@@ -380,9 +424,10 @@ int main(int argc, char** argv)
     t.propagate_at_surface_CustomART_manual() ; 
     t.propagate_at_boundary_manual() ; 
     t.fill_state() ; 
+    t.propagate_at_boundary() ; 
     */
  
-    t.propagate_at_boundary() ; 
+    t.propagate() ; 
 
     return 0 ; 
 }
