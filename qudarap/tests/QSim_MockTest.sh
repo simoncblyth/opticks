@@ -34,11 +34,15 @@ fi
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
        ../QPMT.cc \
+       ../QOptical.cc \
+       ../QBnd.cc \
+       ../QTex.cc \
        ../QProp.cc \
        -g \
        -std=c++11 -lstdc++ \
        -DMOCK_CURAND \
        -DMOCK_CURAND_DEBUG \
+       -DMOCK_TEXTURE \
        -DWITH_CUSTOM4 \
        -I.. \
        -I$OPTICKS_PREFIX/include/SysRap  \

@@ -61,6 +61,41 @@ inline void sstate::save(const char* dir) const
 
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline std::ostream& operator<<(std::ostream& os, const sstate& s )   
+{
+    os << "sstate"
+       << std::endl 
+       << " material1 " << s.material1 
+       << " (refractive_index/absorption_length/scattering_length/reemission_prob) " 
+       << std::endl 
+       << " m1group2 " << s.m1group2
+       << " (group_velocity/spare1/spare2/spare3) "
+       << std::endl 
+       << " material2 " << s.material2 
+       << " (refractive_index/absorption_length/scattering_length/reemission_prob) " 
+       << std::endl 
+       << " surface   " << s.surface
+       << " (detect/absorb/reflect_specular/reflect_diffuse) " 
+       << std::endl 
+       << " optical   " << s.optical
+       << " (x/y/z/w index/type/finish/value) "
+       << std::endl 
+       << " index     " << s.index
+       << " (indices of m1/m2/surf/sensor) "
+       << std::endl 
+       ;
+    return os; 
+}
+#endif
+
+
+
+
+
+
+
 
 
 /**

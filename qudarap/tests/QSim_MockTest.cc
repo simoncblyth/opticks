@@ -20,6 +20,7 @@ Standalone compile and run with::
 #include "stag.h"
 #include "sflow.h"
 #include "sphoton.h"
+#include "sstate.h"
 #include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
 #include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
 
@@ -28,20 +29,32 @@ Standalone compile and run with::
 #include "OpticksPhoton.hh"
 
 #include "QPMT.hh"
+#include "QBnd.hh"
+#include "QOptical.hh"
+
 #include "qpmt.h"
+#include "qbnd.h"
 #include "qsim.h"
 
 struct QSim_MockTest
 {
+    static constexpr const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ; 
     static constexpr const char* BND = 
     "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum" ;
 
     curandStateXORWOW rng ; 
+
+    const NP* optical ; 
     const NP* bnd ; 
-    const SBnd* sbnd ; 
-    int bnd_idx ; 
+
+    const QOptical* q_optical ; 
+    const QBnd*     q_bnd ; 
+
+    const SBnd*     s_bnd ; 
+    int   boundary ; 
+
     const NPFold* jpmt ; 
-    const QPMT<float>* qpmt ; 
+    const QPMT<float>* q_pmt ; 
     qsim* sim ; 
 
     QSim_MockTest(); 
@@ -50,20 +63,31 @@ struct QSim_MockTest
 
     void generate_photon_dummy(); 
     void uniform_sphere();
-    void propagate_at_boundary();
-    void propagate_at_surface_CustomART();   
+
+    void propagate_at_boundary_manual();
+
+    void setup_prd( quad2& prd ); 
+    void setup_photon( sphoton& p);
+
+    void propagate_at_surface_CustomART_manual();   
+
     void fill_state(); 
+    void propagate_at_boundary();
+
 
 };
 
 inline QSim_MockTest::QSim_MockTest()
     :
     rng(1u),
-    bnd(NP::Load("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd.npy")),
-    sbnd(bnd ? new SBnd(bnd) : nullptr),
-    bnd_idx(sbnd ? sbnd->getBoundaryIndex(BND) : -1),
+    optical(NP::Load(BASE, "optical.npy")),
+    bnd(    NP::Load(BASE, "bnd.npy")),
+    q_optical(optical ? new QOptical(optical) : nullptr), 
+    q_bnd(    bnd     ? new QBnd(bnd)         : nullptr), 
+    s_bnd(bnd ? new SBnd(bnd) : nullptr),
+    boundary(s_bnd ? s_bnd->getBoundaryIndex(BND) : -1),
     jpmt(SPMT::Serialize()),
-    qpmt( jpmt ? new QPMT<float>( jpmt ) : nullptr),  
+    q_pmt( jpmt ? new QPMT<float>( jpmt ) : nullptr),  
     sim(new qsim)
 {
     init(); 
@@ -74,13 +98,13 @@ inline QSim_MockTest::QSim_MockTest()
 inline void QSim_MockTest::init()
 {
     assert( bnd ); 
-    assert( bnd_idx > -1 ); 
-    assert( qpmt ); 
+    assert( boundary > -1 ); 
+    assert( q_pmt ); 
 
-    sim->pmt = qpmt->d_pmt ; 
     rng.set_fake(0.); // 0/1:forces transmit/reflect 
 
-    sim->bnd = nullptr ;  
+    sim->bnd = q_bnd->d_qb ;  
+    sim->pmt = q_pmt->d_pmt ; 
 
 
 }
@@ -89,8 +113,10 @@ inline std::string QSim_MockTest::desc() const
 {
     std::stringstream ss ; 
     ss << "QSim_MockTest::desc" << std::endl 
-       << " bnd_idx " << bnd_idx << std::endl  
-       << " sbnd.getBoundarySpec " << ( sbnd ? sbnd->getBoundarySpec(bnd_idx) : "-" )
+       << " bnd " << ( bnd ? bnd->sstr() : "-" )
+       << " optical " << ( optical ? optical->sstr() : "-" )
+       << " boundary " << boundary << std::endl  
+       << " s_bnd.getBoundarySpec " << ( s_bnd ? s_bnd->getBoundarySpec(boundary) : "-" )
        << std::endl 
        ;
     std::string str = ss.str(); 
@@ -119,8 +145,8 @@ inline void QSim_MockTest::uniform_sphere()
 
 
 /**
-QSim_MockTest::propagate_at_boundary
-----------------------------------------
+QSim_MockTest::propagate_at_boundary_manual
+---------------------------------------------
 
                n
            i   :   r     
@@ -145,22 +171,18 @@ to that mom, all in the XY plane::
 Clearly the dot product if that and +Z is zero. 
      
 **/
-inline void QSim_MockTest::propagate_at_boundary()
+inline void QSim_MockTest::propagate_at_boundary_manual()
 {
-    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
     float3 mom = normalize(make_float3(1.f, 0.f, -1.f)) ; 
 
     std::cout 
         << " QSim_MockTest::propagate_at_boundary "
-        << " nrm " << nrm 
         << " mom " << mom 
         << std::endl 
         ;
 
     quad2 prd ; 
-    prd.q0.f.x = nrm.x ; 
-    prd.q0.f.y = nrm.y ; 
-    prd.q0.f.z = nrm.z ;  
+    setup_prd(prd) ; 
 
     sctx ctx ; 
     ctx.prd = &prd ; 
@@ -210,60 +232,110 @@ inline void QSim_MockTest::propagate_at_boundary()
      a->save("$FOLD/pp.npy");  
 }
 
-inline void QSim_MockTest::propagate_at_surface_CustomART()
+
+inline void QSim_MockTest::propagate_at_boundary()
 {
-    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
-    float distance = 0.1f ; 
-    float lposcost = 0.5f ; 
-    int identity = 1001 ; 
-    int boundary = bnd_idx ; 
+    std::cout 
+        << "QSim_MockTest::propagate_at_boundary"
+        << std::endl 
+        ;
 
-    float3 pos = make_float3( 0.f, 0.f, 0.f ); 
-    float3 mom = normalize(make_float3(1.f, 0.f, -1.f)); 
-    float3 pol = normalize(make_float3(0.f, 1.f,  0.f)); 
-    const float wavelength_nm = 440.f ; 
+    quad2 prd ; 
+    setup_prd(prd) ; 
 
-    // lpmtcat doesnt matter as Pyrex and Vacuum are same for all of them 
-    float n0 = sim->pmt->get_lpmtcat_rindex_wl( 0, 0, 0, wavelength_nm ); 
-    float n3 = sim->pmt->get_lpmtcat_rindex_wl( 0, 3, 0, wavelength_nm ); 
+    sctx ctx ; 
+    ctx.idx = 0 ; 
+    ctx.prd = &prd ; 
+
+    sphoton& p = ctx.p ; 
+    setup_photon(p); 
+
+    std::cout << "p0 " << p << std::endl ; 
+   
+    float cosTheta = -dot( p.mom, *prd.normal() ); 
+    sim->bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx );
+
+
+    unsigned flag = 0 ;  
+    int ctrl = sim->propagate_at_boundary(flag, rng, ctx) ; 
 
     std::cout 
-        << "QSim_MockTest::propagate_at_surface_CustomART "
-        << " boundary " << boundary 
-        << " nrm " << nrm 
-        << " mom " << mom 
+        << " flag " << OpticksPhoton::Flag(flag) 
+        << " ctrl " <<  sflow::desc(ctrl) 
+        << std::endl
+        ;
+
+    std::cout << "p1 " << p << std::endl ; 
+ 
+}
+
+
+inline void QSim_MockTest::setup_prd( quad2& prd )
+{
+    float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
+
+    prd.q0.f.x = nrm.x ; 
+    prd.q0.f.y = nrm.y ; 
+    prd.q0.f.z = nrm.z ;  
+    prd.q0.f.w = 0.1f ;    // distance
+
+    prd.q1.f.x = 0.5f ;  // lposcost : local position cosTheta of intersect 
+    prd.q1.u.y = 0u ; 
+    prd.q1.u.z = 1001 ;   // lpmtid : sensor_identifier (< 17612 )
+    prd.q1.u.w = boundary ; 
+}
+inline void QSim_MockTest::setup_photon( sphoton& p)
+{
+    p.zero(); 
+    p.pos = make_float3( 0.f, 0.f, 0.f );
+    p.mom = normalize(make_float3(1.f, 0.f, -1.f));
+    p.pol = normalize(make_float3(0.f, 1.f,  0.f));
+    p.wavelength = 440.f ; 
+}
+
+
+/**
+QSim_MockTest::propagate_at_surface_CustomART_manual
+-----------------------------------------------------
+
+Version with manual sstate filling  
+
+**/
+
+inline void QSim_MockTest::propagate_at_surface_CustomART_manual()
+{
+    quad2 prd ; 
+    setup_prd(prd) ; 
+
+    sctx ctx ; 
+    ctx.prd = &prd ; 
+
+    sphoton& p = ctx.p ; 
+    setup_photon(p); 
+
+    // lpmtcat doesnt matter as Pyrex and Vacuum are same for all of them 
+    float n0 = sim->pmt->get_lpmtcat_rindex_wl( 0, 0, 0, p.wavelength ); 
+    float n3 = sim->pmt->get_lpmtcat_rindex_wl( 0, 3, 0, p.wavelength ); 
+
+    std::cout 
+        << "QSim_MockTest::propagate_at_surface_CustomART_manual "
+        << " boundary " << boundary
+        << " prd.q1.u.w " << prd.q1.u.w
+        << " prd.q0.f:nrm " << prd.q0.f 
+        << " p.mom " << p.mom 
         << " n0 " << std::fixed << std::setw(10) << std::setprecision(4) << n0 
         << " n3 " << std::fixed << std::setw(10) << std::setprecision(4) << n3 
         << std::endl 
         ;
 
-    quad2 prd ; 
-    prd.q0.f.x = nrm.x ; 
-    prd.q0.f.y = nrm.y ; 
-    prd.q0.f.z = nrm.z ;  
-    prd.q0.f.w = distance ; 
-
-    prd.q1.f.x = lposcost ; 
-    prd.q1.u.y = 0u ; 
-    prd.q1.u.z = identity ; 
-    prd.q1.u.w = boundary ; 
-
-    sctx ctx ; 
-    ctx.prd = &prd ; 
     ctx.s.material1.x = n0 ;  // Pyrex RINDEX
     ctx.s.material2.x = n3 ;  // Vacuum RINDEX 
-
-    ctx.p.zero(); 
-    ctx.p.pos = pos ; 
-    ctx.p.mom = mom ; 
-    ctx.p.pol = pol ; 
-    ctx.p.wavelength = wavelength_nm ; 
 
     unsigned flag = 0 ;  
     int ctrl = sim->propagate_at_surface_CustomART(flag, rng, ctx) ; 
  
     std::cout 
-        << "QSim_MockTest::propagate_at_surface_CustomART "
+        << "QSim_MockTest::propagate_at_surface_CustomART_manual "
         << " flag " << flag << " : " << OpticksPhoton::Flag(flag) 
         << " ctrl " << ctrl << " : " << sflow::desc(ctrl)  
         << std::endl 
@@ -272,25 +344,45 @@ inline void QSim_MockTest::propagate_at_surface_CustomART()
 
 inline void QSim_MockTest::fill_state()
 {
-    float wavelength_nm = 440.f ; 
-    float cosTheta = -1.f ; 
-    int boundary = bnd_idx ; 
+    std::cout 
+        << "QSim_MockTest::fill_state" 
+        << " boundary " << boundary 
+        << std::endl 
+        ;
 
     sctx ctx ; 
-    ctx.p.wavelength = wavelength_nm ; 
+    ctx.p.wavelength = 440.f  ; // nm 
     ctx.idx = 0 ; 
 
-    sim->bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx );
+    for(float cosTheta=-1.f ; cosTheta <= 1.f ; cosTheta+= 2.f )
+    {
+        sim->bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx );
+        std::cout 
+            << " cosTheta " << cosTheta 
+            << std::endl 
+            << " ctx.s "   
+            << std::endl 
+            << ctx.s  
+            << std::endl
+            ; 
+    }
 }
+
+
 
 
 int main(int argc, char** argv)
 {
     QSim_MockTest t ; 
     std::cout << t.desc() ; 
-    //t.propagate_at_surface_CustomART() ; 
-    //t.propagate_at_boundary() ; 
+
+    /*
+    t.propagate_at_surface_CustomART_manual() ; 
+    t.propagate_at_boundary_manual() ; 
     t.fill_state() ; 
+    */
+ 
+    t.propagate_at_boundary() ; 
 
     return 0 ; 
 }

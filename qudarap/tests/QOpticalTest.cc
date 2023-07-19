@@ -5,47 +5,28 @@ QOpticalTest.cc
 TODO: combine optical with bnd as they are so closely related it 
 makes no sense to treat them separately 
 
-
 **/
 #include <cuda_runtime.h>
 #include "scuda.h"
-#include "SStr.hh"
-#include "SSys.hh"
-#include "SPath.hh"
 #include "NP.hh"
 
 #include "QOptical.hh"
-#include "OPTICKS_LOG.hh"
-
-void test_check( const QOptical& qo )
-{
-    LOG(info) << qo.desc() ; 
-    qo.check(); 
-}
-
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
-
-    const char* optical_path = SPath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/optical.npy", NOOP ) ;
-    NP* optical = NP::Load(optical_path) ; 
+    const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ; 
+    NP* optical = NP::Load(BASE, "optical.npy") ; 
+    if( optical == nullptr ) return 1 ; 
    
-    LOG(info) 
-        << " optical_path " << optical_path
+    std::cout 
         << " optical " << ( optical ? optical->sstr() : "-" )
+        << std::endl 
         ;
 
-    if( optical == nullptr )
-    {
-        LOG(error) << " creating placeholder optical buffer " ; 
-        optical = NP::Make<unsigned>(10, 4) ; 
-        optical->fillIndexFlat(); 
-    }
+    QOptical q_optical(optical) ; 
+    std::cout << q_optical.desc() << std::endl ; 
 
-    QOptical qo(optical) ; 
-
-    test_check(qo); 
+    q_optical.check(); 
 
     cudaDeviceSynchronize(); 
 

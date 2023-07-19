@@ -35,9 +35,7 @@ struct qbnd
     unsigned            boundary_tex_MaterialLine_LS ; 
     quad*               optical ;  
 
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_TEXTURE) || defined(MOCK_CUDA) 
     QBND_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
     QBND_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
     QBND_METHOD void    fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
@@ -46,7 +44,13 @@ struct qbnd
 }; 
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+
+#if defined( MOCK_TEXTURE) || defined(MOCK_CUDA) 
+#include "stexture.h"
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_TEXTURE) || defined(MOCK_CUDA) 
 /**
 qbnd::boundary_lookup ix iy : Low level integer addressing lookup
 --------------------------------------------------------------------

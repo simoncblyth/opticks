@@ -38,7 +38,11 @@ void QOptical::init()
     INSTANCE = this ; 
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
-    d_optical = const_cast<NP*>(optical)->values<quad>(); 
+
+    NP* a = const_cast<NP*>(optical); 
+    d_optical = a->values<quad>(); 
+    assert( d_optical ); 
+
 #else
     buf = QBuf<unsigned>::Upload(optical) ; 
     d_optical = (quad*)buf->d ; 

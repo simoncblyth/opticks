@@ -517,6 +517,22 @@ SPHOTON_METHOD void sphoton::transform( const glm::tmat4x4<double>& tr, bool nor
 #endif 
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline std::ostream& operator<<(std::ostream& os, const sphoton& p )   
+{
+    os << "sphoton"
+       << std::endl 
+       << p.desc()
+       << std::endl 
+       ;
+    return os; 
+}
+#endif
+
+
+
+
 struct sphoton_selector
 {
     unsigned hitmask ; 

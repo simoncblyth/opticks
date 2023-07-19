@@ -9,7 +9,7 @@
 
 #include "scuda.h"
 #include "squad.h"
-
+#include "sstate.h"
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
@@ -52,7 +52,7 @@ qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>
     qb->boundary_tex_MaterialLine_LS    = SBnd::GetMaterialLine("LS", names) ; 
 
     const QOptical* optical = QOptical::Get() ; 
-    //assert( optical ); 
+    assert( optical ); 
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
@@ -61,6 +61,7 @@ qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>
 
     qb->optical = optical ? optical->d_optical : nullptr ; 
 
+    assert( qb->optical != nullptr ); 
     assert( qb->boundary_meta != nullptr ); 
     return qb ; 
 }
