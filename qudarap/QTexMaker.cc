@@ -56,7 +56,7 @@ QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode, bool normaliz
     // note that from the point of view of array content, saying (height, width) 
     // is a more appropriate ordering than the usual contrary convention  
     
-    QTex<float4>* tex = new QTex<float4>( width, height, src, filterMode, normalizedCoords  );
+    QTex<float4>* tex = new QTex<float4>( width, height, src, filterMode, normalizedCoords, a  );
     tex->setOrigin(a); 
 
     return tex ; 

@@ -67,15 +67,15 @@ struct QUDARAP_API QBnd
     std::string desc() const ; 
 
     static QTex<float4>* MakeBoundaryTex(const NP* buf ) ;
-    static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
-    static std::string DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, unsigned width, unsigned height ); 
+    static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, int width, int height );
+    static std::string DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, int width, int height ); 
 
     NP*  lookup() const ;
     NPFold* serialize() const ; 
     void save(const char* dir) const ; 
 
-    void lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height ) const ;
-    static std::string Dump(   quad* lookup, unsigned num_lookup, unsigned edgeitems=10 );
+    void lookup( quad* lookup, int num_lookup, int width, int height ) const ;
+    static std::string Dump(   quad* lookup, int num_lookup, int edgeitems=10 );
 
 };
 

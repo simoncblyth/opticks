@@ -14,7 +14,7 @@ QTex.hh
 #include <texture_types.h>
 #endif
 
-
+struct NP ; 
 struct quad4 ; 
 union quad ; 
 
@@ -29,6 +29,8 @@ struct QUDARAP_API QTex
     char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint 
     bool         normalizedCoords ; 
     const void*  origin ;  // typically an NP array 
+    const NP*    a ; 
+    // TODO: remove the duplication here, why not just use a ?
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
@@ -40,7 +42,7 @@ struct QUDARAP_API QTex
     quad4*              meta ; 
     quad4*              d_meta ; 
 
-    QTex( size_t width, size_t height, const void* src, char filterMode, bool normalizedCoords  );
+    QTex( size_t width, size_t height, const void* src, char filterMode, bool normalizedCoords, const NP* a   );
 
     void     setMetaDomainX( const quad* domx ); 
     void     setMetaDomainY( const quad* domy ); 

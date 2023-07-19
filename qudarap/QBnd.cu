@@ -3,19 +3,19 @@
 #include "scuda.h"
 #include "qgs.h"
 
-__global__ void _QBnd_lookup_0(cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
+__global__ void _QBnd_lookup_0(cudaTextureObject_t tex, quad4* meta, quad* lookup, int num_lookup, int width, int height )
 {
-    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned iy = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned index = iy * width + ix ;
+    int ix = blockIdx.x * blockDim.x + threadIdx.x;
+    int iy = blockIdx.y * blockDim.y + threadIdx.y;
+    int index = iy * width + ix ;
     if (ix >= width | iy >= height ) return;
 
     // Excluding hangover threads for a 2d launch based on 1d index is a bug
     // as the hangovers would overwrite into the output.
     // Must exclude based on both ix and iy. 
 
-    unsigned nx = meta->q0.u.x  ; 
-    unsigned ny = meta->q0.u.y  ; 
+    int nx = meta->q0.u.x  ; 
+    int ny = meta->q0.u.y  ; 
 
     // HMM: this is assuming normalizedCoordinates:true thats not the normal way for boundary_tex
     float x = (float(ix)+0.5f)/float(nx) ;
@@ -42,9 +42,9 @@ extern "C" void QBnd_lookup_0(
     cudaTextureObject_t tex, 
     quad4* meta, 
     quad* lookup, 
-    unsigned num_lookup, 
-    unsigned width, 
-    unsigned height  ) 
+    int num_lookup, 
+    int width, 
+    int height  ) 
 {
     _QBnd_lookup_0<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
 } 

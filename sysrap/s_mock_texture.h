@@ -6,11 +6,16 @@ s_mock_texture : exploring CUDA texture lookup API on CPU
 The cudaTextureObject_t just probably typedef to unsigned long 
 so its an "int" pointer. 
 
+The .cc that includes this needs to plant the INSTANCE, eg::
+
+    #include "s_mock_texture.h"
+    MockTextureManager* MockTextureManager::INSTANCE = nullptr ; 
 
 **/
 
 #include <vector>
 #include <iomanip>
+#include <cassert>
 
 #include <vector_types.h>
 #include "NP.hh"
@@ -23,19 +28,21 @@ struct MockTexture
     int height ; 
     float4 dom ; 
 
-    MockTexture(NP* a_, int width_, int height_ ); 
+    MockTexture(const NP* a); 
 
     std::string desc() const ; 
     template<typename T> T lookup(float x, float y ) const ; 
     template<typename T> std::string dump() const ; 
 }; 
 
-inline MockTexture::MockTexture(NP* a_, int width_, int height_ )
+inline MockTexture::MockTexture(const NP* a_ )
     :
-    a(a_),
-    width(width_),
-    height(height_)
+    a(NP::MakeNarrowIfWide(a_)),  // NB even if narrow already, still copies
+    width(0),
+    height(0)
 {
+    a->size_2D<4>(width, height); 
+ 
     dom.x = a->get_meta<float>("domain_low",  0.f );
     dom.y = a->get_meta<float>("domain_high",  0.f );
     dom.z = a->get_meta<float>("domain_step",  0.f );
@@ -93,13 +100,13 @@ struct MockTextureManager
     static MockTextureManager* INSTANCE ; 
     static MockTextureManager* Get(); 
     static MockTexture Get(cudaTextureObject_t tex); 
-    static cudaTextureObject_t Add(const NP* a, int width, int height ); 
+    static cudaTextureObject_t Add(const NP* a ); 
 
     std::vector<MockTexture> tt ; 
 
     MockTextureManager() ;
 
-    cudaTextureObject_t add( const NP* a, int width, int height ); 
+    cudaTextureObject_t add( const NP* a ); 
 
     static std::string Desc(); 
     std::string desc() const ; 
@@ -112,7 +119,6 @@ struct MockTextureManager
     template<typename T> std::string dump(cudaTextureObject_t tex) const ; 
 };
 
-MockTextureManager* MockTextureManager::INSTANCE = nullptr ; 
 
 inline MockTextureManager* MockTextureManager::Get()  // static 
 {
@@ -129,18 +135,17 @@ inline MockTexture MockTextureManager::Get(cudaTextureObject_t obj) // static
     assert(INSTANCE); 
     return INSTANCE->get(obj) ; 
 }
-inline cudaTextureObject_t MockTextureManager::Add(const NP* a, int width, int height )
+inline cudaTextureObject_t MockTextureManager::Add(const NP* a )
 {
     if(INSTANCE == nullptr) new MockTextureManager ; 
     assert(INSTANCE); 
-    return INSTANCE->add(a, width, height); 
+    return INSTANCE->add(a); 
 }
 
-inline cudaTextureObject_t MockTextureManager::add(const NP* a_, int width, int height )
+inline cudaTextureObject_t MockTextureManager::add(const NP* a )
 {
-    NP* a = NP::MakeNarrowIfWide(a_) ;  // NB even if narrow already, still copies
     cudaTextureObject_t idx = tt.size() ; 
-    MockTexture tex(a, width, height) ; 
+    MockTexture tex(a) ; 
     tt.push_back(tex); 
     return idx ; 
 }
@@ -181,7 +186,18 @@ inline T MockTextureManager::tex2D( cudaTextureObject_t t, float x, float y ) co
 
 template<typename T> T tex2D(cudaTextureObject_t t, float x, float y )
 {
-    return MockTextureManager::INSTANCE->tex2D<T>( t, x, y ); 
+    MockTextureManager* mgr = MockTextureManager::Get() ; 
+    if( mgr == nullptr ) 
+    {
+         std::cerr 
+             << "s_mock_texture.h/tex2D : FATAL : null MockTextureManager "
+             << std::endl 
+             << " manager is instanciated when adding MOCK texture arrays with MockTextureManager::Add "
+             << std::endl 
+             ; 
+        assert(0);   
+    }
+    return mgr->tex2D<T>( t, x, y ); 
 }
 
 

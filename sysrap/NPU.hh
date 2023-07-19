@@ -271,6 +271,16 @@ struct NPS
         dst = src ; 
     }
 
+    template<int P>
+    static void size_2D( int& width, int& height, const std::vector<int>& sh ) 
+    {
+        int nd = sh.size() ; 
+        assert( nd > 1 && sh[nd-1] == P );  
+        width = sh[nd-2] ; 
+        height = 1 ; 
+        for(int i=0 ; i < nd-2 ; i++) height *= sh[i] ; 
+    }
+
     static std::string desc(const std::vector<int>& shape)
     {
         std::stringstream ss ; 

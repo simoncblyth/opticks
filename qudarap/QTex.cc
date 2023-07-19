@@ -6,8 +6,10 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "NP.hh"
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#include "stexture.h"
 #else
 #include <cuda_runtime.h>
 #include "cudaCheckErrors.h"
@@ -18,7 +20,7 @@
 
 
 template<typename T>
-QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_, bool normalizedCoords_ )
+QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_, bool normalizedCoords_, const NP* a_  )
     :   
     width(width_),
     height(height_),
@@ -26,6 +28,7 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     filterMode(filterMode_),
     normalizedCoords(normalizedCoords_), 
     origin(nullptr),
+    a(a_),
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
     cuArray(nullptr),
@@ -88,6 +91,8 @@ template<typename T>
 void QTex<T>::init()
 {
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+    assert(a); 
+    MockTextureManager::Add(a) ; 
 #else
     createArray();   // cudaMallocArray using channelDesc for T 
     uploadToArray();

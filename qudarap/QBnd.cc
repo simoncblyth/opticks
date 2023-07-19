@@ -34,7 +34,6 @@ const plog::Severity QBnd::LEVEL = SLOG::EnvLevel("QBnd", "DEBUG");
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
-
 /**
 QBnd::MakeInstance
 ---------------------
@@ -59,8 +58,6 @@ qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>
 #else
     LOG(LEVEL) << " optical " << ( optical ? optical->desc() : "MISSING" ) ; 
 #endif
-
-
 
     qb->optical = optical ? optical->d_optical : nullptr ; 
 
@@ -155,7 +152,7 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     //bool normalizedCoords = false ; 
     bool normalizedCoords = true ; 
 
-    QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
+    QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords, buf ) ; 
 
     bool buf_has_meta = buf->has_meta() ;
 
@@ -203,7 +200,7 @@ std::string QBnd::desc() const
     return str ; 
 }
 
-std::string QBnd::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, unsigned width, unsigned height ) // static
+std::string QBnd::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock, int width, int height ) // static
 {
     std::stringstream ss ; 
     ss
@@ -229,7 +226,7 @@ std::string QBnd::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock
 }
 
 
-void QBnd::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static 
+void QBnd::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, int width, int height ) // static 
 {
     threadsPerBlock.x = 16 ; 
     threadsPerBlock.y = 16 ; 
@@ -271,6 +268,18 @@ void QBnd::save(const char* dir) const
 }
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+
+extern "C" void QBnd_lookup_0_MOCK(
+    cudaTextureObject_t texObj, 
+    quad4* meta, 
+    quad* lookup, 
+    int num_lookup, 
+    int width, 
+    int height 
+    ); 
+
+#include "QBnd_MOCK.h"
+
 #else
 
 // from QBnd.cu
@@ -280,15 +289,15 @@ extern "C" void QBnd_lookup_0(
     cudaTextureObject_t texObj, 
     quad4* meta, 
     quad* lookup, 
-    unsigned num_lookup, 
-    unsigned width, 
-    unsigned height 
+    int num_lookup, 
+    int width, 
+    int height 
     ); 
 
 #endif
 
 
-void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height ) const 
+void QBnd::lookup( quad* lookup, int num_lookup, int width, int height ) const 
 {
     if( tex->d_meta == nullptr )
     {
@@ -297,17 +306,23 @@ void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned h
     assert( tex->d_meta != nullptr && "must QTex::uploadMeta() before lookups" );
 
 
-
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+
+    std::cout << "QBnd::lookup MISSING MOCK IMPL " << std::endl ; 
+    quad* d_lookup  = lookup ; 
+
+    QBnd_lookup_0_MOCK(tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height );  
+
 #else
+
+    // TODO: update the below to use more contemporary approach, starting with using QU 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     ConfigureLaunch( numBlocks, threadsPerBlock, width, height ); 
-
     std::cout << DescLaunch( numBlocks, threadsPerBlock, width, height ) << std::endl ; 
-
     size_t size = num_lookup*sizeof(quad) ;  
+
 
     quad* d_lookup  ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_lookup ), size )); 
@@ -321,11 +336,11 @@ void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned h
 
 }
 
-std::string QBnd::Dump( quad* lookup, unsigned num_lookup, unsigned edgeitems ) // static 
+std::string QBnd::Dump( quad* lookup, int num_lookup, int edgeitems ) // static 
 {
     std::stringstream ss ; 
 
-    for(unsigned i=0 ; i < num_lookup ; i++)
+    for(int i=0 ; i < num_lookup ; i++)
     {
         if( i < edgeitems || i > num_lookup - edgeitems)
         {

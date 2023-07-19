@@ -24,8 +24,8 @@ geocache-scd(){  cd $(geocache-dir) ; }
 geocache-usage(){ cat << EOU
 
 
-Geocache
-==========
+Geocache : THIS IS NOT PART OF THE NEW WORKFLOW
+==================================================
 
 
 Directories

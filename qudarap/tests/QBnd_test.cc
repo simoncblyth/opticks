@@ -1,3 +1,15 @@
+/**
+QBnd_test.cc
+==============
+
+Canonically built standalone with::
+
+   ./QBnd_test.sh 
+
+
+
+**/
+
 #include "NP.hh"
 #include "QBnd.hh"
 

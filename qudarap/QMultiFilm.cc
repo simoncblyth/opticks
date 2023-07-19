@@ -150,7 +150,7 @@ QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int 
     LOG_IF(fatal, qmultifilmlut_disable_interpolation) << "QMULTIFILMLUT_DISABLE_INTERP active using filterMode " << filterMode ; 
 
     
-    QTex<float4>* tx = new QTex<float4>(nx, ny, src->cvalues<float>()+offset , filterMode , 1 ) ; 
+    QTex<float4>* tx = new QTex<float4>(nx, ny, src->cvalues<float>()+offset , filterMode , 1, src ) ; 
 
     //tx->setHDFactor(hd_factor); 
     float wv_low  = src->get_meta<float>("wv_low");

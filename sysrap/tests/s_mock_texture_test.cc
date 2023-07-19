@@ -1,84 +1,58 @@
-// ./s_mock_texture_test.sh
 /**
+s_mock_texture_test.cc
+========================
 
+Aim is to be able to use QBnd.hh/qbnd.h in MOCK_CUDA manner on CPU. 
 
+::
 
-Aim is to be able to use qbnd.h in a mock cuda manner on CPU. 
+   ./s_mock_texture_test.sh
+
 
 **/
 
 #include <cstdio>
 #include "NPFold.h"
+
 #include "s_mock_texture.h"
+MockTextureManager* MockTextureManager::INSTANCE = nullptr ; 
 
-
-
-/**
-conventional_size
---------------------
-
-My convention for the size of an array of shape:: 
-
-   (ni, nj, nk, nl, 4 )
-
-* height : ni*nj*nk
-* width  : nl 
-* payload : 4 
-
-
-**/
-
-template<int P>
-void conventional_size( int& width, int& height, const NP* a )
-{
-    assert(a); 
-    const std::vector<int>& sh = a->shape ; 
-    int nd = sh.size() ; 
-    assert( nd > 1 && sh[nd-1] == P ); 
-    width = sh[nd-2] ; 
-    height = 1 ; 
-    for(int i=0 ; i < nd-2 ; i++) height *= sh[i] ; 
-}
 
 cudaTextureObject_t create_boundary_texture()
 {
     const char* base = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ;
     const NP* bnd     = NP::Load(base, "bnd.npy"); 
 
-    int width, height ; 
-    conventional_size<4>(width, height, bnd); 
- 
-    cudaTextureObject_t tex = MockTextureManager::Add(bnd, width, height) ;  ;  
+
+    cudaTextureObject_t tex = MockTextureManager::Add(bnd) ;  ;  
     return tex ; 
 }
 
 NPFold* test_bnd()
 {
-    cudaTextureObject_t tex = create_boundary_texture(); 
+    cudaTextureObject_t obj = create_boundary_texture(); 
 
     std::cout << MockTextureManager::Desc() ; 
-    std::cout << " tex : " << tex << std::endl ; 
+    std::cout << " obj : " << obj << std::endl ; 
 
     MockTextureManager* mgr = MockTextureManager::Get();  
-    std::cout << mgr->dump<float>(tex) ; 
-    std::cout << mgr->dump<float4>(tex) ; 
+    std::cout << mgr->dump<float>(obj) ; 
+    std::cout << mgr->dump<float4>(obj) ; 
 
-    const NP* a = mgr->tt[tex].a ;
- 
-    int width, height ; 
-    conventional_size<4>(width, height, a); 
+    const MockTexture tex = mgr->get(obj) ;  
+    const NP* a = tex.a ;
  
 
     NP* b = NP::MakeLike(a) ; 
     float4* bb = b->values<float4>() ; 
 
-    for(int iy=0 ; iy < height ; iy++)
-    for(int ix=0 ; ix < width  ; ix++)
+    for(int iy=0 ; iy < tex.height ; iy++)
+    for(int ix=0 ; ix < tex.width  ; ix++)
     {
-        float x = (float(ix)+0.5f)/width   ; 
-        float y = (float(iy)+0.5f)/height  ; 
-        float4 payload = tex2D<float4>(tex, x, y ) ;
-        int idx = iy*width + ix ; 
+        float x = (float(ix)+0.5f)/tex.width   ; 
+        float y = (float(iy)+0.5f)/tex.height  ; 
+        float4 payload = tex2D<float4>(obj, x, y ) ;
+        int idx = iy*tex.width + ix ; 
         bb[idx] = payload ; 
     }
 
@@ -90,16 +64,14 @@ NPFold* test_bnd()
 
 NPFold* test_demo_3()
 {
-    int ny = 8 ; 
-    int nx = 4 ; 
-    int height = ny ; 
-    int width = nx ; 
+    int ny = 8 ;  // height
+    int nx = 4 ;  // width 
 
     NP* a0 = NP::Make<float>(ny,nx,4) ; 
-    cudaTextureObject_t tex = MockTextureManager::Add(a0, width, height) ;  ;  
+    cudaTextureObject_t obj = MockTextureManager::Add(a0) ;  ;  
     MockTextureManager* mgr = MockTextureManager::Get();  
 
-    NP* a = mgr->tt[tex].a ; 
+    NP* a = mgr->tt[obj].a ; 
     float4* aa = a->values<float4>() ; 
 
     for(int iy=0 ; iy < ny ; iy++ )
@@ -112,13 +84,13 @@ NPFold* test_demo_3()
     NP* b = NP::MakeLike(a) ; 
     float4* bb = b->values<float4>() ; 
 
-    for(int iy=0 ; iy < height ; iy++)
-    for(int ix=0 ; ix < width  ; ix++)
+    for(int iy=0 ; iy < ny ; iy++)
+    for(int ix=0 ; ix < nx  ; ix++)
     {
-        float x = (float(ix)+0.5f)/width   ; 
-        float y = (float(iy)+0.5f)/height  ; 
-        int idx = iy*width + ix ; 
-        bb[idx] = tex2D<float4>(tex, x, y ) ;
+        float x = (float(ix)+0.5f)/nx   ; 
+        float y = (float(iy)+0.5f)/ny  ; 
+        int idx = iy*nx + ix ; 
+        bb[idx] = tex2D<float4>(obj, x, y ) ;
     }
 
     NPFold* f = new NPFold ; 
@@ -144,10 +116,12 @@ NPFold* test_demo_5()
 
     NP* a0 = NP::Make<float>(ni,nj,nk,nl,nn) ; 
 
-    cudaTextureObject_t tex = MockTextureManager::Add(a0, width, height) ;  ;  
+    cudaTextureObject_t obj = MockTextureManager::Add(a0) ;  ;  
     MockTextureManager* mgr = MockTextureManager::Get();  
 
-    NP* a = mgr->tt[tex].a ; 
+    MockTexture tex = mgr->get(obj) ; 
+
+    NP* a = const_cast<NP*>(tex.a) ;  // unusual to set the values after adding 
     float4* aa = a->values<float4>() ; 
 
     for(int i=0 ; i < ni ; i++)
@@ -162,13 +136,13 @@ NPFold* test_demo_5()
     NP* b = NP::MakeLike(a) ; 
     float4* bb = b->values<float4>() ; 
 
-    for(int iy=0 ; iy < height ; iy++)
-    for(int ix=0 ; ix < width  ; ix++)
+    for(int iy=0 ; iy < tex.height ; iy++)
+    for(int ix=0 ; ix < tex.width  ; ix++)
     {
-        float x = (float(ix)+0.5f)/width   ; 
-        float y = (float(iy)+0.5f)/height  ; 
-        int idx = iy*width + ix ; 
-        bb[idx] = tex2D<float4>(tex, x, y ) ;
+        float x = (float(ix)+0.5f)/tex.width   ; 
+        float y = (float(iy)+0.5f)/tex.height  ; 
+        int idx = iy*tex.width + ix ; 
+        bb[idx] = tex2D<float4>(obj, x, y ) ;
     }
 
     NPFold* f = new NPFold ; 
@@ -216,16 +190,13 @@ See::
 float4 boundary_lookup(cudaTextureObject_t obj,  float nm, int line, int k ) 
 {
     MockTexture tex = MockTextureManager::Get(obj) ; 
-
-    int nx, ny ; 
-    conventional_size<4>(nx, ny, tex.a);   // HMM: could do this within MockTexture ?
  
     // follow qbnd::boundary_lookup
     float fx = (nm - tex.dom.x)/tex.dom.z ;   
-    float x = (fx+0.5f)/float(nx) ; 
+    float x = (fx+0.5f)/float(tex.width) ; 
 
     int iy = 2*line + k ;    // k is 0 or 1 
-    float y = (float(iy)+0.5f)/float(ny) ; 
+    float y = (float(iy)+0.5f)/float(tex.height) ; 
 
     float4 props = tex2D<float4>(obj, x, y );  
     return props ; 
@@ -271,8 +242,8 @@ int main(int argc, char** argv)
 {
     //NPFold* f = test_demo_3(); 
     //NPFold* f = test_demo_5(); 
-    //NPFold* f = test_bnd(); 
-    NPFold* f = test_boundary_lookup(); 
+    NPFold* f = test_bnd(); 
+    //NPFold* f = test_boundary_lookup(); 
 
     f->save("$FOLD"); 
     return 0;

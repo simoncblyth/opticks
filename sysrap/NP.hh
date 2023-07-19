@@ -127,6 +127,9 @@ struct NP
     void change_shape_to_3D() ; 
     void reshape( const std::vector<int>& new_shape ); // product of shape before and after must be the same  
 
+    template<int P> void size_2D( int& width, int& height ) const ; 
+
+
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
 
@@ -1109,6 +1112,34 @@ inline void NP::change_shape_to_3D()
 inline void NP::reshape( const std::vector<int>& new_shape )
 {
     NPS::reshape(shape, new_shape); 
+}
+
+/**
+NP::size_2D
+-------------
+
+Returns the conventional 2D (width, height) for payload last dimension P
+passed by template variable. For example with an array of shape::
+
+    (ni, nj, nk, nl, 4 )
+
+A call to::
+
+   a->size_2D<4>( width, height) 
+
+Would return::
+
+   height = ni*nj*nk  
+   width = nl
+
+NB the last dimension must match the template variable, 4 in the above example. 
+
+**/
+
+template<int P>
+inline void NP::size_2D( int& width, int& height ) const 
+{
+    NPS::size_2D<P>(width, height, shape) ;  
 }
 
 

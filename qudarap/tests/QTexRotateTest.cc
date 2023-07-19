@@ -11,6 +11,7 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
+struct NP ; 
 
 int main(int argc, char** argv)
 {
@@ -38,8 +39,9 @@ int main(int argc, char** argv)
 
     char filterMode = 'P' ; // cudaFilterModePoint : no interpolation, necessary with uchar4 
     bool normalizedCoords = false ; 
-
-    QTex<uchar4> qtex(img.width, img.height, img.data, filterMode, normalizedCoords );
+    const NP* a = nullptr ; 
+ 
+    QTex<uchar4> qtex(img.width, img.height, img.data, filterMode, normalizedCoords, a );
 
 
     QTexRotate<uchar4> qrot(&qtex); 
