@@ -31,23 +31,113 @@ Progress
      think about how they are related to each other 
 
 
+2023 July : mat+sur+bnd+optical translation into new workflow, special surface enum, qpmt.h special surface impl, MOCK_TEXTURE
+----------------------------------------------------------------------------------------------------------------------------------
 
+* o : 07/19 : expand mocking further, such that QSim_MockTest::propagate can now run qsim::propagate without CUDA 
+* o : 07/18 : expand MOCK_TEXTURE/MOCK_CUDA coverage into QBnd QTex
+* o : 07/17 : get CPU QProp_test.sh MOCK_CURAND version of the GPU QPropTest.sh to work 
+* o : 07/15 : first cut at qsim::propagate_at_surface_CustomART by reusing qsim::propagate_at_boundary with override of TransCoeff using theTransmittance 
+* o : 07/15 : disable isur from absorbers without RINDEX as pointless and confusing, for example isur on a Vacuum///Steel border
+* o : 07/14 : confirmed fix, now that old and new workflows agree on sensors are getting expected CSGFoundry inst 4th column
+* o : 07/13 : look into going direct to CSGFoundry from stree in CSG/tests/CSG_stree_Convert_test.sh
+* o : 07/13 : found smoking gun in GSurfaceLib the change to PMT geometry means isSensor no longer giving true,  as the LPMT bnd surfaces now do not have EFFICIENCY prop
+* o : 07/12 : investigate unexpected sensor_id in CF inst array, needed by QPMT for lpmtid 
+* o : 07/11 : QSimTest shakedown, avoid SBnd bnd name assert 
+* o : 07/10 : integrating SPMT/QPMT with QSim
+* o : 07/10 : GGeo::convertSim update for SSim new plumbing
+* o : 07/08 : avoid the OLD prefix by using separate NPFold called GGeo for the old workflow arrays, split off standard array names into smat.h
+* o : 07/07 : encapsulate scint icdf prep into U4Scint.h used from U4Tree::initScint
+* o : 07/06 : prep for changing optical array to contain smatsur.h enum 
+* o : 07/06 : try changing X4/GGeo workflow to match skinsurfaces by LV pointer instead of the LV name to avoid notes/issues/old_workflow_finds_extra_lSteel_skin_surface.rst
+* o : 07/06 : investigate bnd difference with unexpected Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/Steel
+* o : 07/04 : review surface handling, attempt to recreate oldsur without GGeo/X4 in U4Surface::MakeStandardArray
+* o : 07/03 : try PhysicsTable based approach to handling Geant4 Water RAYLEIGH from RINDEX special casing, used from U4Tree::initRayleigh
+* o : 07/02 : remove use of Opticks bash/CMake machinery from examples/UseCustom4/go.sh as Custom4 is upstream from Opticks and should work off the CMAKE_PREFIX_PATH without any need for Opticks
+* o : 07/02 : UseCustom4 version checking. Notes on c4 updating from v0.1.4 to v0.1.5
 
+2023 June : CSGOptiX ELV render scanning, SPMT,QPMT  
+--------------------------------------------------------------
 
-2023 July
----------
+* o : 06/30 : attempt direct from stree/NPFold sstandard::bnd sstandard::mat sstandard::sur creation without GGeo/X4
+* o : 06/25 : integrating Custom4 Stack TMM calc with qudarap/QPMT.hh/qpmt.h using full PMT lpmtid info from SPMT.h 
+* o : 06/24 : rationalize SPMT.h stack::calc avoiding 2nd stackNormal instance, accomodate new ART layout
+* o : 06/19 : extending QPMT.hh QPMTTest.cc to use full SPMT.hh PMT info
+* o : 06/17 : SPMT.h summarizing the PMTSimParamData NPFold into a few arrays for upload to GPU with QPMT.hh and use with qpmt.h
+* o : 06/15 : bring multi token substitution to U::Resolve
+* o : 06/14 : getting g4cx/tests/G4CXOpticks_setGeometry_Test.sh to convert GEOM FewPMT into CSGFoundry for use from the cxs_min.sh/cxt_min.sh/cxr_min.sh and subsequently for small geometry interation for Custom4 GPU equivalent development
+* o : 06/12 : add TMAX flexibility and increase the default to avoid far cutoff in wide views
 
-2023 June
----------
+* 06/11 : Presentation, Qingdao, SDU, Workshop
+
+  * http://localhost/env/presentation/opticks_20230611_qingdao_sdu_workshop.html
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20230611_qingdao_sdu_workshop.html
+
+* o : 06/06 : reviving the ELV render results table
+* o : 06/04 : add cudaSetDevice to Ctx::Ctx as envvar approach is somehow not working
+* o : 06/02 : SCVD::ConfigureVisibleDevices needed for CVD envvar control of CUDA_VISIBLE_DEVICES 
+* o : 06/02 : rejig SGLM.h to avoid kludge double update call and add ESCALE/escale glm::mat4 for matrix consistency
+* o : 06/01 : setup standalone SGLM_set_frame_test.sh to duplicate the SGLM.h/sframe.h view mechanics done by CSGOptiX::RenderMain
 
 2023 May
 ---------
 
+* jo : 05/25 : Finally MR 180 is merged : PMT Geometry pivot 
+
+  * https://simoncblyth.bitbucket.io/env/presentation/opticks_20230525_MR180_timestamp_analysis.html
+
+* 05/25 : Presentation
+
+  * Opticks + JUNO : MR180 Timestamp Analysis 
+  * http://localhost/env/presentation/opticks_20230525_MR180_timestamp_analysis.html
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20230525_MR180_timestamp_analysis.html
+
+* o : 05/19 : try using U4Touchable::ImmediateReplicaNumber from U4Recorder::UserSteppingAction_Optical for SD step points to set the sphoton iindex : possibly a fast way to get the PMT copyNo  without any ReplicaDepth searching
+* o : 05/18 : SProfile.h simple timestamp collection and persisting struct, using to profile junoSD_PMT_v2::ProcessHits
+* o : 05/15 : standalone N=0,1 timestamp analysis plots 
+* o : 05/13 : record BeginOfEvent EndOfEvent time stamps into photon metadata, start analysis of all the time stamps 
+* o : 05/12 : misc notes while reviewing for presentation, stamp.h for simple epoch stamping
+
+* 05/08 : CHEP Presentation
+
+  * Opticks : GPU Optical Photon Simulation via NVIDIA® OptiX™ 7, NVIDIA® CUDA™
+  * http://localhost/env/presentation/opticks_20230508_chep.html
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20230508_chep.html
+
+
 2023 April
 -----------
 
+* 04/28 : Presentation
+
+  * Opticks + JUNO : More junoPMTOpticalModel Issues + Validation of Custom4 C4OpBoundaryProcess Fix
+  * http://localhost/env/presentation/opticks_20230428_More_junoPMTOpticalModel_issues_and_Validation_of_CustomG4OpBoundaryProcess_fix.html
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20230428_More_junoPMTOpticalModel_issues_and_Validation_of_CustomG4OpBoundaryProcess_fix.html
+
+* j : 04/19 : notes on getting the merge to work without conflicts using dry run test merges in temporary clone
+* jo : 04/17 : MR 180 is requested : PMT Geometry pivot
+
+  * https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/180
+
+
+* o : 04/15 : split SEvt::transformInputPhoton from SEvt::addFrameGenstep and do that from SEvt::setFrame as the transformed input photons are needed earlier than SEvt::BeginOfEvent
+* j : 04/12 : notes on fixing the opticksMode:0 vs 2 difference : its was due to clearing of interaction lengths for alignment being left switched on 
+* o : 04/03 : initial try at U4Navigator based simtrace working to some extent within simple standalone geom
+* o : 04/02 : explore use of G4Navigator for a more general Geant4 only simtrace implementation
+
 2023 March
 -----------
+
+
+* o : 03/30 : get uc4packed from the spho label into current_aux for each step point
+* o : 03/27 : factor off history chi2 comparison into opticks.ana.qcf QCF QU
+* o : 03/24 : switch from PMTSIM to CUSTOM4 for the custom boundary process C4OpBoundaryProcess and associated headers
+* o : 03/22 : investigate how to handle custom boundary process deps from opticks and junosw : looks like will have to split off mini-package
+* o : 03/21 : tidy U4SimulateTest U4Recorder in preparation for using the recorder from an AnaMgr within monolith 
+* o : 03/13 : testing junoPMTOpticalModel::ModelTriggerSimple_ with dist1 > EPSILON 2e-4 with onepmt line test avoids double tigger issue, brings N=0/1  history chi2 into match
+* o : 03/09 : support for ModelTrigger_Debug
+* o : 03/03 : simple low dependency approach to A-B history comparison in u4/tests/U4SimulateTest_cf.py and add NNVT fake step point detection
+* o : 03/02 : working out how to skip fakes with U4Recorder to allow A-B comparison between unnatural and natural PMT geometry
 
 2023 Feb 
 ---------
@@ -56,24 +146,37 @@ Progress
 * o : 02/23 : rejig CustomART to facilitate switching between Traditional-Detection-at-photocathode-POM and MultiFilm-photons-in-PMT-POM 
 * o : 02/20 : snd sndtree updates for sn.h, higher level s_pool::serialize s_pool::import
 * o : 02/18 : pull s_pool.h out from sn.h to avoid duplication of serialize/import machinery
+* o : 02/17 : using deepcopy succeeds to make sn.h pruning squeaky clean with absolutely zero node leaks
 * o : 02/17 : try not leaking nodes in sn tree manipulations like pruning in order to maintain an active node map that can use to serialize
 * o : 02/16 : comparing transforms reveals that they all match between A and B but 93:solidSJReceiverFastern and 99:uni1 which are balanced/unbalanced differ in the ordering of the transforms : somehow transforms get shuffled, is primitive order changed by the balancing
 * o : 02/16 : CSGFoundryAB.sh down to 74/8179 discrepant tran/itra that are tangled with lack of tree balancing for lvid 93:solidSJReceiverFastern 99:uni1
+* o : 02/14 : simplify snd/scsg reducing overlap between them and add inverse csg transform handling to stree,snd trying to duplicate itra for the CSGImport 
+* o : 02/10 : start comparing CSGFoundry from CSGImport of stree and old way via GGeo, find lvid 93 99 are balanced in old but not new 
+* o : 02/08 : maybe can use simple pointer based minimal binary tree node sn.h to do the dirty tree population and pruning prior to bringing into the persistable snd.hh
 
-* 
 
+* 02/06 Presentation
+
+  * Opticks + JUNO : PMT Geometry + Optical Model Progress 
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20230206_JUNO_PMT_Geometry_and_Optical_Model_Progress.html
+  * http://localhost/env/presentation/opticks_20230206_JUNO_PMT_Geometry_and_Optical_Model_Progress.html
+
+* jo : 02/03 
+ 
+  * MR 126 is merged : https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/126
+
+* o : 02/01 : work out way of defining inorder traversal for n-ary tree, use that in snd::render_r writing to scanvas.h
 
 2023 Jan : NPFold/NPX map serialize, low dep PMT data branch, U4Material/U4Surface/U4Tree/U4Solid/snode/snd
 -----------------------------------------------------------------------------------------------------------------
 
 Work split into two:
 
-1. preparing low dependency PMT data access for use by CustomG4OpBoundaryProcess 
+1. preparing low dependency PMT data access for use by CustomG4OpBoundaryProcess (prepping MR 126)
 
    * Opticks+JUNO blocked 01/17 (Tue ~2 weeks ago) awaiting merge request to be granted 
  
 2. transition to Opticks direct geometry translation (massive code reduction is close)
-
    
 * o : 01/28 : debug snd.hh scsg.hh failure to set parent, fixed by reserving the vectors in scsg::init
 * o : 01/27 : U4Solid::init_Ellipsoid now U4TreeCreateTest.sh gets thru all JUNO solids, Polycone Ellipsoid need testsing and ZNudge
@@ -96,6 +199,11 @@ Work split into two:
 
 
 * jo : 01/17 : (Tue before CNY) : branch blyth-66-low-dependency-PMT-data-access is ready for merge as it addresses the problem outlined in issue 66
+* jo : 01/17 
+
+  * Make MR 126 : https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/126
+
+
 * jo : 01/12 -> 01/17 : WIP PMTSimDataSvc branch 
 * o : 01/13 : G4CXOpticks__SaveGeometry_DIR envvar control for G4CXOpticks::SaveGeometry as need to do the save later than setGeometry when have SSim additions
 * o : 01/10 : enhancements to allow NPFold.h persisting of jo:Simulation/SimSvc/PMTSimParamSvc/src/PMTSimParamData.h
@@ -107,6 +215,14 @@ Work split into two:
 -----------------------------------------------------------------------------------
 
 * 12/21 : NP::LoadCategoryArrayFromTxtFile NP::CategoryArrayFromString for enum arrays
+
+* 12/20 : presentation
+
+  * Opticks + JUNO : junoPMTOpticalModel FastSim issues and proposed fix using a CustomG4OpBoundaryProcess
+  * http://localhost/env/presentation/opticks_20221220_junoPMTOpticalModel_FastSim_issues_and_CustomG4OpBoundaryProcess_fix.html
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20221220_junoPMTOpticalModel_FastSim_issues_and_CustomG4OpBoundaryProcess_fix.html
+
+
 * 12/16 : pull CustomART.h CustomStatus.h out of CustomBoundary.h : rationalize theCustomStatus handling and presentation in preparation for switching from CustomBoundary.h to CustomART.h making more use of standard G4OpBoundaryProcess mom,pol changes
 * 12/16 : sboundary_test_brewster.sh sboundary_test_critical.sh : plots comparing polarizations before and after TIR and Brewster angle ref
 * 12/15 : try to do less in CustomART by reusing the mom/pol impl of G4OpBoundaryProcess::DielectricDielectric
@@ -147,6 +263,14 @@ Work split into two:
 * 11/20 : PMTFastSim integration in GeoChain for translate.sh and extg4 for xxv.sh, expand storch.h adding T_LINE
 * 11/18 : 3D plotting ModelTrigger yes/no positions : Getting familiar with FastSim in junoPMTOpticalModel
 * 11/18 : 2nd implementation of Catmull Rom spline, factoring off weights reduces the interpolation to a single matrix multiply for each segment
+
+
+* 11/17 : presentation 
+
+  * Opticks+JUNO : PMT Mask Bugs, GPU Multilayer TMM 
+  * http://simoncblyth.bitbucket.io/env/presentation/opticks_20221117_mask_debug_and_tmm.html
+  * http://localhost/env/presentation/opticks_20221117_mask_debug_and_tmm.html
+
 * 11/17 : try Catmull-Rom spline around a circle : in principal it looks like OptiX 7.1+ curve could handle guidetube 
 * 11/15 : fast sim debug using U4PMTFastSimTest.cc 
 * 11/15 : add access to volumes from PMTFastSim via U4VolumeMaker::PV, use from u4/tests/U4PMTFastSimTest.cc
