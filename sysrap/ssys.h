@@ -16,6 +16,7 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <vector>
 #include <iostream>
 #include <map>
+#include <limits>
 
 #include "sstr.h"
 

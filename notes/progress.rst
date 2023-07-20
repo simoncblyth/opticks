@@ -20,6 +20,8 @@ Progress
      n  ; ./month.sh -12
      e  ; ./month.sh -12
 
+   * select informative/representative commit messages for inclusion in these notes
+
 2. review presentations month by month, find them with presentation-index
 3. while doing the above reviews. compile a list of topics and check 
    that the vast majority of commit messages and presentation pages 
@@ -28,6 +30,37 @@ Progress
    * for communication purposes do not want too many topics, aim for ~8, 
      think about how they are related to each other 
 
+
+
+
+
+2023 July
+---------
+
+2023 June
+---------
+
+2023 May
+---------
+
+2023 April
+-----------
+
+2023 March
+-----------
+
+2023 Feb 
+---------
+
+* o : 02/27 : generalize U4VolumeMaker to allow testing with multiple PMT types from PMTSim
+* o : 02/23 : rejig CustomART to facilitate switching between Traditional-Detection-at-photocathode-POM and MultiFilm-photons-in-PMT-POM 
+* o : 02/20 : snd sndtree updates for sn.h, higher level s_pool::serialize s_pool::import
+* o : 02/18 : pull s_pool.h out from sn.h to avoid duplication of serialize/import machinery
+* o : 02/17 : try not leaking nodes in sn tree manipulations like pruning in order to maintain an active node map that can use to serialize
+* o : 02/16 : comparing transforms reveals that they all match between A and B but 93:solidSJReceiverFastern and 99:uni1 which are balanced/unbalanced differ in the ordering of the transforms : somehow transforms get shuffled, is primitive order changed by the balancing
+* o : 02/16 : CSGFoundryAB.sh down to 74/8179 discrepant tran/itra that are tangled with lack of tree balancing for lvid 93:solidSJReceiverFastern 99:uni1
+
+* 
 
 
 2023 Jan : NPFold/NPX map serialize, low dep PMT data branch, U4Material/U4Surface/U4Tree/U4Solid/snode/snd
