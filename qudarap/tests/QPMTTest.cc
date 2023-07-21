@@ -33,7 +33,6 @@ The lpmtcat 0,1,2 correspond to NNVT,HAMA,NNVT_HiQE
 
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
-
 #include "get_jpmt_fold.h"
 #include "QPMTTest.h"
 

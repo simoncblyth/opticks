@@ -271,20 +271,23 @@ access to materials and surfaces::
 
      (num_bnd*4, 4 ) 
 
-The former optical buffer int4 payloads for materials and surfaces:
+The optical buffer int4 payloads for materials and surfaces:
 
-+------------------+---------------+---------------------------+--------------------------+-------------------+   
-|                  | .x            |  .y   Payload_Y           |  .z                      |  .w               |
-+==================+===============+===========================+==========================+===================+
-| MATERIAL LINES   |   idx+1       |  UNUSED                   | UNUSED                   |  UNUSED           |
-+------------------+---------------+---------------------------+--------------------------+-------------------+
-| SURFACE LINES    |               | type                      | finish                   |  value_percent    |
-|                  |   idx+1       | 0:dielectric_metal        | 0:polished               |                   |
-|                  |               | 1:dielectric_dielectric   | 1:polishedfrontpainted   |                   |
-|                  |               |                           | 3:ground                 |                   | 
-|                  |               +---------------------------+--------------------------+-------------------+
-|                  |               |  THESE THREE COLUMNS WERE NEVER USED ON DEVICE                           |
-+------------------+---------------+---------------------------+--------------------------+-------------------+
++------------------+---------------+-------------------------------+--------------------------+-------------------+   
+|                  | .x            |  .y   Payload_Y               |  .z                      |  .w               |
++==================+===============+===============================+==========================+===================+
+| MATERIAL LINES   |   idx+1       |  UNUSED                       | UNUSED                   |  UNUSED           |
++------------------+---------------+-------------------------------+--------------------------+-------------------+
+| SURFACE LINES    |               | type                          | finish                   |  value_percent    |
+| [FORMERLY]       |   idx+1       | 0:dielectric_metal            | 0:polished               |                   |
+|                  |               | 1:dielectric_dielectric       | 1:polishedfrontpainted   |                   |
+|                  |               |                               | 3:ground                 |                   | 
+|                  |               +-------------------------------+--------------------------+-------------------+
+|                  |               |  YZW : THESE THREE COLUMNS WERE FORMERLY NEVER USED ON DEVICE                |
++------------------+---------------+-------------------------------+--------------------------+-------------------+
+| SURFACE LINES    |   idx+1       | smatsur::TypeFromChar(OSN0)   | ZW : AS ABOVE BUT STILL NOT USED ON DEVICE   |      
+| [NOW]            |               | [MAT/SUR TYPE ENUM "ems"]     |                                              |
++------------------+---------------+-------------------------------+----------------------------------------------+
 
 Q: How come the yzw columns not used on device ?
 A: Because that info is used on CPU to prepare the surface entries 
@@ -400,6 +403,9 @@ inline NP* sstandard::make_optical(
 /**
 sstandard::make_bnd
 ---------------------
+
+Form bnd array by interleaving mat and sur array entries as directed by vbd int pointers. 
+
 **/
 
 inline NP* sstandard::make_bnd( 
@@ -442,6 +448,7 @@ inline NP* sstandard::make_bnd(
     int nk = sprop::NUM_PAYLOAD_GRP ; //   2
     int nl = num_domain ;             // 761  fine domain
     int nn = sprop::NUM_PAYLOAD_VAL ; //   4
+
     int np = nk*nl*nn ;               // 2*761*4  number of payload values for one mat/sur 
 
 
@@ -521,6 +528,7 @@ However its simpler to just use Geant4 interpolation from U4Tree level.
 **/
 inline NP* sstandard::unused_mat( const std::vector<std::string>& names, const NPFold* fold )
 {
+    assert(0); 
     const sproplist* pl = sproplist::Material() ; 
     return unused_create(pl, names, fold ); 
 }
@@ -538,6 +546,7 @@ like the mat array this approach is anyhow unworkable as it stands.
 
 inline NP* sstandard::unused_sur( const std::vector<std::string>& names, const NPFold* fold )
 {
+    assert(0); 
     const sproplist* pl = sproplist::Surface() ; 
     return unused_create(pl, names, fold ); 
 }
@@ -553,6 +562,7 @@ and the array content. That is true for "mat" but not for "sur"
 
 inline NP* sstandard::unused_create(const sproplist* pl, const std::vector<std::string>& names, const NPFold* fold )
 { 
+    assert(0); 
     sdomain dom ; 
      
     int ni = names.size() ;

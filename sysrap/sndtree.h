@@ -9,7 +9,7 @@ This brings some of the functionality of the old NTreeBuilder for use with snd n
 This is a workaround combining the inherently persistable but not very flexible
 snd.hh with the more flexible pointer based sn.h 
 
-Once sn.h persisting using s_pool.h becomes fully featued 
+Once sn.h persisting using s_pool.h becomes fully featured 
 this sndtree.h can be removed. 
 
 **/
@@ -21,7 +21,7 @@ this sndtree.h can be removed.
 
 struct sndtree
 {
-    static int CommonTree( const std::vector<int>& nodes, int op ) ; 
+    static int CommonTree( const std::vector<int>& leaves, int op ) ; 
     static int Build_r(sn* n, int& num_leaves_placed, const std::vector<int>& leaves, int d ); 
 }; 
 
@@ -29,6 +29,8 @@ struct sndtree
 /**
 sndtree::CommonTree
 ---------------------
+
+The *leaves* are snd indices, so can snd::Get(idx) to access the snd 
 
 Creates *snd* binary tree sufficient to hold the 
 leaves and places the leaf references into the tree.  
@@ -66,6 +68,8 @@ sndtree::Build_r
 ------------------
 
 Postorder visit after recursive call : so children reached before parents  
+
+NOTE : NO WITH_CHILD IMPL 
 
 **/
 

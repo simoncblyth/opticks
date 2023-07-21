@@ -6,8 +6,8 @@ int main(int argc, char** argv)
     if(pmt == nullptr) return 1 ; 
 
     std::cout << pmt->desc() << std::endl ; 
-    NPFold* spmt = pmt->get_fold(); 
-    spmt->save("$SFOLD/spmt"); 
+    NPFold* spmt_f = pmt->serialize(); 
+    spmt_f->save("$SFOLD/spmt"); 
 
     NPFold* sscan = pmt->make_sscan(); 
     sscan->save("$SFOLD/sscan") ; 

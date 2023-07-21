@@ -779,9 +779,6 @@ inline int stree::GetValueIndex( const std::vector<T>& vec, const T& obj) // sta
 
 
 
-
-
-
 inline void stree::get_children( std::vector<int>& children , int nidx ) const
 {
     const snode& nd = nds[nidx];

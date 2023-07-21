@@ -38,7 +38,7 @@ struct QPMTTest
     QPMTTest(const NPFold* jpmt ); 
 
     NPFold* make_qscan() const ; 
-    NPFold* serialize() const ; 
+    NPFold* serialize(const char* scan_name=nullptr) const ; 
 };
 
 
@@ -96,11 +96,12 @@ inline NPFold* QPMTTest<T>::make_qscan() const
 }
 
 template<typename T>
-inline NPFold* QPMTTest<T>::serialize() const 
+inline NPFold* QPMTTest<T>::serialize(const char* scan_name_) const 
 {
+    const char* scan_name = scan_name_ ? scan_name_ : "qscan" ; 
     NPFold* f = new NPFold ; 
     f->add_subfold("qpmt", qpmt->serialize() ); 
-    f->add_subfold("qscan", make_qscan() ); 
+    f->add_subfold(scan_name, make_qscan() ); 
     return f ; 
 }
 

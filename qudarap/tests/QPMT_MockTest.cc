@@ -18,7 +18,7 @@ int main()
     std::cout << jpmt->desc() ;  
 
     QPMTTest<float> t(jpmt); 
-    NPFold* f = t.serialize(); 
+    NPFold* f = t.serialize("qscan"); 
     f->save("$FOLD"); 
 
     return 0 ; 

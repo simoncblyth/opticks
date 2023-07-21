@@ -56,8 +56,9 @@ foreach(CU ${TEST_SOURCES_CU})
 endforeach()
 
 
-find_package(PMTSim CONFIG)
 
+## HMM: switch to Custom4 (not getting that indirectly via PMTSim) 
+find_package(PMTSim CONFIG)
 
 if(PMTSim_FOUND)
 
@@ -79,7 +80,11 @@ if(PMTSim_FOUND)
         install(TARGETS ${TGT} DESTINATION lib)
     endforeach()
 
+else()
+    message(STATUS "${name} PMTSim_FOUND:${PMTSim_FOUND}  " )
+
 endif()
+
 
 
 

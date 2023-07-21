@@ -60,6 +60,7 @@ Related developments
 #include "scuda.h"
 #include "squad.h"
 #include "ssys.h"
+#include "sproc.h"
 
 #ifdef WITH_CUSTOM4
 #include "C4MultiLayrStack.h"
@@ -209,6 +210,8 @@ struct SPMT
     NPFold* make_testfold() const ; 
 
 
+    const char* ExecutableName ;  
+
     const NPFold* jpmt ; 
     const NPFold* PMT_RINDEX ;       // PyrexRINDEX and VacuumRINDEX 
     const NPFold* PMTSimParamData ; 
@@ -252,6 +255,7 @@ inline SPMT* SPMT::Load(const char* path_)
 
 inline SPMT::SPMT(const NPFold* jpmt_)
     :
+    ExecutableName(sproc::ExecutableName()),
     jpmt(jpmt_),
     PMT_RINDEX(     jpmt ? jpmt->get_subfold("PMT_RINDEX")      : nullptr ),
     PMTSimParamData(jpmt ? jpmt->get_subfold("PMTSimParamData") : nullptr ),
@@ -863,7 +867,8 @@ inline void SPMT::annotate( NP* art ) const
         { "title", "SPMT.title" }, 
         { "brief", "SPMT.brief" }, 
         { "name",  "SPMT.name"  }, 
-        { "label", "SPMT.label" }
+        { "label", "SPMT.label" },
+        { "ExecutableName", ExecutableName }
     }; 
 
     art->set_meta_kv<std::string>(kvs); 

@@ -3,7 +3,8 @@
 snode.h : structural "volume" nodes
 =====================================
 
-snode are structural nodes residing in stree.h and populated 
+snode are structural nodes residing in the the stree.h
+vectors *stree::nds* and *stree::rem* that are populated 
 from Geant4 volumes by U4Tree.h U4Tree::initNodes_r
 
 There are no transform references in snode.h as all 

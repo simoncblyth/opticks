@@ -24,7 +24,7 @@ REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 name=SPMT_test
-defarg="build_run_ana"
+defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
 FOLD=/tmp/$name
@@ -37,7 +37,7 @@ export JFOLD=/tmp/JPMTTest
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
-vars="arg name REALDIR GEOM FOLD SFOLD JFOLD"
+vars="arg name REALDIR GEOM FOLD SFOLD JFOLD CUDA_PREFIX"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
@@ -73,7 +73,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $REALDIR/$name.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
-
 
 exit 0 
 

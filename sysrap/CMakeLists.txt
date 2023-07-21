@@ -170,6 +170,8 @@ set(HEADERS
 
     SCurandState.hh
     SProc.hh
+    sproc.h
+
     SBacktrace.h
     SStackFrame.h
     SProfile.h 

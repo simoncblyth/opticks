@@ -1,9 +1,11 @@
 /**
 QPMT_Test.cc : standalone built variant of om built QPMTTest.cc
 =================================================================
-**/
 
-#include "QPMT.hh"
+Note this standalone built executable is now identical to the om build QPMTTest.cc,
+that is expedient for executable name based bookkeeping. 
+
+**/
 
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"

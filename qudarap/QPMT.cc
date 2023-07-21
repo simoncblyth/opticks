@@ -289,6 +289,8 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 QPMT::mct_lpmtid_
 -------------------
 
+mct means minus_cos_theta for an AOI scan 
+
 1. create lookup output array with shape depending on etype
 2. allocate d_lookup on device
 3. upload domain to d_domain
@@ -301,7 +303,6 @@ QPMT::mct_lpmtid_
 template<typename T>
 NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const 
 {
-
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_lpmtid = lpmtid->shape[0] ; 
 
@@ -316,7 +317,8 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
             { "title", "QPMT.title" }, 
             { "brief", "QPMT.brief" }, 
             { "name",  "QPMT.name"  },   
-            { "label", "QPMT.label" }
+            { "label", "QPMT.label" },
+            { "ExecutableName", ExecutableName }
         };   
         lookup->set_meta_kv<std::string>(kvs); 
     }

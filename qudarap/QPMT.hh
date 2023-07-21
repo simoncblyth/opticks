@@ -17,6 +17,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 #include "plog/Severity.h"
 #include "NPFold.h"
 
+#include "sproc.h"
 #include "qpmt.h"
 #include "QProp.hh"
 
@@ -35,6 +36,8 @@ struct QUDARAP_API QPMT
     static const QPMT<T>*    Get(); 
 
     static std::string Desc(); 
+
+    const char* ExecutableName ;  
 
     const NP* src_rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
     const NP* src_thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )  
@@ -99,6 +102,7 @@ QPMT::QPMT
 template<typename T>
 inline QPMT<T>::QPMT(const NPFold* jpmt )
     :
+    ExecutableName(sproc::ExecutableName()),
     src_rindex(   jpmt->get("rindex")),
     src_thickness(jpmt->get("thickness")),
     src_qeshape(  jpmt->get("qeshape")),
