@@ -1,13 +1,38 @@
 #pragma once
 /**
-scsg.hh : pools of CSG nodes, param, bounding box and transforms
-==================================================================
+scsg.hh : Manages pools of CSG nodes, param, bounding box and transforms
+============================================================================
+
+Canonical *csg* instance is instanciated by stree::stree and "snd::SetPOOL(csg)"
+is called from stree::init. 
 
 Note that the *idx* "integer pointer" used in the API corresponds to the 
 relevant species node/param/aabb/xform for each method. 
 
 CAUTION: DO NOT RETAIN POINTERS/REFS WHILST ADDING NODES 
 AS REALLOC WILL SOMETIMES INVALIDATE THEM
+
+Users of scsg.hh
+-----------------
+
+::
+
+    epsilon:sysrap blyth$ opticks-f scsg.hh 
+    ./sysrap/CMakeLists.txt:    scsg.hh
+    ./sysrap/snd.hh:Usage requires the scsg.hh POOL. That is now done at stree instanciation::
+    ./sysrap/stree.h:#include "scsg.hh"
+    ./sysrap/snd.cc:#include "scsg.hh"
+    ./sysrap/tests/snd_test.cc:#include "scsg.hh"
+    ./sysrap/scsg.hh:scsg.hh : pools of CSG nodes, param, bounding box and transforms
+    ./sysrap/scsg.cc:#include "scsg.hh"
+    ./u4/tests/U4SolidTest.cc:#include "scsg.hh"
+    epsilon:opticks blyth$ 
+
+
+TODO : CAN THIS GO HEADER-ONLY .h ?
+-------------------------------------
+
+* snd.hh static pools a bit problematic  
 
 **/
 

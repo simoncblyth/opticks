@@ -3,6 +3,8 @@
 snd.hh : constituent CSG node in preparation
 ============================================= 
 
+Canonical use from U4Solid::init
+
 snd.h intended as minimal first step, holding parameters of 
 G4VSolid CSG trees for subsequent use by CSGNode::Make
 and providing dependency fire break between G4 and CSG 

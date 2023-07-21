@@ -514,7 +514,7 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 
     int root = U4Solid::Convert(so, lvid, 0 ); 
     assert( root > -1 ); 
-    snd::SetLVID(root, lvid ); 
+    snd::SetLVID(root, lvid );   // HUH: why cant U4Solid::Convert do this ? 
 
     G4String _name = so->GetName() ; 
     // bizarre: G4VSolid::GetName returns by value, not reference

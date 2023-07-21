@@ -7,8 +7,7 @@ Types:
 
 * T : source type eg *sn* which can have non-value members, eg pointers and vector of pointers
 * P : persisting type eg *_sn* paired with the source type where pointers are replaced with integers 
-* S: serialization type used to form the NP.hh array, typically int but may also be float or double  
-
+* S : serialization type used to form the NP.hh array, typically int but may also be float or double  
 
 NB after calls to *s_pool::remove* the integer keys returned by *s_pool::index* 
 will not match the *pid* returned by *s_pool::add* and *s_pool::remove*

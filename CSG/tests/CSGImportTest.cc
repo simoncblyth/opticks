@@ -2,8 +2,10 @@
 CSGImportTest.cc
 =================
 
-**/
+1. loads stree from file
+2. populates CSGFoundry with CSGFoundry::importTree 
 
+**/
 
 #include "OPTICKS_LOG.hh"
 #include "SSim.hh"

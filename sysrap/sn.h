@@ -464,11 +464,17 @@ inline NPFold* sn::Serialize()  // static
     return fold ; 
 }
 
+/**
+sn::Import
+-------------
+
+NB transforms are imported before nodes
+so the transform hookup during node import works. 
+
+**/
+
 inline void sn::Import(const NPFold* fold) // static
 {
-    // NB must import the transforms before the nodes
-    // so the transform hookup during node import works. 
-
     stv::pool.import<double>(fold->get(stv::NAME)) ; 
     sn::pool.import<int>(fold->get(sn::NAME)) ; 
 }
@@ -562,6 +568,15 @@ inline sn* sn::Create(int type_, sn* left_, sn* right_)   // static
 
 
 #ifdef WITH_CHILD
+/**
+sn::disown_child
+------------------
+
+Note that the erase calls the dtor which 
+will also delete child nodes (recursively)
+and removes pool entries. 
+
+**/
 inline void sn::disown_child(sn* ch)
 {
     typedef std::vector<sn*>::iterator IT ; 
@@ -803,7 +818,7 @@ the max height of each node treated as a subtree::
 
 
 bileafs are triplets of nodes with subdepths 1,0,0
-The above tree has two bileafs and one other leaf. 
+The above tree has two bileafs, one other leaf and root. 
 
 **/
 

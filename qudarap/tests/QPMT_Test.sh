@@ -41,7 +41,7 @@ CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name"
+vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name CUSTOM4_PREFIX CUDA_PREFIX"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

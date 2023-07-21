@@ -69,7 +69,7 @@ int scsg::add_(const snd& obj, std::vector<snd>& vec)
         std::cerr << "scsg::add_<snd> DETECTED REALLOC AT idx " << idx << std::endl ;  
     }
 
-    vec[idx].index = idx ;   // template specialization for snd : record the index 
+    vec[idx].index = idx ;   // template specialization for snd : record the index into the added snd
     return idx  ; 
 }
 
