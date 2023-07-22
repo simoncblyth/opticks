@@ -3,9 +3,23 @@
 CSG_stree_Convert.h : developing in CSG/tests for faster cycle 
 ================================================================
 
+WARNING : WORKING ON THIS ELSEWHERE : LOOKS ALMOST COMPLETE THERE::
+
+   CSGFoundry::importTree 
+   CSGImport::importTree  
+
+TODO: review progress in the approaches, consolidate, remove one of them  
+
+* probably this one will be removed
+* but the idea of developing header only for fast dev is a good one 
+  worth bring over to CSGImport 
+
+
+
 Named in the pattern of CSG_GGeo_Convert.
 Once the old workflow is a distant memory can rename 
 this something nicer. 
+
 
 Aims is to replace cg:CSG_GGeo_Convert and 
 hence totally remove the need for GGeo and a huge 

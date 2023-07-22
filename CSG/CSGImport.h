@@ -9,6 +9,13 @@ See::
     CSG/tests/CSGFoundry_importTree_Test.sh
 
 
+CAUTION : SOME PARALLEL DEV NEEDS REVIEW, CONSOLIDATION::
+
+    CSG_stree_Convert.h
+    CSG_stree_Convert_test.cc
+    CSG_stree_Convert_test.sh
+
+
 **/
 
 #include <string>
