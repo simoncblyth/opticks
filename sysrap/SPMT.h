@@ -134,7 +134,9 @@ struct SPMT
 
     std::string desc() const ; 
 
-    NPFold* serialize() const ;  // formerly get_fold
+    bool is_complete() const ; 
+    NPFold* serialize() const ;  
+    NPFold* serialize_() const ; 
 
     float get_frac(int i, int ni) const ; 
     float get_energy(int j, int nj) const ; 
@@ -520,13 +522,28 @@ inline std::string SPMT::desc() const
     return str ; 
 }
 
+inline bool SPMT::is_complete() const
+{
+    return 
+       rindex != nullptr &&
+       thickness != nullptr &&
+       qeshape != nullptr && 
+       lcqs != nullptr 
+       ; 
+}
+
 inline NPFold* SPMT::serialize() const   // formerly get_fold 
 {
+    return is_complete() ? serialize_() : nullptr ; 
+}
+
+inline NPFold* SPMT::serialize_() const   // formerly get_fold 
+{
     NPFold* fold = new NPFold ; 
-    fold->add("rindex", rindex) ; 
-    fold->add("thickness", thickness) ;
-    fold->add("qeshape", qeshape) ;
-    fold->add("lcqs", lcqs) ;
+    if(rindex) fold->add("rindex", rindex) ; 
+    if(thickness) fold->add("thickness", thickness) ;
+    if(qeshape) fold->add("qeshape", qeshape) ;
+    if(lcqs) fold->add("lcqs", lcqs) ;
     return fold ; 
 }
 

@@ -224,7 +224,14 @@ const SPrd* SSim::get_sprd() const
     return bnd ? new SPrd(bnd) : nullptr  ;  
 }
 
+/**
+SSim::get_jpmt
+---------------
 
+Note that if the top fold does not have the JPMT_RELP "extra/jpmt"  subfold
+then this returns nullptr. 
+
+**/
 
 const NPFold* SSim::get_jpmt() const 
 {
@@ -239,7 +246,7 @@ const SPMT* SSim::get_spmt() const
 const NPFold* SSim::get_spmt_f() const 
 {
     const SPMT* spmt = get_spmt() ;
-    const NPFold* spmt_f = spmt->serialize() ;
+    const NPFold* spmt_f = spmt ? spmt->serialize() : nullptr ;
     return spmt_f ; 
 }
 
