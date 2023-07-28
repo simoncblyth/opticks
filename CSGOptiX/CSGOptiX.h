@@ -48,6 +48,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 {
     friend struct QSim ; 
 
+    static constexpr const char* RELDIR = "CSGOptiX" ;  
     static const plog::Severity LEVEL ; 
     static CSGOptiX*   INSTANCE ; 
     static CSGOptiX*   Get(); 
@@ -178,7 +179,8 @@ private:
     int  render_flightpath(); 
 
     void saveMeta(const char* jpg_path) const ;
-
+    const NP* getIAS_Instances(unsigned ias_idx=0) const ; // for debug only 
+    void save(const char* dir) const ;  
 
     static int   _OPTIX_VERSION() ; 
 };

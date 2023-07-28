@@ -336,3 +336,39 @@ Rerun with CSGOptiX=INFO dumps the limits::
 Threaded Properies thru into IAS_Builder::Build to allow checking the 
 instanceId is within range. 
 
+
+HMM::
+
+     530 typedef struct OptixInstance
+     531 {
+     532     /// affine world-to-object transformation as 3x4 matrix in row-major layout
+     533     float transform[12];
+     534 
+     535     /// Application supplied ID. The maximal ID can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_ID.
+     536     unsigned int instanceId;
+     537 
+     538     /// SBT record offset.  Will only be used for instances of geometry acceleration structure (GAS) objects.
+     539     /// Needs to be set to 0 for instances of instance acceleration structure (IAS) objects. The maximal SBT offset
+     540     /// can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_SBT_OFFSET.
+     541     unsigned int sbtOffset;
+     542 
+     543     /// Visibility mask. If rayMask & instanceMask == 0 the instance is culled. The number of available bits can be
+     544     /// queried using OPTIX_DEVICE_PROPERTY_LIMIT_NUM_BITS_INSTANCE_VISIBILITY_MASK.
+     545     unsigned int visibilityMask;
+     546 
+     547     /// Any combination of OptixInstanceFlags is allowed.
+     548     unsigned int flags;
+     549 
+     550     /// Set with an OptixTraversableHandle.
+     551     OptixTraversableHandle traversableHandle;
+     552 
+     553     /// round up to 80-byte, to ensure 16-byte alignment
+     554     unsigned int pad[2];
+     555 } OptixInstance;
+
+
+::
+
+    12 + 1 + 1 + 1 + 1 + 2 + 2 = 20 
+
+

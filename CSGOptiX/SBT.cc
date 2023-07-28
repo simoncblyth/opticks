@@ -572,6 +572,11 @@ const IAS& SBT::getIAS(unsigned ias_idx) const
     return vias[ias_idx]; 
 }
 
+const NP* SBT::getIAS_Instances(unsigned ias_idx) const
+{
+    const IAS& ias = getIAS(ias_idx); 
+    return ias.instances ;  
+}
 
 
 AS* SBT::getTop() const 

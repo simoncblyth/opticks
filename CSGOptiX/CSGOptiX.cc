@@ -426,8 +426,6 @@ void CSGOptiX::initFrameBuffer()
 }
 
 
-
-
 void CSGOptiX::initCheckSim()
 {
     LOG(LEVEL) << " sim " << sim << " event " << event ; 
@@ -1177,6 +1175,33 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 
     meta->save(json_path);
     LOG(LEVEL) << "] json_path " << json_path  ; 
+}
+
+
+const NP* CSGOptiX::getIAS_Instances(unsigned ias_idx) const
+{
+    const NP* instances = nullptr ; 
+#if OPTIX_VERSION < 70000
+#else
+    instances = sbt ? sbt->getIAS_instances(ias_idx) : nullptr ; 
+#endif
+    return instances ; 
+}
+
+/**
+CSGOptiX::save
+----------------
+
+For debug only 
+
+**/
+
+void CSGOptiX::save(const char* dir) const
+{
+    LOG(LEVEL) << "[ dir " << ( dir ? dir : "-" ) ; 
+    const NP* instances = getIAS_Instances(0) ; 
+    if(instances) instances->save(dir, RELDIR, "instances.npy") ;  
+    LOG(LEVEL) << "] dir " << ( dir ? dir : "-" ) ; 
 }
 
 

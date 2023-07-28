@@ -7,7 +7,7 @@
 
 #include <cuda_runtime.h>
 #include "scuda.h"    // roundUp
-
+#include "NPX.h"
 
 #include "CUDA_CHECK.h"
 #include "OPTIX_CHECK.h"
@@ -129,6 +129,13 @@ void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* 
     LOG(LEVEL) << "] build ias " ;  
 }
 
+
+
+NP* IAS_Builder::Serialize( const std::vector<OptixInstance>& instances ) // static 
+{
+    return NPX::ArrayFromVec<unsigned, OptixInstance>(instances) ; 
+}
+
 /**
 IAS_Builder::Build
 -------------------
@@ -143,6 +150,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
     LOG(LEVEL) << "numInstances " << numInstances ; 
 
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
+    ias.instances = Serialize(instances) ;  // optional for debug 
 
 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &ias.d_instances ), numBytes ) );

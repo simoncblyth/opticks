@@ -85,6 +85,8 @@ struct SBT
     std::string descIAS(const std::vector<qat4>& inst ) const ;
 
     const IAS& getIAS(unsigned ias_idx) const ;
+    const NP*  getIAS_Instances(unsigned ias_idx) const; 
+
 
     void createGAS();
     bool isStandardGAS() const ; 

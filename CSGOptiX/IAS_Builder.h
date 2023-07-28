@@ -6,6 +6,7 @@
 #include "plog/Severity.h"
 
 struct SBT ; 
+struct NP ; 
 
 struct IAS_Builder
 {
@@ -14,6 +15,9 @@ struct IAS_Builder
     static void CollectInstances(std::vector<OptixInstance>& instances, const std::vector<qat4>& ias_inst, const SBT* sbt ); 
     static void Build( IAS& ias, const std::vector<qat4>& ias_inst, const SBT* sbt  );  
     static void Build( IAS& ias, const std::vector<OptixInstance>& instances );
+
+    static NP* Serialize( const std::vector<OptixInstance>& instances ); 
+
 };
 
 

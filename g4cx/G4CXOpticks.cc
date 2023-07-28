@@ -332,13 +332,8 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 
     sim->serialize() ;  
 
+    // formerly did G4CXOpticks__setGeometry_saveGeometry here 
 
-    if( setGeometry_saveGeometry != nullptr )
-    {
-        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
-        saveGeometry(setGeometry_saveGeometry); 
-        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
-    }
 
     LOG(LEVEL) << "[ fd " << fd ; 
     SEvt* sev = SEvt::Get() ; 
@@ -376,6 +371,18 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         ; 
 
     LOG(LEVEL) << "] fd " << fd ; 
+
+
+    // try moving this later, so can save things from cx and qs for debug purposes
+    if( setGeometry_saveGeometry != nullptr )
+    {
+        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
+        saveGeometry(setGeometry_saveGeometry); 
+        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
+    }
+
+
+
 }
 
 
@@ -618,6 +625,8 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
                ; 
         }
     }
+
+    if(cx) cx->save(dir) ; 
 
 
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
