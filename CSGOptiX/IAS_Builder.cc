@@ -13,6 +13,7 @@
 #include "OPTIX_CHECK.h"
 
 #include "Ctx.h"
+#include "Properties.h"
 
 //#include "InstanceId.h"  not in use due to bit limits 
 

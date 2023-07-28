@@ -327,3 +327,7 @@ Rerun with CSGOptiX=INFO dumps the limits::
 
 
 
+
+Threaded Properies thru into IAS_Builder::Build to allow checking the 
+instanceId is within range. 
+
