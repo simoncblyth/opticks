@@ -11,6 +11,8 @@ This is used by CSGOptiX.cc and SBT.cc
 
 #include "plog/Severity.h"
 
+struct Properties ; 
+
 struct PIP
 {
     static const plog::Severity LEVEL ; 
@@ -19,6 +21,7 @@ struct PIP
     unsigned max_trace_depth ; 
     unsigned num_payload_values ; 
     unsigned num_attribute_values ; 
+    const Properties* properties ; 
 
     OptixPipelineCompileOptions pipeline_compile_options = {};
     OptixProgramGroupOptions program_group_options = {};
@@ -75,7 +78,7 @@ struct PIP
     static const char* CreateModule_optLevel ; 
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
 
-    PIP(const char* ptx_path_); 
+    PIP(const char* ptx_path_, const Properties* properties_ ); 
     const char* desc() const ; 
 
     void init(); 

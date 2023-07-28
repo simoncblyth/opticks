@@ -403,7 +403,7 @@ void CSGOptiX::initPIP()
     LOG(LEVEL) << "[" ; 
 #if OPTIX_VERSION < 70000
 #else
-    pip = new PIP(ptxpath) ;  
+    pip = new PIP(ptxpath, ctx->props ) ;  
 #endif
     LOG(LEVEL) << "]" ; 
 }

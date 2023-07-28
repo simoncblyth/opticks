@@ -255,7 +255,7 @@ PTX read from *ptx_path_* is used to CreateModule
   used in the PTX, see CSGOptiX7.cu  
 
 **/
-PIP::PIP(const char* ptx_path_ ) 
+PIP::PIP(const char* ptx_path_, const Properties* properties_ ) 
     :
     max_trace_depth(MAX_TRACE_DEPTH),
 #ifdef WITH_PRD
@@ -265,6 +265,7 @@ PIP::PIP(const char* ptx_path_ )
     num_payload_values(8),     // see trace and setPayload 
     num_attribute_values(6),   // see __intersection__is
 #endif
+    properties(properties_),
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),
     module(CreateModule(ptx_path_,pipeline_compile_options))

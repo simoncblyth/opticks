@@ -33,6 +33,7 @@
 
 #include "PIP.h"
 #include "SBT.h"
+#include "Properties.h"
 
 #include "CU.h"
 #include "SLOG.hh"
@@ -55,6 +56,7 @@ SBT::SBT(const PIP* pip_)
     :
     emm(SGeoConfig::EnabledMergedMesh()), 
     pip(pip_),
+    properties(pip->properties),
     raygen(nullptr),
     miss(nullptr),
     hitgroup(nullptr),

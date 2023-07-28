@@ -60,6 +60,14 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
         q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
         unsigned instanceId = q.get_IAS_OptixInstance_instanceId() ; 
 
+        bool instanceId_is_allowed = instanceId < sbt->properties->limitMaxInstanceId ; 
+        LOG_IF(fatal, !instanceId_is_allowed)
+            << " instanceId " << instanceId 
+            << " sbt->properties->limitMaxInstanceId " << sbt->properties->limitMaxInstanceId
+            << " instanceId_is_allowed " << ( instanceId_is_allowed ? "YES" : "NO " )
+            ; 
+        assert( instanceId_is_allowed  ) ; 
+
         const GAS& gas = sbt->getGAS(gasIdx);  // susceptible to out-of-range errors for stale gas_idx 
         
         bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 

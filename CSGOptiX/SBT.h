@@ -26,6 +26,7 @@ class Opticks ;
 struct PIP ; 
 struct CSGFoundry ; 
 struct CSGPrim ; 
+struct Properties ; 
 
 struct SBT 
 {
@@ -35,6 +36,7 @@ struct SBT
     std::vector<unsigned>  solid_selection ; 
     unsigned long long emm ; 
     const PIP*      pip ; 
+    const Properties* properties ; 
     Raygen*       raygen ;
     Miss*         miss ;
     HitGroup*     hitgroup ;
