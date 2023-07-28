@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     app->BeamOn(); 
     delete app ; 
 
-    LOG(info) << SLOG::Banner() << " " << " savedir " << SEvt::GetSaveDir() ; 
+    LOG(info) << SLOG::Banner() << " " << " savedir " << SEvt::GetSaveDir(1) ; 
     return 0 ; 
 }
 

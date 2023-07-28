@@ -23,12 +23,12 @@ int main(int argc, char** argv)
 
     LOG(info) << SEvt::Brief() ; 
 
-    NP* ip = SEvt::GetInputPhoton() ; 
+    NP* ip = SEvt::GetInputPhoton(0) ; 
 
     LOG_IF(error, ip == nullptr) << "SEvt::GetInputPhoton GIVES nullptr : SET OPTICKS_INPUT_PHOTON TO CONFIGURE " ; 
 
-    const char* id = SEvt::GetFrameId() ; 
-    const NP*   fr = SEvt::GetFrameArray() ; 
+    const char* id = SEvt::GetFrameId(0) ; 
+    const NP*   fr = SEvt::GetFrameArray(0) ; 
 
     std::string ip_name = sstr::Format_("ip_%s.npy", ( id ? id : "noid" ) ); 
     std::string fr_name = sstr::Format_("fr_%s.npy", ( id ? id : "noid" ) ); 

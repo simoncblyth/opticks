@@ -114,7 +114,7 @@ void Local_DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
     //std::cout << "Local_DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
 
-    SEvt::AddTag( U4Stack_ScintDiscreteReset, u ); 
+    SEvt::AddTag( 1, U4Stack_ScintDiscreteReset, u ); 
 
     if(FLOAT)
     {   
@@ -404,7 +404,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
         G4double u_reemission = G4UniformRand() ; 
 #ifdef DEBUG_TAG
-        SEvt::AddTag(U4Stack_Reemission, u_reemission); 
+        SEvt::AddTag(1, U4Stack_Reemission, u_reemission); 
 #endif
 
         if (u_reemission >= p_reemission)
@@ -571,7 +571,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
        G4double p = G4UniformRand();
 
 #ifdef DEBUG_TAG
-       SEvt::AddTag(U4Stack_Reemission, p ); 
+       SEvt::AddTag(1, U4Stack_Reemission, p ); 
 #endif
 
        G4double p_count = 0;
@@ -698,7 +698,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
                 G4double u_sampledEnergy = G4UniformRand() ;
 #ifdef DEBUG_TAG
-                SEvt::AddTag(U4Stack_Reemission, u_sampledEnergy ); 
+                SEvt::AddTag(1, U4Stack_Reemission, u_sampledEnergy ); 
 #endif
 
                 G4double CIIvalue = u_sampledEnergy*
@@ -721,7 +721,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
             G4double u_cost = G4UniformRand(); 
 #ifdef DEBUG_TAG
-            SEvt::AddTag(U4Stack_Reemission, u_cost ); 
+            SEvt::AddTag(1, U4Stack_Reemission, u_cost ); 
 #endif
 
             G4double cost = 1. - 2.*u_cost ;
@@ -729,7 +729,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
             G4double u_phi = G4UniformRand() ;
 #ifdef DEBUG_TAG
-            SEvt::AddTag(U4Stack_Reemission, u_phi ); 
+            SEvt::AddTag(1, U4Stack_Reemission, u_phi ); 
 #endif
 
             G4double phi = twopi*u_phi ;
@@ -754,7 +754,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
             u_phi = G4UniformRand() ;  
 #ifdef DEBUG_TAG
-            SEvt::AddTag(U4Stack_Reemission, u_phi ); 
+            SEvt::AddTag(1, U4Stack_Reemission, u_phi ); 
 #endif
 
             phi = twopi*u_phi ;
@@ -786,7 +786,7 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
                 G4double u_deltaTime = G4UniformRand() ;  
 #ifdef DEBUG_TAG
-                SEvt::AddTag(U4Stack_Reemission, u_deltaTime ); 
+                SEvt::AddTag(1, U4Stack_Reemission, u_deltaTime ); 
 #endif
 
                 deltaTime= pPostStepPoint->GetGlobalTime() - t0 

@@ -154,7 +154,7 @@ U4Recorder::U4Recorder()
     eventID(-1),
     transient_fSuspend_track(nullptr),
     rerun_rand(nullptr),
-    evt(SEvt::HighLevelCreate())   
+    evt(SEvt::HighLevelCreate(1))   
 { 
     INSTANCE = this ; 
 }
@@ -162,7 +162,7 @@ U4Recorder::U4Recorder()
 
 void U4Recorder::BeginOfRunAction(const G4Run*)
 {  
-    SEvt::BeginOfRun(); 
+    SEvt::BeginOfRun(); // just sets static stamp 
     LOG(info); 
 }
 
@@ -175,7 +175,7 @@ HUH: some problem with LOG from here ?
 **/
 void U4Recorder::EndOfRunAction(const G4Run*)
 { 
-    SEvt::EndOfRun(); 
+    SEvt::EndOfRun();  // just sets static stamp
 
     SEvt::SetRunMeta<int>("FAKES_SKIP", int(FAKES_SKIP) ); 
     SEvt::SaveRunMeta(); 
@@ -217,12 +217,12 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
     G4int eventID_ = event->GetEventID() ; 
     assert( eventID == eventID_ ); 
 
-    SEvt::AddArray("U4R.npy", MakeMetaArray() ); 
-    SEvt::AddEventConfigArray(); 
+    SEvt::AddArray(1, "U4R.npy", MakeMetaArray() ); 
+    SEvt::AddEventConfigArray(1); 
 
     SEvt::EndOfEvent(eventID_);  // does SEvt::Save SEvt::Clear
 
-    const char* savedir = SEvt::GetSaveDir() ; 
+    const char* savedir = SEvt::GetSaveDir(1) ; 
     LOG(info) << " savedir " << ( savedir ? savedir : "-" );
     SaveMeta(savedir);  
 
@@ -303,8 +303,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         ;
     assert( tstat == fAlive ); 
 
-    SEvt* sev = SEvt::Get(); 
-    LOG_IF(fatal, sev == nullptr) << " SEvt::Get returned nullptr " ; 
+    SEvt* sev = SEvt::Get(1); 
+    LOG_IF(fatal, sev == nullptr) << " SEvt::Get(1) returned nullptr " ; 
     assert(sev); 
 
     if(ulabel.gen() == 0)  
@@ -485,7 +485,7 @@ void U4Recorder::saveOrLoadStates( int id )
     bool g4state_active =  g4state_save || g4state_rerun ; 
     if( g4state_active == false ) return ; 
     
-    SEvt* sev = SEvt::Get(); 
+    SEvt* sev = SEvt::Get(1); 
 
     if(g4state_save) 
     {
@@ -614,7 +614,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 
     if(is_fStopAndKill)
     {
-        SEvt* sev = SEvt::Get(); 
+        SEvt* sev = SEvt::Get(1); 
         U4Random::SetSequenceIndex(-1); 
         sev->finalPhoton(ulabel);  
         transient_fSuspend_track = nullptr ;
@@ -763,7 +763,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    SEvt* sev = SEvt::Get(); 
+    SEvt* sev = SEvt::Get(1); 
     sev->checkPhotonLineage(ulabel); 
 
     sphoton& current_photon = sev->current_ctx.p ;

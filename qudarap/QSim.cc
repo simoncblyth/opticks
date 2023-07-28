@@ -879,6 +879,8 @@ extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsi
 QSim::UploadMockPRD
 ---------------------
 
+NB this "Mock" is in the sense of without real geometry, its still using CUDA
+
 Caution this returns a device pointer.
 
 **/
@@ -886,7 +888,7 @@ Caution this returns a device pointer.
 
 quad2* QSim::UploadMockPRD(const NP* prd) // static
 {
-    const NP* p = SEvt::GetInputPhoton(); 
+    const NP* p = SEvt::GetInputPhoton(0); 
     assert(p); 
     int num_p = p->shape[0] ; 
     assert( num_p > 0 ); 
@@ -934,7 +936,7 @@ using common QEvent functionality
 
 void QSim::mock_propagate( const NP* prd, unsigned type )
 {
-    const NP* ip = SEvt::GetInputPhoton(); 
+    const NP* ip = SEvt::GetInputPhoton(0); 
     int num_ip = ip ? ip->shape[0] : 0 ; 
     assert( num_ip > 0 ); 
 
@@ -943,7 +945,7 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
     int rc = event->setGenstep();   
     assert( rc == 0 ); 
 
-    SEvt::AddArray("prd0", prd );  
+    SEvt::AddArray(0, "prd0", prd );  
     // NB QEvent::setGenstep calls SEvt::Clear so this addition 
     // must be after that to succeed in being added to SEvt saved arrays
 

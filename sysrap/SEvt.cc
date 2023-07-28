@@ -1,5 +1,6 @@
 
 #include <limits>
+#include <array>
 
 #include "scuda.h"
 #include "squad.h"
@@ -60,7 +61,27 @@ A: Thats done only when using SEvt::HighLevelCreate via envvar expansion.
 **/
 
 
-SEvt* SEvt::INSTANCE = nullptr ; 
+// SEvt* SEvt::INSTANCE = nullptr ; 
+
+std::array<SEvt*, SEvt::MAX_INSTANCE> SEvt::INSTANCES = {{ nullptr, nullptr }} ; 
+
+std::string SEvt::DescINSTANCE()  // static
+{
+    std::stringstream ss ; 
+
+    ss << "SEvt::DescINSTANCE" 
+       << std::endl 
+      // << " INSTANCE     " << INSTANCE  
+       << " INSTANCES[0] " << INSTANCES[0] 
+       << std::endl 
+       << " INSTANCES[1] " << INSTANCES[1]
+       << std::endl 
+       ;   
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 /**
 SEvt::SEvt
@@ -125,7 +146,7 @@ components gatherered from device buffers.
 void SEvt::init()
 {
     LOG(LEVEL) << "[" ; 
-    INSTANCE = this ; 
+    //INSTANCE = this ;    // no-longer automated, rely on static creation methods to set INSTANCES[0] or [1]
 
     evt->init();    // array maxima set according to SEventConfig values 
     dbg->zero(); 
@@ -143,7 +164,10 @@ void SEvt::init()
 }
 
 
-const char* SEvt::GetSaveDir(){ return INSTANCE ? INSTANCE->getSaveDir() : nullptr ; }
+const char* SEvt::GetSaveDir(int idx) // static 
+{ 
+    return Exists(idx) ? Get(idx)->getSaveDir() : nullptr ; 
+}
 const char* SEvt::getSaveDir() const { return fold->savedir ; }
 const char* SEvt::getLoadDir() const { return fold->loaddir ; }
 int SEvt::getTotalItems() const { return fold->total_items() ; }
@@ -486,7 +510,12 @@ the allocations for result vectors.
 
 **/
 
-void SEvt::AddFrameGenstep(){ Check() ; INSTANCE->addFrameGenstep() ; } // static
+void SEvt::AddFrameGenstep() // static
+{
+    if(Exists(0)) Get(0)->addFrameGenstep() ; 
+    if(Exists(1)) Get(1)->addFrameGenstep() ; 
+}
+
 void SEvt::addFrameGenstep()
 {
     if(SEventConfig::IsRGModeSimtrace())
@@ -517,8 +546,8 @@ void SEvt::addFrameGenstep()
 const char* SEvt::getFrameId()    const { return frame.getFrameId() ; }
 const NP*   SEvt::getFrameArray() const { return frame.getFrameArray() ; }
 
-const char* SEvt::GetFrameId(){    return INSTANCE ? INSTANCE->getFrameId() : nullptr ; }
-const NP*   SEvt::GetFrameArray(){ return INSTANCE ? INSTANCE->getFrameArray() : nullptr ; } 
+const char* SEvt::GetFrameId(int idx){    return Exists(idx) ? Get(idx)->getFrameId() : nullptr ; }
+const NP*   SEvt::GetFrameArray(int idx){ return Exists(idx) ? Get(idx)->getFrameArray() : nullptr ; } 
 
 
 /**
@@ -619,7 +648,7 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
 {
     LOG(LEVEL) << "[" ; 
 
-    SEvt* prior = SEvt::Get();  
+    SEvt* prior = SEvt::Get(0);  
     if(prior == nullptr ) return nullptr ; 
 
     sframe& pfr = prior->frame ;   
@@ -729,10 +758,102 @@ NP* SEvt::gatherDomain() const
 }
 
 
-SEvt* SEvt::Get(){     return INSTANCE ; }
-SEvt* SEvt::Create() { return new SEvt ; }
-SEvt* SEvt::CreateOrReuse() {         return INSTANCE ? INSTANCE : Create() ; }
-SEvt* SEvt::HighLevelCreateOrReuse(){ return INSTANCE ? INSTANCE : HighLevelCreate() ; }
+
+
+int SEvt::Count()  // static
+{
+    int count = 0 ; 
+    if(Exists(0)) count += 1 ; 
+    if(Exists(1)) count += 1 ; 
+    return count ; 
+}  
+
+
+
+SEvt* SEvt::Get(int idx)  // static
+{  
+    assert( idx == 0 || idx == 1 );    
+    return INSTANCES[idx] ; 
+}
+SEvt* SEvt::Create(int idx)  // static
+{ 
+    assert( idx == 0 || idx == 1); 
+    INSTANCES[idx] = new SEvt ; 
+    return Get(idx) ; 
+}
+
+bool SEvt::Exists(int idx)  // static 
+{
+    return Get(idx) != nullptr ; 
+} 
+SEvt* SEvt::CreateOrReuse(int idx) 
+{  
+    return Exists(idx) ? Get(idx) : Create(idx) ; 
+}
+SEvt* SEvt::HighLevelCreateOrReuse(int idx)
+{
+    return Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
+}
+
+
+/**
+SEvt::CreateOrReuse
+---------------------
+
+Creates 0, 1 OR 2 SEvt depending on SEventConfig::IntegrationMode()::
+
+    OPTICKS_INTEGRATION_MODE (aka opticksMode)
+
++-----------------+----------+----------+--------------------------------------------+
+|  opticksMode    | num SEvt | SEvt idx | notes                                      |
++=================+==========+==========+============================================+
+|             0   |    0     |    -     |                                            |
++-----------------+----------+----------+--------------------------------------------+
+|             1   |    1     |    0     |  GPU optical simulation only               |
++-----------------+----------+----------+--------------------------------------------+
+|             2   |    1     |    1     |  CPU optical simulation only               |
++-----------------+----------+----------+--------------------------------------------+
+|             3   |    2     |   0,1    |  both GPU and CPU optical simulations      |
++-----------------+----------+----------+--------------------------------------------+
+
+**/
+
+
+void SEvt::CreateOrReuse()
+{
+    int imode = SEventConfig::IntegrationMode() ; 
+
+    if( imode == 0 )
+    {
+        LOG(LEVEL) << " imode " << imode << " no SEvt created" ; 
+    }
+    else if( imode == 1 )   // GPU optical simulation only
+    {
+        CreateOrReuse(0); 
+    }
+    else if( imode == 2 )   // CPU optical simulation only 
+    {
+        CreateOrReuse(1); 
+    }
+    else if( imode == 3 )  // both CPU and GPU optical simulation
+    {
+        CreateOrReuse(0);   // GPU
+        CreateOrReuse(1);   // CPU 
+    }
+    else
+    {
+        LOG(fatal) << "unexpected imode " << imode ; 
+        assert(0); 
+    }
+}
+
+
+
+void SEvt::SetFrame(const sframe& fr )
+{
+    if(Exists(0)) Get(0)->setFrame(fr); 
+    if(Exists(1)) Get(1)->setFrame(fr); 
+}
 
 
 /**
@@ -749,7 +870,7 @@ HMM: perhaps reldir should be static, above the individual SEvt instance level ?
 
 **/
 
-SEvt* SEvt::HighLevelCreate() // static
+SEvt* SEvt::HighLevelCreate(int idx) // static
 {
     SEvt* evt = nullptr ; 
 
@@ -783,7 +904,7 @@ SEvt* SEvt::HighLevelCreate() // static
     if(rerun == false)
     {   
         SEvt::SetReldir(alldir); 
-        evt = SEvt::Create();    
+        evt = SEvt::Create(idx);    
     }   
     else
     {   
@@ -797,21 +918,48 @@ SEvt* SEvt::HighLevelCreate() // static
     return evt ; 
 }
 
-bool SEvt::Exists(){ return INSTANCE != nullptr ; }
-void SEvt::Check()
+void SEvt::Check(int idx)
 {
-    LOG_IF(fatal, !INSTANCE) << "must instanciate SEvt before using most SEvt methods" ; 
-    assert(INSTANCE); 
+    SEvt* sev = Get(idx) ; 
+    LOG_IF(fatal, !sev) << "must instanciate SEvt before using most SEvt methods" ; 
+    assert(sev); 
 }
 
 
-// tags are used when recording all randoms consumed by simulation  
-void SEvt::AddTag(unsigned stack, float u ){  INSTANCE->addTag(stack,u);  } 
-int  SEvt::GetTagSlot(){ return INSTANCE->getTagSlot() ; }
+/**
+SEvt::AddTag
+----------------
 
+Tags are used when recording all randoms consumed by simulation  
 
-sgs SEvt::AddGenstep(const quad6& q){ Check(); return INSTANCE->addGenstep(q);  }
-sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
+NB some statics make sense to broadcast to all INSTANCES but
+this is not one of them 
+
+**/
+
+void SEvt::AddTag(int idx, unsigned stack, float u )
+{ 
+    if(Exists(idx)) Get(idx)->addTag(stack,u);  
+} 
+int  SEvt::GetTagSlot(int idx)
+{ 
+    return Exists(idx) ? Get(idx)->getTagSlot() : -1 ; 
+}
+
+sgs SEvt::AddGenstep(const quad6& q)
+{ 
+    sgs label = {} ; 
+    if(Exists(0)) label = Get(0)->addGenstep(q) ;  
+    if(Exists(1)) label = Get(1)->addGenstep(q) ;  
+    return label ; 
+}
+sgs SEvt::AddGenstep(const NP* a)
+{ 
+    sgs label = {} ; 
+    if(Exists(0)) label = Get(0)->addGenstep(a) ;  
+    if(Exists(1)) label = Get(1)->addGenstep(a) ;  
+    return label ; 
+}
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
 
@@ -844,13 +992,52 @@ SEvt::Clear is invoked in two situations:
 
 **/
 
-void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
-void SEvt::Save(){  Check() ; INSTANCE->save(); }
-void SEvt::SaveExtra( const char* name, const NP* a){  Check() ; INSTANCE->saveExtra(name, a); }
+void SEvt::Clear()
+{
+    if(Exists(0)) Get(0)->clear();  
+    if(Exists(1)) Get(1)->clear();  
+}
+void SEvt::Save()
+{ 
+    if(Exists(0)) Get(0)->save();  
+    if(Exists(1)) Get(1)->save();  
+}
+void SEvt::SaveExtra( const char* name, const NP* a)
+{  
+    if(Exists(0)) Get(0)->saveExtra(name, a); 
+    if(Exists(1)) Get(1)->saveExtra(name, a); 
+}
 
-void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
-void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
-void SEvt::SaveGenstepLabels(const char* dir, const char* name){ if(INSTANCE) INSTANCE->saveGenstepLabels(dir, name ); }
+bool SEvt::HaveDistinctOutputDirs() // static 
+{
+    if(Count() < 2) return true ;  
+    assert( Count() == 2 ); 
+    SEvt* i0 = Get(0); 
+    SEvt* i1 = Get(1); 
+    return i0->index != i1->index ; 
+}
+
+
+void SEvt::Save(const char* dir)
+{  
+    assert( HaveDistinctOutputDirs() );  // check will not overwrite 
+    if(Exists(0)) Get(0)->save(dir) ; 
+    if(Exists(1)) Get(1)->save(dir) ; 
+}
+
+void SEvt::Save(const char* dir, const char* rel)
+{  
+    assert( HaveDistinctOutputDirs() );  // check will not overwrite 
+    if(Exists(0)) Get(0)->save(dir, rel) ; 
+    if(Exists(1)) Get(1)->save(dir, rel) ; 
+}
+
+void SEvt::SaveGenstepLabels(const char* dir, const char* name)
+{ 
+    assert( HaveDistinctOutputDirs() );  // check will not overwrite 
+    if(Exists(0)) Get(0)->saveGenstepLabels(dir, name ); 
+    if(Exists(1)) Get(1)->saveGenstepLabels(dir, name ); 
+}
 
 
 
@@ -905,7 +1092,6 @@ Called for example from U4Recorder::BeginOfEventAction
 
 void SEvt::BeginOfEvent(int index)  // static
 {
-    INSTANCE->t_BeginOfEvent = stamp::Now(); 
 
     if(index > -1) 
     {
@@ -932,26 +1118,61 @@ Called for example from U4Recorder::EndOfEventAction
 
 void SEvt::EndOfEvent(int index) // static 
 {
-    INSTANCE->t_EndOfEvent = stamp::Now(); 
 
-    if( index > -1 )
-    {
-        LOG(LEVEL) << " index " << index ; 
-        assert( index == SEvt::GetIndex() );  
-    }
+    SEvt::EndIndex(index); 
 
     SEvt::Save(); 
     SEvt::Clear(); 
 }
 
 
+bool SEvt::IndexPermitted(int index) // static
+{
+    bool permitted = false ; 
+    int count = Count(); 
+    switch(count)
+    {
+        case 1:  permitted = index >= 0 ; break ; 
+        case 2:  permitted = index >= 1 ; break ; 
+    }
+    return permitted ; 
+}
+
+void SEvt::SetIndex(int index)
+{ 
+    bool index_permitted = IndexPermitted(index); 
+    LOG_IF(fatal, !index_permitted) << " index " << index << " count " << Count() ; 
+    assert( index_permitted ); 
+
+    if(Exists(0)) Get(0)->setIndex(index); 
+    if(Exists(1)) Get(1)->setIndex(-index); 
+}
+
+void SEvt::EndIndex(int index)
+{
+    if(Exists(0)) Get(0)->endIndex(index); 
+    if(Exists(1)) Get(1)->endIndex(-index); 
+}
 
 
-void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
-void SEvt::IncrementIndex(){    assert(INSTANCE) ; INSTANCE->incrementIndex() ; }
-void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
-int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
-S4RandomArray* SEvt::GetRandomArray(){ return INSTANCE ? INSTANCE->random_array : nullptr ; }
+void SEvt::IncrementIndex()
+{   
+    if(Exists(0)) Get(0)->incrementIndex() ; 
+    if(Exists(1)) Get(1)->incrementIndex() ; 
+}
+void SEvt::UnsetIndex()
+{  
+    if(Exists(0)) Get(0)->unsetIndex() ; 
+    if(Exists(1)) Get(1)->unsetIndex() ; 
+}
+int SEvt::GetIndex(int idx)
+{   
+    return Exists(idx) ? Get(idx)->getIndex() : 0 ;   
+}
+S4RandomArray* SEvt::GetRandomArray(int idx)
+{ 
+    return Exists(idx) ? Get(idx)->random_array : nullptr ; 
+}
 
 
 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
@@ -960,33 +1181,25 @@ const char* SEvt::DEFAULT_RELDIR = "ALL" ;
 const char* SEvt::RELDIR = nullptr ; 
 void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
 const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
-/*
-void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
-const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
-
-void SEvt::setReldir(const char* reldir_)  // override DEFAULT_RELDIR  
-{ 
-    reldir = reldir_ ? strdup(reldir_) : nullptr ; 
-    LOG(LEVEL)
-        << " reldir " << ( reldir ? reldir : "-" )
-        << " this " << std::hex << this << std::dec
-        ;
-} 
-const char* SEvt::getReldir() const { return reldir ? reldir : DEFAULT_RELDIR ; }
-
-*/
 
 
-int SEvt::GetNumPhotonCollected(){    return INSTANCE ? INSTANCE->getNumPhotonCollected() : UNDEF ; }
-int SEvt::GetNumPhotonGenstepMax(){   return INSTANCE ? INSTANCE->getNumPhotonGenstepMax() : UNDEF ; }
-int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : UNDEF ; }
-int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : UNDEF ; }
-int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : UNDEF ; }
+int SEvt::GetNumPhotonCollected(int idx){    return Exists(idx) ? Get(idx)->getNumPhotonCollected() : UNDEF ; }
+int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getNumPhotonGenstepMax() : UNDEF ; }
+int SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
+int SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getNumGenstepFromGenstep() : UNDEF ; }
+int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
 
-NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : nullptr ; }
-NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
-void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
-bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
+NP* SEvt::GatherGenstep(int idx) {   return Exists(idx) ? Get(idx)->gatherGenstep() : nullptr ; }
+NP* SEvt::GetInputPhoton(int idx) {  return Exists(idx) ? Get(idx)->getInputPhoton() : nullptr ; }
+void SEvt::SetInputPhoton(NP* p) 
+{  
+    if(Exists(0)) Get(0)->setInputPhoton(p) ;
+    if(Exists(1)) Get(1)->setInputPhoton(p) ;
+}
+bool SEvt::HasInputPhoton(int idx)
+{  
+    return Exists(idx) ? Get(idx)->hasInputPhoton() : false ; 
+}
 
 
 
@@ -1072,14 +1285,32 @@ void SEvt::clear_partial(const char* keep_keylist, char delim)
 }
 
 
-void SEvt::setIndex(int index_){ index = index_ ; }
+void SEvt::setIndex(int index_)
+{ 
+    index = index_ ; 
+    t_BeginOfEvent = stamp::Now();  // moved here from the static 
+}
+void SEvt::endIndex(int index_)
+{ 
+    assert( index == index_ );  
+    t_EndOfEvent = stamp::Now();  
+}
+
+int SEvt::getIndex() const 
+{ 
+    return index ; 
+}
 void SEvt::incrementIndex()
 {
-    int new_index = index == MISSING_INDEX ? 0 : index + 1 ; 
+    int base_index = index == MISSING_INDEX ? 0 : index ; 
+    int new_index = base_index < 0 ? base_index - 1 : base_index + 1 ; 
     setIndex(new_index); 
 }
-void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
-int SEvt::getIndex() const { return index ; }
+void SEvt::unsetIndex()
+{  
+    index = MISSING_INDEX ; 
+}
+
 
 
 unsigned SEvt::getNumGenstepFromGenstep() const 
@@ -2005,7 +2236,10 @@ is up to the user to call this from the right place.
 
 **/
 
-void SEvt::AddProcessHitsStamp(int p){ INSTANCE->addProcessHitsStamp(p) ; } // static
+void SEvt::AddProcessHitsStamp(int idx, int p) // static
+{ 
+    if(Exists(idx)) Get(idx)->addProcessHitsStamp(p) ; 
+}
 void SEvt::addProcessHitsStamp(int p)
 {
     uint64_t now = stamp::Now();
@@ -2404,8 +2638,13 @@ std::string SEvt::Brief() // static
 {
     std::stringstream ss ; 
     ss << "SEvt::Brief " 
-       << " SEvt::Exists " << ( SEvt::Exists() ? "Y" : "N" )
-       << " INSTANCE " << ( INSTANCE ? INSTANCE->brief() : "-" ) 
+       << " SEvt::Exists(0) " << ( Exists(0) ? "Y" : "N" )
+       << " SEvt::Exists(1) " << ( Exists(1) ? "Y" : "N" )
+       << std::endl 
+       << " SEvt::Get(0)->brief() " << ( Exists(0) ? Get(0)->brief() : "-" ) 
+       << std::endl 
+       << " SEvt::Get(1)->brief() " << ( Exists(0) ? Get(0)->brief() : "-" ) 
+       << std::endl 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -2493,20 +2732,19 @@ Used for addition of extra metadata arrays to be save within SEvt folder
 
 **/
 
-void SEvt::AddArray( const char* k, const NP* a )  // static
+void SEvt::AddArray(int idx,  const char* k, const NP* a )  // static
 {
     LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
-    assert(INSTANCE) ; 
-    if(INSTANCE) INSTANCE->add_array(k, a); 
+    if(Exists(idx)) Get(idx)->add_array(k, a); 
 }
 void SEvt::add_array( const char* k, const NP* a )
 {
     fold->add(k, a);  
 }
 
-void SEvt::AddEventConfigArray() // static
+void SEvt::AddEventConfigArray(int idx) // static
 {
-    AddArray( SEventConfig::NAME, SEventConfig::Serialize() ); 
+    AddArray(idx, SEventConfig::NAME, SEventConfig::Serialize() ); 
 }
 
 
@@ -2604,6 +2842,11 @@ void SEvt::save(const char* bas, const char* rel1, const char* rel2 )
 }
 
 
+bool SEvt::hasIndex() const 
+{
+    return index != MISSING_INDEX ;  
+}
+
 /**
 SEvt::getOutputDir
 --------------------
@@ -2616,9 +2859,8 @@ the same base_ argument is used, which may be nullptr to use the default.
 const char* SEvt::getOutputDir(const char* base_) const 
 {
     const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
-    bool with_index = index != MISSING_INDEX ;  
     const char* reldir = GetReldir() ; 
-    const char* dir = with_index ? 
+    const char* dir = hasIndex() ? 
                                 SPath::Resolve(base, reldir, index, DIRPATH ) 
                              :
                                 SPath::Resolve(base, reldir,  DIRPATH) 
@@ -3092,9 +3334,9 @@ std::string SEvt::descInputPhoton() const
     std::string s = ss.str(); 
     return s ; 
 }
-std::string SEvt::DescInputPhoton() // static
+std::string SEvt::DescInputPhoton(int idx) // static
 {
-    return INSTANCE ? INSTANCE->descInputPhoton() : "-" ; 
+    return Exists(idx) ? Get(idx)->descInputPhoton() : "-" ; 
 }
 
 

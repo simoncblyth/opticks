@@ -14,7 +14,7 @@ rather than the widely used sysrap library.
 struct NP ; 
 struct SGenerate
 {
-    static NP* GeneratePhotons();  
+    static NP* GeneratePhotons(int idx);  
     static NP* GeneratePhotons(const NP* gs);  
 }; 
 
@@ -42,9 +42,9 @@ SGenerate::GeneratePhotons
 Called for example from U4VPrimaryGenerator::GeneratePrimaries
 
 **/
-inline NP* SGenerate::GeneratePhotons()
+inline NP* SGenerate::GeneratePhotons(int idx)
 {
-    NP* gs = SEvt::GatherGenstep(); 
+    NP* gs = SEvt::GatherGenstep(idx); 
 
     if( gs == nullptr )
     {
@@ -56,7 +56,7 @@ inline NP* SGenerate::GeneratePhotons()
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {
-        ph = SEvt::GetInputPhoton(); 
+        ph = SEvt::GetInputPhoton(idx); 
     }
     else
     {

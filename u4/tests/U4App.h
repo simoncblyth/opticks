@@ -212,7 +212,7 @@ void U4App::EndOfEventAction(const G4Event* event)
 {   
     fRecorder->EndOfEventAction(event);  
 
-    const char* savedir = SEvt::GetSaveDir(); 
+    const char* savedir = SEvt::GetSaveDir(1); 
     SaveMeta(savedir); 
 
 #if defined(WITH_PMTSIM) && defined(POM_DEBUG)

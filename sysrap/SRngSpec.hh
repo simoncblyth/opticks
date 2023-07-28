@@ -12,6 +12,7 @@ SRngSpec
 class SYSRAP_API SRngSpec
 {
     public:
+        static constexpr const char* PREFIX = "QCurandState" ; 
         static const plog::Severity LEVEL ; 
         static const char* DefaultRngDir() ; 
         static const char* CURANDStatePath(const char* rngdir=NULL, unsigned rngmax=3000000, unsigned long long seed=0, unsigned long long offset=0 ); 

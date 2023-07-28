@@ -3192,21 +3192,15 @@ Called from some high level methods eg: CSGFoundry::Load
 void CSGFoundry::AfterLoadOrCreate() // static
 {
     CSGFoundry* fd = CSGFoundry::Get(); 
-    SEvt* sv = SEvt::CreateOrReuse() ; 
 
-    bool frame_hookup = fd != nullptr && sv != nullptr ;  
+    SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
 
-    LOG(LEVEL)
-         << " fd " << ( fd ? "Y" : "N" )  
-         << " sv " << ( sv ? "Y" : "N" )
-         << " frame_hookup " << ( frame_hookup ? "Y" : "N" ) 
-         ;    
-
-    if(!frame_hookup) return ; 
+    if(!fd) return ; 
 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
-    sv->setFrame(fr);      // now only needs to be done once to transform input photons
+
+    SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
 }
 
 

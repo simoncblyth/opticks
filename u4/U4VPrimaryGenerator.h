@@ -125,7 +125,7 @@ in purely optical case.
 
 inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
 {
-    NP* ph = SGenerate::GeneratePhotons(); 
+    NP* ph = SGenerate::GeneratePhotons(1); 
     // TODO: these *ph* are effectively input photons (even though generated from gensteps),
     //       should associate as such in the SEvt to retain access to these
     //

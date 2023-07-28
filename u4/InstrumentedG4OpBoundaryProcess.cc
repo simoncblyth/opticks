@@ -162,7 +162,7 @@ void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
         m_u0_idx_delta = u0_idx_delta ; 
     }
 
-    SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u0 );  
+    SEvt::AddTag( 1, U4Stack_BoundaryDiscreteReset, u0 );  
 
     if(FLOAT)
     {   
@@ -897,7 +897,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
                 << " theTransmittance " << std::setw(10) << std::fixed << std::setprecision(4) << theTransmittance
                 ; 
 #ifdef DEBUG_TAG
-            SEvt::AddTag(U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
+            SEvt::AddTag(1, U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
 #endif
 #ifdef DEBUG_PIDX
             // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
@@ -1114,7 +1114,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
             ;
 
 #ifdef DEBUG_TAG
-        SEvt::AddTag(U4Stack_BoundaryDiMeReflectivity, rand); 
+        SEvt::AddTag(1, U4Stack_BoundaryDiMeReflectivity, rand); 
 #endif
 
 
@@ -2084,7 +2084,7 @@ void InstrumentedG4OpBoundaryProcess::ChooseReflection()
 {
     G4double rand = G4UniformRand();
 #ifdef DEBUG_TAG
-    SEvt::AddTag( U4Stack_ChooseReflection, rand ); 
+    SEvt::AddTag( 1, U4Stack_ChooseReflection, rand ); 
 #endif
 
     if ( rand >= 0.0 && rand < prob_ss ) 
@@ -2157,7 +2157,7 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoeff(const G4double 
         << " DECISION " << ( ret ? "T" : "R" ) 
         ; 
 #ifdef DEBUG_TAG
-    SEvt::AddTag(U4Stack_BoundaryDiDiTransCoeff, u ); 
+    SEvt::AddTag(1, U4Stack_BoundaryDiDiTransCoeff, u ); 
 #endif   
 #ifdef DEBUG_PIDX
     LOG_IF(LEVEL, pidx_dump)
@@ -2174,7 +2174,7 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency(const G4doub
     G4double u = G4UniformRand() ; 
     G4bool ret = u < prob  ; 
 #ifdef DEBUG_TAG
-    SEvt::AddTag(U4Stack_AbsorptionEffDetect, u ); 
+    SEvt::AddTag(1, U4Stack_AbsorptionEffDetect, u ); 
 #endif   
 #ifdef DEBUG_PIDX
     LOG_IF(LEVEL, pidx_dump)

@@ -48,7 +48,7 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
         << U4UniformRand::Desc(u, SEvt::UU )
         ;
 
-    SEvt::AddTag( U4Stack_RayleighDiscreteReset, u ); 
+    SEvt::AddTag( 1, U4Stack_RayleighDiscreteReset, u ); 
 
     if(FLOAT)
     {
@@ -165,20 +165,20 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            // w.r.t. the initial photon momentum direction
 
            CosTheta = G4UniformRand();
-           SEvt::AddTag( U4Stack_RayleighScatter, CosTheta );   // 0
+           SEvt::AddTag( 1, U4Stack_RayleighScatter, CosTheta );   // 0
 
            SinTheta = std::sqrt(1.-CosTheta*CosTheta);
            // consider for the angle 90-180 degrees
 
            u = G4UniformRand() ; 
-           SEvt::AddTag( U4Stack_RayleighScatter, u );      // 1 
+           SEvt::AddTag( 1, U4Stack_RayleighScatter, u );      // 1 
 
            if (u < 0.5) CosTheta = -CosTheta;
 
            // simulate the phi angle
 
            u = G4UniformRand() ; 
-           SEvt::AddTag( U4Stack_RayleighScatter, u );    // 2 
+           SEvt::AddTag( 1, U4Stack_RayleighScatter, u );    // 2 
 
            rand = twopi*u;
            SinPhi = std::sin(rand);
@@ -210,7 +210,7 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            // random generate the azimuthal angle w.r.t. Newmomentum direction
 
            u = G4UniformRand() ; 
-           SEvt::AddTag( U4Stack_RayleighScatter, u );   // 3
+           SEvt::AddTag( 1, U4Stack_RayleighScatter, u );   // 3
 
            if (NewPolarization.mag() == 0.) {
               rand = u*twopi;
@@ -226,7 +226,7 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            cosTheta = NewPolarization.dot(OldPolarization);
 
            u_loopexit = G4UniformRand() ;
-           SEvt::AddTag( U4Stack_RayleighScatter, u_loopexit );   // 4
+           SEvt::AddTag( 1, U4Stack_RayleighScatter, u_loopexit );   // 4
 
           // Loop checking, 13-Aug-2015, Peter Gumplinger
         } while (std::pow(cosTheta,2) < u_loopexit );

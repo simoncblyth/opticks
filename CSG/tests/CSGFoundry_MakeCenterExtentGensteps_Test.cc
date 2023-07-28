@@ -17,7 +17,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt evt ;
+    SEvt* evt = SEvt::Create(0) ;
+    assert( evt ); 
 
     SSim::Create(); 
 
@@ -27,7 +28,7 @@ int main(int argc, char** argv)
 
     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 
-    NP* gs = SEvt::GatherGenstep(); 
+    NP* gs = SEvt::GatherGenstep(0); 
     NP* pp = SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( gs, fr.gridscale() );  
 
     std::cout << " fr " << std::endl << fr << std::endl ; 

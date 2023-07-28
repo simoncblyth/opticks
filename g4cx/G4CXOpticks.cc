@@ -315,7 +315,9 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 G4CXOpticks::setGeometry_
 ---------------------------
 
-Has side-effect of calling SSim::serialize. 
+Has side-effect of calling SSim::serialize which 
+adds the stree and extra subfolds to the SSim subfold. 
+
 Unclear where exactly SSim::serialize needs to happen 
 for sure it must be after U4Tree::Create and before QSim 
 instanciation within CSGOptiX::Create 
@@ -323,6 +325,8 @@ instanciation within CSGOptiX::Create
 Note would be better to encapsulate this SSim handling 
 within U4Tree.h but reluctant currently as U4Tree.h is  
 header only and SSim.hh is not. 
+
+Q: Is the difficulty only due to the need to defer for the extras ? 
  
 **/
 
@@ -336,17 +340,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 
 
     LOG(LEVEL) << "[ fd " << fd ; 
-    SEvt* sev = SEvt::Get() ; 
-    if( sev == nullptr )
-    {
-        LOG(LEVEL) << " Calling SEvt::Create " ; 
-        sev = SEvt::Create() ; 
-        // formerly setReldir to "ALL" but thats now default, and SEvt::RELDIR now static 
-    }
-    else
-    {
-        LOG(LEVEL) << " Using pre-existing SEvt (happens when U4Recorder instanciated it first) " ; 
-    }
+    SEvt* sev = SEvt::CreateOrReuse(0) ; 
     sev->setGeo((SGeo*)fd);   
 
     if(NoGPU == false)
@@ -380,12 +374,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         saveGeometry(setGeometry_saveGeometry); 
         LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
-
-
-
 }
-
-
 
 
 /**
@@ -412,14 +401,12 @@ Q: Given the sframe and SEvt are from sysrap it feels too high level to do this 
 void G4CXOpticks::setupFrame()
 {
     // TODO: see CSGFoundry::AfterLoadOrCreate for auto frame hookup
-  
-    SEvt* sev = SEvt::Get();  
-    assert(sev); 
 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
 
-    sev->setFrame(fr); 
+    SEvt::SetFrame(fr) ; 
+
     if(cx) cx->setFrame(fr);  
 }
 
@@ -459,7 +446,7 @@ void G4CXOpticks::simulate()
 
     // TODO: most of this should be happening at lower level, not up here 
 
-    SEvt* sev = SEvt::Get();  assert(sev); 
+    SEvt* sev = SEvt::Get(0) ;  assert(sev); 
 
 
     unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
@@ -481,7 +468,7 @@ void G4CXOpticks::simulate()
     bool is_undef = num_hit == SEvt::UNDEF ; 
 
 
-    int sev_index = SEvt::GetIndex() ;
+    int sev_index = sev->getIndex() ;
 
     LOG(LEVEL) 
        << "] num_hit " << num_hit 
@@ -536,7 +523,7 @@ void G4CXOpticks::render()
 void G4CXOpticks::saveEvent() const 
 {
     LOG(LEVEL) << "[" ; 
-    SEvt* sev = SEvt::Get(); 
+    SEvt* sev = SEvt::Get(0); 
     if(sev == nullptr) return ; 
 
     LOG(LEVEL) << "[ sev.save " ; 

@@ -52,7 +52,7 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )
 {
     sphoton global, local  ;
-    SEvt* sev = SEvt::Get(); 
+    SEvt* sev = SEvt::Get(1); 
     sev->getHit( global, idx);
 
     sphit ht ; 

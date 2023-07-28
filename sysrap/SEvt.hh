@@ -170,12 +170,16 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int MISSING_INDEX ; 
     static const int DEBUG_CLEAR ; 
 
+    //static SEvt* INSTANCE ; 
+    enum { MAX_INSTANCE = 2 } ;  
+    static std::array<SEvt*, MAX_INSTANCE> INSTANCES ; 
+    static std::string DescINSTANCE(); 
 
-    static SEvt* INSTANCE ; 
+
     SEvt(); 
     void init(); 
 
-    static const char* GetSaveDir() ; 
+    static const char* GetSaveDir(int idx) ; 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
     int getTotalItems() const ; 
@@ -215,8 +219,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     const char* getFrameId() const ; 
     const NP*   getFrameArray() const ; 
-    static const char* GetFrameId() ;
-    static const NP*   GetFrameArray() ;
+    static const char* GetFrameId(int idx) ;
+    static const NP*   GetFrameArray(int idx) ;
  
     void setFrame_HostsideSimtrace() ; 
     void setGeo(const SGeo* cf); 
@@ -233,17 +237,23 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descProvider() const ; 
 
     NP* gatherDomain() const ; 
-    static SEvt* Get() ; 
-    static SEvt* Create() ; 
-    static SEvt* CreateOrReuse() ; 
-    static SEvt* HighLevelCreateOrReuse() ; 
-    static SEvt* HighLevelCreate(); // Create with bells-and-whistles needed by eg u4/tests/U4SimulateTest.cc
 
-    static bool Exists(); 
+    static int  Count() ; 
+    static SEvt* Get(int idx) ; 
+    static SEvt* Create(int idx) ; 
+    static SEvt* CreateOrReuse(int idx) ; 
+    static SEvt* HighLevelCreateOrReuse(int idx) ; 
+    static SEvt* HighLevelCreate(int idx); // Create with bells-and-whistles needed by eg u4/tests/U4SimulateTest.cc
 
-    static void Check(); 
-    static void AddTag(unsigned stack, float u ); 
-    static int  GetTagSlot(); 
+    static void CreateOrReuse(); 
+    static void SetFrame(const sframe& fr ); 
+
+    static bool Exists(int idx); 
+    static void Check(int idx);
+ 
+    static void AddTag(int idx, unsigned stack, float u ); 
+    static int  GetTagSlot(int idx); 
+
     static sgs AddGenstep(const quad6& q); 
     static sgs AddGenstep(const NP* a); 
     static void AddCarrierGenstep(); 
@@ -256,6 +266,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static void Save(const char* bas, const char* rel ); 
     static void Save(const char* dir); 
+    static bool HaveDistinctOutputDirs(); 
+
+
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 
     static uint64_t T_BeginOfRun ; 
@@ -271,31 +284,32 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static void BeginOfEvent(int index=-1); 
     static void EndOfEvent(int index=-1); 
+
+    static bool IndexPermitted(int index); 
     static void SetIndex(int index); 
+    static void EndIndex(int index); 
+
     static void IncrementIndex(); 
     static void UnsetIndex(); 
-    static int  GetIndex(); 
-    static S4RandomArray* GetRandomArray(); 
+    static int  GetIndex(int idx); 
+    static S4RandomArray* GetRandomArray(int idx); 
 
     static const char*  DEFAULT_RELDIR ; 
     static const char* RELDIR ; 
     static void SetReldir(const char* reldir); 
     static const char* GetReldir(); 
 
-    //void setReldir(const char* reldir_) ;  
-    //const char* getReldir() const ; 
 
+    static int GetNumPhotonCollected(int idx); 
+    static int GetNumPhotonGenstepMax(int idx); 
+    static int GetNumPhotonFromGenstep(int idx); 
+    static int GetNumGenstepFromGenstep(int idx); 
+    static int GetNumHit(int idx) ; 
 
-    static int GetNumPhotonCollected(); 
-    static int GetNumPhotonGenstepMax(); 
-    static int GetNumPhotonFromGenstep(); 
-    static int GetNumGenstepFromGenstep(); 
-    static int GetNumHit() ; 
-
-    static NP* GatherGenstep(); 
-    static NP* GetInputPhoton(); 
+    static NP* GatherGenstep(int idx); 
+    static NP* GetInputPhoton(int idx); 
     static void SetInputPhoton(NP* ip); 
-    static bool HasInputPhoton(); 
+    static bool HasInputPhoton(int idx); 
 
 
     void clear_() ; 
@@ -303,9 +317,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     void clear_partial(const char* keep_keylist, char delim=','); 
 
     void setIndex(int index_) ;  
+    void endIndex(int index_) ;  
+    int  getIndex() const ; 
     void incrementIndex() ;  
     void unsetIndex() ;  
-    int getIndex() const ; 
 
     unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
     unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
@@ -345,7 +360,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void finalPhoton(const spho& sp); 
 
-    static void AddProcessHitsStamp(int p); 
+    static void AddProcessHitsStamp(int idx, int p); 
     void addProcessHitsStamp(int p) ; 
 
     void checkPhotonLineage(const spho& sp) const ; 
@@ -410,9 +425,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     void gather() ;  // with on device running this downloads
 
     // add extra metadata arrays to be saved within SEvt fold 
-    static void AddArray(const char* k, const NP* a ); 
+    static void AddArray(int idx, const char* k, const NP* a ); 
     void add_array( const char* k, const NP* a ); 
-    static void AddEventConfigArray() ; 
+    static void AddEventConfigArray(int idx) ; 
 
 
     // save methods not const as call gather
@@ -423,6 +438,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void save(const char* base, const char* reldir ); 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
+
+    bool hasIndex() const ; 
     const char* getOutputDir(const char* base_=nullptr) const ; 
 
     static const char* RunDir( const char* base_=nullptr ); 
@@ -461,7 +478,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descLocalPhoton(unsigned max_print=10) const ; 
     std::string descFramePhoton(unsigned max_print=10) const ; 
     std::string descInputPhoton() const ; 
-    static std::string DescInputPhoton() ; 
+    static std::string DescInputPhoton(int idx) ; 
     std::string descFull(unsigned max_print=10) const ; 
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 

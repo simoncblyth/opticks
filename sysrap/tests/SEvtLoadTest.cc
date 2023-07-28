@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     if(rerun == false)
     {  
         SEvt::SetReldir(reldir);  
-        evt = SEvt::Create();        
+        evt = SEvt::Create(0);        
     }   
     else
     {   

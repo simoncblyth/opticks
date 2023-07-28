@@ -41,7 +41,7 @@ inline G4ThreeVector U4LambertianRand(const G4ThreeVector& normal)
 
     u_exitloop = G4UniformRand() ;
 #ifdef DEBUG_TAG
-    SEvt::AddTag(U4Stack_LambertianRand, u_exitloop ); 
+    SEvt::AddTag(1, U4Stack_LambertianRand, u_exitloop ); 
 #endif  
 
   } while (!(u_exitloop < ndotv) && (count < max_trials));

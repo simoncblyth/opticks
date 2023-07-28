@@ -478,7 +478,7 @@ void QSimTest::mock_propagate()
 
     NP* p = sphoton::make_ephoton_array(num); 
 
-    SEvt* evt = SEvt::Get(); 
+    SEvt* evt = SEvt::Get(0); 
     assert( evt ); 
     evt->setInputPhoton(p);  
     evt->setFramePlaceholder() ; 
@@ -570,7 +570,7 @@ must be done prior to QEvent::init which happens when QSim is instanciated.
 
 void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
 {
-    SEvt* sev = SEvt::Get();
+    SEvt* sev = SEvt::Get(0);
     LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
     assert(sev == nullptr); 
 

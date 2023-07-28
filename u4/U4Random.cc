@@ -464,7 +464,7 @@ double U4Random::flat()
             }
         }
 
-        SEvt::AddTag(stack, f );  
+        SEvt::AddTag(1, stack, f );  
     }
 
 
@@ -490,13 +490,13 @@ void U4Random::check_cursor_vs_tagslot()
     assert(m_seq_index > -1) ;  // must not call when disabled, use G4UniformRand to use standard engine
     int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
 
-    if(SEvt::Exists() == false)
+    if(SEvt::Exists(1) == false)
     {
-        LOG(error) << " SEvt::Exists() false : cannot make this check " ; 
+        LOG(error) << " SEvt::Exists(1) false : cannot make this check " ; 
         return ; 
     }
 
-    int slot = SEvt::GetTagSlot(); 
+    int slot = SEvt::GetTagSlot(1); 
     bool cursor_slot_match = cursor == slot ;  
 
     //LOG(info) << " m_seq_index " << m_seq_index << " cursor " << cursor << " slot " << slot << " cursor_slot_match " << cursor_slot_match ; 

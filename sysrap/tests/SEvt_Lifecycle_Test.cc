@@ -7,10 +7,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(); 
+    SEvt* evt = SEvt::Create(0); 
     assert(evt); 
 
-    bool ip = SEvt::HasInputPhoton() ; 
+    std::cout << SEvt::DescINSTANCE() ; 
+
+
+    bool ip = SEvt::HasInputPhoton(0) ; 
     sframe fr = sframe::Fabricate(0.f,0.f,1000.f) ; 
     evt->setFrame(fr); 
 
@@ -19,9 +22,9 @@ int main(int argc, char** argv)
         if(!ip) SEvt::AddTorchGenstep(); 
 
         SEvt::BeginOfEvent(i);  // setIndex and does genstep setup for input photons
-        assert( SEvt::Get() == evt ); 
+        assert( SEvt::Get(0) == evt ); 
 
-        int npc = SEvt::GetNumPhotonCollected() ; 
+        int npc = SEvt::GetNumPhotonCollected(0) ; 
         for(int j=0 ; j < npc ; j++)
         { 
             int track_id = j ; 
@@ -50,7 +53,7 @@ int main(int argc, char** argv)
 
         SEvt::Save(); 
         SEvt::Clear(); 
-        assert( SEvt::Get() == evt ); 
+        assert( SEvt::Get(0) == evt ); 
     }
 
     std::cout << evt->descDbg() ; 

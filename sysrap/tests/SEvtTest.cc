@@ -12,7 +12,8 @@
 
 void test_AddGenstep()
 {
-   SEvt evt ; 
+   SEvt* evt = SEvt::Create(0) ; 
+   assert( SEvt::Get(0) == evt );  
 
    for(unsigned i=0 ; i < 10 ; i++)
    {
@@ -24,7 +25,7 @@ void test_AddGenstep()
        SEvt::AddGenstep(q);    
    }
 
-   std::cout << SEvt::Get()->desc() << std::endl ; 
+   std::cout << SEvt::Get(0)->desc() << std::endl ; 
 }
 
 
@@ -38,7 +39,7 @@ void test_LifeCycle()
     SEventConfig::SetMaxRec(max_bounce+1); 
     SEventConfig::SetMaxSeq(max_bounce+1); 
 
-    SEvt sev ; 
+    SEvt* evt = SEvt::Create(0) ; 
 
     SEvt::SetIndex(-214); 
     SEvt::UnsetIndex(); 
@@ -47,24 +48,24 @@ void test_LifeCycle()
     gs.set_numphoton(1) ; 
     gs.set_gentype(OpticksGenstep_TORCH); 
 
-    sev.addGenstep(gs);  
+    evt->addGenstep(gs);  
 
     spho label = {0,0,0,{0,0,0,0}} ; 
 
-    sev.beginPhoton(label); 
+    evt->beginPhoton(label); 
 
     int bounce0 = 0 ; 
     int bounce1 = 0 ; 
 
-    bounce0 = sev.slot[label.id] ;  
-    sev.pointPhoton(label);  
-    bounce1 = sev.slot[label.id] ;  
+    bounce0 = evt->slot[label.id] ;  
+    evt->pointPhoton(label);  
+    bounce1 = evt->slot[label.id] ;  
     assert( bounce1 == bounce0 + 1 ); 
 
     std::cout 
          << " i " << std::setw(3) << -1
          << " bounce0 " << std::setw(3) << bounce0 
-         << " : " << sev.current_ctx.p.descFlag() 
+         << " : " << evt->current_ctx.p.descFlag() 
          << std::endl
          ; 
 
@@ -90,25 +91,25 @@ void test_LifeCycle()
     for(int i=0 ; i < int(history.size()) ; i++)
     {   
         unsigned flag = history[i] ; 
-        sev.current_ctx.p.set_flag(flag); 
+        evt->current_ctx.p.set_flag(flag); 
 
-        bounce0 = sev.slot[label.id] ;  
-        sev.pointPhoton(label);  
-        bounce1 = sev.slot[label.id] ;  
+        bounce0 = evt->slot[label.id] ;  
+        evt->pointPhoton(label);  
+        bounce1 = evt->slot[label.id] ;  
         assert( bounce1 == bounce0 + 1 ); 
 
         std::cout 
              << " i " << std::setw(3) << i 
              << " bounce0 " << std::setw(3) << bounce0 
-             << " : " << sev.current_ctx.p.descFlag() 
+             << " : " << evt->current_ctx.p.descFlag() 
              << std::endl
              ; 
     }
 
-    sev.finalPhoton(label); 
+    evt->finalPhoton(label); 
 
-    sev.save("$TMP/SEvtTest");
-    LOG(info) << sev.desc() ;
+    evt->save("$TMP/SEvtTest");
+    LOG(info) << evt->desc() ;
 }
 
 void test_InputPhoton()
@@ -116,10 +117,10 @@ void test_InputPhoton()
     const char* ipf = SEventConfig::InputPhotonFrame();  
     if( ipf == nullptr) return ; 
 
-    SEvt sev ; 
-    LOG(info) << sev.desc() ;
+    SEvt* evt = SEvt::Create(0) ; 
+    LOG(info) << evt->desc() ;
 
-    NP* ip = sev.getInputPhoton(); 
+    NP* ip = evt->getInputPhoton(); 
     
     const char* FOLD = SPath::Resolve("$TMP/SEvtTest/test_InputPhoton", DIRPATH); 
     ip->save(FOLD, SStr::Name("ipf", ipf, ".npy") ); 
@@ -154,7 +155,7 @@ Only after the save does the savedir get set.
 
 void test_savedir()
 {
-    SEvt* evt = SEvt::Create();
+    SEvt* evt = SEvt::Create(0);
 
     //LOG(info) << evt->desc() ;
 
