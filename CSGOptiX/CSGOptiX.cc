@@ -1183,7 +1183,7 @@ const NP* CSGOptiX::getIAS_Instances(unsigned ias_idx) const
     const NP* instances = nullptr ; 
 #if OPTIX_VERSION < 70000
 #else
-    instances = sbt ? sbt->getIAS_instances(ias_idx) : nullptr ; 
+    instances = sbt ? sbt->getIAS_Instances(ias_idx) : nullptr ; 
 #endif
     return instances ; 
 }
