@@ -533,7 +533,7 @@ void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>&
         int ii = int(i) - int(middle) ; 
 
         int gas_idx = solid_selection[i] ; 
-        int sensor_identifier = -1 ; 
+        int sensor_identifier = -1 ;  // AS UNSIGNED THIS EXCEEDS OptixInstance instanceId linit 
         int sensor_index = -1 ; 
  
         qat4 q ; 

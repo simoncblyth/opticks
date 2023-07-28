@@ -12,6 +12,11 @@ Setup
     ./G4CXOpticks_setGeometry_Test.sh
 
 
+Subsequently find the problem is not specific to that geometry, getting 
+it with other geom that has worked recently. 
+
+Likely cause is out of range instanceId. 
+
 
 Issue
 -------

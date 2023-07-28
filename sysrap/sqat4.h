@@ -359,21 +359,34 @@ struct qat4
     * July 2023 : QPMT needs lpmtid GPU side so changing from ins_idx to sensor_identifier
     * HMM: there are -1 in there, which as unsigned becomes  ~0u 
 
+    YEP: that ~0u may be cause of notes/issues/unspecified_launch_failure_with_simpleLArTPC.rst
+
     **/
 
-    QAT4_METHOD unsigned get_IAS_OptixInstance_instanceId() const 
+    QAT4_METHOD int get_IAS_OptixInstance_instanceId() const 
     {
         //const unsigned& ins_idx = q0.u.w ;  
         //return ins_idx ; 
-        const unsigned& sensor_identifier = q2.u.w ; 
+        const int& sensor_identifier = q2.i.w ; 
+        assert( sensor_identifier >= 0 );  // 0 means not a sensor GPU side, so subtract 1 to get actual sensorId
         return sensor_identifier ; 
     }
 
-    QAT4_METHOD void setIdentity(int ins_idx, int gas_idx, int sensor_identifier, int sensor_index )
+    /**
+    sqat4::setIdentity
+    -------------------
+
+    Canonical usage from CSGFoundry::addInstance  where sensor_identifier gets +1 
+    with 0 meaning not a sensor. 
+    **/ 
+
+    QAT4_METHOD void setIdentity(int ins_idx, int gas_idx, int sensor_identifier_1, int sensor_index )
     {
+        assert( sensor_identifier_1 >= 0 ); 
+
         q0.i.w = ins_idx ;             // formerly unsigned and "+ 1"
         q1.i.w = gas_idx ; 
-        q2.i.w = sensor_identifier ; 
+        q2.i.w = sensor_identifier_1 ;   // now +1 with 0 meaning not-a-sensor 
         q3.i.w = sensor_index ; 
     }
     QAT4_METHOD void clearIdentity() // prepare for matrix multiply by clearing any auxiliary info in the "spare" 4th column 

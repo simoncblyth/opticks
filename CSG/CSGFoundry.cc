@@ -1697,14 +1697,24 @@ Used for example from
 1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
 2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
 
+stree.h/snode.h uses sensor_identifier -1 to indicate not a sensor, but 
+that is not convenient on GPU due to OptixInstance.instanceId limits.
+Here here transition to adding 1 and treating 0 as not a sensor. 
+
+
 **/
 
 void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index )
 {
+    assert( sensor_identifier >= -1 ); 
+    unsigned sensor_identifier_1 = sensor_identifier + 1 ; 
+    assert( sensor_identifier_1 >= 0 ); 
+
+
     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
     int ins_idx = int(inst.size()) ;
 
-    instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index );
+    instance.setIdentity( ins_idx, gas_idx, sensor_identifier_1, sensor_index );
 
     LOG(debug) 
         << " ins_idx " << ins_idx 

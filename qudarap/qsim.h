@@ -1470,7 +1470,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
 {
     const sphoton& p = ctx.p ; 
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal 
-    int lpmtid = ctx.prd->identity() ;  
+    int lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor  
     float minus_cos_theta = dot(p.mom, *normal); 
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
 
