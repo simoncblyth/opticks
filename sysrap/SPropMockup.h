@@ -61,6 +61,7 @@ inline const NP* SPropMockup::Combination(const char* base, const char* relp )  
 {
     const char* path = spath::Resolve(base, relp); 
     std::cout
+        << "SPropMockup::Combination"
         << " base " << base  
         << " relp " << relp  
         << " spath::Resolve to path " << path  
@@ -68,7 +69,17 @@ inline const NP* SPropMockup::Combination(const char* base, const char* relp )  
         ;
 
     if( path == nullptr ) return nullptr ;  // malformed path ?
-    NP* a = NP::Load(path) ; 
+
+    bool exists = NP::Exists(path) ; 
+    std::cout
+        << "SPropMockup::Combination"
+        << " path " << ( path ? path : "-" )
+        << " exists " << ( exists ? "YES" : "NO " )
+        << std::endl 
+        ;
+
+
+    NP* a = exists ? NP::Load(path) : nullptr ; 
     if( a == nullptr ) return nullptr ;  // non-existing path 
 
     bool is_double = strcmp( a->dtype, "<f8") == 0; 

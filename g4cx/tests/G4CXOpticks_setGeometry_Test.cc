@@ -8,7 +8,6 @@ Action depends on envvars such as OpticksGDMLPath, see G4CXOpticks::setGeometry
 
 #include "OPTICKS_LOG.hh"
 #include "G4CXOpticks.hh"
-#include "SEvt.hh"
 
 int main(int argc, char** argv)
 {
