@@ -6,7 +6,7 @@ rsync.sh
 
 Usage::
 
-   
+   source ~/opticks/bin/rsync.sh /tmp/GEOM/V1J009/CSGOptiX   
 
 
 EOU

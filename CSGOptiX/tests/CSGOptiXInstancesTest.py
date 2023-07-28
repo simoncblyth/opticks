@@ -78,8 +78,8 @@ if __name__ == '__main__':
     print(repr(f))
     i = OptixInstance(f.instances)
 
-    
-
+    u_iid, n_iid = np.unique( i.instanceId, return_counts=True )  
+    assert n_iid[1:].max() == 1  # should only be 1 of each instanceId other than 0  
 
 
 

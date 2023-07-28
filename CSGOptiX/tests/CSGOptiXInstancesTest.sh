@@ -6,7 +6,11 @@ defarg="info_ana"
 arg=${1:-$defarg}
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-export FOLD=/tmp/GEOM/$GEOM/CSGOptiX
+
+#fold=/tmp/GEOM/$GEOM/CSGOptiX
+fold=$HOME/.opticks/GEOM/$GEOM/CSGOptiX
+
+export FOLD=$fold
 
 vars="BASH_SOURCE name FOLD"
 

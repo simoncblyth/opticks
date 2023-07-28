@@ -626,7 +626,14 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
         }
     }
 
-    if(cx) cx->save(dir) ; 
+    if(cx) 
+    {
+        cx->save(dir) ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " cx null " ; 
+    }
 
 
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
