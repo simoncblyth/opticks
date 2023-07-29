@@ -33,7 +33,7 @@ inline NPFold* S4Material::MakePropertyFold( const char* _mats, const char* _pro
 
         for(int j=0 ; j < num_props ; j++)
         {
-            const char* _prop = props[i].c_str() ; 
+            const char* _prop = props[j].c_str() ; 
             G4MaterialPropertyVector* mpv = mpt->GetProperty(_prop) ; 
             NP* arr = S4MaterialPropertyVector::ConvertToArray(mpv );          
 
