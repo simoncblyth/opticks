@@ -3124,6 +3124,10 @@ then the directory is suffixed with the index::
    
 HMM: what about a save following a gather ? does the download happen twice ?
 
+
+Note that now that have *instance* do not actually need to fiddle
+around with paired index.
+
 **/
 
 void SEvt::save(const char* dir_) 
