@@ -164,14 +164,14 @@ void CSGOptiX::SimtraceMain()
     SEventConfig::SetRGMode("simtrace"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-    cx->simtrace(); 
+    cx->simtrace(0); 
 }
 void CSGOptiX::SimulateMain() // static
 {
     SEventConfig::SetRGMode("simulate"); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-    cx->simulate(); 
+    cx->simulate(0); 
 }
 
 /**
@@ -545,10 +545,10 @@ uses QSim::simulate to do genstep setup prior to calling
 CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 
 **/
-double CSGOptiX::simulate()
+double CSGOptiX::simulate(int eventID)
 {
     assert(sim); 
-    double dt = sim->simulate() ;
+    double dt = sim->simulate(eventID) ;
     return dt ; 
 }
 
@@ -562,10 +562,10 @@ CSGOptiX::simtrace_launch via the SCSGOptiX.h protocol
 
 **/
 
-double CSGOptiX::simtrace()
+double CSGOptiX::simtrace(int eventID)
 {
     assert(sim); 
-    double dt = sim->simtrace() ;
+    double dt = sim->simtrace(eventID) ;
     return dt ; 
 }
 
@@ -574,9 +574,9 @@ double CSGOptiX::proceed()
     double dt = -1. ; 
     switch(SEventConfig::RGMode())
     {
-        case SRG_SIMULATE: dt = simulate() ; break ; 
+        case SRG_SIMULATE: dt = simulate(0) ; break ; 
         case SRG_RENDER:   dt = render()   ; break ; 
-        case SRG_SIMTRACE: dt = simtrace() ; break ; 
+        case SRG_SIMTRACE: dt = simtrace(0) ; break ; 
     }
     return dt ; 
 }

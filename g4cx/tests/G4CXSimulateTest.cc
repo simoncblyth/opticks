@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  
 
-    cx->simulate(); 
+    cx->simulate(0); 
     cudaDeviceSynchronize(); 
     cx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
 

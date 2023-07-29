@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     SEventConfig::SetRGModeSimtrace();   
 
     G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  
-    cx->simtrace(); 
+    cx->simtrace(0); 
 
     cudaDeviceSynchronize(); 
 

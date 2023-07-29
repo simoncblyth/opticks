@@ -92,8 +92,8 @@ private:
 public:
     void setLauncher(SCSGOptiX* cx_ ); 
 
-    double simulate();  // via cx launch 
-    double simtrace();
+    double simulate(int eventID);  // via cx launch 
+    double simtrace(int eventID);
 
 
     qsim* getDevicePtr() const ; 

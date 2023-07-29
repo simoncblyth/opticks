@@ -432,7 +432,7 @@ TODO: compare with B side to see if that makes sense when viewed from A and B di
 
 const bool G4CXOpticks::simulate_saveEvent = ssys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
-void G4CXOpticks::simulate()
+void G4CXOpticks::simulate(int eventID)
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
     if(NoGPU) return ; 
@@ -460,7 +460,7 @@ void G4CXOpticks::simulate()
 
     //]
 
-    qs->simulate();   // GPU launch doing generation and simulation here 
+    qs->simulate(eventID);   // GPU launch doing generation and simulation here 
 
     sev->gather();   // downloads components configured by SEventConfig::CompMask 
 
@@ -492,7 +492,7 @@ void G4CXOpticks::simulate()
 
 
 
-void G4CXOpticks::simtrace()
+void G4CXOpticks::simtrace(int eventID)
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
     if(NoGPU) return ; 
@@ -504,7 +504,7 @@ void G4CXOpticks::simtrace()
 
     // setupFrame();   // EXPT: try moving this to being done from setGeometry
 
-    qs->simtrace(); 
+    qs->simtrace(eventID); 
     LOG(LEVEL) << "]" ; 
 }
 

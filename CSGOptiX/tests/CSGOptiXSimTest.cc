@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 
     QSim* qs = cx->sim ; 
 
-    qs->simulate();  // this internally calls CSGOptiX::simulate following genstep uploading by QSim
+    qs->simulate(0);  // this internally calls CSGOptiX::simulate following genstep uploading by QSim
 
     cudaDeviceSynchronize(); 
 

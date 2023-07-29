@@ -304,7 +304,7 @@ the launch.
 
 **/
 
-double QSim::simulate()
+double QSim::simulate(int eventID)
 {
     LOG(LEVEL); 
 
@@ -312,7 +312,7 @@ double QSim::simulate()
     if( event == nullptr ) std::raise(SIGINT) ; 
     if( event == nullptr ) return -1. ; 
 
-    SEvt::BeginOfEvent();  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+    SEvt::BeginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     LOG(LEVEL) << desc() ;  
     int rc = event->setGenstep() ; 
@@ -320,7 +320,8 @@ double QSim::simulate()
 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
 
-    SEvt::EndOfEvent(); 
+    SEvt::EndOfEvent(eventID);
+ 
     return dt ; 
 }
 
@@ -334,15 +335,15 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 **/
 
 
-double QSim::simtrace()
+double QSim::simtrace(int eventID)
 {
-    SEvt::BeginOfEvent(); 
+    SEvt::BeginOfEvent(eventID); 
 
     int rc = event->setGenstep(); 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
 
-    SEvt::EndOfEvent(); 
+    SEvt::EndOfEvent(eventID); 
     return dt ; 
 }
 

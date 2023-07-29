@@ -156,8 +156,8 @@ private:
     const char* getRenderStemDefault() const ; 
  public: 
     double render(const char* name=nullptr);   // formerly render_snap
-    double simtrace(); 
-    double simulate(); 
+    double simtrace(int eventID); 
+    double simulate(int eventID); 
     double proceed(); 
  private: 
     // these launch  methods fulfil SCSGOptix protocal base

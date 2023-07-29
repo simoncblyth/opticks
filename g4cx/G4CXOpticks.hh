@@ -78,8 +78,8 @@ private:
     void setupFrame(); 
     static const bool simulate_saveEvent ; // G4CXOpticks__simulate_saveEvent
 public: 
-    void simulate(); 
-    void simtrace(); 
+    void simulate(int eventID); 
+    void simtrace(int eventID); 
     void render(); 
 
     void saveEvent() const ; 

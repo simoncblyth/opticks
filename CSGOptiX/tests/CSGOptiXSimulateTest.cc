@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
     SEvt::AddCarrierGenstep(); 
 
-    qs->simulate(); 
+    qs->simulate(0); 
 
     cudaDeviceSynchronize(); 
 

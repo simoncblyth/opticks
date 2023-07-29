@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     if(!SEvt::HasInputPhoton(0)) SEvt::AddTorchGenstep();      
 
-    qs->simulate();  
+    qs->simulate(0);  
 
     cudaDeviceSynchronize(); 
 

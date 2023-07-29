@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     // Not so easy as which frame to use depends on running mode and user input 
     // so best to not hide it. 
 
-    cx->simtrace();  
+    cx->simtrace(0);  
 
     cudaDeviceSynchronize(); 
 
