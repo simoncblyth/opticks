@@ -407,7 +407,9 @@ set(HEADERS
     SSim.hh
     SPropMockup.h
 
+    S4Material.h
     S4MaterialPropertyVector.h
+
     SNameOrder.h
     S4.h 
     S4RandomMonitor.h
