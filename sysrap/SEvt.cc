@@ -785,6 +785,7 @@ SEvt* SEvt::Get(int idx)  // static
 }
 void SEvt::Set(int idx, SEvt* inst) // static
 {
+    LOG(LEVEL) << " idx " << idx  ; 
     assert( idx == 0 || idx == 1 );    
     INSTANCES[idx] = inst ;
 }
@@ -792,6 +793,7 @@ void SEvt::Set(int idx, SEvt* inst) // static
 
 SEvt* SEvt::Create(int idx)  // static
 { 
+    LOG(LEVEL) << " idx " << idx  ; 
     assert( idx == 0 || idx == 1); 
     SEvt* evt = new SEvt ; 
     evt->setInstance(idx) ; 
@@ -805,10 +807,12 @@ bool SEvt::Exists(int idx)  // static
 } 
 SEvt* SEvt::CreateOrReuse(int idx) 
 {  
+    LOG(LEVEL) << " idx " << idx  ; 
     return Exists(idx) ? Get(idx) : Create(idx) ; 
 }
 SEvt* SEvt::HighLevelCreateOrReuse(int idx)
 {
+    LOG(LEVEL) << " idx " << idx  ; 
     return Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
 }
 
@@ -838,28 +842,29 @@ Creates 0, 1 OR 2 SEvt depending on SEventConfig::IntegrationMode()::
 
 void SEvt::CreateOrReuse()
 {
-    int imode = SEventConfig::IntegrationMode() ; 
+    int integrationMode = SEventConfig::IntegrationMode() ; 
+    LOG(LEVEL) << " integrationMode " << integrationMode  ; 
 
-    if( imode == 0 )
+    if( integrationMode == 0 )
     {
-        LOG(LEVEL) << " imode " << imode << " no SEvt created" ; 
+        CreateOrReuse(ECPU);          // HMM: is this needed, for metadata recording ? 
     }
-    else if( imode == 1 )   // GPU optical simulation only
+    else if( integrationMode == 1 )   // GPU optical simulation only
     {
-        CreateOrReuse(0); 
+        CreateOrReuse(EGPU); 
     }
-    else if( imode == 2 )   // CPU optical simulation only 
+    else if( integrationMode == 2 )   // CPU optical simulation only 
     {
-        CreateOrReuse(1); 
+        CreateOrReuse(ECPU); 
     }
-    else if( imode == 3 )  // both CPU and GPU optical simulation
+    else if( integrationMode == 3 )  // both CPU and GPU optical simulation
     {
-        CreateOrReuse(0);   // GPU
-        CreateOrReuse(1);   // CPU 
+        CreateOrReuse(EGPU); 
+        CreateOrReuse(ECPU); 
     }
     else
     {
-        LOG(fatal) << "unexpected imode " << imode ; 
+        LOG(fatal) << "unexpected integrationMode " << integrationMode ; 
         assert(0); 
     }
 }
