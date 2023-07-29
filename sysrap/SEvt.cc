@@ -3129,7 +3129,7 @@ HMM: what about a save following a gather ? does the download happen twice ?
 void SEvt::save(const char* dir_) 
 {
     const char* dir = getOutputDir(dir_); 
-    LOG(info) << " dir " << dir ; 
+    LOG(info) << " dir " << dir <<  " index " << index << " instance " << instance  ; 
     LOG(LEVEL) << descSaveDir(dir_) ; 
 
     LOG(LEVEL) << "[ gather " ; 
