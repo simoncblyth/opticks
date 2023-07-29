@@ -72,16 +72,20 @@ std::string SEvt::DescINSTANCE()  // static
     std::stringstream ss ; 
 
     ss << "SEvt::DescINSTANCE" 
+       << " Count() " << Count()
        << std::endl 
-      // << " INSTANCE     " << INSTANCE  
-       << " INSTANCES[0] " << INSTANCES[0] 
+       << " Exists(0) " << ( Exists(0) ? "YES" : "NO " )
        << std::endl 
-       << " INSTANCES[1] " << INSTANCES[1]
+       << " Exists(1) " << ( Exists(1) ? "YES" : "NO " )
        << std::endl 
        ;   
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+
+
 
 
 
@@ -785,20 +789,21 @@ SEvt* SEvt::Get(int idx)  // static
 }
 void SEvt::Set(int idx, SEvt* inst) // static
 {
-    LOG(LEVEL) << " idx " << idx  ; 
     assert( idx == 0 || idx == 1 );    
     INSTANCES[idx] = inst ;
+    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
 }
 
 
 SEvt* SEvt::Create(int idx)  // static
 { 
-    LOG(LEVEL) << " idx " << idx  ; 
     assert( idx == 0 || idx == 1); 
     SEvt* evt = new SEvt ; 
     evt->setInstance(idx) ; 
     INSTANCES[idx] = evt  ; 
-    return Get(idx) ; 
+    assert( Get(idx) == evt ); 
+    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
+    return evt  ; 
 }
 
 bool SEvt::Exists(int idx)  // static 
@@ -807,13 +812,15 @@ bool SEvt::Exists(int idx)  // static
 } 
 SEvt* SEvt::CreateOrReuse(int idx) 
 {  
-    LOG(LEVEL) << " idx " << idx  ; 
-    return Exists(idx) ? Get(idx) : Create(idx) ; 
+    SEvt* evt = Exists(idx) ? Get(idx) : Create(idx) ; 
+    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
+    return evt ; 
 }
 SEvt* SEvt::HighLevelCreateOrReuse(int idx)
 {
-    LOG(LEVEL) << " idx " << idx  ; 
-    return Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
+    SEvt* evt = Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
+    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
+    return evt ; 
 }
 
 
@@ -867,6 +874,7 @@ void SEvt::CreateOrReuse()
         LOG(fatal) << "unexpected integrationMode " << integrationMode ; 
         assert(0); 
     }
+    LOG(LEVEL) << DescINSTANCE()  ; 
 }
 
 
