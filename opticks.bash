@@ -60,6 +60,12 @@ GEOM grab
 GEOM get 
     synonym for grab  
 
+GEOM tmpget
+    rsync remote /tmp/$USER/opticks/GEOM/$GEOM dir  to local
+
+GEOM tmp 
+    change directory to /tmp/$USER/opticks/GEOM/$GEOM
+
 GEOM scp 
     scp GEOM.sh script to remote
 
@@ -103,13 +109,14 @@ GEOM(){
   base=.opticks/GEOM/$GEOM
 
 
-  local args="vi/grab/scp/top/cf/ss/st/info"
+  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/cf/ss/st/info"
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
   local ggeo=/tmp/$USER/opticks/GGeo 
+  local tmp=/tmp/$USER/opticks/GEOM/$GEOM
   local defarg="vi"
   local arg=${1:-$defarg} 
-  local vars="FUNCNAME defarg arg args script base GEOM geomdir" 
+  local vars="FUNCNAME defarg arg args script base GEOM geomdir tmp" 
 
   if [ "$arg" == "vi" ]; then 
      cmd="vi $HOME/$script"  
@@ -117,6 +124,10 @@ GEOM(){
      cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
   elif [ "$arg" == "ggeo" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $ggeo"
+  elif [ "$arg" == "tmpget" ]; then  
+     cmd="source $OPTICKS_HOME/bin/rsync.sh $tmp"
+  elif [ "$arg" == "tmp" ]; then  
+     cmd="cd $tmp"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
   elif [ "$arg" == "top" ]; then  

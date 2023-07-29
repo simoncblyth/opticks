@@ -542,10 +542,19 @@ void SEvt::addFrameGenstep()
     }   
     else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
     {   
-        assert( genstep.size() == 0 ) ; // cannot mix input photon running with other genstep running  
+        int prior_genstep = genstep.size() ;  
+        bool prior_genstep_expected =  prior_genstep == 0 ;
+
+        LOG_IF(fatal, !prior_genstep_expected ) 
+            << " CANNOT MIX input photon running with other genstep running  "
+            << " index " << index
+            << " instance " << instance
+            << " prior_genstep_expected " << ( prior_genstep_expected ? "YES" : "NO " )
+            << " prior_genstep " << prior_genstep 
+            ; 
+        assert( prior_genstep_expected ) ;
 
         addGenstep(MakeInputPhotonGenstep(input_photon, frame)); 
-
         // transformInputPhoton formerly done here, but thats too late for junosw
     }   
 }
