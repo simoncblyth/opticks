@@ -16,6 +16,9 @@ int main(int argc, char** argv)
     const CSGFoundry* fd = CSGFoundry::Load(cfbase);
     sev->setGeo(fd); 
 
+    assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)
+    assert( sev == SEvt::Get(sev->instance) );  // check the loaded SEvt got slotted in expected slot 
+
     std::cout << sev->descFull() ; 
 
     unsigned num_hit = sev->getNumHit(); 
@@ -39,8 +42,10 @@ int main(int argc, char** argv)
     std::cout << " ht " << ht.desc() << std::endl ; 
 
 
+
+
     U4Hit hit2 ; 
-    U4HitGet::FromEvt(hit2, idx ); 
+    U4HitGet::FromEvt(hit2, idx, sev->instance ); 
     std::cout << " hit2 " << hit2.desc() << std::endl ; 
 
   

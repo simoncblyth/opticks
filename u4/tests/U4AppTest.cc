@@ -19,15 +19,15 @@ int main(int argc, char** argv)
     SEvt::SetReldir(desc.c_str() ); 
 
     SEventConfig::SetStandardFullDebug(); 
-    SEvt sev ;    // SEvt must be instanciated before QEvent
-    const char* outdir = sev.getOutputDir(); 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ;    // SEvt must be instanciated before QEvent
+    const char* outdir = evt->getOutputDir(); 
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 
  
-    sev.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
+    evt->random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
 
     sframe fr = sframe::Load_("$A_FOLD/sframe.npy");  
-    sev.setFrame(fr);   // setFrame tees up Gensteps 
+    evt->setFrame(fr);   // setFrame tees up Gensteps 
 
     // NB: dependency on A_FOLD means that when changing GEOM is is necessary 
     // to run the A-side first before this B-side in order to write the $A_FOLD/sframe.npy
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     rnd.saveProblemIdx(outdir); 
 
-    sev.save(); 
+    evt->save(); 
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 
 

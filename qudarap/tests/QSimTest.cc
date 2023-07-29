@@ -387,7 +387,9 @@ void QSimTest::generate_photon()
     LOG(info) << "[ gs_config " << gs_config ; 
     const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
 
-    SEvt evt ; 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
+    assert(evt); 
+
     SEvt::AddGenstep(gs); 
 
     qs->generate_photon();  
@@ -702,7 +704,8 @@ int main(int argc, char** argv)
 
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
-    SEvt evt ; 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
+    assert(evt);  
 
     QSimTest qst(type, num, prd)  ; 
     qst.main(); 

@@ -40,7 +40,7 @@ void X4Simtrace::simtrace()
     SEventConfig::SetRGModeSimtrace();
     frame.set_hostside_simtrace();  
 
-    evt = new SEvt ; 
+    evt = SEvt::Create(0) ; 
     evt->setFrame(frame);  
 
     LOG(LEVEL) << " evt.simtrace.size " << evt->simtrace.size() ; 

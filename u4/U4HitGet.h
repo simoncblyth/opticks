@@ -19,7 +19,9 @@ See: u4/tests/U4HitTest.cc
 struct U4HitGet
 {
     static void ConvertFromPhoton(U4Hit& hit, const sphoton& global, const sphoton& local, const sphit& ht ); 
-    static void FromEvt(U4Hit& hit, unsigned idx );  
+    static void FromEvt_EGPU(U4Hit& hit, unsigned idx );  
+    static void FromEvt_ECPU(U4Hit& hit, unsigned idx );  
+    static void FromEvt(U4Hit& hit, unsigned idx, int eidx );  
 }; 
 
 inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local, const sphit& ht )
@@ -49,10 +51,13 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
     hit.is_reemission = global.is_reemit() ; 
 }
 
-inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )
+
+inline void U4HitGet::FromEvt_EGPU(U4Hit& hit, unsigned idx ){ FromEvt(hit, idx, SEvt::EGPU); }
+inline void U4HitGet::FromEvt_ECPU(U4Hit& hit, unsigned idx ){ FromEvt(hit, idx, SEvt::ECPU); }
+inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx, int eidx )
 {
     sphoton global, local  ;
-    SEvt* sev = SEvt::Get_EGPU(); 
+    SEvt* sev = SEvt::Get(eidx); 
     sev->getHit( global, idx);
 
     sphit ht ; 

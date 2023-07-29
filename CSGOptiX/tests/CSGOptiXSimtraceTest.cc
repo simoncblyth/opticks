@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
     SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
    
-    SEvt* evt = new SEvt ; 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
  
     CSGFoundry* fd = CSGFoundry::Load(); 
 

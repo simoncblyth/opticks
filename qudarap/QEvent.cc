@@ -67,7 +67,7 @@ Holds:
 
 QEvent::QEvent()
     :
-    sev(SEvt::Get(0)),
+    sev(SEvt::Get_EGPU()),
     selector(sev ? sev->selector : nullptr),
     evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),

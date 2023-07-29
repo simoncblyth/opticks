@@ -20,7 +20,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt evt ; 
+    SEvt* evt = SEvt::Create(0) ;
+    assert( evt );  
 
     LOG(info) << "[ SSim::Load " ; 
     const SSim* sim = SSim::Load(); 

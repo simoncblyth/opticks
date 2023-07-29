@@ -24,7 +24,7 @@ CSGSimtrace::CSGSimtrace()
     geom(SSys::getenvvar("GEOM", "nmskSolidMaskTail")),  
     sim(SSim::Create()),
     fd(CSGFoundry::Load()),
-    evt(new SEvt),
+    evt(SEvt::Create(0)),
     outdir(evt->getOutputDir()), 
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z')),

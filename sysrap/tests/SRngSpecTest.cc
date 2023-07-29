@@ -8,9 +8,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt evt ; 
-    LOG(info) << evt.brief() ; 
-
+    SEvt* evt = SEvt::Create(0) ; 
+    LOG(info) << evt->brief() ; 
 
     unsigned long long seed = 0ull ; 
     unsigned long long offset = 0ull ; 

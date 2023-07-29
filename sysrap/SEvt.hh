@@ -90,7 +90,10 @@ struct stimer ;
 struct SYSRAP_API SEvt : public SCompProvider
 {
     int cfgrc ; 
+
     int index ; 
+    int instance ; 
+
     uint64_t t_BeginOfEvent ; 
     uint64_t t_EndOfEvent ; 
     uint64_t t_PenultimatePoint ; 
@@ -169,6 +172,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int GIDX ; 
     static const int PIDX ; 
     static const int MISSING_INDEX ; 
+    static const int MISSING_INSTANCE ; 
     static const int DEBUG_CLEAR ; 
 
     //static SEvt* INSTANCE ; 
@@ -177,10 +181,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     static std::array<SEvt*, MAX_INSTANCE> INSTANCES ; 
     static std::string DescINSTANCE(); 
 
-
+private:
     SEvt(); 
     void init(); 
 
+public:
     static const char* GetSaveDir(int idx) ; 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
@@ -244,6 +249,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static SEvt* Get_EGPU() ; 
     static SEvt* Get_ECPU() ; 
     static SEvt* Get(int idx) ; 
+    static void Set(int idx, SEvt* inst); 
+
     static SEvt* Create(int idx) ; 
     static SEvt* CreateOrReuse(int idx) ; 
     static SEvt* HighLevelCreateOrReuse(int idx) ; 
@@ -309,6 +316,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int GetNumPhotonFromGenstep(int idx); 
     static int GetNumGenstepFromGenstep(int idx); 
     static int GetNumHit(int idx) ; 
+    static int GetNumHit_EGPU() ; 
+    static int GetNumHit_ECPU() ; 
 
     static int GetNumGenstepFromGenstep(); 
     static int GetNumPhotonFromGenstep(); 
@@ -330,9 +339,14 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void setIndex(int index_) ;  
     void endIndex(int index_) ;  
+
     int  getIndex() const ; 
     void incrementIndex() ;  
     void unsetIndex() ;  
+
+    void setInstance(int instance); 
+    int getInstance() const ; 
+
 
     unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
     unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
@@ -447,11 +461,15 @@ struct SYSRAP_API SEvt : public SCompProvider
     void saveExtra( const char* name, const NP* a ) const ; 
 
     int  load() ; 
+    void onload(); 
+
 
     void save(const char* base, const char* reldir ); 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
 
     bool hasIndex() const ; 
+    bool hasInstance() const ; 
+
     const char* getOutputDir(const char* base_=nullptr) const ; 
 
     static const char* RunDir( const char* base_=nullptr ); 

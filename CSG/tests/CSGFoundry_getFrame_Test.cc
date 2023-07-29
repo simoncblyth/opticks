@@ -12,9 +12,9 @@
 const char* FOLD = getenv("FOLD") ; 
 
 
-int test_InputPhoton(SEvt& sev, const sframe& fr )
+int test_InputPhoton(SEvt* evt, const sframe& fr )
 {
-    NP* ip = sev.getInputPhoton_(); 
+    NP* ip = evt->getInputPhoton_(); 
     if(ip == nullptr) return 0 ;  
 
     NP* ipt0 = fr.transform_photon_m2w(ip, false)  ; // normalize:false
@@ -28,8 +28,8 @@ int test_InputPhoton(SEvt& sev, const sframe& fr )
     ipt0->save(FOLD, "ipt0.npy"); 
     ipt1->save(FOLD, "ipt1.npy"); 
 
-    sev.setFrame(fr); 
-    NP* ipt2 = sev.getInputPhoton() ; 
+    evt->setFrame(fr); 
+    NP* ipt2 = evt->getInputPhoton() ; 
     ipt2->save(FOLD, "ipt2.npy"); 
 
     return 0 ; 
@@ -56,9 +56,9 @@ int main(int argc, char** argv)
     fr.save(FOLD); 
     fr.save_extras(FOLD); 
 
-    SEvt sev ;  
+    SEvt* evt = SEvt::Create(0) ;  
 
-    int rc = test_InputPhoton(sev, fr ); 
+    int rc = test_InputPhoton(evt, fr ); 
 
     return rc ; 
 }

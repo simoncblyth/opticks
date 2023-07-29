@@ -129,7 +129,7 @@ inline void SSimtrace::simtrace()
     // especially SEvt::setFrame_HostsideSimtrace which 
     // generates simtrace photons
 
-    evt = new SEvt ; 
+    evt = SEvt::Create(0) ; 
     evt->setFrame(frame);    // 
 
     SEvt::BeginOfEvent(0); 

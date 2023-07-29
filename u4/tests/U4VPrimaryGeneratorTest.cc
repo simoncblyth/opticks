@@ -8,7 +8,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt evt ; 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
+    assert(evt); 
+
     SEvt::AddTorchGenstep(); 
 
     G4Event* event = new G4Event ; 

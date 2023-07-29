@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     SEventConfig::SetCompMask("genstep,photon,hit,domain,record,rec,seq");  // NB no "simtrace" here
 
-    SEvt evt ;  // holds gensteps and output NPFold of component arrays
+    SEvt* evt = SEvt::Create(SEvt::EGPU)  ;  // holds gensteps and output NPFold of component arrays
     SEvt::AddCarrierGenstep();   // normally gensteps added after geometry setup, but can be before in this simple test 
 
     // TODO: this is missing setFrame
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    evt.save();  // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry  
+    evt->save();  // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry  
  
     return 0 ; 
 }

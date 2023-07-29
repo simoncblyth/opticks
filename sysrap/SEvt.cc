@@ -54,6 +54,7 @@ const plog::Severity SEvt::LEVEL = SLOG::EnvLevel("SEvt", "DEBUG");
 const int SEvt::GIDX = ssys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = ssys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
+const int SEvt::MISSING_INSTANCE = std::numeric_limits<int>::max() ; 
 const int SEvt::DEBUG_CLEAR = ssys::getenvint("SEvt__DEBUG_CLEAR",-1) ;
 
 
@@ -63,7 +64,6 @@ A: Thats done only when using SEvt::HighLevelCreate via envvar expansion.
 **/
 
 
-// SEvt* SEvt::INSTANCE = nullptr ; 
 
 std::array<SEvt*, SEvt::MAX_INSTANCE> SEvt::INSTANCES = {{ nullptr, nullptr }} ; 
 
@@ -103,6 +103,7 @@ SEvt::SEvt()
     :
     cfgrc(SEventConfig::Initialize()),  
     index(MISSING_INDEX),
+    instance(MISSING_INSTANCE),
     t_BeginOfEvent(0),
     t_EndOfEvent(0),
     t_PenultimatePoint(0),
@@ -756,6 +757,9 @@ NP* SEvt::gatherDomain() const
     // as domain will always be available
     domain->set_meta<unsigned>("hitmask", selector->hitmask );
     domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
+    domain->set_meta<int>("index", index); 
+    domain->set_meta<int>("instance", instance); 
+
     return domain ;
 }
 
@@ -779,10 +783,19 @@ SEvt* SEvt::Get(int idx)  // static
     assert( idx == 0 || idx == 1 );    
     return INSTANCES[idx] ; 
 }
+void SEvt::Set(int idx, SEvt* inst) // static
+{
+    assert( idx == 0 || idx == 1 );    
+    INSTANCES[idx] = inst ;
+}
+
+
 SEvt* SEvt::Create(int idx)  // static
 { 
     assert( idx == 0 || idx == 1); 
-    INSTANCES[idx] = new SEvt ; 
+    SEvt* evt = new SEvt ; 
+    evt->setInstance(idx) ; 
+    INSTANCES[idx] = evt  ; 
     return Get(idx) ; 
 }
 
@@ -966,6 +979,19 @@ sgs SEvt::AddGenstep(const NP* a)
 }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
+
+/**
+SEvt::Load
+-----------
+
+Q: which instance slot ? 
+A: are persisting instance in domain metadata and recovering in SEvt::onload
+
+Q: should the INSTANCE array slot be filled onload ? 
+A: Guess so, Loading should regain the state before the save
+
+
+**/
 
 SEvt* SEvt::Load(const char* rel)  // static 
 {
@@ -1192,6 +1218,8 @@ int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getN
 int SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
 int SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getNumGenstepFromGenstep() : UNDEF ; }
 int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
+int SEvt::GetNumHit_EGPU(){  return GetNumHit(EGPU) ; }
+int SEvt::GetNumHit_ECPU(){  return GetNumHit(ECPU) ; }
 
 int SEvt::GetNumGenstepFromGenstep()
 {
@@ -1398,6 +1426,21 @@ void SEvt::unsetIndex()
 {  
     index = MISSING_INDEX ; 
 }
+
+
+
+void SEvt::setInstance(int instance_)
+{
+    instance = instance_ ;  
+}
+int SEvt::getInstance() const 
+{
+    return instance ; 
+}
+
+
+
+
 
 
 
@@ -2935,6 +2978,13 @@ bool SEvt::hasIndex() const
     return index != MISSING_INDEX ;  
 }
 
+bool SEvt::hasInstance() const 
+{
+    return instance != MISSING_INSTANCE ;  
+}
+
+
+
 /**
 SEvt::getOutputDir
 --------------------
@@ -3013,8 +3063,33 @@ int SEvt::load(const char* dir_)
     LOG(LEVEL) << "] fold.load " << dir ; 
     is_loaded = true ; 
 
+    onload(); 
+
     return rc ; 
 }
+
+void SEvt::onload()
+{
+    const NP* domain = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
+    if(!domain) return ; 
+
+    index = domain->get_meta<int>("index");  
+    instance = domain->get_meta<int>("instance");  
+
+    if(hasInstance()) // ie not MISSING_INSTANCE
+    {
+        Set(instance, this); 
+    }
+
+    LOG(LEVEL) 
+        << " from domain " 
+        << " index " << index
+        << " instance " << instance
+        ;
+
+}
+
+
 
 
 /**
