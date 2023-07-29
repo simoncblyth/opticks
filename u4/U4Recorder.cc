@@ -209,7 +209,7 @@ void U4Recorder::BeginOfEventAction(const G4Event* event)
     eventID = event->GetEventID() ; 
     LOG(info) << " eventID " << eventID ; 
 
-    SEvt::BeginOfEvent(1+eventID); 
+    SEvt::BeginOfEvent(eventID); 
 }
 
 void U4Recorder::EndOfEventAction(const G4Event* event)
@@ -220,7 +220,7 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
     SEvt::AddArray(SEvt::ECPU, "U4R.npy", MakeMetaArray() ); 
     SEvt::AddEventConfigArray(SEvt::ECPU); 
 
-    SEvt::EndOfEvent(1+eventID_);  // does SEvt::Save SEvt::Clear
+    SEvt::EndOfEvent(eventID_);  // does SEvt::Save SEvt::Clear
 
     const char* savedir = SEvt::GetSaveDir(SEvt::ECPU) ; 
     LOG(info) << " savedir " << ( savedir ? savedir : "-" );

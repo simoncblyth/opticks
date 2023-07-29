@@ -293,10 +293,11 @@ public:
 
     static void SaveRunMeta(const char* base=nullptr ); 
 
-    static void BeginOfEvent(int index=-1); 
-    static void EndOfEvent(int index=-1); 
+    static void BeginOfEvent(int eventID);  // eventID is zero based
+    static void EndOfEvent(int eventID); 
 
-    static bool IndexPermitted(int index); 
+    static bool IndexPermitted_Old(int index);   // index is 1-based 
+    static bool IndexPermitted(int index);   // index is 1-based 
     static void SetIndex(int index); 
     static void EndIndex(int index); 
 

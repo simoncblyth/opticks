@@ -1138,23 +1138,16 @@ SEvt::BeginOfEvent
 -------------------
 
 Called for example from U4Recorder::BeginOfEventAction
+Note that eventID from Geant4 is zero based but the 
+index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs. 
 
 **/
 
-void SEvt::BeginOfEvent(int index)  // static
+void SEvt::BeginOfEvent(int eventID)  // static
 {
-
-    if(index > -1) 
-    {
-        LOG(LEVEL) << " index " << index ; 
-        SEvt::SetIndex(index); 
-    }
-    else
-    {
-        SEvt::IncrementIndex(); 
-        LOG(LEVEL) << " incrementIndex to: " << index ; 
-    }
-
+    int index = 1+eventID ;  
+    LOG(LEVEL) << " index " << index ; 
+    SEvt::SetIndex(index); 
     SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
 }
 
@@ -1166,18 +1159,16 @@ Called for example from U4Recorder::EndOfEventAction
 
 **/
 
-
-void SEvt::EndOfEvent(int index) // static 
+void SEvt::EndOfEvent(int eventID) // static 
 {
-
-    SEvt::EndIndex(index); 
-
+    int index = 1+eventID ;    
+    SEvt::EndIndex(index);  
     SEvt::Save(); 
     SEvt::Clear(); 
 }
 
 
-bool SEvt::IndexPermitted(int index) // static
+bool SEvt::IndexPermitted_Old(int index) // static
 {
     bool permitted = false ; 
     int count = Count(); 
@@ -1188,6 +1179,12 @@ bool SEvt::IndexPermitted(int index) // static
     }
     return permitted ; 
 }
+
+bool SEvt::IndexPermitted(int index) // static
+{
+    return index >= 1 ;   // for simplicity dont depend on Count, always dis-allow index 0 
+}
+
 
 void SEvt::SetIndex(int index)
 { 
