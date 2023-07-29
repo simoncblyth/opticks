@@ -210,6 +210,7 @@ unsigned SEventConfig::CompMaskAuto()
     unsigned mask = 0 ;     
     if(IsRGModeSimulate())
     {
+        mask |= SCOMP_DOMAIN ; 
         if(MaxGenstep()>0)   mask |= SCOMP_GENSTEP ; 
         if(MaxPhoton()>0)
         {
