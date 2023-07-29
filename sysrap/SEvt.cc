@@ -794,6 +794,14 @@ void SEvt::Set(int idx, SEvt* inst) // static
     LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
 }
 
+/**
+SEvt::Create
+-------------
+
+Q: Does all SEvt creation use this ?
+
+
+**/
 
 SEvt* SEvt::Create(int idx)  // static
 { 

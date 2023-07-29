@@ -340,7 +340,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 
 
     LOG(LEVEL) << "[ fd " << fd ; 
-    SEvt* sev = SEvt::CreateOrReuse(0) ; 
+    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
     sev->setGeo((SGeo*)fd);   
 
     if(NoGPU == false)
