@@ -172,6 +172,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     //static SEvt* INSTANCE ; 
     enum { MAX_INSTANCE = 2 } ;  
+    enum { EGPU, ECPU }; 
     static std::array<SEvt*, MAX_INSTANCE> INSTANCES ; 
     static std::string DescINSTANCE(); 
 
@@ -310,6 +311,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static NP* GetInputPhoton(int idx); 
     static void SetInputPhoton(NP* ip); 
     static bool HasInputPhoton(int idx); 
+
+    static bool HasInputPhoton(); 
+    static NP* GetInputPhoton(); 
+    static std::string DescHasInputPhoton(); 
 
 
     void clear_() ; 

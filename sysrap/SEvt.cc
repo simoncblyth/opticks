@@ -1191,6 +1191,7 @@ int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getN
 
 NP* SEvt::GatherGenstep(int idx) {   return Exists(idx) ? Get(idx)->gatherGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton(int idx) {  return Exists(idx) ? Get(idx)->getInputPhoton() : nullptr ; }
+
 void SEvt::SetInputPhoton(NP* p) 
 {  
     if(Exists(0)) Get(0)->setInputPhoton(p) ;
@@ -1200,6 +1201,43 @@ bool SEvt::HasInputPhoton(int idx)
 {  
     return Exists(idx) ? Get(idx)->hasInputPhoton() : false ; 
 }
+bool SEvt::HasInputPhoton()
+{
+    return HasInputPhoton(EGPU) || HasInputPhoton(ECPU) ; 
+}
+
+NP* SEvt::GetInputPhoton() // static 
+{
+    NP* ip = nullptr ; 
+    if(ip == nullptr && HasInputPhoton(EGPU)) ip = GetInputPhoton(EGPU) ; 
+    if(ip == nullptr && HasInputPhoton(ECPU)) ip = GetInputPhoton(ECPU) ; 
+    return ip ; 
+}
+
+
+std::string SEvt::DescHasInputPhoton()  // static
+{
+    std::stringstream ss ; 
+    ss 
+       <<  "SEvt::DescHasInputPhoton()  " 
+       << " SEventConfig::IntegrationMode " << SEventConfig::IntegrationMode()
+       << " SEvt::HasInputPhoton(EGPU) " << HasInputPhoton(EGPU) 
+       << " SEvt::HasInputPhoton(ECPU) " << HasInputPhoton(ECPU) 
+       << std::endl 
+       << "SEvt::Brief" 
+       << std::endl 
+       << SEvt::Brief() 
+       << std::endl 
+       << "SEvt::DescInputPhoton(EGPU)"
+       << SEvt::DescInputPhoton(EGPU)
+       << "SEvt::DescInputPhoton(ECPU)"
+       << SEvt::DescInputPhoton(ECPU)
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+} 
+
 
 
 
