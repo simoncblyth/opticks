@@ -37,6 +37,8 @@
 #include "OpticksPhoton.hh"
 #include "SComp.h"
 
+bool SEvt::IsDefined(unsigned val){ return val != UNDEF ; }
+
 stimer* SEvt::TIMER = new stimer ;
 void SEvt::TimerStart(){ TIMER->start(); }
 double SEvt::TimerDone(){ return TIMER->done() ; }
@@ -769,6 +771,8 @@ int SEvt::Count()  // static
 }  
 
 
+SEvt* SEvt::Get_EGPU(){ return SEvt::Get(EGPU) ; }
+SEvt* SEvt::Get_ECPU(){ return SEvt::Get(ECPU) ; }
 
 SEvt* SEvt::Get(int idx)  // static
 {  
@@ -1188,6 +1192,52 @@ int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getN
 int SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
 int SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getNumGenstepFromGenstep() : UNDEF ; }
 int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
+
+int SEvt::GetNumGenstepFromGenstep()
+{
+    int imode = SEventConfig::IntegrationMode() ; 
+    int num = 0 ; 
+    if( imode == 1 )
+    {
+        num = GetNumGenstepFromGenstep(EGPU) ; 
+    }
+    else if( imode == 2 )
+    {
+        num = GetNumGenstepFromGenstep(ECPU) ; 
+    }
+    else if( imode == 3 )
+    {
+        int n0 = GetNumGenstepFromGenstep(EGPU) ; 
+        int n1 = GetNumGenstepFromGenstep(ECPU) ; 
+        assert( n0 == n1 );
+        num = n0 ;  
+    }
+    return num ; 
+}
+
+int SEvt::GetNumPhotonFromGenstep()
+{
+    int imode = SEventConfig::IntegrationMode() ; 
+    int num = 0 ; 
+    if( imode == 1 )
+    {
+        num = GetNumPhotonFromGenstep(EGPU) ; 
+    }
+    else if( imode == 2 )
+    {
+        num = GetNumPhotonFromGenstep(ECPU) ; 
+    }
+    else if( imode == 3 )
+    {
+        int n0 = GetNumPhotonFromGenstep(EGPU) ; 
+        int n1 = GetNumPhotonFromGenstep(ECPU) ; 
+        assert( n0 == n1 );
+        num = n0 ;  
+    }
+    return num ; 
+}
+
+
 
 NP* SEvt::GatherGenstep(int idx) {   return Exists(idx) ? Get(idx)->gatherGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton(int idx) {  return Exists(idx) ? Get(idx)->getInputPhoton() : nullptr ; }

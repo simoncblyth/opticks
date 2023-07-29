@@ -154,6 +154,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     static constexpr const unsigned UNDEF = ~0u ; 
+    static bool IsDefined(unsigned val); 
 
     static stimer* TIMER ; 
     static void   TimerStart(); 
@@ -240,6 +241,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* gatherDomain() const ; 
 
     static int  Count() ; 
+    static SEvt* Get_EGPU() ; 
+    static SEvt* Get_ECPU() ; 
     static SEvt* Get(int idx) ; 
     static SEvt* Create(int idx) ; 
     static SEvt* CreateOrReuse(int idx) ; 
@@ -306,6 +309,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int GetNumPhotonFromGenstep(int idx); 
     static int GetNumGenstepFromGenstep(int idx); 
     static int GetNumHit(int idx) ; 
+
+    static int GetNumGenstepFromGenstep(); 
+    static int GetNumPhotonFromGenstep(); 
+
 
     static NP* GatherGenstep(int idx); 
     static NP* GetInputPhoton(int idx); 
