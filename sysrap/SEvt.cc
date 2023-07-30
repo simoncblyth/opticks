@@ -1225,49 +1225,6 @@ int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getN
 int SEvt::GetNumHit_EGPU(){  return GetNumHit(EGPU) ; }
 int SEvt::GetNumHit_ECPU(){  return GetNumHit(ECPU) ; }
 
-int SEvt::GetNumGenstepFromGenstep()
-{
-    int imode = SEventConfig::IntegrationMode() ; 
-    int num = 0 ; 
-    if( imode == 1 )
-    {
-        num = GetNumGenstepFromGenstep(EGPU) ; 
-    }
-    else if( imode == 2 )
-    {
-        num = GetNumGenstepFromGenstep(ECPU) ; 
-    }
-    else if( imode == 3 )
-    {
-        int n0 = GetNumGenstepFromGenstep(EGPU) ; 
-        int n1 = GetNumGenstepFromGenstep(ECPU) ; 
-        assert( n0 == n1 );
-        num = n0 ;  
-    }
-    return num ; 
-}
-
-int SEvt::GetNumPhotonFromGenstep()
-{
-    int imode = SEventConfig::IntegrationMode() ; 
-    int num = 0 ; 
-    if( imode == 1 )
-    {
-        num = GetNumPhotonFromGenstep(EGPU) ; 
-    }
-    else if( imode == 2 )
-    {
-        num = GetNumPhotonFromGenstep(ECPU) ; 
-    }
-    else if( imode == 3 )
-    {
-        int n0 = GetNumPhotonFromGenstep(EGPU) ; 
-        int n1 = GetNumPhotonFromGenstep(ECPU) ; 
-        assert( n0 == n1 );
-        num = n0 ;  
-    }
-    return num ; 
-}
 
 
 

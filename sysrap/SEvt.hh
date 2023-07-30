@@ -319,9 +319,6 @@ public:
     static int GetNumHit_EGPU() ; 
     static int GetNumHit_ECPU() ; 
 
-    static int GetNumGenstepFromGenstep(); 
-    static int GetNumPhotonFromGenstep(); 
-
 
     static NP* GatherGenstep(int idx); 
     static NP* GetInputPhoton(int idx); 
