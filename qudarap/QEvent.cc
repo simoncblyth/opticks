@@ -100,7 +100,7 @@ void QEvent::init()
     assert(evt); 
     assert(selector); 
 
-    LOG(LEVEL) << " QEvent::init calling SEvt::setCompProvider " ; 
+    LOG(LEVEL) << " QEvent::init calling SEvt/setCompProvider " ; 
     sev->setCompProvider(this);  
 }
 
@@ -157,10 +157,13 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 int QEvent::setGenstep()  // onto device
 {
     LOG(LEVEL); 
-    NP* gs = SEvt::GatherGenstep(0); // TODO: review memory handling  
-    SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
-    LOG_IF(fatal, gs == nullptr ) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
+
+    NP* gs = sev->gatherGenstep();
+    sev->clear();  // clear the quad6 vector, ready to collect more genstep
+
+    LOG_IF(fatal, gs == nullptr ) << "Must SEvt/addGenstep before calling QEvent::setGenstep " ;
     //if(gs == nullptr) std::raise(SIGINT); 
+
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 
 
@@ -259,7 +262,7 @@ void QEvent::setInputPhoton()
 {
     LOG(LEVEL); 
  
-    input_photon = SEvt::GetInputPhoton(0); 
+    input_photon = sev->getInputPhoton(); 
     LOG_IF(fatal, input_photon == nullptr) 
         << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
         ; 

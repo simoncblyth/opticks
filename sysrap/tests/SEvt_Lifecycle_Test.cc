@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     {
         if(!ip) SEvt::AddTorchGenstep(); 
 
-        SEvt::BeginOfEvent(i);  // setIndex and does genstep setup for input photons
+        evt->beginOfEvent(i);  // setIndex and does genstep setup for input photons
         assert( SEvt::Get(0) == evt ); 
 
         int npc = SEvt::GetNumPhotonCollected(0) ; 
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
 
         std::cout << evt->descVec() << std::endl ; 
 
-        SEvt::Save(); 
-        SEvt::Clear(); 
+        evt->endOfEvent(i); 
+
         assert( SEvt::Get(0) == evt ); 
     }
 

@@ -224,6 +224,7 @@ QSim::QSim()
     :
     base(QBase::Get()),
     event(new QEvent),
+    sev(event->sev),
     rng(QRng::Get()),
     scint(QScint::Get()),
     cerenkov(QCerenkov::Get()),
@@ -312,7 +313,7 @@ double QSim::simulate(int eventID)
     if( event == nullptr ) std::raise(SIGINT) ; 
     if( event == nullptr ) return -1. ; 
 
-    SEvt::BeginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     LOG(LEVEL) << desc() ;  
     int rc = event->setGenstep() ; 
@@ -320,7 +321,7 @@ double QSim::simulate(int eventID)
 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
 
-    SEvt::EndOfEvent(eventID);
+    sev->endOfEvent(eventID);
  
     return dt ; 
 }
@@ -337,13 +338,13 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simtrace(int eventID)
 {
-    SEvt::BeginOfEvent(eventID); 
+    sev->beginOfEvent(eventID); 
 
     int rc = event->setGenstep(); 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
 
-    SEvt::EndOfEvent(eventID); 
+    sev->endOfEvent(eventID); 
     return dt ; 
 }
 
@@ -877,37 +878,33 @@ extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsi
 
 
 /**
-QSim::UploadMockPRD
----------------------
-
-NB this "Mock" is in the sense of without real geometry, its still using CUDA
+QSim::UploadFakePRD (formerly "UploadMockPRD" )
+----------------------------------------------------
 
 Caution this returns a device pointer.
-
 **/
 
-
-quad2* QSim::UploadMockPRD(const NP* prd) // static
+quad2* QSim::UploadFakePRD(const NP* ip, const NP* prd) // static
 {
-    const NP* p = SEvt::GetInputPhoton(0); 
-    assert(p); 
-    int num_p = p->shape[0] ; 
-    assert( num_p > 0 ); 
-    assert( prd->has_shape( num_p, -1, 2, 4 ) );    // TODO: evt->max_record checking 
-    assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
+    assert(ip); 
+    int num_ip = ip->shape[0] ; 
+    assert( num_ip > 0 ); 
 
+    assert( prd->has_shape( num_ip, -1, 2, 4 ) );    // TODO: evt->max_record checking 
+    assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
 
     LOG(LEVEL) 
          << "["
-         << " num_p " << num_p
+         << " num_ip " << num_ip
          << " num_prd " << num_prd 
          << " prd " << prd->sstr() 
          ;
 
-    const char* label = "QSim::UploadMockPRD/d_prd" ; 
+    const char* label = "QSim::UploadFakePRD/d_prd" ; 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd, label );  
-    // prd non-standard so appropriate to upload here 
+
+    // prd is non-standard so it is appropriate to adhoc upload here 
 
     return d_prd ; 
 }
@@ -915,16 +912,11 @@ quad2* QSim::UploadMockPRD(const NP* prd) // static
 
 
 /**
-QSim::mock_propagate
-----------------------
+QSim::fake_propagate (formerly mock_propagate)
+-----------------------------------------------
 
-TODO: rename this, the "mock" is confusing, 
-its mock in the sense of not using any geometry... 
-but it does use CUDA.  
-
-Unlike other uses of "mock" which convey not using CUDA 
-via the MOCK_CURAND MOCK_TEXTURE MOCK_CUDA mechnism.
-
+Was renamed from "mock" to "fake" as is within Opticks "mock" is 
+used to mean without using CUDA. 
 
 * number of prd must be a multiple of the number of photon, ratio giving bounce_max 
 * number of record must be a multiple of the number of photon, ratio giving record_max 
@@ -935,19 +927,19 @@ using common QEvent functionality
 
 **/
 
-void QSim::mock_propagate( const NP* prd, unsigned type )
+void QSim::fake_propagate( const NP* prd, unsigned type )
 {
-    const NP* ip = SEvt::GetInputPhoton(0); 
+    const NP* ip = sev->getInputPhoton(); 
     int num_ip = ip ? ip->shape[0] : 0 ; 
     assert( num_ip > 0 ); 
 
-    quad2* d_prd = UploadMockPRD(prd) ; 
+    quad2* d_prd = UploadFakePRD(ip, prd) ; 
 
     int rc = event->setGenstep();   
     assert( rc == 0 ); 
 
-    SEvt::AddArray(0, "prd0", prd );  
-    // NB QEvent::setGenstep calls SEvt::Clear so this addition 
+    sev->add_array("prd0", prd );  
+    // NB QEvent::setGenstep calls SEvt/clear so this addition 
     // must be after that to succeed in being added to SEvt saved arrays
 
     int num_photon = event->getNumPhoton(); 

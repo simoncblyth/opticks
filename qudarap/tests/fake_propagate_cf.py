@@ -11,8 +11,8 @@ expr = list(filter(None,textwrap.dedent(r"""
 """).split("\n")))
 
 if __name__ == '__main__':
-    a_fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/mock_propagate")
-    b_fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/mock_propagate_2")
+    a_fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/fake_propagate")
+    b_fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/fake_propagate_2")
     a = Fold.Load(a_fold)
     b = Fold.Load(b_fold)
 

@@ -129,10 +129,10 @@ inline void SSimtrace::simtrace()
     // especially SEvt::setFrame_HostsideSimtrace which 
     // generates simtrace photons
 
-    evt = SEvt::Create(0) ; 
+    evt = SEvt::Create(SEvt::ECPU) ; 
     evt->setFrame(frame);    // 
 
-    SEvt::BeginOfEvent(0); 
+    evt->beginOfEvent(0); 
 
     unsigned num_simtrace = evt->simtrace.size() ;   
     LOG(LEVEL) << " num_simtrace " << num_simtrace ; 

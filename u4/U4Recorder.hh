@@ -71,7 +71,7 @@ struct U4_API U4Recorder
     int eventID ; 
     const G4Track* transient_fSuspend_track ; 
     NP* rerun_rand ;  
-    SEvt* evt ; 
+    SEvt* sev ; 
 
 
     void BeginOfRunAction(const G4Run*);

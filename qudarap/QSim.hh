@@ -23,6 +23,7 @@ HMM : MOST OF THIS API IS FOR TESTING ONLY  : TODO: Move lots to QSimTest perhap
 
 struct NP ; 
 struct SSim ; 
+struct SEvt ; 
 
 template <typename T> struct QTex ; 
 template <typename T> struct QBuf ; 
@@ -64,6 +65,8 @@ struct QUDARAP_API QSim
 
     const QBase*     base ; 
     QEvent*          event ; 
+    SEvt*            sev ; 
+
     const QRng*      rng ;   
     const QScint*    scint ; 
     const QCerenkov* cerenkov ; 
@@ -144,8 +147,8 @@ public:
     void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
 
 
-    static quad2* UploadMockPRD(const NP* prd); 
-    void mock_propagate(const NP* prd, unsigned type ); 
+    static quad2* UploadFakePRD(const NP* ip, const NP* prd); 
+    void fake_propagate(const NP* prd, unsigned type ); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

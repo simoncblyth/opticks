@@ -46,7 +46,7 @@ enum {
    REFLECT_SPECULAR, 
    PROPAGATE_AT_SURFACE, 
 
-   MOCK_PROPAGATE,
+   FAKE_PROPAGATE,
    GENTORCH,
    MULTIFILM_LOOKUP
    
@@ -102,7 +102,7 @@ struct QSimLaunch
     static constexpr const char* REFLECT_DIFFUSE_ = "reflect_diffuse" ;
     static constexpr const char* REFLECT_SPECULAR_ = "reflect_specular" ;
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
-    static constexpr const char* MOCK_PROPAGATE_ = "mock_propagate" ;
+    static constexpr const char* FAKE_PROPAGATE_ = "fake_propagate" ;
     static constexpr const char* GENTORCH_ = "gentorch" ;
     static constexpr const char* MULTIFILM_LOOKUP_ = "multifilm_lookup";
 
@@ -160,7 +160,7 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,REFLECT_DIFFUSE_) == 0)             test = REFLECT_DIFFUSE ;
    if(strcmp(name,REFLECT_SPECULAR_) == 0)            test = REFLECT_SPECULAR ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
-   if(strcmp(name,MOCK_PROPAGATE_)  == 0)             test = MOCK_PROPAGATE ;
+   if(strcmp(name,FAKE_PROPAGATE_)  == 0)             test = FAKE_PROPAGATE ;
    if(strcmp(name,GENTORCH_)  == 0)                   test = GENTORCH ;
    if(strcmp(name,MULTIFILM_LOOKUP_ )  == 0)          test = MULTIFILM_LOOKUP ;
   
@@ -219,7 +219,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case REFLECT_DIFFUSE:              s = REFLECT_DIFFUSE_              ; break ; 
         case REFLECT_SPECULAR:             s = REFLECT_SPECULAR_             ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
-        case MOCK_PROPAGATE:               s = MOCK_PROPAGATE_               ; break ; 
+        case FAKE_PROPAGATE:               s = FAKE_PROPAGATE_               ; break ; 
         case GENTORCH:                     s = GENTORCH_                     ; break ; 
         case MULTIFILM_LOOKUP:             s = MULTIFILM_LOOKUP_             ; break ;
     }
@@ -236,8 +236,7 @@ inline bool QSimLaunch::IsMutate( unsigned type )
         type == PROPAGATE_AT_MULTIFILM_S_POLARIZED||
         type == PROPAGATE_AT_MULTIFILM_P_POLARIZED||
         type == PROPAGATE_AT_MULTIFILM_X_POLARIZED||
-
-        type == MOCK_PROPAGATE 
+        type == FAKE_PROPAGATE 
         ; 
 }
 

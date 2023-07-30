@@ -1,6 +1,6 @@
 #pragma once
 /**
-SPrd : used by QSimTest/mock_propagate
+SPrd : used by QSimTest/fake_propagate
 =========================================
 
 This was moved from QPrd 
@@ -71,7 +71,7 @@ struct SPrd
     std::string desc() const ; 
     int getNumBounce() const ; 
 
-    NP* mock_prd(int num_photon, int num_bounce ) const ; 
+    NP* fake_prd(int num_photon, int num_bounce ) const ; 
 
 };
 
@@ -197,25 +197,25 @@ inline int SPrd::getNumBounce() const
 
 
 /**
-SPrd::mock_prd
+SPrd::fake_prd
 ----------------
 
-Canonical use from QSimTest::mock_propagate
+Canonical use from QSimTest::fake_propagate
 
-Duplicate the sequence of mock prd for all photon, 
+Duplicate the sequence of fake prd for all photon, 
 if the num_bounce exceeds the prd obtained from environment 
 the prd is wrapped within the photon bounces.   
 
 **/
 
-inline NP* SPrd::mock_prd(int num_photon, int num_bounce) const 
+inline NP* SPrd::fake_prd(int num_photon, int num_bounce) const 
 {
     int num_prd = prd.size(); 
     int ni = num_photon ; 
     int nj = num_bounce ; 
 
     if(VERBOSE) std::cout 
-        << "SPrd::mock_prd"
+        << "SPrd::fake_prd"
         << " ni:num_photon " << num_photon
         << " nj:num_bounce " << num_bounce
         << " num_prd " << num_prd 

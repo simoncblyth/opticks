@@ -221,7 +221,6 @@ public:
     static const bool transformInputPhoton_WIDE ; 
     void transformInputPhoton(); 
 
-    static void AddFrameGenstep(); 
     void addFrameGenstep(); 
 
     const char* getFrameId() const ; 
@@ -293,10 +292,10 @@ public:
 
     static void SaveRunMeta(const char* base=nullptr ); 
 
-    static void BeginOfEvent(int eventID);  // eventID is zero based
-    static void EndOfEvent(int eventID); 
+    void beginOfEvent(int eventID); 
+    void endOfEvent(int eventID); 
 
-    static bool IndexPermitted_Old(int index);   // index is 1-based 
+
     static bool IndexPermitted(int index);   // index is 1-based 
     static void SetIndex(int index); 
     static void EndIndex(int index); 
@@ -452,9 +451,10 @@ public:
     void gather() ;  // with on device running this downloads
 
     // add extra metadata arrays to be saved within SEvt fold 
-    static void AddArray(int idx, const char* k, const NP* a ); 
+    //static void AddArray(int idx, const char* k, const NP* a ); 
     void add_array( const char* k, const NP* a ); 
-    static void AddEventConfigArray(int idx) ; 
+    //static void AddEventConfigArray(int idx) ; 
+    void addEventConfigArray() ; 
 
 
     // save methods not const as call gather

@@ -63,7 +63,9 @@ private:
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the sevent.h instance not up here in QEvent.hh
 
+public:
     SEvt*             sev ;  
+private:
     sphoton_selector* selector ; 
     sevent*           evt ; 
     sevent*           d_evt ; 

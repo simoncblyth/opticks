@@ -81,7 +81,7 @@ struct QSimTest
 
     void photon_launch_generate(); 
     void photon_launch_mutate(); 
-    void mock_propagate(); 
+    void fake_propagate(); 
     void quad_launch_generate(); 
 
 }; 
@@ -390,7 +390,7 @@ void QSimTest::generate_photon()
     SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
     assert(evt); 
 
-    SEvt::AddGenstep(gs); 
+    evt->addGenstep(gs); 
 
     qs->generate_photon();  
 
@@ -464,15 +464,15 @@ void QSimTest::photon_launch_generate()
 }
 
 /**
-QSimTest::mock_propagate
+QSimTest::fake_propagate
 ----------------------------------------
 
-NB QSimTest::EventConfig does MOCK_PROPAGATE specific SEventConfig setup of event maxima 
+NB QSimTest::EventConfig does FAKE_PROPAGATE specific SEventConfig setup of event maxima 
 
 **/
 
 
-void QSimTest::mock_propagate()
+void QSimTest::fake_propagate()
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
     LOG(info) << "[" ; 
@@ -480,13 +480,13 @@ void QSimTest::mock_propagate()
 
     NP* p = sphoton::make_ephoton_array(num); 
 
-    SEvt* evt = SEvt::Get(0); 
-    assert( evt ); 
-    evt->setInputPhoton(p);  
-    evt->setFramePlaceholder() ; 
+    SEvt* sev = SEvt::Get_EGPU(); 
+    assert( sev ); 
+    sev->setInputPhoton(p);  
+    sev->setFramePlaceholder() ; 
 
     int bounce_max = SEventConfig::MaxBounce(); 
-    NP* prd = sprd->mock_prd(num, bounce_max);  
+    NP* prd = sprd->fake_prd(num, bounce_max);  
 
     LOG(info) 
         << " num " << num 
@@ -495,15 +495,17 @@ void QSimTest::mock_propagate()
         << " prd " << ( prd ? prd->sstr() : "-" ) 
         ; 
 
-    // SEvt::AddArray("prd0", prd ); 
-    // its too soon to SEvt::AddArray here, must be after the QEvent::setGenstep 
-    // which calls SEvt::Clear (done in QSim::mock_propagate)
+    // sev->add_array("prd0", prd ); 
+    // its too soon to add array here, must be after the QEvent::setGenstep 
+    // which calls SEvt/clear (done in QSim::fake_propagate)
 
-    SEvt::BeginOfEvent(0) ;  // this tees up input photon gensteps
+    int eventID = 0 ; 
 
-    qs->mock_propagate( prd, type ); 
+    sev->beginOfEvent(eventID) ;  // this tees up input photon gensteps
 
-    SEvt::EndOfEvent(0) ;    // saves and clears 
+    qs->fake_propagate( prd, type ); 
+
+    sev->endOfEvent(eventID) ;    // saves and clears 
 
     LOG(info) << "]" ; 
 }
@@ -568,29 +570,30 @@ QSimTest::EventConfig
 SEventConfig settings to configure the QEvent GPU buffers
 must be done prior to QEvent::init which happens when QSim is instanciated.
 
+TODO : looks like for FAKE_PROPAGATE are changing config after 
+SEvt instanciation, hence the changes dont do anything ? 
+
+SO THIS NEEDS REWORKING TO CHANGE CONFIG EARLIER 
+
 **/
 
 void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
 {
-    SEvt* sev = SEvt::Get(0);
-    LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
+    SEvt* sev = SEvt::Get_EGPU();
+    LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for fake_propagate bounce consistency " ;  
     assert(sev == nullptr); 
 
     LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 
-    if( type == MOCK_PROPAGATE )
+    if( type == FAKE_PROPAGATE )
     {
         LOG(LEVEL) << prd->desc() ;  
         int maxbounce = prd->getNumBounce(); 
 
         SEventConfig::SetMaxBounce(maxbounce); 
         SEventConfig::SetEventMode("StandardFullDebug"); 
-
         SEventConfig::Initialize();   
-        // HMM: Initialize is done by SEvt::SEvt : SO THIS WILL NEED REWORKING 
-        // must make any config changes before SEvt instanciation typically in the main 
 
-
-        SEventConfig::SetMaxGenstep(1);        // MOCK_PROPAGATE starts from input photons but uses a single placeholder genstep 
+        SEventConfig::SetMaxGenstep(1);        // FAKE_PROPAGATE starts from input photons but uses a single placeholder genstep 
         SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
 
         LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ;
@@ -680,8 +683,8 @@ void QSimTest::main()
         case RANDOM_DIRECTION_MARSAGLIA:
         case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate()       ; break ; 
-        case MOCK_PROPAGATE:
-                                                mock_propagate()              ; break ; 
+        case FAKE_PROPAGATE:
+                                                fake_propagate()              ; break ; 
 
         default :                           
                                                LOG(fatal) << "unimplemented" << std::endl ; break ; 

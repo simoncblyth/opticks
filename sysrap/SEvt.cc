@@ -506,22 +506,16 @@ void SEvt::transformInputPhoton()
 
 
 /**
-SEvt::AddFrameGenstep
------------------------
+SEvt::addFrameGenstep  (former static SEvt::AddFrameGenstep is removed)
+-------------------------------------------------------------------------
 
-This is invoked from SEvt::BeginOfEvent together with SEvt::SetIndex
+This is invoked from SEvt::beginOfEvent together with SEvt::setIndex
 
 For hostside simtrace and input photon running this must be called 
 at the start of every event cycle to add the gensteps which trigger 
 the allocations for result vectors.  
 
 **/
-
-void SEvt::AddFrameGenstep() // static
-{
-    if(Exists(0)) Get(0)->addFrameGenstep() ; 
-    if(Exists(1)) Get(1)->addFrameGenstep() ; 
-}
 
 void SEvt::addFrameGenstep()
 {
@@ -1143,8 +1137,8 @@ void SEvt::SaveRunMeta(const char* base)
 
 
 /**
-SEvt::BeginOfEvent
--------------------
+SEvt::beginOfEvent  (former static SEvt::BeginOfEvent is removed)
+-------------------------------------------------------------------
 
 Called for example from U4Recorder::BeginOfEventAction
 Note that eventID from Geant4 is zero based but the 
@@ -1152,57 +1146,41 @@ index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs.
 
 **/
 
-void SEvt::BeginOfEvent(int eventID)  // static
+void SEvt::beginOfEvent(int eventID)
 {
-    int index = 1+eventID ;  
-    LOG(LEVEL) << " index " << index ; 
-    SEvt::SetIndex(index); 
-    SEvt::AddFrameGenstep();  // needed for simtrace and input photon running
+    int index_ = 1+eventID ;  
+    LOG(LEVEL) << " index_ " << index_ ; 
+    setIndex(index_); 
+    addFrameGenstep();     // needed for simtrace and input photon running
 }
 
+
 /**
-SEvt::EndOfEvent
------------------
+SEvt::endOfEvent (former static SEvt::EndOfEvent is removed)
+--------------------------------------------------------------
 
 Called for example from U4Recorder::EndOfEventAction
 
 **/
 
-void SEvt::EndOfEvent(int eventID) // static 
+void SEvt::endOfEvent(int eventID)
 {
-    int index = 1+eventID ;    
-    SEvt::EndIndex(index);  
-    SEvt::Save(); 
-    SEvt::Clear(); 
+    int index_ = 1+eventID ;    
+    endIndex(index_); 
+    save(); 
+    clear(); 
 }
 
 
-bool SEvt::IndexPermitted_Old(int index) // static
+bool SEvt::IndexPermitted(int index_) // static
 {
-    bool permitted = false ; 
-    int count = Count(); 
-    switch(count)
-    {
-        case 1:  permitted = index >= 0 ; break ; 
-        case 2:  permitted = index >= 1 ; break ; 
-    }
-    return permitted ; 
+    return std::abs(index_) >= 1 ;   // for simplicity dont depend on Count, always dis-allow index 0 
 }
 
-bool SEvt::IndexPermitted(int index) // static
-{
-    return index >= 1 ;   // for simplicity dont depend on Count, always dis-allow index 0 
-}
-
-
-void SEvt::SetIndex(int index)
+void SEvt::SetIndex(int index_)
 { 
-    bool index_permitted = IndexPermitted(index); 
-    LOG_IF(fatal, !index_permitted) << " index " << index << " count " << Count() ; 
-    assert( index_permitted ); 
-
-    if(Exists(0)) Get(0)->setIndex(index); 
-    if(Exists(1)) Get(1)->setIndex(-index); 
+    if(Exists(0)) Get(0)->setIndex(index_); 
+    if(Exists(1)) Get(1)->setIndex(-index_); 
 }
 
 void SEvt::EndIndex(int index)
@@ -1210,7 +1188,6 @@ void SEvt::EndIndex(int index)
     if(Exists(0)) Get(0)->endIndex(index); 
     if(Exists(1)) Get(1)->endIndex(-index); 
 }
-
 
 void SEvt::IncrementIndex()
 {   
@@ -1430,6 +1407,10 @@ void SEvt::clear_partial(const char* keep_keylist, char delim)
 
 void SEvt::setIndex(int index_)
 { 
+    bool index_permitted = IndexPermitted(index_); 
+    LOG_IF(fatal, !index_permitted) << " index_ " << index_ << " count " << Count() ; 
+    assert( index_permitted ); 
+
     index = index_ ; 
     t_BeginOfEvent = stamp::Now();  // moved here from the static 
 }
@@ -1539,7 +1520,7 @@ actual gensteps for the enabled index.
 sgs SEvt::addGenstep(const quad6& q_)
 {
     dbg->addGenstep++ ; 
-
+    LOG(info) << " index " << index << " instance " << instance ; 
 
     unsigned gentype = q_.gentype(); 
     unsigned matline_ = q_.matline(); 
@@ -2888,21 +2869,31 @@ SEvt::AddArray
 
 Used for addition of extra metadata arrays to be save within SEvt folder
 
-**/
 
 void SEvt::AddArray(int idx,  const char* k, const NP* a )  // static
 {
     LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
     if(Exists(idx)) Get(idx)->add_array(k, a); 
 }
+**/
+
+
+
 void SEvt::add_array( const char* k, const NP* a )
 {
     fold->add(k, a);  
 }
 
+/*
 void SEvt::AddEventConfigArray(int idx) // static
 {
     AddArray(idx, SEventConfig::NAME, SEventConfig::Serialize() ); 
+}
+*/
+
+void SEvt::addEventConfigArray() 
+{
+    fold->add(SEventConfig::NAME, SEventConfig::Serialize() ); 
 }
 
 

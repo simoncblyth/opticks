@@ -208,7 +208,7 @@ void QEventTest::test_setGenstep_quad6()
     event->checkEvt(); 
 
     cudaDeviceSynchronize(); 
-    SEvt::Save( "$TMP/QEventTest/test_setGenstep_quad6" ); 
+    event->sev->save( "$TMP/QEventTest/test_setGenstep_quad6" ); 
 }
 
 

@@ -74,7 +74,7 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_specular
 #test=propagate_at_surface
 
-test=mock_propagate
+test=fake_propagate
 #test=gentorch
 
 M1=1000000
@@ -126,7 +126,7 @@ random_direction_marsaglia) script=random_direction_marsaglia.py ;;
    propagate_at_multifilm*) script=propagate_at_multifilm.py ;;
 
     lambertian_direction)  script=lambertian_direction.py ;; 
-         mock_propagate*)  script=mock_propagate.py ;; 
+         fake_propagate*)  script=fake_propagate.py ;; 
 
                         *) script=generic.py      ;;
 esac
