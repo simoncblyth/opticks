@@ -4027,6 +4027,7 @@ template<typename T> inline void NP::SetMeta( std::string& mt, const char* key, 
     mt = nn.str() ; 
 }
 
+template void     NP::SetMeta<uint64_t>(    std::string&, const char*, uint64_t ); 
 template void     NP::SetMeta<int>(         std::string&, const char*, int ); 
 template void     NP::SetMeta<unsigned>(    std::string&, const char*, unsigned ); 
 template void     NP::SetMeta<float>(       std::string&, const char*, float ); 

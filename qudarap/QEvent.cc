@@ -2,6 +2,8 @@
 #include <sstream>
 #include <csignal>
 
+
+
 #include "SEvt.hh"
 #include "SGeo.hh"
 #include "SPath.hh"
@@ -13,6 +15,7 @@
 #include "sseq.h"
 #include "stag.h"
 #include "sevent.h"
+#include "salloc.h"
 
 #include "sqat4.h"
 #include "stran.h"
@@ -240,8 +243,8 @@ the hostside sevent.h "evt->genstep" "evt->seed"
 void QEvent::device_alloc_genstep()
 {
     LOG(LEVEL) << " device_alloc genstep and seed " ; 
-    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "device_alloc_genstep:quad6" ) ; 
-    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "device_alloc_genstep:int seed" )  ;
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep:quad6" ) ; 
+    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "QEvent::setGenstep/device_alloc_genstep:int seed" )  ;
 }
 
 
@@ -688,6 +691,11 @@ void QEvent::setNumSimtrace(unsigned num_simtrace)
     uploadEvt(); 
 }
 
+
+
+
+
+
 /**
 QEvent::device_alloc_photon
 ----------------------------
@@ -699,7 +707,7 @@ into hostside sevent.h "evt"
 
 void QEvent::device_alloc_photon()
 {
-    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "max_photon*sizeof(sphoton)" ) : nullptr ; 
+    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "QEvent::device_alloc_photon/max_photon*sizeof(sphoton)" ) : nullptr ; 
 
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
     evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
@@ -718,11 +726,37 @@ void QEvent::device_alloc_photon()
         << " evt.num_tag    " << evt->num_tag
         << " evt.num_flat   " << evt->num_flat
         ;
+
+    SetAllocMeta( QU::alloc, evt ); 
 }
+
+
+void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static 
+{
+    if(!alloc) return ; 
+    if(!evt) return ; 
+
+    alloc->set_meta<uint64_t>("evt.max_photon", evt->max_photon); 
+    alloc->set_meta<uint64_t>("evt.max_record", evt->max_record); 
+    alloc->set_meta<uint64_t>("evt.max_rec", evt->max_rec); 
+    alloc->set_meta<uint64_t>("evt.max_seq", evt->max_seq); 
+    alloc->set_meta<uint64_t>("evt.max_prd", evt->max_prd); 
+    alloc->set_meta<uint64_t>("evt.max_tag", evt->max_tag); 
+    alloc->set_meta<uint64_t>("evt.max_flat", evt->max_flat); 
+
+    alloc->set_meta<uint64_t>("evt.num_photon", evt->num_photon); 
+    alloc->set_meta<uint64_t>("evt.num_record", evt->num_record); 
+    alloc->set_meta<uint64_t>("evt.num_rec", evt->num_rec); 
+    alloc->set_meta<uint64_t>("evt.num_seq", evt->num_seq); 
+    alloc->set_meta<uint64_t>("evt.num_prd", evt->num_prd); 
+    alloc->set_meta<uint64_t>("evt.num_tag", evt->num_tag); 
+    alloc->set_meta<uint64_t>("evt.num_flat", evt->num_flat); 
+}
+
  
 void QEvent::device_alloc_simtrace()
 {
-    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace, "max_simtrace" ) ; 
+    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace, "QEvent::device_alloc_simtrace/max_simtrace" ) ; 
     LOG(LEVEL) 
         << " evt.num_simtrace " << evt->num_simtrace 
         << " evt.max_simtrace " << evt->max_simtrace

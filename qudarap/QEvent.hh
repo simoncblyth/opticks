@@ -3,6 +3,7 @@
 struct sevent ; 
 struct quad4 ;
 struct sphoton ; 
+struct salloc ; 
 struct qat4 ; 
 struct quad6 ;
 struct NP ; 
@@ -135,6 +136,7 @@ private:
     void     setNumSimtrace(unsigned num_simtrace) ;  
     void     device_alloc_photon(); 
     void     device_alloc_simtrace(); 
+    static void SetAllocMeta(salloc* alloc, const sevent* evt); 
     void     uploadEvt(); 
 public:
     unsigned getNumPhoton() const ;  

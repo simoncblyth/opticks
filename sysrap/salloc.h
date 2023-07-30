@@ -9,6 +9,9 @@ Some device allocations such as those by QU::device_alloc
 are monitored when the *QU:alloc* *salloc* instance 
 has been instanciated. 
 
+TODO: bizarre, why use glm::tvec4 ? Remove that 
+
+
 ::
 
     epsilon:opticks blyth$ opticks-fl salloc.h 
@@ -39,6 +42,7 @@ struct salloc
     static constexpr const char* ALLOC = "salloc.npy" ; 
     static constexpr const char* RELDIR = "salloc" ; 
 
+    std::string meta ; 
     std::vector<std::string> label ; 
     std::vector<glm::tvec4<uint64_t>> alloc ; 
     void add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare); 
@@ -46,11 +50,14 @@ struct salloc
 
     NP* make_array() const ; 
 
+
     void save(const char* base, const char* reldir=RELDIR); 
     void import(const NP* aa);
     static salloc* Load(const char* base, const char* reldir=RELDIR); 
 
     std::string desc() const ; 
+
+    template<typename T> void set_meta(const char* key, T value); 
 }; 
 
 inline void salloc::add( const char* label_, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare )
@@ -72,6 +79,7 @@ inline NP* salloc::make_array() const
     NP* a = NP::Make<uint64_t>( alloc.size(), 4 ); 
     a->read2<uint64_t>( (uint64_t*)alloc.data() ); 
     a->set_names( label ); 
+    if(!meta.empty()) a->meta = meta ; 
     return a ; 
 }
 inline void salloc::save(const char* base, const char* reldir )
@@ -86,6 +94,7 @@ inline void salloc::import(const NP* a)
     alloc.resize( a->shape[0] ); 
     memcpy( alloc.data(), a->bytes(), a->arr_bytes() ); 
     a->get_names(label); 
+    if(!a->meta.empty()) meta = a->meta ; 
 }
 
 inline salloc* salloc::Load(const char* base, const char* reldir )
@@ -109,6 +118,12 @@ inline std::string salloc::desc() const
        << " alloc.size " << alloc.size()
        << " label.size " << label.size()
        << std::endl
+       ;
+
+    ss << "salloc.meta"
+       << std::endl 
+       << ( meta.empty() ? "-" : meta )
+       << std::endl 
        ;
 
     const char* spacer = "     " ;  
@@ -173,4 +188,11 @@ inline std::string salloc::desc() const
     return s ; 
 }
 
+template<typename T> 
+inline void salloc::set_meta(const char* key, T value)
+{
+    NP::SetMeta(meta, key, value ); 
+}
+
+template void salloc::set_meta<uint64_t>(const char*, uint64_t );
 

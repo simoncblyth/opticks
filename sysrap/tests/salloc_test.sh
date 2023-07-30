@@ -5,11 +5,21 @@ arg=${1:-$defarg}
 
 name=salloc_test 
 
-#export BASE=/tmp/salloc_test
-export BASE=/tmp/blyth/opticks/J003/G4CXSimulateTest
+
+export FOLD=/tmp/$name
+mkdir -p $FOLD
+
+bin=$FOLD/$name
+
+export BASE=$FOLD
+#export BASE=/tmp/blyth/opticks/J003/G4CXSimulateTest
+
+vars="BASH_SOURCE name FOLD BASE OPTICKS_PREFIX"
 
 
-mkdir -p /tmp/$name
+if [ "${arg/info}" != "$arg" ]; then 
+    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
@@ -17,20 +27,23 @@ if [ "${arg/build}" != "$arg" ]; then
           -std=c++11 -lstdc++ \
           -I.. \
           -I$OPTICKS_PREFIX/externals/glm/glm \
-          -o /tmp/$name/$name 
+          -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    /tmp/$name/$name
+    $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    lldb__ /tmp/$name/$name
+
+    case $(uname) in 
+       Darwin) lldb__ $bin ;;
+       Linux) gdb__ $bin ;;
+    esac
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
-
 
 
 if [ "${arg/ana}" != "$arg" ]; then 

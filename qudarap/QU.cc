@@ -101,14 +101,19 @@ Allocate on device and copy from host to device
 template <typename T>
 T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // static
 {
+    size_t size = num_items*sizeof(T) ;
+
     LOG(LEVEL) 
        << " num_items " << num_items
+       << " size " << size 
        << " label " << ( label ? label : "-" )
        ;
 
+    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+
     T* d_array = nullptr ; 
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_items*sizeof(T) )); 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, sizeof(T)*num_items, cudaMemcpyHostToDevice )); 
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), size )); 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, size, cudaMemcpyHostToDevice )); 
     return d_array ; 
 }
 
