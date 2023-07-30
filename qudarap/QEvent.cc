@@ -707,14 +707,7 @@ into hostside sevent.h "evt"
 
 void QEvent::device_alloc_photon()
 {
-    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "QEvent::device_alloc_photon/max_photon*sizeof(sphoton)" ) : nullptr ; 
-
-    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
-    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
-    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq*sizeof(sseq)"    ) : nullptr ; 
-    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
-    evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
-    evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
+    SetAllocMeta( QU::alloc, evt );   // do this first as memory errors likely to happen in following lines
 
     LOG(LEVEL) 
         << " evt.max_photon " << evt->max_photon 
@@ -727,7 +720,15 @@ void QEvent::device_alloc_photon()
         << " evt.num_flat   " << evt->num_flat
         ;
 
-    SetAllocMeta( QU::alloc, evt ); 
+    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "QEvent::device_alloc_photon/max_photon*sizeof(sphoton)" ) : nullptr ; 
+
+    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
+    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
+    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq*sizeof(sseq)"    ) : nullptr ; 
+    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
+    evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
+    evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
+
 }
 
 
