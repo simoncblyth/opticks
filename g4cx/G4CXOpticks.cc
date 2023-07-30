@@ -106,7 +106,11 @@ G4CXOpticks::G4CXOpticks()
     fd(nullptr), 
     cx(nullptr),
     qs(nullptr),
-    t0(schrono::stamp())
+    t0(schrono::stamp()),
+    event_total(0),
+    genstep_total(0),
+    photon_total(0),
+    hit_total(0)
 {
     init();
 }
@@ -432,6 +436,42 @@ TODO: compare with B side to see if that makes sense when viewed from A and B di
 
 const bool G4CXOpticks::simulate_saveEvent = ssys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
+
+std::string G4CXOpticks::descSimulate() const
+{
+    SEvt* sev = SEvt::Get_EGPU() ;  
+    assert(sev); 
+
+    int sev_index = sev->getIndex() ;
+    unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
+    unsigned num_photon  = sev->getNumPhotonCollected(); 
+    unsigned num_hit = sev->getNumHit() ; 
+    bool is_undef = num_hit == SEvt::UNDEF ; 
+
+    std::stringstream ss ;  
+    ss << "G4CXOpticks::descSimulate"
+       << " sev_instance " << sev->instance 
+       << " sev_index " << sev_index 
+       << " num_genstep " << num_genstep 
+       << " num_photon " << num_photon 
+       << " num_hit " << num_hit 
+       << " num_hit.is_undef " << ( is_undef ? "YES" : "NO " )
+       << " sev.brief " << sev->brief()  
+       << " simulate_saveEvent " << ( simulate_saveEvent ? "YES" : "NO " )
+       ;
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+G4CXOpticks::simulate
+------------------------
+
+TODO: most of this should be happening at lower level, not up here 
+
+**/
+
 void G4CXOpticks::simulate(int eventID)
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
@@ -439,51 +479,38 @@ void G4CXOpticks::simulate(int eventID)
 
     LOG(LEVEL) << "[" ; 
     LOG(LEVEL) << desc() ; 
+
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
 
-    // TODO: most of this should be happening at lower level, not up here 
-
-    SEvt* sev = SEvt::Get(0) ;  assert(sev); 
-
+    SEvt* sev = SEvt::Get_EGPU() ;  assert(sev); 
 
     unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
     unsigned num_photon  = sev->getNumPhotonCollected(); 
 
-    LOG(LEVEL) 
-        << "[ num_genstep " << num_genstep
-        << " num_photon " << num_photon
-        << " " << sev->brief()  
-        ;
-
-    //]
-
     qs->simulate(eventID);   // GPU launch doing generation and simulation here 
 
-    sev->gather();   // downloads components configured by SEventConfig::CompMask 
+    sev->gather();           // downloads components configured by SEventConfig::CompMask 
+
 
     unsigned num_hit = sev->getNumHit() ; 
-    bool is_undef = num_hit == SEvt::UNDEF ; 
+
+    event_total += 1 ; 
+    genstep_total += num_genstep ; 
+    photon_total += num_photon ; 
+    hit_total += num_hit ; 
 
 
-    int sev_index = sev->getIndex() ;
-
-    LOG(LEVEL) 
-       << "] num_hit " << num_hit 
-       << " is_undef " << is_undef 
-       << " sev_index " << sev_index 
-       << " simulate_saveEvent " << simulate_saveEvent
-       ;
-
+    LOG(LEVEL) << descSimulate(); 
     LOG(LEVEL) << " sev.descFull " << std::endl << sev->descFull() ; 
 
     if(simulate_saveEvent)
     {
-        LOG(LEVEL) << "[ G4CXOpticks__simulate_saveEvent" << sev_index ; 
+        LOG(LEVEL) << "[ G4CXOpticks__simulate_saveEvent sev.index " << sev->index ; 
         saveEvent(); 
-        LOG(LEVEL) << "] G4CXOpticks__simulate_saveEvent" << sev_index ; 
+        LOG(LEVEL) << "] G4CXOpticks__simulate_saveEvent sev.index " << sev->index ; 
     }
 
     LOG(LEVEL) << "]" ; 
@@ -523,7 +550,7 @@ void G4CXOpticks::render()
 void G4CXOpticks::saveEvent() const 
 {
     LOG(LEVEL) << "[" ; 
-    SEvt* sev = SEvt::Get(0); 
+    SEvt* sev = SEvt::Get_EGPU(); 
     if(sev == nullptr) return ; 
 
     LOG(LEVEL) << "[ sev.save " ; 

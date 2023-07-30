@@ -48,6 +48,7 @@ struct G4CX_API G4CXOpticks
     static bool IsNoGPU() ; 
 
 
+
     SSim*       sim ; 
     const U4Tree*   tr ;
     const G4VPhysicalVolume* wd ; 
@@ -57,6 +58,12 @@ struct G4CX_API G4CXOpticks
     CSGOptiX*   cx ; 
     QSim*       qs ; 
     schrono::TP t0 ; 
+
+
+    unsigned event_total ; 
+    unsigned genstep_total ; 
+    unsigned photon_total ; 
+    unsigned hit_total ; 
 
 private: 
     G4CXOpticks(); 
@@ -78,6 +85,7 @@ private:
     void setupFrame(); 
     static const bool simulate_saveEvent ; // G4CXOpticks__simulate_saveEvent
 public: 
+    std::string descSimulate() const ; 
     void simulate(int eventID); 
     void simtrace(int eventID); 
     void render(); 
