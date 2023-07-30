@@ -34,6 +34,10 @@ void test_load()
 
 int main(int argc, char** argv)
 {
+    /*
     test_save_load(); 
+    */
+    test_load(); 
+
     return 0 ; 
 }

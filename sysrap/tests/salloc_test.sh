@@ -1,20 +1,20 @@
 #!/bin/bash -l 
 
-defarg="build_run"
+defarg="info_build_run"
 arg=${1:-$defarg}
 
 name=salloc_test 
 
-
+source $HOME/.opticks/GEOM/GEOM.sh 
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
 
 export BASE=$FOLD
-#export BASE=/tmp/blyth/opticks/J003/G4CXSimulateTest
+export BASE=/tmp/blyth/opticks/GEOM/$GEOM/ntds3
 
-vars="BASH_SOURCE name FOLD BASE OPTICKS_PREFIX"
+vars="BASH_SOURCE name FOLD BASE OPTICKS_PREFIX GEOM"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

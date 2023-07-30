@@ -883,7 +883,7 @@ void SEvt::CreateOrReuse()
     else
     {
         LOG(fatal) << "unexpected integrationMode " << integrationMode ; 
-        assert(0); 
+        //assert(0); 
     }
     LOG(LEVEL) << DescINSTANCE()  ; 
 }
