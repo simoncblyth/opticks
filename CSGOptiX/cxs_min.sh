@@ -61,6 +61,8 @@ export OPTICKS_INPUT_PHOTON_FRAME=${MOI:-$moi}
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_MAX_BOUNCE=31
 
+export OPTICKS_MAX_PHOTON=10000
+
 
 # investigate double call to clear
 # see ~/opticks/notes/issues/SEvt__clear_double_call.rst

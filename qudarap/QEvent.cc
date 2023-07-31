@@ -736,22 +736,7 @@ void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static
 {
     if(!alloc) return ; 
     if(!evt) return ; 
-
-    alloc->set_meta<uint64_t>("evt.max_photon", evt->max_photon); 
-    alloc->set_meta<uint64_t>("evt.max_record", evt->max_record); 
-    alloc->set_meta<uint64_t>("evt.max_rec", evt->max_rec); 
-    alloc->set_meta<uint64_t>("evt.max_seq", evt->max_seq); 
-    alloc->set_meta<uint64_t>("evt.max_prd", evt->max_prd); 
-    alloc->set_meta<uint64_t>("evt.max_tag", evt->max_tag); 
-    alloc->set_meta<uint64_t>("evt.max_flat", evt->max_flat); 
-
-    alloc->set_meta<uint64_t>("evt.num_photon", evt->num_photon); 
-    alloc->set_meta<uint64_t>("evt.num_record", evt->num_record); 
-    alloc->set_meta<uint64_t>("evt.num_rec", evt->num_rec); 
-    alloc->set_meta<uint64_t>("evt.num_seq", evt->num_seq); 
-    alloc->set_meta<uint64_t>("evt.num_prd", evt->num_prd); 
-    alloc->set_meta<uint64_t>("evt.num_tag", evt->num_tag); 
-    alloc->set_meta<uint64_t>("evt.num_flat", evt->num_flat); 
+    evt->get_meta(alloc->meta); 
 }
 
  

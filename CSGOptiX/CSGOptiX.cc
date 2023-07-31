@@ -136,11 +136,17 @@ int CSGOptiX::Version()
 CSGOptiX::RenderMain CSGOptiX::SimtraceMain CSGOptiX::SimulateMain
 ---------------------------------------------------------------------
 
-These three mains are use by the minimal main tests::
+These three mains are use by the minimal main tests:
 
-    tests/CSGOptiXRMTest.cc 
-    tests/CSGOptiXTMTest.cc 
-    tests/CSGOptiXSMTest.cc 
++-------------+---------------------------+---------------------+
+|  script     | mains                     | notes               | 
++=============+===========================+=====================+
+| cxr_min.sh  | tests/CSGOptiXRMTest.cc   | minimal render      | 
++-------------+---------------------------+---------------------+
+| cxt_min.sh  | tests/CSGOptiXTMTest.cc   | minimal simtrace    |
++-------------+---------------------------+---------------------+
+| cxs_min.sh  | tests/CSGOptiXSMTest.cc   | minimal simulate    |
++-------------+---------------------------+---------------------+
 
 Note that the former SEvt setup and frame hookup 
 done in the main is now moved into CSGFoundry::AfterLoadOrCreate

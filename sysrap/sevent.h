@@ -88,6 +88,7 @@ struct sphoton ;
 #include <sstream>
 #include <iomanip>
 #include "SEventConfig.hh"
+#include "NP.hh"
 #endif
 
 struct sevent
@@ -172,6 +173,8 @@ struct sevent
 
     SEVENT_METHOD void get_domain(quad4& dom) const ; 
     SEVENT_METHOD void get_config(quad4& cfg) const ; 
+    SEVENT_METHOD void get_meta(std::string& meta) const ; 
+
     SEVENT_METHOD void zero(); 
 #endif 
 
@@ -409,6 +412,28 @@ SEVENT_METHOD void sevent::get_config( quad4& cfg ) const
    cfg.q3.u.z = num_seq ; 
    cfg.q3.u.w = 0 ;
 }
+
+
+SEVENT_METHOD void sevent::get_meta(std::string& meta) const 
+{
+    NP::SetMeta<uint64_t>(meta,"evt.max_photon", max_photon); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_record", max_record); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_rec", max_rec); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_seq", max_seq); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_prd", max_prd); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_tag", max_tag); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_flat", max_flat); 
+
+    NP::SetMeta<uint64_t>(meta,"evt.num_photon", num_photon); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_record", num_record); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_rec", num_rec); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_seq", num_seq); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_prd", num_prd); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_tag", num_tag); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_flat", num_flat); 
+}
+
+
 
 /**
 sevent::zero
