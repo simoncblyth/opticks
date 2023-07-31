@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     else
     {   
         evt = SEvt::Load(reldir) ;
-        evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+        evt->clear_except("g4state");  // clear loaded evt but keep g4state 
     }   
 
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     if(evt->is_loaded)
     {
         SEvt::SetReldir("SEvtLoadTest"); 
-        evt->clear_partial("g4state"); 
+        evt->clear_except("g4state"); 
         evt->save(); 
     }
 

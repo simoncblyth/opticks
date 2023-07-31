@@ -27,13 +27,14 @@ if __name__ == '__main__':
 
 
 
-if 0:
-    p = t.photon
-    r = t.record
-    seq = t.seq
-    prd = t.prd
-    h = t.hit if hasattr(t,"hit") else None
-    h_meta = t.hit_meta 
+if 1:
+    p = t.f.photon
+    r = t.f.record
+    seq = t.f.seq
+    prd = t.f.prd
+    h = t.f.hit if hasattr(t.f,"hit") else None
+    h_meta = t.f.hit_meta 
+
 
     ## HMM:makes more sense to put this meta data on the domain, for when no hits
     #pyhit = hit__(p, hitmask)  # hits selected in python 

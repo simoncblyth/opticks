@@ -137,8 +137,9 @@ struct NPFold
 
     // CTOR
     NPFold(); 
-    void check() const ; 
-
+private:
+    void check_integrity() const ; 
+public:
 
     // [subfold handling 
     void         add_subfold(const char* f, NPFold* fo ); 
@@ -185,10 +186,10 @@ struct NPFold
     void add( const char* k, const NP* a); 
     void add_(const char* k, const NP* a); 
     void set( const char* k, const NP* a); 
-    void clear(); 
+    void clear(const std::vector<std::string>* keep=nullptr); 
 
     static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
-    void clear_partial(const char* keylist, char delim=','); 
+    void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
 
 
     // single level (non recursive) accessors
@@ -204,7 +205,7 @@ struct NPFold
 
     const NP* get(const char* k) const ; 
     const NP* get_optional(const char* k) const ; 
-    int   get_num(const char* k) const ; 
+    int   get_num(const char* k) const ;   // number of items in array 
 
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
     template<typename T> void set_meta(const char* key, T value ) ;  
@@ -297,10 +298,10 @@ swapped to .npy for more standard handling.
 
 inline std::string NPFold::FormKey(const char* k, bool change_txt_to_npy) 
 {
-    std::stringstream ss ; 
-
     bool is_npy = IsNPY(k); 
     bool is_txt = IsTXT(k); 
+
+    std::stringstream ss ; 
 
     if(change_txt_to_npy && is_txt)  
     {
@@ -449,7 +450,16 @@ inline NPFold::NPFold()
 {
 }
 
-inline void NPFold::check() const
+
+/**
+NPFold::check_integrity
+--------------------------
+
+check_integrity of key and array vectors and similarly for subfold (non-recursive)
+
+**/
+
+inline void NPFold::check_integrity() const
 {
     assert( kk.size() == aa.size() ); 
     assert( ff.size() == subfold.size() ); 
@@ -725,14 +735,26 @@ inline void NPFold::set(const char* k, const NP* a)
     }
 }
 
-inline void NPFold::clear()
+/**
+NPFold::clear (clearing this fold and all subfold recursively)
+----------------------------------------------------------------
+
+1. check_integrity (non-recursive)
+2. for each NP array delete it and clear the kk and aa vectors
+3. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
+
+**/
+
+inline void NPFold::clear(const std::vector<std::string>* keep)
 {
-    check(); 
+    check_integrity(); 
 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
         const NP* a = aa[i]; 
-        delete a ; 
+        const std::string& k = kk[i] ; 
+        bool listed = keep && std::find( keep->begin(), keep->end(), k ) != keep->end() ; 
+        if(!listed) delete a ; 
     } 
     aa.clear(); 
     kk.clear(); 
@@ -747,17 +769,28 @@ inline void NPFold::clear()
     ff.clear(); 
 }
 
+/**
+NPFold::SplitKeys
+--------------------
+
+FormKey which adds .npy if not already present is applied to form the elem 
+as that is done by NPFold::add 
+
+**/
+
 inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim) // static
 {
+    bool change_txt_to_npy = false ; 
+
     std::stringstream ss; 
     ss.str(keylist)  ;
     std::string s;
-    while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str(),false)); 
+    while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str(),change_txt_to_npy)); 
 }
 
 
 /**
-NPFold::clear_partial
+NPFold::clear_except
 -----------------------
 
 It is not so easy to do partial erase from vector
@@ -773,12 +806,12 @@ Unsure if that will be a problem.
 
 **/
 
-inline void NPFold::clear_partial(const char* keep_keylist, char delim)
+inline void NPFold::clear_except(const char* keylist, bool copy, char delim )
 {
-    check(); 
+    check_integrity(); 
 
     std::vector<std::string> keep ; 
-    SplitKeys(keep, keep_keylist, delim); 
+    if(keylist) SplitKeys(keep, keylist, delim); 
 
     std::vector<const NP*>   tmp_aa ; 
     std::vector<std::string> tmp_kk ; 
@@ -787,15 +820,15 @@ inline void NPFold::clear_partial(const char* keep_keylist, char delim)
     {
         const NP* a = aa[i]; 
         const std::string& k = kk[i] ; 
-        bool listed = std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
+        bool listed = keylist && std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
         if(listed)
         { 
-            tmp_aa.push_back(NP::MakeCopy(a)); 
+            tmp_aa.push_back(copy ? NP::MakeCopy(a) : a ); 
             tmp_kk.push_back(k); 
         }
     } 
 
-    clear(); 
+    clear(copy ? nullptr : &keep); 
 
     assert( tmp_aa.size() == tmp_kk.size() ); 
     for(unsigned i=0 ; i < tmp_aa.size() ; i++)
@@ -812,7 +845,7 @@ inline void NPFold::clear_partial(const char* keep_keylist, char delim)
 
 inline int NPFold::num_items() const 
 {
-    check(); 
+    check_integrity(); 
     return kk.size(); 
 }
 

@@ -34,11 +34,11 @@ int main(int argc, char** argv)
 
     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
 
-    G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  
+    G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  
 
-    cx->simulate(0); 
+    gx->simulate(0); 
     cudaDeviceSynchronize(); 
-    cx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
+    gx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
 
     return 0 ; 
 }

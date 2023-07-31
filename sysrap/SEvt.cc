@@ -129,7 +129,11 @@ SEvt::SEvt()
     is_loadfail(false),
     numphoton_collected(0u),   // updated by addGenstep
     numphoton_genstep_max(0u),
-    clear_count(0)
+    clear_count(0),
+    gather_total(0),
+    genstep_total(0),
+    photon_total(0),
+    hit_total(0)
 {   
     init(); 
 }
@@ -160,9 +164,11 @@ void SEvt::init()
 
     LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
 
-    SEventConfig::CompList(comp);  // populate comp vector based on CompMask
+    SEventConfig::GatherCompList(gather_comp);  // populate gather_comp vector based on GatherCompMask
+    SEventConfig::SaveCompList(save_comp);      // populate save_comp vector based on SaveCompMask
 
-    LOG(LEVEL) << " SEventConfig::CompMaskLabel "  << SEventConfig::CompMaskLabel() ; 
+
+    LOG(LEVEL) << " SEventConfig::GatherCompLabel "  << SEventConfig::GatherCompLabel() ;   // CompMaskLabel 
     LOG(LEVEL) << descComp() ; 
 
     initInputPhoton(); 
@@ -951,7 +957,7 @@ SEvt* SEvt::HighLevelCreate(int idx) // static
     {   
         SEvt::SetReldir(seldir); 
         evt = SEvt::Load(alldir0) ;
-        evt->clear_partial("g4state");  // clear loaded evt but keep g4state 
+        evt->clear_except("g4state");  // clear loaded evt but keep g4state 
         // when rerunning have to load states from alldir0 and then change reldir to save into seldir
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
@@ -1161,13 +1167,17 @@ SEvt::endOfEvent (former static SEvt::EndOfEvent is removed)
 
 Called for example from U4Recorder::EndOfEventAction
 
+
+1. TODO: save should not be standardly done, where to control that ? SEventConfig presumably. 
+2. TODO: split gather from save 
+
 **/
 
 void SEvt::endOfEvent(int eventID)
 {
     int index_ = 1+eventID ;    
     endIndex(index_); 
-    save(); 
+    save();    
     clear(); 
 }
 
@@ -1281,15 +1291,15 @@ std::string SEvt::DescHasInputPhoton()  // static
 
 
 /**
-SEvt::clear_
----------------
+SEvt::clear_vectors
+--------------------
 
 Set the photon counts to zero and clear the vectors. 
 Note that most of the vectors are only used with hostside running.
 
 **/
 
-void SEvt::clear_()
+void SEvt::clear_vectors()
 {
     numphoton_collected = 0u ; 
     numphoton_genstep_max = 0u ; 
@@ -1326,9 +1336,6 @@ void SEvt::clear_()
 
     gather_done = false ;  
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
-
-
-    
 }
 
 /**
@@ -1348,16 +1355,27 @@ void SEvt::clear()
     LOG(info) << "SEvt::clear" ; 
 
     LOG(LEVEL) << "[" ; 
-    clear_(); 
+    clear_vectors(); 
     if(fold) fold->clear(); 
     LOG(LEVEL) << "]" ; 
 }
 
-void SEvt::clear_partial(const char* keep_keylist, char delim)
+/**
+SEvt::clear_except
+--------------------
+
+The comma delimited keeplist need not contain .npy on its keys
+
+**/
+
+void SEvt::clear_except(const char* keeplist )
 {
+    char delim = ',' ; 
+    bool copy = false ; 
+
     LOG(LEVEL) << "[" ; 
-    clear_(); 
-    if(fold) fold->clear_partial(keep_keylist, delim ); 
+    clear_vectors(); 
+    if(fold) fold->clear_except(keeplist, copy, delim ); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -1434,7 +1452,7 @@ unsigned SEvt::getNumPhotonFromGenstep() const
 
 unsigned SEvt::getNumPhotonCollected() const 
 {
-    return numphoton_collected ; 
+    return numphoton_collected ;   // updated by addGenstep 
 }
 unsigned SEvt::getNumPhotonGenstepMax() const 
 {
@@ -1477,7 +1495,7 @@ actual gensteps for the enabled index.
 sgs SEvt::addGenstep(const quad6& q_)
 {
     dbg->addGenstep++ ; 
-    LOG(info) << " index " << index << " instance " << instance ; 
+    LOG(LEVEL) << " index " << index << " instance " << instance ; 
 
     unsigned gentype = q_.gentype(); 
     unsigned matline_ = q_.matline(); 
@@ -2642,16 +2660,16 @@ is not called
 
 **/
 
-NP* SEvt::gatherComponent(unsigned comp) const 
+NP* SEvt::gatherComponent(unsigned cmp) const 
 {
-    unsigned mask = SEventConfig::CompMask(); 
-    return mask & comp ? gatherComponent_(comp) : nullptr ; 
+    unsigned gather_mask = SEventConfig::GatherComp(); 
+    return gather_mask & cmp ? gatherComponent_(cmp) : nullptr ; 
 }
 
-NP* SEvt::gatherComponent_(unsigned comp) const 
+NP* SEvt::gatherComponent_(unsigned cmp) const 
 {
     NP* a = nullptr ; 
-    switch(comp)
+    switch(cmp)
     {   
         case SCOMP_INPHOTON:  a = gatherInputPhoton() ; break ;   
         case SCOMP_G4STATE:   a = gatherG4State()     ; break ;   
@@ -2783,6 +2801,53 @@ std::string SEvt::descDbg() const
     return str ; 
 }
 
+/**
+SEvt::gather_components
+------------------------
+
+NB the provider is either this SEvt OR a QEvent instance held by QSim 
+
+**/
+
+
+void SEvt::gather_components()
+{
+    int num_genstep = getNumGenstepFromGenstep();   // only before clear  
+    int num_photon  = getNumPhotonCollected();
+    int num_hit     = 0 ; 
+
+    for(unsigned i=0 ; i < gather_comp.size() ; i++)
+    {
+        unsigned cmp = gather_comp[i] ;   
+        const char* k = SComp::Name(cmp);    
+        NP* a = provider->gatherComponent(cmp); 
+        LOG(LEVEL) << " k " << std::setw(15) << k << " a " << ( a ? a->brief() : "-" ) ; 
+        if(a == nullptr) continue ;  
+        fold->add(k, a); 
+
+        int num = a->shape[0] ;  
+        
+        if(SComp::IsGenstep(cmp))
+        {
+            assert( num == num_genstep );   
+        }
+        else if(SComp::IsPhoton(cmp))
+        {
+            assert( num == num_photon );   
+        }
+        else if(SComp::IsHit(cmp))
+        {
+            num_hit = num ; 
+        } 
+    }
+    fold->meta = provider->getMeta();  
+
+    gather_total += 1 ;
+    genstep_total += num_genstep ;
+    photon_total += num_photon ;
+    hit_total += num_hit ;
+}
+
 
 /**
 SEvt::gather
@@ -2798,25 +2863,11 @@ into NPFold from the SCompProvider which can either be:
 
 void SEvt::gather() 
 {
-    if(gather_done) 
-    {
-        LOG(error) << "gather_done already skip gather " ; 
-        return ; 
-    }
-
+    LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ; 
+    if(gather_done) return ; 
     gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
 
-    for(unsigned i=0 ; i < comp.size() ; i++)
-    {
-        unsigned cmp = comp[i] ;   
-        const char* k = SComp::Name(cmp);    
-        NP* a = provider->gatherComponent(cmp); 
-        LOG(LEVEL) << " k " << std::setw(15) << k << " a " << ( a ? a->brief() : "-" ) ; 
-        if(a == nullptr) continue ;  
-        fold->add(k, a); 
-    }
-    fold->meta = provider->getMeta();  
-    // persisted metadata will now be in NPFold_meta.txt (previously fdmeta.txt)
+    gather_components(); 
 }
 
 
@@ -3162,7 +3213,9 @@ std::string SEvt::descComponent() const
     std::stringstream ss ; 
     ss << "SEvt::descComponent" 
        << std::endl 
-       << std::setw(20) << " SEventConfig::CompMaskLabel " << SEventConfig::CompMaskLabel() << std::endl  
+       << std::setw(20) << " SEventConfig::GatherCompLabel " << SEventConfig::GatherCompLabel() << std::endl  
+       << std::endl 
+       << std::setw(20) << " SEventConfig::SaveCompLabel " << SEventConfig::SaveCompLabel() << std::endl  
        << std::setw(20) << "hit" << " " 
        << std::setw(20) << ( hit ? hit->sstr() : "-" ) 
        << " "
@@ -3233,8 +3286,12 @@ std::string SEvt::descComp() const
 {
     std::stringstream ss ; 
     ss << "SEvt::descComp " 
-       << " comp.size " << comp.size() 
-       << " SComp::Desc " << SComp::Desc(comp)
+       << " gather_comp.size " << gather_comp.size() 
+       << " SComp::Desc(gather_comp) " << SComp::Desc(gather_comp)
+       << std::endl 
+       << " save_comp.size "   << save_comp.size() 
+       << " SComp::Desc(save_comp) " << SComp::Desc(save_comp)
+       << std::endl 
        ; 
     std::string s = ss.str(); 
     return s ; 
@@ -3244,7 +3301,8 @@ std::string SEvt::descVec() const
 {
     std::stringstream ss ; 
     ss << "SEvt::descVec " 
-       << " comp " << comp.size()  
+       << " gather_comp " << gather_comp.size()  
+       << " save_comp " << save_comp.size()  
        << " genstep " << genstep.size()  
        << " gs " << gs.size()  
        << " pho0 " << pho0.size()  
@@ -3275,7 +3333,7 @@ const NP* SEvt::getSup() const {    return fold->get(SComp::SUP_) ; }
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    
 { 
-    int num = fold->get_num(SComp::HIT_) ; 
+    int num = fold->get_num(SComp::HIT_) ;  // number of items in array 
     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
 }
 
@@ -3317,6 +3375,8 @@ Canonical usage from U4HitGet::FromEvt
 1. copy *idx* hit from NP array into sphoton& lp struct 
 2. uses lp.iindex (instance index) to lookup the frame from the SGeo* cf geometry  
 
+   * TODO: check sensor_identifier, it should now be done GPU side already ? 
+
 **/
 
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
@@ -3339,7 +3399,7 @@ SEvt::getPhotonFrame
 Note that this relies on the photon iindex which 
 may not be set for photons ending in some places. 
 It should always be set for photons ending on PMTs
-assuming properlay instanced geometry. 
+assuming properly instanced geometry. 
 
 **/
 

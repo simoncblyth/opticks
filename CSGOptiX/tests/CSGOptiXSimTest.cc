@@ -19,7 +19,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEventConfig::SetCompMask("genstep,photon,hit,domain,record,rec,seq");  // NB no "simtrace" here
+    const char* comp = "genstep,photon,hit,domain,record,rec,seq" ;  // NB no "simtrace" here
+    SEventConfig::SetGatherComp(comp); 
+    SEventConfig::SetSaveComp(comp); 
+    // TODO: this now automated ? check that 
+
 
     SEvt* evt = SEvt::Create(SEvt::EGPU)  ;  // holds gensteps and output NPFold of component arrays
     SEvt::AddCarrierGenstep();   // normally gensteps added after geometry setup, but can be before in this simple test 

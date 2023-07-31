@@ -48,22 +48,20 @@ struct G4CX_API G4CXOpticks
     static bool IsNoGPU() ; 
 
 
-
-    SSim*       sim ; 
-    const U4Tree*   tr ;
+    SSim*                    sim ; 
+    const U4Tree*            tr ;
     const G4VPhysicalVolume* wd ; 
+    GGeo*                    gg ;
+    CSGFoundry*              fd ; 
+    CSGOptiX*                cx ; 
+    QSim*                    qs ; 
+    schrono::TP              t0 ; 
 
-    GGeo*       gg ;
-    CSGFoundry* fd ; 
-    CSGOptiX*   cx ; 
-    QSim*       qs ; 
-    schrono::TP t0 ; 
-
-
-    unsigned event_total ; 
-    unsigned genstep_total ; 
-    unsigned photon_total ; 
-    unsigned hit_total ; 
+    // WIP: move these into QSim
+    //unsigned event_total ; 
+    //unsigned genstep_total ; 
+    //unsigned photon_total ; 
+    //unsigned hit_total ; 
 
 private: 
     G4CXOpticks(); 
@@ -90,7 +88,7 @@ public:
     void simtrace(int eventID); 
     void render(); 
 
-    void saveEvent() const ; 
+    void saveEvent() const ; // TODO: eliminate, handle it at SEvt level via SEventConfig control 
 
     static const bool saveGeometry_saveGGeo ; // G4CXOpticks__saveGeometry_saveGGeo 
     void saveGeometry() const ;

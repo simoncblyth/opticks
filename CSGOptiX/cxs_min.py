@@ -6,6 +6,8 @@ from opticks.sysrap.sevt import SEvt
 log = logging.getLogger(__name__)
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
+SEL = int(os.environ.get("SEL","0")) 
+
 
 if MODE in [2,3]:
     from opticks.ana.pvplt import *   
@@ -46,12 +48,21 @@ if __name__ == '__main__':
     lpos = np.dot( gpos, e.f.sframe.w2m )
     upos = gpos if GLOBAL else lpos
 
-    H,V = 0,2 
+
+    H,V = 0,2  # X, Z
+
+    if SEL == 1:
+        sel = np.logical_and( np.abs(upos[:,H]) < 500, np.abs(upos[:,V]) < 500 )
+        spos = upos[sel]
+    else:
+        spos = upos 
+    pass
+
   
     if MODE == 2:
-        ax.scatter( upos[:,H], pp[:,V], s=0.1 )
+        ax.scatter( spos[:,H], spos[:,V], s=0.1 )
     elif MODE == 3:
-        pl.add_points(upos[:,:3])
+        pl.add_points(spos[:,:3])
     else:
         pass
     pass

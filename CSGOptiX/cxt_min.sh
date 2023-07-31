@@ -28,7 +28,7 @@ GDIR=.opticks/GEOM/$GEOM
 export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
 
 export BASE=$GDIR/$bin   # rsync special cases paths starting with . 
-export EVT=${EVT:-000}
+export EVT=${EVT:-p001}
 export LOGDIR=$HOME/$BASE
 
 mkdir -p $LOGDIR 
@@ -47,6 +47,9 @@ moi=ALL
 export MOI=${MOI:-$moi}
 #export OPTICKS_EVENT_MODE=StandardFullDebug
 #export OPTICKS_MAX_BOUNCE=31
+
+export OPTICKS_INTEGRATION_MODE=1
+
 
 ## HMM: simtrace replaced ALL with the MOI value  MAYBE: STANDARDIZE ON ALL ?
 export FOLD=$HOME/$GDIR/$bin/$MOI/$EVT

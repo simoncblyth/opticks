@@ -8,6 +8,7 @@ QSimTest.sh
     ./QSimTest.sh 
         run the executable and invoke the python script  
 
+    PIDX=0 ./QSimTest.sh
     PIDX=2 ./QSimTest.sh
         assuming QUDARap was compiled with DEBUG_PIDX this
         provides debug output for the provided photon id 
@@ -19,7 +20,6 @@ EOU
 }
 
 bin=QSimTest 
-
 defarg=run_ana
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -151,7 +151,7 @@ source fill_state.sh
 source ephoton.sh    # branching on TEST inside ephoton.sh 
 source eprd.sh
 
-export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/000
+export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/p001
 
 vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM SDIR EBASE"
 

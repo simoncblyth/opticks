@@ -50,13 +50,6 @@ QSim* QSim::Create()
     return new QSim  ;  
 }
 
-
-
-
-
-
-
-
 /**
 QSim::UploadComponents
 -----------------------
@@ -108,7 +101,6 @@ void QSim::UploadComponents( const SSim* ssim  )
     QBase* base = new QBase ; 
     LOG(LEVEL) << "] new QBase : latency here of about 0.3s from first device access, if latency of >1s need to start nvidia-persistenced " ; 
     LOG(LEVEL) << base->desc(); 
-
 
 
     LOG(LEVEL) << "[ new QRng " ;
@@ -181,8 +173,18 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     const NPFold* spmt_f = ssim->get_spmt_f() ; 
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ; 
-    LOG_IF(LEVEL, qpmt == nullptr ) << " NO QPMT instance " ; 
-    LOG(LEVEL) << QPMT<float>::Desc(); 
+    LOG_IF(LEVEL, qpmt == nullptr ) 
+        << " NO QPMT instance " 
+        << " spmt_f " << ( spmt_f ? "YES" : "NO " )
+        << " qpmt " << ( qpmt ? "YES" : "NO " ) 
+        ;
+ 
+    LOG(LEVEL) 
+        << QPMT<float>::Desc()
+        << std::endl 
+        << " spmt_f " << ( spmt_f ? "YES" : "NO " )
+        << " qpmt " << ( qpmt ? "YES" : "NO " ) 
+        ; 
 
 
 /*
@@ -280,7 +282,7 @@ void QSim::init()
 
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
-    LOG(LEVEL) << checkComponents() ; 
+    LOG(LEVEL) << descComponents() ; 
 }
 
 /**
@@ -363,7 +365,8 @@ char QSim::getScintTexFilterMode() const
 std::string QSim::desc() const
 {
     std::stringstream ss ; 
-    ss << "QSim.hh"
+    ss << "QSim::desc"
+       << std::endl 
        << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec  
        << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec  
        << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec    
@@ -376,7 +379,10 @@ std::string QSim::desc() const
 std::string QSim::descFull() const
 {
     std::stringstream ss ; 
-    ss << "QSim.hh"
+    ss 
+       << std::endl 
+       << "QSim::descFull"
+       << std::endl 
        << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec  
        << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec  
        << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec    
@@ -392,24 +398,29 @@ std::string QSim::descFull() const
     return s ; 
 }
 
-
-
-std::string QSim::checkComponents() const 
+std::string QSim::descComponents() const 
 {
     std::stringstream ss ; 
-    ss << std::endl ;  
-    ss << " base       " << ( base ? "Y" : "N" )  << std::endl ; 
-    ss << " event      " << ( event ? "Y" : "N" )  << std::endl ; 
-    ss << " rng        " << ( rng ? "Y" : "N" )  << std::endl ; 
-    ss << " scint      " << ( scint ? "Y" : "N" )  << std::endl ; 
-    ss << " cerenkov   " << ( cerenkov ? "Y" : "N" )  << std::endl ;  
-    ss << " bnd        " << ( bnd ? "Y" : "N" )  << std::endl ; 
-    ss << " prop       " << ( prop ? "Y" : "N" )  << std::endl ; 
-    ss << " multifilm  " << ( multifilm ? "Y" : "N" )  << std::endl  ; 
-    ss << " sim        " << ( sim ? "Y" : "N" )  << std::endl ; 
-    ss << " d_sim      " << ( d_sim ? "Y" : "N" )  << std::endl ; 
-    ss << " dbg        " << ( dbg ? "Y" : "N" )  << std::endl ; 
-    ss << " d_dbg      " << ( d_dbg ? "Y" : "N" )  << std::endl ; 
+    ss << std::endl   
+       << "QSim::descComponents" 
+       << std::endl 
+       << " (QBase)base             " << ( base      ? "YES" : "NO " )  << std::endl 
+       << " (QEvent)event           " << ( event     ? "YES" : "NO " )  << std::endl 
+       << " (SEvt)sev               " << ( sev       ? "YES" : "NO " )  << std::endl 
+       << " (QRng)rng               " << ( rng       ? "YES" : "NO " )  << std::endl 
+       << " (QScint)scint           " << ( scint     ? "YES" : "NO " )  << std::endl  
+       << " (QCerenkov)cerenkov     " << ( cerenkov  ? "YES" : "NO " )  << std::endl   
+       << " (QBnd)bnd               " << ( bnd       ? "YES" : "NO " )  << std::endl  
+       << " (QOptical)optical       " << ( optical   ? "YES" : "NO " )  << std::endl  
+       << " (QDebug)debug_          " << ( debug_    ? "YES" : "NO " )  << std::endl  
+       << " (QProp)prop             " << ( prop      ? "YES" : "NO " )  << std::endl  
+       << " (QPMT)pmt               " << ( pmt       ? "YES" : "NO " )  << std::endl  
+       << " (QMultiFilm)multifilm   " << ( multifilm ? "YES" : "NO " )  << std::endl  
+       << " (qsim)sim               " << ( sim       ? "YES" : "NO " )  << std::endl 
+       << " (qsim)d_sim             " << ( d_sim     ? "YES" : "NO " )  << std::endl 
+       << " (qdebug)dbg             " << ( dbg       ? "YES" : "NO " )  << std::endl 
+       << " (qdebug)d_dbg           " << ( d_dbg     ? "YES" : "NO " )  << std::endl 
+       ; 
     std::string s = ss.str(); 
     return s ; 
 }

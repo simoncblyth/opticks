@@ -48,7 +48,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGModeSimtrace(); 
-    SEventConfig::SetCompMask("genstep,simtrace"); 
+
+    const char* comp = "genstep,simtrace" ;  
+    SEventConfig::SetGatherComp(comp); 
+    SEventConfig::SetSaveComp(comp); 
+    // TODO: this config is automated now,  check that and remove
 
     SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
    

@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EON
 ab.sh
 =========
@@ -36,15 +35,15 @@ ab_arg=${1:-$ab_defarg}
 stem=${ab_arg}
 script=$OPTICKS_HOME/g4cx/tests/$stem.py
 
+vars="BASH_SOURCE OPTICKS_HOME GEOM ab_arg ab_defarg A_FOLD B_FOLD stem script"
+
 
 if [ "$ab_arg" == "info" ]; then
-   vars="BASH_SOURCE OPTICKS_HOME GEOM ab_arg ab_defarg A_FOLD B_FOLD script"
-   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ -f "$script" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi
-
 
 

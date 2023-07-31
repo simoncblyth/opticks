@@ -86,6 +86,7 @@ struct QUDARAP_API QSim
 
     SCSGOptiX*        cx ; 
 
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
@@ -102,7 +103,7 @@ public:
     qsim* getDevicePtr() const ; 
     std::string desc() const ; 
     std::string descFull() const ; 
-    std::string checkComponents() const ; 
+    std::string descComponents() const ; 
 
 
     // TODO: relocate non-essential methods into tests or elsewhere

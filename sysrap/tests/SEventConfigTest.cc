@@ -56,32 +56,49 @@ void test_OutPath()
 }
 
 
-void test_CompList()
+void test_GatherCompList()
 {
-    std::vector<unsigned> comps ; 
-    SEventConfig::CompList(comps) ; 
-    std::cout << SComp::Desc(comps) << std::endl ; 
+    std::vector<unsigned> gather_comps ; 
+    SEventConfig::GatherCompList(gather_comps) ; 
+    std::cout << SComp::Desc(gather_comps) << std::endl ; 
 }
 
-void test_CompMaskAuto()
+void test_SaveCompList()
 {
-    LOG(info) << " SEventConfig::CompMaskAuto() " << SEventConfig::CompMaskAuto() ; 
-    LOG(info) << " SComp::Desc(SEventConfig::CompMaskAuto()) " << SComp::Desc(SEventConfig::CompMaskAuto()) ; 
+    std::vector<unsigned> save_comps ; 
+    SEventConfig::SaveCompList(save_comps) ; 
+    std::cout << SComp::Desc(save_comps) << std::endl ; 
 }
 
-void test_SetCompMaskAuto()
+
+
+
+
+void test_CompAuto()
+{
+    unsigned gather_mask = 0 ; 
+    unsigned save_mask = 0 ; 
+
+    SEventConfig::CompAuto(gather_mask,save_mask ); 
+
+    LOG(info) << " SComp::Desc(gather_mask) " << SComp::Desc(gather_mask) ; 
+    LOG(info) << " SComp::Desc(save_mask) " << SComp::Desc(save_mask) ; 
+}
+
+
+void test_SetCompAuto()
 {
     std::cout 
-        << "test_SetCompMaskAuto.0"
+        << "test_SetCompAuto.0"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
         ; 
 
-    SEventConfig::SetCompMaskAuto() ;     
+    SEventConfig::SetCompAuto() ;     
 
     std::cout 
-        << "test_SetCompMaskAuto.1"
+        << "test_SetCompAuto.1"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
@@ -107,17 +124,10 @@ void test_SetDefault()
         ; 
 }
 
-
-
-
-
 void test_Save()
 {
     SEventConfig::Save("$FOLD"); 
 }
-
-
-
 
 
 
@@ -129,15 +139,17 @@ int main(int argc, char** argv)
 
     /*
     test_OutPath(); 
-    test_CompList(); 
-    test_CompMaskAuto(); 
-    test_SetCompMaskAuto(); 
+    test_GatherCompList(); 
+    test_SaveCompList(); 
+    test_CompAuto(); 
+    test_SetCompAuto(); 
     test_SetDefault(); 
     test_EstimateAlloc(); 
     test_Save(); 
+    test_Desc(); 
     */
 
-    test_Desc(); 
+    test_SetCompAuto(); 
 
 
     return 0 ; 

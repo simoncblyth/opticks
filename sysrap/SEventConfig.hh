@@ -101,7 +101,11 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kOutName    = "OPTICKS_OUT_NAME" ; 
     static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
-    static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
+
+    //static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
+    static constexpr const char* kGatherComp   = "OPTICKS_GATHER_COMP" ; 
+    static constexpr const char* kSaveComp     = "OPTICKS_SAVE_COMP" ; 
+
     static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ; 
     static constexpr const char* kInputPhoton = "OPTICKS_INPUT_PHOTON" ; 
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
@@ -138,7 +142,11 @@ struct SYSRAP_API SEventConfig
     static const char* OutFold(); 
     static const char* OutName(); 
     static unsigned HitMask(); 
-    static unsigned CompMask(); 
+
+    //static unsigned CompMask(); 
+    static unsigned GatherComp(); 
+    static unsigned SaveComp(); 
+
     static float PropagateEpsilon(); 
     static const char* InputPhoton(); 
     static const char* InputPhotonFrame(); 
@@ -149,8 +157,13 @@ struct SYSRAP_API SEventConfig
     static bool IsRGModeSimulate(); 
     static const char* RGModeLabel(); 
 
-    static std::string CompMaskLabel(); 
-    static void CompList( std::vector<unsigned>& comps ) ; 
+    //static std::string CompMaskLabel(); 
+    static std::string GatherCompLabel(); 
+    static std::string SaveCompLabel(); 
+
+    //static void CompList( std::vector<unsigned>& comps ) ; 
+    static void GatherCompList( std::vector<unsigned>& gather_comp ) ; 
+    static void SaveCompList( std::vector<unsigned>& save_comp ) ; 
 
     static const char* Default ; 
     static const char* StandardFullDebug ; 
@@ -190,10 +203,20 @@ struct SYSRAP_API SEventConfig
     static void SetInputPhoton(const char* input_photon); 
     static void SetInputPhotonFrame(const char* input_photon_frame); 
 
-    static void SetCompMask_(unsigned mask); 
-    static void SetCompMask(const char* names, char delim=',') ; 
-    static void SetCompMaskAuto(); 
-    static unsigned CompMaskAuto() ; 
+    //static void SetCompMask_(unsigned mask); 
+    //static void SetCompMask(const char* names, char delim=',') ; 
+    //static void SetCompMaskAuto(); 
+
+    static void SetGatherComp_(unsigned mask); 
+    static void SetGatherComp(const char* names, char delim=',') ; 
+
+    static void SetSaveComp_(unsigned mask); 
+    static void SetSaveComp(const char* names, char delim=',') ; 
+
+    //static unsigned CompMaskAuto() ; 
+    static void  SetCompAuto(); 
+    static void  CompAuto(unsigned& gather_mask, unsigned& save_mask ); 
+
 
     static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
@@ -221,7 +244,11 @@ struct SYSRAP_API SEventConfig
     static const char* _OutNameDefault ; 
     static const char* _HitMaskDefault ; 
     static const char* _RGModeDefault ; 
-    static const char* _CompMaskDefault ; 
+
+    //static const char* _CompMaskDefault ; 
+    static const char* _GatherCompDefault ; 
+    static const char* _SaveCompDefault ; 
+
     static float _PropagateEpsilonDefault  ; 
     static const char* _InputPhotonDefault ; 
     static const char* _InputPhotonFrameDefault ; 
@@ -251,7 +278,11 @@ struct SYSRAP_API SEventConfig
     static const char* _OutName ; 
     static unsigned _HitMask ; 
     static int _RGMode ; 
-    static unsigned _CompMask ; 
+
+    //static unsigned _CompMask ; 
+    static unsigned _GatherComp ; 
+    static unsigned _SaveComp ; 
+
     static float _PropagateEpsilon ;
     static const char* _InputPhoton ; 
     static const char* _InputPhotonFrame ; 

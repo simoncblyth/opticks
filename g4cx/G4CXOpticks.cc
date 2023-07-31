@@ -99,18 +99,18 @@ HMM: sim in GX ctor seems out of place, shouldnt that be coming from CSGFoundry 
 
 G4CXOpticks::G4CXOpticks()
     :
-    sim(SSim::Create()),   
+    sim(SSim::CreateOrReuse()),   
     tr(nullptr),
     wd(nullptr),
     gg(nullptr),
     fd(nullptr), 
     cx(nullptr),
     qs(nullptr),
-    t0(schrono::stamp()),
-    event_total(0),
-    genstep_total(0),
-    photon_total(0),
-    hit_total(0)
+    t0(schrono::stamp())
+    //event_total(0),
+    //genstep_total(0),
+    //photon_total(0),
+    //hit_total(0)
 {
     init();
 }
@@ -470,6 +470,12 @@ G4CXOpticks::simulate
 
 TODO: most of this should be happening at lower level, not up here 
 
+1. bean counting can happen at SEvt level 
+2. save is already happening at SEvt::endOfEvent 
+   so do not need it or gather up here 
+
+THIS WILL BECOME JUST LIKE simtrace and render 
+
 **/
 
 void G4CXOpticks::simulate(int eventID)
@@ -487,20 +493,20 @@ void G4CXOpticks::simulate(int eventID)
 
     SEvt* sev = SEvt::Get_EGPU() ;  assert(sev); 
 
-    unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
-    unsigned num_photon  = sev->getNumPhotonCollected(); 
+    //unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
+    //unsigned num_photon  = sev->getNumPhotonCollected(); 
 
     qs->simulate(eventID);   // GPU launch doing generation and simulation here 
 
     sev->gather();           // downloads components configured by SEventConfig::CompMask 
+    // save would gather, but need to do that anyhow even when not saving 
 
 
-    unsigned num_hit = sev->getNumHit() ; 
-
-    event_total += 1 ; 
-    genstep_total += num_genstep ; 
-    photon_total += num_photon ; 
-    hit_total += num_hit ; 
+    //unsigned num_hit = sev->getNumHit() ; 
+    //event_total += 1 ; 
+    //genstep_total += num_genstep ; 
+    //photon_total += num_photon ; 
+    //hit_total += num_hit ; 
 
 
     LOG(LEVEL) << descSimulate(); 
@@ -529,8 +535,6 @@ void G4CXOpticks::simtrace(int eventID)
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 
 
-    // setupFrame();   // EXPT: try moving this to being done from setGeometry
-
     qs->simtrace(eventID); 
     LOG(LEVEL) << "]" ; 
 }
@@ -547,7 +551,10 @@ void G4CXOpticks::render()
     LOG(LEVEL) << "]" ; 
 }
 
-void G4CXOpticks::saveEvent() const 
+
+
+
+void G4CXOpticks::saveEvent() const   // TODO: eliminate
 {
     LOG(LEVEL) << "[" ; 
     SEvt* sev = SEvt::Get_EGPU(); 
@@ -622,7 +629,7 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     LOG(info)  << "[ " << ( dir ? dir : "-" ) ; 
     std::cout << "G4CXOpticks::saveGeometry [ " << ( dir ? dir : "-" ) << std::endl ;
 
-    if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
+    if(wd) U4GDML::Write(wd, dir, "origin.gdml" );  // world 
     if(fd) fd->save(dir) ; 
 
     if(gg)

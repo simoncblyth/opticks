@@ -125,19 +125,26 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     sframe            frame ;
 
-    std::vector<unsigned> comp ;  // populated based on SEventConfig::CompMask 
-    std::vector<quad6> genstep ; 
-    std::vector<sgs>   gs ; 
+    // comp vectors are populated from SEventConfig in SEvt::init
+    std::vector<unsigned> gather_comp ;
+    std::vector<unsigned> save_comp ;
 
     unsigned           numphoton_collected ;    // avoid looping over all gensteps for every genstep
     unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
     int                clear_count ; 
 
-    std::vector<spho>  pho0 ;  // unordered push_back as they come 
-    std::vector<spho>  pho ;   // spho are label structs holding 4*int  
-    // TODO:rename, "pho" is too difficult to find
+    // moved here from G4CXOpticks, updated in gather 
+    unsigned gather_total ; 
+    unsigned genstep_total ; 
+    unsigned photon_total ; 
+    unsigned hit_total ; 
 
 
+    // [--- these vectors are cleared by SEvt::clear_
+    std::vector<quad6>   genstep ; 
+    std::vector<sgs>     gs ; 
+    std::vector<spho>    pho0 ;  // unordered push_back as they come 
+    std::vector<spho>    pho ;   // spho are label structs holding 4*int  
     std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 
     std::vector<sphoton> record ; 
@@ -149,6 +156,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<quad4>   simtrace ; 
     std::vector<quad4>   aux ; 
     std::vector<quad6>   sup ; 
+    // ]---- these vectors are cleared by SEvt::clear_
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -329,10 +337,11 @@ public:
     static NP* GetInputPhoton(); 
     static std::string DescHasInputPhoton(); 
 
-
-    void clear_() ; 
+private:
+    void clear_vectors() ; 
+public:
     void clear() ; 
-    void clear_partial(const char* keep_keylist, char delim=','); 
+    void clear_except(const char* keeplist ); 
 
     void setIndex(int index_) ;  
     void endIndex(int index_) ;  
@@ -445,7 +454,8 @@ public:
     std::string desc() const ; 
     std::string descDbg() const ; 
 
-    void gather() ;  // with on device running this downloads
+    void gather_components(); 
+    void gather() ;           // with on device running this downloads
 
     // add extra metadata arrays to be saved within SEvt fold 
     //static void AddArray(int idx, const char* k, const NP* a ); 

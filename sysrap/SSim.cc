@@ -231,6 +231,8 @@ SSim::get_jpmt
 Note that if the top fold does not have the JPMT_RELP "extra/jpmt"  subfold
 then this returns nullptr. 
 
+So that means must first call SSim::AddExtraSubfold
+
 **/
 
 const NPFold* SSim::get_jpmt() const 

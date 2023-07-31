@@ -535,8 +535,18 @@ NP* QEvent::gatherRec() const
     return r ; 
 }
 
+/**
+QEvent::getNumHit
+--------------------
 
-unsigned QEvent::getNumHit() const 
+HMM: applies selector to the GPU photon array, thats surprising 
+for a "get" method... TODO: maybe rearrange to do that once only 
+at the gatherHit stage and subsequently just supply the cached value 
+
+**/
+
+
+unsigned QEvent::getNumHit() const  
 {
     assert( evt->photon ); 
     assert( evt->num_photon ); 
@@ -626,19 +636,19 @@ std::string QEvent::getMeta() const
 {     
     return meta ; 
 }
-NP* QEvent::gatherComponent(unsigned comp) const 
+NP* QEvent::gatherComponent(unsigned cmp) const 
 {
-    LOG(LEVEL) << "[ comp " << comp ; 
-    unsigned mask = SEventConfig::CompMask(); 
-    bool proceed = (mask & comp) != 0 ; 
-    NP* a = proceed ? gatherComponent_(comp) : nullptr ;
-    LOG(LEVEL) << "[ comp " << comp << " proceed " << proceed << " a " <<  a ; 
+    LOG(LEVEL) << "[ cmp " << cmp ; 
+    unsigned gather_mask = SEventConfig::GatherComp(); 
+    bool proceed = (gather_mask & cmp) != 0 ; 
+    NP* a = proceed ? gatherComponent_(cmp) : nullptr ;
+    LOG(LEVEL) << "[ cmp " << cmp << " proceed " << proceed << " a " <<  a ; 
     return a ; 
 }
-NP* QEvent::gatherComponent_(unsigned comp) const 
+NP* QEvent::gatherComponent_(unsigned cmp) const 
 {
     NP* a = nullptr ; 
-    switch(comp)
+    switch(cmp)
     {   
         case SCOMP_GENSTEP:   a = getGenstep()     ; break ;   
         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;   

@@ -4959,7 +4959,7 @@ NP::LoadFromTxtFile
 
 1. resolves spec_or_path into path
 2. reads txt from the file into str
-3. creates array with NP::ArrayFromString  
+3. creates array with NP::LoadFromString  
 
 **/
 
