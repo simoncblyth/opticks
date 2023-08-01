@@ -18,6 +18,7 @@
 #include "sdebug.h"
 #include "stran.h"
 #include "stimer.h"
+#include "spath.h"
 
 #include "SLOG.hh"
 #include "ssys.h"
@@ -25,7 +26,7 @@
 #include "NP.hh"
 #include "NPX.h"
 #include "NPFold.h"
-#include "SPath.hh"
+#include "SPath.hh"   // TODO: switch over to spath.h 
 #include "SGeo.hh"
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -1010,6 +1011,18 @@ sgs SEvt::AddGenstep(const NP* a)
 }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
+
+
+
+SEvt* SEvt::LoadAbsolute(const char* dir_) // static
+{
+    const char* dir = spath::Resolve(dir_); 
+    SEvt* evt = new SEvt ; 
+    int rc = evt->loadfold(dir) ; 
+    if(rc != 0) evt->is_loadfail = true ; 
+    return evt  ; 
+}
+
 
 /**
 SEvt::Load
@@ -3108,16 +3121,20 @@ int SEvt::load(const char* dir_)
     LOG(LEVEL) << " dir " << dir ; 
     LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
     assert(dir); 
+    int rc = loadfold(dir); 
+    return rc ; 
+}
 
+int SEvt::loadfold( const char* dir )
+{
     LOG(LEVEL) << "[ fold.load " << dir ; 
     int rc = fold->load(dir); 
     LOG(LEVEL) << "] fold.load " << dir ; 
     is_loaded = true ; 
-
     onload(); 
-
     return rc ; 
 }
+
 
 void SEvt::onload()
 {

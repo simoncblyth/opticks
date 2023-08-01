@@ -278,6 +278,7 @@ public:
     static void AddCarrierGenstep(); 
     static void AddTorchGenstep(); 
 
+    static SEvt* LoadAbsolute(const char* dir); 
     static SEvt* Load(const char* rel=nullptr); 
     static void Clear(); 
     static void Save() ; 
@@ -470,6 +471,7 @@ public:
     void saveExtra( const char* name, const NP* a ) const ; 
 
     int  load() ; 
+
     void onload(); 
 
 
@@ -487,6 +489,7 @@ public:
     std::string descSaveDir(const char* dir_) const ; 
 
     int  load(const char* dir); 
+    int  loadfold( const char* dir ); 
 
     void save(const char* dir); 
     void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
