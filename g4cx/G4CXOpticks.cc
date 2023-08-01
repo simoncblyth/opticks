@@ -416,27 +416,6 @@ void G4CXOpticks::setupFrame()
 
 
 
-/**
-G4CXOpticks::simulate
-------------------------
-
-To enable saving of SEvt for low level NumPy debugging, define the envvar::
-
-   export G4CXOpticks__simulate_saveEvent=1
-
-Note that the SEvt component arrays will overwrite themselves
-if the SEvt index is not incremented with "SEvt::SetIndex" 
-for each call to G4CXOpticks::simulate. 
-
-HMM: note that all of G4CXOpticks::simulate could be down in an SSim::simulate, 
-      just needs protocol for QSim::simulate call 
-TODO: compare with B side to see if that makes sense when viewed from A and B directions 
-
-**/
-
-const bool G4CXOpticks::simulate_saveEvent = ssys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
-
-
 std::string G4CXOpticks::descSimulate() const
 {
     SEvt* sev = SEvt::Get_EGPU() ;  
@@ -457,26 +436,11 @@ std::string G4CXOpticks::descSimulate() const
        << " num_hit " << num_hit 
        << " num_hit.is_undef " << ( is_undef ? "YES" : "NO " )
        << " sev.brief " << sev->brief()  
-       << " simulate_saveEvent " << ( simulate_saveEvent ? "YES" : "NO " )
        ;
 
     std::string str = ss.str(); 
     return str ; 
 }
-
-/**
-G4CXOpticks::simulate
-------------------------
-
-TODO: most of this should be happening at lower level, not up here 
-
-1. bean counting can happen at SEvt level 
-2. save is already happening at SEvt::endOfEvent 
-   so do not need it or gather up here 
-
-THIS WILL BECOME JUST LIKE simtrace and render 
-
-**/
 
 void G4CXOpticks::simulate(int eventID)
 {
@@ -490,40 +454,9 @@ void G4CXOpticks::simulate(int eventID)
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
-
-    SEvt* sev = SEvt::Get_EGPU() ;  assert(sev); 
-
-    //unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
-    //unsigned num_photon  = sev->getNumPhotonCollected(); 
-
     qs->simulate(eventID);   // GPU launch doing generation and simulation here 
-
-    sev->gather();           // downloads components configured by SEventConfig::CompMask 
-    // save would gather, but need to do that anyhow even when not saving 
-
-
-    //unsigned num_hit = sev->getNumHit() ; 
-    //event_total += 1 ; 
-    //genstep_total += num_genstep ; 
-    //photon_total += num_photon ; 
-    //hit_total += num_hit ; 
-
-
-    LOG(LEVEL) << descSimulate(); 
-    LOG(LEVEL) << " sev.descFull " << std::endl << sev->descFull() ; 
-
-    if(simulate_saveEvent)
-    {
-        LOG(LEVEL) << "[ G4CXOpticks__simulate_saveEvent sev.index " << sev->index ; 
-        saveEvent(); 
-        LOG(LEVEL) << "] G4CXOpticks__simulate_saveEvent sev.index " << sev->index ; 
-    }
-
     LOG(LEVEL) << "]" ; 
 }
-
-
-
 
 void G4CXOpticks::simtrace(int eventID)
 {
@@ -554,26 +487,6 @@ void G4CXOpticks::render()
 
 
 
-void G4CXOpticks::saveEvent() const   // TODO: eliminate
-{
-    LOG(LEVEL) << "[" ; 
-    SEvt* sev = SEvt::Get_EGPU(); 
-    if(sev == nullptr) return ; 
-
-    LOG(LEVEL) << "[ sev.save " ; 
-    sev->save(); 
-    LOG(LEVEL) << "] sev.save " ; 
-
-    /*
-    if( LEVEL == info && SEventConfig::IsRGModeSimulate() )
-    { 
-        LOG(LEVEL) << sev->descPhoton() ; 
-        LOG(LEVEL) << sev->descLocalPhoton() ; 
-        LOG(LEVEL) << sev->descFramePhoton() ; 
-    }
-    */
-    LOG(LEVEL) << "]" ; 
-}
 
 
 /**

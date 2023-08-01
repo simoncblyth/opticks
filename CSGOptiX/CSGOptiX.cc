@@ -923,7 +923,9 @@ double CSGOptiX::launch()
     CUstream stream;
     CUDA_CHECK( cudaStreamCreate( &stream ) );
     OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
-    CUDA_SYNC_CHECK();
+    CUDA_SYNC_CHECK();    
+    // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
+    // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
 #endif
 
     TP t1 = std::chrono::high_resolution_clock::now();

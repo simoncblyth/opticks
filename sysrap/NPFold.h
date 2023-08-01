@@ -191,6 +191,9 @@ public:
     static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
 
+    NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
+    int count_keys( const std::vector<std::string>* keys ) const ; 
+
 
     // single level (non recursive) accessors
 
@@ -806,12 +809,12 @@ Unsure if that will be a problem.
 
 **/
 
-inline void NPFold::clear_except(const char* keylist, bool copy, char delim )
+inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
 {
     check_integrity(); 
 
     std::vector<std::string> keep ; 
-    if(keylist) SplitKeys(keep, keylist, delim); 
+    if(keeplist) SplitKeys(keep, keeplist, delim); 
 
     std::vector<const NP*>   tmp_aa ; 
     std::vector<std::string> tmp_kk ; 
@@ -820,7 +823,7 @@ inline void NPFold::clear_except(const char* keylist, bool copy, char delim )
     {
         const NP* a = aa[i]; 
         const std::string& k = kk[i] ; 
-        bool listed = keylist && std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
+        bool listed = keeplist && std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
         if(listed)
         { 
             tmp_aa.push_back(copy ? NP::MakeCopy(a) : a ); 
@@ -839,7 +842,71 @@ inline void NPFold::clear_except(const char* keylist, bool copy, char delim )
     }
 }
 
+/**
+NPFold::copy
+---------------
 
+If none of this folds keys are specified in the keylist 
+then nullptr is returned. When keys are selected a new NPFold 
+is created and populated with the arrays from this fold.
+
+shallow:true 
+    array pointers are copied as is
+
+shallow:false 
+    arrays are copies and new array pointers used 
+
+
+CURRENTLY subfold are not copied. 
+
+**/
+
+inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) const 
+{
+    check_integrity(); 
+
+    std::vector<std::string> keys ; 
+    if(keylist) SplitKeys(keys, keylist, delim); 
+
+    int count = count_keys(&keys) ; 
+    if( count == 0 ) return nullptr ; 
+
+
+    NPFold* f = new NPFold ; 
+
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i]; 
+        const char* k = kk[i].c_str() ; 
+        bool listed = keylist && std::find( keys.begin(), keys.end(), k ) != keys.end() ; 
+        if(listed)
+        { 
+            f->add_( k, shallow ? a : NP::MakeCopy(a) ); 
+        }
+    } 
+    return f ; 
+}
+/**
+NPFold::count_keys
+------------------
+
+Returns a count of immediate keys in the fold that are listed in the keys vector. 
+
+**/
+
+inline int NPFold::count_keys( const std::vector<std::string>* keys ) const 
+{
+    check_integrity(); 
+    int count = 0 ; 
+    for(unsigned i=0 ; i < kk.size() ; i++)
+    {
+        const char* k = kk[i].c_str() ; 
+        bool listed = keys && std::find( keys->begin(), keys->end(), k ) != keys->end() ; 
+        if(listed) count += 1 ; 
+    }
+    return count ; 
+}
+ 
 
 // single level (non recursive) accessors
 

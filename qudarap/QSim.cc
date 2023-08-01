@@ -1,5 +1,7 @@
 
 #include <csignal>
+//#include <cuda_runtime.h>
+
 #include "SLOG.hh"
 
 #include "ssys.h"
@@ -294,6 +296,23 @@ void QSim::setLauncher(SCSGOptiX* cx_ )
     cx = cx_ ; 
 }
 
+
+/**
+QSim::post_launch
+--------------------
+
+launch is async, so need to sync before can gather ? 
+HOW ELSE TO DO THIS : LIKELY BIG PERFORMANCE EFFECT
+
+cudaDeviceSynchronize already done by CSGOptiX::launch via CUDA_SYNC_CHECK see CSG/CUDA_CHECK.h 
+
+void QSim::post_launch()
+{
+    cudaDeviceSynchronize();  
+}
+**/
+
+
 /**
 QSim::simulate
 ---------------
@@ -322,6 +341,7 @@ double QSim::simulate(int eventID)
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
+    //post_launch(); 
 
     sev->endOfEvent(eventID);
  
@@ -345,6 +365,7 @@ double QSim::simtrace(int eventID)
     int rc = event->setGenstep(); 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
+    //post_launch(); 
 
     sev->endOfEvent(eventID); 
     return dt ; 

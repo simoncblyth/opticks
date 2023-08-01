@@ -3140,23 +3140,30 @@ around with paired index.
 
 void SEvt::save(const char* dir_) 
 {
-    const char* dir = getOutputDir(dir_); 
-    LOG(info) << " dir " << dir <<  " index " << index << " instance " << instance  ; 
-    LOG(LEVEL) << descSaveDir(dir_) ; 
-
-    LOG(LEVEL) << "[ gather " ; 
     gather(); 
-    LOG(LEVEL) << "] gather " ; 
-    
+
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
 
-    LOG(LEVEL) << "[ fold.save " << dir ; 
-    fold->save(dir); 
-    LOG(LEVEL) << "] fold.save " << dir ; 
+    bool shallow = true ; 
+    std::string save_comp = SEventConfig::SaveCompLabel() ; 
+    NPFold* save_fold = fold->copy(save_comp.c_str(), shallow) ; 
 
-    saveLabels(dir); 
-    saveFrame(dir); 
+    LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ; 
+    if(save_fold == nullptr) return ;  
+
+    const char* dir = getOutputDir(dir_); 
+    LOG(info) << " dir " << dir <<  " index " << index << " instance " << instance  << " OPTICKS_SAVE_COMP  " << save_comp ; 
+    LOG(LEVEL) << descSaveDir(dir_) ; 
+
+
+    LOG(LEVEL) << "[ save_fold.save " << dir ; 
+    save_fold->save(dir); 
+    LOG(LEVEL) << "] save_fold.save " << dir ; 
+
+    saveLabels(dir);   
+    saveFrame(dir);   
+    // could add these to the fold ?  
 }
 
 void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const

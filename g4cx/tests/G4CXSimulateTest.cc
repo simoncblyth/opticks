@@ -37,8 +37,7 @@ int main(int argc, char** argv)
     G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  
 
     gx->simulate(0); 
-    cudaDeviceSynchronize(); 
-    gx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
+    // cudaDeviceSynchronize();   HMM: maybe moving the save downwards will have cudaDeviceSynchronize issue ? 
 
     return 0 ; 
 }

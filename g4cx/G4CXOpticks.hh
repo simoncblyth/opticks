@@ -57,11 +57,6 @@ struct G4CX_API G4CXOpticks
     QSim*                    qs ; 
     schrono::TP              t0 ; 
 
-    // WIP: move these into QSim
-    //unsigned event_total ; 
-    //unsigned genstep_total ; 
-    //unsigned photon_total ; 
-    //unsigned hit_total ; 
 
 private: 
     G4CXOpticks(); 
@@ -81,14 +76,12 @@ private:
     void setGeometry(CSGFoundry* fd); 
     void setGeometry_(CSGFoundry* fd); 
     void setupFrame(); 
-    static const bool simulate_saveEvent ; // G4CXOpticks__simulate_saveEvent
 public: 
     std::string descSimulate() const ; 
     void simulate(int eventID); 
     void simtrace(int eventID); 
     void render(); 
 
-    void saveEvent() const ; // TODO: eliminate, handle it at SEvt level via SEventConfig control 
 
     static const bool saveGeometry_saveGGeo ; // G4CXOpticks__saveGeometry_saveGGeo 
     void saveGeometry() const ;

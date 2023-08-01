@@ -25,9 +25,6 @@ int main(int argc, char** argv)
     G4CXOpticks* cx = G4CXOpticks::SetGeometry() ;  
     cx->simtrace(0); 
 
-    cudaDeviceSynchronize(); 
-
-    cx->saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
  
     return 0 ; 
 }
