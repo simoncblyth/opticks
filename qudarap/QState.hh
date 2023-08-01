@@ -1,4 +1,25 @@
 #pragma once
+/**
+QState.hh
+===========
+
+TODO: demote this down to sysrap, perhaps down into sstate.h 
+
+::
+
+    epsilon:qudarap blyth$ opticks-f QState.hh
+    ./qudarap/CMakeLists.txt:    QState.hh
+    ./qudarap/QState.cc:#include "QState.hh"
+    ./qudarap/QState.hh:QState.hh
+    ./qudarap/tests/QStateTest.cc:#include "QState.hh"
+
+    ./qudarap/tests/QSimTest.cc:#include "QState.hh"
+    ./qudarap/QDebug.cc:#include "QState.hh"
+    ./qudarap/QSim.cc:#include "QState.hh"
+    epsilon:opticks blyth$ 
+
+
+**/
 
 #include <iostream>
 #include <iomanip>
