@@ -536,12 +536,13 @@ NP* QEvent::gatherRec() const
 }
 
 /**
-QEvent::getNumHit
---------------------
+QEvent::getNumHit  TODO:rejig 
+-----------------------------------
 
 HMM: applies selector to the GPU photon array, thats surprising 
 for a "get" method... TODO: maybe rearrange to do that once only 
-at the gatherHit stage and subsequently just supply the cached value 
+at the gatherHit stage and subsequently just get the count from 
+SEvt::fold 
 
 **/
 

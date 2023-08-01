@@ -2524,7 +2524,18 @@ NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLO
     assert(0); 
     return nullptr ; 
 }
-NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS 
+
+/**
+SEvt::gatherHit   // TODO: IMPLEMENT THIS 
+-------------------------------------------
+
+Needs to do the CPU side equivalent of QEvent::gatherHit_ 
+using the photon array and the same sphoton selector 
+
+**/
+
+
+NP* SEvt::gatherHit() const 
 { 
     LOG(error) << " not yet implemented for hostside running : change CompMask with SEventConfig to avoid " ; 
     //assert(0); 
@@ -2861,10 +2872,16 @@ void SEvt::gather_components()   // *GATHER*
     fold->meta = provider->getMeta();  
 
 
+    assert( num_genstep > -1 ); 
+    assert( num_photon > -1 ); 
+
+    LOG_IF(fatal, num_hit == -1 ) << " SKIPPED ASSERT : IMPLEMENT SEvt::gatherHit TO AVOID THIS " ; 
+    //assert( num_hit > -1 ); 
+
     gather_total += 1 ;
     genstep_total += num_genstep ;
     photon_total += num_photon ;
-    hit_total += num_hit ;
+    if(num_hit > -1) hit_total += num_hit ; // TODO: impl SEvt::gatherHit to avoid this 
 
     LOG(LEVEL) 
         << " num_comp " << num_comp
@@ -2877,9 +2894,6 @@ void SEvt::gather_components()   // *GATHER*
         << " hit_total " << hit_total 
         ;
 
-    assert( num_genstep > -1 ); 
-    assert( num_photon > -1 ); 
-    assert( num_hit > -1 ); 
 }
 
 
