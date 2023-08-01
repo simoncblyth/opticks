@@ -796,6 +796,15 @@ inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keyl
 NPFold::clear_except
 -----------------------
 
+Clears the folder but preserves the keys listed in the keeplist.
+
+copy:false
+    uses the old arrays 
+
+copy:true
+    creates copies of the arrays that are kept 
+
+
 It is not so easy to do partial erase from vector
 as the indices keep changing as elements are removed. 
 So take a simpler approach:

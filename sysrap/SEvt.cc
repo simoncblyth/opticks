@@ -1167,9 +1167,8 @@ SEvt::endOfEvent (former static SEvt::EndOfEvent is removed)
 
 Called for example from U4Recorder::EndOfEventAction
 
-
-1. TODO: save should not be standardly done, where to control that ? SEventConfig presumably. 
-2. TODO: split gather from save 
+Only SEventConfig::SaveComp OPTICKS_SAVE_COMP are actually saved, 
+so can switch off all saving wuth that config. 
 
 **/
 
@@ -1177,8 +1176,8 @@ void SEvt::endOfEvent(int eventID)
 {
     int index_ = 1+eventID ;    
     endIndex(index_); 
-    save();    
-    clear(); 
+    save();             
+    clear_except("hit"); 
 }
 
 
@@ -1354,11 +1353,14 @@ void SEvt::clear()
 {
     LOG(info) << "SEvt::clear" ; 
 
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[" ;
+ 
     clear_vectors(); 
     if(fold) fold->clear(); 
+
     LOG(LEVEL) << "]" ; 
 }
+
 
 /**
 SEvt::clear_except
@@ -1368,14 +1370,17 @@ The comma delimited keeplist need not contain .npy on its keys
 
 **/
 
-void SEvt::clear_except(const char* keeplist )
+void SEvt::clear_except(const char* keep)
 {
-    char delim = ',' ; 
-    bool copy = false ; 
+    LOG(info) << "SEvt::clear_except" ; 
 
     LOG(LEVEL) << "[" ; 
     clear_vectors(); 
-    if(fold) fold->clear_except(keeplist, copy, delim ); 
+
+    bool copy = false ; 
+    char delim = ',' ; 
+    if(fold) fold->clear_except(keep, copy, delim); 
+
     LOG(LEVEL) << "]" ; 
 }
 

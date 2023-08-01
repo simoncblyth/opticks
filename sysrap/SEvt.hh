@@ -341,7 +341,7 @@ private:
     void clear_vectors() ; 
 public:
     void clear() ; 
-    void clear_except(const char* keeplist ); 
+    void clear_except(const char* keep ); 
 
     void setIndex(int index_) ;  
     void endIndex(int index_) ;  
