@@ -33,7 +33,6 @@
 #include "QMultiFilm.hh"
 #include "QEvent.hh"
 #include "QOptical.hh"
-#include "QState.hh"
 #include "QSimLaunch.hh"
 #include "QDebug.hh"
 #include "QPMT.hh"

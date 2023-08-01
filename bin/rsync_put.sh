@@ -105,12 +105,27 @@ Looks like some case irregularities::
     8 -rwxr-xr-x  1 blyth  staff  326 Aug  1 15:52 qstateTest.sh
     epsilon:tests blyth$ 
 
+After fiddling and sync again::
+
+    N[blyth@localhost opticks]$ o
+    On branch master
+    Your branch is up to date with 'origin/master'.
+
+    Changes not staged for commit:
+      (use "git add/rm <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        deleted:    qudarap/tests/qstateTest.cc
+
+    no changes added to commit (use "git add" and/or "git commit -a")
+    N[blyth@localhost opticks]$ 
+
+
 
 
 EOU
 }
 
-defarg="info_run"
+defarg="info_all"
 arg=${1:-$defarg}
 
 dstfold=/data/blyth/junotop
@@ -126,12 +141,31 @@ if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
-if [ "${arg/run}" != "$arg" ]; then
+if [ "${arg/all}" != "$arg" ]; then
    date 
    rsync -zarv --delete "$from" "$to"
    date
-   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : all error && exit 1 
 fi 
+
+
+if [ "${arg/wc}" != "$arg" ]; then
+
+   read -p "$BASH_SOURCE : CAUTION UNTESTED : this will delete .git 160MB at the other end, enter YES to continue " answer
+
+   if [ "$answer" == "YES" ]; then  
+
+       date 
+       rsync -zarv --exclude .git/ --delete "$from" "$to"
+       date
+       [ $? -ne 0 ] && echo $BASH_SOURCE : wc error && exit 2 
+   else
+        echo $BASH_SOURCE : skip 
+   fi 
+
+
+fi 
+
 
 
 

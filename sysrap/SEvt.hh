@@ -129,7 +129,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<unsigned> gather_comp ;
     std::vector<unsigned> save_comp ;
 
-    unsigned           numphoton_collected ;    // avoid looping over all gensteps for every genstep
+    unsigned           numgenstep_collected ;   // updated by addGenstep
+    unsigned           numphoton_collected ;    // updated by addGenstep 
     unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
     int                clear_count ; 
 
@@ -356,6 +357,8 @@ public:
 
     unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
     unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
+
+    unsigned getNumGenstepCollected() const ;   // total collected genstep since last clear
     unsigned getNumPhotonCollected() const ;    // total collected photons since last clear
     unsigned getNumPhotonGenstepMax() const ;   // max photon in genstep since last clear
 
@@ -458,9 +461,7 @@ public:
     void gather() ;           // with on device running this downloads
 
     // add extra metadata arrays to be saved within SEvt fold 
-    //static void AddArray(int idx, const char* k, const NP* a ); 
     void add_array( const char* k, const NP* a ); 
-    //static void AddEventConfigArray(int idx) ; 
     void addEventConfigArray() ; 
 
 

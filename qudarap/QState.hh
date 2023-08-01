@@ -3,20 +3,19 @@
 QState.hh
 ===========
 
-TODO: demote this down to sysrap, perhaps down into sstate.h 
+TODO: revisit this, should shrink it down to almost nothing 
+TODO: demote this down to sysrap, perhaps down into sstate.h
 
-::
 
-    epsilon:qudarap blyth$ opticks-f QState.hh
+Only user of this is QDebug.cc::
+
+    epsilon:opticks blyth$ opticks-f QState.hh
     ./qudarap/CMakeLists.txt:    QState.hh
     ./qudarap/QState.cc:#include "QState.hh"
     ./qudarap/QState.hh:QState.hh
     ./qudarap/tests/QStateTest.cc:#include "QState.hh"
 
-    ./qudarap/tests/QSimTest.cc:#include "QState.hh"
     ./qudarap/QDebug.cc:#include "QState.hh"
-    ./qudarap/QSim.cc:#include "QState.hh"
-    epsilon:opticks blyth$ 
 
 
 **/

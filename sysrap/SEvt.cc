@@ -127,6 +127,7 @@ SEvt::SEvt()
     gather_done(false),
     is_loaded(false),
     is_loadfail(false),
+    numgenstep_collected(0u),   // updated by addGenstep
     numphoton_collected(0u),   // updated by addGenstep
     numphoton_genstep_max(0u),
     clear_count(0),
@@ -1300,8 +1301,10 @@ Note that most of the vectors are only used with hostside running.
 
 void SEvt::clear_vectors()
 {
+    numgenstep_collected = 0u ; 
     numphoton_collected = 0u ; 
     numphoton_genstep_max = 0u ; 
+
     clear_count += 1 ; 
 
     if(DEBUG_CLEAR > 0)
@@ -1396,7 +1399,7 @@ void SEvt::setIndex(int index_)
 }
 void SEvt::endIndex(int index_)
 { 
-    assert( index == index_ );  
+    assert( std::abs(index) == std::abs(index_) );  
     t_EndOfEvent = stamp::Now();  
 }
 
@@ -1429,8 +1432,16 @@ int SEvt::getInstance() const
 
 
 
+/**
+SEvt::getNumGenstepFromGenstep
+--------------------------------
 
+Size of the genstep vector ...
 
+caution this vector is cleared by QEvent::setGenstep 
+after which must get the count from the genstep array 
+
+**/
 
 unsigned SEvt::getNumGenstepFromGenstep() const 
 {
@@ -1455,6 +1466,10 @@ unsigned SEvt::getNumPhotonFromGenstep() const
     return tot ; 
 }
 
+unsigned SEvt::getNumGenstepCollected() const 
+{
+    return numgenstep_collected ;  // updated by addGenstep
+}
 unsigned SEvt::getNumPhotonCollected() const 
 {
     return numphoton_collected ;   // updated by addGenstep 
@@ -1555,6 +1570,8 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     gs.push_back(s) ;      // summary labels 
     genstep.push_back(q) ; // actual genstep params
+
+    numgenstep_collected += 1 ; 
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
 
 
@@ -1570,6 +1587,7 @@ sgs SEvt::addGenstep(const quad6& q_)
         << " num_photon_changed " << num_photon_changed
         << " gs.size " << gs.size() 
         << " genstep.size " << genstep.size()
+        << " numgenstep_collected " << numgenstep_collected
         << " numphoton_collected " << numphoton_collected
         << " tot_photon " << tot_photon
         << " s.index " << s.index
@@ -2812,16 +2830,21 @@ SEvt::gather_components
 
 NB the provider is either this SEvt OR a QEvent instance held by QSim 
 
+Note thet QEvent::setGenstep invoked SEvt::clear so the genstep vectors 
+are clear when this gets called. So must rely on the contents of the 
+fold to get the stats. 
+
 **/
 
-
-void SEvt::gather_components()
+void SEvt::gather_components()   // *GATHER*
 {
-    int num_genstep = getNumGenstepFromGenstep();   // only before clear  
-    int num_photon  = getNumPhotonCollected();
-    int num_hit     = 0 ; 
+    int num_genstep = -1 ; 
+    int num_photon  = -1 ; 
+    int num_hit     = -1 ; 
 
-    for(unsigned i=0 ; i < gather_comp.size() ; i++)
+    int num_comp = gather_comp.size() ; 
+
+    for(int i=0 ; i < num_comp ; i++)
     {
         unsigned cmp = gather_comp[i] ;   
         const char* k = SComp::Name(cmp);    
@@ -2831,32 +2854,38 @@ void SEvt::gather_components()
         fold->add(k, a); 
 
         int num = a->shape[0] ;  
-        
-        if(SComp::IsGenstep(cmp))
-        {
-            assert( num == num_genstep );   
-        }
-        else if(SComp::IsPhoton(cmp))
-        {
-            assert( num == num_photon );   
-        }
-        else if(SComp::IsHit(cmp))
-        {
-            num_hit = num ; 
-        } 
+        if(     SComp::IsGenstep(cmp)) num_genstep = num ; 
+        else if(SComp::IsPhoton(cmp))  num_photon = num ; 
+        else if(SComp::IsHit(cmp))     num_hit = num ; 
     }
     fold->meta = provider->getMeta();  
+
 
     gather_total += 1 ;
     genstep_total += num_genstep ;
     photon_total += num_photon ;
     hit_total += num_hit ;
+
+    LOG(LEVEL) 
+        << " num_comp " << num_comp
+        << " num_genstep " << num_genstep
+        << " num_photon " << num_photon
+        << " num_hit " << num_hit
+        << " gather_total " << gather_total 
+        << " genstep_total " << genstep_total 
+        << " photon_total " << photon_total 
+        << " hit_total " << hit_total 
+        ;
+
+    assert( num_genstep > -1 ); 
+    assert( num_photon > -1 ); 
+    assert( num_hit > -1 ); 
 }
 
 
 /**
 SEvt::gather
---------------------------
+-------------
 
 Collects the components configured by SEventConfig::CompMask
 into NPFold from the SCompProvider which can either be:
@@ -2876,20 +2905,6 @@ void SEvt::gather()
 }
 
 
-/**
-SEvt::AddArray
----------------
-
-Used for addition of extra metadata arrays to be save within SEvt folder
-
-
-void SEvt::AddArray(int idx,  const char* k, const NP* a )  // static
-{
-    LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
-    if(Exists(idx)) Get(idx)->add_array(k, a); 
-}
-**/
-
 
 
 void SEvt::add_array( const char* k, const NP* a )
@@ -2897,20 +2912,10 @@ void SEvt::add_array( const char* k, const NP* a )
     fold->add(k, a);  
 }
 
-/*
-void SEvt::AddEventConfigArray(int idx) // static
-{
-    AddArray(idx, SEventConfig::NAME, SEventConfig::Serialize() ); 
-}
-*/
-
 void SEvt::addEventConfigArray() 
 {
     fold->add(SEventConfig::NAME, SEventConfig::Serialize() ); 
 }
-
-
-
 
 /**
 SEvt::save
@@ -2918,7 +2923,8 @@ SEvt::save
 
 The component arrays are gathered by SEvt::gather_components
 into the NPFold and then saved. Which components to gather and save 
-are configured via SEventConfig::SetCompMask using the SComp enumeration. 
+are configured via SEventConfig::GatherComp and SEventConfig::SaveComp 
+using the SComp enumeration. 
 
 The arrays are gathered from the SCompProvider object, which 
 may be QEvent for on device running or SEvt itself for U4Recorder 

@@ -31,7 +31,6 @@ QSimTest.cc
 #include "QSimLaunch.hh"
 #include "QEvent.hh"
 #include "QDebug.hh"
-#include "QState.hh"
 
 #include "qdebug.h"
 
