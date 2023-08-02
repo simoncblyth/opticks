@@ -11,6 +11,8 @@ can instead use::
 EOU
 }
 
+git remote -v
+
 date 
 git pull
 date 
