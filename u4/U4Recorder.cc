@@ -7,6 +7,7 @@
 #include "srec.h"
 #include "ssys.h"
 #include "stimer.h"
+#include "smeta.h"
 
 #include "NP.hh"
 #include "SPath.hh"
@@ -155,8 +156,14 @@ U4Recorder::U4Recorder()
     transient_fSuspend_track(nullptr),
     rerun_rand(nullptr),
     sev(SEvt::HighLevelCreate(SEvt::ECPU))   
-{ 
+{
+    init();  
+}
+
+void U4Recorder::init()
+{
     INSTANCE = this ; 
+    smeta::Collect(sev->meta, "U4Recorder::init" ); 
 }
 
 
@@ -303,7 +310,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         ;
     assert( tstat == fAlive ); 
 
-    SEvt* sev = SEvt::Get(1); 
+    SEvt* sev = SEvt::Get_ECPU(); 
     LOG_IF(fatal, sev == nullptr) << " SEvt::Get(1) returned nullptr " ; 
     assert(sev); 
 
@@ -485,7 +492,7 @@ void U4Recorder::saveOrLoadStates( int id )
     bool g4state_active =  g4state_save || g4state_rerun ; 
     if( g4state_active == false ) return ; 
     
-    SEvt* sev = SEvt::Get(1); 
+    SEvt* sev = SEvt::Get_ECPU(); 
 
     if(g4state_save) 
     {
@@ -623,7 +630,7 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 
     if(is_fStopAndKill)
     {
-        SEvt* sev = SEvt::Get(1); 
+        SEvt* sev = SEvt::Get_ECPU(); 
         U4Random::SetSequenceIndex(-1); 
         sev->finalPhoton(ulabel);  
         transient_fSuspend_track = nullptr ;
@@ -772,7 +779,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4ThreeVector delta = step->GetDeltaPosition(); 
     double step_mm = delta.mag()/mm  ;   
 
-    SEvt* sev = SEvt::Get(1); 
+    SEvt* sev = SEvt::Get_ECPU(); 
     sev->checkPhotonLineage(ulabel); 
 
     sphoton& current_photon = sev->current_ctx.p ;

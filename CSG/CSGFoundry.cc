@@ -14,6 +14,7 @@
 
 #include "SSys.hh"
 #include "ssys.h"
+#include "smeta.h"
 #include "SSim.hh"
 #include "SProc.hh"
 #include "SStr.hh"
@@ -134,34 +135,9 @@ void CSGFoundry::init()
     itra.reserve(IMAX); 
     inst.reserve(IMAX); // inst added July 2022 
 
-    setMeta(); 
+    smeta::Collect(meta, "CSGFoundry::init"); 
 }
 
-void CSGFoundry::setMeta()
-{
-    setMeta<std::string>("creator", SProc::ExecutableName() ); 
-    setMeta<int>("mtime", mtime); 
-
-    const char* vars = R"( 
-HOME
-USER
-SCRIPT
-PWD
-CMDLINE
-)" ; 
-    // BASH_SOURCE fails to export  
-    std::stringstream ss;  
-    ss.str(vars)  ;
-    std::string s;
-    while (std::getline(ss, s, '\n')) 
-    {   
-        if(s.empty()) continue ; 
-        const char* k = s.c_str(); 
-        const char* v = getenv(k) ; 
-        if(v) setMeta<std::string>(k, v); 
-        LOG(LEVEL) << std::setw(20) << k << " : " << ( v ? v : "-" ) ;   
-    }   
-}
 
 
 std::string CSGFoundry::brief() const 

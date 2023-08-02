@@ -295,6 +295,8 @@ int QEvent::setGenstep(quad6* qgs, unsigned num_gs )  // TODO: what uses this ? 
 
 
 
+// TODO: how to avoid duplication between QEvent and SEvt ?
+
 bool QEvent::hasGenstep() const { return evt->genstep != nullptr ; }
 bool QEvent::hasSeed() const {    return evt->seed != nullptr ; }
 bool QEvent::hasPhoton() const {  return evt->photon != nullptr ; }
@@ -370,13 +372,13 @@ QEvent::gatherGenstepFromDevice
 ---------------------------------
 
 Gensteps originate on host and are uploaded to device, so downloading
-them from device is not usually done. 
+them from device is not usually done. It is for debugging only. 
 
 **/
 
 NP* QEvent::gatherGenstepFromDevice() const 
 {
-    NP* a = NP::Make<float>( evt->num_genstep, 6, 4 ); 
+    NP* a = NP::Make<float>( evt->num_genstep, 6, 4 );  
     QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep ); 
     return a ; 
 }
@@ -387,7 +389,7 @@ NP* QEvent::gatherSeed() const
     bool has_seed = hasSeed() ; 
     LOG_IF(fatal, !has_seed) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!has_seed) return nullptr ;  
-    NP* s = NP::Make<int>( evt->num_seed ); 
+    NP* s = NP::Make<int>( evt->num_seed );   // TODO: use SEvt::makeSeed
     QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
     return s ; 
 }
@@ -417,7 +419,8 @@ void QEvent::gatherPhoton(NP* p) const
 
 NP* QEvent::gatherPhoton() const 
 {
-    NP* p = NP::Make<float>( evt->num_photon, 4, 4);
+    //NP* p = NP::Make<float>( evt->num_photon, 4, 4); 
+    NP* p = sev->makePhoton(); 
     gatherPhoton(p); 
     return p ; 
 }
@@ -437,7 +440,7 @@ NP* QEvent::gatherSimtrace() const
     bool has_simtrace = hasSimtrace(); 
     LOG_IF(LEVEL, !has_simtrace) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
     if(!has_simtrace) return nullptr ;  
-    NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
+    NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);   // TODO: use SEvt::makeSimtrace ?
     gatherSimtrace(t); 
     return t ; 
 }
@@ -619,7 +622,7 @@ NP* QEvent::gatherHit_() const
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
 
-    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 ); 
+    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 );   // TODO: use SEvt::makeHit ?
 
     QU::copy_device_to_host<sphoton>( (sphoton*)hit->bytes(), evt->hit, evt->num_hit );
 

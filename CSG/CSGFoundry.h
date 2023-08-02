@@ -129,7 +129,6 @@ struct CSG_API CSGFoundry : public SGeo
 
     CSGFoundry();
     void init(); 
-    void setMeta(); 
 
     const char* getFold() const ;
     void setFold(const char* fold); 

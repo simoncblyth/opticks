@@ -1,13 +1,10 @@
-#include "OPTICKS_LOG.hh"
 #include "NP.hh"
-#include "SEvt.hh"
+#include "smeta.h"
 
-int main(int argc, char** argv)
+int main()
 {
-    OPTICKS_LOG(argc, argv); 
-
     NP* a = NP::Make<float>(1) ; 
-    SEvt::AddEnvMeta(a, true) ; 
+    smeta::Collect(a->meta, "SEvt_AddEnvMeta_Test.cc/main" ); 
 
     a->save("$TMP/SEvt_AddEnvMeta_Test/a.npy") ;  
     

@@ -759,6 +759,11 @@ Create (2,4,4) NP array and populate with quad4 from::
     sevent::get_domain 
     sevent::get_config
 
+
+NB an alternative route for metadata is the 
+SEvt::meta OR QEvent::meta that gets adopted as
+the NPFold meta in SEvt::gather_components
+
 **/
 
 NP* SEvt::gatherDomain() const
@@ -2465,10 +2470,7 @@ NP* SEvt::gatherPhoton() const
     NP* p = makePhoton(); 
     p->read2( (float*)evt->photon ); 
 
-    p->set_meta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
-    p->set_meta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
-    p->set_meta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
-    // T_EndOfRun cannot be saved here, it might be saved if SEvt::SaveRunMeta is called
+
     return p ; 
 } 
 
@@ -2562,70 +2564,19 @@ NP* SEvt::gatherSimtrace() const
     return p ; 
 }
 
-
-const char* SEvt::ENVMETA = R"LITERAL(
-SCRIPT
-CHECK
-LAYOUT
-TEST
-VERSION
-GEOM
-EXECUTABLE
-COMMANDLINE
-DIRECTORY
-${GEOM}_GEOMList
-)LITERAL" ;
-
-// HIGHER ORDER KEYS WITH TOKENS ARE HANDLED IN ssys::_getenv
-
-/**
-SEvt::AddEnvMeta
------------------
-
-Invoked by SEvt::makePhoton which gets called by SEvt::gatherPhoton for every event.
-
-This collects the (key, value) pairs of the above set of standard envvars 
-into the photon array metadata. 
-
-HMM: maybe makes for sense for this to go into run rather than photon metadata 
-
-**/
-
-void SEvt::AddEnvMeta( NP* a, bool dump ) // static
-{
-    if(a == nullptr) return ; 
-    typedef std::pair<std::string, std::string> KV ; 
-    std::vector<KV> kvs ; 
-    ssys::getenv_(kvs, ENVMETA); 
-    LOG_IF(info, dump) << DescKV(kvs) ; 
-    a->set_meta_kv(kvs) ; 
-}
-
-std::string SEvt::DescKV( const std::vector<std::pair<std::string, std::string>>& kvs ) // static
-{
-    typedef std::pair<std::string, std::string> KV ; 
-    std::stringstream ss ; 
-    ss << "SEvt::DescKV" << std::endl ;  
-    for(int i=0 ; i < int(kvs.size()) ; i++)
-    {
-        const KV& kv = kvs[i] ; 
-        ss
-            << std::setw(20)  << kv.first 
-            << " : "
-            << std::setw(100) << kv.second
-            << std::endl 
-            ;
-    }
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
 NP* SEvt::makePhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
-    AddEnvMeta(p, false) ; 
+
+    p->set_meta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
+    p->set_meta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
+    p->set_meta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
+    // T_EndOfRun cannot be saved here, it might be saved if SEvt::SaveRunMeta is called
+
+    // AddEnvMeta(p, false) ; 
+    // smeta::Collect(p->meta, "SEvt::makePhoton"); 
+    // decided env meta is better placed on the fold, not the photon
+
     return p ; 
 }
 
@@ -2688,7 +2639,17 @@ NP* SEvt::makeSimtrace() const
 }
 
 
-// SCompProvider methods
+/**
+SEvt::getMeta (an SCompProvider method)
+-----------------------------------------
+
+NB as metadata is collected in SEvt::gather_components 
+from the SCompProvider this is NOT the source of metadata
+for GPU running, that comes from QEvent::getMeta. 
+This is only the source for CPU U4Recorder running (aka B evts).  
+
+**/
+
 std::string SEvt::getMeta() const 
 {
     return meta ; 

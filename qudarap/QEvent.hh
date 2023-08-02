@@ -75,7 +75,11 @@ private:
 public:
     int               upload_count ; 
     std::string       meta ; 
-
+    /**
+    Q: IS THIS meta NEEDED ? SEvt HAS meta TOO ? 
+    A: YES, for now. The metadata gets collected in SEvt::gather_components 
+       via SCompProvider method QEvent::getMeta (OR SEvt::getMeta) 
+    **/
 public:
     int setGenstep();  // PRIMARY ACTION OF QEvent 
 

@@ -67,11 +67,14 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
 
     U4Recorder(); 
+private:
+    void init(); 
+public:   
 
     int eventID ; 
     const G4Track* transient_fSuspend_track ; 
     NP* rerun_rand ;  
-    SEvt* sev ; 
+    SEvt* sev ;   // HMM: Not used as much as it should ? Lots of SEvt::Get_ECPU() instead, WHY ?
 
 
     void BeginOfRunAction(const G4Run*);
