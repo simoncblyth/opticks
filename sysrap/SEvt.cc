@@ -2842,19 +2842,19 @@ void SEvt::gather_components()   // *GATHER*
         else if(SComp::IsPhoton(cmp))  num_photon = num ; 
         else if(SComp::IsHit(cmp))     num_hit = num ; 
     }
-    fold->meta = provider->getMeta();  
 
 
     assert( num_genstep > -1 ); 
     assert( num_photon > -1 ); 
 
-    LOG_IF(fatal, num_hit == -1 ) << " SKIPPED ASSERT : IMPLEMENT SEvt::gatherHit TO AVOID THIS " ; 
-    //assert( num_hit > -1 ); 
+    LOG_IF(fatal, num_hit == -1 ) << " SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
+    assert( num_hit > -1 ); 
 
     gather_total += 1 ;
     genstep_total += num_genstep ;
     photon_total += num_photon ;
-    if(num_hit > -1) hit_total += num_hit ; // TODO: impl SEvt::gatherHit to avoid this 
+    //if(num_hit > -1) hit_total += num_hit ; 
+    hit_total += num_hit ; 
 
     LOG(LEVEL) 
         << " num_comp " << num_comp
@@ -2866,7 +2866,13 @@ void SEvt::gather_components()   // *GATHER*
         << " photon_total " << photon_total 
         << " hit_total " << hit_total 
         ;
+}
 
+void SEvt::gather_metadata()
+{
+    std::string provmeta = provider->getMeta(); 
+    LOG(LEVEL) << " provmeta ["<< provmeta << "]" ; 
+    fold->meta = provmeta ; 
 }
 
 
@@ -2889,6 +2895,7 @@ void SEvt::gather()
     gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
 
     gather_components(); 
+    gather_metadata(); 
 }
 
 

@@ -385,6 +385,12 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kMaxRec
        << std::setw(20) << " MaxRec " << " : " << MaxRec() 
        << std::endl 
+       << std::setw(25) << kMaxAux
+       << std::setw(20) << " MaxAux " << " : " << MaxAux() 
+       << std::endl 
+       << std::setw(25) << kMaxSup
+       << std::setw(20) << " MaxSup " << " : " << MaxSup() 
+       << std::endl 
        << std::setw(25) << kMaxSeq
        << std::setw(20) << " MaxSeq " << " : " << MaxSeq() 
        << std::endl 

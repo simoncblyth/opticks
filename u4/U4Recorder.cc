@@ -164,6 +164,9 @@ void U4Recorder::init()
 {
     INSTANCE = this ; 
     smeta::Collect(sev->meta, "U4Recorder::init" ); 
+
+    LOG(LEVEL) << " sev " << std::hex << sev << std::dec ; 
+    LOG(LEVEL) << "sev->meta[" << sev->meta << "]" ;
 }
 
 

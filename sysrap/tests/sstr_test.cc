@@ -1,4 +1,4 @@
-// name=sstr_test ; gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+// ./sstr_test.sh
 
 #include <string>
 #include <vector>
@@ -175,18 +175,30 @@ void test_nullchar(bool flip)
 }
 
 
+void test_empty()
+{
+    std::string empty ; 
+    std::cout << "empty         [" << empty << "]" << std::endl ; 
+    std::cout << "empty.c_str() [" << empty.c_str() << "]" << std::endl ; 
+
+    char c = empty.c_str()[0] ; 
+    std::cout << "c [" << c << "]" << std::endl ; 
+
+    bool c_is_terminator = c == '\0' ; 
+    std::cout << " c_is_terminator " << ( c_is_terminator ? "YES" : "NO " ) << std::endl; 
+}
+
+
 int main(int argc, char** argv)
 {
     /*
     test_chop(); 
     test_StripTail(); 
     test_SideBySide(); 
+    test_nullchar(true); 
     */
 
-    test_nullchar(false); 
-    test_nullchar(true); 
-
-
+    test_empty(); 
 
     return 0 ; 
 } 

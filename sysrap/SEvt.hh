@@ -455,6 +455,7 @@ public:
     std::string descDbg() const ; 
 
     void gather_components(); 
+    void gather_metadata(); 
     void gather() ;           // with on device running this downloads
 
     // add extra metadata arrays to be saved within SEvt fold 
