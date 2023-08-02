@@ -3,13 +3,18 @@ usage(){ cat << EOU
 rsync_put.sh 
 ===================
 
+
 When the GFW blocks bitbucket and github "put" from remote using rsync 
 
 Usage::
 
-   o
-   ./bin/rsync_put.sh
+   ~/opticks/bin/rsync_put.sh
 
+
+HMM : how dodgy a thing is this ? 
+
+* it means a git binary version is having to deal with the raw 
+  repo files provide by another version 
 
 
 
@@ -89,4 +94,42 @@ if [ "${arg/wc}" != "$arg" ]; then
    fi 
 fi 
 
+
+
+notes(){ cat << EON
+
+Case irregularity::
+
+    epsilon:opticks blyth$ git show HEAD:qudarap/tests/qstateTest.cc
+    #include "QState.hh"
+
+    const char* FOLD = "/tmp/QStateTest" ; 
+
+    int main(int argc, char** argv)
+    {
+        sstate s0 = QState::Make(); 
+        std::cout << " s0 " << QState::Desc(s0) << std::endl ; 
+
+        QState::Save(s0, FOLD, "s.npy" ); 
+
+        sstate s1 ; 
+        QState::Load(s1, FOLD, "s.npy" ); 
+        std::cout << " s1 " << QState::Desc(s1) << std::endl ; 
+
+        return 0 ; 
+    }
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ git show HEAD:qudarap/tests/QStateTest.cc
+    fatal: Path 'qudarap/tests/QStateTest.cc' exists on disk, but not in 'HEAD'.
+    epsilon:opticks blyth$ 
+
+Looks like renamed in file system bit not in git repo, on macOS that 
+is not noticed but it is in git.  So on laptop::
+
+    epsilon:tests blyth$ mv QStateTest.cc qstateTest.cc
+    epsilon:tests blyth$ git mv qstateTest.cc QStateTest.cc
+
+
+EON
+}
 
