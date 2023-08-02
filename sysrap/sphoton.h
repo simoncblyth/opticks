@@ -537,7 +537,8 @@ struct sphoton_selector
 {
     unsigned hitmask ; 
     sphoton_selector(unsigned hitmask_) : hitmask(hitmask_) {}; 
-    SPHOTON_METHOD bool operator() (const sphoton& p) const { return ( p.flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+    SPHOTON_METHOD bool operator() (const sphoton& p) const { return ( p.flagmask  & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+    SPHOTON_METHOD bool operator() (const sphoton* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
 };
 
 

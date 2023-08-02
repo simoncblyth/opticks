@@ -2434,7 +2434,7 @@ inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ..
     else 
     {
         int itemcheck = 1 ; 
-        for(int i=0 ; i < itemshape_.size() ; i++)  
+        for(int i=0 ; i < int(itemshape_.size()) ; i++)  
         {
             sh.push_back(itemshape_[i]) ; 
             itemcheck *= itemshape_[i] ; 

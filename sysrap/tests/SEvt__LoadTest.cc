@@ -10,6 +10,9 @@ int main()
 
     SEvt* b = SEvt::LoadAbsolute("$BFOLD") ; 
     NPFold* bf = b ? b->fold : nullptr  ;
+
+
+
  
     /*
     std::cout 
@@ -33,6 +36,18 @@ int main()
          << std::endl
          ; 
 
+
+    NPFold* f = new NPFold ; 
+    f->add("a_hit", a->getHit() ); 
+    f->add("b_hit", b->gatherHit() ); 
+    f->save("$FOLD") ; 
+
+    std::cout 
+        << " f.desc "
+        << std::endl
+        << ( f ? f->desc() : "-" )
+        << std::endl
+        ;
 
     return 0 ; 
 }

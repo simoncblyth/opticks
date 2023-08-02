@@ -2539,20 +2539,19 @@ NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLO
 }
 
 /**
-SEvt::gatherHit   // TODO: IMPLEMENT THIS 
+SEvt::gatherHit
 -------------------------------------------
 
-Needs to do the CPU side equivalent of QEvent::gatherHit_ 
-using the photon array and the same sphoton selector 
+Does CPU side equivalent of QEvent::gatherHit_ 
+using the photon array and the sphoton_selector 
 
 **/
 
-
 NP* SEvt::gatherHit() const 
 { 
-    LOG(error) << " not yet implemented for hostside running : change CompMask with SEventConfig to avoid " ; 
-    //assert(0); 
-    return nullptr ; 
+    const NP* p = getPhoton(); 
+    NP* h = p ? p->copy_if<float, sphoton>(*selector) : nullptr ;  
+    return h ; 
 }
 
 NP* SEvt::gatherSimtrace() const 
