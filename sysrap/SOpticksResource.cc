@@ -242,9 +242,11 @@ std::string SOpticksResource::Dump()
     const char* geometrybase = DefaultGeometryBase(); 
     const char* runcache_dir = RuncacheDir() ; 
 
+#ifdef WITH_OPTICKS_KEY
     bool setkey = true ; 
     const char* idpath = IDPath(setkey) ; 
-    //const char* cgdir = CGDir(setkey) ; 
+#endif
+
     const char* cfbase = CFBase(); 
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
@@ -272,8 +274,11 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::DefaultGeometryBase()    " << ( geometrybase ? geometrybase : "-" ) << std::endl 
         << "SOpticksResource::DefaultGeometryDir()    " << ( geometrydir ? geometrydir : "-" ) << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
+#ifdef WITH_OPTICKS_KEY
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
-       // << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
+#else
+        << "NOT WITH_OPTICKS_KEY " << std::endl 
+#endif
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
@@ -285,6 +290,9 @@ std::string SOpticksResource::Dump()
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+#ifdef WITH_OPTICKS_KEY
 
 /**
 SOpticksResource::IDPath
@@ -310,23 +318,7 @@ const NP* SOpticksResource::IDLoad(const char* relpath)
     const char* idpath = SOpticksResource::IDPath();
     return NP::Load(idpath, relpath) ; 
 }
-
-
-/*
-
-const char* SOpticksResource::CGDir_NAME = "CSG_GGeo" ; 
-const char* SOpticksResource::CGDir(bool setkey){ return CGDir_(setkey, CGDir_NAME) ; }
-const char* SOpticksResource::CGDir_(bool setkey, const char* rel)  
-{
-    const char* idpath = IDPath(setkey) ; 
-    assert( idpath ); 
-    return SPath::Resolve( idpath, rel , NOOP ); 
-}
-
-const char* SOpticksResource::CGDir_NAME_Alt = "CSG_GGeo_Alt" ; 
-const char* SOpticksResource::CGDirAlt(bool setkey){ return CGDir_(setkey, CGDir_NAME_Alt) ; }
-
-*/
+#endif
 
 
 
@@ -613,8 +605,10 @@ const char* SOpticksResource::Get(const char* key) // static
     const char* tok = getenv(key) ;   // can override via envvar, but typically below defaults are used
     if(tok) return tok ;  
 
-    if(      strcmp(key, "IDPath")==0)           tok = SOpticksResource::IDPath(); 
-    else if( strcmp(key, "CFBase")==0)           tok = SOpticksResource::CFBase(); 
+    if( strcmp(key, "CFBase")==0)                tok = SOpticksResource::CFBase(); 
+#ifdef WITH_OPTICKS_KEY
+    else if( strcmp(key, "IDPath")==0)           tok = SOpticksResource::IDPath(); 
+#endif
     else if( strcmp(key, "CFBaseAlt")==0)        tok = SOpticksResource::CFBaseAlt(); 
     else if( strcmp(key, "GeocacheDir")==0)      tok = SOpticksResource::GeocacheDir(); 
     else if( strcmp(key, "RuncacheDir")==0)      tok = SOpticksResource::RuncacheDir(); 

@@ -9,7 +9,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     LOG(info) << "[ SEvt::Load" ; 
-    SEvt* sev = SEvt::Load() ;  
+    SEvt* sev = SEvt::LoadRelative() ;  
     LOG(info) << sev->descFold(); 
     int total_items = sev->getTotalItems() ; 
 

@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     LOG(info) ;  
-    SEvt* sev = SEvt::Load() ;   
+    SEvt* sev = SEvt::LoadRelative() ;   
     const char* cfbase = sev->getSearchCFBase() ; // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
     const CSGFoundry* fd = CSGFoundry::Load(cfbase);
     sev->setGeo(fd); 

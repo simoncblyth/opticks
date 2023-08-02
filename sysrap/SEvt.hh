@@ -279,7 +279,7 @@ public:
     static void AddTorchGenstep(); 
 
     static SEvt* LoadAbsolute(const char* dir); 
-    static SEvt* Load(const char* rel=nullptr); 
+    static SEvt* LoadRelative(const char* rel=nullptr);  // formerly Load
     static void Clear(); 
     static void Save() ; 
     static void SaveExtra(const char* name, const NP* a) ; 

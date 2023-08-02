@@ -957,8 +957,8 @@ SEvt* SEvt::HighLevelCreate(int idx) // static
     }   
     else
     {   
-        SEvt::SetReldir(seldir); 
-        evt = SEvt::Load(alldir0) ;
+        SEvt::SetReldir(seldir);   // HUH: LoadRelative calls this static anyhow ?
+        evt = SEvt::LoadRelative(alldir0) ;
         evt->clear_except("g4state");  // clear loaded evt but keep g4state 
         // when rerunning have to load states from alldir0 and then change reldir to save into seldir
     }
@@ -1025,8 +1025,8 @@ SEvt* SEvt::LoadAbsolute(const char* dir_) // static
 
 
 /**
-SEvt::Load
------------
+SEvt::LoadRelative (formerly Load)
+------------------------------------
 
 Q: which instance slot ? 
 A: are persisting instance in domain metadata and recovering in SEvt::onload
@@ -1037,7 +1037,7 @@ A: Guess so, Loading should regain the state before the save
 
 **/
 
-SEvt* SEvt::Load(const char* rel)  // static 
+SEvt* SEvt::LoadRelative(const char* rel)  // static 
 {
     LOG(LEVEL) << "[" ; 
 

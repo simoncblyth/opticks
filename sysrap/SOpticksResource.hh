@@ -1,4 +1,16 @@
 #pragma once
+/**
+SOpticksResource.hh
+=====================
+
+Currently this straddles old and new workflows.
+
+TOOO: remove SOpticksKey usage
+
+
+**/
+
+
 #include <string>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
@@ -46,19 +58,11 @@ struct SYSRAP_API SOpticksResource
     static std::string Desc_DefaultOutputDir();  
   
 
-
+#ifdef WITH_OPTICKS_KEY
     // setkey:true means OPTICKS_KEY envvar gets used 
     static const char* IDPath(bool setkey=true);
     static const NP* IDLoad(const char* relpath); 
-
-    /*
-    static const char* CGDir_NAME ;
-    static const char* CGDir(bool setkey=true);  
-    static const char* CGDir_(bool setkey=true, const char* rel=CGDir_NAME ); 
-
-    static const char* CGDir_NAME_Alt ;
-    static const char* CGDirAlt(bool setkey=true);  
-    */
+#endif
 
     static const char* CFBASE_ ;
     static const char* CFBase();

@@ -24,8 +24,8 @@
 #include "SYSRAP_API_EXPORT.hh"
 
 /** 
-SOpticksKey
-============
+SOpticksKey : THIS IS VERY OLD WORKFLOW : TODO: ELIMINATE
+===========================================================
 
 Used to communicate the geometry identity digest
 to be used by Opticks instanciation (especually OpticksResource)
@@ -37,6 +37,23 @@ where the geometry is translated.
 This class is needed because the OPTICKS_KEY in the environment 
 is not always appropriate to use, eg when translating geometry which 
 generates a new OPTICKS_KEY 
+
+Users::
+
+    epsilon:CSG blyth$ opticks-f SOpticksKey.hh 
+    ./sysrap/CMakeLists.txt:    SOpticksKey.hh
+    ./sysrap/SOpticksResource.cc:#include "SOpticksKey.hh"
+    ./sysrap/SOpticksKey.cc:#include "SOpticksKey.hh"
+
+    ./extg4/X4PhysicalVolume.cc:#include "SOpticksKey.hh"
+    ./sysrap/tests/SOpticksResourceTest.cc:#include "SOpticksKey.hh"
+    ./sysrap/tests/SOpticksKeyTest.cc:#include "SOpticksKey.hh"
+    ./optickscore/OpticksResource.cc:#include "SOpticksKey.hh"
+    ./optickscore/Opticks.cc:#include "SOpticksKey.hh"
+    ./boostrap/tests/BOpticksKeyTest.cc:#include "SOpticksKey.hh"
+    ./boostrap/BOpticks.cc:#include "SOpticksKey.hh"
+    ./boostrap/BOpticksResource.cc:#include "SOpticksKey.hh"
+    epsilon:opticks blyth$ 
 
 **/
 

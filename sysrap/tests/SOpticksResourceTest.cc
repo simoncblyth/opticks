@@ -51,6 +51,7 @@ int main(int argc, char** argv)
     {
         std::cout << SOpticksResource::CFBase() << std::endl ; 
     }
+#ifdef WITH_OPTICKS_KEY
     else if( strcmp(arg, "--key") == 0 )
     {
         std::cout << SOpticksKey::Key() << std::endl ; 
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
     {
         std::cout << SOpticksResource::IDPath(true) << std::endl ; 
     }
+#endif
     else if( strcmp(arg, "--resolve") == 0 )
     {
         const char* path = SPath::Resolve("$PrecookedDir", NOOP) ; 

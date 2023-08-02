@@ -18,12 +18,18 @@
 
 void test_MakeMaterial()
 {
+#ifdef WITH_OPTICKS_KEY
     const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
     G4MaterialPropertyVector* v = U4Material::MakeProperty(a) ;  
     G4Material* mat = U4Material::MakeMaterial(v) ;  
 
     LOG(info) << "mat " << mat ; 
     G4cout << "mat " << *mat << std::endl ; 
+
+#else
+    std::cerr << "NOT--WITH_OPTICKS_KEY " << std::endl ; 
+#endif
+
 }
 
 void test_MakeMaterialPropertiesTable()
@@ -112,6 +118,7 @@ void test_NumVec()
 
 void test_Load_0()
 {
+#ifdef WITH_OPTICKS_KEY
     const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
     const NP* b = NP::Load(SPath::Resolve("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy", NOOP)); 
 
@@ -119,6 +126,9 @@ void test_Load_0()
     std::cout << " b " << b->sstr() << " digest " << sdigest::Item(b) << std::endl ; 
 
     a->dump(); 
+#else
+    std::cerr << "NOT--WITH_OPTICKS_KEY " << std::endl ; 
+#endif
 
 }
 
