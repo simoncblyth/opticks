@@ -34,6 +34,7 @@ but the headers are also copied into opticks/sysrap.
 #include <limits>
 #include <random>
 #include <map>
+#include <functional>
 
 #include "NPU.hh"
 
@@ -101,6 +102,9 @@ struct NP
     unsigned arr_bytes() const ;       // formerly num_bytes
     unsigned item_bytes() const ;      // *item* comprises all dimensions beyond the first 
     unsigned meta_bytes() const ;
+
+    template<typename T> bool is_itemtype() const ;  // size of item matches size of type
+
     void clear() ; 
 
     void        update_headers();     
@@ -235,6 +239,12 @@ struct NP
     template<typename T> static NP* MakeUniform( unsigned ni, unsigned seed=0u );  
  
     NP* copy() const ; 
+
+    template<typename S>                               int         count_if( std::function<bool(const S*)>) const ; 
+    template<typename T>                               NP*   simple_copy_if( std::function<bool(const T*)>) const ;  // atomic types only
+    template<typename T, typename S>                   NP*          copy_if( std::function<bool(const S*)>) const ; 
+    template<typename T, typename S, typename... Args> NP* flexible_copy_if( std::function<bool(const S*)>, Args ... itemshape ) const ; 
+
 
     // load array asis 
     static NP* Load(const char* path); 
@@ -866,6 +876,13 @@ inline unsigned NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
 inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
 inline unsigned NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
 inline unsigned NP::meta_bytes() const { return meta.length() ; }
+
+
+template<typename T> 
+inline bool NP::is_itemtype() const  // size of item matches size of type
+{
+    return item_bytes() == sizeof(T) ; 
+}
 
 inline void NP::clear()
 {
@@ -2279,6 +2296,179 @@ inline NP* NP::copy() const
 {
     return MakeCopy(this); 
 }
+
+
+
+
+
+
+
+template<typename S>
+inline int NP::count_if(std::function<bool(const S*)> predicate) const 
+{
+    assert( is_itemtype<S>() );  // size of type same as item_bytes
+    const S* vv = cvalues<S>();  
+    int ni = num_items(); 
+    int count = 0 ; 
+    for(int i=0 ; i < ni ; i++) if(predicate(vv+i)) count += 1 ;  
+    return count ; 
+}
+
+template<typename T> 
+inline NP* NP::simple_copy_if(std::function<bool(const T*)> predicate ) const 
+{
+    assert( is_itemtype<T>() );  // size of type same as item_bytes
+
+    int ni = num_items(); 
+    int si = count_if<T>(predicate) ; 
+    assert( si <= ni ); 
+
+    const T* aa = cvalues<T>();  
+
+    NP* b = NP::Make<T>(si) ; 
+    T* bb = b->values<T>(); 
+
+    int _si = 0 ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        if(predicate(aa+i)) 
+        {
+            memcpy( bb + _si,  aa+i , sizeof(T) ); 
+            _si += 1 ; 
+        }
+    }
+    assert( si == _si ); 
+    return b ; 
+}
+
+/**
+NP::copy_if
+------------
+
+S: compound type, eg int4, sphoton, etc..
+T: atomic base type use for array, eg int, float, double
+
+::   
+
+    NP* hit = photon->copy_if<float,sphoton>(predicate) ; 
+
+**/
+
+
+template<typename T, typename S> 
+inline NP* NP::copy_if(std::function<bool(const S*)> predicate ) const 
+{
+    assert( sizeof(S) >= sizeof(T) );  
+    int ni = num_items(); 
+
+    int si = count_if<S>(predicate) ; 
+    int sj = sizeof(S) / sizeof(T) ; 
+
+    assert( si <= ni ); 
+    std::vector<int> sh(shape) ; 
+    int nd = sh.size(); 
+
+    assert( nd > 0 ); 
+    sh[0] = si ; 
+
+    int itemcheck = 1 ; 
+    for(int i=1 ; i < nd ; i++) itemcheck *= sh[i] ; 
+    assert( itemcheck == sj ); 
+
+    const S* aa = cvalues<S>();  
+
+    NP* b = NP::Make_<T>(sh) ; 
+    S* bb = b->values<S>(); 
+
+    int _si = 0 ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        if(predicate(aa+i)) 
+        {
+            memcpy( bb + _si,  aa+i , sizeof(S) ); 
+            _si += 1 ; 
+        }
+    }
+    assert( si == _si ); 
+    return b ; 
+}
+
+
+/**
+NP::flexible_copy_if
+----------------------
+
+S: compound type, eg int4, sphoton, etc..
+T: atomic base type use for array, eg int, float, double
+Args: variable number of ints used to specify item shape eg (4,4) 
+   
+If no itemshape is provided used default of (sizeof(S)/sizeof(T),) 
+For example with sphoton that has size of 16 floats, would use::
+
+    NP* hit = photon->copy_if<float,sphoton>(predicate, 4, 4) ; 
+
+HMM: as the source array item shape is already available there 
+there is actually no need for the Args itemshape complication.
+Hence named this "flexible"
+**/
+
+template<typename T, typename S, typename... Args> 
+inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ... itemshape ) const 
+{
+    assert( sizeof(S) >= sizeof(T) );  
+    int ni = num_items(); 
+
+    int si = count_if<S>(predicate) ; 
+    int sj = sizeof(S) / sizeof(T) ; 
+
+    assert( si <= ni ); 
+
+    std::vector<int> itemshape_ = {itemshape...};
+    std::vector<int> sh ; 
+    sh.push_back(si) ; 
+
+    if(itemshape_.size() == 0 )
+    {
+        sh.push_back(sj) ; 
+    }
+    else 
+    {
+        int itemcheck = 1 ; 
+        for(int i=0 ; i < itemshape_.size() ; i++)  
+        {
+            sh.push_back(itemshape_[i]) ; 
+            itemcheck *= itemshape_[i] ; 
+        }
+        assert( itemcheck == sj ); 
+    }
+    const S* aa = cvalues<S>();  
+
+    NP* b = NP::Make_<T>(sh) ; 
+    S* bb = b->values<S>(); 
+
+    int _si = 0 ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        if(predicate(aa+i)) 
+        {
+            memcpy( bb + _si,  aa+i , sizeof(S) ); 
+            _si += 1 ; 
+        }
+    }
+    assert( si == _si ); 
+    return b ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
