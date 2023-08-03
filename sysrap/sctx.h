@@ -49,6 +49,8 @@ q2.i.w : st
 #endif
 
 
+#define WITH_SUP 1 
+
 struct sevent ; 
 struct quad2 ; 
 struct sphoton ; 
@@ -76,7 +78,9 @@ struct sctx
     sseq seq ; 
     stagr tagr ; 
     quad4 aux ; 
+#ifdef WITH_SUP
     quad6 sup ;
+#endif
     // NB these are heavy : important to test with and without PRODUCTION 
     // as these are expected to be rather expensive  
 #endif
@@ -154,7 +158,9 @@ A: unsure, currently thats done in SEvt::finalPhoton
 SCTX_METHOD void sctx::end()
 {
     if(evt->seq)  evt->seq[idx] = seq ; 
+#ifdef WITH_SUP
     if(evt->sup)  evt->sup[idx] = sup ; 
+#endif
 #ifdef DEBUG_TAG
     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
     if(evt->flat) evt->flat[idx] = tagr.flat ;

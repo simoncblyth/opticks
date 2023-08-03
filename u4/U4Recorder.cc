@@ -760,9 +760,16 @@ g4-cls G4SteppingManager::
   so if plant the ProcessHits enum into the track label
   can then copy that into the current_aux  
 
+
+Q: Where does the "TO" flag come from ?
+A: See SEvt::beginPhoton
+    
+Q: Can the dependency on boundary process type be avoided ? 
+A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
+   avoid some complexities but maybe just add others. Would rather not go there. 
+   Prefer simplicity. 
+
 **/
-
-
 
 template <typename T>
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
@@ -798,14 +805,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
     }
-    // Q: Where does the "TO" flag come from ?
-    // A: See SEvt::beginPhoton
-    
-    // Q: Can the dependency on boundary process type be avoided ? 
-    // A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
-    //    could avoid some complexities but maybe just add others. Would rather not go there. 
-    //    Prefer simplicity. 
-    //
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
 
     bool is_fastsim_flag = flag == DEFER_FSTRACKINFO ; 

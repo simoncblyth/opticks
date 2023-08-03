@@ -9,7 +9,11 @@ import os, re, logging, textwrap, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold
+
+print("[from opticks.ana.p import * ")
 from opticks.ana.p import * 
+print("]from opticks.ana.p import * ")
+
 from opticks.ana.eget import eslice_
 from opticks.ana.base import PhotonCodeFlags
 from opticks.ana.qcf import QU,QCF,QCFZero
@@ -291,20 +295,25 @@ class SEvt(object):
         self.qlim = qlim
         self.qtab_ = qtab_
 
-    def minimal_qtab(self):
+    def minimal_qtab(self, sli="[:10]", dump=False):
         """
         :return qtab: history table in descending count order 
         """
         e = self
         uq,iq,nq = np.unique(e.q, return_index=True, return_counts=True) 
         oq = np.argsort(nq)[::-1]  
-        expr ="np.c_[nq,iq,uq][oq][:10]"   
+        expr ="np.c_[nq,iq,uq][oq]%(sli)s" % locals()  
         qtab = eval(expr)
-        log.info("minimal_qtab : %s " % expr)
-        print(qtab)
+        if dump:
+            log.info("minimal_qtab : %s " % expr)
+            print(qtab)
+        pass
         return qtab
 
     def init_aux(self, f):
+        """
+        Note aux is currently CPU only 
+        """
         if hasattr(f, 'aux') and not f.aux is None: 
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
             spec_ = f.aux[:,:,2,3].view(np.int32)   ## step spec
@@ -404,6 +413,8 @@ class SEvt(object):
 
     def init_sup(self, f):
         """
+        sup is CPU only 
+
         photon level beginPhoton endPhoton time stamps from the sup quad4 
         """
         if hasattr(f,'sup') and not f.sup is None:

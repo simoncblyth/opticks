@@ -2,8 +2,8 @@
 
 import os, logging, numpy as np
 from opticks.sysrap.sevt import SEvt
-
 log = logging.getLogger(__name__)
+
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
 SEL = int(os.environ.get("SEL","0")) 
@@ -16,7 +16,7 @@ pass
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
+    print("GLOBAL:%d MODE:%d SEL:%d" % (GLOBAL,MODE, SEL))
 
     e = SEvt.Load(symbol="e")
     print(repr(e))

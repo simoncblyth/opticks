@@ -9,7 +9,7 @@ Usage::
 
 Default SEvt being saved into:: 
 
-    /home/blyth/.opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001/
+    ~/.opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001/
 
 EOU
 }

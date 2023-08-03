@@ -1739,7 +1739,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
                  ctx.idx, bounce, cosTheta, ctx.p.mom.x, ctx.p.mom.y, ctx.p.mom.z, normal->x, normal->y, normal->z ); 
 #endif
 
-    ctx.p.set_prd(boundary, identity, cosTheta, iindex ); 
+    ctx.p.set_prd(boundary, identity, cosTheta, iindex );  // HMM: lposcost not passed along 
 
     bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx ); 
 

@@ -4,6 +4,7 @@
 squadx.h : facilitate storing uint64_t values into quad4 which uses 32 bit elements
 =======================================================================================
 
+This is used for storing uint64_t timestmaps into the sctx.sup from SEvt::addProcessHitsStamp
 
 **/
 
@@ -17,7 +18,7 @@ union quadx
     float4 f ; 
     int4   i ; 
     uint4  u ; 
-    wuint2 w ; 
+    wuint2 w ;   // wide 
 };
 
 

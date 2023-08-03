@@ -1922,9 +1922,10 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
+#ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.x = stamp::Now(); 
-
+#endif
 
     ctx.idx = idx ;  
     ctx.evt = evt ; 
@@ -2364,10 +2365,12 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
 
+#ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.y = stamp::Now();   
     xsup.q1.w.x = t_PenultimatePoint ; 
     xsup.q1.w.y = t_LastPoint ; 
+#endif
 
     ctx.end();   // copies {seq,sup} into evt->{seq,sup}[idx] (and tag, flat when DEBUG_TAG)
     evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?
@@ -2395,9 +2398,37 @@ void SEvt::AddProcessHitsStamp(int idx, int p) // static
 { 
     if(Exists(idx)) Get(idx)->addProcessHitsStamp(p) ; 
 }
+/**
+SEvt::addProcessHitsStamp
+---------------------------
+
+See squadx.h and search for WITH_SUP to find where sup is populated.  Also see sevt.py for usage. 
+
++--------------------------------------+----------------------------------------------------------------------------------+
+| sctx::sup fields                     |                                                                                  |
++==================+===================+==================================================================================+
+|  q0.w.x          |  q0.w.y           | q0.w.x SEvt::beginPhoton q0.w.y SEvt::finalPhoton                                |
++------------------+-------------------+----------------------------------------------------------------------------------+
+|  q1.w.x          |  q1.w.y           | q1.w.x SEvt::finalPhoton t_PenultimatePoint q1.w.y SEvt::finalPhoton t_LastPoint |
++------------------+-------------------+----------------------------------------------------------------------------------+
+|  q2.w.x          |  q2.w.y           | time range from SEvt::addProcessHitsStamp(0)                                     |
++---------+--------+--------+----------+----------------------------------------------------------------------------------+
+|  q3.u.x | q3.u.y | q3.u.x | q3.u.w   | .x call count from SEvt::addProcessHitsStamp(0)                                  |   
++---------+--------+--------+----------+----------------------------------------------------------------------------------+
+|  q4.w.x          |  q4.w.y           | time range from SEvt::addProcessHitsStamp(1)                                     |
++---------+--------+-------------------+----------------------------------------------------------------------------------+
+|  q5.u.x | q5.u.y | q5.u.z | q5.u.w   | .x call count frmo SEvt::addProcessHitsStamp(1)                                  |  
++---------+--------+--------+----------+----------------------------------------------------------------------------------+
+
+Use BP=SEvt::addProcessHitsStamp to find where time stamps are coming. Currently none. 
+
+**/
 void SEvt::addProcessHitsStamp(int p)
 {
+    assert( p > -1 ); 
+#ifdef WITH_SUP
     uint64_t now = stamp::Now();
+
     quad6&  sup  = current_ctx.sup ;  
     quadx6& xsup = (quadx6&)current_ctx.sup ;  
 
@@ -2438,6 +2469,7 @@ void SEvt::addProcessHitsStamp(int p)
         << std::endl 
         ; 
     */
+#endif
 }
 
 
