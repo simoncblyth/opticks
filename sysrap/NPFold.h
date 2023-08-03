@@ -90,18 +90,21 @@ Hid fts.h usage behind WITH_FTS as getting compilation error on Linux::
 
 struct NPFold 
 {
-    // MEMBERS
+    // PRIMARY MEMBERS : KEYS, ARRAYS, SUBFOLD
 
     std::vector<std::string> kk ; 
     std::vector<const NP*>   aa ; 
-    std::string meta ; 
-    std::vector<std::string>  names ;  // recent addition
 
-    const char* savedir ; 
-    const char* loaddir ; 
-
-    std::vector<NPFold*> subfold ;  
     std::vector<std::string> ff ;  // keys of sub-NPFold 
+    std::vector<NPFold*> subfold ;  
+
+    // METADATA FIELDS 
+
+    std::string               meta ; 
+    std::vector<std::string>  names ;
+    const char*               savedir ; 
+    const char*               loaddir ; 
+
 
 
     static constexpr const int UNDEF = -1 ; 
@@ -192,6 +195,9 @@ public:
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
 
     NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
+    static void CopyMeta( NPFold* b , const NPFold* a ); 
+
+
     int count_keys( const std::vector<std::string>* keys ) const ; 
 
 
@@ -880,8 +886,8 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     int count = count_keys(&keys) ; 
     if( count == 0 ) return nullptr ; 
 
-
     NPFold* f = new NPFold ; 
+    CopyMeta(f, this);  // copy metadata to the new fold
 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
@@ -895,6 +901,17 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     } 
     return f ; 
 }
+
+inline void NPFold::CopyMeta( NPFold* b , const NPFold* a ) // static
+{
+    b->meta = a->meta ; 
+    b->names = a->names ; 
+    b->savedir = a->savedir ? strdup(a->savedir) : nullptr ; 
+    b->loaddir = a->loaddir ? strdup(a->loaddir) : nullptr ; 
+}
+
+
+
 /**
 NPFold::count_keys
 ------------------

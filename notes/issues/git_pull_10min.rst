@@ -67,3 +67,48 @@ Bizarre the 10min pull time quite repeatable !
 
 
 
+
+
+    N[blyth@localhost opticks_bitbucket]$ ./pull.sh 
+    origin	https://bitbucket.org/simoncblyth/opticks (fetch)
+    origin	https://bitbucket.org/simoncblyth/opticks (push)
+    Thu Aug  3 03:56:57 CST 2023
+    remote: Enumerating objects: 28, done.
+    remote: Counting objects: 100% (28/28), done.
+    remote: Compressing objects: 100% (15/15), done.
+    remote: Total 15 (delta 13), reused 0 (delta 0), pack-reused 0
+    Unpacking objects: 100% (15/15), 2.49 KiB | 91.00 KiB/s, done.
+    From https://bitbucket.org/simoncblyth/opticks
+       aa7fa5f3f..4f9fd4e44  master     -> origin/master
+    Updating aa7fa5f3f..4f9fd4e44
+    Fast-forward
+     notes/issues/git_pull_10min.rst | 69 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     sysrap/SEventConfig.cc          |  6 ++++++
+     sysrap/SEvt.cc                  | 15 +++++++++++----
+     sysrap/SEvt.hh                  |  1 +
+     sysrap/tests/smeta_test.cc      |  1 +
+     sysrap/tests/sstr_test.cc       | 22 +++++++++++++++++-----
+     sysrap/tests/sstr_test.sh       |  1 +
+     u4/U4Recorder.cc                |  3 +++
+     8 files changed, 109 insertions(+), 9 deletions(-)
+     create mode 100644 notes/issues/git_pull_10min.rst
+    Thu Aug  3 04:06:49 CST 2023
+    N[blyth@localhost opticks_bitbucket]$ 
+
+
+
+Try github into junotop::
+
+    date ; git clone https://github.com/simoncblyth/opticks.git opticks_github ; date
+
+
+::
+
+    N[blyth@localhost junotop]$ date ; git clone https://github.com/simoncblyth/opticks.git opticks_github ; date
+    Thu Aug  3 04:54:56 CST 2023
+    Cloning into 'opticks_github'...
+    fatal: unable to access 'https://github.com/simoncblyth/opticks.git/': Failed connect to github.com:443; Connection timed out
+    Thu Aug  3 04:57:04 CST 2023
+    N[blyth@localhost junotop]$ 
+
+
