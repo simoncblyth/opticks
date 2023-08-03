@@ -38,9 +38,13 @@ ${GEOM}_GEOMList
 
 inline void smeta::Collect(std::string& meta, const char* source)
 {
+    uint64_t t = stamp::Now(); 
+    std::string tf = stamp::Format(t) ;
+
     if(source) NP::SetMeta<std::string>(meta, "source", source );
     NP::SetMeta<std::string>(meta, "creator", sproc::ExecutableName() );
-    NP::SetMeta<uint64_t>(meta, "mtime", stamp::Now());
+    NP::SetMeta<uint64_t>(meta, "stamp", t);
+    NP::SetMeta<std::string>(meta, "stampFmt", tf);
     CollectEnv(meta); 
 }
 

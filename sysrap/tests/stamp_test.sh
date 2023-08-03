@@ -4,7 +4,8 @@ name=stamp_test
 bin=/tmp/$name
 export TTPATH=/tmp/$name.npy
 
-defarg="build_run_ana"
+#defarg="build_run_ana"
+defarg="build_run"
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
