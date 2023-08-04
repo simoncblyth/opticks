@@ -24,9 +24,19 @@ def desc_sensor(st):
        2400 : 130 : PMT_20inch_veto_inner1_solid 
        2400 : 132 : PMT_20inch_veto_body_solid_1_2 
 
+
+    In [7]: np.unique( st.nds.sensor_id   )
+    Out[7]: array([    -1,      0,      1,      2,      3, ..., 325595, 325596, 325597, 325598, 325599], dtype=int32)
+
+    In [8]: np.unique( st.nds.sensor_index   )
+    Out[8]: array([   -1,     0,     1,     2,     3, ..., 45607, 45608, 45609, 45610, 45611], dtype=int32)
+
+    In [9]: np.unique( st.nds.sensor_name   )
+    Out[9]: array([-1,  0,  1,  2,  3], dtype=int32)
+
     """
-    ws = np.where(st.nds.sensor > -1 )[0]
-    se = st.nds.sensor[ws]
+    ws = np.where(st.nds.sensor_index > -1 )[0]
+    se = st.nds.sensor_index[ws]
     xse = np.arange(len(se), dtype=np.int32)    
     assert np.all( xse == se )  
     ulv, nlv = np.unique(st.nds.lvid[ws], return_counts=True)
@@ -44,16 +54,16 @@ def desc_sensor(st):
     pass
    
     head = ["desc_sensor",hdr]
-    body = [fmt % ( nlv[i], ulv[i], st.soname_[ulv[i]].decode(), zths[i] ) for i in range(len(ulv))]
+    body = [fmt % ( nlv[i], ulv[i], st.soname_[ulv[i]], zths[i] ) for i in range(len(ulv))]
     tail = [hfmt % ( nlv.sum(), "", "", "" ),]
     return "\n".join(head+body+tail+extra)
 
 
 if __name__ == '__main__':
-    cf = CSGFoundry.Load()
+    cf = CSGFoundry.Load(symbol="cf")
     print(cf) 
 
-    f = Fold.Load(symbol="f")
+    f = Fold.Load(cf.base, "CSGFoundry/SSim/stree", symbol="f")
     st = stree(f)
 
     print(repr(st))

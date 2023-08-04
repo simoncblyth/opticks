@@ -5,30 +5,29 @@ sev.sh
 
 Update geometry, transfer to laptop, load into ipython::
 
-    ntds3       # on workstation
-    ntds3       # on mac laptop : grabs persisted geometry from workstation
-    gxt         # cd ~/opticks/g4cx/tests
-    ./sev.sh    # load into ipython
-
-Alternative jump into ipython from anywhere::
-
-    cd
+    GEOM get                         
     ~/opticks/g4cx/tests/sev.sh 
 
 EOU
 }
 
-export BASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+script=$SDIR/sev.py 
+source $HOME/.opticks/GEOM/GEOM.sh 
+export BASE=/tmp/$USER/opticks/GEOM/$GEOM/ntds3
+export FOLD=$BASE/ALL1/p001
 
-export CFBASE=$BASE
-export STBASE=$BASE
+defarg="info_ana"
+arg=${1:-$defarg}
 
-#export FOLD=$CFBASE/stree
+vars="BASH_SOURCE GEOM BASE FOLD script" 
 
-export FOLD=$(dirname $CFBASE)/ALL/z000
-#export FOLD=$(dirname $CFBASE)/ALL/p001
+if [ "${arg/info}" != "$arg" ]; then 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi
 
-
-${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/sev.py 
-
+if [ "${arg/ana}" != "$arg" ]; then 
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 1 
+fi
 

@@ -44,7 +44,7 @@ After that can compare timings::
 EOU
 }
 
-DIR=$(dirname $BASH_SOURCE)
+DIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 bin=U4SimulateTest
 
 #geom=V1J008

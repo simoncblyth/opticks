@@ -108,7 +108,7 @@ class snode(sobject):
 
     @classmethod
     def Brief(cls, rec):
-        return "snode ix:%7d dh:%2s nc:%5d lv:%3d se:%7d." % (rec.index, rec.depth, rec.num_child, rec.lvid, rec.sensor)
+        return "snode ix:%7d dh:%2s nc:%5d lv:%3d se:%7d." % (rec.index, rec.depth, rec.num_child, rec.lvid, rec.sensor_id)
 
 
 class sfactor(sobject):
@@ -302,9 +302,9 @@ class stree(object):
         dep = self.get_depth(nidx)
         spc = self.DepthSpacer(dep)
         ndd = snode.Brief(nd) if brief else snode.Desc(nd) 
-        sub = self.get_sub(nidx)
-        sfd = "" if sf is None else sf.desc_key(sub)
-        son = self.get_soname(nidx)
+        sub = "skip-sub" # self.get_sub(nidx)
+        sfd = "skip-sfd" # "" if sf is None else sf.desc_key(sub)
+        son = "skip-son" # self.get_soname(nidx)
         return " ".join([spc,ndd,sfd,son])
 
     def desc_nodes_(self, nodes, sf):

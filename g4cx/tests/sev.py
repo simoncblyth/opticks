@@ -35,14 +35,14 @@ from opticks.ana.eprint import eprint, epr
 if __name__ == '__main__':
 
 
-    cf = CSGFoundry.Load("$CFBASE", symbol="cf") 
+    cf = CSGFoundry.Load(symbol="cf") 
     print(repr(cf))
 
-    stf = Fold.Load("$STBASE/stree", symbol="stf" )
+    stf = Fold.Load(cf.base, "CSGFoundry/SSim/stree", symbol="stf")
     st = stree(stf)
     print(repr(st))
 
-    ev = Fold.Load("$FOLD", symbol="ev")
+    ev = Fold.Load("$FOLD",symbol="ev")
     print(repr(ev))
 
     hit_ii = ev.hit.view(np.int32)[:,1,3]  # sphoton.iindex
