@@ -11,6 +11,7 @@ other projects together with NP.hh
 **/
 
 
+#include <csignal>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -398,6 +399,7 @@ struct NPS
 struct U
 {
     static constexpr const bool VERBOSE = false ; 
+    static constexpr const bool RAISE = true ; 
 
     enum { ERROR_PATH=-1, DIR_PATH=1 , FILE_PATH=2, OTHER_PATH=3 } ;   
 
@@ -907,6 +909,7 @@ inline void U::DirList(std::vector<std::string>& names, const char* path, const 
 {
     DIR* dir = opendir(path) ;
     if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
+    if(!dir && RAISE) std::raise(SIGINT) ; 
     if(!dir) return ; 
     struct dirent* entry ;
     while ((entry = readdir(dir)) != nullptr) 

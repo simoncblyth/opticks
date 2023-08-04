@@ -9,8 +9,9 @@ set(TEST_SOURCES
    G4CXSimtraceTest.cc
    G4CXOpticks_setGeometry_Test.cc
    G4CXOpticks_SetGeometry_GetInputPhoton_Test.cc
-)
 
+   G4CXAppTest.cc 
+)
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)

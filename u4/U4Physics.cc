@@ -266,7 +266,7 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     G4VProcess* proc = nullptr ; 
 
 #if defined(WITH_PMTSIM) && defined(WITH_CUSTOM4)
-    const char* path = "$PMTSimParamData_BASE/PMTSimParamData" ; 
+    const char* path = "$PMTSimParamData_BASE" ;  // directory with PMTSimParamData subfolder
     const PMTSimParamData* data = PMTAccessor::LoadData(path) ; 
     LOG(LEVEL) << "load path "  << path << " giving PMTSimParamData.data: " << ( data ? "YES" : "NO" ) ; 
     //LOG_IF(LEVEL, data != nullptr ) << *data ; 

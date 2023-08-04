@@ -54,7 +54,7 @@ npy/NStep.cpp
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define STORCH_METHOD __device__
 #else
-   #define STORCH_METHOD 
+   #define STORCH_METHOD inline
 #endif 
 
 
@@ -96,8 +96,10 @@ struct storch
 
     // NB : organized into 6 quads : are constained not to change that 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
    STORCH_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+#else
+   STORCH_METHOD static void generate( sphoton& p, srng&              rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #endif
 
 
@@ -184,7 +186,6 @@ inline std::string storch::desc() const
 #endif
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 
 /**
 storch::generate
@@ -197,7 +198,11 @@ the photon_id and genstep_id inputs are informational only.
 
 **/
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
+#else
+STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
+#endif
 {
     const storch& gs = (const storch&)gs_ ;   // casting between union-ed types  
 
@@ -220,8 +225,15 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.time = gs.time ; 
         p.mom = gs.mom ; 
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
         float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
         float u_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+#else
+        float u_zenith  = gs.zenith.x  + srng::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        float u_azimuth = gs.azimuth.x + srng::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+#endif
+
+
 
         float r = gs.radius*u_zenith ;
 
@@ -248,9 +260,6 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
         p.mom = gs.mom ; 
-
-        //float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
-        //float r = gs.radius*u_zenith ;
 
         float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
         float sfrac = 2.f*(frac-0.5f) ;     // -1 -> ~1
@@ -291,7 +300,6 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
     p.set_flag(TORCH); 
 }
 
-#endif
 
 
 

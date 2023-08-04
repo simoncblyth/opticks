@@ -415,7 +415,13 @@ class CSGFoundry(object):
         self.mm = MM(os.path.join(fold, "mmlabel.txt"))
 
         sim = Fold.Load(fold, "SSim") 
-        bdn = sim.stree.standard.bnd_names 
+
+        try:
+            bdn = sim.stree.standard.bnd_names 
+        except AttributeError:
+            bdn = None
+        pass
+        if bdn is None: log.fatal("CSGFoundry fail to access sim.stree.standard.bnd_names : geometry incomplete" )
         if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
         pass  
         self.sim = sim

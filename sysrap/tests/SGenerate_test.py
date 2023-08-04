@@ -5,10 +5,12 @@ from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 
 if __name__ == '__main__':
-    t = Fold.Load()
-    gs = t.gs 
-    se = t.se 
-    ph = t.ph 
+    f = Fold.Load(symbol="f")
+    print(repr(f))
+
+    gs = f.gs 
+    se = f.se 
+    ph = f.ph 
 
     pos = ph[:,0,:3]
     mom = ph[:,1,:3]

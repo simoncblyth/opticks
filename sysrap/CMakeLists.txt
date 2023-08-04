@@ -296,6 +296,7 @@ set(HEADERS
     smath.h 
     tcomplex.h
 
+    srng.h
     s_mock_curand.h
     scurand.h  
 

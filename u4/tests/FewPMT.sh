@@ -153,7 +153,8 @@ if [ "$VERSION" == "0" ]; then
 fi 
 
 # standalone access to PMT data 
-export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
+#export PMTSimParamData_BASE=$HOME/.opticks/GEOM/J007/CSGFoundry/SSim/juno
+export PMTSimParamData_BASE=$HOME/.opticks/GEOM/V1J009/CSGFoundry/SSim/extra/jpmt
 
 
 

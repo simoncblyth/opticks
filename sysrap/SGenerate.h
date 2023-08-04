@@ -18,22 +18,19 @@ struct SGenerate
     static NP* GeneratePhotons(const NP* gs);  
 }; 
 
-#if defined(MOCK_CURAND)
 
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
 #include "storch.h"
 #include "scarrier.h"
-#include "scurand.h"
-
+#include "scurand.h"   // without MOCK_CURAND this is an empty struct only 
 #include "SGenstep.hh"
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "OpticksGenstep.h"
 #include "NP.hh"
 
-#endif
 
 /**
 SGenerate::GeneratePhotons
@@ -99,18 +96,22 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
 
     NP* ph = nullptr ; 
 
-#if defined(MOCK_CURAND)
     const quad6* gg = (quad6*)gs_->bytes() ; 
 
     NP* se = SEvent::MakeSeed(gs_) ;
     //std::cout << " se " << ( se ? se->sstr() : "-" ) << std::endl ; 
     const int*   seed = (int*)se->bytes() ;   
 
-    curandStateXORWOW rng(1u); 
-
     int tot_photon = se->shape[0] ; 
     ph = NP::Make<float>( tot_photon, 4, 4); 
     sphoton* pp = (sphoton*)ph->bytes() ; 
+
+    unsigned rng_seed = 1u ; 
+#if defined(MOCK_CURAND)
+    curandStateXORWOW rng(rng_seed); 
+#else
+    srng rng(rng_seed);  
+#endif
 
     for(int i=0 ; i < tot_photon ; i++ )
     {   
@@ -120,6 +121,7 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
         const quad6& gs = gg[genstep_id] ;   
 
         int gencode = SGenstep::GetGencode(gs);  
+
         switch(gencode)
         {    
             case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
@@ -127,7 +129,6 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
             case OpticksGenstep_INPUT_PHOTON:    assert(0)  ; break ; 
         }    
     }
-#endif
     return ph ;
 }
 
