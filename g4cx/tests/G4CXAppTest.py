@@ -9,7 +9,6 @@ GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
 SEL = int(os.environ.get("SEL","0")) 
 
-
 if MODE in [2,3]:
     from opticks.ana.pvplt import *   
     # HMM this import overrides MODE, so need to keep defaults the same 

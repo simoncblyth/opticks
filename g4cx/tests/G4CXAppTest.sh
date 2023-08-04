@@ -13,6 +13,7 @@ EOU
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 U4TDIR=$(cd $SDIR/../../u4/tests && pwd)
+BINDIR=$(cd $SDIR/../../bin && pwd)
 
 bin=G4CXAppTest
 
@@ -25,6 +26,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 geomscript=$U4TDIR/$GEOM.sh
 if [ -f "$geomscript" ]; then  
     source $geomscript
+
+
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
@@ -48,6 +51,8 @@ NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
 export G4CXApp__PRIMARY_MODE=torch
 export OPTICKS_MAX_BOUNCE=31  
 export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_INTEGRATION_MODE=3
+export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
 
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 source $U4TDIR/storch_FillGenstep.sh
@@ -55,12 +60,14 @@ env | grep storch
 
 logging(){
    export G4CXOpticks=INFO
+   export QSim=INFO
+   export QEvent=INFO
 }
 logging
 
 
 
-vars="BASH_SOURCE SDIR U4TDIR GEOM bin geomscript BASE FOLD ana" 
+vars="BASH_SOURCE SDIR U4TDIR BINDIR GEOM bin geomscript BASE FOLD ana PMTSimParamData_BASE" 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -79,9 +86,14 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 
+if [ "${arg/grab}" != "$arg" ]; then
+    source $BINDIR/rsync.sh $BASE
+    [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3
+fi 
+
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $ana
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 4
 fi 
 
 exit 0 

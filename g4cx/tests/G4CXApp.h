@@ -28,9 +28,10 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
+#include "SSim.hh"
 #include "ssys.h"
 #include "SEventConfig.hh"
-#include "NP.hh"
+#include "NPFold.h"
 #include "sframe.h"
 
 #include "U4Material.hh"
@@ -161,6 +162,9 @@ G4VPhysicalVolume* G4CXApp::Construct()
     LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
 
     LOG(info) << "]" ; 
+
+    NPFold* jpmt = NPFold::Load("$PMTSimParamData_BASE") ; // directory with PMTSimParamData subfold
+    SSim::AddExtraSubfold("jpmt", jpmt );  // needs to be before SetGeometry for SPMT/QPMT hookup  
 
     G4CXOpticks::SetGeometry(pv) ; 
 
