@@ -3,6 +3,9 @@ usage(){ cat << EOU
 G4CXAppTest.sh 
 ================
 
+::
+
+    MODE=2 ./G4CXAppTest.sh ana
 
 
 EOU
@@ -31,8 +34,6 @@ ana=$SDIR/$bin.py
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 export FOLD=$BASE/ALLVERSION/p001
 
-
-
 #num_photons=1
 #num_photons=10
 #num_photons=100
@@ -44,7 +45,6 @@ num_photons=10000    # 10k
 
 NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
 
-
 export G4CXApp__PRIMARY_MODE=torch
 export OPTICKS_MAX_BOUNCE=31  
 export OPTICKS_EVENT_MODE=StandardFullDebug
@@ -52,6 +52,12 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 source $U4TDIR/storch_FillGenstep.sh
 env | grep storch
+
+logging(){
+   export G4CXOpticks=INFO
+}
+logging
+
 
 
 vars="BASH_SOURCE SDIR U4TDIR GEOM bin geomscript BASE FOLD ana" 
@@ -79,5 +85,4 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi 
 
 exit 0 
-
 

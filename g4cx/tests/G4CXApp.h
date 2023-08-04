@@ -66,7 +66,6 @@ struct G4CXApp
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     G4VPhysicalVolume*    fPV ; 
-    G4CXOpticks*          fGX ;  
 
     G4VPhysicalVolume* Construct(); 
 
@@ -84,12 +83,14 @@ struct G4CXApp
 
 
     G4CXApp(G4RunManager* runMgr); 
+    static void OpenGeometry() ; 
     virtual ~G4CXApp(); 
 
     static void SaveMeta(const char* savedir); 
     static G4RunManager* InitRunManager(); 
     static G4CXApp*        Create(); 
     void                 BeamOn() ;
+    static void          Main(); 
 
 };
 
@@ -160,6 +161,9 @@ G4VPhysicalVolume* G4CXApp::Construct()
     LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
 
     LOG(info) << "]" ; 
+
+    G4CXOpticks::SetGeometry(pv) ; 
+
     return pv ; 
 }  
 
@@ -210,7 +214,8 @@ void G4CXApp::BeginOfEventAction(const G4Event* event)
     fRecorder->BeginOfEventAction(event); 
 }
 void G4CXApp::EndOfEventAction(const G4Event* event)
-{   
+{  
+    int eventID = event->GetEventID() ;
     fRecorder->EndOfEventAction(event);  
 
     const char* savedir = SEvt::GetSaveDir(1); 
@@ -221,14 +226,22 @@ void G4CXApp::EndOfEventAction(const G4Event* event)
 #else
     LOG(info) << "not-(WITH_PMTSIM and POM_DEBUG)"  ; 
 #endif
+
+    if(SEventConfig::GPU_Simulation())
+    {
+        G4CXOpticks* gx = G4CXOpticks::Get() ;
+        gx->simulate(eventID) ;
+    }
+
+
 }
 
 void G4CXApp::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void G4CXApp::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
 void G4CXApp::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step) ; }
 
-
-G4CXApp::~G4CXApp(){  G4GeometryManager::GetInstance()->OpenGeometry(); }
+void G4CXApp::OpenGeometry(){  G4GeometryManager::GetInstance()->OpenGeometry(); } // static
+G4CXApp::~G4CXApp(){ OpenGeometry(); }
 // G4GeometryManager::OpenGeometry is needed to avoid cleanup warning
 
 
@@ -273,4 +286,10 @@ void G4CXApp::BeamOn()
     fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
 }
 
+void G4CXApp::Main()  // static 
+{
+    G4CXApp* app = G4CXApp::Create() ;   
+    app->BeamOn(); 
+    delete app ;  // avoids "Attempt to delete the (physical volume/logical volume/solid/region) store while geometry closed" warnings 
+}
 

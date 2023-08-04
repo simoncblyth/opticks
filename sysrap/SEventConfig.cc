@@ -99,6 +99,9 @@ const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame,
 
 
 int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
+bool        SEventConfig::GPU_Simulation(){  return _IntegrationMode == 1 || _IntegrationMode == 3 ; }
+bool        SEventConfig::CPU_Simulation(){  return _IntegrationMode == 2 || _IntegrationMode == 3 ; }
+
 const char* SEventConfig::EventMode(){ return _EventMode ; }
 
 

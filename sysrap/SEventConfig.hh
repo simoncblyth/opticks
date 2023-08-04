@@ -112,6 +112,9 @@ struct SYSRAP_API SEventConfig
 
 
     static int         IntegrationMode(); 
+    static bool        GPU_Simulation() ; // 1 or 3 
+    static bool        CPU_Simulation() ; // 2 or 3 
+
     static const char* EventMode(); 
 
     static int         RunningMode(); 

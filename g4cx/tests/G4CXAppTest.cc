@@ -10,17 +10,12 @@ to provide standalone bi-simulation.
 **/
 
 #include "OPTICKS_LOG.hh"
-#include "SEvt.hh"
 #include "G4CXApp.h"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    G4CXApp* app = G4CXApp::Create() ;   
-    app->BeamOn(); 
-    delete app ;  // avoids "Attempt to delete the (physical volume/logical volume/solid/region) store while geometry closed" warnings 
-     
+    G4CXApp::Main(); 
     return 0 ; 
 }
 
