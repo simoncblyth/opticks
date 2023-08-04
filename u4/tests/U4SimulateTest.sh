@@ -102,16 +102,16 @@ export LOC=skip
 log=${bin}.log
 logN=${bin}_$VERSION.log
 
-#num_ph=1
-#num_ph=10
-#num_ph=100
-#num_ph=1000      # 1k
-num_ph=10000    # 10k
-#num_ph=50000    # 50k 
-#num_ph=100000   # 100k
-#num_ph=1000000  # 1M
+#num_photons=1
+#num_photons=10
+#num_photons=100
+#num_photons=1000      # 1k
+num_photons=10000    # 10k
+#num_photons=50000    # 50k 
+#num_photons=100000   # 100k
+#num_photons=1000000  # 1M
 
-NUM_PHOTONS=${NUM_PHOTONS:-$num_ph}
+NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
 
 
 if [ -n "$RERUN" ]; then 

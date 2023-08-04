@@ -109,7 +109,7 @@ std::string G4CXApp::Desc()
 char G4CXApp::PrimaryMode()
 {
     char mode = '?' ; 
-    const char* mode_ = ssys::getenvvar("G4CXApp__PRIMARY_MODE", "gun" ); 
+    const char* mode_ = ssys::getenvvar("G4CXApp__PRIMARY_MODE", "torch" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
     if(strcmp(mode_, "iphoton") == 0) mode = 'I' ;   // CAUTION: torch and iphoton both call U4VPrimaryGenerator::GeneratePrimaries
