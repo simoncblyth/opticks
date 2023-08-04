@@ -1081,11 +1081,15 @@ void SEvt::Save()
     if(Exists(0)) Get(0)->save();  
     if(Exists(1)) Get(1)->save();  
 }
+
+/*
 void SEvt::SaveExtra( const char* name, const NP* a)
 {  
     if(Exists(0)) Get(0)->saveExtra(name, a); 
     if(Exists(1)) Get(1)->saveExtra(name, a); 
 }
+*/
+
 
 bool SEvt::HaveDistinctOutputDirs() // static 
 {
@@ -1169,6 +1173,10 @@ Called for example from U4Recorder::BeginOfEventAction
 Note that eventID from Geant4 is zero based but the 
 index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs. 
 
+TODO: avoid that complication by just basing 
+the output dir index prefix "p" or "n" depending on SEvt::instance 
+which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
+
 **/
 
 void SEvt::beginOfEvent(int eventID)
@@ -1202,9 +1210,12 @@ void SEvt::endOfEvent(int eventID)
 
 bool SEvt::IndexPermitted(int index_) // static
 {
-    return std::abs(index_) >= 1 ;   // for simplicity dont depend on Count, always dis-allow index 0 
+    return index_ >= 1 ;  // no longer allowing -ve index 
+    //return std::abs(index_) >= 1 ;   
+    // for simplicity dont depend on Count, always dis-allow index 0 
 }
 
+/*
 void SEvt::SetIndex(int index_)
 { 
     if(Exists(0)) Get(0)->setIndex(index_); 
@@ -1227,6 +1238,11 @@ void SEvt::UnsetIndex()
     if(Exists(0)) Get(0)->unsetIndex() ; 
     if(Exists(1)) Get(1)->unsetIndex() ; 
 }
+*/
+
+
+
+
 int SEvt::GetIndex(int idx)
 {   
     return Exists(idx) ? Get(idx)->getIndex() : 0 ;   
@@ -2879,14 +2895,15 @@ void SEvt::gather_components()   // *GATHER*
     assert( num_genstep > -1 ); 
     assert( num_photon > -1 ); 
 
-    LOG_IF(fatal, num_hit == -1 ) << " SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
-    assert( num_hit > -1 ); 
+    LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
+    //assert( num_hit > -1 ); 
 
     gather_total += 1 ;
     genstep_total += num_genstep ;
     photon_total += num_photon ;
-    //if(num_hit > -1) hit_total += num_hit ; 
-    hit_total += num_hit ; 
+
+    if(num_hit > -1) hit_total += num_hit ; 
+    //hit_total += num_hit ; 
 
     LOG(LEVEL) 
         << " num_comp " << num_comp
@@ -3061,13 +3078,28 @@ const char* SEvt::getOutputDir(const char* base_) const
 {
     const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
     const char* reldir = GetReldir() ; 
-    const char* dir = hasIndex() ? 
-                                SPath::Resolve(base, reldir, index, DIRPATH ) 
-                             :
-                                SPath::Resolve(base, reldir,  DIRPATH) 
-                             ;
+    const char* dir = nullptr ; 
+    if(hasIndex()) 
+    { 
+        assert( index > 0 ); 
+        assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
+        int u_index = instance == SEvt::EGPU ? index : -index ; 
+        dir = SPath::Resolve(base, reldir, u_index, DIRPATH ) ; 
+    }
+    else
+    {
+        dir = SPath::Resolve(base, reldir,  DIRPATH) ; 
+    }
     return dir ;  
 }
+
+
+
+
+
+
+
+
 
 /**
 SEvt::RunDir

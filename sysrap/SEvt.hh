@@ -3,6 +3,12 @@
 SEvt.hh
 =========
 
+TODO : prune useless/misleading statics, 
+       now that commonly have two active SEvt instances 
+       it is better to only use statics where really 
+       need to message all instances. 
+
+
 NB : THERE IS ALMOST ALWAYS ONLY ONE SEvt INSTANCE NO MATTER HOW MANY G4Event ARE HANDLED
 
 * HAVING MORE THAN ONE SEvt INSTANCE CAN CAUSE PERPLEXING BUGS 
@@ -282,7 +288,7 @@ public:
     static SEvt* LoadRelative(const char* rel=nullptr);  // formerly Load
     static void Clear(); 
     static void Save() ; 
-    static void SaveExtra(const char* name, const NP* a) ; 
+    //static void SaveExtra(const char* name, const NP* a) ; 
 
     static void Save(const char* bas, const char* rel ); 
     static void Save(const char* dir); 
@@ -307,11 +313,13 @@ public:
 
 
     static bool IndexPermitted(int index);   // index is 1-based 
+    /*
     static void SetIndex(int index); 
     static void EndIndex(int index); 
-
     static void IncrementIndex(); 
     static void UnsetIndex(); 
+    */
+
     static int  GetIndex(int idx); 
     static S4RandomArray* GetRandomArray(int idx); 
 

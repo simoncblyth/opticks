@@ -34,8 +34,11 @@ fi
 ana=$SDIR/$bin.py 
 
 
+export VERSION=0
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
-export FOLD=$BASE/ALLVERSION/p001
+export EVT=001
+export AFOLD=$BASE/ALL${VERSION}/p${EVT}
+export BFOLD=$BASE/ALL${VERSION}/n${EVT}
 
 #num_photons=1
 #num_photons=10

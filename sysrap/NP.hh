@@ -4598,8 +4598,9 @@ inline bool NP::Exists(const char* dir, const char* name) // static
     std::string path = U::form_path(dir, name); 
     return Exists(path.c_str()); 
 }
-inline bool NP::Exists(const char* path) // static 
+inline bool NP::Exists(const char* path_) // static 
 {
+    const char* path = U::Resolve(path_); 
     std::ifstream fp(path, std::ios::in|std::ios::binary);
     return fp.fail() ? false : true ; 
 }

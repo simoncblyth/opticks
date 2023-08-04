@@ -62,6 +62,7 @@ struct SYSRAP_API SSim
     static const char* GetContextBrief(); 
     static SSim* CreateOrReuse(); 
 
+    static void  AddExtraSubfold(const char* k, const char* dir ); 
     static void  AddExtraSubfold(const char* k, NPFold* f); 
 
     static int Compare( const SSim* a , const SSim* b ) ; 

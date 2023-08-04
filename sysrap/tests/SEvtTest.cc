@@ -41,8 +41,8 @@ void test_LifeCycle()
 
     SEvt* evt = SEvt::Create(0) ; 
 
-    SEvt::SetIndex(-214); 
-    SEvt::UnsetIndex(); 
+    evt->setIndex(214); 
+    evt->unsetIndex(); 
 
     quad6 gs ; 
     gs.set_numphoton(1) ; 

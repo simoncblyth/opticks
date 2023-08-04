@@ -126,6 +126,7 @@ struct NPFold
     static const char* BareKey(const char* k);  // without .npy 
     static std::string FormKey(const char* k, bool change_txt_to_npy ); 
 
+    static bool    Exists(const char* base); 
     static NPFold* Load_(const char* base ); 
     static const char* Resolve(const char* base_, const char* rel1_=nullptr, const char* rel2_=nullptr); 
     static NPFold* Load(const char* base); 
@@ -328,6 +329,10 @@ inline std::string NPFold::FormKey(const char* k, bool change_txt_to_npy)
     return s ; 
 }
 
+inline bool NPFold::Exists(const char* base) // static
+{
+    return NP::Exists(base, INDEX);  
+}
 inline NPFold* NPFold::Load_(const char* base )
 {
     if(base == nullptr) return nullptr ; 

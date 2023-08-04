@@ -40,6 +40,20 @@ SSim* SSim::CreateOrReuse()
     return INSTANCE ? INSTANCE : Create() ; 
 }
 
+void SSim::AddExtraSubfold(const char* k, const char* dir) // static
+{
+    LOG(LEVEL) << " k " << k << " dir " << dir ;  
+    if(NPFold::Exists(dir)) 
+    {
+        NPFold* fold = NPFold::Load(dir) ;
+        LOG(LEVEL) << " fold " << ( fold ? "YES" : "NO " ) ; 
+        AddExtraSubfold(k, fold );
+    }
+    else
+    {
+        LOG(LEVEL) << " DOESNT EXIST : SKIP " ;  
+    } 
+}
 void SSim::AddExtraSubfold(const char* k, NPFold* f) // static
 {
     SSim* ss = CreateOrReuse(); 

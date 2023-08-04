@@ -9,6 +9,13 @@ CMDLINE = " ".join(sys.argv)
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
+def IsRemoteSession():
+    """
+    Heuristic to detect remote SSH session 
+    """
+    has_SSH_CLIENT = not os.environ.get("SSH_CLIENT", None) is None 
+    has_SSH_TTY = not os.environ.get("SSH_TTY", None) is None 
+    return has_SSH_CLIENT or has_SSH_TTY
 
 class AttrBase(object):
     def __init__(self, symbol="t", prefix="", publish=False):
