@@ -867,7 +867,6 @@ are inserted into the instance transform fourth column.
 NOTE that the nd.sensor_index may be subsequently changed by 
 stree::reorderSensors
 
-
 NB changes made to U4Tree::identifySensitiveInstances should
 usually be made in tandem with U4Tree::identifySensitiveGlobals
 
@@ -962,9 +961,17 @@ inline void U4Tree::identifySensitiveGlobals()
     for(unsigned i=0 ; i < remainder.size() ; i++)
     { 
         int nidx = remainder[i] ; 
-        const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
-        const char* pvn = pv->GetName().c_str() ; 
+        snode& nd = st->nds[nidx] ; 
 
+        const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
+        const G4VPhysicalVolume* ppv = get_pv_(nd.parent) ; 
+
+        const char* pvn = pv->GetName().c_str() ; 
+        const char* ppvn = ppv ? ppv->GetName().c_str() : nullptr  ; 
+
+        // TODO: access the parent pv and pass that to sid with pv 
+        //int sensor_id = sid->getGlobalIdentity(pv, pv_p) ;  
+      
         int sensor_id = sid->getGlobalIdentity(pv) ;  
         int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
         int sensor_name = -1 ; 
@@ -974,17 +981,18 @@ inline void U4Tree::identifySensitiveGlobals()
             st->sensor_count += 1 ;  // count over all factors  
             sensor_name = suniquename::Add(pvn, st->sensor_name ) ; 
         }
-        snode& nd = st->nds[nidx] ; 
         nd.sensor_id = sensor_id ; 
         nd.sensor_index = sensor_index ; 
         nd.sensor_name = sensor_name ; 
-
  
         if(level > 1) std::cerr
             << "U4Tree::identifySensitiveGlobals"
             << " i " << std::setw(7) << i 
+            << " nidx " << std::setw(6) << nidx
             << " sensor_id " << std::setw(7) << sensor_id  
             << " sensor_index " << std::setw(7) << sensor_index  
+            << " pvn " << pvn 
+            << " ppvn " << ( ppvn ? ppvn : "-" )
             << std::endl
             ;
     }

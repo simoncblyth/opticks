@@ -65,10 +65,26 @@ export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 source $U4TDIR/storch_FillGenstep.sh
 env | grep storch
 
+
+export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL
+    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+
+    Pyrex/nnvt_photocathode_mirror_logsurf/nnvt_photocathode_mirror_logsurf/Vacuum
+EOL
+)
+
+
+
 logging(){
    export G4CXOpticks=INFO
+   export X4PhysicalVolume=INFO   # look into sensor boundary to understand lpmtid -1 
    export QSim=INFO
-   export QEvent=INFO
+   #export QEvent=INFO
+
+   export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
 }
 logging
 

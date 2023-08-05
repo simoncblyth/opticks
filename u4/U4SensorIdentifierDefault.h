@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 
+#include "sstr.h"
 #include "U4SensorIdentifier.h"
 #include "G4PVPlacement.hh"
 
@@ -14,11 +15,38 @@ struct U4SensorIdentifierDefault : public U4SensorIdentifier
     static bool IsInterestingCopyNo( int copyno ); 
 }; 
 
+/**
+U4SensorIdentifierDefault::getGlobalIdentity
+---------------------------------------------
 
-inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume* ) const 
+Canonically invoked from U4Tree::identifySensitiveGlobals
+
+Currently a kludge using hardcoded pvn prefix.
+This is because sensors within the global remainder 
+is only relevant to test geometries for JUNO. 
+
+Would be better to construct a boundary name and match that 
+against a list of sensor boundaries (see GBndLib__SENSOR_BOUNDARY_LIST)
+
+HMM: that is not easy without having the parent pv also 
+
+**/
+
+inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume* pv) const 
 {
-    return -1 ;  
+    const char* pvn = pv->GetName().c_str() ;
+    int id = sstr::StartsWith(pvn, "nnvt_") ? 0 : -1 ;  
+
+    std::cout 
+        << "U4SensorIdentifierDefault::getGlobalIdentity " 
+        << " id " << id 
+        << " pvn " << pvn 
+        << std::endl
+        ;   
+
+    return id ;  
 }
+
 
 /**
 U4SensorIdentifierDefault::getInstanceIdentity
@@ -31,20 +59,6 @@ The argument *instance_outer_pv* is recursively traversed
 
 **/
 
-inline bool U4SensorIdentifierDefault::IsInterestingCopyNo( int copyno )
-{
-    return 
-        copyno > -1 && 
-           (
-            (std::abs( copyno -      0 ) < 100) || 
-            (std::abs( copyno -  17612 ) < 100) ||
-            (std::abs( copyno -  30000 ) < 100) ||
-            (std::abs( copyno -  32400 ) < 100) ||
-            (std::abs( copyno - 300000 ) < 100) || 
-            (std::abs( copyno - 325600 ) < 100)  
-           )
-        ;   
-}
 
 inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {
@@ -97,6 +111,22 @@ inline void U4SensorIdentifierDefault::FindSD_r(
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;
     if(sd) sdpv.push_back(pv); 
     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindSD_r( sdpv, lv->GetDaughter(i), depth+1 );
+}
+
+
+inline bool U4SensorIdentifierDefault::IsInterestingCopyNo( int copyno )
+{
+    return 
+        copyno > -1 && 
+           (
+            (std::abs( copyno -      0 ) < 100) || 
+            (std::abs( copyno -  17612 ) < 100) ||
+            (std::abs( copyno -  30000 ) < 100) ||
+            (std::abs( copyno -  32400 ) < 100) ||
+            (std::abs( copyno - 300000 ) < 100) || 
+            (std::abs( copyno - 325600 ) < 100)  
+           )
+        ;   
 }
 
 
