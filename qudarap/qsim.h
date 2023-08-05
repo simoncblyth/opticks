@@ -1463,18 +1463,25 @@ inline QSIM_METHOD int qsim::propagate_at_surface_Detect(unsigned& flag, curandS
 /**
 qsim::propagate_at_surface_CustomART
 -------------------------------------
+
+lpmtid:-1 
+   indicates "not-a-sensor" and a sensor_identity issue, as CustomART 
+   special surfaces are expected to always have sensor identities
  
 **/
 
 inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, curandStateXORWOW& rng, sctx& ctx) const
 {
+
     const sphoton& p = ctx.p ; 
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal 
     int lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor  
     float minus_cos_theta = dot(p.mom, *normal); 
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
 
-#ifdef MOCK_CURAND_DEBUG
+#ifdef DEBUG_PIDX
+    if( ctx.idx == base->pidx ) 
+    {
     float3 cross_mom_nrm = cross(p.mom, *normal) ; 
     printf("//qsim::propagate_at_surface_CustomART p.mom                 (%7.3f %7.3f %7.3f) \n", p.mom.x, p.mom.y, p.mom.z );  
     printf("//qsim::propagate_at_surface_CustomART p.pol                 (%7.3f %7.3f %7.3f) \n", p.pol.x, p.pol.y, p.pol.z );  
@@ -1482,14 +1489,29 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     printf("//qsim::propagate_at_surface_CustomART cross_mom_nrm         (%7.3f %7.3f %7.3f) \n", cross_mom_nrm.x, cross_mom_nrm.y, cross_mom_nrm.z );  
     printf("//qsim::propagate_at_surface_CustomART dot_pol_cross_mom_nrm: %7.3f \n", dot_pol_cross_mom_nrm ); 
     printf("//qsim::propagate_at_surface_CustomART minus_cos_theta        %7.3f \n", minus_cos_theta ); 
+    }
 #endif
+
+    if(lpmtid < 0 )
+    {
+        flag = NAN_ABORT ; 
+#ifdef DEBUG_PIDX
+        //if( ctx.idx == base->pidx ) 
+        printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d : ERROR NOT-A-SENSOR : NAN_ABORT \n", ctx.idx, lpmtid ); 
+#endif
+        return BREAK ; 
+    }
+
 
     float ARTE[4] ; 
-    pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
+    if(lpmtid > -1) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
 
-#ifdef MOCK_CURAND_DEBUG
-    printf("//qsim::propagate_at_surface_CustomART ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n", ARTE[0], ARTE[1], ARTE[2], ARTE[3] );  
+#ifdef DEBUG_PIDX
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n", 
+           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, ARTE[0], ARTE[1], ARTE[2], ARTE[3] );  
 #endif
+
 
     const float& theAbsorption = ARTE[0]; 
     //const float& theReflectivity = ARTE[1]; 
@@ -1498,6 +1520,13 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
 
     float u_theAbsorption = curand_uniform(&rng);
     int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
+
+
+#ifdef DEBUG_PIDX
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim.propagate_at_surface_CustomART idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
+        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], u_theAbsorption, action  );   
+#endif
      
     if( action == BREAK )
     {
@@ -1757,12 +1786,24 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
 #ifdef DEBUG_PIDX
     if( ctx.idx == base->pidx ) 
-    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", ctx.idx, bounce, command, flag, ctx.s.optical.x  );   
+    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d s.optical.y %d \n", 
+          ctx.idx, bounce, command, flag, ctx.s.optical.x, ctx.s.optical.y );   
 #endif
 
     if( command == BOUNDARY )
     {
         const int& ems = ctx.s.optical.y ; 
+
+#if defined(DEBUG_PIDX) 
+        if( ctx.idx == base->pidx ) 
+        {
+#if defined(WITH_CUSTOM4)
+            printf("//qsim.propagate.WITH_CUSTOM4 idx %d  BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost ); 
+#else
+            printf("//qsim.propagate.NOT:WITH_CUSTOM4 idx %d BOUNDARY ems %d %lposcost %7.3f \n", ctx.idx, ems, lposcost); 
+#endif
+        }
+#endif
 
         if( ems == smatsur_NoSurface )
         {
