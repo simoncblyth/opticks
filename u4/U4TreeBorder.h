@@ -45,6 +45,10 @@ see ~/opticks/notes/issues/optical_ems_4_getting_too_many_from_non_sensor_Vacuum
 #include "U4Mat.h"
 
 
+
+
+
+
 struct U4TreeBorder 
 {
     stree* st ; 
@@ -90,9 +94,10 @@ struct U4TreeBorder
     bool has_isur_override( const int4& bd ) const ; 
     void do_osur_override( int4& bd ) ; 
     void do_isur_override( int4& bd ) ; 
-
-
 }; 
+
+
+
 
 inline U4TreeBorder::U4TreeBorder(
         stree* st_, 

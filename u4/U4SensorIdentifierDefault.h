@@ -2,18 +2,34 @@
 
 #include <vector>
 #include <iostream>
+#include <map>
+
+#include "G4PVPlacement.hh"
 
 #include "sstr.h"
+#include "ssys.h"
+
 #include "U4SensorIdentifier.h"
-#include "G4PVPlacement.hh"
+#include "U4Boundary.h"
+
 
 struct U4SensorIdentifierDefault : public U4SensorIdentifier 
 {
-    int getGlobalIdentity(const G4VPhysicalVolume* pv ) const ; 
+    static std::vector<std::string>* GLOBAL_SENSOR_BOUNDARY_LIST ;
+
+    int getGlobalIdentity(const G4VPhysicalVolume* pv, const G4VPhysicalVolume* ppv ) ; 
     int getInstanceIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ; 
     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );  
     static bool IsInterestingCopyNo( int copyno ); 
+
+    std::vector<int> count_global_sensor_boundary ; 
+    
 }; 
+
+
+std::vector<std::string>* 
+U4SensorIdentifierDefault::GLOBAL_SENSOR_BOUNDARY_LIST = ssys::getenv_vec<std::string>("U4SensorIdentifierDefault__GLOBAL_SENSOR_BOUNDARY_LIST", "", '\n' );
+
 
 /**
 U4SensorIdentifierDefault::getGlobalIdentity
@@ -28,19 +44,21 @@ is only relevant to test geometries for JUNO.
 Would be better to construct a boundary name and match that 
 against a list of sensor boundaries (see GBndLib__SENSOR_BOUNDARY_LIST)
 
-HMM: that is not easy without having the parent pv also 
 
 **/
 
-inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume* pv) const 
+inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume* pv, const G4VPhysicalVolume* ppv )
 {
-    const char* pvn = pv->GetName().c_str() ;
-    int id = sstr::StartsWith(pvn, "nnvt_") ? 0 : -1 ;  
+    U4Boundary boundary(pv,ppv); 
+
+    const char* bnd = boundary.bnd.c_str() ; 
+
+    int id = ssys::listed_count( &count_global_sensor_boundary, GLOBAL_SENSOR_BOUNDARY_LIST, bnd ) ; 
 
     std::cout 
         << "U4SensorIdentifierDefault::getGlobalIdentity " 
         << " id " << id 
-        << " pvn " << pvn 
+        << " bnd " << bnd
         << std::endl
         ;   
 

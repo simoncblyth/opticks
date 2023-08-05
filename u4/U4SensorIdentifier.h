@@ -35,7 +35,7 @@ class G4VPhysicalVolume ;
 
 struct U4SensorIdentifier
 {
-    virtual int getGlobalIdentity(const G4VPhysicalVolume* node_pv ) const = 0 ; 
+    virtual int getGlobalIdentity(const G4VPhysicalVolume* node_pv, const G4VPhysicalVolume* node_ppv ) = 0 ; 
     virtual int getInstanceIdentity(const G4VPhysicalVolume* instance_outer_pv ) const = 0 ; 
 }; 
 

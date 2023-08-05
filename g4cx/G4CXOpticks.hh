@@ -31,8 +31,8 @@ struct QSim ;
 struct G4CX_API G4CXOpticks
 {
     static const plog::Severity LEVEL ;
-    static const U4SensorIdentifier* SensorIdentifier ; 
-    static void SetSensorIdentifier( const U4SensorIdentifier* sid ); 
+    static U4SensorIdentifier* SensorIdentifier ; 
+    static void SetSensorIdentifier( U4SensorIdentifier* sid ); 
 
     static G4CXOpticks* INSTANCE ;
     static G4CXOpticks* Get(); 

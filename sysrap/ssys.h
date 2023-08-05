@@ -15,6 +15,7 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <limits>
 
@@ -85,7 +86,11 @@ struct ssys
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
 
-    static bool is_listed( const std::vector<std::string>* vec, const char* name ); 
+    static int  idx_listed( const std::vector<std::string>* nn, const char* n ); 
+    static bool  is_listed( const std::vector<std::string>* nn, const char* n ); 
+    static int              listed_count(       std::vector<int>* ncount, const std::vector<std::string>* nn, const char* n ); 
+    static std::string desc_listed_count( const std::vector<int>* ncount, const std::vector<std::string>* nn ); 
+
     static const char* username(); 
 }; 
 
@@ -488,10 +493,73 @@ template std::string ssys::desc_vec(const std::vector<double>* , unsigned ) ;
 template std::string ssys::desc_vec(const std::vector<std::string>* , unsigned ) ; 
 
 
-inline bool ssys::is_listed( const std::vector<std::string>* nn, const char* name ) // static 
+/**
+ssys::idx_listed
+------------------
+
+* if n is found within nn returns the index in range 0 to size-1 inclusive
+* if n is not found returns size
+* if nn is null return -1 
+
+**/
+
+inline int ssys::idx_listed( const std::vector<std::string>* nn, const char* n ) // static 
 {
-    return nn && std::distance( nn->begin(), std::find( nn->begin(), nn->end(), name ) ) < int(nn->size()) ;  
+    return nn ? std::distance( nn->begin(), std::find( nn->begin(), nn->end(), n ) ) : -1 ;  
 }
+
+inline bool ssys::is_listed( const std::vector<std::string>* nn, const char* n ) // static 
+{
+    int sz = nn ? nn->size() : 0 ; 
+    int idx = idx_listed(nn, n) ; 
+    return idx > -1 && idx < sz ;  
+}
+
+/**
+ssys::listed_count
+--------------------
+
+1. ncount vector is resized to match the size of nn 
+2. index of the n within nn is found 
+3. count for that index is accessed from ncount vector
+4. ncount entry for the index is incremented
+5. count is returned providing a 0-based occurrence index
+
+**/
+inline int ssys::listed_count( std::vector<int>* ncount, const std::vector<std::string>* nn, const char* n )
+{
+    if(nn == nullptr || ncount == nullptr) return -1 ; 
+    int sz = nn->size() ; 
+    ncount->resize(sz); 
+    int idx = idx_listed(nn,n) ;   
+    if(idx >= sz) return -1 ; 
+    int count = ncount->at(idx) ; 
+    (*ncount)[idx] += 1 ; 
+    return count ; 
+}
+
+
+inline std::string ssys::desc_listed_count( const std::vector<int>* ncount, const std::vector<std::string>* nn )
+{
+    int ncount_sz = ncount ? int(ncount->size()) : -1 ; 
+    int nn_sz = nn ? int(nn->size()) : -1 ; 
+
+    std::stringstream ss ; 
+    ss << "ssys::desc_listed_count"
+       << " ncount_sz " << ncount_sz
+       << " nn_sz " << nn_sz
+       << std::endl 
+       ;
+
+    if( ncount_sz == nn_sz && nn_sz > -1 )
+    {
+        for(int i=0 ; i < nn_sz ; i++ ) ss << std::setw(3) << i << " : " << (*ncount)[i] << " : " << (*nn)[i] << std::endl ; 
+    }
+    std::string str = ss.str();
+    return str ;  
+}
+
+
 
 
 inline const char* ssys::username()

@@ -35,10 +35,6 @@ void test_which ()
 
 
 
-
-
-
-
 void test_getenv_()
 {
     int i = ssys::getenv_<int>("i",0) ; 
@@ -192,6 +188,41 @@ void test_is_listed()
     assert( ssys::is_listed(nullptr, "blue") == false ); 
 }
 
+
+void test_listed_count()
+{
+
+    std::vector<int> ncount ; 
+    std::vector<std::string> names = {"red", "green", "blue" } ; 
+
+    std::vector<int>* nc = &ncount ;  
+    const std::vector<std::string>* nn = &names ; 
+
+    assert( ssys::listed_count(nc, nn, "pink") == -1 ) ; 
+    assert( ssys::listed_count(nc, nn, "red") == 0 ) ; 
+    assert( ssys::listed_count(nc, nn, "red") == 1 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 0 ) ; 
+    assert( ssys::listed_count(nc, nn, "red") == 2 ) ; 
+    assert( ssys::listed_count(nullptr, nn, "red") == -1 ) ; 
+    assert( ssys::listed_count(nullptr, nullptr, "red") == -1 ) ; 
+    assert( ssys::listed_count(nc, nullptr, "red") == -1 ) ; 
+    assert( ssys::listed_count(nc, nn, "blue") == 0 ) ; 
+    assert( ssys::listed_count(nc, nn, "blue") == 1 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 1 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 2 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 3 ) ; 
+    assert( ssys::listed_count(nc, nn, "blue") == 2 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 4 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 5 ) ; 
+    assert( ssys::listed_count(nc, nn, "green") == 6 ) ; 
+    assert( ssys::listed_count(nc, nn, "purple") == -1 ) ; 
+    assert( ssys::listed_count(nc, nn, "blue") == 3 ) ; 
+
+    std::cout << ssys::desc_listed_count(nc, nn) << std::endl ; 
+}
+
+
+
 void test_make_vec()
 {
     const char* line = R"LITERAL(
@@ -298,6 +329,7 @@ void test_uname()
 
 
 
+
 int main(int argc, char** argv)
 {
     /*
@@ -326,10 +358,10 @@ int main(int argc, char** argv)
     test_fill_evec<float>(); 
     test_fill_evec<double>(); 
     test_fill_evec<std::string>(); 
+    test_uname(); 
     */
 
-    test_uname(); 
-
+    test_listed_count(); 
 
  
     return 0 ; 

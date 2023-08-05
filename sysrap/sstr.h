@@ -48,6 +48,10 @@ struct sstr
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
 
+    template<typename ... Args>
+    static std::string Join( const char* delim, Args ... args ); 
+
+
     static bool Blank(const char* s ); 
     static bool All(const char* s, char q ); 
     static unsigned Count(const char* s, char q ); 
@@ -277,6 +281,8 @@ template<typename ... Args>
 inline std::string sstr::Format_( const char* fmt, Args ... args )
 {
     // see sysrap/tests/StringFormatTest.cc
+    //std::vector<const char*> args_ = {args...};
+
     int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1 ; // +1 for null termination
     assert( sz > 0 );   
     std::vector<char> buf(sz) ;    
@@ -285,6 +291,19 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
 }
 
 template std::string sstr::Format_( const char*, const char*, int, int ); 
+
+
+template<typename ... Args>
+inline std::string sstr::Join( const char* delim, Args ... args_ )
+{
+    std::vector<const char*> args = {args_ ...};
+    int num_args = args.size() ;  
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_args ; i++) ss << ( args[i] ? args[i] : "" ) << ( i < num_args - 1 ? delim : "" ) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+template std::string sstr::Join( const char*, const char*, const char*, const char*, const char* ); 
 
 
 inline bool sstr::Blank( const char* s )

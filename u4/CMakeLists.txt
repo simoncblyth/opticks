@@ -80,6 +80,7 @@ set(HEADERS
     U4Transform.h
     U4Tree.h
     U4TreeBorder.h
+    U4Boundary.h
 
     U4App.h 
     U4VPrimaryGenerator.h 

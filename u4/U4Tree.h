@@ -91,7 +91,7 @@ struct U4Tree
 
     stree*                                      st ; 
     const G4VPhysicalVolume* const              top ; 
-    const U4SensorIdentifier*                   sid ; 
+    U4SensorIdentifier*                         sid ; 
     int                                         level ;    
     // export SSim__stree_level=1 controls this 
 
@@ -107,14 +107,14 @@ struct U4Tree
     static U4Tree* Create( 
         stree* st, 
         const G4VPhysicalVolume* const top, 
-        const U4SensorIdentifier* sid=nullptr 
+        U4SensorIdentifier* sid=nullptr 
         ); 
 
 private:
     U4Tree(
         stree* st, 
         const G4VPhysicalVolume* const top=nullptr, 
-        const U4SensorIdentifier* sid=nullptr 
+        U4SensorIdentifier* sid=nullptr 
         ); 
 
     void init(); 
@@ -183,7 +183,7 @@ HMM: can these be moved into U4Tree ctor now ?
 inline U4Tree* U4Tree::Create( 
     stree* st, 
     const G4VPhysicalVolume* const top, 
-    const U4SensorIdentifier* sid 
+    U4SensorIdentifier* sid 
     ) 
 {
     if(st->level > 0) std::cout << "[ U4Tree::Create " << std::endl ; 
@@ -206,7 +206,7 @@ inline U4Tree* U4Tree::Create(
 inline U4Tree::U4Tree(
     stree* st_, 
     const G4VPhysicalVolume* const top_,  
-    const U4SensorIdentifier* sid_ 
+    U4SensorIdentifier* sid_ 
     )
     :
     st(st_),
@@ -969,10 +969,7 @@ inline void U4Tree::identifySensitiveGlobals()
         const char* pvn = pv->GetName().c_str() ; 
         const char* ppvn = ppv ? ppv->GetName().c_str() : nullptr  ; 
 
-        // TODO: access the parent pv and pass that to sid with pv 
-        //int sensor_id = sid->getGlobalIdentity(pv, pv_p) ;  
-      
-        int sensor_id = sid->getGlobalIdentity(pv) ;  
+        int sensor_id = sid->getGlobalIdentity(pv, ppv ) ;  
         int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
         int sensor_name = -1 ; 
 
