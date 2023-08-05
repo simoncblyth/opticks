@@ -74,11 +74,14 @@ private:
     NP*               input_photon ; 
 public:
     int               upload_count ; 
-    std::string       meta ; 
+
     /**
+    std::string       meta ; 
     Q: IS THIS meta NEEDED ? SEvt HAS meta TOO ? 
     A: YES, for now. The metadata gets collected in SEvt::gather_components 
        via SCompProvider method QEvent::getMeta (OR SEvt::getMeta) 
+
+    A2: Dont need the meta, need the method that access the underlying SEvt.  
     **/
 public:
     int setGenstep();  // PRIMARY ACTION OF QEvent 
@@ -107,7 +110,7 @@ public:
     bool hasSimtrace() const ; 
 public:
     // SCompProvider methods
-    std::string getMeta() const ; 
+    std::string getMeta() const ;  // returns underlying (SEvt)sev->meta
     NP*      gatherComponent(unsigned comp) const ; 
 public:
     NP*      getGenstep() const ; 
@@ -148,8 +151,6 @@ public:
 public:
     std::string desc() const ; 
 
-    void setMeta( const char* meta ); 
-    bool hasMeta() const ; 
     void checkEvt() ;  // GPU side 
 
 };

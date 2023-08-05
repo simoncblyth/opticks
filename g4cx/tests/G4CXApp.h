@@ -162,10 +162,10 @@ G4VPhysicalVolume* G4CXApp::Construct()
 
     LOG(info) << "]" ; 
 
-    // Collect JUNO PMT info when persisted NPFold exists.
+    // Collect extra JUNO PMT info only when persisted NPFold exists.
     SSim::AddExtraSubfold("jpmt", "$PMTSimParamData_BASE" ); 
 
-    G4CXOpticks::SetGeometry(pv) ; 
+    G4CXOpticks::SetGeometry(pv_) ; 
 
     return pv ; 
 }  

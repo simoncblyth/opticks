@@ -36,6 +36,18 @@ ${GEOM}_GEOMList
     static void CollectEnv(std::string& meta ) ;      
 };
 
+/**
+smeta::Collect
+----------------
+
+This is used for example to populate (SEvt)sevt.meta by:
+
+1. G4CXOpticks::init_SEvt for SEvt::EGPU meta 
+2. U4Recorder::init_SEvt for SEvt::ECPU meta
+3. CSGFoundry::init for the CSGFoundry::meta 
+
+**/
+
 inline void smeta::Collect(std::string& meta, const char* source)
 {
     uint64_t t = stamp::Now(); 
@@ -45,6 +57,8 @@ inline void smeta::Collect(std::string& meta, const char* source)
     NP::SetMeta<std::string>(meta, "creator", sproc::ExecutableName() );
     NP::SetMeta<uint64_t>(meta, "stamp", t);
     NP::SetMeta<std::string>(meta, "stampFmt", tf);
+    NP::SetMeta<std::string>(meta, "uname", ssys::uname("-a"));
+
     CollectEnv(meta); 
 }
 

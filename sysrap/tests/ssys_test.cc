@@ -284,6 +284,18 @@ void test_fill_evec()
     std::cout << " ] " << num << std::endl ; 
 }
 
+void test_uname()
+{
+    std::vector<std::string> args = {"-n", "-a",""} ; 
+    int num = args.size() ; 
+    for(int i=0 ; i < num ; i++) std::cout 
+        << std::setw(4) << args[i] 
+        << " : " 
+        << ssys::uname(args[i].c_str()) 
+        << std::endl
+        ; 
+}
+
 
 
 int main(int argc, char** argv)
@@ -309,12 +321,14 @@ int main(int argc, char** argv)
     test_getenv_multiline(); 
     test_getenv_vec_multiline(); 
     test_fill_vec(); 
-    */
 
     test_fill_evec<int>(); 
     test_fill_evec<float>(); 
     test_fill_evec<double>(); 
     test_fill_evec<std::string>(); 
+    */
+
+    test_uname(); 
 
 
  

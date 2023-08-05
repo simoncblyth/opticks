@@ -69,6 +69,7 @@ struct U4_API U4Recorder
     U4Recorder(); 
 private:
     void init(); 
+    void init_SEvt(); 
 public:   
 
     int eventID ; 

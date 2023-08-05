@@ -66,6 +66,9 @@ Holds:
 * NP.hh:gs
 * NP.hh:input_photon
 
+
+Q: Where is the SEvt::EGPU instanciated ?
+
 **/
 
 QEvent::QEvent()
@@ -76,8 +79,7 @@ QEvent::QEvent()
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
     input_photon(nullptr),
-    upload_count(0),
-    meta()
+    upload_count(0)
 {
     LOG(LEVEL); 
     INSTANCE = this ; 
@@ -116,17 +118,6 @@ std::string QEvent::desc() const
     ss << evt->desc() << std::endl ;
     std::string s = ss.str();  
     return s ; 
-}
-
-
-void QEvent::setMeta(const char* meta_)
-{
-    meta = meta_ ;   // std::string
-} 
-
-bool QEvent::hasMeta() const 
-{
-    return meta.empty() == false ; 
 }
 
 
@@ -635,10 +626,17 @@ NP* QEvent::gatherHit_() const
 }
 
 
+/**
+QEvent::getMeta
+-----------------
+
+SCompProvider method 
+
+**/
 
 std::string QEvent::getMeta() const 
 {     
-    return meta ; 
+    return sev->meta ; 
 }
 NP* QEvent::gatherComponent(unsigned cmp) const 
 {

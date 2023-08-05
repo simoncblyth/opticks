@@ -48,6 +48,7 @@
 #include "C4CustomART_Debug.h" 
 #include "C4TrackInfo.h"
 #include "C4Pho.h"
+#include "C4Version.h"
 #elif PMTSIM_STANDALONE
 #include "CustomART.h" 
 #include "CustomART_Debug.h" 
@@ -163,11 +164,23 @@ U4Recorder::U4Recorder()
 void U4Recorder::init()
 {
     INSTANCE = this ; 
-    smeta::Collect(sev->meta, "U4Recorder::init" ); 
+    init_SEvt(); 
+}
+
+void U4Recorder::init_SEvt()
+{
+    smeta::Collect(sev->meta, "U4Recorder::init_SEvt" ); 
+
+#ifdef WITH_CUSTOM4
+    NP::SetMeta<std::string>(sev->meta, "C4Version", C4Version::Version() ); 
+#else
+    NP::SetMeta<std::string>(sev->meta, "C4Version", "NOT-WITH_CUSTOM4" ); 
+#endif
 
     LOG(LEVEL) << " sev " << std::hex << sev << std::dec ; 
     LOG(LEVEL) << "sev->meta[" << sev->meta << "]" ;
 }
+
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*)

@@ -7,6 +7,7 @@
 #include "sframe.h"
 
 #include "ssys.h"
+#include "smeta.h"
 
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -27,6 +28,9 @@
 
 #include "G4CXOpticks.hh"
 
+#ifdef WITH_CUSTOM4
+#include "C4Version.h"
+#endif
 
 
 // OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
@@ -107,10 +111,6 @@ G4CXOpticks::G4CXOpticks()
     cx(nullptr),
     qs(nullptr),
     t0(schrono::stamp())
-    //event_total(0),
-    //genstep_total(0),
-    //photon_total(0),
-    //hit_total(0)
 {
     init();
 }
@@ -138,11 +138,11 @@ std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
-       << " sim " << sim 
-       << " tr " << tr 
-       << " wd " << wd 
-       << " gg " << gg
-       << " fd " << fd
+       << " sim " << ( sim ? "Y" : "N" )
+       << " tr " << ( tr ? "Y" : "N" ) 
+       << " wd " << ( wd ? "Y" : "N" )
+       << " gg " << ( gg ? "Y" : "N" )
+       << " fd " << ( fd ? "Y" : "N" )
        << " cx " << ( cx ? "Y" : "N" )
        << " qs " << ( qs ? "Y" : "N" )
        ;
@@ -241,6 +241,13 @@ A: YES, stree.h is already playing a vital role as *tree* member of CSG_GGeo/CSG
    see CSG_GGeo_Convert::addInstances where the sensor identifier gets incorporated 
    into the instances
 
+
+TODO: ELIMINATE GGeo, CAUTION PARALLEL DEV IN THE BELOW (CONSOLIDATE THEM)
+
+1. CSG/tests/CSG_stree_Convert.h, fd = CSG_stree_Convert::Translate( st );  
+2. CSG/CSGImport 
+ 
+
 **/
 
 
@@ -255,12 +262,6 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
 
-    /**
-    AIMING TO ELIMINATE GGeo, DEV IN CSG/tests/CSG_stree_Convert.h, ENABLING: 
-    CSGFoundry* fd_ = CSG_stree_Convert::Translate( st );  
-    setGeometry(fd_)
-    **/
-  
     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
     GGeo* gg_ = X4Geo::Translate(wd) ; 
@@ -279,15 +280,11 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
 /**
 NOTE THE TWO STEP::
 
-X4Geo::Translate
+X4Geo::Translate (mainly X4PhysicalVolume instanciation)
     Geant4 -> GGeo 
-
-    All the heavy lifting done by X4PhysicalVolume instanciation 
-
 
 CSG_GGeo_Convert::Translate
     GGeo -> CSG  
-
 
 **/
 
@@ -337,15 +334,9 @@ Q: Is the difficulty only due to the need to defer for the extras ?
 void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 {
     fd = fd_ ; 
-
-    sim->serialize() ;  
-
-    // formerly did G4CXOpticks__setGeometry_saveGeometry here 
-
-
     LOG(LEVEL) << "[ fd " << fd ; 
-    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
-    sev->setGeo((SGeo*)fd);   
+
+    init_SEvt(); 
 
     if(NoGPU == false)
     {
@@ -379,6 +370,31 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
 }
+
+/**
+G4CXOpticks::init_SEvt
+------------------------
+
+Typically this instanciates the SEvt::EGPU instance 
+
+**/
+
+void G4CXOpticks::init_SEvt()
+{
+    sim->serialize() ;  
+    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
+    sev->setGeo((SGeo*)fd);   
+    smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
+
+#ifdef WITH_CUSTOM4
+    NP::SetMeta<std::string>(sev->meta, "C4Version", C4Version::Version() ); 
+#else
+    NP::SetMeta<std::string>(sev->meta, "C4Version", "NOT-WITH_CUSTOM4" ); 
+#endif
+
+}
+
+
 
 
 /**
@@ -589,10 +605,12 @@ Saving geometry with this method requires:
 
 NB this is distinct from saving when setGeometry is run as
 that is too soon to save when additional SSim information 
-is added
+is added.
 
-TODO: probably remove the setGeometry save, as will usually want to 
-do it a bit later 
+HMM : THIS MAY NO LONGER BE TRUE AS NOW USING  SSim::CreateOrReuse
+SO CAN NOW SSim::Add... BEFORE G4CXOpticks::SetGeometry
+
+IF THE setGeometry_saveGeomery proves sufficient can remove this 
 
 **/
 

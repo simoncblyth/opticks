@@ -17,8 +17,9 @@ BINDIR=$(cd $SDIR/../../bin && pwd)
 
 bin=G4CXAppTest
 
-defarg="info_run_ana"
 #defarg="info_dbg_ana"
+defarg="info_run_ana"
+[ -n "$BP" ] && defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
 source $HOME/.opticks/GEOM/GEOM.sh 
@@ -50,6 +51,9 @@ num_photons=10000    # 10k
 #num_photons=1000000  # 1M
 
 NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
+
+export G4CXOpticks__setGeometry_saveGeometry=$HOME/.opticks/GEOM/$GEOM
+export G4CXOpticks__saveGeometry_saveGGeo=1
 
 export G4CXApp__PRIMARY_MODE=torch
 export OPTICKS_MAX_BOUNCE=31  

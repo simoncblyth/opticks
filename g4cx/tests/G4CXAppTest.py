@@ -3,6 +3,8 @@
 import os, logging, numpy as np
 from opticks.ana.fold import Fold, IsRemoteSession
 from opticks.sysrap.sevt import SEvt, SAB
+from opticks.ana.p import cf
+
 log = logging.getLogger(__name__)
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
@@ -30,6 +32,9 @@ if __name__ == '__main__':
     print(repr(a))
     b = SEvt.Load("$BFOLD", symbol="b")
     print(repr(b))
+
+
+    print(cf)
 
 
     #sli="[:]"  allowing everything makes for big tables of low stat histories

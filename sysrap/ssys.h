@@ -27,6 +27,8 @@ struct ssys
 
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);      
     static std::string popen(const char* cmda, const char* cmdb, bool chomp=true, int* rc=nullptr); 
+
+    static std::string uname(const char* args="-a"); 
     static std::string which(const char* script); 
 
     static const char* getenvvar(const char* ekey ); 
@@ -120,8 +122,13 @@ inline std::string ssys::popen(const char* cmda, const char* cmdb, bool chomp, i
     return popen(s.c_str(), chomp, rc ); 
 }
 
-
-
+inline std::string ssys::uname(const char* args)
+{
+    bool chomp = true ; 
+    int rc(0);  
+    std::string line = ssys::popen("uname", args, chomp, &rc ); 
+    return rc == 0 ? line : "" ; 
+}
 
 
 inline std::string ssys::which(const char* script)

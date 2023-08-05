@@ -277,18 +277,15 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
-    InitSim(fd->sim); 
-    InitGeo(fd);   // uploads geometry 
+    InitSim(fd->sim); // uploads SSim arrays instanciating QSim
+    InitGeo(fd);      // uploads geometry 
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
 
-    bool render_mode = SEventConfig::IsRGModeRender() ; 
-    if(render_mode == false)
+    if(!SEventConfig::IsRGModeRender())
     {
         QSim* qs = QSim::Get() ; 
         qs->setLauncher(cx); 
-        QEvent* event = qs->event ; 
-        event->setMeta( fd->meta.c_str() );
     } 
 
     LOG(LEVEL) << "]" ; 
