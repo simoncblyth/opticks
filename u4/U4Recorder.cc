@@ -62,7 +62,7 @@ const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ;
 const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
-const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool(EndOfRunAction_Simtrace_) ; 
+const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool("U4Recorder__EndOfRunAction_Simtrace") ; 
 const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
 
 
@@ -70,6 +70,26 @@ const int U4Recorder::PIDX = ssys::getenvint("PIDX",-1) ;
 const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ; 
 const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
 
+std::string U4Recorder::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << "U4Recorder::Desc" << std::endl 
+       << " U4Recorder_STATES                   : " << STATES << std::endl 
+       << " U4Recorder_RERUN                    : " << RERUN << std::endl 
+       << " U4Recorder__PIDX_ENABLED            : " << ( PIDX_ENABLED            ? "YES" : "NO " ) << std::endl 
+       << " U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " ) << std::endl  
+       << " U4Recorder__REPLICA_NAME_SELECT     : " << ( REPLICA_NAME_SELECT     ? REPLICA_NAME_SELECT : "-" ) << std::endl 
+       << " PIDX                                : " << PIDX << std::endl 
+       << " EIDX                                : " << EIDX << std::endl 
+       << " GIDX                                : " << GIDX << std::endl 
+       ;
+
+    bool uoc = UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
+    ss << UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_ << ":" << int(uoc) << std::endl ; 
+    ss << Switches() << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 /**
 U4Recorder::Switches
@@ -84,21 +104,34 @@ std::string U4Recorder::Switches()  // static
     ss << "U4Recorder::Switches" << std::endl ; 
 #ifdef WITH_CUSTOM4
     ss << "WITH_CUSTOM4" << std::endl ; 
+#else
+    ss << "NOT:WITH_CUSTOM4" << std::endl ; 
 #endif
 #ifdef WITH_PMTSIM
     ss << "WITH_PMTSIM" << std::endl ; 
+#else
+    ss << "NOT:WITH_PMTSIM" << std::endl ; 
 #endif
 #ifdef PMTSIM_STANDALONE
     ss << "PMTSIM_STANDALONE" << std::endl ; 
+#else
+    ss << "NOT:PMTSIM_STANDALONE" << std::endl ; 
 #endif
-    bool uoc = UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
-    ss << UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_ << ":" << int(uoc) << std::endl ; 
+
+#ifdef PRODUCTION
+    ss << "PRODUCTION" << std::endl ; 
+#else
+    ss << "NOT:PRODUCTION" << std::endl ; 
+#endif
+
     std::string str = ss.str(); 
     return str ; 
 }
 
 
-std::string U4Recorder::Desc()
+
+
+std::string U4Recorder::EnabledLabel() // static   (formerly Desc)
 {
     std::stringstream ss ; 
     if( GIDX > -1 ) ss << "GIDX_" << GIDX << "_" ; 
@@ -107,6 +140,11 @@ std::string U4Recorder::Desc()
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+
 
 /**
 U4Recorder::Enabled
@@ -137,6 +175,17 @@ bool U4Recorder::Enabled(const spho& label)
                         ( GIDX == -1 || label.gs == GIDX ) 
                       ;
 } 
+
+
+std::string U4Recorder::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "U4Recorder::desc" ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
@@ -203,10 +252,8 @@ void U4Recorder::EndOfRunAction(const G4Run*)
     SEvt::SetRunMeta<int>("FAKES_SKIP", int(FAKES_SKIP) ); 
     SEvt::SaveRunMeta(); 
 
-    std::cout 
-        << "[ U4Recorder::EndOfRunAction"
-        << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
-        << std::endl  
+    LOG(LEVEL)
+        << "[ U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " )  
         ;
  
     if(EndOfRunAction_Simtrace) 
@@ -214,10 +261,8 @@ void U4Recorder::EndOfRunAction(const G4Run*)
         U4Simtrace::EndOfRunAction() ; 
     }
 
-    std::cout 
-        << "] U4Recorder::EndOfRunAction"
-        << " " << EndOfRunAction_Simtrace_ << ":" << ( EndOfRunAction_Simtrace ? "Y" : "N" )  
-        << std::endl  
+    LOG(LEVEL)
+        << "] U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " )  
         ;
 
 
@@ -653,10 +698,18 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 #ifndef PRODUCTION
         bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 
         sseq& seq = sev->current_ctx.seq ; 
-        LOG_IF(info, ulabel.id < 10 || PIDX_DUMP ) 
+
+        LOG_IF(info, PIDX_DUMP )    // CURIOUS : THIS IS NOT SHOWING UP 
             << " l.id " << std::setw(5) << ulabel.id
             << " seq " << seq.brief()
             ;  
+
+        if(PIDX_DUMP) std::cerr
+            << "U4Recorder::PostUserTrackingAction_Optical.fStopAndKill "
+            << " ulabel.id " << std::setw(6) << ulabel.id 
+            << " seq.brief " << seq.brief() 
+            << std::endl
+            ; 
 #endif
     }
     else if(is_fSuspend)

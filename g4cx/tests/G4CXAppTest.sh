@@ -92,12 +92,16 @@ EOL
 
 
 logging(){
-   export G4CXOpticks=INFO
-   export X4PhysicalVolume=INFO   # look into sensor boundary to understand lpmtid -1 
-   export QSim=INFO
+   export Dummy=INFO
+   #export G4CXOpticks=INFO
+   #export X4PhysicalVolume=INFO   # look into sensor boundary to understand lpmtid -1 
+   #export QSim=INFO
    #export QEvent=INFO
+   #export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
 
-   export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
+   export U4Recorder__PIDX_ENABLED=1
+   export C4OpBoundaryProcess__PIDX_ENABLED=1 
+
 }
 logging
 

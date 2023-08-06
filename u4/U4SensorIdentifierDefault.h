@@ -15,6 +15,8 @@
 
 struct U4SensorIdentifierDefault : public U4SensorIdentifier 
 {
+    static constexpr const bool VERBOSE = false ; 
+ 
     static std::vector<std::string>* GLOBAL_SENSOR_BOUNDARY_LIST ;
 
     int getGlobalIdentity(const G4VPhysicalVolume* pv, const G4VPhysicalVolume* ppv ) ; 
@@ -55,12 +57,13 @@ inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume
 
     int id = ssys::listed_count( &count_global_sensor_boundary, GLOBAL_SENSOR_BOUNDARY_LIST, bnd ) ; 
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "U4SensorIdentifierDefault::getGlobalIdentity " 
         << " id " << id 
         << " bnd " << bnd
         << std::endl
         ;   
+
 
     return id ;  
 }

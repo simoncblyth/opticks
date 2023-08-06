@@ -147,6 +147,7 @@ G4CXApp::G4CXApp(G4RunManager* runMgr)
     fRunMgr->SetUserAction((G4UserSteppingAction*)this);
     fRunMgr->Initialize(); 
 
+    LOG(info) << std::endl << U4Recorder::Desc() ;  
 }
 
 G4VPhysicalVolume* G4CXApp::Construct()

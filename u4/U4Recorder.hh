@@ -47,21 +47,18 @@ struct U4_API U4Recorder
     static const int STATES ; // configures number of g4states to persist 
     static const int RERUN  ; 
     static constexpr int STATE_ITEMS = 2*17+4 ; // 2*17+4 is appropriate for MixMaxRng 
-
     static const bool PIDX_ENABLED ; 
-
-    static constexpr const char* EndOfRunAction_Simtrace_ = "U4Recorder__EndOfRunAction_Simtrace" ; 
-    static const bool            EndOfRunAction_Simtrace ; 
-
+    static const bool EndOfRunAction_Simtrace ; 
     static const char* REPLICA_NAME_SELECT ; 
-
     static const int PIDX ;   // used to control debug printout for idx 
     static const int EIDX ;   // used to enable U4Recorder for an idx, skipping all others
     static const int GIDX ; 
 
-    static std::string Switches(); 
     static std::string Desc(); 
+    static std::string Switches(); 
+    static std::string EnabledLabel(); 
     static bool Enabled(const spho& label); 
+    std::string desc() const ; 
 
     static U4Recorder* INSTANCE ; 
     static U4Recorder* Get(); 
