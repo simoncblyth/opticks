@@ -112,3 +112,50 @@ Try github into junotop::
     N[blyth@localhost junotop]$ 
 
 
+bitbucket blockage seems fixed::
+
+    N[blyth@localhost opticks_bitbucket]$ ./pull.sh 
+    origin	https://bitbucket.org/simoncblyth/opticks (fetch)
+    origin	https://bitbucket.org/simoncblyth/opticks (push)
+    Mon Aug  7 16:34:00 CST 2023
+    remote: Enumerating objects: 276, done.
+    remote: Counting objects: 100% (276/276), done.
+    remote: Compressing objects: 100% (204/204), done.
+    remote: Total 204 (delta 172), reused 0 (delta 0), pack-reused 0
+    Receiving objects: 100% (204/204), 46.06 KiB | 183.00 KiB/s, done.
+    Resolving deltas: 100% (172/172), completed with 67 local objects.
+    From https://bitbucket.org/simoncblyth/opticks
+       4f9fd4e44..4b3c28f8e  master     -> origin/master
+    Updating 4f9fd4e44..4b3c28f8e
+    Fast-forward
+     CSG/CSGFoundry.py                                                       |   8 +-
+     CSGOptiX/CSGOptiX.cc                                                    |   9 +-
+     CSGOptiX/cxs_min.py                                                     |   4 +-
+     CSGOptiX/cxs_min.sh                                                     |   2 +-
+     ana/fold.py                                                             |   7 ++
+     examples/UseCustom4/go.sh                                               |  38 ++++---
+     ...
+     u4/tests/FewPMT_test.cc                                                 |  10 ++
+     u4/tests/FewPMT_test.sh                                                 |   8 ++
+     u4/tests/U4SimulateTest.sh                                              | 132 +++----------------------
+     u4/tests/storch_FillGenstep.sh                                          | 151 ++++++++++++++++++++++++++++
+     71 files changed, 2799 insertions(+), 432 deletions(-)
+     create mode 100644 g4cx/tests/G4CXApp.h
+     create mode 100644 g4cx/tests/G4CXAppTest.cc
+     create mode 100644 g4cx/tests/G4CXAppTest.py
+     create mode 100755 g4cx/tests/G4CXAppTest.sh
+     create mode 100755 g4cx/tests/gx.sh
+     delete mode 100755 g4cx/tests/ntds3.sh
+     create mode 100644 notes/issues/qsim_propagate_at_surface_CustomART_NOT-A-SENSOR_error.rst
+     create mode 100644 notes/issues/sphoton_iindex_identity_CPU_GPU_difference.rst
+     create mode 100644 sysrap/srng.h
+     rename u4/{tests => }/U4App.h (100%)
+     create mode 100644 u4/U4Boundary.h
+     create mode 100644 u4/tests/FewPMT_test.cc
+     create mode 100755 u4/tests/FewPMT_test.sh
+     create mode 100644 u4/tests/storch_FillGenstep.sh
+    Mon Aug  7 16:34:06 CST 2023
+    N[blyth@localhost opticks_bitbucket]$ 
+
+
+
