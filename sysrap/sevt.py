@@ -242,6 +242,8 @@ class SEvt(object):
         self.ipf = ipf
         self.ipc = ipc
 
+    def q_startswith(self, prefix="TO BT SD"):
+        return np.flatnonzero(np.char.startswith(self.q, prefix.encode("utf-8") ))
 
     def init_seq(self, f):
         symbol = f.symbol

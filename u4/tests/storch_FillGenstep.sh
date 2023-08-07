@@ -2,8 +2,8 @@ storch_FillGenstep_usage(){ cat << EOU
 storch_FillGenstep.sh
 =======================
 
-This is sourced from scripts setting up environment
-for torch photon generation 
+This is sourced from scripts to setup envvars
+that configure torch photon generation 
 
 Control vars
 -------------
@@ -30,7 +30,9 @@ export LAYOUT=${LAYOUT:-$layout}
 if [ "$LAYOUT" == "one_pmt" ]; then 
 
     #check=rain_disc
-    check=rain_line
+    #check=rain_line
+    #check=rain_point_xpositive_0
+    check=rain_point_xpositive_100
     #check=up_rain_line
     #check=escape
     #check=rain_dynode
@@ -54,6 +56,24 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         pos=0,0,195    ## 190 grazes HAMA apex
         radius=260     # standand for line from above,  280 hangsover  
         mom=0,0,-1   
+
+    elif [ "${CHECK:0:21}" == "rain_point_xpositive_" ]; then
+
+        xpos=${CHECK:21}
+        ttype=point
+        pos=$xpos,0,195    ## 190 grazes HAMA apex
+        mom=0,0,-1   
+        radius=0  
+
+    elif [ "${CHECK:0:21}" == "rain_point_xnegative_" ]; then
+
+        xpos=${CHECK:21}
+        ttype=point
+        pos=-$xpos,0,195    ## 190 grazes HAMA apex
+        mom=0,0,-1   
+        radius=0  
+
+
 
     elif [ "$CHECK" == "up_rain_line" ]; then
 
