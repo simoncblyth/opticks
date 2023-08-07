@@ -30,9 +30,9 @@ export LAYOUT=${LAYOUT:-$layout}
 if [ "$LAYOUT" == "one_pmt" ]; then 
 
     #check=rain_disc
-    check=rain_line
+    #check=rain_line
     #check=rain_point_xpositive_0
-    #check=rain_point_xpositive_100
+    check=rain_point_xpositive_100
     #check=up_rain_line
     #check=escape
     #check=rain_dynode

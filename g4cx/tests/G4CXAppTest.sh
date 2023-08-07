@@ -64,6 +64,8 @@ export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
 #export OPTICKS_MAX_PHOTON=100000
 
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
+
+export CHECK=rain_point_xpositive_100
 source $U4TDIR/storch_FillGenstep.sh
 env | grep storch
 

@@ -778,6 +778,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
+    printf("//qsim.propagate_at_boundary idx %d (n1,n2,eta) (%10.8f %10.8f %10.8f) \n", ctx.idx, n1, n2, eta ); 
     printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
     printf("//qsim.propagate_at_boundary idx %d mom_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
     printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 

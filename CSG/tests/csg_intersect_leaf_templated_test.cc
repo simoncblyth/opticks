@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "scuda.h"
 #include "squad.h"
+#include "scuda_double.h"
 #include "scuda_templated.h"
 
 #include "csg_intersect_leaf_templated.h"
