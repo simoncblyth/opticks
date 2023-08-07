@@ -81,6 +81,9 @@ if __name__ == '__main__':
             fig, axs = pl
             assert len(axs) == 1
             ax = axs[0]
+            ax.set_xlim(-356,356)
+            ax.set_ylim(-201,201)
+
         elif MODE == 3:
             pl = pvplt_plotter(label)
             pvplt_viewpoint(pl)   # sensitive to EYE, LOOK, UP envvars

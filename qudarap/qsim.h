@@ -840,6 +840,17 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     {
     printf("//qsim.propagate_at_boundary idx %d u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
               ctx.idx,  u_reflect, TransCoeff, reflect  ); 
+
+    printf("//qsim.propagate_at_boundary idx %d p.mom (%10.8f %10.8f %10.8f)  \n", 
+               ctx.idx, p.mom.x, p.mom.y, p.mom.z ) ; 
+
+    printf("//qsim.propagate_at_boundary idx %d o_nrm (%10.8f %10.8f %10.8f)  \n", 
+               ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ) ; 
+
+    printf("//qsim.propagate_at_boundary idx %d eta %10.8f eta*c1 %10.8f c2 %10.8f (eta*c1 - c2) %10.8f \n",
+               ctx.idx, eta, eta*c1, c2, (eta*c1 - c2) );  
+
+
     }
 #endif 
 

@@ -7,6 +7,8 @@ G4CXAppTest.sh
 
     MODE=2 ./G4CXAppTest.sh ana
 
+    MODE=2 APID=62 ./G4CXAppTest.sh tra   
+
 
 EOU
 }
@@ -16,6 +18,9 @@ U4TDIR=$(cd $SDIR/../../u4/tests && pwd)
 BINDIR=$(cd $SDIR/../../bin && pwd)
 
 bin=G4CXAppTest
+ana=$SDIR/G4CXAppTest.py 
+tra=$SDIR/G4CXSimtraceMinTest.py 
+
 
 #defarg="info_dbg_ana"
 defarg="info_run_ana"
@@ -27,12 +32,9 @@ source $HOME/.opticks/GEOM/GEOM.sh
 geomscript=$U4TDIR/$GEOM.sh
 if [ -f "$geomscript" ]; then  
     source $geomscript
-
-
 else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
-ana=$SDIR/$bin.py 
 
 
 export VERSION=0
@@ -40,6 +42,9 @@ export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 export EVT=001
 export AFOLD=$BASE/ALL${VERSION}/p${EVT}
 export BFOLD=$BASE/ALL${VERSION}/n${EVT}
+export TFOLD=$BASE/0/p999
+
+
 
 #num_photons=1
 #num_photons=10
@@ -115,7 +120,7 @@ logging
 #export CEGS=16:0:9:100  
 
 
-vars="BASH_SOURCE SDIR U4TDIR BINDIR GEOM bin geomscript BASE FOLD ana PMTSimParamData_BASE" 
+vars="BASH_SOURCE SDIR U4TDIR BINDIR GEOM bin ana tra geomscript BASE FOLD AFOLD BFOLD TFOLD PMTSimParamData_BASE" 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -143,6 +148,12 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $ana
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 4
 fi 
+
+if [ "${arg/tra}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $tra
+    [ $? -ne 0 ] && echo $BASH_SOURCE : tra error && exit 4
+fi 
+
 
 exit 0 
 

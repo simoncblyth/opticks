@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 """
-G4CXSimtraceMinTest.py
-========================
+G4CXSimtraceMinTest.py : simtrace plot backdrop with APID, BPID onephotonplot on top 
+=======================================================================================
+
+This is now run by G4CXAppTest.sh with eg::
+
+    APID=62 MODE=2 ~/opticks/g4cx/tests/G4CXAppTest.sh tra
 
 This aims to do similar to G4CXSimtraceTest.py but in a more minimal way,
 drawing on developments from cx/cxs_min.py 
