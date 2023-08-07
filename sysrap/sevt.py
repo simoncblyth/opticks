@@ -510,10 +510,14 @@ class SEvt(object):
             wl = _r[:,2,3]
             r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros
             pass
-            assert hasattr(f,'aux')
-            _a = f.aux[pid]
-            a = _a[wl > 0]
-            ast = a[:len(a),1,3].copy().view(np.int8)[::4]
+            _aux = getattr(f, 'aux', None)
+            _a = None if _aux is None else _aux[pid]
+            if _a is None:
+                a = None
+                ast = "no-ast"
+            else:
+                a = _a[wl > 0]
+                ast = a[:len(a),1,3].copy().view(np.int8)[::4]
             pass  
             qpid = q[pid][0].decode("utf-8").strip()  
 

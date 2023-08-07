@@ -23,7 +23,7 @@ Of course CSGOptiX simtrace that does similar on GPU works fine
 across any geometry with solids having any relation to each other. 
 
 TODO: review the GPU simtrace approach and see if something similar 
-could be done with G4Navigator  
+could be done with G4Navigator (see initial work in U4Navigator.h) 
 
 **/
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-U4SimulateTest_allcf.py
+U4SimulateTest_af.py
 ========================
 
 """
@@ -27,6 +27,8 @@ if __name__ == '__main__':
 
     b = Fold.Load("$BASE/ALL1", symbol="b")
     print(repr(b))
+
+    ## modern way to do this is with sevt.py sevt.Load
 
     print("seqhis_(a.seq[PID,0] : %s " % seqhis_(a.seq[PID,0] ))
     print("seqhis_(b.seq[PID,0] : %s " % seqhis_(b.seq[PID,0] ))

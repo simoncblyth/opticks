@@ -67,7 +67,7 @@ if len(AOPT) > 0: topline += "AOPT=%s " % AOPT
 if BPID > -1: topline += "BPID=%d " % BPID
 if len(BOPT) > 0: topline += "BOPT=%s " % BOPT
 
-topline += " ./U4SimtraceTest.py ana   # %s/%s " % (GEOM, GEOMList)
+topline += " ./U4SimtraceTest.sh ana   # %s/%s " % (GEOM, GEOMList)
 
 TOPLINE = os.environ.get("TOPLINE",topline )
 BOTLINE = os.environ.get("BOTLINE","%s" % SFOLD )
@@ -82,8 +82,11 @@ np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 class U4SimtraceTest(object):
     """
-    TODO: come up with a better name for this, its more general that just one test 
-          (just like SEvt is better name than U4SimulateTest) 
+    MAYBE: come up with a better name for this and relocate into ana or SysRap for reuse
+    ACTUALLY this is using trs names, so its not as general as first thought ... 
+    it is limited to small test geometries. 
+
+    The more general GPU simtrace deserves more attention than this one.
     """
     @classmethod
     def Load(cls, fold, **kwa):
@@ -190,7 +193,6 @@ class U4SimtraceTest(object):
 
             if MODE == 2:
                 ax.scatter( gpos[:,H], gpos[:,V], s=SZ, color=color, label=label )
-
             elif MODE == 3:
                 pl.add_points( gpos[:,:3], color=color, label=label)  
             pass

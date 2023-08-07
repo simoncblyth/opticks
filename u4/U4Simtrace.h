@@ -34,14 +34,29 @@ inline void U4Simtrace::EndOfRunAction()
 
 inline void U4Simtrace::Scan()
 {
+    int eventID = 998 ; 
+
     SEvt* evt = SEvt::CreateSimtraceEvent();  
+    evt->beginOfEvent(eventID); 
+
+    int num_simtrace = int(evt->simtrace.size()) ;
+
+    std::cout
+        << "U4Simtrace::Scan"
+        << " num_simtrace " << num_simtrace
+        << " evt.desc " 
+        << std::endl 
+        << evt->desc()
+        << std::endl 
+        ;
+
     bool dump = false ; 
-    for(int i=0 ; i < int(evt->simtrace.size()) ; i++)
+    for(int i=0 ; i < num_simtrace ; i++)
     {
         quad4& p = evt->simtrace[i] ;
         U4Navigator::Simtrace(p, dump);
     }
-    evt->save(); 
+    evt->endOfEvent(eventID);
 }
 
 

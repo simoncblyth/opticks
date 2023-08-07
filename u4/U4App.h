@@ -89,6 +89,7 @@ struct U4App
     static G4RunManager* InitRunManager(); 
     static U4App*        Create(); 
     void                 BeamOn() ;
+    static void          Main(); 
 
 };
 
@@ -271,5 +272,19 @@ void U4App::BeamOn()
 {
     fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
 }
+
+
+
+void U4App::Main()  // static
+{
+    LOG(info) << SLOG::Banner() ; 
+
+    U4App* app = U4App::Create() ;  
+    app->BeamOn(); 
+    delete app ; 
+
+    LOG(info) << SLOG::Banner() << " " << " savedir " << SEvt::GetSaveDir(1) ; 
+}
+
 
 

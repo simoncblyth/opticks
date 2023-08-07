@@ -59,7 +59,9 @@ export G4CXApp__PRIMARY_MODE=torch
 export OPTICKS_MAX_BOUNCE=31  
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_INTEGRATION_MODE=3
+
 export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
+#export OPTICKS_MAX_PHOTON=100000
 
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 source $U4TDIR/storch_FillGenstep.sh
@@ -98,6 +100,7 @@ logging(){
    #export QSim=INFO
    #export QEvent=INFO
    #export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
+   export SEvt=INFO
 
    export U4Recorder__PIDX_ENABLED=1
    export C4OpBoundaryProcess__PIDX_ENABLED=1 
@@ -105,6 +108,9 @@ logging(){
 }
 logging
 
+# dont need to redo the simtrace until geometry changed
+#export U4Recorder__EndOfRunAction_Simtrace=1
+#export CEGS=16:0:9:100  
 
 
 vars="BASH_SOURCE SDIR U4TDIR BINDIR GEOM bin geomscript BASE FOLD ana PMTSimParamData_BASE" 

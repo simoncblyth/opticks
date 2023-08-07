@@ -527,6 +527,7 @@ the allocations for result vectors.
 
 void SEvt::addFrameGenstep()
 {
+    LOG(LEVEL); 
     if(SEventConfig::IsRGModeSimtrace())
     { 
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry 
@@ -688,9 +689,9 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     // generates simtrace photons
         
     SEventConfig::SetRGModeSimtrace();
+    LOG(LEVEL) << " SWITCH : SEventConfig::SetRGModeSimtrace " ; 
     SEvt* ste = new SEvt ;
     ste->setFrame(pfr);   
-    ste->setIndex(999); 
 
     LOG(LEVEL) << "] ste.simtrace.size " << ste->simtrace.size() ; 
 
@@ -2893,17 +2894,19 @@ void SEvt::gather_components()   // *GATHER*
 
 
     assert( num_genstep > -1 ); 
-    assert( num_photon > -1 ); 
 
-    LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
-    //assert( num_hit > -1 ); 
+    if( SEventConfig::IsRGModeSimulate())
+    {
+        assert( num_photon > -1 ); 
+        LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
+        //assert( num_hit > -1 ); 
+    }
 
     gather_total += 1 ;
-    genstep_total += num_genstep ;
-    photon_total += num_photon ;
 
-    if(num_hit > -1) hit_total += num_hit ; 
-    //hit_total += num_hit ; 
+    if(num_genstep > -1) genstep_total += num_genstep ;
+    if(num_photon > -1)  photon_total += num_photon ;
+    if(num_hit > -1)     hit_total += num_hit ; 
 
     LOG(LEVEL) 
         << " num_comp " << num_comp
@@ -3082,8 +3085,19 @@ const char* SEvt::getOutputDir(const char* base_) const
     if(hasIndex()) 
     { 
         assert( index > 0 ); 
-        assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
-        int u_index = instance == SEvt::EGPU ? index : -index ; 
+        int u_index = 0 ; 
+
+        if(SEventConfig::IsRGModeSimulate())
+        {
+            assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
+            u_index = instance == SEvt::EGPU ? index : -index ; 
+        }
+        else if(SEventConfig::IsRGModeSimtrace())
+        {
+            assert( instance == MISSING_INSTANCE ); 
+            u_index = index ;  ; 
+        }
+
         dir = SPath::Resolve(base, reldir, u_index, DIRPATH ) ; 
     }
     else
