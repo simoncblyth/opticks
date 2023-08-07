@@ -81,6 +81,16 @@ void CSGQuery::selectPrim(unsigned solidIdx, unsigned primIdxRel )
     selectPrim(pr); 
 }
 
+/**
+CSGQuery::selectPrim
+---------------------
+
+Recall that each CSGSolid have multiple CSGPrim corresponding 
+in Geant4 to G4VSolid root nodes.  Also each CSGPrim generally has
+multiple CSGNode corresponding to the CSG constituent G4VSolid. 
+
+**/
+
 void CSGQuery::selectPrim( const CSGPrim* pr )
 {
     select_prim = pr ; 

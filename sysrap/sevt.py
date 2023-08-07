@@ -82,7 +82,7 @@ class SEvt(object):
 
         self.init_run(f) 
         self.init_meta(f)
-        self.init_photon_meta(f)
+        self.init_fold_meta(f)
         self.init_U4R_names(f)
         self.init_photon(f)
         self.init_record_sframe(f)
@@ -161,29 +161,26 @@ class SEvt(object):
         self.metakey = metakey
         self.meta = meta 
 
-    def init_photon_meta(self, f):
+    def init_fold_meta(self, f):
         """
+        WIP: NEEDS UPDATE : MOST OF THE METADATA HAS BEEN MOVED TO NPFold_meta
         """
-        CHECK = getattr( f.photon_meta, 'CHECK', [] )
-        CHECK = CHECK[0] if len(CHECK) == 1 else ""
+        msrc = f.NPFold_meta
+        if msrc is None: return 
 
-        LAYOUT = getattr( f.photon_meta, 'LAYOUT', [] )
-        LAYOUT = LAYOUT[0] if len(LAYOUT) == 1 else ""
+        GEOM = msrc.get_value("GEOM")
+        CHECK = msrc.get_value("CHECK")
+        LAYOUT = msrc.get_value("LAYOUT")
+        VERSION = msrc.get_value("VERSION")
         if LAYOUT.find(" ") > -1: LAYOUT = ""
 
-        VERSION = getattr( f.photon_meta, 'VERSION', [] )
-        VERSION = int(VERSION[0]) if len(VERSION) == 1 else -1
         SCRIPT = os.environ.get("SCRIPT", "") 
 
-        GEOM = getattr(f.photon_meta, "GEOM", [])
-        GEOM = GEOM[0] if len(GEOM) == 1 else ""
-
-        GEOMList = getattr(f.photon_meta, "${GEOM}_GEOMList", [])
-        GEOMList = GEOMList[0] if len(GEOMList) == 1 else ""
+        GEOMList = msrc.get_value("${GEOM}_GEOMList", "")
         if GEOMList.endswith("GEOMList"): GEOMList = ""
 
-        TITLE = "N=%d %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
-        IDE = list(filter(None,[f.symbol.upper(), GEOM, GEOMList, "N%d"%VERSION, LAYOUT, CHECK])) 
+        TITLE = "N=%s %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
+        IDE = list(filter(None,[f.symbol.upper(), GEOM, GEOMList, "N%s"%VERSION, LAYOUT, CHECK])) 
         ID = "_".join(IDE)
 
         self.CHECK = CHECK
@@ -630,6 +627,8 @@ class SAB(object):
                 lines.append(repr(qcf.bqu))
             pass
         pass
+        lines.append("a.CHECK : %s " % a.CHECK)
+        lines.append("b.CHECK : %s " % b.CHECK)
         if not qcf is None:
             lines.append(repr(qcf))
         pass

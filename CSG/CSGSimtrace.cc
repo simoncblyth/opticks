@@ -60,9 +60,9 @@ int CSGSimtrace::simtrace()
 
 int CSGSimtrace::simtrace_all()
 {
-    unsigned num_simtrace = evt->simtrace.size() ;
+    int num_simtrace = evt->simtrace.size() ;
     int num_intersect = 0 ; 
-    for(unsigned i=0 ; i < num_simtrace ; i++)
+    for(int i=0 ; i < num_simtrace ; i++)
     {
         quad4& p = evt->simtrace[i] ; 
         bool valid_intersect = q->simtrace(p); 
@@ -78,7 +78,7 @@ int CSGSimtrace::simtrace_all()
 int CSGSimtrace::simtrace_selection()
 {
     int num_intersect = 0 ; 
-    for(unsigned i=0 ; i < num_selection ; i++)
+    for(int i=0 ; i < num_selection ; i++)
     {
         int j = (*selection)[i] ; 
         const quad4& p0 = evt->simtrace[j] ; 

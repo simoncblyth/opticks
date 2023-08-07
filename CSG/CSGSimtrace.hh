@@ -4,6 +4,9 @@ CSGSimtrace.hh : Geometry 2D Cross Sections
 ==============================================
 
 Canonical usage from tests/CSGSimtraceTest.cc
+
+The heart of this is CSGQuery on CPU intersect functionality using the csg headers
+
     
 **/
 
@@ -39,7 +42,7 @@ struct CSG_API CSGSimtrace
 
     const char* SELECTION ; 
     std::vector<int>* selection ; 
-    unsigned num_selection ; 
+    int num_selection ; 
     NP* selection_simtrace ; 
     quad4* qss ; 
 

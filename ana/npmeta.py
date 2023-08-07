@@ -122,6 +122,12 @@ class NPMeta(object):
              raise AttributeError("No attribute %s " % k) 
         return self.find(k)
 
+
+    def get_value(self,k,fallback=""):
+        if not k in self.d:return fallback
+        f = self.find(k, fallback)
+        return f[0] if type(f) is list else f  
+
     def __getitem__(self, idx):
         """
         item access useful for simple lists of names, not metadata dicts 

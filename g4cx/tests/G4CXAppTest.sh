@@ -100,7 +100,7 @@ logging(){
    #export QSim=INFO
    #export QEvent=INFO
    #export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
-   export SEvt=INFO
+   #export SEvt=INFO
 
    export U4Recorder__PIDX_ENABLED=1
    export C4OpBoundaryProcess__PIDX_ENABLED=1 

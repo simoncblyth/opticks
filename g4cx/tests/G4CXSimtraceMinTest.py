@@ -9,7 +9,7 @@ drawing on developments from cx/cxs_min.py
 """
 
 import os, logging, numpy as np
-from opticks.sysrap.sevt import SEvt
+from opticks.sysrap.sevt import SEvt, SAB
 log = logging.getLogger(__name__)
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
@@ -63,6 +63,12 @@ if __name__ == '__main__':
     print(repr(a))
     print(repr(b))
     print(repr(t))
+
+    ab = SAB(a,b)
+    print(repr(ab))
+
+
+
     e = t
 
     label = "APID=%s BPID=%d G4CXSimtraceMinTest.sh  # A:%s B:%s " % (a.pid, b.pid, a.label, b.label )
@@ -109,10 +115,10 @@ if __name__ == '__main__':
     pass
 
 
-    if a.pid > -1:
+    if not a is None and a.pid > -1:
         onephotonplot(pl, a)
     pass 
-    if b.pid > -1:
+    if not b is None and b.pid > -1:
         onephotonplot(pl, b)
     pass 
 

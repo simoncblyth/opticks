@@ -126,6 +126,12 @@ class QCF(object):
         self.c2per = c2per
         self.c2desc = c2desc
         self.c2label = c2label
+        self.sli = slice(None)
+
+    def __getitem__(self, sli):
+        self.sli = sli
+        print("sli: %s " % str(sli))
+        return self
  
     def __repr__(self):
         lines = []
@@ -147,9 +153,17 @@ class QCF(object):
         _quo = list(map(lambda _:fmt % _, _quo ))
         _quo = np.array( _quo )
 
+        sli = self.sli
+
+        start = sli.start if not sli.start is None else 0 
+        stop = sli.stop if not sli.stop is None else 25
+        step = sli.step if not sli.step is None else None  # not used
+
         #abexpr = "np.c_[quo,abo[:,2,:],abo[:,1,:]]"
         abexpr = "np.c_[siq,_quo,siq,sabo2,sc2,sabo1]"
-        subs = "[:25] [bzero] [azero]".split()
+        subs = "[%d:%d]" % ( start, stop ) 
+        subs += " [bzero] [azero]"
+        subs = subs.split()
         descs = ["A-B history frequency chi2 comparison", "bzero: A histories not in B", "azero: B histories not in A" ]
 
         bzero = self.bzero
