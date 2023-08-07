@@ -55,13 +55,6 @@ union quad
     uint4  u ; 
 };
 
-union dquad
-{
-    double4    f ; 
-    longlong4  i ; 
-    ulonglong4 u ; 
-};
-
 union hquad
 {
     short4  s ; 
@@ -201,33 +194,6 @@ SQUAD_METHOD void           quad2::set_lposcost(float lpc)   { q1.f.x = lpc ; }
 SQUAD_METHOD void           quad2::set_iindex(  unsigned ii) { q1.u.y = ii ;  }
 SQUAD_METHOD void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
 SQUAD_METHOD void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
-
-
-
-
-struct dquad4 
-{ 
-    dquad q0 ; 
-    dquad q1 ; 
-    dquad q2 ; 
-    dquad q3 ;
-
-    SQUAD_METHOD void zero();
-    SQUAD_METHOD double* data() ;
-    SQUAD_METHOD const double* cdata() const ;
-};
-
-SQUAD_METHOD void dquad4::zero() 
-{
-    q0.u.x = 0 ; q0.u.y = 0 ; q0.u.z = 0 ; q0.u.w = 0 ; 
-    q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
-    q2.u.x = 0 ; q2.u.y = 0 ; q2.u.z = 0 ; q2.u.w = 0 ; 
-    q3.u.x = 0 ; q3.u.y = 0 ; q3.u.z = 0 ; q3.u.w = 0 ; 
-} 
-
-SQUAD_METHOD double*       dquad4::data() {         return &q0.f.x ;  }
-SQUAD_METHOD const double* dquad4::cdata() const  { return &q0.f.x ;  }
-
 
 
 
@@ -500,16 +466,6 @@ inline std::ostream& operator<<(std::ostream& os, const quad& q)
 
 
 
-inline std::ostream& operator<<(std::ostream& os, const dquad& q)  
-{
-    os  
-       << "f " << q.f  
-    //   << "i " << q.i  
-    //   << "u " << q.u  
-       ;   
-    return os; 
-}
-
 
 inline std::ostream& operator<<(std::ostream& os, const quad4& v)  
 {
@@ -521,25 +477,6 @@ inline std::ostream& operator<<(std::ostream& os, const quad4& v)
        ;   
     return os; 
 }
-
-
-inline std::ostream& operator<<(std::ostream& os, const dquad4& v)  
-{
-    os 
-       << std::endl  
-       << v.q0.f 
-       << std::endl 
-       << v.q1.f 
-       << std::endl 
-       << v.q2.f 
-       << std::endl  
-       << v.q3.f 
-       << std::endl 
-       ;   
-    return os; 
-}
-
-
 
 
 

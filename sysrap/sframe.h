@@ -35,6 +35,12 @@ TODO: should be using Tran<double> for transforming , might as well
 
 #include "scuda.h"
 #include "squad.h"
+
+#ifdef WITH_SCUDA_DOUBLE
+#include "squad_double.h"
+#include "scuda_double.h"
+#endif
+
 #include "sqat4.h"
 #include "stran.h"
 #include "spath.h"
