@@ -45,6 +45,12 @@ export AFOLD=$BASE/ALL${VERSION}/p${EVT}
 export BFOLD=$BASE/ALL${VERSION}/n${EVT}
 export TFOLD=$BASE/0/p999
 
+if [ -z "$APID" -a -z "$BPID" -a -n "$PIDX" ]; then 
+    echo $BASH_SOURCE : PIDX $PIDX is defined and APID BPID are both not defined so setting them to PIDX 
+    export APID=$PIDX
+    export BPID=$PIDX
+fi 
+
 
 
 #num_photons=1

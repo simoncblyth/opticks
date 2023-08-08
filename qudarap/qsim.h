@@ -523,22 +523,24 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
 
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_to_boundary[ idx %d u_absorption %10.8f logf(u_absorption) %10.8f absorption_length %10.4f absorption_distance %10.6f \n", 
+    printf("//qsim.propagate_to_boundary.head idx %d : u_absorption %10.8f logf(u_absorption) %10.8f absorption_length %10.4f absorption_distance %10.6f \n", 
         ctx.idx, u_absorption, logf(u_absorption), absorption_length, absorption_distance );         
+
+    printf("//qsim.propagate_to_boundary.head idx %d : post = np.array([%10.5f,%10.5f,%10.5f,%10.5f]) \n", 
+        ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
+
+    printf("//qsim.propagate_to_boundary.head idx %d : distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f \n",
+             ctx.idx, distance_to_boundary, absorption_distance, scattering_distance )
+
+    printf("//qsim.propagate_to_boundary.head idx %d : u_scattering %10.4f u_absorption %10.4f \n", 
+             ctx.idx, u_scattering, u_absorption  ); 
+
     }
 #endif
 
 
 
-#ifdef DEBUG_TIME
-    if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
-#endif
-
-#ifdef DEBUG_HIST
-    if(ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
-             ctx.idx, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
-#endif
-  
+ 
 
     if (absorption_distance <= scattering_distance) 
     {   
@@ -778,11 +780,17 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d (n1,n2,eta) (%10.8f %10.8f %10.8f) \n", ctx.idx, n1, n2, eta ); 
-    printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
-    printf("//qsim.propagate_at_boundary idx %d mom_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
-    printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
-    printf("//qsim.propagate_at_boundary idx %d c1 %10.4f normal_incidence %d \n", ctx.idx, c1, normal_incidence ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : theTransmittance = %10.8f \n", ctx.idx, theTransmittance  ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : nrm = np.array([%10.8f,%10.8f,%10.8f]) ; lnrm = %10.8f  \n", 
+         ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z, length(oriented_normal) ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : pos = np.array([%10.5f,%10.5f,%10.5f]) ; lpos = %10.8f \n", 
+         ctx.idx, p.pos.x, p.pos.y, p.pos.z, length(p.pos) ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : mom0 = np.array([%10.8f,%10.8f,%10.8f]) ; lmom0 = %10.8f \n", 
+         ctx.idx, p.mom.x, p.mom.y, p.mom.z, length(p.mom)  ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : pol0 = np.array([%10.8f,%10.8f,%10.8f]) ; lpol0 = %10.8f \n",
+          ctx.idx, p.pol.x, p.pol.y, p.pol.z, length(p.pol)  );
+    printf("//qsim.propagate_at_boundary.head idx %d : n1,n2,eta = (%10.8f,%10.8f,%10.8f) \n", ctx.idx, n1, n2, eta ); 
+    printf("//qsim.propagate_at_boundary.head idx %d : c1 = %10.8f ; normal_incidence = %d \n", ctx.idx, c1, normal_incidence ); 
     }
 #endif
 
@@ -814,11 +822,15 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d normal_incidence %d p.pol (%10.4f,%10.4f,%10.4f) p.mom (%10.4f,%10.4f,%10.4f) o_normal (%10.4f,%10.4f,%10.4f)\n", 
-              ctx.idx, normal_incidence, p.pol.x, p.pol.y, p.pol.z, p.mom.x, p.mom.y, p.mom.z, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
+    printf("//qsim.propagate_at_boundary.body idx %d : TransCoeff = %10.8f ; n1c1 = %10.8f ; n2c2 = %10.8f \n",
+            ctx.idx, TransCoeff, n1c1, n2c2 ); 
 
-    printf("//qsim.propagate_at_boundary idx %d TransCoeff %10.4f n1c1 %10.4f n2c2 %10.4f E2_t (%10.4f,%10.4f) A_trans (%10.4f,%10.4f,%10.4f) \n", 
-            ctx.idx, TransCoeff, n1c1, n2c2, E2_t.x, E2_t.y, A_trans.x, A_trans.y, A_trans.z ); 
+    printf("//qsim.propagate_at_boundary.body idx %d : E2_t = np.array([%10.8f,%10.8f]) ; lE2_t = %10.8f \n",
+            ctx.idx,  E2_t.x, E2_t.y, length(E2_t) );
+
+    printf("//qsim.propagate_at_boundary.body idx %d : A_trans = np.array([%10.8f,%10.8f,%10.8f]) ; lA_trans = %10.8f \n",
+            ctx.idx,  A_trans.x, A_trans.y, A_trans.z, length(A_trans) ); 
+
     }
 #endif
 
@@ -838,18 +850,23 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
-              ctx.idx,  u_reflect, TransCoeff, reflect  ); 
+    printf("//qsim.propagate_at_boundary.body idx %d : u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
+              ctx.idx,  u_reflect, TransCoeff, reflect   ); 
 
-    printf("//qsim.propagate_at_boundary idx %d : mom0 = np.array([%10.8f,%10.8f,%10.8f])  \n", 
-               ctx.idx, p.mom.x, p.mom.y, p.mom.z ) ; 
+    printf("//qsim.propagate_at_boundary.body idx %d : mom0 = np.array([%10.8f,%10.8f,%10.8f]) ; lmom0 = %10.8f \n", 
+               ctx.idx, p.mom.x, p.mom.y, p.mom.z, length(p.mom) ) ; 
 
-    printf("//qsim.propagate_at_boundary idx %d : nrm = np.array([%10.8f,%10.8f,%10.8f])  \n", 
-               ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ) ; 
+    printf("//qsim.propagate_at_boundary.body idx %d : pos = np.array([%10.5f,%10.5f,%10.5f]) ; lpos = %10.8f \n", 
+               ctx.idx, p.pos.x, p.pos.y, p.pos.z, length(p.pos)  ); 
 
-    printf("//qsim.propagate_at_boundary idx %d : eta = %10.8f ; eta_c1 = %10.8f ; c2 = %10.8f ; eta_c1__c2 = %10.8f \n",
-               ctx.idx, eta, eta*c1, c2, (eta*c1 - c2) );  
+    printf("//qsim.propagate_at_boundary.body idx %d : nrm = np.array([%10.8f,%10.8f,%10.8f]) ; lnrm = %10.8f \n", 
+               ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z, length(oriented_normal) ) ; 
 
+    printf("//qsim.propagate_at_boundary.body idx %d : n1 = %10.8f ; n2 = %10.8f ; eta = %10.8f  \n",
+               ctx.idx, n1, n2, eta );  
+
+    printf("//qsim.propagate_at_boundary.body idx %d : c1 = %10.8f ; eta_c1 = %10.8f ; c2 = %10.8f ; eta_c1__c2 = %10.8f \n",
+               ctx.idx, c1, eta*c1, c2, (eta*c1 - c2) );  
 
     }
 #endif 
@@ -896,9 +913,11 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
-        printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", ctx.idx, reflect, tir, TransCoeff, u_reflect );  
-        printf("//qsim.propagate_at_boundary idx %d : mom1 = np.array([%10.8f,%10.8f,%10.8f]) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
-        printf("//qsim.propagate_at_boundary idx %d : pol1 = np.array([%10.8f,%10.8f,%10.8f]) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
+    printf("//qsim.propagate_at_boundary.tail idx %d : reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", ctx.idx, reflect, tir, TransCoeff, u_reflect );  
+    printf("//qsim.propagate_at_boundary.tail idx %d : mom1 = np.array([%10.8f,%10.8f,%10.8f]) ; lmom1 = %10.8f  \n", 
+        ctx.idx, p.mom.x, p.mom.y, p.mom.z, length(p.mom) ); 
+    printf("//qsim.propagate_at_boundary.tail idx %d : pol1 = np.array([%10.8f,%10.8f,%10.8f]) ; lpol1 = %10.8f \n", 
+        ctx.idx, p.pol.x, p.pol.y, p.pol.z, length(p.pol) ); 
     }
 #endif
 
@@ -1497,12 +1516,16 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     if( ctx.idx == base->pidx ) 
     {
     float3 cross_mom_nrm = cross(p.mom, *normal) ; 
-    printf("//qsim::propagate_at_surface_CustomART p.mom                 (%7.3f %7.3f %7.3f) \n", p.mom.x, p.mom.y, p.mom.z );  
-    printf("//qsim::propagate_at_surface_CustomART p.pol                 (%7.3f %7.3f %7.3f) \n", p.pol.x, p.pol.y, p.pol.z );  
-    printf("//qsim::propagate_at_surface_CustomART normal                (%7.3f %7.3f %7.3f) \n", normal->x, normal->y, normal->z );  
-    printf("//qsim::propagate_at_surface_CustomART cross_mom_nrm         (%7.3f %7.3f %7.3f) \n", cross_mom_nrm.x, cross_mom_nrm.y, cross_mom_nrm.z );  
-    printf("//qsim::propagate_at_surface_CustomART dot_pol_cross_mom_nrm: %7.3f \n", dot_pol_cross_mom_nrm ); 
-    printf("//qsim::propagate_at_surface_CustomART minus_cos_theta        %7.3f \n", minus_cos_theta ); 
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : mom = np.array([%10.8f,%10.8f,%10.8f]) ; lmom = %10.8f \n", 
+       ctx.idx, p.mom.x, p.mom.y, p.mom.z, length(p.mom) );  
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : pol = np.array([%10.8f,%10.8f,%10.8f]) ; lpol = %10.8f \n", 
+       ctx.idx, p.pol.x, p.pol.y, p.pol.z, length(p.pol) );  
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : nrm = np.array([%10.8f,%10.8f,%10.8f]) ; lnrm = %10.8f \n", 
+       ctx.idx, normal->x, normal->y, normal->z, length(*normal) );  
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : cross_mom_nrm = np.array([%10.8f,%10.8f,%10.8f]) ; lcross_mom_nrm = %10.8f  \n", 
+           ctx.idx, cross_mom_nrm.x, cross_mom_nrm.y, cross_mom_nrm.z, length(cross_mom_nrm)  );  
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : dot_pol_cross_mom_nrm = %10.8f \n", ctx.idx, dot_pol_cross_mom_nrm ); 
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : minus_cos_theta = %10.8f \n", ctx.idx, minus_cos_theta ); 
     }
 #endif
 
@@ -1511,7 +1534,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
         flag = NAN_ABORT ; 
 #ifdef DEBUG_PIDX
         //if( ctx.idx == base->pidx ) 
-        printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d : ERROR NOT-A-SENSOR : NAN_ABORT \n", ctx.idx, lpmtid ); 
+        printf("//qsim::propagate_at_surface_CustomART idx %7d lpmtid %d : ERROR NOT-A-SENSOR : NAN_ABORT \n", ctx.idx, lpmtid ); 
 #endif
         return BREAK ; 
     }
@@ -1778,8 +1801,19 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
 #ifdef DEBUG_PIDX
     if( ctx.idx == base->pidx ) 
-    printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
-                 ctx.idx, bounce, cosTheta, ctx.p.mom.x, ctx.p.mom.y, ctx.p.mom.z, normal->x, normal->y, normal->z ); 
+    {
+    printf("\n//qsim.propagate.head idx %d : bnc %d cosTheta %10.8f \n", ctx.idx, bounce, cosTheta ); 
+
+    printf("//qsim.propagate.head idx %d : mom = np.array([%10.8f,%10.8f,%10.8f]) ; lmom = %10.8f  \n", 
+                 ctx.idx, ctx.p.mom.x, ctx.p.mom.y, ctx.p.mom.z, length(ctx.p.mom) ) ; 
+
+    printf("//qsim.propagate.head idx %d : pos = np.array([%10.5f,%10.5f,%10.5f]) ; lpos = %10.8f \n", 
+                 ctx.idx, ctx.p.pos.x, ctx.p.pos.y, ctx.p.pos.z, length(ctx.p.pos) ) ; 
+
+    printf("//qsim.propagate.head idx %d : nrm = np.array([(%10.8f,%10.8f,%10.8f]) ; lnrm = %10.8f  \n", 
+                 ctx.idx, normal->x, normal->y, normal->z, length(*normal) ); 
+
+    }
 #endif
 
     ctx.p.set_prd(boundary, identity, cosTheta, iindex );  // HMM: lposcost not passed along 
