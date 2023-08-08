@@ -1,14 +1,15 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-G4CXAppTest.sh 
+G4CXTest.sh 
 ================
 
 ::
 
-    MODE=2 ./G4CXAppTest.sh ana
+    PIDX=552 ~/opticks/g4cx/tests/G4CXTest.sh run 
 
-    MODE=2 APID=62 ./G4CXAppTest.sh tra   
+    MODE=2 ./G4CXTest.sh ana
 
+    MODE=2 APID=62 ./G4CXTest.sh tra   
 
 EOU
 }
@@ -17,8 +18,8 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 U4TDIR=$(cd $SDIR/../../u4/tests && pwd)
 BINDIR=$(cd $SDIR/../../bin && pwd)
 
-bin=G4CXAppTest
-ana=$SDIR/G4CXAppTest.py 
+bin=G4CXTest
+ana=$SDIR/G4CXTest.py 
 tra=$SDIR/G4CXSimtraceMinTest.py 
 
 

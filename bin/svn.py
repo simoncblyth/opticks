@@ -229,7 +229,6 @@ class WC(object):
         reldir = cwd[len(home)+1:]
         topdir = reldir.split("/")[0]  
 
-
         if topdir == "opticks":
             repo = "opticks"
         elif reldir.startswith("junotop/junosw"):
@@ -240,6 +239,8 @@ class WC(object):
             repo = "j"
         elif topdir == "env":
             repo = "env"
+        elif topdir == "customgeant4":
+            repo = "customgeant4"
         else:
             print("FATAL : FAILED TO DETECT REPO : RUN THIS FROM TOP DIR OF REPO ") 
             print(" cwd %s home %s reldir %s topdir %s " % (cwd, home, reldir, topdir))

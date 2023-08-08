@@ -10,7 +10,7 @@ set(TEST_SOURCES
    G4CXOpticks_setGeometry_Test.cc
    G4CXOpticks_SetGeometry_GetInputPhoton_Test.cc
 
-   G4CXAppTest.cc 
+   G4CXTest.cc 
 )
 
 foreach(SRC ${TEST_SOURCES})

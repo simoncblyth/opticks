@@ -841,13 +841,13 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     printf("//qsim.propagate_at_boundary idx %d u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
               ctx.idx,  u_reflect, TransCoeff, reflect  ); 
 
-    printf("//qsim.propagate_at_boundary idx %d p.mom (%10.8f %10.8f %10.8f)  \n", 
+    printf("//qsim.propagate_at_boundary idx %d : mom0 = np.array([%10.8f,%10.8f,%10.8f])  \n", 
                ctx.idx, p.mom.x, p.mom.y, p.mom.z ) ; 
 
-    printf("//qsim.propagate_at_boundary idx %d o_nrm (%10.8f %10.8f %10.8f)  \n", 
+    printf("//qsim.propagate_at_boundary idx %d : nrm = np.array([%10.8f,%10.8f,%10.8f])  \n", 
                ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ) ; 
 
-    printf("//qsim.propagate_at_boundary idx %d eta %10.8f eta*c1 %10.8f c2 %10.8f (eta*c1 - c2) %10.8f \n",
+    printf("//qsim.propagate_at_boundary idx %d : eta = %10.8f ; eta_c1 = %10.8f ; c2 = %10.8f ; eta_c1__c2 = %10.8f \n",
                ctx.idx, eta, eta*c1, c2, (eta*c1 - c2) );  
 
 
@@ -860,6 +860,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                     :
                        eta*(p.mom) + (eta*c1 - c2)*oriented_normal
                     ;
+
 
     // Q: Does the new p.mom need to be normalized ?
     // A: NO, it is inherently normalized as derived in the comment below
@@ -880,6 +881,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                                       ;
 
 
+
      // Q: Above expression kinda implies A_trans and A_paral are same for reflect and transmit ?
      // A: NO IT DOESNT,
      //    A_trans is the same (except for normal incidence) as there is only one perpendicular 
@@ -895,8 +897,8 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     if(ctx.idx == base->pidx)
     {
         printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", ctx.idx, reflect, tir, TransCoeff, u_reflect );  
-        printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
-        printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
+        printf("//qsim.propagate_at_boundary idx %d : mom1 = np.array([%10.8f,%10.8f,%10.8f]) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
+        printf("//qsim.propagate_at_boundary idx %d : pol1 = np.array([%10.8f,%10.8f,%10.8f]) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
     }
 #endif
 

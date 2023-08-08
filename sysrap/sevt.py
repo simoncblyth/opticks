@@ -607,6 +607,15 @@ class SAB(object):
         self.qcf0 = qcf0
         self.meta = meta
 
+    def q_startswith(self, prefix="TO BT BT SA"):
+        """
+        This is a cheating way to find accidentally random aligned photons
+        for debugging purposes. 
+        It is especially useful with eg rain_point storch.h where all photons
+        start with same position and direction. 
+        """
+        return np.where( np.logical_and( self.a.q == self.b.q, np.char.startswith(self.a.q, prefix.encode("utf-8")) ))   
+
     def __repr__(self):
         a = self.a
         b = self.b
