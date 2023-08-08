@@ -74,9 +74,9 @@ node
    (CSG constituent nodes : sphere, box, boolean operators)
 
 tran
-    array of quat4 node transforms, same size as itra
+    array of qat4 node transforms, same size as itra
 itra
-    array of quat4 node inverse transforms, same size as tran
+    array of qat4 node inverse transforms, same size as tran
 plan 
     array of float4 planes 
 
