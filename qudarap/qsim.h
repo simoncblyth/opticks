@@ -530,7 +530,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
         ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
 
     printf("//qsim.propagate_to_boundary.head idx %d : distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f \n",
-             ctx.idx, distance_to_boundary, absorption_distance, scattering_distance )
+             ctx.idx, distance_to_boundary, absorption_distance, scattering_distance );
 
     printf("//qsim.propagate_to_boundary.head idx %d : u_scattering %10.4f u_absorption %10.4f \n", 
              ctx.idx, u_scattering, u_absorption  ); 
