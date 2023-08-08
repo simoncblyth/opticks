@@ -499,13 +499,27 @@ class SEvt(object):
     def _get_pid(self):
         return self._pid
     def _set_pid(self, pid):
+        """
+
+        gpos = np.ones( [len(pp), 4 ] ) 
+        gpos[:,:3] = pp
+        lpos = np.dot( gpos, e.f.sframe.w2m )
+        upos = gpos if GLOBAL else lpos
+
+
+        """
         f = self.f
         q = self.q
         symbol = self.f.symbol
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
             wl = _r[:,2,3]
-            r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros
+            r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros, example shape (13, 4, 4)
+
+            g = np.ones([len(r),4])
+            g[:,:3] = r[:,0,:3]  
+            l = np.dot( g, f.sframe.w2m )
+
             pass
             _aux = getattr(f, 'aux', None)
             _a = None if _aux is None else _aux[pid]
@@ -531,6 +545,9 @@ class SEvt(object):
             ast = None
             qpid = None
             label = ""
+
+            g = None
+            l = None
         pass
         self._pid = pid
         self._r = _r
@@ -540,6 +557,8 @@ class SEvt(object):
         self.ast = ast
         self.qpid = qpid
         self.label = label
+        self.g = g 
+        self.l = l 
 
 
     pid = property(_get_pid, _set_pid)

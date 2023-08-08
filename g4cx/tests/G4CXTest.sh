@@ -77,8 +77,11 @@ export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
 
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 
-export CHECK=rain_point_xpositive_100
+#check=rain_point_xpositive_100
+check=rain_line
+export CHECK=${CHECK:-$check} 
 source $U4TDIR/storch_FillGenstep.sh
+echo $BASH_SOURCE : CHECK $CHECK 
 env | grep storch
 
 
