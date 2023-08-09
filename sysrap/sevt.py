@@ -85,6 +85,7 @@ class SEvt(object):
         self.init_fold_meta(f)
         self.init_U4R_names(f)
         self.init_photon(f)
+        self.init_record(f)
         self.init_record_sframe(f)
         self.init_SEventConfig_meta(f)
         self.init_seq(f)
@@ -204,7 +205,22 @@ class SEvt(object):
         else:
             iix = None
         pass
+
         self.iix = iix        
+
+    def init_record(self, f):
+        """
+        :param f: fold instance
+        """
+        if hasattr(f,'record') and not f.record is None:
+            iir = f.record[:,:,1,3].view(np.int32) 
+            idr = f.record[:,:,1,3].view(np.int32) 
+        else:
+            iir = None
+            idr = None
+        pass
+        self.iir = iir        
+        self.idr = idr        
 
     def init_record_sframe(self, f):
 
@@ -519,6 +535,7 @@ class SEvt(object):
             g = np.ones([len(r),4])
             g[:,:3] = r[:,0,:3]  
             l = np.dot( g, f.sframe.w2m )
+            ld = np.diff(l,axis=0) 
 
             pass
             _aux = getattr(f, 'aux', None)
@@ -548,6 +565,7 @@ class SEvt(object):
 
             g = None
             l = None
+            ld = None
         pass
         self._pid = pid
         self._r = _r
@@ -559,6 +577,7 @@ class SEvt(object):
         self.label = label
         self.g = g 
         self.l = l 
+        self.ld = ld
 
 
     pid = property(_get_pid, _set_pid)

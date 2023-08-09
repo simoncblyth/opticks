@@ -21,6 +21,24 @@ def vnorm(v):
 
 
 class InputPhotons(object):
+    """
+    The "WEIGHT" has never been used as such. 
+    The (1,3) sphoton.h slot is used for the iindex integer, 
+    hence set the "WEIGHT" to 0.f in order that the int32 
+    becomes zero. 
+
+    np.zeros([1], dtype=np.float32 ).view(np.int32)[0] == 0 
+    np.ones([1], dtype=np.float32 ).view(np.int32)[0] == 1065353216 
+
+    See ~/opticks/notes/issues/sphoton_float_one_in_int32_1_3_iindex_slot.rst
+
+    Temporary fix::
+ 
+        a.f.record[:,:,1,3][np.where( a.f.record[:,:,1,3] == 1. )] = 0.  
+    """
+
+    WEIGHT = 0.  #  np.zeros([1], dtype=np.float32 ).view(np.int32)[0] == 0  
+
     DEFAULT_BASE = os.path.expanduser("~/.opticks/InputPhotons")
     DTYPE = np.float64 if os.environ.get("DTYPE","np.float32") == "np.float64" else np.float32
 
@@ -30,7 +48,6 @@ class InputPhotons(object):
 
     POSITION = [0.,0.,0.]
     TIME = 0.1
-    WEIGHT = 1.
     WAVELENGTH  = 440. 
 
     @classmethod

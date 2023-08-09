@@ -99,7 +99,6 @@ class QCF(object):
         c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d)" % ( c2sum, int(c2n), c2per, c2cut )
         c2label = "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut )
 
- 
         self._aq = _aq
         self._bq = _bq
         self.lim = lim 
