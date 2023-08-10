@@ -24,6 +24,47 @@ elif MODE in [2,3]:
     from opticks.ana.pvplt import *  # HMM this import overrides MODE, so need to keep defaults the same 
 pass
 
+
+
+
+def onephotonplot(pl, e ):
+    """
+    :param pl: MODE 2/2 plotter objects
+    :param e: SEvt instance
+    """
+    if e is None: return
+    if e.pid < 0: return
+
+    print("onephotonplot e.pid %d " % e.pid )
+
+    if not hasattr(e,'l'): return
+    if e.l is None: return
+    print("onephotonplot e.pid %d PROCEED " % e.pid )
+
+    rpos =  e.l[:,:3] + e.off
+
+    if MODE == 2:
+        fig, axs = pl
+        assert len(axs) == 1
+        ax = axs[0]
+        if True:
+            mpplt_add_contiguous_line_segments(ax, rpos, axes=(H,V), label=None )
+            #self.mp_plab(ax, f)
+        pass
+        #if "nrm" in f.opt:
+        #    self.mp_a_normal(ax, f)  
+        #pass
+    elif MODE == 3:
+        pass
+        pvplt_add_contiguous_line_segments(pl, rpos )
+    pass
+
+
+
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     print("GLOBAL:%d MODE:%d SEL:%d" % (GLOBAL,MODE, SEL))
@@ -81,8 +122,17 @@ if __name__ == '__main__':
             fig, axs = pl
             assert len(axs) == 1
             ax = axs[0]
-            ax.set_xlim(-356,356)
-            ax.set_ylim(-201,201)
+
+            xlim, ylim = mpplt_focus_aspect()
+            if not xlim is None:
+                ax.set_xlim(xlim) 
+                ax.set_ylim(ylim) 
+            else:
+                log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
+            pass 
+
+            #ax.set_xlim(-356,356)
+            #ax.set_ylim(-201,201)
 
         elif MODE == 3:
             pl = pvplt_plotter(label)
@@ -118,6 +168,13 @@ if __name__ == '__main__':
         else:
             pass
         pass
+
+
+        if e.pid > -1: 
+            onephotonplot(pl, e)
+        pass 
+
+
 
         if MODE == 2:
             fig.show()
