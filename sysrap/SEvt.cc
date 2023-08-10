@@ -3094,7 +3094,7 @@ const char* SEvt::getOutputDir(const char* base_) const
         }
         else if(SEventConfig::IsRGModeSimtrace())
         {
-            assert( instance == MISSING_INSTANCE ); 
+            //assert( instance == MISSING_INSTANCE );  // not with U4SimtraceTest.sh 
             u_index = index ;  ; 
         }
 

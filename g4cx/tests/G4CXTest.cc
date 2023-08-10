@@ -1,11 +1,9 @@
 /**
-G4CXAppTest.cc
-===============
+G4CXTest.cc : Standalone bi-simulation
+==========================================
 
-Starting from U4App.h/U4SimulateTest.cc create G4CXApp.h/G4CXAppTest.cc 
-
-Aim is to incorporate G4CXOpticks into the U4Recorder enabled Geant4 application
-to provide standalone bi-simulation. 
+This was based on the Geant4 application u4/tests/U4SimulateTest.cc (U4App.h)
+with the addition of only a few lines to incorporate the G4CXOpticks GPU simulation. 
 
 **/
 
@@ -18,5 +16,4 @@ int main(int argc, char** argv)
     G4CXApp::Main(); 
     return 0 ; 
 }
-
 

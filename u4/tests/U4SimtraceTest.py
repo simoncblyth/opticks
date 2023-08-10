@@ -110,7 +110,7 @@ class U4SimtraceTest(object):
 
         sfs = odict()
         for i, name in enumerate(trs_names):
-            sfs[name] = Fold.Load(fold.base, name,"000",  symbol="%s%0.2d" % (fold.symbol,i) )
+            sfs[name] = Fold.Load(fold.base, name,"p001",  symbol="%s%0.2d" % (fold.symbol,i) )
         pass
 
         symbol = fold.symbol
@@ -246,6 +246,10 @@ class U4SimtraceTest(object):
         fig, axs = pl
         assert len(axs) == 1 
         ax = axs[0]
+
+        ax.set_xlim(-60,60)
+        ax.set_ylim(-100,100)
+
 
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])

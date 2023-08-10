@@ -96,7 +96,7 @@ struct G4CXApp
 
 const plog::Severity G4CXApp::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
 
-std::string G4CXApp::Desc()
+std::string G4CXApp::Desc() // static
 {
     std::string phy = U4Physics::Desc() ; 
     std::string rec = U4Recorder::Desc() ; 
@@ -107,7 +107,7 @@ std::string G4CXApp::Desc()
     return s ; 
 }
 
-char G4CXApp::PrimaryMode()
+char G4CXApp::PrimaryMode() // static
 {
     char mode = '?' ; 
     const char* mode_ = ssys::getenvvar("G4CXApp__PRIMARY_MODE", "torch" ); 
@@ -117,7 +117,7 @@ char G4CXApp::PrimaryMode()
     return mode ;   
 }
 
-G4ParticleGun* G4CXApp::InitGun()
+G4ParticleGun* G4CXApp::InitGun() // static
 {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle("e+");
@@ -171,17 +171,8 @@ G4VPhysicalVolume* G4CXApp::Construct()
     return pv ; 
 }  
 
-// pass along the message to the recorder
-void G4CXApp::BeginOfRunAction(const G4Run* run)
-{ 
-    LOG(info) ; 
-    fRecorder->BeginOfRunAction(run);   
-}
-void G4CXApp::EndOfRunAction(const G4Run* run)
-{   
-    LOG(info); 
-    fRecorder->EndOfRunAction(run);     
-}
+void G4CXApp::BeginOfRunAction(const G4Run* run){ fRecorder->BeginOfRunAction(run);   }
+void G4CXApp::EndOfRunAction(const G4Run* run){   fRecorder->EndOfRunAction(run);     }
 
 
 /**

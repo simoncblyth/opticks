@@ -165,7 +165,7 @@ else
     echo $BASH_SOURCE : no geomscript $geomscript
 fi 
 
-
+# GEOMList for the GEOM is set for example in the FewPMT.sh geomscript 
 _GEOMList=${GEOM}_GEOMList
 GEOMList=${!_GEOMList}
 
