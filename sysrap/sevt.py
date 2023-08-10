@@ -255,8 +255,25 @@ class SEvt(object):
         self.ipf = ipf
         self.ipc = ipc
 
-    def q_startswith(self, prefix="TO BT SD"):
-        return np.flatnonzero(np.char.startswith(self.q, prefix.encode("utf-8") ))
+    def q_startswith(self, prefix="TO BT SD", encoding="utf-8"):
+        return np.flatnonzero(np.char.startswith(self.q, prefix.encode(encoding) ))
+
+    def q_startswith_or(self, pfx1="TO BT BT BT SA", pfx2="TO BT BT BT SD", encoding="utf-8"):
+        return np.flatnonzero(np.logical_or(
+                   np.char.startswith(self.q,pfx1.encode(encoding)), 
+                   np.char.startswith(self.q,pfx2.encode(encoding)) 
+               ))
+
+    def q_startswith_or_(self, pfxs_="TO BT BT BT SA,TO BT BT BT SD", delim=",", encoding="utf-8"):
+        """
+        Another way to implement this is with np.any 
+        """
+        pfxs = pfxs_.split(delim)
+        aa = []
+        for pfx in pfxs:
+            aa.append( np.char.startswith(self.q, pfx.encode(encoding)))
+        pass
+        return np.flatnonzero(np.logical_or.reduce(aa)) 
 
     def init_seq(self, f):
         symbol = f.symbol

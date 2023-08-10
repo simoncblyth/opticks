@@ -106,10 +106,18 @@ if __name__ == '__main__':
     context = "PICK=%s MODE=%d SEL=%d ./G4CXAppTest.sh ana " % (PICK, MODE, SEL )
     print(context)
 
+    #hsel = None
+    hsel = "TO BT BT BT SD,TO BT BT BT SA"
+    HSEL = os.environ.get("HSEL", hsel)
+
 
     for e in ee:
+        ew = e.q_startswith_or_(HSEL) if not HSEL is None else None
 
         elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
+        if not ew is None:
+            elabel += " HSEL=%s " % HSEL 
+        pass
         label = context + " ## " + elabel
 
         qtab = e.minimal_qtab()
@@ -142,32 +150,65 @@ if __name__ == '__main__':
 
         #pp = e.f.inphoton[:,0,:3]
         #pp = e.f.photon[:,0,:3]
-        pp = e.f.record[:,:,0,:3].reshape(-1,3)
+        pp = e.f.record[:,:,0,:3]
+        ww = pp[ew] if not ew is None else None
+
+        ppf = pp.reshape(-1,3)
+        wwf = ww.reshape(-1,3) if not ww is None else None
+        
+
+        g_pos = np.ones( [len(ppf), 4 ] ) 
+        g_pos[:,:3] = ppf
+        l_pos = np.dot( g_pos, e.f.sframe.w2m )
+        u_pos = g_pos if GLOBAL else l_pos
 
 
-        gpos = np.ones( [len(pp), 4 ] ) 
-        gpos[:,:3] = pp
-        lpos = np.dot( gpos, e.f.sframe.w2m )
-        upos = gpos if GLOBAL else lpos
+        if not wwf is None: 
+            h_pos = np.ones( [len(wwf), 4 ] ) 
+            h_pos[:,:3] = wwf
+            i_pos = np.dot( h_pos, e.f.sframe.w2m )
+            v_pos = h_pos if GLOBAL else i_pos 
+        else:
+            h_pos = None
+            i_pos = None
+            v_pos = None
+        pass
 
 
         H,V = 0,2  # X, Z
 
         if SEL == 1:
-            sel = np.logical_and( np.abs(upos[:,H]) < 500, np.abs(upos[:,V]) < 500 )
-            spos = upos[sel]
+            sel = np.logical_and( np.abs(u_pos[:,H]) < 500, np.abs(u_pos[:,V]) < 500 )
+            s_pos = u_pos[sel]
         else:
-            spos = upos
+            s_pos = u_pos
         pass
 
 
         if MODE == 2:
-            ax.scatter( spos[:,H], spos[:,V], s=0.1 )
+            ax.scatter( s_pos[:,H], s_pos[:,V], s=0.1 )
         elif MODE == 3:
-            pl.add_points(spos[:,:3])
+            pl.add_points(s_pos[:,:3])
         else:
             pass
         pass
+
+
+        if not v_pos is None:
+            if MODE == 2:
+                ax.scatter( v_pos[:,H], v_pos[:,V], s=0.1, c="r" )
+            elif MODE == 3:
+                pl.add_points(v_pos[:,:3], color="red")
+            else:
+                pass
+            pass
+        else:
+            pass
+        pass
+
+
+
+
 
 
         if e.pid > -1: 

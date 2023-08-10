@@ -59,13 +59,22 @@ BFOLD = os.environ.get("BFOLD", None)
 N = int(os.environ.get("VERSION","-1")) 
 GEOM = os.environ.get("GEOM", "DummyGEOM")
 GEOMList = os.environ.get("%s_GEOMList" % GEOM, "DummyGEOMList") 
+FOCUS = os.environ.get("FOCUS", "")
 
 APID = int(os.environ.get("APID", -1 ))
 BPID = int(os.environ.get("BPID", -1 ))
 AOPT = os.environ.get("AOPT", "")
 BOPT = os.environ.get("BOPT", "")
 
+
+
 topline = "N=%d " % N
+
+if len(FOCUS) > 0:
+   topline += " FOCUS=%s " % FOCUS
+pass
+
+
 if APID > -1: topline += "APID=%d " % APID
 if len(AOPT) > 0: topline += "AOPT=%s " % AOPT
 
