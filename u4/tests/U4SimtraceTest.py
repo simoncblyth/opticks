@@ -45,6 +45,11 @@ REVERSE = int(os.environ.get("REVERSE","0")) == 1
 size = np.array([1280, 720])
 X,Y,Z = 0,1,2
 
+
+# use eg FOCUS=0,0,100 to select part of view with aspect ratio preserved
+#XLIM=efloatarray_("XLIM","0,0")
+#YLIM=efloatarray_("YLIM","0,0")
+
 FOLD = os.environ.get("FOLD", None)
 SFOLD = os.environ.get("SFOLD", None)
 TFOLD = os.environ.get("TFOLD", None)
@@ -247,9 +252,8 @@ class U4SimtraceTest(object):
         assert len(axs) == 1 
         ax = axs[0]
 
-        ax.set_xlim(-60,60)
-        ax.set_ylim(-100,100)
-
+        #ax.set_xlim(-60,60)  # use FOCUS=0,0,100
+        #ax.set_ylim(-100,100)
 
         locs = ["upper left","lower left", "upper right"]
         LOC = os.environ.get("LOC",locs[0])

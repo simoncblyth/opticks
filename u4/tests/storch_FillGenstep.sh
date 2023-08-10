@@ -32,6 +32,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
     #check=rain_disc
     #check=rain_line
     #check=rain_point_xpositive_0
+    #check=tub3_side_line
     check=rain_point_xpositive_100
     #check=up_rain_line
     #check=escape
@@ -73,7 +74,17 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         mom=0,0,-1   
         radius=0  
 
+    elif [ "${CHECK:0:16}" == "circle_outwards_" ]; then
 
+        ttype=circle
+        radius=${CHECK:16}   # +ve radiys for outwards
+        pos=0,0,0
+
+    elif [ "${CHECK:0:15}" == "circle_inwards_" ]; then
+
+        ttype=circle
+        radius=-${CHECK:15}   # -ve radius for inwards
+        pos=0,0,0
 
     elif [ "$CHECK" == "up_rain_line" ]; then
 
@@ -102,6 +113,13 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         radius=120   
         pos=0,0,-50
         mom=1,0,-1
+
+    elif [ "$CHECK" == "tub3_side_line" ]; then
+
+        ttype=line
+        radius=60     
+        pos=-60,0,-20   ## line from (-60,0,-80) to (-60,0,40) 
+        mom=1,0,0
 
     elif [ "$CHECK" == "lhs_window_line" ]; then
 

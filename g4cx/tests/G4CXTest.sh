@@ -5,11 +5,31 @@ G4CXTest.sh
 
 ::
 
-    PIDX=552 ~/opticks/g4cx/tests/G4CXTest.sh run 
+    ~/opticks/g4cx/tests/G4CXTest.sh run
+
+    PIDX=552 ~/opticks/g4cx/tests/G4CXTest.sh run ## run with single photon debug 
+        
+    ~/opticks/g4cx/tests/G4CXTest.sh grab  
+
 
     MODE=2 ./G4CXTest.sh ana
 
     MODE=2 APID=62 ./G4CXTest.sh tra   
+
+
+Input scripts
+---------------
+
+
+~/opticks/u4/tests/FewPMT.sh 
+    configure geometry 
+
+~/opticks/u4/tests/storch_FillGenstep.sh 
+    configure torch photons, controlled via LAYOUT and CHECK envvars 
+
+
+
+
 
 EOU
 }
@@ -78,7 +98,11 @@ export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
 export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 
 #check=rain_point_xpositive_100
-check=rain_line
+#check=rain_line
+#check=tub3_side_line
+check=circle_inwards_100
+#check=circle_outwards_1
+
 export CHECK=${CHECK:-$check} 
 source $U4TDIR/storch_FillGenstep.sh
 echo $BASH_SOURCE : CHECK $CHECK 

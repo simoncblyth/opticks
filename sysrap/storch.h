@@ -295,6 +295,42 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         p.pol.z = 0.f ;    
         smath::rotateUz(p.pol, p.mom) ; 
     }
+    else if( gs.type == T_CIRCLE )
+    {
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
+        float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
+
+
+        float phi = 2.f*M_PIf*frac ; 
+        float sinPhi = sinf(phi); 
+        float cosPhi = cosf(phi);
+
+        float r = gs.radius < 0.f ? -gs.radius : gs.radius ; 
+
+        // -ve radius for inwards rays 
+        // +ve radius or zero for outwards rays 
+
+        p.mom.x = gs.radius < 0.f ? -cosPhi : cosPhi ; 
+        p.mom.y = 0.f ; 
+        p.mom.z = gs.radius < 0.f ? -sinPhi : sinPhi ; 
+
+        p.pos.x = r*cosPhi ;
+        p.pos.y = 0.f ; 
+        p.pos.z = r*sinPhi ;   
+        // smath::rotateUz(p.pos, p.mom) ;  // dont do that that  
+        p.pos = p.pos + gs.pos ; // translate position after orienting the line
+
+        /*
+        printf("// T_CIRCLE frac %10.4f gs.radius %10.4f r %10.4f  p.mom (%10.4f %10.4f %10.4f) p.pos (%10.4f %10.4f %10.4f) \n", 
+           frac, gs.radius, r, p.mom.x, p.mom.y, p.mom.z, p.pos.x, p.pos.y, p.pos.z ); 
+        */
+
+        p.pol.x = 0.f ;
+        p.pol.y = -1.f ; 
+        p.pol.z = 0.f ;    
+        smath::rotateUz(p.pol, p.mom) ; 
+    }
 
     p.zero_flags(); 
     p.set_flag(TORCH); 

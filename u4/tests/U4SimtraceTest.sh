@@ -3,6 +3,12 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
+
+FewPMT.sh/tub3LogicalPMT::
+
+    MODE=2 FOCUS=0,0,80 ~/opticks/u4/tests/U4SimtraceTest.sh ana 
+
+
 TODO
 ------
 

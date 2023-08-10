@@ -13,6 +13,8 @@ CPU test of CUDA code to generate torch photons using s_mock_curand.h::
 EOU
 }
 
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+
 case $(uname) in 
    Darwin) defarg=build_run_ana ;; 
    Linux)  defarg=build_run ;; 
@@ -24,14 +26,23 @@ msg="=== $BASH_SOURCE :"
 name=storch_test 
 bdir=/tmp/$name/build
 mkdir -p $bdir
+bin=$bdir/$name
+script=$SDIR/$name.py 
 
-vers=M1up99
+vers=circle_outwards
+#vers=circle_inwards
+#vers=M1up99
 odir=$HOME/.opticks/InputPhotons/storch
 fold=$odir/$vers
 mkdir -p $fold
-
 export FOLD=$fold   # controls where generated photons will be saved
-echo $msg FOLD $FOLD vers $vers
+
+vars="BASH_SOURCE name bdir bin script FOLD vers"
+
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+fi 
+
 
 
 if [ "$vers" == "up" ]; then 
@@ -51,6 +62,19 @@ elif [ "$vers" == "down" ]; then
     export storch_FillGenstep_pos=0,0,990
     export storch_FillGenstep_mom=0,0,-1
     export storch_FillGenstep_radius=49
+
+elif [ "$vers" == "circle_outwards" ]; then 
+
+    export storch_FillGenstep_type=circle
+    export storch_FillGenstep_radius=1
+    export storch_FillGenstep_pos=0,0,0
+
+elif [ "$vers" == "circle_inwards" ]; then 
+
+    export storch_FillGenstep_type=circle
+    export storch_FillGenstep_radius=-100
+    export storch_FillGenstep_pos=0,0,0
+
 fi 
 
 
@@ -60,6 +84,7 @@ K100=100000
 M1=1000000
 
 case ${vers:-dummy} in 
+  circle*) num=100 ;; 
   K100*) num=$K100 ;;   ## NB must start with most specific prefix 
   K10*)  num=$K10  ;; 
   K1*)   num=$K1   ;; 
@@ -69,6 +94,9 @@ esac
 export SEvent_MakeGensteps_num_ph=$num
 
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
 
 if [ "${arg/build}" != "$arg" ]; then 
 
@@ -77,12 +105,13 @@ if [ "${arg/build}" != "$arg" ]; then
         Linux) libline="-L$OPTICKS_PREFIX/lib64 -lm -lssl -lcrypto" ;; 
     esac
 
-    gcc $name.cc \
-        -o $bdir/$name  \
+    gcc $SDIR/$name.cc \
+        -o $bin \
         -std=c++11 -lstdc++ \
         -DMOCK_CURAND \
-        -I.. \
-        -I/usr/local/cuda/include \
+        -I$SDIR/.. \
+        -I$CUDA_PREFIX/include \
+        -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/plog/include \
         $libline \
         -lSysRap 
@@ -92,12 +121,12 @@ fi
 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    $bdir/$name
+    $bin
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $msg ana error && exit 3 
 fi
 
