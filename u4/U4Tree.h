@@ -62,6 +62,7 @@ controlled via envvar::
 #include "suniquename.h"
 #include "snd.hh"
 #include "sdomain.h"
+#include "ssys.h"
 
 #include "SSimtrace.h"
 #include "SEventConfig.hh"
@@ -103,6 +104,12 @@ struct U4Tree
     std::vector<const G4VSolid*>                solids ; 
     U4PhysicsTable<G4OpRayleigh>*               rayleigh_table ; 
     U4Scint*                                    scint ;         
+
+    // disable the below with settings with by defining the below envvar
+    static constexpr const char* __DISABLE_OSUR_IMPLICIT = "U4Tree__DISABLE_OSUR_IMPLICIT" ; 
+    static constexpr const char* __DISABLE_ISUR_IMPLICIT = "U4Tree__DISABLE_ISUR_IMPLICIT" ; 
+    bool                                        enable_osur ; 
+    bool                                        enable_isur ; 
 
     static U4Tree* Create( 
         stree* st, 
@@ -215,7 +222,9 @@ inline U4Tree::U4Tree(
     level(st->level),
     num_surfaces(-1),
     rayleigh_table(CreateRayleighTable()),
-    scint(nullptr)
+    scint(nullptr),
+    enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
+    enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT))
 {
     init(); 
 }
@@ -242,6 +251,9 @@ inline void U4Tree::init()
     initSurfaces_Serialize();
 
     initStandard(); 
+
+    std::cerr << "U4Tree::init " <<  desc() << std::endl; 
+
 }
 
 
@@ -567,11 +579,11 @@ geometry model that are not present in the Geant4 geometry model.
 From the Opticks point of view implicits and perfects are
 just handled as standard surfaces with sur entries. 
 
-do_osur:false 
+enable_osur:false 
     reduces the number of implicits a lot, 
     which is convenient for initial testing
 
-do_osur:true
+enable_osur:true
     THIS MUST BE ENABLED FOR Geant4 matching 
     WITHOUT IT SOME Water///Steel boundaries for example
     FAIL TO ABSORB PHOTONS : SEE ~/j/issues/3inch_PMT_geometry_after_virtual_delta.rst
@@ -608,11 +620,9 @@ inline int U4Tree::initNodes_r(
         ;
 #endif
 
-    bool do_osur = true ; // **THIS NEEDS TO BE ENABLED FOR GEANT4 MATCHING** 
-    bool do_isur = true ;  
     // overrides add implicit surfaces when no prior surface and RINDEX->NoRINDEX 
-    if(do_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
-    if(do_isur && border.has_isur_override(bd)) border.do_isur_override(bd); 
+    if(enable_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
+    if(enable_isur && border.has_isur_override(bd)) border.do_isur_override(bd); 
 
     int boundary = st->add_boundary(bd) ; 
     assert( boundary > -1 ); 
@@ -772,6 +782,8 @@ inline std::string U4Tree::desc() const
        << " materials " << materials.size() << std::endl 
        << " surfaces " << surfaces.size() << std::endl 
        << " solids " << solids.size() << std::endl 
+       << " enable_osur " << ( enable_osur ? "YES" : "NO " ) << std::endl 
+       << " enable_isur " << ( enable_isur ? "YES" : "NO " ) << std::endl 
        ;  
     std::string str = ss.str(); 
     return str ; 

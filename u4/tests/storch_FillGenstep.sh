@@ -31,9 +31,10 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
     #check=rain_disc
     #check=rain_line
+    check=rain_line_205
     #check=rain_point_xpositive_0
     #check=tub3_side_line
-    check=rain_point_xpositive_100
+    #check=rain_point_xpositive_100
     #check=up_rain_line
     #check=escape
     #check=rain_dynode
@@ -55,6 +56,13 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
         ttype=line
         pos=0,0,195    ## 190 grazes HAMA apex
+        radius=260     # standand for line from above,  280 hangsover  
+        mom=0,0,-1   
+
+    elif [ "$CHECK" == "rain_line_205" ]; then
+
+        ttype=line
+        pos=0,0,205    ## increase for shooting nmskLogicMaskVirtual, hmskLogicMaskVirtual
         radius=260     # standand for line from above,  280 hangsover  
         mom=0,0,-1   
 

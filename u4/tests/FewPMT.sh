@@ -87,7 +87,10 @@ export nnvt_UsePMTNaturalGeometry=$version
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
 #geomlist=nnvtLogicalPMT
 #geomlist=hamaLogicalPMT
-geomlist=tub3LogicalPMT
+#geomlist=tub3LogicalPMT
+
+#geomlist=hmskLogicMaskVirtual
+geomlist=nmskLogicMaskVirtual
 
 export FewPMT_GEOMList=$geomlist
 
@@ -115,8 +118,8 @@ export LOC=${LOC:-$loc}      # python ana level presentation, a bit out-of-place
 
 if [ "$LAYOUT" == "one_pmt" ]; then 
 
-   export U4VolumeMaker_WrapRockWater_Rock_HALFSIDE=210
-   export U4VolumeMaker_WrapRockWater_Water_HALFSIDE=200
+   export U4VolumeMaker_WrapRockWater_Rock_HALFSIDE=220     # formerly 210
+   export U4VolumeMaker_WrapRockWater_Water_HALFSIDE=210    # formerly 200
    export U4VolumeMaker_WrapRockWater_BOXSCALE=$aspect,$aspect,1
 
 elif [ "$LAYOUT" == "two_pmt" ]; then 
