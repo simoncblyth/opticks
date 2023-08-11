@@ -1545,6 +1545,10 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
 
      nd.sensor_id = -1 ;    
      nd.sensor_index = -1 ; 
+
+     // HUH: boundary not set : THIS X4/GGeo stree is very incomplete 
+     // just used for checking transforms probably 
+     // constrast with U4Tree::initNodes_r 
     
      m_tree->nds.push_back(nd); 
      m_tree->m2w.push_back(tr_m2w);

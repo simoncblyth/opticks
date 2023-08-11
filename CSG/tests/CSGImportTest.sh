@@ -36,7 +36,9 @@ EOU
 
 bin=CSGImportTest
 
-export BASE=/tmp/$USER/opticks/U4TreeCreateTest
+source $HOME/.opticks/GEOM/GEOM.sh 
+#export BASE=/tmp/$USER/opticks/U4TreeCreateTest
+export BASE=/tmp/GEOM/$GEOM/CSGFoundry/SSim
 export FOLD=/tmp/$USER/opticks/$bin
 
 
@@ -50,21 +52,24 @@ mkdir -p $FOLD
 
 
 loglevel(){
+   export CSGFoundry=INFO
    #export CSGImport=INFO
    #export scsg_level=1
    lvid=119
    ndid=0
    export LVID=${LVID:-$lvid}
    export NDID=${NDID:-$ndid}
-
-
-
 }
 loglevel
 
+vars="BASH_SOURCE bin GEOM BASE FOLD check"
 
-defarg=run
+defarg=info_run
 arg=${1:-$defarg}
+
+if [ "${arg/info}" != "$arg" ]; then 
+    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin

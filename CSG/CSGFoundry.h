@@ -103,6 +103,7 @@ struct CSG_API CSGFoundry : public SGeo
     static const SBitSet* ELV(const SName* id); 
 
     static bool Load_saveAlt ; 
+    static CSGFoundry* Import(const stree* st);
     static CSGFoundry* Load();
     static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv ); 
 

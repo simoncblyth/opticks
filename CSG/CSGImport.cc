@@ -254,11 +254,6 @@ An assert constrains the *snd* CSG constituent to be from the shape *lvid*
 that is associated with the structural *snode*. 
 **/
 
-/*
-
-
-*/
-
 
 CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 {

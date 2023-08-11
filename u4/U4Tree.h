@@ -591,7 +591,7 @@ enable_osur:true
 **/
 
 
-//#define U4_OPTICAL_DEBUG 1 
+#define U4_OPTICAL_DEBUG 1 
 
 inline int U4Tree::initNodes_r( 
     const G4VPhysicalVolume* const pv, 

@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 U4TreeCreateTest.sh 
 ======================
@@ -20,6 +19,9 @@ loglevels(){
 }
 
 loglevels
+
+
+export U4TreeBorder__FLAGGED_ISOLID=HamamatsuR12860sMask_virtual0x61b0510
 
 
 source $HOME/.opticks/GEOM/GEOM.sh

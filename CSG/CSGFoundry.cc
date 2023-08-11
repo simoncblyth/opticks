@@ -2570,6 +2570,15 @@ const SBitSet* CSGFoundry::ELV(const SName* id)
 }
 
 
+CSGFoundry* CSGFoundry::Import(const stree* st)
+{
+    CSGFoundry* fd = new CSGFoundry ; 
+    fd->importTree(st);  
+    return fd ; 
+}
+
+
+
 /**
 CSGFoundry::Load
 -------------------

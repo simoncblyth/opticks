@@ -29,8 +29,6 @@ int main(int argc, char** argv)
         assert( tr ); 
         //LOG(info) << tr->desc() ; 
 
-        // HMM: how to record metadata regarding where the world came from ? 
-
         LOG(info) << " save stree to FOLD " << FOLD ; 
         st->save(FOLD); 
     }

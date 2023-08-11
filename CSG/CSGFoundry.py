@@ -424,8 +424,8 @@ class CSGFoundry(object):
         if bdn is None: log.fatal("CSGFoundry fail to access sim.stree.standard.bnd_names : geometry incomplete" )
         if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
         pass  
+        self.bdn = bdn 
         self.sim = sim
-
 
 
     def meshIdx(self, primIdx):
@@ -555,10 +555,8 @@ class CSGFoundry(object):
         node_boundary = node.view(np.uint32)[:,1,2]
         ubs, ubs_count = np.unique(node_boundary, return_counts=True)
 
-        bndname = getattr(self, 'bndname', None)
-
         for ub, ub_count in zip(ubs, ubs_count):
-            bn = bndname[ub] if not bndname is None else "-"
+            bn = self.bdn[ub] if not self.bdn is None else "-"
             print(" %4d : %6d : %s " % (ub, ub_count, bn))
         pass 
 
@@ -591,7 +589,7 @@ class CSGFoundry(object):
                     nlv = n_lvid[i]
                     xlv = x_lvid[i]
                     pidx = primOffset + xlv   # index of the 1st prim with each lv
-                    lines.append(" i %3d ulv %3d xlv %4d nlv %3d : %s  " % (i, ulv, xlv, nlv, self.descPrim(pidx))) 
+                    lines.append(" i %3d ulv %3d xlv %4d nlv %3d : %s " % (i, ulv, xlv, nlv, self.descPrim(pidx) )) 
                 pass
             pass
         pass
@@ -610,10 +608,14 @@ class CSGFoundry(object):
 
         lvid = ipr[1,1]
         lvn = self.meshname[lvid] 
-
         tcn = self.descNodeTC(nodeOffset, numNode)
-        return " pidx %4d lv %3d pxl %4d : %50s : %s " % (pidx, lvid, primIdxLocal, lvn, tcn )
-         
+
+        bnd_ = self.node[nodeOffset:nodeOffset+numNode,1,2].view(np.int32) 
+        ubnd_ = np.unique(bnd_)
+        assert len(ubnd_) == 1, "all nodes of prim should have same boundary "
+        ubnd = ubnd_[0]        
+        return "pidx %4d lv %3d pxl %4d : %50s : %s : bnd %s : %s " % (pidx, lvid, primIdxLocal, lvn, tcn, ubnd, self.bdn[ubnd] )
+
 
     def descNodeTC(self, nodeOffset, numNode, sumcut=7):
         """

@@ -549,10 +549,14 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
             p.time += absorption_distance/group_velocity ;   
             p.pos  += absorption_distance*(p.mom) ;
 
-#ifdef DEBUG_TIME
+#ifdef DEBUG_PIDX
             float absorb_time_delta = absorption_distance/group_velocity ; 
-            if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) absorb_time_delta %10.4f   \n", 
-                         ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, absorb_time_delta  );  
+            if( ctx.idx == base->pidx ) 
+            {
+            printf("//qsim.propagate_to_boundary.body.BULK_ABSORB idx %d : post = np.array([%10.5f,%10.5f,%10.5f,%10.5f]) ; absorb_time_delta = %10.8f   \n", 
+                    ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, absorb_time_delta  );  
+
+            }
 #endif
 
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
@@ -614,9 +618,9 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     p.pos  += distance_to_boundary*(p.mom) ;
     p.time += distance_to_boundary/group_velocity   ;  
 
-#ifdef DEBUG_TIME
+#ifdef DEBUG_PIDX
     float sail_time_delta = distance_to_boundary/group_velocity ; 
-    if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) sail_time_delta %10.4f   \n", 
+    if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary.tail.SAIL idx %d : post = np.array([%10.5f,%10.5f,%10.5f,%10.5f]) ;  sail_time_delta = %10.5f   \n", 
           ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, sail_time_delta  );  
 #endif
 
@@ -1469,6 +1473,10 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
     if( action == BREAK )
     {
         flag = u_surface < absorb ? SURFACE_ABSORB : SURFACE_DETECT  ;
+#ifdef DEBUG_PIDX
+        if(ctx.idx == base->pidx)
+        printf("//qsim.propagate_at_surface.SA/SD.BREAK idx %d : flag %d \n" , ctx.idx, flag ); 
+#endif
     }
     else 
     {
@@ -1478,6 +1486,10 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
             case SURFACE_DREFLECT: reflect_diffuse( rng, ctx)  ; break ; 
             case SURFACE_SREFLECT: reflect_specular(rng, ctx)  ; break ;
         }
+#ifdef DEBUG_PIDX
+        if(ctx.idx == base->pidx)
+        printf("//qsim.propagate_at_surface.DR/SR.CONTINUE idx %d : flag %d \n" , ctx.idx, flag ); 
+#endif
     }
     return action ; 
 }

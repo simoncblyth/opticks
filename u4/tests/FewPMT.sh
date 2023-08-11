@@ -98,7 +98,7 @@ export FewPMT_GEOMList=$geomlist
 delta=1
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
-
+export U4Tree__DISABLE_OSUR_IMPLICIT=1
 
 
 vars="BASH_SOURCE VERSION version_desc POM pom_desc GEOM FewPMT_GEOMList LAYOUT "

@@ -10,12 +10,19 @@ WIP: get this to work with the FewPMT geometry coming from PMTSim
 EOU
 }
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
+
+
+defarg=info_dbg_ana
+arg=${1:-$defarg}
+
+
+
 
 source $HOME/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
 case $GEOM in 
-   FewPMT) geomscript=$REALDIR/../../u4/tests/FewPMT.sh ;;
+   FewPMT) geomscript=$SDIR/../../u4/tests/FewPMT.sh ;;
 esac
 
 
@@ -42,9 +49,11 @@ export GProperty_SIGINT=1
 #export GGeo__save_SIGINT=1
 
 #savedir=~/.opticks/GEOM/$GEOM
-savedir=/tmp/GEOM/$GEOM
-export G4CXOpticks__setGeometry_saveGeometry=$savedir
+export SAVEDIR=/tmp/GEOM/$GEOM
+export G4CXOpticks__setGeometry_saveGeometry=$SAVEDIR
 export G4CXOpticks__saveGeometry_saveGGeo=1
+
+#export U4Tree__DISABLE_OSUR_IMPLICIT=1
 
 
 loglevels(){
@@ -62,14 +71,12 @@ env | grep =INFO
 
 
 bin=G4CXOpticks_setGeometry_Test
+script=$SDIR/$bin.py 
 
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
-vars="REALDIR GEOM FOLD bin geomscript savedir"
-
-defarg=info_dbg
-arg=${1:-$defarg}
+vars="SDIR GEOM FOLD bin geomscript savedir script"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -91,7 +98,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi 
 

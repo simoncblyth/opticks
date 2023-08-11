@@ -3,7 +3,7 @@
 import os, logging, numpy as np
 from opticks.ana.fold import Fold, IsRemoteSession
 from opticks.sysrap.sevt import SEvt, SAB
-from opticks.ana.p import cf
+from opticks.ana.p import *  # including cf boundary___
 
 log = logging.getLogger(__name__)
 
@@ -209,10 +209,6 @@ if __name__ == '__main__':
         else:
             pass
         pass
-
-
-
-
 
 
         if e.pid > -1: 

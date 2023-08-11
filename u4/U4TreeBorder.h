@@ -42,6 +42,7 @@ see ~/opticks/notes/issues/optical_ems_4_getting_too_many_from_non_sensor_Vacuum
 
 **/
 
+#include "ssys.h"
 #include "U4Mat.h"
 
 
@@ -78,6 +79,8 @@ struct U4TreeBorder
     int  implicit_idx ; 
     bool implicit_isur ; 
     bool implicit_osur ; 
+
+    const char* flagged_isolid ; 
 
     U4TreeBorder(
         stree* st_, 
@@ -127,7 +130,8 @@ inline U4TreeBorder::U4TreeBorder(
     isur_( i_rindex == nullptr ? nullptr : U4Surface::Find( pv  , pv_p )), // disable isur from absorbers without RINDEX
     implicit_idx(-1),
     implicit_isur(i_rindex != nullptr && o_rindex == nullptr),  
-    implicit_osur(o_rindex != nullptr && i_rindex == nullptr)
+    implicit_osur(o_rindex != nullptr && i_rindex == nullptr),
+    flagged_isolid(ssys::getenvvar("U4TreeBorder__FLAGGED_ISOLID", "sStrutBallhead"))
 {
 }
 
@@ -147,7 +151,7 @@ std::string U4TreeBorder::desc() const
 
 bool U4TreeBorder::is_flagged() const 
 {
-    return _isolid && strcmp(_isolid, "sStrutBallhead") == 0 ;  
+    return _isolid && flagged_isolid && strcmp(_isolid, flagged_isolid ) == 0 ;  
 }
 
 

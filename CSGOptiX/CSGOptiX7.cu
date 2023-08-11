@@ -267,13 +267,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     {    
         trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
+        // propagate can do nothing meaningful without a boundary 
 
         // HMM: normalize here or within CSG ? Actually only needed for 
         // geometry with active scaling, such as ellipsoid.  
         float3* normal = prd->normal();  
         *normal = normalize(*normal); 
 
-        // propagate can do nothing meaningful without a boundary 
 #ifndef PRODUCTION
         ctx.trace(bounce);  
 #endif
