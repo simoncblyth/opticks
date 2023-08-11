@@ -91,6 +91,11 @@ geomlist=tub3LogicalPMT
 
 export FewPMT_GEOMList=$geomlist
 
+#delta=1e-1
+delta=1
+export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
+
+
 
 
 vars="BASH_SOURCE VERSION version_desc POM pom_desc GEOM FewPMT_GEOMList LAYOUT "

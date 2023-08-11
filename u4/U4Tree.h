@@ -570,7 +570,11 @@ just handled as standard surfaces with sur entries.
 do_osur:false 
     reduces the number of implicits a lot, 
     which is convenient for initial testing
-    BUT will need them once start Geant4 matching 
+
+do_osur:true
+    THIS MUST BE ENABLED FOR Geant4 matching 
+    WITHOUT IT SOME Water///Steel boundaries for example
+    FAIL TO ABSORB PHOTONS : SEE ~/j/issues/3inch_PMT_geometry_after_virtual_delta.rst
 
 **/
 
@@ -604,7 +608,7 @@ inline int U4Tree::initNodes_r(
         ;
 #endif
 
-    bool do_osur = false ; // **THIS NEEDS TO BE ENABLED FOR GEANT4 MATCHING** 
+    bool do_osur = true ; // **THIS NEEDS TO BE ENABLED FOR GEANT4 MATCHING** 
     bool do_isur = true ;  
     // overrides add implicit surfaces when no prior surface and RINDEX->NoRINDEX 
     if(do_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
