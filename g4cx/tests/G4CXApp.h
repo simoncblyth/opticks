@@ -203,28 +203,39 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     LOG(LEVEL) << "]" ; 
 }
 
-void G4CXApp::BeginOfEventAction(const G4Event* event)
-{  
-    // TOO LATE TO SEvt::AddTorchGenstep here as GeneratePrimaries already run 
-    fRecorder->BeginOfEventAction(event); 
-}
+/**
+G4CXApp::BeginOfEventAction
+----------------------------
+
+Its too late to SEvt::AddTorchGenstep here as GeneratePrimaries already run 
+
+**/
+
+void G4CXApp::BeginOfEventAction(const G4Event* event){  fRecorder->BeginOfEventAction(event); }
 void G4CXApp::EndOfEventAction(const G4Event* event)
 {  
-    int eventID = event->GetEventID() ;
     fRecorder->EndOfEventAction(event);  
 
-    const char* savedir = SEvt::GetSaveDir(1); 
-    SaveMeta(savedir); 
 
-#if defined(WITH_PMTSIM) && defined(POM_DEBUG)
-    PMTSim::ModelTrigger_Debug_Save(savedir) ; 
-#else
-    LOG(info) << "not-(WITH_PMTSIM and POM_DEBUG)"  ; 
-#endif
+    // TODO: relocate this into U4Recorder::EndOfEventAction and adopt SEvt::add_array  
+    {
+        const char* savedir = SEvt::GetSaveDir(SEvt::ECPU); 
+        SaveMeta(savedir); 
 
+    #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
+        PMTSim::ModelTrigger_Debug_Save(savedir) ; 
+    #else
+        LOG(info) << "not-(WITH_PMTSIM and POM_DEBUG)"  ; 
+    #endif
+    }
+
+
+
+    // HMM defer to G4CXOpticks::EndOfEventAction ?
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks* gx = G4CXOpticks::Get() ;
+        int eventID = event->GetEventID() ;
         gx->simulate(eventID) ;
     }
 
@@ -248,7 +259,7 @@ void G4CXApp::SaveMeta(const char* savedir) // static
         return ; 
     }  
     // U4Recorder::SaveMeta(savedir);   // try moving to U4Recorder::EndOfEventAction
-    U4VolumeMaker::SaveTransforms(savedir) ;   
+    U4VolumeMaker::SaveTransforms(savedir) ;  // TODO: avoid this direct to file system approach, instead into SEvt::add_array   
 }
 
 G4RunManager* G4CXApp::InitRunManager()  // static

@@ -104,11 +104,17 @@ export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 #check=circle_outwards_1
 check=rain_line_205
 
-
+export LAYOUT=one_pmt
 export CHECK=${CHECK:-$check} 
 source $U4TDIR/storch_FillGenstep.sh
 echo $BASH_SOURCE : CHECK $CHECK 
 env | grep storch
+
+if [ "$storch_FillGenstep_type" == "" ]; then 
+    echo $BASH_SOURCE : FATAL : for CHECK $CHECK LAYOUT $LAYOUT GEOM $GEOM 
+    exit 1 
+fi 
+
 
 
 export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL

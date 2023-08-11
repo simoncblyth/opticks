@@ -198,7 +198,11 @@ if __name__ == '__main__':
             if MODE == 2:
                 ax.scatter( v_pos[:,H], v_pos[:,V], s=0.1, c="r" )
             elif MODE == 3:
-                pl.add_points(v_pos[:,:3], color="red")
+                if len(v_pos) > 0:
+                    pl.add_points(v_pos[:,:3], color="red")
+                else:
+                    print(" SKIP HSEL PLOTTING : pl.add_points(v_pos[:,:3] : AS v_pos EMPTY " )
+                pass 
             else:
                 pass
             pass

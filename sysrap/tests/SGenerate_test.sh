@@ -35,8 +35,26 @@ arg=${1:-$defarg}
 
 vars="BASH_SOURCE SDIR U4TDIR CUDA_PREFIX OPTICKS_PREFIX FOLD bin script"
 
+
+#check=rain_point_xpositive_100
+#check=rain_line
+#check=tub3_side_line
+#check=circle_inwards_100
+#check=circle_outwards_1
+check=rain_line_205
+
+export LAYOUT=one_pmt
+export CHECK=${CHECK:-$check} 
 source $U4TDIR/storch_FillGenstep.sh
+echo $BASH_SOURCE : CHECK $CHECK 
 env | grep storch
+
+if [ "$storch_FillGenstep_type" == "" ]; then 
+    echo $BASH_SOURCE : FATAL : for CHECK $CHECK LAYOUT $LAYOUT GEOM $GEOM 
+    exit 1 
+fi 
+
+
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
