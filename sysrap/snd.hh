@@ -36,9 +36,9 @@ TODO:
 #include "OpticksCSG.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-struct spa ; 
-struct sbb ; 
-struct sxf ; 
+template<typename T> struct spa ; 
+template<typename T> struct sbb ; 
+template<typename T> struct sxf ; 
 struct scsg ; 
 struct NPFold ; 
 struct scanvas ; 
@@ -97,11 +97,11 @@ struct SYSRAP_API snd
 
 
 
-    static const sxf* GetXF(int idx) ; 
-    static       sxf* GetXF_(int idx) ; 
+    static const sxf<double>* GetXF(int idx) ; 
+    static       sxf<double>* GetXF_(int idx) ; 
 
-    const sxf* getXF() const ; 
-    sxf*       getXF_(); 
+    const sxf<double>* getXF() const ; 
+    sxf<double>*       getXF_(); 
 
     static void            NodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out ) ; 
     static std::string DescNodeTransformProduct(int nidx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse ) ; 

@@ -14,15 +14,17 @@ sxf.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
 
 #include "SYSRAP_API_EXPORT.hh"
 
+template<typename T>
 struct SYSRAP_API sxf
 {
     static constexpr const char* NAME = "sxf" ; 
-    glm::tmat4x4<double> t ; 
-    glm::tmat4x4<double> v ; 
+    glm::tmat4x4<T> t ; 
+    glm::tmat4x4<T> v ; 
     std::string desc() const ;  
 }; 
 
-inline std::string sxf::desc() const 
+template<typename T>
+inline std::string sxf<T>::desc() const 
 {
     std::stringstream ss ;
     ss 

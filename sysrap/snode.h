@@ -41,7 +41,7 @@ struct snode
     int lvid ;         // 7
 
     int copyno ;       // 8 
-    int sensor_id ;    // 9 
+    int sensor_id ;    // 9  : -1 signifies "not-a-sensor"
     int sensor_index ; // 10  
     int repeat_index ; // 11
 

@@ -75,9 +75,9 @@ int scsg::add_(const snd& obj, std::vector<snd>& vec)
 
 
 int scsg::addND(const snd& nd) { return add_<snd>(nd, node)  ; }
-int scsg::addPA(const spa& pa) { return add_<spa>(pa, param) ; }
-int scsg::addXF(const sxf& xf) { return add_<sxf>(xf, xform) ; }
-int scsg::addBB(const sbb& bb) { return add_<sbb>(bb, aabb)  ; } 
+int scsg::addPA(const spa<double>& pa) { return add_<spa<double>>(pa, param) ; }
+int scsg::addBB(const sbb<double>& bb) { return add_<sbb<double>>(bb, aabb)  ; } 
+int scsg::addXF(const sxf<double>& xf) { return add_<sxf<double>>(xf, xform) ; }
 
 
 template<typename T>
@@ -87,9 +87,9 @@ const T* scsg::get(int idx, const std::vector<T>& vec) const
     return idx < 0 ? nullptr : &vec[idx] ; 
 }
 const snd* scsg::getND(int idx) const { return get<snd>(idx, node)  ; }
-const spa* scsg::getPA(int idx) const { return get<spa>(idx, param) ; }
-const sbb* scsg::getBB(int idx) const { return get<sbb>(idx, aabb)  ; } 
-const sxf* scsg::getXF(int idx) const { return get<sxf>(idx, xform) ; }
+const spa<double>* scsg::getPA(int idx) const { return get<spa<double>>(idx, param) ; }
+const sbb<double>* scsg::getBB(int idx) const { return get<sbb<double>>(idx, aabb)  ; } 
+const sxf<double>* scsg::getXF(int idx) const { return get<sxf<double>>(idx, xform) ; }
 
 
 
@@ -102,9 +102,9 @@ T* scsg::get_(int idx, std::vector<T>& vec)
 }
 
 snd* scsg::getND_(int idx) { return get_<snd>(idx, node)  ; }
-spa* scsg::getPA_(int idx) { return get_<spa>(idx, param) ; }
-sbb* scsg::getBB_(int idx) { return get_<sbb>(idx, aabb)  ; } 
-sxf* scsg::getXF_(int idx) { return get_<sxf>(idx, xform) ; }
+spa<double>* scsg::getPA_(int idx) { return get_<spa<double>>(idx, param) ; }
+sbb<double>* scsg::getBB_(int idx) { return get_<sbb<double>>(idx, aabb)  ; } 
+sxf<double>* scsg::getXF_(int idx) { return get_<sxf<double>>(idx, xform) ; }
 
 
 
@@ -141,9 +141,9 @@ std::string scsg::desc_(int idx, const std::vector<T>& vec) const
 
 
 std::string scsg::descND(int idx) const { return desc_<snd>(idx, node); }
-std::string scsg::descPA(int idx) const { return desc_<spa>(idx, param); }
-std::string scsg::descBB(int idx) const { return desc_<sbb>(idx, aabb); }
-std::string scsg::descXF(int idx) const { return desc_<sxf>(idx, xform); }
+std::string scsg::descPA(int idx) const { return desc_<spa<double>>(idx, param); }
+std::string scsg::descBB(int idx) const { return desc_<sbb<double>>(idx, aabb); }
+std::string scsg::descXF(int idx) const { return desc_<sxf<double>>(idx, xform); }
 
 
 
@@ -175,17 +175,17 @@ NPFold* scsg::serialize() const
 {
     NPFold* fold = new NPFold ; 
     fold->add("node",  NPX::ArrayFromVec<int,    snd>(node)); 
-    fold->add("param", NPX::ArrayFromVec<double, spa>(param)); 
-    fold->add("aabb",  NPX::ArrayFromVec<double, sbb>(aabb)); 
-    fold->add("xform", NPX::ArrayFromVec<double, sxf>(xform, 2, 4, 4)); 
+    fold->add("param", NPX::ArrayFromVec<double, spa<double>>(param)); 
+    fold->add("aabb",  NPX::ArrayFromVec<double, sbb<double>>(aabb)); 
+    fold->add("xform", NPX::ArrayFromVec<double, sxf<double>>(xform, 2, 4, 4)); 
     return fold ; 
 }
 void scsg::import(const NPFold* fold) 
 { 
     NPX::VecFromArray<snd>(node,  fold->get("node"));  // NB the vec are cleared first 
-    NPX::VecFromArray<spa>(param, fold->get("param")); 
-    NPX::VecFromArray<sbb>(aabb,  fold->get("aabb")); 
-    NPX::VecFromArray<sxf>(xform, fold->get("xform")); 
+    NPX::VecFromArray<spa<double>>(param, fold->get("param")); 
+    NPX::VecFromArray<sbb<double>>(aabb,  fold->get("aabb")); 
+    NPX::VecFromArray<sxf<double>>(xform, fold->get("xform")); 
 }
 
 
