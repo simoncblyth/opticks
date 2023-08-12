@@ -109,6 +109,20 @@ SSim* SSim::Load_(const char* base_)
     sim->load(base);    // reldir defaults to "SSim"
     return sim ; 
 }
+
+
+/**
+SSim::Load
+------------
+
+Default reldir is "SSim" so the base directory is for example::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry  
+    /tmp/GEOM/$GEOM/CSGFoundry
+  
+
+**/
+
 SSim* SSim::Load(const char* base, const char* reldir)
 {
     SSim* sim = new SSim ; 

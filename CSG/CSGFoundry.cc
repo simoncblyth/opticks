@@ -1358,10 +1358,19 @@ CSGSolid* CSGFoundry::make(const char* name)
 }
 
 
+/**
+CSGFoundry::importSim
+----------------------
 
-void CSGFoundry::importTree(const stree* st)
+Instanciatation grabs the (SSim)sim instance 
+
+**/
+
+
+void CSGFoundry::importSim()
 {
-    import->importTree(st); 
+    assert(sim); 
+    import->importTree(sim->tree); 
 }
 
 
@@ -2570,10 +2579,20 @@ const SBitSet* CSGFoundry::ELV(const SName* id)
 }
 
 
-CSGFoundry* CSGFoundry::Import(const stree* st)
+/**
+CSGFoundry::CreateFromSim
+---------------------------
+
+Instanciation grabs the (SSim)sim instance
+
+**/
+
+
+CSGFoundry* CSGFoundry::CreateFromSim()
 {
+    assert(SSim::Get() != nullptr); 
     CSGFoundry* fd = new CSGFoundry ; 
-    fd->importTree(st);  
+    fd->importSim();  
     return fd ; 
 }
 

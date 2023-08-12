@@ -72,7 +72,7 @@ struct SYSRAP_API SSim
     static const char* DEFAULT ; 
     static SSim* Load(); 
     static SSim* Load_(const char* dir); 
-    static SSim* Load(const char* base, const char* rel=RELDIR ); 
+    static SSim* Load(const char* base, const char* reldir=RELDIR ); 
 
 private:
     SSim(); 

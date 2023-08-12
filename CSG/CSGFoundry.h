@@ -103,7 +103,7 @@ struct CSG_API CSGFoundry : public SGeo
     static const SBitSet* ELV(const SName* id); 
 
     static bool Load_saveAlt ; 
-    static CSGFoundry* Import(const stree* st);
+    static CSGFoundry* CreateFromSim();
     static CSGFoundry* Load();
     static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv ); 
 
@@ -274,7 +274,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     // via maker
     void makeDemoSolids();  
-    void importTree(const stree* st); 
+    void importSim(); 
 
 
     CSGSolid* make(const char* name); 
@@ -379,6 +379,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
+
+    // MEMBERS
 
     // HMM "meshname" is historical, should be "lvname" or "soname" ?
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?

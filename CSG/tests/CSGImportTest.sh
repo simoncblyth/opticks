@@ -38,11 +38,10 @@ bin=CSGImportTest
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 #export BASE=/tmp/$USER/opticks/U4TreeCreateTest
-export BASE=/tmp/GEOM/$GEOM/CSGFoundry/SSim
+export BASE=/tmp/GEOM/$GEOM/CSGFoundry
 export FOLD=/tmp/$USER/opticks/$bin
 
-
-check=$BASE/stree/nds.npy
+check=$BASE/SSim/stree/nds.npy
 if [ ! -f "$check" ]; then
    echo $BASH_SOURCE input stree does not exist at BASE $BASE check $check 
    exit 1 
