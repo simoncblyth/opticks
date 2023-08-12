@@ -500,9 +500,20 @@ struct stree
 
     void initStandard() ; 
 
-    void add_material( const char* name, unsigned g4index ); 
-    void add_surface( const char* name ); 
-    void add_surface( const std::vector<std::string>& names  ); 
+    int add_material( const char* name, unsigned g4index ); 
+    int num_material() const ; 
+
+    int add_surface( const char* name ); 
+    int get_surface( const char* name ) const ; 
+    int num_surface() const ;   // total including implicit  
+
+    int add_surface( const std::vector<std::string>& names  ); 
+
+    int add_surface_implicit( const char* name ); 
+    int get_surface_implicit( const char* name ) const ; 
+    int num_surface_implicit() const ; 
+    int num_surface_standard() const ; // total with implicit subtracted
+
 
     int add_boundary( const int4& bd_ ); 
 
@@ -3056,30 +3067,107 @@ so the g4index might not match the idx from mtname.
 
 **/
 
-inline void stree::add_material( const char* name, unsigned g4index )
+inline int stree::add_material( const char* name, unsigned g4index )
 {
-    //unsigned idx = mtname.size() ; 
+    int idx = mtname.size() ; 
     mtname.push_back(name); 
     mtindex.push_back(g4index); 
     // assert( idx == g4index );   NOT FULFILLED
+    return idx ; 
 } 
-
-inline void stree::add_surface( const char* name )
+inline int stree::num_material() const 
 {
-    int idx = suname.size() ; 
-    suname.push_back(name); 
-    suindex.push_back(idx); 
+    return mtname.size();  
+}
+
+inline int stree::add_surface( const char* name )
+{
+    int idx = -1 ; 
+    int prior = stree::GetValueIndex<std::string>( suname, name ) ; 
+    if(prior > -1)  
+    {   
+        idx = prior ; 
+    }
+    else   // new surface name
+    {
+        idx = suname.size() ; 
+        suname.push_back(name) ;   
+        suindex.push_back(idx); 
+        int idx2 = stree::GetValueIndex<std::string>( suname, name ) ; 
+        assert( idx2 == idx ); 
+    }   
+    return idx ; 
 } 
-
-
-inline void stree::add_surface(const std::vector<std::string>& names  )
+inline int stree::get_surface( const char* name ) const 
 {
+    return stree::GetValueIndex<std::string>(suname, name ) ; 
+}
+inline int stree::num_surface() const 
+{
+    return suname.size();  
+}
+
+
+inline int stree::add_surface(const std::vector<std::string>& names  )
+{
+    int idx = -1 ; 
     for(unsigned i=0 ; i < names.size() ; i++) 
     {    
         const char* sn = names[i].c_str() ; 
-        add_surface( sn ); 
+        idx = add_surface( sn ); 
     }    
+    return idx ; 
 } 
+
+
+
+/**
+stree::add_surface_implicit
+----------------------------
+
+Used from U4TreeBorder::get_implicit_idx
+
+THIS FORMERLY RETURNED THE IMPLICIT_IDX, 
+NOW RETURNING THE STANDARD SURFACE IDX 
+
+**/
+
+
+inline int stree::add_surface_implicit( const char* name )
+{
+    int idx = add_surface(name);   
+
+    int implicit_idx = stree::GetValueIndex<std::string>( implicit, name ) ; 
+    if(implicit_idx == -1)  // new implicit 
+    {   
+        implicit.push_back(name) ;   
+        implicit_idx = stree::GetValueIndex<std::string>( implicit, name ) ; 
+        assert( implicit_idx > -1 );  
+        assert( idx == num_surface_standard() + implicit_idx ) ; 
+    }   
+    
+    return idx ; 
+}
+
+
+inline int stree::get_surface_implicit( const char* name ) const 
+{
+    return stree::GetValueIndex<std::string>(implicit, name ) ; 
+}
+inline int stree::num_surface_implicit() const 
+{
+    return implicit.size();  
+}
+inline int stree::num_surface_standard() const 
+{
+    return num_surface() - num_surface_implicit() ;  
+}
+
+
+
+
+
+
 
 inline int stree::add_boundary( const int4& bd_ )
 {

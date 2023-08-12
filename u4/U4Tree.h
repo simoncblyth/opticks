@@ -100,7 +100,7 @@ struct U4Tree
     std::vector<const G4VPhysicalVolume*>       pvs ; 
     std::vector<const G4Material*>              materials ; 
     std::vector<const G4LogicalSurface*>        surfaces ;   // both skin and border 
-    int                                         num_surfaces ; 
+    int                                         num_surface_standard ;  // not including implicits
     std::vector<const G4VSolid*>                solids ; 
     U4PhysicsTable<G4OpRayleigh>*               rayleigh_table ; 
     U4Scint*                                    scint ;         
@@ -220,7 +220,7 @@ inline U4Tree::U4Tree(
     top(top_),
     sid(sid_ ? sid_ : new U4SensorIdentifierDefault),
     level(st->level),
-    num_surfaces(-1),
+    num_surface_standard(-1),
     rayleigh_table(CreateRayleighTable()),
     scint(nullptr),
     enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
@@ -408,9 +408,9 @@ inline void U4Tree::initSurfaces()
 {
     U4Surface::Collect(surfaces);  
     st->surface = U4Surface::MakeFold(surfaces); 
-    num_surfaces = int(surfaces.size()) ; 
+    num_surface_standard = int(surfaces.size()) ; 
 
-    for(int i=0 ; i < num_surfaces ; i++)
+    for(int i=0 ; i < num_surface_standard ; i++)
     {
         const G4LogicalSurface* ls = surfaces[i] ; 
         const G4String& name_ = ls->GetName() ; 
@@ -602,7 +602,8 @@ inline int U4Tree::initNodes_r(
 {
     // preorder visit before recursive call 
 
-    U4TreeBorder border(st, num_surfaces, pv, pv_p) ; 
+    //U4TreeBorder border(st, num_surface_standard, pv, pv_p) ; 
+    U4TreeBorder border(st, pv, pv_p) ; 
    
     int omat = stree::GetPointerIndex<G4Material>(      materials, border.omat_); 
     int osur = stree::GetPointerIndex<G4LogicalSurface>(surfaces,  border.osur_); 

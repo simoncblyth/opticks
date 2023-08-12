@@ -573,8 +573,8 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
   
         // naming order for outgoing photons, not ingoing volume traversal  
-        bool RINDEX_NoRINDEX = daughter_rindex != nullptr && parent_rindex == nullptr ;   
-        bool NoRINDEX_RINDEX = daughter_rindex == nullptr && parent_rindex != nullptr ; 
+        bool RINDEX_NoRINDEX = daughter_rindex != nullptr && parent_rindex == nullptr ;   // ISUR (see U4TreeBorder)
+        bool NoRINDEX_RINDEX = daughter_rindex == nullptr && parent_rindex != nullptr ;   // OSUR (see U4TreeBorder)
 
         //if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
         if(RINDEX_NoRINDEX)
