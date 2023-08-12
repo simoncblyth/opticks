@@ -1,9 +1,9 @@
 /**
-CSGImportTest.cc
-=================
+CSGFoundry__CreateFromSimTest.cc
+===================================
 
-1. loads stree from file
-2. populates CSGFoundry with CSGFoundry::importTree 
+1. loads SSim
+2. populates CSGFoundry with CSGFoundry::CreateFromSim
 
 **/
 

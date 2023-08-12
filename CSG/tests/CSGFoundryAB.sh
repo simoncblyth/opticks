@@ -20,8 +20,11 @@ EOU
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 script=$SDIR/CSGFoundryAB.py
 
-a_cfbase=$HOME/.opticks/GEOM/J007
-b_cfbase=/tmp/$USER/opticks/CSGImportTest  
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+a_cfbase=$HOME/.opticks/GEOM/$GEOM
+b_cfbase=/tmp/GEOM/$GEOM
+#b_cfbase=/tmp/$USER/opticks/CSGFoundry_CreateFromSimTest
 
 export A_CFBASE=${A_CFBASE:-$a_cfbase}
 export B_CFBASE=${B_CFBASE:-$b_cfbase}
@@ -29,7 +32,7 @@ export B_CFBASE=${B_CFBASE:-$b_cfbase}
 defarg="info_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE SDIR A_CFBASE B_CFBASE arg script"
+vars="BASH_SOURCE SDIR GEOM A_CFBASE B_CFBASE arg script"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

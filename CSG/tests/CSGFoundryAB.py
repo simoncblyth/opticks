@@ -5,7 +5,7 @@ CSGFoundryAB.py
 
 """
 
-
+import numpy as np, os, textwrap
 from opticks.ana.fold import Fold
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
 
@@ -57,6 +57,42 @@ class CSGFoundryAB(object):
         return self._ip
 
     ip = property(_get_ip, _set_ip) 
+
+
+    def check_pr(self):
+        a = self.a 
+        b = self.b
+        assert a.pr.dtype.names == b.pr.dtype.names
+
+        lines = []
+        lines.append("CSGFoundryAB.check_pr")
+        expr_ = "len(np.where(a.pr.%(name)s != b.pr.%(name)s )[0])"
+        for name in a.pr.dtype.names:
+            expr = expr_ % locals()  
+            lines.append("%80s : %s " % (expr, eval(expr)))
+        pass
+        return "\n".join(lines) 
+
+    def check_solid(self):
+        """
+        [:,1] houses (numPrim, primOffset, type, padding)
+        """
+        a = self.a 
+        b = self.b 
+        lines = []
+        lines.append("CSGFoundryAB.check_solid")
+        EXPR = filter(None,textwrap.dedent(r"""
+        np.all(a.solid[:,1]==b.solid[:,1]) 
+        np.c_[a.solid[:,1,:2],b.solid[:,1,:2]]#(numNode,nodeOffset) 
+        """).split("\n"))
+        for expr in EXPR: 
+            val = str(eval(expr)) if not expr.startswith("#") else "" 
+            fmt = "%-80s \n%s\n" if len(val.split("\n")) > 1 else "%-80s : %s"
+            lines.append(fmt % (expr, val))
+        pass
+        return "\n".join(lines) 
+
+        
 
 
 
@@ -213,14 +249,12 @@ if __name__ == '__main__':
     print(repr(A))
     print(repr(B))
 
-
     a = CSGFoundry.Load("$A_CFBASE", symbol="a")
     b = CSGFoundry.Load("$B_CFBASE", symbol="b")
     print(a.brief())
     print(b.brief())
 
     ab = CSGFoundryAB(a,b)
-
-
-
+    print(ab.check_pr())
+    print(ab.check_solid())
 

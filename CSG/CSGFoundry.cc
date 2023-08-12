@@ -88,14 +88,14 @@ CSGFoundry::CSGFoundry()
     d_node(nullptr),
     d_plan(nullptr),
     d_itra(nullptr),
+    sim(SSim::Get()),
+    import(new CSGImport(this)),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings 
     target(new CSGTarget(this)),
     maker(new CSGMaker(this)),
-    import(new CSGImport(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
-    sim(SSim::Get()),
     mtime(s_time::EpochSeconds()),
     meta(),
     fold(nullptr),
@@ -105,13 +105,11 @@ CSGFoundry::CSGFoundry()
     origin(nullptr),
     elv(nullptr)
 {
-
-    {
-       // LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
-       // assert(sim); 
-       // HUH: why when it can be loaded ? 
-       // Especially as sim just a passive passenger from CSGFoundry pov 
-    }
+    LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
+    assert(sim); 
+    // HUH: why when it can be loaded ? 
+    // Especially as sim just a passive passenger from CSGFoundry pov 
+    // sim is NOT PASSIVE IN NEW WORKFLOW WHERE CSGFoundry gets Created from SSim
 
     init(); 
     INSTANCE = this ; 
@@ -1370,7 +1368,7 @@ Instanciatation grabs the (SSim)sim instance
 void CSGFoundry::importSim()
 {
     assert(sim); 
-    import->importTree(sim->tree); 
+    import->importTree(); 
 }
 
 

@@ -3,6 +3,7 @@
 #include "stran.h"
 #include "OpticksCSG.h"
 
+#include "SSim.hh"
 #include "stree.h"
 #include "snd.hh"
 
@@ -22,8 +23,12 @@ const int CSGImport::NDID = SSys::getenvint("NDID", -1);
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
     fd(fd_),
-    st(nullptr)
+    st(fd->sim ? fd->sim->tree : nullptr)
 {
+    assert( fd ) ; 
+    assert( fd->sim ) ; 
+    assert( fd->sim->tree ) ; 
+    assert( st ); 
 }
 
 
@@ -57,11 +62,10 @@ Need to find stree.h equivalents to GGeo counterparts::
 
 **/
 
-void CSGImport::importTree(const stree* st_)
+void CSGImport::importTree()
 {
     LOG(LEVEL) << "[" ;     
-    assert( st == nullptr ); 
-    st = st_ ; 
+
     assert(st); 
 
     importNames(); 

@@ -18,7 +18,7 @@ set(TEST_SOURCES
     CSGFoundry_getCenterExtent_Test.cc
     CSGFoundry_findSolidIdx_Test.cc
 
-    CSGImportTest.cc 
+    CSGFoundry_CreateFromSimTest.cc
 
     CSGNameTest.cc
     CSGTargetTest.cc

@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-CSGImportTest.sh : testing CSGFoundry::importTree 
-===================================================
+CSGFoundry_CreateFromSimTest.sh testing CSGFoundry::CreateFromSim
+=====================================================================
 
 Workflow:
 
@@ -34,7 +34,7 @@ See also::
 EOU
 }
 
-bin=CSGImportTest
+bin=CSGFoundry_CreateFromSimTest
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 #export BASE=/tmp/$USER/opticks/U4TreeCreateTest

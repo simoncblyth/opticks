@@ -382,6 +382,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     // MEMBERS
 
+
     // HMM "meshname" is historical, should be "lvname" or "soname" ?
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
@@ -394,25 +395,22 @@ struct CSG_API CSGFoundry : public SGeo
     std::vector<qat4>      itra ;  
     std::vector<qat4>      inst ;  
 
+
     CSGPrim*    d_prim ; 
     CSGNode*    d_node ; 
     float4*     d_plan ; 
     qat4*       d_itra ; 
 
-    // HMM: should these come from SSim/stree ? seem only used by CSGFoundry::inst_find_unique
-    /*
-    std::vector<int> ins ; 
-    std::vector<int> sensor_identifier ; 
-    std::vector<int> sensor_index ; 
-    */
+
     std::vector<int> gas ;
 
 
+    const SSim* sim ; 
+    CSGImport*  import ; 
     SName*    id ;   // holds the meshname vector of G4VSolid names 
 
     CSGTarget*  target ; 
     CSGMaker*   maker ; 
-    CSGImport*  import ; 
     bool        deepcopy_everynode_transform ; 
 
     CSGSolid*   last_added_solid ; 
@@ -421,7 +419,6 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     void setPrimBoundary(unsigned primIdx, const char* bname) ; 
-    const SSim* sim ; 
     int  mtime ; 
 
     std::string meta ; 

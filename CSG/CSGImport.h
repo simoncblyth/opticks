@@ -45,10 +45,10 @@ struct CSG_API CSGImport
 
     CSGImport( CSGFoundry* fd );  
  
-    void importTree(const stree* st); 
+    void importTree(); 
     void importNames(); 
-
     void importSolid(); 
+
     CSGSolid* importRemainderSolid(int ridx, const char* rlabel); 
     CSGSolid* importFactorSolid(   int ridx, const char* rlabel); 
     CSGPrim*  importPrim( int primIdx, const snode& node ); 
