@@ -3,51 +3,36 @@ usage(){ cat << EOU
 CSGFoundry_CreateFromSimTest.sh testing CSGFoundry::CreateFromSim
 =====================================================================
 
-Workflow:
-
-1. Create stree.h instance from loaded GDML and save it::
-
-   cd ~/opticks/u4/tests  # u4t 
-   ./U4TreeCreateTest.sh
-
-2. Load stree.h instance and imports with CSGFoundry::importTree then saves CSGFoundry::
-
-   cd ~/opticks/CSG/tests     # ct 
-   ./CSGImportTest.sh
-
-* TODO: it would be more convenient to combine these two steps, ie go direct from gdml to imported stree CSGFoundry
-* TODO: its a bit confusing that saving CSGFoundry saves stree also
-   
-
-3. The CSGFoundry persisted by CSGImportTest can be compated with others using python with::
-
-   cd ~/opticks/CSG/tests     # ct 
-   ./CSGFoundryAB.sh     
-   
-
-See also::
-
-   cd ~/opticks/sysrap/tests  # st 
-   ./stree_load_test.sh 
-   ./stree_create_test.sh 
-
 EOU
 }
 
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 bin=CSGFoundry_CreateFromSimTest
+script=$SDIR/CSGFoundryAB.py
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-#export BASE=/tmp/$USER/opticks/U4TreeCreateTest
-export BASE=/tmp/GEOM/$GEOM/CSGFoundry
-export FOLD=/tmp/$USER/opticks/$bin
 
-check=$BASE/SSim/stree/nds.npy
+
+base=$HOME/.opticks/GEOM/$GEOM
+#base=/tmp/GEOM/$GEOM
+#base=/tmp/$USER/opticks/U4TreeCreateTest
+export BASE=${BASE:-$base}
+
+check=$BASE/CSGFoundry/SSim/stree/nds.npy
 if [ ! -f "$check" ]; then
-   echo $BASH_SOURCE input stree does not exist at BASE $BASE check $check 
+   echo $BASH_SOURCE input check $check does not exist at BASE $BASE check $check 
    exit 1 
 fi 
 
+export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
+
+# env for CSGFoundryAB comparison 
+export A_CFBASE=$BASE
+export B_CFBASE=$FOLD
+
+vars="BASH_SOURCE bin GEOM BASE FOLD check A_CFBASE B_CFBASE script"
+
 
 
 loglevel(){
@@ -61,9 +46,8 @@ loglevel(){
 }
 loglevel
 
-vars="BASH_SOURCE bin GEOM BASE FOLD check"
 
-defarg=info_run
+defarg=info_run_ana
 arg=${1:-$defarg}
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -81,6 +65,11 @@ if [ "${arg/dbg}" != "$arg" ]; then
        Linux)  gdb__  $bin ;; 
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
+fi 
+
+if [ "${arg/ana}" != "$arg" ]; then 
+   ${IPYTHON:-ipython} --pdb -i $script 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 1 
 fi 
 
 exit 0

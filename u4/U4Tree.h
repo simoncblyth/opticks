@@ -662,7 +662,7 @@ inline int U4Tree::initNodes_r(
     nd.copyno = copyno ; 
     nd.boundary = boundary ; 
 
-    nd.sensor_id = -1 ;    
+    nd.sensor_id = -1 ;      // HMM: -1 to mean not-a-sensor is problematic GPU side
     nd.sensor_index = -1 ;  
     nd.sensor_name = -1 ; 
     // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
@@ -915,6 +915,8 @@ inline void U4Tree::identifySensitiveInstances()
             const char* pvn = pv->GetName().c_str() ; 
 
             int sensor_id = sid->getInstanceIdentity(pv) ;  
+            assert( sensor_id >= -1 );  // sensor_id:-1 signifies "not-a-sensor"
+
             int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
             int sensor_name = -1 ; 
 

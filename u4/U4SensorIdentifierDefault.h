@@ -77,6 +77,7 @@ Canonically used from U4Tree::identifySensitiveInstances
 
 The argument *instance_outer_pv* is recursively traversed
 
+Returns -1 to signify "not-a-sensor"
 
 **/
 

@@ -34,8 +34,8 @@ CSGImport::CSGImport( CSGFoundry* fd_ )
 
 
 /**
-CSGImport::importTree
-----------------------
+CSGImport::import
+------------------
 
 Best guide for how to implement is cg CSG_GGeo_Convert
 
@@ -62,7 +62,7 @@ Need to find stree.h equivalents to GGeo counterparts::
 
 **/
 
-void CSGImport::importTree()
+void CSGImport::import()
 {
     LOG(LEVEL) << "[" ;     
 
@@ -70,6 +70,7 @@ void CSGImport::importTree()
 
     importNames(); 
     importSolid();     
+    importInst();     
 
     LOG(LEVEL) << "]" ;     
 }
@@ -100,17 +101,17 @@ void CSGImport::importSolid()
 
         if( ridx == 0 )
         {
-            importRemainderSolid(ridx, rlabel ); 
+            importSolidRemainder(ridx, rlabel ); 
         }
         else
         {
-            importFactorSolid(ridx, rlabel ); 
+            importSolidFactor(ridx, rlabel ); 
         }
     }
 }
         
 /**
-CSGImport::importRemainderSolid : non-instanced global volumes 
+CSGImport::importSolidRemainder : non-instanced global volumes 
 --------------------------------------------------------------
 
 cf::
@@ -119,7 +120,7 @@ cf::
     CSG_GGeo_Convert::convertPrim
 
 **/
-CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
+CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
 {
     assert( ridx == 0 ); 
     int num_rem = st->rem.size() ; 
@@ -145,7 +146,7 @@ CSGSolid* CSGImport::importRemainderSolid(int ridx, const char* rlabel)
 
 
 
-CSGSolid* CSGImport::importFactorSolid(int ridx, const char* rlabel)
+CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 {
     assert( ridx > 0 ); 
 
@@ -256,6 +257,39 @@ CSGImport::importNode (cf CSG_GGeo_Convert::convertNode)
 
 An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
 that is associated with the structural *snode*. 
+
+Imported CSGNode currently missing the float param and bounding box::
+
+    In [12]: a.node[0]
+    Out[12]: 
+    array([[120000., 120000., 120000.,      0.],
+           [     0.,      0.,      0.,      0.],
+           [-60000., -60000., -60000.,  60000.],
+           [ 60000.,  60000.,      0.,      0.]], dtype=float32)
+
+    In [13]: b.node[0]
+    Out[13]: 
+    array([[0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.]], dtype=float32)
+
+
+
+    In [14]: a.node[0].view(np.int32)
+    Out[14]: 
+    array([[1206542336, 1206542336, 1206542336,          0],
+           [         0,          0,          0,          0],
+           [-949329920, -949329920, -949329920, 1198153728],
+           [1198153728, 1198153728,        110,          1]], dtype=int32)
+
+    In [15]: b.node[0].view(np.int32)
+    Out[15]: 
+    array([[  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [  0,   0,   0,   0],
+           [  0,   0, 110,   1]], dtype=int32)
+
 **/
 
 
@@ -266,7 +300,8 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
     {
         assert( node.lvid == nd->lvid ); 
         const float* aabb = nullptr ;  
-        const float* param6 = nullptr ;  // TODO: get param from snd narrowed to float (or narrow inside CSGNode) 
+        const float* param6 = nullptr ;  
+        // TODO: get param from snd narrowed to float (or narrow inside CSGNode) 
 
         cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
     }
@@ -294,43 +329,27 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
     return n ; 
 }
 
+/**
+CSGImport::importInst
+---------------------------
+
+The CSGFoundry calls should parallel CSG_GGeo_Convert::addInstances
+the source is the stree instead of GGeo/GMergedMesh etc..
+
+::
+
+    In [9]: np.unique(np.where(a.inst != b.inst)[1])
+    Out[9]: array([2, 3])
+
+Previously (2,3) Off-by-one::
+
+    np.all(a.inst[:,2,3].view(np.int32)==b.inst[:,2,3].view(np.int32))   : False
+    np.all(a.inst[:,2,3].view(np.int32)==b.inst[:,2,3].view(np.int32)+1) : True
 
 
+**/
 
-/*
-    bool dump_LVID = node.lvid == LVID ; 
-    if( dump_LVID )
-    {
-        std::cout 
-            << "CSGImport::importNode dump_LVID "
-            << " node.lvid " << node.lvid
-            << " nodeIdx " << nodeIdx 
-            << std::endl 
-            ;
-    }
-
-    bool dump_NDID = node.lvid == LVID && nodeIdx == NDID ; 
-
-    std::stringstream* ss = dump_NDID ? new std::stringstream : nullptr ; 
-
-    st->get_combined_transform(t, v, node, nd, ss ); 
-
-    if(ss) 
-    {
-        std::string str = ss->str(); 
-        std::cout 
-            << "CSGImport::importNode"
-            << " node.lvid " << node.lvid 
-            << " nodeIdx " << nodeIdx 
-            << " LVID " << LVID
-            << " NDID " << NDID 
-            << " dump_NDID " << ( dump_NDID ? "YES" : "NO" )
-            << std::endl
-            << str 
-            << std::endl
-            ;
-            
-    }
-*/
-
-
+void CSGImport::importInst()
+{
+    fd->addInstanceVector( st->inst_f4 ); 
+}

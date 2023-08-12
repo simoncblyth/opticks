@@ -268,8 +268,9 @@ struct CSG_API CSGFoundry : public SGeo
     void addNodeTran(CSGNode* nd ); 
 
 
-    void     addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index ); 
-    void     addInstancePlaceholder(); 
+    void addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index ); 
+    void addInstanceVector(const std::vector<glm::tmat4x4<float>>& v_inst_f4 ); 
+    void addInstancePlaceholder(); 
 
 
     // via maker

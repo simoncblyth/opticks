@@ -1368,7 +1368,7 @@ Instanciatation grabs the (SSim)sim instance
 void CSGFoundry::importSim()
 {
     assert(sim); 
-    import->importTree(); 
+    import->import(); 
 }
 
 
@@ -1680,10 +1680,9 @@ Used for example from
 1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
 2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
 
-stree.h/snode.h uses sensor_identifier -1 to indicate not a sensor, but 
+stree.h/snode.h uses sensor_identifier -1 to indicate not-a-sensor, but 
 that is not convenient on GPU due to OptixInstance.instanceId limits.
-Here here transition to adding 1 and treating 0 as not a sensor. 
-
+Hence here make transition by adding 1 and treating 0 as not-a-sensor. 
 
 **/
 
@@ -1708,6 +1707,34 @@ void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifi
 
     inst.push_back( instance );
 } 
+
+/**
+CSGFoundry::addInstanceVector
+------------------------------
+
+stree.h/snode.h uses sensor_identifier -1 to indicate not-a-sensor, but 
+that is not convenient on GPU due to OptixInstance.instanceId limits.
+Hence here make transition by adding 1 and treating 0 as not-a-sensor, 
+with the sqat4::incrementSensorIdentifier method
+
+**/
+
+void CSGFoundry::addInstanceVector( const std::vector<glm::tmat4x4<float>>& v_inst_f4 )
+{
+    assert( inst.size() == 0 ); 
+    int num_inst = v_inst_f4.size() ; 
+
+    for(int i=0 ; i < num_inst ; i++)
+    {
+        const glm::tmat4x4<float>& inst_f4 = v_inst_f4[i] ; 
+        const float* tr16 = glm::value_ptr(inst_f4) ; 
+        qat4 instance(tr16) ; 
+        instance.incrementSensorIdentifier() ; // GPU side needs 0 to mean "not-a-sensor"
+        inst.push_back( instance );
+    }
+}
+
+
 
 void CSGFoundry::addInstancePlaceholder()
 {

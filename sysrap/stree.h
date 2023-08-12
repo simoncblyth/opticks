@@ -307,6 +307,7 @@ struct stree
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
+
     std::vector<int>                  inst_nidx ; 
     // TODO: compare/consolidate stree.h inst members and methods with CSGFoundry equiv
 
@@ -1170,8 +1171,8 @@ inline std::string stree::DescSensor( const std::vector<int>& sensor_identifier,
 stree::lookup_sensor_identifier
 ---------------------------------
 
-The arg_sensor_identifier array is resized to match arg_sensor_index and 
-populated with sensor_id values from the stree::sensor_id. 
+1. arg_sensor_identifier vector is resized to match the size of arg_sensor_index 
+2. for arg_sensor_index that are not "not-a-sensor" returns s_identifier from stree::sensor_id vector
 
 This is used from CSG_GGeo_Convert::addInstances
 
@@ -2800,19 +2801,6 @@ Canonically invoked from U4Tree::Create
 3. collect transforms into inst, iinst vectors and nidx into inst_nidx
 
 * NB restrict to 32 bit of identity info, so it survives narrowing 
-
-
-idea : bitpack (nidx, gas_idx) into 4th column ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* nidx is very useful for debug
-* gas_idx is usually small (currently ~10 for JUNO)
-
-::
-
-    In [5]: 0xfffff, 0xfff
-    Out[5]: (1048575, 4095)
-
 
 **/
 

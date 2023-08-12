@@ -389,6 +389,25 @@ struct qat4
         q2.i.w = sensor_identifier_1 ;   // now +1 with 0 meaning not-a-sensor 
         q3.i.w = sensor_index ; 
     }
+
+    /**
+    sqat4::incrementSensorIdentifier
+    ---------------------------------
+
+    Canonical usage from CSGFoundry::addInstanceVector to adjust from 
+
+    * CPU -1:not-a-sensor 
+    * GPU  0:not-a-sensor
+
+    **/
+    QAT4_METHOD void incrementSensorIdentifier()
+    {
+        assert( q2.i.w >= -1 ); 
+        q2.i.w += 1 ; 
+        assert( q2.i.w >=  0 ); 
+    }
+
+
     QAT4_METHOD void clearIdentity() // prepare for matrix multiply by clearing any auxiliary info in the "spare" 4th column 
     {
         q0.f.w = 0.f ; 
@@ -396,6 +415,8 @@ struct qat4
         q2.f.w = 0.f ; 
         q3.f.w = 1.f ; 
     }
+
+
 
     // collects unique ins/gas/ias indices found in qv vector of instances
     static QAT4_METHOD void find_unique(const std::vector<qat4>& qv, 

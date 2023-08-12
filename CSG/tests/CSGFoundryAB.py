@@ -53,6 +53,15 @@ class CSGFoundryAB(object):
     def __repr__(self):
         return "AB %d alv %s:%s blv %s:%s " % ( self._ip, self.alv, self.amn, self.blv, self.bmn )
 
+    def brief(self):
+        a = self.a
+        b = self.b
+        lines = []
+        lines.append("CSGFoundryAB.brief")
+        lines.append(a.brief())
+        lines.append(b.brief())
+        return "\n".join(lines)
+
     def _get_ip(self):
         return self._ip
 
@@ -73,6 +82,87 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
+
+    def check_prim(self):
+        a = self.a 
+        b = self.b 
+        ab = self
+        setattr(self,"prim_numNode",np.where(a.prim[:,0,0].view(np.int32)!=b.prim[:,0,0].view(np.int32))[0])
+
+        lines = []
+        lines.append("CSGFoundryAB.check_solid")
+        EXPR = filter(None,textwrap.dedent(r"""
+        #(numNode,nodeOffset,tranOffset,planOffset)
+        a.prim[:,0].view(np.int32) 
+        #(numNode,nodeOffset,tranOffset,planOffset)
+        b.prim[:,0].view(np.int32) 
+        len(np.where(a.prim[:,0]!=b.prim[:,0])[0])
+        #numNode
+        len(np.where(a.prim[:,0,0].view(np.int32)!=b.prim[:,0,0].view(np.int32))[0]) 
+        len(ab.prim_numNode)
+        np.c_[np.unique(a.primname[ab.prim_numNode],return_counts=True)]
+        #nodeOffset
+        len(np.where(a.prim[:,0,1].view(np.int32)!=b.prim[:,0,1].view(np.int32))[0]) 
+        #tranOffset
+        len(np.where(a.prim[:,0,2].view(np.int32)!=b.prim[:,0,2].view(np.int32))[0]) 
+        #planOffset
+        len(np.where(a.prim[:,0,3].view(np.int32)!=b.prim[:,0,3].view(np.int32))[0]) 
+        #(sbtIndexOffset,meshIdx,repeatIdx,primIdx)
+        a.prim[:,1].view(np.int32) 
+        #(sbtIndexOffset,meshIdx,repeatIdx,primIdx)
+        b.prim[:,1].view(np.int32) 
+        len(np.where(a.prim[:,1]!=b.prim[:,1])[0])
+
+        # A : (sbtIndexOffset,meshIdx,repeatIdx,primIdx) where prim_numNode discrepant 
+        a.prim[ab.prim_numNode,1].view(np.int32)   
+        # B : (sbtIndexOffset,meshIdx,repeatIdx,primIdx) where prim_numNode discrepant 
+        b.prim[ab.prim_numNode,1].view(np.int32)   
+
+        # A : (numNode,nodeOffset,tranOffset,planOffset) where prim_numNode discrepant
+        a.prim[ab.prim_numNode,0].view(np.int32)  
+
+        # B : (numNode,nodeOffset,tranOffset,planOffset) where prim_numNode discrepant
+        b.prim[ab.prim_numNode,0].view(np.int32)  
+
+        """).split("\n"))
+        for expr in EXPR: 
+            val = str(eval(expr)) if not expr.startswith("#") else "" 
+            fmt = "%-80s \n%s\n" if len(val.split("\n")) > 1 else "%-80s : %s"
+            lines.append(fmt % (expr, val))
+        pass
+        return "\n".join(lines) 
+
+
+    def check_inst(self):
+        a = self.a
+        b = self.b
+        ab = self
+        setattr(self, "inst", np.max(np.abs(a.inst[:,:,:3]-b.inst[:,:,:3]).reshape(-1,12),axis=1))  
+
+        lines = []
+        lines.append("CSGFoundryAB.check_inst")
+        EXPR = filter(None,textwrap.dedent(r"""
+        np.all(a.inst[:,0,3].view(np.int32)==b.inst[:,0,3].view(np.int32)) 
+        np.all(a.inst[:,1,3].view(np.int32)==b.inst[:,1,3].view(np.int32)) 
+        np.all(a.inst[:,2,3].view(np.int32)==b.inst[:,2,3].view(np.int32)) 
+        np.all(a.inst[:,3,3].view(np.int32)==b.inst[:,3,3].view(np.int32)) 
+        np.all(a.inst[:,:,3].view(np.int32)==b.inst[:,:,3].view(np.int32)) 
+        # deviation counts in the 12 floats of the inst transform
+        len(np.where(ab.inst>1e-4)[0])
+        len(np.where(ab.inst>1e-3)[0]) 
+        len(np.where(ab.inst>1e-2)[0]) 
+        """).split("\n"))
+
+        for expr in EXPR: 
+            val = str(eval(expr)) if not expr.startswith("#") else "" 
+            fmt = "%-80s \n%s\n" if len(val.split("\n")) > 1 else "%-80s : %s"
+            lines.append(fmt % (expr, val))
+        pass
+        return "\n".join(lines) 
+
+
+
+
     def check_solid(self):
         """
         [:,1] houses (numPrim, primOffset, type, padding)
@@ -83,7 +173,7 @@ class CSGFoundryAB(object):
         lines.append("CSGFoundryAB.check_solid")
         EXPR = filter(None,textwrap.dedent(r"""
         np.all(a.solid[:,1]==b.solid[:,1]) 
-        np.c_[a.solid[:,1,:2],b.solid[:,1,:2]]#(numNode,nodeOffset) 
+        np.c_[a.solid[:,1,:2],b.solid[:,1,:2]]#(numPrim,primOffset) 
         """).split("\n"))
         for expr in EXPR: 
             val = str(eval(expr)) if not expr.startswith("#") else "" 
@@ -92,7 +182,47 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
-        
+    def check_names(self):
+        lines = []
+        lines.append("CSGFoundryAB.check_names")
+        EXPR = filter(None,textwrap.dedent(r"""
+        np.all(a.mmlabel==b.mmlabel) 
+        np.all(a.primname==b.primname) 
+        np.all(a.meshname==b.meshname) 
+        """).split("\n"))
+        for expr in EXPR: 
+            val = str(eval(expr)) if not expr.startswith("#") else "" 
+            fmt = "%-80s \n%s\n" if len(val.split("\n")) > 1 else "%-80s : %s"
+            lines.append(fmt % (expr, val))
+        pass
+        return "\n".join(lines) 
+
+    def check_4x4(self, name):
+        a = self.a 
+        b = self.b        
+        ab = self
+
+        am = getattr(a, name)
+        bm = getattr(b, name)
+
+        lines = []
+        lines.append("CSGFoundryAB.check_4x4 %s " % name )
+        lines.append(" a.%s.shape : %s " % (name, str(am.shape)) )
+        lines.append(" b.%s.shape : %s " % (name, str(bm.shape)) )
+        if am.shape == bm.shape:
+            abm = np.max( np.abs(am.reshape(-1,16) - bm.reshape(-1,16)), axis=1 )
+            setattr(self,name, abm )
+            expr = "len(np.where(ab.%(name)s>0.01)[0])" % locals()
+            lines.append(" %s : %s " % (expr, str(eval(expr))))
+        pass
+        return "\n".join(lines)
+
+    def check_tran(self):
+        lines = []
+        lines.append(self.check_4x4("tran"))
+        lines.append(self.check_4x4("itra"))
+        return "\n".join(lines)
+
 
 
 
@@ -255,6 +385,15 @@ if __name__ == '__main__':
     print(b.brief())
 
     ab = CSGFoundryAB(a,b)
+
+    print(ab.check_names())
     print(ab.check_pr())
+    print(ab.check_prim())
     print(ab.check_solid())
+    print(ab.check_tran())
+    print(ab.check_inst())
+
+    print(ab.brief())
+
+
 

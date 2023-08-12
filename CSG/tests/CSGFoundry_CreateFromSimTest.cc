@@ -2,8 +2,9 @@
 CSGFoundry__CreateFromSimTest.cc
 ===================================
 
-1. loads SSim
+1. loads SSim from $BASE/CSGFoundry
 2. populates CSGFoundry with CSGFoundry::CreateFromSim
+3. saves CSGFoundry to $FOLD (which should be differnent from $BASE)
 
 **/
 
@@ -17,7 +18,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SSim* sim = SSim::Load("$BASE") ; 
+    SSim* sim = SSim::Load("$BASE/CSGFoundry") ; 
     stree* st = sim->tree ; 
     std::cout << st->desc() ; 
 
