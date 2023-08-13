@@ -67,6 +67,8 @@ inline int sndtree::CommonTree( const std::vector<int>& leaves, int op ) // stat
 sndtree::Build_r
 ------------------
 
+Builds snd tree based on an 
+
 Postorder visit after recursive call : so children reached before parents  
 
 NOTE : NO WITH_CHILD IMPL 

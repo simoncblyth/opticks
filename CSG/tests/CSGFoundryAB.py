@@ -98,6 +98,33 @@ class CSGFoundryAB(object):
         assert np.all(np.arange(len(b_lvu))==b_lvu) 
         assert np.all(a.meshname==b.meshname) 
 
+    def check_node_tr(self):
+        """
+        """
+        a = self.a 
+        b = self.b 
+        atr = a.node[:,3,3].view(np.int32) & 0x7fffffff
+        btr = b.node[:,3,3].view(np.int32) & 0x7fffffff
+
+        np.c_[np.unique(atr,return_counts=True)] 
+        np.c_[np.unique(btr,return_counts=True)] 
+
+    def check_node_index(self):
+        """
+        For A the node index increments until 15927, 
+        thats probably the repeated unbalanced nodes 
+        """
+        a = self.a 
+        b = self.b 
+
+        aidx = a.node[:,1,3].view(np.int32)
+        aidx_ = aidx[:15927]  
+        assert np.all( aidx_ == np.arange(len(aidx_)) ) 
+
+        bidx = b.node[:,1,3].view(np.int32)
+        assert np.all( bidx == np.arange(len(bidx)) ) 
+
+
     def descLVDetail(self, lvid):
         a = self.a 
         b = self.b 

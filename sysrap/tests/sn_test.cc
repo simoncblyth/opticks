@@ -1,11 +1,8 @@
 // ./sn_test.sh
 
 /**
-
 https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stacktrace-when-my-program-crashes
-
 **/
-
 
 #include <iostream>
 #include <iomanip>
@@ -598,10 +595,10 @@ void test_Import()
 
 int main(int argc, char** argv)
 {
-    //test_Serialize(); 
-    test_Import(); 
 
     /*
+    test_Serialize(); 
+    test_Import(); 
     test_next_sibling(); 
     test_deepcopy_0(); 
     //test_deepcopy_1_leaking(); 
@@ -641,9 +638,9 @@ int main(int argc, char** argv)
 
     test_serialize_1(); 
     test_import_1(); 
-
     */
 
+    test_positivize(); 
 
     Desc(); 
 

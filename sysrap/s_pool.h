@@ -15,6 +15,17 @@ as the *pid* is based on a global count of additions to the pool with no account
 for any deletions, whereas the the *index* adjusts to the size of the current pool providing 
 a contiguous key. 
 
+
+::
+
+    epsilon:opticks blyth$ opticks-fl "s_pool\.h"
+    ./sysrap/tests/Obj.h
+    ./sysrap/s_pool.h
+    ./sysrap/sndtree.h
+    ./sysrap/sn.h
+    ./sysrap/stv.h
+
+
 **/
 
 #include <cassert>
@@ -27,6 +38,15 @@ a contiguous key.
 #include "ssys.h"
 #include "NP.hh"
 
+
+/**
+s_find
+---------
+
+s_find is used by s_pool::index and s_pool::remove in std::find_if 
+traversals of the pool which is a map with int keys  
+
+**/
 
 template<typename T>
 struct s_find
@@ -91,6 +111,18 @@ int s_pool<T,P>::get_num_root() const
     }
     return count_root ; 
 }
+
+/**
+s_pool<T,P>::get_root
+----------------------
+
+HMM: this is also used for s_pool<stv,_stv> transforms 
+which are a single-node-tree, so the name is a little confusing.
+Of course that just means that every transform is regarded
+as "root".  
+
+**/
+
 template<typename T, typename P>
 T* s_pool<T,P>::get_root(int idx) const 
 {
@@ -197,6 +229,16 @@ int s_pool<T,P>::remove(T* o)
     return pid ; 
 } 
 
+/**
+s_pool<T,P>::serialize_
+------------------------
+
+For example with s_pool<sn,_sn> this serializes the entire pool 
+into the std::vector<_sn>& buf of the argument by 
+calling sn::Serialize between refs to _sn and sn pointer.    
+
+**/
+
 template<typename T, typename P>
 inline void s_pool<T,P>::serialize_( std::vector<P>& buf ) const 
 {
@@ -208,6 +250,15 @@ inline void s_pool<T,P>::serialize_( std::vector<P>& buf ) const
         T::Serialize( buf[idx], it->second ); 
     }
 }
+
+/**
+s_pool<T,P>::import_
+----------------------
+
+Import from eg std::vector<_sn>& buf into the s_pool<sn,_sn> 
+by calling sn::Import with arguments  _sn* and the full vector.  
+
+**/
 
 template<typename T, typename P>
 inline void s_pool<T,P>::import_(const std::vector<P>& buf ) 

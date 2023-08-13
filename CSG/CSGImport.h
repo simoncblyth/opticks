@@ -53,7 +53,7 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
     CSGSolid* importSolidRemainder(int ridx, const char* rlabel); 
     CSGSolid* importSolidFactor(   int ridx, const char* rlabel); 
     CSGPrim*  importPrim( int primIdx, const snode& node ); 
-    CSGNode*  importNode( int nodeIdx, const snode& node, const snd* nd); 
+    CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const snd* nd); 
 
 }; 
 

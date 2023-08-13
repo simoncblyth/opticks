@@ -216,8 +216,9 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     for(int i=0 ; i < numParts ; i++)
     {
-        const snd* nd = nds[i]; 
-        importNode(i, node, nd ) ; 
+        int partIdx = i ; 
+        const snd* nd = nds[partIdx]; 
+        importNode(pr->nodeOffset(), partIdx, node, nd ) ; 
     }
 
     LOG(LEVEL) 
@@ -256,16 +257,16 @@ nodeIdx
 
 **/
 
-CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
+CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const snd* nd)
 {
     CSGNode cn = CSGNode::Zero() ; 
+
     if(nd)
     {
         assert( node.lvid == nd->lvid ); 
         /*
         std::cerr 
            << "CSGImport::importNode"
-           << " nodeIdx " << nodeIdx
            << " nd.index " << nd->index
            << " node.index " << node.index
            << std::endl 
@@ -273,13 +274,10 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
         */
         const double* aabb = nd->getAABB() ;  
         const double* param6 = nd->getParam() ;  
-
-        int cn_index = -1 ; 
-        // HMM: which index needed here ? Probably CSGPrim::nodeOffset + nodeIdx ? 
-
         cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb ) ;  
-        cn.setIndex(cn_index);  
     }
+
+    cn.setIndex(nodeOffset + partIdx);  
 
     bool complement = false ; // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
     cn.setBoundary(node.boundary);

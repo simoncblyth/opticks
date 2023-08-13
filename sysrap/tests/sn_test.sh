@@ -1,21 +1,36 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+sn_test.sh
+==========
 
+
+EOU
+}
+
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=sn_test
 
 export FOLD=/tmp/$name
 mkdir -p $FOLD
- 
+
 bin=$FOLD/$name
-defarg="build_run"
+script=$SDIR/$name.py 
+ 
+defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
 opt=-DWITH_CHILD
 export s_pool_level=2
 
+vars="BASH_SOURCE SDIR bin script opt"
+
+if [ "${arg/info}" != "$arg" ]; then 
+    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
-          -I.. \
+          -I$SDIR/.. \
           -I$HOME/np \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           $opt -g -std=c++11 -lstdc++ -o $bin
@@ -36,7 +51,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
 

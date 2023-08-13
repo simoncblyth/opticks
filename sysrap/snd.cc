@@ -15,9 +15,9 @@
 #include "OpticksCSG.h"
 #include "scsg.hh"
 #include "snd.hh"
-#include "sndtree.h"
-#include "st.h"
-#include "stra.h"
+#include "sndtree.h"  // using flexible sn.h 
+#include "st.h"       // only st::complete_binary_tree_nodes
+#include "stra.h"     // transform utilities based on glm  
 #include "stv.h"
 
 sn::POOL sn::pool = {} ; 
@@ -1637,6 +1637,11 @@ snd::Boolean
 
 NB forming a boolean sets up the 
 sibling and parent node linkages 
+
+HMM: for positivization need to first 
+create the full flexible sn tree 
+and only mint 
+
 
 
 **/

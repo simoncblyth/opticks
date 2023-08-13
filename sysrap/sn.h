@@ -124,6 +124,14 @@ struct _sn
     std::string desc() const ; 
 };
 
+/**
+_sn::is_root_importable
+------------------------
+
+Only root expected to have parent -1 
+
+**/
+
 inline bool _sn::is_root_importable() const 
 {
     return parent == -1 ;  
@@ -421,7 +429,17 @@ inline const sn* sn::next_sibling() const
     return next_sib < tot_sib  ? get_sibling(next_sib) : nullptr ;   
 }
 
+/**
+sn::Serialize
+--------------
 
+The Serialize operates by converting pointer members into pool indices 
+
+HMM: the WITH_CHILD impl is restricted to two children for binary tree ? 
+
+TODO: what about multiunion ? 
+
+**/
 
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
@@ -439,8 +457,18 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.left  = pool.index(x->left);  
     n.right = pool.index(x->right);  
 #endif
-
 }
+
+/**
+sn::Import
+-----------
+
+Used by s_pool<T,P>::import_ in a loop providing 
+pointers to every entry in the vector buf.  
+However only root_importable _sn nodes with parent -1 
+get recursively imported. 
+
+**/
 
 inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
 {
