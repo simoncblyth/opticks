@@ -22,6 +22,18 @@ Lifecycle
 * stree is populated by U4Tree::Create
 
 
+SSim+stree vs CSGFoundry 
+--------------------------
+
+Some duplication between these is inevitable, however they have 
+different objectives:
+
+* *SSim+stree* aims to collect and persist all needed info from Geant4 
+* *CSGFoundry* aims to prepare the subset that needs to be uploaded to GPU
+
+  * narrowing to float is something that could be done when going from stree->CSGFoundry 
+
+
 Users of stree.h
 -------------------
 
@@ -297,7 +309,7 @@ struct stree
                                            // subs are collected in stree::classifySubtrees
 
     scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
-    sstandard* standard ;    // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
+    sstandard* standard ;                  // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
 
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
@@ -309,7 +321,6 @@ struct stree
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
     std::vector<int>                  inst_nidx ; 
-    // TODO: compare/consolidate stree.h inst members and methods with CSGFoundry equiv
 
     stree();
 

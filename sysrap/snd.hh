@@ -109,8 +109,8 @@ struct SYSRAP_API snd
 
 
 
-    static void SetLabel(    int idx , const char* label ); 
-    static void SetLVID(int idx, int lvid);  // label node tree 
+    static void SetLabel( int idx , const char* label ); 
+    static void SetLVID(  int idx , int lvid);  // label node tree 
 
     static void GetLVID( std::vector<snd>& nds, int lvid ); 
     static const snd* GetLVRoot( int lvid );
@@ -151,6 +151,10 @@ struct SYSRAP_API snd
 
     void setParam( double x,  double y,  double z,  double w,  double z1, double z2 ); 
     void setAABB(  double x0, double y0, double z0, double x1, double y1, double z1 );
+
+    const double* getParam() const ; 
+    const double* getAABB() const ; 
+
     void setLabel( const char* l ); 
 
     void setLVID(int lvid_ ); 

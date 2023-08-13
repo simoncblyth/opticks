@@ -381,6 +381,13 @@ void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
     assert( last.is_root() ); 
 }
 
+/**
+snd::GetLVRoot
+---------------
+
+Returns pointer to first snd in the (scsg)POOL with the lvid provided.
+
+**/
 const snd* snd::GetLVRoot( int lvid ) // static
 {
     const snd* root = POOL->getLVRoot(lvid); 
@@ -474,10 +481,9 @@ with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r
 
 **/
 
-
 void snd::GetLVNodesComplete(std::vector<const snd*>& nds, int lvid) // static 
 {
-    const snd* root = GetLVRoot(lvid); 
+    const snd* root = GetLVRoot(lvid);  // first snd in (scsg)POOL
     root->getLVNodesComplete(nds);    
 
     int level = Level(); 
@@ -494,8 +500,14 @@ void snd::GetLVNodesComplete(std::vector<const snd*>& nds, int lvid) // static
             << root->render(3)
             ;
     }
-
 }
+
+
+/**
+snd::getLVNodesComplete
+-------------------------
+
+**/
 
 void snd::getLVNodesComplete(std::vector<const snd*>& nds) const 
 {
@@ -504,8 +516,11 @@ void snd::getLVNodesComplete(std::vector<const snd*>& nds) const
     int numParts = bn + sn ; 
     nds.resize(numParts); 
 
+    assert( sn == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+
     GetLVNodesComplete_r( nds, this, 0 ); 
 }
+
 
 void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx)  // static
 {
@@ -529,19 +544,6 @@ void snd::GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int 
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -676,6 +678,20 @@ void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double
     aabb = POOL->addBB(o) ; 
 }
 
+const double* snd::getParam() const 
+{
+    if(param == -1 ) return nullptr ; 
+    assert( param > -1 ); 
+    const spa<double>& pa = POOL->param[param] ; 
+    return pa.data() ; 
+}
+const double* snd::getAABB() const 
+{
+    if(aabb == -1 ) return nullptr ; 
+    assert( aabb > -1 );  
+    const sbb<double>& bb = POOL->aabb[aabb] ; 
+    return bb.data() ; 
+}
 
 
 

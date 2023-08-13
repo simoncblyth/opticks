@@ -29,10 +29,9 @@ Users of scsg.hh
     epsilon:opticks blyth$ 
 
 
-TODO : CAN THIS GO HEADER-ONLY .h ?
--------------------------------------
-
-* snd.hh static pools a bit problematic  
+Q: CAN THIS GO HEADER-ONLY .h ?
+A1: snd.hh static pools are problematic header only, so NO currently
+A2: After upgrade beyond C++11 can reconsider.     
 
 **/
 
@@ -49,6 +48,7 @@ struct NPFold ;
 struct SYSRAP_API scsg
 {
     int level ; 
+
     std::vector<snd> node ; 
     std::vector<spa<double>> param ; 
     std::vector<sbb<double>> aabb ; 

@@ -34,7 +34,7 @@ struct CSGNode ;
 #include "CSG_API_EXPORT.hh"
 
 
-struct CSG_API CSGImport
+struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ? 
 {
     static const plog::Severity LEVEL ; 
     static const int LVID ; 

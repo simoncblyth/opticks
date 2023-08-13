@@ -667,12 +667,14 @@ CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb 
     if(aabb)   nd.setAABB( aabb );  
     return nd ; 
 }
-
-
-
-
-
-
+CSGNode CSGNode::MakeNarrow(unsigned typecode, const double* param6, const double* aabb ) // static
+{
+    CSGNode nd = {} ;
+    nd.setTypecode(typecode) ; 
+    if(param6) nd.setParam_Narrow( param6 );  
+    if(aabb)   nd.setAABB_Narrow( aabb );  
+    return nd ; 
+}
 
 
 #endif

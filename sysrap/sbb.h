@@ -15,6 +15,7 @@ struct SYSRAP_API sbb
     static constexpr const int N = 6 ; 
     T x0, y0, z0, x1, y1, z1 ;  
 
+    const T* data() const { return &x0 ; }  
     T zmin() const { return z0 ; }
     T zmax() const { return z1 ; }
  
@@ -27,7 +28,7 @@ struct SYSRAP_API sbb
 template<typename T>
 inline std::string sbb<T>::desc() const
 {
-    const T* v = &x0 ; 
+    const T* v = data() ; 
     int wid = 8 ; 
     int pre = 3 ; 
     std::stringstream ss ;

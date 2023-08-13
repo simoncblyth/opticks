@@ -39,27 +39,6 @@ CSGImport::import
 
 Best guide for how to implement is cg CSG_GGeo_Convert
 
-CSG_GGeo_Convert::convertSolid
-   shows that need to start from top level of the compound solids 
-   to fit in with the inflexible, having to declare everything ahead, 
-   way of populating CSGFoundry 
-
-
-Need to find stree.h equivalents to GGeo counterparts::
-
-    In [9]: f.factor[:,:5]  ## eg number of compound solids from factor array ?
-    Out[9]: 
-    array([[         0,      25600,          0,          5,  929456433],
-           [         1,      12615,          0,          7,  926363696],
-           [         2,       4997,          0,          7,  825517361],
-           [         3,       2400,          0,          6, 1715024176],
-           [         4,        590,          0,          1,  825569379],
-           [         5,        590,          0,          1,  825255221],
-           [         6,        590,          0,          1,  946037859],
-           [         7,        590,          0,          1,  946103859],
-           [         8,        504,          0,        130, 1631151159]], dtype=int32)
-
-
 **/
 
 void CSGImport::import()
@@ -88,6 +67,11 @@ CSGImport::importSolid : "Solid" means compound Solid
 ----------------------------------------------------------------
 
 After CSG_GGeo_Convert::convertAllSolid
+
+CSG_GGeo_Convert::convertSolid
+   shows that need to start from top level of the compound solids 
+   to fit in with the inflexible, having to declare everything ahead, 
+   way of populating CSGFoundry 
 
 **/
 
@@ -214,8 +198,6 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     snd::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
 
-
-
     bool dump_LVID = node.lvid == LVID ; 
     if(dump_LVID) std::cout 
         << "CSGImport::importPrim"
@@ -290,8 +272,13 @@ Imported CSGNode currently missing the float param and bounding box::
            [  0,   0,   0,   0],
            [  0,   0, 110,   1]], dtype=int32)
 
-**/
 
+(snode)node
+    structural node "parent" 
+(snd)nd 
+    constituent CSG nd
+
+**/
 
 CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 {
@@ -299,11 +286,9 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
     if(nd)
     {
         assert( node.lvid == nd->lvid ); 
-        const float* aabb = nullptr ;  
-        const float* param6 = nullptr ;  
-        // TODO: get param from snd narrowed to float (or narrow inside CSGNode) 
-
-        cn = CSGNode::Make(nd->typecode, param6, aabb ) ;  
+        const double* aabb = nd->getAABB() ;  
+        const double* param6 = nd->getParam() ;  
+        cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb ) ;  
     }
     int typecode = cn.typecode() ; 
 
