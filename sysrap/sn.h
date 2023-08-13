@@ -14,6 +14,27 @@ Usage Example
     sn::POOL sn::pool = {} ;  // initialize static pool 
 
 
+Usage
+-------
+
+
+::
+
+    epsilon:sysrap blyth$ grep -l "sn\.h" *.*
+    CMakeLists.txt
+    index.rst
+    sn.h
+    sndtree.h
+
+    epsilon:sysrap blyth$ grep -l "sndtree\.h" *.*
+    CMakeLists.txt
+    index.rst
+    sn.h
+    snd.cc
+    sndtree.h
+
+
+
 Motivation
 -----------
 

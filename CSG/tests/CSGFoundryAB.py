@@ -82,7 +82,31 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
+    def check_prim_lv(self):
+        a = self.a 
+        b = self.b 
+        a_lv = a.prim.view(np.int32)[:,1,1]  
+        b_lv = b.prim.view(np.int32)[:,1,1]  
+        assert np.all(a_lv==b_lv)    ## same G4VSolid => CSGPrim 
+       
+        assert np.all(np.unique(a_lv)==np.unique(b_lv)) 
+        assert np.all(np.unique(a_lv,return_counts=True)[1]==np.unique(b_lv,return_counts=True)[1]) 
 
+        a_lvu = np.unique(a_lv) 
+        b_lvu = np.unique(b_lv) 
+        assert np.all(np.arange(len(a_lvu))==a_lvu) 
+        assert np.all(np.arange(len(b_lvu))==b_lvu) 
+        assert np.all(a.meshname==b.meshname) 
+
+    def descLVDetail(self, lvid):
+        a = self.a 
+        b = self.b 
+        lines = []
+        lines.append("CSGFoundryAB.descLVDetail")
+        lines.append(a.descLVDetail(lvid))
+        lines.append(b.descLVDetail(lvid))
+        return "\n".join(lines) 
+ 
     def check_prim(self):
         a = self.a 
         b = self.b 

@@ -26,6 +26,13 @@ TODO:
 * how about convexpolyhedron with planes ? just add spl ? 
 * how about multiunion ?
 
+
+TODO:
+
+* add complement (sn.h has it but snd.hh does not) : its essential 
+  for positivization and getting the minimum bounding box
+
+
 **/
 
 #include <vector>
@@ -59,6 +66,8 @@ struct SYSRAP_API snd
     int param ; 
     int aabb ; 
     int xform ; 
+
+    // int complement ; // TODO: get complement going 
 
     char label[16] ;   // sizeof 4 int 
 

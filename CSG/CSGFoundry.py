@@ -595,8 +595,21 @@ class CSGFoundry(object):
         pass
         return "\n".join(lines)
 
+    def descLV(self, lvid, detail=False):
+        lv = self.prim.view(np.int32)[:,1,1]
+        pidxs = np.where(lv==lvid)[0]
 
-    def descPrim(self, pidx):
+        lines = []
+        lines.append("descLV lvid:%d meshname:%s pidxs:%s" % (lvid, self.meshname[lvid],str(pidxs)))
+        for pidx in pidxs:
+            lines.append(self.descPrim(pidx, detail=detail))
+        pass
+        return "\n".join(lines)
+
+    def descLVDetail(self, lvid):
+        return self.descLV(lvid, detail=True)
+
+    def descPrim(self, pidx, detail=False):
 
         pr = self.prim[pidx]
         ipr = pr.view(np.int32)
@@ -614,7 +627,58 @@ class CSGFoundry(object):
         ubnd_ = np.unique(bnd_)
         assert len(ubnd_) == 1, "all nodes of prim should have same boundary "
         ubnd = ubnd_[0]        
-        return "pidx %4d lv %3d pxl %4d : %50s : %s : bnd %s : %s " % (pidx, lvid, primIdxLocal, lvn, tcn, ubnd, self.bdn[ubnd] )
+        line = "pidx %4d lv %3d pxl %4d : %50s : %s : bnd %s : %s " % (pidx, lvid, primIdxLocal, lvn, tcn, ubnd, self.bdn[ubnd] )
+
+        lines = []
+        lines.append(line)
+        if detail:
+            lines.append(self.descNodeParam(nodeOffset,numNode))
+            lines.append(self.descNodeBB(nodeOffset,numNode))
+            lines.append(self.descNodeBoundaryIndex(nodeOffset,numNode))
+            lines.append(self.descNodeTCTran(nodeOffset,numNode, mask_signbit=False))
+            lines.append(self.descNodeTCTran(nodeOffset,numNode, mask_signbit=True))
+        pass
+        return "\n".join(lines)
+
+    def descPrimDetail(self, pidx):
+        return self.descPrim(pidx,detail=True)
+
+    def descNodeFloat(self, nodeOffset, numNode, sli="[:,:6]", label=""):
+        symbol = self.symbol       
+        locals()[symbol] = self
+        expr = "%(symbol)s.node[%(nodeOffset)d:%(nodeOffset)d+%(numNode)d].reshape(-1,16)" 
+        expr += sli 
+        expr = expr % locals()
+        lines = []
+        lines.append("%s # %s " % (expr,label))
+        lines.append(str(eval(expr)))
+        return "\n".join(lines)
+
+    def descNodeParam(self, nodeOffset, numNode):
+        return self.descNodeFloat(nodeOffset,numNode,"[:,:6]", "descNodeParam" ) 
+    def descNodeBB(self, nodeOffset, numNode):
+        return self.descNodeFloat(nodeOffset,numNode,"[:,8:14]", "descNodeBB" ) 
+
+    def descNodeInt(self, nodeOffset, numNode, sli="[:,6:8]", label="", mask_signbit=False):
+        symbol = self.symbol       
+        locals()[symbol] = self
+        expr = "%(symbol)s.node[%(nodeOffset)d:%(nodeOffset)d+%(numNode)d].reshape(-1,16).view(np.int32)" 
+        expr += sli 
+        if mask_signbit:
+            expr += " & 0x7ffffff "    
+        pass
+        expr = expr % locals()
+        lines = []
+        lines.append("%s # %s " % (expr,label))
+        lines.append(str(eval(expr)))
+        return "\n".join(lines)
+
+    def descNodeBoundaryIndex(self, nodeOffset, numNode):
+        return self.descNodeInt(nodeOffset,numNode,"[:,6:8]", "descNodeBoundaryIndex" ) 
+    def descNodeTCTran(self, nodeOffset, numNode, mask_signbit=False):
+        return self.descNodeInt(nodeOffset,numNode,"[:,14:16]", "descNodeTCTran", mask_signbit=mask_signbit ) 
+
+
 
 
     def descNodeTC(self, nodeOffset, numNode, sumcut=7):

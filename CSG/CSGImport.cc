@@ -240,43 +240,19 @@ CSGImport::importNode (cf CSG_GGeo_Convert::convertNode)
 An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
 that is associated with the structural *snode*. 
 
-Imported CSGNode currently missing the float param and bounding box::
-
-    In [12]: a.node[0]
-    Out[12]: 
-    array([[120000., 120000., 120000.,      0.],
-           [     0.,      0.,      0.,      0.],
-           [-60000., -60000., -60000.,  60000.],
-           [ 60000.,  60000.,      0.,      0.]], dtype=float32)
-
-    In [13]: b.node[0]
-    Out[13]: 
-    array([[0., 0., 0., 0.],
-           [0., 0., 0., 0.],
-           [0., 0., 0., 0.],
-           [0., 0., 0., 0.]], dtype=float32)
-
-
-
-    In [14]: a.node[0].view(np.int32)
-    Out[14]: 
-    array([[1206542336, 1206542336, 1206542336,          0],
-           [         0,          0,          0,          0],
-           [-949329920, -949329920, -949329920, 1198153728],
-           [1198153728, 1198153728,        110,          1]], dtype=int32)
-
-    In [15]: b.node[0].view(np.int32)
-    Out[15]: 
-    array([[  0,   0,   0,   0],
-           [  0,   0,   0,   0],
-           [  0,   0,   0,   0],
-           [  0,   0, 110,   1]], dtype=int32)
-
-
 (snode)node
-    structural node "parent" 
+    structural node "parent", corresponding to Geant4 PV/LV 
 (snd)nd 
-    constituent CSG nd
+    constituent CSG nd, corresponding to Geant4 G4VSolid 
+
+nodeIdx
+    local 0-based index over the CSGNode that comprise the CSGPrim
+
+(snode)node.index
+    absolute structural node index with large values 
+     
+(snd)nd.index
+    csg level index
 
 **/
 
@@ -286,10 +262,29 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
     if(nd)
     {
         assert( node.lvid == nd->lvid ); 
+        /*
+        std::cerr 
+           << "CSGImport::importNode"
+           << " nodeIdx " << nodeIdx
+           << " nd.index " << nd->index
+           << " node.index " << node.index
+           << std::endl 
+           ;       
+        */
         const double* aabb = nd->getAABB() ;  
         const double* param6 = nd->getParam() ;  
+
+        int cn_index = -1 ; 
+        // HMM: which index needed here ? Probably CSGPrim::nodeOffset + nodeIdx ? 
+
         cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb ) ;  
+        cn.setIndex(cn_index);  
     }
+
+    bool complement = false ; // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
+    cn.setBoundary(node.boundary);
+    cn.setComplement(complement);
+
     int typecode = cn.typecode() ; 
 
     const std::vector<float4>* pl = nullptr ;  // planes
@@ -311,6 +306,44 @@ CSGNode* CSGImport::importNode(int nodeIdx, const snode& node, const snd* nd)
 
     n->setTransform(tranIdx);
 
+    /*
+    TODO : do the equivalent of CSG_GGeo_Convert::convertNode for defining bbox
+           and sometimes transforming it. 
+
+     788     nbbox bb = comp->getBBox(partIdx);
+     789     bool expect_external_bbox = CSG::ExpectExternalBBox( (int) tc );
+     790     // external bbox is expected for "higher level" solids : 
+                CSG_CONVEXPOLYHEDRON , CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
+     791 
+     792     if( bb.is_empty()  )
+     793     {   
+     794         if(expect_external_bbox==true)
+     795         {   
+     796             LOG(fatal) << " node of type " << CSG::Name(tc) << " are expected to have external bbox, but there is none " ;
+     797             assert(0);
+     798         }
+     799         n->setAABBLocal(); // use params of each type to set the bbox 
+     800     }
+     801     else
+     802     {   
+     803         if(expect_external_bbox==false)
+     804         {   
+     805             LOG(error) << " not expecting bbox for node of type " << CSG::Name(tc) << " (maybe boolean tree for general sphere)" ;
+     806         }
+     807         n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z );
+     808     }
+
+
+
+
+     827     if(tranIdx > 0 )
+     828     {
+     829         const qat4* q = foundry->getTran(tranIdx-1u) ;
+     830         q->transform_aabb_inplace( n->AABB() );
+     831     }
+
+    */
+
     return n ; 
 }
 
@@ -320,17 +353,6 @@ CSGImport::importInst
 
 The CSGFoundry calls should parallel CSG_GGeo_Convert::addInstances
 the source is the stree instead of GGeo/GMergedMesh etc..
-
-::
-
-    In [9]: np.unique(np.where(a.inst != b.inst)[1])
-    Out[9]: array([2, 3])
-
-Previously (2,3) Off-by-one::
-
-    np.all(a.inst[:,2,3].view(np.int32)==b.inst[:,2,3].view(np.int32))   : False
-    np.all(a.inst[:,2,3].view(np.int32)==b.inst[:,2,3].view(np.int32)+1) : True
-
 
 **/
 
