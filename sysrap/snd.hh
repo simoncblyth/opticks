@@ -68,7 +68,7 @@ struct SYSRAP_API snd
     int aabb ; 
     int xform ; 
 
-    // int complement ; // TODO: get complement going 
+    // int complement ; // TODO: get complement going, or bring sn.h up to scratch to replace this  
 
     char label[16] ;   // sizeof 4 int 
 
@@ -164,6 +164,8 @@ struct SYSRAP_API snd
 
     const double* getParam() const ; 
     const double* getAABB() const ; 
+    bool hasUnsetAABB() const ;  // nullptr or all zero 
+    bool hasAABB() const ;       // not-nullptr and not all zero 
 
     void setLabel( const char* l ); 
 

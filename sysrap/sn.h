@@ -106,9 +106,16 @@ struct _sn
 #endif
 
     int type ; 
-    int complement ; // could hold this in sign of type 
+    int complement ;
+
     int parent ; 
     int tv ; 
+
+    // TODO: add these, and methods similar to snd.hh
+    // int lvid ; 
+    // int param ; 
+    // int aabb ; 
+
      
 #ifdef WITH_CHILD
     int sibdex ;  // 0-based sibling index 

@@ -693,6 +693,18 @@ const double* snd::getAABB() const
     return bb.data() ; 
 }
 
+bool snd::hasUnsetAABB() const   // nullptr or all zero
+{
+    const double* aabb = getAABB();  
+    if(aabb == nullptr) return true ; 
+    return sbb::IsZero(aabb); 
+}
+bool snd::hasAABB() const   // not-nullptr and not all zero 
+{
+    const double* aabb = getAABB();  
+    return aabb != nullptr && !sbb::IsZero(aabb) ; 
+}
+
 
 
 

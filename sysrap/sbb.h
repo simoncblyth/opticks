@@ -12,6 +12,8 @@ struct SYSRAP_API sbb
 {
     static constexpr const char* NAME = "sbb" ; 
     static constexpr const int N = 6 ; 
+    static bool IsZero( const double* v ); 
+
     double x0, y0, z0, x1, y1, z1 ;  
 
     const double* data() const { return &x0 ; }  
@@ -23,6 +25,14 @@ struct SYSRAP_API sbb
 
     std::string desc() const ; 
 }; 
+
+inline bool sbb::IsZero( const double* v )
+{
+    int count = 0 ; 
+    for(int i=0 ; i < N ; i++) if(v[i] == 0.) count += 1 ; 
+    return count == N ; 
+}
+
 
 inline std::string sbb::desc() const
 {

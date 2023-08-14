@@ -261,28 +261,20 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 {
     CSGNode cn = CSGNode::Zero() ; 
 
+    const double* aabb   = nd ? nd->getAABB() : nullptr ; 
+    const double* param6 = nd ? nd->getParam() : nullptr  ; 
+    bool complement = false ; // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
+
+    // TODO: once get match tidy this up, looks like setting AABB twice 
     if(nd)
     {
         assert( node.lvid == nd->lvid ); 
-        /*
-        std::cerr 
-           << "CSGImport::importNode"
-           << " nd.index " << nd->index
-           << " node.index " << node.index
-           << std::endl 
-           ;       
-        */
-        const double* aabb = nd->getAABB() ;  
-        const double* param6 = nd->getParam() ;  
         cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb ) ;  
     }
 
     cn.setIndex(nodeOffset + partIdx);  
-
-    bool complement = false ; // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
     cn.setBoundary(node.boundary);
     cn.setComplement(complement);
-
     int typecode = cn.typecode() ; 
 
     const std::vector<float4>* pl = nullptr ;  // planes
@@ -304,43 +296,35 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     n->setTransform(tranIdx);
 
-    /*
-    TODO : do the equivalent of CSG_GGeo_Convert::convertNode for defining bbox
-           and sometimes transforming it. 
 
-     788     nbbox bb = comp->getBBox(partIdx);
-     789     bool expect_external_bbox = CSG::ExpectExternalBBox( (int) tc );
-     790     // external bbox is expected for "higher level" solids : 
-                CSG_CONVEXPOLYHEDRON , CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
-     791 
-     792     if( bb.is_empty()  )
-     793     {   
-     794         if(expect_external_bbox==true)
-     795         {   
-     796             LOG(fatal) << " node of type " << CSG::Name(tc) << " are expected to have external bbox, but there is none " ;
-     797             assert(0);
-     798         }
-     799         n->setAABBLocal(); // use params of each type to set the bbox 
-     800     }
-     801     else
-     802     {   
-     803         if(expect_external_bbox==false)
-     804         {   
-     805             LOG(error) << " not expecting bbox for node of type " << CSG::Name(tc) << " (maybe boolean tree for general sphere)" ;
-     806         }
-     807         n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z );
-     808     }
+    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode);
 
+    // needs to follow CSG_GGeo_Convert::convertNode 
 
+    if( nd && nd->hasAABB() )
+    {   
+        LOG_IF(error, !expect_external_bbox) 
+           << " For node of type " << CSG::Name(typecode)
+           << " : DO NOT EXPECT AABB : BUT FIND ONE " 
+           << " (maybe boolean tree for general sphere)" 
+           ;
+        n->setAABB_Narrow( aabb ); 
+    }
+    else
+    {
+        LOG_IF(fatal, expect_external_bbox )
+           << " For node of type " << CSG::Name(typecode)
+           << " : EXPECT EXTERNAL AABB : BUT THERE IS NONE "
+           ;
+        if(expect_external_bbox) assert(0) ; 
+        n->setAABBLocal(); // use params of each type to set the bbox 
+    }
 
-
-     827     if(tranIdx > 0 )
-     828     {
-     829         const qat4* q = foundry->getTran(tranIdx-1u) ;
-     830         q->transform_aabb_inplace( n->AABB() );
-     831     }
-
-    */
+    const qat4* q = tranIdx > 0 ? fd->getTran(tranIdx-1u) : nullptr  ;
+    if(q)  
+    {
+        q->transform_aabb_inplace( n->AABB() );
+    }
 
     return n ; 
 }
