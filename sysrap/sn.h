@@ -434,10 +434,14 @@ sn::Serialize
 --------------
 
 The Serialize operates by converting pointer members into pool indices 
+This T::Serialize is invoked from s_pool<T,P>::serialize_ 
+for with paired T and P for all pool objects. 
 
-HMM: the WITH_CHILD impl is restricted to two children for binary tree ? 
-
-TODO: what about multiunion ? 
+At first glance this looks like the WITH_CHILD vector of child nodes
+is restricted to working with two children, but that is not the case 
+because the the full vector in the T pool gets represented via next_sibling
+links in the P buffer allowing any number of child nodes to be handled. 
+This functionality is needed for multiunion.  
 
 **/
 
@@ -475,6 +479,15 @@ inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
     if(level() > 0) std::cerr << "sn::Import" << std::endl ; 
     return p->is_root_importable() ? Import_r(p, buf, 0) : nullptr ; 
 }
+
+/**
+sn::Import_r
+-------------
+
+Note that because all _sn nodes are available in the buf 
+issues of ordering of Import are avoided. 
+
+**/
 
 inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 {

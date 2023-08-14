@@ -178,7 +178,7 @@ void snd::setXF(const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
     }
 
 
-    sxf<double> xf ; 
+    sxf xf ; 
     xf.t = t ; 
     xf.v = v ; 
 
@@ -199,7 +199,7 @@ Transform product ordering is an ad-hoc guess::
 
 void snd::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
-    sxf<double>* current = getXF_(); 
+    sxf* current = getXF_(); 
     if(current == nullptr)
     {
         setXF(t,v); 
@@ -215,23 +215,23 @@ void snd::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& 
 }
 
 
-const sxf<double>* snd::GetXF(int idx)  // static
+const sxf* snd::GetXF(int idx)  // static
 {
     const snd* n = Get(idx); 
     return n ? n->getXF() : nullptr ; 
 }
-sxf<double>* snd::GetXF_(int idx)  // static
+sxf* snd::GetXF_(int idx)  // static
 {
     snd* n = Get_(idx); 
     return n ? n->getXF_() : nullptr ; 
 }
 
-const sxf<double>* snd::getXF() const
+const sxf* snd::getXF() const
 {
     CheckPOOL("snd::getXF") ; 
     return POOL->getXF(xform) ; 
 }
-sxf<double>* snd::getXF_()
+sxf* snd::getXF_()
 {
     CheckPOOL("snd::getXF_") ; 
     return POOL->getXF_(xform) ; 
@@ -273,8 +273,8 @@ void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<d
         int ii = nds[reverse ? j : i] ; 
         int jj = nds[reverse ? i : j] ; 
 
-        const sxf<double>* ixf = GetXF(ii) ; 
-        const sxf<double>* jxf = GetXF(jj) ; 
+        const sxf* ixf = GetXF(ii) ; 
+        const sxf* jxf = GetXF(jj) ; 
 
         if(out)
         {
@@ -667,13 +667,13 @@ void snd::CheckPOOL(const char* msg) // static
 void snd::setParam( double x, double y, double z, double w, double z1, double z2 )
 {
     CheckPOOL("snd::setParam") ; 
-    spa<double> o = { x, y, z, w, z1, z2 } ; 
+    spa o = { x, y, z, w, z1, z2 } ; 
     param = POOL->addPA(o) ; 
 }
 void snd::setAABB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
     CheckPOOL("snd::setAABB") ; 
-    sbb<double> o = {x0, y0, z0, x1, y1, z1} ; 
+    sbb o = {x0, y0, z0, x1, y1, z1} ; 
 
     aabb = POOL->addBB(o) ; 
 }
@@ -682,14 +682,14 @@ const double* snd::getParam() const
 {
     if(param == -1 ) return nullptr ; 
     assert( param > -1 ); 
-    const spa<double>& pa = POOL->param[param] ; 
+    const spa& pa = POOL->param[param] ; 
     return pa.data() ; 
 }
 const double* snd::getAABB() const 
 {
     if(aabb == -1 ) return nullptr ; 
     assert( aabb > -1 );  
-    const sbb<double>& bb = POOL->aabb[aabb] ; 
+    const sbb& bb = POOL->aabb[aabb] ; 
     return bb.data() ; 
 }
 
@@ -1364,7 +1364,7 @@ double snd::zmin() const
 {
     assert( CSG::CanZNudge(typecode) ); 
     assert( param > -1 ); 
-    const spa<double>& pa = POOL->param[param] ; 
+    const spa& pa = POOL->param[param] ; 
     return pa.zmin(); 
 }
 
@@ -1372,7 +1372,7 @@ double snd::zmax() const
 {
     assert( CSG::CanZNudge(typecode) ); 
     assert( param > -1 ); 
-    const spa<double>& pa = POOL->param[param] ; 
+    const spa& pa = POOL->param[param] ; 
     return pa.zmax(); 
 }
 
@@ -1382,8 +1382,8 @@ void snd::check_z() const
     assert( param > -1 ); 
     assert( aabb > -1 ); 
 
-    const spa<double>& pa = POOL->param[param] ; 
-    const sbb<double>& bb = POOL->aabb[aabb] ; 
+    const spa& pa = POOL->param[param] ; 
+    const sbb& bb = POOL->aabb[aabb] ; 
 
     assert( pa.zmin() == bb.zmin() ); 
     assert( pa.zmax() == bb.zmax() ); 
@@ -1406,8 +1406,8 @@ void snd::decrease_zmin( double dz )
 {
     check_z(); 
 
-    spa<double>& pa = POOL->param[param] ; 
-    sbb<double>& bb = POOL->aabb[aabb] ; 
+    spa& pa = POOL->param[param] ; 
+    sbb& bb = POOL->aabb[aabb] ; 
 
     pa.decrease_zmin(dz); 
     bb.decrease_zmin(dz); 
@@ -1432,8 +1432,8 @@ void snd::increase_zmax( double dz )
 {
     check_z(); 
 
-    spa<double>& pa = POOL->param[param] ; 
-    sbb<double>& bb = POOL->aabb[aabb] ; 
+    spa& pa = POOL->param[param] ; 
+    sbb& bb = POOL->aabb[aabb] ; 
 
     pa.increase_zmax(dz) ; 
     bb.increase_zmax(dz) ; 
