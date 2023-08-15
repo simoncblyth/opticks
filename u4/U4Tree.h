@@ -523,10 +523,14 @@ cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 {
     assert( int(solids.size()) == lvid ); 
-
-    int root = U4Solid::Convert(so, lvid, 0 ); 
+    int d = 0 ; 
+#ifdef WITH_SND
+    int root = U4Solid::Convert(so, lvid, d );  
     assert( root > -1 ); 
-    snd::SetLVID(root, lvid );   // HUH: why cant U4Solid::Convert do this ? 
+#else
+    sn* root = U4Solid::Convert(so, lvid, d );  
+    assert( root ); 
+#endif
 
     G4String _name = so->GetName() ; 
     // bizarre: G4VSolid::GetName returns by value, not reference

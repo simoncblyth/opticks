@@ -33,9 +33,9 @@ void check_LEAK(const char* msg, int i=-1)
         assert( sn::pool->size() == 0 ); 
     }
 
-    if(!stv::LEAK)
+    if(!s_tv::LEAK)
     {
-        assert( stv::pool->size() == 0 ); 
+        assert( s_tv::pool->size() == 0 ); 
     }
 
 }
@@ -578,7 +578,7 @@ void test_Import()
     s_csg::Import( fold ); 
 
 
-    std::cout << stv::pool->desc() ;  
+    std::cout << s_tv::pool->desc() ;  
 
     sn* t = sn::pool->get_root(0) ; 
 
@@ -586,7 +586,7 @@ void test_Import()
 
     sn* r = t->last_child(); 
 
-    stv* tv = r->tv ; 
+    s_tv* tv = r->tv ; 
 
     std::cout << ( tv ? tv->desc() : "tv-null" ) << std::endl ; 
 

@@ -1,6 +1,6 @@
 #pragma once
 /**
-stv.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
+s_tv.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
 ===================================================================
 
 **/
@@ -16,7 +16,7 @@ stv.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
 
 #include "s_pool.h"
 
-struct _stv
+struct _s_tv
 {
     static constexpr const int NV = 32 ; 
     glm::tmat4x4<double> t ; 
@@ -25,20 +25,20 @@ struct _stv
 
 #include "SYSRAP_API_EXPORT.hh"
 
-struct SYSRAP_API stv
+struct SYSRAP_API s_tv
 {
-    typedef s_pool<stv,_stv> POOL ;
+    typedef s_pool<s_tv,_s_tv> POOL ;
     static POOL* pool ;
     static constexpr const bool LEAK = false ; 
     static void SetPOOL( POOL* pool_ ); 
     static int level() ; 
 
-    static constexpr const char* NAME = "stv.npy" ; 
-    static void Serialize( _stv& p, const stv* o ); 
-    static stv* Import(  const _stv* p, const std::vector<_stv>& buf ); 
+    static constexpr const char* NAME = "s_tv.npy" ; 
+    static void Serialize( _s_tv& p, const s_tv* o ); 
+    static s_tv* Import(  const _s_tv* p, const std::vector<_s_tv>& buf ); 
     
-    stv(); 
-    ~stv(); 
+    s_tv(); 
+    ~s_tv(); 
 
     int pid ; 
     glm::tmat4x4<double> t ; 
@@ -49,43 +49,42 @@ struct SYSRAP_API stv
 }; 
 
 
-inline int stv::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
+inline int s_tv::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
-inline void stv::Serialize( _stv& p, const stv* o )
+inline void s_tv::Serialize( _s_tv& p, const s_tv* o )
 {
     p.t = o->t ; 
     p.v = o->v ; 
 } 
-inline stv* stv::Import( const _stv* p, const std::vector<_stv>& )
+inline s_tv* s_tv::Import( const _s_tv* p, const std::vector<_s_tv>& )
 {
-    stv* o = new stv ; 
+    s_tv* o = new s_tv ; 
     o->t = p->t ; 
     o->v = p->v ; 
     return o ; 
 }
 
 
-inline stv::stv()
+inline s_tv::s_tv()
     :
     pid(pool ? pool->add(this) : -1),
     t(1.),
     v(1.)
 {
-    if(level() > 1) std::cerr << "stv::stv pid " << pid << std::endl ; 
+    if(level() > 1) std::cerr << "s_tv::s_tv pid " << pid << std::endl ; 
 }
-inline stv::~stv()
+inline s_tv::~s_tv()
 {
-    if(level() > 1) std::cerr << "stv::~stv pid " << pid << std::endl ; 
+    if(level() > 1) std::cerr << "s_tv::~s_tv pid " << pid << std::endl ; 
     if(pool) pool->remove(this); 
 }
 
-inline bool stv::is_root_importable() const 
+inline bool s_tv::is_root_importable() const 
 {
     return true ; 
 }
 
-
-inline std::string stv::desc() const 
+inline std::string s_tv::desc() const 
 {
     std::stringstream ss ;
     ss 

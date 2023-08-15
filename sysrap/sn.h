@@ -3,39 +3,6 @@
 sn.h : minimal pointer based transient binary tree node
 ========================================================
 
-* used from sndtree.h 
-
-Usage Example
---------------
-
-::
-
-    #include "sn.h"
-    stv::POOL stv::pool = {} ;  // initialize static pool 
-    sn::POOL sn::pool = {} ;    // initialize static pool 
-
-
-Usage
--------
-
-
-::
-
-    epsilon:sysrap blyth$ grep -l "sn\.h" *.*
-    CMakeLists.txt
-    index.rst
-    sn.h
-    sndtree.h
-
-    epsilon:sysrap blyth$ grep -l "sndtree\.h" *.*
-    CMakeLists.txt
-    index.rst
-    sn.h
-    snd.cc
-    sndtree.h
-
-
-
 Motivation
 -----------
 
@@ -93,8 +60,13 @@ all the way to the GPU.
 
 #include "OpticksCSG.h"
 #include "scanvas.h"
-#include "stv.h"
+
+#include "s_pa.h"
+#include "s_bb.h"
+#include "s_tv.h"
+
 #include "s_pool.h"
+
 #include "NPFold.h"
 
 
@@ -102,22 +74,21 @@ all the way to the GPU.
 struct _sn
 {
 #ifdef WITH_CHILD
-    static constexpr const int NV = 8 ; 
+    static constexpr const int NV = 9 ; 
 #else
-    static constexpr const int NV = 6 ; 
+    static constexpr const int NV = 7 ; 
 #endif
 
     int type ; 
     int complement ;
+    int lvid ; 
 
     int parent ; 
     int tv ; 
 
     // TODO: add these, and methods similar to snd.hh to allow this to replace snd.hh 
-    // int lvid ; 
     // int param ; 
     // int aabb ; 
-
      
 #ifdef WITH_CHILD
     int sibdex ;  // 0-based sibling index 
@@ -152,6 +123,7 @@ inline std::string _sn::desc() const
     ss << "_sn::desc " 
        << " type " << std::setw(4) << type 
        << " complement " << std::setw(1) << complement
+       << " lvid " << std::setw(4) << lvid 
        << " parent " << std::setw(4) << parent 
        << " tv " << std::setw(4) << tv 
        << " is_root_importable " << ( is_root_importable() ? "YES" : "NO " ) 
@@ -174,11 +146,35 @@ inline std::string _sn::desc() const
 
 struct SYSRAP_API sn
 {
+    int pid ;       // (not persisted)
+    int depth ;     // (not persisted)
+    int subdepth ;  // (not persisted)
+
+    int type ; 
+    int complement ; 
+    int lvid ; 
+
+#ifdef WITH_CHILD
+    std::vector<sn*> child ;   // owned by this sn 
+#else
+    sn* left ;           // owned by this sn 
+    sn* right ;          // owned by this sn 
+#endif
+
+    sn* parent ;  // NOT owned by this sn 
+
+    s_tv* tv ;     // owned by this sn 
+    s_pa* pa ; 
+    s_bb* bb  ; 
+
+
     typedef s_pool<sn,_sn> POOL ;
     static POOL* pool ;  
     static void SetPOOL( POOL* pool_ ); 
 
+    static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "sn.npy" ; 
+    static constexpr const double zero = 0. ; 
 
     static std::string Desc(const char* msg=nullptr); 
     static int level(); 
@@ -203,24 +199,10 @@ struct SYSRAP_API sn
 
 
 
-    //static constexpr const bool LEAK = true ; 
     static constexpr const bool LEAK = false ; 
 
-    int pid ;       // (not persisted)
-    int depth ;     // (not persisted)
-    int subdepth ;  // (not persisted)
 
-    int type ; 
-    int complement ; 
-#ifdef WITH_CHILD
-    std::vector<sn*> child ;   // owned by this sn 
-#else
-    sn* left ;           // owned by this sn 
-    sn* right ;          // owned by this sn 
-#endif
 
-    sn* parent ;  // NOT owned by this sn 
-    stv* tv ;     // owned by this sn 
 
 
     sn(int type, sn* left, sn* right);
@@ -230,9 +212,6 @@ struct SYSRAP_API sn
 
     ~sn(); 
 
-    static sn* Zero() ; 
-    static sn* Prim(int type) ; 
-    static sn* Create(int type, sn* left, sn* right); 
 
     void disown_child(sn* ch) ; 
     sn* deepcopy() const ; 
@@ -267,6 +246,9 @@ struct SYSRAP_API sn
 
     void subdepth_label() ; 
     void subdepth_label_r(int d); 
+
+    int checktree() const ; 
+    int checktree_r(char code,  int d ) const ; 
 
     unsigned operators(int minsubdepth) const ; 
     void operators_v(unsigned& mask, int minsubdepth) const ; 
@@ -310,8 +292,14 @@ struct SYSRAP_API sn
     static sn* ZeroTree_r(int elevation, int op); 
     static sn* ZeroTree(int num_leaves, int op ); 
 
-    static sn* CommonTree( std::vector<int>& leaftypes,  int op ); 
-    void populate(std::vector<int>& leaftypes ); 
+    static sn* CommonOperatorTypeTree( std::vector<int>& leaftypes,  int op ); 
+    static sn* CommonOperatorTree(     std::vector<sn*>& leaves    , int op ); 
+
+
+    void populate_leaftypes(std::vector<int>& leaftypes ); 
+    void populate_leaves(   std::vector<sn*>& leaves ); 
+
+
     void prune(); 
     void prune_r(int d) ; 
     bool has_dangle() const ; 
@@ -319,11 +307,61 @@ struct SYSRAP_API sn
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
 
+    void set_lvid(int lvid_); 
+    void set_lvid_r(int lvid_, int d); 
+
+
+
+    void setPA( double x, double y, double z, double w, double z1, double z2 );
+    void setBB(  double x0, double y0, double z0, double x1, double y1, double z1 ); 
+
     void setXF(     const glm::tmat4x4<double>& t ); 
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
     void combineXF( const glm::tmat4x4<double>& t ); 
     void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
+
+
+
+    
+    /**
+    considered returing (int)nd::index here to match snd.hh 
+    but that would not be workable once deleting  
+    any sn nodes as the indices would change
+    **/
+
+    static sn* Cylinder(double radius, double z1, double z2) ;
+    static sn* Cone(double r1, double z1, double r2, double z2);
+    static sn* Sphere(double radius); 
+    static sn* ZSphere(double radius, double z1, double z2);
+    static sn* Box3(double fullside);
+    static sn* Box3(double fx, double fy, double fz );
+    static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
+    static sn* Zero();
+    static sn* Prim(int type) ; 
+    static sn* Create(int type, sn* left=nullptr, sn* right=nullptr ); 
+    static sn* Boolean( int op, sn* l, sn* r );
+
+    static void ZNudgeEnds(  std::vector<sn*>& prims); 
+    static void ZNudgeJoints(std::vector<sn*>& prims); 
+    static std::string ZDesc(const std::vector<sn*>& prims); 
+
+    double zmin() const ; 
+    double zmax() const ; 
+
+
+    static sn* Collection( std::vector<sn*>& prims ); 
+    static sn* UnionTree(  std::vector<sn*>& prims ); 
+    static sn* Contiguous( std::vector<sn*>& prims ); 
+    static sn* Compound(   std::vector<sn*>& prims, int type_ ); 
+
+
 };
+
+
+
+
+
+
 
 inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; }
 inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
@@ -440,6 +478,10 @@ inline const sn* sn::next_sibling() const
     return next_sib < tot_sib  ? get_sibling(next_sib) : nullptr ;   
 }
 
+
+
+
+
 /**
 sn::Serialize
 --------------
@@ -459,12 +501,16 @@ This functionality is needed for multiunion.
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
     assert( pool      && "sn::pool  is required for sn::Serialize" );    
-    assert( stv::pool && "stv::pool is required for sn::Serialize" ); 
+    assert( s_tv::pool && "s_tv::pool is required for sn::Serialize" ); 
+    assert( s_pa::pool && "s_pa::pool is required for sn::Serialize" ); 
+    assert( s_bb::pool && "s_bb::pool is required for sn::Serialize" ); 
 
     n.type = x->type ; 
     n.complement = x->complement ;
+    n.lvid = x->lvid ;
+
     n.parent = pool->index(x->parent);  
-    n.tv = stv::pool->index(x->tv) ;  
+    n.tv = s_tv::pool->index(x->tv) ;  
 
 #ifdef WITH_CHILD
     n.sibdex = x->sibling_index(); 
@@ -505,14 +551,16 @@ issues of ordering of Import are avoided.
 
 inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 {
-    assert( stv::pool && "stv::pool is required for sn::Import_r " ); 
+    assert( s_tv::pool && "s_tv::pool is required for sn::Import_r " ); 
     if(level() > 0) std::cerr << "sn::Import_r d " << d << " " << ( _n ? _n->desc() : "(null)" ) << std::endl ; 
     if(_n == nullptr) return nullptr ; 
 
 #ifdef WITH_CHILD
     sn* n = Create( _n->type , nullptr, nullptr );  
     n->complement = _n->complement ; 
-    n->tv = stv::pool->get_root(_n->tv) ; 
+    n->lvid = _n->lvid ; 
+
+    n->tv = s_tv::pool->get_root(_n->tv) ; 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
     while( _child ) 
@@ -528,10 +576,12 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     sn* r = Import_r( _r, buf, d+1 ); 
     sn* n = Create( _n->type, l, r ); 
     n->complement = _n->complement ; 
-    n->tv = stv::pool->get_root(_n->tv) ; 
+    n->lvid = _n->lvid ; 
+    n->tv = s_tv::pool->get_root(_n->tv) ; 
 #endif
     return n ;  
 }  
+
 
 
 
@@ -544,6 +594,7 @@ inline sn::sn(int type_, sn* left_, sn* right_)
     subdepth(0),
     type(type_),
     complement(0),
+    lvid(-1),
 #ifdef WITH_CHILD
 #else
     left(left_),
@@ -608,18 +659,6 @@ inline sn::~sn()
 
 
 
-inline sn* sn::Zero()   // static
-{
-    return Prim(0); 
-}
-inline sn* sn::Prim(int type_)   // static
-{
-    return new sn(type_, nullptr, nullptr) ; 
-}
-inline sn* sn::Create(int type_, sn* left_, sn* right_)   // static
-{
-    return new sn(type_, left_, right_) ; 
-}
 
 
 
@@ -843,14 +882,17 @@ inline int sn::maxdepth_label()
 inline int sn::maxdepth_label_r(int d)
 {
     depth = d ; 
-#ifdef WITH_CHILD
-    if( child.size() == 0 ) return d ; 
+
+    int nc = num_child();
+    if(nc == 0) return d ;  
+
     int mx = 0 ; 
-    for(int i=0 ; i < int(child.size()) ; i++) mx = std::max( mx, child[i]->maxdepth_label_r(d+1) ) ; 
+    for(int i=0 ; i < nc ; i++) 
+    {
+        sn* ch = get_child(i) ; 
+        mx = std::max(mx, ch->maxdepth_label_r(d+1) ) ; 
+    }
     return mx ; 
-#else
-    return left && right ? std::max( left->maxdepth_label_r(d+1), right->maxdepth_label_r(d+1)) : d ; 
-#endif
 }
 
 
@@ -886,16 +928,64 @@ inline void sn::subdepth_label()
 inline void sn::subdepth_label_r(int d)
 {
     subdepth = maxdepth() ;
-#ifdef WITH_CHILD
-    for(int i=0 ; i < int(child.size()) ; i++) child[i]->subdepth_label_r(d+1) ; 
-#else
-    if(left && right)
+    for(int i=0 ; i < num_child() ; i++) 
     {
-        left->subdepth_label_r(d+1);
-        right->subdepth_label_r(d+1);
+        sn* ch = get_child(i) ; 
+        ch->subdepth_label_r(d+1) ; 
     }
-#endif
 }
+
+
+inline int sn::checktree() const
+{
+    int chk_D = checktree_r('D', 0);  
+    int chk_P = checktree_r('P', 0);  
+    int chk = chk_D + chk_P ; 
+
+    if( chk > 0 )  
+    {    
+        if(level()>0) std::cerr 
+            << "sn::checktree"
+            << " chk_D " << chk_D
+            << " chk_P " << chk_P
+            << desc()
+            << std::endl
+            ;    
+    }    
+    return chk ; 
+}
+
+
+inline int sn::checktree_r(char code,  int d ) const
+{
+    int chk = 0 ;
+
+    if( code == 'D' ) // check expected depth
+    {
+        if(d != depth) chk += 1 ;
+    }
+    else if( code == 'P' ) // check for non-roots without parent set 
+    {
+        if( depth > 0 && parent == nullptr ) chk += 1 ;
+    }
+
+    for(int i=0 ; i < num_child() ; i++) 
+    {
+        sn* ch = get_child(i) ; 
+        ch->checktree_r(code, d+1) ; 
+    }
+
+    return chk ;
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -978,9 +1068,14 @@ inline void sn::preorder_r(std::vector<const sn*>& order, int d ) const
     if(left) left->preorder_r(order, d+1) ; 
     if(right) right->preorder_r(order, d+1) ; 
 #endif
-
-
 }
+
+/**
+sn::inorder_r
+-------------
+
+**/
+
 inline void sn::inorder_r(std::vector<const sn*>& order, int d ) const
 {
 #ifdef WITH_CHILD
@@ -1071,6 +1166,18 @@ inline std::string sn::desc() const
     std::string str = ss.str();
     return str ;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 inline std::string sn::desc_child() const
 {
@@ -1283,11 +1390,18 @@ inline sn* sn::ZeroTree( int num_leaves, int op ) // static
     return root ; 
 }          
 
+/**
+sn::CommonOperatorTypeTree (formerly sn::CommonTree)
+-------------------------------------------------------
 
-inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
+This was implemented while sn was not fully featured.
+It was used to provide a "template" tree with types only, 
+to be used for form snd trees. 
+
+**/
+
+inline sn* sn::CommonOperatorTypeTree( std::vector<int>& leaftypes, int op ) // static
 {   
-    
-
     int num_leaves = leaftypes.size(); 
     sn* root = nullptr ; 
     if( num_leaves == 1 )
@@ -1298,31 +1412,75 @@ inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(level() > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree ZeroTree num_leaves " << num_leaves << std::endl ; 
         if(level() > 1) std::cerr << root->render(5) ; 
 
-        root->populate(leaftypes); 
+        root->populate_leaftypes(leaftypes); 
 
-        if(level() > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree populated num_leaves " << num_leaves << std::endl ; 
         if(level() > 1) std::cerr << root->render(5) ; 
 
         root->prune();
  
-        if(level() > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree pruned num_leaves " << num_leaves << std::endl ; 
         if(level() > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
 } 
 
-/**
-sn::populate
---------------
 
-Replacing zeros with leaf nodes
+
+inline sn* sn::CommonOperatorTree( std::vector<sn*>& leaves, int op ) // static
+{   
+    int num_leaves = leaves.size(); 
+    sn* root = nullptr ; 
+    if( num_leaves == 1 )
+    {
+        root = leaves[0] ; 
+    }
+    else
+    {
+        root = ZeroTree(num_leaves, op );   
+
+        if(level() > 0) std::cerr << "sn::CommonOperatorTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+
+        root->populate_leaves(leaves); 
+
+        if(level() > 0) std::cerr << "sn::CommonOperatorTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+
+        root->prune();
+ 
+        if(level() > 0) std::cerr << "sn::CommonOperatorTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+    }
+    return root ; 
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+sn::populate_leaftypes
+-------------------------
+
+Replacing zeros with leaftype nodes (not fully featured ones).
 
 **/
         
-inline void sn::populate(std::vector<int>& leaftypes )
+inline void sn::populate_leaftypes(std::vector<int>& leaftypes )
 {
     int num_leaves = leaftypes.size(); 
     int num_leaves_placed = 0 ; 
@@ -1333,7 +1491,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
     int num_nodes = order.size(); 
 
     if(level() > 0) std::cerr 
-        << "sn::populate"
+        << "sn::populate_leaftypes"
         << " num_leaves " << num_leaves
         << " num_nodes " << num_nodes
         << std::endl
@@ -1343,7 +1501,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
     {
         sn* n = order[i]; 
         if(level() > 1) std::cerr 
-            << "sn::populate " << std::setw(3) << i 
+            << "sn::populate_leaftypes " << std::setw(3) << i 
             << " n.desc " << n->desc()
             << std::endl 
             ; 
@@ -1355,7 +1513,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
 
 #ifdef WITH_CHILD
         if(level() > 1) std::cerr 
-            << "sn::populate"
+            << "sn::populate_leaftypes"
             << " WITH_CHILD "
             << " i " << i 
             << " n.is_operator " << n->is_operator()
@@ -1370,7 +1528,11 @@ inline void sn::populate(std::vector<int>& leaftypes )
             for(int j=0 ; j < 2 ; j++)
             {
                 sn* ch = n->child[j] ; 
-                if(level() > 1 ) std::cerr << "sn::populate ch.desc " << ch->desc() << std::endl ; 
+                if(level() > 1 ) std::cerr 
+                    << "sn::populate_leaftypes"
+                    << " ch.desc " << ch->desc() 
+                    << std::endl 
+                    ; 
 
                 if( ch->is_zero() && num_leaves_placed < num_leaves )
                 {
@@ -1390,6 +1552,98 @@ inline void sn::populate(std::vector<int>& leaftypes )
             if(n->right->is_zero() && num_leaves_placed < num_leaves)
             {
                 n->set_right(sn::Prim(leaftypes[num_leaves_placed]), false ) ;
+                num_leaves_placed += 1 ; 
+            }    
+        }
+#endif
+    } 
+    assert( num_leaves_placed == num_leaves ); 
+}
+
+
+
+
+
+/**
+sn::populate_leaves
+---------------------
+
+Replacing zeros with fully featured leaf nodes. 
+
+**/
+        
+inline void sn::populate_leaves(std::vector<sn*>& leaves )
+{
+    int num_leaves = leaves.size(); 
+    int num_leaves_placed = 0 ; 
+
+    std::vector<sn*> order ; 
+    inorder_(order) ;   // these all all nodes of the tree, not just leaves
+
+    int num_nodes = order.size(); 
+
+    if(level() > 0) std::cerr 
+        << "sn::populate_leaves"
+        << " num_leaves " << num_leaves
+        << " num_nodes " << num_nodes
+        << std::endl
+        ;
+
+    for(int i=0 ; i < num_nodes ; i++)
+    {
+        sn* n = order[i]; 
+        if(level() > 1) std::cerr 
+            << "sn::populate_leaves " << std::setw(3) << i 
+            << " n.desc " << n->desc()
+            << std::endl 
+            ; 
+    }
+
+    for(int i=0 ; i < num_nodes ; i++)
+    {
+        sn* n = order[i]; 
+
+#ifdef WITH_CHILD
+        if(level() > 1) std::cerr 
+            << "sn::populate_leaves"
+            << " WITH_CHILD "
+            << " i " << i 
+            << " n.is_operator " << n->is_operator()
+            << " n.child.size " << n->child.size()
+            << " num_leaves_placed " << num_leaves_placed
+            << std::endl 
+            ; 
+
+        if(n->is_operator())
+        {
+            assert( n->child.size() == 2 ); 
+            for(int j=0 ; j < 2 ; j++)
+            {
+                sn* ch = n->child[j] ; 
+                if(level() > 1 ) std::cerr 
+                    << "sn::populate_leaves"
+                    << " ch.desc " << ch->desc() 
+                    << std::endl 
+                    ; 
+
+                if( ch->is_zero() && num_leaves_placed < num_leaves )
+                {
+                    n->set_child(j, leaves[num_leaves_placed], false) ;  
+                    num_leaves_placed += 1 ; 
+                } 
+            } 
+        }
+#else
+        if(n->is_operator())
+        {
+            if(n->left->is_zero() && num_leaves_placed < num_leaves)
+            {
+                n->set_left( leaves[num_leaves_placed], false ) ; 
+                num_leaves_placed += 1 ; 
+            }    
+            if(n->right->is_zero() && num_leaves_placed < num_leaves)
+            {
+                n->set_right( leaves[num_leaves_placed], false ) ;
                 num_leaves_placed += 1 ; 
             }    
         }
@@ -1570,6 +1824,61 @@ inline void sn::positivize_r(bool negate, int d)
 }
 
 
+inline void sn::set_lvid(int lvid_)
+{
+    set_lvid_r(lvid_, 0);  
+
+    int chk = checktree();
+    if( chk != 0 )
+    {
+        if(level() > 0 ) std::cerr
+           << "sn::set_lvid"
+           << " lvid " << lvid_
+           << " checktree " << chk
+           << std::endl
+           ;
+    }
+    assert( chk == 0 );
+}
+inline void sn::set_lvid_r(int lvid_, int d)
+{
+    lvid = lvid_ ; 
+    for(int i=0 ; i < num_child() ; i++)
+    {
+        sn* ch = get_child(i) ;       
+        ch->set_lvid_r(lvid_, d+1 ); 
+    }
+}
+
+
+
+
+
+
+
+
+
+inline void sn::setPA( double x0, double y0, double z0, double w0, double x1, double y1 )
+{
+    if( pa == nullptr ) pa = new s_pa ; 
+    pa->x0 = x0 ; 
+    pa->y0 = y0 ; 
+    pa->z0 = z0 ; 
+    pa->w0 = w0 ; 
+    pa->x1 = x1 ; 
+    pa->y1 = y1 ; 
+}
+
+inline void sn::setBB( double x0, double y0, double z0, double x1, double y1, double z1 )
+{
+    if( bb == nullptr ) bb = new s_bb ; 
+    bb->x0 = x0 ; 
+    bb->y0 = y0 ; 
+    bb->z0 = z0 ; 
+    bb->x1 = x1 ; 
+    bb->y1 = y1 ; 
+    bb->z1 = z1 ; 
+}
 
 
 inline void sn::setXF( const glm::tmat4x4<double>& t )
@@ -1584,7 +1893,7 @@ inline void sn::combineXF( const glm::tmat4x4<double>& t )
 }
 inline void sn::setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
-    if( tv == nullptr ) tv = new stv ; 
+    if( tv == nullptr ) tv = new s_tv ; 
     tv->t = t ; 
     tv->v = v ; 
 }
@@ -1592,7 +1901,7 @@ inline void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<dou
 {
     if( tv == nullptr )
     {
-        tv = new stv ; 
+        tv = new s_tv ; 
         tv->t = t ; 
         tv->v = v ; 
     }
@@ -1605,4 +1914,252 @@ inline void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<dou
     }
 }
 
+
+
+
+inline sn* sn::Cylinder(double radius, double z1, double z2) // static
+{   
+    assert( z2 > z1 );  
+    sn* nd = Create(CSG_CYLINDER); 
+    nd->setPA( 0.f, 0.f, 0.f, radius, z1, z2)  ;   
+    nd->setBB( -radius, -radius, z1, +radius, +radius, z2 );
+    return nd ;
+}
+inline sn* sn::Cone(double r1, double z1, double r2, double z2)  // static
+{   
+    assert( z2 > z1 );
+    double rmax = fmax(r1, r2) ;
+    sn* nd = Create(CSG_CONE) ;
+    nd->setPA( r1, z1, r2, z2, 0., 0. ) ;
+    nd->setBB( -rmax, -rmax, z1, rmax, rmax, z2 );
+    return nd ;
+}
+inline sn* sn::Sphere(double radius)  // static
+{
+    assert( radius > zero );
+    sn* nd = Create(CSG_SPHERE) ;
+    nd->setPA( zero, zero, zero, radius, zero, zero );
+    nd->setBB(  -radius, -radius, -radius,  radius, radius, radius  );
+    return nd ;
+}
+inline sn* sn::ZSphere(double radius, double z1, double z2)  // static
+{
+    assert( radius > zero ); 
+    assert( z2 > z1 );   
+    sn* nd = Create(CSG_ZSPHERE) ; 
+    nd->setPA( zero, zero, zero, radius, z1, z2 );   
+    nd->setBB(  -radius, -radius, z1,  radius, radius, z2  );   
+    return nd ;
+}
+inline sn* sn::Box3(double fullside)  // static 
+{
+    return Box3(fullside, fullside, fullside); 
+}
+inline sn* sn::Box3(double fx, double fy, double fz )  // static 
+{
+    assert( fx > 0. );   
+    assert( fy > 0. );   
+    assert( fz > 0. );   
+
+    sn* nd = Create(CSG_BOX3) ; 
+    nd->setPA( fx, fy, fz, 0.f, 0.f, 0.f );   
+    nd->setBB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
+    return nd ;
+}
+
+inline sn* sn::Zero(double  x,  double y,  double z,  double w,  double z1, double z2) // static 
+{
+    sn* nd = Create(CSG_ZERO); 
+    nd->setPA( x, y, z, w, z1, z2 );  
+    return nd ; 
+}   
+inline sn* sn::Zero() // static
+{   
+    sn* nd = Create(CSG_ZERO); 
+    return nd ; 
+}
+inline sn* sn::Prim(int type_)   // static
+{
+    return new sn(type_, nullptr, nullptr) ; 
+}
+inline sn* sn::Create(int type_, sn* left_, sn* right_)  // static
+{
+    sn* nd = new sn(type_, left_, right_) ;
+    return nd ;
+}
+inline sn* sn::Boolean(int type_, sn* left_, sn* right_)  // static
+{
+    sn* nd = Create(type_, left_, right_); 
+    return nd ; 
+}
+
+
+
+/**
+sn::ZNudgeEnds
+-----------------
+
+CAUTION: changes geometry, only appropriate 
+for subtracted consituents eg inners 
+
+**/
+
+inline void sn::ZNudgeEnds(std::vector<sn*>& prims) // static
+{
+    if(level() > 0) std::cout 
+       << std::endl
+       << "sn::ZNudgeEnds PLACEHOLDER "
+       << std::endl
+       << ZDesc(prims)
+       << std::endl
+       ;
+
+    /*
+    for(unsigned i=1 ; i < prims.size() ; i++)
+    {
+        sn* a = prims[i-1]; 
+        sn* b = prims[i]; 
+        a->check_z(); 
+        b->check_z();
+    }
+    */
+}
+
+inline void sn::ZNudgeJoints(std::vector<sn*>& prims) // static
+{
+    if(level() > 0) std::cout
+       << std::endl
+       << "sn::ZNudgeJoints PLACEHOLDER "
+       << std::endl
+       << ZDesc(prims)
+       << std::endl
+       ;
+}
+
+
+
+
+
+/**
+sn::ZDesc
+-----------
+
+   +----+
+   |    |
+   +----+
+   |    |
+   +----+
+   |    |
+   +----+
+
+**/
+
+inline std::string sn::ZDesc(const std::vector<sn*>& prims) // static
+{
+    std::stringstream ss ;
+    ss << "sn::ZDesc" ;
+    ss << " prims(" ;
+    for(unsigned i=0 ; i < prims.size() ; i++) ss << prims[i]->index() << " " ;
+    ss << ") " ;
+    ss << std::endl ;
+
+    for(unsigned i=0 ; i < prims.size() ; i++)
+    {
+        sn* a = prims[i];
+        ss << std::setw(3) << a->index()
+           << ":"
+           << " " << std::setw(10) << a->zmin()
+           << " " << std::setw(10) << a->zmax()
+           << std::endl
+           ;
+    }
+    std::string str = ss.str();
+    return str ;
+}
+
+
+inline double sn::zmin() const
+{
+    assert( CSG::CanZNudge(type) );
+    assert( pa );
+    return pa ? pa->zmin() : 0. ;
+}
+
+inline double sn::zmax() const
+{
+    assert( CSG::CanZNudge(type) );
+    assert( pa );
+    return pa ? pa->zmax() : 0. ;
+}
+
+
+
+
+
+/**
+sn::Collection
+-----------------
+
+Used for example from U4Polycone::init 
+
++-------------+-------------------+-------------------+
+|  VERSION    |  Impl             |  Notes            |
++=============+===================+===================+ 
+|     0       |  sn::UnionTree    | backward looking  | 
++-------------+-------------------+-------------------+
+|     1       |  sn::Contiguous   | forward looking   |   
++-------------+-------------------+-------------------+
+
+**/
+
+inline sn* sn::Collection(std::vector<sn*>& prims ) // static
+{ 
+    sn* n = nullptr ; 
+    switch(VERSION)
+    {   
+        case 0: n = UnionTree(prims)  ; break ; 
+        case 1: n = Contiguous(prims) ; break ;
+    }   
+    return n ; 
+}
+
+inline sn* sn::UnionTree(std::vector<sn*>& prims )
+{
+    sn* n = CommonOperatorTree( prims, CSG_UNION ); 
+    return n ; 
+}
+
+
+
+inline sn* sn::Contiguous(std::vector<sn*>& prims )
+{
+    sn* n = Compound( prims, CSG_CONTIGUOUS ); 
+    return n ; 
+}
+
+
+
+inline sn* sn::Compound(std::vector<sn*>& prims, int type_ )
+{
+    assert( type_ == CSG_CONTIGUOUS || type_ == CSG_DISCONTIGUOUS ); 
+
+    int num_prim = prims.size(); 
+    assert( num_prim > 0 ); 
+
+    sn* nd = Create( type_ ); 
+
+    for(int i=0 ; i < num_prim ; i++)
+    {
+        sn* pr = prims[i] ; 
+#ifdef WITH_CHILD
+        nd->add_child(pr) ; 
+#else
+        assert(0 && "sn::Compound requires WITH_CHILD " ); 
+        assert(num_prim == 2 ); 
+        if(i==0) nd->set_left(pr,  false) ; 
+        if(i==1) nd->set_right(pr, false) ; 
+#endif
+    }
+    return nd ; 
+}
 

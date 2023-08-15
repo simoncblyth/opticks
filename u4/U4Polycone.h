@@ -45,7 +45,13 @@ After reversal::
 #include <algorithm>
 
 #include "G4Polycone.hh"
+
+#ifdef WITH_SND
 #include "snd.hh"
+#else
+#include "sn.h"
+#endif
+
 #include "ssys.h"
 
 struct RZ
@@ -73,12 +79,20 @@ inline std::string RZ::desc() const
 struct U4Polycone
 {
     std::string desc() const ; 
+
+#ifdef WITH_SND
     static int  Convert( const G4Polycone* polycone ); 
+    void addPrims(std::vector<int>& prims, bool outside ); 
+#else
+    static sn*  Convert( const G4Polycone* polycone ); 
+    void addPrims(std::vector<sn*>& prims, bool outside ); 
+#endif
+
     static void GetMinMax( double& mn, double& mx, const std::set<double>& vv ); 
     U4Polycone(const G4Polycone* poly); 
     bool checkZOrder( bool z_ascending ); 
     void init(); 
-    void addPrims(std::vector<int>& prims, bool outside ); 
+
 
     int level ; 
     const G4Polycone* polycone ; 
@@ -104,7 +118,13 @@ struct U4Polycone
     double Z_max ; 
 
     bool   has_inner ; 
+
+#ifdef WITH_SND
     int    root ; 
+#else
+    sn*    root ; 
+#endif
+
 };
 
 inline std::string U4Polycone::desc() const 
@@ -128,7 +148,11 @@ inline std::string U4Polycone::desc() const
        << " Z_max       " << std::setw(10) << Z_max
        << std::endl  
        << " has_inner " << ( has_inner ? "YES" : "NO" ) 
+#ifdef WITH_SND
        << " root " << std::setw(3) << root
+#else
+       << " root " << std::setw(3) << ( root ? root->index() : -1 )
+#endif
        << std::endl 
        ;
 
@@ -138,7 +162,11 @@ inline std::string U4Polycone::desc() const
 }
 
 
+#ifdef WITH_SND
 inline int U4Polycone::Convert( const G4Polycone* polycone )
+#else
+inline sn* U4Polycone::Convert( const G4Polycone* polycone )
+#endif
 {
     U4Polycone upoly(polycone) ; 
     return upoly.root ; 
@@ -171,7 +199,11 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_ )
     Z_min(0),
     Z_max(0),
     has_inner(false),
+#ifdef WITH_SND
     root(-1)
+#else
+    root(nullptr)
+#endif
 {
     init(); 
     if(level > 0 ) std::cerr << "U4Polycone::U4Polycone" << std::endl << desc() << std::endl ; 
@@ -241,11 +273,20 @@ inline void U4Polycone::init()
     bool has_phi_segment = startPhi > 0. || deltaPhi < 2.0*CLHEP::pi  ;
     assert( has_phi_segment == false );  
 
+#ifdef WITH_SND
+    int inner = -1 ; 
     std::vector<int> outer_prims ;
     addPrims( outer_prims, true  ); // outside:true 
     snd::ZNudgeJoints(outer_prims); 
-
     int outer = snd::Collection(outer_prims); 
+#else
+    sn* inner = nullptr ; 
+    std::vector<sn*> outer_prims ;
+    addPrims( outer_prims, true  ); // outside:true 
+    sn::ZNudgeJoints(outer_prims); 
+    sn* outer = sn::Collection(outer_prims) ; 
+#endif
+
  
     if( has_inner == false )
     {
@@ -253,28 +294,49 @@ inline void U4Polycone::init()
     }
     else
     {
-        int inner = -1 ; 
         if( num_R_inner == 1 )  // cylinder inner
         {
             assert( R_inner_min == R_inner_max );
             double rmin = R_inner_min ;
+#ifdef WITH_SND
             inner = snd::Cylinder(rmin, Z_min, Z_max);
+#else
+            inner = sn::Cylinder(rmin, Z_min, Z_max);
+#endif
         }
         else
         {
+#ifdef WITH_SND
             std::vector<int> inner_prims ;
             addPrims( inner_prims, false  ); // outside:false
             snd::ZNudgeEnds(inner_prims);    // only for inner as expands  
             snd::ZNudgeJoints(inner_prims); 
             inner = snd::Collection( inner_prims ); 
+#else
+            std::vector<sn*> inner_prims ;
+            addPrims( inner_prims, false  ); // outside:false
+            sn::ZNudgeEnds(inner_prims);    // only for inner as expands  
+            sn::ZNudgeJoints(inner_prims); 
+            inner = sn::Collection( inner_prims ); 
+#endif
         }
+
+#ifdef WITH_SND
         assert( inner > -1 ); 
         root = snd::Boolean(CSG_DIFFERENCE, outer, inner );  
+#else
+        assert( inner ); 
+        root = sn::Boolean(CSG_DIFFERENCE, outer, inner );  
+#endif
     }
 }
      
 
+#ifdef WITH_SND
 void U4Polycone::addPrims(std::vector<int>& prims,  bool outside  )
+#else
+void U4Polycone::addPrims(std::vector<sn*>& prims,  bool outside  )
+#endif
 {   
     // loop over pairs of planes
     for( unsigned i=1 ; i < rz.size() ; i++ )
@@ -295,8 +357,14 @@ void U4Polycone::addPrims(std::vector<int>& prims,  bool outside  )
         bool z_ascending = z2 > z1 ;
         assert(z_ascending);
 
+#ifdef WITH_SND
         int idx = r2 == r1 ? snd::Cylinder(r2, z1, z2 ) : snd::Cone( r1, z1, r2, z2 ) ; 
         prims.push_back(idx);
+#else
+        sn* pr = r2 == r1 ? sn::Cylinder(r2, z1, z2 ) : sn::Cone( r1, z1, r2, z2 ) ; 
+        prims.push_back(pr);
+#endif
+
     }  
 }
 

@@ -29,11 +29,16 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $SDIR/$name.cc $SDIR/../sn.cc $SDIR/../stv.cc $SDIR/../s_csg.cc \
-          -I$SDIR/.. \
-          -I$HOME/np \
-          -I$OPTICKS_PREFIX/externals/glm/glm \
-          $opt -g -std=c++11 -lstdc++ -o $bin
+    gcc $SDIR/$name.cc \
+        $SDIR/../sn.cc \
+        $SDIR/../s_tv.cc \
+        $SDIR/../s_pa.cc \
+        $SDIR/../s_bb.cc \
+        $SDIR/../s_csg.cc \
+        -I$SDIR/.. \
+        -I$HOME/np \
+        -I$OPTICKS_PREFIX/externals/glm/glm \
+        $opt -g -std=c++11 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 

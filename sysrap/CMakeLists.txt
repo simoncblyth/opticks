@@ -122,7 +122,9 @@ set(SOURCES
 
     s_csg.cc
     sn.cc
-    stv.cc
+    s_pa.cc
+    s_bb.cc
+    s_tv.cc
 
 
     SEvent.cc
@@ -233,7 +235,9 @@ set(HEADERS
     s_pool.h
     s_csg.h
     sn.h 
-    stv.h 
+    s_pa.h 
+    s_bb.h 
+    s_tv.h 
 
     st.h 
     stra.h 

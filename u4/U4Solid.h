@@ -26,10 +26,15 @@ npy/NNodeUncoincide npy/NNodeNudger
 
 #include <set>
 
-//#include "slog.h"
 #include "ssys.h"
 #include "scuda.h"
+
+#ifdef WITH_SND
 #include "snd.hh"
+#else
+#include "sn.h"
+#endif
+
 #include "stran.h"
 #include "OpticksCSG.h"
 
@@ -96,7 +101,13 @@ struct U4Solid
     std::string desc() const ; 
     static int          Type(const G4VSolid* solid ) ;  
     static const char*  Tag( int type ) ;   
-    static int          Convert(const G4VSolid* solid, int lvid, int depth ) ; 
+
+#ifdef WITH_SND
+    static int Convert(const G4VSolid* solid, int lvid, int depth ) ; 
+#else
+    static sn* Convert(const G4VSolid* solid, int lvid, int depth ) ; 
+#endif
+
 
     U4Solid( const G4VSolid* solid, int lvid, int depth ); 
 
@@ -115,9 +126,13 @@ struct U4Solid
     void init_IntersectionSolid(); 
     void init_SubtractionSolid(); 
 
+#ifdef WITH_SND
     int init_Sphere_(char layer); 
     int init_Cons_(char layer); 
-
+#else
+    sn* init_Sphere_(char layer); 
+    sn* init_Cons_(char layer); 
+#endif
 
 
     static OpticksCSG_t BooleanOperator(const G4BooleanSolid* solid ); 
@@ -144,7 +159,13 @@ struct U4Solid
     int             lvid ; 
     int             depth ;   // recursion depth across different G4VSolid
     int             type ;
-    int             root ;     
+
+#ifdef WITH_SND  // old impl that will be replacing 
+    int             root ;    // snd.hh node index   
+#else
+    sn*             root ;  
+#endif
+
 };
 
 inline std::string U4Solid::desc() const 
@@ -158,7 +179,11 @@ inline std::string U4Solid::desc() const
        << " lvid "   << std::setw(3) << lvid    
        << " depth "   << std::setw(3) << depth    
        << " type "  << std::setw(3) << type
+#ifdef WITH_SND
        << " root "  << std::setw(4) << root
+#else
+       << " root "  << std::setw(4) << ( root ? root->index() : -1 )
+#endif
        << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
        << " name " << name.c_str() 
        ; 
@@ -211,7 +236,11 @@ inline const char* U4Solid::Tag(int type)   // static
     return tag ; 
 }
 
+#ifdef WITH_SND
 inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // static
+#else
+inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // static
+#endif
 {
     U4Solid so(solid, lvid, depth ); 
     return so.root ; 
@@ -224,9 +253,22 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_ )
     lvid(lvid_),
     depth(depth_),
     type(Type(solid)),
+#ifdef WITH_SND
     root(-1)
+#else
+    root(nullptr)
+#endif
 {
     init() ; 
+
+#ifdef WITH_SND
+    assert( root > -1 );
+    snd::SetLVID(root, lvid );   
+#else
+    assert( root); 
+    root->set_lvid(lvid); 
+#endif
+
 }
 
 inline void U4Solid::init()
@@ -249,7 +291,11 @@ inline void U4Solid::init()
         case _G4DisplacedSolid    : init_DisplacedSolid()        ; break ; 
     } 
 
+#ifdef WITH_SND
     if(root == -1)
+#else
+    if(root == nullptr)
+#endif
     {
         std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
         assert(0); 
@@ -266,14 +312,24 @@ inline void U4Solid::init_Orb()
     const G4Orb* orb = dynamic_cast<const G4Orb*>(solid);
     assert(orb);
     double radius = orb->GetRadius()/CLHEP::mm ;
+#ifdef WITH_SND
     root = snd::Sphere(radius) ; 
+#else
+    root = sn::Sphere(radius) ; 
+#endif
 }
 
 inline void U4Solid::init_Sphere()
 {
+#ifdef WITH_SND
     int outer = init_Sphere_('O');  assert( outer > -1 ); 
     int inner = init_Sphere_('I');
     root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
+#else
+    sn* outer = init_Sphere_('O') ; assert( outer ) ; 
+    sn* inner = init_Sphere_('I');
+    root = inner == nullptr ? outer : sn::Boolean( CSG_DIFFERENCE, outer, inner ) ; 
+#endif
 }
 
 /**
@@ -297,7 +353,11 @@ TODO: bring over phicut handling from X4Solid
 
 **/
 
+#ifdef WITH_SND
 inline int U4Solid::init_Sphere_(char layer)
+#else
+inline sn* U4Solid::init_Sphere_(char layer)
+#endif
 {
     assert( layer == 'I' || layer == 'O' ); 
     const G4Sphere* sphere = dynamic_cast<const G4Sphere*>(solid);
@@ -306,7 +366,11 @@ inline int U4Solid::init_Sphere_(char layer)
     double rmax = sphere->GetOuterRadius()/CLHEP::mm ; 
     double rmin = sphere->GetInnerRadius()/CLHEP::mm ; 
     double radius = layer == 'I' ? rmin : rmax ;
+#ifdef WITH_SND
     if(radius == 0.) return -1 ; 
+#else
+    if(radius == 0.) return nullptr ; 
+#endif
 
     double startThetaAngle = sphere->GetStartThetaAngle()/CLHEP::radian ; 
     double deltaThetaAngle = sphere->GetDeltaThetaAngle()/CLHEP::radian ; 
@@ -327,7 +391,11 @@ inline int U4Solid::init_Sphere_(char layer)
     bool has_deltaPhi = startPhi != 0. || deltaPhi != 2.*CLHEP::pi  ;
     assert( has_deltaPhi == false ); 
 
+#ifdef WITH_SND
     return z_slice ? snd::ZSphere( radius, zmin, zmax ) : snd::Sphere(radius ) ; 
+#else
+    return z_slice ? sn::ZSphere( radius, zmin, zmax ) : sn::Sphere(radius ) ; 
+#endif
 }
 
 
@@ -393,29 +461,51 @@ inline void U4Solid::init_Ellipsoid()
 
     if( upper_cut == false && lower_cut == false )
     {
+#ifdef WITH_SND
         root = snd::Sphere(sz) ;
+#else
+        root = sn::Sphere(sz) ;
+#endif
     }
     else if( upper_cut == true && lower_cut == true )
     {
+#ifdef WITH_SND
         root = snd::ZSphere(sz, zmin, zmax) ;
+#else
+        root = sn::ZSphere(sz, zmin, zmax) ;
+#endif
+
     }
     else if ( upper_cut == false && lower_cut == true )   // PMT mask uses this 
     {
         double zmax_safe = zmax + 0.1 ;
+#ifdef WITH_SND
         root = snd::ZSphere( sz, zmin, zmax_safe )  ;
+#else
+        root = sn::ZSphere( sz, zmin, zmax_safe )  ;
+#endif
+
     }
     else if ( upper_cut == true && lower_cut == false )
     {
         double zmin_safe = zmin - 0.1 ; 
+#ifdef WITH_SND
         root = snd::ZSphere( sz, zmin_safe, zmax )  ;
+#else
+        root = sn::ZSphere( sz, zmin_safe, zmax )  ;
+#endif
+
     }
 
     // zmin_safe/zmax_safe use safety offset when there is no cut 
     // this avoids rare apex(nadir) hole bug  
     // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
 
+#ifdef WITH_SND
     snd::SetNodeXForm(root, scale );  
-
+#else
+    root->setXF(scale); 
+#endif
 
 }
 
@@ -445,7 +535,11 @@ inline void U4Solid::init_Box()
     double fy = 2.0*box->GetYHalfLength()/CLHEP::mm ;
     double fz = 2.0*box->GetZHalfLength()/CLHEP::mm ;
 
+#ifdef WITH_SND
     root = snd::Box3(fx, fy, fz) ; 
+#else
+    root = sn::Box3(fx, fy, fz) ; 
+#endif
 }
 
 
@@ -459,7 +553,11 @@ inline void U4Solid::init_Tubs()
     double rmin = tubs->GetInnerRadius()/CLHEP::mm ; 
     bool has_inner = rmin > 0. ; 
 
+#ifdef WITH_SND
     int outer = snd::Cylinder(rmax, -hz, hz );
+#else
+    sn* outer = sn::Cylinder(rmax, -hz, hz );
+#endif
 
 
     if(has_inner == false)
@@ -472,9 +570,14 @@ inline void U4Solid::init_Tubs()
         double nudge_inner = 0.01 ;
         double dz = do_nudge_inner ? hz*nudge_inner : 0. ; 
 
+#ifdef WITH_SND
         int inner = snd::Cylinder(rmin, -(hz+dz), hz+dz );  
-
         root = snd::Boolean( CSG_DIFFERENCE, outer, inner ); 
+#else
+        sn* inner = sn::Cylinder(rmin, -(hz+dz), hz+dz );  
+        root = sn::Boolean( CSG_DIFFERENCE, outer, inner ); 
+#endif
+
     }
 
 } 
@@ -491,8 +594,11 @@ inline void U4Solid::init_Polycone()
 
 
 
-
+#ifdef WITH_SND
 inline int U4Solid::init_Cons_(char layer)
+#else
+inline sn* U4Solid::init_Cons_(char layer)
+#endif
 {
     assert( layer == 'I' || layer == 'O' ); 
     const G4Cons* cone = dynamic_cast<const G4Cons*>(solid);
@@ -516,14 +622,24 @@ inline int U4Solid::init_Cons_(char layer)
 
     bool invalid =  r1 == 0. && r2 == 0. ; 
 
+#ifdef WITH_SND
     return invalid ? -1 : snd::Cone( r1, z1, r2, z2 ) ;  
+#else
+    return invalid ? nullptr : sn::Cone( r1, z1, r2, z2 ) ;  
+#endif
 } 
 
 inline void U4Solid::init_Cons()
 {
+#ifdef WITH_SND
     int outer = init_Cons_('O');  assert( outer > -1 ); 
     int inner = init_Cons_('I');
     root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
+#else
+    sn* outer = init_Cons_('O');  assert( outer ); 
+    sn* inner = init_Cons_('I'); 
+    root = inner == nullptr ? outer : sn::Boolean( CSG_DIFFERENCE, outer, inner ) ;
+#endif
 }
 
 
@@ -637,6 +753,7 @@ inline void U4Solid::init_BooleanSolid()
     bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
     assert( !is_left_displaced && "not expecting left displacement " );
 
+#ifdef WITH_SND
     int l = Convert( left, lvid, depth+1  ); 
     int r = Convert( right, lvid, depth+1 ); 
 
@@ -657,6 +774,23 @@ inline void U4Solid::init_BooleanSolid()
     if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
 
     root = snd::Boolean( op, l, r ); 
+#else
+    sn* l = Convert( left,  lvid, depth+1 ); 
+    sn* r = Convert( right, lvid, depth+1 ); 
+
+    if(l->tv && level > 0) std::cout
+        << "U4Solid::init_BooleanSolid "
+        << " observe transform on left node " 
+        << " l.tv " << l->tv->desc()
+        << std::endl 
+        ; 
+
+    if(is_right_displaced) assert( r->tv && "expecting transform on right displaced node " ); 
+ 
+    root = sn::Boolean( op, l, r ); 
+#endif
+
+
 }
 
 
@@ -680,6 +814,7 @@ gets wrapped into a DisplacedSolid.::
    * thats because Dis are "internal" nodes for the Geant4 model that just carry the transform
      they dont actually correspond to a separate constituent   
 
+Dis ARE FUNNY NODES THAT JUST ACT TO HOLD THE TRANSFORM 
 **/
 inline void U4Solid::init_DisplacedSolid()
 {
@@ -695,11 +830,15 @@ inline void U4Solid::init_DisplacedSolid()
     bool single_disp = dynamic_cast<const G4DisplacedSolid*>(moved) == nullptr ; 
     assert(single_disp && "only single disp is expected" );
 
-    int m = Convert( moved, lvid, depth+1 ); 
-    assert(m > -1); 
-    snd::SetNodeXForm(m, xf);  
+#ifdef WITH_SND
+    root = Convert( moved, lvid, depth+1 ); 
+    assert(root > -1); 
+    snd::SetNodeXForm(root, xf);  // internally calls snd::combineXF
+#else
+    root = Convert( moved, lvid, depth+1 ); 
+    root->combineXF(xf); 
+#endif
 
-    root = m ;    // HMM : Dis ARE FUNNY NODES THAT JUST ACT TO HOLD THE TRANSFORM 
 } 
 
 

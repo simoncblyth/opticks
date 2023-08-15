@@ -82,16 +82,22 @@ int snd::GetNumNode( int idx)
     return nd ? nd->num_node() : -1 ; 
 }
 
-void snd::GetTypes(std::vector<int>& types, const std::vector<int>& idxs ) // static
+/**
+snd::GetTypes
+--------------
+
+**/
+
+void snd::GetTypes(std::vector<int>& types, const std::vector<int>& nd_idxs ) // static
 {
-    int num_idx = idxs.size(); 
+    int num_idx = nd_idxs.size(); 
     for(int i=0 ; i < num_idx ; i++)
     {
-        int idx = idxs[i]; 
+        int idx = nd_idxs[i]; 
         const snd* nd = Get(idx) ; 
         types.push_back(nd->typecode) ;  
     }
-    assert( idxs.size() == types.size() ); 
+    assert( nd_idxs.size() == types.size() ); 
 }
 
 
@@ -1537,7 +1543,7 @@ void snd::ZNudgeJoints(const std::vector<int>& prims) // static
     int level = Level(); 
     if(level > 0) std::cout 
        << std::endl
-       << "snd::ZNudgeJoints "
+       << "snd::ZNudgeJoints PLACEHOLDER  "
        << std::endl
        << ZDesc(prims)
        << std::endl
@@ -1747,7 +1753,7 @@ int snd::Compound(int type, const std::vector<int>& prims )
 
 int snd::UnionTree(const std::vector<int>& prims )
 {
-    int idx = sndtree::CommonTree( prims, CSG_UNION ); 
+    int idx = sndtree::CommonTree_PlaceLeaves( prims, CSG_UNION ); 
     return idx ; 
 }
 

@@ -294,7 +294,12 @@ struct stree
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
     std::vector<std::string> soname ;       // unique solid names
+
+#ifdef WITH_SND
     std::vector<int>         solids ;       // snd idx 
+#else
+    std::vector<sn*>         solids ; 
+#endif
 
     std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  

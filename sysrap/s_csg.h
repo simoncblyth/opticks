@@ -1,6 +1,8 @@
 #pragma once
 
-#include "stv.h"
+#include "s_pa.h"
+#include "s_bb.h"
+#include "s_tv.h"
 #include "sn.h"
 
 #include "NPFold.h"
@@ -13,9 +15,10 @@ struct SYSRAP_API s_csg
     static NPFold* Serialize(); 
     static void Import(const NPFold* fold); 
 
-
-    stv::POOL* tv_pool ; 
-    sn::POOL*  n_pool ; 
+    s_pa::POOL* pa ; 
+    s_bb::POOL* bb ; 
+    s_tv::POOL* tv ; 
+    sn::POOL*   n ; 
 
     s_csg(); 
     void init(); 
@@ -30,8 +33,10 @@ struct SYSRAP_API s_csg
 
 inline s_csg::s_csg()
     :
-    tv_pool(new stv::POOL),
-    n_pool(new   sn::POOL)
+    pa(new s_pa::POOL),
+    bb(new s_bb::POOL),
+    tv(new s_tv::POOL),
+    n(new    sn::POOL)
 {
     init(); 
 }
@@ -39,13 +44,15 @@ inline s_csg::s_csg()
 inline void s_csg::init()
 {
     INSTANCE = this ; 
-    stv::SetPOOL(tv_pool) ; 
-    sn::SetPOOL(n_pool) ; 
+    s_pa::SetPOOL(pa) ; 
+    s_bb::SetPOOL(bb) ; 
+    s_tv::SetPOOL(tv) ; 
+    sn::SetPOOL(n) ; 
 }
 
 inline int s_csg::total_size() const
 {
-    return tv_pool->size() + n_pool->size() ; 
+    return pa->size() + bb->size() + tv->size() + n->size() ; 
 }
 
 inline std::string s_csg::brief() const
@@ -53,9 +60,10 @@ inline std::string s_csg::brief() const
     std::stringstream ss ; 
     ss << "s_csg::brief total_size " << total_size() 
        << std::endl  
-       << " tv_pool : " << ( tv_pool ? tv_pool->brief() : "-" ) 
-       << std::endl
-       << " n_pool : " << ( n_pool ? n_pool->brief() : "-" ) 
+       << " pa : " << ( pa ? pa->brief() : "-" ) << std::endl
+       << " bb : " << ( bb ? bb->brief() : "-" ) << std::endl
+       << " tv : " << ( tv ? tv->brief() : "-" ) << std::endl
+       << " n : " << ( n ? n->brief() : "-" ) 
        << std::endl 
        ;
     std::string str = ss.str(); 
@@ -75,8 +83,10 @@ inline std::string s_csg::desc() const
 inline NPFold* s_csg::serialize() const   
 {
     NPFold* fold = new NPFold ; 
-    fold->add(sn::NAME,  n_pool->serialize<int>() );  
-    fold->add(stv::NAME, tv_pool->serialize<double>() ); 
+    fold->add(sn::NAME,  n->serialize<int>() );  
+    fold->add(s_bb::NAME, bb->serialize<double>() ); 
+    fold->add(s_pa::NAME, pa->serialize<double>() ); 
+    fold->add(s_tv::NAME, tv->serialize<double>() ); 
     return fold ; 
 }
 
@@ -100,9 +110,10 @@ buffer gets imported in one go prior to doing any sn hookup.
 
 inline void s_csg::import(const NPFold* fold) 
 {
-    tv_pool->import<double>(fold->get(stv::NAME)) ; 
-    n_pool->import<int>(fold->get(sn::NAME)) ; 
+    pa->import<double>(fold->get(s_pa::NAME)) ; 
+    bb->import<double>(fold->get(s_bb::NAME)) ; 
+    tv->import<double>(fold->get(s_tv::NAME)) ; 
+    n->import<int>(fold->get(sn::NAME)) ; 
 }
-
 
 

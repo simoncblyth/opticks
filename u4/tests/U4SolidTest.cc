@@ -4,20 +4,41 @@
 #include "G4RotationMatrix.hh"
 
 #include "U4Solid.h"
+
+#ifdef WITH_SND
 #include "snd.hh"
 #include "scsg.hh"
+#else
+#include "sn.h"
+#include "s_csg.h"
+#endif
 
-int test_Orb()
+
+
+void test_Convert(const G4VSolid* solid )
+{
+    int lvid = 0 ; 
+    int depth = 0 ; 
+#ifdef WITH_SND
+    int idx = U4Solid::Convert(solid, lvid, depth); 
+    std::cout << snd::Desc(idx); 
+#else
+    sn* nd = U4Solid::Convert(solid, lvid, depth); 
+    std::cout << nd->desc() ;  
+#endif
+}
+
+void test_Orb()
 {
     G4Orb* orb = new G4Orb("orb", 100.) ; 
-    return U4Solid::Convert(orb, 0, 0); 
+    test_Convert(orb); 
 }
-int test_Box()
+void test_Box()
 {
     G4Box* box = new G4Box("box", 100., 200., 300. ) ; 
-    return U4Solid::Convert(box, 0, 0); 
+    test_Convert(box); 
 }
-int test_UnionSolid()
+void test_UnionSolid()
 {
     G4Orb* orb = new G4Orb("orb", 100.) ; 
     G4Box* box = new G4Box("box", 100., 200., 300. ) ; 
@@ -28,26 +49,23 @@ int test_UnionSolid()
             G4ThreeVector(0.000000, 0.000000,1.000000)
             );
     G4ThreeVector tla(50.,60.,70.);
-    G4UnionSolid* uni = new G4UnionSolid( "orb_box", orb, box, rot, tla );  
+    G4UnionSolid* orb_box = new G4UnionSolid( "orb_box", orb, box, rot, tla );  
 
-    return U4Solid::Convert(uni, 0, 0); 
+    test_Convert(orb_box); 
 }
 
 int main(int argc, char** argv)
 {
+#ifdef WITH_SND
     snd::SetPOOL(new scsg); 
+#else
+    s_csg* csg = new s_csg ; 
+    assert(csg); 
+#endif
 
-    int idx = -1 ; 
-
-    idx = test_Orb(); 
-    std::cout << snd::Desc(idx); 
-
-    idx = test_Box(); 
-    std::cout << snd::Desc(idx); 
-
-    idx = test_UnionSolid(); 
-    std::cout << snd::Desc(idx); 
-
+    test_Orb(); 
+    test_Box(); 
+    test_UnionSolid(); 
 
     return 0 ; 
 }

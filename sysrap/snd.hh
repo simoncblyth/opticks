@@ -93,7 +93,7 @@ struct SYSRAP_API snd
 
     static int  GetMaxDepth(int idx) ; 
     static int  GetNumNode(int idx) ; 
-    static void GetTypes(std::vector<int>& types, const std::vector<int>& idxs ); 
+    static void GetTypes(std::vector<int>& types, const std::vector<int>& nd_idxs ); 
 
     static int  GetNodeXForm(int idx) ; 
     static void SetNodeXForm(int idx, const glm::tmat4x4<double>& t );

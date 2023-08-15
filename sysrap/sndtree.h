@@ -9,8 +9,11 @@ This brings some of the functionality of the old NTreeBuilder for use with snd n
 This is a workaround combining the inherently persistable but not very flexible
 snd.hh with the more flexible pointer based sn.h 
 
-Once sn.h persisting using s_pool.h becomes fully featured 
-this sndtree.h can be removed. 
+Once sn.h persisting using s_pool.h s_csg.h becomes fully featured 
+this sndtree.h SHOULD BE REMOVED. 
+ 
+AS ITS AN UNHEALTHY MIX OF TWO NODE TYPES THAT ARE DOING 
+ESSENTIALLY THE SAME THING 
 
 **/
 
@@ -21,14 +24,14 @@ this sndtree.h can be removed.
 
 struct sndtree
 {
-    static int CommonTree( const std::vector<int>& leaves, int op ) ; 
+    static int CommonTree_PlaceLeaves( const std::vector<int>& leaves, int op ) ; 
     static int Build_r(sn* n, int& num_leaves_placed, const std::vector<int>& leaves, int d ); 
 }; 
 
 
 /**
-sndtree::CommonTree
----------------------
+sndtree::CommonTree_PlaceLeaves
+---------------------------------
 
 The *leaves* are snd indices, so can snd::Get(idx) to access the snd 
 
@@ -47,17 +50,19 @@ The snd::Boolean call does the n-ary setup for the 2-ary boolean nodes.
 
 **/
 
-inline int sndtree::CommonTree( const std::vector<int>& leaves, int op ) // static
+inline int sndtree::CommonTree_PlaceLeaves( const std::vector<int>& leaves, int op ) // static
 {
     int num_leaves = leaves.size() ; 
     std::vector<int> leaftypes ; 
     snd::GetTypes(leaftypes, leaves); 
 
-    sn* n = sn::CommonTree( leaftypes, op ); 
+    sn* n = sn::CommonOperatorTypeTree( leaftypes, op ); 
 
     int num_leaves_placed = 0 ; 
     int root = Build_r(n, num_leaves_placed, leaves, 0 );  
     assert( num_leaves_placed == num_leaves );  
+
+    delete n ; 
 
     return root ; 
 }
@@ -67,11 +72,9 @@ inline int sndtree::CommonTree( const std::vector<int>& leaves, int op ) // stat
 sndtree::Build_r
 ------------------
 
-Builds snd tree based on an 
+Builds snd tree based on the "skeleton" provided by the sn tree.
 
 Postorder visit after recursive call : so children reached before parents  
-
-NOTE : NO WITH_CHILD IMPL 
 
 **/
 
@@ -81,8 +84,12 @@ inline int sndtree::Build_r(sn* n, int& num_leaves_placed, const std::vector<int
     if( n->is_operator() )
     {
         int op = n->type ; 
-        int L = Build_r(n->left,  num_leaves_placed, leaves, d+1) ; 
-        int R = Build_r(n->right, num_leaves_placed, leaves, d+1) ; 
+        int nc = n->num_child();  
+        assert( nc == 2 ); 
+        sn* l = n->get_child(0); 
+        sn* r = n->get_child(1); 
+        int L = Build_r(l, num_leaves_placed, leaves, d+1) ; 
+        int R = Build_r(r, num_leaves_placed, leaves, d+1) ; 
         N = snd::Boolean( op, L, R );  
     }
     else
