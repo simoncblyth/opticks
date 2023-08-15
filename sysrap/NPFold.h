@@ -716,6 +716,7 @@ to always do that.
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
+    if(a == nullptr) return ; 
     bool change_txt_to_npy = true ; 
     std::string key = FormKey(k, change_txt_to_npy ); 
     add_(key.c_str(), a ); 

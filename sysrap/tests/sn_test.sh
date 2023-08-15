@@ -29,7 +29,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc \
+    gcc $SDIR/$name.cc $SDIR/../sn.cc $SDIR/../stv.cc $SDIR/../s_csg.cc \
           -I$SDIR/.. \
           -I$HOME/np \
           -I$OPTICKS_PREFIX/externals/glm/glm \

@@ -23,10 +23,16 @@ struct _stv
     glm::tmat4x4<double> v ;
 };
 
-struct stv
+#include "SYSRAP_API_EXPORT.hh"
+
+struct SYSRAP_API stv
 {
     typedef s_pool<stv,_stv> POOL ;
-    static POOL pool ;
+    static POOL* pool ;
+    static constexpr const bool LEAK = false ; 
+    static void SetPOOL( POOL* pool_ ); 
+    static int level() ; 
+
     static constexpr const char* NAME = "stv.npy" ; 
     static void Serialize( _stv& p, const stv* o ); 
     static stv* Import(  const _stv* p, const std::vector<_stv>& buf ); 
@@ -41,6 +47,9 @@ struct stv
     bool is_root_importable() const ; 
     std::string desc() const ;  
 }; 
+
+
+inline int stv::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
 inline void stv::Serialize( _stv& p, const stv* o )
 {
@@ -58,14 +67,16 @@ inline stv* stv::Import( const _stv* p, const std::vector<_stv>& )
 
 inline stv::stv()
     :
-    pid(pool.add(this)),
+    pid(pool ? pool->add(this) : -1),
     t(1.),
     v(1.)
 {
+    if(level() > 1) std::cerr << "stv::stv pid " << pid << std::endl ; 
 }
 inline stv::~stv()
 {
-    pool.remove(this); 
+    if(level() > 1) std::cerr << "stv::~stv pid " << pid << std::endl ; 
+    if(pool) pool->remove(this); 
 }
 
 inline bool stv::is_root_importable() const 

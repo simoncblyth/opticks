@@ -120,6 +120,10 @@ set(SOURCES
     snd.cc
     scsg.cc
 
+    s_csg.cc
+    sn.cc
+    stv.cc
+
 
     SEvent.cc
     SGenstep.cc
@@ -225,7 +229,12 @@ set(HEADERS
     scsg.hh
 
     sndtree.h
+
+    s_pool.h
+    s_csg.h
     sn.h 
+    stv.h 
+
     st.h 
     stra.h 
  

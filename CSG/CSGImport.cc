@@ -303,11 +303,13 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     if( nd && nd->hasAABB() )
     {   
+        /*
         LOG_IF(error, !expect_external_bbox) 
            << " For node of type " << CSG::Name(typecode)
            << " : DO NOT EXPECT AABB : BUT FIND ONE " 
            << " (maybe boolean tree for general sphere)" 
            ;
+        */
         n->setAABB_Narrow( aabb ); 
     }
     else

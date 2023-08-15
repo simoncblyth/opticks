@@ -44,7 +44,7 @@ s_find
 ---------
 
 s_find is used by s_pool::index and s_pool::remove in std::find_if 
-traversals of the pool which is a map with int keys  
+traversals of the pools which are maps of T* pointers with int keys  
 
 **/
 
@@ -87,7 +87,7 @@ struct s_pool
 };
 
 template<typename T, typename P>
-s_pool<T,P>::s_pool()
+inline s_pool<T,P>::s_pool()
     :
     count(0),
     level(ssys::getenvint("s_pool_level",0))
@@ -95,12 +95,12 @@ s_pool<T,P>::s_pool()
 }
 
 template<typename T, typename P>
-int s_pool<T,P>::size() const 
+inline int s_pool<T,P>::size() const 
 {
     return pool.size(); 
 }
 template<typename T, typename P>
-int s_pool<T,P>::get_num_root() const 
+inline int s_pool<T,P>::get_num_root() const 
 {
     int count_root = 0 ; 
     typedef typename POOL::const_iterator IT ; 
@@ -124,7 +124,7 @@ as "root".
 **/
 
 template<typename T, typename P>
-T* s_pool<T,P>::get_root(int idx) const 
+inline T* s_pool<T,P>::get_root(int idx) const 
 {
     T* root = nullptr ; 
     int count_root = 0 ; 
@@ -142,7 +142,7 @@ T* s_pool<T,P>::get_root(int idx) const
 }
 
 template<typename T, typename P>
-std::string s_pool<T,P>::brief(const char* msg) const 
+inline std::string s_pool<T,P>::brief(const char* msg) const 
 {
     std::stringstream ss ; 
     ss
@@ -157,7 +157,7 @@ std::string s_pool<T,P>::brief(const char* msg) const
 }
 
 template<typename T, typename P>
-std::string s_pool<T,P>::desc(const char* msg) const 
+inline std::string s_pool<T,P>::desc(const char* msg) const 
 {
     std::stringstream ss ; 
     ss << "s_pool::desc "
@@ -191,7 +191,7 @@ cause gaps in the pid values whereas the indices will be contiguous.
 **/
 
 template<typename T, typename P>
-int s_pool<T, P>::index(const T* q) const 
+inline int s_pool<T, P>::index(const T* q) const 
 {
     if( q == nullptr ) return -1 ;     
     s_find<T> find(q); 
@@ -200,7 +200,7 @@ int s_pool<T, P>::index(const T* q) const
 }
 
 template<typename T, typename P>
-int s_pool<T, P>::add(T* o)
+inline int s_pool<T, P>::add(T* o)
 {
     int pid = count ; 
     pool[pid] = o ; 
@@ -210,7 +210,7 @@ int s_pool<T, P>::add(T* o)
 }
 
 template<typename T, typename P>
-int s_pool<T,P>::remove(T* o)
+inline int s_pool<T,P>::remove(T* o)
 {
     s_find<T> find(o); 
     typename POOL::iterator it = std::find_if( pool.begin(), pool.end(), find ) ; 
@@ -274,6 +274,7 @@ inline NP* s_pool<T,P>::serialize() const
     std::vector<P> buf ; 
     serialize_(buf); 
 
+    // TODO: use NPX.h  
     NP* a = NP::Make<S>( buf.size(), P::NV ) ; 
     a->read2<S>((S*)buf.data()); 
 

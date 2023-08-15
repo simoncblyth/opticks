@@ -15,6 +15,7 @@ class CSGFoundryAB(object):
         self.a = a 
         self.b = b 
         self.ip = _ip
+        self.check_node()
 
     def _set_ip(self, ip):
         self._ip = ip 
@@ -82,6 +83,9 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
+
+
+
     def check_prim_lv(self):
         a = self.a 
         b = self.b 
@@ -103,6 +107,7 @@ class CSGFoundryAB(object):
         """
         a = self.a 
         b = self.b 
+
         atr = a.node[:,3,3].view(np.int32) & 0x7fffffff
         btr = b.node[:,3,3].view(np.int32) & 0x7fffffff
 
@@ -135,14 +140,22 @@ class CSGFoundryAB(object):
         return "\n".join(lines) 
  
     def check_prim(self):
+        """
+        np.all(a.prim.view(np.int32)[:,:2].reshape(-1,8)==b.prim.view(np.int32)[:,:2].reshape(-1,8)) 
+        """
         a = self.a 
         b = self.b 
         ab = self
         setattr(self,"prim_numNode",np.where(a.prim[:,0,0].view(np.int32)!=b.prim[:,0,0].view(np.int32))[0])
 
         lines = []
-        lines.append("CSGFoundryAB.check_solid")
+        lines.append("CSGFoundryAB.check_prim")
         EXPR = filter(None,textwrap.dedent(r"""
+
+        #(numNode,nodeOffset,tranOffset,planOffset)(sbtIndexOffset,meshIdx,repeatIdx,primIdx)
+        a.prim.view(np.int32)[:,:2].reshape(-1,8)
+        b.prim.view(np.int32)[:,:2].reshape(-1,8)
+
         #(numNode,nodeOffset,tranOffset,planOffset)
         a.prim[:,0].view(np.int32) 
         #(numNode,nodeOffset,tranOffset,planOffset)
@@ -248,6 +261,12 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
+
+    def check_node(self):
+        a = self.a 
+        b = self.b 
+        self.check_4x4("node")
+
     def check_4x4(self, name):
         a = self.a 
         b = self.b        
@@ -261,10 +280,12 @@ class CSGFoundryAB(object):
         lines.append(" a.%s.shape : %s " % (name, str(am.shape)) )
         lines.append(" b.%s.shape : %s " % (name, str(bm.shape)) )
         if am.shape == bm.shape:
-            abm = np.max( np.abs(am.reshape(-1,16) - bm.reshape(-1,16)), axis=1 )
+            abm = np.max(np.abs(am-bm).reshape(-1,16), axis=1 )
             setattr(self,name, abm )
             expr = "len(np.where(ab.%(name)s>0.01)[0])" % locals()
             lines.append(" %s : %s " % (expr, str(eval(expr))))
+        else:
+            setattr(self,name,None) 
         pass
         return "\n".join(lines)
 

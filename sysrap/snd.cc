@@ -16,12 +16,10 @@
 #include "scsg.hh"
 #include "snd.hh"
 #include "sndtree.h"  // using flexible sn.h 
+
 #include "st.h"       // only st::complete_binary_tree_nodes
 #include "stra.h"     // transform utilities based on glm  
-#include "stv.h"
 
-sn::POOL sn::pool = {} ; 
-stv::POOL stv::pool = {} ; 
 
 
 scsg* snd::POOL = nullptr  ; 
@@ -451,6 +449,9 @@ snd::getLVSubNode
 
 Sum of children of compound nodes found beneath this node. 
 HMM: this assumes compound nodes only contain leaf nodes 
+
+Notice that the compound nodes themselves are regarded as part of
+the binary tree. 
 
 **/
 int snd::getLVSubNode() const 
@@ -1137,6 +1138,13 @@ template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t )
 template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t ) const ; 
 template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t, OpticksCSG_t ) const ; 
 
+/**
+snd::typenodes_r_
+-------------------
+
+Recursive traverse CSG tree collecting snd::index when the snd::typecode is in the types vector. 
+
+**/
 
 void snd::typenodes_r_(std::vector<int>& nodes, const std::vector<OpticksCSG_t>& types, int d) const 
 {

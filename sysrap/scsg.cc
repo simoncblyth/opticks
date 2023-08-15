@@ -3,6 +3,14 @@
 #include "NPFold.h"
 #include "NPX.h"
 
+
+// foreigners 
+//#include "sn.h"
+//stv::POOL stv::pool = {} ; 
+//sn::POOL   sn::pool = {} ; 
+
+
+
 scsg::scsg()
     :
     level(ssys::getenvint("scsg_level", 0))

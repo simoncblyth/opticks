@@ -9,31 +9,35 @@ https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stackt
 #include <cassert>
 #include "OpticksCSG.h"
 #include "ssys.h"
+#include "s_csg.h"
 
 #include "NP.hh"
 
 const char* FOLD = getenv("FOLD"); 
 
-
 #include "sn.h"
-sn::POOL sn::pool = {} ; 
-stv::POOL stv::pool = {} ; 
 
 
-void check(const char* msg, int i=-1)
+void check_LEAK(const char* msg, int i=-1)
 {
     //const char* spacer = "\n\n" ; 
     const char* spacer = "" ; 
 
     std::stringstream ss ; 
-    ss << "check[" << std::setw(3) << i << "] " << std::setw(30) << ( msg ? msg : "-" ) << "  " << sn::pool.brief() << spacer << std::endl ; 
+    ss << "check_LEAK[" << std::setw(3) << i << "] " << std::setw(30) << ( msg ? msg : "-" ) << "  " << sn::pool->brief() << spacer << std::endl ; 
     std::string str = ss.str(); 
     std::cout << str ; 
 
     if(!sn::LEAK)
     {
-        assert( sn::pool.size() == 0 ); 
+        assert( sn::pool->size() == 0 ); 
     }
+
+    if(!stv::LEAK)
+    {
+        assert( stv::pool->size() == 0 ); 
+    }
+
 }
 
 void test_BinaryTreeHeight()
@@ -54,7 +58,7 @@ void test_BinaryTreeHeight()
     } 
     if(sn::level() > 0) std::cout << "] test_BinaryTreeHeight "  << std::endl ; 
 
-    check("BinaryTreeHeight"); 
+    check_LEAK("BinaryTreeHeight"); 
 }
 
 void test_ZeroTree()
@@ -73,7 +77,7 @@ void test_ZeroTree()
     if(sn::level() > 1) std::cout << sn::Desc(); 
 
     if(sn::level() > 0) std::cout << "] test_ZeroTree num_leaves " << num_leaves << std::endl ; 
-    check("ZeroTree"); 
+    check_LEAK("ZeroTree"); 
 }
 
 void test_CommonTree(int num_leaves)
@@ -93,7 +97,7 @@ void test_CommonTree(int num_leaves)
 
     if(sn::level() > 0) std::cout << sn::Desc(); 
     if(sn::level() > 1) std::cout << "]test_CommonTree num_leaves " << num_leaves << std::endl ; 
-    check("CommonTree", num_leaves); 
+    check_LEAK("CommonTree", num_leaves); 
 }
 
 void test_CommonTree()
@@ -102,7 +106,7 @@ void test_CommonTree()
     int N = 32 ; 
     for(int nl=1 ; nl < N ; nl++) test_CommonTree(nl); 
     if(sn::level() > 0) std::cout << "] test_CommonTree " << std::endl ; 
-    check("CommonTree"); 
+    check_LEAK("CommonTree"); 
 }
 
 sn* manual_tree_0()
@@ -177,7 +181,7 @@ void test_label()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] test_label it " << it  << std::endl ; 
-    check("label"); 
+    check_LEAK("label"); 
 }
 
 void test_positivize()
@@ -197,39 +201,39 @@ void test_positivize()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] test_positivize it " << it  << std::endl ; 
-    check("positivize"); 
+    check_LEAK("positivize"); 
 }
 
 void test_pool()
 {
     if(sn::level() > 0) std::cout << "[ test_pool " << std::endl ; 
-    assert( sn::pool.size() == 0  );  
+    assert( sn::pool->size() == 0  );  
     sn* a = sn::Zero() ; 
 
 
-    assert( sn::pool.size() == 1  );  
+    assert( sn::pool->size() == 1  );  
     sn* b = sn::Zero() ; 
 
-    assert( sn::pool.size() == 2  );  
+    assert( sn::pool->size() == 2  );  
     sn* c = sn::Zero() ; 
 
-    assert( sn::pool.size() == 3  );  
+    assert( sn::pool->size() == 3  );  
 
 
     if(sn::level() > 1) std::cout << sn::Desc() ; 
 
 
     delete c ; 
-    assert( sn::pool.size() == 2  );  
+    assert( sn::pool->size() == 2  );  
 
     delete a ; 
-    assert( sn::pool.size() == 1  );  
+    assert( sn::pool->size() == 1  );  
 
     delete b ; 
-    assert( sn::pool.size() == 0  );  
+    assert( sn::pool->size() == 0  );  
 
     if(sn::level() > 0) std::cout << "] test_pool " << std::endl ; 
-    check("pool"); 
+    check_LEAK("pool"); 
 }
 
 void test_Simple()
@@ -246,7 +250,7 @@ void test_Simple()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] test_Simple it " << it << std::endl ; 
-    check("Simple"); 
+    check_LEAK("Simple"); 
 }
 
 void test_set_left()
@@ -267,7 +271,7 @@ void test_set_left()
     if(sn::level() > 1) std::cout << sn::Desc() ; 
 
     if(sn::level() > 0) std::cout << "] test_set_left" << std::endl ; 
-    check("set_left"); 
+    check_LEAK("set_left"); 
 }
 
 void test_serialize_0()
@@ -280,11 +284,11 @@ void test_serialize_0()
     if(sn::level() > lev) std::cout << t->render(5) ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-    int num_root = sn::pool.get_num_root() ; 
+    int num_root = sn::pool->get_num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
  
     std::vector<_sn> buf ; 
-    sn::pool.serialize_(buf); 
+    sn::pool->serialize_(buf); 
 
     delete t ; 
 
@@ -295,9 +299,9 @@ void test_serialize_0()
     a->save(FOLD, sn::NAME); 
 
     if(sn::level() > lev) std::cout << "] test_serialize buf.size() " << buf.size()  << std::endl ; 
-    if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
+    if(sn::level() > lev) std::cout << sn::pool->Desc(buf) << std::endl ; 
 
-    check("serialize_0"); 
+    check_LEAK("serialize_0"); 
 }
 
 void test_serialize_1()
@@ -310,10 +314,10 @@ void test_serialize_1()
     if(sn::level() > lev) std::cout << t->render(5) ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-    int num_root = sn::pool.get_num_root() ; 
+    int num_root = sn::pool->get_num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
 
-    NP* a = sn::pool.serialize<int>() ; 
+    NP* a = sn::pool->serialize<int>() ; 
 
     delete t ; 
 
@@ -321,7 +325,7 @@ void test_serialize_1()
 
     a->save(FOLD, sn::NAME); 
 
-    check("serialize_1"); 
+    check_LEAK("serialize_1"); 
 }
 
 void test_import_0()
@@ -335,21 +339,21 @@ void test_import_0()
     std::vector<_sn> buf(a->shape[0]) ; 
     a->write<int>((int*)buf.data()); 
 
-    sn::pool.import_(buf); 
+    sn::pool->import_(buf); 
 
-    if(sn::level() > lev) std::cout << sn::pool.Desc(buf) << std::endl ; 
+    if(sn::level() > lev) std::cout << sn::pool->Desc(buf) << std::endl ; 
 
-    int num_root = sn::pool.get_num_root() ; 
+    int num_root = sn::pool->get_num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
 
-    sn* root = sn::pool.get_root(0) ; 
+    sn* root = sn::pool->get_root(0) ; 
     if(root && sn::level() > lev) std::cout << root->render(5); 
     delete root ; 
 
     if(sn::level() > lev) std::cout << "] test_import_0 " << std::endl ; 
-    check("import_0"); 
+    check_LEAK("import_0"); 
 }
 
 void test_import_1()
@@ -360,18 +364,18 @@ void test_import_1()
     if(sn::level() > lev) std::cout << " load from " << FOLD << "/" << sn::NAME << std::endl ; 
     NP* a = NP::Load(FOLD, sn::NAME );
 
-    sn::pool.import<int>(a); 
+    sn::pool->import<int>(a); 
 
-    int num_root = sn::pool.get_num_root() ; 
+    int num_root = sn::pool->get_num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-    sn* root = sn::pool.get_root(0) ; 
+    sn* root = sn::pool->get_root(0) ; 
     if(root && sn::level() > lev) std::cout << root->render(5); 
     delete root ; 
 
     if(sn::level() > lev) std::cout << "] test_import_1 " << std::endl ; 
-    check("import_1"); 
+    check_LEAK("import_1"); 
 }
 
 
@@ -384,7 +388,7 @@ void test_dtor_0()
 {
     sn* n = sn::Zero(); 
     delete n ; 
-    check("dtor_0"); 
+    check_LEAK("dtor_0"); 
 }
 void test_dtor_1()
 {
@@ -392,7 +396,7 @@ void test_dtor_1()
     sn* b = sn::Prim(101);
     sn* c = sn::Create(1, a, b ); 
     delete c ; 
-    check("dtor_1"); 
+    check_LEAK("dtor_1"); 
 }
 
 void Desc()
@@ -464,7 +468,7 @@ void test_set_child()
 
     delete c ; 
 
-    check("set_child"); 
+    check_LEAK("set_child"); 
 }
 
 void test_deepcopy_0()
@@ -489,7 +493,7 @@ void test_deepcopy_0()
 
     delete ccp ; 
 
-    check("deepcopy_0"); 
+    check_LEAK("deepcopy_0"); 
 }
 
 void test_deepcopy_1_leaking()
@@ -510,7 +514,7 @@ void test_deepcopy_1_leaking()
 
     std::cout << "cp\n" << cp->desc_child() << std::endl ; 
 
-    //check("deepcopy_1_leaking"); 
+    //check_LEAK("deepcopy_1_leaking"); 
 }
 
 void test_next_sibling()
@@ -541,7 +545,7 @@ void test_next_sibling()
 
     delete c ; 
 
-    check("next_sibling"); 
+    check_LEAK("next_sibling"); 
 }
 
 void test_Serialize()
@@ -555,8 +559,7 @@ void test_Serialize()
     if(sn::level() > lev) std::cout << t->render(5) ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-
-    NPFold* fold = sn::Serialize() ; 
+    NPFold* fold = s_csg::Serialize() ; 
 
     delete t ; 
 
@@ -564,18 +567,20 @@ void test_Serialize()
     
     if(sn::level() > lev) std::cout << "] test_Serialize it " << it  << std::endl ; 
 
-    check("Serialize"); 
+    check_LEAK("Serialize"); 
 }
 
 
 void test_Import()
 {
     NPFold* fold = NPFold::Load(FOLD) ; 
-    sn::Import(fold); 
+ 
+    s_csg::Import( fold ); 
 
-    std::cout << stv::pool.desc() ;  
 
-    sn* t = sn::pool.get_root(0) ; 
+    std::cout << stv::pool->desc() ;  
+
+    sn* t = sn::pool->get_root(0) ; 
 
     std::cout << t->render(0) ; 
 
@@ -587,7 +592,7 @@ void test_Import()
 
     delete t ; 
 
-    check("Import"); 
+    check_LEAK("Import"); 
 }
 
 
@@ -595,10 +600,12 @@ void test_Import()
 
 int main(int argc, char** argv)
 {
+    s_csg* _csg = new s_csg ; 
+    std::cout << _csg->brief() ; 
 
-    /*
     test_Serialize(); 
     test_Import(); 
+
     test_next_sibling(); 
     test_deepcopy_0(); 
     //test_deepcopy_1_leaking(); 
@@ -638,11 +645,7 @@ int main(int argc, char** argv)
 
     test_serialize_1(); 
     test_import_1(); 
-    */
-
     test_positivize(); 
-
-    Desc(); 
 
     return 0 ; 
 }

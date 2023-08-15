@@ -11,7 +11,8 @@ Usage Example
 ::
 
     #include "sn.h"
-    sn::POOL sn::pool = {} ;  // initialize static pool 
+    stv::POOL stv::pool = {} ;  // initialize static pool 
+    sn::POOL sn::pool = {} ;    // initialize static pool 
 
 
 Usage
@@ -88,6 +89,7 @@ all the way to the GPU.
 #include <iomanip>
 #include <cassert>
 
+#include "ssys.h"
 
 #include "OpticksCSG.h"
 #include "scanvas.h"
@@ -111,7 +113,7 @@ struct _sn
     int parent ; 
     int tv ; 
 
-    // TODO: add these, and methods similar to snd.hh
+    // TODO: add these, and methods similar to snd.hh to allow this to replace snd.hh 
     // int lvid ; 
     // int param ; 
     // int aabb ; 
@@ -168,10 +170,14 @@ inline std::string _sn::desc() const
 }
 
 
-struct sn
+#include "SYSRAP_API_EXPORT.hh"
+
+struct SYSRAP_API sn
 {
     typedef s_pool<sn,_sn> POOL ;
-    static POOL pool ;
+    static POOL* pool ;  
+    static void SetPOOL( POOL* pool_ ); 
+
     static constexpr const char* NAME = "sn.npy" ; 
 
     static std::string Desc(const char* msg=nullptr); 
@@ -195,8 +201,6 @@ struct sn
     static sn*  Import(  const _sn* p, const std::vector<_sn>& buf ); 
     static sn*  Import_r(const _sn* p, const std::vector<_sn>& buf, int d ); 
 
-    static NPFold* Serialize() ; 
-    static void    Import(const NPFold* fold); 
 
 
     //static constexpr const bool LEAK = true ; 
@@ -209,14 +213,14 @@ struct sn
     int type ; 
     int complement ; 
 #ifdef WITH_CHILD
-    std::vector<sn*> child ; 
+    std::vector<sn*> child ;   // owned by this sn 
 #else
-    sn* left ; 
-    sn* right ;     
+    sn* left ;           // owned by this sn 
+    sn* right ;          // owned by this sn 
 #endif
 
-    sn* parent ; 
-    stv* tv ; 
+    sn* parent ;  // NOT owned by this sn 
+    stv* tv ;     // owned by this sn 
 
 
     sn(int type, sn* left, sn* right);
@@ -321,10 +325,10 @@ struct sn
     void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
 };
 
-inline std::string sn::Desc(const char* msg){ return pool.desc(msg); }
-inline int         sn::level() {  return pool.level ; } // static 
+inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; }
+inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
-inline int         sn::index() const { return pool.index(this); }
+inline int         sn::index() const { return pool ? pool->index(this) : -1 ; }
 inline bool        sn::is_root_importable() const { return parent == nullptr ; }
 
 
@@ -454,19 +458,22 @@ This functionality is needed for multiunion.
 
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
+    assert( pool      && "sn::pool  is required for sn::Serialize" );    
+    assert( stv::pool && "stv::pool is required for sn::Serialize" ); 
+
     n.type = x->type ; 
     n.complement = x->complement ;
-    n.parent = pool.index(x->parent);  
-    n.tv = stv::pool.index(x->tv) ;  
+    n.parent = pool->index(x->parent);  
+    n.tv = stv::pool->index(x->tv) ;  
 
 #ifdef WITH_CHILD
     n.sibdex = x->sibling_index(); 
     n.num_child = x->num_child() ; 
-    n.first_child = pool.index(x->first_child());  
-    n.next_sibling = pool.index(x->next_sibling()); 
+    n.first_child = pool->index(x->first_child());  
+    n.next_sibling = pool->index(x->next_sibling()); 
 #else
-    n.left  = pool.index(x->left);  
-    n.right = pool.index(x->right);  
+    n.left  = pool->index(x->left);  
+    n.right = pool->index(x->right);  
 #endif
 }
 
@@ -498,13 +505,14 @@ issues of ordering of Import are avoided.
 
 inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 {
+    assert( stv::pool && "stv::pool is required for sn::Import_r " ); 
     if(level() > 0) std::cerr << "sn::Import_r d " << d << " " << ( _n ? _n->desc() : "(null)" ) << std::endl ; 
     if(_n == nullptr) return nullptr ; 
 
 #ifdef WITH_CHILD
     sn* n = Create( _n->type , nullptr, nullptr );  
     n->complement = _n->complement ; 
-    n->tv = stv::pool.get_root(_n->tv) ; 
+    n->tv = stv::pool->get_root(_n->tv) ; 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
     while( _child ) 
@@ -520,33 +528,10 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     sn* r = Import_r( _r, buf, d+1 ); 
     sn* n = Create( _n->type, l, r ); 
     n->complement = _n->complement ; 
-    n->tv = stv::pool.get_root(_n->tv) ; 
+    n->tv = stv::pool->get_root(_n->tv) ; 
 #endif
     return n ;  
 }  
-
-inline NPFold* sn::Serialize()  // static 
-{
-    NPFold* fold = new NPFold ; 
-    fold->add(sn::NAME,  sn::pool.serialize<int>() );  
-    fold->add(stv::NAME, stv::pool.serialize<double>() ); 
-    return fold ; 
-}
-
-/**
-sn::Import
--------------
-
-NB transforms are imported before nodes
-so the transform hookup during node import works. 
-
-**/
-
-inline void sn::Import(const NPFold* fold) // static
-{
-    stv::pool.import<double>(fold->get(stv::NAME)) ; 
-    sn::pool.import<int>(fold->get(sn::NAME)) ; 
-}
 
 
 
@@ -554,7 +539,7 @@ inline void sn::Import(const NPFold* fold) // static
 
 inline sn::sn(int type_, sn* left_, sn* right_)
     :
-    pid(pool.add(this)),
+    pid(pool ? pool->add(this) : -1),
     depth(0),
     subdepth(0),
     type(type_),
@@ -567,7 +552,7 @@ inline sn::sn(int type_, sn* left_, sn* right_)
     parent(nullptr),
     tv(nullptr)
 {
-    if(pool.level > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 
 #ifdef WITH_CHILD
     if(left_ && right_)
@@ -600,7 +585,10 @@ inline void sn::add_child( sn* ch )
 // dtor 
 inline sn::~sn()   
 {
-    if(pool.level > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
+
+    delete tv ; 
+
 
 #ifdef WITH_CHILD
     for(int i=0 ; i < int(child.size()) ; i++)
@@ -613,9 +601,9 @@ inline sn::~sn()
     delete right ; 
 #endif
 
-    pool.remove(this); 
+    if(pool) pool->remove(this); 
 
-    if(pool.level > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
 }
 
 
@@ -1289,15 +1277,17 @@ inline sn* sn::ZeroTree_r( int elevation, int op )  // static
 inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 {   
     int height = BinaryTreeHeight(num_leaves) ;
-    if(pool.level > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
+    if(level() > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
     sn* root = ZeroTree_r( height, op );
-    if(pool.level > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
+    if(level() > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
     return root ; 
 }          
 
 
 inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
 {   
+    
+
     int num_leaves = leaftypes.size(); 
     sn* root = nullptr ; 
     if( num_leaves == 1 )
@@ -1308,18 +1298,18 @@ inline sn* sn::CommonTree( std::vector<int>& leaftypes, int op ) // static
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(pool.level > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
-        if(pool.level > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cerr << "sn::CommonTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
 
         root->populate(leaftypes); 
 
-        if(pool.level > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
-        if(pool.level > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cerr << "sn::CommonTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
 
         root->prune();
  
-        if(pool.level > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
-        if(pool.level > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cerr << "sn::CommonTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
 } 
@@ -1342,7 +1332,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
 
     int num_nodes = order.size(); 
 
-    if(pool.level > 0) std::cerr 
+    if(level() > 0) std::cerr 
         << "sn::populate"
         << " num_leaves " << num_leaves
         << " num_nodes " << num_nodes
@@ -1352,7 +1342,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
     for(int i=0 ; i < num_nodes ; i++)
     {
         sn* n = order[i]; 
-        if(pool.level > 1) std::cerr 
+        if(level() > 1) std::cerr 
             << "sn::populate " << std::setw(3) << i 
             << " n.desc " << n->desc()
             << std::endl 
@@ -1364,7 +1354,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
         sn* n = order[i]; 
 
 #ifdef WITH_CHILD
-        if(pool.level > 1) std::cerr 
+        if(level() > 1) std::cerr 
             << "sn::populate"
             << " WITH_CHILD "
             << " i " << i 
@@ -1380,7 +1370,7 @@ inline void sn::populate(std::vector<int>& leaftypes )
             for(int j=0 ; j < 2 ; j++)
             {
                 sn* ch = n->child[j] ; 
-                if(pool.level > 1 ) std::cerr << "sn::populate ch.desc " << ch->desc() << std::endl ; 
+                if(level() > 1 ) std::cerr << "sn::populate ch.desc " << ch->desc() << std::endl ; 
 
                 if( ch->is_zero() && num_leaves_placed < num_leaves )
                 {
@@ -1416,7 +1406,7 @@ inline void sn::prune()
 
     if(has_dangle())
     {
-        if(pool.level > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
+        if(level() > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
     }
 
 }
@@ -1582,23 +1572,23 @@ inline void sn::positivize_r(bool negate, int d)
 
 
 
-void sn::setXF( const glm::tmat4x4<double>& t )
+inline void sn::setXF( const glm::tmat4x4<double>& t )
 {
     glm::tmat4x4<double> v = glm::inverse(t) ; 
     setXF(t, v); 
 }
-void sn::combineXF( const glm::tmat4x4<double>& t )
+inline void sn::combineXF( const glm::tmat4x4<double>& t )
 {
     glm::tmat4x4<double> v = glm::inverse(t) ; 
     combineXF(t, v); 
 }
-void sn::setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
+inline void sn::setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
     if( tv == nullptr ) tv = new stv ; 
     tv->t = t ; 
     tv->v = v ; 
 }
-void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
+inline void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
     if( tv == nullptr )
     {

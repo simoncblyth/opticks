@@ -210,8 +210,13 @@ When SSim not in use can also use::
 #include "sstr.h"
 #include "strid.h"
 #include "sfactor.h"
+
 #include "snd.hh"
 #include "scsg.hh"
+
+#include "s_csg.h"
+#include "sn.h"
+
 #include "stra.h"
 #include "sstandard.h"
 #include "smatsur.h"
@@ -253,6 +258,8 @@ struct stree
 
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* CSG = "csg" ;
+    static constexpr const char* _CSG = "_csg" ;
+    static constexpr const char* SN = "sn" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
@@ -308,7 +315,9 @@ struct stree
     sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
                                            // subs are collected in stree::classifySubtrees
 
-    scsg*  csg ;                           // csg node trees of all solids from G4VSolid    
+    scsg*   csg ;                          // snd.hh based csg node trees of all solids from G4VSolid    
+    s_csg* _csg ;                          // sn.h based csg node trees
+
     sstandard* standard ;                  // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
 
     NPFold* material ;   // material properties from G4 MPTs
@@ -565,6 +574,7 @@ inline stree::stree()
     sensor_count(0),
     subs_freq(new sfreq),
     csg(new scsg),
+    _csg(new s_csg),
     standard(new sstandard),
     material(new NPFold),
     surface(new NPFold)
@@ -1976,8 +1986,8 @@ inline NPFold* stree::serialize() const
     NPFold* f_standard = standard->serialize() ; 
     fold->add_subfold( STANDARD, f_standard ); 
 
-    NPFold* f_csg = csg->serialize() ; 
-    fold->add_subfold( CSG, f_csg ); 
+    fold->add_subfold( CSG, csg->serialize() ); 
+    fold->add_subfold( _CSG, _csg->serialize() ); 
 
     fold->add( SONAME, NPX::Holder(soname) ); 
 
@@ -2121,8 +2131,8 @@ inline void stree::import(const NPFold* fold)
     */
 
 
-    NPFold* f_csg = fold->get_subfold(CSG);
-    csg->import(f_csg); 
+    csg->import(fold->get_subfold(CSG)); 
+    _csg->import(fold->get_subfold(_CSG)); 
 
 
     ImportNames( digs, fold->get(DIGS) ); 
