@@ -593,6 +593,9 @@ target_include_directories( ${name} PUBLIC
    ${CUDA_INCLUDE_DIRS}
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
+
+target_compile_definitions( ${name} PUBLIC WITH_SND )
+
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) ## only does anything with newer plog
 target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    

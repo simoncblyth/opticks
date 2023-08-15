@@ -590,7 +590,7 @@ inline stree::stree()
 inline void stree::init()
 {
     if(level > 0) std::cout << "stree::init " << std::endl ; 
-    snd::SetPOOL(csg); 
+    // snd::SetPOOL(csg);   // moved into scsg::init
 }
 
 

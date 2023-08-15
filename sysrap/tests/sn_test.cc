@@ -80,33 +80,34 @@ void test_ZeroTree()
     check_LEAK("ZeroTree"); 
 }
 
-void test_CommonTree(int num_leaves)
+void test_CommonOperatorTypeTree(int num_leaves)
 {
-    if(sn::level() > 1) std::cout << "[test_CommonTree num_leaves " << num_leaves << std::endl ; 
+    if(sn::level() > 1) std::cout << "[test_CommonOperatorTypeTree num_leaves " << num_leaves << std::endl ; 
     if(sn::level() > 1) std::cout << sn::Desc(); 
 
     std::vector<int> leaftypes ; 
     for(int t=0 ; t < num_leaves ; t++) leaftypes.push_back( CSG_LEAF+t ); 
 
-    sn* root = sn::CommonTree(leaftypes, 1 ); 
-    if(sn::level() > 1) std::cout << sn::Desc("CommonTree"); 
+    sn* root = sn::CommonOperatorTypeTree(leaftypes, CSG_UNION ) ; 
 
-    if(sn::level() > 0) std::cout << "test_CommonTree num_leaves " << std::setw(2) << num_leaves << " root: " << root->desc() << std::endl ; 
+    if(sn::level() > 1) std::cout << sn::Desc("CommonOperatorTypeTree"); 
+
+    if(sn::level() > 0) std::cout << "test_CommonOperatorTypeTree num_leaves " << std::setw(2) << num_leaves << " root: " << root->desc() << std::endl ; 
 
     if(!sn::LEAK) delete root ; 
 
     if(sn::level() > 0) std::cout << sn::Desc(); 
-    if(sn::level() > 1) std::cout << "]test_CommonTree num_leaves " << num_leaves << std::endl ; 
-    check_LEAK("CommonTree", num_leaves); 
+    if(sn::level() > 1) std::cout << "]test_CommonOperatorTypeTree num_leaves " << num_leaves << std::endl ; 
+    check_LEAK("CommonOperatorTypeTree", num_leaves); 
 }
 
-void test_CommonTree()
+void test_CommonOperatorTypeTree()
 {
-    if(sn::level() > 0) std::cout << "[ test_CommonTree " << std::endl ; 
+    if(sn::level() > 0) std::cout << "[ test_CommonOperatorTypeTree " << std::endl ; 
     int N = 32 ; 
-    for(int nl=1 ; nl < N ; nl++) test_CommonTree(nl); 
-    if(sn::level() > 0) std::cout << "] test_CommonTree " << std::endl ; 
-    check_LEAK("CommonTree"); 
+    for(int nl=1 ; nl < N ; nl++) test_CommonOperatorTypeTree(nl); 
+    if(sn::level() > 0) std::cout << "] test_CommonOperatorTypeTree " << std::endl ; 
+    check_LEAK("CommonOperatorTypeTree"); 
 }
 
 sn* manual_tree_0()
@@ -611,29 +612,29 @@ int main(int argc, char** argv)
     //test_deepcopy_1_leaking(); 
 
     // before fixing sn::deepcopy with sn::disown_child some of the below  segmented or hung
-    test_CommonTree(1);
-    test_CommonTree(2);
-    test_CommonTree(3);
-    test_CommonTree(4);
-    test_CommonTree(5);
-    test_CommonTree(6);  
-    test_CommonTree(7); 
-    test_CommonTree(8);
-    test_CommonTree(9);
-    test_CommonTree(10);
-    test_CommonTree(11); 
-    test_CommonTree(12);
-    test_CommonTree(16);   
-    test_CommonTree(32); 
+    test_CommonOperatorTypeTree(1);
+    test_CommonOperatorTypeTree(2);
+    test_CommonOperatorTypeTree(3);
+    test_CommonOperatorTypeTree(4);
+    test_CommonOperatorTypeTree(5);
+    test_CommonOperatorTypeTree(6);  
+    test_CommonOperatorTypeTree(7); 
+    test_CommonOperatorTypeTree(8);
+    test_CommonOperatorTypeTree(9);
+    test_CommonOperatorTypeTree(10);
+    test_CommonOperatorTypeTree(11); 
+    test_CommonOperatorTypeTree(12);
+    test_CommonOperatorTypeTree(16);   
+    test_CommonOperatorTypeTree(32); 
     
     test_set_child(); 
-    test_CommonTree(4); 
-    test_CommonTree(6); 
+    test_CommonOperatorTypeTree(4); 
+    test_CommonOperatorTypeTree(6); 
     test_dtor_0(); 
     test_dtor_1(); 
     test_BinaryTreeHeight(); 
     test_ZeroTree(); 
-    test_CommonTree(); 
+    test_CommonOperatorTypeTree(); 
     test_label(); 
     test_positivize(); 
     test_Simple(); 

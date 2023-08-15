@@ -16,9 +16,7 @@ and providing dependency fire break between G4 and CSG
   with non-binary intersection in future, so are using snd.hh to test non-binary 
   solid persisting following the same approach as snode.h structural nodes
 
-Usage requires the scsg.hh POOL. That is now done at stree instanciation::
-
-    snd::SetPOOL(new scsg); 
+Usage requires the scsg.hh POOL. That is now done at scsg instanciation.
 
 TODO: 
 

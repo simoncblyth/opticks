@@ -601,7 +601,9 @@ inline sn::sn(int type_, sn* left_, sn* right_)
     right(right_),
 #endif
     parent(nullptr),
-    tv(nullptr)
+    tv(nullptr),
+    pa(nullptr),
+    bb(nullptr)
 {
     if(level() > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 

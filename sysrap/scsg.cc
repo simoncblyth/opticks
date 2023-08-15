@@ -3,14 +3,6 @@
 #include "NPFold.h"
 #include "NPX.h"
 
-
-// foreigners 
-//#include "sn.h"
-//stv::POOL stv::pool = {} ; 
-//sn::POOL   sn::pool = {} ; 
-
-
-
 scsg::scsg()
     :
     level(ssys::getenvint("scsg_level", 0))
@@ -36,12 +28,13 @@ AND DO NOT STORE POINTERS OR REFERENCES
 
 void scsg::init()
 {
-   /*
+    /*
     node.reserve(IMAX);   
     param.reserve(IMAX);   
     xform.reserve(IMAX);   
     aabb.reserve(IMAX);   
-   */ 
+    */ 
+    snd::SetPOOL(this);
 }
 
 
