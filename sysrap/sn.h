@@ -333,15 +333,10 @@ struct SYSRAP_API sn
     static sn* Contiguous( std::vector<sn*>& prims ); 
     static sn* Compound(   std::vector<sn*>& prims, int type_ ); 
 
-
+    static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int type ); 
 };
 
-
-
-
-
-
-
+inline void sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; }
 inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
@@ -673,13 +668,22 @@ inline sn* sn::deepcopy() const
     return deepcopy_r(0); 
 }
 
+/**
+sn::deepcopy_r
+----------------
+
+The default copy ctor copies the child vector, but that is a shallow copy  
+just duplicating pointers into the new child vector. 
+Hence within the child loop 
+so in the below the shallow copies are disowned and deep copies made and added 
+to the copy child vector
+
+**/
+
 inline sn* sn::deepcopy_r(int d) const 
 {
     sn* copy = new sn(*this) ;    
 #ifdef WITH_CHILD
-    // above copy ctor copies the child vector, but that is a shallow copy  
-    // so in the below the shallow copies are disowned and deep copies made and added 
-    // to the copy child vector
     for(int i=0 ; i < int(child.size()) ; i++)
     {
         sn* ch = child[i] ; 
@@ -688,6 +692,11 @@ inline sn* sn::deepcopy_r(int d) const
         copy->child.push_back( deep_ch ); 
     }
 #else
+    // whether nullptr or not the shallow default copy 
+    // should have copied left and right 
+    assert( copy->left == left ); 
+    assert( copy->right == right ); 
+    // but thats just a shallow copy so replace here with deep copies
     copy->left  = left  ? left->deepcopy_r(d+1) : nullptr ; 
     copy->right = right ? right->deepcopy_r(d+1) : nullptr ;   
 #endif
@@ -1464,16 +1473,6 @@ inline sn* sn::CommonOperatorTree( std::vector<sn*>& leaves, int op ) // static
 
 
 
-
-
-
-
-
-
-
-
-
-
 /**
 sn::populate_leaftypes
 -------------------------
@@ -2160,5 +2159,56 @@ inline sn* sn::Compound(std::vector<sn*>& prims, int type_ )
 #endif
     }
     return nd ; 
+}
+
+
+/**
+sn::BuildCommonTypeTree_Unbalanced
+------------------------------------
+
+For development of tree manipualtions see::
+
+     sysrap/tests/tree_test.cc 
+     sysrap/tests/tree.h
+
+To build unbalanced, after the first single leaf root, 
+each additional leaf is accompanied by an operator node
+that becomes the new root::
+
+    0
+
+
+      U
+    0   1
+
+          U 
+      U     2
+    0   1
+
+             U
+          U     3
+      U     2
+    0   1
+
+
+
+**/
+
+
+inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int type )  // static
+{
+    int num_leaves = leaves.size() ;
+    int num_leaves_placed = 0 ;  
+    if(num_leaves == 0) return nullptr ; 
+
+    sn* root = leaves[num_leaves_placed] ; 
+    num_leaves_placed += 1 ; 
+
+    while( num_leaves_placed < num_leaves )
+    {
+        root = Create(type, root, leaves[num_leaves_placed]); 
+        num_leaves_placed += 1 ; 
+    } 
+    return root ; 
 }
 

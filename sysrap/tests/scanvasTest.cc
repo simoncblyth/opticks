@@ -117,8 +117,6 @@ int main(int argc, char** argv)
 
     test_resize();  
 
-    /*
-    */ 
 
     return 0 ; 
 }
