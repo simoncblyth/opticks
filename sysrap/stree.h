@@ -1991,8 +1991,11 @@ inline NPFold* stree::serialize() const
     NPFold* f_standard = standard->serialize() ; 
     fold->add_subfold( STANDARD, f_standard ); 
 
+#ifdef WITH_SND
     fold->add_subfold( CSG, csg->serialize() ); 
+#else
     fold->add_subfold( _CSG, _csg->serialize() ); 
+#endif
 
     fold->add( SONAME, NPX::Holder(soname) ); 
 
@@ -2136,8 +2139,11 @@ inline void stree::import(const NPFold* fold)
     */
 
 
+#ifdef WITH_SND
     csg->import(fold->get_subfold(CSG)); 
+#else
     _csg->import(fold->get_subfold(_CSG)); 
+#endif
 
 
     ImportNames( digs, fold->get(DIGS) ); 

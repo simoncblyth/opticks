@@ -6,7 +6,7 @@ U4TreeCreateTest.sh
 EOU
 }
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 bin=U4TreeCreateTest 
 defarg="info_run_ana"
@@ -33,9 +33,9 @@ if [ ! -f "$gdmlpath" ]; then
 fi 
 export ${GEOM}_GDMLPath=$gdmlpath
 export FOLD=/tmp/$USER/opticks/$bin
-script=$REALDIR/$bin.py 
+script=$SDIR/$bin.py 
 
-vars="BASH_SOURCE REALDIR bin GEOM gdmlpath FOLD script"
+vars="BASH_SOURCE SDIR bin GEOM gdmlpath FOLD script"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -57,12 +57,10 @@ if [ "${arg/load}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    
     case $(uname) in
     Darwin) lldb__ $bin ;;
     Linux)  gdb__ $bin ;;
     esac
-
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 

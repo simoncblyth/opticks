@@ -594,7 +594,7 @@ target_include_directories( ${name} PUBLIC
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 
-target_compile_definitions( ${name} PUBLIC WITH_SND )
+#target_compile_definitions( ${name} PUBLIC WITH_SND ) ## THIS IS THE OLD snd.hh (not the new sn.h)
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) ## only does anything with newer plog

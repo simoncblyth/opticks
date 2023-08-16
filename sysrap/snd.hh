@@ -51,22 +51,21 @@ struct scanvas ;
 
 struct SYSRAP_API snd
 {
-    int index ; 
-    int depth ;   // optionally set by calling SetLVID 
-    int sibdex ;  // 0-based sibling index 
+    int typecode ; 
+    int complement ; // not impl
+    int lvid ;
+    int xform ; 
+    int param ; 
+    int aabb ; 
     int parent ; 
 
+    int sibdex ;  // 0-based sibling index 
     int num_child ; 
     int first_child ; 
     int next_sibling ; 
-    int lvid ;
 
-    int typecode ; 
-    int param ; 
-    int aabb ; 
-    int xform ; 
-
-    // int complement ; // TODO: get complement going, or bring sn.h up to scratch to replace this  
+    int index ; 
+    int depth ;   // optionally set by calling SetLVID 
 
     char label[16] ;   // sizeof 4 int 
 

@@ -1635,27 +1635,20 @@ snd::init
 
 void snd::init()
 {
-    index = -1 ; 
-    depth = -1 ; 
-    sibdex = -1 ; 
+    typecode = -1  ; 
+    complement = -1 ; 
+    lvid = -1 ;
+    xform = -1 ; 
+    param = -1 ; 
+    aabb = -1 ; 
     parent = -1 ; 
-
+    sibdex = -1 ; 
     num_child = -1 ; 
     first_child = -1 ; 
     next_sibling = -1 ; 
-    lvid = -1 ;
-
-    typecode = -1  ; 
-    param = -1 ; 
-    aabb = -1 ; 
-    xform = -1 ; 
+    index = -1 ; 
+    depth = -1 ; 
 }
-
-
-
-
-
-
 
 /**
 snd::Boolean

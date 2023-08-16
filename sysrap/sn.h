@@ -47,7 +47,6 @@ Hopefully this functionality can be removed once have leaped
 to CSG_CONTIGUOUS use as standard, which retains n-ary tree 
 all the way to the GPU. 
 
-
 **/
 
 #include <map>
@@ -57,65 +56,38 @@ all the way to the GPU.
 #include <cassert>
 
 #include "ssys.h"
-
 #include "OpticksCSG.h"
 #include "scanvas.h"
-
 #include "s_pa.h"
 #include "s_bb.h"
 #include "s_tv.h"
-
 #include "s_pool.h"
-
 #include "NPFold.h"
-
-
 
 struct _sn
 {
-#ifdef WITH_CHILD
-    static constexpr const int NV = 9 ; 
-#else
-    static constexpr const int NV = 7 ; 
-#endif
-
-    int type ; 
-    int complement ;
-    int lvid ; 
-
-    int parent ; 
-    int tv ; 
-
-    // TODO: add these, and methods similar to snd.hh to allow this to replace snd.hh 
-    // int param ; 
-    // int aabb ; 
+    int type ;         // 0
+    int complement ;   // 1 
+    int lvid ;         // 2
+    int tv ;           // 3
+    int pa ;           // 4
+    int bb ;           // 5 
+    int parent ;       // 6 
      
 #ifdef WITH_CHILD
-    int sibdex ;  // 0-based sibling index 
-    int num_child ; 
-    int first_child ; 
-    int next_sibling ; 
+    int sibdex ;       // 7     0-based sibling index 
+    int num_child ;    // 8
+    int first_child ;  // 9
+    int next_sibling ; // 10  
+    static constexpr const int NV = 11 ; 
 #else
-    int left ; 
-    int right ; 
+    int left ;         // 7
+    int right ;        // 8
+    static constexpr const int NV = 9 ; 
 #endif
-
-    bool is_root_importable() const ; 
     std::string desc() const ; 
+    bool is_root_importable() const ; 
 };
-
-/**
-_sn::is_root_importable
-------------------------
-
-Only root expected to have parent -1 
-
-**/
-
-inline bool _sn::is_root_importable() const 
-{
-    return parent == -1 ;  
-}
 
 inline std::string _sn::desc() const
 {
@@ -124,9 +96,10 @@ inline std::string _sn::desc() const
        << " type " << std::setw(4) << type 
        << " complement " << std::setw(1) << complement
        << " lvid " << std::setw(4) << lvid 
+       << " tv " << std::setw(4) << tv
+       << " pa " << std::setw(4) << pa
+       << " bb " << std::setw(4) << bb
        << " parent " << std::setw(4) << parent 
-       << " tv " << std::setw(4) << tv 
-       << " is_root_importable " << ( is_root_importable() ? "YES" : "NO " ) 
 #ifdef WITH_CHILD
        << " sx " << std::setw(4) << sibdex 
        << " nc " << std::setw(4) << num_child
@@ -136,36 +109,47 @@ inline std::string _sn::desc() const
        << " left " << std::setw(4) << left 
        << " right " << std::setw(4) << right 
 #endif
+       << " is_root_importable " << ( is_root_importable() ? "YES" : "NO " ) 
        ;
     std::string str = ss.str(); 
     return str ; 
 }
 
+/**
+_sn::is_root_importable
+------------------------
+
+Only root expected to have parent -1 
+
+**/
+inline bool _sn::is_root_importable() const 
+{
+    return parent == -1 ;  
+}
 
 #include "SYSRAP_API_EXPORT.hh"
-
 struct SYSRAP_API sn
 {
-    int pid ;       // (not persisted)
-    int depth ;     // (not persisted)
-    int subdepth ;  // (not persisted)
-
-    int type ; 
-    int complement ; 
-    int lvid ; 
+    // persisted
+    int   type ; 
+    int   complement ; 
+    int   lvid ; 
+    s_tv* tv ;    
+    s_pa* pa ; 
+    s_bb* bb  ;
+    sn*   parent ;   // NOT owned by this sn 
 
 #ifdef WITH_CHILD
-    std::vector<sn*> child ;   // owned by this sn 
+    std::vector<sn*> child ;   
 #else
-    sn* left ;           // owned by this sn 
-    sn* right ;          // owned by this sn 
+    sn* left ;          
+    sn* right ;        
 #endif
 
-    sn* parent ;  // NOT owned by this sn 
-
-    s_tv* tv ;     // owned by this sn 
-    s_pa* pa ; 
-    s_bb* bb  ; 
+    // internals, not persisted  
+    int pid ;       
+    int depth ;    
+    int subdepth ; 
 
 
     typedef s_pool<sn,_sn> POOL ;
@@ -197,12 +181,7 @@ struct SYSRAP_API sn
     static sn*  Import(  const _sn* p, const std::vector<_sn>& buf ); 
     static sn*  Import_r(const _sn* p, const std::vector<_sn>& buf, int d ); 
 
-
-
     static constexpr const bool LEAK = false ; 
-
-
-
 
 
     sn(int type, sn* left, sn* right);
@@ -509,8 +488,10 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.complement = x->complement ;
     n.lvid = x->lvid ;
 
-    n.parent = pool->index(x->parent);  
     n.tv = s_tv::pool->index(x->tv) ;  
+    n.pa = s_pa::pool->index(x->pa) ;  
+    n.bb = s_bb::pool->index(x->bb) ;  
+    n.parent = pool->index(x->parent);  
 
 #ifdef WITH_CHILD
     n.sibdex = x->sibling_index(); 
@@ -559,8 +540,10 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     sn* n = Create( _n->type , nullptr, nullptr );  
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
+    n->tv = s_tv::pool->get(_n->tv) ; 
+    n->pa = s_pa::pool->get(_n->pa) ; 
+    n->bb = s_bb::pool->get(_n->bb) ; 
 
-    n->tv = s_tv::pool->get_root(_n->tv) ; 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
     while( _child ) 
@@ -574,10 +557,12 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     const _sn* _r = _n->right > -1 ? &buf[_n->right] : nullptr ;  
     sn* l = Import_r( _l, buf, d+1 ); 
     sn* r = Import_r( _r, buf, d+1 ); 
-    sn* n = Create( _n->type, l, r ); 
+    sn* n = Create( _n->type, l, r );  // sn::sn ctor sets parent of l and r to n 
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
-    n->tv = s_tv::pool->get_root(_n->tv) ; 
+    n->tv = s_tv::pool->get(_n->tv) ; 
+    n->pa = s_pa::pool->get(_n->pa) ; 
+    n->bb = s_bb::pool->get(_n->bb) ; 
 #endif
     return n ;  
 }  
@@ -589,29 +574,29 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 
 inline sn::sn(int type_, sn* left_, sn* right_)
     :
-    pid(pool ? pool->add(this) : -1),
-    depth(0),
-    subdepth(0),
     type(type_),
     complement(0),
     lvid(-1),
+    tv(nullptr),
+    pa(nullptr),
+    bb(nullptr),
+    parent(nullptr),
 #ifdef WITH_CHILD
 #else
     left(left_),
     right(right_),
 #endif
-    parent(nullptr),
-    tv(nullptr),
-    pa(nullptr),
-    bb(nullptr)
+    pid(pool ? pool->add(this) : -1),
+    depth(0),
+    subdepth(0)
 {
     if(level() > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
 
 #ifdef WITH_CHILD
     if(left_ && right_)
     {
-        add_child(left_); 
-        add_child(right_); 
+        add_child(left_);   // sets parent of left_ to this
+        add_child(right_);  // sets parent of right_ to this
     }
 #else
     if(left && right)

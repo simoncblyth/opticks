@@ -67,8 +67,11 @@ struct s_pool
     s_pool(); 
 
     int size() const ; 
-    int get_num_root() const ; 
+    int num_root() const ; 
+    bool all_root() const ; 
+
     T*  get_root(int idx) const ; 
+    T*  get(int idx) const ;   // method asserts all_root then calls get_root 
 
     std::string brief(const char* msg=nullptr) const ; 
     std::string desc(const char* msg=nullptr) const ; 
@@ -100,7 +103,7 @@ inline int s_pool<T,P>::size() const
     return pool.size(); 
 }
 template<typename T, typename P>
-inline int s_pool<T,P>::get_num_root() const 
+inline int s_pool<T,P>::num_root() const 
 {
     int count_root = 0 ; 
     typedef typename POOL::const_iterator IT ; 
@@ -111,6 +114,14 @@ inline int s_pool<T,P>::get_num_root() const
     }
     return count_root ; 
 }
+
+template<typename T, typename P>
+inline bool s_pool<T,P>::all_root() const 
+{
+    return size() == num_root() ; 
+}
+
+
 
 /**
 s_pool<T,P>::get_root
@@ -142,6 +153,17 @@ inline T* s_pool<T,P>::get_root(int idx) const
 }
 
 template<typename T, typename P>
+inline T* s_pool<T,P>::get(int idx) const 
+{
+    assert( all_root() ); 
+    return get_root(idx) ; 
+}
+
+
+
+
+
+template<typename T, typename P>
 inline std::string s_pool<T,P>::brief(const char* msg) const 
 {
     std::stringstream ss ; 
@@ -150,7 +172,7 @@ inline std::string s_pool<T,P>::brief(const char* msg) const
        << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
-       << " num_root " << get_num_root()
+       << " num_root " << num_root()
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -164,7 +186,7 @@ inline std::string s_pool<T,P>::desc(const char* msg) const
        << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
-       << " num_root " << get_num_root()
+       << " num_root " << num_root()
        << std::endl
         ; 
 
