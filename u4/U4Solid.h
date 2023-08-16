@@ -103,13 +103,13 @@ struct U4Solid
     static const char*  Tag( int type ) ;   
 
 #ifdef WITH_SND
-    static int Convert(const G4VSolid* solid, int lvid, int depth ) ; 
+    static int Convert(const G4VSolid* solid, int lvid, int depth, int level ) ; 
 #else
-    static sn* Convert(const G4VSolid* solid, int lvid, int depth ) ; 
+    static sn* Convert(const G4VSolid* solid, int lvid, int depth, int level ) ; 
 #endif
 
 
-    U4Solid( const G4VSolid* solid, int lvid, int depth ); 
+    U4Solid( const G4VSolid* solid, int lvid, int depth, int level ); 
 
     void init(); 
     void init_Orb(); 
@@ -237,18 +237,18 @@ inline const char* U4Solid::Tag(int type)   // static
 }
 
 #ifdef WITH_SND
-inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // static
+inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
 #else
-inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth ) // static
+inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
 #endif
 {
-    U4Solid so(solid, lvid, depth ); 
+    U4Solid so(solid, lvid, depth, level ); 
     return so.root ; 
 }
 
-inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_ )
+inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level_ )
     :
-    level(ssys::getenvint("U4Solid_level",0)),
+    level(level_),
     solid(solid_),
     lvid(lvid_),
     depth(depth_),
@@ -512,12 +512,12 @@ inline void U4Solid::init_Ellipsoid()
 
 inline void U4Solid::init_Hype()
 {
+    assert(0); 
 } 
 inline void U4Solid::init_MultiUnion()
 {
+    assert(0); 
 } 
-
-
 inline void U4Solid::init_Torus()
 {
     assert(0); 
@@ -587,9 +587,15 @@ inline void U4Solid::init_Polycone()
 {
     const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
     assert(polycone);
-    root = U4Polycone::Convert(polycone); 
+    root = U4Polycone::Convert(polycone, level); 
 
-    if(level > 0 ) std::cerr << desc() ; 
+    if(level > 0 ) std::cerr 
+        << "U4Solid::init_Polycone"
+        << " level " << level 
+        << std::endl
+        << desc()
+        << std::endl
+        ; 
 }
 
 
@@ -640,6 +646,13 @@ inline void U4Solid::init_Cons()
     sn* inner = init_Cons_('I'); 
     root = inner == nullptr ? outer : sn::Boolean( CSG_DIFFERENCE, outer, inner ) ;
 #endif
+
+    if(level > 0 ) std::cerr 
+        << "U4Solid::init_Cons"
+        << " level " << level 
+        << desc() 
+        ; 
+
 }
 
 
@@ -754,8 +767,8 @@ inline void U4Solid::init_BooleanSolid()
     assert( !is_left_displaced && "not expecting left displacement " );
 
 #ifdef WITH_SND
-    int l = Convert( left, lvid, depth+1  ); 
-    int r = Convert( right, lvid, depth+1 ); 
+    int l = Convert( left, lvid, depth+1 , level ); 
+    int r = Convert( right, lvid, depth+1, level ); 
 
     int l_xf = snd::GetNodeXForm(l);
     int r_xf = snd::GetNodeXForm(r);
@@ -775,8 +788,8 @@ inline void U4Solid::init_BooleanSolid()
 
     root = snd::Boolean( op, l, r ); 
 #else
-    sn* l = Convert( left,  lvid, depth+1 ); 
-    sn* r = Convert( right, lvid, depth+1 ); 
+    sn* l = Convert( left,  lvid, depth+1, level ); 
+    sn* r = Convert( right, lvid, depth+1, level ); 
 
     if(l->tv && level > 0) std::cout
         << "U4Solid::init_BooleanSolid "
@@ -831,11 +844,11 @@ inline void U4Solid::init_DisplacedSolid()
     assert(single_disp && "only single disp is expected" );
 
 #ifdef WITH_SND
-    root = Convert( moved, lvid, depth+1 ); 
+    root = Convert( moved, lvid, depth+1, level ); 
     assert(root > -1); 
     snd::SetNodeXForm(root, xf);  // internally calls snd::combineXF
 #else
-    root = Convert( moved, lvid, depth+1 ); 
+    root = Convert( moved, lvid, depth+1, level ); 
     root->combineXF(xf); 
 #endif
 

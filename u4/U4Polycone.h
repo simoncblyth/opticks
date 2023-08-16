@@ -81,15 +81,15 @@ struct U4Polycone
     std::string desc() const ; 
 
 #ifdef WITH_SND
-    static int  Convert( const G4Polycone* polycone ); 
-    void addPrims(std::vector<int>& prims, bool outside ); 
+    static int  Convert( const G4Polycone* polycone, int level ); 
+    void collectPrims(std::vector<int>& prims, bool outside ); 
 #else
-    static sn*  Convert( const G4Polycone* polycone ); 
-    void addPrims(std::vector<sn*>& prims, bool outside ); 
+    static sn*  Convert( const G4Polycone* polycone, int level ); 
+    void collectPrims(std::vector<sn*>& prims, bool outside ); 
 #endif
 
     static void GetMinMax( double& mn, double& mx, const std::set<double>& vv ); 
-    U4Polycone(const G4Polycone* poly); 
+    U4Polycone(const G4Polycone* poly, int level ); 
     bool checkZOrder( bool z_ascending ); 
     void init(); 
 
@@ -125,6 +125,8 @@ struct U4Polycone
     sn*    root ; 
 #endif
 
+   const char* label ; 
+
 };
 
 inline std::string U4Polycone::desc() const 
@@ -153,6 +155,7 @@ inline std::string U4Polycone::desc() const
 #else
        << " root " << std::setw(3) << ( root ? root->index() : -1 )
 #endif
+       << " label " << ( label ? label : "-" )
        << std::endl 
        ;
 
@@ -163,12 +166,22 @@ inline std::string U4Polycone::desc() const
 
 
 #ifdef WITH_SND
-inline int U4Polycone::Convert( const G4Polycone* polycone )
+inline int U4Polycone::Convert( const G4Polycone* polycone, int level )
 #else
-inline sn* U4Polycone::Convert( const G4Polycone* polycone )
+inline sn* U4Polycone::Convert( const G4Polycone* polycone, int level )
 #endif
 {
-    U4Polycone upoly(polycone) ; 
+    U4Polycone upoly(polycone, level) ; 
+
+    if(level > 0) 
+    {
+       std::cerr << "U4Polycone::Convert" << std::endl ; 
+#ifdef WITH_SND
+       std::cerr << snd::Render(upoly.root) ; 
+#else
+       std::cerr << upoly.root->render() ; 
+#endif
+    } 
     return upoly.root ; 
 }
 
@@ -183,9 +196,9 @@ inline void U4Polycone::GetMinMax( double& mn, double& mx, const std::set<double
     }
 }
 
-inline U4Polycone::U4Polycone(const G4Polycone* polycone_ ) 
+inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int level_ ) 
     :
-    level(ssys::getenvint("U4Polycone_level",0)),
+    level(level_),
     polycone(polycone_),
     ph(polycone->GetOriginalParameters()),
     num(ph->Num_z_planes),
@@ -200,13 +213,22 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_ )
     Z_max(0),
     has_inner(false),
 #ifdef WITH_SND
-    root(-1)
+    root(-1),
+    label("WITH_SND")
 #else
-    root(nullptr)
+    root(nullptr),
+    label("NOT-WITH_SND")
 #endif
 {
     init(); 
-    if(level > 0 ) std::cerr << "U4Polycone::U4Polycone" << std::endl << desc() << std::endl ; 
+    if(level > 0 ) std::cerr 
+        << "U4Polycone::U4Polycone " 
+        << ( label ? label : "-" )  
+        << std::endl 
+        << desc() 
+        << std::endl
+        ; 
+   
 }
 
 inline bool U4Polycone::checkZOrder( bool z_ascending )
@@ -276,17 +298,36 @@ inline void U4Polycone::init()
 #ifdef WITH_SND
     int inner = -1 ; 
     std::vector<int> outer_prims ;
-    addPrims( outer_prims, true  ); // outside:true 
+    collectPrims( outer_prims, true  ); // outside:true 
+
+    if(level > 0) std::cerr
+        << "U4Polycone::init.WITH_SND"
+        << " outer_prims.size " << outer_prims.size()
+        << std::endl
+        ; 
+
     snd::ZNudgeJoints(outer_prims); 
     int outer = snd::Collection(outer_prims); 
 #else
     sn* inner = nullptr ; 
     std::vector<sn*> outer_prims ;
-    addPrims( outer_prims, true  ); // outside:true 
+    collectPrims( outer_prims, true  ); // outside:true 
+
+    if(level > 0) std::cerr
+        << "U4Polycone::init.NOT-WITH_SND"
+        << " outer_prims.size " << outer_prims.size()
+        << std::endl
+        ; 
+
     sn::ZNudgeJoints(outer_prims); 
     sn* outer = sn::Collection(outer_prims) ; 
 #endif
 
+    if(level > 0) std::cerr 
+       << "U4Polycone::init"
+       << " has_inner " << ( has_inner ? "YES" : "NO " )
+       << std::endl 
+       ;
  
     if( has_inner == false )
     {
@@ -308,13 +349,27 @@ inline void U4Polycone::init()
         {
 #ifdef WITH_SND
             std::vector<int> inner_prims ;
-            addPrims( inner_prims, false  ); // outside:false
+            collectPrims( inner_prims, false  ); // outside:false
+
+            if(level > 0) std::cerr
+                << "U4Polycone::init.WITH_SND"
+                << " num inner_prims " << inner_prims.size()
+                << std::endl
+                ; 
+
             snd::ZNudgeEnds(inner_prims);    // only for inner as expands  
             snd::ZNudgeJoints(inner_prims); 
             inner = snd::Collection( inner_prims ); 
 #else
             std::vector<sn*> inner_prims ;
-            addPrims( inner_prims, false  ); // outside:false
+            collectPrims( inner_prims, false  ); // outside:false
+
+            if(level > 0) std::cerr
+                << "U4Polycone::init.NOT-WITH_SND"
+                << " num inner_prims " << inner_prims.size()
+                << std::endl
+                ; 
+
             sn::ZNudgeEnds(inner_prims);    // only for inner as expands  
             sn::ZNudgeJoints(inner_prims); 
             inner = sn::Collection( inner_prims ); 
@@ -332,10 +387,16 @@ inline void U4Polycone::init()
 }
      
 
+/**
+U4Polycone::collectPrims
+--------------------------
+
+**/
+
 #ifdef WITH_SND
-void U4Polycone::addPrims(std::vector<int>& prims,  bool outside  )
+void U4Polycone::collectPrims(std::vector<int>& prims,  bool outside  )
 #else
-void U4Polycone::addPrims(std::vector<sn*>& prims,  bool outside  )
+void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
 #endif
 {   
     // loop over pairs of planes
@@ -350,20 +411,34 @@ void U4Polycone::addPrims(std::vector<sn*>& prims,  bool outside  )
 
         if( z1 == z2 )
         {
-            if(level > 0) std::cerr << "U4Polycone::makePrims skipping prim as z2 == z1  " << std::endl ; 
+            if(level > 0) std::cerr << "U4Polycone::collectPrims skipping prim as z2 == z1  " << std::endl ; 
             continue ;
         }
+
 
         bool z_ascending = z2 > z1 ;
         assert(z_ascending);
 
+        bool is_cylinder = r1 == r2 ;  
+        int idx = -1 ; 
+
 #ifdef WITH_SND
-        int idx = r2 == r1 ? snd::Cylinder(r2, z1, z2 ) : snd::Cone( r1, z1, r2, z2 ) ; 
+        idx = is_cylinder ? snd::Cylinder(r2, z1, z2 ) : snd::Cone( r1, z1, r2, z2 ) ; 
         prims.push_back(idx);
 #else
-        sn* pr = r2 == r1 ? sn::Cylinder(r2, z1, z2 ) : sn::Cone( r1, z1, r2, z2 ) ; 
+        sn* pr = is_cylinder ? sn::Cylinder(r2, z1, z2 ) : sn::Cone( r1, z1, r2, z2 ) ; 
         prims.push_back(pr);
+        idx = pr->index() ; 
 #endif
+        if( level > 0 ) std::cerr 
+             << "U4Polycone::collectPrims"
+             << " outside " << ( outside ? "YES" : "NO " )
+             << " idx " << idx 
+             << " is_cylinder " << ( is_cylinder ? "YES" : "NO " ) 
+             << std::endl 
+             ; 
+
+
 
     }  
 }

@@ -19,11 +19,12 @@ void test_Convert(const G4VSolid* solid )
 {
     int lvid = 0 ; 
     int depth = 0 ; 
+    int level = 1 ; 
 #ifdef WITH_SND
-    int idx = U4Solid::Convert(solid, lvid, depth); 
+    int idx = U4Solid::Convert(solid, lvid, depth, level); 
     std::cout << snd::Desc(idx); 
 #else
-    sn* nd = U4Solid::Convert(solid, lvid, depth); 
+    sn* nd = U4Solid::Convert(solid, lvid, depth, level); 
     std::cout << nd->desc() ;  
 #endif
 }

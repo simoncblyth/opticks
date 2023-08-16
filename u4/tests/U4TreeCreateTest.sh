@@ -23,6 +23,8 @@ loglevels
 
 export U4TreeBorder__FLAGGED_ISOLID=HamamatsuR12860sMask_virtual0x61b0510
 
+export U4Tree__IsFlaggedSolid_NAME=HamamatsuR12860sMask_virtual
+
 
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml

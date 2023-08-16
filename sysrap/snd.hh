@@ -51,23 +51,23 @@ struct scanvas ;
 
 struct SYSRAP_API snd
 {
-    int typecode ; 
-    int complement ; // not impl
-    int lvid ;
-    int xform ; 
-    int param ; 
-    int aabb ; 
-    int parent ; 
+    int typecode ;         // 0
+    int complement ;       // 1    not impl
+    int lvid ;             // 2
+    int xform ;            // 3
+    int param ;            // 4
+    int aabb ;             // 5 
+    int parent ;           // 6
 
-    int sibdex ;  // 0-based sibling index 
-    int num_child ; 
-    int first_child ; 
-    int next_sibling ; 
+    int sibdex ;           // 7     0-based sibling index 
+    int num_child ;        // 8
+    int first_child ;      // 9
+    int next_sibling ;     // 10
+ 
+    int index ;            // 11
+    int depth ;            // 12                 optionally set by calling SetLVID 
 
-    int index ; 
-    int depth ;   // optionally set by calling SetLVID 
-
-    char label[16] ;   // sizeof 4 int 
+    char label[16] ;       // 13,14,14,16        sizeof 4 int 
 
 
     static constexpr const int VERSION = 0 ;

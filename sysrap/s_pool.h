@@ -61,10 +61,11 @@ struct s_pool
 {
     typedef typename std::map<int, T*> POOL ; 
     POOL pool ; 
+    const char* label ; 
     int count ; 
     int level ;  
 
-    s_pool(); 
+    s_pool(const char* label); 
 
     int size() const ; 
     int num_root() const ; 
@@ -90,8 +91,9 @@ struct s_pool
 };
 
 template<typename T, typename P>
-inline s_pool<T,P>::s_pool()
+inline s_pool<T,P>::s_pool(const char* label)
     :
+    label(label ? strdup(label) : nullptr),
     count(0),
     level(ssys::getenvint("s_pool_level",0))
 {
@@ -169,7 +171,8 @@ inline std::string s_pool<T,P>::brief(const char* msg) const
     std::stringstream ss ; 
     ss
        << "s_pool::brief "
-       << ( msg ? msg : "-" )
+       << " label " << ( label ? label : "-" )
+       << " msg " << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
        << " num_root " << num_root()
@@ -183,7 +186,8 @@ inline std::string s_pool<T,P>::desc(const char* msg) const
 {
     std::stringstream ss ; 
     ss << "s_pool::desc "
-       << ( msg ? msg : "-" )
+       << " label " << ( label ? label : "-" )
+       << " msg " << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
        << " num_root " << num_root()
@@ -226,7 +230,12 @@ inline int s_pool<T, P>::add(T* o)
 {
     int pid = count ; 
     pool[pid] = o ; 
-    if(level > 0) std::cerr << "s_pool::add pid " << pid << std::endl ; 
+    if(level > 0) std::cerr 
+        << "s_pool::add " 
+        << ( label ? label : "-" ) 
+        << " pid " << pid 
+        << std::endl 
+        ; 
     count += 1 ; 
     return pid ; 
 }
@@ -240,12 +249,22 @@ inline int s_pool<T,P>::remove(T* o)
     int pid = -1 ; 
     if( it == pool.end() )
     {
-        if(level > 0) std::cerr << "s_pool::remove failed to find the object : already removed, double dtors ?  " << std::endl ; 
+        if(level > 0) std::cerr 
+           << "s_pool::remove " 
+           << ( label ? label : "-"  ) 
+           << " failed to find the object : already removed, double dtors ?  " 
+           << std::endl 
+           ; 
     }
     else
     {
         pid = it->first ; 
-        if(level > 0) std::cerr << "s_pool::remove pid " << pid << std::endl ; 
+        if(level > 0) std::cerr 
+            << "s_pool::remove " 
+            << ( label ? label : "-"  ) 
+            << " pid " << pid 
+            << std::endl
+            ; 
         pool.erase(it); 
     }
     return pid ; 

@@ -1429,17 +1429,32 @@ inline sn* sn::CommonOperatorTree( std::vector<sn*>& leaves, int op ) // static
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(level() > 0) std::cerr << "sn::CommonOperatorTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after ZeroTree"
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl
+            ; 
         if(level() > 1) std::cerr << root->render(5) ; 
 
         root->populate_leaves(leaves); 
 
-        if(level() > 0) std::cerr << "sn::CommonOperatorTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after populate_leaves" 
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl 
+            ; 
         if(level() > 1) std::cerr << root->render(5) ; 
 
         root->prune();
  
-        if(level() > 0) std::cerr << "sn::CommonOperatorTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after prun"
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl 
+            ; 
         if(level() > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
@@ -2115,9 +2130,6 @@ inline sn* sn::UnionTree(std::vector<sn*>& prims )
     sn* n = CommonOperatorTree( prims, CSG_UNION ); 
     return n ; 
 }
-
-
-
 inline sn* sn::Contiguous(std::vector<sn*>& prims )
 {
     sn* n = Compound( prims, CSG_CONTIGUOUS ); 
