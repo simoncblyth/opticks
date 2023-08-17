@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ssys.h"
+
 #include "s_pa.h"
 #include "s_bb.h"
 #include "s_tv.h"
@@ -8,13 +10,29 @@
 #include "NPFold.h"
 #include "SYSRAP_API_EXPORT.hh"
 
+struct s_csg_find_lvid
+{
+    int lvid ; 
+    s_csg_find_lvid(int q_lvid) : lvid(q_lvid) {}   
+    bool operator()(const sn* n){ return lvid == n->lvid ; }  
+};
+
+struct s_csg_find_lvid_root
+{
+    int lvid ; 
+    s_csg_find_lvid_root(int q_lvid) : lvid(q_lvid) {}   
+    bool operator()(const sn* n){ return lvid == n->lvid && n->is_root() ; }  
+};
+
 struct SYSRAP_API s_csg
 {
     static s_csg* INSTANCE ; 
     static s_csg* Get(); 
     static NPFold* Serialize(); 
     static void Import(const NPFold* fold); 
+    static void Load(const char* base) ; 
 
+    int level ; 
     s_pa::POOL* pa ; 
     s_bb::POOL* bb ; 
     s_tv::POOL* tv ; 
@@ -29,6 +47,15 @@ struct SYSRAP_API s_csg
 
     NPFold* serialize() const ; 
     void import(const NPFold* fold); 
+
+
+    void find_lvid( std::vector<sn*>& nds, int lvid ) const ; 
+    sn*  find_lvid_root(int lvid) const ; 
+
+    static void FindLVID(std::vector<sn*>& nds, int lvid); 
+    static sn*  FindLVIDRoot(int lvid); 
+
+    static std::string Desc(const std::vector<sn*>& nds); 
 };
 
 
@@ -52,9 +79,18 @@ inline void s_csg::Import(const NPFold* fold)
     INSTANCE->import(fold); 
 }
 
+inline void s_csg::Load(const char* base)
+{
+    NPFold* fold = NPFold::Load(base); 
+    Import(fold); 
+}
+
+
+
 
 inline s_csg::s_csg()
     :
+    level(ssys::getenvint("s_csg_level",0)),
     pa(new s_pa::POOL("pa")),
     bb(new s_bb::POOL("bb")),
     tv(new s_tv::POOL("tv")),
@@ -119,8 +155,8 @@ inline NPFold* s_csg::serialize() const
 
 
 /**
-s_csg::Import
--------------
+s_csg::import
+--------------
 
 NB transforms are imported before nodes
 so the transform hookup during node import works. 
@@ -136,9 +172,88 @@ buffer gets imported in one go prior to doing any sn hookup.
 
 inline void s_csg::import(const NPFold* fold) 
 {
+    if(level > 0) std::cerr 
+        << "s_csg::import "
+        << " s_csg_level " << level 
+        << " fold " << ( fold ? fold->desc() : "-" )
+        << std::endl 
+        ;
+
     pa->import<double>(fold->get(s_pa::NAME)) ; 
     bb->import<double>(fold->get(s_bb::NAME)) ; 
     tv->import<double>(fold->get(s_tv::NAME)) ; 
     nd->import<int>(   fold->get(  sn::NAME)) ; 
 }
+
+inline void s_csg::find_lvid(std::vector<sn*>& nds, int lvid) const 
+{
+    s_csg_find_lvid flv(lvid); 
+    nd->find(nds, flv );   
+} 
+inline sn* s_csg::find_lvid_root(int lvid ) const 
+{
+    std::vector<sn*> nds ; 
+    s_csg_find_lvid_root flvr(lvid); 
+    nd->find(nds, flvr );   
+    int count = nds.size() ; 
+    assert( count <= 1 ); 
+    return count == 1 ? nds[0] : nullptr ; 
+}
+
+inline void s_csg::FindLVID(std::vector<sn*>& nds, int lvid) // static
+{
+    assert(INSTANCE); 
+    INSTANCE->find_lvid(nds, lvid); 
+}
+inline sn* s_csg::FindLVIDRoot(int lvid) // static
+{
+    assert(INSTANCE); 
+    return INSTANCE->find_lvid_root(lvid); 
+}
+
+
+inline std::string s_csg::Desc(const std::vector<sn*>& nds) // static
+{
+    std::stringstream ss ; 
+    ss << "s_csg::Desc nds.size " << nds.size() << std::endl ; 
+    for(int i=0 ; i < int(nds.size()) ; i++) 
+    {
+        const sn* n = nds[i] ; 
+        ss << n->desc() << std::endl ;  
+    }
+    std::string str = ss.str();
+    return str ; 
+}
+
+
+
+/**
+s_csg::getLVRoot
+----------------
+
+Returns first *snd* node for *lvid* with snd::is_root true
+
+
+const sn* s_csg::getLVRoot(int lvid ) const 
+{
+    const sn* root = nullptr ; 
+
+    int count = 0 ; 
+    int num_node = node.size(); 
+    for(int i=0 ; i < num_node ; i++)
+    {
+        const snd& nd = node[i] ; 
+        if(nd.lvid == lvid && nd.is_root()) 
+        {
+            root = &nd ; 
+            count += 1 ; 
+        }
+    }
+    assert( count <= 1 ); 
+    return root ; 
+}
+
+**/
+
+
 

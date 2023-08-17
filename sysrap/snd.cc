@@ -372,7 +372,7 @@ snd::GetLVID (GetLVIDNodes more appropos)
 
 Q: Is the last snd returned always root ? 
 A: As trees are created postorder and nodes get added to the POOL 
-   in creation order I think that indeed the last must always be root. 
+   in creation order I think that indeed the last must always be the root node. 
 
 **/
 

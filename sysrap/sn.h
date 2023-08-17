@@ -66,12 +66,12 @@ all the way to the GPU.
 
 struct _sn
 {
-    int  type ;         // 0
+    int  typecode ;     // 0
     int  complement ;   // 1 
     int  lvid ;         // 2
-    int  tv ;           // 3
-    int  pa ;           // 4
-    int  bb ;           // 5 
+    int  xform ;        // 3
+    int  param ;        // 4
+    int  aabb ;         // 5 
     int  parent ;       // 6 
     
 #ifdef WITH_CHILD
@@ -93,19 +93,19 @@ struct _sn
 #endif
 
     std::string desc() const ; 
-    bool is_root_importable() const ; 
+    bool is_root() const ; 
 };
 
 inline std::string _sn::desc() const
 {
     std::stringstream ss ; 
     ss << "_sn::desc " 
-       << " type " << std::setw(4) << type 
+       << " typecode " << std::setw(4) << typecode 
        << " complement " << std::setw(1) << complement
        << " lvid " << std::setw(4) << lvid 
-       << " tv " << std::setw(4) << tv
-       << " pa " << std::setw(4) << pa
-       << " bb " << std::setw(4) << bb
+       << " xform " << std::setw(4) << xform
+       << " param " << std::setw(4) << param
+       << " aabb " << std::setw(4) << aabb
        << " parent " << std::setw(4) << parent 
 #ifdef WITH_CHILD
        << " sx " << std::setw(4) << sibdex 
@@ -116,20 +116,20 @@ inline std::string _sn::desc() const
        << " left " << std::setw(4) << left 
        << " right " << std::setw(4) << right 
 #endif
-       << " is_root_importable " << ( is_root_importable() ? "YES" : "NO " ) 
+       << " is_root " << ( is_root() ? "YES" : "NO " ) 
        ;
     std::string str = ss.str(); 
     return str ; 
 }
 
 /**
-_sn::is_root_importable
-------------------------
+_sn::is_root
+------------
 
 Only root expected to have parent -1 
 
 **/
-inline bool _sn::is_root_importable() const 
+inline bool _sn::is_root() const 
 {
     return parent == -1 ;  
 }
@@ -138,12 +138,12 @@ inline bool _sn::is_root_importable() const
 struct SYSRAP_API sn
 {
     // persisted
-    int   type ; 
+    int   typecode ; 
     int   complement ; 
     int   lvid ; 
-    s_tv* tv ;    
-    s_pa* pa ; 
-    s_bb* bb  ;
+    s_tv* xform ;    
+    s_pa* param ; 
+    s_bb* aabb  ;
     sn*   parent ;   // NOT owned by this sn 
 
 #ifdef WITH_CHILD
@@ -171,7 +171,7 @@ struct SYSRAP_API sn
     static int level(); 
 
     int  index() const ; 
-    bool is_root_importable() const ; 
+    bool is_root() const ; 
 
     int  num_child() const ; 
     sn*  first_child() const ; 
@@ -191,7 +191,7 @@ struct SYSRAP_API sn
     static constexpr const bool LEAK = false ; 
 
 
-    sn(int type, sn* left, sn* right);
+    sn(int typecode, sn* left, sn* right);
 #ifdef WITH_CHILD
     void add_child( sn* ch ); 
 #endif
@@ -321,8 +321,8 @@ struct SYSRAP_API sn
     static sn* Box3(double fx, double fy, double fz );
     static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
     static sn* Zero();
-    static sn* Prim(int type) ; 
-    static sn* Create(int type, sn* left=nullptr, sn* right=nullptr ); 
+    static sn* Prim(int typecode) ; 
+    static sn* Create(int typecode, sn* left=nullptr, sn* right=nullptr ); 
     static sn* Boolean( int op, sn* l, sn* r );
 
     static void ZNudgeEnds(  std::vector<sn*>& prims); 
@@ -332,14 +332,18 @@ struct SYSRAP_API sn
     double zmin() const ; 
     double zmax() const ; 
 
+    const double* getParam() const ; 
+    const double* getAABB() const ; 
+    bool hasAABB() const ;  // not-nullptr and not all zero 
+
 
     static sn* Collection( std::vector<sn*>& prims ); 
     static sn* UnionTree(  std::vector<sn*>& prims ); 
     static sn* Contiguous( std::vector<sn*>& prims ); 
-    static sn* Compound(   std::vector<sn*>& prims, int type_ ); 
+    static sn* Compound(   std::vector<sn*>& prims, int typecode_ ); 
 
     static sn* Buggy_CommonOperatorTree( std::vector<sn*>& leaves    , int op ); 
-    static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int type ); 
+    static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int typecode ); 
 };
 
 inline void sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
@@ -347,7 +351,7 @@ inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-
 inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
 inline int         sn::index() const { return pool ? pool->index(this) : -1 ; }
-inline bool        sn::is_root_importable() const { return parent == nullptr ; }
+inline bool        sn::is_root() const { return parent == nullptr ; }
 
 
 inline int sn::num_child() const
@@ -481,13 +485,13 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     assert( s_pa::pool && "s_pa::pool is required for sn::Serialize" ); 
     assert( s_bb::pool && "s_bb::pool is required for sn::Serialize" ); 
 
-    n.type = x->type ; 
+    n.typecode = x->typecode ; 
     n.complement = x->complement ;
     n.lvid = x->lvid ;
 
-    n.tv = s_tv::pool->index(x->tv) ;  
-    n.pa = s_pa::pool->index(x->pa) ;  
-    n.bb = s_bb::pool->index(x->bb) ;  
+    n.xform = s_tv::pool->index(x->xform) ;  
+    n.param = s_pa::pool->index(x->param) ;  
+    n.aabb = s_bb::pool->index(x->aabb) ;  
     n.parent = pool->index(x->parent);  
 
 #ifdef WITH_CHILD
@@ -522,7 +526,7 @@ get recursively imported.
 inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
 {
     if(level() > 0) std::cerr << "sn::Import" << std::endl ; 
-    return p->is_root_importable() ? Import_r(p, buf, 0) : nullptr ; 
+    return p->is_root() ? Import_r(p, buf, 0) : nullptr ; 
 }
 
 /**
@@ -541,12 +545,12 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     if(_n == nullptr) return nullptr ; 
 
 #ifdef WITH_CHILD
-    sn* n = Create( _n->type , nullptr, nullptr );  
+    sn* n = Create( _n->typecode , nullptr, nullptr );  
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
-    n->tv = s_tv::pool->get(_n->tv) ; 
-    n->pa = s_pa::pool->get(_n->pa) ; 
-    n->bb = s_bb::pool->get(_n->bb) ; 
+    n->xform = s_tv::pool->get(_n->xform) ; 
+    n->param = s_pa::pool->get(_n->param) ; 
+    n->aabb = s_bb::pool->get(_n->aabb) ; 
 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
@@ -561,12 +565,12 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     const _sn* _r = _n->right > -1 ? &buf[_n->right] : nullptr ;  
     sn* l = Import_r( _l, buf, d+1 ); 
     sn* r = Import_r( _r, buf, d+1 ); 
-    sn* n = Create( _n->type, l, r );  // sn::sn ctor sets parent of l and r to n 
+    sn* n = Create( _n->typecode, l, r );  // sn::sn ctor sets parent of l and r to n 
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
-    n->tv = s_tv::pool->get(_n->tv) ; 
-    n->pa = s_pa::pool->get(_n->pa) ; 
-    n->bb = s_bb::pool->get(_n->bb) ; 
+    n->xform = s_tv::pool->get(_n->xform) ; 
+    n->param = s_pa::pool->get(_n->param) ; 
+    n->aabb = s_bb::pool->get(_n->aabb) ; 
 #endif
     return n ;  
 }  
@@ -576,14 +580,14 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 
 // ctor
 
-inline sn::sn(int type_, sn* left_, sn* right_)
+inline sn::sn(int typecode_, sn* left_, sn* right_)
     :
-    type(type_),
+    typecode(typecode_),
     complement(0),
     lvid(-1),
-    tv(nullptr),
-    pa(nullptr),
-    bb(nullptr),
+    xform(nullptr),
+    param(nullptr),
+    aabb(nullptr),
     parent(nullptr),
 #ifdef WITH_CHILD
 #else
@@ -630,7 +634,7 @@ inline sn::~sn()
 {
     if(level() > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
 
-    delete tv ; 
+    delete xform ; 
 
 
 #ifdef WITH_CHILD
@@ -786,7 +790,7 @@ inline bool sn::is_operator() const
 }
 inline bool sn::is_zero() const 
 {   
-    return type == 0 ;  
+    return typecode == 0 ;  
 }
 inline bool sn::is_lrzero() const 
 {   
@@ -1015,7 +1019,7 @@ inline void sn::operators_v(unsigned& mask, int minsubdepth) const
 {
     if( subdepth >= minsubdepth )
     {   
-        switch( type )
+        switch( typecode )
         {   
             case CSG_UNION         : mask |= CSG::Mask(CSG_UNION)        ; break ; 
             case CSG_INTERSECTION  : mask |= CSG::Mask(CSG_INTERSECTION) ; break ; 
@@ -1163,11 +1167,12 @@ inline std::string sn::desc() const
     ss << "sn::desc"
        << " pid " << std::setw(4) << pid
        << " idx " << std::setw(4) << index()
-       << " type " << std::setw(3) << type 
+       << " typecode " << std::setw(3) << typecode 
        << " num_node " << std::setw(3) << num_node() 
        << " num_leaf " << std::setw(3) << num_leaf() 
        << " maxdepth " << std::setw(2) << maxdepth() 
        << " is_positive_form " << ( is_positive_form() ? "Y" : "N" ) 
+       << " lvid " << std::setw(3) << lvid 
        ; 
     std::string str = ss.str();
     return str ;
@@ -1304,12 +1309,12 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
 
     int ix = ordinal ;
     int iy = d ;
-    std::string tag = CSG::Tag(type, complement == 1); 
+    std::string tag = CSG::Tag(typecode, complement == 1); 
 
     switch(mode)
     {
         case 0: canvas->drawch( ix, iy, 0,0, 'o' )         ; break ; 
-        case 1: canvas->draw(   ix, iy, 0,0,  type  )      ; break ; 
+        case 1: canvas->draw(   ix, iy, 0,0,  typecode  )      ; break ; 
         case 2: canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
         case 3: canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
         case 4: canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
@@ -1375,7 +1380,7 @@ sn::ZeroTree_r
 ---------------
 
 Recursively builds complete binary tree 
-with all operator nodes with a common *op* type 
+with all operator nodes with a common *op* typecode 
 and all leaf nodes are sn::Zero. 
 
 **/
@@ -1401,7 +1406,7 @@ sn::CommonOperatorTypeTree (formerly sn::CommonTree)
 ------------------------------------------------------------
 
 This was implemented while sn was not fully featured.
-It was used to provide a "template" tree with types only, 
+It was used to provide a "template" tree with typecodes only, 
 to be used for form snd trees. 
 
 **/
@@ -1749,11 +1754,11 @@ inline void sn::positivize_r(bool negate, int d)
         bool left_negate = false ; 
         bool right_negate = false ; 
 
-        if(type == CSG_INTERSECTION || type == CSG_UNION)
+        if(typecode == CSG_INTERSECTION || typecode == CSG_UNION)
         {   
             if(negate)                             // !( A*B ) ->  !A + !B       !(A + B) ->     !A * !B
             {    
-                type = CSG::DeMorganSwap(type) ;   // UNION->INTERSECTION, INTERSECTION->UNION
+                typecode = CSG::DeMorganSwap(typecode) ;   // UNION->INTERSECTION, INTERSECTION->UNION
                 left_negate = true ; 
                 right_negate = true ; 
             }   
@@ -1763,17 +1768,17 @@ inline void sn::positivize_r(bool negate, int d)
                 right_negate = false ;
             }
         }
-        else if(type == CSG_DIFFERENCE)
+        else if(typecode == CSG_DIFFERENCE)
         {
             if(negate)                             //  !(A - B) -> !(A*!B) -> !A + B
             {
-                type = CSG_UNION ;
+                typecode = CSG_UNION ;
                 left_negate = true ;
                 right_negate = false  ;
             }
             else
             {
-                type = CSG_INTERSECTION ;    //    A - B ->  A * !B
+                typecode = CSG_INTERSECTION ;    //    A - B ->  A * !B
                 left_negate = false ;
                 right_negate = true ;
             }
@@ -1838,24 +1843,24 @@ inline void sn::set_lvid_r(int lvid_, int d)
 
 inline void sn::setPA( double x0, double y0, double z0, double w0, double x1, double y1 )
 {
-    if( pa == nullptr ) pa = new s_pa ; 
-    pa->x0 = x0 ; 
-    pa->y0 = y0 ; 
-    pa->z0 = z0 ; 
-    pa->w0 = w0 ; 
-    pa->x1 = x1 ; 
-    pa->y1 = y1 ; 
+    if( param == nullptr ) param = new s_pa ; 
+    param->x0 = x0 ; 
+    param->y0 = y0 ; 
+    param->z0 = z0 ; 
+    param->w0 = w0 ; 
+    param->x1 = x1 ; 
+    param->y1 = y1 ; 
 }
 
 inline void sn::setBB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
-    if( bb == nullptr ) bb = new s_bb ; 
-    bb->x0 = x0 ; 
-    bb->y0 = y0 ; 
-    bb->z0 = z0 ; 
-    bb->x1 = x1 ; 
-    bb->y1 = y1 ; 
-    bb->z1 = z1 ; 
+    if( aabb == nullptr ) aabb = new s_bb ; 
+    aabb->x0 = x0 ; 
+    aabb->y0 = y0 ; 
+    aabb->z0 = z0 ; 
+    aabb->x1 = x1 ; 
+    aabb->y1 = y1 ; 
+    aabb->z1 = z1 ; 
 }
 
 
@@ -1871,24 +1876,24 @@ inline void sn::combineXF( const glm::tmat4x4<double>& t )
 }
 inline void sn::setXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
-    if( tv == nullptr ) tv = new s_tv ; 
-    tv->t = t ; 
-    tv->v = v ; 
+    if( xform == nullptr ) xform = new s_tv ; 
+    xform->t = t ; 
+    xform->v = v ; 
 }
 inline void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v )
 {
-    if( tv == nullptr )
+    if( xform == nullptr )
     {
-        tv = new s_tv ; 
-        tv->t = t ; 
-        tv->v = v ; 
+        xform = new s_tv ; 
+        xform->t = t ; 
+        xform->v = v ; 
     }
     else
     {
-        glm::tmat4x4<double> tt = tv->t * t ;   
-        glm::tmat4x4<double> vv = v * tv->v ;   
-        tv->t = tt ; 
-        tv->v = vv ; 
+        glm::tmat4x4<double> tt = xform->t * t ;   
+        glm::tmat4x4<double> vv = v * xform->v ;   
+        xform->t = tt ; 
+        xform->v = vv ; 
     }
 }
 
@@ -1956,18 +1961,18 @@ inline sn* sn::Zero() // static
     sn* nd = Create(CSG_ZERO); 
     return nd ; 
 }
-inline sn* sn::Prim(int type_)   // static
+inline sn* sn::Prim(int typecode_)   // static
 {
-    return new sn(type_, nullptr, nullptr) ; 
+    return new sn(typecode_, nullptr, nullptr) ; 
 }
-inline sn* sn::Create(int type_, sn* left_, sn* right_)  // static
+inline sn* sn::Create(int typecode_, sn* left_, sn* right_)  // static
 {
-    sn* nd = new sn(type_, left_, right_) ;
+    sn* nd = new sn(typecode_, left_, right_) ;
     return nd ;
 }
-inline sn* sn::Boolean(int type_, sn* left_, sn* right_)  // static
+inline sn* sn::Boolean(int typecode_, sn* left_, sn* right_)  // static
 {
-    sn* nd = Create(type_, left_, right_); 
+    sn* nd = Create(typecode_, left_, right_); 
     return nd ; 
 }
 
@@ -2058,19 +2063,26 @@ inline std::string sn::ZDesc(const std::vector<sn*>& prims) // static
 
 inline double sn::zmin() const
 {
-    assert( CSG::CanZNudge(type) );
-    assert( pa );
-    return pa ? pa->zmin() : 0. ;
+    assert( CSG::CanZNudge(typecode) );
+    assert( param );
+    return param ? param->zmin() : 0. ;
 }
 
 inline double sn::zmax() const
 {
-    assert( CSG::CanZNudge(type) );
-    assert( pa );
-    return pa ? pa->zmax() : 0. ;
+    assert( CSG::CanZNudge(typecode) );
+    assert( param );
+    return param ? param->zmax() : 0. ;
 }
 
+inline const double* sn::getParam() const { return param ? param->data() : nullptr ; }
+inline const double* sn::getAABB()  const { return aabb ? aabb->data() : nullptr ; }
 
+inline bool sn::hasAABB() const   // not-nullptr and not all zero 
+{
+    const double* aabb = getAABB();  
+    return aabb != nullptr && !s_bb::IsZero(aabb) ; 
+}
 
 
 
@@ -2115,14 +2127,14 @@ inline sn* sn::Contiguous(std::vector<sn*>& prims )
 
 
 
-inline sn* sn::Compound(std::vector<sn*>& prims, int type_ )
+inline sn* sn::Compound(std::vector<sn*>& prims, int typecode_ )
 {
-    assert( type_ == CSG_CONTIGUOUS || type_ == CSG_DISCONTIGUOUS ); 
+    assert( typecode_ == CSG_CONTIGUOUS || typecode_ == CSG_DISCONTIGUOUS ); 
 
     int num_prim = prims.size(); 
     assert( num_prim > 0 ); 
 
-    sn* nd = Create( type_ ); 
+    sn* nd = Create( typecode_ ); 
 
     for(int i=0 ; i < num_prim ; i++)
     {
@@ -2250,7 +2262,7 @@ that becomes the new root::
 **/
 
 
-inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int type )  // static
+inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int typecode )  // static
 {
     int num_leaves = leaves.size() ;
     int num_leaves_placed = 0 ;  
@@ -2261,9 +2273,100 @@ inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, i
 
     while( num_leaves_placed < num_leaves )
     {
-        root = Create(type, root, leaves[num_leaves_placed]); 
+        root = Create(typecode, root, leaves[num_leaves_placed]); 
         num_leaves_placed += 1 ; 
     } 
     return root ; 
 }
+
+
+
+
+/**
+sn::GetLVRoot
+---------------
+
+Returns pointer to first snd in the (scsg)POOL with the lvid provided.
+
+const sn* sn::GetLVRoot( int lvid ) // static
+{
+    const sn* root = POOL->getLVRoot(lvid); 
+    return root ; 
+}
+
+**/
+
+/**
+sn::GetLVNodesComplete
+-------------------------
+
+As the traversal is constrained to the binary tree portion of the n-ary snd tree 
+can populate a vector of *snd* pointers in complete binary tree level order indexing
+with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r.
+
+
+void sn::GetLVNodesComplete(std::vector<const sn*>& nds, int lvid) // static 
+{
+    const sn* root = GetLVRoot(lvid);  // first sn in (scsg)POOL
+    root->getLVNodesComplete(nds);    
+
+    int level = Level(); 
+
+    if(level > 0 && nds.size() > 8 )
+    {
+        std::cout
+            << "sn::GetLVNodesComplete"
+            << " lvid " << lvid
+            << " level " << level
+            << std::endl
+            << root->rbrief()
+            << std::endl
+            << root->render(3)
+            ;
+    }
+}
+**/
+
+
+/**
+sn::getLVNodesComplete
+-------------------------
+
+
+void sn::getLVNodesComplete(std::vector<const sn*>& nds) const 
+{
+    int bn = getLVBinNode();  
+    int sn = getLVSubNode();  
+    int numParts = bn + sn ; 
+    nds.resize(numParts); 
+
+    assert( sn == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+
+    GetLVNodesComplete_r( nds, this, 0 ); 
+}
+
+
+void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx)  // static
+{
+    assert( idx < int(nds.size()) ); 
+    nds[idx] = nd ; 
+
+    if( nd->num_child > 0 && nd->is_listnode() == false ) // non-list operator node
+    {
+        assert( nd->num_child == 2 ) ;
+        int ch = nd->first_child ;
+        for(int i=0 ; i < nd->num_child ; i++)
+        {
+            const sn* child = sn::Get(ch) ;
+            assert( child->index == ch );
+
+            int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
+
+            GetLVNodesComplete_r(nds, child, cidx );
+
+            ch = child->next_sibling ;
+        }
+    }
+}
+**/
 

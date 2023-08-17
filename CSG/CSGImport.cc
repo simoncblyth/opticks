@@ -45,8 +45,6 @@ void CSGImport::import()
 {
     LOG(LEVEL) << "[" ;     
 
-    assert(st); 
-
     importNames(); 
     importSolid();     
     importInst();     
@@ -57,6 +55,7 @@ void CSGImport::import()
 
 void CSGImport::importNames()
 {
+    assert(st); 
     st->get_mmlabel( fd->mmlabel);  
     st->get_meshname(fd->meshname);  
 }
@@ -66,7 +65,7 @@ void CSGImport::importNames()
 CSGImport::importSolid : "Solid" means compound Solid 
 ----------------------------------------------------------------
 
-After CSG_GGeo_Convert::convertAllSolid
+Following prior CSG_GGeo_Convert::convertAllSolid
 
 CSG_GGeo_Convert::convertSolid
    shows that need to start from top level of the compound solids 
@@ -174,6 +173,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 
 
 
+
 /**
 CSGImport::importPrim
 ----------------------
@@ -186,17 +186,30 @@ subNum/subOffset referencing.
   it must be traversed as a binary tree by regarding the compound nodes as effectively leaf node "primitives" 
   in order to generate the indices into the complete binary tree serialization in level order 
 
-
 **/
 
+
 CSGPrim* CSGImport::importPrim(int primIdx, const snode& node ) 
+{
+#ifdef WITH_SND
+    CSGPrim* pr = importPrim_<snd>(primIdx, node ) ;  
+#else
+    CSGPrim* pr = importPrim_<sn>(primIdx, node ) ;  
+#endif
+    return pr ; 
+} 
+
+
+template<typename N>
+CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node ) 
 {
     int lvid = node.lvid ; 
     const char* name = fd->getMeshName(lvid)  ; 
 
-    std::vector<const snd*> nds ; 
-    snd::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
+    std::vector<const N*> nds ; 
+    N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
+
 
     bool dump_LVID = node.lvid == LVID ; 
     if(dump_LVID) std::cout 
@@ -217,8 +230,8 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     for(int i=0 ; i < numParts ; i++)
     {
         int partIdx = i ; 
-        const snd* nd = nds[partIdx]; 
-        importNode(pr->nodeOffset(), partIdx, node, nd ) ; 
+        const N* nd = nds[partIdx]; 
+        importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
     }
 
     LOG(LEVEL) 
@@ -255,17 +268,25 @@ nodeIdx
 (snd)nd.index
     csg level index
 
+
+TODO: once get match tidy this up, looks like setting AABB twice 
+
 **/
 
-CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const snd* nd)
+
+template<typename N>
+CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
 {
     CSGNode cn = CSGNode::Zero() ; 
+    const double* aabb = nullptr ; 
+    const double* param6 = nullptr ; 
+    bool complement = false ; 
 
-    const double* aabb   = nd ? nd->getAABB() : nullptr ; 
-    const double* param6 = nd ? nd->getParam() : nullptr  ; 
-    bool complement = false ; // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
+    aabb   = nd ? nd->getAABB() : nullptr ; 
+    param6 = nd ? nd->getParam() : nullptr  ; 
+    complement = nd ? nd->complement : false ; 
+    // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
 
-    // TODO: once get match tidy this up, looks like setting AABB twice 
     if(nd)
     {
         assert( node.lvid == nd->lvid ); 

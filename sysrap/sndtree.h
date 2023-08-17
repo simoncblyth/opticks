@@ -86,7 +86,7 @@ inline int sndtree::Build_r(sn* n, int& num_leaves_placed, const std::vector<int
     int N = -1 ; 
     if( n->is_operator() )
     {
-        int op = n->type ; 
+        int op = n->typecode ; 
         int nc = n->num_child();  
         assert( nc == 2 ); 
         sn* l = n->get_child(0); 

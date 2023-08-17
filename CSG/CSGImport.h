@@ -23,8 +23,12 @@ CAUTION : SOME PARALLEL DEV NEEDS REVIEW, CONSOLIDATION::
 
 struct stree ; 
 struct snode ; 
-struct snd ; 
 
+#ifdef WITH_SND
+struct snd ; 
+#else
+struct sn ; 
+#endif
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
@@ -52,8 +56,16 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
 
     CSGSolid* importSolidRemainder(int ridx, const char* rlabel); 
     CSGSolid* importSolidFactor(   int ridx, const char* rlabel); 
+
+
     CSGPrim*  importPrim( int primIdx, const snode& node ); 
-    CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const snd* nd); 
+
+    template<typename N>
+    CSGPrim*  importPrim_( int primIdx, const snode& node ); 
+
+    template<typename N>
+    CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const N* nd); 
+
 
 }; 
 

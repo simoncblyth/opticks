@@ -32,15 +32,51 @@ These issues motivated enhancing the more flexible sn.h CSG node
 
 * DONE : param, transform, bbox now match between snd/sn routes
 
-Now that have a match between snd/sn routes. Next:
+Now that have a match between snd/sn routes. NEXT:
 
 * adopt sn with CSGFoundry::CreateFromSim 
+
+  * WIP: rework CSGImport::importNode for sn.h (not snd.hh)
+
 * compare OLD/NEW again at CSGFoundry level now using sn.h 
   
   * the more flexible sn.h CSG node impl means that can now try to 
     bring uncoincidence (and balancing) from the OLD workflow
     into the NEW workflow : meaning that can try to get CSGNode match 
     between OLD/NEW 
+
+
+
+WIP : Bringing more snd/scsg features over to sn/s_pool
+----------------------------------------------------------
+
+::
+
+    epsilon:tests blyth$ LVID=0 BASE=/tmp/blyth/opticks/U4TreeCreateTest/stree/_csg /tmp/s_csg_test/s_csg_test 
+    s_csg::Desc nds.size 3
+    sn::desc pid    0 idx    0 typecode   3 num_node   3 num_leaf   2 maxdepth  1 is_positive_form N lvid   0
+    sn::desc pid    1 idx    1 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid   0
+    sn::desc pid    2 idx    2 typecode 110 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid   0
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ LVID=1 BASE=/tmp/blyth/opticks/U4TreeCreateTest/stree/_csg /tmp/s_csg_test/s_csg_test 
+    s_csg::Desc nds.size 3
+    sn::desc pid    3 idx    3 typecode   3 num_node   3 num_leaf   2 maxdepth  1 is_positive_form N lvid   1
+    sn::desc pid    4 idx    4 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid   1
+    sn::desc pid    5 idx    5 typecode 110 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid   1
+    epsilon:tests blyth$ LVID=2 BASE=/tmp/blyth/opticks/U4TreeCreateTest/stree/_csg /tmp/s_csg_test/s_csg_test 
+    s_csg::Desc nds.size 1
+    sn::desc pid    6 idx    6 typecode 110 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid   2
+    epsilon:tests blyth$ LVID=108 BASE=/tmp/blyth/opticks/U4TreeCreateTest/stree/_csg /tmp/s_csg_test/s_csg_test 
+    s_csg::Desc nds.size 5
+    sn::desc pid  464 idx  464 typecode   1 num_node   5 num_leaf   3 maxdepth  2 is_positive_form Y lvid 108
+    sn::desc pid  465 idx  465 typecode   1 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 108
+    sn::desc pid  466 idx  466 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 108
+    sn::desc pid  467 idx  467 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 108
+    sn::desc pid  468 idx  468 typecode 108 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 108
+    epsilon:tests blyth$ 
+      
+
 
 
 

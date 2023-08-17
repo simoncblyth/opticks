@@ -120,6 +120,8 @@ struct SYSRAP_API snd
     static void SetLVID(  int idx , int lvid);  // label node tree 
 
     static void GetLVID( std::vector<snd>& nds, int lvid ); 
+
+
     static const snd* GetLVRoot( int lvid );
  
     static int GetLVNumNode( int lvid ); // total nodes 
@@ -130,10 +132,11 @@ struct SYSRAP_API snd
     int getLVBinNode() const ;  // binary tree nodes (compound constituents not included) 
     int getLVSubNode() const ;  // sub nodes : ie the compound constituents  
 
-
     static void GetLVNodesComplete(std::vector<const snd*>& nds, int lvid); // unbalanced deep trees will have many nullptr 
     void        getLVNodesComplete(std::vector<const snd*>& nds) const ; 
     static void GetLVNodesComplete_r(std::vector<const snd*>& nds, const snd* nd, int idx); 
+
+
 
     static std::string Desc(int idx);
     static std::string DescParam(int idx);

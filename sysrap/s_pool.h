@@ -34,6 +34,7 @@ a contiguous key.
 #include <iomanip>
 #include <map>
 #include <vector>
+#include <functional>
 
 #include "ssys.h"
 #include "NPX.h"
@@ -74,6 +75,8 @@ struct s_pool
     T*  get_root(int idx) const ; 
     T*  get(int idx) const ;   // method asserts all_root then calls get_root 
 
+    void find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
+
     std::string brief(const char* msg=nullptr) const ; 
     std::string desc(const char* msg=nullptr) const ; 
 
@@ -112,7 +115,7 @@ inline int s_pool<T,P>::num_root() const
     for(IT it=pool.begin() ; it != pool.end() ; it++) 
     {
         T* n = it->second ;  
-        if(n->is_root_importable()) count_root += 1 ; 
+        if(n->is_root()) count_root += 1 ; 
     }
     return count_root ; 
 }
@@ -145,7 +148,7 @@ inline T* s_pool<T,P>::get_root(int idx) const
     for(IT it=pool.begin() ; it != pool.end() ; it++) 
     {
         T* n = it->second ;  
-        if(n->is_root_importable()) 
+        if(n->is_root()) 
         {
             if( idx == count_root ) root = n ; 
             count_root += 1 ; 
@@ -161,8 +164,16 @@ inline T* s_pool<T,P>::get(int idx) const
     return get_root(idx) ; 
 }
 
-
-
+template<typename T, typename P>
+inline void s_pool<T,P>::find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const 
+{
+    typedef typename POOL::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        T* n = it->second ;  
+        if(predicate(n)) vec.push_back(n) ; 
+    }
+}
 
 
 template<typename T, typename P>
@@ -321,8 +332,11 @@ template<typename T, typename P>
 template<typename S>
 inline void s_pool<T,P>::import( const NP* a ) 
 {
+    if(level > 0) std::cerr << "s_pool::import a.sstr " << ( a ? a->sstr() : "-" )  << std::endl ; 
     std::vector<P> buf(a->shape[0]) ; 
+
     NPX::VecFromArray<P>(buf, a );  // from array into buf
+
     import_(buf);                   // from buf into pool 
 }
 

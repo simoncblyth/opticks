@@ -791,14 +791,14 @@ inline void U4Solid::init_BooleanSolid()
     sn* l = Convert( left,  lvid, depth+1, level ); 
     sn* r = Convert( right, lvid, depth+1, level ); 
 
-    if(l->tv && level > 0) std::cout
+    if(l->xform && level > 0) std::cout
         << "U4Solid::init_BooleanSolid "
         << " observe transform on left node " 
-        << " l.tv " << l->tv->desc()
+        << " l.xform " << l->xform->desc()
         << std::endl 
         ; 
 
-    if(is_right_displaced) assert( r->tv && "expecting transform on right displaced node " ); 
+    if(is_right_displaced) assert( r->xform && "expecting transform on right displaced node " ); 
  
     root = sn::Boolean( op, l, r ); 
 #endif

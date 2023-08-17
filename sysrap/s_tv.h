@@ -45,7 +45,7 @@ struct SYSRAP_API s_tv
     glm::tmat4x4<double> t ; 
     glm::tmat4x4<double> v ;
  
-    bool is_root_importable() const ; 
+    bool is_root() const { return true ; } 
     std::string desc() const ;  
 }; 
 
@@ -80,10 +80,6 @@ inline s_tv::~s_tv()
     if(pool) pool->remove(this); 
 }
 
-inline bool s_tv::is_root_importable() const 
-{
-    return true ; 
-}
 
 inline std::string s_tv::desc() const 
 {

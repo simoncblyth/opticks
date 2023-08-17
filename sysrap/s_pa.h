@@ -39,14 +39,14 @@ struct SYSRAP_API s_pa
 
     double x0, y0, z0, w0, x1, y1 ;
 
-
+    const double* data() const { return &x0 ; }
+    bool is_root() const { return true ; } 
     double zmin() const { return x1 ; }
     double zmax() const { return y1 ; }
     void decrease_zmin(double dz){ assert( dz >= 0.) ; x1 -= dz ; }
     void increase_zmax(double dz){ assert( dz >= 0.) ; y1 += dz ; }
 
  
-    bool is_root_importable() const ; 
     std::string desc() const ;  
 }; 
 
@@ -91,11 +91,6 @@ inline s_pa::~s_pa()
 {
     if(level() > 1) std::cerr << "s_pa::~s_pa pid " << pid << std::endl ; 
     if(pool) pool->remove(this); 
-}
-
-inline bool s_pa::is_root_importable() const 
-{
-    return true ; 
 }
 
 inline std::string s_pa::desc() const 

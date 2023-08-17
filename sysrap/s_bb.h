@@ -27,13 +27,14 @@ struct _s_bb
 
 struct SYSRAP_API s_bb
 {
+    static constexpr const int N = 6 ; 
+    static constexpr const char* NAME = "s_bb.npy" ; 
+    static constexpr const bool LEAK = false ; 
     typedef s_pool<s_bb,_s_bb> POOL ;
     static POOL* pool ;
-    static constexpr const bool LEAK = false ; 
     static void SetPOOL( POOL* pool_ ); 
     static int level() ; 
-
-    static constexpr const char* NAME = "s_bb.npy" ; 
+    static bool IsZero( const double* v ); 
     static void Serialize( _s_bb& p, const s_bb* o ); 
     static s_bb* Import(  const _s_bb* p, const std::vector<_s_bb>& buf ); 
     
@@ -49,12 +50,23 @@ struct SYSRAP_API s_bb
     double y1 ; 
     double z1 ; 
  
-    bool is_root_importable() const ; 
+    const double* data() const { return &x0 ; }
+    bool is_root() const { return true ; } 
     std::string desc() const ;  
 }; 
 
 inline void s_bb::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int s_bb::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
+
+inline bool s_bb::IsZero( const double* v )
+{
+    int count = 0 ; 
+    for(int i=0 ; i < N ; i++) if(v[i] == 0.) count += 1 ; 
+    return count == N ; 
+}
+
+
+
 
 inline void s_bb::Serialize( _s_bb& p, const s_bb* o )
 {
@@ -96,10 +108,6 @@ inline s_bb::~s_bb()
     if(pool) pool->remove(this); 
 }
 
-inline bool s_bb::is_root_importable() const 
-{
-    return true ; 
-}
 
 inline std::string s_bb::desc() const 
 {
