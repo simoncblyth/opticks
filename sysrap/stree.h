@@ -426,10 +426,23 @@ struct stree
 
     std::string desc_node_product(   glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse ) const ; 
 
-    void         get_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd, std::ostream* out) const ; 
-    std::string desc_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd) const ;  
 
+    template<typename N>
+    void get_combined_transform(
+             glm::tmat4x4<double>& t,
+             glm::tmat4x4<double>& v,
+             const snode& node,
+             const N* nd,
+             std::ostream* out
+             ) const ;
 
+    template<typename N>
+    std::string desc_combined_transform(
+             glm::tmat4x4<double>& t,
+             glm::tmat4x4<double>& v,
+             const snode& node,
+             const N* nd
+             ) const ;
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -1710,38 +1723,49 @@ sysrap/tests/stree_create_test.cc
 
 **/
 
-inline void stree::get_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd, std::ostream* out ) const 
+template<typename N>
+inline void stree::get_combined_transform(
+    glm::tmat4x4<double>& t,
+    glm::tmat4x4<double>& v,
+    const snode& node,
+    const N* nd,
+    std::ostream* out ) const
 {
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer 
 
     glm::tmat4x4<double> tt(1.) ;
     glm::tmat4x4<double> vv(1.) ;
 
-    get_node_product( tt, vv, node.index, local, false, out );  
+    get_node_product( tt, vv, node.index, local, false, out );
 
 
     glm::tmat4x4<double> tc(1.) ;
     glm::tmat4x4<double> vc(1.) ;
 
     if(nd)
-    { 
+    {
         assert( node.lvid == nd->lvid );
         snd::NodeTransformProduct(nd->index, tc, vc, false, out );
     }
 
-    t = tt * tc ; 
-    v = vc * vv ; 
+    t = tt * tc ;
+    v = vc * vv ;
 
-    if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl << std::endl ;   
+    if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl << std::endl ;
 }
 
-inline std::string stree::desc_combined_transform( glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, const snode& node, const snd* nd ) const 
+template<typename N>
+inline std::string stree::desc_combined_transform(
+    glm::tmat4x4<double>& t,
+    glm::tmat4x4<double>& v,
+    const snode& node,
+    const N* nd ) const
 {
-    std::stringstream ss ; 
-    ss << "stree::desc_combined_transform" << std::endl; 
-    get_combined_transform(t, v, node, nd, &ss ); 
-    std::string str = ss.str(); 
-    return str ; 
+    std::stringstream ss ;
+    ss << "stree::desc_combined_transform" << std::endl;
+    get_combined_transform(t, v, node, nd, &ss );
+    std::string str = ss.str();
+    return str ;
 }
 
 /**

@@ -207,7 +207,9 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
     const char* name = fd->getMeshName(lvid)  ; 
 
     std::vector<const N*> nds ; 
-    N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
+
+    assert(0 && "IMPL INCOMPLETE");
+    //N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
 
 
@@ -277,39 +279,40 @@ TODO: once get match tidy this up, looks like setting AABB twice
 template<typename N>
 CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
 {
-    CSGNode cn = CSGNode::Zero() ; 
-    const double* aabb = nullptr ; 
-    const double* param6 = nullptr ; 
-    bool complement = false ; 
+    CSGNode cn = CSGNode::Zero() ;
+    const double* aabb = nullptr ;
+    const double* param6 = nullptr ;
+    bool complement = false ;
 
-    aabb   = nd ? nd->getAABB() : nullptr ; 
-    param6 = nd ? nd->getParam() : nullptr  ; 
-    complement = nd ? nd->complement : false ; 
+    aabb   = nd ? nd->getAABB() : nullptr ;
+    param6 = nd ? nd->getParam() : nullptr ;
+    complement = nd ? nd->complement : false ;
     // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
 
     if(nd)
     {
-        assert( node.lvid == nd->lvid ); 
-        cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb ) ;  
+        assert( node.lvid == nd->lvid );
+        cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb );
     }
 
-    cn.setIndex(nodeOffset + partIdx);  
-    cn.setBoundary(node.boundary);
-    cn.setComplement(complement);
-    int typecode = cn.typecode() ; 
+    cn.setIndex(nodeOffset + partIdx) ;
+    cn.setBoundary(node.boundary) ;
+    cn.setComplement(complement) ;
+    int typecode = cn.typecode() ;
 
     const std::vector<float4>* pl = nullptr ;  // planes
-    const Tran<double>* tv = nullptr ; 
+    const Tran<double>* tv = nullptr ;
 
     if( CSG::IsLeaf(typecode) )
-    {    
-        glm::tmat4x4<double> t(1.)  ; 
-        glm::tmat4x4<double> v(1.) ; 
+    {
+        glm::tmat4x4<double> t(1.) ;
+        glm::tmat4x4<double> v(1.) ;
 
-        st->get_combined_transform(t, v, node, nd, nullptr ); 
+        assert(0 && "IMPL INCOMPLETE");
+        //st->get_combined_transform(t, v, node, nd, nullptr );
 
-        tv = new Tran<double>(t, v);  
-    }    
+        tv = new Tran<double>(t, v);
+    }
 
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
@@ -320,7 +323,7 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     bool expect_external_bbox = CSG::ExpectExternalBBox(typecode);
 
-    // needs to follow CSG_GGeo_Convert::convertNode 
+    // needs to follow CSG_GGeo_Convert::convertNode
 
     if( nd && nd->hasAABB() )
     {   
