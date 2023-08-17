@@ -271,9 +271,7 @@ struct SYSRAP_API sn
     static sn* ZeroTree_r(int elevation, int op); 
     static sn* ZeroTree(int num_leaves, int op ); 
 
-    static sn* CommonOperatorTypeTree( std::vector<int>& leaftypes,  int op ); 
-    static sn* CommonOperatorTree(     std::vector<sn*>& leaves    , int op ); 
-
+    static sn* CommonOperatorTypeTree(   std::vector<int>& leaftypes,  int op ); 
 
     void populate_leaftypes(std::vector<int>& leaftypes ); 
     void populate_leaves(   std::vector<sn*>& leaves ); 
@@ -298,8 +296,6 @@ struct SYSRAP_API sn
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
     void combineXF( const glm::tmat4x4<double>& t ); 
     void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
-
-
 
     
     /**
@@ -333,6 +329,7 @@ struct SYSRAP_API sn
     static sn* Contiguous( std::vector<sn*>& prims ); 
     static sn* Compound(   std::vector<sn*>& prims, int type_ ); 
 
+    static sn* Buggy_CommonOperatorTree( std::vector<sn*>& leaves    , int op ); 
     static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int type ); 
 };
 
@@ -489,7 +486,7 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.parent = pool->index(x->parent);  
 
 #ifdef WITH_CHILD
-    n.sibdex = x->sibling_index(); 
+    n.sibdex = x->sibling_index();  // 0 for root 
     n.num_child = x->num_child() ; 
     n.first_child = pool->index(x->first_child());  
     n.next_sibling = pool->index(x->next_sibling()); 
@@ -1388,7 +1385,7 @@ inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 
 /**
 sn::CommonOperatorTypeTree (formerly sn::CommonTree)
--------------------------------------------------------
+------------------------------------------------------------
 
 This was implemented while sn was not fully featured.
 It was used to provide a "template" tree with types only, 
@@ -1419,51 +1416,6 @@ inline sn* sn::CommonOperatorTypeTree( std::vector<int>& leaftypes, int op ) // 
         root->prune();
  
         if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree pruned num_leaves " << num_leaves << std::endl ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
-    }
-    return root ; 
-} 
-
-
-
-inline sn* sn::CommonOperatorTree( std::vector<sn*>& leaves, int op ) // static
-{   
-    int num_leaves = leaves.size(); 
-    sn* root = nullptr ; 
-    if( num_leaves == 1 )
-    {
-        root = leaves[0] ; 
-    }
-    else
-    {
-        root = ZeroTree(num_leaves, op );   
-
-        if(level() > 0) std::cerr 
-            << "sn::CommonOperatorTree after ZeroTree"
-            << " num_leaves " << num_leaves 
-            << " level " << level()
-            << std::endl
-            ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
-
-        root->populate_leaves(leaves); 
-
-        if(level() > 0) std::cerr 
-            << "sn::CommonOperatorTree after populate_leaves" 
-            << " num_leaves " << num_leaves 
-            << " level " << level()
-            << std::endl 
-            ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
-
-        root->prune();
- 
-        if(level() > 0) std::cerr 
-            << "sn::CommonOperatorTree after prun"
-            << " num_leaves " << num_leaves 
-            << " level " << level()
-            << std::endl 
-            ; 
         if(level() > 1) std::cerr << root->render(5) ; 
     }
     return root ; 
@@ -2126,7 +2078,8 @@ inline sn* sn::Collection(std::vector<sn*>& prims ) // static
 
 inline sn* sn::UnionTree(std::vector<sn*>& prims )
 {
-    sn* n = CommonOperatorTree( prims, CSG_UNION ); 
+    //sn* n = Buggy_CommonOperatorTree( prims, CSG_UNION ); 
+    sn* n = BuildCommonTypeTree_Unbalanced(prims, CSG_UNION ); 
     return n ; 
 }
 inline sn* sn::Contiguous(std::vector<sn*>& prims )
@@ -2162,11 +2115,88 @@ inline sn* sn::Compound(std::vector<sn*>& prims, int type_ )
 }
 
 
+
+
+
+
+/**
+sn::Buggy_CommonOperatorTree
+-----------------------------
+
+This has issues of inadvertent node deletion when 
+there are for example 3 leaves::
+
+
+        U
+      U   2
+    0  1
+
+The populate_leaves and/or prune needs to be cleverer 
+to make this approach work. 
+
+See sn::BuildCommonTypeTree_Unbalanced below for 
+alternative without this bug. 
+
+**/
+
+
+inline sn* sn::Buggy_CommonOperatorTree( std::vector<sn*>& leaves, int op ) // static
+{   
+    int num_leaves = leaves.size(); 
+    sn* root = nullptr ; 
+    if( num_leaves == 1 )
+    {
+        root = leaves[0] ; 
+    }
+    else
+    {
+        root = ZeroTree(num_leaves, op );   
+
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after ZeroTree"
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl
+            ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+
+        root->populate_leaves(leaves); 
+
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after populate_leaves" 
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl 
+            ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+
+        root->prune();
+ 
+        if(level() > 0) std::cerr 
+            << "sn::CommonOperatorTree after prun"
+            << " num_leaves " << num_leaves 
+            << " level " << level()
+            << std::endl 
+            ; 
+        if(level() > 1) std::cerr << root->render(5) ; 
+    }
+    return root ; 
+} 
+
+
+
+
+
+
+
 /**
 sn::BuildCommonTypeTree_Unbalanced
 ------------------------------------
 
-For development of tree manipualtions see::
+Simple unbalanced tree building from leaves that is now used from sn::UnionTree.
+Previously used a more complicated approach sn::Buggy_CommonOperatorTree
+
+For development of tree manipulations see::
 
      sysrap/tests/tree_test.cc 
      sysrap/tests/tree.h

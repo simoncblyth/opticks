@@ -595,6 +595,8 @@ target_include_directories( ${name} PUBLIC
 )
 
 #target_compile_definitions( ${name} PUBLIC WITH_SND ) ## THIS IS THE OLD snd.hh (not the new sn.h)
+target_compile_definitions( ${name} PUBLIC WITH_CHILD ) ## sn.h support for n-ary not just binary trees
+
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) ## only does anything with newer plog

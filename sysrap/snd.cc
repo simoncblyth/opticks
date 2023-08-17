@@ -1623,6 +1623,7 @@ snd snd::Init(int tc)  // static
     nd.init(); 
     nd.typecode = tc ; 
     nd.num_child = 0 ; 
+    nd.complement = 0 ;  // not used in snd, but set it false anyhow
     return nd ; 
 }
 
@@ -1716,6 +1717,7 @@ int snd::Compound(int type, const std::vector<int>& prims )
     assert( num_prim > 0 ); 
 
     snd nd = Init( type ); 
+    nd.sibdex = 0 ; // root sibdex to 0 
     nd.num_child = num_prim ; 
     nd.first_child = prims[0] ;
     int idx = Add(nd) ; 
@@ -1747,6 +1749,8 @@ int snd::Compound(int type, const std::vector<int>& prims )
 int snd::UnionTree(const std::vector<int>& prims )
 {
     int idx = sndtree::CommonTree_PlaceLeaves( prims, CSG_UNION ); 
+    snd* n = Get_(idx); 
+    assert( n->sibdex == 0 ) ;  // root sibdex to 0 
     return idx ; 
 }
 

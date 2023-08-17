@@ -1,7 +1,8 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4TreeCreateTest.sh 
-======================
+U4TreeCreateTest.sh  : loads GDML, runs U4Tree::Create populating stree.h, saves to FOLD  
+============================================================================================
+
 
 EOU
 }

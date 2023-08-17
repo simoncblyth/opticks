@@ -64,6 +64,9 @@ inline int sndtree::CommonTree_PlaceLeaves( const std::vector<int>& leaves, int 
 
     delete n ; 
 
+    snd* r = snd::Get_(root); 
+    r->sibdex = 0 ; 
+
     return root ; 
 }
 

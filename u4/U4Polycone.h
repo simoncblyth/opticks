@@ -444,5 +444,3 @@ void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
 }
 
 
-
-

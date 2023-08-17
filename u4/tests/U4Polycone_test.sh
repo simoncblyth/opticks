@@ -3,13 +3,24 @@ usage(){ cat << EOU
 U4Polycone_test.sh
 ===================
 
-::
+This compiles the needed parts of sysrap from source (not using libSysRap) 
+in order to facilitate quick changes of compilation options. 
 
-   # -L$OPTICKS_PREFIX/lib \
-   # -lSysRap \
+Compilation options:
+
+-DWITH_SND
+     reverts to the old inflexible snd.hh CSG node impl
+     instead of the default more flexible sn.h impl 
+
+-DWITH_CHILD
+     switches sn.h node impl to use child vector instead of left right nodes, 
+     this generalizes the node impl to n-ary instead of binary 
 
 EOU
 }
+
+opt="-DWITH_SND"
+#opt="-DWITH_CHILD"
 
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
@@ -27,11 +38,8 @@ CUDA_PREFIX=/usr/local/cuda
 clhep-
 g4-
 
-defarg="build_run"
+defarg="info_build_run_ana"
 arg=${1:-$defarg}
-
-#opt="-DWITH_SND"
-opt=""
 
 
 export sn__level=2
@@ -66,10 +74,10 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$(g4-prefix)/include/Geant4  \
          -L$(g4-prefix)/lib \
          -L$(clhep-prefix)/lib \
-           -lG4global \
-           -lG4geometry \
-           -lCLHEP \
-          -o $bin
+         -lG4global \
+         -lG4geometry \
+         -lCLHEP \
+         -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 

@@ -731,3 +731,67 @@ Cannot just directly place into the tree due to hoiking problem.
     100     return N ;
     101 }
 
+
+
+U4Polycone_test.sh now giving node match with sn.h WITH_CHILD
+----------------------------------------------------------------
+
+
+::
+
+    In [5]:
+    epsilon:opticks blyth$ ./u4/tests/U4Polycone_test.sh ana
+    f
+
+    CMDLINE:/Users/blyth/opticks/u4/tests/U4Polycone_test.py
+    f.base:/tmp/U4Polycone_test
+
+      : f.csg                                              :                 None : 18:40:05.497211 
+      : f._csg                                             :                 None : 18:44:05.229495 
+
+     min_stamp : 2023-08-16 16:01:01.997569 
+     max_stamp : 2023-08-16 16:05:01.729853 
+     dif_stamp : 0:03:59.732284 
+     age_stamp : 18:40:05.497211 
+    snd[:,:11]
+    [[105   0  -1  -1   0   0   3   0   0  -1   1]
+     [105   0  -1  -1   1   1   3   1   0  -1  -1]
+     [108   0  -1  -1   2   2   4   1   0  -1  -1]
+     [  1   0  -1  -1  -1  -1   4   0   2   0   2]
+     [  1   0  -1  -1  -1  -1  -1   0   2   3  -1]]
+    sn 
+    [[105   0  -1  -1   0   0   3   0   0  -1   1]
+     [105   0  -1  -1   1   1   3   1   0  -1  -1]
+     [108   0  -1  -1   2   2   4   1   0  -1  -1]
+     [  1   0  -1  -1  -1  -1   4   0   2   0   2]
+     [  1   0  -1  -1  -1  -1  -1   0   2   3  -1]]
+    np.all( snd[:,:11] == sn )
+    True
+
+
+
+
+U4TreeCreateTest.sh with sn.h WITH_CHILD impl
+--------------------------------------------------
+
+::
+
+    In [12]: np.unique( np.where( snd[:,:11] != sn )[1] )
+    Out[12]: array([1, 7])
+
+    # complement differs : always -1 in snd, always 0 in sn 
+    # sibdex differs
+
+
+    In [23]: np.unique( snd[:,7], return_counts=True )
+    Out[23]: (array([-1,  0,  1], dtype=int32), array([139, 207, 207]))
+
+    In [24]: np.unique( sn[:,7], return_counts=True )
+    Out[24]: (array([0, 1], dtype=int32), array([346, 207]))
+
+
+HMM: need to rerun the x4/ggeo on workstation and pullback 
+to the complement/sibdex changes to snd.hh reflected 
+
+
+
