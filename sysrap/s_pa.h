@@ -13,25 +13,22 @@ s_pa.h
 
 struct _s_pa
 {
-    static constexpr const int NV = 6 ; 
+    static constexpr const char* ITEM = "6" ;  
 
     double x0, y0, z0, w0, x1, y1 ;
-
-
-
 };
 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API s_pa
 {
+    static constexpr const char* NAME = "s_pa.npy" ; 
+    static constexpr const bool LEAK = false ; 
+
     typedef s_pool<s_pa,_s_pa> POOL ;
     static POOL* pool ;
-    static constexpr const bool LEAK = false ; 
     static void SetPOOL( POOL* pool_ ); 
     static int level() ; 
-
-    static constexpr const char* NAME = "s_pa.npy" ; 
     static void Serialize( _s_pa& p, const s_pa* o ); 
     static s_pa* Import(  const _s_pa* p, const std::vector<_s_pa>& buf ); 
     
@@ -53,7 +50,7 @@ struct SYSRAP_API s_pa
     std::string desc() const ;  
 }; 
 
-
+inline void s_pa::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int s_pa::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
 inline void s_pa::Serialize( _s_pa& p, const s_pa* o )

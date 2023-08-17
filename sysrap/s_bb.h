@@ -13,7 +13,7 @@ s_bb.h
 
 struct _s_bb
 {
-    static constexpr const int NV = 6 ; 
+    static constexpr const char* ITEM = "6" ;  
 
     double x0 ; 
     double y0 ; 
@@ -21,7 +21,6 @@ struct _s_bb
     double x1 ; 
     double y1 ; 
     double z1 ; 
-
 };
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -54,7 +53,7 @@ struct SYSRAP_API s_bb
     std::string desc() const ;  
 }; 
 
-
+inline void s_bb::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int s_bb::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
 inline void s_bb::Serialize( _s_bb& p, const s_bb* o )

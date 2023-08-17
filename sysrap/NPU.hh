@@ -511,6 +511,7 @@ inline void U::sizeof_check() // static
 template<typename T>
 inline void U::MakeVec(std::vector<T>& vec, const char* line, char delim)
 {
+    if(line == nullptr) return ; 
     std::stringstream ss; 
     ss.str(line);
     std::string s;

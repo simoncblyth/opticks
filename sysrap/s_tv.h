@@ -18,7 +18,8 @@ s_tv.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
 
 struct _s_tv
 {
-    static constexpr const int NV = 32 ; 
+    static constexpr const char* ITEM = "2,4,4" ;  
+
     glm::tmat4x4<double> t ; 
     glm::tmat4x4<double> v ;
 };
@@ -27,13 +28,13 @@ struct _s_tv
 
 struct SYSRAP_API s_tv
 {
+    static constexpr const bool LEAK = false ; 
+    static constexpr const char* NAME = "s_tv.npy" ; 
+
     typedef s_pool<s_tv,_s_tv> POOL ;
     static POOL* pool ;
-    static constexpr const bool LEAK = false ; 
     static void SetPOOL( POOL* pool_ ); 
     static int level() ; 
-
-    static constexpr const char* NAME = "s_tv.npy" ; 
     static void Serialize( _s_tv& p, const s_tv* o ); 
     static s_tv* Import(  const _s_tv* p, const std::vector<_s_tv>& buf ); 
     
@@ -48,15 +49,15 @@ struct SYSRAP_API s_tv
     std::string desc() const ;  
 }; 
 
+inline void s_tv::SetPOOL( POOL* pool_ ){ pool = pool_ ; } // static 
+inline int  s_tv::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
 
-inline int s_tv::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
-
-inline void s_tv::Serialize( _s_tv& p, const s_tv* o )
+inline void s_tv::Serialize( _s_tv& p, const s_tv* o ) // static
 {
     p.t = o->t ; 
     p.v = o->v ; 
 } 
-inline s_tv* s_tv::Import( const _s_tv* p, const std::vector<_s_tv>& )
+inline s_tv* s_tv::Import( const _s_tv* p, const std::vector<_s_tv>& ) // static
 {
     s_tv* o = new s_tv ; 
     o->t = p->t ; 

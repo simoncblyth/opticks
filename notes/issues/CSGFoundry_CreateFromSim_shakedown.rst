@@ -7,6 +7,44 @@ Compare geometries from X4/GGeo and stree routes::
     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh ana
 
 
+Overview
+-----------
+
+Two geometry routes::
+
+     .             X4      CSG_GGeo
+     OLD : Geant4 -----> GGeo ----->  CSGFoundry 
+
+                  U4Tree        CSGImport
+     NEW : Geant4 ----->  stree ------>  CSGFoundry 
+                          snd/sn
+
+
+Comparisons at CSGFoundry level reveal CSGNode discrepancies
+between the two routes. Some of the differences:
+
+* NEW : has no complemented nodes, positivization not implemented in snd.hh 
+* NEW : lacks uncoincidence shifts in some lv that are present in OLD
+* NEW : bbox diffs 
+
+These issues motivated enhancing the more flexible sn.h CSG node 
+(that supports positivization) to have most of the features of snd.hh  
+
+* DONE : param, transform, bbox now match between snd/sn routes
+
+Now that have a match between snd/sn routes. Next:
+
+* adopt sn with CSGFoundry::CreateFromSim 
+* compare OLD/NEW again at CSGFoundry level now using sn.h 
+  
+  * the more flexible sn.h CSG node impl means that can now try to 
+    bring uncoincidence (and balancing) from the OLD workflow
+    into the NEW workflow : meaning that can try to get CSGNode match 
+    between OLD/NEW 
+
+
+
+
 
 A/B comparison of CSGFoundry geometries
 ------------------------------------------
@@ -812,8 +850,8 @@ to the complement/sibdex changes to snd.hh reflected
 
 
 
-snd.hh side still has sibdex:-1 nodes that are all sibdex:0 on sn.h side
----------------------------------------------------------------------------
+FIXED : snd.hh side still has sibdex:-1 nodes that are all sibdex:0 on sn.h side
+---------------------------------------------------------------------------------
 
 ::
 

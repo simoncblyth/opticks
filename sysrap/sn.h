@@ -82,14 +82,14 @@ struct _sn
     int  index ;        // 11 
     int  depth ;        // 12
     char label[16] ;    // 13,14,15,16 
-    static constexpr const int NV = 17 ; 
+    static constexpr const char* ITEM = "17" ;  
 #else
     int  left ;         // 7
     int  right ;        // 8
     int  index ;        // 9
     int  depth ;        // 10
     char label[16] ;    // 11,12,13,14 
-    static constexpr const int NV = 15 ; 
+    static constexpr const char* ITEM = "15" ;  
 #endif
 
     std::string desc() const ; 

@@ -36,7 +36,7 @@ a contiguous key.
 #include <vector>
 
 #include "ssys.h"
-#include "NP.hh"
+#include "NPX.h"
 
 
 /**
@@ -313,25 +313,17 @@ template<typename S>
 inline NP* s_pool<T,P>::serialize() const 
 {
     std::vector<P> buf ; 
-    serialize_(buf); 
-
-    // TODO: use NPX.h  
-    NP* a = NP::Make<S>( buf.size(), P::NV ) ; 
-    a->read2<S>((S*)buf.data()); 
-
-    return a ; 
+    serialize_(buf);                                 // from pool into the buf of P objects 
+    return NPX::ArrayFromVec_<S, P>(buf, P::ITEM) ;  // from buf into array  
 }
 
 template<typename T, typename P>
 template<typename S>
 inline void s_pool<T,P>::import( const NP* a ) 
 {
-    assert( a->shape[1] == P::NV );  
-
     std::vector<P> buf(a->shape[0]) ; 
-    a->write<S>((S*)buf.data()); 
-
-    import_(buf); 
+    NPX::VecFromArray<P>(buf, a );  // from array into buf
+    import_(buf);                   // from buf into pool 
 }
 
 template<typename T, typename P>

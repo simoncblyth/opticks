@@ -41,8 +41,17 @@ struct NPX
     static NP* Holder( const std::vector<std::string>& names ); 
 
 
+
+    template<typename T, typename S> 
+    static NP* ArrayFromVec__(const std::vector<S>& v, const std::vector<int>& itemshape ); 
+
     template<typename T, typename S, typename... Args> 
-    static NP* ArrayFromVec(const std::vector<S>& v, Args ... args );   // ArrayFromVec_ellipsis
+    static NP* ArrayFromVec(const std::vector<S>& v, Args ... args_itemshape );   // ArrayFromVec_ellipsis
+
+    template<typename T, typename S> 
+    static NP* ArrayFromVec_(const std::vector<S>& v, const char* str_itemshape );  
+
+
     template<typename S> 
     static void VecFromArray(std::vector<S>& v, const NP* a );
 
@@ -232,6 +241,59 @@ inline NP* NPX::Holder( const std::vector<std::string>& names )
 
 
 
+
+
+
+
+
+template<typename T, typename S> 
+inline NP* NPX::ArrayFromVec__(const std::vector<S>& v, const std::vector<int>& itemshape )   
+{
+    assert( sizeof(S) >= sizeof(T) );  
+    int ni = v.size() ; 
+    int nj = sizeof(S) / sizeof(T) ; 
+
+    const T* src = (T*)v.data() ; 
+
+    std::vector<int> shape ; 
+    shape.push_back(ni) ; 
+
+    if(itemshape.size() == 0 )
+    {
+        shape.push_back(nj) ; 
+    }
+    else 
+    {
+        int itemcheck = 1 ; 
+        for(unsigned i=0 ; i < itemshape.size() ; i++)  
+        {
+            shape.push_back(itemshape[i]) ; 
+            itemcheck *= itemshape[i] ; 
+        }
+        bool consistent = itemcheck == nj ;
+
+        if(!consistent) std::cerr 
+            << "NPX::ArrayFromVec__"
+            << " ERROR " 
+            << " consistent " << ( consistent ? "YES" : "NO " )
+            << " itemcheck " << itemcheck 
+            << " nj " << nj 
+            << " itemshape.size " << itemshape.size()
+            << std::endl 
+            ;  
+
+        assert(consistent); 
+    }
+
+
+    NP* a = NP::Make_<T>(shape) ; 
+    a->read2(src);  
+    return a ; 
+}
+
+
+
+
 /**
 NPX::ArrayFromVec
 -------------------
@@ -244,39 +306,22 @@ flat item count however.
 **/
 
 template<typename T, typename S, typename... Args> 
-inline NP* NPX::ArrayFromVec(const std::vector<S>& v, Args ... itemshape )   // ArrayFromVec_ellipsis
+inline NP* NPX::ArrayFromVec(const std::vector<S>& v, Args ... args_itemshape )   // ArrayFromVec_ellipsis
 {
-    assert( sizeof(S) >= sizeof(T) );  
-    int ni = v.size() ; 
-    int nj = sizeof(S) / sizeof(T) ; 
-
-    const T* src = (T*)v.data() ; 
-
-    std::vector<int> shape ; 
-    shape.push_back(ni) ; 
-
-    std::vector<int> itemshape_ = {itemshape...};
-
-    if(itemshape_.size() == 0 )
-    {
-        shape.push_back(nj) ; 
-    }
-    else 
-    {
-        int itemcheck = 1 ; 
-        for(unsigned i=0 ; i < itemshape_.size() ; i++)  
-        {
-            shape.push_back(itemshape_[i]) ; 
-            itemcheck *= itemshape_[i] ; 
-        }
-        assert( itemcheck == nj ); 
-    }
-
-
-    NP* a = NP::Make_<T>(shape) ; 
-    a->read2(src);  
-    return a ; 
+    std::vector<int> itemshape = {args_itemshape...};
+    return ArrayFromVec__<T,S>(v, itemshape ); 
 }
+
+template<typename T, typename S> 
+inline NP* NPX::ArrayFromVec_(const std::vector<S>& v, const char* str_itemshape )
+{
+    std::vector<int> itemshape ; 
+    U::MakeVec(itemshape,  str_itemshape, ',' ); 
+    return ArrayFromVec__<T,S>(v, itemshape ); 
+}
+
+
+
 
 template<typename S> 
 inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
