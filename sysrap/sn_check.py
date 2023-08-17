@@ -4,35 +4,6 @@ sn_check.py
 ============
 
 
-::
-
-    struct _sn
-    {
-        int type ;         // 0
-        int complement ;   // 1 
-        int lvid ;         // 2
-
-        int tv ;           // 3
-        int pa ;           // 4
-        int bb ;           // 5 
-
-        int parent ;       // 6 
-         
-    #ifdef WITH_CHILD
-        int sibdex ;       // 7     0-based sibling index 
-        int num_child ;    // 8
-        int first_child ;  // 9
-        int next_sibling ; // 10  
-        static constexpr const int NV = 11 ; 
-    #else
-        int left ;         // 7
-        int right ;        // 8
-        static constexpr const int NV = 9 ; 
-    #endif
-        std::string desc() const ; 
-        bool is_root_importable() const ; 
-    };
-
 """
 
 import numpy as np
@@ -43,18 +14,16 @@ class snd_check(object):
         snd = f.csg.node
         snd_fields = snd.shape[1]  
         assert snd_fields == 17  
-
         self.snd = snd
   
-
 
 class sn_check(object):
     def __init__(self, f, symbol="c"):
         lvn = f.soname_names
         sn = f._csg.sn
         sn_fields = sn.shape[1]  
-        assert sn_fields in [9,11] 
-        with_child = sn_fields == 11
+        assert sn_fields in [17,15] 
+        with_child = sn_fields == 17
 
         s_pa = f._csg.s_pa
         s_tv = f._csg.s_tv

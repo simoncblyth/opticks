@@ -347,6 +347,7 @@ void snd::SetLVID(int idx, int lvid)  // static
 {
     snd* nd = Get_(idx); 
     nd->setLVID(lvid);   
+    if(nd->is_root()) nd->sibdex = 0 ; 
 
     int chk = nd->checktree(); 
     if( chk != 0 )

@@ -3,6 +3,22 @@ usage(){ cat << EOU
 U4TreeCreateTest.sh  : loads GDML, runs U4Tree::Create populating stree.h, saves to FOLD  
 ============================================================================================
 
+Running this twice WITH_SND and NOT:WITH_SND enables 
+comparison of snd.hh and sn.h based CSG node impls
+as the CSG nodes are persisted into "stree/csg" WITH_SND 
+and "stree/_csg" NOT:WITH_SND
+
+NB when enabling/disabling SysRap WITH_SND need to rebuild sysrap+u4 
+prior to re-running.  This is rather slow as changing flags forces
+everything to be recompiled.  BUT: this is just transient whilst 
+checking the newer more flexible sn.h impl
+
+As soon are are satisfied that sn.h is behaving will no longer
+need to switch back to WITH_SND. 
+
+The test U4Polycone_test.sh avoids this slow rebuild by 
+directly compiling the needed SysRap sources and not using 
+the full SysRap library.  
 
 EOU
 }

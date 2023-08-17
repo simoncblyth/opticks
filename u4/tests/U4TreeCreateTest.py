@@ -4,7 +4,7 @@ U4TreeCreateTest.py
 =====================
 """
 
-import numpy as np
+import numpy as np, textwrap
 from opticks.ana.fold import Fold
 from opticks.sysrap.stree import stree, snode
 from opticks.sysrap.sn_check import sn_check
@@ -23,6 +23,19 @@ if __name__ == '__main__':
     sn = f._csg.sn   
     snd = f.csg.node   
 
+    EXPR = r"""
+    snd
+    sn
+    np.where( snd != sn )
+    """
+
+    for expr in list(filter(None,textwrap.dedent(EXPR).split("\n"))):
+        print(expr)
+        if expr[0] == "#": continue
+        print(eval(expr))
+    pass   
+
+      
 
 
 

@@ -594,8 +594,33 @@ target_include_directories( ${name} PUBLIC
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 
-#target_compile_definitions( ${name} PUBLIC WITH_SND ) ## THIS IS THE OLD snd.hh (not the new sn.h)
-target_compile_definitions( ${name} PUBLIC WITH_CHILD ) ## sn.h support for n-ary not just binary trees
+
+#[=[
+SysRap Compile Definitions
+----------------------------
+
+WITH_SND
+   switches the below to use the old inflexible snd.hh CSG node impl, 
+   instead of the default more flexible sn.h impl:
+
+   sysrap/stree.h
+       WITH_SND saves CSG nodes in CSGFoundry/SSim/stree/csg 
+       NOT:WITH_SND saves CSG nodes in CSGFoundry/SSim/stree/_csg 
+
+   u4/U4Tree.h u4/U4Solid.h u4/U4Polycone.h 
+       WITH_SND uses snd.hh idx int as CSG root
+       NOT:WITH_SND uses sn.h sn* pointer as CSG root 
+    
+WITH_CHILD
+   sysrap/sn.h uses child vector of sn pointers supporting n-ary trees
+
+NOT:WITH_CHILD
+   sysrap/sn.h uses left, right sn pointers supporting only binary trees
+
+#]=]
+
+#target_compile_definitions( ${name} PUBLIC WITH_SND )
+target_compile_definitions( ${name} PUBLIC WITH_CHILD ) 
 
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )

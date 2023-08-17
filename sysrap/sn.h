@@ -66,25 +66,32 @@ all the way to the GPU.
 
 struct _sn
 {
-    int type ;         // 0
-    int complement ;   // 1 
-    int lvid ;         // 2
-    int tv ;           // 3
-    int pa ;           // 4
-    int bb ;           // 5 
-    int parent ;       // 6 
-     
+    int  type ;         // 0
+    int  complement ;   // 1 
+    int  lvid ;         // 2
+    int  tv ;           // 3
+    int  pa ;           // 4
+    int  bb ;           // 5 
+    int  parent ;       // 6 
+    
 #ifdef WITH_CHILD
-    int sibdex ;       // 7     0-based sibling index 
-    int num_child ;    // 8
-    int first_child ;  // 9
-    int next_sibling ; // 10  
-    static constexpr const int NV = 11 ; 
+    int  sibdex ;       // 7     0-based sibling index 
+    int  num_child ;    // 8
+    int  first_child ;  // 9
+    int  next_sibling ; // 10  
+    int  index ;        // 11 
+    int  depth ;        // 12
+    char label[16] ;    // 13,14,15,16 
+    static constexpr const int NV = 17 ; 
 #else
-    int left ;         // 7
-    int right ;        // 8
-    static constexpr const int NV = 9 ; 
+    int  left ;         // 7
+    int  right ;        // 8
+    int  index ;        // 9
+    int  depth ;        // 10
+    char label[16] ;    // 11,12,13,14 
+    static constexpr const int NV = 15 ; 
 #endif
+
     std::string desc() const ; 
     bool is_root_importable() const ; 
 };
@@ -145,12 +152,12 @@ struct SYSRAP_API sn
     sn* left ;          
     sn* right ;        
 #endif
+    int depth ;    
+    char label[16] ; 
 
     // internals, not persisted  
     int pid ;       
-    int depth ;    
     int subdepth ; 
-
 
     typedef s_pool<sn,_sn> POOL ;
     static POOL* pool ;  
@@ -218,13 +225,13 @@ struct SYSRAP_API sn
     int maxdepth() const ; 
     int maxdepth_r(int d) const ; 
 
-    void label(); 
+    void labeltree(); 
 
-    int maxdepth_label() ; 
-    int maxdepth_label_r(int d) ; 
+    int labeltree_maxdepth() ; 
+    int labeltree_maxdepth_r(int d) ; 
 
-    void subdepth_label() ; 
-    void subdepth_label_r(int d); 
+    void labeltree_subdepth() ; 
+    void labeltree_subdepth_r(int d); 
 
     int checktree() const ; 
     int checktree_r(char code,  int d ) const ; 
@@ -284,6 +291,8 @@ struct SYSRAP_API sn
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
 
+    void zero_label(); 
+    void set_label( const char* label_ ); 
     void set_lvid(int lvid_); 
     void set_lvid_r(int lvid_, int d); 
 
@@ -449,10 +458,6 @@ inline const sn* sn::next_sibling() const
     return next_sib < tot_sib  ? get_sibling(next_sib) : nullptr ;   
 }
 
-
-
-
-
 /**
 sn::Serialize
 --------------
@@ -494,6 +499,13 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.left  = pool->index(x->left);  
     n.right = pool->index(x->right);  
 #endif
+
+    n.index = pool->index(x) ; 
+    n.depth = x->depth ; 
+
+    assert( sizeof(n.label) == sizeof(x->label) ); 
+    strncpy( &n.label[0], x->label, sizeof(x->label) );
+
 }
 
 /**
@@ -578,11 +590,12 @@ inline sn::sn(int type_, sn* left_, sn* right_)
     left(left_),
     right(right_),
 #endif
-    pid(pool ? pool->add(this) : -1),
     depth(0),
+    pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
     if(level() > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
+    zero_label(); 
 
 #ifdef WITH_CHILD
     if(left_ && right_)
@@ -862,17 +875,17 @@ inline int sn::maxdepth_r(int d) const
 
 
 
-inline void sn::label()
+inline void sn::labeltree()
 {
-    maxdepth_label(); 
-    subdepth_label(); 
+    labeltree_maxdepth(); 
+    labeltree_subdepth(); 
 }
 
-inline int sn::maxdepth_label() 
+inline int sn::labeltree_maxdepth() 
 {
-    return maxdepth_label_r(0);
+    return labeltree_maxdepth_r(0);
 }
-inline int sn::maxdepth_label_r(int d)
+inline int sn::labeltree_maxdepth_r(int d)
 {
     depth = d ; 
 
@@ -883,7 +896,7 @@ inline int sn::maxdepth_label_r(int d)
     for(int i=0 ; i < nc ; i++) 
     {
         sn* ch = get_child(i) ; 
-        mx = std::max(mx, ch->maxdepth_label_r(d+1) ) ; 
+        mx = std::max(mx, ch->labeltree_maxdepth_r(d+1) ) ; 
     }
     return mx ; 
 }
@@ -891,7 +904,7 @@ inline int sn::maxdepth_label_r(int d)
 
 
 /** 
-sn::subdepth_label  (based on NTreeBalance::subdepth_r)
+sn::labeltree_subdepth  (based on NTreeBalance::subdepth_r)
 ------------------------------------------------------------
 
 How far down can you go from each node. 
@@ -914,17 +927,17 @@ The above tree has two bileafs, one other leaf and root.
 
 **/
 
-inline void sn::subdepth_label()
+inline void sn::labeltree_subdepth()
 {
-    subdepth_label_r(0); 
+    labeltree_subdepth_r(0); 
 }
-inline void sn::subdepth_label_r(int d)
+inline void sn::labeltree_subdepth_r(int d)
 {
     subdepth = maxdepth() ;
     for(int i=0 ; i < num_child() ; i++) 
     {
         sn* ch = get_child(i) ; 
-        ch->subdepth_label_r(d+1) ; 
+        ch->labeltree_subdepth_r(d+1) ; 
     }
 }
 
@@ -1776,9 +1789,19 @@ inline void sn::positivize_r(bool negate, int d)
     }
 }
 
+inline void sn::zero_label()
+{
+    for(int i=0 ; i < int(sizeof(label)) ; i++) label[i] = '\0' ;    
+}
+
+inline void sn::set_label( const char* label_ )
+{
+    strncpy( &label[0], label_, sizeof(label) );
+}
 
 inline void sn::set_lvid(int lvid_)
 {
+
     set_lvid_r(lvid_, 0);  
 
     int chk = checktree();
@@ -1796,6 +1819,8 @@ inline void sn::set_lvid(int lvid_)
 inline void sn::set_lvid_r(int lvid_, int d)
 {
     lvid = lvid_ ; 
+    depth = d ; 
+
     for(int i=0 ; i < num_child() ; i++)
     {
         sn* ch = get_child(i) ;       

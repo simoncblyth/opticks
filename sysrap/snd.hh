@@ -64,8 +64,8 @@ struct SYSRAP_API snd
     int first_child ;      // 9
     int next_sibling ;     // 10
  
-    int index ;            // 11
-    int depth ;            // 12                 optionally set by calling SetLVID 
+    int index ;            // 11      set on adding to POOL by the scsg::add_ snd template specialization 
+    int depth ;            // 12      set by calling SetLVID 
 
     char label[16] ;       // 13,14,14,16        sizeof 4 int 
 
