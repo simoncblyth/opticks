@@ -62,6 +62,10 @@ all the way to the GPU.
 #include "s_bb.h"
 #include "s_tv.h"
 #include "s_pool.h"
+
+//#include "s_csg.h" // DONT DO THAT : CIRCULAR 
+#include "st.h"  // complete binary tree math 
+
 #include "NPFold.h"
 
 struct _sn
@@ -159,16 +163,23 @@ struct SYSRAP_API sn
     int pid ;       
     int subdepth ; 
 
+
     typedef s_pool<sn,_sn> POOL ;
     static POOL* pool ;  
-    static void SetPOOL( POOL* pool_ ); 
-
     static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "sn.npy" ; 
     static constexpr const double zero = 0. ; 
 
-    static std::string Desc(const char* msg=nullptr); 
+    static void SetPOOL( POOL* pool_ ); 
     static int level(); 
+    static std::string Desc(const char* msg=nullptr); 
+
+    template<typename N>
+    static std::string Desc(N* n); 
+
+    template<typename N>
+    static std::string Desc(const std::vector<N*>& nds); 
+
 
     int  index() const ; 
     bool is_root() const ; 
@@ -240,6 +251,8 @@ struct SYSRAP_API sn
     void operators_v(unsigned& mask, int minsubdepth) const ; 
     void operators_r(unsigned& mask, int minsubdepth) const ; 
     bool is_positive_form() const ; 
+    bool is_listnode() const ; 
+    std::string tag() const ; 
 
     void preorder( std::vector<const sn*>& order ) const ; 
     void inorder(  std::vector<const sn*>& order ) const ; 
@@ -254,12 +267,15 @@ struct SYSRAP_API sn
 
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
+    std::string brief() const ; 
     std::string desc_child() const ; 
     std::string desc_r() const ; 
     void desc_r(int d, std::stringstream& ss) const ; 
 
     std::string render() const ; 
     std::string render(int mode) const ; 
+
+    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID } ; 
 
     static constexpr const char* MODE_MINIMAL = "MINIMAL" ; 
     static constexpr const char* MODE_TYPECODE = "TYPECODE" ; 
@@ -344,15 +360,58 @@ struct SYSRAP_API sn
 
     static sn* Buggy_CommonOperatorTree( std::vector<sn*>& leaves    , int op ); 
     static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int typecode ); 
+
+    static void GetLVNodes( std::vector<sn*>& nds, int lvid ); 
+    static sn*  GetLVRoot( int lvid ); 
+
+    std::string rbrief() const ; 
+    void rbrief_r(std::ostream& os, int d) const  ; 
+
+    bool has_type(const std::vector<OpticksCSG_t>& types) const ; 
+    template<typename ... Args> 
+    void typenodes_(std::vector<const sn*>& nds, Args ... tcs ) const ; 
+    void typenodes_r_(std::vector<const sn*>& nds, const std::vector<OpticksCSG_t>& types, int d) const ; 
+
+    int max_binary_depth() const ; 
+    int max_binary_depth_r(int d) const ; 
+
+    int getLVBinNode() const ; 
+    int getLVSubNode() const ; 
+    int getLVNumNode() const ; 
+
+    static void GetLVNodesComplete(std::vector<const sn*>& nds, int lvid); 
+    void        getLVNodesComplete(std::vector<const sn*>& nds) const ; 
+    static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx); 
+
+
 };
 
-inline void sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
-inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; }
+inline void        sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
+inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; } // static
 
-inline int         sn::index() const { return pool ? pool->index(this) : -1 ; }
-inline bool        sn::is_root() const { return parent == nullptr ; }
+template<typename N>
+inline std::string sn::Desc(N* n) // static
+{
+    return n ? n->desc() : "(null)" ;  
+}
 
+template<typename N>
+inline std::string sn::Desc(const std::vector<N*>& nds) // static
+{
+    std::stringstream ss ; 
+    ss << "sn::Desc nds.size " << nds.size() << std::endl ; 
+    for(int i=0 ; i < int(nds.size()) ; i++) ss << Desc(nds[i]) << std::endl ; 
+    std::string str = ss.str();
+    return str ; 
+}
+
+
+
+
+
+inline int  sn::index() const { return pool ? pool->index(this) : -1 ; }
+inline bool sn::is_root() const { return parent == nullptr ; }
 
 inline int sn::num_child() const
 {
@@ -1029,6 +1088,7 @@ inline void sn::operators_v(unsigned& mask, int minsubdepth) const
     }   
 }
 
+
 inline void sn::operators_r(unsigned& mask, int minsubdepth) const
 {
 #ifdef WITH_CHILD
@@ -1051,7 +1111,8 @@ inline bool sn::is_positive_form() const
     return (ops & CSG::Mask(CSG_DIFFERENCE)) == 0 ; 
 }
 
-
+inline bool        sn::is_listnode() const { return CSG::IsList(typecode); }
+inline std::string sn::tag() const {         return CSG::Tag(typecode) ;  }
 
 
 
@@ -1173,21 +1234,36 @@ inline std::string sn::desc() const
        << " maxdepth " << std::setw(2) << maxdepth() 
        << " is_positive_form " << ( is_positive_form() ? "Y" : "N" ) 
        << " lvid " << std::setw(3) << lvid 
+       << " tag " << tag() 
        ; 
     std::string str = ss.str();
     return str ;
 }
 
 
-
-
-
-
-
-
-
-
-
+inline std::string sn::brief() const
+{
+    std::stringstream ss ;
+    ss << "sn::brief"
+       << " tc " << std::setw(4) << typecode
+       << " cm " << std::setw(2) << complement
+       << " lv " << std::setw(3) << lvid 
+       << " xf " << std::setw(1) << ( xform ? "Y" : "N" )
+       << " pa " << std::setw(1) << ( param ? "Y" : "N" )
+       << " bb " << std::setw(1) << ( aabb  ? "Y" : "N" )
+       << " pt " << std::setw(1) << ( parent ? "Y" : "N" )
+#ifdef WITH_CHILD
+       << " nc " << std::setw(2) << child.size() 
+#else
+       << " l  " << std::setw(1) << ( left  ? "Y" : "N" )   
+       << " r  " << std::setw(1) << ( right  ? "Y" : "N" )   
+#endif
+       << " dp " << std::setw(2) << depth
+       << " tg " << tag()
+       ; 
+    std::string str = ss.str();
+    return str ;
+}
 
 
 inline std::string sn::desc_child() const
@@ -1292,12 +1368,12 @@ inline const char* sn::rendermode(int mode) // static
     const char* md = nullptr ; 
     switch(mode) 
     {
-        case 0: md = MODE_MINIMAL  ; break ; 
-        case 1: md = MODE_TYPECODE ; break ; 
-        case 2: md = MODE_DEPTH    ; break ; 
-        case 3: md = MODE_SUBDEPTH ; break ; 
-        case 4: md = MODE_TYPETAG  ; break ; 
-        case 5: md = MODE_PID      ; break ; 
+        case MINIMAL:  md = MODE_MINIMAL  ; break ; 
+        case TYPECODE: md = MODE_TYPECODE ; break ; 
+        case DEPTH:    md = MODE_DEPTH    ; break ; 
+        case SUBDEPTH: md = MODE_SUBDEPTH ; break ; 
+        case TYPETAG:  md = MODE_TYPETAG  ; break ; 
+        case PID:      md = MODE_PID      ; break ; 
     }
     return md ; 
 }
@@ -2280,21 +2356,232 @@ inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, i
 }
 
 
+/**
+sn::GetLVNodes
+---------------
+
+Collect all sn with the provided lvid
+
+**/
+
+struct sn_find_lvid
+{
+    int lvid ; 
+    sn_find_lvid(int q_lvid) : lvid(q_lvid) {}   
+    bool operator()(const sn* n){ return lvid == n->lvid ; }  
+};
+
+
+inline void sn::GetLVNodes( std::vector<sn*>& nds, int lvid ) // static
+{
+    sn_find_lvid flv(lvid); 
+    pool->find(nds, flv );   
+}
+
 
 
 /**
 sn::GetLVRoot
 ---------------
 
-Returns pointer to first snd in the (scsg)POOL with the lvid provided.
-
-const sn* sn::GetLVRoot( int lvid ) // static
-{
-    const sn* root = POOL->getLVRoot(lvid); 
-    return root ; 
-}
+First sn with the lvid and sn::is_root():true in (s_csg)pool 
 
 **/
+
+struct sn_find_lvid_root
+{
+    int lvid ; 
+    sn_find_lvid_root(int q_lvid) : lvid(q_lvid) {}   
+    bool operator()(const sn* n){ return lvid == n->lvid && n->is_root() ; }  
+};
+
+inline sn* sn::GetLVRoot( int lvid ) // static
+{
+    std::vector<sn*> nds ; 
+    sn_find_lvid_root flvr(lvid); 
+    pool->find(nds, flvr );   
+    int count = nds.size() ; 
+    assert( count == 0 || count == 1 ); 
+    return count == 1 ? nds[0] : nullptr ; 
+}
+
+
+
+inline std::string sn::rbrief() const 
+{
+    std::stringstream ss ; 
+    ss << "sn::rbrief" << std::endl ; 
+
+    rbrief_r(ss, 0) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline void sn::rbrief_r(std::ostream& os, int d) const 
+{
+    os << std::setw(3) << d << " : " << brief() << std::endl ; 
+    for(int i=0 ; i < num_child() ; i++) get_child(i)->rbrief_r(os, d+1) ;
+}
+
+
+/**
+sn::has_type
+------------
+
+Returns true when this node has typecode present in the types vector.  
+
+**/
+
+
+inline bool sn::has_type(const std::vector<OpticksCSG_t>& types) const 
+{
+    return std::find( types.begin(), types.end(), typecode ) != types.end() ; 
+}
+
+/**
+sn::typenodes_
+-----------------
+
+Collect sn with typecode provided in the args. 
+
+**/
+
+template<typename ... Args> 
+inline void sn::typenodes_(std::vector<const sn*>& nds, Args ... tcs ) const  
+{
+    std::vector<OpticksCSG_t> types = {tcs ...};
+    typenodes_r_(nds, types, 0 ); 
+}
+
+// NB MUST USE SYSRAP_API TO PLANT THE SYMBOLS IN THE LIB (OR MAKE THEM VISIBLE FROM ELSEWHERE) 
+template SYSRAP_API void sn::typenodes_(std::vector<const sn*>& nds, OpticksCSG_t ) const  ; 
+template SYSRAP_API void sn::typenodes_(std::vector<const sn*>& nds, OpticksCSG_t, OpticksCSG_t ) const ; 
+template SYSRAP_API void sn::typenodes_(std::vector<const sn*>& nds, OpticksCSG_t, OpticksCSG_t, OpticksCSG_t ) const  ; 
+
+/**
+sn::typenodes_r_
+-------------------
+
+Recursive traverse CSG tree collecting snd::index when the snd::typecode is in the types vector. 
+
+**/
+
+inline void sn::typenodes_r_(std::vector<const sn*>& nds, const std::vector<OpticksCSG_t>& types, int d) const 
+{
+    if(has_type(types)) nds.push_back(this); 
+    for(int i=0 ; i < num_child() ; i++) get_child(i)->typenodes_r_(nds, types, d+1 ) ;
+}
+
+
+
+
+
+/**
+sn::max_binary_depth
+-----------------------
+
+Maximum depth of the binary compliant portion of the n-ary tree, 
+ie with listnodes not recursed and where nodes have either 0 or 2 children.  
+The listnodes are regarded as leaf node primitives.  
+
+* Despite the *sn* tree being an n-ary tree (able to hold polycone and multiunion compounds)
+  it must be traversed as a binary tree by regarding the compound nodes as effectively 
+  leaf node "primitives" in order to generate the indices into the complete binary 
+  tree serialization in level order 
+
+* hence the recursion is halted at list nodes
+
+**/
+
+inline int sn::max_binary_depth() const 
+{
+    return max_binary_depth_r(0) ; 
+}
+inline int sn::max_binary_depth_r(int d) const   
+{
+    int mx = d ; 
+    if( is_listnode() == false )
+    {
+        int nc = num_child() ; 
+        if( nc > 0 ) assert( nc == 2 ) ; 
+        for(int i=0 ; i < nc ; i++)  
+        {
+            sn* ch = get_child(i) ; 
+            mx = std::max( mx,  ch->max_binary_depth_r(d + 1) ) ; 
+        }
+    }
+    return mx ; 
+}
+
+
+
+
+
+/**
+sn::getLVBinNode
+------------------
+
+Returns the number of nodes in a complete binary tree
+of height corresponding to the max_binary_depth 
+of this node. 
+
+**/
+
+inline int sn::getLVBinNode() const 
+{
+    int h = max_binary_depth(); 
+    return st::complete_binary_tree_nodes( h );  
+}
+
+/**
+sn::getLVSubNode
+-------------------
+
+Sum of children of compound nodes found beneath this node. 
+HMM: this assumes compound nodes only contain leaf nodes 
+
+Notice that the compound nodes themselves are regarded as part of
+the binary tree. 
+
+**/
+
+inline int sn::getLVSubNode() const 
+{
+    int constituents = 0 ; 
+    std::vector<const sn*> subs ; 
+    typenodes_(subs, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP );  
+    int nsub = subs.size(); 
+    for(int i=0 ; i < nsub ; i++)
+    {
+        const sn* nd = subs[i] ; 
+        assert( nd->typecode == CSG_CONTIGUOUS || nd->typecode == CSG_DISCONTIGUOUS ); 
+        constituents += nd->num_child() ; 
+    } 
+    return constituents ; 
+}
+
+
+/**
+sn::getLVNumNode
+-------------------
+
+Returns total number of nodes that can contain 
+a complete binary tree + listnode constituents
+serialization of this node.  
+
+**/
+
+inline int sn::getLVNumNode() const 
+{
+    int bn = getLVBinNode() ; 
+    int sn = getLVSubNode() ; 
+    return bn + sn ; 
+}
+
+
+
+
+
 
 /**
 sn::GetLVNodesComplete
@@ -2304,36 +2591,35 @@ As the traversal is constrained to the binary tree portion of the n-ary snd tree
 can populate a vector of *snd* pointers in complete binary tree level order indexing
 with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r.
 
+**/
 
-void sn::GetLVNodesComplete(std::vector<const sn*>& nds, int lvid) // static 
+inline void sn::GetLVNodesComplete(std::vector<const sn*>& nds, int lvid) // static 
 {
-    const sn* root = GetLVRoot(lvid);  // first sn in (scsg)POOL
+    const sn* root = GetLVRoot(lvid);  // first sn from pool with lvid that is_root
+    assert(root); 
     root->getLVNodesComplete(nds);    
 
-    int level = Level(); 
-
-    if(level > 0 && nds.size() > 8 )
+    if(level() > 0 && nds.size() > 8 )
     {
         std::cout
             << "sn::GetLVNodesComplete"
             << " lvid " << lvid
-            << " level " << level
+            << " level " << level()
             << std::endl
             << root->rbrief()
             << std::endl
-            << root->render(3)
+            << root->render(SUBDEPTH)
             ;
     }
 }
-**/
-
 
 /**
 sn::getLVNodesComplete
 -------------------------
 
+**/
 
-void sn::getLVNodesComplete(std::vector<const sn*>& nds) const 
+inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const 
 {
     int bn = getLVBinNode();  
     int sn = getLVSubNode();  
@@ -2345,28 +2631,29 @@ void sn::getLVNodesComplete(std::vector<const sn*>& nds) const
     GetLVNodesComplete_r( nds, this, 0 ); 
 }
 
+/**
+sn::GetLVNodesComplete_r
+-------------------------
+**/
 
-void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx)  // static
+inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx)  // static
 {
     assert( idx < int(nds.size()) ); 
     nds[idx] = nd ; 
 
-    if( nd->num_child > 0 && nd->is_listnode() == false ) // non-list operator node
+    int nc = nd->num_child() ; 
+
+    if( nc > 0 && nd->is_listnode() == false ) // non-list operator node
     {
-        assert( nd->num_child == 2 ) ;
-        int ch = nd->first_child ;
-        for(int i=0 ; i < nd->num_child ; i++)
+        assert( nc == 2 ) ;
+        for(int i=0 ; i < nc ; i++)
         {
-            const sn* child = sn::Get(ch) ;
-            assert( child->index == ch );
+            const sn* child = nd->get_child(i) ;
 
             int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing 
 
             GetLVNodesComplete_r(nds, child, cidx );
-
-            ch = child->next_sibling ;
         }
     }
 }
-**/
 

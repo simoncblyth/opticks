@@ -288,6 +288,7 @@ struct CSG
 
     static std::string Tag(int type)
     {
+        assert( type > -1 ); 
         const char* name = Name(type);
         assert(strlen(name) > 2 );
         std::string s(name, name+2) ; 

@@ -390,7 +390,7 @@ void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
 snd::GetLVRoot
 ---------------
 
-Returns pointer to first snd in the (scsg)POOL with the lvid provided.
+First snd with the lvid and snd::is_root():true in (scsg)POOL 
 
 **/
 const snd* snd::GetLVRoot( int lvid ) // static
@@ -573,6 +573,7 @@ bool snd::is_listnode() const
 {
     return CSG::IsList(typecode); 
 }
+
 std::string snd::tag() const
 {
     return typecode < 0 ? "negative-typecode-ERR" : CSG::Tag(typecode) ; 
@@ -1132,6 +1133,13 @@ void snd::find_r(std::vector<int>& nodes, char l0, int d) const
 
 
 
+/**
+snd::typenodes_
+-----------------
+
+Collect snd indices with typecode provided in the args. 
+
+**/
 
 template<typename ... Args> 
 void snd::typenodes_(std::vector<int>& nodes, Args ... tcs ) const 
@@ -1140,7 +1148,7 @@ void snd::typenodes_(std::vector<int>& nodes, Args ... tcs ) const
     typenodes_r_(nodes, types, 0 ); 
 }
 
-// NB MUST USE SYSRAP_API TO PLANT THE SYMBOLS IN THE LIB  
+// NB MUST USE SYSRAP_API TO PLANT THE SYMBOLS IN THE LIB (OR MAKE THEM VISIBLE FROM ELSEWHERE) 
 template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t ) const ; 
 template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t ) const ; 
 template SYSRAP_API void snd::typenodes_(std::vector<int>& nodes, OpticksCSG_t, OpticksCSG_t, OpticksCSG_t ) const ; 
