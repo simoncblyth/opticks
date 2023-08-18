@@ -74,6 +74,11 @@ class snd(sobject):
     FIELD = "ix dp sx pt nc fc sx lv tc pm bb xf".split()
 
 
+class STR(str):
+    """STR inherits from str and changes the repr to provide the str""" 
+    def __repr__(self):
+        return str(self)
+
 class snode(sobject):
     """
     Volume structure node 
@@ -97,6 +102,16 @@ class snode(sobject):
              ] 
 
     FIELD = "ix dp sx pt nc fc sx lv cp se sx ri ro bd sn".split()
+
+    @classmethod
+    def Doc(cls):
+        assert len(cls.FIELD) == len(cls.DTYPE)
+        lines = []
+        for i in range(len(cls.FIELD)):
+            line = "%2s : %15s : %s " % (cls.FIELD[i], cls.DTYPE[i][0], cls.DTYPE[i][1] )
+            lines.append(line)
+        pass
+        return STR("\n".join(lines))
 
     @classmethod
     def Desc(cls, rec):

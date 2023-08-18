@@ -50,7 +50,10 @@ set(TEST_SOURCES
    U4TransformTest.cc
    U4TraverseTest.cc
    U4TreeTest.cc
+
    U4TreeCreateTest.cc
+   U4TreeCreateSSimTest.cc
+
    U4Material_MakePropertyFold_MakeTest.cc
    U4Material_MakePropertyFold_LoadTest.cc
    U4TouchableTest.cc

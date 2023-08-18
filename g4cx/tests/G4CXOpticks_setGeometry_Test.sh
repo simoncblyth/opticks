@@ -3,21 +3,32 @@ usage(){ cat << EOU
 G4CXOpticks_setGeometry_Test.sh
 ===================================
 
-Test of geometry conversions in isolation. 
+Test of geometry conversions in isolation::
+                  
+    OLD : Geant4 --[X4]--> GGeo ----[CSG_GGeo]--->  CSGFoundry 
+    NEW : Geant4 --[U4]--> SSim/stree --[CSGImport]-> CSGFoundry 
 
-WIP: get this to work with the FewPMT geometry coming from PMTSim 
+CAUTIONS:
+
+1. runs from GDML, so SensitiveDetector info is lost
+
+   * SO NOT USEFUL FOR CHECKING SENSORS
+
+2. this currently does the old workflow and some parts of the new workflow
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
 
-
 defarg=info_dbg_ana
 arg=${1:-$defarg}
 
+bin=G4CXOpticks_setGeometry_Test
+script=$SDIR/$bin.py 
 
-
+export FOLD=/tmp/$USER/opticks/$bin
+mkdir -p $FOLD
 
 source $HOME/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
@@ -25,14 +36,13 @@ case $GEOM in
    FewPMT) geomscript=$SDIR/../../u4/tests/FewPMT.sh ;;
 esac
 
-
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+
+vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
+
 if [ -f "$origin" ]; then
     export ${GEOM}_GDMLPathFromGEOM=$origin
-    ## see G4CXOpticks::setGeometry 
-    ## BUT : GDML looses SD : SO NOT SO USEFUL RUNNING FROM GDML
 fi 
-
 
 if [ -n "$geomscript" -a -f "$geomscript" ]; then 
     echo $BASH_SOURCE : GEOM $GEOM : sourcing geomscript $geomscript
@@ -41,20 +51,19 @@ else
     echo $BASH_SOURCE : GEOM $GEOM : no geomscript    
 fi 
 
-
-
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
 #export BFile__preparePath_SIGINT=1
 #export GGeo__save_SIGINT=1
 
 #savedir=~/.opticks/GEOM/$GEOM
-export SAVEDIR=/tmp/GEOM/$GEOM
-export G4CXOpticks__setGeometry_saveGeometry=$SAVEDIR
+#savedir=/tmp/GEOM/$GEOM
+#export SAVEDIR=${SAVEDIR:-$savedir}
+
+export G4CXOpticks__setGeometry_saveGeometry=$FOLD
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1
-
 
 loglevels(){
    export Dummy=INFO
@@ -66,17 +75,7 @@ loglevels(){
    export U4VolumeMaker=INFO
 }
 #loglevels
-
 env | grep =INFO
-
-
-bin=G4CXOpticks_setGeometry_Test
-script=$SDIR/$bin.py 
-
-export FOLD=/tmp/$USER/opticks/$bin
-mkdir -p $FOLD
-
-vars="SDIR GEOM FOLD bin geomscript savedir script"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

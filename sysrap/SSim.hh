@@ -54,7 +54,6 @@ struct SYSRAP_API SSim
     static constexpr const char* EXTRA = "extra" ;
     static constexpr const char* JPMT_RELP = "extra/jpmt" ; 
     static constexpr const char* RELP_DEFAULT = "stree/standard" ; 
-
  
     static SSim* INSTANCE ; 
     static SSim* Get(); 
@@ -84,6 +83,7 @@ public:
     // top NPFold must be populated with SSim::serialize 
     // prior to these accessors working 
     std::string desc() const ; 
+    std::string brief() const ; 
 
     const NP* get(const char* k) const ; 
     void      set(const char* k, const NP* a) ; 
@@ -102,7 +102,7 @@ public:
     void add_extra_subfold(const char* k, NPFold* f ); 
 
 public:
-    void save(const char* base, const char* reldir=RELDIR) const ; 
+    void save(const char* base, const char* reldir=RELDIR) ;  // not const as may serialize 
     void load(const char* base, const char* reldir=RELDIR) ; 
     void serialize(); 
 

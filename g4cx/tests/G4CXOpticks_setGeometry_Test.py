@@ -4,7 +4,7 @@ import numpy as np, textwrap
 from opticks.CSG.CSGFoundry import CSGFoundry
 
 if __name__ == '__main__':
-    cf = CSGFoundry.Load("$SAVEDIR") 
+    cf = CSGFoundry.Load("$FOLD") 
     print(repr(cf))
 
     boundary = cf.node[:,1,2].view(np.int32) 

@@ -467,5 +467,17 @@ if __name__ == '__main__':
 
     print(ab.brief())
 
+    a_meshname = np.char.partition(a.meshname.astype("U"),"0x")[:,0]  
+    b_meshname = b.meshname.astype("U")
+    assert np.all( a_meshname == b_meshname ) 
+
+    a_primname = np.char.partition(a.primname.astype("U"),"0x")[:,0]  
+    b_primname = b.primname.astype("U")
+
+ 
+
+
+
+
 
 

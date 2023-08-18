@@ -181,6 +181,7 @@ This and the following accessors require serialization to populate top
 **/
 
 std::string SSim::desc() const { return top ? top->desc() : "-" ; }
+std::string SSim::brief() const { return top ? top->brief() : "-" ; }
 
 const NP* SSim::get(const char* k) const 
 { 
@@ -302,9 +303,10 @@ Canonical usage from CSGFoundry::save_ with::
 
 **/
 
-void SSim::save(const char* base, const char* reldir) const  
-{ 
-    LOG_IF(fatal, top == nullptr) << " top null : MUST serialize before save  " ;  
+void SSim::save(const char* base, const char* reldir) 
+{
+    if(top == nullptr) serialize() ; 
+    LOG_IF(fatal, top == nullptr) << " top null : MUST serialize before save, serialize failed ? " ;  
     assert( top != nullptr ) ; 
 
     const char* dir = spath::Resolve(base, reldir) ;  

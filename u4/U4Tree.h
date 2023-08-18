@@ -117,6 +117,10 @@ struct U4Tree
         U4SensorIdentifier* sid=nullptr 
         ); 
 
+    // using SSim::Get SSim::get_tree is tempting 
+    // but that would add SSim dependency and SSim is not header only 
+    // static U4Tree* Create( const G4VPhysicalVolume* const top, U4SensorIdentifier* sid=nullptr ); 
+
 private:
     U4Tree(
         stree* st, 
@@ -513,7 +517,7 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 }
 
 
-inline const char* U4Tree::IsFlaggedSolid_NAME = ssys::getenvvar("U4Tree__IsFlaggedSolid_NAME", "sMask_virtual") ; 
+inline const char* U4Tree::IsFlaggedSolid_NAME = ssys::getenvvar("U4Tree__IsFlaggedSolid_NAME", "PLACEHOLDER") ; 
 
 inline bool U4Tree::IsFlaggedSolid(const char* name)
 {

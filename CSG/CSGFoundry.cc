@@ -2235,7 +2235,7 @@ void CSGFoundry::save_(const char* dir_) const
     if(sim)
     {
         LOG(LEVEL) << " SSim::save " << dir ;  
-        sim->save(dir, SSim::RELDIR );  
+        const_cast<SSim*>(sim)->save(dir, SSim::RELDIR );  
     }
     else
     {
