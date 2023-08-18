@@ -1,6 +1,6 @@
 /**
-CSGFoundry__CreateFromSimTest.cc
-===================================
+CSGFoundry_CreateFromSimTest.cc
+================================
 
 1. loads SSim from $BASE/CSGFoundry
 2. populates CSGFoundry with CSGFoundry::CreateFromSim

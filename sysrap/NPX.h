@@ -339,6 +339,8 @@ inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
           << " a.item_bytes " << ib
           << " a.sstr " << a->sstr()
           << std::endl 
+          << " a.lpath " << a->get_lpath()
+          << std::endl 
           << " CHECK FOR COMPILATION OPTIONS THAT CHANGE STRUCT SIZES "
           << std::endl 
           << " FOR EXAMPLE WITH_CHILD CHANGES sysrap/sn.h "

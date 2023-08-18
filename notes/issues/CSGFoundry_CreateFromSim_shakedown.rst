@@ -36,7 +36,7 @@ Now that have a match between snd/sn routes. NEXT:
 
 * adopt sn with CSGFoundry::CreateFromSim 
 
-  * WIP: rework CSGImport::importNode for sn.h (not snd.hh)
+  * DONE : rework CSGImport::importNode for sn.h (not snd.hh)
 
 * compare OLD/NEW again at CSGFoundry level now using sn.h 
   
@@ -47,8 +47,8 @@ Now that have a match between snd/sn routes. NEXT:
 
 
 
-WIP : Bringing more snd/scsg features over to sn/s_pool
-----------------------------------------------------------
+DONE : Brought most snd/scsg features over to sn/s_csg/s_pool
+----------------------------------------------------------------
 
 ::
 
