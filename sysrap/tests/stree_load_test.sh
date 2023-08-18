@@ -54,7 +54,8 @@ EOU
 
 SDIR=$(dirname $BASH_SOURCE)
 
-defarg="build_run_ana"
+#defarg="info_build_run_ana"
+defarg="info_build_run"
 [ -n "$LVID" ] && defarg="build_run" 
 
 arg=${1:-$defarg}
@@ -70,8 +71,23 @@ else
 fi   
 export BASE=${BASE:-$base}
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
+
+opt="-DWITH_PLACEHOLDER"
+if [ -n "$SND" ]; then
+    opt="$opt -DWITH_SND"
+else
+    opt="$opt -DWITH_CHILD"
+fi
+
 export stree_level=1 
 export FOLD=$BASE/stree
+
+
+vars="BASH_SOURCE BASE FOLD opt"
+
 
 if [ ! -d "$BASE/stree" ]; then
     echo $BASH_SOURCE : BASE $BASE GEOM $GEOM
@@ -80,19 +96,38 @@ if [ ! -d "$BASE/stree" ]; then
 fi 
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE BASE FOLD"
-    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $(dirname $bin)
-    gcc $SDIR/$name.cc $SDIR/../snd.cc $SDIR/../scsg.cc  \
+    if [ "${opt/WITH_SND}" != "$opt" ]; then
+         gcc \
+          $opt \
+          $SDIR/$name.cc \
+          $SDIR/../snd.cc \
+          $SDIR/../scsg.cc  \
           -g -std=c++11 -lstdc++ \
           -I$SDIR/.. \
-          -I/usr/local/cuda/include \
+          -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
+    else
+         gcc \
+          $opt \
+          $SDIR/$name.cc \
+          $SDIR/../s_tv.cc \
+          $SDIR/../s_bb.cc \
+          $SDIR/../s_pa.cc \
+          $SDIR/../sn.cc \
+          $SDIR/../s_csg.cc  \
+          -g -std=c++11 -lstdc++ \
+          -I$SDIR/.. \
+          -I$CUDA_PREFIX/include \
+          -I$OPTICKS_PREFIX/externals/glm/glm \
+          -o $bin
+    fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error with opt $opt && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
@@ -117,10 +152,6 @@ if [ "${arg/csg}" != "$arg" ]; then
     FOLD=$FOLD/csg ${IPYTHON:-ipython} --pdb -i $SDIR/${name}_csg.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
-
-
-
-
 
 exit 0 
 

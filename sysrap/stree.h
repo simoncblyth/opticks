@@ -211,11 +211,14 @@ When SSim not in use can also use::
 #include "strid.h"
 #include "sfactor.h"
 
+#ifdef WITH_SND
 #include "snd.hh"
 #include "scsg.hh"
-
+#else
 #include "s_csg.h"
 #include "sn.h"
+#endif
+
 
 #include "stra.h"
 #include "sstandard.h"
@@ -320,8 +323,11 @@ struct stree
     sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
                                            // subs are collected in stree::classifySubtrees
 
+#ifdef WITH_SND
     scsg*   csg ;                          // snd.hh based csg node trees of all solids from G4VSolid    
+#else
     s_csg* _csg ;                          // sn.h based csg node trees
+#endif
 
     sstandard* standard ;                  // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
 
@@ -591,8 +597,11 @@ inline stree::stree()
     level(ssys::getenvint("stree_level", 0)),
     sensor_count(0),
     subs_freq(new sfreq),
+#ifdef WITH_SND
     csg(new scsg),
+#else
     _csg(new s_csg),
+#endif
     standard(new sstandard),
     material(new NPFold),
     surface(new NPFold)
@@ -603,7 +612,6 @@ inline stree::stree()
 inline void stree::init()
 {
     if(level > 0) std::cout << "stree::init " << std::endl ; 
-    // snd::SetPOOL(csg);   // moved into scsg::init
 }
 
 
@@ -685,7 +693,11 @@ inline std::string stree::desc() const
        << std::endl
        << " stree::desc.csg "  
        << std::endl
+#ifdef WITH_SND
        << ( csg ? csg->desc() : "-" )
+#else
+       << ( _csg ? _csg->desc() : "-" )
+#endif
        << std::endl
        << "]stree::desc"
        << std::endl
@@ -1681,9 +1693,10 @@ inline std::string stree::desc_node_product( glm::tmat4x4<double>& m2w_, glm::tm
 stree::get_combined_transform : combining structural and CSG transforms
 ------------------------------------------------------------------------
 
-Canonical usage from CSGImport::importNode
+* combines structural (volume level) and CSG (solid level) transforms
+* canonical usage from CSGImport::importNode
 
-The CSG constituent *snd* lvid is required to directly match that of 
+The CSG constituent *snd/sn* lvid is required to directly match that of 
 the structural *snode*, not just by containment but directly.  
 
 
@@ -1736,7 +1749,7 @@ inline void stree::get_combined_transform(
     glm::tmat4x4<double> tt(1.) ;
     glm::tmat4x4<double> vv(1.) ;
 
-    get_node_product( tt, vv, node.index, local, false, out );
+    get_node_product( tt, vv, node.index, local, false, out ); // reverse:false
 
 
     glm::tmat4x4<double> tc(1.) ;
@@ -1745,9 +1758,10 @@ inline void stree::get_combined_transform(
     if(nd)
     {
         assert( node.lvid == nd->lvid );
-        snd::NodeTransformProduct(nd->index, tc, vc, false, out );
+        N::NodeTransformProduct(nd->idx(), tc, vc, false, out );  // reverse:false
     }
 
+    // combine structural (volume level) and CSG (solid level) transforms
     t = tt * tc ;
     v = vc * vv ;
 
@@ -2164,9 +2178,33 @@ inline void stree::import(const NPFold* fold)
 
 
 #ifdef WITH_SND
-    csg->import(fold->get_subfold(CSG)); 
+    NPFold* csg_f = fold->get_subfold(CSG) ;
+    if(csg_f == nullptr) std::cerr
+        << "stree::import.WITH_SND "
+        << " FAILED : DUE TO LACK OF subfold CSG : " << CSG 
+        << std::endl 
+        << " PROBABLY THE PERSISTED TREE WAS CREATED NOT:WITH_SND "
+        << std::endl 
+        << " SWITCH OPTION TO NOT:WITH_SND OR RECREATE THE TREE WITH_SND "
+        << std::endl 
+        ;
+
+    assert(csg_f);  
+    csg->import(csg_f); 
 #else
-    _csg->import(fold->get_subfold(_CSG)); 
+    NPFold* csg_f = fold->get_subfold(_CSG) ;
+
+    if(csg_f == nullptr) std::cerr
+        << "stree::import.NOT:WITH_SND"
+        << " FAILED : DUE TO LACK OF subfold _CSG : " << _CSG 
+        << std::endl 
+        << " PROBABLY THE PERSISTED TREE WAS CREATED WITH_SND "
+        << std::endl 
+        << " SWITCH OPTION TO WITH_SND OR RECREATE THE TREE NOT:WITH_SND "
+        << std::endl 
+        ;
+
+    _csg->import(csg_f); 
 #endif
 
 

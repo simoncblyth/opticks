@@ -21,6 +21,24 @@ void test_GetLVNodes()
         ;
 }
 
+void test_getLVNodes()
+{
+    int lvid = ssys::getenvint("LVID", 108) ; 
+    sn* root = sn::GetLVRoot(lvid) ; 
+    if(!root) return ; 
+
+    std::vector<sn*> nds ; 
+    root->getLVNodes(nds) ; 
+
+    std::cerr 
+        << "test_getLVNodes"
+        << " lvid " << lvid 
+        << std::endl 
+        << sn::Desc(nds)
+        << std::endl
+        ;
+}
+
 void test_GetLVRoot()
 {
     int lvid = ssys::getenvint("LVID", 108) ; 
@@ -147,6 +165,81 @@ void test_getLVNodesComplete()
         ;
 }
 
+void test_ancestors()
+{
+    sn* root = sn::GetLVRoot(ssys::getenvint("LVID", 108)) ; 
+    if(!root) return ; 
+
+    std::vector<const sn*> nds0 ; 
+    root->ancestors(nds0);     
+    assert( nds0.size() == 0 && "root nodes should not have ancestors" ); 
+
+    std::cerr 
+        << "test_ancestors" 
+        << std::endl
+        << sn::Desc(nds0)
+        << std::endl
+        <<  ( root ? root->render(sn::TYPETAG) : "-" )
+        << std::endl
+        ;
+
+
+    std::vector<sn*> nds1 ; 
+    root->getLVNodes(nds1); 
+
+    std::cerr 
+        << "test_ancestors" 
+        << std::endl
+        << " root->getLVNodes(nds1) "
+        << std::endl
+        << sn::Desc(nds1)
+        << std::endl
+        ;
+
+   for(int i=0 ; i < int(nds1.size()) ; i++)
+   {
+       sn* nd = nds1[i] ; 
+       std::vector<const sn*> anc ; 
+       nd->ancestors(anc); 
+       std::cerr
+          << std::setw(3) << i << " : "
+          << " anc.size " << anc.size()
+          << std::endl 
+          ;
+   }   
+}
+
+void test_getNodeTransformProduct()
+{
+    sn* root = sn::GetLVRoot(ssys::getenvint("LVID", 108)) ; 
+    if(!root) return ; 
+
+    std::vector<sn*> nds ; 
+    root->getLVNodes(nds); 
+
+    std::cerr
+        << "test_getNodeTransformProduct"
+        << std::endl
+        << sn::Desc(nds)
+        << std::endl
+        ;
+
+    for(int i=0 ; i < int(nds.size()) ; i++)
+    {
+        sn* nd = nds[i] ; 
+
+        glm::tmat4x4<double> t(1.); 
+        glm::tmat4x4<double> v(1.); 
+        bool reverse = false ; 
+
+        std::cerr 
+            << "test_getNodeTransformProduct"
+            << std::endl
+            << nd->desc_getNodeTransformProduct(t,v,reverse)
+            << std::endl
+            ;
+    }
+}
 
 int main()
 {
@@ -154,14 +247,17 @@ int main()
 
     /*
     test_GetLVNodes(); 
+    test_getLVNodes(); 
     test_GetLVRoot(); 
     test_max_binary_depth(); 
     test_typenodes_(); 
     test_getLVNumNode(); 
     test_GetLVNodesComplete();     
-    */
     test_getLVNodesComplete();     
+    test_ancestors();     
+    */
 
+    test_getNodeTransformProduct();     
 
     return 0 ; 
 }

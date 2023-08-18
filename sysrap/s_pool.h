@@ -73,7 +73,7 @@ struct s_pool
     bool all_root() const ; 
 
     T*  get_root(int idx) const ; 
-    T*  get(int idx) const ;   // method asserts all_root then calls get_root 
+    T*  get(int idx) const ; 
 
     void find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
 
@@ -160,9 +160,9 @@ inline T* s_pool<T,P>::get_root(int idx) const
 template<typename T, typename P>
 inline T* s_pool<T,P>::get(int idx) const 
 {
-    assert( all_root() ); 
-    return get_root(idx) ; 
+    return pool.count(idx) == 1 ? pool.at(idx) : nullptr ; 
 }
+
 
 template<typename T, typename P>
 inline void s_pool<T,P>::find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const 

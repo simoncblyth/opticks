@@ -64,7 +64,8 @@ all the way to the GPU.
 #include "s_pool.h"
 
 //#include "s_csg.h" // DONT DO THAT : CIRCULAR 
-#include "st.h"  // complete binary tree math 
+#include "st.h"      // complete binary tree math 
+#include "stra.h"    // glm transform utilities 
 
 #include "NPFold.h"
 
@@ -181,6 +182,7 @@ struct SYSRAP_API sn
     static std::string Desc(const std::vector<N*>& nds); 
 
 
+    int  idx() const ;  // to match snd.hh
     int  index() const ; 
     bool is_root() const ; 
 
@@ -362,7 +364,11 @@ struct SYSRAP_API sn
     static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int typecode ); 
 
     static void GetLVNodes( std::vector<sn*>& nds, int lvid ); 
-    static sn*  GetLVRoot( int lvid ); 
+    void getLVNodes( std::vector<sn*>& nds ) const ;
+    static bool Includes(const std::vector<sn*>& nds, sn* nd ); 
+
+    static sn* Get(int idx); 
+    static sn* GetLVRoot( int lvid ); 
 
     std::string rbrief() const ; 
     void rbrief_r(std::ostream& os, int d) const  ; 
@@ -383,8 +389,34 @@ struct SYSRAP_API sn
     void        getLVNodesComplete(std::vector<const sn*>& nds) const ; 
     static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx); 
 
+    void ancestors(std::vector<const sn*>& nds) const ; 
 
-};
+    static void NodeTransformProduct(
+        int idx, 
+        glm::tmat4x4<double>& t, 
+        glm::tmat4x4<double>& v, 
+        bool reverse, 
+        std::ostream* out); 
+
+    static std::string DescNodeTransformProduct(
+        int idx, 
+        glm::tmat4x4<double>& t, 
+        glm::tmat4x4<double>& v, 
+        bool reverse ); 
+
+    void getNodeTransformProduct(
+        glm::tmat4x4<double>& t, 
+        glm::tmat4x4<double>& v, 
+        bool reverse, 
+        std::ostream* out) const ; 
+
+    std::string desc_getNodeTransformProduct(
+        glm::tmat4x4<double>& t, 
+        glm::tmat4x4<double>& v,  
+        bool reverse) const ; 
+
+    
+};  // END
 
 inline void        sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
@@ -410,6 +442,7 @@ inline std::string sn::Desc(const std::vector<N*>& nds) // static
 
 
 
+inline int  sn::idx() const { return index() ; } // to match snd.hh 
 inline int  sn::index() const { return pool ? pool->index(this) : -1 ; }
 inline bool sn::is_root() const { return parent == nullptr ; }
 
@@ -609,7 +642,7 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     n->lvid = _n->lvid ; 
     n->xform = s_tv::pool->get(_n->xform) ; 
     n->param = s_pa::pool->get(_n->param) ; 
-    n->aabb = s_bb::pool->get(_n->aabb) ; 
+    n->aabb =  s_bb::pool->get(_n->aabb) ; 
 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
@@ -2379,6 +2412,31 @@ inline void sn::GetLVNodes( std::vector<sn*>& nds, int lvid ) // static
 }
 
 
+/**
+sn::getLVNodes
+---------------
+
+Collect all sn with the lvid of this node. 
+The vector is expected to include this node. 
+
+**/
+
+inline void sn::getLVNodes( std::vector<sn*>& nds ) const 
+{
+    GetLVNodes(nds, lvid ); 
+    assert( Includes(nds, const_cast<sn*>(this) ) ); 
+}
+
+inline bool sn::Includes( const std::vector<sn*>& nds, sn* nd ) // static
+{
+    return std::find(nds.begin(), nds.end(), nd ) != nds.end() ; 
+}
+
+inline sn* sn::Get(int idx) // static 
+{
+    return pool->get(idx) ; 
+}
+
 
 /**
 sn::GetLVRoot
@@ -2656,4 +2714,144 @@ inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, 
         }
     }
 }
+
+
+
+
+/**
+sn::ancestors (not including this node)
+-----------------------------------------
+
+Collect by following parent links then reverse 
+the vector to put into root first order. 
+
+**/
+
+inline void sn::ancestors(std::vector<const sn*>& nds) const
+{
+    const sn* nd = this ; 
+    while( nd && nd->parent ) 
+    {    
+        nds.push_back(nd->parent);
+        nd = nd->parent ; 
+    }    
+    std::reverse( nds.begin(), nds.end() );
+}
+
+
+
+
+
+
+/**
+snd::NodeTransformProduct
+---------------------------
+
+cf nmat4triple::product
+
+1. finds CSG node ancestors of snd idx 
+
+
+**/
+
+
+
+inline void sn::NodeTransformProduct(
+    int idx, 
+    glm::tmat4x4<double>& t, 
+    glm::tmat4x4<double>& v, 
+    bool reverse, 
+    std::ostream* out)  // static
+{
+    sn* nd = Get(idx); 
+    assert(nd); 
+    nd->getNodeTransformProduct(t,v,reverse,out) ; 
+}
+
+inline std::string sn::DescNodeTransformProduct(
+    int idx, 
+    glm::tmat4x4<double>& t, 
+    glm::tmat4x4<double>& v, 
+    bool reverse ) // static 
+{
+    std::stringstream ss ; 
+    ss << "sn::DescNodeTransformProduct" << std::endl ;
+    NodeTransformProduct( idx, t, v, reverse, &ss );     
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline void sn::getNodeTransformProduct(
+    glm::tmat4x4<double>& t, 
+    glm::tmat4x4<double>& v, 
+    bool reverse, std::ostream* out) const
+{
+    std::vector<const sn*> nds ; 
+    ancestors(nds);
+    nds.push_back(this); 
+
+    int num_nds = nds.size();
+
+    if(out)
+    {
+        *out 
+             << std::endl 
+             << "sn::getNodeTransformProduct" 
+             << " idx " << idx() 
+             << " reverse " << reverse
+             << " num_nds " << num_nds 
+             << std::endl 
+             ;
+    }
+
+    glm::tmat4x4<double> tp(1.); 
+    glm::tmat4x4<double> vp(1.); 
+
+    for(int i=0 ; i < num_nds ; i++ ) 
+    {
+        int j  = num_nds - 1 - i ;  
+        const sn* ii = nds[reverse ? j : i] ; 
+        const sn* jj = nds[reverse ? i : j] ; 
+
+        const s_tv* ixf = ii->xform ; 
+        const s_tv* jxf = jj->xform ; 
+
+        if(out)
+        {
+            *out
+                << " i " << i 
+                << " j " << j 
+                << " ii.idx " << ii->idx() 
+                << " jj.idx " << jj->idx()
+                << " ixf " << ( ixf ? "Y" : "N" ) 
+                << " jxf " << ( jxf ? "Y" : "N" ) 
+                << std::endl 
+                ; 
+
+           if(ixf) *out << stra<double>::Desc( ixf->t, ixf->v, "(ixf.t)", "(ixf.v)" ) << std::endl ;   
+           if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;   
+        }
+
+
+        if(ixf) tp *= ixf->t ; 
+        if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
+    }
+    memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
+    memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
+
+    if(out) *out << stra<double>::Desc( tp, vp , "tp", "vp" ) << std::endl ;
+}
+
+inline std::string sn::desc_getNodeTransformProduct(
+    glm::tmat4x4<double>& t, 
+    glm::tmat4x4<double>& v,  
+    bool reverse) const
+{
+    std::stringstream ss ; 
+    ss << "sn::desc_getNodeTransformProduct" << std::endl ;
+    getNodeTransformProduct( t, v, reverse, &ss );     
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 

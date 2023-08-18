@@ -46,6 +46,18 @@ struct SYSRAP_API s_csg
 
     NPFold* serialize() const ; 
     void import(const NPFold* fold); 
+
+    int num_pa() const ; 
+    int num_bb() const ; 
+    int num_tv() const ; 
+    int num_nd() const ; 
+
+    // low level accessors by index 
+    s_pa* get_pa(int idx) const ; 
+    s_bb* get_bb(int idx) const ; 
+    s_tv* get_tv(int idx) const ; 
+    sn*   get_nd(int idx) const ; 
+
 };
 
 
@@ -110,13 +122,23 @@ inline void s_csg::init()
 
 inline int s_csg::total_size() const
 {
-    return pa->size() + bb->size() + tv->size() + nd->size() ; 
+    return num_pa() + num_bb() + num_tv() + num_nd() ; 
 }
+
+inline int s_csg::num_pa() const { return pa->size() ; }
+inline int s_csg::num_bb() const { return bb->size() ; }
+inline int s_csg::num_tv() const { return tv->size() ; }
+inline int s_csg::num_nd() const { return nd->size() ; }
 
 inline std::string s_csg::brief() const
 {
     std::stringstream ss ; 
-    ss << "s_csg::brief total_size " << total_size() 
+    ss << "s_csg::brief" 
+       << " total_size " << total_size() 
+       << " num_pa " << num_pa()
+       << " num_bb " << num_bb()
+       << " num_tv " << num_tv()
+       << " num_nd " << num_nd()
        << std::endl  
        << " pa : " << ( pa ? pa->brief() : "-" ) << std::endl
        << " bb : " << ( bb ? bb->brief() : "-" ) << std::endl
@@ -184,5 +206,11 @@ inline void s_csg::import(const NPFold* fold)
     tv->import<double>(fold->get(s_tv::NAME)) ; 
     nd->import<int>(   fold->get(  sn::NAME)) ; 
 }
+
+
+inline s_pa* s_csg::get_pa(int idx) const { return pa->get(idx) ; }
+inline s_bb* s_csg::get_bb(int idx) const { return bb->get(idx) ; }
+inline s_tv* s_csg::get_tv(int idx) const { return tv->get(idx) ; }
+inline sn*   s_csg::get_nd(int idx) const { return nd->get(idx) ; }
 
 

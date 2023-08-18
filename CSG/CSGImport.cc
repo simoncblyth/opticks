@@ -208,8 +208,7 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
 
     std::vector<const N*> nds ; 
 
-    assert(0 && "IMPL INCOMPLETE");
-    //N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
+    N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int numParts = nds.size(); 
 
 
@@ -308,8 +307,8 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
         glm::tmat4x4<double> t(1.) ;
         glm::tmat4x4<double> v(1.) ;
 
-        assert(0 && "IMPL INCOMPLETE");
-        //st->get_combined_transform(t, v, node, nd, nullptr );
+        //assert(0 && "IMPL INCOMPLETE");
+        st->get_combined_transform(t, v, node, nd, nullptr );
 
         tv = new Tran<double>(t, v);
     }

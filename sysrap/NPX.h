@@ -338,6 +338,10 @@ inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
           << " sizeof(S) " << sizeof(S) 
           << " a.item_bytes " << ib
           << " a.sstr " << a->sstr()
+          << std::endl 
+          << " CHECK FOR COMPILATION OPTIONS THAT CHANGE STRUCT SIZES "
+          << std::endl 
+          << " FOR EXAMPLE WITH_CHILD CHANGES sysrap/sn.h "
           << std::endl
           ;
 

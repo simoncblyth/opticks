@@ -147,6 +147,7 @@ struct SYSRAP_API snd
 
 
     bool is_listnode() const ; 
+    int idx() const ; 
     std::string tag() const ; 
     std::string brief() const ; 
 

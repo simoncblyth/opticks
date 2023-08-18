@@ -247,13 +247,16 @@ snd::NodeTransformProduct
 
 cf nmat4triple::product
 
+1. finds CSG node ancestors of snd idx 
+
+
 **/
 
-void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out)  // static
+void snd::NodeTransformProduct(int idx, glm::tmat4x4<double>& t, glm::tmat4x4<double>& v, bool reverse, std::ostream* out)  // static
 {
     std::vector<int> nds ; 
-    Ancestors(root, nds);  
-    nds.push_back(root); 
+    Ancestors(idx, nds);
+    nds.push_back(idx); 
     int num_nds = nds.size();
 
     if(out)
@@ -261,7 +264,7 @@ void snd::NodeTransformProduct(int root, glm::tmat4x4<double>& t, glm::tmat4x4<d
         *out 
              << std::endl 
              << "snd::NodeTransformProduct" 
-             << " root " << root 
+             << " idx " << idx 
              << " reverse " << reverse
              << " num_nds " << num_nds 
              << std::endl 
@@ -373,6 +376,8 @@ snd::GetLVID (GetLVIDNodes more appropos)
 Q: Is the last snd returned always root ? 
 A: As trees are created postorder and nodes get added to the POOL 
    in creation order I think that indeed the last must always be the root node. 
+ 
+   * NOT SO SURE ABOUT THAT 
 
 **/
 
@@ -579,7 +584,7 @@ std::string snd::tag() const
     return typecode < 0 ? "negative-typecode-ERR" : CSG::Tag(typecode) ; 
 }
 
-
+int snd::idx() const {  return index ; }
 
 
 std::string snd::brief() const 

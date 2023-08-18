@@ -351,6 +351,28 @@ CSGOptiX
 EOS
 }
 
+om-subs-thoughts(){ cat << EOS
+okconf      # not enough functionality, TODO: merge into sysrap
+sysrap
+boostrap      # REMOVE
+npy           # REMOVE
+optickscore   # REMOVE
+ggeo          # REMOVE
+extg4         # REMOVE 
+ana
+analytic      
+bin 
+CSG    
+CSG_GGeo      # REMOVE 
+GeoChain      # REMOVE
+qudarap     
+gdxml  
+u4   
+CSGOptiX
+g4cx
+EOS
+}
+
 
 om-subs-alt-notes(){ cat << EON
 
