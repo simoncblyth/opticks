@@ -79,6 +79,7 @@ loglevels(){
    export CSGFoundry=INFO
    export GSurfaceLib=INFO
    export U4VolumeMaker=INFO
+   export NCSG=INFO
 }
 #loglevels
 env | grep =INFO

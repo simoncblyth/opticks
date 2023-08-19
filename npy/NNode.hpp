@@ -331,6 +331,9 @@ struct NPY_API nnode
  
 
     void set_treeidx(int idx) ; 
+    void set_treeidx_r(int treeidx_); 
+
+
     int  get_treeidx() const ; 
 
     void set_nudgeskip(bool nudgeskip_); 

@@ -350,8 +350,21 @@ solid identification via lvIdx which becomes treeidx.
 **/
 void nnode::set_treeidx(int treeidx_)
 {
-    treeidx = treeidx_ ; 
+    set_treeidx_r(treeidx_); 
 }
+
+void nnode::set_treeidx_r(int treeidx_)
+{
+    treeidx = treeidx_ ; 
+    if(left && right)
+    {
+        left->set_treeidx_r(treeidx_); 
+        right->set_treeidx_r(treeidx_); 
+    }
+}
+
+
+
 int nnode::get_treeidx() const 
 {
     return treeidx ; 

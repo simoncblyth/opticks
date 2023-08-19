@@ -117,6 +117,12 @@ void  ncone::increase_z2(float dz)
     const float new_r2 =  _r1 +  (_r2 - _r1)*( new_z2 - _z1 )/(_z2 - _z1)  ; 
 
     LOG(info) 
+        << " treeidx " << get_treeidx() 
+        << " dz " << dz
+        << " _r1 " << _r1
+        << " _z1 " << _z1
+        << " _r2 " << _r2
+        << " _z2 " << _z2
         << " new_z2 " << new_z2 
         << " new_r2 " << new_r2 
         ;
@@ -140,6 +146,12 @@ void  ncone::decrease_z1(float dz)
     const float new_r1 = _r2 + (_r2 - _r1)*(new_z1 - _z2) /(_z2 - _z1 ) ; 
 
     LOG(info) 
+        << " treeidx " << get_treeidx() 
+        << " dz " << dz
+        << " _r1 " << _r1
+        << " _z1 " << _z1
+        << " _r2 " << _r2
+        << " _z2 " << _z2
         << " new_z1 " << new_z1 
         << " new_r1 " << new_r1 
         ;

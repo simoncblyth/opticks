@@ -94,8 +94,29 @@ float nzsphere::zc() const {      return (zmin() + zmax())/2.f ; }
 unsigned nzsphere::flags() const { return param2.u.x ; }
 
 // grow the zsphere upwards on upper side (z2) or downwards on down side (z1)
-void  nzsphere::increase_z2(float dz){ assert( dz >= 0.f) ; param1.f.y += dz ; check() ; } // z2 > z1
-void  nzsphere::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; check() ; }
+void  nzsphere::increase_z2(float dz)    //  z2 > z1
+{ 
+    LOG(info)
+        << " treeidx " << get_treeidx()
+        << " dz " << dz
+        ;
+
+    assert( dz >= 0.f) ; 
+    param1.f.y += dz ; 
+    check() ; 
+} 
+
+void  nzsphere::decrease_z1(float dz)
+{ 
+    LOG(info)
+        << " treeidx " << get_treeidx()
+        << " dz " << dz
+        ;
+
+    assert( dz >= 0.f) ; 
+    param1.f.x -= dz ; 
+    check() ; 
+}
 void  nzsphere::set_zcut(float z1, float z2){  param1.f.x = z1 ; param1.f.y = z2 ; check() ; }
 
 

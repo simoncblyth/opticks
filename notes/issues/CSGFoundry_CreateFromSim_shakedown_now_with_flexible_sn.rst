@@ -8,6 +8,15 @@ Context
 * prev :doc:`CSGFoundry_CreateFromSim_shakedown`
 
 
+
+A/B python comparison
+------------------------
+
+Python analysis, A/B comparison::
+
+    ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh ana
+
+
 Overview
 ----------
 
@@ -706,6 +715,72 @@ Encapsulate finding primIdx from nodeIdx into CSGFoundry.py::
 
 
 
+DONE : Added logging : looking for  95,96, 106,107,108, 117
+--------------------------------------------------------------
+
+::
+
+    2023-08-19 20:46:11.509 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 94 lvIdx 94 treeidx 94
+    2023-08-19 20:46:11.509 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 94 lvIdx 94
+
+
+    2023-08-19 20:46:11.510 ERROR [33035526] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing base_steel0x5aa4870
+    2023-08-19 20:46:11.510 FATAL [33035526] [*X4Solid::Polycone_MakeInner@1843]  EXPERIMENTAL num_R_inner > 1 handling :  name base_steel0x5aa4870 num_R_inner 2 lvIdx 95
+    2023-08-19 20:46:11.510 ERROR [33035526] [*X4Solid::Polycone_MakeInner@1854]  inner_prims.size 2 lvIdx 95
+    2023-08-19 20:46:11.510 ERROR [33035526] [*X4Solid::Polycone_MakeInner@1869]  lower.is_znudge_capable lvIdx 95
+    2023-08-19 20:46:11.511 INFO  [33035526] [ncylinder::decrease_z1@139]  treeidx -1 _z1 -101 dz 1 new_z1 -102
+    2023-08-19 20:46:11.511 ERROR [33035526] [*X4Solid::Polycone_MakeInner@1872]  upper.is_znudge_capable lvIdx 95
+    2023-08-19 20:46:11.511 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx -1 _z2 0 dz 1 new_z2 1
+    2023-08-19 20:46:11.511 INFO  [33035526] [ncylinder::decrease_z1@139]  treeidx -1 _z1 -15 dz 1 new_z1 -16
+    2023-08-19 20:46:11.511 ERROR [33035526] [*X4Solid::Polycone_MakeInner@1925]  after znudges lvIdx 95
+    2023-08-19 20:46:11.511 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 95 lvIdx 95 treeidx 95
+    2023-08-19 20:46:11.511 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx 95 _z2 -15 dz 1 new_z2 -14
+    2023-08-19 20:46:11.514 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 95 lvIdx 95
+    2023-08-19 20:46:11.514 ERROR [33035526] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing solidAddition_down0x5ba5d90
+
+
+    2023-08-19 20:46:11.515 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 96 lvIdx 96 treeidx 96
+    2023-08-19 20:46:11.515 INFO  [33035526] [ncone::increase_z2@119]  treeidx 96 dz 1 _r1 200 _z1 -140 _r2 450 _z2 0 new_z2 1 new_r2 451.786
+    2023-08-19 20:46:11.519 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 96 lvIdx 96
+
+
+    2023-08-19 20:46:11.581 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 106 lvIdx 106 treeidx 106
+    2023-08-19 20:46:11.581 INFO  [33035526] [nzsphere::decrease_z1@111]  treeidx 106 dz 1
+    2023-08-19 20:46:11.581 INFO  [33035526] [nzsphere::increase_z2@99]  treeidx 106 dz 1
+    2023-08-19 20:46:11.584 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 106 lvIdx 106
+
+
+    2023-08-19 20:46:11.590 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 107 lvIdx 107 treeidx 107
+    2023-08-19 20:46:11.590 INFO  [33035526] [nzsphere::decrease_z1@111]  treeidx 107 dz 1
+    2023-08-19 20:46:11.590 INFO  [33035526] [nzsphere::increase_z2@99]  treeidx 107 dz 1
+    2023-08-19 20:46:11.593 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 107 lvIdx 107
+
+
+    2023-08-19 20:46:11.599 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 108 lvIdx 108 treeidx 108
+    2023-08-19 20:46:11.599 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx 108 _z2 0 dz 1 new_z2 1
+    2023-08-19 20:46:11.599 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx 108 _z2 100 dz 1 new_z2 101
+    2023-08-19 20:46:11.600 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 108 lvIdx 108
+
+    2023-08-19 20:46:11.648 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 117 lvIdx 117 treeidx 117
+    2023-08-19 20:46:11.648 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx 117 _z2 0 dz 1 new_z2 1
+    2023-08-19 20:46:11.648 INFO  [33035526] [ncylinder::increase_z2@122]  treeidx 117 _z2 97 dz 1 new_z2 98
+    2023-08-19 20:46:11.650 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 117 lvIdx 117
+
+
+    2023-08-19 20:46:11.730 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 118 lvIdx 118 treeidx 118
+    2023-08-19 20:46:11.732 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 118 lvIdx 118
+    2023-08-19 20:46:11.732 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 119 lvIdx 119 treeidx 119
+    2023-08-19 20:46:11.732 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 119 lvIdx 119
+    2023-08-19 20:46:11.733 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 120 lvIdx 120 treeidx 120
+    2023-08-19 20:46:11.734 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 120 lvIdx 120
+    2023-08-19 20:46:11.734 ERROR [33035526] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing PMT_3inch_cntr_solid0x68fff60
+    2023-08-19 20:46:11.734 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 121 lvIdx 121 treeidx 121
+    2023-08-19 20:46:11.735 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 121 lvIdx 121
+    2023-08-19 20:46:11.735 ERROR [33035526] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing PMT_3inch_pmt_solid_cyl0x68fdd10
+    2023-08-19 20:46:11.735 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 122 lvIdx 122 treeidx 122
+    2023-08-19 20:46:11.737 INFO  [33035526] [*NCSG::Adopt@186]  ]  soIdx 122 lvIdx 122
+    2023-08-19 20:46:11.805 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 123 lvIdx 123 treeidx 123
+
 
 TODO : Disable uncoincidence shifts in A to check if that explains all the above CSGNode diffs
 -------------------------------------------------------------------------------------------------
@@ -917,6 +992,222 @@ DONE : Added sn::positivize to U4Solid::init_Tree
     286     root->positivize() ;
     287 #endif
     288 }
+
+
+A/B bnd are off : THIS IS osur ?
+-----------------------------------
+
+::
+
+    In [9]: a_bnd =  a.node[:,1,2].view(np.int32)
+
+    In [10]: b_bnd = b.node[:,1,2].view(np.int32)
+
+    In [11]: a_bnd.min()
+    Out[11]: 0
+
+    In [12]: a_bnd.max()
+    Out[12]: 42
+
+    In [13]: b_bnd.max()
+    Out[13]: 123
+
+    In [14]: b_bnd.min()
+    Out[14]: 0
+
+
+::
+
+    In [22]: A.SSim.stree.standard.bnd_names.shape   ## A using GGeo bndname not this ?
+    Out[22]: (124,)
+
+    In [23]: B.SSim.stree.standard.bnd_names.shape
+    Out[23]: (124,)
+
+    In [24]: np.all( A.SSim.stree.standard.bnd_names == B.SSim.stree.standard.bnd_names )
+    Out[24]: True
+
+
+
+A : nudge stack
+-----------------
+
+
+::
+
+    BP=ncone::increase_z2 ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh dbg
+
+
+::
+
+    lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x000000010a7105bb libNPY.dylib`ncone::increase_z2(this=0x0000000132ecaa70, dz=1) at NCone.cpp:109
+        frame #1: 0x000000010a6f5c25 libNPY.dylib`NNodeNudger::znudge_union_maxmin(this=0x0000000132ecbb90, coin=0x0000000132ecb200) at NNodeNudger.cpp:491
+        frame #2: 0x000000010a6f4d12 libNPY.dylib`NNodeNudger::znudge(this=0x0000000132ecbb90, coin=0x0000000132ecb200) at NNodeNudger.cpp:299
+        frame #3: 0x000000010a6f2bbc libNPY.dylib`NNodeNudger::uncoincide(this=0x0000000132ecbb90) at NNodeNudger.cpp:286
+        frame #4: 0x000000010a6f11ed libNPY.dylib`NNodeNudger::init(this=0x0000000132ecbb90) at NNodeNudger.cpp:92
+        frame #5: 0x000000010a6f0c36 libNPY.dylib`NNodeNudger::NNodeNudger(this=0x0000000132ecbb90, root_=0x0000000132ecb300, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:66
+        frame #6: 0x000000010a6f15bd libNPY.dylib`NNodeNudger::NNodeNudger(this=0x0000000132ecbb90, root_=0x0000000132ecb300, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:64
+        frame #7: 0x000000010a7843a3 libNPY.dylib`NCSG::MakeNudger(msg="Adopt root ctor", root=0x0000000132ecb300, surface_epsilon=0.00000999999974) at NCSG.cpp:284
+        frame #8: 0x000000010a7844f7 libNPY.dylib`NCSG::NCSG(this=0x0000000132ecbad0, root=0x0000000132ecb300) at NCSG.cpp:317
+        frame #9: 0x000000010a7836ed libNPY.dylib`NCSG::NCSG(this=0x0000000132ecbad0, root=0x0000000132ecb300) at NCSG.cpp:332
+        frame #10: 0x000000010a7834c1 libNPY.dylib`NCSG::Adopt(root=0x0000000132ecb300, config=0x0000000000000000, soIdx=96, lvIdx=96) at NCSG.cpp:177
+        frame #11: 0x00000001008ad8d7 libExtG4.dylib`X4PhysicalVolume::ConvertSolid_FromRawNode(ok=0x0000000132d989f0, lvIdx=96, soIdx=96, solid=0x000000010c464d50, soname="uni_acrylic10x5ba6710", lvname="lAddition0x5ba7be0", balance_deep_tree=true, raw=0x0000000132ecb300) at X4PhysicalVolume.cc:1226
+        frame #12: 0x00000001008ad2fc libExtG4.dylib`X4PhysicalVolume::ConvertSolid_(ok=0x0000000132d989f0, lvIdx=96, soIdx=96, solid=0x000000010c464d50, soname="uni_acrylic10x5ba6710", lvname="lAddition0x5ba7be0", balance_deep_tree=true) at X4PhysicalVolume.cc:1192
+        frame #13: 0x00000001008ac33d libExtG4.dylib`X4PhysicalVolume::ConvertSolid(ok=0x0000000132d989f0, lvIdx=96, soIdx=96, solid=0x000000010c464d50, soname="uni_acrylic10x5ba6710", lvname="lAddition0x5ba7be0") at X4PhysicalVolume.cc:1090
+        frame #14: 0x00000001008aac05 libExtG4.dylib`X4PhysicalVolume::convertSolid(this=0x00007ffeefbfc978, lv=0x000000010c196f30) at X4PhysicalVolume.cc:1035
+        frame #15: 0x00000001008a9b25 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x000000010c1cc870, depth=6) at X4PhysicalVolume.cc:994
+        frame #16: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x0000000124a10040, depth=5) at X4PhysicalVolume.cc:988
+        frame #17: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x00000001244bdf70, depth=4) at X4PhysicalVolume.cc:988
+        frame #18: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x0000000124a928d0, depth=3) at X4PhysicalVolume.cc:988
+        frame #19: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x0000000124a92a00, depth=2) at X4PhysicalVolume.cc:988
+        frame #20: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x0000000124988ca0, depth=1) at X4PhysicalVolume.cc:988
+        frame #21: 0x00000001008a9844 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfc978, pv=0x000000010f9135d0, depth=0) at X4PhysicalVolume.cc:988
+        frame #22: 0x00000001008a422a libExtG4.dylib`X4PhysicalVolume::convertSolids(this=0x00007ffeefbfc978) at X4PhysicalVolume.cc:946
+        frame #23: 0x00000001008a2f43 libExtG4.dylib`X4PhysicalVolume::init(this=0x00007ffeefbfc978) at X4PhysicalVolume.cc:212
+        frame #24: 0x00000001008a2bba libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfc978, ggeo=0x0000000132dafe60, top=0x000000010f9135d0) at X4PhysicalVolume.cc:191
+        frame #25: 0x00000001008a30a5 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfc978, ggeo=0x0000000132dafe60, top=0x000000010f9135d0) at X4PhysicalVolume.cc:182
+        frame #26: 0x000000010089b9a8 libExtG4.dylib`X4Geo::Translate(top=0x000000010f9135d0) at X4Geo.cc:25
+        frame #27: 0x0000000100120218 libG4CX.dylib`G4CXOpticks::setGeometry(this=0x000000010c4574b0, world=0x000000010f9135d0) at G4CXOpticks.cc:267
+        frame #28: 0x0000000100121b59 libG4CX.dylib`G4CXOpticks::setGeometry(this=0x000000010c4574b0, gdmlpath="/Users/blyth/.opticks/GEO
+
+
+
+    (lldb) f 8 
+    frame #8: 0x000000010a7844f7 libNPY.dylib`NCSG::NCSG(this=0x0000000132ecbad0, root=0x0000000132ecb300) at NCSG.cpp:317
+       314 	    m_root(root),
+       315 	    m_points(NULL),
+       316 	    m_uncoincide(make_uncoincide()),
+    -> 317 	    m_nudger(MakeNudger("Adopt root ctor", root, SURFACE_EPSILON)),
+       318 	    m_csgdata(new NCSGData),
+       319 	    m_adopted(true), 
+       320 	    m_boundary(NULL),
+    (lldb) p root->get_treeidx()
+    (int) $2 = 96
+    (lldb) 
+
+     274 NNodeNudger* NCSG::MakeNudger(const char* msg, nnode* root, float surface_epsilon )   // static  
+     275 {
+     276     int treeidx = root->get_treeidx();
+     277     bool nudgeskip = root->is_nudgeskip() ;
+     278 
+     279     LOG(LEVEL)
+     280         << " treeidx " << treeidx
+     281         << " nudgeskip " << nudgeskip
+     282          ;
+     283 
+     284     NNodeNudger* nudger = nudgeskip ? nullptr : new NNodeNudger(root, surface_epsilon, root->verbosity);
+     285     return nudger ;
+     286 }
+
+
+    (lldb) f 4
+    frame #4: 0x000000010a6f11ed libNPY.dylib`NNodeNudger::init(this=0x0000000132ecbb90) at NNodeNudger.cpp:92
+       89  	    collect_coincidence();
+       90  	
+       91  	    if(enabled)
+    -> 92  	       uncoincide();
+       93  	
+       94  	    bool out = listed || nudges.size() > 0 ; 
+       95  	    LOG_IF(LEVEL, out ) << brief() ;  
+    (lldb) 
+
+
+Add disable NNodeNudger__DISABLE::
+
+    057 NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
+     58     :
+     59     root(root_),
+     60     epsilon(epsilon_),
+     61     verbosity(SSys::getenvint("VERBOSITY",1)),
+     62     listed(false),
+     63     enabled(!SSys::getenvbool("NNodeNudger__DISABLE"))
+     64 {
+     65     root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
+     66     init();
+     67 }
+
+    (lldb) p root->get_treeidx()
+    (int) $6 = 96
+    (lldb) f 3
+    frame #3: 0x000000010a6f2bbc libNPY.dylib`NNodeNudger::uncoincide(this=0x0000000132ecbb90) at NNodeNudger.cpp:286
+       283 	   unsigned num_coincidence = coincidence.size();
+       284 	   for(unsigned i=0 ; i < num_coincidence ; i++)
+       285 	   {
+    -> 286 	       znudge(&coincidence[i]);
+       287 	   }
+       288 	}
+       289 	
+    (lldb) 
+
+    (lldb) f 2
+    frame #2: 0x000000010a6f4d12 libNPY.dylib`NNodeNudger::znudge(this=0x0000000132ecbb90, coin=0x0000000132ecb200) at NNodeNudger.cpp:299
+       296 	    if( can_znudge_union_maxmin(coin) ) 
+       297 	    {
+       298 	        LOG(LEVEL) << "proceed znudge_union_maxmin " << desc_znudge_union_maxmin(coin) ; 
+    -> 299 	        znudge_union_maxmin(coin);
+       300 	    }
+       301 	    else
+       302 	    {
+    (lldb) 
+
+    (lldb) f 1
+    frame #1: 0x000000010a6f5c25 libNPY.dylib`NNodeNudger::znudge_union_maxmin(this=0x0000000132ecbb90, coin=0x0000000132ecb200) at NNodeNudger.cpp:491
+       488 	
+       489 	        **/ 
+       490 	
+    -> 491 	        i->increase_z2( dz ); 
+       492 	        coin->n = NUDGE_I_INCREASE_Z2 ; 
+       493 	    }
+       494 	
+    (lldb) p i 
+    (ncone *) $7 = 0x0000000132ecaa70
+    (lldb) p i->get_treeidx()
+    (int) $8 = -1
+    (lldb) 
+
+
+HMM : THE set_treeidx needs to recurse
+
+
+
+::
+
+    1205 GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, c     onst char* soname, const char* lvname, bool balance_deep_tree,
+    1206      nnode* raw)
+    1207 {
+    1208     bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ;
+    1209     bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+    1210     bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ;
+    1211     bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ;
+    1212     bool do_balance = balance_deep_tree && !is_x4balanceskip ;
+    1213 
+    1214     nnode* root = do_balance ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;
+    1215 
+    1216     LOG(LEVEL) << " after NTreeProcess:::Process " ;
+    1217 
+    1218     root->other = raw ;
+    1219     root->set_nudgeskip( is_x4nudgeskip );
+    1220     root->set_pointskip( is_x4pointskip );
+    1221     root->set_treeidx( lvIdx );
+    1222 
+    1223     const NSceneConfig* config = NULL ;
+    1224 
+    1225     LOG(LEVEL) << "[ before NCSG::Adopt " ;
+    1226     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instanc     e
+    1227     LOG(LEVEL) << "] after NCSG::Adopt " ;
+    1228     assert( csg ) ;
+    1229     assert( csg->isUsedGlobally() );
+    1230 
+    1231     bool is_balanced = root != raw ;
+    1232     if(is_balanced) assert( balance_deep_tree == true );
+    1233 
+    1234     csg->set_balanced(is_balanced) ;
+    1235     csg->set_soname( soname ) ;
+    1236     csg->set_lvname( lvname ) ;
+
+
 
 
 

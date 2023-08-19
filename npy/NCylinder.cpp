@@ -119,7 +119,8 @@ void  ncylinder::increase_z2(float dz)
     float _z2 = z2(); 
     float new_z2 = _z2 + dz ; 
 
-    LOG(LEVEL) 
+    LOG(info) 
+        << " treeidx " << get_treeidx()
         << " _z2 " << _z2
         << " dz " << dz
         << " new_z2 " << new_z2 
@@ -135,7 +136,8 @@ void  ncylinder::decrease_z1(float dz)
     float _z1 = z1(); 
     float new_z1 = _z1 - dz ; 
 
-    LOG(LEVEL) 
+    LOG(info) 
+        << " treeidx " << get_treeidx()
         << " _z1 " << _z1
         << " dz " << dz
         << " new_z1 " << new_z1

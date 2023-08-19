@@ -60,7 +60,7 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
     epsilon(epsilon_), 
     verbosity(SSys::getenvint("VERBOSITY",1)),
     listed(false),
-    enabled(true)
+    enabled(!SSys::getenvbool("NNodeNudger__DISABLE"))
 {
     root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
     init();
