@@ -82,56 +82,6 @@ DONE : Add U4TreeCreateSSimTest.sh for SSim creation from gdml
 ---------------------------------------------------------------
 
 
-A/B comparison 
------------------
-
-
-~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh ana::
-
-      ['sOuterWaterPool', '0x', '5a05390'],
-       ['sPoolLining', '0x', '5a04be0'],
-       ['sBottomRock', '0x', '5a00520'],
-       ['sWorld', '0x', '59f2060']], dtype='<U44')
-
-    In [38]: np.char.partition(a.meshname.astype("U"),"0x").shape
-    Out[38]: (139, 3)
-
-    In [42]: b_meshname = b.meshname.astype("U")
-    In [43]: a_meshname = np.char.partition(a.meshname.astype("U"),"0x")[:,0]
-
-
-
-
-A/B comparison of CSGFoundry geometries
-------------------------------------------
-
-::
-
-    epsilon:tests blyth$  ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh info
-             BASH_SOURCE : /Users/blyth/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh 
-                     bin : CSGFoundry_CreateFromSimTest 
-                    GEOM : V1J009 
-                    BASE : /Users/blyth/.opticks/GEOM/V1J009 
-                    FOLD : /tmp/blyth/opticks/CSGFoundry_CreateFromSimTest 
-                   check : /Users/blyth/.opticks/GEOM/V1J009/CSGFoundry/SSim/stree/nds.npy 
-                A_CFBASE : /Users/blyth/.opticks/GEOM/V1J009 
-                B_CFBASE : /tmp/blyth/opticks/CSGFoundry_CreateFromSimTest 
-                  script : /Users/blyth/opticks/CSG/tests/CSGFoundryAB.py 
-
-    In [24]: np.c_[ua[100:110],ub[100:110]]
-    Out[24]: 
-    array([['ZC2.A06_B06_FlangeI_Web_FlangeII', '30', 'ZC2.A05_B05_FlangeI_Web_FlangeII', '30'],
-           ['ZC2.A06_B07_FlangeI_Web_FlangeII', '30', 'ZC2.A05_B06_FlangeI_Web_FlangeII', '30'],
-           ['ZC2.B01_B01_FlangeI_Web_FlangeII', '30', 'ZC2.A06_B06_FlangeI_Web_FlangeII', '30'],
-           ['ZC2.B03_B03_FlangeI_Web_FlangeII', '30', 'ZC2.A06_B07_FlangeI_Web_FlangeII', '30'],
-           ['ZC2.B05_B05_FlangeI_Web_FlangeII', '30', 'ZC2.B01_B01_FlangeI_Web_FlangeII', '30'],
-           ['base_steel', '1', 'ZC2.B03_B03_FlangeI_Web_FlangeII', '30'],
-           ['mask_PMT_20inch_vetosMask', '1', 'ZC2.B05_B05_FlangeI_Web_FlangeII', '30'],
-           ['sAcrylic', '1', 'base_steel', '1'],
-           ['sAirTT', '1', 'mask_PMT_20inch_vetosMask', '1'],
-           ['sBar', '128', 'mask_PMT_20inch_vetosMask_virtual', '1']], dtype='<U44')
-
-
 
 
 

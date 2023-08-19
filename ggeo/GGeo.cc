@@ -156,8 +156,6 @@ GGeo* GGeo::LoadFromDir(Opticks* ok, const char* base, const char* reldir)  // s
 }
 
 
-void GGeo::setTree(stree* tree){ m_tree = tree ; }
-stree* GGeo::getTree() const {  return m_tree ; }
 
 
 /**
@@ -170,8 +168,7 @@ live=true instanciation only used from G4Opticks::translateGeometry
 
 
 GGeo::GGeo(Opticks* ok, bool live)
-  :
-   m_tree(nullptr),
+   :
    m_fold(new NPFold), 
    m_log(new SLogger("GGeo::GGeo","",verbose)),
    m_ok(ok ? ok : Opticks::Instance() ), 
@@ -871,10 +868,6 @@ void GGeo::save_()
     m_sourcelib->save();
     LOG(LEVEL) << " m_bndlib.save " ; 
     m_bndlib->save();  
-
-    LOG(LEVEL) << " m_tree.save " ; 
-
-    if(m_tree) m_tree->save(idpath); 
 
 
     LOG(LEVEL) << " after saves " ; 

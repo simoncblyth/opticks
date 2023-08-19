@@ -227,6 +227,14 @@ When SSim not in use can also use::
 #include "SBnd.h"
 
 
+struct stree_standin
+{
+    std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
+    std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
+    std::vector<glm::tmat4x4<double>> gtd ; // GGeo Transform Debug, added from X4PhysicalVolume::convertStructure_r
+};
+
+
 struct stree
 {
     static constexpr const int MAXDEPTH = 15 ; // presentational only   

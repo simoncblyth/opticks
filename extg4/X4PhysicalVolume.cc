@@ -1407,9 +1407,8 @@ void X4PhysicalVolume::convertStructure()
     assert(m_top) ;
     LOG(LEVEL) << "[ creating large tree of GVolume instances" ; 
 
-    m_tree = new stree ;   // HMM: m_tree is a spy from the future 
-    m_ggeo->setTree(m_tree); 
-    
+    m_tree = new stree_standin ; 
+    //m_ggeo->setTree(m_tree); 
 
     const G4VPhysicalVolume* pv = m_top ; 
     GVolume* parent = NULL ; 

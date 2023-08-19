@@ -39,7 +39,7 @@ struct nnode ;
 #include "X4Named.hh"
 
 
-struct stree ; 
+struct stree_standin ; 
 
 template <typename T> struct nxform ; 
 template <typename T> class GPropertyMap ; 
@@ -173,7 +173,7 @@ class X4_API X4PhysicalVolume : public X4Named
         GBorderSurface*      findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const ; 
         GSkinSurface*        findSkinSurfaceOK( const G4LogicalVolume* const lv) const ;
     private:
-        stree*                       m_tree ; 
+        stree_standin*               m_tree ; 
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  
         Opticks*                     m_ok ; 

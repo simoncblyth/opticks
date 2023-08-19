@@ -14,6 +14,12 @@ from opticks.sysrap.sfreq import sfreq
 from opticks.sysrap.OpticksCSG import CSG_ 
 
 
+class STR(str):
+    """STR inherits from str and changes the repr to provide the str""" 
+    def __repr__(self):
+        return str(self)
+
+
 class sobject(object):
     @classmethod
     def Label(cls, spc=5, pfx=10):
@@ -50,11 +56,54 @@ class sobject(object):
         ra = np.core.records.fromarrays(a.T, dtype=cls.DTYPE )
         return ra 
 
+    @classmethod
+    def Doc(cls):
+        assert len(cls.FIELD) == len(cls.DTYPE)
+        lines = []
+        for i in range(len(cls.FIELD)):
+            line = "%2d : %2s : %15s : %s " % (i, cls.FIELD[i], cls.DTYPE[i][0], cls.DTYPE[i][1] )
+            lines.append(line)
+        pass
+        return STR("\n".join(lines))
+
+
+
+
+class sn(sobject):
+    """
+    sn.h CSG constituent node 
+    """
+    DTYPE = [
+             ('typecode', '<i4'), 
+             ('complement', '<i4'), 
+             ('lvid', '<i4'), 
+             ('xform', '<i4'), 
+             ('param', '<i4'), 
+             ('aabb', '<i4'), 
+             ('parent', '<i4'), 
+             ('sibdex', '<i4'), 
+             ('num_child', '<i4'),
+             ('first_child', '<i4'),
+             ('next_sibling', '<i4'),
+             ('index', '<i4'),
+             ('depth', '<i4'),
+             ('label0', '<i4'),
+             ('label1', '<i4'),
+             ('label2', '<i4'),
+             ('label3', '<i4'),
+             ] 
+
+    FIELD = "tc cm lv xf pa bb pr sx nc fc ns ix dp l0 l1 l2 l3".split()
+
+
+
+
+
 
 
 class snd(sobject):
     """
-    CSG constituent node 
+    snd.hh CSG constituent node 
     """
     DTYPE = [
              ('index', '<i4'), 
@@ -73,11 +122,6 @@ class snd(sobject):
 
     FIELD = "ix dp sx pt nc fc sx lv tc pm bb xf".split()
 
-
-class STR(str):
-    """STR inherits from str and changes the repr to provide the str""" 
-    def __repr__(self):
-        return str(self)
 
 class snode(sobject):
     """
@@ -102,16 +146,6 @@ class snode(sobject):
              ] 
 
     FIELD = "ix dp sx pt nc fc sx lv cp se sx ri ro bd sn".split()
-
-    @classmethod
-    def Doc(cls):
-        assert len(cls.FIELD) == len(cls.DTYPE)
-        lines = []
-        for i in range(len(cls.FIELD)):
-            line = "%2s : %15s : %s " % (cls.FIELD[i], cls.DTYPE[i][0], cls.DTYPE[i][1] )
-            lines.append(line)
-        pass
-        return STR("\n".join(lines))
 
     @classmethod
     def Desc(cls, rec):

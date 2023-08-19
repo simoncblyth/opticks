@@ -77,8 +77,8 @@ struct s_pool
 
     void find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
 
-    std::string brief(const char* msg=nullptr) const ; 
-    std::string desc(const char* msg=nullptr) const ; 
+    std::string brief() const ; 
+    std::string desc() const ; 
 
     int index(const T* q) const ; 
     int add( T* o ); 
@@ -177,13 +177,12 @@ inline void s_pool<T,P>::find(std::vector<T*>& vec, std::function<bool(const T*)
 
 
 template<typename T, typename P>
-inline std::string s_pool<T,P>::brief(const char* msg) const 
+inline std::string s_pool<T,P>::brief() const 
 {
     std::stringstream ss ; 
     ss
        << "s_pool::brief "
        << " label " << ( label ? label : "-" )
-       << " msg " << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
        << " num_root " << num_root()
@@ -193,12 +192,11 @@ inline std::string s_pool<T,P>::brief(const char* msg) const
 }
 
 template<typename T, typename P>
-inline std::string s_pool<T,P>::desc(const char* msg) const 
+inline std::string s_pool<T,P>::desc() const 
 {
     std::stringstream ss ; 
     ss << "s_pool::desc "
        << " label " << ( label ? label : "-" )
-       << " msg " << ( msg ? msg : "-" )
        << " count " << count 
        << " pool.size " << pool.size() 
        << " num_root " << num_root()
@@ -230,10 +228,25 @@ cause gaps in the pid values whereas the indices will be contiguous.
 template<typename T, typename P>
 inline int s_pool<T, P>::index(const T* q) const 
 {
+    if( q == nullptr && level > 0) std::cerr 
+         << "s_pool::index got nullptr arg "
+         << " pool.size " << pool.size()
+         << std::endl 
+         ;
+     
     if( q == nullptr ) return -1 ;     
+
     s_find<T> find(q); 
-    size_t idx = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), find )); 
-    return idx < pool.size() ? idx : -1 ;  
+    size_t idx_ = std::distance( pool.begin(), std::find_if( pool.begin(), pool.end(), find )); 
+    int idx = idx_ < pool.size() ? idx_ : -1 ;  
+
+    if( idx == -1 && level > 0) std::cerr
+         << "s_pool::index failed to find non-nullptr  "
+         << " pool.size " << pool.size()
+         << std::endl 
+         ;
+ 
+    return idx ; 
 }
 
 template<typename T, typename P>

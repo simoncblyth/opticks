@@ -9,6 +9,9 @@ import numpy as np, os, textwrap
 from opticks.ana.fold import Fold
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
 
+from opticks.sysrap.stree import sn, snode, stree
+
+
 
 class CSGFoundryAB(object):
     def __init__(self, a, b, _ip=0):
@@ -443,6 +446,8 @@ def checkprims(a, b, ip0=-1, ip1=-1, order="A"):
 
 if __name__ == '__main__':
 
+    np.set_printoptions(edgeitems=10) 
+
     CSGPrim.Type()
 
     A = Fold.Load("$A_CFBASE/CSGFoundry", symbol="A")
@@ -475,6 +480,9 @@ if __name__ == '__main__':
     b_primname = b.primname.astype("U")
 
  
+    an = A.SSim.stree._csg.sn
+    bn = B.SSim.stree._csg.sn
+
 
 
 

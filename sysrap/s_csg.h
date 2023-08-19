@@ -108,6 +108,7 @@ inline s_csg::s_csg()
     tv(new s_tv::POOL("tv")),
     nd(new   sn::POOL("nd"))
 {
+    if(level > 0) std::cerr << "s_csg::s_csg s_csg_level : " << level << std::endl ; 
     init(); 
 }
 
@@ -166,6 +167,7 @@ inline std::string s_csg::desc() const
 
 inline NPFold* s_csg::serialize() const   
 {
+    if(level > 0) std::cerr << "s_csg::serialize s_csg_level : " << level << std::endl ; 
     NPFold* fold = new NPFold ; 
     fold->add(  sn::NAME, nd->serialize<int>() );  
     fold->add(s_bb::NAME, bb->serialize<double>() ); 

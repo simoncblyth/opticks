@@ -173,7 +173,7 @@ struct SYSRAP_API sn
 
     static void SetPOOL( POOL* pool_ ); 
     static int level(); 
-    static std::string Desc(const char* msg=nullptr); 
+    static std::string Desc(); 
 
     template<typename N>
     static std::string Desc(N* n); 
@@ -419,8 +419,8 @@ struct SYSRAP_API sn
 };  // END
 
 inline void        sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
-inline int         sn::level() {  return pool ? pool->level : ssys::getenvint("sn__level",-1) ; } // static 
-inline std::string sn::Desc(const char* msg){ return pool ? pool->desc(msg) : "-" ; } // static
+inline int         sn::level() {  return ssys::getenvint("sn__level",-1) ; } // static 
+inline std::string sn::Desc(){    return pool ? pool->desc() : "-" ; } // static
 
 template<typename N>
 inline std::string sn::Desc(N* n) // static
@@ -572,6 +572,11 @@ This functionality is needed for multiunion.
 
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
+    if(level() > 1) std::cerr 
+        << "sn::Serialize ["  
+        << std::endl 
+        ;
+
     assert( pool      && "sn::pool  is required for sn::Serialize" );    
     assert( s_tv::pool && "s_tv::pool is required for sn::Serialize" ); 
     assert( s_pa::pool && "s_pa::pool is required for sn::Serialize" ); 
@@ -601,6 +606,21 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
 
     assert( sizeof(n.label) == sizeof(x->label) ); 
     strncpy( &n.label[0], x->label, sizeof(x->label) );
+
+
+    if(level() > 1) std::cerr 
+        << "sn::Serialize ]"  
+        << std::endl 
+        << "(sn)x" 
+        << std::endl 
+        << x->desc()
+        << std::endl 
+        << "(_sn)n" 
+        << std::endl 
+        << n.desc()
+        << std::endl 
+        ;
+
 
 }
 
