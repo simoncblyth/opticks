@@ -63,8 +63,8 @@ export GProperty_SIGINT=1
 export G4CXOpticks__setGeometry_saveGeometry=$FOLD
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
-export s_csg_level=2 
-export sn__level=2
+#export s_csg_level=2 
+#export sn__level=2
 
 
 

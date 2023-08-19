@@ -1712,6 +1712,7 @@ void X4Solid::convertPolycone()
     const G4PolyconeHistorical* ph = polycone->GetOriginalParameters() ;
     double startPhi = ph->Start_angle/degree ;  
     double deltaPhi = ph->Opening_angle/degree ;
+    int lvIdx = get_lvIdx() ; 
 
     std::vector<zplane> zp ; 
     std::set<double> R_inner ; 
@@ -1758,6 +1759,7 @@ void X4Solid::convertPolycone()
     unsigned num_R_outer = R_outer.size() ; 
 
     LOG(LEVEL)
+        << " lvIdx " << lvIdx
         << " nz " << nz
         << " zmin " << std::setw(10) << std::fixed << std::setprecision(4) << zmin
         << " zmax " << std::setw(10) << std::fixed << std::setprecision(4) << zmax
@@ -1765,12 +1767,14 @@ void X4Solid::convertPolycone()
         ;
 
     LOG(LEVEL)
+        << " lvIdx " << lvIdx
         << " R_inner_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_min
         << " R_inner_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_max
         << " num_R_inner " << num_R_inner
         << " has_inner " << has_inner 
         ;
     LOG(LEVEL)
+        << " lvIdx " << lvIdx
         << " R_outer_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_min
         << " R_outer_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_max
         << " num_R_outer " << num_R_outer
@@ -1799,7 +1803,7 @@ void X4Solid::convertPolycone()
     }
     else if( has_inner && num_R_inner > 1 )
     {
-        inner = Polycone_MakeInner( zp, m_name, num_R_inner ); 
+        inner = Polycone_MakeInner( zp, m_name, num_R_inner, lvIdx ); 
         inner->label = BStr::concat( m_name, "_inner_polycone", NULL  ); 
     }
 
@@ -1834,15 +1838,23 @@ X4Solid::Polycone_MakeInner
 
 **/
 
-nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner) // static 
+nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner, int lvIdx ) // static 
 {
-    LOG(fatal) << " EXPERIMENTAL num_R_inner > 1 handling "  << name << " num_R_inner " << num_R_inner  ;   
+    LOG(fatal) 
+       << " EXPERIMENTAL num_R_inner > 1 handling : "  
+       << " name " << name 
+       << " num_R_inner " << num_R_inner  
+       << " lvIdx " << lvIdx
+       ;   
 
     std::vector<nnode*> inner_prims ; 
     Polycone_MakePrims( zp, inner_prims, name, false  ); 
 
     unsigned num_prims = inner_prims.size() ; 
-    LOG(error) << " inner_prims.size " << num_prims ; 
+    LOG(error) 
+        << " inner_prims.size " << num_prims 
+        << " lvIdx " << lvIdx
+        ; 
 
     nnode* lower = inner_prims[0] ; 
     nnode* upper = inner_prims[inner_prims.size()-1] ; 
@@ -1854,10 +1866,10 @@ nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* na
     {
         float dz = 1.0 ; 
 
-        LOG(error) << " lower.is_znudge_capable " ; 
+        LOG(error) << " lower.is_znudge_capable lvIdx " << lvIdx ; 
         lower->decrease_z1(dz); 
 
-        LOG(error) << " upper.is_znudge_capable " ;  
+        LOG(error) << " upper.is_znudge_capable lvIdx " << lvIdx ;  
         upper->increase_z2(dz); 
 
         if( num_prims == 2 )
@@ -1910,7 +1922,7 @@ nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* na
         }
     }
 
-    LOG(error) << " after znudges " ; 
+    LOG(error) << " after znudges lvIdx " << lvIdx ; 
     bool inner_dump = true ; 
     nnode* inner = NTreeBuilder<nnode>::UnionTree(inner_prims, inner_dump) ;
     return inner ; 

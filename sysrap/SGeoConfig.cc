@@ -245,21 +245,32 @@ However do not want to require writing cache and prefer to minimize
 detector specific Opticks setup code as it is much easier 
 to test in isolation than as an appendage to a detector framework. 
 
+**AVOID "0x" SUFFIXES IN DECISION STRINGS**
+
+The "0x" address suffix on names are only present when running 
+from a Geant4 geometry that was booted from GDML (assuming sane naming). 
+Hence including "0x" in decision strings such as skip lists would
+cause different geometry when running from GDML and when running 
+live which is to be avoided.   
+
 **/
 void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
 {
-    const char* JUNO_names = "HamamatsuR12860sMask0x,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
+    const char* JUNO_names = "HamamatsuR12860sMask,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
     bool JUNO_detected = id->hasNames(JUNO_names); 
     LOG(LEVEL) << " JUNO_detected " << JUNO_detected ; 
     if(JUNO_detected)
     {
-        const char* skips = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ;
+        //const char* skips = "NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual" ;
+        const char* skips = nullptr ; 
+
         SetCXSkipLV(skips); 
         SetCXSkipLV_IDXList(id); 
     
         // USING dynamic ELVSelection here would be inappropriate : as dynamic selection 
         // means the persisted geometry does not match the used geometry.   
     }
+    
 }
 
 

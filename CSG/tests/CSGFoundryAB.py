@@ -86,9 +86,6 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
-
-
-
     def check_prim_lv(self):
         a = self.a 
         b = self.b 
@@ -478,10 +475,18 @@ if __name__ == '__main__':
 
     a_primname = np.char.partition(a.primname.astype("U"),"0x")[:,0]  
     b_primname = b.primname.astype("U")
-
  
     an = A.SSim.stree._csg.sn
     bn = B.SSim.stree._csg.sn
+
+
+    a_tc = a.node[:,3,2].view(np.int32)
+    b_tc = b.node[:,3,2].view(np.int32)
+    w_tc = np.where( a_tc != b_tc )[0]
+
+    
+
+    
 
 
 

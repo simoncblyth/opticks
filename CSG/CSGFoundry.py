@@ -428,6 +428,38 @@ class CSGFoundry(object):
         self.sim = sim
 
 
+    def find_primIdx_from_nodeIdx(self, nodeIdx_):
+        """
+        If nodeIdx is valid there should always be exactly 
+        one prim in which it appears. 
+
+        For example use to lookup primname that contain a selection
+        of nodeIdx::
+
+            In [4]: np.c_[b.primname[np.unique(a.find_primIdx_from_nodeIdx(w))]]                                                                         
+            Out[4]: 
+            array([['NNVTMCPPMTsMask_virtual'],
+                   ['HamamatsuR12860sMask_virtual'],
+                   ['HamamatsuR12860_PMT_20inch_pmt_solid_1_4'],
+                   ['HamamatsuR12860_PMT_20inch_inner_solid_1_4'],
+                   ['base_steel'],
+                   ['uni_acrylic1']], dtype=object)
+
+
+        """
+        a = self 
+
+        numNode = a.prim[:,0,0].view(np.int32)
+        nodeOffset = a.prim[:,0,1].view(np.int32)
+
+        primIdx = np.zeros(len(nodeIdx_), dtype=np.int32) 
+        for i, nodeIdx in enumerate(nodeIdx_):
+            primIdx[i]  = np.where(np.logical_and( nodeIdx >= nodeOffset, nodeIdx < nodeOffset+numNode ))[0] 
+        pass
+        return primIdx 
+            
+
+
     def meshIdx(self, primIdx):
         """
         Lookup the midx of primIdx prim 

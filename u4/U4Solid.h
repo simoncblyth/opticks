@@ -98,7 +98,7 @@ struct U4Solid
     static constexpr const char* G4SubtractionSolid_  = "Sub" ;
     static constexpr const char* G4DisplacedSolid_    = "Dis" ;
 
-    std::string desc() const ; 
+    std::string         desc() const ; 
     static int          Type(const G4VSolid* solid ) ;  
     static const char*  Tag( int type ) ;   
 
@@ -108,10 +108,14 @@ struct U4Solid
     static sn* Convert(const G4VSolid* solid, int lvid, int depth, int level ) ; 
 #endif
 
-
+private:
     U4Solid( const G4VSolid* solid, int lvid, int depth, int level ); 
 
     void init(); 
+    void init_Constituents(); 
+    void init_Check(); 
+    void init_Tree(); 
+
     void init_Orb(); 
     void init_Sphere(); 
     void init_Ellipsoid(); 
@@ -260,18 +264,37 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
 #endif
 {
     init() ; 
-
-#ifdef WITH_SND
-    assert( root > -1 );
-    snd::SetLVID(root, lvid );   
-#else
-    assert( root); 
-    root->set_lvid(lvid); 
-#endif
-
 }
 
 inline void U4Solid::init()
+{
+    init_Constituents(); 
+    init_Check(); 
+    init_Tree() ; 
+}
+
+inline void U4Solid::init_Tree()
+{
+#ifdef WITH_SND
+    assert( root > -1 );
+    snd::SetLVID(root, lvid );   
+    std::cerr << "U4Solid::init_Tree.WITH_SND.FATAL snd.hh does not provide positivize" << std::endl ; 
+    assert(0); 
+#else
+    assert( root); 
+    root->set_lvid(lvid); 
+    root->positivize() ;  
+#endif
+}
+
+
+/**
+U4Solid::init_Constituents
+--------------------------
+
+**/
+
+inline void U4Solid::init_Constituents()
 {
     switch(type)
     {
@@ -290,21 +313,25 @@ inline void U4Solid::init()
         case _G4SubtractionSolid  : init_SubtractionSolid()      ; break ; 
         case _G4DisplacedSolid    : init_DisplacedSolid()        ; break ; 
     } 
+}
 
+inline void U4Solid::init_Check()
+{
 #ifdef WITH_SND
     if(root == -1)
 #else
     if(root == nullptr)
 #endif
     {
-        std::cerr << "U4Solid::init FAILED desc: " << desc() << std::endl ; 
+        std::cerr << "U4Solid::init_Check FAILED desc: " << desc() << std::endl ; 
         assert(0); 
     }
     else
     {
-        if(level > 0 ) std::cerr << "U4Solid::init SUCCEEDED desc: " << desc() << std::endl ; 
+        if(level > 0 ) std::cerr << "U4Solid::init_Check SUCCEEDED desc: " << desc() << std::endl ; 
     }
 }
+
 
 
 inline void U4Solid::init_Orb()

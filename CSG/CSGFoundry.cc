@@ -264,6 +264,8 @@ void CSGFoundry::getMeshName( std::vector<std::string>& mname ) const
 CSGFoundry::getPrimName
 ------------------------
 
+For each prim use meshIdx to lookup the MeshName, which is the "LV" solid name.
+
 After CSGFoundry.py:make_primIdx_meshname_dict
 see notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
 
@@ -289,9 +291,6 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
         }
     }
 }
-
-
-
 
 const char* CSGFoundry::getMeshName(unsigned midx) const 
 {
