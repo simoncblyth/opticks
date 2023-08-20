@@ -124,14 +124,24 @@ class X4_API X4Solid : public X4SolidBase
 
     private:
         static const bool convertPolycone_enable_phi_segment ; 
-        static const int  convertPolycone_debug_mode ;  // export X4Solid_convertPolycone_debug_mode=1 
+        static const int  convertPolycone_debug_mode ;  // export X4Solid__convertPolycone_debug_mode=1 
+        static const int  convertPolycone_nudge_mode ;  // export X4Solid__convertPolycone_nudge_mode=0 # DISABLE 
 
         void convertPolycone();
         void convertPolycone_g4code();
 
         static void Polycone_GetZPlane(std::vector<zplane>& zp, std::set<double>& R_inner, std::set<double>& R_outer, const G4PolyconeHistorical* ph  ); 
         static void Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nnode*>& prims, const char* name, bool outer  ); 
-        static nnode* Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner, int lvIdx=-2); 
+        static nnode* Polycone_MakeInner(
+            const std::vector<zplane>& zp, 
+            const char* name, 
+            unsigned num_R_inner, 
+            int lvIdx, 
+            bool nudge ); 
+
+        static void Polycone_Inner_Nudge( std::vector<nnode*>& inner_prims, int lvIdx, bool nudge ); 
+
+
         static bool Polycone_DoPhiSegment( const G4PolyconeHistorical* ph ); 
         static bool Polycone_CheckZOrder( const std::vector<zplane>& zp, bool z_ascending ); 
         static void SetExternalBoundingBox( nnode* root,  const G4VSolid* solid ); 

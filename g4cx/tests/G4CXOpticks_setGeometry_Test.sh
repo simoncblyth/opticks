@@ -63,6 +63,10 @@ export GProperty_SIGINT=1
 export G4CXOpticks__setGeometry_saveGeometry=$FOLD
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
+export NNodeNudger__DISABLE=1
+#export X4Solid__convertPolycone_nudge_mode=0 # 0:DISABLE 
+
+
 #export s_csg_level=2 
 #export sn__level=2
 
@@ -79,7 +83,7 @@ loglevels(){
    export CSGFoundry=INFO
    export GSurfaceLib=INFO
    export U4VolumeMaker=INFO
-   export NCSG=INFO
+   #export NCSG=INFO
 }
 #loglevels
 env | grep =INFO

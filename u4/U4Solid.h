@@ -98,18 +98,32 @@ struct U4Solid
     static constexpr const char* G4SubtractionSolid_  = "Sub" ;
     static constexpr const char* G4DisplacedSolid_    = "Dis" ;
 
+
+    static const char* IsFlaggedName_ ; 
+    static const char* IsFlaggedType_ ; 
+    static bool IsFlaggedName(const char* name); 
+    static bool IsFlaggedType(const char* type); 
+
+    static const char*  brief_KEY ; 
+    std::string         brief() const ; 
     std::string         desc() const ; 
-    static int          Type(const G4VSolid* solid ) ;  
+    static const char*  Name( const G4VSolid* solid) ; 
+    static const char*  EType(const G4VSolid* solid) ; 
+    static int          Level(int level_, const char* name, const char* entityType ); 
+
+    static int          Type(const char* entityType ) ;  
     static const char*  Tag( int type ) ;   
+    const char* tag() const ; 
+
 
 #ifdef WITH_SND
-    static int Convert(const G4VSolid* solid, int lvid, int depth, int level ) ; 
+    static int Convert(const G4VSolid* solid, int lvid, int depth, int level=-1 ) ; 
 #else
-    static sn* Convert(const G4VSolid* solid, int lvid, int depth, int level ) ; 
+    static sn* Convert(const G4VSolid* solid, int lvid, int depth, int level=-1 ) ; 
 #endif
 
 private:
-    U4Solid( const G4VSolid* solid, int lvid, int depth, int level ); 
+    U4Solid( const G4VSolid* solid, int lvid, int depth, int level  ); 
 
     void init(); 
     void init_Constituents(); 
@@ -158,11 +172,14 @@ private:
     void init_DisplacedSolid(); 
 
     // members
-    int             level ; 
     const G4VSolid* solid ; 
+    const char*     name ; 
+    const char*     entityType ; 
+    int             level ; 
+    int             type ;
+
     int             lvid ; 
     int             depth ;   // recursion depth across different G4VSolid
-    int             type ;
 
 #ifdef WITH_SND  // old impl that will be replacing 
     int             root ;    // snd.hh node index   
@@ -172,33 +189,73 @@ private:
 
 };
 
+
+
+inline const char* U4Solid::IsFlaggedName_ = ssys::getenvvar("U4Solid__IsFlaggedName", "PLACEHOLDER") ; 
+inline bool U4Solid::IsFlaggedName(const char* name)
+{
+    return name && IsFlaggedName_ && strstr(name, IsFlaggedName_ ) ;  
+}
+
+inline const char* U4Solid::IsFlaggedType_ = ssys::getenvvar("U4Solid__IsFlaggedType", "G4Dummy") ; 
+inline bool U4Solid::IsFlaggedType(const char* type)
+{
+    return type && IsFlaggedType_ && strstr(type, IsFlaggedType_ ) ;  
+}
+
+inline const char* U4Solid::brief_KEY = "lvid/depth/tag/root" ; 
+
+inline std::string U4Solid::brief() const 
+{
+    std::stringstream ss ; 
+    ss << std::setw(3) << lvid
+       << "/" << depth 
+       << "/" << tag()
+       
+#ifdef WITH_SND
+       << "/"  << std::setw(3) << root
+#else
+       << "/"  << std::setw(3) << ( root ? root->index() : -1 )
+#endif
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 inline std::string U4Solid::desc() const 
 {
-    G4String name = solid->GetName(); 
-
     std::stringstream ss ; 
-    ss << "U4Solid::desc" 
+    ss 
+       << brief()
        << " level " << level
-       << " solid " << ( solid ? "Y" : "N" )
-       << " lvid "   << std::setw(3) << lvid    
-       << " depth "   << std::setw(3) << depth    
-       << " type "  << std::setw(3) << type
-#ifdef WITH_SND
-       << " root "  << std::setw(4) << root
-#else
-       << " root "  << std::setw(4) << ( root ? root->index() : -1 )
-#endif
-       << " U4Solid::Tag(type) " << U4Solid::Tag(type) 
-       << " name " << name.c_str() 
+       << " entityType " << std::setw(16) << ( entityType ? entityType : "-" )
+       << " name " << ( name ? name : "-" )
        ; 
     std::string str = ss.str(); 
     return str ; 
 }
 
-inline int U4Solid::Type(const G4VSolid* solid)   // static 
+inline const char* U4Solid::Name(const G4VSolid* solid)  // static
 {
-    G4GeometryType etype = solid->GetEntityType();  // G4GeometryType typedef for G4String
-    const char* name = etype.c_str(); 
+    G4String _name = solid->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
+    const char* name = _name.c_str();    
+    return strdup(name) ; 
+}
+
+inline const char* U4Solid::EType(const G4VSolid* solid)  // static
+{
+    G4GeometryType _etype = solid->GetEntityType();  // G4GeometryType typedef for G4String
+    return strdup(_etype.c_str()) ; 
+}
+inline int U4Solid::Level(int level_, const char* name, const char* entityType )   // static 
+{
+    if(level_ > 0 ) return level_ ; 
+    if(IsFlaggedName(name) || IsFlaggedType(entityType)) return 1 ; 
+    return -1 ; 
+}
+
+inline int U4Solid::Type(const char* name)   // static 
+{
     int type = _G4Other ; 
     if( strcmp(name, "G4Orb") == 0 )               type = _G4Orb ; 
     if( strcmp(name, "G4Sphere") == 0 )            type = _G4Sphere ; 
@@ -240,6 +297,9 @@ inline const char* U4Solid::Tag(int type)   // static
     return tag ; 
 }
 
+inline const char* U4Solid::tag() const { return Tag(type) ; }
+
+
 #ifdef WITH_SND
 inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
 #else
@@ -250,13 +310,18 @@ inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int leve
     return so.root ; 
 }
 
+
+
+
 inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level_ )
     :
-    level(level_),
     solid(solid_),
+    name(Name(solid_)),
+    entityType(EType(solid)),
+    level(Level(level_,name,entityType)),
+    type(Type(entityType)),
     lvid(lvid_),
     depth(depth_),
-    type(Type(solid)),
 #ifdef WITH_SND
     root(-1)
 #else
@@ -268,9 +333,19 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
 
 inline void U4Solid::init()
 {
+    std::cerr 
+        <<  ( depth == 0 ? "\n" : "" )
+        << "[U4Solid::init " << brief() 
+        << " " << ( depth == 0 ? brief_KEY : "" )
+        << " " << ( depth == 0 ? name : "" )
+        << std::endl
+        ; 
+
     init_Constituents(); 
     init_Check(); 
     init_Tree() ; 
+
+    std::cerr << "]U4Solid::init " << brief() << std::endl ; 
 }
 
 inline void U4Solid::init_Tree()

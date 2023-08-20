@@ -1,13 +1,10 @@
 CSGFoundry_CreateFromSim_shakedown_now_with_flexible_sn
 ==========================================================
 
-
 Context
 ----------
 
 * prev :doc:`CSGFoundry_CreateFromSim_shakedown`
-
-
 
 A/B python comparison
 ------------------------
@@ -16,19 +13,15 @@ Python analysis, A/B comparison::
 
     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh ana
 
-
 Overview
 ----------
 
 Two geometry routes::
 
      A0             X4      CSG_GGeo
-     OLD : Geant4 -----> GGeo ----->  CSGFoundry 
-
+     OLD : Geant4 -----> GGeo/NNode/NCSG/... ----->  CSGFoundry 
+                         
      ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh   ## A0 : Loads GDML, pass world to G4CXOpticks  
-
-     BP=X4Solid::Balance ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
-
 
 
      B0+B1        U4Tree        CSGImport
@@ -1209,5 +1202,185 @@ HMM : THE set_treeidx needs to recurse
 
 
 
+
+With "export NNodeNudger__DISABLE=1" : get 2 base_steel CSGNode discrepant LV:95
+-----------------------------------------------------------------------------------
+
+
+::
+
+    In [2]: w = np.where(ab.node > 1e-2 )[0]
+
+    In [3]: w
+    Out[3]: array([15829, 15830])
+
+    In [4]: a.node.shape
+    Out[4]: (15968, 4, 4)
+
+    In [5]: b.node.shape
+    Out[5]: (15968, 4, 4)
+
+    In [6]: a.find_primIdx_from_nodeIdx(w)
+    Out[6]: array([2956, 2956], dtype=int32)
+
+    In [7]: a.primname[a.find_primIdx_from_nodeIdx(w)]
+    Out[7]: array(['base_steel0x5aa4870', 'base_steel0x5aa4870'], dtype=object)
+
+    In [8]: b.primname[b.find_primIdx_from_nodeIdx(w)]
+    Out[8]: array(['base_steel', 'base_steel'], dtype=object)
+
+
+    In [11]: np.c_[a.node[w],b.node[w],a.node[w]-b.node[w]]
+    Out[11]:
+    array([[[   0. ,    0. ,    0. ,   55.5,    0. ,    0. ,    0. ,   55.5,    0. ,    0. ,    0. ,    0. ],
+            [-102. ,  -15. ,    0. ,    0. , -101. ,  -15. ,    0. ,    0. ,   -1. ,    0. ,   -0. ,   -0. ],
+            [ -55.5,  -55.5, -102. ,   55.5,  -55.5,  -55.5, -101. ,   55.5,    0. ,    0. ,   -1. ,    0. ],
+            [  55.5,  -15. ,    0. ,   -0. ,   55.5,  -15. ,    0. ,   -0. ,    0. ,    0. ,    0. ,    0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ,    0. ,    0. ,    0. ,   43. ,    0. ,    0. ,    0. ,    0. ],
+            [ -16. ,    1. ,    0. ,    0. ,  -15. ,    0. ,    0. ,    0. ,   -1. ,    1. ,   -0. ,   -0. ],
+            [ -43. ,  -43. ,  -16. ,   43. ,  -43. ,  -43. ,  -15. ,   43. ,    0. ,    0. ,   -1. ,    0. ],
+            [  43. ,    1. ,    0. ,   -0. ,   43. ,    0. ,    0. ,   -0. ,    0. ,    1. ,    0. ,    0. ]]], dtype=float32)
+
+    In [12]:
+
+    In [12]: a.node[w]
+    Out[12]:
+    array([[[   0. ,    0. ,    0. ,   55.5],       ## cx,cy,cz,radius 
+            [-102. ,  -15. ,    0. ,    0. ],       ## z1,z2,i:bd,i:idx
+            [ -55.5,  -55.5, -102. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -16. ,    1. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -16. ,   43. ],
+            [  43. ,    1. ,    0. ,   -0. ]]], dtype=float32)
+
+    ## HMM -102 : grown lower edge ? 
+
+    In [13]: b.node[w]
+    Out[13]:
+    array([[[   0. ,    0. ,    0. ,   55.5],
+            [-101. ,  -15. ,    0. ,    0. ],
+            [ -55.5,  -55.5, -101. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -15. ,    0. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -15. ,   43. ],
+            [  43. ,    0. ,    0. ,   -0. ]]], dtype=float32)
+
+    In [14]: a.node[w] - b.node[w]
+    Out[14]:
+    array([[[ 0.,  0.,  0.,  0.],
+            [-1.,  0., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0.,  0.],
+            [-1.,  1., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  1.,  0.,  0.]]], dtype=float32)
+
+    In [15]:
+
+    In [15]: a.node.view(np.int32)[w,3,2]
+    Out[15]: array([105, 105], dtype=int32)
+
+    In [16]: b.node.view(np.int32)[w,3,2]
+    Out[16]: array([105, 105], dtype=int32)
+
+::
+
+     38     CSG_LEAF=101,
+     39         CSG_SPHERE=101,
+     40         CSG_BOX=102,
+     41         CSG_ZSPHERE=103,
+     42         CSG_TUBS=104,
+     43         CSG_CYLINDER=105,
+     44         CSG_SLAB=106,
+     45         CSG_PLANE=107,
+     46         CSG_CONE=108,
+     47         CSG_EXBB=109,
+     48         CSG_BOX3=110,
+
+
+
+::
+
+    In [18]: b.prim[b.find_primIdx_from_nodeIdx(w)].view(np.int32)
+    Out[18]:
+    array([[[    7, 15824,  7254,     0],   ##  numNode, nodeOffset, tranOffset, planOffset
+            [    0,    95,     6,     0],   ##  sbt    , lvIdx,    , repeatIdx , primIdx 
+            [    0,     0,     0,     0],
+            [    0,     0,     0,     0]],
+
+           [[    7, 15824,  7254,     0],
+            [    0,    95,     6,     0],
+            [    0,     0,     0,     0],
+            [    0,     0,     0,     0]]], dtype=int32)
+
+
+    In [20]: b.meshname[95]
+    Out[20]: 'base_steel'
+
+    In [21]: a.meshname[95]
+    Out[21]: 'base_steel0x5aa4870'
+
+
+
+::
+
+    2023-08-20 13:35:31.605 INFO  [33305488] [*NCSG::Adopt@186]  ]  soIdx 93 lvIdx 93
+    2023-08-20 13:35:31.606 INFO  [33305488] [*NCSG::Adopt@169]  [  soIdx 94 lvIdx 94 treeidx 94
+    2023-08-20 13:35:31.606 INFO  [33305488] [*NCSG::Adopt@186]  ]  soIdx 94 lvIdx 94
+    2023-08-20 13:35:31.607 ERROR [33305488] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing base_steel0x5aa4870
+    2023-08-20 13:35:31.607 FATAL [33305488] [*X4Solid::Polycone_MakeInner@1843]  EXPERIMENTAL num_R_inner > 1 handling :  name base_steel0x5aa4870 num_R_inner 2 lvIdx 95
+    2023-08-20 13:35:31.607 ERROR [33305488] [*X4Solid::Polycone_MakeInner@1854]  inner_prims.size 2 lvIdx 95
+    2023-08-20 13:35:31.607 ERROR [33305488] [*X4Solid::Polycone_MakeInner@1869]  lower.is_znudge_capable lvIdx 95
+    2023-08-20 13:35:31.607 INFO  [33305488] [ncylinder::decrease_z1@139]  treeidx -1 _z1 -101 dz 1 new_z1 -102
+    2023-08-20 13:35:31.607 ERROR [33305488] [*X4Solid::Polycone_MakeInner@1872]  upper.is_znudge_capable lvIdx 95
+    2023-08-20 13:35:31.607 INFO  [33305488] [ncylinder::increase_z2@122]  treeidx -1 _z2 0 dz 1 new_z2 1
+    2023-08-20 13:35:31.607 INFO  [33305488] [ncylinder::decrease_z1@139]  treeidx -1 _z1 -15 dz 1 new_z1 -16
+    2023-08-20 13:35:31.607 ERROR [33305488] [*X4Solid::Polycone_MakeInner@1925]  after znudges lvIdx 95
+    2023-08-20 13:35:31.608 INFO  [33305488] [*NCSG::Adopt@169]  [  soIdx 95 lvIdx 95 treeidx 95
+    2023-08-20 13:35:31.608 INFO  [33305488] [*NCSG::Adopt@186]  ]  soIdx 95 lvIdx 95
+    2023-08-20 13:35:31.609 ERROR [33305488] [X4Solid::convertPolycone@1725] all_z_descending detected, reversing solidAddition_down0x5ba5d90
+    2023-08-20 13:35:31.609 INFO  [33305488] [*NCSG::Adopt@169]  [  soIdx 96 lvIdx 96 treeidx 96
+    2023-08-20 13:35:31.611 INFO  [33305488] [*NCSG::Adopt@186]  ]  soIdx 96 lvIdx 96
+    2023-08-20 13:35:31.613 INFO  [33305488] [*NCSG::Adopt@169]  [  soIdx 97 lvIdx 97 treeidx 97
+
+
+
+
+
+DONE : Get CSGNode A/B match with NNodeNudger__DISABLE=1 X4Solid__convertPolycone_nudge_mode=0
+-------------------------------------------------------------------------------------------------
+
+
+::
+
+     66 export NNodeNudger__DISABLE=1
+     67 export X4Solid__convertPolycone_nudge_mode=0 # DISABLE 
+
+Hence those two nudge locations explain all the A/B CSGNode deviation.::
+
+    In [4]: np.where(ab.node > 1e-2)                                                                                                
+    Out[4]: (array([], dtype=int64),)
+
+
+WIP : review A:nudging and decide how to implement in B 
+----------------------------------------------------------
+
+* A:X4Solid.cc/NNodeNudger.cpp --> B:U4Solid.h/sn.h
+* A:X4Solid::Polycone_Nudge --> B:U4Polycone.h/sn.h 
+
+Started with filling out sn nudge methods. 
+
+::
+
+     336     static void ZNudgeEnds(  std::vector<sn*>& prims);
+     337     static void ZNudgeJoints(std::vector<sn*>& prims);
+     338     static std::string ZDesc(const std::vector<sn*>& prims);
 
 

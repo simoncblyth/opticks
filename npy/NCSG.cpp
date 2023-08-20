@@ -166,7 +166,7 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     int treeidx = root->get_treeidx() ; 
 
-    LOG(info) << " [ " << " soIdx " << soIdx  << " lvIdx " << lvIdx << " treeidx " << treeidx ; 
+    LOG(LEVEL) << " [ " << " soIdx " << soIdx  << " lvIdx " << lvIdx << " treeidx " << treeidx ; 
 
 
     if( treeidx > -1 ) assert( unsigned(treeidx) == lvIdx ); 
@@ -183,7 +183,7 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     tree->postchange();  // collect global transforms and exports
 
-    LOG(info) << " ] " << " soIdx " << soIdx  << " lvIdx " << lvIdx ; 
+    LOG(LEVEL) << " ] " << " soIdx " << soIdx  << " lvIdx " << lvIdx ; 
 
     return tree ; 
 }

@@ -8,44 +8,34 @@ Motivation
 
 In order to duplicate at CSG/CSGNode level the old workflow geometry 
 (that goes thru GGeo/NNode) it is necessary to perform binary tree 
-manipulations equivalent to those done by npy/NTreeBuilder::UnionTree in order 
-to handle shapes such as G4Polycone. 
+manipulations equivalent to those done by npy/NTreeBuilder::UnionTree 
+in order to handle shapes such as G4Polycone. 
 
-However the array based *snd/scsg* node approach with integer index addressing 
-lacks the capability to easily delete nodes making it unsuitable
+However the old array based *snd/scsg* node approach with integer index 
+addressing lacks the capability to easily delete nodes making it unsuitable
 for tree manipulations such as pruning and rearrangement that are needed 
 in order to flexibly create complete binary trees with any number of leaf nodes.
 
-Hence the *sn* nodes are developed to transiently act as a template 
-for binary trees that are subsequently solidified into *snd* trees. 
-In this way the initial tree setup is done using the very flexible 
-pointer based *sn*. The *sn* tree is then used as a guide for the creation 
-of the less flexible (from creation/deletion point of view) *snd* 
-tree that gets persisted.  
+Hence the *sn* nodes are developed. Initially sn.h was used as transient 
+template for binary trees that are subsequently solidified into *snd* trees. 
+But have now moved most snd functionality over to sn. So can directly use 
+only sn and eliminate the old WITH_SND. 
 
-
-Could snd/sn be consolidated ?
---------------------------------
-
-There is pressure to add things from snd to sn 
-(eg param, bbox, transforms, n-ary "std::vector<sn*> child")
-such that *sn* can be a complete representation of the CSG. 
-But dont want to duplicate things.
+sn ctor/dtor register/de-register from s_pool<sn,_sn> 
+-------------------------------------------------------
 
 In order to convert active *sn* pointers into indices 
-have explictly avoided leaking any *sn* by taking care to delete
-appropriately. This means that can use the *sn* ctor/dtor
-to add/erase update an std::map of active *sn* pointers
-keyed on a creation index.  This map allows the active 
-pointers to be converted into a contiguous set of indices 
-to facilitate serialization. 
+on persisting have explictly avoided leaking any *sn* by 
+taking care to always delete appropriately. 
+This means that can use the *sn* ctor/dtor to add/erase update 
+an std::map of active *sn* pointers keyed on a creation index.  
+This map allows the active *sn* pointers to be converted into 
+a contiguous set of indices to facilitate serialization. 
 
-Future
---------
+Possible Future
+-----------------
 
-Hopefully this functionality can be removed once have leaped
-to CSG_CONTIGUOUS use as standard, which retains n-ary tree 
-all the way to the GPU. 
+CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 
 **/
 
@@ -343,12 +333,20 @@ struct SYSRAP_API sn
     static sn* Create(int typecode, sn* left=nullptr, sn* right=nullptr ); 
     static sn* Boolean( int op, sn* l, sn* r );
 
-    static void ZNudgeEnds(  std::vector<sn*>& prims); 
-    static void ZNudgeJoints(std::vector<sn*>& prims); 
-    static std::string ZDesc(const std::vector<sn*>& prims); 
+    static void ZNudgeEnds(  std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeJoints(std::vector<sn*>& prims, bool enable); 
 
+    bool can_znudge() const ; 
+    static bool CanZNudgeAll(std::vector<sn*>& prims); 
+
+    void increase_zmax( double dz ); // expand upwards in +Z direction 
+    void decrease_zmin( double dz ); // expand downwards in -Z direction
     double zmin() const ; 
     double zmax() const ; 
+    void set_zmin(double zmin_) ; 
+    void set_zmax(double zmax_) ; 
+
+    static std::string ZDesc(const std::vector<sn*>& prims); 
 
     const double* getParam() const ; 
     const double* getAABB() const ; 
@@ -2112,36 +2110,53 @@ sn::ZNudgeEnds
 -----------------
 
 CAUTION: changes geometry, only appropriate 
-for subtracted consituents eg inners 
+for subtracted constituents eg inners 
+
+HMM: need to check z-ordering of prims 
 
 **/
 
-inline void sn::ZNudgeEnds(std::vector<sn*>& prims) // static
+inline void sn::ZNudgeEnds(std::vector<sn*>& prims, bool enable) // static
 {
-    if(level() > 0) std::cout 
+    int num_prim = prims.size() ; 
+
+    if(true || level() > 0) std::cout 
        << std::endl
        << "sn::ZNudgeEnds PLACEHOLDER "
+       << " num_prim " << num_prim 
+       << " enable " << ( enable ? "YES" : "NO " )
        << std::endl
        << ZDesc(prims)
        << std::endl
        ;
 
     /*
-    for(unsigned i=1 ; i < prims.size() ; i++)
+    for(int i=1 ; i < num_prim ; i++)
     {
         sn* a = prims[i-1]; 
         sn* b = prims[i]; 
-        a->check_z(); 
-        b->check_z();
+        //a->check_z(); 
+        //b->check_z();
     }
     */
 }
 
-inline void sn::ZNudgeJoints(std::vector<sn*>& prims) // static
+/**
+sn::ZNudgeJoints
+-----------------
+
+
+
+**/
+
+inline void sn::ZNudgeJoints(std::vector<sn*>& prims, bool enable ) // static
 {
-    if(level() > 0) std::cout
+    int num_prim = prims.size() ; 
+    if(true || level() > 0) std::cout
        << std::endl
        << "sn::ZNudgeJoints PLACEHOLDER "
+       << " num_prim " << num_prim 
+       << " enable " << ( enable ? "YES" : "NO " )
        << std::endl
        << ZDesc(prims)
        << std::endl
@@ -2149,8 +2164,120 @@ inline void sn::ZNudgeJoints(std::vector<sn*>& prims) // static
 }
 
 
+/**
+sn::can_znudge
+----------------
+
+Typecode currently must be one of::
+
+   CSG_CYLINDER 
+   CSG_CONE 
+   CSG_DISC
+   CSG_ZSPHERE
+
+**/
+
+inline bool sn::can_znudge() const 
+{
+    return param && CSG::CanZNudge(typecode) ; 
+}
+
+/**
+sn::CanZNudgeAll
+-----------------
+
+Returns true when all prim are ZNudge capable 
+
+**/
+
+inline bool sn::CanZNudgeAll(std::vector<sn*>& prims)  // static
+{
+    int num_prim = prims.size() ; 
+    int count = 0 ; 
+    for(int i=0 ; i < num_prim ; i++) if(prims[i]->can_znudge()) count += 1 ; 
+    return count == num_prim ; 
+}
 
 
+
+/**
+sn::increase_zmax
+------------------
+
+Expand upwards in +Z direction::
+
+    +~~~~~~~~+  zmax + dz  (dz > 0.)
+    +--------+  zmax
+    |        |
+    |        |
+    +--------+  zmin
+
+**/
+inline void sn::increase_zmax( double dz )
+{
+    assert( dz > 0. ); 
+    double _zmax = zmax(); 
+    double new_zmax = _zmax + dz ; 
+
+    std::cerr
+        << "sn::increase_zmax"
+        << " lvid " << lvid 
+        << " _zmax " << _zmax 
+        << " dz " << dz
+        << " new_zmax " << new_zmax 
+        ;   
+
+    set_zmax(new_zmax); 
+}
+/**
+sn::decrease_zmin
+------------------
+
+Expand downwards in -Z direction::
+
+    +--------+  zmax
+    |        |
+    |        |
+    +--------+  zmin
+    +~~~~~~~~+  zmin - dz    (dz > 0.)
+
+**/
+inline void sn::decrease_zmin( double dz )
+{
+    assert( dz > 0. ); 
+    double _zmin = zmin(); 
+    double new_zmin = _zmin - dz ; 
+
+    std::cerr
+        << "sn::decrease_zmin"
+        << " lvid " << lvid 
+        << " _zmin " << _zmin 
+        << " dz " << dz
+        << " new_zmin " << new_zmin 
+        ;   
+
+    set_zmin(new_zmin); 
+}
+inline double sn::zmin() const
+{
+    assert( can_znudge() );
+    return param->zmin() ;
+}
+inline double sn::zmax() const
+{
+    assert( can_znudge() );
+    return param->zmax() ;
+}
+inline void sn::set_zmin(double zmin_)
+{
+    assert( can_znudge() );
+    param->set_zmin(zmin_) ; 
+}
+inline void sn::set_zmax(double zmax_) 
+{
+    assert( can_znudge() );
+    param->set_zmax(zmax_) ; 
+}
 
 /**
 sn::ZDesc
@@ -2168,40 +2295,27 @@ sn::ZDesc
 
 inline std::string sn::ZDesc(const std::vector<sn*>& prims) // static
 {
+    int num_prim = prims.size() ; 
     std::stringstream ss ;
     ss << "sn::ZDesc" ;
     ss << " prims(" ;
-    for(unsigned i=0 ; i < prims.size() ; i++) ss << prims[i]->index() << " " ;
+    for(int i=0 ; i < num_prim ; i++) ss << prims[i]->index() << " " ;
     ss << ") " ;
     ss << std::endl ;
 
-    for(unsigned i=0 ; i < prims.size() ; i++)
+    for(int i=0 ; i < num_prim ; i++)
     {
         sn* a = prims[i];
-        ss << std::setw(3) << a->index()
-           << ":"
-           << " " << std::setw(10) << a->zmin()
-           << " " << std::setw(10) << a->zmax()
+        ss << " idx "  << std::setw(3) << a->index()
+           << " lv "   << std::setw(3) << a->lvid
+           << " tag "   << std::setw(3) << a->tag()
+           << " zmin " << std::setw(10) << a->zmin()
+           << " zmax " << std::setw(10) << a->zmax()
            << std::endl
            ;
     }
     std::string str = ss.str();
     return str ;
-}
-
-
-inline double sn::zmin() const
-{
-    assert( CSG::CanZNudge(typecode) );
-    assert( param );
-    return param ? param->zmin() : 0. ;
-}
-
-inline double sn::zmax() const
-{
-    assert( CSG::CanZNudge(typecode) );
-    assert( param );
-    return param ? param->zmax() : 0. ;
 }
 
 inline const double* sn::getParam() const { return param ? param->data() : nullptr ; }

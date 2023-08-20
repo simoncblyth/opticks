@@ -1701,11 +1701,13 @@ void X4Solid::Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nn
 }
 
 
-const int X4Solid::convertPolycone_debug_mode = SSys::getenvint("X4Solid_convertPolycone_debug_mode", 0); 
+const int X4Solid::convertPolycone_debug_mode = SSys::getenvint("X4Solid__convertPolycone_debug_mode", 0); 
+const int X4Solid::convertPolycone_nudge_mode = SSys::getenvint("X4Solid__convertPolycone_nudge_mode", 1); 
 
 void X4Solid::convertPolycone()
 {  
     const int debug_mode = convertPolycone_debug_mode ; 
+    const bool nudge = convertPolycone_nudge_mode > 0 ; 
 
     const G4Polycone* const polycone = static_cast<const G4Polycone*>(m_solid);
     assert(polycone); 
@@ -1722,7 +1724,7 @@ void X4Solid::convertPolycone()
     bool all_z_descending = Polycone_CheckZOrder(zp, false ); 
     if(all_z_descending)
     {
-        LOG(error) << "all_z_descending detected, reversing " << m_name ; 
+        LOG(error) << "all_z_descending detected, reversing " << m_name << " lvIdx " << lvIdx  ; 
         std::reverse( std::begin(zp), std::end(zp) ) ; 
     } 
     bool all_z_ascending  = Polycone_CheckZOrder(zp, true  ); 
@@ -1803,7 +1805,7 @@ void X4Solid::convertPolycone()
     }
     else if( has_inner && num_R_inner > 1 )
     {
-        inner = Polycone_MakeInner( zp, m_name, num_R_inner, lvIdx ); 
+        inner = Polycone_MakeInner( zp, m_name, num_R_inner, lvIdx, nudge ); 
         inner->label = BStr::concat( m_name, "_inner_polycone", NULL  ); 
     }
 
@@ -1826,6 +1828,8 @@ void X4Solid::convertPolycone()
         }
     }
 
+    end_result->set_treeidx(lvIdx) ; 
+
     setRoot(end_result); 
     convertPolycone_g4code();
 }
@@ -1838,95 +1842,136 @@ X4Solid::Polycone_MakeInner
 
 **/
 
-nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner, int lvIdx ) // static 
+nnode* X4Solid::Polycone_MakeInner(
+    const std::vector<zplane>& zp, 
+    const char* name, 
+    unsigned num_R_inner, 
+    int lvIdx,
+    bool nudge
+    ) // static 
 {
     LOG(fatal) 
-       << " EXPERIMENTAL num_R_inner > 1 handling : "  
-       << " name " << name 
-       << " num_R_inner " << num_R_inner  
-       << " lvIdx " << lvIdx
-       ;   
+        << " EXPERIMENTAL num_R_inner > 1 handling : "  
+        << " name " << name 
+        << " num_R_inner " << num_R_inner  
+        << " lvIdx " << lvIdx
+        << " nudge " << nudge
+        ;   
 
     std::vector<nnode*> inner_prims ; 
     Polycone_MakePrims( zp, inner_prims, name, false  ); 
+    Polycone_Inner_Nudge( inner_prims, lvIdx, nudge ); 
 
-    unsigned num_prims = inner_prims.size() ; 
-    LOG(error) 
-        << " inner_prims.size " << num_prims 
-        << " lvIdx " << lvIdx
-        ; 
-
-    nnode* lower = inner_prims[0] ; 
-    nnode* upper = inner_prims[inner_prims.size()-1] ; 
-
-    // polycone made up of cone and cylinder so should all be znudge capable
-    // HUH: should be looping over pairs when num_prims > 2 
-
-    if( lower->is_znudge_capable() &&  upper->is_znudge_capable()  )
-    {
-        float dz = 1.0 ; 
-
-        LOG(error) << " lower.is_znudge_capable lvIdx " << lvIdx ; 
-        lower->decrease_z1(dz); 
-
-        LOG(error) << " upper.is_znudge_capable lvIdx " << lvIdx ;  
-        upper->increase_z2(dz); 
-
-        if( num_prims == 2 )
-        {
-            // see NNodeNudger::znudge_union_maxmin  expand the z on the smaller r side
-
-            nnode* j = upper ; 
-            nnode* i = lower ; 
-
-            float rj = j->r1() ; 
-            float ri = i->r2() ;  
-
-            if( ri > rj )    
-            {   
-               /** 
-                          rj
-                    +-----+
-                    |     |   
-                +---+-----+---+
-                |   +~~~~~+   |    j->decrease_z1
-                |             | 
-                +-------------+
-                              ri 
-                **/ 
-
-                j->decrease_z1( dz );   
-            }   
-            else
-            {   
-
-
-               /** 
-                              rj                 
-                +-------------+
-                |             |
-                |   +~~~~~+   |    i->increase_z2
-                +---+-----+---+
-                    |     |   
-                    +-----+             
-                          ri         
-
-                **/ 
-
-                i->increase_z2( dz );  
-            }   
-        }
-        else
-        {
-            LOG(fatal) << " polycone inner coincidence avoidance has not yet been generalized, name " << name  ;  
-        }
-    }
-
-    LOG(error) << " after znudges lvIdx " << lvIdx ; 
     bool inner_dump = true ; 
     nnode* inner = NTreeBuilder<nnode>::UnionTree(inner_prims, inner_dump) ;
     return inner ; 
 }
+
+/**
+X4Solid::Polycone_Inner_Nudge
+-------------------------------
+
+polycone made up of cone and cylinder so should all be znudge capable
+HUH: should be looping over pairs when num_prims > 2 
+
+WHAT GIVES ? THIS FIRST EXPANDS SOLID Z-EDGES UP AND DOWN 
+WITH lower->decrease_z1/upper->increase_z2 
+THAT LOOKS LIKE IT WILL INCORRECTLY CHANGES GEOMETRY 
+
+* BUT THATS OK FOR SUBTRACTED SHAPES LIKE POLYCONE INNERS 
+
+* BELOW FOR 2 PRIMS ONLY : DOES UNCOINCIDENCE ON THE JOINTS 
+  CHOOSING WHICH SIDE OF JOINT TO CHANGE BASED ON THE RADII ? 
+
+* NOTE SIMILARITY TO CARPENTRY/WOODWORK JOINTS
+
+**/
+
+void X4Solid::Polycone_Inner_Nudge( std::vector<nnode*>& inner_prims, int lvIdx, bool nudge ) // static
+{
+    unsigned num_prims = inner_prims.size() ; 
+    nnode* lower = inner_prims[0] ; 
+    nnode* upper = inner_prims[inner_prims.size()-1] ; 
+    bool can_nudge = lower->is_znudge_capable() &&  upper->is_znudge_capable() ; 
+
+    LOG(error) 
+        << " inner_prims.size (num_prims) " << num_prims 
+        << " lvIdx " << lvIdx
+        << " can_nudge " << can_nudge
+        << " nudge " << nudge
+        ; 
+
+    if(!can_nudge) return ; 
+    if(!nudge) return ; 
+
+    float dz = 1.0 ; 
+
+    LOG(error) << " lower->decrease_z1(dz) : EXPAND SOLID DOWN (SUBTRACTED INNER ?) : lvIdx " << lvIdx ; 
+    lower->decrease_z1(dz); 
+
+    LOG(error) << " upper->increase_z2(dz) : EXPAND SOLID UP (SUBTRACTED INNER ?) : lvIdx " << lvIdx ;  
+    upper->increase_z2(dz); 
+
+
+
+    if( num_prims == 2 )
+    {
+        // see NNodeNudger::znudge_union_maxmin  expand the z on the smaller r side
+
+        nnode* j = upper ; 
+        nnode* i = lower ; 
+
+        float rj = j->r1() ; 
+        float ri = i->r2() ;  
+
+        if( ri > rj )    
+        {   
+           /** 
+                      rj
+                +-----+
+                |     |   
+            +---+-----+---+
+            |   +~~~~~+   |    j->decrease_z1
+            |             | 
+            +-------------+
+                          ri 
+            **/ 
+
+            j->decrease_z1( dz ); // upper  
+            LOG(error) << " r_lower > r_upper : upper->decrease_z1(dz) : expand upper down into bigger lower : lvIdx " << lvIdx ;  
+        }   
+        else
+        {   
+
+
+           /** 
+                          rj                 
+            +-------------+
+            |             |
+            |   +~~~~~+   |    i->increase_z2
+            +---+-----+---+
+                |     |   
+                +-----+             
+                      ri         
+
+            **/ 
+
+            i->increase_z2( dz );  // lower
+            LOG(error) << " r_upper > r_lower : lower->increase_z2(dz) : expand lower up into bigger upper : lvIdx " << lvIdx ;  
+        }   
+    }
+    else
+    {
+        LOG(fatal) 
+            << " polycone inner coincidence avoidance only implemented for 2 prim combinations  " 
+            << " num_prims " << num_prims  
+            << " lvIdx " << lvIdx 
+            ;  
+    }
+}
+
+
+
 
 
 

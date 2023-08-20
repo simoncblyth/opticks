@@ -43,9 +43,8 @@ struct SYSRAP_API s_pa
     bool is_root() const { return true ; } 
     double zmin() const { return x1 ; }
     double zmax() const { return y1 ; }
-    void decrease_zmin(double dz){ assert( dz >= 0.) ; x1 -= dz ; }
-    void increase_zmax(double dz){ assert( dz >= 0.) ; y1 += dz ; }
-
+    void set_zmin(double zmin_){ x1 = zmin_ ; }
+    void set_zmax(double zmax_){ y1 = zmax_ ; }
  
     std::string desc() const ;  
 }; 

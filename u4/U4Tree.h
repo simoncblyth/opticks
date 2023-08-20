@@ -146,8 +146,6 @@ private:
     void initSolid(const G4LogicalVolume* const lv); 
 
 
-    static const char* IsFlaggedSolid_NAME ; 
-    static bool IsFlaggedSolid(const char* name); 
     void initSolid(const G4VSolid* const so, int lvid ); 
 
     void initNodes(); 
@@ -517,12 +515,8 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
 }
 
 
-inline const char* U4Tree::IsFlaggedSolid_NAME = ssys::getenvvar("U4Tree__IsFlaggedSolid_NAME", "PLACEHOLDER") ; 
 
-inline bool U4Tree::IsFlaggedSolid(const char* name)
-{
-    return name && IsFlaggedSolid_NAME && strstr(name, IsFlaggedSolid_NAME ) ;  
-}
+
 
 
 /**
@@ -539,32 +533,16 @@ cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 
 inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 {
-    G4String _name = so->GetName() ; 
-    // bizarre: G4VSolid::GetName returns by value, not reference
+    G4String _name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
     const char* name = _name.c_str();    
-    bool flagged = IsFlaggedSolid(name) ; 
-    int solid_level = flagged ? 1 : 0 ; 
-    if(flagged)
-    {
-        std::cerr 
-            << "U4Tree::initSolid"
-            << " U4Tree__IsFlaggedSolid_NAME [" << ( IsFlaggedSolid_NAME ? IsFlaggedSolid_NAME : "-" ) << "]" 
-            << " flagged " << ( flagged ? "YES" : "NO " )
-            << " solid_level " << solid_level 
-            << " name " << name 
-            << " lvid " << lvid 
-            << std::endl 
-            ;
-    }
-
 
     assert( int(solids.size()) == lvid ); 
     int d = 0 ; 
 #ifdef WITH_SND
-    int root = U4Solid::Convert(so, lvid, d, solid_level );  
+    int root = U4Solid::Convert(so, lvid, d );  
     assert( root > -1 ); 
 #else
-    sn* root = U4Solid::Convert(so, lvid, d, solid_level );  
+    sn* root = U4Solid::Convert(so, lvid, d );  
     assert( root ); 
 #endif
 
