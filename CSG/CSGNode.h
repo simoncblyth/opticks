@@ -120,6 +120,38 @@ gtransformIdx
 **Operator nodes pick between intersect distances from their leaf nodes, they never use their own gtransforms.**
 
 
+
+Interpret (3,3) zero to mean no transform, so much subtract 1 prior to tran lookup
+-----------------------------------------------------------------------------------
+
+::
+
+    In [23]: trIdx = a.node.view(np.int32)[:,3,3] & 0x7fffffff
+
+    In [28]: np.c_[np.unique(trIdx, return_counts=True)]
+    Out[28]:
+    array([[   0, 8577],
+           [   1,    1],
+           [   2,    1],
+           [   3,    1],
+           ...,
+           [7389,    1],
+           [7390,    1],
+           [7391,    1]])
+
+    In [29]: a.tran.shape
+    Out[29]: (7391, 4, 4)
+
+    In [31]: a.tran[7391-1]                                                                                                         
+    Out[31]: 
+    array([[  1. ,   0. ,   0. ,   0. ],
+           [  0. ,   1. ,   0. ,   0. ],
+           [  0. ,   0. ,   1. ,   0. ],
+           [  0. , 831.6,   0. ,   1. ]], dtype=float32)
+
+
+
+
 tree transforms vs final "flat" transforms
 --------------------------------------------
 

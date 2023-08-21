@@ -1139,24 +1139,27 @@ void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progen
     }   
 }
 
+/**
+nnode::collect_monogroup
+-------------------------
 
 
+1. follow parent links collecting ancestors until reach ancestor of another CSG type
+   eg on starting with a primitive of CSG_UNION parent finds 
+   direct lineage ancestors that are also CSG_UNION
 
+2. for each of those same type ancestors collect
+   all progeny but exclude the operator nodes to 
+   give just the prims within the same type monogroup 
+
+**/
 
 void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const 
 {
    if(!parent) return ;    
 
-   // follow parent links collecting ancestors until reach ancestor of another CSG type
-   // eg on starting with a primitive of CSG_UNION parent finds 
-   // direct lineage ancestors that are also CSG_UNION
-
    std::vector<const nnode*> connectedtype ; 
    collect_connectedtype_ancestors(connectedtype);  
-
-   // then for each of those same type ancestors collect
-   // all progeny... eg for CSG_UNION parent this
-   // will collect all operators and primitives in the union
 
    int xtyp = parent->type ;  // exclude the operators from the monogroup
 
@@ -1166,6 +1169,19 @@ void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const
        cu->collect_progeny( monogroup, xtyp ); 
    }  
 }
+
+/**
+nnode::is_same_monogroup
+-------------------------
+
+1. if a or b have no parent or either of their parent type is not *op* returns false
+
+2. collect monogroup of a 
+
+3. return true if b is found within the monogroup of a 
+
+**/
+
 bool nnode::is_same_monogroup(const nnode* a, const nnode* b, int op)  // static
 {
    if(!a->parent || !b->parent || a->parent->type != op || b->parent->type != op) return false ;  

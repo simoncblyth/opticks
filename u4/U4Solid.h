@@ -689,7 +689,7 @@ inline void U4Solid::init_Polycone()
 {
     const G4Polycone* polycone = dynamic_cast<const G4Polycone*>(solid);
     assert(polycone);
-    root = U4Polycone::Convert(polycone, level); 
+    root = U4Polycone::Convert(polycone, lvid, depth, level ); 
 
     if(level > 0 ) std::cerr 
         << "U4Solid::init_Polycone"

@@ -1887,7 +1887,7 @@ THAT LOOKS LIKE IT WILL INCORRECTLY CHANGES GEOMETRY
 
 **/
 
-void X4Solid::Polycone_Inner_Nudge( std::vector<nnode*>& inner_prims, int lvIdx, bool nudge ) // static
+void X4Slid::Polycone_Inner_Nudge( std::vector<nnode*>& inner_prims, int lvIdx, bool nudge ) // static
 {
     unsigned num_prims = inner_prims.size() ; 
     nnode* lower = inner_prims[0] ; 

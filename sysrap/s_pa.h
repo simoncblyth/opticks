@@ -3,8 +3,14 @@
 s_pa.h
 ========
 
+Note that the meaning of the six param 
+depends on typecode, so must do anything 
+typecode specific (such as zmin() set_zmin ... )
+within sn.h 
+
 */
 
+#include <cassert>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -40,11 +46,12 @@ struct SYSRAP_API s_pa
     double x0, y0, z0, w0, x1, y1 ;
 
     const double* data() const { return &x0 ; }
+    double* data_() {            return &x0 ; }
     bool is_root() const { return true ; } 
-    double zmin() const { return x1 ; }
-    double zmax() const { return y1 ; }
-    void set_zmin(double zmin_){ x1 = zmin_ ; }
-    void set_zmax(double zmax_){ y1 = zmax_ ; }
+
+    double value(int i) const {       assert( i >=0 && i < 6 ) ; return  *(data() + i) ; } 
+    void set_value(int i, double v ) { assert( i >=0 && i < 6 ) ; *(data_()+i) = v ; }
+
  
     std::string desc() const ;  
 }; 

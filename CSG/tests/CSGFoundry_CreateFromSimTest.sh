@@ -47,6 +47,12 @@ export LVID=${LVID:-$lvid}
 export NDID=${NDID:-$ndid}
 #export scsg_level=1
 
+# this does nothing here as no U4 involved 
+#export U4Polycone__DISABLE_NUDGE=1 
+
+
+
+
 vars="BASH_SOURCE bin GEOM BASE FOLD check A_CFBASE B_CFBASE script LVID NDID scsg_level"
 
 loglevel(){

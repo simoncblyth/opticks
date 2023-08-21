@@ -63,8 +63,10 @@ export GProperty_SIGINT=1
 export G4CXOpticks__setGeometry_saveGeometry=$FOLD
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
-export NNodeNudger__DISABLE=1
+#export NNodeNudger__DISABLE=1
 #export X4Solid__convertPolycone_nudge_mode=0 # 0:DISABLE 
+
+#export U4Polycone__DISABLE_NUDGE=1 
 
 
 #export s_csg_level=2 

@@ -1329,6 +1329,10 @@ With "export NNodeNudger__DISABLE=1" : get 2 base_steel CSGNode discrepant LV:95
 
 
 
+
+
+
+
 ::
 
     2023-08-20 13:35:31.605 INFO  [33305488] [*NCSG::Adopt@186]  ]  soIdx 93 lvIdx 93
@@ -1369,18 +1373,237 @@ Hence those two nudge locations explain all the A/B CSGNode deviation.::
     Out[4]: (array([], dtype=int64),)
 
 
-WIP : review A:nudging and decide how to implement in B 
-----------------------------------------------------------
+
+WIP : review more general nudging in A and decide how to implement in B
+--------------------------------------------------------------------------
 
 * A:X4Solid.cc/NNodeNudger.cpp --> B:U4Solid.h/sn.h
+
+WIP : review Polycone nudging in A and decide how to implement in B 
+---------------------------------------------------------------------
+
+Started with the simpler Polycone nudging as unlike the general case 
+that has no transforms and no need to be concerned with finding coincidences 
+as every joint is coincident and every inner end is also coincident
+in the subtraction. 
+
+
 * A:X4Solid::Polycone_Nudge --> B:U4Polycone.h/sn.h 
 
-Started with filling out sn nudge methods. 
-
-::
+Started with rationalizing U4Polycone.h and filling out sn nudge methods::
 
      336     static void ZNudgeEnds(  std::vector<sn*>& prims);
      337     static void ZNudgeJoints(std::vector<sn*>& prims);
      338     static std::string ZDesc(const std::vector<sn*>& prims);
+
+
+::
+
+    In [1]: w = np.where(ab.node > 1e-2)[0]
+
+    In [2]: w
+    Out[2]: array([15829, 15830])
+
+    In [4]: b.find_primIdx_from_nodeIdx(w)
+    Out[4]: array([2956, 2956], dtype=int32)
+
+    In [5]: b.primname[2956]
+    Out[5]: 'base_steel'
+
+
+::
+
+    In [13]: a.node[w]    ## two subtracted cylinders of different radii
+    Out[13]: 
+    array([[[   0. ,    0. ,    0. ,   55.5],
+            [-102. ,  -15. ,    0. ,    0. ],
+            [ -55.5,  -55.5, -102. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -16. ,    1. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -16. ,   43. ],
+            [  43. ,    1. ,    0. ,   -0. ]]], dtype=float32)
+
+
+    In [14]: b.node[w]
+    Out[14]: 
+    array([[[   0. ,    0. ,    0. ,   55.5],
+            [-101. ,  -15. ,    0. ,    0. ],
+            [ -55.5,  -55.5, -101. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -15. ,    0. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -15. ,   43. ],
+            [  43. ,    0. ,    0. ,   -0. ]]], dtype=float32)
+
+    In [15]: a.node[w] - b.node[w]                                                                                                  
+    Out[15]: 
+    array([[[ 0.,  0.,  0.,  0.],
+            [-1.,  0., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0.,  0.],
+            [-1.,  1., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  1.,  0.,  0.]]], dtype=float32)
+
+    In [16]: a.node[w].view(np.int32)
+    Out[16]: 
+    array([[[          0,           0,           0,  1113456640],
+            [-1026818048, -1049624576,          23,           5],
+            [-1034027008, -1034027008, -1026818048,  1113456640],
+            [ 1113456640, -1049624576,         105, -2147476391]],
+
+           [[          0,           0,           0,  1110179840],
+            [-1048576000,  1065353216,          23,           6],
+            [-1037303808, -1037303808, -1048576000,  1110179840],
+            [ 1110179840,  1065353216,         105, -2147476390]]], dtype=int32)
+
+
+
+
+
+WIP : After implementing U4Polycone use of sn::ZNudgeExpandEnds : establish baseline
+---------------------------------------------------------------------------------------
+
+1. disable nudging from both A and B:: 
+
+A ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh::
+
+    export NNodeNudger__DISABLE=1
+    export X4Solid__convertPolycone_nudge_mode=0 # 0:DISABLE 
+    export U4Polycone__DISABLE_NUDGE=1 
+
+B ~/opticks/u4/tests/U4TreeCreateSSimTest.sh::
+
+    export U4Polycone__DISABLE_NUDGE=1 
+
+
+As expected that gives no large CSGNode deviations (but it would have terrible coincidence issues)::
+
+    In [3]: w = np.where(ab.node > 1e-2)[0] ; w
+    Out[3]: array([], dtype=int64)
+
+
+2. Now enable X4Solid__convertPolycone_nudge_mode=1 (the default) by commenting the above A line.   
+
+As expected base_steel polycone becomes discrepant::
+
+    In [1]: w = np.where(ab.node > 1e-2)[0] ; w
+    Out[1]: array([15829, 15830])
+
+    In [2]: a.find_primIdx_from_nodeIdx(w)
+    Out[2]: array([2956, 2956], dtype=int32)
+
+    In [3]: a.primname[2956]
+    Out[3]: 'base_steel0x5aa4870'
+
+
+3. Then enable the new B side U4Polycone nudging  by commenting the above B line::
+
+    #export U4Polycone__DISABLE_NUDGE=1 
+   
+
+Not matching yet because : joints not done, bbox not updated::
+
+    In [4]: a.node[w]
+    Out[4]: 
+    array([[[   0. ,    0. ,    0. ,   55.5],
+            [-102. ,  -15. ,    0. ,    0. ],
+            [ -55.5,  -55.5, -102. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -16. ,    1. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -16. ,   43. ],
+            [  43. ,    1. ,    0. ,   -0. ]]], dtype=float32)
+
+    In [5]: b.node[w]
+    Out[5]: 
+    array([[[   0. ,    0. ,    0. ,   55.5],
+            [-102. ,  -15. ,    0. ,    0. ],
+            [ -55.5,  -55.5, -101. ,   55.5],
+            [  55.5,  -15. ,    0. ,   -0. ]],
+
+           [[   0. ,    0. ,    0. ,   43. ],
+            [ -15. ,    1. ,    0. ,    0. ],
+            [ -43. ,  -43. ,  -15. ,   43. ],
+            [  43. ,    0. ,    0. ,   -0. ]]], dtype=float32)
+
+    In [6]: a.node[w]-b.node[w]
+    Out[6]: 
+    array([[[ 0.,  0.,  0.,  0.],
+            [ 0.,  0., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0.,  0.],
+            [-1.,  0., -0., -0.],
+            [ 0.,  0., -1.,  0.],
+            [ 0.,  1.,  0.,  0.]]], dtype=float32)
+
+
+
+After enable joint nudging::
+
+    In [1]: w = np.where(ab.node > 1e-2)[0] ; w
+    Out[1]: array([15679, 15680, 15720, 15721, 15827, 15829, 15830, 15834])
+     
+
+    In [2]: a.find_primIdx_from_nodeIdx(w)
+    Out[2]: array([2928, 2928, 2937, 2937, 2956, 2956, 2956, 2957], dtype=int32)
+
+
+    In [4]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[4]:
+    array([['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+    In [5]:
+
+::
+
+    In [8]: a.node.view(np.int32)[w,3,2]
+    Out[8]: array([105, 105, 105, 105, 105, 105, 105, 108], dtype=int32)
+
+    In [9]: b.node.view(np.int32)[w,3,2]
+    Out[9]: array([105, 105, 105, 105, 105, 105, 105, 108], dtype=int32)  ## cylinders and one cone
+
+
+
+    In [6]: a.node[w].reshape(-1,16)[:,:6]
+    Out[6]: 
+    array([[   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,   97.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,  100.   ],
+           [   0.   ,    0.   ,    0.   ,   70.   , -101.   ,  -15.   ],
+           [   0.   ,    0.   ,    0.   ,   55.5  , -102.   ,  -15.   ],
+           [   0.   ,    0.   ,    0.   ,   43.   ,  -16.   ,    1.   ],
+           [ 200.   , -140.   ,  450.   ,    0.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [7]: b.node[w].reshape(-1,16)[:,:6]
+    Out[7]: 
+    array([[   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,   98.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,  101.   ],
+           [   0.   ,    0.   ,    0.   ,   70.   , -101.   ,  -14.   ],
+           [   0.   ,    0.   ,    0.   ,   55.5  , -102.   ,  -15.   ],
+           [   0.   ,    0.   ,    0.   ,   43.   ,  -16.   ,    1.   ],
+           [ 200.   , -140.   ,  450.   ,    1.   ,    0.   ,    0.   ]], dtype=float32)
+
+
+
+
 
 

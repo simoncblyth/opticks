@@ -250,8 +250,8 @@ struct SYSRAP_API snd
     void decrease_zmin( double dz ); 
     void increase_zmax( double dz ); 
     static std::string ZDesc(const std::vector<int>& prims);
-    static void ZNudgeEnds(    const std::vector<int>& prims); 
-    static void ZNudgeJoints(  const std::vector<int>& prims); 
+    static void ZNudgeExpandEnds(    const std::vector<int>& prims); 
+    static void ZNudgeOverlapJoints( const std::vector<int>& prims); 
 
 
     static snd Init(int tc); 

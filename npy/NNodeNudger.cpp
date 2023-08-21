@@ -108,6 +108,9 @@ The *bb* bounding boxes of all primitives are collected
 and the *zorder* of all the primitives is established 
 by sorting based on bb[i].min.z
 
+zorder vector of prim indices is sorted based on min z of bbox. 
+So any CSG tree transforms need to be reflected in the bbox. 
+
 **/
 
 void NNodeNudger::find_prim_z_order()
@@ -126,6 +129,14 @@ void NNodeNudger::find_prim_z_order()
     std::sort(zorder.begin(), zorder.end(), *this );   // np.argsort style : sort the indices
 } 
 
+bool NNodeNudger::operator()( int i, int j)  
+{
+    return bb[i].min.z < bb[j].min.z ;    // ascending bb.min.z
+}  
+
+
+
+
 void NNodeNudger::dump_prim_bb() const 
 {
     LOG(info); 
@@ -141,11 +152,6 @@ void NNodeNudger::dump_prim_bb() const
             ; 
     }
 }
-
-bool NNodeNudger::operator()( int i, int j)  
-{
-    return bb[i].min.z < bb[j].min.z ;    // ascending bb.min.z
-}  
 
 unsigned NNodeNudger::get_num_prim() const 
 {
@@ -206,8 +212,8 @@ NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 
 
 Label order just picks one of the
-pair as first, eg smaller box in above
-comparisons.::
+pair as first, eg smaller box in below
+illustration of comparisons.::
 
               maxmax      +--+
                /          |  |
@@ -236,7 +242,8 @@ comparisons.::
 
 void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 {
-    for(unsigned p=0 ; p < 4 ; p++)
+
+    for(unsigned p=0 ; p < 4 ; p++) // PAIR_MINMIN, PAI
     {
         NNodePairType pair = (NNodePairType)p ; 
 
@@ -265,7 +272,9 @@ void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
             switch(pair)
             {  
                 case PAIR_MINMIN:  coincidence.push_back({ prim[i], prim[j], pair }); break ;
-                case PAIR_MINMAX:  coincidence.push_back({ prim[j], prim[i], PAIR_MAXMIN }); break ;  // flip prim order of MINMAX to make a MAXMIN
+                case PAIR_MINMAX:  coincidence.push_back({ prim[j], prim[i], PAIR_MAXMIN }); break ;  
+                // flip prim order of MINMAX to make a MAXMIN 
+                // HMM: does the order flip miss some ? As only cover (i,j) pairs where i < j ?
                 case PAIR_MAXMIN:  coincidence.push_back({ prim[i], prim[j], pair }); break ;
                 case PAIR_MAXMAX:  coincidence.push_back({ prim[i], prim[j], pair }); break ;
             }
@@ -319,8 +328,10 @@ void NNodeNudger::znudge(NNodeCoincidence* coin)
 NNodeNudger::can_znudge_union_maxmin
 -------------------------------------
 
-Requiring siblings is too restrictive... the binary splitup is an implemntation detail
-what matters is that they are from the same union not the same pair 
+Requiring siblings is too restrictive... the splitup into the binary tree 
+is an implementation detail. 
+
+What matters is that they are from the same union not the same pair 
 
 TODO:
     For z-sphere the ability to znudge depends on endcap existance on a side ... ? 

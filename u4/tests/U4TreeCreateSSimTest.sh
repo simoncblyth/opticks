@@ -25,6 +25,9 @@ loglevels
 
 export SSim__stree_level=0 
 
+#export U4Polycone__DISABLE_NUDGE=1 
+
+
 
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml

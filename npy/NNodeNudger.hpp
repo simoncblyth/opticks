@@ -162,8 +162,8 @@ struct NPY_API NNodeNudger
      
 
      Consider (cy - co) with coincident base...
-     solution is to grow co down, but how to 
-     detect in code ? 
+     solution is to grow co (the subtracted solid) down, 
+     but how to detect in code ? 
 
      When you get minmin coincidence ~~~
      (min means low edge... so direction to grow
@@ -175,7 +175,8 @@ struct NPY_API NNodeNudger
 
 
      A minmin coincidence after positivization, 
-     can always pull down the one with the complement ?
+     can always pull down the one with the complement, 
+     to avoid the coincidence and not change the shape ?
 
 
 

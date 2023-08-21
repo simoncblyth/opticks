@@ -3,6 +3,20 @@
 U4Polycone.h
 ===============
 
+Polycone Z-Nudging
+-------------------
+
+Polycone Z-nudging is simpler than the general case because:
+
+1. no transforms
+2. no need to look for coincidences, as every Z-joint is coincident 
+   and every subtracted inner end face is coincident with the outer that 
+   it is subtracted from.  
+
+
+Polycone example
+----------------
+
 Initial::
 
     U4Polycone::desc num 4 rz 4 R_inner 2 R_outer 2 Z 3
@@ -78,28 +92,37 @@ inline std::string RZ::desc() const
 
 struct U4Polycone
 {
-    std::string desc() const ; 
-
 #ifdef WITH_SND
-    static int  Convert( const G4Polycone* polycone, int level ); 
-    void collectPrims(std::vector<int>& prims, bool outside ); 
+    static int  Convert( const G4Polycone* polycone, int lvid, int depth, int level ); 
 #else
-    static sn*  Convert( const G4Polycone* polycone, int level ); 
-    void collectPrims(std::vector<sn*>& prims, bool outside ); 
+    static sn*  Convert( const G4Polycone* polycone, int lvid, int depth, int level ); 
 #endif
+private:
 
+    std::string desc() const ; 
     static void GetMinMax( double& mn, double& mx, const std::set<double>& vv ); 
 
-private:
-    U4Polycone(const G4Polycone* poly, int level ); 
+
+    U4Polycone(const G4Polycone* poly, int lvid, int depth, int level ); 
     bool checkZOrder( bool z_ascending ); 
     void init(); 
     void init_RZ(); 
     void init_outer(); 
     void init_inner(); 
 
+#ifdef WITH_SND
+    void collectPrims(std::vector<int>& prims, bool outside ); 
+#else
+    void collectPrims(std::vector<sn*>& prims, bool outside ); 
+#endif
 
+
+    // MEMBERS
+
+    int lvid ; 
+    int depth ; 
     int level ; 
+
     bool enable_nudge ; 
     const G4Polycone* polycone ; 
     const G4PolyconeHistorical* ph ; 
@@ -143,10 +166,36 @@ private:
 
 };
 
+
+#ifdef WITH_SND
+inline int U4Polycone::Convert( const G4Polycone* polycone, int lvid, int depth, int level )
+#else
+inline sn* U4Polycone::Convert( const G4Polycone* polycone, int lvid, int depth, int level )
+#endif
+{
+    U4Polycone upoly(polycone, lvid, depth, level ) ; 
+
+    if(level > 0) 
+    {
+       std::cerr << "U4Polycone::Convert" << std::endl ; 
+#ifdef WITH_SND
+       std::cerr << snd::Render(upoly.root) ; 
+#else
+       std::cerr << upoly.root->render(5) ; 
+#endif
+    } 
+    return upoly.root ; 
+}
+
+
+
+
 inline std::string U4Polycone::desc() const 
 {
     std::stringstream ss ; 
     ss << "U4Polycone::desc"
+       << " lvid " << lvid
+       << " depth " << depth
        << " level " << level 
        << " enable_nudge " << ( enable_nudge ? "YES" : "NO " ) 
        << " num " << num 
@@ -180,25 +229,7 @@ inline std::string U4Polycone::desc() const
 }
 
 
-#ifdef WITH_SND
-inline int U4Polycone::Convert( const G4Polycone* polycone, int level )
-#else
-inline sn* U4Polycone::Convert( const G4Polycone* polycone, int level )
-#endif
-{
-    U4Polycone upoly(polycone, level) ; 
 
-    if(level > 0) 
-    {
-       std::cerr << "U4Polycone::Convert" << std::endl ; 
-#ifdef WITH_SND
-       std::cerr << snd::Render(upoly.root) ; 
-#else
-       std::cerr << upoly.root->render(5) ; 
-#endif
-    } 
-    return upoly.root ; 
-}
 
 inline void U4Polycone::GetMinMax( double& mn, double& mx, const std::set<double>& vv )
 {
@@ -211,8 +242,10 @@ inline void U4Polycone::GetMinMax( double& mn, double& mx, const std::set<double
     }
 }
 
-inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int level_ ) 
+inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int lvid_, int depth_, int level_ ) 
     :
+    lvid(lvid_),
+    depth(depth_),
     level(level_),
     enable_nudge(!ssys::getenvbool("U4Polycone__DISABLE_NUDGE")),
     polycone(polycone_),
@@ -285,6 +318,21 @@ inline void U4Polycone::init()
     }
 }
 
+/**
+U4Polycone::init_RZ
+---------------------
+
+1. fill (RZ)rz vector and insert values into std::set 
+   to give number of unique rmin, rmax, z 
+
+2. if necessary reverse the rz vector to make all z ascending 
+
+3. get the min/max ranges of rmin, rmax, z and determine if there 
+   is an inner based on the rmin range
+
+4. assert that there is no phi segment 
+
+**/
 
 inline void U4Polycone::init_RZ()
 {
@@ -336,6 +384,17 @@ inline void U4Polycone::init_RZ()
     assert( has_phi_segment == false );  
 }
 
+/**
+U4Polycone::init_outer
+------------------------
+
+1. populate outer_prims vector with cones and cylinders
+2. when more than one outer prim invoke sn::ZNudgeOverlapJoints. 
+   This does not change geometry as it just changes internal joints 
+   between prims to avoid coincident faces (assuming sane prim sizes). 
+3. collect the vector of prims into a binary union tree of nodes
+
+**/
 
 inline void U4Polycone::init_outer()
 {
@@ -349,14 +408,26 @@ inline void U4Polycone::init_outer()
         ; 
 
 #ifdef WITH_SND
-    if(num_outer_prim > 1) snd::ZNudgeJoints(outer_prims, enable_nudge); 
+    if(num_outer_prim > 1) snd::ZNudgeOverlapJoints(outer_prims, enable_nudge); 
     outer = snd::Collection(outer_prims); 
 #else
-    if(num_outer_prim > 1) sn::ZNudgeJoints(outer_prims, enable_nudge); 
+    if(num_outer_prim > 1) sn::ZNudgeOverlapJoints(outer_prims, enable_nudge); 
     outer = sn::Collection(outer_prims) ; 
 #endif
 
 }
+
+/**
+U4Polycone::init_inner
+-----------------------
+
+1. if there is only a single inner create a single cylinder 
+ 
+   * HMM : what about a single cone inner ?
+
+
+
+**/
 
 inline void U4Polycone::init_inner()
 {
@@ -390,12 +461,12 @@ inline void U4Polycone::init_inner()
             ; 
 
 #ifdef WITH_SND
-        snd::ZNudgeEnds(inner_prims, enable_nudge);    // only for inner as expands  
-        if(num_inner_prim > 1) snd::ZNudgeJoints(inner_prims, enable_nudge); 
+        snd::ZNudgeExpandEnds(inner_prims, enable_nudge);    // only for inner
+        if(num_inner_prim > 1) snd::ZNudgeOverlapJoints(inner_prims, enable_nudge); 
         inner = snd::Collection( inner_prims ); 
 #else
-        sn::ZNudgeEnds(inner_prims, enable_nudge);    // only for inner as expands  
-        if(num_inner_prim > 1) sn::ZNudgeJoints(inner_prims, enable_nudge); 
+        sn::ZNudgeExpandEnds(inner_prims, enable_nudge);    // only for inner 
+        if(num_inner_prim > 1) sn::ZNudgeOverlapJoints(inner_prims, enable_nudge); 
         inner = sn::Collection( inner_prims ); 
 #endif
     }
@@ -405,6 +476,11 @@ inline void U4Polycone::init_inner()
 /**
 U4Polycone::collectPrims
 --------------------------
+
+Populate prims vectors with snd indices or sn pointers 
+to cylinder or cone nodes created using values 
+from the (RZ)rz vector. For outside:true use Rmax values 
+otherwise use Rmin values for the inner. 
 
 **/
 
@@ -442,6 +518,7 @@ void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
         prims.push_back(idx);
 #else
         sn* pr = is_cylinder ? sn::Cylinder(r2, z1, z2 ) : sn::Cone( r1, z1, r2, z2 ) ; 
+        pr->lvid = lvid ;  // so this before setting root for debug purposes
         prims.push_back(pr);
         idx = pr->index() ; 
 #endif

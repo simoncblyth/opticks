@@ -1518,20 +1518,20 @@ std::string snd::ZDesc(const std::vector<int>& prims) // static
 }
 
 /**
-snd::ZNudgeEnds
------------------
+snd::ZNudgeExpandEnds
+-----------------------
 
 CAUTION: changes geometry, only appropriate 
 for subtracted consituents eg inners 
 
 **/
 
-void snd::ZNudgeEnds(const std::vector<int>& prims) // static
+void snd::ZNudgeExpandEnds(const std::vector<int>& prims) // static
 {
     int level = Level(); 
     if(level > 0) std::cout 
        << std::endl
-       << "snd::ZNudgeEnds "
+       << "snd::ZNudgeExpandEnds "
        << std::endl
        << ZDesc(prims)
        << std::endl
@@ -1552,12 +1552,12 @@ void snd::ZNudgeEnds(const std::vector<int>& prims) // static
     */
 }
 
-void snd::ZNudgeJoints(const std::vector<int>& prims) // static
+void snd::ZNudgeOverlapJoints(const std::vector<int>& prims) // static
 {
     int level = Level(); 
     if(level > 0) std::cout 
        << std::endl
-       << "snd::ZNudgeJoints PLACEHOLDER  "
+       << "snd::ZNudgeOverlapJoints PLACEHOLDER  "
        << std::endl
        << ZDesc(prims)
        << std::endl

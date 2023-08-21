@@ -160,6 +160,7 @@ struct SYSRAP_API sn
     static constexpr const int VERSION = 0 ;
     static constexpr const char* NAME = "sn.npy" ; 
     static constexpr const double zero = 0. ; 
+    static constexpr const double Z_EPSILON = 1e-3 ; 
 
     static void SetPOOL( POOL* pool_ ); 
     static int level(); 
@@ -333,8 +334,8 @@ struct SYSRAP_API sn
     static sn* Create(int typecode, sn* left=nullptr, sn* right=nullptr ); 
     static sn* Boolean( int op, sn* l, sn* r );
 
-    static void ZNudgeEnds(  std::vector<sn*>& prims, bool enable); 
-    static void ZNudgeJoints(std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeExpandEnds(  std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeOverlapJoints(std::vector<sn*>& prims, bool enable); 
 
     bool can_znudge() const ; 
     static bool CanZNudgeAll(std::vector<sn*>& prims); 
@@ -345,6 +346,9 @@ struct SYSRAP_API sn
     double zmax() const ; 
     void set_zmin(double zmin_) ; 
     void set_zmax(double zmax_) ; 
+
+    double rperp_at_zmax() const ; 
+    double rperp_at_zmin() const ; 
 
     static std::string ZDesc(const std::vector<sn*>& prims); 
 
@@ -388,6 +392,22 @@ struct SYSRAP_API sn
     static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx); 
 
     void ancestors(std::vector<const sn*>& nds) const ; 
+
+    void connectedtype_ancestors(std::vector<const sn*>& nds ) const ; 
+    static void ConnectedTypeAncestors(const sn* n, std::vector<const sn*>& nds, int q_typecode); 
+
+    void collect_progeny( std::vector<const sn*>& progeny, int exclude_typecode ) const ; 
+    static void CollectProgeny_r( const sn* n, std::vector<const sn*>& progeny, int exclude_typecode ); 
+
+    void collect_monogroup( std::vector<const sn*>& monogroup ) const ; 
+
+    static bool AreFromSameMonogroup(const sn* a, const sn* b, int op); 
+    static bool AreFromSameUnion(const sn* a, const sn* b); 
+
+
+
+
+
 
     static void NodeTransformProduct(
         int idx, 
@@ -2106,61 +2126,177 @@ inline sn* sn::Boolean(int typecode_, sn* left_, sn* right_)  // static
 
 
 /**
-sn::ZNudgeEnds
------------------
+sn::ZNudgeExpandEnds
+---------------------
 
 CAUTION: changes geometry, only appropriate 
 for subtracted constituents eg inners 
 
-HMM: need to check z-ordering of prims 
+This is used from U4Polycone::init_inner 
+and is probably only applicable to the 
+very controlled situation of the polycone
+with a bunch of cylinders and cones. 
+
+* cf X4Solid::Polycone_Inner_Nudge
 
 **/
 
-inline void sn::ZNudgeEnds(std::vector<sn*>& prims, bool enable) // static
+inline void sn::ZNudgeExpandEnds(std::vector<sn*>& prims, bool enable) // static
 {
     int num_prim = prims.size() ; 
+
+    sn* lower = prims[0] ; 
+    sn* upper = prims[prims.size()-1] ; 
+    bool can_znudge_ends = lower->can_znudge() && upper->can_znudge() ; 
+    assert( can_znudge_ends ); 
+  
+    double lower_zmin = lower->zmin() ; 
+    double upper_zmax = upper->zmax() ; 
+    bool z_expect = upper_zmax > lower_zmin  ; 
+
 
     if(true || level() > 0) std::cout 
        << std::endl
-       << "sn::ZNudgeEnds PLACEHOLDER "
+       << "sn::ZNudgeExpandEnds "
        << " num_prim " << num_prim 
        << " enable " << ( enable ? "YES" : "NO " )
+       << " can_znudge_ends " << ( can_znudge_ends ? "YES" : "NO " ) 
+       << " lower_zmin " << lower_zmin
+       << " upper_zmax " << upper_zmax
+       << " z_expect " << ( z_expect ? "YES" : "NO " )
        << std::endl
        << ZDesc(prims)
        << std::endl
        ;
 
-    /*
-    for(int i=1 ; i < num_prim ; i++)
-    {
-        sn* a = prims[i-1]; 
-        sn* b = prims[i]; 
-        //a->check_z(); 
-        //b->check_z();
-    }
-    */
+    if(!enable) return ; 
+    assert( z_expect ); 
+
+    double dz = 1. ; 
+    lower->decrease_zmin(dz);   
+    upper->increase_zmax(dz);   
 }
 
 /**
-sn::ZNudgeJoints
------------------
+sn::ZNudgeOverlapJoints
+-------------------------
+
+lower_rperp_at_zmax > upper_rperp_at_zmin::
+            
+        +-----+
+        |     |   
+    +---+.....+---+  
+    |   +~~~~~+   |       upper->decrease_zmin
+    |             | 
+    +-------------+
+
+!(lower_rperp_at_zmax > upper_rperp_at_zmin)::
+               
+    +-------------+
+    |             |
+    |   +~~~~~+   |    lower->increase_zmax
+    +---+-----+---+
+        |     |   
+        +-----+             
 
 
+HMM a cone atop a cylinder where the cone at zmin 
+starts at the same radius of the cylinder will mean that 
+there will be a change to the shape for both 
+uncoinciding by the cylinder expanding up and the cone 
+expanding down. So there is no way to avoid concidence 
+on that joint, without changing geometry::
+
+
+        +----------------+
+       /                  \
+      /                    \
+     /                      \
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    |                        |
+    |                        | 
+    |                        | 
+    |                        | 
+    |                        | 
+    +------------------------+
+
+This happens with::
+
+   NNVTMCPPMTsMask_virtual
+   HamamatsuR12860sMask_virtual
+
+As they are virtual it doesnt matter for physics in this 
+case : but that doesnt stop it being an issue. 
 
 **/
 
-inline void sn::ZNudgeJoints(std::vector<sn*>& prims, bool enable ) // static
+inline void sn::ZNudgeOverlapJoints(std::vector<sn*>& prims, bool enable ) // static
 {
     int num_prim = prims.size() ; 
-    if(true || level() > 0) std::cout
+    assert( num_prim > 1 && "one prim has no joints" );  
+    double dz = 1. ; 
+
+    bool dump = true || level() > 0 ; 
+
+    if(dump) std::cout
        << std::endl
-       << "sn::ZNudgeJoints PLACEHOLDER "
+       << "sn::ZNudgeOverlapJoints "
        << " num_prim " << num_prim 
        << " enable " << ( enable ? "YES" : "NO " )
        << std::endl
        << ZDesc(prims)
        << std::endl
        ;
+
+    for(int i=1 ; i < num_prim ; i++)
+    {
+        sn* lower = prims[i-1] ; 
+        sn* upper = prims[i] ; 
+        bool can_znudge_ends = lower->can_znudge() && upper->can_znudge() ; 
+        assert( can_znudge_ends ); 
+        
+        double lower_zmax = lower->zmax(); 
+        double upper_zmin = upper->zmin() ; 
+        bool z_coincident_joint = std::abs( lower_zmax - upper_zmin ) < Z_EPSILON  ; 
+
+        double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
+        double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
+
+        if(dump) std::cerr
+            << "sn::ZNudgeOverlapJoints"
+            << " ("<< i-1 << "," << i << ") "
+            << " lower_zmax " << lower_zmax  
+            << " upper_zmin " << upper_zmin
+            << " z_coincident_joint " << ( z_coincident_joint ? "YES" : "NO " )
+            << " enable " << ( enable ? "YES" : "NO " )
+            << " upper_rperp_at_zmin " << upper_rperp_at_zmin
+            << " lower_rperp_at_zmax " << lower_rperp_at_zmax
+            << std::endl 
+            ; 
+
+        if(!z_coincident_joint) continue ; 
+
+        if( lower_rperp_at_zmax > upper_rperp_at_zmin )    
+        {    
+            upper->decrease_zmin( dz ); 
+            std::cerr  
+                << "sn::ZNudgeOverlapJoints"
+                << " lower_rperp_at_zmax > upper_rperp_at_zmin : upper->decrease_zmin( dz ) "
+                << "  : expand upper down into bigger lower "
+                << std::endl 
+                ;  
+        }
+        else
+        {
+            lower->increase_zmax( dz ); 
+            std::cerr  
+                << "sn::ZNudgeOverlapJoints"
+                << " !(lower_rperp_at_zmax > upper_rperp_at_zmin) : lower->increase_zmax( dz ) "
+                << "  : expand lower up into bigger upper "
+                << std::endl 
+                ;  
+        }
+    }
 }
 
 
@@ -2225,6 +2361,7 @@ inline void sn::increase_zmax( double dz )
         << " _zmax " << _zmax 
         << " dz " << dz
         << " new_zmax " << new_zmax 
+        << std::endl 
         ;   
 
     set_zmax(new_zmax); 
@@ -2254,6 +2391,7 @@ inline void sn::decrease_zmin( double dz )
         << " _zmin " << _zmin 
         << " dz " << dz
         << " new_zmin " << new_zmin 
+        << std::endl 
         ;   
 
     set_zmin(new_zmin); 
@@ -2261,23 +2399,70 @@ inline void sn::decrease_zmin( double dz )
 inline double sn::zmin() const
 {
     assert( can_znudge() );
-    return param->zmin() ;
+    double v = 0. ; 
+    switch(typecode)
+    {
+        case CSG_CYLINDER: v = param->value(4) ; break ; 
+        case CSG_CONE:     v = param->value(1) ; break ;  
+    }
+    return v ;
 }
-inline double sn::zmax() const
-{
-    assert( can_znudge() );
-    return param->zmax() ;
-}
+
 inline void sn::set_zmin(double zmin_)
 {
     assert( can_znudge() );
-    param->set_zmin(zmin_) ; 
+    switch(typecode)
+    {
+        case CSG_CYLINDER: param->set_value(4, zmin_) ; break ; 
+        case CSG_CONE:     param->set_value(1, zmin_) ; break ; 
+    }
 }
-inline void sn::set_zmax(double zmax_) 
+
+inline double sn::zmax() const
 {
     assert( can_znudge() );
-    param->set_zmax(zmax_) ; 
+    double v = 0. ; 
+    switch(typecode)
+    {
+        case CSG_CYLINDER: v = param->value(5) ; break ; 
+        case CSG_CONE:     v = param->value(3) ; break ;  
+    }
+    return v ;
 }
+inline void sn::set_zmax(double zmax_)
+{
+    assert( can_znudge() );
+    switch(typecode) 
+    {
+        case CSG_CYLINDER: param->set_value(5, zmax_) ; break ; 
+        case CSG_CONE:     param->set_value(3, zmax_) ; break ; 
+    } 
+}
+
+inline double sn::rperp_at_zmax() const 
+{
+    assert( can_znudge() );
+    double v = 0. ; 
+    switch(typecode)
+    {
+        case CSG_CYLINDER: v = param->value(3) ; break ; 
+        case CSG_CONE:     v = param->value(2) ; break ; 
+    }
+    return v ; 
+}
+
+inline double sn::rperp_at_zmin() const 
+{
+    assert( can_znudge() );
+    double v = 0. ; 
+    switch(typecode)
+    {
+        case CSG_CYLINDER: v = param->value(3) ; break ; 
+        case CSG_CONE:     v = param->value(0) ; break ; 
+    }
+    return v ; 
+}
+
 
 /**
 sn::ZDesc
@@ -2307,10 +2492,11 @@ inline std::string sn::ZDesc(const std::vector<sn*>& prims) // static
     {
         sn* a = prims[i];
         ss << " idx "  << std::setw(3) << a->index()
-           << " lv "   << std::setw(3) << a->lvid
            << " tag "   << std::setw(3) << a->tag()
            << " zmin " << std::setw(10) << a->zmin()
            << " zmax " << std::setw(10) << a->zmax()
+           << " rperp_at_zmin " << std::setw(10) << a->rperp_at_zmin()
+           << " rperp_at_zmax " << std::setw(10) << a->rperp_at_zmax()
            << std::endl
            ;
     }
@@ -2872,13 +3058,137 @@ inline void sn::ancestors(std::vector<const sn*>& nds) const
     std::reverse( nds.begin(), nds.end() );
 }
 
+/**
+sn::connectedtype_ancestors
+-----------------------------
 
+Follow impl from nnode::collect_connectedtype_ancestors
 
+Notice this is different from selecting all ancestors and then requiring 
+a type, because the traversal up the parent links is stopped 
+once reaching an node of type different to the parent type.  
+
+**/
+
+inline void sn::connectedtype_ancestors(std::vector<const sn*>& nds ) const 
+{
+    if(!parent) return ;   // start from parent to avoid collecting self
+    ConnectedTypeAncestors( parent, nds, parent->typecode ); 
+}
+inline void sn::ConnectedTypeAncestors(const sn* n, std::vector<const sn*>& nds, int q_typecode) // static
+{
+    while(n && n->typecode == q_typecode)
+    {    
+        nds.push_back(n);
+        n = n->parent ; 
+    }    
+}
 
 
 
 /**
-snd::NodeTransformProduct
+sn::collect_progeny
+---------------------
+
+Follow impl from nnode::collect_progeny
+
+Progeny excludes self, so start from child
+
+**/
+
+inline void sn::collect_progeny( std::vector<const sn*>& progeny, int exclude_typecode ) const
+{   
+    for(int i=0 ; i < num_child() ; i++)
+    {   
+        const sn* ch = get_child(i); 
+        CollectProgeny_r(ch, progeny, exclude_typecode );  
+    }
+}
+inline void sn::CollectProgeny_r( const sn* n, std::vector<const sn*>& progeny, int exclude_typecode ) // static
+{   
+    if(n->typecode != exclude_typecode || exclude_typecode == CSG_ZERO)  
+    {   
+        if(std::find(progeny.begin(), progeny.end(), n) == progeny.end()) progeny.push_back(n);
+    }
+    
+    for(int i=0 ; i < n->num_child() ; i++)
+    {   
+        const sn* ch = n->get_child(i); 
+        CollectProgeny_r(ch, progeny, exclude_typecode );  
+    }
+}
+
+
+/**
+sn::collect_monogroup
+-----------------------
+
+Follow impl from nnode::collect_monogroup
+
+
+1. follow parent links collecting ancestors until reach ancestor of another CSG type
+   eg on starting with a primitive of CSG_UNION parent finds 
+   direct lineage ancestors that are also CSG_UNION
+
+2. for each of those same type ancestors collect
+   all progeny but exclude the operator nodes to 
+   give just the prims within the same type monogroup 
+
+**/
+
+inline void sn::collect_monogroup( std::vector<const sn*>& monogroup ) const
+{
+   if(!parent) return ;
+
+   std::vector<const sn*> connectedtype ;
+   connectedtype_ancestors(connectedtype);
+   int num_connectedtype = connectedtype.size() ; 
+
+   int exclude_typecode = parent->typecode ;  
+
+   for(int i=0 ; i < num_connectedtype ; i++)
+   {
+       const sn* ca = connectedtype[i];
+       ca->collect_progeny( monogroup, exclude_typecode );
+   }
+}
+
+/**
+sn::AreFromSameMonogroup
+--------------------------
+
+After nnode::is_same_monogroup
+
+1. if a or b have no parent or either of their parent type is not *op* returns false
+
+2. collect monogroup of a 
+
+3. return true if b is found within the monogroup of a 
+
+**/
+
+
+
+inline bool sn::AreFromSameMonogroup(const sn* a, const sn* b, int op)  // static
+{
+   if(!a->parent || !b->parent || a->parent->typecode != op || b->parent->typecode != op) return false ;
+
+   std::vector<const sn*> monogroup ;
+   a->collect_monogroup(monogroup);
+
+   return std::find(monogroup.begin(), monogroup.end(), b ) != monogroup.end() ;
+}
+
+
+inline bool sn::AreFromSameUnion(const sn* a, const sn* b) // static
+{
+   return AreFromSameMonogroup(a,b, CSG_UNION );
+}
+
+
+
+/**
+sn::NodeTransformProduct
 ---------------------------
 
 cf nmat4triple::product
@@ -2987,5 +3297,8 @@ inline std::string sn::desc_getNodeTransformProduct(
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+
 
 
