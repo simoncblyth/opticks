@@ -49,7 +49,7 @@ float ncone::z2() const { return param.f.w ; }  // z2 > z1
 ncone::decrease_z1 ncone::increase_z2
 -----------------------------------------
 
-TODO: avoid increase_z1 and decrease_z2 changing angle of the cone by proportionately changing r1 and r2 
+This avoids increase_z1 and decrease_z2 changing angle of the cone by proportionately changing r1 and r2 
 
 
                     
@@ -78,12 +78,12 @@ Consider increasing z2 by dz (dz > 0) to new_z2
 while keeping the same cone angle
 
        new_z2 - z1       z2 - z1  
-      -------------  =  ----------
-       new_r2 - r1       r2 - r1 
+      -------------  =  ----------       ratios of corresponding z and r diffs 
+       new_r2 - r1       r2 - r1         must be equal for fixed cone angle 
 
 
-      new_r2 - r1       z2i - z1  
-      ----------  =  ----------
+      new_r2 - r1     new_z2 - z1  
+      ----------  =  -------------       collect r and z terms on each side  
        r2  - r1        z2 - z1 
 
        new_r2 =   r1 +  (r2 - r1) ( new_z2 - z1 )/(z2 - z1)

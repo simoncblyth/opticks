@@ -87,13 +87,14 @@ class sn(sobject):
              ('next_sibling', '<i4'),
              ('index', '<i4'),
              ('depth', '<i4'),
+             ('note',  '<i4'),
              ('label0', '<i4'),
              ('label1', '<i4'),
              ('label2', '<i4'),
              ('label3', '<i4'),
              ] 
 
-    FIELD = "tc cm lv xf pa bb pr sx nc fc ns ix dp l0 l1 l2 l3".split()
+    FIELD = "tc cm lv xf pa bb pr sx nc fc ns ix dp nt l0 l1 l2 l3".split()
 
 
 

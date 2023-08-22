@@ -667,6 +667,11 @@ Encapsulate finding primIdx from nodeIdx into CSGFoundry.py::
            ['uni_acrylic1']], dtype=object)    ## jcv AdditionAcrylicConstruction : huge sphere with polycone subtracted
 
 
+
+
+
+
+
 * HMM: THEY LOOK LIKE THEY ALL INCLUDE POLYCONE CONVERSIONS 
 
 ::
@@ -1547,7 +1552,7 @@ Not matching yet because : joints not done, bbox not updated::
 
 
 
-After enable joint nudging::
+After enable joint and end nudging in B, but with only polycone in A::
 
     In [1]: w = np.where(ab.node > 1e-2)[0] ; w
     Out[1]: array([15679, 15680, 15720, 15721, 15827, 15829, 15830, 15834])
@@ -1579,6 +1584,7 @@ After enable joint nudging::
     Out[9]: array([105, 105, 105, 105, 105, 105, 105, 108], dtype=int32)  ## cylinders and one cone
 
 
+Perhaps some diffs from nudger disabled in A::
 
     In [6]: a.node[w].reshape(-1,16)[:,:6]
     Out[6]: 
@@ -1604,6 +1610,468 @@ After enable joint nudging::
 
 
 
+Now with nudger enabled in A::
 
+
+    In [1]: w = np.where(ab.node > 1e-2)[0] ; w
+    Out[1]: array([15679, 15680, 15720, 15721, 15750, 15753, 15765, 15768, 15827, 15829, 15830, 15834])
+
+    In [2]: a.find_primIdx_from_nodeIdx(w)
+    Out[2]: array([2928, 2928, 2937, 2937, 2940, 2940, 2941, 2941, 2956, 2956, 2956, 2957], dtype=int32)
+
+    In [3]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[3]:
+    array([['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+
+    In [5]: a.node[w,:2].reshape(-1,8)
+    Out[5]:
+    array([[   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,   98.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,  101.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001, -168.226,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001,   -1.   ,  190.101,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   , -163.225,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   ,   -1.   ,  185.1  ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   70.   , -101.   ,  -14.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   55.5  , -102.   ,  -15.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   43.   ,  -16.   ,    1.   ,    0.   ,    0.   ],
+           [ 200.   , -140.   ,  451.786,    1.   ,    0.   ,    0.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [6]: b.node[w,:2].reshape(-1,8)
+    Out[6]:
+    array([[   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,   98.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 , -183.225,    1.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  264.05 ,    0.   ,  101.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001, -168.226,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001,    0.   ,  190.101,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   , -163.225,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   ,    0.   ,  185.1  ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   70.   , -101.   ,  -14.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   55.5  , -102.   ,  -15.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,   43.   ,  -16.   ,    1.   ,    0.   ,    0.   ],
+           [ 200.   , -140.   ,  450.   ,    1.   ,    0.   ,    0.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [7]: a.node[w,:2].reshape(-1,8) - b.node[w,:2].reshape(-1,8)
+    Out[7]: 
+    array([[ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  1.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   , -1.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  1.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   , -1.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  0.   , -0.   , -0.   ],
+           [ 0.   ,  0.   ,  1.786,  0.   ,  0.   ,  0.   , -0.   , -0.   ]], dtype=float32)
+
+
+
+Restrict to comparing param, gives 5 discrepant nodes. This is before general 
+Nudging implemented in B::
+
+    In [14]: abpar = np.max(np.abs(apar-bpar), axis=1 )
+
+    In [15]: abpar.shape
+    Out[15]: (15968,)
+
+    In [16]: a.node.shape
+    Out[16]: (15968, 4, 4)
+
+    In [17]: np.where( abpar > 1e-2)[0]
+    Out[17]: array([15750, 15753, 15765, 15768, 15834])
+
+    In [18]: w = np.where( abpar > 1e-2)[0]
+
+    In [19]: w
+    Out[19]: array([15750, 15753, 15765, 15768, 15834])
+
+    In [20]: a.find_primIdx_from_nodeIdx(w)
+    Out[20]: array([2940, 2940, 2941, 2941, 2957], dtype=int32)
+
+    In [21]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[21]:
+    array([['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+    In [23]: a.node[w,3,2].view(np.int32)
+    Out[23]: array([103, 103, 103, 103, 108], dtype=int32)   # 4 cylinders and one cone
+
+
+    In [23]: a.node[w,3,2].view(np.int32)
+    Out[23]: array([103, 103, 103, 103, 108], dtype=int32)
+
+    In [24]: apar[w]
+    Out[24]:
+    array([[   0.   ,    0.   ,    0.   ,  190.001, -168.226,    1.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001,   -1.   ,  190.101],
+           [   0.   ,    0.   ,    0.   ,  185.   , -163.225,    1.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   ,   -1.   ,  185.1  ],
+           [ 200.   , -140.   ,  451.786,    1.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [25]: bpar[w]
+    Out[25]:
+    array([[   0.   ,    0.   ,    0.   ,  190.001, -168.226,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001,    0.   ,  190.101],
+           [   0.   ,    0.   ,    0.   ,  185.   , -163.225,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  185.   ,    0.   ,  185.1  ],
+           [ 200.   , -140.   ,  450.   ,    1.   ,    0.   ,    0.   ]], dtype=float32)
+
+
+    In [29]: a.prim[a.find_primIdx_from_nodeIdx(w)].view(np.int32)[:,1,1]
+    Out[29]: array([107, 107, 106, 106,  96], dtype=int32)
+
+    In [30]: a.prim[a.find_primIdx_from_nodeIdx(w)].view(np.int32)[:,0,0]
+    Out[30]: array([15, 15, 15, 15,  7], dtype=int32)
+
+
+AHAH : NEED ZSphere nudging for lvid 107, 106::
+
+    2023-08-21 20:41:01.522 INFO  [34056294] [nzsphere::decrease_z1@111]  treeidx 106 dz 1
+    2023-08-21 20:41:01.522 INFO  [34056294] [nzsphere::increase_z2@99]  treeidx 106 dz 1
+    2023-08-21 20:41:01.530 INFO  [34056294] [nzsphere::decrease_z1@111]  treeidx 107 dz 1
+    2023-08-21 20:41:01.530 INFO  [34056294] [nzsphere::increase_z2@99]  treeidx 107 dz 1
+
+::
+
+    2023-08-21 20:41:01.460 INFO  [34056294] [ncone::increase_z2@119]  treeidx 96 dz 1 _r1 200 _z1 -140 _r2 450 _z2 0 new_z2 1 new_r2 451.786
+
+
+
+
+
+CSGNode Deviations
+-------------------
+
+::
+
+
+    In [10]: w = np.where(ab.node > 1e-2)[0]  ; w
+    Out[10]: array([15679, 15680, 15720, 15721, 15750, 15753, 15765, 15768, 15827, 15829, 15830, 15834])
+
+    In [11]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[11]:
+    array([['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+
+CSGNode parameter deviations
+------------------------------
+
+::
+
+    In [7]: w = np.where(ab.npa > 1e-2)[0] ; w
+    Out[7]: array([15750, 15753, 15765, 15768, 15834])
+
+    In [8]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[8]:
+    array([['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+
+* parameter deviations from lack of ZSphere nudging for first 4 
+  and last one is from lack is specialized cone nudging 
+
+
+CSGNode parameter deviations, now with specialized cone nudging 
+------------------------------------------------------------------
+
+The specialized cone handling avoids param deviation in uni_acrylic1::
+
+    In [1]: w = np.where(ab.npa > 1e-2)[0] ; w
+    Out[1]: array([15750, 15753, 15765, 15768])
+
+    In [2]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[2]: 
+    array([['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0']], dtype=object)
+
+
+
+
+FIXED : CSGNode parameter deviation for cone in uni_acrylic1 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is not from lack of general nudger because that cone
+comes from a polycone. 
+
+AHHA there is special handling ncone::decrease_z1 ncone::increase_z2
+for growing cones that avoids changing the cone angle by changing radii too. 
+
+
+Find the prim::
+
+    In [37]: a_prim_lvid = a.prim.view(np.int32)[:,1,1]
+
+    In [38]: b_prim_lvid = b.prim.view(np.int32)[:,1,1]
+
+    In [39]: np.all( a_prim_lvid == b_prim_lvid )
+    Out[39]: True
+
+    In [45]: p = np.where( a_prim_lvid == 96 )[0][0] ; p
+    Out[45]: 2957
+
+    In [46]: a.prim[p].view(np.int32)
+    Out[46]:
+    array([[          7,       15831,        7258,           0],
+           [          0,          96,           7,           0],
+           [-1008606062, -1008606062, -1022623744,  1138877586],
+           [ 1138877586,  1085695590,           0,           0]], dtype=int32)
+
+    In [47]: a.prim[p]
+    Out[47]:
+    array([[   0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ],
+           [-451.786, -451.786, -140.   ,  451.786],
+           [ 451.786,    5.7  ,    0.   ,    0.   ]], dtype=float32)
+
+    In [48]: b.prim[p]
+    Out[48]:
+    array([[0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.]], dtype=float32)
+
+    In [49]: b.prim[p].view(np.int32)
+    Out[49]:
+    array([[    7, 15831,  7258,     0],
+           [    0,    96,     7,     0],
+           [    0,     0,     0,     0],
+           [    0,     0,     0,     0]], dtype=int32)
+
+
+    In [52]: a.node[15831:15831+7].view(np.int32)[:,3,2]
+    Out[52]: array([  2,   1, 101, 108, 105,   0,   0], dtype=int32)
+
+    In [53]: b.node[15831:15831+7].view(np.int32)[:,3,2]
+    Out[53]: array([  2,   1, 101, 108, 105,   0,   0], dtype=int32)
+                     INT  UNI  !SPH  CON  CYL
+                               
+
+                 INT
+
+             UNI      SPH  
+
+          CON   CYL  
+
+
+Deviation is all in the CONE::
+
+    In [63]: a.node[15831+3:15831+4]
+    Out[63]: 
+    array([[[ 200.   , -140.   ,  451.786,    1.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-451.786, -451.786, -140.   ,  451.786],
+            [ 451.786,    1.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [64]: b.node[15831+3:15831+4]
+    Out[64]: 
+    array([[[ 200., -140.,  450.,    1.],
+            [   0.,    0.,    0.,    0.],
+            [-450., -450., -140.,  450.],
+            [ 450.,    0.,    0.,    0.]]], dtype=float32)
+
+
+Polycone that becomes union of cone and cylinder subtracting huge sphere. 
+
+
+
+jcv AdditionAcrylicConstruction::
+
+    112     } else if (option=="simple") {
+    113 
+    114         double ZNodes3[3];
+    115         double RminNodes3[3];
+    116         double RmaxNodes3[3];
+    117         ZNodes3[0] = 5.7*mm; RminNodes3[0] = 0*mm; RmaxNodes3[0] = 450.*mm;
+    118         ZNodes3[1] = 0.0*mm; RminNodes3[1] = 0*mm; RmaxNodes3[1] = 450.*mm;
+    119         ZNodes3[2] = -140.0*mm; RminNodes3[2] = 0*mm; RmaxNodes3[2] = 200.*mm;
+    120 
+    121         solidAddition_down = new G4Polycone("solidAddition_down",0.0*deg,360.0*deg,3,ZNodes3,RminNodes3,RmaxNodes3);
+    122 
+    123     }
+    124 
+    125 
+    126 //    solidAddition_down = new G4Tubs("solidAddition_down",0,199.67*mm,140*mm,0.0*deg,360.0*deg);
+    127 //    solidAddition_down = new G4Cons("solidAddition_down",0.*mm,450.*mm,0.*mm,200*mm,70.*mm,0.*deg,360.*deg);
+    128     solidAddition_up = new G4Sphere("solidAddition_up",0*mm,m_radAcrylic,0.0*deg,360.0*deg,0.0*deg,180.*deg);
+    129 
+    130     uni_acrylic1 = new G4SubtractionSolid("uni_acrylic1",solidAddition_down,solidAddition_up,0,G4ThreeVector(0*mm,0*mm,+m_radAcrylic));
+    131 
+    132     solidAddition_up1 = new G4Tubs("solidAddition_up1",120*mm,208*mm,15.2*mm,0.0*deg,360.0*deg);
+    133     uni_acrylic2 = new G4SubtractionSolid("uni_acrylic2",uni_acrylic1,solidAddition_up1,0,G4ThreeVector(0.*mm,0.*mm,-20*mm));
+
+
+
+WIP : CSGNode paramter deviation for HAMA solids 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* difference is lack of ZSPHERE nudge : for ZSPH in union 
+
+::
+
+    In [1]: w = np.where(ab.npa > 1e-2)[0] ; w
+    Out[1]: array([15750, 15753, 15765, 15768])
+
+    In [21]: pp = a.find_primIdx_from_nodeIdx(w) ; pp
+    Out[21]: array([2940, 2940, 2941, 2941], dtype=int32)
+
+    In [25]: upp = np.unique(pp) ; upp
+    Out[25]: array([2940, 2941], dtype=int32)
+
+
+Param from two nodes in each of these prim is discrepant::
+
+    In [22]: np.c_[a.primname[upp]]
+    Out[22]: 
+    array([['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0']], dtype=object)
+
+
+    In [16]: p = a.prim[upp]  
+
+    In [28]: p.view(np.int32)[:,:2].reshape(-1,8)
+    Out[28]: 
+    array([[   15, 15746,  7217,     0,     3,   107,     3,     3],
+           [   15, 15761,  7221,     0,     4,   106,     3,     4]], dtype=int32)
+            numNode nodeOff tranOff       sbt   lvid    ridx  primIdx
+
+
+    In [31]: a.node[15746:15746+15,3,2].view(np.int32)
+    Out[31]: array([  1,   1, 108,   1, 103,   0,   0, 103, 105,   0,   0,   0,   0,   0,   0], dtype=int32)
+                    UNI   UNI  CONE UNI  ZSP          ZSP   CYL
+
+
+
+                   UNI
+               UNI      CONE
+            UNI   ZSP        
+         ZSP  CYL 
+
+
+
+::
+
+    In [36]: a.node[15746:15746+15].reshape(-1,16)[:,:6]
+    Out[36]: 
+    array([[   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],      UNI
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],      UNI
+           [ 139.245,    5.99 ,  142.968,   17.17 ,    0.   ,    0.   ],      CONE
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],      UNI
+           [   0.   ,    0.   ,    0.   ,  190.001, -168.226,   *1.*  ],      ZSP : zmax increased
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],      ZER
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],      ZER
+           [   0.   ,    0.   ,    0.   ,  190.001,  *-1.*  ,  190.101],      ZSP : zmin decreased  
+           [   0.   ,    0.   ,    0.   ,  254.001,   -2.5  ,    2.5  ],      CYL
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [37]: b.node[15746:15746+15].reshape(-1,16)[:,:6]
+    Out[37]: 
+    array([[   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [ 139.245,    5.99 ,  142.968,   17.17 ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001, -168.226,   *0.*  ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,  190.001,   *0.*  ,  190.101],
+           [   0.   ,    0.   ,    0.   ,  254.001,   -2.5  ,    2.5  ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ],
+           [   0.   ,    0.   ,    0.   ,    0.   ,    0.   ,    0.   ]], dtype=float32)
+
+    In [38]: a.node[15746:15746+15].reshape(-1,16)[:,:6] - b.node[15746:15746+15].reshape(-1,16)[:,:6]
+    Out[38]: 
+    array([[ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  1.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0., -1.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.]], dtype=float32)
+
+
+
+
+
+TODO : CSGNode bbox deviations
+----------------------------------
+
+
+::
+
+    In [2]: w = np.where(ab.nbb > 1e-2)[0]
+
+    In [3]: w
+    Out[3]: array([15679, 15680, 15720, 15721, 15750, 15753, 15765, 15768, 15827, 15829, 15830, 15834])
+
+    In [4]: a.find_primIdx_from_nodeIdx(w)
+    Out[4]: array([2928, 2928, 2937, 2937, 2940, 2940, 2941, 2941, 2956, 2956, 2956, 2957], dtype=int32)
+
+    In [5]: np.c_[a.primname[a.find_primIdx_from_nodeIdx(w)]]
+    Out[5]:
+    array([['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['NNVTMCPPMTsMask_virtual0x6173a40'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860sMask_virtual0x6163d90'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['HamamatsuR12860_PMT_20inch_inner_solid_1_40x61578a0'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['base_steel0x5aa4870'],
+           ['uni_acrylic10x5ba6710']], dtype=object)
+
+    In [6]:
 
 

@@ -76,15 +76,17 @@ struct _sn
     int  next_sibling ; // 10  
     int  index ;        // 11 
     int  depth ;        // 12
-    char label[16] ;    // 13,14,15,16 
-    static constexpr const char* ITEM = "17" ;  
+    int  note  ;        // 13 
+    char label[16] ;    // 14,15,18,17 
+    static constexpr const char* ITEM = "18" ;  
 #else
     int  left ;         // 7
     int  right ;        // 8
     int  index ;        // 9
     int  depth ;        // 10
-    char label[16] ;    // 11,12,13,14 
-    static constexpr const char* ITEM = "15" ;  
+    int  note  ;        // 11
+    char label[16] ;    // 12,13,14,15 
+    static constexpr const char* ITEM = "16" ;  
 #endif
 
     std::string desc() const ; 
@@ -148,6 +150,7 @@ struct SYSRAP_API sn
     sn* right ;        
 #endif
     int depth ;    
+    int note ; 
     char label[16] ; 
 
     // internals, not persisted  
@@ -340,15 +343,36 @@ struct SYSRAP_API sn
     bool can_znudge() const ; 
     static bool CanZNudgeAll(std::vector<sn*>& prims); 
 
+
+    enum {
+            NOTE_INCREASE_ZMAX = 0x1 << 0, 
+            NOTE_DECREASE_ZMIN = 0x1 << 1
+         };
+
     void increase_zmax( double dz ); // expand upwards in +Z direction 
     void decrease_zmin( double dz ); // expand downwards in -Z direction
+
+    void increase_zmax_( double dz ); 
+    void decrease_zmin_( double dz ); 
+
+    void increase_zmax_cone( double dz ); 
+    void decrease_zmin_cone( double dz ); 
+
+
+
+
     double zmin() const ; 
     double zmax() const ; 
     void set_zmin(double zmin_) ; 
     void set_zmax(double zmax_) ; 
 
-    double rperp_at_zmax() const ; 
-    double rperp_at_zmin() const ; 
+    double    rperp_at_zmax() const ; 
+    void set_rperp_at_zmax(double rperp_) const ; 
+
+    double   rperp_at_zmin() const ; 
+    void set_rperp_at_zmin(double rperp_) const ; 
+
+
 
     static std::string ZDesc(const std::vector<sn*>& prims); 
 
@@ -621,6 +645,7 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
 
     n.index = pool->index(x) ; 
     n.depth = x->depth ; 
+    n.note  = x->note  ; 
 
     assert( sizeof(n.label) == sizeof(x->label) ); 
     strncpy( &n.label[0], x->label, sizeof(x->label) );
@@ -725,6 +750,7 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
     right(right_),
 #endif
     depth(0),
+    note(0),
     pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
@@ -2335,9 +2361,38 @@ inline bool sn::CanZNudgeAll(std::vector<sn*>& prims)  // static
 }
 
 
+inline void sn::increase_zmax( double dz )
+{
+    if(typecode == CSG_CONE) 
+    {
+        increase_zmax_cone( dz ); 
+    }
+    else
+    {
+        increase_zmax_( dz ); 
+    }
+    note |= NOTE_INCREASE_ZMAX ; 
+}
+
+inline void sn::decrease_zmin( double dz )
+{
+    if(typecode == CSG_CONE) 
+    {
+        decrease_zmin_cone( dz ); 
+    }
+    else
+    {
+        decrease_zmin_( dz ); 
+    }
+    note |= NOTE_DECREASE_ZMIN ; 
+}
+
+
+
+
 
 /**
-sn::increase_zmax
+sn::increase_zmax_
 ------------------
 
 Expand upwards in +Z direction::
@@ -2349,14 +2404,14 @@ Expand upwards in +Z direction::
     +--------+  zmin
 
 **/
-inline void sn::increase_zmax( double dz )
+inline void sn::increase_zmax_( double dz )
 {
     assert( dz > 0. ); 
     double _zmax = zmax(); 
     double new_zmax = _zmax + dz ; 
 
     std::cerr
-        << "sn::increase_zmax"
+        << "sn::increase_zmax_"
         << " lvid " << lvid 
         << " _zmax " << _zmax 
         << " dz " << dz
@@ -2366,9 +2421,14 @@ inline void sn::increase_zmax( double dz )
 
     set_zmax(new_zmax); 
 }
+
+
+
+
+
 /**
-sn::decrease_zmin
-------------------
+sn::decrease_zmin_
+--------------------
 
 Expand downwards in -Z direction::
 
@@ -2379,14 +2439,14 @@ Expand downwards in -Z direction::
     +~~~~~~~~+  zmin - dz    (dz > 0.)
 
 **/
-inline void sn::decrease_zmin( double dz )
+inline void sn::decrease_zmin_( double dz )
 {
     assert( dz > 0. ); 
     double _zmin = zmin(); 
     double new_zmin = _zmin - dz ; 
 
     std::cerr
-        << "sn::decrease_zmin"
+        << "sn::decrease_zmin_"
         << " lvid " << lvid 
         << " _zmin " << _zmin 
         << " dz " << dz
@@ -2396,6 +2456,131 @@ inline void sn::decrease_zmin( double dz )
 
     set_zmin(new_zmin); 
 }
+
+
+/**
+sn::increase_zmax_cone
+------------------------
+
+Impl from ncone::decrease_z1
+
+This avoids increase_zmax and decrease_zmin 
+changing angle of the cone by proportionately changing 
+rperp_at_zmin and rperp_at_zmax
+
+
+                    
+                   new_rperp_at_zmax : new_r2
+                    |
+                    | rperp_at_zmax  : r2   
+                    | | 
+                    | |
+              +~~~~~+ |        new_zmax : new_z2
+             /   .   \|
+            +----.----+        zmax : z2           z2 > z1  by assertion 
+           /     .     \
+          /      .      \
+         /       .       \
+        +--------.--------+    zmin : z1 
+       /         .        |\
+      +~~~~~~~~~~.~~~~~~~~|~+  new_zmin : new_z1
+                          | |
+                          | |
+                          rperp_at_zmin : r1
+                            |
+                           new_rperp_at_zmin : new_r1
+
+
+Consider increasing zmax by dz (dz > 0) to new_zmax
+while keeping the same cone angle::
+
+
+       new_z2 - z1       z2 - z1  
+      -------------  =  ----------       ratios of corresponding z and r diffs 
+       new_r2 - r1       r2 - r1         must be equal for fixed cone angle 
+
+
+      new_r2 - r1     new_z2 - z1  
+      ----------  =  -------------       collect r and z terms on each side  
+       r2  - r1        z2 - z1 
+
+       new_r2 =   r1 +  (r2 - r1) ( new_z2 - z1 )/(z2 - z1)
+
+
+Similarly for decreasing zmin by dz (dz > 0) to new_zmin
+
+
+     new_r1 - r2          r2 - r1
+   ---------------  =   ----------
+     new_z1 - z2          z2 - z1 
+
+
+        
+     new_r1 = r2 + ( r2 - r1 )*(new_z1 - z2) / (z2 - z1 )
+
+
+**/
+
+
+
+inline void sn::increase_zmax_cone( double dz )
+{
+    double r1 = param->value(0) ;  // aka rperp_at_zmin
+    double z1 = param->value(1) ;  // aka zmin
+    double r2 = param->value(2) ;  // aka rperp_at_zmax
+    double z2 = param->value(3) ;  // aka zmax
+
+    double new_z2 = z2 + dz ; 
+    double new_r2 = r1 +  (r2 - r1)*( new_z2 - z1 )/(z2 - z1)  ;
+
+    std::cerr
+        << "sn::increase_zmax_cone"
+        << " lvid " << lvid 
+        << " z2 " << z2
+        << " r2 " << r2
+        << " dz " << dz
+        << " new_z2 " << new_z2 
+        << " new_r2 " << new_r2 
+        << std::endl 
+        ;   
+
+    set_zmax(new_z2);
+    set_rperp_at_zmax(new_r2 < 0. ? 0. : new_r2);
+}
+
+
+inline void sn::decrease_zmin_cone( double dz )
+{
+    double r1 = param->value(0) ;  // aka rperp_at_zmin
+    double z1 = param->value(1) ;  // aka zmin
+    double r2 = param->value(2) ;  // aka rperp_at_zmax
+    double z2 = param->value(3) ;  // aka zmax
+
+    double new_z1 = z1 - dz ; 
+    double new_r1 = r2 + (r2 - r1)*(new_z1 - z2) /(z2 - z1 ) ;
+
+    std::cerr
+        << "sn::decrease_zmin_cone"
+        << " lvid " << lvid 
+        << " z1 " << z1
+        << " r1 " << r1
+        << " dz " << dz
+        << " new_z1 " << new_z1 
+        << " new_r1 " << new_r1 
+        << std::endl 
+        ;   
+
+    set_zmin(new_z1);
+    set_rperp_at_zmin(new_r1 < 0. ? 0. : new_r1);
+
+}
+
+
+
+
+
+
+
 inline double sn::zmin() const
 {
     assert( can_znudge() );
@@ -2451,6 +2636,16 @@ inline double sn::rperp_at_zmax() const
     return v ; 
 }
 
+inline void sn::set_rperp_at_zmax(double rperp_) const 
+{
+    assert( can_znudge() );
+    switch(typecode) 
+    {
+        case CSG_CYLINDER: param->set_value(3, rperp_) ; break ; 
+        case CSG_CONE:     param->set_value(2, rperp_) ; break ; 
+    } 
+}
+
 inline double sn::rperp_at_zmin() const 
 {
     assert( can_znudge() );
@@ -2462,6 +2657,18 @@ inline double sn::rperp_at_zmin() const
     }
     return v ; 
 }
+
+inline void sn::set_rperp_at_zmin(double rperp_) const 
+{
+    assert( can_znudge() );
+    switch(typecode) 
+    {
+        case CSG_CYLINDER: param->set_value(3, rperp_) ; break ; 
+        case CSG_CONE:     param->set_value(0, rperp_) ; break ; 
+    } 
+}
+
+
 
 
 /**

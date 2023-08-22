@@ -19,6 +19,8 @@ class CSGFoundryAB(object):
         self.b = b 
         self.ip = _ip
         self.check_node()
+        self.check_node_param("npa")
+        self.check_node_bbox("nbb")
 
     def _set_ip(self, ip):
         self._ip = ip 
@@ -288,6 +290,26 @@ class CSGFoundryAB(object):
             setattr(self,name,None) 
         pass
         return "\n".join(lines)
+
+    def check_node_param(self, name="npa"):
+        a = self.a 
+        b = self.b        
+        ab = self
+        a_pa = a.node.reshape(-1,16)[:,:6]
+        b_pa = b.node.reshape(-1,16)[:,:6]
+        setattr(ab, name, np.max(np.abs(a_pa-b_pa), axis=1 ))
+        
+    def check_node_bbox(self, name="nbb"):
+        a = self.a 
+        b = self.b        
+        ab = self
+        a_bb = a.node.reshape(-1,16)[:,8:14]
+        b_bb = b.node.reshape(-1,16)[:,8:14]
+        setattr(ab, name, np.max(np.abs(a_bb-b_bb), axis=1 ))
+
+        
+
+   
 
     def check_tran(self):
         lines = []

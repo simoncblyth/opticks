@@ -51,6 +51,9 @@ cx:convexpolyhedron
    planeOffset and number of planes   
 
 
+* TODO : it would be convenient for debugging for the lvid to be in the node, 
+  for example via bitpack with the boundary or typecode 
+
 
 * vim replace : shift-R
 
