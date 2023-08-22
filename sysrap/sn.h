@@ -661,7 +661,7 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.note  = x->note  ; 
 
     assert( sizeof(n.label) == sizeof(x->label) ); 
-    strncpy( &n.label[0], x->label, sizeof(x->label) );
+    strncpy( &n.label[0], x->label, sizeof(n.label) );
 
 
     if(level() > 1) std::cerr 
