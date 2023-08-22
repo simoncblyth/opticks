@@ -1488,9 +1488,17 @@ inline const snode* stree::get_parent_node(int nidx) const
 stree::is_outer_node
 ----------------------
 
-An outer node is either the root node with no parent
-or has a parent with a different repeat_index.
-The outer nodes correspond to base nodes of the instances. 
+Used by::
+
+   stree::get_ancestors
+   stree::get_node_product 
+
+An outer node is either the root node which has no parent
+or some other node with a parent from a different repeat_index.
+Typically the different repeat_index with be the global zero. 
+
+The outer nodes correspond to base nodes of the instances, 
+and similarly the root node is the base node of the remainder nodes. 
 
 **/
 
@@ -1501,10 +1509,10 @@ inline bool stree::is_outer_node(int nidx) const
     const snode* p = get_parent_node(nidx); 
 
     return p == nullptr ? 
-                            true  
-                         :
-                            p->repeat_index != n->repeat_index 
-                         ;
+                           true  
+                        :
+                           p->repeat_index != n->repeat_index 
+                        ;
 
 }
 
@@ -1529,8 +1537,10 @@ local:false
 local:true
     Gets ancestors of *nidx* that have the same repeat_index as the *nidx* node.
     For *nidx* within the remainder nodes this is expected to start from root, nidx 0.
-    For *nidx* within instanced nodes this will only include nodes within that same instance. 
+    For *nidx* within instanced nodes this will only include ancestor 
+    nodes within that same instance. 
 
+    HMM: looks like does not include the outer node ?
 
 
 Q: Judgement after collection, so does that correctly skip the outer ?  
@@ -1538,7 +1548,11 @@ A: No because its recording the parent looking ahead, hence try popping the last
 
 **/
 
-inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx, bool local, std::ostream* out ) const
+inline void stree::get_ancestors( 
+    std::vector<int>& ancestors, 
+    int nidx, 
+    bool local, 
+    std::ostream* out ) const
 {
     const snode* nd0 = &nds[nidx] ; 
     const snode* nd = nd0->parent > -1 ? &nds[nd0->parent] : nullptr ; 
@@ -1612,15 +1626,37 @@ inline void stree::get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<
     w2m_ = w2m[nidx]; 
 }
 
+/**
+stree::get_node_product
+-------------------------
+
+local:true
+   note that the get_ancestors does not include the outer node index, 
+   where the outer node is the one that has parent of different repeat_idx, 
+   or root with no parent.
+  
+   The reason to skip the outer node is because the transform for that node 
+   will differ for all instances whereas with local:true are operating 
+   within the frame of the instance such that the transform product will 
+   be the same for all instances.  Indeed that skipped transform 
+   will become part of the instance transforms. 
+
+**/
+
 inline void stree::get_node_product( 
                       glm::tmat4x4<double>& m2w_, 
-                      glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse, std::ostream* out ) const 
+                      glm::tmat4x4<double>& w2m_, 
+                      int nidx, 
+                      bool local, 
+                      bool reverse, 
+                      std::ostream* out ) const 
 {
     std::vector<int> nodes ; 
     get_ancestors(nodes, nidx, local, out);  // root-first-order (from collecting parent links then reversing the vector)
 
-    bool is_local_outer = local && is_outer_node(nidx) ; 
-    if(is_local_outer == false ) nodes.push_back(nidx); 
+    bool is_local_outer = local && is_outer_node(nidx) ;
+    if(is_local_outer == false ) nodes.push_back(nidx);  // dont include the local_outer node, here either
+
 
     int num_nodes = nodes.size();
 
@@ -1742,6 +1778,13 @@ sysrap/tests/stree_create_test.cc
    sets up a geometry with structural translations+rotations 
    and csg translations+rotations+scales to test the get_transform product ordering  
 
+
+local:true for instances node.repeat_index > 0
+    get_node_product with local:true gives structural transform 
+    product within the instance, excluding the outer node transform. 
+    That transform product will often be identity.
+
+
 **/
 
 template<typename N>
@@ -1758,7 +1801,8 @@ inline void stree::get_combined_transform(
     glm::tmat4x4<double> vv(1.) ;
 
     get_node_product( tt, vv, node.index, local, false, out ); // reverse:false
-
+   
+  
 
     glm::tmat4x4<double> tc(1.) ;
     glm::tmat4x4<double> vc(1.) ;

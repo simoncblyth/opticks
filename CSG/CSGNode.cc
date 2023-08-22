@@ -15,7 +15,8 @@
 #include "CSGNode.h"
 
 
-const float CSGNode::UNBOUNDED_DEFAULT_EXTENT = 100.f ; 
+//const float CSGNode::UNBOUNDED_DEFAULT_EXTENT = 100.f ; 
+const float CSGNode::UNBOUNDED_DEFAULT_EXTENT = 0.f ; 
 
 
 std::string CSGNode::Addr(unsigned repeatIdx, unsigned primIdx, unsigned partIdxRel ) // static
@@ -372,6 +373,18 @@ void CSGNode::getYRange(float& y0, float& y1) const
     }
 }
 
+
+/**
+CSGNode::setAABBLocal
+----------------------
+
+CAUTION : currently this is near duplicated in sn::setAABBLocal
+
+The duplication is because need the bbox for general nudging in sn.h 
+
+**/
+
+
 void CSGNode::setAABBLocal()
 {
     unsigned tc = typecode(); 
@@ -457,7 +470,6 @@ void CSGNode::setAABBLocal()
         assert(0); 
         setAABB( 0.f );  
     }
-
 }
 
 CSGNode CSGNode::Zero()  // static

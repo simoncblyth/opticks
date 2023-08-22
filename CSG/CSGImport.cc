@@ -252,6 +252,8 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
 CSGImport::importNode (cf CSG_GGeo_Convert::convertNode)
 ----------------------------------------------------------
 
+Impl must stay close to CSG_GGeo_Convert::convertNode
+
 An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
 that is associated with the structural *snode*. 
 
@@ -272,6 +274,23 @@ nodeIdx
 
 TODO: once get match tidy this up, looks like setting AABB twice 
 
+
+Lack of complement in snd.hh and inflexibility motivated the move to sn.h 
+
+
+
+**Leaf CSGNode transforms**
+
+For the instanced with node.repeat_index > 0,  
+transforms are within the instance frame.
+
+For global remainder with node.repeat_index == 0, it will be the absolute transform 
+combining the CSG node transforms with the structural node transforms all the way down 
+from root. 
+
+
+
+
 **/
 
 
@@ -279,14 +298,11 @@ template<typename N>
 CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
 {
     CSGNode cn = CSGNode::Zero() ;
-    const double* aabb = nullptr ;
-    const double* param6 = nullptr ;
-    bool complement = false ;
 
-    aabb   = nd ? nd->getAABB() : nullptr ;
-    param6 = nd ? nd->getParam() : nullptr ;
-    complement = nd ? nd->complement : false ;
-    // HMM: snd is missing complement, sn.h has it, U4Solid uses CSG_DIFFERENCE
+    const double* aabb   = nd ? nd->getAABB() : nullptr ;
+    const double* param6 = nd ? nd->getParam() : nullptr ;
+    bool complement      = nd ? nd->complement : false ;
+    bool has_aabb = aabb != nullptr ; 
 
     if(nd)
     {
@@ -298,50 +314,39 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     cn.setBoundary(node.boundary) ;
     cn.setComplement(complement) ;
     int typecode = cn.typecode() ;
+    
 
     const std::vector<float4>* pl = nullptr ;  // planes
     const Tran<double>* tv = nullptr ;
-
     if( CSG::IsLeaf(typecode) )
     {
         glm::tmat4x4<double> t(1.) ;
         glm::tmat4x4<double> v(1.) ;
-
-        //assert(0 && "IMPL INCOMPLETE");
         st->get_combined_transform(t, v, node, nd, nullptr );
-
         tv = new Tran<double>(t, v);
     }
-
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
     CSGNode* n = fd->addNode(cn, pl);    // Tran gets narrowed
-
     n->setTransform(tranIdx);
 
+    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode); 
+    // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
 
-    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode);
+    LOG_IF(fatal, expect_external_bbox && !has_aabb )
+        << " For node of type " << CSG::Name(typecode)
+        << " nd.lvid " << nd->lvid 
+        << " : EXPECT EXTERNAL AABB : BUT THERE IS NONE "
+        ;
 
-    // needs to follow CSG_GGeo_Convert::convertNode
 
-    if( nd && nd->hasAABB() )
+    if( expect_external_bbox )
     {   
-        /*
-        LOG_IF(error, !expect_external_bbox) 
-           << " For node of type " << CSG::Name(typecode)
-           << " : DO NOT EXPECT AABB : BUT FIND ONE " 
-           << " (maybe boolean tree for general sphere)" 
-           ;
-        */
+        assert(has_aabb);   
         n->setAABB_Narrow( aabb ); 
     }
-    else
+    else if( nd )  // try blanket setting the bbox 
     {
-        LOG_IF(fatal, expect_external_bbox )
-           << " For node of type " << CSG::Name(typecode)
-           << " : EXPECT EXTERNAL AABB : BUT THERE IS NONE "
-           ;
-        if(expect_external_bbox) assert(0) ; 
         n->setAABBLocal(); // use params of each type to set the bbox 
     }
 

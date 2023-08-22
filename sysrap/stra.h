@@ -66,6 +66,8 @@ struct stra
     static T Maxdiff_from_Identity(const glm::tmat4x4<T>& m); 
     static bool IsIdentity(const glm::tmat4x4<T>& m, T epsilon=1e-6); 
     static bool IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>& v, T epsilon=1e-6); 
+
+    static void Transform_AABB( T* aabb1, const T* aabb0, const glm::tmat4x4<T>& t ); 
 }; 
 
 
@@ -473,7 +475,70 @@ inline bool stra<T>::IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>&
     return IsIdentity(t, epsilon) && IsIdentity(v, epsilon) ; 
 } 
 
+/**
+stra::Transform_AABB
+---------------------
 
+Impl from sqat4.h transform_aabb_inplace 
+
+**/
+
+template<typename T>
+inline void stra<T>::Transform_AABB( T* aabb_1, const T* aabb, const glm::tmat4x4<T>& t )
+{
+    glm::tvec4<T> q0(0.);
+    glm::tvec4<T> q1(0.);
+    glm::tvec4<T> q2(0.);
+    glm::tvec4<T> q3(0.);
+
+    memcpy( glm::value_ptr(q0), glm::value_ptr(t) +  0,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q1), glm::value_ptr(t) +  4,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q2), glm::value_ptr(t) +  8,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q3), glm::value_ptr(t) + 12,  4*sizeof(T) ); 
+     
+
+    glm::tvec4<T> xa = q0 * *(aabb+0) ; 
+    glm::tvec4<T> xb = q0 * *(aabb+3) ; 
+
+    glm::tvec4<T> ya = q1 * *(aabb+1) ; 
+    glm::tvec4<T> yb = q1 * *(aabb+4) ; 
+
+    glm::tvec4<T> za = q2 * *(aabb+2) ; 
+    glm::tvec4<T> zb = q2 * *(aabb+5) ; 
+
+
+
+
+
+
+/*
+        float4 xa = q0.f * *(aabb+0) ; 
+        float4 xb = q0.f * *(aabb+3) ;
+        float4 xmi = fminf(xa, xb);
+        float4 xma = fmaxf(xa, xb);
+
+        float4 ya = q1.f * *(aabb+1) ; 
+        float4 yb = q1.f * *(aabb+4) ;
+        float4 ymi = fminf(ya, yb);
+        float4 yma = fmaxf(ya, yb);
+
+        float4 za = q2.f * *(aabb+2) ; 
+        float4 zb = q2.f * *(aabb+5) ;
+        float4 zmi = fminf(za, zb);
+        float4 zma = fmaxf(za, zb);
+
+        float4 tmi = xmi + ymi + zmi + q3.f ; 
+        float4 tma = xma + yma + zma + q3.f ; 
+
+        *(aabb + 0) = tmi.x ; 
+        *(aabb + 1) = tmi.y ; 
+        *(aabb + 2) = tmi.z ; 
+        *(aabb + 3) = tma.x ; 
+        *(aabb + 4) = tma.y ; 
+        *(aabb + 5) = tma.z ; 
+*/
+
+}
 
 
 

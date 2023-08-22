@@ -459,6 +459,17 @@ class CSGFoundry(object):
         return primIdx 
             
 
+    def find_lvid_from_nodeIdx(self, nodeIdx_):
+        """
+        """ 
+        primIdx = self.find_primIdx_from_nodeIdx(nodeIdx_)
+        return self.prim[primIdx].view(np.int32)[:,1,1] 
+
+    def find_lvname_from_nodeIdx(self, nodeIdx_):
+        lvid = self.find_lvid_from_nodeIdx(nodeIdx_)
+        return self.meshname[lvid]
+
+ 
 
     def meshIdx(self, primIdx):
         """

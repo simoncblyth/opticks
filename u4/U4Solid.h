@@ -359,6 +359,7 @@ inline void U4Solid::init_Tree()
     assert( root); 
     root->set_lvid(lvid); 
     root->positivize() ;  
+    root->uncoincide(); 
 #endif
 }
 

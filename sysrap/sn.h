@@ -164,6 +164,7 @@ struct SYSRAP_API sn
     static constexpr const char* NAME = "sn.npy" ; 
     static constexpr const double zero = 0. ; 
     static constexpr const double Z_EPSILON = 1e-3 ; 
+    static constexpr const double UNBOUNDED_DEFAULT_EXTENT = 0. ; 
 
     static void SetPOOL( POOL* pool_ ); 
     static int level(); 
@@ -263,6 +264,7 @@ struct SYSRAP_API sn
 
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
+    std::string desc_prim() const ; 
     std::string brief() const ; 
     std::string desc_child() const ; 
     std::string desc_r() const ; 
@@ -312,6 +314,7 @@ struct SYSRAP_API sn
 
     void setPA( double x, double y, double z, double w, double z1, double z2 );
     void setBB(  double x0, double y0, double z0, double x1, double y1, double z1 ); 
+    void setBB(  double x0 ); 
 
     void setXF(     const glm::tmat4x4<double>& t ); 
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
@@ -376,6 +379,7 @@ struct SYSRAP_API sn
 
     static std::string ZDesc(const std::vector<sn*>& prims); 
 
+    void getParam_(double& p0, double& p1, double& p2, double& p3, double& p4, double& p5 ) const ; 
     const double* getParam() const ; 
     const double* getAABB() const ; 
     bool hasAABB() const ;  // not-nullptr and not all zero 
@@ -423,6 +427,10 @@ struct SYSRAP_API sn
     void collect_progeny( std::vector<const sn*>& progeny, int exclude_typecode ) const ; 
     static void CollectProgeny_r( const sn* n, std::vector<const sn*>& progeny, int exclude_typecode ); 
 
+    void collect_prim( std::vector<const sn*>& prim ) const ; 
+    void collect_prim_r( std::vector<const sn*>& prim, int d ) const ; 
+
+
     void collect_monogroup( std::vector<const sn*>& monogroup ) const ; 
 
     static bool AreFromSameMonogroup(const sn* a, const sn* b, int op); 
@@ -457,6 +465,8 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& v,  
         bool reverse) const ; 
 
+    void setAABBLocal() ; 
+    void uncoincide() ; 
     
 };  // END
 
@@ -1337,6 +1347,24 @@ inline std::string sn::desc() const
     return str ;
 }
 
+inline std::string sn::desc_prim() const 
+{
+    std::stringstream ss ;
+    ss 
+       << " idx " << std::setw(4) << index()
+       << " lvid " << std::setw(3) << lvid 
+       << " " << tag()
+#ifdef WITH_SND
+       <<  " aabb " << aabb 
+#else 
+       << ( aabb ? aabb->desc() : "-" )
+#endif
+       ; 
+
+    std::string str = ss.str();
+    return str ;
+}
+
 
 inline std::string sn::brief() const
 {
@@ -2036,6 +2064,19 @@ inline void sn::setBB( double x0, double y0, double z0, double x1, double y1, do
     aabb->z1 = z1 ; 
 }
 
+inline void sn::setBB( double x0 )
+{
+    if( aabb == nullptr ) aabb = new s_bb ; 
+    aabb->x0 = -x0 ; 
+    aabb->y0 = -x0 ; 
+    aabb->z0 = -x0 ; 
+    aabb->x1 = +x0 ; 
+    aabb->y1 = +x0 ; 
+    aabb->z1 = +x0 ; 
+}
+
+
+
 
 inline void sn::setXF( const glm::tmat4x4<double>& t )
 {
@@ -2588,6 +2629,7 @@ inline double sn::zmin() const
     switch(typecode)
     {
         case CSG_CYLINDER: v = param->value(4) ; break ; 
+        case CSG_ZSPHERE:  v = param->value(4) ; break ;  
         case CSG_CONE:     v = param->value(1) ; break ;  
     }
     return v ;
@@ -2599,6 +2641,7 @@ inline void sn::set_zmin(double zmin_)
     switch(typecode)
     {
         case CSG_CYLINDER: param->set_value(4, zmin_) ; break ; 
+        case CSG_ZSPHERE:  param->set_value(4, zmin_) ; break ;  
         case CSG_CONE:     param->set_value(1, zmin_) ; break ; 
     }
 }
@@ -2610,6 +2653,7 @@ inline double sn::zmax() const
     switch(typecode)
     {
         case CSG_CYLINDER: v = param->value(5) ; break ; 
+        case CSG_ZSPHERE:  v = param->value(5) ; break ;  
         case CSG_CONE:     v = param->value(3) ; break ;  
     }
     return v ;
@@ -2620,6 +2664,7 @@ inline void sn::set_zmax(double zmax_)
     switch(typecode) 
     {
         case CSG_CYLINDER: param->set_value(5, zmax_) ; break ; 
+        case CSG_ZSPHERE:  param->set_value(5, zmax_) ; break ; 
         case CSG_CONE:     param->set_value(3, zmax_) ; break ; 
     } 
 }
@@ -2711,6 +2756,17 @@ inline std::string sn::ZDesc(const std::vector<sn*>& prims) // static
     return str ;
 }
 
+
+inline void sn::getParam_(double& p0, double& p1, double& p2, double& p3, double& p4, double& p5 ) const 
+{ 
+    const double* d = param ? param->data() : nullptr ; 
+    p0 = d ? d[0] : 0. ;   
+    p1 = d ? d[1] : 0. ;   
+    p2 = d ? d[2] : 0. ;   
+    p3 = d ? d[3] : 0. ;   
+    p4 = d ? d[4] : 0. ;   
+    p5 = d ? d[5] : 0. ;   
+}
 inline const double* sn::getParam() const { return param ? param->data() : nullptr ; }
 inline const double* sn::getAABB()  const { return aabb ? aabb->data() : nullptr ; }
 
@@ -3326,6 +3382,21 @@ inline void sn::CollectProgeny_r( const sn* n, std::vector<const sn*>& progeny, 
 }
 
 
+inline void sn::collect_prim( std::vector<const sn*>& prim ) const 
+{
+    collect_prim_r(prim, 0); 
+}
+inline void sn::collect_prim_r( std::vector<const sn*>& prim, int d ) const 
+{
+    if(is_primitive()) prim.push_back(this); 
+    for(int i=0 ; i < num_child() ; i++) get_child(i)->collect_prim_r(prim, d+1) ; 
+}
+
+
+
+
+
+
 /**
 sn::collect_monogroup
 -----------------------
@@ -3402,10 +3473,7 @@ cf nmat4triple::product
 
 1. finds CSG node ancestors of snd idx 
 
-
 **/
-
-
 
 inline void sn::NodeTransformProduct(
     int idx, 
@@ -3507,5 +3575,149 @@ inline std::string sn::desc_getNodeTransformProduct(
 
 
 
+/**
+sn::setAABBLocal
+-------------------
+
+Migrated down from CSGNode::setAABBLocal as nudging 
+needs this done earlier. 
+
+**/
+
+inline void sn::setAABBLocal()
+{
+    if(typecode == CSG_SPHERE)
+    {   
+        double cx, cy, cz, r, a, b ; 
+        getParam_(cx, cy, cz, r, a, b );  
+        assert( cx == 0. && cy == 0. && cz == 0. ); 
+        assert( a == 0. && b == 0. ); 
+        setBB(  -r, -r, -r,  r, r, r  );  
+    }   
+    else if(typecode == CSG_ZSPHERE)
+    {   
+        double cx, cy, cz, r, z1, z2 ; 
+        getParam_(cx, cy, cz, r, z1, z2 );  
+        assert( cx == 0. && cy == 0. && cz == 0. ) ; 
+        assert( z1 == zmin());  
+        assert( z2 == zmax());  
+        assert( z2 > z1 );  
+        setBB(  -r, -r, z1,  r, r, z2  );  
+    }   
+    else if( typecode == CSG_CONE )
+    {   
+        double r1, z1, r2, z2, a, b ; 
+        getParam_(r1, z1, r2, z2, a, b );  
+        assert( a == 0. && b == 0. ); 
+        double rmax = fmaxf(r1, r2) ;
+        setBB( -rmax, -rmax, z1, rmax, rmax, z2 );  
+    }   
+    else if( typecode == CSG_BOX3 )
+    {   
+        double fx, fy, fz, a, b, c ; 
+        getParam_(fx, fy, fz, a, b, c );  
+        assert( a == 0. && b == 0. && c == 0. ); 
+        setBB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
+    }   
+    else if( typecode == CSG_CYLINDER || typecode == CSG_OLDCYLINDER )
+    {   
+        double px, py, a, radius, z1, z2 ; 
+        getParam_(px, py, a, radius, z1, z2 ) ; 
+        assert( px == 0. && py == 0. && a == 0. ); 
+        setBB( px-radius, py-radius, z1, px+radius, py+radius, z2 );   
+    }
+    else if( typecode == CSG_DISC )
+    {
+        double px, py, ir, r, z1, z2 ;
+        getParam_(px, py, ir, r, z1, z2);
+        assert( px == 0. && py == 0. && ir == 0. ); 
+        setBB( px - r , py - r , z1, px + r, py + r, z2 );
+    }
+    else if( typecode == CSG_HYPERBOLOID )
+    {
+        double r0, zf, z1, z2, a, b ;
+        getParam_(r0, zf, z1, z2, a, b ) ;
+        assert( a == 0. && b == 0. ); 
+        assert( z1 < z2 );
+        const double rr0 = r0*r0 ;
+        const double z1s = z1/zf ;
+        const double z2s = z2/zf ;
+
+        const double rr1 = rr0 * ( z1s*z1s + 1. ) ;
+        const double rr2 = rr0 * ( z2s*z2s + 1. ) ;
+        const double rmx = sqrtf(fmaxf( rr1, rr2 )) ;
+
+        setBB(  -rmx,  -rmx,  z1,  rmx, rmx, z2 );
+    }
+    else if( typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE )
+    {
+        setBB( 0. );
+    }
+    else if( typecode == CSG_CONTIGUOUS || typecode == CSG_DISCONTIGUOUS )
+    {
+        // cannot define bbox of list header nodes without combining bbox of all the subs 
+        // so have to defer setting the bbox until all the subs are converted 
+        setBB( 0. );
+    }
+    else if( typecode == CSG_ZERO )
+    {
+        setBB( UNBOUNDED_DEFAULT_EXTENT );
+    }
+    else if( typecode == CSG_PHICUT )
+    {
+        setBB( UNBOUNDED_DEFAULT_EXTENT );
+    }
+    else if( typecode == CSG_THETACUT )
+    {
+        setBB( UNBOUNDED_DEFAULT_EXTENT );
+    }
+    else
+    {
+        std::cerr 
+            << "sn::setAABBLocal : FATAL NOT IMPLEMENTED : "
+            << " typecode " << typecode 
+            << " CSG::Name(typecode) " << CSG::Name(typecode)
+            << std::endl 
+            ;
+        assert(0);
+        setBB( 0. );
+    }
+}
 
 
+
+
+inline void sn::uncoincide()
+{
+#ifdef WITH_SND
+#else
+    std::vector<const sn*> prim ; 
+    collect_prim(prim); 
+    int num_prim = prim.size() ; 
+
+    std::stringstream ss ; 
+    ss
+        << "sn::uncoincide" 
+        << " lvid " << lvid 
+        << " num_prim " << num_prim 
+        << std::endl
+        ; 
+
+    for(int i=0 ; i < num_prim ; i++)
+    {
+        const sn* p = prim[i] ; 
+        const_cast<sn*>(p)->setAABBLocal() ; 
+
+        glm::tmat4x4<double> tc(1.) ;
+        glm::tmat4x4<double> vc(1.) ;
+
+        p->getNodeTransformProduct(tc, vc, false, &ss ); // reverse:false
+
+        ss << p->desc_prim() << std::endl ; 
+    }
+
+    std::string str = ss.str() ; 
+    std::cerr << str << std::endl ; 
+
+#endif
+}

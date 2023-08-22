@@ -111,14 +111,17 @@ inline s_bb::~s_bb()
 
 inline std::string s_bb::desc() const 
 {
+    int w = 7 ; 
+    int p = 3 ;  
     std::stringstream ss ;
     ss 
-       << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0
-       << " y0 " << std::setw(10) << std::fixed << std::setprecision(3) << y0
-       << " z0 " << std::setw(10) << std::fixed << std::setprecision(3) << z0 
-       << " x1 " << std::setw(10) << std::fixed << std::setprecision(3) << x1
-       << " y1 " << std::setw(10) << std::fixed << std::setprecision(3) << y1 
-       << " z1 " << std::setw(10) << std::fixed << std::setprecision(3) << z1 
+       << "[" << std::setw(w) << std::fixed << std::setprecision(p) << x0
+       << "," << std::setw(w) << std::fixed << std::setprecision(p) << y0
+       << "," << std::setw(w) << std::fixed << std::setprecision(p) << z0 
+       << "," << std::setw(w) << std::fixed << std::setprecision(p) << x1
+       << "," << std::setw(w) << std::fixed << std::setprecision(p) << y1 
+       << "," << std::setw(w) << std::fixed << std::setprecision(p) << z1 
+       << "]" 
        ;
         
     std::string str = ss.str(); 
