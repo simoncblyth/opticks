@@ -315,6 +315,7 @@ struct SYSRAP_API sn
     void setPA( double x, double y, double z, double w, double z1, double z2 );
     void setBB(  double x0, double y0, double z0, double x1, double y1, double z1 ); 
     void setBB(  double x0 ); 
+    double* getBB_data() ; 
 
     void setXF(     const glm::tmat4x4<double>& t ); 
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
@@ -439,8 +440,6 @@ struct SYSRAP_API sn
 
 
 
-
-
     static void NodeTransformProduct(
         int idx, 
         glm::tmat4x4<double>& t, 
@@ -466,7 +465,11 @@ struct SYSRAP_API sn
         bool reverse) const ; 
 
     void setAABBLocal() ; 
+
+    static const int uncoincide_dump_lvid ;  // export sn__uncoincide_dump_lvid=101
     void uncoincide() ; 
+    void uncoincide_(std::ostream* out); 
+
     
 };  // END
 
@@ -2075,6 +2078,11 @@ inline void sn::setBB( double x0 )
     aabb->z1 = +x0 ; 
 }
 
+inline double* sn::getBB_data() 
+{
+    if( aabb == nullptr ) aabb = new s_bb ; 
+    return aabb->data(); 
+}
 
 
 
@@ -3685,9 +3693,20 @@ inline void sn::setAABBLocal()
 }
 
 
-
+inline const int sn::uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", 107) ;
 
 inline void sn::uncoincide()
+{
+    std::stringstream ss ; 
+    bool dump = lvid == std::abs(uncoincide_dump_lvid) ; 
+    uncoincide_( dump ? &ss : nullptr ); 
+    if(!dump) return ; 
+
+    std::string str = ss.str() ; 
+    std::cerr << str << std::endl ; 
+}
+
+inline void sn::uncoincide_(std::ostream* out)
 {
 #ifdef WITH_SND
 #else
@@ -3695,9 +3714,10 @@ inline void sn::uncoincide()
     collect_prim(prim); 
     int num_prim = prim.size() ; 
 
-    std::stringstream ss ; 
-    ss
+    if(out) *out 
         << "sn::uncoincide" 
+        << " sn__uncoincide_dump_lvid " << uncoincide_dump_lvid
+        << " (-ve for transform details) "
         << " lvid " << lvid 
         << " num_prim " << num_prim 
         << std::endl
@@ -3706,18 +3726,21 @@ inline void sn::uncoincide()
     for(int i=0 ; i < num_prim ; i++)
     {
         const sn* p = prim[i] ; 
-        const_cast<sn*>(p)->setAABBLocal() ; 
 
-        glm::tmat4x4<double> tc(1.) ;
-        glm::tmat4x4<double> vc(1.) ;
+        glm::tmat4x4<double> t(1.) ;
+        glm::tmat4x4<double> v(1.) ;
 
-        p->getNodeTransformProduct(tc, vc, false, &ss ); // reverse:false
+        std::ostream* ntp_out = uncoincide_dump_lvid < 0 ? out : nullptr ; 
+        p->getNodeTransformProduct(t, v, false, ntp_out ); // reverse:false
 
-        ss << p->desc_prim() << std::endl ; 
+        sn* _p = const_cast<sn*>(p) ; 
+        _p->setAABBLocal() ; 
+
+        double* pbb = _p->getBB_data() ; 
+        stra<double>::Transform_AABB_Inplace( pbb,  t );   
+
+        if(out) *out << p->desc_prim() << std::endl ; 
     }
-
-    std::string str = ss.str() ; 
-    std::cerr << str << std::endl ; 
 
 #endif
 }

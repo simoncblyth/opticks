@@ -5,9 +5,15 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-defarg="build_run" 
+defarg="info_build_run" 
 arg=${1:-$defarg}
 opt=-g
+
+vars="BASH_SOURCE arg opt FOLD"
+
+if [ "${arg/info}" != "$arg" ]; then 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
    gcc $name.cc $opt -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -o $bin

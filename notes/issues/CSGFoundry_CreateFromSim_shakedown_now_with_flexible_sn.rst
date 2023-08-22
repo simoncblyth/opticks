@@ -2209,18 +2209,40 @@ Encapsulate lvid lookup in CSGFoundry.py::
     ]U4Solid::init 107/0/Uni/463
 
 
+After using the transforms to stra<double>::Transform_AABB_Inplace::
+
+    sn::uncoincide sn__uncoincide_dump_lvid 107 (-ve for transform details)  lvid 107 num_prim 4
+     idx  457 lvid 107 zs[-254.001,-254.001,  0.000,254.001,254.001,190.101]   ## zs coincident with cy at z=0.000
+     idx  458 lvid 107 cy[-254.001,-254.001, -5.000,254.001,254.001,  0.000]
+     idx  460 lvid 107 zs[-254.001,-254.001,-173.226,254.001,254.001, -5.000]  ## zs coincident with cy at z=-5.000 
+     idx  462 lvid 107 co[-142.968,-142.968,-173.226,142.968,142.968,-162.045]
+
+    ]U4Solid::init 107/0/Uni/463
 
 
-                   UNI
-               UNI      CONE
+Similar with 106::
+
+    sn::uncoincide sn__uncoincide_dump_lvid 106 (-ve for transform details)  lvid 106 num_prim 4
+     idx  450 lvid 106 zs[-249.000,-249.000,  0.000,249.000,249.000,185.100]
+     idx  451 lvid 106 cy[-249.000,-249.000, -5.000,249.000,249.000,  0.000]
+     idx  453 lvid 106 zs[-249.000,-249.000,-168.225,249.000,249.000, -5.000]
+     idx  455 lvid 106 co[-139.625,-139.625,-168.225,139.625,139.625,-158.178]
+
+    ]U4Solid::init 106/0/Uni/456
+
+
+
+
+
+                   UNI 
+               UNI      CONE          CONE IS THE PMT NECK   
             UNI   ZSP        
          ZSP  CYL 
 
 
 
-HMM: clearly transforms involved 
+HMM: clearly need to transform the AABB::
 
-::
 
     In [3]: print(a.descLVDetail(107))
     descLV lvid:107 meshname:HamamatsuR12860_PMT_20inch_pmt_solid_1_40x6152280 pidxs:[2940]
@@ -2454,4 +2476,22 @@ HMM: clearly transforms involved
      idx  462 lvid 107 co[-142.968,-142.968,  5.990,142.968,142.968, 17.170]
 
     ]U4Solid::init 107/0/Uni/463
+
+
+
+
+Added sn::uncoincide : currently that forms the bbox and transforms with the CSG tree transform
+------------------------------------------------------------------------------------------------
+
+::
+
+    sn::uncoincide sn__uncoincide_dump_lvid 107 (-ve for transform details)  lvid 107 num_prim 4
+     idx  457 lvid 107 zs[-254.001,-254.001,  0.000,254.001,254.001,190.101]
+     idx  458 lvid 107 cy[-254.001,-254.001, -5.000,254.001,254.001,  0.000]
+     idx  460 lvid 107 zs[-254.001,-254.001,-173.226,254.001,254.001, -5.000]
+     idx  462 lvid 107 co[-142.968,-142.968,-173.226,142.968,142.968,-162.045]
+
+    ]U4Solid::init 107/0/Uni/463
+
+
 

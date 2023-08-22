@@ -20,6 +20,7 @@ in new code.
 #include "glm/gtx/string_cast.hpp"
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/component_wise.hpp>
 
 
 
@@ -67,7 +68,17 @@ struct stra
     static bool IsIdentity(const glm::tmat4x4<T>& m, T epsilon=1e-6); 
     static bool IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>& v, T epsilon=1e-6); 
 
+    static void Rows(glm::tvec4<T>& q0,
+                     glm::tvec4<T>& q1,
+                     glm::tvec4<T>& q2,
+                     glm::tvec4<T>& q3,
+                     const glm::tmat4x4<T>& t ) ; 
+
+    static void Min(glm::tvec4<T>& q, const glm::tvec4<T>& a, const glm::tvec4<T>& b); 
+    static void Max(glm::tvec4<T>& q, const glm::tvec4<T>& a, const glm::tvec4<T>& b); 
+
     static void Transform_AABB( T* aabb1, const T* aabb0, const glm::tmat4x4<T>& t ); 
+    static void Transform_AABB_Inplace(         T* aabb,  const glm::tmat4x4<T>& t ); 
 }; 
 
 
@@ -152,6 +163,13 @@ std::string stra<T>::Desc(const T* tt, int num)
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+
+
+
 
 
 template<typename T>
@@ -475,6 +493,41 @@ inline bool stra<T>::IsIdentity(const glm::tmat4x4<T>& t, const glm::tmat4x4<T>&
     return IsIdentity(t, epsilon) && IsIdentity(v, epsilon) ; 
 } 
 
+template<typename T>
+inline void stra<T>::Rows(
+    glm::tvec4<T>& q0,
+    glm::tvec4<T>& q1,
+    glm::tvec4<T>& q2,
+    glm::tvec4<T>& q3,
+    const glm::tmat4x4<T>& t ) 
+{
+    memcpy( glm::value_ptr(q0), glm::value_ptr(t) +  0,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q1), glm::value_ptr(t) +  4,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q2), glm::value_ptr(t) +  8,  4*sizeof(T) ); 
+    memcpy( glm::value_ptr(q3), glm::value_ptr(t) + 12,  4*sizeof(T) ); 
+} 
+
+template<typename T>
+void stra<T>::Min(glm::tvec4<T>& q, const glm::tvec4<T>& a, const glm::tvec4<T>& b)
+{
+    q.x = std::min( a.x, b.x ); 
+    q.y = std::min( a.y, b.y ); 
+    q.z = std::min( a.z, b.z ); 
+    q.w = std::min( a.w, b.w ); 
+}
+
+template<typename T>
+void stra<T>::Max(glm::tvec4<T>& q, const glm::tvec4<T>& a, const glm::tvec4<T>& b)
+{
+    q.x = std::max( a.x, b.x ); 
+    q.y = std::max( a.y, b.y ); 
+    q.z = std::max( a.z, b.z ); 
+    q.w = std::max( a.w, b.w ); 
+}
+
+
+
+
 /**
 stra::Transform_AABB
 ---------------------
@@ -491,53 +544,65 @@ inline void stra<T>::Transform_AABB( T* aabb_1, const T* aabb, const glm::tmat4x
     glm::tvec4<T> q2(0.);
     glm::tvec4<T> q3(0.);
 
-    memcpy( glm::value_ptr(q0), glm::value_ptr(t) +  0,  4*sizeof(T) ); 
-    memcpy( glm::value_ptr(q1), glm::value_ptr(t) +  4,  4*sizeof(T) ); 
-    memcpy( glm::value_ptr(q2), glm::value_ptr(t) +  8,  4*sizeof(T) ); 
-    memcpy( glm::value_ptr(q3), glm::value_ptr(t) + 12,  4*sizeof(T) ); 
-     
+    Rows(q0,q1,q2,q3,t); 
 
-    glm::tvec4<T> xa = q0 * *(aabb+0) ; 
-    glm::tvec4<T> xb = q0 * *(aabb+3) ; 
+    T x0 = *(aabb+0) ; 
+    T y0 = *(aabb+1) ; 
+    T z0 = *(aabb+2) ; 
+    T x1 = *(aabb+3) ; 
+    T y1 = *(aabb+4) ; 
+    T z1 = *(aabb+5) ; 
 
-    glm::tvec4<T> ya = q1 * *(aabb+1) ; 
-    glm::tvec4<T> yb = q1 * *(aabb+4) ; 
+    glm::tvec4<T> xa = q0 * x0  ; 
+    glm::tvec4<T> xb = q0 * x1 ; 
+    glm::tvec4<T> xmi ; 
+    glm::tvec4<T> xma ;
+    stra<T>::Min( xmi, xa, xb);  
+    stra<T>::Max( xma, xa, xb);  
+ 
+    glm::tvec4<T> ya = q1 * y0 ; 
+    glm::tvec4<T> yb = q1 * y1 ; 
+    glm::tvec4<T> ymi ; 
+    glm::tvec4<T> yma ;
+    stra<T>::Min( ymi, ya, yb);  
+    stra<T>::Max( yma, ya, yb);  
+  
+    glm::tvec4<T> za = q2 * z0 ; 
+    glm::tvec4<T> zb = q2 * z1 ; 
+    glm::tvec4<T> zmi ; 
+    glm::tvec4<T> zma ;
+    stra<T>::Min( zmi, za, zb);  
+    stra<T>::Max( zma, za, zb);  
 
-    glm::tvec4<T> za = q2 * *(aabb+2) ; 
-    glm::tvec4<T> zb = q2 * *(aabb+5) ; 
+    *(aabb_1+0) = xmi.x + ymi.x + zmi.x + q3.x ; 
+    *(aabb_1+1) = xmi.y + ymi.y + zmi.y + q3.y ; 
+    *(aabb_1+2) = xmi.z + ymi.z + zmi.z + q3.z ; 
+    *(aabb_1+3) = xma.x + yma.x + zma.x + q3.x ; 
+    *(aabb_1+4) = xma.y + yma.y + zma.y + q3.y ; 
+    *(aabb_1+5) = xma.z + yma.z + zma.z + q3.z ; 
+}
+
+template<typename T>
+inline void stra<T>::Transform_AABB_Inplace( T* aabb, const glm::tmat4x4<T>& t )
+{
+    Transform_AABB( aabb, aabb, t ); 
+}
 
 
 
 
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const glm::tmat4x4<T>& m)  
+{
+    os << stra<T>::Desc(m) ;   
+    return os; 
+}
 
-
-/*
-        float4 xa = q0.f * *(aabb+0) ; 
-        float4 xb = q0.f * *(aabb+3) ;
-        float4 xmi = fminf(xa, xb);
-        float4 xma = fmaxf(xa, xb);
-
-        float4 ya = q1.f * *(aabb+1) ; 
-        float4 yb = q1.f * *(aabb+4) ;
-        float4 ymi = fminf(ya, yb);
-        float4 yma = fmaxf(ya, yb);
-
-        float4 za = q2.f * *(aabb+2) ; 
-        float4 zb = q2.f * *(aabb+5) ;
-        float4 zmi = fminf(za, zb);
-        float4 zma = fmaxf(za, zb);
-
-        float4 tmi = xmi + ymi + zmi + q3.f ; 
-        float4 tma = xma + yma + zma + q3.f ; 
-
-        *(aabb + 0) = tmi.x ; 
-        *(aabb + 1) = tmi.y ; 
-        *(aabb + 2) = tmi.z ; 
-        *(aabb + 3) = tma.x ; 
-        *(aabb + 4) = tma.y ; 
-        *(aabb + 5) = tma.z ; 
-*/
-
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const glm::tvec4<T>& v)  
+{
+    os << stra<T>::Desc(v) ;   
+    return os; 
 }
 
 

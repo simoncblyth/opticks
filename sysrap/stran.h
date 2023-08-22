@@ -111,7 +111,7 @@ struct Tran
 };
 
 
-
+/*
 template<typename T>
 inline std::ostream& operator<< (std::ostream& out, const glm::tmat4x4<T>& m  )
 {
@@ -125,6 +125,7 @@ inline std::ostream& operator<< (std::ostream& out, const glm::tmat4x4<T>& m  )
     }   
     return out ; 
 }
+*/
 
 template<typename T>
 inline std::ostream& operator<< (std::ostream& out, const Tran<T>& tr)

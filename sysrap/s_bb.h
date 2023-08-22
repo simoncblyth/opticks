@@ -50,7 +50,9 @@ struct SYSRAP_API s_bb
     double y1 ; 
     double z1 ; 
  
-    const double* data() const { return &x0 ; }
+    const double* cdata() const { return &x0 ; }
+    double* data() {              return &x0 ; }
+
     bool is_root() const { return true ; } 
     std::string desc() const ;  
 }; 

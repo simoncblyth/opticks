@@ -704,7 +704,7 @@ const double* snd::getAABB() const
     if(aabb == -1 ) return nullptr ; 
     assert( aabb > -1 );  
     const sbb& bb = POOL->aabb[aabb] ; 
-    return bb.data() ; 
+    return bb.cdata() ; 
 }
 
 bool snd::hasUnsetAABB() const   // nullptr or all zero

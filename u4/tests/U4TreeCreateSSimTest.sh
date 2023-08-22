@@ -24,6 +24,8 @@ loglevels
 #export U4Tree__IsFlaggedSolid_NAME=HamamatsuR12860sMask_virtual
 
 export SSim__stree_level=0 
+#export sn__uncoincide_dump_lvid=107 
+export sn__uncoincide_dump_lvid=106
 
 #export U4Polycone__DISABLE_NUDGE=1 
 

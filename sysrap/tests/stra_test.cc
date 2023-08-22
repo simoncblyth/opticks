@@ -7,6 +7,7 @@
 #include <string>
 
 #include "stra.h"
+#include "sbb.h"
 
 
 void test_Desc()
@@ -60,14 +61,101 @@ void test_Place()
         << stra<double>::Desc(b[i]) 
         << std::endl 
         ;
+}
 
 
+template<typename T>
+void test_Rows()
+{
+    std::array<T,16> a = { 
+          0., 1., 2., 3., 
+          4., 5., 6., 7., 
+          8., 9.,10.,11., 
+         12.,13.,14.,15.
+     }; 
 
+    glm::tmat4x4<T> m = stra<T>::FromData(a.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+ 
+    glm::tvec4<T> q0(0.);
+    glm::tvec4<T> q1(0.);
+    glm::tvec4<T> q2(0.);
+    glm::tvec4<T> q3(0.);
+
+    stra<T>::Rows(q0,q1,q2,q3,m); 
+
+    std::cout << " q0 " << q0 << std::endl ; 
+    std::cout << " q1 " << q1 << std::endl ; 
+    std::cout << " q2 " << q2 << std::endl ; 
+    std::cout << " q3 " << q3 << std::endl ; 
+
+    glm::tvec4<T> q01_min = glm::min<T>( q0, q1 ); 
+    glm::tvec4<T> q01_max = glm::max<T>( q0, q1 ); 
+
+    std::cout << " q01_min " << q01_min << std::endl ; 
+    std::cout << " q01_max " << q01_max << std::endl ; 
+}
+
+
+template<typename T>
+void test_Transform_AABB()
+{
+    std::cout << "test_Transform_AABB" << std::endl ; 
+
+    std::array<T,16> a = { 
+          1., 0., 0., 0., 
+          0., 1., 0., 0., 
+          0., 0., 1., 0., 
+          0., 0.,100.,1. 
+     }; 
+
+    glm::tmat4x4<T> m = stra<T>::FromData(a.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+
+
+    std::array<T,6> bb0 = { -100., -100., -100.,  100., 100., 100. } ; 
+    std::array<T,6> bb1(bb0) ; 
+
+    std::cout << " bb0 " << sbb::Desc(bb0.data()) << std::endl ; 
+
+    stra<T>::Transform_AABB( bb1.data(), bb0.data(),  m );   
+
+    std::cout << " bb1 " << sbb::Desc(bb1.data()) << std::endl ; 
+}
+
+template<typename T>
+void test_Transform_AABB_Inplace()
+{
+    std::cout << "test_Transform_AABB_Inplace" << std::endl ; 
+
+    std::array<T,16> a = { 
+          1., 0., 0., 0., 
+          0., 1., 0., 0., 
+          0., 0., 1., 0., 
+          0., 0.,100.,1. 
+     }; 
+
+    glm::tmat4x4<T> m = stra<T>::FromData(a.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+
+    std::array<T,6> bb0 = { -100., -100., -100.,  100., 100., 100. } ; 
+    std::array<T,6> bb1(bb0) ; 
+
+    std::cout << " bb0 " << sbb::Desc(bb0.data()) << std::endl ; 
+
+    stra<T>::Transform_AABB_Inplace( bb1.data(),  m );   
+
+    std::cout << " bb1 " << sbb::Desc(bb1.data()) << std::endl ; 
 }
 
 int main()
 {
+    /*
     test_Place(); 
+    test_Rows<double>();
+    test_Transform_AABB<double>();
+    */
+    test_Transform_AABB_Inplace<double>();
 
     return 0 ; 
 }
