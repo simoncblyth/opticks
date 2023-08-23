@@ -11,7 +11,7 @@ https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stackt
 #include "ssys.h"
 #include "s_csg.h"
 
-#include "NP.hh"
+#include "NPX.h"
 
 const char* FOLD = getenv("FOLD"); 
 
@@ -90,7 +90,7 @@ void test_CommonOperatorTypeTree(int num_leaves)
 
     sn* root = sn::CommonOperatorTypeTree(leaftypes, CSG_UNION ) ; 
 
-    if(sn::level() > 1) std::cout << sn::Desc("CommonOperatorTypeTree"); 
+    if(sn::level() > 1) std::cout << sn::Desc(root); 
 
     if(sn::level() > 0) std::cout << "test_CommonOperatorTypeTree num_leaves " << std::setw(2) << num_leaves << " root: " << root->desc() << std::endl ; 
 
@@ -176,7 +176,7 @@ void test_label()
 
     sn* t = manual_tree(it); 
 
-    t->label(); 
+    t->labeltree(); 
 
     if(sn::level() > 1) std::cout << t->render(3) ; 
 
@@ -194,7 +194,7 @@ void test_positivize()
 
     int mode = ssys::getenvint("MODE", 4) ; 
 
-    t->label(); 
+    t->labeltree(); 
     if(sn::level() > 1) std::cout << t->render(mode) ; 
 
     t->positivize(); 
@@ -244,7 +244,7 @@ void test_Simple()
 
     sn* t = manual_tree(it); 
 
-    t->label(); 
+    t->labeltree(); 
 
     if(sn::level() > 1) std::cout << t->render(5) ; 
     if(sn::level() > 1) std::cout << sn::Desc() ; 
@@ -285,7 +285,7 @@ void test_serialize_0()
     if(sn::level() > lev) std::cout << t->render(5) ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-    int num_root = sn::pool->get_num_root() ; 
+    int num_root = sn::pool->num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
  
     std::vector<_sn> buf ; 
@@ -293,8 +293,10 @@ void test_serialize_0()
 
     delete t ; 
 
-    NP* a = NP::Make<int>( buf.size(), _sn::NV ) ; 
-    a->read2<int>((int*)buf.data()); 
+    NP* a = NPX::ArrayFromVec_<int, _sn>(buf, _sn::ITEM) ; 
+
+    //NP* a = NP::Make<int>( buf.size(), _sn::NV ) ; 
+    //a->read2<int>((int*)buf.data()); 
 
     if(sn::level() > lev) std::cout << " save to " << FOLD << "/" << sn::NAME << std::endl ; 
     a->save(FOLD, sn::NAME); 
@@ -315,7 +317,7 @@ void test_serialize_1()
     if(sn::level() > lev) std::cout << t->render(5) ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
-    int num_root = sn::pool->get_num_root() ; 
+    int num_root = sn::pool->num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
 
     NP* a = sn::pool->serialize<int>() ; 
@@ -336,15 +338,16 @@ void test_import_0()
 
     if(sn::level() > lev) std::cout << " load from " << FOLD << "/" << sn::NAME << std::endl ; 
     NP* a = NP::Load(FOLD, sn::NAME );
-    assert( a->shape[1] == _sn::NV );  
     std::vector<_sn> buf(a->shape[0]) ; 
     a->write<int>((int*)buf.data()); 
+
+
 
     sn::pool->import_(buf); 
 
     if(sn::level() > lev) std::cout << sn::pool->Desc(buf) << std::endl ; 
 
-    int num_root = sn::pool->get_num_root() ; 
+    int num_root = sn::pool->num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
@@ -367,7 +370,7 @@ void test_import_1()
 
     sn::pool->import<int>(a); 
 
-    int num_root = sn::pool->get_num_root() ; 
+    int num_root = sn::pool->num_root() ; 
     if(sn::level() > lev) std::cout << " num_root " << num_root << std::endl ; 
     if(sn::level() > lev) std::cout << sn::Desc(); 
 
@@ -587,9 +590,9 @@ void test_Import()
 
     sn* r = t->last_child(); 
 
-    s_tv* tv = r->tv ; 
+    s_tv* xform = r->xform ; 
 
-    std::cout << ( tv ? tv->desc() : "tv-null" ) << std::endl ; 
+    std::cout << ( xform ? xform->desc() : "xform-null" ) << std::endl ; 
 
     delete t ; 
 
@@ -598,12 +601,81 @@ void test_Import()
 
 
 
+void test_OrderPrim()
+{
+    std::vector<sn*> prim0 ; 
+    sn* a = sn::Cylinder(100., -200., -100. );      
+    sn* b = sn::Cylinder( 50., -100.,    0. );      
+    sn* c = sn::Cylinder( 60.,    0.,  100. );      
+    sn* d = sn::Cylinder( 70.,  100.,  200. );      
+   
+    prim0.push_back(a) ; 
+    prim0.push_back(b) ; 
+    prim0.push_back(c) ; 
+    prim0.push_back(d) ; 
+
+    std::reverse( prim0.begin(), prim0.end() ); 
+
+    sn* root = sn::UnionTree(prim0); 
+    root->setAABB(); 
+
+    std::cout 
+        << "test_OrderPrim"
+        << std::endl
+        << " root->desc_prim_all() "
+        << root->desc_prim_all() 
+        << std::endl
+        ;
+
+    std::vector<const sn*> prim ; 
+    root->collect_prim(prim); 
+    assert(prim.size() == prim0.size() ); 
+
+    std::cout 
+        << " sn::DescPrim(prim) asis from  : root->collect_prim(prim)  "
+        << std::endl
+        <<  sn::DescPrim(prim)
+        << std::endl
+        ;
+
+    bool ascending = true ; 
+
+    sn::OrderPrim<const sn>( prim, sn::AABB_ZMin, ascending  ); 
+    std::cout 
+        << " sn::DescPrim(prim) after : sn::OrderPrim<const sn>( prim, sn::AABB_ZMin ) "
+        << std::endl
+        <<  sn::DescPrim(prim)
+        << std::endl
+        ;
+
+    sn::OrderPrim<const sn>( prim, sn::AABB_XMin, ascending  ); 
+    std::cout 
+        << " sn::DescPrim(prim) after : sn::OrderPrim<const sn>( prim, sn::AABB_XMin ) "
+        << std::endl
+        <<  sn::DescPrim(prim)
+        << std::endl
+        ;
+
+    sn::OrderPrim<const sn>( prim, sn::AABB_XMax, ascending  ); 
+    std::cout 
+        << " sn::DescPrim(prim) after : sn::OrderPrim<const sn>( prim, sn::AABB_XMax ) "
+        << std::endl
+        <<  sn::DescPrim(prim)
+        << std::endl
+        ;
+
+}
+
+
 
 int main(int argc, char** argv)
 {
     s_csg* _csg = new s_csg ; 
     std::cout << _csg->brief() ; 
 
+    test_OrderPrim(); 
+
+    /*
     test_Serialize(); 
     test_Import(); 
 
@@ -647,6 +719,8 @@ int main(int argc, char** argv)
     test_serialize_1(); 
     test_import_1(); 
     test_positivize(); 
+
+    */
 
     return 0 ; 
 }

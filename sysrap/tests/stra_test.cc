@@ -148,14 +148,175 @@ void test_Transform_AABB_Inplace()
     std::cout << " bb1 " << sbb::Desc(bb1.data()) << std::endl ; 
 }
 
+template<typename T>
+void test_Transform_Vec()
+{
+    std::cout << "test_Transform_Vec" << std::endl ; 
+
+    std::array<T,16> a = { 
+          1., 0., 0., 0., 
+          0., 1., 0., 0., 
+          0., 0., 1., 0., 
+          0., 0.,100.,1. 
+     }; 
+
+    glm::tmat4x4<T> m = stra<T>::FromData(a.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+
+    glm::tvec4<T> pos ; 
+    glm::tvec4<T> pos0 = { 0, 0, 0, 1 } ;  
+
+    stra<T>::Transform_Vec(pos, pos0, m ); 
+
+    std::cout << " pos0 " << stra<T>::Desc(pos0)  << std::endl ; 
+    std::cout << " pos  " << stra<T>::Desc(pos)  << std::endl ; 
+
+}
+
+
+
+
+template<typename T>
+void test_Transform_Data()
+{
+    std::cout << "test_Transform_Data" << std::endl ; 
+
+    std::array<T,16> a = { 
+          1., 0., 0., 0., 
+          0., 1., 0., 0., 
+          0., 0., 1., 0., 
+          0., 0.,100.,1. 
+     }; 
+
+    glm::tmat4x4<T> m = stra<T>::FromData(a.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+
+    std::array<double,3> pos0 = { 0, 0, 0 } ; 
+    std::array<double,3> pos = { 0, 0, 0 } ; 
+
+    stra<T>::Transform_Data(pos.data(), pos0.data(), m ); 
+
+    std::cout << " pos0 " << stra<T>::Desc(pos0.data(), 1, 3, 0)  << std::endl ; 
+    std::cout << " pos  " << stra<T>::Desc(pos.data(),  1, 3, 0 ) << std::endl ; 
+
+}
+
+template<typename T>
+void test_Desc_strided()
+{
+    std::array<T,64> a = { 
+          1., 2., 3., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+          4., 5., 6., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+          7., 8., 9., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+         10.,11.,12., 0.,
+          0., 0., 0., 0.,
+          0., 0., 0., 0., 
+          0., 0., 0., 0. 
+     }; 
+
+
+   std::cout 
+       << "test_Desc_strided"
+       << std::endl 
+       << stra<T>::Desc( a.data(), 4, 3, 16 ) 
+       << std::endl 
+       ;
+              
+}
+
+
+
+
+
+template<typename T>
+void test_Transform_Strided()
+{
+    std::cout << "test_Transform_Strided" << std::endl ; 
+
+    std::array<T,16> _m = { 
+          1., 0., 0., 0., 
+          0., 1., 0., 0., 
+          0., 0., 1., 0., 
+          0., 0.,100.,1. 
+     }; 
+
+    glm::tmat4x4<T> m = stra<T>::FromData(_m.data()) ;   
+    std::cout << " m " << m << std::endl ; 
+
+
+    std::array<T,64> p0 = { 
+          1., 2., 3., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+          4., 5., 6., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+          7., 8., 9., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+          0., 0., 0., 0., 
+
+         10.,11.,12., 0.,
+          0., 0., 0., 0.,
+          0., 0., 0., 0., 
+          0., 0., 0., 0. 
+     }; 
+
+     std::array<T,64> p1(p0) ; 
+
+     stra<T>::Transform_Strided( p1.data(), p0.data(), 4, 3, 16, m, 1. ); 
+
+     std::array<T,64> p2(p0) ; 
+     stra<T>::Transform_Strided_Inplace( p2.data(), 4, 3, 16, m, 1. ); 
+
+
+     std::cout 
+         << "test_Transform_Strided"
+         << std::endl 
+         << " p0 "
+         << std::endl 
+         << stra<T>::Desc( p0.data(), 4, 3, 16 ) 
+         << std::endl 
+         << " p1 "
+         << std::endl 
+         << stra<T>::Desc( p1.data(), 4, 3, 16 ) 
+         << std::endl 
+         << " p2 (check Transform_Strided_Inplace)  "
+         << std::endl 
+         << stra<T>::Desc( p2.data(), 4, 3, 16 ) 
+         << std::endl 
+         ;
+
+}
+
 int main()
 {
     /*
     test_Place(); 
     test_Rows<double>();
     test_Transform_AABB<double>();
-    */
     test_Transform_AABB_Inplace<double>();
+    test_Desc_strided<double>();
+    test_Transform_Vec<double>();
+    test_Transform_Data<double>();
+    */
+    test_Transform_Strided<double>();
 
     return 0 ; 
 }

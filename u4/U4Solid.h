@@ -203,7 +203,7 @@ inline bool U4Solid::IsFlaggedType(const char* type)
     return type && IsFlaggedType_ && strstr(type, IsFlaggedType_ ) ;  
 }
 
-inline const char* U4Solid::brief_KEY = "lvid/depth/tag/root" ; 
+inline const char* U4Solid::brief_KEY = "lvid/depth/tag/root/level" ; 
 
 inline std::string U4Solid::brief() const 
 {
@@ -217,6 +217,7 @@ inline std::string U4Solid::brief() const
 #else
        << "/"  << std::setw(3) << ( root ? root->index() : -1 )
 #endif
+       << "/" << std::setw(1) << level 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -333,7 +334,7 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
 
 inline void U4Solid::init()
 {
-    std::cerr 
+    if(level > 0) std::cerr 
         <<  ( depth == 0 ? "\n" : "" )
         << "[U4Solid::init " << brief() 
         << " " << ( depth == 0 ? brief_KEY : "" )
@@ -345,7 +346,7 @@ inline void U4Solid::init()
     init_Check(); 
     init_Tree() ; 
 
-    std::cerr << "]U4Solid::init " << brief() << std::endl ; 
+    if(level > 0) std::cerr << "]U4Solid::init " << brief() << std::endl ; 
 }
 
 inline void U4Solid::init_Tree()
@@ -357,9 +358,13 @@ inline void U4Solid::init_Tree()
     assert(0); 
 #else
     assert( root); 
-    root->set_lvid(lvid); 
-    root->positivize() ;  
-    root->uncoincide(); 
+
+    // only invoke from the top solid, so entire CSG tree of solids
+    // has been traversed at this point 
+    if( depth == 0 )  
+    {
+        root->postconvert(lvid); 
+    }
 #endif
 }
 

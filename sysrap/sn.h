@@ -44,6 +44,8 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include <sstream>
 #include <iomanip>
 #include <cassert>
+#include <functional>
+#include <algorithm>
 
 #include "ssys.h"
 #include "OpticksCSG.h"
@@ -77,16 +79,18 @@ struct _sn
     int  index ;        // 11 
     int  depth ;        // 12
     int  note  ;        // 13 
-    char label[16] ;    // 14,15,18,17 
-    static constexpr const char* ITEM = "18" ;  
+    int  coincide ;     // 14
+    char label[16] ;    // 15,16,17,18 
+    static constexpr const char* ITEM = "19" ;  
 #else
     int  left ;         // 7
     int  right ;        // 8
     int  index ;        // 9
     int  depth ;        // 10
     int  note  ;        // 11
-    char label[16] ;    // 12,13,14,15 
-    static constexpr const char* ITEM = "16" ;  
+    int  coincide ;     // 12
+    char label[16] ;    // 13,14,15,16 
+    static constexpr const char* ITEM = "17" ;  
 #endif
 
     std::string desc() const ; 
@@ -151,6 +155,7 @@ struct SYSRAP_API sn
 #endif
     int depth ;    
     int note ; 
+    int coincide ; 
     char label[16] ; 
 
     // internals, not persisted  
@@ -170,11 +175,11 @@ struct SYSRAP_API sn
     static int level(); 
     static std::string Desc(); 
 
-    template<typename N>
-    static std::string Desc(N* n); 
-
-    template<typename N>
-    static std::string Desc(const std::vector<N*>& nds); 
+    // templating allows to work with both "sn*" and "const sn*" 
+    template<typename N> static std::string Desc(N* n); 
+    template<typename N> static std::string DescPrim(N* n); 
+    template<typename N> static std::string Desc(const std::vector<N*>& nds); 
+    template<typename N> static std::string DescPrim(const std::vector<N*>& nds); 
 
 
     int  idx() const ;  // to match snd.hh
@@ -216,6 +221,8 @@ struct SYSRAP_API sn
     void set_right( sn* right, bool copy  );
 
     bool is_primitive() const ; 
+    bool is_complement() const ; 
+    bool is_complement_primitive() const ; 
     bool is_bileaf() const ; 
     bool is_operator() const ; 
     bool is_zero() const ; 
@@ -265,6 +272,7 @@ struct SYSRAP_API sn
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
     std::string desc_prim() const ; 
+    std::string desc_prim_all() const ; 
     std::string brief() const ; 
     std::string desc_child() const ; 
     std::string desc_r() const ; 
@@ -302,6 +310,11 @@ struct SYSRAP_API sn
     void prune_r(int d) ; 
     bool has_dangle() const ; 
 
+    void postconvert(int lvid); 
+
+    template<typename N>
+    static void OrderPrim( std::vector<N*>& prim, std::function<double(N* p)> fn, bool ascending  ); 
+
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
 
@@ -315,7 +328,35 @@ struct SYSRAP_API sn
     void setPA( double x, double y, double z, double w, double z1, double z2 );
     void setBB(  double x0, double y0, double z0, double x1, double y1, double z1 ); 
     void setBB(  double x0 ); 
+
     double* getBB_data() ; 
+
+    double  getBB_xmin() const ; 
+    double  getBB_ymin() const ; 
+    double  getBB_zmin() const ; 
+
+    double  getBB_xmax() const ; 
+    double  getBB_ymax() const ; 
+    double  getBB_zmax() const ; 
+
+    double  getBB_xavg() const ; 
+    double  getBB_yavg() const ; 
+    double  getBB_zavg() const ; 
+
+    static double AABB_XMin( const sn* n );  
+    static double AABB_YMin( const sn* n );  
+    static double AABB_ZMin( const sn* n );  
+
+    static double AABB_XMax( const sn* n );  
+    static double AABB_YMax( const sn* n );  
+    static double AABB_ZMax( const sn* n );  
+
+    static double AABB_XAvg( const sn* n );  
+    static double AABB_YAvg( const sn* n );  
+    static double AABB_ZAvg( const sn* n );  
+
+
+
 
     void setXF(     const glm::tmat4x4<double>& t ); 
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
@@ -341,8 +382,9 @@ struct SYSRAP_API sn
     static sn* Create(int typecode, sn* left=nullptr, sn* right=nullptr ); 
     static sn* Boolean( int op, sn* l, sn* r );
 
-    static void ZNudgeExpandEnds(  std::vector<sn*>& prims, bool enable); 
-    static void ZNudgeOverlapJoints(std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeExpandEnds(   int lvid, std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeOverlapJoints(int lvid, std::vector<sn*>& prims, bool enable); 
+    static void ZNudgeOverlapJoint(int lvid, int i, sn* lower, sn* upper, bool enable, std::ostream* out  ); 
 
     bool can_znudge() const ; 
     static bool CanZNudgeAll(std::vector<sn*>& prims); 
@@ -465,10 +507,12 @@ struct SYSRAP_API sn
         bool reverse) const ; 
 
     void setAABBLocal() ; 
+    void setAABB() ; 
 
-    static const int uncoincide_dump_lvid ;  // export sn__uncoincide_dump_lvid=101
+    //static const int uncoincide_dump_lvid ;  // export sn__uncoincide_dump_lvid=101
+    // sometimes get : warning: inline variables are a C++1z extension [-Wc++1z-extensions]
     void uncoincide() ; 
-    void uncoincide_(std::ostream* out); 
+    int uncoincide_(std::ostream* out); 
 
     
 };  // END
@@ -484,6 +528,13 @@ inline std::string sn::Desc(N* n) // static
 }
 
 template<typename N>
+inline std::string sn::DescPrim(N* n) // static
+{
+    return n ? n->desc_prim() : "(null)" ;  
+}
+
+
+template<typename N>
 inline std::string sn::Desc(const std::vector<N*>& nds) // static
 {
     std::stringstream ss ; 
@@ -493,6 +544,15 @@ inline std::string sn::Desc(const std::vector<N*>& nds) // static
     return str ; 
 }
 
+template<typename N>
+inline std::string sn::DescPrim(const std::vector<N*>& nds) // static
+{
+    std::stringstream ss ; 
+    ss << "sn::DescPrim nds.size " << nds.size() << std::endl ; 
+    for(int i=0 ; i < int(nds.size()) ; i++) ss << DescPrim(nds[i]) << std::endl ; 
+    std::string str = ss.str();
+    return str ; 
+}
 
 
 
@@ -659,6 +719,7 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     n.index = pool->index(x) ; 
     n.depth = x->depth ; 
     n.note  = x->note  ; 
+    n.coincide  = x->coincide  ; 
 
     assert( sizeof(n.label) == sizeof(x->label) ); 
     strncpy( &n.label[0], x->label, sizeof(n.label) );
@@ -764,6 +825,7 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
 #endif
     depth(0),
     note(0),
+    coincide(0),
     pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
@@ -936,7 +998,12 @@ inline bool sn::is_primitive() const
     return left == nullptr && right == nullptr ;
 #endif
 
-}   
+}  
+
+inline bool sn::is_complement() const           { return complement == 1 ; }
+inline bool sn::is_complement_primitive() const { return is_complement() && is_primitive() ; } 
+
+ 
 inline bool sn::is_bileaf() const 
 {   
 #ifdef WITH_CHILD
@@ -1357,15 +1424,21 @@ inline std::string sn::desc_prim() const
        << " idx " << std::setw(4) << index()
        << " lvid " << std::setw(3) << lvid 
        << " " << tag()
-#ifdef WITH_SND
-       <<  " aabb " << aabb 
-#else 
        << ( aabb ? aabb->desc() : "-" )
-#endif
        ; 
 
     std::string str = ss.str();
     return str ;
+}
+
+inline std::string sn::desc_prim_all() const 
+{
+    std::vector<const sn*> prim ; 
+    collect_prim(prim);
+    bool ascending = true ; 
+    OrderPrim<const sn>(prim, sn::AABB_ZMin, ascending ); 
+
+    return DescPrim(prim); 
 }
 
 
@@ -2084,6 +2157,30 @@ inline double* sn::getBB_data()
     return aabb->data(); 
 }
 
+inline double sn::getBB_xmin() const { return aabb ? aabb->x0 : 0. ; } 
+inline double sn::getBB_ymin() const { return aabb ? aabb->y0 : 0. ; } 
+inline double sn::getBB_zmin() const { return aabb ? aabb->z0 : 0. ; } 
+
+inline double sn::getBB_xmax() const { return aabb ? aabb->x1 : 0. ; } 
+inline double sn::getBB_ymax() const { return aabb ? aabb->y1 : 0. ; } 
+inline double sn::getBB_zmax() const { return aabb ? aabb->z1 : 0. ; } 
+
+inline double sn::getBB_xavg() const { return ( getBB_xmin() + getBB_xmax() )/2. ; }
+inline double sn::getBB_yavg() const { return ( getBB_ymin() + getBB_ymax() )/2. ; }
+inline double sn::getBB_zavg() const { return ( getBB_zmin() + getBB_zmax() )/2. ; }
+
+
+inline double sn::AABB_XMin( const sn* n ){ return n ? n->getBB_xmin() : 0. ; }
+inline double sn::AABB_YMin( const sn* n ){ return n ? n->getBB_ymin() : 0. ; }
+inline double sn::AABB_ZMin( const sn* n ){ return n ? n->getBB_zmin() : 0. ; }
+
+inline double sn::AABB_XMax( const sn* n ){ return n ? n->getBB_xmax() : 0. ; }
+inline double sn::AABB_YMax( const sn* n ){ return n ? n->getBB_ymax() : 0. ; }
+inline double sn::AABB_ZMax( const sn* n ){ return n ? n->getBB_zmax() : 0. ; }
+
+inline double sn::AABB_XAvg( const sn* n ){ return n ? n->getBB_xavg() : 0. ; }
+inline double sn::AABB_YAvg( const sn* n ){ return n ? n->getBB_yavg() : 0. ; }
+inline double sn::AABB_ZAvg( const sn* n ){ return n ? n->getBB_zavg() : 0. ; }
 
 
 inline void sn::setXF( const glm::tmat4x4<double>& t )
@@ -2216,7 +2313,7 @@ with a bunch of cylinders and cones.
 
 **/
 
-inline void sn::ZNudgeExpandEnds(std::vector<sn*>& prims, bool enable) // static
+inline void sn::ZNudgeExpandEnds(int lvid, std::vector<sn*>& prims, bool enable) // static
 {
     int num_prim = prims.size() ; 
 
@@ -2229,12 +2326,13 @@ inline void sn::ZNudgeExpandEnds(std::vector<sn*>& prims, bool enable) // static
     double upper_zmax = upper->zmax() ; 
     bool z_expect = upper_zmax > lower_zmin  ; 
 
-
-    if(true || level() > 0) std::cout 
+    if(level() > 0) std::cout 
        << std::endl
        << "sn::ZNudgeExpandEnds "
+       << " lvid " << lvid
        << " num_prim " << num_prim 
        << " enable " << ( enable ? "YES" : "NO " )
+       << " level " << level()
        << " can_znudge_ends " << ( can_znudge_ends ? "YES" : "NO " ) 
        << " lower_zmin " << lower_zmin
        << " upper_zmax " << upper_zmax
@@ -2305,19 +2403,23 @@ case : but that doesnt stop it being an issue.
 
 **/
 
-inline void sn::ZNudgeOverlapJoints(std::vector<sn*>& prims, bool enable ) // static
+inline void sn::ZNudgeOverlapJoints(int lvid, std::vector<sn*>& prims, bool enable ) // static
 {
     int num_prim = prims.size() ; 
     assert( num_prim > 1 && "one prim has no joints" );  
-    double dz = 1. ; 
 
-    bool dump = true || level() > 0 ; 
+    bool dump = level() > 0 ; 
 
-    if(dump) std::cout
+    std::stringstream ss ; 
+    std::ostream* out = dump ? &ss : nullptr  ; 
+
+    if(out) *out
        << std::endl
        << "sn::ZNudgeOverlapJoints "
+       << " lvid " << lvid
        << " num_prim " << num_prim 
        << " enable " << ( enable ? "YES" : "NO " )
+       << " level " << level() 
        << std::endl
        << ZDesc(prims)
        << std::endl
@@ -2327,52 +2429,80 @@ inline void sn::ZNudgeOverlapJoints(std::vector<sn*>& prims, bool enable ) // st
     {
         sn* lower = prims[i-1] ; 
         sn* upper = prims[i] ; 
-        bool can_znudge_ends = lower->can_znudge() && upper->can_znudge() ; 
-        assert( can_znudge_ends ); 
-        
-        double lower_zmax = lower->zmax(); 
-        double upper_zmin = upper->zmin() ; 
-        bool z_coincident_joint = std::abs( lower_zmax - upper_zmin ) < Z_EPSILON  ; 
+        ZNudgeOverlapJoint(lvid, i, lower, upper, enable, out );  
+    }
 
-        double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
-        double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
-
-        if(dump) std::cerr
-            << "sn::ZNudgeOverlapJoints"
-            << " ("<< i-1 << "," << i << ") "
-            << " lower_zmax " << lower_zmax  
-            << " upper_zmin " << upper_zmin
-            << " z_coincident_joint " << ( z_coincident_joint ? "YES" : "NO " )
-            << " enable " << ( enable ? "YES" : "NO " )
-            << " upper_rperp_at_zmin " << upper_rperp_at_zmin
-            << " lower_rperp_at_zmax " << lower_rperp_at_zmax
-            << std::endl 
-            ; 
-
-        if(!z_coincident_joint) continue ; 
-
-        if( lower_rperp_at_zmax > upper_rperp_at_zmin )    
-        {    
-            upper->decrease_zmin( dz ); 
-            std::cerr  
-                << "sn::ZNudgeOverlapJoints"
-                << " lower_rperp_at_zmax > upper_rperp_at_zmin : upper->decrease_zmin( dz ) "
-                << "  : expand upper down into bigger lower "
-                << std::endl 
-                ;  
-        }
-        else
-        {
-            lower->increase_zmax( dz ); 
-            std::cerr  
-                << "sn::ZNudgeOverlapJoints"
-                << " !(lower_rperp_at_zmax > upper_rperp_at_zmin) : lower->increase_zmax( dz ) "
-                << "  : expand lower up into bigger upper "
-                << std::endl 
-                ;  
-        }
+    if(out)
+    {
+        std::string str = ss.str(); 
+        std::cerr << str ; 
     }
 }
+
+/**
+sn::ZNudgeOverlapJoint
+-----------------------
+
+This is used from U4Polycone nudging. 
+
+It is not so easy to use this with the more general sn::uncoincide nudging 
+because in this case there are transforms involved, so the zmax/zmin param 
+may not look coincident but with the transforms they are. 
+
+**/
+
+inline void sn::ZNudgeOverlapJoint(int lvid, int i, sn* lower, sn* upper, bool enable, std::ostream* out  ) // static
+{
+    bool can_znudge_ = lower->can_znudge() && upper->can_znudge() ; 
+    assert( can_znudge_ ); 
+    
+    double dz = 1. ; 
+    double lower_zmax = lower->zmax(); 
+    double upper_zmin = upper->zmin() ; 
+    bool z_coincident_joint = std::abs( lower_zmax - upper_zmin ) < Z_EPSILON  ; 
+
+    double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
+    double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
+
+    if(out) *out
+        << "sn::ZNudgeOverlapJoint"
+        << " ("<< i-1 << "," << i << ") "
+        << " lower_zmax " << lower_zmax  
+        << " upper_zmin " << upper_zmin
+        << " z_coincident_joint " << ( z_coincident_joint ? "YES" : "NO " )
+        << " enable " << ( enable ? "YES" : "NO " )
+        << " upper_rperp_at_zmin " << upper_rperp_at_zmin
+        << " lower_rperp_at_zmax " << lower_rperp_at_zmax
+        << std::endl 
+        ; 
+
+    if(!z_coincident_joint) return ; 
+
+    if( lower_rperp_at_zmax > upper_rperp_at_zmin )    
+    {    
+        upper->decrease_zmin( dz ); 
+        if(out) *out 
+            << "sn::ZNudgeOverlapJoint"
+            << " lvid " << lvid
+            << " lower_rperp_at_zmax > upper_rperp_at_zmin : upper->decrease_zmin( dz ) "
+            << "  : expand upper down into bigger lower "
+            << std::endl 
+            ;  
+    }
+    else
+    {
+        lower->increase_zmax( dz ); 
+        if(out) *out  
+            << "sn::ZNudgeOverlapJoints"
+            << " lvid " << lvid
+            << " !(lower_rperp_at_zmax > upper_rperp_at_zmin) : lower->increase_zmax( dz ) "
+            << "  : expand lower up into bigger upper "
+            << std::endl 
+            ;  
+    }
+}
+
+
 
 
 /**
@@ -2462,9 +2592,9 @@ inline void sn::increase_zmax_( double dz )
     std::cerr
         << "sn::increase_zmax_"
         << " lvid " << lvid 
-        << " _zmax " << _zmax 
-        << " dz " << dz
-        << " new_zmax " << new_zmax 
+        << " _zmax "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmax 
+        << " dz "       << std::fixed << std::setw(7) << std::setprecision(2) << dz 
+        << " new_zmax " << std::fixed << std::setw(7) << std::setprecision(2) << new_zmax
         << std::endl 
         ;   
 
@@ -2497,9 +2627,9 @@ inline void sn::decrease_zmin_( double dz )
     std::cerr
         << "sn::decrease_zmin_"
         << " lvid " << lvid 
-        << " _zmin " << _zmin 
-        << " dz " << dz
-        << " new_zmin " << new_zmin 
+        << " _zmin "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmin 
+        << " dz "       << std::fixed << std::setw(7) << std::setprecision(2) << dz 
+        << " new_zmin " << std::fixed << std::setw(7) << std::setprecision(2) << new_zmin
         << std::endl 
         ;   
 
@@ -3693,54 +3823,182 @@ inline void sn::setAABBLocal()
 }
 
 
-inline const int sn::uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", 107) ;
 
-inline void sn::uncoincide()
+/**
+sn::postconvert (HMM: think of better name)
+---------------------------------------------
+
+This is called from U4Solid::init_Tree
+
+**/
+
+
+inline void sn::postconvert(int lvid)
 {
-    std::stringstream ss ; 
-    bool dump = lvid == std::abs(uncoincide_dump_lvid) ; 
-    uncoincide_( dump ? &ss : nullptr ); 
-    if(!dump) return ; 
+    set_lvid(lvid); 
+    positivize() ;   
+    setAABB(); 
 
-    std::string str = ss.str() ; 
-    std::cerr << str << std::endl ; 
+    uncoincide(); 
+
+    if(coincide > 0) std::cout 
+        << "sn::postconvert" 
+        << " lvid " << lvid 
+        << " coincide " << coincide
+        << std::endl
+        << desc_prim_all() 
+        << std::endl
+        ; 
+
 }
 
-inline void sn::uncoincide_(std::ostream* out)
+struct sn_compare
 {
-#ifdef WITH_SND
-#else
+    std::function<double(const sn* p)>& fn ; 
+    bool ascending ; 
+    
+    sn_compare( std::function<double(const sn* p)>& fn_ , bool ascending_ ) 
+        : 
+        fn(fn_), 
+        ascending(ascending_) 
+    {} 
+    bool operator()(const sn* a, const sn* b)
+    {
+        bool cmp = fn(a) < fn(b) ;  
+        return ascending ? cmp : !cmp ; 
+    }
+};
+
+/**
+sn::OrderPrim
+---------------
+
+Sorts the vector of prim by comparison of the 
+results of the argument function on each node. 
+
+**/
+
+
+template<typename N>
+inline void sn::OrderPrim( std::vector<N*>& prim, std::function<double(N* p)> fn, bool ascending  ) // static
+{
+    sn_compare cmp(fn, ascending) ; 
+    std::sort( prim.begin(), prim.end(), cmp ); 
+}
+
+
+
+/**
+sn::setAABB
+-------------------
+
+**/
+
+inline void sn::setAABB()
+{
     std::vector<const sn*> prim ; 
     collect_prim(prim); 
     int num_prim = prim.size() ; 
 
-    if(out) *out 
-        << "sn::uncoincide" 
-        << " sn__uncoincide_dump_lvid " << uncoincide_dump_lvid
-        << " (-ve for transform details) "
-        << " lvid " << lvid 
-        << " num_prim " << num_prim 
-        << std::endl
-        ; 
-
     for(int i=0 ; i < num_prim ; i++)
     {
         const sn* p = prim[i] ; 
+        sn* _p = const_cast<sn*>(p) ; 
+        _p->setAABBLocal() ; 
 
         glm::tmat4x4<double> t(1.) ;
         glm::tmat4x4<double> v(1.) ;
 
-        std::ostream* ntp_out = uncoincide_dump_lvid < 0 ? out : nullptr ; 
-        p->getNodeTransformProduct(t, v, false, ntp_out ); // reverse:false
-
-        sn* _p = const_cast<sn*>(p) ; 
-        _p->setAABBLocal() ; 
+        bool reverse = false ; 
+        std::ostream* out = nullptr ; 
+        p->getNodeTransformProduct(t, v, reverse, out ); 
 
         double* pbb = _p->getBB_data() ; 
         stra<double>::Transform_AABB_Inplace( pbb,  t );   
+    }
+}
 
-        if(out) *out << p->desc_prim() << std::endl ; 
+
+inline void sn::uncoincide()
+{
+    int uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", 107) ;
+    bool dump = lvid == std::abs(uncoincide_dump_lvid) ; 
+
+    std::stringstream ss ; 
+    if(dump) ss 
+        << "sn::uncoincide"
+        << " sn__uncoincide_dump_lvid " << uncoincide_dump_lvid
+        << " lvid " << lvid 
+        << std::endl
+        ;
+ 
+    coincide = uncoincide_( dump ? &ss : nullptr ); 
+
+    if( dump )
+    {
+        std::string str = ss.str() ; 
+        std::cerr << str << std::endl ; 
+    }
+}
+
+/**
+sn::uncoincide_
+-------------------
+
+Many box box coincidences are currently not counted from can_znudge:false
+
+**/
+
+inline int sn::uncoincide_(std::ostream* out)
+{
+    std::vector<const sn*> prim ; 
+    collect_prim(prim); 
+    int num_prim = prim.size() ; 
+
+    bool ascending = true ; 
+    OrderPrim<const sn>(prim, AABB_ZAvg, ascending ) ; 
+
+    if(out) *out 
+        << "sn::uncoincide_" 
+        << " num_prim " << num_prim 
+        << std::endl
+        ; 
+
+    int count = 0 ; 
+    for(int i=1 ; i < num_prim ; i++)
+    {
+        const sn* lower = prim[i-1] ; 
+        const sn* upper = prim[i] ;
+        bool can_znudge = lower->can_znudge() && upper->can_znudge() ; 
+        bool same_union = AreFromSameUnion(lower, upper) ; 
+        double lower_zmax = lower->getBB_zmax() ; 
+        double upper_zmin = upper->getBB_zmin() ; 
+
+        bool z_minmax_coincide =  std::abs( lower_zmax - upper_zmin ) < Z_EPSILON ; 
+        bool fixable_coincide = z_minmax_coincide && can_znudge && same_union ; 
+        if(fixable_coincide) count += 1 ; 
+
+        if(fixable_coincide)
+        {
+
+        }
+
+ 
+        if(out) *out 
+            << " lo: " << lower->desc_prim() 
+            << " hi: " << upper->desc_prim() 
+            << " " << ( z_minmax_coincide ? "Z_MINMAX_COINCIDE" : " " )
+            << " " << ( fixable_coincide ? "FIXABLE_COINCIDE" : " " )
+            << std::endl
+            ; 
     }
 
-#endif
+    if(out) *out 
+        << "sn::uncoincide_" 
+        << " num_prim " << num_prim 
+        << " Z_MINMAX_COINCIDE count " << count 
+        << std::endl
+        ; 
+
+    return count ; 
 }

@@ -44,6 +44,8 @@ struct stra
     static std::string Desc(const glm::tvec4<T>& t); 
     static std::string Desc(const glm::tvec3<T>& t); 
     static std::string Desc(const T* tt, int num); 
+    static std::string Desc(const T* tt, int ni, int nj, int item_stride=0) ; 
+
 
     static std::string Array(const glm::tmat4x4<T>& tr); 
     static std::string Array(const T* tt, int num); 
@@ -79,6 +81,11 @@ struct stra
 
     static void Transform_AABB( T* aabb1, const T* aabb0, const glm::tmat4x4<T>& t ); 
     static void Transform_AABB_Inplace(         T* aabb,  const glm::tmat4x4<T>& t ); 
+
+    static void Transform_Vec( glm::tvec4<T>& pos, const glm::tvec4<T>&  pos0, const glm::tmat4x4<T>& t ); 
+    static void Transform_Data(    T* _pos, const T* _pos0,  const glm::tmat4x4<T>& t, T w = 1.  ); 
+    static void Transform_Strided( T* _pos, const T* _pos0,  int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w = 1.  ); 
+    static void Transform_Strided_Inplace(        T* _pos,   int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w = 1.  ); 
 }; 
 
 
@@ -163,6 +170,29 @@ std::string stra<T>::Desc(const T* tt, int num)
     std::string s = ss.str(); 
     return s ; 
 }
+
+template<typename T>
+std::string stra<T>::Desc(const T* tt, int ni, int nj, int item_stride)
+{
+    int stride = item_stride == 0 ? nj : item_stride ; 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        for(int j=0 ; j < nj ; j++) 
+        {
+            int idx = i*stride + j ; 
+            ss 
+                << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[idx] 
+                ;
+        }
+        if( i < ni - 1) ss << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 
 
@@ -590,7 +620,81 @@ inline void stra<T>::Transform_AABB_Inplace( T* aabb, const glm::tmat4x4<T>& t )
 
 
 
+template<typename T>
+inline void stra<T>::Transform_Vec( glm::tvec4<T>& pos, const glm::tvec4<T>&  pos0, const glm::tmat4x4<T>& t )
+{
+    pos = t * pos0 ; 
+}
 
+template<typename T>
+inline void stra<T>::Transform_Data( T* _pos, const T* _pos0,  const glm::tmat4x4<T>& t, T w  )
+{
+    glm::tvec4<T> pos0 ; 
+    pos0.x = *(_pos0 + 0) ; 
+    pos0.y = *(_pos0 + 1) ; 
+    pos0.z = *(_pos0 + 2) ; 
+    pos0.w = w ; 
+
+    glm::tvec4<T> pos = t * pos0 ; 
+
+    *(_pos+0) = pos.x ; 
+    *(_pos+1) = pos.y ; 
+    *(_pos+2) = pos.z ; 
+}
+
+template<typename T>
+inline void stra<T>::Transform_Strided( T* _pos, const T* _pos0, int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w  )
+{
+    assert( nj == 3 || nj == 4 ); 
+    int stride = item_stride == 0 ? nj : item_stride ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        glm::tvec4<T> pos0 ; 
+
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx = i*stride + j ; 
+            switch(j)
+            {
+                case 0: pos0.x = _pos0[idx] ; break ; 
+                case 1: pos0.y = _pos0[idx] ; break ; 
+                case 2: pos0.z = _pos0[idx] ; break ; 
+                case 3: pos0.w = _pos0[idx] ; break ; 
+            }
+        }
+        if( nj == 3 ) pos0.w = w ; 
+
+        glm::tvec4<T> pos = t * pos0 ; 
+
+
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx = i*stride + j ; 
+            switch(j)
+            {
+                case 0: _pos[idx] = pos.x ; break ; 
+                case 1: _pos[idx] = pos.y ; break ; 
+                case 2: _pos[idx] = pos.z ; break ; 
+                case 3: _pos[idx] = pos.w ; break ; 
+            }
+        }
+    }
+}
+
+
+template<typename T>
+inline void stra<T>::Transform_Strided_Inplace( T* _pos, int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w  )
+{
+    const T* _pos0 = const_cast<const T*>(_pos) ; 
+    Transform_Strided( _pos, _pos0, ni, nj, item_stride, t, w ); 
+}
+
+
+
+
+
+ 
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const glm::tmat4x4<T>& m)  
 {

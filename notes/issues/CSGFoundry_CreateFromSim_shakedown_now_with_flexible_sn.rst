@@ -2494,4 +2494,63 @@ Added sn::uncoincide : currently that forms the bbox and transforms with the CSG
     ]U4Solid::init 107/0/Uni/463
 
 
+HMM : where are the combined CSGPrim AABB set in A ? 
+------------------------------------------------------
+
+::
+
+     512 CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
+     513 {
+     ...
+     560     CSGPrim* prim = foundry->addPrim(numParts, nodeOffset_ );
+     561     prim->setMeshIdx(meshIdx);
+     562     assert(prim) ;
+     563 
+     564     AABB bb = {} ;
+     565 
+     ...
+     577     for(unsigned partIdxRel=0 ; partIdxRel < numParts ; partIdxRel++ )
+     578     {
+     579         CSGNode* n = convertNode(comp, primIdx, partIdxRel);
+     580 
+     581         if(root == nullptr) root = n ;   // first nodes becomes root 
+     582 
+     583         if(n->is_zero()) continue;
+     584 
+     585         bool negated = n->is_complemented_primitive();
+     586 
+     587         bool bbskip = negated ;
+     ...
+     600         float* naabb = n->AABB();
+     601 
+     602         if(!bbskip) bb.include_aabb( naabb );
+     603     }
+     ...
+     652     if( has_xbb == false )
+     653     {
+     654         const float* bb_data = bb.data();
+     655         LOG(debug)
+     656             << " has_xbb " << has_xbb
+     657             << " (using self defined BB for prim) "
+     658             << " AABB \n" << AABB::Desc(bb_data)
+     659             ;
+     660         prim->setAABB( bb_data );
+     661     }
+     662     else
+     663     {
+     664         LOG(LEVEL)
+     665             << " has_xbb " << has_xbb
+     666             << " (USING EXTERNAL BB for prim, eg from G4VSolid) "
+     667             << " xbb \n" << xbb.desc()
+     668             ;
+     669 
+     670         prim->setAABB( xbb.min.x, xbb.min.y, xbb.min.z, xbb.max.x, xbb.max.y, xbb.max.z );
+     671     }
+     672 
+
+
+
+
+
+
 

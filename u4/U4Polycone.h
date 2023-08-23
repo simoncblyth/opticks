@@ -408,10 +408,10 @@ inline void U4Polycone::init_outer()
         ; 
 
 #ifdef WITH_SND
-    if(num_outer_prim > 1) snd::ZNudgeOverlapJoints(outer_prims, enable_nudge); 
+    if(num_outer_prim > 1) snd::ZNudgeOverlapJoints(lvid, outer_prims, enable_nudge); 
     outer = snd::Collection(outer_prims); 
 #else
-    if(num_outer_prim > 1) sn::ZNudgeOverlapJoints(outer_prims, enable_nudge); 
+    if(num_outer_prim > 1) sn::ZNudgeOverlapJoints(lvid, outer_prims, enable_nudge); 
     outer = sn::Collection(outer_prims) ; 
 #endif
 
@@ -461,12 +461,12 @@ inline void U4Polycone::init_inner()
             ; 
 
 #ifdef WITH_SND
-        snd::ZNudgeExpandEnds(inner_prims, enable_nudge);    // only for inner
-        if(num_inner_prim > 1) snd::ZNudgeOverlapJoints(inner_prims, enable_nudge); 
+        snd::ZNudgeExpandEnds(lvid, inner_prims, enable_nudge);    // only for inner
+        if(num_inner_prim > 1) snd::ZNudgeOverlapJoints(lvid, inner_prims, enable_nudge); 
         inner = snd::Collection( inner_prims ); 
 #else
-        sn::ZNudgeExpandEnds(inner_prims, enable_nudge);    // only for inner 
-        if(num_inner_prim > 1) sn::ZNudgeOverlapJoints(inner_prims, enable_nudge); 
+        sn::ZNudgeExpandEnds(lvid, inner_prims, enable_nudge);    // only for inner 
+        if(num_inner_prim > 1) sn::ZNudgeOverlapJoints(lvid, inner_prims, enable_nudge); 
         inner = sn::Collection( inner_prims ); 
 #endif
     }
