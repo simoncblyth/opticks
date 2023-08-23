@@ -5,7 +5,7 @@ CSGFoundryAB.py
 
 """
 
-import numpy as np, os, textwrap
+import numpy as np, os, textwrap, builtins
 from opticks.ana.fold import Fold
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
 
@@ -463,6 +463,36 @@ def checkprims(a, b, ip0=-1, ip1=-1, order="A"):
     pass
 
 
+def eprint(_lines, _globals, _locals ):
+    lines = list(filter(None, textwrap.dedent(_lines).split("\n") ))
+
+    print("-" * 100)
+    print("\n".join(lines))
+    print("-" * 100)
+
+    for line in lines:
+        elem = line.split("=") 
+        if len(elem) == 1:
+            exp = elem[0]
+            val = eval(exp, _globals, _locals )
+            print(exp)
+            print(repr(val))
+        elif len(elem) == 2:
+            key, exp = elem 
+            val = eval(exp, _globals, _locals )
+            setattr(builtins, key.strip(), val)
+            print(line)
+            if line.find("##") == -1:
+                print(repr(val))
+            pass
+        else:
+            print(line)
+        pass
+    pass       
+    print("-" * 100)
+
+
+
 if __name__ == '__main__':
 
     np.set_printoptions(edgeitems=10) 
@@ -506,5 +536,16 @@ if __name__ == '__main__':
     b_tc = b.node[:,3,2].view(np.int32)
     w_tc = np.where( a_tc != b_tc )[0]
 
-    
+
+    eprint(r"""
+    w_pa = np.where( ab.npa > 1e-3 )[0]
+    w_pa_shape = w_pa.shape
+    w_pa.shape
+
+    w_bb = np.where( ab.nbb > 1e-3 )[0]  ##
+    w_bb.shape
+    """, globals(), locals() )
+
+
+        
 

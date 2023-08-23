@@ -22,6 +22,7 @@ Two geometry routes::
      OLD : Geant4 -----> GGeo/NNode/NCSG/... ----->  CSGFoundry 
                          
      ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh   ## A0 : Loads GDML, pass world to G4CXOpticks  
+     ## HMM : THIS ALREADY POPULATES AN stree : SO COULD CREATE THE TWO CSGFoundry GEOMETRIES WITH THIS ONE EXECUTABLE 
 
 
      B0+B1        U4Tree        CSGImport
@@ -29,6 +30,7 @@ Two geometry routes::
                           snd/sn
 
      ~/opticks/u4/tests/U4TreeCreateSSimTest.sh             ## B0 : Loads GDML, Create SSim/stree using U4Tree.h 
+
      ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, runs CSGImport creating CSGFoundry
 
 
@@ -2553,8 +2555,24 @@ HMM : where are the combined CSGPrim AABB set in A ?
 
 
 
-enabling sn::uncoincide
--------------------------
+DONE : enabled sn::uncoincide : gets all node param to match : BUT CURRENTLY USING NON-TRANSFORMED ELLIPSOID RPERP
+---------------------------------------------------------------------------------------------------------------------
+
+* so the znudge upper/lower choice is matching old workflow by accident
+
+::
+
+    In [2]: w = np.where(ab.npa > 1e-2)[0] ;  w
+    Out[2]: array([], dtype=int64)
+
+    In [3]: ab.npa.max()
+    Out[3]: 2.1e-44
+
+    In [4]: ab.npa.shape
+    Out[4]: (15968,)
+
+
+
 
 ::
 
@@ -2617,15 +2635,30 @@ enabling sn::uncoincide
 
 ::
 
-In [2]: w = np.where(ab.npa > 1e-2)[0] ;  w                                                                                                                                     
-Out[2]: array([], dtype=int64)
+    U4GDML::read                   yielded chars :  cout      0 cerr      0 : set VERBOSE to see them 
+    sn::increase_zmax_ lvid 95 _zmax  -15.00 dz    1.00 new_zmax  -14.00
+    sn::decrease_zmin_ lvid 95 _zmin -101.00 dz    1.00 new_zmin -102.00
+    sn::increase_zmax_ lvid 95 _zmax    0.00 dz    1.00 new_zmax    1.00
+    sn::decrease_zmin_ lvid 95 _zmin  -15.00 dz    1.00 new_zmin  -16.00
+    sn::increase_zmax_cone lvid 96 z2 0.00 r2 450.00 dz 1.00 new_z2 1.00 new_r2 451.79
+    sn::increase_zmax_ lvid 106 _zmax    0.00 dz    1.00 new_zmax    1.00
+    sn::increase_zmax_ lvid 106 _zmax    2.50 dz    1.00 new_zmax    3.50
+    sn::uncoincide sn__uncoincide_dump_lvid 106 lvid 106
+    sn::uncoincide_ lvid 106 num_prim 4
+    sn::uncoincide_zminmax lvid 106 (1,2)  lower_zmax -5 upper_zmin -5 lower_tag zs upper_tag cy can_znudge YES same_union YES z_minmax_coincide YES fixable_coincide YES enable YES
+    sn::uncoincide_zminmax lvid 106 (1,2)  lower_rperp_at_zmax 185 upper_rperp_at_zmin 249 (leaf frame) 
+     upper_pos    249.0000   249.0000    -5.0000 (tree frame) 
+     lower_pos    249.0000   249.0000    -5.0000 (tree frame) 
+     upper_rperp_smaller NO 
+     !upper_rperp_smaller : lower->increase_zmax( dz ) : expand lower up into bigger upper 
+    sn::uncoincide_zminmax lvid 106 (2,3)  lower_zmax 0 upper_zmin 0 lower_tag cy upper_tag zs can_znudge YES same_union YES z_minmax_coincide YES fixable_coincide YES enable YES
+    sn::uncoincide_zminmax lvid 106 (2,3)  lower_rperp_at_zmax 249 upper_rperp_at_zmin 185 (leaf frame) 
+     upper_pos    249.0000   249.0000     0.0000 (tree frame) 
+     lower_pos    249.0000   249.0000     0.0000 (tree frame) 
+     upper_rperp_smaller NO 
+     !upper_rperp_smaller : lower->increase_zmax( dz ) : expand lower up into bigger upper 
+    sn::uncoincide_ lvid 106 num_prim 4 coincide 2
 
-In [3]: ab.npa.max()                                                                                                                                                            
-Out[3]: 2.1e-44
-
-In [4]: ab.npa.shape                                                                                                                                                            
-Out[4]: (15968,)
-
-
+    sn::postconvert lvid 106 coincide 2
 
 

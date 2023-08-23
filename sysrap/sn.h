@@ -4132,7 +4132,6 @@ inline void sn::uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, st
     double upper_zmin = upper->getBB_zmin() ; 
     bool z_minmax_coincide =  std::abs( lower_zmax - upper_zmin ) < Z_EPSILON ; 
     bool fixable_coincide = z_minmax_coincide && can_znudge && same_union ; 
-    double dz = 1. ; 
 
     if(out && z_minmax_coincide) *out
         << "sn::uncoincide_zminmax"
@@ -4150,57 +4149,60 @@ inline void sn::uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, st
         << std::endl 
         ;
 
-    if(fixable_coincide)
-    {
-        coincide += 1 ; 
+    if(!fixable_coincide) return ; 
 
-        double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
-        double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
+    coincide += 1 ; 
 
-        // TODO : THIS IS MIXING UP FRAMES : NEEDS TO USE THE LEAF LOCAL VALUES HERE 
-        glm::tvec3<double> upos( upper_rperp_at_zmin, upper_rperp_at_zmin, upper_zmin ); 
-        glm::tvec3<double> lpos( lower_rperp_at_zmax, lower_rperp_at_zmax, lower_zmax ); 
-  
-        Transform_Leaf2Tree( upos, upper, out ); 
-        Transform_Leaf2Tree( lpos, lower, out ); 
+    double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
+    double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
+
+    // NB these positions must use coordinates/param in corresponding upper/lower leaf frame 
+    glm::tvec3<double> upper_pos( upper->rperp_at_zmin(), upper->rperp_at_zmin(), upper->zmin() ); 
+    glm::tvec3<double> lower_pos( lower->rperp_at_zmax(), lower->rperp_at_zmax(), lower->zmax() ); 
+
+    // transforming the leaf frame coordinates into tree frame : should  
+    Transform_Leaf2Tree( upper_pos, upper, nullptr ); 
+    Transform_Leaf2Tree( lower_pos, lower, nullptr ); 
+
+    bool upper_lower_pos_z_equal = std::abs( upper_pos.z - lower_pos.z) < Z_EPSILON ; 
+    bool rperp_equal = std::abs( lower_pos.x - upper_pos.x ) < Z_EPSILON  ; 
+    bool upper_rperp_smaller = lower_pos.x > upper_pos.x ; 
+    bool upper_shape_smaller = upper->typecode == CSG_ZSPHERE && lower->typecode == CSG_CYLINDER ; 
+    bool upper_decrease_zmin = rperp_equal ?  upper_shape_smaller : upper_rperp_smaller ; 
+
+    double dz = 1. ; 
+    if( upper_decrease_zmin )  upper->decrease_zmin( dz ); 
+    else                       lower->increase_zmax( dz ); 
 
 
-        if(out) *out
-            << "sn::uncoincide_zminmax"
-            << " lvid " << lvid
-            << " ("<< i-1 << "," << i << ") "
-            << " lower_rperp_at_zmax " << lower_rperp_at_zmax
-            << " upper_rperp_at_zmin " << upper_rperp_at_zmin
-            << std::endl 
-            ; 
+    if(out) *out
+        << "sn::uncoincide_zminmax"
+        << " lvid " << lvid
+        << " ("<< i-1 << "," << i << ") "
+        << " lower_rperp_at_zmax " << lower_rperp_at_zmax
+        << " upper_rperp_at_zmin " << upper_rperp_at_zmin
+        << " (leaf frame) "
+        << std::endl 
+        << " upper_pos " << stra<double>::Desc(upper_pos) << " (tree frame) " 
+        << std::endl 
+        << " lower_pos " << stra<double>::Desc(lower_pos) << " (tree frame) "
+        << std::endl 
+        << " rperp_equal " << ( rperp_equal ? "YES" : "NO " )
+        << " upper_rperp_smaller " << ( upper_rperp_smaller ? "YES" : "NO " )
+        << " upper_shape_smaller " << ( upper_shape_smaller ? "YES" : "NO " )
+        << " upper_decrease_zmin " << ( upper_decrease_zmin ? "YES" : "NO " )
+        << " upper_lower_pos_z_equal " << ( upper_lower_pos_z_equal ? "YES" : "NO " )
+        << std::endl 
+        << ( upper_decrease_zmin  ? 
+             "  upper->decrease_zmin( dz ) : expand upper down into bigger lower "
+             :
+             "  lower->increase_zmax( dz ) : expand lower up into bigger upper "
+           )
+        << " coincide " << coincide  
+        << std::endl 
+        ; 
 
-        if( lower_rperp_at_zmax > upper_rperp_at_zmin )    
-        {
-            upper->decrease_zmin( dz ); 
+   assert( upper_lower_pos_z_equal && "EXPECTED upper_lower_pos_z_equal FOR COINCIDENT " ); 
 
-            if(out) *out 
-                << "sn::uncoincide_zminmax"
-                << " lvid " << lvid
-                << " ("<< i-1 << "," << i << ") "
-                << " lower_rperp_at_zmax > upper_rperp_at_zmin : upper->decrease_zmin( dz ) "
-                << "  : expand upper down into bigger lower "
-                << std::endl 
-                ;  
-
-        }
-        else
-        {
-            lower->increase_zmax( dz ); 
-
-            if(out) *out  
-                << "sn::uncoincide_zminmax"
-                << " lvid " << lvid
-                << " ("<< i-1 << "," << i << ") "
-                << " !(lower_rperp_at_zmax > upper_rperp_at_zmin) : lower->increase_zmax( dz ) "
-                << "  : expand lower up into bigger upper "
-                << std::endl 
-                ;  
-        }
-    }
 }
 
