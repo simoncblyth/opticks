@@ -178,8 +178,8 @@ struct SYSRAP_API sn
     // templating allows to work with both "sn*" and "const sn*" 
     template<typename N> static std::string Desc(N* n); 
     template<typename N> static std::string DescPrim(N* n); 
-    template<typename N> static std::string Desc(const std::vector<N*>& nds); 
-    template<typename N> static std::string DescPrim(const std::vector<N*>& nds); 
+    template<typename N> static std::string Desc(const std::vector<N*>& nds, bool reverse=false); 
+    template<typename N> static std::string DescPrim(const std::vector<N*>& nds, bool reverse=false); 
 
 
     int  idx() const ;  // to match snd.hh
@@ -272,7 +272,7 @@ struct SYSRAP_API sn
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
     std::string desc_prim() const ; 
-    std::string desc_prim_all() const ; 
+    std::string desc_prim_all(bool reverse) const ; 
     std::string brief() const ; 
     std::string desc_child() const ; 
     std::string desc_r() const ; 
@@ -419,6 +419,12 @@ struct SYSRAP_API sn
     void set_rperp_at_zmin(double rperp_) const ; 
 
 
+    static double Sphere_RPerp_At_Z(double r, double z); 
+    double rperp_at_zmin_zsphere() const ; 
+    double rperp_at_zmax_zsphere() const ; 
+
+
+
 
     static std::string ZDesc(const std::vector<sn*>& prims); 
 
@@ -506,13 +512,15 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& v,  
         bool reverse) const ; 
 
+    double radius_sphere() const ; 
     void setAABBLocal() ; 
     void setAABB() ; 
 
-    //static const int uncoincide_dump_lvid ;  // export sn__uncoincide_dump_lvid=101
-    // sometimes get : warning: inline variables are a C++1z extension [-Wc++1z-extensions]
+    static void Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, std::ostream* out ); 
+
     void uncoincide() ; 
-    int uncoincide_(std::ostream* out); 
+    void uncoincide_( bool enable, std::ostream* out); 
+    void uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, std::ostream* out  ) ; 
 
     
 };  // END
@@ -535,21 +543,23 @@ inline std::string sn::DescPrim(N* n) // static
 
 
 template<typename N>
-inline std::string sn::Desc(const std::vector<N*>& nds) // static
+inline std::string sn::Desc(const std::vector<N*>& nds, bool reverse) // static
 {
+    int num_nd = nds.size() ;
     std::stringstream ss ; 
-    ss << "sn::Desc nds.size " << nds.size() << std::endl ; 
-    for(int i=0 ; i < int(nds.size()) ; i++) ss << Desc(nds[i]) << std::endl ; 
+    ss << "sn::Desc num_nd " << num_nd << ( reverse ? " DESC ORDER REVERSED " : "-" ) << std::endl ; 
+    for(int i=0 ; i < num_nd ; i++) ss << Desc(nds[reverse ? num_nd - 1 - i : i]) << std::endl ; 
     std::string str = ss.str();
     return str ; 
 }
 
 template<typename N>
-inline std::string sn::DescPrim(const std::vector<N*>& nds) // static
+inline std::string sn::DescPrim(const std::vector<N*>& nds, bool reverse) // static
 {
+    int num_nd = nds.size() ;
     std::stringstream ss ; 
-    ss << "sn::DescPrim nds.size " << nds.size() << std::endl ; 
-    for(int i=0 ; i < int(nds.size()) ; i++) ss << DescPrim(nds[i]) << std::endl ; 
+    ss << "sn::DescPrim num_nd " << num_nd << ( reverse ? " DESC ORDER REVERSED " : "-" ) << std::endl ; 
+    for(int i=0 ; i < num_nd ; i++) ss << DescPrim(nds[reverse ? num_nd - 1 - i : i]) << std::endl ; 
     std::string str = ss.str();
     return str ; 
 }
@@ -1431,14 +1441,14 @@ inline std::string sn::desc_prim() const
     return str ;
 }
 
-inline std::string sn::desc_prim_all() const 
+inline std::string sn::desc_prim_all(bool reverse) const 
 {
     std::vector<const sn*> prim ; 
     collect_prim(prim);
     bool ascending = true ; 
     OrderPrim<const sn>(prim, sn::AABB_ZMin, ascending ); 
 
-    return DescPrim(prim); 
+    return DescPrim(prim, reverse); 
 }
 
 
@@ -2353,54 +2363,6 @@ inline void sn::ZNudgeExpandEnds(int lvid, std::vector<sn*>& prims, bool enable)
 /**
 sn::ZNudgeOverlapJoints
 -------------------------
-
-lower_rperp_at_zmax > upper_rperp_at_zmin::
-            
-        +-----+
-        |     |   
-    +---+.....+---+  
-    |   +~~~~~+   |       upper->decrease_zmin
-    |             | 
-    +-------------+
-
-!(lower_rperp_at_zmax > upper_rperp_at_zmin)::
-               
-    +-------------+
-    |             |
-    |   +~~~~~+   |    lower->increase_zmax
-    +---+-----+---+
-        |     |   
-        +-----+             
-
-
-HMM a cone atop a cylinder where the cone at zmin 
-starts at the same radius of the cylinder will mean that 
-there will be a change to the shape for both 
-uncoinciding by the cylinder expanding up and the cone 
-expanding down. So there is no way to avoid concidence 
-on that joint, without changing geometry::
-
-
-        +----------------+
-       /                  \
-      /                    \
-     /                      \
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-    |                        |
-    |                        | 
-    |                        | 
-    |                        | 
-    |                        | 
-    +------------------------+
-
-This happens with::
-
-   NNVTMCPPMTsMask_virtual
-   HamamatsuR12860sMask_virtual
-
-As they are virtual it doesnt matter for physics in this 
-case : but that doesnt stop it being an issue. 
-
 **/
 
 inline void sn::ZNudgeOverlapJoints(int lvid, std::vector<sn*>& prims, bool enable ) // static
@@ -2448,6 +2410,55 @@ This is used from U4Polycone nudging.
 It is not so easy to use this with the more general sn::uncoincide nudging 
 because in this case there are transforms involved, so the zmax/zmin param 
 may not look coincident but with the transforms they are. 
+
+
+
+lower_rperp_at_zmax > upper_rperp_at_zmin::
+            
+        +-----+
+        |     |   
+    +---+.....+---+  
+    |   +~~~~~+   |       upper->decrease_zmin
+    |             | 
+    +-------------+
+
+!(lower_rperp_at_zmax > upper_rperp_at_zmin)::
+               
+    +-------------+
+    |             |
+    |   +~~~~~+   |    lower->increase_zmax
+    +---+-----+---+
+        |     |   
+        +-----+             
+
+
+HMM a cone atop a cylinder where the cone at zmin 
+starts at the same radius of the cylinder will mean that 
+there will be a change to the shape for both 
+uncoinciding by the cylinder expanding up and the cone 
+expanding down. So there is no way to avoid concidence 
+on that joint, without changing geometry::
+
+
+        +----------------+
+       /                  \
+      /                    \
+     /                      \
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    |                        |
+    |                        | 
+    |                        | 
+    |                        | 
+    |                        | 
+    +------------------------+
+
+This happens with::
+
+   NNVTMCPPMTsMask_virtual
+   HamamatsuR12860sMask_virtual
+
+As they are virtual it doesnt matter for physics in this case : 
+but that doesnt stop it being an issue. 
 
 **/
 
@@ -2813,8 +2824,9 @@ inline double sn::rperp_at_zmax() const
     double v = 0. ; 
     switch(typecode)
     {
-        case CSG_CYLINDER: v = param->value(3) ; break ; 
-        case CSG_CONE:     v = param->value(2) ; break ; 
+        case CSG_CYLINDER: v = param->value(3)         ; break ; 
+        case CSG_ZSPHERE:  v = rperp_at_zmax_zsphere() ; break ; 
+        case CSG_CONE:     v = param->value(2)         ; break ; 
     }
     return v ; 
 }
@@ -2835,11 +2847,16 @@ inline double sn::rperp_at_zmin() const
     double v = 0. ; 
     switch(typecode)
     {
-        case CSG_CYLINDER: v = param->value(3) ; break ; 
-        case CSG_CONE:     v = param->value(0) ; break ; 
+        case CSG_CYLINDER: v = param->value(3)         ; break ; 
+        case CSG_ZSPHERE:  v = rperp_at_zmin_zsphere() ; break ; 
+        case CSG_CONE:     v = param->value(0)         ; break ; 
     }
     return v ; 
 }
+
+
+
+
 
 inline void sn::set_rperp_at_zmin(double rperp_) const 
 {
@@ -2851,6 +2868,66 @@ inline void sn::set_rperp_at_zmin(double rperp_) const
     } 
 }
 
+
+
+
+
+/**
+sn::Sphere_RPerp_At_Z
+-----------------------
+
+                :
+                :
+                *
+                :   *  
+                :  /:    .
+                : r : z    
+                :/  :       .
+      +---------+---+-------+
+                  p 
+
+      pp + zz = rr   =>   p = sqrt( rr - zz ) 
+
+**/
+
+inline double sn::Sphere_RPerp_At_Z(double r, double z)  // static   
+{
+    assert( std::abs(z) <= r ); 
+    return sqrt(r*r - z*z ) ;   
+}
+
+/**
+sn::rperp_at_zmin_zsphere sn::rperp_at_zmax_zsphere(
+------------------------------------------------------
+
+::
+
+           _  _
+        .          .  
+      /             \
+     .               .
+     +---------------+
+
+
+HMM: For ellipsoid need to apply transform to the node local 
+param before using values at "tree level"
+
+
+**/
+inline double sn::rperp_at_zmin_zsphere() const 
+{
+    double r = radius_sphere() ; 
+    double z = zmin(); 
+    double p = Sphere_RPerp_At_Z( r, z ); 
+    return p  ; 
+}
+inline double sn::rperp_at_zmax_zsphere() const 
+{
+    double r = radius_sphere() ; 
+    double z = zmax(); 
+    double p = Sphere_RPerp_At_Z( r, z ); 
+    return p ; 
+}
 
 
 
@@ -3713,6 +3790,15 @@ inline std::string sn::desc_getNodeTransformProduct(
 
 
 
+inline double sn::radius_sphere() const
+{
+    double cx, cy, cz, r, z1, z2 ; 
+    getParam_(cx, cy, cz, r, z1, z2 );  
+    assert( cx == 0. && cy == 0. && cz == 0. ) ; 
+    return r ; 
+} 
+
+
 /**
 sn::setAABBLocal
 -------------------
@@ -3828,7 +3914,7 @@ inline void sn::setAABBLocal()
 sn::postconvert (HMM: think of better name)
 ---------------------------------------------
 
-This is called from U4Solid::init_Tree
+This is called from U4Solid::init_Tree only from the depth zero solid
 
 **/
 
@@ -3838,17 +3924,33 @@ inline void sn::postconvert(int lvid)
     set_lvid(lvid); 
     positivize() ;   
     setAABB(); 
-
     uncoincide(); 
 
-    if(coincide > 0) std::cout 
-        << "sn::postconvert" 
-        << " lvid " << lvid 
-        << " coincide " << coincide
-        << std::endl
-        << desc_prim_all() 
-        << std::endl
-        ; 
+    if(coincide > 0) 
+    {
+        std::cout 
+            << "sn::postconvert" 
+            << " lvid " << lvid 
+            << " coincide " << coincide
+            << std::endl
+            << " desc_prim_all before update AABB " 
+            << desc_prim_all(true) 
+            << std::endl
+            ; 
+
+        setAABB(); 
+
+        std::cout 
+            << "sn::postconvert" 
+            << " lvid " << lvid 
+            << " coincide " << coincide
+            << std::endl
+            << " desc_prim_all after update AABB " 
+            << desc_prim_all(true) 
+            << std::endl
+            ; 
+    }
+
 
 }
 
@@ -3918,11 +4020,41 @@ inline void sn::setAABB()
     }
 }
 
+inline void sn::Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, std::ostream* out )  // static
+{
+    glm::tvec4<double> pos0 ; 
+    pos0.x = xyz.x ; 
+    pos0.y = xyz.y ; 
+    pos0.z = xyz.z ; 
+    pos0.w = 1. ; 
+ 
+    glm::tmat4x4<double> t(1.) ;
+    glm::tmat4x4<double> v(1.) ;
+    bool reverse = false ; 
+    leaf->getNodeTransformProduct(t, v, reverse, nullptr ); 
+   
+    glm::tvec4<double> pos = t * pos0 ; 
+
+    xyz.x = pos.x ; 
+    xyz.y = pos.y ; 
+    xyz.z = pos.z ;
+
+    if(out) *out
+        << "sn::Transform_Leaf2Tree"
+        << std::endl 
+        << " pos0 " << stra<double>::Desc(pos0) 
+        << std::endl 
+        << " pos  " << stra<double>::Desc(pos) 
+        << std::endl 
+        ;
+}
+
 
 inline void sn::uncoincide()
 {
     int uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", 107) ;
     bool dump = lvid == std::abs(uncoincide_dump_lvid) ; 
+    bool enable = true ; 
 
     std::stringstream ss ; 
     if(dump) ss 
@@ -3932,7 +4064,7 @@ inline void sn::uncoincide()
         << std::endl
         ;
  
-    coincide = uncoincide_( dump ? &ss : nullptr ); 
+    uncoincide_( enable, dump ? &ss : nullptr ); 
 
     if( dump )
     {
@@ -3949,7 +4081,7 @@ Many box box coincidences are currently not counted from can_znudge:false
 
 **/
 
-inline int sn::uncoincide_(std::ostream* out)
+inline void sn::uncoincide_(bool enable, std::ostream* out)
 {
     std::vector<const sn*> prim ; 
     collect_prim(prim); 
@@ -3960,45 +4092,115 @@ inline int sn::uncoincide_(std::ostream* out)
 
     if(out) *out 
         << "sn::uncoincide_" 
+        << " lvid " << lvid
         << " num_prim " << num_prim 
         << std::endl
         ; 
 
-    int count = 0 ; 
     for(int i=1 ; i < num_prim ; i++)
     {
         const sn* lower = prim[i-1] ; 
         const sn* upper = prim[i] ;
-        bool can_znudge = lower->can_znudge() && upper->can_znudge() ; 
-        bool same_union = AreFromSameUnion(lower, upper) ; 
-        double lower_zmax = lower->getBB_zmax() ; 
-        double upper_zmin = upper->getBB_zmin() ; 
-
-        bool z_minmax_coincide =  std::abs( lower_zmax - upper_zmin ) < Z_EPSILON ; 
-        bool fixable_coincide = z_minmax_coincide && can_znudge && same_union ; 
-        if(fixable_coincide) count += 1 ; 
-
-        if(fixable_coincide)
-        {
-
-        }
-
- 
-        if(out) *out 
-            << " lo: " << lower->desc_prim() 
-            << " hi: " << upper->desc_prim() 
-            << " " << ( z_minmax_coincide ? "Z_MINMAX_COINCIDE" : " " )
-            << " " << ( fixable_coincide ? "FIXABLE_COINCIDE" : " " )
-            << std::endl
-            ; 
+        sn* _lower = const_cast<sn*>( lower ); 
+        sn* _upper = const_cast<sn*>( upper ); 
+        uncoincide_zminmax( i, _lower, _upper, enable, out ); 
     }
 
     if(out) *out 
         << "sn::uncoincide_" 
+        << " lvid " << lvid
         << " num_prim " << num_prim 
-        << " Z_MINMAX_COINCIDE count " << count 
+        << " coincide " << coincide
         << std::endl
         ; 
-
-    return count ; 
 }
+
+/**
+sn::uncoincide_zminmax
+------------------------
+
+TODO : should be using a transformed rperp as this needs to 
+operate in the frame of the root of the CSG tree 
+
+**/
+
+inline void sn::uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, std::ostream* out )
+{
+    bool can_znudge = lower->can_znudge() && upper->can_znudge() ; 
+    bool same_union = AreFromSameUnion(lower, upper) ; 
+    double lower_zmax = lower->getBB_zmax() ; 
+    double upper_zmin = upper->getBB_zmin() ; 
+    bool z_minmax_coincide =  std::abs( lower_zmax - upper_zmin ) < Z_EPSILON ; 
+    bool fixable_coincide = z_minmax_coincide && can_znudge && same_union ; 
+    double dz = 1. ; 
+
+    if(out && z_minmax_coincide) *out
+        << "sn::uncoincide_zminmax"
+        << " lvid " << lvid
+        << " ("<< i-1 << "," << i << ") "
+        << " lower_zmax " << lower_zmax  
+        << " upper_zmin " << upper_zmin
+        << " lower_tag " << lower->tag()
+        << " upper_tag " << upper->tag()
+        << " can_znudge " << ( can_znudge ? "YES" : "NO " )
+        << " same_union " << ( same_union ? "YES" : "NO " )
+        << " z_minmax_coincide " << ( z_minmax_coincide ? "YES" : "NO " )
+        << " fixable_coincide " << ( fixable_coincide ? "YES" : "NO " )
+        << " enable " << ( enable ? "YES" : "NO " )
+        << std::endl 
+        ;
+
+    if(fixable_coincide)
+    {
+        coincide += 1 ; 
+
+        double upper_rperp_at_zmin = upper->rperp_at_zmin() ; 
+        double lower_rperp_at_zmax = lower->rperp_at_zmax() ; 
+
+        // TODO : THIS IS MIXING UP FRAMES : NEEDS TO USE THE LEAF LOCAL VALUES HERE 
+        glm::tvec3<double> upos( upper_rperp_at_zmin, upper_rperp_at_zmin, upper_zmin ); 
+        glm::tvec3<double> lpos( lower_rperp_at_zmax, lower_rperp_at_zmax, lower_zmax ); 
+  
+        Transform_Leaf2Tree( upos, upper, out ); 
+        Transform_Leaf2Tree( lpos, lower, out ); 
+
+
+        if(out) *out
+            << "sn::uncoincide_zminmax"
+            << " lvid " << lvid
+            << " ("<< i-1 << "," << i << ") "
+            << " lower_rperp_at_zmax " << lower_rperp_at_zmax
+            << " upper_rperp_at_zmin " << upper_rperp_at_zmin
+            << std::endl 
+            ; 
+
+        if( lower_rperp_at_zmax > upper_rperp_at_zmin )    
+        {
+            upper->decrease_zmin( dz ); 
+
+            if(out) *out 
+                << "sn::uncoincide_zminmax"
+                << " lvid " << lvid
+                << " ("<< i-1 << "," << i << ") "
+                << " lower_rperp_at_zmax > upper_rperp_at_zmin : upper->decrease_zmin( dz ) "
+                << "  : expand upper down into bigger lower "
+                << std::endl 
+                ;  
+
+        }
+        else
+        {
+            lower->increase_zmax( dz ); 
+
+            if(out) *out  
+                << "sn::uncoincide_zminmax"
+                << " lvid " << lvid
+                << " ("<< i-1 << "," << i << ") "
+                << " !(lower_rperp_at_zmax > upper_rperp_at_zmin) : lower->increase_zmax( dz ) "
+                << "  : expand lower up into bigger upper "
+                << std::endl 
+                ;  
+        }
+    }
+}
+
