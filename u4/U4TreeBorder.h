@@ -95,6 +95,8 @@ struct U4TreeBorder
     bool has_isur_override( const int4& bd ) const ; 
     void do_osur_override( int4& bd ) ; 
     void do_isur_override( int4& bd ) ; 
+
+    void check( const int4& bd )  ; 
 }; 
 
 
@@ -237,6 +239,16 @@ inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : ou
 #ifdef DEBUG_IMPLICIT
     st->implicit_isur.push_back(bd); 
 #endif
+}
+
+inline void U4TreeBorder::check( const int4& bd ) 
+{
+    if(is_flagged()) std::cout 
+        << "U4TreeBorder::check is_flagged " << std::endl 
+        << " (omat,osur,isur,imat) " << bd << std::endl 
+        << desc()
+        << std::endl 
+        ;
 }
 
 

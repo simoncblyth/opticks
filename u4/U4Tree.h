@@ -605,7 +605,6 @@ enable_osur:true
 **/
 
 
-#define U4_OPTICAL_DEBUG 1 
 
 inline int U4Tree::initNodes_r( 
     const G4VPhysicalVolume* const pv, 
@@ -615,8 +614,6 @@ inline int U4Tree::initNodes_r(
     int parent )
 {
     // preorder visit before recursive call 
-
-    //U4TreeBorder border(st, num_surface_standard, pv, pv_p) ; 
     U4TreeBorder border(st, pv, pv_p) ; 
    
     int omat = stree::GetPointerIndex<G4Material>(      materials, border.omat_); 
@@ -626,22 +623,13 @@ inline int U4Tree::initNodes_r(
 
     int4 bd = {omat, osur, isur, imat } ; 
 
-#ifdef U4_OPTICAL_DEBUG
-    if(border.is_flagged()) std::cout 
-        << "U4Tree::initNodes_r border.is_flagged " << std::endl 
-        << " (omat,osur,isur,imat) " << bd << std::endl 
-        << border.desc()
-        << std::endl 
-        ;
-#endif
-
     // overrides add implicit surfaces when no prior surface and RINDEX->NoRINDEX 
     if(enable_osur && border.has_osur_override(bd)) border.do_osur_override(bd);  
     if(enable_isur && border.has_isur_override(bd)) border.do_isur_override(bd); 
 
+    border.check(bd); 
     int boundary = st->add_boundary(bd) ; 
     assert( boundary > -1 ); 
-   
 
 
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();

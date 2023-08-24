@@ -118,8 +118,9 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
 
     for(int i=0 ; i < num_rem ; i++)
     {
-        const snode& node = st->rem[i] ;
-        CSGPrim* pr = importPrim( i, node ) ;  
+        int primIdx = i ;  // primIdx within the CSGSolid
+        const snode& node = st->rem[primIdx] ;
+        CSGPrim* pr = importPrim( primIdx, node ) ;  
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         assert( pr );  
     }
@@ -159,9 +160,10 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 
     for(int i=0 ; i < subtree ; i++)
     {
-        const snode& node = nodes[i] ;   // structural node
+        int primIdx = i ;  // primIdx within the CSGSolid
+        const snode& node = nodes[primIdx] ;   // structural node
 
-        CSGPrim* pr = importPrim( i, node );  
+        CSGPrim* pr = importPrim( primIdx, node );  
         pr->setRepeatIdx(ridx); 
 
         LOG_IF( verbose, pr == nullptr) << " pr null " ;  
@@ -226,7 +228,7 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
     CSGPrim* pr = fd->addPrim( numParts );
 
     pr->setMeshIdx(lvid);
-    pr->setPrimIdx(primIdx);
+    pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
 
     for(int i=0 ; i < numParts ; i++)
     {
