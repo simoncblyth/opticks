@@ -378,12 +378,11 @@ void CSGNode::getYRange(float& y0, float& y1) const
 CSGNode::setAABBLocal
 ----------------------
 
-CAUTION : currently this is near duplicated in sn::setAABBLocal
-
+CAUTION : currently this is near duplicated in sn::setAABB_LeafFrame
 The duplication is because need the bbox for general nudging in sn.h 
+and also needed for CSGCopy::copyNode
 
 **/
-
 
 void CSGNode::setAABBLocal()
 {
@@ -471,6 +470,8 @@ void CSGNode::setAABBLocal()
         setAABB( 0.f );  
     }
 }
+
+
 
 CSGNode CSGNode::Zero()  // static
 {
@@ -671,6 +672,12 @@ NB not easy to expand to more than 6 params as q1.u.z q1.u.w are otherwise engag
 
 **/
 
+CSGNode CSGNode::Make(unsigned typecode ) // static
+{
+    CSGNode nd = {} ;
+    nd.setTypecode(typecode) ; 
+    return nd ; 
+}
 CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb ) // static
 {
     CSGNode nd = {} ;
@@ -687,6 +694,14 @@ CSGNode CSGNode::MakeNarrow(unsigned typecode, const double* param6, const doubl
     if(aabb)   nd.setAABB_Narrow( aabb );  
     return nd ; 
 }
+
+
+
+
+
+
+
+
 
 
 #endif

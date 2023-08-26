@@ -261,11 +261,12 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
         itr = src->getItra(sTranIdx-1u) ; 
         dTranIdx = 1u + dst->addTran( tra, itr ) ;
     }
-       
-    CSGNode nd = {} ;
-    CSGNode::Copy(nd, *snd );   // dumb straight copy : so need to fix transform and plan references  
 
-    CSGNode* dnd = dst->addNode(nd, &splanes);   
+    CSGNode nd = {} ; 
+    CSGNode::Copy(nd, *snd ); // dumb straight copy : so need to fix transform and plan references   
+
+    CSGNode* dnd = dst->addNode(nd, &splanes, nullptr);
+
     dnd->setTransformComplement( dTranIdx, complement ); 
 
     /*

@@ -427,6 +427,10 @@ class CSGFoundry(object):
         self.bdn = bdn 
         self.sim = sim
 
+        self.npa = self.node.reshape(-1,16)[:,0:6]
+        self.nbb = self.node.reshape(-1,16)[:,8:14]
+
+
 
     def find_primIdx_from_nodeIdx(self, nodeIdx_):
         """

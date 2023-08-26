@@ -83,6 +83,8 @@ CAUTION regards what to rebuild + rerun after changes, in order to make a valid 
 +----------------+-----------+
 | G4CXOpticks.hh | A0        |
 +----------------+-----------+
+
+
 FIXED : BP=sn::Serialize for A shows all pool empty : probably this is an issue of the other stree
 ----------------------------------------------------------------------------------------------------
 
@@ -468,7 +470,7 @@ without any skips : SO DISABLED THE  SGeoConfig::GeometrySpecificSetup
 
 
 
-TODO : A/B CSGPrim prim content : ints match, B lacks bbox
+WIP : A/B CSGPrim prim content : ints match, B lacks bbox
 ------------------------------------------------------------
 
 
@@ -528,7 +530,7 @@ B:prim misses bbox::
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
 
 
-::
+
 
     
 
@@ -697,7 +699,7 @@ Encapsulate finding primIdx from nodeIdx into CSGFoundry.py::
 
 * 117,108,107,106,95,96
 
-* TODO: improve nudge logging, only lv 95 is showing up ? All the above six lv should appear. 
+* DONE : improved nudge logging,
 
 ::
 
@@ -782,7 +784,7 @@ DONE : Added logging : looking for  95,96, 106,107,108, 117
     2023-08-19 20:46:11.805 INFO  [33035526] [*NCSG::Adopt@169]  [  soIdx 123 lvIdx 123 treeidx 123
 
 
-TODO : Disable uncoincidence shifts in A to check if that explains all the above CSGNode diffs
+DONE : Confirmed that uncoincidence shifts in A explains all the above CSGNode diffs
 -------------------------------------------------------------------------------------------------
 
 Where is Uncoincidence done in A side, how to disable ?::
@@ -1381,13 +1383,13 @@ Hence those two nudge locations explain all the A/B CSGNode deviation.::
 
 
 
-WIP : review more general nudging in A and decide how to implement in B
---------------------------------------------------------------------------
+DONE  : review more general nudging in A and decide how to implement in B : IMPLEMENTED IN SN::UNCOINCIDE
+--------------------------------------------------------------------------------------------------------------
 
 * A:X4Solid.cc/NNodeNudger.cpp --> B:U4Solid.h/sn.h
 
-WIP : review Polycone nudging in A and decide how to implement in B 
----------------------------------------------------------------------
+DONE  : review Polycone nudging in A and decide how to implement in B  : IMPLEMENTED IN U4POLYCONE USING SN::ZNUDGE METHODS
+------------------------------------------------------------------------------------------------------------------------------
 
 Started with the simpler Polycone nudging as unlike the general case 
 that has no transforms and no need to be concerned with finding coincidences 
@@ -1473,7 +1475,7 @@ Started with rationalizing U4Polycone.h and filling out sn nudge methods::
 
 
 
-WIP : After implementing U4Polycone use of sn::ZNudgeExpandEnds : establish baseline
+DONE  : After implementing U4Polycone use of sn::ZNudgeExpandEnds : establish baseline
 ---------------------------------------------------------------------------------------
 
 1. disable nudging from both A and B:: 
@@ -1785,8 +1787,8 @@ CSGNode Deviations
            ['uni_acrylic10x5ba6710']], dtype=object)
 
 
-CSGNode bbox deviants
--------------------------
+FIXED : CSGNode bbox deviants
+--------------------------------
 
 Where does the A side update bbox after nudges ? Where to do that on A side ?
 
@@ -1843,8 +1845,8 @@ Where does the A side update bbox after nudges ? Where to do that on A side ?
 
 
 
-CSGNode parameter deviations
-------------------------------
+FIXED : CSGNode parameter deviations
+---------------------------------------
 
 ::
 
@@ -2555,10 +2557,14 @@ HMM : where are the combined CSGPrim AABB set in A ?
 
 
 
-DONE : enabled sn::uncoincide : gets all node param to match : BUT CURRENTLY USING NON-TRANSFORMED ELLIPSOID RPERP
----------------------------------------------------------------------------------------------------------------------
+DONE : enabled sn::uncoincide : gets all node param to match 
+--------------------------------------------------------------
 
-* so the znudge upper/lower choice is matching old workflow by accident
+* initially used non ellipsoid transformed rperp 
+  so the znudge upper/lower choice was matching old workflow by accident
+
+* after using correct transform the rperp are equal : so added special casing for CYL-ZSH
+
 
 ::
 
@@ -2660,5 +2666,114 @@ DONE : enabled sn::uncoincide : gets all node param to match : BUT CURRENTLY USI
     sn::uncoincide_ lvid 106 num_prim 4 coincide 2
 
     sn::postconvert lvid 106 coincide 2
+
+
+
+
+DONE : Whats up with node bbox ? JUST SMALL DIFFS LESS THAN 1e-2 ON BIG VALUES float/double level diffs
+-----------------------------------------------------------------------------------------------------------
+
+::
+
+    In [5]: a.node[:,2:].reshape(-1,8)[:,:6]
+    Out[5]: 
+    array([[-60000.  , -60000.  , -60000.  ,  60000.  ,  60000.  ,  60000.  ],
+           [-28000.  , -27500.  ,  21750.  ,  34250.  ,  27500.  ,  51750.  ],
+           [-28000.  , -27500.  ,  32750.  ,  34250.  ,  27500.  ,  51750.  ],
+           [    -0.  ,     -0.  ,     -0.  ,      0.  ,      0.  ,      0.  ],
+           [-28000.  , -29760.  ,  -7770.  ,  34250.  ,  29760.  ,  51750.  ],
+           [-29000.  , -59520.  , -48290.  ,  35250.  ,  59520.  ,  32750.  ],
+           [    -0.  ,     -0.  ,     -0.  ,      0.  ,      0.  ,      0.  ],
+           [-25000.  , -26760.  ,  -4770.  ,  31250.  ,  26760.  ,  48750.  ],
+           [-28000.  , -53520.  , -42290.  ,  34250.  ,  53520.  ,  32750.  ],
+           [-28000.  , -27500.  ,  21750.  ,  34250.  ,  27500.  ,  32750.  ],
+           ...,
+           [ -3430.  ,    712.85,     -5.15,   3430.  ,    739.15,      5.15],
+           [ -3430.  ,    713.  ,     -5.  ,   3430.  ,    739.  ,      5.  ],
+           [ -3430.  ,    739.25,     -5.15,   3430.  ,    765.55,      5.15],
+           [ -3430.  ,    739.4 ,     -5.  ,   3430.  ,    765.4 ,      5.  ],
+           [ -3430.  ,    765.65,     -5.15,   3430.  ,    791.95,      5.15],
+           [ -3430.  ,    765.8 ,     -5.  ,   3430.  ,    791.8 ,      5.  ],
+           [ -3430.  ,    792.05,     -5.15,   3430.  ,    818.35,      5.15],
+           [ -3430.  ,    792.2 ,     -5.  ,   3430.  ,    818.2 ,      5.  ],
+           [ -3430.  ,    818.45,     -5.15,   3430.  ,    844.75,      5.15],
+           [ -3430.  ,    818.6 ,     -5.  ,   3430.  ,    844.6 ,      5.  ]], dtype=float32)
+
+    In [6]: b.node[:,2:].reshape(-1,8)[:,:6]
+    Out[6]: 
+    array([[-60000.  , -60000.  , -60000.  ,  60000.  ,  60000.  ,  60000.  ],
+           [-28000.  , -27500.  ,  21750.  ,  34250.  ,  27500.  ,  51750.  ],
+           [-28000.  , -27500.  ,  32750.  ,  34250.  ,  27500.  ,  51750.  ],
+           [    -0.  ,     -0.  ,     -0.  ,      0.  ,      0.  ,      0.  ],
+           [-28000.  , -29760.  ,  -7770.  ,  34250.  ,  29760.  ,  51750.  ],
+           [-29000.  , -59520.  , -48290.  ,  35250.  ,  59520.  ,  32750.  ],
+           [    -0.  ,     -0.  ,     -0.  ,      0.  ,      0.  ,      0.  ],
+           [-25000.  , -26760.  ,  -4770.  ,  31250.  ,  26760.  ,  48750.  ],
+           [-28000.  , -53520.  , -42290.  ,  34250.  ,  53520.  ,  32750.  ],
+           [-28000.  , -27500.  ,  21750.  ,  34250.  ,  27500.  ,  32750.  ],
+           ...,
+           [ -3430.  ,    712.85,     -5.15,   3430.  ,    739.15,      5.15],
+           [ -3430.  ,    713.  ,     -5.  ,   3430.  ,    739.  ,      5.  ],
+           [ -3430.  ,    739.25,     -5.15,   3430.  ,    765.55,      5.15],
+           [ -3430.  ,    739.4 ,     -5.  ,   3430.  ,    765.4 ,      5.  ],
+           [ -3430.  ,    765.65,     -5.15,   3430.  ,    791.95,      5.15],
+           [ -3430.  ,    765.8 ,     -5.  ,   3430.  ,    791.8 ,      5.  ],
+           [ -3430.  ,    792.05,     -5.15,   3430.  ,    818.35,      5.15],
+           [ -3430.  ,    792.2 ,     -5.  ,   3430.  ,    818.2 ,      5.  ],
+           [ -3430.  ,    818.45,     -5.15,   3430.  ,    844.75,      5.15],
+           [ -3430.  ,    818.6 ,     -5.  ,   3430.  ,    844.6 ,      5.  ]], dtype=float32)
+
+    In [7]:                                                         
+
+Small diffs node bb only::
+
+    In [16]: w_bb = np.where( ab.nbb > 1e-2 ) ; w_bb
+    Out[16]: (array([], dtype=int64),)
+
+
+
+
+WIP : Bring the CSGPrim bbox into B side ? Where is it done A side ?
+----------------------------------------------------------------------
+
+::
+
+     512 CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
+     513 {
+     ...
+     575     CSGNode* root = nullptr ;
+     576 
+     577     for(unsigned partIdxRel=0 ; partIdxRel < numParts ; partIdxRel++ )
+     578     {   
+     579         CSGNode* n = convertNode(comp, primIdx, partIdxRel);
+     580         
+     581         if(root == nullptr) root = n ;   // first nodes becomes root 
+     582         
+     583         if(n->is_zero()) continue;
+     584         
+     585         bool negated = n->is_complemented_primitive();
+     586         
+     587         bool bbskip = negated ;
+     588           
+     589           /*
+     590         if(dump || bbskip) 
+     591             LOG(LEVEL)
+     592                 << " partIdxRel " << std::setw(3) << partIdxRel 
+     593                 << " " << n->desc() 
+     594                 << " negated " << negated
+     595                 << " bbskip " << bbskip 
+     596                 ;
+     597 
+     598         */
+     599         
+     600         float* naabb = n->AABB();
+     601         
+     602         if(!bbskip) bb.include_aabb( naabb );
+     603     }
+
+
+
+
+
 
 

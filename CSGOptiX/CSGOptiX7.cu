@@ -271,6 +271,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
         // HMM: normalize here or within CSG ? Actually only needed for 
         // geometry with active scaling, such as ellipsoid.  
+        // TODO: move this so its only done when needed
         float3* normal = prd->normal();  
         *normal = normalize(*normal); 
 

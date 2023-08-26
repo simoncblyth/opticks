@@ -49,12 +49,19 @@ struct SYSRAP_API s_bb
     double x1 ; 
     double y1 ; 
     double z1 ; 
- 
+
+
     const double* cdata() const { return &x0 ; }
     double* data() {              return &x0 ; }
 
     bool is_root() const { return true ; } 
     std::string desc() const ;  
+
+    static void IncludePoint( double* aabb,  const double* other_point ); 
+    static void IncludeAABB(  double* aabb,  const double* other_aabb  ); 
+    void include_point( const double* point ); 
+    void include_aabb(  const double* aabb  ); 
+
 }; 
 
 inline void s_bb::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
@@ -129,5 +136,56 @@ inline std::string s_bb::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+inline void s_bb::IncludePoint( double* aabb,  const double* point ) // static
+{
+    double* x0 = aabb + 0 ; 
+    double* y0 = aabb + 1 ; 
+    double* z0 = aabb + 2 ; 
+
+    double* x1 = aabb + 3 ; 
+    double* y1 = aabb + 4 ; 
+    double* z1 = aabb + 5 ; 
+
+    *x0 = std::min( *x0 , point[0] ) ; 
+    *y0 = std::min( *y0 , point[1] ) ; 
+    *z0 = std::min( *z0 , point[2] ) ; 
+
+    *x1 = std::max( *x1 , point[0] ) ; 
+    *y1 = std::max( *y1 , point[1] ) ; 
+    *z1 = std::max( *z1 , point[2] ) ; 
+}
+
+inline void s_bb::IncludeAABB(  double* aabb,  const double* other_aabb  ) // static
+{
+    double* x0 = aabb + 0 ; 
+    double* y0 = aabb + 1 ; 
+    double* z0 = aabb + 2 ; 
+
+    double* x1 = aabb + 3 ; 
+    double* y1 = aabb + 4 ; 
+    double* z1 = aabb + 5 ; 
+
+    *x0 = std::min( *x0 , other_aabb[0] ) ; 
+    *y0 = std::min( *y0 , other_aabb[1] ) ; 
+    *z0 = std::min( *z0 , other_aabb[2] ) ; 
+
+    *x1 = std::max( *x1 , other_aabb[3] ) ; 
+    *y1 = std::max( *y1 , other_aabb[4] ) ; 
+    *z1 = std::max( *z1 , other_aabb[5] ) ; 
+
+}
+inline void s_bb::include_point( const double* point )
+{
+    IncludePoint( data(), point ); 
+}
+inline void s_bb::include_aabb(  const double* aabb  )
+{
+    IncludeAABB( data(), aabb ); 
+}
+
+
+
 
 

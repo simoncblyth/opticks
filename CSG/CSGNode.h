@@ -230,6 +230,7 @@ struct CSG_API CSGNode
 
     NODE_METHOD void setParam(const float* p)
     { 
+        if(!p) return ; 
         q0.f.x = *(p+0) ; 
         q0.f.y = *(p+1) ; 
         q0.f.z = *(p+2) ; 
@@ -240,6 +241,7 @@ struct CSG_API CSGNode
 
     NODE_METHOD void setParam_Narrow(const double* p)
     { 
+        if(!p) return ; 
         q0.f.x = *(p+0) ; 
         q0.f.y = *(p+1) ; 
         q0.f.z = *(p+2) ; 
@@ -257,6 +259,7 @@ struct CSG_API CSGNode
     NODE_METHOD void setAABB(  float e ){                                                    q2.f.x = -e ; q2.f.y = -e ; q2.f.z = -e ; q2.f.w =  e ; q3.f.x =  e ; q3.f.y =  e ; }  
     NODE_METHOD void setAABB(const float* p)
     { 
+        if(!p) return ; 
         q2.f.x = *(p+0) ; 
         q2.f.y = *(p+1) ; 
         q2.f.z = *(p+2) ; 
@@ -267,6 +270,7 @@ struct CSG_API CSGNode
 
     NODE_METHOD void setAABB_Narrow(const double* p)
     { 
+        if(!p) return ; 
         q2.f.x = *(p+0) ; 
         q2.f.y = *(p+1) ; 
         q2.f.z = *(p+2) ; 
@@ -380,6 +384,7 @@ struct CSG_API CSGNode
     static CSGNode Disc(float px, float py, float ir, float r, float z1, float z2);
 
     static CSGNode MakeDemo(const char* name); 
+    static CSGNode Make(       unsigned typecode ); 
     static CSGNode Make(       unsigned typecode, const float*  param6, const float*  aabb); 
     static CSGNode MakeNarrow( unsigned typecode, const double* param6, const double* aabb); 
 

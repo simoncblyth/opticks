@@ -200,6 +200,7 @@ When SSim not in use can also use::
 #include "NP.hh"
 #include "NPX.h"
 #include "NPFold.h"
+#include "OpticksCSG.h"
 
 #include "ssys.h"
 #include "sstr.h"
@@ -210,6 +211,8 @@ When SSim not in use can also use::
 #include "sstr.h"
 #include "strid.h"
 #include "sfactor.h"
+#include "stran.h"
+#include "stra.h"
 
 #ifdef WITH_SND
 #include "snd.hh"
@@ -441,6 +444,8 @@ struct stree
     std::string desc_node_product(   glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse ) const ; 
 
 
+
+
     template<typename N>
     void get_combined_transform(
              glm::tmat4x4<double>& t,
@@ -457,6 +462,15 @@ struct stree
              const snode& node,
              const N* nd
              ) const ;
+
+    template<typename N>
+    const Tran<double>* get_combined_tran_and_aabb(
+             double* aabb, 
+             const snode& node,
+             const N* nd,
+             std::ostream* out
+             ) const ;
+
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -1833,6 +1847,45 @@ inline std::string stree::desc_combined_transform(
     std::string str = ss.str();
     return str ;
 }
+
+/**
+stree::get_combined_tran
+--------------------------
+
+0. early exits returning nullptr for non leaf nodes
+1. gets combined structural(snode.h) and CSG tree(sn.h) transform 
+2. collects that combined transform and its inverse (t,v) into Tran instance
+3. copies bbox values (assumed leaf frame) from the nd into aabb argument
+4. transforms the bbox using the combined structural + tree transform
+
+CAUTION : sn::uncoincide needs CSG tree frame AABB but this needs leaf frame AABB 
+
+**/
+
+template<typename N>
+inline const Tran<double>* stree::get_combined_tran_and_aabb(
+    double* aabb, 
+    const snode& node,
+    const N* nd,
+    std::ostream* out
+    ) const 
+{
+    assert( nd ); 
+    if(!CSG::IsLeaf(nd->typecode)) return nullptr ; 
+
+    glm::tmat4x4<double> t(1.) ;
+    glm::tmat4x4<double> v(1.) ;
+    get_combined_transform(t, v, node, nd, out );
+    const Tran<double>* tv = new Tran<double>(t, v); 
+
+    nd->copyBB_data( aabb ); 
+    stra<double>::Transform_AABB_Inplace(aabb, t);   
+
+    return tv ; 
+}
+
+
+
 
 /**
 stree::get_nodes : node indices of nodes with *sub* subtree digest

@@ -531,7 +531,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     bool operators_only = true ; 
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
-    bool positive = CSG::IsPositiveMask( mask ); 
+    bool positive = CSG::IsPositiveMask( mask );  // SEEMS NOT USED ?
     nbbox xbb = comp->getBBox(primIdx);  
     bool has_xbb = xbb.is_empty() == false ; 
 

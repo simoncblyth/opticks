@@ -1376,18 +1376,9 @@ void CSGFoundry::importSim()
 
 
 
-/**
-CSGFoundry::addNode
---------------------
 
-Note that the planeIdx and planeNum of the CSGNode are 
-rewritten based on the number of planes for this nd 
-and the number of planes collected already into
-the global plan vector. 
 
-**/
-
-CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr  )
+CSGNode* CSGFoundry::addNode(CSGNode nd)
 {
     LOG_IF(fatal, !last_added_prim) << "must addPrim prior to addNode" ; 
     assert( last_added_prim ); 
@@ -1416,25 +1407,53 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tr
         ;
     assert( ok_globalNodeIdx ); 
 
-    unsigned num_planes = pl ? pl->size() : 0 ; 
-    if(num_planes > 0)
-    {
-        nd.setTypecode(CSG_CONVEXPOLYHEDRON) ; 
-        nd.setPlaneIdx(plan.size());    
-        nd.setPlaneNum(num_planes);    
-        for(unsigned i=0 ; i < num_planes ; i++) addPlan((*pl)[i]);  
-    }
-
-    if(tr)
-    {
-        unsigned trIdx = 1u + addTran(tr);  // 1-based idx, 0 meaning None
-        nd.setTransform(trIdx);  
-    }
-
     node.push_back(nd); 
     last_added_node = node.data() + globalNodeIdx ;
     return last_added_node ; 
 }
+
+
+CSGNode* CSGFoundry::addNode()
+{
+    CSGNode nd = CSGNode::Zero() ; 
+    return addNode(nd); 
+}
+
+
+
+/**
+CSGFoundry::addNode
+--------------------
+
+Note that the planeIdx and planeNum of the CSGNode are 
+rewritten based on the number of planes for this nd 
+and the number of planes collected already into
+the global plan vector. 
+
+Note that when pl and tr are nullptr this does very 
+little : essentially just occupying the slot in the foundry. 
+
+**/
+
+CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr  )
+{
+    CSGNode* n = addNode(nd) ; 
+    unsigned num_planes = pl ? pl->size() : 0 ; 
+    if(num_planes > 0)
+    {
+        n->setTypecode(CSG_CONVEXPOLYHEDRON) ; 
+        n->setPlaneIdx(plan.size());    
+        n->setPlaneNum(num_planes);    
+        for(unsigned i=0 ; i < num_planes ; i++) addPlan((*pl)[i]);  
+    }
+    if(tr)
+    {
+        unsigned trIdx = 1u + addTran(tr);  // 1-based idx, 0 meaning None
+        n->setTransform(trIdx);  
+    }
+    return n ; 
+}
+
 
 
 
@@ -1464,7 +1483,7 @@ CSGNode* CSGFoundry::addNodes(const std::vector<CSGNode>& nds )
     return node.data() + idx ; 
 }
 
-CSGNode*  CSGFoundry::addNode(AABB& bb, CSGNode nd )
+CSGNode* CSGFoundry::addNode(AABB& bb, CSGNode nd )
 {
     CSGNode* n = addNode(nd); 
     bb.include_aabb( n->AABB() ); 
@@ -1521,8 +1540,7 @@ CSGPrim* CSGFoundry::addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, con
     {
         const CSGNode& nd = nds[i] ; 
         const Tran<double>* tr = trs ? (*trs)[i] : nullptr ; 
-        std::vector<float4>* planes = nullptr ;  
-        CSGNode* n = addNode(nd, planes); 
+        CSGNode* n = addNode(nd); 
         if(tr)
         {
             bool transform_node_aabb = true ; 

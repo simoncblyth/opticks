@@ -310,11 +310,6 @@ struct SYSRAP_API sn
     void prune_r(int d) ; 
     bool has_dangle() const ; 
 
-    void postconvert(int lvid); 
-
-    template<typename N>
-    static void OrderPrim( std::vector<N*>& prim, std::function<double(N* p)> fn, bool ascending  ); 
-
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
 
@@ -326,10 +321,14 @@ struct SYSRAP_API sn
 
 
     void setPA( double x, double y, double z, double w, double z1, double z2 );
+    const double* getPA_data() const  ; 
+    void    copyPA_data(double* dst) const ; 
+
     void setBB(  double x0, double y0, double z0, double x1, double y1, double z1 ); 
     void setBB(  double x0 ); 
 
-    double* getBB_data() ; 
+    const double* getBB_data() const ; 
+    void    copyBB_data(double* dst) const ;  
 
     double  getBB_xmin() const ; 
     double  getBB_ymin() const ; 
@@ -513,8 +512,19 @@ struct SYSRAP_API sn
         bool reverse) const ; 
 
     double radius_sphere() const ; 
-    void setAABBLocal() ; 
-    void setAABB() ; 
+
+    void setAABB_LeafFrame() ; 
+    void setAABB_LeafFrame_All() ; 
+    void setAABB_TreeFrame_All() ; 
+
+
+    void postconvert(int lvid); 
+
+    template<typename N>
+    static void OrderPrim( std::vector<N*>& prim, std::function<double(N* p)> fn, bool ascending  ); 
+
+
+
 
     static void Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, std::ostream* out ); 
 
@@ -2139,6 +2149,22 @@ inline void sn::setPA( double x0, double y0, double z0, double w0, double x1, do
     param->y1 = y1 ; 
 }
 
+
+inline const double* sn::getPA_data() const 
+{
+    return param ? param->data() : nullptr ; 
+}
+
+inline void sn::copyPA_data(double* dst) const 
+{
+    const double* src = getPA_data() ; 
+    for(int i=0 ; i < 6 ; i++) dst[i] = src[i] ;  
+}
+
+
+
+
+
 inline void sn::setBB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
     if( aabb == nullptr ) aabb = new s_bb ; 
@@ -2161,11 +2187,17 @@ inline void sn::setBB( double x0 )
     aabb->z1 = +x0 ; 
 }
 
-inline double* sn::getBB_data() 
+inline const double* sn::getBB_data() const 
 {
-    if( aabb == nullptr ) aabb = new s_bb ; 
-    return aabb->data(); 
+    return aabb ? aabb->data() : nullptr ; 
 }
+inline void sn::copyBB_data(double* dst) const 
+{
+    const double* src = getBB_data() ; 
+    for(int i=0 ; i < 6 ; i++) dst[i] = src[i] ;  
+}
+
+
 
 inline double sn::getBB_xmin() const { return aabb ? aabb->x0 : 0. ; } 
 inline double sn::getBB_ymin() const { return aabb ? aabb->y0 : 0. ; } 
@@ -3800,15 +3832,15 @@ inline double sn::radius_sphere() const
 
 
 /**
-sn::setAABBLocal
--------------------
+sn::setAABB_LeafFrame
+----------------------
 
 Migrated down from CSGNode::setAABBLocal as nudging 
 needs this done earlier. 
 
 **/
 
-inline void sn::setAABBLocal()
+inline void sn::setAABB_LeafFrame()
 {
     if(typecode == CSG_SPHERE)
     {   
@@ -3898,13 +3930,57 @@ inline void sn::setAABBLocal()
     else
     {
         std::cerr 
-            << "sn::setAABBLocal : FATAL NOT IMPLEMENTED : "
+            << "sn::setAABB_LeafFrame : FATAL NOT IMPLEMENTED : "
             << " typecode " << typecode 
             << " CSG::Name(typecode) " << CSG::Name(typecode)
             << std::endl 
             ;
         assert(0);
         setBB( 0. );
+    }
+}
+
+inline void sn::setAABB_LeafFrame_All()  
+{
+    std::vector<const sn*> prim ; 
+    collect_prim(prim); 
+    int num_prim = prim.size() ; 
+    for(int i=0 ; i < num_prim ; i++)
+    {
+        const sn* p = prim[i] ; 
+        sn* _p = const_cast<sn*>(p) ; 
+        _p->setAABB_LeafFrame() ; 
+    }
+}
+
+
+/*
+sn::setAABB_TreeFrame_All formerly sn::setAABB
+-----------------------------------------------
+
+**/
+
+inline void sn::setAABB_TreeFrame_All()  
+{
+    std::vector<const sn*> prim ; 
+    collect_prim(prim); 
+    int num_prim = prim.size() ; 
+
+    for(int i=0 ; i < num_prim ; i++)
+    {
+        const sn* p = prim[i] ; 
+        sn* _p = const_cast<sn*>(p) ; 
+        _p->setAABB_LeafFrame() ; 
+
+        glm::tmat4x4<double> t(1.) ;
+        glm::tmat4x4<double> v(1.) ;
+
+        bool reverse = false ; 
+        std::ostream* out = nullptr ; 
+        p->getNodeTransformProduct(t, v, reverse, out ); 
+
+        const double* pbb = _p->getBB_data() ; 
+        stra<double>::Transform_AABB_Inplace( const_cast<double*>(pbb),  t );   
     }
 }
 
@@ -3916,42 +3992,25 @@ sn::postconvert (HMM: think of better name)
 
 This is called from U4Solid::init_Tree only from the depth zero solid
 
-**/
+Note that uncoincide needs the leaf bbox in tree frame so they can be compared
+to look for coincidences and make some parameter nudges.  
+But subsequent code such as stree::get_combined_tran_and_aabb 
+expects the bbox to be in leaf frame, hence the bbox are recomputed 
+from the possibly nudged parameters in leaf frame after the uncoincide.
 
+**/
 
 inline void sn::postconvert(int lvid)
 {
     set_lvid(lvid); 
+
     positivize() ;   
-    setAABB(); 
+
+    setAABB_TreeFrame_All();  
+
     uncoincide(); 
 
-    if(coincide > 0) 
-    {
-        std::cout 
-            << "sn::postconvert" 
-            << " lvid " << lvid 
-            << " coincide " << coincide
-            << std::endl
-            << " desc_prim_all before update AABB " 
-            << desc_prim_all(true) 
-            << std::endl
-            ; 
-
-        setAABB(); 
-
-        std::cout 
-            << "sn::postconvert" 
-            << " lvid " << lvid 
-            << " coincide " << coincide
-            << std::endl
-            << " desc_prim_all after update AABB " 
-            << desc_prim_all(true) 
-            << std::endl
-            ; 
-    }
-
-
+    setAABB_LeafFrame_All();  
 }
 
 struct sn_compare
@@ -3988,37 +4047,6 @@ inline void sn::OrderPrim( std::vector<N*>& prim, std::function<double(N* p)> fn
     std::sort( prim.begin(), prim.end(), cmp ); 
 }
 
-
-
-/**
-sn::setAABB
--------------------
-
-**/
-
-inline void sn::setAABB()
-{
-    std::vector<const sn*> prim ; 
-    collect_prim(prim); 
-    int num_prim = prim.size() ; 
-
-    for(int i=0 ; i < num_prim ; i++)
-    {
-        const sn* p = prim[i] ; 
-        sn* _p = const_cast<sn*>(p) ; 
-        _p->setAABBLocal() ; 
-
-        glm::tmat4x4<double> t(1.) ;
-        glm::tmat4x4<double> v(1.) ;
-
-        bool reverse = false ; 
-        std::ostream* out = nullptr ; 
-        p->getNodeTransformProduct(t, v, reverse, out ); 
-
-        double* pbb = _p->getBB_data() ; 
-        stra<double>::Transform_AABB_Inplace( pbb,  t );   
-    }
-}
 
 inline void sn::Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, std::ostream* out )  // static
 {
@@ -4160,7 +4188,7 @@ inline void sn::uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, st
     glm::tvec3<double> upper_pos( upper->rperp_at_zmin(), upper->rperp_at_zmin(), upper->zmin() ); 
     glm::tvec3<double> lower_pos( lower->rperp_at_zmax(), lower->rperp_at_zmax(), lower->zmax() ); 
 
-    // transforming the leaf frame coordinates into tree frame : should  
+    // transforming the leaf frame coordinates into tree frame 
     Transform_Leaf2Tree( upper_pos, upper, nullptr ); 
     Transform_Leaf2Tree( lower_pos, lower, nullptr ); 
 

@@ -280,6 +280,11 @@ TODO: once get match tidy this up, looks like setting AABB twice
 Lack of complement in snd.hh and inflexibility motivated the move to sn.h 
 
 
+**CSG Leaf/Tree Frame AABB ?**
+
+The stree::get_combined_tran_and_aabb expects the sn.h AABB 
+to be leaf frame (not CSG tree frame needed by sn::uncoincide).
+
 
 **Leaf CSGNode transforms**
 
@@ -292,45 +297,9 @@ from root.
 
 
 
+TODO : SUPPORT FOR CSGNode TYPES THAT NEED EXTERNAL BBOX::
 
-**/
-
-
-template<typename N>
-CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
-{
-    CSGNode cn = CSGNode::Zero() ;
-
-    const double* aabb   = nd ? nd->getAABB() : nullptr ;
-    const double* param6 = nd ? nd->getParam() : nullptr ;
-    bool complement      = nd ? nd->complement : false ;
-    bool has_aabb = aabb != nullptr ; 
-
-    if(nd)
-    {
-        assert( node.lvid == nd->lvid );
-        cn = CSGNode::MakeNarrow(nd->typecode, param6, aabb );
-    }
-
-    cn.setIndex(nodeOffset + partIdx) ;
-    cn.setBoundary(node.boundary) ;
-    cn.setComplement(complement) ;
-    int typecode = cn.typecode() ;
-    
-
-    const std::vector<float4>* pl = nullptr ;  // planes
-    const Tran<double>* tv = nullptr ;
-    if( CSG::IsLeaf(typecode) )
-    {
-        glm::tmat4x4<double> t(1.) ;
-        glm::tmat4x4<double> v(1.) ;
-        st->get_combined_transform(t, v, node, nd, nullptr );
-        tv = new Tran<double>(t, v);
-    }
-    unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
-
-    CSGNode* n = fd->addNode(cn, pl);    // Tran gets narrowed
-    n->setTransform(tranIdx);
+    DEFERRED DOING UNTIL WANT TO TEST SOME EXAMPLES
 
     bool expect_external_bbox = CSG::ExpectExternalBBox(typecode); 
     // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
@@ -341,22 +310,48 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
         << " : EXPECT EXTERNAL AABB : BUT THERE IS NONE "
         ;
 
-
     if( expect_external_bbox )
     {   
         assert(has_aabb);   
         n->setAABB_Narrow( aabb ); 
     }
-    else if( nd )  // try blanket setting the bbox 
-    {
-        n->setAABBLocal(); // use params of each type to set the bbox 
-    }
 
-    const qat4* q = tranIdx > 0 ? fd->getTran(tranIdx-1u) : nullptr  ;
-    if(q)  
-    {
+
+
+OLD WAY OF TRANSFORMING THE NODE BBOX USED::
+
+    {    
+        n->setAABBLocal();
+        const qat4* q = fd->getTran(tranIdx-1u) ;
         q->transform_aabb_inplace( n->AABB() );
-    }
+    } 
+
+**/
+
+template<typename N>
+CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
+{
+    if(nd) assert( node.lvid == nd->lvid );
+
+    int  typecode = nd ? nd->typecode : CSG_ZERO ; 
+    bool leaf = CSG::IsLeaf(typecode) ; 
+    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode); 
+    assert( !expect_external_bbox && "DEFERRED EXTERNAL BBOX SUPPORT UNTIL HAVE SOME EXAMPLES TO WORK ON" ); 
+
+    std::array<double,6> bb ; 
+    double* aabb = leaf ? bb.data() : nullptr ;
+    const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
+    unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+
+    CSGNode* n = fd->addNode();   
+
+    n->setTypecode(typecode); 
+    n->setIndex(nodeOffset+partIdx); 
+    n->setBoundary(node.boundary); 
+    n->setComplement( nd ? nd->complement : false ); 
+    n->setTransform(tranIdx);
+    n->setParam_Narrow( nd ? nd->getPA_data() : nullptr ); 
+    n->setAABB_Narrow(aabb ? aabb : nullptr  ); 
 
     return n ; 
 }

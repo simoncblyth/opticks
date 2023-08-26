@@ -538,12 +538,15 @@ if __name__ == '__main__':
 
 
     eprint(r"""
-    w_pa = np.where( ab.npa > 1e-3 )[0]
-    w_pa_shape = w_pa.shape
-    w_pa.shape
+    w_npa3 = np.where( ab.npa > 1e-3 )[0]
+    w_npa3.shape
 
-    w_bb = np.where( ab.nbb > 1e-3 )[0]  ##
-    w_bb.shape
+    w_nbb3 = np.where( ab.nbb > 1e-3 )[0]  ##
+    w_nbb3.shape
+
+    w_nbb2 = np.where( ab.nbb > 1e-2 )[0]  ##
+    w_nbb2.shape
+
     """, globals(), locals() )
 
 
