@@ -19,8 +19,11 @@ class CSGFoundryAB(object):
         self.b = b 
         self.ip = _ip
         self.check_node()
-        self.check_node_param("npa")
-        self.check_node_bbox("nbb")
+
+        qwns = "npa nbb pbb".split()
+        for qwn in qwns:
+            self.compare_qwn(qwn)
+        pass
 
     def _set_ip(self, ip):
         self._ip = ip 
@@ -291,24 +294,13 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines)
 
-    def check_node_param(self, name="npa"):
+    def compare_qwn(self, qwn="npa"):
         a = self.a 
         b = self.b        
         ab = self
-        a_pa = a.node.reshape(-1,16)[:,:6]
-        b_pa = b.node.reshape(-1,16)[:,:6]
-        setattr(ab, name, np.max(np.abs(a_pa-b_pa), axis=1 ))
-        
-    def check_node_bbox(self, name="nbb"):
-        a = self.a 
-        b = self.b        
-        ab = self
-        a_bb = a.node.reshape(-1,16)[:,8:14]
-        b_bb = b.node.reshape(-1,16)[:,8:14]
-        setattr(ab, name, np.max(np.abs(a_bb-b_bb), axis=1 ))
-
-        
-
+        aq = getattr(a, qwn)
+        bq = getattr(b, qwn)
+        setattr(ab, qwn, np.max(np.abs(aq-bq), axis=1 ))
    
 
     def check_tran(self):
@@ -546,6 +538,12 @@ if __name__ == '__main__':
 
     w_nbb2 = np.where( ab.nbb > 1e-2 )[0]  ##
     w_nbb2.shape
+
+    w_pbb3 = np.where( ab.pbb > 1e-3 )[0]  ##
+    w_pbb3.shape
+
+    w_pbb2 = np.where( ab.pbb > 1e-2 )[0]  ##
+    w_pbb2.shape
 
     """, globals(), locals() )
 

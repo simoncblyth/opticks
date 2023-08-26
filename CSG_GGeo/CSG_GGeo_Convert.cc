@@ -600,6 +600,10 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         float* naabb = n->AABB();  
 
         if(!bbskip) bb.include_aabb( naabb );  
+
+        // HMM: THIS ONLY MAKES SENSE IF THE CSGNode BBOX 
+        // HAVE BEEN TRANSFORMED INTO A COMMON FRAME 
+
     }
 
 
@@ -750,6 +754,12 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         tv = new Tran<float>(t, v); 
     }
 
+    /**
+    Use of partIdx accessing the GTransform suggests it includes the
+    CSG tree transforms, BUT DOES INT INCLUDE THE STRUCTURAL TRANSFORM 
+    FOR THE GLOBALS TOO ? 
+    **/
+
     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
     // HMM: this is not using the higher level 
@@ -775,7 +785,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     const float* aabb = nullptr ;  
     CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
-    CSGNode* n = foundry->addNode(nd, planes );
+    CSGNode* n = foundry->addNode(nd, planes, nullptr );
 
     if( tc == CSG_THETACUT )
     {

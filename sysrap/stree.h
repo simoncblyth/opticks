@@ -1751,6 +1751,8 @@ inline std::string stree::desc_node_product( glm::tmat4x4<double>& m2w_, glm::tm
 stree::get_combined_transform : combining structural and CSG transforms
 ------------------------------------------------------------------------
 
+NB : WHAT THE TRANSFORMS DEPEND STRONGLY ON : "local = node.repeat_index > 0"
+
 * combines structural (volume level) and CSG (solid level) transforms
 * canonical usage from CSGImport::importNode
 
@@ -1810,14 +1812,10 @@ inline void stree::get_combined_transform(
     std::ostream* out ) const
 {
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer 
-
     glm::tmat4x4<double> tt(1.) ;
     glm::tmat4x4<double> vv(1.) ;
-
     get_node_product( tt, vv, node.index, local, false, out ); // reverse:false
    
-  
-
     glm::tmat4x4<double> tc(1.) ;
     glm::tmat4x4<double> vc(1.) ;
 

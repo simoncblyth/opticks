@@ -2773,7 +2773,3 @@ WIP : Bring the CSGPrim bbox into B side ? Where is it done A side ?
 
 
 
-
-
-
-

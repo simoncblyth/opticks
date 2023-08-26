@@ -429,6 +429,8 @@ class CSGFoundry(object):
 
         self.npa = self.node.reshape(-1,16)[:,0:6]
         self.nbb = self.node.reshape(-1,16)[:,8:14]
+        self.pbb = self.prim.reshape(-1,16)[:,8:14]  
+
 
 
 

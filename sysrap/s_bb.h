@@ -57,10 +57,13 @@ struct SYSRAP_API s_bb
     bool is_root() const { return true ; } 
     std::string desc() const ;  
 
-    static void IncludePoint( double* aabb,  const double* other_point ); 
-    static void IncludeAABB(  double* aabb,  const double* other_aabb  ); 
+    template<typename T> static std::string Desc( const T* aabb ); 
+    template<typename T> static bool AllZero( const T* aabb ); 
+    template<typename T> static void IncludePoint( T* aabb,  const T* other_point ); 
+    template<typename T> static void IncludeAABB(  T* aabb,  const T* other_aabb  ); 
     void include_point( const double* point ); 
     void include_aabb(  const double* aabb  ); 
+
 
 }; 
 
@@ -117,74 +120,80 @@ inline s_bb::~s_bb()
     if(pool) pool->remove(this); 
 }
 
+inline std::string s_bb::desc() const { return Desc(cdata()) ; }
 
-inline std::string s_bb::desc() const 
+template<typename T>
+inline std::string s_bb::Desc( const T* aabb ) // static
 {
     int w = 7 ; 
-    int p = 3 ;  
-    std::stringstream ss ;
-    ss 
-       << "[" << std::setw(w) << std::fixed << std::setprecision(p) << x0
-       << "," << std::setw(w) << std::fixed << std::setprecision(p) << y0
-       << "," << std::setw(w) << std::fixed << std::setprecision(p) << z0 
-       << "," << std::setw(w) << std::fixed << std::setprecision(p) << x1
-       << "," << std::setw(w) << std::fixed << std::setprecision(p) << y1 
-       << "," << std::setw(w) << std::fixed << std::setprecision(p) << z1 
-       << "]" 
-       ;
-        
+    int p = 3 ; 
+    bool all_zero = AllZero(aabb); 
+    std::stringstream ss ; 
+    ss << "[" ; 
+    for(int i=0 ; i < N ; i++) 
+        ss << std::fixed << std::setw(w) << std::setprecision(p) << aabb[i] << ( i < N - 1 ? "," : "" )  ;
+    ss << "]" << ( all_zero ? " ALL_ZERO" : "" ) ;   
     std::string str = ss.str(); 
     return str ; 
 }
 
 
-inline void s_bb::IncludePoint( double* aabb,  const double* point ) // static
+
+
+template<typename T>
+inline bool s_bb::AllZero( const T* aabb ) // static
 {
-    double* x0 = aabb + 0 ; 
-    double* y0 = aabb + 1 ; 
-    double* z0 = aabb + 2 ; 
-
-    double* x1 = aabb + 3 ; 
-    double* y1 = aabb + 4 ; 
-    double* z1 = aabb + 5 ; 
-
-    *x0 = std::min( *x0 , point[0] ) ; 
-    *y0 = std::min( *y0 , point[1] ) ; 
-    *z0 = std::min( *z0 , point[2] ) ; 
-
-    *x1 = std::max( *x1 , point[0] ) ; 
-    *y1 = std::max( *y1 , point[1] ) ; 
-    *z1 = std::max( *z1 , point[2] ) ; 
+    int count = 0 ;  
+    for(int i=0 ; i < N ; i++) if(std::abs(aabb[i]) == T(0.)) count += 1 ; 
+    return count == N ; 
 }
 
-inline void s_bb::IncludeAABB(  double* aabb,  const double* other_aabb  ) // static
+/**
+s_bb::IncludePoint
+-------------------
+
+When aabb starts empty the point is adopted as both min and max 
+without any comparisons.
+
+**/
+
+template<typename T>
+inline void s_bb::IncludePoint( T* aabb,  const T* point ) // static
 {
-    double* x0 = aabb + 0 ; 
-    double* y0 = aabb + 1 ; 
-    double* z0 = aabb + 2 ; 
-
-    double* x1 = aabb + 3 ; 
-    double* y1 = aabb + 4 ; 
-    double* z1 = aabb + 5 ; 
-
-    *x0 = std::min( *x0 , other_aabb[0] ) ; 
-    *y0 = std::min( *y0 , other_aabb[1] ) ; 
-    *z0 = std::min( *z0 , other_aabb[2] ) ; 
-
-    *x1 = std::max( *x1 , other_aabb[3] ) ; 
-    *y1 = std::max( *y1 , other_aabb[4] ) ; 
-    *z1 = std::max( *z1 , other_aabb[5] ) ; 
-
+    bool adopt = AllZero(aabb) ; 
+    for(int i=0 ; i < 3 ; i++) aabb[i] = adopt ? point[i]   : std::min( aabb[i], point[i])   ; 
+    for(int i=3 ; i < N ; i++) aabb[i] = adopt ? point[i-3] : std::min( aabb[i], point[i-3]) ; 
 }
+
+/**
+s_bb::IncludeAABB
+------------------
+
+When aabb starts empty and the other_aabb is not empty the
+other_aabb is adopted with no comparisons. 
+Otherwise when both have values the min and max of the 
+aabb gets set by comparison. 
+
+**/
+
+template<typename T>
+inline void s_bb::IncludeAABB(  T* aabb,  const T* other_aabb  ) // static
+{
+    bool adopt = AllZero(aabb) && !AllZero(other_aabb) ; 
+    for(int i=0 ; i < 3 ; i++) aabb[i] = adopt ? other_aabb[i] : std::min( aabb[i],  other_aabb[i]) ; 
+    for(int i=3 ; i < N ; i++) aabb[i] = adopt ? other_aabb[i] : std::max( aabb[i],  other_aabb[i]) ; 
+}
+
+
+
 inline void s_bb::include_point( const double* point )
 {
-    IncludePoint( data(), point ); 
+    IncludePoint<double>( data(), point ); 
 }
 inline void s_bb::include_aabb(  const double* aabb  )
 {
-    IncludeAABB( data(), aabb ); 
+    IncludeAABB<double>( data(), aabb ); 
 }
-
 
 
 

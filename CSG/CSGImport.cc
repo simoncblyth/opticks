@@ -6,6 +6,7 @@
 #include "SSim.hh"
 #include "stree.h"
 #include "snd.hh"
+#include "s_bb.h"
 
 #include "SSys.hh"
 #include "SLOG.hh"
@@ -230,12 +231,17 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
 
+    std::array<float,6> bb = {} ; 
+
     for(int i=0 ; i < numParts ; i++)
     {
         int partIdx = i ; 
         const N* nd = nds[partIdx]; 
-        importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
+        CSGNode* n = importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
+        assert(n); 
+        if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB() ); 
     }
+    pr->setAABB( bb.data() );
 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
@@ -272,9 +278,6 @@ nodeIdx
      
 (snd)nd.index
     csg level index
-
-
-TODO: once get match tidy this up, looks like setting AABB twice 
 
 
 Lack of complement in snd.hh and inflexibility motivated the move to sn.h 
@@ -316,8 +319,6 @@ TODO : SUPPORT FOR CSGNode TYPES THAT NEED EXTERNAL BBOX::
         n->setAABB_Narrow( aabb ); 
     }
 
-
-
 OLD WAY OF TRANSFORMING THE NODE BBOX USED::
 
     {    
@@ -340,6 +341,7 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     std::array<double,6> bb ; 
     double* aabb = leaf ? bb.data() : nullptr ;
+    // NB : TRANSFORM VERY DEPENDENT ON node.repeat_index == 0 OR not 
     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
