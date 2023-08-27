@@ -3015,3 +3015,358 @@ NIX IS THE PARTIDX WITHIN THE COMPOUND SOLID, NOT WITHIN THE PRIM OR ABSOLUTE::
     Out[5]: (array([    0, 15669, 15676, 15717, 15795, 15823, 15824, 15831, 15838]),)
 
 
+
+WIP : A side has very tiny param 0 value for typecode 1/2
+------------------------------------------------------------
+
+Looks like a stray int32 in param for old workflow causing 1e-44 deviation between old/new. 
+
+Try::
+
+    681 CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb ) // static
+    682 {
+    683     CSGNode nd = {} ;
+    684     nd.setTypecode(typecode) ;
+    685 
+    686     // try avoiding CSG_UNION CSG_INTERSECT getting some stray int32 in param6[0]
+    687     // by only setting param, aabb for primitives
+    688     if(CSG::IsPrimitive(typecode))
+    689     {
+    690         if(param6) nd.setParam( param6 );
+    691         if(aabb)   nd.setAABB( aabb );
+    692     }
+    693 
+    694     return nd ;
+    695 }
+
+
+
+
+
+
+
+::
+
+    In [25]: a.npa[w_npa]*1e44
+    Out[25]: array([0.42 , 0.42 , 0.42 , 0.42 , 0.42 , 0.42 , 0.42 , 0.981, 0.981, 0.981, ..., 0.42 , 0.42 , 0.42 , 0.981, 0.42 , 0.42 , 0.981, 0.981, 0.981, 0.981])
+
+    In [26]: b.npa[w_npa]*1e44
+    Out[26]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ..., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+
+    In [27]: a.npa.shape
+    Out[27]: (15968, 6)
+
+    In [28]: a.ntc
+    Out[28]: array([110, 110, 110,   2, 105, 110,   2, 105, 110, 110, ..., 110, 110, 110, 110, 110, 110, 110, 110, 110, 110], dtype=int32)
+
+
+    In [30]: a.ntc[w_npa[0]]
+    Out[30]: array([2, 2, 2, 2, 2, 2, 2, 1, 1, 1, ..., 2, 2, 2, 2, 1, 1, 2, 2, 2, 2], dtype=int32)
+
+    In [31]: np.unique( a.ntc[w_npa[0]], return_counts=True )
+    Out[31]: (array([1, 2], dtype=int32), array([2131,   27]))
+
+    In [32]: np.c_[np.unique( a.ntc[w_npa[0]], return_counts=True )]
+    Out[32]:
+    array([[   1, 2131],
+           [   2,   27]])
+
+
+    In [30]: a.ntc[w_npa[0]]
+    Out[30]: array([2, 2, 2, 2, 2, 2, 2, 1, 1, 1, ..., 2, 2, 2, 2, 1, 1, 2, 2, 2, 2], dtype=int32)
+
+    In [31]: np.unique( a.ntc[w_npa[0]], return_counts=True )
+    Out[31]: (array([1, 2], dtype=int32), array([2131,   27]))
+
+    In [32]: np.c_[np.unique( a.ntc[w_npa[0]], return_counts=True )]
+    Out[32]:
+    array([[   1, 2131],
+           [   2,   27]])
+
+    In [33]: a.npa[w_npa]
+    Out[33]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ..., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
+
+    In [34]: a.npa[w_npa].view(np.int32)
+    Out[34]: array([3, 3, 3, 3, 3, 3, 3, 7, 7, 7, ..., 3, 3, 3, 7, 3, 3, 7, 7, 7, 7], dtype=int32)
+
+    In [35]: np.unique( a.npa[w_npa].view(np.int32), return_counts=True )
+    Out[35]: (array([ 3,  7, 15], dtype=int32), array([  25, 2129,    4]))
+
+    In [36]: np.c_[np.unique( a.npa[w_npa].view(np.int32), return_counts=True )]
+    Out[36]:
+    array([[   3,   25],
+           [   7, 2129],
+           [  15,    4]])
+
+    In [37]:
+
+
+
+    In [38]: a.npa[a.ntc==1,0]
+    Out[38]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ..., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
+
+    In [39]: a.npa[a.ntc==1,0]*1e44
+    Out[39]: array([0.981, 0.   , 0.981, 0.   , 0.981, 0.   , 0.981, 0.   , 0.981, 0.   , ..., 2.102, 0.   , 0.   , 0.   , 0.42 , 0.42 , 0.   , 0.   , 0.   , 0.   ])
+
+    In [40]: b.npa[b.ntc==1,0]*1e44
+    Out[40]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., ..., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+
+    In [41]: b.npa[b.ntc==1,0].view(np.int32)
+    Out[41]: array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ..., 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=int32)
+
+    In [42]: a.npa[a.ntc==1,0].view(np.int32)
+    Out[42]: array([ 7,  0,  7,  0,  7,  0,  7,  0,  7,  0, ..., 15,  0,  0,  0,  3,  3,  0,  0,  0,  0], dtype=int32)
+
+    In [43]: a.npa[a.ntc==2,0].view(np.int32)
+    Out[43]: array([ 3,  3,  3,  3,  3,  3,  3,  3,  3,  7,  0, 15,  0,  0,  3,  3,  3,  7,  0, 15,  0,  0,  3,  3,  3,  3,  3,  3,  7,  0,  7,  7,  7,  0,  7], dtype=int32)
+
+
+
+HMM : THOSE STRAYS MAY ACTUALLY  BE subNum ?
+------------------------------------------------
+
+::
+
+
+    203     // used for compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS 
+            // and the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE    ...
+    204     NODE_METHOD unsigned subNum()        const { return q0.u.x ; }
+    205     NODE_METHOD unsigned subOffset()     const { return q0.u.y ; }
+    206 
+    207     NODE_METHOD void setSubNum(unsigned num){    q0.u.x = num ; }
+    208     NODE_METHOD void setSubOffset(unsigned num){ q0.u.y = num ; }
+
+
+::
+
+    epsilon:tests blyth$ opticks-f setSubNum 
+    ./CSG/CSGNode.cc:        nd.setSubNum(num_sub); 
+    ./CSG/CSGNode.cc:        nd.setSubNum(num_sub); 
+    ./CSG/CSGNode.h:    NODE_METHOD void setSubNum(unsigned num){    q0.u.x = num ; }
+    ./CSG_GGeo/CSG_GGeo_Convert.cc:        root->setSubNum( root_subNum ); 
+    ./npy/NNode.cpp:void nnode::setSubNum(unsigned num) 
+    ./npy/NNode.cpp:        root->setSubNum( tree_nodes ); 
+    ./npy/NPart.cpp:void npart::setSubNum(unsigned sub_num )
+    ./npy/NMultiUnion.cpp:    n->setSubNum(sub_num); 
+    ./npy/NPart.hpp:    void setSubNum(unsigned sub_num) ; 
+    ./npy/NNode.hpp:    void     setSubNum(unsigned sub_num) ; 
+    epsilon:opticks blyth$ 
+
+
+
+CSG_GGeo_Convert::convertPrim::
+
+     527     int root_typecode  = comp->getTypeCode(root_partIdx) ;
+     528     int root_subNum    = comp->getSubNum(root_partIdx) ;
+     529     int root_subOffset = comp->getSubOffset(root_partIdx) ;
+     530     bool root_is_compound = CSG::IsCompound((int)root_typecode);
+
+     // 314     static bool IsCompound(int type){      return  type < CSG_LEAF && type > CSG_ZERO ; }
+
+     623     if(root_is_compound) // tc > CSG_ZERO && tc < CSG_LEAF
+     624     {
+     625         assert( numParts > 1 );
+     626         bool tree = int(root_subNum) == int(numParts) ;
+     627 
+     628         if( tree == false )
+     629         {
+     630            LOG(error)
+     631                << " non-tree nodes detected, eg with list-nodes "
+     632                << " root_subNum " << root_subNum
+     633                << " root_subOffset " << root_subOffset
+     634                << " numParts " << numParts
+     635                ;
+     636         }
+     637 
+     638         root->setSubNum( root_subNum );
+     639         root->setSubOffset( root_subOffset );
+     640     }
+     641     else
+     642     {
+     643         assert( numParts == 1 );
+     644         assert( root_subNum == -1 );
+     645         assert( root_subOffset == -1 );
+     646     }
+
+
+::
+
+    In [27]: np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)]
+    Out[27]: 
+    array([[   3,   25],
+           [   7, 2129],
+           [  15,    4]])
+
+
+
+
+
+
+     22 typedef enum {
+     23     CSG_ZERO=0,
+     24     CSG_OFFSET_LIST=4,
+     25     CSG_OFFSET_LEAF=7,
+     26 
+     27     CSG_TREE=1,
+     28         CSG_UNION=1,
+     29         CSG_INTERSECTION=2,
+     30         CSG_DIFFERENCE=3,
+     31 
+     32     CSG_NODE=11,
+     33     CSG_LIST=11,
+     34         CSG_CONTIGUOUS=11,
+     35         CSG_DISCONTIGUOUS=12,
+     36         CSG_OVERLAP=13,
+     37 
+     38     CSG_LEAF=101,
+     39         CSG_SPHERE=101,
+     40         CSG_BOX=102,
+     41         CSG_ZSPHERE=103,
+
+
+
+
+    173 /**
+    174 CSGNode::BooleanOperator
+    175 -------------------------
+    176 
+    177 * num_sub is normally -1, for standard boolean trees
+    178 * num_sub > 0 is used for compound "list" nodes : a more efficient approach 
+    179   avoid tree overheads used for some complex solids 
+    180 
+    181 **/
+    182 
+    183 CSGNode CSGNode::BooleanOperator(unsigned op, int num_sub)   // static 
+    184 {
+    185     assert( CSG::IsOperator((OpticksCSG_t)op) );
+    186     CSGNode nd = {} ;
+    187     nd.setTypecode(op) ;
+    188     if( num_sub > 0 )
+    189     {
+    190         nd.setSubNum(num_sub);
+    191     }
+    192     return nd ;
+    193 }
+
+
+
+::
+
+     60 
+     61     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
+     62     | q  |      x         |      y         |     z          |      w         |  notes                                          |
+     63     +====+================+================+================+================+=================================================+
+     64     |    | sp/zs/cy:cen_x | sp/zs/cy:cen_y | sp/zs/cy:cen_z | sp/zs/cy:radius|  eliminate center? as can be done by transform  |
+     65     | q0 | cn:r1          | cn:z1          | cn:r2          | cn:z2          |  cn:z2 > z1                                     |
+     66     |    | hy:r0 z=0 waist| hy:zf          | hy:z1          | hy:z2          |  hy:z2 > z1                                     |
+     67     |    | b3:fx          | b3:fy          | b3:fz          |                |  b3: fullside dimensions, center always origin  |
+     68     |    | pl/sl:nx       | pl/sl:ny       | pl/sl:nz       | pl:d           |  pl: NB Node plane distinct from plane array    |
+     69     |    |                |                | ds:inner_r     | ds:radius      |                                                 |
+     70     |    | co:subNum      | co:subOffset   |                | radius()       |                                                 |
+     71     |    | cx:planeIdx    | cx:planeNum    |                |                |                                                 |
+     72     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
+     73     |    | zs:zdelta_0    | zs:zdelta_1    | boundary       | index          |                                                 |
+     74     |    | sl:a           | sl:b           |  (1,2)         | (within solid) |  sl:a,b offsets from origin                     |
+     75     | q1 | cy:z1          | cy:z2          |                | (1,3)          |  cy:z2 > z1                                     |
+     76     |    | ds:z1          | ds:z2          |                |                |                                                 |
+     77     |    | z1()           | z2()           |                |                |                                                 |
+     78     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
+     79     |    |                |                |                |                |  q2.w was previously typecode                   |
+     80     |    |                |                |                |                |                                                 |
+     81     | q2 |  BBMin_x       |  BBMin_y       |  BBMin_z       |  BBMax_x       |                                                 |
+     82     |    |                |                |                |                |                                                 |
+     83     |    |                |                |                |                |                                                 |
+     84     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
+     85     |    |                |                |  typecode      | gtransformIdx  |  a.node[:,3,3].view(np.int32) & 0x7fffffff      |
+     86     |    |                |                |  (3,2)         | complement     |                                                 |
+     87     | q3 |  BBMax_y       |  BBMax_z       |                | (3,3)          |                                                 |
+     88     |    |                |                |                |                |                                                 |
+     89     |    |                |                |                |                |                                                 |
+     90     |    |                |                |                |                |                                                 |
+     91     |    |                |                |                |                |                                                 |
+     92     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
+     93 
+
+
+
+
+
+TODO : REMAINING DEVIATIONS TO CHASE : subNum on compound root nodes AND boundary index
+-----------------------------------------------------------------------------------------
+
+
+~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh ana::
+
+    w_solid = np.where( a.solid != b.solid )[0]  ##
+    w_solid.shape
+    (0,)
+
+    np.all( a.nbd == b.nbd )  # node boundary     : THIS NEEDS OSUR IMPLEMENTED IN OLD WORKFLOW TO MATCH NEW
+    False                                         : TODO CHECK THAT THIS MATCHES WHEN DISABLE OSUR IN NEW WORKFLOW  
+
+    np.all( a.nix == b.nix )  # nodeIdx local to the compound solid 
+    True
+    w_nix = np.where(a.nix != b.nix)[0] ## 
+    w_nix.shape
+    (0,)
+    w_npa3 = np.where( np.abs(a.npa - b.npa) > 1e-3 )[0] ##  node param deviations
+    w_npa3.shape
+    (0,)
+    w_nbb3 = np.where( np.abs(a.nbb - b.nbb) > 3e-2 )[0]  ## node bbox deviations
+    w_nbb3.shape
+    (0,)
+    w_nbb2 = np.where( np.abs(a.nbb - b.nbb) > 1e-2 )[0]  ## node bbox deviations
+    w_nbb2.shape
+    (0,)
+    np.all( a.ntc == b.ntc )  # node typecode
+    True
+    np.all( a.ncm == b.ncm )  # node complement 
+    True
+    np.all( a.ntr == b.ntr )  # node transform idx + 1 
+    True
+    np.all( a.pnn == b.pnn )  # prim numNode
+    True
+    np.all( a.pno == b.pno )  # prim nodeOffset
+    True
+    np.all( a.pto == b.pto )  # prim tranOffset
+    True
+    np.all( a.ppo == b.ppo )  # prim planOffset
+    True
+    np.all( a.psb == b.psb )  # prim sbtIndexOffset
+    True
+    np.all( a.plv == b.plv )  # prim lvid/meshIdx
+    True
+    np.all( a.prx == b.prx )  # prim ridx/repeatIdx
+    True
+    np.all( a.pix == b.pix )  # primIdx 
+    True
+    w_pbb3 = np.where( np.abs(a.pbb-b.pbb) > 1e-3 )[0]  ## prim bbox deviations
+    w_pbb3.shape
+    (1099,)
+    w_pbb2 = np.where( np.abs(a.pbb-b.pbb) > 1e-2 )[0]  ## prim bbox deviations
+    w_pbb2.shape
+    (0,)
+    np.all( a.snp == b.snp )  # solid numPrim 
+    True
+    np.all( a.spo == b.spo )  # solid primOffset
+    True
+    np.all( a.sce == b.sce )  # solid center_extent 
+    True
+    w_sce = np.where( np.abs( a.sce - b.sce ) > 1e-3 )[0]    # solid center_extent
+    array([], dtype=int64)
+    w_sce.shape 
+    (0,)
+
+    w_npa = np.where( a.npa != b.npa )[0]   ## int32 3,7,15 in first param slot 
+    w_npa.shape   # these are subNum on compound root nodes : and new workflow omits it
+    (2158,)
+    tab = np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)] ## subNum picked from node param 0 of compound root nodes
+    tab 
+    array([[   3,   25],
+           [   7, 2129],
+           [  15,    4]])
+
+    In [1]:                                                                           
+
+
+

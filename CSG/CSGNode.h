@@ -228,6 +228,17 @@ struct CSG_API CSGNode
     }
 
 
+    /**
+    HUNTING FOR OLD WORKFLOW BUG : WITH INT32 OVERWRITES IN UNION/DIFFERENCE CSGNode 
+
+    ACTUALLY : THIS IS NOT A BUG : THAT IS subNum set by CSG_GGeo_Convert::convertPrim
+    **/
+    NODE_METHOD bool hasStrayInt() const  
+    {
+        return (  q3.u.z == 1 || q3.u.z == 2 ) && ( q0.u.x == 3 || q0.u.x == 7 || q0.u.x == 15 ) ; 
+
+    }  
+
     NODE_METHOD void setParam(const float* p)
     { 
         if(!p) return ; 

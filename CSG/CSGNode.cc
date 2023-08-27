@@ -678,12 +678,28 @@ CSGNode CSGNode::Make(unsigned typecode ) // static
     nd.setTypecode(typecode) ; 
     return nd ; 
 }
+
+/**
+CSGNode::Make
+----------------
+
+Thought for a while that had a bug causing stray int32 in param6[0]
+on compound root nodes... but they are in fact subNum for 
+the generalized CSG handling.  Nevertheless its still 
+a good idea to only pass in the float param6 and aabb for primitives. 
+HMM: EXTERNAL BBOX MAY REQUIRE TO RECONSIDER THIS
+
+**/
+
 CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb ) // static
 {
     CSGNode nd = {} ;
     nd.setTypecode(typecode) ; 
-    if(param6) nd.setParam( param6 );  
-    if(aabb)   nd.setAABB( aabb );  
+    if(CSG::IsPrimitive(typecode)) 
+    {
+        if(param6) nd.setParam( param6 );  
+        if(aabb)   nd.setAABB( aabb );  
+    }
     return nd ; 
 }
 CSGNode CSGNode::MakeNarrow(unsigned typecode, const double* param6, const double* aabb ) // static

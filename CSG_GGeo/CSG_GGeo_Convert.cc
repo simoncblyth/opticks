@@ -620,7 +620,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " root_is_compound " << root_is_compound
         ; 
 
-    if(root_is_compound)
+    if(root_is_compound) // tc > CSG_ZERO && tc < CSG_LEAF
     {
         assert( numParts > 1 ); 
         bool tree = int(root_subNum) == int(numParts) ; 
@@ -785,7 +785,12 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     const float* aabb = nullptr ;  
     CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
+    assert( !nd.hasStrayInt() );  
+
+
     CSGNode* n = foundry->addNode(nd, planes, nullptr );
+    assert( !n->hasStrayInt() );  
+
 
     if( tc == CSG_THETACUT )
     {
@@ -848,6 +853,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         const qat4* q = foundry->getTran(tranIdx-1u) ;
         q->transform_aabb_inplace( n->AABB() );
     }
+    assert( !n->hasStrayInt() );  
 
     return n ; 
 }

@@ -456,6 +456,15 @@ def eprint(_lines, _globals, _locals ):
     If present the position is used to extract the key and expression
     to be evaluated in the scope provided by the arguments. 
     The key with value is planted into the calling scope using builtins. 
+
+
+
+    HMM : PARSE NEEDS TO DETECT PARAMETER EQUAL 
+
+    np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)]
+
+
+    TODO : support semicolon on the lines 
     """
     lines = list(filter(None, textwrap.dedent(_lines).split("\n") ))
 
@@ -534,37 +543,61 @@ if __name__ == '__main__':
 
 
     eprint(r"""
-    w_npa3 = np.where( ab.npa > 1e-3 )[0]
-    w_npa3.shape
-
-    w_nbb3 = np.where( ab.nbb > 1e-3 )[0]  ##
-    w_nbb3.shape
-
-    w_nbb2 = np.where( ab.nbb > 1e-2 )[0]  ##
-    w_nbb2.shape
-
-    w_pbb3 = np.where( ab.pbb > 1e-3 )[0]  ##
-    w_pbb3.shape
-
-    w_pbb2 = np.where( ab.pbb > 1e-2 )[0]  ##
-    w_pbb2.shape
 
     w_solid = np.where( a.solid != b.solid )[0]  ##
     w_solid.shape
 
-    w_solid = np.where( a.solid != b.solid )[0] 
+    np.all( a.nbd == b.nbd )  # node boundary 
 
+    np.all( a.nix == b.nix )  # nodeIdx local to the compound solid 
     w_nix = np.where(a.nix != b.nix)[0] ## 
     w_nix.shape
 
-    np.all( a.ntc == b.ntc )  # node typecode
-    np.all( a.ntr == b.ntr )  # node transform idx + 1 
-    np.all( a.ncm == b.ncm )  # node complement 
+    w_npa3 = np.where( np.abs(a.npa - b.npa) > 1e-3 )[0] ##  node param deviations
+    w_npa3.shape
 
+    w_nbb3 = np.where( np.abs(a.nbb - b.nbb) > 3e-2 )[0]  ## node bbox deviations
+    w_nbb3.shape
+    w_nbb2 = np.where( np.abs(a.nbb - b.nbb) > 1e-2 )[0]  ## node bbox deviations
+    w_nbb2.shape
+
+
+    np.all( a.ntc == b.ntc )  # node typecode
+    np.all( a.ncm == b.ncm )  # node complement 
+    np.all( a.ntr == b.ntr )  # node transform idx + 1 
+
+    np.all( a.pnn == b.pnn )  # prim numNode
+    np.all( a.pno == b.pno )  # prim nodeOffset
+    np.all( a.pto == b.pto )  # prim tranOffset
+    np.all( a.ppo == b.ppo )  # prim planOffset
+    
+    np.all( a.psb == b.psb )  # prim sbtIndexOffset
+    np.all( a.plv == b.plv )  # prim lvid/meshIdx
+    np.all( a.prx == b.prx )  # prim ridx/repeatIdx
     np.all( a.pix == b.pix )  # primIdx 
 
+
+    w_pbb3 = np.where( np.abs(a.pbb-b.pbb) > 1e-3 )[0]  ## prim bbox deviations
+    w_pbb3.shape
+
+    w_pbb2 = np.where( np.abs(a.pbb-b.pbb) > 1e-2 )[0]  ## prim bbox deviations
+    w_pbb2.shape
+
+
+    np.all( a.snp == b.snp )  # solid numPrim 
+    np.all( a.spo == b.spo )  # solid primOffset
+
+    np.all( a.sce == b.sce )  # solid center_extent 
+
+    w_sce = np.where( np.abs( a.sce - b.sce ) > 1e-3 )[0]    # solid center_extent
+    w_sce.shape 
+
+    w_npa = np.where( a.npa != b.npa )[0]   ## int32 3,7,15 in first param slot 
+    w_npa.shape   # these are subNum on compound root nodes : and new workflow omits it
+
+    tab = np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)] ## subNum picked from node param 0 of compound root nodes
+    tab 
+
     """, globals(), locals() )
-
-
-        
+pass        
 

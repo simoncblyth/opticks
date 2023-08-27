@@ -435,10 +435,6 @@ class CSGFoundry(object):
         self.ncm = self.node.view(np.uint32)[:,3,3] >> 31  # node complement
         self.ntr = self.node.view(np.uint32)[:,3,3] & 0x7fffffff  # node tranIdx+1 
    
-        self.snp = self.solid[:,1,0].view(np.int32) # solid numPrim
-        self.spo = self.solid[:,1,1].view(np.int32) # solid primOffset 
-        self.sce = self.solid[:,2].view(np.float32)
-
         self.pnn = self.prim.view(np.int32)[:,0,0] # prim num node
         self.pno = self.prim.view(np.int32)[:,0,1] # prim node offset 
         self.pto = self.prim.view(np.int32)[:,0,2] # prim tran offset 
@@ -450,6 +446,12 @@ class CSGFoundry(object):
         self.pix = self.prim.view(np.int32)[:,1,3] # prim idx
 
         self.pbb = self.prim.reshape(-1,16)[:,8:14]  
+
+
+        self.snp = self.solid[:,1,0].view(np.int32) # solid numPrim
+        self.spo = self.solid[:,1,1].view(np.int32) # solid primOffset 
+        self.sce = self.solid[:,2].view(np.float32)
+
 
 
     def find_primIdx_from_nodeIdx(self, nodeIdx_):
