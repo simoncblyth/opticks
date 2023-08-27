@@ -1375,7 +1375,38 @@ void CSGFoundry::importSim()
 
 
 
+/**
+CSGFoundry::addNode_solidLocalNodeIdx
+--------------------------------------
 
+Index that would be assigned to the next added node 
+within the currently "open" last_added_solid.
+Notice this is counting right across prim making it a bit awkward 
+to access. 
+
+Although awkward in the new workflow it was a rather natural 
+thing in the old workflow from the historical GGeo/GMergedMesh splits. 
+Actually more precisely its because of the GParts concatenation 
+done in the old workflow, where the parts for multiple prim got joined 
+together fot persistency convenience. 
+
+**/
+
+int CSGFoundry::addNode_solidLocalNodeIdx() const 
+{
+    LOG_IF(fatal, !last_added_solid) << "must addSolid prior to addPrim and addNode " ; 
+    assert( last_added_solid ); 
+
+    unsigned primOffset = last_added_solid->primOffset ;
+    const CSGPrim* first_prim_of_last_added_solid = prim.data() + primOffset ; 
+    assert( first_prim_of_last_added_solid ) ;  
+    int nodeOffset = first_prim_of_last_added_solid->nodeOffset() ; 
+
+    int globalNodeIdx = node.size(); 
+    int solidLocalNodeIdx = globalNodeIdx - nodeOffset ;  
+
+    return solidLocalNodeIdx ; 
+}
 
 
 CSGNode* CSGFoundry::addNode(CSGNode nd)
@@ -1407,8 +1438,14 @@ CSGNode* CSGFoundry::addNode(CSGNode nd)
         ;
     assert( ok_globalNodeIdx ); 
 
+
+    int solidLocalNodeIdx = addNode_solidLocalNodeIdx() ;  // depends on node.size so must call before below push_back
+
     node.push_back(nd); 
     last_added_node = node.data() + globalNodeIdx ;
+
+    last_added_node->setIndex( solidLocalNodeIdx );  // TRY AUTOMATIC CSGNode::index a.nix
+
     return last_added_node ; 
 }
 
@@ -1763,6 +1800,25 @@ void CSGFoundry::addInstancePlaceholder()
     addInstance(tr16, gas_idx, sensor_identifier, sensor_index );  
 }
 
+/**
+CSGFoundry::addPrim_solidLocalPrimIdx
+--------------------------------------
+
+Index that would be assigned to the next added prim 
+within the currently "open" last_added_solid
+
+**/
+
+int CSGFoundry::addPrim_solidLocalPrimIdx() const 
+{
+    LOG_IF(fatal, !last_added_solid) << "must addSolid prior to addPrim" ; 
+    assert( last_added_solid ); 
+
+    unsigned primOffset = last_added_solid->primOffset ; 
+    unsigned globalPrimIdx = prim.size(); 
+    unsigned localPrimIdx = globalPrimIdx - primOffset ;  
+    return localPrimIdx ; 
+}
 
 
 /**

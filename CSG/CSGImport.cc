@@ -115,6 +115,7 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
         << " num_rem " << num_rem 
         ; 
 
+    std::array<float,6> bb = {} ; 
     CSGSolid* so = fd->addSolid(num_rem, rlabel); 
 
     for(int i=0 ; i < num_rem ; i++)
@@ -122,14 +123,30 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = st->rem[primIdx] ;
         CSGPrim* pr = importPrim( primIdx, node ) ;  
-        LOG_IF( verbose, pr == nullptr) << " pr null " ;  
         assert( pr );  
+        s_bb::IncludeAABB( bb.data(), pr->AABB() );  
     }
+    s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
     return so ; 
 }
 
 
 
+/**
+CSGImport::importSolidFactor
+-----------------------------
+
+Note the simple way the bbox of each prim are combined to 
+give the center_extent of the solid. This implies that 
+the bbox of all the prim are from the same frame, which 
+should be the frame of the outer prim of the instance. 
+Otherwise the center extent would be incorrect, unless 
+there is no relative transform differences between the
+prims of the compound solid. 
+
+TODO: confirm consistent frame for the prim bbox 
+
+**/
 
 CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 {
@@ -159,17 +176,20 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 
     assert( subtree == int(nodes.size()) ); 
 
+    std::array<float,6> bb = {} ; 
+
     for(int i=0 ; i < subtree ; i++)
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = nodes[primIdx] ;   // structural node
 
         CSGPrim* pr = importPrim( primIdx, node );  
+        assert( pr ); 
         pr->setRepeatIdx(ridx); 
 
-        LOG_IF( verbose, pr == nullptr) << " pr null " ;  
-        assert( pr ); 
+        s_bb::IncludeAABB( bb.data(), pr->AABB() );  
     }
+    s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
 
     return so ; 
 }
@@ -324,14 +344,6 @@ TODO : SUPPORT FOR CSGNode TYPES THAT NEED EXTERNAL BBOX::
         n->setAABB_Narrow( aabb ); 
     }
 
-OLD WAY OF TRANSFORMING THE NODE BBOX USED::
-
-    {    
-        n->setAABBLocal();
-        const qat4* q = fd->getTran(tranIdx-1u) ;
-        q->transform_aabb_inplace( n->AABB() );
-    } 
-
 **/
 
 template<typename N>
@@ -349,11 +361,11 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     // NB : TRANSFORM VERY DEPENDENT ON node.repeat_index == 0 OR not 
     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+    
 
     CSGNode* n = fd->addNode();   
-
+    //n->setIndex(nodeIdx);     // NOW AUTOMATED IN CSGFoundry::addNode
     n->setTypecode(typecode); 
-    n->setIndex(nodeOffset+partIdx); 
     n->setBoundary(node.boundary); 
     n->setComplement( nd ? nd->complement : false ); 
     n->setTransform(tranIdx);

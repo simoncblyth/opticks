@@ -756,7 +756,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     /**
     Use of partIdx accessing the GTransform suggests it includes the
-    CSG tree transforms, BUT DOES INT INCLUDE THE STRUCTURAL TRANSFORM 
+    CSG tree transforms, BUT DOES IT INCLUDE THE STRUCTURAL TRANSFORM 
     FOR THE GLOBALS TOO ? 
     **/
 
@@ -793,7 +793,16 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         CSGNode::Dump(n, 1, "CSG_GGeo_Convert::convertNode CSG_THETACUT before setIndex" );  
     }
 
-    n->setIndex(partIdx); 
+    // HAVE AUTOMATED THE SETTING OF THE INDEX : SO HERE JUST CHECK CONSISTENCY 
+    unsigned n_index = n->index(); 
+    bool node_index_consistent = n_index == partIdx ; 
+    LOG_IF( fatal, !node_index_consistent ) 
+        << " node_index_consistent " << ( node_index_consistent ? "YES" : "NO " )
+        << " n_index " << n_index
+        << " partIdx " << partIdx
+        ;
+    assert( node_index_consistent ); 
+    //n->setIndex(partIdx); 
 
     nbbox bb = comp->getBBox(partIdx); 
     bool expect_external_bbox = CSG::ExpectExternalBBox( (int) tc );  

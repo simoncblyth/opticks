@@ -6,11 +6,9 @@ CSGFoundryAB.py
 """
 
 import numpy as np, os, textwrap, builtins
-from opticks.ana.fold import Fold
+from opticks.ana.fold import Fold, STR
 from opticks.CSG.CSGFoundry import CSGFoundry, CSGPrim, CSGNode
-
 from opticks.sysrap.stree import sn, snode, stree
-
 
 
 class CSGFoundryAB(object):
@@ -18,7 +16,9 @@ class CSGFoundryAB(object):
         self.a = a 
         self.b = b 
         self.ip = _ip
-        self.check_node()
+
+        self.check_4x4("node")
+        self.check_4x4("prim")
 
         qwns = "npa nbb pbb".split()
         for qwn in qwns:
@@ -229,9 +229,6 @@ class CSGFoundryAB(object):
         pass
         return "\n".join(lines) 
 
-
-
-
     def check_solid(self):
         """
         [:,1] houses (numPrim, primOffset, type, padding)
@@ -267,16 +264,11 @@ class CSGFoundryAB(object):
         return "\n".join(lines) 
 
 
-    def check_node(self):
-        a = self.a 
-        b = self.b 
-        self.check_4x4("node")
 
     def check_4x4(self, name):
         a = self.a 
         b = self.b        
         ab = self
-
         am = getattr(a, name)
         bm = getattr(b, name)
 
@@ -292,7 +284,7 @@ class CSGFoundryAB(object):
         else:
             setattr(self,name,None) 
         pass
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
     def compare_qwn(self, qwn="npa"):
         a = self.a 
@@ -456,6 +448,15 @@ def checkprims(a, b, ip0=-1, ip1=-1, order="A"):
 
 
 def eprint(_lines, _globals, _locals ):
+    """
+    Double hash "##" on the line suppresses printing the repr 
+    of the evaluation. 
+
+    Lines are first search for the position of the first "=" character.
+    If present the position is used to extract the key and expression
+    to be evaluated in the scope provided by the arguments. 
+    The key with value is planted into the calling scope using builtins. 
+    """
     lines = list(filter(None, textwrap.dedent(_lines).split("\n") ))
 
     print("-" * 100)
@@ -463,16 +464,19 @@ def eprint(_lines, _globals, _locals ):
     print("-" * 100)
 
     for line in lines:
-        elem = line.split("=") 
-        if len(elem) == 1:
-            exp = elem[0]
+        eq = line.find("=") 
+        eeq = line.find("==") 
+        no_key = eq == -1 or ( eq > -1 and eq == eeq ) # no "=" or first "=" is from "==" 
+        if no_key: 
+            exp = line
             val = eval(exp, _globals, _locals )
             print(exp)
             print(repr(val))
-        elif len(elem) == 2:
-            key, exp = elem 
+        elif eq > -1:
+            key, exp = line[:eq].strip(), line[1+eq:]  # before and after first "="
             val = eval(exp, _globals, _locals )
-            setattr(builtins, key.strip(), val)
+            #print("set [%s] " % key )
+            setattr(builtins, key, val)
             print(line)
             if line.find("##") == -1:
                 print(repr(val))
@@ -544,6 +548,20 @@ if __name__ == '__main__':
 
     w_pbb2 = np.where( ab.pbb > 1e-2 )[0]  ##
     w_pbb2.shape
+
+    w_solid = np.where( a.solid != b.solid )[0]  ##
+    w_solid.shape
+
+    w_solid = np.where( a.solid != b.solid )[0] 
+
+    w_nix = np.where(a.nix != b.nix)[0] ## 
+    w_nix.shape
+
+    np.all( a.ntc == b.ntc )  # node typecode
+    np.all( a.ntr == b.ntr )  # node transform idx + 1 
+    np.all( a.ncm == b.ncm )  # node complement 
+
+    np.all( a.pix == b.pix )  # primIdx 
 
     """, globals(), locals() )
 
