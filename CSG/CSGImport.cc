@@ -8,7 +8,7 @@
 #include "snd.hh"
 #include "s_bb.h"
 
-#include "SSys.hh"
+#include "ssys.h"
 #include "SLOG.hh"
 
 #include "CSGNode.h"
@@ -17,8 +17,8 @@
 
 const plog::Severity CSGImport::LEVEL = SLOG::EnvLevel("CSGImport", "DEBUG" ); 
 
-const int CSGImport::LVID = SSys::getenvint("LVID", -1); 
-const int CSGImport::NDID = SSys::getenvint("NDID", -1); 
+const int CSGImport::LVID = ssys::getenvint("LVID", -1); 
+const int CSGImport::NDID = ssys::getenvint("NDID", -1); 
 
 
 CSGImport::CSGImport( CSGFoundry* fd_ )
@@ -231,6 +231,9 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
 
+    std::stringstream ss ; 
+    std::ostream* out = dump_LVID ? &ss : nullptr  ; 
+
     std::array<float,6> bb = {} ; 
 
     for(int i=0 ; i < numParts ; i++)
@@ -239,9 +242,11 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
         const N* nd = nds[partIdx]; 
         CSGNode* n = importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
         assert(n); 
-        if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB() ); 
+        if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB(), out ); 
     }
     pr->setAABB( bb.data() );
+
+    LOG_IF(info, dump_LVID ) <<  ss.str() ; 
 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 

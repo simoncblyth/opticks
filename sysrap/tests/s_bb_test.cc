@@ -22,11 +22,17 @@ void test_IncludeAABB()
     std::cout << "bb_1 " << s_bb::Desc(bb_1.data()) << std::endl ; 
     std::cout << "bb_2 " << s_bb::Desc(bb_2.data()) << std::endl ; 
 
-    s_bb::IncludeAABB( bb_0.data(), bb_1.data() ); 
+
+    std::stringstream ss ; 
+
+    s_bb::IncludeAABB( bb_0.data(), bb_1.data(), &ss ); 
     std::cout << " IncludeAABB( bb_0, bb_1 )  " << s_bb::Desc(bb_0.data()) << std::endl ; 
 
-    s_bb::IncludeAABB( bb_0.data(), bb_2.data() ); 
+    s_bb::IncludeAABB( bb_0.data(), bb_2.data(), &ss  ); 
     std::cout << " IncludeAABB( bb_0, bb_2 )  " << s_bb::Desc(bb_0.data()) << std::endl ; 
+
+    std::string str = ss.str(); 
+    std::cout << str ; 
 }
 
 

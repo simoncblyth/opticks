@@ -9,6 +9,13 @@ CMDLINE = " ".join(sys.argv)
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
+
+class STR(str):
+    """STR inherits from str and changes the repr to provide the str : useful for interactive ipython"""
+    def __repr__(self):
+        return str(self)
+
+
 def IsRemoteSession():
     """
     Heuristic to detect remote SSH session 

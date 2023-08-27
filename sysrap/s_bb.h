@@ -60,7 +60,7 @@ struct SYSRAP_API s_bb
     template<typename T> static std::string Desc( const T* aabb ); 
     template<typename T> static bool AllZero( const T* aabb ); 
     template<typename T> static void IncludePoint( T* aabb,  const T* other_point ); 
-    template<typename T> static void IncludeAABB(  T* aabb,  const T* other_aabb  ); 
+    template<typename T> static void IncludeAABB(  T* aabb,  const T* other_aabb , std::ostream* out=nullptr  ); 
     void include_point( const double* point ); 
     void include_aabb(  const double* aabb  ); 
 
@@ -155,6 +155,8 @@ s_bb::IncludePoint
 When aabb starts empty the point is adopted as both min and max 
 without any comparisons.
 
+HMM: AN ALL ZERO POINT IS TREATED AS VALID
+
 **/
 
 template<typename T>
@@ -174,14 +176,37 @@ other_aabb is adopted with no comparisons.
 Otherwise when both have values the min and max of the 
 aabb gets set by comparison. 
 
+NB all zero other_aabb values causes an early exit and no combination 
+as such an other_aabb is regarded as unset 
+
 **/
 
 template<typename T>
-inline void s_bb::IncludeAABB(  T* aabb,  const T* other_aabb  ) // static
+inline void s_bb::IncludeAABB(  T* aabb,  const T* other_aabb, std::ostream* out  ) // static
 {
-    bool adopt = AllZero(aabb) && !AllZero(other_aabb) ; 
-    for(int i=0 ; i < 3 ; i++) aabb[i] = adopt ? other_aabb[i] : std::min( aabb[i],  other_aabb[i]) ; 
-    for(int i=3 ; i < N ; i++) aabb[i] = adopt ? other_aabb[i] : std::max( aabb[i],  other_aabb[i]) ; 
+    bool other_aabb_zero = AllZero(other_aabb) ; 
+    if(other_aabb_zero) return ;    
+
+    bool aabb_zero = AllZero(aabb) ; 
+
+    if(out) *out 
+        << "s_bb::IncludeAABB " 
+        << std::endl
+        << " inital_aabb  " << Desc(aabb)
+        << std::endl
+        << " other_aabb   " << Desc(other_aabb)  << ( aabb_zero ? " ADOPT OTHER AS STARTING" : "COMBINE" )
+        << std::endl
+        ;
+
+    for(int i=0 ; i < 3 ; i++) aabb[i] = aabb_zero ? other_aabb[i] : std::min(aabb[i], other_aabb[i]) ; 
+    for(int i=3 ; i < N ; i++) aabb[i] = aabb_zero ? other_aabb[i] : std::max(aabb[i], other_aabb[i]) ; 
+
+    if(out) *out 
+        << " updated_aabb " << Desc(aabb) 
+        << std::endl 
+        ;
+ 
+
 }
 
 

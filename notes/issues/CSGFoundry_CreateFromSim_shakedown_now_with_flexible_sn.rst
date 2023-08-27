@@ -30,7 +30,6 @@ Two geometry routes::
                           snd/sn
 
      ~/opticks/u4/tests/U4TreeCreateSSimTest.sh             ## B0 : Loads GDML, Create SSim/stree using U4Tree.h 
-
      ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, runs CSGImport creating CSGFoundry
 
 
@@ -2733,10 +2732,10 @@ Small diffs node bb only::
 
 
 
-WIP : Bring the CSGPrim bbox into B side ? Where is it done A side ?
-----------------------------------------------------------------------
+DONE  : Bring the CSGPrim bbox into B side ? Where is it done A side ?
+------------------------------------------------------------------------
 
-::
+* done in `CSGImport::importPrim_` starting from the below::
 
      512 CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
      513 {
@@ -2754,22 +2753,145 @@ WIP : Bring the CSGPrim bbox into B side ? Where is it done A side ?
      585         bool negated = n->is_complemented_primitive();
      586         
      587         bool bbskip = negated ;
-     588           
-     589           /*
-     590         if(dump || bbskip) 
-     591             LOG(LEVEL)
-     592                 << " partIdxRel " << std::setw(3) << partIdxRel 
-     593                 << " " << n->desc() 
-     594                 << " negated " << negated
-     595                 << " bbskip " << bbskip 
-     596                 ;
-     597 
-     598         */
-     599         
+     ... 
      600         float* naabb = n->AABB();
      601         
      602         if(!bbskip) bb.include_aabb( naabb );
      603     }
+
+
+HMM: I think there is a bug in the above, it is including the 
+all zero bbox from the operator nodes. 
+Which means that some bbox are artificially enlarged to include the origin ? 
+
+
+DONE  : Fixing s_bb::IncludeAABB to igore all zero other_aabb gets pbb close
+-------------------------------------------------------------------------------
+
+DIFFERENCE WITH TAIL AABB::
+
+    w_pbb2 = np.where( ab.pbb > 1e-2 )[0]  ##
+    w_pbb2.shape
+    (2,)
+
+    In [1]: w_pbb2
+    Out[1]: array([2930, 2939])
+
+    In [2]: a.pbb[2930]
+    Out[2]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,    0.   ], dtype=float32)
+
+    In [3]: b.pbb[2930]
+    Out[3]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,  -39.   ], dtype=float32)
+
+    In [4]: a.pbb[2939]
+    Out[4]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,    0.   ], dtype=float32)
+
+    In [5]: b.pbb[2939]
+    Out[5]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,  -40.   ], dtype=float32)
+
+
+    In [7]: b.plv[w_pbb2]
+    Out[7]: array([110,  98], dtype=int32)
+
+    In [8]: a.meshname[a.plv[w_pbb2]]
+    Out[8]: array(['NNVTMCPPMTTail0x6176550', 'HamamatsuR12860Tail0x61673d0'], dtype=object)
+
+
+Looking at the detailed dump, its clear that B is correct with the smaller AABB::
+
+    In [11]: b.descLVDetail(110)    
+
+
+* https://simoncblyth.bitbucket.io/env/presentation/opticks_20221117_mask_debug_and_tmm.html
+
+Simtrace plots of the Tail in above,  can see that it is the fancy bowl shape at back of PMT.
+The bbox clearly should extend up to -39. (not up to 0.). 
+
+
+DONE : CONFIRMED and FIXED A SIDE saabb.h BUG 
+-------------------------------------------------
+
+Added the AllZero check to AABB::include_aabb. 
+Maybe that will get A and B to match ? IT DOES::
+
+    138 AABB_METHOD bool AABB::AllZero(const float* aabb) // static
+    139 {   
+    140     int count = 0 ; 
+    141     for(int i=0 ; i < 6 ; i++) if(std::abs(aabb[i]) == 0.f) count += 1 ;
+    142     return count == 6 ;
+    143 }
+    144 
+    145 AABB_METHOD void AABB::include_aabb(const float* aabb)
+    146 {
+    147     if(AllZero(aabb)) return ;
+    148 
+
+
+
+::
+
+    w_pbb3 = np.where( ab.pbb > 1e-3 )[0]  ##
+    w_pbb3.shape
+    (903,)
+    w_pbb2 = np.where( ab.pbb > 1e-2 )[0]  ##
+    w_pbb2.shape
+    (0,)
+    ----------------------------------------------------------------------------------------------------
+
+    In [1]: a.pbb[2930]
+    Out[1]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,  -39.   ], dtype=float32)
+
+    In [2]: b.pbb[2930]
+    Out[2]: array([-264.   , -264.   , -183.225,  264.   ,  264.   ,  -39.   ], dtype=float32)
+
+    In [3]:
+
+
+WIP : CSGSolid B SIDE MISSES center_extent
+---------------------------------------------
+
+::
+
+    In [7]: a.solid[1]
+    Out[7]:
+    array([[      12658,           0,           0,           0],
+           [          5,        2923,           0,           0],
+           [          0,           0, -1047560320,  1114095814]], dtype=int32)
+
+    In [8]: b.solid[1]
+    Out[8]:
+    array([[12658,     0,     0,     0],
+           [    5,  2923,     0,     0],
+           [    0,     0,     0,     0]], dtype=int32)
+
+
+Missing center_extent from B::
+
+    In [10]: a.solid.view(np.float32)[:,2]
+    Out[10]:
+    array([[    0.   ,     0.   ,     0.   , 60000.   ],
+           [    0.   ,     0.   ,   -17.937,    57.938],
+           [    0.   ,     0.   ,     5.438,   264.05 ],
+           [    0.   ,     0.   ,     8.438,   264.05 ],
+           [    0.   ,     0.   ,    84.525,   264.05 ],
+           [    0.   ,     0.   ,     0.   ,    50.   ],
+           [    0.   ,     0.   ,   -50.5  ,   195.   ],
+           [    0.   ,     0.   ,   -67.15 ,   451.786],
+           [    0.   ,     0.   ,     0.   ,  3430.6  ]], dtype=float32)
+
+    In [11]: b.solid.view(np.float32)[:,2]
+    Out[11]:
+    array([[0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.],
+           [0., 0., 0., 0.]], dtype=float32)
+
+
 
 
 

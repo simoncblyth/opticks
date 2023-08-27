@@ -27,7 +27,10 @@ struct AABB
     bool empty() const ; 
     void include_point(const float* point); 
     void include_point(const float3& p);
+
+    static bool AllZero(const float* aabb); 
     void include_aabb( const float* aabb);
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -132,10 +135,17 @@ AABB_METHOD void AABB::include_point(const float3& p)
 }
 
 
-
+AABB_METHOD bool AABB::AllZero(const float* aabb) // static
+{
+    int count = 0 ; 
+    for(int i=0 ; i < 6 ; i++) if(std::abs(aabb[i]) == 0.f) count += 1 ; 
+    return count == 6 ; 
+}
 
 AABB_METHOD void AABB::include_aabb(const float* aabb)
 {
+    if(AllZero(aabb)) return ;  
+
     const float3 other_mn = make_float3( *(aabb+0), *(aabb+1), *(aabb+2) ); 
     const float3 other_mx = make_float3( *(aabb+3), *(aabb+4), *(aabb+5) ); 
 

@@ -3,7 +3,7 @@ import os, sys, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir
-from opticks.ana.fold import Fold
+from opticks.ana.fold import Fold, STR
 from opticks.sysrap.OpticksCSG import CSG_
 
 class CSGObject(object):
@@ -136,7 +136,7 @@ class MM(object):
         pass
 
     def __repr__(self):
-        return "\n".join(self.mm)
+        return STR("\n".join(self.mm))
 
 
 class LV(object):
@@ -431,6 +431,10 @@ class CSGFoundry(object):
         self.nbb = self.node.reshape(-1,16)[:,8:14]
         self.pbb = self.prim.reshape(-1,16)[:,8:14]  
 
+        self.plv = self.prim.view(np.int32)[:,1,1] # prim lvid 
+        self.prx = self.prim.view(np.int32)[:,1,2] # prim ridx from 
+        self.pnn = self.prim.view(np.int32)[:,0,0] # prim num node
+        self.pno = self.prim.view(np.int32)[:,0,1] # prim node offset 
 
 
 
@@ -653,7 +657,7 @@ class CSGFoundry(object):
         for pidx in pidxs:
             lines.append(self.descPrim(pidx, detail=detail))
         pass
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
     def descLVDetail(self, lvid):
         return self.descLV(lvid, detail=True)
@@ -687,7 +691,7 @@ class CSGFoundry(object):
             lines.append(self.descNodeTCTran(nodeOffset,numNode, mask_signbit=False))
             lines.append(self.descNodeTCTran(nodeOffset,numNode, mask_signbit=True))
         pass
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
     def descPrimDetail(self, pidx):
         return self.descPrim(pidx,detail=True)
@@ -701,7 +705,7 @@ class CSGFoundry(object):
         lines = []
         lines.append("%s # %s " % (expr,label))
         lines.append(str(eval(expr)))
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
     def descNodeParam(self, nodeOffset, numNode):
         return self.descNodeFloat(nodeOffset,numNode,"[:,:6]", "descNodeParam" ) 
@@ -720,7 +724,7 @@ class CSGFoundry(object):
         lines = []
         lines.append("%s # %s " % (expr,label))
         lines.append(str(eval(expr)))
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
     def descNodeBoundaryIndex(self, nodeOffset, numNode):
         return self.descNodeInt(nodeOffset,numNode,"[:,6:8]", "descNodeBoundaryIndex" ) 
@@ -781,7 +785,7 @@ class CSGFoundry(object):
             pass
             lines.append(self.descSolid(ridx, detail=detail))
         pass    
-        return "\n".join(lines)
+        return STR("\n".join(lines))
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ from opticks.sysrap.OpticksCSG import CSG_
 
 
 class STR(str):
-    """STR inherits from str and changes the repr to provide the str""" 
+    """STR inherits from str and changes the repr to provide the str : useful for interactive ipython""" 
     def __repr__(self):
         return str(self)
 
