@@ -256,18 +256,32 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
 
     std::array<float,6> bb = {} ; 
 
+    CSGNode* root = nullptr ; 
+
     for(int i=0 ; i < numParts ; i++)
     {
         int partIdx = i ; 
         const N* nd = nds[partIdx]; 
         CSGNode* n = importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
         assert(n); 
+        if(root == nullptr) root = n ;   // first node becomes root 
+
         if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB(), out ); 
     }
     pr->setAABB( bb.data() );
 
-    LOG_IF(info, dump_LVID ) <<  ss.str() ; 
+    assert( root ); 
 
+    if(CSG::IsCompound(root->typecode()))
+    {
+        assert( numParts > 1 ); 
+        root->setSubNum( numParts ); 
+        root->setSubOffset( 0 );   
+        // THESE NEED REVISIT WHEN ADDING list-nodes SUPPORT
+    }
+
+
+    LOG_IF(info, dump_LVID ) <<  ss.str() ; 
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
         << " lvid "    << std::setw(3) << lvid 

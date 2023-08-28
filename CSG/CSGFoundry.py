@@ -437,8 +437,16 @@ class CSGFoundry(object):
    
         self.pnn = self.prim.view(np.int32)[:,0,0] # prim num node
         self.pno = self.prim.view(np.int32)[:,0,1] # prim node offset 
+
+
+
         self.pto = self.prim.view(np.int32)[:,0,2] # prim tran offset 
         self.ppo = self.prim.view(np.int32)[:,0,3] # prim plan offset 
+
+        self.crn = self.pno[self.pnn>1]   # node indices of compound roots  
+        self.crn_subnum = self.node.view(np.int32)[self.crn,0,0]
+        self.crn_suboff = self.node.view(np.int32)[self.crn,0,1]   
+
 
         self.psb = self.prim.view(np.int32)[:,1,0] # prim sbtIndexOffset 
         self.plv = self.prim.view(np.int32)[:,1,1] # prim lvid/meshIdx 

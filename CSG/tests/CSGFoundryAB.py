@@ -458,8 +458,9 @@ def eprint(_lines, _globals, _locals ):
     The key with value is planted into the calling scope using builtins. 
 
 
-
     HMM : PARSE NEEDS TO DETECT PARAMETER EQUAL 
+
+    ACTUALLY MAYBE EASIER TO PREFIX WITH "_ =" IF NO "KEY =" prefix is found 
 
     np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)]
 
@@ -561,6 +562,9 @@ if __name__ == '__main__':
     w_nbb2 = np.where( np.abs(a.nbb - b.nbb) > 1e-2 )[0]  ## node bbox deviations
     w_nbb2.shape
 
+    w_nbb = np.where( a.nbb != b.nbb )  ##
+    np.abs( a.nbb[w_nbb] - b.nbb[w_nbb] ).max()   # max deviation in bbox 
+    
 
     np.all( a.ntc == b.ntc )  # node typecode
     np.all( a.ncm == b.ncm )  # node complement 
@@ -595,8 +599,19 @@ if __name__ == '__main__':
     w_npa = np.where( a.npa != b.npa )[0]   ## int32 3,7,15 in first param slot 
     w_npa.shape   # these are subNum on compound root nodes : and new workflow omits it
 
+    np.all( a.npa == b.npa )  # after setting crn_subnum in b the node param match exactly  
+
+
     tab = np.c_[np.unique(a.npa[a.pno[a.pnn>1],0].view(np.int32),return_counts=True)] ## subNum picked from node param 0 of compound root nodes
     tab 
+
+    tab2 = np.c_[np.unique( a.crn_subnum, return_counts=True )]  ## encapsulate subnum using "crn" compound root node  
+    tab2
+
+    _ = np.c_[np.unique(a.pnn[a.pnn>1], return_counts=True )] # looks like subnum same as the prim num nodes
+
+    np.all( a.crn_subnum == b.crn_subnum) 
+    np.all( a.crn_suboff == b.crn_suboff) 
 
     """, globals(), locals() )
 pass        
