@@ -548,7 +548,7 @@ if __name__ == '__main__':
     w_solid = np.where( a.solid != b.solid )[0]  ##
     w_solid.shape
 
-    np.all( a.nbd == b.nbd )  # node boundary 
+    np.all( a.nbd == b.nbd )  # node boundary : ONLY REMAINING DEVIANT 
 
     np.all( a.nix == b.nix )  # nodeIdx local to the compound solid 
     w_nix = np.where(a.nix != b.nix)[0] ## 
@@ -612,6 +612,14 @@ if __name__ == '__main__':
 
     np.all( a.crn_subnum == b.crn_subnum) 
     np.all( a.crn_suboff == b.crn_suboff) 
+
+
+    an = A.SSim.extra.GGeo.bnd_names      ## A side still GGeo in charge
+    bn = B.SSim.stree.standard.bnd_names  ## B side using stree 
+    w_bnd_names = np.where( an != bn )[0] ##
+    w_bnd_names
+
+    np.c_[an[w_bnd_names],bn[w_bnd_names]]   # discrepant bnd names
 
     """, globals(), locals() )
 pass        

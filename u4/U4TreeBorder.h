@@ -49,7 +49,6 @@ see ~/opticks/notes/issues/optical_ems_4_getting_too_many_from_non_sensor_Vacuum
 struct U4TreeBorder 
 {
     stree* st ; 
-    //int num_surface_standard ; // excluding implicits  
 
     const G4LogicalVolume* const lv ; 
     const G4LogicalVolume* const lv_p ;  
@@ -80,12 +79,10 @@ struct U4TreeBorder
 
     U4TreeBorder(
         stree* st_, 
-     //   int num_surface_standard_ , 
         const G4VPhysicalVolume* const pv, 
         const G4VPhysicalVolume* const pv_p 
         ); 
 
-    void init(); 
     std::string desc() const ; 
     bool is_flagged() const ; 
 
@@ -99,17 +96,37 @@ struct U4TreeBorder
     void check( const int4& bd )  ; 
 }; 
 
+/**
+U4TreeBorder::U4TreeBorder
+-----------------------------
 
+Boundary spec::
+
+   omat/osur/isur/imat 
+    
+   +-----------------------------+
+   |                             |
+   | pv_p    omat    osolid      |
+   |              ||             |     implicit_osur : o_rindex != nullptr && i_rindex = nullptr
+   |              ||             | 
+   |         osur \/             |     osur : relevant for photons going from pv_p -> pv ( outer to inner, ingoing )
+   +-----------------------------+ 
+   |         isur /\             |     isur : relevant for photons goes from pv -> pv_p  ( inner to outer, outgoing ) 
+   |              ||             | 
+   |              ||             |     implicit_isur : i_rindex != nullptr && o_rindex == nullptr
+   | pv      imat    isolid      |
+   |                             |
+   +-----------------------------+
+
+**/
 
 
 inline U4TreeBorder::U4TreeBorder(
-        stree* st_, 
-      //  int num_surface_standard_, 
-        const G4VPhysicalVolume* const pv, 
-        const G4VPhysicalVolume* const pv_p )
+    stree* st_, 
+    const G4VPhysicalVolume* const pv, 
+    const G4VPhysicalVolume* const pv_p )
     :
     st(st_),
-    //num_surface_standard(num_surface_standard_),
     lv(pv->GetLogicalVolume()),
     lv_p(pv_p ? pv_p->GetLogicalVolume() : lv),
     imat_(lv->GetMaterial()),
@@ -126,20 +143,15 @@ inline U4TreeBorder::U4TreeBorder(
     onam(pv_p ? pv_p->GetName() : inam), 
     i_rindex(U4Mat::GetRINDEX( imat_ )), 
     o_rindex(U4Mat::GetRINDEX( omat_ )),
-    osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface
-    isur_( i_rindex == nullptr ? nullptr : U4Surface::Find( pv  , pv_p )), // disable isur from absorbers without RINDEX
+    osur_(U4Surface::Find( pv_p, pv )),    // look for border or skin surface, HMM: maybe disable for o_rindex == nullptr ?
+    isur_( i_rindex == nullptr ? nullptr : U4Surface::Find( pv, pv_p )), // disable isur from absorbers without RINDEX
     implicit_idx(-1),
     implicit_isur(i_rindex != nullptr && o_rindex == nullptr),  
     implicit_osur(o_rindex != nullptr && i_rindex == nullptr),
     flagged_isolid(ssys::getenvvar("U4TreeBorder__FLAGGED_ISOLID", "sStrutBallhead"))
 {
-    init(); 
 }
 
-void U4TreeBorder::init()
-{
-    //assert( st->num_surface_standard() == num_surface_standard ) ;   
-}
 
 std::string U4TreeBorder::desc() const 
 {
@@ -167,12 +179,19 @@ bool U4TreeBorder::is_flagged() const
 U4TreeBorder::get_surface_idx_of_implicit
 -------------------------------------------
 
-HMM: why need num_surfaces ? why not just get absolute index from stree ?
++---------------------------------+-----------------+
+|  Callers                        |  flip           |
++=================================+=================+ 
+|  U4TreeBorder::do_osur_override |  true           |
++---------------------------------+-----------------+  
+|  U4TreeBorder::do_isur_override |  false          |
++---------------------------------+-----------------+  
 
-::
 
-    std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, imatn, onam, omatn, flip );   i
-    // alternate verbose implicit name for debug
+1. uses inam and onam pv name to form a name for the implicit surface
+2. adds implicit name to the stree suname vector if not already present 
+   and returns the standard surface index  
+
 
 **/
 
@@ -180,15 +199,7 @@ inline int U4TreeBorder::get_surface_idx_of_implicit(bool flip)
 {
     std::string implicit_ = S4::ImplicitBorderSurfaceName(inam, onam, flip );   // based on pv pv_p names
     const char* implicit = implicit_.c_str(); 
-
-    /*
-    int implicit_idx = st->add_surface_implicit(implicit) ; 
-    int surface_idx = num_surface_standard + implicit_idx ;
-    int surface_idx_2 = st->get_surface( implicit ); 
-    assert( surface_idx == surface_idx_2 ); 
-    */
     int surface_idx = st->add_surface_implicit(implicit) ;  // now returns standard surface idx 
-
     return surface_idx ; 
 }
 
@@ -218,27 +229,25 @@ inline bool U4TreeBorder::has_isur_override( const int4& bd ) const
     const int& isur = bd.z ; 
     return isur == -1 && implicit_isur == true ;  
 }
+
+/**
+U4TreeBorder::do_osur_override U4TreeBorder::do_isur_override
+--------------------------------------------------------------
+
+Called from U4Tree::initNodes_r when osur/isur implicits are enabled
+and the above has override methods return true. 
+
+**/
+
 inline void U4TreeBorder::do_osur_override( int4& bd ) // from omat to imat : inwards
 {
-#ifdef DEBUG_IMPLICIT
-    st->implicit_osur.push_back(bd);  
-#endif
     int& osur = bd.y ; 
     osur = get_surface_idx_of_implicit(true); 
-#ifdef DEBUG_IMPLICIT
-    st->implicit_osur.push_back(bd);  
-#endif
 }
 inline void U4TreeBorder::do_isur_override( int4& bd ) // from imat to omat : outwards
 {
-#ifdef DEBUG_IMPLICIT
-    st->implicit_isur.push_back(bd); 
-#endif
     int& isur = bd.z ; 
     isur = get_surface_idx_of_implicit(false); 
-#ifdef DEBUG_IMPLICIT
-    st->implicit_isur.push_back(bd); 
-#endif
 }
 
 inline void U4TreeBorder::check( const int4& bd ) 

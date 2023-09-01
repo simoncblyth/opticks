@@ -141,7 +141,13 @@ class X4_API X4PhysicalVolume : public X4Named
         bool hasEfficiency(const G4Material* mat);
     private:
         void convertMaterials_r(const G4VPhysicalVolume* const pv, int depth) ;
+
+        static constexpr const char* Implicit_RINDEX_NoRINDEX = "Implicit_RINDEX_NoRINDEX" ; 
+
         void convertImplicitSurfaces_r(const G4VPhysicalVolume* const pv, int depth) ; 
+        static constexpr const char* __ENABLE_OSUR_IMPLICIT = "X4PhysicalVolume__ENABLE_OSUR_IMPLICIT" ; 
+        static constexpr const char* __DISABLE_ISUR_IMPLICIT = "X4PhysicalVolume__DISABLE_ISUR_IMPLICIT" ; 
+
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void convertSolid( const G4LogicalVolume* lv ); 
         void dumpLV(unsigned edgeitems=100) const ;
@@ -173,6 +179,9 @@ class X4_API X4PhysicalVolume : public X4Named
         GBorderSurface*      findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const ; 
         GSkinSurface*        findSkinSurfaceOK( const G4LogicalVolume* const lv) const ;
     private:
+
+        bool                         m_enable_osur ; 
+        bool                         m_enable_isur ; 
         stree_standin*               m_tree ; 
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  

@@ -25,6 +25,7 @@
 
 #include "snode.h"
 #include "stree.h"
+#include "ssys.h"
 
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
@@ -146,6 +147,8 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* 
 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
     :
     X4Named("X4PhysicalVolume"),
+    m_enable_osur(ssys::getenvbool(__ENABLE_OSUR_IMPLICIT)),
+    m_enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT)),
     m_tree(nullptr),
     m_ggeo(ggeo),
     m_top(top),
@@ -552,6 +555,30 @@ NoRINDEX_RINDEX
     there tend to be only a few of these : but they are optically important as "containers" 
     eg Tyvek or Rock containing Water   
 
+
+
+Use same names as U4TreeBorder::U4TreeBorder for sanity::
+
+   omat/osur/isur/imat 
+    
+   +-----------------------------+
+   |                             |
+   | pv_p    omat    osolid      |
+   |              ||             |     implicit_osur : o_rindex != nullptr && i_rindex = nullptr
+   |              ||             | 
+   |         osur \/             |     osur : relevant for photons going from pv_p -> pv ( outer to inner, ingoing )
+   +-----------------------------+ 
+   |         isur /\             |     isur : relevant for photons goes from pv -> pv_p  ( inner to outer, outgoing ) 
+   |              ||             | 
+   |              ||             |     implicit_isur : i_rindex != nullptr && o_rindex == nullptr
+   | pv      imat    isolid      |
+   |                             |
+   +-----------------------------+
+
+
+
+
+
 **/
 
 void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const parent_pv, int depth)
@@ -572,38 +599,50 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         const G4MaterialPropertyVector* daughter_rindex = daughter_mpt ? daughter_mpt->GetProperty(kRINDEX) : nullptr ; // WHAT: cannot do this with const mpt 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
   
-        // naming order for outgoing photons, not ingoing volume traversal  
-        bool RINDEX_NoRINDEX = daughter_rindex != nullptr && parent_rindex == nullptr ;   // ISUR (see U4TreeBorder)
-        bool NoRINDEX_RINDEX = daughter_rindex == nullptr && parent_rindex != nullptr ;   // OSUR (see U4TreeBorder)
 
-        //if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
-        if(RINDEX_NoRINDEX)
+        bool implicit_osur   = daughter_rindex == nullptr && parent_rindex != nullptr ;   // ingoing photons  
+        bool implicit_isur   = daughter_rindex != nullptr && parent_rindex == nullptr ;   // outgoing photons [former RINDEX_NoRINDEX]
+
+        const char* daughter_pvn = X4::Name( daughter_pv ) ; // pv1
+        const char* parent_pvn   = X4::Name( parent_pv ) ;   // pv2
+
+        LOG(LEVEL)
+            << " parent_mtName " << parent_mtName
+            << " daughter_mtName " << daughter_mtName
+            << " daughter_pvn " << std::setw(30) << daughter_pvn
+            << " parent_pvn " << std::setw(30) << parent_pvn
+            << " implicit_osur " << ( implicit_osur  ? "YES" : "NO " )
+            << " implicit_isur " << ( implicit_isur  ? "YES" : "NO " )
+            ; 
+
+        if(implicit_isur && m_enable_isur)
         {
-            const char* pv1 = X4::Name( daughter_pv ) ; 
-            const char* pv2 = X4::Name( parent_pv ) ; 
-            GBorderSurface* bs = m_slib->findBorderSurface(pv1, pv2);  
-
+            GBorderSurface* outgoing_bs = m_slib->findBorderSurface(daughter_pvn, parent_pvn);  
             LOG(LEVEL) 
-               << " parent_mtName " << parent_mtName
-               << " daughter_mtName " << daughter_mtName
-               ;
-
-            LOG(LEVEL)
-                << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
-                << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
-                << " pv1 " << std::setw(30) << pv1
-                << " pv2 " << std::setw(30) << pv2
-                << " bs " << bs 
-                <<  ( bs ? " preexisting-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
+                << " outgoing_bs " << ( outgoing_bs != nullptr ? "YES" : "NO" )
+                <<  ( outgoing_bs ? " preexisting-outgoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
                 ;
 
-
-            if( bs == nullptr )
+            if( outgoing_bs == nullptr )
             {
-                m_slib->addImplicitBorderSurface_RINDEX_NoRINDEX(pv1, pv2); 
+                m_slib->addImplicitBorderSurface( Implicit_RINDEX_NoRINDEX, daughter_pvn, parent_pvn); 
             }
-           
         } 
+        else if( implicit_osur && m_enable_osur )
+        {
+            // THIS LOOKS TO BE VERY SLOW : PRESUMABLY THE REASON WAS DISABLED 
+            GBorderSurface* ingoing_bs = m_slib->findBorderSurface(parent_pvn, daughter_pvn);  
+            LOG(LEVEL) 
+                << " ingoing_bs " << ( ingoing_bs != nullptr ? "YES" : "NO" )
+                <<  ( ingoing_bs ? " preexisting-ingoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
+                ;
+
+            if( ingoing_bs == nullptr )
+            {
+                m_slib->addImplicitBorderSurface( Implicit_RINDEX_NoRINDEX, parent_pvn, daughter_pvn); 
+            }
+        }
+
         convertImplicitSurfaces_r( daughter_pv , depth + 1 );
     }
 }
@@ -648,8 +687,22 @@ void X4PhysicalVolume::convertSurfaces()
 
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
+    LOG(LEVEL) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
+    LOG(info) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
     convertImplicitSurfaces_r(pv, depth);
     num_surf1 = m_slib->getNumSurfaces() ; 
+
+    bool surfname_debug = false ; 
+    if( surfname_debug )
+    {
+        std::vector<std::string> surfnames ; 
+        m_slib->collectBorderSurfaceNames(surfnames);  
+        NP::WriteNames("/tmp/X4PhysicalVolume__convertSurfaces_surfnames.txt", surfnames) ; 
+    }
+
+
+    LOG(info) << "]convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
+    LOG(LEVEL) << "]convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
 
     size_t num_ibs = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;  
 

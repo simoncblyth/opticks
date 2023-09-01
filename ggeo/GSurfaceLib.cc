@@ -706,8 +706,8 @@ void GSurfaceLib::addPerfectProperties( GPropertyMap<double>* dst, double detect
 
 
 /**
-GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX
----------------------------------------------------------
+GSurfaceLib::addImplicitBorderSurface  (formerly addImplicitBorderSurface_RINDEX_NoRINDEX )
+---------------------------------------------------------------------------------------------
 
 Invoked from X4PhysicalVolume::convertImplicitSurfaces_r
 
@@ -718,7 +718,7 @@ See notes/issues/GSurfaceLib__addImplicitBorderSurface_RINDEX_NoRINDEX.rst
 
 **/
 
-void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 )
+void GSurfaceLib::addImplicitBorderSurface( const char* prefix,  const char* pv1, const char* pv2 )
 {
     GBorderSurface* prior_bs = findBorderSurface(pv1, pv2);
     if( prior_bs != nullptr )
@@ -736,9 +736,9 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
     std::string spv1 = SGDML::Strip(pv1); 
     std::string spv2 = SGDML::Strip(pv2); 
     std::stringstream ss ; 
-    ss << "Implicit_RINDEX_NoRINDEX_" << spv1 << "_" << spv2 ;  
-    std::string s = ss.str(); 
-    const char* name = s.c_str(); 
+    ss << prefix << "_" << spv1 << "_" << spv2 ;  
+    std::string str = ss.str(); 
+    const char* name = str.c_str(); 
 
     // placeholders
     const char* type = "1" ; 
@@ -1581,8 +1581,17 @@ GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2)
 }
 
 
-
-
+void GSurfaceLib::collectBorderSurfaceNames( std::vector<std::string>& names ) const 
+{
+    for(unsigned int i=0 ; i < m_border_surfaces.size() ; i++ )
+    {
+        GBorderSurface* bs = m_border_surfaces[i];
+        char* pv1 = bs->getPV1(); 
+        char* pv2 = bs->getPV2(); 
+        names.push_back(pv1); 
+        names.push_back(pv2); 
+    }
+}
 
 
 

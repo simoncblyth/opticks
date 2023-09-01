@@ -18,8 +18,7 @@ struct S4
 
     static std::string Strip( const std::string& name );
 
-    // verbose variant for debugging 
-    static std::string ImplicitBorderSurfaceName( 
+    static std::string ImplicitBorderSurfaceName_Debug( 
           const std::string& pv1, 
           const char* mat1, 
           const std::string& pv2,
@@ -56,7 +55,7 @@ inline std::string S4::Strip( const std::string& name )
     return sname ; 
 }
 
-inline std::string S4::ImplicitBorderSurfaceName( 
+inline std::string S4::ImplicitBorderSurfaceName_Debug( 
           const std::string& pv1, 
           const char* mat1, 
           const std::string& pv2,
@@ -86,8 +85,6 @@ inline std::string S4::ImplicitBorderSurfaceName(
     std::string str = ss.str();
     return str ; 
 }
-
-
 
 
 inline std::string S4::ImplicitBorderSurfaceName( 

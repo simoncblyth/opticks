@@ -65,22 +65,15 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 
 #export NNodeNudger__DISABLE=1
 #export X4Solid__convertPolycone_nudge_mode=0 # 0:DISABLE 
-
 #export U4Polycone__DISABLE_NUDGE=1 
-
-
 #export s_csg_level=2 
 #export sn__level=2
-
-
-
-
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1
 
 loglevels(){
    export Dummy=INFO
    export G4CXOpticks=INFO
-   #export X4PhysicalVolume=INFO
+   export X4PhysicalVolume=INFO
    #export SOpticksResource=INFO
    export CSGFoundry=INFO
    export GSurfaceLib=INFO

@@ -1,4 +1,5 @@
 
+#include <csignal>
 #include "SLOG.hh"
 
 
@@ -219,6 +220,7 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
     LOG(LEVEL) << " gdmlpath [" << gdmlpath << "]" ;
     const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
+
     setGeometry(world); 
 }
 
@@ -261,10 +263,12 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     stree* st = sim->get_tree(); 
 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
+    LOG(info) << "Completed U4Tree::Create " ; 
 
     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
     GGeo* gg_ = X4Geo::Translate(wd) ; 
+    LOG(info) << "Completed X4Geo::Translate " ; 
 
     setGeometry(gg_); 
 }

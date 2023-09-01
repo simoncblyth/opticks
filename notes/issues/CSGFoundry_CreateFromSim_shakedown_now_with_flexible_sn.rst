@@ -30,7 +30,7 @@ Two geometry routes::
                           snd/sn
 
      ~/opticks/u4/tests/U4TreeCreateSSimTest.sh             ## B0 : Loads GDML, Create SSim/stree using U4Tree.h 
-     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, runs CSGImport creating CSGFoundry
+     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, uses CSGImport to create and save CSGFoundry
 
 
      B0           U4Tree        
@@ -45,7 +45,7 @@ Two geometry routes::
      NEW :                stree ------>  CSGFoundry 
                           snd/sn
 
-     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, runs CSGImport creating CSGFoundry
+     ~/opticks/CSG/tests/CSGFoundry_CreateFromSimTest.sh    ## B1 : Loads SSim/stree, uses CSGImport to create and save CSGFoundry
 
 
 Breakpoint debug examples
@@ -3367,6 +3367,161 @@ TODO : REMAINING DEVIATIONS TO CHASE : subNum on compound root nodes AND boundar
            [  15,    4]])
 
     In [1]:                                                                           
+
+
+
+DONE : added subNum/subOffset to compound root nodes
+------------------------------------------------------
+
+::
+
+    275     if(CSG::IsCompound(root->typecode()))
+    276     {
+    277         assert( numParts > 1 );
+    278         root->setSubNum( numParts );
+    279         root->setSubOffset( 0 );
+    280         // THESE NEED REVISIT WHEN ADDING list-nodes SUPPORT
+    281     }
+    282 
+
+
+WIP : boundary is only remaining deviant
+-------------------------------------------
+
+U4Tree.h the implicits are enabled by default::
+
+     108     // disable the below with settings with by defining the below envvar
+     109     static constexpr const char* __DISABLE_OSUR_IMPLICIT = "U4Tree__DISABLE_OSUR_IMPLICIT" ;
+     110     static constexpr const char* __DISABLE_ISUR_IMPLICIT = "U4Tree__DISABLE_ISUR_IMPLICIT" ;
+     111     bool                                        enable_osur ;
+     112     bool                                        enable_isur ;
+     113 
+
+
+Confirmed that the below gets A/B match::
+
+   export U4Tree__DISABLE_OSUR_IMPLICIT=1 
+
+::
+
+    np.all( a.nbd == b.nbd )  # node boundary 
+    True
+
+Of course cannot leave like that as need the OSUR implicits for Geant4 matching::
+
+    In [12]: len( A.SSim.stree.standard.bnd_names )
+    Out[12]: 124
+
+    In [19]: len( A.SSim.extra.GGeo.bnd_names )
+    Out[19]: 43
+
+    In [13]: len( B.SSim.stree.standard.bnd_names )
+    Out[13]: 43
+
+
+
+TODO : BND NAME DIFF, COULD DUPLICATE SKIPPING POINTLESS ISUR IN A TO MATCH THIS ?
+------------------------------------------------------------------------------------
+
+B side skips pointless ISUR from NoRINDEX absorbers. There will be no photons
+coming out of the metal so the ISUR are pointless. 
+
+::
+
+    In [3]: an = A.SSim.extra.GGeo.bnd_names
+
+    In [4]: bn = B.SSim.stree.standard.bnd_names
+
+    In [5]: w_bnd_names = np.where( an != bn )[0]
+
+    In [6]: w_bnd_names
+    Out[6]: array([21, 22, 26, 29, 30, 31, 33, 34, 38])
+
+    In [7]: np.c_[an[w_bnd_names],bn[w_bnd_names]]
+    Out[7]:
+    array([['Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel', 'Water/StrutAcrylicOpSurface//StrutSteel'],
+           ['Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel', 'Water/Strut2AcrylicOpSurface//StrutSteel'],
+           ['Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel', 'Water/HamamatsuMaskOpticalSurface//CDReflectorSteel'],
+           ['Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel', 'Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface//Steel'],
+           ['Vacuum/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+            'Vacuum/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf//Steel'],
+           ['Water/NNVTMaskOpticalSurface/NNVTMaskOpticalSurface/CDReflectorSteel', 'Water/NNVTMaskOpticalSurface//CDReflectorSteel'],
+           ['Vacuum/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel', 'Vacuum/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf//Steel'],
+           ['Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel', 'Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface//Steel'],
+           ['Water/Steel_surface/Steel_surface/Steel', 'Water/Steel_surface//Steel']], dtype='<U122')
+
+
+
+TODO : Compare implicit in old and new, work out how to add osur implicits to old
+
+::
+
+    epsilon:opticks blyth$ opticks-fl RINDEX_NoRINDEX
+    ./extg4/X4PhysicalVolume.cc
+    ./sysrap/sstandard.h
+    ./sysrap/S4.h
+    ./sysrap/SBnd.h
+    ./ggeo/GSurfaceLib.hh
+    ./ggeo/GSurfaceLib.cc
+    ./u4/U4TreeBorder.h
+
+
+X4PhysicalVolume::convertImplicitSurfaces_r
+--------------------------------------------
+
+
+Enabling OSUR implicits in old GGeo workflow catching too many, and 
+causing very slow convert. 
+
+WIP : work out why so many ? New workflow doesnt get that many. 
+
+Start by saving the names in X4PhysicalVolume::convertSurfaces::
+
+     685     const G4VPhysicalVolume* pv = m_top ;
+     686     int depth = 0 ;
+     687     LOG(LEVEL) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
+     688     LOG(info) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
+     689     convertImplicitSurfaces_r(pv, depth);
+     690     num_surf1 = m_slib->getNumSurfaces() ;
+     691 
+     692     bool surfname_debug = true ;
+     693     if( surfname_debug )
+     694     {
+     695         std::vector<std::string> surfnames ;
+     696         m_slib->collectBorderSurfaceNames(surfnames);
+     697         NP::WriteNames("/tmp/X4PhysicalVolume__convertSurfaces_surfnames.txt", surfnames) ;
+     698     }
+     699 
+
+
+
+Getting so many due to the 3inch PMT /tmp/X4PhysicalVolume__convertSurfaces_surfnames.txt::
+
+    94041 PMT_3inch_log_phys0x72ff8e0
+    94042 PMT_3inch_cntr_phys0x6900c30
+    94043 PMT_3inch_log_phys0x72ff9e0
+    94044 PMT_3inch_cntr_phys0x6900c30
+    94045 PMT_3inch_log_phys0x72ffae0
+    94046 PMT_3inch_cntr_phys0x6900c30
+    94047 PMT_3inch_log_phys0x72ffbe0
+    94048 PMT_3inch_cntr_phys0x6900c30
+    94049 PMT_3inch_log_phys0x72ffce0
+    94050 PMT_3inch_cntr_phys0x6900c30
+    94051 PMT_3inch_log_phys0x72ffde0
+    94052 PMT_3inch_cntr_phys0x6900c30
+    94053 PMT_3inch_log_phys0x72ffee0
+    94054 PMT_3inch_cntr_phys0x6900c30
+
+
+More than half from PMT_3inch::
+
+    epsilon:u4 blyth$ grep PMT_3inch /tmp/X4PhysicalVolume__convertSurfaces_surfnames.txt | wc -l 
+       51208
+
+    epsilon:u4 blyth$ cat /tmp/X4PhysicalVolume__convertSurfaces_surfnames.txt | wc -l 
+       94276
+
+
 
 
 

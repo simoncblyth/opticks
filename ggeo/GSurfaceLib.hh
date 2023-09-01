@@ -227,10 +227,13 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
 
 
        GBorderSurface*     findBorderSurface(const char* pv1, const char* pv2) const ;
+       void                collectBorderSurfaceNames( std::vector<std::string>& names ) const ; 
+
+
        void                dumpRawSkinSurface(const char* name) const ;
        void                dumpRawBorderSurface(const char* name) const ;
 
-       void                addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 ); 
+       void                addImplicitBorderSurface( const char* prefix, const char* pv1, const char* pv2 ); 
        unsigned            getNumImplicitBorderSurface() const ; 
 
    private:

@@ -27,6 +27,8 @@ export SSim__stree_level=0
 #export sn__uncoincide_dump_lvid=107 
 export sn__uncoincide_dump_lvid=106
 
+
+#export U4Tree__DISABLE_OSUR_IMPLICIT=1   ## TEMPORAILY TO SEE IF OSUR EXPLAINS ALL BOUNDARY DEVIATION
 #export U4Polycone__DISABLE_NUDGE=1 
 
 

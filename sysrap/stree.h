@@ -3265,6 +3265,16 @@ inline int stree::num_material() const
     return mtname.size();  
 }
 
+/**
+stree::add_surface
+--------------------
+
+If the name is already present in the suname list 
+just returns the 0-based index otherwise add to suname 
+and return the new index. 
+
+**/
+
 inline int stree::add_surface( const char* name )
 {
     int idx = -1 ; 
