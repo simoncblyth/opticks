@@ -427,6 +427,9 @@ set(HEADERS
 
     SNameOrder.h
     S4.h 
+    S4Surface.h 
+    S4TreeBorder.h
+
     S4RandomMonitor.h
     S4RandomArray.h
 

@@ -35,7 +35,7 @@
 
 GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, char mode )
 {
-    const char* name = X4::Name( src ); 
+    const char* name = X4::ShortName( src ); 
     size_t index = X4::GetOpticksIndex( src ) ;  
 
     G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
@@ -58,7 +58,8 @@ GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, cha
     // those two names are the same when running live, as is standard 
     */
 
-    dst->setSkinSurface(  X4::BaseNameAsis(lv) ) ; 
+    //dst->setSkinSurface(  X4::BaseNameAsis(lv) ) ; 
+    dst->setSkinSurface(  X4::ShortName(lv) ) ; 
     dst->setSkinSurfaceLV( (void*)lv ); 
 
 

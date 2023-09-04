@@ -153,7 +153,7 @@ inline U4TreeBorder::U4TreeBorder(
 }
 
 
-std::string U4TreeBorder::desc() const 
+inline std::string U4TreeBorder::desc() const 
 {
     std::stringstream ss ; 
     ss << "U4TreeBorder::desc" << std::endl 
@@ -167,7 +167,7 @@ std::string U4TreeBorder::desc() const
     return str ; 
 }
 
-bool U4TreeBorder::is_flagged() const 
+inline bool U4TreeBorder::is_flagged() const 
 {
     return _isolid && flagged_isolid && strcmp(_isolid, flagged_isolid ) == 0 ;  
 }

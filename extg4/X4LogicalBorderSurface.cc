@@ -40,8 +40,9 @@ const plog::Severity X4LogicalBorderSurface::LEVEL = SLOG::EnvLevel("X4LogicalBo
 
 GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src, char mode)
 {
-    const char* name = X4::Name( src ); 
-    size_t index = X4::GetOpticksIndex( src ) ;  
+    //const char* name = X4::Name( src ); 
+    const char* name = X4::ShortName( src ); 
+    size_t index = X4::GetOpticksIndex( src ) ;   // COULD BE PROBLEM WITH IMPLICITS ?
 
     G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
     assert( os );
@@ -57,7 +58,7 @@ GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* sr
     const G4VPhysicalVolume* pv2 = src->GetVolume2(); 
     assert( pv1 && pv2 ) ; 
 
-    dst->setBorderSurface( X4::Name(pv1), X4::Name(pv2) );   
+    dst->setBorderSurface( X4::ShortName(pv1), X4::ShortName(pv2) );   
 
     LOG(LEVEL) << name << " is_sensor " << dst->isSensor() ; 
 

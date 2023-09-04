@@ -577,6 +577,9 @@ Use same names as U4TreeBorder::U4TreeBorder for sanity::
 
 
 
+Issue : Using full name with pointer suffix leads to far too many OSUR slowing the conversion. 
+
+Try to switch from X4::Name to X4::ShortName
 
 
 **/
@@ -588,7 +591,8 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
     const G4String& parent_mtName = parent_mt->GetName(); 
 
     G4MaterialPropertiesTable* parent_mpt = parent_mt->GetMaterialPropertiesTable();
-    const G4MaterialPropertyVector* parent_rindex = parent_mpt ? parent_mpt->GetProperty(kRINDEX) : nullptr ;     // WHAT: cannot do this with const mpt 
+    const G4MaterialPropertyVector* parent_rindex = parent_mpt ? parent_mpt->GetProperty(kRINDEX) : nullptr ;     
+    // WHAT: cannot do this with const mpt 
 
     for (size_t i=0 ; i < size_t(parent_lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
     {
@@ -603,10 +607,14 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         bool implicit_osur   = daughter_rindex == nullptr && parent_rindex != nullptr ;   // ingoing photons  
         bool implicit_isur   = daughter_rindex != nullptr && parent_rindex == nullptr ;   // outgoing photons [former RINDEX_NoRINDEX]
 
-        const char* daughter_pvn = X4::Name( daughter_pv ) ; // pv1
-        const char* parent_pvn   = X4::Name( parent_pv ) ;   // pv2
+        //const char* daughter_pvn = X4::Name( daughter_pv ) ; // pv1
+        //const char* parent_pvn   = X4::Name( parent_pv ) ;   // pv2
+        const char* daughter_pvn = X4::ShortName( daughter_pv ) ; // pv1
+        const char* parent_pvn   = X4::ShortName( parent_pv ) ;   // pv2
+        bool flagged_material_pair = parent_mtName.compare("Air")==0 && daughter_mtName.compare("Steel")==0 ; 
 
-        LOG(LEVEL)
+        LOG_IF(info, flagged_material_pair)
+            << " flagged_material_pair " << ( flagged_material_pair ? "YES" : "NO " )
             << " parent_mtName " << parent_mtName
             << " daughter_mtName " << daughter_mtName
             << " daughter_pvn " << std::setw(30) << daughter_pvn
@@ -618,31 +626,30 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         if(implicit_isur && m_enable_isur)
         {
             GBorderSurface* outgoing_bs = m_slib->findBorderSurface(daughter_pvn, parent_pvn);  
-            LOG(LEVEL) 
-                << " outgoing_bs " << ( outgoing_bs != nullptr ? "YES" : "NO" )
-                <<  ( outgoing_bs ? " preexisting-outgoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
-                ;
-
             if( outgoing_bs == nullptr )
             {
+                LOG(info) 
+                    << " outgoing_bs " << ( outgoing_bs != nullptr ? "YES" : "NO" )
+                    <<  ( outgoing_bs ? " preexisting-outgoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
+                    ;
+
                 m_slib->addImplicitBorderSurface( Implicit_RINDEX_NoRINDEX, daughter_pvn, parent_pvn); 
+                // Q: WHERE DOES THE BOUNDARY THAT USES THIS IMPLICIT GET SET ? 
+                // A: See X4PhysicalVolume::convertNodes X4PhysicalVolume::addBoundary
             }
         } 
         else if( implicit_osur && m_enable_osur )
         {
-            // THIS LOOKS TO BE VERY SLOW : PRESUMABLY THE REASON WAS DISABLED 
             GBorderSurface* ingoing_bs = m_slib->findBorderSurface(parent_pvn, daughter_pvn);  
-            LOG(LEVEL) 
-                << " ingoing_bs " << ( ingoing_bs != nullptr ? "YES" : "NO" )
-                <<  ( ingoing_bs ? " preexisting-ingoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
-                ;
-
             if( ingoing_bs == nullptr )
             {
+                LOG(info) 
+                    << " ingoing_bs " << ( ingoing_bs != nullptr ? "YES" : "NO" )
+                    <<  ( ingoing_bs ? " preexisting-ingoing-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
+                    ;
                 m_slib->addImplicitBorderSurface( Implicit_RINDEX_NoRINDEX, parent_pvn, daughter_pvn); 
             }
         }
-
         convertImplicitSurfaces_r( daughter_pv , depth + 1 );
     }
 }
@@ -688,7 +695,12 @@ void X4PhysicalVolume::convertSurfaces()
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     LOG(LEVEL) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
-    LOG(info) << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 ;
+    LOG(info) 
+        << "[convertImplicitSurfaces_r num_surf1 " << num_surf1 
+        << " m_enable_osur " << ( m_enable_osur  ? "YES" : "NO " )
+        << " m_enable_isur " << ( m_enable_isur  ? "YES" : "NO " )
+        ; 
+
     convertImplicitSurfaces_r(pv, depth);
     num_surf1 = m_slib->getNumSurfaces() ; 
 
@@ -920,8 +932,13 @@ GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* c
 
 GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const 
 {
-    const char* pv1 = a ? X4::Name( a ) : nullptr  ; 
-    const char* pv2 = b ? X4::Name( b ) : nullptr ; 
+
+    //const char* pv1 = a ? X4::Name( a ) : nullptr  ; 
+    //const char* pv2 = b ? X4::Name( b ) : nullptr ; 
+
+    const char* pv1 = a ? X4::ShortName( a ) : nullptr  ; 
+    const char* pv2 = b ? X4::ShortName( b ) : nullptr ; 
+
     GBorderSurface* bs =  nullptr ; 
     if( pv1 != nullptr && pv2 != nullptr)
     {

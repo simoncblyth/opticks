@@ -1,8 +1,12 @@
 #pragma once
 
 /**
-SLabelCache
+SLabelCache.hh
 ===============
+
+Used from X4::MakeSurfaceIndexCache to 
+create cache of surface void* pointers and 
+an integer index. 
 
 **/
 
@@ -32,6 +36,15 @@ inline void SLabelCache<T>::add(const void* obj, T label)
 {
     cache[obj] = label ; 
 }
+
+/**
+SLabelCache::find
+-------------------
+
+Returns the label associated with the obj by SLabelCache::add 
+
+**/
+
 template <typename T>
 inline T SLabelCache<T>::find(const void* obj)
 {
