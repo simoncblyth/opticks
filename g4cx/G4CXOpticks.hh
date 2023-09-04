@@ -18,7 +18,10 @@ struct U4Tree ;
 struct U4SensorIdentifier ; 
 class G4VPhysicalVolume ;  
 
+#ifdef WITH_GGEO
 class  GGeo ; 
+#endif
+
 struct CSGFoundry ; 
 struct CSGOptiX ; 
 struct SSim ; 
@@ -51,7 +54,9 @@ struct G4CX_API G4CXOpticks
     SSim*                    sim ; 
     const U4Tree*            tr ;
     const G4VPhysicalVolume* wd ; 
+#ifdef WITH_GGEO
     GGeo*                    gg ;
+#endif
     CSGFoundry*              fd ; 
     CSGOptiX*                cx ; 
     QSim*                    qs ; 
@@ -71,7 +76,9 @@ private:
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
+#ifdef WITH_GGEO
     void setGeometry(GGeo* gg); 
+#endif
     static const char* setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
     void setGeometry_(CSGFoundry* fd); 

@@ -34,11 +34,13 @@
 #endif
 
 
+
+#ifdef WITH_GGEO
 // OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
 #include "Opticks.hh"
 #include "X4Geo.hh"
 #include "GGeo.hh"
-
+#endif
 
 
 const plog::Severity G4CXOpticks::LEVEL = SLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
@@ -107,7 +109,9 @@ G4CXOpticks::G4CXOpticks()
     sim(SSim::CreateOrReuse()),   
     tr(nullptr),
     wd(nullptr),
+#ifdef WITH_GGEO
     gg(nullptr),
+#endif
     fd(nullptr), 
     cx(nullptr),
     qs(nullptr),
@@ -142,7 +146,12 @@ std::string G4CXOpticks::desc() const
        << " sim " << ( sim ? "Y" : "N" )
        << " tr " << ( tr ? "Y" : "N" ) 
        << " wd " << ( wd ? "Y" : "N" )
+#ifdef WITH_GGEO
+       << " WITH_GGEO "
        << " gg " << ( gg ? "Y" : "N" )
+#else
+       << " NOT:WITH_GGEO "
+#endif
        << " fd " << ( fd ? "Y" : "N" )
        << " cx " << ( cx ? "Y" : "N" )
        << " qs " << ( qs ? "Y" : "N" )
@@ -244,11 +253,7 @@ A: YES, stree.h is already playing a vital role as *tree* member of CSG_GGeo/CSG
    into the instances
 
 
-TODO: ELIMINATE GGeo, CAUTION PARALLEL DEV IN THE BELOW (CONSOLIDATE THEM)
-
-1. CSG/tests/CSG_stree_Convert.h, fd = CSG_stree_Convert::Translate( st );  
-2. CSG/CSGImport 
- 
+WIP : PLACE GGEO BEHIND WITH_GGEO
 
 **/
 
@@ -259,19 +264,26 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     assert(world); 
     wd = world ;
 
-    assert(sim && "sim instance should have been created in ctor" ); 
-    stree* st = sim->get_tree(); 
-
-    tr = U4Tree::Create(st, world, SensorIdentifier ) ;
-    LOG(info) << "Completed U4Tree::Create " ; 
-
+#ifdef WITH_GGEO
     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
     Opticks::Configure("--gparts_transform_offset --allownokey" );  
     GGeo* gg_ = X4Geo::Translate(wd) ; 
     LOG(info) << "Completed X4Geo::Translate " ; 
 
     setGeometry(gg_); 
+#else
+    assert(sim && "sim instance should have been created in ctor" ); 
+    stree* st = sim->get_tree(); 
+
+    tr = U4Tree::Create(st, world, SensorIdentifier ) ;
+    LOG(info) << "Completed U4Tree::Create " ; 
+
+    CSGFoundry* fd_ = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE  
+    setGeometry(fd_); 
+#endif
 }
+
+#ifdef WITH_GGEO
 void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
@@ -280,6 +292,7 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
 }
+#endif
 
 /**
 NOTE THE TWO STEP::
@@ -565,6 +578,7 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );  // world 
     if(fd) fd->save(dir) ; 
 
+#ifdef WITH_GGEO
     if(gg)
     {
         if(saveGeometry_saveGGeo)
@@ -579,6 +593,8 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
                ; 
         }
     }
+#endif
+
 
     if(cx) 
     {

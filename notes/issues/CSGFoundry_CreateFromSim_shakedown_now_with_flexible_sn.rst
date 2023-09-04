@@ -3522,6 +3522,214 @@ More than half from PMT_3inch::
        94276
 
 
+The new workflow border surface identity is pointer based. 
+But old workflow is pv name based. 
+
+
+::
+
+    In [6]: np.c_[B.SSim.stree.standard.bnd_names]                                            
+       ...
+
+       ['Vacuum/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf//Steel'],
+       ['Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface//Steel'],
+       ['Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum'],
+       ['Pyrex//PMT_3inch_absorb_logsurf1/Vacuum'],
+       ['Water/Implicit_RINDEX_NoRINDEX_PMT_3inch_log_phys_PMT_3inch_cntr_phys//Steel'],
+       ['Water///LS'],
+       ['Water/Steel_surface//Steel'],
+       ['vetoWater///Water'],
+       ['Pyrex///Pyrex'],
+       ['Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum'],
+       ['Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum']], dtype='<U122')
 
 
 
+
+Investigate boundary discrepancy
+-----------------------------------
+
+A side (old workflow)  missing lots of OSUR implicits unexpectedly.::
+
+
+    In [1]: an = A.SSim.extra.GGeo.bnd_names
+
+    In [2]: bn = B.SSim.stree.standard.bnd_names
+
+
+    In [7]: set(bn)-set(an)
+    Out[7]:
+    {'Air/Implicit_RINDEX_NoRINDEX_lUpperChimney_phys_pUpperChimneySteel//Steel',
+     'Air/Implicit_RINDEX_NoRINDEX_lUpperChimney_phys_pUpperChimneyTyvek//Tyvek',
+     'Air/Implicit_RINDEX_NoRINDEX_pExpHall_pPoolCover//Steel',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_0_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_1_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_2_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_0_ff__pPanel_3_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_0_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_1_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_2_f_//Aluminium',
+     'Air/Implicit_RINDEX_NoRINDEX_pPlane_1_ff__pPanel_3_f_//Aluminium',
+     'Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air',
+     'Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air',
+     'Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining/vetoWater',
+     'Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface//Steel',
+     'Vacuum/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf//Steel',
+     'Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface//Steel',
+     'Vacuum/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf//Steel',
+     'Water/HamamatsuMaskOpticalSurface//CDReflectorSteel',
+     'Water/Implicit_RINDEX_NoRINDEX_PMT_3inch_log_phys_PMT_3inch_cntr_phys//Steel',
+     'Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lSteel_phys//Steel',
+     'Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lUpper_phys//Steel',
+     'Water/NNVTMaskOpticalSurface//CDReflectorSteel',
+     'Water/Steel_surface//Steel',
+     'Water/Strut2AcrylicOpSurface//StrutSteel',
+     'Water/StrutAcrylicOpSurface//StrutSteel',
+     'vetoWater/Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLb1.bt02_HBeam_phys//LatticedShellSteel',
+     'vetoWater/Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLb1.bt05_HBeam_phys//LatticedShellSteel',
+     'vetoWater/Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLb1.bt06_HBeam_phys//LatticedShellSteel',
+     'vetoWater/Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLb1.bt07_HBeam_phys//LatticedShellSteel',
+     'vetoWater/Implicit_RINDEX_NoRINDEX_pOuterWaterPool_GLb1.bt08_HBeam_phys//LatticedShellSteel',
+
+
+
+HMM: OLD WORKFLOW IS LOTS MORE INVOLVED THAN NEW::
+
+     951 GItemList* GBndLib::createNames()
+     952 {
+     953     unsigned int ni = getNumBnd();
+     954     GItemList* names = new GItemList(getType());
+     955     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
+     956     {
+     957         const guint4& bnd = m_bnd[i] ;
+     958         names->add(shortname(bnd).c_str());
+     959     }
+     960     return names ;
+     961 }
+
+
+     622 std::string GBndLib::shortname(unsigned boundary) const
+     623 {
+     624     guint4 bnd = getBnd(boundary);
+     625     return shortname(bnd);
+     626 }
+     627 
+     628 
+     629 std::string GBndLib::shortname(const guint4& bnd) const
+     630 {
+     631     std::stringstream ss ;
+     632     ss
+     633        << (bnd[OMAT] == UNSET ? "OMAT-unset-error" : m_mlib->getName(bnd[OMAT]))
+     634        << "/"
+     635        << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR]))
+     636        << "/"
+     637        << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR]))
+     638        << "/"
+     639        << (bnd[IMAT] == UNSET ? "IMAT-unset-error" : m_mlib->getName(bnd[IMAT]))
+     640        ;
+     641     return ss.str();
+     642 }
+
+
+
+Ingredients for adding old workflow implicits.. need to add surface and reference int 
+by minting an index thats collected into GBndLib::
+
+
+    927 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_sele     ct )
+    1928 {
+    1929 #ifdef X4_PROFILE
+    1930     float t00 = BTimeStamp::RealTime();
+    1931 #endif
+    1932   
+    1933     // record copynumber in GVolume, as thats one way to handle pmtid
+    1934     const G4PVPlacement* placement = dynamic_cast<const G4PVPlacement*>(pv);
+    1935     assert(placement);
+    1936     G4int copyNumber = placement->GetCopyNo() ;
+    1937 
+    1938     X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
+    1939 
+    1940     unsigned boundary = addBoundary( pv, pv_p );
+    1941     std::string boundaryName = m_blib->shortname(boundary);
+    1942     int materialIdx = m_blib->getInnerMaterial(boundary);
+
+
+
+
+Making sure boundary surface uses X4::ShortName 
+------------------------------------------------
+
+::
+
+    In [1]: an = A.SSim.extra.GGeo.bnd_names
+
+    In [2]: bn = B.SSim.stree.standard.bnd_names
+
+    In [3]: an.shape
+    Out[3]: (132,)
+
+    In [4]: bn.shape
+    Out[4]: (124,)
+
+    In [5]: np.c_[an]                                        
+
+::
+
+    In [7]: set(an)-set(bn)
+    Out[7]: 
+    {'Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_dynode_tube_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_grid_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_inner_edge_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_inner_ring_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_outer_edge_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_HamamatsuR12860_PMT_20inch_inner_phys_HamamatsuR12860_PMT_20inch_shield_phy/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_edge_phy/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_mcp_phy/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/Implicit_RINDEX_NoRINDEX_NNVTMCPPMT_PMT_20inch_inner_phys_NNVTMCPPMT_PMT_20inch_tube_phy/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Steel',
+     'Water/Implicit_RINDEX_NoRINDEX_lLowerChimney_phys_pLowerChimneySteel/Steel_surface/Steel',
+     'Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lSteel2_phys/Strut2AcrylicOpSurface/StrutSteel',
+     'Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lSteel_phys/StrutAcrylicOpSurface/StrutSteel',
+     'Water/Implicit_RINDEX_NoRINDEX_pLPMT_Hamamatsu_R12860_HamamatsuR12860pMaskTail//AcrylicMask',
+     'Water/Implicit_RINDEX_NoRINDEX_pLPMT_Hamamatsu_R12860_HamamatsuR12860pMaskTail/HamamatsuMaskOpticalSurface/CDReflectorSteel',
+     'Water/Implicit_RINDEX_NoRINDEX_pLPMT_NNVT_MCPPMT_NNVTMCPPMTpMaskTail//AcrylicMask',
+     'Water/Implicit_RINDEX_NoRINDEX_pLPMT_NNVT_MCPPMT_NNVTMCPPMTpMaskTail/NNVTMaskOpticalSurface/CDReflectorSteel'}
+
+    In [8]: set(bn)-set(an)
+    Out[8]: 
+    {'Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface//Steel',
+     'Vacuum/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf//Steel',
+     'Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface//Steel',
+     'Vacuum/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf//Steel',
+     'Water///AcrylicMask',
+     'Water/HamamatsuMaskOpticalSurface//CDReflectorSteel',
+     'Water/NNVTMaskOpticalSurface//CDReflectorSteel',
+     'Water/Steel_surface//Steel',
+     'Water/Strut2AcrylicOpSurface//StrutSteel',
+     'Water/StrutAcrylicOpSurface//StrutSteel'}
+
+
+Looks like A is now adding implicits when there is prexisting surface. 
+
+* X4LogicalBorderSurface::Convert was using X4::Name not X4::ShortName 
+
+
+HMM: using an index that doesnt get into GBndLib
+
+
+::
+
+    IndexError                                Traceback (most recent call last)
+    ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.py in <module>
+         14 
+         15     bn = cf.sim.stree.standard.bnd_names
+    ---> 16     l_bnd = bn[u_bnd]
+         17 
+         18     abn = cf.sim.stree.standard.bnd_names
+
+    IndexError: index 124 is out of bounds for axis 0 with size 124
+
+
+
+CONCLUDED TOO MUCH EFFORT TO BRING OSUR IMPLICITS TO THE OLD WORKFLOW : LEAPING TO NEW WORKFLOW

@@ -69,6 +69,8 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 #export s_csg_level=2 
 #export sn__level=2
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1
+export X4PhysicalVolume__ENABLE_OSUR_IMPLICIT=1
+
 
 loglevels(){
    export Dummy=INFO
