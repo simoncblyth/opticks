@@ -87,10 +87,10 @@ export nnvt_UsePMTNaturalGeometry=$version
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
 #geomlist=nnvtLogicalPMT
 #geomlist=hamaLogicalPMT
-#geomlist=tub3LogicalPMT
+#geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100 
 
 #geomlist=hmskLogicMaskVirtual
-geomlist=nmskLogicMaskVirtual
+geomlist=nmskLogicMaskVirtual   # LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
 
 export FewPMT_GEOMList=$geomlist
 
@@ -98,7 +98,8 @@ export FewPMT_GEOMList=$geomlist
 delta=1
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
-export U4Tree__DISABLE_OSUR_IMPLICIT=1
+# HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 
+#export U4Tree__DISABLE_OSUR_IMPLICIT=1
 
 
 vars="BASH_SOURCE VERSION version_desc POM pom_desc GEOM FewPMT_GEOMList LAYOUT "

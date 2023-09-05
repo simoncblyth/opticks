@@ -404,6 +404,20 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
 }
 
 
+/**
+_QSim_reflect_generate
+-----------------------
+
+::
+
+    q0 : initial mom
+    q1 : 
+    q2 :
+    q3 : initial pol 
+
+
+**/
+
 
 __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type )
 {
@@ -426,21 +440,11 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
 
     switch(type)
     {
-        //case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx, tagr) ;  break ;  
-        //case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, idx) ;  break ;  
         case REFLECT_DIFFUSE:   sim->reflect_diffuse(  rng, ctx) ;  break ;  
         case REFLECT_SPECULAR:  sim->reflect_specular( rng, ctx) ;  break ;  
     }
     photon[idx] = ctx.p ; 
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -473,9 +477,8 @@ __global__ void _QSim_lambertian_direction( qsim* sim, quad* q, unsigned num_qua
     ctx.idx = idx ; 
 
     float3* dir = (float3*)&q[idx].f.x ;  
-    const float orient = -1.f ; 
 
-    sim->lambertian_direction( dir, &dbg->normal, orient, rng, ctx );  
+    sim->lambertian_direction( dir, &dbg->normal, dbg->orient, rng, ctx );  
 
     q[idx].u.w = idx ; 
 }

@@ -115,6 +115,14 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         pos=0,0,-50
         mom=0,0,-1
 
+
+    elif [ "$CHECK" == "rain_down_100" ]; then
+
+        ttype=line
+        radius=100    
+        pos=0,0,-100
+        mom=0,0,-1
+
     elif [ "$CHECK" == "rain_dynode_diag" ]; then
 
         ttype=line

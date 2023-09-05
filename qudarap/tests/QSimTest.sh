@@ -19,6 +19,9 @@ QSimTest.sh
 EOU
 }
 
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+cd $SDIR
+
 bin=QSimTest 
 defarg=run_ana
 
@@ -33,7 +36,6 @@ if [ -n "$BP" ]; then
 fi 
 
 arg=${1:-$defarg}
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 source $HOME/.opticks/GEOM/GEOM.sh
 msg="=== $BASH_SOURCE :"
@@ -71,10 +73,10 @@ msg="=== $BASH_SOURCE :"
 #test=random_direction_marsaglia
 #test=lambertian_direction
 #test=reflect_diffuse
-#test=reflect_specular
+test=reflect_specular
 #test=propagate_at_surface
 
-test=fake_propagate
+#test=fake_propagate
 #test=gentorch
 
 M1=1000000
@@ -147,6 +149,15 @@ loglevels()
 loglevels
 
 
+export SPRD_BND=$(cat << EOV
+Water///Water
+Water///Water
+Water///Water
+Water///Water
+EOV
+)
+
+
 source fill_state.sh 
 source ephoton.sh    # branching on TEST inside ephoton.sh 
 source eprd.sh
@@ -206,7 +217,9 @@ if [ "${arg/ana}" != "$arg" ]; then
     if [ -f "$script" ]; then
 
         #export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
-        export FOLD=$EBASE
+        #export FOLD=$EBASE
+        export FOLD="/tmp/$USER/opticks/$TEST"
+        # TODO: unify the layout if the test outputs 
 
         export EYE=-1,-1,1 
         export LOOK=0,0,0

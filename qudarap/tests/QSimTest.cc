@@ -83,6 +83,7 @@ struct QSimTest
     void fake_propagate(); 
     void quad_launch_generate(); 
 
+
 }; 
 
 /**
@@ -518,6 +519,8 @@ void QSimTest::quad_launch_generate()
     q->save(dir, "q.npy"); 
 }
 
+
+
 /**
 QSimTest::photon_launch_mutate
 --------------------------------
@@ -665,9 +668,10 @@ void QSimTest::main()
         case RAYLEIGH_SCATTER_ALIGN: 
         case PROPAGATE_AT_BOUNDARY:   
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  
+                                                 assert(0) ; break ;  // TODO: review these tests and revive them 
         case REFLECT_DIFFUSE:
         case REFLECT_SPECULAR:
-                                                 assert(0) ; break ; 
+                                                 photon_launch_generate()  ; break ; 
         case HEMISPHERE_S_POLARIZED:   
         case HEMISPHERE_P_POLARIZED:  
         case HEMISPHERE_X_POLARIZED:   

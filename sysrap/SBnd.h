@@ -50,6 +50,8 @@ struct SBnd
 
     int    getBoundaryIndex(const char* spec) const ;
 
+    static const char* getBoundaryIndices_NOTES ; 
+
     void        getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ;
     std::string descBoundaryIndices( const std::vector<int>& bnd_idx ) const ;
 
@@ -153,6 +155,22 @@ inline int SBnd::getBoundaryIndex(const char* spec) const
     return idx ;  
 }
 
+
+inline const char* SBnd::getBoundaryIndices_NOTES = R"(
+SBnd::getBoundaryIndices_NOTES
+--------------------------------
+
+Failure to look up a boundary index indicates the spec string 
+specifies a boundary that is not present within the current geometry.
+For example check the spec is present in the bnd_names.txt of the bnd array 
+be used::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd.npy
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd_names.txt 
+    
+
+)" ; 
+
 inline void SBnd::getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim ) const 
 {
     assert( bnd_idx.size() == 0 ); 
@@ -165,9 +183,14 @@ inline void SBnd::getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd
         const char* spec = bnd[i].c_str(); 
         if(strlen(spec) == 0) continue ;  
         int bidx = getBoundaryIndex(spec); 
-        if( bidx == MISSING ) std::cerr << " i " << i << " invalid spec [" << spec << "]" << std::endl ;      
+        if( bidx == MISSING ) std::cerr 
+            << " SBnd::getBoundaryIndices "
+            << " i " << i << " invalid spec [" << spec << "]" 
+            << std::endl 
+            << getBoundaryIndices_NOTES
+            << std::endl 
+            ;      
         assert( bidx != MISSING ); 
-
         bnd_idx.push_back(bidx) ; 
     }
 }

@@ -244,23 +244,56 @@ arriving at the final one
 **/
 inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx )
 {
+#ifdef DEBUG_PIDX
+    int PIDX = 1 ;  // its static so cannot use base
+    if(ctx.idx == PIDX )
+    {
+        printf("//qsim.lambertian_direction.head idx %d : normal = np.array([%10.5f,%10.5f,%10.5f]) ; orient = %10.5f  \n", 
+            ctx.idx, normal->x, normal->y, normal->z, orient  );  
+    }
+#endif
+
     float ndotv ; 
     int count = 0 ; 
     float u ; 
     do
     {
         count++ ; 
-        random_direction_marsaglia(dir, rng, ctx); 
+        random_direction_marsaglia(dir, rng, ctx); // sets dir to random point on unit sphere 
         ndotv = dot( *dir, *normal )*orient ; 
-        if( ndotv < 0.f )
+        if( ndotv < 0.f )   
         {
             *dir = -1.f*(*dir) ; 
             ndotv = -1.f*ndotv ; 
         } 
+        // when random dir is in opposite hemisphere to oriented normal 
+        // flip the dir into same hemi and ndotv
+
         u = curand_uniform(&rng) ; 
-        //if( ctx.idx == 0u) printf("//qsim.lambertian_direction idx %d count %d  u %10.4f \n", ctx.idx, count, u ); 
+
+#ifdef DEBUG_PIDX
+        if(ctx.idx == PIDX)
+        {
+            printf("//qsim.lambertian_direction.loop idx %d : dir = np.array([%10.5f,%10.5f,%10.5f]) ; count = %d ; ndotv = %10.5f ; u = %10.5f \n", 
+                ctx.idx, dir->x, dir->y, dir->z, count, ndotv, u   );  
+
+        }
+#endif
     } 
     while (!(u < ndotv) && (count < 1024)) ;  
+    // distribution looks pretty similar without the while loop
+
+
+#ifdef DEBUG_PIDX
+    if(ctx.idx == PIDX)
+    {
+        printf("//qsim.lambertian_direction.tail idx %d : dir = np.array([%10.5f,%10.5f,%10.5f]) ; count = %d ; ndotv = %10.5f \n", 
+            ctx.idx, dir->x, dir->y, dir->z, count, ndotv  );  
+
+    }
+#endif
+
+
 }
 
 /**
@@ -268,22 +301,6 @@ qsim::random_direction_marsaglia following G4RandomDirection
 -------------------------------------------------------------
 
 * https://mathworld.wolfram.com/SpherePointPicking.html
-
-Marsaglia (1972) derived an elegant method that consists of picking u and v from independent 
-uniform distributions on (-1,1) and rejecting points for which uu+vv >=1. 
-From the remaining points,
-
-    x=2*u*sqrt(1-(uu+vv))	
-    y=2*v*sqrt(1-(uu+vv))	
-    z=1-2(uu+vv)
-
-Checking normalization, it reduces to 1::
-
-   xx + yy + zz = 
-         4uu (1-(uu+vv)) 
-         4vv (1-(uu+vv)) +
-        1 -4(uu+vv) + 4(uu+vv)(uu+vv)   
-                = 1 
 
 ::
 
@@ -303,6 +320,27 @@ Checking normalization, it reduces to 1::
               |    .      |      .      |
               +--------.--|--.----------+
                           |      
+
+Marsaglia (1972) derived an elegant method that consists of picking u and v from independent 
+uniform distributions on (-1,1) and rejecting points for which uu+vv >=1. 
+So are picking points from within the (u,v) disc. 
+
+For those remaining random points on the 2D (u,v) disc the below (u,v) to (x,y,z) 
+mapping is used to give a 3D position on the unit sphere,
+
+    x=2*u*sqrt(1-(uu+vv))	
+    y=2*v*sqrt(1-(uu+vv))	
+    z=1-2(uu+vv)
+
+Checking normalization, it reduces to 1::
+
+   xx + yy + zz = 
+         4uu (1-(uu+vv)) 
+         4vv (1-(uu+vv)) +
+        1 -4(uu+vv) + 4(uu+vv)(uu+vv)   
+                = 1 
+
+So that means the random 3D (x,y,z) points are on the unit sphere. 
 
 ::
 
@@ -1637,6 +1675,36 @@ qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
     386 }
 
 
+
+
+Orient the normal depending on incident momentum to handle inside/outside
+--------------------------------------------------------------------------
+
+HMM: Geant4 is very flippy with normals whereas Opticks uses fixed 
+geometrical normals that may then need to be oriented for a specfic task, 
+such as diffuse reflection from the shape. 
+
+
+::
+
+        geometrical normal
+         : 
+       \ : /  diffuse reflection from outside in same hemi as geometrical normal : orient 1.f 
+        \:/   incident momentum is against the geometrical normal   dot( old_mom, *normal ) < 0.f 
+       --*------+
+      /         |
+     /          |
+     \          /
+      \ \   /  /   diffuse reflection from inside needs to use a flipped geometrical normal : orient -1.f
+       \ \ /  /    incident moment is with the geometrical normal   dot( old_mom, *normal ) > 0.f 
+        \_*__/
+          :
+          :
+          geometrical normal
+
+
+orient is used to flip the reflection normal back against the incident direction
+
 **/
 
 inline QSIM_METHOD void qsim::reflect_diffuse( curandStateXORWOW& rng, sctx& ctx )
@@ -1645,26 +1713,105 @@ inline QSIM_METHOD void qsim::reflect_diffuse( curandStateXORWOW& rng, sctx& ctx
 
     float3 old_mom = p.mom ; 
 
-    const float3* normal = ctx.prd->normal()  ;  
-    const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip  of theGlobalNormal ?
+    const float3* normal = ctx.prd->normal() ;    // geometrical outwards normal 
+
+    //const float orient = -1.f ; // BUG : FIXED ORIENT FLIP CANNOT BE CORRECT 
+    const float orient = dot( old_mom, *normal ) > 0.f ? -1.f : 1.f ; 
+
     lambertian_direction( &p.mom, normal, orient, rng, ctx );
+
 
     float3 facet_normal = normalize( p.mom - old_mom ); 
     const float EdotN = dot( p.pol, facet_normal ); 
     p.pol = -1.f*(p.pol) + 2.f*EdotN*facet_normal ; 
+
+#ifdef DEBUG_PIDX
+    if(ctx.idx == base->pidx)
+    {
+    printf("//qsim.reflect_diffuse idx %d : old_mom = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  old_mom.x, old_mom.y, old_mom.z ) ; 
+
+    printf("//qsim.reflect_diffuse idx %d : normal0 = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  normal->x, normal->y, normal->z ) ; 
+
+    printf("//qsim.reflect_diffuse idx %d : p.mom = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  p.mom.x, p.mom.y, p.mom.z ) ; 
+
+    printf("//qsim.reflect_diffuse idx %d : facet_normal = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  facet_normal.x, facet_normal.y, facet_normal.z ) ; 
+    }
+#endif
+
 }
+
+/**
+qsim::reflect_specular
+-----------------------
+
+TODO: check the fixed orient flip with specular reflections
+from inside and outside
+
+Its not so obvious here because the oriented normal is part of the 
+mom calc so it would be easy to double flip. 
+
+G4OpBoundaryProcess::PostStepDoIt does an early flip of theGlobalNormal
+but the G4Navigator does flips before that too... so Geant4 is too flippy 
+to be helpful. 
+
+**/
 
 inline QSIM_METHOD void qsim::reflect_specular( curandStateXORWOW& rng, sctx& ctx )
 {
     sphoton& p = ctx.p ;  
     const float3* normal = ctx.prd->normal() ;      
-    const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip of theGlobalNormal ?
+
+#ifdef DEBUG_PIDX
+    if(ctx.idx == base->pidx)
+    {
+    printf("//qsim.reflect_specular.head idx %d : normal0 = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  normal->x, normal->y, normal->z ) ; 
+
+    printf("//qsim.reflect_specular.head idx %d : mom0 = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  p.mom.x, p.mom.y, p.mom.z ) ; 
+
+    printf("//qsim.reflect_specular.head idx %d : pol0 = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  p.pol.x, p.pol.y, p.pol.z ) ; 
+    }
+#endif
+
+#ifdef WITH_ORIENT
+    //const float orient = -1.f ;    
+    const float orient = 1.f ;    
+    // because orient appears twice in the below p.mom p.pol calcs 
+    // it being +1.f or -1.f makes no difference
 
     const float PdotN = dot( p.mom, *normal )*orient ; 
-    p.mom = p.mom - 2.f*PdotN*(*normal)*orient ; 
+    p.mom = p.mom - 2.f*PdotN*(*normal)*orient ;  
 
     const float EdotN = dot( p.pol, *normal )*orient ; 
     p.pol = -1.f*(p.pol) + 2.f*EdotN*(*normal)*orient  ; 
+#else
+    // removed orient as does not effect calc, hence confusing and pointless
+    const float PdotN = dot( p.mom, *normal ) ; 
+    p.mom = p.mom - 2.f*PdotN*(*normal) ;  
+
+    const float EdotN = dot( p.pol, *normal ) ; 
+    p.pol = -1.f*(p.pol) + 2.f*EdotN*(*normal)  ; 
+#endif
+
+#ifdef DEBUG_PIDX
+    if(ctx.idx == base->pidx)
+    {
+    printf("//qsim.reflect_specular.tail idx %d : mom1 = np.array([%10.5f,%10.5f,%10.5f]) ; PdotN = %10.5f ; EdotN = %10.5f \n",
+        ctx.idx,  p.mom.x, p.mom.y, p.mom.z, PdotN, EdotN  ) ; 
+
+    printf("//qsim.reflect_specular.tail idx %d : pol1 = np.array([%10.5f,%10.5f,%10.5f]) \n",
+        ctx.idx,  p.pol.x, p.pol.y, p.pol.z ) ; 
+
+    }
+#endif
+
+
 }
 
 /**

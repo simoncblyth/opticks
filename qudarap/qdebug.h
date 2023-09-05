@@ -27,6 +27,7 @@ struct qdebug
     float wavelength ; 
     float cosTheta ; 
     float3 normal ; 
+    float  orient ; 
 
     sstate s ; 
     quad2  prd ; 

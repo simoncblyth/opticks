@@ -36,6 +36,7 @@ qdebug* QDebug::MakeInstance()   // static
     dbg->wavelength = 500.f ; 
     dbg->cosTheta = cosTheta ; 
     qvals( dbg->normal , "DBG_NRM", "0,0,1" ); 
+    dbg->orient = 1.f ;  // orient -1.f flips the normal direction 
    
     // qstate: mocking result of fill_state 
     dbg->s = QState::Make(); 

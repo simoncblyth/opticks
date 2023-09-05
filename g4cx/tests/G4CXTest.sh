@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-G4CXTest.sh 
-================
+G4CXTest.sh : Standalone bi-simulation with G4CXApp::Main
+===========================================================
 
 ::
 
@@ -10,6 +10,11 @@ G4CXTest.sh
     PIDX=552 ~/opticks/g4cx/tests/G4CXTest.sh run ## run with single photon debug 
         
     ~/opticks/g4cx/tests/G4CXTest.sh grab  
+
+
+    PICK=B MODE=2 ~/opticks/g4cx/tests/G4CXTest.sh ana
+         2D (matplotlib) plot Geant4 photon histories
+ 
 
 
     MODE=2 ./G4CXTest.sh ana
@@ -102,7 +107,8 @@ export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 #check=tub3_side_line
 #check=circle_inwards_100
 #check=circle_outwards_1
-check=rain_line_205
+#check=rain_line_205
+check=rain_down_100
 
 export LAYOUT=one_pmt
 export CHECK=${CHECK:-$check} 
@@ -116,16 +122,16 @@ if [ "$storch_FillGenstep_type" == "" ]; then
 fi 
 
 
-
-export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL
-    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
-    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
-    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
-    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
-
-    Pyrex/nnvt_photocathode_mirror_logsurf/nnvt_photocathode_mirror_logsurf/Vacuum
-EOL
-)
+# WITH NEW WORKFLOW THIS NO LONGER DOES ANYTHING 
+#export GBndLib__SENSOR_BOUNDARY_LIST=$(cat << EOL
+#    Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+#    Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/NNVTMCPPMT_PMT_20inch_photocathode_mirror_logsurf/Vacuum
+#    Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+#    Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum
+#
+#    Pyrex/nnvt_photocathode_mirror_logsurf/nnvt_photocathode_mirror_logsurf/Vacuum
+#EOL
+#)
 
 export U4SensorIdentifierDefault__GLOBAL_SENSOR_BOUNDARY_LIST=$(cat << EOL
 

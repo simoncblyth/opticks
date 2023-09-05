@@ -345,6 +345,8 @@ inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
           << std::endl 
           << " FOR EXAMPLE WITH_CHILD CHANGES sysrap/sn.h "
           << std::endl
+          << " ANOTHER POSSIBILITY IS LOADING AN ARRAY WRITTEN BEFORE STRUCT SIZE CHANGES "
+          << std::endl
           ;
 
    assert( expected_sizeof_item ); 

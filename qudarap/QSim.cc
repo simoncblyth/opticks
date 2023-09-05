@@ -829,7 +829,8 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
 
     return q ; 
 }
- 
+
+
 
 
 /**

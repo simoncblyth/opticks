@@ -69,6 +69,9 @@ GEOM tmp
 GEOM scp 
     scp GEOM.sh script to remote
 
+GEOM base
+     change directory to GEOM base directory above all the \$GEOM dir
+
 GEOM top
      change directory to : \$GEOM dir
   
@@ -110,6 +113,7 @@ GEOM(){
 
 
   local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/cf/ss/st/info"
+  local geombase=$HOME/.opticks/GEOM
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
   local ggeo=/tmp/$USER/opticks/GGeo 
@@ -130,6 +134,8 @@ GEOM(){
      cmd="cd $tmp"
   elif [ "$arg" == "scp" ]; then  
      cmd="scp $HOME/$script P:$script"
+  elif [ "$arg" == "base" ]; then  
+     cmd="cd $geombase"
   elif [ "$arg" == "top" ]; then  
      cmd="cd $geomdir"
   elif [ "$arg" == "cf" ]; then  

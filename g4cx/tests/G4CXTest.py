@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
 SEL = int(os.environ.get("SEL","0")) 
+POI = int(os.environ.get("POI","-1")) 
 
 PICK = os.environ.get("PICK","AB")
 AIDX = int(os.environ.get("AIDX","0"))
@@ -80,14 +81,20 @@ if __name__ == '__main__':
 
     #sli="[:]"  allowing everything makes for big tables of low stat histories
     sli="[:15]"
-    at = a.minimal_qtab(sli=sli)  
-    bt = b.minimal_qtab(sli=sli)
+    at = None if a is None else a.minimal_qtab(sli=sli)  
+    bt = None if b is None else b.minimal_qtab(sli=sli)
 
     print("at\n",at)
     print("bt\n",bt)
 
-    ab = SAB(a,b)
-    print(repr(ab))
+    if not a is None and not b is None:
+        ab = SAB(a,b)
+        print(repr(ab))
+    else:
+        ab = None
+    pass
+
+
 
 
     assert PICK in ["A","B","AB","BA", "CF"]
@@ -103,11 +110,17 @@ if __name__ == '__main__':
         ee = []
     pass 
 
-    context = "PICK=%s MODE=%d SEL=%d ./G4CXAppTest.sh ana " % (PICK, MODE, SEL )
+    if len(ee) == 0:
+        log.fatal("set PICK envvar to one of : A,B,AB,BA in order to load SEvt from AFOLD BFOLD " )
+        assert(0)
+    pass
+
+
+    context = "PICK=%s MODE=%d SEL=%d POI=%d ./G4CXAppTest.sh ana " % (PICK, MODE, SEL, POI )
     print(context)
 
-    #hsel = None
-    hsel = "TO BT BT BT SD,TO BT BT BT SA"
+    hsel = None
+    #hsel = "TO BT BT BT SD,TO BT BT BT SA"
     HSEL = os.environ.get("HSEL", hsel)
 
 
@@ -150,7 +163,16 @@ if __name__ == '__main__':
 
         #pp = e.f.inphoton[:,0,:3]
         #pp = e.f.photon[:,0,:3]
-        pp = e.f.record[:,:,0,:3]
+        #pp = e.f.record[:,:,0,:3]
+
+        if POI == -1: 
+            pp = e.f.record[:,:,0,:3]
+        elif POI > -1:
+            pp = e.f.record[:,POI,0,:3]
+        else:
+            pp = None
+        pass   
+
         ww = pp[ew] if not ew is None else None
 
         ppf = pp.reshape(-1,3)
