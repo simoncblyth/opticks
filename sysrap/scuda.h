@@ -54,6 +54,10 @@
 #define M_1_PIf     0.318309886183790671538f
 #endif
 
+#ifndef M_SQRT2f 
+#define M_SQRT2f  1.4142135623730951f
+#endif
+
 
 #if !defined(__CUDACC__)
 

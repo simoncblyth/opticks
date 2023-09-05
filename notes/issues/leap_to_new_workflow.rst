@@ -137,32 +137,7 @@ Possible causes:
 
 * not implemented the SigmaAlpha 
 * ellipsoid normal lack of normalization : COULD BE AN ISSUE, BUT NOT HERE AS ITS FLAT BASE
-
-::
-
-     638 G4ThreeVector
-     639 G4OpBoundaryProcess::GetFacetNormal(const G4ThreeVector& Momentum,
-     640                         const G4ThreeVector&  Normal ) const
-     641 {
-     642         G4ThreeVector FacetNormal;
-     643 
-     644         if (theModel == unified || theModel == LUT || theModel== DAVIS) {
-     645 
-     646            /* This function code alpha to a random value taken from the
-     647            distribution p(alpha) = g(alpha; 0, sigma_alpha)*std::sin(alpha),
-     648            for alpha > 0 and alpha < 90, where g(alpha; 0, sigma_alpha)
-     649            is a gaussian distribution with mean 0 and standard deviation
-     650            sigma_alpha.  */
-     651 
-     652            G4double alpha;
-     653 
-     654            G4double sigma_alpha = 0.0;
-     655            if (OpticalSurface) sigma_alpha = OpticalSurface->GetSigmaAlpha();
-     656 
-     657            if (sigma_alpha == 0.0) return FacetNormal = Normal;
-     658 
-     659            G4double f_max = std::min(1.0,4.*sigma_alpha);
-     660 
+* the largest cause was qsim::reflect_diffuse fixed orient bug : FIXED THAT 
 
 
 
@@ -223,8 +198,171 @@ TODO : Implement SigmaAlpha less diffuse reflection not just Lambertian
 
 
 
+::
+
+     638 G4ThreeVector
+     639 G4OpBoundaryProcess::GetFacetNormal(const G4ThreeVector& Momentum,
+     640                         const G4ThreeVector&  Normal ) const
+     641 {
+     642         G4ThreeVector FacetNormal;
+     643 
+     644         if (theModel == unified || theModel == LUT || theModel== DAVIS) {
+     645 
+     646            /* This function code alpha to a random value taken from the
+     647            distribution p(alpha) = g(alpha; 0, sigma_alpha)*std::sin(alpha),
+     648            for alpha > 0 and alpha < 90, where g(alpha; 0, sigma_alpha)
+     649            is a gaussian distribution with mean 0 and standard deviation
+     650            sigma_alpha.  */
+     651 
+     652            G4double alpha;
+     653 
+     654            G4double sigma_alpha = 0.0;
+     655            if (OpticalSurface) sigma_alpha = OpticalSurface->GetSigmaAlpha();
+     656 
+     657            if (sigma_alpha == 0.0) return FacetNormal = Normal;
+     658 
+     659            G4double f_max = std::min(1.0,4.*sigma_alpha);
+     660 
+     661            G4double phi, SinAlpha, CosAlpha, SinPhi, CosPhi, unit_x, unit_y, unit_z;
+     662            G4ThreeVector tmpNormal;
+     663 
+     664            do {
+     665               do {
+     666                  alpha = G4RandGauss::shoot(0.0,sigma_alpha);
+     667                  // Loop checking, 13-Aug-2015, Peter Gumplinger
+     668               } while (G4UniformRand()*f_max > std::sin(alpha) || alpha >= halfpi );
+     669 
+     670               phi = G4UniformRand()*twopi;
+     671 
+     672               SinAlpha = std::sin(alpha);
+     673               CosAlpha = std::cos(alpha);
+     674               SinPhi = std::sin(phi);
+     675               CosPhi = std::cos(phi);
+     676 
+     677               unit_x = SinAlpha * CosPhi;
+     678               unit_y = SinAlpha * SinPhi;
+     679               unit_z = CosAlpha;
+     680 
+     681               FacetNormal.setX(unit_x);
+     682               FacetNormal.setY(unit_y);
+     683               FacetNormal.setZ(unit_z);
+     684 
+     685               tmpNormal = Normal;
+     686 
+     687               FacetNormal.rotateUz(tmpNormal);
+     688               // Loop checking, 13-Aug-2015, Peter Gumplinger
+     689            } while (Momentum * FacetNormal >= 0.0);
+     690     }
 
 
 
 
+
+
+::
+
+    g4-hh G4RandGauss
+    g4-cls Randomize
+
+::
+
+     50 #include "G4MTRandGamma.hh"
+     51 #include "G4MTRandGauss.hh"
+     52 #include "G4MTRandGaussQ.hh"
+     53 #include "G4MTRandGeneral.hh"
+     54 
+     55 // NOTE: G4RandStat MT-version is missing, but actually currently
+     56 // never used in the G4 source
+     57 //
+     58 #define G4RandFlat G4MTRandFlat
+     59 #define G4RandBit G4MTRandBit
+     60 #define G4RandGamma G4MTRandGamma
+     61 #define G4RandGauss G4MTRandGaussQ
+     62 #define G4RandExponential G4MTRandExponential
+
+
+g4-cls G4MTRandGaussQ::
+
+     68   // Static methods to shoot random values using the static generator
+     69 
+     70   static  inline G4double shoot();
+     71 
+     72   static  inline G4double shoot( G4double mean, G4double stdDev );
+
+
+::
+
+
+     46 G4double G4MTRandGaussQ::shoot()
+     47 {
+     48   CLHEP::HepRandomEngine* anEngine = G4MTHepRandom::getTheEngine();
+     49   return transformQuick (anEngine->flat());
+     50 }
+
+
+     57 G4double G4MTRandGaussQ::shoot(G4double mean, G4double stdDev)
+     58 {
+     59   return shoot()*stdDev + mean;
+     60 }
+
+
+
+    095 // Since all these are this is static to this compilation unit only, the 
+     96 // info is establised a priori and not at each invocation.
+     97 
+     98 // The main data is of course the gaussQTables table; the rest is all 
+     99 // bookkeeping to know what the tables mean.
+    100 
+    101 #define Table0size   250
+    102 #define Table1size  1000
+    103 #define TableSize   (Table0size+Table1size)
+    104 
+    105 #define Table0step  (2.0E-6) 
+    106 #define Table1step  (5.0E-4)
+    107 
+    108 #define Table0scale   (1.0/Table1step)
+    109 
+    110 #define Table0offset 0
+    111 #define Table1offset (Table0size)
+    112 
+    113   // Here comes the big (5K bytes) table, kept in a file ---
+    114 
+    115 static const G4float gaussTables [TableSize] = {
+    116 #include "gaussQTables.cdat"
+    117 }; 
+    118 
+    119 G4double G4MTRandGaussQ::transformQuick (G4double r)                  
+    120 {
+    121   G4double sign = +1.0; // We always compute a negative number of 
+    122                         // sigmas.  For r > 0 we will multiply by
+    123                         // sign = -1 to return a positive number.
+    124   if ( r > .5 ) {
+    125     r = 1-r;
+    126     sign = -1.0;
+    127   }
+    128 
+    129   G4int index;
+    130   G4double  dx;
+    131 
+    132   if ( r >= Table1step ) {
+    133     index = G4int((Table1size<<1) * r); // 1 to Table1size
+    134     if (index == Table1size) return 0.0;
+    135     dx = (Table1size<<1) * r - index;  // fraction of way to next bin
+    136     index += Table1offset-1;
+    137   } else if ( r > Table0step ) {
+
+
+
+
+
+::
+
+    epsilon:tests blyth$ g4-
+    epsilon:tests blyth$ g4-cd
+    epsilon:geant4.10.04.p02 blyth$ find . -name gaussQTables.cdat
+    ./source/externals/clhep/include/CLHEP/Random/gaussQTables.cdat
+    ./source/global/HEPRandom/src/gaussQTables.cdat
+    epsilon:geant4.10.04.p02 blyth$ 
+    epsilon:geant4.10.04.p02 blyth$ diff source/externals/clhep/include/CLHEP/Random/gaussQTables.cdat source/global/HEPRandom/src/gaussQTables.cdat
+    epsilon:geant4.10.04.p02 blyth$ 
 

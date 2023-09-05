@@ -410,10 +410,10 @@ _QSim_reflect_generate
 
 ::
 
-    q0 : initial mom
-    q1 : 
-    q2 :
-    q3 : initial pol 
+    q0 : initial q1 (mom, ?)
+    q1 : final q1   (mom. ?) 
+    q2 : final q2   (pol, wl)
+    q3 : initial q2 (pol, wl)  
 
 
 **/
@@ -432,7 +432,7 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
     ctx.p = dbg->p ;   
 
     quad4& q = (quad4&)ctx.p ; 
-    q.q0.f = q.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
+    q.q0.f = q.q1.f ;   // non-standard record initial q1 (mom) into q0 and initial q2 (pol,wl) into q3
     q.q3.f = q.q2.f ; 
 
     float u_decision_burn = curand_uniform(&rng);   // aligns consumption 
