@@ -73,8 +73,9 @@ msg="=== $BASH_SOURCE :"
 #test=random_direction_marsaglia
 #test=lambertian_direction
 #test=reflect_diffuse
-test=reflect_specular
+#test=reflect_specular
 #test=propagate_at_surface
+test=randgaussq_shoot
 
 #test=fake_propagate
 #test=gentorch
@@ -94,7 +95,9 @@ case $TEST in
     rng_sequence) num=$M1 ;; 
     random_direction_marsaglia) num=$M1 ;; 
     lambertian_direction) num=$M1 ;; 
+    randgaussq_shoot) num=$M1 ;; 
      wavelength*) num=$M1 ;; 
+     randgaussq*) num=$M1 ;; 
   scint_generate) num=$M1 ;;
   cerenkov_generate) num=$M1 ;;
    hemisphere_s_polarized|propagate_at_boundary_s_polarized) num=$M1 ;; 
@@ -129,7 +132,7 @@ random_direction_marsaglia) script=random_direction_marsaglia.py ;;
 
     lambertian_direction)  script=lambertian_direction.py ;; 
          fake_propagate*)  script=fake_propagate.py ;; 
-
+         randgaussq_shoot) script=randgaussq_shoot.py ;; 
                         *) script=generic.py      ;;
 esac
 

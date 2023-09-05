@@ -654,6 +654,26 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 }
 
 
+extern void QSim_RandGaussQ_shoot(  dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* v, unsigned num_v );
+
+NP* QSim::RandGaussQ_shoot(unsigned num_v )
+{
+    const char* label = "QSim::RandGaussQ_shoot/num" ; 
+    configureLaunch(num_v, 1 ); 
+
+    std::cout << "QSim::RandGaussQ_shoot num_v " << num_v << std::endl; 
+
+    NP* v = NP::Make<float>(num_v) ; 
+    float* d_v = QU::device_alloc<float>(num_v, label ); 
+    
+    QSim_RandGaussQ_shoot(numBlocks, threadsPerBlock, d_sim, d_v, num_v );
+
+    cudaDeviceSynchronize();  
+
+    QU::copy_device_to_host_and_free<float>( (float*)v->bytes(), d_v, num_v, label ); 
+
+    return v ; 
+}
 
 
 

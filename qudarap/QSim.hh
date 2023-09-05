@@ -128,6 +128,10 @@ public:
 
 
     NP* scint_wavelength( unsigned num_wavelength, unsigned& hd_factor ); 
+
+    NP* RandGaussQ_shoot(unsigned num_v ); 
+
+
     NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 

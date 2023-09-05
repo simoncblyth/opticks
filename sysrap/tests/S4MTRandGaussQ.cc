@@ -1,6 +1,13 @@
 
 #include <cmath>
 #include "S4MTRandGaussQ.h"
+#include "Randomize.hh"
+
+double S4MTRandGaussQ::shoot()
+{
+    double u = G4UniformRand() ; 
+    return transformQuick(u); 
+}
 
 //
 // Table of errInts, for use with transform(r) and quickTransform(r)

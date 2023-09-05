@@ -68,6 +68,7 @@ struct QSimTest
     void multifilm_lookup_all();
 
     void wavelength() ; 
+    void RandGaussQ_shoot(); 
 
     void dbg_gs_generate(); 
 
@@ -358,6 +359,16 @@ void QSimTest::wavelength()
     w->save( dir, name ); 
 }
 
+
+
+void QSimTest::RandGaussQ_shoot()
+{
+    NP* v = qs->RandGaussQ_shoot(num)  ; 
+    v->save(dir, "RandGaussQ_shoot.npy" ); 
+}
+
+
+
 void QSimTest::dbg_gs_generate()
 {
     NP* p = qs->dbg_gs_generate(num, type); 
@@ -636,6 +647,9 @@ void QSimTest::main()
         case WAVELENGTH_SCINTILLATION:      
         case WAVELENGTH_CERENKOV:           
                                             wavelength()                               ; break ; 
+
+        case RANDGAUSSQ_SHOOT:
+                                            RandGaussQ_shoot()                         ; break ;  
 
         case SCINT_GENERATE:           
         case CERENKOV_GENERATE:             

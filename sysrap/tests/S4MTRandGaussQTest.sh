@@ -24,6 +24,9 @@ cd $SDIR
 
 name=S4MTRandGaussQTest
 
+clhep-
+g4-
+
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
@@ -39,10 +42,14 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
-        S4MTRandGaussQ.cc \
-        -I$HOME/np \
-        -std=c++11 -lstdc++ \
-        -o $bin
+       S4MTRandGaussQ.cc \
+       -I$HOME/np \
+       -I$(clhep-prefix)/include \
+       -I$(g4-prefix)/include/Geant4  \
+       -L$(clhep-prefix)/lib \
+       -lCLHEP \
+       -std=c++11 -lstdc++ \
+       -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 fi
 

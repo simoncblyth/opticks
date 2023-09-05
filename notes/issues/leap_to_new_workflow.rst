@@ -346,9 +346,22 @@ g4-cls G4MTRandGaussQ::
     131 
     132   if ( r >= Table1step ) {
     133     index = G4int((Table1size<<1) * r); // 1 to Table1size
-    134     if (index == Table1size) return 0.0;
+
+    // Table1size << 1   1000 << 1 = 2000 
+    // maximum r is 0.5   at which point get    1000 * 2 * 0.5 = 1000 
+    // halfmax r is 0.25                        1000 * 2 * 0.25 = 500
+
+    134     if (index == Table1size) return 0.0;    
+    // for r = 0.5 return 0.0 
+
     135     dx = (Table1size<<1) * r - index;  // fraction of way to next bin
+
+    // eg r = 0.25 ; index = 500   
+
     136     index += Table1offset-1;
+
+    //   
+
     137   } else if ( r > Table0step ) {
 
 

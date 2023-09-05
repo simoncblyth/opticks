@@ -48,7 +48,8 @@ enum {
 
    FAKE_PROPAGATE,
    GENTORCH,
-   MULTIFILM_LOOKUP
+   MULTIFILM_LOOKUP,
+   RANDGAUSSQ_SHOOT 
    
 };
  
@@ -105,6 +106,7 @@ struct QSimLaunch
     static constexpr const char* FAKE_PROPAGATE_ = "fake_propagate" ;
     static constexpr const char* GENTORCH_ = "gentorch" ;
     static constexpr const char* MULTIFILM_LOOKUP_ = "multifilm_lookup";
+    static constexpr const char* RANDGAUSSQ_SHOOT_ = "randgaussq_shoot" ; 
 
 };
 
@@ -163,6 +165,7 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,FAKE_PROPAGATE_)  == 0)             test = FAKE_PROPAGATE ;
    if(strcmp(name,GENTORCH_)  == 0)                   test = GENTORCH ;
    if(strcmp(name,MULTIFILM_LOOKUP_ )  == 0)          test = MULTIFILM_LOOKUP ;
+   if(strcmp(name,RANDGAUSSQ_SHOOT_ )  == 0)          test = RANDGAUSSQ_SHOOT ;
   
    bool known =  test != UNKNOWN  ;
    if(!known) printf("QSimLaunch::Type name [%s] is unknown \n", name) ; 
@@ -222,6 +225,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case FAKE_PROPAGATE:               s = FAKE_PROPAGATE_               ; break ; 
         case GENTORCH:                     s = GENTORCH_                     ; break ; 
         case MULTIFILM_LOOKUP:             s = MULTIFILM_LOOKUP_             ; break ;
+        case RANDGAUSSQ_SHOOT:             s = RANDGAUSSQ_SHOOT_             ; break ;
     }
     return s; 
 }

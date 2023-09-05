@@ -57,10 +57,15 @@ __device__ float erfinvf ( float  x )
 
 struct S4MTRandGaussQ
 {
-  static double transformQuick (double r); 
-  static double transformSmall (double r); 
+    static double shoot( double mean, double stdDev ); 
+    static double shoot(); 
+    static double transformQuick (double r); 
+    static double transformSmall (double r); 
 }; 
 
-
+inline double S4MTRandGaussQ::shoot(double mean, double stdDev)
+{
+    return shoot()*stdDev + mean;
+}
 
 

@@ -96,6 +96,30 @@ extern void QSim_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim* si
 
 
 
+__global__ void _QSim_RandGaussQ_shoot(qsim* sim, float* vv, unsigned num_v )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_v) return;
+
+    curandState rng = sim->rngstate[id]; 
+
+    float mean = 5.f ; 
+    float stdDev = 0.1f ; 
+    float v = sim->RandGaussQ_shoot(rng, mean, stdDev ) ; 
+ 
+    //if(id % 100000 == 0) 
+    //printf("//_QSim_RandGaussQ_shoot id %d  v %10.4f    \n", id, v  ); 
+
+    vv[id] = v ; 
+}
+
+extern void QSim_RandGaussQ_shoot(  dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, float* v, unsigned num_v )
+{
+    printf("//QSim_RandGaussQ_shoot num_v %d \n", num_v ); 
+    _QSim_RandGaussQ_shoot<<<numBlocks,threadsPerBlock>>>( sim, v, num_v ); 
+}
+
+
 
 
 

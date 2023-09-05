@@ -82,6 +82,8 @@ struct qsim
 
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
+    QSIM_METHOD static float RandGaussQ_shoot( curandStateXORWOW& rng, float mean, float stdDev ); 
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
@@ -187,6 +189,29 @@ inline QSIM_METHOD float3 qsim::uniform_sphere(curandStateXORWOW& rng)
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
 }
+
+/**
+qsim::RandGaussQ_shoot
+------------------------
+
+See:: 
+
+    sysrap/tests/erfcinvf_Test.sh 
+    sysrap/tests/S4MTRandGaussQTest.sh
+
+    g4-cls RandGaussQ
+    g4-cls G4MTRandGaussQ
+
+**/
+inline QSIM_METHOD float qsim::RandGaussQ_shoot( curandStateXORWOW& rng, float mean, float stdDev )
+{
+    float u2 = 2.f*curand_uniform(&rng) ;
+    float v = -M_SQRT2f*erfcinvf(u2)*stdDev + mean ; 
+    //printf("//qsim.RandGaussQ_shoot mean %10.5f stdDev %10.5f u2 %10.5f v %10.5f \n", mean, stdDev, u2, v  ) ; 
+    return v ; 
+}
+
+
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
