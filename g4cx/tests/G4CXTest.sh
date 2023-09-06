@@ -105,10 +105,10 @@ export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
 #check=rain_point_xpositive_100
 #check=rain_line
 #check=tub3_side_line
-#check=circle_inwards_100
+check=circle_inwards_100
 #check=circle_outwards_1
 #check=rain_line_205
-check=rain_down_100
+#check=rain_down_100
 
 export LAYOUT=one_pmt
 export CHECK=${CHECK:-$check} 

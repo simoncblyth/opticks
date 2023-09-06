@@ -148,7 +148,7 @@ inline U4TreeBorder::U4TreeBorder(
     implicit_idx(-1),
     implicit_isur(i_rindex != nullptr && o_rindex == nullptr),  
     implicit_osur(o_rindex != nullptr && i_rindex == nullptr),
-    flagged_isolid(ssys::getenvvar("U4TreeBorder__FLAGGED_ISOLID", "sStrutBallhead"))
+    flagged_isolid(ssys::getenvvar("U4TreeBorder__FLAGGED_ISOLID", "PLACEHOLDER_FOR_SOLIDNAME_LIKE_sStrutBallhead"))
 {
 }
 

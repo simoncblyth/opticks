@@ -87,10 +87,10 @@ export nnvt_UsePMTNaturalGeometry=$version
 #geomlist=nnvtLogicalPMT,hamaLogicalPMT    # in one_pmt layout get HAMA with this
 #geomlist=nnvtLogicalPMT
 #geomlist=hamaLogicalPMT
-#geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100 
+geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100 
 
 #geomlist=hmskLogicMaskVirtual
-geomlist=nmskLogicMaskVirtual   # LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
+#geomlist=nmskLogicMaskVirtual   # LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
 
 export FewPMT_GEOMList=$geomlist
 
