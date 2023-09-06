@@ -221,3 +221,193 @@ Again V1J011 : with OSUR implicits not disabled AND export Tub3inchPMTV3Manager_
     []
 
 
+
+
+Check 3inch G4CXTest.sh with degenerate default 1e-3
+--------------------------------------------------------
+
+~/opticks/u4/tests/FewPMT.sh::
+
+     delta=1e-3   # DEGENERATE DEFAULT IN C++
+     #delta=1e-1
+     #delta=1
+     export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
+     
+
+
+With delta 1e-3 : YUCK::
+
+    ~/opticks/g4cx/tests/G4CXTest.sh 
+
+    a.CHECK : circle_inwards_100 
+    b.CHECK : circle_inwards_100 
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :  2034.1321 c2n :     5.0000 c2per:   406.8264  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  2034.13/5:406.826 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SD   ' ' 0' '  7003   4354' '617.8745' '   310    310']
+     [' 1' 'TO BT SA      ' ' 1' '   985   3449' '1369.2594' '     0   5775']
+     [' 2' 'TO BT BT SA   ' ' 2' '  1907   2162' '15.9806' '    60      0']
+     [' 3' 'TO BT BT AB   ' ' 3' '    48      9' '26.6842' '   431   1226']
+     [' 4' 'TO BT BR BT SA' ' 4' '    26     13' ' 4.3333' '   107   1143']
+     [' 5' 'TO AB         ' ' 5' '    11      7' ' 0.0000' '   336    615']
+     [' 6' 'TO BT BR AB   ' ' 6' '     9      0' ' 0.0000' '  6190     -1']
+     [' 7' 'TO BT AB      ' ' 7' '     7      2' ' 0.0000' '  2413   1246']
+     [' 8' 'TO SC SA      ' ' 8' '     2      3' ' 0.0000' '  1338   4018']
+     [' 9' 'TO SC BT BT SD' ' 9' '     1      0' ' 0.0000' '  1859     -1']
+     ['10' 'TO SC AB      ' '10' '     0      1' ' 0.0000' '    -1   5925']
+     ['11' 'TO BT SC AB   ' '11' '     1      0' ' 0.0000' '  6977     -1']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+    PICK=AB MODE=0 SEL=0 POI=-1 ./G4CXAppTest.sh ana 
+    not plotting as MODE 0 in environ
+
+With delta 1e-2 : ALSO YUCK::
+
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :  2065.5898 c2n :     5.0000 c2per:   413.1180  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  2065.59/5:413.118 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SD   ' ' 0' '  7003   4354' '617.8745' '   310    310']
+     [' 1' 'TO BT SA      ' ' 1' '   961   3449' '1403.6608' '     0   5775']
+     [' 2' 'TO BT BT SA   ' ' 2' '  1931   2162' '13.0371' '    54      0']
+     [' 3' 'TO BT BT AB   ' ' 3' '    48      9' '26.6842' '   431   1226']
+     [' 4' 'TO BT BR BT SA' ' 4' '    26     13' ' 4.3333' '   107   1143']
+     [' 5' 'TO AB         ' ' 5' '    11      7' ' 0.0000' '   336    615']
+     [' 6' 'TO BT BR AB   ' ' 6' '     9      0' ' 0.0000' '  6190     -1']
+     [' 7' 'TO BT AB      ' ' 7' '     7      2' ' 0.0000' '  2413   1246']
+     [' 8' 'TO SC SA      ' ' 8' '     2      3' ' 0.0000' '  1338   4018']
+     [' 9' 'TO SC BT BT SD' ' 9' '     1      0' ' 0.0000' '  1859     -1']
+     ['10' 'TO SC AB      ' '10' '     0      1' ' 0.0000' '    -1   5925']
+     ['11' 'TO BT SC AB   ' '11' '     1      0' ' 0.0000' '  6977     -1']]
+
+
+With delta 5e-2 : GOOD AGREEMENT (PropagateEpsilon which is used to set tmin is 0.05)::
+
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :     4.9946 c2n :     4.0000 c2per:     1.2486  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)   4.99/4:1.249 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SD   ' ' 0' '  4351   4354' ' 0.0010' '   310    310']
+     [' 1' 'TO BT SA      ' ' 1' '  3451   3449' ' 0.0006' '     0   5775']
+     [' 2' 'TO BT BT SA   ' ' 2' '  2142   2162' ' 0.0929' '     1      0']
+     [' 3' 'TO BT BR BT SA' ' 3' '    27     13' ' 4.9000' '   107   1143']
+     [' 4' 'TO BT BT AB   ' ' 4' '    12      9' ' 0.0000' '   431   1226']
+     [' 5' 'TO AB         ' ' 5' '    11      7' ' 0.0000' '   336    615']
+     [' 6' 'TO SC SA      ' ' 6' '     2      3' ' 0.0000' '  1338   4018']
+     [' 7' 'TO BT AB      ' ' 7' '     3      2' ' 0.0000' '  2413   1246']
+     [' 8' 'TO SC BT BT SD' ' 8' '     1      0' ' 0.0000' '  1859     -1']
+     [' 9' 'TO SC AB      ' ' 9' '     0      1' ' 0.0000' '    -1   5925']]
+
+With delta 1e-1 : GOOD AGREEMENT : ALMOST NO DIFFERENCE FROM 1::
+
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :     4.9763 c2n :     4.0000 c2per:     1.2441  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)   4.98/4:1.244 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SD   ' ' 0' '  4351   4354' ' 0.0010' '   310    310']
+     [' 1' 'TO BT SA      ' ' 1' '  3449   3449' ' 0.0000' '  5775   5775']
+     [' 2' 'TO BT BT SA   ' ' 2' '  2144   2162' ' 0.0752' '     0      0']
+     [' 3' 'TO BT BR BT SA' ' 3' '    27     13' ' 4.9000' '   107   1143']
+     [' 4' 'TO BT BT AB   ' ' 4' '    12      9' ' 0.0000' '   431   1226']
+     [' 5' 'TO AB         ' ' 5' '    11      7' ' 0.0000' '   336    615']
+     [' 6' 'TO SC SA      ' ' 6' '     2      3' ' 0.0000' '  1338   4018']
+     [' 7' 'TO BT AB      ' ' 7' '     3      2' ' 0.0000' '  2413   1246']
+     [' 8' 'TO SC BT BT SD' ' 8' '     1      0' ' 0.0000' '  1859     -1']
+     [' 9' 'TO SC AB      ' ' 9' '     0      1' ' 0.0000' '    -1   5925']]
+
+With delta 1 : GOOD AGREEMENT::
+
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :     4.9681 c2n :     4.0000 c2per:     1.2420  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)   4.97/4:1.242 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SD   ' ' 0' '  4351   4354' ' 0.0010' '   310    310']
+     [' 1' 'TO BT SA      ' ' 1' '  3449   3449' ' 0.0000' '  5775   5775']
+     [' 2' 'TO BT BT SA   ' ' 2' '  2145   2162' ' 0.0671' '     0      0']
+     [' 3' 'TO BT BR BT SA' ' 3' '    27     13' ' 4.9000' '   107   1143']
+     [' 4' 'TO BT BT AB   ' ' 4' '    12      9' ' 0.0000' '   431   1226']
+     [' 5' 'TO AB         ' ' 5' '    10      7' ' 0.0000' '   336    615']
+     [' 6' 'TO SC SA      ' ' 6' '     2      3' ' 0.0000' '  1338   4018']
+     [' 7' 'TO BT AB      ' ' 7' '     3      2' ' 0.0000' '  2413   1246']
+     [' 8' 'TO SC BT BT SD' ' 8' '     1      0' ' 0.0000' '  1859     -1']
+     [' 9' 'TO SC AB      ' ' 9' '     0      1' ' 0.0000' '    -1   5925']]
+
+
+
+HMM : IS THAT JUST THE SETTING OF PROPAGATE_EPSILON ? 
+--------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-f propagate_epsilon
+    ./ana/simtrace_plot.py:        epsilon = self.frame.propagate_epsilon
+    ./ana/debug/genstep_sequence_material_mismatch.py:     331     m_context[ "propagate_epsilon"]->setFloat(pe);  // TODO: check impact of changing propagate_epsilon
+    ./ana/debug/genstep_sequence_material_mismatch.py:    171         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    ./CSG/csg_intersect_tree.h:    float propagate_epsilon = 0.0001f ;  // ? 
+    ./CSG/csg_intersect_tree.h:                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
+    ./CSG/csg_intersect_tree.h:                        printf("// %3d : looping one side tminAdvanced %10.4f with eps %10.4f \n", nodeIdx, tminAdvanced, propagate_epsilon );  
+    ./CSG/csg_intersect_node.h:    const float propagate_epsilon = 0.0001f ; 
+    ./CSG/csg_intersect_node.h:        //float tminAdvanced = enter[i] + propagate_epsilon ;    // <= without ordered enters get internal spurious 
+    ./CSG/csg_intersect_node.h:        float tminAdvanced = enter[idx[i]] + propagate_epsilon ; 
+    ./CSG/csg_intersect_node.h:        if(tminAdvanced < farthest_exit.w)  // enter[idx[i]]+propagate_epsilon < "farthest_contiguous_exit" so far    
+    ./CSG/csg_intersect_node.h:    float propagate_epsilon = 0.0001f ; 
+    ./CSG/csg_intersect_node.h:                float tminAdvanced = sub_isect.w + propagate_epsilon ; 
+    ./CSG/CSGFoundry.cc:    fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
+    ./sysrap/sframe.h:    void set_propagate_epsilon(float eps); 
+    ./sysrap/sframe.h:    float propagate_epsilon() const ; 
+    ./sysrap/sframe.h:       << " propagate_epsilon " << std::setw(10) << std::fixed << std::setprecision(5) << propagate_epsilon()
+    ./sysrap/sframe.h:inline void sframe::set_propagate_epsilon(float eps){     aux.q1.f.x = eps ; }
+    ./sysrap/sframe.h:inline float sframe::propagate_epsilon() const   { return aux.q1.f.x ; }
+    ./sysrap/sframe.py:        propagate_epsilon = a[3,1,0]   # aux.q1.f.x 
+    ./sysrap/sframe.py:        self.propagate_epsilon = propagate_epsilon 
+    ./dev/csg/slavish.py:propagate_epsilon = 1e-3
+    ./dev/csg/slavish.py:            tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
+    ./dev/csg/slavish.py:                    tminAdvanced = abs(csg.data[loopside,0,W]) + propagate_epsilon 
+    ./dev/csg/slavish.py:                    tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
+    ./dev/csg/slavish.py:                        tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
+    ./optixrap/cu/csg_intersect_boolean.h:    float tA_min = propagate_epsilon ;  
+    ./optixrap/cu/csg_intersect_boolean.h:            x_tmin[side] = isect[side].w + propagate_epsilon ; 
+    ./optixrap/cu/csg_intersect_boolean.h:                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
+    ./optixrap/cu/csg_intersect_boolean.h:                 tX_min[side] = _side.w + propagate_epsilon ;  // classification as well as intersect needs the advance
+    ./optixrap/cu/csg_intersect_boolean.h:                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
+    ./optixrap/cu/csg_intersect_boolean.h:        tX_min[side] = _side.w + propagate_epsilon ;
+    ./optixrap/cu/generate.cu:rtDeclareVariable(float,         propagate_epsilon, , );
+    ./optixrap/cu/generate.cu:    rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    ./optixrap/cu/generate.cu:        rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    ./optixrap/cu/intersect_analytic.cu:rtDeclareVariable(float, propagate_epsilon, , );
+    ./optixrap/OPropagator.cc:    m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );       // TODO: check impact of changing propagate_epsilon
+    epsilon:opticks blyth$ 
+
+
+::
+
+    epsilon:opticks blyth$ opticks-f SEventConfig::PropagateEpsilon
+    ./CSGOptiX/CSGOptiX.cc:    params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
+    ./CSG/CSGFoundry.cc:    fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
+    ./sysrap/SEventConfig.cc:float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
+    epsilon:opticks blyth$ 
+
+    epsilon:opticks blyth$ SEventConfigTest | grep PropagateEpsilon
+    OPTICKS_PROPAGATE_EPSILON   PropagateEpsilon  :     0.0500
+    OPTICKS_PROPAGATE_EPSILON   PropagateEpsilon  :     0.0500
+    epsilon:opticks blyth$ 
+
+::
+
+     60 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
+
+

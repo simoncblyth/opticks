@@ -94,9 +94,14 @@ geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100
 
 export FewPMT_GEOMList=$geomlist
 
-delta=1e-3   # DEGENERATE DEFAULT IN C++
-#delta=1e-1
-#delta=1
+# OBSERVATIONS ALL WITH SEventConfig::PropagateEpsilon default of 0.05 
+#delta=1e-3   # YUCK WITH tub3 G4CXTest.sh : DEGENERATE DEFAULT IN ORIGINAL C++ 
+#delta=1e-2   # ALSO YUCK WITH tub3 G4CXTest.sh
+#delta=4e-2   # TODO: TRY THIS : IS IT REALLY JUST WHEN DIP BELOW PropagateEpsilon THAT THINGS FALL TO PIECES ?
+#delta=5e-2   # OK WITH tub3 G4CXTest.sh  THIS EQUALS SEventConfig::PropagateEpsilon 
+#delta=1e-1   # OK WITH tub3 G4CXTest.sh
+delta=1       # OK WITH tub3 G4CXTest.sh
+
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
 # HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 
