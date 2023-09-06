@@ -163,7 +163,7 @@ class QCF(object):
         subs = "[%d:%d]" % ( start, stop ) 
         subs += " [bzero] [azero]"
         subs = subs.split()
-        descs = ["A-B history frequency chi2 comparison", "bzero: A histories not in B", "azero: B histories not in A" ]
+        descs = ["A-B history frequency chi2 comparison", "in A but not B", "in B but not A" ]
 
         bzero = self.bzero
         azero = self.azero

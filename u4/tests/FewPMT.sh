@@ -94,8 +94,9 @@ geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100
 
 export FewPMT_GEOMList=$geomlist
 
+delta=1e-3   # DEGENERATE DEFAULT IN C++
 #delta=1e-1
-delta=1
+#delta=1
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
 # HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 

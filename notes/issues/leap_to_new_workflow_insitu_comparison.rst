@@ -94,6 +94,11 @@ Pick single photons in A and B to highlight that have "only" histories::
 
     APID=16654 BPID=15508 MODE=3 PICK=AB ~/j/ntds/ntds3.sh 
 
+Split that for capture::
+
+    MODE=2 APID=16654 PICK=A ~/j/ntds/ntds3.sh
+    MODE=2 BPID=15508 PICK=B ~/j/ntds/ntds3.sh
+
 
 
 Try V1J011 : with OSUR implicits not disabled : Still get 3inch and PMT virtual apex issues
