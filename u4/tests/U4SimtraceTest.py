@@ -101,6 +101,8 @@ class U4SimtraceTest(object):
     it is limited to small test geometries. 
 
     The more general GPU simtrace deserves more attention than this one.
+
+    HMM: there are developments elsewhere that are close to this, MAYBE: consolidate
     """
     @classmethod
     def Load(cls, fold, **kwa):
@@ -125,7 +127,7 @@ class U4SimtraceTest(object):
         sfs = odict()
         for i, name in enumerate(trs_names):
             sfs[name] = Fold.Load(fold.base, name,"p001",  symbol="%s%0.2d" % (fold.symbol,i) )
-        pass
+        pass  # Fold for each solid 
 
         symbol = fold.symbol
 
@@ -189,6 +191,15 @@ class U4SimtraceTest(object):
                  print("missing simtrace for soname:%s " % soname)
                  continue
             pass
+
+            gspo = sf.genstep[:,5,:3]
+            if "GENSTEP" in os.environ:
+                if MODE == 2:
+                    ax.scatter( gspo[:,H], gspo[:,V], s=SZ, color="black" )
+                elif MODE == 3:
+                    pl.add_points( gspo[:,:3], color=color, label=label)  
+                pass
+            pass
             
 
             tr = np.float32(trs[i])
@@ -221,7 +232,7 @@ class U4SimtraceTest(object):
                 log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
             pass 
 
-            if 'POINT' in os.environ:
+            if 'POINT' in os.environ: # ADD POINT OR POINTS SPECIFIED BY TRIPLETS 
                 point = efloatarray_("POINT", "0,0,0").reshape(-1,3)
                 ax.scatter( point[:,H], point[:,V], s=SZ, color="red", label="POINT" )
             pass
@@ -239,9 +250,6 @@ class U4SimtraceTest(object):
         elif MODE == 3:
             pass
         pass
-
-
-
 
 
     def show(self, pl ):

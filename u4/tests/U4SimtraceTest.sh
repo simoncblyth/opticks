@@ -3,10 +3,11 @@ usage(){ cat << EOU
 U4SimtraceTest.sh
 ==========================
 
-
 FewPMT.sh/tub3LogicalPMT::
 
     MODE=2 FOCUS=0,0,80 ~/opticks/u4/tests/U4SimtraceTest.sh ana 
+
+    MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh
 
 
 TODO
@@ -151,6 +152,9 @@ geom=FewPMT
 evt=000
 eye=0,1000,0   # +Y 1000mm
 
+#cegs=16:0:9:1000   # default used from SFrameGenstep::MakeCenterExtentGensteps
+cegs=16:0:9:5000    # increase photon count for more precise detail 
+
 export VERSION=${N:-0}
 export GEOM=${GEOM:-$geom}
 export GEOMFOLD=/tmp/$USER/opticks/GEOM/$GEOM
@@ -162,6 +166,8 @@ export BFOLD=$GEOMFOLD/U4SimulateTest/ALL1/$EVT   # SEL1 another possibility
 export APID=${APID:-$apid}                        # APID for photons from ALL0
 export BPID=${BPID:-$bpid}                        # BPID for photons from ALL1
 export EYE=${EYE:-$eye}       # not extent scaled, just mm
+export CEGS=${CEGS:-$cegs}
+export CEHIGH_0=-1:1:0:0:7:8:1000:4
  
 
 geomscript=$DIR/$GEOM.sh 

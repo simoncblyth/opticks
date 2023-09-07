@@ -108,10 +108,17 @@ SSimtrace::simtrace
 
 SEvt::setFrame
 
+
 1. creates gensteps with SFrameGenstep::MakeCenterExtentGensteps and adds them to SEvt
 2. as frame.is_hostside_simtrace also generates simtrace "photons" 
 
-In RGModeSimtrace SEvt::setFrame adds simtrace gensteps configured via envvars
+
+SEvt::beginOfEvent invokes SEvt::addFrameGenstep 
+which in RGModeSimtrace adds simtrace gensteps configured via envvars
+especially::
+
+CEGS : CenterExtentGensteps 
+    eg 16:0:9:5000 : specifies grid and photons per grid point  
 
 Because SSimtrace::simtrace gets called for each solid with U4SimtraceTest.sh 
 the instanciation of SEvt here in SSimtrace::simtrace is unusual, 
@@ -132,7 +139,7 @@ inline void SSimtrace::simtrace()
     evt = SEvt::Create(SEvt::ECPU) ; 
     evt->setFrame(frame);    // 
 
-    evt->beginOfEvent(0); 
+    evt->beginOfEvent(0);   // invokes SEvt::addFrameGenstep for RGModeSimtrace
 
     unsigned num_simtrace = evt->simtrace.size() ;   
     LOG(LEVEL) << " num_simtrace " << num_simtrace ; 

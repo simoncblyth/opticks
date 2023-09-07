@@ -3,10 +3,11 @@
 SFrameGenstep.hh
 ==================
 
-TODO: contrast with SCenterExtentGenstep and replace all used of that with this 
+TODO: contrast this with SCenterExtentGenstep and replace all use of that with this 
 
 * principal advantage of SFrameGenstep over SCenterExtentGenstep is the sframe.h/sframe.py 
-  providing a central object available both from C++ and python 
+  providing a central object on which to hang metadata that is 
+  available both from C++ and python 
 
 
 

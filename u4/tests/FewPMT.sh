@@ -104,8 +104,15 @@ delta=1       # OK WITH tub3 G4CXTest.sh
 
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
-# HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 
-#export U4Tree__DISABLE_OSUR_IMPLICIT=1
+
+#magic=0.05    # initial default in original C++
+#magic=0.01    # decrease to try to get LPMT apex degeneracy issue to appear standalone 
+magic=1        # CHECK ITS WORKING IN simtrace plot 
+ 
+export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=$magic
+
+
+#export U4Tree__DISABLE_OSUR_IMPLICIT=1  # HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 
 
 
 vars="BASH_SOURCE VERSION version_desc POM pom_desc GEOM FewPMT_GEOMList LAYOUT "

@@ -411,3 +411,284 @@ HMM : IS THAT JUST THE SETTING OF PROPAGATE_EPSILON ?
      60 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
 
 
+
+
+
+Try to repoduce LPMT apex degen issue standalone
+---------------------------------------------------
+
+::
+
+   Change u4/tests/FewPMT.sh geomlist:hmskLogicMaskVirtual
+   Change g4cx/tests/G4CXTest.sh check:rain_line_205 
+
+   PICK=B D=2 ~/opticks/g4cx/tests/G4CXTest.sh ana 
+   PICK=B D=2 ~/opticks/g4cx/tests/G4CXTest.sh
+
+   ~/opticks/g4cx/tests/G4CXTest.sh    
+   ~/opticks/g4cx/tests/G4CXTest.sh grab 
+
+   PICK=AB D=2 ~/opticks/g4cx/tests/G4CXTest.sh ana 
+
+
+
+
+
+
+GEOM:FewPMT u4/tests/FewPMT.sh geomlist:hmskLogicMaskVirtual g4cx/tests/G4CXTest.sh check:rain_line_205  
+----------------------------------------------------------------------------------------------------------
+
+HMM : DO NOT SEE APEX DEGEN ISSUE STANDALONE WITH 10k, 100k 
+
+::
+
+    PICK=AB D=2 ~/opticks/g4cx/tests/G4CXTest.sh ana
+
+
+    In [18]: a.f.record[50000-5:50000+5,0:5,0,2]
+    Out[18]: 
+    array([[ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   ,  141.013],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225]], dtype=float32)
+
+    In [19]: b.f.record[50000-5:50000+5,0:5,0,2]
+    Out[19]: 
+    array([[ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225],
+           [ 205.   ,  200.05 ,  200.   ,  192.   , -175.225]], dtype=float32)
+
+
+GEOM:V1J011 : Investigate the LPMT apex degeneracy 
+----------------------------------------------------
+
+Below PMT-local-frame z-positions for z-points of LPMT apex photons
+show geometry delta of 0.05, which happens to 
+exactly match the default PropagateEpsilon of 0.05 
+
+jcv HamamatsuMaskManager::
+
+     60     MAGIC_virtual_thickness = 0.05*mm;
+     61 }
+      
+
+
+* that could explain why the standalone check not showing the issue currently 
+
+* DONE : ADDED ENVVAR CONTROL FOR THE 0.05 DELTA : export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=0.05 
+* TODO : CHECK THAT DECREASING THAT MAKES STANDALONE EXHIBIT THE ISSUE 
+* TODO : CHECK THAT INCREASING THAT MAKES INSITU AVOID THE ISSUE 
+
+::
+
+    PICK=AB D=2 ~/j/ntds/ntds3.sh ana 
+     
+    In [10]: a.lpos[50000-5:50000+5,0:5,2]    
+    Out[10]: 
+    array([[229.999, 200.049, 192.   , 190.001, 184.999],
+           [229.999, 200.048, 192.   , 189.999, 185.   ],
+           [229.999, 200.049, 199.998, 191.999, 189.999],
+           [229.999, 200.049, 192.   , 189.999, 185.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 192.   , 189.999, 185.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 192.   , 190.   , 185.   ],
+           [230.   , 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 192.001, 190.   , 185.   ]])
+
+    In [11]: b.lpos[50000-5:50000+5,0:5,2]
+    Out[11]: 
+    array([[229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 191.999, 190.   ],
+           [230.   , 200.049, 199.999, 191.999, 190.   ],
+           [229.999, 200.049, 199.999, 192.   , 190.   ]])
+
+    In [12]: a.q[50000-5:50000+5]
+    Out[12]: 
+    array([[b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT SA                                                                                  '],
+           [b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT SD                                                                               '],
+           [b'TO BT BT BT SD                                                                                  ']], dtype='|S96')
+
+    In [13]: b.q[50000-5:50000+5]
+    Out[13]: 
+    array([[b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT SD                                                                               '],
+           [b'TO BT BT BT BT SD                                                                               '],
+           [b'TO BT BT BT BT BT SA                                                                            '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT BR BT BT BT BT BT BT BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SA             '],
+           [b'TO BT BT BT BT SA                                                                               '],
+           [b'TO BT BT BT BT SA                                                                               ']], dtype='|S96')
+
+
+
+
+
+
+Try with decreased MAGIC to 0.01 gives apex issues, increase back to 0.05 back to no issue 
+--------------------------------------------------------------------------------------------
+
+::
+
+   ~/opticks/g4cx/tests/G4CXTest.sh 
+
+::
+
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [[' 4' 'TO BT BT BT DR BT BT SA                                                                        ' ' 4' '  4302      0' '4302.0000' '  1438     -1']
+     [' 9' 'TO BT BT SA                                                                                    ' ' 9' '   943      0' '943.0000' ' 48985     -1']
+     ['12' 'TO BT BT DR BT BT BT SA                                                                        ' '12' '   700      0' '700.0000' ' 48986     -1']
+     ['13' 'TO BT BT BT DR DR BT BT SA                                                                     ' '13' '   609      0' '609.0000' '  2119     -1']
+     ['24' 'TO BT BT DR SA                                                                                 ' '24' '   105      0' '105.0000' ' 49008     -1']
+     ['26' 'TO BT BT BT DR DR DR BT BT SA                                                                  ' '26' '    94      0' '94.0000' '  4048     -1']
+     ['27' 'TO BT BT DR BT BT SA                                                                           ' '27' '    88      0' '88.0000' ' 48995     -1']
+     ['32' 'TO BT BT DR DR BT BT BT SA                                                                     ' '32' '    65      0' '65.0000' ' 48990     -1']
+     ['33' 'TO BT BT BT BR DR BT BT SA                                                                     ' '33' '    61      0' '61.0000' '   897     -1']
+     ['56' 'TO BT BT DR DR SA                                                                              ' '56' '    17      0' ' 0.0000' ' 48992     -1']
+     ['57' 'TO BT BT DR DR BT BT SA                                                                        ' '57' '    16      0' ' 0.0000' ' 49185     -1']
+     ['66' 'TO BT BT BT DR DR DR DR BT BT SA                                                               ' '66' '    12      0' ' 0.0000' '  3531     -1']
+     ['69' 'TO BT BT DR BT AB                                                                              ' '69' '    11      0' ' 0.0000' ' 49002     -1']
+     ['70' 'TO BT BT BT DR BR BT BT SA                                                                     ' '70' '    11      0' ' 0.0000' '  2174     -1']]
+
+
+Back to 0.05 no problem::
+
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :    59.2115 c2n :    47.0000 c2per:     1.2598  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  59.21/47:1.260 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT SA                                                                                 ' ' 0' ' 43249  43434' ' 0.3948' '  1434   1434']
+     [' 1' 'TO BT BT BT DR BT BT BT SA                                                                     ' ' 1' ' 34571  34395' ' 0.4491' '  1435   1440']
+     [' 2' 'TO BT BT BT DR SA                                                                              ' ' 2' '  6513   6436' ' 0.4579' '  1433   1437']
+     [' 3' 'TO BT BT BT DR DR BT BT BT SA                                                                  ' ' 3' '  4745   4628' ' 1.4605' '  1457   2038']
+     [' 4' 'TO BT BT BR BT BT SA                                                                           ' ' 4' '  2377   2342' ' 0.2596' '     2      0']
+     [' 5' 'TO BT BT BT DR DR SA                                                                           ' ' 5' '  1188   1276' ' 3.1429' '  1449   2201']
+     [' 6' 'TO BT BT AB                                                                                    ' ' 6' '  1174   1272' ' 3.9264' '    26     44']
+     [' 7' 'TO BT BR BT SA                                                                                 ' ' 7' '   925    956' ' 0.5109' '     1      3']
+     [' 8' 'TO BT BT BT DR DR DR BT BT BT SA                                                               ' ' 8' '   828    865' ' 0.8086' '  2041   2249']
+     [' 9' 'TO BT BT BT AB                                                                                 ' ' 9' '   797    788' ' 0.0511' '   985   1433']
+     ['10' 'TO BT BT BT DR AB                                                                              ' '10' '   436    387' ' 2.9174' '  1899   2353']
+     ['11' 'TO BT BT BT DR BT AB                                                                           ' '11' '   426    394' ' 1.2488' '  1834   1847']
+     ['12' 'TO BT BT BT DR DR DR SA                                                                        ' '12' '   202    232' ' 2.0737' '  3079   2440']
+     ['13' 'TO BT BT BT BT BT BT SA                                                                        ' '13' '   210    202' ' 0.1553' '   778    778']
+     ['14' 'TO BT BT BT BR SA                                                                              ' '14' '   155    170' ' 0.6923' '   844    837']
+     ['15' 'TO BT BT BT DR BR BT BT BT SA                                                                  ' '15' '   169    168' ' 0.0030' '  1495   1436']
+     ['16' 'TO BT BT BT DR DR DR DR BT BT BT SA                                                            ' '16' '   148    165' ' 0.9233' '  3531   2162']
+     ['17' 'TO BT BT BT BR DR BT BT BT SA                                                                  ' '17' '   162    134' ' 2.6486' '   830    850']
+     ['18' 'TO BT BT BT DR BT BT BT AB                                                                     ' '18' '    82    124' ' 8.5631' '  1605   2569']
+     ['19' 'TO BT BT BT DR BT BR BT BT BT BT SA                                                            ' '19' '   109     85' ' 2.9691' '  1464   1473']
+     ['20' 'TO BT BT BT SC BT BT BT SA                                                                     ' '20' '   100    106' ' 0.1748' '  2079   1858']
+     ['21' 'TO AB                                                                                          ' '21' '    79     80' ' 0.0063' '   336    846']
+     ['22' 'TO BT BT BR AB                                                                                 ' '22' '    67     45' ' 4.3214' '     4     15']
+     ['23' 'TO BT BT BT DR DR AB                                                                           ' '23' '    55     59' ' 0.1404' '  7999   2756']
+     ['24' 'TO BT BT BT DR DR BT AB                                                                        ' '24' '    56     58' ' 0.0351' '  2946   2140']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+
+
+
+
+
+
+V1J011 : Insitu with larger MAGIC
+-----------------------------------
+
+::
+
+     694 ntds_noxjsjfa()
+     695 {
+     696    #local gpfx=R           # R:Release builds of junosw+custom4   
+     697    local gpfx=V          # V:Debug builds of junosw+custom4  
+     698    GPFX=${GPFX:-$gpfx}    # need to match with j/ntds/ntds.sh  AGEOM, BGEOM
+     699 
+     700    export EVTMAX=1
+     701 
+     702 
+     703    ## export U4Tree__DISABLE_OSUR_IMPLICIT=1   
+     704    unset U4Tree__DISABLE_OSUR_IMPLICIT
+     705    ## WHEN REMOVING AN ENVVAR MUST REMEMBER TO unset
+     706    ## disabling OSUR implicit was needed previously to avoid scrambling CSGNode border 
+     707    ## but the move to the new workflow should avoid that issue 
+     708 
+     709    export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=1
+     710    export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=0.1  # 0.05 C++ default
+     711 
+     712 
+     713    NOXJ=1 NOSJ=1 NOFA=1 GEOM=${GPFX}1J011 OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-0} ntds
+     714 
+     715    # this will fail for lack of input photon for OPTICKS_INTEGRATION_MODE=0 
+     716 }
+     717 
+
+
+
+    ntds3_noxjsjfa    # workstation, run opticksMode:3 doing both optical simulations in one invokation
+
+    GEOM # check its V1J011
+    GEOM get 
+    GEOM tmpget 
+
+    PICK=AB D=2 ~/j/ntds/ntds3.sh ana 
+
+
+
+Zooming in on simtrace : the clearance is 0.05 mm
+----------------------------------------------------
+
+::
+
+    MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh
+    MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh ana
+    MODE=2 VERBOSE=1 ~/opticks/u4/tests/U4SimtraceTest.sh     
+  
+Verified the envvar control works with the simtrace plot, clearance increased to 1 mm
+via setting in u4/tests/FewPMT.sh::
+
+    108 #magic=0.05    # initial default in original C++
+    109 #magic=0.01    # decrease to try to get LPMT apex degeneracy issue to appear standalone 
+    110 magic=1        # CHECK ITS WORKING IN simtrace plot 
+    111 
+    112 export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=$magic
+
+
+
+    HamamatsuMaskManager::HamamatsuMaskManager
+    MAGIC_virtual_thickness            1.00000
+    MAGIC_virtual_thickness_default    0.05000
+    MAGIC CHANGED BY ENVVAR : HamamatsuMaskManager__MAGIC_virtual_thickness_MM
+     
+
