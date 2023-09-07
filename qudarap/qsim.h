@@ -83,7 +83,8 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
     QSIM_METHOD static float RandGaussQ_shoot( curandStateXORWOW& rng, float mean, float stdDev ); 
-
+    QSIM_METHOD static void SmearNormal_SigmaAlpha( curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float sigma_alpha );
+    QSIM_METHOD static void SmearNormal_Polish(     curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float polish ); 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
@@ -210,6 +211,102 @@ inline QSIM_METHOD float qsim::RandGaussQ_shoot( curandStateXORWOW& rng, float m
     //printf("//qsim.RandGaussQ_shoot mean %10.5f stdDev %10.5f u2 %10.5f v %10.5f \n", mean, stdDev, u2, v  ) ; 
     return v ; 
 }
+
+
+/**
+qsim::SmearNormal_SigmaAlpha
+------------------------------
+
+TODO: FIND PI MULTIPLE CONSTANTS 
+
+**/
+
+inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha( 
+    curandStateXORWOW& rng, 
+    float3& smeared_normal, 
+    const float3& direction, 
+    const float3& normal, 
+    float sigma_alpha )
+{
+    if(sigma_alpha == 0.f)
+    {
+        smeared_normal = normal ;  
+        return ; 
+    } 
+    float f_max = fminf(1.f,4.f*sigma_alpha);
+
+    float alpha, sin_alpha, phi, u0, u1 ; 
+    bool reject_alpha ; 
+    bool reject_dir ; 
+
+    do {
+        do {
+
+            alpha = RandGaussQ_shoot(rng, 0.f, sigma_alpha );  // mean:0.f stdDev:sigma_alpha
+            sin_alpha = sinf(alpha); 
+            u0 = curand_uniform(&rng) ; 
+            reject_alpha = alpha >= M_PIf/2.f || u0*fminf(1.f, 4.f*sigma_alpha) > sin_alpha ; 
+
+        } while( reject_alpha ) ; 
+
+        u1 = curand_uniform(&rng) ; 
+        phi = u1*M_PIf*2.f ;
+
+        smeared_normal.x = sin_alpha * cosf(phi) ; 
+        smeared_normal.y = sin_alpha * sinf(phi) ; 
+        smeared_normal.z = cosf(alpha) ; 
+
+        smath::rotateUz(smeared_normal, normal);
+        reject_dir = dot(smeared_normal, direction ) >= 0.f ;  
+
+    } while( reject_dir ) ; 
+}
+
+/**
+qsim::SmearNormal_Polish
+------------------------------
+
+**/
+
+inline QSIM_METHOD void qsim::SmearNormal_Polish( 
+    curandStateXORWOW& rng, 
+    float3& smeared_normal, 
+    const float3& direction, 
+    const float3& normal, 
+    float polish )
+{
+    if(polish == 1.f)
+    {
+        smeared_normal = normal ;  
+        return ; 
+    } 
+
+    float u0, u1, u2 ; 
+    float3 smear ;
+    bool reject_mag ; 
+    bool reject_dir ; 
+
+    do {
+        do {
+            u0 = curand_uniform(&rng); 
+            u1 = curand_uniform(&rng) ; 
+            u2 = curand_uniform(&rng) ; 
+            smear.x = 2.f*u0 - 1.f ; 
+            smear.y = 2.f*u1 - 1.f ; 
+            smear.z = 2.f*u2 - 1.f ; 
+            reject_mag = length(smear) > 1.f  ;   // HMM: could this use just dot(smear, smear) ? 
+       } 
+       while( reject_mag );
+
+       smeared_normal = normal + (1.f-polish)*smear;
+       reject_dir = dot(smeared_normal, direction ) >= 0.f ;  
+    } 
+    while( reject_dir );
+    smeared_normal = normalize(smeared_normal); 
+}
+
+
+
 
 
 #endif

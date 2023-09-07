@@ -692,3 +692,72 @@ via setting in u4/tests/FewPMT.sh::
     MAGIC CHANGED BY ENVVAR : HamamatsuMaskManager__MAGIC_virtual_thickness_MM
      
 
+
+FIXED FOR HAMA : After making sure the control is present+compiled+configured for Insitu
+------------------------------------------------------------------------------------------
+
+::
+
+    ntds3_noxjsjfa    # workstation, run opticksMode:3 doing both optical simulations in one invokation
+
+    GEOM get          # laptop
+    GEOM tmpget       # laptop
+    PICK=AB D=2 ~/j/ntds/ntds3.sh ana  # laptop compare 
+
+Looking good when shooting HAMA PMTs::
+
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :    75.2304 c2n :   107.0000 c2per:     0.7031  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  75.23/107:0.703 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT SA                                                                              ' ' 0' ' 37500  37733' ' 0.7216' '     8      2']
+     [' 1' 'TO BT BT BT BT SD                                                                              ' ' 1' ' 30892  30651' ' 0.9437' '     4      1']
+     [' 2' 'TO BT BT BT BT BT SA                                                                           ' ' 2' ' 12429  12446' ' 0.0116' '  9412   9599']
+     [' 3' 'TO BT BT BT BT BT SR SA                                                                        ' ' 3' '  3810   3811' ' 0.0001' ' 11059  10961']
+     [' 4' 'TO BT BT BT BT BT SR SR SA                                                                     ' ' 4' '  1999   2016' ' 0.0720' ' 10899  10881']
+     [' 5' 'TO BT BT AB                                                                                    ' ' 5' '   884    915' ' 0.5342' '    26     16']
+     [' 6' 'TO BT BT BT BT BT SR SR SR SA                                                                  ' ' 6' '   572    581' ' 0.0703' ' 14725  14767']
+     [' 7' 'TO BT BT BT BT BR BT BT BT BT BT BT AB                                                         ' ' 7' '   411    437' ' 0.7972' ' 11875   5112']
+     [' 8' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT SA                                                   ' ' 8' '   335    337' ' 0.0060' '  7444   7474']
+     [' 9' 'TO BT BT BT BT BR BT BT BT BT BT SA                                                            ' ' 9' '   332    309' ' 0.8253' '  1021   1023']
+     ['10' 'TO BT BT BT BT AB                                                                              ' '10' '   319    321' ' 0.0063' '   651     34']
+     ['11' 'TO BT BT BT BT BT SR BR SA                                                                     ' '11' '   309    319' ' 0.1592' ' 33584  33568']
+     ['12' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT SD                                                   ' '12' '   317    282' ' 2.0451' '  8147   8160']
+     ['13' 'TO BT BT BT BT BR BT BT BT BT BT BT SD                                                         ' '13' '   314    314' ' 0.0000' '  5262   5254']
+     ['14' 'TO BT BT BT BT BR BT BT BT BT AB                                                               ' '14' '   281    255' ' 1.2612' '   646    265']
+     ['15' 'TO BT BT BT BT BT SR SR SR BR SA                                                               ' '15' '   212    245' ' 2.3829' ' 14749  14802']
+     ['16' 'TO BT BT BR BT BT BT SA                                                                        ' '16' '   243    218' ' 1.3557' '     2      0']
+     ['17' 'TO BT BT BT BR BT BT BT BT SA                                                                  ' '17' '   216    211' ' 0.0585' '   206    195']
+     ['18' 'TO BT BT BT BT BT SR SR SR BR BT BT BT BT BT BT SA                                             ' '18' '   176    204' ' 2.0632' ' 15529  15472']
+     ['19' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT BT BT BT BT SD                                       ' '19' '   190    172' ' 0.8950' ' 16931  11829']
+     ['20' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT BT BT BT BT SA                                       ' '20' '   164    174' ' 0.2959' ' 11832  11864']
+     ['21' 'TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT BT BT SA                                    ' '21' '   148    170' ' 1.5220' ' 17266  17964']
+     ['22' 'TO BT BT BT BT BT SR SR SR BR BR SR SA                                                         ' '22' '   168    133' ' 4.0698' ' 15414  15611']
+     ['23' 'TO BT BT BT BT BT BR SR SA                                                                     ' '23' '   148    161' ' 0.5469' '  9351   9270']
+     ['24' 'TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT BT BT SD                                    ' '24' '   149    157' ' 0.2092' ' 16930  17039']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+
+
+
+TODO: Try reducing clearance to see how low it can go
+--------------------------------------------------------
+
+
+TODO: Test with NNVT
+----------------------
+
+
+TODO: Find some sigma_alpha/polish surfaces to hunt for deviations
+--------------------------------------------------------------------
+
+
+
+
+

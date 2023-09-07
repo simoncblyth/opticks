@@ -109,7 +109,9 @@ inline G4ThreeVector S4OpBoundaryProcess::SmearNormal_SigmaAlpha(const G4ThreeVe
        FacetNormal.setY(unit_y);
        FacetNormal.setZ(unit_z);
 
-       tmpNormal = Normal;
+       tmpNormal = Normal;  
+       // HUH: argument to rotateUz and Normal are both const refs
+       // so tmpNormal is entirely pointless ? 
 
        FacetNormal.rotateUz(tmpNormal);
        // Loop checking, 13-Aug-2015, Peter Gumplinger
