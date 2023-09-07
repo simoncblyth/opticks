@@ -8,7 +8,12 @@ from opticks.ana.p import *  # including cf boundary___
 log = logging.getLogger(__name__)
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
-MODE = int(os.environ.get("MODE","3")) 
+D = int(os.environ.get("D","3")) 
+MODE = int(os.environ.get("MODE",D)) 
+
+print(" D:%d MODE:%d " % (D, MODE))
+
+
 SEL = int(os.environ.get("SEL","0")) 
 POI = int(os.environ.get("POI","-1")) 
 

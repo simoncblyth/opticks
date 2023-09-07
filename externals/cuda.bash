@@ -36,6 +36,14 @@ See Also
 * env-;cudatex-
 
 
+CUDA gcc version mapping
+---------------------------
+
+* https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+* https://github.com/pytorch/pytorch/blob/main/torch/utils/cpp_extension.py#L56
+* https://gist.github.com/ax3l/9489132
+
+* see pytorch-vi
 
 
 CUDA Startup Latency with nvidia-persistenced is about 0.25-0.3s : how to reduce ?
