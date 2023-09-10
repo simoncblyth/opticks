@@ -14,7 +14,7 @@ MODE = int(os.environ.get("MODE",D))
 print(" D:%d MODE:%d " % (D, MODE))
 
 
-SEL = int(os.environ.get("SEL","0")) 
+SEL = os.environ.get("SEL","") 
 POI = int(os.environ.get("POI","-1")) 
 
 PICK = os.environ.get("PICK","AB")
@@ -73,7 +73,7 @@ def onephotonplot(pl, e ):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    print("GLOBAL:%d MODE:%d SEL:%d" % (GLOBAL,MODE, SEL))
+    print("GLOBAL:%d MODE:%d SEL:%s" % (GLOBAL,MODE, SEL))
 
     a = SEvt.Load("$AFOLD", symbol="a")
     print(repr(a))
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     pass
 
 
-    context = "PICK=%s MODE=%d SEL=%d POI=%d ./G4CXAppTest.sh ana " % (PICK, MODE, SEL, POI )
+    context = "PICK=%s MODE=%d SEL=%s POI=%d ~/opticks/g4cx/tests/G4CXTest.sh ana " % (PICK, MODE, SEL, POI )
     print(context)
 
     hsel = None
@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
         H,V = 0,2  # X, Z
 
-        if SEL == 1:
+        if SEL == "1":
             sel = np.logical_and( np.abs(u_pos[:,H]) < 500, np.abs(u_pos[:,V]) < 500 )
             s_pos = u_pos[sel]
         else:

@@ -105,9 +105,9 @@ export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
 
 #magic=0.01    # decrease to try to get LPMT apex degeneracy issue to appear standalone 
-magic=0.04     # just less than PropagateEpsilon
+#magic=0.04     # just less than PropagateEpsilon
 #magic=0.05    # initial default in original C++ of both HamamatsuMaskManager and NNVTMaskManager
-#magic=0.1      # TRY A CONSERVATIVE DOUBLING OF THE CLEARANCE 
+magic=0.1      # TRY A CONSERVATIVE DOUBLING OF THE CLEARANCE 
 #magic=1       # CHECK ITS WORKING BY MAKING EASILY VISIBLE IN simtrace plot : yes, but this could cause overlaps 
 export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=$magic
 export NNVTMaskManager__MAGIC_virtual_thickness_MM=$magic

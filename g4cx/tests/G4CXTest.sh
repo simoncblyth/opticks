@@ -95,7 +95,7 @@ fi
 #num_photons=1000      # 1k
 #num_photons=10000    # 10k
 #num_photons=50000    # 50k 
-num_photons=100000   # 100k
+num_photons=100000    # 100k
 #num_photons=1000000  # 1M
 
 NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}

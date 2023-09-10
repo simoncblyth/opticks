@@ -939,13 +939,243 @@ CONFIRMED : clearance of 0.04 is enough to cause the issue::
 
 
 
-WIP: adding rectangle_inwards storch type Z:+-205 X:+-300 : for standalone test of sides + bottom
+DONE : adding rectangle_inwards storch type Z:+-205 X:+-300 : for standalone test of sides + bottom
 -----------------------------------------------------------------------------------------------------
 
 Even after the MAGIC fix there is almost no clearance to sides and bottom as shown by simtrace::
 
     MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh ana 
+
+HMM: PILOT ERROR IN THE ABOVE STATEMENT, AFTER A CLOSE LOOK AGAIN WITH MAGIC 0.1 GET AGREEMENT
+AND OBSERVE THAT CLEARANCE AT SIDES IS SAME AS AT TOP (NAMELY THE MAGIC)
+
+THERE IS NO CLEARANCE AT THE BOTTOM WITH WHAT LOOKS LIKE COINCIDENT EDGE : BUT 
+SEEMS TO HAVE NO PHYSICS EFFECT
+
+
+So added rectangle_inwards and check standalone::
+
+    ~/opticks/g4cx/tests/G4CXTest.sh     # workstation 
+    GEOM tmpget                          # laptop 
+    ~/opticks/g4cx/tests/G4CXTest.sh ana # laptop
+
+Looking very different::
+
+    a.CHECK : rectangle_inwards 
+    b.CHECK : rectangle_inwards 
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :  6009.9526 c2n :    57.0000 c2per:   105.4378  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  6009.95/57:105.438 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT BT BT SA                                                                        ' ' 0' ' 19557  24280' '508.8562' ' 12603  10122']
+     [' 1' 'TO BT DR BT SA                                                                                 ' ' 1' ' 14691  14766' ' 0.1910' '  1331   1329']
+     [' 2' 'TO SA                                                                                          ' ' 2' ' 13659  13710' ' 0.0950' '     0      0']
+     [' 3' 'TO BT SA                                                                                       ' ' 3' ' 13331  13237' ' 0.3326' '  1328   1328']
+     [' 4' 'TO BT BT BT SA                                                                                 ' ' 4' '  9500   9773' ' 3.8670' ' 76612  76612']
+     [' 5' 'TO BT BT BT DR BT BT BT SA                                                                     ' ' 5' '  7451   7880' '12.0045' ' 76613  76613']
+     [' 6' 'TO DR SA                                                                                       ' ' 6' '  6172   6132' ' 0.1300' ' 56725  56725']
+     [' 7' 'TO BT BT BT BT SA                                                                              ' ' 7' '  4677      5' '4662.0215' ' 10129  76607']
+     [' 8' 'TO BT BT BR BT BT SA                                                                           ' ' 8' '  1598   1586' ' 0.0452' ' 10349  10158']
+     [' 9' 'TO BT BT BT DR SA                                                                              ' ' 9' '  1292   1400' ' 4.3328' ' 76621  76640']
+     ['10' 'TO BT BR BT SA                                                                                 ' '10' '  1096   1066' ' 0.4163' ' 10168  10315']
+     ['11' 'TO BT BT BT DR DR BT BT BT SA                                                                  ' '11' '   976    964' ' 0.0742' ' 76815  76798']
+     ['12' 'TO BT BT AB                                                                                    ' '12' '   630    623' ' 0.0391' ' 10162  10144']
+     ['13' 'TO BT BT BT AB                                                                                 ' '13' '   484    472' ' 0.1506' ' 10264  10130']
+     ['14' 'TO BT BT BT DR BT BT SA                                                                        ' '14' '   457      0' '457.0000' ' 76638     -1']
+     ['15' 'TO BT BT BT BR BT BT BT SA                                                                     ' '15' '   343    329' ' 0.2917' ' 11215  10143']
+     ['16' 'TO BT BT BT BT AB                                                                              ' '16' '   272    336' ' 6.7368' ' 11089  10247']
+     ['17' 'TO BT DR SA                                                                                    ' '17' '   257    329' ' 8.8464' '  1345   1371']
+     ['18' 'TO BT DR DR BT SA                                                                              ' '18' '   278    251' ' 1.3781' '  1332   1355']
+     ['19' 'TO BT BT BT DR DR SA                                                                           ' '19' '   265    259' ' 0.0687' ' 76968  76861']
+     ['20' 'TO AB                                                                                          ' '20' '   235    224' ' 0.2636' '     5     29']
+     ['21' 'TO BT BT BT DR DR DR BT BT BT SA                                                               ' '21' '   191    180' ' 0.3261' ' 76849  77021']
+     ['22' 'TO BT BT BT BT BR BT BT BT BT SA                                                               ' '22' '   130    177' ' 7.1954' ' 21356  10425']
+     ['23' 'TO BT AB                                                                                       ' '23' '   168     82' '29.5840' '  1415   1624']
+     ['24' 'TO BT BT BR BR BR BT BT SA                                                                     ' '24' '   143    138' ' 0.0890' ' 22995  23295']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [['14' 'TO BT BT BT DR BT BT SA                                                                        ' '14' '   457      0' '457.0000' ' 76638     -1']
+     ['31' 'TO BT BT DR BT BT BT SA                                                                        ' '31' '    75      0' '75.0000' ' 87385     -1']
+     ['35' 'TO BT BT BT DR DR BT BT SA                                                                     ' '35' '    52      0' '52.0000' ' 77409     -1']
+     ['59' 'TO BT BT DR SA                                                                                 ' '59' '    14      0' ' 0.0000' ' 87411     -1']
+     ['65' 'TO BT BT DR BT BT SA                                                                           ' '65' '    12      0' ' 0.0000' ' 87393     -1']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+    PICK=AB MODE=0 SEL=0 POI=-1 ./G4CXAppTest.sh ana 
+    not plotting as MODE 0 in environ
+    not plotting as MODE 0 in environ
+
     
+::
+
+    PICK=AB MODE=2 ~/opticks/g4cx/tests/G4CXTest.sh ana
+
+
+Notice all the "in A but not B" have 1(or 2) DR : diffuse reflect. 
+
+* THIS POOR AGREEMENT WAS FROM PILOT ERROR : STILL USING MAGIC 0.04 LESS THAN THE 
+  DEFAULT 0.05 AND A LOT LESS THAN THE INTENDED FUTURE VALUE OF 0.1 
+
+
+
+Reduce stats for easier interactivity on the plot::
+
+    a.CHECK : rectangle_inwards 
+    b.CHECK : rectangle_inwards 
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :   582.6970 c2n :    22.0000 c2per:    26.4862  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  582.70/22:26.486 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT BT BT SA                                                                        ' ' 0' '  1954   2436' '52.9212' '  1261   1013']
+     [' 1' 'TO BT DR BT SA                                                                                 ' ' 1' '  1481   1476' ' 0.0085' '   133    134']
+     [' 2' 'TO SA                                                                                          ' ' 2' '  1371   1344' ' 0.2685' '     0      0']
+     [' 3' 'TO BT SA                                                                                       ' ' 3' '  1328   1326' ' 0.0015' '   134    133']
+     [' 4' 'TO BT BT BT SA                                                                                 ' ' 4' '   993    972' ' 0.2244' '  7666   7664']
+     [' 5' 'TO BT BT BT DR BT BT BT SA                                                                     ' ' 5' '   707    804' ' 6.2270' '  7664   7663']
+     [' 6' 'TO DR SA                                                                                       ' ' 6' '   613    638' ' 0.4996' '  5676   5676']
+     [' 7' 'TO BT BT BT BT SA                                                                              ' ' 7' '   465      0' '465.0000' '  1013     -1']
+     [' 8' 'TO BT BT BR BT BT SA                                                                           ' ' 8' '   170    153' ' 0.8947' '  1060   1404']
+     [' 9' 'TO BT BT BT DR SA                                                                              ' ' 9' '   133    117' ' 1.0240' '  7710   7684']
+     ['10' 'TO BT BR BT SA                                                                                 ' '10' '   109    102' ' 0.2322' '  1676   1719']
+     ['11' 'TO BT BT BT DR DR BT BT BT SA                                                                  ' '11' '    93     95' ' 0.0213' '  7699   7717']
+     ['12' 'TO BT BT AB                                                                                    ' '12' '    47     84' '10.4504' '  1087   1046']
+     ['13' 'TO BT BT BT AB                                                                                 ' '13' '    44     49' ' 0.2688' '  1017   1050']
+     ['14' 'TO BT BT BT DR BT BT SA                                                                        ' '14' '    42      0' '42.0000' '  7669     -1']
+     ['15' 'TO BT BT BT BT AB                                                                              ' '15' '    35     33' ' 0.0588' '  1016   1057']
+     ['16' 'TO BT DR SA                                                                                    ' '16' '    26     33' ' 0.8305' '   135    143']
+     ['17' 'TO BT BT BT BR BT BT BT SA                                                                     ' '17' '    30     23' ' 0.9245' '  1020   2138']
+     ['18' 'TO BT BT BT DR DR SA                                                                           ' '18' '    24     21' ' 0.2000' '  7772   7808']
+     ['19' 'TO AB                                                                                          ' '19' '    22     17' ' 0.6410' '     5    129']
+     ['20' 'TO BT AB                                                                                       ' '20' '    21      4' ' 0.0000' '   201    259']
+     ['21' 'TO BT DR DR BT SA                                                                              ' '21' '    20     20' ' 0.0000' '   209    144']
+     ['22' 'TO BT BT BT DR BT AB                                                                           ' '22' '    16     16' ' 0.0000' '  7790   7668']
+     ['23' 'TO BT BT BR BR BR BT BT SA                                                                     ' '23' '    14     15' ' 0.0000' '  2381   2396']
+     ['24' 'TO BT BT BT DR DR DR BT BT BT SA                                                               ' '24' '    13     15' ' 0.0000' '  7687   7760']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [[' 7' 'TO BT BT BT BT SA                                                                              ' ' 7' '   465      0' '465.0000' '  1013     -1']
+     ['14' 'TO BT BT BT DR BT BT SA                                                                        ' '14' '    42      0' '42.0000' '  7669     -1']
+     ['27' 'TO BT BT DR BT BT BT SA                                                                        ' '27' '    11      0' ' 0.0000' '  8739     -1']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+    PICK=AB MODE=0 SEL=0 POI=-1 ./G4CXAppTest.sh ana 
+
+
+::
+
+     PICK=A MODE=2 HSEL="TO BT BT BT BT SA" ~/opticks/g4cx/tests/G4CXTest.sh ana
+     PICK=A MODE=2 HSEL="TO BT BT BT BT SA" ~/opticks/g4cx/tests/G4CXTest.sh mpcap
+
+
+
+
+Upping the MAGIC to 0.1 (twice the default brings back into line)
+--------------------------------------------------------------------
+
+::
+
+    ~/opticks/g4cx/tests/G4CXTest.sh ana
+
+    a.CHECK : rectangle_inwards 
+    b.CHECK : rectangle_inwards 
+    QCF qcf :  
+    a.q 10000 b.q 10000 lim slice(None, None, None) 
+    c2sum :    18.8328 c2n :    20.0000 c2per:     0.9416  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  18.83/20:0.942 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT BT BT SA                                                                        ' ' 0' '  2425   2436' ' 0.0249' '  1013   1013']
+     [' 1' 'TO BT DR BT SA                                                                                 ' ' 1' '  1484   1476' ' 0.0216' '   133    134']
+     [' 2' 'TO SA                                                                                          ' ' 2' '  1371   1344' ' 0.2685' '     0      0']
+     [' 3' 'TO BT SA                                                                                       ' ' 3' '  1329   1326' ' 0.0034' '   134    133']
+     [' 4' 'TO BT BT BT SA                                                                                 ' ' 4' '  1004    972' ' 0.5182' '  7666   7664']
+     [' 5' 'TO BT BT BT DR BT BT BT SA                                                                     ' ' 5' '   760    804' ' 1.2379' '  7664   7663']
+     [' 6' 'TO DR SA                                                                                       ' ' 6' '   613    638' ' 0.4996' '  5676   5676']
+     [' 7' 'TO BT BT BR BT BT SA                                                                           ' ' 7' '   170    153' ' 0.8947' '  1060   1404']
+     [' 8' 'TO BT BT BT DR SA                                                                              ' ' 8' '   133    117' ' 1.0240' '  7710   7684']
+     [' 9' 'TO BT BR BT SA                                                                                 ' ' 9' '   109    102' ' 0.2322' '  1676   1719']
+     ['10' 'TO BT BT BT DR DR BT BT BT SA                                                                  ' '10' '    96     95' ' 0.0052' '  7699   7717']
+     ['11' 'TO BT BT AB                                                                                    ' '11' '    46     84' '11.1077' '  1087   1046']
+     ['12' 'TO BT BT BT AB                                                                                 ' '12' '    45     49' ' 0.1702' '  1017   1050']
+     ['13' 'TO BT BT BT BT AB                                                                              ' '13' '    37     33' ' 0.2286' '  1016   1057']
+     ['14' 'TO BT DR SA                                                                                    ' '14' '    26     33' ' 0.8305' '   135    143']
+     ['15' 'TO BT BT BT BR BT BT BT SA                                                                     ' '15' '    30     23' ' 0.9245' '  1020   2138']
+     ['16' 'TO BT BT BT DR DR SA                                                                           ' '16' '    24     21' ' 0.2000' '  7772   7808']
+     ['17' 'TO AB                                                                                          ' '17' '    22     17' ' 0.6410' '     5    129']
+     ['18' 'TO BT DR DR BT SA                                                                              ' '18' '    20     20' ' 0.0000' '   209    144']
+     ['19' 'TO BT BT BT DR BT AB                                                                           ' '19' '    16     16' ' 0.0000' '  7790   7668']
+     ['20' 'TO BT BT BT BT BR BT BT BT BT SA                                                               ' '20' '    16     12' ' 0.0000' '  1096   1258']
+     ['21' 'TO BT BT BR BR BR BT BT SA                                                                     ' '21' '    14     15' ' 0.0000' '  2381   2396']
+     ['22' 'TO BT BT BT DR DR DR BT BT BT SA                                                               ' '22' '    13     15' ' 0.0000' '  7687   7760']
+     ['23' 'TO BT BT BR AB                                                                                 ' '23' '    10      4' ' 0.0000' '  2275   2384']
+     ['24' 'TO BT AB                                                                                       ' '24' '    10      4' ' 0.0000' '   201    259']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+
+
+
+Up stats to 100k 
+------------------
+
+::
+
+    a.CHECK : rectangle_inwards 
+    b.CHECK : rectangle_inwards 
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :    51.1842 c2n :    51.0000 c2per:     1.0036  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  51.18/51:1.004 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT BT BT SA                                                                        ' ' 0' ' 24281  24306' ' 0.0129' ' 10122  10122']
+     [' 1' 'TO BT DR BT SA                                                                                 ' ' 1' ' 14714  14761' ' 0.0749' '  1331   1331']
+     [' 2' 'TO SA                                                                                          ' ' 2' ' 13643  13705' ' 0.1406' '     0      0']
+     [' 3' 'TO BT SA                                                                                       ' ' 3' ' 13344  13241' ' 0.3991' '  1328   1328']
+     [' 4' 'TO BT BT BT SA                                                                                 ' ' 4' '  9608   9789' ' 1.6890' ' 76612  76612']
+     [' 5' 'TO BT BT BT DR BT BT BT SA                                                                     ' ' 5' '  7993   7842' ' 1.4399' ' 76613  76616']
+     [' 6' 'TO DR SA                                                                                       ' ' 6' '  6172   6137' ' 0.0995' ' 56725  56727']
+     [' 7' 'TO BT BT BR BT BT SA                                                                           ' ' 7' '  1600   1606' ' 0.0112' ' 10124  10182']
+     [' 8' 'TO BT BT BT DR SA                                                                              ' ' 8' '  1306   1398' ' 3.1302' ' 76621  76796']
+     [' 9' 'TO BT BR BT SA                                                                                 ' ' 9' '  1096   1058' ' 0.6704' ' 10168  10339']
+     ['10' 'TO BT BT BT DR DR BT BT BT SA                                                                  ' '10' '  1036    972' ' 2.0398' ' 76815  76812']
+     ['11' 'TO BT BT AB                                                                                    ' '11' '   626    602' ' 0.4691' ' 10162  10168']
+     ['12' 'TO BT BT BT AB                                                                                 ' '12' '   504    462' ' 1.8261' ' 10264  10129']
+     ['13' 'TO BT BT BT BR BT BT BT SA                                                                     ' '13' '   344    319' ' 0.9427' ' 11215  10167']
+     ['14' 'TO BT BT BT BT AB                                                                              ' '14' '   308    330' ' 0.7586' ' 10186  10271']
+     ['15' 'TO BT DR SA                                                                                    ' '15' '   257    320' ' 6.8787' '  1345   1414']
+     ['16' 'TO BT DR DR BT SA                                                                              ' '16' '   278    255' ' 0.9925' '  1332   1398']
+     ['17' 'TO BT BT BT DR DR SA                                                                           ' '17' '   267    267' ' 0.0000' ' 76968  76921']
+     ['18' 'TO AB                                                                                          ' '18' '   235    206' ' 1.9070' '     5     67']
+     ['19' 'TO BT BT BT DR DR DR BT BT BT SA                                                               ' '19' '   197    181' ' 0.6772' ' 76849  77095']
+     ['20' 'TO BT BT BT BT BR BT BT BT BT SA                                                               ' '20' '   146    164' ' 1.0452' ' 10180  10449']
+     ['21' 'TO BT BT BR BR BR BT BT SA                                                                     ' '21' '   143    147' ' 0.0552' ' 22995  23317']
+     ['22' 'TO BT BT BT DR AB                                                                              ' '22' '    97     88' ' 0.4378' ' 77211  76774']
+     ['23' 'TO BT BT BT DR BT AB                                                                           ' '23' '    97     79' ' 1.8409' ' 76665  76767']
+     ['24' 'TO BT BT BT BT BT BT AB                                                                        ' '24' '    82     92' ' 0.5747' ' 10617  10219']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+
+
+
+HMM: to to increase stats for real close looks::
+
+
+    PICK=AB MODE=2 HSEL="TO BT BT BT BT SA" FOCUS=0,194,10 ~/opticks/g4cx/tests/G4CXTest.sh ana
+
 
 
 
