@@ -89,8 +89,8 @@ export nnvt_UsePMTNaturalGeometry=$version
 #geomlist=hamaLogicalPMT
 #geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100 
 
-geomlist=hmskLogicMaskVirtual
-#geomlist=nmskLogicMaskVirtual   # LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
+#geomlist=hmskLogicMaskVirtual
+geomlist=nmskLogicMaskVirtual   # FIXED? : LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
 
 export FewPMT_GEOMList=$geomlist
 
@@ -100,17 +100,17 @@ export FewPMT_GEOMList=$geomlist
 #delta=4e-2   # TODO: TRY THIS : IS IT REALLY JUST WHEN DIP BELOW PropagateEpsilon THAT THINGS FALL TO PIECES ?
 #delta=5e-2   # OK WITH tub3 G4CXTest.sh  THIS EQUALS SEventConfig::PropagateEpsilon 
 #delta=1e-1   # OK WITH tub3 G4CXTest.sh
-delta=1       # OK WITH tub3 G4CXTest.sh
-
+delta=1       # OK WITH tub3 G4CXTest.sh   
 export Tub3inchPMTV3Manager__VIRTUAL_DELTA_MM=$delta
 
 
-#magic=0.05    # initial default in original C++
 #magic=0.01    # decrease to try to get LPMT apex degeneracy issue to appear standalone 
-magic=1        # CHECK ITS WORKING IN simtrace plot 
- 
+magic=0.04     # just less than PropagateEpsilon
+#magic=0.05    # initial default in original C++ of both HamamatsuMaskManager and NNVTMaskManager
+#magic=0.1      # TRY A CONSERVATIVE DOUBLING OF THE CLEARANCE 
+#magic=1       # CHECK ITS WORKING BY MAKING EASILY VISIBLE IN simtrace plot : yes, but this could cause overlaps 
 export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=$magic
-
+export NNVTMaskManager__MAGIC_virtual_thickness_MM=$magic
 
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1  # HMM: THIS IS SOMEWHAT OF A HIDDEN PLACE TO DO THIS ? 
 

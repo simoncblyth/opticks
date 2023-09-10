@@ -85,8 +85,8 @@ struct storch
     float3   pol ;
     float    wavelength ; 
  
-    float2  zenith ; 
-    float2  azimuth ; 
+    float2  zenith ;  // for T_RECTANGLE : repurposed for the Z values of rect sides
+    float2  azimuth ; // for T_RECTANGLE : repurposed for the X values of rect sides 
 
     // beam
     float    radius ; 
@@ -106,12 +106,14 @@ struct storch
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static constexpr const char* storch_FillGenstep_pos = "storch_FillGenstep_pos" ; 
-   static constexpr const char* storch_FillGenstep_time = "storch_FillGenstep_time" ; 
-   static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
+   static constexpr const char* storch_FillGenstep_pos        = "storch_FillGenstep_pos" ; 
+   static constexpr const char* storch_FillGenstep_time       = "storch_FillGenstep_time" ; 
+   static constexpr const char* storch_FillGenstep_mom        = "storch_FillGenstep_mom" ; 
    static constexpr const char* storch_FillGenstep_wavelength = "storch_FillGenstep_wavelength" ; 
-   static constexpr const char* storch_FillGenstep_radius = "storch_FillGenstep_radius" ; 
-   static constexpr const char* storch_FillGenstep_type = "storch_FillGenstep_type" ; 
+   static constexpr const char* storch_FillGenstep_radius     = "storch_FillGenstep_radius" ; 
+   static constexpr const char* storch_FillGenstep_zenith     = "storch_FillGenstep_zenith" ; 
+   static constexpr const char* storch_FillGenstep_azimuth    = "storch_FillGenstep_azimuth" ; 
+   static constexpr const char* storch_FillGenstep_type       = "storch_FillGenstep_type" ; 
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump=false ) ; 
    std::string desc() const ; 
 #endif
@@ -135,29 +137,26 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     gs.numphoton = numphoton_per_genstep  ;   
 
     qvals( gs.pos , storch_FillGenstep_pos , "0,0,-90" );    
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_pos gs.pos (%10.4f %10.4f %10.4f) \n", gs.pos.x, gs.pos.y, gs.pos.z ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_pos gs.pos (%10.4f %10.4f %10.4f) \n", gs.pos.x, gs.pos.y, gs.pos.z ); 
 
     qvals( gs.time, storch_FillGenstep_time, "0.0" ); 
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_time gs.time (%10.4f) \n", gs.time ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_time gs.time (%10.4f) \n", gs.time ); 
 
     qvals( gs.mom , storch_FillGenstep_mom , "0,0,1" );    
-    gs.mom = normalize(gs.mom);  
-    // maybe should skip this float normalized, relying instead on U4VPrimaryGenerator::GetPhotonParam to do the normalize ?
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
+    gs.mom = normalize(gs.mom);  // maybe should skip this float normalized, relying instead on U4VPrimaryGenerator::GetPhotonParam to do the normalize ?
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
 
     qvals( gs.wavelength, storch_FillGenstep_wavelength, "420" ); 
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_wavelength gs.wavelength (%10.4f) \n", gs.wavelength  ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_wavelength gs.wavelength (%10.4f) \n", gs.wavelength  ); 
 
-    gs.zenith = make_float2( 0.f, 1.f );  
-    gs.azimuth = make_float2( 0.f, 1.f );  
+    qvals( gs.zenith,  storch_FillGenstep_zenith,  "0,1" ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_zenith gs.zenith (%10.4f,%10.4f) \n", gs.zenith.x, gs.zenith.y  ); 
+
+    qvals( gs.azimuth,  storch_FillGenstep_azimuth,  "0,1" ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_azimuth gs.azimuth (%10.4f,%10.4f) \n", gs.azimuth.x, gs.azimuth.y  ); 
 
     qvals( gs.radius, storch_FillGenstep_radius, "50" ); 
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
 
     const char* type = qenv(storch_FillGenstep_type, "disc" );  
     unsigned ttype = storchtype::Type(type) ; 
@@ -166,8 +165,7 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     assert(ttype_valid);  
 
     gs.type = ttype ;  
-    if(dump)
-    printf("//storch::FillGenstep storch_FillGenstep_type %s  gs.type %d \n", type, gs.type ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_type %s  gs.type %d \n", type, gs.type ); 
     gs.mode = 255 ;    //torchmode::Type("...");  
 }
 
@@ -204,7 +202,7 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
 STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 #endif
 {
-    const storch& gs = (const storch&)gs_ ;   // casting between union-ed types  
+    const storch& gs = (const storch&)gs_ ;   // casting between union-ed types : quad6 and storch  
 
 #ifdef STORCH_DEBUG
     printf("//storch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
@@ -301,7 +299,6 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         p.time = gs.time ; 
         float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
 
-
         float phi = 2.f*M_PIf*frac ; 
         float sinPhi = sinf(phi); 
         float cosPhi = cosf(phi);
@@ -331,7 +328,60 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         p.pol.z = 0.f ;    
         smath::rotateUz(p.pol, p.mom) ; 
     }
+    else if( gs.type == T_RECTANGLE )
+    {
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
 
+        /**
+        DIVIDE TOTAL PHOTON SLOTS INTO FOUR SIDES 
+        ie side is 0,0,0...,1,1,1...,2,2,2,..,3,3,3...
+
+              +------3:top-------+- gs.zenith.y
+              |                  |
+              |                  |
+              0:left             1:right
+              |                  |
+              |                  |
+              +---2:bottom-------+- gs.zenith.x
+              |                  |
+              gs.azimuth.x       gs.azimuth.y
+
+        **/ 
+
+        int side_size = gs.numphoton/4 ; 
+        int side = photon_id/side_size ;  
+        int side_offset = side*side_size ; 
+        int side_index = photon_id - side_offset ; // index within the side
+        float frac = float(side_index)/float(side_size) ;  // 0->~1  within the side
+
+        if( side == 0 || side == 1 ) // left or right 
+        {
+            p.pos.x = side == 0 ? gs.azimuth.x : gs.azimuth.y ; 
+            p.pos.y = 0.f ; 
+            p.pos.z = (1.f-frac)*gs.zenith.x + frac*gs.zenith.y ; 
+
+            p.mom.x = side == 0 ? 1.f : -1.f ;   // inwards
+            p.mom.y = 0.f ; 
+            p.mom.z = 0.f ; 
+        }
+        else if( side == 2 || side == 3)  // bottom or top
+        {
+            p.pos.x = (1.f-frac)*gs.azimuth.x + frac*gs.azimuth.y ; 
+            p.pos.y = 0.f ; 
+            p.pos.z = side == 2 ? gs.zenith.x : gs.zenith.y ;   
+
+            p.mom.x = 0.f ; 
+            p.mom.y = 0.f ; 
+            p.mom.z = side == 2 ? 1.f : -1.f ;   
+        }
+        p.pos = p.pos + gs.pos ; // translate position, often gs.pos is origin anyhow
+
+        p.pol.x = 0.f ;
+        p.pol.y = -1.f ;    // point out the XZ plane, so its transverse
+        p.pol.z = 0.f ;    
+        smath::rotateUz(p.pol, p.mom) ; 
+    }
     p.zero_flags(); 
     p.set_flag(TORCH); 
 }

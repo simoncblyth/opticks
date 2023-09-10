@@ -5,6 +5,12 @@ storch_FillGenstep.sh
 This is sourced from scripts to setup envvars
 that configure torch photon generation 
 
+Some of this config such as CHECK 
+may be overridden by callers, for example:
+
+* ~/opticks/g4cx/tests/G4CXTest.sh 
+
+
 Control vars
 -------------
 
@@ -31,7 +37,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
 
     #check=rain_disc
     #check=rain_line
-    check=rain_line_205
+    #check=rain_line_205
     #check=rain_point_xpositive_0
     #check=tub3_side_line
     #check=rain_point_xpositive_100
@@ -42,6 +48,7 @@ if [ "$LAYOUT" == "one_pmt" ]; then
     #check=lhs_window_line
     #check=lhs_reflector_line
     #check=lhs_reflector_point
+    check=rectangle_inwards
     export CHECK=${CHECK:-$check}  # CAUTION: this is duplicated for other layouts
 
     if [ "$CHECK" == "rain_disc" ]; then
@@ -93,6 +100,13 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         ttype=circle
         radius=-${CHECK:15}   # -ve radius for inwards
         pos=0,0,0
+
+    elif [ "$CHECK" == "rectangle_inwards" ]; then
+
+        ttype=rectangle
+        pos=0,0,0 
+        zenith=-205,205
+        azimuth=-290,290
 
     elif [ "$CHECK" == "up_rain_line" ]; then
 
@@ -182,4 +196,7 @@ export storch_FillGenstep_type=$ttype
 export storch_FillGenstep_radius=$radius
 export storch_FillGenstep_pos=$pos
 export storch_FillGenstep_mom=$mom
+[ -n "$zenith" ]  && export storch_FillGenstep_zenith=$zenith
+[ -n "$azimuth" ] && export storch_FillGenstep_azimuth=$azimuth
+
 

@@ -750,8 +750,203 @@ TODO: Try reducing clearance to see how low it can go
 --------------------------------------------------------
 
 
-TODO: Test with NNVT
-----------------------
+DONE : Insitu Test with NNVT
+---------------------------------
+
+1. change OPTICKS_INPUT_PHOTON_FRAME to NNVT:0:1000 in ntds_noxjsjfa
+
+::
+
+    GEOM tmpget
+    PICK=AB MODE=2 ~/j/ntds/ntds3.sh ana 
+
+::
+
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :   280.8794 c2n :   188.0000 c2per:     1.4940  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  280.88/188:1.494 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:25]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT BT BT SD                                                                              ' ' 0' ' 33322  33343' ' 0.0066' '     1      2']
+     [' 1' 'TO BT BT BT BT SA                                                                              ' ' 1' ' 28160  28070' ' 0.1441' '     8      0']
+     [' 2' 'TO BT BT BT BT BT SR SA                                                                        ' ' 2' '  6270   6268' ' 0.0003' ' 10363  10565']
+     [' 3' 'TO BT BT BT BT BT SA                                                                           ' ' 3' '  4552   4649' ' 1.0226' '  8398   8433']
+     [' 4' 'TO BT BT BT BT BT SR BR SR SA                                                                  ' ' 4' '  1154   1186' ' 0.4376' ' 21156  21014']
+     [' 5' 'TO BT BT BT BT BT SR BR SA                                                                     ' ' 5' '   923    989' ' 2.2782' ' 20241  20201']
+     [' 6' 'TO BT BT BT BT BR BT BT BT BT BT BT AB                                                         ' ' 6' '   946    958' ' 0.0756' ' 10389   8432']
+     [' 7' 'TO BT BT BT BT BT SR SR SA                                                                     ' ' 7' '   901    942' ' 0.9121' ' 10399  10410']
+     [' 8' 'TO BT BT AB                                                                                    ' ' 8' '   878    895' ' 0.1630' '    26    102']
+     [' 9' 'TO BT BT BT BT BT SR BT BT BT BT BT BT BT AB                                                   ' ' 9' '   615    635' ' 0.3200' ' 20974  22027']
+     ['10' 'TO BT BT BT BT BR BT BT BT BT AB                                                               ' '10' '   571    601' ' 0.7679' '  8459   9208']
+     ['11' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT SA                                                   ' '11' '   533    537' ' 0.0150' '  7312   7299']
+     ['12' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT BT BT BT BT SD                                       ' '12' '   503    396' '12.7353' ' 12018  11465']
+     ['13' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT SD                                                   ' '13' '   480    497' ' 0.2958' '  7974   7967']
+     ['14' 'TO BT BT BT BT BR BT BT BT BT BT BT BT BT BT BT BT BT SA                                       ' '14' '   412    411' ' 0.0012' ' 11467  11471']
+     ['15' 'TO BT BT BT BT BT SR SR SR SA                                                                  ' '15' '   383    396' ' 0.2169' ' 10362  10368']
+     ['16' 'TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT BT BT SD                                    ' '16' '   389    377' ' 0.1880' ' 16444  16267']
+     ['17' 'TO BT BT BT BT BT SR BR SR SR SA                                                               ' '17' '   353    381' ' 1.0681' ' 20996  22699']
+     ['18' 'TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT BT BT SA                                    ' '18' '   355    338' ' 0.4170' ' 16401  16714']
+     ['19' 'TO BT BT BT BT AB                                                                              ' '19' '   315    331' ' 0.3963' '   651    115']
+     ['20' 'TO BT BT BT BT BR BT BT BT BT BT SA                                                            ' '20' '   308    320' ' 0.2293' '   665    672']
+     ['21' 'TO BT BT BT BT BR BT BT BT BT BT BT SC AB                                                      ' '21' '   313    292' ' 0.7289' ' 16582  17047']
+     ['22' 'TO BT BT BT BT BT SR BT BT BT BT BT BT BT BT BT BT BT BT BT SD                                 ' '22' '   270    276' ' 0.0659' ' 22351  22491']
+     ['23' 'TO BT BT BT BT BT SR BT BT BT BT BT BT BT BT BT BT BT BT BT SA                                 ' '23' '   233    255' ' 0.9918' ' 22437  22413']
+     ['24' 'TO BT BT BT BT BT SR BT BT BT BT BT BT BT SC BT BT BT BT BT BT SD                              ' '24' '   232    234' ' 0.0086' ' 22684  22926']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [['68' 'TO BT BT BT SD                                                                                 ' '68' '    60      0' '60.0000' ' 49825     -1']
+     ['77' 'TO BT BT BT SA                                                                                 ' '77' '    50      0' '50.0000' ' 49820     -1']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+    PICK=AB MODE=2 SEL= ~/j/ntds/ntds3.sh 
+    suptitle:PICK=AB MODE=2 SEL= ~/j/ntds/ntds3.sh  ## A : /tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001  
+    no SUBTITLE
+    no THIRDLINE
+    no lhsanno
+    no rhsanno
+    NOT:ax.scatter spos 
+    suptitle:PICK=AB MODE=2 SEL= ~/j/ntds/ntds3.sh  ## B : /tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/n001  
+
+
+Getting expected APEX in red, add NNVT virtual not yet expanded::
+
+    PICK=A MODE=2 SEL="TO BT BT BT SD,TO BT BT BT SA" ~/j/ntds/ntds3.sh ana 
+    PICK=A MODE=2 SEL="TO BT BT BT SD,TO BT BT BT SA" APID=49825 ~/j/ntds/ntds3.sh ana 
+
+
+DONE : Check NNVT degeneracy with simtrace
+--------------------------------------------
+
+1. Switch GEOM to "FewPMT" with the GEOM bash function
+2. configure geomlist in ~/opticks/u4/tests/FewPMT.sh::
+
+   92 #geomlist=hmskLogicMaskVirtual
+   93 geomlist=nmskLogicMaskVirtual  
+   94 
+   95 export FewPMT_GEOMList=$geomlist
+
+
+3. run simtrace ~/opticks/u4/tests/U4SimtraceTest.sh  (default ana in 3D for 2D)::
+
+   MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh ana
+
+   MODE=2 FOCUS=0,195,20 ~/opticks/u4/tests/U4SimtraceTest.sh ana
+   MODE=2 FOCUS=0,195,10 ~/opticks/u4/tests/U4SimtraceTest.sh ana  ## focus on degenerate apex 
+
+   MODE=2 FOCUS=0,194,0.1 ~/opticks/u4/tests/U4SimtraceTest.sh ana ## improve aim, take close look at clearance : it is the expected 0.05 mm  
+
+DONE : Increased clearance, doubling MAGIC::
+
+    107 #magic=0.01    # decrease to try to get LPMT apex degeneracy issue to appear standalone 
+    108 #magic=0.05    # initial default in original C++
+    109 magic=0.1      # TRY A CONSERVATIVE DOUBLING OF THE CLEARANCE 
+    110 #magic=1       # CHECK ITS WORKING BY MAKING EASILY VISIBLE IN simtrace plot : yes, but this could cause overlaps 
+    111 export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=$magic
+    112 export NNVTMaskManager__MAGIC_virtual_thickness_MM=$magic
+    113 
+    "~/opticks/u4/tests/FewPMT.sh" 182L, 5808C written
+
+DONE : Recompile j/PMTSIM in order to add the envvar MAGIC control to NNVTMaskManager::
+
+    jps ; om
+
+DONE : Rerun simtrace with the doubled MAGIC::
+
+    MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh 
+    MODE=2 FOCUS=0,194,0.1 ~/opticks/u4/tests/U4SimtraceTest.sh ana
+    MODE=2 FOCUS=0,194,0.15 ~/opticks/u4/tests/U4SimtraceTest.sh ana  ## confirm the expected increased clearance
+
+* NOTE THAT SIMTRACE IS PURE Geant4 SO IT WORKS FINE ON LAPTOP : NO NEED TO RUN ON WORKSTATION AND GRAB BACK 
+
+TODO: rain line +Z 205  standalone check of NNVTMaskManager, first with default MAGIC 0.05 and then 0.1 
+----------------------------------------------------------------------------------------------------------
+
+A/B standalone G4CXTest.sh needs to run on workstation (at least A does) so sync repos
+from laptop to workstation.::
+
+    ~/opticks/bin/rsync_put.sh   ## only bash script, so should not need to recompile
+
+    epsilon:junosw blyth$ put.sh | grep NNVTMaskManager 
+    scp /Users/blyth/junotop/junosw/Simulation/DetSimV2/PMTSim/include/NNVTMaskManager.hh P:junotop/junosw/Simulation/DetSimV2/PMTSim/include/NNVTMaskManager.hh
+    scp /Users/blyth/junotop/junosw/Simulation/DetSimV2/PMTSim/src/NNVTMaskManager.cc P:junotop/junosw/Simulation/DetSimV2/PMTSim/src/NNVTMaskManager.cc
+    epsilon:junosw blyth$ put.sh | grep NNVTMaskManager  | sh 
+
+Workstation updates:: 
+
+    jo ; ./build_Debug.sh   
+    jps ; om                # HMM: actually didnt need junosw rebuild yet, only actually need to rebuild j/PMTSim
+
+
+Check G4CXTest.sh and GEOM config on workstation, still FewPMT and rain_line_205 so proceed ::
+
+   ~/opticks/g4cx/tests/G4CXTest.sh 
+
+Curiously do not see the deviation. The clearance is right on the edge 0.05 though::
+
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :    57.9116 c2n :    47.0000 c2per:     1.2322  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  57.91/47:1.232 (30)
+
+Decreasing to 0.01 and it gets bad, with many "in A but not B"::
+
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :  7387.7803 c2n :    57.0000 c2per:   129.6102  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  7387.78/57:129.610 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [[' 4' 'TO BT BT BT DR BT BT SA                                                                        ' ' 4' '  4152      0' '4152.0000' '  1430     -1']
+     [' 8' 'TO BT BT SA                                                                                    ' ' 8' '   954      0' '954.0000' ' 48969     -1']
+     ['12' 'TO BT BT DR BT BT BT SA                                                                        ' '12' '   713      0' '713.0000' ' 48971     -1']
+     ['13' 'TO BT BT BT DR DR BT BT SA                                                                     ' '13' '   554      0' '554.0000' '  2284     -1']
+     ['23' 'TO BT BT DR SA                                                                                 ' '23' '   110      0' '110.0000' ' 49008     -1']
+     ['27' 'TO BT BT DR BT BT SA                                                                           ' '27' '    87      0' '87.0000' ' 48976     -1']
+     ['28' 'TO BT BT BT DR DR DR BT BT SA                                                                  ' '28' '    86      0' '86.0000' '  4048     -1']
+     ['32' 'TO BT BT DR DR BT BT BT SA                                                                     ' '32' '    66      0' '66.0000' ' 48990     -1']
+     ['33' 'TO BT BT BT BR DR BT BT SA                                                                     ' '33' '    65      0' '65.0000' '   897     -1']
+     ['37' 'TO BT BT BR BT SA                                                                              ' '37' '    53      0' '53.0000' '     2     -1']
+     ['56' 'TO BT BT DR DR SA                                                                              ' '56' '    17      0' ' 0.0000' ' 49154     -1']
+     ['58' 'TO BT BT DR DR BT BT SA                                                                        ' '58' '    14      0' ' 0.0000' ' 48992     -1']
+     ['60' 'TO BT BT BT DR BR BT BT SA                                                                     ' '60' '    13      0' ' 0.0000' '  2174     -1']
+     ['63' 'TO BT BT DR BT AB                                                                              ' '63' '    12      0' ' 0.0000' ' 48972     -1']]
+
+Try setting MAGIC at PropagateEpsilon(0.05)-0.01 ie 0.04::
+
+    epsilon:tests blyth$ vi FewPMT.sh
+    epsilon:tests blyth$ put.sh | sh    # laptop
+
+    ~/opticks/g4cx/tests/G4CXTest.sh     # workstation
+
+CONFIRMED : clearance of 0.04 is enough to cause the issue::
+
+    QCF qcf :  
+    a.q 100000 b.q 100000 lim slice(None, None, None) 
+    c2sum :  3594.4990 c2n :    54.0000 c2per:    66.5648  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  3594.50/54:66.565 (30)
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    [[' 5' 'TO BT BT BT DR BT BT SA                                                                        ' ' 5' '  2177      0' '2177.0000' '  1673     -1']
+     ['11' 'TO BT BT SA                                                                                    ' '11' '   494      0' '494.0000' ' 49485     -1']
+     ['14' 'TO BT BT DR BT BT BT SA                                                                        ' '14' '   361      0' '361.0000' ' 49487     -1']
+     ['15' 'TO BT BT BT DR DR BT BT SA                                                                     ' '15' '   261      0' '261.0000' '  2284     -1']
+     ['31' 'TO BT BT DR SA                                                                                 ' '31' '    52      0' '52.0000' ' 49497     -1']
+     ['36' 'TO BT BT DR BT BT SA                                                                           ' '36' '    38      0' '38.0000' ' 49499     -1']
+     ['37' 'TO BT BT BT DR DR DR BT BT SA                                                                  ' '37' '    38      0' '38.0000' '  6604     -1']
+     ['45' 'TO BT BT DR DR BT BT BT SA                                                                     ' '45' '    28      0' ' 0.0000' ' 49504     -1']]
+
+
+
+WIP: adding rectangle_inwards storch type Z:+-205 X:+-300 : for standalone test of sides + bottom
+-----------------------------------------------------------------------------------------------------
+
+Even after the MAGIC fix there is almost no clearance to sides and bottom as shown by simtrace::
+
+    MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh ana 
+    
+
 
 
 TODO: Find some sigma_alpha/polish surfaces to hunt for deviations

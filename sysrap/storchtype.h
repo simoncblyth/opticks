@@ -12,6 +12,7 @@ enum {
    T_LINE,
    T_POINT,
    T_CIRCLE,
+   T_RECTANGLE,
    T_LAST
 }; 
 
@@ -27,6 +28,7 @@ struct storchtype
     static constexpr const char* T_LINE_  = "line" ;
     static constexpr const char* T_POINT_  = "point" ;
     static constexpr const char* T_CIRCLE_  = "circle" ;
+    static constexpr const char* T_RECTANGLE_  = "rectangle" ;
 
     static unsigned Type(const char* name); 
     static const char* Name(unsigned type); 
@@ -40,6 +42,7 @@ inline unsigned storchtype::Type(const char* name)
     if(strcmp(name,T_LINE_)==0) type = T_LINE ; 
     if(strcmp(name,T_POINT_)==0) type = T_POINT ; 
     if(strcmp(name,T_CIRCLE_)==0) type = T_CIRCLE ; 
+    if(strcmp(name,T_RECTANGLE_)==0) type = T_RECTANGLE ; 
     return type ; 
 }
 
@@ -53,6 +56,7 @@ inline const char* storchtype::Name(unsigned type)
         case T_LINE:  n = T_LINE_ ; break ; 
         case T_POINT:  n = T_POINT_ ; break ; 
         case T_CIRCLE:  n = T_CIRCLE_ ; break ; 
+        case T_RECTANGLE:  n = T_RECTANGLE_ ; break ; 
         default : break ; 
     }
     return n ; 
