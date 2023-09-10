@@ -235,22 +235,25 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     } 
     float f_max = fminf(1.f,4.f*sigma_alpha);
 
-    float alpha, sin_alpha, phi, u0, u1 ; 
+    float alpha, sin_alpha, phi, u0, u1, u2 ; 
     bool reject_alpha ; 
     bool reject_dir ; 
 
     do {
         do {
 
-            alpha = RandGaussQ_shoot(rng, 0.f, sigma_alpha );  // mean:0.f stdDev:sigma_alpha
+            //alpha = RandGaussQ_shoot(rng, 0.f, sigma_alpha );  // mean:0.f stdDev:sigma_alpha
+            u0 = 2.f*curand_uniform(&rng) ; 
+            alpha = -M_SQRT2f*erfcinvf(u2)*sigma_alpha ; 
+
             sin_alpha = sinf(alpha); 
-            u0 = curand_uniform(&rng) ; 
-            reject_alpha = alpha >= M_PIf/2.f || u0*fminf(1.f, 4.f*sigma_alpha) > sin_alpha ; 
+            u1 = curand_uniform(&rng) ; 
+            reject_alpha = alpha >= M_PIf/2.f || u1*fminf(1.f, 4.f*sigma_alpha) > sin_alpha ; 
 
         } while( reject_alpha ) ; 
 
-        u1 = curand_uniform(&rng) ; 
-        phi = u1*M_PIf*2.f ;
+        u2 = curand_uniform(&rng) ; 
+        phi = u2*M_PIf*2.f ;
 
         smeared_normal.x = sin_alpha * cosf(phi) ; 
         smeared_normal.y = sin_alpha * sinf(phi) ; 

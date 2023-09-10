@@ -485,12 +485,11 @@ jcv HamamatsuMaskManager::
      61 }
       
 
-
-* that could explain why the standalone check not showing the issue currently 
+* that could explain why the standalone check not showing the issue currently : IT WAS ON THE EDGE 
 
 * DONE : ADDED ENVVAR CONTROL FOR THE 0.05 DELTA : export HamamatsuMaskManager__MAGIC_virtual_thickness_MM=0.05 
-* TODO : CHECK THAT DECREASING THAT MAKES STANDALONE EXHIBIT THE ISSUE 
-* TODO : CHECK THAT INCREASING THAT MAKES INSITU AVOID THE ISSUE 
+* DONE : CHECK THAT DECREASING THAT MAKES STANDALONE EXHIBIT THE ISSUE 
+* DONE : CHECK THAT INCREASING THAT MAKES INSITU AVOID THE ISSUE 
 
 ::
 
@@ -746,8 +745,12 @@ Looking good when shooting HAMA PMTs::
 
 
 
-TODO: Try reducing clearance to see how low it can go
+DONE : Try reducing clearance to see how low it can go
 --------------------------------------------------------
+
+Seems to really be as simple as making it more than PropagateEpsilon 0.05 mm
+BUT could be being misled by looking at neatly targetted torch photon inputs 
+(with 2D in mind) so conservartively think best to keep geometry clearance >= 2*PropagateEpilon = 0.1 mm  
 
 
 DONE : Insitu Test with NNVT
@@ -860,7 +863,7 @@ DONE : Rerun simtrace with the doubled MAGIC::
 
 * NOTE THAT SIMTRACE IS PURE Geant4 SO IT WORKS FINE ON LAPTOP : NO NEED TO RUN ON WORKSTATION AND GRAB BACK 
 
-TODO: rain line +Z 205  standalone check of NNVTMaskManager, first with default MAGIC 0.05 and then 0.1 
+DONE : rain line +Z 205  standalone check of NNVTMaskManager, first with default MAGIC 0.05 and then 0.1 
 ----------------------------------------------------------------------------------------------------------
 
 A/B standalone G4CXTest.sh needs to run on workstation (at least A does) so sync repos
@@ -1075,8 +1078,8 @@ Reduce stats for easier interactivity on the plot::
 
 
 
-Upping the MAGIC to 0.1 (twice the default brings back into line)
---------------------------------------------------------------------
+DONE : Upping the MAGIC to 0.1 (twice the default brings back into line)
+-------------------------------------------------------------------------
 
 ::
 
@@ -1124,8 +1127,8 @@ Upping the MAGIC to 0.1 (twice the default brings back into line)
 
 
 
-Up stats to 100k 
-------------------
+DONE : Up stats to 100k, with MAGIC 0.1 : ALL OK WITH rectangle_inwards  and NNVTMask 
+----------------------------------------------------------------------------------------
 
 ::
 
@@ -1171,10 +1174,29 @@ Up stats to 100k
 
 
 
-HMM: to to increase stats for real close looks::
+
+
+::
 
 
     PICK=AB MODE=2 HSEL="TO BT BT BT BT SA" FOCUS=0,194,10 ~/opticks/g4cx/tests/G4CXTest.sh ana
+
+
+HMM: to see detail in really close looks at simulation records would have to increase stats crazily
+and then not look at most of the data... 
+
+Suggests implementing some bbox selection into record collection, 
+so can runs full simulation but only collect record points within
+a configured bbox within a configured target frame?
+
+Added note to sctx::point 
+
+
+
+TODO : Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
+---------------------------------------------------------------------------------------------
+
+
 
 
 

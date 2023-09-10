@@ -1,5 +1,6 @@
 // ./erfcinvf_Test.sh
 
+
 #include <cstdlib>
 #include <array>
 #include "NP.hh"
@@ -25,13 +26,11 @@ __global__ void _test_erfcinvf(float* ff, int ni, int nj)
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float u = float(ix)/float(ni-1) ;  // standin for uniform rand between 0 and 1 
-    float u2 = 2.f*u  ; 
+    float u2 = 2.f*float(ix)/float(ni-1) ;  // value ~between 0 and 2 
     float v = -M_SQRT2f*erfcinvf(u2) ;   
 
-    ff[ix*nj+0] = u ; 
-    ff[ix*nj+1] = u2 ; 
-    ff[ix*nj+2] = v ; 
+    ff[ix*nj+0] = u2 ; 
+    ff[ix*nj+1] = v ; 
 }
 
 void ConfigureLaunch(dim3& numBlocks, dim3& threadsPerBlock, unsigned width )
@@ -48,7 +47,7 @@ void ConfigureLaunch(dim3& numBlocks, dim3& threadsPerBlock, unsigned width )
 void test_erfcinvf()
 {
     int ni = 1000 ; 
-    int nj = 3 ; 
+    int nj = 2 ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -67,7 +66,7 @@ void test_erfcinvf()
     cudaMemcpy( hh, dd, arr_bytes, cudaMemcpyDeviceToHost ) ; 
     cudaDeviceSynchronize();
 
-    h->save(FOLD,"test_erfcinvf.npy"); 
+    h->save(FOLD,"erfcinvf_Test_cu.npy"); 
 }
 int main()
 {

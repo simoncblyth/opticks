@@ -111,7 +111,18 @@ sctx::point : copy current sphoton p into (idx,bounce) entries of evt->record/re
 
 Notice this is NOT writing into evt->photon, that is done at SEvt::finalPhoton
 The reason for this split is that photon arrays are always needed 
-but the others record/rec/seq/aux are for debugging only. 
+but the others record/rec/seq/aux are only used for debugging purposes. 
+
+IDEA/TODO: When wishing to examine simulation records in a very small region of geometry 
+(to check clearance between surfaces for example) it is currently necessary to 
+run with huge statistics, then transfer around all that data and then promptly 
+not look at most of it in analysis.  This suggests implementing an optional 
+recording bbox (presumably within the target frame) into which photon record
+points must be in order to be recorded. This way can run full simulation but 
+only record the region of current interest. 
+
+HMM: to do that need to access target frame GPU side ? Or could transform the 
+input bbox within target frame into a global frame bbox and use that ? 
 
 **/
 
