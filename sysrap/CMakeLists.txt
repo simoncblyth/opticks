@@ -259,6 +259,9 @@ set(HEADERS
     SLauncher.hh
     SRenderer.hh
     SRandom.h
+    s_seq.h
+    S4Random.h
+
     SCF.h
 
     SCtrl.hh
@@ -315,6 +318,10 @@ set(HEADERS
 
     s_mock_texture.h
     stexture.h  
+
+    njuffa_erfcinvf.h 
+    s_mock_erfcinvf.h
+
 
     squad.h
     squadx.h

@@ -1193,8 +1193,8 @@ Added note to sctx::point
 
 
 
-WIP: Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
----------------------------------------------------------------------------------------------
+DONE : Impl Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
+-------------------------------------------------------------------------------------------------
 
 ::
 
@@ -1214,7 +1214,35 @@ WIP: Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNorma
     epsilon:opticks blyth$ git commit -m "first step in checking qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish is to get a MOCK_CUDA version to work, that needs a CPU side implementation of erfcinvf, found one on stackoverflow njuffa_erfcinvf.h that gets very close to the CUDA erfcinvf "
 
 
+WIP : Comparing normal smearing impls
+-----------------------------------------
 
++---+---------------------------------------------------+--------------------------------------------+
+| A | ~/opticks/qudarap/tests/QSim_MockTest.sh          | MOCK_CUDA test of qsim impl                | 
++---+---------------------------------------------------+--------------------------------------------+
+| B | ~/opticks/sysrap/tests/S4OpBoundaryProcessTest.sh | Geant4 impl pulled into standalone form    |
++---+---------------------------------------------------+--------------------------------------------+
+| C | ? ~/opticks/qudarap/tests/QSimTest.sh             | TODO: CUDA QSim impl                       |
++---+---------------------------------------------------+--------------------------------------------+
+
+::
+
+    MODE=1 ~/opticks/qudarap/tests/QSim_MockTest.sh ana
+    MODE=1 ~/opticks/sysrap/tests/S4OpBoundaryProcessTest.sh ana
+   
+
+HMM : VERY DIFFERENT 
+
+* QSim_MockTest has sharp cutoff just above angle of 0.2 
+* S4OpBoundaryProcessTest tails off far more out to 0.35 
+
+
+Back to checking erfcinv
+
+::
+
+    ~/opticks/sysrap/tests/S4MTRandGaussQTest.sh 
+     
 
 
 TODO: Find some sigma_alpha/polish surfaces to hunt for deviations

@@ -66,7 +66,13 @@ TODO:
 #include "qpmt.h"
 #include "tcomplex.h"
 
+
+
+#if defined(MOCK_CUDA)
+#else
 struct curandStateXORWOW ; 
+#endif
+
 struct qcerenkov ; 
 
 struct qsim
@@ -235,20 +241,29 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     } 
     float f_max = fminf(1.f,4.f*sigma_alpha);
 
+#ifdef MOCK_CUDA_DEBUG
+    printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG sigma_alpha %10.5f f_max %10.5f  \n", sigma_alpha, f_max ); 
+#endif
+
     float alpha, sin_alpha, phi, u0, u1, u2 ; 
     bool reject_alpha ; 
     bool reject_dir ; 
 
     do {
         do {
-
             //alpha = RandGaussQ_shoot(rng, 0.f, sigma_alpha );  // mean:0.f stdDev:sigma_alpha
-            u0 = 2.f*curand_uniform(&rng) ; 
-            alpha = -M_SQRT2f*erfcinvf(u2)*sigma_alpha ; 
+            u0 = curand_uniform(&rng) ; 
+            alpha = -M_SQRT2f*erfcinvf(2.f*u0)*sigma_alpha ; 
 
             sin_alpha = sinf(alpha); 
             u1 = curand_uniform(&rng) ; 
-            reject_alpha = alpha >= M_PIf/2.f || u1*fminf(1.f, 4.f*sigma_alpha) > sin_alpha ; 
+            reject_alpha = alpha >= M_PIf/2.f || (u1*f_max > sin_alpha) ; 
+
+#ifdef MOCK_CUDA_DEBUG
+            printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u0 %10.5f alpha %10.5f sin_alpha %10.5f u1 %10.5f u1*f_max %10.5f  (u1*f_max > sin_alpha) %d reject_alpha %d  \n", 
+               u0, alpha, sin_alpha, u1, u1*f_max, (u1*f_max > sin_alpha), reject_alpha ); 
+            // theres lots of alpha rejected : eg all -ve sin_alpha             
+#endif
 
         } while( reject_alpha ) ; 
 
@@ -260,7 +275,14 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
         smeared_normal.z = cosf(alpha) ; 
 
         smath::rotateUz(smeared_normal, normal);
-        reject_dir = dot(smeared_normal, direction ) >= 0.f ;  
+        reject_dir = dot(smeared_normal, direction ) >= 0.f ;   
+        // reject smears into same hemi as direction
+
+#ifdef MOCK_CUDA_DEBUG
+            printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u2 %10.5f phi %10.5f smeared_normal ( %10.5f, %10.5f, %10.5f)  reject_dir %d  \n", 
+               u2, phi, smeared_normal.x, smeared_normal.y, smeared_normal.z, reject_dir ); 
+#endif
+
 
     } while( reject_dir ) ; 
 }
@@ -283,6 +305,10 @@ inline QSIM_METHOD void qsim::SmearNormal_Polish(
         smeared_normal = normal ;  
         return ; 
     } 
+
+#ifdef MOCK_CUDA
+    //printf("//qsim::SmearNormal_Polish \n"); 
+#endif
 
     float u0, u1, u2 ; 
     float3 smear ;

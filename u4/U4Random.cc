@@ -176,6 +176,8 @@ void U4Random::init()
         << NOTES
         << std::endl 
         ;
+
+    LOG(LEVEL) << desc() ; 
 }
 
 bool U4Random::isReady() const { return m_ready ; }

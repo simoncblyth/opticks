@@ -16,11 +16,17 @@ qcerenkov.h
 #include "OpticksPhoton.h"
 
 
+
+#if defined(MOCK_CUDA)
+#else
+struct curandStateXORWOW ; 
+#endif
+
+
 struct scerenkov ; 
 struct qbase ; 
 struct qbnd ; 
 struct quad6 ; 
-struct curandStateXORWOW ; 
 template <typename T> struct qprop ; 
 
 /**

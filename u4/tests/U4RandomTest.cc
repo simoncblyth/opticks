@@ -20,6 +20,13 @@ void test_basics(U4Random* rnd)
     LOG(info) << " rand.dump after U4Random::setSequenceIndex(-1) : BACK TO STANDARD RANDOMS " ; 
     rnd->setSequenceIndex(-1); 
     rnd->dump(); 
+
+    LOG(info) << " rand.dump after U4Random::setSequenceIndex(0) : USING PRECOOKED RANDOMS AGAIN " ; 
+    rnd->setSequenceIndex(0); 
+    rnd->dump(); 
+
+
+
 }
 
 int main(int argc, char** argv)

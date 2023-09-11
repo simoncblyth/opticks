@@ -50,7 +50,20 @@ struct SBnd
 
     int    getBoundaryIndex(const char* spec) const ;
 
-    static const char* getBoundaryIndices_NOTES ; 
+    static constexpr const char* getBoundaryIndices_NOTES = R"(
+SBnd::getBoundaryIndices_NOTES
+--------------------------------
+
+Failure to look up a boundary index indicates the spec string 
+specifies a boundary that is not present within the current geometry.
+For example check the spec is present in the bnd_names.txt of the bnd array 
+be used::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd.npy
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd_names.txt 
+    
+
+)" ; 
 
     void        getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ;
     std::string descBoundaryIndices( const std::vector<int>& bnd_idx ) const ;
@@ -156,20 +169,6 @@ inline int SBnd::getBoundaryIndex(const char* spec) const
 }
 
 
-inline const char* SBnd::getBoundaryIndices_NOTES = R"(
-SBnd::getBoundaryIndices_NOTES
---------------------------------
-
-Failure to look up a boundary index indicates the spec string 
-specifies a boundary that is not present within the current geometry.
-For example check the spec is present in the bnd_names.txt of the bnd array 
-be used::
-
-    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd.npy
-    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/bnd_names.txt 
-    
-
-)" ; 
 
 inline void SBnd::getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim ) const 
 {

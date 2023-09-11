@@ -11,8 +11,13 @@ qscint.h
    #define QSCINT_METHOD 
 #endif 
 
-struct quad4 ; 
+
+#if defined(MOCK_CUDA)
+#else
 struct curandStateXORWOW ; 
+#endif
+
+struct quad4 ; 
 struct quad6 ; 
 struct sphoton ; 
 

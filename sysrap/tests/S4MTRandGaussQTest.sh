@@ -19,8 +19,7 @@ EOU
 }
 
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-cd $SDIR
+cd $(dirname $BASH_SOURCE)
 
 name=S4MTRandGaussQTest
 
@@ -34,7 +33,7 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-vars="BASH_SOURCE name SDIR FOLD bin"
+vars="BASH_SOURCE name FOLD bin"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -43,7 +42,7 @@ fi
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
        S4MTRandGaussQ.cc \
-       -I$HOME/np \
+       -I.. \
        -I$(clhep-prefix)/include \
        -I$(g4-prefix)/include/Geant4  \
        -L$(clhep-prefix)/lib \
@@ -63,10 +62,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi
 
-
-
-
 exit 0 
-
 
 

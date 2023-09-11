@@ -2,6 +2,28 @@
 QSim_MockTest.cc : CPU tests of QSim.hh/qsim.h CUDA code using MOCK_CURAND mocking 
 =======================================================================================
 
+
+Testing GPU code on CPU requires mocking 
+of CUDA API including:
+
+1. tex2D lookups 
+2. curand random generation
+3. erfcinvf : inverse complementary error function 
+
+There are now lots of examples of curand mocking, 
+search for MOCK_CURAND, MOCK_CUDA. See::
+
+    sysrap/s_mock_curand.h 
+    sysrap/scurand.h 
+
+Mocking tex2D lookups is not so common. See::
+
+    sysrap/s_mock_texture.h 
+    sysrap/stexture.h 
+
+and search for MOCK_TEXTURE, MOCK_CUDA. 
+
+
 HMM: QSim.hh not very amenable to standalone use because the boatload of 
 headers that come with it : so operating at lower level.
 
@@ -13,8 +35,9 @@ Standalone compile and run with::
 
 #include "NPFold.h"
 
+#include "ssys.h"
 #include "scuda.h"
-#include "smath.h"
+#include "smath.h"    // includes s_mock_erfinvf.h when MOCK_CUDA is defined
 #include "squad.h"
 #include "srec.h"
 #include "stag.h"
@@ -26,6 +49,7 @@ Standalone compile and run with::
 #include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
 #include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
 
+#include "S4Random.h"   // header only use of pre-cooked randoms 
 #include "SPMT.h"
 #include "SBnd.h"
 #include "OpticksPhoton.hh"
@@ -60,10 +84,13 @@ struct QSim_MockTest
     const NPFold* jpmt ; 
     const QPMT<float>* q_pmt ; 
     qsim* sim ; 
+    const int num ;  
+    S4Random* rnd ; 
 
     QSim_MockTest(); 
 
     void init(); 
+    void init_bnd(); 
     std::string desc() const; 
 
     void generate_photon_dummy(); 
@@ -81,6 +108,11 @@ struct QSim_MockTest
     void fill_state(); 
     void propagate_at_boundary();
     void propagate();
+    void SmearNormal(int chk, float value); 
+    void SmearNormal_SigmaAlpha(); 
+    void SmearNormal_Polish(); 
+    void SmearNormal_debug(); 
+
 
 };
 
@@ -96,7 +128,9 @@ inline QSim_MockTest::QSim_MockTest()
     boundary(s_bnd ? s_bnd->getBoundaryIndex(BND) : -1),
     jpmt(SPMT::Serialize()),
     q_pmt( jpmt ? new QPMT<float>( jpmt ) : nullptr),  
-    sim(new qsim)
+    sim(new qsim),
+    num(ssys::getenvint("NUM",1000)),
+    rnd(new S4Random)
 {
     init(); 
 }
@@ -105,17 +139,38 @@ inline QSim_MockTest::QSim_MockTest()
 
 inline void QSim_MockTest::init()
 {
-    assert( bnd ); 
-    assert( boundary > -1 ); 
-    assert( q_pmt ); 
+    init_bnd(); 
 
+    assert( q_pmt ); 
     //rng.set_fake(0.); // 0/1:forces transmit/reflect 
 
     sim->base = q_base ? q_base->d_base : nullptr ;
-    sim->bnd = q_bnd->d_qb ;  
     sim->pmt = q_pmt->d_pmt ; 
-
 }
+
+
+inline void QSim_MockTest::init_bnd()
+{
+    assert( bnd ); 
+    bool have_boundary = boundary > -1 ; 
+    if(!have_boundary) std::cerr 
+        << "QSim_MockTest::init_bnd"
+        << std::endl 
+        << " FATAL FAILED TO LOOKUP boundary " << boundary
+        << std::endl 
+        << " BND " << BND 
+        << std::endl 
+        << " NO BOUNDARY WITH THAT SPEC PRESENT WITHIN LOADED GEOMETRY "
+        << std::endl 
+        << " BASE " << BASE
+        << std::endl 
+        << " PROBABLY THE GEOM ENVVAR IS MIS-CONFIGURED : CHANGE IT USING GEOM BASH FUNCTION " 
+        << std::endl
+        ;
+    assert( have_boundary ); 
+    sim->bnd = q_bnd->d_qb ;  
+}
+
 
 inline std::string QSim_MockTest::desc() const
 {
@@ -414,6 +469,81 @@ inline void QSim_MockTest::propagate()
     std::cout << "p1 " << p1 << std::endl ; 
 }
 
+/**
+QSim_MockTest::SmearNormal
+---------------------------
+
+This MOCK_CUDA test of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
+is similar to sysrap/tests/S4OpBoundaryProcessTest.sh 
+
+**/
+
+inline void QSim_MockTest::SmearNormal(int chk, float value)
+{
+    float3 direct = make_float3(0.f, 0.f, -1.f ); 
+    float3 normal = make_float3(0.f, 0.f,  1.f ); 
+
+    int ni = num ; 
+    int nj = 3 ; 
+
+    NP* a = NP::Make<float>( ni, nj );  
+    float* aa = a->values<float>(); 
+
+    const char* path = nullptr ; 
+    if( chk == 0 )
+    {
+        a->set_meta<float>("sigma_alpha", value );  
+        a->names.push_back("SmearNormal_SigmaAlpha"); 
+        path="$FOLD/SigmaAlpha.npy" ; 
+    }
+    else if( chk == 1)
+    {
+        a->set_meta<float>("polish", value );  
+        a->names.push_back("SmearNormal_Polish"); 
+        path="$FOLD/Polish.npy" ; 
+    }
+
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        rnd->setSequenceIndex(i): 
+
+        float3 smeared_normal = make_float3( 0.f, 0.f, 0.f ) ; 
+        switch(chk)
+        {
+            case 0: sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, sigma_alpha );
+            case 1: sim->SmearNormal_Polish(    rng, smeared_normal, direct, normal, polish );
+        }
+        aa[i*3+0] = smeared_normal.x ;         
+        aa[i*3+1] = smeared_normal.y ;         
+        aa[i*3+2] = smeared_normal.z ;         
+    } 
+    a->save(path);
+
+}
+
+inline void QSim_MockTest::SmearNormal_SigmaAlpha()
+{
+    float sigma_alpha = 0.1f ; 
+    SmearNormal(0, sigma_alpha); 
+}
+inline void QSim_MockTest::SmearNormal_Polish()
+{
+    float polish = 0.8f ; 
+    SmearNormal(1, polish); 
+}
+
+
+inline void QSim_MockTest::SmearNormal_debug()
+{
+    float sigma_alpha = 0.1f ; 
+    float3 direct = make_float3(0.f, 0.f, -1.f ); 
+    float3 normal = make_float3(0.f, 0.f,  1.f ); 
+
+    float3 smeared_normal = make_float3( 0.f, 0.f, 0.f ) ; 
+    sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, sigma_alpha );
+}
+
 
 int main(int argc, char** argv)
 {
@@ -425,9 +555,13 @@ int main(int argc, char** argv)
     t.propagate_at_boundary_manual() ; 
     t.fill_state() ; 
     t.propagate_at_boundary() ; 
-    */
- 
     t.propagate() ; 
+    t.SmearNormal() ; 
+    */
+
+    t.SmearNormal_debug() ; 
+
+ 
 
     return 0 ; 
 }

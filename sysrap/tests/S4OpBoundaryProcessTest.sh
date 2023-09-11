@@ -16,7 +16,13 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-vars="BASH_SOURCE name SDIR FOLD bin"
+export OTHER=/tmp/QSim_MockTest
+
+#num=1000
+num=100000
+export NUM=${NUM:-$num}
+
+vars="BASH_SOURCE name SDIR FOLD bin NUM"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -24,7 +30,7 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
-       -I$HOME/np \
+       -I.. \
        -I$(clhep-prefix)/include \
        -I$(g4-prefix)/include/Geant4  \
        -L$(clhep-prefix)/lib \

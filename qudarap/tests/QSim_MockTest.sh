@@ -10,12 +10,12 @@ the CMAKE_PREFIX_PATH
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+cd $(dirname $BASH_SOURCE)
 name=QSim_MockTest
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-defarg="build_run"
+defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
 export FOLD=/tmp/$name
@@ -28,7 +28,11 @@ CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="FOLD GEOM bin name CUSTOM4_PREFIX CUDA_PREFIX"
+#num=1000
+num=1000000
+export NUM=${NUM:-$num}
+
+vars="BASH_SOURCE FOLD GEOM bin name CUSTOM4_PREFIX CUDA_PREFIX NUM"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -56,6 +60,8 @@ if [ "${arg/build}" != "$arg" ]; then
        -std=c++11 -lstdc++ \
        -DDEBUG_PIDX \
        -DMOCK_CURAND \
+       -DMOCK_CUDA \
+       -DMOCK_CUDA_DEBUG \
        -DMOCK_CURAND_DEBUG \
        -DMOCK_TEXTURE \
        -I.. \
@@ -84,7 +90,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $SDIR/$name.py
+    ${IPYTHON:-ipython} --pdb -i $name.py
     [ $? -ne 0 ] && echo $msg ana error && exit 4
 fi
 
