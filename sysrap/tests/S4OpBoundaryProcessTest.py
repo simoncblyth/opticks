@@ -15,13 +15,17 @@ if __name__ == '__main__':
     f_base = os.path.basename(f.base)
 
 
-    a = f.SigmaAlpha
-    n = f.SigmaAlpha_names
+    CHECK = os.environ.get("CHECK")
 
-    sigma_alpha = f.SigmaAlpha_meta.sigma_alpha[0] if hasattr(f.SigmaAlpha_meta,'sigma_alpha') else None
+    a = getattr(f, CHECK) 
+    n = getattr(f, "%s_names" % CHECK ) 
+    m = getattr(f, "%s_meta"  % CHECK ) 
+    value = getattr( m, "value" )[0]  
+    valuename = getattr( m, "valuename" )[0]  
 
     label = "S4OpBoundaryProcessTest.sh :"
-    label += " white:%s sigma_alpha:%s " % ( n[0], sigma_alpha )
+    label += " %s  white:%s %s:%s " % ( CHECK, n[0], valuename, value  )
+    label_h = "%s:%s" % ( valuename, value  )
 
     if MODE == 3:
         pl = pvplt_plotter(label=label)
@@ -50,16 +54,15 @@ if __name__ == '__main__':
         ## dot product with Z direction picks Z coordinate 
         ## so np.arccos should be the final alpha 
 
-        f_alpha_angle = np.arccos(np.dot( a, nrm )) 
+        angle = np.arccos(np.dot( a, nrm )) 
 
         bins = np.linspace(0,0.4,100)
-        h_f_alpha_angle = np.histogram(f_alpha_angle, bins=bins )[0] if not f_alpha_angle is None else None
-
+        angle_h = np.histogram(angle, bins=bins )[0]
 
         fig, ax = mp.subplots(figsize=SIZE/100.)
         fig.suptitle(label)
 
-        if not h_f_alpha_angle  is None:ax.plot( bins[:-1], h_f_alpha_angle,  drawstyle="steps-post", label="h_f_alpha_angle " + f_base )
+        ax.plot( bins[:-1], angle_h,  drawstyle="steps-post", label=label_h )
 
         ax.legend()
         fig.show()

@@ -1214,7 +1214,7 @@ DONE : Impl Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::Sme
     epsilon:opticks blyth$ git commit -m "first step in checking qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish is to get a MOCK_CUDA version to work, that needs a CPU side implementation of erfcinvf, found one on stackoverflow njuffa_erfcinvf.h that gets very close to the CUDA erfcinvf "
 
 
-WIP : Comparing normal smearing impls
+DONE : Comparing normal smearing impls
 -----------------------------------------
 
 +---+---------------------------------------------------+--------------------------------------------+
@@ -1222,33 +1222,77 @@ WIP : Comparing normal smearing impls
 +---+---------------------------------------------------+--------------------------------------------+
 | B | ~/opticks/sysrap/tests/S4OpBoundaryProcessTest.sh | Geant4 impl pulled into standalone form    |
 +---+---------------------------------------------------+--------------------------------------------+
-| C | ? ~/opticks/qudarap/tests/QSimTest.sh             | TODO: CUDA QSim impl                       |
-+---+---------------------------------------------------+--------------------------------------------+
 
 ::
 
     MODE=1 ~/opticks/qudarap/tests/QSim_MockTest.sh ana
     MODE=1 ~/opticks/sysrap/tests/S4OpBoundaryProcessTest.sh ana
-   
-
-HMM : VERY DIFFERENT 
-
-* QSim_MockTest has sharp cutoff just above angle of 0.2 
-* S4OpBoundaryProcessTest tails off far more out to 0.35 
 
 
-Back to checking erfcinv
+ 
+DONE : Checking erfcinv didnt reveal any issues
+-------------------------------------------------
 
 ::
 
     ~/opticks/sysrap/tests/S4MTRandGaussQTest.sh 
      
 
+FIXED : VERY DIFFERENT FROM BUG : TWAS A MISSING BREAK : SO ONE WAS MIXING POLISH ANS SIGMA_ALPHA
+-----------------------------------------------------------------------------------------------------------
+
+* QSim_MockTest has sharp cutoff just above angle of 0.2 
+* S4OpBoundaryProcessTest tails off far more out to 0.35 
+
+
+DONE : After fixing bug and also setting up random aligned check : getting almost perfect agreement for SigmaAlpha
+---------------------------------------------------------------------------------------------------------------------
+
+::
+
+    ~/opticks/qudarap/tests/QSim_MockTest_cf_S4OpBoundaryProcessTest.sh 
+
+
+3 normals out of 100k are deviant::
+
+    In [4]: ab = np.abs(a-b)
+
+    In [6]: np.where( ab > 0.01 )
+    Out[6]: 
+    (array([59652, 59652, 59652, 81736, 81736, 81736, 83852, 83852, 83852]),
+     array([0, 1, 2, 0, 1, 2, 0, 1, 2]))
+
+    In [7]: a.shape
+    Out[7]: (100000, 3)
+
+    In [8]: b.shape
+    Out[8]: (100000, 3)
+
+
+
+DONE : random aligned comparisons of QSim_MockTest_cf_S4OpBoundaryProcessTest.sh  for SigmaAlpha and Polish smearing are matching
+------------------------------------------------------------------------------------------------------------------------------------
+
++----+----------------------------------------------------------------------+--------------------------------------------+
+| A  | ~/opticks/qudarap/tests/QSim_MockTest.sh                             | MOCK_CUDA test of qsim impl                | 
++----+----------------------------------------------------------------------+--------------------------------------------+
+| B  | ~/opticks/sysrap/tests/S4OpBoundaryProcessTest.sh                    | Geant4 impl pulled into standalone form    |
++----+----------------------------------------------------------------------+--------------------------------------------+
+| AB | ~/opticks/qudarap/tests/QSim_MockTest_cf_S4OpBoundaryProcessTest.sh  | Compare the above                          |   
++----+----------------------------------------------------------------------+--------------------------------------------+
+
+
+TODO : Compare without random aligment
+-----------------------------------------
+ 
+TODO : Compare the actual CUDA impl, now that the MOCK_CUDA one is debugged
+------------------------------------------------------------------------------
+
+TODO : Investigate how to incorporate the normal smearing
+-----------------------------------------------------------
 
 TODO: Find some sigma_alpha/polish surfaces to hunt for deviations
 --------------------------------------------------------------------
-
-
 
 
 

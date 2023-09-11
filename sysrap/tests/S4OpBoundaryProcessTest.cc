@@ -24,7 +24,17 @@ struct Chk
     static constexpr const char* POLISH_ = "Polish.npy" ; 
     static const char* Name(int chk); 
 
-    static void SmearNormal(); 
+    Chk(); 
+
+    const char* CHECK ; 
+    NP*         a  ; 
+
+    void save(); 
+    void SmearNormal_SigmaAlpha(); 
+    void SmearNormal_Polish(); 
+    void run(); 
+
+    static NP* SmearNormal(int chk, double value); 
 
 }; 
 
@@ -39,19 +49,54 @@ const char* Chk::Name(int chk)
     return n ;
 }
 
+Chk::Chk()
+    :
+    CHECK(ssys::getenvvar("CHECK","SmearNormal_SigmaAlpha")),
+    a(nullptr)
+{
+}
 
-void Chk::SmearNormal()
+
+void Chk::save()
+{
+    std::string arr = CHECK ; 
+    arr += ".npy" ; 
+    a->save("$FOLD", arr.c_str() ); 
+}
+
+void Chk::SmearNormal_SigmaAlpha()
 {
     int chk = SIGMA_ALPHA ; 
-    const char* chkname = Name(chk); 
+    double sigma_alpha = 0.1 ; 
+    a = SmearNormal( chk, sigma_alpha ); 
+    a->set_meta<double>("value", sigma_alpha ); 
+    a->set_meta<std::string>("valuename", "sigma_alpha" ); 
+    const char* name = Name(chk); 
+    a->names.push_back(name); 
 
+    save(); 
+}
+void Chk::SmearNormal_Polish()
+{
+    int chk = POLISH ; 
+    double polish = 0.8 ; 
+    a = SmearNormal(chk, polish ); 
+    a->set_meta<double>("value", polish ); 
+    a->set_meta<std::string>("valuename", "polish" ); 
+
+    const char* name = Name(chk); 
+    a->names.push_back(name); 
+
+    save(); 
+}
+
+
+NP* Chk::SmearNormal(int chk, double value)
+{
     S4Random r ; 
 
     G4ThreeVector Momentum(0., 0., -1. ); 
     G4ThreeVector Normal(  0., 0.,  1. );
-
-    G4double sigma_alpha = 0.1 ; 
-    G4double polish = 0.8 ; 
 
     const int N = ssys::getenvint("NUM", 1000) ; 
     int ni = N ; 
@@ -60,17 +105,6 @@ void Chk::SmearNormal()
     NP* a = NP::Make<double>( ni, nj ); 
     double* aa = a->values<double>(); 
 
-    if(chk == SIGMA_ALPHA)
-    {
-        a->set_meta<double>("sigma_alpha", sigma_alpha ); 
-        a->names.push_back(chkname); 
-    }
-    else if( chk == POLISH )
-    {
-        a->set_meta<double>("polish", polish ); 
-        a->names.push_back(chkname); 
-    }
-
     for(int i=0 ; i < ni ; i++) 
     {
         r.setSequenceIndex(i);   // use precooked random streams : so can align 
@@ -78,8 +112,8 @@ void Chk::SmearNormal()
         G4ThreeVector FacetNormal( 0., 0., 0.) ; 
         switch(chk)
         {
-            case SIGMA_ALPHA: FacetNormal = S4OpBoundaryProcess::SmearNormal_SigmaAlpha( Momentum, Normal, sigma_alpha );  break ; 
-            case POLISH:      FacetNormal = S4OpBoundaryProcess::SmearNormal_Polish(     Momentum, Normal, polish      );  break ; 
+            case SIGMA_ALPHA: FacetNormal = S4OpBoundaryProcess::SmearNormal_SigmaAlpha( Momentum, Normal, value );  break ; 
+            case POLISH:      FacetNormal = S4OpBoundaryProcess::SmearNormal_Polish(     Momentum, Normal, value );  break ; 
         }
 
         aa[i*3+0] = FacetNormal.x() ; 
@@ -95,11 +129,28 @@ void Chk::SmearNormal()
             << std::endl
             ; 
     }
-    a->save("$FOLD", chkname); 
+    return a ; 
 }
+
+void Chk::run()
+{
+    if(     strcmp(CHECK, "SmearNormal_SigmaAlpha")==0) SmearNormal_SigmaAlpha() ; 
+    else if(strcmp(CHECK, "SmearNormal_Polish")==0) SmearNormal_Polish() ;
+    else
+    {
+        std::cerr 
+            << "Chk::run" 
+            << " CHECK " << ( CHECK ? CHECK : "-" ) << " IS UNHANDLED " 
+            << std::endl 
+            ;
+    }
+}
+
 
 int main()
 {
-    Chk::SmearNormal(); 
+    Chk chk ; 
+    chk.run(); 
+
     return 0 ; 
 }

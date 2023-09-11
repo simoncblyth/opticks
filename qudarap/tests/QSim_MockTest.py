@@ -7,30 +7,24 @@ import matplotlib.pyplot as mp
 SIZE = np.array([1280, 720])
 
 MODE=int(os.environ.get("MODE","3")) 
-
+CHECK = os.environ.get("CHECK", "SmearNormal_SigmaAlpha")
 
 if __name__ == '__main__':
     f = Fold.Load(symbol="f")
     print(repr(f))
 
- 
+    a = getattr(f, CHECK) 
+    n = getattr(f, "%s_names" % CHECK )
+    m = getattr(f, "%s_meta" % CHECK ) 
 
-    a = f.SmearNormal 
-    n = f.SmearNormal_names
     nj = a.shape[1]
-    assert nj == len(n)
+    assert nj == 3 
+    
+    value = m.value[0] if hasattr(m,'value') else None
+    valuename = m.valuename[0] if hasattr(m,'valuename') else None
 
-
-    sigma_alpha = f.SmearNormal_meta.sigma_alpha[0] if hasattr(f.SmearNormal_meta,'sigma_alpha') else None
-    polish = f.SmearNormal_meta.polish[0] if hasattr(f.SmearNormal_meta,'polish') else None
-
-    label = "QSim_MockTest.sh :"
-    if not sigma_alpha is None and len(n) > 0:
-        label += " white:%s sigma_alpha:%s " % ( n[0], sigma_alpha )
-    pass
-    if not polish is None and len(n) > 1:
-        label += " red:%s polish:%s " % ( n[1],polish ) 
-    pass 
+    label = "QSim_MockTest.sh : CHECK %s " % CHECK 
+    label += " white:%s %s:%s " % ( n[0], valuename, value )
     
 
     if MODE == 3:
@@ -41,8 +35,7 @@ if __name__ == '__main__':
         vec = np.array( [[0,0,1]] ) 
         pvplt_lines( pl, pos, vec )
 
-        if nj > 0:pl.add_points( a[:,0] , color="white" )
-        if nj > 1:pl.add_points( a[:,1] , color="red" )
+        pl.add_points( a , color="white" )
 
         cpos = pl.show()
 
@@ -52,8 +45,7 @@ if __name__ == '__main__':
         fig.suptitle(label)
         ax.set_aspect("equal")
 
-        if nj > 0:ax.scatter( a[:,0,0], a[:,0,1], s=0.1, c="b" )
-        if nj > 1:ax.scatter( a[:,1,0], a[:,1,1], s=0.1, c="r" )
+        ax.scatter( a[:,0], a[:,1], s=0.1, c="b" )
         fig.show()
  
     elif MODE == 1:
@@ -62,23 +54,19 @@ if __name__ == '__main__':
         ## dot product with Z direction picks Z coordinate 
         ## so np.arccos should be the final alpha 
 
-        alpha_angle = np.arccos(np.dot( a[:,0], nrm )) if nj > 0 else None
-        polish_angle = np.arccos(np.dot( a[:,1], nrm )) if nj > 1 else None 
+        angle = np.arccos(np.dot( a, nrm )) 
 
         bins = np.linspace(0,0.4,100)  
-        h_alpha_angle = np.histogram(alpha_angle, bins=bins )[0] if not alpha_angle is None else None
-        h_polish_angle = np.histogram(polish_angle, bins=bins )[0] if not polish_angle is None else None
+        h_angle = np.histogram(angle, bins=bins )[0] 
 
         fig, ax = mp.subplots(figsize=SIZE/100.)
         fig.suptitle(label)
 
-        if not h_alpha_angle  is None:ax.plot( bins[:-1], h_alpha_angle,  drawstyle="steps-post", label="h_alpha_angle" )
-        if not h_polish_angle is None:ax.plot( bins[:-1], h_polish_angle, drawstyle="steps-post", label="h_polish_angle" )
+        if not h_angle is None:ax.plot( bins[:-1], h_angle,  drawstyle="steps-post", label="h_angle" )
         ax.legend() 
 
         fig.show()
     pass
 pass
-
 
 

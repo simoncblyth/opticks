@@ -26,6 +26,7 @@ private:
     int           m_seq_ni ;
     int           m_seq_nv ;
     int           m_seq_index ;
+    int           m_pidx ; 
     NP*           m_cur ;
     int*          m_cur_values ;
     bool          m_recycle ;
@@ -45,6 +46,7 @@ inline s_seq::s_seq()
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),                        // num items
     m_seq_nv(m_seq ? m_seq->shape[1]*m_seq->shape[2] : 0 ),        // num values in each item 
     m_seq_index(-1),
+    m_pidx(ssys::getenvint("PIDX",-100)),
     m_cur(NP::Make<int>(m_seq_ni)),
     m_cur_values(m_cur->values<int>()),
     m_recycle(true)
@@ -105,7 +107,11 @@ inline double s_seq::flat()
     double d = f ;               // promote random float to double 
     m_flat_prior = d ;
 
-    *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
+#ifdef MOCK_CUDA_DEBUG
+    if(m_seq_index == m_pidx) printf("//s_seq::flat.MOCK_CUDA_DEBUG m_seq_index %5d cursor %4d d %10.5f \n", m_seq_index, cursor, d ) ; 
+#endif
+
+    *(m_cur_values + m_seq_index) += 1 ;   // increment the cursor in the array, for the next generation 
 
     return d ;
 }

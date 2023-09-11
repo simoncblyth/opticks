@@ -29,10 +29,16 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 #num=1000
-num=1000000
+num=100000
+#num=1000000
 export NUM=${NUM:-$num}
 
-vars="BASH_SOURCE FOLD GEOM bin name CUSTOM4_PREFIX CUDA_PREFIX NUM"
+#check=SmearNormal_SigmaAlpha
+check=SmearNormal_Polish
+export CHECK=${CHECK:-$check}
+
+
+vars="BASH_SOURCE FOLD GEOM bin name CUSTOM4_PREFIX CUDA_PREFIX NUM CHECK"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

@@ -89,8 +89,8 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
     QSIM_METHOD static float RandGaussQ_shoot( curandStateXORWOW& rng, float mean, float stdDev ); 
-    QSIM_METHOD static void SmearNormal_SigmaAlpha( curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float sigma_alpha );
-    QSIM_METHOD static void SmearNormal_Polish(     curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float polish ); 
+    QSIM_METHOD static void SmearNormal_SigmaAlpha( curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float sigma_alpha, bool );
+    QSIM_METHOD static void SmearNormal_Polish(     curandStateXORWOW& rng, float3& smeared_normal, const float3& mom, const float3& normal, float polish     , bool ); 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
@@ -232,7 +232,13 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     float3& smeared_normal, 
     const float3& direction, 
     const float3& normal, 
-    float sigma_alpha )
+    float sigma_alpha, 
+#ifdef MOCK_CUDA_DEBUG
+    bool dump
+#else
+    bool
+#endif
+   )
 {
     if(sigma_alpha == 0.f)
     {
@@ -242,7 +248,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     float f_max = fminf(1.f,4.f*sigma_alpha);
 
 #ifdef MOCK_CUDA_DEBUG
-    printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG sigma_alpha %10.5f f_max %10.5f  \n", sigma_alpha, f_max ); 
+    if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG sigma_alpha %10.5f f_max %10.5f  \n", sigma_alpha, f_max ); 
 #endif
 
     float alpha, sin_alpha, phi, u0, u1, u2 ; 
@@ -260,7 +266,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
             reject_alpha = alpha >= M_PIf/2.f || (u1*f_max > sin_alpha) ; 
 
 #ifdef MOCK_CUDA_DEBUG
-            printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u0 %10.5f alpha %10.5f sin_alpha %10.5f u1 %10.5f u1*f_max %10.5f  (u1*f_max > sin_alpha) %d reject_alpha %d  \n", 
+            if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u0 %10.5f alpha %10.5f sin_alpha %10.5f u1 %10.5f u1*f_max %10.5f  (u1*f_max > sin_alpha) %d reject_alpha %d  \n", 
                u0, alpha, sin_alpha, u1, u1*f_max, (u1*f_max > sin_alpha), reject_alpha ); 
             // theres lots of alpha rejected : eg all -ve sin_alpha             
 #endif
@@ -279,7 +285,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
         // reject smears into same hemi as direction
 
 #ifdef MOCK_CUDA_DEBUG
-            printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u2 %10.5f phi %10.5f smeared_normal ( %10.5f, %10.5f, %10.5f)  reject_dir %d  \n", 
+        if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u2 %10.5f phi %10.5f smeared_normal ( %10.5f, %10.5f, %10.5f)  reject_dir %d  \n", 
                u2, phi, smeared_normal.x, smeared_normal.y, smeared_normal.z, reject_dir ); 
 #endif
 
@@ -298,7 +304,13 @@ inline QSIM_METHOD void qsim::SmearNormal_Polish(
     float3& smeared_normal, 
     const float3& direction, 
     const float3& normal, 
-    float polish )
+    float polish, 
+#ifdef MOCK_CUDA_DEBUG
+    bool  dump  
+#else
+    bool 
+#endif
+    )
 {
     if(polish == 1.f)
     {
@@ -307,7 +319,7 @@ inline QSIM_METHOD void qsim::SmearNormal_Polish(
     } 
 
 #ifdef MOCK_CUDA
-    //printf("//qsim::SmearNormal_Polish \n"); 
+    if(dump) printf("//qsim::SmearNormal_Polish \n"); 
 #endif
 
     float u0, u1, u2 ; 

@@ -51,12 +51,14 @@ inline void srng::set_fake(double fake_){ fake = fake_ ; }
 inline float srng::generate_float()
 {
     if( fake >= 0.f ) return fake ; 
-    return seq && seq->is_enabled() ? seq->flat() : fdist(engine) ; 
+    float u = seq && seq->is_enabled() ? seq->flat() : fdist(engine) ; 
+    return u ; 
 } 
 inline double srng::generate_double()
 { 
     if( fake >= 0.f ) return fake ; 
-    return seq && seq->is_enabled() ? seq->flat() : ddist(engine) ; 
+    double u = seq && seq->is_enabled() ? seq->flat() : ddist(engine) ; 
+    return u ; 
 }
 inline void srng::setSequenceIndex(int idx)
 {

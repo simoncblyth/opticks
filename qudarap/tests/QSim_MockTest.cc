@@ -49,7 +49,6 @@ Standalone compile and run with::
 #include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
 #include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
 
-#include "S4Random.h"   // header only use of pre-cooked randoms 
 #include "SPMT.h"
 #include "SBnd.h"
 #include "OpticksPhoton.hh"
@@ -69,6 +68,7 @@ struct QSim_MockTest
     static constexpr const char* BND = 
     "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum" ;
 
+    const char* CHECK ; 
     curandStateXORWOW rng ; 
 
     const NP* optical ; 
@@ -84,11 +84,13 @@ struct QSim_MockTest
     const NPFold* jpmt ; 
     const QPMT<float>* q_pmt ; 
     qsim* sim ; 
-    const int num ;  
-    S4Random* rnd ; 
+    const int num ;   
+    const int PIDX ; 
+    NP*  a ; 
 
     QSim_MockTest(); 
 
+    void save(); 
     void init(); 
     void init_bnd(); 
     std::string desc() const; 
@@ -111,13 +113,14 @@ struct QSim_MockTest
     void SmearNormal(int chk, float value); 
     void SmearNormal_SigmaAlpha(); 
     void SmearNormal_Polish(); 
-    void SmearNormal_debug(); 
+    void SmearNormal_SigmaAlpha_one(); 
 
-
+    void run(); 
 };
 
 inline QSim_MockTest::QSim_MockTest()
     :
+    CHECK(ssys::getenvvar("CHECK", "SmearNormal_SigmaAlpha")),
     rng(1u),
     optical(NP::Load(BASE, "optical.npy")),
     bnd(    NP::Load(BASE, "bnd.npy")),
@@ -130,11 +133,18 @@ inline QSim_MockTest::QSim_MockTest()
     q_pmt( jpmt ? new QPMT<float>( jpmt ) : nullptr),  
     sim(new qsim),
     num(ssys::getenvint("NUM",1000)),
-    rnd(new S4Random)
+    PIDX(ssys::getenvint("PIDX",-100)),
+    a(nullptr)
 {
     init(); 
 }
 
+inline void QSim_MockTest::save() 
+{
+    std::string arr = CHECK ; 
+    arr += ".npy" ; 
+    a->save("$FOLD", arr.c_str()); 
+}
 
 
 inline void QSim_MockTest::init()
@@ -476,6 +486,13 @@ QSim_MockTest::SmearNormal
 This MOCK_CUDA test of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
 is similar to sysrap/tests/S4OpBoundaryProcessTest.sh 
 
++------+-------------+
+| chk  |  value      |
++======+=============+
+|  0   | sigma_alpha |
++------+-------------+
+|  1   | polish      |
++------+-------------+
 **/
 
 inline void QSim_MockTest::SmearNormal(int chk, float value)
@@ -486,63 +503,83 @@ inline void QSim_MockTest::SmearNormal(int chk, float value)
     int ni = num ; 
     int nj = 3 ; 
 
-    NP* a = NP::Make<float>( ni, nj );  
+    a = NP::Make<float>( ni, nj );  
     float* aa = a->values<float>(); 
 
     const char* path = nullptr ; 
     if( chk == 0 )
     {
-        a->set_meta<float>("sigma_alpha", value );  
+        a->set_meta<float>("value", value );  
+        a->set_meta<std::string>("valuename", "sigma_alpha" ); 
         a->names.push_back("SmearNormal_SigmaAlpha"); 
-        path="$FOLD/SigmaAlpha.npy" ; 
     }
     else if( chk == 1)
     {
-        a->set_meta<float>("polish", value );  
+        a->set_meta<float>("value", value );  
+        a->set_meta<std::string>("valuename", "polish" ); 
         a->names.push_back("SmearNormal_Polish"); 
-        path="$FOLD/Polish.npy" ; 
     }
-
 
     for(int i=0 ; i < ni ; i++)
     {
-        rnd->setSequenceIndex(i): 
-
+        rng.setSequenceIndex(i); 
+        bool dump = i == PIDX ; 
         float3 smeared_normal = make_float3( 0.f, 0.f, 0.f ) ; 
         switch(chk)
         {
-            case 0: sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, sigma_alpha );
-            case 1: sim->SmearNormal_Polish(    rng, smeared_normal, direct, normal, polish );
+            case 0: sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, value, dump ); break ; 
+            case 1: sim->SmearNormal_Polish(    rng, smeared_normal, direct, normal, value, dump ); break ; 
         }
         aa[i*3+0] = smeared_normal.x ;         
         aa[i*3+1] = smeared_normal.y ;         
         aa[i*3+2] = smeared_normal.z ;         
     } 
-    a->save(path);
-
 }
+
 
 inline void QSim_MockTest::SmearNormal_SigmaAlpha()
 {
     float sigma_alpha = 0.1f ; 
     SmearNormal(0, sigma_alpha); 
+    save(); 
 }
 inline void QSim_MockTest::SmearNormal_Polish()
 {
     float polish = 0.8f ; 
     SmearNormal(1, polish); 
+    save(); 
 }
 
 
-inline void QSim_MockTest::SmearNormal_debug()
+inline void QSim_MockTest::SmearNormal_SigmaAlpha_one()
 {
+    rng.setSequenceIndex(0); 
+
     float sigma_alpha = 0.1f ; 
     float3 direct = make_float3(0.f, 0.f, -1.f ); 
     float3 normal = make_float3(0.f, 0.f,  1.f ); 
 
     float3 smeared_normal = make_float3( 0.f, 0.f, 0.f ) ; 
-    sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, sigma_alpha );
+    bool dump = true ; 
+    sim->SmearNormal_SigmaAlpha(rng, smeared_normal, direct, normal, sigma_alpha, dump );
 }
+
+inline void QSim_MockTest::run()
+{
+    if(     strcmp(CHECK,"SmearNormal_SigmaAlpha")==0) SmearNormal_SigmaAlpha() ; 
+    else if(strcmp(CHECK,"SmearNormal_Polish")==0)     SmearNormal_Polish() ; 
+    else
+    {
+        std::cerr 
+            << "QSim_MockTest::run" 
+            << " CHECK " << ( CHECK ? CHECK : "-" ) 
+            << " UNHANDLED " 
+            << std::endl
+            ;
+    } 
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -556,12 +593,13 @@ int main(int argc, char** argv)
     t.fill_state() ; 
     t.propagate_at_boundary() ; 
     t.propagate() ; 
-    t.SmearNormal() ; 
+    t.SmearNormal_debug() ; 
+    t.SmearNormal_SigmaAlpha() ; 
+    t.SmearNormal_SigmaAlpha_one() ; 
+    t.SmearNormal_Polish() ; 
     */
 
-    t.SmearNormal_debug() ; 
-
- 
+    t.run(); 
 
     return 0 ; 
 }

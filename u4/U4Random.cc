@@ -121,7 +121,6 @@ A single -1 corresponds to a wildcard:
 * (0,-1) will match all cursors for photon idx 0 
 * (-1,0) will match all cursor 0 for all photon idx 
 
-
 This allows selection of one or more U4Random::flat calls.
 For example std::raise(SIGINT) could be called when a random draw of 
 interest is done in order to examine the call stack for that random 
