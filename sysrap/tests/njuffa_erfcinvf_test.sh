@@ -26,7 +26,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ -I$HOME/np -o $bin
+    gcc $name.cc -I.. -std=c++11 -lstdc++ -I$HOME/np -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 fi
 

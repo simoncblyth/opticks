@@ -97,13 +97,34 @@ void test_rotateUz()
 
 
 
+void test_erfcinvf()
+{
+    float SQRT2 = sqrtf(2.f) ;
+
+    int N = 100 ; 
+    for(int i=0 ; i < N ; i++)
+    {
+        float u2 = 2.f*float(i)/float(N-1) ; 
+        float v = -SQRT2*smath::erfcinvf(u2) ;  
+        std::cout
+            << " i " << std::setw(5) << i 
+            << " u2 " << std::setw(10) << std::setprecision(5) << std::fixed << u2 
+            << " v  " << std::setw(10) << std::setprecision(5) << std::fixed << v
+            << std::endl 
+            ;
+    }
+}
+
+
+
 int main(int argc, char** argv)
 {
     /*
     test_count_nibbles();  
+    test_rotateUz(); 
     */
 
-    test_rotateUz(); 
+    test_erfcinvf(); 
 
     return 0 ; 
 }

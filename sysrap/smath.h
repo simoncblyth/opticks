@@ -14,6 +14,7 @@ struct smath
 
     SMATH_METHOD static void rotateUz(float3& d, const float3& u ); 
     SMATH_METHOD static int count_nibbles( unsigned long long ); 
+    SMATH_METHOD static float erfcinvf(float u2); 
 }; 
 
 
@@ -109,3 +110,63 @@ inline SMATH_METHOD int smath::count_nibbles(unsigned long long x)
     unsigned long long count = (x * 0x101010101010101ull) >> 56 ; 
     return count ; 
 }
+
+
+#ifdef MOCK_CUDA
+// this defines global erfcinvf function as standin for 
+#include "s_mock_erfcinvf.h"
+#endif
+
+/**
+smath::erfcinvf
+----------------
+
+Actually little need for this as CUDA already provides an erfcinvf function,
+and for MOCK_CUDA a corresponding global is also defined based on 
+using njuffa_erfcinvf.h.
+However as globals tend to be difficult to find its convenient to 
+include in smath.h for elucidatory+discovery purposes.
+
++-------------+--------------+
+| domain      | erfcinvf(x)  |
++=============+==============+
+|      x < 0  |  nan         |
++-------------+--------------+
+|      x = 0  |   inf        |      
++-------------+--------------+
+|      x = 1  |    0         |  
++-------------+--------------+
+|      x = 2  |  -inf        |  
++-------------+--------------+
+
+CAUTION: for matching with Geant4 the erfcinvf result is scaled 
+by -sqrtf(2.f) with domain folded in half from 0->2 to 0->1
+See Geant4/CLHEP classes::
+
+    g4-cls RandGaussQ
+    g4-cls G4MTRandGaussQ
+    g4-cls G4OpBoundaryProcess
+
+Geant4 sigma_alpha ground surface smears normal using angle from::
+
+    alpha = G4RandGauss::shoot(0.0,sigma_alpha);  // (mean, stdDev) 
+
+Tests while trying to do this on GPU::
+
+    sysrap/tests/S4MTRandGaussQTest.sh
+    sysrap/tests/erfcinvf_Test.sh
+    sysrap/tests/njuffa_erfcinvf_test.sh
+    sysrap/tests/smath_test.sh
+
+**/
+
+inline SMATH_METHOD float smath::erfcinvf(float u2) 
+{
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CUDA)
+    return ::erfcinvf(u2) ; 
+#else
+    return 0.f ; 
+#endif
+}
+
+

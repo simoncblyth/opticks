@@ -1193,9 +1193,25 @@ Added note to sctx::point
 
 
 
-TODO : Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
+WIP: Standalone mock cuda check of qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish
 ---------------------------------------------------------------------------------------------
 
+::
+
+    Changes to be committed:
+      (use "git reset HEAD <file>..." to unstage)
+
+        modified:   notes/issues/leap_to_new_workflow_insitu_comparison.rst
+        modified:   qudarap/qsim.h
+        modified:   sysrap/sctx.h
+        modified:   sysrap/tests/erfcinvf_Test.cu
+        modified:   sysrap/tests/erfcinvf_Test.py
+        new file:   sysrap/tests/njuffa_erfcinvf.h
+        new file:   sysrap/tests/njuffa_erfcinvf_test.cc
+        new file:   sysrap/tests/njuffa_erfcinvf_test.py
+        new file:   sysrap/tests/njuffa_erfcinvf_test.sh
+
+    epsilon:opticks blyth$ git commit -m "first step in checking qsim::SmearNormal_SigmaAlpha qsim::SmearNormal_Polish is to get a MOCK_CUDA version to work, that needs a CPU side implementation of erfcinvf, found one on stackoverflow njuffa_erfcinvf.h that gets very close to the CUDA erfcinvf "
 
 
 
