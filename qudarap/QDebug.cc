@@ -6,6 +6,7 @@
 #include "squad.h"
 #include "sscint.h"
 #include "scerenkov.h"
+#include "ssys.h"
 
 #include "QBnd.hh"
 #include "qbnd.h"
@@ -36,8 +37,10 @@ qdebug* QDebug::MakeInstance()   // static
     dbg->wavelength = 500.f ; 
     dbg->cosTheta = cosTheta ; 
     qvals( dbg->normal , "DBG_NRM", "0,0,1" ); 
+    qvals( dbg->direction , "DBG_DIR", "0,0,-1" ); 
     dbg->orient = 1.f ;  // orient -1.f flips the normal direction 
-   
+    dbg->value = ssys::getenvfloat("DBG_VALUE", 0.2f)  ;  // eg sigma_alpha or polish 
+
     // qstate: mocking result of fill_state 
     dbg->s = QState::Make(); 
 

@@ -18,9 +18,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
-export FOLD=/tmp/$name
-mkdir -p $FOLD
-bin=$FOLD/$name
+export BASE=/tmp/$name
+bin=$BASE/$name
 
 custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/0.1.6
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
@@ -33,12 +32,20 @@ num=100000
 #num=1000000
 export NUM=${NUM:-$num}
 
-#check=SmearNormal_SigmaAlpha
-check=SmearNormal_Polish
+check=smear_normal_sigma_alpha
+#check=smear_normal_polish
 export CHECK=${CHECK:-$check}
 
+export FOLD=$BASE/$CHECK
+mkdir -p $FOLD
 
-vars="BASH_SOURCE FOLD GEOM bin name CUSTOM4_PREFIX CUDA_PREFIX NUM CHECK"
+case $CHECK in 
+   smear_normal*) script=smear_normal.py ;;
+               *) script=$name.py        ;;
+esac
+
+
+vars="BASH_SOURCE BASE FOLD CHECK GEOM bin script name CUSTOM4_PREFIX CUDA_PREFIX NUM"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -96,12 +103,10 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $msg ana error && exit 4
 fi
 
-
 exit 0 
-
 
 

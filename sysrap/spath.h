@@ -32,6 +32,9 @@ struct spath
     static bool Exists( Args ... args ); 
 
     static bool LooksLikePath(const char* arg); 
+    static const char* Basename(const char* path); 
+
+
 };
 
 /**
@@ -228,6 +231,16 @@ inline bool spath::LooksLikePath(const char* arg)
     if(strlen(arg) < 2) return false ; 
     return arg[0] == '/' || arg[0] == '$' ; 
 }
+
+inline const char* spath::Basename(const char* path)
+{
+    std::string p = path ; 
+    std::size_t pos = p.find_last_of("/");
+    std::string base = pos == std::string::npos ? p : p.substr(pos+1) ; 
+    return strdup( base.c_str() ) ; 
+}
+
+
 
 
 

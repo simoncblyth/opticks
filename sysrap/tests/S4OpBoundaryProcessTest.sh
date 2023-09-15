@@ -12,23 +12,26 @@ g4-
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
-export FOLD=/tmp/$name
+
+BASE=/tmp/$name
+bin=$BASE/$name
+
+check=smear_normal_sigma_alpha
+#check=smear_normal_polish
+export CHECK=${CHECK:-$check}
+
+export FOLD=$BASE/$CHECK
 mkdir -p $FOLD
-bin=$FOLD/$name
 
 #num=1
 #num=1000
 num=100000
 export NUM=${NUM:-$num}
 
-#check=SmearNormal_SigmaAlpha
-check=SmearNormal_Polish
-export CHECK=${CHECK:-$check}
-
 opt=-DMOCK_CUDA_DEBUG
 
 
-vars="BASH_SOURCE name SDIR FOLD bin NUM opt CHECK"
+vars="BASH_SOURCE name SDIR BASE FOLD CHECK bin NUM opt CHECK"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -57,8 +60,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi
 
-
 exit 0 
-
 
 

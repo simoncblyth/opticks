@@ -660,16 +660,15 @@ NP* QSim::RandGaussQ_shoot(unsigned num_v )
 {
     const char* label = "QSim::RandGaussQ_shoot/num" ; 
     configureLaunch(num_v, 1 ); 
+    std::cout << label << " " << num_v << std::endl; 
 
-    std::cout << "QSim::RandGaussQ_shoot num_v " << num_v << std::endl; 
-
-    NP* v = NP::Make<float>(num_v) ; 
     float* d_v = QU::device_alloc<float>(num_v, label ); 
     
     QSim_RandGaussQ_shoot(numBlocks, threadsPerBlock, d_sim, d_v, num_v );
 
     cudaDeviceSynchronize();  
 
+    NP* v = NP::Make<float>(num_v) ; 
     QU::copy_device_to_host_and_free<float>( (float*)v->bytes(), d_v, num_v, label ); 
 
     return v ; 
@@ -846,6 +845,14 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
     quad* qq = (quad*)q->bytes(); 
 
     QU::copy_device_to_host_and_free<quad>( qq, d_q, num_quad, label ); 
+
+    if( type == QGEN_SMEAR_NORMAL_SIGMA_ALPHA || type == QGEN_SMEAR_NORMAL_POLISH )
+    {
+        q->set_meta<std::string>("normal", scuda::serialize(dbg->normal) );
+        q->set_meta<std::string>("direction", scuda::serialize(dbg->direction) );
+        q->set_meta<float>("value", dbg->value );
+        q->set_meta<std::string>("valuename", type == QGEN_SMEAR_NORMAL_SIGMA_ALPHA ? "sigma_alpha" : "polish" );
+    }
 
     return q ; 
 }

@@ -78,6 +78,15 @@ void test_efloat3n()
 
 
 
+void test_serial()
+{
+    float4 v = make_float4( 0.001f , 1.004f, 2.00008f, 3.0006f ); 
+    std::cout << " v " << v << std::endl ; 
+
+    std::cout << " scuda::serialize(v) " <<  scuda::serialize(v) << std::endl ; 
+
+}
+
 
 
 
@@ -92,7 +101,7 @@ int main()
     test_efloat4(); 
     test_efloat3n(); 
     */
-    test_cross(); 
+    test_serial(); 
 
 
     return 0 ; 

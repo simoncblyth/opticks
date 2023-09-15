@@ -1,30 +1,42 @@
 #!/usr/bin/env python
+"""
+smear_normal.py
+===============
+
+"""
 
 import os, numpy as np
-
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 import matplotlib.pyplot as mp
-
 SIZE = np.array([1280, 720])
-MODE=int(os.environ.get("MODE","3"))
+
+MODE=int(os.environ.get("MODE","3")) 
+TEST = os.environ.get("TEST", "")
+CHECK = os.environ.get("CHECK", "SmearNormal_SigmaAlpha")
 
 if __name__ == '__main__':
     f = Fold.Load(symbol="f")
     print(repr(f))
-    f_base = os.path.basename(f.base)
 
+    is_mock = not getattr(f, CHECK, None ) is None
+    if not is_mock: CHECK = "q"
 
-    FOLD = os.environ.get("FOLD")
+    q = getattr(f, CHECK)
+    assert len(q.shape) == 2
+    assert q.shape[1] == 4
 
-    q = f.q 
-    a = q[:,:3] 
-    value = f.q_meta.value[0]
-    valuename = f.q_meta.valuename[0]  
+    a = q[:,:3]
 
-    label = "S4OpBoundaryProcessTest.sh :"
-    label += " %s white %s:%s " % ( FOLD, valuename, value  )
-    label_h = "%s:%s" % ( valuename, value  )
+    m = getattr(f, "%s_meta" % CHECK ) 
+
+    source = m.source[0] if hasattr(m,'source') else "NO-source-metadata" 
+    value = m.value[0] if hasattr(m,'value') else None
+    valuename = m.valuename[0] if hasattr(m,'valuename') else None
+
+    label = "%s " % source 
+    label += " white %s:%s " % ( valuename, value )
+    
 
     if MODE == 3:
         pl = pvplt_plotter(label=label)
@@ -39,14 +51,14 @@ if __name__ == '__main__':
         cpos = pl.show()
 
     elif MODE == 2:
-
+         
         fig, ax = mp.subplots(figsize=SIZE/100.)
         fig.suptitle(label)
         ax.set_aspect("equal")
 
         ax.scatter( a[:,0], a[:,1], s=0.1, c="b" )
         fig.show()
-         
+ 
     elif MODE == 1:
 
         nrm = np.array( [0,0,1], dtype=np.float32 )  ## unsmeared normal is +Z direction  
@@ -55,16 +67,17 @@ if __name__ == '__main__':
 
         angle = np.arccos(np.dot( a, nrm )) 
 
-        bins = np.linspace(0,0.4,100)
-        angle_h = np.histogram(angle, bins=bins )[0]
+        bins = np.linspace(0,0.4,100)  
+        h_angle = np.histogram(angle, bins=bins )[0] 
 
         fig, ax = mp.subplots(figsize=SIZE/100.)
         fig.suptitle(label)
 
-        ax.plot( bins[:-1], angle_h,  drawstyle="steps-post", label=label_h )
+        if not h_angle is None:ax.plot( bins[:-1], h_angle,  drawstyle="steps-post", label="h_angle" )
+        ax.legend() 
 
-        ax.legend()
         fig.show()
     pass
 pass
+
 

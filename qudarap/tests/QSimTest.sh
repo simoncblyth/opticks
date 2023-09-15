@@ -6,7 +6,7 @@ QSimTest.sh
 ::
 
     ./QSimTest.sh 
-        run the executable and invoke the python script  
+        runs the executable and invoke the python script  
 
     PIDX=0 ./QSimTest.sh
     PIDX=2 ./QSimTest.sh
@@ -22,7 +22,9 @@ EOU
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 cd $SDIR
 
-bin=QSimTest 
+name=QSimTest 
+
+bin=$name
 defarg=run_ana
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -75,22 +77,27 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_diffuse
 #test=reflect_specular
 #test=propagate_at_surface
-test=randgaussq_shoot
+#test=randgaussq_shoot
 
 #test=fake_propagate
 #test=gentorch
 
+test=smear_normal_sigma_alpha
+
+export TEST=${TEST:-$test}
+export FOLD=/tmp/$name/$TEST
+mkdir -p $FOLD
+
 M1=1000000
 K2=100000
 
-num=8
-#num=$K2
+#num=8
+num=$K2
 #num=$M1
 
 nrm=0,0,1
 #nrm=0,0,-1
 
-export TEST=${TEST:-$test}
 case $TEST in
     rng_sequence) num=$M1 ;; 
     random_direction_marsaglia) num=$M1 ;; 
@@ -133,6 +140,7 @@ random_direction_marsaglia) script=random_direction_marsaglia.py ;;
     lambertian_direction)  script=lambertian_direction.py ;; 
          fake_propagate*)  script=fake_propagate.py ;; 
          randgaussq_shoot) script=randgaussq_shoot.py ;; 
+            smear_normal*) script=smear_normal.py ;; 
                         *) script=generic.py      ;;
 esac
 
@@ -164,6 +172,12 @@ EOV
 source fill_state.sh 
 source ephoton.sh    # branching on TEST inside ephoton.sh 
 source eprd.sh
+
+
+if [ "$TEST" == "smear_normal_sigma_alpha" ]; then 
+   export DBG_VALUE=0.1
+fi 
+
 
 export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/p001
 
@@ -219,10 +233,7 @@ if [ "${arg/ana}" != "$arg" ]; then
 
     if [ -f "$script" ]; then
 
-        #export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
-        #export FOLD=$EBASE
-        export FOLD="/tmp/$USER/opticks/$TEST"
-        # TODO: unify the layout if the test outputs 
+        export FOLD="/tmp/QSimTest/$TEST"
 
         export EYE=-1,-1,1 
         export LOOK=0,0,0

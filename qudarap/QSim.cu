@@ -472,25 +472,7 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
 
 
 
-
-
-
-__global__ void _QSim_random_direction_marsaglia( qsim* sim, quad* q, unsigned num_quad )
-{
-    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if (idx >= num_quad ) return;
-
-    curandState rng = sim->rngstate[idx] ; 
-    sctx ctx = {} ; 
-    ctx.idx = idx ;  
-
-    float3* dir = (float3*)&q[idx].f.x ;  
-    sim->random_direction_marsaglia( dir, rng, ctx );  
-
-    q[idx].u.w = idx ; 
-}
-
-__global__ void _QSim_lambertian_direction( qsim* sim, quad* q, unsigned num_quad, qdebug* dbg )
+__global__ void _QSim_quad_launch( qsim* sim, quad* q, unsigned num_quad, qdebug* dbg, unsigned type )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_quad ) return;
@@ -500,24 +482,50 @@ __global__ void _QSim_lambertian_direction( qsim* sim, quad* q, unsigned num_qua
     sctx ctx = {} ; 
     ctx.idx = idx ; 
 
-    float3* dir = (float3*)&q[idx].f.x ;  
+    float3* v3 = (float3*)&q[idx].f.x ;  
 
-    sim->lambertian_direction( dir, &dbg->normal, dbg->orient, rng, ctx );  
+
+    if( type == QGEN_LAMBERTIAN_DIRECTION )
+    {
+        sim->lambertian_direction( v3, &dbg->normal, dbg->orient, rng, ctx );  
+    }
+    else if( type == QGEN_RANDOM_DIRECTION_MARSAGLIA )
+    {
+        sim->random_direction_marsaglia( v3, rng, ctx );  
+    }
+    else if( type == QGEN_SMEAR_NORMAL_SIGMA_ALPHA )
+    {
+        sim->SmearNormal_SigmaAlpha( rng, v3, &dbg->direction, &dbg->normal, dbg->value , ctx );  
+    }
+    else if( type == QGEN_SMEAR_NORMAL_POLISH )
+    {
+        sim->SmearNormal_Polish(     rng, v3, &dbg->direction, &dbg->normal, dbg->value , ctx );  
+    }
+
 
     q[idx].u.w = idx ; 
 }
 
 
+
+
+
+
+
+
+
 extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad* q, unsigned num_quad, qdebug* dbg, unsigned type  )
 {
+
     const char* name = QSimLaunch::Name(type) ; 
     printf("//QSim_quad_launch sim %p quad %p num_quad %d dbg %p type %d name %s \n", sim, q, num_quad, dbg, type, name ); 
 
-    switch(type)
-    {
-        case RANDOM_DIRECTION_MARSAGLIA: _QSim_random_direction_marsaglia<<<numBlocks,threadsPerBlock>>>(  sim, q, num_quad )        ; break ;
-        case LAMBERTIAN_DIRECTION:       _QSim_lambertian_direction<<<numBlocks,threadsPerBlock>>>(        sim, q, num_quad, dbg )   ; break ;
-    }
+    assert( type == QGEN_RANDOM_DIRECTION_MARSAGLIA ||  
+            type == QGEN_LAMBERTIAN_DIRECTION       ||
+            type == QGEN_SMEAR_NORMAL_SIGMA_ALPHA   ||
+            type == QGEN_SMEAR_NORMAL_POLISH   ) ; 
+
+    _QSim_quad_launch<<<numBlocks,threadsPerBlock>>>( sim, q, num_quad, dbg, type ) ; 
 }
 
 /**

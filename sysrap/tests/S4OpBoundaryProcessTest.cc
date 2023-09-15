@@ -12,86 +12,50 @@ to allow alignment
 **/
 
 #include "ssys.h"
+#include "spath.h"
 #include "NP.hh"
 #include "S4OpBoundaryProcess.h"
 #include "S4Random.h"
 
-
 struct Chk
 {
-    enum { SIGMA_ALPHA, POLISH } ; 
-    static constexpr const char* SIGMA_ALPHA_ = "SigmaAlpha.npy" ; 
-    static constexpr const char* POLISH_ = "Polish.npy" ; 
-    static const char* Name(int chk); 
-
     Chk(); 
+    std::string desc() const ; 
 
+    const char* FOLD ; 
     const char* CHECK ; 
     NP*         a  ; 
 
-    void save(); 
-    void SmearNormal_SigmaAlpha(); 
-    void SmearNormal_Polish(); 
     void run(); 
-
-    static NP* SmearNormal(int chk, double value); 
+    void SmearNormal(int chk, double value); 
 
 }; 
 
-const char* Chk::Name(int chk)
-{
-    const char* n = nullptr ; 
-    switch(chk)
-    {
-        case SIGMA_ALPHA: n = SIGMA_ALPHA_ ; break ; 
-        case POLISH:      n = POLISH_ ; break ; 
-    }
-    return n ;
-}
 
 Chk::Chk()
     :
-    CHECK(ssys::getenvvar("CHECK","SmearNormal_SigmaAlpha")),
+    FOLD(ssys::getenvvar("FOLD")),
+    CHECK(FOLD ? spath::Basename(FOLD) : nullptr),
     a(nullptr)
 {
 }
 
-
-void Chk::save()
+std::string Chk::desc() const
 {
-    std::string arr = CHECK ; 
-    arr += ".npy" ; 
-    a->save("$FOLD", arr.c_str() ); 
-}
-
-void Chk::SmearNormal_SigmaAlpha()
-{
-    int chk = SIGMA_ALPHA ; 
-    double sigma_alpha = 0.1 ; 
-    a = SmearNormal( chk, sigma_alpha ); 
-    a->set_meta<double>("value", sigma_alpha ); 
-    a->set_meta<std::string>("valuename", "sigma_alpha" ); 
-    const char* name = Name(chk); 
-    a->names.push_back(name); 
-
-    save(); 
-}
-void Chk::SmearNormal_Polish()
-{
-    int chk = POLISH ; 
-    double polish = 0.8 ; 
-    a = SmearNormal(chk, polish ); 
-    a->set_meta<double>("value", polish ); 
-    a->set_meta<std::string>("valuename", "polish" ); 
-
-    const char* name = Name(chk); 
-    a->names.push_back(name); 
-
-    save(); 
+    std::stringstream ss ; 
+    ss << "Chk::desc" 
+       << std::endl 
+       << " FOLD " << ( FOLD ? FOLD : "-" ) 
+       << std::endl 
+       << " CHECK " << ( CHECK ? CHECK : "-" ) 
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
-NP* Chk::SmearNormal(int chk, double value)
+void Chk::SmearNormal(int chk, double value)
 {
     S4Random r ; 
 
@@ -100,10 +64,14 @@ NP* Chk::SmearNormal(int chk, double value)
 
     const int N = ssys::getenvint("NUM", 1000) ; 
     int ni = N ; 
-    int nj = 3 ; 
+    int nj = 4 ; 
 
     NP* a = NP::Make<double>( ni, nj ); 
     double* aa = a->values<double>(); 
+
+    a->set_meta<double>("value", value ); 
+    a->set_meta<std::string>("valuename", chk == 0 ? "sigma_alpha" : "polish" ); 
+    a->set_meta<std::string>("source", "S4OpBoundaryProcessTest.sh") ; 
 
     for(int i=0 ; i < ni ; i++) 
     {
@@ -112,13 +80,14 @@ NP* Chk::SmearNormal(int chk, double value)
         G4ThreeVector FacetNormal( 0., 0., 0.) ; 
         switch(chk)
         {
-            case SIGMA_ALPHA: FacetNormal = S4OpBoundaryProcess::SmearNormal_SigmaAlpha( Momentum, Normal, value );  break ; 
-            case POLISH:      FacetNormal = S4OpBoundaryProcess::SmearNormal_Polish(     Momentum, Normal, value );  break ; 
+            case 0: FacetNormal = S4OpBoundaryProcess::SmearNormal_SigmaAlpha( Momentum, Normal, value );  break ; 
+            case 1: FacetNormal = S4OpBoundaryProcess::SmearNormal_Polish(     Momentum, Normal, value );  break ; 
         }
 
-        aa[i*3+0] = FacetNormal.x() ; 
-        aa[i*3+1] = FacetNormal.y() ; 
-        aa[i*3+2] = FacetNormal.z() ; 
+        aa[i*4+0] = FacetNormal.x() ; 
+        aa[i*4+1] = FacetNormal.y() ; 
+        aa[i*4+2] = FacetNormal.z() ; 
+        aa[i*4+3] = 0.  ; 
 
         if(i < 4)  std::cout 
             << " i " << i 
@@ -129,13 +98,15 @@ NP* Chk::SmearNormal(int chk, double value)
             << std::endl
             ; 
     }
-    return a ; 
+    a->save("$FOLD/q.npy" ); 
 }
 
 void Chk::run()
 {
-    if(     strcmp(CHECK, "SmearNormal_SigmaAlpha")==0) SmearNormal_SigmaAlpha() ; 
-    else if(strcmp(CHECK, "SmearNormal_Polish")==0) SmearNormal_Polish() ;
+    std::cout << desc() << std::endl ; 
+
+    if(     strcmp(CHECK, "smear_normal_sigma_alpha")==0) SmearNormal(0, 0.1) ; 
+    else if(strcmp(CHECK, "smear_normal_polish")==0)      SmearNormal(1, 0.8) ;
     else
     {
         std::cerr 

@@ -40,8 +40,11 @@ enum {
    PROPAGATE_AT_MULTIFILM_X_POLARIZED,
 
 
-   RANDOM_DIRECTION_MARSAGLIA, 
-   LAMBERTIAN_DIRECTION,
+   QGEN_RANDOM_DIRECTION_MARSAGLIA, 
+   QGEN_LAMBERTIAN_DIRECTION,
+   QGEN_SMEAR_NORMAL_SIGMA_ALPHA,
+   QGEN_SMEAR_NORMAL_POLISH,
+
    REFLECT_DIFFUSE, 
    REFLECT_SPECULAR, 
    PROPAGATE_AT_SURFACE, 
@@ -98,8 +101,12 @@ struct QSimLaunch
     static constexpr const char* PROPAGATE_AT_MULTIFILM_X_POLARIZED_ = "propagate_at_multifilm_x_polarized";
 
     
-    static constexpr const char* RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ;
-    static constexpr const char* LAMBERTIAN_DIRECTION_ = "lambertian_direction" ;
+    static constexpr const char* QGEN_RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ;
+    static constexpr const char* QGEN_LAMBERTIAN_DIRECTION_ = "lambertian_direction" ;
+    static constexpr const char* QGEN_SMEAR_NORMAL_SIGMA_ALPHA_ = "smear_normal_sigma_alpha" ; 
+    static constexpr const char* QGEN_SMEAR_NORMAL_POLISH_ = "smear_normal_polish" ; 
+
+
     static constexpr const char* REFLECT_DIFFUSE_ = "reflect_diffuse" ;
     static constexpr const char* REFLECT_SPECULAR_ = "reflect_specular" ;
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
@@ -157,8 +164,11 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_AT_MULTIFILM_P_POLARIZED_ )  == 0) test = PROPAGATE_AT_MULTIFILM_P_POLARIZED;
    if(strcmp(name,PROPAGATE_AT_MULTIFILM_X_POLARIZED_ )  == 0) test = PROPAGATE_AT_MULTIFILM_X_POLARIZED;
 
-   if(strcmp(name,RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = RANDOM_DIRECTION_MARSAGLIA ;
-   if(strcmp(name,LAMBERTIAN_DIRECTION_) == 0)        test = LAMBERTIAN_DIRECTION ;
+   if(strcmp(name,QGEN_RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = QGEN_RANDOM_DIRECTION_MARSAGLIA ;
+   if(strcmp(name,QGEN_LAMBERTIAN_DIRECTION_) == 0)        test = QGEN_LAMBERTIAN_DIRECTION ;
+   if(strcmp(name,QGEN_SMEAR_NORMAL_SIGMA_ALPHA_) == 0)    test = QGEN_SMEAR_NORMAL_SIGMA_ALPHA ;
+   if(strcmp(name,QGEN_SMEAR_NORMAL_POLISH_) == 0)         test = QGEN_SMEAR_NORMAL_POLISH ;
+
    if(strcmp(name,REFLECT_DIFFUSE_) == 0)             test = REFLECT_DIFFUSE ;
    if(strcmp(name,REFLECT_SPECULAR_) == 0)            test = REFLECT_SPECULAR ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
@@ -217,8 +227,12 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_AT_MULTIFILM_X_POLARIZED: s = PROPAGATE_AT_MULTIFILM_X_POLARIZED_ ; break ;
 
 
-        case RANDOM_DIRECTION_MARSAGLIA:   s = RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
-        case LAMBERTIAN_DIRECTION:         s = LAMBERTIAN_DIRECTION_         ; break ; 
+        case QGEN_RANDOM_DIRECTION_MARSAGLIA:   s = QGEN_RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
+        case QGEN_LAMBERTIAN_DIRECTION:         s = QGEN_LAMBERTIAN_DIRECTION_         ; break ; 
+        case QGEN_SMEAR_NORMAL_SIGMA_ALPHA:     s = QGEN_SMEAR_NORMAL_SIGMA_ALPHA_     ; break ; 
+        case QGEN_SMEAR_NORMAL_POLISH:          s = QGEN_SMEAR_NORMAL_POLISH_          ; break ; 
+
+
         case REFLECT_DIFFUSE:              s = REFLECT_DIFFUSE_              ; break ; 
         case REFLECT_SPECULAR:             s = REFLECT_SPECULAR_             ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 

@@ -14,7 +14,9 @@ QSimTest.cc
 #include "scuda.h"
 #include "squad.h"
 #include "ssys.h"
-#include "SPath.hh"
+
+#include "SPath.hh"   // TODO: migrate to spath.h 
+#include "spath.h"   
 
 #include "SSim.hh"
 #include "SBnd.h"
@@ -30,8 +32,8 @@ QSimTest.cc
 #include "QSim.hh"
 #include "QSimLaunch.hh"
 #include "QEvent.hh"
-#include "QDebug.hh"
 
+#include "QDebug.hh"
 #include "qdebug.h"
 
 #include "SEvent.hh"
@@ -50,7 +52,6 @@ struct QSimTest
     unsigned type ;  // QSimLaunch type 
     unsigned num ; 
     const char* subfold ; 
-    const char* dir ; 
     int rc ; 
 
     QSimTest(unsigned type, unsigned num, const SPrd* sprd ); 
@@ -97,7 +98,6 @@ Inhibiting logging  within executables does not work ...
 
 const plog::Severity QSimTest::LEVEL = SLOG::EnvLevel("QSimTest", "INFO"); 
 
-const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
 
 
 QSimTest::QSimTest(unsigned type_, unsigned num_, const SPrd* sprd_)
@@ -107,7 +107,6 @@ QSimTest::QSimTest(unsigned type_, unsigned num_, const SPrd* sprd_)
     type(type_),
     num(num_),
     subfold(QSimLaunch::Name(type)),
-    dir(SPath::Resolve("$FOLD", subfold, DIRPATH)),
     rc(0)
 {
 }
@@ -135,10 +134,10 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
-    const char* udir = rng_sequence_PRECOOKED ? SPath::Resolve("$PrecookedDir/QSimTest/rng_sequence", DIRPATH) : dir ; 
+    const char* udir = rng_sequence_PRECOOKED ? "$HOME/.opticks/precooked/QSimTest/rng_sequence" : "$FOLD" ; 
     LOG_IF(error, rng_sequence_PRECOOKED) 
         << " QSimTest__rng_sequence_PRECOOKED envvar triggers directory override " << std::endl 
-        << " default  [" << dir << "] " << std::endl 
+        << " default  [" << "$FOLD" << "] " << std::endl 
         << " override [" << udir << "]"  
         ; 
 
@@ -156,7 +155,6 @@ Does lookups at every texel of the 2d float4 boundary texture
 
 void QSimTest::boundary_lookup_all()
 {
-    LOG(info) << " dir [" << dir << "]" ; 
     unsigned width = qs->getBoundaryTexWidth(); 
     unsigned height = qs->getBoundaryTexHeight(); 
     const NP* src = qs->getBoundaryTexSrc(); 
@@ -167,8 +165,8 @@ void QSimTest::boundary_lookup_all()
     NP* l = qs->boundary_lookup_all( width, height ); 
     assert( l->has_shape( num_bnd, 4, 2, width, 4 ) ); 
 
-    l->save(dir, "lookup_all.npy" ); 
-    src->save( dir, "lookup_all_src.npy" ); 
+    l->save("$FOLD/lookup_all.npy" ); 
+    src->save("$FOLD/lookup_all_src.npy" ); 
 }
 
 /**
@@ -197,8 +195,8 @@ void QSimTest::boundary_lookup_line(const char* material, float x0 , float x1, u
 
     NP* l = qs->boundary_lookup_line( xx, nx, line, k ); 
 
-    l->save(dir, "lookup_line.npy" ); 
-    NP::Write( dir, "lookup_line_wavelength.npy" ,  xx, nx ); 
+    l->save("$FOLD/lookup_line.npy" ); 
+    x->save("$FOLD/lookup_line_wavelength.npy"); 
 }
 
 /**
@@ -246,9 +244,9 @@ void QSimTest::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 
     const char* reldir = sizeof(T) == 8 ? "double" : "float" ; 
 
-    pp->save(dir, reldir, "prop_lookup_pp.npy" ); 
-    x->save(dir, reldir, "prop_lookup_x.npy" ); 
-    yy->save(dir, reldir, "prop_lookup_yy.npy" ); 
+    pp->save("$FOLD", reldir, "prop_lookup_pp.npy" ); 
+    x->save("$FOLD", reldir, "prop_lookup_x.npy" ); 
+    yy->save("$FOLD", reldir, "prop_lookup_yy.npy" ); 
 }
 
 
@@ -315,12 +313,8 @@ void QSimTest::multifilm_lookup_all(){
          output[i*num_item+7] = h_quad2_result[i].q1.f.w;
     }   
         
-    int create_dirs = 2 ; // 2:dirpath
-    const char* fold = SPath::Resolve(FOLD, create_dirs ); 
 
-    std::cout<<" save multifilm_lut_result.npy in FOLD = "<< fold 
-             <<std::endl;
-    result->save(fold,"multifilm_lut_result.npy");
+    result->save("$FOLD/multifilm_lut_result.npy");
 }
 
 
@@ -356,7 +350,7 @@ void QSimTest::wavelength()
     qs->dump_wavelength( ww, num ); 
    
     LOG(info) << " name " << name ; 
-    w->save( dir, name ); 
+    w->save("$FOLD", name ); 
 }
 
 
@@ -364,7 +358,7 @@ void QSimTest::wavelength()
 void QSimTest::RandGaussQ_shoot()
 {
     NP* v = qs->RandGaussQ_shoot(num)  ; 
-    v->save(dir, "RandGaussQ_shoot.npy" ); 
+    v->save("$FOLD/RandGaussQ_shoot.npy" ); 
 }
 
 
@@ -373,15 +367,15 @@ void QSimTest::dbg_gs_generate()
 {
     NP* p = qs->dbg_gs_generate(num, type); 
 
-    p->save(dir, "p.npy"); 
+    p->save("$FOLD/p.npy"); 
 
     if( type == SCINT_GENERATE )
     {
-        qs->dbg->save_scint_gs(dir);  
+        qs->dbg->save_scint_gs("$FOLD");  
     }
     else if( type == CERENKOV_GENERATE )
     {
-        qs->dbg->save_cerenkov_gs(dir);  
+        qs->dbg->save_cerenkov_gs("$FOLD");  
     }
     else
     {
@@ -406,7 +400,7 @@ void QSimTest::generate_photon()
     qs->generate_photon();  
 
     NP* p = qs->event->gatherPhoton(); 
-    p->save(dir, "p.npy"); 
+    p->save("$FOLD/p.npy"); 
 
     LOG(info) << "]" ; 
 }
@@ -449,12 +443,10 @@ void QSimTest::save_state( const char* subfold, const float* data, int num_state
     std::vector<std::string> names ; 
     getStateNames(names, num_state); 
 
-    const char* path = SPath::Resolve(FOLD, subfold, "state.npy", FILEPATH ); 
-
     NP* a = NP::Make<float>( num_state, 6, 4 ); // (6,4) item dimension corresponds to the 6 quads of quad6 
     a->read( data ); 
     a->set_names(names); 
-    a->save(path); 
+    a->save("$FOLD/state.npy"); 
 }
 
 
@@ -470,8 +462,8 @@ void QSimTest::photon_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
     NP* p = qs->photon_launch_generate(num, type ); 
-    p->save(dir, "p.npy"); 
-    qs->dbg->save(dir); 
+    p->save("$FOLD/p.npy"); 
+    qs->dbg->save("$FOLD"); 
 }
 
 /**
@@ -523,11 +515,16 @@ void QSimTest::fake_propagate()
 
 
 
+
+
+
+
 void QSimTest::quad_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
     NP* q = qs->quad_launch_generate(num, type ); 
-    q->save(dir, "q.npy"); 
+    q->set_meta<std::string>("source", "QSimTest.sh"); 
+    q->save("$FOLD/q.npy"); 
 }
 
 
@@ -549,13 +546,12 @@ void QSimTest::photon_launch_mutate()
     assert( src_subfold ); 
 
     unsigned num_photon = num ; 
-    NP* a = NP::Load(FOLD, src_subfold,  "p.npy" ); 
+    NP* a = NP::Load("$FOLD", src_subfold,  "p.npy" ); 
 
     if( a == nullptr )
     {
         LOG(fatal) 
              << "failed to NP::Load photons from "
-             << " FOLD " << FOLD
              <<  " src_subfold " << src_subfold   
              << std::endl 
              << " YOU PROBABLY NEED TO RUN ANOTHER TEST FIRST TO GENERATE THE PHOTONS "
@@ -571,9 +567,9 @@ void QSimTest::photon_launch_mutate()
     sphoton* photons = (sphoton*)a->bytes() ; 
     qs->photon_launch_mutate( photons, num_photon, type ); 
 
-    a->save(dir, "p.npy"); 
+    a->save("$FOLD/p.npy"); 
 
-    qs->dbg->save(dir); 
+    qs->dbg->save("$FOLD"); 
 }
 
 /**
@@ -637,7 +633,6 @@ void QSimTest::main()
         << " subfold " << subfold
         << " ni_tranche_size " << ni_tranche_size
         << " print_id " << print_id
-        << " dir " << dir
         ; 
 
     switch(type)
@@ -693,12 +688,14 @@ void QSimTest::main()
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
-	case PROPAGATE_AT_MULTIFILM_S_POLARIZED: 
-	case PROPAGATE_AT_MULTIFILM_P_POLARIZED: 
-	case PROPAGATE_AT_MULTIFILM_X_POLARIZED:
+		case PROPAGATE_AT_MULTIFILM_S_POLARIZED: 
+		case PROPAGATE_AT_MULTIFILM_P_POLARIZED: 
+		case PROPAGATE_AT_MULTIFILM_X_POLARIZED:
                                                  photon_launch_mutate()         ; break ;  
-        case RANDOM_DIRECTION_MARSAGLIA:
-        case LAMBERTIAN_DIRECTION:
+        case QGEN_RANDOM_DIRECTION_MARSAGLIA:
+        case QGEN_LAMBERTIAN_DIRECTION:
+        case QGEN_SMEAR_NORMAL_SIGMA_ALPHA:
+        case QGEN_SMEAR_NORMAL_POLISH:
                                                  quad_launch_generate()       ; break ; 
         case FAKE_PROPAGATE:
                                                 fake_propagate()              ; break ; 

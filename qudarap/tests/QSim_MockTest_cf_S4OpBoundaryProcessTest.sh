@@ -6,15 +6,18 @@ name=QSim_MockTest_cf_S4OpBoundaryProcessTest
 defarg="info_ana"
 arg=${1:-$defarg}
 
-export AFOLD=/tmp/QSim_MockTest
-export BFOLD=/tmp/S4OpBoundaryProcessTest
 
-#check=SmearNormal_SigmaAlpha
-check=SmearNormal_Polish
+check=smear_normal_sigma_alpha
+#check=smear_normal_polish
 export CHECK=${CHECK:-$check}
 
 
-vars="BASH_SOURCE name arg AFOLD BFOLD CHECK"
+export AFOLD=/tmp/QSim_MockTest/$CHECK
+export BFOLD=/tmp/S4OpBoundaryProcessTest/$CHECK
+export CFOLD=/tmp/QSimTest/$CHECK
+
+
+vars="BASH_SOURCE name arg CHECK AFOLD BFOLD CFOLD"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

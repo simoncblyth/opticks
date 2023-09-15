@@ -2662,6 +2662,10 @@ struct scuda
     static float4 efloat4(const char* ekey, const char* fallback="0,0,0,0", char delim=',' ); 
     static float3 efloat3n(const char* ekey, const char* fallback="0,0,0",   char delim=',' ); 
 
+    static std::string serialize( const float2& v );  // eg for metadata vector into string 
+    static std::string serialize( const float3& v ); 
+    static std::string serialize( const float4& v ); 
+
 };
 
 template<typename T>
@@ -2734,6 +2738,49 @@ inline float3 scuda::efloat3n(const char* ekey, const char* fallback, char delim
    float3 v = efloat3(ekey, fallback, delim); 
    return normalize(v);  
 }
+
+
+
+inline std::string scuda::serialize(const float2& v )
+{
+    std::stringstream ss ; 
+    ss << v.x 
+       << "," 
+       << v.y 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string scuda::serialize(const float3& v )
+{
+    std::stringstream ss ; 
+    ss << v.x 
+       << "," 
+       << v.y 
+       << ","
+       << v.z 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+inline std::string scuda::serialize(const float4& v )
+{
+    std::stringstream ss ; 
+    ss << v.x 
+       << "," 
+       << v.y 
+       << ","
+       << v.z 
+       << ","
+       << v.w 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 // ./spath_test.sh
 
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include "spath.h"
@@ -69,6 +70,14 @@ void test_Exists2()
 }
 
 
+void test_Basename()
+{
+    const char* path = "/tmp/some/long/path/with/an/intersesting/base" ; 
+    const char* base = spath::Basename(path) ; 
+    assert( strcmp( base, "base") == 0 ); 
+}
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -77,7 +86,7 @@ int main(int argc, char** argv)
     test_Exists(); 
     test_Exists2(); 
     */
-    test_ResolvePath(); 
+    test_Basename(); 
 
 
     return 0 ; 
