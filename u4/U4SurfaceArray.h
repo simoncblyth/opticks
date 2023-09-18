@@ -5,7 +5,7 @@ U4SurfaceArray.h
 
 Formerly did this in U4Surface::MakeStandardArray
 
-* this is a reimplementation follow the intent of GSurfaceLib::createStandardSurface
+* this is a reimplementation that follows the intent of GSurfaceLib::createStandardSurface
 * for surfaces only payload group zero is filled with four payload
   probabilities that sum to one::
 
@@ -13,6 +13,31 @@ Formerly did this in U4Surface::MakeStandardArray
 
 * EFFICIENCY, REFLECTIVITY and specular/diffuse optical surface nature 
   are inputs to setting the four probabilities that must sum to 1. 
+
+* notice that implicit surfaces are like perfects in that there 
+  is no wavelength variation of properties : the implicits 
+  always just perfectly absorb corresponding to Geant4 fStopAndKill
+  behaviour when going from RINDEX to non-RINDEX material. 
+
+
+Only simple surfaces are covered by this
+------------------------------------------
+
+U4SurfaceArray currently only handles simple surfaces where each surface
+is either:
+
+* sensor
+* absorber
+* specular refector 
+* diffuse reflector
+
+As implemented in qsim::propagate_at_surface
+
+Other types of surfaces need to use a different approach and 
+steered to the appropriate qsim method by qsim::propagate 
+based on the "ems" or smatsur.h enum which is planted 
+into the optical buffer by sstandard::make_optical
+
 
 **/
 
@@ -128,6 +153,7 @@ slots that all add to one and are treated as probabilities.
 Note assumption that sensors do not reflect, this is old traditional POM 
 for more involved modelling need to use special surfaces, see smatsur.h. 
  
+
 **/
 
 inline void U4SurfaceArray::addSurface(int i, const G4LogicalSurface* ls)
@@ -236,7 +262,8 @@ U4SurfaceArray::addPerfect
 ----------------------------
 
 Perfect surfaces are used for debugging and unrealistic tests.  
-They have constant properties across the energy/wavelength domain. 
+They have constant properties across the energy/wavelength domain, 
+implemented by simply copying the values. 
 
 **/
 

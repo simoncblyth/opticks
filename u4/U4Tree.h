@@ -458,7 +458,7 @@ subsequent reuse within the test geomerty.
 inline void U4Tree::initSurfaces_Serialize()
 {
     std::vector<U4SurfacePerfect> perfect ; 
-    U4SurfacePerfect::Get(perfect);
+    U4SurfacePerfect::Get(perfect);  // perfect Detect,Absorb,Specular,Diffuse surfaces 
 
     int num_perfect = perfect.size(); 
     for(int i=0 ; i < num_perfect ; i++)
@@ -467,6 +467,7 @@ inline void U4Tree::initSurfaces_Serialize()
         const char* name = perf.name.c_str() ; 
         st->add_surface( name );   
     }
+
 
     U4SurfaceArray serialize(surfaces, st->implicit, perfect) ;   
     st->standard->sur = serialize.sur ; 

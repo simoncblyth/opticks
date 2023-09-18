@@ -1,5 +1,7 @@
 #!/bin/bash -l 
 
+cd $(dirname $BASH_SOURCE)
+
 name=stree_py_test
 defarg="info_ana"
 arg=${1:-$defarg}

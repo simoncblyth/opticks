@@ -293,6 +293,14 @@ Q: How come the yzw columns not used on device ?
 A: Because that info is used on CPU to prepare the surface entries 
    of the bnd array, which are accessed on device via the boundary texture. 
 
+
+HANDLING SIGMA_ALPHA/POLISH GROUND SURFACES ?
+-----------------------------------------------
+
+This loops over all surfaces in use in the geometry, so 
+can detect surfaces that need special handling : and communicate 
+that via the ems smatsur.h enum value.  
+
 **/
 
 inline NP* sstandard::make_optical(
@@ -368,8 +376,13 @@ inline NP* sstandard::make_optical(
                 char OSN0 = *OSN.c_str() ;                     
                 int ems = smatsur::TypeFromChar(OSN0) ; 
 
+                /**
+                HERE CAN DETECT FINISH AND ModelValuePercent THAT
+                REQUIRES SIGMA_ALPHA OR POLISH GROUND SURFACE HANDLING   
+                FOR WHICH WILL NEED NEW smatsur.h enum value
+                **/
+
                 int Payload_Y = ems ; 
-                //int Payload_Y = Type ; 
 
                 if(VERBOSE) std::cout 
                     << " bnd:i "   << std::setw(3) << i 

@@ -1282,17 +1282,70 @@ DONE : random aligned comparisons of QSim_MockTest_cf_S4OpBoundaryProcessTest.sh
 +----+----------------------------------------------------------------------+--------------------------------------------+
 
 
-TODO : Compare without random aligment
------------------------------------------
- 
-TODO : Compare the actual CUDA impl, now that the MOCK_CUDA one is debugged
+DONE : Compare the actual CUDA impl, now that the MOCK_CUDA one is debugged
 ------------------------------------------------------------------------------
 
-TODO : Investigate how to incorporate the normal smearing
+
+DONE : Review surface switching in G4OpBoundaryProcess and qsim.h (action and translation)
+-------------------------------------------------------------------------------------------
+
+
+::
+
+    ~/opticks/sysrap/tests/ground.sh 
+
+
+    CSGFoundry/SSim/stree/surface/NNVTMaskOpticalSurface/NPFold_meta.txt
+    OpticalSurfaceName:opNNVTMask
+    TypeName:dielectric_metal
+    ModelName:unified
+    FinishName:ground
+    Type:0
+    Model:1
+    Finish:3
+    ModelValue:0.2
+    lv:NNVTMCPPMTlMaskTail
+    type:Skin
+    -rw-rw-r--  1 blyth  staff  192 Sep  7 20:20 CSGFoundry/SSim/stree/surface/NNVTMaskOpticalSurface/ABSLENGTH.npy
+    -rw-rw-r--  1 blyth  staff  160 Sep  7 20:20 CSGFoundry/SSim/stree/surface/NNVTMaskOpticalSurface/REFLECTIVITY.npy
+
+
+::
+
+    ~/opticks/sysrap/tests/stree_py_test.sh
+    ..
+
+    In [16]: st.f.surface.NNVTMaskOpticalSurface.REFLECTIVITY                                                                                                  
+    Out[16]: 
+    array([[0.   , 0.535],
+           [0.   , 0.535]])
+
+    In [19]: st.f.surface.HamamatsuMaskOpticalSurface.REFLECTIVITY                                                                                             
+    Out[19]: 
+    array([[0.   , 0.535],
+           [0.   , 0.535]])
+
+
+
+
+
+HMM : Investigate how to incorporate the normal smearing
 -----------------------------------------------------------
 
-TODO: Find some sigma_alpha/polish surfaces to hunt for deviations
---------------------------------------------------------------------
+My re-reading of G4OpBoundaryProcess suggests that DielectricMetal Mask sigma_alpha surfaces are 
+actually doing nothing .. because ChooseReflection always sets theStatus LambertianReflection
+for prob_ss prob_sl prob_bs all zero (their default). 
+
+THATS GOOD NEWS : IF CONFIRMED : AS MEANS NO NEED TO INTEGRATE THE SMEAR NORMAL STUFF 
+
+
+
+
+
+
+
+DONE : Find some sigma_alpha/polish surfaces to hunt for deviations : LPMT MaskTail
+--------------------------------------------------------------------------------------
 
 
 

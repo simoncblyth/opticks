@@ -371,9 +371,29 @@ class stree(object):
         return ssf
 
 
-    def desc_boundary(self):
+    def desc_boundary_stats(self):
+        """
+        Counts of volumes with each boundary  
+        
+        desc_boundary_stats
+        u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True  )
+           0 :    0 :      1 : Galactic///Galactic 
+           1 :    1 :      3 : Galactic///Rock 
+           2 :    2 :      1 : Rock///Galactic 
+           3 :    3 :      1 : Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air 
+           4 :    4 :      1 : Rock///Rock 
+           5 :    5 :      1 : Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air 
+           6 :    6 :      1 : Air/Implicit_RINDEX_NoRINDEX_pExpHall_pPoolCover//Steel 
+         ...
+         108 :  108 :   4997 : Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum 
+         109 :  109 :   4997 : Vacuum/HamamatsuR12860_PMT_20inch_dynode_plate_opsurface//Steel 
+         110 :  110 :   4997 : Vacuum/HamamatsuR12860_PMT_20inch_outer_edge_opsurface//Steel 
+         111 :  111 :   4997 : Vacuum/HamamatsuR12860_PMT_20inch_inner_edge_opsurface//Steel 
+
+
+        """ 
         lines = []
-        lines.append("desc_boundary")
+        lines.append("desc_boundary_stats")
         st = self
         lines.append("u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True  )") 
         u_bd, n_bd = np.unique( st.nds.boundary, return_counts=True ) 
@@ -381,10 +401,11 @@ class stree(object):
         for i in range(len(u_bd)):
             u = u_bd[i]
             n = n_bd[i]
-            line = " %3d : %4d : %6d : %s " % (i, u, n, st.f.bd_names[u] )
+            line = " %3d : %4d : %6d : %s " % (i, u, n, st.f.standard.bd_names[u] )
             lines.append(line)
         pass
-        return "\n".join(lines)
+        return STR("\n".join(lines))
+
 
     def desc_remainder(self):
         lines = []

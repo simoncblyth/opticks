@@ -1584,8 +1584,8 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
           
 /**
-qsim::propagate_at_surface
-----------------------------
+qsim::propagate_at_surface   (HMM: perhaps propagate_at_simplified_surface )
+-------------------------------------------------------------------------------
 
 +---------------------+------------------+---------------------------------------------------------+--------------+
 | output flag         |   command        |  changed                                                |  note        |
