@@ -1339,6 +1339,68 @@ for prob_ss prob_sl prob_bs all zero (their default).
 THATS GOOD NEWS : IF CONFIRMED : AS MEANS NO NEED TO INTEGRATE THE SMEAR NORMAL STUFF 
 
 
+HMM : U4SimulateTest.sh GDML bordered surf ref issue...
+----------------------------------------------------------------------------------------
+
+
+HMM error with a border surface reference when loading /Users/blyth/.opticks/GEOM/FewPMT/origin.gdml::
+
+    G4GDML: Reading '/Users/blyth/.opticks/GEOM/FewPMT/origin.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : ReadError
+          issued by : G4GDMLReadStructure::GetPhysvol()
+    Referenced physvol 'Rock_lv_pv0x7f99eed51ed0' was not found!
+    *** Fatal Exception *** core dump ***
+
+Try commenting that bordersurface::
+
+    407     <skinsurface name="HamamatsuMaskOpticalSurface" surfaceproperty="opHamamatsuMask">
+    408       <volumeref ref="hmsklMaskTail0x7f99eed481b0"/>
+    409     </skinsurface>
+    410     <!--bordersurface name="water_rock_bs" surfaceproperty="water_rock_bs">
+    411       <physvolref ref="Water_lv_pv0x7f99eed51e80"/>
+    412       <physvolref ref="Rock_lv_pv0x7f99eed51ed0"/>
+    413     </bordersurface-->
+    414   </structure>
+
+
+DONE : Confirmed sigma_alpha "useless" for mask tail using mask_tail_diagonal_line
+--------------------------------------------------------------------------------------
+
+* Doing Geant4 side only as access to WiFi requires gymnastics beside my window
+
+u4/tests/storch_FillGenstep.sh::
+
+    175     elif [ "$CHECK" == "mask_tail_diagonal_line" ]; then
+    176     
+    177         intent="point symmetrically placed to tareget outside of nmskTail"
+    178         ttype=line 
+    179         radius=50   
+    180         pos=-214,0,-127
+    181         mom=1,0,1
+
+
+::
+
+    MODE=2 ~/opticks/u4/tests/U4SimulateTest.sh run_ph
+    MODE=2 ~/opticks/u4/tests/U4SimulateTest.sh ph
+
+    MODE=2 BP=C4OpBoundaryProcess::PostStepDoIt ~/opticks/u4/tests/U4SimulateTest.sh dbg_ph
+
+    ## NB the "C" not "G" in C4OpBoundaryProcess::PostStepDoIt
+    ## Custom4 process is in use via the j/PMTSim lib 
+
+    MODE=2 BP=C4OpBoundaryProcess::GetFacetNormal ~/opticks/u4/tests/U4SimulateTest.sh dbg_ph
+
+
+Note that the breakpoint C4OpBoundaryProcess::GetFacetNormal is never hit 
+confirming the suspicion that the sigma_alpha actually going nothing. 
+
 
 
 

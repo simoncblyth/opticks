@@ -192,6 +192,10 @@ if __name__ == '__main__':
     ppos2  = eval(ppos2_) 
     ppos3  = eval(ppos3_) 
 
+    ppos = t.record[:,:,0,:3].reshape(-1,3)
+
+
+
     elem = []
     elem.append(CMDLINE)
     if not ppos0 is None: elem.append("b:%s" % ppos0_)

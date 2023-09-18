@@ -2,10 +2,12 @@ usage(){ cat << EOU
 FewPMT.sh
 ==========
 
-This geomscript is sourced from::
+This geomscript may depending on GEOM be sourced for example from::
 
-   U4SimtraceTest.sh
-   U4SimulateTest.sh
+   u4/tests/U4SimtraceTest.sh
+   u4/tests/U4SimulateTest.sh
+   g4cx/tests/G4CXTest.sh
+
 
 Moved LAYOUT control here to be in common 
 between U4SimulateTest.sh and U4SimtraceTest.sh 

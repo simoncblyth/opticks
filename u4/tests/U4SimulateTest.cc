@@ -4,8 +4,6 @@ U4SimulateTest.cc  (HMM: maybe rename U4AppTest.cc)
 
 All the Geant4 setup happens in U4App::Create from U4App.h
 
-TODO: incorporate J_PMTSIM_LOG_ hookup into OPTICKS_LOG
-
 **/
 
 #include "U4App.h"    

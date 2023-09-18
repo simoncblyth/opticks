@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 
-
 name=ssys_test 
 bin=/tmp/$name
 

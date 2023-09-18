@@ -9,7 +9,6 @@ FewPMT.sh/tub3LogicalPMT::
 
     MODE=2 ~/opticks/u4/tests/U4SimtraceTest.sh
 
-
 TODO
 ------
 

@@ -39,7 +39,14 @@ void test_Load()
 void test_GEOMLoad()
 {
     SName* id = SName::GEOMLoad(); 
-    std::cout << id->detail() << std::endl ; 
+    std::cout 
+        << "test_GEOMLoad"
+        << std::endl 
+        << "SName* id = SName::GEOMLoad() ; id->detail() " 
+        << std::endl 
+        << id->detail()
+        << std::endl 
+        ; 
 }
 
 int main(int argc, char** argv)

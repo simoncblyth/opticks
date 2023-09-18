@@ -223,7 +223,31 @@ inline QSIM_METHOD float qsim::RandGaussQ_shoot( curandStateXORWOW& rng, float m
 qsim::SmearNormal_SigmaAlpha
 ------------------------------
 
-TODO: FIND PI MULTIPLE CONSTANTS 
+CAUTION : THIS CURRENTLY NOT USED BY ANYTHING OTHER THAN TESTS
+
+The reason is that a Geant4 simulation with some sigma_alpha/polish 
+surfaces will not actually use G4OpBoundaryProcess::GetFacetNormal unless
+a bunch of conditions are satisfied such as having non-zero values of some 
+of prob_sl/prob_ss/prob_bs that induces G4OpBoundaryProcess::ChooseReflection 
+to return something other that LambertianReflection.
+
+**THIS MAKES ME SUSPECT ACTUAL USE OF NORMAL SMEARING IS VERY RARE**
+
++----------------------+-------------------------------+------------------------------+----------------------+
+| G4OpBoundaryProcess  | G4MaterialPropertiesIndex.hh  | G4MaterialPropertiesTable.cc | ChooseReflection     |  
++======================+===============================+==============================+======================+
+| prob_sl              | kSPECULARLOBECONSTANT         | SPECULARLOBECONSTANT         | LobeReflection       | 
++----------------------+-------------------------------+------------------------------+----------------------+
+| prob_ss              | kSPECULARSPIKECONSTANT        | SPECULARSPIKECONSTANT        | SpikeReflection      |  
++----------------------+-------------------------------+------------------------------+----------------------+
+| prob_bs              | kBACKSCATTERCONSTANT          | BACKSCATTERCONSTANT          | BackScattering       |
++----------------------+-------------------------------+------------------------------+----------------------+
+| all zero =>          |                               |                              | LambertianReflection |
++----------------------+-------------------------------+------------------------------+----------------------+
+
+TODO: full simulation run with breakpoint "BP=C4OpBoundaryProcess::GetFacetNormal"
+
+* C4 (not G4) as Custom4 is in use for the boundary process 
 
 **/
 
@@ -296,6 +320,8 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
 /**
 qsim::SmearNormal_Polish
 ------------------------------
+
+CAUTION : THIS CURRENTLY NOT USED BY ANYTHING OTHER THAN TESTS : SEE DETAILS ABOVE
 
 **/
 

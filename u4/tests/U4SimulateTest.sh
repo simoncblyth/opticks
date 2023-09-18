@@ -74,8 +74,6 @@ fi
 _GEOMList=${GEOM}_GEOMList
 GEOMList=${!_GEOMList}
 
-vars="GEOM _GEOMList GEOMList"
-for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
 
 export BASE=/tmp/$USER/opticks/GEOM/$GEOM/$bin
 
@@ -93,8 +91,11 @@ export U4Recorder__PIDX_ENABLED=1
 
 
 
+evt=n001
+export EVT=${EVT:-$evt}       # used for FOLD envvars
 
-export EVT=${EVT:-000}       # used for FOLD envvars
+
+
 
 # python ana level presentation 
 export LOC=skip
@@ -112,7 +113,6 @@ num_photons=10000    # 10k
 #num_photons=1000000  # 1M
 
 NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
-
 
 if [ -n "$RERUN" ]; then 
    export OPTICKS_G4STATE_RERUN=$RERUN
@@ -153,7 +153,7 @@ if [ "$running_mode" == "SRM_G4STATE_RERUN" ]; then
    echo $BASH_SOURCE : switch on logging when doing single photon RERUN
    loglevel  
 else
-   echo $BASH_SOURCE : switch on some logging anyhow : THIS WILL BE VERBOSE
+   #echo $BASH_SOURCE : switch on some logging anyhow : THIS WILL BE VERBOSE
    #export junoPMTOpticalModel=INFO
    #export CustomG4OpBoundaryProcess=INFO
 
@@ -170,43 +170,6 @@ if [ -n "$SIMTRACE" ]; then
 fi 
 
 
-
-
-defarg="run_ph"
-#defarg="run_mt"
-[ -n "$BP" ] && defarg="dbg"
-
-arg=${1:-$defarg}
-
-if [ "$arg" == "dbg" ]; then
-   bp=MixMaxRng::flat
-   #bp="$bp CustomG4OpBoundaryProcess::DielectricMetal"
-   #bp="$bp CustomG4OpBoundaryProcess::ChooseReflection" 
-   #bp="$bp CustomG4OpBoundaryProcess::DoAbsorption" 
-   #bp="$bp CustomG4OpBoundaryProcess::DoReflection"
-   #export BP=${BP:-$bp}
-fi 
-
-
-
-if [ "${arg/run}" != "$arg" ]; then
-    [ -f "$log" ] && rm $log 
-    $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-    [ -f "$log" ] && echo $BASH_SOURCE rename log $log to logN $logN && mv $log $logN    
-fi 
-
-if [ "${arg/dbg}" != "$arg" ]; then
-    [ -f "$log" ] && rm $log 
-    case $(uname) in 
-        Darwin) lldb__ $bin ;;
-        Linux)   gdb__ $bin ;;
-    esac
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
-fi 
-
-
-
 ## analysis modes beginning with n: nfs/ncf/naf/nph are NumPy only (without matplotlib and pyvista)
 ## envout is used to communicate from some python scripts back into this bash script 
 ## this only makes sense for single N=0, N=1 running 
@@ -218,6 +181,25 @@ export FOLD=$BASE/$reldir/$EVT
 export AFOLD=$BASE/ALL0/$EVT     ## for comparisons 
 export BFOLD=$BASE/ALL1/$EVT
 
+
+
+
+vars="BASH_SOURCE GEOM _GEOMList GEOMList BASE EVT FOLD NUM_PHOTONS script"
+
+
+
+
+
+
+
+
+
+
+defarg="run_ph"
+#defarg="run_mt"
+[ -n "$BP" ] && defarg="dbg"
+
+arg=${1:-$defarg}
 [ "${arg:0:1}" == "n" ] && export MODE=0
 
 if [ "${arg/fs}" != "$arg" -o "${arg/nfs}" != "$arg" ]; then
@@ -242,6 +224,36 @@ elif [ "${arg/__}" != "$arg" -o "${arg/n__}" != "$arg" ]; then
     script=$DIR/${bin}.py 
 fi 
 
+
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
+    [ -f "$log" ] && rm $log 
+    $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+    [ -f "$log" ] && echo $BASH_SOURCE rename log $log to logN $logN && mv $log $logN    
+fi 
+
+
+if [ "$arg" == "dbg" ]; then
+   bp=MixMaxRng::flat
+   #bp="$bp CustomG4OpBoundaryProcess::DielectricMetal"
+   #bp="$bp CustomG4OpBoundaryProcess::ChooseReflection" 
+   #bp="$bp CustomG4OpBoundaryProcess::DoAbsorption" 
+   #bp="$bp CustomG4OpBoundaryProcess::DoReflection"
+   #export BP=${BP:-$bp}
+fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then
+    [ -f "$log" ] && rm $log 
+    case $(uname) in 
+        Darwin) lldb__ $bin ;;
+        Linux)   gdb__ $bin ;;
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
+fi 
 
 if [ -n "$script" -a -f "$script" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script 

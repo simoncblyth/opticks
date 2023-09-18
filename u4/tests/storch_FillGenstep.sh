@@ -48,7 +48,9 @@ if [ "$LAYOUT" == "one_pmt" ]; then
     #check=lhs_window_line
     #check=lhs_reflector_line
     #check=lhs_reflector_point
-    check=rectangle_inwards
+    #check=rectangle_inwards
+    check=mask_tail_diagonal_line
+
     export CHECK=${CHECK:-$check}  # CAUTION: this is duplicated for other layouts
 
     if [ "$CHECK" == "rain_disc" ]; then
@@ -171,6 +173,14 @@ if [ "$LAYOUT" == "one_pmt" ]; then
         pos=-300,0,-10     ## PMT left below cathode at Z=0, for shooting the reflector 
         mom=1,0,0
         radius=0
+
+    elif [ "$CHECK" == "mask_tail_diagonal_line" ]; then
+
+        intent="point symmetrically placed to tareget outside of nmskTail"
+        ttype=line
+        radius=50   
+        pos=-214,0,-127
+        mom=1,0,1
 
     else
          echo $BASH_SOURCE : ERROR LAYOUT $LAYOUT CHECK $CHECK IS NOT HANDLED

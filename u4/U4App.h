@@ -5,7 +5,8 @@ U4App.h  : Geant4 Application in a header (formerly misnamed U4RecorderTest.h)
 Note that the methods are not inlined, but that does not matter as this should only be included
 once into the main.  This is effectively providing a Geant4 application in a single header. 
 
-Geometry setup in U4App::Construct is done by U4VolumeMaker::PV which is controlled by the GEOM envvar.  
+Geometry setup in U4App::Construct is done by U4VolumeMaker::PV 
+which is controlled by the GEOM envvar.  
 
 Note that this does not have access to CSGFoundry geometry, so the SEvt/sframe
 is a default one with zero ce.w extent. 
