@@ -11,6 +11,16 @@ struct S4Material
    static NPFold* MakePropertyFold( const char* mats, const char* props, char delim=',' ); 
 }; 
 
+/**
+S4Material::MakePropertyFold
+----------------------------
+
+This is for example used from LSExpDetectorConstruction_Opticks::SerializePMT with::
+
+    NPFold* pmt_rindex = S4Material::MakePropertyFold("Pyrex,Vacuum","RINDEX") ; 
+
+**/
+
 inline NPFold* S4Material::MakePropertyFold( const char* _mats, const char* _props, char delim )
 {
     std::vector<std::string> mats ; 

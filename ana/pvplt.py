@@ -190,8 +190,6 @@ def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     pl.add_lines( lpol, color=polcol ) 
 
 
-
-
 def pvplt_plotter(label="pvplt_plotter"):
     print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
     pl = pv.Plotter(window_size=SIZE*2 )  

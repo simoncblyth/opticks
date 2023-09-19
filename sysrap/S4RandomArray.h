@@ -1,7 +1,7 @@
 #pragma once
 /**
-S4RandomArray
-=================
+S4RandomArray : Uses Current Engine, but collects the randoms
+===============================================================
 
 Instanciation holds onto the current engine in m_engine and 
 replaces it with itself.  Flat calls to the engine are 

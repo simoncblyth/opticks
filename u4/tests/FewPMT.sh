@@ -92,7 +92,9 @@ export nnvt_UsePMTNaturalGeometry=$version
 #geomlist=tub3LogicalPMT       # A/B match with circle_inwards_100 
 
 #geomlist=hmskLogicMaskVirtual
-geomlist=nmskLogicMaskVirtual   # FIXED? : LOOKS LIKE DR AT POI 4 DIFFERENCE A(OK):STAYS IN PLANE, B(G4) DOESNT 
+#geomlist=nmskLogicMaskVirtual  
+#geomlist=xjacLogical
+geomlist=xjfcLogical
 
 export FewPMT_GEOMList=$geomlist
 
