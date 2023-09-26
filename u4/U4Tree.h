@@ -530,6 +530,16 @@ models and a dependency fire break is advantageous.
 
 cf X4PhysicalVolume::ConvertSolid_ X4Solid::Convert
 
+
+HMM: this could be the place to branch for 
+special handling of deep CSG trees, based on 
+hints planted in the G4VSolid name of the root
+solid. Doing up here rather than within U4Solid::Convert
+would avoid recursive complications. 
+
+BUT: could rely on CSG_LISTNODE hints within the 
+tree to direct the alt conversion 
+
 **/
 
 inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )

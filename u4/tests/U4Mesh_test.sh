@@ -1,33 +1,39 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+U4Mesh_test.sh
+================
 
+::
+
+    ~/opticks/u4/tests/U4Mesh_test.sh
+
+EOU
+}
+
+cd $(dirname $BASH_SOURCE)
 name=U4Mesh_test
-
-FOLD=/tmp/$name
+export FOLD=/tmp/$name
 mkdir -p $FOLD
-export FOLD
-
 bin=$FOLD/$name
-vars="BASH_SOURCE name FOLD bin"
-
-
-defarg="info_build_run_ana"
-arg=${1:-$defarg}
-
-if [ "${arg/info}" != "$arg" ]; then 
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
-fi 
 
 clhep-
 g4-
 
+
+vars="BASH_SOURCE name FOLD bin"
+
+defarg="info_build_run_ana"
+arg=${1:-$defarg}
+
+
+[ "${arg/info}" != "$arg" ] && for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+
+
 if [ "${arg/build}" != "$arg" ]; then
-    gcc \
-         $name.cc \
+    gcc $name.cc \
          -I.. \
          -std=c++11 -lstdc++ \
          -I$HOME/opticks/sysrap \
-         -I$CUDA_PREFIX/include \
-         -I$OPTICKS_PREFIX/externals/glm/glm \
          -I$(clhep-prefix)/include \
          -I$(g4-prefix)/include/Geant4  \
          -L$(g4-prefix)/lib \
@@ -51,5 +57,4 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi 
 
 exit 0 
-
 

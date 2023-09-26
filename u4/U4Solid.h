@@ -301,6 +301,15 @@ inline const char* U4Solid::Tag(int type)   // static
 inline const char* U4Solid::tag() const { return Tag(type) ; }
 
 
+/**
+U4Solid::Convert
+-----------------
+
+Canonically invoked from U4Tree::initSolid
+
+**/
+
+
 #ifdef WITH_SND
 inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
 #else

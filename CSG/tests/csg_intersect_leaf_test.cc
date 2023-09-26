@@ -11,24 +11,6 @@
 #include "CSGNode.h"
 #include "NPFold.h"
 
-void test_intersect_leaf_Sphere()
-{
-    CSGNode nd = CSGNode::Sphere(100.f); 
-
-    const CSGNode* node = &nd ; 
-    const float4* plan = nullptr ; 
-    const qat4* itra = nullptr ; 
-    const float t_min = 0 ; 
-
-    float3 ray_origin    = {0.f, 0.f, 0.f }; 
-    float3 ray_direction = {0.f, 0.f, 1.f }; 
-    float4 isect = {0.f, 0.f, 0.f, 0.f } ; 
-
-    bool is = intersect_leaf(isect, node, plan, itra, t_min, ray_origin, ray_direction ); 
-
-    printf("// is = %d ; isect = np.array([%10.5f,%10.5f,%10.5f,%10.5f]) \n", is, isect.x, isect.y, isect.z, isect.w ) ;  
-}
-
 
 struct Geometry
 {
@@ -76,6 +58,9 @@ Geometry::simtrace
 -------------------
 
 Follow quad4 layout from CSGQuery::simtrace 
+
+Notice no mystery regarding access to the transforms, the itra is 
+simply an argument to the intersect_leaf call. 
 
 **/
 
@@ -154,7 +139,6 @@ void test_intersect_leaf()
 
 int main()
 {
-    //test_intersect_leaf_Sphere() ; 
     test_intersect_leaf() ; 
 
     return 0 ; 
