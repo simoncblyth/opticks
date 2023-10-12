@@ -28,13 +28,13 @@ Workflow for adding Opticks tags:
 
        git push 
        git push github
-       open https://github.com/simoncblyth/opticks/tags # check web interface
       
 4. run this tag add and pushing script, check output commands and run if correct::
 
        cd ~/opticks
        ./addtag.sh           # check tag add and push commands 
        ./addtag.sh | sh      # run those commands
+       open https://github.com/simoncblyth/opticks/tags # check web interface
 
 NB this simple script assumes single digit 0-9 major/minor/patch version integers
 
