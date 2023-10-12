@@ -25,6 +25,9 @@ For example there is one as an external of ROOT::
 EOU
 }
 
+defarg="info_build_run_examine"
+arg=${1:-$defarg}
+
 cd $(dirname $BASH_SOURCE)
 name=UseGeometryShader
 bdir=/tmp/$name
@@ -40,9 +43,6 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 
 vars="name bdir sdir SHADER_FOLD ARRAY_FOLD bin"
-
-defarg="info_build_run"
-arg=${1:-$defarg}
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -120,6 +120,17 @@ if [ "${arg/dbg}" != "$arg" ]; then
    esac
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
 fi 
+
+if [ "${arg/examine}" != "$arg" ]; then 
+   case $(uname) in
+      Darwin) otool -L $bin ;;
+      Linux)  ldd $bin ;;
+   esac
+   [ $? -ne 0 ] && echo $BASH_SOURCE : examine error && exit 5
+ 
+
+fi 
+
 
 exit 0 
 
