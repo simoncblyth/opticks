@@ -45,10 +45,15 @@ if [ "${arg/run}" != "$arg" ] ; then
     #export ARRAY_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
     #export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
     #export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
-    export ARRAY_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
+    #export ARRAY_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
+    #export ARRAY_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
+    export ARRAY_FOLD=/tmp/sphoton_test
 
     if [ -n "$DEBUG" ]; then 
-        lldb__ $name 
+        case $(uname) in
+           Darwin) lldb__ $name ;;
+           Linux)  gdb__ $name ;;
+        esac
     else
         $name
     fi 

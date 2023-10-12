@@ -378,7 +378,42 @@ void test_dot_pol_cross_mom_nrm()
 } 
 
 
+void test_make_record_array()
+{
+    NP* a = NP::Make<float>( 360, 10, 4, 4 ); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ; 
+    int nk = a->shape[2] ; 
+    int nl = a->shape[3] ; 
+    float* aa = a->values<float>(); 
 
+    for(int i=0 ; i < ni ; i++)
+    {
+        float t = 2.f*M_PIf * float(i)/360.  ; 
+        float ct = cos(t);   
+        float st = sin(t);   
+
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx_ij = i*nj*nk*nl + j*nk*nl ; 
+            sphoton p = {} ; 
+
+            // XZ ripples on pond heading outwards from origin
+            p.pos.x = ct*float(j) ;  
+            p.pos.y = 0.f ;  
+            p.pos.z = st*float(j) ; 
+            p.time = float(j) ; 
+
+            p.mom.x = ct ;  
+            p.mom.y = 0.f ;  
+            p.mom.z = st ; 
+
+            memcpy( aa + idx_ij, p.cdata(), sizeof(float)*nk*nl ); 
+        }
+    }
+    a->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" ); 
+    a->save("$FOLD/record.npy"); 
+}
 
 int main()
 {
@@ -395,10 +430,11 @@ int main()
     test_sphotond_Get(); 
     test_set_polarization(); 
     test_dot_pol_cross_mom_nrm(); 
+    test_make_ephoton_array(); 
 
     */
 
-    test_make_ephoton_array(); 
+    test_make_record_array(); 
 
     return 0 ; 
 }

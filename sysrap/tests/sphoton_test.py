@@ -23,6 +23,26 @@ def test_dot_pol_cross_mom_nrm(a):
     fig.show()
 
 
+def test_make_record_array(a):
+    title = "test_make_record_array"
+
+    fig, ax = plt.subplots(1, figsize=SIZE/100.)
+    fig.suptitle(title)
+    ax.set_aspect(1)
+
+    X,Y,Z = 0,1,2
+    H,V = X,Z
+
+    for j in range(10):
+        ax.scatter( a[:,j,0,H], a[:,j,0,V], label=str(j) ) 
+    pass
+
+    
+    ax.legend()
+    fig.show()
+
+
+
 
 
 if __name__ == '__main__':
@@ -33,6 +53,11 @@ if __name__ == '__main__':
     if not a is None:
        test_dot_pol_cross_mom_nrm(a)
     pass 
+
+    a = t.record
+    if not a is None:
+        test_make_record_array(a)
+    pass
 pass
 
 

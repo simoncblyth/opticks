@@ -33,6 +33,7 @@ is there a better way ?
 
 **/
 
+#include <cassert>
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -42,15 +43,16 @@ is there a better way ?
 
 #include "scuda.h"
 #include "squad.h"
+#include "sframe.h"
 #include "SGLFW.h"
 #include "SGLM.h"
 
 #include "NP.hh"
 
 static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
-static const char* vertex_shader_text = NP::ReadString(SHADER_FOLD, "vert.glsl"); 
-static const char* geometry_shader_text = NP::ReadString(SHADER_FOLD, "geom.glsl"); 
-static const char* fragment_shader_text = NP::ReadString(SHADER_FOLD, "frag.glsl"); 
+static const char* vertex_shader_text = U::ReadString(SHADER_FOLD, "vert.glsl"); 
+static const char* geometry_shader_text = U::ReadString(SHADER_FOLD, "geom.glsl"); 
+static const char* fragment_shader_text = U::ReadString(SHADER_FOLD, "frag.glsl"); 
 static const char* ARRAY_FOLD = getenv("ARRAY_FOLD"); 
 
 int main(int argc, char** argv)
@@ -68,6 +70,8 @@ int main(int argc, char** argv)
     // rec.npy    : compressed step record with shape like (10000, 10, 2, 4) and type np.int16 
 
     NP* a = NP::Load(ARRAY_FOLD, ARRAY_NAME) ;   // expecting shape like (10000, 10, 4, 4)
+    assert( a && "FAILED to load from ARRAY_FOLD " ); 
+
     assert(a->shape.size() == 4);   
     bool is_compressed = a->ebyte == 2 ; 
     GLsizei a_count = a->shape[0]*a->shape[1] ;  
@@ -82,40 +86,21 @@ int main(int argc, char** argv)
         << std::endl 
         ; 
 
-    float4 post_center = make_float4( 0.f, 0.f, 0.f, 0.f ); 
-    float4 post_extent = make_float4( 1.f, 1.f, 1.f, 5.f ); 
-    //float extent = is_compressed ? 1.f : 100.f ; 
-
-/*
-    if( is_compressed )
-    {
-        // HMM: where to encapsulate this kinda thing ? cannot be from qudarap : maybe sysrap/squad.h  
-        NP* domain = NP::Load(ARRAY_FOLD, "domain.npy") ; 
-        if( domain == nullptr ) std::cout << "ERROR : missing domain.npy in ARRAY_FOLD " << ARRAY_FOLD << std::endl ; 
-        if( domain == nullptr ) return 0 ;  
-        assert( domain->has_shape(2,4,4) && domain->uifc == 'f' && domain->ebyte == 4 ); 
-        quad4 dom[2] ; 
-        domain->write((float*)&dom[0]);  
-        post_center = dom[0].q0.f ; 
-        post_extent = dom[0].q1.f ; 
-        std::cout << " post_center " << post_center << std::endl ; 
-        std::cout << " post_extent " << post_extent << std::endl ; 
-
-        extent = post_extent.x ; 
-    }
-    else
-    {
-        //extent = 1000.f ; 
-        extent = 1.f ; 
-    }
-*/
+    float4 post_center = make_float4( 0.f, 0.f, 0.f,  0.f ); 
+    float4 post_extent = make_float4( 1.f, 1.f, 1.f, 10.f ); 
 
     // Param.w is incremented from .x to .y by ,z  
     glm::vec4 Param(0.f, post_extent.w, post_extent.w/1000.f , 0.f);    // t0, t1, dt, tc 
 
 
+    sframe fr ; 
+    fr.ce.x = 0.f ; 
+    fr.ce.y = 0.f ; 
+    fr.ce.z = 0.f ; 
+    fr.ce.w = 10.f ; 
+
     SGLM sglm ; 
-    sglm.set_ce( 0.f, 0.f, 0.f, 50.f ); 
+    sglm.set_frame(fr); 
     sglm.update(); 
     sglm.dump();
 

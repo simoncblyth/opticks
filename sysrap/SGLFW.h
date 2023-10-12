@@ -131,12 +131,12 @@ struct SGLFW_Attribute
     std::vector<std::string> field ; 
 
     GLuint index ; 
-    GLint size ;                 // field 0 : number of components must be one of : 1,2,3,4 
-    GLenum type ;                // field 1
-    GLboolean normalized ;       // field 2
-    GLsizei stride ;             // field 3 
-    size_t   byte_offset ;        // field 4
-    bool     integer_attribute ; // field 5       
+    GLint size ;                   // field 0 : number of components must be one of : 1,2,3,4 
+    GLenum type ;                  // field 1
+    GLboolean normalized ;         // field 2
+    GLsizei stride ;               // field 3 : in bytes eg for 4,4 float photon/record struct stride is 4*4*4=64
+    size_t   byte_offset ;         // field 4
+    bool     integer_attribute ;   // field 5       
     void*    byte_offset_pointer ; // derived from byte_offset 
 
 
@@ -335,6 +335,8 @@ SGLFW::enableArrayAttribute
 ------------------------------
 
 Array attribute : connecting values from the array with attribute symbol in the shader program 
+
+Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
 
 **/
 
