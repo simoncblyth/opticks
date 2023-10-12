@@ -32,22 +32,20 @@ name=U4Mesh_test2
 BASE=/tmp/$name
 bin=$BASE/$name
 
-
-if [ -n "$GEOM" ]; then 
-
+if [ -n "$AGEOM" -a -n "$BGEOM" ]; then
+   script=${name}_cf.py  
+   AFOLD=$BASE/$AGEOM
+   BFOLD=$BASE/$BGEOM
+   export AFOLD
+   export BFOLD
+elif [ -n "$GEOM" ]; then 
    script=$name.py 
    FOLD=$BASE/$GEOM
    mkdir -p $FOLD
    export FOLD
-
-elif [ -n "$AGEOM" -a -n "$BGEOM" ]; then
-   script=${name}_cf.py  
-
-   AFOLD=$BASE/$AGEOM
-   BFOLD=$BASE/$BGEOM
-
-   export AFOLD
-   export BFOLD
+else
+   echo $BASH_SOURCE : ERROR GEOM is not defined 
+   exit 1 
 fi 
 
 clhep-
