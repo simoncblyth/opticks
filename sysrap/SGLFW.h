@@ -277,13 +277,20 @@ void SGLFW::init()
     
     glewExperimental = GL_TRUE;
     glewInit (); 
-    assert( glGetError() == GL_INVALID_ENUM );  // long-standing glew bug apparently 
-    assert( glGetError() == GL_NO_ERROR );  
+
+    GLenum err0 = glGetError() ; 
+    GLenum err1 = glGetError() ; 
+    bool err0_expected = err0 == GL_INVALID_ENUM ; // long-standing glew bug apparently 
+    bool err1_expected = err1 == GL_NO_ERROR ; 
+    if(!err0_expected) printf("//SGLFW::init UNEXPECTED err0 %d \n", err0 ); 
+    if(!err1_expected) printf("//SGLFW::init UNEXPECTED err1 %d \n", err1 ); 
+    assert( err0_expected );  
+    assert( err1_expected );  
 
     const GLubyte* renderer = glGetString (GL_RENDERER);
     const GLubyte* version = glGetString (GL_VERSION);
-    printf(" renderer %s \n", renderer );
-    printf(" version %s \n", version );
+    printf("//SGLFW::init renderer %s \n", renderer );
+    printf("//SGLFW::init version %s \n", version );
 
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored, setting in geom not vert shader used when present 
 

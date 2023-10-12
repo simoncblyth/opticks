@@ -77,6 +77,23 @@ glew-ecd(){  cd $(glew-edir); }
 glew-version(){ echo 1.13.0 ; }
 #glew-version(){ echo 2.1.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
+glew-libdir(){ echo $(glew-prefix)/lib ; }
+
+
+glew-info(){ cat << EOI
+
+   glew-version : $(glew-version)
+   glew-name    : $(glew-name)   
+   glew-sdir    : $(glew-sdir) 
+   glew-url     : $(glew-url) 
+   glew-dist    : $(glew-dist) 
+   glew-prefix  : $(glew-prefix) 
+   glew-libdir  : $(glew-libdir) 
+
+
+EOI
+}
+
 
 glew-url(){ 
    local gen=$(opticks-cmake-generator)

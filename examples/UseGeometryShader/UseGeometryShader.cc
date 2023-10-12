@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     SGLM sglm ; 
     sglm.set_frame(fr); 
     sglm.update(); 
-    sglm.dump();
+    //sglm.dump();
 
 
     const char* title = ARRAY_NAME ; 
