@@ -5,7 +5,7 @@ build.sh
 
 ::
 
-   EYE=0,-4,0,1 ./build.sh run
+  EYE=0,-4,0,1 ./build.sh run
 
 Using /tmp/sphoton_test/record.npy is convenient for debugging 
 as the record array can be defined to have photons moving in 
@@ -51,6 +51,26 @@ if [ "${arg/build}" != "$arg" ]; then
 
    [ $? -ne 0 ] && echo $BASH_SOURCE : compile error && exit 1 
 
+
+   if [ "$(uname)" == "Darwin" ]; then
+
+      opt=$OPTICKS_PREFIX/externals/lib/libGLEW.dylib \
+          $OPTICKS_PREFIX/externals/lib/libglfw.dylib \
+          -framework Cocoa \
+          -framework OpenGL \
+          -framework IOKit \
+          -framework CoreFoundation \
+          -framework CoreVideo 
+
+   elif [ "$(uname)" == "Linux" ]; then
+
+      opt=-Wl,-rpath,/data/blyth/junotop/ExternalLibs/ROOT/6.24.06/lib:$OPTICKS_PREFIX/externals/lib64 \
+           -L/data/blyth/junotop/ExternalLibs/ROOT/6.24.06/lib -lGLEW \
+           -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
+           -lGL 
+   fi 
+
+
    gcc \
      -fvisibility=hidden \
      -fvisibility-inlines-hidden \
@@ -61,16 +81,9 @@ if [ "${arg/build}" != "$arg" ]; then
      -Wno-shadow \
      -Wsign-compare \
       -g -O0 \
-      -lstdc++ \
+      -lstdc++ -lm \
       $bdir/$name.o -o $bin \
-      $OPTICKS_PREFIX/externals/lib/libGLEW.dylib \
-      $OPTICKS_PREFIX/externals/lib/libglfw.dylib \
-      -framework Cocoa \
-      -framework OpenGL \
-      -framework IOKit \
-      -framework CoreFoundation \
-      -framework CoreVideo 
-     # TODO: Linux equiv 
+      $opt 
 
    [ $? -ne 0 ] && echo $BASH_SOURCE : link error && exit 2
 fi

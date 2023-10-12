@@ -22,6 +22,8 @@ arg=${1:-build_run}
 sdir=$(pwd)
 name=$(basename $sdir)
 
+source ~/.opticks_config
+
 if [ "${arg/build}" != "$arg" ] ; then 
 
     opticks-

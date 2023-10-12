@@ -23,7 +23,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ \
+    gcc $name.cc -std=c++11 -lstdc++ -lm -lcrypto -lssl \
            -I.. \
            -I/usr/local/cuda/include \
            -I$OPTICKS_PREFIX/externals/glm/glm \
