@@ -16,6 +16,67 @@ CAUTIONS:
 
 2. this currently does the old workflow and some parts of the new workflow
 
+
+HOW TO LOAD YOUR GDML FILE WITH THIS SCRIPT
+---------------------------------------------
+
+There are several ways to configure GDML loading currently, see "G4CXOpticks::setGeometry()".
+However this script uses just one of them. The relevant lines 
+for this config from this bash script are::
+
+    source $HOME/.opticks/GEOM/GEOM.sh             # mini config script that only sets GEOM envvar 
+    origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml   # path to GDML
+    export ${GEOM}_GDMLPathFromGEOM=$origin        # export path to GDML 
+
+So to load your own GDML using this script, without changing this script:
+
+1. decide on identifier string for your geometry, eg Z36 
+2. create or edit the file $HOME/.opticks/GEOM/GEOM.sh for example containing
+   (NB this file is not in the repository, it is in ~/.opticks)::
+
+     #!/bin/bash 
+     # THIS SCRIPT DOES ONE THING ONLY : IT EXPORTS GEOM
+     geom=Z39
+     export GEOM=$geom  
+
+   * the "GEOM" bash function defaults to editing this GEOM.sh as 
+     a shortcut for quickly changing between geometries
+
+3. copy your gdml file to the path that this script expects::
+
+     $HOME/.opticks/GEOM/Z36/origin.gdml 
+
+4. now you can run the script with::
+
+     ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+
+5. examine translated geometry that is written to folders beneath::
+
+     $HOME/.opticks/GEOM/Z36/CSGFoundry/
+
+6. the Opticks CSGFoundry geometry is comprised of NumPy .npy and .txt files 
+   which can all be examined from python, use the below command to 
+   load the geometry into python::
+
+     ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh ana
+
+
+For example, the JUNO geometry with Opticks GEOM identifier "V1J011" 
+is comprised of ~200 .npy and ~150 .txt files::
+
+    epsilon:~ blyth$ find ~/.opticks/GEOM/V1J011/CSGFoundry -type f -name '*.npy' | wc -l 
+         199
+    epsilon:~ blyth$ find ~/.opticks/GEOM/V1J011/CSGFoundry -type f -name '*.txt' | wc -l 
+         146
+    epsilon:~ blyth$ find ~/.opticks/GEOM/V1J011/CSGFoundry -type f  | wc -l 
+         345
+
+
+Note that following the conventions of this script enables switching 
+between geometries without changing this script, simply by setting the 
+GEOM envvar that is exported from $HOME/.opticks/GEOM/GEOM.sh
+
+
 EOU
 }
 
@@ -30,18 +91,18 @@ script=$SDIR/$bin.py
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
-source $HOME/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
+source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
 
 case $GEOM in 
    FewPMT) geomscript=$SDIR/../../u4/tests/FewPMT.sh ;;
 esac
 
-origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
 
 vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
 
 if [ -f "$origin" ]; then
-    export ${GEOM}_GDMLPathFromGEOM=$origin
+    export ${GEOM}_GDMLPathFromGEOM=$origin      # export path to GDML 
 fi 
 
 if [ -n "$geomscript" -a -f "$geomscript" ]; then 
