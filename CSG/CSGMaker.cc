@@ -490,7 +490,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
 
     float extent = p->extent(); 
     LOG_IF(fatal, extent == 0.f) << "FATAL : " << label << " : got zero extent " ; 
-    assert( extent > 0.f ); 
+    //assert( extent > 0.f ); 
 
     AABB bb = AABB::Make( p->AABB() ); 
     so->center_extent = bb.center_extent()  ; 

@@ -683,6 +683,7 @@ template unsigned U::GetE(const char*, unsigned );
 template float    U::GetE(const char*, float );
 template double   U::GetE(const char*, double );
 template char     U::GetE(const char*, char );
+template unsigned char U::GetE(const char*, unsigned char );
 
 
 
@@ -1877,7 +1878,9 @@ inline int UName::add(const char* name, bool dump)
 inline int UName::get(const char* name)
 {
     size_t idx = std::distance( names.begin(), std::find(names.begin(), names.end(), name) ) ; 
-    return idx == names.size() ? -1 : idx ; 
+    size_t num = names.size() ; 
+    std::cout << "UName::get " << ( name ? name : "-" ) << " num " << num << " idx " << idx << std::endl ; 
+    return idx == num ? -1 : idx ; 
 } 
 inline std::string UName::desc() const
 {

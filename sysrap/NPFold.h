@@ -183,6 +183,7 @@ public:
 
 
     std::string desc_subfold(const char* top="/") const ;  
+    bool is_empty() const ; 
     int total_items() const ; 
     // ]subfold handling 
 
@@ -688,6 +689,10 @@ inline std::string NPFold::desc_subfold(const char* top)  const
     return s ; 
 }
 
+inline bool NPFold::is_empty() const 
+{
+    return total_items() == 0 ; 
+}
 inline int NPFold::total_items() const 
 {
     std::vector<const NPFold*> folds ;

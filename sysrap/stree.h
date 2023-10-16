@@ -2254,30 +2254,25 @@ inline void stree::import(const NPFold* fold)
     ImportArray<int, int>( suindex, fold->get(SUINDEX) );
   
     NPFold* f_standard = fold->get_subfold(STANDARD) ; 
-    standard->import(f_standard); 
 
-    assert( standard->bd ); 
-    NPX::VecFromArray<int4>( vbd, standard->bd );  
-    standard->bd->get_names( bdname );
+    if(f_standard->is_empty())
+    {
+        std::cerr 
+            << "stree::import skip asserts for empty f_standard : assuming trivial test geometry " 
+            << std::endl
+            ; 
+    }
+    else
+    { 
+        standard->import(f_standard); 
 
-    assert( standard->bnd ); 
-    import_bnd( standard->bnd ); 
+        assert( standard->bd ); 
+        NPX::VecFromArray<int4>( vbd, standard->bd );  
+        standard->bd->get_names( bdname );
 
-    /*
-    const NP* _mtline = fold->get(MTLINE) ; 
-    std::cout 
-        << "stree::import"
-        << " _mtline " << ( _mtline ? _mtline->sstr() : "-" ) 
-        << std::endl
-        ; 
- 
-    ImportArray<int, int>( mtline, _mtline );
-    // _mtline is empty so this stomps of the 
-    // one done by import_bnd/init_mtindex_to_mtline
-
-    init_mtindex_to_mtline();   
-    // NO : THIS IS DONE BY import_bnd
-    */
+        assert( standard->bnd ); 
+        import_bnd( standard->bnd ); 
+    }
 
 
 #ifdef WITH_SND

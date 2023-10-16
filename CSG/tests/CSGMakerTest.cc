@@ -1,13 +1,33 @@
-#include "SSys.hh"
+/**
+CSGMakerTest.cc
+=================
+
+
+
+
+**/
+
+
+#include "ssys.h"
 #include "SSim.hh"
 #include "SOpticksResource.hh"
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
 #include "OPTICKS_LOG.hh"
 
+/**
+GetNames
+---------
+
+Populate the names vector with all CSGMaker names or just the 
+one provided when envvar CSGMakerTest_GEOM is defined. 
+For listnames:true dump the names to stdout. 
+
+**/
+
 void GetNames( std::vector<std::string>& names, bool listnames )
 {
-     const char* geom = SSys::getenvvar("CSGMakerTest_GEOM", nullptr ); 
+     const char* geom = ssys::getenvvar("CSGMakerTest_GEOM", nullptr ); 
      // NB ExecutableName_GEOM is treated as GEOM override 
 
      if( geom == nullptr ) 
