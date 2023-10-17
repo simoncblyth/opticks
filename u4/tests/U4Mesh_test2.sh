@@ -53,6 +53,8 @@ g4-
 
 vars="BASH_SOURCE name BASE FOLD bin GEOM AGEOM BGEOM AFOLD BFOLD script"
 
+export JUNO_SIMPLIFY_CALIB_ANCHOR=1 
+
 
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
