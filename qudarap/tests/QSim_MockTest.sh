@@ -5,7 +5,8 @@ QSim_MockTest.sh
 
 Note that unlike the standard Opticks CMake build
 this script finds Custom4 without consulting 
-the CMAKE_PREFIX_PATH 
+the CMAKE_PREFIX_PATH so its convenient for 
+testing new versions.  
 
 EOU
 }
@@ -21,7 +22,7 @@ arg=${1:-$defarg}
 export BASE=/tmp/$name
 bin=$BASE/$name
 
-custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/0.1.6
+custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/0.1.8
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 
 cuda_prefix=/usr/local/cuda

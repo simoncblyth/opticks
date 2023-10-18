@@ -2,9 +2,7 @@
 QSim_MockTest.cc : CPU tests of QSim.hh/qsim.h CUDA code using MOCK_CURAND mocking 
 =======================================================================================
 
-
-Testing GPU code on CPU requires mocking 
-of CUDA API including:
+Testing GPU code on CPU requires mocking of CUDA API including:
 
 1. tex2D lookups 
 2. curand random generation
@@ -367,7 +365,7 @@ inline void QSim_MockTest::setup_photon( sphoton& p)
 QSim_MockTest::propagate_at_surface_CustomART_manual
 -----------------------------------------------------
 
-Version with manual sstate filling  
+Lower level version with manual sstate filling  
 
 **/
 
@@ -565,17 +563,23 @@ int main(int argc, char** argv)
     QSim_MockTest t ; 
     std::cout << t.desc() ; 
 
-    /*
+#ifdef WITH_CUSTOM4
     t.propagate_at_surface_CustomART_manual() ; 
+#else
+    std::cout << "NOT-WITH_CUSTOM4 " << std::endl ; 
+#endif
+
+
+    /*
     t.propagate_at_boundary_manual() ; 
     t.fill_state() ; 
     t.propagate_at_boundary() ; 
     t.propagate() ; 
     t.SmearNormal_debug() ; 
     t.SmearNormal_SigmaAlpha_one() ; 
+    t.run(); 
     */
 
-    t.run(); 
 
     return 0 ; 
 }
