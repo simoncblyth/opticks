@@ -410,6 +410,44 @@ g4cx has another stray::
 
 
 
+Standardize clean build testing under francis
+------------------------------------------------
 
+::
+
+    epsilon:~ francis$ cat deepclean_except_externals.sh 
+    #!/bin/bash -l 
+
+    usage(){ cat << EOU
+    deepclean_except_externals.sh
+    ==============================
+
+    For testing almost from scratch builds of 
+    opticks except keeping the externals : which 
+    are prone to failure from network blockages. 
+
+    EOU
+    }
+
+    rm -rf local/opticks/bin
+    rm -rf local/opticks/build
+    rm -rf local/opticks/include
+    rm -rf local/opticks/lib
+    rm -rf local/opticks/opticksaux
+    rm -rf local/opticks/py
+
+    epsilon:~ francis$ 
+
+
+Hence test opticks-full as user francis with::
+
+    ssh F
+
+    # uses symbolic link to /Users/blyth/opticks so no clone
+    ./deepclean_except_externals.sh
+    opticks-full 
+
+
+Above is laptop test.
 
 

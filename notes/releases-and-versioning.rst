@@ -25,9 +25,9 @@ see the below page to find the URLs.
 
 * https://github.com/simoncblyth/opticks/tags
 
-For example download the v0.2.0 zip with::
+For example download the v0.2.1 zip with::
 
-    curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.0.zip
+    curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.1.zip
 
 
 How to checkout snapshot tag into a new branch 
@@ -37,18 +37,20 @@ How to checkout snapshot tag into a new branch
 
     git fetch --all --tags               # fetch from upstream 
     git tag                              # list the tags 
-    git checkout tags/v0.2.0 -b v020     # create branch v020 and checkout snapshot into it 
+    git checkout tags/v0.2.1 -b v021     # create branch for a tag and checkout into it 
     git branch                           # list branches
     git checkout master                  # return to master with the latest
 
 
 
-Snapshot History : Resuming tagging after 2 years with v0.2.0
------------------------------------------------------------------
+Snapshot Tags History
+----------------------
 
 +------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
 | date       | tag     | OPTICKS_VERSION_NUMBER  | GEOCACHE_CODE_VERSION      | Notes                                                                           |
 +============+=========+=========================+============================+=================================================================================+  
+| 2023/10/20 | v0.2.1  | 21                      | NO CURRENT EQUIVALENT      | Fix stale dependencies issue reported by Hans, remove opticksaux from externals |
++------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
 | 2023/10/12 | v0.2.0  | 20                      | NO CURRENT EQUIVALENT      | Resume tagging after 2 years of changes : huge change from prior release        |
 +------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
 
