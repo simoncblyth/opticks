@@ -34,13 +34,8 @@ convenient debugging.
 
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
-
-#ifdef OLD
-#include "Opticks.hh"
-#else
 #include "SOpticksResource.hh"
 #include "SOpticks.hh"
-#endif
 
 #include "CSGGeometry.h"
 
@@ -48,13 +43,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-#ifdef OLD
-    Opticks ok(argc, argv);
-    ok.configure();
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-#else
     const char* cfbase = SOpticksResource::CFBase(); 
-#endif
 
     bool with_geom = SSys::getenvbool("CSGGeometry_GEOM") ; 
     LOG(info) << " with_geom " << with_geom << " cfbase " << cfbase ;
@@ -65,12 +54,7 @@ int main(int argc, char** argv)
     geom() ; 
 
     const char* msg = "CSG/tests/CSGIntersectSolidTest.cc" ; 
-
-#ifdef OLD
-    if(cfbase) Opticks::WriteCFBaseScript(cfbase, msg) ; 
-#else
     SOpticks::WriteCFBaseScript(cfbase, msg); 
-#endif
 
     return 0 ; 
 }

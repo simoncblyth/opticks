@@ -10,7 +10,6 @@ MOI=solidXJfixture:64 CSGTargetGlobalTest
 #include "SSys.hh"
 #include "SSim.hh"
 #include "SStr.hh"
-//#include "Opticks.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"
@@ -21,9 +20,6 @@ MOI=solidXJfixture:64 CSGTargetGlobalTest
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    //Opticks ok(argc, argv); 
-    //ok.configure(); 
 
     SSim::Create(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
