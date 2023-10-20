@@ -12,11 +12,22 @@ Less frequenty Opticks is pushed to the github repository.
 
 * https://github.com/simoncblyth/opticks
 
-Git "snapshot" tags are occasionally made and pushed to 
-both bitbucket and github.  Github provides a convenient way 
-to download tar.gz or zip archives of those tagged versions from the below page. 
 
-* https://github.com/simoncblyth/opticks/tags 
+
+How to download a snapshot .tar.gz or .zip
+---------------------------------------------
+
+Git "snapshot" tags are occasionally made and pushed to 
+both bitbucket and github.  
+
+Snapshot .tar.gz/.zip for each tag can be downloaded from GitHub, 
+see the below page to find the URLs. 
+
+* https://github.com/simoncblyth/opticks/tags
+
+For example download the v0.2.0 zip with::
+
+    curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.0.zip
 
 
 Snapshot History : Resuming tagging after 2 years with v0.2.0
@@ -30,6 +41,7 @@ Snapshot History : Resuming tagging after 2 years with v0.2.0
 
 
 For a record of ancient tags see the "Snapshot pre-History" section at the end of this page. 
+
 
 
 Workflow for adding "snapshot" tag to github and bitbucket
