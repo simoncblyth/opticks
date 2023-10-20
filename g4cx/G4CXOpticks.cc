@@ -23,7 +23,7 @@
 #include "U4Tree.h"
 
 #include "CSGFoundry.h"
-#include "CSG_GGeo_Convert.h"
+
 #include "CSGOptiX.h"
 #include "QSim.hh"
 
@@ -37,6 +37,7 @@
 
 #ifdef WITH_GGEO
 // OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
+#include "CSG_GGeo_Convert.h"
 #include "Opticks.hh"
 #include "X4Geo.hh"
 #include "GGeo.hh"

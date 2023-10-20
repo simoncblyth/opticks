@@ -4,7 +4,7 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(CUDA REQUIRED)   
-find_package(OpticksCore REQUIRED)  ## AIMING TO ELIMINATE : DO NOT ADD ANY FURTHER USAGE OF OKC 
+#find_package(OpticksCore REQUIRED)  ## AIMING TO ELIMINATE : DO NOT ADD ANY FURTHER USAGE OF OKC 
 find_package(QUDARap REQUIRED)
 find_package(CSG REQUIRED)
 
@@ -124,9 +124,11 @@ target_link_libraries(${name}
          ${CUDA_LIBRARIES}
          Opticks::OptiX
          Opticks::CSG
-         Opticks::OpticksCore
          Opticks::QUDARap
 )
+
+# Opticks::OpticksCore
+
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

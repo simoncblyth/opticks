@@ -385,3 +385,31 @@ YEP CSGOptiX has similar issue::
     ./examples/UseOpticksCore/CMakeLists.txt:target_link_libraries(${name} Opticks::OpticksCore)
     epsilon:opticks blyth$ 
 
+
+
+g4cx has another stray::
+
+
+    === om-make-one : g4cx            /Users/blyth/opticks/g4cx                                    /usr/local/opticks/build/g4cx                                
+    -- Configuring G4CX
+    ...
+    -- Configuring done
+    CMake Error in CMakeLists.txt:
+      Imported target "Opticks::ExtG4" includes non-existent path
+
+        "/usr/local/opticks/include/OpticksCore"
+
+      in its INTERFACE_INCLUDE_DIRECTORIES.  Possible reasons include:
+
+      * The path was deleted, renamed, or moved to another location.
+
+      * An install or uninstall procedure did not complete successfully.
+
+      * The installation package was faulty and references files it does not
+      provide.
+
+
+
+
+
+
