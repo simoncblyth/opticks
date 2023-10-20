@@ -685,17 +685,23 @@ glfw
 glew
 gleq
 imgui
+plog
+#opticksaux
+nljson
+EOL
+}
+
+opticks-externals-retired(){ cat << EOL
 #assimp
 #openmesh
-plog
-opticksaux
 #oimplicitmesher
 #odcs
 #oyoctogl
-nljson
 #ocsgbsp
 EOL
-}
+} 
+
+
 
 opticks-preqs(){
 : emits to stdout the names of the bash precursors that configure and check pre-requisite packages
