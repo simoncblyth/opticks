@@ -30,6 +30,19 @@ For example download the v0.2.0 zip with::
     curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.0.zip
 
 
+How to checkout snapshot tag into a new branch 
+------------------------------------------------
+
+::
+
+    git fetch --all --tags               # fetch from upstream 
+    git tag                              # list the tags 
+    git checkout tags/v0.2.0 -b v020     # create branch v020 and checkout snapshot into it 
+    git branch                           # list branches
+    git checkout master                  # return to master with the latest
+
+
+
 Snapshot History : Resuming tagging after 2 years with v0.2.0
 -----------------------------------------------------------------
 
