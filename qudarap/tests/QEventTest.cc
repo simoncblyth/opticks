@@ -220,15 +220,15 @@ int main(int argc, char** argv)
     SEvt* evt = SEvt::Create(SEvt::EGPU) ;
     assert( evt );  
 
+    QEventTest::test_setGenstep_many(); 
 
     /*
     QEventTest::test_setGenstep_one(); 
-    QEventTest::test_setGenstep_many(); 
     QEventTest::test_setGenstep_loaded(); 
     QEventTest::test_setGenstep_checkEvt(); 
+    QEventTest::test_setGenstep_quad6(); 
     */
 
-    QEventTest::test_setGenstep_quad6(); 
 
 
     return 0 ; 

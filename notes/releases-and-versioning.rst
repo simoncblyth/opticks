@@ -29,17 +29,33 @@ For example download the v0.2.1 zip with::
 
     curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.1.zip
 
+Note that the tarball does not include git information, it simply provides
+a snapshot of the state of the repository at a particular commit that has been 
+marked by having an associated tag. 
+
 
 How to checkout snapshot tag into a new branch 
 ------------------------------------------------
 
+An alternative way to use a tag starting from a clone clone
+
 ::
 
+    git fetch origin 
     git fetch --all --tags               # fetch from upstream 
     git tag                              # list the tags 
     git checkout tags/v0.2.1 -b v021     # create branch for a tag and checkout into it 
     git branch                           # list branches
     git checkout master                  # return to master with the latest
+
+
+
+
+git clone https://github.com/simoncblyth/opticks.git
+cd opticks
+git checkout v0.2.1
+
+
 
 
 
