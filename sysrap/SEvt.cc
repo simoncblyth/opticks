@@ -3079,8 +3079,11 @@ the same base_ argument is used, which may be nullptr to use the default.
 
 const char* SEvt::getOutputDir(const char* base_) const 
 {
-    const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
+    const char* defd = SGeo::DefaultDir() ; 
+    const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ; 
+
+
     const char* dir = nullptr ; 
     if(hasIndex()) 
     { 
@@ -3104,6 +3107,27 @@ const char* SEvt::getOutputDir(const char* base_) const
     {
         dir = SPath::Resolve(base, reldir,  DIRPATH) ; 
     }
+
+    LOG(info)
+        << std::endl  
+        << " base_  " << ( base_ ? base_ : "-" )
+        << std::endl  
+        << " base   " << ( base ? base : "-" )
+        << std::endl  
+        << " reldir " << ( reldir ? reldir : "-" )
+        << std::endl  
+        << " SGeo::DefaultDir " << ( defd ? defd : "-" )
+        << std::endl  
+        << " SPath::Resolve(\"$DefaultOutputDir\", DIRPATH)"
+        << SPath::Resolve("$DefaultOutputDir", DIRPATH )
+        << std::endl  
+        << " SPath::Resolve(\"$TMP\", DIRPATH)"
+        << SPath::Resolve("$TMP", DIRPATH )
+        << std::endl  
+        << " dir    " << ( dir ? dir : "-" )  
+        << std::endl  
+        ;
+
     return dir ;  
 }
 

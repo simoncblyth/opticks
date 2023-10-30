@@ -61,10 +61,12 @@ GEOM get
     synonym for grab  
 
 GEOM tmpget
-    rsync remote /tmp/$USER/opticks/GEOM/$GEOM dir  to local
+    when TMP is undefined : rsync remote /tmp/$USER/opticks/GEOM/$GEOM dir to local
+    when TMP is defined : rsync remote $TMP/GEOM/$GEOM dir to local
 
 GEOM tmp 
-    change directory to /tmp/$USER/opticks/GEOM/$GEOM
+    change directory to /tmp/$USER/opticks/GEOM/$GEOM 
+    or $TMP/GEOM/$GEOM when TMP is defined
 
 GEOM scp 
     scp GEOM.sh script to remote
@@ -117,7 +119,8 @@ GEOM(){
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
   local ggeo=/tmp/$USER/opticks/GGeo 
-  local tmp=/tmp/$USER/opticks/GEOM/$GEOM
+  local tmpbase=${TMP:-/tmp/$USER/opticks} 
+  local tmp=$tmpbase/GEOM/$GEOM
   local defarg="vi"
   local arg=${1:-$defarg} 
   local vars="FUNCNAME defarg arg args script base GEOM geomdir tmp" 
