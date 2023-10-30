@@ -4,7 +4,7 @@
 sdevice.h 
 ============
 
-Simplfied version of the former cudarap/CDevice.cu 
+Simplified version of the former cudarap/CDevice.cu 
 
 **/
 
@@ -362,8 +362,9 @@ void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
     }
 }
 
-void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath)
+void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
 {
+    const char* dirpath = spath::ResolvePath(dirpath_) ; 
     std::string path = Path(dirpath); 
     if(VERBOSE) std::cout
         << "sdevice::Load"
@@ -380,7 +381,14 @@ void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath)
         if(in.eof()) return ;   
         if(in.fail())
         {
-            std::cerr << " failed read from " << path << std::endl ; 
+            std::cerr 
+                << "sdevice::Load"
+                << " failed read from " 
+                << " dirpath_ " << ( dirpath_ ? dirpath_ : "-" ) 
+                << " dirpath " << ( dirpath ? dirpath : "-" ) 
+                << " path " << ( path.empty() ? "-" : path.c_str() ) 
+                << std::endl
+                ; 
             return ; 
         } 
         devices.push_back(d); 

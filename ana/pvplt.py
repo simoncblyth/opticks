@@ -36,11 +36,14 @@ pv = None
 if MODE in [2,3,-2,-3]:
     try:
         import matplotlib as mp
+        import matplotlib.pyplot as mpp
+        # this works in a varietry of versions  
         # trying to control window position using  fig.canvas.manager.window
         # might need mp.use('TkAgg')  but that crashes
         #import matplotlib.pyplot as mp  
     except ImportError:
         mp = None
+        mpp = None
     pass
 pass
 
@@ -257,7 +260,7 @@ def mpplt_annotate_ax( ax ):
 
 
 def mpplt_plotter(nrows=1, ncols=1, label="", equal=True):
-    fig, axs = mp.pyplot.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi 
+    fig, axs = mpp.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi 
     if type(axs).__name__ == 'AxesSubplot':axs=np.array([axs], dtype=np.object )
 
     if equal:

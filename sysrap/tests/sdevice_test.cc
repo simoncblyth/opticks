@@ -1,12 +1,20 @@
+/**
+sdevice_test.cc
+==================
+
+See notes in sdevice_test.sh 
+
+**/
+
+
 #include "sdevice.h"
 
 int main(int argc, char** argv)
 {  
     std::vector<sdevice> devs ; 
-
-    const char* dirpath = "$HOME/.opticks/runcache" ; 
-    sdevice::Visible(devs, dirpath, nosave );  
-    sdevice::Dump( devs , "visible devices"); 
+    sdevice::Visible(devs, "$HOME/.opticks/runcache", false );  
+    std::cout << sdevice::Desc( devs ) ; 
+    //std::cout << sdevice::Brief( devs ) ; 
 
     return 0 ; 
 }

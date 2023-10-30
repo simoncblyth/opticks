@@ -1,4 +1,24 @@
 #pragma once
+/**
+scontext.h
+============
+
+Looks like everything now done in sdevice.h 
+plus SCVD.h no longer working 
+
+TODO: remove SCVD.h 
+TODO: update this scontext.h for sdevice.h doing most of the task... 
+      scontext.h can just hold onto the vectors of sdevice structs 
+
+::
+
+    ./CSGOptiX/tests/CSGOptiXRenderTest.cc:#include "scontext.h"
+    ./sysrap/CMakeLists.txt:    scontext.h
+    ./sysrap/tests/scontext_test.cc:#include "scontext.h"
+    ./sysrap/scontext.h:TODO: remove SCVD.h and scontext.h 
+    ./sysrap/SSim.cc:#include "scontext.h"
+
+**/
 
 #include "sdevice.h"
 #include "SCVD.h"

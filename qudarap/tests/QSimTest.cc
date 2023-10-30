@@ -716,7 +716,7 @@ int main(int argc, char** argv)
     unsigned num = QSimTest::Num(argc, argv); 
 
     SSim* sim = SSim::Load(); 
-    QSim::UploadComponents(sim);   // instanciates things like QBnd
+    QSim::UploadComponents(sim);   // instanciates things like QBnd : NORMALLY FIRST GPU ACCESS 
     const SPrd* prd = sim->get_sprd() ; 
 
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
