@@ -16,6 +16,21 @@ class STR(str):
         return str(self)
 
 
+def IsDudNPY(path):
+    """
+    Heuristic to detect dud .npy before trying to np.load them 
+    Observe some pho0.npy with header only and no content ? 
+    """
+    dud = False    
+    with open(path, mode="rb") as fp:
+        contents = fp.read()    
+        if contents[0:6] == b'\x93NUMPY' and contents[-1:] == b'\n' and len(contents) == 128:
+            dud = True 
+        pass
+    pass
+    return dud
+
+
 def IsRemoteSession():
     """
     Heuristic to detect remote SSH session 
@@ -260,7 +275,17 @@ class Fold(object):
             if name == self.SFRAME:
                 a = sframe.Load(path)
             elif name.endswith(".npy"):
-                a = np.load(path)
+                is_dud_npy = IsDudNPY(path)
+                a = None
+                if is_dud_npy:
+                    print("fold.load detected dud .npy %s " % path )
+                else:
+                    try:
+                        a = np.load(path)
+                    except ValueError:
+                        print("fold.load error with np.load of %s " % path )
+                    pass
+                pass
             elif name.endswith("_meta.txt"):
                 a = NPMeta.Load(path)
                 self.txts[name] = a 

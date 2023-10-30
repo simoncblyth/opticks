@@ -54,7 +54,7 @@ class SEvt(object):
         else:
             f = Fold.Load(*args, **kwa )
         pass
-        return None if f is None else cls(f)
+        return None if f is None else cls(f, **kwa)
 
     @classmethod
     def LoadConcat(cls, *args, **kwa):
@@ -68,10 +68,12 @@ class SEvt(object):
         assert hasattr(f, 'ff') 
         return f 
 
-    def __init__(self, f):
+    def __init__(self, f, **kwa):
         """
-        :param f: Fold instance 
+        :param f: Fold instance
+        :param kwa: override param, only W2M accepted
         """
+
         self.f = f 
         self.symbol = f.symbol
         self._r = None
@@ -79,6 +81,8 @@ class SEvt(object):
         self._a = None
         self.a = None
         self._pid = -1
+        self.W2M = kwa.get("W2M", None)
+        print("sevt.init W2M\n", self.W2M )
 
         self.init_run(f) 
         self.init_meta(f)
@@ -94,7 +98,7 @@ class SEvt(object):
         self.init_aux_t(f)
         self.init_sup(f)
         self.init_junoSD_PMT_v2_SProfile(f)
-        self.init_env(f)
+        self.init_env(f)  # setting pid needs frames so has to be late
 
     @classmethod
     def CommonRunBase(cls, f):
@@ -125,18 +129,26 @@ class SEvt(object):
         """
         urun_base = self.CommonRunBase(f)
         urun_path = os.path.join( urun_base, "run.npy" )
-        fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
-        has_run_meta = not fp is None and getattr(fp,'run_meta', None) != None
 
-        rr_ = [fp.run_meta.T_BeginOfRun[0], fp.run_meta.T_EndOfRun[0]] if has_run_meta else [0,0]
+        # THIS WAS RECURSING AND LOADING THE n001 and p001 folders
+        #print("[ sevt.init_run Fold.Load urun_path %s loading urun_base %s " % (urun_path,urun_base) )
+        #fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
+        #print("] sevt.init_run Fold.Load ")
+        #run_meta = not fp is None and getattr(fp,'run_meta', None) != None
+        #self.fp = fp 
+
+        urun_meta = os.path.join( urun_base, "run_meta.txt" )
+        run_meta = NPMeta.Load(urun_meta) if os.path.exists(urun_meta) else None
+        has_run_meta = not run_meta is None
+
+        rr_ = [run_meta.T_BeginOfRun[0], run_meta.T_EndOfRun[0]] if has_run_meta else [0,0]
         rr = np.array(rr_, dtype=np.uint64 )
 
-        self.fp = fp 
         self.rr = rr   # T_BeginOfRun, T_EndOfRun
 
         qwns = ["FAKES_SKIP",]
         for qwn in qwns:
-            mval = list(map(int,getattr(fp.run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"])) 
+            mval = list(map(int,getattr(run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"])) 
             setattr(self, qwn, mval[0] )
         pass  
 
@@ -150,7 +162,7 @@ class SEvt(object):
         off = np.array(list(map(float,off_.split(","))))
         log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (f.symbol, pid, opt, str(off)) ) 
 
-        self.pid = pid
+        self.pid = pid   
         self.opt = opt 
         self.off = off
 
@@ -227,19 +239,23 @@ class SEvt(object):
         with_sframe = not getattr(f, "sframe", None) is None
         with_record = not getattr(f, "record", None) is None
 
+        W2M = self.W2M
+
         if with_sframe and with_record:
-            w2m = f.sframe.w2m
             gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
             gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
+            w2m = W2M if not W2M is None else f.sframe.w2m
             lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
         else:
-            w2m = None
+            w2m = W2M if not W2M is None else None
             gpos = None
             lpos = None
         pass
         self.w2m = w2m
         self.gpos = gpos 
         self.lpos = lpos 
+         
+
 
     def init_SEventConfig_meta(self, f):
         ipl = getattr(f.SEventConfig_meta, "InputPhoton", []) 
@@ -542,16 +558,10 @@ class SEvt(object):
         return self._pid
     def _set_pid(self, pid):
         """
-
-        gpos = np.ones( [len(pp), 4 ] ) 
-        gpos[:,:3] = pp
-        lpos = np.dot( gpos, e.f.sframe.w2m )
-        upos = gpos if GLOBAL else lpos
-
-
         """
         f = self.f
         q = self.q
+        W2M = self.W2M
         symbol = self.f.symbol
         if pid > -1 and hasattr(f,'record') and pid < len(f.record):
             _r = f.record[pid]
@@ -560,7 +570,9 @@ class SEvt(object):
 
             g = np.ones([len(r),4])
             g[:,:3] = r[:,0,:3]  
-            l = np.dot( g, f.sframe.w2m )
+
+            w2m = W2M if not W2M is None else f.sframe.w2m
+            l = np.dot( g, w2m )
             ld = np.diff(l,axis=0) 
 
             pass
@@ -605,8 +617,17 @@ class SEvt(object):
         self.l = l 
         self.ld = ld
 
-
     pid = property(_get_pid, _set_pid)
+
+
+    #def _get_w2m(self):
+    #    return self._w2m 
+    #
+    #def _set_w2m(self, w2m=None):
+    #    self._w2m = w2m if not w2m is None else f.sframe.w2m 
+
+
+
 
     def spec_(self, i):
         """

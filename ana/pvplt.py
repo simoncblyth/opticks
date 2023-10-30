@@ -195,7 +195,11 @@ def pvplt_plotter(label="pvplt_plotter"):
     pl = pv.Plotter(window_size=SIZE*2 )  
     pvplt_viewpoint(pl, reset=False)
 
-    pl.show_grid()
+    if not "NOGRID" in os.environ:
+        pl.show_grid()
+    else:
+        print("pvplt_plotter NOGRID")
+    pass
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
     return pl 
