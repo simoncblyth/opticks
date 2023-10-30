@@ -10,8 +10,13 @@ G4CX
 
 #]=]
 
+#find_package(Custom4 CONFIG)   # hmm U4 looks for Custom4 and does setup
 find_package(U4       REQUIRED CONFIG)
 find_package(CSGOptiX REQUIRED CONFIG)
+
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
+
 
 
 set(SOURCES

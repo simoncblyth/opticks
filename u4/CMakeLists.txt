@@ -27,9 +27,12 @@ find_package(GDXML REQUIRED CONFIG)
 find_package(CLHEP  REQUIRED CONFIG) 
 find_package(OpticksXercesC REQUIRED MODULE)
 
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 2 =======  find PMTSim IT SHOULD FIND Custom4 ")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 2 =======  find Custom4 PMTSim  ")
 
+find_package(Custom4 CONFIG)  # have to be explicit as Custom4 needed without j/PMTSim
 find_package(PMTSim CONFIG)  
+
+
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND       : ${PMTSim_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION     : ${PMTSim_VERSION}")
