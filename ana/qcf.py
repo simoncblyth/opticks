@@ -11,6 +11,13 @@ log = logging.getLogger(__name__)
 
 class QU(object):
     def __init__(self, q, symbol="q"):
+        """
+        QU : Unique value table 
+
+        u : unique values within q
+        x : first index within q of the unique value
+        n : count of unique values of q 
+        """
 
         expr = "np.c_[n,x,u][o][lim]"
         label = "uniques in descending count order with first index x"
@@ -46,6 +53,8 @@ class QU(object):
 
 
 class QCF(object):
+    """
+    """
     def __init__(self, _aq, _bq, symbol="qcf"):
         _same_shape = _aq.shape == _bq.shape
         if not _same_shape:
@@ -72,6 +81,10 @@ class QCF(object):
             bi_ = np.where(bqu.u == q )[0]
             ai = ai_[0] if len(ai_) == 1 else -1
             bi = bi_[0] if len(bi_) == 1 else -1
+
+            # NB the ai and bi are internal indices into the separate A and B lists
+            # so they are necessary but not ordinarily surfaced 
+            # as not very human digestible 
 
             ab[i,0,0] = ai
             ab[i,1,0] = aqu.x[ai] if ai > -1 else -1
@@ -139,7 +152,7 @@ class QCF(object):
         lines.append(self.c2label)
         lines.append(self.c2desc)
 
-        siq = list(map(lambda _:"%2d" % _ , self.iq ))
+        siq = list(map(lambda _:"%2d" % _ , self.iq ))  # row index 
         sc2 = list(map(lambda _:"%7.4f" % _, self.c2 ))
 
         sabo2 = list(map(lambda _:"%6d %6d" % tuple(_), self.abo[:,2,:]))

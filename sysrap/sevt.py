@@ -284,38 +284,41 @@ class SEvt(object):
             q_ = f.seq[:,0]
             q  = ht.seqhis(q_)  # ht from opticks.ana.p 
             qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
-            n = np.sum( seqnib_(q_), axis=1 )   
+            n = np.sum( seqnib_(q_), axis=1 )  # occupied nibbles, ie number of history points  
 
-            nosc = np.ones(len(qq), np.bool )       # start all true
-            nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
-
-            noscab = np.ones(len(qq), np.bool )     # start all true  
-            noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
-            noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
-
-            qu, qi, qn = np.unique(q, return_index=True, return_counts=True)  
+            qu, qi, qn = np.unique(q, return_index=True, return_counts=True) 
             quo = np.argsort(qn)[::-1]  
 
             qtab = eval(qtab_)
             qtab_ = qtab_.replace("q","%s.q" % symbol)
+
+            nosc = np.ones(len(qq), np.bool )       # start all true
+            nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
+
+            nore = np.ones(len(qq), np.bool )       # start all true
+            nore[np.where(qq == pcf.RE)[0]] = 0     # knock out photons with reemission in their histories
+
+            noscab = np.ones(len(qq), np.bool )     # start all true  
+            noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
+            noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
         else:
             q_ = None
             q = None
             qq = None
             n = None
-            nosc = None
-            noscab = None
             qu, qi, qn = None, None, None
             quo = None
             qtab = None 
+
+            nosc = None
+            nore = None
+            noscab = None
         pass
 
         self.q_ = q_
         self.q = q
         self.qq = qq
         self.n = n 
-        self.nosc = nosc   # mask of photons without SC in their histories
-        self.noscab = noscab   # mask of photons without SC or AB in their histories
 
         self.qu = qu
         self.qi = qi
@@ -326,6 +329,12 @@ class SEvt(object):
 
         self.qlim = qlim
         self.qtab_ = qtab_
+
+        self.nosc = nosc   # mask of photons without SC in their histories
+        self.nore = nore   # mask of photons without RE in their histories
+        self.noscab = noscab   # mask of photons without SC or AB in their histories
+
+
 
     def minimal_qtab(self, sli="[:10]", dump=False):
         """
@@ -642,7 +651,15 @@ class SAB(object):
     """
     Comparison of pairs of SEvt 
     """
+
+    def __getitem__(self, sli):
+        self.sli = sli
+        return self  
+
     def __init__(self, a, b): 
+
+        self.sli = slice(None)
+
         if a.q is None or b.q is None: 
             qcf = None
             qcf0 = None
@@ -672,6 +689,7 @@ class SAB(object):
         return np.where( np.logical_and( self.a.q == self.b.q, np.char.startswith(self.a.q, prefix.encode("utf-8")) ))   
 
     def __repr__(self):
+        ab = self
         a = self.a
         b = self.b
         qcf = self.qcf
@@ -687,17 +705,21 @@ class SAB(object):
             lines.append(str(b))
             lines.append(repr(b.f))
             if not qcf is None:
+                lines.append("ab.qcf.aqu")
                 lines.append(repr(qcf.aqu))
+                lines.append("ab.qcf.bqu")
                 lines.append(repr(qcf.bqu))
             pass
         pass
         lines.append("a.CHECK : %s " % a.CHECK)
         lines.append("b.CHECK : %s " % b.CHECK)
-        if not qcf is None:
-            lines.append(repr(qcf))
+        if not ab.qcf is None:
+            lines.append("ab.qcf[:40]")
+            lines.append(repr(ab.qcf[:40]))
         pass
-        if not qcf0 is None:
-            lines.append(repr(qcf0))
+        if not ab.qcf0 is None:
+            lines.append("ab.qcf0[:30])")
+            lines.append(repr(ab.qcf0[:30]))
         pass
         if not meta is None:
             lines.append(str(meta))
