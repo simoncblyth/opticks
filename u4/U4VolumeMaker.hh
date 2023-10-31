@@ -88,10 +88,15 @@ struct U4_API U4VolumeMaker
     static const G4VPhysicalVolume* Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv, const char* flip_axes=nullptr ); 
 
     // specialist pv creators
-
+    
+    static constexpr const char* U4VolumeMaker_RaindropRockAirWater_MATS = "U4VolumeMaker_RaindropRockAirWater_MATS" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_HALFSIDE = "U4VolumeMaker_RaindropRockAirWater_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_FACTOR   = "U4VolumeMaker_RaindropRockAirWater_FACTOR" ; 
-    static void RaindropRockAirWater_Configure( double& rock_halfside, double& air_halfside, double& water_radius ); 
+    static void RaindropRockAirWater_Configure( 
+        std::vector<std::string>& mats, 
+        double& container_halfside, 
+        double& medium_halfside, 
+        double& drop_radius ); 
     static const G4VPhysicalVolume* RaindropRockAirWater();  
     static const G4VPhysicalVolume* RaindropRockAirWaterSD();
 

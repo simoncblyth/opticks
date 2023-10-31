@@ -75,15 +75,15 @@ U4VolumeMaker::PV
 
 Invokes several PV getter methods the first to provide a PV wins.
 
+PVS_
+    Specials provided locally 
 PVG_
     load geometry from a gdmlpath
 PVP_
     PMTSim getter, requiring WITH_PMTSIM macro to be set meaning that PMTSim pkg was found by CMake
-PVS_
-    Specials provided locally 
 PVL_
     For names starting with List, multiple volumes are created and arranged eg into a grid. 
-    The names to create are extracted using the name argumnent as a comma delimited list
+    The names to create are extracted using the name argument as a comma delimited list
 PV1_
     Places single lv once or duplicates it several times depending on 
     strings found in the name such as Grid,Cube,Xoff,Yoff,Zoff
@@ -96,9 +96,9 @@ const G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
     std::cerr << "U4VolumeMaker::PV name " << name << std::endl ; 
     LOG(LEVEL) << "[" << name ; 
     const G4VPhysicalVolume* pv = nullptr ; 
+    if(pv == nullptr) pv = PVS_(name); 
     if(pv == nullptr) pv = PVG_(name); 
     if(pv == nullptr) pv = PVP_(name); 
-    if(pv == nullptr) pv = PVS_(name); 
     if(pv == nullptr) pv = PVL_(name); 
     if(pv == nullptr) pv = PV1_(name); 
     LOG_IF(error, pv == nullptr) << "returning nullptr for name [" << name << "]" ; 
@@ -803,11 +803,11 @@ cf CSG/CSGMaker.cc CSGMaker::makeBoxedSphere
 
 
    +------------------------+ 
-   | Rock                   |
+   | Rock/Container         |
    |    +-----------+       |
-   |    | Air       |       |    
+   |    | Air/Medium|       |    
    |    |    . .    |       |    
-   |    |   . Wa.   |       |    
+   |    |   .Wa/Drop|       |    
    |    |    . .    |       |    
    |    |           |       |    
    |    +-----|-----+       |
@@ -820,20 +820,27 @@ Defaults::
     HALFSIDE: 100. 
     FACTOR: 1. 
    
-    water_radius   :  halfside/2.         : 50. 
-    air_halfside   :  halfside*factor     : 100.
-    rock_halfside  :  1.1*halfside*factor : 110. 
+    drop_radius        :  halfside/2.         : 50. 
+    medium_halfside    :  halfside*factor     : 100.
+    container_halfside :  1.1*halfside*factor : 110. 
 
 An easy way to get some scattering and absorption to happen 
-is to increase U4VolumeMaker_RaindropRockAirWater_FACTOR to 10. for example. 
+is to increase U4VolumeMaker_RaindropRockAirWater_FACTOR to 10. 
+for example. 
 
 **/
 
-void U4VolumeMaker::RaindropRockAirWater_Configure( double& rock_halfside, double& air_halfside, double& water_radius )
+void U4VolumeMaker::RaindropRockAirWater_Configure( 
+    std::vector<std::string>& mats, 
+    double& rock_halfside, 
+    double& air_halfside, 
+    double& water_radius )
 {
+    ssys::fill_evec(mats, U4VolumeMaker_RaindropRockAirWater_MATS, "Rock,Air,Water", ',' ) ; 
     double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
 
+    LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_MATS << " " << ssys::desc_vec(&mats) ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
  
@@ -842,36 +849,65 @@ void U4VolumeMaker::RaindropRockAirWater_Configure( double& rock_halfside, doubl
     water_radius = halfside/2. ; 
 }
 
+/**
+U4VolumeMaker::RaindropRockAirWater
+------------------------------------
+
++-----------+--------------+
+| original  |  generalized |
++===========+==============+
+| Rock      | container    |
++-----------+--------------+
+| Air       | medium       |
++-----------+--------------+
+| Water     | drop         | 
++-----------+--------------+
+
+**/
+
 const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
 {
-    double rock_halfside, air_halfside, water_radius ; 
-    RaindropRockAirWater_Configure( rock_halfside, air_halfside, water_radius); 
+    std::vector<std::string> mats ; 
+    double container_halfside ;
+    double medium_halfside ;
+    double drop_radius ; 
 
-    bool warn = false ; 
-    G4Material* water_material  = G4Material::GetMaterial("Water", warn);   assert(water_material); 
-    G4Material* air_material  = G4Material::GetMaterial("Air", warn);   assert(air_material); 
-    G4Material* rock_material = G4Material::GetMaterial("Rock", warn);  assert(rock_material); 
+    RaindropRockAirWater_Configure( mats, container_halfside, medium_halfside, drop_radius); 
 
-    G4Orb* water_solid = new G4Orb("water_solid", water_radius ); 
-    G4Box* air_solid = new G4Box("air_solid", air_halfside, air_halfside, air_halfside );
-    G4Box* rock_solid = new G4Box("rock_solid", rock_halfside, rock_halfside, rock_halfside );
+    assert( mats.size() == 3 ); 
+    const char* container_mat = mats[0].c_str() ;   // originally "Rock"
+    const char* medium_mat = mats[1].c_str() ;      // originally "Air"
+    const char* drop_mat = mats[2].c_str() ;        // originally "Water"
 
-    G4LogicalVolume* water_lv = new G4LogicalVolume( water_solid, water_material, "water_lv"); 
-    G4LogicalVolume* air_lv = new G4LogicalVolume( air_solid, air_material, "air_lv"); 
-    G4LogicalVolume* rock_lv = new G4LogicalVolume( rock_solid, rock_material, "rock_lv" ); 
+    G4Material* container_material = U4Material::Get(container_mat );  
+    G4Material* medium_material  = U4Material::Get(medium_mat);   
+    G4Material* drop_material  = U4Material::Get(drop_mat); 
 
-    const G4VPhysicalVolume* water_pv = new G4PVPlacement(0,G4ThreeVector(), water_lv ,"water_pv", air_lv,false,0);
-    const G4VPhysicalVolume* air_pv = new G4PVPlacement(0,G4ThreeVector(),   air_lv ,  "air_pv",  rock_lv,false,0);
-    const G4VPhysicalVolume* rock_pv = new G4PVPlacement(0,G4ThreeVector(),  rock_lv ,  "rock_pv", nullptr,false,0);
+    assert(container_material); 
+    assert(medium_material); 
+    assert(drop_material); 
 
-    assert( water_pv ); 
-    assert( air_pv ); 
-    assert( rock_pv ); 
+    G4Orb* drop_solid = new G4Orb("drop_solid", drop_radius ); 
+    G4Box* medium_solid = new G4Box("medium_solid", medium_halfside, medium_halfside, medium_halfside );
+    G4Box* container_solid = new G4Box("container_solid", container_halfside, container_halfside, container_halfside );
 
-    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("air_rock_bs", air_pv, rock_pv );  
-    assert( air_rock_bs ); 
+    G4LogicalVolume* drop_lv = new G4LogicalVolume( drop_solid, drop_material, "drop_lv"); 
+    G4LogicalVolume* medium_lv = new G4LogicalVolume( medium_solid, medium_material, "medium_lv"); 
+    G4LogicalVolume* container_lv = new G4LogicalVolume( container_solid, container_material, "container_lv" ); 
 
-    return rock_pv ; 
+    const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv ,"drop_pv", medium_lv,false,0);
+    const G4VPhysicalVolume* medium_pv = new G4PVPlacement(0,G4ThreeVector(),   medium_lv ,  "medium_pv",  container_lv,false,0);
+    const G4VPhysicalVolume* container_pv = new G4PVPlacement(0,G4ThreeVector(),  container_lv ,  "container_pv", nullptr,false,0);
+
+    assert( drop_pv ); 
+    assert( medium_pv ); 
+    assert( container_pv ); 
+
+    G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface(
+       "medium_container_bs", medium_pv, container_pv );  
+    assert( medium_container_bs ); 
+
+    return container_pv ; 
 }
 
 /**
@@ -890,31 +926,39 @@ together by the higher level methods that make less sense to generalize.
 
 const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWaterSD()
 {
-    double rock_halfside, air_halfside, water_radius ; 
-    RaindropRockAirWater_Configure( rock_halfside, air_halfside, water_radius ); 
+    std::vector<std::string> mats ; 
+    double container_halfside ;
+    double medium_halfside ;
+    double drop_radius ; 
+    RaindropRockAirWater_Configure( mats, container_halfside, medium_halfside, drop_radius ); 
 
-    G4LogicalVolume* rock_lv  = Box_(rock_halfside, "Rock" ); 
-    G4LogicalVolume* air_lv   = Box_(air_halfside, "Air" ); 
-    G4LogicalVolume* water_lv = Orb_(water_radius, "Water" ); 
+    assert( mats.size() == 3 ); 
+    const char* container_mat = mats[0].c_str() ;   // originally "Rock"
+    const char* medium_mat = mats[1].c_str() ;      // originally "Air"
+    const char* drop_mat = mats[2].c_str() ;        // originally "Water"
 
-    const G4VPhysicalVolume* rock_pv  = new G4PVPlacement(0,G4ThreeVector(), rock_lv ,  "rock_pv", nullptr,false,0);
-    const G4VPhysicalVolume* air_pv   = new G4PVPlacement(0,G4ThreeVector(), air_lv  ,  "air_pv",  rock_lv,false,0);
-    const G4VPhysicalVolume* water_pv = new G4PVPlacement(0,G4ThreeVector(), water_lv , "water_pv", air_lv,false,0);
+    G4LogicalVolume* container_lv  = Box_(container_halfside, container_mat ); 
+    G4LogicalVolume* medium_lv   = Box_(medium_halfside, medium_mat ); 
+    G4LogicalVolume* drop_lv = Orb_(drop_radius, drop_mat ); 
 
-    assert( rock_pv ); 
-    assert( air_pv ); 
-    assert( water_pv ); 
+    const G4VPhysicalVolume* container_pv  = new G4PVPlacement(0,G4ThreeVector(), container_lv ,  "container_pv", nullptr,false,0);
+    const G4VPhysicalVolume* medium_pv     = new G4PVPlacement(0,G4ThreeVector(), medium_lv    ,  "medium_pv", container_lv,false,0);
+    const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv , "drop_pv", medium_lv,false,0);
 
-    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("air_rock_bs", air_pv, rock_pv );  
-    assert( air_rock_bs ); 
+    assert( container_pv ); 
+    assert( medium_pv ); 
+    assert( drop_pv ); 
 
-    //water_lv->SetSensitiveDetector(new U4SensitiveDetector("water_sd")); 
+    G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface("medium_container_bs", medium_pv, container_pv );  
+    assert( medium_container_bs ); 
+
+    //drop_lv->SetSensitiveDetector(new U4SensitiveDetector("drop_sd")); 
     // not needed, it is the below surface that is necessary 
 
-    G4LogicalBorderSurface* air_water_bs = U4Surface::MakePerfectDetectorBorderSurface("air_water_bs", air_pv, water_pv );  
-    assert( air_water_bs ); 
+    G4LogicalBorderSurface* medium_drop_bs = U4Surface::MakePerfectDetectorBorderSurface("medium_drop_bs", medium_pv, drop_pv );  
+    assert( medium_drop_bs ); 
 
-    return rock_pv ; 
+    return container_pv ; 
 }
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char* prefix )
 {

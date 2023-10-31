@@ -29,6 +29,7 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 set(TEST_SOURCES
    U4Custom4Test.cc
+   U4NistManagerTest.cc
    U4MaterialTest.cc
    U4MaterialPropertyVectorTest.cc
    Deprecated_U4PhotonInfoTest.cc

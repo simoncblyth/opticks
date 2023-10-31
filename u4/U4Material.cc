@@ -8,6 +8,7 @@
 #include "SPath.hh"
 #include "SDir.h"
 #include "SStr.hh"
+#include "sstr.h"
 #include "SSim.hh"
 #include "SBnd.h"
 #include "sdomain.h"
@@ -23,6 +24,7 @@
 #include "G4Version.hh"
 #include "U4Material.hh"
 #include "U4MaterialPropertyVector.h"
+#include "U4NistManager.h"
 
 const plog::Severity U4Material::LEVEL = SLOG::EnvLevel("U4Material", "DEBUG"); 
 
@@ -92,8 +94,11 @@ const char* U4Material::FindMaterialName(const char* volname)
 U4Material::Get
 -----------------
 
-Ordinary G4Material::GetMaterial has first chance, otherwise U4Material::Get_ 
-may provide. 
+Material resolution order:
+
+1. ordinary G4Material::GetMaterial 
+2. U4Material::Get_ which implements a few specials : Scintillator and Vacuum 
+3. U4NistManager::GetMaterial for names starting with "G4_"
 
 **/
 
@@ -101,6 +106,7 @@ G4Material* U4Material::Get(const char* name)
 {
    G4Material* material = G4Material::GetMaterial(name, false); 
    if( material == nullptr ) material = Get_(name); 
+   if(sstr::StartsWith(name, "G4_")) material = U4NistManager::GetMaterial(name) ; 
    return material ;   
 }
 

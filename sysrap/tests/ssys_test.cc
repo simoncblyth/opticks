@@ -328,6 +328,13 @@ void test_uname()
 }
 
 
+void test_fill_evec_string()
+{   
+    std::vector<std::string> mat ; 
+    ssys::fill_evec(mat, "MAT", "Rock,Air,Water", ',' ) ; 
+    std::cout << ssys::desc_vec(&mat) << std::endl ;  
+}
+
 
 
 int main(int argc, char** argv)
@@ -359,9 +366,10 @@ int main(int argc, char** argv)
     test_fill_evec<double>(); 
     test_fill_evec<std::string>(); 
     test_uname(); 
+    test_listed_count(); 
     */
 
-    test_listed_count(); 
+    test_fill_evec_string(); 
 
  
     return 0 ; 
