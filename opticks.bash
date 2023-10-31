@@ -1789,19 +1789,19 @@ opticks-full-externals()
     echo $msg START $(date)
     local rc
 
-    echo $msg installing the below externals into $(opticks-prefix)/externals
+    echo $msg installing the below externals into $(opticks-prefix)/externals : eg bcm glm glfw glew gleq imgui plog nljson
     opticks-externals 
     opticks-externals-install
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
-    echo $msg config-ing the preqs 
+    echo $msg config-ing the preqs : eg cuda optix
     opticks-preqs
     opticks-preqs-pc
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
-    echo $msg config-ing the foreign
+    echo $msg config-ing the foreign : eg boost clhep xercesc g4
     opticks-foreign
     #opticks-foreign-pc
     rc=$?

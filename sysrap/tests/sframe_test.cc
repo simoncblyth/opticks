@@ -2,6 +2,16 @@
 
 #include "sframe.h"
 
+void test_uninitialized()
+{
+    sframe fr = {} ; 
+    std::cout << "fr" << std::endl << fr << std::endl ; 
+
+    std::cout << "fr.m2w.q3.i.w " << fr.m2w.q3.i.w  << std::endl; 
+    std::cout << "fr.m2w.q3.f.w " << fr.m2w.q3.f.w  << std::endl; 
+}
+
+
 void test_save_load()
 {
     sframe a ; 
@@ -37,11 +47,12 @@ void test_setTranslate()
 
 int main(int argc, char** argv)
 {
+    test_uninitialized(); 
     /*
     test_save_load() ; 
     test_load(); 
-    */
     test_setTranslate(); 
+    */
 
 
     return 0 ; 

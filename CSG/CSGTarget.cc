@@ -44,6 +44,11 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 {
     const qat4* _t = foundry->getInst(inst_idx); 
 
+    LOG(LEVEL)
+        << " inst_idx " << inst_idx
+        << " _t " << ( _t ? "YES" : "NO " )
+        ;
+
     LOG_IF(error, _t == nullptr) 
         << " inst_idx " << inst_idx 
         << " failed to foundry->getInst(inst_idx), " 
@@ -55,6 +60,16 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
     int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
     _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
+    LOG(LEVEL)
+        << " inst_idx " << inst_idx
+        << " _t " << ( _t ? "YES" : "NO " )
+        << " ins_idx " << ins_idx
+        << " gas_idx " << gas_idx
+        << " sensor_identifier " << sensor_identifier
+        << " sensor_index " << sensor_index
+        ;
+
+
     assert( ins_idx == inst_idx ); 
     fr.set_inst(inst_idx); 
    
@@ -62,14 +77,39 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
     fr.set_identity(ins_idx, gas_idx, sensor_identifier, sensor_index ) ; 
 
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
-    const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
-    qat4::copy(fr.m2w,  t);  
-    qat4::copy(fr.w2m, *v);  
-    // TODO: adopt sframe::setTransform
+    const qat4* v = Tran<double>::Invert(&t);     
 
+    qat4::copy(fr.m2w,  t);   
+    qat4::copy(fr.w2m, *v); 
+
+    // identity info IS NOT cleared by Tran::Invert
+    // as there is special handling to retain it (see stran.h) 
+    // the explicit clearing below fixes a bug revealed during 
+    // Raindrop revival 
+    // see notes/issues/Raindrop_revival_fix_CSGTarget_getFrame_nan_from_not_clearing_identity_info.rst 
+
+
+    fr.m2w.clearIdentity(); 
+    fr.w2m.clearIdentity(); 
+ 
+    // TODO: adopt sframe::setTransform
 
     const CSGSolid* solid = foundry->getSolid(gas_idx); 
     fr.ce = solid->center_extent ;  
+
+
+    LOG(LEVEL)
+        << " inst_idx " << inst_idx
+        << " _t " << ( _t ? "YES" : "NO " )
+        << " ins_idx " << ins_idx
+        << " gas_idx " << gas_idx
+        << " sensor_identifier " << sensor_identifier
+        << " sensor_index " << sensor_index
+        << " fr.m2w.q3.f.w " <<  fr.m2w.q3.f.w
+        << " fr.m2w.q3.i.w " <<  fr.m2w.q3.i.w
+        << " fr.w2m.q3.f.w " <<  fr.w2m.q3.f.w
+        << " fr.w2m.q3.i.w " <<  fr.w2m.q3.i.w
+        ;
 
     return 0 ; 
 }

@@ -3141,7 +3141,7 @@ sframe CSGFoundry::getFrame() const
 }
 sframe CSGFoundry::getFrame(const char* frs) const 
 {
-    sframe fr ; 
+    sframe fr = {} ; 
     int rc = getFrame(fr, frs ? frs : sframe::DEFAULT_FRS );
     LOG_IF(error, rc != 0) << " frs " << frs << std::endl << getFrame_NOTES ; 
     if(rc != 0) std::raise(SIGINT); 
@@ -3251,7 +3251,9 @@ that picked the frame.
 
 sframe CSGFoundry::getFrameE() const 
 {
-    sframe fr ; 
+    sframe fr = {} ; 
+
+
 
     if(ssys::getenvbool("INST"))
     {

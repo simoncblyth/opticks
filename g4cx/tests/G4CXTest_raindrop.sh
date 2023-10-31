@@ -49,11 +49,13 @@ export BFOLD=${TMP:-$tmp}/GEOM/$GEOM/$bin/ALL$VERSION/n001
 logging()
 {
    export U4Recorder=INFO
+   export CSGFoundry=INFO
+   export CSGTarget=INFO
 }
-logging
+#logging
 
-#defarg="info_run_ana"
-defarg="info_dbg_ana"
+defarg="info_run_ana"
+#defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
 vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD" 
