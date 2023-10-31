@@ -68,6 +68,7 @@ struct G4CXApp
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     G4VPhysicalVolume*    fPV ; 
+    int                   fIntegrationMode ; 
 
     G4VPhysicalVolume* Construct(); 
 
@@ -139,7 +140,8 @@ G4CXApp::G4CXApp(G4RunManager* runMgr)
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
     fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
-    fPV(nullptr)
+    fPV(nullptr),
+    fIntegrationMode(SEventConfig::IntegrationMode())
 {
     fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
     fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
@@ -170,10 +172,19 @@ G4VPhysicalVolume* G4CXApp::Construct()
 
     LOG(info) << "]" ; 
 
+    
     // Collect extra JUNO PMT info only when persisted NPFold exists.
     SSim::AddExtraSubfold("jpmt", "$PMTSimParamData_BASE" ); 
 
-    G4CXOpticks::SetGeometry(pv_) ; 
+
+    if(SEventConfig::GPU_Simulation())
+    {
+        G4CXOpticks::SetGeometry(pv_) ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " skip passing geometry to opticks " ; 
+    }
 
     return pv ; 
 }  
@@ -236,14 +247,16 @@ void G4CXApp::EndOfEventAction(const G4Event* event)
     #endif
     }
 
-
-
     // HMM defer to G4CXOpticks::EndOfEventAction ?
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks* gx = G4CXOpticks::Get() ;
         int eventID = event->GetEventID() ;
         gx->simulate(eventID) ;
+    }
+    else
+    {
+         LOG(LEVEL) << " skip opticks simulate " ; 
     }
 
 

@@ -835,6 +835,13 @@ A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
    avoid some complexities but maybe just add others. Would rather not go there. 
    Prefer simplicity. 
 
+
+Logging issue with templated methods ? 
+---------------------------------------
+
+Somehow getting PLOG logging from this templated method to 
+appear us problematic, so resorted to preprocessor macro. 
+
 **/
 
 template <typename T>
@@ -843,7 +850,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     const G4Track* track = step->GetTrack(); 
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     const G4VTouchable* touch = track->GetTouchable();  
-    LOG(LEVEL) << "[ pv " << ( pv ? pv->GetName() : "-" ) ; 
+
+#ifdef U4Recorder_DEBUG
+    std::cout << "U4Recorder::UserSteppingAction_Optical [ pv " << ( pv ? pv->GetName() : "-" ) << std::endl ; 
+#endif
 
     spho ulabel = {} ; 
     GetLabel( ulabel, track ); 
@@ -866,7 +876,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool first_flag = current_photon.flagmask_count() == 1 ;  
     if(first_flag)
     { 
-        LOG(LEVEL) << " first_flag, track " << track  ; 
+#ifdef U4Recorder_DEBUG
+        std::cout << "U4Recorder::UserSteppingAction_Optical first_flag, track " << track << std::endl   ; 
+#endif
         U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
@@ -897,13 +909,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
 
-    LOG(LEVEL) 
+#ifdef U4Recorder_DEBUG
+        std::cout 
+        << "U4Recorder::UserSteppingAction_Optical"
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
         << " is_fastsim_flag " << is_fastsim_flag  
         << " is_boundary_flag " << is_boundary_flag  
         << " is_surface_flag " << is_surface_flag  
+        << std::endl
         ;
+#endif
 
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
@@ -940,7 +956,22 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             ; 
     }
 
+    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::DescPositionTime(post) ; 
     LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
+
+#ifdef U4Recorder_DEBUG
+    if(flag == 0 ) std::cout 
+        << "U4Recorder::UserSteppingAction_Optical"
+        << " ERR flag zero "
+        << std::endl 
+        << U4StepPoint::DescPositionTime(post)  
+        << std::endl 
+        << U4StepPoint::Desc<T>(post) 
+        << std::endl 
+        ;
+ 
+#endif
+
     assert( flag > 0 ); 
 
     bool PIDX_DUMP = ulabel.id == PIDX && PIDX_ENABLED ; 

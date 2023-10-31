@@ -24,7 +24,8 @@ struct U4MaterialPropertiesTable
     static std::string DescProperties(const std::vector<std::string>& keys, const std::vector<G4MaterialPropertyVector*>& props ) ; 
 
     static NPFold* MakeFold( const G4MaterialPropertiesTable* mpt ); 
-
+    static G4MaterialPropertiesTable* Create(std::vector<std::string>& keys, std::vector<double>& vals ); 
+    static G4MaterialPropertiesTable* Create(const char* key, double val ); 
 }; 
 
 /**
@@ -252,3 +253,30 @@ inline NPFold* U4MaterialPropertiesTable::MakeFold( const G4MaterialPropertiesTa
     }
     return fold ; 
 }
+
+inline G4MaterialPropertiesTable* U4MaterialPropertiesTable::Create( 
+    std::vector<std::string>& keys, 
+    std::vector<double>& vals )
+{
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable ; 
+    assert( keys.size() == vals.size() ) ; 
+    int num = int(keys.size());  
+    for(int i=0 ; i < num ; i++)
+    {
+        const char* key = keys[i].c_str(); 
+        double val = vals[i] ; 
+        G4MaterialPropertyVector* opv = U4MaterialPropertyVector::Make_V(val) ;   
+        mpt->AddProperty(key, opv ); 
+    }
+    return mpt ; 
+}
+
+inline G4MaterialPropertiesTable* U4MaterialPropertiesTable::Create(const char* key, double val )
+{
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable ; 
+    G4MaterialPropertyVector* opv = U4MaterialPropertyVector::Make_V(val) ;   
+    mpt->AddProperty(key, opv ); 
+    return mpt ; 
+}
+
+

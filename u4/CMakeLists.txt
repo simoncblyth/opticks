@@ -38,6 +38,11 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND       : ${PMTSim_FOUND
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION     : ${PMTSim_VERSION}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_FOUND      : ${GDXML_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_VERSION    : ${GDXML_VERSION}")
+
+
+
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 3 ======= completed finds " )
 
@@ -161,6 +166,7 @@ target_compile_definitions( ${name} PRIVATE OPTICKS_U4 )
 target_compile_definitions( ${name} PRIVATE G4USE_STD11 ) 
 target_compile_definitions( ${name} PRIVATE STANDALONE ) 
 target_compile_definitions( ${name} PRIVATE DEBUG_TAG ) 
+target_compile_definitions( ${name} PRIVATE U4Recorder_DEBUG )
 
 
 if(Custom4_FOUND)

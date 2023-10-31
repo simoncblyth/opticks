@@ -47,6 +47,7 @@ inline NP* SGenerate::GeneratePhotons(int idx)
     {
         std::cerr << "SGenerate::GeneratePhotons FATAL SEvt::GatherGenstep returns null " << std::endl ; 
         std::cerr << "user code needs to instanciate SEvt and AddGenstep " << std::endl ;  
+        std::cerr << "NB even input photon running requires a genstep" << std::endl ;  
         return nullptr ;  
     }
 

@@ -1,5 +1,6 @@
 #include <sstream>
 #include <csignal>
+#include <array>
 
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
@@ -832,11 +833,14 @@ for example.
 
 void U4VolumeMaker::RaindropRockAirWater_Configure( 
     std::vector<std::string>& mats, 
+    std::vector<double>& rindex, 
     double& rock_halfside, 
     double& air_halfside, 
     double& water_radius )
 {
-    ssys::fill_evec(mats, U4VolumeMaker_RaindropRockAirWater_MATS, "Rock,Air,Water", ',' ) ; 
+    ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "Rock,Air,Water", ',' ) ; 
+    ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,0,0", ',' ) ; 
+
     double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
 
@@ -868,13 +872,16 @@ U4VolumeMaker::RaindropRockAirWater
 const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
 {
     std::vector<std::string> mats ; 
+    std::vector<double> rindex ; 
     double container_halfside ;
     double medium_halfside ;
     double drop_radius ; 
 
-    RaindropRockAirWater_Configure( mats, container_halfside, medium_halfside, drop_radius); 
+    RaindropRockAirWater_Configure( mats, rindex, container_halfside, medium_halfside, drop_radius); 
 
     assert( mats.size() == 3 ); 
+    assert( rindex.size() == 3 ); 
+
     const char* container_mat = mats[0].c_str() ;   // originally "Rock"
     const char* medium_mat = mats[1].c_str() ;      // originally "Air"
     const char* drop_mat = mats[2].c_str() ;        // originally "Water"
@@ -883,9 +890,17 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
     G4Material* medium_material  = U4Material::Get(medium_mat);   
     G4Material* drop_material  = U4Material::Get(drop_mat); 
 
-    assert(container_material); 
-    assert(medium_material); 
-    assert(drop_material); 
+    std::array<G4Material*, 3> materials = {{container_material, medium_material, drop_material }} ; 
+    // fix up materials that dont have RINDEX properties, if that is configured
+    for(int i=0 ; i < 3 ; i++)
+    {
+        G4Material* mat = materials[i] ; 
+        if(rindex[i] > 0. && !U4Material::HasMPT(mat) ) 
+        {
+            U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;
+        }
+    }
+
 
     G4Orb* drop_solid = new G4Orb("drop_solid", drop_radius ); 
     G4Box* medium_solid = new G4Box("medium_solid", medium_halfside, medium_halfside, medium_halfside );
@@ -927,19 +942,38 @@ together by the higher level methods that make less sense to generalize.
 const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWaterSD()
 {
     std::vector<std::string> mats ; 
+    std::vector<double> rindex ; 
+
     double container_halfside ;
     double medium_halfside ;
     double drop_radius ; 
-    RaindropRockAirWater_Configure( mats, container_halfside, medium_halfside, drop_radius ); 
+    RaindropRockAirWater_Configure( mats, rindex, container_halfside, medium_halfside, drop_radius ); 
 
     assert( mats.size() == 3 ); 
+    assert( rindex.size() == 3 ); 
+
     const char* container_mat = mats[0].c_str() ;   // originally "Rock"
     const char* medium_mat = mats[1].c_str() ;      // originally "Air"
     const char* drop_mat = mats[2].c_str() ;        // originally "Water"
 
-    G4LogicalVolume* container_lv  = Box_(container_halfside, container_mat ); 
-    G4LogicalVolume* medium_lv   = Box_(medium_halfside, medium_mat ); 
-    G4LogicalVolume* drop_lv = Orb_(drop_radius, drop_mat ); 
+    G4Material* container_material  = U4Material::Get(container_mat);   
+    G4Material* medium_material  = U4Material::Get(medium_mat);   
+    G4Material* drop_material  = U4Material::Get(drop_mat);   
+
+    std::array<G4Material*, 3> materials = {{container_material, medium_material, drop_material }} ; 
+    // fix up materials that dont have RINDEX properties, if that is configured
+    for(int i=0 ; i < 3 ; i++)
+    {
+        G4Material* mat = materials[i] ; 
+        if(rindex[i] > 0. && !U4Material::HasMPT(mat) ) 
+        {
+            U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;
+        }
+    }
+
+    G4LogicalVolume* container_lv  = Box_(container_halfside, container_material ); 
+    G4LogicalVolume* medium_lv   = Box_(medium_halfside, medium_material ); 
+    G4LogicalVolume* drop_lv = Orb_(drop_radius, drop_material ); 
 
     const G4VPhysicalVolume* container_pv  = new G4PVPlacement(0,G4ThreeVector(), container_lv ,  "container_pv", nullptr,false,0);
     const G4VPhysicalVolume* medium_pv     = new G4PVPlacement(0,G4ThreeVector(), medium_lv    ,  "medium_pv", container_lv,false,0);
@@ -964,6 +998,10 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char
 {
     if( prefix == nullptr ) prefix = mat ; 
     G4Material* material  = U4Material::Get(mat);   assert(material); 
+    return Orb_(radius, material, prefix ); 
+}
+G4LogicalVolume* U4VolumeMaker::Orb_( double radius, G4Material* material, const char* prefix )
+{
     G4Orb* solid = new G4Orb( SStr::Name(prefix,"_solid"), radius ); 
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
     return lv ; 
@@ -971,8 +1009,13 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char
 G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix, const double* scale )
 {
     if( prefix == nullptr ) prefix = mat ; 
-    G4Material* material  = U4Material::Get(mat);   assert(material); 
+    G4Material* material  = U4Material::Get(mat);   
+    assert(material); 
+    return Box_( halfside, material, prefix, scale ); 
+}
 
+G4LogicalVolume* U4VolumeMaker::Box_( double halfside, G4Material* material, const char* prefix, const double* scale )
+{
     double hx = scale ? scale[0]*halfside : halfside ; 
     double hy = scale ? scale[1]*halfside : halfside ; 
     double hz = scale ? scale[2]*halfside : halfside ; 

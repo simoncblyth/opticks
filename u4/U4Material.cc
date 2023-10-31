@@ -380,6 +380,16 @@ NPFold* U4Material::MakePropertyFold(const G4Material* mat )
 
 
 
+bool U4Material::HasMPT(const G4Material* mat) // static 
+{
+   return nullptr != mat->GetMaterialPropertiesTable() ; 
+}
+
+void U4Material::SetMPT(G4Material* mat, G4MaterialPropertiesTable* mpt)
+{
+    mat->SetMaterialPropertiesTable(mpt); 
+}
+
 
 std::string U4Material::DescPropertyNames( const G4Material* mat )
 {
@@ -485,6 +495,7 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* m
     
     return mpt ; 
 } 
+
 
 
 /**

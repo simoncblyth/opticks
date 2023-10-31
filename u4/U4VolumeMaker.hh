@@ -90,10 +90,12 @@ struct U4_API U4VolumeMaker
     // specialist pv creators
     
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_MATS = "U4VolumeMaker_RaindropRockAirWater_MATS" ; 
+    static constexpr const char* U4VolumeMaker_RaindropRockAirWater_RINDEX = "U4VolumeMaker_RaindropRockAirWater_RINDEX" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_HALFSIDE = "U4VolumeMaker_RaindropRockAirWater_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_FACTOR   = "U4VolumeMaker_RaindropRockAirWater_FACTOR" ; 
     static void RaindropRockAirWater_Configure( 
         std::vector<std::string>& mats, 
+        std::vector<double>& rindex, 
         double& container_halfside, 
         double& medium_halfside, 
         double& drop_radius ); 
@@ -103,7 +105,9 @@ struct U4_API U4VolumeMaker
     // general lv creators 
  
     static G4LogicalVolume* Orb_( double radius,   const char* mat, const char* prefix=nullptr ); 
+    static G4LogicalVolume* Orb_( double radius,   G4Material* mat, const char* prefix=nullptr ); 
     static G4LogicalVolume* Box_( double halfside, const char* mat, const char* prefix=nullptr, const double* boxscale=nullptr ); 
+    static G4LogicalVolume* Box_( double halfside, G4Material* mat, const char* prefix=nullptr, const double* boxscale=nullptr ); 
 
 
     // instance wraps 

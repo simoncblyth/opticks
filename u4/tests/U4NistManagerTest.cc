@@ -24,10 +24,15 @@ int main(int argc, char** argv)
     const char* name = argc > 1 ? argv[1] : "G4_WATER" ; 
     std::cout << ( name ? name : "-" ) << std::endl ; 
 
-    G4Material* material  = U4NistManager::GetMaterial(name) ; 
+    G4Material* mat  = U4NistManager::GetMaterial(name) ; 
+    if(!mat) return 1 ;
 
-    if(material) G4cout << *material ; 
-    else G4cout << argv[0] << " FAILED TO CREATE " << name ; 
+    G4cout << *mat ; 
+
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable() ; 
+ 
+    std::cout << " mpt " << ( mpt ? "YES" : "NO " ) << std::endl ; 
+
 
     return 0 ;
 }

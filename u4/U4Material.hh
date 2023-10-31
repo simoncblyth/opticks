@@ -53,6 +53,8 @@ struct U4_API U4Material
     static NPFold* MakePropertyFold(); 
     static NPFold* MakePropertyFold(std::vector<const G4Material*>& mats); 
 
+    static bool HasMPT(const G4Material* mat); 
+    static void SetMPT(G4Material* mat, G4MaterialPropertiesTable* mpt); 
 
     static std::string DescPropertyNames( const G4Material* mat ); 
 

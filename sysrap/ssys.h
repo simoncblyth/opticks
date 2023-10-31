@@ -422,6 +422,7 @@ inline void ssys::fill_evec(std::vector<T>& vec, const char* ekey, const char* f
 {
     assert(fallback); 
     char* line_ = getenv(ekey);
+    if(line_ == nullptr && fallback == nullptr) return ;  
     const char* line = line_ ? line_ : fallback ; 
     fill_vec<T>( vec, line, delim ); 
 } 
