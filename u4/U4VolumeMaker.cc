@@ -31,11 +31,6 @@
 #include "PMTSim.hh"
 #endif
 
-#ifdef WITH_PMTFASTSIM
-#include "PMTFastSim.hh"
-#endif
-
-
 
 const plog::Severity U4VolumeMaker::LEVEL = SLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
 const char* U4VolumeMaker::GEOM = ssys::getenvvar("GEOM", "BoxOfScintillator"); 
@@ -84,8 +79,6 @@ PVG_
     load geometry from a gdmlpath
 PVP_
     PMTSim getter, requiring WITH_PMTSIM macro to be set meaning that PMTSim pkg was found by CMake
-PVF_
-    PMTFastSim getter, requiring WITH_PMTFASTSIM macro, meaning that PMTFastSim pkg found by CMake
 PVS_
     Specials provided locally 
 PVL_
@@ -105,7 +98,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
     const G4VPhysicalVolume* pv = nullptr ; 
     if(pv == nullptr) pv = PVG_(name); 
     if(pv == nullptr) pv = PVP_(name); 
-    if(pv == nullptr) pv = PVF_(name); 
     if(pv == nullptr) pv = PVS_(name); 
     if(pv == nullptr) pv = PVL_(name); 
     if(pv == nullptr) pv = PV1_(name); 
@@ -249,45 +241,6 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
     LOG(LEVEL) << "]" ; 
 #else
     LOG(info) << " not-WITH_PMTSIM name [" << name << "]" ; 
-#endif
-    return pv ; 
-}
-
-/**
-U4VolumeMaker::PVF_
----------------------
-
-HMM: Coupling between U4 and PMTSim/PMTFastSim 
-should be reduced to a minimum. 
-
-Can it be reduced back to just to Geant4 geometry access ? 
-
-Extending to JUNO specifics like junoPMTOpticalModel seems a step too far. 
-
-Also, more comfortable with PMTSim/PMTFastSim dependency 
-being restricted to test executables, keeping it out 
-of the U4 lib. Could do this with header-only U4 impls.  
-
-**/
-
-const G4VPhysicalVolume* U4VolumeMaker::PVF_(const char* name)
-{
-    METH = "PVF_" ; 
-    const G4VPhysicalVolume* pv = nullptr ; 
-#ifdef WITH_PMTFASTSIM
-    bool has_manager_prefix = PMTFastSim::HasManagerPrefix(name) ;
-    LOG(LEVEL) << "[ WITH_PMTFASTSIM name [" << name << "] has_manager_prefix " << has_manager_prefix ; 
-    if(has_manager_prefix) 
-    {
-        G4LogicalVolume* lv = PMTFastSim::GetLV(name) ; 
-        LOG_IF(fatal, lv == nullptr ) << "PMTFastSim::GetLV returned nullptr for name [" << name << "]" ; 
-        assert( lv ); 
-
-        pv = Wrap( name, lv ) ;          
-    }
-    LOG(LEVEL) << "]" ; 
-#else
-    LOG(info) << " not-WITH_PMTFASTSIM name [" << name << "]" ; 
 #endif
     return pv ; 
 }

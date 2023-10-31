@@ -2,10 +2,12 @@
 G4CXApp.h  : Geant4 Application integrated with G4CXOpticks within a single header 
 =========================================================================================
 
-This is based upon u4/U4App.h with the addition of G4CXOpticks 
+This ~300 line header does everything to setup a Geant4 app and integrate G4CXOpticks
+plus a U4Recorder instance that collects the details of the Geant4 simulation in Opticks SEvt 
+format to facilitate comparison of Opticks and Geant4 optical simulations. 
 
 Note that the methods are not inlined, but that does not matter as this should only be included
-once into the main.  
+once into the main. This was initially based upon u4/U4App.h with the addition of G4CXOpticks 
 
 Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is controlled by the GEOM envvar.  
 
@@ -154,7 +156,12 @@ G4VPhysicalVolume* G4CXApp::Construct()
 { 
     LOG(info) << "[" ; 
     const G4VPhysicalVolume* pv_ = U4VolumeMaker::PV() ;
-    LOG_IF(fatal, pv_ == nullptr) << " FAILED TO CREATE PV : CHECK GEOM envvar " ;  
+    LOG_IF(fatal, pv_ == nullptr) 
+        << " FAILED TO CREATE PV : CHECK GEOM envvar " 
+        << std::endl
+        << U4VolumeMaker::Desc()
+        ;  
+   
     if(pv_ == nullptr) std::raise(SIGINT) ; 
 
     G4VPhysicalVolume* pv = const_cast<G4VPhysicalVolume*>(pv_);  
