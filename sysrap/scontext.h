@@ -1,12 +1,25 @@
 #pragma once
 /**
-scontext.h
-============
+scontext.h : holds sdevice.h structs for all and visible GPUs
+==============================================================
+
+Canonical instance is SSim::sctx instanciated by SSim::SSim
 
 
-TODO: update this scontext.h for sdevice.h doing most of the task... 
-      scontext.h can just hold onto the vectors of sdevice structs 
+TODO: use this a source of metadata 
+      for inclusion into SEvt run_meta ? 
 
+::
+
+    epsilon:opticks blyth$ opticks-fl scontext.h 
+    ./sysrap/CMakeLists.txt
+    ./sysrap/sdevice.h
+    ./sysrap/tests/scontext_test.cc
+    ./sysrap/scontext.h
+    ./sysrap/SSim.cc
+
+Equivalent of this in the old workflow was 
+optixrap/OContext.cc OContext::initDevices
 
 Formerly used SCVD.h to promote "CVD" into "CUDA_VISIBLE_DEVICES" 
 in code in order to have more control over visible GPUs. 
@@ -14,20 +27,12 @@ However find that approach no longer impacts CUDA.
 Perhaps following a CUDA version/runtime/driver update the 
 CUDA_VISIBLE_DEVICES envvar is read earlier than previously. 
 
-::
-
-    ./CSGOptiX/tests/CSGOptiXRenderTest.cc:#include "scontext.h"
-    ./sysrap/CMakeLists.txt:    scontext.h
-    ./sysrap/tests/scontext_test.cc:#include "scontext.h"
-    ./sysrap/SSim.cc:#include "scontext.h"
-
 **/
 
 #include "sdevice.h"
 
 struct scontext
 {
-    static scontext* INSTANCE ; 
     static constexpr const bool VERBOSE = false ; 
 
     scontext(); 
@@ -36,32 +41,19 @@ struct scontext
 
     std::string desc() const ; 
     std::string brief() const ; 
-
-    static scontext* Get() ; 
-    static std::string Desc() ; 
-    static std::string Brief() ; 
 };
 
-/**
 
-cf the former optixrap/OContext.cc OContext::initDevices
-
-**/
-
-scontext* scontext::INSTANCE = nullptr ; 
 
 inline scontext::scontext()
 {
-    INSTANCE = this ; 
-
-
     if(VERBOSE) std::cout << "[scontext::scontext" << std::endl ; 
 
     const char* dirpath = spath::ResolvePath("$HOME/.opticks/scontext") ; 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
     assert(rc == 0); 
 
-    // the below only saves when CVD envvar is not defined, so all dev visible
+    // the below only saves when CUDA_VISIBLE_DEVICES envvar is not defined, so all dev visible
     bool nosave = false ; 
     sdevice::Visible(visible_devices, dirpath, nosave );  
 
@@ -86,23 +78,4 @@ inline std::string scontext::brief() const
 {
     return sdevice::Brief(visible_devices) ; 
 }
-
-
-inline scontext* scontext::Get()
-{
-    return INSTANCE ; 
-}
-inline std::string scontext::Desc() 
-{
-    return INSTANCE ? INSTANCE->desc() : "-" ; 
-}
-inline std::string scontext::Brief() 
-{
-    return INSTANCE ? INSTANCE->brief() : "-" ; 
-}
-
-
-
-
-
 

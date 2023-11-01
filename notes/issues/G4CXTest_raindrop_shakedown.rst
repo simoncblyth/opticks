@@ -1,10 +1,13 @@
 G4CXTest_raindrop_shakedown
-=============================
+============================
 
 ::
 
     ~/opticks/g4cx/tests/G4CXTest_raindrop.sh
 
+
+FIXED : A/B discrep issue
+--------------------------
 
 A : Opticks is scattering and absorbing 
 B : Geant4 is not scattering and absorbing  
@@ -108,16 +111,30 @@ Steps to debug
 2. PIDX debug 
 
 
-Issue 2 : lack of metadata re GPU in use etc..
------------------------------------------------
+Issue 2 : FIXED : lack of metadata re GPU in use etc..
+-------------------------------------------------------
+
+Added SSim::getGPUMeta info to SEvt NPFold_meta.txt::
+
+    epsilon:p001 blyth$ cat NPFold_meta.txt
+    source:G4CXOpticks::init_SEvt
+    creator:G4CXTest
+    stamp:1698844817482513
+    stampFmt:2023-11-01T21:20:17.482513
+    uname:Linux localhost.localdomain 3.10.0-957.10.1.el7.x86_64 #1 SMP Mon Mar 18 15:06:45 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+    HOME:/home/blyth
+    USER:blyth
+    PWD:/data/blyth/junotop/opticks/g4cx/tests
+    VERSION:0
+    GEOM:RaindropRockAirWater
+    ${GEOM}_GEOMList:RaindropRockAirWater_GEOMList
+    GPUMeta:0:TITAN_V 1:TITAN_RTX
+    C4Version:0.1.9
+    epsilon:p001 blyth$ 
 
 
-
-
-
-
-Issue 1 : very different A/B histories as if different material props OR physics
------------------------------------------------------------------------------------
+Issue 1 : FIXED : very different A/B histories as if different material props OR physics
+------------------------------------------------------------------------------------------
 
 ::
 
@@ -155,6 +172,18 @@ Issue 1 : very different A/B histories as if different material props OR physics
      ['20' 'TO BR AB                     ' '20' '     6      0' ' 0.0000' '184076     -1']
      ['21' 'TO BT SC BR BT SA            ' '21' '     5      0' ' 0.0000' ' 10048     -1']
      ['22' 'TO BT BR BT SC SA            ' '22' '     4      0' ' 0.0000' ' 76929     -1']
+
+
+
+Issue 1A : HUH on workstation : get wrong p-value : NEED TO INSTALL scipy THERE 
+---------------------------------------------------------------------------------
+
+::
+
+    QCF qcf :  
+    a.q 1000000 b.q 1000000 lim slice(None, None, None) 
+    c2sum :    16.7315 c2n :    10.0000 c2per:     1.6732  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  16.73/10:1.673 (30) pv[1.00,> 0.05 : null-hyp ] 
 
 
 

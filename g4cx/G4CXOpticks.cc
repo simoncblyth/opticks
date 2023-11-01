@@ -404,10 +404,14 @@ void G4CXOpticks::init_SEvt()
     sev->setGeo((SGeo*)fd);   
     smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
 
+    std::string gm = sim->getGPUMeta() ; 
+    sev->setMeta("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
 #ifdef WITH_CUSTOM4
-    NP::SetMeta<std::string>(sev->meta, "C4Version", C4Version::Version() ); 
+    std::string c4 = C4Version::Version();
+    sev->setMeta("C4Version", c4.c_str()); 
 #else
-    NP::SetMeta<std::string>(sev->meta, "C4Version", "NOT-WITH_CUSTOM4" ); 
+    sev->setMeta("C4Version", "NOT-WITH_CUSTOM4" ); 
 #endif
 
 }

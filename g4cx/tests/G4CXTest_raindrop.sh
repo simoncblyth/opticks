@@ -33,6 +33,10 @@ export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 
+if [ -n "$CVD" ]; then 
+    export CUDA_VISIBLE_DEVICES=$CVD
+fi
+
 
 #num=1000
 #num=5000
@@ -89,7 +93,7 @@ defarg="info_run_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD evtfold" 
+vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD evtfold CVD CUDA_VISIBLE_DEVICES" 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

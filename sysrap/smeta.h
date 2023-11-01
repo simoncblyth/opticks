@@ -16,6 +16,8 @@ BASH_SOURCE fails to export
 struct smeta
 {
     static constexpr const char* VARS = R"( 
+CVD
+CUDA_VISIBLE_DEVICES
 HOME
 USER
 SCRIPT

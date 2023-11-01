@@ -1048,7 +1048,9 @@ double CSGOptiX::render( const char* stem_ )
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
-    const char* extra = SSim::GetContextBrief();  // scontext::brief giving GPU name 
+    std::string _extra = SSim::GetGPUMeta();  // scontext::brief giving GPU name 
+    const char* extra = strdup(_extra.c_str()) ;  
+
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 
 
@@ -1163,9 +1165,8 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
         js["cfmeta"] = foundry->meta ; 
     }
 
-
-    const char* extra = SSim::GetContextBrief(); 
-    js["scontext"] = extra ? extra : "-" ; 
+    std::string extra = SSim::GetGPUMeta(); 
+    js["scontext"] = extra.empty() ? "-" : strdup(extra.c_str()) ; 
 
     const std::vector<double>& t = launch_times ;
     if( t.size() > 0 )

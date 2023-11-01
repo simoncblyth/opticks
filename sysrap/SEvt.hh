@@ -305,8 +305,9 @@ public:
 
     template<typename T>
     static void SetRunMeta(const char* k, T v ); 
-
     static void SaveRunMeta(const char* base=nullptr ); 
+
+    void setMeta(const char* k, const char* v); 
 
     void beginOfEvent(int eventID); 
     void endOfEvent(int eventID); 

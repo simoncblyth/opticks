@@ -57,10 +57,8 @@ struct SYSRAP_API SSim
  
     static SSim* INSTANCE ; 
     static SSim* Get(); 
-    static scontext* GetContext(); 
-    static const char* GetContextBrief(); 
     static SSim* CreateOrReuse(); 
-
+ 
     static void  AddExtraSubfold(const char* k, const char* dir ); 
     static void  AddExtraSubfold(const char* k, NPFold* f); 
 
@@ -73,6 +71,8 @@ struct SYSRAP_API SSim
     static SSim* Load_(const char* dir); 
     static SSim* Load(const char* base, const char* reldir=RELDIR ); 
 
+    static std::string GetGPUMeta();
+    std::string getGPUMeta() const ; 
 private:
     SSim(); 
     void init(); 

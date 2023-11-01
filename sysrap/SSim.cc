@@ -25,15 +25,7 @@ const int SSim::stree_level = ssys::getenvint("SSim__stree_level", 0) ;
 SSim* SSim::INSTANCE = nullptr ; 
 
 SSim* SSim::Get(){ return INSTANCE ; }
-scontext* SSim::GetContext(){ return INSTANCE ? INSTANCE->sctx : nullptr ; }
 
-const char* SSim::GetContextBrief() // static 
-{
-    scontext* sctx = GetContext(); 
-    std::string sctx_brief = sctx ? sctx->Brief() : "no-sctx" ; 
-    const char* extra = sctx_brief.c_str() ; 
-    return strdup(extra) ; 
-}
 
 SSim* SSim::CreateOrReuse()
 { 
@@ -128,6 +120,17 @@ SSim* SSim::Load(const char* base, const char* reldir)
     SSim* sim = new SSim ; 
     sim->load(base, reldir);  
     return sim ; 
+}
+
+std::string SSim::GetGPUMeta() // static 
+{
+    SSim* ss = Get(); 
+    return ss ? ss->getGPUMeta() : "ERR-NO-SSim" ; 
+}
+std::string SSim::getGPUMeta() const 
+{
+    std::string meta = sctx ? sctx->brief() : "no-sctx" ; 
+    return meta ; 
 }
 
 SSim::SSim()

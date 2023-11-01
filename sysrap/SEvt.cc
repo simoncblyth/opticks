@@ -30,6 +30,7 @@
 #include "SGeo.hh"
 #include "SEvt.hh"
 #include "SEvent.hh"
+#include "SSim.hh"
 #include "SEventConfig.hh"
 #include "SFrameGenstep.hh"
 #include "SOpticksResource.hh"
@@ -1143,6 +1144,8 @@ template void SEvt::SetRunMeta<uint64_t>( const char*, uint64_t  );
 template void SEvt::SetRunMeta<unsigned>( const char*, unsigned  );
 template void SEvt::SetRunMeta<float>(    const char*, float  );
 template void SEvt::SetRunMeta<double>(   const char*, double  );
+template void SEvt::SetRunMeta<std::string>( const char*, std::string  );
+
 
 
 /**
@@ -1157,13 +1160,19 @@ void SEvt::SaveRunMeta(const char* base)
 {
     SetRunMeta<uint64_t>("T_BeginOfRun", T_BeginOfRun ); 
     SetRunMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  
+
+    // SetRunMeta<std::string>("GPUMeta",  SSim::GetGPUMeta() );  
+    // HMM: BETTER TO KEEP GPUMeta IN SEvt NPFold_meta.txt 
+    // AS OTHER SUCH INFO IS THERE AND ITS ONLY APPROPRIATE FOR EGPU SEvt 
+
     const char* dir = RunDir(base); 
     RUN_META->save(dir, "run.npy") ; 
 }
 
-
-
-
+void SEvt::setMeta(const char* k, const char* v)
+{
+    NP::SetMeta<std::string>(meta, k, v ); 
+} 
 
 
 /**
