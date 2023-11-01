@@ -383,9 +383,9 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     // try moving this later, so can save things from cx and qs for debug purposes
     if( setGeometry_saveGeometry != nullptr )
     {
-        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
+        LOG(info) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
         saveGeometry(setGeometry_saveGeometry); 
-        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
+        LOG(info) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
 }
 
@@ -578,34 +578,7 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );  // world 
     if(fd) fd->save(dir) ; 
-
-#ifdef WITH_GGEO
-    if(gg)
-    {
-        if(saveGeometry_saveGGeo)
-        {
-            gg->save_to_dir(dir) ;   
-        } 
-        else
-        {
-            LOG(error) 
-               << "skipped saving GGeo, enable with :"  << std::endl 
-               << "export G4CXOpticks__saveGeometry_saveGGeo=1 "
-               ; 
-        }
-    }
-#endif
-
-
-    if(cx) 
-    {
-        cx->save(dir) ; 
-    }
-    else
-    {
-        LOG(LEVEL) << " cx null " ; 
-    }
-
+    //if(cx) cx->save(dir);  // debug serialization of OptixInstance that was never used 
 
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }
@@ -617,10 +590,10 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
 G4CXOpticks::SaveGeometry
 ----------------------------
 
-Saving geometry with this method requires:
+Saving geometry with this method requires BOTH:
 
-1. invoking the method from your Opticks integration code, call must be after SetGeometry 
-2. define envvar configuring the directory to save into, eg::
+1. invoking this method from your Opticks integration code, call must be after SetGeometry 
+2. have defined the below envvar configuring the directory to save into, conventionally::
 
    export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM  
 

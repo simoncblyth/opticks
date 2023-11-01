@@ -86,6 +86,9 @@ GEOM ss
 GEOM st
      change directory to : \$GEOM/CSGFoundry/SSim/stree
 
+GEOM std
+     change directory to : \$GEOM/CSGFoundry/SSim/stree/standard
+
 
 GEOM origin
      vim -R origin.gdml on top dir 
@@ -114,7 +117,7 @@ GEOM(){
   base=.opticks/GEOM/$GEOM
 
 
-  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/cf/ss/st/info"
+  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/cf/ss/st/std/info"
   local geombase=$HOME/.opticks/GEOM
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
@@ -147,6 +150,8 @@ GEOM(){
      cmd="cd $geomdir/CSGFoundry/SSim"
   elif [ "$arg" == "st" ]; then  
      cmd="cd $geomdir/CSGFoundry/SSim/stree"
+  elif [ "$arg" == "std" ]; then  
+     cmd="cd $geomdir/CSGFoundry/SSim/stree/standard"
   elif [ "$arg" == "origin" ]; then  
      cmd="cd $geomdir ; vim -R origin.gdml"
   elif [ "$arg" == "help" ]; then  

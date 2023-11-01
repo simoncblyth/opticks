@@ -14,6 +14,15 @@ requires access to optical surface type,
 if not already present need to add metadata 
 to the surface NPFold/NP to carry that info.   
 
+
+Nov 1 2023 : Increase default ABSLENGTH RAYLEIGH 1e6 -> 1e12 mm 
+------------------------------------------------------------------
+
+Increase default ABSLENGTH RAYLEIGH from 1e6 to 1e12
+due to notes/issues/G4CXTest_raindrop_shakedown.rst
+This is relevant to simple tests where it is common 
+not to define ABSLENGTH and RAYLEIGH properties. 
+
 **/
 
 #include "sprop.h"
@@ -22,8 +31,8 @@ struct sproplist
 {
     static constexpr const char* MATERIAL = R"(
     0 0 RINDEX          1
-    0 1 ABSLENGTH       1e6
-    0 2 RAYLEIGH        1e6
+    0 1 ABSLENGTH       1e12
+    0 2 RAYLEIGH        1e12
     0 3 REEMISSIONPROB  0.
     1 0 GROUPVEL        299.792458
     1 1 SPARE11         0.

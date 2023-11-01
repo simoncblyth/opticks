@@ -145,6 +145,7 @@ class SEvt(object):
         rr = np.array(rr_, dtype=np.uint64 )
 
         self.rr = rr   # T_BeginOfRun, T_EndOfRun
+        self.run_meta = run_meta
 
         qwns = ["FAKES_SKIP",]
         for qwn in qwns:

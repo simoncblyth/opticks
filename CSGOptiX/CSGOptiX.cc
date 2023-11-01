@@ -1197,12 +1197,16 @@ const NP* CSGOptiX::getIAS_Instances(unsigned ias_idx) const
 CSGOptiX::save
 ----------------
 
-For debug only 
+For debug only  : saves serialized OptixInstances 
+seems these were never used for anything. 
+See IAS_Builder::Serialize
 
 **/
 
 void CSGOptiX::save(const char* dir) const
 {
+    assert(0); 
+
     LOG(LEVEL) << "[ dir " << ( dir ? dir : "-" ) ; 
     const NP* instances = getIAS_Instances(0) ; 
     if(instances) instances->save(dir, RELDIR, "instances.npy") ;  

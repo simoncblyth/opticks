@@ -185,6 +185,7 @@ G4VPhysicalVolume* G4CXApp::Construct()
     {
         LOG(LEVEL) << " skip passing geometry to opticks " ; 
     }
+    G4CXOpticks::SaveGeometry() ; 
 
     return pv ; 
 }  

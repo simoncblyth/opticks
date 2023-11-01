@@ -21,6 +21,7 @@ EOU
 }
 
 cd $(dirname $BASH_SOURCE)
+DIR=$(pwd)
 
 bin=G4CXTest
 script=G4CXTest_raindrop.py 
@@ -30,36 +31,35 @@ export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,1,1.333
 export U4VolumeMaker_RaindropRockAirWater_MATS=G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 
+export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
+
 
 #num=1000
+#num=5000
 num=1000000
+NUM=${NUM:-$num}
 
-export SEvent_MakeGensteps_num_ph=$num
+export SEvent_MakeGensteps_num_ph=$NUM
 
 #src="rectangle"
 src="disc"
 
 if [ "$src" == "rectangle" ]; then
-
     export storch_FillGenstep_pos=0,0,0
     export storch_FillGenstep_type=rectangle
     export storch_FillGenstep_zenith=-20,20
     export storch_FillGenstep_azimuth=-20,20
-
 elif [ "$src" == "disc" ]; then
-
     export storch_FillGenstep_type=disc
     export storch_FillGenstep_radius=50        # radius
     export storch_FillGenstep_zenith=0,1       # radial range scale
     export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction 
     export storch_FillGenstep_mom=1,0,0
     export storch_FillGenstep_pos=-80,0,0
-
 fi 
 
-#export storch_FillGenstep_radius=20
 
-oim=2  # CPU only 
+#oim=2  # CPU only 
 oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=$oim 
 export OPTICKS_EVENT_MODE=StandardFullDebug   # configure saving more details
@@ -67,10 +67,12 @@ export OPTICKS_EVENT_MODE=StandardFullDebug   # configure saving more details
 # below directories match those used by SEvt saving 
 # in order to be able to load SEvt into python analysis script
 # 
-tmp=/tmp/$USER/opticks
+tmpbase=${TMP:-/tmp/$USER/opticks} 
+evtfold=$tmpbase/GEOM/$GEOM
+
 export VERSION=0  # used in the SEvt output directory 
-export AFOLD=${TMP:-$tmp}/GEOM/$GEOM/$bin/ALL$VERSION/p001 
-export BFOLD=${TMP:-$tmp}/GEOM/$GEOM/$bin/ALL$VERSION/n001 
+export AFOLD=$evtfold/$bin/ALL$VERSION/p001 
+export BFOLD=$evtfold/$bin/ALL$VERSION/n001 
 
 
 logging()
@@ -87,7 +89,7 @@ defarg="info_run_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD" 
+vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD evtfold" 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -106,9 +108,14 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 
+if [ "${arg/grab}" != "$arg" ]; then
+    source $DIR/../../bin/rsync.sh $evtfold
+    [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
+fi
+
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script 
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error with script $script && exit 3 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error with script $script && exit 4
 fi 
 
 exit 0 

@@ -169,6 +169,10 @@ sstandard::deferred_init
 NB deferred init called from stree::initStandard 
 after mat and sur have been filled. 
 
+* standard->mat is populated by U4Tree::initMaterials 
+  using U4Material::MakeStandardArray
+
+
 **/
 
 inline void sstandard::deferred_init(
