@@ -85,7 +85,7 @@ fi
 
 
 cvd=0
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
 
 

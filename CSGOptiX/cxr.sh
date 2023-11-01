@@ -68,7 +68,7 @@ sizescale=1.5
 
 # [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop : BUT are usually just grabbing from remote
 
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}    # CVD to CUDA_VISIBLE_DEVICES with SCVD.h no longer working 
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
 
 export EMM=${EMM:-$emm}    # -e 

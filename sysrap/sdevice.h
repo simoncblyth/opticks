@@ -6,6 +6,15 @@ sdevice.h
 
 Simplified version of the former cudarap/CDevice.cu 
 
+To select the GPU need to use CUDA_VISIBLE_DEVICES 
+and metadata recording is handled with sdevice.h scontext.h 
+
+* scontext.h needs updating to handle updated sdevice.h and 
+  metadata from scontext needs to be included into the SEvt run metadata 
+
+* running sysrap/tests/sdevice_test.sh without CUDA_VISIBLE_DEVICES
+  defined persists info on all GPUs into ~/.opticks/runcache/sdevice.bin
+
 **/
 
 #include <cstddef>
@@ -119,8 +128,16 @@ sdevice::Collect
 Use CUDA API to collect a summary of the cudaDeviceProp properties 
 regarding all attached devices into the vector of sdevice argument.
 
-When ordinal_from_index=true the sdevice.ordinal value is taken 
-from the index in the order returned by cudaGetDeviceProperties(&p, i)
+ordinal_from_index:true
+    sdevice.ordinal value is taken from the index corresponding to the ordering 
+    of devices returned by cudaGetDeviceProperties(&p, i) : this 
+    is used by sdevice::Visible when when no CUDA_VISIBLE_DEVICES envvar
+    is defined
+
+ordinal_from_index:false
+    sdevice.ordinal is set to initial placeholder -1 : sdevice::Visible 
+    however when CUDA_VISIBLE_DEVICES envvar is defined sets the ordinal
+    by matching device properties with the persisted list of all of them  
 
 **/
 
@@ -336,7 +353,13 @@ std::string sdevice::Path(const char* dirpath)
     return ss.str(); 
 }
 
+/**
+sdevice::Save
+--------------
 
+All sdevice struct from the vector are written into a single file
+
+**/
 
 void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
 {
@@ -361,6 +384,16 @@ void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
         d.write(out);   
     }
 }
+
+/**
+sdevice::Load
+---------------
+
+The sdevice struct vector is populated by reading 
+from the single file until reaching EOF. 
+
+**/
+
 
 void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
 {

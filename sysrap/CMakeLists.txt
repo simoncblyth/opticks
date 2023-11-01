@@ -387,7 +387,6 @@ set(HEADERS
     SGLM.h
     SGLFW.h
     SDir.h
-    SCVD.h
     SRG.h
     SCAM.h
     SBAS.h

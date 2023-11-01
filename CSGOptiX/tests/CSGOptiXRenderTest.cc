@@ -32,7 +32,6 @@ CFBASE
 #include <cstdlib>
 #include <csignal>
 
-//#include "SCVD.h"
 #include "scontext.h"
 
 #include "SPath.hh"

@@ -3,25 +3,27 @@
 scontext.h
 ============
 
-Looks like everything now done in sdevice.h 
-plus SCVD.h no longer working 
 
-TODO: remove SCVD.h 
 TODO: update this scontext.h for sdevice.h doing most of the task... 
       scontext.h can just hold onto the vectors of sdevice structs 
+
+
+Formerly used SCVD.h to promote "CVD" into "CUDA_VISIBLE_DEVICES" 
+in code in order to have more control over visible GPUs. 
+However find that approach no longer impacts CUDA. 
+Perhaps following a CUDA version/runtime/driver update the 
+CUDA_VISIBLE_DEVICES envvar is read earlier than previously. 
 
 ::
 
     ./CSGOptiX/tests/CSGOptiXRenderTest.cc:#include "scontext.h"
     ./sysrap/CMakeLists.txt:    scontext.h
     ./sysrap/tests/scontext_test.cc:#include "scontext.h"
-    ./sysrap/scontext.h:TODO: remove SCVD.h and scontext.h 
     ./sysrap/SSim.cc:#include "scontext.h"
 
 **/
 
 #include "sdevice.h"
-#include "SCVD.h"
 
 struct scontext
 {
@@ -51,11 +53,6 @@ scontext* scontext::INSTANCE = nullptr ;
 inline scontext::scontext()
 {
     INSTANCE = this ; 
-
-    //SCVD::ConfigureVisibleDevices();  
-    // Seems the CVD->CUDA_VISIBLE_DEVICES promotion in code no longer impacts CUDA.
-    // Perhaps the CUDA runtime/driver is reading the CUDA_VISIBLE_DEVICES envvar earlier ?
-    // Before this sets it. 
 
 
     if(VERBOSE) std::cout << "[scontext::scontext" << std::endl ; 

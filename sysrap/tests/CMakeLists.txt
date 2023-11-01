@@ -114,7 +114,6 @@ set(TEST_SOURCES
    SFrameConfigTest.cc
    SGeoConfigTest.cc
 
-   SCVDLabel.cc 
 
    SEvtTest.cc
    SEvtLoadTest.cc

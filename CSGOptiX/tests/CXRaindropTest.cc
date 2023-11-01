@@ -7,7 +7,6 @@ CXRaindropTest : Used from cxs_raindrop.sh
 #include <cuda_runtime.h>
 
 #include "OPTICKS_LOG.hh"
-#include "SCVD.h"
 #include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -18,7 +17,6 @@ CXRaindropTest : Used from cxs_raindrop.sh
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    SCVD::ConfigureVisibleDevices(); 
 
     SEventConfig::SetRGMode("simulate"); 
     SEventConfig::SetStandardFullDebug(); 
