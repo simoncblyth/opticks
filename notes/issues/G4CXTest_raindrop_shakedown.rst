@@ -26,9 +26,11 @@ B : Geant4 is not scattering and absorbing
   * recall that when no property is available Opticks adopts 
     some large values for scattering and absorption length
 
+    * YEP : defaults in sproplist.h 
+
   * the issue only becomes apparent with large (1M level) stats 
 
-  * TODO : confirm this and increase the defaults hugely 
+  * DONE : confirmed this and increased defaults hugely 
     to match Geant4 in anything but insane stats
 
 
@@ -98,15 +100,21 @@ Default scattering and absorption length of 1e6 mm is too small
 
 
 
+
 Steps to debug
 ----------------
 
-1. persist GEOM to file and peruse 
+1. DONE : persist GEOM to file and peruse 
 2. PIDX debug 
 
 
 Issue 2 : lack of metadata re GPU in use etc..
 -----------------------------------------------
+
+
+
+
+
 
 Issue 1 : very different A/B histories as if different material props OR physics
 -----------------------------------------------------------------------------------
@@ -148,5 +156,46 @@ Issue 1 : very different A/B histories as if different material props OR physics
      ['21' 'TO BT SC BR BT SA            ' '21' '     5      0' ' 0.0000' ' 10048     -1']
      ['22' 'TO BT BR BT SC SA            ' '22' '     4      0' ' 0.0000' ' 76929     -1']
 
+
+
+Issue 1 : FIXED : After upping the defaults : chi2 not brilliant : BUT null-hyp consistent
+--------------------------------------------------------------------------------------------------
+
+::
+
+    QCF qcf :  
+    a.q 1000000 b.q 1000000 lim slice(None, None, None) 
+    c2sum :    16.7315 c2n :    10.0000 c2per:     1.6732  C2CUT:   30 
+    c2sum/c2n:c2per(C2CUT)  16.73/10:1.673 (30) pv[0.08,> 0.05 : null-hyp ] 
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][0:40]  ## A-B history frequency chi2 comparison 
+    [[' 0' 'TO BT BT SA                  ' ' 0' '880064 879870' ' 0.0214' '     0      0']
+     [' 1' 'TO BR SA                     ' ' 1' ' 66771  67104' ' 0.8283' '    62     53']
+     [' 2' 'TO BT BR BT SA               ' ' 2' ' 45166  44838' ' 1.1953' '     1      2']
+     [' 3' 'TO BT BR BR BT SA            ' ' 3' '  5476   5580' ' 0.9783' '   345    344']
+     [' 4' 'TO BT BR BR BR BT SA         ' ' 4' '  1360   1494' ' 6.2915' '  4471    358']
+     [' 5' 'TO BT BR BR BR BR BT SA      ' ' 5' '   536    557' ' 0.4035' '     3   1106']
+     [' 6' 'TO BT BR BR BR BR BR BT SA   ' ' 6' '   240    209' ' 2.1403' '  5689   5331']
+     [' 7' 'TO BT BR BR BR BR BR BR BR BR' ' 7' '   173    147' ' 2.1125' '  3145    896']
+     [' 8' 'TO BT BR BR BR BR BR BR BT SA' ' 8' '   115    123' ' 0.2689' '  3602   1783']
+     [' 9' 'TO BT BR BR BR BR BR BR BR BT' ' 9' '    99     78' ' 2.4915' ' 13398   1424']]
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][bzero]  ## in A but not B 
+    []
+
+    np.c_[siq,_quo,siq,sabo2,sc2,sabo1][azero]  ## in B but not A 
+    []
+
+
+
+See ana/nbase.py::
+
+    In [1]: from scipy.stats import chi2 as _chi2
+
+    In [3]: _chi2.cdf( 16.73, 10 )   ## 
+    Out[3]: 0.919444001345491
+
+    In [4]: 1 - _chi2.cdf( 16.73, 10 )
+    Out[4]: 0.08055599865450902
 
 

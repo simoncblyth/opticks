@@ -6,7 +6,7 @@ qcf.py
 
 """
 import os, logging, numpy as np
-from opticks.ana.nbase import chi2
+from opticks.ana.nbase import chi2, chi2_pvalue
 log = logging.getLogger(__name__)
 
 class QU(object):
@@ -109,8 +109,18 @@ class QCF(object):
         c2,c2n,c2c = chi2( abo[:,2,0], abo[:,2,1], cut=c2cut )
         c2sum = c2.sum()
         c2per = c2sum/c2n
-        c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d)" % ( c2sum, int(c2n), c2per, c2cut )
+
+        c2pv = chi2_pvalue( c2sum, int(c2n) )
+        c2pvm = "> 0.05 : null-hyp " if c2pv > 0.05 else "< 0.05 : NOT:null-hyp "  
+        c2pvd = "pv[%3.2f,%s] " % (c2pv, c2pvm)
+        # null-hyp consistent means there is no significant difference between 
+        # the frequency counts in the A and B samples at a certain confidence
+        # level (normally 5%) 
+        
+        c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d) %s" % ( c2sum, int(c2n), c2per, c2cut, c2pvd )
         c2label = "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut )
+
+
 
         self._aq = _aq
         self._bq = _bq

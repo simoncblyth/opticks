@@ -8,6 +8,7 @@ G4CXTest_raindrop.py
 import os, logging, textwrap, numpy as np
 from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt, SAB
+from opticks.ana.nbase import chi2_pvalue
 
 MODE = int(os.environ.get("MODE","3"))
 PICK = os.environ.get("PICK","A")

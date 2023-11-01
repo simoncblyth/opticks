@@ -209,11 +209,35 @@ def chi2_pvalue( c2obs, ndf ):
     :param ndf: 
     :return pvalue:  1 - _chi2.cdf(c2obs, ndf) 
 
+    * https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html
+
+    For ndf:10 you want to know if a chi2 value of 18.307
+    should be regarded as consistent with a null hypothesis.
+    By looking at the probability that the chi2 where more than 
+    that::
+
+        In [2]: from scipy.stats import chi2 as _chi2
+        In [27]: 1 - _chi2.cdf(18.307, 10)  ## chi2 of 18.307 for ndf:10 : on the edge of being significant deviation
+        Out[27]: 0.05000058909139815
+
+        In [4]: 1-_chi2.cdf(20, 10 )   ## chi2 of 20 for ndf:10 : regarded as significant deviation from null 
+        Out[4]: 0.02925268807696113
+
+    A p-value of less than or equal to 0.05 is regarded as evidence of a
+    statistically significant result, and in these cases, the null hypothesis
+    should be rejected in favor of the alternative hypothesis.
+
+
     # probability of getting a chi2 <= c2obs for the ndf 
 
     # https://onlinecourses.science.psu.edu/stat414/node/147
 
+    :google:`interpret chi2 values`
+
     ::
+
+
+        from scipy.stats import chi2 as _chi2
 
         In [49]: _chi2.cdf( 15.99, 10 )   ## for ndf 10, probability for chi2 < 15.99 is 0.900
         Out[49]: 0.90008098002000925
@@ -246,14 +270,60 @@ def chi2_pvalue( c2obs, ndf ):
 
         In [56]: _chi2.cdf( [3.94,4.87,6.18,7.27,9.34,11.78,13.44,15.99,18.31,23.21,29.59], 10 )
         Out[56]: array([ 0.05  ,  0.1003,  0.2001,  0.3003,  0.4998,  0.6999,  0.7999,  0.9001,  0.95  ,  0.99  ,  0.999 ])
+        ## probability of a chi2 value less than those values for ndf 10 
 
         In [57]: 1 - _chi2.cdf( [3.94,4.87,6.18,7.27,9.34,11.78,13.44,15.99,18.31,23.21,29.59], 10 )   ## P-value (Probability)
         Out[57]: array([ 0.95  ,  0.8997,  0.7999,  0.6997,  0.5002,  0.3001,  0.2001,  0.0999,  0.05  ,  0.01  ,  0.001 ])
+        ## probability of a chi2 greater than those values for ndf 10 
 
 
     * ~/opticks_refs/PoissonConsistency.pdf
     * http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf 
 
+    * https://www.scribbr.com/statistics/chi-square-distributions/
+    * https://www.scribbr.com/statistics/chi-square-tests/
+    * https://www.scribbr.com/statistics/chi-square-distribution-table/
+    * https://www.scribbr.com/wp-content/uploads/2022/05/Chi-square-table.pdf
+
+    In [20]: df = np.arange(1,31)
+
+    ## so called 5% critical values : to judge null hypotheses for different 
+    ## degrees of freedom 
+    ## Alternatively 
+
+    In [22]: df = np.arange(1,31)
+
+    In [23]: cr5 = _chi2.ppf( 0.95,df)
+
+    In [24]: _chi2.cdf( cr5 , df)
+    Out[24]: array([0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95])
+
+    In [25]: np.c_[df,cr5]
+    Out[25]: 
+    array([[ 1.   ,  3.841],
+           [ 2.   ,  5.991],
+           [ 3.   ,  7.815],
+           [ 4.   ,  9.488],
+           [ 5.   , 11.07 ],
+           [ 6.   , 12.592],
+           [ 7.   , 14.067],
+           [ 8.   , 15.507],
+           [ 9.   , 16.919],
+           [10.   , 18.307],
+           [11.   , 19.675],
+           [12.   , 21.026],
+           [13.   , 22.362],
+           [14.   , 23.685],
+           [15.   , 24.996],
+           [16.   , 26.296],
+           [17.   , 27.587],
+
+
+    * https://www.nevis.columbia.edu/~seligman/root-class/html/appendix/statistics/ChiSquaredDOF.html
+
+    Chi2 critical values
+
+    * https://www.itl.nist.gov/div898/handbook/eda/section3/eda3674.htm
 
     """
     if _chi2 is None:
