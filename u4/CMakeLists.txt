@@ -162,11 +162,12 @@ target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )
 
-target_compile_definitions( ${name} PRIVATE OPTICKS_U4 )
+target_compile_definitions( ${name} PUBLIC OPTICKS_U4 ) # THIS MUST BE PUBLIC FOR SLOG-ING TO WORK FULLY 
+
 target_compile_definitions( ${name} PRIVATE G4USE_STD11 ) 
 target_compile_definitions( ${name} PRIVATE STANDALONE ) 
 target_compile_definitions( ${name} PRIVATE DEBUG_TAG ) 
-target_compile_definitions( ${name} PRIVATE U4Recorder_DEBUG )
+#target_compile_definitions( ${name} PRIVATE U4Recorder_DEBUG )
 
 
 if(Custom4_FOUND)

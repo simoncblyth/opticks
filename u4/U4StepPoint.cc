@@ -18,6 +18,7 @@
 #include "U4StepStatus.h"
 #include "U4OpBoundaryProcess.h"
 #include "U4OpBoundaryProcessStatus.h"
+#include "U4Physics.hh"
 #include "U4StepPoint.hh"
 
 
@@ -163,12 +164,28 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn)
     else if( status == fGeomBoundary && proc == U4StepPoint_Transportation )
     {
         unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
+        T* proc = U4OpBoundaryProcess::Get<T>(); 
+
+        LOG_IF( error, bstat == Undefined )
+            << " U4OpBoundaryProcess::GetStatus<T>() : Undefined "
+            << std::endl 
+            << " U4OpBoundaryProcess::Get<T>() " << ( proc ? "YES" : "NO " )
+            << std::endl 
+            << " U4Physics::Switches() " 
+            << std::endl 
+            << U4Physics::Switches()
+            ;
 
         flag = BoundaryFlag(bstat) ;   // BT BR NA SA SD SR DR 
-        LOG_IF(LEVEL, flag == NAN_ABORT ) 
-            << " fGeomBoundary " 
-            << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
-            << " flag " << OpticksPhoton::Flag(flag)
+
+        LOG_IF(error, flag == 0 )   // NAN_ABORT are common from StepTooSmall
+            << " UNEXPECTED BoundaryFlag ZERO  " 
+            << std::endl 
+            << " flag " << flag 
+            << " OpticksPhoton::Flag(flag) " << OpticksPhoton::Flag(flag)
+            << std::endl 
+            << " bstat " << bstat  
+            << " U4OpBoundaryProcessStatus::Name(bstat) " << U4OpBoundaryProcessStatus::Name(bstat)
             ;
     }
     else if( status == fGeomBoundary && proc == U4StepPoint_OpFastSim )

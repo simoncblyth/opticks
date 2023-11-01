@@ -342,10 +342,7 @@ HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-    //std::cout << "[ U4Recorder::PreUserTrackingAction_Optical " << std::endl ;
     LOG(LEVEL) << "[" ; 
-    LOG(info) << "[" ; 
-    // HUH: this logging not appearing 
 
     G4Track* _track = const_cast<G4Track*>(track) ; 
     _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
@@ -358,7 +355,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     if(skip) return ; 
 
     bool modulo = ulabel.id % 1000 == 0  ;  
-    LOG_IF(info, modulo) << " modulo : ulabel.id " << ulabel.id ; 
+    LOG_IF(info, modulo) << " modulo 1000 : ulabel.id " << ulabel.id ; 
 
     U4Random::SetSequenceIndex(ulabel.id); 
 
@@ -398,7 +395,6 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         }
     }
     LOG(LEVEL) << "]" ; 
-    LOG(info) << "]" ; 
     //std::cout << "] U4Recorder::PreUserTrackingAction_Optical " << std::endl ;
 }
 
@@ -836,11 +832,13 @@ A: HMM: Perhaps if CustomG4OpBoundary process inherited from G4OpBoundaryProcess
    Prefer simplicity. 
 
 
-Logging issue with templated methods ? 
----------------------------------------
+FIXED : Logging issue with U4 
+------------------------------
 
-Somehow getting PLOG logging from this templated method to 
-appear us problematic, so resorted to preprocessor macro. 
+Somehow SLOG-logging from U4 had stopped appearing. 
+Turned out this was caused by the OPTICKS_U4 switch 
+being accidentally flipped to PRIVATE in CMakeLists.txt
+: that must stay PUBLIC for SLOG to work.  
 
 **/
 
@@ -851,9 +849,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     G4VPhysicalVolume* pv = track->GetVolume() ; 
     const G4VTouchable* touch = track->GetTouchable();  
 
-#ifdef U4Recorder_DEBUG
-    std::cout << "U4Recorder::UserSteppingAction_Optical [ pv " << ( pv ? pv->GetName() : "-" ) << std::endl ; 
-#endif
+    LOG(LEVEL) << "[  pv "  << ( pv ? pv->GetName() : "-" ) ; 
 
     spho ulabel = {} ; 
     GetLabel( ulabel, track ); 
@@ -876,9 +872,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool first_flag = current_photon.flagmask_count() == 1 ;  
     if(first_flag)
     { 
-#ifdef U4Recorder_DEBUG
-        std::cout << "U4Recorder::UserSteppingAction_Optical first_flag, track " << track << std::endl   ; 
-#endif
+        LOG(LEVEL) << " first_flag, track " << track ; 
         U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
         current_aux.q1.i.w = int('F') ; 
         sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
@@ -905,21 +899,14 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
               :  
               U4Touchable::AncestorReplicaNumber(touch) 
               ;  
-    
 
-
-
-#ifdef U4Recorder_DEBUG
-        std::cout 
-        << "U4Recorder::UserSteppingAction_Optical"
+    LOG(LEVEL)
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
         << " is_fastsim_flag " << is_fastsim_flag  
         << " is_boundary_flag " << is_boundary_flag  
         << " is_surface_flag " << is_surface_flag  
-        << std::endl
         ;
-#endif
 
     // DEFER_FSTRACKINFO : special flag signalling that 
     // the FastSim DoIt status needs to be accessed via the 
@@ -956,21 +943,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             ; 
     }
 
-    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::DescPositionTime(post) ; 
-    LOG_IF(error, flag == 0) << " ERR flag zero : post " << U4StepPoint::Desc<T>(post) ; 
-
-#ifdef U4Recorder_DEBUG
-    if(flag == 0 ) std::cout 
-        << "U4Recorder::UserSteppingAction_Optical"
-        << " ERR flag zero "
+    LOG_IF(error, flag == 0) 
+        << " ERR flag zero : post " 
         << std::endl 
-        << U4StepPoint::DescPositionTime(post)  
+        << "U4StepPoint::DescPositionTime(post)"
+        << std::endl 
+        << U4StepPoint::DescPositionTime(post) 
+        << std::endl 
+        << "U4StepPoint::Desc<T>(post)"
         << std::endl 
         << U4StepPoint::Desc<T>(post) 
-        << std::endl 
         ;
- 
-#endif
 
     assert( flag > 0 ); 
 

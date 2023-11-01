@@ -153,12 +153,23 @@ std::string U4Physics::Switches()  // static
     ss << "U4Physics::Switches" << std::endl ; 
 #if defined(WITH_CUSTOM4)
     ss << "WITH_CUSTOM4" << std::endl ; 
+#else
+    ss << "NOT:WITH_CUSTOM4" << std::endl ; 
 #endif
 #if defined(WITH_PMTSIM)
     ss << "WITH_PMTSIM" << std::endl ; 
+#else
+    ss << "NOT:WITH_PMTSIM" << std::endl ; 
+#endif
+#if defined(WITH_CUSTOM4) && defined(WITH_PMTSIM)
+    ss << "WITH_CUSTOM4_AND_WITH_PMTSIM" << std::endl ; 
+#else
+    ss << "NOT:WITH_CUSTOM4_AND_WITH_PMTSIM" << std::endl ; 
 #endif
 #if defined(DEBUG_TAG)
     ss << "DEBUG_TAG" << std::endl ; 
+#else
+    ss << "NOT:DEBUG_TAG" << std::endl ; 
 #endif
     std::string str = ss.str();
     return str ;
@@ -260,6 +271,17 @@ void U4Physics::ConstructOp()
         }
     }
 }
+
+
+/**
+U4Physics::CreateBoundaryProcess
+---------------------------------
+
+Looks like this needs updating now that it
+is normal to use WITH_CUSTOM4 within junosw+opticks
+without using WITH_PMTSIM
+
+**/
 
 G4VProcess* U4Physics::CreateBoundaryProcess()  // static 
 {

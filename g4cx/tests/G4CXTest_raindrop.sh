@@ -49,10 +49,12 @@ export BFOLD=${TMP:-$tmp}/GEOM/$GEOM/$bin/ALL$VERSION/n001
 logging()
 {
    export U4Recorder=INFO
-   export CSGFoundry=INFO
-   export CSGTarget=INFO
+   export U4StepPoint=INFO
+   export U4Physics=INFO
+   #export CSGFoundry=INFO
+   #export CSGTarget=INFO
 }
-#logging
+[ -n "$LOG" ] && logging
 
 defarg="info_run_ana"
 #defarg="info_dbg_ana"

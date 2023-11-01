@@ -116,7 +116,6 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND     : ${PMTSim_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND    : ${Custom4_FOUND}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTFastSim_FOUND : ${PMTFastSim_FOUND}")
 
 
 set(PMTSim_TESTS

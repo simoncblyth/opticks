@@ -2803,7 +2803,7 @@ u4t(){ cd $(opticks-home)/u4/tests ; pwd_ ; }
 c4(){ cd ~/customgeant4 ; git status ; }
 
 gx(){ cd $(opticks-home)/g4cx ; pwd_ ; }
-gxt(){ cd $(opticks-home)/g4cx/tests ; pwd_ ; }
+gxt(){ cd $(opticks-home)/g4cx/tests ; pwd_ ; ls -l *.sh ;  }
 gd(){ cd $(opticks-home)/gdxml ; pwd_ ; }
 gdt(){ cd $(opticks-home)/gdxml/tests ; pwd_ ; }
 
