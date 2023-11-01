@@ -7,6 +7,10 @@
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
 #include "PMTSimParamSvc/PMTAccessor.h"
+#elif defined(WITH_CUSTOM4) && !defined(WITH_PMTSIM)
+#include "G4OpBoundaryProcess.hh"
+#include "C4OpBoundaryProcess.hh"
+#include "U4PMTAccessor.h"
 #else
 #include "InstrumentedG4OpBoundaryProcess.hh"
 #endif
@@ -166,6 +170,13 @@ std::string U4Physics::Switches()  // static
 #else
     ss << "NOT:WITH_CUSTOM4_AND_WITH_PMTSIM" << std::endl ; 
 #endif
+
+#if defined(WITH_CUSTOM4) && !defined(WITH_PMTSIM)
+    ss << "WITH_CUSTOM4_AND_NOT_WITH_PMTSIM" << std::endl ; 
+#else
+    ss << "NOT:WITH_CUSTOM4_AND_NOT_WITH_PMTSIM" << std::endl ; 
+#endif
+
 #if defined(DEBUG_TAG)
     ss << "DEBUG_TAG" << std::endl ; 
 #else
@@ -297,7 +308,13 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     const C4IPMTAccessor* ipmt = pmt ;  
     proc = new C4OpBoundaryProcess(ipmt);
 
-    LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_PMTSIM and WITH_CUSTOM4 " ; 
+    LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 WITH_PMTSIM " ; 
+
+#elif defined(WITH_CUSTOM4)
+    const U4PMTAccessor* pmt = new U4PMTAccessor ;
+    const C4IPMTAccessor* ipmt = pmt ;  
+    proc = new C4OpBoundaryProcess(ipmt);
+    LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 NOT:WITH_PMTSIM " ; 
 #else
     proc = new InstrumentedG4OpBoundaryProcess();
     LOG(LEVEL) << "create InstrumentedG4OpBoundaryProcess : NOT (WITH_PMTSIM and WITH_CUSTOM4) " ; 

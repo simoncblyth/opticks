@@ -1,5 +1,5 @@
-U4Recorder_getting_zero_BoundaryFlag_when_CUSTOM4_enabled
-============================================================
+FIXED : U4Recorder_getting_zero_BoundaryFlag_when_CUSTOM4_enabled
+======================================================================
 
 Overview
 ---------
@@ -11,14 +11,28 @@ Overview
   when that is in fact not the case currently in the simple test 
 
 
+Solution : using u4/U4PMTAccessor.h from u4/U4Physics.cc
+-----------------------------------------------------------
 
 HMM: creating a fully featured C4OpBoundaryProcess needs the 
-PMTSimParamSvc/PMTAccessor.h that comes from PMTSim 
+PMTSimParamSvc/PMTAccessor.h that comes from PMTSim (or from junosw)
 as a sneaky way to use junosw functionality inside opticks 
 
 So how can I use the U4Recorder ? Note that the U4Physics 
 is only used in testing. 
 
+Try creating u4/U4PMTAccessor.h : a mock implementation of the protocol::
+
+     05 struct C4IPMTAccessor
+      6 {
+      7     virtual int    get_num_lpmt() const = 0 ;
+      8     virtual double get_pmtid_qe( int pmtid, double energy ) const = 0 ;
+      9     virtual double get_qescale( int pmtid ) const = 0 ;
+     10     virtual int    get_pmtcat( int pmtid  ) const = 0 ;
+     11     virtual void   get_stackspec( std::array<double, 16>& ss, int pmtcat, double energy_eV ) const = 0 ;
+     12     virtual const char* get_typename() const = 0 ;
+     13 
+     14 };
 
 
 Issue : U4Recorder getting zero flags at boundaries and tripping assert

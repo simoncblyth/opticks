@@ -13,8 +13,14 @@ Dont want to complexify C4. Solution is to get headeronly SLOG to work.
 #include "OPTICKS_LOG.hh"
 
 #ifdef WITH_CUSTOM4
+
+
 #include "C4OpBoundaryProcess.hh"
 #include "C4CustomART.h"
+
+// mock Accessor standin for junosw PMTAccessor
+#include "U4PMTAccessor.h"
+
 #endif
 
 int main(int argc, char** argv)
@@ -22,8 +28,9 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
 #ifdef WITH_CUSTOM4
-    C4IPMTAccessor* accessor = nullptr ; 
-    C4OpBoundaryProcess* proc = new C4OpBoundaryProcess(accessor) ;     
+    U4PMTAccessor* pmt = new U4PMTAccessor ; 
+    C4IPMTAccessor* ipmt = pmt ; 
+    C4OpBoundaryProcess* proc = new C4OpBoundaryProcess(pmt) ;     
     std::cout << " proc " << std::hex << proc << std::dec << std::endl ;
 #endif
 
