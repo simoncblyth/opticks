@@ -16,19 +16,22 @@ class STR(str):
         return str(self)
 
 
-def IsDudNPY(path):
+def IsEmptyNPY(path):
     """
-    Heuristic to detect dud .npy before trying to np.load them 
+    Heuristic to detect empty .npy before trying to np.load them 
+    BUT: why do that : as NumPy should do that justfine ? 
+
     Observe some pho0.npy with header only and no content ? 
+    Also the stree _names.npy sidecars are all empty.
     """
-    dud = False    
+    empty = False    
     with open(path, mode="rb") as fp:
         contents = fp.read()    
         if contents[0:6] == b'\x93NUMPY' and contents[-1:] == b'\n' and len(contents) == 128:
-            dud = True 
+            empty = True 
         pass
     pass
-    return dud
+    return empty
 
 
 def IsRemoteSession():
@@ -275,17 +278,18 @@ class Fold(object):
             if name == self.SFRAME:
                 a = sframe.Load(path)
             elif name.endswith(".npy"):
-                is_dud_npy = IsDudNPY(path)
+                is_empty_npy = IsEmptyNPY(path)
                 a = None
-                if is_dud_npy:
-                    print("fold.load detected dud .npy %s " % path )
-                else:
-                    try:
-                        a = np.load(path)
-                    except ValueError:
-                        print("fold.load error with np.load of %s " % path )
-                    pass
-                pass
+                a = np.load(path)
+                #if is_empty_npy:
+                #    print("fold.load detected empty .npy %s " % path )
+                #else:
+                #    try:
+                #        a = np.load(path)
+                #    except ValueError:
+                #        print("fold.load error with np.load of %s " % path )
+                #    pass
+                #pass
             elif name.endswith("_meta.txt"):
                 a = NPMeta.Load(path)
                 self.txts[name] = a 
