@@ -11,6 +11,12 @@ For the configuratuin of the raindrop see U4VolumeMaker::RaindropRockAirWater_Co
 Currently this uses the default torch genstep for the initial photons, 
 see storch::FillGenstep for how to customize that. 
 
+::
+
+    ~/opticks/g4cx/tests/G4CXTest_raindrop.sh
+
+    EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_raindrop.sh ana
+
 EOU
 }
 
@@ -24,12 +30,33 @@ export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,1,1.333
 export U4VolumeMaker_RaindropRockAirWater_MATS=G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 
-# adjust the default torch genstep position, see storch::FillGenstep
-export SEvent_MakeGensteps_num_ph=1000
-export storch_FillGenstep_pos=0,0,0
-export storch_FillGenstep_type=rectangle
-export storch_FillGenstep_zenith=-20,20
-export storch_FillGenstep_azimuth=-20,20
+
+#num=1000
+num=1000000
+
+export SEvent_MakeGensteps_num_ph=$num
+
+#src="rectangle"
+src="disc"
+
+if [ "$src" == "rectangle" ]; then
+
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_type=rectangle
+    export storch_FillGenstep_zenith=-20,20
+    export storch_FillGenstep_azimuth=-20,20
+
+elif [ "$src" == "disc" ]; then
+
+    export storch_FillGenstep_type=disc
+    export storch_FillGenstep_radius=50        # radius
+    export storch_FillGenstep_zenith=0,1       # radial range scale
+    export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction 
+    export storch_FillGenstep_mom=1,0,0
+    export storch_FillGenstep_pos=-80,0,0
+
+fi 
+
 #export storch_FillGenstep_radius=20
 
 oim=2  # CPU only 

@@ -194,6 +194,11 @@ For CPU running with mock curand this is invoked by SGenerate::GeneratePhotons
 Populate "sphoton& p" as parameterized by "const quad6& gs_" which casts to "const storch& gs",
 the photon_id and genstep_id inputs are informational only. 
 
+disc/T_DISC
+    zenith.x->zenith.y radial range, eg [0. 100.] filled disc, [90., 100.] annulus 
+    azimuth.x->azimuth.y phi segment in fraction of twopi [0,1] for complete segment 
+
+
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
@@ -230,8 +235,6 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         float u_zenith  = gs.zenith.x  + srng::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
         float u_azimuth = gs.azimuth.x + srng::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
 #endif
-
-
 
         float r = gs.radius*u_zenith ;
 

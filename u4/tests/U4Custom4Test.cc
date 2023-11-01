@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 #ifdef WITH_CUSTOM4
     U4PMTAccessor* pmt = new U4PMTAccessor ; 
     C4IPMTAccessor* ipmt = pmt ; 
-    C4OpBoundaryProcess* proc = new C4OpBoundaryProcess(pmt) ;     
+    C4OpBoundaryProcess* proc = new C4OpBoundaryProcess(ipmt) ;     
     std::cout << " proc " << std::hex << proc << std::dec << std::endl ;
 #endif
 
