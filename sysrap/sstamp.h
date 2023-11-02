@@ -5,13 +5,13 @@
 #include <sstream>
 #include <iomanip>
 
-struct stamp
+struct sstamp
 {
     static uint64_t Now(); 
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
 }; 
 
-inline uint64_t stamp::Now()
+inline uint64_t sstamp::Now()
 {
     using Clock = std::chrono::system_clock;
     using Unit  = std::chrono::microseconds ;
@@ -27,7 +27,7 @@ t=0 is special cased to give the current time
 
 **/
 
-inline std::string stamp::Format(uint64_t t, const char* fmt)
+inline std::string sstamp::Format(uint64_t t, const char* fmt)
 {
     if(t == 0) t = Now() ; 
     using Clock = std::chrono::system_clock;

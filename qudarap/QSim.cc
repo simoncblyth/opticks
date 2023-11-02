@@ -5,6 +5,7 @@
 #include "SLOG.hh"
 
 #include "ssys.h"
+#include "sstamp.h"
 #include "spath.h"
 
 #include "SEvt.hh"
@@ -339,8 +340,9 @@ double QSim::simulate(int eventID)
     int rc = event->setGenstep() ; 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
+    sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
-    //post_launch(); 
+    sev->t_PostLaunch = sstamp::Now() ; 
 
     sev->t_Launch = dt ; 
     sev->endOfEvent(eventID);
@@ -362,10 +364,12 @@ double QSim::simtrace(int eventID)
 {
     sev->beginOfEvent(eventID); 
 
-    int rc = event->setGenstep(); 
+    int rc = event->setGenstep();  
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
+
+    sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
-    //post_launch(); 
+    sev->t_PostLaunch = sstamp::Now() ; 
 
     sev->t_Launch = dt ; 
     sev->endOfEvent(eventID); 

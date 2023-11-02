@@ -104,6 +104,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     uint64_t t_EndOfEvent ; 
     uint64_t t_PenultimatePoint ; 
     uint64_t t_LastPoint ; 
+    uint64_t t_PreLaunch ; 
+    uint64_t t_PostLaunch ; 
     double   t_Launch ; 
 
 

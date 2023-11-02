@@ -5,7 +5,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "squadx.h"
-#include "stamp.h"
+#include "sstamp.h"
 
 #include "sphoton.h"
 #include "srec.h"
@@ -114,6 +114,8 @@ SEvt::SEvt()
     t_EndOfEvent(0),
     t_PenultimatePoint(0),
     t_LastPoint(0),
+    t_PreLaunch(0),
+    t_PostLaunch(0),
     t_Launch(-2.),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
@@ -1130,8 +1132,8 @@ void SEvt::SaveGenstepLabels(const char* dir, const char* name)
 
 uint64_t SEvt::T_BeginOfRun = 0 ; 
 uint64_t SEvt::T_EndOfRun = 0 ; 
-void SEvt::BeginOfRun(){ T_BeginOfRun = stamp::Now(); } // static 
-void SEvt::EndOfRun()  { T_EndOfRun   = stamp::Now(); } // static 
+void SEvt::BeginOfRun(){ T_BeginOfRun = sstamp::Now(); } // static 
+void SEvt::EndOfRun()  { T_EndOfRun   = sstamp::Now(); } // static 
 
 
 template<typename T>
@@ -1231,6 +1233,8 @@ void SEvt::endOfEvent(int eventID)
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
     setMeta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
     setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
+    setMeta<uint64_t>("t_PreLaunch", t_PreLaunch ); 
+    setMeta<uint64_t>("t_PostLaunch", t_PostLaunch ); 
     setMeta<double>("t_Launch", t_Launch ); 
     setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
     // too soon for T_EndOfRun to be saved here
@@ -1435,12 +1439,12 @@ void SEvt::setIndex(int index_)
     assert( index_permitted ); 
 
     index = index_ ; 
-    t_BeginOfEvent = stamp::Now();  // moved here from the static 
+    t_BeginOfEvent = sstamp::Now();  // moved here from the static 
 }
 void SEvt::endIndex(int index_)
 { 
     assert( std::abs(index) == std::abs(index_) );  
-    t_EndOfEvent = stamp::Now();  
+    t_EndOfEvent = sstamp::Now();  
 }
 
 int SEvt::getIndex() const 
@@ -1946,7 +1950,7 @@ void SEvt::beginPhoton(const spho& label)
 
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
-    xsup.q0.w.x = stamp::Now(); 
+    xsup.q0.w.x = sstamp::Now(); 
 #endif
 
     ctx.idx = idx ;  
@@ -2257,7 +2261,7 @@ void SEvt::pointPhoton(const spho& label)
 
 #ifndef PRODUCTION
     t_PenultimatePoint = t_LastPoint ; 
-    t_LastPoint = stamp::Now() ;  
+    t_LastPoint = sstamp::Now() ;  
     quad4& aux = current_ctx.aux ;
     quadx4& auxx = (quadx4&)aux ;  
     auxx.q3.w.x = t_LastPoint ;  // shoe-horn uint64_t time stamp into aux 
@@ -2389,7 +2393,7 @@ void SEvt::finalPhoton(const spho& label)
 
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
-    xsup.q0.w.y = stamp::Now();   
+    xsup.q0.w.y = sstamp::Now();   
     xsup.q1.w.x = t_PenultimatePoint ; 
     xsup.q1.w.y = t_LastPoint ; 
 #endif
@@ -2449,7 +2453,7 @@ void SEvt::addProcessHitsStamp(int p)
 {
     assert( p > -1 ); 
 #ifdef WITH_SUP
-    uint64_t now = stamp::Now();
+    uint64_t now = sstamp::Now();
 
     quad6&  sup  = current_ctx.sup ;  
     quadx6& xsup = (quadx6&)current_ctx.sup ;  

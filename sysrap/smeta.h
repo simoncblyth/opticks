@@ -9,7 +9,7 @@ BASH_SOURCE fails to export
 
 #include "sproc.h"
 #include "ssys.h"
-#include "stamp.h"
+#include "sstamp.h"
 
 #include "NP.hh"
 
@@ -52,8 +52,8 @@ This is used for example to populate (SEvt)sevt.meta by:
 
 inline void smeta::Collect(std::string& meta, const char* source)
 {
-    uint64_t t = stamp::Now(); 
-    std::string tf = stamp::Format(t) ;
+    uint64_t t = sstamp::Now(); 
+    std::string tf = sstamp::Format(t) ;
 
     if(source) NP::SetMeta<std::string>(meta, "source", source );
     NP::SetMeta<std::string>(meta, "creator", sproc::ExecutableName() );

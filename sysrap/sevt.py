@@ -426,7 +426,7 @@ class SEvt(object):
 
     def init_junoSD_PMT_v2_SProfile(self, f):
         """
-        The timestamps come from sysrap/stamp.h and are datetime64[us] (UTC) compliant 
+        The timestamps come from sysrap/sstamp.h and are datetime64[us] (UTC) compliant 
 
         pf
             uint64_t microsecond timestamps collected by SProfile.h 
