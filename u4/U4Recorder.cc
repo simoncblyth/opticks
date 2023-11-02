@@ -369,8 +369,8 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     LOG_IF( info, skip ) << " Enabled-SKIP  EIDX/GIDX " << EIDX << "/" << GIDX ;  
     if(skip) return ; 
 
-    bool modulo = ulabel.id % 1000 == 0  ;  
-    LOG_IF(info, modulo) << " modulo 1000 : ulabel.id " << ulabel.id ; 
+    bool modulo = ulabel.id % 100000 == 0  ;  
+    LOG_IF(info, modulo) << " modulo 100000 : ulabel.id " << ulabel.id ; 
 
     U4Random::SetSequenceIndex(ulabel.id); 
 

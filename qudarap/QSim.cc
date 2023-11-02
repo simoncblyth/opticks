@@ -342,6 +342,7 @@ double QSim::simulate(int eventID)
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
     //post_launch(); 
 
+    sev->t_Launch = dt ; 
     sev->endOfEvent(eventID);
  
     return dt ; 
@@ -366,7 +367,9 @@ double QSim::simtrace(int eventID)
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
     //post_launch(); 
 
+    sev->t_Launch = dt ; 
     sev->endOfEvent(eventID); 
+
     return dt ; 
 }
 

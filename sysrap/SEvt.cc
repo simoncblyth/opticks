@@ -114,6 +114,7 @@ SEvt::SEvt()
     t_EndOfEvent(0),
     t_PenultimatePoint(0),
     t_LastPoint(0),
+    t_Launch(-2.),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
@@ -1169,10 +1170,23 @@ void SEvt::SaveRunMeta(const char* base)
     RUN_META->save(dir, "run.npy") ; 
 }
 
-void SEvt::setMeta(const char* k, const char* v)
+void SEvt::setMetaString(const char* k, const char* v)
 {
     NP::SetMeta<std::string>(meta, k, v ); 
-} 
+}
+
+template<typename T>
+void SEvt::setMeta( const char* k, T v )
+{
+    NP::SetMeta<T>( meta, k, v );  
+}
+
+template void SEvt::setMeta<uint64_t>(const char*, uint64_t ); 
+template void SEvt::setMeta<int>(const char*, int ); 
+template void SEvt::setMeta<unsigned>(const char*, unsigned ); 
+template void SEvt::setMeta<float>(const char*, float ); 
+template void SEvt::setMeta<double>(const char*, double ); 
+template void SEvt::setMeta<std::string>(const char*, std::string ); 
 
 
 /**
@@ -1193,7 +1207,7 @@ void SEvt::beginOfEvent(int eventID)
 {
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
-    setIndex(index_); 
+    setIndex(index_);      // also sets t_BeginOfEvent stamp 
     addFrameGenstep();     // needed for simtrace and input photon running
 }
 
@@ -1212,7 +1226,15 @@ so can switch off all saving wuth that config.
 void SEvt::endOfEvent(int eventID)
 {
     int index_ = 1+eventID ;    
-    endIndex(index_); 
+    endIndex(index_);   // also sets t_EndOfEvent stamp
+
+    setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
+    setMeta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
+    setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
+    setMeta<double>("t_Launch", t_Launch ); 
+    setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
+    // too soon for T_EndOfRun to be saved here
+
     save();             
     clear_except("hit"); 
 }
@@ -1224,32 +1246,6 @@ bool SEvt::IndexPermitted(int index_) // static
     //return std::abs(index_) >= 1 ;   
     // for simplicity dont depend on Count, always dis-allow index 0 
 }
-
-/*
-void SEvt::SetIndex(int index_)
-{ 
-    if(Exists(0)) Get(0)->setIndex(index_); 
-    if(Exists(1)) Get(1)->setIndex(-index_); 
-}
-
-void SEvt::EndIndex(int index)
-{
-    if(Exists(0)) Get(0)->endIndex(index); 
-    if(Exists(1)) Get(1)->endIndex(-index); 
-}
-
-void SEvt::IncrementIndex()
-{   
-    if(Exists(0)) Get(0)->incrementIndex() ; 
-    if(Exists(1)) Get(1)->incrementIndex() ; 
-}
-void SEvt::UnsetIndex()
-{  
-    if(Exists(0)) Get(0)->unsetIndex() ; 
-    if(Exists(1)) Get(1)->unsetIndex() ; 
-}
-*/
-
 
 
 
@@ -2527,8 +2523,6 @@ NP* SEvt::gatherPhoton() const
     if( evt->photon == nullptr ) return nullptr ; 
     NP* p = makePhoton(); 
     p->read2( (float*)evt->photon ); 
-
-
     return p ; 
 } 
 
@@ -2622,19 +2616,21 @@ NP* SEvt::gatherSimtrace() const
     return p ; 
 }
 
+/**
+SEvt::makePhoton
+-----------------
+
+This is galled by SEvt::gatherPhoton 
+
+Formerly planted timing metadata on the photon array,
+have now moved that to the SEvt NPFold_meta.txt
+as they are not photon specific. 
+
+**/
+
 NP* SEvt::makePhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 ); 
-
-    p->set_meta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
-    p->set_meta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
-    p->set_meta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
-    // T_EndOfRun cannot be saved here, it might be saved if SEvt::SaveRunMeta is called
-
-    // AddEnvMeta(p, false) ; 
-    // smeta::Collect(p->meta, "SEvt::makePhoton"); 
-    // decided env meta is better placed on the fold, not the photon
-
     return p ; 
 }
 

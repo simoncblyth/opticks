@@ -104,6 +104,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     uint64_t t_EndOfEvent ; 
     uint64_t t_PenultimatePoint ; 
     uint64_t t_LastPoint ; 
+    double   t_Launch ; 
+
 
     sphoton_selector* selector ; 
     sevent* evt ; 
@@ -307,20 +309,18 @@ public:
     static void SetRunMeta(const char* k, T v ); 
     static void SaveRunMeta(const char* base=nullptr ); 
 
-    void setMeta(const char* k, const char* v); 
+    void setMetaString(const char* k, const char* v); 
+
+    template<typename T>
+    void setMeta( const char* k, T v ); 
+
 
     void beginOfEvent(int eventID); 
     void endOfEvent(int eventID); 
 
 
-    static bool IndexPermitted(int index);   // index is 1-based 
-    /*
-    static void SetIndex(int index); 
-    static void EndIndex(int index); 
-    static void IncrementIndex(); 
-    static void UnsetIndex(); 
-    */
 
+    static bool IndexPermitted(int index);   // index is 1-based 
     static int  GetIndex(int idx); 
     static S4RandomArray* GetRandomArray(int idx); 
 

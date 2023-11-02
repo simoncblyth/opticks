@@ -315,7 +315,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         LOG(LEVEL) << " skip CSGOptiX::Create as NoGPU has been set " ;  
     }
 
-    qs = cx ? cx->sim : nullptr ; 
+    qs = cx ? cx->sim : nullptr ;   // QSim 
    
     QSim* qsg = QSim::Get()  ;  
 
@@ -324,6 +324,8 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         << " qs " << ( qs ? "Y" : "N" )
         << " QSim::Get " << ( qsg ? "Y" : "N" ) 
         ; 
+
+    assert( qs == qsg ); 
 
     LOG(LEVEL) << "] fd " << fd ; 
 
@@ -354,13 +356,13 @@ void G4CXOpticks::init_SEvt()
     smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
 
     std::string gm = sim->getGPUMeta() ; 
-    sev->setMeta("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+    sev->setMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
 
 #ifdef WITH_CUSTOM4
     std::string c4 = C4Version::Version();
-    sev->setMeta("C4Version", c4.c_str()); 
+    sev->setMetaString("C4Version", c4.c_str()); 
 #else
-    sev->setMeta("C4Version", "NOT-WITH_CUSTOM4" ); 
+    sev->setMetaString("C4Version", "NOT-WITH_CUSTOM4" ); 
 #endif
 
 }

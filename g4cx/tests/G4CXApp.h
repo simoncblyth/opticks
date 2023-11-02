@@ -173,12 +173,12 @@ G4VPhysicalVolume* G4CXApp::Construct()
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks::SetGeometry(pv_) ; 
+        G4CXOpticks::SaveGeometry() ; 
     }
     else
     {
         LOG(LEVEL) << " SEventConfig::GPU_Simulation() false : SKIP G4CXOpticks::SetGeometry " ; 
     }
-    G4CXOpticks::SaveGeometry() ; 
 
     return pv ; 
 }  
