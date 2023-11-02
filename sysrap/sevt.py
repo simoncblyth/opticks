@@ -86,6 +86,7 @@ class SEvt(object):
 
         self.init_run(f) 
         self.init_meta(f)
+        self.init_fold_meta_timestamp(f)
         self.init_fold_meta(f)
         self.init_U4R_names(f)
         self.init_photon(f)
@@ -175,9 +176,48 @@ class SEvt(object):
         self.metakey = metakey
         self.meta = meta 
 
+    def init_fold_meta_timestamp(self, f):
+        """
+        """
+        msrc = f.NPFold_meta
+        if msrc is None: return 
+        mts_ = lambda _:np.uint64(msrc.get_value(_))
+
+        bor = mts_("T_BeginOfRun")
+        boe = mts_("t_BeginOfEvent")
+        gs0 = mts_("t_setGenstep_0")
+        gs1 = mts_("t_setGenstep_1")
+        gs2 = mts_("t_setGenstep_2")
+        gs3 = mts_("t_setGenstep_3")
+        gs4 = mts_("t_setGenstep_4")
+        gs5 = mts_("t_setGenstep_5")
+        gs6 = mts_("t_setGenstep_6")
+        gs7 = mts_("t_setGenstep_7")
+        gs8 = mts_("t_setGenstep_8")
+        pre = mts_("t_PreLaunch")
+        pos = mts_("t_PostLaunch")
+        eoe = mts_("t_EndOfEvent")
+
+        b2e = eoe - boe
+        ee = np.array([boe, eoe, b2e], dtype=np.uint64 )
+        ett = np.array([bor, boe, gs0, gs1, gs2, gs3, gs4, gs5, gs6, gs7, gs8, pre, pos, eoe], dtype=np.uint64 )
+        ettl = "bor boe gs0 gs1 gs2 gs3 gs4 gs5 gs6 gs7 gs8 pre pos eoe".split()
+        ettd = np.zeros( len(ett), dtype=np.uint64 )
+        ettd[1:] = np.diff(ett)
+
+        ettv = ett.view("datetime64[us]")
+        ettc = np.c_[ettl, ett, ettv.astype("|S26"), ettd/1e6, ettd]
+
+        self.ee = ee
+        self.ett = ett
+        self.ettd = ettd
+        self.ettv = ettv
+        self.ettl = ettl
+        self.ettc = ettc 
+
+
     def init_fold_meta(self, f):
         """
-        WIP: NEEDS UPDATE : MOST OF THE METADATA HAS BEEN MOVED TO NPFold_meta
         """
         msrc = f.NPFold_meta
         if msrc is None: return 
@@ -399,15 +439,11 @@ class SEvt(object):
 
         For concatenated SEvt the total of all the EndOfEvent-BeginOfEvent 
         is placed into ee[-1]
-        """
-        with_photon_meta = not getattr(f, 'photon_meta', None) is None 
+
+        TIMING METADATA HAS BEEN MOVED FROM THE PHOTON TO THE FOLD
         with_ff = not getattr(f, 'ff', None) is None 
-        log.info("init_ee with_photon_meta:%d with_ff:%d" % (with_photon_meta, with_ff))
-        if with_photon_meta:
-            boe = np.uint64(f.photon_meta.t_BeginOfEvent[0])
-            eoe = np.uint64(f.photon_meta.t_EndOfEvent[0])
-            b2e = eoe-boe
-        elif with_ff:
+        log.info("init_ee with_ff:%d" % (with_ff))
+        if with_ff:
             kk = f.ff.keys()
             boe = np.uint64(0)
             eoe = np.uint64(0)
@@ -423,6 +459,7 @@ class SEvt(object):
             boe, eoe, b2e = 0,0,0 
         pass 
         self.ee = np.array([boe, eoe, b2e], dtype=np.uint64 )
+        """
 
     def init_junoSD_PMT_v2_SProfile(self, f):
         """

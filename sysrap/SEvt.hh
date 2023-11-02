@@ -101,11 +101,21 @@ struct SYSRAP_API SEvt : public SCompProvider
     int instance ; 
 
     uint64_t t_BeginOfEvent ; 
-    uint64_t t_EndOfEvent ; 
-    uint64_t t_PenultimatePoint ; 
-    uint64_t t_LastPoint ; 
+    uint64_t t_setGenstep_0 ; 
+    uint64_t t_setGenstep_1 ; 
+    uint64_t t_setGenstep_2 ; 
+    uint64_t t_setGenstep_3 ; 
+    uint64_t t_setGenstep_4 ; 
+    uint64_t t_setGenstep_5 ; 
+    uint64_t t_setGenstep_6 ; 
+    uint64_t t_setGenstep_7 ; 
+    uint64_t t_setGenstep_8 ; 
     uint64_t t_PreLaunch ; 
     uint64_t t_PostLaunch ; 
+    uint64_t t_EndOfEvent ; 
+
+    uint64_t t_PenultimatePoint ; 
+    uint64_t t_LastPoint ; 
     double   t_Launch ; 
 
 

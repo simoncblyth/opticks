@@ -111,11 +111,20 @@ SEvt::SEvt()
     index(MISSING_INDEX),
     instance(MISSING_INSTANCE),
     t_BeginOfEvent(0),
+    t_setGenstep_0(0),
+    t_setGenstep_1(0),
+    t_setGenstep_2(0),
+    t_setGenstep_3(0),
+    t_setGenstep_4(0),
+    t_setGenstep_5(0),
+    t_setGenstep_6(0),
+    t_setGenstep_7(0),
+    t_setGenstep_8(0),
+    t_PreLaunch(0),
+    t_PostLaunch(0),
     t_EndOfEvent(0),
     t_PenultimatePoint(0),
     t_LastPoint(0),
-    t_PreLaunch(0),
-    t_PostLaunch(0),
     t_Launch(-2.),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
@@ -1230,14 +1239,24 @@ void SEvt::endOfEvent(int eventID)
     int index_ = 1+eventID ;    
     endIndex(index_);   // also sets t_EndOfEvent stamp
 
+    setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
-    setMeta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
-    setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
+    setMeta<uint64_t>("t_setGenstep_0",  t_setGenstep_0 ); 
+    setMeta<uint64_t>("t_setGenstep_1",  t_setGenstep_1 ); 
+    setMeta<uint64_t>("t_setGenstep_2",  t_setGenstep_2 ); 
+    setMeta<uint64_t>("t_setGenstep_3",  t_setGenstep_3 ); 
+    setMeta<uint64_t>("t_setGenstep_4",  t_setGenstep_4 ); 
+    setMeta<uint64_t>("t_setGenstep_5",  t_setGenstep_5 ); 
+    setMeta<uint64_t>("t_setGenstep_6",  t_setGenstep_6 ); 
+    setMeta<uint64_t>("t_setGenstep_7",  t_setGenstep_7 ); 
+    setMeta<uint64_t>("t_setGenstep_8",  t_setGenstep_8 ); 
     setMeta<uint64_t>("t_PreLaunch", t_PreLaunch ); 
     setMeta<uint64_t>("t_PostLaunch", t_PostLaunch ); 
+    setMeta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
+
+    setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
     setMeta<double>("t_Launch", t_Launch ); 
-    setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
-    // too soon for T_EndOfRun to be saved here
+    // setMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  // TOO SOON
 
     save();             
     clear_except("hit"); 

@@ -16,6 +16,7 @@
 #include "stag.h"
 #include "sevent.h"
 #include "salloc.h"
+#include "sstamp.h"
 
 #include "sqat4.h"
 #include "stran.h"
@@ -150,10 +151,15 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 int QEvent::setGenstep()  // onto device
 {
-    LOG(LEVEL); 
+    sev->t_setGenstep_0 = sstamp::Now(); 
 
-    NP* gs = sev->gatherGenstep();
-    sev->clear();  // clear the quad6 vector, ready to collect more genstep
+    NP* gs = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+
+    sev->t_setGenstep_1 = sstamp::Now(); 
+
+    sev->clear();                   // clears quad6 genstep vector, ready to collect more genstep
+
+    sev->t_setGenstep_2 = sstamp::Now(); 
 
     LOG_IF(fatal, gs == nullptr ) << "Must SEvt/addGenstep before calling QEvent::setGenstep " ;
     //if(gs == nullptr) std::raise(SIGINT); 
@@ -167,17 +173,20 @@ QEvent::setGenstep
 -------------------
 
 Recall that even with input photon running, still have gensteps.  
-So when the number of gensteps is zero can safely skip this. 
+If the number of gensteps is zero there are no photons and no launch. 
 
 **/
 
 
 int QEvent::setGenstep(NP* gs_) 
 { 
+    sev->t_setGenstep_3 = sstamp::Now(); 
+
     gs = gs_ ; 
     SGenstep::Check(gs); 
     evt->num_genstep = gs->shape[0] ; 
     bool not_allocated = evt->genstep == nullptr && evt->seed == nullptr ; 
+
 
     LOG(LEVEL) 
         << " evt.num_genstep " << evt->num_genstep 
@@ -186,23 +195,32 @@ int QEvent::setGenstep(NP* gs_)
 
     if(not_allocated) 
     {
-        device_alloc_genstep() ; 
+        device_alloc_genstep_and_seed() ; 
     }
 
     LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
+
+
  
     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
     LOG_IF(fatal, !num_gs_allowed) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
+    sev->t_setGenstep_4 = sstamp::Now(); 
+
     QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep ); 
 
+    sev->t_setGenstep_5 = sstamp::Now(); 
+
     QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+
+    sev->t_setGenstep_6 = sstamp::Now(); 
 
     //count_genstep_photons();   // sets evt->num_seed
     //fill_seed_buffer() ;       // populates seed buffer
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
+    sev->t_setGenstep_7 = sstamp::Now(); 
 
     int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
 
@@ -210,32 +228,35 @@ int QEvent::setGenstep(NP* gs_)
     {
         setNumSimtrace( evt->num_seed ); 
     }
-    else if(OpticksGenstep_::IsInputPhoton(gencode0))
+    else if(OpticksGenstep_::IsInputPhoton(gencode0)) // OpticksGenstep_INPUT_PHOTON  (NOT: _TORCH)
     {
         setInputPhoton(); 
     }
     else
     {
-        setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
+        setNumPhoton( evt->num_seed );  // *HEAVY* : photon, rec, record may be allocated here depending on SEventConfig
     }
     upload_count += 1 ; 
+
+    sev->t_setGenstep_8 = sstamp::Now(); 
+
     return 0 ; 
 }
 
 /**
-QEvent::device_alloc_genstep
-------------------------------
+QEvent::device_alloc_genstep_and_seed
+-------------------------------------------
 
 Allocates memory for genstep and seed, keeping device pointers within
 the hostside sevent.h "evt->genstep" "evt->seed"
 
 **/
 
-void QEvent::device_alloc_genstep()
+void QEvent::device_alloc_genstep_and_seed()
 {
     LOG(LEVEL) << " device_alloc genstep and seed " ; 
-    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep:quad6" ) ; 
-    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "QEvent::setGenstep/device_alloc_genstep:int seed" )  ;
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6" ) ; 
+    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "QEvent::setGenstep/device_alloc_genstep_and_seed:int seed" )  ;
 }
 
 
@@ -682,10 +703,13 @@ At the first call when evt.photon is nullptr allocation on device is done.
 Canonically invoked internally from QEvent::setGenstep but may be invoked 
 directly from "friendly" photon only tests without use of gensteps.  
 
-Sets evt->num_photon asserts that is within allowed *evt->max_photon* and calls *uploadEvt*
+1. Sets evt->num_photon which asserts that is within allowed *evt->max_photon* 
+2. allocates buffers for all configured arrays (how heavy depends on configured array sizes)
+3. calls *uploadEvt* (lightweight, just counts and pointers)
 
 This assumes that the number of photons for subsequent launches does not increase 
 when collecting records : that is ok as running with records is regarded as debugging. 
+
 **/
 
 void QEvent::setNumPhoton(unsigned num_photon )
@@ -766,7 +790,9 @@ void QEvent::device_alloc_simtrace()
 QEvent::uploadEvt 
 --------------------
 
-Copies host side *evt* instance (with updated num_genstep and num_photon) to device side  *d_evt*.  
+Uploads lightweight sevent.h instance with counters and pointers for the array. 
+
+Copies host side sevent.h *evt* instance (with updated num_genstep and num_photon) to device side  *d_evt*.  
 Note that the evt->genstep and evt->photon pointers are not updated, so the same buffers are reused for each launch. 
 
 **/

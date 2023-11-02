@@ -88,7 +88,7 @@ public:
 
 private:
     int  setGenstep(NP* gs);
-    void device_alloc_genstep(); 
+    void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     int setGenstep(quad6* gs, unsigned num_gs ); 
     unsigned count_genstep_photons(); 

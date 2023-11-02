@@ -328,7 +328,7 @@ the launch.
 
 double QSim::simulate(int eventID)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << desc() ;  
 
     LOG_IF(error, event == nullptr) << " QEvent:event null " << desc()  ; 
     if( event == nullptr ) std::raise(SIGINT) ; 
@@ -336,8 +336,7 @@ double QSim::simulate(int eventID)
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
-    LOG(LEVEL) << desc() ;  
-    int rc = event->setGenstep() ; 
+    int rc = event->setGenstep() ;  
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
     sev->t_PreLaunch = sstamp::Now() ; 
