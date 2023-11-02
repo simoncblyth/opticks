@@ -25,19 +25,38 @@ The latest releases are::
 
 Geant4 1070 requires 2.4.4.0
 
+
+
+Test a newer version without changing the default one below
+--------------------------------------------------------------
+
+::
+   
+   clhep-
+   clhep-ver(){     echo 2.4.6.2 ; }  # override the default function 
+   clhep--
+
+Use that in a pure opticks install by changing ~/.opticks_config::
+
+    opticks-prepend-prefix $ext/clhep_2451
+    #opticks-prepend-prefix $ext/clhep_2462
+        
+
 EOU
 }
 
 clhep-prefix-default(){  echo $(opticks-prefix)_externals/clhep_$(clhep-version)  ; }
 clhep-prefix(){  echo ${OPTICKS_CLHEP_PREFIX:-$(clhep-prefix-default)}  ; }
-#clhep-ver(){     echo 2.4.1.0 ; }
-#clhep-ver(){     echo 2.4.4.0 ; }
-clhep-ver(){     echo 2.4.5.1 ; }
+##clhep-ver(){     echo 2.4.1.0 ; }
+##clhep-ver(){     echo 2.4.4.0 ; }
+clhep-ver(){     echo 2.4.5.1 ; }    # longstanding former ver
+#clhep-ver(){     echo 2.4.6.2 ; }   # for CaTS 
 
 clhep-version(){  local v=$(clhep-ver) ; echo ${v//./} ; }
 
 #clhep-url(){     echo http://proj-clhep.web.cern.ch/proj-clhep/DISTRIBUTION/tarFiles/clhep-$(clhep-ver).tgz ; }
 clhep-url(){     echo https://proj-clhep.web.cern.ch/proj-clhep/dist1/clhep-$(clhep-ver).tgz ; }
+
 
 clhep-dstname(){ echo $(clhep-ver) ; }     
 clhep-dir(){     echo $(clhep-prefix).build/$(clhep-dstname)/CLHEP ; }  

@@ -374,6 +374,16 @@ examples/extended/persistency/gdml/G01/README::
   the path where the XercesC XML parser package is installed in your system.
 
 
+g4 1112
+---------
+
+::
+
+    CMake Error at CMakeLists.txt:19 (cmake_minimum_required):
+      CMake 3.16 or higher is required.  You are running version 3.13.4
+
+
+
 
 EOU
 }
@@ -582,6 +592,7 @@ g4-nom(){
     91072) echo geant4.10.07.r08 ;;    # unreleased dist for testing 
    100072) echo geant4.master100721 ;; 
      1100) echo geant4.11.00.b01 ;;
+     1112) echo geant4-v11.1.2 ;;
   esac
 }
 
@@ -600,7 +611,9 @@ g4-url(){
         geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
         geant4.10.07.r08) echo https://cached/geant4.10.7.r08.tar ;;         # unreleased dummy 
         geant4.master100721) echo https://cached/geant4.master100721.tar ;;  # unreleased dummy 
+        geant4-v11.1.2)   echo https://geant4-data.web.cern.ch/releases/geant4-v11.1.2.tar.gz  ;;
    esac
+
 }
 
 g4-title()
@@ -611,6 +624,7 @@ g4-title()
       1042) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
      91072) echo 1st Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;; 
     100721) echo 2nd Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;;
+      1112) echo suggested by Hans for CaTS Nov 2023 ;; 
    esac
 }
 

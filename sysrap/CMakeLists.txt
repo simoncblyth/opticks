@@ -310,6 +310,7 @@ set(HEADERS
 
     scuda.h
     smath.h 
+    sblackbody.h
     tcomplex.h
 
     srng.h
