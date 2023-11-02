@@ -505,11 +505,16 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::v
     return rock_pv ; 
 }
 
+
+
+NP* U4VolumeMaker::GetTransforms() // static
+{
+    return TRS ; 
+}
+
 /**
 U4VolumeMaker::SaveTransforms
 -----------------------------
-
-TODO: use SEvt::add_array capabilities rather than this direct to file system approach 
 
 **/
 

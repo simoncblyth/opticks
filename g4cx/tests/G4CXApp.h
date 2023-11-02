@@ -44,10 +44,6 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 
 #include "G4CXOpticks.hh"
 
-#ifdef WITH_PMTSIM
-#include "PMTSim.hh"
-#endif
-
 
 struct G4CXApp
     : 
@@ -89,7 +85,6 @@ struct G4CXApp
     static void OpenGeometry() ; 
     virtual ~G4CXApp(); 
 
-    static void SaveMeta(const char* savedir); 
     static G4RunManager* InitRunManager(); 
     static G4CXApp*        Create(); 
     void                 BeamOn() ;
@@ -171,11 +166,9 @@ G4VPhysicalVolume* G4CXApp::Construct()
     LOG(LEVEL) << " fPV " << ( fPV ? fPV->GetName() : "ERR-NO-PV" ) ; 
 
     LOG(info) << "]" ; 
-
     
     // Collect extra JUNO PMT info only when persisted NPFold exists.
     SSim::AddExtraSubfold("jpmt", "$PMTSimParamData_BASE" ); 
-
 
     if(SEventConfig::GPU_Simulation())
     {
@@ -183,7 +176,7 @@ G4VPhysicalVolume* G4CXApp::Construct()
     }
     else
     {
-        LOG(LEVEL) << " skip passing geometry to opticks " ; 
+        LOG(LEVEL) << " SEventConfig::GPU_Simulation() false : SKIP G4CXOpticks::SetGeometry " ; 
     }
     G4CXOpticks::SaveGeometry() ; 
 
@@ -235,20 +228,6 @@ void G4CXApp::EndOfEventAction(const G4Event* event)
 {  
     fRecorder->EndOfEventAction(event);  
 
-
-    // TODO: relocate this into U4Recorder::EndOfEventAction and adopt SEvt::add_array  
-    {
-        const char* savedir = SEvt::GetSaveDir(SEvt::ECPU); 
-        SaveMeta(savedir); 
-
-    #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
-        PMTSim::ModelTrigger_Debug_Save(savedir) ; 
-    #else
-        LOG(info) << "not-(WITH_PMTSIM and POM_DEBUG)"  ; 
-    #endif
-    }
-
-    // HMM defer to G4CXOpticks::EndOfEventAction ?
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks* gx = G4CXOpticks::Get() ;
@@ -257,10 +236,8 @@ void G4CXApp::EndOfEventAction(const G4Event* event)
     }
     else
     {
-         LOG(LEVEL) << " skip opticks simulate " ; 
+         LOG(LEVEL) << " SEventConfig::GPU_Simulation() false : SKIP G4CXOpticks::simulate " ; 
     }
-
-
 }
 
 void G4CXApp::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
@@ -271,17 +248,6 @@ void G4CXApp::OpenGeometry(){  G4GeometryManager::GetInstance()->OpenGeometry();
 G4CXApp::~G4CXApp(){ OpenGeometry(); }
 // G4GeometryManager::OpenGeometry is needed to avoid cleanup warning
 
-
-void G4CXApp::SaveMeta(const char* savedir) // static
-{
-    if(savedir == nullptr)
-    {
-        LOG(error) << " NULL savedir " ; 
-        return ; 
-    }  
-    // U4Recorder::SaveMeta(savedir);   // try moving to U4Recorder::EndOfEventAction
-    U4VolumeMaker::SaveTransforms(savedir) ;  // TODO: avoid this direct to file system approach, instead into SEvt::add_array   
-}
 
 G4RunManager* G4CXApp::InitRunManager()  // static
 {

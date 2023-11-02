@@ -31,6 +31,7 @@
 #include "U4Random.hh"
 #include "U4UniformRand.h"
 #include "U4Fake.h"
+#include "U4VolumeMaker.hh"
 
 #include "U4Surface.h"
 #include "U4Process.h"
@@ -39,6 +40,10 @@
 
 #include "SCF.h"
 #include "U4Step.h"
+
+#ifdef WITH_PMTSIM
+#include "PMTSim.hh"
+#endif
 
 
 #include "G4OpBoundaryProcess.hh"
@@ -285,8 +290,18 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
     G4int eventID_ = event->GetEventID() ; 
     assert( eventID == eventID_ ); 
 
+    #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
+        NP* mtda = PMTSim::ModelTrigger_Debug_Array(); 
+        std::string name = mtda->get_meta<std::string>("NAME", "MTDA.npy") ; 
+        sev->add_array( name.c_str(), mtda );   
+    #else
+        LOG(LEVEL) << "not-(WITH_PMTSIM and POM_DEBUG)"  ;   
+    #endif
+
+    sev->add_array("TRS.npy", U4VolumeMaker::GetTransforms() );
     sev->add_array("U4R.npy", MakeMetaArray() ); 
     sev->addEventConfigArray(); 
+
 
     sev->endOfEvent(eventID_);  // does save and clear
 

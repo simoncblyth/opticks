@@ -60,6 +60,7 @@ struct U4_API U4VolumeMaker
 
     static NP* TRS ; 
     static const G4VPhysicalVolume* WrapAroundItem( const char* name, std::vector<G4LogicalVolume*>& items_lv, const char* prefix ); // prefix eg AroundCircle
+    static NP* GetTransforms() ; 
     static void SaveTransforms( const char* savedir ); 
 
 

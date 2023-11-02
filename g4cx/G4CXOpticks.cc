@@ -34,16 +34,6 @@
 #endif
 
 
-
-#ifdef WITH_GGEO
-// OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
-#include "CSG_GGeo_Convert.h"
-#include "Opticks.hh"
-#include "X4Geo.hh"
-#include "GGeo.hh"
-#endif
-
-
 const plog::Severity G4CXOpticks::LEVEL = SLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
 U4SensorIdentifier* G4CXOpticks::SensorIdentifier = nullptr ; 
@@ -52,7 +42,6 @@ void G4CXOpticks::SetSensorIdentifier( U4SensorIdentifier* sid ){ SensorIdentifi
 
 G4CXOpticks* G4CXOpticks::INSTANCE = nullptr ; 
 G4CXOpticks* G4CXOpticks::Get(){ return INSTANCE ; } 
-// formerly instanciated when INSTANCE nullptr, but its better to require more care with when the instanciation is done
 
 /**
 G4CXOpticks::SetGeometry
@@ -75,10 +64,9 @@ G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
     return g4cx ; 
 }
 
-
 void G4CXOpticks::Finalize() // static 
 {
-    LOG(LEVEL) << "placeholder mimic G4Opticks " ; 
+    LOG(LEVEL); 
 }
 
 #ifdef __APPLE__
@@ -110,9 +98,6 @@ G4CXOpticks::G4CXOpticks()
     sim(SSim::CreateOrReuse()),   
     tr(nullptr),
     wd(nullptr),
-#ifdef WITH_GGEO
-    gg(nullptr),
-#endif
     fd(nullptr), 
     cx(nullptr),
     qs(nullptr),
@@ -147,12 +132,6 @@ std::string G4CXOpticks::desc() const
        << " sim " << ( sim ? "Y" : "N" )
        << " tr " << ( tr ? "Y" : "N" ) 
        << " wd " << ( wd ? "Y" : "N" )
-#ifdef WITH_GGEO
-       << " WITH_GGEO "
-       << " gg " << ( gg ? "Y" : "N" )
-#else
-       << " NOT:WITH_GGEO "
-#endif
        << " fd " << ( fd ? "Y" : "N" )
        << " cx " << ( cx ? "Y" : "N" )
        << " qs " << ( qs ? "Y" : "N" )
@@ -238,7 +217,7 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
 G4CXOpticks::setGeometry
 -------------------------
 
-U4Tree/stree+SSim aspiring to replace the GGeo+X4+.. packages 
+U4Tree/stree+SSim replacing the former GGeo+X4+.. packages 
 
 HMM: need a way to distingish between a re-animated world coming via GDML save/load  
 and a live original world : as need to do things a bit differently in each case.
@@ -254,57 +233,26 @@ A: YES, stree.h is already playing a vital role as *tree* member of CSG_GGeo/CSG
    into the instances
 
 
-WIP : PLACE GGEO BEHIND WITH_GGEO
-
 **/
 
 
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 {
-    LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
+    LOG(LEVEL) << "[ G4VPhysicalVolume world " << world ; 
     assert(world); 
     wd = world ;
 
-#ifdef WITH_GGEO
-    // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
-    Opticks::Configure("--gparts_transform_offset --allownokey" );  
-    GGeo* gg_ = X4Geo::Translate(wd) ; 
-    LOG(info) << "Completed X4Geo::Translate " ; 
-
-    setGeometry(gg_); 
-#else
-    assert(sim && "sim instance should have been created in ctor" ); 
+    assert(sim && "sim instance should have been grabbed/created in ctor" ); 
     stree* st = sim->get_tree(); 
 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
-    LOG(info) << "Completed U4Tree::Create " ; 
+    LOG(LEVEL) << "Completed U4Tree::Create " ; 
 
     CSGFoundry* fd_ = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE  
     setGeometry(fd_); 
-#endif
+
+    LOG(LEVEL) << "] G4VPhysicalVolume world " << world ; 
 }
-
-#ifdef WITH_GGEO
-void G4CXOpticks::setGeometry(GGeo* gg_)
-{
-    LOG(LEVEL); 
-    gg = gg_ ; 
-
-    CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
-    setGeometry(fd_); 
-}
-#endif
-
-/**
-NOTE THE TWO STEP::
-
-X4Geo::Translate (mainly X4PhysicalVolume instanciation)
-    Geant4 -> GGeo 
-
-CSG_GGeo_Convert::Translate
-    GGeo -> CSG  
-
-**/
 
 
 
@@ -393,7 +341,8 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 G4CXOpticks::init_SEvt
 ------------------------
 
-Typically this instanciates the SEvt::EGPU instance 
+Typically this instanciates the SEvt::EGPU instance once only 
+at initialization, invoked from `G4CXOpticks::setGeometry_`
 
 **/
 
@@ -480,6 +429,15 @@ std::string G4CXOpticks::descSimulate() const
     return str ; 
 }
 
+/**
+G4CXOpticks::simulate
+-----------------------
+
+GPU launch doing generation and simulation done here 
+
+**/
+
+
 void G4CXOpticks::simulate(int eventID)
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
@@ -492,7 +450,7 @@ void G4CXOpticks::simulate(int eventID)
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
-    qs->simulate(eventID);   // GPU launch doing generation and simulation here 
+    qs->simulate(eventID);   
     LOG(LEVEL) << "]" ; 
 }
 
@@ -551,12 +509,8 @@ What is saved::
 
 Grab that locally::
 
-    getgeom () 
-    { 
-        GEOM=${GEOM:-ntds3};
-        BASE=/tmp/$USER/opticks/GEOM/$GEOM/G4CXOpticks;
-        source $OPTICKS_HOME/bin/rsync.sh $BASE
-    }
+    GEOM      ## set the envvar 
+    GEOM get  ## grab the remote geometry to local 
 
 **/
 
@@ -570,7 +524,6 @@ void G4CXOpticks::saveGeometry() const
 }
 
 
-const bool G4CXOpticks::saveGeometry_saveGGeo = ssys::getenvbool("G4CXOpticks__saveGeometry_saveGGeo");
 
 void G4CXOpticks::saveGeometry(const char* dir_) const
 {
