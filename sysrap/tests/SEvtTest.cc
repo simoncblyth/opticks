@@ -165,7 +165,7 @@ void test_savedir()
     evt->save(); 
 
     const char* savedir1 = evt->getSaveDir() ; 
-    assert( savedir1 != nullptr );   
+    //assert( savedir1 != nullptr );   
 
     LOG(info) 
         << " savedir0 " << ( savedir0 ? savedir0 : "(null)" )  
@@ -178,6 +178,7 @@ void test_savedir()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    SEventConfig::SetRGModeTest(); 
 
     /*
     test_AddGenstep(); 

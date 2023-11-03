@@ -6,7 +6,7 @@ SRG.h : Raygen Mode
 **/
 
 
-enum { SRG_RENDER, SRG_SIMTRACE, SRG_SIMULATE } ;  
+enum { SRG_RENDER, SRG_SIMTRACE, SRG_SIMULATE, SRG_TEST } ;  
 
 
 #ifndef __CUDACC__
@@ -19,6 +19,7 @@ struct SRG
     static constexpr const char* RENDER_ = "render" ;
     static constexpr const char* SIMTRACE_ = "simtrace" ;
     static constexpr const char* SIMULATE_ = "simulate" ;
+    static constexpr const char* TEST_ = "test" ;
 };
 inline const char* SRG::Name(int32_t raygenmode)
 {
@@ -28,6 +29,7 @@ inline const char* SRG::Name(int32_t raygenmode)
         case SRG_RENDER:   s = RENDER_   ; break ;
         case SRG_SIMTRACE: s = SIMTRACE_ ; break ;
         case SRG_SIMULATE: s = SIMULATE_ ; break ;
+        case SRG_TEST:     s = TEST_     ; break ;
     }
     return s ; 
 }
@@ -37,6 +39,7 @@ inline int32_t SRG::Type(const char* name)
     if(strcmp(name,RENDER_) == 0 )   type = SRG_RENDER ;
     if(strcmp(name,SIMTRACE_) == 0 ) type = SRG_SIMTRACE ;
     if(strcmp(name,SIMULATE_) == 0 ) type = SRG_SIMULATE ;
+    if(strcmp(name,TEST_) == 0 )     type = SRG_TEST ;
     return type ;
 }
 #endif

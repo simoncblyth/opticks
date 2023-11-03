@@ -2188,7 +2188,7 @@ opticks-former-check-key()
    return 0 
 }
 
-opticks-check-key()
+opticks-check-no-key()
 {
    local msg="=== $FUNCNAME :"
    if [ -n "$OPTICKS_KEY" ]; then 
@@ -2227,9 +2227,9 @@ opticks-t-()
    rc=$?
    [ $rc -ne 0 ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installation && return $rc
 
-   opticks-check-key 
+   opticks-check-no-key 
    rc=$?
-   [ $rc -ne 0 ] && echo $msg ABORT : opticks-check-key failed && return $rc 
+   [ $rc -ne 0 ] && echo $msg ABORT : opticks-check-no-key failed && return $rc 
 
 
    ## if 1st arg is a directory, cd there to run ctest     

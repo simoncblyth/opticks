@@ -158,6 +158,8 @@ struct SYSRAP_API SEventConfig
     static bool IsRGModeRender(); 
     static bool IsRGModeSimtrace(); 
     static bool IsRGModeSimulate(); 
+    static bool IsRGModeTest(); 
+
     static const char* RGModeLabel(); 
 
     //static std::string CompMaskLabel(); 
@@ -201,6 +203,7 @@ struct SYSRAP_API SEventConfig
     static void SetRGModeSimulate() ; 
     static void SetRGModeSimtrace() ; 
     static void SetRGModeRender() ; 
+    static void SetRGModeTest() ; 
 
     static void SetPropagateEpsilon( float eps) ; 
     static void SetInputPhoton(const char* input_photon); 

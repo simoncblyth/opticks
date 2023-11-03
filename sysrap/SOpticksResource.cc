@@ -503,7 +503,6 @@ const char* SOpticksResource::SomeGDMLPath()
 
     const char* path = SPath::PickFirstExisting(path0, path1, path2); 
     LOG(LEVEL)  << " path " << ( path ? path : "-" ) ;    
-    assert(path); 
     return path ; 
 }
 

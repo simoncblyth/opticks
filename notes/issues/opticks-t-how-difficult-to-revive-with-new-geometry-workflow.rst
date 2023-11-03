@@ -3,8 +3,8 @@ opticks-t-how-difficult-to-revive-with-new-geometry-workflow
 
 
 
-Issue 1 : requires OPTICKS_KEY with is an old workflow envvar
-----------------------------------------------------------------
+Issue 1 : FIXED : requires OPTICKS_KEY with is an old workflow envvar
+---------------------------------------------------------------------------
 
 ::
 
@@ -22,8 +22,8 @@ Issue 1 : requires OPTICKS_KEY with is an old workflow envvar
     epsilon:~ blyth$ 
 
 
-Issue 2 : checking $OPTICKS_PREFIX/installcache which is irrelevant in new workflow
----------------------------------------------------------------------------------------
+Issue 2 : FIXED : checking $OPTICKS_PREFIX/installcache which is irrelevant in new workflow
+-----------------------------------------------------------------------------------------------
 
 ::
 

@@ -165,6 +165,7 @@ int SEventConfig::RGMode(){  return _RGMode ; }
 bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
 bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
 bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
+bool SEventConfig::IsRGModeTest(){     return RGMode() == SRG_TEST ; } 
 const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
 
@@ -204,6 +205,7 @@ void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ;
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
 void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
+void SEventConfig::SetRGModeTest(){      SetRGMode( SRG::TEST_ ); }
 
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }

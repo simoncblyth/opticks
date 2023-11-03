@@ -3,6 +3,12 @@ usage(){ cat << EOU
 GEOM_.sh
 ===========
 
+
+* TODO : remove this : hardcoding GEOM in a repo dir is inappropriate 
+
+  * GEOM envvar is a user input : so setup like this belongs in userland 
+
+
 Edit this script using "geom_" bash function from opticks/opticks.bash 
 
 * NB this GEOM_.sh script is distinct from the "geom" bash function and GEOM.txt file
