@@ -14,6 +14,14 @@ sblackbody.h
     In [2]: h,c,k 
     Out[2]: (6.62607015e-34, 299792458.0, 1.380649e-23)
 
+* https://physics.info/planck/
+* http://www.fourmilab.ch/documents/specrend/specrend.c
+* https://en.wikipedia.org/wiki/Planck%27s_law
+
+TODO RESCUE::
+
+   npy/ciexyz.h 
+
 
 **/
 

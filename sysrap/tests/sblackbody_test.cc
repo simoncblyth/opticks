@@ -3,7 +3,8 @@
 
 int main()
 {
-    std::vector<int> temps = {{6500,6000,5500,5000,4500}} ; 
+    //std::vector<int> temps = {{6500,6000,5500,5000,4500}} ; 
+    std::vector<int> temps = {{7000,6000,5000,4000,3000}} ; 
     int ni = temps.size(); 
     int nj = 1400 ; 
     int nk = 2 ; 
