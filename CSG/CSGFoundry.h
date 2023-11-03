@@ -300,6 +300,8 @@ struct CSG_API CSGFoundry : public SGeo
     void load() ; 
 
     static const char* load_FAIL_base_null_NOTES ; 
+    static const char* LoadFailNotes(); 
+
     void load( const char* base, const char* rel ) ; 
     void setCFBase( const char* cfbase_ ); 
     const char* getCFBase() const ; 

@@ -1,6 +1,7 @@
 
 #include <limits>
 #include <array>
+#include <csignal>
 
 #include "scuda.h"
 #include "squad.h"
@@ -909,7 +910,8 @@ void SEvt::CreateOrReuse()
     }
     else
     {
-        LOG(fatal) << "unexpected integrationMode " << integrationMode ; 
+        LOG(LEVEL) << " NOT CREATING SEvt : unexpected integrationMode " << integrationMode ; 
+        //std::raise(SIGINT); 
         //assert(0); 
     }
     LOG(LEVEL) << DescINSTANCE()  ; 

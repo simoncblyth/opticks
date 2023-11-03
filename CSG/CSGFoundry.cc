@@ -2352,6 +2352,7 @@ void CSGFoundry::load()
 
 
 
+
 const char* CSGFoundry::load_FAIL_base_null_NOTES = R"(
 CSGFoundry::load_FAIL_base_null_NOTES
 ======================================
@@ -2360,13 +2361,9 @@ You appear to be attempting to load a geometry folder that does not exist.
 Perhaps this is due to incorrect envvars or the folder really does not exist.
 Scripts that can create geometry folders include:
 
-* GeoChain/translate.sh 
-* GeoChain/mtranslate.sh 
 * CSG/CSGMakerTest.sh 
 
-GeoChain typically converts a Geant4 geometry into CSG and saves the CSGFoundry folder.
 CSGMaker saves a CSGFoundry geometry that was authored directly in CSG. 
-
 
 Attempting to run an executable directly rather than the script 
 that sets up the environment can cause such errors.
@@ -2379,6 +2376,7 @@ but with all the directories emptied.
 Relevant envvars : CFBASE and GEOM 
 
 )" ; 
+const char* CSGFoundry::LoadFailNotes(){ return load_FAIL_base_null_NOTES ; } // static
 
 
 void CSGFoundry::load(const char* base_, const char* rel) 
@@ -2778,14 +2776,12 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 CSGFoundry::ResolveCFBase
 ---------------------------
 
-The cfbase path is sensitive to envvars CFBASE, OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX 
+The cfbase path is sensitive to envvars CFBASE
 
 Load precedence:
 
 0. when GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
 1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
-2. otherwise SOpticksResource::CFBase will invoke CGDir to obtain the CSG_GGeo directory 
-   corresponding to the current OPTICKS_KEY envvar 
 
 **/
 
@@ -2846,6 +2842,7 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
+    if(base == nullptr) return nullptr ; 
     CSGFoundry* fd = new CSGFoundry();  
     fd->load(base, rel); 
     return fd ; 
@@ -3290,6 +3287,9 @@ CSGFoundry::AfterLoadOrCreate
 -------------------------------
 
 Called from some high level methods eg: CSGFoundry::Load
+
+The idea behind this is to auto connect SEvt with the frame 
+from the geometry.
 
 **/
 

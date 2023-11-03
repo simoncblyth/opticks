@@ -578,7 +578,11 @@ om-testenv-notes(){ cat << EON
 om-testenv-notes
 ------------------
 
-# HMM: should be sourcing ~/.opticks/GEOM.sh ?  
+Tests cannot depend on a user file and do "source ~/.opticks/GEOM.sh"
+
+Testing that needs geometry should have a test setup which 
+creates that geometry. 
+
 
 EON
 }
@@ -599,9 +603,15 @@ om-testenv-push()
     om-testenv-dump "[push" 
 
     export OM_KEEP_GEOM=$GEOM
-    export GEOM=${OPTICKS_T_GEOM:-$GEOM}
 
-    source $(dirname $BASH_SOURCE)/bin/GEOM_.sh   
+    local geom_script=$HOME/.opticks/GEOM/GEOM.sh
+
+    if [ -s $geom_script ]; then 
+        source $geom_script
+        # script is expected to always set GEOM
+        # and perhaps set OPTICKS_T_GEOM
+    fi 
+    export GEOM=${OPTICKS_T_GEOM:-$GEOM}
 
     om-testenv-dump "]push" 
 }

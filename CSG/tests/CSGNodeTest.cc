@@ -9,7 +9,9 @@ int main(int argc, char** argv)
     SSim::Create(); 
 
     CSGFoundry* fd = CSGFoundry::Load(); 
- 
+    LOG_IF(fatal, fd==nullptr) << CSGFoundry::LoadFailNotes() ; 
+    if(fd == nullptr) return 1 ;  
+
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 
 
@@ -26,9 +28,10 @@ int main(int argc, char** argv)
         for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset() + pr->numNode() ; nodeIdx++)
         {
             const CSGNode* nd = fd->getNode(nodeIdx); 
-            std::cout << nd->desc() << std::endl ; 
+            std::cout << nd->desc()  ; 
         }
     }
+    std::cout << std::endl ; 
 
     return 0 ; 
 }
