@@ -48,7 +48,6 @@ Recall the many trees
 Note that this needs to be repeated on the workstation 
 and the GPU cluster gateway node.
 
-
 Gotchas
 ---------
 
@@ -66,9 +65,8 @@ workflow for Opticks binary releases
 
 0. workstation: get to clean revision by commit and push, then build and test::
 
-     o
-     om--
-     opticks-t 
+     oo
+     # opticks-t 
 
 0.5 workstation: test creating and exploding tarball onto fake /cvmfs::
 

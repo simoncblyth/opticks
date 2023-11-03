@@ -7,6 +7,9 @@ Strategy
 1. DONE : rearrange the position of libraries such as OptiX to make packaging simpler
 2. DONE : develop python + bash scripts to make tarball, okdist-- 
 
+NOTE for publishing to cvmfs see hcvmfs-vi
+--------------------------------------------
+
 
 whats left for release ?
 -------------------------
@@ -624,10 +627,6 @@ Running without geocache gives misleading error
     OpSnapTest: /home/blyth/opticks/ggeo/GGeo.cc:633: void GGeo::loadFromG4DAE(): Assertion `rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- "' failed.
     Aborted (core dumped)
     -rw-rw-r--. 1 blyth blyth 11059217 Sep 11 11:32 /home/blyth/local/opticks/tmp/snap00000.ppm
-
-
-
-
 
 
 
