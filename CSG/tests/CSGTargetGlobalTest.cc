@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         << " midx " << std::setw(5) << midx 
         << " max_mord " << std::setw(5) << max_mord 
         << " iidx " << std::setw(6) << iidx
-        << " name " << std::setw(10) << name 
+        << " name " << std::setw(10) << ( name ? name : "-" ) 
         << std::endl 
         ;
 

@@ -181,7 +181,11 @@ class SEvt(object):
         """
         msrc = f.NPFold_meta
         if msrc is None: return 
-        mts_ = lambda _:np.uint64(msrc.get_value(_))
+
+        def mts_(key):
+            val = msrc.get_value(key)
+            if val == '': val = "0" 
+            return np.uint64(val)
 
         bor = mts_("T_BeginOfRun")
         boe = mts_("t_BeginOfEvent")

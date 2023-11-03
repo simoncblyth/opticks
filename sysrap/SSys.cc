@@ -431,6 +431,15 @@ bool SSys::getenvbool( const char* envkey )
     return ival ; 
 }
 
+/**
+SSys::getenvintvec
+--------------------
+
+All usage should migrate to::
+
+    ssys::getenv_vec<int> 
+
+**/
 
 std::vector<int>* SSys::getenvintvec(const char* envkey, char delim)   // static
 {

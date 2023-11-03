@@ -2451,16 +2451,8 @@ different geometries.
 CSG/CSGMakerTest.sh 
     CSG level creation of simple test CSGFoundry 
 
-    NB somewhat misleadinging this saves to directories such as::
-
-        /tmp/$USER/opticks/GeoChain/BoxedSphere/CSGFoundry/
-
-
-GeoChain/translate.sh
-    translation of Geant4 defined test geometry 
-
-CSG_GGeo/run.sh 
-    translation of OPTICKS_KEY identified GGeo geometry into CSGFoundry
+G4CX/G4CXTest.sh 
+    Creates Geant4 geometry translates and saves into CSGFoundry      
 
 
 )LITERAL" ; 
@@ -2790,7 +2782,7 @@ const char* CSGFoundry::ResolveCFBase_() // static
     const char* cfbase = nullptr ; 
     cfbase = SOpticksResource::CFBaseFromGEOM() ;
 
-    LOG(LEVEL) << "cfbase " << ( cfbase ? cfbase : "no-cfbase from SOpticksResource::CFBaseFromGEOM try next SOpticksResource::CFBase  " ) ;   
+    LOG(LEVEL) << "cfbase from SOpticksResource::CFBaseFromGEOM : " << ( cfbase ? cfbase : "no-cfbase : try next SOpticksResource::CFBase  " ) ;   
     if(cfbase == nullptr) cfbase = SOpticksResource::CFBase() ;  // standard or override
     LOG(LEVEL) << "cfbase " << ( cfbase ? cfbase : "no-cfbase from SOpticksResource::CFBase" ) ;   
     return cfbase ; 
@@ -2818,6 +2810,16 @@ CSGFoundry* CSGFoundry::Load_() // static
     CSGFoundry* fd = Load(cfbase, "CSGFoundry"); 
     return fd ; 
 }
+
+/**
+CSGFoundry::LoadGeom
+---------------------
+
+HMM: is there reason for this anymore : simpler
+to treat full geometries and small geometries just the same 
+from the point of view of loading. 
+
+**/
 
 CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 {

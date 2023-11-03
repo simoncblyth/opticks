@@ -38,9 +38,9 @@ if [ -n "$CVD" ]; then
 fi
 
 
-#num=1000
+num=1000
 #num=5000
-num=1000000
+#num=1000000
 NUM=${NUM:-$num}
 
 export SEvent_MakeGensteps_num_ph=$NUM

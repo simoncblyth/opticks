@@ -1,11 +1,24 @@
 #!/bin/bash -l 
-msg="=== $BASH_SOURCE :"
 
-CSGQueryTest $* 
-[ $? -ne 0 ] && echo $msg run error && exit 1
+cd $(dirname $BASH_SOURCE)
 
-#${IPYTHON:-ipython} -i tests/CSGQueryTest.py 
-#[ $? -ne 0 ] && echo $msg ana error && exit 2
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+name=CSGQueryTest
+#defarg="run_ana"
+defarg="run"
+arg=${1:-$defarg}
+
+
+if [ "${arg/run}" != "$arg" ]; then 
+   $name $* 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+   ${IPYTHON:-ipython} --pdb -i tests/$name.py 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 2
+fi
 
 exit 0 
 

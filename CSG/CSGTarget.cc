@@ -69,7 +69,14 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
         << " sensor_index " << sensor_index
         ;
 
+    LOG_IF( fatal , gas_idx < 0 ) 
+        << " gas_idx " << gas_idx 
+        << " foundry->inst.size " << foundry->inst.size()
+        << " BAD sqat4.h inst ? "
+        ;  
 
+    assert( gas_idx > -1 ); 
+ 
     assert( ins_idx == inst_idx ); 
     fr.set_inst(inst_idx); 
    

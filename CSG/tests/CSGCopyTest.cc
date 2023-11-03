@@ -1,10 +1,8 @@
 #include "OPTICKS_LOG.hh"
 #include "SSim.hh"
-#include "SSys.hh"
 #include "SBitSet.hh"
 #include "CSGFoundry.h"
 #include "CSGCopy.h"
-
 
 int main(int argc, char** argv)
 {
@@ -17,7 +15,6 @@ int main(int argc, char** argv)
     SSim::Create(); 
 
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
-    // CSGFoundry::Load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  
 
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", "t" ); 
 
@@ -43,7 +40,6 @@ int main(int argc, char** argv)
     {
         LOG(info) << " src.cfbase " << src->cfbase << " elv.spec " << elv->spec ; 
     }
-
 
     return 0 ;  
 }

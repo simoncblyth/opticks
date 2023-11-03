@@ -49,7 +49,7 @@ inline scontext::scontext()
 {
     if(VERBOSE) std::cout << "[scontext::scontext" << std::endl ; 
 
-    const char* dirpath = spath::ResolvePath("$HOME/.opticks/scontext") ; 
+    const char* dirpath = spath::Resolve("$HOME/.opticks/scontext") ; 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
     assert(rc == 0); 
 

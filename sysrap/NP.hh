@@ -247,6 +247,7 @@ struct NP
 
 
     // load array asis 
+    static NP* LoadIfExists(const char* path); 
     static NP* Load(const char* path); 
     static NP* Load_(const char* path); 
     static NP* Load(const char* dir, const char* name); 
@@ -2471,7 +2472,10 @@ inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ..
 
 
 
-
+inline NP* NP::LoadIfExists(const char* path_)
+{
+    return NP::Exists(path_) ? NP::Load(path_) : nullptr ; 
+}
 
 inline NP* NP::Load(const char* path_)
 {
@@ -4758,6 +4762,9 @@ inline void NP::save(const char* dir, const char* reldir, const char* name) cons
 
 inline void NP::save(const char* dir, const char* name) const 
 {
+    if(dir == nullptr || name == nullptr) std::cerr << "NP::save FAIL dir OR name arg is null " << std::endl ; 
+    if(dir == nullptr || name == nullptr) return ; 
+
     std::string path = U::form_path(dir, name); 
     save(path.c_str()); 
 }

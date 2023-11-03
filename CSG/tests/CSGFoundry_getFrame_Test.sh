@@ -23,7 +23,7 @@ source $DIR/../../bin/OPTICKS_INPUT_PHOTON.sh
 
 source ~/.opticks/GEOM/GEOM.sh  # sets GEOM envvar, edit with GEOM bash function
 
-export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+# export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # now setting this in GEOM.sh 
 
 
 ipf=Hama:0:1000

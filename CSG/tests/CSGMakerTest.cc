@@ -2,13 +2,18 @@
 CSGMakerTest.cc
 =================
 
+HMM: this was stomping on standard GEOM folder  
+USING MakeGeom/LoadGeom needs to effectively change GEOM to the name argument
+and standard corresponding folder 
 
-
+NOPE : THIS IS DOING SOMETHING NON-STANDARD
+SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY 
 
 **/
 
 
 #include "ssys.h"
+#include "spath.h"
 #include "SSim.hh"
 #include "SOpticksResource.hh"
 #include "CSGFoundry.h"
@@ -60,17 +65,18 @@ int main(int argc, char** argv)
          const char* name = names[i].c_str() ; 
          LOG(info) << name ; 
 
-         SOpticksResource::SetGEOM(name);  
+         //SOpticksResource::SetGEOM(name);  
 
          CSGFoundry* fd = CSGFoundry::MakeGeom( name ); 
          LOG(info) << fd->desc();    
 
-         fd->save();  
-         // HMM: this is stomping on standard GEOM folder  
-         // USING MakeGeom/LoadGeom needs to effectively change GEOM to the name argument
-         // and standard corresponding folder 
+         const char* base = spath::Join("$TMP/CSGMakerTest",name) ; 
 
-         CSGFoundry* lfd = CSGFoundry::LoadGeom( name ); 
+         fd->save(base);  
+
+         //CSGFoundry* lfd = CSGFoundry::LoadGeom( name );
+         CSGFoundry* lfd = CSGFoundry::Load(base); 
+
 
          LOG(info) << " lfd.loaddir " << lfd->loaddir ; 
 

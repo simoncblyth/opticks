@@ -437,6 +437,7 @@ template void ssys::fill_evec( std::vector<std::string>& , const char*, const ch
 template<typename T>
 inline std::vector<T>* ssys::make_vec(const char* line, char delim )
 {
+    if(line == nullptr) return nullptr ; 
     std::vector<T>* vec = new std::vector<T>() ; 
     fill_vec<T>( *vec, line, delim ); 
     return vec ; 
@@ -450,7 +451,6 @@ inline std::vector<T>* ssys::make_vec(const char* line, char delim )
 template<typename T>
 inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim )
 {
-    assert(fallback); 
     char* line = getenv(ekey);
     return make_vec<T>( line ? line : fallback, delim );  
 }

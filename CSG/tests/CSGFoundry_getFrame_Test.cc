@@ -46,19 +46,27 @@ int main(int argc, char** argv)
     const CSGFoundry* fd = CSGFoundry::Load();
     std::cout << " fd.brief " << fd->brief() << std::endl ;
     std::cout << " fd.desc  " << fd->desc() << std::endl ;
-
+    std::cout << "[ fd->getFrameE " << std::endl ; 
     sframe fr = fd->getFrameE() ;  // via INST, MOI, OPTICKS_INPUT_PHOTON_FRAME "ipf"
+    std::cout << "] fd->getFrameE " << std::endl ; 
 
     int INST = ssys::getenvint("INST",-1) ; 
     if(INST > -1) std::cout <<  "INST" << INST << std::endl << fd->descInstance(INST) << std::endl ; 
-    std::cout << "fr" << fr << std::endl ;   
 
+    std::cout << "[ fr " << std::endl << fr << std::endl << " ] fr " << std::endl ;   
+
+    std::cout << " [ fr.save " << std::endl ; 
     fr.save(FOLD); 
+    std::cout << " ] fr.save " << std::endl ; 
+    std::cout << " [ fr.save_extras " << std::endl ; 
     fr.save_extras(FOLD); 
+    std::cout << " ] fr.save_extras " << std::endl ; 
 
     SEvt* evt = SEvt::Create(0) ;  
 
+    std::cout << " [ test_InputPhoton " << std::endl ; 
     int rc = test_InputPhoton(evt, fr ); 
+    std::cout << " ] test_InputPhoton " << std::endl ; 
 
     return rc ; 
 }

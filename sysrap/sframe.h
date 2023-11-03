@@ -415,9 +415,23 @@ inline NP* sframe::getFrameArray() const
 }
 inline void sframe::save(const char* dir, const char* name_ ) const
 {
+    std::cout 
+        << "[ sframe::save " 
+        << " dir : " << ( dir ? dir : "MISSING_DIR" ) 
+        << " name: " << ( name_ ? name_ : "MISSING_NAME" ) 
+        << std::endl 
+        ; 
+
     std::string name = U::form_name( name_ , ".npy" ) ; 
     NP* a = getFrameArray(); 
+
     a->save(dir, name.c_str()); 
+
+    std::cout 
+       << "] sframe::save "
+       << std::endl
+       ;
+
 }
 inline void sframe::save_extras(const char* dir)
 {

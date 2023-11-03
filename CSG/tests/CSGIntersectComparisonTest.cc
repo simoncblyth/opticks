@@ -174,7 +174,7 @@ CSGIntersectComparisonTest::CSGIntersectComparisonTest( const CSGNode* a_, const
     METHOD(SSys::getenvvar("METHOD", "loaded")),
     FULL(SSys::getenvbool("FULL")),
     RERUN(SSys::getenvvar("RERUN", "/tmp/simtrace.npy")),
-    rerun( NP::Load(RERUN) ),
+    rerun( NP::LoadIfExists(RERUN) ),
     rr( rerun ? (const quad4*)rerun->values<float>() : nullptr ),
     AXES(SSys::getenvvar("AXES", "XZ")),
     h( strlen(AXES) > 0 ? AXES[0] - 'X' : ~0u ),

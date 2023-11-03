@@ -3,9 +3,10 @@
 #include <array>
 #include <cstdlib>
 
-#include "SSys.hh"
+#include "ssys.h"
+#include "spath.h"
+
 #include "SSim.hh"
-#include "SPath.hh"
 #include "NP.hh"
 
 #include "CSGFoundry.h"
@@ -28,24 +29,29 @@ CSGSimtraceRerun::CSGSimtraceRerun()
     fd(CSGFoundry::Load()),      // via GEOM envvar 
     vv(fd ? fd->loadAux("Values/values.npy") : nullptr ),
     SELECTION(getenv("SELECTION")),
-    selection(SSys::getenvintvec("SELECTION",',')),  // when no envvar gives nullptr  
+    selection(ssys::getenv_vec<int>("SELECTION",nullptr,',')),  // when no envvar gives fallback:nullptr  
     with_selection(selection && selection->size() > 0 ),  // SELECTION envvar must have values for with_selection:true 
-    fold(SPath::Resolve("$T_FOLD", NOOP)),
-    path0(SPath::Join(fold, "simtrace.npy")),
-    path1(SPath::Join(fold, with_selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
-    simtrace0(NP::Load(path0)),
+    fold(spath::Resolve("$T_FOLD")),
+    path0(spath::Join(fold, "simtrace.npy")),
+    path1(spath::Join(fold, with_selection ? "simtrace_selection.npy" : "simtrace_rerun.npy" )),
+    simtrace0(NP::LoadIfExists(path0)),
     simtrace1(with_selection ? NP::Make<float>(selection->size(),2,4,4) : NP::MakeLike(simtrace0)),
     qq0(simtrace0 ? (const quad4*)simtrace0->bytes() : nullptr),
     qq1(simtrace1 ? (quad4*)simtrace1->bytes() : nullptr),  
-    q(new CSGQuery(fd)),
-    d(new CSGDraw(q,'Z'))
+    q(fd ? new CSGQuery(fd) : nullptr),
+    d(q  ? new CSGDraw(q,'Z') : nullptr)
 {
     init(); 
 }
 
 void CSGSimtraceRerun::init()
 {
-    LOG(LEVEL) << d->desc();
+    LOG_IF(fatal, fd == nullptr) << " NO GEOMETRY " ; 
+    assert( fd ); 
+    //LOG_IF(fatal, simtrace0 == nullptr) << " NO SIMTRACE INTERSECTS TO CHECK  " ; 
+    //assert( simtrace0 ); 
+
+    LOG(LEVEL) << ( d ? d->desc() : "-" ) ;
     LOG(LEVEL) << " fd.cfbase " << fd->cfbase ; 
     LOG(LEVEL) << " vv " << ( vv ? vv->sstr() : "-" ) ; 
     LOG(LEVEL) << "vv.lpath [" << ( vv->lpath.empty() ? "" : vv->lpath )  << "]" << std::endl << ( vv ? vv->descValues() : "-" ) ; 

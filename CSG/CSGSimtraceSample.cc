@@ -3,10 +3,10 @@
 #include <array>
 #include <cstdlib>
 
-#include "SSys.hh"
-#include "SSim.hh"
-#include "SPath.hh"
+#include "ssys.h"
 #include "NP.hh"
+
+#include "SSim.hh"
 
 #include "CSGFoundry.h"
 #include "CSGQuery.h"
@@ -23,19 +23,22 @@ CSGSimtraceSample::CSGSimtraceSample()
     sim(SSim::Create()),
     fd(CSGFoundry::Load()),      // via GEOM envvar 
     vv(fd ? fd->loadAux("Values/values.npy") : nullptr ),
-    path(SSys::getenvvar("SAMPLE_PATH","/tmp/simtrace_sample.npy")),
-    simtrace(NP::Load(path)),
+    path(ssys::getenvvar("SAMPLE_PATH","/tmp/simtrace_sample.npy")),
+    simtrace(NP::LoadIfExists(path)),
     qq(simtrace ? (quad4*)simtrace->bytes() : nullptr),  
-    q(new CSGQuery(fd)),
-    d(new CSGDraw(q,'Z'))
+    q(fd ? new CSGQuery(fd) : nullptr ),
+    d(q  ? new CSGDraw(q,'Z') : nullptr)
 {
     init(); 
 }
 
 void CSGSimtraceSample::init()
 {
-    LOG(LEVEL) << d->desc() ; 
-    LOG(LEVEL) << " fd.cfbase " << fd->cfbase ; 
+    LOG_IF( fatal, fd == nullptr ) << " fd NULL " ; 
+    assert( fd ); 
+
+    LOG(LEVEL) << " d(CSGDraw) " << ( d ? d->desc() : "-" )  ; 
+    LOG(LEVEL) << " fd.cfbase " << ( fd ? fd->cfbase : "-" ) ; 
     LOG(LEVEL) << " vv " << ( vv ? vv->sstr() : "-" ) ; 
     LOG(LEVEL) << "vv.lpath [" << ( vv ? vv->lpath : "-" ) << "]"  ; 
     LOG(LEVEL) << "vv.descValues " << std::endl << ( vv ? vv->descValues() : "-" ) ; 
@@ -58,6 +61,9 @@ std::string CSGSimtraceSample::desc() const
 
 int CSGSimtraceSample::intersect()
 {
+    LOG_IF(fatal, q == nullptr ) << " q NULL " ; 
+    if(q == nullptr) return 0 ; 
+
     unsigned n = simtrace ? simtrace->shape[0] : 0u ; 
     int num_intersect = 0 ; 
     for(unsigned i=0 ; i < n ; i++) 

@@ -85,7 +85,7 @@ struct SName
 
 inline SName* SName::Load(const char* path_)
 {
-    const char* path = spath::ResolvePath(path_); 
+    const char* path = spath::Resolve(path_); 
     if(path == nullptr) 
     {
         std::cerr 

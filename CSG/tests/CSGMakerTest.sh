@@ -2,12 +2,16 @@
 
 bin=CSGMakerTest
 
+logging(){
+   export CSGFoundry=INFO
+}
+logging
 
-export CSGFoundry=INFO
 
 #geom=JustOrb
-geom=BoxedSphere
+#geom=BoxedSphere
 #export CSGMakerTest_GEOM=$geom
+
 
 arg=${1:-run}
 

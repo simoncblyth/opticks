@@ -18,7 +18,7 @@ void test_ResolvePath()
     for(unsigned i=0 ; i < specs.size() ; i++)
     { 
         const char* spec = specs[i].c_str(); 
-        const char* path = spath::ResolvePath(spec); 
+        const char* path = spath::Resolve(spec); 
         std::cout 
             << " spec " << spec << std::endl  
             << " path " << path << std::endl
@@ -77,6 +77,12 @@ void test_Basename()
     assert( strcmp( base, "base") == 0 ); 
 }
 
+void test_Name()
+{
+    const char* name = spath::Name("red_","green_","blue") ; 
+    assert( strcmp( name, "red_green_blue") == 0 ); 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -85,8 +91,9 @@ int main(int argc, char** argv)
     test_Resolve(); 
     test_Exists(); 
     test_Exists2(); 
-    */
     test_Basename(); 
+    */
+    test_Name(); 
 
 
     return 0 ; 

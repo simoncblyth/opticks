@@ -363,7 +363,7 @@ All sdevice struct from the vector are written into a single file
 
 void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
 {
-    const char* dirpath = spath::ResolvePath(dirpath_) ; 
+    const char* dirpath = spath::Resolve(dirpath_) ; 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
     assert(rc == 0); 
 
@@ -397,7 +397,7 @@ from the single file until reaching EOF.
 
 void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
 {
-    const char* dirpath = spath::ResolvePath(dirpath_) ; 
+    const char* dirpath = spath::Resolve(dirpath_) ; 
     std::string path = Path(dirpath); 
     if(VERBOSE) std::cout
         << "sdevice::Load"

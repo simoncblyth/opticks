@@ -3,11 +3,16 @@
 #include <cstdlib>
 
 #include "SSys.hh"
+#include "ssys.h"
+
 #include "SStr.hh"
+#include "sstr.h"
+
 #include "SPath.hh"
+#include "spath.h"
+
 #include "SProc.hh"
 #include "SOpticksResource.hh"
-#include "SOpticksKey.hh"
 #include "SLOG.hh"
 
 #include "NP.hh"
@@ -34,18 +39,12 @@ SOpticksResource::ResolveUserPrefix
 2. if envvar not defined defaults to $HOME/.opticks 
 3. the envvar is subsequently internally set for consistency 
 
-NB changes to layout need to be done in several places C++/bash/py::
-
-   ana/geocache.bash
-   ana/key.py
-   boostrap/BOpticksResource.cc
-   sysrap/SOpticksResource.cc
 
 **/
 
 const char* SOpticksResource::ResolveUserPrefix(const char* envkey, bool envset)  // static
 {
-    const char* evalue = SSys::getenvvar(envkey);    
+    const char* evalue = ssys::getenvvar(envkey);    
     const char* prefix = evalue == nullptr ?  MakeUserDir(".opticks") : evalue ; 
     if(envset)
     {
@@ -96,19 +95,20 @@ using envvar SOpticksResource_ExecutableName
 const char* SOpticksResource::ExecutableName()
 {  
     const char* exe0 = SProc::ExecutableName() ; 
-    bool is_python = SStr::StartsWith(exe0, "python") ;  
-    const char* script = SSys::getenvvar("SCRIPT"); 
+    bool is_python = sstr::StartsWith(exe0, "python") ;  
+    const char* script = ssys::getenvvar("SCRIPT"); 
     const char* exe = ( is_python && script ) ? script : exe0 ; 
-    const char* result = SSys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
+    const char* result = ssys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
 
     // as this is used before logging is setup cannot use normal logging to check 
-    if(SSys::getenvvar("SOpticksResource")) std::cout 
+    if(ssys::getenvvar("SOpticksResource")) std::cout 
         << "SOpticksResource::ExecutableName" 
         << " exe0 "      << ( exe0 ? exe0 : "-" )
         << " is_python " << is_python 
         << " script "    << ( script ? script : "-" )
         << " exe "       << ( exe  ? exe : "-" )
         << " result "    << ( result ? result : "-" ) 
+        << std::endl 
         ;
 
     return result ; 
@@ -136,9 +136,9 @@ Precedence order for the GEOM string returned
 
 const char* SOpticksResource::GEOMFromEnv(const char* fallback)
 {
-    const char* geom_std = SSys::getenvvar("GEOM", fallback) ; 
+    const char* geom_std = ssys::getenvvar("GEOM", fallback) ; 
     const char* geom_bin = ExecutableName_GEOM() ; 
-    const char* geom = SSys::getenvvar(geom_bin, geom_std) ;     
+    const char* geom = ssys::getenvvar(geom_bin, geom_std) ;     
     return geom ; 
 }
 
@@ -197,7 +197,9 @@ const char* SOpticksResource::DefaultOutputDir()
 }
 const char* SOpticksResource::DefaultGeometryDir()
 { 
-    return SPath::Resolve("$TMP/GEOM", GEOM(), NOOP); 
+    //return SPath::Resolve("$HOME/.opticks/GEOM", GEOM(), NOOP); 
+    //return SPath::Resolve("$TMP/GEOM", GEOM(), NOOP); 
+    return spath::Resolve("$HOME/.opticks/GEOM/$GEOM") ; 
 }
 const char* SOpticksResource::DefaultGeometryBase()
 { 
@@ -241,12 +243,6 @@ std::string SOpticksResource::Dump()
     const char* geometrydir = DefaultGeometryDir(); 
     const char* geometrybase = DefaultGeometryBase(); 
     const char* runcache_dir = RuncacheDir() ; 
-
-#ifdef WITH_OPTICKS_KEY
-    bool setkey = true ; 
-    const char* idpath = IDPath(setkey) ; 
-#endif
-
     const char* cfbase = CFBase(); 
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
@@ -272,13 +268,8 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::PrecookedDir()           " << ( precooked_dir ? precooked_dir : "-" )  << std::endl 
         << "SOpticksResource::DefaultOutputDir()       " << ( outputdir ? outputdir : "-" ) << std::endl 
         << "SOpticksResource::DefaultGeometryBase()    " << ( geometrybase ? geometrybase : "-" ) << std::endl 
-        << "SOpticksResource::DefaultGeometryDir()    " << ( geometrydir ? geometrydir : "-" ) << std::endl 
+        << "SOpticksResource::DefaultGeometryDir()     " << ( geometrydir ? geometrydir : "-" ) << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
-#ifdef WITH_OPTICKS_KEY
-        << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
-#else
-        << "NOT WITH_OPTICKS_KEY " << std::endl 
-#endif
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
@@ -290,35 +281,6 @@ std::string SOpticksResource::Dump()
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-#ifdef WITH_OPTICKS_KEY
-
-/**
-SOpticksResource::IDPath
--------------------------
-
-The default setkey:true means that the OPTICKS_KEY from the environment is used. 
-
-**/
-
-const char* SOpticksResource::IDPath(bool setkey) 
-{  
-    if(setkey)
-    {
-        SOpticksKey::SetKey(); 
-    }
-    const char* base = GeocacheDir(); 
-    const SOpticksKey* key = SOpticksKey::GetKey() ; 
-    return key == nullptr ? nullptr : key->getIdPath(base)  ;  
-}
-
-const NP* SOpticksResource::IDLoad(const char* relpath)
-{
-    const char* idpath = SOpticksResource::IDPath();
-    return NP::Load(idpath, relpath) ; 
-}
-#endif
 
 
 
@@ -346,31 +308,13 @@ OPTICKS_KEY is returned.
 const char* SOpticksResource::CFBASE_ = "CFBASE" ; 
 const char* SOpticksResource::CFBase()
 {
-    const char* cfbase = SSys::getenvvar(CFBASE_) ; 
-
-    /*
-    if( cfbase == nullptr )
-    {
-        bool setkey = true ; 
-        cfbase = CGDir(setkey);    
-    }
-    */
-
+    const char* cfbase = ssys::getenvvar(CFBASE_) ; 
     return cfbase ; 
 }
 
 const char* SOpticksResource::CFBaseAlt()
 {
-    const char* cfbase = SSys::getenvvar("CFBASE_ALT") ; 
-
-    /*
-    if( cfbase == nullptr )
-    {
-        bool setkey = true ; 
-        cfbase = CGDirAlt(setkey); 
-    }
-    */
-
+    const char* cfbase = ssys::getenvvar("CFBASE_ALT") ; 
     return cfbase ; 
 }
 
@@ -392,7 +336,7 @@ such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
 const char* SOpticksResource::OldCFBaseFromGEOM()
 {
     const char* cfbase = nullptr ; 
-    const char* geom = SSys::getenvvar("GEOM"); 
+    const char* geom = ssys::getenvvar("GEOM"); 
     if( geom != nullptr )
     {
         const char* gcn =  SStr::HeadLast(geom, '_'); 
@@ -430,9 +374,11 @@ Bash functions to edit config : geom_, com_. oip
 const char* SOpticksResource::CFBaseFromGEOM()
 {
     const char* geom = GEOM(); 
-    const char* path = geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
+    const char* name = spath::Name(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ; 
+    const char* path = geom == nullptr ? nullptr : ssys::getenvvar(name) ; 
     LOG(LEVEL) 
         << " geom " << geom 
+        << " name " << name 
         << " path " << path 
         ;
     return path ; 
@@ -455,7 +401,7 @@ that starts with the GEOM value::
 const char* SOpticksResource::GDMLPathFromGEOM()
 {
     const char* geom = GEOM(); 
-    const char* path =  geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
+    const char* path =  geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
     LOG(LEVEL) 
         << " geom " << geom 
         << " path " << path 
@@ -469,7 +415,7 @@ const char* SOpticksResource::GDMLPathFromGEOM()
 const char* SOpticksResource::WrapLVForName(const char* name)
 {
     assert(name) ; 
-    return SSys::getenvvar(SStr::Name(name, "_WrapLVForName")) ; 
+    return ssys::getenvvar(SStr::Name(name, "_WrapLVForName")) ; 
 }
 
 
@@ -533,25 +479,25 @@ For example exercise this with::
 const char* SOpticksResource::GDMLPath(){ return GDMLPath( GEOM()); }
 const char* SOpticksResource::GDMLPath(const char* geom)
 {
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
 }
 
 const char* SOpticksResource::GEOMSub(){ return GEOMSub( GEOM()); }
 const char* SOpticksResource::GEOMSub(const char* geom)
 {
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMSub")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMSub")) ; 
 }
 
 const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( GEOM()); }
 const char* SOpticksResource::GEOMWrap(const char* geom)
 {
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 
 }
 
 const char* SOpticksResource::GEOMList(){ return GEOMList( GEOM()); }
 const char* SOpticksResource::GEOMList(const char* geom)
 {
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMList")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMList")) ; 
 }
 
 

@@ -3,42 +3,29 @@ usage(){ cat << EOU
 CSGFoundry_CreateFromSimTest.sh testing CSGFoundry::CreateFromSim
 =====================================================================
 
-HMM: problem with this is that there is only one CSGFoundry 
-so cannot compare between two routes. This is becaise when using 
-U4TreeCreate start from gdml and create SSim that creates the CSGFoundry. 
-
-
+This is a technical test that are able to copy one CSGFoundry 
+to another, rather than a compatison of two routes. 
+This is because when using U4TreeCreate start from gdml 
+and create SSim that creates the CSGFoundry. 
 So will need to go upwards to gxt/G4CXOpticks_setGeometry_Test.sh
+for a more complete test. 
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 bin=CSGFoundry_CreateFromSimTest
+
+#script=$SDIR/$bin.py
 script=$SDIR/CSGFoundryAB.py
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-
-
-#base=$HOME/.opticks/GEOM/$GEOM
-#base=/tmp/GEOM/$GEOM
-#base=/tmp/$USER/opticks/U4TreeCreateTest
-base=/tmp/blyth/opticks/U4TreeCreateSSimTest
-
-export BASE=${BASE:-$base}
-
-check=$BASE/SSim/stree/nds.npy
-
-if [ ! -f "$check" ]; then
-   echo $BASH_SOURCE input check $check does not exist at BASE $BASE check $check 
-   exit 1 
-fi 
 
 export FOLD=/tmp/$USER/opticks/$bin
 mkdir -p $FOLD
 
 # env for CSGFoundryAB comparison 
-export A_CFBASE=/tmp/$USER/opticks/G4CXOpticks_setGeometry_Test
+export A_CFBASE=$HOME/.opticks/GEOM/$GEOM
 export B_CFBASE=$FOLD
 
 lvid=119
@@ -46,9 +33,6 @@ ndid=0
 export LVID=${LVID:-$lvid}
 export NDID=${NDID:-$ndid}
 #export scsg_level=1
-
-# this does nothing here as no U4 involved 
-#export U4Polycone__DISABLE_NUDGE=1 
 
 
 

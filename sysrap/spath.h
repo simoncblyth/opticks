@@ -1,4 +1,15 @@
 #pragma once
+/**
+spath.h
+=========
+
+Q: Whats the difference between spath::ResolvePath and spath::Resolve ? 
+A: ResolvePath accepts only a single string element whereas Resolve accepts
+   from 1 to 4 elements
+
+   * so incon
+
+**/
 
 #include <cstdlib>
 #include <cstring>
@@ -11,22 +22,31 @@ struct spath
 {
     static constexpr const bool VERBOSE = false ; 
 
-    static std::string _ResolvePath0(const char* spec); 
+private:
     static std::string _ResolvePath(const char* spec); 
     static const char* ResolvePath(const char* spec); 
 
     template<typename ... Args>
     static std::string _Resolve(Args ... args ); 
 
+public:
     template<typename ... Args>
     static const char* Resolve(Args ... args ); 
 
-
+private:
     template<typename ... Args>
     static std::string _Join( Args ... args_  ); 
 
     template<typename ... Args>
+    static std::string _Name( Args ... args_  ); 
+
+public:
+    template<typename ... Args>
     static const char* Join( Args ... args ); 
+
+    template<typename ... Args>
+    static const char* Name( Args ... args ); 
+
 
     template<typename ... Args>
     static bool Exists( Args ... args ); 
@@ -37,42 +57,6 @@ struct spath
 
 };
 
-/**
-spath::_ResolvePath0 : old impl that only works for tokens at start of spec
------------------------------------------------------------------------------
-::
-
-    $TOKEN/remainder/path/name.npy   (tok_plus) 
-    $TOKEN
-
-If the TOKEN envvar is not set then nullptr is returned.  
-
-**/
-
-inline std::string spath::_ResolvePath0(const char* spec_)
-{
-    if(spec_ == nullptr) return "" ; 
-    char* spec = strdup(spec_); 
-
-    std::stringstream ss ; 
-    if( spec[0] == '$' )
-    {
-        char* sep = strchr(spec, '/');       // point to first slash  
-        char* end = strchr(spec, '\0' ); 
-        bool tok_plus =  sep && end && sep != end ;  
-        if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
-        char* pfx = getenv(spec+1) ; 
-        if(pfx == nullptr) return "" ;  
-        if(tok_plus) *sep = '/' ;            // put back the slash 
-        ss << pfx << ( sep ? sep : "" ) ; 
-    }
-    else
-    {
-        ss << spec ; 
-    }
-    std::string str = ss.str(); 
-    return str ; 
-}
 
 /**
 spath::_ResolvePath
@@ -208,6 +192,73 @@ template const char* spath::Join( const char* );
 template const char* spath::Join( const char*, const char* ); 
 template const char* spath::Join( const char*, const char*, const char* ); 
 template const char* spath::Join( const char*, const char*, const char*, const char* ); 
+
+
+
+
+
+
+
+
+template<typename ... Args>
+inline std::string spath::_Name( Args ... args_  )  // static
+{
+    std::vector<std::string> args = {args_...};
+    std::vector<std::string> elem ; 
+
+    for(unsigned i=0 ; i < args.size() ; i++)
+    {
+        const std::string& arg = args[i] ; 
+        if(!arg.empty()) elem.push_back(arg);  
+    }
+
+    const char* delim = "" ; 
+
+    unsigned num_elem = elem.size() ; 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < num_elem ; i++)
+    {
+        const std::string& ele = elem[i] ; 
+        ss << ele << ( i < num_elem - 1 ? delim : "" ) ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}   
+
+template std::string spath::_Name( const char* ); 
+template std::string spath::_Name( const char*, const char* ); 
+template std::string spath::_Name( const char*, const char*, const char* ); 
+template std::string spath::_Name( const char*, const char*, const char*, const char* ); 
+
+template<typename ... Args>
+inline const char* spath::Name( Args ... args )  // static
+{
+    std::string s = _Name(std::forward<Args>(args)...)  ; 
+    return strdup(s.c_str()) ; 
+}   
+
+template const char* spath::Name( const char* ); 
+template const char* spath::Name( const char*, const char* ); 
+template const char* spath::Name( const char*, const char*, const char* ); 
+template const char* spath::Name( const char*, const char*, const char*, const char* ); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
