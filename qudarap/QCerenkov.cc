@@ -3,8 +3,7 @@
 #include <cuda_runtime.h>
 
 #include "SLOG.hh"
-#include "SSys.hh"
-#include "SPath.hh"
+#include "spath.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -35,7 +34,7 @@ const char* QCerenkov::DEFAULT_FOLD = "$TMP/QCerenkovIntegralTest/test_makeICDF_
 
 NP* QCerenkov::Load(const char* fold, const char* name)  // static
 {
-    const char* path = SPath::Resolve(fold, name, NOOP);  
+    const char* path = spath::Resolve(fold);  
     NP* a = NP::Load(path); 
     LOG_IF(fatal, !a) << " failed to load array from path " << path ; 
     return a ; 

@@ -2,8 +2,7 @@
 #include <algorithm>
 
 #include "SLOG.hh"
-#include "SSys.hh"
-#include "SPath.hh"
+#include "spath.h"
 #include "scuda.h"
 
 #include "NP.hh"
@@ -22,24 +21,23 @@ const unsigned QCerenkovIntegral::SPLITBIN_PAYLOAD_SIZE = 8 ;
 const unsigned QCerenkovIntegral::UPPERCUT_PAYLOAD_SIZE = 3 ; 
 
 
+
+
+
 /**
-For now restrict to handling RINDEX from a single material . 
+QCerenkovIntegral::QCerenkovIntegral
+------------------------------------
+
+Requires path to RINDEX.npy 
+Note this is just handling rindex for a single material. 
+
+
 **/
-
-const char* QCerenkovIntegral::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/LS_ori/RINDEX.npy" ;
-
-NP* QCerenkovIntegral::Load(const char* path_)  // static
-{
-    int create_dirs = 0 ;  // 0:nop
-    const char* path = SPath::Resolve(path_, create_dirs);  
-    NP* a = NP::Load(path); 
-    return a ; 
-}
 
 QCerenkovIntegral::QCerenkovIntegral(const char* path_ )
     :
-    path( path_ ? path_ : DEFAULT_PATH ),
-    dsrc( path ? Load(path) : nullptr ),
+    path( spath::Resolve(path_) ),
+    dsrc( NP::LoadIfExists(path)),
     src( nullptr ),
     emn(0.),
     emx(0.),
@@ -52,7 +50,10 @@ QCerenkovIntegral::QCerenkovIntegral(const char* path_ )
 
 void QCerenkovIntegral::init()
 {
-    LOG_IF(error, dsrc == nullptr ) << " not loaded " ; 
+    LOG_IF(error, dsrc == nullptr ) 
+        << " FAILED to load " 
+        << " path " << path 
+        ; 
     if(dsrc == nullptr) return ; 
 
     if(dsrc) src = dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc) ; 

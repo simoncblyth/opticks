@@ -40,7 +40,6 @@ struct QUDARAP_API QCerenkovIntegral
 
     static const char* State(int state); 
 
-    static NP* Load(const char* path_) ; 
 
     const char*             path ; 
     NP*                     dsrc ;  // RINDEX array 

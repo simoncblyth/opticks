@@ -7,7 +7,7 @@ in order to construct an ICDF that is saved into $TMP/QCerenkovIntegralTest
 
 **/
 
-#include "SPath.hh"
+#include "spath.h"
 #include "NP.hh"
 #include "NPX.h"
 #include "SOpticksResource.hh"
@@ -64,8 +64,7 @@ void test_GetAverageNumberOfPhotons_s2(const QCerenkovIntegral& ck)
                 ; 
     }
 
-    int create_dirs = 1 ; //1:filepath
-    const char* path = SPath::Resolve(BASE, "test_GetAverageNumberOfPhotons_s2.npy", create_dirs ); 
+    const char* path = spath::Resolve(BASE, "test_GetAverageNumberOfPhotons_s2.npy" ); 
     LOG(info) << " save to " << path ; 
     scan->save(path); 
 }
@@ -81,9 +80,7 @@ void test_getS2Integral_UpperCut_one( const QCerenkovIntegral& ck, double BetaIn
         << " s2c " << s2c->desc()
         ; 
 
-  
-    int create_dirs = 1 ; // 1:filepath 
-    const char* path = SPath::Resolve(BASE, "test_getS2Integral_UpperCut_one.npy", create_dirs ); 
+    const char* path = spath::Resolve(BASE, "test_getS2Integral_UpperCut_one.npy" ); 
     LOG(info) << " save to " << path ; 
     s2c->save(path); 
 }
@@ -105,9 +102,7 @@ void test_getS2Integral_UpperCut(const QCerenkovIntegral& ck )
         << " s2c " << s2c->desc()
         ; 
 
-
-    int create_dirs = 2 ; // 2:dirpath 
-    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_UpperCut", create_dirs ); 
+    const char* fold = spath::Resolve(BASE, "test_getS2Integral_UpperCut" ); 
     LOG(info) << " save to " << fold ; 
     s2c->save(fold,"s2c.npy"); 
 
@@ -122,8 +117,7 @@ void test_getS2Integral_SplitBin( const QCerenkovIntegral& ck, const char* bis_,
     const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NPX::FromString<double>(bis_);     
     NP* s2c = ck.getS2Integral_SplitBin<double>(bis, mul, dump); 
 
-    int create_dirs = 2 ; // 2:dirpath 
-    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_SplitBin", create_dirs); 
+    const char* fold = spath::Resolve(BASE, "test_getS2Integral_SplitBin"); 
 
     LOG(info) 
         << " bis_ " << bis_
@@ -156,8 +150,7 @@ void test_makeICDF_UpperCut(const QCerenkovIntegral& ck, unsigned ny, unsigned n
         << std::endl  
         ;
 
-    int create_dirs = 2 ; // 2:dirpath 
-    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_UpperCut",  create_dirs); 
+    const char* qck_path = spath::Resolve(BASE, "test_makeICDF_UpperCut"); 
     qck.save(qck_path); 
 }
 
@@ -177,8 +170,7 @@ void test_makeICDF_SplitBin(const QCerenkovIntegral& ck, unsigned ny, unsigned m
         << std::endl  
         ;
 
-    int create_dirs = 2 ;  //2:dirpath
-    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_SplitBin",  create_dirs); 
+    const char* qck_path = spath::Resolve(BASE, "test_makeICDF_SplitBin"); 
     qck.save(qck_path); 
 }
 
@@ -189,14 +181,20 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* rindexpath = SPath::Resolve("$CFBaseFromGEOM/GGeo/GScintillatorLib/LS_ori/RINDEX.npy", NOOP ); 
-    LOG(info) << " rindexpath " << rindexpath ; 
+    const char* _path = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/material/LS/RINDEX.npy" ; 
+    const char* path = spath::Resolve(_path) ; 
+    LOG(info) 
+        << " _path " << path
+        << " path " << path
+        ; 
 
-    char d = 'S' ; 
+    char d = 'N' ; 
     char t = argc > 1 ? argv[1][0] : d  ; 
     LOG(info) << " t " << t ; 
 
-    QCerenkovIntegral ck(rindexpath) ;  
+    QCerenkovIntegral ck(path) ;  
+    if(ck.dsrc == nullptr) return 0 ; 
+
 
     if( t == 'N' )
     {

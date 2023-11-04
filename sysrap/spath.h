@@ -18,6 +18,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 struct spath
 {
