@@ -1,11 +1,11 @@
-#include "SSys.hh"
-#include "SPath.hh"
+
+#include "OPTICKS_LOG.hh"
+#include "ssys.h"
+#include "spath.h"
+#include "scuda.h"
 #include "NP.hh"
 #include "SOpticksResource.hh"
 #include "QScint.hh"
-#include "scuda.h"
-#include "OPTICKS_LOG.hh"
-
 
 void test_check(QScint& sc)
 {
@@ -15,11 +15,8 @@ void test_check(QScint& sc)
 void test_lookup(QScint& sc)
 {
     NP* dst = sc.lookup(); 
-    int create_dirs = 2 ; // 2:dirpath
-    const char* fold = SPath::Resolve("$TMP/QScintTest", create_dirs) ; 
-    LOG(info) << " save to " << fold ; 
-    dst->save(fold, "dst.npy"); 
-    sc.src->save(fold, "src.npy") ; 
+    dst->save("$TMP/QScintTest/dst.npy"); 
+    sc.src->save("$TMP/QScintTest/src.npy") ; 
 }
 
 int main(int argc, char** argv)
@@ -27,10 +24,15 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* cfbase = SOpticksResource::CFBaseFromGEOM(); 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry/SSim/icdf.npy"); // HMM: this needs a more destinctive name/location  
+    LOG_IF(fatal, cfbase == nullptr ) << " SOpticksResource::CFBaseFromGEOM() returned nullptr : CHECK GEOM " ; 
+    if(cfbase == nullptr) return 1 ; 
+
+    const char* path = spath::Resolve(cfbase, "CSGFoundry/SSim/stree/standard/icdf.npy" ); 
+    NP* icdf = NP::LoadIfExists(path); 
 
     LOG(info) 
         << " cfbase " << cfbase
+        << " path " << path 
         << " icdf " << ( icdf ? icdf->sstr() : "-" )
         ; 
 

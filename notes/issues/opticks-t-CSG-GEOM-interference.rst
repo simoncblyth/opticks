@@ -1,5 +1,5 @@
-opticks-t-CSG-GEOM-interference
-==================================
+FIXED : opticks-t-CSG-GEOM-interference and some other CSG test fails
+=======================================================================
 
 Some CSG test is writing into GEOM folder unexpectedly, 
 causing non-repeatable test fails.
