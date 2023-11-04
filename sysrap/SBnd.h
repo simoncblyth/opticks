@@ -65,6 +65,7 @@ be used::
 
 )" ; 
 
+    bool        hasAllBoundaryIndices( const char* bnd_sequence, char delim=',' ) const ;
     void        getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ;
     std::string descBoundaryIndices( const std::vector<int>& bnd_idx ) const ;
 
@@ -169,6 +170,21 @@ inline int SBnd::getBoundaryIndex(const char* spec) const
 }
 
 
+inline bool SBnd::hasAllBoundaryIndices( const char* bnd_sequence, char delim ) const 
+{
+    std::vector<std::string> bnd ; 
+    sstr::SplitTrim(bnd_sequence,delim, bnd ); 
+    int missing = 0 ; 
+
+    for(int i=0 ; i < int(bnd.size()) ; i++)
+    {
+        const char* spec = bnd[i].c_str(); 
+        if(strlen(spec) == 0) continue ;  
+        int bidx = getBoundaryIndex(spec); 
+        if( bidx == MISSING ) missing += 1 ; 
+    }
+    return missing == 0 ; 
+}
 
 inline void SBnd::getBoundaryIndices( std::vector<int>& bnd_idx, const char* bnd_sequence, char delim ) const 
 {

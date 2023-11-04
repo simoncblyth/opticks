@@ -55,6 +55,7 @@ struct SPrd
     const char*         bnd_sequence ; 
     const NP*           bnd ; 
     const SBnd*         sbnd ; 
+    int                 rc ; 
 
     std::vector<float4> nrmt ; 
     std::vector<float>  lposcost; 
@@ -89,9 +90,9 @@ inline SPrd::SPrd(const NP* bnd_)
     :
     bnd_sequence(ssys::getenvvar("SPRD_BND", SPRD_BND_DEFAULT )),
     bnd(bnd_),
-    sbnd(bnd ? new SBnd(bnd) : nullptr)
+    sbnd(bnd ? new SBnd(bnd) : nullptr),
+    rc(0)
 {
-    assert(sbnd); 
     init(); 
 }
 
@@ -111,6 +112,26 @@ Sensitive to envvars SPRD_BND, SPRD_NRMT, SPRD_IDENTITY, SPRD_LPOSCOST
 
 inline void SPrd::init_evec()
 {
+    assert(sbnd); 
+    bool has_all = sbnd->hasAllBoundaryIndices( bnd_sequence, '\n' ); 
+
+    if(!has_all)
+    {
+        std::cerr 
+            << "SPrd::init_evec"
+            << " THE GEOMETRY DOES NOT HAVE ALL THE BOUNDARY INDICES " 
+            << std::endl
+            << "["
+            << std::endl
+            << ( bnd_sequence ? bnd_sequence : "-" )
+            << std::endl
+            << "]"
+            << std::endl
+            ;
+        rc = 101 ; 
+        return ; 
+    } 
+
     sbnd->getBoundaryIndices( bnd_idx, bnd_sequence, '\n' ); 
 
     ssys::fill_evec<int>  (identity, "SPRD_IDENTITY", SPRD_IDENTITY_DEFAULT, ',' );  

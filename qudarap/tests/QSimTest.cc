@@ -717,6 +717,13 @@ int main(int argc, char** argv)
     QSim::UploadComponents(sim);   // instanciates things like QBnd : NORMALLY FIRST GPU ACCESS 
     const SPrd* prd = sim->get_sprd() ; 
 
+    LOG_IF(error, prd->rc != 0 )
+        << " SPrd::rc NON-ZERO " << prd->rc 
+        << " NOT ALL CONFIGURED BOUNDARIES ARE IN THE GEOMETRY "
+        ;
+    if(prd->rc != 0 ) return 1 ; 
+
+
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
     SEvt* evt = SEvt::Create(SEvt::EGPU) ; 

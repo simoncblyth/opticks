@@ -10,7 +10,7 @@
 */
 
 #include "OPTICKS_LOG.hh"
-#include "SPath.hh"
+#include "spath.h"
 #include "GDXML.hh"
 
 int main(int argc, char** argv)
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* srcpath = argc > 1 ? argv[1] : nullptr ; 
-    const char* dstpath = SPath::Resolve("$TMP/GDXMLTest/test.gdml", FILEPATH) ; 
+    const char* dstpath = spath::Resolve("$TMP/GDXMLTest/test.gdml") ; 
 
     if(!srcpath) 
     {
