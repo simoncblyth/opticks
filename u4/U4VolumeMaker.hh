@@ -97,11 +97,11 @@ struct U4_API U4VolumeMaker
     static void RaindropRockAirWater_Configure( 
         std::vector<std::string>& mats, 
         std::vector<double>& rindex, 
+        double& universe_halfside, 
         double& container_halfside, 
         double& medium_halfside, 
         double& drop_radius ); 
-    static const G4VPhysicalVolume* RaindropRockAirWater();  
-    static const G4VPhysicalVolume* RaindropRockAirWaterSD();
+    static const G4VPhysicalVolume* RaindropRockAirWater(bool sd);  
 
     // general lv creators 
  

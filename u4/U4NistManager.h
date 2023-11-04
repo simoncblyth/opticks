@@ -1,5 +1,16 @@
 #pragma once
+/**
+U4NistManager.h
+================
 
+Find names::
+
+    g4-;g4-cc FindOrBuildMaterial
+    g4-cls G4NistMaterialBuilder
+
+
+
+**/
 #include "G4NistManager.hh"
 
 struct U4NistManager

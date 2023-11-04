@@ -9,13 +9,12 @@
 #include "G4Box.hh"
 #include "G4Orb.hh"
 
-#include "SStr.hh"
-#include "SOpticksResource.hh"
-#include "SPath.hh"
-#include "ssys.h"
+#include "spath.h"
 #include "sstr.h"
+#include "ssys.h"
 #include "SPlace.h"
 
+#include "SOpticksResource.hh"
 #include "SLOG.hh"
 
 #include "U4.hh"
@@ -138,7 +137,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     METH = "PVG_" ; 
     const char* gdmlpath = SOpticksResource::GDMLPath(name) ;  // CAUTION this is different from GDMLPathFromGEOM  
     const char* sub = SOpticksResource::GEOMSub(name);  
-    bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
+    bool exists = gdmlpath && spath::Exists(gdmlpath) ; 
 
     std::cerr 
         << "U4VolumeMaker::PVG_"
@@ -153,7 +152,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     const G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ; 
 
     if(loaded && ssys::getenvbool(PVG_WriteNames))
-        U4Volume::WriteNames( loaded, SPath::Resolve("$TMP", PVG_WriteNames, DIRPATH));  
+        U4Volume::WriteNames( loaded, spath::Resolve("$TMP", PVG_WriteNames));  
     
     const G4VPhysicalVolume* pv = loaded ; 
 
@@ -165,7 +164,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
         pv = Wrap( name, lvs );  
 
         if(ssys::getenvbool(PVG_WriteNames_Sub))
-            U4Volume::WriteNames( pv, SPath::Resolve("$TMP", PVG_WriteNames_Sub, DIRPATH));  
+            U4Volume::WriteNames( pv, spath::Resolve("$TMP", PVG_WriteNames_Sub));  
     }
 
     LOG(LEVEL) 
@@ -252,15 +251,14 @@ const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
     METH = "PVS_" ; 
     const G4VPhysicalVolume* pv = nullptr ; 
     if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);   
-    if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater();   
-    if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWaterSD();   
-    if(strcmp(name,"RaindropRockAirWaterSmall" ) == 0) pv = RaindropRockAirWater();   
+    if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater(false);   
+    if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWater(true);   
     return pv ; 
 }
 const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 {
     METH = "PVL_" ; 
-    if(!SStr::StartsWith(name, "List")) return nullptr  ; 
+    if(!sstr::StartsWith(name, "List")) return nullptr  ; 
     std::vector<G4LogicalVolume*> lvs ; 
     LV(lvs, name + strlen("List") ); 
     const G4VPhysicalVolume* pv = WrapLVGrid(lvs, 1, 1, 1 ); 
@@ -324,7 +322,7 @@ U4VolumeMaker::LV vector interface : creates multiple LV using delimited names s
 void U4VolumeMaker::LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, char delim )
 {
     std::vector<std::string> names ; 
-    SStr::Split(names_ , delim, names ); 
+    sstr::Split(names_ , delim, names ); 
     unsigned num_names = names.size(); 
     LOG(LEVEL) << " names_ " << names_ << " num_names " << num_names ;  
     assert( num_names > 1 ); 
@@ -731,7 +729,7 @@ Used from U4VolumeMaker::WrapLVOffset
 const G4VPhysicalVolume* U4VolumeMaker::AddPlacement( G4LogicalVolume* mother_lv,  G4LogicalVolume* lv,  double tx, double ty, double tz )
 {
     G4ThreeVector tla(tx,ty,tz); 
-    const char* pv_name = SStr::Name( lv->GetName().c_str(), "_placement" ); 
+    const char* pv_name = spath::Name( lv->GetName().c_str(), "_placement" ); 
     LOG(LEVEL) << Desc(tla) << " " << pv_name ;  
     const G4VPhysicalVolume* pv = new G4PVPlacement(0,tla,lv,pv_name,mother_lv,false,0);
     return pv ; 
@@ -795,7 +793,7 @@ const G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, const char* mat, co
 const G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv, const char* flip_axes )
 {
     const char* lv_name = lv->GetName().c_str() ; 
-    const char* pv_name = SStr::Name(lv_name, "_pv") ; 
+    const char* pv_name = spath::Name(lv_name, "_pv") ; 
 
     U4RotationMatrix* flip = flip_axes ? U4RotationMatrix::Flip(flip_axes) : nullptr ; 
     return new G4PVPlacement(flip,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
@@ -839,12 +837,13 @@ for example.
 void U4VolumeMaker::RaindropRockAirWater_Configure( 
     std::vector<std::string>& mats, 
     std::vector<double>& rindex, 
-    double& rock_halfside, 
-    double& air_halfside, 
-    double& water_radius )
+    double& universe_halfside,    // VACUUM
+    double& container_halfside,   // Rock
+    double& medium_halfside,      // Air
+    double& drop_radius )         // Water
 {
-    ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "G4_Pb,G4_AIR,G4_WATER", ',' ) ; 
-    ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,1,1.333", ',' ) ; 
+    ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "VACUUM,G4_Pb,G4_AIR,G4_WATER", ',' ) ; 
+    ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,0,1,1.333", ',' ) ; 
 
     double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
@@ -853,9 +852,10 @@ void U4VolumeMaker::RaindropRockAirWater_Configure(
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
  
-    rock_halfside = 1.1*halfside*factor ; 
-    air_halfside = halfside*factor ; 
-    water_radius = halfside/2. ; 
+    universe_halfside = 1.2*halfside*factor ;    // VACUUM 
+    container_halfside = 1.1*halfside*factor ;   // rock  : G4_Pb
+    medium_halfside = halfside*factor ;          // air   : G4_AIR
+    drop_radius = halfside/2. ;                  // water : G4_WATER 
 }
 
 /**
@@ -872,79 +872,6 @@ U4VolumeMaker::RaindropRockAirWater
 | Water     | drop         | 
 +-----------+--------------+
 
-**/
-
-const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
-{
-    std::vector<std::string> mats ; 
-    std::vector<double> rindex ; 
-    double container_halfside ;
-    double medium_halfside ;
-    double drop_radius ; 
-
-    RaindropRockAirWater_Configure( mats, rindex, container_halfside, medium_halfside, drop_radius); 
-
-    assert( mats.size() == 3 ); 
-    assert( rindex.size() == 3 ); 
-
-    std::array<G4Material*, 3> materials ; 
-
-    for(int i=0 ; i < 3 ; i++)
-    {
-        const char* mat = mats[i].c_str() ; 
-        G4Material* material = U4Material::Get(mat) ;
-        if( material == nullptr ) std::cerr 
-            << "U4Material::Get"
-            << " FAILED FOR [" << mat << "]"
-            << std::endl 
-            ;
-        materials[i] = material ; 
-    }
-
-    G4Material* container_material = materials[0] ;  // originally "Rock"
-    G4Material* medium_material  = materials[1] ;    // originally "Air"
-    G4Material* drop_material  = materials[2] ;      // originally "Water"
-
-
-    // fix up materials that dont have RINDEX properties, if that is configured
-    for(int i=0 ; i < 3 ; i++)
-    {
-        G4Material* mat = materials[i] ; 
-        assert(mat); 
-
-        if(rindex[i] > 0. && !U4Material::HasMPT(mat) ) 
-        {
-            U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;
-        }
-    }
-
-
-    G4Orb* drop_solid = new G4Orb("drop_solid", drop_radius ); 
-    G4Box* medium_solid = new G4Box("medium_solid", medium_halfside, medium_halfside, medium_halfside );
-    G4Box* container_solid = new G4Box("container_solid", container_halfside, container_halfside, container_halfside );
-
-    G4LogicalVolume* drop_lv = new G4LogicalVolume( drop_solid, drop_material, "drop_lv"); 
-    G4LogicalVolume* medium_lv = new G4LogicalVolume( medium_solid, medium_material, "medium_lv"); 
-    G4LogicalVolume* container_lv = new G4LogicalVolume( container_solid, container_material, "container_lv" ); 
-
-    const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv ,"drop_pv", medium_lv,false,0);
-    const G4VPhysicalVolume* medium_pv = new G4PVPlacement(0,G4ThreeVector(),   medium_lv ,  "medium_pv",  container_lv,false,0);
-    const G4VPhysicalVolume* container_pv = new G4PVPlacement(0,G4ThreeVector(),  container_lv ,  "container_pv", nullptr,false,0);
-
-    assert( drop_pv ); 
-    assert( medium_pv ); 
-    assert( container_pv ); 
-
-    G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface(
-       "medium_container_bs", medium_pv, container_pv );  
-    assert( medium_container_bs ); 
-
-    return container_pv ; 
-}
-
-/**
-U4VolumeMaker::RaindropRockAirWaterSD
---------------------------------------
 
 Notice that so long as all the LV are created prior to creating the PV, 
 which need the LV for placement and mother logical, there is no need to be 
@@ -956,61 +883,90 @@ together by the higher level methods that make less sense to generalize.
 
 **/
 
-const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWaterSD()
+const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
 {
     std::vector<std::string> mats ; 
     std::vector<double> rindex ; 
 
+    double universe_halfside ;
     double container_halfside ;
     double medium_halfside ;
     double drop_radius ; 
-    RaindropRockAirWater_Configure( mats, rindex, container_halfside, medium_halfside, drop_radius ); 
 
-    assert( mats.size() == 3 ); 
-    assert( rindex.size() == 3 ); 
+    RaindropRockAirWater_Configure( mats, rindex, universe_halfside, container_halfside, medium_halfside, drop_radius); 
 
-    const char* container_mat = mats[0].c_str() ;   // originally "Rock"
-    const char* medium_mat = mats[1].c_str() ;      // originally "Air"
-    const char* drop_mat = mats[2].c_str() ;        // originally "Water"
+    static const int N = 4 ; 
+    bool mats_expect = mats.size() == N  ; 
+    bool rindex_expect = rindex.size() == N ; 
 
-    G4Material* container_material  = U4Material::Get(container_mat);   
-    G4Material* medium_material  = U4Material::Get(medium_mat);   
-    G4Material* drop_material  = U4Material::Get(drop_mat);   
+    LOG_IF(error, !mats_expect)   << " unexpected mats.size " << mats.size() << " expecting " << N ; 
+    LOG_IF(error, !rindex_expect) << " unexpected rindex.size " << rindex.size() << " expecting " << N ; 
+    assert( mats_expect ); 
+    assert( rindex_expect ); 
 
-    std::array<G4Material*, 3> materials = {{container_material, medium_material, drop_material }} ; 
+    std::array<G4Material*, N> materials ; 
+
+    for(int i=0 ; i < N ; i++)
+    {
+        const char* mat = mats[i].c_str() ; 
+        G4Material* material = U4Material::Get(mat) ;
+        if( material == nullptr ) std::cerr 
+            << "U4Material::Get"
+            << " FAILED FOR [" << mat << "]"
+            << std::endl 
+            ;
+        materials[i] = material ; 
+    }
+
+    G4Material* universe_material = materials[0] ;  // default "VACUUM"
+    G4Material* container_material = materials[1] ;  // default "G4_Pb"
+    G4Material* medium_material  = materials[2] ;    // default "G4_AIR"
+    G4Material* drop_material  = materials[3] ;      // default "G4_WATER"
+
     // fix up materials that dont have RINDEX properties, if that is configured
-    for(int i=0 ; i < 3 ; i++)
+    for(int i=0 ; i < N ; i++)
     {
         G4Material* mat = materials[i] ; 
+        assert(mat); 
+
         if(rindex[i] > 0. && !U4Material::HasMPT(mat) ) 
         {
             U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;
         }
     }
 
+
+    G4LogicalVolume* universe_lv  = Box_(universe_halfside, universe_material ); 
     G4LogicalVolume* container_lv  = Box_(container_halfside, container_material ); 
     G4LogicalVolume* medium_lv   = Box_(medium_halfside, medium_material ); 
     G4LogicalVolume* drop_lv = Orb_(drop_radius, drop_material ); 
 
-    const G4VPhysicalVolume* container_pv  = new G4PVPlacement(0,G4ThreeVector(), container_lv ,  "container_pv", nullptr,false,0);
-    const G4VPhysicalVolume* medium_pv     = new G4PVPlacement(0,G4ThreeVector(), medium_lv    ,  "medium_pv", container_lv,false,0);
-    const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv , "drop_pv", medium_lv,false,0);
+    const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv ,"drop_pv", medium_lv,false,0);
+    const G4VPhysicalVolume* medium_pv = new G4PVPlacement(0,G4ThreeVector(),   medium_lv ,  "medium_pv",  container_lv,false,0);
+    const G4VPhysicalVolume* container_pv = new G4PVPlacement(0,G4ThreeVector(),  container_lv ,  "container_pv", universe_lv,false,0);
+    const G4VPhysicalVolume* universe_pv = new G4PVPlacement(0,G4ThreeVector(),  universe_lv ,  "universe_pv", nullptr,false,0);
 
-    assert( container_pv ); 
-    assert( medium_pv ); 
     assert( drop_pv ); 
+    assert( medium_pv ); 
+    assert( container_pv ); 
+    assert( universe_pv ); 
 
-    G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface("medium_container_bs", medium_pv, container_pv );  
+    G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface(
+       "medium_container_bs", medium_pv, container_pv );  
     assert( medium_container_bs ); 
 
-    //drop_lv->SetSensitiveDetector(new U4SensitiveDetector("drop_sd")); 
-    // not needed, it is the below surface that is necessary 
+    if(sd)
+    {
+        //drop_lv->SetSensitiveDetector(new U4SensitiveDetector("drop_sd")); 
+        // not needed, it is the below surface that is necessary 
 
-    G4LogicalBorderSurface* medium_drop_bs = U4Surface::MakePerfectDetectorBorderSurface("medium_drop_bs", medium_pv, drop_pv );  
-    assert( medium_drop_bs ); 
-
-    return container_pv ; 
+        G4LogicalBorderSurface* medium_drop_bs = U4Surface::MakePerfectDetectorBorderSurface("medium_drop_bs", medium_pv, drop_pv );  
+        assert( medium_drop_bs ); 
+    }
+    return universe_pv ; 
 }
+
+
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char* prefix )
 {
     if( prefix == nullptr ) prefix = mat ; 
@@ -1019,8 +975,9 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char
 }
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, G4Material* material, const char* prefix )
 {
-    G4Orb* solid = new G4Orb( SStr::Name(prefix,"_solid"), radius ); 
-    G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
+    if( prefix == nullptr ) prefix = material->GetName().c_str() ; 
+    G4Orb* solid = new G4Orb( spath::Name(prefix,"_solid"), radius ); 
+    G4LogicalVolume* lv = new G4LogicalVolume( solid, material, spath::Name(prefix,"_lv")); 
     return lv ; 
 }
 G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix, const double* scale )
@@ -1033,14 +990,15 @@ G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const ch
 
 G4LogicalVolume* U4VolumeMaker::Box_( double halfside, G4Material* material, const char* prefix, const double* scale )
 {
+    if( prefix == nullptr ) prefix = material->GetName().c_str() ; 
     double hx = scale ? scale[0]*halfside : halfside ; 
     double hy = scale ? scale[1]*halfside : halfside ; 
     double hz = scale ? scale[2]*halfside : halfside ; 
 
     LOG(LEVEL) << " hx " << hx << " hy " << hy << " hz " << hz << " halfside " << halfside ; 
 
-    G4Box* solid = new G4Box( SStr::Name(prefix,"_solid"), hx, hy, hz );
-    G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
+    G4Box* solid = new G4Box( spath::Name(prefix,"_solid"), hx, hy, hz );
+    G4LogicalVolume* lv = new G4LogicalVolume( solid, material, spath::Name(prefix,"_lv")); 
     return lv ; 
 }
 

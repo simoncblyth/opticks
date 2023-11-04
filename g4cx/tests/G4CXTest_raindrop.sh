@@ -27,9 +27,12 @@ bin=G4CXTest
 script=G4CXTest_raindrop.py 
 
 export GEOM=RaindropRockAirWater  # GEOM is identifier for a geometry 
-export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,1,1.333
-export U4VolumeMaker_RaindropRockAirWater_MATS=G4_Pb,G4_AIR,G4_WATER
+
+# THESE ARE NOW THE DEFAULTS 
+export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,0,1,1.333
+export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
+
 
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 

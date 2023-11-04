@@ -41,9 +41,13 @@ Full GEOM : V1J011 : ALL PASSING CURRENTLY
 Minimal GEOM : RaindropRockAirWater 
 -------------------------------------
 
-Need technical universe wrapper volume to avoid
-
 ::
+
+        
+    100% tests passed, 0 tests failed out of 32
+
+
+Added universe wrapper volume to avoid three fails::
 
     The following tests FAILED:
           9 - U4Test.U4GDMLReadTest (Child aborted)

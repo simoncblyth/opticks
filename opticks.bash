@@ -76,7 +76,13 @@ GEOM base
 
 GEOM top
      change directory to : \$GEOM dir
-  
+
+GEOM lock 
+     make \$GEOM dir tree readonly   
+
+GEOM unlock 
+     make \$GEOM dir tree writable
+
 GEOM cf
      change directory to : \$GEOM/CSGFoundry 
 
@@ -117,7 +123,7 @@ GEOM(){
   base=.opticks/GEOM/$GEOM
 
 
-  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/cf/ss/st/std/info"
+  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/info"
   local geombase=$HOME/.opticks/GEOM
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
@@ -144,6 +150,10 @@ GEOM(){
      cmd="cd $geombase"
   elif [ "$arg" == "top" ]; then  
      cmd="cd $geomdir"
+  elif [ "$arg" == "lock" ]; then  
+     cmd="chmod -R ugo-w $geomdir"
+  elif [ "$arg" == "unlock" ]; then  
+     cmd="chmod -R u+w $geomdir"
   elif [ "$arg" == "cf" ]; then  
      cmd="cd $geomdir/CSGFoundry"
   elif [ "$arg" == "ss" ]; then  
