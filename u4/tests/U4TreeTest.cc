@@ -1,15 +1,13 @@
 #include "OPTICKS_LOG.hh"
 
+#include "spath.h"
+#include "ssys.h"
 
-
-
-#include "SPath.hh"
-#include "SSys.hh"
 #include "U4GDML.h"
 #include "U4Tree.h"
 
 
-const char* FOLD = SPath::Resolve("$TMP/U4TreeTest", DIRPATH); 
+const char* FOLD = spath::Resolve("/tmp/$USER/opticks/U4TreeTest"); 
 
 
 void test_saveload_get_children(const stree* tree0, const stree* tree1, int nidx )
@@ -75,8 +73,8 @@ void test_get_pv_0(const U4Tree* tree)
     std::cout << "[ test_get_pv_0 " << std::endl ; 
     const stree* st = tree->st ; 
 
-    const char* q_spec0 = SSys::getenvvar("SPEC0", "HamamatsuR12860sMask_virtual:0:0" ); 
-    const char* q_spec1 = SSys::getenvvar("SPEC1", "HamamatsuR12860sMask_virtual:0:-1" );
+    const char* q_spec0 = ssys::getenvvar("SPEC0", "HamamatsuR12860sMask_virtual:0:0" ); 
+    const char* q_spec1 = ssys::getenvvar("SPEC1", "HamamatsuR12860sMask_virtual:0:-1" );
 
     int nidx0 = st->find_lvid_node(q_spec0 );   
     int nidx1 = st->find_lvid_node(q_spec1 );   
@@ -213,7 +211,7 @@ void test_get_pv_1(const U4Tree* tree, const char* q_soname)
 {
     std::cout << "[ test_get_pv_1 " << std::endl ; 
 
-    unsigned edge = SSys::getenvunsigned("EDGE", 10); 
+    unsigned edge = ssys::getenvunsigned("EDGE", 10); 
 
     std::vector<int> nodes ; 
     tree->st->find_lvid_nodes(nodes, q_soname );  
@@ -262,11 +260,14 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* path = SPath::Resolve("$GDMLPath", NOOP ) ; 
-    LOG(info) << " path [" << path << "]" ; 
-    LOG_IF(fatal, path == nullptr) << " $GDMLPath null, see SOpticksResource  " ; 
+    const char* _path = "$HOME/.opticks/GEOM/$GEOM/origin.gdml" ;
+    const char* path = spath::Resolve(_path); 
+    LOG(info) 
+        << " _path [" << _path << "]" 
+        << " path [" << path << "]" 
+        ; 
+    LOG_IF(fatal, path == nullptr) << " " ; 
     if( path == nullptr ) return 0 ; 
-
 
     const G4VPhysicalVolume* world = U4GDML::Read(path) ;  
 

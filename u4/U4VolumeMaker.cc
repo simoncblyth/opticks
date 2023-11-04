@@ -843,8 +843,8 @@ void U4VolumeMaker::RaindropRockAirWater_Configure(
     double& air_halfside, 
     double& water_radius )
 {
-    ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "Rock,Air,Water", ',' ) ; 
-    ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,0,0", ',' ) ; 
+    ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "G4_Pb,G4_AIR,G4_WATER", ',' ) ; 
+    ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,1,1.333", ',' ) ; 
 
     double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
@@ -887,19 +887,31 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
     assert( mats.size() == 3 ); 
     assert( rindex.size() == 3 ); 
 
-    const char* container_mat = mats[0].c_str() ;   // originally "Rock"
-    const char* medium_mat = mats[1].c_str() ;      // originally "Air"
-    const char* drop_mat = mats[2].c_str() ;        // originally "Water"
+    std::array<G4Material*, 3> materials ; 
 
-    G4Material* container_material = U4Material::Get(container_mat );  
-    G4Material* medium_material  = U4Material::Get(medium_mat);   
-    G4Material* drop_material  = U4Material::Get(drop_mat); 
+    for(int i=0 ; i < 3 ; i++)
+    {
+        const char* mat = mats[i].c_str() ; 
+        G4Material* material = U4Material::Get(mat) ;
+        if( material == nullptr ) std::cerr 
+            << "U4Material::Get"
+            << " FAILED FOR [" << mat << "]"
+            << std::endl 
+            ;
+        materials[i] = material ; 
+    }
 
-    std::array<G4Material*, 3> materials = {{container_material, medium_material, drop_material }} ; 
+    G4Material* container_material = materials[0] ;  // originally "Rock"
+    G4Material* medium_material  = materials[1] ;    // originally "Air"
+    G4Material* drop_material  = materials[2] ;      // originally "Water"
+
+
     // fix up materials that dont have RINDEX properties, if that is configured
     for(int i=0 ; i < 3 ; i++)
     {
         G4Material* mat = materials[i] ; 
+        assert(mat); 
+
         if(rindex[i] > 0. && !U4Material::HasMPT(mat) ) 
         {
             U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;

@@ -380,6 +380,16 @@ inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 
     // postorder visit after recursive call  
     G4Material* mt = lv->GetMaterial() ; 
+
+    if(mt == nullptr) std::cerr
+       << "U4Tree::initMaterials_r"
+       << " pv " << ( pv ? pv->GetName() : "-" )
+       << " lv " << ( lv ? lv->GetName() : "-" )
+       << " num_child " << num_child 
+       << " mt " << ( mt ? mt->GetName() : "-" )
+       << std::endl
+       ;  
+
     assert(mt);  
 
     std::vector<const G4Material*>& m = materials ;  

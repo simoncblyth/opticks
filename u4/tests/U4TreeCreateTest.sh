@@ -39,9 +39,7 @@ loglevels
 
 
 export U4TreeBorder__FLAGGED_ISOLID=HamamatsuR12860sMask_virtual0x61b0510
-
 export U4Tree__IsFlaggedSolid_NAME=HamamatsuR12860sMask_virtual
-
 
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
@@ -76,11 +74,8 @@ if [ "${arg/load}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    case $(uname) in
-    Darwin) lldb__ $bin ;;
-    Linux)  gdb__ $bin ;;
-    esac
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
+   dbg__ $bin 
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 

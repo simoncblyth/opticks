@@ -3333,7 +3333,13 @@ opticks-cfbase(){ cd $(opticks-cfbase-) ; }
 opticks-cf-(){  echo $(opticks-cfbase-)/CSGFoundry ; }
 opticks-cf(){   cd $(opticks-cf-) ; }
 
-
+dbg__()
+{
+   case $(uname) in 
+      Darwin) lldb__ $* ;; 
+      Linux) gdb__ $* ;;
+   esac
+}
 
 gdb__ () 
 { 

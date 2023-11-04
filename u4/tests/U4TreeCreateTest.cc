@@ -1,10 +1,11 @@
 #include "OPTICKS_LOG.hh"
+#include "spath.h"
+#include "stree.h"
 
 #include "U4VolumeMaker.hh"
 #include "U4Tree.h"
-#include "stree.h"
 
-const char* FOLD = getenv("FOLD"); 
+const char* FOLD = spath::Resolve("/tmp/$USER/opticks/U4TreeCreateTest"); 
 
 int main(int argc, char** argv)
 {

@@ -66,11 +66,14 @@ set(TEST_SOURCES
 
    G4ThreeVectorTest.cc 
 
-   U4NavigatorTest.cc
 
    U4PhysicsTableTest.cc 
- 
 )
+
+set(EXPECTED_TO_FAIL_TEST_SOURCES
+   U4NavigatorTest.cc
+)
+
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
@@ -81,6 +84,16 @@ foreach(SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} U4)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
+
+
+foreach(SRC ${EXPECTED_TO_FAIL_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} U4)
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
 
 
 

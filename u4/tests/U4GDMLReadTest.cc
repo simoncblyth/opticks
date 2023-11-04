@@ -1,6 +1,6 @@
-#include "SPath.hh"
-#include "SOpticksResource.hh"
+
 #include "OPTICKS_LOG.hh"
+#include "spath.h"
 #include "U4GDML.h"
 
 #include "G4Material.hh"
@@ -48,17 +48,22 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* srcpath = SOpticksResource::GDMLPathFromGEOM() ; 
-    LOG(info) << " argv[0] " << argv[0] << " srcpath " << srcpath ; 
+    const char* path = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/origin.gdml"); 
+
+    LOG(info) 
+        << " argv[0] "
+        << argv[0] 
+        << " path " 
+        << path ; 
 
 
-    const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  
+    const G4VPhysicalVolume* world = U4GDML::Read(path) ;  
 
     Traverse trv(world);
 
     LOG(info) 
         << " argv[0] " << argv[0] << std::endl 
-        << " srcpath " << srcpath << std::endl 
+        << " path " << path << std::endl 
         << " world " << world << std::endl  
         ;
 

@@ -3,6 +3,9 @@ usage(){ cat << EOU
 COMMON.sh 
 ============
 
+MOVING AWAY FROM THIS : TO $HOME/.opticks/GEOM/GEOM.sh 
+
+
 Shortcut bash functions:
 
 com_

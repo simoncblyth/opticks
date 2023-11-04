@@ -29,10 +29,12 @@ arg=${1:-run}
 #geom=hama_body_log
 #geom=hamaLogicalPMT
 #geom=hamaBodyLog
-geom=V1J008
-
-
+#geom=V1J008
+geom=V1J011
 export GEOM=${GEOM:-$geom}
+
+#source $HOME/.opticks/GEOM/GEOM.sh 
+
 
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 if [ -f "$origin" ]; then

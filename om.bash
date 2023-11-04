@@ -61,6 +61,16 @@ om-test :opticksgeo
     run the tests for all subprojects from the first okconf upto opticksgeo    
 
 
+Partial test running
+----------------------
+
+::
+
+    TESTARG="-R U4TreeCreate" om-test  ## runs just the tests with that pattern 
+    TESTARG="-E U4TreeTest" om-test   ## exclude the regexp tests
+
+The TESTARG is included on the ctest command line, see ctest --help    
+
 Real World Usage 
 ------------------
 
@@ -953,7 +963,7 @@ $FUNCNAME
 
 To debug ctest running::
 
-    cd ~/opticks/integration
+    cd ~/opticks/u4
     om-cd  # change to bdir
 
     ctest -N    # list tests 
@@ -980,7 +990,10 @@ om-test-one()
     cd $bdir
     local log=ctest.log
     date          | tee $log
-    ctest $* --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
+
+    echo ctest $TESTARG --interactive-debug-mode 0 --output-on-failure  
+    ctest $* $TESTARG --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
+
     date          | tee -a $log
 
     cd $iwd

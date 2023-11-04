@@ -4,8 +4,8 @@ bin=U4TreeTest
 defarg="run_ana"
 arg=${1:-$defarg}
 
-
-source $OPTICKS_HOME/bin/COMMON.sh
+#source $OPTICKS_HOME/bin/COMMON.sh
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 
 if [ "${arg/info}" != "$arg" ]; then 

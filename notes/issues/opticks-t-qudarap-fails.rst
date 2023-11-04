@@ -45,10 +45,10 @@ With minimal GEOM::
 
     The following tests FAILED:
           5 - QUDARapTest.QCerenkovTest (Child aborted)
-          7 - QUDARapTest.QSimTest (Child aborted)
+          7 - QUDARapTest.QSimTest (Failed)
           8 - QUDARapTest.QBndTest (Child aborted)
-         20 - QUDARapTest.QPMTTest (INTERRUPT)
     Errors while running CTest
+
 
 
 
