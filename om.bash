@@ -567,12 +567,32 @@ om-make(){    om-one-or-all make $* ; return $? ; }
 om-install(){ om-one-or-all install $* ; return $? ; }
 om-cleaninstall(){ om-one-or-all cleaninstall $* ; return $? ; }
 om-visit(){   om-one-or-all visit $* ; return $? ; }
+
+om-test-hint(){ cat << EOH
+om-test-hint
+-------------
+
+To rerun selected tests use CTESTARG to change the ctest commandline, 
+for example using the "-R" regexp option eg::
+
+    CTESTARG="-R U4TreeCreateTest" om-test 
+    CTESTARG="-R U4TreeCreate" om-test     
+    ctest --help  # to see the possibilities
+
+To rebuild a test and rerun it use::
+ 
+    TEST=SBndTest om-t  # NB no environment setup : so only for very simple tests
+
+EOH
+}
+
 om-test(){    
     local rc=0
     om-testenv-push 
     om-one-or-all test $* 
     rc=$?
     om-testenv-pop
+    om-test-hint
     return $rc  
 }
 om-echo(){    om-one-or-all echo $* ; return $? ; }
@@ -991,8 +1011,8 @@ om-test-one()
     local log=ctest.log
     date          | tee $log
 
-    echo ctest $TESTARG --interactive-debug-mode 0 --output-on-failure  
-    ctest $* $TESTARG --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
+    echo ctest $CTESTARG --interactive-debug-mode 0 --output-on-failure  
+    ctest $* $CTESTARG --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
 
     date          | tee -a $log
 

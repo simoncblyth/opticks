@@ -100,8 +100,14 @@ void test_getBoundaryIndices_0(const SBnd& sb)
     const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );
     LOG(info) << " bnd_sequence " << bnd_sequence ;
 
+    bool has_all = sb.hasAllBoundaryIndices( bnd_sequence, ',') ; 
+    LOG_IF(error, !has_all) << " GEOMETRY DOES NOT CONTAIN ALL THE BOUNDARIES " ;  
+    if(!has_all) return ; 
+
     std::vector<int> bnd_idx ;
     sb.getBoundaryIndices( bnd_idx, bnd_sequence, ',' );
+
+
     LOG(info) << "sb.descBoundaryIndices" << std::endl << sb.descBoundaryIndices( bnd_idx );
 }
 
