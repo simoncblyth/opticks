@@ -153,6 +153,7 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER,DEBUG_CONE preprocessor macros
 #target_compile_definitions( ${name} PRIVATE DEBUG_CYLINDER )
 #target_compile_definitions( ${name} PRIVATE DEBUG_CONE )
 
+target_compile_definitions( ${name} PUBLIC WITH_S_BB )
 
 
 target_include_directories(${name}

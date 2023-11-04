@@ -19,6 +19,11 @@
 const float CSGNode::UNBOUNDED_DEFAULT_EXTENT = 0.f ; 
 
 
+bool CSGNode::IsDiff( const CSGNode& a , const CSGNode& b )  // static
+{
+    return false ; 
+}
+
 std::string CSGNode::Addr(unsigned repeatIdx, unsigned primIdx, unsigned partIdxRel ) // static
 {
     int wid = 10 ; 

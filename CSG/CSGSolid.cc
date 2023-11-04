@@ -16,6 +16,11 @@
 const plog::Severity CSGSolid::LEVEL = SLOG::EnvLevel("CSGSolid", "DEBUG") ; 
 
 
+bool CSGSolid::IsDiff( const CSGSolid& a , const CSGSolid& b ) // static 
+{
+    return false ; 
+}
+
 CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )
 {
     CSGSolid so = {} ; 

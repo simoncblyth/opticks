@@ -2,6 +2,7 @@
 
 struct SBitSet ; 
 struct CSGFoundry ; 
+struct s_bb ; 
 
 #include "plog/Severity.h"
 #include "CSG_API_EXPORT.hh"
@@ -29,9 +30,16 @@ struct CSG_API CSGCopy
 
     std::string desc() const ; 
     void copy() ; 
+
+#ifdef WITH_S_BB
+    void copySolidPrim(s_bb& solid_bb, int dPrimOffset, const CSGSolid* sso ); 
+    void copyPrimNodes(s_bb& prim_bb, const CSGPrim* spr ); 
+    void copyNode(     s_bb& prim_bb, unsigned nodeIdx ); 
+#else
     void copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso ); 
     void copyPrimNodes(AABB& prim_bb, const CSGPrim* spr ); 
     void copyNode(     AABB& prim_bb, unsigned nodeIdx ); 
+#endif
     void copySolidInstances();
 
  

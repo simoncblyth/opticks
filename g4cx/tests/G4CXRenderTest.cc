@@ -2,12 +2,9 @@
 G4CXRenderTest.cc
 ===================
 
-GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance,  
-TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
-
-
-HMM: no SEvt, saving the frame and render files could be managed by SEvt too to make the environment 
-the same in all RGNode
+TODO: investigate if SEvt could be used in render mode too 
+(eg to save the frame and image files) in order
+to make environment more similar in all modes
 
 **/
 #include <cuda_runtime.h>

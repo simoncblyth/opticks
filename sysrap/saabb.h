@@ -12,6 +12,17 @@
 #define AABB_METHOD inline 
 
 
+/**
+NOPE : DONT MAKE ANOTHER BBOX IMPL : REUSE s_bb.h WITHOUT THE POOL 
+
+struct saabb
+{
+   double3 mn ; 
+   double3 mx ; 
+};
+**/
+
+
 struct AABB
 {
     float3 mn ; 

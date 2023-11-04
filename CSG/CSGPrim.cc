@@ -37,6 +37,14 @@ std::string CSGPrim::desc() const
     return s ; 
 }
 
+bool CSGPrim::IsDiff( const CSGPrim& a , const CSGPrim& b )
+{
+    return false ; 
+}
+
+
+
+
 /**
 CSGPrim::MakeSpec
 -------------------

@@ -2955,6 +2955,11 @@ inline std::ostream& operator<<(std::ostream& os, const uint4& v)
     return os; 
 }
 
+inline bool float4_IsDiff( const float4& a, const float4& b )
+{
+    return false ; 
+}
+
 
 
 #endif

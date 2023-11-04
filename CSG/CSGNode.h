@@ -329,7 +329,7 @@ struct CSG_API CSGNode
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-
+    static bool IsDiff( const CSGNode& a , const CSGNode& b ); 
     static std::string Addr(unsigned repeatIdx, unsigned primIdx, unsigned partIdxRel ); 
 
     static std::string Desc(const float* fval, int numval=6, int wid=7, int prec=1 ); 

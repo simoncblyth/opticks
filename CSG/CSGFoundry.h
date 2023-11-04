@@ -115,13 +115,21 @@ struct CSG_API CSGFoundry : public SGeo
     void setOverrideSim( const SSim* ssim ); 
     const SSim* getSim() const ; 
 
+    // TODO: farm off comparison machinery into another struct 
 
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
+    static int CompareStruct(const CSGFoundry* a , const CSGFoundry* b ); 
     static std::string DescCompare( const CSGFoundry* a, const CSGFoundry* b ); 
-
 
     template<typename T>
     static int CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b );
+
+    template<typename T>
+    static int CompareStruct( const char* name, const std::vector<T>& a, const std::vector<T>& b );
+
+    static int CompareFloat4( const char* name, const std::vector<float4>& aa, const std::vector<float4>& bb ); 
+    static bool Float4_IsDiff( const float4& a , const float4& b ); 
+
 
     static int CompareBytes(const void* a, const void* b, unsigned num_bytes);
 

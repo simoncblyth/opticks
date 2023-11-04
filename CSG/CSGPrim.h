@@ -138,6 +138,10 @@ struct CSG_API CSGPrim
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+
+
+
     void scaleAABB_( float scale )
     {
         float* aabb = AABB_(); 
@@ -202,6 +206,7 @@ struct CSG_API CSGPrim
 
 
     std::string desc() const ; 
+    static bool IsDiff( const CSGPrim& a , const CSGPrim& b );
     static CSGPrimSpec MakeSpec( const CSGPrim* prim0, unsigned primIdx, unsigned numPrim ) ; 
 #endif
 

@@ -1,8 +1,17 @@
 
 #include "scuda.h"
 #include "sqat4.h"
+#include "ssys.h"
+
+#ifdef WITH_S_BB
+#include "s_bb.h"
+#else
+#include "saabb.h"
+#endif
+
+#include "SLOG.hh"
+
 #include "SBitSet.hh"
-#include "SSys.hh"
 #include "OpticksCSG.h"
 
 #include "CSGFoundry.h"
@@ -11,12 +20,11 @@
 #include "CSGNode.h"
 
 #include "CSGCopy.h"
-#include "SLOG.hh"
 
 
 const plog::Severity CSGCopy::LEVEL = SLOG::EnvLevel("CSGCopy", "DEBUG" ); 
-const int CSGCopy::DUMP_RIDX = SSys::getenvint("DUMP_RIDX", -1) ; 
-const int CSGCopy::DUMP_NPS = SSys::getenvint("DUMP_NPS", 0) ; 
+const int CSGCopy::DUMP_RIDX = ssys::getenvint("DUMP_RIDX", -1) ; 
+const int CSGCopy::DUMP_NPS = ssys::getenvint("DUMP_NPS", 0) ; 
 
 
 
@@ -139,15 +147,24 @@ void CSGCopy::copy()
 
         solidMap[sSolidIdx] = dSolidIdx ; 
 
+#ifdef WITH_S_BB
+        s_bb solid_bb = {} ; 
+#else
         AABB solid_bb = {} ;
+#endif
 
         copySolidPrim(solid_bb, dPrimOffset, sso);  
 
         unsigned numSelectedPrimCheck = dst->prim.size() - dPrimOffset ; 
         assert( numSelectedPrim == numSelectedPrimCheck );  
 
+#ifdef WITH_S_BB
+        float* ce = &(dso->center_extent.x) ; 
+        solid_bb.center_extent( ce ) ;  
+#else
         //dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
         dso->center_extent = solid_bb.center_extent(); 
+#endif
 
         LOG_IF(LEVEL, dump_solid) << " dso " << dso->desc() ; 
 
@@ -168,7 +185,11 @@ See the AABB mechanics at the tail of CSGFoundry::addDeepCopySolid
 
 **/
 
+#ifdef WITH_S_BB
+void CSGCopy::copySolidPrim(s_bb& solid_bb, int dPrimOffset, const CSGSolid* sso )
+#else
 void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso )
+#endif
 {
     unsigned dump_ = Dump(sSolidIdx); 
     bool dump_prim = ( dump_ & 0x2 ) != 0u ; 
@@ -192,13 +213,22 @@ void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso
          dpr->setRepeatIdx(repeatIdx); 
          dpr->setPrimIdx(dPrimIdx_local); 
 
+#ifdef WITH_S_BB
+         s_bb prim_bb = {} ;
+#else
          AABB prim_bb = {} ;
+#endif
          copyPrimNodes(prim_bb, spr ); 
-         dpr->setAABB( prim_bb.data() ); 
+
+#ifdef WITH_S_BB
+         prim_bb.write<float>( dpr->AABB_() ); 
+#else
          //dpr->setAABB( spr->AABB() );  // will not be so with selection 
+         dpr->setAABB( prim_bb.data() ); 
+#endif
 
          unsigned mismatch = 0 ; 
-         std::string cf = AABB::Compare(mismatch, spr->AABB(), prim_bb.data(), 1, 1e-6 ) ; 
+         std::string cf = AABB::Compare(mismatch, spr->AABB(), dpr->AABB(), 1, 1e-6 ) ; 
          if ( dump_prim && mismatch > 0 )
          {
              std::cout << std::endl ;  
@@ -219,7 +249,11 @@ CSGCopy::copyPrimNodes
 
 **/
 
+#ifdef WITH_S_BB
+void CSGCopy::copyPrimNodes(s_bb& prim_bb, const CSGPrim* spr )
+#else
 void CSGCopy::copyPrimNodes(AABB& prim_bb, const CSGPrim* spr )
+#endif
 {
     for(int nodeIdx=spr->nodeOffset() ; nodeIdx < spr->nodeOffset()+spr->numNode() ; nodeIdx++)
     {
@@ -236,7 +270,11 @@ also see tail of CSGFoundry::addDeepCopySolid
 
 **/
 
+#ifdef WITH_S_BB
+void CSGCopy::copyNode(s_bb& prim_bb, unsigned nodeIdx )
+#else
 void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
+#endif
 {
     unsigned dump_ = Dump(sSolidIdx); 
     bool dump_node = ( dump_ & 0x4 ) != 0u ; 
@@ -269,14 +307,6 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
 
     dnd->setTransformComplement( dTranIdx, complement ); 
 
-    /*
-    LOG(LEVEL)
-        << " nodeIdx " << std::setw(5) << nodeIdx
-        << " sTranIdx " << std::setw(5) << sTranIdx 
-        << " dTranIdx " << std::setw(5) << dTranIdx 
-        ;
-    */
- 
     if( elv == nullptr )
     {
         assert( dnd->planeNum() == snd->planeNum() );  
@@ -296,7 +326,12 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
         {
             tra->transform_aabb_inplace( naabb );
         }
+#ifdef WITH_S_BB
+        prim_bb.include_aabb_widen( naabb );
+
+#else
         prim_bb.include_aabb( naabb );
+#endif
     } 
 
     //if(dump_node) LOG(LEVEL) 
@@ -310,7 +345,11 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
         << " ht " << has_transform
         << " ng " << negated
         << " ib " << include_bb
+#ifdef WITH_S_BB
+        << " bb " << s_bb::Desc(naabb) 
+#else
         << " bb " << AABB::Desc(naabb) 
+#endif
         << std::endl 
         ; 
 }

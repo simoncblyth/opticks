@@ -428,6 +428,18 @@ void CSGFoundry::addSolidLabel(const char* label)
     mmlabel.push_back(label);  
 }
 
+/**
+CSGFoundry::Compare
+--------------------
+
+This does very simple byte comparison : looking for equality.
+
+TODO: find/implement absolute and relative difference comparison 
+using compare methods specific to the types to handle real comparisons,
+such as needed by CSGCopyTest 
+
+**/
+
 int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
 {
     int mismatch = 0 ; 
@@ -445,6 +457,27 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
 
     return mismatch ; 
 }
+
+int CSGFoundry::CompareStruct( const CSGFoundry* a, const CSGFoundry* b )
+{
+    int mismatch = 0 ; 
+    mismatch += CompareStruct( "solid", a->solid, b->solid ); 
+    mismatch += CompareStruct( "prim" , a->prim , b->prim ); 
+    mismatch += CompareStruct( "node" , a->node , b->node ); 
+    mismatch += CompareFloat4( "plan" , a->plan , b->plan ); 
+    mismatch += CompareStruct( "tran" , a->tran , b->tran ); 
+    mismatch += CompareStruct( "itra" , a->itra , b->itra ); 
+    mismatch += CompareStruct( "inst" , a->inst , b->inst ); 
+    mismatch += CompareVec(    "gas"  , a->gas , b->gas ); 
+    LOG_IF(fatal, mismatch != 0 ) << " mismatch FAIL ";  
+    //assert( mismatch == 0 ); 
+    mismatch += SSim::Compare( a->sim, b->sim ); 
+
+    return mismatch ; 
+}
+
+
+
 
 
 std::string CSGFoundry::DescCompare( const CSGFoundry* a, const CSGFoundry* b )
@@ -478,7 +511,13 @@ std::string CSGFoundry::DescCompare( const CSGFoundry* a, const CSGFoundry* b )
 }
 
 
+/**
+CSGFoundry::CompareVec
+------------------------
 
+Simple comparison looking for equality.
+
+**/
 
 template<typename T>
 int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b )
@@ -507,6 +546,86 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
          ;  
     return mismatch ; 
 }
+
+/**
+CSGFoundry::CompareStruct
+----------------------------
+
+More nuanced comparison to avoid small relative differences
+causing being regarded as errors.  
+
+**/
+
+
+template<typename T>
+int CSGFoundry::CompareStruct( const char* name, const std::vector<T>& aa, const std::vector<T>& bb )
+{
+    int mismatch = 0 ; 
+
+    bool size_match = aa.size() == bb.size() ; 
+    LOG_IF(info, !size_match) << name << " size_match FAIL " << aa.size() << " vs " << bb.size()    ; 
+    if(!size_match) mismatch += 1 ; 
+    if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
+
+    int num_struct = aa.size(); 
+    int num_diff = 0 ; 
+    for(int i=0 ; i < num_struct ; i++)
+    {
+        const T& a = aa[i] ; 
+        const T& b = bb[i] ; 
+        bool is_diff = T::IsDiff( a, b );   
+        if( is_diff ) num_diff += 1 ; 
+    }
+    if(num_diff != 0 ) mismatch += 1 ; 
+
+    LOG_IF(fatal, mismatch != 0) << " mismatch FAIL for " << name ;  
+    if( mismatch != 0 ) std::cout 
+         << " mismatch FAIL for " << name 
+         << " aa.size " << aa.size()
+         << " bb.size " << bb.size()
+         << " num_diff " << num_diff
+         << " mismatch " << mismatch 
+         << std::endl
+         ;  
+    return mismatch ; 
+}
+
+int CSGFoundry::CompareFloat4( const char* name, const std::vector<float4>& aa, const std::vector<float4>& bb ) // static
+{
+    int mismatch = 0 ; 
+    bool size_match = aa.size() == bb.size() ; 
+    LOG_IF(info, !size_match) << name << " size_match FAIL " << aa.size() << " vs " << bb.size()    ; 
+    if(!size_match) mismatch += 1 ; 
+    if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
+
+    int num_struct = aa.size(); 
+    int num_diff = 0 ; 
+    for(int i=0 ; i < num_struct ; i++)
+    {
+        const float4& a = aa[i] ; 
+        const float4& b = bb[i] ; 
+        bool is_diff = Float4_IsDiff( a, b );   
+        if( is_diff ) num_diff += 1 ; 
+    }
+    if(num_diff != 0 ) mismatch += 1 ; 
+
+    LOG_IF(fatal, mismatch != 0) << " mismatch FAIL for " << name ;  
+    if( mismatch != 0 ) std::cout 
+         << " mismatch FAIL for " << name 
+         << " aa.size " << aa.size()
+         << " bb.size " << bb.size()
+         << " num_diff " << num_diff
+         << " mismatch " << mismatch 
+         << std::endl
+         ;  
+    return mismatch ; 
+}
+
+bool CSGFoundry::Float4_IsDiff( const float4& a , const float4& b ) // static 
+{
+    return false ; 
+}
+
 
 int CSGFoundry::CompareBytes(const void* a, const void* b, unsigned num_bytes)
 {

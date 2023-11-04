@@ -3020,7 +3020,7 @@ inline const double* sn::getAABB()  const { return aabb ? aabb->data() : nullptr
 inline bool sn::hasAABB() const   // not-nullptr and not all zero 
 {
     const double* aabb = getAABB();  
-    return aabb != nullptr && !s_bb::IsZero(aabb) ; 
+    return aabb != nullptr && !s_bb::AllZero(aabb) ; 
 }
 
 

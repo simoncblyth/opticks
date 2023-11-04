@@ -416,7 +416,10 @@ struct qat4
         q3.f.w = 1.f ; 
     }
 
-
+    static QAT4_METHOD bool IsDiff( const qat4& a, const qat4& b )
+    {
+        return false ; 
+    }
 
     // collects unique ins/gas/ias indices found in qv vector of instances
     static QAT4_METHOD void find_unique(const std::vector<qat4>& qv, 

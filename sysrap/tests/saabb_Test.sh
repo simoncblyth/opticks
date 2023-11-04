@@ -2,7 +2,7 @@
 
 cd $(dirname $BASH_SOURCE)
 
-name=saabbTest
+name=saabb_Test
 
 FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
@@ -25,6 +25,5 @@ $bin
 [ $? -ne 0 ] && echo $BASH_SOURCE : run fail && exit 2
 
 exit 0 
-
 
 
