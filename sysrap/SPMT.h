@@ -249,7 +249,7 @@ inline const NPFold* SPMT::Serialize(const char* path) // static
 inline SPMT* SPMT::Load(const char* path_)
 {
     const char* path = path_ != nullptr ? path_ : PATH ;  
-    NPFold* fold = NPFold::Load(path) ; 
+    NPFold* fold = NPFold::LoadIfExists(path) ; 
     if(VERBOSE) printf("SPMT::Load path %s \n", ( path == nullptr ? "path-null" : path ) );  
     if(VERBOSE) printf("SPMT::Load fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );  
     return fold == nullptr ? nullptr : new SPMT(fold) ; 

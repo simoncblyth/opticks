@@ -43,11 +43,13 @@ int main(int argc, char** argv)
     std::cout << " Before: " << QPMT<float>::Desc() << std::endl ; 
 
     const NPFold* jpmt = get_jpmt_fold(); 
+    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr " ;  
+    if(jpmt==nullptr) return 0 ;  
 
     QPMTTest<float> t(jpmt); 
     NPFold* f = t.serialize(); 
     cudaDeviceSynchronize();
-    f->save("$FOLD"); 
+    f->save("/tmp/$USER/opticks/QPMTTest"); 
 
     std::cout << " Final: " << QPMT<float>::Desc() << std::endl ; 
 

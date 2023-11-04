@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* artpath = SSys::getenvvar("ARTPATH", "/tmp/debug_multi_film_table/all_table.npy") ; 
-    NP* art = NP::Load(artpath) ; 
+    NP* art = NP::LoadIfExists(artpath) ; 
 
     LOG(info)
        << " ARTPATH " << artpath 

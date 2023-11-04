@@ -14,8 +14,6 @@ QSimTest.cc
 #include "scuda.h"
 #include "squad.h"
 #include "ssys.h"
-
-#include "SPath.hh"   // TODO: migrate to spath.h 
 #include "spath.h"   
 
 #include "SSim.hh"

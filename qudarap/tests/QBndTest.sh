@@ -24,9 +24,17 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
+if [ "${arg/dbg}" != "$arg" ]; then 
+    case $(uname) in
+       Darwin) lldb__ $name ;;
+       Linux)  gdb__ $name ;;
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
+fi 
+
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $name.py
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 2 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi 
 
 exit 0 

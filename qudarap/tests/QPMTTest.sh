@@ -33,7 +33,7 @@ logging(){
 }
 logging
 
-export FOLD=/tmp/$name
+export FOLD=/tmp/$USER/opticks/$name
 vars="REALDIR FOLD GEOM name"
 
 if [ "${arg/info}" != "$arg" ]; then 

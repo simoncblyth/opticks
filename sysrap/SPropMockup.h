@@ -20,7 +20,7 @@ struct NP ;
 struct SPropMockup
 {
     static constexpr const char* DEMO_BASE = "$HOME/.opticks/GEOM/$GEOM" ;
-    static constexpr const char* DEMO_RELP = "GGeo/GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    static constexpr const char* DEMO_RELP = "CSGFoundry/SSim/stree/material/LS/RINDEX.npy" ; 
 
     static const NP* CombinationDemo(); 
     static const NP* Combination(const char* base, const char* relp ); 

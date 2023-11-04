@@ -13,7 +13,7 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
 
 name=QPropTest 
 
-export FOLD=/tmp/$name
+export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD/float
 mkdir -p $FOLD/double
 
@@ -36,6 +36,14 @@ fi
 if [ "${arg/run}" != "$arg" ]; then 
     $name
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1  
+fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+    case $(uname) in
+       Darwin) lldb__ $name ;;
+       Linux)  gdb__ $name ;;
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2  
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
