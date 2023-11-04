@@ -65,6 +65,42 @@ And then there was one
     Assertion failed: (cf == 0), function main, file /Users/blyth/opticks/CSG/tests/CSGCopyTest.cc, line 35.
 
 
+::
+
+    In [6]: ai = a.inst.view(np.int32)
+    In [7]: bi = b.inst.view(np.int32)
+
+    In [8]: ai
+    Out[8]:
+    array([[[1065353216,          0,          0,          0],
+            [         0, 1065353216,          0,          0],
+            [         0,          0, 1065353216,          0],
+            [         0,          0,          0,         -1]]], dtype=int32)
+
+    In [9]: bi
+    Out[9]:
+    array([[[1065353216,          0,          0,          0],
+            [         0, 1065353216,          0,          0],
+            [         0,          0, 1065353216,          1],
+            [         0,          0,          0,         -1]]], dtype=int32)
+
+    In [10]: np.where( ai != bi )
+    Out[10]: (array([0]), array([2]), array([3]))
+
+::
+
+    383     QAT4_METHOD void setIdentity(int ins_idx, int gas_idx, int sensor_identifier_1, int sensor_index )
+    384     {
+    385         assert( sensor_identifier_1 >= 0 );
+    386 
+    387         q0.i.w = ins_idx ;             // formerly unsigned and "+ 1"
+    388         q1.i.w = gas_idx ;
+    389         q2.i.w = sensor_identifier_1 ;   // now +1 with 0 meaning not-a-sensor 
+    390         q3.i.w = sensor_index ;
+    391     }
+
+Discrepancy in inst "sensor_identifier_1" 
+
 
 
 

@@ -321,11 +321,6 @@ class CSGFoundry(object):
         elif "GEOM" in os.environ:
             cfbase = os.path.expandvars("$HOME/.opticks/GEOM/$GEOM") 
             note = "via GEOM"
-        elif "OPTICKS_KEY" in os.environ:
-            kd = keydir(os.environ["OPTICKS_KEY"])
-            cfbase = os.path.join(kd, "CSG_GGeo")
-            note = "via OPTICKS_KEY"
-            ## HMM: match against OPTICKS_KEY_* in environ to find the "tag" of this key 
         else:
             cfbase = None
             note = "via NO envvars"

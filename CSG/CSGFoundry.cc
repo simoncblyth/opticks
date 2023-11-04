@@ -499,8 +499,12 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     if(byte_match != 0) mismatch += 1 ; 
 
     LOG_IF(fatal, mismatch != 0) << " mismatch FAIL for " << name ;  
-    if( mismatch != 0 ) std::cout << " mismatch FAIL for " << name << std::endl ;  
-    //assert( mismatch == 0 ); 
+    if( mismatch != 0 ) std::cout 
+         << " mismatch FAIL for " << name 
+         << " a.size " << a.size()
+         << " b.size " << b.size()
+         << std::endl
+         ;  
     return mismatch ; 
 }
 
@@ -1729,10 +1733,8 @@ void CSGFoundry::addNodeTran(CSGNode* nd )
 CSGFoundry::addInstance
 ------------------------
 
-Used for example from 
-
-1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
-2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
+Used from CSGCopy::copy/CSGCopy::copySolidInstances 
+when copying a loaded CSGFoundry to apply a selection
 
 stree.h/snode.h uses sensor_identifier -1 to indicate not-a-sensor, but 
 that is not convenient on GPU due to OptixInstance.instanceId limits.
@@ -1740,22 +1742,34 @@ Hence here make transition by adding 1 and treating 0 as not-a-sensor.
 
 **/
 
-void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index )
+void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index, bool firstcall )
 {
-    assert( sensor_identifier >= -1 ); 
-    unsigned sensor_identifier_1 = sensor_identifier + 1 ; 
-    assert( sensor_identifier_1 >= 0 ); 
+    int sensor_identifier_u = 0 ; 
+
+    if( firstcall )
+    {
+        assert( sensor_identifier >= -1 ); 
+        sensor_identifier_u = sensor_identifier + 1 ; 
+    }
+    else
+    {
+        assert( sensor_identifier >= 0 ); 
+        sensor_identifier_u = sensor_identifier  ; 
+    }
+    assert( sensor_identifier_u >= 0 ); 
 
 
     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
     int ins_idx = int(inst.size()) ;
 
-    instance.setIdentity( ins_idx, gas_idx, sensor_identifier_1, sensor_index );
+    instance.setIdentity( ins_idx, gas_idx, sensor_identifier_u, sensor_index );
 
-    LOG(debug) 
+    LOG(LEVEL) 
+        << " firstcall " << ( firstcall ? "YES" : "NO " )
         << " ins_idx " << ins_idx 
         << " gas_idx " << gas_idx 
         << " sensor_identifier " << sensor_identifier
+        << " sensor_identifier_u " << sensor_identifier_u
         << " sensor_index " << sensor_index
         ;
 
@@ -1796,8 +1810,12 @@ void CSGFoundry::addInstancePlaceholder()
     int gas_idx = -1 ; 
     int sensor_identifier = -1 ; 
     int sensor_index = -1 ;  
+    bool firstcall = true ;  
+    // CAUSES : sensor_identifier to be incremented
+    // as on GPU need to use 0 for not-a-sensor NOT -1 
+    // (OptiX has bitlimits and -1 uses all bits)
 
-    addInstance(tr16, gas_idx, sensor_identifier, sensor_index );  
+    addInstance(tr16, gas_idx, sensor_identifier, sensor_index, firstcall );  
 }
 
 /**

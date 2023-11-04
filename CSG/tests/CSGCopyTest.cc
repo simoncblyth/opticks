@@ -1,4 +1,5 @@
 #include "OPTICKS_LOG.hh"
+#include "ssys.h"
 #include "SSim.hh"
 #include "SBitSet.hh"
 #include "CSGFoundry.h"
@@ -15,6 +16,8 @@ int main(int argc, char** argv)
     SSim::Create(); 
 
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
+    LOG_IF(fatal , src == nullptr ) << " NO GEOMETRY " ; 
+    if(src == nullptr) return 1 ; 
 
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", "t" ); 
 
@@ -24,6 +27,9 @@ int main(int argc, char** argv)
 
     int cf = CSGFoundry::Compare(src, dst); 
 
+    if(ssys::hasenv_("AFOLD")) src->save("$AFOLD"); 
+    if(ssys::hasenv_("BFOLD")) dst->save("$BFOLD"); 
+
     LOG(info) 
         << " src " << src 
         << " dst " << dst   
@@ -32,6 +38,13 @@ int main(int argc, char** argv)
 
     if( elv == nullptr || elv->all() )
     {
+        LOG_IF(fatal, cf != 0 ) 
+            << " UNEXPECTED DIFFERENCE " 
+            << " DEBUG WITH :" 
+            << std::endl 
+            << " ~/opticks/CSG/tests/CSGCopyTest.sh ana "
+            ;  
+
         assert( cf == 0 ); 
     }
 

@@ -330,6 +330,9 @@ See ~/j/issues/cxr_scan_cxr_overview_ELV_scan_out_of_range_error.rst
 void CSGCopy::copySolidInstances()
 {
     unsigned sNumInst = src->getNumInst(); 
+
+    LOG(LEVEL) << " sNumInst " << sNumInst ;  
+
     for(unsigned i=0 ; i < sNumInst ; i++)
     {
         int sInstIdx = i ; 
@@ -338,19 +341,26 @@ void CSGCopy::copySolidInstances()
         int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         ins->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index ); 
 
+        LOG(LEVEL)
+            << " sInstIdx " << sInstIdx
+            << " ins_idx " << ins_idx
+            << " gas_idx " << gas_idx
+            << " sensor_identifier " << sensor_identifier
+            << " sensor_index " << sensor_index
+            ;
+
         assert( ins_idx == sInstIdx ); 
         assert( gas_idx < int(sNumSolid) ); 
 
         int sSolidIdx = gas_idx ; 
         int dSolidIdx = solidMap[sSolidIdx] ; 
+        // need to use dSolidIdx to prevent gas_refs going stale on selection
 
         if( dSolidIdx > -1 )
         {
             const float* tr16 = ins->cdata(); 
-            //dst->addInstance(tr16,  gas_idx, sensor_identifier, sensor_index ); 
-            dst->addInstance(tr16,  dSolidIdx, sensor_identifier, sensor_index ); 
-            //                     ^^^^^^^^^^^  try to fix gas_refs going stale on selection 
-
+            bool firstcall = false ; // NOT FIRST CALL : SO DO NOT INCREMENT sensor_identifier
+            dst->addInstance(tr16,  dSolidIdx, sensor_identifier, sensor_index, firstcall ); 
         }
     }
 }
