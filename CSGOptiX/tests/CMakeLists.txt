@@ -20,6 +20,10 @@ set(SINGLE_SOURCES
 foreach(SRC ${SINGLE_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
+
+    #add_test(${name}.${TGT} ${TGT})
+    # TODO: review these tests before making them ctests 
+
     target_link_libraries(${TGT} CSGOptiX)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()

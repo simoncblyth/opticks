@@ -4,7 +4,7 @@ cd $(dirname $BASH_SOURCE)
 bin=CSGCopyTest
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-defarg="info_run"
+defarg="info_run_ana"
 arg=${1:-$defarg}
 vars="BASH_SOURCE GEOM bin arg BASE AFOLD BFOLD"
 
@@ -28,10 +28,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    case $(uname) in 
-       Darwin) lldb__ $bin ;;
-       Linux)  gdb__ $bin ;;
-    esac
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 

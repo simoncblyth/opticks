@@ -17,7 +17,9 @@ foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 
-    add_test(${name}.${TGT} ${TGT})
+    #add_test(${name}.${TGT} ${TGT})
+    # comment for now : as many of these tests need lots of environment setup
+    # TODO: maybe arrange script running tests ?     
 
     target_link_libraries(${TGT} G4CX)
     install(TARGETS ${TGT} DESTINATION lib)
