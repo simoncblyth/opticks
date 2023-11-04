@@ -79,7 +79,7 @@ if __name__ == '__main__':
     print(context)
 
 
-    for e in [a,b]:
+    for e in ee:
         if e is None:continue
         pos = e.f.photon[:,0,:3]
         sel = np.where(e.f.record[:,:,2,3] > 0) # select on wavelength to avoid unfilled zeros

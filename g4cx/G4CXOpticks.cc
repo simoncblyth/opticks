@@ -6,7 +6,7 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "sframe.h"
-
+#include "spath.h"
 #include "ssys.h"
 #include "smeta.h"
 
@@ -530,7 +530,7 @@ void G4CXOpticks::saveGeometry() const
 void G4CXOpticks::saveGeometry(const char* dir_) const
 {
     LOG(LEVEL) << " dir_ " << dir_ ; 
-    const char* dir = SPath::Resolve(dir_, DIRPATH); 
+    const char* dir = spath::Resolve(dir_); 
     LOG(LEVEL) << "[ " << ( dir ? dir : "-" ) ; 
     LOG(info)  << "[ " << ( dir ? dir : "-" ) ; 
     std::cout << "G4CXOpticks::saveGeometry [ " << ( dir ? dir : "-" ) << std::endl ;

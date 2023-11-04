@@ -3,7 +3,10 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+
+#include "sstr.h"
 #include "spath.h"
+#include "sdirectory.h"
 
 
 void test_ResolvePath()
@@ -84,6 +87,37 @@ void test_Name()
 }
 
 
+void test_Remove()
+{
+    const char* path_ = "/tmp/$USER/opticks/spath_test/file_test_Remove.gdml" ; 
+    const char* path = spath::Resolve(path_); 
+    sdirectory::MakeDirsForFile(path,0); 
+    sstr::Write(path, "42:test_Remove\n" ); 
+
+    std::cout 
+        << " path_ " << path_
+        << " path  " << path
+        << std::endl 
+        ;
+
+    bool exists_0 = spath::Exists(path);  
+    int rc = spath::Remove(path);  
+    bool exists_1 = spath::Exists(path);  
+
+    std::cout
+        << " path_ " << path_
+        << " path " << path 
+        << " rc " << rc 
+        << " exists_0 " << exists_0 
+        << " exists_1 " << exists_1 
+        << std::endl 
+        ; 
+
+    assert( exists_0 == 1); 
+    assert( exists_1 == 0); 
+}
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -92,9 +126,9 @@ int main(int argc, char** argv)
     test_Exists(); 
     test_Exists2(); 
     test_Basename(); 
-    */
     test_Name(); 
-
+    */
+    test_Remove(); 
 
     return 0 ; 
 }

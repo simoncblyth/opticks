@@ -174,6 +174,12 @@ void test_nullchar(bool flip)
     std::cout << "[" << name << "]" << std::endl ; 
 }
 
+void test_Write()
+{
+    const char* path = "/tmp/test_Write.txt" ; 
+    sstr::Write(path, "test_Write" ); 
+}
+
 
 void test_empty()
 {
@@ -196,9 +202,10 @@ int main(int argc, char** argv)
     test_StripTail(); 
     test_SideBySide(); 
     test_nullchar(true); 
+    test_Write(); 
+    test_empty(); 
     */
 
-    test_empty(); 
 
     return 0 ; 
 } 

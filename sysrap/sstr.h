@@ -19,7 +19,9 @@ struct sstr
     static bool MatchAll(   const char* s, const char* q); 
     static bool MatchStart( const char* s, const char* q); 
     static bool StartsWith( const char* s, const char* q); 
+
     static bool MatchEnd(   const char* s, const char* q); 
+    static bool EndsWith(   const char* s, const char* q); 
 
     static bool Contains(   const char* s_ , const char* q_); 
 
@@ -33,7 +35,8 @@ struct sstr
     static std::string Replace(const char* s, char q, char r); 
 
     static const char* ReplaceChars(const char* str, const char* repl, char to ); 
-
+    static std::string ReplaceEnd_( const char* s, const char* q, const char* r  ); 
+    static const char* ReplaceEnd(  const char* s, const char* q, const char* r  ); 
 
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split(     const char* str, char delim,   std::vector<std::string>& elem ); 
@@ -114,14 +117,19 @@ inline bool sstr::StartsWith( const char* s, const char* q)  // synonym for sstr
 }
 
 
-
-
-
 inline bool sstr::MatchEnd( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+inline bool sstr::EndsWith( const char* s, const char* q)
+{
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
+
+
+
 
 inline bool sstr::Contains( const char* s_ , const char* q_ )
 {       
@@ -187,12 +195,47 @@ inline std::string sstr::Replace(const char* s, char q, char r) // static
     return str ; 
 }
 
+
+
 inline const char* sstr::ReplaceChars(const char* str, const char* repl, char to )
 {
     char* s = strdup(str);  
     for(unsigned i=0 ; i < strlen(s) ; i++) if(strchr(repl, s[i]) != nullptr) s[i] = to ;
     return s ; 
 }   
+
+
+
+
+/**
+sstr::ReplaceEnd_
+------------------
+
+String s is required to have ending q.
+New string n is returned with the ending q replaced with r.
+
+**/
+
+inline std::string sstr::ReplaceEnd_( const char* s, const char* q, const char* r  )
+{
+    int pos = strlen(s) - strlen(q) ;
+    assert( pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ); // check q is at end of s 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < pos ; i++) ss << *(s+i) ;  // copy front of s 
+    ss << r ;    // replace the end 
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline const char* sstr::ReplaceEnd( const char* s, const char* q, const char* r  )
+{
+    std::string str = ReplaceEnd_(s, q, r); 
+    return strdup(str.c_str());
+}
+
+
 
 
 

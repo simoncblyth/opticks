@@ -12,6 +12,10 @@ So make the GEOM directory readonly and look for permission error.::
    om-test
 
 
+   chmod -R u+w $HOME/.opticks/GEOM/RaindropRockAirWater/   # make writable
+
+
+
 ::
 
     The following tests FAILED:
@@ -65,7 +69,9 @@ And then there was one
     Assertion failed: (cf == 0), function main, file /Users/blyth/opticks/CSG/tests/CSGCopyTest.cc, line 35.
 
 
-::
+
+
+CSGCopyTest : FIXED inst diff by adding firstcall argument to CSGFoundry::addInstance::
 
     In [6]: ai = a.inst.view(np.int32)
     In [7]: bi = b.inst.view(np.int32)
@@ -101,6 +107,82 @@ And then there was one
 
 Discrepancy in inst "sensor_identifier_1" 
 
+
+
+
+
+HUH : where did the plan come from::
+
+    In [1]: a.plan
+    Out[1]:
+    array([[[ 0.577,  0.577, -0.577, 57.735]],
+
+           [[-0.577, -0.577, -0.577, 57.735]],
+
+           [[-0.577,  0.577,  0.577, 57.735]],
+
+           [[ 0.577, -0.577,  0.577, 57.735]]], dtype=float32)
+
+
+::
+
+    epsilon:CSGFoundry blyth$ GEOM cf
+    cd /Users/blyth/.opticks/GEOM/RaindropRockAirWater/CSGFoundry
+    epsilon:CSGFoundry blyth$ l
+    total 88
+    8 -r--r--r--   1 blyth  staff  192 Nov  3 20:16 inst.npy
+    8 -r--r--r--   1 blyth  staff  320 Nov  3 20:16 itra.npy
+    8 -r--r--r--   1 blyth  staff  320 Nov  3 20:16 tran.npy
+    8 -r--r--r--   1 blyth  staff  320 Nov  3 20:16 node.npy
+    8 -r--r--r--   1 blyth  staff  320 Nov  3 20:16 prim.npy
+    8 -r--r--r--   1 blyth  staff  176 Nov  3 20:16 solid.npy
+    8 -r--r--r--   1 blyth  staff  385 Nov  3 20:16 meta.txt
+    8 -r--r--r--   1 blyth  staff   18 Nov  3 20:16 mmlabel.txt
+    8 -r--r--r--   1 blyth  staff   40 Nov  3 20:16 primname.txt
+    8 -r--r--r--   1 blyth  staff   40 Nov  3 20:16 meshname.txt
+    0 dr-xr-xr-x   6 blyth  staff  192 Nov  3 20:16 ..
+    8 -r--r--r--   1 blyth  staff  192 Nov  3 19:20 plan.npy
+    0 dr-xr-xr-x  14 blyth  staff  448 Nov  3 19:20 .
+    0 dr-xr-xr-x   4 blyth  staff  128 Nov  1 15:51 SSim
+    epsilon:CSGFoundry blyth$ 
+
+
+
+
+::
+
+    (lldb) f 6
+    frame #6: 0x000000010029c01c libG4CX.dylib`U4GDML::write_(this=0x00007ffeefbfc928, path="/Users/blyth/.opticks/GEOM/RaindropRockAirWater/origin_raw.gdml") at U4GDML.h:209
+       206 	inline void U4GDML::write_(const char* path)
+       207 	{
+       208 	    if(SPath::Exists(path)) SPath::Remove(path); 
+    -> 209 	    parser->Write(path, world, write_refs, write_schema_location); 
+       210 	}
+       211 	
+
+
+Writing again doesnt update the plan.npy::
+
+
+    epsilon:tests blyth$ GEOM cf
+    cd /Users/blyth/.opticks/GEOM/RaindropRockAirWater/CSGFoundry
+    epsilon:CSGFoundry blyth$ l
+    total 88
+    8 -rw-r--r--   1 blyth  staff  192 Nov  4 10:13 inst.npy
+    8 -rw-r--r--   1 blyth  staff  320 Nov  4 10:13 itra.npy
+    8 -rw-r--r--   1 blyth  staff  320 Nov  4 10:13 tran.npy
+    8 -rw-r--r--   1 blyth  staff  320 Nov  4 10:13 node.npy
+    8 -rw-r--r--   1 blyth  staff  320 Nov  4 10:13 prim.npy
+    8 -rw-r--r--   1 blyth  staff  176 Nov  4 10:13 solid.npy
+    8 -rw-r--r--   1 blyth  staff  385 Nov  4 10:13 meta.txt
+    8 -rw-r--r--   1 blyth  staff   18 Nov  4 10:13 mmlabel.txt
+    8 -rw-r--r--   1 blyth  staff   40 Nov  4 10:13 primname.txt
+    8 -rw-r--r--   1 blyth  staff   40 Nov  4 10:13 meshname.txt
+    0 drwxr-xr-x   6 blyth  staff  192 Nov  4 10:13 ..
+    8 -rw-r--r--   1 blyth  staff  192 Nov  3 19:20 plan.npy
+    0 drwxr-xr-x  14 blyth  staff  448 Nov  3 19:20 .
+    0 drwxr-xr-x   4 blyth  staff  128 Nov  1 15:51 SSim
+    epsilon:CSGFoundry blyth$ 
 
 
 

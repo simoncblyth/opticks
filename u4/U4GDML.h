@@ -37,9 +37,10 @@ struct U4GDML
 
 
 #include "sdirect.h"
-#include "SPath.hh"
-#include "SStr.hh"
-#include "SSys.hh"
+#include "spath.h"
+#include "sstr.h"
+#include "ssys.h"
+
 #include "G4GDMLParser.hh"
 #include "GDXML.hh"
 
@@ -64,7 +65,7 @@ inline const G4VPhysicalVolume* U4GDML::Read()
 inline const G4VPhysicalVolume* U4GDML::Read(const char* path_)
 {
     const char* path = path_ ? path_ : DefaultGDMLPath ; 
-    bool exists = path ? SPath::Exists(path) : false ; 
+    bool exists = path ? spath::Exists(path) : false ; 
     LOG_IF(fatal, !exists) << " path invalid or does not exist [" << path << "]" ; 
     if(!exists) return nullptr ; 
 
@@ -110,7 +111,7 @@ inline U4GDML::U4GDML(const G4VPhysicalVolume* world_)
 
 inline void U4GDML::read(const char* base, const char* name)
 {
-    const char* path = SPath::Resolve(base, name, NOOP); 
+    const char* path = spath::Resolve(base, name); 
     read(path);  
 }
 
@@ -127,7 +128,7 @@ not working, something funny about G4cout ?::
 
 inline void U4GDML::read(const char* path_)
 {
-    const char* path = SPath::Resolve(path_, NOOP); 
+    const char* path = spath::Resolve(path_); 
 
     parser->SetStripFlag(read_trim); 
 
@@ -151,7 +152,7 @@ inline void U4GDML::read(const char* path_)
 
 inline void U4GDML::write(const char* base, const char* name)
 {
-    const char* path = SPath::Resolve(base, name, FILEPATH); 
+    const char* path = spath::Resolve(base, name); 
     write(path);  
 }
 
@@ -176,11 +177,11 @@ To disable use of GDXML::Fix define envvar::
 
 inline void U4GDML::write(const char* path)
 {
-    assert( SStr::EndsWith(path, ".gdml") ); 
+    assert( sstr::EndsWith(path, ".gdml") ); 
     const char* dstpath = path ; 
 
     const char* ekey = "U4GDML_GDXML_FIX_DISABLE" ; 
-    bool U4GDML_GDXML_FIX_DISABLE = SSys::getenvbool(ekey) ;
+    bool U4GDML_GDXML_FIX_DISABLE = ssys::getenvbool(ekey) ;
     bool U4GDML_GDXML_FIX = !U4GDML_GDXML_FIX_DISABLE  ; 
 
     LOG(LEVEL) 
@@ -191,7 +192,7 @@ inline void U4GDML::write(const char* path)
 
     if(U4GDML_GDXML_FIX)
     {
-        const char* rawpath = SStr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
+        const char* rawpath = sstr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
         write_(rawpath); 
         GDXML::Fix( dstpath, rawpath );     
         LOG(LEVEL) << " Apply GDXML::Fix " << " rawpath " << rawpath << " dstpath " << dstpath ; 
@@ -205,7 +206,15 @@ inline void U4GDML::write(const char* path)
 
 inline void U4GDML::write_(const char* path)
 {
-    if(SPath::Exists(path)) SPath::Remove(path); 
+    if(spath::Exists(path)) 
+    {
+        int rc = spath::Remove(path); 
+        LOG_IF(fatal, rc != 0 ) 
+            << " FAILED TO REMOVE PATH [" << path << "]" 
+            << " CHECK PERMISSIONS " 
+            ; 
+        
+    }
     parser->Write(path, world, write_refs, write_schema_location); 
 }
 

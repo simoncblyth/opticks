@@ -11,6 +11,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 
 **/
 
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -54,6 +55,7 @@ public:
     static bool LooksLikePath(const char* arg); 
     static const char* Basename(const char* path); 
 
+    static int Remove(const char* path_); 
 
 };
 
@@ -292,6 +294,12 @@ inline const char* spath::Basename(const char* path)
 }
 
 
+inline int spath::Remove(const char* path_)
+{
+    const char* path = spath::Resolve(path_); 
+    assert( strlen(path) > 2 ); 
+    return remove(path);  
+}
 
 
 

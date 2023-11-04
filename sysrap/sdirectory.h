@@ -2,14 +2,34 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <string>
 #include <sys/stat.h>
 #include <errno.h> 
 #include "dirent.h"
 
 struct sdirectory
 {
-   static int MakeDirs(const char* dirpath, int mode );  
+    static std::string DirName( const char* filepath );
+    static int MakeDirsForFile(const char* filepath, int mode );  
+    static int MakeDirs(const char* dirpath, int mode );  
 };
+
+
+
+inline std::string sdirectory::DirName( const char* filepath )
+{
+    std::string p = filepath ; 
+    std::size_t pos = p.find_last_of("/") ; 
+    return pos == std::string::npos ? "" : p.substr(0, pos); 
+}
+
+inline int sdirectory::MakeDirsForFile( const char* filepath, int mode_ )
+{
+    if(filepath == nullptr) return 1 ; 
+    std::string dirpath = DirName(filepath);
+    return MakeDirs(dirpath.c_str(), mode_ );
+}
+
 
 /**
 sdirectory::MakeDirs
