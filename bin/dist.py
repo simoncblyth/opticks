@@ -6,7 +6,7 @@ dist.py
 Used from::
 
     okdist- okdist.py 
-    scdist- scdist.py 
+    scdist- scdist.py   # shared cache 
 
 
 """
@@ -78,6 +78,9 @@ class Dist(object):
         return sz
 
     def add(self, path):
+        """
+        add to the archive and sum sizes
+        """
         log.debug(path)
         arcname = os.path.join(self.prefix,path) 
         self.dist.add(path, arcname=arcname, recursive=False)
@@ -107,7 +110,11 @@ class Dist(object):
 
     def recurse_(self, base, depth ):
         """
-        NB all paths are relative to base 
+        Recurse the tree calling self.add for 
+        all paths that are not excluded via exclude_file 
+        or exclude_dir methods. 
+
+        NB paths are relative to base
         """
         assert os.path.isdir(base), "expected directory %s does not exist " % base
 
