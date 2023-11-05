@@ -572,26 +572,46 @@ om-test-hint(){ cat << EOH
 om-test-hint
 -------------
 
+NB : are now running each test via test runners such as::
+
+    STestRunner.sh 
+    CSGTestRunner.sh 
+
 To rerun selected tests use CTESTARG to change the ctest commandline, 
 for example using the "-R" regexp option eg::
 
     CTESTARG="-R U4TreeCreateTest" om-test 
-    CTESTARG="-R U4TreeCreate" om-test     
-    ctest --help  # to see the possibilities
+    CTESTARG="-R U4TreeCreate"     om-test     
+
+Or directly use ctest for more control::
+
+    st     # cd ~/opticks/sysrap/tests 
+    ct     # cd ~/opticks/CSG/tests
+    qt     # cd ~/opticks/qudarap/tests
+    u4t    # cd ~/opticks/u4/tests
+    cxt    # cd ~/opticks/CSGOptiX/tests
+    gxt    # cd ~/opticks/g4cx/tests
+
+    om-cd  # cd to build directory (eg /usr/local/opticks/build/CSG/tests)
+
+    ctest -N                                      # list tests 
+    ctest -R U4TreeCreateTest --output-on-failure # run tests matching a pattern 
+    ctest --help                                  # to see the possibilities
 
 To rebuild a test and rerun it use::
  
     TEST=SBndTest om-t  # NB no environment setup : so only for very simple tests
+
 
 EOH
 }
 
 om-test(){    
     local rc=0
-    om-testenv-push 
+    #om-testenv-push 
     om-one-or-all test $* 
     rc=$?
-    om-testenv-pop
+    #om-testenv-pop
     om-test-hint
     return $rc  
 }
@@ -608,11 +628,8 @@ om-testenv-notes(){ cat << EON
 om-testenv-notes
 ------------------
 
-Tests cannot depend on a user file and do "source ~/.opticks/GEOM.sh"
-
-Testing that needs geometry should have a test setup which 
-creates that geometry. 
-
+TRYING TO USE BASH RUNNERS INSTEAD OF THIS, AS THAT PLAYS 
+BETTER WITH CTEST INSTALLED TESTS  
 
 EON
 }

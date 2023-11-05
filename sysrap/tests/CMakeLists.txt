@@ -123,11 +123,16 @@ set(TEST_SOURCES
    SEvt__HasInputPhoton_Test.cc 
    SEvt_AddEnvMeta_Test.cc
 
-   SSimTest.cc
-   SBndTest.cc
    SNameTest.cc
 )
 
+
+#SEnvTest_FAIL.cc
+set(BASH_RUN_TEST_SOURCES
+    SEnvTest_PASS.cc
+    SSimTest.cc
+    SBndTest.cc
+)
 
 if(NLJSON_FOUND)
    list(APPEND TEST_SOURCES SMetaTest.cc)
@@ -169,15 +174,12 @@ foreach(SRC ${TEST_SOURCES})
     #add_dependencies(check ${TGT})
 endforeach()
 
-set(WRAPPED_TEST_SOURCES
-    SEnvTest_FAIL.cc
-    SEnvTest_PASS.cc
-)
+
 
 find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
 message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
 
-foreach(SRC ${WRAPPED_TEST_SOURCES})
+foreach(SRC ${BASH_RUN_TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} SysRap)

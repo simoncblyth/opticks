@@ -43,11 +43,11 @@ Recall the many trees
 5. release tree, the result of exploding the distribution tarball 
 
 * a bitbucket clone gives you 1
-* running *om--* yields 2 and 3
+* running *oo* yields 2 and 3
 * runnning *okdist--* yields 4 and 5 
 
 Note that this needs to be repeated on the workstation 
-and the GPU cluster gateway node.
+and the GPU cluster gateway node (lxslc7).
 
 Gotchas
 ---------

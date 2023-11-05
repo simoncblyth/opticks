@@ -14,6 +14,22 @@ Packaging up the tests (following okdist- workflow) and running them works::
 But running them lacks GEOM and other environment, 
 so get lots of fails. 
 
+Just the sysrap fails::
+
+    epsilon:tests blyth$ pwd
+    /usr/local/opticks/tests
+    epsilon:tests blyth$ ctest --output-on-failure
+
+
+    The following tests FAILED:
+         95 - SysRapTest.SSimTest (INTERRUPT)
+         96 - SysRapTest.SBndTest (INTERRUPT)
+        101 - SysRapTest.SEnvTest_FAIL (Failed)
+    Errors while running CTest
+    epsilon:tests blyth$ 
+
+
+
 HMM: opticks-t/om-test bash machinery does the env setup
 How to do the equivalent withing ctest ? 
 
@@ -37,6 +53,30 @@ Commands to test::
     ctest -R SEnvTest_PASS --output-on-failure
     ctest -R SEnvTest_FAIL --output-on-failure
 
+
+That also works from okdist-install-tests tree
+-------------------------------------------------
+
+::
+
+    okdist-install-tests
+    cd /usr/local/opticks/tests
+    ctest -R SEnvTest_FAIL --output-on-failure  
+
+BUT: notice lots of hardcoded absolute paths back to the src tree
+
+/usr/local/opticks/tests/sysrap/tests/CTestTestfile.cmake::
+
+    205 add_test(SysRapTest.STTFTest "STTFTest")
+    206 set_tests_properties(SysRapTest.STTFTest PROPERTIES  _BACKTRACE_TRIPLES "/Users/blyth/opticks/sysrap/tests/CMakeLists.txt;16    8;add_test;/Users/blyth/opticks/sysrap/tests/CMakeLists.txt;0;")
+    207 add_test(SysRapTest.SEnvTest_FAIL "/opt/local/bin/bash" "/Users/blyth/opticks/sysrap/tests/STestRunner.sh" "SEnvTest_FAIL")
+    208 set_tests_properties(SysRapTest.SEnvTest_FAIL PROPERTIES  _BACKTRACE_TRIPLES "/Users/blyth/opticks/sysrap/tests/CMakeLists.t    xt;185;add_test;/Users/blyth/opticks/sysrap/tests/CMakeLists.txt;0;")
+    209 add_test(SysRapTest.SEnvTest_PASS "/opt/local/bin/bash" "/Users/blyth/opticks/sysrap/tests/STestRunner.sh" "SEnvTest_PASS")
+    210 set_tests_properties(SysRapTest.SEnvTest_PASS PROPERTIES  _BACKTRACE_TRIPLES "/Users/blyth/opticks/sysrap/tests/CMakeLists.t    xt;185;add_test;/Users/blyth/opticks/sysrap/tests/CMakeLists.txt;0;")
+
+    
+
+   
 
 
 ctest environment setup for tests

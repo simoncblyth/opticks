@@ -3,6 +3,8 @@
 CTestTestfile.py
 ==================
 
+Used from okdist-;okdist-install-tests
+
 This enables ctest running of installed tests, 
 without the full build tree.
 
@@ -57,12 +59,22 @@ class BuildTree(object):
     SKIPDIRS = ["CMakeFiles", "Testing", ]
 
     def __init__(self, root, projs):
+        """
+        :param root: build tree path, aka bdir
+        :param projs: list of project directory paths
+        """
         self.root = root
         self.projs = projs
         log.info("root %s " % root)
         log.info("projs %r " % projs)
 
     def filtercopy(self, dstbase):
+        """
+        Copies content of proj dirs 
+        to dstbase ignoring the configured skips. 
+
+        :param dstbase: base of destination folder 
+        """
         for proj in self.projs:
             src = os.path.join(self.root, proj)
             dst = os.path.join(dstbase, proj)  
@@ -82,6 +94,16 @@ class BuildTree(object):
         return not name == self.NAME 
 
     def __call__(self, src, names):
+        """
+        :param src: directory being copyied
+        :param names: names of files within src directory 
+        :return ignore: list of names of files within src to ignore
+
+        Used by shutil.copytree ignore callable::
+
+            callable(src, names) -> ignored_names
+
+        """
         ignore = []
         for name in names:
             path = os.path.join(src, name)
