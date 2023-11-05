@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <csignal>
 
 #include "OPTICKS_LOG.hh"
 
@@ -56,6 +57,7 @@ GEOM
             << std::endl 
             ; 
     }
+
 
 
     return 0 ; 

@@ -520,15 +520,6 @@ add_custom_command(
 add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
 
 
-
-
-    
-
-
-
-
-
-
 list(APPEND HEADERS 
   ${IGS} 
   ${IPH} 

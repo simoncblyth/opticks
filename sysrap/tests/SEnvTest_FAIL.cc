@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <csignal>
 
 #include "OPTICKS_LOG.hh"
 
@@ -57,6 +58,8 @@ GEOM
             ; 
     }
 
+
+    std::raise(SIGINT); // hari kari : for ctest debugging  
 
     return 0 ; 
 }

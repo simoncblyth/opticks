@@ -17,10 +17,11 @@
 ## limitations under the License.
 ##
 
-okdist-source(){ echo $BASH_SOURCE ; }
 okdist-sdir(){ echo $(dirname $(okdist-source)) ; }
 okdist-py(){ echo $(okdist-sdir)/okdist.py ; }
-okdist-vi(){ vi $(okdist-source) $(okdist-py) $(opticks-home)/notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst ; }
+okdist-vi(){ vi $BASH_SOURCE $(okdist-py) \
+     $(opticks-home)/notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst ; 
+}
 okdist-env(){ echo -n ; }
 okdist-usage(){  cat << \EOU
 
@@ -66,24 +67,24 @@ workflow for Opticks binary releases
 0. workstation: get to clean revision by commit and push, then build and test::
 
      oo
-     # opticks-t 
+     opticks-t 
 
-0.5 workstation: test creating and exploding tarball onto fake /cvmfs::
+1. workstation: test creating and exploding tarball onto fake /cvmfs::
 
     okdist--
 
-0.6 workstation: test the binary release by running tests as unpriviled simon::
+2. workstation: test the binary release by running tests as unpriviled simon::
 
      su - simon 
      opticks-release-test 
 
-1. lxslc: update repo and build 
+3. lxslc: update repo and build 
 
-2. lxslc: create tarball and test exploding it into releases:: 
+4. lxslc: create tarball and test exploding it into releases:: 
  
      okdist--
 
-3. lxslc: test release from user like environment, 
+5. lxslc: test release from user like environment, 
    
    * switch from developer_setup to user_setup in ~/.bash_profile and ssh into another tab  
    * see scdist- for examples of the source lines for user setup
@@ -94,11 +95,11 @@ workflow for Opticks binary releases
      opticks-release-test    ## everything that needs GPU will fail 
 
 
-4. lxslc: copy tarball and python script to stratum zero node::
+6. lxslc: copy tarball and python script to stratum zero node::
 
       okdist- ; scp $(okdist-path) $(which oktar.py) O:  
 
-5a. automated way::
+7. automated way::
 
    ssh O   
        ## login to stratum zero
@@ -113,7 +114,7 @@ workflow for Opticks binary releases
        ## close and publish this transaction
 
 
-5b. manual way of publishing the tarball release onto cvmfs::
+8. manual way of publishing the tarball release onto cvmfs::
 
    ssh O   
        ## login to stratum zero
@@ -164,19 +165,7 @@ EOU
 
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
-
-okdist-revision(){   
-  if [ -d "$(opticks-home)/.hg" ]; then 
-     okdist-revision-hg
-  elif [ -d "$(opticks-home)/.git" ]; then 
-     okdist-revision-git
-  else
-     echo $FUNCNAME-error 
-  fi 
-}
-okdist-revision-hg(){   hg --debug id -i $(opticks-home) ; } 
-okdist-revision-git(){  ( cd $(opticks-home) && git rev-parse HEAD ) ; } 
-
+okdist-revision(){ cd $(opticks-home) && git rev-parse HEAD ; } 
 okdist-releases-dir-default(){ echo $(opticks-dir)/releases ; }
 okdist-releases-dir(){         echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
 okdist-rcd(){                  cd $(okdist-releases-dir) ; }

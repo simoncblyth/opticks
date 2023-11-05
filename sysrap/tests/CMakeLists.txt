@@ -160,18 +160,36 @@ set(_OBJC_TEST_SOURCES
 )
 
 
-
-
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
-
-    add_test(${name}.${TGT} ${TGT})
-    #add_dependencies(check ${TGT})
-
     target_link_libraries(${TGT} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
+    add_test(${name}.${TGT} ${TGT})
+    #add_dependencies(check ${TGT})
 endforeach()
+
+set(WRAPPED_TEST_SOURCES
+    SEnvTest_FAIL.cc
+    SEnvTest_PASS.cc
+)
+
+find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
+message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
+
+foreach(SRC ${WRAPPED_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} SysRap)
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(
+       NAME ${name}.${TGT} 
+       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/STestRunner.sh ${TGT}
+    )
+endforeach()
+
+
+
 
 
 
@@ -187,6 +205,7 @@ foreach(COLOR ${TEST_COLORS})
     add_test(${TEST} ${TGT} SEnvTest_C --info )  # arguments for the executable, the envvar prefix and debug level
     set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "SEnvTest_COLOR=${COLOR}")
 endforeach()
+
 
 
 #[=[

@@ -24,7 +24,7 @@ whats left for release ?
   * not needed fpor CMake approach 
   * see examples/UseG4
 
-* something to replace opticks-config
+* NO LONGER RELEVANT ? something to replace opticks-config
 
   * do this manually with bash functions inside opticks-release.bash ? opticks-release-config ?
   * OR : follow something like CMake pkgconfig : but for a multi-proj  
@@ -1459,5 +1459,9 @@ again the same as on the linker command line. For compatibility reasons with
 older version of the linker DT RPATH entries are created by default. The linker
 op- tion --enable-new-dtags must be used to also add DT RUNPATH entry. This
 will cause both, DT RPATH and DT RUNPATH entries, to be created.
+
+
+
+
 
 

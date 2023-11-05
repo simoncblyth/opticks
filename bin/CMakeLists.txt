@@ -32,6 +32,8 @@ set(SCRIPTS
    ptx.py
    strace.py 
    js.py 
+
+   SimpleCTestRunner.sh 
 )
 
 if(APPLE)
