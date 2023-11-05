@@ -15,13 +15,24 @@ int main(int argc, char** argv)
 
     SSim::Create(); 
 
+    // CAUTION : MOST OF THIS IS DONE BY CSGFoundry::Load
+
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
     LOG_IF(fatal , src == nullptr ) << " NO GEOMETRY " ; 
     if(src == nullptr) return 1 ; 
 
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", "t" ); 
 
-    LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
+    LOG(info) 
+        << "env->desc()"
+        << std::endl 
+        << elv->desc() 
+        << std::endl 
+        << "src->descELV(elv)"
+        << std::endl 
+        << src->descELV(elv)
+        << std::endl 
+        ; 
 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
 

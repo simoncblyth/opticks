@@ -749,6 +749,20 @@ void SStr::Split( const char* str, char delim,   std::vector<std::string>& elem 
     while (std::getline(ss, s, delim)) elem.push_back(s) ; 
 }
 
+/**
+SStr::ISplit
+-------------
+
+Usage::
+
+    std::vector<int> pos ; 
+    SStr::ISplit( spec_, pos, ',' );  
+
+Replace with::
+
+    sstr::split<int>( pos,  spec_ , ',' )
+
+**/
 
 int SStr::ISplit( const char* line, std::vector<int>& ivec, char delim )
 {

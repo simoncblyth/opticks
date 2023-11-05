@@ -2,9 +2,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include "sstr.h"
+#include "ssys.h"
+
 #include "SBitSet.hh"
-#include "SSys.hh"
-#include "SStr.hh"
 #include "SName.h"
 
 std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
@@ -16,9 +17,19 @@ std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
 }
 
 
+/**
+SBitSet::Create
+-----------------
+
+1. reads spec from ekey envvar eg:"ELV" with fallback eg:"t"
+2. 
+
+**/
+
+
 SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallback )
 {
-    const char* spec = SSys::getenvvar(ekey, fallback) ;
+    const char* spec = ssys::getenvvar(ekey, fallback) ;
     SBitSet* bs = Create(num_bits, spec); 
     if(bs) bs->set_label(ekey); 
     return bs ; 
@@ -49,6 +60,8 @@ Otherwise without the complement token all bit positions are first set *false*
 and the bit positions provided are set to *true*.
 
 Examples with num_bits:8 for brevity:
+
+* NB : think of the bitset as a sequence, not as a number 
 
 +-------+--------------------+---------------------------------+
 | spec  | bits (num_bits:8)  |  notes                          |
@@ -89,7 +102,7 @@ void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
 
     std::vector<int> pos ; 
     char delim = ',' ; 
-    SStr::ISplit( spec_, pos, delim );  
+    sstr::split<int>( pos,  spec_ , delim );
 
     for(unsigned i=0 ; i < pos.size() ; i++)
     {
@@ -125,6 +138,7 @@ unsigned SBitSet::count() const
     return num ; 
 }
 
+bool SBitSet::is_all_set() const { return all() ; }
 bool SBitSet::all() const { return count() == num_bits ; }
 bool SBitSet::any() const { return count() > 0  ; }
 bool SBitSet::none() const { return count() == 0  ; }

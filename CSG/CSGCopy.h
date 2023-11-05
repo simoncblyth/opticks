@@ -1,4 +1,22 @@
 #pragma once
+/**
+CSGCopy
+=========
+
+
+identical_bbox_cheat:true
+    when the elv selection SBitSet has all bits set it means
+    there is no selection so identical:true 
+    
+    In that case have observed small 0.002 mm shifts in 
+    large bbox dimension values as a result of the copy : 
+    causing CSGCopyTest.sh to fail when using exact comparisons. 
+
+    As a shortcut to fixing the small bbox shift issue 
+    can instead cheat and copy the bbox from the src when it
+    is known that there is no selection being applied. 
+
+**/
 
 struct SBitSet ; 
 struct CSGFoundry ; 
@@ -22,6 +40,8 @@ struct CSG_API CSGCopy
     int*              solidMap ;  
     unsigned          sSolidIdx ; 
     const SBitSet*    elv ; 
+    bool              identical ; // when elv->is_all_set dst should be identical to src 
+    bool              identical_bbox_cheat ;       
 
     CSGFoundry* dst ; 
 

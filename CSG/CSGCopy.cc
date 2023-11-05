@@ -42,6 +42,9 @@ CSGCopy::Select
 
 Used from CSGFoundry::CopySelect 
 
+Q: How to detect a "no-selection" SBitSet ? 
+A: SBitSet::is_all_set indicates all bits are set, hence no selection
+
 **/
 
 CSGFoundry* CSGCopy::Select(const CSGFoundry* src, const SBitSet* elv )
@@ -59,6 +62,8 @@ CSGCopy::CSGCopy(const CSGFoundry* src_, const SBitSet* elv_)
     solidMap(new int[sNumSolid]), 
     sSolidIdx(~0u), 
     elv(elv_),
+    identical(elv ? elv->is_all_set() : true),
+    identical_bbox_cheat(identical && true),
     dst(new CSGFoundry)
 {
 }
@@ -158,13 +163,19 @@ void CSGCopy::copy()
         unsigned numSelectedPrimCheck = dst->prim.size() - dPrimOffset ; 
         assert( numSelectedPrim == numSelectedPrimCheck );  
 
+        if(identical_bbox_cheat) // only admissable when no selection 
+        { 
+            dso->center_extent = sso->center_extent ;  
+        }
+        else
+        {
 #ifdef WITH_S_BB
-        float* ce = &(dso->center_extent.x) ; 
-        solid_bb.center_extent( ce ) ;  
+            float* ce = &(dso->center_extent.x) ; 
+            solid_bb.center_extent( ce ) ;  
 #else
-        //dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
-        dso->center_extent = solid_bb.center_extent(); 
+            dso->center_extent = solid_bb.center_extent(); 
 #endif
+        }
 
         LOG_IF(LEVEL, dump_solid) << " dso " << dso->desc() ; 
 
@@ -207,7 +218,7 @@ void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso
          unsigned dPrimIdx_local = dPrimIdx_global - dPrimOffset ; // make the PrimIdx local to the solid 
 
          CSGPrim* dpr = dst->addPrim(numNode, -1 ); 
-         if( elv == nullptr ) assert( dpr->nodeOffset() == spr->nodeOffset() ); 
+         if( identical ) assert( dpr->nodeOffset() == spr->nodeOffset() ); 
 
          dpr->setMeshIdx(meshIdx);    
          dpr->setRepeatIdx(repeatIdx); 
@@ -220,12 +231,18 @@ void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso
 #endif
          copyPrimNodes(prim_bb, spr ); 
 
+         if(identical_bbox_cheat)  // only admissable when no selection
+         {
+             dpr->setAABB( spr->AABB() );
+         }
+         else
+         {
 #ifdef WITH_S_BB
-         prim_bb.write<float>( dpr->AABB_() ); 
+             prim_bb.write<float>( dpr->AABB_() ); 
 #else
-         //dpr->setAABB( spr->AABB() );  // will not be so with selection 
-         dpr->setAABB( prim_bb.data() ); 
+             dpr->setAABB( prim_bb.data() ); 
 #endif
+         } 
 
          unsigned mismatch = 0 ; 
          std::string cf = AABB::Compare(mismatch, spr->AABB(), dpr->AABB(), 1, 1e-6 ) ; 
@@ -307,7 +324,7 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
 
     dnd->setTransformComplement( dTranIdx, complement ); 
 
-    if( elv == nullptr )
+    if( identical )
     {
         assert( dnd->planeNum() == snd->planeNum() );  
         assert( dnd->planeIdx() == snd->planeIdx() ); 
@@ -319,19 +336,23 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
 
     float* naabb = dnd->AABB();   
 
-    if(include_bb) 
+    // negated nodes are not included into the prim bb
+    if(include_bb)  
     {
-        dnd->setAABBLocal() ;         // reset to local with no transform applied
-        if(tra)
+        if( identical_bbox_cheat )
         {
-            tra->transform_aabb_inplace( naabb );
+            LOG(debug) << " identical_bbox_cheat : do nothing : as dumb CSGNode::Copy already copies bbox ";  
         }
+        else
+        {
+            dnd->setAABBLocal() ; // reset to local with no transform applied
+            if(tra) tra->transform_aabb_inplace( naabb );
 #ifdef WITH_S_BB
-        prim_bb.include_aabb_widen( naabb );
-
+            prim_bb.include_aabb_widen( naabb );
 #else
-        prim_bb.include_aabb( naabb );
+            prim_bb.include_aabb( naabb );
 #endif
+        }
     } 
 
     //if(dump_node) LOG(LEVEL) 
@@ -380,7 +401,7 @@ void CSGCopy::copySolidInstances()
         int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         ins->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index ); 
 
-        LOG(LEVEL)
+        LOG(debug)
             << " sInstIdx " << sInstIdx
             << " ins_idx " << ins_idx
             << " gas_idx " << gas_idx

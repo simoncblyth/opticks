@@ -118,7 +118,7 @@ struct CSG_API CSGFoundry : public SGeo
     // TODO: farm off comparison machinery into another struct 
 
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
-    static int CompareStruct(const CSGFoundry* a , const CSGFoundry* b ); 
+    static int WIP_CompareStruct(const CSGFoundry* a , const CSGFoundry* b ); 
     static std::string DescCompare( const CSGFoundry* a, const CSGFoundry* b ); 
 
     template<typename T>

@@ -315,7 +315,20 @@ SName::findIndex uses "name starts with query string" matching
 so names like HamamatsuR12860sMask_virtual0x5f50520
 can be matched without the pointer suffix. 
 
-HMM: but there are duplicate prefixes, so this aint a good approach 
+HMM: but there are duplicate prefixes, so this aint a good approach.
+It causes -1 for midx::
+
+    CSGFoundry::descELV elv.num_bits 139 num_include 139 num_exclude 0
+    INCLUDE:139
+
+    p:  0:midx:  0:mn:sTopRock_domeAir
+    p:  1:midx: -1:mn:sTopRock_dome
+    p:  2:midx:  2:mn:sDomeRockBox
+    p:  3:midx:  3:mn:PoolCoversub
+    p:  4:midx:  4:mn:Upper_LS_tube
+    p:  5:midx:  5:mn:Upper_Steel_tube
+
+TODO: instead match against names with 0x suffix removed 
 
 **/
 
@@ -368,12 +381,14 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     unsigned num_exclude = exclude_pos.size()  ; 
     unsigned num_bits = elv->num_bits ; 
     assert( num_bits == num_include + num_exclude ); 
+    bool is_all_set = elv->is_all_set(); 
 
     std::stringstream ss ;  
     ss << "CSGFoundry::descELV" 
        << " elv.num_bits " << num_bits 
        << " num_include " << num_include
        << " num_exclude " << num_exclude
+       << " is_all_set " << is_all_set 
        << std::endl 
        ; 
 
@@ -458,7 +473,15 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     return mismatch ; 
 }
 
-int CSGFoundry::CompareStruct( const CSGFoundry* a, const CSGFoundry* b )
+/**
+CSGFoundry::WIP_CompareStruct
+------------------------------
+
+The base comparisons are not implemented yet. 
+
+**/
+
+int CSGFoundry::WIP_CompareStruct( const CSGFoundry* a, const CSGFoundry* b )
 {
     int mismatch = 0 ; 
     mismatch += CompareStruct( "solid", a->solid, b->solid ); 
@@ -1883,7 +1906,7 @@ void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifi
 
     instance.setIdentity( ins_idx, gas_idx, sensor_identifier_u, sensor_index );
 
-    LOG(LEVEL) 
+    LOG(debug) 
         << " firstcall " << ( firstcall ? "YES" : "NO " )
         << " ins_idx " << ins_idx 
         << " gas_idx " << gas_idx 
@@ -2800,6 +2823,13 @@ const SBitSet* CSGFoundry::ELV(const SName* id)
     unsigned num_meshname = id->getNumName(); 
     const char* elv_ = ELVString(id); 
     SBitSet* elv = elv_ ? SBitSet::Create(num_meshname, elv_ ) : nullptr ; 
+
+    LOG(LEVEL) 
+       << " num_meshname " << num_meshname
+       << " elv_ " << ( elv_ ? elv_ : "-" ) 
+       << " elv " << ( elv ? elv->desc() : "-" )
+       ;
+ 
     return elv ; 
 }
 

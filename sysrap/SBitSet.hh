@@ -47,6 +47,7 @@ struct SYSRAP_API SBitSet
     bool        is_set(unsigned pos) const ;
 
     unsigned    count() const ; 
+    bool        is_all_set() const ; 
     bool        all() const ; 
     bool        any() const ; 
     bool        none() const ; 

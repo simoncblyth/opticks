@@ -2802,30 +2802,31 @@ oglrap(){   oglrap-  ; oglrap-cd $* ; }
 cudarap(){  cudarap- ; cudarap-cd $* ; }
 qudarap(){  qudarap- ; qudarap-cd $* ; }
 
+pwd_(){   [ -z "$QUIET" ] && pwd  ; }
+pwdt_(){  [ -z "$QUIET" ] && pwd && ls -l *.sh ; }
 
-pwd_(){ [ -z "$QUIET" ] && pwd  ; }
 
 # optix7 expts 
 c(){  cd $(opticks-home)/CSG ; pwd_ ; }
-ct(){ cd $(opticks-home)/CSG/tests ; pwd_ ; }
+ct(){ cd $(opticks-home)/CSG/tests ; pwdt_ ; }
 cg(){ cd $(opticks-home)/CSG_GGeo ; pwd_ ; }
 gc(){ cd $(opticks-home)/GeoChain ; pwd_ ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd_ ; }
-cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd_ ; }
+cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwdt_ ; }
 u4(){ cd $(opticks-home)/u4 ; pwd_ ; }
-u4t(){ cd $(opticks-home)/u4/tests ; pwd_ ; }
+u4t(){ cd $(opticks-home)/u4/tests ; pwdt_ ; }
 #c4(){ cd $(opticks-home)/c4 ; pwd_ ; }
 c4(){ cd ~/customgeant4 ; git status ; }
 
 gx(){ cd $(opticks-home)/g4cx ; pwd_ ; }
-gxt(){ cd $(opticks-home)/g4cx/tests ; pwd_ ; ls -l *.sh ;  }
+gxt(){ cd $(opticks-home)/g4cx/tests ; pwdt_ ;  }
 gd(){ cd $(opticks-home)/gdxml ; pwd_ ; }
-gdt(){ cd $(opticks-home)/gdxml/tests ; pwd_ ; }
+gdt(){ cd $(opticks-home)/gdxml/tests ; pwdt_ ; }
 
 qu(){ qudarap $* ; pwd_ ; }
-qt(){ qudarap tests ; pwd_ ; }
+qt(){ qudarap tests ; pwdt_ ; }
 sy(){ sysrap $* ; pwd_ ; }
-st(){ sysrap tests ; pwd_ ; }
+st(){ sysrap tests ; pwdt_ ; }
 
 
 

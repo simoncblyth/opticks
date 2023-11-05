@@ -275,6 +275,27 @@ or equal to *max_count*.
 
 Returns -1 if not found.
 
+This is used from CSGFoundry::findMeshIndex and results in -1 for
+names with common prefixes::
+
+    CSGFoundry::descELV elv.num_bits 139 num_include 139 num_exclude 0
+    INCLUDE:139
+
+    p:  0:midx:  0:mn:sTopRock_domeAir
+    p:  1:midx: -1:mn:sTopRock_dome
+    p:  2:midx:  2:mn:sDomeRockBox
+    p:  3:midx:  3:mn:PoolCoversub
+    p:  4:midx:  4:mn:Upper_LS_tube
+    p:  5:midx:  5:mn:Upper_Steel_tube
+    p:  6:midx:  6:mn:Upper_Tyvek_tube
+    p:  7:midx:  7:mn:Upper_Chimney
+    p:  8:midx: -1:mn:sBar
+    p:  9:midx: -1:mn:sBar
+    p: 10:midx: 10:mn:sPanelTape
+    p: 11:midx: -1:mn:sPanel
+    p: 12:midx: 12:mn:sPlane
+
+
 **/
 
 inline int SName::findIndex(const char* starting, unsigned& count, int max_count ) const 
