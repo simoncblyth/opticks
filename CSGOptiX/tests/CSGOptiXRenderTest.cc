@@ -2,7 +2,7 @@
 CSGOptiXRenderTest
 ====================
 
-For a simpler alternative see CSGOptiXRdrTest
+For a simpler alternative see CSGOptiXRMTest.cc
 
 This executable is typically run via cxr_*.sh specialized bash scripts 
 each dedicated to different types of renders. 
@@ -48,12 +48,6 @@ CFBASE
 #include "sqat4.h"
 
 #include "SGLM.h"
-
-#ifdef WITH_SGLM
-#else
-#include "Opticks.hh"
-#endif
-
 #include "CSGFoundry.h"
 #include "CSGCopy.h"
 #include "CSGOptiX.h"
@@ -65,11 +59,6 @@ const plog::Severity LEVEL = debug ;
 struct CSGOptiXRenderTest
 {
     CSGOptiXRenderTest() ; 
-
-#ifdef WITH_SGLM
-#else
-    Opticks*    ok ; 
-#endif
 
     const char* solid_selection ; 
 
@@ -92,10 +81,6 @@ struct CSGOptiXRenderTest
 
 CSGOptiXRenderTest::CSGOptiXRenderTest()
     : 
-#ifdef WITH_SGLM
-#else
-    ok(Opticks::Get()),
-#endif
     solid_selection(SGeoConfig::SolidSelection()),   //  formerly from --solid_label option used for selecting solids from the geometry 
     fd(CSGFoundry::Load()), 
     cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates 
@@ -164,18 +149,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEventConfig::SetRGMode("render"); 
+    SEventConfig::SetRGModeRender(); 
 
-#ifdef WITH_SGLM
-    //LOG(LEVEL) << " WITH_SGLM : not using Opticks " ; 
-#else
-    LOG(fatal) << " not-WITH_SGLM : calling Opticks::Configure  " ; 
-    Opticks::Configure(argc, argv);  
-#endif
-
+    /*
     const char* outdir = SEventConfig::OutDir(); 
-    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
+    SOpticks::WriteOutputDirScript(outdir) ; 
 
+    writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
+    skip as writing into PWD potentially problematic
+    */
 
     SSim::Create(); 
 

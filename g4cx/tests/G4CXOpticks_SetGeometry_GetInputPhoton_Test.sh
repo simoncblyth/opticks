@@ -14,7 +14,7 @@ source $HOME/.opticks/GEOM/GEOM.sh
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
 
-loglevels(){
+logging(){
    export Dummy=INFO
    export G4CXOpticks=INFO
    #export X4PhysicalVolume=INFO
@@ -22,9 +22,7 @@ loglevels(){
    export CSGFoundry=INFO
    export GSurfaceLib=INFO
 }
-#loglevels
-
-env | grep =INFO
+[ -n "$LOG" ] && logging && env | grep =INFO
 
 
 export OPTICKS_INPUT_PHOTON=DownXZ1000_f8.npy
@@ -39,7 +37,6 @@ defarg=run_ana
 arg=${1:-$defarg}
 
 if [ "${arg/run}" != "$arg" ]; then 
-
     $bin
     MOI=Hama:0:1000 $bin
     MOI=NNVT:0:1000 $bin
@@ -48,10 +45,7 @@ fi
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     export TAIL="-o run"
-    case $(uname) in 
-       Darwin) lldb__ $bin  ;; 
-       Linux)  gdb__  $bin ;;
-    esac
+    dbg__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi 
 

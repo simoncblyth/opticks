@@ -4,6 +4,8 @@ project(${name} VERSION 0.1.0)
 
 #[=[
 Promote sources to ctests by moving to lower list 
+generally the problem is required environment 
+or doing geometry specific things. 
 #]=]
 
 set(SINGLE_SOURCES
