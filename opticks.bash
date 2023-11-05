@@ -662,8 +662,8 @@ EON
 
 
 
-opticks-c(){    cd $(opticks-dir) ; }
-opticks-cd(){   cd $(opticks-dir) ; }
+opticks-c(){    cd $(opticks-dir)/$1 ; }
+opticks-cd(){   cd $(opticks-dir)/$1 ; }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 opticks-xcd(){  cd $(opticks-xdir); }

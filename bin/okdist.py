@@ -33,7 +33,8 @@ class OKDist(Dist):
                          'pkgconfig',  
                            ]   
 
-    bases = ['include', 
+    bases = [
+             'include', 
              'lib',                  # order 400 executables
              'lib64',              
              'externals/share/bcm',  #  cmake infrastructure enhancement 
@@ -42,19 +43,22 @@ class OKDist(Dist):
              'externals/OptiX/lib64', 
              'externals/glm/glm/glm',
              'externals/plog/include',
+             'installcache/PTX', 
+             'gl',                   # shaders 
+             'tests',                # tree of CTestTestfile.cmake  
+             'py',                   # installed python module tree
+             'bin',
+             'metadata',
+             'cmake/Modules',        # infraastructure for Finding, configuring etc..
+             ]
+
+    former_bases = [ 
+             'integration', 
+             'opticksaux',           # a few example GDML files
              'externals/include/OpenMesh',
              'externals/include/assimp',
              'externals/include/YoctoGL',
              'externals/include/DualContouringSample',
-             'installcache/PTX', 
-             'gl',                   # shaders 
-             'tests',                # tree of CTestTestfile.cmake  
-             'integration', 
-             'py',                   # installed python module tree
-             'bin',
-             'opticksaux',           # a few example GDML files
-             'metadata',
-             'cmake/Modules',        # infraastructure for Finding, configuring etc..
              ]
 
     bases_g4 = [
@@ -70,7 +74,6 @@ class OKDist(Dist):
     extras = []
 
     def __init__(self, distprefix, distname, include_geant4, include_xercesc ):
-
 
         extra_bases = []
         if include_geant4:
@@ -91,15 +94,15 @@ class OKDist(Dist):
         if name.endswith(".log"):
             exclude = True
         pass
-        if name.startswith("libG4OK"):  ## Opticks Geant4 interface lib named like g4 libs
-            exclude = False
-        elif name.startswith("libG4") and self.include_geant4 == False:
-            exclude = True
-        elif name.startswith("libxerces") and self.include_xercesc == False:
-            exclude = True
-        elif (name.startswith("liboptix_denoiser") or name.startswith("libcudnn")) and self.include_optix_big == False:  
-            exclude = True
-        pass
+        #if name.startswith("libG4OK"):  ## Opticks Geant4 interface lib named like g4 libs
+        #    exclude = False
+        #elif name.startswith("libG4") and self.include_geant4 == False:
+        #    exclude = True
+        #elif name.startswith("libxerces") and self.include_xercesc == False:
+        #    exclude = True
+        #elif (name.startswith("liboptix_denoiser") or name.startswith("libcudnn")) and self.include_optix_big == False:  
+        #    exclude = True
+        #pass
         return exclude
 
 

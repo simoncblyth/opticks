@@ -6,6 +6,15 @@ CMakeModules.py
 This copies cmake/Modules into the installation directory 
 which is necessary to allow building against the release. 
 
+
+Why not install these with CMake ?
+-----------------------------------
+
+Because opticks is in fact multiple CMake packages which 
+are tied together with find_package and bash scripts 
+it is expedient to do some project-wide things 
+with bash/python scripts. 
+
 Usage Example
 ---------------
  
@@ -28,6 +37,7 @@ class SourceTree(object):
                 'old', 
                 'inactive',
                 'include', 
+                'dev'
                ] 
 
     def __init__(self, home, dest):

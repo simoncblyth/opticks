@@ -1,28 +1,11 @@
-##
-## Copyright (c) 2019 Opticks Team. All Rights Reserved.
-##
-## This file is part of Opticks
-## (see https://bitbucket.org/simoncblyth/opticks).
-##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
-## You may obtain a copy of the License at
-##
-##   http://www.apache.org/licenses/LICENSE-2.0
-##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
-## limitations under the License.
-##
-
-okdist-sdir(){ echo $(dirname $(okdist-source)) ; }
-okdist-py(){ echo $(okdist-sdir)/okdist.py ; }
+okdist-env(){ echo -n ; }
 okdist-vi(){ vi $BASH_SOURCE $(okdist-py) \
      $(opticks-home)/notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst ; 
 }
-okdist-env(){ echo -n ; }
+okdist-sdir(){ echo $(dirname $BASH_SOURCE) ; }
+okdist-py(){ echo $(okdist-sdir)/okdist.py ; }
+
+
 okdist-usage(){  cat << \EOU
 
 Opticks Binary Distribution : create tarball for explosion on cvmfs 
@@ -145,7 +128,18 @@ workflow for Opticks binary releases
        ## close and publish this transaction
 
 
+run installed ctests
+-------------------------------
 
+After okdist-- okdist-create-tests 
+tests are installed into the "tests" subfolder
+under the installation prefix::
+
+    opticks-
+    opticks-cd tests
+
+    ctest -N
+    ctest --output-on-failure
 
 
 okdist testing on workstation
@@ -234,6 +228,16 @@ okdist-install-tests()
    local dest=$(opticks-dir)/tests
    echo $msg bdir $bdir dest $dest
    CTestTestfile.py $bdir --dest $dest
+   local script=$dest/ctest.sh 
+
+   cat << EOT > $script
+#!/bin/bash -l 
+#ctest -N 
+ctest --output-on-failure
+EOT
+
+   chmod ugo+x $script 
+
 }
 
 okdist-install-cmake-modules()
@@ -397,50 +401,4 @@ okdist--(){
    okdist-explode
    okdist-ls  
 }
-
-
-
-
-
-
-
-
-
-
-okdist-test-notes(){ cat << EON
-
-* ppm snaps defaulting to triangulated, still need --xanalytic switch.
-* how to be sure are using the packaged libs ?
-
-  * recall some RPATH setup for Linux using ORIGIN which enables the
-    libs to be found relative to the executables 
-  * notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst  
-
-  * where is the sensitivity to opticks-f OPTICKS_INSTALL_PREFIX
-
-EON
-}
-
-
-okdist-snap-()
-{
-    PATH=$(okdist-tmp)/lib:$PATH which OpSnapTest   
-}
-
-okdist-test()
-{
-    #OPTICKS_INSTALL_PREFIX=$(okdist-tmp) $(okdist-tmp)/lib/OpticksResourceTest --envkey 
-    #LD_TRACE_LOADED_OBJECTS=1 $(okdist-tmp)/lib/OpticksResourceTest
-
-   # gdb --args \
-
-    OPTICKS_INSTALL_PREFIX=$(okdist-tmp) \
-        $(okdist-tmp)/lib/OpSnapTest --envkey --xanalytic --target 352851 --eye -1,-1,-1 --snapconfig "steps=10,eyestartz=-1,eyestopz=5" --size 2560,1440,1 --embedded
-
-    local ppm=$(opticks-dir)/tmp/snap00000.ppm 
-    ls -l $ppm
-    open $ppm
-}
-
-
 

@@ -144,9 +144,9 @@ class OpticksCMakeProj(object):
              'SysRap':200, 
              'CSG':300,
              'QUDARap':400,
-             'CSGOptiX':500,
-             'GDXML':600,
-             'U4':700,
+             'GDXML':500,
+             'U4':600,
+             'CSGOptiX':700,
              'G4CX':800
             }
 
