@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSGOptiXTest)
 project(${name} VERSION 0.1.0)
 
+#[=[
+Promote sources to ctests by moving to lower list 
+#]=]
 
 set(SINGLE_SOURCES
-    CSGOptiXVersion.cc
-    CSGOptiXVersionTest.cc
-    CSGOptiXRenderTest.cc
     CSGOptiXSimtraceTest.cc
     CSGOptiXSimulateTest.cc
     CSGOptiXSimTest.cc
@@ -17,13 +17,23 @@ set(SINGLE_SOURCES
     CSGOptiXSMTest.cc
 )
 
+set(TEST_SOURCES
+    CSGOptiXVersion.cc
+    CSGOptiXVersionTest.cc
+    CSGOptiXRenderTest.cc
+)
+
 foreach(SRC ${SINGLE_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} CSGOptiX)
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
 
-    #add_test(${name}.${TGT} ${TGT})
-    # TODO: review these tests before making them ctests 
-
+foreach(SRC ${TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    add_test(${name}.${TGT} ${TGT})
     target_link_libraries(${TGT} CSGOptiX)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()

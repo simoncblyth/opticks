@@ -17,25 +17,7 @@ gxr.sh : G4CXRenderTest
 analog delta times more than 2% of total
 --------------------------------------------------
 
-::
-
-    In [1]: log[2]
-    Out[1]: 
-                     timestamp :        DTS-prev :        DFS-frst :msg
-    2022-08-23 23:46:36.137000 :      0.2620[42] :      0.2620[42] : INFO  [57512] [main@24] ] cu first 
-    2022-08-23 23:46:36.240000 :      0.0740[12] :      0.3650[59] : INFO  [57512] [CSGOptiX::initCtx@322] ]
-    2022-08-23 23:46:36.264000 :      0.0230[ 4] :      0.3890[63] : INFO  [57512] [CSGOptiX::initPIP@333] ]
-    2022-08-23 23:46:36.299000 :      0.0130[ 2] :      0.4240[68] : INFO  [57512] [IAS_Builder::CollectInstances@77]  i   25601 gasIdx   2 sbtOffset   3094 gasIdx_sbtOffset.size   3
-    2022-08-23 23:46:36.374000 :      0.0350[ 6] :      0.4990[80] : INFO  [57512] [CSGFoundry::getFrame@2880]  fr sframe::desc inst 0 frs -1
-    2022-08-23 23:46:36.390000 :      0.0130[ 2] :      0.5150[83] : INFO  [57512] [CSGOptiX::launch@794]  (width, height, depth) ( 1920,1080,1) 0.0126
-    2022-08-23 23:46:36.495000 :      0.0960[15] :      0.6200[100] : INFO  [57512] [Frame::snap@155] ] writeJPG 
-
-
-                             - :                 :                 :G4CXRenderTest.log
-    2022-08-23 23:46:35.875000 :                 :                 :start
-    2022-08-23 23:46:36.496000 :                 :                 :end
-                             - :                 :      0.6210[100] :total seconds
-                             - :                 :      2.0000[100] :pc_cut
+See bin/log.py for logfile analysis with time filtering 
 
 EOU
 }
@@ -60,7 +42,16 @@ esac
 bin=G4CXRenderTest
 log=$bin.log
 gxrdir=$(dirname $BASH_SOURCE)
+
 source $gxrdir/../bin/COMMON.sh 
+
+## bin/COMMON sources bin/GEOM_.sh and bin/OPTICKS_INPUT_PHOTON.sh
+## BUT the content of those is very user specific so have moved
+## geometry to $HOME/.opticks/GEOM/GEOM.sh 
+## THIS KINDA THING IS IN USERLAND BUT COULD SUGGEST 
+## INPUT PHOTONS ALSO CONFIGURED IN THE SAME GEOM.sh FILE
+## OR FILES THAT THAT FILE SOURCES 
+
 
 eye=-0.4,0,0
 moi=-1
@@ -69,6 +60,8 @@ export MOI=${MOI:-$moi}
 
 
 # HMM could do loglevels in COMMON.sh ?
+# NO : WHAT LOGGING TO SWITCH ON DEPENDS ON EACH SCRIPT
+# SO IT SHOULD BE THERE
 
 loglevels()
 {
