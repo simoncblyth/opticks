@@ -33,7 +33,6 @@ set(SCRIPTS
    strace.py 
    js.py 
 
-   SimpleCTestRunner.sh 
 )
 
 if(APPLE)
