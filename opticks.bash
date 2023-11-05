@@ -2256,6 +2256,7 @@ opticks-t-()
 
    om-
    om-test 
+   om-test-help
 
    cd $iwd
 }

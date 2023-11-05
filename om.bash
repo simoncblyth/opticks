@@ -568,8 +568,8 @@ om-install(){ om-one-or-all install $* ; return $? ; }
 om-cleaninstall(){ om-one-or-all cleaninstall $* ; return $? ; }
 om-visit(){   om-one-or-all visit $* ; return $? ; }
 
-om-test-hint(){ cat << EOH
-om-test-hint
+om-test-help(){ cat << EOH
+om-test-help
 -------------
 
 NB : are now running each test via test runners such as::
@@ -612,7 +612,7 @@ om-test(){
     om-one-or-all test $* 
     rc=$?
     #om-testenv-pop
-    om-test-hint
+    #om-test-help   # call this from opticks-t- to avoid repetition
     return $rc  
 }
 om-echo(){    om-one-or-all echo $* ; return $? ; }
