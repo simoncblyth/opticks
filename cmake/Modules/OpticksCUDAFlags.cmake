@@ -59,14 +59,6 @@ Select a particular C++ dialect.
 
 Allowed values for this option: c++03,c++11,c++14
 
-
-
-
-
-
-
-
-
 #]=]
 
 
@@ -74,7 +66,11 @@ set(OPTICKS_CUDA_NVCC_DIALECT $ENV{OPTICKS_CUDA_NVCC_DIALECT})
 if(OPTICKS_CUDA_NVCC_DIALECT)
     message(STATUS "cmake/Modules/OpticksCUDAFlags.cmake : reading envvar OPTICKS_CUDA_NVCC_DIALECT into variable ${OPTICKS_CUDA_NVCC_DIALECT}")
 else()
-    set(OPTICKS_CUDA_NVCC_DIALECT "c++11")
+    if(UNIX AND NOT APPLE)
+       set(OPTICKS_CUDA_NVCC_DIALECT "c++17")
+    else()
+       set(OPTICKS_CUDA_NVCC_DIALECT "c++11")
+    endif()
     message(STATUS "cmake/Modules/OpticksCUDAFlags.cmake : using default OPTICKS_CUDA_NVCC_DIALECT variable ${OPTICKS_CUDA_NVCC_DIALECT}")
 endif()
 

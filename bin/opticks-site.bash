@@ -12,6 +12,8 @@ This opticks-site.bash script is intended to be the shared
 single script that users must source to configure access to 
 an Opticks binary release, shared cache and Geant4 installation. 
 
+HMM : should be using Boost/Xercesc/CLHEP/Geant4 incommon
+
 The sidecar local script contains absolute site specific 
 paths that administrators must customize appropriately for the
 installation that must be accessible from GPU cluster 
@@ -81,7 +83,7 @@ Building an executable that links against the release using CMake
 Clone the opticks source::
 
    cd
-   hg clone http://bitbucket.org/simoncblyth/opticks
+   git clone http://bitbucket.org/simoncblyth/opticks
    cd opticks/examples/Geant4/CerenkovMinimal
 
    cat go-release.sh    # examine the cmake command line  

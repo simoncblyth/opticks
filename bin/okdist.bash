@@ -138,8 +138,8 @@ under the installation prefix::
     opticks-
     opticks-cd tests
 
-    ctest -N
-    ctest --output-on-failure
+    ctest -N                   ## list tests
+    ctest --output-on-failure  ## run them all 
 
 
 okdist testing on workstation
@@ -160,7 +160,7 @@ EOU
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
 okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
-okdist-releases-dir-default(){ echo $(opticks-dir)/releases ; }
+okdist-releases-dir-default(){ echo $(opticks-dir)_releases ; }
 okdist-releases-dir(){         echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
 okdist-rcd(){                  cd $(okdist-releases-dir) ; }
 

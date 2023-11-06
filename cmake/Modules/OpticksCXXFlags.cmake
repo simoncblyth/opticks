@@ -71,7 +71,6 @@ else()
      set(CMAKE_CXX_STANDARD 14)
      set(CMAKE_CXX_STANDARD_REQUIRED on)
   else ()
-     #set(CMAKE_CXX_STANDARD 14)
      set(CMAKE_CXX_STANDARD 17)   ## Geant4 1100 forcing c++17 : BUT that restricts to gcc 5+ requiring 
      set(CMAKE_CXX_STANDARD_REQUIRED on)
   endif ()
