@@ -5,8 +5,8 @@ opticks-site-source-local(){  echo ${BASH_SOURCE/.bash/-local.bash} ; }
 opticks-site-vi(){       vi $(opticks-site-source) $(opticks-site-source-local) ; }
 
 opticks-site-usage(){ cat << EOU 
-$FUNCNAME
-===================
+bin/opticks-site.bash : configure access to opticks binary release
+=====================================================================
 
 This opticks-site.bash script is intended to be the shared
 single script that users must source to configure access to 
@@ -46,7 +46,7 @@ Specifically this script sources other scripts that
 define bash functions starting with:
 
 1. opticks-release 
-2. opticks-envg4
+2. opticks-envg4      ## PROBLEMATIC : NEEDS TO USE COMMON GEANT4
 3. opticks-sharedcache 
 
 For more details of these see::
@@ -124,7 +124,7 @@ Instructions for Site Adminstrators
         . ~/opticks/bin/opticks-site.bash
         opticks-site-deploy         ## copies scripts into place
 
-   This is now done automatically by the okdist-- funtion okdist-deploy-opticks-site
+   This is now done automatically by the okdist-- function okdist-deploy-opticks-site
 
 2. customize the absolute paths contained in the 2nd opticks-site-path-local script::
 
@@ -444,8 +444,9 @@ opticks-site-main()
 
     export  TMP=$(opticks-site-user-tmp)
 
-    source $(opticks-site-envg4) 
+    #source $(opticks-site-envg4) 
 
+    # NB opticks-site-release path is customizable in bin/opticks-site-local.bash
     source $(opticks-site-release)
 
     source $(opticks-site-sharedcache)

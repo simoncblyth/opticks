@@ -33,60 +33,29 @@ class OKDist(Dist):
                          'pkgconfig',  
                            ]   
 
+    ## dist.py:Dist iterates over each of these dirs 
     bases = [
-             'include', 
-             'lib',                  # order 400 executables
-             'lib64',              
-             'externals/share/bcm',  #  cmake infrastructure enhancement 
-             'externals/lib',
-             'externals/lib64',
-             'externals/OptiX/lib64', 
-             'externals/glm/glm/glm',
-             'externals/plog/include',
-             'installcache/PTX', 
-             'gl',                   # shaders 
+             'cmake',    
              'tests',                # tree of CTestTestfile.cmake  
-             'py',                   # installed python module tree
-             'bin',
              'metadata',
-             'cmake/Modules',        # infraastructure for Finding, configuring etc..
+             'lib',               
+             'lib64',              
+             'ptx',
+             'bin',
+             'externals',
+             'include', 
+             'py',                   # installed python module tree
              ]
-
-    former_bases = [ 
-             'integration', 
-             'opticksaux',           # a few example GDML files
-             'externals/include/OpenMesh',
-             'externals/include/assimp',
-             'externals/include/YoctoGL',
-             'externals/include/DualContouringSample',
-             ]
-
-    bases_g4 = [
-             'externals/config',
-             'externals/share/Geant4-10.4.2/data',       # adds about 1.6G to .tar when included
-               ] 
-
-    bases_xercesc = [
-             'externals/include/xercesc',
-                   ]
 
 
     extras = []
 
-    def __init__(self, distprefix, distname, include_geant4, include_xercesc ):
-
+    def __init__(self, distprefix, distname ):
+        """
+        :param distprefix:
+        :param distname:
+        """
         extra_bases = []
-        if include_geant4:
-            extra_bases += self.bases_g4
-        pass
-        if include_xercesc:
-            extra_bases += self.bases_xercesc
-        pass 
-
-        self.include_geant4 = include_geant4 
-        self.include_xercesc = include_xercesc 
-        self.include_optix_big = False 
-
         Dist.__init__(self, distprefix, distname, extra_bases)
 
     def exclude_file(self, name):
@@ -94,15 +63,6 @@ class OKDist(Dist):
         if name.endswith(".log"):
             exclude = True
         pass
-        #if name.startswith("libG4OK"):  ## Opticks Geant4 interface lib named like g4 libs
-        #    exclude = False
-        #elif name.startswith("libG4") and self.include_geant4 == False:
-        #    exclude = True
-        #elif name.startswith("libxerces") and self.include_xercesc == False:
-        #    exclude = True
-        #elif (name.startswith("liboptix_denoiser") or name.startswith("libcudnn")) and self.include_optix_big == False:  
-        #    exclude = True
-        #pass
         return exclude
 
 
@@ -112,8 +72,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "--distname",  help="Distribution name including the extension, expect .tar or .tar.gz" )
     parser.add_argument(     "--distprefix",  help="Distribution prefix, ie the top level directory structure within distribution file." )
-    parser.add_argument(     "--include_geant4",   default=False, action="store_true", help="Include Geant4 libraries and datafiles from the distribution" )
-    parser.add_argument(     "--include_xercesc",  default=False, action="store_true", help="Include xercesc libraries and includes in the distribution" )
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
 
@@ -122,7 +80,7 @@ if __name__ == '__main__':
 
     log.info("distprefix %s distname %s " % (args.distprefix, args.distname))
 
-    dist = OKDist(args.distprefix, args.distname, include_geant4=args.include_geant4, include_xercesc=args.include_xercesc)
+    dist = OKDist(args.distprefix, args.distname)
 
     print(dist.large())
 

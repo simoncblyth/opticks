@@ -55,11 +55,10 @@ class Dist(object):
         self.prefix = distprefix
         self.dist = tarfile.open(distname, mode)    
 
-        for base in self.bases:
-            self.recurse_(base, 0) 
-        pass
-        for base in extra_bases:
-            self.recurse_(base, 0) 
+        for base in self.bases + extra_bases:
+            if os.path.exists(base):
+                self.recurse_(base, 0) 
+            pass
         pass
         for extra in self.extras:
             assert os.path.exists(extra), extra
@@ -95,7 +94,16 @@ class Dist(object):
 
     def large(self, cut=5e6):
         msg = "tarball files exceeding %d bytes,  %10.3f M  in ascending order" % ( cut, cut/1e6 ) 
-        return "\n".join([msg]+map(lambda kv:"% 10.3f : %s " % (kv[1]/1e6, kv[0]),sorted(filter(lambda kv:kv[1] > cut, self.sz.items()),key=lambda kv:kv[1]) ))
+        lines = [msg]
+        present_ = lambda kv:"% 10.3f : %s " % (kv[1]/1e6, kv[0])   
+        ssz = sorted(filter(lambda kv:kv[1] > cut, self.sz.items()), key=lambda kv:kv[1])
+        for kv in ssz: 
+            lines.append(present_(kv))
+        pass
+        #list(map(lambda kv:"% 10.3f : %s " % (kv[1]/1e6, kv[0]),
+        #sorted(filter(lambda kv:kv[1] > cut, self.sz.items()),key=lambda kv:kv[1]) ))
+        return "\n".join(lines)
+
 
     def exclude_dir(self, name):
         exclude = name in self.exclude_dir_name

@@ -6,28 +6,23 @@ opticks-release-dir(){    echo $(dirname $BASH_SOURCE) ; }
 opticks-release-prefix(){ echo $(dirname $(dirname $BASH_SOURCE)) ; }
 opticks-release-cd(){     cd $(opticks-release-prefix) ; }
 
-
 opticks-release-usage(){ cat << EOU
-$FUNCNAME
-=======================
+bin/opticks-release.bash
+=========================
 
-This opticks-release.bash script sets up a minimal environment for the 
-use of an Opticks binary distribution.
+This is sourced from bin/opticks-site.bash with a 
+path customized in bin/opticks-site-local.bash to configure
+the installation prefix of the binary release. 
 
-Use it by including a line in your ~/.bashrc similar to one of the below, 
-corresponding to your operating system architecture and package versions::
+The primary role of this script is to define the prefix directory
+based on the directory in which this script is installed PREFIX/bin/opticks-release.bash
 
-   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-slc7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
-   source /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/bin/opticks-release.bash
-   
-By default Opticks binary distributions do not include Geant4 libs or data, 
-those are assumed to be separately provided and environment configured.
+So this script is intended to be sourced in its installed location::
 
-The Opticks binary distribution also does not include the shared cache.
-The shared cache which contains geocache and rngcache is much larger than the
-binary distribution. The administrator of your GPU cluster should instruct 
-you regarding the path to the script that will setup access to 
-the shared cache. 
+    . /usr/local/opticks/bin/opticks-release.bash
+    opticks-release-info
+    opticks-release-check
+
 
 FUNCTIONS
 ----------
@@ -39,17 +34,14 @@ opticks-release-check
     dumps environment 
 
 opticks-release-test
-    runs more than 400 tests of the Opticks distribution using ctest
-    roughly 20% of them will fail if Geant4 libraries or data are not found.
-    Many tests will also fail if access to the shared cache with 
-    geocache and rngcache is not configured. 
+    runs hundreds of tests using ctest 
 
 EOU
 }
 
 opticks-release-info(){ cat << EOI
-$FUNCNAME
-=====================
+bin/opticks-release.bash opticks-release-info
+================================================
 
   opticks-release-source : $(opticks-release-source)
   opticks-release-dir    : $(opticks-release-dir)
@@ -57,7 +49,7 @@ $FUNCNAME
 
 
   HOME                      : $HOME  
-  OPTICKS_USER_HOME         : $OPTICKS_USER_HOME
+  OPTICKS_USER_HOME         : $OPTICKS_USER_HOME         SEEMS NO LONGER USED ?
       optional envvar that overrides HOME within Opticks
 
   opticks-release-user-home : $(opticks-release-user-home)
@@ -86,7 +78,6 @@ opticks-release-check(){
    env | grep G4
 
    echo $msg ctest $(which ctest)
-
 }
 
 opticks-release-main(){
@@ -96,8 +87,6 @@ opticks-release-main(){
    export PATH=$(opticks-release-prefix)/bin:$(opticks-release-prefix)/lib:$(opticks-release-prefix)/py/opticks/ana:$PATH 
 
    export PYTHONPATH=$(opticks-release-prefix)/py:$PYTHONPATH
-
-   source $(opticks-release-prefix)/integration/integration.bash   ## bash precursor hookup, eg tboolean- which is used by some tests
 
    olocal-(){ echo -n ; }   ## many bash env functions expect this function to be defined
 }
@@ -112,6 +101,9 @@ opticks-release-cd(){  cd $(opticks-release-prefix) ; }
 
 opticks-release-test()
 {
+    # THIS MAKES MORE SENSE UP IN opticks-site perhaps ? 
+    # AS THE ENVIRONMENT IS NOT SETUP HERE ?
+
     local proj=$1
     local msg="== $FUNCNAME :"
     local iwd=$PWD

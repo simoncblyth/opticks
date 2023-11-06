@@ -1076,9 +1076,6 @@ opticks-setup--(){   source $(opticks-setup-path) ; }
 
 opticks-setup-generate-notes(){ cat << EON
 
-TODO : simplify the generated setup 
-
-* move -goc, -gob stuff which is not for general consumption elsewhere 
 
 EON
 }
@@ -1227,6 +1224,11 @@ EOH
 
 opticks-setup-consistency-check-(){ 
    local var=${1:-CMAKE_PREFIX_PATH} 
+
+   : note how the buildtime values of the vars are captured into the 
+   : generated script then checked to be consistent later 
+   : although note that a warning is provided but no action 
+
    cat << EOC
 
 # record buildenv optional envvars
@@ -1241,7 +1243,7 @@ if [ -n "\$$var" ]; then
        echo \$BUILD_$var | tr ":" "\n"  
        echo 
        
-       #echo \$MSG WARNING resetting $var to the build time input value : it will be modified below  
+       #echo \$MSG WARNING resetting $var to the build time input value
        #export $var=\$BUILD_$var
    else
        echo \$MSG consistent $var between build time and usage 
@@ -1471,6 +1473,9 @@ opticks-setup-info()
 
 opticks-setup-paths-(){ cat << EOS
 # $FUNCNAME 
+# THIS IS THE PRIMARY PURPOSE OF THE GENERATED SCRIPT
+# SETTING PATH VARIABLES TO ALLOW USE OF OPTICKS EXECUTABLES
+# AND EXTERNAL LIBS THAT THEY DEPEND UPON  
 
 opticks-setup- append PATH \$OPTICKS_CUDA_PREFIX/bin   ## nvcc
 opticks-setup- append PATH \$OPTICKS_PREFIX/bin

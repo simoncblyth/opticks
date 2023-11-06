@@ -3,11 +3,11 @@ set(name Bin)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-# increasing dependency order
+#[=[
+TODO: review the scripts : many are no longer relevant 
+#]=]
+
 set(SCRIPTS
-   opticks-release.bash
-   opticks-site.bash
-   opticks-site-local.bash
    o.sh
    tboolean.sh
    env.sh
@@ -19,30 +19,39 @@ set(SCRIPTS
    scan.bash
    oc.bash
 
-   CTestTestfile.py 
-   CTestLog.py  
-   CMakeModules.py 
-   okdist.py  
-   oktar.py
-
    find_package.py
-   pkg_config.py
    findpkg.py
+
+   pkg_config.py
    pc.py
+
    ptx.py
    strace.py 
    js.py 
-
 )
 
-if(APPLE)
-   list(APPEND SCRIPTS OKTest_macOS_standalone.sh)
-endif()
+set(INFRA_SCRIPTS
+   CTestTestfile.py 
+   CTestLog.py  
+   CMakeModules.py 
+
+   okdist.py  
+   oktar.py
+)
+
+set(INSTALLED_SCRIPTS
+   opticks-release.bash
+   opticks-site.bash
+   opticks-site-local.bash
+)
+
+#if(APPLE)
+#   list(APPEND SCRIPTS OKTest_macOS_standalone.sh)
+#endif()
 
 
 # top level python needs to go in bin, 
 # but modules that need to be imported must go to py/opticks/bin
-
 
 macro(install_bin_symlink filepath sympath)
     #install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/${filepath} ${sympath})")
@@ -56,9 +65,10 @@ include(GNUInstallDirs)
 message(STATUS "Bin.CMAKE_INSTALL_BINDIR:${CMAKE_INSTALL_BINDIR}")
 
 
-install(PROGRAMS ${SCRIPTS}   DESTINATION bin)
-install_bin_symlink( oc.bash oc )
-install_bin_symlink( oc.bash opticks-config )
+install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
+
+#install_bin_symlink( oc.bash oc )
+#install_bin_symlink( oc.bash opticks-config )
 
 
 set(PYSCRIPTS
@@ -67,7 +77,7 @@ set(PYSCRIPTS
    dist.py
 )
 
-install(PROGRAMS ${PYSCRIPTS}                 DESTINATION py/opticks/bin)
+install(PROGRAMS ${PYSCRIPTS} DESTINATION py/opticks/bin)
 
 
 add_subdirectory(tests)
