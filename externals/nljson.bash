@@ -17,7 +17,8 @@ nljson-get()
 {
    local msg="=== $FUNCNAME :"
    local iwd=$PWD
-   local dir=$(dirname $(nljson-path)) &&  mkdir -p $dir && cd $dir
+   local path=$(nljson-path)
+   local dir=$(dirname $path) &&  mkdir -p $dir && cd $dir
 
    local url=$(nljson-url)
    local name=$(basename $url)
@@ -27,12 +28,12 @@ nljson-get()
 
    cd $iwd
 
-   [ -s "$name" ]   # set rc 
+   [ -s "$path" ]   # set rc 
 }
 
 nljson--(){
    nljson-get
-   nljson-pc
+   #nljson-pc
 }
 
 nljson-r(){ vim -R $(nljson-path) ; }

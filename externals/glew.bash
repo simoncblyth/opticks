@@ -190,8 +190,8 @@ glew--() {
     [ $? -ne 0 ] && echo $msg get FAIL && return 1
     glew-make install
     [ $? -ne 0 ] && echo $msg install FAIL && return 2
-    glew-pc
-    [ $? -ne 0 ] && echo $msg pc FAIL && return 3
+    #glew-pc
+    #[ $? -ne 0 ] && echo $msg pc FAIL && return 3
 
     return 0 
 }

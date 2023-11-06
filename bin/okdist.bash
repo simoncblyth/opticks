@@ -159,16 +159,14 @@ EOU
 
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
-okdist-revision(){ cd $(opticks-home) && git rev-parse HEAD ; } 
+okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
 okdist-releases-dir-default(){ echo $(opticks-dir)/releases ; }
 okdist-releases-dir(){         echo ${OKDIST_RELEASES_DIR:-$(okdist-releases-dir-default)} ; } 
 okdist-rcd(){                  cd $(okdist-releases-dir) ; }
 
-
 okdist-title(){   echo Opticks ; }
-okdist-version(){ echo 0.0.0_alpha ; }
-#okdist-ext(){     echo .tar.gz ; }   # slow to create and only half the size, .tar is better while testing
-okdist-ext(){     echo .tar ; }  
+okdist-version(){ echo 0.0.1_alpha ; } # HMM:eventually this should be tied to opticks tags  
+okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing 
 okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
 okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
 okdist-path(){   echo $(opticks-dir)/$(okdist-name) ; }    

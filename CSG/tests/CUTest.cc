@@ -7,9 +7,6 @@
 #include "CSGPrim.h"
 #include "CSGPrimSpec.h"
 
-
-
-
 int main(int argc, char** argv)
 {
     int primOffset = 0 ; 
@@ -38,8 +35,6 @@ int main(int argc, char** argv)
         std::cout << p.desc() << std::endl;  
     }
     assert( 0 == memcmp( tt.data(), pp.data(), sizeof(CSGPrim)*numPrim ) ); 
-
-
 
     return 0 ; 
 }

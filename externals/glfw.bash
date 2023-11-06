@@ -487,8 +487,8 @@ glfw--()
    glfw-make install
    [ $? -ne 0 ] && echo $msg make/instal FAIL && return 3
 
-   glfw-pc
-   [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+   #glfw-pc
+   #[ $? -ne 0 ] && echo $msg pc FAIL && return 4
 
    return 0
 }

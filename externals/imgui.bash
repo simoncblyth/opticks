@@ -471,8 +471,8 @@ imgui--(){
   imgui-make install 
   [ $? -ne 0 ] && echo $msg make/install FAIL && return 3
 
-  imgui-pc 
-  [ $? -ne 0 ] && echo $msg pc FAIL && return 4
+  #imgui-pc 
+  #[ $? -ne 0 ] && echo $msg pc FAIL && return 4
 
   cd $iwd
   return 0
