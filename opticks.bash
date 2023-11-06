@@ -123,7 +123,7 @@ GEOM(){
   base=.opticks/GEOM/$GEOM
 
 
-  local args="vi/grab/get/ggeo/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/info"
+  local args="vi/grab/get/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/info"
   local geombase=$HOME/.opticks/GEOM
   local geomdir=$HOME/.opticks/GEOM/$GEOM
   local cfdir=$geomdir/CSGFoundry 
@@ -138,8 +138,6 @@ GEOM(){
      cmd="vi $HOME/$script"  
   elif [ "$arg" == "grab" -o "$arg" == "get" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $base"
-  elif [ "$arg" == "ggeo" ]; then  
-     cmd="source $OPTICKS_HOME/bin/rsync.sh $ggeo"
   elif [ "$arg" == "tmpget" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $tmp"
   elif [ "$arg" == "tmp" ]; then  
@@ -1389,8 +1387,8 @@ opticks-setup-funcs-(){
    declare -f opticks-setup- 
    declare -f opticks-setup-info-
    declare -f opticks-setup-info
-   declare -f opticks-gob 
-   declare -f opticks-goc 
+   #declare -f opticks-gob 
+   #declare -f opticks-goc 
    declare -f opticks-setup-find-config-prefix
    declare -f opticks-setup-find-geant4-prefix
 
@@ -1519,17 +1517,19 @@ opticks-setup-misc-(){ cat << EOM
 
 export TMP=\${TMP:-/tmp/\$USER/opticks}   ## too many uses of TMP to change all to OPTICKS_TMP right now
 export OPTICKS_TMP=\${OPTICKS_TMP:-/tmp/\$USER/opticks}  
-export OPTICKS_EVENT_BASE=\${OPTICKS_EVENT_BASE:-/tmp/\$USER/opticks} 
 mkdir -p \${OPTICKS_TMP}
-mkdir -p \${OPTICKS_EVENT_BASE}
-
-## see sysrap/STTF.hh
-export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 
 EOM
 }
 
+opticks-setup-misc-removed-(){ cat << EOR
+export OPTICKS_EVENT_BASE=\${OPTICKS_EVENT_BASE:-/tmp/\$USER/opticks} 
+mkdir -p \${OPTICKS_EVENT_BASE}
+## see sysrap/STTF.hh
+export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 
+EOR
+}
 
 opticks-geant4-prefix-notes(){ cat << EON
 
@@ -1839,6 +1839,9 @@ opticks-full-make()
 
     local setup=$(opticks-setup-path)
     [ ! -f "$setup" ] && echo $msg ABORT missing opticks setup script $setup && return 1
+
+    echo $msg running setup : as opticks-full-prepare needs to find and run executable
+    opticks-setup
 
     om-  
     cd $(om-home)

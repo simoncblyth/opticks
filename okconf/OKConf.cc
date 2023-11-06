@@ -172,6 +172,18 @@ unsigned OKConf::ComputeCapabilityInteger()
 #endif    
 }
 
+/**
+OKConf::OpticksInstallPrefix
+-----------------------------
+
+NB resolution order:
+
+1. envvar OPTICKS_INSTALL_PREFIX
+2. internally set OKCONF_OPTICKS_INSTALL_PREFIX 
+   coming from the CMAKE_INSTALL_PREFIX used 
+   for the installation
+
+**/
 const char* OKConf::OpticksInstallPrefix()
 {
 #ifdef OKCONF_OPTICKS_INSTALL_PREFIX
