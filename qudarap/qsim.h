@@ -2192,7 +2192,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 #if defined(WITH_CUSTOM4)
             printf("//qsim.propagate.WITH_CUSTOM4 idx %d  BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost ); 
 #else
-            printf("//qsim.propagate.NOT:WITH_CUSTOM4 idx %d BOUNDARY ems %d %lposcost %7.3f \n", ctx.idx, ems, lposcost); 
+            printf("//qsim.propagate.NOT:WITH_CUSTOM4 idx %d BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost); 
 #endif
         }
 #endif

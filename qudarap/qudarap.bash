@@ -32,7 +32,7 @@ qudarap-prepare-installation()
    local sizes=$(qudarap-prepare-sizes)
    local size 
    for size in $sizes ; do 
-       QCurandState_SPEC=$size:0:0  QCurandStateTest
+       QCurandState_SPEC=$size:0:0  ${OPTICKS_PREFIX}/lib/QCurandStateTest
        rc=$? ; [ $rc -ne 0 ] && return $rc
    done
    return 0 
