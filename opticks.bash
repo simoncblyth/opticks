@@ -2660,7 +2660,10 @@ EON
 opticks-okdist-mode(){ echo dbg ; }
 opticks-okdist-dirlabel(){ 
     g4- 
-    echo $(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) ; 
+    local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) 
+    local ulabel=${label//\//} 
+    : remove all slashes from the label such as CentOS/7 -> CentOS7
+    echo $ulabel 
 }
 
 opticks-compiler-version(){  echo gcc$(opticks-gcc-version) ; } 

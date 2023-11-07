@@ -158,7 +158,11 @@ EOU
 
 okdist-tmp(){     echo /tmp/$USER/opticks/okdist ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
-okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
+
+# git -C not available in older git
+#okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
+okdist-revision(){  echo $(cd $(opticks-home) && git rev-parse HEAD) ; }
+
 okdist-release-dir-default(){ echo $(opticks-dir)_release ; }
 okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-default)} ; } 
 
