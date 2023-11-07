@@ -1072,8 +1072,9 @@ opticks-paths()
 
 
 opticks-setup-cat(){ cat $(opticks-setup-path) ; }
-opticks-setup-vi(){  vi $(opticks-setup-path) ; }
+opticks-setup-vi(){  vi $(opticks-setup-path) $(opticks-release-path) ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
+#opticks-release-- MAKES NO SENSE AS THE release script relies on sourced path to give prefix
 
 opticks-setup-generate-notes(){ cat << EON
 
@@ -1792,11 +1793,14 @@ export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
 
 if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
     if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then 
+        echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
         source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
     else
         echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX
         return 1 
     fi 
+else
+    echo === $FUNCNAME : ERROR no \$OPTICKS_GEANT4_PREFIX
 fi  
 
 EOS

@@ -306,7 +306,10 @@ EON
 okdist-tarball-create(){
    : bin/okdist.bash create tarball 
 
+   echo === $FUNCNAME
+
    which oktar.py 
+   opticks-cd
    oktar.py $(okdist-path) create --prefix $(okdist-prefix) 
 
    echo $msg list tarball : $(okdist-path)
@@ -316,11 +319,15 @@ okdist-tarball-create(){
 
 okdist-tarball-extract(){ 
    : bin/okdist.bash extract tarball into release dir 
+
+   echo === $FUNCNAME
    oktar.py $(okdist-path) extract --base $(okdist-release-dir) ; 
 }
 
 okdist-tarball-dump(){ 
    : bin/okdist.bash extract tarball into release dir 
+
+   echo === $FUNCNAME
    oktar.py $(okdist-path) dump
 }  
 

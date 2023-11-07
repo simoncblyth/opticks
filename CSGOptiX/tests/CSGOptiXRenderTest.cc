@@ -151,6 +151,17 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGModeRender(); 
 
+#ifdef __APPLE__
+    LOG(error)
+       << " rendering can be made to work with small GEOM on macOS"
+       << " but its crashing with large GEOM : so disabling that "
+       << " as thats using ancient CUDA and OptiX are disabling that "  
+       ;
+    return 0 ; 
+#endif
+
+
+
     /*
     const char* outdir = SEventConfig::OutDir(); 
     SOpticks::WriteOutputDirScript(outdir) ; 

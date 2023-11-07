@@ -334,6 +334,8 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
         << " num_lookup " << num_lookup 
         ;
 
+
+   // TODO: can this dependency on CUSTOM4 be removed ? 
 #ifdef WITH_CUSTOM4
     T* h_lookup = lookup->values<T>() ; 
 

@@ -93,7 +93,158 @@ okdist--::
 
 
 
-CAN the opticks-setup.sh be reused for the 
+try using opticks-release.sh similar to opticks-setup.sh
+----------------------------------------------------------
 
+
+
+binary release ctest fails
+-------------------------------------------------------
+
+::
+
+    The following tests FAILED:
+        151 - QUDARapTest.QTexRotateTest (Failed)
+        152 - QUDARapTest.QRngTest (Failed)
+        153 - QUDARapTest.QScintTest (Failed)
+        154 - QUDARapTest.QCerenkovIntegralTest (Failed)
+        155 - QUDARapTest.QPolyTest (Failed)
+        156 - QUDARapTest.QSimTest (Failed)
+        157 - QUDARapTest.QOpticalTest (Failed)
+        158 - QUDARapTest.QPropTest (Failed)
+        159 - QUDARapTest.QEventTest (Failed)
+        160 - QUDARapTest.QSimWithEventTest (Failed)
+        161 - QUDARapTest.QSimCreateTest (Failed)
+        162 - QUDARapTest.QUTest (Failed)
+        163 - QUDARapTest.QTexMakerTest (Failed)
+        164 - QUDARapTest.QTexLookupTest (Failed)
+        165 - QUDARapTest.QBufTest (Failed)
+        166 - QUDARapTest.QMultiFilmTest (Failed)
+        167 - QUDARapTest.QCurandStateTest (Failed)
+
+              These ones are from dependency on geant4 libs coming in via custom4 
+              thats a weak dependency : can it be removed ?  
+
+        173 - U4Test.Deprecated_U4PhotonInfoTest (Failed)
+        174 - U4Test.U4TrackInfoTest (Failed)
+        175 - U4Test.U4TrackTest (Failed)
+        189 - U4Test.U4TreeTest (Failed)
+        190 - U4Test.U4TreeCreateTest (Failed)
+        191 - U4Test.U4TreeCreateSSimTest (Failed)
+          
+             These from Geant4 environment setup missing 
+
+        201 - CSGOptiXTest.CSGOptiXVersion (Failed)
+        202 - CSGOptiXTest.CSGOptiXVersionTest (Failed)
+        203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
+
+  
+             These from Geant4 libs via Custom4 dep also 
+                
+              dyld: Library not loaded: @rpath/libG4Tree.dylib
+              Referenced from: /usr/local/opticks_externals/custom4/0.1.9/lib/libCustom4.dylib
+              Reason: image not found
+
+
+
+::
+
+    epsilon:tests blyth$ ctest -R QTexRotateTest --output-on-failure
+    Test project /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/tests
+        Start 151: QUDARapTest.QTexRotateTest
+    1/1 Test #151: QUDARapTest.QTexRotateTest .......***Failed    0.03 sec
+                    HOME : /Users/blyth
+                     PWD : /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/tests/qudarap/tests
+                    GEOM : V1J011
+             BASH_SOURCE : /Users/blyth/opticks/qudarap/tests/QTestRunner.sh
+              EXECUTABLE : QTexRotateTest
+                    ARGS : 
+    dyld: Library not loaded: @rpath/libG4Tree.dylib
+      Referenced from: /usr/local/opticks_externals/custom4/0.1.9/lib/libCustom4.dylib
+      Reason: image not found
+    /Users/blyth/opticks/qudarap/tests/QTestRunner.sh: line 23: 77581 Abort trap: 6           $EXECUTABLE $@
+    /Users/blyth/opticks/qudarap/tests/QTestRunner.sh : FAIL from QTexRotateTest
+
+
+
+::
+
+    epsilon:qudarap blyth$ grep -l CUSTOM4 *.*
+    CMakeLists.txt
+    QPMT.cc     : minimal dep on CUSTOM4 looks like could be removed, changed into runtime existence
+    QPMT.cu     : also maybe can elim   
+    QPMT_MOCK.h : 
+        above dont use CUSTOM4 headers they just use PMT data associated with CUSTOM4
+        so better to branch on data existance, not compile time flag ? 
+
+    qpmt.h
+        this uses C4MultiLayrStack.h
+
+        IF THAT IS REALLY THE ONLY DEPENDENCY OF QUDARAP ON CUSTOM4 THEN 
+        BETTER TO REARRANGE TO ONLY DEPEND ON HEADERS AND NOT THE LIB 
+        * HOW TO DO THAT ? WITH_CUSTOM4_HEADER_NOT_LIB 
+        * COULD DO IT IN DIRTY WAYS OF COURSE 
+
+    qsim.h
+         qsim::propagate_at_surface_CustomART 
+
+
+
+.opticks_config::
+
+
+    #source ~/opticks/bin/opticks-setup-minimal.sh 1>/dev/null 2>&1
+    #source ~/opticks/bin/opticks-setup-minimal.sh
+
+    opticks-setup > /dev/null  # source setup script which appends the Opticks and externals prefixes to CMAKE_PREFIX_PATH etc..
+    #[ $? -ne 0 ] && echo .opticks_config : opticks-setup ERROR : SLEEPING && sleep 10000000
+
+    #export release=/usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/bin/opticks-release.sh
+    #source $release > /dev/null
+    #source $release 
+    #[ $? -ne 0 ] && echo  .bashrc : ERROR sourcing release $release 
+
+
+To update the opticks-release.sh comment source release and returning to standard opticks-setup, 
+then regenerate::
+
+    epsilon:~ blyth$ opticks-
+    epsilon:~ blyth$ opticks-setup-generate
+    epsilon:~ blyth$ okdist-
+    epsilon:~ blyth$ okdist--
+
+Change back to sourcing release and open fresh session.
+
+
+
+
+Down to one fail from binary release
+--------------------------------------
+
+::
+
+    epsilon:tests blyth$ pwd
+    /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/tests
+    epsilon:tests blyth$ ctest 
+    ...
+
+    201/205 Test #201: CSGOptiXTest.CSGOptiXVersion .............................   Passed    0.16 sec
+            Start 202: CSGOptiXTest.CSGOptiXVersionTest
+    202/205 Test #202: CSGOptiXTest.CSGOptiXVersionTest .........................   Passed    0.17 sec
+            Start 203: CSGOptiXTest.CSGOptiXRenderTest
+    203/205 Test #203: CSGOptiXTest.CSGOptiXRenderTest ..........................***Failed   15.55 sec
+            Start 204: G4CXTest.G4CXRenderTest
+    204/205 Test #204: G4CXTest.G4CXRenderTest ..................................   Passed    3.62 sec
+            Start 205: G4CXTest.G4CXOpticks_setGeometry_Test
+    205/205 Test #205: G4CXTest.G4CXOpticks_setGeometry_Test ....................   Passed    3.41 sec
+
+    99% tests passed, 1 tests failed out of 205
+
+    Total Test time (real) = 204.57 sec
+
+    The following tests FAILED:
+        203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
+    Errors while running CTest
+    epsilon:tests blyth$ 
 
 
