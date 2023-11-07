@@ -5,8 +5,6 @@ okdist-vi(){ vi $BASH_SOURCE $(okdist-py) \
 }
 okdist-sdir(){ echo $(dirname $BASH_SOURCE) ; }
 okdist-py(){ echo $(okdist-sdir)/okdist.py ; }
-
-
 okdist-usage(){  cat << \EOU
 
 Opticks Binary Distribution : create tarball for explosion on cvmfs 
@@ -158,22 +156,22 @@ folder inside the normal opticks-dir.
 EOU
 }
 
-okdist-tmp(){     echo /tmp/$USER/opticks/okdist-test ; }
+okdist-tmp(){     echo /tmp/$USER/opticks/okdist ; }
 okdist-cd(){      cd $(okdist-tmp) ; }
 okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
 okdist-release-dir-default(){ echo $(opticks-dir)_release ; }
 okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-default)} ; } 
-okdist-rcd(){                  cd $(okdist-release-dir) ; }
 
 okdist-title(){   echo Opticks ; }
 okdist-version(){ echo 0.0.1_alpha ; } # HMM:eventually this should be tied to opticks tags  
 okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing 
 okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
 okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
-okdist-path(){   echo $(opticks-dir)/$(okdist-name) ; }    
+okdist-path(){   echo $(okdist-tmp)/$(okdist-name) ; }    
+
 
 okdist-release-prefix(){ echo $(okdist-release-dir)/$(okdist-prefix) ; } 
-
+okdist-rcd(){            cd $(okdist-release-prefix) ; }
 
 okdist-info(){ cat << EOI
 $FUNCNAME
@@ -248,7 +246,7 @@ okdist-install-cmake-modules()
    CMakeModules.py --home $home --dest $dest
 }
 
-okdist-metadata()
+okdist-install-metadata()
 {
    local mdir="$(opticks-dir)/metadata"
 
@@ -258,6 +256,110 @@ okdist-metadata()
    okdist-revision > $mdir/okdist-revision.txt
 }
 
+
+
+okdist-install-extras()
+{
+   local msg="=== $FUNCNAME :"
+   local iwd=$PWD
+
+   opticks-
+   opticks-cd  ## install directory 
+
+   echo $msg write metadata
+   okdist-install-metadata
+
+   echo $msg install tests
+   okdist-install-tests 
+
+   echo $msg install cmake/Modules 
+   okdist-install-cmake-modules 
+
+   cd $iwd
+}
+
+
+okdist-tarball-notes(){ cat << EON
+$FUNCNAME
+======================
+
+* okdist-path argument is the absolute path of the tarball, which 
+  is typically directly inside the install dir opticks-dir 
+
+* directories with preexisting extracted tarballs are deleted, to 
+  avoid mixing 
+
+For example the extracted prefix directory is::
+
+    /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg
+
+HMM: recall that not everything is installed by CMake other
+files such as the below are installed with opticks-setup-generate
+that is run by opticks-full::
+
+    bin/opticks-setup.sh 
+    bin/opticks-setup.csh 
+
+EON
+}
+
+okdist-tarball-create(){
+   : bin/okdist.bash create tarball 
+
+   which oktar.py 
+   oktar.py $(okdist-path) create --prefix $(okdist-prefix) 
+
+   echo $msg list tarball : $(okdist-path)
+   ls -al $(okdist-path) 
+   du -h $(okdist-path) 
+}
+
+okdist-tarball-extract(){ 
+   : bin/okdist.bash extract tarball into release dir 
+   oktar.py $(okdist-path) extract --base $(okdist-release-dir) ; 
+}
+
+okdist-tarball-dump(){ 
+   : bin/okdist.bash extract tarball into release dir 
+   oktar.py $(okdist-path) dump
+}  
+
+# list the tarball 
+okdist-ls(){      echo $FUNCNAME ; local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
+
+okdist-lst(){
+    local path=$(okdist-path)
+    case $(okdist-ext) in 
+       .tar.gz) tar ztvf $path ;;
+          .tar) tar  tvf $path ;;
+    esac
+}
+
+okdist--(){        
+   okdist-install-extras
+   okdist-tarball-create 
+   okdist-tarball-extract
+   okdist-ls  
+
+   #echo $msg okdist-deploy-opticks-site
+   #okdist-deploy-opticks-site
+}
+
+okdist-deploy-notes(){ cat << EON
+Maybe reuse installed bin/opticks-setup.sh instead of the site machinery ? 
+To setup use of the binary release. 
+
+    
+    src=/usr/local/opticks
+    dst=/some/new/prefix
+    f=check.txt
+
+    sed -i -e "s,$src,$dst,g" $f
+
+OR could pass in a prefix to opticks-setup-generate 
+
+EON
+}
 
 okdist-deploy-opticks-site()
 {
@@ -273,82 +375,5 @@ okdist-deploy-opticks-site()
    else
        echo $msg missing script $script
    fi
-}
-
-
-okdist-create()
-{
-   local msg="=== $FUNCNAME :"
-   local iwd=$PWD
-
-   opticks-
-   opticks-cd  ## install directory 
-
-   echo $msg write metadata
-   okdist-metadata
-
-   echo $msg install tests
-   okdist-install-tests 
-
-   echo $msg install cmake/Modules 
-   okdist-install-cmake-modules 
-
-   echo $msg create tarball
-   okdist.py --distprefix $(okdist-prefix) --distname $(okdist-name) 
-
-   echo $msg list tarball
-   ls -al $(okdist-name) 
-   du -h $(okdist-name) 
-
-   #echo $msg okdist-deploy-opticks-site
-   #okdist-deploy-opticks-site
-
-   cd $iwd
-}
-
-
-# list the tarball 
-okdist-ls(){      echo $FUNCNAME ; local p=$(okdist-path) ; ls -l $p ; du -h $p ; }
-
-
-
-okdist-explode-notes(){ cat << EON
-$FUNCNAME
-======================
-
-* okdist-path argument is the absolute path of the tarball, which 
-  is typically directly inside the install dir opticks-dir 
-
-* relative paths inside tarballs are such that the tarballs 
-  should always be exploded from the release dir in order to get the intended layout,  
-  okdist-explode does this
-
-* directories with preexisting exploded tarballs are deleted, to 
-  avoid mixing 
-
-For example the exploded prefix directory is::
-
-    /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg
-
-EON
-}
-
-okdist-explode(){ 
-   : bin/okdist.bash explode tarball into release dir 
-   oktar.py $(okdist-path) --explode --base $(okdist-release-dir) ; 
-}
-
-okdist-lst(){
-    local path=$(okdist-path)
-    case $(okdist-ext) in 
-       .tar.gz) tar ztvf $path ;;
-          .tar) tar  tvf $path ;;
-    esac
-}
-
-okdist--(){        
-   okdist-create
-   okdist-explode
-   okdist-ls  
 }
 

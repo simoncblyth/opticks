@@ -45,5 +45,55 @@ bin/opticks-setup.sh
 
 
 
+tar exclusions
+---------------
+
+::
+
+    epsilon:tt blyth$ tar tf a.tar > a.txt
+    epsilon:tt blyth$ tar tf Opticks-0.0.1_alpha.tar > Opticks-0.0.1_alpha.txt
+    epsilon:tt blyth$ wc -l a.txt
+        6099 a.txt
+    epsilon:tt blyth$ wc -l Opticks-0.0.1_alpha.txt
+        1205 Opticks-0.0.1_alpha.txt
+    epsilon:tt blyth$ 
+
+::
+
+    ~/opticks/bin/oktar.py /tmp/tt/a.tar --create \
+            --prefix Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg \
+
+    ~/opticks/bin/oktar.py /tmp/tt/a.tar
+
+
+
+TODO : check ctest from release tarball with ordinary install renamed
+--------------------------------------------------------------------------- 
+
+okdist--::
+
+    epsilon:opticks_release blyth$ l Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/bin/
+    total 120
+     0 drwxr-xr-x  11 blyth  staff    352 Nov  7 13:32 ..
+     0 drwxr-xr-x  11 blyth  staff    352 Nov  7 13:32 .
+    16 -rw-r--r--   1 blyth  staff   7176 Nov  7 13:21 opticks-setup.sh
+     8 -rw-r--r--   1 blyth  staff     59 Nov  7 13:21 opticks-setup.csh
+    16 -rwxr-xr-x   1 blyth  staff   8169 Nov  7 13:19 oktar.py
+     8 -rwxr-xr-x   1 blyth  staff   3661 Nov  6 21:12 opticks-release.bash
+    24 -rwxr-xr-x   1 blyth  staff  11822 Nov  6 21:06 opticks-site.bash
+     8 -rwxr-xr-x   1 blyth  staff   2177 Nov  6 21:05 opticks-site-local.bash
+     8 -rwxr-xr-x   1 blyth  staff   2725 Nov  5 20:59 CMakeModules.py
+    16 -rwxr-xr-x   1 blyth  staff   4422 Nov  5 18:53 CTestTestfile.py
+    16 -rwxr-xr-x   1 blyth  staff   5518 Sep 23  2021 CTestLog.py
+    epsilon:opticks_release blyth$ l Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/bin/opticks-setup.sh 
+    16 -rw-r--r--  1 blyth  staff  7176 Nov  7 13:21 Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/bin/opticks-setup.sh
+    epsilon:opticks_release blyth$ pwd
+    /usr/local/opticks_release
+    epsilon:opticks_release blyth$ 
+
+
+
+CAN the opticks-setup.sh be reused for the 
+
 
 

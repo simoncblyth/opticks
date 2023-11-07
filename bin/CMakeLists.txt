@@ -30,19 +30,16 @@ set(SCRIPTS
    js.py 
 )
 
-set(INFRA_SCRIPTS
-   CTestTestfile.py 
-   CTestLog.py  
-   CMakeModules.py 
-
-   okdist.py  
-   oktar.py
-)
-
 set(INSTALLED_SCRIPTS
    opticks-release.bash
    opticks-site.bash
    opticks-site-local.bash
+
+   CTestTestfile.py 
+   CTestLog.py  
+   CMakeModules.py 
+   oktar.py
+
 )
 
 #if(APPLE)
@@ -74,7 +71,6 @@ install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
 set(PYSCRIPTS
    __init__.py 
    CMakeLists.py
-   dist.py
 )
 
 install(PROGRAMS ${PYSCRIPTS} DESTINATION py/opticks/bin)
