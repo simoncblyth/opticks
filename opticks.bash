@@ -613,6 +613,7 @@ opticks-xdir(){   echo $(opticks-prefix)/externals ; }  ## try putting externals
 opticks-installcachedir(){ echo $(opticks-prefix)/installcache ; }
 opticks-setup-path(){   echo $(opticks-prefix)/bin/opticks-setup.sh ; }
 opticks-release-path(){ echo $(opticks-prefix)/bin/opticks-release.sh ; }
+opticks-utils-path(){   echo $(opticks-prefix)/bin/opticks-utils.sh ; }
 
 opticks-setup(){
    local msg="=== $FUNCNAME :"
@@ -1126,6 +1127,11 @@ opticks-setup-generate(){
     mkdir -p $(dirname $release)     
     echo $msg writing $release 
 
+    local utils=$(opticks-utils-path)
+    mkdir -p $(dirname $utils)     
+    echo $msg writing $utils 
+
+
     local csh=${setup/.sh}.csh
     echo "# $FUNCNAME you gotta be kidding : use bash  "  > $csh
 
@@ -1137,6 +1143,11 @@ opticks-setup-generate(){
     opticks-release-generate- > $release
     rc=$?
     echo $msg post opticks-release-generate- rc $rc
+    [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
+
+    opticks-utils-generate- > $utils
+    rc=$?
+    echo $msg post opticks-utils-generate- rc $rc
     [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
 
@@ -1188,6 +1199,12 @@ opticks-release-generate-(){
     return $rc
 }
 
+opticks-utils-generate-(){ opticks-utils-generate-- |  perl -pe 's,cd_func,cd,g' -  ; }
+opticks-utils-generate--(){ 
+   echo "# $FUNCNAME"
+   echo "# some funcs are needed before sourcing release : so collect them here "
+   declare -f opticks-prepend-prefix 
+}
 
 
 opticks-setup-check-mandatory-buildenv()
@@ -1562,8 +1579,9 @@ opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/externals/lib64
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_CUDA_PREFIX/lib
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_CUDA_PREFIX/lib64
 
-opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib
-opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib64
+# from optix7 no libs, just headers, impl in driver 
+#opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib
+#opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib64
 
 EOS
 }
@@ -2662,20 +2680,14 @@ opticks-okdist-dirlabel(){
     g4- 
     local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) 
     local ulabel=${label//\//} 
-    : remove all slashes from the label such as CentOS/7 -> CentOS7
+    : remove all slashes from the label
     echo $ulabel 
 }
 
 opticks-compiler-version(){  echo gcc$(opticks-gcc-version) ; } 
-opticks-gcc-version(){ opticks-gcc-version-$(uname) ; }
-opticks-gcc-version-Linux(){  gcc --version |  perl -ne 'm/(\d)\.(\d)/ && print "$1$2" ' ; }   
-opticks-gcc-version-Darwin(){ clang -dumpversion ; } # 4.2.1 clang compatibility with gcc ?
-
-
+opticks-gcc-version(){ gcc -dumpversion | perl -pe 's/\.//g' - ; } # 4.2.1 clang compatibility with gcc ?
 opticks-os-release(){ opticks-$(uname)-release- ; }
-
-opticks-Darwin-release-(){  sw_vers -productVersion ; }
-
+opticks-Darwin-release-(){  sw_vers -productVersion ; }  # eg 10.13.6 
 opticks-Linux-release-(){   cat /etc/redhat-release | perl -ne 'm/(\w*) Linux release (\d)\.(\d)/ && print "${1}/${2}" ' ; }
 opticks-Linux-release()
 {
