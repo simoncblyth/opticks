@@ -217,6 +217,72 @@ Change back to sourcing release and open fresh session.
 
 
 
+Avoid QUDARap depending on Custom4 lib + Geant4 libs
+------------------------------------------------------
+
+::
+
+    epsilon:qudarap blyth$ otool -L /usr/local/opticks/lib/QTexRotateTest
+    /usr/local/opticks/lib/QTexRotateTest:
+        @rpath/libQUDARap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libSysRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libOKConf.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libCustom4.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
+
+    epsilon:qudarap blyth$ otool -L /usr/local/opticks_externals/custom4/0.1.9/lib/libCustom4.dylib
+    /usr/local/opticks_externals/custom4/0.1.9/lib/libCustom4.dylib:
+        @rpath/libCustom4.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4Tree.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4GMocren.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4visHepRep.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4RayTracer.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4VRML.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4interfaces.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4persistency.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4error_propagation.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4readout.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4physicslists.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4parmodels.dylib (compatibility version 0.0.0, current version 0.0.0)
+        ...
+
+
+qudarap/CMakeLists.txt::
+
+    #[=[
+    As QUDARap only needs a single header-only header 
+    from Custom4 not the lib hook up the include directory, 
+    instead of the full target which would bring in the Custom4 lib 
+    which in turn adds dependency on Geant4 libs 
+    #]=]
+
+    if(Custom4_FOUND)
+       #set(LIBS ${LIBS} Custom4::Custom4)   # DONT DO THIS IT ADDS DEPENDENCY ON GEANT4 LIBS
+       target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
+    endif()
+
+    target_link_libraries( ${name} ${LIBS})
+    #target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
+    target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
+    target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
+    target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
+
+
+
+After::
+
+    epsilon:qudarap blyth$ otool -L /usr/local/opticks/lib/libQUDARap.dylib
+    /usr/local/opticks/lib/libQUDARap.dylib:
+        @rpath/libQUDARap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libSysRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libOKConf.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.50.4)
+    epsilon:qudarap blyth$ 
+
+
+
 
 Down to one fail from binary release
 --------------------------------------

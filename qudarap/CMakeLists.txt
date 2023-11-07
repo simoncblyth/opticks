@@ -21,18 +21,11 @@ message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
 #[=[
 A successful find of Custom4 runs some CMake config, see::
 
-    epsilon:qudarap blyth$ cat ${OPTICKS_PREFIX}_externals/custom4/0.1.6/lib/Custom4-0.1.6/Custom4Config.cmake | grep WITH
+    epsilon:qudarap blyth$ cat ${OPTICKS_PREFIX}_externals/custom4/0.1.9/lib/Custom4-0.1.9/Custom4Config.cmake | grep WITH
     set(Custom4_DEFINITIONS -DWITH_CUSTOM4 )
           INTERFACE_COMPILE_DEFINITIONS "WITH_CUSTOM4"
 
 #]=]
-
-
-
-if(Custom4_FOUND)
-   set(LIBS ${LIBS} Custom4::Custom4)  
-else()
-endif()
 
 
 
@@ -171,10 +164,28 @@ if(UNIX AND NOT APPLE)
 endif()
 
 
+
+
+
+
+
+
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 
 get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
+
+#[=[
+As QUDARap only needs a single header-only header 
+from Custom4 not the lib hook up the include directory, 
+instead of the full target which would bring in the Custom4 lib 
+which in turn adds dependency on Geant4 libs 
+#]=]
+
+if(Custom4_FOUND)
+   #set(LIBS ${LIBS} Custom4::Custom4)   # DONT DO THIS IT ADDS DEPENDENCY ON GEANT4 LIBS
+   target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
+endif()
 
 target_link_libraries( ${name} ${LIBS})
 #target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
