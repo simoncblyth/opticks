@@ -103,12 +103,15 @@ inline std::string spath::_ResolvePath(const char* spec_)
                     << "] does not resolve " 
                     << std::endl 
                     ; 
-                return "" ;    // all tokens must resolve 
+                //return "" ;    // all tokens must resolve 
+                ss << "UNRESOLVED_TOKEN_" << (p+1) ; 
             }
-            if(tok_plus) *sep = '/' ;            // put back the slash 
-            ss << val  ; 
-
-            i += toklen ;   // skip over the token 
+            else
+            {
+                ss << val ; 
+            }
+            if(tok_plus) *sep = '/' ;  // put back the slash 
+            i += toklen ;              // skip over the token 
         }
         else
         {

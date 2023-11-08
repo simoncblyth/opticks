@@ -827,3 +827,85 @@ from PATH and avoid the non-portable absolute source tree paths.
 
 
 
+After recreate release : getting test runners off PATH
+-----------------------------------------------------------
+
+HUH: few tests taking a long time to fail. But it is not repeatable, 
+they are subsequently failing quickly.
+
+* Maybe from scontext checking for GPUs and not finding any ? 
+
+::
+
+    .       Start 107: SysRapTest.SSimTest
+    107/205 Test #107: SysRapTest.SSimTest ......................................***Failed  127.28 sec
+            Start 108: SysRapTest.SBndTest
+    108/205 Test #108: SysRapTest.SBndTest ......................................***Failed   81.34 sec
+
+
+Why so long to fail, it fails quickly when use Runner from commandline::
+
+    L7[blyth@lxslc707 ~]$ STestRunner.sh SSimTest 
+                    HOME : /afs/ihep.ac.cn/users/b/blyth
+                     PWD : /afs/ihep.ac.cn/users/b/blyth
+                    GEOM : 
+             BASH_SOURCE : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh
+              EXECUTABLE : SSimTest
+                    ARGS : 
+    STTF::Load failed to open /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+    STTF::init failed : no font file has been loaded 
+    spath::_ResolvePath token [GEOM] does not resolve 
+    U::DirList FAILED TO OPEN DIR SSim
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh : FAIL from SSimTest
+    L7[blyth@lxslc707 ~]$ 
+
+
+
+::
+
+    L7[blyth@lxslc707 tests]$ ctest -R SSimTest --output-on-failure
+    Test project /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests
+        Start 107: SysRapTest.SSimTest
+    1/2 Test #107: SysRapTest.SSimTest ..............***Failed   53.45 sec
+                    HOME : /afs/ihep.ac.cn/users/b/blyth
+                     PWD : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests/sysrap/tests
+                    GEOM : 
+             BASH_SOURCE : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh
+              EXECUTABLE : SSimTest
+                    ARGS : 
+    STTF::Load failed to open /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+    STTF::init failed : no font file has been loaded 
+    spath::_ResolvePath token [GEOM] does not resolve 
+    terminate called after throwing an instance of 'std::bad_alloc'
+      what():  std::bad_alloc
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh: line 67: 26929 Aborted                 $EXECUTABLE $@
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh : FAIL from SSimTest
+
+
+
+
+Slow fail is not repeatable::
+
+    103/104 Test #103: SysRapTest.SSimTest ......................................***Failed    0.18 sec
+                    HOME : /afs/ihep.ac.cn/users/b/blyth
+                     PWD : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests/sysrap/tests
+                    GEOM : 
+             BASH_SOURCE : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh
+              EXECUTABLE : SSimTest
+                    ARGS : 
+    SLOG::EnvLevel adjusting loglevel by envvar   key SSim level INFO fallback DEBUG upper_level INFO
+    STTF::Load failed to open /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+    STTF::init failed : no font file has been loaded 
+    spath::_ResolvePath token [GEOM] does not resolve 
+    2023-11-08 14:47:59.879 INFO  [18957] [SSim::init@151] scontext::desc []
+    all_devices
+    []
+    visible_devices
+    []
+
+    2023-11-08 14:47:59.881 INFO  [18957] [SSim::load@331] [
+    2023-11-08 14:47:59.881 INFO  [18957] [SSim::load@338] [ top.load [SSim]
+    U::DirList FAILED TO OPEN DIR SSim
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh : FAIL from SSimTest
+
+

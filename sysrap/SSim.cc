@@ -96,9 +96,17 @@ SSim* SSim::Load(){ return Load_(DEFAULT) ; }
 
 SSim* SSim::Load_(const char* base_)
 {
+    LOG(LEVEL) << "[" ; 
     const char* base = spath::Resolve(base_ ? base_ : DEFAULT ); 
+    LOG(LEVEL) 
+       << " base_ [" << ( base_ ? base_ : "-" ) << "]"
+       << " base [" << ( base ? base : "-" ) << "]" 
+       ;
+
     SSim* sim = new SSim ; 
     sim->load(base);    // reldir defaults to "SSim"
+
+    LOG(LEVEL) << "]" ; 
     return sim ; 
 }
 

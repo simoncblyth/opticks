@@ -9,6 +9,17 @@
 #include "sdirectory.h"
 
 
+void test_Resolve_with_undefined_token()
+{
+   const char* path_ = "$HOME/.opticks/GEOM/$TYPO/CSGFoundry" ; 
+   const char* path = spath::Resolve(path_); 
+   std::cout 
+       << " path_ [" << path_ << "]" << std::endl 
+       << " path  [" << path  << "]" << std::endl 
+       ;
+}
+
+
 void test_ResolvePath()
 {
     std::vector<std::string> specs = {
@@ -127,8 +138,9 @@ int main(int argc, char** argv)
     test_Exists2(); 
     test_Basename(); 
     test_Name(); 
-    */
     test_Remove(); 
+    */
+    test_Resolve_with_undefined_token();
 
     return 0 ; 
 }

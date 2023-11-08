@@ -11,9 +11,12 @@ void test_Load()
 
 void test_Load_get()
 {
+    std::cout << "[test_Load_get " << std::endl ; 
     SSim* sim = SSim::Load(); 
-    const NP* optical = sim->get(snam::OPTICAL); 
+    std::cout << " sim " << ( sim ? "YES" : "NO " ) << std::endl ; 
+    const NP* optical = sim ? sim->get(snam::OPTICAL) : nullptr ; 
     std::cout << " optical " << ( optical ? optical->sstr() : "-" ) << std::endl ; 
+    std::cout << "]test_Load_get " << std::endl ; 
 }
 
 
