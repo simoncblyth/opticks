@@ -50,6 +50,9 @@ inline scontext::scontext()
     if(VERBOSE) std::cout << "[scontext::scontext" << std::endl ; 
 
     const char* dirpath = spath::Resolve("$HOME/.opticks/scontext") ; 
+
+    if(VERBOSE) std::cout << " scontext::scontext dirpath " << ( dirpath ? dirpath : "-" )  << std::endl ; 
+
     int rc = sdirectory::MakeDirs(dirpath, 0); 
     assert(rc == 0); 
 

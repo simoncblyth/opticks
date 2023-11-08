@@ -911,4 +911,36 @@ Slow fail is not repeatable::
 
 
 
+::
+
+    L7[blyth@lxslc714 tests]$ ./scontext_test.sh 
+    terminate called after throwing an instance of 'std::bad_alloc'
+      what():  std::bad_alloc
+    ^C^C
+
+::
+
+    L7[blyth@lxslc701 .opticks]$ cd scontext/
+    L7[blyth@lxslc701 scontext]$ l
+    total 8
+    0 -rw-r--r-- 1 blyth dyw    0 Nov  8 15:16 sdevice.bin
+    4 drwxr-xr-x 2 blyth dyw 4096 Nov  8 14:23 .
+    4 drwxr-xr-x 6 blyth dyw 4096 Nov  8 14:15 ..
+    L7[blyth@lxslc701 scontext]$ 
+
+
+
+Get non-sensical device count::
+
+    L7[blyth@lxslc714 tests]$ ./scontext_test.sh 
+    [scontext::scontext
+    [scontext::scontext dirpath /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext
+    [sdevice::Visible
+    sdevice::Collect cudaGetDeviceCount : -1715263024
+    sdevice::Visible no_cvd:1
+    sdevice::Visible no_cvd save to /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext
+    sdevice::Save path /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext/sdevice.bin
+    ]sdevice::Visible
+    sdevice::Load dirpath /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext path /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext/sdevice.bin
+    ]scontext::scontext
 

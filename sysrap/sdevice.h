@@ -143,7 +143,7 @@ ordinal_from_index:false
 
 void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
 {
-    int devCount;
+    int devCount(0) ;  // TWAS A BUG TO NOT INITIALIZE THIS 
     cudaGetDeviceCount(&devCount);
     if(VERBOSE) std::cout << "sdevice::Collect cudaGetDeviceCount : " << devCount << std::endl ; 
 
