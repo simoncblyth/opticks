@@ -3,6 +3,11 @@ set(name SysRapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
+set(INSTALLED_SCRIPTS
+   STestRunner.sh   
+)
+
+install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
 
 set(TEST_SOURCES
 
@@ -154,7 +159,6 @@ set(_TEST_SOURCES
    UnwindTest.cc
 )
 
-
 set(OBJC_TEST_SOURCES
 )
 
@@ -165,6 +169,8 @@ set(_OBJC_TEST_SOURCES
 )
 
 
+
+
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
@@ -173,24 +179,6 @@ foreach(SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
     #add_dependencies(check ${TGT})
 endforeach()
-
-
-
-find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
-message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
-
-foreach(SRC ${BASH_RUN_TEST_SOURCES})
-    get_filename_component(TGT ${SRC} NAME_WE)
-    add_executable(${TGT} ${SRC})
-    target_link_libraries(${TGT} SysRap)
-    install(TARGETS ${TGT} DESTINATION lib)
-    add_test(
-       NAME ${name}.${TGT} 
-       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/STestRunner.sh ${TGT}
-    )
-endforeach()
-
-
 
 
 
@@ -208,17 +196,10 @@ foreach(COLOR ${TEST_COLORS})
     set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "SEnvTest_COLOR=${COLOR}")
 endforeach()
 
-
-
 #[=[
 Debug these "fabricated" tests with::
 
    ctest -R SysRapTest.SEnvTest. -V
-
-
-CTest fixtures
-
-https://crascit.com/2016/10/18/test-fixtures-with-cmake-ctest/
 
 #]=]
 
@@ -235,4 +216,22 @@ https://crascit.com/2016/10/18/test-fixtures-with-cmake-ctest/
 #endforeach()
 
 
+
+find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
+message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
+
+foreach(SRC ${BASH_RUN_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} SysRap)
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(
+       NAME ${name}.${TGT} 
+       COMMAND bash STestRunner.sh ${TGT}  
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/STestRunner.sh ${TGT}
+    )
+    #[=[
+    Try to be more portable by getting bash and Runner off the PATH 
+    #]=]
+endforeach()
 

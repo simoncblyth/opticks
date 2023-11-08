@@ -3,6 +3,12 @@ set(name U4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
+set(INSTALLED_SCRIPTS
+    U4TestRunner.sh 
+)
+install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
+
+
 #[=[
 Unlike most executables U4VPrimaryGeneratorTest 
 needs the MOCK_CURAND macro in order to use CUDA 
@@ -77,9 +83,8 @@ set(EXPECTED_TO_FAIL_TEST_SOURCES
 
 
 
-find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
-message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
-
+#find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
+#message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
@@ -90,7 +95,8 @@ foreach(SRC ${TEST_SOURCES})
     #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
-       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/U4TestRunner.sh ${TGT}
+       COMMAND bash U4TestRunner.sh ${TGT}
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/U4TestRunner.sh ${TGT}
     )
 endforeach()
 

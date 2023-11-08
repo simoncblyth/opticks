@@ -3,6 +3,10 @@ set(name QUDARapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
+set(INSTALLED_SCRIPTS
+   QTestRunner.sh 
+)
+install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
 set(TEST_SOURCES
 
@@ -51,7 +55,8 @@ foreach(SRC ${TEST_SOURCES})
     #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
-       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/QTestRunner.sh ${TGT}
+       COMMAND bash QTestRunner.sh ${TGT}
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/QTestRunner.sh ${TGT}
     )
 
 endforeach()

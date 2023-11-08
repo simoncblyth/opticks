@@ -3,6 +3,11 @@ set(name G4CXTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
+set(INSTALLED_SCRIPTS
+    GXTestRunner.sh 
+)
+install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
+
 #[=[
 Promote to ctests by moving between the lists 
 Issues preventing them being ctests are:
@@ -38,9 +43,8 @@ foreach(SRC ${SINGLE_SOURCES})
 endforeach()
 
 
-find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
-message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
-
+#find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
+#message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
@@ -51,7 +55,8 @@ foreach(SRC ${TEST_SOURCES})
     #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
-       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GXTestRunner.sh ${TGT}
+       COMMAND bash GXTestRunner.sh ${TGT}
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GXTestRunner.sh ${TGT}
     )
 endforeach()
 

@@ -1,7 +1,7 @@
 #pragma once
 /**
-SOpticksResource.hh
-=====================
+SOpticksResource.hh : MOVING AWAY FROM THIS TO SIMPLER spath.h WITH EXPLICIT PATHS 
+====================================================================================
 
 Currently this straddles old and new workflows.
 
@@ -44,9 +44,8 @@ TODO: review usage, can this be simplified
 
 TOOO: 
 
-1. remove SOpticksKey usage
-2. remove plog/SLOG 
-3. convert to header only
+1. remove plog/SLOG 
+2. convert to header only
 
    * HMM: who uses the static _GEOM ? 
 

@@ -4,10 +4,8 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(CUDA REQUIRED)   
-#find_package(OpticksCore REQUIRED)  ## AIMING TO ELIMINATE : DO NOT ADD ANY FURTHER USAGE OF OKC 
 find_package(QUDARap REQUIRED)
 find_package(CSG REQUIRED)
-
 
 set(OpticksOptiX_VERBOSE ON)
 find_package(OpticksOptiX REQUIRED MODULE)   

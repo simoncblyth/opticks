@@ -4,6 +4,13 @@ project(${name} VERSION 0.1.0)
 
 #find_package(OpticksCore REQUIRED CONFIG)
 
+set(INSTALLED_SCRIPTS
+    CSGTestRunner.sh 
+)
+install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
+
+
+
 set(TEST_SOURCES
     CSGNodeTest.cc
     CSGNodeImpTest.cc
@@ -72,7 +79,8 @@ foreach(SRC ${TEST_SOURCES})
     #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
-       COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CSGTestRunner.sh ${TGT}
+       COMMAND bash CSGTestRunner.sh ${TGT}
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CSGTestRunner.sh ${TGT}
     )
 endforeach()
 

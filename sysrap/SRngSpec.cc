@@ -47,8 +47,9 @@ bool SRngSpec::isValid(const char* rngdir) const
 {
     const char* path = getCURANDStatePath(rngdir); 
     bool readable = SPath::IsReadable(path); 
-    LOG(LEVEL)
-        << " path " << path 
+    LOG_IF(error, !readable) 
+        << " NOT READABLE CURANDStatePath " 
+        << " path " << ( path ? path : "-" )  
         << " readable " << readable 
         ;
     return readable ;  

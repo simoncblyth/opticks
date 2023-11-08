@@ -1,13 +1,13 @@
 testing_binary_release
 ========================
 
-Relevant scripts:
+review the old scripts
+----------------------
 
 okdist--
    creates tarball and test explodes it into eg /usr/local/opticks_release   
-   OR more specifically::
 
-       /usr/local/opticks_release/Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg/
+
 
 
 bin/opticks-site.bash
@@ -15,8 +15,6 @@ bin/opticks-site.bash
 
 bin/opticks-site-local.bash 
    customization of opticks-site.bash via bash functions
-
-
 
 bin/opticks-release.bash
     minimal environment for use of binary release
@@ -26,12 +24,16 @@ bin/opticks-release.bash
  
 
 
+DECIDED ABOVE "SITE" APPROACH TOO HEAVY : ADOPTED A opticks-release.sh
+TECHNIQUE SIMILAR TO opticks-setup.sh AND ADAPTED okdist-- 
+
+
 
 HMM different levels of environment setup
 ---------------------------------------------
 
 
-~/.opticks_config
+~/.opticks_standard_config
     development environment for access to opticks pre-requisites and 
     externals which also (somewhat dirtily) invokes opticks-setup 
 
@@ -43,6 +45,75 @@ opticks-setup
 bin/opticks-setup.sh
     (opticks-setup-vi to view the generated setup)
 
+
+
+procedure to recreate the tarball on R workstation/simon
+------------------------------------------------------------
+
+::
+
+   R
+
+   
+   vip  # switch .bashrc to .opticks_standard_config for standard build 
+
+   ./fresh_build.sh    # delete local/opticks
+
+   opticks-full
+
+   opticks-t           # standard install ctest 
+
+   okdist-
+   okdist--      # create tarball and extract it into opticks_releases
+
+   ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
+   
+   ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
+
+   vip  # switch .bashrc to .opticks_release_config for binary release testing 
+
+   [simon@localhost tests]$ t orp
+   orp () { cd $OPTICKS_RELEASE_PREFIX/$1 }
+
+   orp tests
+
+   ctest -N 
+   ctest 
+
+
+
+gcc debugging 
+----------------
+
+Reproduced the issue with L7:g/mandelbrot/mandelbrot.sh::
+
+    L7[blyth@lxslc712 mandelbrot]$ ./mandelbrot.sh build
+    L7[blyth@lxslc712 mandelbrot]$ ./mandelbrot.sh dbg
+    GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-120.el7
+    Copyright (C) 2013 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+    and "show warranty" for details.
+    This GDB was configured as "x86_64-redhat-linux-gnu".
+    For bug reporting instructions, please see:
+    <http://www.gnu.org/software/gdb/bugs/>...
+    Reading symbols from /tmp/blyth/mandelbrot/mandelbrot...Dwarf Error: wrong version in compilation unit header (is 5, should be 2, 3, or 4) [in module /tmp/blyth/mandelbrot/mandelbrot]
+    (no debugging symbols found)...done.
+    (gdb) 
+
+
+    L7[blyth@lxslc712 mandelbrot]$ which gcc
+    /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/contrib/gcc/11.2.0/bin/gcc
+    L7[blyth@lxslc712 mandelbrot]$ which gdb
+    /usr/bin/gdb
+
+::
+
+    gcc: error: ‘-gdwarf3’ is ambiguous; use ‘-gdwarf-3’ for DWARF version or ‘-gdwarf’ ‘-g3’ for debug level
+
+
+* https://bugzilla.redhat.com/show_bug.cgi?id=1956475
 
 
 tar exclusions
@@ -284,8 +355,8 @@ After::
 
 
 
-Down to one fail from binary release
---------------------------------------
+Down to one fail from binary release : on Darwin
+---------------------------------------------------
 
 ::
 
@@ -312,5 +383,447 @@ Down to one fail from binary release
         203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
     Errors while running CTest
     epsilon:tests blyth$ 
+
+
+
+Build tarball in workstation/simon "R" : all ctest passed from binary release run
+------------------------------------------------------------------------------------
+
+* certain that none of the standard install was used by deleting local/opticks first 
+
+::
+
+    [simon@localhost tests]$ pwd
+    /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc12-geant4_10_04_p02-dbg/tests
+    [simon@localhost tests]$ 
+
+
+
+NEXT : test on L7 : even without GPU many tests should pass
+--------------------------------------------------------------
+
+::
+
+    N[blyth@localhost okdist]$ scp -4 Opticks-0.0.1_alpha.tar L708:g/local/
+    Warning: Permanently added 'lxslc708.ihep.ac.cn,202.122.33.192' (ECDSA) to the list of known hosts.
+    Opticks-0.0.1_alpha.tar                                                                                100%  219MB  11.2MB/s   00:19    
+    N[blyth@localhost okdist]$ 
+
+Explode inplace::
+
+    L7[blyth@lxslc707 local]$ tar xvf Opticks-0.0.1_alpha.tar
+
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
+
+
+Almost all tests failing::
+
+    2% tests passed, 201 tests failed out of 205
+
+    Total Test time (real) =   4.43 sec
+
+    The following tests FAILED:
+          5 - SysRapTest.PythonImportTest (OTHER_FAULT)
+          6 - SysRapTest.SOKConfTest (OTHER_FAULT)
+          7 - SysRapTest.SArTest (OTHER_FAULT)
+          8 - SysRapTest.SArrTest (OTHER_FAULT)
+          9 - SysRapTest.SArgsTest (OTHER_FAULT)
+         10 - SysRapTest.STimesTest (OTHER_FAULT)
+         11 - SysRapTest.SEnvTest (OTHER_FAULT)
+         12 - SysRapTest.SSysTest (OTHER_FAULT)
+         13 - SysRapTest.SSys2Test (OTHER_FAULT)
+         14 - SysRapTest.SSys3Test (OTHER_FAULT)
+         ...
+
+
+Notice some old paths have been compiled in::
+
+    L7[blyth@lxslc711 okconf]$ OKConfTest
+    OKConf::Dump
+                      OKConf::OpticksVersionInteger() 21
+                       OKConf::OpticksInstallPrefix() /data/simon/local/opticks
+                            OKConf::CMAKE_CXX_FLAGS()  -fvisibility=hidden -fvisibility-inlines-hidden -fdiagnostics-show-option -Wall -Wno-unused-function -Wno-comment -Wno-deprecated -Wno-shadow
+                         OKConf::CUDAVersionInteger() 11070
+                   OKConf::ComputeCapabilityInteger() 70
+                            OKConf::OptiXInstallDir() /home/blyth/local/opticks/externals/OptiX_750
+                         OKCONF_OPTIX_VERSION_INTEGER 70500
+                        OKConf::OptiXVersionInteger() 70500
+                         OKCONF_OPTIX_VERSION_MAJOR   7
+                          OKConf::OptiXVersionMajor() 7
+                         OKCONF_OPTIX_VERSION_MINOR   5
+                          OKConf::OptiXVersionMinor() 5
+                         OKCONF_OPTIX_VERSION_MICRO   0
+                          OKConf::OptiXVersionMicro() 0
+                       OKConf::Geant4VersionInteger() 1042
+                       OKConf::ShaderDir()            /data/simon/local/opticks/gl
+                       OKConf::DefaultSTTFPath()      /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+
+
+::
+
+    L7[blyth@lxslc711 sysrap]$ ctest --output-on-failure
+    Test project /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests/sysrap
+            Start   1: SysRapTest.PythonImportTest
+      1/104 Test   #1: SysRapTest.PythonImportTest ..............................***Exception: Other  0.02 sec
+    PythonImportTest: /home/simon/opticks/sysrap/SPath.cc:237: static void SPath::CreateDirs(const char*, int): Assertion `rc == 0' failed.
+
+            Start   2: SysRapTest.SOKConfTest
+      2/104 Test   #2: SysRapTest.SOKConfTest ...................................***Exception: Other  0.02 sec
+    SOKConfTest: /home/simon/opticks/sysrap/SPath.cc:237: static void SPath::CreateDirs(const char*, int): Assertion `rc == 0' failed.
+
+            Start   3: SysRapTest.SArTest
+      3/104 Test   #3: SysRapTest.SArTest .......................................***Exception: Other  0.02 sec
+    SArTest: /home/simon/opticks/sysrap/SPath.cc:237: static void SPath::CreateDirs(const char*, int): Assertion `rc == 0' failed.
+
+            Start   4: SysRapTest.SArrTest
+      4/104 Test   #4: SysRapTest.SArrTest ......................................***Exception: Other  0.02 sec
+    SArrTest: /home/simon/opticks/sysrap/SPath.cc:237: static void SPath::CreateDirs(const char*, int): Assertion `rc == 0' failed.
+
+
+::
+
+     70 
+     71 const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRngCachePrefix(), "rngcache", NOOP); }
+     72 const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", NOOP); }
+     73 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
+     74 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
+     75 
+     76 
+
+* See L7:g/wrong_gdb.txt for the full error
+
+
+Although not full debug info, have the stack::
+
+    (gdb) bt
+    #0  0x00007ffff652e387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff652fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff65271a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6527252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b4bbf4 in SPath::CreateDirs(char const*, int) ()
+    #5  0x00007ffff7b4b954 in SPath::Resolve(char const*, int) ()
+    #6  0x00007ffff7b4be50 in SPath::Resolve(char const*, char const*, int) ()
+    #7  0x00007ffff7bb6ded in SOpticksResource::MakeUserDir(char const*) ()
+    #8  0x00007ffff7bb6e34 in SOpticksResource::ResolveUserPrefix(char const*, bool) ()
+    #9  0x00007ffff7bb7021 in SOpticksResource::ResolveRngCachePrefix() ()
+    #10 0x00007ffff7bb70b5 in SOpticksResource::RNGCacheDir() ()
+    #11 0x00007ffff7bb70db in SOpticksResource::RNGDir() ()
+    #12 0x00007ffff7bb867d in SOpticksResource::Get(char const*) ()
+    #13 0x00007ffff7b4b89e in SPath::Resolve(char const*, int) ()
+    #14 0x00007ffff7b3a94f in __static_initialization_and_destruction_0 ()
+    #15 0x00007ffff7b3a96f in _GLOBAL__sub_I_SCurandState.cc ()
+    #16 0x00007ffff7dea9c3 in _dl_init_internal () from /lib64/ld-linux-x86-64.so.2
+    #17 0x00007ffff7ddc17a in _dl_start_user () from /lib64/ld-linux-x86-64.so.2
+    #18 0x0000000000000001 in ?? ()
+    #19 0x00007fffffffcd5f in ?? ()
+    #20 0x0000000000000000 in ?? ()
+    (gdb) 
+
+
+
+All sysrap tests failed because of the SCurandState::RNGDIR global static::
+
+     09 const plog::Severity SCurandState::LEVEL = SLOG::EnvLevel("SCurandState", "DEBUG" );
+     10 const char* SCurandState::RNGDIR = SPath::Resolve("$RNGDir", DIRPATH ) ;
+     11 const char* SCurandState::NAME_PREFIX = "QCurandState" ;
+     12 const char* SCurandState::DEFAULT_PATH = nullptr ;
+
+
+The error was from lack of afs permissions to create $HOME/.opticks
+by SOpticksResource::ResolveUserPrefix SOpticksResource::MakeUserDir(".opticks")
+
+Have linked that into G::
+
+   .opticks -> /hpcfs/juno/junogpu/blyth/.opticks
+
+
+::
+
+    Total Tests: 205
+    L7[blyth@lxslc712 tests]$ ctest 
+    Test project /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests
+            Start   1: OKConfTest.OKConfTest
+      1/205 Test   #1: OKConfTest.OKConfTest ....................................   Passed    0.04 sec
+            Start   2: OKConfTest.OpticksVersionNumberTest
+      2/205 Test   #2: OKConfTest.OpticksVersionNumberTest ......................   Passed    0.05 sec
+            Start   3: OKConfTest.Geant4VersionInteger
+      3/205 Test   #3: OKConfTest.Geant4VersionInteger ..........................   Passed    0.03 sec
+            Start   4: OKConfTest.CPPVersionInteger
+      4/205 Test   #4: OKConfTest.CPPVersionInteger .............................   Passed    0.05 sec
+            Start   5: SysRapTest.PythonImportTest
+      5/205 Test   #5: SysRapTest.PythonImportTest ..............................   Passed    0.98 sec
+            Start   6: SysRapTest.SOKConfTest
+      6/205 Test   #6: SysRapTest.SOKConfTest ...................................   Passed    0.11 sec
+            Start   7: SysRapTest.SArTest
+      7/205 Test   #7: SysRapTest.SArTest .......................................   Passed    0.03 sec
+            Start   8: SysRapTest.SArrTest
+      8/205 Test   #8: SysRapTest.SArrTest ......................................   Passed    0.06 sec
+            Start   9: SysRapTest.SArgsTest
+      9/205 Test   #9: SysRapTest.SArgsTest .....................................   Passed    0.13 sec
+            Start  10: SysRapTest.STimesTest
+     10/205 Test  #10: SysRapTest.STimesTest ....................................   Passed    0.07 sec
+            Start  11: SysRapTest.SEnvTest
+     11/205 Test  #11: SysRapTest.SEnvTest ......................................   Passed    0.07 sec
+            Start  12: SysRapTest.SSysTest
+     12/205 Test  #12: SysRapTest.SSysTest ......................................   Passed    0.08 sec
+            Start  13: SysRapTest.SSys2Test
+     13/205 Test  #13: SysRapTest.SSys2Test .....................................   Passed    0.09 sec
+            Start  14: SysRapTest.SSys3Test
+     14/205 Test  #14: SysRapTest.SSys3Test .....................................   Passed    0.07 sec
+            Start  15: SysRapTest.SStrTest
+     15/205 Test  #15: SysRapTest.SStrTest ......................................   Passed    0.06 sec
+            Start  16: SysRapTest.SPathTest
+     16/205 Test  #16: SysRapTest.SPathTest .....................................   Passed    0.12 sec
+            Start  17: SysRapTest.STrancheTest
+     17/205 Test  #17: SysRapTest.STrancheTest ..................................   Passed    0.07 sec
+            Start  18: SysRapTest.SVecTest
+     18/205 Test  #18: SysRapTest.SVecTest ......................................   Passed    0.11 sec
+            Start  19: SysRapTest.SNameVecTest
+     19/205 Test  #19: SysRapTest.SNameVecTest ..................................   Passed    0.10 sec
+            Start  20: SysRapTest.SMapTest
+     20/205 Test  #20: SysRapTest.SMapTest ......................................   Passed    0.07 sec
+            Start  21: SysRapTest.SCountTest
+     21/205 Test  #21: SysRapTest.SCountTest ....................................   Passed    0.08 sec
+            Start  22: SysRapTest.SSeqTest
+     22/205 Test  #22: SysRapTest.SSeqTest ......................................   Passed    0.08 sec
+            Start  23: SysRapTest.SProcTest
+     23/205 Test  #23: SysRapTest.SProcTest .....................................   Passed    0.14 sec
+            Start  24: SysRapTest.SBase36Test
+     24/205 Test  #24: SysRapTest.SBase36Test ...................................   Passed    0.06 sec
+            Start  25: SysRapTest.SSortKVTest
+     25/205 Test  #25: SysRapTest.SSortKVTest ...................................   Passed    0.06 sec
+            Start  26: SysRapTest.SPairVecTest
+     26/205 Test  #26: SysRapTest.SPairVecTest ..................................   Passed    0.10 sec
+            Start  27: SysRapTest.SDigestTest
+     27/205 Test  #27: SysRapTest.SDigestTest ...................................   Passed    0.13 sec
+            Start  28: SysRapTest.SDigestNPTest
+     28/205 Test  #28: SysRapTest.SDigestNPTest .................................   Passed    0.13 sec
+            Start  29: SysRapTest.SCFTest
+     29/205 Test  #29: SysRapTest.SCFTest .......................................   Passed    0.14 sec
+            Start  30: SysRapTest.SGeoTest
+     30/205 Test  #30: SysRapTest.SGeoTest ......................................   Passed    0.10 sec
+            Start  31: SysRapTest.SCurandStateTest
+     31/205 Test  #31: SysRapTest.SCurandStateTest ..............................***Exception: Other  0.10 sec
+
+     2023-11-08 10:53:21.030 FATAL [19991] [SCurandState::RngMax@79]  
+     unable to open file [/afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin]
+
+            Start  32: SysRapTest.PLogTest
+     32/205 Test  #32: SysRapTest.PLogTest ......................................   Passed    0.08 sec
+            Start  33: SysRapTest.SLOG_Test
+     33/205 Test  #33: SysRapTest.SLOG_Test .....................................   Passed    0.06 sec
+            Start  34: SysRapTest.SLOGTest
+     34/205 Test  #34: SysRapTest.SLOGTest ......................................   Passed    0.05 sec
+            Start  35: SysRapTest.SYSRAP_LOG_Test
+     35/205 Test  #35: SysRapTest.SYSRAP_LOG_Test ...............................   Passed    0.12 sec
+            Start  36: SysRapTest.SYSRAP_LOG_FileAppenderTest
+     36/205 Test  #36: SysRapTest.SYSRAP_LOG_FileAppenderTest ...................   Passed    0.06 sec
+            Start  37: SysRapTest.SYSRAP_OPTICKS_LOG_Test
+     37/205 Test  #37: SysRapTest.SYSRAP_OPTICKS_LOG_Test .......................   Passed    0.08 sec
+            Start  38: SysRapTest.SYSRAP_OPTICKS_LOG_NULL_Test
+     38/205 Test  #38: SysRapTest.SYSRAP_OPTICKS_LOG_NULL_Test ..................   Passed    0.14 sec
+            Start  39: SysRapTest.SOPTICKS_LOG_Test
+     39/205 Test  #39: SysRapTest.SOPTICKS_LOG_Test .............................   Passed    0.06 sec
+            Start  40: SysRapTest.OPTICKS_LOG_Test
+     40/205 Test  #40: SysRapTest.OPTICKS_LOG_Test ..............................   Passed    0.05 sec
+            Start  41: SysRapTest.sLOG_MACRO_Test
+     41/205 Test  #41: SysRapTest.sLOG_MACRO_Test ...............................   Passed    0.05 sec
+            Start  42: SysRapTest.SLOG_exename_Test
+     42/205 Test  #42: SysRapTest.SLOG_exename_Test .............................   Passed    0.08 sec
+            Start  43: SysRapTest.SLOG_Banner_Test
+     43/205 Test  #43: SysRapTest.SLOG_Banner_Test ..............................   Passed    0.13 sec
+            Start  44: SysRapTest.reallocTest
+     44/205 Test  #44: SysRapTest.reallocTest ...................................   Passed    0.04 sec
+            Start  45: SysRapTest.OpticksCSGTest
+     45/205 Test  #45: SysRapTest.OpticksCSGTest ................................   Passed    0.11 sec
+            Start  46: SysRapTest.hash_define_without_value
+     46/205 Test  #46: SysRapTest.hash_define_without_value .....................   Passed    0.08 sec
+            Start  47: SysRapTest.SDirectTest
+     47/205 Test  #47: SysRapTest.SDirectTest ...................................   Passed    0.08 sec
+            Start  48: SysRapTest.S_freopen_redirect_test
+     48/205 Test  #48: SysRapTest.S_freopen_redirect_test .......................   Passed    0.07 sec
+            Start  49: SysRapTest.S_get_option_Test
+     49/205 Test  #49: SysRapTest.S_get_option_Test .............................   Passed    0.04 sec
+            Start  50: SysRapTest.SIdTest
+     50/205 Test  #50: SysRapTest.SIdTest .......................................   Passed    0.05 sec
+            Start  51: SysRapTest.ArrayTest
+     51/205 Test  #51: SysRapTest.ArrayTest .....................................   Passed    0.06 sec
+            Start  52: SysRapTest.SBacktraceTest
+     52/205 Test  #52: SysRapTest.SBacktraceTest ................................   Passed    0.12 sec
+            Start  53: SysRapTest.SStackFrameTest
+     53/205 Test  #53: SysRapTest.SStackFrameTest ...............................   Passed    0.09 sec
+            Start  54: SysRapTest.SGDMLTest
+     54/205 Test  #54: SysRapTest.SGDMLTest .....................................   Passed    0.11 sec
+            Start  55: SysRapTest.SSetTest
+     55/205 Test  #55: SysRapTest.SSetTest ......................................   Passed    0.05 sec
+            Start  56: SysRapTest.STimeTest
+     56/205 Test  #56: SysRapTest.STimeTest .....................................   Passed    0.09 sec
+            Start  57: SysRapTest.SASCIITest
+     57/205 Test  #57: SysRapTest.SASCIITest ....................................   Passed    0.06 sec
+            Start  58: SysRapTest.SAbbrevTest
+     58/205 Test  #58: SysRapTest.SAbbrevTest ...................................   Passed    0.10 sec
+            Start  59: SysRapTest.SPPMTest
+     59/205 Test  #59: SysRapTest.SPPMTest ......................................   Passed    0.86 sec
+            Start  60: SysRapTest.SColorTest
+     60/205 Test  #60: SysRapTest.SColorTest ....................................   Passed    0.06 sec
+            Start  61: SysRapTest.SPackTest
+     61/205 Test  #61: SysRapTest.SPackTest .....................................   Passed    0.08 sec
+            Start  62: SysRapTest.SBitTest
+     62/205 Test  #62: SysRapTest.SBitTest ......................................   Passed    0.12 sec
+            Start  63: SysRapTest.SBitSetTest
+     63/205 Test  #63: SysRapTest.SBitSetTest ...................................   Passed    0.09 sec
+            Start  64: SysRapTest.SEnabledTest
+     64/205 Test  #64: SysRapTest.SEnabledTest ..................................   Passed    0.10 sec
+            Start  65: SysRapTest.SBitFromStringTest
+     65/205 Test  #65: SysRapTest.SBitFromStringTest ............................   Passed    0.10 sec
+            Start  66: SysRapTest.SRandTest
+     66/205 Test  #66: SysRapTest.SRandTest .....................................   Passed    0.35 sec
+            Start  67: SysRapTest.SOpticksTest
+     67/205 Test  #67: SysRapTest.SOpticksTest ..................................   Passed    0.10 sec
+            Start  68: SysRapTest.SOpticksKeyTest
+     68/205 Test  #68: SysRapTest.SOpticksKeyTest ...............................   Passed    0.06 sec
+            Start  69: SysRapTest.SOpticksResourceTest
+     69/205 Test  #69: SysRapTest.SOpticksResourceTest ..........................   Passed    0.12 sec
+            Start  70: SysRapTest.SRngSpecTest
+     70/205 Test  #70: SysRapTest.SRngSpecTest ..................................***Exception: Other  0.10 sec
+
+     NOT READABLE CurandStatePath 
+
+            Start  71: SysRapTest.CheckGeoTest
+     71/205 Test  #71: SysRapTest.CheckGeoTest ..................................   Passed    0.07 sec
+            Start  72: SysRapTest.SGLMTest
+     72/205 Test  #72: SysRapTest.SGLMTest ......................................   Passed    0.10 sec
+            Start  73: SysRapTest.SConstantTest
+     73/205 Test  #73: SysRapTest.SConstantTest .................................   Passed    0.07 sec
+            Start  74: SysRapTest.SLabelCacheTest
+     74/205 Test  #74: SysRapTest.SLabelCacheTest ...............................   Passed    0.13 sec
+            Start  75: SysRapTest.CastTest
+     75/205 Test  #75: SysRapTest.CastTest ......................................   Passed    0.06 sec
+            Start  76: SysRapTest.SOpticksVersionNumberTest
+     76/205 Test  #76: SysRapTest.SOpticksVersionNumberTest .....................   Passed    0.05 sec
+            Start  77: SysRapTest.SRngTest
+     77/205 Test  #77: SysRapTest.SRngTest ......................................   Passed    0.05 sec
+            Start  78: SysRapTest.SDirTest
+     78/205 Test  #78: SysRapTest.SDirTest ......................................   Passed    0.07 sec
+            Start  79: SysRapTest.SDiceTest
+     79/205 Test  #79: SysRapTest.SDiceTest .....................................   Passed    0.18 sec
+            Start  80: SysRapTest.stranTest
+     80/205 Test  #80: SysRapTest.stranTest .....................................***Exception: Interrupt  0.12 sec
+ 
+     MISSING INPUT_PHOTONS    
+ 
+     L7[blyth@lxslc712 tests]$ stranTest
+     NP::load Failed to load from path /afs/ihep.ac.cn/users/b/blyth/.opticks/InputPhotons/RandomDisc100_f8.npy
+     L7[blyth@lxslc712 tests]$ rc
+     RC 130
+
+
+            Start  81: SysRapTest.stranRotateTest
+     81/205 Test  #81: SysRapTest.stranRotateTest ...............................   Passed    0.17 sec
+            Start  82: SysRapTest.SCenterExtentGenstepTest
+     82/205 Test  #82: SysRapTest.SCenterExtentGenstepTest ......................   Passed    0.09 sec
+            Start  83: SysRapTest.SFrameGenstep_MakeCenterExtentGensteps_Test
+     83/205 Test  #83: SysRapTest.SFrameGenstep_MakeCenterExtentGensteps_Test ...   Passed    0.10 sec
+            Start  84: SysRapTest.SEventTest
+     84/205 Test  #84: SysRapTest.SEventTest ....................................   Passed    0.12 sec
+            Start  85: SysRapTest.SThetaCutTest
+     85/205 Test  #85: SysRapTest.SThetaCutTest .................................   Passed    0.08 sec
+            Start  86: SysRapTest.SPhiCutTest
+     86/205 Test  #86: SysRapTest.SPhiCutTest ...................................   Passed    0.05 sec
+            Start  87: SysRapTest.scanvasTest
+     87/205 Test  #87: SysRapTest.scanvasTest ...................................   Passed    0.08 sec
+            Start  88: SysRapTest.OpticksPhotonTest
+     88/205 Test  #88: SysRapTest.OpticksPhotonTest .............................   Passed    0.06 sec
+            Start  89: SysRapTest.SUTest
+     89/205 Test  #89: SysRapTest.SUTest ........................................   Passed    0.24 sec
+            Start  90: SysRapTest.SEventConfigTest
+     90/205 Test  #90: SysRapTest.SEventConfigTest ..............................   Passed    0.08 sec
+            Start  91: SysRapTest.SFrameConfigTest
+     91/205 Test  #91: SysRapTest.SFrameConfigTest ..............................   Passed    0.04 sec
+            Start  92: SysRapTest.SGeoConfigTest
+     92/205 Test  #92: SysRapTest.SGeoConfigTest ................................   Passed    0.08 sec
+            Start  93: SysRapTest.SEvtTest
+     93/205 Test  #93: SysRapTest.SEvtTest ......................................   Passed    0.10 sec
+            Start  94: SysRapTest.SEvtLoadTest
+     94/205 Test  #94: SysRapTest.SEvtLoadTest ..................................   Passed    0.10 sec
+            Start  95: SysRapTest.SEvt__UU_BURN_Test
+     95/205 Test  #95: SysRapTest.SEvt__UU_BURN_Test ............................   Passed    0.10 sec
+            Start  96: SysRapTest.SEvt_Lifecycle_Test
+     96/205 Test  #96: SysRapTest.SEvt_Lifecycle_Test ...........................   Passed    0.10 sec
+            Start  97: SysRapTest.SEvt__HasInputPhoton_Test
+     97/205 Test  #97: SysRapTest.SEvt__HasInputPhoton_Test .....................   Passed    0.08 sec
+            Start  98: SysRapTest.SEvt_AddEnvMeta_Test
+     98/205 Test  #98: SysRapTest.SEvt_AddEnvMeta_Test ..........................   Passed    0.13 sec
+            Start  99: SysRapTest.SNameTest
+     99/205 Test  #99: SysRapTest.SNameTest .....................................   Passed    0.10 sec
+            Start 100: SysRapTest.SMetaTest
+    100/205 Test #100: SysRapTest.SMetaTest .....................................   Passed    0.11 sec
+            Start 101: SysRapTest.SIMGTest
+    101/205 Test #101: SysRapTest.SIMGTest ......................................   Passed    0.16 sec
+            Start 102: SysRapTest.STTFTest
+    102/205 Test #102: SysRapTest.STTFTest ......................................   Passed    0.09 sec
+            Start 103: SysRapTest.SEnvTest_PASS
+    103/205 Test #103: SysRapTest.SEnvTest_PASS .................................***Failed    0.01 sec
+            Start 104: SysRapTest.SSimTest
+    104/205 Test #104: SysRapTest.SSimTest ......................................***Failed    0.01 sec
+            Start 105: SysRapTest.SBndTest
+    105/205 Test #105: SysRapTest.SBndTest ......................................***Failed    0.01 sec
+
+    ALL THE BASH RUN TESTS ARE FAILING 
+
+    131 set(BASH_RUN_TEST_SOURCES
+    132     SEnvTest_PASS.cc
+    133     SSimTest.cc
+    134     SBndTest.cc
+    135 )
+
+    L7[blyth@lxslc706 tests]$ ctest -R SEnvTest_PASS --output-on-failure
+    Test project /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests
+        Start 103: SysRapTest.SEnvTest_PASS
+    1/1 Test #103: SysRapTest.SEnvTest_PASS .........***Failed    0.01 sec
+    /usr/bin/bash: /home/simon/opticks/sysrap/tests/STestRunner.sh: No such file or directory
+
+    Total Test time (real) =   0.05 sec
+
+    The following tests FAILED:
+        103 - SysRapTest.SEnvTest_PASS (Failed)
+    Errors while running CTest
+    L7[blyth@lxslc706 tests]$ 
+
+
+
+    50% tests passed, 103 tests failed out of 205
+
+    Total Test time (real) =  12.46 sec
+
+    The following tests FAILED:
+         31 - SysRapTest.SCurandStateTest (OTHER_FAULT)
+         70 - SysRapTest.SRngSpecTest (OTHER_FAULT)
+         80 - SysRapTest.stranTest (INTERRUPT)
+        103 - SysRapTest.SEnvTest_PASS (Failed)
+        104 - SysRapTest.SSimTest (Failed)
+        105 - SysRapTest.SBndTest (Failed)
+        109 - CSGTest.CSGNodeTest (Failed)
+        110 - CSGTest.CSGNodeImpTest (Failed)
+        111 - CSGTest.CSGIntersectSolidTest (Failed)
+        112 - CSGTest.CSGPrimImpTest (Failed)
+        113 - CSGTest.CSGPrimSpecTest (Failed)
+ 
+        All the rest failing from not finding test runner : as using source tree path ...
+ 
+    Errors while running CTest
+    L7[blyth@lxslc712 tests]$ 
+
+
+All the bash runner tests have source tree paths in cmake files
+-----------------------------------------------------------------
+
+/usr/local/opticks/tests/sysrap/tests/CTestTestfile.cmake::
+
+    "/opt/local/bin/bash" "/Users/blyth/opticks/sysrap/tests/STestRunner.sh" "SEnvTest_PASS")
+
+Changed all the tests/CMakeLists.txt to get bash and STestRunner.sh etc.. 
+from PATH and avoid the non-portable absolute source tree paths. 
+
 
 

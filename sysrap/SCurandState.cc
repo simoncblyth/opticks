@@ -76,7 +76,7 @@ long SCurandState::RngMax(const char* path)
     FILE *fp = fopen(path,"rb");
 
     bool failed = fp == nullptr ;
-    LOG_IF(fatal, failed ) << " unabled to open file [" << path << "]" ;
+    LOG_IF(fatal, failed ) << " unable to open file [" << path << "]" ;
     assert(!failed);
 
     fseek(fp, 0L, SEEK_END);

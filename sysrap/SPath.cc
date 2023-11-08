@@ -226,12 +226,15 @@ void SPath::CreateDirs(const char* path, int mode)  // static
 {
     if(mode == 0) return ; 
     const char* dirname = mode == 1 ? Dirname(path) : path ; 
-    int rc = MakeDirs(dirname) ; 
-    LOG(rc == 0 ? LEVEL : error)
-        << " path " << path 
+    int rc = MakeDirs(dirname) ;
+
+    if( rc != 0 ) std::cerr 
+        << "SPath::CreateDirs ERROR "
+        << " path " << ( path ? path : "-" ) 
         << " mode " << mode
-        << " dirname " << dirname
+        << " dirname " << ( dirname ? dirname : "-" )
         << " rc " << rc
+        << std::endl 
         ;
 
     assert( rc == 0 ); 
