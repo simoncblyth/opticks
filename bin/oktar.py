@@ -74,7 +74,7 @@ class OKTar(object):
 
     CACHE_BASES = filter(None,textwrap.dedent(r"""
     GEOM
-    InputPhotons 
+    InputPhotons
     rngcache
     precooked
     flight
@@ -84,7 +84,7 @@ class OKTar(object):
     def Bases(cls, mode):
        assert mode in ["BINARY", "CACHE"], (mode,)
        BASES = cls.BINARY_BASES if mode == "BINARY" else cls.CACHE_BASES  
-       return list(filter(lambda _:not _[0] == "#", BASES))  
+       return list(map(str.strip,list(filter(lambda _:not _[0] == "#", BASES))))  
 
     @classmethod
     def TarMode(cls, name):

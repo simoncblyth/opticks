@@ -28,7 +28,7 @@ R:workstation/simon build standalone opticks (shares same opticks working copy a
    ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
    ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
 
-   vip  # switch .bashrc to .opticks_release_config for local binary release testing 
+   vip  # in .bashrc switch from .opticks_standard_config to  .opticks_release_config for local binary release testing 
    x
    R   # exit and reconnect 
 
@@ -42,7 +42,6 @@ R:workstation/simon build standalone opticks (shares same opticks working copy a
 L:gateway/blyth::
 
    L
-
    cd g/local
 
    rm -rf Opticks-0.0.1_alpha         # remove the old expanded archive 
@@ -54,8 +53,29 @@ L:gateway/blyth::
    L   # fresh session 
 
    ort         # cd $OPTICKS_RELEASE_PREFIX/tests
-   ctest -N    # test the binary release
-   ctest 
+   ctest -N    # list the tests
+
+   ctest       # expect around 19/205 FAILs for lack of GPU   
+
+   sj # review the GPU job 
+
+
+
+Packaging .opticks
+--------------------
+
+::
+
+     N
+     jre
+     cd ~/.opticks
+     ~/opticks/bin/oktar.py /tmp/tt/dot_opticks.tar create --prefix dot_opticks/v0 --mode CACHE
+
+
+Extract that archive with the two element prefix stripped:: 
+
+     tar xvf dot_opticks.tar --strip-components=2 
+
 
 
 Potential issues with binary release running

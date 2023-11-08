@@ -8,8 +8,6 @@ okdist--
    creates tarball and test explodes it into eg /usr/local/opticks_release   
 
 
-
-
 bin/opticks-site.bash
    configure access to opticks binary release
 
@@ -21,7 +19,6 @@ bin/opticks-release.bash
 
     HUH: this is nice and simple but looks very 
     incomplete : it needs to hook into opticks-setup somehow ?
- 
 
 
 DECIDED ABOVE "SITE" APPROACH TOO HEAVY : ADOPTED A opticks-release.sh
@@ -36,6 +33,10 @@ HMM different levels of environment setup
 ~/.opticks_standard_config
     development environment for access to opticks pre-requisites and 
     externals which also (somewhat dirtily) invokes opticks-setup 
+
+~/.opticks_release_config
+   user environment based on binary distribution 
+
 
 opticks-setup
     bash function that sources the script at the path returned 
