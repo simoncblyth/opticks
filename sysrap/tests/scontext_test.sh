@@ -104,7 +104,8 @@ EOU
 }
 
 name=scontext_test
-bin=/tmp/$name
+bin=/tmp/$USER/opticks/$name
+mkdir -p $(dirname $bin)
 
 defarg="build_run"
 arg=${1:-$defarg}
@@ -117,7 +118,7 @@ CUDA_LIBDIR=$CUDA_PREFIX/lib
 
 if [ "${arg/build}" != "$arg" ]; then 
    gcc $name.cc  \
-       -std=c++11 -lstdc++ \
+       -g -std=c++11 -lstdc++ \
        -I.. \
        -I$CUDA_PREFIX/include \
        -L$CUDA_LIBDIR \

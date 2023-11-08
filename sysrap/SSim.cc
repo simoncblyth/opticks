@@ -89,7 +89,6 @@ SSim::Load from persisted geometry  : used for testing
  
 **/
 
-//const char* SSim::DEFAULT = "$CFBaseFromGEOM/CSGFoundry" ; 
 const char* SSim::DEFAULT = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ; 
 
 SSim* SSim::Load(){ return Load_(DEFAULT) ; }
@@ -144,7 +143,7 @@ std::string SSim::getGPUMeta() const
 SSim::SSim()
     :
     relp(ssys::getenvvar("SSim__RELP", RELP_DEFAULT )), // alt: "extra/GGeo"
-    sctx(new scontext),
+    sctx(nullptr),
     top(nullptr),
     extra(nullptr),
     tree(new stree)
@@ -156,6 +155,12 @@ void SSim::init()
 {
     INSTANCE = this ; 
     tree->set_level(stree_level); 
+
+    // suspect may sometimes take many seconds checking for GPU ? 
+    LOG(LEVEL) << "[ new scontext" ;  
+    sctx = new scontext ; 
+    LOG(LEVEL) << "] new scontext" ; 
+
     LOG(LEVEL) << sctx->desc() ;     
 }
 
@@ -329,8 +334,6 @@ void SSim::save(const char* base, const char* reldir)
 /**
 SSim::load
 ------------
-
-tree.load taking 0.467s which is excessive as not yet in use
 
 **/
 
