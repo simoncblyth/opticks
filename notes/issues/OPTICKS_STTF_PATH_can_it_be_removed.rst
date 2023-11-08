@@ -1,8 +1,10 @@
-OPTICKS_STTF_PATH_can_it_be_removed.rst
-========================================
+OPTICKS_STTF_PATH_can_it_be_removed.rst : NO 
+===============================================
 
 
 Can the envvar be removed from setup ?  YES : looks so
+
+* NOPE : IT CANNOT AS RELEASE RUNNIG NEEDS TO OVERRIDE THE INCORRECT DEFAULT SOURCE PATH 
 
 
 ::

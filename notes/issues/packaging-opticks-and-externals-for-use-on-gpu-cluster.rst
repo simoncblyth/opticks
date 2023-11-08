@@ -1339,7 +1339,6 @@ Try the ORIGIN trick
       RPATH                $ORIGIN/../externals/optix/lib64:/usr/local/cuda-10.1/lib64
     [blyth@localhost lib]$ 
 
-
 Create directory structure in /tmp/tt with libs and exe in same relative positions::
 
 

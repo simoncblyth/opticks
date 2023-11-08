@@ -1160,3 +1160,62 @@ After parachute in the rngcache files : down to 19/205 fails
     L7[blyth@lxslc703 tests]$ 
 
 
+
+Prep for gpujob using a non "-l" bash script : from an empty env ?
+-------------------------------------------------------------------- 
+
+::
+
+   /hpcfs/juno/junogpu/blyth/j/okjob.sh
+
+
+Test binary release on gpu cluster : 2/205 fails
+--------------------------------------------------
+
+
+/hpcfs/juno/junogpu/blyth/okjob/133803.out::
+
+    99% tests passed, 2 tests failed out of 205 
+
+    Total Test time (real) = 115.59 sec 
+
+    The following tests FAILED:
+         80 - SysRapTest.stranTest (INTERRUPT)
+        179 - U4Test.U4RandomTest (Failed)
+    okjob-tail : rc 8
+    Wed Nov  8 19:11:23 CST 2023
+
+
+::
+
+    80/205 Test  #80: SysRapTest.stranTest .....................................***Exception: Interrupt  0.03 sec 
+    NP::load Failed to load from path /hpcfs/juno/junogpu/blyth/.opticks/InputPhotons/RandomDisc100_f8.npy
+
+
+
+
+    179/205 Test #179: U4Test.U4RandomTest ......................................***Failed    0.08 sec
+                    HOME : /hpcfs/juno/junogpu/blyth
+                     PWD : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests/u4/tests
+                    GEOM : V1J011
+             BASH_SOURCE : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/U4TestRunner.sh
+              EXECUTABLE : U4RandomTest
+                    ARGS :
+    STTF::Load failed to open /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+    STTF::init failed : no font file has been loaded
+    NP::load Failed to load from path /hpcfs/juno/junogpu/blyth/.opticks/precooked/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/U4TestRunner.sh : FAIL from U4RandomTest
+
+     
+Getting zero sized sdevice.bin::
+
+    L7[blyth@lxslc714 .opticks]$ l scontext/
+    total 8
+    0 -rw-r--r-- 1 blyth dyw    0 Nov  8 19:11 sdevice.bin
+    4 drwxr-xr-x 2 blyth dyw 4096 Nov  8 16:03 .
+    4 drwxr-xr-x 6 blyth dyw 4096 Nov  8 16:03 ..
+
+
+HMM: need redirect outputs ? 
+
+

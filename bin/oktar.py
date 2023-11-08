@@ -3,19 +3,36 @@
 oktar.py  
 ==========
 
-The common prefix includes the trailing slash::
+opticks binary distribution tarballs
+-------------------------------------
 
-   ...
-   Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/cmake/Modules/FindPLog.cmake
-   Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/cmake/Modules/FindGLM.cmake
+This is used by the okdist- functions for creating 
+opticks binary distribution tarballs. Usage when testing::
 
-   Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/ 3279 
+    cd /usr/local/opticks
+    ~/opticks/bin/oktar.py \
+          /tmp/tt/Opticks-0.0.1_alpha.tar create \
+         --prefix Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg 
 
+Convention for common prefix of all items in the archive::
+
+   Opticks-0.0.0_alpha/x86_64-centos7-gcc48-geant4_10_04_p02-dbg/ 
+
+
+.opticks cache tarballs for sharing GEOM, rngcache, precooked etc..
+----------------------------------------------------------------------
 
 ::
 
-    cd /usr/local/opticks
-    ~/opticks/bin/oktar.py /tmp/tt/a.tar --create --prefix Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg 
+    cd ~/.opticks
+    ~/opticks/bin/oktar.py /tmp/zz/dot_opticks.tar create --prefix dot_opticks/v0 --mode CACHE 
+    ~/opticks/bin/oktar.py /tmp/zz/dot_opticks.tar dump
+
+* two elem prefix name combining the basis junosw_opticks_release name
+  with an additional elem for the version of the "shared cache", 
+  no need for arch/gcc/os names as all noarch : mostly .npy files
+
+    junosw_opticks_release_name/v1
 
 
 """
@@ -32,7 +49,7 @@ class OKTar(object):
     is needed. 
     """
     PREFIX = "Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg"
-    BASES = filter(None,textwrap.dedent(r"""
+    BINARY_BASES = filter(None,textwrap.dedent(r"""
     metadata
     bin
     lib
@@ -55,21 +72,30 @@ class OKTar(object):
     externals/share/bcm
     """).split("\n"))
 
-    @classmethod
-    def Bases(cls):
-       return list(filter(lambda _:not _[0] == "#", cls.BASES))  
+    CACHE_BASES = filter(None,textwrap.dedent(r"""
+    GEOM
+    InputPhotons 
+    rngcache
+    precooked
+    flight
+    """).split("\n"))
 
     @classmethod
-    def CreateMode(cls, name):
-        mode = None
+    def Bases(cls, mode):
+       assert mode in ["BINARY", "CACHE"], (mode,)
+       BASES = cls.BINARY_BASES if mode == "BINARY" else cls.CACHE_BASES  
+       return list(filter(lambda _:not _[0] == "#", BASES))  
+
+    @classmethod
+    def TarMode(cls, name):
+        tarmode = None
         if name.endswith(".tar.gz"): 
-            mode = "w:gz"
+            tarmode = "w:gz"
         elif name.endswith(".tar"):
-            mode = "w"
+            tarmode = "w"
         pass
-        assert not mode is None, "expecting name ending .tar.gz or .tar : not %s " % (name)
-        return mode 
-
+        assert not tarmode is None, "expecting name ending .tar.gz or .tar : not %s " % (name)
+        return tarmode 
 
     @classmethod
     def GetSize(self, path):
@@ -83,7 +109,7 @@ class OKTar(object):
 
     def __init__(self, path):
         """
-        :param path: to the tarfile to open 
+        :param path: to the tarfile to create, extract from or dump
         """
         self.path = os.path.expanduser(path)
         self.name = os.path.basename(path)
@@ -105,20 +131,21 @@ class OKTar(object):
             print(" %10.3f : %s " % ( sz, mi.name))
         pass   
 
-    def create(self, prefix):
+    def create(self, prefix, mode):
         """
         :param prefix: relative root for all paths added to archive 
+        :param mode: either "BINARY" or "CACHE"
         """
         pass
+        assert mode in ["BINARY", "CACHE"]
 
         elem = prefix.split("/")
         assert len(elem) == 2, "expecting prefix with two path elements : %s " % prefix
         xstem = elem[0]
         assert self.stem == xstem, "tarball name stem [%s] must match first elem of prefix [%s]" % (self.stem, xstem) 
 
-        mode = self.CreateMode(self.name) 
+        tarmode = self.TarMode(self.name) 
         base = os.path.realpath(os.getcwd())
-
 
         outdir = os.path.dirname(self.path)
         if not os.path.isdir(outdir):
@@ -126,15 +153,15 @@ class OKTar(object):
             os.makedirs(outdir)
         pass
         log.info("prefix %s base %s " % (prefix, base))
-        log.info("writing path %s mode %s " % (self.path, mode) )
+        log.info("writing path %s tarmode %s mode %s " % (self.path, tarmode, mode) )
 
         self.prefix = prefix
-        self.t = tarfile.open(self.path, mode)    
+        self.t = tarfile.open(self.path, tarmode)    
 
-        for name in self.Bases():
+        for name in self.Bases(mode):
             path = os.path.join(base, name)
             if not os.path.exists(path): continue
-            assert os.path.isdir(path), "expecting only directories at top level of archive"
+            assert os.path.isdir(path), "only directories are expected as BASES at top level of archive"
             self.recurse_(name, 0) 
         pass
 
@@ -182,8 +209,18 @@ class OKTar(object):
         """
         :param base: directory in which to extract from archive 
 
-        Note that because of the enforced used of a two level common prefix
-        its no problem to extract into the same directory as the creation
+        Alternatively extract from commandline with eg::
+
+            rm -rf Opticks-0.0.1_alpha
+            tar xvf Opticks-0.0.1_alpha.tar 
+ 
+        In addition to that this checks the common prefix 
+        of the paths in the archive is following the two element
+        convention. 
+
+        Note that because of the enforced use of a two level common prefix
+        it is no problem to extract into the same directory as the creation, 
+        because this clears ahead. 
         """
         self.t = tarfile.open(self.path, "r")
         self.n = self.t.getnames()
@@ -223,18 +260,15 @@ if __name__ == '__main__':
     prefix = OKTar.PREFIX
 
     parser.add_argument( "path",  nargs=1, help="Path of distribution tarball, eg ~/Opticks-0.0.0_alpha.tar " )
-    parser.add_argument( "mode", choices=["create","extract","dump"] )
+    parser.add_argument( "verb", choices=["create","extract","dump"] )
 
-    parser.add_argument( "--base",  default=os.getcwd(), help="Path at which to explode tarballs %(default)s ")   
-    parser.add_argument( "--prefix", default=prefix, help="Prefix to all paths that will be added to archive" ) 
+    parser.add_argument( "--mode", choices=["BINARY", "CACHE" ], default="BINARY" )
+    parser.add_argument( "--base",  default=os.getcwd(), help="Path at which to extract tarballs %(default)s ")   
+    parser.add_argument( "--prefix", default=prefix, help="Two elem prefix prepended to all paths added to archive" ) 
 
     desc = { 'extract':"Extract tarball contents into base" , 
              'create':"Create with contents of current directory or --base argument if specified",
              'dump':"Dump names and sizes of tarball members" }
-
-    #parser.add_argument( "--extract", action="store_true", default=False, help="Extract tarball contents into base ")   
-    #parser.add_argument( "--dump",    action="store_true", default=False, help="Dump names and sizes of tarball members ")   
-    #parser.add_argument( "--create",  action="store_true", default=False, help="Create with contents of current directory ")   
 
     parser.add_argument( "--level", default="info", help="logging level" ) 
     args = parser.parse_args()
@@ -245,11 +279,11 @@ if __name__ == '__main__':
 
     t = OKTar(args.path[0])
 
-    if args.mode == "dump": 
+    if args.verb == "dump": 
         t.dump()
-    elif args.mode == "create":
-        t.create(args.prefix)
-    elif args.mode == "extract": 
+    elif args.verb == "create":
+        t.create(args.prefix, args.mode)
+    elif args.verb == "extract": 
         t.extract(args.base)
     pass
 
