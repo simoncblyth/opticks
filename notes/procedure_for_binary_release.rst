@@ -1,8 +1,6 @@
 procedure_for_binary_release
 ============================
 
-Example from workstation/simon "R"
-
 N:workstation/blyth update::
  
    N
@@ -10,13 +8,14 @@ N:workstation/blyth update::
    o
    git pull 
   
-R:workstation/simon build standalone opticks::
+R:workstation/simon build standalone opticks (shares same opticks working copy as N)::
 
    R
    vip  # switch .bashrc to .opticks_standard_config for source tree build
 
    ./fresh_build.sh    # delete local/opticks
-   opticks-full        # recreate local/opticks
+
+   opticks-full        # recreate local/opticks (takes around 5 min)
 
    opticks-t           # standard install ctest 
 
@@ -24,26 +23,30 @@ R:workstation/simon build standalone opticks::
    okdist--            # create tarball and extract it into opticks_releases
 
    ## HMM : SOME OF WHAT okdist-- DOES (metadata + collecting ctest files) 
-   ## COULD BE ADDED TO opticks-t ? 
+   ## COULD BE ADDED TO opticks-full ? 
 
    ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
    ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
 
-   vip  # switch .bashrc to .opticks_release_config for binary release testing 
+   vip  # switch .bashrc to .opticks_release_config for local binary release testing 
+   x
+   R   # exit and reconnect 
 
    ort    # cd $OPTICKS_RELEASE_PREFIX/tests
    ctest -N 
    ctest 
 
-   scp -4 $(okdist-path) L:g/local/ 
-
+   scp -4 /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar L:g/local/     # copy tarball to L 
+   scp -4 $(okdist-path) L:g/local/      # (from standard env can use the func)   
 
 L:gateway/blyth::
 
    L
 
    cd g/local
-   tar xvf Opticks-0.0.1_alpha.tar
+
+   rm -rf Opticks-0.0.1_alpha         # remove the old expanded archive 
+   tar xvf Opticks-0.0.1_alpha.tar    # extract the new one 
 
    vip   # check .opticks_release_config OPTICKS_RELEASE_PREFIX is correct 
 

@@ -30,10 +30,13 @@ set(SCRIPTS
    js.py 
 )
 
-set(INSTALLED_SCRIPTS
+set(FORMER_INSTALLED_SCRIPTS
    opticks-release.bash
    opticks-site.bash
    opticks-site-local.bash
+)
+
+set(INSTALLED_SCRIPTS
 
    CTestTestfile.py 
    CTestLog.py  

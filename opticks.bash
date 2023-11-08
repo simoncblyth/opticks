@@ -699,17 +699,18 @@ opticks-externals(){
   cat << EOL  | grep -v ^#
 bcm
 glm
-glfw
-glew
-gleq
+#glfw
+#glew
+#gleq
 imgui
 plog
-#opticksaux
 nljson
 EOL
 }
+# need imgui even though not currently using it just for its font file 
 
 opticks-externals-retired(){ cat << EOL
+#opticksaux
 #assimp
 #openmesh
 #oimplicitmesher
@@ -1484,6 +1485,7 @@ HERE_OPTICKS_PREFIX=\$(dirname \$(dirname \$BASH_SOURCE))
 export OPTICKS_PREFIX=\$HERE_OPTICKS_PREFIX
 export OPTICKS_CUDA_PREFIX=\${OPTICKS_CUDA_PREFIX:-$OPTICKS_CUDA_PREFIX}
 export OPTICKS_OPTIX_PREFIX=\${OPTICKS_OPTIX_PREFIX:-$OPTICKS_OPTIX_PREFIX}
+#
 
 EHEAD
 }
@@ -1592,6 +1594,8 @@ opticks-setup-misc-(){ cat << EOM
 export TMP=\${TMP:-/tmp/\$USER/opticks}   ## too many uses of TMP to change all to OPTICKS_TMP right now
 export OPTICKS_TMP=\${OPTICKS_TMP:-/tmp/\$USER/opticks}  
 mkdir -p \${OPTICKS_TMP}
+## see sysrap/STTF.hh still needed for binary release
+export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 
 EOM
 }
@@ -1599,8 +1603,6 @@ EOM
 opticks-setup-misc-removed-(){ cat << EOR
 export OPTICKS_EVENT_BASE=\${OPTICKS_EVENT_BASE:-/tmp/\$USER/opticks} 
 mkdir -p \${OPTICKS_EVENT_BASE}
-## see sysrap/STTF.hh
-export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 
 EOR
 }

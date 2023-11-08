@@ -47,6 +47,7 @@ class OKTar(object):
     #externals/include/GL
     #externals/include/GLFW
     #externals/imgui/imgui
+    externals/imgui/imgui/extra_fonts
     externals/lib
     externals/lib64
     externals/plog/include

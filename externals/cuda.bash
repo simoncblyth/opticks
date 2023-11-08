@@ -36,6 +36,15 @@ See Also
 * env-;cudatex-
 
 
+CUDA Error Handling
+---------------------
+
+* https://stackoverflow.com/questions/14038589/what-is-the-canonical-way-to-check-for-errors-using-the-cuda-runtime-api%5B/url%5D
+
+
+
+
+
 CUDA gcc version mapping
 ---------------------------
 

@@ -909,8 +909,6 @@ Slow fail is not repeatable::
     /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/STestRunner.sh : FAIL from SSimTest
 
 
-
-
 ::
 
     L7[blyth@lxslc714 tests]$ ./scontext_test.sh 
@@ -943,4 +941,222 @@ Get non-sensical device count::
     ]sdevice::Visible
     sdevice::Load dirpath /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext path /afs/ihep.ac.cn/users/b/blyth/.opticks/scontext/sdevice.bin
     ]scontext::scontext
+
+
+
+Fixing undefined device count : avoids hangs : make another binary release : down to 45/205 fails
+---------------------------------------------------------------------------------------------------
+
+Most of the fails are from lack of GEOM envvar and geometry::
+
+    78% tests passed, 45 tests failed out of 205
+
+    Total Test time (real) =  29.93 sec
+
+    The following tests FAILED:
+         31 - SysRapTest.SCurandStateTest (OTHER_FAULT)
+         70 - SysRapTest.SRngSpecTest (OTHER_FAULT)
+         80 - SysRapTest.stranTest (INTERRUPT)
+        107 - SysRapTest.SSimTest (Failed)
+        108 - SysRapTest.SBndTest (Failed)
+        109 - CSGTest.CSGNodeTest (Failed)
+        112 - CSGTest.CSGPrimImpTest (Failed)
+        113 - CSGTest.CSGPrimSpecTest (Failed)
+        114 - CSGTest.CSGPrimTest (Failed)
+        116 - CSGTest.CSGFoundryTest (Failed)
+        118 - CSGTest.CSGFoundry_getCenterExtent_Test (Failed)
+        119 - CSGTest.CSGFoundry_findSolidIdx_Test (Failed)
+        120 - CSGTest.CSGFoundry_CreateFromSimTest (Failed)
+        121 - CSGTest.CSGNameTest (Failed)
+        122 - CSGTest.CSGTargetTest (Failed)
+        123 - CSGTest.CSGTargetGlobalTest (Failed)
+        124 - CSGTest.CSGFoundry_MakeCenterExtentGensteps_Test (Failed)
+        125 - CSGTest.CSGFoundry_getFrame_Test (Failed)
+        126 - CSGTest.CSGFoundry_getMeshName_Test (Failed)
+        129 - CSGTest.CSGFoundryLoadTest (Failed)
+        131 - CSGTest.CUTest (Failed)
+        134 - CSGTest.CSGQueryTest (Failed)
+        135 - CSGTest.CSGSimtraceTest (Failed)
+        136 - CSGTest.CSGSimtraceRerunTest (Failed)
+        137 - CSGTest.CSGSimtraceSampleTest (Failed)
+        138 - CSGTest.CSGCopyTest (Failed)
+        152 - QUDARapTest.QRngTest (Failed)
+        153 - QUDARapTest.QScintTest (Failed)
+        156 - QUDARapTest.QSimTest (Failed)
+        157 - QUDARapTest.QOpticalTest (Failed)
+        159 - QUDARapTest.QEventTest (Failed)
+        160 - QUDARapTest.QSimWithEventTest (Failed)
+        161 - QUDARapTest.QSimCreateTest (Failed)
+        162 - QUDARapTest.QUTest (Failed)
+        163 - QUDARapTest.QTexMakerTest (Failed)
+        164 - QUDARapTest.QTexLookupTest (Failed)
+        165 - QUDARapTest.QBufTest (Failed)
+        167 - QUDARapTest.QCurandStateTest (Failed)
+        177 - U4Test.U4GDMLReadTest (Failed)
+        179 - U4Test.U4RandomTest (Failed)
+        188 - U4Test.U4TraverseTest (Failed)
+        189 - U4Test.U4TreeTest (Failed)
+        203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
+        204 - G4CXTest.G4CXRenderTest (Failed)
+        205 - G4CXTest.G4CXOpticks_setGeometry_Test (Failed)
+    Errors while running CTest
+    L7[blyth@lxslc703 tests]$ 
+
+
+
+After parachute in GEOM directory : down to 22/205 fails
+----------------------------------------------------------
+
+::
+
+    N[blyth@localhost ~]$ scp -4 -r ~/.opticks/GEOM/. L:.opticks/GEOM/
+
+::
+
+    L7[blyth@lxslc703 tests]$ ctest --output-on-failure 
+
+    89% tests passed, 22 tests failed out of 205
+
+    Total Test time (real) = 194.71 sec
+
+    The following tests FAILED:
+         31 - SysRapTest.SCurandStateTest (OTHER_FAULT)
+         70 - SysRapTest.SRngSpecTest (OTHER_FAULT)
+        152 - QUDARapTest.QRngTest (Failed)
+
+         LACK OF /afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG files
+         unable to open file [/afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin]
+         NOT READABLE CURANDStatePath  path /afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG/QCurandState_1000000_0_0.bin readable 0
+
+         80 - SysRapTest.stranTest (INTERRUPT)
+         NP::load Failed to load from path /afs/ihep.ac.cn/users/b/blyth/.opticks/InputPhotons/RandomDisc100_f8.npy
+
+        179 - U4Test.U4RandomTest (Failed)
+         NP::load Failed to load from path /afs/ihep.ac.cn/users/b/blyth/.opticks/precooked/QSimTest/rng_sequence/
+
+
+        112 - CSGTest.CSGPrimImpTest (Failed)
+        131 - CSGTest.CUTest (Failed)
+        153 - QUDARapTest.QScintTest (Failed)
+        156 - QUDARapTest.QSimTest (Failed)
+        157 - QUDARapTest.QOpticalTest (Failed)
+        158 - QUDARapTest.QPropTest (Failed)
+        159 - QUDARapTest.QEventTest (Failed)
+        160 - QUDARapTest.QSimWithEventTest (Failed)
+        161 - QUDARapTest.QSimCreateTest (Failed)
+        163 - QUDARapTest.QTexMakerTest (Failed)
+        164 - QUDARapTest.QTexLookupTest (Failed)
+        165 - QUDARapTest.QBufTest (Failed)
+        167 - QUDARapTest.QCurandStateTest (Failed)
+        203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
+        204 - G4CXTest.G4CXRenderTest (Failed)
+        205 - G4CXTest.G4CXOpticks_setGeometry_Test (Failed)
+
+        no CUDA-capable device
+
+
+    Errors while running CTest
+
+
+Most fails from unhandled exception::
+
+    no CUDA-capable device is detected
+
+::
+
+    131/205 Test #131: CSGTest.CUTest ...........................................***Failed    0.23 sec
+                    HOME : /afs/ihep.ac.cn/users/b/blyth
+                     PWD : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/tests/CSG/tests
+                    GEOM : V1J011
+             BASH_SOURCE : /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/CSGTestRunner.sh
+              EXECUTABLE : CUTest
+                    ARGS : 
+    terminate called after throwing an instance of 'sutil::CUDA_Exception'
+      what():  CUDA call (cudaMalloc(reinterpret_cast<void**>( &d_array ), num_bytes ) ) failed with error: 'no CUDA-capable device is detected' (/home/simon/opticks/CSG/CU.cc:101)
+
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/CSGTestRunner.sh: line 25: 23630 Aborted                 (core dumped) $EXECUTABLE $@
+    /hpcfs/juno/junogpu/blyth/local/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg/bin/CSGTestRunner.sh : FAIL from CUTest
+
+
+Can reproduce that exception on laptop with::
+
+    epsilon:opticks blyth$ CUDA_VISIBLE_DEVICES=1 CUTest 
+    libc++abi.dylib: terminating with uncaught exception of type sutil::CUDA_Exception: CUDA call (cudaMalloc(reinterpret_cast<void**>( &d_array ), num_bytes ) ) failed with error: 'no CUDA-capable device is detected' (/Users/blyth/opticks/CSG/CU.cc:101)
+
+    Abort trap: 6
+    epsilon:opticks blyth$ 
+
+
+::
+
+    (lldb) f 9
+    frame #9: 0x0000000100002938 CUTest`main(argc=1, argv=0x00007ffeefbfea30) at CUTest.cc:24
+       21  	        pp.push_back(p); 
+       22  	    }
+       23  	
+    -> 24  	    CSGPrim* d_prim = CU::UploadVec(pp); 
+       25  	    CSGPrimSpec psd = CSGPrim::MakeSpec( d_prim,  primOffset, numPrim ); ;
+       26  	    psd.device = true ; 
+       27  	    psd.downloadDump("CUTest.downloadDump"); 
+    (lldb) f 8
+    frame #8: 0x00000001000c73f6 libCSG.dylib`CSGPrim* CU::UploadVec<CSGPrim>(vec=size=10) at CU.cc:101
+       98  	    LOG(LEVEL) << " num_items " << num_items  ; 
+       99  	#endif
+       100 	    T* d_array = nullptr ; 
+    -> 101 	    CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_bytes ));
+       102 	    CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), vec.data(), num_bytes, cudaMemcpyHostToDevice ));
+       103 	    return d_array ; 
+       104 	}
+    (lldb) 
+
+
+::
+
+    L7[blyth@lxslc703 tests]$ STTFTest 
+    STTF::Load failed to open /data/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+    STTF::init failed : no font file has been loaded 
+    STTFTest : failed to initialize font 
+    L7[blyth@lxslc703 tests]$ rc
+    RC 0
+    L7[blyth@lxslc703 tests]$ 
+
+
+
+After parachute in the rngcache files : down to 19/205 fails
+--------------------------------------------------------------
+
+::
+
+   N[blyth@localhost RNG]$ scp -4 QCurandState* L:.opticks/rngcache/RNG/
+
+
+::
+
+    91% tests passed, 19 tests failed out of 205
+
+    Total Test time (real) = 213.18 sec
+
+    The following tests FAILED:
+         80 - SysRapTest.stranTest (INTERRUPT)
+        112 - CSGTest.CSGPrimImpTest (Failed)
+        131 - CSGTest.CUTest (Failed)
+        152 - QUDARapTest.QRngTest (Failed)
+        153 - QUDARapTest.QScintTest (Failed)
+        156 - QUDARapTest.QSimTest (Failed)
+        157 - QUDARapTest.QOpticalTest (Failed)
+        158 - QUDARapTest.QPropTest (Failed)
+        159 - QUDARapTest.QEventTest (Failed)
+        160 - QUDARapTest.QSimWithEventTest (Failed)
+        161 - QUDARapTest.QSimCreateTest (Failed)
+        162 - QUDARapTest.QUTest (Failed)
+        163 - QUDARapTest.QTexMakerTest (Failed)
+        164 - QUDARapTest.QTexLookupTest (Failed)
+        165 - QUDARapTest.QBufTest (Failed)
+        179 - U4Test.U4RandomTest (Failed)
+        203 - CSGOptiXTest.CSGOptiXRenderTest (Failed)
+        204 - G4CXTest.G4CXRenderTest (Failed)
+        205 - G4CXTest.G4CXOpticks_setGeometry_Test (Failed)
+    Errors while running CTest
+    L7[blyth@lxslc703 tests]$ 
+
 
