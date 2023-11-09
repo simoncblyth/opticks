@@ -99,6 +99,11 @@ GEOM std
 GEOM origin
      vim -R origin.gdml on top dir 
 
+GEOM source
+     source the $HOME/.opticks/GEOM/GEOM.sh 
+     its kinda dirty to do this but handy for some debugging,
+     remember to exit sessions after doing this 
+
 GEOM info 
      dump variables of the GEOM bash function
 
@@ -162,6 +167,8 @@ GEOM(){
      cmd="cd $geomdir/CSGFoundry/SSim/stree/standard"
   elif [ "$arg" == "origin" ]; then  
      cmd="cd $geomdir ; vim -R origin.gdml"
+  elif [ "$arg" == "source" ]; then  
+     cmd="source $HOME/.opticks/GEOM/GEOM.sh"
   elif [ "$arg" == "help" ]; then  
      cmd="GEOM_help"
   elif [ "$arg" == "info" ]; then  
