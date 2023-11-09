@@ -161,8 +161,6 @@ void test_Resolve_With_Index()
     LOG(info); 
     const char* lines = R"LIT(
 $TMP
-$OPTICKS_TMP
-$OPTICKS_EVENT_BASE
 $HOME/hello
 $NON_EXISTING_EVAR/elsewhere
 $DefaultOutputDir
@@ -205,13 +203,9 @@ void test_Resolve()
     const char* lines = R"LIT(
 $TMP
 $DefaultOutputDir
-$OPTICKS_TMP
-$OPTICKS_EVENT_BASE
 $HOME/hello 
 $TMP/somewhere/over/the/rainbow.txt
 $NON_EXISTING_EVAR/elsewhere/sub.txt
-$CFBase/CSGFoundry/SSim
-$CFBASE/CSGFoundry/SSim
 /just/some/path.txt
 stem.ext
 /

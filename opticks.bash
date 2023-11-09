@@ -1035,15 +1035,8 @@ Which envvars can be changed post setup ?
 A few envvars defined in the setup script are
 purely runtime in nature and can be overriden.
 
-OPTICKS_KEY 
-   selecting geometry 
-
-OPTICKS_TMP, TMP
+TMP
    temp dir 
-
-OPTICKS_EVENT_BASE
-   event output dir
-
 
 Dev
 ---
@@ -1591,9 +1584,8 @@ EOS
 opticks-setup-misc-(){ cat << EOM
 # $FUNCNAME  
 
-export TMP=\${TMP:-/tmp/\$USER/opticks}   ## too many uses of TMP to change all to OPTICKS_TMP right now
-export OPTICKS_TMP=\${OPTICKS_TMP:-/tmp/\$USER/opticks}  
-mkdir -p \${OPTICKS_TMP}
+export TMP=\${TMP:-/tmp/\$USER/opticks}
+mkdir -p \${TMP}
 ## see sysrap/STTF.hh still needed for binary release
 export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 

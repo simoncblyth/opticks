@@ -199,7 +199,7 @@ class DirectPkg(odict):
     @classmethod
     def Path(cls, name):
         default_tmpdir = cls.DefaultTmpDir()
-        tmpdir = os.environ.get("OPTICKS_TMP", default_tmpdir )
+        tmpdir = os.environ.get("TMP", default_tmpdir )
         log.debug("tmpdir %s " % tmpdir)
         return os.path.join(tmpdir, "bin/findpkg/%s.json" % name )
 
