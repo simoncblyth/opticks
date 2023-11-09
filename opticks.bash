@@ -1869,13 +1869,16 @@ opticks-full()
     opticks-full-make    
     [ $? -ne 0 ] && echo $msg ERR from opticks-full-make && return 3
 
+    opticks-install-extras
+    [ $? -ne 0 ] && echo $msg ERR from opticks-install-extras && return 4
+
     opticks-cuda-capable
     rc=$?
     if [ $rc -eq 0 ]; then
         echo $msg detected GPU proceed with opticks-full-prepare
         opticks-full-prepare
         rc=$?
-        [ $rc -ne 0 ] && echo $msg ERR from opticks-full-prepare && return 4
+        [ $rc -ne 0 ] && echo $msg ERR from opticks-full-prepare && return 5
     else
         echo $msg detected no CUDA cabable GPU - skipping opticks-full-prepare
         rc=0    
@@ -1937,6 +1940,65 @@ opticks-full-make()
     echo $msg DONE $(date)
     return 0
 }
+
+opticks-install-extras()
+{
+   local msg="=== $FUNCNAME :"
+   local iwd=$PWD     
+
+   opticks-cd  ## install directory 
+
+   echo $msg install cmake/Modules 
+   opticks-install-cmake-modules
+   [ $? -ne 0 ] && echo $msg ERROR after opticks-install-cmake-modules && return 1 
+
+   echo $msg install ctest 
+   opticks-install-tests 
+   [ $? -ne 0 ] && echo $msg ERROR after opticks-install-tests && return 1 
+
+   cd $iwd
+   return 0 
+}
+
+
+
+opticks-install-tests()
+{
+   : formerly this was okdist-install-tests
+
+   local msg="=== $FUNCNAME :"
+   local bdir=$(opticks-bdir)
+   local dest=$(opticks-dir)/tests
+   echo $msg bdir $bdir dest $dest
+   CTestTestfile.py $bdir --dest $dest
+   local script=$dest/ctest.sh 
+
+   cat << EOT > $script
+#!/bin/bash -l 
+#ctest -N 
+ctest --output-on-failure
+EOT
+
+   chmod ugo+x $script 
+}
+
+opticks-install-cmake-modules()
+{
+   : formerly this was okdist-install-cmake-modules
+   local msg="=== $FUNCNAME :"
+   local home=$(opticks-home)
+   local dest=$(opticks-dir)
+
+   echo $msg home $home dest $dest 
+
+
+   CMakeModules.py --home $home --dest $dest
+}
+
+
+
+
+
 
 opticks-full-prepare()
 {

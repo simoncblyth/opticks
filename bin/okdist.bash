@@ -221,34 +221,7 @@ EOI
 }
 
 
-okdist-install-tests()
-{
-   local msg="=== $FUNCNAME :"
-   opticks-
-   local bdir=$(opticks-bdir)
-   local dest=$(opticks-dir)/tests
-   echo $msg bdir $bdir dest $dest
-   CTestTestfile.py $bdir --dest $dest
-   local script=$dest/ctest.sh 
 
-   cat << EOT > $script
-#!/bin/bash -l 
-#ctest -N 
-ctest --output-on-failure
-EOT
-
-   chmod ugo+x $script 
-
-}
-
-okdist-install-cmake-modules()
-{
-   opticks-
-   local home=$(opticks-home)
-   local dest=$(opticks-dir)
-
-   CMakeModules.py --home $home --dest $dest
-}
 
 okdist-install-metadata()
 {
@@ -272,12 +245,6 @@ okdist-install-extras()
 
    echo $msg write metadata
    okdist-install-metadata
-
-   echo $msg install tests
-   okdist-install-tests 
-
-   echo $msg install cmake/Modules 
-   okdist-install-cmake-modules 
 
    cd $iwd
 }
