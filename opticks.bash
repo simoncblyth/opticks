@@ -113,6 +113,10 @@ GEOM help
 EOH
 }
 
+TMP(){
+   cd ${TMP:-/tmp/$USER/opticks} 
+   pwd
+}
 
 GEOM(){ 
   : opticks/opticks.bash GEOM vi/grab/scp

@@ -466,10 +466,13 @@ imgui--(){
 
   imgui-get
   [ $? -ne 0 ] && echo $msg get FAIL && return 1
-  imgui-cmake
-  [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
-  imgui-make install 
-  [ $? -ne 0 ] && echo $msg make/install FAIL && return 3
+
+  # SKIPPING IMGUI BUILD AS FOR NOW ARE JUST USING ONE OF ITS FONTS 
+
+  # imgui-cmake
+  # [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+  # imgui-make install 
+  # [ $? -ne 0 ] && echo $msg make/install FAIL && return 3
 
   #imgui-pc 
   #[ $? -ne 0 ] && echo $msg pc FAIL && return 4
