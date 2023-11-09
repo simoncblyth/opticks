@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 name=sframe_test 
-export FOLD=/tmp/$name 
+export FOLD=${TMP:-/tmp/$USER/opticks}/$name 
 mkdir -p $FOLD
 
 defarg="build_run_ana"

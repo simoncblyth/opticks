@@ -1,12 +1,8 @@
 
-
-#include "SOpticksResource.hh"
-#include "SSys.hh"
-#include "SSim.hh"
-#include "SPath.hh"
-#include "NP.hh"
+#include "spath.h"
 #include "sdigest.h"
-
+#include "SSim.hh"
+#include "NP.hh"
 
 #include "U4Material.hh"
 #include "U4PhysicsVector.h"
@@ -16,21 +12,6 @@
 #include "OPTICKS_LOG.hh"
 
 
-void test_MakeMaterial()
-{
-#ifdef WITH_OPTICKS_KEY
-    const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
-    G4MaterialPropertyVector* v = U4Material::MakeProperty(a) ;  
-    G4Material* mat = U4Material::MakeMaterial(v) ;  
-
-    LOG(info) << "mat " << mat ; 
-    G4cout << "mat " << *mat << std::endl ; 
-
-#else
-    std::cerr << "NOT--WITH_OPTICKS_KEY " << std::endl ; 
-#endif
-
-}
 
 void test_MakeMaterialPropertiesTable()
 {
@@ -116,22 +97,6 @@ void test_NumVec()
 
 
 
-void test_Load_0()
-{
-#ifdef WITH_OPTICKS_KEY
-    const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
-    const NP* b = NP::Load(SPath::Resolve("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy", NOOP)); 
-
-    std::cout << " a " << a->sstr() << " digest " << sdigest::Item(a) << std::endl ; 
-    std::cout << " b " << b->sstr() << " digest " << sdigest::Item(b) << std::endl ; 
-
-    a->dump(); 
-#else
-    std::cerr << "NOT--WITH_OPTICKS_KEY " << std::endl ; 
-#endif
-
-}
-
 
 
 void test_LoadOri_name()
@@ -181,7 +146,7 @@ void test_LoadBnd()
 
 void test_BndNames()
 {
-    const char* path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
+    const char* path = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/bnd_names.txt");  
     LOG(info) << " path " << path ; 
 }
 
@@ -228,12 +193,10 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     
     /*
-    test_MakeMaterial(); 
     test_MakeMaterialPropertiesTable(); 
     test_GetProperty(); 
     test_NumVec(); 
     test_MakeScintillator(); 
-    test_Load_0(); 
     test_LoadOri_name(); 
     test_ListOri(); 
     test_LoadOri(); 

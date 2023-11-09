@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* path = argc > 1 ? argv[1] : "/tmp/CSGSolidTest.npy" ; 
+    const char* path = argc > 1 ? argv[1] : "$TMP/CSGSolidTest/CSGSolidTest.npy" ; 
     test_Make_Write(path); 
     test_labelMatch(); 
     test_ParseLabel(); 

@@ -1,10 +1,10 @@
 
 #include "NP.hh"
-#include "SPath.hh"
+#include "spath.h"
 #include "QRng.hh"
 #include "OPTICKS_LOG.hh"
 
-const char* FOLD = "/tmp/QRngTest" ; 
+const char* FOLD = spath::Resolve("$TMP/QRngTest") ; 
 
 /**
 test_generate

@@ -8,7 +8,7 @@ EOU
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd) 
 name=s_bb_test
-export FOLD=/tmp/$name
+export FOLD=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 

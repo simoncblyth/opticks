@@ -87,6 +87,7 @@ U4EngineTest.cc
 
 #include <iostream>
 #include "ssys.h"
+#include "spath.h"
 #include "NP.hh"
 #include "U4Engine.h"
 #include "G4Types.hh"
@@ -94,7 +95,7 @@ U4EngineTest.cc
 
 #include "Randomize.hh"
 
-const char* FOLD = ssys::getenvvar("FOLD", "/tmp/U4EngineTest" ); 
+const char* FOLD = spath::Resolve("$TMP/U4EngineTest" ); 
 
 void dump(int idx, double u)
 {

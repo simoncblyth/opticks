@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 
 struct sstr
@@ -50,6 +51,12 @@ struct sstr
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
+
+    static std::string FormatIndex_( int idx, bool prefix, int wid ); 
+    static const char* FormatIndex(  int idx, bool prefix, int wid ); 
+
+
+
 
     template<typename ... Args>
     static std::string Join( const char* delim, Args ... args ); 
@@ -334,6 +341,43 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
 }
 
 template std::string sstr::Format_( const char*, const char*, int, int ); 
+
+
+
+inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid )
+{
+    std::stringstream ss ;  
+    if(prefix) ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) ) ; 
+    ss << std::setfill('0') << std::setw(wid) << std::abs(idx) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+sstr::FormatIndex
+-------------------
+
+prefix:true wid:3
+
++-----+--------+
+| idx |  val   |
++=====+========+
+|  1  | p001   |
++-----+--------+
+|  -1 | n001   |
++-----+--------+
+|  0  | z000   |
++-----+--------+
+
+**/
+
+inline const char* sstr::FormatIndex( int idx, bool prefix, int wid )
+{
+    std::string str = FormatIndex_(idx, prefix, wid ); 
+    return strdup(str.c_str()); 
+}
+
+
 
 
 template<typename ... Args>

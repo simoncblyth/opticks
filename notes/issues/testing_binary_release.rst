@@ -1220,3 +1220,54 @@ Getting zero sized sdevice.bin::
 HMM: need redirect outputs ? 
 
 
+
+
+gpu cluster running : many tests still writing to /tmp blackhole
+------------------------------------------------------------------
+
+* added TMP special casing to spath::Resolve 
+* changing to $TMP 
+
+::
+
+     666 Wed Nov  8 22:10:49 CST 2023
+     667 total 2908
+     669   0 drwxr-xr-x   3 blyth       dyw          17 Nov  8 22:10 U4Hit_Debug       ## DONE
+
+     676   0 drwxr-xr-x   3 blyth       dyw          32 Nov  8 22:09 U4EngineTest      ## DONE
+     677   0 drwxr-xr-x   3 blyth       dyw          19 Nov  8 22:09 QRngTest          ## DONE
+     678   4 -rw-r--r--   1 blyth       dyw         416 Nov  8 22:08 CSGSolidTest.npy  ## DONE
+     679  40 -rw-r--r--   1 blyth       dyw       40328 Nov  8 22:08 STTFTest.jpg      ## DONE  
+     680   0 drwxr-xr-x   3 blyth       dyw          21 Nov  8 22:08 blyth            ## ?? NEED find inside
+
+
+     670   0 drwxr-xr-x   2 blyth       dyw          90 Nov  8 22:10 p001          ## DONE U4Debug_Test     ? 
+     671   0 drwxr-xr-x   2 blyth       dyw          90 Nov  8 22:10 z000              ?
+
+
+
+Something creatig /tmp/blyth/opticks/GMaterialLib
+
+::
+
+    ./u4/U4Material.hh:    static constexpr const char* LIBDIR = "$IDPath/GMaterialLib" ;   // TODO: USING IDPath NOT ACCEPTABLE IN NEW WORKFLOW
+    ./u4/U4Tree.h:float/double bnd buffer is a zip from GSurfaceLib GMaterialLib which 
+    ./u4/U4Tree.h:GMaterialLib/GSurfaceLib
+    ./u4/U4Material.cc:   $IDPath/GMaterialLib/Water_ori
+    ./u4/U4Material.cc:   $IDPath/GMaterialLib/Water_ori
+
+
+::
+
+    epsilon:opticks blyth$ pwd
+    /tmp/blyth/opticks
+    epsilon:opticks blyth$ l 
+    total 0
+    0 drwxr-xr-x  3 blyth  wheel   96 Nov  9 14:14 U4TreeCreateSSimTest
+    0 drwxr-xr-x  6 blyth  wheel  192 Nov  9 14:14 .
+    0 drwxr-xr-x  3 blyth  wheel   96 Nov  9 14:14 U4TreeCreateTest
+    0 drwxr-xr-x  3 blyth  wheel   96 Nov  9 14:13 U4TreeTest
+    0 drwxr-xr-x  2 blyth  wheel   64 Nov  9 14:11 GMaterialLib
+    0 drwxr-xr-x  3 blyth  wheel   96 Nov  9 14:08 ..
+    epsilon:opticks blyth$ 
+

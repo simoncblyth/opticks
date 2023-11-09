@@ -320,38 +320,6 @@ const char* SOpticksResource::CFBaseAlt()
 
 
 /**
-SOpticksResource::OldCFBaseFromGEOM
-----------------------------------
-
-Construct a CFBASE directory from GEOM envvar.
-
-Have stopped using this automatically from SOpticksResource::CFBase
-as GEOM envvar is too commonly used that this can kick in unexpectedly. 
-
-GEOM envvar value such as AltXJfixtureConstruction_FirstSuffix_XY leads for CFBASE folder 
-such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
-
-**/
-
-const char* SOpticksResource::OldCFBaseFromGEOM()
-{
-    const char* cfbase = nullptr ; 
-    const char* geom = ssys::getenvvar("GEOM"); 
-    if( geom != nullptr )
-    {
-        const char* gcn =  SStr::HeadLast(geom, '_'); 
-#ifdef __APPLE__
-        const char* rel = "GeoChain_Darwin" ; 
-#else
-        const char* rel = "GeoChain" ; 
-#endif
-        cfbase = SPath::Resolve("$TMP", rel, gcn, NOOP  );    
-    }
-    return cfbase ;  
-}
-
-
-/**
 SOpticksResource::CFBaseFromGEOM
 ----------------------------------
 
@@ -551,9 +519,6 @@ const char* SOpticksResource::Get(const char* key) // static
     if(tok) return tok ;  
 
     if( strcmp(key, "CFBase")==0)                tok = SOpticksResource::CFBase(); 
-#ifdef WITH_OPTICKS_KEY
-    else if( strcmp(key, "IDPath")==0)           tok = SOpticksResource::IDPath(); 
-#endif
     else if( strcmp(key, "CFBaseAlt")==0)        tok = SOpticksResource::CFBaseAlt(); 
     else if( strcmp(key, "GeocacheDir")==0)      tok = SOpticksResource::GeocacheDir(); 
     else if( strcmp(key, "RuncacheDir")==0)      tok = SOpticksResource::RuncacheDir(); 

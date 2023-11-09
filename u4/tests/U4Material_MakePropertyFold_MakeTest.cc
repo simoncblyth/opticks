@@ -1,5 +1,6 @@
-#include "SPath.hh"
-#include "SOpticksResource.hh"
+#include "spath.h"
+//#include "SOpticksResource.hh"
+
 #include "OPTICKS_LOG.hh"
 #include "U4GDML.h"
 #include "U4Material.hh"
@@ -9,7 +10,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* srcpath = argc > 1 ? argv[1] : SOpticksResource::SomeGDMLPath() ; 
+    const char* _origin = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/origin.gdml"); 
+    //const char* srcpath = argc > 1 ? argv[1] : SOpticksResource::SomeGDMLPath() ; 
+    const char* srcpath = argc > 1 ? argv[1] : spath::Resolve(_origin) ; 
+
     const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  
 
     NPFold* mats = U4Material::MakePropertyFold() ; 
@@ -22,7 +26,7 @@ int main(int argc, char** argv)
 
     const char* base = "$TMP/U4Material_MakePropertyFold" ; 
     const char* name = "U4Material" ; 
-    const char* fold = SPath::Resolve(base, name, DIRPATH) ; 
+    const char* fold = spath::Resolve(base, name) ; 
 
     LOG(info) << std::endl << mats->desc_subfold(name) << std::endl ; 
 

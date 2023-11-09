@@ -35,10 +35,10 @@ understand lack of gensteps.
 struct U4_API U4Debug
 {   
     static const plog::Severity LEVEL ; 
-    static constexpr const char* EKEY = "U4Debug_SaveDir" ;   
-    static const char* SaveDir ; 
+    static constexpr const char* ETOK = "${U4Debug_SaveDir:-$TMP}/U4Debug" ;  // see spath::ResolveToken
+    //static const char* SaveDir ; 
+    //static const char* GetSaveDir(int eventID); 
 
-    static const char* GetSaveDir(int eventID); 
     static void Save(int eventID); 
 };
 

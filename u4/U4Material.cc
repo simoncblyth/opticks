@@ -4,8 +4,10 @@
 #include <sstream>
 #include <limits>
 
-#include "SSys.hh"
-#include "SPath.hh"
+#include "ssys.h"
+#include "spath.h"
+
+
 #include "SDir.h"
 #include "SStr.hh"
 #include "sstr.h"
@@ -453,8 +455,12 @@ The matdir may use the standard tokens eg::
 G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_  )
 {
     const char* ekey = "U4Material__MakeMaterialPropertiesTable_sigint" ; 
-    bool sigint = SSys::getenvbool(ekey) ; 
-    const char* matdir = SPath::Resolve(matdir_, NOOP); 
+    bool sigint = ssys::getenvbool(ekey) ; 
+
+
+    const char* matdir = spath::Resolve(matdir_); 
+    //const char* matdir = SPath::Resolve(matdir_, NOOP); 
+
     std::vector<std::string> names ; 
     SDir::List(names, matdir, ".npy", sigint ); 
  
@@ -513,7 +519,8 @@ Constructs the properties table by loading the  properties listed in *delim* del
 
 G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_, const char* keys_, char delim )
 {
-    const char* matdir = SPath::Resolve(matdir_, NOOP); 
+    const char* matdir = spath::Resolve(matdir_); 
+    //const char* matdir = SPath::Resolve(matdir_, NOOP); 
 
     std::vector<std::string> keys ; 
     SStr::Split( keys_, delim, keys ); 
@@ -859,7 +866,8 @@ G4Material* U4Material::LoadOri(const char* name)
 
 void U4Material::ListOri(std::vector<std::string>& names)
 {
-    const char* libdir = SPath::Resolve(LIBDIR, NOOP ); 
+    //const char* libdir = SPath::Resolve(LIBDIR, NOOP ); 
+    const char* libdir = spath::Resolve(LIBDIR); 
     const char* ext = "_ori" ; 
     SDir::List(names, libdir, ext ); 
     SDir::Trim(names, ext); 

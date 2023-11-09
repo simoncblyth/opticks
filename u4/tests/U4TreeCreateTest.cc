@@ -5,7 +5,7 @@
 #include "U4VolumeMaker.hh"
 #include "U4Tree.h"
 
-const char* FOLD = spath::Resolve("/tmp/$USER/opticks/U4TreeCreateTest"); 
+const char* FOLD = spath::Resolve("$TMP/U4TreeCreateTest"); 
 
 int main(int argc, char** argv)
 {

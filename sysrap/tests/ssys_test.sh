@@ -1,7 +1,8 @@
 #!/bin/bash -l 
 
 name=ssys_test 
-bin=/tmp/$name
+bin=${TMP:-/tmp/$USER/opticks}/$name 
+mkdir -p $(dirname $bin)
 
 defarg="build_run"
 arg=${1:-$defarg}

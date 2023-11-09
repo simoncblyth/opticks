@@ -4,7 +4,7 @@
 #include "G4Log.hh"
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
-#include "SPath.hh"
+#include "spath.h"
 #include "NP.hh"
 
 
@@ -24,7 +24,7 @@ struct U4LogTest
 }; 
 
 
-const char* U4LogTest::FOLD = SPath::Resolve("$TMP/U4LogTest", DIRPATH);
+const char* U4LogTest::FOLD = spath::Resolve("$TMP/U4LogTest");
 
 
 U4LogTest::U4LogTest()

@@ -7,7 +7,7 @@
 #include "U4Tree.h"
 
 
-const char* FOLD = spath::Resolve("/tmp/$USER/opticks/U4TreeTest"); 
+const char* FOLD = spath::Resolve("$TMP/U4TreeTest"); 
 
 
 void test_saveload_get_children(const stree* tree0, const stree* tree1, int nidx )

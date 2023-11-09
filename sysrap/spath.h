@@ -22,11 +22,18 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 
 struct spath
 {
+    friend struct spath_test ; 
     static constexpr const bool VERBOSE = false ; 
 
 private:
     static std::string _ResolvePath(const char* spec); 
     static const char* ResolvePath(const char* spec); 
+
+    static char* DefaultTMP();
+    static char* ResolveToken(const char* token); 
+    static char* _ResolveToken(const char* token); 
+    static bool  IsTokenWithFallback(const char* token); 
+    static char* _ResolveTokenWithFallback(const char* token); 
 
     template<typename ... Args>
     static std::string _Resolve(Args ... args ); 
@@ -92,7 +99,7 @@ inline std::string spath::_ResolvePath(const char* spec_)
             char* sep = strchr( p, '/' ) ; // first slash after token   
             bool tok_plus =  sep && end && sep != end ;  
             if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
-            char* val = getenv(p+1) ;  // skip '$'
+            char* val = ResolveToken(p+1) ;  // skip '$'
             int toklen = int(strlen(p)) ;  // strlen("TOKEN")  no need for +1 as already at '$'  
             if(VERBOSE) std::cout << " toklen " << toklen << std::endl ;  
             if(val == nullptr) 
@@ -128,6 +135,112 @@ inline const char* spath::ResolvePath(const char* spec_)
     std::string path = _ResolvePath(spec_) ;
     return strdup(path.c_str()) ; 
 }
+
+inline char* spath::DefaultTMP()
+{
+    char* user = getenv("USER") ; 
+    std::stringstream ss ; 
+    ss << "/tmp/" << ( user ? user : "MISSING_USER" ) << "/" << "opticks" ;   
+    std::string str = ss.str(); 
+    return strdup(str.c_str()); 
+}
+
+inline char* spath::ResolveToken(const char* token)
+{
+    return IsTokenWithFallback(token) 
+        ?
+            _ResolveTokenWithFallback(token)
+        :
+            _ResolveToken(token)
+        ; 
+}
+
+/**
+spath::_ResolveToken
+----------------------
+
+The token "TMP" is special cased to resolve as /tmp/$USER/opticks
+when no TMP envvar is defined. 
+
+**/
+
+
+inline char* spath::_ResolveToken(const char* token)
+{
+    char* val = getenv(token) ; 
+    if( val == nullptr && strcmp(token, "TMP") == 0) val = DefaultTMP() ; 
+    return val ; 
+}
+
+/**
+spath::IsTokenWithFallback
+---------------------------
+
+Bash style token with fallback::
+
+   ${U4Debug_SaveDir:-$TMP}   # original 
+   {U4Debug_SaveDir:-$TMP}    # when arrives here from ResolveToken 
+
+
+**/
+
+inline bool spath::IsTokenWithFallback(const char* token)
+{
+    return token && strlen(token) > 0 && token[0] == '{' && token[strlen(token)-1] == '}' && strstr(token,":-$") != nullptr  ; 
+}
+
+/**
+spath::_ResolveTokenWithFallback
+----------------------------------
+
+Currently only simple fallback token are supported. 
+
+TODO: handle more general fallbacks like ${TMP:-/tmp/$USER/opticks}
+
+**/
+
+inline char* spath::_ResolveTokenWithFallback(const char* token_)
+{
+    assert( IsTokenWithFallback(token_) ); 
+
+    char* token = strdup(token_); 
+    token[strlen(token)-1] = '\0' ;  // overwrite the trailing '}' 
+
+    const char* delim = ":-$" ; 
+    char* split = strstr(token, delim) ; 
+
+    bool dump = false ; 
+ 
+    if(dump) std::cout 
+       << "spath::ResolveTokenWithFallback" 
+       << std::endl 
+       << " token " << ( token ? token : "-" )
+       << std::endl 
+       << " split " << ( split ? split : "-" )
+       << std::endl 
+       ;
+
+    assert( split );  
+    char* tok1 = split + strlen(delim)  ; 
+
+    split[0] = '\0' ; 
+    char* tok0 = token + 1 ; 
+    
+    if(dump) std::cout 
+       << "spath::ResolveTokenWithFallback" 
+       << std::endl 
+       << " tok0 " << ( tok0 ? tok0 : "-" )
+       << std::endl 
+       << " tok1 " << ( tok1 ? tok1 : "-" )
+       << std::endl 
+       ;
+
+    char* val = _ResolveToken(tok0) ; 
+    if(val == nullptr) val = _ResolveToken(tok1) ; 
+    return val ; 
+}
+
+
 
 
 template<typename ... Args>

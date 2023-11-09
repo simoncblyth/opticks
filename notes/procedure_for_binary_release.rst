@@ -57,7 +57,12 @@ L:gateway/blyth::
 
    ctest       # expect around 19/205 FAILs for lack of GPU   
 
+   sf # list the slurm related functions 
    sj # review the GPU job 
+
+
+   /hpcfs/juno/junogpu/blyth/j/okjob.sh   # test run of script before submission on lxslc7 
+
 
 
 
@@ -71,10 +76,16 @@ Packaging .opticks
      cd ~/.opticks
      ~/opticks/bin/oktar.py /tmp/tt/dot_opticks.tar create --prefix dot_opticks/v0 --mode CACHE
 
+     N[blyth@localhost .opticks]$ scp -4 /tmp/tt/dot_opticks.tar L:g/.opticks/
 
 Extract that archive with the two element prefix stripped:: 
 
-     tar xvf dot_opticks.tar --strip-components=2 
+     tar tvf dot_opticks.tar  # check the explosion
+     
+     L7[blyth@lxslc711 .opticks]$ rm -rf GEOM InputPhotons flight precooked rngcache  
+         # clean ahead to avoid mixing 
+      
+     L7[blyth@lxslc711 .opticks]$ tar xvf dot_opticks.tar --strip-components=2
 
 
 

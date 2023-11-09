@@ -64,7 +64,7 @@ template <typename T>
 inline void QPropTest<T>::save() const
 {
     NPFold* f = serialize(); 
-    f->save("/tmp/$USER/opticks/QPropTest", RELDIR ) ; 
+    f->save("$TMP/QPropTest", RELDIR ) ; 
 }
 
 

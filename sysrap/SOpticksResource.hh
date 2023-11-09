@@ -1,14 +1,14 @@
 #pragma once
 /**
-SOpticksResource.hh : MOVING AWAY FROM THIS TO SIMPLER spath.h WITH EXPLICIT PATHS 
-====================================================================================
+SOpticksResource.hh : AIMING TO ELIMINATE THIS : MOVING TO SIMPLER spath.h WITH MORE EXPLICIT PATHS 
+==============================================================================================================
 
 Currently this straddles old and new workflows.
 
 Is this abstraction layer still needed ? 
 ------------------------------------------
 
-TODO: review usage, can this be simplified
+TODO: review usage, can this be simplified : NOPE : AIM TO REMOVE 
 
 ::
 
@@ -41,13 +41,6 @@ TODO: review usage, can this be simplified
     ./g4cx/G4CXOpticks.cc
     epsilon:opticks blyth$ 
 
-
-TOOO: 
-
-1. remove plog/SLOG 
-2. convert to header only
-
-   * HMM: who uses the static _GEOM ? 
 
 **/
 
@@ -98,17 +91,9 @@ struct SYSRAP_API SOpticksResource
 
     static std::string Desc_DefaultOutputDir();  
   
-
-#ifdef WITH_OPTICKS_KEY
-    // setkey:true means OPTICKS_KEY envvar gets used 
-    static const char* IDPath(bool setkey=true);
-    static const NP* IDLoad(const char* relpath); 
-#endif
-
     static const char* CFBASE_ ;
     static const char* CFBase();
     static const char* CFBaseAlt();
-    static const char* OldCFBaseFromGEOM();
     static const char* CFBaseFromGEOM();
     static const char* GDMLPathFromGEOM(); 
     static const char* WrapLVForName(const char* name); 

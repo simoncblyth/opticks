@@ -1,9 +1,9 @@
 #!/bin/bash -l 
 
 name=sblackbody_test
-export FOLD=/tmp/$name
-mkdir -p $FOLD
+export FOLD=${TMP:-/tmp/$USER/opticks}/$name
 bin=$FOLD/$name
+mkdir -p $(dirname $bin)
 
 cd $(dirname $BASH_SOURCE)
 

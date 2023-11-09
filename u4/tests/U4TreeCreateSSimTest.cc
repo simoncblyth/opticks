@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         U4Tree::Create(sim->tree, world) ; 
 
         LOG(info) << " save SSim to $FOLD " ; 
-        sim->save("/tmp/$USER/opticks/U4TreeCreateSSimTest"); 
+        sim->save("$TMP/U4TreeCreateSSimTest"); 
     }
     LOG(info) << " sim.tree.desc " << std::endl << sim->tree->desc() ;
     return 0 ;  

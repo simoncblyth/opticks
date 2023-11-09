@@ -13,7 +13,7 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
 
 name=QPropTest 
 
-export FOLD=/tmp/$USER/opticks/$name
+export FOLD=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $FOLD/float
 mkdir -p $FOLD/double
 

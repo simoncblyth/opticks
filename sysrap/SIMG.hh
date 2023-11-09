@@ -12,6 +12,7 @@
 #else
 #define LOG(severity) if(false) std::cout    // just kill the logging when no SLOG
 #endif
+#include "sdirectory.h"
 
 
 struct SIMG 
@@ -40,11 +41,11 @@ struct SIMG
    void writePNG() const ; 
    void writeJPG(int quality) const ; 
 
-   void writePNG(const char* path) const ; 
-   void writeJPG(const char* path, int quality) const ; 
-
    void writePNG(const char* dir, const char* name) const ; 
    void writeJPG(const char* dir, const char* name, int quality) const ; 
+
+   void writePNG(const char* path) const ; 
+   void writeJPG(const char* path, int quality) const ; 
 
    static std::string FormPath(const char* dir, const char* name);
    static bool EndsWith( const char* s, const char* q);
@@ -215,11 +216,6 @@ inline void SIMG::writePNG(const char* dir, const char* name) const
     std::string s = FormPath(dir, name); 
     writePNG(s.c_str()); 
 }
-inline void SIMG::writePNG(const char* path) const 
-{
-    //LOG(LEVEL) << "stbi_write_png " << path ; 
-    stbi_write_png(path, width, height, channels, data, width * channels);
-}
 
 
 inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const 
@@ -227,10 +223,24 @@ inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const
     std::string s = FormPath(dir, name); 
     writeJPG(s.c_str(), quality); 
 }
+
+
+
+
+inline void SIMG::writePNG(const char* path) const 
+{
+    //LOG(LEVEL) << "stbi_write_png " << path ; 
+    sdirectory::MakeDirsForFile(path, 0); 
+    stbi_write_png(path, width, height, channels, data, width * channels);
+}
+
 inline void SIMG::writeJPG(const char* path, int quality) const 
 {
-    //LOG(LEVEL) << "stbi_write_jpg " << path << " quality " << quality  ; 
     assert( quality > 0 && quality <= 100 ); 
+
+    //std::cout << "SIMG::writeJPG [" << ( path ? path : "-" ) << "]" << std::endl ; 
+    sdirectory::MakeDirsForFile(path, 0); 
+
     stbi_write_jpg(path, width, height, channels, data, quality );
 }
 
