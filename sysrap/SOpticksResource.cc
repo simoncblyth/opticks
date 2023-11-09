@@ -412,8 +412,8 @@ const char* SOpticksResource::SomeGDMLPath()
 {
     // TODO: use GDXML instead of the old CGDMLKludge 
     const char* path0 = getenv(SomeGDMLPath_) ;   
-    const char* path1 = SPath::Resolve("$IDPath/origin_CGDMLKludge.gdml", NOOP );  
-    const char* path2 = SPath::Resolve("$OPTICKS_PREFIX/origin_CGDMLKludge_02mar2022.gdml", NOOP) ; 
+    const char* path1 = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/origin.gdml");  
+    const char* path2 = nullptr ; 
 
     const char* path = SPath::PickFirstExisting(path0, path1, path2); 
     LOG(LEVEL)  << " path " << ( path ? path : "-" ) ;    

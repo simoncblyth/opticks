@@ -1,38 +1,12 @@
 /**
-SOpticksResourceTest.cc
-=========================
-
-The output from this executable is used by the bash function : opticks-key-remote-dir::
-
-    opticks-key-remote-dir () 
-    { 
-        local msg="=== $FUNCNAME ";
-        [ -z "$OPTICKS_KEY_REMOTE" ] && echo $msg missing required envvar OPTICKS_KEY_REMOTE && return 1;
-        local opticks_key_remote_dir=$(OPTICKS_KEY=$(opticks-key-remote) OPTICKS_GEOCACHE_PREFIX=.opticks SOpticksResourceTest --keydir);
-        echo $opticks_key_remote_dir
-    }
-
-Thus avoid emitting anything extra when the --cfbase --key  and --keydir arguments are used.  
-
-
-
-::
-
-    epsilon:sysrap blyth$ SOpticksResourceTest --dod
-    SPath::Resolve("$DefaultOutputDir", NOOP) /tmp/blyth/opticks/SOpticksResourceTest
-
-    epsilon:sysrap blyth$ TMP=$HOME/.opticks SOpticksResourceTest --dod
-    SPath::Resolve("$DefaultOutputDir", NOOP) /Users/blyth/.opticks/SOpticksResourceTest
-
-
+SOpticksResourceTest.cc : THIS IS GOING THE WAY OF THE DODO 
+==============================================================
 
 **/
 
 #include "OPTICKS_LOG.hh"
 #include "SOpticksResource.hh"
-#include "SOpticksKey.hh"
 #include "SPath.hh"
-#include "SStr.hh"
 
 
 
@@ -51,16 +25,6 @@ int main(int argc, char** argv)
     {
         std::cout << SOpticksResource::CFBase() << std::endl ; 
     }
-#ifdef WITH_OPTICKS_KEY
-    else if( strcmp(arg, "--key") == 0 )
-    {
-        std::cout << SOpticksKey::Key() << std::endl ; 
-    }
-    else if( strcmp(arg, "--keydir") == 0 )
-    {
-        std::cout << SOpticksResource::IDPath(true) << std::endl ; 
-    }
-#endif
     else if( strcmp(arg, "--resolve") == 0 )
     {
         const char* path = SPath::Resolve("$PrecookedDir", NOOP) ; 
