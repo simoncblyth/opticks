@@ -15,15 +15,13 @@ R:workstation/simon build standalone opticks (shares same opticks working copy a
 
    ./fresh_build.sh    # delete local/opticks
 
-   opticks-full        # recreate local/opticks (takes around 5 min)
+   opticks-full        # recreate local/opticks (takes around 5 min) now also installs ctests and cmake modules
 
-   opticks-t           # standard install ctest 
+   opticks-t           # standard ctest 
 
-   okdist-
-   okdist--            # create tarball and extract it into opticks_releases
+   opticks-tar         # create tarball using okdist-
 
-   ## HMM : SOME OF WHAT okdist-- DOES (metadata + collecting ctest files) 
-   ## COULD BE ADDED TO opticks-full ? 
+   ## TODO: opticks-conf binary TO GIVE INFO ABOUT THE INSTALL 
 
    ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
    ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
@@ -65,7 +63,6 @@ L:gateway/blyth::
 
 
 
-
 Packaging .opticks
 --------------------
 
@@ -86,16 +83,6 @@ Extract that archive with the two element prefix stripped::
          # clean ahead to avoid mixing 
       
      L7[blyth@lxslc711 .opticks]$ tar xvf dot_opticks.tar --strip-components=2
-
-
-
-Potential issues with binary release running
-----------------------------------------------
-
-1. Lack of AFS permissions to create $HOME/.opticks : causes all SysRap tests to fail 
-2. Lack of $HOME/.opticks/InputPhotons 
-
-
 
 
 

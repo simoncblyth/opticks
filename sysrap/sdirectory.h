@@ -10,7 +10,7 @@
 struct sdirectory
 {
     static std::string DirName( const char* filepath );
-    static int MakeDirsForFile(const char* filepath, int mode );  
+    static int MakeDirsForFile(const char* filepath, int mode=0 );  
     static int MakeDirs(const char* dirpath, int mode );  
 };
 

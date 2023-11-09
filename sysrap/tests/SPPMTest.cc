@@ -1,13 +1,15 @@
-#include "SPath.hh"
-#include "SStr.hh"
+#include "spath.h"
+#include "sdirectory.h"
+
 #include "SPPM.hh"
 #include "OPTICKS_LOG.hh"
 
 
 void test_MakeTestImage()
 {
-    int create_dirs = 1 ; // 1:filepath
-    const char* path = SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm", create_dirs ) ;
+    const char* path = spath::Resolve("$TMP/SPPMTest/SPPMTest_MakeTestImage.ppm") ;
+    sdirectory::MakeDirsForFile(path); 
+
     const char* config = "vertical_gradient" ; 
 
     const int width = 1024 ; 
@@ -35,8 +37,8 @@ void test_MakeTestImage()
 
 void test_MakeWriteRead()
 {
-    int create_dirs =  1 ; // 1:filepath 
-    const char* path = SPath::Resolve("$TMP/SPPMTest.ppm", create_dirs ) ;
+    const char* path = spath::Resolve("$TMP/SPPMTest/SPPMTest.ppm") ;
+    sdirectory::MakeDirsForFile(path); 
 
     //const char* config = "checkerboard" ; 
     //const char* config = "horizontal_gradient" ; 

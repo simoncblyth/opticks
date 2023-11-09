@@ -623,7 +623,7 @@ opticks-bindir(){ echo $(opticks-prefix)/lib ; }   ## use lib for executables fo
 opticks-xdir(){   echo $(opticks-prefix)/externals ; }  ## try putting externals above the build identity 
 opticks-installcachedir(){ echo $(opticks-prefix)/installcache ; }
 opticks-setup-path(){   echo $(opticks-prefix)/bin/opticks-setup.sh ; }
-opticks-release-path(){ echo $(opticks-prefix)/bin/opticks-release.sh ; }
+#opticks-release-path(){ echo $(opticks-prefix)/bin/opticks-release.sh ; }
 opticks-utils-path(){   echo $(opticks-prefix)/bin/opticks-utils.sh ; }
 
 opticks-setup(){
@@ -1078,7 +1078,7 @@ opticks-paths()
 
 
 opticks-setup-cat(){ cat $(opticks-setup-path) ; }
-opticks-setup-vi(){  vi $(opticks-setup-path) $(opticks-release-path) ; }
+opticks-setup-vi(){  vi $(opticks-setup-path)  ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
 #opticks-release-- MAKES NO SENSE AS THE release script relies on sourced path to give prefix
 
@@ -1128,9 +1128,9 @@ opticks-setup-generate(){
     mkdir -p $(dirname $setup)     
     echo $msg writing $setup 
 
-    local release=$(opticks-release-path)
-    mkdir -p $(dirname $release)     
-    echo $msg writing $release 
+    #local release=$(opticks-release-path)
+    #mkdir -p $(dirname $release)     
+    #echo $msg writing $release 
 
     local utils=$(opticks-utils-path)
     mkdir -p $(dirname $utils)     
@@ -1145,10 +1145,10 @@ opticks-setup-generate(){
     echo $msg post opticks-setup-generate- rc $rc
     [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
-    opticks-release-generate- > $release
-    rc=$?
-    echo $msg post opticks-release-generate- rc $rc
-    [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
+    #opticks-release-generate- > $release
+    #rc=$?
+    #echo $msg post opticks-release-generate- rc $rc
+    #[ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
     opticks-utils-generate- > $utils
     rc=$?
@@ -1174,8 +1174,8 @@ opticks-setup-generate-(){
     [ ! $rc -eq 0 ] && return $rc
 
     opticks-setup-prefix-  
-    opticks-setup-consistency-check-  CMAKE_PREFIX_PATH 
-    opticks-setup-consistency-check-  PKG_CONFIG_PATH   
+    #opticks-setup-consistency-check-  CMAKE_PREFIX_PATH 
+    #opticks-setup-consistency-check-  PKG_CONFIG_PATH   
     opticks-setup-misc-                                  
     opticks-setup-funcs-
 
@@ -1186,23 +1186,23 @@ opticks-setup-generate-(){
     return $rc
 }
 
-opticks-release-generate-(){ 
-
-    opticks-setup-hdr- $FUNCNAME    
-    rc=$?
-    [ ! $rc -eq 0 ] && return $rc
-
-    opticks-release-prefix-    ## NB DIFFERENT FOR release 
-
-    opticks-setup-misc-                                  
-    opticks-setup-funcs-
-
-    opticks-setup-paths-    
-    opticks-setup-libpaths- 
-    opticks-setup-geant4-   
-    rc=$?
-    return $rc
-}
+#opticks-release-generate-(){ 
+#
+#    opticks-setup-hdr- $FUNCNAME    
+#    rc=$?
+#    [ ! $rc -eq 0 ] && return $rc
+#
+#    opticks-release-prefix-    ## NB DIFFERENT FOR release 
+#
+#    opticks-setup-misc-                                  
+#    opticks-setup-funcs-
+#
+#    opticks-setup-paths-    
+#    opticks-setup-libpaths- 
+#    opticks-setup-geant4-   
+#    rc=$?
+#    return $rc
+#}
 
 opticks-utils-generate-(){ opticks-utils-generate-- |  perl -pe 's,cd_func,cd,g' -  ; }
 opticks-utils-generate--(){ 
@@ -1458,7 +1458,7 @@ opticks-setup-funcs--(){
    # but it seems declare -f is more uniform
 }
 
-opticks-setup-prefix-(){ cat << EHEAD
+opticks-setup-prefix-OLD-(){ cat << EHEAD
 # $FUNCNAME 
 
 # mandatory envvars from buildenv propagated into userenv via this setup
@@ -1481,10 +1481,10 @@ fi
 EHEAD
 }
 
-opticks-release-prefix-(){ cat << EHEAD
+opticks-setup-prefix-(){ cat << EHEAD
 # $FUNCNAME 
 
-# for release running the HERE location is used for OPTICKS_PREFIX
+# try to unify standard and release setup by getting OPTICKS_PREFIX from HERE location
 HERE_OPTICKS_PREFIX=\$(dirname \$(dirname \$BASH_SOURCE))
 export OPTICKS_PREFIX=\$HERE_OPTICKS_PREFIX
 export OPTICKS_CUDA_PREFIX=\${OPTICKS_CUDA_PREFIX:-$OPTICKS_CUDA_PREFIX}
@@ -1751,6 +1751,12 @@ opticks-prepend-prefix-notes(){ cat << EON
 opticks-prepend-prefix
     intended for build environment path setup, ie configuring access to "foreign" externals,
     ie externals that are not built by opticks-externals-install
+
+1. check the prefix by seeing if it exists and contains bin lib64 lib 
+2. if CMAKE_PREFIX_PATH is defined prepend the prefix to it otherwise set CMAKE_PREFIX_PATH to the prefix
+3. ditto for PKG_CONFIG_PATH but using libdir/pkgconfig where libdir is lib64 or lib 
+4. if the bindir exists then then do the same for PATH
+5. same for the library path 
 
 EON
 }
@@ -2031,7 +2037,7 @@ opticks-ext-setup()
         rc=$?
         if [ "$rc" == "0" ]; then 
             $ext-setup >> $(opticks-setup-path)
-            $ext-setup >> $(opticks-release-path)
+            #$ext-setup >> $(opticks-release-path)
             rc=$?
             [ $rc -ne 0 ] && echo $msg RC $rc from ext $ext : ABORTING && return $rc
         else
@@ -2153,6 +2159,18 @@ opticks-curl(){
    eval $cmd
 }
 
+
+opticks-tar()
+{
+    : create and extract binary release tarball 
+
+    local msg=" === $FUNCNAME :"
+    okdist-
+    okdist--
+
+    [ $? -ne 0 ] && echo $msg ERROR after okdist-- && return 1
+    return 0  
+}
 
 
 
