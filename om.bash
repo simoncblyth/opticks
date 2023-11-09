@@ -1182,8 +1182,13 @@ om-pdir()
     local here=$(pwd -P);
     local stop=$(om-sdir);
     local btop=$(om-bdir);
-    stop=${stop%/}  # remove trailing slash 
+    stop=${stop%/}  
     btop=${btop%/}   
+    :  remove trailing slash 
+
+    [ -n "$DEBUG" ] && echo $FUNCNAME here $here stop $stop btop $btop
+
+    : symbolic links can trick this 
     case $here in 
         $stop)  echo $btop ;;
         $btop)  echo $stop ;;

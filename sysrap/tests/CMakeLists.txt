@@ -84,7 +84,6 @@ set(TEST_SOURCES
    SRandTest.cc
    SOpticksTest.cc
    SOpticksKeyTest.cc
-   SOpticksResourceTest.cc
 
    SRngSpecTest.cc 
 
@@ -134,6 +133,7 @@ set(TEST_SOURCES
 
 #SEnvTest_FAIL.cc
 set(BASH_RUN_TEST_SOURCES
+    SOpticksResourceTest.cc
     SEnvTest_PASS.cc
     SSimTest.cc
     SBndTest.cc
