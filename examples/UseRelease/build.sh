@@ -7,8 +7,8 @@ bdir=$TMP/${name}.build
 idir=$TMP/${name}.install
 bin=$idir/lib/$name
 
-# -DGeant4_DIR=$(opticks-envg4-Geant4_DIR)
-# SHOULD BE IN ENV ALREADY ? 
+vars="BASH_SOURCE TMP sdir bdir idir bin OPTICKS_PREFIX"
+for var in $vars ; do printf "%25s : %s\n" "$var" "${!var}" ; done 
 
 echo === $BASH_SOURCE : CMAKE_PREFIX_PATH
 echo $CMAKE_PREFIX_PATH | tr ":" "\n"
@@ -16,14 +16,16 @@ echo $CMAKE_PREFIX_PATH | tr ":" "\n"
 rm -rf $bdir 
 rm -rf $idir 
 
+# THIS SHOULD BE SET VIA THE ENVVAR     
+# -DCMAKE_PREFIX_PATH="$OPTICKS_PREFIX/externals;$OPTICKS_PREFIX" \
+
 if [ ! -d "$bdir" ]; then 
    mkdir -p $bdir && cd $bdir 
    cmake $sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DOPTICKS_PREFIX=$OPTICKS_PREFIX \
-    -DCMAKE_MODULE_PATH=$OPTICKS_PREFIX/cmake/Modules \
-    -DCMAKE_PREFIX_PATH="$OPTICKS_PREFIX/externals;$OPTICKS_PREFIX" \
-    -DCMAKE_INSTALL_PREFIX=$idir
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DOPTICKS_PREFIX=$OPTICKS_PREFIX \
+      -DCMAKE_MODULE_PATH=$OPTICKS_PREFIX/cmake/Modules \
+      -DCMAKE_INSTALL_PREFIX=$idir
 else
    cd $bdir 
 fi 
