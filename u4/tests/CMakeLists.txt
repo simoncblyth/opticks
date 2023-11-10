@@ -56,10 +56,7 @@ set(TEST_SOURCES
    U4RotationMatrixTest.cc
    U4TransformTest.cc
    U4TraverseTest.cc
-   U4TreeTest.cc
 
-   U4TreeCreateTest.cc
-   U4TreeCreateSSimTest.cc
 
    U4Material_MakePropertyFold_MakeTest.cc
    U4Material_MakePropertyFold_LoadTest.cc
@@ -80,11 +77,11 @@ set(EXPECTED_TO_FAIL_TEST_SOURCES
    U4NavigatorTest.cc
 )
 
-
-
-
-#find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
-#message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
+set(SLOW_TEST_SOURCES
+   U4TreeTest.cc
+   U4TreeCreateTest.cc
+   U4TreeCreateSSimTest.cc
+)
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
@@ -92,16 +89,20 @@ foreach(SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} U4)
     install(TARGETS ${TGT} DESTINATION lib)
 
-    #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
        COMMAND bash U4TestRunner.sh ${TGT}
-       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/U4TestRunner.sh ${TGT}
     )
 endforeach()
 
-
 foreach(SRC ${EXPECTED_TO_FAIL_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} U4)
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+foreach(SRC ${SLOW_TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} U4)
