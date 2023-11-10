@@ -64,7 +64,7 @@ void test_runpython()
 int main(void)
 {
     test_runpython(); 
-    //test_redirect(); 
+    test_redirect(); 
 
     return 0;
 }

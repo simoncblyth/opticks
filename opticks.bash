@@ -612,6 +612,9 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
 
+opticks-adir(){   echo $(dirname $(opticks-home))/opticks_ancient ; }
+opticks-acd(){  cd $(opticks-adir)/$1 ; }
+
 opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
 
@@ -2512,6 +2515,7 @@ opticks-find(){
 opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-fl(){ opticks-f "$1" -l ; }   
 opticks-fh(){ HERE=1 opticks-f $* ; }  
+opticks-fa(){ ANCIENT=1 opticks-f $* ; : search a sibling opticks_ancient tree ;  }  
 opticks-f(){   
    : search C/C++ code/headers, txt, cmake python scripts etc.. BUT NOT .rst
    : .rst due to too many hits within issues 
@@ -2521,7 +2525,13 @@ opticks-f(){
    local opt=${2:--H}
 
    local iwd=$PWD
-   [ -z "$HERE" ] && opticks-scd
+
+   if [ -n "$ANCIENT" ]; then 
+       opricks-acd
+   else
+       [ -z "$HERE" ] && opticks-scd
+       : when HERE is defined use the invoking directory : otherwise start from opticks-sdir
+   fi 
 
    find . \
         \( \

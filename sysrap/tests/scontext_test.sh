@@ -104,7 +104,7 @@ EOU
 }
 
 name=scontext_test
-bin=/tmp/$USER/opticks/$name
+bin=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $(dirname $bin)
 
 defarg="build_run"

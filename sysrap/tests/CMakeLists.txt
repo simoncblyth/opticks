@@ -128,6 +128,8 @@ set(TEST_SOURCES
    SEvt_AddEnvMeta_Test.cc
 
    SNameTest.cc
+
+   scontext_test.cc
 )
 
 
