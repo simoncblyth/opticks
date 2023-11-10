@@ -1192,7 +1192,7 @@ opticks-bashrc-generate-(){
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
 
-    opticks-setup-prefix-  
+    opticks-bashrc-prefix-  
 
     opticks-setup-misc-                                  
     opticks-setup-funcs-
@@ -1484,7 +1484,7 @@ EHEAD
 opticks-setup-prefix-(){ cat << EHEAD
 # $FUNCNAME 
 
-# try to unify standard and release setup by getting OPTICKS_PREFIX from HERE location
+# getting OPTICKS_PREFIX from HERE location assuming depth 1 
 HERE_OPTICKS_PREFIX=\$(dirname \$(dirname \$BASH_SOURCE))
 export OPTICKS_PREFIX=\$HERE_OPTICKS_PREFIX
 export OPTICKS_CUDA_PREFIX=\${OPTICKS_CUDA_PREFIX:-$OPTICKS_CUDA_PREFIX}
@@ -1493,6 +1493,21 @@ export OPTICKS_OPTIX_PREFIX=\${OPTICKS_OPTIX_PREFIX:-$OPTICKS_OPTIX_PREFIX}
 
 EHEAD
 }
+
+opticks-bashrc-prefix-(){ cat << EHEAD
+# $FUNCNAME 
+
+# getting OPTICKS_PREFIX from HERE location assuming depth 0 
+HERE_OPTICKS_PREFIX=\$(dirname \$BASH_SOURCE)
+export OPTICKS_PREFIX=\$HERE_OPTICKS_PREFIX
+export OPTICKS_CUDA_PREFIX=\${OPTICKS_CUDA_PREFIX:-$OPTICKS_CUDA_PREFIX}
+export OPTICKS_OPTIX_PREFIX=\${OPTICKS_OPTIX_PREFIX:-$OPTICKS_OPTIX_PREFIX}
+#
+
+EHEAD
+}
+
+
 
 
 
