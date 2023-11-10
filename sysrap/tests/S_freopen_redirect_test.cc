@@ -25,8 +25,9 @@
 #include <iostream>
 #include <cassert>
 #include "S_freopen_redirect.hh"
-#include "SPath.hh"
-#include "SSys.hh"
+#include "spath.h"
+#include "sdirectory.h"
+#include "ssys.h"
 
 
 /**
@@ -35,26 +36,26 @@ only the std::cerr appears in output, the rest is directed to the file
 
 void test_redirect()
 {
-    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log", 1 ) ; // 1:filepath create_dirs
+    const char* path = spath::Resolve("$TMP/S_freopen_redirect_test/redirect.log") ;
+    sdirectory::MakeDirsForFile(path); 
     std::cout << "test_redirect writing to " << path << std::endl ;  
 
-    SSys::Dump("before redirect, should appear in output"); 
+    ssys::Dump("before redirect, should appear in output"); 
 
     {
        S_freopen_redirect fr(stdout, path) ; 
-       SSys::Dump("during redirect, should NOT appear in output, should be written to file : observe only std::cerr in output"); 
+       ssys::Dump("during redirect, should NOT appear in output, should be written to file : observe only std::cerr in output"); 
     }
 
-    SSys::Dump("after redirect, should appear in output"); 
+    ssys::Dump("after redirect, should appear in output"); 
 }
 
 
 void test_runpython()
 {
-    //int rc = SSys::run("tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch ");
-    //int rc = SSys::run("python -c 'print \"hello\"' " );
-    int rc = SSys::run("python -c 'import sys ; sys.stderr.write(\"hello stderr\\n\")' " );
-    //int rc = SSys::run("python -c 'import sys ; sys.stdout.write(\"hello stdout\\n\")' " );
+    //int rc = ssys::run("python -c 'print \"hello\"' " );
+    int rc = ssys::run("python -c 'import sys ; sys.stderr.write(\"hello stderr\\n\")' " );
+    //int rc = ssys::run("python -c 'import sys ; sys.stdout.write(\"hello stdout\\n\")' " );
     assert( rc == 0 );
 }
 
@@ -62,11 +63,13 @@ void test_runpython()
 
 int main(void)
 {
-    //test_runpython(); 
-    test_redirect(); 
+    test_runpython(); 
+    //test_redirect(); 
 
     return 0;
 }
+
+
 
 /*
 
@@ -74,26 +77,15 @@ close failed in file object destructor:
 sys.excepthook is missing
 lost sys.stderr
 
-*/
-
-
-
-/*
-
 ::
 
     double OContext::launch_redirected_(unsigned entry, unsigned width, unsigned height)
     {
         assert( m_llogpath ) ; 
-
         S_freopen_redirect sfr(stdout, m_llogpath );
-
         double dt = launch_( entry, width, height ) ;
-
         return dt ;                              
     }
-
-
 
 OContext::launch_redirected_ succeeds to write kernel rtPrintf 
 logging to file BUT a subsequent same process "system" invokation 
@@ -113,13 +105,9 @@ of python has problems indicating that cleanup is not complete
 
 This issue is reproduced by this test
 
-
 Perhaps dup2 can put humpty back together again
   
 * https://msdn.microsoft.com/en-us/library/8syseb29.aspx
 
-
 */
-
-
 

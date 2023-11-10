@@ -31,10 +31,8 @@ fresh_build.sh from R::
 
 ::
 
-   ## TODO: opticks-conf binary TO GIVE INFO ABOUT THE INSTALL 
 
    ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
-   ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
 
    vip  # in .bashrc switch mode from "build" to "usage" for local binary release testing 
    x

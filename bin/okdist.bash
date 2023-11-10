@@ -171,7 +171,7 @@ okdist-version(){ echo 0.0.1_alpha ; } # HMM:eventually this should be tied to o
 okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing 
 okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
 okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
-okdist-path(){   echo $(okdist-tmp)/$(okdist-name) ; }    
+okdist-path(){   echo $(okdist-release-dir)/$(okdist-name) ; }    
 
 
 okdist-release-prefix(){ echo $(okdist-release-dir)/$(okdist-prefix) ; } 

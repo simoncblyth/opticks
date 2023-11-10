@@ -335,6 +335,13 @@ void test_fill_evec_string()
     std::cout << ssys::desc_vec(&mat) << std::endl ;  
 }
 
+void test_Dump()
+{
+    ssys::Dump("test_Dump"); 
+    ssys::Dump("test_Dump"); 
+    ssys::Dump("test_Dump"); 
+    ssys::Dump("test_Dump"); 
+}
 
 
 int main(int argc, char** argv)
@@ -367,9 +374,10 @@ int main(int argc, char** argv)
     test_fill_evec<std::string>(); 
     test_uname(); 
     test_listed_count(); 
-    */
-
     test_fill_evec_string(); 
+    */
+    test_Dump(); 
+
 
  
     return 0 ; 

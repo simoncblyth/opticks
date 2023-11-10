@@ -92,6 +92,11 @@ struct ssys
     static std::string desc_listed_count( const std::vector<int>* ncount, const std::vector<std::string>* nn ); 
 
     static const char* username(); 
+
+    static void Dump(const char* msg); 
+    static int run(const char* cmd); 
+
+
 }; 
 
 
@@ -573,6 +578,49 @@ inline const char* ssys::username()
     return user ? user : "ssys-username-undefined" ; 
 }
 
+
+
+
+/**
+ssys::Dump
+------------
+
+Dump the message using std::cout std::cerr printf and std::printf, used for testing stream redirection
+
+**/
+
+inline void ssys::Dump(const char* msg)
+{
+    static int COUNT = -1 ; 
+    COUNT++ ; 
+    std::cout << std::setw(3) << COUNT << "[" << std::setw(20) << "std::cout" << "] " << msg << std::endl;  
+    std::cerr << std::setw(3) << COUNT << "[" << std::setw(20) << "std::cerr" << "] " << msg << std::endl;  
+    printf("%3d[%20s] %s \n", COUNT, "printf", msg );  
+    std::printf("%3d[%20s] %s \n", COUNT, "std::printf", msg );  
+    std::cerr << std::endl  ;   
+}
+
+
+inline int ssys::run(const char* cmd)
+{
+    int rc_raw = system(cmd);
+    int rc =  WEXITSTATUS(rc_raw) ;
+
+    std::cout 
+        << "ssys::run "
+        <<  ( cmd ? cmd : "-" ) 
+        << " rc_raw : " << rc_raw 
+        << " rc : " << rc
+        << std::endl 
+        ;
+
+    if(rc != 0) std::cout 
+        << "ssys::run"
+        << " PATH ENVVAR MISCONFIGURED ? " 
+        << std::endl  
+        ; 
+    return rc ;  
+}
 
 
 
