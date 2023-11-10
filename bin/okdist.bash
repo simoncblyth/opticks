@@ -279,9 +279,8 @@ okdist-tarball-create(){
 
    echo === $FUNCNAME
 
-   which oktar.py 
    opticks-cd
-   oktar.py $(okdist-path) create --prefix $(okdist-prefix) 
+   $(opticks-home)/bin/oktar.py $(okdist-path) create --prefix $(okdist-prefix) 
 
    echo $msg list tarball : $(okdist-path)
    ls -al $(okdist-path) 
@@ -292,7 +291,7 @@ okdist-tarball-extract(){
    : bin/okdist.bash extract tarball into release dir 
 
    echo === $FUNCNAME
-   oktar.py $(okdist-path) extract --base $(okdist-release-dir) ; 
+   $(opticks-home)/bin/oktar.py $(okdist-path) extract --base $(okdist-release-dir) ; 
 }
 
 okdist-tarball-dump(){ 

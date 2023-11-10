@@ -11,26 +11,36 @@ N:workstation/blyth update::
 R:workstation/simon build standalone opticks (shares same opticks working copy as N)::
 
    R
-   vip  # switch .bashrc to .opticks_standard_config for source tree build
+   vip                # switch .bashrc to .opticks_build_config for source tree build
 
-   ./fresh_build.sh    # delete local/opticks
+   ./fresh_build.sh    # delete local/opticks and recreate and make tarball and extract it
 
-   opticks-full        # recreate local/opticks (takes around 5 min) now also installs ctests and cmake modules
 
-   opticks-t           # standard ctest 
+fresh_build.sh from R::
 
-   opticks-tar         # create tarball using okdist-
+    #!/bin/bash -l 
+
+    rm -rf local/opticks  
+
+    opticks-full   # recreate local/opticks (takes around 5 min), now installs ctests and cmake modules
+
+    #opticks-t     # standard ctest 
+
+    opticks-tar    # create tarball with okdist--
+
+
+::
 
    ## TODO: opticks-conf binary TO GIVE INFO ABOUT THE INSTALL 
 
    ## NOTE LOCATION : /tmp/simon/opticks/okdist/Opticks-0.0.1_alpha.tar
    ## binary release extracted to /data/simon/local/opticks_release/Opticks-0.0.1_alpha/x86_64-CentOS7-gcc1120-geant4_10_04_p02-dbg
 
-   vip  # in .bashrc switch from .opticks_standard_config to  .opticks_release_config for local binary release testing 
+   vip  # in .bashrc switch mode from "build" to "usage" for local binary release testing 
    x
    R   # exit and reconnect 
 
-   ort    # cd $OPTICKS_RELEASE_PREFIX/tests
+   ort    # cd $OPTICKS_PREFIX/tests
    ctest -N 
    ctest 
 
@@ -45,7 +55,7 @@ L:gateway/blyth::
    rm -rf Opticks-0.0.1_alpha         # remove the old expanded archive 
    tar xvf Opticks-0.0.1_alpha.tar    # extract the new one 
 
-   vip   # check .opticks_release_config OPTICKS_RELEASE_PREFIX is correct 
+   vip   # check .bashrc and .opticks_usage_config 
 
    x
    L   # fresh session 

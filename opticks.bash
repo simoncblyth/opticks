@@ -623,7 +623,7 @@ opticks-bindir(){ echo $(opticks-prefix)/lib ; }   ## use lib for executables fo
 opticks-xdir(){   echo $(opticks-prefix)/externals ; }  ## try putting externals above the build identity 
 opticks-installcachedir(){ echo $(opticks-prefix)/installcache ; }
 opticks-setup-path(){   echo $(opticks-prefix)/bin/opticks-setup.sh ; }
-#opticks-release-path(){ echo $(opticks-prefix)/bin/opticks-release.sh ; }
+opticks-bashrc-path(){  echo $(opticks-prefix)/bashrc ; }
 opticks-utils-path(){   echo $(opticks-prefix)/bin/opticks-utils.sh ; }
 
 opticks-setup(){
@@ -1128,9 +1128,9 @@ opticks-setup-generate(){
     mkdir -p $(dirname $setup)     
     echo $msg writing $setup 
 
-    #local release=$(opticks-release-path)
-    #mkdir -p $(dirname $release)     
-    #echo $msg writing $release 
+    local bashrc=$(opticks-bashrc-path)
+    mkdir -p $(dirname $bashrc)     
+    echo $msg writing $bashrc 
 
     local utils=$(opticks-utils-path)
     mkdir -p $(dirname $utils)     
@@ -1145,10 +1145,10 @@ opticks-setup-generate(){
     echo $msg post opticks-setup-generate- rc $rc
     [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
-    #opticks-release-generate- > $release
-    #rc=$?
-    #echo $msg post opticks-release-generate- rc $rc
-    #[ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
+    opticks-bashrc-generate- > $bashrc
+    rc=$?
+    echo $msg post opticks-bashrc-generate- rc $rc
+    [ ! $rc -eq 0 ] && echo $msg ABORT && return $rc
 
     opticks-utils-generate- > $utils
     rc=$?
@@ -1186,23 +1186,23 @@ opticks-setup-generate-(){
     return $rc
 }
 
-#opticks-release-generate-(){ 
-#
-#    opticks-setup-hdr- $FUNCNAME    
-#    rc=$?
-#    [ ! $rc -eq 0 ] && return $rc
-#
-#    opticks-release-prefix-    ## NB DIFFERENT FOR release 
-#
-#    opticks-setup-misc-                                  
-#    opticks-setup-funcs-
-#
-#    opticks-setup-paths-    
-#    opticks-setup-libpaths- 
-#    opticks-setup-geant4-   
-#    rc=$?
-#    return $rc
-#}
+opticks-bashrc-generate-(){ 
+
+    opticks-setup-hdr- $FUNCNAME    
+    rc=$?
+    [ ! $rc -eq 0 ] && return $rc
+
+    opticks-setup-prefix-  
+
+    opticks-setup-misc-                                  
+    opticks-setup-funcs-
+
+    opticks-setup-paths-    
+    opticks-setup-libpaths- 
+    opticks-setup-geant4-   
+    rc=$?
+    return $rc
+}
 
 opticks-utils-generate-(){ opticks-utils-generate-- |  perl -pe 's,cd_func,cd,g' -  ; }
 opticks-utils-generate--(){ 
@@ -1596,7 +1596,7 @@ opticks-setup-misc-(){ cat << EOM
 # $FUNCNAME  
 
 export TMP=\${TMP:-/tmp/\$USER/opticks}
-mkdir -p \${TMP}
+## mkdir -p \${TMP}
 ## see sysrap/STTF.hh still needed for binary release
 export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 

@@ -50,6 +50,7 @@ class OKTar(object):
     """
     PREFIX = "Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg"
     BINARY_BASES = filter(None,textwrap.dedent(r"""
+    bashrc
     metadata
     bin
     lib
@@ -161,8 +162,12 @@ class OKTar(object):
         for name in self.Bases(mode):
             path = os.path.join(base, name)
             if not os.path.exists(path): continue
-            assert os.path.isdir(path), "only directories are expected as BASES at top level of archive"
-            self.recurse_(name, 0) 
+            if os.path.isfile(path):  ## top level files such as bashrc
+                log.info("adding top level file %s " % path)
+                self.add(name)
+            else:
+                self.recurse_(name, 0) 
+            pass
         pass
 
     def recurse_(self, relbase, depth ):
@@ -179,12 +184,12 @@ class OKTar(object):
         for name in names:
             relpath = os.path.join(relbase, name)
             if os.path.isdir(relpath):
-                 exclude = name in self.exclude_dir_names
-                 if not exclude:
-                     self.recurse_(relpath, depth+1)
-                 pass
+                exclude = name in self.exclude_dir_names
+                if not exclude:
+                    self.recurse_(relpath, depth+1)
+                pass
             else:
-                 self.add(relpath)
+                self.add(relpath)
             pass
         pass
 
