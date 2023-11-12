@@ -53,7 +53,7 @@
 #include "C4CustomART_Debug.h" 
 #include "C4TrackInfo.h"
 #include "C4Pho.h"
-#include "C4Version.h"
+//#include "C4Version.h"
 #elif PMTSIM_STANDALONE
 #include "CustomART.h" 
 #include "CustomART_Debug.h" 
@@ -226,7 +226,8 @@ void U4Recorder::init_SEvt()
     smeta::Collect(sev->meta, "U4Recorder::init_SEvt" ); 
 
 #ifdef WITH_CUSTOM4
-    NP::SetMeta<std::string>(sev->meta, "C4Version", C4Version::Version() ); 
+    // Custom4 0.1.8 has octal bug in C4Version.h SO skip the version metadata   
+    NP::SetMeta<std::string>(sev->meta, "C4Version", "TBD" ) ; // C4Version::Version() ); 
 #else
     NP::SetMeta<std::string>(sev->meta, "C4Version", "NOT-WITH_CUSTOM4" ); 
 #endif

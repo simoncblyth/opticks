@@ -30,7 +30,7 @@
 #include "G4CXOpticks.hh"
 
 #ifdef WITH_CUSTOM4
-#include "C4Version.h"
+//#include "C4Version.h"
 #endif
 
 
@@ -359,7 +359,7 @@ void G4CXOpticks::init_SEvt()
     sev->setMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
 
 #ifdef WITH_CUSTOM4
-    std::string c4 = C4Version::Version();
+    std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
     sev->setMetaString("C4Version", c4.c_str()); 
 #else
     sev->setMetaString("C4Version", "NOT-WITH_CUSTOM4" ); 

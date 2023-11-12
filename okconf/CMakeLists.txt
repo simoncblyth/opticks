@@ -42,11 +42,15 @@ find_package(OpticksCUDA MODULE QUIET)
 set(OptiX_VERBOSE ON)
 find_package(OptiX       MODULE QUIET) 
 find_package(G4          MODULE QUIET) 
+#find_package(Custom4     MODULE QUIET) 
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
 message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
 message(STATUS "OpticksCUDA_API_VERSION : ${OpticksCUDA_API_VERSION}")
 message(STATUS "G4_VERSION_INTEGER      : ${G4_VERSION_INTEGER}")
+
+
+
 
 # generate define header for hardcoding in the library 
 
