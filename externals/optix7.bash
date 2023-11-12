@@ -1387,11 +1387,13 @@ EOU
 }
 
 
-optix7-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
 optix6-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
+optix7-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_750 ; }
+optix8-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_800 ; }
 
-optix7-prefix(){ echo ${OPTICKS_OPTIX7_PREFIX:-$(optix7-prefix-default)} ; }
 optix6-prefix(){ echo ${OPTICKS_OPTIX6_PREFIX:-$(optix6-prefix-default)} ; }
+optix7-prefix(){ echo ${OPTICKS_OPTIX7_PREFIX:-$(optix7-prefix-default)} ; }
+optix8-prefix(){ echo ${OPTICKS_OPTIX8_PREFIX:-$(optix8-prefix-default)} ; }
 
 #optix7-realprefix(){ 
 #  local prefix=$OPTICKS_OPTIX_PREFIX 
@@ -1403,20 +1405,28 @@ optix6-prefix(){ echo ${OPTICKS_OPTIX6_PREFIX:-$(optix6-prefix-default)} ; }
 #optix6-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_650 ; }
 
 
-optix7-icd(){ cd $(optix7-prefix)/include ; }
-optix7-cd(){ cd $(optix7-prefix)/SDK ; }
-optix7-dcd(){ cd $(optix7-prefix)/doc ; }
-
 optix6-icd(){ cd $(optix6-prefix)/include ; }
 optix6-cd(){ cd $(optix6-prefix)/SDK ; }
 optix6-dcd(){ cd $(optix6-prefix)/doc ; }
 
+optix7-icd(){ cd $(optix7-prefix)/include ; }
+optix7-cd(){ cd $(optix7-prefix)/SDK ; }
+optix7-dcd(){ cd $(optix7-prefix)/doc ; }
 
-optix7-pdf-(){ echo $(optix7-prefix)/doc/OptiX_Programming_Guide_7.0.0.pdf ; }
+optix8-icd(){ cd $(optix8-prefix)/include ; }
+optix8-cd(){ cd $(optix8-prefix)/SDK ; }
+optix8-dcd(){ cd $(optix8-prefix)/doc ; }
+
+
+
+
 optix6-pdf-(){ echo $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
+optix7-pdf-(){ echo $(optix7-prefix)/doc/OptiX_Programming_Guide_7.5.0.pdf ; }
+optix8-pdf-(){ echo $(optix8-prefix)/doc/OptiX_Programming_Guide_8.0.0.pdf ; }
 
-optix7-pdf(){ open $($FUNCNAME-) ; }
 optix6-pdf(){ open $($FUNCNAME-) ; }
+optix7-pdf(){ open $($FUNCNAME-) ; }
+optix8-pdf(){ open $($FUNCNAME-) ; }
 
 optix7-html(){ open https://raytracing-docs.nvidia.com/optix7/index.html ; }
 optix7-guide(){ open https://raytracing-docs.nvidia.com/optix7/guide/index.html ; }
@@ -1425,13 +1435,13 @@ optix7-guide(){ open https://raytracing-docs.nvidia.com/optix7/guide/index.html 
 # open- is from env-
 optix6-p(){ open- ; open-page $(( 8 + ${1:-0} )) $(optix6-pdf-) ; }
 optix7-p(){ open- ; open-page $(( 4 + ${1:-0} )) $(optix7-pdf-) ; }
+optix8-p(){ open- ; open-page $(( 4 + ${1:-0} )) $(optix8-pdf-) ; }
 
 optix7-g(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
 optix7-l(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }
 
 optix7-f(){  optix7-cd ; find . -type f -exec grep -Hi ${1:-nvrtc} {} \+ ; }
 optix7-fl(){ optix7-cd ; find . -type f -exec grep -li ${1:-nvrtc} {} \+ ; }
-
 
 optix6-g(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
 optix6-l(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }

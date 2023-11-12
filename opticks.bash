@@ -2177,6 +2177,13 @@ opticks-curl(){
    eval $cmd
 }
 
+opticks-tag(){
+   local iwd=$PWD
+   cd $(opticks-home)
+   git tag | sed -n '$p'
+   cd $iwd
+}
+
 
 opticks-tar()
 {

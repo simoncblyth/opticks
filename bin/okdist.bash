@@ -163,11 +163,12 @@ okdist-cd(){      cd $(okdist-tmp) ; }
 #okdist-revision(){ git -C $(opticks-home) rev-parse HEAD ; } 
 okdist-revision(){  echo $(cd $(opticks-home) && git rev-parse HEAD) ; }
 
-okdist-release-dir-default(){ echo $(opticks-dir)_release ; }
+#okdist-release-dir-default(){ echo $(opticks-dir)_release ; }
+okdist-release-dir-default(){ echo $(opticks-dir) ; }
 okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-default)} ; } 
 
 okdist-title(){   echo Opticks ; }
-okdist-version(){ echo 0.0.1_alpha ; } # HMM:eventually this should be tied to opticks tags  
+okdist-version(){ opticks-tag ; } 
 okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing 
 okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
 okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
