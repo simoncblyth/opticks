@@ -13,7 +13,7 @@ opticks/cmake/Modules/FindOpticks.cmake used from offline/cmake/JUNODependencies
     ## Opticks
     if(DEFINED ENV{OPTICKS_PREFIX})
        set(Opticks_VERBOSE YES)
-       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{JUNOTOP}/opticks/cmake/Modules")
+       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{OPTICKS_PREFIX}/cmake/Modules")
        find_package(Opticks QUIET MODULE)
        message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Opticks_FOUND:${Opticks_FOUND}" )
     endif()

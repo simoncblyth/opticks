@@ -2127,6 +2127,13 @@ git clone wrapper similar to opticks-curl that will clone
 from local bare repos in $OPTICKS_DOWNLOAD_CACHE in order to avoid the sometimes 
 very slow or failing cloning thru the GFW
 
+Subseqently decided to favor git repo with working directory 
+over bare git repo as its quicker to check the version in use. 
+
+Github repo url : https://github.com/simoncblyth/plog.git
+
+   
+
 EOC
 }
 
@@ -2135,14 +2142,18 @@ opticks-git-clone(){
    local dir=$PWD
    local url=$1
    local repo=$(basename $url)
+   local stem=${repo/.git}
+
    if [ -z "$url" -o -z "$repo" ]; then
        cmd="echo $msg BAD url $url repo $repo"
+   elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$stem" ]; then 
+       cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$stem"  
    elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$repo" ]; then 
        cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$repo"  
    else
        cmd="git clone $url"
    fi  
-   echo $msg dir $dir url $url dist $dist OPTICKS_DOWNLOAD_CACHE $OPTICKS_DOWNLOAD_CACHE cmd $cmd 
+   echo $msg dir $dir url $url stem $stem OPTICKS_DOWNLOAD_CACHE $OPTICKS_DOWNLOAD_CACHE cmd $cmd 
    eval $cmd
 }
 

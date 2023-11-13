@@ -27,6 +27,16 @@ PLOG : Simple header only logging that works across DLLs
 ============================================================
 
 
+old chestnut appender assert issue 
+------------------------------------
+
+* https://github.com/SergiusTheBest/plog#share-log-instances-across-modules-exe-dll-so-dylib
+
+Looks like the first test release used an old cached plog. 
+Not the updated new one with PLOG_LOCAL functionality. 
+Thats the danger with caches. You have to remember to update them or clear them. 
+
+
 
 clone an older plog
 ----------------------
