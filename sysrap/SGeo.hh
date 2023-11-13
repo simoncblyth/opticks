@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-SGeo
-======
+SGeo  : TODO Remove now that GGeo is gone
+================================================
 
 Protocol base used to facilitate lower level package access
 to limited geometry information, by passing the higher level 
@@ -13,6 +13,27 @@ of the last geometry uploaded to the device in a location that
 is accessible from anywhere. (HMM: an alt approach would be to set an envvar for this ?)
 
 TODO: this needs to be replaced by stree
+
+
+::
+
+    epsilon:sysrap blyth$ opticks-f SGeo.hh 
+    ./CSG/CSGFoundry.h:#include "SGeo.hh"
+    ./GeoChain/GeoChain.cc:#include "SGeo.hh"
+    ./sysrap/CMakeLists.txt:    SGeo.hh
+    ./sysrap/CheckGeo.hh:#include "SGeo.hh"
+    ./sysrap/tests/SGeoTest.cc:#include "SGeo.hh"
+    ./sysrap/SEvt.cc:#include "SGeo.hh"
+    ./sysrap/SGeo.cc:#include "SGeo.hh"
+    ./ggeo/GGeo.hh:#include "SGeo.hh"
+    ./ggeo/tests/GGeoTest.cc:#include "SGeo.hh"
+    ./qudarap/QEvent.cc:#include "SGeo.hh"
+    ./optickscore/OpticksDbg.cc:#include "SGeo.hh"
+    ./g4cx/G4CXOpticks.cc:#include "SGeo.hh"
+    epsilon:opticks blyth$ 
+
+
+
 
 **/
 

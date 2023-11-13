@@ -11,7 +11,7 @@
 #include "SPath.hh"
 #include "spath.h"
 
-#include "SProc.hh"
+#include "sproc.h"
 #include "SOpticksResource.hh"
 #include "SLOG.hh"
 
@@ -94,18 +94,19 @@ using envvar SOpticksResource_ExecutableName
 
 const char* SOpticksResource::ExecutableName()
 {  
-    const char* exe0 = SProc::ExecutableName() ; 
+    /* 
+    const char* exe0 = sproc::ExecutableName() ; 
     bool is_python = sstr::StartsWith(exe0, "python") ;  
     const char* script = ssys::getenvvar("SCRIPT"); 
     const char* exe = ( is_python && script ) ? script : exe0 ; 
+    */
+
+    const char* exe = sproc::ExecutableName() ;
     const char* result = ssys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
 
     // as this is used before logging is setup cannot use normal logging to check 
     if(ssys::getenvvar("SOpticksResource")) std::cout 
         << "SOpticksResource::ExecutableName" 
-        << " exe0 "      << ( exe0 ? exe0 : "-" )
-        << " is_python " << is_python 
-        << " script "    << ( script ? script : "-" )
         << " exe "       << ( exe  ? exe : "-" )
         << " result "    << ( result ? result : "-" ) 
         << std::endl 

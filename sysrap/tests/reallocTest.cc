@@ -1,6 +1,6 @@
 // gcc reallocTest.cc -lstdc++ -o /tmp/reallocTest && /tmp/reallocTest 
 
-#include "SProc.hh"
+#include "sproc.h"
 
 #include <iostream>
 #include <iomanip>
@@ -92,7 +92,7 @@ int main()
 
     A<float>* a = new A<float>(0, 6, 4 ); 
 
-    float vm0 = SProc::VirtualMemoryUsageMB() ;
+    float vm0 = sproc::VirtualMemoryUsageMB() ;
 
     for(int e=0 ; e < 100 ; e++)
     {
@@ -100,7 +100,7 @@ int main()
         std::cout << std::setw(4) << e << " : " << a->desc() << std::endl ;  
         a->reset(); 
     }
-    float vm1 = SProc::VirtualMemoryUsageMB() ;
+    float vm1 = sproc::VirtualMemoryUsageMB() ;
     float dv = vm1 - vm0 ; 
     std::cout 
         << " vm0 " << vm0 

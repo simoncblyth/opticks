@@ -499,7 +499,11 @@ public:
     bool hasIndex() const ; 
     bool hasInstance() const ; 
 
+    const char* getOutputDir_OLD(const char* base_=nullptr) const ; 
     const char* getOutputDir(const char* base_=nullptr) const ; 
+    const char* getIndexString() const ; 
+
+
 
     static const char* RunDir( const char* base_=nullptr ); 
     static const char* DefaultDir() ; 

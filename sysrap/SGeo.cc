@@ -1,7 +1,7 @@
 #include <cstring>
 #include <sstream>
 #include "SPath.hh"
-#include "SProc.hh"
+#include "sproc.h"
 #include "SGeo.hh"
 #include "SEventConfig.hh"
 #include "SLOG.hh"
@@ -58,7 +58,7 @@ const char* SGeo::LastUploadCFBase_OutDir()
 {
     const char* cfbase = LastUploadCFBase(); 
     if(cfbase == nullptr) return nullptr ; 
-    const char* exename = SProc::ExecutableName(); 
+    const char* exename = sproc::ExecutableName(); 
     const char* outdir = SPath::Resolve(cfbase, exename, DIRPATH );  
     return outdir ; 
 }

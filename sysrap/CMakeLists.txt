@@ -54,12 +54,12 @@ include_directories(
 
 set(WITH_SLOG YES)
 
+
 set(SOURCES
     SYSRAP_LOG.cc 
     SLOG.cc 
 
     SCurandState.cc
-    SProc.cc
     SSys.cc
     SStr.cc
     SPath.cc
@@ -171,7 +171,6 @@ set(HEADERS
 
 
     SCurandState.hh
-    SProc.hh
     sproc.h
     smeta.h
 
@@ -453,6 +452,13 @@ set(HEADERS
     SOpBoundaryProcess.hh
 )
 
+set(RETIRED_SOURCES
+    SProc.cc
+)
+
+set(RETIRED_HEADERS
+    SProc.hh
+)
 
 
 

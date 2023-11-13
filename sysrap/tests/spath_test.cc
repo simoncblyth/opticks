@@ -11,10 +11,14 @@
 
 struct spath_test 
 {
+   static void Resolve_inline(); 
+   static void Resolve_defaultOutputPath(); 
    static void Resolve_with_undefined_token();
    static void Resolve_with_undefined_TMP();
    static void IsTokenWithFallback(); 
    static void ResolveTokenWithFallback(); 
+   static void _ResolveToken(); 
+   static void ResolveToken(); 
    static void ResolvePath(); 
    static void Resolve(); 
    static void Exists(); 
@@ -23,6 +27,32 @@ struct spath_test
    static void Name(); 
    static void Remove(); 
 };
+
+
+
+
+void spath_test::Resolve_inline()
+{
+   const char* path_ = "$TMP/$ExecutableName/ALL${VERSION:-0}" ; 
+   const char* path = spath::Resolve(path_); 
+   std::cout 
+       << " path_ [" << path_ << "]" << std::endl 
+       << " path  [" << path  << "]" << std::endl 
+       ;
+}
+
+void spath_test::Resolve_defaultOutputPath()
+{
+   const char* path_ = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
+   const char* path = spath::Resolve(path_); 
+   std::cout 
+       << " path_ [" << path_ << "]" << std::endl 
+       << " path  [" << path  << "]" << std::endl 
+       ;
+}
+
+
+
 
 
 void spath_test::Resolve_with_undefined_token()
@@ -55,27 +85,87 @@ void spath_test::IsTokenWithFallback()
 
 void spath_test::ResolveTokenWithFallback()
 {
-    const char* token = "{U4Debug_SaveDir:-$TMP}" ; 
-    const char* val = spath::_ResolveTokenWithFallback(token) ; 
+    std::cout << "\nspath_test::ResolveTokenWithFallback\n\n" ;  
 
-    std::cout 
-       << "spath_test::ResolveTokenWithFallback"
-       << std::endl 
-       << " token " << token 
-       << std::endl 
-       << " val   " << ( val ? val : "-" )
-       << std::endl 
-       ;
+    std::vector<std::string> tokens = {
+        "{U4Debug_SaveDir:-$TMP}",
+        "${U4Debug_SaveDir:-$TMP}",
+        "{VERSION:-99}",
+        "${VERSION:-99}"
+        }; 
+
+    for(unsigned i=0 ; i < tokens.size() ; i++)
+    {
+        const char* token = tokens[i].c_str(); 
+        const char* result = spath::_ResolveTokenWithFallback(token); 
+        std::cout 
+            << " token " << token << std::endl  
+            << " result " << ( result ? result : "-" ) << std::endl
+            << std::endl 
+            ;
+    }
+}
+
+void spath_test::_ResolveToken()
+{
+    std::cout << "\nspath_test::_ResolveToken\n\n" ;  
+    std::vector<std::string> tokens = {
+        "$TMP",
+        "TMP" ,
+        "$ExecutableName",
+        "ExecutableName",
+        }; 
+
+    for(unsigned i=0 ; i < tokens.size() ; i++)
+    { 
+        const char* token = tokens[i].c_str(); 
+        const char* result = spath::ResolveToken(token); 
+        std::cout 
+            << " token " << token << std::endl  
+            << " result " << ( result ? result : "-" ) << std::endl
+            << std::endl 
+            ;
+    }
+}
+
+
+
+
+void spath_test::ResolveToken()
+{
+    std::cout << "\nspath_test::ResolveToken\n\n" ;  
+    std::vector<std::string> tokens = {
+        "$TMP",
+        "${TMP:-/some/other/path}",
+        "TMP" ,
+        "${VERSION:-0}"
+        }; 
+
+    for(unsigned i=0 ; i < tokens.size() ; i++)
+    { 
+        const char* token = tokens[i].c_str(); 
+        const char* result = spath::ResolveToken(token); 
+        std::cout 
+            << " token " << token << std::endl  
+            << " result " << ( result ? result : "-" ) << std::endl
+            << std::endl 
+            ;
+    }
 }
 
 
 void spath_test::ResolvePath()
 {
+    std::cout << "\nspath_test::ResolvePath\n\n" ;  
     std::vector<std::string> specs = {
         "$HOME/hello.npy", 
         "$HOME", 
         "$HOME/red/green/blue$HOME",
-        "$HOME/red/green/blue$HOME/cyan/magenta"
+        "$HOME/red/green/blue$HOME/cyan/magenta",
+        "${VERSION:-99}",
+        "ALL${VERSION:-99}",
+        "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}",
+        "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail" 
          } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++)
@@ -181,8 +271,11 @@ void spath_test::Remove()
 int main(int argc, char** argv)
 {
     /*
+    spath_test::Resolve_defaultOutputPath();
     spath_test::Resolve_with_undefined_token();
     spath_test::Resolve_with_undefined_TMP();
+    spath_test::Resolve_inline();
+    spath_test::ResolveToken(); 
     spath_test::ResolvePath(); 
     spath_test::Resolve(); 
     spath_test::Exists(); 
@@ -190,9 +283,14 @@ int main(int argc, char** argv)
     spath_test::Basename(); 
     spath_test::Name(); 
     spath_test::Remove(); 
-    */
     spath_test::IsTokenWithFallback(); 
     spath_test::ResolveTokenWithFallback(); 
+    */
+
+    spath_test::ResolveTokenWithFallback(); 
+    spath_test::_ResolveToken(); 
+    spath_test::ResolvePath(); 
+
 
     return 0 ; 
 }

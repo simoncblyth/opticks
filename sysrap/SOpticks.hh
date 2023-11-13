@@ -3,6 +3,8 @@
 SOpticks.hh
 ==============
 
+* HMM : LOOKS IRRELEVANT NOW : TODO: REMOVE 
+
 Collecting the subset of Opticks API needed in CSGOptiX as it 
 would be helpful to be able to build CSGOptiXRenderTest with 
 a really minimal install excluding : brap, NPY, optickscore

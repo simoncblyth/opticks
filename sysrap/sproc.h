@@ -10,17 +10,46 @@ macOS implementation of VirtualMemoryUsageMB of a process.
 #include <cstddef>
 #include <cassert>
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
+
+#include "sstr.h"
+
 
 struct sproc 
 {
+    static int parseLine(char* line); 
     static float VirtualMemoryUsageMB();
     static float VirtualMemoryUsageKB();
     static float ResidentSetSizeMB();
     static float ResidentSetSizeKB();
 
-    static const char* ExecutablePath(bool basename=false); 
-    static const char* ExecutableName(); 
+    static char* ExecutablePath(bool basename=false); 
+    static char* _ExecutableName(); 
+    static bool StartsWith( const char* s, const char* q); 
+    static char* ExecutableName(); 
 };
+
+
+
+/**
+sproc::parseLine
+-----------------
+
+Expects a line of the below form with digits and ending in " Kb"::
+
+   VmSize:	  108092 kB
+
+**/
+
+inline int sproc::parseLine(char* line){
+    int i = strlen(line);
+    const char* p = line;
+    while (*p <'0' || *p > '9') p++; // advance until first digit 
+    line[i-3] = '\0';  // chop off the " kB"
+    i = atoi(p);
+    return i;
+}
 
 
 #ifdef _MSC_VER
@@ -95,24 +124,6 @@ inline float sproc::ResidentSetSizeKB()
 #include "stdio.h"
 #include "string.h"
 
-/**
-parseLine
------------
-
-Expects a line the below form with digits and ending in " Kb"::
-
-   VmSize:	  108092 kB
-
-**/
-
-inline int parseLine(char* line){
-    int i = strlen(line);
-    const char* p = line;
-    while (*p <'0' || *p > '9') p++;
-    line[i-3] = '\0';
-    i = atoi(p);
-    return i;
-}
 
 inline float sproc::VirtualMemoryUsageKB()
 {
@@ -177,7 +188,7 @@ sproc::ExecutablePath
 
 
 #ifdef _MSC_VER
-inline const char* sproc::ExecutablePath(bool basename)
+inline char* sproc::ExecutablePath(bool basename)
 {
     return NULL ; 
 }
@@ -185,7 +196,7 @@ inline const char* sproc::ExecutablePath(bool basename)
 
 #include <mach-o/dyld.h>
 
-inline const char* sproc::ExecutablePath(bool basename)
+inline char* sproc::ExecutablePath(bool basename)
 {
     char buf[PATH_MAX];
     uint32_t size = sizeof(buf);
@@ -199,7 +210,7 @@ inline const char* sproc::ExecutablePath(bool basename)
         ;
 
     assert(ok); 
-    const char* s = basename ? strrchr(buf, '/') : NULL ;  
+    char* s = basename ? strrchr(buf, '/') : NULL ;  
     return s ? strdup(s+1) : strdup(buf) ; 
 }
 #else
@@ -208,23 +219,39 @@ inline const char* sproc::ExecutablePath(bool basename)
 #include <unistd.h>
 #include <limits.h>
 
-inline const char* sproc::ExecutablePath(bool basename)
+inline char* sproc::ExecutablePath(bool basename)
 {
     char buf[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", buf, sizeof(buf)-1);
     if (len != -1) buf[len] = '\0';
 
-    const char* s = basename ? strrchr(buf, '/') : NULL ;  
+    char* s = basename ? strrchr(buf, '/') : NULL ;  
     return s ? strdup(s+1) : strdup(buf) ; 
 }
 
 #endif
 
 
-inline const char* sproc::ExecutableName()
+inline char* sproc::_ExecutableName()
 {
     bool basename = true ; 
     return ExecutablePath(basename); 
 }
+
+
+inline bool sproc::StartsWith( const char* s, const char* q) 
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ; 
+}
+
+inline char* sproc::ExecutableName()
+{  
+    char* exe0 = sproc::_ExecutableName() ; 
+    bool is_python = sproc::StartsWith(exe0, "python") ;  
+    char* script = getenv("OPTICKS_SCRIPT"); 
+    char* exe = ( is_python && script ) ? script : exe0 ; 
+    return exe ; 
+}
+
 
 

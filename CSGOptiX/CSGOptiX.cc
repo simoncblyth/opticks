@@ -40,7 +40,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
-#include "SProc.hh"
+#include "sproc.h"
 #include "SGLM.h"
 #include "NP.hh"
 #include "SRG.h"
@@ -1044,7 +1044,7 @@ double CSGOptiX::render( const char* stem_ )
 
     double dt = render_launch();  
 
-    const char* topline = SSys::getenvvar("TOPLINE", SProc::ExecutableName() ); 
+    const char* topline = SSys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
     const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );

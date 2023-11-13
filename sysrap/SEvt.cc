@@ -20,6 +20,8 @@
 #include "stran.h"
 #include "stimer.h"
 #include "spath.h"
+#include "sdirectory.h"
+#include "sstr.h"
 
 #include "SLOG.hh"
 #include "ssys.h"
@@ -3098,44 +3100,21 @@ bool SEvt::hasInstance() const
 
 
 /**
-SEvt::getOutputDir
---------------------
+SEvt::getOutputDir_OLD
+-----------------------
 
 Returns the directory that will be used by SEvt::save so long as
 the same base_ argument is used, which may be nullptr to use the default. 
 
 **/
 
-const char* SEvt::getOutputDir(const char* base_) const 
+const char* SEvt::getOutputDir_OLD(const char* base_) const 
 {
     const char* defd = SGeo::DefaultDir() ; 
     const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ; 
-
-
-    const char* dir = nullptr ; 
-    if(hasIndex()) 
-    { 
-        assert( index > 0 ); 
-        int u_index = 0 ; 
-
-        if(SEventConfig::IsRGModeSimulate())
-        {
-            assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
-            u_index = instance == SEvt::EGPU ? index : -index ; 
-        }
-        else if(SEventConfig::IsRGModeSimtrace())
-        {
-            //assert( instance == MISSING_INSTANCE );  // not with U4SimtraceTest.sh 
-            u_index = index ;  ; 
-        }
-
-        dir = SPath::Resolve(base, reldir, u_index, DIRPATH ) ; 
-    }
-    else
-    {
-        dir = SPath::Resolve(base, reldir,  DIRPATH) ; 
-    }
+    const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
+    const char* dir = SPath::Resolve(base, reldir, sidx, DIRPATH ) ; 
 
     LOG(info)
         << std::endl  
@@ -3160,8 +3139,64 @@ const char* SEvt::getOutputDir(const char* base_) const
     return dir ;  
 }
 
+/**
+SEvt::getOutputDir
+----------------------------
+
+Reimpl in a way that is faster to understand, 
+in attempt to remove lots of tedious code by 
+focussing tokenization into spath.h and the 
+high level control here in one place. 
+
+**/
+
+const char* SEvt::getOutputDir(const char* base_) const 
+{
+    const char* base = base_ ? base_ : "$TMP/GEOM/$GEOM/$ExecutableName" ; 
+    const char* reldir = GetReldir() ; 
+    const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
+    const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
+    sdirectory::MakeDirs(path,0); 
 
 
+    LOG(info)
+        << std::endl  
+        << " base_  " << ( base_ ? base_ : "-" )
+        << std::endl  
+        << " reldir   " << ( reldir ? reldir : "-" )
+        << std::endl  
+        << " sidx   " << ( sidx ? sidx : "-" )
+        << std::endl  
+        << " path   " << ( path ? path : "-" )
+        << std::endl  
+        ;
+
+    return path ; 
+}
+
+
+
+
+
+const char* SEvt::getIndexString() const 
+{
+    int u_index = 0 ; 
+    assert( index > 0 ); 
+    if(SEventConfig::IsRGModeSimulate())
+    {
+        assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
+        u_index = instance == SEvt::EGPU ? index : -index ; 
+    }
+    else if(SEventConfig::IsRGModeSimtrace())
+    {
+        //assert( instance == MISSING_INSTANCE );  // not with U4SimtraceTest.sh 
+        u_index = index ;  ; 
+    }
+
+    bool pfx = true ; // 'n' 'p' 'z'
+    int wid = 3 ; 
+    return sstr::FormatIndex(u_index, pfx, wid); 
+}
 
 
 

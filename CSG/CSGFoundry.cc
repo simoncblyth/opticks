@@ -12,11 +12,11 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "SSys.hh"
 #include "ssys.h"
+#include "sproc.h"
+
 #include "smeta.h"
 #include "SSim.hh"
-#include "SProc.hh"
 #include "SStr.hh"
 #include "SPath.hh"
 #include "s_time.h"
@@ -49,7 +49,7 @@
 const unsigned CSGFoundry::IMAX = 50000 ; 
 
 const plog::Severity CSGFoundry::LEVEL = SLOG::EnvLevel("CSGFoundry", "DEBUG" ); 
-const int CSGFoundry::VERBOSE = SSys::getenvint("VERBOSE", 0); 
+const int CSGFoundry::VERBOSE = ssys::getenvint("VERBOSE", 0); 
 
 std::string CSGFoundry::descComp() const 
 {
@@ -694,7 +694,8 @@ std::string CSGFoundry::descSolids() const
 
 std::string CSGFoundry::descInstance() const
 {
-    std::vector<int>* idxs = SSys::getenvintvec("IDX", ',');
+    std::vector<int>* idxs = ssys::getenv_vec<int>("IDX", nullptr, ',');
+
     std::stringstream ss ; 
     if(idxs == nullptr)
     {
@@ -2369,7 +2370,7 @@ is for example /tmp/$USER/opticks/$GEOM/SProc::ExecutableName
 const char* CSGFoundry::getBaseDir(bool create) const
 {
     const char* cfbase_default = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //   
-    const char* cfbase = SSys::getenvvar("CFBASE", cfbase_default );  
+    const char* cfbase = ssys::getenvvar("CFBASE", cfbase_default );  
     return cfbase ? strdup(cfbase) : nullptr ; 
 }
 
@@ -2873,7 +2874,7 @@ This is taking 0.48s for full JUNO, thats 27% of single event gxt.sh runtime
 
 **/
 
-bool CSGFoundry::Load_saveAlt = SSys::getenvbool("CSGFoundry_Load_saveAlt") ; 
+bool CSGFoundry::Load_saveAlt = ssys::getenvbool("CSGFoundry_Load_saveAlt") ; 
 
 CSGFoundry* CSGFoundry::Load() // static
 {
@@ -2990,7 +2991,7 @@ from the point of view of loading.
 
 CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 {
-    if(geom == nullptr) geom = SSys::getenvvar("GEOM", "GeneralSphereDEV") ; 
+    if(geom == nullptr) geom = ssys::getenvvar("GEOM", "GeneralSphereDEV") ; 
     CSGFoundry* fd = new CSGFoundry();  
     fd->setGeom(geom); 
     fd->load(); 
@@ -3302,7 +3303,7 @@ Grab these from remote with::
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi_or_iidx = SSys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
+    const char* moi_or_iidx = ssys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
     return getFrame(moi_or_iidx); 
 }
 sframe CSGFoundry::getFrame(const char* frs) const 

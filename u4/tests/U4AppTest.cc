@@ -1,3 +1,12 @@
+/**
+u4/tests/U4AppTest.cc (formerly names U4RecorderTest ? Geant4 simulation with Opticks SEvt instrumentation)
+=============================================================================================================
+
+See g4cx/test/G4CXTest.cc for further development that started 
+from this and added opticks simulate. 
+
+**/
+
 #include "U4App.h"
 
 int main(int argc, char** argv)
@@ -19,7 +28,8 @@ int main(int argc, char** argv)
     SEvt::SetReldir(desc.c_str() ); 
 
     SEventConfig::SetStandardFullDebug(); 
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ;    // SEvt must be instanciated before QEvent
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ;  // ECPU would be more appropriate
+     // SEvt must be instanciated before QEvent
     const char* outdir = evt->getOutputDir(); 
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 

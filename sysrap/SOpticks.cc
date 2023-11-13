@@ -2,7 +2,7 @@
 #include "s_time.h"
 
 #include "SStr.hh"
-#include "SProc.hh"
+#include "sproc.h"
 #include "SOpticks.hh"
 #include "SEventConfig.hh"
 
@@ -120,7 +120,7 @@ void SOpticks::WriteOutputDirScript() // static
 
 void SOpticks::WriteOutputDirScript(const char* outdir) // static
 {
-    const char* exename = SProc::ExecutableName() ;
+    const char* exename = sproc::ExecutableName() ;
     const char* envvar = SStr::Concat(exename,  "_OUTPUT_DIR" ); 
     const char* sh_path = SStr::Concat(exename, "_OUTPUT_DIR" , ".sh")   ;    
 

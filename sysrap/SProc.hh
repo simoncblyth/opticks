@@ -20,10 +20,28 @@
 #pragma once
 
 /**
-SProc
-=======
+SProc : MIGRATING to sproc.h
+=================================
 
-macOS implementation of VirtualMemoryUsageMB of a process.
+::
+
+    epsilon:sysrap blyth$ opticks-f SProc.hh 
+    ## ./CSGOptiX/CSGOptiX.cc:#include "SProc.hh"
+    ## ./CSG/CSGFoundry.cc:#include "SProc.hh"
+    ## ./sysrap/SProc.cc:#include "SProc.hh"
+    ## ./sysrap/SLOG.cc:#include "SProc.hh"
+    ## ./sysrap/CMakeLists.txt:    SProc.hh
+
+    ./sysrap/tests/SProcTest.cc:#include "SProc.hh"
+
+    ./sysrap/SGeo.cc:#include "SProc.hh"
+
+    ./sysrap/SOpticks.cc:#include "SProc.hh"
+    ./sysrap/SOpticksResource.cc:#include "SProc.hh"
+
+
+
+
 
 **/
 

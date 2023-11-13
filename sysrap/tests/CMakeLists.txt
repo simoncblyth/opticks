@@ -29,7 +29,6 @@ set(TEST_SOURCES
    SMapTest.cc
    SCountTest.cc
    SSeqTest.cc
-   SProcTest.cc
    SBase36Test.cc
    SSortKVTest.cc
    SPairVecTest.cc
@@ -131,6 +130,12 @@ set(TEST_SOURCES
 
    scontext_test.cc
 )
+
+
+set(RETIRED_TEST_SOURCES
+   SProcTest.cc
+)
+
 
 
 #SEnvTest_FAIL.cc

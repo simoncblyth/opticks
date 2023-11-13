@@ -29,7 +29,6 @@
 #include "ssys.h"
 #include "s_time.h"
 
-#include "SProc.hh"
 #include "SOpticksResource.hh"
 #include "SASCII.hh"
 

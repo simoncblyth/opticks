@@ -174,6 +174,23 @@ void test_savedir()
 }
 
 
+void test_getOutputDir()
+{
+    SEvt* evt = SEvt::Create(0);
+    const char* dir0 = evt->getOutputDir_OLD(); 
+    const char* dir1 = evt->getOutputDir(); 
+
+    LOG(info) 
+        << "test_getOutputDir" << std::endl 
+        << " dir0 [" << ( dir0 ? dir0 : "-" ) << "]" << std::endl 
+        << " dir1 [" << ( dir1 ? dir1 : "-" ) << "]" << std::endl 
+        ;
+}
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -184,10 +201,11 @@ int main(int argc, char** argv)
     test_AddGenstep(); 
     test_LifeCycle(); 
     test_InputPhoton(); 
+    test_savedir(); 
     */
 
+    test_getOutputDir(); 
 
-    test_savedir(); 
 
 
     return 0 ; 

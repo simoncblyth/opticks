@@ -149,3 +149,34 @@ Extract that archive with the two element prefix stripped::
 
 
 
+Publish release onto /cvmfs/opticks.ihep.ac.cn
+-------------------------------------------------
+
+
+Extracting from tarball into /cvmfs/opticks.ihep.ac.cn/ok/releases/::
+
+    L     # ssh keys for O access are on L, so go that way 
+
+    L> g 
+    L> cd local/opticks
+    L> scp Opticks-v0.2.1.tar O:   # copy tarball to stratum0 optickspub account 
+    L> ssh O                       # into stratum0
+
+    O> cvmfs_server transaction opticks.ihep.ac.cn   ## start transation to make it writable
+    O> mv Opticks-v0.2.1.tar /cvmfs/opticks.ihep.ac.cn/ok/releases/
+    O> cd /cvmfs/opticks.ihep.ac.cn/ok/releases/
+    O> tar tvf Opticks-v0.2.1.tar  # check the paths in the tarball 
+    O> tar xvf Opticks-v0.2.1.tar  # explode the tarball 
+    O> rm Opticks-v0.2.1.tar       # remove tarball 
+    O> cd /cvmfs                   # step away from modified folders
+    O> cvmfs_server publish -m "Add Opticks-v0.2.1 test release " opticks.ihep.ac.cn
+    O> exit 
+
+
+* NB IT CAN TAKE 5 MIN OR SO BEFORE THE ADDITION APPEARS ON CLUSTER MACHINES AND WORKSTATION
+* HMM: NEXT TIME WOULD BE GOOD TO INCLUDE SOME UPDATE METADATA NOTES INSIDE THE RELEASE :
+  SO CAN EASILY SEE THAT HAVE UPDATED
+
+
+
+
