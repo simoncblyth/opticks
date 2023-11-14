@@ -37,6 +37,7 @@ struct U4GDML
 
 
 #include "sdirect.h"
+#include "sdirectory.h"
 #include "spath.h"
 #include "sstr.h"
 #include "ssys.h"
@@ -215,6 +216,7 @@ inline void U4GDML::write_(const char* path)
             ; 
         
     }
+    sdirectory::MakeDirsForFile(path,0);
     parser->Write(path, world, write_refs, write_schema_location); 
 }
 
