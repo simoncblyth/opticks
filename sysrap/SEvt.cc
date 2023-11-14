@@ -948,9 +948,9 @@ SEvt* SEvt::HighLevelCreate(int idx) // static
     int g4state_rerun_id = SEventConfig::G4StateRerun(); 
     bool rerun = g4state_rerun_id > -1 ;
 
-    const char* alldir = ssys::replace_envvar_token("ALL${VERSION}") ; 
+    const char* alldir = spath::Resolve("ALL${VERSION:-0}") ; 
     const char* alldir0 = "ALL0" ; 
-    const char* seldir = ssys::replace_envvar_token("SEL${VERSION}") ; 
+    const char* seldir = spath::Resolve("SEL${VERSION:-0}") ; 
 
     LOG(info) 
         << " g4state_rerun_id " << g4state_rerun_id 

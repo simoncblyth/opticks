@@ -262,6 +262,8 @@ inline char* ssys::_getenv(const char* ekey)
 ssys::replace_envvar_token
 ----------------------------
 
+NB spath::Resolve provides much more flexible tokenization replacement
+
 1. extract VAR from head of string "${VAR}rest-of-string"  
 2. construct string with the "${VAR}" replaced with its value obtained from envvar lookup, 
    when the envvar does not exist returns eg "VARrest-of-string" 
