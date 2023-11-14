@@ -5,9 +5,7 @@ spath.h
 
 Q: Whats the difference between spath::ResolvePath and spath::Resolve ? 
 A: ResolvePath accepts only a single string element whereas Resolve accepts
-   from 1 to 4 elements
-
-   * so incon
+   from 1 to 4 elements. Also ResolvePath is private, the public interface is Resolve 
 
 **/
 
@@ -26,10 +24,14 @@ struct spath
 {
     friend struct spath_test ; 
     static constexpr const bool VERBOSE = false ; 
+    static constexpr const bool DUMP = false ; 
 
 private:
     static std::string _ResolvePath(const char* spec); 
+    static std::string _ResolvePathGeneralized(const char* spec_); 
+
     static char* ResolvePath(const char* spec); 
+    static char* ResolvePathGeneralized(const char* spec); 
 
     static char* DefaultTMP();
     static char* DefaultOutputDir();
@@ -82,12 +84,13 @@ This works with multiple tokens, eg::
 
     $HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt
 
+But not yet with fallback paths, see _ResolvePathGeneralized
+
 **/
 
 inline std::string spath::_ResolvePath(const char* spec_)
 {
     if(spec_ == nullptr) return "" ; 
-
     char* spec = strdup(spec_); 
 
     std::stringstream ss ; 
@@ -103,7 +106,7 @@ inline std::string spath::_ResolvePath(const char* spec_)
         if( spec[i] == '$' )
         {
             char* p = spec + i ; 
-            char* sep = strchr( p, '/' ) ; // first slash after token   
+            char* sep = strchr( p, '/' ) ; // first slash after $ : HMM too simple with fallback paths
             bool tok_plus =  sep && end && sep != end ;  
             if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
             char* val = ResolveToken(p+1) ;  // skip '$'
@@ -117,7 +120,6 @@ inline std::string spath::_ResolvePath(const char* spec_)
                     << "] does not resolve " 
                     << std::endl 
                     ; 
-                //return "" ;    // all tokens must resolve 
                 ss << "UNRESOLVED_TOKEN_" << (p+1) ; 
             }
             else
@@ -137,11 +139,84 @@ inline std::string spath::_ResolvePath(const char* spec_)
     return str ; 
 }
 
+/**
+spath::_ResolvePathGeneralized
+---------------------------------
+
+Simple paths with tokens::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt
+
+More generalized paths with curlies and fallback paths::
+
+    ${GEOM}Hello 
+    ${RNGDir:-$HOME/.opticks/rngcache/RNG}
+
+**/
+
+inline std::string spath::_ResolvePathGeneralized(const char* spec_)
+{
+    if(spec_ == nullptr) return "" ; 
+    char* spec = strdup(spec_); 
+
+    std::stringstream ss ; 
+    int speclen = int(strlen(spec)) ;  
+    int speclen1 = speclen - 1 ; 
+    char* end = strchr(spec, '\0' ); 
+    int i = 0 ; 
+
+    while( i < speclen  )
+    {
+        char* p = spec + i ; 
+        if( i < speclen1 && *p == '$' && *(p+1) != '{' )
+        {
+            char* sep = strchr( p, '/' ) ;       // first slash after $ : HMM too simple with fallback paths
+            bool tok_plus =  sep && end && sep != end ;  
+            if(tok_plus) *sep = '\0' ;           // replace slash with null termination 
+            char* val = ResolveToken(p+1) ;      // skip '$'
+            int toklen = int(strlen(p)) ;        // strlen("TOKEN")  no need for +1 as already at '$'  
+            ss << ( val ? val : p+1 )  ; 
+            if(tok_plus) *sep = '/' ;            // put back the slash 
+            i += toklen ;                        // skip over the token 
+        }
+        else if( i < speclen1 && *p == '$' && *(p+1) == '{' )
+        {
+            char* sep = strchr(p, '}' ) + 1 ;   // one char beyond the first } after the $ 
+            char keep = *sep ; 
+            bool tok_plus = sep && end && sep != end ;  
+            if(tok_plus) *sep = '\0' ;           // replace one beyond char with null termination 
+            char* val = ResolveToken(p+1) ;      // skip '$'
+            int toklen = int(strlen(p)) ;        // strlen("TOKEN")  no need for +1 as already at '$'  
+            ss << ( val ? val : p+1 )  ; 
+            if(tok_plus) *sep = keep ;            // put back the changed char (could be '\0' ) 
+            i += toklen ;                        // skip over the token 
+        }
+        else
+        {
+           ss << *p ; 
+           i += 1 ; 
+        }
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
 inline char* spath::ResolvePath(const char* spec_)
 {
     std::string path = _ResolvePath(spec_) ;
     return strdup(path.c_str()) ; 
 }
+inline char* spath::ResolvePathGeneralized(const char* spec_)
+{
+    std::string path = _ResolvePathGeneralized(spec_) ;
+    return strdup(path.c_str()) ; 
+}
+
+
+
 
 inline char* spath::DefaultTMP()
 {
@@ -161,7 +236,9 @@ inline char* spath::DefaultOutputDir()
 
 inline char* spath::ResolveToken(const char* token)
 {
-    char* result0 = IsTokenWithFallback(token) 
+    bool is_twf = IsTokenWithFallback(token) ; 
+
+    char* result0 = is_twf 
                  ?
                     _ResolveTokenWithFallback(token)
                  :
@@ -171,12 +248,12 @@ inline char* spath::ResolveToken(const char* token)
     bool is_still_token = IsToken(result0) && strcmp(token, result0) != 0 ; 
     char* result1 = is_still_token ? ResolvePath(result0) : result0  ;  
 
-    bool dump = false ; 
-    if(dump) std::cout 
-        << "spath::ResolveToken"
-        << " token   " << ( token ? token : "-" )
-        << " result0 " << ( result0 ? result0 : "-" )
-        << " result1 " << ( result1 ? result1 : "-" )
+    if(DUMP) std::cout 
+        << "spath::ResolveToken.DUMP" << std::endl 
+        << " token  [" << ( token ? token : "-" ) << "]"
+        << " is_twf " << ( is_twf ? "YES" : "NO " ) 
+        << " result0 [" << ( result0 ? result0 : "-" ) << "]"
+        << " result1 [" << ( result1 ? result1 : "-" ) << "]"
         << std::endl 
         ;
       
@@ -322,7 +399,10 @@ template<typename ... Args>
 inline const char* spath::Resolve( Args ... args  )  // static
 {
     std::string spec = _Join(std::forward<Args>(args)... ); 
-    std::string path = _ResolvePath(spec.c_str()); 
+
+    //std::string path = _ResolvePath(spec.c_str()); 
+    std::string path = _ResolvePathGeneralized(spec.c_str()); 
+
     return strdup(path.c_str()) ; 
 }
 

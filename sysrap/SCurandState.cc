@@ -1,13 +1,17 @@
 #include <cassert>
 #include <iomanip>
 #include "PLOG.hh"
-#include "SPath.hh"
+
+#include "spath.h"
+#include "sdirectory.h"
+#include "sstr.h"
+
 #include "SCurandState.hh"
 #include "SEventConfig.hh"
-#include "SStr.hh"
 
 const plog::Severity SCurandState::LEVEL = SLOG::EnvLevel("SCurandState", "DEBUG" );  
-const char* SCurandState::RNGDIR = SPath::Resolve("$RNGDir", DIRPATH ) ; 
+const char* SCurandState::RNGDIR = spath::Resolve("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ; 
+
 const char* SCurandState::NAME_PREFIX = "QCurandState" ; 
 const char* SCurandState::DEFAULT_PATH = nullptr ; 
 
@@ -21,6 +25,7 @@ std::string SCurandState::Desc()  // static
        << " SEventConfig::MaxCurandState() " << SEventConfig::MaxCurandState() << std::endl
        << " SCurandState::Path() " << path << std::endl 
        << " SCurandState::RngMax() " << rngmax << std::endl 
+       << " RNGDIR  " << RNGDIR << std::endl 
        ;
     std::string s = ss.str() ;
     return s ; 
@@ -35,8 +40,10 @@ const char* SCurandState::Path()  // static
         int offset = 0 ; 
         // seed and offset could some from SEventConfig too 
         
-        std::string path = Path_(rngmax, seed, offset ); 
-        DEFAULT_PATH = strdup(path.c_str()); 
+        std::string path_ = Path_(rngmax, seed, offset ); 
+        const char* path = path_.c_str() ;
+        sdirectory::MakeDirsForFile(path); 
+        DEFAULT_PATH = strdup(path); 
     }
     return DEFAULT_PATH ; 
 }
@@ -134,7 +141,7 @@ void SCurandState::init()
     if(spec)
     {
         std::vector<int> ivec ; 
-        SStr::ISplit(spec, ivec, ':' ); 
+        sstr::split<int>(ivec, spec, ':'); 
         unsigned num_vals = ivec.size(); 
         assert( num_vals > 0 && num_vals <= 3 ); 
 
@@ -146,7 +153,7 @@ void SCurandState::init()
     }
 
     path = Path_(num, seed, offset); 
-    exists = SPath::Exists(path.c_str()); 
+    exists = spath::Exists(path.c_str()); 
     rngmax = exists ? RngMax( path.c_str() ) : 0 ; 
 }
 

@@ -21,8 +21,11 @@ struct spath_test
    static void ResolveToken(); 
    static void ResolveToken_(const char* token); 
    static void ResolveToken1(); 
-   static void ResolvePath(); 
+
+   static void Resolve_(const char* spec); 
+   static void Resolve1(); 
    static void Resolve(); 
+
    static void Exists(); 
    static void Exists2(); 
    static void Basename(); 
@@ -144,8 +147,8 @@ void spath_test::ResolveToken_(const char* token)
 
 void spath_test::ResolveToken1()
 {
-    ResolveToken_("$DefaultOutputDir"); 
-
+    //ResolveToken_("$DefaultOutputDir"); 
+    ResolveToken_("{RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
 }
 void spath_test::ResolveToken()
 {
@@ -166,11 +169,26 @@ void spath_test::ResolveToken()
 
 
 
-
-
-void spath_test::ResolvePath()
+void spath_test::Resolve_(const char* spec)
 {
-    std::cout << "\nspath_test::ResolvePath\n\n" ;  
+    //const char* path = spath::Resolve(spec); 
+    const char* path = spath::ResolvePathGeneralized(spec); 
+    std::cout 
+        << " spec " << spec << std::endl  
+        << " path " << path << std::endl
+        << std::endl 
+        ;
+}
+
+void spath_test::Resolve1()
+{
+    Resolve_("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
+}
+
+
+void spath_test::Resolve()
+{
+    std::cout << "\nspath_test::Resolve\n\n" ;  
     std::vector<std::string> specs = {
         "$HOME/hello.npy", 
         "$HOME", 
@@ -181,29 +199,14 @@ void spath_test::ResolvePath()
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}",
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail",
         "$DefaultOutputDir",
-        "$DefaultOutputDir/some/further/relative/path"
+        "$DefaultOutputDir/some/further/relative/path",
+        "${RNGDir:-$HOME/.opticks/rngcache/RNG}"
         } ; 
 
-    for(unsigned i=0 ; i < specs.size() ; i++)
-    { 
-        const char* spec = specs[i].c_str(); 
-        const char* path = spath::Resolve(spec); 
-        std::cout 
-            << " spec " << spec << std::endl  
-            << " path " << path << std::endl
-            << std::endl 
-            ;
-    }
+    for(unsigned i=0 ; i < specs.size() ; i++) Resolve_( specs[i].c_str() ); 
 }
 
-void spath_test::Resolve()
-{
-    const char* path0 = spath::Resolve("$HOME", "subdir", "another", "name.npy" ) ;  
-    const char* path1 = spath::Resolve("$HOME/subdir/another/name.npy" ) ;  
 
-    std::cout << " path0 [" << path0 << "]" << std::endl ;   
-    std::cout << " path1 [" << path1 << "]" << std::endl ;   
-}
 
 void spath_test::Exists()
 {
@@ -286,13 +289,11 @@ void spath_test::Remove()
 
 int main(int argc, char** argv)
 {
-    /*
     spath_test::Resolve_defaultOutputPath();
     spath_test::Resolve_with_undefined_token();
     spath_test::Resolve_with_undefined_TMP();
     spath_test::Resolve_inline();
     spath_test::ResolveToken(); 
-    spath_test::ResolvePath(); 
     spath_test::Resolve(); 
     spath_test::Exists(); 
     spath_test::Exists2(); 
@@ -304,11 +305,9 @@ int main(int argc, char** argv)
 
     spath_test::ResolveTokenWithFallback(); 
     spath_test::_ResolveToken(); 
+    spath_test::Resolve(); 
+    spath_test::Resolve1(); 
     spath_test::ResolveToken1(); 
-    */
-    spath_test::ResolvePath(); 
-
-
 
 
     return 0 ; 
