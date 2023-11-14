@@ -6,6 +6,11 @@ name=spath_test
 bin=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $(dirname $bin)
 
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+vars="BASH_SOURCE name bin GEOM TMP"
+for var in $vars ; do printf "%25s : %s\n" "$var" "${!var}" ; done 
+
 gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
 [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
 

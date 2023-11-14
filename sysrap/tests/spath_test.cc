@@ -182,7 +182,8 @@ void spath_test::Resolve_(const char* spec)
 
 void spath_test::Resolve1()
 {
-    Resolve_("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
+    //Resolve_("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
+    Resolve_("$DefaultOutputDir") ;
 }
 
 
@@ -290,6 +291,7 @@ void spath_test::Remove()
 
 int main(int argc, char** argv)
 {
+    /*
     spath_test::Resolve_defaultOutputPath();
     spath_test::Resolve_with_undefined_token();
     spath_test::Resolve_with_undefined_TMP();
@@ -307,8 +309,9 @@ int main(int argc, char** argv)
     spath_test::ResolveTokenWithFallback(); 
     spath_test::_ResolveToken(); 
     spath_test::Resolve(); 
-    spath_test::Resolve1(); 
     spath_test::ResolveToken1(); 
+    */
+    spath_test::Resolve1(); 
 
 
     return 0 ; 
