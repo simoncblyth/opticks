@@ -1088,6 +1088,8 @@ opticks-setup--(){   source $(opticks-setup-path) ; }
 opticks-setup-generate-notes(){ cat << EON
 
 
+
+
 EON
 }
 opticks-setup-generate(){
@@ -1879,6 +1881,46 @@ opticks-cuda-capable()
    esac
 }
 
+
+opticks-full-notes(){ cat << EON
+
+opticks-full has traditionally been used for full source builds, 
+getting externals and building them generating and 
+invoking setup to configure use of those externals. 
+Now that are moving more to release builds could consider 
+getting externals from former releases. 
+
+HMM: but thats kinda complicated : and probably not worthy of the 
+effort, the opticks externals do not take long to build. 
+
+
+opticks-info
+    dump config of the build
+
+opticks-full-externals 
+    for each of the externals : bcm glm imgui plog nljson
+    invokes a pair of bash functions eg "bcm-;bcm--" 
+    that get and install the externals into $OPTICKS_PREFIX/externals 
+    
+opticks-full-make
+    invokes opticks-setup-generate writing $OPTICKS_PREFIX/bin/opticks-setup.sh 
+    then sources that with opticks-setup and calls om- om-install 
+    installing Opticks into $OPTICKS_PREFIX/lib etc.. 
+
+opticks-install-extras
+    opticks-install-cmake-modules enables building against the installed opticks with CMake, 
+    opticks-install-tests enables testing the installed opticks with ctest 
+
+opticks-cuda-capable
+    checks for a GPU using nvidia-smi
+
+opticks-full-prepare
+    when a GPU is detected invokes opticks-prepare-installation to create 
+    QCurandState files in default dir ~/.opticks/rngcache/RNG 
+
+EON
+}
+
 opticks-full()
 {
     local msg="=== $FUNCNAME :"
@@ -1994,7 +2036,11 @@ opticks-install-tests()
    local bdir=$(opticks-bdir)
    local dest=$(opticks-dir)/tests
    echo $msg bdir $bdir dest $dest
-   CTestTestfile.py $bdir --dest $dest
+
+   : using the source tree for PYTHONPATH as this is needed 
+   : as part of the installation
+
+   PYTHONPATH=$(opticks-fold) CTestTestfile.py $bdir --dest $dest
    local script=$dest/ctest.sh 
 
    cat << EOT > $script
@@ -2304,22 +2350,13 @@ opticks-prepare-installation-notes(){ cat << EON
 $FUNCNAME
 ===================================
 
-PTX 
-    remains in the installcache.
-
-OKC 
-    has been eliminated, the below should NOT be run::
-
-       OpticksPrepareInstallCacheTest '$INSTALLCACHE_DIR/OKC'
 
 RNG 
-    has been relocated from the installcache to the rngcache 
-    which is positioned under OPTICKS_SHARED_CACHE_PREFIX
+    ~/.opticks/rngcache/RNG 
 
-    The default RNG dir is ~/.opticks/rngcache/RNG but this is expected
-    to be moved to a shared location, eg for use on a GPU cluster, 
-    using envvar OPTICKS_SHARED_CACHE_PREFIX which positions 
-    the RNG dir at $OPTICKS_SHARED_CACHE_PREFIX/rngcache/RNG
+    HMM: maybe better to share this, eg for use on a GPU cluster, 
+    could use an envvar OPTICKS_CACHE_PREFIX 
+    Which defaults to $HOME/.opticks to facilitate sharing 
 
 EON
 }
