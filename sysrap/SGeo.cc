@@ -1,6 +1,7 @@
 #include <cstring>
 #include <sstream>
-#include "SPath.hh"
+
+//#include "SPath.hh"
 #include "sproc.h"
 #include "SGeo.hh"
 #include "SEventConfig.hh"
@@ -8,7 +9,7 @@
 
 const plog::Severity SGeo::LEVEL = SLOG::EnvLevel("SGeo", "DEBUG"); 
 
-const char* SGeo::LAST_UPLOAD_CFBASE = nullptr ;
+//const char* SGeo::LAST_UPLOAD_CFBASE = nullptr ;
 
 /**
 SGeo::SetLastUploadCFBase
@@ -21,7 +22,6 @@ and using a new CFBase for consistency between results and geometry
 This is the reason that dynamic prim selection is only appropriate for shortterm
 tests such as render scanning for bottlenecks. 
 
-**/
 
 void SGeo::SetLastUploadCFBase(const char* cfbase)
 {
@@ -40,6 +40,7 @@ const char* SGeo::LastUploadCFBase()
     return LAST_UPLOAD_CFBASE ; 
 }
 
+**/
 
 
 
@@ -53,7 +54,6 @@ which is within the last uploaded CFBase/ExeName
 HMM: This is becoming less useful due to its fixation on CFBase 
 which is not longer the only way to start from a saved geometry. 
 
-**/
 const char* SGeo::LastUploadCFBase_OutDir()
 {
     const char* cfbase = LastUploadCFBase(); 
@@ -62,6 +62,9 @@ const char* SGeo::LastUploadCFBase_OutDir()
     const char* outdir = SPath::Resolve(cfbase, exename, DIRPATH );  
     return outdir ; 
 }
+
+**/
+
 
 
 /**
@@ -83,7 +86,6 @@ However in some circumstances such as with the B side of aligned running (U4Reco
 it is appropriate to use the override code or envvar to locate B side outputs together 
 with the A side. 
 
-**/
 
 const char* SGeo::DefaultDir()
 {
@@ -93,15 +95,19 @@ const char* SGeo::DefaultDir()
 
     return dir ; 
 }
+**/
+
+
+
 
 std::string SGeo::Desc() 
 {
-    const char* lucfbod = LastUploadCFBase_OutDir() ; 
+    //const char* lucfbod = LastUploadCFBase_OutDir() ; 
     const char* outfold = SEventConfig::OutFold() ; 
 
     std::stringstream ss ; 
     ss << "SGeo::Desc" << std::endl 
-       << " SGeo::LastUploadCFBase_OutDir " << ( lucfbod ? lucfbod : "-" ) << std::endl
+     //  << " SGeo::LastUploadCFBase_OutDir " << ( lucfbod ? lucfbod : "-" ) << std::endl
        << " SEventConfig::OutFold() " << ( outfold ? outfold : "-" ) << std::endl 
        ;
 

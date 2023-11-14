@@ -5,8 +5,6 @@
 
 
 #include "SEvt.hh"
-#include "SGeo.hh"
-#include "SPath.hh"
 
 #include "scuda.h"
 #include "squad.h"

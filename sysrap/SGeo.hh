@@ -1,38 +1,30 @@
 #pragma once
 
 /**
-SGeo  : TODO Remove now that GGeo is gone
-================================================
+SGeo : protocol fulfilled by CSGFoundry 
+=========================================
 
 Protocol base used to facilitate lower level package access
 to limited geometry information, by passing the higher level 
-GGeo instance down to it cast down to this SGeo protocol base.
+CSGFoundry instance down to it cast down to this SGeo protocol base.
 
 Also used by CSG/CSGFoundry::upload to record the CFBase directory 
 of the last geometry uploaded to the device in a location that
 is accessible from anywhere. (HMM: an alt approach would be to set an envvar for this ?)
-
-TODO: this needs to be replaced by stree
 
 
 ::
 
     epsilon:sysrap blyth$ opticks-f SGeo.hh 
     ./CSG/CSGFoundry.h:#include "SGeo.hh"
-    ./GeoChain/GeoChain.cc:#include "SGeo.hh"
+
     ./sysrap/CMakeLists.txt:    SGeo.hh
     ./sysrap/CheckGeo.hh:#include "SGeo.hh"
     ./sysrap/tests/SGeoTest.cc:#include "SGeo.hh"
     ./sysrap/SEvt.cc:#include "SGeo.hh"
     ./sysrap/SGeo.cc:#include "SGeo.hh"
-    ./ggeo/GGeo.hh:#include "SGeo.hh"
-    ./ggeo/tests/GGeoTest.cc:#include "SGeo.hh"
-    ./qudarap/QEvent.cc:#include "SGeo.hh"
-    ./optickscore/OpticksDbg.cc:#include "SGeo.hh"
+
     ./g4cx/G4CXOpticks.cc:#include "SGeo.hh"
-    epsilon:opticks blyth$ 
-
-
 
 
 **/
@@ -49,13 +41,16 @@ struct SYSRAP_API SGeo
         static SGeo* Get() ; 
     private:
         static SGeo* INSTANCE ; 
-        static const char* LAST_UPLOAD_CFBASE ;
+        //static const char* LAST_UPLOAD_CFBASE ;
         static const plog::Severity LEVEL ; 
     public:
+        /*
         static void SetLastUploadCFBase(const char* cfbase);   
         static const char* LastUploadCFBase() ; 
         static const char* LastUploadCFBase_OutDir(); 
         static const char* DefaultDir() ; 
+        */
+
         static std::string Desc() ; 
     public:
         SGeo(); 

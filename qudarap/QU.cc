@@ -2,8 +2,9 @@
 
 #include "NP.hh"
 #include "SLOG.hh"
-#include "SPath.hh"
 
+#include "spath.h"
+#include "sdirectory.h"
 #include "scuda.h"
 #include "squad.h"
 #include "srec.h"
@@ -220,7 +221,8 @@ void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
         if(alloc) 
         {
             ss << alloc->desc() ; 
-            const char* out = SPath::Resolve("$DefaultOutputDir", DIRPATH) ; 
+            const char* out = spath::Resolve("$DefaultOutputDir") ; 
+            sdirectory::MakeDirs(out,0); 
             LOG(error) << "save salloc record to " << out ; 
             alloc->save(out) ; 
         }

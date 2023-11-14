@@ -36,7 +36,6 @@ set(TEST_SOURCES
    SDigestNPTest.cc
 
    SCFTest.cc
-   SGeoTest.cc
    SCurandStateTest.cc
 
    

@@ -19,6 +19,8 @@ struct spath_test
    static void ResolveTokenWithFallback(); 
    static void _ResolveToken(); 
    static void ResolveToken(); 
+   static void ResolveToken_(const char* token); 
+   static void ResolveToken1(); 
    static void ResolvePath(); 
    static void Resolve(); 
    static void Exists(); 
@@ -129,8 +131,22 @@ void spath_test::_ResolveToken()
 }
 
 
+void spath_test::ResolveToken_(const char* token)
+{
+    const char* result = spath::ResolveToken(token); 
+    std::cout 
+        << "spath_test::ResolveToken_" << std::endl 
+        << " token " << token << std::endl  
+        << " result " << ( result ? result : "-" ) << std::endl
+        << std::endl 
+        ;
+}
 
+void spath_test::ResolveToken1()
+{
+    ResolveToken_("$DefaultOutputDir"); 
 
+}
 void spath_test::ResolveToken()
 {
     std::cout << "\nspath_test::ResolveToken\n\n" ;  
@@ -144,14 +160,12 @@ void spath_test::ResolveToken()
     for(unsigned i=0 ; i < tokens.size() ; i++)
     { 
         const char* token = tokens[i].c_str(); 
-        const char* result = spath::ResolveToken(token); 
-        std::cout 
-            << " token " << token << std::endl  
-            << " result " << ( result ? result : "-" ) << std::endl
-            << std::endl 
-            ;
+        ResolveToken_(token) ; 
     }
 }
+
+
+
 
 
 void spath_test::ResolvePath()
@@ -165,8 +179,10 @@ void spath_test::ResolvePath()
         "${VERSION:-99}",
         "ALL${VERSION:-99}",
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}",
-        "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail" 
-         } ; 
+        "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail",
+        "$DefaultOutputDir",
+        "$DefaultOutputDir/some/further/relative/path"
+        } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++)
     { 
@@ -285,11 +301,14 @@ int main(int argc, char** argv)
     spath_test::Remove(); 
     spath_test::IsTokenWithFallback(); 
     spath_test::ResolveTokenWithFallback(); 
-    */
 
     spath_test::ResolveTokenWithFallback(); 
     spath_test::_ResolveToken(); 
+    spath_test::ResolveToken1(); 
+    */
     spath_test::ResolvePath(); 
+
+
 
 
     return 0 ; 

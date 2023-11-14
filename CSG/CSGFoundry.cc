@@ -344,7 +344,6 @@ int CSGFoundry::findMeshIndex(const char* qname) const
 CSGFoundry::getMeshIndexWithName
 ----------------------------------
 
-SGeo 
 
 **/
 
@@ -3125,11 +3124,8 @@ void CSGFoundry::upload()
     LOG_IF(fatal, !is_uploaded_1) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded_1 == true); 
 
-    //const char* ocfb = getOriginCFBase(); 
-    //   actually that means results will be placed in folder inconsistent with the geometry 
-
-    const char* cfb = getCFBase(); 
-    SGeo::SetLastUploadCFBase(cfb) ; 
+    //const char* cfb = getCFBase(); 
+    //SGeo::SetLastUploadCFBase(cfb) ; 
     LOG(LEVEL) << "]" ; 
 }
 

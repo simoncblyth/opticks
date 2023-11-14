@@ -32,9 +32,13 @@ private:
     static char* ResolvePath(const char* spec); 
 
     static char* DefaultTMP();
+    static char* DefaultOutputDir();
+    static constexpr const char* _DefaultOutputDir = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
+
     static char* ResolveToken(const char* token); 
     static char* _ResolveToken(const char* token); 
     static bool  IsTokenWithFallback(const char* token); 
+    static bool  IsToken(const char* token); 
     static char* _ResolveTokenWithFallback(const char* token); 
 
     template<typename ... Args>
@@ -83,6 +87,7 @@ This works with multiple tokens, eg::
 inline std::string spath::_ResolvePath(const char* spec_)
 {
     if(spec_ == nullptr) return "" ; 
+
     char* spec = strdup(spec_); 
 
     std::stringstream ss ; 
@@ -147,14 +152,35 @@ inline char* spath::DefaultTMP()
     return strdup(str.c_str()); 
 }
 
+inline char* spath::DefaultOutputDir()
+{
+    return (char*)_DefaultOutputDir ; 
+}
+
+
+
 inline char* spath::ResolveToken(const char* token)
 {
-    return IsTokenWithFallback(token) 
-        ?
-            _ResolveTokenWithFallback(token)
-        :
-            _ResolveToken(token)
-        ; 
+    char* result0 = IsTokenWithFallback(token) 
+                 ?
+                    _ResolveTokenWithFallback(token)
+                 :
+                    _ResolveToken(token)
+                 ; 
+    
+    bool is_still_token = IsToken(result0) && strcmp(token, result0) != 0 ; 
+    char* result1 = is_still_token ? ResolvePath(result0) : result0  ;  
+
+    bool dump = false ; 
+    if(dump) std::cout 
+        << "spath::ResolveToken"
+        << " token   " << ( token ? token : "-" )
+        << " result0 " << ( result0 ? result0 : "-" )
+        << " result1 " << ( result1 ? result1 : "-" )
+        << std::endl 
+        ;
+      
+    return result1 ; 
 }
 
 /**
@@ -184,8 +210,9 @@ inline char* spath::_ResolveToken(const char* token)
     } 
 
     char* val = getenv(tok) ; 
-    if( val == nullptr && strcmp(tok, "TMP") == 0)            val = DefaultTMP() ; 
-    if( val == nullptr && strcmp(tok, "ExecutableName") == 0) val = sproc::ExecutableName() ; 
+    if( val == nullptr && strcmp(tok, "TMP") == 0)              val = DefaultTMP() ; 
+    if( val == nullptr && strcmp(tok, "ExecutableName")   == 0) val = sproc::ExecutableName() ; 
+    if( val == nullptr && strcmp(tok, "DefaultOutputDir") == 0) val = DefaultOutputDir() ; 
     return val ; 
 }
 
@@ -205,6 +232,11 @@ inline bool spath::IsTokenWithFallback(const char* token)
 {
     return token && strlen(token) > 0 && token[0] == '{' && token[strlen(token)-1] == '}' && strstr(token,":-") != nullptr  ; 
 }
+inline bool spath::IsToken(const char* token)
+{
+    return token && strlen(token) > 0 && strstr(token,"$") != nullptr  ; 
+}
+
 
 /**
 spath::_ResolveTokenWithFallback

@@ -352,7 +352,9 @@ void G4CXOpticks::init_SEvt()
 {
     sim->serialize() ;  
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
-    sev->setGeo((SGeo*)fd);   
+
+    sev->setGeo((SGeo*)fd);    // IS THIS USED BY ANYTHING ? 
+
     smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
 
     std::string gm = sim->getGPUMeta() ; 
@@ -519,7 +521,6 @@ Grab that locally::
 
 void G4CXOpticks::saveGeometry() const
 {
-    // SGeo::DefaultDir() was giving null : due to static const depending on static const
     const char* dir = SEventConfig::OutFold() ;  
     LOG(LEVEL)  << "dir [" << ( dir ? dir : "-" )  ; 
     saveGeometry(dir) ; 

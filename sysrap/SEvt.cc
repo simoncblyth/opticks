@@ -621,13 +621,12 @@ void SEvt::setFrame_HostsideSimtrace()
 SEvt::setGeo
 -------------
 
+SGeo is a protocol for geometry access fulfilled by CSGFoundry (and formerly by GGeo)
+
 Canonical invokation is from G4CXOpticks::setGeometry 
 This connection between the SGeo geometry and SEvt is what allows 
 the appropriate instance frame to be accessed. That is vital for 
 looking up the sensor_identifier and sensor_index.  
-
-SGeo is a protocol for geometry access fulfilled by both GGeo
-and CSGFoundry 
 
 TODO: replace this with stree.h based approach  
 
@@ -1228,10 +1227,13 @@ void SEvt::beginOfEvent(int eventID)
 
 
 /**
-SEvt::endOfEvent (former static SEvt::EndOfEvent is removed)
---------------------------------------------------------------
+SEvt::endOfEvent
+------------------
 
-Called for example from U4Recorder::EndOfEventAction
+Called for example from::
+   
+   U4Recorder::EndOfEventAction
+   QSim::simulate
 
 Only SEventConfig::SaveComp OPTICKS_SAVE_COMP are actually saved, 
 so can switch off all saving wuth that config. 
@@ -3011,7 +3013,7 @@ SEvt::save persists NP arrays into the default directory
 or the directory argument provided.
 
 The FALLBACK_DIR which is used for the SEvt::DefaultDir is obtained from SEventConfig::OutFold 
-which is normally "$DefaultOutputDir" $TMP/GEOM/ExecutableName
+which is normally "$DefaultOutputDir" $TMP/GEOM/$GEOM/ExecutableName
 This can be overriden using SEventConfig::SetOutFold or by setting the 
 envvar OPTICKS_OUT_FOLD.
 
@@ -3071,7 +3073,7 @@ int SEvt::load()
 {
     const char* dir = DefaultDir(); 
     int rc = load(dir); 
-    LOG(LEVEL) << "SGeo::DefaultDir " << dir << " rc " << rc ;
+    LOG(LEVEL) << "SEvt::DefaultDir " << dir << " rc " << rc ;
     return rc ;  
 }
 
@@ -3110,7 +3112,7 @@ the same base_ argument is used, which may be nullptr to use the default.
 
 const char* SEvt::getOutputDir_OLD(const char* base_) const 
 {
-    const char* defd = SGeo::DefaultDir() ; 
+    const char* defd = DefaultDir() ; 
     const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ; 
     const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
@@ -3124,7 +3126,7 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
         << std::endl  
         << " reldir " << ( reldir ? reldir : "-" )
         << std::endl  
-        << " SGeo::DefaultDir " << ( defd ? defd : "-" )
+        << " SEvt::DefaultDir " << ( defd ? defd : "-" )
         << std::endl  
         << " SPath::Resolve(\"$DefaultOutputDir\", DIRPATH)"
         << SPath::Resolve("$DefaultOutputDir", DIRPATH )
@@ -3213,7 +3215,7 @@ Directory without event index, used for run level metadata.
 
 const char* SEvt::RunDir( const char* base_ )  // static
 {
-    const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
+    const char* base = base_ ? base_ : SEvt::DefaultDir() ; 
     const char* reldir = GetReldir() ; 
     const char* dir = SPath::Resolve(base, reldir, DIRPATH ); 
     return dir ; 
@@ -3223,7 +3225,8 @@ const char* SEvt::RunDir( const char* base_ )  // static
 
 const char* SEvt::DefaultDir() // static
 {
-    return SGeo::DefaultDir() ; 
+    //return SGeo::DefaultDir() ; 
+    return SEventConfig::OutFold() ; 
 }
 
 
