@@ -20,9 +20,11 @@ struct sstr
     static bool MatchAll(   const char* s, const char* q); 
     static bool MatchStart( const char* s, const char* q); 
     static bool StartsWith( const char* s, const char* q); 
-
     static bool MatchEnd(   const char* s, const char* q); 
     static bool EndsWith(   const char* s, const char* q); 
+
+    static constexpr const char* AZaz = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
+    static bool StartsWithLetterAZaz(const char* q ); 
 
     static bool Contains(   const char* s_ , const char* q_); 
 
@@ -133,6 +135,11 @@ inline bool sstr::EndsWith( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
+inline bool sstr::StartsWithLetterAZaz(const char* q )
+{
+    const char* p = q != nullptr && strlen(q) > 0 ? strchr(AZaz, q[0]) : nullptr ; 
+    return p != nullptr ;  
 }
 
 

@@ -10,7 +10,6 @@ in order to construct an ICDF that is saved into $TMP/QCerenkovIntegralTest
 #include "spath.h"
 #include "NP.hh"
 #include "NPX.h"
-#include "SOpticksResource.hh"
 #include "QCerenkovIntegral.hh"
 #include "QCK.hh"
 

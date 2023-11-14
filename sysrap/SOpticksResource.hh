@@ -8,38 +8,29 @@ Currently this straddles old and new workflows.
 Is this abstraction layer still needed ? 
 ------------------------------------------
 
-TODO: review usage, can this be simplified : NOPE : AIM TO REMOVE 
+NOPE : IN PROCESS OF REMOVING  : BUT MAYBE CAN SLIM DOWN DRASTICALLY::
 
-::
+    epsilon:tests blyth$ opticks-fl SOpticksResource.hh 
 
-    epsilon:opticks blyth$ opticks-fl SOpticksResource.hh 
-    ./CSGOptiX/tests/CSGOptiXRenderTest.cc
-    ./CSG/CSGSimtrace.cc
-    ./CSG/tests/CSGMakerTest.cc
     ./CSG/tests/CSGIntersectSolidTest.cc
-    ./CSG/tests/CSGTargetTest.cc
     ./CSG/tests/CSGGeometryFromGeocacheTest.cc
     ./CSG/CSGFoundry.cc
+
+    ./u4/U4VolumeMaker.cc   ## uses GEOMWrap, GDMLPath, ... 
+    ./g4cx/G4CXOpticks.cc   ## GDMLPath methods 
+
+
+    ## DISCOUNTED
     ./sysrap/SOpticksResource.hh
     ./sysrap/CMakeLists.txt
     ./sysrap/tests/SOpticksResourceTest.cc
-    ./sysrap/tests/SSimTest.cc
     ./sysrap/SOpticksResource.cc
     ./sysrap/SPath.cc
-    ./sysrap/SLOG.cc
-    ./sysrap/SEvt.cc
-    ./sysrap/SSim.cc
-    ./qudarap/tests/QScintTest.cc
-    ./qudarap/tests/QSimTest.cc
-    ./qudarap/tests/QCerenkovIntegralTest.cc
-    ./qudarap/tests/QSimWithEventTest.cc
-    ./u4/tests/U4GDMLReadTest.cc
-    ./u4/tests/U4MaterialTest.cc
-    ./u4/tests/U4Material_MakePropertyFold_MakeTest.cc
-    ./u4/U4VolumeMaker.cc
     ./boostrap/BOpticksResource.cc
-    ./g4cx/G4CXOpticks.cc
+
     epsilon:opticks blyth$ 
+
+
 
 
 **/

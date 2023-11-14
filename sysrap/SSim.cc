@@ -13,7 +13,6 @@
 #include "ssys.h"
 #include "spath.h"
 
-#include "SOpticksResource.hh"
 #include "SSim.hh"
 #include "SBnd.h"
 #include "SPrd.h"

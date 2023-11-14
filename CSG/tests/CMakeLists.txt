@@ -63,8 +63,11 @@ set(TEST_SOURCES
     CSGSignedDistanceFieldTest.cc
 
     CSGGeometryTest.cc
-    CSGGeometryFromGeocacheTest.cc
     CSGClassifyTest.cc
+)
+
+set( DEFERRED_TEST_SOURCES
+    CSGGeometryFromGeocacheTest.cc
 )
 
 find_program(BASH_EXECUTABLE NAMES bash REQUIRED)

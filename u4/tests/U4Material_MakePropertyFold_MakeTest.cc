@@ -1,5 +1,4 @@
 #include "spath.h"
-//#include "SOpticksResource.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "U4GDML.h"
@@ -11,7 +10,6 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* _origin = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/origin.gdml"); 
-    //const char* srcpath = argc > 1 ? argv[1] : SOpticksResource::SomeGDMLPath() ; 
     const char* srcpath = argc > 1 ? argv[1] : spath::Resolve(_origin) ; 
 
     const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  

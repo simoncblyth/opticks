@@ -399,7 +399,7 @@ The first such directory is returned, or nullptr if not found.
 
 **/
 
-const char* SOpticksResource::SearchCFBase(const char* dir){ return SPath::SearchDirUpTreeWithFile(dir, SearchCFBase_RELF) ; }
+const char* SOpticksResource::SearchCFBase(const char* dir){ return spath::SearchDirUpTreeWithFile(dir, SearchCFBase_RELF) ; }
 
 
 const char* SOpticksResource::OpticksGDMLPath_ = "OpticksGDMLPath" ; 

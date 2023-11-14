@@ -73,6 +73,8 @@ public:
 
     static int Remove(const char* path_); 
 
+    static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
+
 };
 
 
@@ -561,4 +563,25 @@ inline int spath::Remove(const char* path_)
 }
 
 
+/**
+spath::SearchDirUpTreeWithFile
+-------------------------------
+
+Search up the directory tree starting from *startdir* for 
+a directory that contains an existing relative filepath *relf*  
+
+**/
+
+inline const char* spath::SearchDirUpTreeWithFile( const char* startdir, const char* relf )
+{
+    if(startdir == nullptr || relf == nullptr) return nullptr ; 
+    char* dir = strdup(startdir) ; 
+    while(dir && strlen(dir) > 1)
+    {
+        if(spath::Exists(dir, relf)) break ; 
+        char* last = strrchr(dir, '/');    
+        *last = '\0' ;  // move the null termination inwards from right, going up directory by directory 
+    }
+    return ( dir && strlen(dir) > 1 ) ? strdup(dir) : nullptr ; 
+}
 

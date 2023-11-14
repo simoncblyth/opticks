@@ -28,8 +28,8 @@
 #include "SLOG.hh"
 #include "ssys.h"
 #include "s_time.h"
+#include "sproc.h"
 
-#include "SOpticksResource.hh"
 #include "SASCII.hh"
 
 #define STTF_IMPLEMENTATION 1 
@@ -39,7 +39,6 @@ SLOG* SLOG::instance = NULL ;
 
 const int SLOG::MAXARGC = 100 ;  
 
-//#define SLOG_DBG 1
 
 /**
 
@@ -273,7 +272,7 @@ This uses just the executable name with .log appended
 
 const char* SLOG::_logpath()
 {
-    const char* exename = SOpticksResource::ExecutableName() ; 
+    const char* exename = sproc::ExecutableName() ; 
     std::string lp(exename) ; 
     lp += ".log" ; 
     return strdup(lp.c_str());

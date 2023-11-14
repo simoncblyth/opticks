@@ -220,6 +220,7 @@ public:
     const char* getLoadDir() const ; 
     int getTotalItems() const ; 
 
+    static constexpr const char* SearchCFBase_RELF = "CSGFoundry/solid.npy" ; 
     const char* getSearchCFBase() const ; 
 
 

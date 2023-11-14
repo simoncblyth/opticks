@@ -22,21 +22,18 @@
 #include "spath.h"
 #include "sdirectory.h"
 #include "sstr.h"
-
-#include "SLOG.hh"
 #include "ssys.h"
-#include "SStr.hh"
+#include "SLOG.hh"
+
 #include "NP.hh"
 #include "NPX.h"
 #include "NPFold.h"
-#include "SPath.hh"   // TODO: switch over to spath.h 
 #include "SGeo.hh"
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "SSim.hh"
 #include "SEventConfig.hh"
 #include "SFrameGenstep.hh"
-#include "SOpticksResource.hh"
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
@@ -208,9 +205,9 @@ SEvt::getSearchCFbase
 ----------------------
 
 Search for CFBase geometry folder corresponding to event arrays based on 
-the loaded/saved SEvt directories. SOpticksResource::SearchCFBase uses::
+the loaded/saved SEvt directories eg with::
 
-    SPath::SearchDirUpTreeWithFile(dir, "CSGFoundry/solid.npy")
+    spath::SearchDirUpTreeWithFile(dir, "CSGFoundry/solid.npy")
 
 As the start dirs tried are loaddir and savedir this has no possibility of working prior 
 to a load or save having been done. As this is typically used for loaded SEvt 
@@ -238,13 +235,15 @@ const char* SEvt::getSearchCFBase() const
     const char* loaddir = getLoadDir();
     const char* savedir = getSaveDir();
     const char* cfbase = nullptr ; 
-    if(cfbase == nullptr && loaddir) cfbase = SOpticksResource::SearchCFBase(loaddir) ;
-    if(cfbase == nullptr && savedir) cfbase = SOpticksResource::SearchCFBase(savedir) ;
+    if(cfbase == nullptr && loaddir) cfbase = spath::SearchDirUpTreeWithFile(loaddir, SearchCFBase_RELF ); 
+    if(cfbase == nullptr && savedir) cfbase = spath::SearchDirUpTreeWithFile(savedir, SearchCFBase_RELF) ;
     return cfbase ; 
 }
 
 
-const char* SEvt::INPUT_PHOTON_DIR = ssys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+//const char* SEvt::INPUT_PHOTON_DIR = ssys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+const char* SEvt::INPUT_PHOTON_DIR = spath::Resolve("${SEvt__INPUT_PHOTON_DIR:-$HOME/.opticks/InputPhotons}") ; 
+
 /**
 SEvt::LoadInputPhoton
 ----------------------
@@ -260,7 +259,7 @@ Resolving the input string to a path is done in one of two ways:
    Create such files with ana/input_photons.py  
 
 2. if the string does not start with a letter eg /path/to/some/dir/file.npy or $TOKEN/path/to/file.npy 
-   it is passed unchanged to  SPath::Resolve
+   it is passed unchanged to  spath::Resolve
 
 **/
 
@@ -272,8 +271,8 @@ NP* SEvt::LoadInputPhoton() // static
 
 NP* SEvt::LoadInputPhoton(const char* ip)
 {
-    assert(strlen(ip) > 0 && SStr::EndsWith(ip, ".npy") ); 
-    const char* path = SStr::StartsWithLetterAZaz(ip) ?  SPath::Resolve(INPUT_PHOTON_DIR, ip, NOOP) : SPath::Resolve( ip, NOOP ) ; 
+    assert(strlen(ip) > 0 && sstr::EndsWith(ip, ".npy") ); 
+    const char* path = sstr::StartsWithLetterAZaz(ip) ?  spath::Resolve(INPUT_PHOTON_DIR, ip) : spath::Resolve( ip ) ; 
 
     NP* a = NP::Load(path); 
     LOG_IF(fatal, a == nullptr) << " FAILED to load input photon from path " << path << " SEventConfig::InputPhoton " << ip ; 
@@ -3079,12 +3078,12 @@ int SEvt::load()
 
 void SEvt::save(const char* bas, const char* rel ) 
 {
-    const char* dir = SPath::Resolve(bas, rel, DIRPATH); 
+    const char* dir = spath::Resolve(bas, rel); 
     save(dir); 
 }
 void SEvt::save(const char* bas, const char* rel1, const char* rel2 ) 
 {
-    const char* dir = SPath::Resolve(bas, rel1, rel2,  DIRPATH); 
+    const char* dir = spath::Resolve(bas, rel1, rel2); 
     save(dir); 
 }
 
@@ -3116,7 +3115,8 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
     const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ; 
     const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
-    const char* dir = SPath::Resolve(base, reldir, sidx, DIRPATH ) ; 
+    const char* dir = spath::Resolve(base, reldir, sidx ) ; 
+    sdirectory::MakeDirs(dir,0); 
 
     LOG(info)
         << std::endl  
@@ -3128,11 +3128,11 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
         << std::endl  
         << " SEvt::DefaultDir " << ( defd ? defd : "-" )
         << std::endl  
-        << " SPath::Resolve(\"$DefaultOutputDir\", DIRPATH)"
-        << SPath::Resolve("$DefaultOutputDir", DIRPATH )
+        << " spath::Resolve(\"$DefaultOutputDir\" )"
+        << spath::Resolve("$DefaultOutputDir" )
         << std::endl  
-        << " SPath::Resolve(\"$TMP\", DIRPATH)"
-        << SPath::Resolve("$TMP", DIRPATH )
+        << " spath::Resolve(\"$TMP\" )"
+        << spath::Resolve("$TMP" )
         << std::endl  
         << " dir    " << ( dir ? dir : "-" )  
         << std::endl  
@@ -3217,15 +3217,13 @@ const char* SEvt::RunDir( const char* base_ )  // static
 {
     const char* base = base_ ? base_ : SEvt::DefaultDir() ; 
     const char* reldir = GetReldir() ; 
-    const char* dir = SPath::Resolve(base, reldir, DIRPATH ); 
+    const char* dir = spath::Resolve(base, reldir ); 
+    sdirectory::MakeDirs(dir,0); 
     return dir ; 
 }
 
-
-
 const char* SEvt::DefaultDir() // static
 {
-    //return SGeo::DefaultDir() ; 
     return SEventConfig::OutFold() ; 
 }
 

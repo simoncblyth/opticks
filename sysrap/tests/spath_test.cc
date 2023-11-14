@@ -200,7 +200,8 @@ void spath_test::Resolve()
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail",
         "$DefaultOutputDir",
         "$DefaultOutputDir/some/further/relative/path",
-        "${RNGDir:-$HOME/.opticks/rngcache/RNG}"
+        "${RNGDir:-$HOME/.opticks/rngcache/RNG}",
+        "${SEvt__INPUT_PHOTON_DIR:-$HOME/.opticks/InputPhotons}"
         } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++) Resolve_( specs[i].c_str() ); 

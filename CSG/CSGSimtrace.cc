@@ -1,6 +1,5 @@
 #include "SLOG.hh"
 #include "SEventConfig.hh"
-#include "SOpticksResource.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
 #include "SSim.hh"

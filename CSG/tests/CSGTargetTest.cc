@@ -28,7 +28,6 @@ Check a few different iidx of midx 120::
 #include "SStr.hh"
 #include "SSim.hh"
 
-#include "SOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"

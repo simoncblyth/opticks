@@ -4,7 +4,6 @@
 #include "spath.h"
 #include "scuda.h"
 #include "NP.hh"
-#include "SOpticksResource.hh"
 #include "QScint.hh"
 
 void test_check(QScint& sc)
@@ -23,15 +22,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBaseFromGEOM(); 
-    LOG_IF(fatal, cfbase == nullptr ) << " SOpticksResource::CFBaseFromGEOM() returned nullptr : CHECK GEOM " ; 
-    if(cfbase == nullptr) return 1 ; 
-
-    const char* path = spath::Resolve(cfbase, "CSGFoundry/SSim/stree/standard/icdf.npy" ); 
+    const char* path = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/icdf.npy" ); 
     NP* icdf = NP::LoadIfExists(path); 
 
     LOG(info) 
-        << " cfbase " << cfbase
         << " path " << path 
         << " icdf " << ( icdf ? icdf->sstr() : "-" )
         ; 

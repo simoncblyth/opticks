@@ -1,6 +1,5 @@
 #include "SSim.hh"
 #include "NP.hh"
-#include "SOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
 void test_Load()

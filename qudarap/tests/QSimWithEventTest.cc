@@ -5,7 +5,6 @@
 #include "SEvt.hh"
 #include "SSim.hh"
 #include "NP.hh"
-#include "SOpticksResource.hh"
 
 #include <cuda_runtime.h>
 #include "scuda.h"

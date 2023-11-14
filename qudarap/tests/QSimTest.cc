@@ -9,7 +9,6 @@ QSimTest.cc
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
 
-#include "SOpticksResource.hh"
 #include "SEventConfig.hh"
 #include "scuda.h"
 #include "squad.h"

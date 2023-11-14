@@ -15,7 +15,6 @@ SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY
 #include "ssys.h"
 #include "spath.h"
 #include "SSim.hh"
-#include "SOpticksResource.hh"
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
 #include "OPTICKS_LOG.hh"
@@ -64,8 +63,6 @@ int main(int argc, char** argv)
      {
          const char* name = names[i].c_str() ; 
          LOG(info) << name ; 
-
-         //SOpticksResource::SetGEOM(name);  
 
          CSGFoundry* fd = CSGFoundry::MakeGeom( name ); 
          LOG(info) << fd->desc();    

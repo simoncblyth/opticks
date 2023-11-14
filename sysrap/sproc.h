@@ -244,6 +244,16 @@ inline bool sproc::StartsWith( const char* s, const char* q)
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ; 
 }
 
+/**
+sproc::ExecutableName
+----------------------
+
+In embedded running with python "main" the 
+initial executable name is eg "python3.9".
+That can be overridden with envvar OPTICKS_SCRIPT 
+
+**/
+
 inline char* sproc::ExecutableName()
 {  
     char* exe0 = sproc::_ExecutableName() ; 
