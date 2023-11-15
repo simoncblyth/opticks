@@ -30,15 +30,18 @@ include_directories(
 )
 
 
+#set(COMPUTE_CAPABILITY $ENV{OPTICKS_COMPUTE_CAPABILITY})
+#set(CUDA_NVCC_FLAGS)
+#list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
+#list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
+#list(APPEND CUDA_NVCC_FLAGS "-O2")
+#list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+#list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
-set(COMPUTE_CAPABILITY $ENV{OPTICKS_COMPUTE_CAPABILITY})
-
-set(CUDA_NVCC_FLAGS)
-list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
-list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
-list(APPEND CUDA_NVCC_FLAGS "-O2")
-list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
-list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+#[=[
+CUDA_NVCC_FLAGS are set in cmake/Modules/OpticksCUDAFlags.cmake
+its better to set them in one place
+#]=]
 
 
 set(SOURCES)
