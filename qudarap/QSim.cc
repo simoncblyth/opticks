@@ -52,6 +52,23 @@ QSim* QSim::Create()
     return new QSim  ;  
 }
 
+const char* QSim::Desc()
+{
+    std::stringstream ss ; 
+    ss << "QSim::Desc" 
+#ifdef WITH_CUSTOM4
+       << " WITH_CUSTOM4 " 
+#else
+       << " NOT:WITH_CUSTOM4 "
+#endif
+       ;    
+    std::string str = ss.str(); 
+    return strdup(str.c_str()); 
+}
+
+
+
+
 /**
 QSim::UploadComponents
 -----------------------

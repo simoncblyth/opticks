@@ -16,6 +16,7 @@ set(TEST_SOURCES
    QCerenkovIntegralTest.cc
    QPolyTest.cc
    QSimTest.cc
+   QSimDescTest.cc
    QOpticalTest.cc 
    QPropTest.cc 
    QEventTest.cc 

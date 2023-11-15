@@ -15,10 +15,13 @@ or doing geometry specific things.
 #]=]
 
 set(SINGLE_SOURCES
+
+    CSGOptiXDescTest.cc 
     CSGOptiXSimtraceTest.cc
     CSGOptiXSimulateTest.cc
     CSGOptiXSimTest.cc
     CXRaindropTest.cc
+
 
     CSGOptiXRMTest.cc
     CSGOptiXTMTest.cc

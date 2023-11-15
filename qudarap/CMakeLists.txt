@@ -176,19 +176,22 @@ get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
 
 #[=[
-As QUDARap only needs a single header-only header 
-from Custom4 not the lib hook up the include directory, 
-instead of the full target which would bring in the Custom4 lib 
-which in turn adds dependency on Geant4 libs 
+As QUDARap only requires a single header-only header from Custom4,
+not the library it is unnecessarily adding dependency on the lib and 
+all the Geant4 libs when hooking up the full target with::
+
+   # set(LIBS ${LIBS} Custom4::Custom4) 
+
+So instead just hookup the include_directories and 
+compile_definitions not the full target. 
 #]=]
 
 if(Custom4_FOUND)
-   #set(LIBS ${LIBS} Custom4::Custom4)   # DONT DO THIS IT ADDS DEPENDENCY ON GEANT4 LIBS
+   target_compile_definitions( ${name} PUBLIC WITH_CUSTOM4 )
    target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
 endif()
 
 target_link_libraries( ${name} ${LIBS})
-#target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
@@ -198,7 +201,7 @@ target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 WITH_THRUST compile definition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* WITH_THRUST is needed for Custom4 on GPU complex math functions used by qpmt.h 
+* WITH_THRUST is needed for the Custom4 GPU complex math functions used by qpmt.h 
 
 * However Custom4 also used on CPU without WITH_THRUST (eg by junosw), so 
   the WITH_THRUST definition must be PRIVATE to avoid interference with other

@@ -211,8 +211,8 @@ const char* CSGOptiX::Desc()
        << " NOT:WITH_CUSTOM4 "
 #endif
        ; 
-    std::string s = ss.str(); 
-    return strdup(s.c_str()); 
+    std::string str = ss.str(); 
+    return strdup(str.c_str()); 
 }
 
 
