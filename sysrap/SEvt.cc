@@ -3116,7 +3116,7 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
     const char* reldir = GetReldir() ; 
     const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
-    sdirectory::MakeDirs(dir,0); 
+    sdirectory::MakeDirs(path,0); 
 
     LOG(info)
         << std::endl  
@@ -3134,11 +3134,11 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
         << " spath::Resolve(\"$TMP\" )"
         << spath::Resolve("$TMP" )
         << std::endl  
-        << " dir    " << ( dir ? dir : "-" )  
+        << " path    " << ( path ? path : "-" )  
         << std::endl  
         ;
 
-    return dir ;  
+    return path ;  
 }
 
 /**
