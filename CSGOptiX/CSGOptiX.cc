@@ -205,6 +205,11 @@ const char* CSGOptiX::Desc()
        << " Version " << Version() 
        << " PTXNAME " << PTXNAME 
        << " GEO_PTXNAME " << ( GEO_PTXNAME ? GEO_PTXNAME : "-" ) 
+#ifdef WITH_CUSTOM4
+       << " WITH_CUSTOM4 " 
+#else
+       << " NOT:WITH_CUSTOM4 "
+#endif
        ; 
     std::string s = ss.str(); 
     return strdup(s.c_str()); 

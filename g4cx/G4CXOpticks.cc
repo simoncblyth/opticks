@@ -251,6 +251,8 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     CSGFoundry* fd_ = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE  
     setGeometry(fd_); 
 
+    LOG(info) << Desc() ; 
+
     LOG(LEVEL) << "] G4VPhysicalVolume world " << world ; 
 }
 
