@@ -397,6 +397,21 @@ template std::string spath::_Resolve( const char*, const char*, const char* );
 template std::string spath::_Resolve( const char*, const char*, const char*, const char* ); 
 
 
+/**
+spath::Resolve
+----------------
+
+All provided path elements must be non-nullptr
+otherwise get an assert when trying to convert the 
+nullptr into a std::string. 
+
+Although this could be avoided by ignoring such 
+elements it is safer to require everything defined.
+Safety is important as the returned paths can be used
+for directory deletions. 
+
+**/
+
 template<typename ... Args>
 inline const char* spath::Resolve( Args ... args  )  // static
 {
@@ -412,9 +427,6 @@ template const char* spath::Resolve( const char* );
 template const char* spath::Resolve( const char*, const char* ); 
 template const char* spath::Resolve( const char*, const char*, const char* ); 
 template const char* spath::Resolve( const char*, const char*, const char*, const char* ); 
-
-
-
 
 template<typename ... Args>
 inline std::string spath::_Join( Args ... args_  )  // static

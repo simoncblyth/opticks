@@ -3115,7 +3115,7 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
     const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ; 
     const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
-    const char* dir = spath::Resolve(base, reldir, sidx ) ; 
+    const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(dir,0); 
 
     LOG(info)
@@ -3160,8 +3160,7 @@ const char* SEvt::getOutputDir(const char* base_) const
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
 
-
-    LOG(info)
+    LOG(LEVEL)
         << std::endl  
         << " base_  " << ( base_ ? base_ : "-" )
         << std::endl  
