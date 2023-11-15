@@ -2178,7 +2178,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
 #ifdef DEBUG_PIDX
     if( ctx.idx == base->pidx ) 
-    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d s.optical.y %d \n", 
+    printf("//qsim.propagate.body idx %d bounce %d command %d flag %d s.optical.x %d s.optical.y %d \n", 
           ctx.idx, bounce, command, flag, ctx.s.optical.x, ctx.s.optical.y );   
 #endif
 
@@ -2190,9 +2190,9 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         if( ctx.idx == base->pidx ) 
         {
 #if defined(WITH_CUSTOM4)
-            printf("//qsim.propagate.WITH_CUSTOM4 idx %d  BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost ); 
+            printf("//qsim.propagate.body.WITH_CUSTOM4 idx %d  BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost ); 
 #else
-            printf("//qsim.propagate.NOT:WITH_CUSTOM4 idx %d BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost); 
+            printf("//qsim.propagate.body.NOT:WITH_CUSTOM4 idx %d BOUNDARY ems %d lposcost %7.3f \n", ctx.idx, ems, lposcost); 
 #endif
         }
 #endif
@@ -2209,7 +2209,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         {
 #ifdef DEBUG_PIDX
             if( ctx.idx == base->pidx ) 
-            printf("//qsim.propagate (lposcost < 0.f) idx %d bounce %d command %d flag %d ems %d \n", 
+            printf("//qsim.propagate.body (lposcost < 0.f) idx %d bounce %d command %d flag %d ems %d \n", 
                      ctx.idx, bounce, command, flag, ems  );   
 #endif           
             command = propagate_at_surface( flag, rng, ctx ) ; 
@@ -2226,6 +2226,14 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         }
     }
     ctx.p.set_flag(flag);   
+
+
+#ifdef DEBUG_PIDX
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim.propagate.tail idx %d bounce %d command %d flag %d ctx.s.optical.y(ems) %d \n", 
+             ctx.idx, bounce, command, flag, ctx.s.optical.y  );   
+#endif           
+
     return command ; 
 }
 /**
