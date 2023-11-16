@@ -78,6 +78,7 @@ QEvent::QEvent()
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
     input_photon(nullptr),
+    narrow_input_photon(nullptr),
     upload_count(0)
 {
     LOG(LEVEL); 
@@ -274,8 +275,20 @@ narrowed here prior to upload.
 void QEvent::setInputPhoton()
 {
     LOG(LEVEL); 
- 
-    input_photon = sev->getInputPhoton(); 
+    //input_photon = sev->getInputPhoton(); 
+    if( input_photon == nullptr ) 
+    {
+        input_photon = sev->getInputPhoton()->copy() ; 
+        checkInputPhoton(); 
+        narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
+    }
+    int numph = input_photon->shape[0] ; 
+    setNumPhoton( numph ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), numph ); 
+}
+
+void QEvent::checkInputPhoton() const 
+{
     LOG_IF(fatal, input_photon == nullptr) 
         << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
         ; 
@@ -284,6 +297,7 @@ void QEvent::setInputPhoton()
 
     bool expected_shape = input_photon->has_shape( -1, 4, 4) ;
     bool expected_ebyte = input_photon->ebyte == 4 || input_photon->ebyte == 8 ;
+
     int numph = input_photon->shape[0] ; 
     bool expected_numph = evt->num_seed == numph ;
 
@@ -294,11 +308,6 @@ void QEvent::setInputPhoton()
     assert(expected_shape); 
     assert(expected_ebyte); 
     assert(expected_numph); 
-
-    NP* narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
-
-    setNumPhoton( numph ); 
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), numph ); 
 }
 
 

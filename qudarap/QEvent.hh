@@ -72,6 +72,7 @@ private:
     sevent*           d_evt ; 
     NP*               gs ;  
     NP*               input_photon ; 
+    NP*               narrow_input_photon ; 
 public:
     int               upload_count ; 
 
@@ -90,6 +91,8 @@ private:
     int  setGenstep(NP* gs);
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
+    void checkInputPhoton() const ; 
+
     int setGenstep(quad6* gs, unsigned num_gs ); 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
