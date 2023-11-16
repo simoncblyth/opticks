@@ -49,6 +49,7 @@ and singular with long lived buffers of defined maximum capacity that get reused
 struct QUDARAP_API QEvent : public SCompProvider
 {
     friend struct QEventTest ; 
+    friend struct QEvent_setInputPhoton_Test ; 
 
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 

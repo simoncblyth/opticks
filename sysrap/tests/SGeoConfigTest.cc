@@ -54,11 +54,12 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    //const char* idp = "$CFBase/CSGFoundry/meshname.txt" ; 
     const char* idp = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ; 
 
     SName* id = SName::Load(idp); 
     std::cout << id->detail() << std::endl ; 
+
+    LOG(info) << SGeoConfig::Desc() ; 
 
     /*
     SGeoConfig::GeometrySpecificSetup(id); 
@@ -66,9 +67,9 @@ int main(int argc, char** argv)
     LOG(info) << SGeoConfig::DescEMM() ; 
     test_Arglist(); 
     test_CXSkipLV(id); 
+    test_ELVSelection(id); 
     */
 
-    test_ELVSelection(id); 
 
     return 0 ; 
 }

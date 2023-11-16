@@ -2,11 +2,11 @@
 
 #include <cuda_runtime.h>
 
-#include "SPath.hh"
 #include "OpticksGenstep.h"
 #include "NP.hh"
 #include "QBuf.hh"
 
+#include "spath.h"
 #include "scuda.h"
 #include "squad.h"
 
@@ -158,7 +158,7 @@ void QEventTest::test_setGenstep_loaded(NP* gs)
 void QEventTest::test_setGenstep_loaded()
 {
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
-    const char* path = SPath::Resolve(path_, 0); 
+    const char* path = spath::Resolve(path); 
     NP* gs0 = NP::Load(path); 
 
     if( gs0 == nullptr )

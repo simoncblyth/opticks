@@ -19,6 +19,7 @@
 const plog::Severity SGeoConfig::LEVEL = SLOG::EnvLevel("SGeoConfig", "DEBUG"); 
 
 
+const char* SGeoConfig::_GEOM = ssys::getenvvar(kGEOM, nullptr ); 
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
 const char* SGeoConfig::_ELVSelection   = ssys::getenvvar(kELVSelection, nullptr ); 
 const char* SGeoConfig::_SolidSelection = ssys::getenvvar(kSolidSelection, nullptr ); 
@@ -45,6 +46,7 @@ SGeoConfig::ELVSelection
 --------------------------
 **/
 
+const char* SGeoConfig::GEOM(){           return _GEOM ; }
 const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
 const char* SGeoConfig::ELVSelection(const SName* id )
 {
@@ -126,6 +128,7 @@ std::string SGeoConfig::Desc()
 {
     std::stringstream ss ; 
     ss << std::endl ; 
+    ss << std::setw(25) << kGEOM             << " : " << ( _GEOM   ? _GEOM   : "-" ) << std::endl ;    
     ss << std::setw(25) << kEMM              << " : " << SBit::HexString(_EMM) << " 0x" << std::hex << _EMM << std::dec << std::endl ;
     ss << std::setw(25) << kELVSelection     << " : " << ( _ELVSelection   ? _ELVSelection   : "-" ) << std::endl ;    
     ss << std::setw(25) << kSolidSelection   << " : " << ( _SolidSelection ? _SolidSelection : "-" ) << std::endl ;    

@@ -95,7 +95,7 @@ struct ssys
 
     static void Dump(const char* msg); 
     static int run(const char* cmd); 
-
+    static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
 
 }; 
 
@@ -623,6 +623,65 @@ inline int ssys::run(const char* cmd)
         ; 
     return rc ;  
 }
+
+
+
+
+/**
+ssys::setenvvar
+-----------------
+
+overwrite:false 
+    preexisting envvar is not overridden. 
+
+As shell handling of empty strings is inconvenient the special_empty_token char 
+allows a single char to represent the empty string, eg '-' 
+
+**/
+
+
+inline int ssys::setenvvar( const char* ekey, const char* value, bool overwrite, char special_empty_token)
+{
+    std::stringstream ss ;
+    ss << ekey << "=" ;
+
+    if(value)
+    {
+        if(special_empty_token != '\0' && strlen(value) == 1 && value[0] == special_empty_token)
+        {
+            ss << "" ; 
+        }
+        else
+        {
+            ss << value ; 
+        }
+    }
+
+    std::string ekv = ss.str();
+    const char* prior = getenv(ekey) ;
+
+    char* ekv_ = const_cast<char*>(strdup(ekv.c_str()));
+
+    int rc = ( overwrite || !prior ) ? putenv(ekv_) : 0  ; 
+
+    const char* after = getenv(ekey) ;
+
+    if(VERBOSE) std::cerr
+        << "ssys::setenvvar"
+        << " ekey " << ekey 
+        << " ekv " << ekv 
+        << " overwrite " << overwrite
+        << " prior " << ( prior ? prior : "NULL" )
+        << " value " << ( value ? value : "NULL" )   
+        << " after " << ( after ? after : "NULL" )   
+        << " rc " << rc 
+        << std::endl 
+        ;
+
+    //std::raise(SIGINT);  
+    return rc ;
+}
+
 
 
 

@@ -20,6 +20,7 @@ set(TEST_SOURCES
    QOpticalTest.cc 
    QPropTest.cc 
    QEventTest.cc 
+   QEvent_Lifecycle_Test.cc
    QSimWithEventTest.cc 
    QSimCreateTest.cc 
    QUTest.cc

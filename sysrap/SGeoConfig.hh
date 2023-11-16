@@ -22,6 +22,7 @@ struct SYSRAP_API SGeoConfig
     static std::string Desc(); 
     static std::string DescEMM(); 
 
+    static constexpr const char* kGEOM           = "OPTICKS_GEOM,GEOM" ; 
     static constexpr const char* kEMM            = "OPTICKS_EMM_SELECTION,EMM" ; 
     static constexpr const char* kELVSelection   = "OPTICKS_ELV_SELECTION,ELV" ; 
     static constexpr const char* kSolidSelection = "OPTICKS_SOLID_SELECTION" ; 
@@ -37,6 +38,7 @@ struct SYSRAP_API SGeoConfig
     static constexpr const char* kArglistPath_desc = "generic path to a list of arguments used by some tests" ; 
     static constexpr const char* kCXSkipLV_desc = "non-dynamic LV skipping in CSG_GGeo_Convert, PREFERABLE FOR LONG-LIVED SKIPS" ; 
 
+    static const char* _GEOM ;   
     static unsigned long long _EMM ; 
     static const char* _ELVSelection ;   
     static const char* _SolidSelection ;   
@@ -46,6 +48,7 @@ struct SYSRAP_API SGeoConfig
     static const char* _CXSkipLV_IDXList ; 
 
     static unsigned long long EnabledMergedMesh() ; 
+    static const char* GEOM(); 
     static const char* SolidSelection(); 
     static const char* FlightConfig(); 
     static const char* ArglistPath(); 
@@ -58,6 +61,7 @@ struct SYSRAP_API SGeoConfig
 
     static void SetCXSkipLV_IDXList(const SName* id); 
 
+    static void SetGEOM(           const char* gm ); 
     static void SetSolidSelection( const char* ss ); 
     static void SetELVSelection(   const char* es ); 
     static void SetFlightConfig(   const char* fc ); 

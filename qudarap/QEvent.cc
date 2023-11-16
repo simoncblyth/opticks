@@ -275,14 +275,11 @@ narrowed here prior to upload.
 void QEvent::setInputPhoton()
 {
     LOG(LEVEL); 
-    //input_photon = sev->getInputPhoton(); 
-    if( input_photon == nullptr ) 
-    {
-        input_photon = sev->getInputPhoton()->copy() ; 
-        checkInputPhoton(); 
-        narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
-    }
-    int numph = input_photon->shape[0] ; 
+    input_photon = sev->gatherInputPhoton(); // makes a copy 
+    checkInputPhoton(); 
+    narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
+
+    int numph = narrow_input_photon->shape[0] ; 
     setNumPhoton( numph ); 
     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), numph ); 
 }
@@ -303,7 +300,7 @@ void QEvent::checkInputPhoton() const
 
     LOG_IF(fatal, !expected_shape) << " !expected_shape " << input_photon->sstr() ; 
     LOG_IF(fatal, !expected_ebyte) << " !expected_ebyte " << input_photon->ebyte ; 
-    LOG_IF(fatal, !expected_numph) << " !expected_numph " << numph ; 
+    LOG_IF(fatal, !expected_numph) << " !expected_numph " << numph << " evt.num_seed " << ( evt ? evt->num_seed : -1 )  ; 
 
     assert(expected_shape); 
     assert(expected_ebyte); 
@@ -626,7 +623,10 @@ NP* QEvent::gatherHit() const
     if(!has_photon) return nullptr ; 
 
     assert( evt->photon ); 
+
+    LOG_IF(fatal, evt->num_photon == 0 ) << " evt->num_photon ZERO " ;  
     assert( evt->num_photon ); 
+
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
 
     LOG(LEVEL) 

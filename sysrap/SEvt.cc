@@ -1032,7 +1032,7 @@ sgs SEvt::AddGenstep(const NP* a)
 }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
-
+// InputPhoton genstep addition invoked from SEvt::addFrameGenstep
 
 
 SEvt* SEvt::LoadAbsolute(const char* dir_) // static
@@ -1265,6 +1265,8 @@ void SEvt::endOfEvent(int eventID)
 
     save();             
     clear_except("hit"); 
+    // HMM: note that QEvent::setGenstep calls the SEvt::clear before launch 
+
 }
 
 
@@ -1415,15 +1417,12 @@ SEvt::clear
 Clear vectors and the fold.
 
 Note this is called by QEvent::setGenstep 
-so when adding input arrays make sure to do so 
-after the genstep setup. 
 
 **/
 
 void SEvt::clear()
 {
-    LOG(info) << "SEvt::clear" ; 
-
+    //std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
  
     clear_vectors(); 
@@ -1443,8 +1442,6 @@ The comma delimited keeplist need not contain .npy on its keys
 
 void SEvt::clear_except(const char* keep)
 {
-    LOG(info) << "SEvt::clear_except" ; 
-
     LOG(LEVEL) << "[" ; 
     clear_vectors(); 
 
@@ -2930,7 +2927,7 @@ void SEvt::gather_components()   // *GATHER*
     {
         assert( num_genstep > -1 ); 
         assert( num_photon > -1 ); 
-        LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
+        //LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
         //assert( num_hit > -1 ); 
     }
 

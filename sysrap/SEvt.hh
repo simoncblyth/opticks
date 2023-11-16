@@ -9,11 +9,6 @@ TODO : prune useless/misleading statics,
        need to message all instances. 
 
 
-NB : THERE IS ALMOST ALWAYS ONLY ONE SEvt INSTANCE NO MATTER HOW MANY G4Event ARE HANDLED
-
-* HAVING MORE THAN ONE SEvt INSTANCE CAN CAUSE PERPLEXING BUGS 
-
-
 TODO : lifecycle leak checking 
 
 Q: Where is this instanciated canonically ?
@@ -82,7 +77,6 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "SComp.h"
 #include "SRandom.h"
 
-//struct SCF ; 
 struct sphoton_selector ; 
 struct sdebug ; 
 struct NP ; 

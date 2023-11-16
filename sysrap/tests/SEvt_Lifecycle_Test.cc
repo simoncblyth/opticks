@@ -7,13 +7,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(0); 
+    SEvt* evt = SEvt::Create(SEvt::EGPU);   // instanciation may load input_photons
     assert(evt); 
 
     std::cout << SEvt::DescINSTANCE() ; 
 
 
-    bool ip = SEvt::HasInputPhoton(0) ; 
+    bool ip = SEvt::HasInputPhoton(SEvt::EGPU) ; 
     sframe fr = sframe::Fabricate(0.f,0.f,1000.f) ; 
     evt->setFrame(fr); 
 

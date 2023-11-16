@@ -51,6 +51,7 @@ TODO: should be using Tran<double> for transforming , might as well
 
 struct sframe
 {
+    static constexpr const bool VERBOSE = false ; 
     static constexpr const char* NAME = "sframe" ;  // formerly with .npy, now splitting ext for easier stem changes
     static constexpr const char* DEFAULT_FRS = "-1" ; 
     static constexpr const char* DEFAULT_NAME = "ALL" ;  
@@ -415,7 +416,7 @@ inline NP* sframe::getFrameArray() const
 }
 inline void sframe::save(const char* dir, const char* name_ ) const
 {
-    std::cout 
+    if(VERBOSE) std::cout 
         << "[ sframe::save " 
         << " dir : " << ( dir ? dir : "MISSING_DIR" ) 
         << " name: " << ( name_ ? name_ : "MISSING_NAME" ) 
@@ -427,7 +428,7 @@ inline void sframe::save(const char* dir, const char* name_ ) const
 
     a->save(dir, name.c_str()); 
 
-    std::cout 
+    if(VERBOSE) std::cout 
        << "] sframe::save "
        << std::endl
        ;
