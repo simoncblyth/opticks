@@ -195,8 +195,9 @@ inline void U4GDML::write(const char* path)
     {
         const char* rawpath = sstr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
         write_(rawpath); 
+        LOG(LEVEL) << "[ Apply GDXML::Fix " << " rawpath " << rawpath << " dstpath " << dstpath ; 
         GDXML::Fix( dstpath, rawpath );     
-        LOG(LEVEL) << " Apply GDXML::Fix " << " rawpath " << rawpath << " dstpath " << dstpath ; 
+        LOG(LEVEL) << "] Apply GDXML::Fix " << " rawpath " << rawpath << " dstpath " << dstpath ; 
     }
     else
     {
@@ -207,17 +208,23 @@ inline void U4GDML::write(const char* path)
 
 inline void U4GDML::write_(const char* path)
 {
-    if(spath::Exists(path)) 
-    {
-        int rc = spath::Remove(path); 
-        LOG_IF(fatal, rc != 0 ) 
-            << " FAILED TO REMOVE PATH [" << path << "]" 
-            << " CHECK PERMISSIONS " 
-            ; 
+    LOG(LEVEL) << "[" ;    
+    bool exists = spath::Exists(path) ; 
+    int rc = exists ? spath::Remove(path) : 0 ; 
+    LOG_IF(fatal, rc != 0 ) 
+        << " FAILED TO REMOVE PATH [" << path << "]" 
+        << " CHECK PERMISSIONS " 
+        ; 
+
+    LOG(LEVEL) 
+        << " path " << ( path ? path : "-" ) 
+        << " exists " << ( exists ? "YES" : "NO " )
+        << " rc " << rc
+        ;
         
-    }
     sdirectory::MakeDirsForFile(path,0);
     parser->Write(path, world, write_refs, write_schema_location); 
+    LOG(LEVEL) << "]" ;    
 }
 
 
