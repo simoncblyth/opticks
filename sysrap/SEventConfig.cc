@@ -5,14 +5,18 @@
 #include <iostream>
 #include <iomanip>
 
-#include "SSys.hh"
-#include "SPath.hh"
+#include "ssys.h"
+#include "spath.h"
+#include "sdirectory.h"
+#include "salloc.h"
+
+#include "SPath.hh"   // only SPath::Make to replace
+
 #include "SEventConfig.hh"
 #include "SRG.h"  // raygenmode
 #include "SRM.h"  // runningmode
 #include "SComp.h"
 #include "OpticksPhoton.hh"
-#include "salloc.h"
 
 #include "SLOG.hh"
 
@@ -62,40 +66,40 @@ const char* SEventConfig::_InputPhotonDefault = nullptr ;
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ; 
 
 
-int         SEventConfig::_IntegrationMode = SSys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
-const char* SEventConfig::_EventMode = SSys::getenvvar(kEventMode, _EventModeDefault ); 
-int SEventConfig::_RunningMode = SRM::Type(SSys::getenvvar(kRunningMode, _RunningModeDefault)); 
-const char* SEventConfig::_G4StateSpec  = SSys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
-int         SEventConfig::_G4StateRerun = SSys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
+int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
+const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault ); 
+int SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
+const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
+int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
 
-int SEventConfig::_MaxGenstep   = SSys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
-int SEventConfig::_MaxPhoton    = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
-int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
-int SEventConfig::_MaxBounce    = SSys::getenvint(kMaxBounce, _MaxBounceDefault ) ; 
-int SEventConfig::_MaxRecord    = SSys::getenvint(kMaxRecord, _MaxRecordDefault ) ;    
-int SEventConfig::_MaxRec       = SSys::getenvint(kMaxRec, _MaxRecDefault ) ;   
-int SEventConfig::_MaxAux       = SSys::getenvint(kMaxAux, _MaxAuxDefault ) ;   
-int SEventConfig::_MaxSup       = SSys::getenvint(kMaxSup, _MaxSupDefault ) ;   
-int SEventConfig::_MaxSeq       = SSys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;  
-int SEventConfig::_MaxPrd       = SSys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;  
-int SEventConfig::_MaxTag       = SSys::getenvint(kMaxTag,  _MaxTagDefault ) ;  
-int SEventConfig::_MaxFlat      = SSys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;  
-float SEventConfig::_MaxExtent  = SSys::getenvfloat(kMaxExtent, _MaxExtentDefault );  
-float SEventConfig::_MaxTime    = SSys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
-const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold, _OutFoldDefault ); 
-const char* SEventConfig::_OutName = SSys::getenvvar(kOutName, _OutNameDefault ); 
-int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, _RGModeDefault)) ;    
-unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, _HitMaskDefault )) ;   
+int SEventConfig::_MaxGenstep   = ssys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
+int SEventConfig::_MaxPhoton    = ssys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
+int SEventConfig::_MaxSimtrace  = ssys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
+int SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ; 
+int SEventConfig::_MaxRecord    = ssys::getenvint(kMaxRecord, _MaxRecordDefault ) ;    
+int SEventConfig::_MaxRec       = ssys::getenvint(kMaxRec, _MaxRecDefault ) ;   
+int SEventConfig::_MaxAux       = ssys::getenvint(kMaxAux, _MaxAuxDefault ) ;   
+int SEventConfig::_MaxSup       = ssys::getenvint(kMaxSup, _MaxSupDefault ) ;   
+int SEventConfig::_MaxSeq       = ssys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;  
+int SEventConfig::_MaxPrd       = ssys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;  
+int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;  
+int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;  
+float SEventConfig::_MaxExtent  = ssys::getenvfloat(kMaxExtent, _MaxExtentDefault );  
+float SEventConfig::_MaxTime    = ssys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
+const char* SEventConfig::_OutFold = ssys::getenvvar(kOutFold, _OutFoldDefault ); 
+const char* SEventConfig::_OutName = ssys::getenvvar(kOutName, _OutNameDefault ); 
+int SEventConfig::_RGMode = SRG::Type(ssys::getenvvar(kRGMode, _RGModeDefault)) ;    
+unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 
-//unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
-unsigned SEventConfig::_GatherComp  = SComp::Mask(SSys::getenvvar(kGatherComp, _GatherCompDefault )) ;   
-unsigned SEventConfig::_SaveComp    = SComp::Mask(SSys::getenvvar(kSaveComp,   _SaveCompDefault )) ;   
+//unsigned SEventConfig::_CompMask  = SComp::Mask(ssys::getenvvar(kCompMask, _CompMaskDefault )) ;   
+unsigned SEventConfig::_GatherComp  = SComp::Mask(ssys::getenvvar(kGatherComp, _GatherCompDefault )) ;   
+unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _SaveCompDefault )) ;   
 
 
-float SEventConfig::_PropagateEpsilon = SSys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ; 
-const char* SEventConfig::_InputPhoton = SSys::getenvvar(kInputPhoton, _InputPhotonDefault ); 
-const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
+float SEventConfig::_PropagateEpsilon = ssys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ; 
+const char* SEventConfig::_InputPhoton = ssys::getenvvar(kInputPhoton, _InputPhotonDefault ); 
+const char* SEventConfig::_InputPhotonFrame = ssys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
 
 
 int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
@@ -479,7 +483,9 @@ TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpt
 
 const char* SEventConfig::OutDir()  
 {
-    return SPath::Resolve( OutFold(), OutName(), DIRPATH ); 
+    const char* dir = spath::Resolve( OutFold(), OutName() ); 
+    sdirectory::MakeDirs(dir,0); 
+    return dir ; 
 }
 const char* SEventConfig::OutPath( const char* stem, int index, const char* ext )
 {
@@ -508,7 +514,9 @@ std::string SEventConfig::DescOutPath(  const char* stem, int index, const char*
 
 const char* SEventConfig::OutDir(const char* reldir)
 {
-    return SPath::Resolve( OutFold(), OutName(), reldir, DIRPATH ); 
+    const char* dir = spath::Resolve( OutFold(), OutName(), reldir ); 
+    sdirectory::MakeDirs(dir, 0); 
+    return dir ; 
 }
 const char* SEventConfig::OutPath( const char* reldir, const char* stem, int index, const char* ext )
 {
