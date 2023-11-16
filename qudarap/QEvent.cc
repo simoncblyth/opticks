@@ -281,16 +281,24 @@ void QEvent::setInputPhoton()
         ; 
 
     assert(input_photon);  
-    assert(input_photon->has_shape( -1, 4, 4) ); 
-    assert(input_photon->ebyte == 4 || input_photon->ebyte == 8); 
 
-    int num_photon = input_photon->shape[0] ; 
-    assert( evt->num_seed == num_photon ); 
+    bool expected_shape = input_photon->has_shape( -1, 4, 4) ;
+    bool expected_ebyte = input_photon->ebyte == 4 || input_photon->ebyte == 8 ;
+    int numph = input_photon->shape[0] ; 
+    bool expected_numph = evt->num_seed == numph ;
+
+    LOG_IF(fatal, !expected_shape) << " !expected_shape " << input_photon->sstr() ; 
+    LOG_IF(fatal, !expected_ebyte) << " !expected_ebyte " << input_photon->ebyte ; 
+    LOG_IF(fatal, !expected_numph) << " !expected_numph " << numph ; 
+
+    assert(expected_shape); 
+    assert(expected_ebyte); 
+    assert(expected_numph); 
 
     NP* narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
 
-    setNumPhoton( num_photon ); 
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), num_photon ); 
+    setNumPhoton( numph ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), numph ); 
 }
 
 
