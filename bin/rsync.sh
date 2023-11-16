@@ -17,14 +17,17 @@ odir=$1
 
 if [ -n "$odir" ]; then 
 
+    REMOTE=${REMOTE:-P}
+
     if [ -d "$odir" ]; then
         echo == $BASH_SOURCE odir $odir exists
     else
         echo == $BASH_SOURCE creating rsync destination directory $odir 
     fi 
 
+
     xdir=$odir/  ## require trailing slash to avoid rsync duplicating path element 
-    from=P:$xdir
+    from=$REMOTE:$xdir
 
     if [ "${odir:0:1}" == "." ]; then 
         to=$HOME/$xdir
@@ -32,7 +35,7 @@ if [ -n "$odir" ]; then
         to=$xdir
     fi  
 
-    vars="BASH_SOURCE xdir from to"
+    vars="BASH_SOURCE xdir REMOTE from to"
     for var in $vars ; do printf "%-30s : %s \n" $var "${!var}" ; done ; 
 
     mkdir -p "$to"
