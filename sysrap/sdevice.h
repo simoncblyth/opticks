@@ -18,10 +18,22 @@ and metadata recording is handled with sdevice.h scontext.h
 **/
 
 #include <cstddef>
-#include <string>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <cstring>
+#include <cassert>
+#include <sstream>
+#include <cstdlib>
+#include <fstream>
+#include <cuda_runtime_api.h>
+
+#include "sdirectory.h"
+#include "spath.h"
+
+
+
 
 struct sdevice 
 {
@@ -41,17 +53,18 @@ struct sdevice
     int multiProcessorCount ; 
     size_t totalGlobalMem ; 
 
-    float totalGlobalMem_GB() const ;
-    void read( std::istream& in ); 
-    void write( std::ostream& out ) const ; 
-    bool matches(const sdevice& other) const ; 
 
     const char* brief() const ;
     const char* desc() const ; 
-
-    static int Size(); 
-    static void Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave=false ); 
+    bool matches(const sdevice& other) const ; 
+    float totalGlobalMem_GB() const ;
+    static int DeviceCount(); 
     static void Collect(std::vector<sdevice>& devices, bool ordinal_from_index=false ); 
+    static int Size(); 
+    void write( std::ostream& out ) const ; 
+    void read( std::istream& in ); 
+
+    static void Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave=false ); 
     static int FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all );
 
     static std::string Path(const char* dirpath); 
@@ -63,24 +76,9 @@ struct sdevice
 };
 
 
+inline int sdevice::VISIBLE_COUNT = 0 ; 
 
-
-#include <cassert>
-#include <sstream>
-#include <iomanip>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <fstream>
-
-#include <cuda_runtime_api.h>
-#include "sdirectory.h"
-#include "spath.h"
-
-
-int sdevice::VISIBLE_COUNT = 0 ; 
-
-const char* sdevice::brief() const 
+inline const char* sdevice::brief() const 
 {
     std::stringstream ss ; 
     ss << "idx/ord/mpc/cc:" 
@@ -97,7 +95,7 @@ const char* sdevice::brief() const
     return strdup(s.c_str());  
 }
 
-const char* sdevice::desc() const 
+inline const char* sdevice::desc() const 
 {
     std::stringstream ss ; 
     ss 
@@ -109,17 +107,22 @@ const char* sdevice::desc() const
     return strdup(s.c_str());  
 } 
 
-bool sdevice::matches(const sdevice& other) const 
+inline bool sdevice::matches(const sdevice& other) const 
 {
    return strncmp(other.uuid, uuid, sizeof(uuid)) == 0 && strncmp(other.name, name, sizeof(name)) == 0;   
 }
 
-float sdevice::totalGlobalMem_GB() const 
+inline float sdevice::totalGlobalMem_GB() const 
 {
     return float(totalGlobalMem)/float(1024*1024*1024)  ;  
 }
 
-
+inline int sdevice::DeviceCount() // static
+{
+    int devCount(0) ;  // TWAS A BUG TO NOT INITIALIZE THIS 
+    cudaGetDeviceCount(&devCount);
+    return devCount ; 
+}
 
 /**
 sdevice::Collect
@@ -141,10 +144,9 @@ ordinal_from_index:false
 
 **/
 
-void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
+inline void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
 {
-    int devCount(0) ;  // TWAS A BUG TO NOT INITIALIZE THIS 
-    cudaGetDeviceCount(&devCount);
+    int devCount = DeviceCount() ; 
     if(VERBOSE) std::cout << "sdevice::Collect cudaGetDeviceCount : " << devCount << std::endl ; 
 
     for (int i = 0; i < devCount; ++i)
@@ -179,7 +181,7 @@ void sdevice::Collect(std::vector<sdevice>& devices, bool ordinal_from_index)
     }   
 }
 
-int sdevice::Size() 
+inline int sdevice::Size() 
 {
     return 
         sizeof(int) +       // ordinal
@@ -192,7 +194,7 @@ int sdevice::Size()
         sizeof(int) +       // multiProcessorCount 
         sizeof(size_t) ;    // totalGlobalMem
 }
-void sdevice::write( std::ostream& out ) const
+inline void sdevice::write( std::ostream& out ) const
 {
     int size = Size(); 
     char* buffer = new char[size];
@@ -213,7 +215,7 @@ void sdevice::write( std::ostream& out ) const
     delete [] buffer ; 
 }
 
-void sdevice::read( std::istream& in )
+inline void sdevice::read( std::istream& in )
 {
     int size = Size(); 
     char* buffer = new char[size];
@@ -264,7 +266,7 @@ not CUDA.
 
 **/
 
-void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave)
+inline void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool nosave)
 {
     if(VERBOSE) std::cout << "[sdevice::Visible" << std::endl ;
 
@@ -277,11 +279,13 @@ void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath, bool n
 
     VISIBLE_COUNT = visible.size() ; 
 
+    assert( sdevice::DeviceCount() == VISIBLE_COUNT ); 
+
     if(VERBOSE) std::cerr << "sdevice::Visible no_cvd:" << no_cvd << std::endl ; 
 
     if( no_cvd )
     {
-        if(nosave == false && dirpath != nullptr)
+        if(nosave == false && dirpath != nullptr && VISIBLE_COUNT > 0 )
         {
             if(VERBOSE) std::cerr 
                 << "sdevice::Visible no_cvd save to " 
@@ -311,7 +315,7 @@ sdevice::FindIndexOfMatchingDevice
 
 **/
 
-int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all )
+inline int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdevice>& all )
 {
     int index = -1 ; 
     if(VERBOSE) std::cout 
@@ -345,7 +349,7 @@ int sdevice::FindIndexOfMatchingDevice( const sdevice& d, const std::vector<sdev
 
 
 
-std::string sdevice::Path(const char* dirpath)
+inline std::string sdevice::Path(const char* dirpath)
 {
     std::stringstream ss ; 
     if( dirpath ) ss << dirpath << "/" ; 
@@ -361,7 +365,7 @@ All sdevice struct from the vector are written into a single file
 
 **/
 
-void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
+inline void sdevice::Save( const std::vector<sdevice>& devices, const char* dirpath_ )
 {
     const char* dirpath = spath::Resolve(dirpath_) ; 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
@@ -395,7 +399,7 @@ from the single file until reaching EOF.
 **/
 
 
-void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
+inline void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
 {
     const char* dirpath = spath::Resolve(dirpath_) ; 
     std::string path = Path(dirpath); 
@@ -428,7 +432,7 @@ void sdevice::Load( std::vector<sdevice>& devices, const char* dirpath_)
     }
 }
 
-std::string sdevice::Brief( const std::vector<sdevice>& devices )
+inline std::string sdevice::Brief( const std::vector<sdevice>& devices )
 { 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < devices.size() ; i++)
@@ -445,7 +449,7 @@ std::string sdevice::Brief( const std::vector<sdevice>& devices )
     return ss.str(); 
 }
 
-std::string sdevice::Desc( const std::vector<sdevice>& devices )
+inline std::string sdevice::Desc( const std::vector<sdevice>& devices )
 {
     std::stringstream ss ; 
     ss << "[" << Brief(devices) << "]" << std::endl  ; 
