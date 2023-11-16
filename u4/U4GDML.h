@@ -209,16 +209,9 @@ inline void U4GDML::write(const char* path)
 inline void U4GDML::write_(const char* path)
 {
     LOG(LEVEL) << "[" ;    
-    std::cout << "[U4GDML::write_" << std::endl ; 
     bool exists = spath::Exists(path) ; 
-    std::cout 
-        << ".U4GDML::write_"
-        << " path " << ( path ? path : "-" )
-        << " exists " << ( exists ? "YES" : "NO " )
-        << std::endl 
-        ;
-
     int rc = exists ? spath::Remove(path) : 0 ; 
+
     LOG_IF(fatal, rc != 0 ) 
         << " FAILED TO REMOVE PATH [" << path << "]" 
         << " CHECK PERMISSIONS " 
@@ -229,20 +222,10 @@ inline void U4GDML::write_(const char* path)
         << " exists " << ( exists ? "YES" : "NO " )
         << " rc " << rc
         ;
-        
-    std::cout
-        << ".U4GDML::write_"
-        << " path " << ( path ? path : "-" ) 
-        << " exists " << ( exists ? "YES" : "NO " )
-        << " rc " << rc
-        << std::endl 
-        ;
- 
 
     sdirectory::MakeDirsForFile(path,0);
     parser->Write(path, world, write_refs, write_schema_location); 
     LOG(LEVEL) << "]" ;    
-    std::cout << "]U4GDML::write_" << std::endl ; 
 }
 
 
