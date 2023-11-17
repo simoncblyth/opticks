@@ -57,7 +57,6 @@ int  SEventConfig::_MaxSimtraceDefault = 3*M ;
 #endif
 
 
-//const char* SEventConfig::_CompMaskDefault = SComp::ALL_ ; 
 const char* SEventConfig::_GatherCompDefault = SComp::ALL_ ; 
 const char* SEventConfig::_SaveCompDefault = SComp::ALL_ ; 
 
@@ -92,7 +91,6 @@ const char* SEventConfig::_OutName = ssys::getenvvar(kOutName, _OutNameDefault )
 int SEventConfig::_RGMode = SRG::Type(ssys::getenvvar(kRGMode, _RGModeDefault)) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 
-//unsigned SEventConfig::_CompMask  = SComp::Mask(ssys::getenvvar(kCompMask, _CompMaskDefault )) ;   
 unsigned SEventConfig::_GatherComp  = SComp::Mask(ssys::getenvvar(kGatherComp, _GatherCompDefault )) ;   
 unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _SaveCompDefault )) ;   
 
@@ -155,7 +153,6 @@ const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
-//unsigned SEventConfig::CompMask(){  return _CompMask; } 
 unsigned SEventConfig::GatherComp(){  return _GatherComp ; } 
 unsigned SEventConfig::SaveComp(){    return _SaveComp ; } 
 
@@ -174,12 +171,15 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
 
 
-
-
-const char* SEventConfig::Default = "Default" ; 
-const char* SEventConfig::StandardFullDebug = "StandardFullDebug" ; 
+ 
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
+void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
+
+bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
+bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
+bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode, Minimal) == 0 ; }
+
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
@@ -215,12 +215,6 @@ void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Che
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; Check() ; }
 
-/*
-void SEventConfig::SetCompMask_(unsigned mask){ _CompMask = mask ; }
-void SEventConfig::SetCompMask(const char* names, char delim){  SetCompMask_( SComp::Mask(names,delim)) ; }
-void SEventConfig::SetCompMaskAuto(){ SetCompMask_( CompMaskAuto() ) ; }
-*/
-
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
 
@@ -245,11 +239,19 @@ SEventConfig::CompAuto
 
 Canonically invoked by SEventConfig::Initialize
 
+enum values like SCOMP_PHOTON are bitwise-ORed into the 
+gather and save masks based on configured MAX values. 
+
 **/
 
 void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
 {
-    if(IsRGModeSimulate())
+    if(IsRGModeSimulate() && IsMinimal())
+    {
+        gather_mask = SCOMP_HIT  ; 
+        save_mask = 0u ; 
+    }
+    else if(IsRGModeSimulate())
     {
         gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ; 
 
@@ -555,21 +557,24 @@ int SEventConfig::Initialize() // static
     Initialize_COUNT += 1 ; 
 
     const char* mode = EventMode(); 
-    LOG(LEVEL) <<  " EventMode() " << mode ; 
+    LOG(LEVEL) <<  " EventMode() " << mode ;  // eg Default, StandardFullDebug
     LOG(LEVEL) 
         <<  " RunningMode() " << RunningMode() 
         <<  " RunningModeLabel() " << RunningModeLabel() 
         ; 
 
-    //std::raise(SIGINT); 
-
     int maxbounce = MaxBounce(); 
 
-    if(strcmp(mode, Default) == 0 )
+    if(IsDefault())
     {
         SetCompAuto() ;   // comp set based on Max values   
     }
-    else if(strcmp(mode, StandardFullDebug) == 0 )
+    else if(IsMinimal())
+    {
+
+        SetCompAuto() ;   // comp set based on Max values   
+    }
+    else if(IsStandardFullDebug())
     {
         SEventConfig::SetMaxRecord(maxbounce+1); 
         SEventConfig::SetMaxRec(maxbounce+1); 
@@ -645,9 +650,6 @@ NP* SEventConfig::Serialize() // static
     if(on) meta->set_meta<std::string>("OutName", on );  
 
     meta->set_meta<unsigned>("HitMask", HitMask() );  
-
-    //meta->set_meta<unsigned>("CompMask", CompMask() );  
-    //meta->set_meta<std::string>("CompMaskLabel", CompMaskLabel()); 
 
     meta->set_meta<unsigned>("GatherComp", GatherComp() );  
     meta->set_meta<unsigned>("SaveComp", SaveComp() );  

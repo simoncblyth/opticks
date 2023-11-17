@@ -1268,9 +1268,9 @@ void SEvt::endOfEvent(int eventID)
     setMeta<double>("t_Launch", t_Launch ); 
     // setMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  // TOO SOON
 
-    save();             
+    save();              // gather and save SEventConfig configured arrays
     clear_except("hit"); 
-    // HMM: note that QEvent::setGenstep calls the SEvt::clear before launch 
+    // an earlier SEvt::clear is invoked by QEvent::setGenstep before launch 
 
 }
 
@@ -3296,8 +3296,24 @@ void SEvt::onload()
 
 
 /**
-SEvt::save
-------------
+SEvt::save (HMM: gather_and_save might be more appropriate)
+--------------------------------------------------------------
+
+This method always needs to be run even when no arrays are intended 
+to be saved. The default is to not save anything but some arrays
+are usually gathered. 
+
+
+
+
+
+Saving arrays is a debugging activity configured 
+with SEventConfig::SaveCompLabel that has a large impact on performance. 
+
+Gathering arrays (eg downloading them from device buffers to host) 
+is something that will always need to be done. The arrays to 
+gather are configured with SEventConfig::GatherCompLabel
+
 
 If an index has been set with SEvt::setIndex SEvt::SetIndex 
 and not unset with SEvt::UnsetIndex SEvt::unsetIndex

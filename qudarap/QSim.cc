@@ -357,7 +357,7 @@ double QSim::simulate(int eventID)
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
     sev->t_PreLaunch = sstamp::Now() ; 
-    double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;
+    double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
     sev->t_PostLaunch = sstamp::Now() ; 
 
     sev->t_Launch = dt ; 

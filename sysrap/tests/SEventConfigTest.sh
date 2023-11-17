@@ -2,22 +2,27 @@
 
 name=SEventConfigTest
 
-export OPTICKS_EVENTMODE=StandardFullDebug
+#mode=StandardFullDebug
+mode=Default
 
-#export OPTICKS_OUT_FOLD=/tmp/$USER/opticks/SEventConfigTest/out_fold
-#export OPTICKS_OUT_NAME=oganized/relative/dir/tree/out_name
+export OPTICKS_EVENT_MODE=$mode
+
+#export OPTICKS_OUT_FOLD=${TMP:-/tmp/$USER/opticks}/$name/out_fold
+#export OPTICKS_OUT_NAME=organized/relative/dir/tree/out_name
 
 export OPTICKS_INPUT_PHOTON=/some/path/to/name.npy 
 export OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
+export FOLD=${TMP:-/tmp/$USER/opticks}/$name
 
-
-
-
-export BASE=/tmp/blyth/opticks/J003/G4CXSimulateTest
-export FOLD=/tmp/$USER/opticks/$name
-
-defarg="run"
+defarg="info_run"
 arg=${1:-$defarg}
+
+
+vars="0 BASH_SOURCE name mode OPTICKS_EVENT_MODE OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME"
+
+if [ "${arg/info}" != "$arg" ]; then 
+   for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
+fi
 
 if [ "${arg/run}" != "$arg" ]; then 
    $name
@@ -25,10 +30,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in
-       Darwin) lldb__ $name ;;
-       Linux)  gdb__  $name ;;
-   esac     
+   dbg__ $name
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi 
 

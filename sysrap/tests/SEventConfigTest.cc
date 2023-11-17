@@ -6,7 +6,6 @@
 #include "SEventConfig.hh"
 #include "SComp.h"
 
-const char* BASE = getenv("BASE"); 
 
 void test_Desc()
 {
@@ -15,15 +14,7 @@ void test_Desc()
     std::cout << SEventConfig::Desc() << std::endl ; 
 }
 
-void test_EstimateAlloc()
-{
-    LOG(info); 
-    //SEventConfig::SetMaxPhoton(101); 
-    std::cout << SEventConfig::Desc() << std::endl ; 
 
-    salloc* al = salloc::Load(BASE) ; 
-    LOG(info)  << "al.desc" << std::endl << ( al ? al->desc() : "-" ) ; 
-}
 
 
 /**
@@ -144,7 +135,6 @@ int main(int argc, char** argv)
     test_CompAuto(); 
     test_SetCompAuto(); 
     test_SetDefault(); 
-    test_EstimateAlloc(); 
     test_Save(); 
     test_Desc(); 
     */

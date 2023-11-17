@@ -49,8 +49,8 @@ void QEvent_Lifecycle_Test::Test()
         //    2. calls QEvent::setInputPhoton which invokes SEvt::gatherInputPhoton and uploads 
         //
 
-
         // IN REALITY THE LAUNCH WOULD BE HERE
+        // propagating the photons, changing GPU side buffers 
 
 
         sev->endOfEvent(eventID); 

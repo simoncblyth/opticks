@@ -78,36 +78,39 @@ struct SYSRAP_API SEventConfig
     static constexpr const int K = 1000 ; 
 
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
-    static constexpr const char* kEventMode = "OPTICKS_EVENT_MODE" ; 
-    static constexpr const char* kRunningMode = "OPTICKS_RUNNING_MODE" ; 
-    static constexpr const char* kG4StateSpec = "OPTICKS_G4STATE_SPEC" ; 
+    static constexpr const char* kEventMode    = "OPTICKS_EVENT_MODE" ; 
+    static constexpr const char* kRunningMode  = "OPTICKS_RUNNING_MODE" ; 
+    static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
     static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
-    static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
-    static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
-    static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
-    static constexpr const char* kMaxBounce  = "OPTICKS_MAX_BOUNCE" ; 
-    static constexpr const char* kMaxRecord  = "OPTICKS_MAX_RECORD" ; 
-    static constexpr const char* kMaxRec     = "OPTICKS_MAX_REC" ; 
-    static constexpr const char* kMaxAux     = "OPTICKS_MAX_AUX" ; 
-    static constexpr const char* kMaxSup     = "OPTICKS_MAX_SUP" ; 
-    static constexpr const char* kMaxSeq     = "OPTICKS_MAX_SEQ" ; 
-    static constexpr const char* kMaxPrd     = "OPTICKS_MAX_PRD" ; 
-    static constexpr const char* kMaxTag     = "OPTICKS_MAX_TAG" ; 
-    static constexpr const char* kMaxFlat    = "OPTICKS_MAX_FLAT" ; 
-    static constexpr const char* kMaxExtent  = "OPTICKS_MAX_EXTENT" ; 
-    static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
-    static constexpr const char* kOutPrefix  = "OPTICKS_OUT_PREFIX" ; 
-    static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
-    static constexpr const char* kOutName    = "OPTICKS_OUT_NAME" ; 
-    static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
-    static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
 
-    //static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
+    static constexpr const char* kMaxGenstep   = "OPTICKS_MAX_GENSTEP" ; 
+    static constexpr const char* kMaxPhoton    = "OPTICKS_MAX_PHOTON" ; 
+    static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
+
+    static constexpr const char* kMaxBounce    = "OPTICKS_MAX_BOUNCE" ; 
+    static constexpr const char* kMaxRecord    = "OPTICKS_MAX_RECORD" ; 
+    static constexpr const char* kMaxRec       = "OPTICKS_MAX_REC" ; 
+    static constexpr const char* kMaxAux       = "OPTICKS_MAX_AUX" ; 
+    static constexpr const char* kMaxSup       = "OPTICKS_MAX_SUP" ; 
+    static constexpr const char* kMaxSeq       = "OPTICKS_MAX_SEQ" ; 
+    static constexpr const char* kMaxPrd       = "OPTICKS_MAX_PRD" ; 
+    static constexpr const char* kMaxTag       = "OPTICKS_MAX_TAG" ; 
+    static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ; 
+
+    static constexpr const char* kMaxExtent    = "OPTICKS_MAX_EXTENT" ; 
+    static constexpr const char* kMaxTime      = "OPTICKS_MAX_TIME" ; 
+
+    static constexpr const char* kOutPrefix    = "OPTICKS_OUT_PREFIX" ; 
+    static constexpr const char* kOutFold      = "OPTICKS_OUT_FOLD" ; 
+    static constexpr const char* kOutName      = "OPTICKS_OUT_NAME" ; 
+    static constexpr const char* kHitMask      = "OPTICKS_HIT_MASK" ; 
+    static constexpr const char* kRGMode       = "OPTICKS_RG_MODE" ; 
+
     static constexpr const char* kGatherComp   = "OPTICKS_GATHER_COMP" ; 
     static constexpr const char* kSaveComp     = "OPTICKS_SAVE_COMP" ; 
 
     static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ; 
-    static constexpr const char* kInputPhoton = "OPTICKS_INPUT_PHOTON" ; 
+    static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ; 
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
 
 
@@ -146,7 +149,6 @@ struct SYSRAP_API SEventConfig
     static const char* OutName(); 
     static unsigned HitMask(); 
 
-    //static unsigned CompMask(); 
     static unsigned GatherComp(); 
     static unsigned SaveComp(); 
 
@@ -162,18 +164,23 @@ struct SYSRAP_API SEventConfig
 
     static const char* RGModeLabel(); 
 
-    //static std::string CompMaskLabel(); 
     static std::string GatherCompLabel(); 
     static std::string SaveCompLabel(); 
 
-    //static void CompList( std::vector<unsigned>& comps ) ; 
     static void GatherCompList( std::vector<unsigned>& gather_comp ) ; 
     static void SaveCompList( std::vector<unsigned>& save_comp ) ; 
 
-    static const char* Default ; 
-    static const char* StandardFullDebug ; 
+    static constexpr const char* Default = "Default" ; 
+    static constexpr const char* StandardFullDebug = "StandardFullDebug" ; 
+    static constexpr const char* Minimal = "Minimal" ; 
+
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
+    static void SetMinimal();
+
+    static bool IsDefault(); 
+    static bool IsStandardFullDebug(); 
+    static bool IsMinimal();
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
@@ -193,8 +200,10 @@ struct SYSRAP_API SEventConfig
     static void SetMaxPrd(    int max_prd); 
     static void SetMaxTag(    int max_tag); 
     static void SetMaxFlat(    int max_flat); 
+
     static void SetMaxExtent( float max_extent); 
     static void SetMaxTime(   float max_time ); 
+
     static void SetOutFold( const char* out_fold); 
     static void SetOutName( const char* out_name); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
@@ -209,17 +218,12 @@ struct SYSRAP_API SEventConfig
     static void SetInputPhoton(const char* input_photon); 
     static void SetInputPhotonFrame(const char* input_photon_frame); 
 
-    //static void SetCompMask_(unsigned mask); 
-    //static void SetCompMask(const char* names, char delim=',') ; 
-    //static void SetCompMaskAuto(); 
-
     static void SetGatherComp_(unsigned mask); 
     static void SetGatherComp(const char* names, char delim=',') ; 
 
     static void SetSaveComp_(unsigned mask); 
     static void SetSaveComp(const char* names, char delim=',') ; 
 
-    //static unsigned CompMaskAuto() ; 
     static void  SetCompAuto(); 
     static void  CompAuto(unsigned& gather_mask, unsigned& save_mask ); 
 
@@ -251,7 +255,6 @@ struct SYSRAP_API SEventConfig
     static const char* _HitMaskDefault ; 
     static const char* _RGModeDefault ; 
 
-    //static const char* _CompMaskDefault ; 
     static const char* _GatherCompDefault ; 
     static const char* _SaveCompDefault ; 
 
@@ -285,7 +288,6 @@ struct SYSRAP_API SEventConfig
     static unsigned _HitMask ; 
     static int _RGMode ; 
 
-    //static unsigned _CompMask ; 
     static unsigned _GatherComp ; 
     static unsigned _SaveComp ; 
 
