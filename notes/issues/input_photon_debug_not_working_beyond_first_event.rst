@@ -1,13 +1,13 @@
-input_photon_debug_not_working_beyond_first_event
-==================================================
-
-
+FIXED : input_photon_debug_not_working_beyond_first_event
+===========================================================
 
 issue
 --------
 
 Using input_photons beyond 1st event crashes, with garbled evt. 
 
+* creation of qudarap/tests/QEvent_Lifecycle_Test.cc clarifed the 
+  API and enabled simplification that FIXED the issue
 
 
 review input photon mechanics

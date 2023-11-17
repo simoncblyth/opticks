@@ -105,7 +105,8 @@ struct NPFold
     const char*               savedir ; 
     const char*               loaddir ; 
 
-
+    // nodata:true used for lightweight access to metadata from many arrays
+    bool                      nodata ; 
 
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
@@ -193,12 +194,13 @@ public:
     void add_(const char* k, const NP* a); 
     void set( const char* k, const NP* a); 
 
+    static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
+    void clear(); 
 private:
     void clear_(const std::vector<std::string>* keep); 
 public:
-    static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
-    void clear(); 
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
+
 
     NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
     static void CopyMeta( NPFold* b , const NPFold* a ); 
@@ -470,7 +472,8 @@ inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
 inline NPFold::NPFold()
     :
     savedir(nullptr),
-    loaddir(nullptr)
+    loaddir(nullptr),
+    nodata(false)
 {
 }
 
@@ -693,6 +696,7 @@ inline std::string NPFold::desc_subfold(const char* top)  const
     ss << " folds " << folds.size() << std::endl ; 
     ss << " paths " << paths.size() << std::endl ; 
     for(unsigned i=0 ; i < paths.size() ; i++) ss << i << " [" << paths[i] << "]" << std::endl ; 
+    if(nodata) ss << " NODATA " ; 
 
     std::string s = ss.str(); 
     return s ; 
@@ -745,9 +749,17 @@ This lower level method does not add DOT_NPY to keys
 **/
 inline void NPFold::add_(const char* k, const NP* a) 
 {
+    bool have_key_already = std::find( kk.begin(), kk.end(), k ) != kk.end() ; 
+    if(have_key_already) std::cerr << "NPFold::add_ FATAL : have_key_already " << k << std::endl ; 
+    assert( !have_key_already ); 
+
     kk.push_back(k); 
     aa.push_back(a); 
 }
+
+
+    
+
 
 inline void NPFold::set(const char* k, const NP* a) 
 {
@@ -765,44 +777,8 @@ inline void NPFold::set(const char* k, const NP* a)
 }
 
 
-/**
-NPFold::clear_
-----------------
 
-This method is private as it must be used in conjunction with 
-NPFold::clear_except in order to to keep (key, array) pairs
-of listed keys. 
 
-1. check_integrity (non-recursive)
-2. each NP array with corresponding key not in the keep list is deleted 
-3. clears the kk and aa vectors
-4. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
-
-**/
-
-inline void NPFold::clear_(const std::vector<std::string>* keep)
-{
-    check_integrity(); 
-
-    for(unsigned i=0 ; i < aa.size() ; i++)
-    {
-        const NP* a = aa[i]; 
-        const std::string& k = kk[i] ; 
-        bool listed = keep && std::find( keep->begin(), keep->end(), k ) != keep->end() ; 
-        if(!listed) delete a ; 
-    } 
-    aa.clear(); 
-    kk.clear();  // HUH: THAT CLEARS KEPT KEYS ? 
-
-    for(unsigned i=0 ; i < subfold.size() ; i++)
-    {
-        NPFold* sub = const_cast<NPFold*>(subfold[i]) ; 
-        sub->clear();  
-    }
-
-    subfold.clear();
-    ff.clear(); 
-}
 
 /**
 NPFold::SplitKeys
@@ -834,6 +810,49 @@ inline void NPFold::clear()
     clear_(nullptr);     
 }
 
+
+/**
+NPFold::clear_
+----------------
+
+This method is private as it must be used in conjunction with 
+NPFold::clear_except in order to to keep (key, array) pairs
+of listed keys. 
+
+1. check_integrity (non-recursive)
+2. each NP array with corresponding key not in the keep list is deleted 
+3. clears the kk and aa vectors
+4. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
+
+**/
+
+inline void NPFold::clear_(const std::vector<std::string>* keep)
+{
+    check_integrity(); 
+
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i]; 
+        const std::string& k = kk[i] ; 
+        bool listed = keep && std::find( keep->begin(), keep->end(), k ) != keep->end() ; 
+        if(!listed) delete a ; 
+    } 
+    aa.clear(); 
+    kk.clear();  
+
+    // HUH: CLEARS ARRAY POINTER VECTOR BUT DOES NOT DELETE 
+    // ARRAYS WITH KEYS IN THE KEEP LIST SO IT LOOSES 
+    // ARRAY POINTERS OF KEPT ARRAYS  
+
+    for(unsigned i=0 ; i < subfold.size() ; i++)
+    {
+        NPFold* sub = const_cast<NPFold*>(subfold[i]) ; 
+        sub->clear();  
+    }
+
+    subfold.clear();
+    ff.clear(); 
+}
 
 /**
 NPFold::clear_except
@@ -946,6 +965,7 @@ inline void NPFold::CopyMeta( NPFold* b , const NPFold* a ) // static
     b->names = a->names ; 
     b->savedir = a->savedir ? strdup(a->savedir) : nullptr ; 
     b->loaddir = a->loaddir ? strdup(a->loaddir) : nullptr ; 
+    b->nodata  = a->nodata ; 
 }
 
 
@@ -985,13 +1005,6 @@ inline const char* NPFold::get_key(unsigned idx) const
 {
     return idx < kk.size() ? kk[idx].c_str() : nullptr ;
 }
-/*
-inline const std::string& NPFold::get_keystring( unsigned idx) const
-{  
-    assert( idx < kk.size() ; 
-    return kk[idx] ; 
-}
-*/
 
 inline const NP* NPFold::get_array(unsigned idx) const 
 {
@@ -1126,6 +1139,8 @@ SO THE INDEX ALWAYS GETS TRUNCATED
 
 inline void NPFold::save(const char* base_)  // not const as sets savedir
 {
+    assert( !nodata ); 
+
     const char* base = U::Resolve(base_); 
     savedir = strdup(base); 
 
@@ -1186,11 +1201,11 @@ NPFold::load_array
 1. add the array using relp as the key
 
 **/
-inline void NPFold::load_array(const char* base, const char* relp)
+inline void NPFold::load_array(const char* _base, const char* relp)
 {
     bool npy = IsNPY(relp) ; 
 
-    NP* a = npy ? NP::Load(base, relp) : NP::LoadFromTxtFile<double>(base, relp) ;  
+    NP* a = npy ? NP::Load(_base, relp) : NP::LoadFromTxtFile<double>(_base, relp) ;  
     
     if(a) add(relp,a ) ; 
 }
@@ -1201,10 +1216,10 @@ NPFold::load_subfold
 
 **/
 
-inline void NPFold::load_subfold(const char* base, const char* relp)
+inline void NPFold::load_subfold(const char* _base, const char* relp)
 {
     assert(!IsNPY(relp)); 
-    add_subfold(relp,  NPFold::Load(base, relp) ) ; 
+    add_subfold(relp,  NPFold::Load(_base, relp) ) ; 
 }
 
 
@@ -1278,10 +1293,15 @@ NPFold::load_dir
 Loads directory-by-directory into separate NPFold 
 unlike load_fts that loads entire tree into a single NPFold. 
 
+Excluding files with names ending run_meta.txt avoids 
+loading metadata sidecar files as those are loaded whilst loading 
+the associated array eg run.npy 
+
 **/
 
-inline int NPFold::load_dir(const char* base) 
+inline int NPFold::load_dir(const char* _base) 
 {
+    const char* base = nodata ? _base + 1 : _base ;  
     std::vector<std::string> names ; 
     U::DirList(names, base) ; 
     if(names.size() == 0) return 1 ; 
@@ -1291,21 +1311,26 @@ inline int NPFold::load_dir(const char* base)
         const char* name = names[i].c_str(); 
         int type = U::PathType(base, name) ; 
 
-        if( type == U::FILE_PATH ) 
+        if( type == U::FILE_PATH && U::EndsWith(name, "_meta.txt"))
         {
-            load_array(base, name) ; 
+            if(VERBOSE) std::cerr << "NPFold::load_dir SKIP metadata sidecar " << name << std::endl ;
+        }
+        else if( type == U::FILE_PATH ) 
+        {
+            load_array(_base, name) ; 
         }
         else if( type == U::DIR_PATH ) 
         {
-            load_subfold(base, name);  // instanciates NPFold and add_subfold
+            load_subfold(_base, name);  // instanciates NPFold and add_subfold
         }
     }
     return 0 ; 
 }
 
 
-inline int NPFold::load_index(const char* base) 
+inline int NPFold::load_index(const char* _base) 
 {
+    const char* base = nodata ? _base + 1 : _base ;  
     std::vector<std::string> keys ; 
     NP::ReadNames(base, INDEX, keys );  
     for(unsigned i=0 ; i < keys.size() ; i++) 
@@ -1313,11 +1338,11 @@ inline int NPFold::load_index(const char* base)
         const char* key = keys[i].c_str() ; 
         if(IsNPY(key))
         {
-            load_array(base, key );   // invokes *add* appending to kk and aa 
+            load_array(_base, key );   // invokes *add* appending to kk and aa 
         }
         else
         {
-            load_subfold(base, key);  // instanciates NPFold and add_subfold
+            load_subfold(_base, key);  // instanciates NPFold and add_subfold
         }
     }
     return 0 ; 
@@ -1343,8 +1368,11 @@ How to avoid this structural difference and allow booting from property text fil
 
 **/
 
-inline int NPFold::load(const char* base) 
+inline int NPFold::load(const char* _base) 
 {
+    nodata = NP::NoData(_base) ;  // _path starting with '@' 
+    const char* base = nodata ? _base + 1 : _base ;  
+
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
     if(has_meta) meta = U::ReadString( base, META ); 
@@ -1353,7 +1381,7 @@ inline int NPFold::load(const char* base)
     if(has_names) NP::ReadNames( base, NAMES, names ); 
 
     bool has_index = NP::Exists(base, INDEX) ; 
-    int rc = has_index ? load_index(base) : load_dir(base) ; 
+    int rc = has_index ? load_index(_base) : load_dir(_base) ; 
 
     return rc ; 
 }
@@ -1382,7 +1410,13 @@ inline std::string NPFold::desc(int depth) const
     {
         const char* k = kk[i].c_str() ; 
         const NP* a = aa[i] ; 
-        ss << Indent(depth*10) << std::setw(20) << k << " : " << ( a ? a->sstr() : "-" ) << std::endl ;  
+        ss 
+           << ( a && a->nodata ? "ND " : "   " )
+           << Indent(depth*10) 
+           << std::setw(20) << k 
+           << " : " << ( a ? a->sstr() : "-" ) 
+           << std::endl 
+           ;  
     }
     for(unsigned i=0 ; i < ff.size() ; i++) 
     {

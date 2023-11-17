@@ -369,6 +369,8 @@ struct NP
     static bool Exists(const char* base, const char* rel, const char* name);   
     static bool Exists(const char* dir, const char* name);   
     static bool Exists(const char* path);   
+    static bool NoData(const char* path); 
+
     int load(const char* dir, const char* name);   
     int load(const char* path);   
 
@@ -469,7 +471,7 @@ struct NP
     // END OF TAIL STATICS
   
     // primary data members 
-    std::vector<char> data ; 
+    std::vector<char> data = {} ; 
     std::vector<int>  shape ; 
     std::string       meta ; 
     std::vector<std::string>  names ;  // CHANGED to vector of string for convenience of reference passing, eg for CSGName
@@ -487,6 +489,10 @@ struct NP
     char        uifc ;    // element type code 
     int         ebyte ;   // element bytes  
     int         size ;    // number of elements from shape
+
+    // nodata:true used for lightweight access to metadata from many arrays
+    bool        nodata ; 
+
 
 };
 
@@ -967,7 +973,7 @@ inline bool NP::decode_header()
     NPU::parse_header( shape, descr, uifc, ebyte, _hdr ) ; 
     dtype = strdup(descr.c_str());  
     size = NPS::size(shape);    // product of shape dimensions 
-    data.resize(size*ebyte) ;   // data is now just char 
+    if(!nodata) data.resize(size*ebyte) ;   // data is now just char 
     return true  ; 
 }
 
@@ -1024,17 +1030,20 @@ inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
     dtype(strdup(dtype_)),
     uifc(NPU::_dtype_uifc(dtype)),
     ebyte(NPU::_dtype_ebyte(dtype)),
-    size(NPS::size(shape))
+    size(NPS::size(shape)),
+    nodata(false)
 {
     init(); 
 }
 
+// DEFAULT CTOR
 inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm, int no )
     :
     dtype(strdup(dtype_)),
     uifc(NPU::_dtype_uifc(dtype)),
     ebyte(NPU::_dtype_ebyte(dtype)),
-    size(NPS::set_shape(shape, ni,nj,nk,nl,nm,no ))
+    size(NPS::set_shape(shape, ni,nj,nk,nl,nm,no )),
+    nodata(false)
 {
     init(); 
 }
@@ -1045,15 +1054,13 @@ inline void NP::init()
     unsigned long long ebyte_ = ebyte ; 
     unsigned long long num_char = size_*ebyte_ ; 
 
-#ifdef DEBUG
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::init"
         << " size " << size
         << " ebyte " << ebyte
         << " num_char " << num_char 
         << std::endl 
         ;
-#endif
 
     data.resize( num_char ) ;  // vector of char  
     std::fill( data.begin(), data.end(), 0 );     
@@ -3922,6 +3929,7 @@ inline std::string NP::desc() const
        << " meta.size " << meta.size() 
        << " names.size " << names.size() 
        ;
+    if(nodata) ss << " NODATA " ; 
     return ss.str(); 
 }
 
@@ -4609,11 +4617,18 @@ inline bool NP::Exists(const char* path_) // static
     return fp.fail() ? false : true ; 
 }
 
+inline bool NP::NoData(const char* path)
+{
+    return path && strlen(path) > 0 && path[0] == '@' ; 
+}
+
 inline int NP::load(const char* dir, const char* name)
 {
     std::string path = U::form_path(dir, name); 
     return load(path.c_str()); 
 }
+
+
 
 /**
 NP::load
@@ -4627,8 +4642,11 @@ newline from the stream without returning it.
 
 **/
 
-inline int NP::load(const char* path)
+inline int NP::load(const char* _path)
 {
+    nodata = NoData(_path) ;  // _path starting with '@' 
+    const char* path = nodata ? _path + 1 : _path ;  
+
     if(VERBOSE) std::cerr << "[ NP::load " << path << std::endl ; 
 
     lpath = path ;  // loadpath 
@@ -4647,7 +4665,14 @@ inline int NP::load(const char* path)
 
     decode_header(); 
 
-    fp.read(bytes(), arr_bytes() );
+    if(nodata)
+    {
+        if(VERBOSE) std::cerr << "NP::load SKIP reading data as nodata:true : data.size() " << data.size() << std::endl ;  
+    }
+    else
+    {
+        fp.read(bytes(), arr_bytes() );
+    }
 
     load_meta( path ); 
     load_names( path ); 

@@ -306,9 +306,10 @@ struct NPS
 
     static int size(const std::vector<int>& shape)
     {
+        int ndim = int(shape.size()); 
         int sz = 1;
-        for(unsigned i=0; i<shape.size(); ++i) sz *= shape[i] ;
-        return sz ;  
+        for(int i=0; i<ndim; ++i) sz *= shape[i] ;
+        return ndim == 0 ? 0 : sz ;  
     }
 
     static int itemsize(const std::vector<int>& shape)
