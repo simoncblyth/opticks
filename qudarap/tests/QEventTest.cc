@@ -158,7 +158,7 @@ void QEventTest::test_setGenstep_loaded(NP* gs)
 void QEventTest::test_setGenstep_loaded()
 {
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
-    const char* path = spath::Resolve(path); 
+    const char* path = spath::Resolve(path_); 
     NP* gs0 = NP::Load(path); 
 
     if( gs0 == nullptr )

@@ -258,7 +258,7 @@ inline void U4Tree::init()
 
     initStandard(); 
 
-    std::cerr << "U4Tree::init " <<  desc() << std::endl; 
+    std::cout << "U4Tree::init " <<  desc() << std::endl; 
 
 }
 

@@ -649,7 +649,7 @@ inline int sn::sibling_index() const
     int tot_sib = total_siblings() ; 
     int sibdex = parent == nullptr ? 0 : parent->child_index(this) ; 
 
-    if(level() > 1) std::cerr << "sn::sibling_index"
+    if(level() > 1) std::cout << "sn::sibling_index"
               << " tot_sib " << tot_sib 
               << " sibdex " << sibdex
               << std::endl 
@@ -680,7 +680,7 @@ inline const sn* sn::next_sibling() const
     int next_sib = 1+sibling_index() ; 
     int tot_sib = total_siblings() ; 
 
-    if(level() > 1) std::cerr << "sn::next_sibling" 
+    if(level() > 1) std::cout << "sn::next_sibling" 
               << " tot_sib " << tot_sib
               << " next_sib " << next_sib 
               << std::endl 
@@ -707,7 +707,7 @@ This functionality is needed for multiunion.
 
 inline void sn::Serialize(_sn& n, const sn* x) // static 
 {
-    if(level() > 1) std::cerr 
+    if(level() > 1) std::cout 
         << "sn::Serialize ["  
         << std::endl 
         ;
@@ -745,7 +745,7 @@ inline void sn::Serialize(_sn& n, const sn* x) // static
     strncpy( &n.label[0], x->label, sizeof(n.label) );
 
 
-    if(level() > 1) std::cerr 
+    if(level() > 1) std::cout 
         << "sn::Serialize ]"  
         << std::endl 
         << "(sn)x" 
@@ -774,7 +774,7 @@ get recursively imported.
 
 inline sn* sn::Import( const _sn* p, const std::vector<_sn>& buf ) // static
 {
-    if(level() > 0) std::cerr << "sn::Import" << std::endl ; 
+    if(level() > 0) std::cout << "sn::Import" << std::endl ; 
     return p->is_root() ? Import_r(p, buf, 0) : nullptr ; 
 }
 
@@ -790,7 +790,7 @@ issues of ordering of Import are avoided.
 inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 {
     assert( s_tv::pool && "s_tv::pool is required for sn::Import_r " ); 
-    if(level() > 0) std::cerr << "sn::Import_r d " << d << " " << ( _n ? _n->desc() : "(null)" ) << std::endl ; 
+    if(level() > 0) std::cout << "sn::Import_r d " << d << " " << ( _n ? _n->desc() : "(null)" ) << std::endl ; 
     if(_n == nullptr) return nullptr ; 
 
 #ifdef WITH_CHILD
@@ -849,7 +849,7 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
     pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
-    if(level() > 1) std::cerr << "sn::sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cout << "sn::sn pid " << pid << std::endl ; 
     zero_label(); 
 
 #ifdef WITH_CHILD
@@ -883,7 +883,7 @@ inline void sn::add_child( sn* ch )
 // dtor 
 inline sn::~sn()   
 {
-    if(level() > 1) std::cerr << "[ sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cout << "[ sn::~sn pid " << pid << std::endl ; 
 
     delete xform ; 
 
@@ -901,7 +901,7 @@ inline sn::~sn()
 
     if(pool) pool->remove(this); 
 
-    if(level() > 1) std::cerr << "] sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cout << "] sn::~sn pid " << pid << std::endl ; 
 }
 
 
@@ -1210,7 +1210,7 @@ inline int sn::checktree() const
 
     if( chk > 0 )  
     {    
-        if(level()>0) std::cerr 
+        if(level()>0) std::cout 
             << "sn::checktree"
             << " chk_D " << chk_D
             << " chk_P " << chk_P
@@ -1692,9 +1692,9 @@ inline sn* sn::ZeroTree_r( int elevation, int op )  // static
 inline sn* sn::ZeroTree( int num_leaves, int op ) // static
 {   
     int height = BinaryTreeHeight(num_leaves) ;
-    if(level() > 0 ) std::cerr << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
+    if(level() > 0 ) std::cout << "[sn::ZeroTree num_leaves " << num_leaves << " height " << height << std::endl; 
     sn* root = ZeroTree_r( height, op );
-    if(level() > 0) std::cerr << "]sn::ZeroTree " << std::endl ; 
+    if(level() > 0) std::cout << "]sn::ZeroTree " << std::endl ; 
     return root ; 
 }          
 
@@ -1720,18 +1720,18 @@ inline sn* sn::CommonOperatorTypeTree( std::vector<int>& leaftypes, int op ) // 
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree ZeroTree num_leaves " << num_leaves << std::endl ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cout << "sn::CommonOperatorTypeTree ZeroTree num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cout << root->render(5) ; 
 
         root->populate_leaftypes(leaftypes); 
 
-        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree populated num_leaves " << num_leaves << std::endl ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cout << "sn::CommonOperatorTypeTree populated num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cout << root->render(5) ; 
 
         root->prune();
  
-        if(level() > 0) std::cerr << "sn::CommonOperatorTypeTree pruned num_leaves " << num_leaves << std::endl ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 0) std::cout << "sn::CommonOperatorTypeTree pruned num_leaves " << num_leaves << std::endl ; 
+        if(level() > 1) std::cout << root->render(5) ; 
     }
     return root ; 
 } 
@@ -1758,7 +1758,7 @@ inline void sn::populate_leaftypes(std::vector<int>& leaftypes )
 
     int num_nodes = order.size(); 
 
-    if(level() > 0) std::cerr 
+    if(level() > 0) std::cout 
         << "sn::populate_leaftypes"
         << " num_leaves " << num_leaves
         << " num_nodes " << num_nodes
@@ -1768,7 +1768,7 @@ inline void sn::populate_leaftypes(std::vector<int>& leaftypes )
     for(int i=0 ; i < num_nodes ; i++)
     {
         sn* n = order[i]; 
-        if(level() > 1) std::cerr 
+        if(level() > 1) std::cout 
             << "sn::populate_leaftypes " << std::setw(3) << i 
             << " n.desc " << n->desc()
             << std::endl 
@@ -1780,7 +1780,7 @@ inline void sn::populate_leaftypes(std::vector<int>& leaftypes )
         sn* n = order[i]; 
 
 #ifdef WITH_CHILD
-        if(level() > 1) std::cerr 
+        if(level() > 1) std::cout 
             << "sn::populate_leaftypes"
             << " WITH_CHILD "
             << " i " << i 
@@ -1796,7 +1796,7 @@ inline void sn::populate_leaftypes(std::vector<int>& leaftypes )
             for(int j=0 ; j < 2 ; j++)
             {
                 sn* ch = n->child[j] ; 
-                if(level() > 1 ) std::cerr 
+                if(level() > 1 ) std::cout 
                     << "sn::populate_leaftypes"
                     << " ch.desc " << ch->desc() 
                     << std::endl 
@@ -1850,7 +1850,7 @@ inline void sn::populate_leaves(std::vector<sn*>& leaves )
 
     int num_nodes = order.size(); 
 
-    if(level() > 0) std::cerr 
+    if(level() > 0) std::cout 
         << "sn::populate_leaves"
         << " num_leaves " << num_leaves
         << " num_nodes " << num_nodes
@@ -1860,7 +1860,7 @@ inline void sn::populate_leaves(std::vector<sn*>& leaves )
     for(int i=0 ; i < num_nodes ; i++)
     {
         sn* n = order[i]; 
-        if(level() > 1) std::cerr 
+        if(level() > 1) std::cout 
             << "sn::populate_leaves " << std::setw(3) << i 
             << " n.desc " << n->desc()
             << std::endl 
@@ -1872,7 +1872,7 @@ inline void sn::populate_leaves(std::vector<sn*>& leaves )
         sn* n = order[i]; 
 
 #ifdef WITH_CHILD
-        if(level() > 1) std::cerr 
+        if(level() > 1) std::cout 
             << "sn::populate_leaves"
             << " WITH_CHILD "
             << " i " << i 
@@ -1888,7 +1888,7 @@ inline void sn::populate_leaves(std::vector<sn*>& leaves )
             for(int j=0 ; j < 2 ; j++)
             {
                 sn* ch = n->child[j] ; 
-                if(level() > 1 ) std::cerr 
+                if(level() > 1 ) std::cout 
                     << "sn::populate_leaves"
                     << " ch.desc " << ch->desc() 
                     << std::endl 
@@ -1928,7 +1928,7 @@ inline void sn::prune()
 
     if(has_dangle())
     {
-        if(level() > -1) std::cerr << "sn::prune ERROR left with dangle " << std::endl ; 
+        if(level() > -1) std::cout << "sn::prune ERROR left with dangle " << std::endl ; 
     }
 
 }
@@ -2109,7 +2109,7 @@ inline void sn::set_lvid(int lvid_)
     int chk = checktree();
     if( chk != 0 )
     {
-        if(level() > 0 ) std::cerr
+        if(level() > 0 ) std::cout
            << "sn::set_lvid"
            << " lvid " << lvid_
            << " checktree " << chk
@@ -2429,7 +2429,7 @@ inline void sn::ZNudgeOverlapJoints(int lvid, std::vector<sn*>& prims, bool enab
     if(out)
     {
         std::string str = ss.str(); 
-        std::cerr << str ; 
+        std::cout << str ; 
     }
 }
 
@@ -2632,7 +2632,7 @@ inline void sn::increase_zmax_( double dz )
     double _zmax = zmax(); 
     double new_zmax = _zmax + dz ; 
 
-    std::cerr
+    std::cout
         << "sn::increase_zmax_"
         << " lvid " << lvid 
         << " _zmax "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmax 
@@ -2667,7 +2667,7 @@ inline void sn::decrease_zmin_( double dz )
     double _zmin = zmin(); 
     double new_zmin = _zmin - dz ; 
 
-    std::cerr
+    std::cout
         << "sn::decrease_zmin_"
         << " lvid " << lvid 
         << " _zmin "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmin 
@@ -2755,7 +2755,7 @@ inline void sn::increase_zmax_cone( double dz )
     double new_z2 = z2 + dz ; 
     double new_r2 = r1 +  (r2 - r1)*( new_z2 - z1 )/(z2 - z1)  ;
 
-    std::cerr
+    std::cout
         << "sn::increase_zmax_cone"
         << " lvid " << lvid 
         << " z2 " << z2
@@ -2781,7 +2781,7 @@ inline void sn::decrease_zmin_cone( double dz )
     double new_z1 = z1 - dz ; 
     double new_r1 = r2 + (r2 - r1)*(new_z1 - z2) /(z2 - z1 ) ;
 
-    std::cerr
+    std::cout
         << "sn::decrease_zmin_cone"
         << " lvid " << lvid 
         << " z1 " << z1
@@ -3128,33 +3128,33 @@ inline sn* sn::Buggy_CommonOperatorTree( std::vector<sn*>& leaves, int op ) // s
     {
         root = ZeroTree(num_leaves, op );   
 
-        if(level() > 0) std::cerr 
+        if(level() > 0) std::cout 
             << "sn::CommonOperatorTree after ZeroTree"
             << " num_leaves " << num_leaves 
             << " level " << level()
             << std::endl
             ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 1) std::cout << root->render(5) ; 
 
         root->populate_leaves(leaves); 
 
-        if(level() > 0) std::cerr 
+        if(level() > 0) std::cout 
             << "sn::CommonOperatorTree after populate_leaves" 
             << " num_leaves " << num_leaves 
             << " level " << level()
             << std::endl 
             ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 1) std::cout << root->render(5) ; 
 
         root->prune();
  
-        if(level() > 0) std::cerr 
+        if(level() > 0) std::cout 
             << "sn::CommonOperatorTree after prun"
             << " num_leaves " << num_leaves 
             << " level " << level()
             << std::endl 
             ; 
-        if(level() > 1) std::cerr << root->render(5) ; 
+        if(level() > 1) std::cout << root->render(5) ; 
     }
     return root ; 
 } 
@@ -3929,7 +3929,7 @@ inline void sn::setAABB_LeafFrame()
     }
     else
     {
-        std::cerr 
+        std::cout 
             << "sn::setAABB_LeafFrame : FATAL NOT IMPLEMENTED : "
             << " typecode " << typecode 
             << " CSG::Name(typecode) " << CSG::Name(typecode)
@@ -4097,7 +4097,7 @@ inline void sn::uncoincide()
     if( dump )
     {
         std::string str = ss.str() ; 
-        std::cerr << str << std::endl ; 
+        std::cout << str << std::endl ; 
     }
 }
 
