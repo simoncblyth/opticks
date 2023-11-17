@@ -66,7 +66,7 @@ UName                U4Recorder::SPECS = {} ;
 const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ; 
 const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
 
-const int U4Recorder::SEvt_NPFold_VERBOSE  = ssys::getenvbool("U4Recorder__SEvt_NPFold_VERBOSE") ; 
+const bool U4Recorder::SEvt_NPFold_VERBOSE  = ssys::getenvbool("U4Recorder__SEvt_NPFold_VERBOSE") ; 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
 const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool("U4Recorder__EndOfRunAction_Simtrace") ; 
 const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
