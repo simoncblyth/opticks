@@ -138,4 +138,49 @@ Mockup how NPFold is being reused for each event
 with components coming and going. 
 
 
+HMM : genstep handling with input photons ? 
+---------------------------------------------
+
+
+::
+
+    167     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
+    168 
+    169 #ifdef WITH_CUSTOM4
+    170     sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    171     gs = C4GS::Make(_gs.index, _gs.photons, _gs.offset, _gs.gentype );
+    172 #else
+    173     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    174 #endif
+    175     // gs is private static genstep label 
+    176 
+
+
+    281 #ifdef WITH_CUSTOM4
+    282     sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    283     gs = C4GS::Make(_gs.index, _gs.photons, _gs.offset , _gs.gentype );
+    284 #else
+    285     gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
+    286 #endif
+
+
+With scintillation and cerenkov U4.cc adds the genstep to both SEvt::EGPU and SEvt::ECPU 
+via the static::
+
+    1030 sgs SEvt::AddGenstep(const quad6& q)
+    1031 {
+    1032     sgs label = {} ;
+    1033     if(Exists(0)) label = Get(0)->addGenstep(q) ;
+    1034     if(Exists(1)) label = Get(1)->addGenstep(q) ;
+    1035     return label ;
+    1036 }
+
+
+Where is the equivalent for input photons ? 
+
+
+
+
+
+
 

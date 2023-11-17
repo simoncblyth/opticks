@@ -556,6 +556,8 @@ void SEvt::addFrameGenstep()
     LOG(LEVEL); 
     if(SEventConfig::IsRGModeSimtrace())
     { 
+        fold->clear(); // ADHOC
+
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry 
         if(frs)
         {
@@ -571,6 +573,8 @@ void SEvt::addFrameGenstep()
     }   
     else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
     {   
+        fold->clear();  // ADHOC : TRY TO HANDLE U4Recorder DUPLICATE KEY ISSUE
+
         int prior_genstep = genstep.size() ;  
         bool prior_genstep_expected =  prior_genstep == 0 ;
 
