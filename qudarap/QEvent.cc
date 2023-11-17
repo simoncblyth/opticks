@@ -15,6 +15,7 @@
 #include "sevent.h"
 #include "salloc.h"
 #include "sstamp.h"
+#include "ssys.h"
 
 #include "sqat4.h"
 #include "stran.h"
