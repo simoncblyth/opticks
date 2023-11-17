@@ -234,6 +234,13 @@ void U4Recorder::init_SEvt()
 
     LOG(LEVEL) << " sev " << std::hex << sev << std::dec ; 
     LOG(LEVEL) << "sev->meta[" << sev->meta << "]" ;
+
+    if(LEVEL == info) 
+    {
+        LOG(LEVEL) << " U4Recorder:INFO setting SEvt:setFoldVerbose " ; 
+        sev->setFoldVerbose(true); 
+    }
+
 }
 
 
@@ -270,12 +277,7 @@ void U4Recorder::EndOfRunAction(const G4Run*)
     LOG(LEVEL)
         << "] U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " )  
         ;
-
-
 }
-
-
-
 
 
 void U4Recorder::BeginOfEventAction(const G4Event* event)

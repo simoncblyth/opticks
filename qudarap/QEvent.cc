@@ -126,9 +126,6 @@ QEvent::setGenstep
 
 Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
 
-
-
-
 **/
 
 int QEvent::setGenstep()  // onto device

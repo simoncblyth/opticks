@@ -152,6 +152,7 @@ SEvt::SEvt()
 {   
     init(); 
 }
+
 /**
 SEvt::init
 -----------
@@ -189,6 +190,11 @@ void SEvt::init()
     initInputPhoton(); 
     initG4State();        // HMM: G4State not an every-event thing ? first event only ?
     LOG(LEVEL) << "]" ; 
+}
+
+void SEvt::setFoldVerbose(bool v)
+{
+    fold->set_verbose(v); 
 }
 
 

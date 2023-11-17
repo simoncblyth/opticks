@@ -107,6 +107,7 @@ struct NPFold
 
     // nodata:true used for lightweight access to metadata from many arrays
     bool                      nodata ; 
+    bool                      verbose_ ; 
 
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
@@ -143,6 +144,7 @@ struct NPFold
 
     // CTOR
     NPFold(); 
+    void set_verbose( bool v=true ); 
 private:
     void check_integrity() const ; 
 public:
@@ -473,8 +475,15 @@ inline NPFold::NPFold()
     :
     savedir(nullptr),
     loaddir(nullptr),
-    nodata(false)
+    nodata(false),
+    verbose_(VERBOSE)
 {
+    if(verbose_) std::cerr << "NPFold::NPFold" << std::endl ; 
+}
+
+inline void NPFold::set_verbose( bool v )
+{
+    verbose_ = v ;  
 }
 
 
@@ -749,6 +758,8 @@ This lower level method does not add DOT_NPY to keys
 **/
 inline void NPFold::add_(const char* k, const NP* a) 
 {
+    if(verbose_) std::cerr << "NPFold::add_ [" << k  << "]" <<  std::endl ; 
+
     bool have_key_already = std::find( kk.begin(), kk.end(), k ) != kk.end() ; 
     if(have_key_already) std::cerr << "NPFold::add_ FATAL : have_key_already " << k << std::endl ; 
     assert( !have_key_already ); 
@@ -807,6 +818,7 @@ NPFold::clear (clearing this fold and all subfold recursively)
 **/
 inline void NPFold::clear()
 {
+    if(verbose_) std::cerr << "NPFold::clear() ALL" << std::endl ; 
     clear_(nullptr);     
 }
 
@@ -843,6 +855,9 @@ inline void NPFold::clear_(const std::vector<std::string>* keep)
     // HUH: CLEARS ARRAY POINTER VECTOR BUT DOES NOT DELETE 
     // ARRAYS WITH KEYS IN THE KEEP LIST SO IT LOOSES 
     // ARRAY POINTERS OF KEPT ARRAYS  
+    //
+    // THAT CAN ONLY WORK IF THOSE POINTERS WERE GRABBED PREVIOUSLY 
+    // AS THEY ARE BY clear_except
 
     for(unsigned i=0 ; i < subfold.size() ; i++)
     {
@@ -883,6 +898,15 @@ Unsure if that will be a problem.
 
 inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
 {
+    if(verbose_) std::cerr 
+         << "NPFold::clear_except("
+         << " keeplist:" << keeplist
+         << " copy:" << copy 
+         << " delim:" << delim 
+         << ")" 
+         << std::endl 
+         ; 
+
     check_integrity(); 
 
     std::vector<std::string> keep ; 
@@ -903,7 +927,15 @@ inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
         }
     } 
 
-    clear_(copy ? nullptr : &keep); 
+    if(copy == true)
+    {
+        clear_(nullptr);  // remove all (k,a) pairs
+    }
+    else
+    {
+        clear_(&keep);    // remove all apart from the keep list, clears all keys 
+    }
+
 
     assert( tmp_aa.size() == tmp_kk.size() ); 
     for(unsigned i=0 ; i < tmp_aa.size() ; i++)
