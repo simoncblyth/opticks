@@ -66,11 +66,6 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
 
-#ifdef WITH_SGLM
-#else
-    Opticks*          ok ;  
-    Composition*      composition ; 
-#endif
     SGLM*             sglm ; 
 
     const char*       flight ; 
@@ -110,11 +105,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     const char* desc() const ; 
 
 private:
-#ifdef WITH_SGLM
     static Params* InitParams( int raygenmode, const SGLM* sglm  ) ; 
-#else
-    static Params* InitParams( int raygenmode, const Opticks* ok  ); 
-#endif
     static void InitGeo(  CSGFoundry* fd ); 
     static void InitSim( const SSim* ssim ); 
 

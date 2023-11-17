@@ -41,6 +41,8 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 
 // sysrap
 #include "sproc.h"
+#include "ssys.h"
+
 #include "SGLM.h"
 #include "NP.hh"
 #include "SRG.h"
@@ -49,7 +51,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "SGeoConfig.hh"
 #include "SSim.hh"
 #include "SStr.hh"
-#include "SSys.hh"
 #include "SEvt.hh"
 #include "SMeta.hh"
 #include "SPath.hh"
@@ -60,13 +61,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "sframe.h"
 #include "salloc.h"
 
-
-#ifdef WITH_SGLM
-#else
-#include "Opticks.hh"
-#include "Composition.hh"
-#include "FlightPath.hh"
-#endif
 
 
 /**
@@ -298,35 +292,20 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 }
 
 
-#ifdef WITH_SGLM
 Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
 {
     LOG(LEVEL) << "[" ; 
     return new Params(raygenmode, sglm->Width(), sglm->Height(), 1 ) ; 
     LOG(LEVEL) << "]" ; 
 }
-#else
-Params* CSGOptiX::InitParams( int raygenmode, const Opticks* ok  ) // static
-{
-    LOG(LEVEL) << "[" ; 
-    return new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() ) ; 
-    LOG(LEVEL) << "]" ; 
-}
-#endif
-
 
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
-#ifdef WITH_SGLM
-#else
-    ok(Opticks::Instance()),
-    composition(ok->getComposition()),
-#endif
     sglm(new SGLM),   // instanciate always to allow view matrix comparisons
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
-    prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
+    prefix(ssys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
     outdir(SEventConfig::OutFold()),    
     cmaketarget("CSGOptiX"),  
     ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
@@ -335,13 +314,9 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 #else
     geoptxpath(nullptr),
 #endif
-    tmin_model(SSys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
+    tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
     raygenmode(SEventConfig::RGMode()),
-#ifdef WITH_SGLM
     params(InitParams(raygenmode,sglm)),
-#else
-    params(InitParams(raygenmode,ok)),
-#endif
 
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
@@ -362,9 +337,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 
 void CSGOptiX::init()
 {
-#ifdef WITH_SGLM
     sglm->addlog("CSGOptiX::init", "start"); 
-#endif
 
     LOG(LEVEL) 
         << "[" 
@@ -598,7 +571,7 @@ double CSGOptiX::proceed()
 const char* CSGOptiX::TOP = "i0" ; 
 const char* CSGOptiX::Top()
 {
-    const char* top = SSys::getenvvar("TOP", TOP ); 
+    const char* top = ssys::getenvvar("TOP", TOP ); 
     bool top_valid = top != nullptr && strlen(top) > 1 && top[0] == 'i' ;  
     if(!top_valid)
     { 
@@ -659,7 +632,7 @@ A: Currently think that it is just a bookkeeping convenience for simtrace and no
 
 void CSGOptiX::setFrame()
 {
-    setFrame(SSys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
+    setFrame(ssys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
 }
 
 void CSGOptiX::setFrame(const char* frs)
@@ -698,15 +671,6 @@ void CSGOptiX::setFrame(const sframe& fr_ )
     const qat4& w2m = sglm->fr.w2m ; 
 
 
-#ifdef WITH_SGLM
-#else
-    // without SGLM is the old way of doing things to be eliminated
-    bool autocam = true ; 
-    composition->setCenterExtent(ce, autocam, &m2w, &w2m );  // model2world view setup 
-    composition->setNear(sglm->tmin_abs()); 
-    LOG(info) << std::endl << composition->getCameraDesc() ;  
-#endif
-
     LOG(LEVEL) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " sglm.TMIN " << sglm->TMIN
@@ -740,7 +704,6 @@ void CSGOptiX::prepareRenderParam()
     float extent ; 
     float length ; 
 
-#ifdef WITH_SGLM
     extent = sglm->fr.ce.w ; 
     eye = sglm->e ; 
     U = sglm->u ; 
@@ -750,16 +713,6 @@ void CSGOptiX::prepareRenderParam()
     tmax = sglm->get_far_abs() ; 
     cameratype = sglm->cam ; 
     length = 0.f ; 
-#else
-    glm::vec4 ZProj ;
-    extent = composition->getExtent(); 
-    composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
-    tmin = composition->getNear(); 
-    tmax = composition->getFar(); 
-    cameratype = composition->getCameraType(); 
-    length = composition->getLength(); 
-#endif
-
 
     if(!flight) 
     {
@@ -810,17 +763,10 @@ void CSGOptiX::prepareRenderParam()
 
     if(flight) return ; 
 
-#ifdef WITH_SGLM
     LOG(LEVEL)
         << "sglm.desc " << std::endl 
         << sglm->desc() 
         ; 
-#else
-    LOG(LEVEL)
-        << "composition.desc " << std::endl 
-        << composition->desc() 
-        ; 
-#endif
 
 }
 
@@ -853,11 +799,7 @@ A: not from device code it seems : only by using the hostside params to
 
 void CSGOptiX::prepareParam()
 {
-#ifdef WITH_SGLM
     const float4& ce = sglm->fr.ce ;   
-#else
-    const glm::vec4& ce = composition->getCenterExtent();   
-#endif
 
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
@@ -1022,13 +964,9 @@ do similar with NAMEPREFIX envvar.
 const char* CSGOptiX::getRenderStemDefault() const 
 {
     std::stringstream ss ; 
-    ss << SSys::getenvvar("NAMEPREFIX","nonamepfx") ; 
+    ss << ssys::getenvvar("NAMEPREFIX","nonamepfx") ; 
     ss << "_" ; 
-#ifdef WITH_SGLM
     ss << sglm->get_frame_name() ; 
-#else
-    ss << "nosglm" ; 
-#endif
     
     std::string str = ss.str(); 
     return strdup(str.c_str()); 
@@ -1043,14 +981,12 @@ CSGOptiX::render  (formerly render_snap)
 double CSGOptiX::render( const char* stem_ )
 {
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
-#ifdef WITH_SGLM
     sglm->addlog("CSGOptiX::render_snap", stem ); 
-#endif
 
     double dt = render_launch();  
 
-    const char* topline = SSys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
-    const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
+    const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
+    const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
     std::string _extra = SSim::GetGPUMeta();  // scontext::brief giving GPU name 
@@ -1076,10 +1012,8 @@ double CSGOptiX::render( const char* stem_ )
 
     snap(outpath, botline, topline  );   
 
-#ifdef WITH_SGLM
     sglm->fr.save( outdir, stem ); 
     sglm->writeDesc( outdir, stem, ".log" ); 
-#endif
 
     return dt ; 
 }
@@ -1139,14 +1073,8 @@ void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
 
 int CSGOptiX::render_flightpath() // for making mp4 movies
 {
-#ifdef WITH_SGLM
-    LOG(fatal) << "flightpath rendering not yet implemented in WITH_SGLM branch " ; 
-    int rc = 1 ; 
-#else
-    FlightPath* fp = ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
-    int rc = fp->render( (SRenderer*)this  );
-#endif
-    return rc ; 
+    LOG(fatal) << "flightpath rendering not yet implemented in now default SGLM branch " ; 
+    return 1 ; 
 }
 
 void CSGOptiX::saveMeta(const char* jpg_path) const
@@ -1156,14 +1084,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 
     nlohmann::json& js = meta->js ;
     js["jpg"] = jpg_path ; 
-
-#ifdef WITH_SGLM
     js["emm"] = SGeoConfig::EnabledMergedMesh() ;
-#else
-    js["emm"] = ok->getEnabledMergedMesh() ;
-    js["argline"] = ok->getArgLine();
-    js["nameprefix"] = ok->getNamePrefix() ;
-#endif
 
     if(foundry->hasMeta())
     {
