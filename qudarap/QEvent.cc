@@ -78,7 +78,6 @@ QEvent::QEvent()
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
     input_photon(nullptr),
-    narrow_input_photon(nullptr),
     upload_count(0)
 {
     LOG(LEVEL); 
@@ -127,24 +126,8 @@ QEvent::setGenstep
 
 Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
 
-1. gensteps uploaded to QEvent::init allocated evt->genstep device buffer, 
-   overwriting any prior gensteps and evt->num_genstep is set 
-
-2. *count_genstep_photons* calculates the total number of seeds (and photons) by 
-   adding the photons from each genstep and setting evt->num_seed
-
-3. *fill_seed_buffer* populates seed buffer using num photons per genstep from genstep buffer
-
-3. invokes setNumPhoton which may allocate records
 
 
-* HMM: find that without zeroing the seed buffer the seed filling gets messed up causing QEventTest fails 
-  doing this in QEvent::init is not sufficient need to do in QEvent::setGenstep.  
-  **This is a documented limitation of sysrap/iexpand.h**
- 
-  So far it seems that no zeroing is needed for the genstep buffer. 
-
-HMM: what about simtrace ? ce-gensteps are very different to ordinary gs 
 
 **/
 
@@ -173,6 +156,28 @@ QEvent::setGenstep
 
 Recall that even with input photon running, still have gensteps.  
 If the number of gensteps is zero there are no photons and no launch. 
+
+
+1. if not already allocated QEvent::device_alloc_genstep_and_seed
+   using configured sevent::max_genstep sevent::max_photon values  
+
+2. QU::copy_host_to_device the sevent::num_genstep 
+   and setting pointer sevent::genstep 
+
+3. QU::device_memset zeroing the seed buffer : this is needed 
+   for each launch, doing at initialization only is not sufficient.
+   **This is a documented limitation of sysrap/iexpand.h**
+
+4. QEvent::count_genstep_photons_and_fill_seed_buffer
+
+   * calculates the total number of seeds (and photons) on device 
+     by adding the photons from each genstep and setting evt->num_seed
+
+   * populates seed buffer using num photons per genstep from genstep buffer, 
+     which is the way each photon thread refers back to its genstep
+
+5. setNumSimtrace/setInputPhoton/setNumPhoton which may allocate records
+
 
 **/
 
@@ -265,23 +270,53 @@ QEvent::setInputPhoton
 ------------------------
 
 This is a private method invoked only from QEvent::setGenstep
-which gets the input photon array from SEvt and uploads 
-it to the device. 
-When the input_photon array is in double precision it is 
-narrowed here prior to upload. 
+
+1. SEvt::gatherInputPhoton narrows or copies the input 
+   photons (which may be frame transformed) providing 
+   a narrowed f4 array. 
+
+   NB gatherInputPhoton always provides a fresh 
+   unencumbered array that a subsequent SEvt::clear 
+   cannot delete. So that means it just LEAKs, 
+   but that currently not much of a problem 
+   as input photons are used for debugging purposes 
+   currently 
+
+   TODO: WHEN DOING LEAK CHECKING TRY TO FIND THIS 
+   LEAK AND AVOID IT BY DELETING THE ARRAY HERE 
+   IMMEDIATELY AFTER UPLOAD 
+
+   Input photons are awkward because they do not 
+   follow the pattern of other arrays. They:
+
+   * originate on the CPU (like gensteps)
+   * have no dedicated device buffer for them (unlike gensteps)
+   * get copied into the photons buffer instead of 
+     being generated on device 
+   * are not downloaded from device
+
+   Effectively input photons are a cheat to avoid 
+   on device generation that is convenuent for 
+   debugging, and especially useful to provide
+   common inputs for random aligned bi-simulation. 
+
+
+2. QEvent::checkInputPhoton expectation asserts
+
+3. QU::copy_host_to_device upload the input photon array 
+   into the photon buffer
 
 **/
 
 void QEvent::setInputPhoton()
 {
     LOG(LEVEL); 
-    input_photon = sev->gatherInputPhoton(); // makes a copy 
+    input_photon = sev->gatherInputPhoton(); 
     checkInputPhoton(); 
-    narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
 
-    int numph = narrow_input_photon->shape[0] ; 
+    int numph = input_photon->shape[0] ; 
     setNumPhoton( numph ); 
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), numph ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), numph ); 
 }
 
 void QEvent::checkInputPhoton() const 
@@ -293,7 +328,7 @@ void QEvent::checkInputPhoton() const
     assert(input_photon);  
 
     bool expected_shape = input_photon->has_shape( -1, 4, 4) ;
-    bool expected_ebyte = input_photon->ebyte == 4 || input_photon->ebyte == 8 ;
+    bool expected_ebyte = input_photon->ebyte == 4 ;
 
     int numph = input_photon->shape[0] ; 
     bool expected_numph = evt->num_seed == numph ;

@@ -375,15 +375,20 @@ SEvt::gatherInputPhoton
 
 To avoid issues with inphoton and saving 2nd events, 
 treat the inphoton more like other arrays by having a distinct
-inphoton copy for each event. 
+narrowed inphoton copy for each event. 
+
 
 **/
 
 NP* SEvt::gatherInputPhoton() const 
 {
     NP* ip = getInputPhoton(); 
-    NP* ipc = ip ? ip->copy() : nullptr ; 
-    return ipc ; 
+    NP* ipn = nullptr ; 
+    if(ip)
+    {
+        ipn = ip->ebyte == 8 ? NP::MakeNarrow(ip) : ip->copy() ;
+    }
+    return ipn ; 
 }
 
 

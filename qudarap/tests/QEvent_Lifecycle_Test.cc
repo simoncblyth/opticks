@@ -44,7 +44,8 @@ void QEvent_Lifecycle_Test::Test()
         int rc = event->setGenstep(); 
         assert( rc == 0 );
         // QEvent::setGenstep 
-        //    1. calls SEvt::gatherGenstep anduploads 
+        //    1. SEvt::gatherGenstep yielding NP* gs 
+        //    2. SEvt::clear which clears vectors and NPFold::clear which deletes arrays 
         //    2. calls QEvent::setInputPhoton which invokes SEvt::gatherInputPhoton and uploads 
         //
 

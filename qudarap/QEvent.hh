@@ -73,7 +73,6 @@ private:
     sevent*           d_evt ; 
     NP*               gs ;  
     NP*               input_photon ; 
-    NP*               narrow_input_photon ; 
 public:
     int               upload_count ; 
 

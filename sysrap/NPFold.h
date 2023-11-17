@@ -192,9 +192,12 @@ public:
     void add( const char* k, const NP* a); 
     void add_(const char* k, const NP* a); 
     void set( const char* k, const NP* a); 
-    void clear(const std::vector<std::string>* keep=nullptr); 
 
+private:
+    void clear_(const std::vector<std::string>* keep); 
+public:
     static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
+    void clear(); 
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
 
     NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
@@ -761,17 +764,23 @@ inline void NPFold::set(const char* k, const NP* a)
     }
 }
 
+
 /**
-NPFold::clear (clearing this fold and all subfold recursively)
-----------------------------------------------------------------
+NPFold::clear_
+----------------
+
+This method is private as it must be used in conjunction with 
+NPFold::clear_except in order to to keep (key, array) pairs
+of listed keys. 
 
 1. check_integrity (non-recursive)
-2. for each NP array delete it and clear the kk and aa vectors
-3. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
+2. each NP array with corresponding key not in the keep list is deleted 
+3. clears the kk and aa vectors
+4. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
 
 **/
 
-inline void NPFold::clear(const std::vector<std::string>* keep)
+inline void NPFold::clear_(const std::vector<std::string>* keep)
 {
     check_integrity(); 
 
@@ -783,7 +792,7 @@ inline void NPFold::clear(const std::vector<std::string>* keep)
         if(!listed) delete a ; 
     } 
     aa.clear(); 
-    kk.clear(); 
+    kk.clear();  // HUH: THAT CLEARS KEPT KEYS ? 
 
     for(unsigned i=0 ; i < subfold.size() ; i++)
     {
@@ -816,10 +825,22 @@ inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keyl
 
 
 /**
+NPFold::clear (clearing this fold and all subfold recursively)
+----------------------------------------------------------------
+
+**/
+inline void NPFold::clear()
+{
+    clear_(nullptr);     
+}
+
+
+/**
 NPFold::clear_except
 -----------------------
 
-Clears the folder but preserves the keys listed in the keeplist.
+Clears the folder but preserves the (key, array) pairs 
+listed in the keeplist of keys. 
 
 copy:false
     uses the old arrays 
@@ -832,7 +853,7 @@ It is not so easy to do partial erase from vector
 as the indices keep changing as elements are removed. 
 So take a simpler approach:
 
-1. first copy keys and arrays identified by the *keep_keylist* into tmp_kk, tmp_aa
+1. first copy keys and arrays identified by the *keeplist* into tmp_kk, tmp_aa
 2. do a normal clear of all elements, which deletes 
 3. add copied tmp_aa tmp_kk back to the fold 
 
@@ -863,7 +884,7 @@ inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
         }
     } 
 
-    clear(copy ? nullptr : &keep); 
+    clear_(copy ? nullptr : &keep); 
 
     assert( tmp_aa.size() == tmp_kk.size() ); 
     for(unsigned i=0 ; i < tmp_aa.size() ; i++)
