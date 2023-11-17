@@ -47,6 +47,7 @@ struct U4_API U4Recorder
     static const int STATES ; // configures number of g4states to persist 
     static const int RERUN  ; 
     static constexpr int STATE_ITEMS = 2*17+4 ; // 2*17+4 is appropriate for MixMaxRng 
+    static const bool SEvt_NPFold_VERBOSE ; 
     static const bool PIDX_ENABLED ; 
     static const bool EndOfRunAction_Simtrace ; 
     static const char* REPLICA_NAME_SELECT ; 

@@ -66,6 +66,7 @@ UName                U4Recorder::SPECS = {} ;
 const int U4Recorder::STATES = ssys::getenvint("U4Recorder_STATES",-1) ; 
 const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ; 
 
+const int U4Recorder::SEvt_NPFold_VERBOSE  = ssys::getenvbool("U4Recorder__SEvt_NPFold_VERBOSE") ; 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
 const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool("U4Recorder__EndOfRunAction_Simtrace") ; 
 const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
@@ -82,6 +83,7 @@ std::string U4Recorder::Desc() // static
        << " U4Recorder_STATES                   : " << STATES << std::endl 
        << " U4Recorder_RERUN                    : " << RERUN << std::endl 
        << " U4Recorder__PIDX_ENABLED            : " << ( PIDX_ENABLED            ? "YES" : "NO " ) << std::endl 
+       << " U4Recorder__SEvt_NPFold_VERBOSE     : " << ( SEvt_NPFold_VERBOSE     ? "YES" : "NO " ) << std::endl
        << " U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " ) << std::endl  
        << " U4Recorder__REPLICA_NAME_SELECT     : " << ( REPLICA_NAME_SELECT     ? REPLICA_NAME_SELECT : "-" ) << std::endl 
        << " PIDX                                : " << PIDX << std::endl 
@@ -235,9 +237,9 @@ void U4Recorder::init_SEvt()
     LOG(LEVEL) << " sev " << std::hex << sev << std::dec ; 
     LOG(LEVEL) << "sev->meta[" << sev->meta << "]" ;
 
-    if(LEVEL == info) 
+    if(SEvt_NPFold_VERBOSE)
     {
-        LOG(LEVEL) << " U4Recorder:INFO setting SEvt:setFoldVerbose " ; 
+        LOG(info) << " U4Recorder__SEvt_NPFold_VERBOSE : setting SEvt:setFoldVerbose " ; 
         sev->setFoldVerbose(true); 
     }
 
