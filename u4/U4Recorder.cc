@@ -94,8 +94,8 @@ std::string U4Recorder::Desc() // static
     bool uoc = UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
     ss << UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_ << ":" << int(uoc) << std::endl ; 
     ss << Switches() << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 /**

@@ -42,6 +42,21 @@ const plog::Severity QEvent::LEVEL = SLOG::EnvLevel("QEvent", "DEBUG");
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
 
+const bool QEvent::SEvt_NPFold_VERBOSE  = ssys::getenvbool("QEvent__SEvt_NPFold_VERBOSE") ;
+
+std::string QEvent::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << "QEvent::Desc" << std::endl 
+       << " QEvent__SEvt_NPFold_VERBOSE     : " << ( SEvt_NPFold_VERBOSE     ? "YES" : "NO " ) << std::endl
+       ;
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 sevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
@@ -106,6 +121,17 @@ void QEvent::init()
 
     LOG(LEVEL) << " QEvent::init calling SEvt/setCompProvider " ; 
     sev->setCompProvider(this);  
+
+    init_SEvt(); 
+}
+
+void QEvent::init_SEvt()
+{
+    if(SEvt_NPFold_VERBOSE)
+    {
+        LOG(info) << " QEvent__SEvt_NPFold_VERBOSE : setting SEvt:setFoldVerbose " ;
+        sev->setFoldVerbose(true);
+    }
 }
 
 NP* QEvent::gatherDomain() const { return sev ? sev->gatherDomain() : nullptr ; }

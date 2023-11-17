@@ -54,6 +54,9 @@ struct QUDARAP_API QEvent : public SCompProvider
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
+    static const bool SEvt_NPFold_VERBOSE ; 
+    static std::string Desc(); 
+
 
     sevent* getDevicePtr() const ;
 
@@ -61,6 +64,7 @@ struct QUDARAP_API QEvent : public SCompProvider
 
 private:
     void init(); 
+    void init_SEvt(); 
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the sevent.h instance not up here in QEvent.hh
