@@ -82,6 +82,8 @@ struct NPX
     static std::string Desc_MSD(const std::map<std::string,double>& msd); 
 
     static NP* ArrayFromEnumMap( const std::map<int, std::string>& catMap) ; 
+
+    static NP* MakeCharArray( const std::vector<std::string>& nn ); 
 }; 
 
 
@@ -625,7 +627,6 @@ inline NP* NPX::LoadCategoryArrayFromTxtFile(const char* path, int catfield, con
     return a ; 
 }
 
-
 inline void NPX::Import_MSD( std::map<std::string, double>& msd, const NP* a) // static
 {
     assert( a && a->uifc == 'f' && a->ebyte == 8 );
@@ -701,5 +702,17 @@ inline NP* NPX::ArrayFromEnumMap( const std::map<int, std::string>& catMap)
     return a ; 
 }
 
+inline NP* NPX::MakeCharArray( const std::vector<std::string>& nn )
+{
+    int ni = int(nn.size()); 
+    int maxlen = 0 ; 
+    for(int i=0 ; i < ni ; i++) maxlen = std::max( int(strlen(nn[i].c_str())), maxlen ) ;
+    int nj = maxlen + 1 ; 
+
+    NP* a = NP::Make<char>(ni, nj) ; 
+    char* aa = a->values<char>() ; 
+    for(int i=0 ; i < ni ; i++) for(int j=0 ; j < nj ; j++) aa[i*nj+j] = nn[i].c_str()[j] ; 
+    return a ;  
+}
 
  

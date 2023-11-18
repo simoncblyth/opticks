@@ -1,19 +1,6 @@
 multi-event-metadata-machinery-for-production
 ===============================================
 
-Overview
-----------
-
-Did this kinda thing many times, because metadata and layout keep changing
-as well as the scope of the testing. What I want now : 
-
-0. full SEvt loading is not needed, as too slow : want just the metadata
-1. matrix of time stamps to see how reproducible the pattern is
-2. summary plot presentation of the timing information  
-3. once that is operational : start reduction from lots of debug to production minimalism
-
-HMM: to create something that lasts could impl a nodata mode
-for NP.hh and NPFold.h 
 
 Priors
 -------
@@ -31,6 +18,51 @@ ana/profilesmrytab.py
 ana/profile_.py
 
 ana/metadata.py
+
+
+Overview
+----------
+
+Did this kinda thing many times, because metadata and layout keep changing
+as well as the scope of the testing. What I want now : 
+
+0. full SEvt loading is not needed, as too slow : want just the metadata
+1. matrix of time stamps to see how reproducible the pattern is
+2. summary plot presentation of the timing information  
+3. once that is operational : start reduction from lots of debug to production minimalism
+4. perhaps a timestamp mode that makes A and B easily comparable, but arranging 
+   the same stamp names ?  
+
+HMM: to create something that lasts could impl a nodata mode
+for NP.hh and NPFold.h 
+
+Can do most of the hardlifting in C++ writing a summary NPFold 
+that can read from python and present with matplotlib
+
+Status
+---------
+
+Investigating in::
+
+    ~/np/tests/NPFold_nodata_test.sh
+    ~/np/tests/NPFold_stamps_test.sh
+
+1. DONE : added nodata mode to NP.hh and NPFold.h : for fast loading of 
+          metadata only from many folders of arrays 
+2. DONE : added timestamp metadata handling to NP.hh and NPFold.h
+3. DONE : in NPFold_stamps_test.sh NPFold::substamps_pn
+          select subfold of an NPFold to be compared based on prefix
+          asserting on same counts pull the timestamp info into a collective table to be
+          saved with names and metadata  (hmm as python is the 
+          consumer could create char arrays for names of timestamps
+          and filepaths)
+
+4. TODO : plotting timestamps 
+
+* maybe can use things from::
+
+    sysrap/sevt_tt.py 
+    j/ntds/stamp.sh 
 
 
 
@@ -176,7 +208,7 @@ via the static::
     1036 }
 
 
-Where is the equivalent for input photons ? 
+Where is the equivalent for input photons ? Its done from SEvt::addFrameGenstep. 
 
 
 

@@ -9,6 +9,8 @@ struct sstamp
 {
     static uint64_t Now(); 
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
+    static std::string FormatInt(int64_t t, int wid ); 
+    static bool LooksLikeStampInt(const char* str); 
 }; 
 
 inline uint64_t sstamp::Now()
@@ -48,5 +50,42 @@ inline std::string sstamp::Format(uint64_t t, const char* fmt)
 
     std::string str = ss.str(); 
     return str ; 
+}
+
+inline std::string sstamp::FormatInt(int64_t t, int wid ) // static
+{
+    std::stringstream ss ; 
+    if( t > -1 ) ss << std::setw(wid) << t ;  
+    else         ss << std::setw(wid) << "" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+sstamp::LooksLikeStampInt
+--------------------------
+
+Contemporary microsecond uint64_t timestamps since Sept 2001 look like below with 16 digits::
+
+    1700224486350245
+
+::
+
+    In [20]: np.c_[np.array([0,int(1e15),1700224486350245,int(1e16),int(0x7ffffffffffffff) ]).view("datetime64[us]")]
+    Out[20]:
+    array([[ '1970-01-01T00:00:00.000000'],
+           [ '2001-09-09T01:46:40.000000'],
+           [ '2023-11-17T12:34:46.350245'],
+           [ '2286-11-20T17:46:40.000000'],
+           ['20237-04-25T10:45:03.423487']], dtype='datetime64[us]')
+
+*/
+
+inline bool sstamp::LooksLikeStampInt(const char* str) // static
+{
+    int length = strlen(str) ; 
+    int digits = 0 ;  
+    for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;   
+    return length == 16 && digits == length  ; 
 }
 

@@ -185,8 +185,12 @@ public:
           std::vector<std::string>& paths ); 
     static std::string Concat(const char* base, const char* sub, char delim='/' ); 
 
+    std::string desc_subfold(const char* top=TOP) const ;  
+    void find_subfold_with_prefix(
+         std::vector<const NPFold*>& subs, 
+         std::vector<std::string>& subpaths,
+         const char* prefix ) const ; 
 
-    std::string desc_subfold(const char* top="/") const ;  
     bool is_empty() const ; 
     int total_items() const ; 
     // ]subfold handling 
@@ -252,16 +256,28 @@ public:
 
     std::string desc() const ; 
     std::string desc(int depth) const ; 
+    std::string descMetaKVS() const ; 
+
+    void getMetaKVS(std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) const ; 
+    int  getMetaNumStamp() const ; 
+
     static std::string Indent(int width); 
 
     std::string brief() const ; 
     std::string stats() const ; 
+    std::string smry() const ; 
 
     // STATIC CONVERTERS
 
     static void Import_MIMSD(            std::map<int,std::map<std::string,double>>& mimsd, const NPFold* f );  
     static NPFold* Serialize_MIMSD(const std::map<int,std::map<std::string,double>>& mimsd); 
     static std::string Desc_MIMSD( const std::map<int,std::map<std::string,double>>& mimsd); 
+
+
+    // TIMESTAMP COMPARISON OF SUBFOLDER METADATA
+
+    NPFold* substamps(const char* prefix) const ; 
+    NPFold* substamps_pn() const ; 
 
 
 }; 
@@ -610,6 +626,8 @@ inline const NPFold* NPFold::find_subfold(const char* qpath) const
 }
 
 
+
+
 inline const void NPFold::find_subfold_with_all_keys(
     std::vector<const NPFold*>& subs, 
     const char* keys_, 
@@ -692,24 +710,69 @@ inline std::string NPFold::Concat(const char* base, const char* sub, char delim 
     return s ; 
 }
 
+/**
+NPFold::desc_subfold
+---------------------
 
+Provides summary information for the subfold of this fold 
+acting as an index to the full details that follow for each 
+subfold and so on recursively. 
+
+**/
 
 inline std::string NPFold::desc_subfold(const char* top)  const 
 {
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
+    assert( folds.size() == paths.size() ); 
+
     int tot_items = Traverse_r( this, top,  folds, paths ); 
 
     std::stringstream ss ; 
     ss << " tot_items " << tot_items << std::endl ; 
     ss << " folds " << folds.size() << std::endl ; 
     ss << " paths " << paths.size() << std::endl ; 
-    for(unsigned i=0 ; i < paths.size() ; i++) ss << i << " [" << paths[i] << "]" << std::endl ; 
+    for(int i=0 ; i < int(paths.size()) ; i++) 
+    {
+        const NPFold* f = folds[i] ; 
+        const std::string& p = paths[i] ; 
+        ss << std::setw(3) << i 
+           << " [" << p << "] "
+           << f->smry()
+           << std::endl
+           ; 
+    }
+
     if(nodata) ss << " NODATA " ; 
 
     std::string s = ss.str(); 
     return s ; 
 }
+
+inline void NPFold::find_subfold_with_prefix(
+    std::vector<const NPFold*>& subs, std::vector<std::string>& subpaths, const char* prefix ) const 
+{
+    std::vector<const NPFold*> folds ;
+    std::vector<std::string>   paths ;
+    assert( folds.size() == paths.size() ); 
+    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
+    if(tot_items == 0) return ; 
+
+    for(int i=0 ; i < int(paths.size()) ; i++) 
+    {
+        const NPFold* f = folds[i] ; 
+        const char* p = paths[i].c_str() ; 
+        if(U::StartsWith(p, prefix))
+        {
+            subs.push_back(f);  
+            subpaths.push_back(p); 
+        }
+    }
+}
+
+
+
+
 
 inline bool NPFold::is_empty() const 
 {
@@ -1433,11 +1496,38 @@ inline std::string NPFold::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+inline std::string NPFold::descMetaKVS() const
+{
+    return NP::DescMetaKVS(meta); 
+}
+
+inline void NPFold::getMetaKVS(std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) const 
+{
+    NP::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp ); 
+}
+
+inline int NPFold::getMetaNumStamp() const 
+{
+    std::vector<std::string> keys ; 
+    std::vector<int64_t>   stamps ; 
+    bool only_with_stamp = true ; 
+    getMetaKVS(&keys, nullptr, &stamps, only_with_stamp ); 
+    assert( keys.size() == stamps.size() ); 
+    int count = 0 ; 
+    for(int i=0 ; i < int(keys.size()) ; i++) count += stamps[i] == 0 ? 0 : 1 ; 
+    return count ; 
+}
+
+
+
+
 inline std::string NPFold::desc(int depth) const  
 {
     std::stringstream ss ; 
     ss << "NPFold::desc depth " << depth << std::endl ; 
     ss << brief() << std::endl ; 
+    ss << descMetaKVS() << std::endl ; 
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
         const char* k = kk[i].c_str() ; 
@@ -1447,7 +1537,7 @@ inline std::string NPFold::desc(int depth) const
            << Indent(depth*10) 
            << std::setw(20) << k 
            << " : " << ( a ? a->sstr() : "-" ) 
-           << std::endl 
+           << std::endl
            ;  
     }
     for(unsigned i=0 ; i < ff.size() ; i++) 
@@ -1489,8 +1579,14 @@ inline std::string NPFold::stats() const
     return str ; 
 }
 
-
-
+inline std::string NPFold::smry() const 
+{
+    int num_stamp = getMetaNumStamp() ; 
+    std::stringstream ss ; 
+    ss << " stamp:" << num_stamp ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 // STATIC CONVERTERS
@@ -1564,8 +1660,75 @@ inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, 
 }
 
 
+/**
+NPFold::substamps
+--------------------
 
+1. finds vector of subfold of this fold with the path prefix, eg "//p" "//n" 
+2. access metadata stamps for all the subfold, those with the same stamp keys
+   as the first are collected into a summary stamps array 
+3. labels array of the common stamp keys 
+4. these arrays are returns in an NPFold
 
+**/
+
+inline NPFold* NPFold::substamps(const char* prefix) const 
+{ 
+    std::vector<const NPFold*> subs ; 
+    std::vector<std::string> subpaths ; 
+    find_subfold_with_prefix(subs, subpaths,  prefix );  
+    assert( subs.size() == subpaths.size() ); 
+
+    std::cout 
+        << "NPFold::substamps" 
+        << " find_subfold_with_prefix " << prefix
+        << " subs.size " << subs.size()
+        << std::endl
+        ;
+
+    int num_sub = int(subs.size()) ; 
+    int num_stamp = num_sub > 0 ? subs[0]->getMetaNumStamp() : 0 ;  
+
+    int ni = num_sub ; 
+    int nj = num_stamp ; 
+
+    NP* t = NP::Make<int64_t>( ni, nj ) ; 
+    int64_t* tt = t->values<int64_t>() ; 
+    t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
+    t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
+
+    std::vector<std::string> comkeys ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        const NPFold* sub = subs[i] ; 
+        const char* subpath = subpaths[i].c_str() ; 
+        std::vector<std::string> keys ; 
+        std::vector<int64_t>   stamps ; 
+        bool only_with_stamps = true ; 
+        sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps ); 
+        assert( int(stamps.size()) == nj ) ; 
+
+        if(i == 0) comkeys = keys ; 
+        bool same_keys = i == 0 ? true : keys == comkeys ; 
+        std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
+        assert(same_keys); 
+
+        for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
+        t->names.push_back(subpath); 
+    }
+    NPFold* out = new NPFold ; 
+    out->add("stamps", t );
+    out->add("labels", NPX::MakeCharArray(comkeys) );  
+    return out ; 
+}
+
+inline NPFold* NPFold::substamps_pn() const 
+{
+    NPFold* pn = new NPFold ; 
+    pn->add_subfold( "p", substamps("//p")); 
+    pn->add_subfold( "n", substamps("//n")); 
+    return pn ; 
+}
 
 
 

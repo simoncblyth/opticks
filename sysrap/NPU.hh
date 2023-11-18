@@ -24,6 +24,7 @@ other projects together with NP.hh
 #include <cstdlib>
 #include <cstdint>
 #include <algorithm>
+#include <chrono>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -492,6 +493,11 @@ struct U
     static const char* ReadString( const char* path );
 
     static const char* ReadString2( const char* path );
+
+    static uint64_t Now(); 
+    static bool LooksLikeStampInt(const char* str); 
+    static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
+    static std::string FormatInt(int64_t t, int wid ); 
 };
 
 
@@ -1150,6 +1156,68 @@ inline const char* U::ReadString2(const char* path_)  // static
     std::string str = ss.str(); 
     return str.empty() ? nullptr : strdup(str.c_str()) ; 
 }
+
+
+inline uint64_t U::Now() // static
+{
+    // from opticks/sysrap/sstamp.h 
+    using Clock = std::chrono::system_clock;
+    using Unit  = std::chrono::microseconds ;
+    std::chrono::time_point<Clock> t0 = Clock::now();
+    return std::chrono::duration_cast<Unit>(t0.time_since_epoch()).count() ;   
+}
+
+/**
+U::LooksLikeStampInt
+----------------------
+
+Microsecond uint64_t timestamps look like below with 16 digits::
+
+    1700224486350245
+
+**/
+
+inline bool U::LooksLikeStampInt(const char* str) // static
+{   
+    int length = strlen(str) ;
+    int digits = 0 ; 
+    for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;
+    return length == 16 && digits == length  ;
+}
+
+inline std::string U::Format(uint64_t t, const char* fmt) // static
+{
+    // from opticks/sysrap/sstamp.h 
+    if(t == 0) t = Now() ; 
+    using Clock = std::chrono::system_clock;
+    using Unit  = std::chrono::microseconds  ;   
+    std::chrono::time_point<Clock> tp{Unit{t}} ; 
+
+    std::time_t tt = Clock::to_time_t(tp);
+
+    // extract the sub second part from the duration since epoch
+    auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
+
+    std::stringstream ss ; 
+    ss  
+       << std::put_time(std::localtime(&tt), fmt ) 
+       << std::setfill('0') 
+       << std::setw(6) << subsec.count() 
+       ;   
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string U::FormatInt(int64_t t, int wid ) // static
+{
+    std::stringstream ss ; 
+    if( t > -1 ) ss << std::setw(wid) << t ;  
+    else         ss << std::setw(wid) << "" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 

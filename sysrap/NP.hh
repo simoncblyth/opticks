@@ -339,6 +339,13 @@ struct NP
     bool has_meta() const ; 
     static std::string               get_meta_string_(const char* metadata, const char* key);  
     static std::string               get_meta_string( const std::string& meta, const char* key) ;  
+
+    typedef std::vector<std::string> VS ; 
+    typedef std::vector<int64_t> VT ; 
+
+    static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
+    static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
+
     template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback ); 
 
     template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
@@ -353,6 +360,11 @@ struct NP
 
     
     std::string descMeta() const ; 
+
+    static int         GetFirstStampIndex(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
+    static std::string DescMetaKVS(const std::string& meta); 
+    std::string descMetaKVS() const ; 
+
     const char* get_lpath() const ; 
 
 
@@ -4148,12 +4160,50 @@ inline std::string NP::get_meta_string_(const char* metadata, const char* key) /
     return value ; 
 }
 
-
-inline std::string NP::get_meta_string(const std::string& meta, const char* key) 
+inline std::string NP::get_meta_string(const std::string& meta, const char* key)  // static
 {
     const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
     return get_meta_string_( metadata, key ); 
 }
+
+
+
+
+inline void NP::GetMetaKVS_(const char* metadata, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) // static 
+{
+    if(metadata == nullptr) return ; 
+    std::stringstream ss;
+    ss.str(metadata);
+    std::string s;
+    char delim = ':' ; 
+
+    while (std::getline(ss, s))
+    { 
+        size_t pos = s.find(delim); 
+        if( pos != std::string::npos )
+        {
+            std::string k = s.substr(0, pos);
+            std::string _v = s.substr(pos+1);
+            const char* v = _v.c_str(); 
+            bool looks_like_stamp = U::LooksLikeStampInt(v); 
+            int64_t t = looks_like_stamp ? U::To<int64_t>( v ) : 0  ;  
+            bool select = only_with_stamp ? looks_like_stamp : true ; 
+            if(!select) continue ; 
+
+            if(keys) keys->push_back(k); 
+            if(vals) vals->push_back(v);
+            if(stamps) stamps->push_back(t);
+        }
+    } 
+}
+
+inline void NP::GetMetaKVS( const std::string& meta, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp  )
+{
+    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
+    return GetMetaKVS_( metadata, keys, vals, stamps, only_with_stamp ); 
+}
+
+
 
 template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key, T fallback) // static 
 {
@@ -4172,6 +4222,10 @@ template unsigned    NP::GetMeta<unsigned>(   const std::string& , const char*, 
 template float       NP::GetMeta<float>(      const std::string& , const char*, float ) ; 
 template double      NP::GetMeta<double>(     const std::string& , const char*, double ) ; 
 template std::string NP::GetMeta<std::string>(const std::string& , const char*, std::string ) ; 
+
+
+
+
 
 template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
 {
@@ -4301,9 +4355,98 @@ inline std::string NP::descMeta() const
        << meta 
        << std::endl 
        ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+
+/**
+NP::GetFirstStampIndex
+-----------------------
+
+Return index of the first stamp that has difference to 
+the next stamp of less than the discount. This is 
+to avoid uninteresting large time ranges in the deltas.   
+
+HMM: this assumes the stamps are ascending 
+
+**/
+
+inline int NP::GetFirstStampIndex(const std::vector<int64_t>& stamps, int64_t discount ) // static
+{
+    int first = -1 ; 
+    int i_prev = -1 ; 
+    int64_t t_prev = -1 ; 
+
+    for(int i=0 ; i < int(stamps.size()) ; i++)
+    {
+        if(stamps[i] == 0) continue ; 
+  
+        int64_t t  = stamps[i] ;         
+        int64_t dt = t_prev > -1 ? t - t_prev : -1 ;  
+        if( dt > -1 && dt < discount && first == -1 ) first = i_prev ; 
+
+        t_prev = t ; 
+        i_prev = i ;    
+    }   
+    return first ;     
+}
+
+inline std::string NP::DescMetaKVS(const std::string& meta)  // static
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    std::vector<int64_t> stamps ;  
+    bool only_with_stamp = false ; 
+    GetMetaKVS(meta, &keys, &vals, &stamps, only_with_stamp ); 
+    assert( keys.size() == vals.size() ); 
+    assert( keys.size() == stamps.size() ); 
+    assert( stamps.size() == keys.size() ); 
+
+    int idx0 = GetFirstStampIndex(stamps ); 
+    int64_t t_first = idx0 > -1 ? stamps[idx0] : -1 ; 
+    int64_t t_prev = -1 ; 
+
+    std::stringstream ss ; 
+    //ss << " t_first " << t_first << " idx0 " << idx0 << std::endl ; 
+
+    for(int i=0 ; i < int(keys.size()) ; i++)
+    {
+        const char* k = keys[i].c_str(); 
+        const char* v = vals[i].c_str(); 
+        int64_t t = stamps[i] ; 
+
+        int64_t dt0 = t > 0 && t_first > -1 ? t - t_first : -1 ; // microseconds since first stamp
+        int64_t dt  = t > 0 && t_prev  > -1 ? t - t_prev  : -1 ; // microseconds since previous stamp 
+        if(t > 0) t_prev = t ; 
+ 
+        ss << std::setw(30) << k 
+           << " : "
+           << v
+           << "   "
+           << ( t > 0 ? U::Format(t) : "" )
+           << " " << U::FormatInt(dt0, 10) 
+           << " " << U::FormatInt(dt, 10 )  
+           << std::endl 
+           ;
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string NP::descMetaKVS() const 
+{
+    std::stringstream ss ; 
+    ss << "NP::descMetaKVS" 
+       << std::endl 
+       << DescMetaKVS(meta) 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 
 inline const char* NP::get_lpath() const 
 {
