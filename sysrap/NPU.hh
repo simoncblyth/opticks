@@ -1171,9 +1171,19 @@ inline uint64_t U::Now() // static
 U::LooksLikeStampInt
 ----------------------
 
-Microsecond uint64_t timestamps look like below with 16 digits::
+Contemporary microsecond uint64_t timestamps look like below with 16 digits::
 
     1700224486350245
+
+::
+
+    In [20]: np.c_[np.array([0,int(1e15),1700224486350245,int(1e16),int(0x7ffffffffffffff) ]).view("datetime64[us]")]
+    Out[20]:
+    array([[ '1970-01-01T00:00:00.000000'],
+           [ '2001-09-09T01:46:40.000000'],
+           [ '2023-11-17T12:34:46.350245'],
+           [ '2286-11-20T17:46:40.000000'],
+           ['20237-04-25T10:45:03.423487']], dtype='datetime64[us]')
 
 **/
 
