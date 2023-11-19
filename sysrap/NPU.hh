@@ -495,7 +495,9 @@ struct U
     static const char* ReadString2( const char* path );
 
     static uint64_t Now(); 
-    static bool LooksLikeStampInt(const char* str); 
+    static bool LooksLikeStampInt(   const char* str); 
+    static bool LooksLikeProfileTriplet(const char* str); 
+
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
     static std::string FormatInt(int64_t t, int wid ); 
 };
@@ -1194,6 +1196,36 @@ inline bool U::LooksLikeStampInt(const char* str) // static
     for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;
     return length == 16 && digits == length  ;
 }
+
+/**
+U::LooksLikeProfileTriplet
+-----------------------------
+
+Follows sprof::LooksLikeProf, repeated hear for convenience
+
+**/
+
+inline bool U::LooksLikeProfileTriplet(const char* str) // static
+{
+    int len = str ? int(strlen(str)) : 0 ; 
+    int count_delim = 0 ; 
+    int count_non_digit = 0 ; 
+    int first_field_digits = 0 ; 
+
+    for(int i=0 ; i < len ; i++ ) 
+    {   
+        char c = str[i] ; 
+        bool is_digit = c >= '0' && c <= '9' ;
+        bool is_delim = c == ',' ; 
+        if(!is_digit) count_non_digit += 1 ; 
+        if(count_delim == 0 && is_digit ) first_field_digits += 1 ;   
+        if(is_delim) count_delim += 1 ; 
+    }   
+    bool heuristic = count_delim == 2 && count_non_digit == count_delim && first_field_digits == 16 ; 
+    return heuristic ;    
+}
+
+
 
 inline std::string U::Format(uint64_t t, const char* fmt) // static
 {

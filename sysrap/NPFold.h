@@ -256,10 +256,14 @@ public:
 
     std::string desc() const ; 
     std::string desc(int depth) const ; 
-    std::string descMetaKVS() const ; 
 
+    std::string descMetaKVS() const ; 
     void getMetaKVS(std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) const ; 
     int  getMetaNumStamp() const ; 
+
+    std::string descMetaKV() const ; 
+    void getMetaKV(std::vector<std::string>* keys, std::vector<std::string>* vals, bool only_with_profile ) const ; 
+    int  getMetaNumProfile() const ; 
 
     static std::string Indent(int width); 
 
@@ -274,11 +278,13 @@ public:
     static std::string Desc_MIMSD( const std::map<int,std::map<std::string,double>>& mimsd); 
 
 
-    // TIMESTAMP COMPARISON OF SUBFOLDER METADATA
+    // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
 
-    NPFold* substamps(const char* prefix) const ; 
-    NPFold* substamps_pn() const ; 
+    NPFold* substamp(const char* prefix) const ; 
+    NPFold* substamp_ab(const char* a_prefix="//p", const char* b_prefix="//n" ) const ; 
 
+    NPFold* subprofile(const char* prefix) const ; 
+    NPFold* subprofile_ab(const char* a_prefix="//p", const char* b_prefix="//n" ) const ; 
 
 }; 
 
@@ -1502,7 +1508,11 @@ inline std::string NPFold::descMetaKVS() const
     return NP::DescMetaKVS(meta); 
 }
 
-inline void NPFold::getMetaKVS(std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) const 
+inline void NPFold::getMetaKVS(
+    std::vector<std::string>* keys, 
+    std::vector<std::string>* vals, 
+    std::vector<int64_t>* stamps, 
+    bool only_with_stamp ) const 
 {
     NP::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp ); 
 }
@@ -1518,6 +1528,34 @@ inline int NPFold::getMetaNumStamp() const
     for(int i=0 ; i < int(keys.size()) ; i++) count += stamps[i] == 0 ? 0 : 1 ; 
     return count ; 
 }
+
+
+
+inline std::string NPFold::descMetaKV() const
+{
+    return NP::DescMetaKV(meta); 
+}
+
+inline void NPFold::getMetaKV(
+    std::vector<std::string>* keys, 
+    std::vector<std::string>* vals, 
+    bool only_with_profile ) const 
+{
+    NP::GetMetaKV(meta, keys, vals, only_with_profile ); 
+}
+
+inline int NPFold::getMetaNumProfile() const 
+{
+    std::vector<std::string> keys ; 
+    std::vector<std::string> vals ; 
+    bool only_with_profile = true ; 
+    getMetaKV(&keys, &vals, only_with_profile ); 
+    assert( keys.size() == vals.size() ); 
+    int count = keys.size() ; 
+    return count ; 
+}
+
+
 
 
 
@@ -1661,7 +1699,7 @@ inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, 
 
 
 /**
-NPFold::substamps
+NPFold::substamp
 --------------------
 
 1. finds vector of subfold of this fold with the path prefix, eg "//p" "//n" 
@@ -1672,7 +1710,7 @@ NPFold::substamps
 
 **/
 
-inline NPFold* NPFold::substamps(const char* prefix) const 
+inline NPFold* NPFold::substamp(const char* prefix) const 
 { 
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
@@ -1680,7 +1718,7 @@ inline NPFold* NPFold::substamps(const char* prefix) const
     assert( subs.size() == subpaths.size() ); 
 
     std::cout 
-        << "NPFold::substamps" 
+        << "NPFold::substamp" 
         << " find_subfold_with_prefix " << prefix
         << " subs.size " << subs.size()
         << std::endl
@@ -1694,6 +1732,7 @@ inline NPFold* NPFold::substamps(const char* prefix) const
 
     NP* t = NP::Make<int64_t>( ni, nj ) ; 
     int64_t* tt = t->values<int64_t>() ; 
+    t->set_meta<std::string>("creator","NPFold::substamp"); 
     t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
     t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
 
@@ -1716,20 +1755,126 @@ inline NPFold* NPFold::substamps(const char* prefix) const
         for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
         t->names.push_back(subpath); 
     }
+
+    NP* l = NPX::MakeCharArray(comkeys); 
+    l->names = comkeys ; 
+
     NPFold* out = new NPFold ; 
     out->add("stamps", t );
-    out->add("labels", NPX::MakeCharArray(comkeys) );  
+    out->add("labels", l );  
     return out ; 
+
 }
 
-inline NPFold* NPFold::substamps_pn() const 
+inline NPFold* NPFold::substamp_ab(const char* a_prefix, const char* b_prefix) const 
 {
     NPFold* pn = new NPFold ; 
-    pn->add_subfold( "p", substamps("//p")); 
-    pn->add_subfold( "n", substamps("//n")); 
+    pn->add_subfold( "a", substamp(a_prefix)); 
+    pn->add_subfold( "b", substamp(b_prefix)); 
     return pn ; 
 }
 
 
+
+/**
+NPFold::subprofile
+--------------------
+
+1. finds vector of subfold of this fold with the path prefix, eg "//p" "//n" 
+2. access metadata profiles for all of the subfold, those with the same stamp keys
+   as the first are collected into a summary profile array
+
+   * hence choose prefix to select sub NPFold with the same profile content 
+ 
+3. labels array of the common stamp keys 
+4. these arrays are returns in an NPFold
+
+**/
+
+inline NPFold* NPFold::subprofile(const char* prefix) const 
+{
+    std::vector<const NPFold*> subs ; 
+    std::vector<std::string> subpaths ; 
+    find_subfold_with_prefix(subs, subpaths,  prefix );  
+    assert( subs.size() == subpaths.size() ); 
+
+    int num_sub = int(subs.size()) ; 
+    int num_prof = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
+    bool dump = false ; 
+
+    if(dump) std::cout 
+        << "NPFold::subprofile"
+        << " num_sub " << num_sub 
+        << " sub0.num_prof " << num_prof 
+        << std::endl
+        ; 
+
+    int ni = num_sub ; 
+    int nj = num_prof ; 
+    int nk = 3 ;   
+
+    NP* t = NP::Make<int64_t>( ni, nj, nk ) ; 
+    int64_t* tt = t->values<int64_t>() ; 
+    t->set_meta<std::string>("creator","NPFold::subprofile"); 
+    t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
+    t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
+
+    std::vector<std::string> comkeys ; 
+    for(int i=0 ; i < ni ; i++) 
+    {
+        const NPFold* sub = subs[i] ; 
+        const char* subpath = subpaths[i].c_str() ; 
+
+        if(dump) std::cout 
+            << subpath 
+            << std::endl
+            << sub->descMetaKV()
+            << std::endl
+            ; 
+
+        std::vector<std::string> keys ; 
+        std::vector<std::string> vals ; 
+        bool only_with_profiles = true ; 
+        sub->getMetaKV(&keys, &vals, only_with_profiles ); 
+        assert( vals.size() == keys.size() ) ; 
+        assert( int(vals.size()) == nj ) ; 
+
+        if(i == 0) comkeys = keys ; 
+        bool same_keys = i == 0 ? true : keys == comkeys ; 
+        if(dump) std::cout 
+             << "sub.loaddir " << sub->loaddir 
+             << " keys.size " << keys.size() 
+             << " " << ( same_keys ? "Y" : "N" )
+             << std::endl
+             ; 
+        assert(same_keys); 
+
+        for(int j=0 ; j < nj ; j++) 
+        {
+            const char* v = vals[j].c_str(); 
+            std::vector<int64_t> elem ; 
+            U::MakeVec<int64_t>( elem, v, ',' ); 
+            assert( int(elem.size()) == nk ); 
+            for(int k=0 ; k < nk ; k++)  tt[i*nj*nk+j*nk+k] = elem[k] ; 
+        }
+        t->names.push_back(subpath); 
+    }
+
+    NP* l = NPX::MakeCharArray(comkeys); 
+    l->names = comkeys ; 
+
+    NPFold* out = new NPFold ; 
+    out->add("profile", t );
+    out->add("labels", l ) ; 
+    return out ; 
+}
+
+inline NPFold* NPFold::subprofile_ab(const char* a_prefix, const char* b_prefix) const 
+{
+    NPFold* pn = new NPFold ; 
+    pn->add_subfold( "a", subprofile(a_prefix)); 
+    pn->add_subfold( "b", subprofile(b_prefix)); 
+    return pn ; 
+}
 
 

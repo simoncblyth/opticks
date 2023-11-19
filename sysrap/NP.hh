@@ -343,6 +343,9 @@ struct NP
     typedef std::vector<std::string> VS ; 
     typedef std::vector<int64_t> VT ; 
 
+    static void GetMetaKV_( const char* metadata    , VS* keys, VS* vals, bool only_with_profile ); 
+    static void GetMetaKV(  const std::string& meta , VS* keys, VS* vals, bool only_with_profile ); 
+
     static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
     static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
 
@@ -364,6 +367,10 @@ struct NP
     static int         GetFirstStampIndex(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
     static std::string DescMetaKVS(const std::string& meta); 
     std::string descMetaKVS() const ; 
+
+    static std::string DescMetaKV(const std::string& meta); 
+    std::string descMetaKV() const ; 
+
 
     const char* get_lpath() const ; 
 
@@ -4169,7 +4176,62 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
 
 
 
-inline void NP::GetMetaKVS_(const char* metadata, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) // static 
+
+
+
+
+
+
+inline void NP::GetMetaKV_(
+    const char* metadata, 
+    std::vector<std::string>* keys, 
+    std::vector<std::string>* vals, 
+    bool only_with_profile ) // static
+{
+    if(metadata == nullptr) return ; 
+    std::stringstream ss;
+    ss.str(metadata);
+    std::string s;
+    char delim = ':' ; 
+
+    while (std::getline(ss, s))
+    { 
+        size_t pos = s.find(delim); 
+        if( pos != std::string::npos )
+        {
+            std::string k = s.substr(0, pos);
+            std::string _v = s.substr(pos+1);
+            const char* v = _v.c_str(); 
+
+            bool looks_like_profile = U::LooksLikeProfileTriplet(v); 
+            bool select = only_with_profile ? looks_like_profile  : true ; 
+            if(!select) continue ; 
+
+            if(keys) keys->push_back(k); 
+            if(vals) vals->push_back(v);
+        }
+    } 
+}
+
+inline void NP::GetMetaKV(
+    const std::string& meta, 
+    std::vector<std::string>* keys,
+    std::vector<std::string>* vals, 
+    bool only_with_profile ) // static
+{
+    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
+    return GetMetaKV_( metadata, keys, vals, only_with_profile ); 
+}
+
+
+
+
+inline void NP::GetMetaKVS_(
+    const char* metadata, 
+    std::vector<std::string>* keys, 
+    std::vector<std::string>* vals, 
+    std::vector<int64_t>* stamps, 
+    bool only_with_stamp ) // static 
 {
     if(metadata == nullptr) return ; 
     std::stringstream ss;
@@ -4444,6 +4506,58 @@ inline std::string NP::descMetaKVS() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+
+
+
+
+inline std::string NP::DescMetaKV(const std::string& meta)  // static
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    bool only_with_profile = false ; 
+    GetMetaKV(meta, &keys, &vals, only_with_profile ); 
+    assert( keys.size() == vals.size() ); 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < int(keys.size()) ; i++)
+    {
+        const char* k = keys[i].c_str(); 
+        const char* v = vals[i].c_str(); 
+        bool looks_like_stamp = U::LooksLikeStampInt(v); 
+        bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
+        ss << std::setw(30) << k 
+           << " : "
+           << std::setw(60) << v
+           << " : "
+           << ( looks_like_stamp ? "STAMP" :  ( looks_like_prof ? "PROF "  : "     " ))
+           << std::endl 
+           ;
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string NP::descMetaKV() const 
+{
+    std::stringstream ss ; 
+    ss << "NP::descMetaKV" 
+       << std::endl 
+       << DescMetaKV(meta) 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 

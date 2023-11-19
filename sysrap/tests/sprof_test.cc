@@ -24,8 +24,8 @@ void test_procedural()
         sprof::Stamp(p); 
 
         std::string str = sprof::Desc(p) ; 
-        bool llp = sprof::LooksLikeProf(str.c_str()) ; 
-        std::cout << str << " llp " << ( llp ? "YES" : "NO " )  << std::endl ; 
+        bool llpt = sprof::LooksLikeProfileTriplet(str.c_str()) ; 
+        std::cout << str << " llpt " << ( llpt ? "YES" : "NO " )  << std::endl ; 
     }
 }
 

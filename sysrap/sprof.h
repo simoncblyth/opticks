@@ -17,7 +17,7 @@ struct sprof
 
     static void Stamp(sprof& prof); 
     static std::string Desc(const sprof& prof); 
-    static bool LooksLikeProf(const char* str); 
+    static bool LooksLikeProfileTriplet(const char* str); 
 };
 
 inline void sprof::Stamp(sprof& prof)
@@ -36,8 +36,8 @@ inline std::string sprof::Desc(const sprof& prof)
 }
 
 /**
-sprof::LooksLikeProf
----------------------
+sprof::LooksLikeProfileTriplet
+--------------------------------
 
 sprof strings have:
 
@@ -51,7 +51,7 @@ For example::
 
 **/
 
-inline bool sprof::LooksLikeProf(const char* str)
+inline bool sprof::LooksLikeProfileTriplet(const char* str)
 {
     int len = str ? int(strlen(str)) : 0 ; 
     int count_delim = 0 ; 
