@@ -66,6 +66,77 @@ Investigating in::
 
 
 
+
+HMM : not just timestamps, also need memory record
+-----------------------------------------------------
+
+OLD OK_PROFILE approach from Opticks.hh treated the code site label as dynamic, 
+and collected it into a char array.
+
+* approach is rather limited : profiling info collected into 
+  the global Opticks instance
+
+* collecting into SEvt NPFold makes more sense 
+
+::
+
+    76 #define OK_PROFILE(s) \
+     77     { \
+     78        if(m_ok)\
+     79        {\
+     80           m_ok->profile((s)) ;\
+     81        }\
+     82     }
+     83 
+
+     558 void Opticks::profile(const char* label)
+     559 {
+     560     if(!m_profile_enabled) return ;
+     561     m_profile->stamp(label, m_tagoffset);
+     562    // m_tagoffset is set by Opticks::makeEvent
+     563 }
+
+::
+
+     366 Opticks::Opticks(int argc, char** argv, const char* argforced )
+     367     :
+     ...
+     382     m_profile(new OpticksProfile()),
+     383     m_profile_enabled(m_sargs->hasArg("--profile")),
+
+::
+
+    ./optickscore/OpticksEvent.cc:    OK_PROFILE("_OpticksEvent::setGenstepData");
+    ./optickscore/OpticksEvent.cc:    OK_PROFILE("OpticksEvent::setGenstepData");
+
+    209 void OpticksProfile::stamp(const char* label, int count)
+    210 {
+    211    setT(BTimeStamp::RealTime2()) ;
+    212    setVM(SProc::VirtualMemoryUsageMB()) ;
+    213    m_num_stamp += 1 ;
+    214 
+    215    float  t   = m_t - m_t0 ;      // time since instanciation
+    216    float dt   = m_t - m_tprev ;   // time since previous stamp
+    217 
+    218    float vm   = m_vm - m_vm0 ;     // vm since instanciation
+    219    float dvm  = m_vm - m_vmprev ;  // vm since previous stamp
+    220 
+    221    m_last_stamp.x = t ;
+    222    m_last_stamp.y = dt ;
+    223    m_last_stamp.z = vm ;
+    224    m_last_stamp.w = dvm ;
+    225 
+    226    // the prev start at zero, so first dt and dvm give absolute m_t0 m_vm0 valules
+    227 
+    228    m_tt->add<const char*>(label, t, dt, vm, dvm,  count );
+    229    m_npy->add(       t, dt, vm, dvm );
+    230    m_lpy->addString( label ) ;
+
+    m_npy(NPY<float>::make(0,m_tt->getNumColumns())),
+    m_lpy(NPY<char>::make(0,64)),
+
+
+
 NP.hh NPFold.h nodata mode : load just metadata from NPFold tree of arrays
 -----------------------------------------------------------------------------
 

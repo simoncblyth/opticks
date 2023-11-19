@@ -157,15 +157,21 @@ Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->lau
 
 int QEvent::setGenstep()  // onto device
 {
+#ifndef PRODUCTION 
     sev->t_setGenstep_0 = sstamp::Now(); 
+#endif
 
     NP* gs = sev->gatherGenstep();  // creates array from quad6 genstep vector 
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_1 = sstamp::Now(); 
+#endif
 
     sev->clear();                   // clears quad6 genstep vector, ready to collect more genstep
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_2 = sstamp::Now(); 
+#endif
 
     LOG_IF(fatal, gs == nullptr ) << "Must SEvt/addGenstep before calling QEvent::setGenstep " ;
     //if(gs == nullptr) std::raise(SIGINT); 
@@ -207,8 +213,10 @@ If the number of gensteps is zero there are no photons and no launch.
 
 
 int QEvent::setGenstep(NP* gs_) 
-{ 
+{
+#ifndef PRODUCTION 
     sev->t_setGenstep_3 = sstamp::Now(); 
+#endif
 
     gs = gs_ ; 
     SGenstep::Check(gs); 
@@ -234,21 +242,29 @@ int QEvent::setGenstep(NP* gs_)
     LOG_IF(fatal, !num_gs_allowed) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_4 = sstamp::Now(); 
+#endif
 
     QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep ); 
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_5 = sstamp::Now(); 
+#endif
 
     QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_6 = sstamp::Now(); 
+#endif
 
     //count_genstep_photons();   // sets evt->num_seed
     //fill_seed_buffer() ;       // populates seed buffer
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_7 = sstamp::Now(); 
+#endif
 
     int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
 
@@ -266,7 +282,9 @@ int QEvent::setGenstep(NP* gs_)
     }
     upload_count += 1 ; 
 
+#ifndef PRODUCTION 
     sev->t_setGenstep_8 = sstamp::Now(); 
+#endif
 
     return 0 ; 
 }

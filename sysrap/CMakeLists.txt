@@ -172,6 +172,7 @@ set(HEADERS
 
     SCurandState.hh
     sproc.h
+    sprof.h
     smeta.h
 
     SBacktrace.h

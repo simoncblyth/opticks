@@ -2,7 +2,7 @@
 #include <sstream>
 
 //#include "SPath.hh"
-#include "sproc.h"
+//#include "sproc.h"
 #include "SGeo.hh"
 #include "SEventConfig.hh"
 #include "SLOG.hh"

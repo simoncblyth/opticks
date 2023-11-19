@@ -13,7 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "ssys.h"
-#include "sproc.h"
+//#include "sproc.h"
 
 #include "smeta.h"
 #include "SSim.hh"

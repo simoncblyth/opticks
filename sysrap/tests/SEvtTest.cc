@@ -1,13 +1,16 @@
 
 #include "OPTICKS_LOG.hh"
 #include "OpticksGenstep.h"
-#include "SPath.hh"
+
+#include "scuda.h"
+#include "spath.h"
+#include "sprof.h"
+#include "stran.h"
+#include "sdirectory.h"
+
 #include "SEventConfig.hh"
 #include "SEvt.hh"
-#include "SStr.hh"
-#include "SCF.h"
 
-#include "stran.h"
 
 
 void test_AddGenstep()
@@ -122,8 +125,10 @@ void test_InputPhoton()
 
     NP* ip = evt->getInputPhoton(); 
     
-    const char* FOLD = SPath::Resolve("$TMP/SEvtTest/test_InputPhoton", DIRPATH); 
-    ip->save(FOLD, SStr::Name("ipf", ipf, ".npy") ); 
+    const char* FOLD = spath::Resolve("$TMP/SEvtTest/test_InputPhoton"); 
+    sdirectory::MakeDirs( FOLD, 0 ); 
+
+    ip->save(FOLD, spath::Name("ipf", ipf, ".npy") ); 
 
     /*
     const qat4* q = SEvt::CF->getInputPhotonFrame(); 
@@ -188,9 +193,16 @@ void test_getOutputDir()
 }
 
 
+void test_setMetaProf()
+{
+    SEvt* evt = SEvt::Create(0);
 
+    sprof prof = {} ; 
+    sprof::Stamp(prof); 
+    evt->setMetaProf("test_setMeta", prof ); 
 
-
+    std::cout << "evt->meta" << std::endl << evt->meta << std::endl ;  
+}
 
 int main(int argc, char** argv)
 {
@@ -202,11 +214,10 @@ int main(int argc, char** argv)
     test_LifeCycle(); 
     test_InputPhoton(); 
     test_savedir(); 
+    test_getOutputDir(); 
     */
 
-    test_getOutputDir(); 
-
-
+    test_setMetaProf(); 
 
     return 0 ; 
 }

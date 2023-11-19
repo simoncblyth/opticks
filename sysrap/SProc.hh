@@ -23,24 +23,52 @@
 SProc : MIGRATING to sproc.h
 =================================
 
-::
+Almost all in dead code::
 
-    epsilon:sysrap blyth$ opticks-f SProc.hh 
-    ## ./CSGOptiX/CSGOptiX.cc:#include "SProc.hh"
-    ## ./CSG/CSGFoundry.cc:#include "SProc.hh"
-    ## ./sysrap/SProc.cc:#include "SProc.hh"
-    ## ./sysrap/SLOG.cc:#include "SProc.hh"
-    ## ./sysrap/CMakeLists.txt:    SProc.hh
+    epsilon:opticks blyth$ opticks-fl SProc.hh
 
-    ./sysrap/tests/SProcTest.cc:#include "SProc.hh"
+    ./sysrap/SProc.hh
+    ./sysrap/CMakeLists.txt
+    ./sysrap/tests/SProcTest.cc
+    ./sysrap/SProc.cc
 
-    ./sysrap/SGeo.cc:#include "SProc.hh"
+    ./cfg4/tests/CGenstepCollectorLeak2Test.cc
+    ./cfg4/tests/CGenstepCollectorLeakTest.cc
+    ./optickscore/OpticksProfile.cc
+    ./optickscore/tests/OpticksEventLeakTest.cc
+    ./optickscore/tests/OpticksRunTest.cc
+    ./optickscore/tests/OpticksEventTest.cc
+    ./optickscore/Opticks.cc
+    ./boostrap/BOpticksResource.cc
+    ./npy/tests/NPY8DynamicRandomTest.cc
+    ./npy/tests/NPY5Test.cc
+    ./npy/tests/NPY6Test.cc
 
-    ./sysrap/SOpticks.cc:#include "SProc.hh"
-    ./sysrap/SOpticksResource.cc:#include "SProc.hh"
+But profiling usage is currently all in dead code::
 
+    epsilon:opticks blyth$ opticks-fl VirtualMemoryUsage
+    ./cfg4/tests/CGenstepCollectorLeak2Test.cc
+    ./cfg4/tests/CGenstepCollectorLeakTest.cc
+    ./sysrap/sproc.h
+    ./sysrap/SProc.hh
+    ./sysrap/tests/reallocTest.cc
+    ./sysrap/tests/SProcTest.cc
+    ./sysrap/SProc.cc
+    ./optickscore/OpticksProfile.cc
+    ./optickscore/tests/OpticksRunTest.cc
+    ./optickscore/tests/OpticksEventTest.cc
+    ./npy/tests/NPY5Test.cc
+    ./npy/tests/NPY6Test.cc
+    epsilon:opticks blyth$ 
 
-
+    epsilon:opticks blyth$ opticks-fl ResidentSetSize 
+    ./cfg4/tests/CGenstepCollectorLeak2Test.cc
+    ./sysrap/sproc.h
+    ./sysrap/SProc.hh
+    ./sysrap/SProc.cc
+    ./optickscore/OpticksProfile.cc
+    ./npy/tests/NPY6Test.cc
+    epsilon:opticks blyth$ 
 
 
 **/

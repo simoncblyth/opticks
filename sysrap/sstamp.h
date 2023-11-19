@@ -1,6 +1,7 @@
 #pragma  once
 
 #include <chrono>
+#include <thread>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -11,6 +12,7 @@ struct sstamp
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
     static std::string FormatInt(int64_t t, int wid ); 
     static bool LooksLikeStampInt(const char* str); 
+    static void sleep(int seconds); 
 }; 
 
 inline uint64_t sstamp::Now()
@@ -88,4 +90,14 @@ inline bool sstamp::LooksLikeStampInt(const char* str) // static
     for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;   
     return length == 16 && digits == length  ; 
 }
+
+inline void sstamp::sleep(int seconds)
+{
+    std::chrono::seconds dura(seconds);
+    std::this_thread::sleep_for( dura );
+}
+
+
+
+
 

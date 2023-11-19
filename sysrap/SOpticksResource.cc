@@ -7,6 +7,7 @@
 
 #include "SStr.hh"
 #include "sstr.h"
+#include "spath.h"
 
 #include "SPath.hh"
 #include "spath.h"
@@ -370,7 +371,7 @@ that starts with the GEOM value::
 const char* SOpticksResource::GDMLPathFromGEOM()
 {
     const char* geom = GEOM(); 
-    const char* path =  geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GDMLPathFromGEOM")) ; 
+    const char* path =  geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GDMLPathFromGEOM")) ; 
     LOG(LEVEL) 
         << " geom " << geom 
         << " path " << path 
@@ -384,7 +385,7 @@ const char* SOpticksResource::GDMLPathFromGEOM()
 const char* SOpticksResource::WrapLVForName(const char* name)
 {
     assert(name) ; 
-    return ssys::getenvvar(SStr::Name(name, "_WrapLVForName")) ; 
+    return ssys::getenvvar(spath::Name(name, "_WrapLVForName")) ; 
 }
 
 
@@ -448,25 +449,25 @@ For example exercise this with::
 const char* SOpticksResource::GDMLPath(){ return GDMLPath( GEOM()); }
 const char* SOpticksResource::GDMLPath(const char* geom)
 {
-    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GDMLPath")) ; 
 }
 
 const char* SOpticksResource::GEOMSub(){ return GEOMSub( GEOM()); }
 const char* SOpticksResource::GEOMSub(const char* geom)
 {
-    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMSub")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMSub")) ; 
 }
 
 const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( GEOM()); }
 const char* SOpticksResource::GEOMWrap(const char* geom)
 {
-    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMWrap")) ; 
 }
 
 const char* SOpticksResource::GEOMList(){ return GEOMList( GEOM()); }
 const char* SOpticksResource::GEOMList(const char* geom)
 {
-    return geom == nullptr ? nullptr : ssys::getenvvar(SStr::Name(geom, "_GEOMList")) ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMList")) ; 
 }
 
 

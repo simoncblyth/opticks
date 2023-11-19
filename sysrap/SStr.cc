@@ -304,6 +304,10 @@ template const char* SStr::Format( const char*, const char* , int, const char* )
 
 
 
+/**
+
+replace with spath::Name
+
 template<typename ... Args>
 const char* SStr::Name( Args ... elem_ )
 {
@@ -317,6 +321,8 @@ const char* SStr::Name( Args ... elem_ )
 template const char* SStr::Name( const char* ); 
 template const char* SStr::Name( const char*, const char*  ); 
 template const char* SStr::Name( const char*, const char*, const char* ); 
+
+**/
 
 
 

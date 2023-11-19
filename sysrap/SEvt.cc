@@ -7,6 +7,7 @@
 #include "squad.h"
 #include "squadx.h"
 #include "sstamp.h"
+#include "sprof.h"
 
 #include "sphoton.h"
 #include "srec.h"
@@ -111,6 +112,7 @@ SEvt::SEvt()
     index(MISSING_INDEX),
     instance(MISSING_INSTANCE),
     t_BeginOfEvent(0),
+#ifndef PRODUCTION
     t_setGenstep_0(0),
     t_setGenstep_1(0),
     t_setGenstep_2(0),
@@ -120,6 +122,7 @@ SEvt::SEvt()
     t_setGenstep_6(0),
     t_setGenstep_7(0),
     t_setGenstep_8(0),
+#endif
     t_PreLaunch(0),
     t_PostLaunch(0),
     t_EndOfEvent(0),
@@ -794,6 +797,10 @@ NB an alternative route for metadata is the
 SEvt::meta OR QEvent::meta that gets adopted as
 the NPFold meta in SEvt::gather_components
 
+DOMAIN IS INCREASINGLY IRRELEVANT WHEN NOT USING REC 
+
+TODO: ELIMINATE
+
 **/
 
 NP* SEvt::gatherDomain() const
@@ -803,12 +810,12 @@ NP* SEvt::gatherDomain() const
     evt->get_config(dom[1]);  // maxima, counts 
     NP* domain = NP::Make<float>( 2, 4, 4 );
     domain->read2<float>( (float*)&dom[0] );
-    // actually it makes more sense to place metadata on domain than hits 
-    // as domain will always be available
-    domain->set_meta<unsigned>("hitmask", selector->hitmask );
-    domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
-    domain->set_meta<int>("index", index); 
-    domain->set_meta<int>("instance", instance); 
+
+    // MOVED THE BELOW TO SEvt::endMeta
+    //domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
+    //domain->set_meta<unsigned>("hitmask", selector->hitmask );
+    //domain->set_meta<int>("index", index); 
+    //domain->set_meta<int>("instance", instance); 
 
     return domain ;
 }
@@ -1203,6 +1210,12 @@ void SEvt::setMetaString(const char* k, const char* v)
     NP::SetMeta<std::string>(meta, k, v ); 
 }
 
+void SEvt::setMetaProf(const char* k, sprof& v)
+{
+    NP::SetMeta<std::string>(meta, k, sprof::Desc(v) ); 
+}
+
+
 template<typename T>
 void SEvt::setMeta( const char* k, T v )
 {
@@ -1233,10 +1246,17 @@ which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
 
 void SEvt::beginOfEvent(int eventID)
 {
+#ifndef PRODUCTION
+    sprof::Stamp(p_SEvt__beginOfEvent_0);  
+#endif
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
+
     addFrameGenstep();     // needed for simtrace and input photon running
+#ifndef PRODUCTION
+    sprof::Stamp(p_SEvt__beginOfEvent_1);  
+#endif
 }
 
 
@@ -1256,11 +1276,37 @@ so can switch off all saving wuth that config.
 
 void SEvt::endOfEvent(int eventID)
 {
+#ifndef PRODUCTION
+    sprof::Stamp(p_SEvt__endOfEvent_0);  
+#endif
+
     int index_ = 1+eventID ;    
     endIndex(index_);   // also sets t_EndOfEvent stamp
+    endMeta(); 
+    save();              // gather and save SEventConfig configured arrays
+    clear_except("hit"); 
+    // an earlier SEvt::clear is invoked by QEvent::setGenstep before launch 
+
+
+}
+
+void SEvt::endMeta()
+{
+    setMeta<std::string>("site", "SEvt::endMeta" );
+    setMeta<int>("hitmask", selector->hitmask );
+    setMeta<int>("index", index); 
+    setMeta<int>("instance", instance); 
+
+#ifndef PRODUCTION
+    setMetaProf("p_SEvt__beginOfEvent_0", p_SEvt__beginOfEvent_0); 
+    setMetaProf("p_SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
+    setMetaProf("p_SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
+#endif
 
     setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
+
+#ifndef PRODUCTION
     setMeta<uint64_t>("t_setGenstep_0",  t_setGenstep_0 ); 
     setMeta<uint64_t>("t_setGenstep_1",  t_setGenstep_1 ); 
     setMeta<uint64_t>("t_setGenstep_2",  t_setGenstep_2 ); 
@@ -1270,6 +1316,7 @@ void SEvt::endOfEvent(int eventID)
     setMeta<uint64_t>("t_setGenstep_6",  t_setGenstep_6 ); 
     setMeta<uint64_t>("t_setGenstep_7",  t_setGenstep_7 ); 
     setMeta<uint64_t>("t_setGenstep_8",  t_setGenstep_8 ); 
+#endif
     setMeta<uint64_t>("t_PreLaunch", t_PreLaunch ); 
     setMeta<uint64_t>("t_PostLaunch", t_PostLaunch ); 
     setMeta<uint64_t>("t_EndOfEvent",   t_EndOfEvent ); 
@@ -1277,11 +1324,6 @@ void SEvt::endOfEvent(int eventID)
     setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
     setMeta<double>("t_Launch", t_Launch ); 
     // setMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  // TOO SOON
-
-    save();              // gather and save SEventConfig configured arrays
-    clear_except("hit"); 
-    // an earlier SEvt::clear is invoked by QEvent::setGenstep before launch 
-
 }
 
 

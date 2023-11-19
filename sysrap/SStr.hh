@@ -173,9 +173,10 @@ class SYSRAP_API SStr {
       template<typename ... Args>
       static const char* Format( const char* fmt, Args ... args ); 
 
-      template<typename ... Args>
-      static const char* Name( Args ... args ); 
- 
+      // template<typename ... Args>
+      // static const char* Name( Args ... args ); 
+      // replace with spath::Name
+
       static const char* ParseStringIntInt( const char* triplet, int& y, int& z, char delim=':' ); 
 };
 

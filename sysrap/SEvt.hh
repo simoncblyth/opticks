@@ -69,6 +69,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "stag.h"
 #include "sevent.h"
 #include "sctx.h"
+#include "sprof.h"
 
 #include "squad.h"
 #include "sframe.h"
@@ -94,7 +95,14 @@ struct SYSRAP_API SEvt : public SCompProvider
     int index ; 
     int instance ; 
 
+#ifndef PRODUCTION
+    sprof p_SEvt__beginOfEvent_0 ; 
+    sprof p_SEvt__beginOfEvent_1 ; 
+    sprof p_SEvt__endOfEvent_0 ;
+#endif
+
     uint64_t t_BeginOfEvent ; 
+#ifndef PRODUCTION
     uint64_t t_setGenstep_0 ; 
     uint64_t t_setGenstep_1 ; 
     uint64_t t_setGenstep_2 ; 
@@ -104,14 +112,16 @@ struct SYSRAP_API SEvt : public SCompProvider
     uint64_t t_setGenstep_6 ; 
     uint64_t t_setGenstep_7 ; 
     uint64_t t_setGenstep_8 ; 
+#endif
     uint64_t t_PreLaunch ; 
     uint64_t t_PostLaunch ; 
     uint64_t t_EndOfEvent ; 
 
     uint64_t t_PenultimatePoint ; 
     uint64_t t_LastPoint ; 
-    double   t_Launch ; 
 
+
+    double   t_Launch ; 
 
     sphoton_selector* selector ; 
     sevent* evt ; 
@@ -318,6 +328,7 @@ public:
     static void SaveRunMeta(const char* base=nullptr ); 
 
     void setMetaString(const char* k, const char* v); 
+    void setMetaProf(  const char* k, sprof& v); 
 
     template<typename T>
     void setMeta( const char* k, T v ); 
@@ -325,7 +336,7 @@ public:
 
     void beginOfEvent(int eventID); 
     void endOfEvent(int eventID); 
-
+    void endMeta(); 
 
 
     static bool IndexPermitted(int index);   // index is 1-based 

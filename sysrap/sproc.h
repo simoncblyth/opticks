@@ -3,7 +3,35 @@
 sproc.h
 ===========
 
-macOS implementation of VirtualMemoryUsageMB of a process.
+Implementations of VirtualMemoryUsageMB of a process.
+Migrated from former SProc.hh.  
+
+Survey usage, mostly ExecutableName::
+
+    epsilon:opticks blyth$ opticks-fl sproc.h
+    ./CSGOptiX/CSGOptiX.cc    ## ExecutableName
+    ./CSG/CSGFoundry.cc       ## NOT USED : REMOVED
+    ./sysrap/sproc.h
+    ./sysrap/spath.h          ## spath::_ResolveToken replaces $ExecutableName  
+
+
+    ./sysrap/SProc.hh
+    ./sysrap/SOpticksResource.cc  ## ExecutableName 
+
+    ./sysrap/CMakeLists.txt
+    ./sysrap/tests/reallocTest.cc
+    ./sysrap/tests/sproc_test.cc
+
+    ./sysrap/SOpticks.cc       ## ExecutableName
+
+    ./sysrap/SLOG.cc           ## ExecutableName
+    ./sysrap/smeta.h           ## ExecutableName
+    ./sysrap/SPMT.h            ## ExecutableName 
+    ./sysrap/SGeo.cc           ## NOT USED : COMMENTED
+    ./qudarap/QPMT.hh          ## ExecutableName
+
+    epsilon:opticks blyth$ 
+
 
 **/
 
@@ -13,12 +41,16 @@ macOS implementation of VirtualMemoryUsageMB of a process.
 #include <cstring>
 #include <cstdlib>
 
-#include "sstr.h"
 
 
 struct sproc 
 {
-    static int parseLine(char* line); 
+    static constexpr const unsigned long long K = 1000 ;   // 1024?
+    static uint32_t parseLine(char* line); 
+
+    static int Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb ); 
+
+    // TODO: remove these four, switch to Query 
     static float VirtualMemoryUsageMB();
     static float VirtualMemoryUsageKB();
     static float ResidentSetSizeMB();
@@ -42,34 +74,30 @@ Expects a line of the below form with digits and ending in " Kb"::
 
 **/
 
-inline int sproc::parseLine(char* line){
+inline uint32_t sproc::parseLine(char* line){
     int i = strlen(line);
     const char* p = line;
     while (*p <'0' || *p > '9') p++; // advance until first digit 
     line[i-3] = '\0';  // chop off the " kB"
-    i = atoi(p);
-    return i;
+    return std::atoi(p);
 }
 
 
 #ifdef _MSC_VER
-inline float sproc::VirtualMemoryUsageMB()
+inline void sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
 {
-    return 0 ; 
+    virtual_size_kb = 0 ; 
+    resident_size_kb = 0 ; 
 }
-
 #elif defined(__APPLE__)
 
 #include<mach/mach.h>
 
 /**
-
 https://developer.apple.com/forums/thread/105088
-
 **/
 
-
-inline float sproc::VirtualMemoryUsageKB()
+inline int sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
 {
     struct mach_task_basic_info info;
     mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
@@ -78,103 +106,80 @@ inline float sproc::VirtualMemoryUsageKB()
                                    (task_info_t)&info,
                                    &size);
 
+    int rc = 0 ; 
     if( kerr == KERN_SUCCESS ) 
     {
-        vm_size_t vsize_ = info.virtual_size  ;  
-        unsigned long long vsize(vsize_); 
-        unsigned long long KB = 1000 ; 
-        float usage = float(vsize/KB) ; 
-        return usage  ;
+        vm_size_t virtual_ = info.virtual_size  ;  
+        vm_size_t resident_ = info.resident_size  ;  
+
+        virtual_size_kb = virtual_/K  ;   // narrowing 
+        resident_size_kb = resident_/K ;  // narrowing 
     }
-
-    std::cerr  << mach_error_string(kerr) << std::endl   ; 
-
-    return 0 ;   
-}
-
-
-inline float sproc::ResidentSetSizeKB()
-{
-    struct mach_task_basic_info info;
-    mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
-    kern_return_t kerr = task_info(mach_task_self(),
-                                   MACH_TASK_BASIC_INFO,
-                                   (task_info_t)&info,
-                                   &size);
-
-    if( kerr == KERN_SUCCESS ) 
+    else
     {
-        vm_size_t rsize_ = info.resident_size  ;  
-        unsigned long long rsize(rsize_); 
-        unsigned long long KB = 1000 ; 
-        float usage = float(rsize/KB) ; 
-        return usage  ;
+        rc = 1 ; 
+        std::cerr  << mach_error_string(kerr) << std::endl   ; 
     }
-
-    std::cerr << mach_error_string(kerr) << std::endl  ; 
-
-    return 0 ;   
+    return rc ; 
 }
+
 
 #else
     
 // https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
-#include "stdlib.h"
-#include "stdio.h"
-#include "string.h"
-
-
-inline float sproc::VirtualMemoryUsageKB()
+inline int sproc::Query(uint32_t& virtual_size, uint32_t& resident_size )
 {
     FILE* file = fopen("/proc/self/status", "r");
     float result = 0.f ;
     char line[128];
-
+    int found = 0 ; 
     while (fgets(line, 128, file) != NULL){
         if (strncmp(line, "VmSize:", 7) == 0){
-            result = parseLine(line);   // value in Kb 
-            break;
+            virtual_size = parseLine(line);   // value in Kb 
+            found += 1 ; 
+            if(found == 2 ) break;
+        } else if( strncmp(line, "VmRSS:", 6) == 0){
+            resident_size = parseLine(line);   // value in Kb 
+            found += 1 ; 
+            if(found == 2 ) break;
         }
     }
     fclose(file);
-    return result;
-}
-
-
-inline float sproc::ResidentSetSizeKB()
-{
-    FILE* file = fopen("/proc/self/status", "r");
-    float result = 0.f ;
-    char line[128];
-
-    while (fgets(line, 128, file) != NULL){
-        if (strncmp(line, "VmRSS:", 6) == 0){
-            result = parseLine(line);   // value in Kb 
-            break;
-        }
-    }
-    fclose(file);
-    return result;
+    return found == 2 ? 0 : 1 ; 
 }
 
 
 #endif
 
+
+
+inline float sproc::VirtualMemoryUsageKB()
+{
+    uint32_t virtual_size_kb, resident_size_kb ; 
+    Query(virtual_size_kb, resident_size_kb) ; 
+    return virtual_size_kb ;
+}
+inline float sproc::ResidentSetSizeKB()
+{
+    uint32_t virtual_size_kb, resident_size_kb ; 
+    Query(virtual_size_kb, resident_size_kb ) ; 
+    return resident_size_kb ;
+}
 inline float sproc::VirtualMemoryUsageMB()
 {
-    float result = VirtualMemoryUsageKB() ; 
-    return result/1000.f ;   
+    uint32_t virtual_size_kb, resident_size_kb ; 
+    Query(virtual_size_kb, resident_size_kb) ; 
+    float size_mb = virtual_size_kb/K ;
+    return size_mb  ;
 }
-
 inline float sproc::ResidentSetSizeMB()
 {
-    float result = ResidentSetSizeKB() ; 
-    return result/1000.f ;   
+    uint32_t virtual_size_kb, resident_size_kb ; 
+    Query(virtual_size_kb, resident_size_kb) ; 
+    float size_mb = resident_size_kb/K ;
+    return size_mb  ;
 }
-
-
-
 
 
 
@@ -190,7 +195,7 @@ sproc::ExecutablePath
 #ifdef _MSC_VER
 inline char* sproc::ExecutablePath(bool basename)
 {
-    return NULL ; 
+    return nullptr ; 
 }
 #elif defined(__APPLE__)
 
@@ -262,6 +267,5 @@ inline char* sproc::ExecutableName()
     char* exe = ( is_python && script ) ? script : exe0 ; 
     return exe ; 
 }
-
 
 
