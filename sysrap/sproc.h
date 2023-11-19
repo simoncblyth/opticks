@@ -131,7 +131,6 @@ inline int sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
 inline int sproc::Query(uint32_t& virtual_size, uint32_t& resident_size )
 {
     FILE* file = fopen("/proc/self/status", "r");
-    float result = 0.f ;
     char line[128];
     int found = 0 ; 
     while (fgets(line, 128, file) != NULL){
