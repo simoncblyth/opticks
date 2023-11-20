@@ -113,6 +113,8 @@ struct NPFold
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* DOT_NPY = ".npy" ;  // formerly EXT
     static constexpr const char* DOT_TXT = ".txt" ; 
+    static constexpr const char* DOT_PNG = ".png" ; 
+    static constexpr const char* DOT_JPG = ".jpg" ; 
     static constexpr const char* TOP = "/" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
     static constexpr const char* META  = "NPFold_meta.txt" ; 
@@ -122,6 +124,8 @@ struct NPFold
 
     static bool IsNPY(const char* k); 
     static bool IsTXT(const char* k); 
+    static bool IsPNG(const char* k); 
+    static bool IsJPG(const char* k); 
     static bool HasSuffix( const char* k, const char* s ); 
     static bool HasPrefix( const char* k, const char* p ); 
 
@@ -209,6 +213,7 @@ public:
 
 
     NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
+    NPFold* copy_all(bool shallow) const ; 
     static void CopyMeta( NPFold* b , const NPFold* a ); 
 
 
@@ -300,6 +305,8 @@ public:
 
 inline bool NPFold::IsNPY(const char* k) { return HasSuffix(k, DOT_NPY) ; }
 inline bool NPFold::IsTXT(const char* k) { return HasSuffix(k, DOT_TXT) ; }
+inline bool NPFold::IsPNG(const char* k) { return HasSuffix(k, DOT_PNG) ; }
+inline bool NPFold::IsJPG(const char* k) { return HasSuffix(k, DOT_JPG) ; }
 
 
 inline bool NPFold::HasSuffix(const char* k, const char* s ) 
@@ -1028,9 +1035,11 @@ inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
 NPFold::copy
 ---------------
 
-If none of this folds keys are specified in the keylist 
-then nullptr is returned. When keys are selected a new NPFold 
-is created and populated with the arrays from this fold.
+Formerly returned nullptr when none of this folds keys 
+are specified in the keylist. However changed this 
+as sometimes want just the fold metadata.
+A new NPFold is created and populated with any keylist 
+selected arrays from this fold.
 
 shallow:true 
     array pointers are copied as is
@@ -1051,7 +1060,17 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     if(keylist) SplitKeys(keys, keylist, delim); 
 
     int count = count_keys(&keys) ; 
-    if( count == 0 ) return nullptr ; 
+    if( count == 0 ) std::cerr
+        << "NPFold::copy"
+        << " keylist " << ( keylist ? keylist : "-" )
+        << " count " << count 
+        << " kk.size " << kk.size() 
+        << " meta " << ( meta.empty() ? "EMPTY" : meta )  
+        << std::endl 
+        ; 
+
+    //if( count == 0 ) return nullptr ; 
+    // sometimes want fold metadata without any arrays
 
     NPFold* f = new NPFold ; 
     CopyMeta(f, this);  // copy metadata to the new fold
@@ -1068,6 +1087,28 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     } 
     return f ; 
 }
+
+inline NPFold* NPFold::copy_all(bool shallow) const 
+{
+    check_integrity(); 
+
+    NPFold* f = new NPFold ; 
+    CopyMeta(f, this);  // copy metadata to the new fold
+
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i]; 
+        const char* k = kk[i].c_str() ; 
+        f->add_( k, shallow ? a : NP::MakeCopy(a) ); 
+    } 
+    return f ; 
+}
+
+
+
+
+
+
 
 inline void NPFold::CopyMeta( NPFold* b , const NPFold* a ) // static
 {
@@ -1329,10 +1370,23 @@ NPFold::load_array
 **/
 inline void NPFold::load_array(const char* _base, const char* relp)
 {
-    bool npy = IsNPY(relp) ; 
+    bool is_npy = IsNPY(relp) ; 
+    bool is_txt = IsTXT(relp) ; 
 
-    NP* a = npy ? NP::Load(_base, relp) : NP::LoadFromTxtFile<double>(_base, relp) ;  
-    
+    NP* a = nullptr ; 
+
+    if(is_txt)
+    {
+        a = NP::LoadFromTxtFile<double>(_base, relp) ; 
+    }
+    else if(is_npy)  
+    {
+        a = NP::Load(_base, relp) ; 
+    }
+    else
+    {
+        a = nullptr ; 
+    } 
     if(a) add(relp,a ) ; 
 }
 
@@ -1444,6 +1498,10 @@ inline int NPFold::load_dir(const char* _base)
         else if( type == U::FILE_PATH ) 
         {
             load_array(_base, name) ; 
+        }
+        else if( type == U::DIR_PATH && U::StartsWith(name, "_"))
+        {
+            if(VERBOSE) std::cerr << "NPFold::load_dir SKIP directory starting with _" << name << std::endl ;
         }
         else if( type == U::DIR_PATH ) 
         {
