@@ -10,28 +10,9 @@
 void test_Desc()
 {
     LOG(info); 
-    //SEventConfig::SetMaxPhoton(101); 
     std::cout << SEventConfig::Desc() << std::endl ; 
 }
 
-
-
-
-/**
-
-epsilon:sysrap blyth$ SEventConfigTest 
-2022-08-18 16:46:45.830 INFO  [32281222] [test_OutPath@15] 
-2022-08-18 16:46:45.831 INFO  [32281222] [test_OutPath@20]  SEventConfig::OutPath path_0 /tmp/blyth/opticks/SEventConfigTest/stem00101.npy
-2022-08-18 16:46:45.831 INFO  [32281222] [test_OutPath@21]  SEventConfig::OutPath path_1 /tmp/blyth/opticks/SEventConfigTest/local_reldir/stem00101.npy
-2022-08-18 16:46:45.831 INFO  [32281222] [test_OutPath@22]  SEventConfig::OutPath path_2 /tmp/blyth/opticks/SEventConfigTest/snap.jpg
-
-epsilon:sysrap blyth$ GEOM=hello SEventConfigTest
-2022-08-18 16:47:09.672 INFO  [32281483] [test_OutPath@15] 
-2022-08-18 16:47:09.674 INFO  [32281483] [test_OutPath@20]  SEventConfig::OutPath path_0 /tmp/blyth/opticks/hello/SEventConfigTest/stem00101.npy
-2022-08-18 16:47:09.674 INFO  [32281483] [test_OutPath@21]  SEventConfig::OutPath path_1 /tmp/blyth/opticks/hello/SEventConfigTest/local_reldir/stem00101.npy
-2022-08-18 16:47:09.674 INFO  [32281483] [test_OutPath@22]  SEventConfig::OutPath path_2 /tmp/blyth/opticks/hello/SEventConfigTest/snap.jpg
-
-**/
 
 
 void test_OutPath()
@@ -86,7 +67,8 @@ void test_SetCompAuto()
         << std::endl
         ; 
 
-    SEventConfig::SetCompAuto() ;     
+    /*
+    SEventConfig::SetCompAuto() ;     // NOW DONE BY SEventConfig::Initialize
 
     std::cout 
         << "test_SetCompAuto.1"
@@ -94,6 +76,7 @@ void test_SetCompAuto()
         << SEventConfig::Desc() 
         << std::endl
         ; 
+    */
 }
 
 void test_SetDefault()
@@ -137,9 +120,10 @@ int main(int argc, char** argv)
     test_SetDefault(); 
     test_Save(); 
     test_Desc(); 
+    test_SetCompAuto(); 
     */
 
-    test_SetCompAuto(); 
+    test_Desc(); 
 
 
     return 0 ; 

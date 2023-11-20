@@ -2979,15 +2979,6 @@ void SEvt::gather_components()   // *GATHER*
         else if(SComp::IsHit(cmp))     num_hit = num ; 
     }
 
-
-    if( SEventConfig::IsRGModeSimulate())
-    {
-        assert( num_genstep > -1 ); 
-        assert( num_photon > -1 ); 
-        //LOG_IF(fatal, num_hit == -1 ) << " SKIP ASSERT : SHOULD NOW ALWAYS HAVE HIT ARRAY (EVEN IF EMPTY?)  AS HAVE SEvt::gatherHit  " ; 
-        //assert( num_hit > -1 ); 
-    }
-
     gather_total += 1 ;
 
     if(num_genstep > -1) genstep_total += num_genstep ;

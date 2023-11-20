@@ -215,10 +215,10 @@ def mpplt_annotate_fig( fig, label  ):
     TOF = float(os.environ.get("TOF","0.99"))   # adjust the position of the title, to legibly display 4 lines      
 
     if len(suptitle) > 0:
-        print("suptitle:%s " % (suptitle) )
+        log.debug("suptitle:%s " % (suptitle) )
         fig.suptitle(suptitle, family="monospace", va="top", ha='left', x=0.1, y=TOF, fontweight='bold' )
     else:
-        print("no SUPTITLE/label" )
+        log.debug("no SUPTITLE/label" )
     pass
 
 
@@ -229,32 +229,32 @@ def mpplt_annotate_ax( ax ):
     rhsanno  = os.environ.get("RHSANNO", "") 
 
     if len(subtitle) > 0:
-        print("subtitle:%s " % (subtitle) )
+        log.debug("subtitle:%s " % (subtitle) )
         ax.text( 1.05, -0.12, subtitle, va='bottom', ha='right', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
-        print("no SUBTITLE")
+        log.debug("no SUBTITLE")
     pass
 
     if len(thirdline) > 0:
-        print("thirdline:%s " % (thirdline) )
+        log.debug("thirdline:%s " % (thirdline) )
         ax.text(-0.05,  1.02, thirdline, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
-        print("no THIRDLINE")
+        log.debug("no THIRDLINE")
     pass
 
     if len(lhsanno) > 0:
-        #print("lhsanno:%s " % (lhsanno) )
+        log.debug("lhsanno:%s " % (lhsanno) )
         ax.text(-0.05,  0.01, lhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
-        print("no lhsanno")
+        log.debug("no lhsanno")
     pass
 
     if len(rhsanno) > 0:
         rhsanno_pos = efloatarray_("RHSANNO_POS","0.6,0.01")
-        #print("rhsanno:%s " % (rhsanno) )
+        log.debug("rhsanno:%s " % (rhsanno) )
         ax.text(rhsanno_pos[0], rhsanno_pos[1], rhsanno, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
     else:
-        print("no rhsanno")
+        log.debug("no rhsanno")
     pass
 
 

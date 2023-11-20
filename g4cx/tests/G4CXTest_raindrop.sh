@@ -69,7 +69,10 @@ fi
 #oim=2  # CPU only 
 oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=$oim 
-export OPTICKS_EVENT_MODE=StandardFullDebug   # configure saving more details
+
+mode=Minimal
+#mode=StandardFullDebug
+export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 
 # below directories match those used by SEvt saving 
 # in order to be able to load SEvt into python analysis script

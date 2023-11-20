@@ -3,7 +3,10 @@
 name=SEventConfigTest
 
 #mode=StandardFullDebug
-mode=Default
+#mode=Default
+mode=Minimal
+
+cd $(dirname $BASH_SOURCE)
 
 export OPTICKS_EVENT_MODE=$mode
 

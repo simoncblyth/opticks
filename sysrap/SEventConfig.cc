@@ -248,6 +248,7 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
 {
     if(IsRGModeSimulate() && IsMinimal())
     {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
         gather_mask = SCOMP_HIT  ; 
         save_mask = 0u ; 
     }
@@ -571,7 +572,6 @@ int SEventConfig::Initialize() // static
     }
     else if(IsMinimal())
     {
-
         SetCompAuto() ;   // comp set based on Max values   
     }
     else if(IsStandardFullDebug())
