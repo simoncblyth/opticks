@@ -123,23 +123,28 @@ public:
     NP*      getGenstep() const ; 
     NP*      getInputPhoton() const ; 
 
+    NP*      gatherPhoton() const ; 
+    NP*      gatherHit() const ; 
+
+#ifndef PRODUCTION
+    NP*      gatherSeed() const ; 
     NP*      gatherDomain() const ; 
     NP*      gatherGenstepFromDevice() const ; 
-    NP*      gatherSeed() const ; 
-    NP*      gatherPhoton() const ; 
+    void     gatherSimtrace(     NP* t ) const ;
     NP*      gatherSimtrace() const ; 
+    void     gatherSeq(          NP* seq) const ; 
     NP*      gatherSeq() const ;       // seqhis..
     NP*      gatherPrd() const ;  
-    NP*      gatherTag() const ;  
     NP*      gatherFlat() const ;  
     NP*      gatherRecord() const ;    // full step records
+    NP*      gatherTag() const ;  
     NP*      gatherRec() const  ;      // compressed step record
-    NP*      gatherHit() const ; 
+#endif
+
 public:
     // mutating interface. TODO: Suspect only the photon mutating API actually needed for some QSimTest, remove the others
     void     gatherPhoton(       NP* p ) const ;
-    void     gatherSimtrace(     NP* t ) const ;
-    void     gatherSeq(          NP* seq) const ; 
+
 private:
     NP*      gatherComponent_(unsigned comp) const ; 
     NP*      gatherHit_() const ; 

@@ -162,7 +162,9 @@ void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
         m_u0_idx_delta = u0_idx_delta ; 
     }
 
+#ifndef PRODUCTION
     SEvt::AddTag( 1, U4Stack_BoundaryDiscreteReset, u0 );  
+#endif
 
     if(FLOAT)
     {   
@@ -896,9 +898,13 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
                 << " theReflectivity " << std::setw(10) << std::fixed << std::setprecision(4) << theReflectivity
                 << " theTransmittance " << std::setw(10) << std::fixed << std::setprecision(4) << theTransmittance
                 ; 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
             SEvt::AddTag(1, U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
 #endif
+#endif
+
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
             // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
             //     meaning that "rand" is always a burn doing nothing.  
@@ -912,6 +918,7 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
                 << " theReflectivity " << std::setw(10) << std::fixed << std::setprecision(4) << theReflectivity
                 << " rand > theReflectivity  " << (rand > theReflectivity )
                 ;
+#endif
 #endif
             if ( rand > theReflectivity )
             {
@@ -1113,8 +1120,10 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
             << " theTransmittance " << theTransmittance
             ;
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
         SEvt::AddTag(1, U4Stack_BoundaryDiMeReflectivity, rand); 
+#endif
 #endif
 
 
@@ -2083,8 +2092,10 @@ For SpikeReflection theFacetNormal is set to theGlobalNormal
 void InstrumentedG4OpBoundaryProcess::ChooseReflection()
 {
     G4double rand = G4UniformRand();
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     SEvt::AddTag( 1, U4Stack_ChooseReflection, rand ); 
+#endif
 #endif
 
     if ( rand >= 0.0 && rand < prob_ss ) 
@@ -2156,15 +2167,20 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoeff(const G4double 
         << " TransCoeff " << prob 
         << " DECISION " << ( ret ? "T" : "R" ) 
         ; 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     SEvt::AddTag(1, U4Stack_BoundaryDiDiTransCoeff, u ); 
 #endif   
+#endif
+
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
     LOG_IF(LEVEL, pidx_dump)
          << " pidx " << pidx
          << " prob " << prob 
          << " ret " << ret 
          ;   
+#endif
 #endif
     return ret ; 
 }
@@ -2173,15 +2189,19 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency(const G4doub
 {
     G4double u = G4UniformRand() ; 
     G4bool ret = u < prob  ; 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     SEvt::AddTag(1, U4Stack_AbsorptionEffDetect, u ); 
 #endif   
+#endif   
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
     LOG_IF(LEVEL, pidx_dump)
          << " pidx " << pidx
          << " prob " << prob 
          << " ret " << ret 
          ;   
+#endif
 #endif
     return ret ; 
 }

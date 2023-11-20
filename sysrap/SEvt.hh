@@ -295,9 +295,11 @@ public:
 
     static bool Exists(int idx); 
     static void Check(int idx);
- 
+
+#ifndef PRODUCTION 
     static void AddTag(int idx, unsigned stack, float u ); 
     static int  GetTagSlot(int idx); 
+#endif
 
     static sgs AddGenstep(const quad6& q); 
     static sgs AddGenstep(const NP* a); 
@@ -419,8 +421,11 @@ public:
     void pointPhoton(const spho& sp); 
 
     static bool PIDX_ENABLED ;
+
+#ifndef PRODUCTION
     void addTag(unsigned tag, float u); 
     int getTagSlot() const ; 
+#endif
 
     void finalPhoton(const spho& sp); 
 

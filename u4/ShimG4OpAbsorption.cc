@@ -47,7 +47,9 @@ const bool ShimG4OpAbsorption::PIDX_ENABLED = ssys::getenvbool("ShimG4OpAbsorpti
         << U4UniformRand::Desc(u, SEvt::UU )
         ;
 
+#ifndef PRODUCTION
     SEvt::AddTag( 1, U4Stack_AbsorptionDiscreteReset, u ); 
+#endif
 
     if(FLOAT)
     {

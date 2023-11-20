@@ -117,8 +117,10 @@ Steps to fix:
     size_t getNumIndices() const ;
     size_t getMaskedIndex(int index_);
     void setSequenceIndex(int index_);  
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     void check_cursor_vs_tagslot(); 
+#endif
 #endif
     void saveProblemIdx(const char* fold) const ; 
 

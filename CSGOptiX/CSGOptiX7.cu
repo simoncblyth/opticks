@@ -154,6 +154,7 @@ static __forceinline__ __device__ void trace(
 #endif
 }
 
+#ifndef PRODUCTION
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
 {
@@ -212,6 +213,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
     }
 }
+#endif
  
 /**
 simulate : uses params for input: gensteps, seeds and output photons 
@@ -291,6 +293,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     evt->photon[idx] = ctx.p ;
 }
 
+#ifndef PRODUCTION
 /**
 simtrace
 ----------
@@ -345,8 +348,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     );
 
     evt->add_simtrace( idx, p, prd, params.tmin ); 
-
 }
+#endif
 
 /**
 for angular efficiency need intersection point in object frame to get the angles  
@@ -360,12 +363,16 @@ extern "C" __global__ void __raygen__rg()
     quad2 prd ; 
     prd.zero(); 
   
+#ifndef PRODUCTION
     switch( params.raygenmode )
     {
         case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;  
         case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
         case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
     }
+#else
+    simulate( idx, dim, &prd ) ;
+#endif
 } 
 
 

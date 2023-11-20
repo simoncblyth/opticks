@@ -9,9 +9,13 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+
+#ifndef PRODUCTION
 #include "srec.h"
 #include "sseq.h"
 #include "stag.h"
+#endif
+
 #include "sevent.h"
 #include "salloc.h"
 #include "sstamp.h"
@@ -134,8 +138,6 @@ void QEvent::init_SEvt()
         sev->setFoldVerbose(true);
     }
 }
-
-NP* QEvent::gatherDomain() const { return sev ? sev->gatherDomain() : nullptr ; }
 
 
 std::string QEvent::desc() const
@@ -468,32 +470,8 @@ NP* QEvent::getInputPhoton() const
 
 
 
-/**
-QEvent::gatherGenstepFromDevice
----------------------------------
-
-Gensteps originate on host and are uploaded to device, so downloading
-them from device is not usually done. It is for debugging only. 
-
-**/
-
-NP* QEvent::gatherGenstepFromDevice() const 
-{
-    NP* a = NP::Make<float>( evt->num_genstep, 6, 4 );  
-    QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep ); 
-    return a ; 
-}
 
 
-NP* QEvent::gatherSeed() const 
-{
-    bool has_seed = hasSeed() ; 
-    LOG_IF(fatal, !has_seed) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!has_seed) return nullptr ;  
-    NP* s = NP::Make<int>( evt->num_seed );   // TODO: use SEvt::makeSeed
-    QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
-    return s ; 
-}
 
 
 /**
@@ -527,6 +505,36 @@ NP* QEvent::gatherPhoton() const
 }
 
 
+#ifndef PRODUCTION
+
+NP* QEvent::gatherSeed() const 
+{
+    bool has_seed = hasSeed() ; 
+    LOG_IF(fatal, !has_seed) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!has_seed) return nullptr ;  
+    NP* s = NP::Make<int>( evt->num_seed );   // TODO: use SEvt::makeSeed
+    QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
+    return s ; 
+}
+
+NP* QEvent::gatherDomain() const { return sev ? sev->gatherDomain() : nullptr ; }
+
+
+/**
+QEvent::gatherGenstepFromDevice
+---------------------------------
+
+Gensteps originate on host and are uploaded to device, so downloading
+them from device is not usually done. It is for debugging only. 
+
+**/
+
+NP* QEvent::gatherGenstepFromDevice() const 
+{
+    NP* a = NP::Make<float>( evt->num_genstep, 6, 4 );  
+    QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep ); 
+    return a ; 
+}
 
 
 void QEvent::gatherSimtrace(NP* t) const 
@@ -555,7 +563,6 @@ void QEvent::gatherSeq(NP* seq) const
     QU::copy_device_to_host<sseq>( (sseq*)seq->bytes(), evt->seq, evt->num_seq ); 
     LOG(LEVEL) << "] evt.num_seq " << evt->num_seq  ; 
 }
-
 NP* QEvent::gatherSeq() const 
 {
     bool has_seq = hasSeq(); 
@@ -567,6 +574,8 @@ NP* QEvent::gatherSeq() const
     gatherSeq(seq); 
     return seq ; 
 }
+
+
 
 NP* QEvent::gatherPrd() const 
 {
@@ -620,11 +629,12 @@ NP* QEvent::gatherRecord() const
 
 NP* QEvent::gatherRec() const 
 {
+    NP* r = nullptr ; 
     bool has_rec = hasRec(); 
     LOG_IF(LEVEL, !has_rec ) << " gatherRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!has_rec) return nullptr ;  
 
-    NP* r = sev->makeRec(); 
+    r = sev->makeRec(); 
 
     LOG(LEVEL) 
         << " evt.num_photon " << evt->num_photon 
@@ -638,6 +648,7 @@ NP* QEvent::gatherRec() const
     QU::copy_device_to_host<srec>( (srec*)r->bytes(), evt->rec, evt->num_rec ); 
     return r ; 
 }
+#endif
 
 /**
 QEvent::getNumHit  TODO:rejig 
@@ -760,26 +771,35 @@ NP* QEvent::gatherComponent(unsigned cmp) const
     LOG(LEVEL) << "[ cmp " << cmp << " proceed " << proceed << " a " <<  a ; 
     return a ; 
 }
+
+/**
+QEvent::gatherComponent_
+-------------------------
+
+Gather downloads from device, get accesses from host 
+
+**/
+
 NP* QEvent::gatherComponent_(unsigned cmp) const 
 {
     NP* a = nullptr ; 
     switch(cmp)
     {   
         case SCOMP_GENSTEP:   a = getGenstep()     ; break ;   
-        case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
-
         case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
+        case SCOMP_HIT:       a = gatherHit()      ; break ;   
+#ifndef PRODUCTION
+        case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;   
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;   
         case SCOMP_REC:       a = gatherRec()      ; break ;   
         case SCOMP_SEQ:       a = gatherSeq()      ; break ;   
         case SCOMP_PRD:       a = gatherPrd()      ; break ;   
         case SCOMP_SEED:      a = gatherSeed()     ; break ;   
-        case SCOMP_HIT:       a = gatherHit()      ; break ;   
         case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;   
         case SCOMP_TAG:       a = gatherTag()      ; break ;   
         case SCOMP_FLAT:      a = gatherFlat()     ; break ;   
-        // gather downloads from device, get access from host 
+#endif
     }   
     return a ; 
 }
@@ -840,22 +860,26 @@ void QEvent::device_alloc_photon()
     LOG(LEVEL) 
         << " evt.max_photon " << evt->max_photon 
         << " evt.num_photon " << evt->num_photon 
+#ifndef PRODUCTION
         << " evt.num_record " << evt->num_record 
         << " evt.num_rec    " << evt->num_rec 
         << " evt.num_seq    " << evt->num_seq
         << " evt.num_prd    " << evt->num_prd
         << " evt.num_tag    " << evt->num_tag
         << " evt.num_flat   " << evt->num_flat
+#endif
         ;
 
     evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "QEvent::device_alloc_photon/max_photon*sizeof(sphoton)" ) : nullptr ; 
 
+#ifndef PRODUCTION
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
     evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
     evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq*sizeof(sseq)"    ) : nullptr ; 
     evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
     evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
     evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
+#endif
 
 }
 

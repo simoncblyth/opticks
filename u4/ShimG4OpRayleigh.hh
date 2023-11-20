@@ -18,7 +18,6 @@ class U4_API ShimG4OpRayleigh : public G4OpRayleigh
         ShimG4OpRayleigh(); 
         virtual ~ShimG4OpRayleigh(); 
 
-#ifdef DEBUG_TAG
         static const bool FLOAT ; 
         static const int  PIDX ; 
         static const bool PIDX_ENABLED ; 
@@ -38,10 +37,6 @@ class U4_API ShimG4OpRayleigh : public G4OpRayleigh
      G4VParticleChange* PostStepDoIt(const G4Track& aTrack,
                                      const G4Step&  aStep);
 
-
-
-
-#endif
 }; 
 
 

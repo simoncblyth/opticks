@@ -100,8 +100,6 @@ const plog::Severity Local_DsG4Scintillation::LEVEL = error ;
 #endif
 
 
-
-#ifdef DEBUG_TAG
 #include "U4Stack.h"
 #include "SEvt.hh"
 
@@ -114,7 +112,13 @@ void Local_DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
     //std::cout << "Local_DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
 
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
     SEvt::AddTag( 1, U4Stack_ScintDiscreteReset, u ); 
+#endif
+#endif
+
+
 
     if(FLOAT)
     {   
@@ -126,21 +130,7 @@ void Local_DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
         theNumberOfInteractionLengthLeft = -1.*G4Log(u) ;   
     }   
     theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
-
 }
-
-
-
-
-
-
-
-
-
-
-
-#endif
-
 
 
 
@@ -403,8 +393,11 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
             Reemission_Prob->Value(aTrack.GetKineticEnergy());
 
         G4double u_reemission = G4UniformRand() ; 
+
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
         SEvt::AddTag(1, U4Stack_Reemission, u_reemission); 
+#endif
 #endif
 
         if (u_reemission >= p_reemission)
@@ -570,8 +563,10 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
     for(G4int i = 0 ; i < NumTracks ; i++){
        G4double p = G4UniformRand();
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
        SEvt::AddTag(1, U4Stack_Reemission, p ); 
+#endif
 #endif
 
        G4double p_count = 0;
@@ -697,8 +692,10 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
                 // reemission, the sample method need modification
 
                 G4double u_sampledEnergy = G4UniformRand() ;
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
                 SEvt::AddTag(1, U4Stack_Reemission, u_sampledEnergy ); 
+#endif
 #endif
 
                 G4double CIIvalue = u_sampledEnergy*
@@ -720,16 +717,20 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
            // Generate random photon direction
 
             G4double u_cost = G4UniformRand(); 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
             SEvt::AddTag(1, U4Stack_Reemission, u_cost ); 
+#endif
 #endif
 
             G4double cost = 1. - 2.*u_cost ;
             G4double sint = sqrt((1.-cost)*(1.+cost));
 
             G4double u_phi = G4UniformRand() ;
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
             SEvt::AddTag(1, U4Stack_Reemission, u_phi ); 
+#endif
 #endif
 
             G4double phi = twopi*u_phi ;
@@ -753,8 +754,10 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
             G4ThreeVector perp = photonMomentum.cross(photonPolarization);
 
             u_phi = G4UniformRand() ;  
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
             SEvt::AddTag(1, U4Stack_Reemission, u_phi ); 
+#endif
 #endif
 
             phi = twopi*u_phi ;
@@ -785,8 +788,10 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 
 
                 G4double u_deltaTime = G4UniformRand() ;  
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
                 SEvt::AddTag(1, U4Stack_Reemission, u_deltaTime ); 
+#endif
 #endif
 
                 deltaTime= pPostStepPoint->GetGlobalTime() - t0 

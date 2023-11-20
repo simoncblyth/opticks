@@ -885,8 +885,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     sev->checkPhotonLineage(ulabel); 
 
     sphoton& current_photon = sev->current_ctx.p ;
+
+#ifndef PRODUCTION
     quad4&   current_aux    = sev->current_ctx.aux ; 
     current_aux.zero_v(3, 3);   // may be set below
+#endif
 
     // first_flag identified by the flagmask having a single bit (all genflag are single bits, set in beginPhoton)
     bool first_flag = current_photon.flagmask_count() == 1 ;  
@@ -894,7 +897,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     { 
         LOG(LEVEL) << " first_flag, track " << track ; 
         U4StepPoint::Update(current_photon, pre);   // populate current_photon with pos,mom,pol,time,wavelength
+#ifndef PRODUCTION
         current_aux.q1.i.w = int('F') ; 
+#endif
         sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
     }
     unsigned flag = U4StepPoint::Flag<T>(post) ; 
@@ -903,7 +908,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
     bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
     bool is_detect_flag = OpticksPhoton::IsSurfaceDetectFlag(flag) ;  // SD 
+
+#ifndef PRODUCTION
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;  
+#endif
 
 /*
 #ifdef U4RECORDER_EXPENSIVE_IINDEX
@@ -1012,13 +1020,14 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     }
 
 
+
+#ifndef PRODUCTION
     //current_aux.q2.u.z = ulabel.uc4packed();  // CAUTION: stomping on cdbg.pmtid setting above
     //current_aux.q2.i.w = st ;                  // CAUTION: stomping on cdbg.spare setting above  
 
     current_aux.q2.i.z = fakemask ;              // CAUTION: stomping on cdbg.pmtid setting above  
     current_aux.q2.f.w = float(fake_duration) ;  // CAUTION: stomping on cdbg.spare setting above 
-
-
+#endif
 
 
 

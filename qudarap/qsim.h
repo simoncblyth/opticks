@@ -612,6 +612,7 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
         float u3 = curand_uniform(&rng) ;    
         float u4 = curand_uniform(&rng) ;    
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
         stagr& tagr = ctx.tagr ;  // UNTESTED
         tagr.add(stag_sc, u0); 
@@ -619,6 +620,7 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
         tagr.add(stag_sc, u2); 
         tagr.add(stag_sc, u3); 
         tagr.add(stag_sc, u4); 
+#endif
 #endif
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);
@@ -720,20 +722,27 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     const float& distance_to_boundary = ctx.prd->q0.f.w ; 
 
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     float u_to_sci = curand_uniform(&rng) ;  // purely for alignment with G4 
     float u_to_bnd = curand_uniform(&rng) ;  // purely for alignment with G4 
 #endif
+#endif
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     stagr& tagr = ctx.tagr ; 
     tagr.add( stag_to_sci, u_to_sci); 
     tagr.add( stag_to_bnd, u_to_bnd); 
     tagr.add( stag_to_sca, u_scattering); 
     tagr.add( stag_to_abs, u_absorption); 
+#endif
+#endif
 
+
+#ifdef DEBUG_LOGF
     // see notes/issues/U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations.rst
     float scattering_distance = -scattering_length*KLUDGE_FASTMATH_LOGF(u_scattering);   
     float absorption_distance = -absorption_length*KLUDGE_FASTMATH_LOGF(u_absorption);
@@ -742,6 +751,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     float absorption_distance = -absorption_length*logf(u_absorption);
 #endif
 
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
 
     if(ctx.idx == base->pidx)
@@ -760,6 +770,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
 
     }
 #endif
+#endif
 
 
 
@@ -772,6 +783,8 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
             p.time += absorption_distance/group_velocity ;   
             p.pos  += absorption_distance*(p.mom) ;
 
+
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
             float absorb_time_delta = absorption_distance/group_velocity ; 
             if( ctx.idx == base->pidx ) 
@@ -781,11 +794,15 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
 
             }
 #endif
+#endif
 
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
 
+
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
             if( u_reemit != 2.f ) tagr.add( stag_to_ree, u_reemit) ; 
+#endif
 #endif
 
 
@@ -801,12 +818,14 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
                 p.mom = uniform_sphere(u_re_mom_ph, u_re_mom_ct);
                 p.pol = normalize(cross(uniform_sphere(u_re_pol_ph, u_re_pol_ct), p.mom));
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
                 tagr.add( stag_re_wl, u_re_wavelength); 
                 tagr.add( stag_re_mom_ph, u_re_mom_ph); 
                 tagr.add( stag_re_mom_ct, u_re_mom_ct); 
                 tagr.add( stag_re_pol_ph, u_re_pol_ph); 
                 tagr.add( stag_re_pol_ct, u_re_pol_ct); 
+#endif
 #endif
 
                 flag = BULK_REEMIT ;
@@ -841,10 +860,12 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     p.pos  += distance_to_boundary*(p.mom) ;
     p.time += distance_to_boundary/group_velocity   ;  
 
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
     float sail_time_delta = distance_to_boundary/group_velocity ; 
     if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary.tail.SAIL idx %d : post = np.array([%10.5f,%10.5f,%10.5f,%10.5f]) ;  sail_time_delta = %10.5f   \n", 
           ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, sail_time_delta  );  
+#endif
 #endif
 
     return BOUNDARY ;
@@ -1062,18 +1083,23 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
 #endif
 
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
+#endif
 #endif
     const float u_reflect = curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     stagr& tagr = ctx.tagr ; 
     tagr.add( stag_at_burn_sf_sd, u_boundary_burn); 
     tagr.add( stag_at_ref,  u_reflect); 
 #endif
+#endif
 
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
     if(ctx.idx == base->pidx)
     {
@@ -1096,6 +1122,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
                ctx.idx, c1, eta*c1, c2, (eta*c1 - c2) );  
 
     }
+#endif 
 #endif 
 
     p.mom = reflect
@@ -1162,6 +1189,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     if( flag ==  BOUNDARY_REFLECT )
     {
@@ -1176,6 +1204,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
         tagr.add( stag_to_sca, u_br_align_2 ); 
         tagr.add( stag_to_abs, u_br_align_3 ); 
     }
+#endif
 #endif
 
     return CONTINUE ; 
@@ -1683,11 +1712,13 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
 
     float u_surface = curand_uniform(&rng);
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     stagr& tagr = ctx.tagr ; 
     float u_surface_burn = curand_uniform(&rng);
     tagr.add( stag_at_burn_sf_sd, u_surface); 
     tagr.add( stag_sf_burn,       u_surface_burn); 
+#endif
 #endif
 
 
@@ -1696,9 +1727,11 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
     if( action == BREAK )
     {
         flag = u_surface < absorb ? SURFACE_ABSORB : SURFACE_DETECT  ;
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
         if(ctx.idx == base->pidx)
         printf("//qsim.propagate_at_surface.SA/SD.BREAK idx %d : flag %d \n" , ctx.idx, flag ); 
+#endif
 #endif
     }
     else 
@@ -1709,9 +1742,11 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXOR
             case SURFACE_DREFLECT: reflect_diffuse( rng, ctx)  ; break ; 
             case SURFACE_SREFLECT: reflect_specular(rng, ctx)  ; break ;
         }
+#ifndef PRODUCTION
 #ifdef DEBUG_PIDX
         if(ctx.idx == base->pidx)
         printf("//qsim.propagate_at_surface.DR/SR.CONTINUE idx %d : flag %d \n" , ctx.idx, flag ); 
+#endif
 #endif
     }
     return action ; 
@@ -2300,10 +2335,12 @@ inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards,
     float phi = u_hemipol_phi*2.f*M_PIf;  // 0->2pi
     float cosTheta = curand_uniform(&rng) ;      // 0->1
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
     stagr& tagr = ctx.tagr ; 
     tagr.add( stag_hp_ph, u_hemipol_phi ); 
     tagr.add( stag_hp_ph, cosTheta );    // trying to reduce stag::BITS from 5 to 4, so change stag_hp_ct to stag_hp_ph 
+#endif
 #endif
 
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);

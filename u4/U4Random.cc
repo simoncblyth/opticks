@@ -284,8 +284,10 @@ void U4Random::setSequenceIndex(int index_)
 
     if( index_ < 0 )
     {
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
         check_cursor_vs_tagslot() ; 
+#endif
 #endif
         m_seq_index = index_ ; 
         disable() ;
@@ -465,7 +467,9 @@ double U4Random::flat()
             }
         }
 
+#ifndef PRODUCTION
         SEvt::AddTag(1, stack, f );  
+#endif
     }
 
 
@@ -473,6 +477,7 @@ double U4Random::flat()
 }
 
 
+#ifndef PRODUCTION
 #ifdef DEBUG_TAG
 /**
 U4Random::check_cursor_vs_tagslot
@@ -516,6 +521,7 @@ void U4Random::check_cursor_vs_tagslot()
     } 
     assert( cursor_slot_match ); 
 }
+#endif
 #endif
 
 

@@ -1018,6 +1018,7 @@ void SEvt::Check(int idx)
 }
 
 
+#ifndef PRODUCTION
 /**
 SEvt::AddTag
 ----------------
@@ -1037,6 +1038,7 @@ int  SEvt::GetTagSlot(int idx)
 { 
     return Exists(idx) ? Get(idx)->getTagSlot() : -1 ; 
 }
+#endif
 
 sgs SEvt::AddGenstep(const quad6& q)
 { 
@@ -2026,9 +2028,11 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
+#ifndef PRODUCTION
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.x = sstamp::Now(); 
+#endif
 #endif
 
     ctx.idx = idx ;  
@@ -2162,8 +2166,6 @@ void SEvt::rjoinPhoton(const spho& label)
     pho[idx] = label ;   
     current_pho = label ; 
 
-    const int& bounce = slot[idx] ; assert( bounce > 0 );   
-    int prior = bounce - 1 ; 
 
     // RE-WRITE HISTORY : CHANGING BULK_ABSORB INTO BULK_REEMIT
 
@@ -2177,6 +2179,9 @@ void SEvt::rjoinPhoton(const spho& label)
         current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
     }
 
+#ifndef PRODUCTION
+    const int& bounce = slot[idx] ; assert( bounce > 0 );   
+    int prior = bounce - 1 ; 
     // at truncation point and beyond cannot compare or do rejoin fixup
     if( evt->seq && prior < evt->max_seq )
     {
@@ -2196,6 +2201,8 @@ void SEvt::rjoinPhoton(const spho& label)
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
     } 
+#endif
+
 
     // NOT: rec  (compressed record) are not handled
     //      but no longer using that as decided full recording 
@@ -2359,17 +2366,19 @@ void SEvt::pointPhoton(const spho& label)
     if(fake_first) return ; 
 
 
+#ifndef PRODUCTION
     if(first_point == false) ctx.trace(bounce); 
     ctx.point(bounce); 
+#endif
 
-
-    sseq& seq = ctx.seq ; 
     LOG(LEVEL) 
         << "(" << std::setw(5) << label.id
         << "," << std::setw(2) << bounce
         << ") "
         << std::setw(2) << OpticksPhoton::Abbrev(ctx.p.flag()) 
-        << seq.desc_seqhis()
+#ifndef PRODUCTION
+        << ctx.seq.desc_seqhis()
+#endif
         ;   
 
 
@@ -2384,7 +2393,9 @@ void SEvt::pointPhoton(const spho& label)
         << " evt.max_tag    " << evt->max_tag
         << " evt.max_flat    " << evt->max_flat
         << " label.desc " << label.desc() 
-        << " seq.desc_seqhis " << seq.desc_seqhis() ; 
+#ifndef PRODUCTION
+        << " ctx.seq.desc_seqhis " << ctx.seq.desc_seqhis() ; 
+#endif
         ;
 
     bounce += 1 ;   // increments slot array, by reference
@@ -2400,6 +2411,7 @@ HMM: this needs to be called following every random consumption ... see U4Random
 
 bool SEvt::PIDX_ENABLED = ssys::getenvbool("SEvt__PIDX_ENABLED") ; 
 
+#ifndef PRODUCTION
 void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 
@@ -2446,6 +2458,9 @@ int SEvt::getTagSlot() const
     const stagr& tagr = current_ctx.tagr ; 
     return tagr.slot ; 
 }
+#endif
+
+
 
 /**
 SEvt::finalPhoton : only used for hostside running
@@ -2469,14 +2484,16 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
 
+#ifndef PRODUCTION
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;  
     xsup.q0.w.y = sstamp::Now();   
     xsup.q1.w.x = t_PenultimatePoint ; 
     xsup.q1.w.y = t_LastPoint ; 
 #endif
-
     ctx.end();   // copies {seq,sup} into evt->{seq,sup}[idx] (and tag, flat when DEBUG_TAG)
+#endif
+
     evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?
 }
 
@@ -2530,6 +2547,8 @@ Use BP=SEvt::addProcessHitsStamp to find where time stamps are coming. Currently
 void SEvt::addProcessHitsStamp(int p)
 {
     assert( p > -1 ); 
+
+#ifndef PRODUCTION
 #ifdef WITH_SUP
     uint64_t now = sstamp::Now();
 
@@ -2573,6 +2592,7 @@ void SEvt::addProcessHitsStamp(int p)
         << std::endl 
         ; 
     */
+#endif
 #endif
 }
 

@@ -626,7 +626,7 @@ NOT:WITH_CHILD
 #target_compile_definitions( ${name} PUBLIC WITH_SND )
 target_compile_definitions( ${name} PUBLIC WITH_CHILD ) 
 
-#target_compile_definitions( ${name} PUBLIC PRODUCTION )
+target_compile_definitions( ${name} PUBLIC PRODUCTION )
 
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )

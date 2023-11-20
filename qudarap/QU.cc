@@ -7,8 +7,12 @@
 #include "sdirectory.h"
 #include "scuda.h"
 #include "squad.h"
+
+#ifndef PRODUCTION
 #include "srec.h"
 #include "sseq.h"
+#endif
+
 #include "sphoton.h"
 #include "sevent.h"
 #include "salloc.h"
@@ -265,8 +269,12 @@ template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items, cons
 template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items, const char* label) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items, const char* label) ;
 template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items, const char* label) ;
+
+#ifndef PRODUCTION
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items, const char* label) ;
 template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items, const char* label) ;
+#endif
+
 template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items, const char* label) ;
 
 
@@ -294,12 +302,15 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
 }
 
 template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items, const char* label) ;
+template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
+template QUDARAP_API curandState* QU::device_alloc_zero<curandState>(  unsigned num_items, const char* label) ;
+
+#ifndef PRODUCTION
 template QUDARAP_API srec*      QU::device_alloc_zero<srec>(   unsigned num_items, const char* label) ;
 template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(   unsigned num_items, const char* label) ;
 template QUDARAP_API stag*      QU::device_alloc_zero<stag>(   unsigned num_items, const char* label) ;
 template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(  unsigned num_items, const char* label) ;
-template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
-template QUDARAP_API curandState* QU::device_alloc_zero<curandState>(  unsigned num_items, const char* label) ;
+#endif
 
 
 
@@ -366,11 +377,13 @@ template int QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_i
 template int QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template int QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
 template int QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
+template int QU::copy_device_to_host<curandState>( curandState* h, curandState* d,  unsigned num_items);
+#ifndef PRODUCTION
 template int QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
 template int QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 template int QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
 template int QU::copy_device_to_host<sflat>( sflat* h, sflat* d,  unsigned num_items);
-template int QU::copy_device_to_host<curandState>( curandState* h, curandState* d,  unsigned num_items);
+#endif
 
 
 /**

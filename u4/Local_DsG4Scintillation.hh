@@ -117,11 +117,9 @@ private:
 #endif
 
 public:
-#ifdef DEBUG_TAG
      static const bool FLOAT ; 
      static const int  PIDX ; 
      void ResetNumberOfInteractionLengthLeft();
-#endif
 
 
         //////////////

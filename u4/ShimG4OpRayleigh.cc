@@ -19,8 +19,6 @@ ShimG4OpRayleigh::~ShimG4OpRayleigh()
 
 
 
-#ifdef DEBUG_TAG
-
 #include "U4Stack.h"
 #include "U4UniformRand.h"
 #include "SEvt.hh"
@@ -48,7 +46,12 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
         << U4UniformRand::Desc(u, SEvt::UU )
         ;
 
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
     SEvt::AddTag( 1, U4Stack_RayleighDiscreteReset, u ); 
+#endif
+#endif
+
 
     if(FLOAT)
     {
@@ -165,20 +168,35 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            // w.r.t. the initial photon momentum direction
 
            CosTheta = G4UniformRand();
+
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
            SEvt::AddTag( 1, U4Stack_RayleighScatter, CosTheta );   // 0
+#endif
+#endif
 
            SinTheta = std::sqrt(1.-CosTheta*CosTheta);
            // consider for the angle 90-180 degrees
 
            u = G4UniformRand() ; 
+
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
            SEvt::AddTag( 1, U4Stack_RayleighScatter, u );      // 1 
+#endif
+#endif
 
            if (u < 0.5) CosTheta = -CosTheta;
 
            // simulate the phi angle
 
            u = G4UniformRand() ; 
+
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
            SEvt::AddTag( 1, U4Stack_RayleighScatter, u );    // 2 
+#endif
+#endif
 
            rand = twopi*u;
            SinPhi = std::sin(rand);
@@ -210,7 +228,12 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            // random generate the azimuthal angle w.r.t. Newmomentum direction
 
            u = G4UniformRand() ; 
+
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
            SEvt::AddTag( 1, U4Stack_RayleighScatter, u );   // 3
+#endif
+#endif
 
            if (NewPolarization.mag() == 0.) {
               rand = u*twopi;
@@ -226,7 +249,12 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
            cosTheta = NewPolarization.dot(OldPolarization);
 
            u_loopexit = G4UniformRand() ;
+
+#ifndef PRODUCTION
+#ifdef DEBUG_TAG
            SEvt::AddTag( 1, U4Stack_RayleighScatter, u_loopexit );   // 4
+#endif
+#endif
 
           // Loop checking, 13-Aug-2015, Peter Gumplinger
         } while (std::pow(cosTheta,2) < u_loopexit );
@@ -248,19 +276,6 @@ G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 
 
 
