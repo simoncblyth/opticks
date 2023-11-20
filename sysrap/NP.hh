@@ -361,6 +361,9 @@ struct NP
     template<typename T> static void        SetMetaKV( std::string& meta, const std::vector<std::pair<std::string, T>>& kvs ); 
     template<typename T> static std::string    DescKV(                    const std::vector<std::pair<std::string, T>>& kvs ); 
 
+    static void SetMetaKV_( std::string& meta, const VS& keys, const VS& vals ); 
+    void        setMetaKV_( const VS& keys, const VS& vals ); 
+
     
     std::string descMeta() const ; 
 
@@ -4181,7 +4184,6 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
 
 
 
-
 inline void NP::GetMetaKV_(
     const char* metadata, 
     std::vector<std::string>* keys, 
@@ -4387,6 +4389,7 @@ template<typename T> inline void NP::SetMetaKV( std::string& meta, const std::ve
     for(int i=0 ; i < int(kvs.size()); i++) SetMeta(meta, kvs[i].first.c_str(), kvs[i].second ); 
 }
 
+
 template<typename T> inline std::string NP::DescKV( const std::vector<std::pair<std::string, T>>& kvs ) // static
 {
     typedef std::pair<std::string, T> KV ; 
@@ -4405,6 +4408,24 @@ template<typename T> inline std::string NP::DescKV( const std::vector<std::pair<
     std::string str = ss.str();
     return str ;
 }
+
+
+inline void NP::SetMetaKV_( 
+    std::string& meta, 
+    const std::vector<std::string>& keys, 
+    const std::vector<std::string>& vals ) // static
+{
+    assert( keys.size() == vals.size() ); 
+    for(int i=0 ; i < int(keys.size()); i++) SetMeta(meta, keys[i].c_str(), vals[i].c_str() ); 
+}
+
+inline void NP::setMetaKV_( const std::vector<std::string>& keys,  const std::vector<std::string>& vals )
+{
+    SetMetaKV_(meta, keys, vals); 
+}
+
+
+
 
 
 

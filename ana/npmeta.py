@@ -77,7 +77,7 @@ class NPMeta(object):
         return cfm  
 
     @classmethod
-    def AsDict(cls, lines):
+    def AsDict_OLD(cls, lines):
         d = odict()
         key = "" 
         d[key] = []
@@ -94,6 +94,17 @@ class NPMeta(object):
         pass    
         return d 
 
+    @classmethod
+    def AsDict(cls, lines):
+        d = odict()
+        for line in lines:
+            dpos = line.find(":") 
+            if dpos == -1: continue
+            key = line[:dpos] 
+            val = line[dpos+1:] 
+            d[key] = val 
+        pass    
+        return d 
  
     @classmethod
     def Load(cls, path):
@@ -121,7 +132,6 @@ class NPMeta(object):
         if not k in self.d:
              raise AttributeError("No attribute %s " % k) 
         return self.find(k)
-
 
     def get_value(self,k,fallback=""):
         if not k in self.d:return fallback

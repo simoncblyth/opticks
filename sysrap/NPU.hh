@@ -442,6 +442,13 @@ struct U
     template<typename T>
     static std::vector<T>* MakeVec(const char* line, char delim=','); 
 
+    static void Zip(
+        std::vector<std::string>& kvs, 
+        const std::vector<std::string>& keys, 
+        const std::vector<std::string>& vals, 
+        char delim=':'); 
+
+
     template<typename T>
     static long LoadVec(std::vector<T>& vec, const char* path_); 
 
@@ -532,6 +539,27 @@ inline void U::MakeVec(std::vector<T>& vec, const char* line, char delim)
         vec.push_back(t) ; 
     }   
 }
+
+inline void U::Zip(
+    std::vector<std::string>& kvs, 
+    const std::vector<std::string>& keys, 
+    const std::vector<std::string>& vals, 
+    char delim )
+{
+    assert( keys.size() == vals.size() ); 
+    kvs.clear(); 
+
+    char s_delim[2] ; 
+    s_delim[0] = delim ; 
+    s_delim[1] = '\0' ;
+
+    for(int i=0 ; i < int(keys.size()) ; i++)
+    {
+        std::string kv = U::FormName_( keys[i].c_str(), s_delim, vals[i].c_str() ); 
+        kvs.push_back(kv);  
+    }
+}
+
 
 
 /**
