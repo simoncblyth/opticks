@@ -95,11 +95,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     int index ; 
     int instance ; 
 
-#ifndef PRODUCTION
     sprof p_SEvt__beginOfEvent_0 ; 
     sprof p_SEvt__beginOfEvent_1 ; 
     sprof p_SEvt__endOfEvent_0 ;
-#endif
 
     uint64_t t_BeginOfEvent ; 
 #ifndef PRODUCTION

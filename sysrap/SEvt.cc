@@ -1248,17 +1248,13 @@ which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
 
 void SEvt::beginOfEvent(int eventID)
 {
-#ifndef PRODUCTION
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
-#endif
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
 
     addFrameGenstep();     // needed for simtrace and input photon running
-#ifndef PRODUCTION
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
-#endif
 }
 
 
@@ -1278,9 +1274,7 @@ so can switch off all saving wuth that config.
 
 void SEvt::endOfEvent(int eventID)
 {
-#ifndef PRODUCTION
     sprof::Stamp(p_SEvt__endOfEvent_0);  
-#endif
 
     int index_ = 1+eventID ;    
     endIndex(index_);   // also sets t_EndOfEvent stamp
@@ -1299,11 +1293,9 @@ void SEvt::endMeta()
     setMeta<int>("index", index); 
     setMeta<int>("instance", instance); 
 
-#ifndef PRODUCTION
     setMetaProf("p_SEvt__beginOfEvent_0", p_SEvt__beginOfEvent_0); 
     setMetaProf("p_SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
     setMetaProf("p_SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
-#endif
 
     setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
