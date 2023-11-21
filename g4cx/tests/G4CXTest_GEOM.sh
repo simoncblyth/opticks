@@ -62,8 +62,8 @@ oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=$oim 
 
 #mode=Minimal
-mode=HitOnly
-#mode=StandardFullDebug
+#mode=HitOnly
+mode=StandardFullDebug
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 
 tmpbase=${TMP:-/tmp/$USER/opticks} 
@@ -100,10 +100,8 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    case $(uname) in
-       Linux) gdb -ex r --args $bin  ;;
-       Darwin) lldb__ $bin ;;
-    esac
+    ## gdb -ex r --args $bin
+    dbg__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 

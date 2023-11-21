@@ -24,12 +24,10 @@ const int CSGImport::NDID = ssys::getenvint("NDID", -1);
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
     fd(fd_),
-    st(fd->sim ? fd->sim->tree : nullptr)
+    st(nullptr)
 {
+    LOG_IF(fatal, fd == nullptr) << " fd(CSGFoundry) required " ; 
     assert( fd ) ; 
-    assert( fd->sim ) ; 
-    assert( fd->sim->tree ) ; 
-    assert( st ); 
 }
 
 
@@ -46,6 +44,11 @@ void CSGImport::import()
 {
     LOG(LEVEL) << "[" ;     
 
+    st = fd->sim ? fd->sim->tree : nullptr ; 
+    LOG_IF(fatal, st == nullptr) << " fd.sim(SSim) fd.st(stree) required " ; 
+    assert(st); 
+
+
     importNames(); 
     importSolid();     
     importInst();     
@@ -56,7 +59,6 @@ void CSGImport::import()
 
 void CSGImport::importNames()
 {
-    assert(st); 
     st->get_mmlabel( fd->mmlabel);  
     st->get_meshname(fd->meshname);  
 }

@@ -338,11 +338,14 @@ SSim::load
 
 void SSim::load(const char* base, const char* reldir)
 { 
-    LOG(LEVEL) << "[" ; 
     const char* dir = spath::Resolve(base, reldir) ;  
+    load_(dir); 
+}
 
+void SSim::load_(const char* dir)
+{
+    LOG(LEVEL) << "[" ; 
     LOG_IF(fatal, top != nullptr)  << " top is NOT nullptr : cannot SSim::load into pre-serialized instance " ;  
-
     top = new NPFold ; 
 
     LOG(LEVEL) << "[ top.load [" << dir << "]" ; 

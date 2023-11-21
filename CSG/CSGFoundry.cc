@@ -78,7 +78,14 @@ CSGFoundry* CSGFoundry::Get(){ return INSTANCE ; }  // HMM SGeo base struct alre
 CSGFoundry::CSGFoundry
 ------------------------
 
+HMM: the dependency between CSGFoundry and SSim is a bit mixed up
+because of the two possibilities:
 
+1. "Import" : create CSGFoundry from SSim/stree using CSGImport
+2. "Load"   : load previously created and persisted CSGFoundry + SSim from file system 
+
+sim(SSim) used to be a passive passenger of CSGFoundry but now that CSGFoundry 
+can be CSGImported from SSim it is no longer so passive. 
 
 **/
 
@@ -107,9 +114,6 @@ CSGFoundry::CSGFoundry()
 {
     LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
     assert(sim); 
-    // HUH: why when it can be loaded ? 
-    // Especially as sim just a passive passenger from CSGFoundry pov 
-    // sim is NOT PASSIVE IN NEW WORKFLOW WHERE CSGFoundry gets Created from SSim
 
     init(); 
     INSTANCE = this ; 
@@ -2969,11 +2973,25 @@ const char* CSGFoundry::ResolveCFBase() // static
 /**
 CSGFoundry::Load_
 -------------------
+
+HMM: this is expecting to load preexisting SSim + CSGFoundry  
+from file system. Its also possible to create CSGFoundry from SSim
+using CSGImport functionality using CSGFoundry::CreateFromSim and CSGFoundry::importSim
+
+HMM: this means dont really need to persit CSGFoundry : however
+its very useful for debugging and access to geometry info, so 
+will continue to do so for now. 
+
 **/
 
 CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = ResolveCFBase() ; 
+
+    SSim* sim = SSim::Load(cfbase, "CSGFoundry/SSim"); 
+    LOG_IF(fatal, sim==nullptr ) << " sim(SSim) required before CSGFoundry::Load " ; 
+    assert(sim); 
+
     CSGFoundry* fd = Load(cfbase, "CSGFoundry"); 
     return fd ; 
 }

@@ -45,7 +45,7 @@ export LOGDIR=$HOME/$BASE
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
-LOG=$bin.log
+LOGFILE=$bin.log
 
 
 #ipho=RainXZ_Z195_1000_f8.npy      ## ok 
@@ -84,15 +84,15 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 
 logging(){ 
+    export CSGFoundry=INFO
     export CSGOptiX=INFO
     export QEvent=INFO 
     export QSim=INFO
 }
-#logging
+[ -n "$LOG" ] && logging
 
 
-
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR FOLD LOG"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -104,20 +104,16 @@ fi
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 
-   if [ -f "$LOG" ]; then 
-       echo $BASH_SOURCE : run : delete prior LOG $LOG 
-       rm "$LOG" 
+   if [ -f "$LOGFILE" ]; then 
+       echo $BASH_SOURCE : run : delete prior LOGFILE $LOGFILE 
+       rm "$LOGFILE" 
    fi 
 
    if [ "${arg/run}" != "$arg" ]; then
        $bin
    elif [ "${arg/dbg}" != "$arg" ]; then
-       case $(uname) in
-          Linux) gdb__ $bin ;;
-          Darwin) lldb__ $bin ;;  
-       esac
+       dbg__ $bin 
    fi 
-
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 

@@ -142,10 +142,10 @@ These three mains are use by the minimal main tests:
 | cxs_min.sh  | tests/CSGOptiXSMTest.cc   | minimal simulate    |
 +-------------+---------------------------+---------------------+
 
-Note that the former SEvt setup and frame hookup 
+Note that SEvt setup and frame hookup formerly 
 done in the main is now moved into CSGFoundry::AfterLoadOrCreate
-
-Also try moving SEvt::BeginOfEvent SEvt::EndOfEvent into QSim
+and invokation of SEvt::beginOfEvent SEvt::endOfEvent is done from 
+QSim
 
 Note that currently rendering persisting does not use SEvt in the
 same way as simtrace and simulate, but it could do in future. 
@@ -154,21 +154,21 @@ same way as simtrace and simulate, but it could do in future.
 
 void CSGOptiX::RenderMain() // static
 {
-    SEventConfig::SetRGMode("render"); 
+    SEventConfig::SetRGModeRender(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->render(); 
 }
 void CSGOptiX::SimtraceMain()
 {
-    SEventConfig::SetRGMode("simtrace"); 
+    SEventConfig::SetRGModeSimtrace(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->simtrace(0); 
 }
 void CSGOptiX::SimulateMain() // static
 {
-    SEventConfig::SetRGMode("simulate"); 
+    SEventConfig::SetRGModeSimulate(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->simulate(0); 

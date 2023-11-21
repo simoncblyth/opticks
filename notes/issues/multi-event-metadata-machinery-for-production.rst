@@ -283,7 +283,3 @@ Where is the equivalent for input photons ? Its done from SEvt::addFrameGenstep.
 
 
 
-
-
-
-

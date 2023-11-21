@@ -49,7 +49,7 @@ CSGOptiXSimulateTest.cc
  
 
 CXRaindropTest.cc
-   Geometry specific 
+   Specific geometry
 
 
 Utility 
