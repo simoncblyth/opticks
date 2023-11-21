@@ -179,9 +179,19 @@ class Fold(object):
         pass
         return fold
 
-    def __getattr__(self, name):
-        """Only called when there is no *name* attr"""
-        return None
+    # TRY USING DEFAULT : FOR ORDINARY hasattr 
+    #def __getattr__(self, name):
+    #    """Only called when there is no *name* attr"""
+    #    return None
+    #
+    #def __getattr__(self, item):
+    #    try:
+    #        return self.__dict__[item]
+    #    except KeyError:
+    #        classname = type(self).__name__
+    #        msg = f'{classname!r} object has no attribute {item!r}'
+    #        raise AttributeError(msg)
+    #
 
 
     SFRAME = "sframe.npy"

@@ -303,13 +303,15 @@ class SEvt(object):
 
 
     def init_SEventConfig_meta(self, f):
-        ipl = getattr(f.SEventConfig_meta, "InputPhoton", []) 
+        meta = getattr(f, 'SEventConfig_meta', {})
+
+        ipl = getattr(meta, "InputPhoton", []) 
         ip = ipl[0] if len(ipl)==1 else None
 
-        ipfl = getattr(f.SEventConfig_meta, "InputPhotonFrame", []) 
+        ipfl = getattr(meta, "InputPhotonFrame", []) 
         ipf = ipfl[0] if len(ipfl)==1 else None
  
-        ipcl = getattr(f.SEventConfig_meta, "InputPhotonCheck", []) 
+        ipcl = getattr(meta, "InputPhotonCheck", []) 
         ipc = ipc[0] if len(ipcl)==1 else None
 
         self.ip = ip
