@@ -175,10 +175,12 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
+void SEventConfig::SetHitOnly(){            SetEventMode(HitOnly)           ; }
 
 bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
 bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode, Minimal) == 0 ; }
+bool SEventConfig::IsHitOnly(){           return _EventMode && strcmp(_EventMode, HitOnly) == 0 ; }
 
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
@@ -222,7 +224,7 @@ void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
 
 
-void SEventConfig::SetCompAuto()
+void SEventConfig::SetComp()
 {
      unsigned gather_mask = 0 ; 
      unsigned save_mask = 0 ; 
@@ -250,7 +252,13 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
     {
         LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
         gather_mask = SCOMP_HIT  ; 
-        save_mask = SCOMP_HIT ;   // HMM: check  
+        save_mask = 0 ;  
+    }
+    else if(IsRGModeSimulate() && IsHitOnly())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitOnly()" ; 
+        gather_mask = SCOMP_HIT  ; 
+        save_mask = SCOMP_HIT ;   
     }
     else if(IsRGModeSimulate())
     {
@@ -568,11 +576,11 @@ int SEventConfig::Initialize() // static
 
     if(IsDefault())
     {
-        SetCompAuto() ;   // comp set based on Max values   
+        SetComp() ;
     }
-    else if(IsMinimal())
+    else if(IsMinimal() || IsHitOnly())
     {
-        SetCompAuto() ;   // comp set based on Max values   
+        SetComp() ;  
     }
     else if(IsStandardFullDebug())
     {
@@ -587,7 +595,7 @@ int SEventConfig::Initialize() // static
         SEventConfig::SetMaxFlat(1); 
         SEventConfig::SetMaxSup(1); 
 
-        SetCompAuto() ;   // comp set based on Max values   
+        SetComp() ;   // comp set based on Max values   
     }
     else
     {

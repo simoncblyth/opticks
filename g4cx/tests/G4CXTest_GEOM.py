@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """
-G4CXTest_raindrop.py
+G4CXTest_GEOM.py
 ======================
-
 
 """
 import os, logging, textwrap, numpy as np
@@ -46,7 +45,7 @@ if __name__ == '__main__':
     ee = {'A':a, 'B':b} 
 
     print("[--- ab = SAB(a,b) ----")
-    ab = SAB(a,b)
+    ab = None if a is None or b is None else SAB(a,b) 
     print("]--- ab = SAB(a,b) ----")
 
     print("[----- repr(ab) ")
@@ -61,24 +60,49 @@ if __name__ == '__main__':
     EXPR = list(filter(None,textwrap.dedent(EXPR_).split("\n")))
     for expr in EXPR:eprint(expr, locals(), globals() )
 
-    context = "PICK=%s MODE=%d  ~/opticks/g4cx/tests/G4CXTest_raindrop.sh " % (PICK, MODE )
+    context = "PICK=%s MODE=%d  ~/opticks/g4cx/tests/G4CXTest_GEOM.sh " % (PICK, MODE )
     print(context)
 
     for Q in PICK:
         e = ee.get(Q,None)
         if e is None:continue
-        pos = e.f.photon[:,0,:3]
-        sel = np.where(e.f.record[:,:,2,3] > 0) # select on wavelength to avoid unfilled zeros
-        poi = e.f.record[:,:,0,:3][sel]
 
         elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
         label = context + " ## " + elabel
 
+        if hasattr(e.f, 'photon'): 
+            pos = e.f.photon[:,0,:3]
+        else:
+            pos = None
+        pass
+
+        if hasattr(e.f, 'hit'): 
+            hit = e.f.hit[:,0,:3]
+        else:
+            hit = None
+        pass
+
+        if hasattr(e.f, 'record'):
+            sel = np.where(e.f.record[:,:,2,3] > 0) # select on wavelength to avoid unfilled zeros
+            poi = e.f.record[:,:,0,:3][sel]
+        else:
+            poi = None
+        pass
+
         if MODE == 3 and not pv is None:
             pl = pvplt_plotter(label)
             pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
-            pl.add_points( poi, color="green", point_size=3.0 )
-            pl.add_points( pos, color="red", point_size=3.0 )
+
+            if not poi is None:
+                pl.add_points( poi, color="green", point_size=3.0 )
+            pass
+            if not pos is None:
+                pl.add_points( pos, color="red", point_size=3.0 )
+            pass
+            if not hit is None:
+                pl.add_points( hit, color="cyan", point_size=3.0 )
+            pass
+
             pl.show_grid()
             cp = pl.show()
         pass

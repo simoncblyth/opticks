@@ -173,14 +173,17 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* Default = "Default" ; 
     static constexpr const char* StandardFullDebug = "StandardFullDebug" ; 
     static constexpr const char* Minimal = "Minimal" ; 
+    static constexpr const char* HitOnly = "HitOnly" ; 
 
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
     static void SetMinimal();
+    static void SetHitOnly();
 
     static bool IsDefault(); 
     static bool IsStandardFullDebug(); 
     static bool IsMinimal();
+    static bool IsHitOnly();
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
@@ -224,7 +227,7 @@ struct SYSRAP_API SEventConfig
     static void SetSaveComp_(unsigned mask); 
     static void SetSaveComp(const char* names, char delim=',') ; 
 
-    static void  SetCompAuto(); 
+    static void  SetComp(); 
     static void  CompAuto(unsigned& gather_mask, unsigned& save_mask ); 
 
 
