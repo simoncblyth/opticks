@@ -1399,6 +1399,7 @@ Generated with::
 Dump flags with::
 
    QSimDescTest 
+   ssys_test
 
 **/
 std::string QSim::Desc()  // static

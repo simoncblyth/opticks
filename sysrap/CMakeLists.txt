@@ -647,6 +647,11 @@ PLOG_LOCAL
 #]=]
 
 
+if(Custom4_FOUND)
+   target_compile_definitions( ${name} PUBLIC WITH_CUSTOM4 )
+   target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
+endif()
+
 target_compile_definitions( ${name}
     PUBLIC
       $<$<CONFIG:Debug>:CONFIG_Debug>
@@ -657,15 +662,10 @@ target_compile_definitions( ${name}
       OPTICKS_SYSRAP 
       WITH_CHILD
       PLOG_LOCAL
+      $<$<CONFIG:Debug>:DEBUG_TAG>
       $<$<CONFIG:Debug>:DEBUG_PIDX>
       $<$<CONFIG:Release>:PRODUCTION>
-    PRIVATE
-      $<$<CONFIG:Debug>:DEBUG_TAG>
 )
-
-
-
-
 
 
 

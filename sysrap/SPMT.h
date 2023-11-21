@@ -16,6 +16,8 @@ Usage sketch
 WITH_CUSTOM4
 --------------
 
+Custom4 is used only for access to the header-only 
+TMM complex calculation.  
 Lack of the WITH_CUSTOM4 flag in sysrap IS A problem as 
 SPMT.h despite being header only is not directly included 
 into QPMT it gets compiled into SSim

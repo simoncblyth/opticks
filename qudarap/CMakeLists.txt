@@ -204,11 +204,6 @@ https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-i
 
 #]=]
 
-
-#target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
-#target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
-
-
 target_compile_definitions( ${name}
     PUBLIC
       OPTICKS_QUDARAP 

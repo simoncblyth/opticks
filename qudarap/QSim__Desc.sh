@@ -28,6 +28,7 @@ Generated with::
 Dump flags with::
 
    QSimDescTest 
+   ssys__test
 
 **/
 std::string QSim::Desc()  // static

@@ -7,19 +7,14 @@ Usage::
 
     MODE=2 SEL=1 ./cxs_min.sh ana 
 
-Default SEvt being saved into:: 
-
-    ~/.opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001/
-
 EOU
 }
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 case $(uname) in
    #Linux) defarg=dbg_info ;;
    Linux) defarg=run_info ;;
-   #Darwin) defarg=grab_ana ;;
    Darwin) defarg=ana ;;
 esac
 
@@ -38,9 +33,7 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 GDIR=.opticks/GEOM/$GEOM
 export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
 
-export BASE=$GDIR/$bin   # bin/rsync.sh special cases paths starting with . 
 export EVT=${EVT:-p001}
-
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM/$bin
 export LOGDIR=$BASE
 export FOLD=$BASE/ALL/$EVT
@@ -94,7 +87,7 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR FOLD LOG"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -125,7 +118,7 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/cxs_min.py
+    ${IPYTHON:-ipython} --pdb -i $SDIR/cxs_min.py
 fi 
 
 

@@ -698,6 +698,7 @@ Generated with::
 Dump flags with::
 
     ssys_test
+    QSimDescTest
 
 **/
 inline std::string ssys::Desc()  // static
