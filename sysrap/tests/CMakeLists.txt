@@ -128,6 +128,7 @@ set(TEST_SOURCES
    SNameTest.cc
 
    scontext_test.cc
+   ssys_test.cc
 )
 
 

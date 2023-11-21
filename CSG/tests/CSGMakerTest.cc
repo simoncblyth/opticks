@@ -64,7 +64,7 @@ int main(int argc, char** argv)
          const char* name = names[i].c_str() ; 
          LOG(info) << name ; 
 
-         CSGFoundry* fd = CSGFoundry::MakeGeom( name ); 
+         CSGFoundry* fd = CSGMaker::MakeGeom( name ); 
          LOG(info) << fd->desc();    
 
          const char* base = spath::Join("$TMP/CSGMakerTest",name) ; 

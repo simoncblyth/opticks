@@ -621,20 +621,49 @@ WITH_CHILD
 NOT:WITH_CHILD
    sysrap/sn.h uses left, right sn pointers supporting only binary trees
 
+DEBUG_TAG 
+   needed for random aligned running in multiple pkgs: sysrap, qudarap, u4  
+   however making this PUBLIC makes rebuilding real heavy 
+   so must rely on making coordinated switches when doing random aligned running  
+
+PLOG_LOCAL
+   changes visibility of plog external symbols, allowing better
+   integration with packages (like junosw) that do not hide 
+   symbols by default  
+
+
+# TRY USING BUILD_TYPE dependent flags with generator expression
+#target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
+#target_compile_definitions( ${name} PUBLIC WITH_CHILD ) 
+#target_compile_definitions( ${name} PUBLIC PRODUCTION )
+#target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) 
+#target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    
+
 #]=]
 
-#target_compile_definitions( ${name} PUBLIC WITH_SND )
-target_compile_definitions( ${name} PUBLIC WITH_CHILD ) 
 
-target_compile_definitions( ${name} PUBLIC PRODUCTION )
+target_compile_definitions( ${name}
+    PUBLIC
+      $<$<CONFIG:Debug>:CONFIG_Debug>
+      $<$<CONFIG:RelWithDebInfo>:CONFIG_RelWithDebInfo>
+      $<$<CONFIG:Release>:CONFIG_Release>
+      $<$<CONFIG:MinSizeRel>:CONFIG_MinSizeRel>
+
+      OPTICKS_SYSRAP 
+      WITH_CHILD
+      PLOG_LOCAL
+      $<$<CONFIG:Debug>:DEBUG_PIDX>
+      $<$<CONFIG:Release>:PRODUCTION>
+    PRIVATE
+      $<$<CONFIG:Debug>:DEBUG_TAG>
+)
 
 
-target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
-target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) ## only does anything with newer plog
-target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    
-## DEBUG_TAG is needed for random aligned running in multiple pkgs: sysrap, qudarap, u4
-## however making this PUBLIC makes rebuilding real heavy 
-## so must rely on making coordinated switches when doing random aligned running  
+
+
+
+
+
 
 if(WITH_STTF)
 target_compile_definitions( ${name} PUBLIC WITH_STTF)

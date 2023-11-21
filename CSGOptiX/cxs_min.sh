@@ -40,8 +40,10 @@ export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
 
 export BASE=$GDIR/$bin   # bin/rsync.sh special cases paths starting with . 
 export EVT=${EVT:-p001}
-export FOLD=$HOME/$GDIR/$bin/ALL/$EVT
-export LOGDIR=$HOME/$BASE
+
+export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM/$bin
+export LOGDIR=$BASE
+export FOLD=$BASE/ALL/$EVT
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
@@ -118,8 +120,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 fi 
 
 
-if [ "${arg/grab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+if [ "${arg/grab}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/rsync.sh $BASE
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then

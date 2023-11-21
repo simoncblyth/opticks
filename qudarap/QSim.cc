@@ -52,20 +52,6 @@ QSim* QSim::Create()
     return new QSim  ;  
 }
 
-const char* QSim::Desc()
-{
-    std::stringstream ss ; 
-    ss << "QSim::Desc" 
-#ifdef WITH_CUSTOM4
-       << " WITH_CUSTOM4 " 
-#else
-       << " NOT:WITH_CUSTOM4 "
-#endif
-       ;    
-    std::string str = ss.str(); 
-    return strdup(str.c_str()); 
-}
-
 
 
 
@@ -1400,5 +1386,90 @@ void QSim::dump_photon( quad4* photon, unsigned num_photon, const char* opt_, un
         }
     }
 }
+
+
+/**
+QSim::Desc
+------------
+
+Generated with::
+
+   ~/opticks/qudarap/QSim__Desc.sh 
+
+Dump flags with::
+
+   QSimDescTest 
+
+**/
+std::string QSim::Desc()  // static
+{
+    std::stringstream ss ; 
+    ss << "QSim::Desc"
+       << std::endl 
+#ifdef CONFIG_Debug
+       << "CONFIG_Debug"
+#else
+       << "NOT:CONFIG_Debug"
+#endif
+       << std::endl 
+#ifdef CONFIG_RelWithDebInfo
+       << "CONFIG_RelWithDebInfo"
+#else
+       << "NOT:CONFIG_RelWithDebInfo"
+#endif
+       << std::endl 
+#ifdef CONFIG_Release
+       << "CONFIG_Release"
+#else
+       << "NOT:CONFIG_Release"
+#endif
+       << std::endl 
+#ifdef CONFIG_MinSizeRel
+       << "CONFIG_MinSizeRel"
+#else
+       << "NOT:CONFIG_MinSizeRel"
+#endif
+       << std::endl 
+#ifdef PRODUCTION
+       << "PRODUCTION"
+#else
+       << "NOT:PRODUCTION"
+#endif
+       << std::endl 
+#ifdef WITH_CHILD
+       << "WITH_CHILD"
+#else
+       << "NOT:WITH_CHILD"
+#endif
+       << std::endl 
+#ifdef WITH_CUSTOM4
+       << "WITH_CUSTOM4"
+#else
+       << "NOT:WITH_CUSTOM4"
+#endif
+       << std::endl 
+#ifdef PLOG_LOCAL
+       << "PLOG_LOCAL"
+#else
+       << "NOT:PLOG_LOCAL"
+#endif
+       << std::endl 
+#ifdef DEBUG_PIDX
+       << "DEBUG_PIDX"
+#else
+       << "NOT:DEBUG_PIDX"
+#endif
+       << std::endl 
+#ifdef DEBUG_TAG
+       << "DEBUG_TAG"
+#else
+       << "NOT:DEBUG_TAG"
+#endif
+       << std::endl 
+       ;
+    std::string str = ss.str() ; 
+    return str ;  
+}
+
 
 

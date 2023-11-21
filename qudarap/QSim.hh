@@ -60,7 +60,6 @@ struct QUDARAP_API QSim
     static QSim* INSTANCE ; 
     static QSim* Get(); 
     static QSim* Create(); 
-    static const char* Desc(); 
 
     static void UploadComponents(const SSim* ssim);   
 
@@ -172,7 +171,7 @@ public:
 
     void multifilm_lookup_all( quad2* sample , quad2* result ,  unsigned width, unsigned height );
 
-
+    static std::string Desc(); 
 };
 
 

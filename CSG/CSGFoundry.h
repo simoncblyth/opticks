@@ -93,10 +93,11 @@ struct CSG_API CSGFoundry : public SGeo
     static const char* RELDIR ; 
     static const constexpr unsigned UNDEFINED = ~0u ; 
 
-    static CSGFoundry* MakeGeom(const char* geom);
-    static CSGFoundry* LoadGeom(const char* geom=nullptr); 
+    // MOVED TO CSGMaker
+    //static CSGFoundry* MakeGeom(const char* geom);
+    //static CSGFoundry* MakeDemo(); 
+    //static CSGFoundry* LoadGeom(const char* geom=nullptr); 
 
-    static CSGFoundry* MakeDemo(); 
 
     const char* descELV() const ; 
     static const char* ELVString(const SName* id); 

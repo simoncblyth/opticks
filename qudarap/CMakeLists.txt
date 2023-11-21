@@ -193,8 +193,29 @@ endif()
 
 target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
-target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
-target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
+
+#[=[
+
+https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-in-cmake
+
+   $<CONFIG:Debug>   1 for Debug, 0 otherwise
+   $<1:X>            X 
+   $<0:X>            Empty 
+
+#]=]
+
+
+#target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
+#target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
+
+
+target_compile_definitions( ${name}
+    PUBLIC
+      OPTICKS_QUDARAP 
+      $<$<CONFIG:Debug>:DEBUG_TAG>
+      $<$<CONFIG:Debug>:DEBUG_PIDX>
+)
+
 
 #[=[
 

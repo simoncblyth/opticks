@@ -14,6 +14,7 @@ DUMP=2 NUM=210 CSGQueryTest A
 #include "OPTICKS_LOG.hh"
 
 #include "CSGFoundry.h"
+#include "CSGMaker.h"
 #include "CSGQuery.h"
 #include "CSGDraw.h"
 
@@ -76,7 +77,7 @@ const int CSGQueryTest::VERBOSE = SSys::getenvint("VERBOSE", 0 );
 
 CSGQueryTest::CSGQueryTest()
     :
-    fd(CSGFoundry::LoadGeom()),
+    fd(CSGMaker::LoadGeom()),
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z')),
     gsid(0),

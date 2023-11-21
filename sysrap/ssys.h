@@ -82,6 +82,8 @@ struct ssys
     template<typename T>
     static std::vector<T>* getenv_vec(const char* ekey, const char* fallback, char delim=','); 
 
+     static std::vector<int>* getenvintvec(const char* envkey, char delim=','); 
+
 
     template<typename T>
     static std::string desc_vec( const std::vector<T>* vec, unsigned edgeitems=5 ); 
@@ -96,6 +98,8 @@ struct ssys
     static void Dump(const char* msg); 
     static int run(const char* cmd); 
     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
+
+    static std::string Desc();
 
 }; 
 
@@ -470,11 +474,10 @@ template std::vector<double>*   ssys::getenv_vec(const char*, const char*, char 
 template std::vector<std::string>*   ssys::getenv_vec(const char*, const char*, char );
 
 
-
-
-
-
-
+inline std::vector<int>* ssys::getenvintvec(const char* envkey, char delim)
+{
+    return getenv_vec<int>(envkey, nullptr, delim);  
+}
 
 
 
@@ -682,6 +685,84 @@ inline int ssys::setenvvar( const char* ekey, const char* value, bool overwrite,
     return rc ;
 }
 
+
+/**
+ssys::Desc
+-------------
+
+Generated with::
+
+   ~/opticks/sysrap/ssys__Desc.sh 
+   ~/opticks/sysrap/ssys__Desc.sh | pbcopy 
+
+Dump flags with::
+
+    ssys_test
+
+**/
+inline std::string ssys::Desc()  // static
+{
+    std::stringstream ss ; 
+    ss << "ssys::Desc"
+       << std::endl 
+#ifdef CONFIG_Release
+       << "CONFIG_Release"
+#else
+       << "NOT:CONFIG_Release"
+#endif
+       << std::endl 
+#ifdef CONFIG_RelWithDebInfo
+       << "CONFIG_RelWithDebInfo"
+#else
+       << "NOT:CONFIG_RelWithDebInfo"
+#endif
+       << std::endl 
+#ifdef CONFIG_Debug
+       << "CONFIG_Debug"
+#else
+       << "NOT:CONFIG_Debug"
+#endif
+       << std::endl 
+#ifdef PRODUCTION
+       << "PRODUCTION"
+#else
+       << "NOT:PRODUCTION"
+#endif
+       << std::endl 
+#ifdef WITH_CHILD
+       << "WITH_CHILD"
+#else
+       << "NOT:WITH_CHILD"
+#endif
+       << std::endl 
+#ifdef WITH_CUSTOM4
+       << "WITH_CUSTOM4"
+#else
+       << "NOT:WITH_CUSTOM4"
+#endif
+       << std::endl 
+#ifdef PLOG_LOCAL
+       << "PLOG_LOCAL"
+#else
+       << "NOT:PLOG_LOCAL"
+#endif
+       << std::endl 
+#ifdef DEBUG_PIDX
+       << "DEBUG_PIDX"
+#else
+       << "NOT:DEBUG_PIDX"
+#endif
+       << std::endl 
+#ifdef DEBUG_TAG
+       << "DEBUG_TAG"
+#else
+       << "NOT:DEBUG_TAG"
+#endif
+       << std::endl 
+       ;
+    std::string str = ss.str() ; 
+    return str ;  
+}
 
 
 

@@ -73,7 +73,7 @@ void test_getenvvec_string_2()
     std::vector<std::string>* svec = ssys::getenv_vec<std::string>("SVEC", "A1,B2,C3,D4" ); 
     std::cout << "SVEC " << ssys::desc_vec<std::string>(svec) << std::endl ; 
 
-    for(int i=0 ; i < svec->size() ; i++)
+    for(int i=0 ; i < int(svec->size()) ; i++)
     {
         const std::string& s = (*svec)[i] ; 
         std::cout << "[" << s << "]" << std::endl ; 
@@ -343,6 +343,13 @@ void test_Dump()
     ssys::Dump("test_Dump"); 
 }
 
+void test_Desc()
+{
+    std::cout << ssys::Desc(); 
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -375,9 +382,10 @@ int main(int argc, char** argv)
     test_uname(); 
     test_listed_count(); 
     test_fill_evec_string(); 
-    */
     test_Dump(); 
+    */
 
+    test_Desc(); 
 
  
     return 0 ; 

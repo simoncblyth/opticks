@@ -1,9 +1,9 @@
 #include <csignal>
 
-#include "SSys.hh"
-#include "SPath.hh"
 #include "SLOG.hh"
-
+#include "ssys.h"
+#include "spath.h"
+#include "sdirectory.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sc4u.h"
@@ -14,6 +14,7 @@
 #include "CSGQuery.h"
 #include "CSGDraw.h"
 #include "CSGFoundry.h"
+#include "CSGMaker.h"
 #include "CSGGeometry.h"
 #include "CSGRecord.h"
 #include "CSGGrid.h"
@@ -25,7 +26,7 @@ void CSGGeometry::operator()()
 {
     LOG(info) ; 
 
-    bool dump_ = SSys::getenvbool("DUMP"); 
+    bool dump_ = ssys::getenvbool("DUMP"); 
     if(dump_)
     {
         LOG(info) << " dump  " ; 
@@ -57,8 +58,9 @@ const char* CSGGeometry::OutDir(const char* cfbase, const char* geom, const char
         return nullptr ;   
     }
 
-    int create_dirs = 2 ;   
-    const char* outdir = SPath::Resolve(cfbase, "CSGIntersectSolidTest", reldir, create_dirs );  
+    const char* outdir = spath::Resolve(cfbase, "CSGIntersectSolidTest", reldir );  
+    sdirectory::MakeDirs(outdir); 
+
     return outdir ;  
 }
 
@@ -79,17 +81,17 @@ CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)
     :
     default_geom(nullptr),
     default_sopr(nullptr),
-    geom(SSys::getenvvar("CSGGeometry_GEOM", default_geom)),
-    sopr(SSys::getenvvar("SOPR", default_sopr)),
-    cfbase(SSys::getenvvar("CFBASE", default_cfbase)), 
+    geom(ssys::getenvvar("CSGGeometry_GEOM", default_geom)),
+    sopr(ssys::getenvvar("SOPR", default_sopr)),
+    cfbase(ssys::getenvvar("CFBASE", default_cfbase)), 
     outdir(OutDir(cfbase,geom,sopr)),
     name(nullptr),
     fd(fd_),
     q(nullptr),
     ce(nullptr),
     d(nullptr),
-    sxyzw(SSys::getenvintvec("SXYZW",',')),
-    sxyz(SSys::getenvintvec("SXYZ",',')),
+    sxyzw(ssys::getenvintvec("SXYZW",',')),
+    sxyz(ssys::getenvintvec("SXYZ",',')),
     no_selection(sxyzw == nullptr && sxyz == nullptr),
     sx(0),
     sy(0),
@@ -127,11 +129,11 @@ void CSGGeometry::init_fd()
         {
             name = strdup(geom); 
             LOG(info) << "init from GEOM " << geom << " name " << name ; 
-            fd = CSGFoundry::MakeGeom(geom) ; 
+            fd = CSGMaker::MakeGeom(geom) ; 
         }
         else if(cfbase != nullptr)
         {
-            name = SPath::Basename(cfbase); 
+            name = spath::Basename(cfbase); 
             LOG(info) << "init from CFBASE " << cfbase << " name " << name  ; 
             fd = CSGFoundry::Load(cfbase, "CSGFoundry");
             LOG(info) << " fd.meta\n" << ( fd->hasMeta() ? fd->meta : " NO meta " ) ; 
@@ -192,7 +194,7 @@ void CSGGeometry::saveSignedDistanceField() const
     LOG_IF(error, q == nullptr ) << " q null : ABORT " ; 
     if(!q) return ; 
 
-    int resolution = SSys::getenvint("RESOLUTION", 25) ; 
+    int resolution = ssys::getenvint("RESOLUTION", 25) ; 
     LOG(info) << " name " << name << " RESOLUTION " << resolution ; 
 
     q->dumpPrim();
@@ -215,10 +217,10 @@ a selection of intersects.
 
 void CSGGeometry::centerExtentGenstepIntersect() 
 {
-    const char* path = SSys::getenvvar("SELECTED_ISECT"); 
+    const char* path = ssys::getenvvar("SELECTED_ISECT"); 
     if(path == nullptr)
     {
-        float t_min = SSys::getenvfloat("TMIN", 0.f ); 
+        float t_min = ssys::getenvfloat("TMIN", 0.f ); 
         saveCenterExtentGenstepIntersect(t_min); 
     }
     else
@@ -273,8 +275,9 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
 
 #ifdef DEBUG_RECORD
             std::string gsid_name = C4U_name( gsid.u , "gsid", '_' );  
-            int create_dirs = 2 ; // 2:dirpath 
-            const char* dir = SPath::Resolve(outdir, "saveCenterExtentGenstepIntersect", gsid_name.c_str(), create_dirs ); 
+            const char* dir = spath::Resolve(outdir, "saveCenterExtentGenstepIntersect", gsid_name.c_str() );
+            sdirectory::MakeDirs(dir,0);  
+ 
             LOG(info) << " DEBUG_RECORD saving to " << dir ; 
             CSGRecord::Save(dir); 
             CSGRecord::Dump(dir); 
@@ -335,8 +338,9 @@ void CSGGeometry::intersectSelected(const char* path)
         std::string gsid_name = C4U_name(gsid, "gsid", '_' ); 
 
 #ifdef DEBUG_RECORD
-        int create_dirs = 2 ; // 2:dirpath 
-        const char* dir = SPath::Resolve(outdir, "intersectSelected", gsid_name.c_str(), create_dirs ); 
+        const char* dir = spath::Resolve(outdir, "intersectSelected", gsid_name.c_str() ); 
+        sdirectory::MakeDirs(dir,0); 
+
         CSGRecord::Save(dir); 
         if(i == 0) CSGRecord::Dump(dir); 
         CSGRecord::Clear(); 

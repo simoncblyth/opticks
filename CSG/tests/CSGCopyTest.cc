@@ -3,6 +3,7 @@
 #include "SSim.hh"
 #include "SBitSet.hh"
 #include "CSGFoundry.h"
+#include "CSGMaker.h"
 #include "CSGCopy.h"
 
 int main(int argc, char** argv)
@@ -17,7 +18,7 @@ int main(int argc, char** argv)
 
     // CAUTION : MOST OF THIS IS DONE BY CSGFoundry::Load
 
-    CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
+    CSGFoundry* src = mode == 'D' ? CSGMaker::MakeDemo() : CSGFoundry::Load_() ; 
     LOG_IF(fatal , src == nullptr ) << " NO GEOMETRY " ; 
     if(src == nullptr) return 1 ; 
 

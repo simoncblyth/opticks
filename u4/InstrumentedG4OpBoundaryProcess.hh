@@ -166,7 +166,7 @@ class U4_API InstrumentedG4OpBoundaryProcess
 #endif
 {
 
-#ifdef DEBUG_PIDX
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
         static const int  PIDX ;
         int pidx ; 
         bool pidx_dump ; 

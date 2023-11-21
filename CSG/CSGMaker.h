@@ -144,6 +144,12 @@ struct CSG_API CSGMaker
     CSGSolid* makeConvexPolyhedronTetrahedron(const char* label="vtet", float extent=100.f);
 
 
+
+    static CSGFoundry* MakeGeom(const char* geom);
+    static CSGFoundry* MakeDemo(); 
+    static CSGFoundry* LoadGeom(const char* geom=nullptr); 
+
+
 };
 
 

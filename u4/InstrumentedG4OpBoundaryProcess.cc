@@ -90,11 +90,27 @@
 #endif
 
 #include "SLOG.hh"
-#include "spho.h"
-#include "STrackInfo.h"
 #include "U4OpticalSurface.h"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4MaterialPropertiesTable.h"
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+
+#include "scuda.h"
+#include "squad.h"
+#include "SEvt.hh"
+#include "SSys.hh"
+//#include "U4PhotonInfo.h"  // TODO: should be STrackInfo<spho> now
+const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ; 
+
+#ifdef WITH_CUSTOM4
+#include "C4TrackInfo.h"
+#include "C4Pho.h"
+#else
+#include "STrackInfo.h"
+#include "spho.h"
+#endif
+#endif
 
 
 
@@ -102,16 +118,7 @@
 NP* U4UniformRand::UU = nullptr ;  
 // UU gets set by U4Recorder::saveOrLoadStates when doing single photon reruns
 
-#ifdef DEBUG_PIDX
 
-    #include "scuda.h"
-    #include "squad.h"
-    #include "SEvt.hh"
-    #include "SSys.hh"
-    #include "U4PhotonInfo.h"  // TODO: should be STrackInfo<spho> now
-    const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ; 
-
-#endif
 
 
 #ifdef DEBUG_TAG
@@ -411,10 +418,17 @@ tail
 G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track& aTrack, const G4Step& aStep)
 {
     //[head
-#ifdef DEBUG_PIDX
-    // U4PhotonInfo::GetIndex is picking up the index from the label set 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    // formerly used U4PhotonInfo::GetIndex to pick up the label set 
     // in U4Recorder::PreUserTrackingAction_Optical for initially unlabelled input photons
-    pidx = U4PhotonInfo::GetIndex(&aTrack);    // TODO: now needs to be STrackInfo<spho>
+    // pidx = U4PhotonInfo::GetIndex(&aTrack);    // TODO: now needs to be STrackInfo<spho>
+#ifdef WITH_CUSTOM4
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(&aTrack); 
+    pidx = label->id ; 
+#else
+    spho* label = STrackInfo<spho>::GetRef(&aTrack); 
+    pidx = label->id ; 
+#endif
     pidx_dump = pidx == PIDX ; 
 #endif
     theStatus = Undefined;
@@ -496,9 +510,9 @@ G4VParticleChange* InstrumentedG4OpBoundaryProcess::PostStepDoIt_(const G4Track&
     theGlobalNormal = theGlobalExitNormal ;  
 
 
-#ifdef DEBUG_PIDX
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     {
-        quad2& prd = SEvt::Get()->current_prd ; 
+        quad2& prd = SEvt::Get_ECPU()->current_prd ; 
         prd.q0.f.x = theGlobalNormal.x() ; 
         prd.q0.f.y = theGlobalNormal.y() ; 
         prd.q0.f.z = theGlobalNormal.z() ; 

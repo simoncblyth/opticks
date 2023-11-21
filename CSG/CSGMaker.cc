@@ -3,9 +3,9 @@
 #include "scuda.h"
 #include "squad.h"
 #include "stran.h"
+#include "ssys.h"
 #include "OpticksCSG.h"
 
-#include "SSys.hh"
 #include "SLOG.hh"
 
 #include "CSGNode.h"
@@ -282,8 +282,8 @@ each with a single CSGNode.
 
 CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
 {
-    float halfside = SSys::getenvfloat("CSGMaker_makeBoxedSphere_HALFSIDE", 100.f); 
-    float factor   = SSys::getenvfloat("CSGMaker_makeBoxedSphere_FACTOR", 1.f); 
+    float halfside = ssys::getenvfloat("CSGMaker_makeBoxedSphere_HALFSIDE", 100.f); 
+    float factor   = ssys::getenvfloat("CSGMaker_makeBoxedSphere_FACTOR", 1.f); 
     LOG(info) << "CSGMaker_makeBoxedSphere_HALFSIDE " << halfside  ; 
     LOG(info) << "CSGMaker_makeBoxedSphere_FACTOR   " << factor ; 
 
@@ -1404,5 +1404,87 @@ CSGSolid* CSGMaker::makeConvexPolyhedronTetrahedron(const char* label, float ext
     nd.setAABB(extent); 
     return makeSolid11(label, nd, &pl, VTET_MIDX ); 
 }
+
+
+
+/**
+CSGMaker::MakeGeom
+----------------------
+
+Intended for creation of small CSGFoundry test geometries that are entirely created by this method.
+
+Formerly was CSGFoundry::MakeGeom
+
+**/
+
+CSGFoundry*  CSGMaker::MakeGeom(const char* geom) // static
+{
+    CSGFoundry* fd = new CSGFoundry();  
+    CSGMaker* mk = fd->maker ;
+    CSGSolid* so = mk->make( geom );
+    fd->setGeom(geom);  
+
+    fd->addTranPlaceholder();  
+    fd->addInstancePlaceholder(); 
+
+    // avoid tripping some checks 
+    fd->addMeshName(geom);   
+    fd->addSolidLabel(geom);  
+    fd->setMeta<std::string>("source", "CSGFoundry::MakeGeom" ); 
+
+    assert( so ); 
+
+    LOG(info) << " so " << so ;
+    LOG(info) << " so.desc " << so->desc() ;
+    LOG(info) << " fd.desc " << fd->desc() ;
+
+    return fd ; 
+}
+/**
+CSGMaker::MakeDemo
+---------------------
+
+Formerly was CSGFoundry::MakeDemo
+
+**/
+
+CSGFoundry*  CSGMaker::MakeDemo()
+{
+    CSGFoundry* fd = new CSGFoundry();
+    fd->makeDemoSolids(); 
+    return fd ; 
+}
+
+
+
+/**
+CSGMaker::LoadGeom (formerly CSGFoundry::LoadGeom)
+----------------------------------------------------
+
+HMM: is there reason for this anymore : simpler
+to treat full geometries and small geometries just the same 
+from the point of view of loading. 
+
+**/
+
+
+CSGFoundry* CSGMaker::LoadGeom(const char* geom) // static
+{
+    if(geom == nullptr) geom = ssys::getenvvar("GEOM", "GeneralSphereDEV") ; 
+    CSGFoundry* fd = new CSGFoundry();  
+    fd->setGeom(geom); 
+    fd->load(); 
+
+    const char* meta = fd->meta.empty() ? nullptr : fd->meta.c_str();  
+
+    LOG(LEVEL) 
+       << " geom " << geom 
+       << " loaddir " << fd->loaddir 
+       << ( meta ? "\n" : "" )
+       << ( meta ? meta : "-" )
+       ; 
+
+    return fd ; 
+} 
 
 

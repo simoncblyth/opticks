@@ -2725,45 +2725,6 @@ void CSGFoundry::setElv(const SBitSet* elv_)
 }
 
 
-/**
-CSGFoundry::MakeGeom
-----------------------
-
-Intended for creation of small CSGFoundry test geometries that are entirely created by this method.
-
-**/
-
-CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
-{
-    CSGFoundry* fd = new CSGFoundry();  
-    CSGMaker* mk = fd->maker ;
-    CSGSolid* so = mk->make( geom );
-    fd->setGeom(geom);  
-
-    fd->addTranPlaceholder();  
-    fd->addInstancePlaceholder(); 
-
-    // avoid tripping some checks 
-    fd->addMeshName(geom);   
-    fd->addSolidLabel(geom);  
-    fd->setMeta<std::string>("source", "CSGFoundry::MakeGeom" ); 
-
-    assert( so ); 
-
-    LOG(info) << " so " << so ;
-    LOG(info) << " so.desc " << so->desc() ;
-    LOG(info) << " fd.desc " << fd->desc() ;
-
-    return fd ; 
-}
-
-
-CSGFoundry*  CSGFoundry::MakeDemo()
-{
-    CSGFoundry* fd = new CSGFoundry();
-    fd->makeDemoSolids(); 
-    return fd ; 
-}
 
 /**
 CSGFoundry::descELV
@@ -2975,12 +2936,17 @@ CSGFoundry::Load_
 -------------------
 
 HMM: this is expecting to load preexisting SSim + CSGFoundry  
-from file system. Its also possible to create CSGFoundry from SSim
+from filesystem. Its also possible to create CSGFoundry from SSim
 using CSGImport functionality using CSGFoundry::CreateFromSim and CSGFoundry::importSim
 
 HMM: this means dont really need to persit CSGFoundry : however
 its very useful for debugging and access to geometry info, so 
 will continue to do so for now. 
+
+HUH : there is another SSim::Load at tail of CSGFoundry::load
+
+* LOOKS LIKE SSim GETTING LOADED TWICE ? 
+* TODO : SLIM DOWN THE SIMULAR METHODS
 
 **/
 
@@ -2988,7 +2954,11 @@ CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = ResolveCFBase() ; 
 
+
+    LOG(LEVEL) << "[ SSim::Load " ;  
     SSim* sim = SSim::Load(cfbase, "CSGFoundry/SSim"); 
+    LOG(LEVEL) << "] SSim::Load " ;  
+
     LOG_IF(fatal, sim==nullptr ) << " sim(SSim) required before CSGFoundry::Load " ; 
     assert(sim); 
 
@@ -2996,36 +2966,7 @@ CSGFoundry* CSGFoundry::Load_() // static
     return fd ; 
 }
 
-/**
-CSGFoundry::LoadGeom
----------------------
 
-HMM: is there reason for this anymore : simpler
-to treat full geometries and small geometries just the same 
-from the point of view of loading. 
-
-**/
-
-CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
-{
-    if(geom == nullptr) geom = ssys::getenvvar("GEOM", "GeneralSphereDEV") ; 
-    CSGFoundry* fd = new CSGFoundry();  
-    fd->setGeom(geom); 
-    fd->load(); 
-
-    if(VERBOSE > 0 )
-    {
-        if( !fd->meta.empty() )
-        {
-            LOG(info) << " geom " << geom << " loaddir " << fd->loaddir << std::endl << fd->meta ; 
-        }
-        else
-        {
-            LOG(info) << " geom " << geom << " loaddir " << fd->loaddir ;  
-        }
-    }
-    return fd ; 
-} 
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
@@ -3151,7 +3092,6 @@ bool CSGFoundry::isUploaded() const
 {
     return d_prim != nullptr && d_node != nullptr ; 
 }
-
 
 
 void CSGFoundry::inst_find_unique()
