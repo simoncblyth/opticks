@@ -46,6 +46,11 @@ find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 find_package(OpticksCUDA REQUIRED MODULE)
 
+set(Custom4_VERBOSE ON) 
+find_package(Custom4 CONFIG)
+
+message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
+
 
 include_directories(
     ${OPTICKS_PREFIX}/externals/glm/glm

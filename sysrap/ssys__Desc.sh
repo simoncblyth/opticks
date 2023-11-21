@@ -36,10 +36,12 @@ inline std::string ssys::Desc()  // static
     ss << "ssys::Desc"
        << std::endl 
 EOH
+# keep tag order the same as ../qudarap/QSim__Desc.sh
 ssys__Desc $(cat << EOB
+CONFIG_Debug
 CONFIG_Release
 CONFIG_RelWithDebInfo
-CONFIG_Debug
+CONFIG_MinSizeRel
 PRODUCTION
 WITH_CHILD
 WITH_CUSTOM4

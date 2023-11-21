@@ -2,6 +2,24 @@
 SPMT.h : summarize PMTSimParamData NPFold into the few arrays needed on GPU
 ============================================================================
 
+Usage sketch
+-------------
+
+::
+
+    SSim::get_spmt
+    QSim::UploadComponents
+    QPMT
+    qpmt 
+
+
+WITH_CUSTOM4
+--------------
+
+Lack of the WITH_CUSTOM4 flag in sysrap IS A problem as 
+SPMT.h despite being header only is not directly included 
+into QPMT it gets compiled into SSim
+
 Aims
 ----
 
@@ -16,6 +34,7 @@ Aims
 
 2. DONE :  (17612,2) PMT info arrays with [pmtcat 0/1/2, qescale]
 3. DONE : update QPMT.hh/qpmt.h to upload the SPMT.h arrays and test them on device
+
 
 
 Related developments

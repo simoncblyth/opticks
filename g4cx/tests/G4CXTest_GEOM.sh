@@ -75,10 +75,11 @@ export BFOLD=$evtfold/$bin/ALL$VERSION/n001
 
 logging()
 {
+   export SSim=INFO
    export SEvt=INFO
-   export U4Recorder=INFO
-   export U4StepPoint=INFO
-   export U4Physics=INFO
+   #export U4Recorder=INFO
+   #export U4StepPoint=INFO
+   #export U4Physics=INFO
    #export CSGFoundry=INFO
    #export CSGTarget=INFO
 }

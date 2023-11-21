@@ -36,10 +36,11 @@ std::string QSim::Desc()  // static
     ss << "QSim::Desc"
        << std::endl 
 EOH
+# keep tag order same as ../sysrap/ssys__Desc.sh 
 QSim__Desc $(cat << EOB
 CONFIG_Debug
-CONFIG_RelWithDebInfo
 CONFIG_Release
+CONFIG_RelWithDebInfo
 CONFIG_MinSizeRel
 PRODUCTION
 WITH_CHILD

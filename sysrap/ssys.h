@@ -705,6 +705,12 @@ inline std::string ssys::Desc()  // static
     std::stringstream ss ; 
     ss << "ssys::Desc"
        << std::endl 
+#ifdef CONFIG_Debug
+       << "CONFIG_Debug"
+#else
+       << "NOT:CONFIG_Debug"
+#endif
+       << std::endl 
 #ifdef CONFIG_Release
        << "CONFIG_Release"
 #else
@@ -717,10 +723,10 @@ inline std::string ssys::Desc()  // static
        << "NOT:CONFIG_RelWithDebInfo"
 #endif
        << std::endl 
-#ifdef CONFIG_Debug
-       << "CONFIG_Debug"
+#ifdef CONFIG_MinSizeRel
+       << "CONFIG_MinSizeRel"
 #else
-       << "NOT:CONFIG_Debug"
+       << "NOT:CONFIG_MinSizeRel"
 #endif
        << std::endl 
 #ifdef PRODUCTION
@@ -763,6 +769,4 @@ inline std::string ssys::Desc()  // static
     std::string str = ss.str() ; 
     return str ;  
 }
-
-
 
