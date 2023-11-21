@@ -1,6 +1,7 @@
 #!/bin/bash -l 
 
 #TMP=/tmp/somewhere/other/than/here
+cd $(dirname $BASH_SOURCE)
 
 name=spath_test 
 bin=${TMP:-/tmp/$USER/opticks}/$name

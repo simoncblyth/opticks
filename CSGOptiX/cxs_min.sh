@@ -69,6 +69,8 @@ export OPTICKS_MAX_BOUNCE=31
 export OPTICKS_MAX_PHOTON=100000
 export OPTICKS_INTEGRATION_MODE=1
 
+export NEVT=10 
+
 
 # investigate double call to clear
 # see ~/opticks/notes/issues/SEvt__clear_double_call.rst
@@ -87,7 +89,7 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 

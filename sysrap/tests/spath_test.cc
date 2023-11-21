@@ -1,4 +1,4 @@
-// ./spath_test.sh
+// ~/opticks/sysrap/tests/spath_test.sh
 
 #include <cassert>
 #include <iostream>
@@ -31,7 +31,12 @@ struct spath_test
    static void Basename(); 
    static void Name(); 
    static void Remove(); 
+
+   static void _Check(); 
 };
+
+
+
 
 
 
@@ -288,6 +293,16 @@ void spath_test::Remove()
     assert( exists_1 == 0); 
 }
 
+void spath_test::_Check()
+{
+    std::string chk0 = spath::_Check('A', "red", "green", "blue"); 
+    std::string chk1 = spath::_Check('B', "red", "green", "blue"); 
+    std::cout << "spath_test::_Check [" << chk0 << "]" << std::endl ; 
+    std::cout << "spath_test::_Check [" << chk1 << "]" << std::endl ; 
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -310,9 +325,10 @@ int main(int argc, char** argv)
     spath_test::_ResolveToken(); 
     spath_test::Resolve(); 
     spath_test::ResolveToken1(); 
-    */
     spath_test::Resolve1(); 
+    */
 
+    spath_test::_Check(); 
 
     return 0 ; 
 }

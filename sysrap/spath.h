@@ -55,6 +55,9 @@ private:
     static std::string _Join( Args ... args_  ); 
 
     template<typename ... Args>
+    static std::string _Check( char method, Args ... args_  ); 
+
+    template<typename ... Args>
     static std::string _Name( Args ... args_  ); 
 
 public:
@@ -471,6 +474,29 @@ template const char* spath::Join( const char*, const char*, const char*, const c
 
 
 
+template<typename ... Args>
+inline std::string spath::_Check( char method, Args ... args_  )  // static
+{
+    std::vector<std::string> args = {args_...};
+    std::stringstream ss ; 
+    ss << method << ":" ; 
+
+    for(int i=0 ; i < int(args.size()) ; i++)
+    {
+        const std::string& arg = args[i] ; 
+        if(arg.empty()) continue ;
+        ss << arg << " " ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+} 
+
+
+template std::string spath::_Check( char, const char* ); 
+template std::string spath::_Check( char, const char*, const char* ); 
+template std::string spath::_Check( char, const char*, const char*, const char* ); 
+template std::string spath::_Check( char, const char*, const char*, const char*, const char* ); 
+
 
 
 
@@ -549,6 +575,11 @@ template bool spath::Exists( const char* );
 template bool spath::Exists( const char*, const char* ); 
 template bool spath::Exists( const char*, const char*, const char* ); 
 template bool spath::Exists( const char*, const char*, const char*, const char* ); 
+
+
+
+
+
 
 
 inline bool spath::LooksLikePath(const char* arg)

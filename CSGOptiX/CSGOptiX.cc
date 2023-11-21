@@ -171,7 +171,10 @@ void CSGOptiX::SimulateMain() // static
     SEventConfig::SetRGModeSimulate(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-    cx->simulate(0); 
+
+    int nevt = ssys::getenvint("NEVT",1); 
+    LOG(LEVEL) << " NEVT " << nevt ; 
+    for(int i=0 ; i < nevt ; i++) cx->simulate(i); 
 }
 
 /**

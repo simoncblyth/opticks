@@ -205,6 +205,8 @@ public:
     void set( const char* k, const NP* a); 
 
     static void SplitKeys( std::vector<std::string>& elem , const char* keylist, char delim=','); 
+    static std::string DescKeys( const std::vector<std::string>& elem, char delim=',' ); 
+
     void clear(); 
 private:
     void clear_(const std::vector<std::string>* keep); 
@@ -289,12 +291,12 @@ public:
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
 
-    NPFold* substamp(const char* prefix) const ; 
-    NPFold* substamp_ab(const char* a_prefix="//p", const char* b_prefix="//n" ) const ; 
-
+    NPFold* substamp(  const char* prefix) const ; 
     NPFold* subprofile(const char* prefix) const ; 
-    NPFold* subprofile_ab(const char* a_prefix="//p", const char* b_prefix="//n" ) const ; 
 
+    template<typename ... Args>
+    NPFold* subfold_summary(char method, Args ... args_  ) const  ; 
+ 
 
     static void Subkey(std::vector<std::string>& ukey, const std::vector<const NPFold*>& subs ); 
     static void SubCommonKV(std::vector<std::string>& ckey, std::vector<std::string>& cval, const std::vector<const NPFold*>& subs ); 
@@ -548,6 +550,7 @@ inline void NPFold::check_integrity() const
 // [ subfold handling 
 inline void NPFold::add_subfold(const char* f, NPFold* fo )
 {
+    if(fo == nullptr) return ; 
     ff.push_back(f); // subfold keys 
     subfold.push_back(fo); 
 }
@@ -895,6 +898,21 @@ inline void NPFold::SplitKeys( std::vector<std::string>& elem , const char* keyl
     while (std::getline(ss, s, delim)) elem.push_back(FormKey(s.c_str(),change_txt_to_npy)); 
 }
 
+inline std::string NPFold::DescKeys( const std::vector<std::string>& elem, char delim )
+{
+    int num_elem = elem.size(); 
+    std::stringstream ss; 
+    for(int i=0 ; i < num_elem; i++) 
+    {
+        ss << elem[i] ; 
+        if( i < num_elem - 1) ss << delim ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 
 /**
 NPFold::clear (clearing this fold and all subfold recursively)
@@ -1058,11 +1076,13 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
 
     std::vector<std::string> keys ; 
     if(keylist) SplitKeys(keys, keylist, delim); 
+    // SplitKeys adds .npy to keys if not already present 
 
     int count = count_keys(&keys) ; 
     if( count == 0 ) std::cerr
         << "NPFold::copy"
         << " keylist " << ( keylist ? keylist : "-" )
+        << " keys " << DescKeys(keys, delim) 
         << " count " << count 
         << " kk.size " << kk.size() 
         << " meta " << ( meta.empty() ? "EMPTY" : meta )  
@@ -1801,71 +1821,71 @@ inline NPFold* NPFold::substamp(const char* prefix) const
     std::vector<std::string> subpaths ; 
     find_subfold_with_prefix(subs, &subpaths,  prefix );  
     assert( subs.size() == subpaths.size() ); 
+    int num_sub = int(subs.size()) ; 
+    int num_stamp0 = num_sub > 0 ? subs[0]->getMetaNumStamp() : 0 ;  
+    bool skip = num_sub == 0 || num_stamp0 == 0 ; 
 
     std::cout 
-        << "NPFold::substamp" 
+        << "[NPFold::substamp" 
         << " find_subfold_with_prefix " << prefix
-        << " subs.size " << subs.size()
+        << " num_sub " << num_sub
+        << " num_stamp0 " << num_stamp0
+        << " skip " << ( skip ? "YES" : "NO ") 
         << std::endl
         ;
 
-    int num_sub = int(subs.size()) ; 
-    int num_stamp = num_sub > 0 ? subs[0]->getMetaNumStamp() : 0 ;  
-
-    int ni = num_sub ; 
-    int nj = num_stamp ; 
-
-    NP* t = NP::Make<int64_t>( ni, nj ) ; 
-    int64_t* tt = t->values<int64_t>() ; 
-    t->set_meta<std::string>("creator","NPFold::substamp"); 
-    t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
-    t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
-
-
-    // collect metadata (k,v) pairs that are the same for all the subs
-    std::vector<std::string> ckey ;  
-    std::vector<std::string> cval ; 
-    SubCommonKV(ckey, cval, subs );
-    assert( ckey.size() == cval.size() ); 
-    t->setMetaKV_(ckey, cval); 
-
-
-    std::vector<std::string> comkeys ; 
-    for(int i=0 ; i < ni ; i++) 
+    NPFold* out = nullptr ; 
+    if(!skip)
     {
-        const NPFold* sub = subs[i] ; 
-        const char* subpath = subpaths[i].c_str() ; 
-        std::vector<std::string> keys ; 
-        std::vector<int64_t>   stamps ; 
-        bool only_with_stamps = true ; 
-        sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps ); 
-        assert( int(stamps.size()) == nj ) ; 
+        int ni = num_sub ; 
+        int nj = num_stamp0 ; 
 
-        if(i == 0) comkeys = keys ; 
-        bool same_keys = i == 0 ? true : keys == comkeys ; 
-        std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
-        assert(same_keys); 
+        NP* t = NP::Make<int64_t>( ni, nj ) ; 
+        int64_t* tt = t->values<int64_t>() ; 
+        t->set_meta<std::string>("creator","NPFold::substamp"); 
+        t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
+        t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
 
-        for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
-        t->names.push_back(subpath); 
+        // collect metadata (k,v) pairs that are the same for all the subs
+        std::vector<std::string> ckey ;  
+        std::vector<std::string> cval ; 
+        SubCommonKV(ckey, cval, subs );
+        assert( ckey.size() == cval.size() ); 
+        t->setMetaKV_(ckey, cval); 
+
+        std::vector<std::string> comkeys ; 
+        for(int i=0 ; i < ni ; i++) 
+        {
+            const NPFold* sub = subs[i] ; 
+            const char* subpath = subpaths[i].c_str() ; 
+            std::vector<std::string> keys ; 
+            std::vector<int64_t>   stamps ; 
+            bool only_with_stamps = true ; 
+            sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps ); 
+            assert( int(stamps.size()) == nj ) ; 
+
+            if(i == 0) comkeys = keys ; 
+            bool same_keys = i == 0 ? true : keys == comkeys ; 
+            std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
+            assert(same_keys); 
+
+            for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
+            t->names.push_back(subpath); 
+        }
+
+        NP* l = NPX::MakeCharArray(comkeys); 
+        l->names = comkeys ; 
+
+        out = new NPFold ; 
+        out->add("stamps", t );
+        out->add("labels", l );  
     }
-
-    NP* l = NPX::MakeCharArray(comkeys); 
-    l->names = comkeys ; 
-
-    NPFold* out = new NPFold ; 
-    out->add("stamps", t );
-    out->add("labels", l );  
+    std::cout 
+        << "]NPFold::substamp" 
+        << std::endl
+        ;
     return out ; 
 
-}
-
-inline NPFold* NPFold::substamp_ab(const char* a_prefix, const char* b_prefix) const 
-{
-    NPFold* pn = new NPFold ; 
-    pn->add_subfold( "a", substamp(a_prefix)); 
-    pn->add_subfold( "b", substamp(b_prefix)); 
-    return pn ; 
 }
 
 
@@ -1892,95 +1912,145 @@ inline NPFold* NPFold::subprofile(const char* prefix) const
     find_subfold_with_prefix(subs, &subpaths,  prefix );  
     assert( subs.size() == subpaths.size() ); 
 
-
-
     int num_sub = int(subs.size()) ; 
-    int num_prof = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
+    int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
+    bool skip = num_sub == 0 || num_prof0 == 0 ; 
+
     bool dump = false ; 
 
     if(dump) std::cout 
-        << "NPFold::subprofile"
+        << "[NPFold::subprofile"
+        << " find_subfold_with_prefix " << prefix
         << " num_sub " << num_sub 
-        << " sub0.num_prof " << num_prof 
+        << " num_prof0 " << num_prof0
+        << " skip " << ( skip ? "YES" : "NO ") 
         << std::endl
         ; 
 
-    int ni = num_sub ; 
-    int nj = num_prof ; 
-    int nk = 3 ;   
-
-    NP* t = NP::Make<int64_t>( ni, nj, nk ) ; 
-    int64_t* tt = t->values<int64_t>() ; 
-    t->set_meta<std::string>("creator","NPFold::subprofile"); 
-    t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
-    t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
-
-
-    // collect metadata (k,v) pairs that are the same for all the subs
-    std::vector<std::string> ckey ;  
-    std::vector<std::string> cval ; 
-    SubCommonKV(ckey, cval, subs );
-    assert( ckey.size() == cval.size() ); 
-    t->setMetaKV_(ckey, cval); 
-
-
-    std::vector<std::string> comkeys ; 
-    for(int i=0 ; i < ni ; i++) 
+    NPFold* out = nullptr ; 
+    if(!skip)
     {
-        const NPFold* sub = subs[i] ; 
-        const char* subpath = subpaths[i].c_str() ; 
+        int ni = num_sub ; 
+        int nj = num_prof0 ; 
+        int nk = 3 ;   
 
-        if(dump) std::cout 
-            << subpath 
-            << std::endl
-            << sub->descMetaKV()
-            << std::endl
-            ; 
+        NP* t = NP::Make<int64_t>( ni, nj, nk ) ; 
+        int64_t* tt = t->values<int64_t>() ; 
+        t->set_meta<std::string>("creator","NPFold::subprofile"); 
+        t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
+        t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
 
-        std::vector<std::string> keys ; 
-        std::vector<std::string> vals ; 
-        bool only_with_profiles = true ; 
-        sub->getMetaKV(&keys, &vals, only_with_profiles ); 
-        assert( vals.size() == keys.size() ) ; 
-        assert( int(vals.size()) == nj ) ; 
+        // collect metadata (k,v) pairs that are the same for all the subs
+        std::vector<std::string> ckey ;  
+        std::vector<std::string> cval ; 
+        SubCommonKV(ckey, cval, subs );
+        assert( ckey.size() == cval.size() ); 
+        t->setMetaKV_(ckey, cval); 
 
-        if(i == 0) comkeys = keys ; 
-        bool same_keys = i == 0 ? true : keys == comkeys ; 
-        if(dump) std::cout 
-             << "sub.loaddir " << sub->loaddir 
-             << " keys.size " << keys.size() 
-             << " " << ( same_keys ? "Y" : "N" )
-             << std::endl
-             ; 
-        assert(same_keys); 
-
-        for(int j=0 ; j < nj ; j++) 
+        std::vector<std::string> comkeys ; 
+        for(int i=0 ; i < ni ; i++) 
         {
-            const char* v = vals[j].c_str(); 
-            std::vector<int64_t> elem ; 
-            U::MakeVec<int64_t>( elem, v, ',' ); 
-            assert( int(elem.size()) == nk ); 
-            for(int k=0 ; k < nk ; k++)  tt[i*nj*nk+j*nk+k] = elem[k] ; 
+            const NPFold* sub = subs[i] ; 
+            const char* subpath = subpaths[i].c_str() ; 
+
+            if(dump) std::cout 
+                << subpath 
+                << std::endl
+                << sub->descMetaKV()
+                << std::endl
+                ; 
+
+            std::vector<std::string> keys ; 
+            std::vector<std::string> vals ; 
+            bool only_with_profiles = true ; 
+            sub->getMetaKV(&keys, &vals, only_with_profiles ); 
+            assert( vals.size() == keys.size() ) ; 
+            assert( int(vals.size()) == nj ) ; 
+
+            if(i == 0) comkeys = keys ; 
+            bool same_keys = i == 0 ? true : keys == comkeys ; 
+            if(dump) std::cout 
+                 << "sub.loaddir " << sub->loaddir 
+                 << " keys.size " << keys.size() 
+                 << " " << ( same_keys ? "Y" : "N" )
+                 << std::endl
+                 ; 
+            assert(same_keys); 
+
+            for(int j=0 ; j < nj ; j++) 
+            {
+                const char* v = vals[j].c_str(); 
+                std::vector<int64_t> elem ; 
+                U::MakeVec<int64_t>( elem, v, ',' ); 
+                assert( int(elem.size()) == nk ); 
+                for(int k=0 ; k < nk ; k++)  tt[i*nj*nk+j*nk+k] = elem[k] ; 
+            }
+            t->names.push_back(subpath); 
         }
-        t->names.push_back(subpath); 
+
+        NP* l = NPX::MakeCharArray(comkeys); 
+        l->names = comkeys ; 
+
+        out = new NPFold ; 
+        out->add("profile", t );
+        out->add("labels", l ) ; 
     }
-
-    NP* l = NPX::MakeCharArray(comkeys); 
-    l->names = comkeys ; 
-
-    NPFold* out = new NPFold ; 
-    out->add("profile", t );
-    out->add("labels", l ) ; 
+    std::cout 
+        << "]NPFold::subprofile" 
+        << std::endl
+        ;
     return out ; 
 }
 
-inline NPFold* NPFold::subprofile_ab(const char* a_prefix, const char* b_prefix) const 
+
+
+/**
+NPFold::subfold_summary
+-----------------------
+
+::
+
+   NPFold* ab = NPFold::subfold_summary('S', "a://p", "b://n" ) ; 
+   NPFold* ab = NPFold::subfold_summary('P', "a://p", "b://n" ) ; 
+
+**/
+
+template<typename ... Args>
+inline NPFold* NPFold::subfold_summary(char method, Args ... args_  ) const 
 {
-    NPFold* pn = new NPFold ; 
-    pn->add_subfold( "a", subprofile(a_prefix)); 
-    pn->add_subfold( "b", subprofile(b_prefix)); 
-    return pn ; 
+    std::vector<std::string> args = {args_...};
+    NPFold* spec_ff = nullptr ; 
+    char delim = ':' ;
+    for(int i=0 ; i < int(args.size()) ; i++)
+    {   
+        const std::string& arg = args[i] ; 
+        if(arg.empty()) continue ; 
+        size_t pos = arg.find(delim); 
+        if( pos != std::string::npos )
+        {
+            std::string _k = arg.substr(0, pos);
+            std::string _v = arg.substr(pos+1);
+            const char* k = _k.c_str(); 
+            const char* v = _v.c_str(); 
+
+            NPFold* sub = nullptr ; 
+            switch(method)
+            {
+               case 'S': sub = substamp(v); break ; 
+               case 'P': sub = subprofile(v); break ; 
+            } 
+
+            if(sub == nullptr ) continue ; 
+            if(spec_ff == nullptr) spec_ff = new NPFold ; 
+            spec_ff->add_subfold(k, sub );  
+        }
+    }   
+    return spec_ff ;  
 }
+
+template NPFold* NPFold::subfold_summary( char, const char* ) const ;
+template NPFold* NPFold::subfold_summary( char, const char*, const char* ) const ;
+template NPFold* NPFold::subfold_summary( char, const char*, const char*, const char* ) const ;
 
 
 
