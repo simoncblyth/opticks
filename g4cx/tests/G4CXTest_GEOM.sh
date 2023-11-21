@@ -20,10 +20,10 @@ EOU
 }
 
 cd $(dirname $BASH_SOURCE)
-DIR=$(pwd)
+SDIR=$(pwd)
 
 bin=G4CXTest
-script=G4CXTest_GEOM.py 
+script=$SDIR/G4CXTest_GEOM.py 
 
 source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for finding geometry
 
@@ -66,17 +66,19 @@ export OPTICKS_INTEGRATION_MODE=$oim
 mode=StandardFullDebug
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 
-tmpbase=${TMP:-/tmp/$USER/opticks} 
-evtfold=$tmpbase/GEOM/$GEOM
+TMP=${TMP:-/tmp/$USER/opticks}
+export BASE=$TMP/GEOM/$GEOM/$bin
+export VERSION=0                       # used in the SEvt output directory 
+export AFOLD=$BASE/ALL$VERSION/p001 
+export BFOLD=$BASE/ALL$VERSION/n001 
 
-export VERSION=0  # used in the SEvt output directory 
-export AFOLD=$evtfold/$bin/ALL$VERSION/p001 
-export BFOLD=$evtfold/$bin/ALL$VERSION/n001 
+
+LOGFILE=$name.log
 
 logging()
 {
    export SSim=INFO
-   export SEvt=INFO
+   #export SEvt=INFO
    #export U4Recorder=INFO
    #export U4StepPoint=INFO
    #export U4Physics=INFO
@@ -89,25 +91,33 @@ defarg="info_run_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP AFOLD BFOLD evtfold CVD CUDA_VISIBLE_DEVICES" 
+vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
+
+
+mkdir -p $BASE
+cd $BASE
+
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%50s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then
+    rm $LOGFILE
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
+    mkdir -p $BASE
+    cd $BASE
     ## gdb -ex r --args $bin
     dbg__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $DIR/../../bin/rsync.sh $evtfold
+    source $SDIR/../../bin/rsync.sh $BASE
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
 fi
 

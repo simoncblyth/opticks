@@ -123,4 +123,3 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $SDIR/cxs_min.py
 fi 
 
-
