@@ -189,7 +189,18 @@ inline std::string storch::desc() const
 storch::generate
 -----------------
 
-For CPU running with mock curand this is invoked by SGenerate::GeneratePhotons
+On GPU this is invoked by::
+
+   CSGOptiX7.cu:simulate 
+   qsim::generate_photon
+
+On CPU this is invoked using MOCK_CURAND with for example::
+
+   G4CXApp::GeneratePrimaries
+   U4VPrimaryGenerator::GeneratePrimaries
+   SGenerate::GeneratePhotons
+   storch::generate    
+
 
 Populate "sphoton& p" as parameterized by "const quad6& gs_" which casts to "const storch& gs",
 the photon_id and genstep_id inputs are informational only. 

@@ -22,6 +22,23 @@ Laptop::
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
 
 
+
+
+
+storch::generate is used for both GPU and CPU 
+--------------------------------------------------
+
+* On GPU the generation is invoked at highest level CSGOptiX7.cu:simulate
+* On CPU for example the stack is below, using MOCK_CURAND::
+
+  G4RunManager::BeamOn 
+  ... 
+  G4RunManager::GenerateEvent 
+  G4CXApp::GeneratePrimaries
+  U4VPrimaryGenerator::GeneratePrimaries
+  SGenerate::GeneratePhotons
+  storch::generate    
+
 EOU
 }
 
@@ -62,9 +79,6 @@ elif [ "$src" == "disc" ]; then
     export storch_FillGenstep_mom=1,0,0
     export storch_FillGenstep_pos=-80,0,0
 fi 
-
-# Q: Is storch.h generating on GPU ? 
-# A: YES, with storch::generate it can generate on both CPU(with MOCK_CURAND) and on GPU with real curand 
 
 
 #oim=2  # CPU only 
