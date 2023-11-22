@@ -1,10 +1,14 @@
 #pragma once
 /**
-U4PMTAccessor.h
-================
+U4PMTAccessor.h  DUMMY PLACEHOLDER
+======================================
 
 This is a mock standin for "jcv PMTAccessor" 
 for usage WITH_CUSTOM4 NOT:WITH_PMTSIM
+
+See SPMTAccessor for a standaline accessor that 
+actually provides almost the same as the PMTAccessor
+from the monolith.
 
 **/
 

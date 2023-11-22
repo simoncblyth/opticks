@@ -10,7 +10,8 @@
 #elif defined(WITH_CUSTOM4) && !defined(WITH_PMTSIM)
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
-#include "U4PMTAccessor.h"
+//#include "U4PMTAccessor.h"
+#include "SPMTAccessor.h"
 #else
 #include "InstrumentedG4OpBoundaryProcess.hh"
 #endif
@@ -311,7 +312,12 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 WITH_PMTSIM " ; 
 
 #elif defined(WITH_CUSTOM4)
-    const U4PMTAccessor* pmt = new U4PMTAccessor ;
+    //const U4PMTAccessor* pmt = new U4PMTAccessor ; // DUMMY PLACEHOLDER
+    const char* jpmt = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ; 
+    const SPMTAccessor* pmt = SPMTAccessor::Load(jpmt) ; 
+    LOG_IF(fatal, pmt == nullptr ) << " FAILED TO SPMTAccessor::Load from [" << jpmt << "]" ; 
+    assert(pmt); 
+
     const C4IPMTAccessor* ipmt = pmt ;  
     proc = new C4OpBoundaryProcess(ipmt);
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 NOT:WITH_PMTSIM " ; 

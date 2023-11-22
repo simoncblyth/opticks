@@ -1,3 +1,4 @@
+#pragma once
 /**
 SPMT.h : summarize PMTSimParamData NPFold into the few arrays needed on GPU
 ============================================================================
@@ -57,18 +58,18 @@ Related developments
 
 * Simulation/SimSvc/PMTSimParamSvc/PMTSimParamSvc/tests/PMTSimParamData_test.sh 
 
-  * _PMTSimParamData::Load from "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt/PMTSimParamData"
+  * _PMTSimParamData::Load from "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt/PMTSimParamData"
   * test a few simple queries against the loaded PMTSimParamData 
   * does _PMTSimParamData::Scan_pmtid_qe 
 
 * Simulation/SimSvc/PMTSimParamSvc/PMTSimParamSvc/tests/PMTAccessor_test.sh
 
-  * PMTAccessor::Load from "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt" 
+  * PMTAccessor::Load from "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" 
   * standalone CPU use of PMTAccessor to do the stack calc  
 
 * qudarap/tests/QPMTTest.sh 
 
-  * formerl used JPMT NP_PROP_BASE loading rindex and thickness, not qeshape and lcqs
+  * formerly used JPMT NP_PROP_BASE loading rindex and thickness, not qeshape and lcqs
   * DONE: add in SPMT.h rather than JPMT and extend to include qeshape and lcqs
   * DONE: on GPU interpolation check using QPMT
 
@@ -153,6 +154,7 @@ struct SPMT
     void init_lcqs(); 
     static int TranslateCat(int lpmtcat); 
 
+    std::string descDetail() const ; 
     std::string desc() const ; 
 
     bool is_complete() const ; 
@@ -160,6 +162,14 @@ struct SPMT
     NPFold* serialize_() const ; 
 
     float get_frac(int i, int ni) const ; 
+
+    template<typename T>
+    static T GetFrac(int i, int ni ); 
+
+    template<typename T>
+    static T GetValueInRange(int j, int nj, T X0, T X1 ); 
+
+
     float get_energy(int j, int nj) const ; 
     float get_wavelength(int j, int nj) const ; 
 
@@ -233,6 +243,7 @@ struct SPMT
     NPFold* make_testfold() const ; 
 
 
+
     const char* ExecutableName ;  
 
     const NPFold* jpmt ; 
@@ -256,7 +267,7 @@ struct SPMT
 
 
 const int SPMT::N_LPMT = ssys::getenvint("N_LPMT", 1 ); // 10 LPMT default for fast scanning  
-const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  1 );  // "AOI" (actually mct) scan points from -1. to 1. 
+const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  180 );  // "AOI" (actually mct) scan points from -1. to 1. 
 const int SPMT::N_SPOL = ssys::getenvint("N_SPOL", 1 ); // polarization scan points from S-pol to P-pol 
 
 
@@ -427,7 +438,7 @@ inline void SPMT::init_qeshape()
 
         v_qeshape.push_back(vn) ;
     }
-    qeshape = NP::Combine(v_qeshape); 
+    qeshape = NP::Combine(v_qeshape);
     qeshape->set_names(names); 
 }
 
@@ -435,7 +446,7 @@ inline void SPMT::init_qeshape()
 SPMT::init_lcqs
 -----------------
 
-1. get lpmtCat, qeScale arrays from PMTSimParamData
+1. get lpmtCat, qeScale arrays from PMTSimParamData NPFold
 2. check appropriate sizes with info for all NUM_LPMT 17612 
 3. populate v_lcqs vector of LCQS struct holding int:lc 
    "local 0/1/2 pmtcat" and float:qeScale
@@ -515,29 +526,31 @@ inline int SPMT::TranslateCat(int lpmtcat) // static
 }
 
 
+
+inline std::string SPMT::descDetail() const
+{
+    std::stringstream ss ; 
+    ss << "SPMT::descDetail" << std::endl ; 
+    ss << ( jpmt ? jpmt->desc() : "NO_JPMT" ) << std::endl ; 
+    ss << "PMT_RINDEX.desc " << std::endl ; 
+    ss << ( PMT_RINDEX ? PMT_RINDEX->desc() : "NO_PMT_RINDEX" ) << std::endl ; 
+    ss << "PMTSimParamData.desc " << std::endl ; 
+    ss << ( PMTSimParamData ? PMTSimParamData->desc() : "NO_PMTSimParamData" ) << std::endl ; 
+    ss << "jpmt/PMTSimParamData/MPT " << std::endl << std::endl ; 
+    ss << ( MPT ? MPT->desc() : "NO_MPT" ) << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 inline std::string SPMT::desc() const
 {
     std::stringstream ss ; 
     ss << "SPMT::desc" << std::endl ; 
     ss << "jpmt.loaddir " << ( jpmt && jpmt->loaddir ? jpmt->loaddir : "NO_LOAD" ) << std::endl ; 
-
-    /*
-    ss << "jpmt.desc " << std::endl ; 
-    ss << ( jpmt ? jpmt->desc() : "NO_JPMT" ) << std::endl ; 
-
-    ss << "PMT_RINDEX.desc " << std::endl ; 
-    ss << ( PMT_RINDEX ? PMT_RINDEX->desc() : "NO_PMT_RINDEX" ) << std::endl ; 
-    //ss << "PMTSimParamData.desc " << std::endl ; 
-    //ss << ( PMTSimParamData ? PMTSimParamData->desc() : "NO_PMTSimParamData" ) << std::endl ; 
-    ss << "jpmt/PMTSimParamData/MPT " << std::endl << std::endl ; 
-    ss << ( MPT ? MPT->desc() : "NO_MPT" ) << std::endl ; 
-    */
- 
     ss << "rindex " << ( rindex ? rindex->sstr() : "-" ) << std::endl ; 
     ss << "thickness " << ( thickness ? thickness->sstr() : "-" ) << std::endl ; 
     ss << "qeshape " << ( qeshape ? qeshape->sstr() : "-" ) << std::endl ; 
     ss << "lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl ; 
-
 
     std::string str = ss.str(); 
     return str ; 
@@ -561,6 +574,9 @@ inline NPFold* SPMT::serialize() const   // formerly get_fold
 inline NPFold* SPMT::serialize_() const   // formerly get_fold 
 {
     NPFold* fold = new NPFold ; 
+
+    if(jpmt) fold->add_subfold("jpmt", const_cast<NPFold*>(jpmt) ) ; 
+
     if(rindex) fold->add("rindex", rindex) ; 
     if(thickness) fold->add("thickness", thickness) ;
     if(qeshape) fold->add("qeshape", qeshape) ;
@@ -569,31 +585,35 @@ inline NPFold* SPMT::serialize_() const   // formerly get_fold
 }
 
 
-inline float SPMT::get_frac(int i, int ni) const
+template<typename T>
+inline T SPMT::GetFrac(int i, int ni )  // static
 {
-   return ni == 1 ? 0.f : float(i)/float(ni-1) ; 
+   return ni == 1 ? 0.f : T(i)/T(ni-1) ; 
 }
 
-inline float SPMT::get_energy(int j, int nj) const
+template<typename T>
+inline T SPMT::GetValueInRange(int j, int nj, T X0, T X1 )  // static
 {
-    assert( j < nj ); 
-    float fr = get_frac(j, nj); 
-    float en = EN0*(1.f-fr) + EN1*fr ; 
-    return en ; 
+    assert( j < nj );
+    T one(1.); 
+    T fr = GetFrac<T>(j, nj); 
+    T x = X0*(one-fr) + X1*fr ; 
+    return x ; 
 }
 
+inline float SPMT::get_energy(int j, int nj) const 
+{
+    return GetValueInRange<float>(j, nj, EN0, EN1) ; 
+}
 inline float SPMT::get_wavelength(int j, int nj) const
 {
-    assert( j < nj ); 
-    float fr = get_frac(j, nj); 
-    float wl = WL0*(1.f-fr) + WL1*fr ; 
-    return wl ; 
+    return GetValueInRange<float>(j, nj, WL0, WL1) ; 
 }
 
 inline float SPMT::get_minus_cos_theta_linear_angle(int k, int nk) const 
 {
     assert( k < nk ); 
-    float theta_frac = get_frac(k, nk); 
+    float theta_frac = GetFrac<float>(k, nk); 
     float max_theta_pi = 1.f ; 
     float theta = theta_frac*max_theta_pi*M_PI ; 
     float mct = -cos(theta) ;  
@@ -603,7 +623,7 @@ inline float SPMT::get_minus_cos_theta_linear_angle(int k, int nk) const
 inline float SPMT::get_minus_cos_theta_linear_cosine(int k, int nk) const 
 {
     assert( k < nk ); 
-    float fr = get_frac(k, nk); 
+    float fr = GetFrac<float>(k, nk); 
     float MCT0 = -1.f ; 
     float MCT1 =  1.f ; 
     float mct = MCT0*(1.f-fr) + MCT1*fr ; 
@@ -937,6 +957,7 @@ only one value when not scanned over.
 
 inline NPFold* SPMT::make_sscan() const 
 {
+    std::cout << "[SPMT::make_sscan " << std::endl; 
     NPFold* fold = new NPFold ; 
 
     const NP* lpmtid_domain = Make_LPMTID_LIST() ; 
@@ -960,7 +981,6 @@ inline NPFold* SPMT::make_sscan() const
     int nl = N_SPOL ; 
 
 
-    std::cout << "[ SPMT::make_sscan "  << std::endl ; 
 
     NP* args  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
     NP* ARTE  = NP::Make<float>(ni, nj, nk, nl, 4 ); 
@@ -1081,7 +1101,7 @@ inline NPFold* SPMT::make_sscan() const
            }
         }
     }
-    std::cout << "] SPMT::get_ARTE " << std::endl ; 
+    std::cout << "]SPMT::make_sscan " << std::endl; 
     return fold ; 
 }
 #endif
@@ -1192,6 +1212,27 @@ inline NP* SPMT::get_qescale() const
     return a ; 
 }
 
+/**
+SPMT::get_lcqs
+----------------
+
+Accesses the lcqs array returning:
+
+* lc(int): local (0,1,2) lpmt category 
+* qs(float):qescale 
+
+::
+
+    In [5]: np.c_[np.unique( s.lcqs[:,0], return_counts=True )]
+    Out[5]: 
+    array([[   0, 2720],
+           [   1, 4997],
+           [   2, 9895]])
+
+
+
+
+**/
 inline void SPMT::get_lcqs(int& lc, float& qs, int lpmtid) const 
 {
     assert( lpmtid >= 0 && lpmtid < NUM_LPMT );  
@@ -1200,6 +1241,9 @@ inline void SPMT::get_lcqs(int& lc, float& qs, int lpmtid) const
     lc = lcqs_i[lpmtid*2+0] ; 
     qs = lcqs_f[lpmtid*2+1] ; 
 }
+/**
+HUH: doesnt this just duplicate lcqs ? 
+**/
 inline NP* SPMT::get_lcqs() const 
 {
     std::cout << "SPMT::get_lcqs " << std::endl ; 

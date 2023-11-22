@@ -1,49 +1,26 @@
 #!/bin/bash -l 
-usage(){ cat << EOU
-SPMT_test.sh
-===============
 
-::
-
-    ~/opticks/sysrap/tests/SPMT_test.sh 
-
-
-For AOI scanning use::
-
-    ./SPMT_scan.sh 
-
-That does something like::
-
-    N_MCT=900 N_SPOL=1  ./SPMT_test.sh  
-
-Note dependency on GEOM envvar, which is used 
-to SPMT::Load the PMT info NPFold from::
-
-    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extras/jpmt
-
-EOU
-}
-
+name=SPMTAccessor_test
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-name=SPMT_test
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
 TMP=${TMP:-/tmp/$USER/opticks}
 
-export SFOLD=$TMP/$name
-export JFOLD=$TMP/JPMTTest
+export FOLD=$TMP/$name
+mkdir -p $FOLD
+mkdir -p ${FOLD}.build
 
-mkdir -p $SFOLD
-bin=$SFOLD/$name
+bin=${FOLD}.build/$name
+
 
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
-vars="arg name REALDIR GEOM TMP FOLD SFOLD JFOLD CUDA_PREFIX"
+vars="arg name SDIR GEOM TMP FOLD CUDA_PREFIX bin"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
@@ -77,5 +54,4 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi 
 
 exit 0 
-
 

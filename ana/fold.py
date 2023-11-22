@@ -431,6 +431,7 @@ class Fold(object):
         l.append("")
         stamps = []
 
+        # stems include both files and subfold
         for i in range(len(self.stems)):
             stem = self.stems[i] 
             path = self.paths[i] if i < len(self.paths) else None
@@ -439,28 +440,34 @@ class Fold(object):
             aname = "%s.%s" % (self.symbol,stem)
             line = "%1s : %-50s :" % ( abbrev_, aname )
 
-            a = getattr(self, stem)
+            is_subfold = os.path.isdir(path)
 
-            if a is None:
-                line += " NO ATTR "
+            if is_subfold:
+                line += " SUBFOLD " 
             else:
-                kls = a.__class__.__name__
-                ext = ".txt" if kls == 'NPMeta' else ".npy"
-                name = "%s%s" % (stem,ext)
+                a = getattr(self, stem)
 
-                sh = str(len(a)) if ext == ".txt" else str(a.shape)
-                line += " %20s :" % ( sh )
-            pass
+                if a is None:
+                    line += " NO ATTR "
+                else:
+                    kls = a.__class__.__name__
+                    ext = ".txt" if kls == 'NPMeta' else ".npy"
+                    name = "%s%s" % (stem,ext)
+
+                    sh = str(len(a)) if ext == ".txt" else str(a.shape)
+                    line += " %20s :" % ( sh )
+                pass
 
 
-            if not path is None and os.path.exists(path):
-                st = os.stat(path)
-                stamp = datetime.datetime.fromtimestamp(st.st_ctime)
-                age_stamp = now_stamp - stamp
-                stamps.append(stamp)
-                line += " %s " % age_stamp
-            else:
-                line += " NO path " 
+                if not path is None and os.path.exists(path):
+                    st = os.stat(path)
+                    stamp = datetime.datetime.fromtimestamp(st.st_ctime)
+                    age_stamp = now_stamp - stamp
+                    stamps.append(stamp)
+                    line += " %s " % age_stamp
+                else:
+                    line += " NO path " 
+                pass
             pass
             l.append(line)
         pass

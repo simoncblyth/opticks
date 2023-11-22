@@ -98,8 +98,8 @@ if __name__ == '__main__':
 
     num_lpmtid = len(f.lpmtid_domain)
     num_mct = len(f.mct_domain) 
-    art_shape = (num_lpmtid, num_mct, 4, 4)
-    assert art.shape == art_shape, art.shape
+    art_shape = (num_lpmtid, num_mct, 4, 4) if num_mct > 1 else (num_lpmtid, 4, 4)
+    assert art.shape == art_shape, (art_shape, art.shape)
 
     PMTIDX = np.fromstring(os.environ.get("PMTIDX","0"),dtype=np.int64, sep=",") 
     lpmtid = f.lpmtid_domain[PMTIDX]
