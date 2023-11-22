@@ -1,4 +1,5 @@
-// name=sseq_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
+// ~/opticks/sysrap/tests/sseq_test.sh 
+
 
 #include <iostream>
 #include <iomanip>
@@ -7,7 +8,9 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sseq.h"
+#include "spath.h"
 
+#include "NPX.h"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 
@@ -333,6 +336,23 @@ void test_shiftwrap()
     }
 }
 
+void test_load_seq()
+{
+    const char* path = spath::Resolve("$TMP/GEOM/$GEOM/G4CXTest/ALL0/p001/seq.npy") ; 
+    NP* a = NP::Load(path); 
+    std::cout << " path " << path << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
+
+    std::vector<sseq> qq ; 
+    NPX::VecFromArray<sseq>(qq, a ); 
+
+    for(int i=0 ; i < std::min(int(qq.size()), 10) ; i++)
+    {
+        const sseq& q = qq[i] ; 
+        std::cout << q.desc_seqhis() << std::endl ;  
+    }
+}
+
+
 
 int main()
 {
@@ -350,7 +370,8 @@ int main()
     test_shiftwrap();    
     */
 
-    test_desc_seqhis_1();    
+    test_load_seq(); 
+
 
     return 0 ; 
 }

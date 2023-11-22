@@ -1,13 +1,22 @@
 #!/bin/bash -l 
 
-msg="=== $BASH_SOURCE :"
+cd $(dirname $BASH_SOURCE)
+
+source $HOME/.opticks/GEOM/GEOM.sh 
+
 name=OpticksPhotonSTANDALONETest 
 
-gcc $name.cc -I.. -std=c++11 -lstdc++ -o /tmp/$name 
-[ $? -ne 0 ] && echo $msg compile error && exit 1 
+TMP=${TMP:-/tmp/$USER/opticks}
+export FOLD=$TMP/$name
+mkdir -p $FOLD
+bin=$FOLD/$name
 
-/tmp/$name
-[ $? -ne 0 ] && echo $msg run error && exit 2
+
+gcc $name.cc -I.. -std=c++11 -lstdc++ -o $bin
+[ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
+
+$bin
+[ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 
 exit 0 
 

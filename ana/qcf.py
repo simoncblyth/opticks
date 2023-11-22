@@ -16,7 +16,7 @@ class QU(object):
 
         u : unique values within q
         x : first index within q of the unique value
-        n : count of unique values of q 
+        n : count of occurrence of the unique values in q 
         """
 
         expr = "np.c_[n,x,u][o][lim]"
@@ -24,6 +24,7 @@ class QU(object):
 
         u, x, n = np.unique(q, return_index=True, return_counts=True)
         o = np.argsort(n)[::-1]  
+        # HMM:notice that the ordering is not applied here 
 
         self.symbol = symbol
         self.expr = expr 
@@ -54,8 +55,13 @@ class QU(object):
 
 class QCF(object):
     """
+    Used for example from sevt.py:SAB
     """
     def __init__(self, _aq, _bq, symbol="qcf"):
+        """
+        :param _aq: photon history strings for event A
+        :param _bq: ditto for B 
+        """
         _same_shape = _aq.shape == _bq.shape
         if not _same_shape:
             mn = min(_aq.shape[0], _bq.shape[0])
@@ -70,12 +76,18 @@ class QCF(object):
         same_shape = aq.shape == bq.shape
         assert same_shape
 
-        aqu = QU(aq, symbol="%s.aqu" % symbol )
-        bqu = QU(bq, symbol="%s.bqu" % symbol ) 
+        asym = "%s.aqu" % symbol
+
+        log.info("QCF.__init__ %s " % asym)  
+        aqu = QU(aq, symbol=asym )
+        bsym = "%s.bqu" % symbol
+        log.info("QCF.__init__ %s " % bsym)  
+        bqu = QU(bq, symbol=bsym ) 
 
         qu = np.unique(np.concatenate([aqu.u,bqu.u]))       ## unique histories of both A and B in uncontrolled order
         ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
 
+        log.info("QCF.__init__ [ qu loop")
         for i, q in enumerate(qu):
             ai_ = np.where(aqu.u == q )[0]           # find indices in the a and b unique lists 
             bi_ = np.where(bqu.u == q )[0]
@@ -85,15 +97,22 @@ class QCF(object):
             # NB the ai and bi are internal indices into the separate A and B lists
             # so they are necessary but not ordinarily surfaced 
             # as not very human digestible 
+            #
+            # effectively ai and bi are pointers into the two unique lists
+           
+            if i % 1000 == 0:
+                log.info("QCF.__init__ . qu loop %d " % i )
+            pass
 
             ab[i,0,0] = ai
-            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1
-            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0
+            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1  ## index of first occurrence
+            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0   ## count in each 
 
             ab[i,0,1] = bi
             ab[i,1,1] = bqu.x[bi] if bi > -1 else -1
             ab[i,2,1] = bqu.n[bi] if bi > -1 else 0
         pass
+        log.info("QCF.__init__ ] qu loop")
 
         abx = np.max(ab[:,2,:], axis=1 )   # max of aqn, bqn counts 
         abxo = np.argsort(abx)[::-1]       # descending count order indices

@@ -724,7 +724,7 @@ class SAB(object):
     def __init__(self, a, b): 
 
         self.sli = slice(None)
-
+        log.info("[")
         if a.q is None or b.q is None: 
             qcf = None
             qcf0 = None
@@ -743,6 +743,7 @@ class SAB(object):
         self.qcf = qcf
         self.qcf0 = qcf0
         self.meta = meta
+        log.info("]")
 
     def q_startswith(self, prefix="TO BT BT SA"):
         """

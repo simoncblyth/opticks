@@ -196,7 +196,7 @@ SSEQ_METHOD std::string sseq::desc() const
 
 SSEQ_METHOD std::string sseq::desc_seqhis() const 
 {
-    std::string fseq = OpticksPhoton::FlagSequence(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
+    std::string fseq = OpticksPhoton::FlagSequence_(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < NSEQ ; i++) ss << " " << std::setw(16) << std::hex << seqhis[NSEQ-1-i] << std::dec  ; 
@@ -208,7 +208,7 @@ SSEQ_METHOD std::string sseq::desc_seqhis() const
 }
 SSEQ_METHOD std::string sseq::brief() const
 {
-    std::string fseq = OpticksPhoton::FlagSequence(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
+    std::string fseq = OpticksPhoton::FlagSequence_(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
     return sstr::TrimTrailing(fseq.c_str()) ; 
 } 
 
