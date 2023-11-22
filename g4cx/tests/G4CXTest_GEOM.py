@@ -53,12 +53,12 @@ if __name__ == '__main__':
     print("]----- repr(ab) ")
 
 
-    EXPR_ = r"""
-    np.c_[np.unique(a.q, return_counts=True)] 
-    np.c_[np.unique(b.q, return_counts=True)] 
-    """
-    EXPR = list(filter(None,textwrap.dedent(EXPR_).split("\n")))
-    for expr in EXPR:eprint(expr, locals(), globals() )
+    # EXPR_ = r"""
+    # np.c_[np.unique(a.q, return_counts=True)] 
+    # np.c_[np.unique(b.q, return_counts=True)] 
+    # """
+    # EXPR = list(filter(None,textwrap.dedent(EXPR_).split("\n")))
+    # for expr in EXPR:eprint(expr, locals(), globals() )
 
     context = "PICK=%s MODE=%d  ~/opticks/g4cx/tests/G4CXTest_GEOM.sh " % (PICK, MODE )
     print(context)

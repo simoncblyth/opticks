@@ -11,13 +11,15 @@ For the configuratuin of the raindrop see U4VolumeMaker::RaindropRockAirWater_Co
 Currently this uses the default torch genstep for the initial photons, 
 see storch::FillGenstep for how to customize that. 
 
-::
+Workstation::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
-    EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
-
     LOG=1 BP=C4CustomART::doIt ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg  
 
+Laptop::
+
+    ~/opticks/g4cx/tests/G4CXTest_GEOM.sh grab 
+    EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
 
 
 EOU
@@ -36,11 +38,12 @@ if [ -n "$CVD" ]; then
 fi
 
 
-num=1000
+#num=1000
 #num=5000
-#num=1000000
+num=1000000
 NUM=${NUM:-$num}
 
+export OPTICKS_MAX_PHOTON=1000000  
 export SEvent_MakeGensteps_num_ph=$NUM
 
 #src="rectangle"
@@ -60,6 +63,9 @@ elif [ "$src" == "disc" ]; then
     export storch_FillGenstep_pos=-80,0,0
 fi 
 
+# Q: Is storch.h generating on GPU ? 
+# A: YES, with storch::generate it can generate on both CPU(with MOCK_CURAND) and on GPU with real curand 
+
 
 #oim=2  # CPU only 
 oim=3  # GPU and CPU optical simulation
@@ -69,6 +75,8 @@ export OPTICKS_INTEGRATION_MODE=$oim
 #mode=HitOnly
 mode=StandardFullDebug
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
+export OPTICKS_MAX_BOUNCE=31
+
 
 TMP=${TMP:-/tmp/$USER/opticks}
 export BASE=$TMP/GEOM/$GEOM
