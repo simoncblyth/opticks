@@ -35,6 +35,7 @@ inline void Traverse::visit( const G4VPhysicalVolume* const pv, int depth  )
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     G4Material* mt = lv->GetMaterial() ; 
     if( count % 10000 == 0 ) std::cout
+        << "Traverse::visit"
         << " count " << count  
         << " depth " << depth 
         << " mt " << mt->GetName() 
@@ -56,6 +57,7 @@ int main(int argc, char** argv)
         << " path " 
         << path ; 
 
+    new U4SensitiveDetector("PMTSDMgr") ; 
 
     const G4VPhysicalVolume* world = U4GDML::Read(path) ;  
 

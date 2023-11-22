@@ -1,11 +1,14 @@
 #pragma once
 
+#include <cstdlib>
 #include "plog/Severity.h"
 class G4VPhysicalVolume ; 
 class G4GDMLParser ; 
 
 struct U4GDML
 {
+    static const bool VERBOSE ; 
+    static constexpr const char* SensDet = "SensDet" ; // string used by G4GDMLParse SD aux 
     static constexpr const plog::Severity LEVEL = info ; 
     static constexpr const char* DefaultGDMLPath = "$UserGEOMDir/origin.gdml" ;  
 
@@ -27,7 +30,10 @@ struct U4GDML
 
     void read( const char* base, const char* name);
     void read( const char* path);
-    void readAux(); 
+private:
+    void read_( const char* path);
+    void connectAuxSensDet(); 
+public:
 
     void write(const char* base, const char* name);
     void write(const char* path);
@@ -35,7 +41,7 @@ struct U4GDML
 };
 
 
-
+const bool U4GDML::VERBOSE = getenv("U4GDML__VERBOSE") != nullptr ; 
 
 
 #include "sdirect.h"
@@ -46,6 +52,7 @@ struct U4GDML
 
 #include "G4GDMLParser.hh"
 #include "GDXML.hh"
+#include "U4SensitiveDetector.hh"
 
 
 /**
@@ -132,6 +139,12 @@ not working, something funny about G4cout ?::
 
 inline void U4GDML::read(const char* path_)
 {
+    read_(path_); 
+    connectAuxSensDet(); 
+}
+
+inline void U4GDML::read_(const char* path_)
+{
     const char* path = spath::Resolve(path_); 
 
     parser->SetStripFlag(read_trim); 
@@ -147,23 +160,35 @@ inline void U4GDML::read(const char* path_)
     }
     std::string out = coutbuf.str();
     std::string err = cerrbuf.str();
-    bool verbose = getenv("VERBOSE") != nullptr ;  
-    std::cout << sdirect::OutputMessage("U4GDML::read", out, err, verbose );
+    std::cout << sdirect::OutputMessage("U4GDML::read", out, err, VERBOSE );
 
     const G4String setupName = "Default" ;
     world = parser->GetWorldVolume(setupName) ; 
-
-    readAux(); 
 }
 
-inline void U4GDML::readAux()
+/**
+U4GDML::connectAuxSensDet
+---------------------------
+
+Must create U4SensitiveDetector of the same names
+as in the GDML for the connection to work, eg::
+
+    <auxiliary auxtype="SensDet" auxvalue="PMTSDMgr"/>
+
+**/
+
+inline void U4GDML::connectAuxSensDet()
 {
     const G4GDMLAuxMapType* auxmap = parser->GetAuxMap();
-    std::cout << "[U4GDML::readAux"
-              << " auxmap.size " << auxmap->size()
-              << " (volumes with aux info) " 
-              << std::endl  
-              ;
+
+    if(VERBOSE) std::cout 
+        << "[U4GDML::connectAuxSensDet"
+        << " auxmap.size " << auxmap->size()
+        << " (volumes with aux info) " 
+        << std::endl  
+        << U4SensitiveDetector::Desc()
+        ;
+
 
     typedef G4GDMLAuxMapType::const_iterator MIT ;  
     typedef G4GDMLAuxListType::const_iterator VIT ; 
@@ -172,9 +197,10 @@ inline void U4GDML::readAux()
     {
         G4LogicalVolume* lv = mit->first ; 
         G4GDMLAuxListType ls = mit->second ;      
+        const char* lvn = lv->GetName().c_str();  
           
-        std::cout 
-             << "LV " << lv->GetName()
+        if(VERBOSE) std::cout 
+             << "lvn " << lvn
              << " has the following list of auxiliary information: "
              << std::endl 
              ;
@@ -182,17 +208,42 @@ inline void U4GDML::readAux()
         for (VIT vit = ls.begin(); vit != ls.end(); vit++) 
         {
             const G4GDMLAuxStructType& aux = *vit ;  
-            std::cout 
-                   << " aux.type [" << aux.type << "]"
-                   << " aux.value ["   << aux.value << "]"
-                   << " aux.unit [" << aux.unit << "]"
+            const G4String& type = aux.type ;
+            const G4String& value = aux.value ;
+            const G4String& unit = aux.unit ;
+            bool is_SensDet = strcmp(type.c_str(), SensDet) == 0 ; 
+            const char* sdn = is_SensDet ? value.c_str() : nullptr ; 
+            U4SensitiveDetector* sd = sdn ? U4SensitiveDetector::Get(sdn) : nullptr ; 
+
+            if(VERBOSE) std::cout 
+                   << " aux.type [" << type << "]"
+                   << " aux.value ["   << value << "]"
+                   << " aux.unit [" << unit << "]"
+                   << " is_SensDet " << ( is_SensDet ? "YES" : "NO " ) 
+                   << " sdn " << ( sdn ? sdn : "-" )
+                   << " sd " << ( sd ? "YES" : "NO " )
                    << std::endl 
                    ;
+
+            if(sd) 
+            {
+                //if(VERBOSE)
+                std::cout 
+                    << "U4GDML::connectAuxSensDet"
+                    << " sdn " << ( sdn ? sdn : "-" )
+                    << " lvn " << ( lvn ? lvn : "-" )
+                    << std::endl 
+                    ;
+
+                lv->SetSensitiveDetector(sd); 
+            }
+
         }   
     } 
-    std::cout << "]U4GDML::readAux"
-              << std::endl  
-              ;
+    if(VERBOSE) std::cout 
+        << "]U4GDML::connectAuxSensDet"
+        << std::endl  
+        ;
 
 }
 

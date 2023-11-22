@@ -1,4 +1,17 @@
 #!/bin/bash -l
+usage(){ cat << EOU
+U4GDMLReadTest.sh
+===================
+
+::
+
+   ~/opticks/u4/tests/U4GDMLReadTest.sh
+
+
+EOU
+}
+
+cd $(dirname $BASH_SOURCE)
 
 source $HOME/.opticks/GEOM/GEOM.sh  
 

@@ -77,7 +77,8 @@ export VERSION=0                       # used in the SEvt output directory
 export AFOLD=$EVTBASE/ALL$VERSION/p001 
 export BFOLD=$EVTBASE/ALL$VERSION/n001 
 export G4CXOpticks__SaveGeometry_DIR=$BASE  # save geom into BASE for debug 
-
+export G4CXApp__SensDet=PMTSDMgr 
+export U4GDML__VERBOSE=1 
 
 logging()
 {

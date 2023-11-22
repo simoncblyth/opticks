@@ -40,6 +40,7 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 #include "U4Recorder.hh"
 #include "U4Random.hh"
 #include "U4Physics.hh"
+#include "U4SensitiveDetector.hh"
 #include "U4VPrimaryGenerator.h"
 
 #include "G4CXOpticks.hh"
@@ -58,13 +59,16 @@ struct G4CXApp
     static std::string Desc(); 
     static char PrimaryMode(); 
     static G4ParticleGun* InitGun(); 
+    static U4SensitiveDetector* InitSensDet(); 
 
     G4RunManager*         fRunMgr ;  
     char                  fPrimaryMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
+    U4SensitiveDetector*  fSensDet ; 
     G4VPhysicalVolume*    fPV ; 
     int                   fIntegrationMode ; 
+    
 
     G4VPhysicalVolume* Construct(); 
 
@@ -129,12 +133,30 @@ G4ParticleGun* G4CXApp::InitGun() // static
     return gun ; 
 }
 
+U4SensitiveDetector* G4CXApp::InitSensDet() // static
+{
+    const char* sdn = ssys::getenvvar("G4CXApp__SensDet") ; 
+    U4SensitiveDetector* sd = sdn ? new U4SensitiveDetector(sdn) : nullptr ; 
+    std::cout 
+        << "G4CXApp::InitSensDet" 
+        << " sdn " << ( sdn ? sdn : "-" )
+        << " sd " << ( sd ? "YES" : "NO " )
+        << std::endl
+        << U4SensitiveDetector::Desc()
+        << std::endl
+        ; 
+   
+
+    return sd ; 
+}
+
 G4CXApp::G4CXApp(G4RunManager* runMgr)
     :
     fRunMgr(runMgr),
     fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
     fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
+    fSensDet(InitSensDet()),
     fPV(nullptr),
     fIntegrationMode(SEventConfig::IntegrationMode())
 {

@@ -1064,15 +1064,28 @@ inline void stree::postcreate() const
 
 inline std::string stree::desc_sensor() const 
 {
+    int num_sensor = sensor_name.size() ;      
     std::stringstream ss ; 
     ss << "stree::desc_sensor" << std::endl 
        << " sensor_id.size " << sensor_id.size() << std::endl 
        << " sensor_count " << sensor_count << std::endl 
-       << " sensor_name.size " << sensor_name.size() << std::endl 
+       << " sensor_name.size " << num_sensor << std::endl 
        ; 
-     
+ 
+    int edgeitems = 20 ; 
+
     ss << "sensor_name[" << std::endl  ; 
-    for(int i=0; i < int(sensor_name.size()) ; i++) ss << sensor_name[i].c_str() << std::endl ; 
+    for(int i=0; i < num_sensor ; i++) 
+    {
+        if( i < edgeitems || i > num_sensor - edgeitems ) 
+        {
+            ss << sensor_name[i].c_str() << std::endl ; 
+        }
+        else if( i == edgeitems )
+        {
+            ss << "..." << std::endl ; 
+        }
+    }
     ss << "]" << std::endl  ; 
     std::string str = ss.str(); 
     return str ;  

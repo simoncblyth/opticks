@@ -59,6 +59,7 @@ set(SOURCES
     U4Recorder.cc
     U4StepPoint.cc
     U4Random.cc
+    U4SensitiveDetector.cc
 
     U4Debug.cc
     U4Scintillation_Debug.cc
@@ -96,6 +97,7 @@ set(HEADERS
 
     U4SensorIdentifier.h
     U4SensorIdentifierDefault.h
+    U4SensitiveDetector.hh
 
     U4SolidMaker.hh
     U4SolidTree.hh
