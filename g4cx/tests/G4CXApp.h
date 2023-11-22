@@ -298,7 +298,10 @@ G4CXApp* G4CXApp::Create()  // static
 
 void G4CXApp::BeamOn()
 {
-    fRunMgr->BeamOn(ssys::getenvint("BeamOn",1)); 
+    int nevt = ssys::getenvint("BeamOn",1) ; 
+    LOG(info) << "[ BeamOn=" << nevt  ; 
+    fRunMgr->BeamOn(nevt) ; 
+    LOG(info) << "]" ; 
 }
 
 void G4CXApp::Main()  // static 

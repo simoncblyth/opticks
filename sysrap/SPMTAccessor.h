@@ -38,9 +38,9 @@ struct SPMTAccessor
 
     //[C4IPMTAccessor protocol methods
     int         get_num_lpmt() const ;
-    double      get_pmtid_qe( int pmtid, double energy ) const ; 
     double      get_qescale( int pmtid ) const ; 
     int         get_pmtcat( int pmtid ) const ; 
+    double      get_pmtid_qe( int pmtid, double energy_MeV ) const ; 
     void        get_stackspec( std::array<double, 16>& ss, int pmtcat, double energy_eV ) const ; 
     const char* get_typename() const ; 
     //]
@@ -70,12 +70,7 @@ inline int SPMTAccessor::get_num_lpmt() const
 {
     return SPMT::NUM_LPMT ; 
 }
-inline double SPMTAccessor::get_pmtid_qe( int pmtid, double energy ) const
-{
-    float energy_eV = energy ; 
-    float qe = pmt->get_pmtid_qe(pmtid, energy_eV) ; 
-    return qe ; 
-}
+
 inline double SPMTAccessor::get_qescale( int pmtid ) const 
 {
     float qs = pmt->get_qescale(pmtid); 
@@ -83,18 +78,65 @@ inline double SPMTAccessor::get_qescale( int pmtid ) const
 }
 inline int SPMTAccessor::get_pmtcat( int pmtid ) const 
 {
-    return pmt->get_lpmtcat(pmtid) ;   // assumes pmtid is for LPMT  
+    int cat = pmt->get_lpmtcat(pmtid) ;   // assumes pmtid is for LPMT  
+
+    if(VERBOSE) std::cout 
+        << "SPMTAccessor::get_pmtcat"
+        << " pmtid " << pmtid
+        << " cat " << cat
+        << std::endl 
+        ;
+
+    return cat ; 
 }
 
-inline void SPMTAccessor::get_stackspec( std::array<double, 16>& spec, int pmtcat, double energy ) const 
+
+
+/**
+SPMTAccessor::get_pmtid_qe
+----------------------------
+
+From C4CustomART::doIt it is apparent that PMTAccessor which
+SPMTAccessor aims to stand in for in standalone running 
+without j/PMTSim is inconsistent in its energy units.
+
++----------------------------+-------------+  
+|  Method                    | energy unit |
++============================+=============+
+| PMTAccessor::get_pmtid_qe  | energy_MeV  |
++----------------------------+-------------+  
+| PMTAccessor::get_stackspec | energy_eV   |
++----------------------------+-------------+  
+
+**/
+
+inline double SPMTAccessor::get_pmtid_qe( int pmtid, double energy_MeV ) const
 {
-    float energy_eV = energy ; 
+    float energy_eV = energy_MeV*1e6 ;  
+    float qe = pmt->get_pmtid_qe(pmtid, energy_eV) ; 
+
+    if(VERBOSE) std::cout 
+        << "SPMTAccessor::get_pmtid_qe"
+        << " pmtid " << pmtid
+        << " energy_MeV " << std::scientific << energy_MeV
+        << " energy_eV " << std::scientific << energy_eV
+        << " qe " << std::scientific << qe
+        << std::endl 
+        ;
+
+    return qe ; 
+}
+
+inline void SPMTAccessor::get_stackspec( std::array<double, 16>& spec, int pmtcat, double energy_eV_ ) const 
+{
+    float energy_eV = energy_eV_ ; 
     quad4 q_spec ; 
     pmt->get_stackspec(q_spec, pmtcat, energy_eV); 
 
     const float* qq = q_spec.cdata(); 
     for(int i=0 ; i < 16 ; i++) spec[i] = double(qq[i]) ; 
 
+#ifdef DEBUG
     if(VERBOSE) std::cout 
         << "SPMTAccessor::get_stackspec" 
         << " pmtcat " << pmtcat
@@ -103,6 +145,7 @@ inline void SPMTAccessor::get_stackspec( std::array<double, 16>& spec, int pmtca
         << Desc(spec)
         << std::endl 
         ; 
+#endif
 
 }
 
