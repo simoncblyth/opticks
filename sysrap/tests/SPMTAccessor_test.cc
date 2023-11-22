@@ -128,12 +128,8 @@ void SPMTAccessor_test::get_stackspec_one() const
     double energy = 4. ; 
     std::array<double, 16> ss ; 
     accessor->get_stackspec( ss, pmtcat, energy ); 
- 
-    for(int i=0 ; i < 16 ; i++) std::cout 
-        << ( i % 4 == 0 ? "\n" : " " ) 
-        << std::setw(10) << std::fixed  << ss[i] << " " 
-        << ( i == 15 ? "\n" : " " ) 
-        ;
+
+    std::cout << SPMTAccessor::Desc(ss) ; 
 }
 
 

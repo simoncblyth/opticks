@@ -17,6 +17,9 @@ mkdir -p ${FOLD}.build
 bin=${FOLD}.build/$name
 
 
+export SPMTAccessor__VERBOSE=1
+
+
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
