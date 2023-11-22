@@ -34,7 +34,7 @@ inline void Traverse::visit( const G4VPhysicalVolume* const pv, int depth  )
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     G4Material* mt = lv->GetMaterial() ; 
-    std::cout
+    if( count % 10000 == 0 ) std::cout
         << " count " << count  
         << " depth " << depth 
         << " mt " << mt->GetName() 

@@ -20,8 +20,7 @@ U4GDMLTest.cc
 
 **/
 
-
-#include "SPath.hh"
+#include "spath.h"
 #include "OPTICKS_LOG.hh"
 #include "U4GDML.h"
 
@@ -30,7 +29,10 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* srcpath = argc > 1 ? argv[1] :  nullptr ; 
-    const char* dstpath = SPath::Resolve("$TMP/U4GDMLTest/out.gdml", FILEPATH) ; 
+    if(srcpath == nullptr) return 0 ; 
+
+    const char* dstpath = spath::Resolve("$TMP/U4GDMLTest/out.gdml") ; 
+    sdirectory::MakeDirsForFile(dstpath); 
 
     const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  
 
@@ -44,5 +46,5 @@ int main(int argc, char** argv)
         ;
 
     return 0 ; 
-
 }
+

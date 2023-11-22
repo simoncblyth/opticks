@@ -16,6 +16,10 @@ see storch::FillGenstep for how to customize that.
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
 
+    LOG=1 BP=C4CustomART::doIt ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg  
+
+
+
 EOU
 }
 
@@ -67,21 +71,23 @@ mode=StandardFullDebug
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 
 TMP=${TMP:-/tmp/$USER/opticks}
-export BASE=$TMP/GEOM/$GEOM/$bin
+export BASE=$TMP/GEOM/$GEOM
+export EVTBASE=$BASE/$bin
 export VERSION=0                       # used in the SEvt output directory 
-export AFOLD=$BASE/ALL$VERSION/p001 
-export BFOLD=$BASE/ALL$VERSION/n001 
+export AFOLD=$EVTBASE/ALL$VERSION/p001 
+export BFOLD=$EVTBASE/ALL$VERSION/n001 
+export G4CXOpticks__SaveGeometry_DIR=$BASE  # save geom into BASE for debug 
 
-
-LOGFILE=$name.log
 
 logging()
 {
    export SSim=INFO
+   export QSim=INFO
+   export QPMT=INFO
    #export SEvt=INFO
    #export U4Recorder=INFO
    #export U4StepPoint=INFO
-   #export U4Physics=INFO
+   export U4Physics=INFO
    #export CSGFoundry=INFO
    #export CSGTarget=INFO
 }
@@ -93,7 +99,6 @@ arg=${1:-$defarg}
 
 vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
 
-
 mkdir -p $BASE
 cd $BASE
 
@@ -103,7 +108,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then
-    rm $LOGFILE
+    rm -f $bin.log
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
@@ -111,13 +116,13 @@ fi
 if [ "${arg/dbg}" != "$arg" ]; then
     mkdir -p $BASE
     cd $BASE
-    ## gdb -ex r --args $bin
-    dbg__ $bin 
+    dbg__ $(which $bin) 
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $SDIR/../../bin/rsync.sh $BASE
+    #source $SDIR/../../bin/rsync.sh $EVTBASE
+    source $SDIR/../../bin/rsync.sh $BASE       ## widen to BASE to include the debug geometry save 
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
 fi
 

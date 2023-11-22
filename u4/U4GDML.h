@@ -27,6 +27,8 @@ struct U4GDML
 
     void read( const char* base, const char* name);
     void read( const char* path);
+    void readAux(); 
+
     void write(const char* base, const char* name);
     void write(const char* path);
     void write_(const char* path);
@@ -108,6 +110,7 @@ inline U4GDML::U4GDML(const G4VPhysicalVolume* world_)
     parser(new G4GDMLParser),
     world(world_)
 {
+    parser->SetSDExport(true); 
 }
 
 inline void U4GDML::read(const char* base, const char* name)
@@ -149,7 +152,50 @@ inline void U4GDML::read(const char* path_)
 
     const G4String setupName = "Default" ;
     world = parser->GetWorldVolume(setupName) ; 
+
+    readAux(); 
 }
+
+inline void U4GDML::readAux()
+{
+    const G4GDMLAuxMapType* auxmap = parser->GetAuxMap();
+    std::cout << "[U4GDML::readAux"
+              << " auxmap.size " << auxmap->size()
+              << " (volumes with aux info) " 
+              << std::endl  
+              ;
+
+    typedef G4GDMLAuxMapType::const_iterator MIT ;  
+    typedef G4GDMLAuxListType::const_iterator VIT ; 
+
+    for (MIT mit = auxmap->begin(); mit != auxmap->end(); mit++) 
+    {
+        G4LogicalVolume* lv = mit->first ; 
+        G4GDMLAuxListType ls = mit->second ;      
+          
+        std::cout 
+             << "LV " << lv->GetName()
+             << " has the following list of auxiliary information: "
+             << std::endl 
+             ;
+
+        for (VIT vit = ls.begin(); vit != ls.end(); vit++) 
+        {
+            const G4GDMLAuxStructType& aux = *vit ;  
+            std::cout 
+                   << " aux.type [" << aux.type << "]"
+                   << " aux.value ["   << aux.value << "]"
+                   << " aux.unit [" << aux.unit << "]"
+                   << std::endl 
+                   ;
+        }   
+    } 
+    std::cout << "]U4GDML::readAux"
+              << std::endl  
+              ;
+
+}
+
 
 inline void U4GDML::write(const char* base, const char* name)
 {

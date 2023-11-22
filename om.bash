@@ -239,6 +239,7 @@ om-prefix-clean(){
 #om-cmake-generator(){ echo $(opticks-cmake-generator) ; }
 om-cmake-generator(){ echo "Unix Makefiles" ; }
 om-bdir(){  
+   : TODO separate bdir depending on Release/Debug so its faster to switch 
    local gen=$(om-cmake-generator)
    case $gen in 
       "Unix Makefiles") echo $(om-prefix)/build/$1 ;;
@@ -814,7 +815,7 @@ om-conf-one()
 
     local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
     local sdir=$(om-sdir $name)
-    local bdir=$(om-bdir $name)
+    local bdir=$(om-bdir $name)   # TODO: different bdir for each build type
 
     if [ "$arg" == "clean" ]; then
          echo $msg removed bdir $bdir as directed by clean argument
@@ -857,6 +858,7 @@ om-cmake-okconf()
        -DOptiX_INSTALL_DIR=$(opticks-optix-prefix) \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
 
+    # TODO: arrange for this and om-cmake to merge
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
 
     rc=$?
