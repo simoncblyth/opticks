@@ -40,6 +40,9 @@
 #include "OpticksPhoton.hh"
 #include "SComp.h"
 
+
+bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
+
 bool SEvt::IsDefined(unsigned val){ return val != UNDEF ; }
 
 stimer* SEvt::TIMER = new stimer ;
@@ -175,6 +178,8 @@ components gatherered from device buffers.
 
 void SEvt::init()
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
+
     LOG(LEVEL) << "[" ; 
     //INSTANCE = this ;    // no-longer automated, rely on static creation methods to set INSTANCES[0] or [1]
 
@@ -552,11 +557,23 @@ For hostside simtrace and input photon running this must be called
 at the start of every event cycle to add the gensteps which trigger 
 the allocations for result vectors.  
 
+
+TODO : FIND WAY TO AVOID THE KLUDGY FEATURES OF THIS
+
+This branches between ECPU and EGPU because  
+U4VPrimaryGenerator::GeneratePrimaries needs
+torch gensteps before U4Recorder::BeginOfEventAction 
+So have to skip the genstep setup for ECPU as it should
+have been done already.
+
 **/
 
 void SEvt::addFrameGenstep()
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     LOG(LEVEL); 
+
+
     if(SEventConfig::IsRGModeSimtrace())
     { 
         fold->clear(); // ADHOC
@@ -574,26 +591,61 @@ void SEvt::addFrameGenstep()
 
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace(); 
     }   
-    else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
+    else if(SEventConfig::IsRGModeSimulate()) 
     {   
-        fold->clear();  // ADHOC : TRY TO HANDLE U4Recorder DUPLICATE KEY ISSUE
+        bool has_inpho = hasInputPhoton() ; 
+        bool has_torch = SEventConfig::IsRunningModeTorch()  ; 
+        bool has_both  = has_inpho && has_torch ;
+        LOG_IF(fatal, has_both) 
+            << " CANNOT MIX input photon and torch mode running  "
+            << " index " << index 
+            ;
+        assert(!has_both); 
 
-        int prior_genstep = genstep.size() ;  
-        bool prior_genstep_expected =  prior_genstep == 0 ;
+        if( has_inpho || has_torch )
+        {
+            // HMMZ SHOULD THIS BE clear TO CLEAR THE VECTORS TOO
+            fold->clear();  // ADHOC : TRY TO HANDLE U4Recorder DUPLICATE KEY ISSUE
 
-        LOG_IF(fatal, !prior_genstep_expected ) 
-            << " CANNOT MIX input photon running with other genstep running  "
-            << " index " << index
-            << " instance " << instance
-            << " prior_genstep_expected " << ( prior_genstep_expected ? "YES" : "NO " )
-            << " prior_genstep " << prior_genstep 
-            ; 
-        assert( prior_genstep_expected ) ;
-
-        addGenstep(MakeInputPhotonGenstep(input_photon, frame)); 
-        // transformInputPhoton formerly done here, but thats too late for junosw
+            if( has_inpho )
+            { 
+                assertZeroGensteps(); 
+                quad6 ipgs = MakeInputPhotonGenstep(input_photon, frame) ;
+                addGenstep(ipgs); 
+            }
+            else if( has_torch )
+            {
+                if(isEGPU())
+                {
+                    assertZeroGensteps(); 
+                    // just filling the storch struct from config (no generation yet)
+                    // so repeating for CPU and GPU instances is no problem 
+                    NP* togs = SEvent::MakeTorchGensteps(); 
+                    addGenstep(togs); 
+                }
+            }
+        }
     }   
 }
+
+void SEvt::assertZeroGensteps()
+{
+    int prior_genstep = genstep.size() ;  
+    bool prior_genstep_zero = prior_genstep == 0 ;
+
+    LOG_IF(fatal, !prior_genstep_zero ) 
+        << " FIND genstep WHEN NONE ARE EXPECTED  "
+        << " index " << index
+        << " instance " << instance
+        << " isECPU " << isECPU()
+        << " isEGPU " << isEGPU()
+        << " prior_genstep_zero " << ( prior_genstep_zero ? "YES" : "NO " )
+        << " prior_genstep " << prior_genstep 
+        ; 
+    assert( prior_genstep_zero ) ;
+}
+
+
 
 const char* SEvt::getFrameId()    const { return frame.getFrameId() ; }
 const NP*   SEvt::getFrameArray() const { return frame.getFrameArray() ; }
@@ -867,6 +919,9 @@ SEvt* SEvt::Create(int idx)  // static
     return evt  ; 
 }
 
+bool SEvt::isEGPU() const { return instance == EGPU ; }
+bool SEvt::isECPU() const { return instance == ECPU ; }
+
 bool SEvt::Exists(int idx)  // static 
 {
     return Get(idx) != nullptr ; 
@@ -1056,6 +1111,14 @@ sgs SEvt::AddGenstep(const NP* a)
 }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
+
+void SEvt::addTorchGenstep()
+{
+    const NP* a = SEvent::MakeTorchGensteps() ;
+    addGenstep(a);  
+}
+
+
 // InputPhoton genstep addition invoked from SEvt::addFrameGenstep
 
 
@@ -1236,7 +1299,11 @@ template void SEvt::setMeta<std::string>(const char*, std::string );
 SEvt::beginOfEvent  (former static SEvt::BeginOfEvent is removed)
 -------------------------------------------------------------------
 
-Called for example from U4Recorder::BeginOfEventAction
+Called from::
+
+     QSim::simulate (SEvt::EGPU instance ) 
+     U4Recorder::BeginOfEventAction  (SEvt::ECPU instance)
+
 Note that eventID from Geant4 is zero based but the 
 index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs. 
 
@@ -1248,6 +1315,7 @@ which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
 
 void SEvt::beginOfEvent(int eventID)
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
@@ -1274,6 +1342,7 @@ so can switch off all saving wuth that config.
 
 void SEvt::endOfEvent(int eventID)
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__endOfEvent_0);  
 
     int index_ = 1+eventID ;    
@@ -1467,12 +1536,16 @@ SEvt::clear
 
 Clear vectors and the fold.
 
-Note this is called by QEvent::setGenstep 
+Note this is called by:
+
+   (EGPU instance) QEvent::setGenstep 
+   (ECPU instance)
 
 **/
 
 void SEvt::clear()
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     //std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
  
@@ -1493,6 +1566,7 @@ The comma delimited keeplist need not contain .npy on its keys
 
 void SEvt::clear_except(const char* keep)
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     LOG(LEVEL) << "[" ; 
     clear_vectors(); 
 
@@ -1630,6 +1704,7 @@ actual gensteps for the enabled index.
 
 sgs SEvt::addGenstep(const quad6& q_)
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     dbg->addGenstep++ ; 
     LOG(LEVEL) << " index " << index << " instance " << instance ; 
 
@@ -1744,6 +1819,7 @@ needed to accommodate the photons from the last genstep collected.
 
 void SEvt::setNumPhoton(unsigned num_photon)
 {
+    LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ; 
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
     LOG_IF(fatal, !num_photon_allowed) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
     assert( num_photon_allowed );
@@ -2930,6 +3006,26 @@ std::string SEvt::brief() const
     return str ; 
 }
 
+std::string SEvt::id() const 
+{
+    bool is_egpu = isEGPU(); 
+    bool is_ecpu = isECPU(); 
+    assert( is_egpu ^ is_ecpu ); 
+
+    std::stringstream ss ; 
+    ss << "SEvt::id " 
+       << ( is_egpu ? "EGPU" : "" )
+       << ( is_ecpu ? "ECPU" : "" )
+       << " (" << index << ") " 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
 std::string SEvt::desc() const 
 {
     std::stringstream ss ; 
@@ -3031,6 +3127,7 @@ into NPFold from the SCompProvider which can either be:
 
 void SEvt::gather() 
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ; 
     if(gather_done) return ; 
     gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
@@ -3388,6 +3485,7 @@ around with paired index.
 
 void SEvt::save(const char* dir_) 
 {
+    LOG_IF(info, LIFECYCLE) << id() ; 
     gather(); 
 
     LOG(LEVEL) << descComponent() ; 

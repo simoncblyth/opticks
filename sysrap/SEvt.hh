@@ -90,6 +90,9 @@ struct stimer ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
+    static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
+    static bool LIFECYCLE ; 
+
     int cfgrc ; 
 
     int index ; 
@@ -255,6 +258,8 @@ public:
     void transformInputPhoton(); 
 
     void addFrameGenstep(); 
+    void assertZeroGensteps();
+
 
     const char* getFrameId() const ; 
     const NP*   getFrameArray() const ; 
@@ -291,6 +296,9 @@ public:
     static void CreateOrReuse(); 
     static void SetFrame(const sframe& fr ); 
 
+    bool isEGPU() const ; 
+    bool isECPU() const ; 
+
     static bool Exists(int idx); 
     static void Check(int idx);
 
@@ -303,6 +311,7 @@ public:
     static sgs AddGenstep(const NP* a); 
     static void AddCarrierGenstep(); 
     static void AddTorchGenstep(); 
+    void addTorchGenstep(); 
 
     static SEvt* LoadAbsolute(const char* dir); 
     static SEvt* LoadRelative(const char* rel=nullptr);  // formerly Load
@@ -482,6 +491,8 @@ public:
     std::string descFold() const ; 
     static std::string Brief() ; 
     std::string brief() const ; 
+    std::string id() const ; 
+
     std::string desc() const ; 
     std::string descDbg() const ; 
 

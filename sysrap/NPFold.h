@@ -263,6 +263,7 @@ public:
     int load(const char* base, const char* rel0, const char* rel1=nullptr ) ; 
 
 
+    std::string descKeys() const ; 
     std::string desc() const ; 
     std::string desc(int depth) const ; 
 
@@ -849,7 +850,11 @@ inline void NPFold::add_(const char* k, const NP* a)
     if(verbose_) std::cerr << "NPFold::add_ [" << k  << "]" <<  std::endl ; 
 
     bool have_key_already = std::find( kk.begin(), kk.end(), k ) != kk.end() ; 
-    if(have_key_already) std::cerr << "NPFold::add_ FATAL : have_key_already " << k << std::endl ; 
+    if(have_key_already) std::cerr 
+        << "NPFold::add_ FATAL : have_key_already [" << k << "]"  
+        << std::endl 
+        << descKeys()
+        ; 
     assert( !have_key_already ); 
 
     kk.push_back(k); 
@@ -1595,6 +1600,19 @@ inline int NPFold::load(const char* base_, const char* rel0, const char* rel1)
     return load(base.c_str()); 
 }
 
+inline std::string NPFold::descKeys() const  
+{
+    int num_key = kk.size() ; 
+    std::stringstream ss ; 
+    ss << "NPFold::descKeys" 
+       << " kk.size " << num_key
+       ;
+    for(int i=0 ; i < num_key ; i++) ss << " [" << kk[i] << "] " ;  
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 inline std::string NPFold::desc() const  
 {
     std::stringstream ss ; 
@@ -1664,7 +1682,6 @@ inline void NPFold::setMetaKV(const std::vector<std::string>& keys, const std::v
 }
 
 
-
 inline std::string NPFold::desc(int depth) const  
 {
     std::stringstream ss ; 
@@ -1691,8 +1708,8 @@ inline std::string NPFold::desc(int depth) const
         NPFold* sf = subfold[i] ; 
         ss << sf->desc(depth+1) << std::endl ;   
     }
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 inline std::string NPFold::Indent(int width)  // static

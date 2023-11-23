@@ -169,7 +169,7 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_1 = sstamp::Now(); 
 #endif
 
-    sev->clear();                   // clears quad6 genstep vector, ready to collect more genstep
+    sev->clear();   // clears quad6 genstep vector and the fold,  ready to collect more genstep
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_2 = sstamp::Now(); 

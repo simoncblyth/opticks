@@ -3,14 +3,6 @@ usage(){ cat << EOU
 G4CXTest_GEOM.sh : Standalone bi-simulation with G4CXApp::Main and current GEOM 
 ===================================================================================
 
-Certain special GEOM strings such as "RaindropRockAirWater" 
-are recognized by U4VolumeMaker::PVS_  which is called by U4VolumeMaker::PV
-
-For the configuratuin of the raindrop see U4VolumeMaker::RaindropRockAirWater_Configure
-
-Currently this uses the default torch genstep for the initial photons, 
-see storch::FillGenstep for how to customize that. 
-
 Workstation::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
@@ -22,11 +14,8 @@ Laptop::
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
 
 
-
-
-
-storch::generate is used for both GPU and CPU 
---------------------------------------------------
+storch::generate is used for both GPU and CPU generation
+---------------------------------------------------------
 
 * On GPU the generation is invoked at highest level CSGOptiX7.cu:simulate
 * On CPU for example the stack is below, using MOCK_CURAND::
@@ -57,10 +46,10 @@ fi
 
 #num=1000
 #num=5000
-num=1000000
+num=100000
 NUM=${NUM:-$num}
 
-export OPTICKS_MAX_PHOTON=1000000  
+export OPTICKS_MAX_PHOTON=100000  
 export SEvent_MakeGensteps_num_ph=$NUM
 
 #src="rectangle"
@@ -90,12 +79,16 @@ fi
 #oim=2  # CPU only 
 oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=$oim 
+export OPTICKS_RUNNING_MODE=SRM_TORCH
 
 #mode=Minimal
 #mode=HitOnly
 mode=StandardFullDebug
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 export OPTICKS_MAX_BOUNCE=31
+
+export OPTICKS_NUM_EVENT=3
+
 
 
 TMP=${TMP:-/tmp/$USER/opticks}

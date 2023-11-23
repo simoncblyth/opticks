@@ -173,14 +173,14 @@ void CSGOptiX::SimulateMain() // static
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 
     LOG(info) 
-        << SEventConfig::kNumEvent    << "=" << SEventConfig::NumEvent()
-        << SEventConfig::kRunningMode << "=" << SEventConfig::RunningMode()
+        << " " << SEventConfig::kNumEvent    << "=" << SEventConfig::NumEvent()
+        << " " << SEventConfig::kRunningMode << "=" << SEventConfig::RunningModeLabel()
         << " SEventConfig::IsRunningModeTorch() " << ( SEventConfig::IsRunningModeTorch() ? "YES" : "NO " )
         ; 
 
     for(int i=0 ; i < SEventConfig::NumEvent() ; i++)
     {
-        if(SEventConfig::IsRunningModeTorch()) SEvt::AddTorchGenstep();
+        // if(SEventConfig::IsRunningModeTorch()) SEvt::AddTorchGenstep(); MOVED DOWN TO SEvt::addFrameGenstep
         cx->simulate(i); 
     }
 }

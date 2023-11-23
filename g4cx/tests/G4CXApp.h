@@ -109,13 +109,28 @@ std::string G4CXApp::Desc() // static
     return s ; 
 }
 
+
+/**
+G4CXApp::PrimaryMode
+----------------------
+
+HMM: have SEventConfig::IsRunningModeTorch ?
+MAYBE ADD SEventConfig::IsRunningModeGun ? 
+
+Note that torch and iphoton use the same mechanism 
+at this level U4VPrimaryGenerator::GeneratePrimaries 
+the branch happens at lower level depending on 
+input photons being configured. 
+
+**/
+
 char G4CXApp::PrimaryMode() // static
 {
     char mode = '?' ; 
     const char* mode_ = ssys::getenvvar("G4CXApp__PRIMARY_MODE", "torch" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
-    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ;   // CAUTION: torch and iphoton both call U4VPrimaryGenerator::GeneratePrimaries
+    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
     return mode ;   
 }
 
@@ -216,6 +231,15 @@ G4CXApp::GeneratePrimaries
 Other that for gun running this uses U4VPrimaryGenerator::GeneratePrimaries
 which is based on SGenerate::GeneratePhotons
 
+As U4VPrimaryGenerator::GeneratePrimaries needs the gensteps early 
+(before U4Recorder::BeginOfEventAction invokes SEvt::beginOfEvent)
+to allow Geant4 to use SGenerate::GeneratePhotons it is necessary 
+to SEvt::addTorchGenstep here. 
+
+But thats means cannot use the normal EGPU pattern of adding gensteps 
+in the SEvt::beginOfEvent call.  
+That causes kludgy SEvt::addFrameGenstep
+
 **/
 
 void G4CXApp::GeneratePrimaries(G4Event* event)
@@ -224,7 +248,11 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
 
     if(fPrimaryMode == 'T')
     {
-        SEvt::AddTorchGenstep();  
+        SEvt* sev = SEvt::Get_ECPU();  
+        assert(sev); 
+        sev->addTorchGenstep(); 
+        // adding to both instances via static 
+        // is kinda confusing SEvt::AddTorchGenstep();  
     }
 
     switch(fPrimaryMode)
@@ -246,9 +274,27 @@ Its too late to SEvt::AddTorchGenstep here as GeneratePrimaries already run
 **/
 
 void G4CXApp::BeginOfEventAction(const G4Event* event){  fRecorder->BeginOfEventAction(event); }
+
+/**
+G4CXApp::EndOfEventAction
+---------------------------
+
+::
+
+    SEvt::ECPU endOfEvent
+    G4CXOpticks::simulate
+          SEvt::EGPU beginOfEvent
+          ... launch .. 
+          SEvt::EGPU endOfEvent
+
+* GPU begin after CPU end 
+
+**/
+
+
 void G4CXApp::EndOfEventAction(const G4Event* event)
 {  
-    fRecorder->EndOfEventAction(event);  
+    fRecorder->EndOfEventAction(event);   // saves SEvt::ECPU   
 
     if(SEventConfig::GPU_Simulation())
     {
@@ -298,9 +344,8 @@ G4CXApp* G4CXApp::Create()  // static
 
 void G4CXApp::BeamOn()
 {
-    int nevt = ssys::getenvint("BeamOn",1) ; 
-    LOG(info) << "[ BeamOn=" << nevt  ; 
-    fRunMgr->BeamOn(nevt) ; 
+    LOG(info) << "[ " << SEventConfig::kNumEvent << "=" << SEventConfig::NumEvent()  ; 
+    fRunMgr->BeamOn(SEventConfig::NumEvent()) ; 
     LOG(info) << "]" ; 
 }
 
