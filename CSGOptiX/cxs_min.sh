@@ -100,6 +100,7 @@ elif [ "$light" == "storch" ]; then
 fi 
 
 
+export SEvt__LIFECYCLE=1
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_MAX_BOUNCE=31
 

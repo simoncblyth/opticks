@@ -3010,7 +3010,6 @@ std::string SEvt::id() const
 {
     bool is_egpu = isEGPU(); 
     bool is_ecpu = isECPU(); 
-    assert( is_egpu ^ is_ecpu ); 
 
     std::stringstream ss ; 
     ss << "SEvt::id " 
