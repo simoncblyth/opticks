@@ -12,12 +12,11 @@
 #include "scarrier.h"
 
 #include "sxyz.h" 
-
+#include "ssys.h"
+#include "sstr.h"
 
 #include "NP.hh"
 #include "SLOG.hh"
-#include "SStr.hh"
-#include "SSys.hh"
 
 #include "OpticksGenstep.h"
 
@@ -31,8 +30,8 @@ const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ;
 NP* SEvent::MakeDemoGensteps(const char* config)
 {
     NP* gs = nullptr ;
-    if(     SStr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
-    else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps() ; 
+    if(     sstr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
+    else if(sstr::StartsWith(config, "torch")) gs = MakeTorchGensteps() ; 
     assert(gs); 
     LOG(LEVEL) 
        << " config " << ( config ? config :  "-" )
@@ -49,35 +48,43 @@ NP* SEvent::MakeCarrierGensteps(){  return MakeGensteps( OpticksGenstep_CARRIER 
 
 NP* SEvent::MakeGensteps( int gentype )
 {
-    unsigned num_ph = SSys::getenvunsigned("SEvent_MakeGensteps_num_ph", 100 ); 
+    unsigned num_ph = ssys::getenvunsigned("SEvent_MakeGensteps_num_ph", 100 ); 
+    bool dump = ssys::getenvbool("SEvent_MakeGensteps_dump"); 
     unsigned num_gs = 1 ; 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     switch(gentype)
     {
-        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, num_ph) ; break ; 
-        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, num_ph) ; break ; 
-        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, num_ph) ; break ; 
-        case  OpticksGenstep_CARRIER:       FillGensteps<scarrier>( gs, num_ph) ; break ; 
+        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_CARRIER:       FillGensteps<scarrier>( gs, num_ph, dump) ; break ; 
     }
     return gs ; 
 }
 
 template<typename T>
-void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep )
+void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep, bool dump )
 {
     T* tt = (T*)gs->bytes() ; 
-    for(int i=0 ; i < gs->shape[0] ; i++ ) T::FillGenstep( tt[i], i, numphoton_per_genstep ) ; 
+    for(int i=0 ; i < gs->shape[0] ; i++ ) 
+    {
+        unsigned genstep_id = i ; 
+        T::FillGenstep( tt[i], genstep_id, numphoton_per_genstep, dump ) ; 
+    }
 }
 
-template void SEvent::FillGensteps<storch>(    NP* gs, unsigned numphoton_per_genstep ); 
-template void SEvent::FillGensteps<scerenkov>( NP* gs, unsigned numphoton_per_genstep ); 
-template void SEvent::FillGensteps<sscint>(    NP* gs, unsigned numphoton_per_genstep ); 
-template void SEvent::FillGensteps<scarrier>(  NP* gs, unsigned numphoton_per_genstep ); 
+template void SEvent::FillGensteps<storch>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGensteps<scerenkov>( NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGensteps<sscint>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGensteps<scarrier>(  NP* gs, unsigned numphoton_per_genstep, bool dump ); 
 
 
 /**
 SEvent::MakeSeed
 ------------------
+
+Creates seed array which provides genstep reference indices
+for each photon slot. 
 
 Normally this is done on device using involved thrust, 
 here is a simple CPU implementation of that.
@@ -89,8 +96,12 @@ NP* SEvent::MakeSeed( const NP* gs )
     assert( gs->has_shape(-1,6,4) );  
     int num_gs = gs->shape[0] ; 
     const storch* tt = (storch*)gs->bytes() ; 
+    // storch type is used only to access numphoton in the quad6 (0,3) position
+    // which all genstep types place at the same offset 
+    // HMM: using quad6 would be clearer
 
-    std::vector<int> gsp(num_gs) ; 
+    // vector of numphoton in each genstep
+    std::vector<int> gsp(num_gs) ;
     for(int i=0 ; i < num_gs ; i++ ) gsp[i] = tt[i].numphoton ;
 
     int tot_photons = 0 ; 
@@ -99,6 +110,8 @@ NP* SEvent::MakeSeed( const NP* gs )
     NP* se = NP::Make<int>( tot_photons );  
     int* sev = se->values<int>();  
 
+    // duplicate genstep reference index into the seed array 
+    // which is the same length as total photons
     int offset = 0 ; 
     for(int i=0 ; i < num_gs ; i++) 
     {   

@@ -5,7 +5,9 @@ cxs_min.sh : minimal executable and script for shakedown
 
 Usage::
 
-    MODE=2 SEL=1 ./cxs_min.sh ana 
+    MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
+
+    EVT=p005 ~/opticks/CSGOptiX/cxs_min.sh ana 
 
 EOU
 }

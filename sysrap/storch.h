@@ -110,6 +110,8 @@ struct storch
    static constexpr const char* storch_FillGenstep_time       = "storch_FillGenstep_time" ; 
    static constexpr const char* storch_FillGenstep_mom        = "storch_FillGenstep_mom" ; 
    static constexpr const char* storch_FillGenstep_wavelength = "storch_FillGenstep_wavelength" ; 
+   static constexpr const char* storch_FillGenstep_distance   = "storch_FillGenstep_distance" ; 
+   static constexpr const char* storch_FillGenstep_weight     = "storch_FillGenstep_weight" ; 
    static constexpr const char* storch_FillGenstep_radius     = "storch_FillGenstep_radius" ; 
    static constexpr const char* storch_FillGenstep_zenith     = "storch_FillGenstep_zenith" ; 
    static constexpr const char* storch_FillGenstep_azimuth    = "storch_FillGenstep_azimuth" ; 
@@ -148,6 +150,12 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
 
     qvals( gs.wavelength, storch_FillGenstep_wavelength, "420" ); 
     if(dump) printf("//storch::FillGenstep storch_FillGenstep_wavelength gs.wavelength (%10.4f) \n", gs.wavelength  ); 
+
+    qvals( gs.distance, storch_FillGenstep_distance, "0" ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_distance gs.distance (%10.4f) \n", gs.distance  ); 
+
+    qvals( gs.weight, storch_FillGenstep_weight, "0" ); 
+    if(dump) printf("//storch::FillGenstep storch_FillGenstep_weight gs.weight (%10.4f) \n", gs.weight  ); 
 
     qvals( gs.zenith,  storch_FillGenstep_zenith,  "0,1" ); 
     if(dump) printf("//storch::FillGenstep storch_FillGenstep_zenith gs.zenith (%10.4f,%10.4f) \n", gs.zenith.x, gs.zenith.y  ); 
@@ -205,9 +213,7 @@ On CPU this is invoked using MOCK_CURAND with for example::
 Populate "sphoton& p" as parameterized by "const quad6& gs_" which casts to "const storch& gs",
 the photon_id and genstep_id inputs are informational only. 
 
-disc/T_DISC
-    zenith.x->zenith.y radial range, eg [0. 100.] filled disc, [90., 100.] annulus 
-    azimuth.x->azimuth.y phi segment in fraction of twopi [0,1] for complete segment 
+Old workflow equivalent ~/opticks/optixrap/cu/torchstep.h
 
 
 **/
@@ -233,6 +239,13 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
 #endif
     if( gs.type == T_DISC )
     {
+
+        /**
+        disc/T_DISC
+            zenith.x->zenith.y radial range, eg [0. 100.] filled disc, [90., 100.] annulus 
+            azimuth.x->azimuth.y phi segment in fraction of twopi [0,1] for complete segment 
+
+        **/ 
         //printf("//storch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
 
         p.wavelength = gs.wavelength ; 
@@ -264,11 +277,143 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         p.pol.x = sinPhi ;
         p.pol.y = -cosPhi ; 
         p.pol.z = 0.f ;    
-        // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
+        // p.pol.z zero in initial frame, so rotating the frame to arrange 
+        // z to be in p.mom direction makes pol transverse to mom
+        // NOTICE : ARBITRARY PHASE OF POLARIZATION CHOICE HERE 
         smath::rotateUz(p.pol, p.mom) ; 
+    }
+    else if( gs.type == T_SPHERE )
+    {
+        /**
+        T_SPHERE
+             generates positions on a sphere of gs.radius and radial momentum direction
+             outwards(inwards) for gs.radius +ve(-ve) 
+        **/
+ 
+
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
+        float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        float u_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+#else
+        float u_zenith  = gs.zenith.x  + srng::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        float u_azimuth = gs.azimuth.x + srng::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+#endif
+
+        float phi = 2.f*M_PIf*u_azimuth ;  // azimuth range 0->2pi 
+        float sinPhi = sinf(phi); 
+        float cosPhi = cosf(phi);
+ 
+        float cosTheta = 1.f - 2.0f*u_zenith  ;   // polar range 0->pi
+        float sinTheta = sqrtf( 1.0f - cosTheta*cosTheta ); 
+
+        float flip = copysignf( 1.f, gs.radius ); 
+
+        // gs.radius -ve(+ve) => flip -1.f(+1.f)  
+        // below flips direction and not position for outwards/inwards control
+  
+        p.mom.x = flip*sinTheta*cosPhi ;  
+        p.mom.y = flip*sinTheta*sinPhi ; 
+        p.mom.z = flip*cosTheta ; 
+
+        float radius = fabs(gs.radius); 
+        p.pos.x = sinTheta*cosPhi*radius ; 
+        p.pos.y = sinTheta*sinPhi*radius ; 
+        p.pos.z = cosTheta*radius ; 
+
+        // float frac_twopi = 0.0f ;    // tangent vectors up the sphere (towards +Z pole, increasing theta)
+        // float frac_twopi = 0.5f ;    // tangent vectors down the sphere (towards -Z pole, decreasing theta) 
+        // float frac_twopi = 0.25f ;   // tangents around the sphere in direction of increasing phi
+        // float frac_twopi = 0.75f ;      // tangents around the sphere in direction of decreasing phi 
+        // NOTICE : ARBITRARY PHASE OF POLARIZATION CHOICE HERE : VARIOUS TANGENTS TO THE SPHERE
+        float frac_twopi = gs.distance ;  // repurpose the distance, as frac_twopi 
+
+        float phase = 2.f*M_PIf*frac_twopi ; 
+        p.pol.x = cosf(phase) ; 
+        p.pol.y = sinf(phase) ; 
+        p.pol.z = 0.f ;   
+        // p.pol.z zero in initial frame, so rotating the frame to arrange 
+        // z to be in p.mom direction makes pol transverse to mom
+        smath::rotateUz(p.pol, p.mom); 
+    }
+    else if( gs.type == T_SPHERE_MARSAGLIA )
+    {
+        /**
+        T_SPHERE_MARSAGLIA
+             generates positions on a sphere of gs.radius and radial momentum direction
+             outwards(inwards) for gs.radius +ve(-ve) 
+
+             uses Marsaglia rejection sampling to get points on unit sphere
+
+             using zenith/azimuth does restrict the range, but in a funny tent shape 
+
+        **/
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
+  
+        float u0_zenith, u1_azimuth  ; 
+        float u, v, b, a  ; 
+
+        do
+        {
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
+            u0_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;   // aka polar theta 
+            u1_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;   // aka azimuth phi
+#else
+            u0_zenith  = gs.zenith.x  + srng::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+            u1_azimuth = gs.azimuth.x + srng::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+#endif
+            u = 2.f*u0_zenith - 1.f ; 
+            v = 2.f*u1_azimuth - 1.f ; 
+            b = u*u + v*v ; 
+        }    
+        while( b > 1.f ) ;  
+        a = 2.f*sqrtf( 1.f - b );   
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+        //printf("//storch::generate T_SPHERE gs.radius %10.4f gs.distance %10.4f \n", gs.radius, gs.distance ); 
+#endif       
+        float radius = fabs(gs.radius) ; 
+        float flip = copysignf( 1.f, gs.radius ); 
+
+        // gs.radius -ve(+ve) => flip -1.f(+1.f)  
+        // want to flip direction but not position and avoid extra storage 
+        p.mom.x = flip*a*u ; 
+        p.mom.y = flip*a*v ; 
+        p.mom.z = flip*(2.f*b - 1.f) ; 
+
+        p.pos.x = a*u*radius ;  
+        p.pos.y = a*v*radius ; 
+        p.pos.z = (2.f*b-1.f)*radius ; 
+
+        // float frac_twopi = 0.0f ;    // tangent vectors up the sphere (towards +Z pole, increasing theta)
+        // float frac_twopi = 0.5f ;    // tangent vectors down the sphere (towards -Z pole, decreasing theta) 
+        // float frac_twopi = 0.25f ;   // tangents around the sphere in direction of increasing phi
+        // float frac_twopi = 0.75f ;      // tangents around the sphere in direction of decreasing phi 
+        // NOTICE : ARBITRARY PHASE OF POLARIZATION CHOICE HERE : VARIOUS TANGENTS TO THE SPHERE
+        float frac_twopi = gs.distance ;  // repurpose the distance, as frac_twopi 
+
+        float phase = 2.f*M_PIf*frac_twopi ; 
+        p.pol.x = cosf(phase) ; 
+        p.pol.y = sinf(phase) ; 
+        p.pol.z = 0.f ;   
+        // p.pol.z zero in initial frame, so rotating the frame to arrange 
+        // z to be in p.mom direction makes pol transverse to mom
+        smath::rotateUz(p.pol, p.mom); 
     }
     else if( gs.type == T_LINE )
     {
+        /**
+        T_LINE
+            photons start at positions (varying by photon_id) 
+            along a line from -gs.radius to +gs.radius 
+            wavelength and time are fixed. 
+            The position and polarization are oriented
+            such that the local frame z is in the gs.mom direction.  
+
+        **/
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
         p.mom = gs.mom ; 
@@ -291,6 +436,11 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
     }
     else if( gs.type == T_POINT )
     {
+        /**
+        T_POINT
+             all photons start at gs.pos, local frame z is rotate into 
+             gs.mom direction as is local -Y polarization direction
+        **/
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
         p.mom = gs.mom ; 
@@ -309,6 +459,18 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
     }
     else if( gs.type == T_CIRCLE )
     {
+        /**
+        T_CIRCLE
+             phi position around circle of radius |gs.radius| based on photon_id 
+             at position gs.pos
+
+             gs.radius>0(<0)
+                 local mom is radially outwards(inwards) in XZ plane
+
+             local -Y pol direction is oriented according to the 
+             local radial mom direction  
+
+        **/
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
         float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
@@ -344,9 +506,6 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
     }
     else if( gs.type == T_RECTANGLE )
     {
-        p.wavelength = gs.wavelength ; 
-        p.time = gs.time ; 
-
         /**
         DIVIDE TOTAL PHOTON SLOTS INTO FOUR SIDES 
         ie side is 0,0,0...,1,1,1...,2,2,2,..,3,3,3...
@@ -362,6 +521,9 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
               gs.azimuth.x       gs.azimuth.y
 
         **/ 
+
+        p.wavelength = gs.wavelength ; 
+        p.time = gs.time ; 
 
         int side_size = gs.numphoton/4 ; 
         int side = photon_id/side_size ;  

@@ -5,45 +5,67 @@ storch_test.sh
 
 CPU test of CUDA code to generate torch photons using s_mock_curand.h::
 
-   ./storch_test.sh build
-   ./storch_test.sh run
-   ./storch_test.sh ana
-   ./storch_test.sh build_run_ana   # default 
+   ~/opticks/sysrap/tests/storch_test.sh build
+   ~/opticks/sysrap/tests/storch_test.sh run
+   ~/opticks/sysrap/tests/storch_test.sh ana
+
+   ~/opticks/sysrap/tests/storch_test.sh build_run_ana   
+
+
+HMM : unless can get the implementation to work header only its 
+kinda pointless not including storch_test in the CMake built 
+ones as normally need to rebuild sysrap anyhow. 
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
+cd $(dirname $BASH_SOURCE)
+
 case $(uname) in 
-   Darwin) defarg=build_run_ana ;; 
-   Linux)  defarg=build_run ;; 
+   Darwin) defarg=build_env_run_ana ;; 
+   Linux)  defarg=build_env_run ;; 
 esac
 arg=${1:-$defarg}
 
 
+TMP=${TMP:-/tmp/$USER/opticks}
+
+
 msg="=== $BASH_SOURCE :"
 name=storch_test 
-bdir=/tmp/$name/build
+bdir=$TMP/$name.build
 mkdir -p $bdir
 bin=$bdir/$name
-script=$SDIR/$name.py 
 
-vers=circle_outwards
+script=$name.py 
+
+vers=sphere
+#vers=sphere_marsaglia
+#vers=sphere__restricted
+#vers=sphere_marsaglia__restricted
+
+
+#vers=circle_outwards
 #vers=circle_inwards
 #vers=M1up99
-odir=$HOME/.opticks/InputPhotons/storch
-fold=$odir/$vers
-mkdir -p $fold
+
+# HMM: generating into InputPhotons somewhat dirty 
+# odir=$HOME/.opticks/InputPhotons/storch
+# fold=$odir/$vers
+# mkdir -p $fold
+
+fold=$TMP/$name
 export FOLD=$fold   # controls where generated photons will be saved
+mkdir -p $FOLD
+
 
 vars="BASH_SOURCE name bdir bin script FOLD vers"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 fi 
-
-
 
 if [ "$vers" == "up" ]; then 
 
@@ -75,7 +97,26 @@ elif [ "$vers" == "circle_inwards" ]; then
     export storch_FillGenstep_radius=-100
     export storch_FillGenstep_pos=0,0,0
 
+elif [ "$vers" == "sphere" -o "$vers" == "sphere_marsaglia" ]; then 
+
+    export storch_FillGenstep_type=$vers
+    export storch_FillGenstep_radius=100    # -ve radius for inwards
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
+
+elif [    "$vers" == "sphere__restricted" 
+       -o "$vers" == "sphere_marsaglia__restricted"
+     ]; then 
+
+    export storch_FillGenstep_type=${vers/__*} # string before __
+    export storch_FillGenstep_radius=100   # -ve radius for inwards
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_zenith=0.25,0.75
+    export storch_FillGenstep_azimuth=0.25,0.75
+    export storch_FillGenstep_distance=0.25 # frac_twopi control of polarization direction
+
 fi 
+
 
 
 K1=1000
@@ -92,6 +133,7 @@ case ${vers:-dummy} in
     *)   num=$K10  ;; 
 esac
 export SEvent_MakeGensteps_num_ph=$num
+export SEvent_MakeGensteps_dump=1 
 
 
 cuda_prefix=/usr/local/cuda
@@ -105,11 +147,11 @@ if [ "${arg/build}" != "$arg" ]; then
         Linux) libline="-L$OPTICKS_PREFIX/lib64 -lm -lssl -lcrypto" ;; 
     esac
 
-    gcc $SDIR/$name.cc \
+    gcc $name.cc \
         -o $bin \
         -std=c++11 -lstdc++ \
         -DMOCK_CURAND \
-        -I$SDIR/.. \
+        -I.. \
         -I$CUDA_PREFIX/include \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/plog/include \
@@ -120,6 +162,10 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 
+if [ "${arg/env}" != "$arg" ]; then 
+   env | grep storch_FillGenstep
+fi
+
 if [ "${arg/run}" != "$arg" ]; then 
     $bin
     [ $? -ne 0 ] && echo $msg run error && exit 2 
@@ -129,16 +175,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $msg ana error && exit 3 
 fi
-
-#if [ "${arg/cf}" != "$arg" ]; then 
-#
-#    export A_FOLD=$a_fold
-#    export B_FOLD=$b_fold
-#
-#    ${IPYTHON:-ipython} --pdb -i ${name}_cf.py 
-#    [ $? -ne 0 ] && echo $msg cf error && exit 4
-#fi
-
 
 if [ "${arg/grab}" != "$arg" ]; then 
     echo $msg odir $odir

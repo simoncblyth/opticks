@@ -64,7 +64,8 @@ export OPTICKS_MAX_PHOTON=1000000
 export SEvent_MakeGensteps_num_ph=$NUM
 
 #src="rectangle"
-src="disc"
+#src="disc"
+src="sphere"
 
 if [ "$src" == "rectangle" ]; then
     export storch_FillGenstep_pos=0,0,0
@@ -73,11 +74,16 @@ if [ "$src" == "rectangle" ]; then
     export storch_FillGenstep_azimuth=-20,20
 elif [ "$src" == "disc" ]; then
     export storch_FillGenstep_type=disc
-    export storch_FillGenstep_radius=50        # radius
+    export storch_FillGenstep_radius=50      
     export storch_FillGenstep_zenith=0,1       # radial range scale
     export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction 
     export storch_FillGenstep_mom=1,0,0
     export storch_FillGenstep_pos=-80,0,0
+elif [ "$src" == "sphere" ]; then
+    export storch_FillGenstep_type=sphere
+    export storch_FillGenstep_radius=100    # +ve for outwards    
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
 fi 
 
 
@@ -146,8 +152,8 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    #source $SDIR/../../bin/rsync.sh $EVTBASE
-    source $SDIR/../../bin/rsync.sh $BASE       ## widen to BASE to include the debug geometry save 
+    source $SDIR/../../bin/rsync.sh $EVTBASE
+    #source $SDIR/../../bin/rsync.sh $BASE       ## widen to BASE to include the debug geometry save 
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
 fi
 

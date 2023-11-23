@@ -4,7 +4,9 @@ storch_test.cc : CPU tests of storch.h CUDA code using mocking
 
 Standalone compile and run with::
 
-   ./storch_test.sh 
+   ~/opticks/sysrap/tests/storch_test.sh 
+
+HMM: not standalone anymore, currently using libSysrap
 
 **/
 #include <numeric>
@@ -17,55 +19,19 @@ Standalone compile and run with::
 #include "sphoton.h"
 #include "storch.h"
 #include "SEvent.hh"
-#include "NP.hh"
 
-const char* FOLD = getenv("FOLD") ; 
+#include "NPFold.h"
 
-NP* make_torch_photon( const NP* gs, const NP* se )
+
+struct storch_test
 {
-    const quad6* gg = (quad6*)gs->bytes() ;  
-    const int*   seed = (int*)se->bytes() ;  
+    static void union_cast(); 
+    static void ref_cast(); 
+    static NP* make_torch_photon( const NP* gs, const NP* se );   
+    static NPFold* generate();
+};
 
-    curandStateXORWOW rng(1u); 
-
-    int tot_photon = se->shape[0] ; 
-    NP* ph = NP::Make<float>( tot_photon, 4, 4); 
-    sphoton* pp = (sphoton*)ph->bytes() ; 
-
-    for(int i=0 ; i < tot_photon ; i++ )
-    {
-        unsigned photon_id = i ; 
-        unsigned genstep_id = seed[photon_id] ; 
-
-        sphoton& p = pp[photon_id] ; 
-        const quad6& g = gg[genstep_id] ;  
-        
-        storch::generate(p, rng, g, photon_id, genstep_id ); 
-         
-        if(i % 100 == 0) std::cout << std::setw(6) << i << " : " << p.descBase() << std::endl;  
-    }
-    return ph ; 
-}
-
-void test_generate()
-{
-    NP* gs = SEvent::MakeTorchGensteps(); 
-    NP* se = SEvent::MakeSeed(gs) ; 
-    NP* ph = make_torch_photon(gs, se); 
-
-    if(FOLD == nullptr) 
-    {
-        printf(" must set FOLD envvar to save \n"); 
-        return ; 
-    }
-
-    printf("save to %s\n", FOLD );
-    gs->save(FOLD, "gs.npy"); 
-    se->save(FOLD, "se.npy"); 
-    ph->save(FOLD, "ph.npy"); 
-}
-
-void test_union_cast()
+void storch_test::union_cast()
 {
     {
         qtorch qt ; 
@@ -90,7 +56,7 @@ void test_union_cast()
     }
 }
 
-void test_ref_cast()
+void storch_test::ref_cast()
 {
     float4 a = make_float4( 1.f, 2.f, 3.f, 4.f ); 
     const float3& b = (const float3&)a ; 
@@ -102,11 +68,64 @@ void test_ref_cast()
     std::cout << " d " << d << std::endl ;   
 }
 
+
+
+
+
+
+NP* storch_test::make_torch_photon( const NP* gs, const NP* se )
+{
+    std::cout << "[storch_test::make_torch_photon" << std::endl ;
+    const quad6* gg = (quad6*)gs->bytes() ;  
+    const int*   seed = (int*)se->bytes() ;  
+
+    curandStateXORWOW rng(1u); 
+
+    int tot_photon = se->shape[0] ; 
+    NP* ph = NP::Make<float>( tot_photon, 4, 4); 
+    sphoton* pp = (sphoton*)ph->bytes() ; 
+
+    for(int i=0 ; i < tot_photon ; i++ )
+    {
+        unsigned photon_id = i ; 
+        unsigned genstep_id = seed[photon_id] ; 
+
+        sphoton& p = pp[photon_id] ; 
+        const quad6& g = gg[genstep_id] ;  
+        
+        storch::generate(p, rng, g, photon_id, genstep_id ); 
+         
+        if(i % 100 == 0) std::cout << std::setw(6) << i << " : " << p.descBase() << std::endl;  
+    }
+    std::cout << "]storch_test::make_torch_photon" << std::endl ;
+    return ph ; 
+}
+
+NPFold* storch_test::generate()
+{
+    std::cout << "[storch_test::generate" << std::endl ;
+    NP* gs = SEvent::MakeTorchGensteps(); 
+    NP* se = SEvent::MakeSeed(gs) ; 
+    NP* ph = make_torch_photon(gs, se); 
+
+    NPFold* fold = new NPFold ; 
+    fold->add( "gs", gs ); 
+    fold->add( "se", se ); 
+    fold->add( "ph", ph ); 
+    std::cout << "]storch_test::generate" << std::endl ;
+    return fold ; 
+}
+
 int main(int argc, char** argv)
 {
-    test_generate(); 
-    //test_union_cast(); 
-    //test_ref_cast(); 
+    /*
+    storch_test::union_cast(); 
+    storch_test::ref_cast(); 
+    */
+
+    NPFold* fold = storch_test::generate(); 
+    fold->save("$FOLD"); 
+
     return 0 ; 
 }
 

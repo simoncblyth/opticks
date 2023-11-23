@@ -64,7 +64,7 @@ struct sscint
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static void FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
+   static void FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump ) ; 
    std::string desc() const ; 
 #endif
 
@@ -75,7 +75,7 @@ struct sscint
 #else
 #include <sstream>
 
-inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump )
 {
     gs.gentype = OpticksGenstep_SCINTILLATION ; 
     gs.trackid = 0u ; 

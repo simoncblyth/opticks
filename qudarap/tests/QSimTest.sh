@@ -178,10 +178,10 @@ if [ "$TEST" == "smear_normal_sigma_alpha" ]; then
    export DBG_VALUE=0.1
 fi 
 
+TMP=${TMP:-/tmp/$USER/opticks}
+export EBASE=$TMP/GEOM/$GEOM/QSimTest/ALL/p001
 
-export EBASE=/tmp/$USER/opticks/GEOM/$GEOM/QSimTest/ALL/p001
-
-vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM SDIR EBASE"
+vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM SDIR TMP EBASE"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
@@ -198,10 +198,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in
-     Darwin) lldb__ $bin ;;
-     Linux)  gdb__  $bin ;;
-   esac
+   dbg__ $bin
    [ $? -ne 0 ] && echo $msg dbg error && exit 2 
 fi
 

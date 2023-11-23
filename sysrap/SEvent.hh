@@ -27,15 +27,11 @@ struct SYSRAP_API SEvent
     static NP* MakeGensteps(int gentype); 
 
     template <typename T> 
-    static void FillGensteps( NP* gs, unsigned numphoton_per_genstep ) ; 
+    static void FillGensteps( NP* gs, unsigned numphoton_per_genstep, bool dump ) ; 
 
 
     static NP* MakeSeed( const NP* gs ); 
  
-
-
-
-
 
     static NP* MakeCountGensteps(const char* config=nullptr, int* total=nullptr);
     static unsigned SumCounts(const std::vector<int>& counts); 
@@ -46,11 +42,6 @@ struct SYSRAP_API SEvent
 
 
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep, int* total );
-
-
-
-
 };
-
 
 

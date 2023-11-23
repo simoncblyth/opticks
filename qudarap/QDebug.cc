@@ -50,7 +50,8 @@ qdebug* QDebug::MakeInstance()   // static
     dbg->p.ephoton() ;   // sphoton::ephoton 
  
     sscint& scint_gs = dbg->scint_gs ; 
-    sscint::FillGenstep( scint_gs, 0, 100 ); 
+    bool dump = false ; 
+    sscint::FillGenstep( scint_gs, 0, 100, dump ); 
 
     scerenkov& cerenkov_gs = dbg->cerenkov_gs ; 
 
@@ -65,7 +66,7 @@ qdebug* QDebug::MakeInstance()   // static
          << " TO FIX THIS YOU PROBABLY NEED TO RERUN THE GEOMETRY CONVERSION TO UPDATE THE PERSISTED SSim IN CSGFoundry/SSim "
          ;
 
-    scerenkov::FillGenstep( cerenkov_gs, cerenkov_matline, 100 ); 
+    scerenkov::FillGenstep( cerenkov_gs, cerenkov_matline, 100, dump ); 
 
     return dbg ; 
 }
