@@ -41,6 +41,16 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     return gs ; 
 }
 
+/**
+SEvent::MakeTorchGensteps
+--------------------------
+
+Canonically invoked from SEvt::AddTorchGenstep 
+which seems to need user code invokation. 
+HMM: perhaps SEventConfig to do this in standardized place ?
+
+**/
+
 NP* SEvent::MakeTorchGensteps(){    return MakeGensteps( OpticksGenstep_TORCH ) ; }
 NP* SEvent::MakeCerenkovGensteps(){ return MakeGensteps( OpticksGenstep_CERENKOV ) ; }
 NP* SEvent::MakeScintGensteps(){    return MakeGensteps( OpticksGenstep_SCINTILLATION ) ; }
@@ -51,6 +61,9 @@ NP* SEvent::MakeGensteps( int gentype )
     unsigned num_ph = ssys::getenvunsigned("SEvent_MakeGensteps_num_ph", 100 ); 
     bool dump = ssys::getenvbool("SEvent_MakeGensteps_dump"); 
     unsigned num_gs = 1 ; 
+
+    LOG(info) << "num_ph " << num_ph << " dump " << dump ; 
+
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     switch(gentype)
     {

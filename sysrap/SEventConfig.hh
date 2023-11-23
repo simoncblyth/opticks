@@ -80,6 +80,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
     static constexpr const char* kEventMode    = "OPTICKS_EVENT_MODE" ; 
     static constexpr const char* kRunningMode  = "OPTICKS_RUNNING_MODE" ; 
+    static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ; 
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
     static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
 
@@ -125,7 +126,9 @@ struct SYSRAP_API SEventConfig
     static bool IsRunningModeDefault(); 
     static bool IsRunningModeG4StateSave(); 
     static bool IsRunningModeG4StateRerun();  
+    static bool IsRunningModeTorch();  
 
+    static int         NumEvent(); 
     static const char* G4StateSpec(); 
     static int         G4StateRerun(); 
 
@@ -187,7 +190,8 @@ struct SYSRAP_API SEventConfig
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
-    static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State 
+    static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State/Torch
+    static void SetNumEvent(int nevt);            // NumEvent is used by some tests 
     static void SetG4StateSpec(const char* spec); 
     static void SetG4StateRerun(int id); 
 
@@ -234,6 +238,7 @@ struct SYSRAP_API SEventConfig
     static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
     static const char* _RunningModeDefault ; 
+    static int         _NumEventDefault ; 
     static const char* _G4StateSpecDefault ; 
     static const char* _G4StateSpecNotes ; 
     static int         _G4StateRerunDefault ; 
@@ -269,6 +274,7 @@ struct SYSRAP_API SEventConfig
     static int         _IntegrationMode ; 
     static const char* _EventMode ; 
     static int         _RunningMode ; 
+    static int         _NumEvent ; 
     static const char* _G4StateSpec ; 
     static int         _G4StateRerun ; 
 

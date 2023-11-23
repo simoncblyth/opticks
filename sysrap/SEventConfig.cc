@@ -25,6 +25,7 @@ const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG
 int         SEventConfig::_IntegrationModeDefault = -1 ;
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
+int         SEventConfig::_NumEventDefault = 1 ;
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ; 
 int         SEventConfig::_G4StateRerunDefault = -1 ;
@@ -67,7 +68,8 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault ); 
-int SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
+int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
+int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault ); 
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
@@ -112,7 +114,9 @@ const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
 bool SEventConfig::IsRunningModeDefault(){      return RunningMode() == SRM_DEFAULT ; } 
 bool SEventConfig::IsRunningModeG4StateSave(){  return RunningMode() == SRM_G4STATE_SAVE ; } 
 bool SEventConfig::IsRunningModeG4StateRerun(){ return RunningMode() == SRM_G4STATE_RERUN ; } 
+bool SEventConfig::IsRunningModeTorch(){        return RunningMode() == SRM_TORCH ; } 
 
+int         SEventConfig::NumEvent(){     return _NumEvent ; }
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
 
 /**
@@ -186,6 +190,7 @@ bool SEventConfig::IsHitOnly(){           return _EventMode && strcmp(_EventMode
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
 void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
+void SEventConfig::SetNumEvent(int nevt){             _NumEvent = nevt ; Check() ; }
 void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; Check() ; }
 void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; Check() ; }
 
@@ -373,6 +378,9 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << ""
        << std::setw(20) << " RunningModeLabel " << " : " << RunningModeLabel() 
+       << std::endl 
+       << std::setw(25) << kNumEvent
+       << std::setw(20) << " NumEvent " << " : " << NumEvent() 
        << std::endl 
        << std::setw(25) << kG4StateSpec
        << std::setw(20) << " G4StateSpec " << " : " << G4StateSpec() 

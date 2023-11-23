@@ -172,9 +172,17 @@ void CSGOptiX::SimulateMain() // static
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 
-    int nevt = ssys::getenvint("NEVT",1); 
-    LOG(LEVEL) << " NEVT " << nevt ; 
-    for(int i=0 ; i < nevt ; i++) cx->simulate(i); 
+    LOG(info) 
+        << SEventConfig::kNumEvent    << "=" << SEventConfig::NumEvent()
+        << SEventConfig::kRunningMode << "=" << SEventConfig::RunningMode()
+        << " SEventConfig::IsRunningModeTorch() " << ( SEventConfig::IsRunningModeTorch() ? "YES" : "NO " )
+        ; 
+
+    for(int i=0 ; i < SEventConfig::NumEvent() ; i++)
+    {
+        if(SEventConfig::IsRunningModeTorch()) SEvt::AddTorchGenstep();
+        cx->simulate(i); 
+    }
 }
 
 /**

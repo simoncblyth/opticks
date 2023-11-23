@@ -83,7 +83,9 @@ struct SYSRAP_API OpticksPhoton
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
     static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1); 
-    static std::string FlagSequence_(const unsigned long long* seqhis, unsigned nseq, bool abbrev=true, int highlight=-1); 
+
+    template<typename T>
+    static std::string FlagSequence_(const T* seqhis, unsigned nseq, bool abbrev=true, int highlight=-1); 
     // added the underscore as distinguishing by value or pointer is asking for confusion
 
     static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
@@ -247,12 +249,13 @@ inline void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, c
 
 inline std::string OpticksPhoton::FlagSequence(const unsigned long long seqhis, bool abbrev, int highlight)
 {
-    return FlagSequence_(&seqhis, 1, abbrev, highlight ); 
+    return FlagSequence_<unsigned long long>(&seqhis, 1, abbrev, highlight ); 
 }
 
-inline std::string OpticksPhoton::FlagSequence_(const unsigned long long* seqhis, unsigned nseq, bool abbrev, int highlight)
+template<typename T>
+inline std::string OpticksPhoton::FlagSequence_(const T* seqhis, unsigned nseq, bool abbrev, int highlight)
 {
-    assert(sizeof(unsigned long long)*8 == 16*4);
+    assert(sizeof(T)*8 == 16*4);
     unsigned hi = highlight < 0 ? 16*nseq : highlight ; 
 
     std::stringstream ss ;
