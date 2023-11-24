@@ -123,10 +123,13 @@ struct SYSRAP_API SEventConfig
 
     static int         RunningMode(); 
     static const char* RunningModeLabel(); 
+
     static bool IsRunningModeDefault(); 
     static bool IsRunningModeG4StateSave(); 
     static bool IsRunningModeG4StateRerun();  
     static bool IsRunningModeTorch();  
+    static bool IsRunningModeInpho();  
+    static bool IsRunningModeGun();  
 
     static int         NumEvent(); 
     static const char* G4StateSpec(); 

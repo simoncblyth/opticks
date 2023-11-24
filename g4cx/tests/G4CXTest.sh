@@ -103,7 +103,7 @@ NUM_PHOTONS=${NUM_PHOTONS:-$num_photons}
 export G4CXOpticks__setGeometry_saveGeometry=$HOME/.opticks/GEOM/$GEOM
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
-export G4CXApp__PRIMARY_MODE=torch
+export OPTICKS_RUNNING_MODE=SRM_TORCH
 export OPTICKS_MAX_BOUNCE=31  
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_INTEGRATION_MODE=3

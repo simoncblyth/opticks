@@ -421,6 +421,7 @@ set(HEADERS
     SComp.h 
 
     SEventConfig.hh
+    SRM.h 
     SFrameConfig.hh
     SGeoConfig.hh
 

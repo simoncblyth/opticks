@@ -28,12 +28,15 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 #include "G4ParticleGun.hh"
 #include "G4GeometryManager.hh"
 
+
+#include "ssys.h"
+#include "sframe.h"
+
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
 #include "SSim.hh"
-#include "ssys.h"
 #include "SEventConfig.hh"
-#include "sframe.h"
+#include "SRM.h"
 
 #include "U4Material.hh"
 #include "U4VolumeMaker.hh"
@@ -57,12 +60,11 @@ struct G4CXApp
 {
     static const plog::Severity LEVEL ; 
     static std::string Desc(); 
-    static char PrimaryMode(); 
     static G4ParticleGun* InitGun(); 
     static U4SensitiveDetector* InitSensDet(); 
 
     G4RunManager*         fRunMgr ;  
-    char                  fPrimaryMode ;  
+    int                   fRunningMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     U4SensitiveDetector*  fSensDet ; 
@@ -109,31 +111,6 @@ std::string G4CXApp::Desc() // static
     return s ; 
 }
 
-
-/**
-G4CXApp::PrimaryMode
-----------------------
-
-HMM: have SEventConfig::IsRunningModeTorch ?
-MAYBE ADD SEventConfig::IsRunningModeGun ? 
-
-Note that torch and iphoton use the same mechanism 
-at this level U4VPrimaryGenerator::GeneratePrimaries 
-the branch happens at lower level depending on 
-input photons being configured. 
-
-**/
-
-char G4CXApp::PrimaryMode() // static
-{
-    char mode = '?' ; 
-    const char* mode_ = ssys::getenvvar("G4CXApp__PRIMARY_MODE", "torch" ); 
-    if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
-    if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
-    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
-    return mode ;   
-}
-
 G4ParticleGun* G4CXApp::InitGun() // static
 {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -160,17 +137,15 @@ U4SensitiveDetector* G4CXApp::InitSensDet() // static
         << U4SensitiveDetector::Desc()
         << std::endl
         ; 
-   
-
     return sd ; 
 }
 
 G4CXApp::G4CXApp(G4RunManager* runMgr)
     :
     fRunMgr(runMgr),
-    fPrimaryMode(PrimaryMode()),
+    fRunningMode(SEventConfig::RunningMode()),
     fRecorder(new U4Recorder),
-    fGun(fPrimaryMode == 'G' ? InitGun() : nullptr),
+    fGun(fRunningMode == SRM_GUN ? InitGun() : nullptr),
     fSensDet(InitSensDet()),
     fPV(nullptr),
     fIntegrationMode(SEventConfig::IntegrationMode())
@@ -244,9 +219,9 @@ That causes kludgy SEvt::addFrameGenstep
 
 void G4CXApp::GeneratePrimaries(G4Event* event)
 {   
-    LOG(LEVEL) << "[ fPrimaryMode " << fPrimaryMode  ; 
+    LOG(LEVEL) << "[ fRunningMode " << fRunningMode  ; 
 
-    if(fPrimaryMode == 'T')
+    if(fRunningMode == SRM_TORCH)
     {
         SEvt* sev = SEvt::Get_ECPU();  
         assert(sev); 
@@ -255,11 +230,11 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
         // is kinda confusing SEvt::AddTorchGenstep();  
     }
 
-    switch(fPrimaryMode)
+    switch(fRunningMode)
     {
-        case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
-        case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; // eg from collected torch gensteps 
-        case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; // NOTE torch and iphoton are doing the same thing : misleading 
+        case SRM_GUN  : fGun->GeneratePrimaryVertex(event)              ; break ; 
+        case SRM_TORCH: U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; 
+        case SRM_INPHO: U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;
         default:  assert(0) ; break ; 
     }
     LOG(LEVEL) << "]" ; 

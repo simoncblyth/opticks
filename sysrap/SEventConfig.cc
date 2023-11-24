@@ -111,10 +111,13 @@ const char* SEventConfig::EventMode(){ return _EventMode ; }
 
 int         SEventConfig::RunningMode(){ return _RunningMode ; }
 const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
+
 bool SEventConfig::IsRunningModeDefault(){      return RunningMode() == SRM_DEFAULT ; } 
 bool SEventConfig::IsRunningModeG4StateSave(){  return RunningMode() == SRM_G4STATE_SAVE ; } 
 bool SEventConfig::IsRunningModeG4StateRerun(){ return RunningMode() == SRM_G4STATE_RERUN ; } 
 bool SEventConfig::IsRunningModeTorch(){        return RunningMode() == SRM_TORCH ; } 
+bool SEventConfig::IsRunningModeInpho(){        return RunningMode() == SRM_INPHO ; } 
+bool SEventConfig::IsRunningModeGun(){          return RunningMode() == SRM_GUN ; } 
 
 int         SEventConfig::NumEvent(){     return _NumEvent ; }
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }

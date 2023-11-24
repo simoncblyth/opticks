@@ -1315,11 +1315,11 @@ which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
 
 void SEvt::beginOfEvent(int eventID)
 {
-    LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
+    LOG_IF(info, LIFECYCLE) << id() ; 
 
     addFrameGenstep();     // needed for simtrace and input photon running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
