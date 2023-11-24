@@ -70,12 +70,13 @@ private:
     // should reside inside the sevent.h instance not up here in QEvent.hh
 
 public:
+    SEvt*             sev_cpu ;  
     SEvt*             sev ;  
 private:
     sphoton_selector* selector ; 
     sevent*           evt ; 
     sevent*           d_evt ; 
-    NP*               gs ;  
+    const NP*         gs ;  
     NP*               input_photon ; 
 public:
     int               upload_count ; 
@@ -92,7 +93,7 @@ public:
     int setGenstep();  // PRIMARY ACTION OF QEvent 
 
 private:
-    int  setGenstep(NP* gs);
+    int  setGenstep(const NP* gs);
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     void checkInputPhoton() const ; 

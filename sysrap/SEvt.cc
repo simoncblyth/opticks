@@ -42,6 +42,7 @@
 
 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
+bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
 bool SEvt::IsDefined(unsigned val){ return val != UNDEF ; }
 
@@ -1305,6 +1306,43 @@ TODO: avoid that complication by just basing
 the output dir index prefix "p" or "n" depending on SEvt::instance 
 which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
 
+
+
+Lifecycle::
+    
+      G4CXApp::BeginOfEventAction
+        U4Recorder::BeginOfEventAction
+          B.SEvt::beginOfEvent
+            ... collects gensteps into both ECPU and EGPU
+            ... collects gensteps into both ECPU and EGPU
+            ... collects gensteps into both ECPU and EGPU
+
+      G4CXApp::EndOfEventAction
+        U4Recorder::EndOfEventAction
+          B.SEvt::endOfEvent              B:clear_except("hit,genstep", ',');  
+
+        G4CXOpticks::simulate
+          QSim::simulate
+
+            A:SEvt::beginOfEvent          A:clear_except("genstep");  
+           
+            QEvent::setGenstep
+               B:SEvt::getGenstep 
+               A:SEvt::clear
+               QEvent::setGenstep(NP*)
+           
+            SCSGOptiX::simulate_launch 
+           
+            A:SEvt::endOfEvent           A:clear_except("hit,genstep", ',');  
+
+
+As gensteps are collected in the ECPU before EGPU starts 
+cannot clear the gensteps at the EGPU.start  
+
+Need to think of the lifcycle of both ECPU and EGPU together. 
+This remains true even with runningMode 1 which has no ECPU 
+as still need to collect the gensteps. 
+
 **/
 
 void SEvt::beginOfEvent(int eventID)
@@ -1315,7 +1353,18 @@ void SEvt::beginOfEvent(int eventID)
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    clear();  // vectors and fold ? 
+    //clear(); 
+
+    
+    if(isECPU())
+    {
+        clear();  
+    }
+    else if(isEGPU())
+    {
+        clear_except("genstep");  
+    }
+    
 
     addFrameGenstep();     // needed for simtrace and input photon running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
@@ -1345,10 +1394,9 @@ void SEvt::endOfEvent(int eventID)
     endIndex(index_);   // also sets t_EndOfEvent stamp
     endMeta(); 
     save();              // gather and save SEventConfig configured arrays
-    clear_except("hit"); 
+
+    clear_except("hit,genstep", ','); 
     // an earlier SEvt::clear is invoked by QEvent::setGenstep before launch 
-
-
 }
 
 void SEvt::endMeta()
@@ -1542,7 +1590,7 @@ Note this is called by:
 void SEvt::clear()
 {
     LOG_IF(info, LIFECYCLE) << id() ; 
-    //std::raise(SIGINT);
+    if(CLEAR_SIGINT) std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
  
     clear_vectors(); 
@@ -1560,14 +1608,14 @@ The comma delimited keeplist need not contain .npy on its keys
 
 **/
 
-void SEvt::clear_except(const char* keep)
+void SEvt::clear_except(const char* keep, char delim)
 {
-    LOG_IF(info, LIFECYCLE) << id() ; 
+    LOG_IF(info, LIFECYCLE) << id() << " keep " << keep ; 
     LOG(LEVEL) << "[" ; 
+
     clear_vectors(); 
 
     bool copy = false ; 
-    char delim = ',' ; 
     if(fold) fold->clear_except(keep, copy, delim); 
 
     LOG(LEVEL) << "]" ; 
@@ -1593,6 +1641,13 @@ int SEvt::getIndex() const
 { 
     return index ; 
 }
+int SEvt::getIndexPresentation() const 
+{ 
+    return index == MISSING_INDEX ? -1 : index ; 
+}
+
+
+
 void SEvt::incrementIndex()
 {
     int base_index = index == MISSING_INDEX ? 0 : index ; 
@@ -1815,7 +1870,7 @@ needed to accommodate the photons from the last genstep collected.
 
 void SEvt::setNumPhoton(unsigned num_photon)
 {
-    LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ; 
+    //LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ; 
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
     LOG_IF(fatal, !num_photon_allowed) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
     assert( num_photon_allowed );
@@ -3011,7 +3066,7 @@ std::string SEvt::id() const
     ss << "SEvt::id " 
        << ( is_egpu ? "EGPU" : "" )
        << ( is_ecpu ? "ECPU" : "" )
-       << " (" << index << ") " 
+       << " (" << getIndexPresentation() << ") " 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -3685,10 +3740,13 @@ std::string SEvt::descVec() const
 
 
 
-const NP* SEvt::getPhoton() const { return fold->get(SComp::PHOTON_) ; }
-const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
-const NP* SEvt::getAux() const {    return fold->get(SComp::AUX_) ; }
-const NP* SEvt::getSup() const {    return fold->get(SComp::SUP_) ; }
+
+
+const NP* SEvt::getGenstep() const { return fold->get(SComp::GENSTEP_) ;}
+const NP* SEvt::getPhoton() const {  return fold->get(SComp::PHOTON_) ; }
+const NP* SEvt::getHit() const {     return fold->get(SComp::HIT_) ; }
+const NP* SEvt::getAux() const {     return fold->get(SComp::AUX_) ; }
+const NP* SEvt::getSup() const {     return fold->get(SComp::SUP_) ; }
 
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    

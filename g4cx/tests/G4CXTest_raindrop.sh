@@ -46,24 +46,28 @@ num=1000
 #num=1000000
 NUM=${NUM:-$num}
 
-export SEvent_MakeGensteps_num_ph=$NUM
 
-#src="rectangle"
-src="disc"
+export OPTICKS_RUNNING_MODE="SRM_TORCH"
 
-if [ "$src" == "rectangle" ]; then
-    export storch_FillGenstep_pos=0,0,0
-    export storch_FillGenstep_type=rectangle
-    export storch_FillGenstep_zenith=-20,20
-    export storch_FillGenstep_azimuth=-20,20
-elif [ "$src" == "disc" ]; then
-    export storch_FillGenstep_type=disc
-    export storch_FillGenstep_radius=50        # radius
-    export storch_FillGenstep_zenith=0,1       # radial range scale
-    export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction 
-    export storch_FillGenstep_mom=1,0,0
-    export storch_FillGenstep_pos=-80,0,0
-fi 
+if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
+    export SEvent_MakeGensteps_num_ph=$NUM
+    #src="rectangle"
+    src="disc"
+
+    if [ "$src" == "rectangle" ]; then
+        export storch_FillGenstep_pos=0,0,0
+        export storch_FillGenstep_type=rectangle
+        export storch_FillGenstep_zenith=-20,20
+        export storch_FillGenstep_azimuth=-20,20
+    elif [ "$src" == "disc" ]; then
+        export storch_FillGenstep_type=disc
+        export storch_FillGenstep_radius=50        # radius
+        export storch_FillGenstep_zenith=0,1       # radial range scale
+        export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction 
+        export storch_FillGenstep_mom=1,0,0
+        export storch_FillGenstep_pos=-80,0,0
+    fi 
+fi
 
 
 #oim=2  # CPU only 

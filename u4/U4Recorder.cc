@@ -286,14 +286,16 @@ void U4Recorder::BeginOfEventAction(const G4Event* event)
 { 
     eventID = event->GetEventID() ; 
     LOG(info) << " eventID " << eventID ; 
+    LOG_IF(info, SEvt::LIFECYCLE ) << " eventID " << eventID ; 
 
     sev->beginOfEvent(eventID);  
 }
 
 void U4Recorder::EndOfEventAction(const G4Event* event)
-{  
+{ 
     G4int eventID_ = event->GetEventID() ; 
     assert( eventID == eventID_ ); 
+    LOG_IF(info, SEvt::LIFECYCLE ) << " eventID " << eventID ; 
 
     #if defined(WITH_PMTSIM) && defined(POM_DEBUG)
         NP* mtda = PMTSim::ModelTrigger_Debug_Array(); 

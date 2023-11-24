@@ -93,6 +93,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
     static bool LIFECYCLE ; 
 
+    static constexpr const char* SEvt__CLEAR_SIGINT = "SEvt__CLEAR_SIGINT" ; 
+    static bool CLEAR_SIGINT ; 
+
+
     int cfgrc ; 
 
     int index ; 
@@ -380,12 +384,13 @@ private:
     void clear_vectors() ; 
 public:
     void clear() ; 
-    void clear_except(const char* keep ); 
+    void clear_except(const char* keep, char delim=',' ); 
 
     void setIndex(int index_) ;  
     void endIndex(int index_) ;  
 
     int  getIndex() const ; 
+    int  getIndexPresentation() const ; 
     void incrementIndex() ;  
     void unsetIndex() ;  
 
@@ -543,6 +548,7 @@ public:
     std::string descComp() const ; 
     std::string descVec() const ; 
 
+    const NP* getGenstep() const ; 
     const NP* getPhoton() const ; 
     const NP* getHit() const ; 
     const NP* getAux() const ; 

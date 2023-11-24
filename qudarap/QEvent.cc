@@ -92,6 +92,7 @@ Q: Where is the SEvt::EGPU instanciated ?
 
 QEvent::QEvent()
     :
+    sev_cpu(SEvt::Get_ECPU()),
     sev(SEvt::Get_EGPU()),
     selector(sev ? sev->selector : nullptr),
     evt(sev ? sev->evt : nullptr),
@@ -159,11 +160,22 @@ Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->lau
 
 int QEvent::setGenstep()  // onto device
 {
+    LOG_IF(info, SEvt::LIFECYCLE) ; 
+    
+
 #ifndef PRODUCTION 
     sev->t_setGenstep_0 = sstamp::Now(); 
 #endif
 
-    NP* gs = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+    //NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+    const NP* gs_ = sev_cpu ? sev_cpu->getGenstep() : nullptr ; 
+
+    LOG_IF(fatal, gs_ == nullptr ) 
+         << "Must SEvt/addGenstep before calling QEvent::setGenstep " 
+         << " sev_cpu " << ( sev_cpu ? "YES" : "NO " )
+         ;
+    if(gs_ == nullptr) std::raise(SIGINT); 
+
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_1 = sstamp::Now(); 
@@ -175,10 +187,8 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_2 = sstamp::Now(); 
 #endif
 
-    LOG_IF(fatal, gs == nullptr ) << "Must SEvt/addGenstep before calling QEvent::setGenstep " ;
-    //if(gs == nullptr) std::raise(SIGINT); 
 
-    return gs == nullptr ? -1 : setGenstep(gs) ; 
+    return gs_ == nullptr ? -1 : setGenstep(gs_) ; 
 } 
 
 
@@ -214,7 +224,7 @@ If the number of gensteps is zero there are no photons and no launch.
 **/
 
 
-int QEvent::setGenstep(NP* gs_) 
+int QEvent::setGenstep(const NP* gs_) 
 {
 #ifndef PRODUCTION 
     sev->t_setGenstep_3 = sstamp::Now(); 
@@ -459,7 +469,7 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
 
 NP* QEvent::getGenstep() const 
 {
-    return gs ; 
+    return const_cast<NP*>(gs) ;  // const_cast so can use QEvent::gatherComponent_
 }
 
 NP* QEvent::getInputPhoton() const 
@@ -487,6 +497,7 @@ void QEvent::gatherPhoton(NP* p) const
     int rc = QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
 
     LOG_IF(fatal, rc != 0) 
+         << " QU::copy_device_to_host photon FAILED "
          << " evt->photon " << ( evt->photon ? "Y" : "N" ) 
          << " evt->num_photon " <<  evt->num_photon
          ;
@@ -787,6 +798,7 @@ NP* QEvent::gatherComponent_(unsigned cmp) const
     {   
         case SCOMP_GENSTEP:   a = getGenstep()     ; break ;   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
+
         case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
         case SCOMP_HIT:       a = gatherHit()      ; break ;   
 #ifndef PRODUCTION

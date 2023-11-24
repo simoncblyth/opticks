@@ -327,11 +327,28 @@ NB the surprising fact that this calls CSGOptiX::simulate (using a protocol),
 that seems funny dependency-wise but its needed for genstep preparation prior to 
 the launch. 
 
+::
+
+    QSim::simulate 
+
+       SEvt::beginOfEvent
+
+       QEvent::setGenstep
+          ECPU.SEvt::getGenstep 
+          SEvt::clear
+          QEvent::setGenstep(NP*)
+
+       SCSGOptiX::simulate_launch 
+
+       SEvt::endOfEvent
+
+
 **/
 
 double QSim::simulate(int eventID)
 {
     LOG(LEVEL) << desc() ;  
+    LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
 
     LOG_IF(error, event == nullptr) << " QEvent:event null " << desc()  ; 
     if( event == nullptr ) std::raise(SIGINT) ; 
@@ -348,7 +365,8 @@ double QSim::simulate(int eventID)
 
     sev->t_Launch = dt ; 
     sev->endOfEvent(eventID);
- 
+    LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
+
     return dt ; 
 }
 
