@@ -38,8 +38,6 @@ script=$SDIR/G4CXTest_GEOM.py
 
 source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for finding geometry
 
-
-
 [ -n "$CVD" ] && export CUDA_VISIBLE_DEVICES=$CVD
 
 
@@ -67,9 +65,9 @@ NUM=${NUM:-$num}
 export OPTICKS_MAX_PHOTON=100000  
 
 
-srm=SRM_TORCH
+#srm=SRM_TORCH
 #srm=SRM_INPHO
-#srm=SRM_GUN
+srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 
 echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE

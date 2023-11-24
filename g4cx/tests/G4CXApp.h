@@ -219,15 +219,14 @@ That causes kludgy SEvt::addFrameGenstep
 
 void G4CXApp::GeneratePrimaries(G4Event* event)
 {   
-    LOG(LEVEL) << "[ fRunningMode " << fRunningMode  ; 
+    LOG(LEVEL) << "[ SEventConfig::RunningModeLabel " << SEventConfig::RunningModeLabel() ; 
 
     if(fRunningMode == SRM_TORCH)
     {
         SEvt* sev = SEvt::Get_ECPU();  
         assert(sev); 
         sev->addTorchGenstep(); 
-        // adding to both instances via static 
-        // is kinda confusing SEvt::AddTorchGenstep();  
+        // formerly added to both instances via static SEvt::AddTorchGenstep()
     }
 
     switch(fRunningMode)

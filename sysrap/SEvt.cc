@@ -573,11 +573,8 @@ void SEvt::addFrameGenstep()
     LOG_IF(info, LIFECYCLE) << id() ; 
     LOG(LEVEL); 
 
-
     if(SEventConfig::IsRGModeSimtrace())
     { 
-        fold->clear(); // ADHOC
-
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry 
         if(frs)
         {
@@ -604,9 +601,6 @@ void SEvt::addFrameGenstep()
 
         if( has_inpho || has_torch )
         {
-            // HMMZ SHOULD THIS BE clear TO CLEAR THE VECTORS TOO
-            fold->clear();  // ADHOC : TRY TO HANDLE U4Recorder DUPLICATE KEY ISSUE
-
             if( has_inpho )
             { 
                 assertZeroGensteps(); 
@@ -1321,6 +1315,8 @@ void SEvt::beginOfEvent(int eventID)
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
+    clear();  // vectors and fold ? 
+
     addFrameGenstep();     // needed for simtrace and input photon running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
@@ -1550,7 +1546,7 @@ void SEvt::clear()
     LOG(LEVEL) << "[" ;
  
     clear_vectors(); 
-    if(fold) fold->clear(); 
+    fold->clear(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -3103,6 +3099,18 @@ void SEvt::gather_components()   // *GATHER*
         << " hit_total " << hit_total 
         ;
 }
+
+
+/**
+SEvt::gather_metadata
+----------------------
+
+HMM: replaces fold.meta with metadata from provider : either this SEvt or QEvent ?
+
+* does this make sense anymore ?  
+
+**/
+
 
 void SEvt::gather_metadata()
 {

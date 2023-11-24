@@ -34,19 +34,28 @@ bin=CSGOptiXSMTest
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
 export EVT=${EVT:-p001}
-export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM/$bin
-export LOGDIR=$BASE
-export FOLD=$BASE/ALL/$EVT
+export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
+export BINBASE=$BASE/$bin
+export LOGDIR=$BINBASE
+export AFOLD=$BINBASE/ALL/$EVT
+
+export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
+
+
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGFILE=$bin.log
 
 
-#light="input_photon"
-light="storch"
+srm=SRM_TORCH
+#srm=SRM_INPHO
+#srm=SRM_GUN
+export OPTICKS_RUNNING_MODE=$srm
 
-if [ "$light" == "input_photon" ]; then 
+echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
+
+if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPHO" ]; then 
 
     #ipho=RainXZ_Z195_1000_f8.npy      ## ok 
     #ipho=RainXZ_Z230_1000_f8.npy      ## ok
@@ -68,11 +77,8 @@ if [ "$light" == "input_photon" ]; then
     export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$ipho};
     export OPTICKS_INPUT_PHOTON_FRAME=${MOI:-$moi}
 
-    
+elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-elif [ "$light" == "storch" ]; then 
-
-    export OPTICKS_RUNNING_MODE=SRM_TORCH
     export SEvent_MakeGensteps_num_ph=100000
     #src="rectangle"
     #src="disc"
@@ -97,22 +103,18 @@ elif [ "$light" == "storch" ]; then
         export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
     fi 
 
+elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then 
+
+    echo -n 
+
 fi 
 
 
-export SEvt__LIFECYCLE=1
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_MAX_BOUNCE=31
-
-#export OPTICKS_MAX_PHOTON=10000
 export OPTICKS_MAX_PHOTON=100000
 export OPTICKS_INTEGRATION_MODE=1
-
 export OPTICKS_NUM_EVENT=3 
-
-# investigate double call to clear
-# see ~/opticks/notes/issues/SEvt__clear_double_call.rst
-#export SEvt__DEBUG_CLEAR=1
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
@@ -123,11 +125,13 @@ logging(){
     export CSGOptiX=INFO
     export QEvent=INFO 
     export QSim=INFO
+    #export SEvt__DEBUG_CLEAR=1   # see ~/opticks/notes/issues/SEvt__clear_double_call.rst
+    #export SEvt__LIFECYCLE=1
 }
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
+vars="GEOM LOGDIR BINBASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -154,10 +158,12 @@ fi
 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/rsync.sh $BASE
+    source $OPTICKS_HOME/bin/rsync.sh $BINBASE
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $SDIR/cxs_min.py
 fi 
+
+
 

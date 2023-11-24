@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, logging, numpy as np
-from opticks.sysrap.sevt import SEvt
+from opticks.sysrap.sevt import SEvt, SAB
 log = logging.getLogger(__name__)
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
@@ -18,12 +18,19 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     print("GLOBAL:%d MODE:%d SEL:%d" % (GLOBAL,MODE, SEL))
 
-    e = SEvt.Load(symbol="e")
-    print(repr(e))
+    a = SEvt.Load("$AFOLD", symbol="a")
+    print(repr(a))
+
+    if "BFOLD" in os.environ:   
+        b = SEvt.Load("$BFOLD", symbol="b") 
+        print(repr(b))
+        ab = SAB(a,b) 
+        print(repr(ab))
+    pass
+
+    e = a 
 
     qtab = e.minimal_qtab()
-
-
     label = e.f.base
 
     if MODE in [0,1]:
