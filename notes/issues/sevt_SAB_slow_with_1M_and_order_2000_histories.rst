@@ -11,6 +11,88 @@ possible in the python/numpy way.
 
 Maybe need to do in C++ ?   
 
+
+
+HMM recall doing something similar before with thrust : for the OpenGL/imgui category interface
+--------------------------------------------------------------------------------------------------
+
+
+TODO: need to bring the below into new workflow, it does most 
+of np.unique on device already (no first indices though) 
+
+::
+
+    epsilon:cudarap blyth$ opticks-f thrust::sort 
+    ./thrustrap/TSparse_.cu:   thrust::sort_by_key 
+    ./thrustrap/TSparse_.cu:    thrust::sort(data.begin(), data.end());
+    ./thrustrap/TSparse_.cu:    thrust::sort_by_key( 
+    epsilon:opticks blyth$ 
+
+::
+
+    115 template <typename T>
+    116 void TSparse<T>::count_unique()
+    117 {
+    118     typedef typename thrust::device_vector<T>::iterator Iterator;
+    119 
+    120     thrust::device_ptr<T> psrc = thrust::device_pointer_cast((T*)m_source.dev_ptr) ;
+    121 
+    122     strided_range<Iterator> src( psrc + m_source.begin, psrc + m_source.end, m_source.stride );
+    123 
+    124     thrust::device_vector<T> data(src.begin(), src.end());  // copy to avoid sorting original
+    125 
+    126     thrust::sort(data.begin(), data.end());
+    127 
+    128     // inner_product of sorted data with shifted by one self finds "edges" between values 
+    129     m_num_unique = thrust::inner_product(
+    130                                   data.begin(),data.end() - 1,   // first1, last1  
+    131                                              data.begin() + 1,   // first2
+    132                                                        int(1),   // output type init 
+    133                                           thrust::plus<int>(),   // reduction operator
+    134                                     thrust::not_equal_to<T>()    // pair-by-pair operator, returning 1 at edges 
+    135                                       );
+    136 
+    137 
+    138 #ifdef DEBUG
+    139     printf("TSparse<T>::count_unique m_num_unique %d \n", m_num_unique) ;
+    140 #endif
+    141 
+    142     m_values.resize(m_num_unique);
+    143     m_counts.resize(m_num_unique);
+    144 
+    145     // find all unique key values with their counts
+    146     thrust::reduce_by_key(
+    147                                 data.begin(),    // keys_first
+    148                                   data.end(),    // keys_last 
+    149            thrust::constant_iterator<int>(1),    // values_first 
+    150                             m_values.begin(),    // keys_output 
+    151                             m_counts.begin()     // values_output
+    152                          );
+    153 
+    154    // *reduce_by_key* is a generalization of reduce to key-value pairs. For each group
+    155    // of consecutive keys in the range [keys_first, keys_last) that are equal,
+    156    // reduce_by_key copies the first element of the group to the keys_output. 
+    157    // The corresponding values in the range are reduced using the plus and the result
+    158    // copied to values_output.
+    159    //
+    160    // As *data* is sorted this means get each unique key once in m_values together
+    161    // the occurrent count in m_counts    
+    162 
+    163     thrust::sort_by_key(
+    164                           m_counts.begin(),     // keys_first
+    165                             m_counts.end(),     // keys_last 
+    166                           m_values.begin(),     // values_first
+    167                      thrust::greater<int>()
+    168                        );
+    169 
+    170     // sorts keys and values into descending key order, as the counts are in 
+    171     // the key slots this sorts in descending count order
+    172 
+    173 }
+
+
+
+
 Issue sevt.py:SAB taking minutes for only 1M photons ? Due to many distinct histories
 ---------------------------------------------------------------------------------------
 
@@ -150,7 +232,6 @@ Left field : use 128 bit big int
 
     sysrap/tests/sbigint_test.cc
     sysrap/tests/sbigint_test.sh
-
 
 
 

@@ -56,6 +56,39 @@ void test_load_seq()
     }
 }
 
+/**
+test_unique_count_comparison
+-------------------------------
+
+Currently doing this in python starting from::
+
+   np.unique(a, return_index=True, return_counts=True ) 
+
+but its rather slow with 1M photons::
+
+   notes/issues/sevt_SAB_slow_with_1M_and_order_2000_histories.rst
+
+Look into alternatives::
+
+   sysrap/tests/unique_count_comparison/
+   thrustrap/TSparse_.cu
+
+HMM a CPU version of TSparse_.cu would be interesting to see speedup::
+
+   NP* uic = NP::UniqueIndexCount(a) ; 
+
+**/
+
+void test_unique()
+{
+    const char* _path = "$TMP/GEOM/$GEOM/G4CXTest/ALL0/p001/seq.npy" ; 
+    const char* path = spath::Resolve(_path) ; 
+    NP* a = NP::Load(path); 
+    if(a == nullptr) return ; 
+    std::cout << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
