@@ -70,7 +70,6 @@ private:
     // should reside inside the sevent.h instance not up here in QEvent.hh
 
 public:
-    SEvt*             sev_cpu ;  
     SEvt*             sev ;  
 private:
     sphoton_selector* selector ; 

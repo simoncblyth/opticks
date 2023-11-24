@@ -82,5 +82,9 @@ public:
     void saveGeometry() const ;
     void saveGeometry(const char* dir) const ; 
 
+
+    void SensitiveDetector_Initialize(int eventID);
+    void SensitiveDetector_EndOfEvent(int eventID); 
+
 };
 

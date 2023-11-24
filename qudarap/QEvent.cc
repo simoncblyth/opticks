@@ -92,7 +92,6 @@ Q: Where is the SEvt::EGPU instanciated ?
 
 QEvent::QEvent()
     :
-    sev_cpu(SEvt::Get_ECPU()),
     sev(SEvt::Get_EGPU()),
     selector(sev ? sev->selector : nullptr),
     evt(sev ? sev->evt : nullptr),
@@ -167,12 +166,11 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_0 = sstamp::Now(); 
 #endif
 
+    NP* gs_ = SEvent::GetGENSTEP(); 
     //NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
-    const NP* gs_ = sev_cpu ? sev_cpu->getGenstep() : nullptr ; 
 
     LOG_IF(fatal, gs_ == nullptr ) 
-         << "Must SEvt/addGenstep before calling QEvent::setGenstep " 
-         << " sev_cpu " << ( sev_cpu ? "YES" : "NO " )
+         << "Must SEvent::SetGENSTEP before calling QEvent::setGenstep " 
          ;
     if(gs_ == nullptr) std::raise(SIGINT); 
 

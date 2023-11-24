@@ -20,11 +20,65 @@
 
 #include "OpticksGenstep.h"
 
-
+#include "SEvt.hh"
 #include "SGenstep.hh"
 #include "SEvent.hh"
 
 const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ; 
+
+
+NP* SEvent::GENSTEP = nullptr ; 
+NP* SEvent::GetGENSTEP()
+{
+    LOG_IF(info, SEvt::LIFECYCLE ) <<  " GENSTEP " << ( GENSTEP ? GENSTEP->sstr() : "-" ); 
+    return GENSTEP ; 
+}
+
+/**
+HMM: delete prior and copying on set would avoid uncontrolled leak 
+
+void SEvent::SetGENSTEP(NP* gs)
+{
+    delete GENSTEP ; 
+    GENSTEP = gs ? gs->copy() : nullptr ; 
+}
+**/
+
+
+
+void SEvent::SetGENSTEP(NP* gs)
+{
+    GENSTEP = gs ; 
+    LOG_IF(info, SEvt::LIFECYCLE ) <<  " GENSTEP " << ( GENSTEP ? GENSTEP->sstr() : "-" ); 
+}
+
+bool SEvent::HaveGENSTEP()
+{
+    return GENSTEP != nullptr ; 
+}
+
+NP* SEvent::HIT = nullptr ; 
+NP* SEvent::GetHIT()
+{
+    return HIT ; 
+}
+void SEvent::SetHIT(NP* gs)
+{
+    HIT = gs ; 
+}
+bool SEvent::HaveHIT()
+{
+    return HIT != nullptr ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 NP* SEvent::MakeDemoGensteps(const char* config)

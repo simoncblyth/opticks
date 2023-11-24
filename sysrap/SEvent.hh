@@ -18,6 +18,19 @@ struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
 
+    static NP* GENSTEP ; 
+    static NP*  GetGENSTEP(); 
+    static void SetGENSTEP(NP* gs); 
+    static bool HaveGENSTEP(); 
+
+    static NP* HIT ; 
+    static NP*  GetHIT(); 
+    static void SetHIT(NP* gs); 
+    static bool HaveHIT(); 
+
+
+
+
     static NP* MakeDemoGensteps(const char* config=nullptr);  
 
     static NP* MakeTorchGensteps();  

@@ -82,6 +82,9 @@ public:
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
 
+    void BeginOfEventAction_(int eventID_);
+    void EndOfEventAction_(int eventID_);
+
     void PreUserTrackingAction(const G4Track*);
     void PostUserTrackingAction(const G4Track*);
 

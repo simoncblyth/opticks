@@ -281,19 +281,37 @@ void U4Recorder::EndOfRunAction(const G4Run*)
         ;
 }
 
-
 void U4Recorder::BeginOfEventAction(const G4Event* event)
+{
+    int eventID_ = event->GetEventID() ; 
+    //BeginOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
+}
+void U4Recorder::EndOfEventAction(const G4Event* event)
+{
+    int eventID_ = event->GetEventID() ; 
+    //EndOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
+}
+
+
+void U4Recorder::BeginOfEventAction_(int eventID_)
 { 
-    eventID = event->GetEventID() ; 
+    eventID = eventID_ ; 
     LOG(info) << " eventID " << eventID ; 
     LOG_IF(info, SEvt::LIFECYCLE ) << " eventID " << eventID ; 
-
     sev->beginOfEvent(eventID);  
 }
 
-void U4Recorder::EndOfEventAction(const G4Event* event)
+/**
+U4Recorder::EndOfEventAction
+-----------------------------
+
+This is happening later than expected causing lifecycle 
+issues between the SEvt::ECPU and SEvt::EGPU 
+
+**/
+
+void U4Recorder::EndOfEventAction_(int eventID_)
 { 
-    G4int eventID_ = event->GetEventID() ; 
     assert( eventID == eventID_ ); 
     LOG_IF(info, SEvt::LIFECYCLE ) << " eventID " << eventID ; 
 
@@ -309,7 +327,8 @@ void U4Recorder::EndOfEventAction(const G4Event* event)
     sev->add_array("U4R.npy", MakeMetaArray() ); 
     sev->addEventConfigArray(); 
 
-
+    // SEvt::endOfEvent THIS TAKES IMPORTANT ACTIONS
+    // BUT USING THE RECORDER IS OPTIONAL ? 
     sev->endOfEvent(eventID_);  // does save and clear
 
     const char* savedir = sev->getSaveDir() ; 

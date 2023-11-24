@@ -39,7 +39,7 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE
 export AFOLD=$BINBASE/ALL/$EVT
 
-export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
+#export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
 
 
 

@@ -96,11 +96,31 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__CLEAR_SIGINT = "SEvt__CLEAR_SIGINT" ; 
     static bool CLEAR_SIGINT ; 
 
+    enum { SEvt__SEvt, 
+           SEvt__init, 
+           SEvt__beginOfEvent, 
+           SEvt__endOfEvent,
+           SEvt__gather,
+           SEvt__clear
+           } ; 
+
+    static constexpr const char* SEvt__SEvt_ = "SEvt__SEvt" ;  
+    static constexpr const char* SEvt__init_ = "SEvt__init" ;  
+    static constexpr const char* SEvt__beginOfEvent_ = "SEvt__beginOfEvent" ;  
+    static constexpr const char* SEvt__endOfEvent_ = "SEvt__endOfEvent" ;  
+    static constexpr const char* SEvt__gather_ = "SEvt__gather" ;  
+    static constexpr const char* SEvt__clear_ = "SEvt__clear" ;  
+
+    const char* descStage() const ; 
+    void setStage(int stage_); 
+    int  getStage() const ; 
+
 
     int cfgrc ; 
 
     int index ; 
     int instance ; 
+    int stage ; 
 
     sprof p_SEvt__beginOfEvent_0 ; 
     sprof p_SEvt__beginOfEvent_1 ; 
@@ -220,6 +240,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static std::string DescINSTANCE(); 
 
 private:
+
     SEvt(); 
     void init(); 
 public:
@@ -302,6 +323,8 @@ public:
 
     bool isEGPU() const ; 
     bool isECPU() const ; 
+    SEvt* getSibling() const ; 
+
 
     static bool Exists(int idx); 
     static void Check(int idx);
@@ -457,6 +480,9 @@ public:
     NP* gatherGS() const ;   // genstep labels from std::vector<sgs>  
 
     NP* gatherGenstep() const ;  // from genstep vector
+    bool haveGenstepVec() const ; 
+
+
     NP* gatherPhoton() const ; 
     NP* gatherRecord() const ; 
     NP* gatherRec() const ; 

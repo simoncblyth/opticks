@@ -17,6 +17,7 @@
 #include "SFrameGenstep.hh"
 
 #include "U4VolumeMaker.hh"
+#include "U4Recorder.hh"
 
 #include "SEventConfig.hh"
 #include "U4GDML.h"
@@ -580,6 +581,77 @@ void G4CXOpticks::SaveGeometry() // static
     if(dir == nullptr) return ; 
     LOG(info) << " save to dir " << dir << " configured via envvar " << SaveGeometry_KEY ; 
     INSTANCE->saveGeometry(dir); 
+}
+
+
+
+/**
+G4CXOpticks::SensitiveDetector_Initialize
+-------------------------------------------
+
+Optional lifecycle method intended to be called from Geant4 integration 
+G4VSensitiveDetector::Initialize
+
+**/
+
+void G4CXOpticks::SensitiveDetector_Initialize(int eventID)
+{
+    LOG(error) << " eventID " << eventID ; 
+    U4Recorder* recorder = U4Recorder::Get(); 
+    if(recorder)
+    {
+        recorder->BeginOfEventAction_(eventID); 
+    }
+}
+
+
+/**
+G4CXOpticks::SensitiveDetector_EndOfEvent
+-------------------------------------------
+
+Optional lifecycle method intended to be called from Geant4 integration 
+G4VSensitiveDetector::EndOfEvent
+
+The Geant4 call order gleaned from g4-cls G4EventManager
+with the related calls to G4CXOpticks and U4Recorder::
+
+    G4VSensitiveDetector::Initialize      
+
+    G4UserEventAction::BeginOfEventAction  ==> U4Recorder::BeginOfEventAction
+
+       
+    G4VSensitiveDetector::EndOfEvent       ==> G4CXOpticks::simulate : AS HITS NEEDED HERE
+
+    G4UserEventAction::EndOfEventAction    ==> U4Recorder::EndOfEventAction 
+
+
+This call order presents complications as the simulate call needs the gensteps 
+from the SEvt::ECPU that is only wrapped up at U4Recorder::EndOfEventAction.
+This pair of methods enables rearranging the order::
+
+    G4VSensitiveDetector::Initialize       ==> U4Recorder::BeginOfEventAction
+
+    G4UserEventAction::BeginOfEventAction  
+
+       
+    G4VSensitiveDetector::EndOfEvent       ==> U4Recorder::EndOfEventAction,  
+                                           ==> G4CXOpticks::simulate : AS HITS NEEDED HERE
+
+    G4UserEventAction::EndOfEventAction   
+
+Note that the Stepping and Tracking actions handled by 
+the U4Recorder can proceed unchanged by this. 
+
+**/
+
+void G4CXOpticks::SensitiveDetector_EndOfEvent(int eventID)
+{
+    LOG(error) << " eventID " << eventID ; 
+    U4Recorder* recorder = U4Recorder::Get(); 
+    if(recorder)
+    {
+        recorder->EndOfEventAction_(eventID); 
+    }
 }
 
 

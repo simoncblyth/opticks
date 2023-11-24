@@ -44,6 +44,21 @@
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
+
+const char* SEvt::descStage() const 
+{
+    const char* st = nullptr ; 
+    switch(stage)
+    {
+        case SEvt__SEvt:         st = SEvt__SEvt_         ; break ; 
+        case SEvt__init:         st = SEvt__init_         ; break ; 
+        case SEvt__beginOfEvent: st = SEvt__beginOfEvent_ ; break ; 
+        case SEvt__endOfEvent:   st = SEvt__endOfEvent_   ; break ; 
+        case SEvt__gather:       st = SEvt__gather_   ; break ; 
+    }
+    return st ; 
+}
+
 bool SEvt::IsDefined(unsigned val){ return val != UNDEF ; }
 
 stimer* SEvt::TIMER = new stimer ;
@@ -92,8 +107,14 @@ std::string SEvt::DescINSTANCE()  // static
 
 
 
-
-
+void SEvt::setStage(int stage_)
+{
+    stage = stage_ ; 
+}
+int SEvt::getStage() const
+{
+    return stage ; 
+}
 
 
 /**
@@ -115,6 +136,7 @@ SEvt::SEvt()
     cfgrc(SEventConfig::Initialize()),  
     index(MISSING_INDEX),
     instance(MISSING_INSTANCE),
+    stage(SEvt__SEvt),
     t_BeginOfEvent(0),
 #ifndef PRODUCTION
     t_setGenstep_0(0),
@@ -179,6 +201,8 @@ components gatherered from device buffers.
 
 void SEvt::init()
 {
+    setStage(SEvt__init); 
+
     LOG_IF(info, LIFECYCLE) << id() ; 
 
     LOG(LEVEL) << "[" ; 
@@ -917,6 +941,19 @@ SEvt* SEvt::Create(int idx)  // static
 bool SEvt::isEGPU() const { return instance == EGPU ; }
 bool SEvt::isECPU() const { return instance == ECPU ; }
 
+SEvt* SEvt::getSibling() const
+{
+    SEvt* sibling = nullptr ; 
+    switch(instance)
+    {
+        case ECPU:  sibling = Get(EGPU) ; break ;  
+        case EGPU:  sibling = Get(ECPU) ; break ;  
+        default:    sibling = nullptr ; 
+    }
+    return sibling ; 
+}
+
+
 bool SEvt::Exists(int idx)  // static 
 {
     return Get(idx) != nullptr ; 
@@ -1290,6 +1327,9 @@ template void SEvt::setMeta<double>(const char*, double );
 template void SEvt::setMeta<std::string>(const char*, std::string ); 
 
 
+
+
+
 /**
 SEvt::beginOfEvent  (former static SEvt::BeginOfEvent is removed)
 -------------------------------------------------------------------
@@ -1319,27 +1359,34 @@ Lifecycle::
 
       G4CXApp::EndOfEventAction
         U4Recorder::EndOfEventAction
-          B.SEvt::endOfEvent              B:clear_except("hit,genstep", ',');  
+          B.SEvt::endOfEvent                    ==> SEvent::SetGENSTEP    
+
+        ^^^^ LIFECYCLE ISSUE IS BECAUSE THIS DONT RUN BEFORE THE BELOW ^^^
+        ^^^^ IN ANY CASE NEED TO WORK WITHOUT THE U4RECORDER ^^^^^^^^^^^^^
 
         G4CXOpticks::simulate
           QSim::simulate
 
-            A:SEvt::beginOfEvent          A:clear_except("genstep");  
+            A:SEvt::beginOfEvent        
            
             QEvent::setGenstep
                B:SEvt::getGenstep 
                A:SEvt::clear
-               QEvent::setGenstep(NP*)
+               QEvent::setGenstep(NP*)          <==  SEvent::GetGENSTEP
            
             SCSGOptiX::simulate_launch 
            
-            A:SEvt::endOfEvent           A:clear_except("hit,genstep", ',');  
+            A:SEvt::endOfEvent         
+
+
+Try avoiding making SEvt more complicated by effecting the genstep
+passing from ECPU to EGPU via SEvent::GENSTEP
 
 
 As gensteps are collected in the ECPU before EGPU starts 
 cannot clear the gensteps at the EGPU.start  
 
-Need to think of the lifcycle of both ECPU and EGPU together. 
+Need to think of the lifecycle of both ECPU and EGPU together. 
 This remains true even with runningMode 1 which has no ECPU 
 as still need to collect the gensteps. 
 
@@ -1347,28 +1394,41 @@ as still need to collect the gensteps.
 
 void SEvt::beginOfEvent(int eventID)
 {
+    setStage(SEvt__beginOfEvent); 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
+
+
+    /*
+    // kicking the sibling is a kludge that 
+    // G4CXOpticks::SensitiveDetector_EndOfEvent 
+    //should avoid
+
+    if(isEGPU()) 
+    {
+        SEvt* ecpu = getSibling() ; 
+        if(ecpu->getIndex() == index_ )
+        {
+            LOG_IF(info, LIFECYCLE) << id() << " KICK ECPU SIBLING : " << ecpu->id() ; 
+            ecpu->endOfEvent(eventID) ; 
+        }
+        else
+        {
+            LOG_IF(info, LIFECYCLE) << id() << " ECPU SIBLING NOT SAME INDEX : " << ecpu->id() ; 
+        }
+    }
+    */
+
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    //clear(); 
-
-    
-    if(isECPU())
-    {
-        clear();  
-    }
-    else if(isEGPU())
-    {
-        clear_except("genstep");  
-    }
-    
+    clear(); 
 
     addFrameGenstep();     // needed for simtrace and input photon running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
+
 
 
 /**
@@ -1387,6 +1447,10 @@ so can switch off all saving wuth that config.
 
 void SEvt::endOfEvent(int eventID)
 {
+    LOG_IF(error, gather_done) << " gather_done SKIP eventID " << eventID ; 
+    if(gather_done) return ; 
+
+    setStage(SEvt__endOfEvent); 
     LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__endOfEvent_0);  
 
@@ -1395,8 +1459,20 @@ void SEvt::endOfEvent(int eventID)
     endMeta(); 
     save();              // gather and save SEventConfig configured arrays
 
-    clear_except("hit,genstep", ','); 
-    // an earlier SEvt::clear is invoked by QEvent::setGenstep before launch 
+    if(isECPU())
+    {
+        const NP* gs_ = getGenstep(); 
+        LOG_IF(fatal, gs_ == nullptr) << " gs_ NULL " ; 
+        assert( gs_ ); 
+        SEvent::SetGENSTEP(gs_->copy());   // picked up by  QEvent::setGenstep
+        // HMM: WOULD BE MORE SYMMETRICAL TO PICK UP IN EGPU.SEvt::beginOfEvent
+
+    }
+
+    const NP* hit_ = getHit(); 
+    SEvent::SetHIT(hit_->copy()); 
+
+    clear(); 
 }
 
 void SEvt::endMeta()
@@ -1553,6 +1629,7 @@ void SEvt::clear_vectors()
 
     setNumPhoton(0); 
 
+
     genstep.clear();
     gs.clear();
 
@@ -1589,6 +1666,8 @@ Note this is called by:
 
 void SEvt::clear()
 {
+    setStage(SEvt__clear); 
+
     LOG_IF(info, LIFECYCLE) << id() ; 
     if(CLEAR_SIGINT) std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
@@ -1610,7 +1689,7 @@ The comma delimited keeplist need not contain .npy on its keys
 
 void SEvt::clear_except(const char* keep, char delim)
 {
-    LOG_IF(info, LIFECYCLE) << id() << " keep " << keep ; 
+    LOG_IF(info, LIFECYCLE) << id() << " keep:[" << keep << "]"  ; 
     LOG(LEVEL) << "[" ; 
 
     clear_vectors(); 
@@ -2736,7 +2815,7 @@ NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.
 NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
-
+bool SEvt::haveGenstepVec() const { return genstep.size() > 0 ; }
 
 
 NP* SEvt::gatherPhoton() const 
@@ -3067,6 +3146,8 @@ std::string SEvt::id() const
        << ( is_egpu ? "EGPU" : "" )
        << ( is_ecpu ? "ECPU" : "" )
        << " (" << getIndexPresentation() << ") " 
+       << " GSV " << ( haveGenstepVec() ? "YES" : "NO " )
+       << " " << descStage() 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -3175,6 +3256,7 @@ void SEvt::gather_metadata()
 }
 
 
+
 /**
 SEvt::gather
 -------------
@@ -3189,6 +3271,7 @@ into NPFold from the SCompProvider which can either be:
 
 void SEvt::gather() 
 {
+    setStage(SEvt__gather); 
     LOG_IF(info, LIFECYCLE) << id() ; 
     LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ; 
     if(gather_done) return ; 
