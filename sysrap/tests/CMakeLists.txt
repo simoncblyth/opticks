@@ -131,6 +131,7 @@ set(TEST_SOURCES
    ssys_test.cc
 
    sstampfold_test.cc
+   sprof_fold_test.cc
 
 )
 

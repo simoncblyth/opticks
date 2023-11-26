@@ -18,6 +18,7 @@ struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
 
+#ifdef DEBUG_SEVT_LIFECYCLE
     static NP* GENSTEP ; 
     static NP*  GetGENSTEP(); 
     static void SetGENSTEP(NP* gs); 
@@ -27,7 +28,7 @@ struct SYSRAP_API SEvent
     static NP*  GetHIT(); 
     static void SetHIT(NP* gs); 
     static bool HaveHIT(); 
-
+#endif
 
 
 

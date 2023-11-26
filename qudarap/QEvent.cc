@@ -166,8 +166,12 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_0 = sstamp::Now(); 
 #endif
 
+#ifdef DEBUG_SEVT_LIFECYCLE
     NP* gs_ = SEvent::GetGENSTEP(); 
-    //NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+#else
+    NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+#endif
+
 
     LOG_IF(fatal, gs_ == nullptr ) 
          << "Must SEvent::SetGENSTEP before calling QEvent::setGenstep " 

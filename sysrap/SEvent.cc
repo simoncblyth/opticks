@@ -27,6 +27,9 @@
 const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ; 
 
 
+
+#ifdef DEBUG_SEVT_LIFECYCLE
+
 NP* SEvent::GENSTEP = nullptr ; 
 NP* SEvent::GetGENSTEP()
 {
@@ -43,7 +46,6 @@ void SEvent::SetGENSTEP(NP* gs)
     GENSTEP = gs ? gs->copy() : nullptr ; 
 }
 **/
-
 
 
 void SEvent::SetGENSTEP(NP* gs)
@@ -71,7 +73,7 @@ bool SEvent::HaveHIT()
     return HIT != nullptr ; 
 }
 
-
+#endif
 
 
 

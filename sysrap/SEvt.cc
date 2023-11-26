@@ -1438,18 +1438,19 @@ void SEvt::endOfEvent(int eventID)
     endMeta(); 
     save();              // gather and save SEventConfig configured arrays
 
+
+#ifdef DEBUG_SEVT_LIFECYCLE
     if(isECPU())
     {
-        const NP* gs_ = getGenstep(); 
+        const NP* gs_ = getGenstep();  // relies on already being gathered by the save call 
         LOG_IF(fatal, gs_ == nullptr) << " gs_ NULL " ; 
         assert( gs_ ); 
         SEvent::SetGENSTEP(gs_->copy());   // picked up by  QEvent::setGenstep
-        // HMM: WOULD BE MORE SYMMETRICAL TO PICK UP IN EGPU.SEvt::beginOfEvent
-
     }
-
     const NP* hit_ = getHit(); 
     SEvent::SetHIT(hit_->copy()); 
+#endif
+
 
     clear(); 
 }
