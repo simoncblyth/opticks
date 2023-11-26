@@ -1,7 +1,7 @@
-#!/bin/bash -l
+#!/bin/bash -l 
 
 
-bin=CSGOptiXRenderTest 
+bin=QSimWithEventTest
 source $HOME/.opticks/GEOM/GEOM.sh
 
 vars="BASH_SOURCE bin GEOM"
