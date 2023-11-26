@@ -403,7 +403,7 @@ struct NP
     static bool Exists(const char* path);   
 
     static const char NODATA_PREFIX = '@' ; 
-    static bool NoData(const char* path); 
+    static bool IsNoData(const char* path); 
     static const char* PathWithNoDataPrefix(const char* path); 
 
 
@@ -5043,7 +5043,7 @@ inline bool NP::Exists(const char* path_) // static
     return fp.fail() ? false : true ; 
 }
 
-inline bool NP::NoData(const char* path) // static
+inline bool NP::IsNoData(const char* path) // static
 {
     return path && strlen(path) > 0 && path[0] == NODATA_PREFIX ; 
 }
@@ -5051,7 +5051,7 @@ inline bool NP::NoData(const char* path) // static
 inline const char* NP::PathWithNoDataPrefix(const char* path) // static
 {
     if(path == nullptr) return nullptr ; 
-    if(NoData(path)) return path ;   // dont add prefix if one already present 
+    if(IsNoData(path)) return path ;   // dont add prefix if one already present 
 
     std::stringstream ss ; 
     ss << NODATA_PREFIX << path ; 
@@ -5082,7 +5082,7 @@ newline from the stream without returning it.
 
 inline int NP::load(const char* _path)
 {
-    nodata = NoData(_path) ;  // _path starting with NODATA_PREFIX currently '@'
+    nodata = IsNoData(_path) ;  // _path starting with NODATA_PREFIX currently '@'
     const char* path = nodata ? _path + 1 : _path ;  
 
     if(VERBOSE) std::cerr << "[ NP::load " << path << std::endl ; 
@@ -5651,6 +5651,9 @@ template <typename T>
 inline NP* NP::LoadFromTxtFile(const char* spec_or_path )  // static 
 {   
     const char* path = Resolve(spec_or_path ) ; 
+
+    
+
     if(!Exists(path))
     {
         std::cerr 

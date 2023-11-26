@@ -6,7 +6,6 @@ Summarizes SEvt/NPFold metadata time stamps into substamp arrays
 grouped by NPFold path prefix. The summary NPFold is presented textually 
 and saved to allow plotting from python. 
 
-TODO: bring over the plotting machinery from ~/np/tests/NPFold_stamps_test.py 
 
 +-----+---------------------------------+-------------------------+
 | key | SEvt/NPFold path prefix         |  SEvt type              |

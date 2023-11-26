@@ -1476,12 +1476,18 @@ NPFold::load_array
 **/
 inline void NPFold::load_array(const char* _base, const char* relp)
 {
+    bool is_nodata = NP::IsNoData(_base); 
     bool is_npy = IsNPY(relp) ; 
     bool is_txt = IsTXT(relp) ; 
 
+
     NP* a = nullptr ; 
 
-    if(is_txt)
+    if(is_nodata)
+    {
+        a = nullptr ; 
+    }
+    else if(is_txt)
     {
         a = NP::LoadFromTxtFile<double>(_base, relp) ; 
     }
@@ -1660,7 +1666,7 @@ How to avoid this structural difference and allow booting from property text fil
 
 inline int NPFold::load(const char* _base) 
 {
-    nodata = NP::NoData(_base) ;  // _path starting with NP::NODATA_PREFIX eg '@' 
+    nodata = NP::IsNoData(_base) ;  // _path starting with NP::NODATA_PREFIX eg '@' 
     const char* base = nodata ? _base + 1 : _base ;  
 
     loaddir = strdup(base); 

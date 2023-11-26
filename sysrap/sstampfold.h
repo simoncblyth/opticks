@@ -3,7 +3,7 @@
 sstampfold.h
 ===============
 
-Presents timestamp metadata from a collection of SEvt NPFold
+Presents sstamp.h timestamp metadata from a collection of SEvt NPFold
 
 **/
 
