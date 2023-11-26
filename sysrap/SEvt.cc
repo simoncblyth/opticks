@@ -1400,27 +1400,6 @@ void SEvt::beginOfEvent(int eventID)
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);      // also sets t_BeginOfEvent stamp 
 
-
-    /*
-    // kicking the sibling is a kludge that 
-    // G4CXOpticks::SensitiveDetector_EndOfEvent 
-    //should avoid
-
-    if(isEGPU()) 
-    {
-        SEvt* ecpu = getSibling() ; 
-        if(ecpu->getIndex() == index_ )
-        {
-            LOG_IF(info, LIFECYCLE) << id() << " KICK ECPU SIBLING : " << ecpu->id() ; 
-            ecpu->endOfEvent(eventID) ; 
-        }
-        else
-        {
-            LOG_IF(info, LIFECYCLE) << id() << " ECPU SIBLING NOT SAME INDEX : " << ecpu->id() ; 
-        }
-    }
-    */
-
     LOG_IF(info, LIFECYCLE) << id() ; 
 
     clear(); 
