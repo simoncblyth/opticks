@@ -565,6 +565,13 @@ inline std::string NPFold::DescCompare(const NPFold* a, const NPFold* b )
 
 inline NPFold::NPFold()
     :
+    kk(),
+    aa(),
+    ff(),
+    subfold(),
+    headline(),
+    meta(),
+    names(),
     savedir(nullptr),
     loaddir(nullptr),
     nodata(false),
@@ -1363,8 +1370,9 @@ template void     NPFold::set_meta<std::string>(const char*, std::string );
 
 inline void NPFold::save(const char* base_, const char* rel) // not const as sets savedir
 {
-    std::string base = U::form_path(base_, rel); 
-    save(base.c_str()); 
+    std::string _base = U::form_path(base_, rel); 
+    const char* base = _base.c_str(); 
+    save(base); 
 }
 
 
@@ -1422,7 +1430,8 @@ inline void NPFold::_save(const char* base)  // not const as sets savedir
     _save_subfold_r(base); 
 
     if(!meta.empty()) U::WriteString(base, META, meta.c_str() );  
-    if(names.size() > 0 )  NP::WriteNames(base, NAMES, names) ; 
+
+    NP::WriteNames_Simple(base, NAMES, names) ; 
 }
 
 

@@ -452,6 +452,10 @@ struct NP
     static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
     static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
 
+
+    static void WriteNames_Simple( const char* dir, const char* name, const std::vector<std::string>& names ); 
+    static void WriteNames_Simple( const char* path,                  const std::vector<std::string>& names ); 
+
     static void WriteString(const char* dir, const char* name, const char* ext, const std::string& str, bool append=false ); 
 
     static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
@@ -5443,19 +5447,30 @@ template void NP::Write<unsigned>(const char*, const char*, const std::vector<un
 
 
 
-inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
+inline void NP::WriteNames(
+    const char* dir, 
+    const char* name, 
+    const std::vector<std::string>& names, 
+    unsigned num_names_, 
+    bool append )
 {
-    std::stringstream ss ; 
-    ss << dir << "/" << name ; 
-    std::string path = ss.str() ; 
-    WriteNames(path.c_str(), names, num_names_, append  ); 
+    std::string _path = U::form_path(dir, name); 
+    const char* path = _path.c_str(); 
+    WriteNames(path, names, num_names_, append  ); 
 }
 
 
-inline void NP::WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
+inline void NP::WriteNames(
+    const char* dir, 
+    const char* reldir, 
+    const char* name, 
+    const std::vector<std::string>& names, 
+    unsigned num_names_, 
+    bool append )
 {
-    std::string path = U::form_path(dir, reldir, name); 
-    WriteNames(path.c_str(), names, num_names_, append ); 
+    std::string _path = U::form_path(dir, reldir, name); 
+    const char* path = _path.c_str(); 
+    WriteNames(path, names, num_names_, append ); 
 }
 
 /**
@@ -5474,7 +5489,11 @@ ate : 'at end'
 
 **/
 
-inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_, bool append )
+inline void NP::WriteNames(
+    const char* path, 
+    const std::vector<std::string>& names, 
+    unsigned num_names_, 
+    bool append )
 {
     // if(names.size() == 0) return ;   DONT EARLY EXIT AS MORE REASONABLE TO TRUNCATE THE FILE WHEN THERE ARE NO NAMES 
     int rc = U::MakeDirsForFile(path); 
@@ -5482,6 +5501,7 @@ inline void NP::WriteNames(const char* path, const std::vector<std::string>& nam
 
     unsigned num_names = num_names_ == 0 ? names.size() : num_names_ ; 
     assert( num_names <= names.size() ); 
+    assert( num_names <= 1000 ) ; // sanity check 
 
     std::ios_base::openmode mode = std::ios::out|std::ios::binary ; 
     if(append) mode |= std::ios::app ;
@@ -5490,6 +5510,37 @@ inline void NP::WriteNames(const char* path, const std::vector<std::string>& nam
     for( unsigned i=0 ; i < num_names ; i++) stream << names[i] << std::endl ; 
     stream.close(); 
 }
+
+
+
+inline void NP::WriteNames_Simple(
+    const char* dir, 
+    const char* name, 
+    const std::vector<std::string>& names )
+{
+    std::string _path = U::form_path(dir, name); 
+    const char* path = _path.c_str(); 
+
+    WriteNames_Simple(path, names ); 
+ 
+}
+
+inline void NP::WriteNames_Simple(
+    const char* path, 
+    const std::vector<std::string>& names )
+{
+    int rc = U::MakeDirsForFile(path); 
+    assert( rc == 0 ); 
+
+    int num_names = names.size(); 
+    std::ios_base::openmode mode = std::ios::out|std::ios::binary ; 
+    std::ofstream fp(path, mode );
+    for( int i=0 ; i < num_names ; i++) fp << names[i] << std::endl ; 
+    fp.close(); 
+}
+    
+
+
 
 inline void NP::WriteString(const char* dir, const char* name_, const char* ext, const std::string& str, bool append ) // static
 {
