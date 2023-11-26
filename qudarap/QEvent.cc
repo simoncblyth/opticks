@@ -159,7 +159,7 @@ Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->lau
 
 int QEvent::setGenstep()  // onto device
 {
-    LOG_IF(info, SEvt::LIFECYCLE) ; 
+    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
     
 
 #ifndef PRODUCTION 
@@ -193,14 +193,16 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_2 = sstamp::Now(); 
 #endif
 
+    int rc = gs_ == nullptr ? -1 : setGenstepUpload(gs_) ; 
 
-    return gs_ == nullptr ? -1 : setGenstep(gs_) ; 
+    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
+    return rc ; 
 } 
 
 
 /**
-QEvent::setGenstep
--------------------
+QEvent::setGenstepUpload
+---------------------------
 
 Recall that even with input photon running, still have gensteps.  
 If the number of gensteps is zero there are no photons and no launch. 
@@ -230,8 +232,9 @@ If the number of gensteps is zero there are no photons and no launch.
 **/
 
 
-int QEvent::setGenstep(const NP* gs_) 
+int QEvent::setGenstepUpload(const NP* gs_) 
 {
+    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
 #ifndef PRODUCTION 
     sev->t_setGenstep_3 = sstamp::Now(); 
 #endif
@@ -303,7 +306,7 @@ int QEvent::setGenstep(const NP* gs_)
 #ifndef PRODUCTION 
     sev->t_setGenstep_8 = sstamp::Now(); 
 #endif
-
+    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
     return 0 ; 
 }
 
@@ -408,7 +411,7 @@ int QEvent::setGenstep(quad6* qgs, unsigned num_gs )  // TODO: what uses this ? 
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
-    return setGenstep( gs_ ); 
+    return setGenstepUpload( gs_ ); 
 }
 
 
@@ -779,6 +782,12 @@ std::string QEvent::getMeta() const
 {     
     return sev->meta ; 
 }
+
+const char* QEvent::getTypeName() const
+{
+    return TYPENAME ; 
+}
+
 NP* QEvent::gatherComponent(unsigned cmp) const 
 {
     LOG(LEVEL) << "[ cmp " << cmp ; 

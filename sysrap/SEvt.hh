@@ -101,7 +101,8 @@ struct SYSRAP_API SEvt : public SCompProvider
            SEvt__beginOfEvent, 
            SEvt__endOfEvent,
            SEvt__gather,
-           SEvt__clear
+           SEvt__clear,
+           SEvt__OTHER
            } ; 
 
     static constexpr const char* SEvt__SEvt_ = "SEvt__SEvt" ;  
@@ -110,6 +111,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__endOfEvent_ = "SEvt__endOfEvent" ;  
     static constexpr const char* SEvt__gather_ = "SEvt__gather" ;  
     static constexpr const char* SEvt__clear_ = "SEvt__clear" ;  
+    static constexpr const char* SEvt__OTHER_ = "SEvt__OTHER" ;  
 
     const char* descStage() const ; 
     void setStage(int stage_); 
@@ -304,6 +306,7 @@ public:
     void setCompProvider(const SCompProvider* provider); 
     bool isSelfProvider() const ; 
     std::string descProvider() const ; 
+
 
     NP* gatherDomain() const ; 
 
@@ -509,9 +512,15 @@ public:
     NP* makeSimtrace() const ; 
 
 
-    // SCompProvider methods
+    static constexpr const char* TYPENAME = "SEvt" ; 
+
+    //[ SCompProvider methods
     std::string getMeta() const ; 
+    const char* getTypeName() const ; 
     NP* gatherComponent(unsigned comp) const ; 
+    //] SCompProvider methods
+
+
     NP* gatherComponent_(unsigned comp) const ; 
 
     void saveGenstep(const char* dir) const ; 

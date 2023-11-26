@@ -54,7 +54,8 @@ const char* SEvt::descStage() const
         case SEvt__init:         st = SEvt__init_         ; break ; 
         case SEvt__beginOfEvent: st = SEvt__beginOfEvent_ ; break ; 
         case SEvt__endOfEvent:   st = SEvt__endOfEvent_   ; break ; 
-        case SEvt__gather:       st = SEvt__gather_   ; break ; 
+        case SEvt__gather:       st = SEvt__gather_       ; break ; 
+        default:                 st = SEvt__OTHER_        ; break ;     
     }
     return st ; 
 }
@@ -1648,12 +1649,15 @@ void SEvt::clear()
 {
     setStage(SEvt__clear); 
 
-    LOG_IF(info, LIFECYCLE) << id() ; 
+    LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_vectors " ; 
+
     if(CLEAR_SIGINT) std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
  
     clear_vectors(); 
     fold->clear(); 
+
+    LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_vectors " ; 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -2973,6 +2977,10 @@ NP* SEvt::makeSimtrace() const
 }
 
 
+
+
+
+
 /**
 SEvt::getMeta (an SCompProvider method)
 -----------------------------------------
@@ -2984,10 +2992,17 @@ This is only the source for CPU U4Recorder running (aka B evts).
 
 **/
 
+
 std::string SEvt::getMeta() const 
 {
     return meta ; 
 }
+
+const char* SEvt::getTypeName() const 
+{
+    return TYPENAME ; 
+}
+
 
 
 

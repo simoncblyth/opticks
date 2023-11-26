@@ -92,7 +92,7 @@ public:
     int setGenstep();  // PRIMARY ACTION OF QEvent 
 
 private:
-    int  setGenstep(const NP* gs);
+    int  setGenstepUpload(const NP* gs);
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     void checkInputPhoton() const ; 
@@ -116,8 +116,10 @@ public:
     bool hasHit() const ; 
     bool hasSimtrace() const ; 
 public:
+    static constexpr const char* TYPENAME = "QEvent" ; 
     // SCompProvider methods
     std::string getMeta() const ;  // returns underlying (SEvt)sev->meta
+    const char* getTypeName() const ; 
     NP*      gatherComponent(unsigned comp) const ; 
 public:
     NP*      getGenstep() const ; 

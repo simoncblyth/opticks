@@ -10,6 +10,15 @@ defarg="info_run"
 arg=${1:-$defarg}
 
 
+logging(){ 
+    export SEvt=INFO 
+    export SEvt__LIFECYCLE=1  ## sparse SEvt debug output, works well alone  
+}
+#[ -n "$LOG" ] && logging
+logging
+
+
+
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 

@@ -43,20 +43,32 @@ int main(int argc, char** argv)
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     int x_total = 0 ; 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total ) ; 
-    SEvt::AddGenstep(gs); 
 
+    std::cout << " main [ SEvt::AddGenstep(gs ) " << std::endl ; 
+    SEvt::AddGenstep(gs); 
+    std::cout << " main ] SEvt::AddGenstep(gs ) " << std::endl ; 
+
+    std::cout << " main [ qev->setGenstep  " << std::endl ; 
     qev->setGenstep(); 
+    std::cout << " main ] qev->setGenstep  " << std::endl ; 
 
     assert( int(qev->getNumPhoton()) == x_total ); 
 
-    LOG(info) << qev->desc() ; 
+    //LOG(info) << qev->desc() ; 
 
-    qev->checkEvt(); 
+    std::cout << " main [ qev->checkEvt  " << std::endl ; 
+    qev->checkEvt();  // TOO LATE ? 
+    std::cout << " main ] qev->checkEvt  " << std::endl ; 
 
+
+    std::cout << " main [ qs->generate_photon  " << std::endl ; 
     qs->generate_photon();  
+    std::cout << " main ] qs->generate_photon  " << std::endl ; 
 
 
+    std::cout << " main [ qev->gather_photon  " << std::endl ; 
     NP* photon = qev->gatherPhoton();  
+    std::cout << " main ] qev->gather_photon  " << std::endl ; 
     photon->dump(); 
 
     cudaDeviceSynchronize(); 

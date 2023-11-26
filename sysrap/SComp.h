@@ -41,8 +41,9 @@ enum {
 
 struct SYSRAP_API SCompProvider
 {
-    virtual NP* gatherComponent(unsigned comp) const = 0 ; 
+    virtual const char* getTypeName() const = 0 ; 
     virtual std::string getMeta() const = 0 ; 
+    virtual NP* gatherComponent(unsigned comp) const = 0 ; 
 }; 
 
 struct SYSRAP_API SComp

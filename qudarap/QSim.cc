@@ -749,6 +749,10 @@ extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim
 QSim::generate_photon
 -----------------------
 
+HMM : getting assert for QSimWithEventTest from the below 
+QEvent::setGenstep because the genstep has already been set and uploaded 
+and the genstep vector cleared. 
+
 **/
 
 
@@ -756,7 +760,7 @@ void QSim::generate_photon()
 {
     LOG(LEVEL) << "[" ; 
 
-    event->setGenstep(); 
+     // event->setGenstep();   // ??see above?? 
 
     unsigned num_photon = event->getNumPhoton() ;  
     LOG(info) << " num_photon " << num_photon ; 
