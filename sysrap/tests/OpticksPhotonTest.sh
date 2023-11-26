@@ -11,9 +11,6 @@ EOU
 }
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-
-bin=OpticksPhotonTest 
-
-$bin
+OpticksPhotonTest 
 
 

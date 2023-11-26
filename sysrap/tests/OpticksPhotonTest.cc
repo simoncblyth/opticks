@@ -222,7 +222,7 @@ void test_load_seq()
 {
     const char* _path = "$TMP/GEOM/$GEOM/G4CXTest/ALL0/p001/seq.npy" ; 
     const char* path = spath::Resolve(_path) ; 
-    NP* a = NP::Load(path); 
+    NP* a = NP::LoadIfExists(path); 
     std::cout 
         << "OpticksPhotonTest:test_load_seq" 
         << std::endl
@@ -246,9 +246,6 @@ void test_load_seq()
         else if( i == edge ) 
             std::cout << "..." << std::endl ;
     }
-
-
-
 
 }
 
