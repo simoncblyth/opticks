@@ -19,18 +19,25 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(0) ;
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ;
     assert( evt );  
 
     LOG(info) << "[ SSim::Load " ; 
     const SSim* sim = SSim::Load(); 
     LOG(info) << "] SSim::Load : sim " << sim  ; 
-    LOG(info) << " sim.desc " << std::endl << sim->desc() ; 
+
+    LOG_IF(info, getenv("VERBOSE")!=nullptr ) 
+         << "[sim.desc " 
+         << std::endl 
+         << sim->desc()
+         << std::endl 
+         << "]sim.desc " 
+         ; 
 
     QSim::UploadComponents(sim); 
 
     QSim* qs = QSim::Create(); 
-    QEvent* qe = qs->event ; 
+    QEvent* qev = qs->event ; 
 
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
@@ -38,18 +45,18 @@ int main(int argc, char** argv)
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total ) ; 
     SEvt::AddGenstep(gs); 
 
-    qe->setGenstep(); 
+    qev->setGenstep(); 
 
-    assert( int(qe->getNumPhoton()) == x_total ); 
+    assert( int(qev->getNumPhoton()) == x_total ); 
 
-    LOG(info) << qe->desc() ; 
+    LOG(info) << qev->desc() ; 
 
-    qe->checkEvt(); 
+    qev->checkEvt(); 
 
     qs->generate_photon();  
 
 
-    NP* photon = qe->gatherPhoton();  
+    NP* photon = qev->gatherPhoton();  
     photon->dump(); 
 
     cudaDeviceSynchronize(); 
