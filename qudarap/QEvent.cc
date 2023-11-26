@@ -168,14 +168,18 @@ int QEvent::setGenstep()  // onto device
 
 #ifdef DEBUG_SEVT_LIFECYCLE
     NP* gs_ = SEvent::GetGENSTEP(); 
-#else
-    NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
-#endif
-
 
     LOG_IF(fatal, gs_ == nullptr ) 
          << "Must SEvent::SetGENSTEP before calling QEvent::setGenstep " 
          ;
+
+#else
+    NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
+    LOG_IF(fatal, gs_ == nullptr ) 
+         << "Must add gensteps to SEvt::EGPU instance before calling QEvent::setGenstep " 
+         ;
+#endif
+
     if(gs_ == nullptr) std::raise(SIGINT); 
 
 

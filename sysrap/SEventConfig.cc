@@ -505,13 +505,37 @@ TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpt
 
 const char* SEventConfig::OutDir()  
 {
-    const char* dir = spath::Resolve( OutFold(), OutName() ); 
+    const char* outfold = OutFold(); 
+    const char* outname = OutName(); 
+
+    LOG(LEVEL) 
+        << " outfold " << ( outfold ? outfold : "-" ) 
+        << " outname " << ( outname ? outname : "-" ) 
+        ;
+
+    const char* dir = spath::Resolve( outfold, outname ); 
+
+    LOG(LEVEL) 
+        << " dir " << ( dir ? dir : "-" ) 
+        ;
+
     sdirectory::MakeDirs(dir,0); 
     return dir ; 
 }
 const char* SEventConfig::OutPath( const char* stem, int index, const char* ext )
 {
-     return SPath::Make( OutFold(), OutName(), stem, index, ext, FILEPATH);  // HMM: an InPath would use NOOP to not create the dir
+    const char* outfold = OutFold(); 
+    const char* outname = OutName(); 
+
+    LOG(LEVEL) 
+        << " outfold " << ( outfold ? outfold : "-" ) 
+        << " outname " << ( outname ? outname : "-" ) 
+        << " stem " << ( stem ? stem : "-" ) 
+        << " ext " << ( ext ? ext : "-" ) 
+        ;
+
+    return SPath::Make( outfold, outname, stem, index, ext, FILEPATH); 
+    // HMM: an InPath would use NOOP to not create the dir
 }
 
 std::string SEventConfig::DescOutPath(  const char* stem, int index, const char* ext ) 

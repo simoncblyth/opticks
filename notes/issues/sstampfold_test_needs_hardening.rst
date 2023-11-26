@@ -1,5 +1,5 @@
-sstampfold_test_needs_hardening
-================================
+FIXED : sstampfold_test_needs_hardening
+==========================================
 
 
 Crashes when run from directory with no NPFold::
