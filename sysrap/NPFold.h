@@ -301,6 +301,7 @@ public:
 
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
+    // TODO: reposition into NPX.h 
 
     NPFold* substamp(  const char* prefix, const char* keyname) const ; 
     NPFold* subprofile(const char* prefix, const char* keyname) const ; 
@@ -834,15 +835,43 @@ inline std::string NPFold::desc_subfold(const char* top)  const
 }
 
 inline void NPFold::find_subfold_with_prefix(
-    std::vector<const NPFold*>& subs, std::vector<std::string>* subpaths, const char* prefix ) const 
+    std::vector<const NPFold*>& subs, 
+    std::vector<std::string>* subpaths, 
+    const char* prefix ) const 
 {
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
-    assert( folds.size() == paths.size() ); 
-    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
-    if(tot_items == 0) return ; 
 
-    for(int i=0 ; i < int(paths.size()) ; i++) 
+
+    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
+
+    assert( folds.size() == paths.size() ); 
+    int num_paths = paths.size(); 
+
+    bool dump = false ; 
+
+    if(dump)
+    {
+        std::cerr 
+            << "NPFold::find_subfold_with_prefix"
+            << " prefix " << ( prefix ? prefix : "-" )
+            << " TOP " << TOP 
+            << " folds.size " << folds.size() 
+            << " paths.size " << paths.size() 
+            << " tot_items " << tot_items
+            << " nodata " << nodata 
+            << std::endl
+            ;
+
+        for(int i=0 ; i < num_paths ; i++) std::cerr 
+            << "[" << paths[i] << "]" 
+            << std::endl 
+            ;
+    }
+
+    if(nodata == false && tot_items == 0) return ; 
+
+    for(int i=0 ; i < num_paths ; i++) 
     {
         const NPFold* f = folds[i] ; 
         const char* p = paths[i].c_str() ; 
@@ -2036,7 +2065,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
     int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
     bool skip = num_sub == 0 || num_prof0 == 0 ; 
 
-    bool dump = false ; 
+    bool dump = true ; 
 
     if(dump) std::cout 
         << "[NPFold::subprofile"
@@ -2158,6 +2187,7 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
 
     NPFold* spec_ff = nullptr ; 
 
+
     for(int i=0 ; i < num_uargs ; i++)
     {
         const std::string& arg = uargs[i] ; 
@@ -2179,7 +2209,18 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
             sub = subprofile(v, "subprofile") ; 
         } 
 
-        if(sub == nullptr ) continue ; 
+        if(sub == nullptr ) 
+        {
+            std::cerr 
+                << "NPFold::subfold_summary"
+                << " k [" << k << "]"
+                << " v [" << v << "]"
+                << " sub " << ( sub ? "YES" : "NO " ) 
+                << std::endl 
+                ; 
+
+            continue ; 
+        }
         if(spec_ff == nullptr) spec_ff = new NPFold ; 
         spec_ff->add_subfold(k, sub );  
     }   
