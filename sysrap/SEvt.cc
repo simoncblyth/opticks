@@ -1332,8 +1332,8 @@ template void SEvt::setMeta<std::string>(const char*, std::string );
 
 
 /**
-SEvt::beginOfEvent  (former static SEvt::BeginOfEvent is removed)
--------------------------------------------------------------------
+SEvt::beginOfEvent
+-------------------
 
 Called from::
 
@@ -1343,27 +1343,20 @@ Called from::
 Note that eventID from Geant4 is zero based but the 
 index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs. 
 
-TODO: avoid that complication by just basing 
-the output dir index prefix "p" or "n" depending on SEvt::instance 
-which is either 0 or 1 (SEvt::EGPU or SEvt::ECPU)
-
-
 
 Lifecycle::
     
       G4CXApp::BeginOfEventAction
         U4Recorder::BeginOfEventAction
           B.SEvt::beginOfEvent
-            ... collects gensteps into both ECPU and EGPU
-            ... collects gensteps into both ECPU and EGPU
-            ... collects gensteps into both ECPU and EGPU
+
+      ... collect gensteps into whichever SEvt are instanciated
+      ... collect gensteps into whichever SEvt are instanciated
+      ... collect gensteps into whichever SEvt are instanciated
 
       G4CXApp::EndOfEventAction
         U4Recorder::EndOfEventAction
-          B.SEvt::endOfEvent                    ==> SEvent::SetGENSTEP    
-
-        ^^^^ LIFECYCLE ISSUE IS BECAUSE THIS DONT RUN BEFORE THE BELOW ^^^
-        ^^^^ IN ANY CASE NEED TO WORK WITHOUT THE U4RECORDER ^^^^^^^^^^^^^
+          B.SEvt::endOfEvent               
 
         G4CXOpticks::simulate
           QSim::simulate
@@ -1373,19 +1366,15 @@ Lifecycle::
             QEvent::setGenstep
                B:SEvt::getGenstep 
                A:SEvt::clear
-               QEvent::setGenstep(NP*)          <==  SEvent::GetGENSTEP
+               QEvent::setGenstep(NP*)  
            
             SCSGOptiX::simulate_launch 
            
             A:SEvt::endOfEvent         
 
 
-Try avoiding making SEvt more complicated by effecting the genstep
-passing from ECPU to EGPU via SEvent::GENSTEP
-
-
-As gensteps are collected in the ECPU before EGPU starts 
-cannot clear the gensteps at the EGPU.start  
+As gensteps are collected before EGPU.beginOfEvent
+cannot clear EGPU at this juncture. 
 
 Need to think of the lifecycle of both ECPU and EGPU together. 
 This remains true even with runningMode 1 which has no ECPU 
@@ -1403,7 +1392,11 @@ void SEvt::beginOfEvent(int eventID)
 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    clear(); 
+    if(isECPU())
+    {
+        clear(); 
+    }
+
 
     addFrameGenstep();     // needed for simtrace and input photon running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
