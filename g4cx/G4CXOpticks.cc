@@ -346,8 +346,10 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 G4CXOpticks::init_SEvt
 ------------------------
 
-Typically this instanciates the SEvt::EGPU instance once only 
-at initialization, invoked from `G4CXOpticks::setGeometry_`
+This invoked one only from `G4CXOpticks::setGeometry_`
+
+A single SEvt::EGPU instance is instanciated, which is 
+reused for each simulate call.  
 
 **/
 

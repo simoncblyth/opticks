@@ -71,7 +71,7 @@ int main(int argc, char** argv)
         << std::endl
         ;
 
-    if(VERBOSE || true) std::cout 
+    if(VERBOSE) std::cout 
         << "[sstampfold_report.VERBOSE "
         << std::endl
         << f->desc()

@@ -57,8 +57,9 @@ inline void smeta::Collect(std::string& meta, const char* source)
 
     if(source) NP::SetMeta<std::string>(meta, "source", source );
     NP::SetMeta<std::string>(meta, "creator", sproc::ExecutableName() );
-    NP::SetMeta<uint64_t>(meta, "stamp", t);
-    NP::SetMeta<std::string>(meta, "stampFmt", tf);
+    NP::SetMeta<uint64_t>(meta, "_init_stamp", t);   
+    // disqualify the stamp with '_' : as this is too long before the event action 
+    NP::SetMeta<std::string>(meta, "_init_stamp_Fmt", tf);
     NP::SetMeta<std::string>(meta, "uname", ssys::uname("-a"));
 
     CollectEnv(meta); 

@@ -1460,7 +1460,10 @@ void SEvt::endMeta()
     setMetaProf("p_SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
     setMetaProf("p_SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
 
-    setMeta<uint64_t>("T_BeginOfRun",   T_BeginOfRun ); 
+    setMeta<uint64_t>("_T_BeginOfRun",   T_BeginOfRun ); 
+    // '_' prefix disqualifies BeginOfRun stamp in NP::GetMetaKVS 
+    // as it is too long before the interesting sequence of stamps 
+
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
 
 #ifndef PRODUCTION

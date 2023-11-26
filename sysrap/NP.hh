@@ -4398,12 +4398,14 @@ inline void NP::GetMetaKVS_(
         size_t pos = s.find(delim); 
         if( pos != std::string::npos )
         {
-            std::string k = s.substr(0, pos);
+            std::string _k = s.substr(0, pos);
             std::string _v = s.substr(pos+1);
+            const char* k = _k.c_str(); 
             const char* v = _v.c_str(); 
+            bool disqualify_key = strlen(k) > 0 && k[0] == '_' ; 
             bool looks_like_stamp = U::LooksLikeStampInt(v); 
             int64_t t = looks_like_stamp ? U::To<int64_t>( v ) : 0  ;  
-            bool select = only_with_stamp ? looks_like_stamp : true ; 
+            bool select = only_with_stamp ? ( looks_like_stamp && !disqualify_key )  : true ; 
             if(!select) continue ; 
 
             if(keys) keys->push_back(k); 
