@@ -1,6 +1,6 @@
 /**
-sstampfold_test.cc : Summarize + Present SEvt/NPFold metadata time stamps 
-===========================================================================
+sstampfold_report.cc : Summarize + Present SEvt/NPFold metadata time stamps 
+=============================================================================
 
 Summarizes SEvt/NPFold metadata time stamps into substamp arrays 
 grouped by NPFold path prefix. The summary NPFold is presented textually 
@@ -16,7 +16,7 @@ and saved to allow plotting from python.
 +-----+---------------------------------+-------------------------+
 
 The tables are presented with row and column labels and the 
-summary NPFold is saved to ./sstampfold_test relative to 
+summary NPFold is saved to ./sstampfold_report relative to 
 the invoking directory which needs to contain SEvt/NPFold folders 
 corresponding to the path prefix.  
 
@@ -35,10 +35,10 @@ Usage::
     ./p006/NPFold_meta.txt
     ./p008/NPFold_meta.txt
 
-    epsilon:ALL0 blyth$ sstampfold_test 
+    epsilon:ALL0 blyth$ sstampfold_report 
     ...
     
-    epsilon:ALL0 blyth$ ls -alst ../sstampfold_test/   ##  ls output NPFold directory 
+    epsilon:ALL0 blyth$ ls -alst ../sstampfold_report/   ##  ls output NPFold directory 
     total 8
     8 -rw-r--r--  1 blyth  staff    4 Nov 26 14:12 NPFold_index.txt
     0 drwxr-xr-x  9 blyth  staff  288 Nov 26 13:01 b
@@ -65,18 +65,18 @@ int main(int argc, char** argv)
     NPFold* f = NPFold::LoadNoData(dirp); 
 
     std::cout 
-        << "sstampfold_test"
+        << "sstampfold_report"
         << std::endl
         << "NPFold::LoadNoData(\"" << dirp << "\")" 
         << std::endl
         ;
 
     if(VERBOSE || true) std::cout 
-        << "[sstampfold_test.VERBOSE "
+        << "[sstampfold_report.VERBOSE "
         << std::endl
         << f->desc()
         << std::endl
-        << "]sstampfold_test.VERBOSE "
+        << "]sstampfold_report.VERBOSE "
         << std::endl
         ; 
 

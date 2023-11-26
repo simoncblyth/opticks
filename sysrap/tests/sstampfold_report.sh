@@ -1,37 +1,37 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-sstampfold_test.sh
+sstampfold_report.sh
 =======================
 
 ::
 
-   ~/opticks/sysrap/tests/sstampfold_test.sh
+   ~/opticks/sysrap/tests/sstampfold_report.sh
 
-   PICK=AB ~/opticks/sysrap/tests/sstampfold_test.sh ana
+   PICK=AB ~/opticks/sysrap/tests/sstampfold_report.sh ana
 
-   PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sstampfold_test.sh ana
+   PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sstampfold_report.sh ana
 
 
-NB the sstampfold_test executable can be used without using this
+NB the sstampfold_report executable can be used without using this
 script by invoking the executable from appropriate directories.
 For example::
 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/
 
 Which contains NPFold directories with names p001 n001 etc..
-that match the fold prefixed hardcoded into the sstampfold_test 
+that match the fold prefixed hardcoded into the sstampfold_report 
 executable. 
 
-The default output FOLD when no envvar is defined is "../sstampfold_test" 
+The default output FOLD when no envvar is defined is "../sstampfold_report" 
 relative to the invoking directory of directory argument, eg::
 
-   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sstampfold_test/
+   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sstampfold_report/
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-name=sstampfold_test
+name=sstampfold_report
 script=$SDIR/$name.py
 bin=$name
 

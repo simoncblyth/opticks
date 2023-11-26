@@ -129,10 +129,12 @@ set(TEST_SOURCES
 
    scontext_test.cc
    ssys_test.cc
+)
 
-   sstampfold_test.cc
-   sprof_fold_test.cc
 
+set(REPORT_SOURCES
+   sstampfold_report.cc
+   sprof_fold_report.cc
 )
 
 
@@ -188,8 +190,21 @@ foreach(SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
-    #add_dependencies(check ${TGT})
 endforeach()
+
+
+
+foreach(SRC ${REPORT_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} SysRap)
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
+
+
+
 
 
 
