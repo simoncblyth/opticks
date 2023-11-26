@@ -5,7 +5,17 @@ NPMeta.py
 
 Parsing metadata lines from NP.hh 
 
-TODO: introspective listing of keys, rather than current needing to know whats there 
+Currently have two copies of this source at::
+
+    ~/np/npmeta.py
+    ~/opticks/ana/npmeta.py
+
+The np repository version is regarded as the 
+primary and is occasionally copied together with
+NP.hh NPFold.h headers via::
+
+    cd ~/np
+    ./cp.sh 
 
 """
 
@@ -105,6 +115,7 @@ class NPMeta(object):
             d[key] = val 
         pass    
         return d 
+
  
     @classmethod
     def Load(cls, path):
@@ -164,6 +175,49 @@ class NPMeta(object):
     def __str__(self):
         return repr(self.d)
 
+
+    def has_key(self, k):
+        return k in self.d
+
+    def keys(self):
+        return self.d.keys()
+
+    def values(self):
+        return self.d.values()
+
+    def smry(self, keys="red,green,blue"):
+        kv = []
+        for k in keys.split(","):
+            if self.has_key(k):
+                v = self.d[k]
+                kv.append("%s:%s" % (k,v) )
+            pass
+        return " ".join(kv)     
+           
+    @classmethod
+    def Summarize(cls, label):
+        """
+        Shorten stamp labels via heuristics of distinctive chars
+        """
+        smry = "" 
+        p = None
+        for c in label:
+            if p is None:                      # always take first char 
+                smry += c 
+            elif c.isalnum() and p == "_":     # first alnum char after _
+                smry += c 
+            elif c.isupper() and p.islower():  # upper char following lower
+                smry += c 
+            elif p == "P" and c in "ro":       #  accept r or o after P to distinguish Pre and Post 
+                smry += c 
+            pass 
+            p = c 
+        pass
+        return smry 
+
+
+
+ 
 
 
 def test_load():

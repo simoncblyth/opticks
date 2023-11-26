@@ -100,6 +100,7 @@ struct ssys
     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
 
     static std::string Desc();
+    static std::string PWD();
 
 }; 
 
@@ -770,4 +771,10 @@ inline std::string ssys::Desc()  // static
     std::string str = ss.str() ; 
     return str ;  
 }
+
+inline std::string ssys::PWD()  // static
+{
+    return getenvvar("PWD");    // note no newline
+}
+
 

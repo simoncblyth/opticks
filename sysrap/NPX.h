@@ -72,6 +72,8 @@ struct NPX
     template<typename S>
     static std::string DescDiscoMap( const std::map<int, S>& m ); 
 
+    template<typename T> 
+    static NP* FromNumpyString(const char* str) ;  
 
     static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=','); 
     static NP* LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim=',');
@@ -229,6 +231,10 @@ inline NP* NPX::FromString(const char* str, char delim)  // static
     NP* a = Make<T>(vec) ; 
     return a ; 
 }
+
+
+
+
 
 
 
@@ -579,6 +585,59 @@ inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
 
 
 
+template <typename T> 
+inline NP* NPX::FromNumpyString(const char* str)  // static 
+{   
+    std::vector<T> vec ; 
+    std::stringstream fss(str);
+    bool dump = false ; 
+
+    int num_field_0 = 0 ; 
+    std::string line ; 
+    while(getline(fss, line))
+    {
+        if(strlen(line.c_str())==0) continue ; 
+        if(dump) std::cout << "{" << line << "}" << std::endl ; 
+        std::istringstream iss(line);
+        std::vector<std::string> fields ; 
+        std::string field ; 
+        while( iss >> field ) fields.push_back(field) ;
+
+        int num_field = 0 ; 
+
+        if(dump) std::cout << "fields.size " << fields.size() << std::endl ; 
+        for(int j=0 ; j < int(fields.size()) ; j++ )
+        {
+           const char* fld = fields[j].c_str() ;  
+           char* fldd = U::FirstToLastDigit(fld); 
+           if(fldd == nullptr) continue ; 
+
+           T val = U::To<T>(fldd) ; 
+
+           if(dump) std::cout 
+               << "{" << fld << "}" 
+               << "{" << fldd << "}" 
+               << "{" << val << "}" 
+               <<  std::endl
+               ;  
+           num_field += 1 ; 
+           vec.push_back( val ); 
+        }
+        if( num_field_0 == 0 ) 
+        {
+            num_field_0 = num_field ; 
+        }
+        else
+        {
+            assert( num_field_0 == num_field ); 
+        }
+    }
+
+    NP* a = Make<T>(vec) ; 
+    a->change_shape(-1, num_field_0);  
+
+    return a ; 
+}
 
 inline NP* NPX::CategoryArrayFromString(const char* str, int catfield, const char* cats_, char delim )
 {

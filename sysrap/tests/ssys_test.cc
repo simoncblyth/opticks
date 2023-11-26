@@ -1,4 +1,4 @@
-// ./ssys_test.sh
+// ~/opticks/sysrap/tests/ssys_test.sh
 
 #include <string>
 #include <iostream>
@@ -347,6 +347,13 @@ void test_Desc()
 {
     std::cout << ssys::Desc(); 
 }
+void test_PWD()
+{
+    std::cout << ssys::PWD();  
+}
+
+
+
 
 
 
@@ -383,9 +390,10 @@ int main(int argc, char** argv)
     test_listed_count(); 
     test_fill_evec_string(); 
     test_Dump(); 
-    */
-
     test_Desc(); 
+    */
+    test_PWD(); 
+
 
  
     return 0 ; 

@@ -1,4 +1,14 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+ssys_test.sh
+=============
+
+::
+
+    ~/opticks/sysrap/tests/ssys_test.sh 
+
+EOU
+}
 
 name=ssys_test 
 bin=${TMP:-/tmp/$USER/opticks}/$name 
@@ -6,6 +16,8 @@ mkdir -p $(dirname $bin)
 
 defarg="build_run"
 arg=${1:-$defarg}
+
+cd $(dirname $BASH_SOURCE)
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin

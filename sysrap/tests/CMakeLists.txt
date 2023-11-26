@@ -129,6 +129,9 @@ set(TEST_SOURCES
 
    scontext_test.cc
    ssys_test.cc
+
+   sstampfold_test.cc
+
 )
 
 

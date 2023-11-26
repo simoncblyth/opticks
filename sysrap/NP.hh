@@ -80,6 +80,8 @@ struct NP
     template<typename T> static int ALength(  T x0, T x1, T st ); 
     template<typename T> static NP* ARange(   T x0, T x1, T st ); 
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
+    template<typename T> static NP* DeltaColumn(const NP* a, int jcol=0 ) ; 
+
     template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
                          static NP* SqrtOneMinusSquare( const NP* a ); 
      
@@ -196,6 +198,14 @@ struct NP
 
 
     std::string descValues() const ; 
+
+    template<typename T>
+    std::string descTable(
+       int wid=7, 
+       const std::vector<std::string>* column_labels=nullptr, 
+       const std::vector<std::string>* row_labels=nullptr
+       ) const ; 
+
     static NP* MakeLike(  const NP* src);  
     static void CopyMeta( NP* b, const NP* a ); 
 
@@ -391,7 +401,11 @@ struct NP
     static bool Exists(const char* base, const char* rel, const char* name);   
     static bool Exists(const char* dir, const char* name);   
     static bool Exists(const char* path);   
+
+    static const char NODATA_PREFIX = '@' ; 
     static bool NoData(const char* path); 
+    static const char* PathWithNoDataPrefix(const char* path); 
+
 
     int load(const char* dir, const char* name);   
     int load(const char* path);   
@@ -694,6 +708,57 @@ inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload )  // static
     }
     return a ; 
 }
+
+
+/**
+NP::DeltaColumn
+------------------
+
+::
+
+    In [6]: ab.a.stamps.shape
+    Out[6]: (10, 13)
+
+    In [7]: delta_stamps = ab.a.stamps - ab.a.stamps[:,0, np.newaxis]  ; delta_stamps
+    Out[7]:
+    array([[    0,   209,   223,   265,   265,   489,   505,   522,   723,  2097,  2097, 63816, 63919],
+           [    0,   231,   244,   284,   284,   285,   368,   394,   590,   633,   633, 57248, 57356],
+           [    0,   233,   245,   285,   285,   286,   351,   380,   638,   681,   681, 57402, 57480],
+           [    0,   133,   170,   173,   173,   175,   259,   305,   844, 30887, 30888, 60904, 60961],
+           [    0,   187,   226,   229,   230,   232,   396,   471,  1188, 33499, 33500, 63340, 63406],
+           [    0,   170,   210,   214,   215,   217,   294,   328,   634, 31164, 31164, 60558, 60630],
+           [    0,   131,   171,   174,   175,   177,   237,   273,   570, 32739, 32740, 62156, 62219],
+           [    0,   136,   175,   179,   179,   181,   242,   292,   827, 32244, 32244, 62329, 62389],
+           [    0,   135,   175,   179,   179,   181,   247,   281,   597, 32904, 32904, 62951, 63012],
+           [    0,   132,   170,   174,   175,   177,   237,   271,   565, 32285, 32285, 62043, 62105]])
+
+    In [8]: delta_stamps.shape
+    Out[8]: (10, 13)
+
+**/
+
+template<typename T> inline NP* NP::DeltaColumn(const NP* a, int jcol )
+{
+    assert( a->shape.size() == 2 ); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ; 
+    assert( jcol < nj ); 
+
+    NP* b = NP::MakeLike(a) ;
+
+    const T* aa = a->cvalues<T>(); 
+    T* bb = b->values<T>(); 
+
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    bb[i*nj+j] = aa[i*nj+j] - aa[i*nj+jcol] ; 
+
+    return b ; 
+}
+
+
+
+
 
 /**
 NP::MinusCosThetaLinearAngle
@@ -1649,6 +1714,89 @@ inline std::string NP::descValues() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+/**
+NP::descTable
+----------------
+
+**/
+
+template<typename T>
+inline std::string NP::descTable(int wid, 
+    const std::vector<std::string>* column_labels, 
+    const std::vector<std::string>* row_labels
+  ) const 
+{
+    assert( shape.size() == 2 ); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+    std::stringstream ss ; 
+    ss << "NP::descTable " << sstr() << std::endl ; 
+    const T* vv = cvalues<T>() ; 
+
+
+    int cwid = wid ; 
+    int rwid = 2*wid ; 
+    
+    std::vector<std::string> column_smry ; 
+    U::Summarize( column_smry, column_labels, cwid ); 
+    bool with_column_labels = int(column_smry.size()) == nj ;
+
+    std::vector<std::string> row_smry ; 
+    U::Summarize( row_smry, row_labels, rwid ); 
+    bool with_row_labels = int(row_smry.size()) == ni ;
+
+
+    if(with_column_labels) for(int j=0 ; j < nj ; j++) ss 
+        << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 ) 
+        << std::setw(cwid) 
+        << column_smry[j] 
+        << ( j < nj -1 ? " " : "\n" ) 
+        ;  
+
+    for(int i=0 ; i < ni ; i++) 
+    {
+        if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ; 
+        for(int j=0 ; j < nj ; j++) 
+        {
+            ss
+                << std::setw(cwid) 
+                << vv[i*nj+j] 
+                << ( j < nj -1 ? " " : "\n" ) 
+                ; 
+        }
+    }
+
+    if(with_column_labels) for(int j=0 ; j < nj ; j++) ss 
+        << ( j == 0 ? "\n" : "" ) 
+        << std::setw(cwid) 
+        << column_smry[j] 
+        << " : " 
+        << (*column_labels)[j] 
+        << std::endl 
+        ;  
+
+    if(with_row_labels) for(int i=0 ; i < ni ; i++) ss 
+        << ( i == 0 ? "\n" : "" ) 
+        << std::setw(rwid) 
+        << row_smry[i] 
+        << " : " 
+        << (*row_labels)[i] 
+        << std::endl 
+        ;  
+
+
+
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
 
 
 
@@ -4895,10 +5043,22 @@ inline bool NP::Exists(const char* path_) // static
     return fp.fail() ? false : true ; 
 }
 
-inline bool NP::NoData(const char* path)
+inline bool NP::NoData(const char* path) // static
 {
-    return path && strlen(path) > 0 && path[0] == '@' ; 
+    return path && strlen(path) > 0 && path[0] == NODATA_PREFIX ; 
 }
+
+inline const char* NP::PathWithNoDataPrefix(const char* path) // static
+{
+    if(path == nullptr) return nullptr ; 
+    if(NoData(path)) return path ;   // dont add prefix if one already present 
+
+    std::stringstream ss ; 
+    ss << NODATA_PREFIX << path ; 
+    std::string str = ss.str() ; 
+    return strdup(str.c_str()); 
+}
+
 
 inline int NP::load(const char* dir, const char* name)
 {
@@ -4922,7 +5082,7 @@ newline from the stream without returning it.
 
 inline int NP::load(const char* _path)
 {
-    nodata = NoData(_path) ;  // _path starting with '@' 
+    nodata = NoData(_path) ;  // _path starting with NODATA_PREFIX currently '@'
     const char* path = nodata ? _path + 1 : _path ;  
 
     if(VERBOSE) std::cerr << "[ NP::load " << path << std::endl ; 

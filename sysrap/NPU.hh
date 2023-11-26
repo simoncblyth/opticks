@@ -25,6 +25,7 @@ other projects together with NP.hh
 #include <cstdint>
 #include <algorithm>
 #include <chrono>
+#include <cctype>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -410,7 +411,19 @@ struct U
     static bool EndsWith( const char* s, const char* q) ; 
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
     static std::string DirName( const char* path ); 
+
     static std::string BaseName( const char* path ); 
+    static const char* BaseName_( const char* path ); 
+
+    static std::string BaseName_NoSepAsis( const char* path ); 
+    static const char* BaseName_NoSepAsis_( const char* path ); 
+
+
+    static std::string FormSiblingPath( const char* sibname , const char* dirpath ); 
+    static std::string FormExecutableSiblingPath( const char* argv0 , const char* dirpath ); 
+    static int SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath ); 
+
+    static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
 
     static std::string FormName_( int idx, int wid=3 ); 
     static const char* FormName( int idx, int wid=3 ); 
@@ -420,6 +433,19 @@ struct U
 
     static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
     static const char* FormName( const char* prefix, const char* body, const char* ext ); 
+
+    static bool isalnum_(char c ); 
+    static bool isupper_(char c ); 
+    static bool islower_(char c ); 
+
+
+    static void Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid ); 
+    static const char* Summarize( const char* label, int wid ); 
+    static std::string Summarize_( const char* label, int wid ); 
+
+    static void LineVector( std::vector<std::string>& lines, const char* LINES ); 
+    static std::string Space(int wid); 
+
 
 
     static std::string form_name(const char* stem, const char* ext); 
@@ -463,6 +489,7 @@ struct U
     template<typename T> static T To( const char* a ); 
     template<typename T> static bool ConvertsTo( const char* a ); 
 
+    static char* PWD(); 
 
     template<typename T>
     static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=','); 
@@ -507,6 +534,11 @@ struct U
 
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
     static std::string FormatInt(int64_t t, int wid ); 
+
+    static char* LastDigit(const char* str); 
+    static char* FirstDigit(const char* str); 
+    static char* FirstToLastDigit(const char* str); 
+
 };
 
 
@@ -676,9 +708,10 @@ template <typename T> inline bool U::ConvertsTo( const char* a )   // static
 }
 
 
-
-
-
+inline char* U::PWD() // static
+{
+    return getenv("PWD"); 
+}
 
 template<typename T>
 inline std::vector<T>* U::GetEnvVec(const char* ekey, const char* fallback, char delim)
@@ -759,6 +792,163 @@ inline std::string U::BaseName( const char* path )
     std::size_t pos = p.find_last_of("/") ; 
     return pos == std::string::npos ? "" : p.substr(pos+1); 
 }
+inline const char* U::BaseName_( const char* path )
+{
+    std::string name = BaseName(path); 
+    return strdup(name.c_str()); 
+}
+
+
+inline std::string U::BaseName_NoSepAsis( const char* path )
+{
+    std::string p = path ; 
+    std::size_t pos = p.find_last_of("/") ; 
+    return pos == std::string::npos ? p : p.substr(pos+1); 
+}
+inline const char* U::BaseName_NoSepAsis_( const char* path )
+{
+    std::string name = BaseName_NoSepAsis(path); 
+    return strdup(name.c_str()); 
+}
+
+
+
+
+
+/**
+U::FormSiblingPath
+---------------------
+
+For example::
+
+   sibname : NPFold_stamps_test
+   dirpath : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL
+   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/NPFold_stamps_test  
+
+**/
+
+inline std::string U::FormSiblingPath( const char* sibname , const char* dirpath )
+{
+    std::string container = DirName(dirpath) ; 
+    std::stringstream ss ; 
+    ss << container << "/" << sibname ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string U::FormExecutableSiblingPath( const char* argv0 , const char* dirpath )
+{
+    const char* exename = BaseName_NoSepAsis_(argv0) ; 
+    std::string sibpath = FormSiblingPath( exename, dirpath ); 
+
+    if(VERBOSE) std::cout 
+        << "[U::FormExecutableSiblingPath"
+        << std::endl 
+        << " argv0 " << ( argv0 ? argv0 : "-" ) 
+        << std::endl 
+        << " dirpath " << ( dirpath ? dirpath : "-" )
+        << std::endl 
+        << " exename " << ( exename ? exename : "-" )
+        << std::endl 
+        << " sibpath " << sibpath 
+        << std::endl 
+        << "]U::FormExecutableSiblingPath"
+        << std::endl 
+        ;
+
+    return sibpath ; 
+}
+
+inline int U::SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath )
+{
+    std::string _sibfold = FormExecutableSiblingPath(argv0, dirpath); 
+    const char* sibfold = _sibfold.empty() ? nullptr : _sibfold.c_str() ; 
+    bool overwrite = false ; 
+    int rc = setenvvar( ekey, sibfold, overwrite ); 
+
+    if(VERBOSE) std::cout 
+        << "[U::SetEnvDefaultExecutableSiblingPath"
+        << std::endl 
+        << " ekey " << ( ekey ? ekey : "-" ) 
+        << std::endl 
+        << " argv0 " << ( argv0 ? argv0 : "-" )
+        << std::endl 
+        << " ditpath " << ( dirpath ? dirpath : "-" )
+        << std::endl 
+        << " sibfold " << ( sibfold ? sibfold : "-" )
+        << std::endl 
+        << " rc " << rc 
+        << std::endl 
+        << "]U::SetEnvDefaultExecutableSiblingPath"
+        << std::endl 
+        ;
+
+    return rc ; 
+}
+
+
+
+
+/**
+U::setenvvar (similar to opticks/sysrap/ssys.h ssys::setenvvar)
+-----------------------------------------------------------------
+
+overwrite:false 
+    preexisting envvar is not overridden. 
+
+As shell handling of empty strings is inconvenient the special_empty_token char 
+allows a single char to represent the empty string, eg '-' 
+
+**/
+
+inline int U::setenvvar( const char* ekey, const char* value, bool overwrite, char special_empty_token)
+{
+    std::stringstream ss ;
+    ss << ekey << "=" ;
+
+    if(value)
+    {   
+        if(special_empty_token != '\0' && strlen(value) == 1 && value[0] == special_empty_token)
+        {   
+            ss << "" ; 
+        }   
+        else
+        {   
+            ss << value ; 
+        }   
+    }   
+
+    std::string ekv = ss.str();
+    const char* prior = getenv(ekey) ;
+
+    char* ekv_ = const_cast<char*>(strdup(ekv.c_str()));
+
+    int rc = ( overwrite || !prior ) ? putenv(ekv_) : 0  ;   
+
+    const char* after = getenv(ekey) ;
+
+    if(VERBOSE) std::cerr
+        << "U::setenvvar"
+        << " ekey " << ekey 
+        << " ekv " << ekv 
+        << " overwrite " << overwrite
+        << " prior " << ( prior ? prior : "NULL" )
+        << " value " << ( value ? value : "NULL" )   
+        << " after " << ( after ? after : "NULL" )   
+        << " rc " << rc  
+        << std::endl 
+        ;   
+
+    return rc ;
+}
+
+
+
+
+
+
+
+
 
 inline std::string U::FormName_( int idx, int wid )
 { 
@@ -804,6 +994,98 @@ inline const char* U::FormName( const char* prefix, const char* body, const char
     return strdup(name.c_str()); 
 }
 
+// cctype
+inline bool U::isalnum_(char c ) { return std::isalnum(static_cast<unsigned char>(c)) ; }
+inline bool U::isupper_(char c ) { return std::isupper(static_cast<unsigned char>(c)) ; }
+inline bool U::islower_(char c ) { return std::islower(static_cast<unsigned char>(c)) ; }
+
+
+inline void U::Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid )
+{
+    int num_labels = labels ? labels->size() : 0 ; 
+    for(int i=0 ; i < num_labels ; i++)
+    {
+        const char* label = (*labels)[i].c_str() ; 
+        smry_labels.push_back( U::Summarize(label, wid) ) ;  
+    }
+}
+
+/**
+U::Summarize
+---------------
+
+Shorten stamp labels via heuristics of distinctive chars    
+
+C++ version of npmeta.py NPMeta::Summarize
+
+
+* always take first char 
+* alnum after _
+* upper char following lower 
+* accept r or o after P to distinguish Pre and Post 
+
+**/
+
+inline const char* U::Summarize( const char* label, int wid )  // static
+{
+    if(label == nullptr) return nullptr ;
+    std::string smry = U::Summarize_(label, wid); 
+    char* _smry = const_cast<char*>(smry.c_str()) ; 
+    int len = strlen(_smry) ; 
+    if(len > wid) _smry[wid+1] = '\0' ;    
+    return strdup(_smry) ; 
+}
+inline std::string U::Summarize_( const char* label, int wid )  // static
+{
+    int len = strlen(label) ; 
+    std::string str ; 
+    if( len <= wid )
+    { 
+        str = label ; 
+    }
+    else
+    {
+        std::stringstream ss ;  
+        char p = '\0' ; 
+        for(int i=0 ; i < len ; i++) 
+        {
+           char c = label[i] ; 
+           bool take =  ( p == '\0' ) 
+                     || ( isalnum_(c) && p == '_' )     
+                     || ( isalnum_(c) && p == '_' )
+                     || ( isupper_(c) && islower_(p) )
+                     || ( p == 'P' && ( c == 'r' || c == 'o' ) )
+                     ;
+           p = c ;
+           if(take) ss << c ;  
+        }
+        str = ss.str(); 
+    }
+    return str ; 
+}
+
+
+
+
+
+inline void U::LineVector( std::vector<std::string>& lines, const char* LINES )
+{
+    std::stringstream fss(LINES);
+    std::string line ; 
+    while(getline(fss, line))
+    {
+        if(strlen(line.c_str())==0) continue ; 
+        lines.push_back(line); 
+    }
+}
+
+inline std::string U::Space(int wid)
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < wid ; i++) ss << " " ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 
@@ -1065,6 +1347,8 @@ This resolves spec with multiple tokens, eg::
 
     $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/jpmt/PMTSimParamData/MPT
 
+Any unresolved token causes nullptr to be returned.
+
 **/
 
 inline const char* U::Resolve(const char* spec_, const char* rel1_, const char* rel2_ )
@@ -1287,6 +1571,62 @@ inline std::string U::FormatInt(int64_t t, int wid ) // static
     std::string str = ss.str(); 
     return str ; 
 }
+
+/**
+U::LastDigit
+-------------
+
+Start from the end of the string, returning when reach 
+first digit from end (aka last digit from front). 
+
+**/
+
+inline char* U::LastDigit(const char* str)
+{
+    if(str == nullptr) return nullptr ; 
+    char* s = const_cast<char*>(str); 
+    char* p = s+strlen(s)-1 ; 
+    while( p > s )
+    {
+       if( *p >= '0' && *p <= '9' ) break ; 
+       p-- ; 
+    }
+    return p ; 
+}
+
+inline char* U::FirstDigit(const char* str)
+{
+    if(str == nullptr) return nullptr ; 
+    char* s = const_cast<char*>(str); 
+    char* p = s ; 
+    while( p )
+    {
+       if( *p >= '0' && *p <= '9' ) break ; 
+       p++ ; 
+    }
+    return p ; 
+}
+
+inline char* U::FirstToLastDigit(const char* str)
+{
+    const char* s = strdup(str); 
+    char* f = FirstDigit(s); 
+    char* l = LastDigit(s); 
+    char* r = nullptr ; 
+    if(f && l && l + 1  > f)
+    {
+        if(*(l+1) != '\0') *(l+1) = '\0' ; 
+        r = f ; 
+    }
+    return r ; 
+}
+
+
+
+
+
+
+
 
 
 

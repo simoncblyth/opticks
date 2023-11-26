@@ -193,6 +193,7 @@ set(HEADERS
     schrono.h
     stimer.h
     sstamp.h 
+    sstampfold.h 
 
     SBnd.h
     SPrd.h
