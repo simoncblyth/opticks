@@ -513,7 +513,11 @@ const char* SEventConfig::OutDir()
         << " outname " << ( outname ? outname : "-" ) 
         ;
 
-    const char* dir = spath::Resolve( outfold, outname ); 
+    const char* dir = outname == nullptr ? 
+                            spath::Resolve( outfold ) 
+                            :
+                            spath::Resolve( outfold, outname )
+                            ; 
 
     LOG(LEVEL) 
         << " dir " << ( dir ? dir : "-" ) 

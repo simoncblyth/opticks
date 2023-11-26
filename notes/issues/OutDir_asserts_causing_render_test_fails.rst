@@ -54,3 +54,20 @@ OutDir_asserts_causing_render_test_fails
     (gdb) 
 
 
+::
+
+    (gdb) f 12
+    #12 0x00007ffff49dfe65 in CSGOptiX::render (this=0x1c6343f0, stem_=0x0) at /home/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:1001
+    1001	    const char* outdir = SEventConfig::OutDir();
+    (gdb) f 11
+    #11 0x00007ffff3e35799 in SEventConfig::OutDir () at /home/blyth/junotop/opticks/sysrap/SEventConfig.cc:516
+    516	    const char* dir = spath::Resolve( outfold, outname ); 
+    (gdb) p outfold
+    $1 = 0x7ffff3f481ba "$DefaultOutputDir"
+    (gdb) p outname
+    $2 = 0x0
+    (gdb) 
+
+
+
+
