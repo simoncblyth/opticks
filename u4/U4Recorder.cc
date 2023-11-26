@@ -281,14 +281,14 @@ void U4Recorder::EndOfRunAction(const G4Run*)
         ;
 }
 
-void U4Recorder::BeginOfEventAction(const G4Event* event)
+void U4Recorder::BeginOfEventAction(const G4Event* /*event*/)
 {
-    int eventID_ = event->GetEventID() ; 
+    //int eventID_ = event->GetEventID() ; 
     //BeginOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }
-void U4Recorder::EndOfEventAction(const G4Event* event)
+void U4Recorder::EndOfEventAction(const G4Event* /*event*/)
 {
-    int eventID_ = event->GetEventID() ; 
+    //int eventID_ = event->GetEventID() ; 
     //EndOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }
 
