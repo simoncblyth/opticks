@@ -5,9 +5,16 @@ cxs_min.sh : minimal executable and script for shakedown
 
 Usage::
 
+
+     ~/opticks/CSGOptiX/cxs_min.sh
+     ~/opticks/CSGOptiX/cxs_min.sh info
+     ~/opticks/CSGOptiX/cxs_min.sh run
+     ~/opticks/CSGOptiX/cxs_min.sh report
+
     MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
 
     EVT=p005 ~/opticks/CSGOptiX/cxs_min.sh ana 
+
 
 EOU
 }
@@ -16,7 +23,7 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 case $(uname) in
    #Linux) defarg=dbg_info ;;
-   Linux) defarg=run_stamp_info ;;
+   Linux) defarg=run_report_info ;;
    Darwin) defarg=ana ;;
 esac
 
@@ -38,10 +45,10 @@ export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/ALL
-export AFOLD=$BINBASE/ALL/$EVT
+export AFOLD=$BINBASE/$EVT
 
-#export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
-export BFOLD=$BASE/jok-tds/ALL0/p001
+#export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
+export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
 
 
 mkdir -p $LOGDIR 
@@ -165,9 +172,12 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
-if [ "${arg/stamp}" != "$arg" ]; then
+if [ "${arg/report}" != "$arg" ]; then
    sstampfold_report
    [ $? -ne 0 ] && echo $BASH_SOURCE sstampfold_report error && exit 1 
+
+   sprof_fold_report
+   [ $? -ne 0 ] && echo $BASH_SOURCE sprof_fold_report error && exit 1 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
@@ -177,6 +187,5 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi 
-
 
 

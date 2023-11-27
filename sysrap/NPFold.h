@@ -301,7 +301,6 @@ public:
 
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
-    // TODO: reposition into NPX.h 
 
     NPFold* substamp(  const char* prefix, const char* keyname) const ; 
     NPFold* subprofile(const char* prefix, const char* keyname) const ; 
@@ -2065,7 +2064,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
     int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
     bool skip = num_sub == 0 || num_prof0 == 0 ; 
 
-    bool dump = true ; 
+    bool dump = false ; 
 
     if(dump) std::cout 
         << "[NPFold::subprofile"

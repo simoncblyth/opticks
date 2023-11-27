@@ -120,14 +120,14 @@ fi
 
 TMP=${TMP:-/tmp/$USER/opticks}
 export BASE=$TMP/GEOM/$GEOM
-export BINBASE=$BASE/$bin
-export VERSION=0                       # used in the SEvt output directory 
-export AFOLD=$BINBASE/ALL$VERSION/p001 
-export BFOLD=$BINBASE/ALL$VERSION/n001 
+export VERSION=0                       # used in SEvt output directory 
+export LOGBASE=$BASE/$bin/ALL$VERSION
+export AFOLD=$LOGBASE/p001 
+export BFOLD=$LOGBASE/n001 
 #export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
 
-mkdir -p $BINBASE
-cd $BINBASE        ## logfile written in invoking directory 
+mkdir -p $LOGBASE
+cd $LOGBASE            ## logfile written in invoking directory 
 
 
 #export G4CXOpticks__SaveGeometry_DIR=$BASE  ## optionally save geom into BASE for debug 
@@ -152,11 +152,11 @@ logging()
 }
 [ -n "$LOG" ] && logging
 
-defarg="info_run_ana"
+defarg="info_run_report_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE BINBASE AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
+vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE LOGBASE AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -169,16 +169,22 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
+if [ "${arg/report}" != "$arg" ]; then
+    rm -f $bin.log
+    sstampfold_report
+    [ $? -ne 0 ] && echo $BASH_SOURCE : sstampfold_report error && exit 1 
+
+    sprof_fold_report
+    [ $? -ne 0 ] && echo $BASH_SOURCE : sprof_fold_report error && exit 1 
+fi 
+
 if [ "${arg/dbg}" != "$arg" ]; then
-    mkdir -p $BASE
-    cd $BASE
-    dbg__ $(which $bin) 
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $SDIR/../../bin/rsync.sh $BINBASE
-    #source $SDIR/../../bin/rsync.sh $BASE       ## widen to BASE to include the debug geometry save 
+    source $SDIR/../../bin/rsync.sh $LOGBASE    ## widen to BASE to include the debug geometry save 
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
 fi
 
