@@ -16,7 +16,7 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 case $(uname) in
    #Linux) defarg=dbg_info ;;
-   Linux) defarg=run_info ;;
+   Linux) defarg=run_stamp_info ;;
    Darwin) defarg=ana ;;
 esac
 
@@ -37,7 +37,7 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
-export LOGDIR=$BINBASE
+export LOGDIR=$BINBASE/ALL
 export AFOLD=$BINBASE/ALL/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
@@ -61,6 +61,7 @@ echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
 
     igs=$TMP/GEOM/$GEOM/jok-tds/ALL0/p001/genstep.npy 
+    ## HMM: COULD LOAD SEQUENCE OF GENSTEP EVT BY EVT ?
     export OPTICKS_INPUT_GENSTEP=$igs
     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
 
@@ -123,7 +124,7 @@ export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_MAX_BOUNCE=31
 export OPTICKS_MAX_PHOTON=100000
 export OPTICKS_INTEGRATION_MODE=1
-export OPTICKS_NUM_EVENT=3 
+export OPTICKS_NUM_EVENT=10
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
@@ -165,6 +166,10 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
+if [ "${arg/stamp}" != "$arg" ]; then
+   sstampfold_report
+   [ $? -ne 0 ] && echo $BASH_SOURCE sstampfold_report error && exit 1 
+fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $BINBASE

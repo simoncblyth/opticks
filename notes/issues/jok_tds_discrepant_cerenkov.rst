@@ -1,5 +1,5 @@
-jok_tds_discrepant_cerenkov
-===============================
+FIXED : jok_tds_discrepant_cerenkov
+=====================================
 
 workflow
 -----------
@@ -138,7 +138,7 @@ Lack CK histories other than crazy "CK"::
 
 
 
-HMM : the CK genstep matline are all -1 
+HMM : All CK genstep matline are -1 
 -------------------------------------------
 
 
@@ -807,7 +807,7 @@ setGeo
 
 
 
-TODO : review U4Tree geometry transition to see how to form the mtindex to mtline map on production side
+DONE : review U4Tree geometry translation to see how to form the mtindex to mtline map on production side
 ------------------------------------------------------------------------------------------------------------
 
 ::
@@ -842,8 +842,54 @@ TODO : review U4Tree geometry transition to see how to form the mtindex to mtlin
 
 
 
-Adding mtindex to mtline map setup to sstandard looks straightforward
------------------------------------------------------------------------
+
+
+rejig to stree::init_material_mapping instead of stree::import_bnd
+---------------------------------------------------------------------
+
+::
+
+    stree::init_material_mapping level > 1 [0] desc_mt 
+    stree::desc_mt mtname 19 mtname_no_rindex 11 mtindex 19 mtline 19 mtindex.mn 0 mtindex.mx 42
+     i   0 mtindex  20 mtline  15 mtname Air
+     i   1 mtindex  35 mtline   7 mtname Rock
+     i   2 mtindex   0 mtline   0 mtname Galactic
+     i   3 mtindex   9 mtline  27 mtname Steel
+     i   4 mtindex   1 mtline  35 mtname LS
+     i   5 mtindex   4 mtline  43 mtname Tyvek
+     i   6 mtindex  38 mtline  59 mtname Scintillator
+     i   7 mtindex  42 mtline  55 mtname TiO2Coating
+     i   8 mtindex  39 mtline  51 mtname Adhesive
+     i   9 mtindex  40 mtline  47 mtname Aluminium
+     i  10 mtindex  10 mtline  99 mtname LatticedShellSteel
+     i  11 mtindex   5 mtline 395 mtname Acrylic
+     i  12 mtindex  12 mtline 403 mtname StrutSteel
+     i  13 mtindex   6 mtline 423 mtname AcrylicMask
+     i  14 mtindex  11 mtline 427 mtname CDReflectorSteel
+     i  15 mtindex  21 mtline 435 mtname Vacuum
+     i  16 mtindex  33 mtline 431 mtname Pyrex
+     i  17 mtindex  37 mtline 391 mtname Water
+     i  18 mtindex  36 mtline  95 mtname vetoWater
+
+
+
+
+
+::
+
+    commit e9e01e40d0831464e18c06e775fa5c4f07eb3703 (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Nov 27 15:51:44 2023 +0800
+
+        rejig to stree::init_material_mapping instead of stree::import_bnd as need the mapping with live geometry for CK matline
+
+    commit 1e1b4f058dc6931d7f872eebd8da5f2836e8a388
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Nov 27 14:45:25 2023 +0800
+
+        debug CK generation issue, suspect cause is stree::init_mtindex_to_mtline not run for live geometry, only loaded
+
+
 
 ::
 

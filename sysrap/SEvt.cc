@@ -1919,13 +1919,6 @@ sgs SEvt::addGenstep(const quad6& q_)
     // simplify handling of disabled gensteps by simply setting numphoton to zero for them
 
 
-    LOG_IF(info, is_cerenkov_gs )
-        << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
-        << " gentype " << gentype
-        << " matline_ " << matline_ 
-        << " G4_INDEX_OFFSET " << G4_INDEX_OFFSET
-        ;
-
     if(matline_ >= G4_INDEX_OFFSET  )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ; 
@@ -1934,25 +1927,22 @@ sgs SEvt::addGenstep(const quad6& q_)
         bool bad_ck = is_cerenkov_gs && matline == -1 ;
 
         LOG_IF(info, bad_ck )
-             << " bad_ck "
-             << " matline " << matline 
-             << " desc_mt " 
-             << std::endl 
-             << ( cf ? cf->desc_mt() : "no-cf" )
-             << std::endl 
-             ;
- 
+            << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
+            << " cf " << ( cf ? "YES" : "NO " ) 
+            << " bad_ck "
+            << " matline_ " << matline_ 
+            << " matline " << matline 
+            << " gentype " << gentype
+            << " mtindex " << mtindex
+            << " G4_INDEX_OFFSET " << G4_INDEX_OFFSET
+            << " desc_mt " 
+            << std::endl 
+            << ( cf ? cf->desc_mt() : "no-cf" )
+            << std::endl 
+            ;
 
         q.set_matline(matline);  // <=== THIS IS CHANGING GS BACK IN CALLERS SCOPE 
 
-        LOG_IF(info, is_cerenkov_gs )
-            << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
-            << " cf " << ( cf ? "YES" : "NO " ) 
-            << " gentype " << gentype
-            << " mtindex " << mtindex
-            << " matline_ " << matline_ 
-            << " matline " << matline
-            ;
     }
 
 
