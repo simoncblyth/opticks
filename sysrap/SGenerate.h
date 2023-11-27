@@ -14,7 +14,7 @@ rather than the widely used sysrap library.
 struct NP ; 
 struct SGenerate
 {
-    static NP* GeneratePhotons(int idx);  
+    //static NP* GeneratePhotons(int idx);  
     static NP* GeneratePhotons(const NP* gs);  
 }; 
 
@@ -36,12 +36,19 @@ struct SGenerate
 SGenerate::GeneratePhotons
 ----------------------------
 
+NB only the below gentypes are implemented::
+
+    INPUT_PHOTONS
+    CARRIER
+    TORCH 
+
 Called for example from U4VPrimaryGenerator::GeneratePrimaries
 
-**/
 inline NP* SGenerate::GeneratePhotons(int idx)
 {
-    NP* gs = SEvt::GatherGenstep(idx); 
+    NP* gs = SEvt::GatherGenstep(idx);  // LOOKS GENERAL, BUT ISNT 
+
+   
 
     if( gs == nullptr )
     {
@@ -50,6 +57,9 @@ inline NP* SGenerate::GeneratePhotons(int idx)
         std::cerr << "NB even input photon running requires a genstep" << std::endl ;  
         return nullptr ;  
     }
+
+    assert( gs->shape[0] == 1 );  // MAKING THE POINT THAT THIS CODE LOOKS MORE GENERAL THAN IT IS 
+
 
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
@@ -80,6 +90,10 @@ inline NP* SGenerate::GeneratePhotons(int idx)
 
     return phs ;  
 }
+**/
+
+
+
 
 /**
 SGenerate::GeneratePhotons
@@ -88,6 +102,8 @@ SGenerate::GeneratePhotons
 Does high level genstep handling, prepares MOCK CURAND, 
 creates seeds, creates photon array. 
 The details of the generation are done by storch::generate or scarrier:generate
+
+NB : currently only limited gentype can be generated with this
 
 **/
 

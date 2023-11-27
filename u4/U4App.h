@@ -186,8 +186,11 @@ which is based on SGenerate::GeneratePhotons
 
 **/
 
-void U4App::GeneratePrimaries(G4Event* event)
+void U4App::GeneratePrimaries(G4Event* /*event*/)
 {   
+    std::raise(SIGINT) ;  // THIS NEEDS REVISIT : FOLLOWING G4CXApp.h   
+
+   /**
     LOG(LEVEL) << "[ fPrimaryMode " << fPrimaryMode  ; 
 
     if(fPrimaryMode == 'T')
@@ -203,6 +206,7 @@ void U4App::GeneratePrimaries(G4Event* event)
         default:  assert(0) ; break ; 
     }
     LOG(LEVEL) << "]" ; 
+    **/
 }
 
 void U4App::BeginOfEventAction(const G4Event* event)

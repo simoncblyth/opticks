@@ -112,6 +112,10 @@ Are genstep added twice ?
 
 HMM: getting the torch gensteps into Geant4 means have to have them earlier. 
 
+Maybe could avoid SEvt at this early stage, just get GeneratePrimaries
+to use SGenerate::GeneratePhotons ?
+
+
 ::
 
      668 void SEvt::addFrameGenstep()
@@ -129,5 +133,32 @@ HMM: getting the torch gensteps into Geant4 means have to have them earlier.
      721                 }
      722             }
 
+
+
+
+::
+
+    084 /**
+     85 SGenerate::GeneratePhotons
+     86 ----------------------------
+     87 
+     88 Does high level genstep handling, prepares MOCK CURAND, 
+     89 creates seeds, creates photon array. 
+     90 The details of the generation are done by storch::generate or scarrier:generate
+     91 
+     92 **/
+     93 
+     94 inline NP* SGenerate::GeneratePhotons(const NP* gs_)
+     95 {
+
+
+    126 inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
+    127 {
+    128     int idx = 1 ; // SEvt::ECPU 
+    129     NP* ph = SGenerate::GeneratePhotons(idx);
+    130     // TODO: these *ph* are effectively input photons (even though generated from gensteps),
+    131     //       should associate as such in the SEvt to retain access to these
+    132     //
+    133 
 
 

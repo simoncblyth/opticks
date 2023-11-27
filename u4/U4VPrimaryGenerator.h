@@ -10,6 +10,7 @@ not the library.
 
 **/
 
+struct NP ; 
 struct sphoton ; 
 class G4PrimaryVertex ; 
 class G4Event ; 
@@ -26,7 +27,9 @@ struct U4_API U4VPrimaryGenerator
     template<typename P> 
     static G4PrimaryVertex* MakePrimaryVertexPhoton( const P& p); 
 
-    static void GeneratePrimaries(G4Event *event); 
+   // static void GeneratePrimaries(G4Event *event); 
+    static void GeneratePrimaries_From_Photons(G4Event* event, const NP* ph ); 
+
 };
 
 
@@ -39,7 +42,7 @@ struct U4_API U4VPrimaryGenerator
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-#include "SGenerate.h"  // needs MOCK_CURAND
+//#include "SGenerate.h"  // needs MOCK_CURAND
 
 #include "scuda.h"
 #include "squad.h"
@@ -121,16 +124,23 @@ SEvt as "input photons". This relies on Geant4 being consistent
 in the way PrimaryVertex become G4Track ? I expect it will work 
 in purely optical case. 
 
+HMM: These *ph* are effectively input photons (even though generated from gensteps),
+should associate as such in the SEvt to retain access to these
+
 **/
 
+/*
 inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
 {
     int idx = 1 ; // SEvt::ECPU 
     NP* ph = SGenerate::GeneratePhotons(idx); 
-    // TODO: these *ph* are effectively input photons (even though generated from gensteps),
-    //       should associate as such in the SEvt to retain access to these
-    //
+  
+    GeneratePrimaries_From_Photons(event, ph); 
+}
+*/
 
+inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, const NP* ph )
+{
     std::cout << "U4VPrimaryGenerator::GeneratePrimaries ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
 
     if(ph == nullptr) std::cerr 

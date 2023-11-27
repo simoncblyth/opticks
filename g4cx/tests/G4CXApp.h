@@ -37,6 +37,9 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 #include "SSim.hh"
 #include "SEventConfig.hh"
 #include "SRM.h"
+#include "SGenerate.h"
+#include "SEvent.hh"
+
 
 #include "U4Material.hh"
 #include "U4VolumeMaker.hh"
@@ -218,6 +221,8 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     G4int eventID = event->GetEventID(); 
  
     LOG(LEVEL) << "[ SEventConfig::RunningModeLabel " << SEventConfig::RunningModeLabel() << " eventID " << eventID ; 
+    SEvt* sev = SEvt::Get_ECPU();  
+    assert(sev); 
 
     if(SEventConfig::IsRunningModeGun())
     {
@@ -227,19 +232,18 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     }
     else if(SEventConfig::IsRunningModeTorch())
     {
-        SEvt* sev = SEvt::Get_ECPU();  
-        assert(sev); 
-        sev->addTorchGenstep(); 
-        // formerly added to both instances via static SEvt::AddTorchGenstep()
-        U4VPrimaryGenerator::GeneratePrimaries(event);
+        const NP* gs = SEvent::MakeTorchGensteps() ;        
+        NP* ph = SGenerate::GeneratePhotons(gs); 
+        U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
     }
     else if(SEventConfig::IsRunningModeInputPhoton())
     {
-        U4VPrimaryGenerator::GeneratePrimaries(event) ; 
+        NP* ph = sev->getInputPhoton(); 
+        U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph) ; 
     }
     else if(SEventConfig::IsRunningModeInputGenstep())
     {
-        LOG(fatal) << " InputGensteps mode does not work with Geant4 : its an Opticks only mode : use eg cxs_min.sh " ; 
+        LOG(fatal) << "General InputGensteps with Geant4 not implemented, use eg cxs_min.sh to do that with Opticks " ; 
         std::raise(SIGINT); 
     }
     LOG(LEVEL) << "] " << " eventID " << eventID  ; 
