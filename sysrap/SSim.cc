@@ -186,6 +186,15 @@ int SSim::lookup_mtline( int mtindex ) const
     return tree->lookup_mtline(mtindex); 
 }
 
+std::string SSim::desc_mt() const
+{
+    return tree->desc_mt() ; 
+}
+
+
+
+
+
 
 /**
 SSim::desc

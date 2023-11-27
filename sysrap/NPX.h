@@ -309,7 +309,11 @@ NPX::ArrayFromVec
 The optional itemshape integers override the flat item element count 
 obtained from the type sizeof ratio *sizeof(S)/sizeof(T)*.
 Note that the product of the itemshape integers must match the 
-flat item count however.  
+flat item count however.  Usage::
+
+    struct Compound { int ii[16] ; }; 
+    std::vector<Compound> v = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }} ; 
+    NP* a = NPX::ArrayFromVec<int,Compound>( v, 4, 4) ; 
 
 **/
 

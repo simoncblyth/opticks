@@ -33,5 +33,9 @@ int CheckGeo::lookup_mtline(int mtindex) const
 {
     return -1 ; 
 }
+std::string CheckGeo::desc_mt() const 
+{
+    return "CheckGeo::desc_mt"  ; 
+}
 
 

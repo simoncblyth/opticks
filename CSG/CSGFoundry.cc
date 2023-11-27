@@ -362,6 +362,14 @@ int CSGFoundry::lookup_mtline(int mtindex) const
     assert(sim); 
     return sim->lookup_mtline(mtindex) ;  
 }
+std::string CSGFoundry::desc_mt() const 
+{
+    assert(sim); 
+    return sim->desc_mt() ;  
+}
+
+
+
 
 
 

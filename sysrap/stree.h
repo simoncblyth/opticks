@@ -240,7 +240,7 @@ struct stree_standin
 
 struct stree
 {
-    static constexpr const int MAXDEPTH = 15 ; // presentational only   
+    static constexpr const int MAXDEPTH = 15 ; // presentational limit only   
     static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400   
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
@@ -3460,6 +3460,9 @@ stree::import_bnd
 -------------------
 
 Moved from SSim::import_bnd 
+
+SUSPECT THIS IS ONLY CALLED ON LOADING : NOT 
+ON CREATION : CAUSING CERENKOV MTLINE ISSUE 
 
 **/
 

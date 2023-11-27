@@ -1897,8 +1897,12 @@ sgs SEvt::addGenstep(const quad6& q_)
     unsigned gentype = q_.gentype(); 
     unsigned matline_ = q_.matline(); 
 
+    bool is_input_photon_gs = OpticksGenstep_::IsInputPhoton(gentype) ; 
+    bool is_cerenkov_gs = OpticksGenstep_::IsCerenkov(gentype); 
 
-    bool input_photon_with_normal_genstep = input_photon && OpticksGenstep_::IsInputPhoton(gentype) == false  ; 
+
+
+    bool input_photon_with_normal_genstep = input_photon && !is_input_photon_gs  ; 
     LOG_IF(fatal, input_photon_with_normal_genstep)
         << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
         << " MIXING input photons with other gensteps is not allowed "
@@ -1910,19 +1914,43 @@ sgs SEvt::addGenstep(const quad6& q_)
     int gidx = int(gs.size())  ;  // 0-based genstep label index
     bool enabled = GIDX == -1 || GIDX == gidx ; 
 
-    quad6& q = const_cast<quad6&>(q_);   
+    quad6& q = const_cast<quad6&>(q_);  
     if(!enabled) q.set_numphoton(0);   
     // simplify handling of disabled gensteps by simply setting numphoton to zero for them
 
-    if(matline_ >= G4_INDEX_OFFSET )
+
+    LOG_IF(info, is_cerenkov_gs )
+        << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
+        << " gentype " << gentype
+        << " matline_ " << matline_ 
+        << " G4_INDEX_OFFSET " << G4_INDEX_OFFSET
+        ;
+
+    if(matline_ >= G4_INDEX_OFFSET  )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ; 
-        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
-        q.set_matline(matline); 
+        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;    // cf(SGeo) used for lookup
 
-        LOG(debug) 
-            << " matline_ " << matline_ 
+        bool bad_ck = is_cerenkov_gs && matline == -1 ;
+
+        LOG_IF(info, bad_ck )
+             << " bad_ck "
+             << " matline " << matline 
+             << " desc_mt " 
+             << std::endl 
+             << ( cf ? cf->desc_mt() : "no-cf" )
+             << std::endl 
+             ;
+ 
+
+        q.set_matline(matline);  // <=== THIS IS CHANGING GS BACK IN CALLERS SCOPE 
+
+        LOG_IF(info, is_cerenkov_gs )
+            << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
+            << " cf " << ( cf ? "YES" : "NO " ) 
+            << " gentype " << gentype
             << " mtindex " << mtindex
+            << " matline_ " << matline_ 
             << " matline " << matline
             ;
     }
@@ -1946,7 +1974,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     s.gentype = q.gentype() ; 
 
     gs.push_back(s) ;      // summary labels 
-    genstep.push_back(q) ; // actual genstep params
+    genstep.push_back(q) ; // actual genstep params : copied into the vector
 
     numgenstep_collected += 1 ; 
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear

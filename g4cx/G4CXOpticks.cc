@@ -358,7 +358,7 @@ void G4CXOpticks::init_SEvt()
     sim->serialize() ;  
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
 
-    sev->setGeo((SGeo*)fd);    // IS THIS USED BY ANYTHING ? 
+    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  Y: Essential set_matline of Cerenkov Genstep 
 
     smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
 

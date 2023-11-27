@@ -509,7 +509,7 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
 SBnd::FillMaterialLine
 -----------------------
 
-Used from SSim::import_bnd
+Used from stree::import_bnd
 
 Uses the "specs" boundary name list to convert 
 all the stree::mtname into st->mtline 

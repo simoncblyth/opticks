@@ -79,6 +79,7 @@ private:
 public:
     stree* get_tree() const ; 
     int lookup_mtline( int mtindex ) const ; 
+    std::string desc_mt() const ; 
 public:
     // top NPFold must be populated with SSim::serialize 
     // prior to these accessors working 

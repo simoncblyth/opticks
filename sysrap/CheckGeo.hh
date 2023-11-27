@@ -11,7 +11,9 @@ struct SYSRAP_API CheckGeo : public SGeo
     int                getMeshIndexWithName(const char* name, bool startswith) const ;
     int                getFrame(sframe& fr, int ins_idx ) const ; 
     std::string        descBase() const ; 
+
     int                lookup_mtline(int mtindex) const ; 
+    std::string        desc_mt() const ; 
 };
 
 
