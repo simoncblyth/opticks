@@ -125,7 +125,7 @@ G4ParticleGun* G4CXApp::InitGun() // static
 
 U4SensitiveDetector* G4CXApp::InitSensDet() // static
 {
-    const char* sdn = ssys::getenvvar("G4CXApp__SensDet") ; 
+    const char* sdn = ssys::getenvvar("G4CXApp__SensDet", "PMTSDMgr" ) ; 
     U4SensitiveDetector* sd = sdn ? new U4SensitiveDetector(sdn) : nullptr ; 
     std::cout 
         << "G4CXApp::InitSensDet" 
@@ -214,8 +214,10 @@ That causes kludgy SEvt::addFrameGenstep
 **/
 
 void G4CXApp::GeneratePrimaries(G4Event* event)
-{   
-    LOG(LEVEL) << "[ SEventConfig::RunningModeLabel " << SEventConfig::RunningModeLabel() ; 
+{  
+    G4int eventID = event->GetEventID(); 
+ 
+    LOG(LEVEL) << "[ SEventConfig::RunningModeLabel " << SEventConfig::RunningModeLabel() << " eventID " << eventID ; 
 
     if(SEventConfig::IsRunningModeGun())
     {
@@ -240,7 +242,7 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
         LOG(fatal) << " InputGensteps mode does not work with Geant4 : its an Opticks only mode : use eg cxs_min.sh " ; 
         std::raise(SIGINT); 
     }
-    LOG(LEVEL) << "]" ; 
+    LOG(LEVEL) << "] " << " eventID " << eventID  ; 
 }
 
 /**

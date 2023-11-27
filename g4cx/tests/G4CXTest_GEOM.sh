@@ -1,11 +1,19 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-G4CXTest_GEOM.sh : Standalone bi-simulation with G4CXApp::Main and current GEOM 
-===================================================================================
+G4CXTest_GEOM.sh : Standalone optical only bi-simulation with G4CXApp::Main and current GEOM 
+================================================================================================
+
+Standalone optical Geant4 initialization is faster than embedded Geant4 + Opticks but is 
+still 2-3 min to voxelize. 
+
+See ~/opticks/CSGOptiX/cxs_min.sh for initializion in under 1 second. 
+
 
 Workstation::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
+    ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg
+
     LOG=1 BP=C4CustomART::doIt ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg  
 
 Laptop::
@@ -68,7 +76,7 @@ export OPTICKS_MAX_PHOTON=100000
 #srm=SRM_DEFAULT
 srm=SRM_TORCH
 #srm=SRM_INPUT_PHOTON
-#srm=SRM_INPUT_GENSTEP
+#srm=SRM_INPUT_GENSTEP    ## NOT IMPLEMENTED FOR GEANT4
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 

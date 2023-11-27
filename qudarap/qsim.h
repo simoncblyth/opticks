@@ -266,7 +266,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     const sctx& ctx
    )
 {
-#ifdef MOCK_CUDA_DEBUG
+#if !defined(PRODUCTION) && defined(MOCK_CUDA_DEBUG)
     bool dump = ctx.idx == -1 ; 
 #endif
 
@@ -277,7 +277,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
     } 
     float f_max = fminf(1.f,4.f*sigma_alpha);
 
-#ifdef MOCK_CUDA_DEBUG
+#if !defined(PRODUCTION) && defined(MOCK_CUDA_DEBUG)
     if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG sigma_alpha %10.5f f_max %10.5f  \n", sigma_alpha, f_max ); 
 #endif
 
@@ -295,7 +295,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
             u1 = curand_uniform(&rng) ; 
             reject_alpha = alpha >= M_PIf/2.f || (u1*f_max > sin_alpha) ; 
 
-#ifdef MOCK_CUDA_DEBUG
+#if !defined(PRODUCTION) && defined(MOCK_CUDA_DEBUG)
             if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u0 %10.5f alpha %10.5f sin_alpha %10.5f u1 %10.5f u1*f_max %10.5f  (u1*f_max > sin_alpha) %d reject_alpha %d  \n", 
                u0, alpha, sin_alpha, u1, u1*f_max, (u1*f_max > sin_alpha), reject_alpha ); 
             // theres lots of alpha rejected : eg all -ve sin_alpha             
@@ -314,7 +314,7 @@ inline QSIM_METHOD void qsim::SmearNormal_SigmaAlpha(
         reject_dir = dot(*smeared_normal, *direction ) >= 0.f ;   
         // reject smears that move the normal into same hemi as direction
 
-#ifdef MOCK_CUDA_DEBUG
+#if !defined(PRODUCTION) && defined(MOCK_CUDA_DEBUG)
         if(dump) printf("//qsim::SmearNormal_SigmaAlpha.MOCK_CUDA_DEBUG u2 %10.5f phi %10.5f smeared_normal ( %10.5f, %10.5f, %10.5f)  reject_dir %d  \n", 
                u2, phi, smeared_normal->x, smeared_normal->y, smeared_normal->z, reject_dir ); 
 #endif
@@ -340,7 +340,7 @@ inline QSIM_METHOD void qsim::SmearNormal_Polish(
     const sctx& ctx
     )
 {
-#ifdef MOCK_CUDA_DEBUG
+#if !defined(PRODUCTION) && defined(MOCK_CUDA_DEBUG)
     bool dump = ctx.idx == -1 ; 
 #endif
 
@@ -1158,7 +1158,6 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
     printf("//qsim.propagate_at_boundary.tail idx %d : pol1 = np.array([%10.8f,%10.8f,%10.8f]) ; lpol1 = %10.8f \n", 
         ctx.idx, p.pol.x, p.pol.y, p.pol.z, length(p.pol) ); 
     }
-#endif
 
     /*
     if(ctx.idx == 251959)
@@ -1170,6 +1169,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXO
         printf("//qsim.propagate_at_boundary reflect %d  tir %d polarization (%10.4f, %10.4f, %10.4f) \n", reflect, tir, p.pol.x, p.pol.y, p.pol.z );  
     }
     */
+#endif
 
     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 
