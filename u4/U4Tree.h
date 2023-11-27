@@ -395,6 +395,16 @@ inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
     std::vector<const G4Material*>& m = materials ;  
     if(std::find(m.begin(), m.end(), mt) == m.end()) initMaterial(mt);  
 }
+
+/**
+U4Tree::initMaterial
+----------------------
+
+Invokes stree::add_material with mtname and g4index 
+collecting into stree::mtname and stree::mtindex vectors
+
+**/
+
 inline void U4Tree::initMaterial(const G4Material* const mt)
 {
     materials.push_back(mt); 
@@ -746,31 +756,8 @@ U4Tree::initStandard
 ----------------------
 
 Have now transitioned from a former unholy mixture of old and new.
-But still in validation stage, so retain the below old notes for now. 
+Using sstandard::deferred_init
 
-SSim::import_bnd
-GGeo::convertSim_BndLib
-
-X4PhysicalVolume::addBoundary
-   during volume traversal look for border/skin surfaces and
-   adds to GBndLib when found using the names of boundaries and surfaces 
-
-   * uses GGeo::findSkinSurface instead just use G4 (follow G4OpBoundaryProcess) 
-
-float/double bnd buffer is a zip from GSurfaceLib GMaterialLib which 
-uses domain standardization and is steered by the int bd buffer 
-
-GMaterialLib/GSurfaceLib
-   standard domain and standard set of props with defaults   
-
-   * current 
-
-How to handle the bnd cleanly ? 
-
-SSim and SBnd look all setup, but they are currently relying on NP* bnd
-with "spec" names that comes from GGeo/GBndLib 
-
-So just need to create the bnd and the optical buffer ? 
 
 **/
 

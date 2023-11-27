@@ -25,8 +25,8 @@ sn ctor/dtor register/de-register from s_pool<sn,_sn>
 -------------------------------------------------------
 
 In order to convert active *sn* pointers into indices 
-on persisting have explictly avoided leaking any *sn* by 
-taking care to always delete appropriately. 
+on persisting have explictly avoided leaking ANY *sn* by 
+taking care to ALWAYS delete appropriately. 
 This means that can use the *sn* ctor/dtor to add/erase update 
 an std::map of active *sn* pointers keyed on a creation index.  
 This map allows the active *sn* pointers to be converted into 

@@ -290,6 +290,8 @@ struct stree
 
     static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
     static constexpr const char* SENSOR_NAME = "sensor_name.npy" ; 
+    static constexpr const char* MTINDEX_TO_MTLINE = "mtindex_to_mtline.npy" ; 
+
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     int level ;                            // verbosity 
@@ -298,8 +300,7 @@ struct stree
     std::vector<std::string> mtname_no_rindex ; 
     std::vector<int>         mtindex ;      // G4Material::GetIndex 0-based creation indices 
     std::vector<int>         mtline ;     
-    std::map<int,int>        mtindex_to_mtline ;   // filled from mtindex and mtline with init_mtindex_to_mtline 
-    // map not currently persisted (it could be using NPX.h)
+    std::map<int,int>        mtindex_to_mtline ;   // filled from mtindex and mtline via init_material_mapping
 
     std::vector<std::string> suname ;       // surface names
     std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
@@ -566,6 +567,7 @@ struct stree
     std::string desc_bd() const ; 
 
     void initStandard() ; 
+    void init_material_mapping(); 
 
     int add_material( const char* name, unsigned g4index ); 
     int num_material() const ; 
@@ -590,7 +592,7 @@ struct stree
 
     NPFold* get_surface_subfold(int idx) const ; 
 
-    void import_bnd(const NP* bnd); 
+    //void import_bnd(const NP* bnd); 
     void init_mtindex_to_mtline(); 
     int lookup_mtline( int mtindex ) const ; 
 };
@@ -2171,6 +2173,7 @@ inline NPFold* stree::serialize() const
     NP* _inst_nidx = NPX::ArrayFromVec<int,int>( inst_nidx ) ; 
     NP* _sensor_id = NPX::ArrayFromVec<int,int>( sensor_id ) ; 
     NP* _sensor_name = NPX::Holder(sensor_name); 
+    NP* _mtindex_to_mtline = NPX::ArrayFromDiscoMap<int>( mtindex_to_mtline ) ; 
 
     fold->add( FACTOR, _factor ); 
     fold->add( INST,   _inst ); 
@@ -2180,6 +2183,7 @@ inline NPFold* stree::serialize() const
     fold->add( INST_NIDX,   _inst_nidx ); 
     fold->add( SENSOR_ID,   _sensor_id ); 
     fold->add( SENSOR_NAME, _sensor_name ); 
+    fold->add( MTINDEX_TO_MTLINE, _mtindex_to_mtline  ); 
 
     return fold ; 
 }
@@ -2265,7 +2269,9 @@ inline void stree::import(const NPFold* fold)
 
     ImportArray<int, int>( mtindex, fold->get(MTINDEX) );
     ImportArray<int, int>( suindex, fold->get(SUINDEX) );
-  
+ 
+    NPX::DiscoMapFromArray<int>( mtindex_to_mtline, fold->get(MTINDEX_TO_MTLINE) ); 
+ 
     NPFold* f_standard = fold->get_subfold(STANDARD) ; 
 
     if(f_standard->is_empty())
@@ -2284,7 +2290,7 @@ inline void stree::import(const NPFold* fold)
         standard->bd->get_names( bdname );
 
         assert( standard->bnd ); 
-        import_bnd( standard->bnd ); 
+        //import_bnd( standard->bnd ); 
     }
 
 
@@ -3452,7 +3458,46 @@ the conversion is done with mat and sur arrays prepared.
 inline void stree::initStandard()
 {
     standard->deferred_init( vbd, bdname, suname, surface ); 
+
+    init_material_mapping() ; 
 }
+
+
+/**
+stree::init_material_mapping
+-------------------------------
+
+Formerly similar to this was done by stree::import_bnd
+but need the material map for live geometry running, 
+so repositioned to being invoked from stree::initStandard
+
+**/
+
+
+inline void stree::init_material_mapping()
+{
+    assert( mtline.size() == 0 ); 
+    assert( mtname.size() == mtindex.size() ); 
+
+    // for each mtname use bnd->names to fill the mtline vector
+    SBnd::FillMaterialLine( mtline, mtindex, mtname, bdname ); 
+
+    // fill (int,int) map from the mtline and mtindex vectors 
+    init_mtindex_to_mtline() ; 
+ 
+    //if( level > 1 ) 
+    std::cerr 
+        << "stree::init_material_mapping" 
+        << " level > 1 [" << level << "]" 
+        << " desc_mt " 
+        << std::endl 
+        << desc_mt() 
+        << std::endl 
+        ; 
+}
+
+
+
 
 
 /**
@@ -3461,10 +3506,10 @@ stree::import_bnd
 
 Moved from SSim::import_bnd 
 
-SUSPECT THIS IS ONLY CALLED ON LOADING : NOT 
-ON CREATION : CAUSING CERENKOV MTLINE ISSUE 
+The mtname and mtindex are populated by stree::add_material, 
+beyond those just need the bnd names to determine the 
+mtline and the map. 
 
-**/
 
 inline void stree::import_bnd(const NP* bnd)
 {
@@ -3491,10 +3536,17 @@ inline void stree::import_bnd(const NP* bnd)
         ; 
 }
 
+**/
+
+
+
 
 /**
 stree::init_mtindex_to_mtline
 ------------------------------
+
+SUSPECT THIS IS ONLY CALLED ON LOADING : NOT 
+ON CREATION : CAUSING CERENKOV MTLINE ISSUE 
 
 Canonically invoked from SSim::import_bnd/SBnd::FillMaterialLine following 
 live creation or from stree::load_ when loading a persisted stree.  

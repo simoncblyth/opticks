@@ -810,6 +810,48 @@ setGeo
 TODO : review U4Tree geometry transition to see how to form the mtindex to mtline map on production side
 ------------------------------------------------------------------------------------------------------------
 
+::
+
+   BP=stree::init_mtindex_to_mtline GDB=1 ~/j/okjob.sh 
+
+::
+
+    2023-11-27 14:54:42.164 INFO  [152868] [SEvt::addGenstep@1893] SEvt::id EGPU (9)  GSV YES SEvt__OTHER
+    2023-11-27 14:54:42.164 INFO  [152868] [SEvt::addGenstep@1922]  is_cerenkov_gs YES gentype 18 matline_ 1000001 G4_INDEX_OFFSET 1000000
+    2023-11-27 14:54:42.164 INFO  [152868] [SEvt::addGenstep@1936]  bad_ck  matline -1 desc_mt 
+    stree::desc_mt mtname 19 mtname_no_rindex 11 mtindex 19 mtline 0 mtindex.mn 0 mtindex.mx 42
+     i   0 mtindex  20 mtline  -1 mtname Air
+     i   1 mtindex  35 mtline  -1 mtname Rock
+     i   2 mtindex   0 mtline  -1 mtname Galactic
+     i   3 mtindex   9 mtline  -1 mtname Steel
+     i   4 mtindex   1 mtline  -1 mtname LS
+     i   5 mtindex   4 mtline  -1 mtname Tyvek
+     i   6 mtindex  38 mtline  -1 mtname Scintillator
+     i   7 mtindex  42 mtline  -1 mtname TiO2Coating
+     i   8 mtindex  39 mtline  -1 mtname Adhesive
+     i   9 mtindex  40 mtline  -1 mtname Aluminium
+     i  10 mtindex  10 mtline  -1 mtname LatticedShellSteel
+     i  11 mtindex   5 mtline  -1 mtname Acrylic
+     i  12 mtindex  12 mtline  -1 mtname StrutSteel
+     i  13 mtindex   6 mtline  -1 mtname AcrylicMask
+     i  14 mtindex  11 mtline  -1 mtname CDReflectorSteel
+     i  15 mtindex  21 mtline  -1 mtname Vacuum
+     i  16 mtindex  33 mtline  -1 mtname Pyrex
+     i  17 mtindex  37 mtline  -1 mtname Water
+     i  18 mtindex  36 mtline  -1 mtname vetoWater
 
 
+
+Adding mtindex to mtline map setup to sstandard looks straightforward
+-----------------------------------------------------------------------
+
+::
+
+    epsilon:sysrap blyth$ opticks-f deferred_init
+    ./sysrap/sstandard.h:    void deferred_init(
+    ./sysrap/sstandard.h:sstandard::deferred_init
+    ./sysrap/sstandard.h:inline void sstandard::deferred_init(
+    ./sysrap/stree.h:    standard->deferred_init( vbd, bdname, suname, surface ); 
+    ./u4/U4Tree.h:Using sstandard::deferred_init
+    epsilon:opticks blyth$ 
 

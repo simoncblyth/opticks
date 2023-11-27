@@ -21,24 +21,35 @@ if __name__ == '__main__':
     print(repr(c))
 
     sn = f._csg.sn   
-    snd = f.csg.node   
-
     s_tv = f._csg.s_tv
-    xform = f.csg.xform
-
     s_pa = f._csg.s_pa 
-    param = f.csg.param
-
     s_bb = f._csg.s_bb
-    aabb = f.csg.aabb 
- 
 
-    EXPR = r"""
-    np.all( snd == sn )
-    np.all( xform == s_tv ) 
-    np.all( param == s_pa )
-    np.all( aabb == s_bb )
-    """
+    if hasattr(f, 'csg'):
+        snd = f.csg.node   
+        xform = f.csg.xform
+        param = f.csg.param
+        aabb = f.csg.aabb 
+
+        EXPR = r"""
+        np.all( snd == sn )
+        np.all( xform == s_tv ) 
+        np.all( param == s_pa )
+        np.all( aabb == s_bb )
+        """
+    else:
+        snd = None 
+        xform = None 
+        param = None 
+        aabb = None 
+
+        EXPR = r"""
+        sn
+        s_tv
+        s_pa
+        s_bb
+        """
+    pass
 
     for expr in list(filter(None,textwrap.dedent(EXPR).split("\n"))):
         print(expr)

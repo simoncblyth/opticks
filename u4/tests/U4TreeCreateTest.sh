@@ -49,7 +49,9 @@ if [ ! -f "$gdmlpath" ]; then
    exit 1 
 fi 
 export ${GEOM}_GDMLPath=$gdmlpath
-export FOLD=/tmp/$USER/opticks/$bin
+
+TMP=${TMP:-/tmp/$USER/opticks}
+export FOLD=$TMP/$bin
 script=$SDIR/$bin.py 
 
 vars="BASH_SOURCE SDIR bin GEOM gdmlpath FOLD script"

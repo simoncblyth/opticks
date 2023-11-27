@@ -22,8 +22,8 @@ class sn_check(object):
         lvn = f.soname_names
         sn = f._csg.sn
         sn_fields = sn.shape[1]  
-        assert sn_fields in [17,15] 
-        with_child = sn_fields == 17
+        assert sn_fields in [17,19]   
+        with_child = sn_fields == 19
 
         s_pa = f._csg.s_pa
         s_tv = f._csg.s_tv
