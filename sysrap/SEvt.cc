@@ -679,7 +679,7 @@ void SEvt::addFrameGenstep()
             SEvt::SetReldir(frs);  
         }
   
-        NP* gs = SFrameGenstep::MakeCenterExtentGensteps(frame);  
+        NP* gs = SFrameGenstep::MakeCenterExtentGenstep(frame);  
         LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ; 
         addGenstep(gs); 
 
@@ -697,34 +697,27 @@ void SEvt::addFrameGenstep()
         assert( inputs == 0 || inputs == 1); 
         if( inputs == 1 )
         {
+            assertZeroGenstep(); 
+            NP* igs = nullptr ; 
             if( hasInputGenstep() )
             {
-                assertZeroGensteps(); 
-                NP* igs = getInputGenstep() ; 
-                addGenstep(igs); 
+                igs = getInputGenstep() ; 
             }
             else if( hasInputPhoton())
             { 
-                assertZeroGensteps(); 
-                quad6 ipgs = MakeInputPhotonGenstep(input_photon, frame) ;
-                addGenstep(ipgs); 
+                igs = SEvent::MakeInputPhotonGenstep(input_photon, frame) ;
             }
             else if( has_torch )
             {
-                if(isEGPU())
-                {
-                    assertZeroGensteps(); 
-                    // just filling the storch struct from config (no generation yet)
-                    // so repeating for CPU and GPU instances is no problem 
-                    NP* togs = SEvent::MakeTorchGensteps(); 
-                    addGenstep(togs); 
-                }
+                igs = SEvent::MakeTorchGenstep(); 
             }
+            assert(igs);  
+            addGenstep(igs); 
         }
     }   
 }
 
-void SEvt::assertZeroGensteps()
+void SEvt::assertZeroGenstep()
 {
     int prior_genstep = genstep.size() ;  
     bool prior_genstep_zero = prior_genstep == 0 ;
@@ -878,32 +871,6 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     return ste ; 
 }
 
-
-/**
-SEvt::MakeInputPhotonGenstep
------------------------------
-
-Now called from SEvt::addFrameGenstep (formerly from SEvt::setFrame)
-Note that the only thing taken from the *input_photon* is the 
-number of photons so this can work with either local or 
-transformed *input_photon*. 
-
-The m2w transform from the frame is copied into the genstep.  
-HMM: is that actually used ? Because the frame is also persisted. 
-
-**/
-
-quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
-{
-    LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;  
-
-    quad6 ipgs ; 
-    ipgs.zero(); 
-    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
-    ipgs.set_numphoton(  input_photon->shape[0]  ); 
-    fr.m2w.write(ipgs); // copy fr.m2w into ipgs.q2,q3,q4,q5 
-    return ipgs ; 
-}
 
 
 /**
@@ -1218,12 +1185,12 @@ sgs SEvt::AddGenstep(const NP* a)
     if(Exists(1)) label = Get(1)->addGenstep(a) ;  
     return label ; 
 }
-void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
-void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
+void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGenstep()); }
+void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGenstep());   }
 
 void SEvt::addTorchGenstep()
 {
-    const NP* a = SEvent::MakeTorchGensteps() ;
+    const NP* a = SEvent::MakeTorchGenstep() ;
     addGenstep(a);  
 }
 
@@ -1507,20 +1474,6 @@ void SEvt::endOfEvent(int eventID)
     endIndex(index_);   // also sets t_EndOfEvent stamp
     endMeta(); 
     save();              // gather and save SEventConfig configured arrays
-
-
-#ifdef DEBUG_SEVT_LIFECYCLE
-    if(isECPU())
-    {
-        const NP* gs_ = getGenstep();  // relies on already being gathered by the save call 
-        LOG_IF(fatal, gs_ == nullptr) << " gs_ NULL " ; 
-        assert( gs_ ); 
-        SEvent::SetGENSTEP(gs_->copy());   // picked up by  QEvent::setGenstep
-    }
-    const NP* hit_ = getHit(); 
-    SEvent::SetHIT(hit_->copy()); 
-#endif
-
 
     clear(); 
 }

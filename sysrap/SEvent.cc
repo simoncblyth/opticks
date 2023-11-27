@@ -15,7 +15,7 @@
 #include "ssys.h"
 #include "sstr.h"
 
-#include "NP.hh"
+#include "NPX.h"
 #include "SLOG.hh"
 
 #include "OpticksGenstep.h"
@@ -28,7 +28,6 @@ const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ;
 
 
 
-#ifdef DEBUG_SEVT_LIFECYCLE
 
 NP* SEvent::GENSTEP = nullptr ; 
 NP* SEvent::GetGENSTEP()
@@ -36,17 +35,6 @@ NP* SEvent::GetGENSTEP()
     LOG_IF(info, SEvt::LIFECYCLE ) <<  " GENSTEP " << ( GENSTEP ? GENSTEP->sstr() : "-" ); 
     return GENSTEP ; 
 }
-
-/**
-HMM: delete prior and copying on set would avoid uncontrolled leak 
-
-void SEvent::SetGENSTEP(NP* gs)
-{
-    delete GENSTEP ; 
-    GENSTEP = gs ? gs->copy() : nullptr ; 
-}
-**/
-
 
 void SEvent::SetGENSTEP(NP* gs)
 {
@@ -73,7 +61,6 @@ bool SEvent::HaveHIT()
     return HIT != nullptr ; 
 }
 
-#endif
 
 
 
@@ -83,11 +70,11 @@ bool SEvent::HaveHIT()
 
 
 
-NP* SEvent::MakeDemoGensteps(const char* config)
+NP* SEvent::MakeDemoGenstep(const char* config)
 {
     NP* gs = nullptr ;
-    if(     sstr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
-    else if(sstr::StartsWith(config, "torch")) gs = MakeTorchGensteps() ; 
+    if(     sstr::StartsWith(config, "count")) gs = MakeCountGenstep(config) ;   
+    else if(sstr::StartsWith(config, "torch")) gs = MakeTorchGenstep() ; 
     assert(gs); 
     LOG(LEVEL) 
        << " config " << ( config ? config :  "-" )
@@ -97,8 +84,50 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     return gs ; 
 }
 
+
+
+
+NP* SEvent::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
+{
+    std::vector<quad6> qgs(1) ; 
+    qgs[0].zero() ; 
+    qgs[0] = MakeInputPhotonGenstep_(input_photon, fr );   
+    NP* ipgs = NPX::ArrayFromVec<float,quad6>( qgs, 6, 4) ; 
+    return ipgs ; 
+}
+
 /**
-SEvent::MakeTorchGensteps
+SEvent::MakeInputPhotonGenstep_
+---------------------------------
+
+Now called from SEvt::addFrameGenstep (formerly from SEvt::setFrame)
+Note that the only thing taken from the *input_photon* is the 
+number of photons so this can work with either local or 
+transformed *input_photon*. 
+
+The m2w transform from the frame is copied into the genstep.  
+HMM: is that actually used ? Because the frame is also persisted. 
+
+**/
+
+quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, const sframe& fr )
+{
+    LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;  
+
+    quad6 ipgs ; 
+    ipgs.zero(); 
+    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
+    ipgs.set_numphoton(  input_photon->shape[0]  ); 
+    fr.m2w.write(ipgs); // copy fr.m2w into ipgs.q2,q3,q4,q5 
+    return ipgs ; 
+}
+
+
+
+
+
+/**
+SEvent::MakeTorchGenstep
 --------------------------
 
 Canonically invoked from SEvt::AddTorchGenstep 
@@ -107,15 +136,15 @@ HMM: perhaps SEventConfig to do this in standardized place ?
 
 **/
 
-NP* SEvent::MakeTorchGensteps(){    return MakeGensteps( OpticksGenstep_TORCH ) ; }
-NP* SEvent::MakeCerenkovGensteps(){ return MakeGensteps( OpticksGenstep_CERENKOV ) ; }
-NP* SEvent::MakeScintGensteps(){    return MakeGensteps( OpticksGenstep_SCINTILLATION ) ; }
-NP* SEvent::MakeCarrierGensteps(){  return MakeGensteps( OpticksGenstep_CARRIER ) ; }
+NP* SEvent::MakeTorchGenstep(){    return MakeGenstep( OpticksGenstep_TORCH ) ; }
+NP* SEvent::MakeCerenkovGenstep(){ return MakeGenstep( OpticksGenstep_CERENKOV ) ; }
+NP* SEvent::MakeScintGenstep(){    return MakeGenstep( OpticksGenstep_SCINTILLATION ) ; }
+NP* SEvent::MakeCarrierGenstep(){  return MakeGenstep( OpticksGenstep_CARRIER ) ; }
 
-NP* SEvent::MakeGensteps( int gentype )
+NP* SEvent::MakeGenstep( int gentype )
 {
-    unsigned num_ph = ssys::getenvunsigned("SEvent_MakeGensteps_num_ph", 100 ); 
-    bool dump = ssys::getenvbool("SEvent_MakeGensteps_dump"); 
+    unsigned num_ph = ssys::getenvunsigned("SEvent_MakeGenstep_num_ph", 100 ); 
+    bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
     unsigned num_gs = 1 ; 
 
     LOG(info) << "num_ph " << num_ph << " dump " << dump ; 
@@ -123,16 +152,16 @@ NP* SEvent::MakeGensteps( int gentype )
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     switch(gentype)
     {
-        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_CARRIER:       FillGensteps<scarrier>( gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_TORCH:         FillGenstep<storch>(   gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_CERENKOV:      FillGenstep<scerenkov>(gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_SCINTILLATION: FillGenstep<sscint>(   gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_CARRIER:       FillGenstep<scarrier>( gs, num_ph, dump) ; break ; 
     }
     return gs ; 
 }
 
 template<typename T>
-void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep, bool dump )
+void SEvent::FillGenstep( NP* gs, unsigned numphoton_per_genstep, bool dump )
 {
     T* tt = (T*)gs->bytes() ; 
     for(int i=0 ; i < gs->shape[0] ; i++ ) 
@@ -142,10 +171,10 @@ void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep, bool dump )
     }
 }
 
-template void SEvent::FillGensteps<storch>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGensteps<scerenkov>( NP* gs, unsigned numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGensteps<sscint>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGensteps<scarrier>(  NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<storch>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<scerenkov>( NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<sscint>(    NP* gs, unsigned numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<scarrier>(  NP* gs, unsigned numphoton_per_genstep, bool dump ); 
 
 
 /**
@@ -195,18 +224,18 @@ NP* SEvent::MakeSeed( const NP* gs )
 
 
 
-NP* SEvent::MakeCountGensteps(const char* config, int* total ) // static 
+NP* SEvent::MakeCountGenstep(const char* config, int* total ) // static 
 {
     std::vector<int>* photon_counts_per_genstep = nullptr ; 
     if( config == nullptr )
     {
         (*photon_counts_per_genstep) = { 3, 5, 2, 0, 1, 3, 4, 2, 4 }; 
     }
-    return MakeCountGensteps(*photon_counts_per_genstep, total);
+    return MakeCountGenstep(*photon_counts_per_genstep, total);
 }
 
 /**
-SEvent::MakeCountGensteps
+SEvent::MakeCountGenstep
 ---------------------------
 
 Used by qudarap/tests/QEventTest.cc
@@ -214,7 +243,7 @@ Used by qudarap/tests/QEventTest.cc
 **/
 
 
-NP* SEvent::MakeCountGensteps(const std::vector<int>& counts, int* total ) // static 
+NP* SEvent::MakeCountGenstep(const std::vector<int>& counts, int* total ) // static 
 {
     int gencode = OpticksGenstep_TORCH ;
     std::vector<quad6> gensteps ;

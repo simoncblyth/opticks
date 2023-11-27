@@ -162,3 +162,21 @@ to use SGenerate::GeneratePhotons ?
     133 
 
 
+
+::
+
+    2023-11-27 19:12:13.272 INFO  [115122] [G4CXApp::BeamOn@331] [ OPTICKS_NUM_EVENT=3
+    2023-11-27 19:13:43.063 INFO  [115122] [U4Recorder::BeginOfRunAction@253] 
+    2023-11-27 19:13:43.063 INFO  [115122] [G4CXApp::GeneratePrimaries@223] [ SEventConfig::RunningModeLabel SRM_TORCH eventID 0
+    2023-11-27 19:13:43.063 INFO  [115122] [SEvent::MakeGensteps@121] num_ph 100000 dump 0
+    U4VPrimaryGenerator::GeneratePrimaries ph (100000, 4, 4, )
+    2023-11-27 19:13:43.134 INFO  [115122] [G4CXApp::GeneratePrimaries@249] ]  eventID 0
+    2023-11-27 19:13:43.178 INFO  [115122] [SEvt::hostside_running_resize_@2146] resizing photon 0 to evt.num_photon 0
+    2023-11-27 19:13:43.178 ERROR [115122] [SEvt::beginPhoton@2274]  not in_range  idx 99999 pho.size  0 label spho (gs:ix:id:gn   09999999999[  0,  0,  0,  0])
+    SEvt::beginPhoton FATAL not in_range idx 99999 pho.size  0 label spho (gs:ix:id:gn   09999999999[  0,  0,  0,  0])
+    G4CXTest: /home/blyth/junotop/opticks/sysrap/SEvt.cc:2289: void SEvt::beginPhoton(const spho&): Assertion `in_range' failed.
+    /home/blyth/opticks/g4cx/tests/G4CXTest_GEOM.sh: line 170: 115122 Aborted                 (core dumped) $bin
+    /home/blyth/opticks/g4cx/tests/G4CXTest_GEOM.sh : run error
+    N[blyth@localhost opticks]$ 
+
+

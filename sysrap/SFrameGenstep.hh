@@ -75,14 +75,14 @@ struct SYSRAP_API SFrameGenstep
     static const char* CEGS_XY ; 
     static const char* CEGS_XZ ;  // default 
 
-    static NP* MakeCenterExtentGensteps(sframe& fr); 
-    static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) ;
+    static NP* MakeCenterExtentGenstep(sframe& fr); 
+    static NP* MakeCenterExtentGenstep(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) ;
 
     static void StandardizeCEGS( std::vector<int>& cegs );
     static void GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, const float3& ce_offset ) ; 
 
-    static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
-    static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale ) ; 
+    static void GenerateCenterExtentGenstepPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
+    static NP* GenerateCenterExtentGenstepPhotons_( const NP* gsa, float gridscale ) ; 
 
     static void GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep ); 
 

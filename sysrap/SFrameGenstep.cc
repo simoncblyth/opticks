@@ -134,7 +134,7 @@ which makes the config available from python.
 const char* SFrameGenstep::CEGS_XY = "16:9:0:1000" ;  
 const char* SFrameGenstep::CEGS_XZ = "16:0:9:1000" ;  // default 
 
-NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
+NP* SFrameGenstep::MakeCenterExtentGenstep(sframe& fr)
 {
     const float4& ce = fr.ce ; 
     float gridscale = SSys::getenvfloat("GRIDSCALE", 0.1 ) ; 
@@ -162,7 +162,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
 
     std::vector<NP*> gsl ; 
-    NP* gs_base = MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    NP* gs_base = MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
     gsl.push_back(gs_base) ; 
 
     std::vector<std::string> keys = {{
@@ -186,7 +186,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
         LOG(LEVEL) << " key " << key << " cehigh.size " << cehigh.size() ;  
         if(cehigh.size() == 8)
         {
-            NP* gs_cehigh = MakeCenterExtentGensteps(ce, cehigh, gridscale, geotran, ce_offset, ce_scale );
+            NP* gs_cehigh = MakeCenterExtentGenstep(ce, cehigh, gridscale, geotran, ce_offset, ce_scale );
             gsl.push_back(gs_cehigh) ; 
         }
     }
@@ -272,7 +272,7 @@ This allows high resolution regions without changes to indexing.
 
 **/
 
-NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) // static
+NP* SFrameGenstep::MakeCenterExtentGenstep(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
@@ -538,15 +538,15 @@ void SFrameGenstep::GetBoundingBox( float3& mn, float3& mx, const float4& ce, co
 
 
 /**
-SFrameGenstep::GenerateCenterExtentGenstepsPhotons
+SFrameGenstep::GenerateCenterExtentGenstepPhotons
 -----------------------------------------------------
 
 **/
 
-NP* SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale )
+NP* SFrameGenstep::GenerateCenterExtentGenstepPhotons_( const NP* gsa, float gridscale )
 {
     std::vector<quad4> pp ;
-    GenerateCenterExtentGenstepsPhotons( pp, gsa, gridscale ); 
+    GenerateCenterExtentGenstepPhotons( pp, gsa, gridscale ); 
 
     NP* ppa = NP::Make<float>( pp.size(), 4, 4 );
     memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
@@ -557,8 +557,8 @@ NP* SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gr
 
 
 /**
-SFrameGenstep::GenerateCenterExtentGenstepsPhotons
----------------------------------------------
+SFrameGenstep::GenerateCenterExtentGenstepPhotons
+---------------------------------------------------
 
 Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>::generate_photon_torch
 
@@ -574,7 +574,7 @@ TODO: consolidate the below two methods, paradir is the hangup
 
 **/
 
-void SFrameGenstep::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
+void SFrameGenstep::GenerateCenterExtentGenstepPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
 {
     LOG(LEVEL) << " gsa " << gsa->sstr() ; 
 

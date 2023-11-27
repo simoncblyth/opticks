@@ -310,7 +310,7 @@ public:
     void transformInputPhoton(); 
 
     void addFrameGenstep(); 
-    void assertZeroGensteps();
+    void assertZeroGenstep();
 
 
     const char* getFrameId() const ; 
@@ -327,7 +327,7 @@ public:
 
     static SEvt* CreateSimtraceEvent(); 
 
-    static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
+
     void setCompProvider(const SCompProvider* provider); 
     bool isSelfProvider() const ; 
     std::string descProvider() const ; 

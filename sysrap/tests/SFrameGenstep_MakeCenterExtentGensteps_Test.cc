@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     sframe fr ;  
     fr.ce.w = 100.f ; 
 
-    NP* gs = SFrameGenstep::MakeCenterExtentGensteps(fr);
+    NP* gs = SFrameGenstep::MakeCenterExtentGenstep(fr);
     LOG(info) << " gs " << ( gs ? gs->sstr() : "-" ) ;  
 
     if(FOLD)

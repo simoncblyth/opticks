@@ -283,11 +283,15 @@ void U4Recorder::EndOfRunAction(const G4Run*)
 
 void U4Recorder::BeginOfEventAction(const G4Event* /*event*/)
 {
+    LOG(fatal) << "CHANGE TO U4Recorder::BeginOfEventAction_ " ; 
+    assert(0); 
+
     //int eventID_ = event->GetEventID() ; 
     //BeginOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }
 void U4Recorder::EndOfEventAction(const G4Event* /*event*/)
 {
+    LOG(fatal) << "CHANGE TO U4Recorder::EndOfEventAction_ " ; 
     //int eventID_ = event->GetEventID() ; 
     //EndOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }

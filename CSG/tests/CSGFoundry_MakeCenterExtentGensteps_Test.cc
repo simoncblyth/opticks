@@ -26,17 +26,17 @@ int main(int argc, char** argv)
 
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
 
-    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGenstep(fr) ); 
 
     NP* gs = SEvt::GatherGenstep(0); 
-    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( gs, fr.gridscale() );  
+    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gs, fr.gridscale() );  
 
     std::cout << " fr " << std::endl << fr << std::endl ; 
 
 
 
     // HMM: want to use SEvt for saving not QEvent 
-    const char* dir = SPath::Resolve("$TMP/CSG/CSGFoundry_MakeCenterExtentGensteps_Test", DIRPATH); 
+    const char* dir = spath::Resolve("$TMP/CSG/CSGFoundry_MakeCenterExtentGensteps_Test"); 
     std::cout << dir << std::endl ; 
     gs->save(dir, "genstep.npy"); 
     pp->save(dir, "photon.npy"); 

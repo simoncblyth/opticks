@@ -232,9 +232,10 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     }
     else if(SEventConfig::IsRunningModeTorch())
     {
-        const NP* gs = SEvent::MakeTorchGensteps() ;        
+        NP* gs = SEvent::MakeTorchGenstep() ;        
         NP* ph = SGenerate::GeneratePhotons(gs); 
         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
+        SEvent::SetGENSTEP(gs); 
     }
     else if(SEventConfig::IsRunningModeInputPhoton())
     {
@@ -257,7 +258,18 @@ Its too late to SEvt::AddTorchGenstep here as GeneratePrimaries already run
 
 **/
 
-void G4CXApp::BeginOfEventAction(const G4Event* event){  fRecorder->BeginOfEventAction(event); }
+void G4CXApp::BeginOfEventAction(const G4Event* event)
+{ 
+    SEvt* sev = SEvt::Get_ECPU();  
+    if(SEventConfig::IsRunningModeTorch())
+    {
+        NP* gs = SEvent::GetGENSTEP(); 
+        sev->addGenstep(gs); 
+    }
+
+    G4int eventID = event->GetEventID(); 
+    fRecorder->BeginOfEventAction_(eventID); 
+}
 
 /**
 G4CXApp::EndOfEventAction
@@ -278,17 +290,13 @@ G4CXApp::EndOfEventAction
 
 void G4CXApp::EndOfEventAction(const G4Event* event)
 {  
-    fRecorder->EndOfEventAction(event);   // saves SEvt::ECPU   
+    G4int eventID = event->GetEventID(); 
+    fRecorder->EndOfEventAction_(eventID);   // saves SEvt::ECPU   
 
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks* gx = G4CXOpticks::Get() ;
-        int eventID = event->GetEventID() ;
         gx->simulate(eventID) ;
-    }
-    else
-    {
-         LOG(LEVEL) << " SEventConfig::GPU_Simulation() false : SKIP G4CXOpticks::simulate " ; 
     }
 }
 

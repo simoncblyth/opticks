@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     int x_total = 0 ; 
-    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total ) ; 
+    const NP* gs = SEvent::MakeCountGenstep(photon_counts_per_genstep, &x_total ) ; 
 
     std::cout << " main [ SEvt::AddGenstep(gs ) " << std::endl ; 
     SEvt::AddGenstep(gs); 

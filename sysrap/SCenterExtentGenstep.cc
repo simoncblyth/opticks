@@ -141,14 +141,14 @@ void SCenterExtentGenstep::init()
     std::vector<float3> ce_offset ; 
     ce_offset.push_back(offset);   
 
-    gs = SFrameGenstep::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    gs = SFrameGenstep::MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
 
     const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
     const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 
     set_meta<std::string>("TOPLINE", topline );
     set_meta<std::string>("BOTLINE", botline );
 
-    SFrameGenstep::GenerateCenterExtentGenstepsPhotons( pp, gs, gridscale );
+    SFrameGenstep::GenerateCenterExtentGenstepPhotons( pp, gs, gridscale );
 
     LOG(LEVEL) << "]" ;
 }

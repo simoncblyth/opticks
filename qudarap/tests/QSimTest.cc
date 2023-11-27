@@ -387,7 +387,7 @@ void QSimTest::generate_photon()
     const char* gs_config = ssys::getenvvar("GS_CONFIG", "torch" ); 
 
     LOG(info) << "[ gs_config " << gs_config ; 
-    const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
+    const NP* gs = SEvent::MakeDemoGenstep(gs_config); 
 
     SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
     assert(evt); 

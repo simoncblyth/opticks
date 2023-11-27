@@ -38,7 +38,7 @@ void QEventTest::setGenstep_one()
     //                                             0  1  2  3  4  5  6  7  8  
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     int x_num_photon = 0  ; 
-    NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_num_photon ) ; 
+    NP* gs = SEvent::MakeCountGenstep(photon_counts_per_genstep, &x_num_photon ) ; 
 
 
     QEvent* event = new QEvent ; 
@@ -92,7 +92,7 @@ void QEventTest::setGenstep_many()
     for(int i=0 ; i < num_v ; i++)
     {
         x_num_photon[i] = SEvent::SumCounts( v[i] ) ; 
-        gs[i] = SEvent::MakeCountGensteps( v[i], &x_total[i] ); 
+        gs[i] = SEvent::MakeCountGenstep( v[i], &x_total[i] ); 
         assert( x_total[i] == x_num_photon[i] ); 
 
         SEvent::ExpectedSeeds(x_seed[i], v[i]); 
@@ -198,7 +198,7 @@ void QEventTest::setGenstep_checkEvt()
     std::cout << " x_num_photon " << x_num_photon << std::endl ; 
 
     int x_total = 0 ; 
-    NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total) ; 
+    NP* gs = SEvent::MakeCountGenstep(photon_counts_per_genstep, &x_total) ; 
     assert( x_num_photon == x_total ) ; 
 
     QEvent* event = new QEvent ; 

@@ -13,12 +13,12 @@ template <typename T> struct Tran ;
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
+#include "sframe.h"
 
 struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
 
-#ifdef DEBUG_SEVT_LIFECYCLE
     static NP* GENSTEP ; 
     static NP*  GetGENSTEP(); 
     static void SetGENSTEP(NP* gs); 
@@ -28,26 +28,27 @@ struct SYSRAP_API SEvent
     static NP*  GetHIT(); 
     static void SetHIT(NP* gs); 
     static bool HaveHIT(); 
-#endif
 
 
 
-    static NP* MakeDemoGensteps(const char* config=nullptr);  
+    static NP*   MakeInputPhotonGenstep( const NP* input_photon, const sframe& fr ); 
+    static quad6 MakeInputPhotonGenstep_(const NP* input_photon, const sframe& fr ); 
 
-    static NP* MakeTorchGensteps();  
-    static NP* MakeCerenkovGensteps();  
-    static NP* MakeScintGensteps();  
-    static NP* MakeCarrierGensteps(); 
-    static NP* MakeGensteps(int gentype); 
+    static NP* MakeDemoGenstep(const char* config=nullptr);  
+    static NP* MakeTorchGenstep();  
+    static NP* MakeCerenkovGenstep();  
+    static NP* MakeScintGenstep();  
+    static NP* MakeCarrierGenstep(); 
+    static NP* MakeGenstep(int gentype); 
 
     template <typename T> 
-    static void FillGensteps( NP* gs, unsigned numphoton_per_genstep, bool dump ) ; 
+    static void FillGenstep( NP* gs, unsigned numphoton_per_genstep, bool dump ) ; 
 
 
     static NP* MakeSeed( const NP* gs ); 
  
 
-    static NP* MakeCountGensteps(const char* config=nullptr, int* total=nullptr);
+    static NP* MakeCountGenstep(const char* config=nullptr, int* total=nullptr);
     static unsigned SumCounts(const std::vector<int>& counts); 
 
     static void ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& counts );
@@ -55,7 +56,7 @@ struct SYSRAP_API SEvent
     static std::string DescSeed( const int* seed, int num_seed, int edgeitems ); 
 
 
-    static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep, int* total );
+    static NP* MakeCountGenstep(const std::vector<int>& photon_counts_per_genstep, int* total );
 };
 
 
