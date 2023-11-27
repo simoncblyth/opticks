@@ -243,6 +243,11 @@ public:
     const NP* get(const char* k) const ; 
     const NP* get_optional(const char* k) const ; 
     int   get_num(const char* k) const ;   // number of items in array 
+    void  get_counts( std::vector<std::string>& keys, std::vector<int>& counts ) const ; 
+    static std::string DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts ); 
+
+
+
 
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
     std::string get_meta_string(const char* key) const ;  // empty when not found
@@ -411,6 +416,8 @@ NPFold::LoadNoData_
 --------------------
 
 Loads folder and array metadata only, no array data. 
+
+HMM: BUT NEED THE ARRAY SIZES ? 
 
 **/
 
@@ -1350,6 +1357,34 @@ inline int NPFold::get_num(const char* k) const
 }
 
 
+inline void NPFold::get_counts( std::vector<std::string>& keys, std::vector<int>& counts ) const 
+{
+    int nkk = kk.size(); 
+    for(int i=0 ; i < nkk ; i++)
+    {
+        const char* k = kk[i].c_str(); 
+        const NP* a = get(k) ; 
+        if(a == nullptr) continue ; 
+        keys.push_back(k); 
+        counts.push_back(a->shape[0]); 
+    }
+}
+inline std::string NPFold::DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts )
+{
+    assert( keys.size() == counts.size() ); 
+    int num_key = keys.size(); 
+    std::stringstream ss ; 
+    ss << "NPFold::DescCounts num_key " << num_key << std::endl ; 
+    for(int i=0 ; i < num_key ; i++ ) ss << std::setw(20) << keys[i] << " : " << counts[i] << std::endl ; 
+    std::string str = ss.str() ; 
+    return str ;    
+}
+
+
+
+
+
+
 
 template<typename T> inline T NPFold::get_meta(const char* key, T fallback) const 
 {
@@ -1520,17 +1555,17 @@ inline void NPFold::load_array(const char* _base, const char* relp)
 
     NP* a = nullptr ; 
 
-    if(is_nodata)
+    if(is_npy)  
+    {
+        a = NP::Load(_base, relp) ; 
+    }
+    else if(is_nodata)   // nodata mode only do nodata load of arrays
     {
         a = nullptr ; 
     }
     else if(is_txt)
     {
         a = NP::LoadFromTxtFile<double>(_base, relp) ; 
-    }
-    else if(is_npy)  
-    {
-        a = NP::Load(_base, relp) ; 
     }
     else
     {
@@ -1779,6 +1814,7 @@ inline int NPFold::getMetaNumStamp() const
 
 
 
+
 inline std::string NPFold::descMetaKV() const
 {
     return NP::DescMetaKV(meta); 
@@ -1990,6 +2026,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
         t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
         t->set_meta<std::string>("keyname", keyname ? keyname : "-" ); 
+       
 
         // collect metadata (k,v) pairs that are the same for all the subs
         std::vector<std::string> ckey ;  
@@ -2016,7 +2053,17 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
 
             for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
             t->names.push_back(subpath); 
+
+            std::vector<std::string> arr_keys ; 
+            std::vector<int> arr_counts ; 
+            sub->get_counts(arr_keys, arr_counts); 
+            std::cout << DescCounts(arr_keys, arr_counts);   
+            // HMM: no keys, nodata killed them ?
+ 
         }
+
+        // TODO: array counts (eg photon and hit) for each fold into counts array 
+
 
         NP* l = NPX::MakeCharArray(comkeys); 
         l->names = comkeys ; 
