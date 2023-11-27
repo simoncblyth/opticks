@@ -41,7 +41,7 @@ export LOGDIR=$BINBASE/ALL
 export AFOLD=$BINBASE/ALL/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with foreign "A"
-
+export BFOLD=$BASE/jok-tds/ALL0/p001
 
 
 mkdir -p $LOGDIR 
@@ -60,8 +60,7 @@ echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
 
-    igs=$TMP/GEOM/$GEOM/jok-tds/ALL0/p001/genstep.npy 
-    ## HMM: COULD LOAD SEQUENCE OF GENSTEP EVT BY EVT ?
+    igs=$BASE/jok-tds/ALL0/p001/genstep.npy 
     export OPTICKS_INPUT_GENSTEP=$igs
     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
 

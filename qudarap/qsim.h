@@ -436,14 +436,12 @@ arriving at the final one
 inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx )
 {
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    /*
-    int PIDX = 1 ;  // its static so cannot use base
+    int PIDX = -1 ; 
     if(ctx.idx == PIDX )
     {
         printf("//qsim.lambertian_direction.head idx %d : normal = np.array([%10.5f,%10.5f,%10.5f]) ; orient = %10.5f  \n", 
             ctx.idx, normal->x, normal->y, normal->z, orient  );  
     }
-    */
 #endif
 
     float ndotv ; 
@@ -465,6 +463,7 @@ inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* n
         u = curand_uniform(&rng) ; 
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+       
         if(ctx.idx == PIDX)
         {
             printf("//qsim.lambertian_direction.loop idx %d : dir = np.array([%10.5f,%10.5f,%10.5f]) ; count = %d ; ndotv = %10.5f ; u = %10.5f \n", 
