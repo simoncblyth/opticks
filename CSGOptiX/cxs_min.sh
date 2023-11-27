@@ -88,7 +88,7 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    export SEvent_MakeGensteps_num_ph=100000
+    export SEvent_MakeGenstep_num_ph=100000
     #src="rectangle"
     #src="disc"
     src="sphere"

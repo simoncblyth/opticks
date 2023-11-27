@@ -132,8 +132,8 @@ case ${vers:-dummy} in
   M1*)   num=$M1   ;; 
     *)   num=$K10  ;; 
 esac
-export SEvent_MakeGensteps_num_ph=$num
-export SEvent_MakeGensteps_dump=1 
+export SEvent_MakeGenstep_num_ph=$num
+export SEvent_MakeGenstep_dump=1 
 
 
 cuda_prefix=/usr/local/cuda

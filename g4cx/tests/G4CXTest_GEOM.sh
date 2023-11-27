@@ -83,7 +83,7 @@ export OPTICKS_RUNNING_MODE=$srm
 echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
-    export SEvent_MakeGensteps_num_ph=$NUM
+    export SEvent_MakeGenstep_num_ph=$NUM
     #src="rectangle"
     #src="disc"
     src="sphere"

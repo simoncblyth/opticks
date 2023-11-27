@@ -132,7 +132,7 @@ export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended s
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_G4STATE_SPEC=${NUM_PHOTONS}:38       # default is only 1000:38 to keep state files small 
 
-export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
+export SEvent_MakeGenstep_num_ph=${NUM_PHOTONS}
 source $DIR/storch_FillGenstep.sh 
 
 

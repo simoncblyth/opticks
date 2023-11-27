@@ -111,7 +111,7 @@ export OPTICKS_INTEGRATION_MODE=3
 export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}
 #export OPTICKS_MAX_PHOTON=100000
 
-export SEvent_MakeGensteps_num_ph=${NUM_PHOTONS}
+export SEvent_MakeGenstep_num_ph=${NUM_PHOTONS}
 
 #check=rain_point_xpositive_100
 #check=rain_line
