@@ -62,6 +62,8 @@ const char* SEventConfig::_GatherCompDefault = SComp::ALL_ ;
 const char* SEventConfig::_SaveCompDefault = SComp::ALL_ ; 
 
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ; 
+
+const char* SEventConfig::_InputGenstepDefault = nullptr ; 
 const char* SEventConfig::_InputPhotonDefault = nullptr ; 
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ; 
 
@@ -98,6 +100,8 @@ unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _
 
 
 float SEventConfig::_PropagateEpsilon = ssys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ; 
+
+const char* SEventConfig::_InputGenstep = ssys::getenvvar(kInputGenstep, _InputGenstepDefault ); 
 const char* SEventConfig::_InputPhoton = ssys::getenvvar(kInputPhoton, _InputPhotonDefault ); 
 const char* SEventConfig::_InputPhotonFrame = ssys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
 
@@ -115,9 +119,11 @@ const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
 bool SEventConfig::IsRunningModeDefault(){      return RunningMode() == SRM_DEFAULT ; } 
 bool SEventConfig::IsRunningModeG4StateSave(){  return RunningMode() == SRM_G4STATE_SAVE ; } 
 bool SEventConfig::IsRunningModeG4StateRerun(){ return RunningMode() == SRM_G4STATE_RERUN ; } 
-bool SEventConfig::IsRunningModeTorch(){        return RunningMode() == SRM_TORCH ; } 
-bool SEventConfig::IsRunningModeInpho(){        return RunningMode() == SRM_INPHO ; } 
-bool SEventConfig::IsRunningModeGun(){          return RunningMode() == SRM_GUN ; } 
+
+bool SEventConfig::IsRunningModeTorch(){         return RunningMode() == SRM_TORCH ; } 
+bool SEventConfig::IsRunningModeInputPhoton(){   return RunningMode() == SRM_INPUT_PHOTON ; } 
+bool SEventConfig::IsRunningModeInputGenstep(){  return RunningMode() == SRM_INPUT_GENSTEP ; } 
+bool SEventConfig::IsRunningModeGun(){           return RunningMode() == SRM_GUN ; } 
 
 int         SEventConfig::NumEvent(){     return _NumEvent ; }
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
@@ -165,6 +171,8 @@ unsigned SEventConfig::SaveComp(){    return _SaveComp ; }
 
 
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
+
+const char* SEventConfig::InputGenstep(){   return _InputGenstep ; }
 const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
@@ -222,6 +230,8 @@ void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
 void SEventConfig::SetRGModeTest(){      SetRGMode( SRG::TEST_ ); }
 
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
+
+void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdup(ig) : nullptr ; Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; Check() ; }
 
@@ -480,6 +490,9 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kPropagateEpsilon
        << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() 
        << std::endl 
+       << std::setw(25) << kInputGenstep
+       << std::setw(20) << " InputGenstep " << " : " << ( InputGenstep() ? InputGenstep() : "-" )  
+       << std::endl 
        << std::setw(25) << kInputPhoton
        << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )  
        << std::endl 
@@ -705,6 +718,10 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<std::string>("SaveCompLabel", SaveCompLabel()); 
 
     meta->set_meta<float>("PropagateEpsilon", PropagateEpsilon() );  
+
+
+    const char* ig  = InputGenstep() ;  
+    if(ig)  meta->set_meta<std::string>("InputGenstep", ig );  
 
     const char* ip  = InputPhoton() ;  
     if(ip)  meta->set_meta<std::string>("InputPhoton", ip );  

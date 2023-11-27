@@ -114,6 +114,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kSaveComp     = "OPTICKS_SAVE_COMP" ; 
 
     static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ; 
+    static constexpr const char* kInputGenstep     = "OPTICKS_INPUT_GENSTEP" ; 
     static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ; 
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
 
@@ -130,8 +131,10 @@ struct SYSRAP_API SEventConfig
     static bool IsRunningModeDefault(); 
     static bool IsRunningModeG4StateSave(); 
     static bool IsRunningModeG4StateRerun();  
+
     static bool IsRunningModeTorch();  
-    static bool IsRunningModeInpho();  
+    static bool IsRunningModeInputPhoton();  
+    static bool IsRunningModeInputGenstep();  
     static bool IsRunningModeGun();  
 
     static int         NumEvent(); 
@@ -162,6 +165,7 @@ struct SYSRAP_API SEventConfig
     static unsigned SaveComp(); 
 
     static float PropagateEpsilon(); 
+    static const char* InputGenstep(); 
     static const char* InputPhoton(); 
     static const char* InputPhotonFrame(); 
 
@@ -228,6 +232,7 @@ struct SYSRAP_API SEventConfig
     static void SetRGModeTest() ; 
 
     static void SetPropagateEpsilon( float eps) ; 
+    static void SetInputGenstep(const char* input_genstep); 
     static void SetInputPhoton(const char* input_photon); 
     static void SetInputPhotonFrame(const char* input_photon_frame); 
 
@@ -273,6 +278,7 @@ struct SYSRAP_API SEventConfig
     static const char* _SaveCompDefault ; 
 
     static float _PropagateEpsilonDefault  ; 
+    static const char* _InputGenstepDefault ; 
     static const char* _InputPhotonDefault ; 
     static const char* _InputPhotonFrameDefault ; 
 
@@ -307,6 +313,7 @@ struct SYSRAP_API SEventConfig
     static unsigned _SaveComp ; 
 
     static float _PropagateEpsilon ;
+    static const char* _InputGenstep ; 
     static const char* _InputPhoton ; 
     static const char* _InputPhotonFrame ; 
 

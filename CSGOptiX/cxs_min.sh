@@ -48,8 +48,10 @@ cd $LOGDIR
 LOGFILE=$bin.log
 
 
+#srm=SRM_DEFAULT
 srm=SRM_TORCH
-#srm=SRM_INPHO
+#srm=SRM_INPUT_PHOTON
+#srm=SRM_INPUT_GENSTEP
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 

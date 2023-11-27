@@ -159,6 +159,7 @@ SEvt::SEvt()
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
+    input_genstep(nullptr),
     input_photon(nullptr),
     input_photon_transformed(nullptr),
     g4state(nullptr),
@@ -221,7 +222,9 @@ void SEvt::init()
     LOG(LEVEL) << " SEventConfig::GatherCompLabel "  << SEventConfig::GatherCompLabel() ;   // CompMaskLabel 
     LOG(LEVEL) << descComp() ; 
 
+    initInputGenstep(); 
     initInputPhoton(); 
+
     initG4State();        // HMM: G4State not an every-event thing ? first event only ?
     LOG(LEVEL) << "]" ; 
 }
@@ -281,8 +284,49 @@ const char* SEvt::getSearchCFBase() const
 }
 
 
-//const char* SEvt::INPUT_PHOTON_DIR = ssys::getenvvar("SEvt__INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+const char* SEvt::INPUT_GENSTEP_DIR = spath::Resolve("${SEvt__INPUT_GENSTEP_DIR:-$HOME/.opticks/InputGensteps}") ; 
 const char* SEvt::INPUT_PHOTON_DIR = spath::Resolve("${SEvt__INPUT_PHOTON_DIR:-$HOME/.opticks/InputPhotons}") ; 
+
+
+const char* SEvt::ResolveInputArray(const char* spec, const char* dir) // static
+{
+    assert(strlen(spec) > 0 && sstr::EndsWith(spec, ".npy") ); 
+    const char* path = sstr::StartsWithLetterAZaz(spec) ?  spath::Resolve(dir, spec) : spath::Resolve( spec ) ; 
+    return path ; 
+}
+
+NP* SEvt::LoadInputArray(const char* path) // static
+{
+    NP* a = NP::Load(path); 
+    LOG_IF(fatal, a == nullptr) << " FAILED to load input array from path " << path ; 
+
+    LOG(LEVEL) 
+        << " path " << path 
+        << " a.sstr " << a->sstr()
+        ;
+
+    assert( a ) ; 
+    assert( a->has_shape(-1,4,4) || a->has_shape(-1,6,4)); 
+    assert( a->shape[0] > 0 );  
+
+    return a ; 
+}
+
+
+
+NP* SEvt::LoadInputGenstep() // static 
+{
+    const char* spec = SEventConfig::InputGenstep(); 
+    return spec ? LoadInputGenstep(spec) : nullptr ; 
+}
+NP* SEvt::LoadInputGenstep(const char* spec)
+{
+    const char* path = ResolveInputArray( spec, INPUT_GENSTEP_DIR ); 
+    NP* a = LoadInputArray(path); 
+    assert( a->has_shape(-1,6,4) ); 
+    return a ; 
+}
+
 
 /**
 SEvt::LoadInputPhoton
@@ -305,30 +349,39 @@ Resolving the input string to a path is done in one of two ways:
 
 NP* SEvt::LoadInputPhoton() // static 
 {
-    const char* ip = SEventConfig::InputPhoton(); 
-    return ip ? LoadInputPhoton(ip) : nullptr ; 
+    const char* spec = SEventConfig::InputPhoton(); 
+    return spec ? LoadInputPhoton(spec) : nullptr ; 
 }
-
-NP* SEvt::LoadInputPhoton(const char* ip)
+NP* SEvt::LoadInputPhoton(const char* spec)
 {
-    assert(strlen(ip) > 0 && sstr::EndsWith(ip, ".npy") ); 
-    const char* path = sstr::StartsWithLetterAZaz(ip) ?  spath::Resolve(INPUT_PHOTON_DIR, ip) : spath::Resolve( ip ) ; 
-
-    NP* a = NP::Load(path); 
-    LOG_IF(fatal, a == nullptr) << " FAILED to load input photon from path " << path << " SEventConfig::InputPhoton " << ip ; 
-
-    assert( a ) ; 
+    const char* path = ResolveInputArray( spec, INPUT_PHOTON_DIR ); 
+    NP* a = LoadInputArray(path); 
     assert( a->has_shape(-1,4,4) ); 
-    assert( a->shape[0] > 0 );  
-
-    LOG(LEVEL) 
-        << " SEventConfig::InputPhoton " << ip
-        << " path " << path 
-        << " a.sstr " << a->sstr()
-        ;
-
     return a ; 
 }
+
+
+/**
+SEvt::initInputGenstep
+-----------------------
+
+**/
+
+void SEvt::initInputGenstep()
+{
+    NP* ig = LoadInputGenstep() ;
+    setInputGenstep(ig); 
+}
+void SEvt::setInputGenstep(NP* ig)
+{
+    if(ig == nullptr) return ; 
+    input_genstep = ig ; 
+    assert( input_genstep->has_shape(-1,6,4) ); 
+    int numgenstep = input_genstep->shape[0] ; 
+    assert( numgenstep > 0 ); 
+}
+NP* SEvt::getInputGenstep() const { return input_genstep ; }
+bool SEvt::hasInputGenstep() const { return input_genstep != nullptr ; }
 
 
 
@@ -370,6 +423,10 @@ void SEvt::setInputPhoton(NP* p)
 }
 
 
+
+
+
+
 /**
 SEvt::getInputPhoton_
 ----------------------
@@ -407,6 +464,20 @@ see CSGFoundry::getFrameE. Possible envvars include:
 **/
 NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
 bool SEvt::hasInputPhotonTransformed() const { return input_photon_transformed != nullptr ; }
+
+
+
+NP* SEvt::gatherInputGenstep() const 
+{
+    NP* ig = getInputGenstep(); 
+    NP* ign = nullptr ; 
+    if(ig)
+    {
+        ign = ig->ebyte == 8 ? NP::MakeNarrow(ig) : ig->copy() ;
+    }
+    return ign ; 
+}
+
 
 
 /**
@@ -574,8 +645,8 @@ void SEvt::transformInputPhoton()
 
 
 /**
-SEvt::addFrameGenstep  (former static SEvt::AddFrameGenstep is removed)
--------------------------------------------------------------------------
+SEvt::addFrameGenstep  TODO: this needs better name "beginOfEvent_setupGenstep" ?
+--------------------------------------------------------------------------------------
 
 This is invoked from SEvt::beginOfEvent together with SEvt::setIndex
 
@@ -616,18 +687,23 @@ void SEvt::addFrameGenstep()
     }   
     else if(SEventConfig::IsRGModeSimulate()) 
     {   
-        bool has_inpho = hasInputPhoton() ; 
         bool has_torch = SEventConfig::IsRunningModeTorch()  ; 
-        bool has_both  = has_inpho && has_torch ;
-        LOG_IF(fatal, has_both) 
-            << " CANNOT MIX input photon and torch mode running  "
+        int inputs = int(hasInputGenstep()) + int(hasInputPhoton()) + int(has_torch) ; 
+
+        LOG_IF(fatal, inputs > 1 ) 
+            << " CANNOT COMBINE INPUTS : input_photon/input_genstep/torch "
             << " index " << index 
             ;
-        assert(!has_both); 
-
-        if( has_inpho || has_torch )
+        assert( inputs == 0 || inputs == 1); 
+        if( inputs == 1 )
         {
-            if( has_inpho )
+            if( hasInputGenstep() )
+            {
+                assertZeroGensteps(); 
+                NP* igs = getInputGenstep() ; 
+                addGenstep(igs); 
+            }
+            else if( hasInputPhoton())
             { 
                 assertZeroGensteps(); 
                 quad6 ipgs = MakeInputPhotonGenstep(input_photon, frame) ;
@@ -4009,6 +4085,22 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
     return s ; 
 }
 
+
+std::string SEvt::descInputGenstep() const 
+{
+    const char* ig = SEventConfig::InputGenstep() ; 
+    int c1 = 35 ; 
+    const char* div = " : " ; 
+    std::stringstream ss ; 
+    ss << "SEvt::descInputGenstep" << std::endl ;
+    ss << std::setw(c1) << " SEventConfig::IntegrationMode "  << div << SEventConfig::IntegrationMode() << std::endl ; 
+    ss << std::setw(c1) << " SEventConfig::InputGenstep "      << div << ( ig  ? ig  : "-" ) << std::endl ; 
+    ss << std::setw(c1) << " input_genstep "   << div << ( input_genstep ? input_genstep->sstr() : "-" )     << std::endl ;  
+    ss << std::setw(c1) << " input_genstep.lpath " << div << ( input_genstep ? input_genstep->get_lpath() : "--" ) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 std::string SEvt::descInputPhoton() const 
 {
     const char* ip = SEventConfig::InputPhoton() ; 
@@ -4028,10 +4120,18 @@ std::string SEvt::descInputPhoton() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string SEvt::DescInputGenstep(int idx) // static
+{
+    return Exists(idx) ? Get(idx)->descInputGenstep() : "-" ; 
+}
 std::string SEvt::DescInputPhoton(int idx) // static
 {
     return Exists(idx) ? Get(idx)->descInputPhoton() : "-" ; 
 }
+
+
+
 
 
 

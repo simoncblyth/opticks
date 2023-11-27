@@ -65,8 +65,10 @@ NUM=${NUM:-$num}
 export OPTICKS_MAX_PHOTON=100000  
 
 
+#srm=SRM_DEFAULT
 srm=SRM_TORCH
-#srm=SRM_INPHO
+#srm=SRM_INPUT_PHOTON
+#srm=SRM_INPUT_GENSTEP
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 
@@ -97,8 +99,12 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
         export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
     fi 
 
-elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPHO" ]; then 
+elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then 
     echo -n 
+
+elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
+    echo -n 
+
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then 
     echo -n 
 fi 

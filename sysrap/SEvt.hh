@@ -155,6 +155,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sdebug* dbg ; 
     std::string meta ; 
 
+    NP* input_genstep ; 
     NP* input_photon ; 
     NP* input_photon_transformed ; 
     NP* g4state ;    // populated by U4Engine::SaveStatus
@@ -257,9 +258,25 @@ public:
     const char* getSearchCFBase() const ; 
 
 
+    static const char* INPUT_GENSTEP_DIR ; 
     static const char* INPUT_PHOTON_DIR ; 
+    static const char* ResolveInputArray(const char* spec, const char* dir) ; 
+    static NP* LoadInputArray(const char* path) ; 
+
+    static NP* LoadInputGenstep(); 
+    static NP* LoadInputGenstep(const char* spec); 
+
     static NP* LoadInputPhoton(); 
-    static NP* LoadInputPhoton(const char* ip); 
+    static NP* LoadInputPhoton(const char* spec); 
+
+
+
+    void initInputGenstep(); 
+    void setInputGenstep(NP* g); 
+    NP* getInputGenstep() const ; 
+    bool hasInputGenstep() const ; 
+
+
     void initInputPhoton(); 
     void setInputPhoton(NP* p); 
 
@@ -268,7 +285,15 @@ public:
     NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
     bool hasInputPhotonTransformed() const ; 
 
+
+
+    NP* gatherInputGenstep() const ;   // returns a copy of the input genstep array 
     NP* gatherInputPhoton() const ;   // returns a copy of the input photon array 
+
+
+
+
+
 
 
     void initG4State() ; 
@@ -603,8 +628,14 @@ public:
     std::string descPhoton(unsigned max_print=10) const ; 
     std::string descLocalPhoton(unsigned max_print=10) const ; 
     std::string descFramePhoton(unsigned max_print=10) const ; 
+
+
+    std::string descInputGenstep() const ; 
     std::string descInputPhoton() const ; 
+
+    static std::string DescInputGenstep(int idx) ; 
     static std::string DescInputPhoton(int idx) ; 
+
     std::string descFull(unsigned max_print=10) const ; 
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 

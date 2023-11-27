@@ -64,12 +64,10 @@ struct G4CXApp
     static U4SensitiveDetector* InitSensDet(); 
 
     G4RunManager*         fRunMgr ;  
-    int                   fRunningMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
     U4SensitiveDetector*  fSensDet ; 
     G4VPhysicalVolume*    fPV ; 
-    int                   fIntegrationMode ; 
     
 
     G4VPhysicalVolume* Construct(); 
@@ -143,12 +141,10 @@ U4SensitiveDetector* G4CXApp::InitSensDet() // static
 G4CXApp::G4CXApp(G4RunManager* runMgr)
     :
     fRunMgr(runMgr),
-    fRunningMode(SEventConfig::RunningMode()),
     fRecorder(new U4Recorder),
-    fGun(fRunningMode == SRM_GUN ? InitGun() : nullptr),
+    fGun(SEventConfig::IsRunningModeGun() ? InitGun() : nullptr),
     fSensDet(InitSensDet()),
-    fPV(nullptr),
-    fIntegrationMode(SEventConfig::IntegrationMode())
+    fPV(nullptr)
 {
     fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
     fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
@@ -221,20 +217,28 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
 {   
     LOG(LEVEL) << "[ SEventConfig::RunningModeLabel " << SEventConfig::RunningModeLabel() ; 
 
-    if(fRunningMode == SRM_TORCH)
+    if(SEventConfig::IsRunningModeGun())
+    {
+        LOG(fatal) << " THIS MODE NEEDS WORK ON U4PHYSICS " ; 
+        std::raise(SIGINT); 
+        fGun->GeneratePrimaryVertex(event) ; 
+    }
+    else if(SEventConfig::IsRunningModeTorch())
     {
         SEvt* sev = SEvt::Get_ECPU();  
         assert(sev); 
         sev->addTorchGenstep(); 
         // formerly added to both instances via static SEvt::AddTorchGenstep()
+        U4VPrimaryGenerator::GeneratePrimaries(event);
     }
-
-    switch(fRunningMode)
+    else if(SEventConfig::IsRunningModeInputPhoton())
     {
-        case SRM_GUN  : fGun->GeneratePrimaryVertex(event)              ; break ; 
-        case SRM_TORCH: U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ; 
-        case SRM_INPHO: U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;
-        default:  assert(0) ; break ; 
+        U4VPrimaryGenerator::GeneratePrimaries(event) ; 
+    }
+    else if(SEventConfig::IsRunningModeInputGenstep())
+    {
+        LOG(fatal) << " InputGensteps mode does not work with Geant4 : its an Opticks only mode : use eg cxs_min.sh " ; 
+        std::raise(SIGINT); 
     }
     LOG(LEVEL) << "]" ; 
 }
