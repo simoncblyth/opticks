@@ -30,6 +30,7 @@ arg=${1:-$defarg}
 # assumes source available
 
 bin=CSGOptiXSMTest
+script=$SDIR/cxs_min.py
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
@@ -49,15 +50,21 @@ LOGFILE=$bin.log
 
 
 #srm=SRM_DEFAULT
-srm=SRM_TORCH
+#srm=SRM_TORCH
 #srm=SRM_INPUT_PHOTON
-#srm=SRM_INPUT_GENSTEP
+srm=SRM_INPUT_GENSTEP
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 
 echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
 
-if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPHO" ]; then 
+if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
+
+    igs=$TMP/GEOM/$GEOM/jok-tds/ALL0/p001/genstep.npy 
+    export OPTICKS_INPUT_GENSTEP=$igs
+    [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
+
+elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then 
 
     #ipho=RainXZ_Z195_1000_f8.npy      ## ok 
     #ipho=RainXZ_Z230_1000_f8.npy      ## ok
@@ -164,7 +171,7 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $SDIR/cxs_min.py
+    ${IPYTHON:-ipython} --pdb -i $script
 fi 
 
 

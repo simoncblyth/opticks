@@ -52,7 +52,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_cerenkov
 
 #test=scint_generate
-#test=cerenkov_generate
+test=cerenkov_generate
 
 #test=fill_state_0
 #test=fill_state_1
@@ -82,7 +82,7 @@ msg="=== $BASH_SOURCE :"
 #test=fake_propagate
 #test=gentorch
 
-test=smear_normal_sigma_alpha
+#test=smear_normal_sigma_alpha
 
 export TEST=${TEST:-$test}
 export FOLD=/tmp/$name/$TEST

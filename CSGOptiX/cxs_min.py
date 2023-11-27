@@ -31,6 +31,9 @@ if __name__ == '__main__':
     e = a 
 
     qtab = e.minimal_qtab()
+    print("qtab")
+    print(qtab)
+
     label = e.f.base
 
     if MODE in [0,1]:

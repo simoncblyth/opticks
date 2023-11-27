@@ -321,8 +321,8 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
     } while ( u_maxSin2 > sin2Theta && count < 100 );
 
     if(count > 50)
-    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d \n", 
-              idx , sampledRI, cosTheta, sin2Theta, wavelength, count );  
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n", 
+              idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline );  
 }
 
 
