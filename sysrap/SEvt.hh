@@ -357,10 +357,15 @@ public:
 
     bool isEGPU() const ; 
     bool isECPU() const ; 
+    bool isFirstEvt() const ; 
+    bool isLastEvt() const ; 
+
     SEvt* getSibling() const ; 
 
 
     static bool Exists(int idx); 
+    static bool Exists_ECPU(); 
+    static bool Exists_EGPU(); 
     static void Check(int idx);
 
 #ifndef PRODUCTION 
@@ -387,8 +392,6 @@ public:
 
     static void SaveGenstepLabels(const char* dir, const char* name="gsl.npy"); 
 
-    static uint64_t T_BeginOfRun ; 
-    static uint64_t T_EndOfRun ; 
     static void BeginOfRun(); 
     static void EndOfRun(); 
 

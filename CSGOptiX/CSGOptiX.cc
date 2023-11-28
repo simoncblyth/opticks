@@ -180,7 +180,6 @@ void CSGOptiX::SimulateMain() // static
 
     for(int i=0 ; i < SEventConfig::NumEvent() ; i++)
     {
-        // if(SEventConfig::IsRunningModeTorch()) SEvt::AddTorchGenstep(); MOVED DOWN TO SEvt::addFrameGenstep
         cx->simulate(i); 
     }
 }

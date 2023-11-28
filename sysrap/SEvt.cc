@@ -1013,6 +1013,27 @@ SEvt* SEvt::Create(int idx)  // static
 bool SEvt::isEGPU() const { return instance == EGPU ; }
 bool SEvt::isECPU() const { return instance == ECPU ; }
 
+/**
+SEvt::isFirstEvt SEvt::isLastEvt
+-----------------------------------
+
+When have both ECPU and EGPU the ECPU is first 
+otherwise when there is only one event 
+whatever it is is inevitably first(and last). 
+
+**/
+bool SEvt::isFirstEvt() const 
+{
+    return Exists_EGPU() && Exists_ECPU() ? isECPU() : true ; 
+}
+bool SEvt::isLastEvt() const 
+{
+    return Exists_EGPU() && Exists_ECPU() ? isEGPU() : true ; 
+}
+
+
+
+
 SEvt* SEvt::getSibling() const
 {
     SEvt* sibling = nullptr ; 
@@ -1030,6 +1051,13 @@ bool SEvt::Exists(int idx)  // static
 {
     return Get(idx) != nullptr ; 
 } 
+
+bool SEvt::Exists_ECPU(){ return Exists(ECPU) ; }
+bool SEvt::Exists_EGPU(){ return Exists(EGPU) ; }
+
+
+
+
 SEvt* SEvt::CreateOrReuse(int idx) 
 {  
     SEvt* evt = Exists(idx) ? Get(idx) : Create(idx) ; 
@@ -1332,10 +1360,16 @@ void SEvt::SaveGenstepLabels(const char* dir, const char* name)
 
 
 
-uint64_t SEvt::T_BeginOfRun = 0 ; 
-uint64_t SEvt::T_EndOfRun = 0 ; 
-void SEvt::BeginOfRun(){ T_BeginOfRun = sstamp::Now(); } // static 
-void SEvt::EndOfRun()  { T_EndOfRun   = sstamp::Now(); } // static 
+
+void SEvt::BeginOfRun()
+{ 
+    SetRunProf("SEvt__BeginOfRun"); 
+} 
+void SEvt::EndOfRun()  
+{ 
+    SetRunProf("SEvt__EndOfRun"); 
+    SaveRunMeta(); 
+} 
 
 
 template<typename T>
@@ -1369,19 +1403,11 @@ void SEvt::SetRunProf(const char* k)   // static
 SEvt::SaveRunMeta
 -------------------
 
-May be called for example from U4Recorder::EndOfRunAction
 
 **/
 
 void SEvt::SaveRunMeta(const char* base)
 {
-    SetRunMeta<uint64_t>("T_BeginOfRun", T_BeginOfRun ); 
-    SetRunMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  
-
-    // SetRunMeta<std::string>("GPUMeta",  SSim::GetGPUMeta() );  
-    // HMM: BETTER TO KEEP GPUMeta IN SEvt NPFold_meta.txt 
-    // AS OTHER SUCH INFO IS THERE AND ITS ONLY APPROPRIATE FOR EGPU SEvt 
-
     const char* dir = RunDir(base); 
     RUN_META->save(dir, "run.npy") ; 
 }
@@ -1409,8 +1435,6 @@ template void SEvt::setMeta<unsigned>(const char*, unsigned );
 template void SEvt::setMeta<float>(const char*, float ); 
 template void SEvt::setMeta<double>(const char*, double ); 
 template void SEvt::setMeta<std::string>(const char*, std::string ); 
-
-
 
 
 
@@ -1465,8 +1489,11 @@ as still need to collect the gensteps.
 
 **/
 
+
+
 void SEvt::beginOfEvent(int eventID)
 {
+    if(isFirstEvt() && eventID == 0) BeginOfRun() ; 
     if(eventID == 0) SetRunProf( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ; 
 
     setStage(SEvt__beginOfEvent); 
@@ -1520,7 +1547,12 @@ void SEvt::endOfEvent(int eventID)
     clear(); 
 
 
-    if(eventID == SEventConfig::NumEvent()-1 ) SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
+    bool last_event = eventID == SEventConfig::NumEvent()-1 ; 
+    if(last_event)
+    {
+        SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
+        if(isLastEvt()) SEvt::EndOfRun();   // invokes SaveRunMeta
+    }
 }
 
 void SEvt::endMeta()
@@ -1530,13 +1562,9 @@ void SEvt::endMeta()
     setMeta<int>("index", index); 
     setMeta<int>("instance", instance); 
 
-    setMetaProf("p_SEvt__beginOfEvent_0", p_SEvt__beginOfEvent_0); 
-    setMetaProf("p_SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
-    setMetaProf("p_SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
-
-    setMeta<uint64_t>("_T_BeginOfRun",   T_BeginOfRun ); 
-    // '_' prefix disqualifies BeginOfRun stamp in NP::GetMetaKVS 
-    // as it is too long before the interesting sequence of stamps 
+    setMetaProf("SEvt__beginOfEvent_0", p_SEvt__beginOfEvent_0); 
+    setMetaProf("SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
+    setMetaProf("SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
 
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
 
@@ -1557,7 +1585,6 @@ void SEvt::endMeta()
 
     setMeta<uint64_t>("t_Event", t_EndOfEvent - t_BeginOfEvent ); 
     setMeta<double>("t_Launch", t_Launch ); 
-    // setMeta<uint64_t>("T_EndOfRun",   T_EndOfRun );  // TOO SOON
 }
 
 

@@ -249,7 +249,9 @@ void U4Recorder::init_SEvt()
 
 void U4Recorder::BeginOfRunAction(const G4Run*)
 {  
-    SEvt::BeginOfRun(); // just sets static stamp 
+    // SEvt::BeginOfRun(); // just sets static stamp 
+    // MOVED THIS TO DETECTION IN SEvt::beginOfEvent 
+
     LOG(info); 
 }
 
@@ -262,10 +264,11 @@ HUH: some problem with LOG from here ?
 **/
 void U4Recorder::EndOfRunAction(const G4Run*)
 { 
-    SEvt::EndOfRun();  // just sets static stamp
-
     SEvt::SetRunMeta<int>("FAKES_SKIP", int(FAKES_SKIP) ); 
-    SEvt::SaveRunMeta(); 
+
+    // SEvt::EndOfRun();  // invokes SaveRunMeta
+    // MOVED THIS TO DETECTION IN SEvt::endOfEvent
+    
 
     LOG(LEVEL)
         << "[ U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " )  
