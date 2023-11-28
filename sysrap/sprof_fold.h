@@ -46,7 +46,7 @@ inline std::string sprof_fold::desc() const
     std::stringstream ss ; 
     ss 
        << "[sprof_fold::desc " << ( symbol ? symbol : "-" )  << std::endl 
-       << ( dt ? dt->descTable<int64_t>(8,cols,rows) : "-" ) << std::endl 
+       << ( dt ? dt->descTable_<int64_t>(8,cols,rows) : "-" ) << std::endl 
        << "]sprof_fold::desc " << ( symbol ? symbol : "-" )  << std::endl 
        ;
     std::string str =  ss.str() ; 

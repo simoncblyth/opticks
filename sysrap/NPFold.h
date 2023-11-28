@@ -72,6 +72,7 @@ Hid fts.h usage behind WITH_FTS as getting compilation error on Linux::
 #include <iterator> 
 #include <vector> 
 #include <map> 
+#include <set> 
 #include <cstdlib>
 #include <cstdio>
 #include <sys/types.h>
@@ -243,7 +244,7 @@ public:
     const NP* get(const char* k) const ; 
     const NP* get_optional(const char* k) const ; 
     int   get_num(const char* k) const ;   // number of items in array 
-    void  get_counts( std::vector<std::string>& keys, std::vector<int>& counts ) const ; 
+    void  get_counts( std::vector<std::string>* keys, std::vector<int>* counts ) const ; 
     static std::string DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts ); 
 
 
@@ -304,6 +305,9 @@ public:
     static NPFold* Serialize_MIMSD(const std::map<int,std::map<std::string,double>>& mimsd); 
     static std::string Desc_MIMSD( const std::map<int,std::map<std::string,double>>& mimsd); 
 
+
+    // SUMMARIZE FOLD ARRAY COUNTS
+    NP* subcount( const char* prefix ) const ; 
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
 
@@ -1357,7 +1361,7 @@ inline int NPFold::get_num(const char* k) const
 }
 
 
-inline void NPFold::get_counts( std::vector<std::string>& keys, std::vector<int>& counts ) const 
+inline void NPFold::get_counts( std::vector<std::string>* keys, std::vector<int>* counts ) const 
 {
     int nkk = kk.size(); 
     for(int i=0 ; i < nkk ; i++)
@@ -1365,8 +1369,8 @@ inline void NPFold::get_counts( std::vector<std::string>& keys, std::vector<int>
         const char* k = kk[i].c_str(); 
         const NP* a = get(k) ; 
         if(a == nullptr) continue ; 
-        keys.push_back(k); 
-        counts.push_back(a->shape[0]); 
+        if(keys) keys->push_back(k); 
+        if(counts) counts->push_back(a->shape[0]); 
     }
 }
 inline std::string NPFold::DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts )
@@ -1848,7 +1852,7 @@ inline void NPFold::setMetaKV(const std::vector<std::string>& keys, const std::v
 inline std::string NPFold::desc(int depth) const  
 {
     std::stringstream ss ; 
-    ss << "NPFold::desc depth " << depth << std::endl ; 
+    ss << "NPFold::desc( " << depth << ")" << std::endl ; 
     ss << brief() << std::endl ; 
     ss << descMetaKVS() << std::endl ; 
     for(unsigned i=0 ; i < kk.size() ; i++) 
@@ -1984,6 +1988,88 @@ inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, 
 
 
 /**
+NPFold::subcount
+------------------
+
+1. find subfold with prefix
+2. get unique list of array keys from all subfold 
+3. create 2d array with array counts for each sub 
+
+**/
+
+inline NP* NPFold::subcount( const char* prefix ) const 
+{
+    // 1. 
+    std::vector<const NPFold*> subs ; 
+    std::vector<std::string> subpaths ; 
+    find_subfold_with_prefix(subs, &subpaths,  prefix );  
+    assert( subs.size() == subpaths.size() ); 
+    int num_sub = int(subs.size()) ; 
+
+    // 2. 
+    std::set<std::string> s_keys ; 
+    for(int i=0 ; i < num_sub ; i++) 
+    {
+        std::vector<std::string> keys ; 
+        subs[i]->get_counts(&keys, nullptr); 
+        std::transform(
+            keys.begin(), keys.end(), 
+            std::inserter(s_keys, s_keys.end()),
+            [](const std::string& obj) { return obj ; }
+           );  
+    }
+    std::vector<std::string> ukey(s_keys.begin(), s_keys.end()) ; 
+    int num_ukey = ukey.size() ; 
+
+    int ni = num_sub ; 
+    int nj = num_ukey ; 
+
+    NP* a = NP::Make<int>( ni, nj  ); 
+    a->labels = new std::vector<std::string> ; 
+    a->names = subpaths ; 
+
+    int* aa = a->values<int>() ; 
+
+    for(int i=0 ; i < num_ukey ; i++)
+    {
+        const char* uk  = ukey[i].c_str() ; 
+        const char* _uk = IsNPY(uk) ? BareKey(uk) : uk ; 
+        a->labels->push_back(_uk); 
+    } 
+
+    bool dump = false ; 
+    if(dump) std::cout <<  " num_ukey " << num_ukey << std::endl ;
+    if(dump) for(int i=0 ; i < num_ukey ; i++ ) std::cout << a->names[i] << std::endl ; 
+
+    for(int i=0 ; i < ni ; i++) 
+    {
+        std::vector<std::string> keys ; 
+        std::vector<int> counts ; 
+        subs[i]->get_counts(&keys, &counts); 
+        assert( keys.size() == counts.size() ); 
+        int num_key = keys.size(); 
+
+        for(int j=0 ; j < nj ; j++)
+        {
+            const char* uk = ukey[j].c_str(); 
+            int idx = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), uk ) ) ; 
+            int count = idx < num_key ? counts[idx] : -1  ; 
+            aa[i*nj+j] = count ;  
+
+            if(dump) std::cout 
+                << std::setw(20) << uk 
+                << " idx " << idx 
+                << " count " << count 
+                << std::endl 
+                ; 
+        }
+    }
+    return a ; 
+}
+
+
+
+/**
 NPFold::substamp
 --------------------
 
@@ -2036,6 +2122,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         t->setMetaKV_(ckey, cval); 
 
         std::vector<std::string> comkeys ; 
+
         for(int i=0 ; i < ni ; i++) 
         {
             const NPFold* sub = subs[i] ; 
@@ -2054,26 +2141,21 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
             for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
             t->names.push_back(subpath); 
 
-            std::vector<std::string> arr_keys ; 
-            std::vector<int> arr_counts ; 
-            sub->get_counts(arr_keys, arr_counts); 
-            std::cout << DescCounts(arr_keys, arr_counts);   
-            // HMM: no keys, nodata killed them ?
- 
         }
-
-        // TODO: array counts (eg photon and hit) for each fold into counts array 
 
 
         NP* l = NPX::MakeCharArray(comkeys); 
         l->names = comkeys ; 
 
         NP* dt = NP::DeltaColumn<int64_t>(t); 
+        NP* count = subcount(prefix); 
 
         out = new NPFold ; 
         out->add(keyname, t );
         out->add(U::FormName("delta_",keyname,nullptr), dt );
         out->add("labels", l );  
+        out->add("subcount", count ); 
+
     }
     std::cout 
         << "]NPFold::substamp" 

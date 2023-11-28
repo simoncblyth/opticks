@@ -2,6 +2,11 @@
 sstampfold_report.cc : Summarize + Present SEvt/NPFold metadata time stamps 
 =============================================================================
 
+::
+ 
+    ~/opticks/sysrap/tests/sstampfold_report.sh 
+
+
 Summarizes SEvt/NPFold metadata time stamps into substamp arrays 
 grouped by NPFold path prefix. The summary NPFold is presented textually 
 and saved to allow plotting from python. 
@@ -70,6 +75,23 @@ int main(int argc, char** argv)
         << "NPFold::LoadNoData(\"" << dirp << "\")" 
         << std::endl
         ;
+
+    const NP* run = f->get("run"); 
+    if(run) std::cout 
+        << "[sstampfold_report.run " 
+        << run->sstr() 
+        << std::endl 
+        << " sstampfold_report.run.descMetaKV "
+        << std::endl 
+        << run->descMetaKV()
+        << std::endl 
+        << " sstampfold_report.run.descMetaKVS "
+        << std::endl 
+        << run->descMetaKVS()
+        << "]sstampfold_report.run " 
+        << std::endl 
+        ;   
+
 
     if(VERBOSE) std::cout 
         << "[sstampfold_report.VERBOSE "

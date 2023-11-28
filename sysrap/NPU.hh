@@ -26,6 +26,8 @@ other projects together with NP.hh
 #include <algorithm>
 #include <chrono>
 #include <cctype>
+#include <locale>
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1566,6 +1568,8 @@ inline std::string U::Format(uint64_t t, const char* fmt) // static
 inline std::string U::FormatInt(int64_t t, int wid ) // static
 {
     std::stringstream ss ; 
+    ss.imbue(std::locale("")) ;  // commas for thousands
+
     if( t > -1 ) ss << std::setw(wid) << t ;  
     else         ss << std::setw(wid) << "" ; 
     std::string str = ss.str(); 
