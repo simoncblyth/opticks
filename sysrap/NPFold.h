@@ -2037,7 +2037,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
         a->labels->push_back(_uk); 
     } 
 
-    bool dump = true ; 
+    bool dump = getenv("NPFold__subcount_DUMP") != nullptr  ; 
     if(dump) std::cout << "[NPFold.hh:subcount" << std::endl ; 
     if(dump) std::cout <<  " num_ukey " << num_ukey << std::endl ;
     if(dump) for(int i=0 ; i < num_ukey ; i++ ) std::cout << a->names[i] << std::endl ; 
@@ -2093,7 +2093,9 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     int num_stamp0 = num_sub > 0 ? subs[0]->getMetaNumStamp() : 0 ;  
     bool skip = num_sub == 0 || num_stamp0 == 0 ; 
 
-    std::cout 
+    bool dump = getenv("NPFold__substamp_DUMP") != nullptr ; 
+
+    if(dump) std::cout 
         << "[NPFold::substamp" 
         << " find_subfold_with_prefix " << prefix
         << " num_sub " << num_sub
@@ -2137,7 +2139,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
 
             if(i == 0) comkeys = keys ; 
             bool same_keys = i == 0 ? true : keys == comkeys ; 
-            std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
+            if(dump) std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
             assert(same_keys); 
 
             for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
@@ -2159,7 +2161,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         out->add("subcount", count ); 
 
     }
-    std::cout 
+    if(dump) std::cout 
         << "]NPFold::substamp" 
         << std::endl
         ;

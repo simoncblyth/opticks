@@ -638,7 +638,7 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;
     }
-    else if(IsMinimal() || IsHitOnly())
+    else if(IsMinimal() || IsHitOnly() || IsHitAndPhoton())
     {
         SetComp() ;  
     }

@@ -4687,13 +4687,8 @@ inline std::string NP::DescMetaKVS(const std::string& meta)  // static
     auto order = [&tt](const size_t& a, const size_t &b) { return tt[a] < tt[b];}  ; 
     std::sort(ii.begin(), ii.end(), order );  
 
-    /*
-    int idx0 = GetFirstStampIndex(tt ); 
-    int64_t t_first = idx0 > -1 ? tt[idx0] : -1 ; 
-    int64_t t_prev = -1 ; 
-    */
-
     int64_t t_first = 0 ; 
+    int64_t t_second = 0 ; 
     int64_t t_prev  = 0 ; 
 
     std::stringstream ss ; 
@@ -4703,10 +4698,13 @@ inline std::string NP::DescMetaKVS(const std::string& meta)  // static
         const char* k = keys[i].c_str(); 
         const char* v = vals[i].c_str(); 
         int64_t     t = tt[i] ; 
+
+        if(t_first > 0 && t_second == 0 && t > 0 ) t_second = t  ; 
         if(t_first == 0 && t > 0 ) t_first = t  ; 
 
-        int64_t dt0 = t > 0 && t_first > 0 ? t - t_first : -1 ; // microseconds since first stamp
-        int64_t dt  = t > 0 && t_prev  > 0 ? t - t_prev  : -1 ; // microseconds since previous stamp 
+        int64_t dt0 = t > 0 && t_first  > 0 ? t - t_first  : -1 ; // microseconds since first 
+        int64_t dt1 = t > 0 && t_second > 0 ? t - t_second : -1 ; // microseconds since second
+        int64_t dt  = t > 0 && t_prev   > 0 ? t - t_prev   : -1 ; // microseconds since previous stamp 
         if(t > 0) t_prev = t ; 
  
         ss << std::setw(30) << k 
@@ -4715,6 +4713,7 @@ inline std::string NP::DescMetaKVS(const std::string& meta)  // static
            << "   "
            << std::setw(27) << (  t > 0 ? U::Format(t) : "" )
            << " " << std::setw(11) << U::FormatInt(dt0, 11) 
+           << " " << std::setw(11) << U::FormatInt(dt1, 11) 
            << " " << std::setw(11) << U::FormatInt(dt , 11 )  
            << std::endl 
            ;
@@ -4779,7 +4778,7 @@ inline std::string NP::DescMetaKV(const std::string& meta)  // static
 
         ss << std::setw(30) << k 
            << " : "
-           << std::setw(60) << v
+           << std::setw(35) << v
            << " : "
            << std::setw(12) << ( t > 0 ? t - t0 : -1 )
            << " : "

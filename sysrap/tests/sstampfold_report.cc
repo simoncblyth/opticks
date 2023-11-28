@@ -5,6 +5,7 @@ sstampfold_report.cc : Summarize + Present SEvt/NPFold metadata time stamps
 ::
  
     ~/opticks/sysrap/tests/sstampfold_report.sh 
+    JOB=N2 ~/opticks/sysrap/tests/sstampfold_report.sh runo
 
 
 Summarizes SEvt/NPFold metadata time stamps into substamp arrays 
@@ -81,10 +82,12 @@ int main(int argc, char** argv)
         << "[sstampfold_report.run " 
         << run->sstr() 
         << std::endl 
+        /*
         << " sstampfold_report.run.descMetaKV "
         << std::endl 
         << run->descMetaKV()
         << std::endl 
+        */
         << " sstampfold_report.run.descMetaKVS "
         << std::endl 
         << run->descMetaKVS()
@@ -103,7 +106,13 @@ int main(int argc, char** argv)
         ; 
 
     NPFold* smry = f->subfold_summary(sstampfold::STAMP_KEY, "a://p", "b://n"); 
-    std::cout << smry->desc() << std::endl ;
+
+    if(VERBOSE) std::cout 
+        << "[sstampfold_report.smry.desc.VERBOSE" << std::endl 
+        << smry->desc() 
+        << "]sstampfold_report.smry.desc.VERBOSE" << std::endl 
+        << std::endl
+        ;
 
     const NPFold* a = smry->find_subfold("a"); 
     const NPFold* b = smry->find_subfold("b"); 
@@ -111,8 +120,22 @@ int main(int argc, char** argv)
     sstampfold ast(a, "ast"); 
     sstampfold bst(b, "bst"); 
 
-    std::cout << ast.desc() ; 
-    std::cout << bst.desc() ; 
+    std::cout 
+        << "[sstampfold_report.ast.desc" << std::endl 
+        << ast.desc() 
+        << "]sstampfold_report.ast.desc" << std::endl 
+        << "[sstampfold_report.bst.desc" << std::endl 
+        << bst.desc() 
+        << "]sstampfold_report.bst.desc" << std::endl 
+        ; 
+
+
+    NP* boa = sstampfold::BOA(ast,bst); 
+    std::cout 
+        << "[sstampfold::BOA" << std::endl 
+        << ( boa ? boa->sstr() : "-" ) << std::endl 
+        << "]sstampfold::BOA" << std::endl 
+        ;
 
     smry->save_verbose("$FOLD"); 
 

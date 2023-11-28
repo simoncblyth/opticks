@@ -30,6 +30,9 @@ struct sstampfold
     sstampfold( const NPFold* af, const char* symbol ); 
     std::string brief() const ; 
     std::string desc() const ; 
+
+    static NP* BOA(const sstampfold& a, const sstampfold& b); 
+
 };
 
 
@@ -64,7 +67,7 @@ inline std::string sstampfold::brief() const
 inline std::string sstampfold::desc() const 
 {
     std::stringstream ss ; 
-    ss << brief() << std::endl ; 
+    //ss << brief() << std::endl ; 
 
     ss 
        << "[sstampfold::desc " << ( symbol ? symbol : "-" )  << std::endl 
@@ -76,6 +79,40 @@ inline std::string sstampfold::desc() const
     std::string str =  ss.str() ; 
     return str ; 
 } 
+
+/**
+sstampfold::BOA
+-----------------
+
+B over A
+
+**/
+
+inline NP* sstampfold::BOA( const sstampfold& a, const sstampfold& b)  // static
+{
+    const NP* adt = a.dt ; 
+    const NP* bdt = b.dt ;
+
+    std::cout 
+        << " adt.shape " 
+        << ( adt ? adt->sstr() : "-" ) 
+        << std::endl     
+        << " bdt.shape " 
+        << ( bdt ? bdt->sstr() : "-" ) 
+        << std::endl     
+        ;
+
+ 
+    
+    return nullptr ; 
+}
+
+
+
+
+
+
+
     
 
 

@@ -185,6 +185,8 @@ if [ "${arg/report}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : sprof_fold_report error && exit 1 
 fi 
 
+
+
 if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 

@@ -78,8 +78,8 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
-if [ "${arg/noa}" != "$arg" ]; then 
-    echo $BASH_SOURCE : noa exit 
+if [ "${arg/runo}" != "$arg" ]; then 
+    echo $BASH_SOURCE : runo : short for runonly : exit 
     exit 0
 fi
 
