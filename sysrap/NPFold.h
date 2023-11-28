@@ -2037,7 +2037,8 @@ inline NP* NPFold::subcount( const char* prefix ) const
         a->labels->push_back(_uk); 
     } 
 
-    bool dump = false ; 
+    bool dump = true ; 
+    if(dump) std::cout << "[NPFold.hh:subcount" << std::endl ; 
     if(dump) std::cout <<  " num_ukey " << num_ukey << std::endl ;
     if(dump) for(int i=0 ; i < num_ukey ; i++ ) std::cout << a->names[i] << std::endl ; 
 
@@ -2064,6 +2065,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
                 ; 
         }
     }
+    if(dump) std::cout << "]NPFold.hh:subcount" << std::endl ; 
     return a ; 
 }
 

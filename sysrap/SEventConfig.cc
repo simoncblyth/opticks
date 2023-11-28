@@ -191,11 +191,13 @@ void SEventConfig::SetDefault(){            SetEventMode(Default)           ; }
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
 void SEventConfig::SetHitOnly(){            SetEventMode(HitOnly)           ; }
+void SEventConfig::SetHitAndPhoton(){       SetEventMode(HitAndPhoton)      ; }
 
 bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
 bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode, Minimal) == 0 ; }
 bool SEventConfig::IsHitOnly(){           return _EventMode && strcmp(_EventMode, HitOnly) == 0 ; }
+bool SEventConfig::IsHitAndPhoton(){      return _EventMode && strcmp(_EventMode, HitAndPhoton) == 0 ; }
 
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
@@ -277,6 +279,12 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
         LOG(LEVEL) << "IsRGModeSimulate() && IsHitOnly()" ; 
         gather_mask = SCOMP_HIT  ; 
         save_mask = SCOMP_HIT ;   
+    }
+    else if(IsRGModeSimulate() && IsHitAndPhoton())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitAndPhoton()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_PHOTON ; 
+        save_mask = SCOMP_HIT | SCOMP_PHOTON ;   
     }
     else if(IsRGModeSimulate())
     {

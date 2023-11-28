@@ -89,12 +89,6 @@ const int SEvt::MISSING_INSTANCE = std::numeric_limits<int>::max() ;
 const int SEvt::DEBUG_CLEAR = ssys::getenvint("SEvt__DEBUG_CLEAR",-1) ;
 
 
-/**
-Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
-A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
-**/
-
-
 
 std::array<SEvt*, SEvt::MAX_INSTANCE> SEvt::INSTANCES = {{ nullptr, nullptr }} ; 
 
@@ -1145,6 +1139,12 @@ which is now invoked from U4Recorder instanciation.
 
 HMM: perhaps reldir should be static, above the individual SEvt instance level ? 
 
+
+
+Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
+A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
+
+
 **/
 
 SEvt* SEvt::HighLevelCreate(int idx) // static
@@ -1405,6 +1405,11 @@ SEvt::SaveRunMeta
 void SEvt::SaveRunMeta(const char* base)
 {
     const char* dir = RunDir(base); 
+    LOG(info) 
+        << " base " << ( base ? base : "-" ) 
+        << " dir " << ( dir ? dir : "-" ) 
+        ; 
+
     RUN_META->save(dir, "run.npy") ; 
 }
 
@@ -1550,11 +1555,18 @@ void SEvt::endOfEvent(int eventID)
     clear(); 
 
 
-    bool last_event = eventID == SEventConfig::NumEvent()-1 ; 
-    if(last_event)
+    bool is_last_eventID = eventID == SEventConfig::NumEvent()-1 ; 
+    if(is_last_eventID)
     {
         SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
-        if(isLastEvt()) SEvt::EndOfRun();   // invokes SaveRunMeta
+        bool is_last_evt = isLastEvt() ; 
+
+        LOG(info) 
+            << " is_last_eventID " << ( is_last_eventID ? "YES" : "NO " ) 
+            << " is_last_evt " << ( is_last_evt ? "YES" : "NO " ) 
+            ;
+            
+        if(is_last_evt) SEvt::EndOfRun();   // invokes SaveRunMeta
     }
 }
 
@@ -1727,6 +1739,8 @@ void SEvt::clear_vectors()
     simtrace.clear(); 
     aux.clear(); 
     sup.clear(); 
+
+    // NOTE no hit : thats a sub-selection of the photon 
 
     gather_done = false ;  
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
@@ -3000,6 +3014,9 @@ SEvt::gatherHit
 
 Does CPU side equivalent of QEvent::gatherHit_ 
 using the photon array and the sphoton_selector 
+
+HMM: notice that this relies on having gathered 
+the photon so cannot have HitOnly on B side ? 
 
 **/
 

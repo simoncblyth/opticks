@@ -187,16 +187,19 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* StandardFullDebug = "StandardFullDebug" ; 
     static constexpr const char* Minimal = "Minimal" ; 
     static constexpr const char* HitOnly = "HitOnly" ; 
+    static constexpr const char* HitAndPhoton = "HitAndPhoton" ; 
 
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
     static void SetMinimal();
     static void SetHitOnly();
+    static void SetHitAndPhoton();
 
     static bool IsDefault(); 
     static bool IsStandardFullDebug(); 
     static bool IsMinimal();
     static bool IsHitOnly();
+    static bool IsHitAndPhoton();
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt

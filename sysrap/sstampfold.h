@@ -28,6 +28,7 @@ struct sstampfold
     const std::vector<std::string>* cols ; 
  
     sstampfold( const NPFold* af, const char* symbol ); 
+    std::string brief() const ; 
     std::string desc() const ; 
 };
 
@@ -44,10 +45,27 @@ inline sstampfold::sstampfold( const NPFold* af_, const char* symbol_ )
     cols(la ? &(la->names) : nullptr)
 {
 }
+inline std::string sstampfold::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "[sstampfold::brief" << std::endl 
+       << " af " << ( af ? "YES" : "NO " ) << std::endl 
+       << " symbol " << ( symbol ? symbol : "-" ) << std::endl  
+       << " sc " << ( sc ? sc->sstr() : "-" ) << std::endl 
+       << " st " << ( st ? st->sstr() : "-" ) << std::endl 
+       << " dt " << ( dt ? dt->sstr() : "-" ) << std::endl 
+       << " la " << ( la ? la->sstr() : "-" ) << std::endl 
+       << "]sstampfold::brief" << std::endl 
+       ; 
+    std::string str =  ss.str() ; 
+    return str ; 
+}
 
 inline std::string sstampfold::desc() const 
 {
     std::stringstream ss ; 
+    ss << brief() << std::endl ; 
+
     ss 
        << "[sstampfold::desc " << ( symbol ? symbol : "-" )  << std::endl 
        << ( sc ? sc->descTable<int>(8) : "-" ) << std::endl 

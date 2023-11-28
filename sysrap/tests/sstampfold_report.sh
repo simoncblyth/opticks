@@ -35,16 +35,23 @@ name=sstampfold_report
 script=$SDIR/$name.py
 bin=$name
 
-##L
-#cd /hpcfs/juno/junogpu/blyth/tmp/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/p001
-#cd /hpcfs/juno/junogpu/blyth/tmp/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
-#cd /hpcfs/juno/junogpu/blyth/tmp/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/n010
-##N
-cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
-#cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/p010
 
-#cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL
-[ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY && exit 0 
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+
+job=N1
+JOB=${JOB:-$job}
+
+dir=unknown 
+case $JOB in 
+  L1) dir=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
+  N1) dir=/data/blyth/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
+  N2) dir=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
+  N3) dir=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL ;;
+esac
+
+cd $dir
+[ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY job $job dir $dir && exit 0 
 
 
 export FOLD=$PWD/../$name   ## set FOLD used by binary, for ana 

@@ -1748,68 +1748,85 @@ inline std::string NP::descTable_(int wid,
     const std::vector<std::string>* row_labels
   ) const 
 {
-    assert( shape.size() == 2 ); 
-    int ni = shape[0] ; 
-    int nj = shape[1] ; 
     std::stringstream ss ; 
     ss << "NP::descTable_ " << sstr() << std::endl ; 
-    const T* vv = cvalues<T>() ; 
-
-
-    int cwid = wid ; 
-    int rwid = 2*wid ; 
-    
-    std::vector<std::string> column_smry ; 
-    if(column_labels) U::Summarize( column_smry, column_labels, cwid ); 
-    bool with_column_labels = int(column_smry.size()) == nj ;
-
-    std::vector<std::string> row_smry ; 
-    if(row_labels) U::Summarize( row_smry, row_labels, rwid ); 
-    bool with_row_labels = int(row_smry.size()) == ni ;
-
-
-    if(with_column_labels) for(int j=0 ; j < nj ; j++) ss 
-        << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 ) 
-        << std::setw(cwid) 
-        << column_smry[j] 
-        << ( j < nj -1 ? " " : "\n" ) 
-        ;  
-
-    for(int i=0 ; i < ni ; i++) 
+    int ndim = shape.size() ; 
+    bool skip = ndim != 2 ; 
+    if(skip) 
     {
-        if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ; 
-        for(int j=0 ; j < nj ; j++) 
-        {
-            ss
-                << std::setw(cwid) 
-                << vv[i*nj+j] 
-                << ( j < nj -1 ? " " : "\n" ) 
-                ; 
-        }
+        ss << " ERROR : UNEXPECTED SHAPE ndim " << ndim << std::endl ;
+        ss << " column_labels " << std::endl ; 
+        if(column_labels) for(int i=0 ; i < int(column_labels->size()) ; i++) ss << (*column_labels)[i] << std::endl ; 
+        ss << " row_labels " << std::endl ; 
+        if(row_labels) for(int i=0 ; i < int(row_labels->size()) ; i++) ss << (*row_labels)[i] << std::endl ; 
     }
 
-    if(with_column_labels) for(int j=0 ; j < nj ; j++) 
+    if(!skip)
     {
-        if( strcmp(column_smry[j].c_str(), (*column_labels)[j].c_str()) != 0) ss 
-            << ( j == 0 ? "\n" : "" ) 
+        int ni = shape[0] ; 
+        int nj = shape[1] ; 
+        const T* vv = cvalues<T>() ; 
+        int cwid = wid ; 
+        int rwid = 2*wid ; 
+        
+        std::vector<std::string> column_smry ; 
+        if(column_labels) U::Summarize( column_smry, column_labels, cwid ); 
+        bool with_column_labels = int(column_smry.size()) == nj ;
+
+        std::vector<std::string> row_smry ; 
+        if(row_labels) U::Summarize( row_smry, row_labels, rwid ); 
+        bool with_row_labels = int(row_smry.size()) == ni ;
+
+
+        if(with_column_labels) for(int j=0 ; j < nj ; j++) ss 
+            << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 ) 
             << std::setw(cwid) 
             << column_smry[j] 
-            << " : " 
-            << (*column_labels)[j] 
-            << std::endl 
+            << ( j < nj -1 ? " " : "\n" ) 
             ;  
+
+        for(int i=0 ; i < ni ; i++) 
+        {
+            if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ; 
+            for(int j=0 ; j < nj ; j++) 
+            {
+                ss
+                    << std::setw(cwid) 
+                    << vv[i*nj+j] 
+                    << ( j < nj -1 ? " " : "\n" ) 
+                    ; 
+            }
         }
 
-    if(with_row_labels) for(int i=0 ; i < ni ; i++) 
-    {
-        if( strcmp(row_smry[i].c_str(), (*row_labels)[i].c_str()) != 0) ss 
-            << ( i == 0 ? "\n" : "" ) 
-            << std::setw(rwid) 
-            << row_smry[i] 
-            << " : " 
-            << (*row_labels)[i] 
-            << std::endl 
-            ;  
+        if(with_column_labels) 
+        {
+            for(int j=0 ; j < nj ; j++) 
+            {
+                if( strcmp(column_smry[j].c_str(), (*column_labels)[j].c_str()) != 0) ss 
+                    << ( j == 0 ? "\n" : "" ) 
+                    << std::setw(cwid) 
+                    << column_smry[j] 
+                    << " : " 
+                    << (*column_labels)[j] 
+                    << std::endl 
+                    ;
+            }  
+        }
+
+        if(with_row_labels) 
+        {
+            for(int i=0 ; i < ni ; i++) 
+            {
+                if( strcmp(row_smry[i].c_str(), (*row_labels)[i].c_str()) != 0) ss 
+                    << ( i == 0 ? "\n" : "" ) 
+                    << std::setw(rwid) 
+                    << row_smry[i] 
+                    << " : " 
+                    << (*row_labels)[i] 
+                    << std::endl 
+                    ;  
+            }
+        }
     }
 
     std::string str = ss.str(); 

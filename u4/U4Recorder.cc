@@ -242,33 +242,23 @@ void U4Recorder::init_SEvt()
         LOG(info) << " U4Recorder__SEvt_NPFold_VERBOSE : setting SEvt:setFoldVerbose " ; 
         sev->setFoldVerbose(true); 
     }
-
 }
-
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*)
 {  
-    // SEvt::BeginOfRun(); // just sets static stamp 
-    // MOVED THIS TO DETECTION IN SEvt::beginOfEvent 
-
-    LOG(info); 
+    LOG(LEVEL); 
 }
 
 /**
 U4Recorder::EndOfRunAction
 ---------------------------
 
-HUH: some problem with LOG from here ? 
-
 **/
 void U4Recorder::EndOfRunAction(const G4Run*)
 { 
     SEvt::SetRunMeta<int>("FAKES_SKIP", int(FAKES_SKIP) ); 
 
-    // SEvt::EndOfRun();  // invokes SaveRunMeta
-    // MOVED THIS TO DETECTION IN SEvt::endOfEvent
-    
 
     LOG(LEVEL)
         << "[ U4Recorder__EndOfRunAction_Simtrace : " << ( EndOfRunAction_Simtrace ? "YES" : "NO " )  
@@ -284,20 +274,15 @@ void U4Recorder::EndOfRunAction(const G4Run*)
         ;
 }
 
-void U4Recorder::BeginOfEventAction(const G4Event* /*event*/)
+void U4Recorder::BeginOfEventAction(const G4Event*)
 {
-    LOG(fatal) << "CHANGE TO U4Recorder::BeginOfEventAction_ " ; 
+    LOG(fatal) << "CHANGE TO U4Recorder::BeginOfEventAction_ : see G4CXOpticks::SensitiveDetector_EndOfEvent " ; 
     assert(0); 
-
-    //int eventID_ = event->GetEventID() ; 
-    //BeginOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }
-void U4Recorder::EndOfEventAction(const G4Event* /*event*/)
+void U4Recorder::EndOfEventAction(const G4Event*)
 {
-    LOG(fatal) << "CHANGE TO U4Recorder::EndOfEventAction_ " ; 
+    LOG(fatal) << "CHANGE TO U4Recorder::EndOfEventAction_ : see G4CXOpticks::SensitiveDetector_EndOfEvent" ; 
     assert(0); 
-    //int eventID_ = event->GetEventID() ; 
-    //EndOfEventAction_(eventID_);   // see G4CXOpticks::SensitiveDetector_EndOfEvent
 }
 
 

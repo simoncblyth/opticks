@@ -6,8 +6,7 @@ G4CXTest_GEOM.sh : Standalone optical only bi-simulation with G4CXApp::Main and 
 Standalone optical Geant4 initialization is faster than embedded Geant4 + Opticks but is 
 still 2-3 min to voxelize. 
 
-See ~/opticks/CSGOptiX/cxs_min.sh for initializion in under 1 second. 
-
+See ~/opticks/CSGOptiX/cxs_min.sh for initializion in ~2 second. 
 
 Workstation::
 
@@ -20,6 +19,7 @@ Laptop::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh grab 
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
+
 
 storch::generate is used for both GPU and CPU generation
 ---------------------------------------------------------
@@ -54,23 +54,30 @@ source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for findi
 #oim=1  # GPU only 
 #oim=2  # CPU only 
 oim=3   # GPU and CPU 
-export OPTICKS_INTEGRATION_MODE=$oim 
+export OPTICKS_INTEGRATION_MODE=${OIM:-$oim} 
 
 ## OPTICKS_EVENT_MODE configures the SEvt components to gather and save
-#mode=Minimal
-#mode=HitOnly
-mode=StandardFullDebug
-export OPTICKS_EVENT_MODE=$mode   
+#oem=Minimal
+#oem=HitOnly      ## CURRENTLY B SIDE CANNOT JUST GET HITS, IT NEEDS PHOTONS TO SELECT FROM 
+oem=HitAndPhoton
+#oem=StandardFullDebug
+export OPTICKS_EVENT_MODE=${OEM:-$oem}   
 export OPTICKS_MAX_BOUNCE=31
 export OPTICKS_NUM_EVENT=3
 
 
 #num=1000
 #num=5000
-num=100000
+#num=100000
+num=1000000
 NUM=${NUM:-$num}
 
-export OPTICKS_MAX_PHOTON=100000  
+export OPTICKS_MAX_PHOTON=1000000
+
+if [ $NUM -gt $OPTICKS_MAX_PHOTON ]; then
+   echo $BASH_SOURCE : ERROR NUM $NUM OPTICKS_MAX_PHOTON $OPTICKS_MAX_PHOTON && exit 1 
+fi
+
 
 
 #srm=SRM_DEFAULT
