@@ -68,7 +68,17 @@ double SEvt::TimerDone(){ return TIMER->done() ; }
 uint64_t SEvt::TimerStartCount(){ return TIMER->start_count() ; }
 std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 
-NP* SEvt::RUN_META = NP::Make<float>(1) ; 
+
+NP* SEvt::Init_RUN_META() // 
+{
+    NP* run_meta = NP::Make<float>(1);
+    sprof now ; 
+    sprof::Stamp(now);  
+    run_meta->set_meta<std::string>("p_SEvt__Init_RUN_META", sprof::Desc(now) ); 
+    return run_meta ; 
+}
+
+NP* SEvt::RUN_META = Init_RUN_META() ; 
 
 NP* SEvt::UU = nullptr ; 
 NP* SEvt::UU_BURN = nullptr ; // NP::Load("$SEvt__UU_BURN") ; 
@@ -314,12 +324,27 @@ NP* SEvt::LoadInputArray(const char* path) // static
 
 
 
+/**
+SEvt::LoadInputGenstep
+------------------------
+
+::
+
+    export OPTICKS_INPUT_GENSTEP=$BASE/jok-tds/ALL0/p001/genstep.npy
+    ##export OPTICKS_INPUT_GENSTEP=$BASE/jok-tds/ALL0
+
+HMM: could implement config with a directory to input 
+a sequence of gensteps
+
+**/
+
+
 NP* SEvt::LoadInputGenstep() // static 
 {
     const char* spec = SEventConfig::InputGenstep(); 
     return spec ? LoadInputGenstep(spec) : nullptr ; 
 }
-NP* SEvt::LoadInputGenstep(const char* spec)
+NP* SEvt::LoadInputGenstep(const char* spec) // static
 {
     const char* path = ResolveInputArray( spec, INPUT_GENSTEP_DIR ); 
     NP* a = LoadInputArray(path); 
@@ -971,6 +996,9 @@ Q: Does all SEvt creation use this ?
 
 **/
 
+SEvt* SEvt::Create_EGPU(){ return Create(EGPU) ; }
+SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
+ 
 SEvt* SEvt::Create(int idx)  // static
 { 
     assert( idx == 0 || idx == 1); 
@@ -1324,6 +1352,18 @@ template void SEvt::SetRunMeta<double>(   const char*, double  );
 template void SEvt::SetRunMeta<std::string>( const char*, std::string  );
 
 
+void SEvt::SetRunProf(const char* k, const sprof& v) // static
+{
+    SetRunMeta<std::string>( k, sprof::Desc(v) ); 
+}
+void SEvt::SetRunProf(const char* k)   // static 
+{
+    sprof now ; 
+    sprof::Stamp(now) ; 
+    SetRunProf(k, now); 
+}
+
+
 
 /**
 SEvt::SaveRunMeta
@@ -1427,6 +1467,8 @@ as still need to collect the gensteps.
 
 void SEvt::beginOfEvent(int eventID)
 {
+    if(eventID == 0) SetRunProf( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ; 
+
     setStage(SEvt__beginOfEvent); 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
     int index_ = 1+eventID ;  
@@ -1476,6 +1518,9 @@ void SEvt::endOfEvent(int eventID)
     save();              // gather and save SEventConfig configured arrays
 
     clear(); 
+
+
+    if(eventID == SEventConfig::NumEvent()-1 ) SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
 }
 
 void SEvt::endMeta()

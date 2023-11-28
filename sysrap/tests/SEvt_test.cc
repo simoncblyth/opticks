@@ -1,4 +1,4 @@
-// ./SEvt_test.sh 
+// ~/opticks/sysrap/tests/SEvt_test.sh 
 
 #include "OpticksGenstep.h"
 #include "SEvt.hh"
@@ -15,12 +15,12 @@ void test_AddGenstep()
 
        SEvt::AddGenstep(q);    
    }
-   std::cout << SEvt::Get()->desc() << std::endl ; 
+   std::cout << SEvt::Get_EGPU()->desc() << std::endl ; 
 }
 
 void test_GetNumHit()
 {
-    unsigned num_hit = SEvt::GetNumHit(); 
+    unsigned num_hit = SEvt::GetNumHit(SEvt::EGPU); 
     unsigned UNDEF = ~0u ; 
 
     std::cout 
@@ -36,19 +36,40 @@ void test_GetNumHit()
     // when num_hit is UNDEF the below loop does nothing as int(UNDEF) is -1 
 }
 
+void test_RUN_META()
+{
+    NP* m = SEvt::RUN_META ; 
+
+    std::cout 
+        << ( m ? m->sstr() : "-" ) 
+        << std::endl 
+        << ( m ? m->meta : "-" ) 
+        << std::endl
+        ;   
+}
+
+void test_SetRunProf()
+{
+    std::cout << "test_SetRunProf" << std::endl ; 
+    SEvt::SetRunProf("test_SetRunProf_0"); 
+    SEvt::SetRunProf("test_SetRunProf_1"); 
+    std::cout << SEvt::RUN_META->meta ; 
+}
+
 
 
 int main()
 {
-   SEvt evt ; 
+    SEvt* evt = SEvt::Create_EGPU() ; 
 
-   /*
-   test_AddGenstep(); 
-   */
+    /*
+    test_AddGenstep(); 
+    test_GetNumHit();  
+    test_RUN_META(); 
+    */
+    test_SetRunProf(); 
 
-   test_GetNumHit();  
-
-
-   return 0 ; 
+    return 0 ; 
 }
+// ~/opticks/sysrap/tests/SEvt_test.sh 
 

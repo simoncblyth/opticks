@@ -226,7 +226,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     static uint64_t TimerStartCount(); 
     static std::string TimerDesc(); 
 
+
+    static NP* Init_RUN_META(); 
     static NP* RUN_META ; 
+
+
     static NP* UU ;  
     static NP* UU_BURN ;  
     static const plog::Severity LEVEL ; 
@@ -341,6 +345,8 @@ public:
     static SEvt* Get(int idx) ; 
     static void Set(int idx, SEvt* inst); 
 
+    static SEvt* Create_EGPU() ; 
+    static SEvt* Create_ECPU() ; 
     static SEvt* Create(int idx) ; 
     static SEvt* CreateOrReuse(int idx) ; 
     static SEvt* HighLevelCreateOrReuse(int idx) ; 
@@ -389,7 +395,14 @@ public:
 
     template<typename T>
     static void SetRunMeta(const char* k, T v ); 
+
+    static void SetRunProf(const char* k, const sprof& v); 
+    static void SetRunProf(const char* k);  // NOW 
+
     static void SaveRunMeta(const char* base=nullptr ); 
+
+
+
 
     void setMetaString(const char* k, const char* v); 
     void setMetaProf(  const char* k, sprof& v); 
