@@ -17,6 +17,7 @@ struct sprof
 
     static void Stamp(sprof& prof); 
     static std::string Desc(const sprof& prof); 
+    static std::string Now(); 
     static bool LooksLikeProfileTriplet(const char* str); 
 };
 
@@ -34,6 +35,14 @@ inline std::string sprof::Desc(const sprof& prof)
     std::string str = ss.str(); 
     return str ; 
 }
+inline std::string sprof::Now()
+{
+    sprof now ; 
+    Stamp(now);  
+    return Desc(now);  
+}
+
+
 
 /**
 sprof::LooksLikeProfileTriplet

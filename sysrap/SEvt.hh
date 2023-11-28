@@ -408,7 +408,8 @@ public:
 
 
     void setMetaString(const char* k, const char* v); 
-    void setMetaProf(  const char* k, sprof& v); 
+    void setMetaProf(  const char* k, const sprof& v); 
+    void setMetaProf(  const char* k) ; 
 
     template<typename T>
     void setMeta( const char* k, T v ); 

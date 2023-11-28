@@ -45,7 +45,7 @@ export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/ALL
-export AFOLD=$BINBASE/$EVT
+export AFOLD=$BINBASE/ALL/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
 export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable

@@ -142,10 +142,14 @@ class SEvt(object):
         run_meta = NPMeta.Load(urun_meta) if os.path.exists(urun_meta) else None
         has_run_meta = not run_meta is None
 
-        rr_ = [run_meta.T_BeginOfRun[0], run_meta.T_EndOfRun[0]] if has_run_meta else [0,0]
+        prof2stamp_ = lambda prof:prof.split(",")[0]  
+
+        rr_ = [prof2stamp_(run_meta.SEvt__BeginOfRun), 
+               prof2stamp_(run_meta.SEvt__EndOfRun  )] if has_run_meta else [0,0]
+
         rr = np.array(rr_, dtype=np.uint64 )
 
-        self.rr = rr   # T_BeginOfRun, T_EndOfRun
+        self.rr = rr   
         self.run_meta = run_meta
 
         qwns = ["FAKES_SKIP",]

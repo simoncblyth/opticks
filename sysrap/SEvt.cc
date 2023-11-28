@@ -72,9 +72,7 @@ std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 NP* SEvt::Init_RUN_META() // 
 {
     NP* run_meta = NP::Make<float>(1);
-    sprof now ; 
-    sprof::Stamp(now);  
-    run_meta->set_meta<std::string>("p_SEvt__Init_RUN_META", sprof::Desc(now) ); 
+    run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() ); 
     return run_meta ; 
 }
 
@@ -1392,9 +1390,7 @@ void SEvt::SetRunProf(const char* k, const sprof& v) // static
 }
 void SEvt::SetRunProf(const char* k)   // static 
 {
-    sprof now ; 
-    sprof::Stamp(now) ; 
-    SetRunProf(k, now); 
+    SetRunMeta<std::string>( k, sprof::Now() ); 
 }
 
 
@@ -1417,10 +1413,17 @@ void SEvt::setMetaString(const char* k, const char* v)
     NP::SetMeta<std::string>(meta, k, v ); 
 }
 
-void SEvt::setMetaProf(const char* k, sprof& v)
+void SEvt::setMetaProf(const char* k, const sprof& v)
 {
     NP::SetMeta<std::string>(meta, k, sprof::Desc(v) ); 
 }
+void SEvt::setMetaProf(const char* k)   
+{
+    NP::SetMeta<std::string>(meta, k, sprof::Now() ); 
+}
+
+
+
 
 
 template<typename T>
