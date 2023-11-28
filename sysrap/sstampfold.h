@@ -93,7 +93,11 @@ inline NP* sstampfold::BOA( const sstampfold& a, const sstampfold& b)  // static
     const NP* adt = a.dt ; 
     const NP* bdt = b.dt ;
 
+    
+
     std::cout 
+        << "[sstampfold::BOA" 
+        << std::endl     
         << " adt.shape " 
         << ( adt ? adt->sstr() : "-" ) 
         << std::endl     
@@ -102,9 +106,57 @@ inline NP* sstampfold::BOA( const sstampfold& a, const sstampfold& b)  // static
         << std::endl     
         ;
 
- 
-    
-    return nullptr ; 
+    assert( adt && adt->shape.size() == 2 ); 
+    assert( bdt && bdt->shape.size() == 2 ); 
+
+
+    int a_ni = adt->shape[0] ;  
+    int b_ni = bdt->shape[0] ;  
+
+    //assert( int(adt->names.size()) == a_ni ); 
+    //assert( int(bdt->names.size()) == b_ni ); 
+
+    std::cout << " adt->names.size " << adt->names.size() << std::endl ; 
+    std::cout << " bdt->names.size " << bdt->names.size() << std::endl ; 
+
+    std::cout << " adt->labels " << ( adt->labels ? "YES" : "NO " ) << std::endl ; 
+    std::cout << " bdt->labels " << ( bdt->labels ? "YES" : "NO " ) << std::endl ; 
+
+    assert( a_ni == b_ni ); 
+    int ni = a_ni ; 
+
+
+    int a_nj = adt->shape[1] ; 
+    int b_nj = bdt->shape[1] ; 
+
+    const int64_t* aa = adt->cvalues<int64_t>();  
+    const int64_t* bb = bdt->cvalues<int64_t>();  
+
+    int c_ni = ni ; 
+    int c_nj = 3 ; 
+    NP* c = NP::Make<double>(c_ni, c_nj); 
+    double* cc = c->values<double>(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        int64_t av = aa[i*a_nj+a_nj-1] ; 
+        int64_t bv = bb[i*b_nj+b_nj-1] ; 
+        double  boa = double(bv)/double(av); 
+
+        cc[i*c_nj+0] = av ;   
+        cc[i*c_nj+1] = bv ;   
+        cc[i*c_nj+2] = boa ;   
+
+        std::cout 
+            //<< std::setw(10) << adt->names[i] 
+            << std::setw(10) << av 
+            //<< std::setw(10) << bdt->names[i] 
+            << std::setw(10) << bv
+            << std::fixed << std::setw(10) << std::setprecision(2) << boa
+            << std::endl 
+            ;
+    }
+    return c ; 
 }
 
 
