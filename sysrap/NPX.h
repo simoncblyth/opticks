@@ -88,7 +88,7 @@ struct NPX
     static NP* MakeCharArray( const std::vector<std::string>& nn ); 
 
     template<typename F, typename T>
-    static NP* BOA( NP* a, NP* b, int a_column=-1, int b_column=-1 ); 
+    static NP* BOA( NP* a, NP* b, int a_column=-1, int b_column=-1, std::ostream* out=nullptr  ); 
 
 }; 
 
@@ -792,19 +792,27 @@ F: float or double of the created array
 **/
 
 template<typename F, typename T>
-inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column )  // static
+inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column, std::ostream* out )  // static
 {
-    assert( a ); 
-    assert( b ); 
-    bool dump = true ; //getenv("NPX__BOA_DUMP") != nullptr ; 
-    if(dump) std::cout 
+    if(out) *out 
        << "NPX::BOA"
        << std::endl 
-       << " a " << ( a ? a->sstr() : "-" )
+       << " A " << ( a ? a->sstr() : "-" )
        << std::endl 
-       << " b " << ( b ? b->sstr() : "-" )
+       << " B " << ( b ? b->sstr() : "-" )
        << std::endl 
        ;
+
+    bool abort = a == nullptr || b == nullptr ;
+    if(abort) std::cerr 
+        << "NPX::BOA ABORT A or B null "
+        << std::endl 
+        << " A " << ( a ? a->sstr() : "-" )
+        << std::endl 
+        << " B " << ( b ? b->sstr() : "-" )
+        << std::endl 
+        ;
+    if(abort) return nullptr ; 
 
     assert( a->shape.size() == 2 ); 
     assert( b->shape.size() == 2 ); 

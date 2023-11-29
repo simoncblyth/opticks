@@ -153,14 +153,18 @@ For varying photons per event need to get the SEvt index here::
 **/
 
 
-NP* SEvent::MakeGenstep( int gentype, int idx )
+NP* SEvent::MakeGenstep( int gentype, int index )
 {
-    int num_ph = idx > -1 ? SEventConfig::NumPhoton(idx) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
+    bool with_index = index != -1 ; 
+    if(with_index) assert( index > 0 );  // SEvt::index is 1-based 
+    int num_ph = with_index ? SEventConfig::NumPhoton(index-1) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
     unsigned num_gs = 1 ; 
 
     LOG(info) 
-        << " idx " << idx
+        << " gentype " << gentype
+        << " index (1-based) " << index
+        << " with_index " << ( with_index ? "YES" : "NO " )
         << " num_ph " << num_ph 
         << " dump " << dump
         ; 

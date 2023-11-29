@@ -68,9 +68,15 @@ struct sstr
     static bool All(const char* s, char q ); 
     static unsigned Count(const char* s, char q ); 
 
+    template<typename T>
+    static T To(const char* arg) ; 
 
     static int AsInt(const char* arg, int fallback=-1 ) ; 
     static const char* ParseStringIntInt( const char* triplet, int& y, int& z, char delim=':' ); 
+
+    template<typename T>
+    static void ParsePair( const char* txt, T& x, T& y, char delim=':' ); 
+
 
     static bool IsWhitespace(const std::string& s ); 
 
@@ -84,6 +90,9 @@ struct sstr
 
     template<typename T>
     static void ParseIntSpecList( std::vector<T>& ii, const char* spec, char delim=',' ); 
+
+    template<typename T>
+    static void ParseScale( const char* spec, T& scale ); 
 
     template<typename T>
     static std::vector<T>* ParseIntSpecList( const char* spec, char delim=',' ) ; 
@@ -436,6 +445,24 @@ inline unsigned sstr::Count( const char* s , char q )
    return count ;  
 }
 
+template<typename T>
+inline T sstr::To(const char* arg )
+{
+    std::string str(arg);
+    std::istringstream iss(str);
+    T v ;    
+    iss >> v ;  
+    return v ;  
+}
+
+// specialization for std::string as the above truncates at the first blank in the string, see tests/NP_set_meta_get_meta_test.cc  
+template<> inline std::string sstr::To(const char* a )  
+{
+    std::string s(a); 
+    return s ;  
+}
+
+
 
 
 inline int sstr::AsInt(const char* arg, int fallback )
@@ -461,6 +488,32 @@ inline const char* sstr::ParseStringIntInt( const char* triplet, int& y, int& z,
     z = AsInt( elem[2].c_str() ); 
     return strdup(elem[0].c_str()); 
 }
+
+
+template<typename T>
+inline void sstr::ParsePair( const char* txt, T& x, T& y, char delim )
+{
+    std::stringstream ss; 
+    ss.str(txt)  ;
+    std::string s;
+    std::vector<std::string> elem ; 
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+    int num_elem = elem.size();  
+    bool expect = num_elem == 2 ;
+    if(!expect) std::cerr 
+        << "sstr::ParsePair"
+        << " txt [" << ( txt ? txt : "-" ) << "]"
+        << " delim " << delim 
+        << " num_elem " << num_elem 
+        << std::endl
+        ;
+
+    assert(expect); 
+    x = To<T>( elem[0].c_str() ); 
+    y = To<T>( elem[1].c_str() ); 
+}
+
+
 
 inline bool sstr::IsWhitespace(const std::string& str )
 {
@@ -494,6 +547,20 @@ sstr::ParseIntSpec
 * spec with prefix both uses the scales to multiply the value and sets the scale for subsequent
 * spec without prefix is multiplied by the current scale 
 
++-----+-------------+
+| pfx |   scale     |
++=====+=============+
+|  h  |       100   | 
+|  K  |     1,000   | 
+|  H  |   100,000   |
+|  M  | 1,000,000   |
++-----+-------------+
+
+Examples::
+
+    H1,2,3,4,5,6,7,8,9,10
+
+
 **/
 
 template<typename T>
@@ -502,19 +569,16 @@ inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static
     bool valid = spec != nullptr && strlen(spec) > 0 ; 
     assert(valid); 
     bool is_digit = isdigit_(spec[0]);  
+    const char* e = is_digit ? spec : spec + 1 ; 
+    T value = To<T>( e) ; 
+    ParseScale<T>(spec, scale); 
+    return value*scale  ; 
+}
 
-
-    T value(0) ; 
-
-    if(sizeof(T) == 8)   
-    {
-        value = strtoll( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
-    }
-    else
-    {
-        value = strtol( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
-    }
-
+template<typename T>
+inline void sstr::ParseScale( const char* spec, T& scale )
+{
+    bool is_digit = isdigit_(spec[0]);  
     if(!is_digit)
     {
         switch(spec[0])
@@ -525,27 +589,51 @@ inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static
             case 'M': scale = 1000000 ; break ;  
         }
     }
-    return value*scale  ; 
 }
+
 
 /**
 sstr::ParseIntSpecList
 ------------------------
 
-Parses delimited string into vector of ints, for example::
+Parses delimited string into vector of ints, for examples
 
-    "M1,2,3,4,5,K1,2"   -> 1000000,2000000,3000000,4000000,5000000,1000,2000"
++---------------------+------------------------------------------------------+
+|  spec               | values                                               | 
++=====================+======================================================+
+|  "M1,2,3,4,5,K1,2"  | 1000000,2000000,3000000,4000000,5000000,1000,2000    |
+|  "M1:5,K1:2"        | 1000000,2000000,3000000,4000000,5000000,1000,2000    |
++---------------------+------------------------------------------------------+
+
 
 **/
 
 template<typename T>
 inline void sstr::ParseIntSpecList( std::vector<T>& values, const char* spec, char delim ) // static 
 {
+    values.clear(); 
     std::stringstream ss; 
     ss.str(spec)  ;
     std::string elem ;
     T scale = 1 ; 
-    while (std::getline(ss, elem, delim)) values.push_back( ParseIntSpec<T>( elem.c_str(), scale )) ; 
+    while (std::getline(ss, elem, delim)) 
+    {
+        const char* e = elem.c_str(); 
+        const char* p = strstr(e, ":" ); 
+
+        if( p == nullptr )
+        {
+            values.push_back(ParseIntSpec<T>( e, scale )); 
+        }
+        else
+        {
+            const char* q = isdigit_(e[0]) ? e : e + 1 ; 
+            T i0, i1 ; 
+            ParsePair<T>( q , i0, i1, ':' );
+            ParseScale<T>( e, scale ); 
+            for(T i=i0 ; i <= i1 ; i++) values.push_back(i*scale) ;      
+        }
+    }
 }
 
 template<typename T>

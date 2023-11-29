@@ -56,6 +56,18 @@ Usage::
     epsilon:ALL0 blyth$ 
 
 
+
+Actions
+---------
+
+1. NPFold::LoadNoData metadata of a single run with run metdata and 
+   multiple SEvt folders often with both //p and //n prefix subfold
+
+2. 
+
+
+
+
 **/
 
 #include <cstdlib>
@@ -72,12 +84,6 @@ int main(int argc, char** argv)
     bool VERBOSE = getenv("VERBOSE") != nullptr ; 
 
     NPFold* f = NPFold::LoadNoData(dirp); 
-    /**
-    typically load metadata of a single run 
-    with run metdata and multiple SEvt folders 
-    with both //p and //n prefix 
-    **/
-
     std::cout 
         << "sstampfold_report"
         << std::endl

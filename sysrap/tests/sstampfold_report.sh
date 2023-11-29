@@ -11,6 +11,9 @@ during development.
 
    ~/opticks/sysrap/tests/sstampfold_report.sh
 
+   JOB=N3 ~/opticks/sysrap/tests/sstampfold_report.sh 
+
+
    PICK=AB ~/opticks/sysrap/tests/sstampfold_report.sh ana
 
    PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sstampfold_report.sh ana

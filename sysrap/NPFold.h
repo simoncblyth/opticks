@@ -2395,7 +2395,14 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
     NPFold* bf = find_subfold_(bsym) ; 
     NP* a = af ? af->get_(key) : nullptr ; 
     NP* b = bf ? bf->get_(key) : nullptr ; 
-    NP* boa = NPX::BOA<F,T>( a, b, -1, -1 ); 
+
+    const NP* a_subcount = af ? af->get("subcount") : nullptr ; 
+    const NP* b_subcount = bf ? bf->get("subcount") : nullptr ; 
+ 
+    int a_column = -1 ; 
+    int b_column = -1 ; 
+
+    NP* boa = NPX::BOA<F,T>( a, b, a_column, a_column, out ); 
 
     if(out) *out 
        << "[NPFold::compare_subarray"
@@ -2406,7 +2413,17 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
        << " bf " << ( bf ? "YES" : "NO " )
        << " a " << ( a ? "YES" : "NO " )
        << " b " << ( b ? "YES" : "NO " )
+       << " a_subcount " << ( a_subcount ? "YES" : "NO " )
+       << " b_subcount " << ( b_subcount ? "YES" : "NO " )
        << " boa " << ( boa ? "YES" : "NO " )
+       << std::endl 
+       << "-NPFold::compare_subarray.a_subcount" 
+       << std::endl 
+       << ( a_subcount ? a_subcount->descTable<int>(8) : "-" )
+       << std::endl 
+       << "-NPFold::compare_subarray.b_subcount" 
+       << std::endl 
+       << ( b_subcount ? b_subcount->descTable<int>(8) : "-" )
        << std::endl 
        << "-NPFold::compare_subarray." << asym 
        << std::endl
@@ -2430,8 +2447,7 @@ template<typename F, typename T>
 std::string NPFold::compare_subarrays_report(const char* key, const char* asym, const char* bsym )
 {
     std::stringstream ss ; 
-    NP* boa = compare_subarrays<F, T>(key, asym, bsym, &ss );
-    assert( boa );  
+    compare_subarrays<F, T>(key, asym, bsym, &ss );
     std::string str = ss.str(); 
     return str ; 
 }

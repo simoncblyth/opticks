@@ -17,6 +17,7 @@ Usage::
     MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
 
     EVT=p005 ~/opticks/CSGOptiX/cxs_min.sh ana 
+    EVT=p010 ~/opticks/CSGOptiX/cxs_min.sh ana
 
 
 EOU
@@ -99,7 +100,7 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    export OPTICKS_NUM_PHOTON=K1,2,3,4,5,6,7,8,9,10 
+    export OPTICKS_NUM_PHOTON=K1:10 
     export SEvent_MakeGenstep_num_ph=100000
     #src="rectangle"
     #src="disc"

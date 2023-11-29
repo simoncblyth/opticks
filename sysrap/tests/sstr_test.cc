@@ -198,36 +198,50 @@ void test_empty()
 template<typename T>
 void test_ParseIntSpecList()
 {
-     const char* spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2" ; 
-     std::vector<T> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000 } ;  
+     const char* _spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2,h1:4" ; 
 
-     std::vector<std::string> elem ; 
-     sstr::Split(  spec, ',' , elem ); 
-     assert( elem.size() == expect.size() ); 
+     std::vector<T> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000,100,200,300,400 } ;  
+     int num_expect = expect.size(); 
+
+     std::vector<std::string> spec ; 
+     sstr::Split( _spec, ',' , spec ); 
+     int num_spec = spec.size(); 
 
      std::vector<T> value ; 
-     sstr::ParseIntSpecList<T>(value, spec); 
-     assert( value.size() == expect.size() ); 
+     sstr::ParseIntSpecList<T>(value, _spec); 
+     int num_value = value.size(); 
 
-     std::vector<T>* ls = sstr::ParseIntSpecList<T>(spec) ;
-     assert( ls->size() == expect.size() );
+     std::vector<T>* ls = sstr::ParseIntSpecList<T>(_spec) ;
+     int num_ls = ls->size(); 
 
+     std::cout 
+         << " _spec " << std::endl
+         << _spec 
+         << std::endl 
+         << " num_spec " << num_spec 
+         << " num_value " << num_value
+         << " num_expect " << num_expect
+         << " num_ls " << num_ls
+         << std::endl 
+         ;
 
-     int num = value.size(); 
+     assert( num_spec  <= num_expect ); 
+     assert( num_value == num_expect ); 
+     assert( num_ls == num_expect );
+
      int pass = 0 ; 
-
-     for(int i=0 ; i < num ; i++)
+     for(int i=0 ; i < num_value ; i++)
      {
-         const char* s = elem[i].c_str(); 
-         T e = expect[i] ;  
-         T v = value[i] ;  
-         T l = (*ls)[i] ;  
+         const char* s = i < num_spec ? spec[i].c_str() : nullptr ; 
+         T e = i < num_expect ? expect[i] : -1 ;  
+         T v = i < num_value  ? value[i]  : -1 ;  
+         T l = i < num_ls ?      (*ls)[i] : -1 ;  
 
          bool match = e == v && e == l ; 
 
          pass += int(match) ; 
          std::cout  
-              << std::setw(10) << s
+              << std::setw(10) << ( s ? s : "-" )
               << std::setw(10) << e
               << std::setw(10) << v
               << std::setw(10) << l
@@ -236,8 +250,55 @@ void test_ParseIntSpecList()
               ;
 
      }
-     assert( pass == num ); 
+     assert( pass == num_value ); 
 }
+
+/**
+
+epsilon:opticks blyth$ ~/opticks/sysrap/tests/sstr_test.sh
+        M1:5,K1:2 :  [1000000 2000000 3000000 4000000 5000000 1000 2000  ] 
+  M1,2,3,4,5,K1,2 :  [1000000 2000000 3000000 4000000 5000000 1000 2000  ] 
+            h1:10 :  [100 200 300 400 500 600 700 800 900 1000  ] 
+            K1:10 :  [1000 2000 3000 4000 5000 6000 7000 8000 9000 10000  ] 
+            H1:10 :  [100000 200000 300000 400000 500000 600000 700000 800000 900000 1000000  ] 
+            M1:10 :  [1000000 2000000 3000000 4000000 5000000 6000000 7000000 8000000 9000000 10000000  ] 
+
+**/
+
+
+template<typename T>
+void test_ParseIntSpecList_demo()
+{
+    std::vector<std::string> spec = { 
+         "M1:5,K1:2" , 
+         "M1,2,3,4,5,K1,2", 
+         "h1:10",
+         "K1:10",
+         "H1:10",
+         "M1:10"
+     };  
+    int num_spec = spec.size(); 
+     
+    std::vector<T> value ; 
+    for(int i=0 ; i < num_spec ; i++)
+    {
+        const char* _spec = spec[i].c_str(); 
+        sstr::ParseIntSpecList<T>(value, _spec);  
+        std::cout 
+            << std::setw(30) << _spec 
+            << " : "
+            << " [" 
+            ; 
+            
+        int num_value = value.size(); 
+        for(int i=0 ; i < num_value ; i++) std::cout << value[i] << " " ; 
+        std::cout << " ] " << std::endl ;  
+    }
+}
+
+
+ 
+
 
 
 int main(int argc, char** argv)
@@ -249,9 +310,12 @@ int main(int argc, char** argv)
     test_nullchar(true); 
     test_Write(); 
     test_empty(); 
-    test_ParseIntSpecList<int>() ; 
     test_ParseIntSpecList<int64_t>() ; 
+    test_ParseIntSpecList<int>() ; 
     */
+
+    test_ParseIntSpecList_demo<int>() ; 
+
 
     return 0 ; 
 } 
