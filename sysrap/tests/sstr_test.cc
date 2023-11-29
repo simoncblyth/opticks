@@ -1,4 +1,4 @@
-// ./sstr_test.sh
+// ~/opticks/sysrap/tests/sstr_test.sh
 
 #include <string>
 #include <vector>
@@ -207,6 +207,10 @@ void test_ParseIntSpecList()
      sstr::ParseIntSpecList(value, spec); 
      assert( value.size() == expect.size() ); 
 
+     std::vector<int64_t>* ls = sstr::ParseIntSpecList(spec) ;
+     assert( ls->size() == expect.size() );
+
+
      int num = value.size(); 
      int pass = 0 ; 
 
@@ -215,12 +219,16 @@ void test_ParseIntSpecList()
          const char* s = elem[i].c_str(); 
          int64_t e = expect[i] ;  
          int64_t v = value[i] ;  
-         bool match = e == v ; 
+         int64_t l = (*ls)[i] ;  
+
+         bool match = e == v && e == l ; 
+
          pass += int(match) ; 
          std::cout  
               << std::setw(10) << s
               << std::setw(10) << e
               << std::setw(10) << v
+              << std::setw(10) << l
               << ( match ? " " : " ERROR MISMATCH" )
               << std::endl 
               ;
@@ -228,8 +236,6 @@ void test_ParseIntSpecList()
      }
      assert( pass == num ); 
 }
-
-
 
 
 int main(int argc, char** argv)
@@ -246,3 +252,6 @@ int main(int argc, char** argv)
 
     return 0 ; 
 } 
+// ~/opticks/sysrap/tests/sstr_test.sh
+
+

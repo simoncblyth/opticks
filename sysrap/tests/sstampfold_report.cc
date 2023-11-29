@@ -2,6 +2,8 @@
 sstampfold_report.cc : Summarize + Present SEvt/NPFold metadata time stamps 
 =============================================================================
 
+TODO: rename, functionality of sstampfold.h moved into NPFold.h NPX.h 
+
 ::
  
     ~/opticks/sysrap/tests/sstampfold_report.sh 
@@ -57,7 +59,8 @@ Usage::
 **/
 
 #include <cstdlib>
-#include "sstampfold.h"
+
+#include "NPFold.h"
 
 
 int main(int argc, char** argv)
@@ -67,8 +70,13 @@ int main(int argc, char** argv)
     U::SetEnvDefaultExecutableSiblingPath("FOLD", argv[0], dirp );
 
     bool VERBOSE = getenv("VERBOSE") != nullptr ; 
- 
+
     NPFold* f = NPFold::LoadNoData(dirp); 
+    /**
+    typically load metadata of a single run 
+    with run metdata and multiple SEvt folders 
+    with both //p and //n prefix 
+    **/
 
     std::cout 
         << "sstampfold_report"
@@ -105,7 +113,10 @@ int main(int argc, char** argv)
         << std::endl
         ; 
 
-    NPFold* smry = f->subfold_summary(sstampfold::STAMP_KEY, "a://p", "b://n"); 
+    NPFold* smry = f->subfold_summary("substamp", "a://p", "b://n"); 
+    /**
+    compare within event timestamps between two sets of SEvt 
+    **/
 
     if(VERBOSE) std::cout 
         << "[sstampfold_report.smry.desc.VERBOSE" << std::endl 
@@ -114,28 +125,18 @@ int main(int argc, char** argv)
         << std::endl
         ;
 
-    const NPFold* a = smry->find_subfold("a"); 
-    const NPFold* b = smry->find_subfold("b"); 
-
-    sstampfold ast(a, "ast"); 
-    sstampfold bst(b, "bst"); 
+    const NP* boa = smry->compare_subarrays<double, int64_t>( "delta_substamp", "a", "b" ); 
+    /**
+    form ratios of columns of the delta_substamp tables  
+    **/
 
     std::cout 
-        << "[sstampfold_report.ast.desc" << std::endl 
-        << ast.desc() 
-        << "]sstampfold_report.ast.desc" << std::endl 
-        << "[sstampfold_report.bst.desc" << std::endl 
-        << bst.desc() 
-        << "]sstampfold_report.bst.desc" << std::endl 
-        ; 
-
-
-    NP* boa = sstampfold::BOA(ast,bst); 
-    std::cout 
-        << "[sstampfold::BOA" << std::endl 
-        << ( boa ? boa->sstr() : "-" ) << std::endl 
-        << "]sstampfold::BOA" << std::endl 
+        << "[sstampfold_report.BOA" << std::endl 
+        << ( boa ? boa->descTable<double>(10) : "-" ) << std::endl 
+        << "]sstampfold_report.BOA" << std::endl 
         ;
+
+    smry->add( "boa", boa ); 
 
     smry->save_verbose("$FOLD"); 
 

@@ -86,6 +86,10 @@ struct NPX
     static NP* ArrayFromEnumMap( const std::map<int, std::string>& catMap) ; 
 
     static NP* MakeCharArray( const std::vector<std::string>& nn ); 
+
+    template<typename F, typename T>
+    static NP* BOA( NP* a, NP* b, int a_column=-1, int b_column=-1 ); 
+
 }; 
 
 
@@ -774,4 +778,89 @@ inline NP* NPX::MakeCharArray( const std::vector<std::string>& nn )
     return a ;  
 }
 
- 
+/**
+NPX::BOA
+---------
+
+Forms the ratio of two columns obtained from two 2D arrays a and b 
+with shapes (N,M_a) and (N, M_b) creating an (N, 4) array with 
+B/A in third column and A/B in fourth.
+
+T: int or int64_t of the source arrays 
+F: float or double of the created array 
+
+**/
+
+template<typename F, typename T>
+inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column )  // static
+{
+    assert( a ); 
+    assert( b ); 
+    bool dump = true ; //getenv("NPX__BOA_DUMP") != nullptr ; 
+    if(dump) std::cout 
+       << "NPX::BOA"
+       << std::endl 
+       << " a " << ( a ? a->sstr() : "-" )
+       << std::endl 
+       << " b " << ( b ? b->sstr() : "-" )
+       << std::endl 
+       ;
+
+    assert( a->shape.size() == 2 ); 
+    assert( b->shape.size() == 2 ); 
+
+    int a_ni = a->shape[0] ;  
+    int b_ni = b->shape[0] ;  
+
+    if(a->names.size() == 0) for(int i=0 ; i < a_ni ; i++) a->names.push_back( U::FormName_("A", i, nullptr )) ; 
+    if(b->names.size() == 0) for(int i=0 ; i < b_ni ; i++) b->names.push_back( U::FormName_("B", i, nullptr )) ; 
+
+    assert( int(a->names.size()) == a_ni ); 
+    assert( int(b->names.size()) == b_ni ); 
+
+    assert( a_ni == b_ni ); 
+    int ni = a_ni ; 
+
+    int a_nj = a->shape[1] ; 
+    int b_nj = b->shape[1] ; 
+
+    const T* aa = a->cvalues<T>();  
+    const T* bb = b->cvalues<T>();  
+
+    int c_ni = ni ; 
+    int c_nj = 4 ; 
+
+    NP* c = NP::Make<F>(c_ni, c_nj); 
+    c->set_meta<std::string>("creator", "NPX::BOA"); 
+    c->set_meta<int>("a_column", a_column ); 
+    c->set_meta<int>("b_column", b_column ); 
+
+    F* cc = c->values<F>(); 
+
+    c->labels = new std::vector<std::string>(c_nj)  ; 
+    (*c->labels)[0] = "A" ; 
+    (*c->labels)[1] = "B" ; 
+    (*c->labels)[2] = "B/A" ; 
+    (*c->labels)[3] = "A/B" ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        T av = aa[i*a_nj+a_nj+a_column] ; 
+        T bv = bb[i*b_nj+b_nj+b_column] ; 
+        F boa = F(bv)/F(av); 
+        F aob = F(av)/F(bv); 
+
+        cc[i*c_nj+0] = F(av) ;   
+        cc[i*c_nj+1] = F(bv) ;   
+        cc[i*c_nj+2] = boa ; 
+        cc[i*c_nj+3] = aob ; 
+
+        const char* an = a->names[i].c_str() ; 
+        const char* bn = b->names[i].c_str() ; 
+        std::string name = U::FormName_(bn,":", an ); 
+        c->names.push_back(name) ; 
+    }
+    return c ; 
+}
+
+

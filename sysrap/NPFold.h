@@ -242,6 +242,9 @@ public:
 
 
     const NP* get(const char* k) const ; 
+    NP*       get_(const char* k); 
+
+
     const NP* get_optional(const char* k) const ; 
     int   get_num(const char* k) const ;   // number of items in array 
     void  get_counts( std::vector<std::string>* keys, std::vector<int>* counts ) const ; 
@@ -316,6 +319,9 @@ public:
 
     template<typename ... Args>
     NPFold* subfold_summary(const char* method, Args ... args_  ) const  ; 
+
+    template<typename F, typename T>
+    NP* compare_subarrays(const char* key, const char* asym="a", const char* bsym="b" ); 
  
 
     static void Subkey(std::vector<std::string>& ukey, const std::vector<const NPFold*>& subs ); 
@@ -1329,6 +1335,13 @@ inline const NP* NPFold::get(const char* k) const
     return idx == UNDEF ? nullptr : aa[idx] ; 
 }
 
+inline NP* NPFold::get_(const char* k)
+{
+    const NP* a = get(k) ; 
+    return const_cast<NP*>(a) ; 
+}
+
+
 /**
 NPFold::get_optional
 ---------------------
@@ -2116,7 +2129,6 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         t->set_meta<std::string>("base", loaddir ? loaddir : "-" ); 
         t->set_meta<std::string>("prefix", prefix ? prefix : "-" ); 
         t->set_meta<std::string>("keyname", keyname ? keyname : "-" ); 
-       
 
         // collect metadata (k,v) pairs that are the same for all the subs
         std::vector<std::string> ckey ;  
@@ -2125,8 +2137,8 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         assert( ckey.size() == cval.size() ); 
         t->setMetaKV_(ckey, cval); 
 
-        std::vector<std::string> comkeys ; 
 
+        std::vector<std::string> comkeys ; 
         for(int i=0 ; i < ni ; i++) 
         {
             const NPFold* sub = subs[i] ; 
@@ -2146,18 +2158,20 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
             t->names.push_back(subpath); 
 
         }
+        t->labels = new std::vector<std::string>(comkeys.begin(), comkeys.end())  ; 
 
-
-        NP* l = NPX::MakeCharArray(comkeys); 
-        l->names = comkeys ; 
+        //NP* l = NPX::MakeCharArray(comkeys); 
+        //l->names = comkeys ; 
 
         NP* dt = NP::DeltaColumn<int64_t>(t); 
+        dt->names = t->names ; 
+        dt->labels = new std::vector<std::string>(comkeys.begin(), comkeys.end())  ; 
+
         NP* count = subcount(prefix); 
 
         out = new NPFold ; 
         out->add(keyname, t );
         out->add(U::FormName("delta_",keyname,nullptr), dt );
-        out->add("labels", l );  
         out->add("subcount", count ); 
 
     }
@@ -2166,7 +2180,6 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         << std::endl
         ;
     return out ; 
-
 }
 
 
@@ -2319,7 +2332,6 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
 
     NPFold* spec_ff = nullptr ; 
 
-
     for(int i=0 ; i < num_uargs ; i++)
     {
         const std::string& arg = uargs[i] ; 
@@ -2366,6 +2378,37 @@ template NPFold* NPFold::subfold_summary( const char*, const char* ) const ;
 template NPFold* NPFold::subfold_summary( const char*, const char*, const char* ) const ;
 template NPFold* NPFold::subfold_summary( const char*, const char*, const char*, const char* ) const ;
 
+
+/**
+NPFold::compare_subarrays
+----------------------------
+
+**/
+
+template<typename F, typename T>
+NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsym )
+{
+    NPFold* af = find_subfold_(asym) ; 
+    NPFold* bf = find_subfold_(bsym) ; 
+    NP* a = af ? af->get_(key) : nullptr ; 
+    NP* b = bf ? bf->get_(key) : nullptr ; 
+
+    std::cout 
+       << "NPFold::compare_subarray"
+       << " key " << key 
+       << " asym " << asym 
+       << " bsym " << bsym 
+       << " af " << ( af ? "YES" : "NO " )
+       << " bf " << ( bf ? "YES" : "NO " )
+       << " a " << ( a ? "YES" : "NO " )
+       << " b " << ( b ? "YES" : "NO " )
+     //  << " boa " << ( boa ? "YES" : "NO " )
+       << std::endl 
+       ; 
+
+    NP* boa = NPX::BOA<F,T>( a, b, -1, -1 ); 
+    return boa ; 
+}  
 
 
 /**

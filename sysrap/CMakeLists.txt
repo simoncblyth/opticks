@@ -193,7 +193,6 @@ set(HEADERS
     schrono.h
     stimer.h
     sstamp.h 
-    sstampfold.h 
     sprof_fold.h 
 
     SBnd.h

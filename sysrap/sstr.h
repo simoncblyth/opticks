@@ -81,7 +81,7 @@ struct sstr
 
     static int64_t ParseIntSpec( const char* spec, int64_t& scale ); 
     static void ParseIntSpecList( std::vector<int64_t>& ii, const char* spec, char delim=',' ); 
-
+    static std::vector<int64_t>* ParseIntSpecList( const char* spec, char delim=',' ) ; 
 
 };
 
@@ -406,6 +406,8 @@ inline std::string sstr::Join( const char* delim, Args ... args_ )
     std::string str = ss.str(); 
     return str ; 
 }
+template std::string sstr::Join( const char*, const char*, const char* ); 
+template std::string sstr::Join( const char*, const char*, const char*, const char*  ); 
 template std::string sstr::Join( const char*, const char*, const char*, const char*, const char* ); 
 
 
@@ -525,5 +527,13 @@ inline void sstr::ParseIntSpecList( std::vector<int64_t>& values, const char* sp
     std::string elem ;
     int64_t scale = 1 ; 
     while (std::getline(ss, elem, delim)) values.push_back( ParseIntSpec( elem.c_str(), scale )) ; 
+}
+
+inline std::vector<int64_t>* sstr::ParseIntSpecList( const char* spec, char delim )
+{
+    if(spec == nullptr) return nullptr ; 
+    std::vector<int64_t>* ls = new std::vector<int64_t> ; 
+    ParseIntSpecList( *ls, spec, delim ); 
+    return ls ; 
 }
 

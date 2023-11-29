@@ -436,6 +436,7 @@ struct U
     static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
     static const char* FormName( const char* prefix, const char* body, const char* ext ); 
 
+    static bool isdigit_(char c ); 
     static bool isalnum_(char c ); 
     static bool isupper_(char c ); 
     static bool islower_(char c ); 
@@ -997,6 +998,8 @@ inline const char* U::FormName( const char* prefix, const char* body, const char
 }
 
 // cctype
+
+inline bool U::isdigit_(char c ) { return std::isdigit(static_cast<unsigned char>(c)) ; }
 inline bool U::isalnum_(char c ) { return std::isalnum(static_cast<unsigned char>(c)) ; }
 inline bool U::isupper_(char c ) { return std::isupper(static_cast<unsigned char>(c)) ; }
 inline bool U::islower_(char c ) { return std::islower(static_cast<unsigned char>(c)) ; }

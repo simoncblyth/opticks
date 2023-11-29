@@ -3,6 +3,10 @@ usage(){ cat << EOU
 sstampfold_report.sh
 =======================
 
+Caution the binary is built and installed standardly 
+as well as being built standalone by this script
+during development. 
+
 ::
 
    ~/opticks/sysrap/tests/sstampfold_report.sh
@@ -32,9 +36,26 @@ EOU
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=sstampfold_report
+src=$SDIR/$name.cc
 script=$SDIR/$name.py
-bin=$name
 
+DEV=1
+if [ -z "$DEV" ]; then
+    bin=$name                                   ## standard binary 
+    defarg="run_info_ana"
+else
+    bin=${TMP:-/tmp/$USER/opticks}/$name/$name    ## standalone binary
+    #defarg="build_run_info_ana"
+    defarg="build_run_info_noa"
+fi
+arg=${1:-$defarg}
+
+
+if [ "$bin" == "$name" ]; then
+    echo $BASH_SOURCE : using standard binary 
+else
+    mkdir -p $(dirname $bin)
+fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
@@ -58,14 +79,18 @@ export FOLD=$PWD/../$name   ## set FOLD used by binary, for ana
 export MODE=2               ## 2:matplotlib plotting 
 
 
-defarg="run_info_ana"
-arg=${1:-$defarg}
 
 vars="0 BASH_SOURCE SDIR FOLD PWD name bin script"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
 fi 
+
+if [ "${arg/build}" != "$arg" ]; then 
+    gcc $src -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
+fi
+
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     dbg__ $bin
@@ -78,8 +103,8 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
-if [ "${arg/runo}" != "$arg" ]; then 
-    echo $BASH_SOURCE : runo : short for runonly : exit 
+if [ "${arg/noa}" != "$arg" ]; then 
+    echo $BASH_SOURCE : noa : no analysis exit 
     exit 0
 fi
 
