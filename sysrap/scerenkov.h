@@ -68,7 +68,7 @@ struct scerenkov
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static void FillGenstep( scerenkov& gs, unsigned matline, unsigned numphoton_per_genstep, bool dump ) ; 
+   static void FillGenstep( scerenkov& gs, int matline, int numphoton_per_genstep, bool dump ) ; 
    std::string desc() const ; 
 #endif
 
@@ -92,7 +92,7 @@ A better way of doing this would use the MaterialLine as input and obtain the va
 
 **/
 
-inline void scerenkov::FillGenstep( scerenkov& gs, unsigned matline, unsigned numphoton_per_genstep, bool dump )
+inline void scerenkov::FillGenstep( scerenkov& gs, int matline, int numphoton_per_genstep, bool dump )
 {
     float nMax = 1.793f ; 
     float BetaInverse = 1.500f ; 

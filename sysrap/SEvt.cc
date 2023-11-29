@@ -726,7 +726,7 @@ void SEvt::addFrameGenstep()
             }
             else if( has_torch )
             {
-                igs = SEvent::MakeTorchGenstep(); 
+                igs = SEvent::MakeTorchGenstep(index);  // pass index to allow changing num photons per event
             }
             assert(igs);  
             addGenstep(igs); 
@@ -1508,7 +1508,7 @@ void SEvt::beginOfEvent(int eventID)
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
-    setIndex(index_);      // also sets t_BeginOfEvent stamp 
+    setIndex(index_);   
 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
@@ -1801,7 +1801,7 @@ void SEvt::clear_except(const char* keep, char delim)
 
 void SEvt::setIndex(int index_)
 { 
-    bool index_permitted = IndexPermitted(index_); 
+    bool index_permitted = IndexPermitted(index_);  // >= 1 
     LOG_IF(fatal, !index_permitted) << " index_ " << index_ << " count " << Count() ; 
     assert( index_permitted ); 
 

@@ -11,6 +11,9 @@ Usage::
      ~/opticks/CSGOptiX/cxs_min.sh run
      ~/opticks/CSGOptiX/cxs_min.sh report
 
+
+    BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh run
+
     MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
 
     EVT=p005 ~/opticks/CSGOptiX/cxs_min.sh ana 
@@ -57,9 +60,9 @@ LOGFILE=$bin.log
 
 
 #srm=SRM_DEFAULT
-#srm=SRM_TORCH
+srm=SRM_TORCH
 #srm=SRM_INPUT_PHOTON
-srm=SRM_INPUT_GENSTEP
+#srm=SRM_INPUT_GENSTEP
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 
@@ -96,6 +99,7 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
+    export OPTICKS_NUM_PHOTON=K1,2,3,4,5,6,7,8,9,10 
     export SEvent_MakeGenstep_num_ph=100000
     #src="rectangle"
     #src="disc"

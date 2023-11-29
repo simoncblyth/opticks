@@ -38,7 +38,7 @@ struct scarrier
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #else
-   SCARRIER_METHOD static void FillGenstep( scarrier& gs, unsigned matline, unsigned numphoton_per_genstep, bool dump ) ; 
+   SCARRIER_METHOD static void FillGenstep( scarrier& gs, int matline, int numphoton_per_genstep, bool dump ) ; 
 #endif
 
 }; 
@@ -66,7 +66,7 @@ inline SCARRIER_METHOD void scarrier::generate( sphoton& p_, srng&              
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 #else
-inline void scarrier::FillGenstep( scarrier& gs, unsigned matline, unsigned numphoton_per_genstep, bool dump ) 
+inline void scarrier::FillGenstep( scarrier& gs, int matline, int numphoton_per_genstep, bool dump ) 
 {
     gs.q0.u = make_uint4( OpticksGenstep_CARRIER, 0u, 0u, numphoton_per_genstep );   
     gs.q1.u = make_uint4( 0u,0u,0u,0u );  

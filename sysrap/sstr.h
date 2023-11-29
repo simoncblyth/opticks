@@ -79,9 +79,14 @@ struct sstr
     static bool isupper_(char c );
     static bool islower_(char c );
 
-    static int64_t ParseIntSpec( const char* spec, int64_t& scale ); 
-    static void ParseIntSpecList( std::vector<int64_t>& ii, const char* spec, char delim=',' ); 
-    static std::vector<int64_t>* ParseIntSpecList( const char* spec, char delim=',' ) ; 
+    template<typename T>
+    static T ParseIntSpec( const char* spec, T& scale ); 
+
+    template<typename T>
+    static void ParseIntSpecList( std::vector<T>& ii, const char* spec, char delim=',' ); 
+
+    template<typename T>
+    static std::vector<T>* ParseIntSpecList( const char* spec, char delim=',' ) ; 
 
 };
 
@@ -491,12 +496,25 @@ sstr::ParseIntSpec
 
 **/
 
-inline int64_t sstr::ParseIntSpec( const char* spec, int64_t& scale ) // static 
+template<typename T>
+inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static 
 {
     bool valid = spec != nullptr && strlen(spec) > 0 ; 
     assert(valid); 
     bool is_digit = isdigit_(spec[0]);  
-    int64_t value = strtoll( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
+
+
+    T value(0) ; 
+
+    if(sizeof(T) == 8)   
+    {
+        value = strtoll( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
+    }
+    else
+    {
+        value = strtol( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
+    }
+
     if(!is_digit)
     {
         switch(spec[0])
@@ -520,20 +538,22 @@ Parses delimited string into vector of ints, for example::
 
 **/
 
-inline void sstr::ParseIntSpecList( std::vector<int64_t>& values, const char* spec, char delim ) // static 
+template<typename T>
+inline void sstr::ParseIntSpecList( std::vector<T>& values, const char* spec, char delim ) // static 
 {
     std::stringstream ss; 
     ss.str(spec)  ;
     std::string elem ;
-    int64_t scale = 1 ; 
-    while (std::getline(ss, elem, delim)) values.push_back( ParseIntSpec( elem.c_str(), scale )) ; 
+    T scale = 1 ; 
+    while (std::getline(ss, elem, delim)) values.push_back( ParseIntSpec<T>( elem.c_str(), scale )) ; 
 }
 
-inline std::vector<int64_t>* sstr::ParseIntSpecList( const char* spec, char delim )
+template<typename T>
+inline std::vector<T>* sstr::ParseIntSpecList( const char* spec, char delim )
 {
     if(spec == nullptr) return nullptr ; 
-    std::vector<int64_t>* ls = new std::vector<int64_t> ; 
-    ParseIntSpecList( *ls, spec, delim ); 
+    std::vector<T>* ls = new std::vector<T> ; 
+    ParseIntSpecList<T>( *ls, spec, delim ); 
     return ls ; 
 }
 

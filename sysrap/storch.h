@@ -116,7 +116,7 @@ struct storch
    static constexpr const char* storch_FillGenstep_zenith     = "storch_FillGenstep_zenith" ; 
    static constexpr const char* storch_FillGenstep_azimuth    = "storch_FillGenstep_azimuth" ; 
    static constexpr const char* storch_FillGenstep_type       = "storch_FillGenstep_type" ; 
-   static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump=false ) ; 
+   static void FillGenstep( storch& gs, int genstep_id, int numphoton_per_genstep, bool dump=false ) ; 
    std::string desc() const ; 
 #endif
 
@@ -133,7 +133,7 @@ storch::FillGenstep
 Canonically invoked from SEvent::MakeGensteps
 
 **/
-inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep, bool dump )
+inline void storch::FillGenstep( storch& gs, int genstep_id, int numphoton_per_genstep, bool dump )
 {
     gs.gentype = OpticksGenstep_TORCH ; 
     gs.numphoton = numphoton_per_genstep  ;   

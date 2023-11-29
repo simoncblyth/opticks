@@ -4,8 +4,10 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 #include "ssys.h"
+#include "sstr.h"
 #include "spath.h"
 #include "sdirectory.h"
 #include "salloc.h"
@@ -26,6 +28,7 @@ int         SEventConfig::_IntegrationModeDefault = -1 ;
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_NumEventDefault = 1 ;
+const char* SEventConfig::_NumPhotonDefault = nullptr ;
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ; 
 int         SEventConfig::_G4StateRerunDefault = -1 ;
@@ -72,6 +75,35 @@ int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault ); 
 int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
 int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault ); 
+
+std::vector<int>* SEventConfig::_GetNumPhotonPerEvent()
+{
+    const char* NumPhotonSpec = ssys::getenvvar(kNumPhoton,  _NumPhotonDefault ); 
+    return sstr::ParseIntSpecList<int>( NumPhotonSpec, ',' ); 
+}
+std::vector<int>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ; 
+
+/**
+
+OPTICKS_NUM_PHOTON=M1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest 
+
+**/
+int SEventConfig::_GetNumPhoton(int idx)
+{
+    if(_NumPhotonPerEvent == nullptr) return 0 ; 
+
+    int nevt0 = NumEvent(); 
+    int nevt1 = _NumPhotonPerEvent->size() ;
+    bool match = nevt0 == nevt1 ;  
+    LOG_IF(fatal, !match) << " nevt0 " << nevt0 << " nevt1 " << nevt1 ; 
+    assert( match ); 
+    if(idx < 0 ) idx += nevt0 ; 
+    if(idx >= nevt0) return 0 ; 
+
+    return (*_NumPhotonPerEvent)[idx] ; 
+}
+
+
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
@@ -126,6 +158,8 @@ bool SEventConfig::IsRunningModeInputGenstep(){  return RunningMode() == SRM_INP
 bool SEventConfig::IsRunningModeGun(){           return RunningMode() == SRM_GUN ; } 
 
 int         SEventConfig::NumEvent(){     return _NumEvent ; }
+int         SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
+
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
 
 /**
@@ -402,6 +436,11 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << kNumEvent
        << std::setw(20) << " NumEvent " << " : " << NumEvent() 
+       << std::endl 
+       << std::setw(25) << kNumPhoton
+       << std::setw(20) << " NumPhoton(0) " << " : " << NumPhoton(0) 
+       << std::setw(20) << " NumPhoton(1) " << " : " << NumPhoton(1) 
+       << std::setw(20) << " NumPhoton(-1) " << " : " << NumPhoton(-1) 
        << std::endl 
        << std::setw(25) << kG4StateSpec
        << std::setw(20) << " G4StateSpec " << " : " << G4StateSpec() 
