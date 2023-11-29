@@ -321,7 +321,10 @@ public:
     NPFold* subfold_summary(const char* method, Args ... args_  ) const  ; 
 
     template<typename F, typename T>
-    NP* compare_subarrays(const char* key, const char* asym="a", const char* bsym="b" ); 
+    NP* compare_subarrays(const char* key, const char* asym="a", const char* bsym="b", std::ostream* out=nullptr  ); 
+
+    template<typename F, typename T>
+    std::string compare_subarrays_report(const char* key, const char* asym="a", const char* bsym="b" ); 
  
 
     static void Subkey(std::vector<std::string>& ukey, const std::vector<const NPFold*>& subs ); 
@@ -2386,15 +2389,16 @@ NPFold::compare_subarrays
 **/
 
 template<typename F, typename T>
-NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsym )
+NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsym,  std::ostream* out  )
 {
     NPFold* af = find_subfold_(asym) ; 
     NPFold* bf = find_subfold_(bsym) ; 
     NP* a = af ? af->get_(key) : nullptr ; 
     NP* b = bf ? bf->get_(key) : nullptr ; 
+    NP* boa = NPX::BOA<F,T>( a, b, -1, -1 ); 
 
-    std::cout 
-       << "NPFold::compare_subarray"
+    if(out) *out 
+       << "[NPFold::compare_subarray"
        << " key " << key 
        << " asym " << asym 
        << " bsym " << bsym 
@@ -2402,13 +2406,36 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
        << " bf " << ( bf ? "YES" : "NO " )
        << " a " << ( a ? "YES" : "NO " )
        << " b " << ( b ? "YES" : "NO " )
-     //  << " boa " << ( boa ? "YES" : "NO " )
+       << " boa " << ( boa ? "YES" : "NO " )
        << std::endl 
-       ; 
-
-    NP* boa = NPX::BOA<F,T>( a, b, -1, -1 ); 
+       << "-NPFold::compare_subarray." << asym 
+       << std::endl
+       << ( a ? a->descTable<T>(8) : "-" )
+       << std::endl
+       << "-NPFold::compare_subarray." << bsym 
+       << std::endl
+       << ( b ? b->descTable<T>(8) : "-" )
+       << std::endl
+       << "-NPFold::compare_subarray.boa "
+       << std::endl 
+       << ( boa ? boa->descTable<F>(12) : "-" ) 
+       << std::endl
+       << "]NPFold::compare_subarray"
+       << std::endl
+       ;
     return boa ; 
 }  
+
+template<typename F, typename T>
+std::string NPFold::compare_subarrays_report(const char* key, const char* asym, const char* bsym )
+{
+    std::stringstream ss ; 
+    NP* boa = compare_subarrays<F, T>(key, asym, bsym, &ss );
+    assert( boa );  
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 /**

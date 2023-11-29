@@ -125,11 +125,16 @@ int main(int argc, char** argv)
         << std::endl
         ;
 
-    const NP* boa = smry->compare_subarrays<double, int64_t>( "delta_substamp", "a", "b" ); 
     /**
+
     form ratios of columns of the delta_substamp tables  
     **/
 
+
+    std::cout << smry->compare_subarrays_report<double, int64_t>( "delta_substamp", "a", "b" ) ; 
+
+    /**
+    const NP* boa = smry->compare_subarrays<double, int64_t>( "delta_substamp", "a", "b" ); 
     std::cout 
         << "[sstampfold_report.BOA" << std::endl 
         << ( boa ? boa->descTable<double>(10) : "-" ) << std::endl 
@@ -137,6 +142,9 @@ int main(int argc, char** argv)
         ;
 
     smry->add( "boa", boa ); 
+
+    */
+
 
     smry->save_verbose("$FOLD"); 
 
