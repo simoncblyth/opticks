@@ -428,10 +428,6 @@ inline NPFold* NPFold::Load_(const char* base )
 NPFold::LoadNoData_
 --------------------
 
-Loads folder and array metadata only, no array data. 
-
-HMM: BUT NEED THE ARRAY SIZES ? 
-
 **/
 
 inline NPFold* NPFold::LoadNoData_(const char* base_ )
@@ -910,7 +906,17 @@ inline bool NPFold::is_empty() const
 {
     return total_items() == 0 ; 
 }
-inline int NPFold::total_items() const 
+
+/**
+NPFold::total_items
+---------------------
+
+Assuming that a NoData fold with some metadata 
+will have total_items greater than zero ?
+
+**/
+
+inline int NPFold::total_items() const   
 {
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
@@ -1192,10 +1198,12 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     int count = count_keys(&keys) ; 
     if( count == 0 ) std::cerr
         << "NPFold::copy"
-        << " keylist " << ( keylist ? keylist : "-" )
-        << " keys " << DescKeys(keys, delim) 
+        << " NOTE COUNT_KEYS GIVING ZERO "
+        << " keylist [" << ( keylist ? keylist : "-" ) << "]" 
+        << " keylist.keys [" << DescKeys(keys, delim) << "]"  
         << " count " << count 
         << " kk.size " << kk.size() 
+        << " DescKeys(kk) [" << DescKeys(kk,',')  << "]" 
         << " meta " << ( meta.empty() ? "EMPTY" : meta )  
         << std::endl 
         ; 
@@ -2402,7 +2410,7 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
     int a_column = -1 ; 
     int b_column = -1 ; 
 
-    NP* boa = NPX::BOA<F,T>( a, b, a_column, a_column, out ); 
+    NP* boa = NPX::BOA<F,T>( a, b, a_column, b_column, out ); 
 
     if(out) *out 
        << "[NPFold::compare_subarray"

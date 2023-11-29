@@ -12,7 +12,8 @@ Usage::
      ~/opticks/CSGOptiX/cxs_min.sh report
 
 
-    BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh run
+    BP=SEvt::SEvt ~/opticks/CSGOptiX/cxs_min.sh
+    BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh
 
     MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
 
@@ -48,8 +49,12 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
-export LOGDIR=$BINBASE/ALL
-export AFOLD=$BINBASE/ALL/$EVT
+
+#export VERSION=0   # StandardFullDebug
+#export VERSION=1   # Minimal  
+
+export LOGDIR=$BINBASE/ALL${VERSION:-0}
+export AFOLD=$BINBASE/ALL${VERSION:-0}/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
 export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
@@ -100,7 +105,9 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    export OPTICKS_NUM_PHOTON=K1:10 
+    onp=K1:10 
+    #onp=H1:10  
+    export OPTICKS_NUM_PHOTON=${ONP:-$onp}
     export SEvent_MakeGenstep_num_ph=100000
     #src="rectangle"
     #src="disc"
@@ -132,9 +139,12 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then
 fi 
 
 
-export OPTICKS_EVENT_MODE=StandardFullDebug
+
+#oem=StandardFullDebug
+oem=Minimal
+export OPTICKS_EVENT_MODE=${OEM:-$oem}
 export OPTICKS_MAX_BOUNCE=31
-export OPTICKS_MAX_PHOTON=100000
+export OPTICKS_MAX_PHOTON=1000000
 export OPTICKS_INTEGRATION_MODE=1
 export OPTICKS_NUM_EVENT=10
 
@@ -179,8 +189,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/report}" != "$arg" ]; then
-   sstampfold_report
-   [ $? -ne 0 ] && echo $BASH_SOURCE sstampfold_report error && exit 1 
+   sreport
+   [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1 
 
    sprof_fold_report
    [ $? -ne 0 ] && echo $BASH_SOURCE sprof_fold_report error && exit 1 

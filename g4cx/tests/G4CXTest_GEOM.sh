@@ -178,8 +178,8 @@ fi
 
 if [ "${arg/report}" != "$arg" ]; then
     rm -f $bin.log
-    sstampfold_report
-    [ $? -ne 0 ] && echo $BASH_SOURCE : sstampfold_report error && exit 1 
+    sreport
+    [ $? -ne 0 ] && echo $BASH_SOURCE : sreport error && exit 1 
 
     sprof_fold_report
     [ $? -ne 0 ] && echo $BASH_SOURCE : sprof_fold_report error && exit 1 

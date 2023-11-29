@@ -1,44 +1,44 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-sstampfold_report.sh
-=======================
+sreport.sh
+============
 
-Caution the binary is built and installed standardly 
+Caution the sreport binary is built and installed standardly 
 as well as being built standalone by this script
 during development. 
 
 ::
 
-   ~/opticks/sysrap/tests/sstampfold_report.sh
+   ~/opticks/sysrap/tests/sreport.sh
 
-   JOB=N3 ~/opticks/sysrap/tests/sstampfold_report.sh 
-
-
-   PICK=AB ~/opticks/sysrap/tests/sstampfold_report.sh ana
-
-   PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sstampfold_report.sh ana
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh 
 
 
-NB the sstampfold_report executable can be used without using this
-script by invoking the executable from appropriate directories.
-For example::
+   PICK=AB ~/opticks/sysrap/tests/sreport.sh ana
 
-   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/
+   PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sreport.sh ana
+
+NB the sreport executable can be used without using this script 
+by invoking the executable from appropriate directories. For example::
+
+   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL
 
 Which contains NPFold directories with names p001 n001 etc..
-that match the fold prefixed hardcoded into the sstampfold_report 
+that match the fold prefixed hardcoded into the sreport 
 executable. 
 
-The default output FOLD when no envvar is defined is "../sstampfold_report" 
+The default output FOLD when no envvar is defined is "../sreport" 
 relative to the invoking directory of directory argument, eg::
 
-   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sstampfold_report/
+   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sreport/
+
+HMM: MAYBE CHANGE TO  ../ALL_sreport ../ALL0_sreport etc.. 
 
 EOU
 }
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-name=sstampfold_report
+name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py
 

@@ -1,13 +1,14 @@
 /**
-sstampfold_report.cc : Summarize + Present SEvt/NPFold metadata time stamps 
+sreport.cc : Summarize + Present SEvt/NPFold metadata time stamps 
 =============================================================================
 
-TODO: rename, functionality of sstampfold.h moved into NPFold.h NPX.h 
+* formerly sstampfold_report using sstampfold.h but that functionality 
+  moved into NPFold.h NPX.h 
 
 ::
  
-    ~/opticks/sysrap/tests/sstampfold_report.sh 
-    JOB=N2 ~/opticks/sysrap/tests/sstampfold_report.sh runo
+    ~/opticks/sysrap/tests/sreport.sh 
+    JOB=N2 ~/opticks/sysrap/tests/sreport.sh runo
 
 
 Summarizes SEvt/NPFold metadata time stamps into substamp arrays 
@@ -24,7 +25,7 @@ and saved to allow plotting from python.
 +-----+---------------------------------+-------------------------+
 
 The tables are presented with row and column labels and the 
-summary NPFold is saved to ./sstampfold_report relative to 
+summary NPFold is saved to ./sreport relative to 
 the invoking directory which needs to contain SEvt/NPFold folders 
 corresponding to the path prefix.  
 
@@ -43,10 +44,10 @@ Usage::
     ./p006/NPFold_meta.txt
     ./p008/NPFold_meta.txt
 
-    epsilon:ALL0 blyth$ sstampfold_report 
+    epsilon:ALL0 blyth$ sreport 
     ...
     
-    epsilon:ALL0 blyth$ ls -alst ../sstampfold_report/   ##  ls output NPFold directory 
+    epsilon:ALL0 blyth$ ls -alst ../sreport/   ##  ls output NPFold directory 
     total 8
     8 -rw-r--r--  1 blyth  staff    4 Nov 26 14:12 NPFold_index.txt
     0 drwxr-xr-x  9 blyth  staff  288 Nov 26 13:01 b
@@ -84,72 +85,58 @@ int main(int argc, char** argv)
     bool VERBOSE = getenv("VERBOSE") != nullptr ; 
 
     NPFold* f = NPFold::LoadNoData(dirp); 
+    bool f_empty = f && f->is_empty()  ; 
+
     std::cout 
-        << "sstampfold_report"
+        << "sreport"
         << std::endl
         << "NPFold::LoadNoData(\"" << dirp << "\")" 
         << std::endl
+        << " f " << ( f ? "YES" : "NO " ) 
+        << std::endl
+        << " f_empty " << ( f_empty ? "YES" : "NO " )
+        << std::endl
         ;
+
+    if(f_empty) std::cerr 
+        << "sreport : ABORT : f_empty : EMPTY DIR ? " 
+        << std::endl 
+        << ( dirp ? dirp : "-" )
+        << std::endl 
+        ;
+    if(f_empty) return 1 ; 
 
     const NP* run = f->get("run"); 
     if(run) std::cout 
-        << "[sstampfold_report.run " 
+        << "[sreport.run " 
         << run->sstr() 
         << std::endl 
-        /*
-        << " sstampfold_report.run.descMetaKV "
-        << std::endl 
-        << run->descMetaKV()
-        << std::endl 
-        */
-        << " sstampfold_report.run.descMetaKVS "
+        << " sreport.run.descMetaKVS "
         << std::endl 
         << run->descMetaKVS()
-        << "]sstampfold_report.run " 
+        << "]sreport.run " 
         << std::endl 
         ;   
 
-
     if(VERBOSE) std::cout 
-        << "[sstampfold_report.VERBOSE "
+        << "[sreport.VERBOSE "
         << std::endl
         << f->desc()
         << std::endl
-        << "]sstampfold_report.VERBOSE "
+        << "]sreport.VERBOSE "
         << std::endl
         ; 
 
     NPFold* smry = f->subfold_summary("substamp", "a://p", "b://n"); 
-    /**
-    compare within event timestamps between two sets of SEvt 
-    **/
 
     if(VERBOSE) std::cout 
-        << "[sstampfold_report.smry.desc.VERBOSE" << std::endl 
+        << "[sreport.smry.desc.VERBOSE" << std::endl 
         << smry->desc() 
-        << "]sstampfold_report.smry.desc.VERBOSE" << std::endl 
+        << "]sreport.smry.desc.VERBOSE" << std::endl 
         << std::endl
         ;
 
-    /**
-
-    form ratios of columns of the delta_substamp tables  
-    **/
-
-
     std::cout << smry->compare_subarrays_report<double, int64_t>( "delta_substamp", "a", "b" ) ; 
-
-    /**
-    const NP* boa = smry->compare_subarrays<double, int64_t>( "delta_substamp", "a", "b" ); 
-    std::cout 
-        << "[sstampfold_report.BOA" << std::endl 
-        << ( boa ? boa->descTable<double>(10) : "-" ) << std::endl 
-        << "]sstampfold_report.BOA" << std::endl 
-        ;
-
-    smry->add( "boa", boa ); 
-
-    */
 
 
     smry->save_verbose("$FOLD"); 

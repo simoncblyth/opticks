@@ -133,7 +133,7 @@ set(TEST_SOURCES
 
 
 set(REPORT_SOURCES
-   sstampfold_report.cc
+   sreport.cc
    sprof_fold_report.cc
 )
 

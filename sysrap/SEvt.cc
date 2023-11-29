@@ -1139,11 +1139,11 @@ which is now invoked from U4Recorder instanciation.
 
 HMM: perhaps reldir should be static, above the individual SEvt instance level ? 
 
-
-
 Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
 A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
 
+
+HMM : versioning the reldir is too useful to be done here 
 
 **/
 
@@ -1624,7 +1624,7 @@ S4RandomArray* SEvt::GetRandomArray(int idx)
 
 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
 
-const char* SEvt::DEFAULT_RELDIR = "ALL" ;   
+const char* SEvt::DEFAULT_RELDIR = "ALL${VERSION:-0}" ;   
 const char* SEvt::RELDIR = nullptr ; 
 void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
 const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
@@ -3542,7 +3542,7 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
 {
     const char* defd = DefaultDir() ; 
     const char* base = base_ ? base_ : defd ; 
-    const char* reldir = GetReldir() ; 
+    const char* reldir = GetReldir() ;   // eg "ALL" or "ALL0" or "ALL${VERSION:-0}"
     const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
