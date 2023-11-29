@@ -1734,6 +1734,8 @@ inline std::string NP::descValues() const
 NP::descTable
 ----------------
 
+TODO: column totals 
+
 **/
 
 template<typename T>
@@ -1748,6 +1750,8 @@ inline std::string NP::descTable_(int wid,
     const std::vector<std::string>* row_labels
   ) const 
 {
+    bool with_column_totals = true ; 
+
     std::stringstream ss ; 
     ss << "NP::descTable_ " << sstr() << std::endl ; 
     int ndim = shape.size() ; 
@@ -1785,16 +1789,34 @@ inline std::string NP::descTable_(int wid,
             << ( j < nj -1 ? " " : "\n" ) 
             ;  
 
+        std::vector<T> column_totals(nj,0); 
+
         for(int i=0 ; i < ni ; i++) 
         {
             if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ; 
             for(int j=0 ; j < nj ; j++) 
             {
+                T v = vv[i*nj+j] ;
+                column_totals[j] += v ;  
                 ss
                     << std::setw(cwid) 
-                    << vv[i*nj+j] 
+                    << v 
                     << ( j < nj -1 ? " " : "\n" ) 
                     ; 
+            }
+        }
+
+        if(with_column_totals)
+        {
+            if(with_row_labels) ss << std::setw(rwid) << "TOTAL:" << " " ; 
+            for(int j=0 ; j < nj ; j++) 
+            {
+                T v = column_totals[j] ; 
+                ss 
+                    << std::setw(cwid) 
+                    << v 
+                    << ( j < nj - 1 ? " " : "\n" ) 
+                    ;
             }
         }
 

@@ -11,6 +11,10 @@ Usage::
      ~/opticks/CSGOptiX/cxs_min.sh run
      ~/opticks/CSGOptiX/cxs_min.sh report
 
+     ~/opticks/CSGOptiX/cxs_min.sh grab 
+
+     EVT=p012 ~/opticks/CSGOptiX/cxs_min.sh ana
+
 
     BP=SEvt::SEvt ~/opticks/CSGOptiX/cxs_min.sh
     BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh
@@ -50,6 +54,7 @@ export BINBASE=$BASE/$bin
 
 
 VERSION=${VERSION:-2}   ## see below currently using VERSION TO SELECT OEM 
+export VERSION
 
 export LOGDIR=$BINBASE/ALL$VERSION
 export AFOLD=$BINBASE/ALL$VERSION/$EVT
@@ -103,8 +108,8 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    onp=K1:10 
-    #onp=H1:10  
+    #onp=K1:10 
+    onp=H1:10,M2:3
     export OPTICKS_NUM_PHOTON=${ONP:-$onp}
     export SEvent_MakeGenstep_num_ph=100000
     #src="rectangle"
@@ -146,9 +151,9 @@ esac
 
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
 export OPTICKS_MAX_BOUNCE=31
-export OPTICKS_MAX_PHOTON=1000000
+export OPTICKS_MAX_PHOTON=3000000
 export OPTICKS_INTEGRATION_MODE=1
-export OPTICKS_NUM_EVENT=10
+export OPTICKS_NUM_EVENT=12
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
@@ -197,7 +202,7 @@ if [ "${arg/report}" != "$arg" ]; then
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/rsync.sh $BINBASE
+    source $OPTICKS_HOME/bin/rsync.sh $LOGDIR
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
