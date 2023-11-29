@@ -824,20 +824,26 @@ U::FormSiblingPath
 
 For example::
 
-   sibname : NPFold_stamps_test
-   dirpath : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL
-   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/NPFold_stamps_test  
+   sibname : sreport
+   dirpath : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
+   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport   (now)
+   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sreport   (formerly)
 
 **/
 
 inline std::string U::FormSiblingPath( const char* sibname , const char* dirpath )
 {
-    std::string container = DirName(dirpath) ; 
     std::stringstream ss ; 
+    /*
+    std::string container = DirName(dirpath) ; 
     ss << container << "/" << sibname ; 
+    */    
+    ss << dirpath << "_" << sibname ; 
+
     std::string str = ss.str(); 
     return str ; 
 }
+
 
 inline std::string U::FormExecutableSiblingPath( const char* argv0 , const char* dirpath )
 {

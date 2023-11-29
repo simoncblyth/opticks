@@ -134,7 +134,6 @@ set(TEST_SOURCES
 
 set(REPORT_SOURCES
    sreport.cc
-   sprof_fold_report.cc
 )
 
 

@@ -38,8 +38,6 @@ fi
 
 arg=${1:-$defarg}
 
-#export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
-# assumes source available
 
 bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
@@ -50,11 +48,11 @@ export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-#export VERSION=0   # StandardFullDebug
-#export VERSION=1   # Minimal  
 
-export LOGDIR=$BINBASE/ALL${VERSION:-0}
-export AFOLD=$BINBASE/ALL${VERSION:-0}/$EVT
+VERSION=${VERSION:-2}   ## see below currently using VERSION TO SELECT OEM 
+
+export LOGDIR=$BINBASE/ALL$VERSION
+export AFOLD=$BINBASE/ALL$VERSION/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
 export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
@@ -139,9 +137,13 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then
 fi 
 
 
+case $VERSION in 
+ 0) oem=Minimal ;;
+ 1) oem=HitOnly ;; 
+ 2) oem=HitAndPhoton ;; 
+99) oem=StandardFullDebug ;;
+esac 
 
-#oem=StandardFullDebug
-oem=Minimal
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
 export OPTICKS_MAX_BOUNCE=31
 export OPTICKS_MAX_PHOTON=1000000
@@ -163,10 +165,11 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BINBASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
+vars="GEOM LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+   env | grep OPTICKS 
 fi 
 
 if [ "${arg/fold}" != "$arg" ]; then
@@ -191,9 +194,6 @@ fi
 if [ "${arg/report}" != "$arg" ]; then
    sreport
    [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1 
-
-   sprof_fold_report
-   [ $? -ne 0 ] && echo $BASH_SOURCE sprof_fold_report error && exit 1 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then

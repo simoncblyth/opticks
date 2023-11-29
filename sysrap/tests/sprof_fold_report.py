@@ -3,6 +3,9 @@
 NPFold_profile_test.py
 =======================
 
+TODO : connect this with sreport.cc subprofile output 
+
+
 ::
 
     In [8]: a.profile[:,:,0] - a.profile[:,0,0, np.newaxis]

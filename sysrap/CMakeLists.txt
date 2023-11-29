@@ -177,7 +177,6 @@ set(HEADERS
 
     SCurandState.hh
     sproc.h
-    sprof.h
     smeta.h
 
     SBacktrace.h
@@ -193,7 +192,6 @@ set(HEADERS
     schrono.h
     stimer.h
     sstamp.h 
-    sprof_fold.h 
 
     SBnd.h
     SPrd.h

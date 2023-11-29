@@ -76,71 +76,158 @@ Actions
 #include "NPFold.h"
 
 
+struct sreport
+{
+    static constexpr const char* ASEL = "a://p" ; 
+    static constexpr const char* BSEL = "b://n" ; 
+
+    const char* dirp ; 
+    NPFold* fold ; 
+    bool fold_valid ; 
+
+    bool VERBOSE ;
+    const NP* run ;
+    NPFold* substamp ;   
+    NPFold* subprofile ;   
+    NPFold* smry ; 
+
+    sreport(const char* dirp);  
+    void init(); 
+
+    std::string desc() const ;
+    std::string desc_fold() const ;
+    std::string desc_run() const ;
+    std::string desc_substamp() const ;
+    std::string desc_subprofile() const ;
+
+    void save(const char* dir); 
+};
+
+inline sreport::sreport( const char* dirp_ )
+    :
+    dirp(dirp_),
+    fold(NPFold::LoadNoData(dirp)),
+    fold_valid( fold && !fold->is_empty() ),
+    VERBOSE(getenv("sreport__VERBOSE") != nullptr),
+    run(fold ? fold->get("run") : nullptr),
+    substamp(fold_valid ? fold->subfold_summary("substamp", ASEL, BSEL) : nullptr),
+    subprofile(fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr),
+    smry(new NPFold)
+{
+    smry->add_subfold("substamp", substamp ) ; 
+    smry->add_subfold("subprofile", subprofile ) ; 
+}
+
+
+inline std::string sreport::desc() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc" << std::endl 
+       << desc_fold()
+       << desc_run() 
+       << desc_substamp()
+       << "]sreport.desc" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport::desc_fold() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_fold" << std::endl 
+       << "fold = NPFold::LoadNoData(\"" << dirp << "\")" << std::endl
+       << "fold " << ( fold ? "YES" : "NO " )  << std::endl
+       << "fold_valid " << ( fold_valid ? "YES" : "NO " ) << std::endl
+       ;
+
+    if(VERBOSE) ss
+       << "[sreport.desc_fold.VERBOSE " << std::endl
+       << ( fold ? fold->desc() : "-" ) << std::endl
+       << "]sreport.desc_fold.VERBOSE " << std::endl
+       ; 
+
+    ss << "]sreport.desc_fold" << std::endl 
+       ; 
+
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport::desc_run() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_run" << std::endl 
+       << ( run ? run->sstr() : "-" ) << std::endl 
+       << ".sreport.desc_run.descMetaKVS " << std::endl 
+       << ( run ? run->descMetaKVS() : "-" ) << std::endl
+       << "]sreport.desc_run" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport::desc_substamp() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_substamp" << std::endl 
+       ;
+    if(VERBOSE) ss
+       << "[sreport.desc_substamp.VERBOSE" << std::endl 
+       << ( substamp ? substamp->desc() : "-" )
+       << "]sreport.desc_substamp.VERBOSE" << std::endl 
+       ;
+
+    ss << "[sreport.desc_substamp.compare_subarrays_report" << std::endl 
+       <<  ( substamp ? substamp->compare_subarrays_report<double, int64_t>( "delta_substamp", "a", "b" ) : "-" )
+       << "]sreport.desc_substamp.compare_subarrays_report" << std::endl 
+       << "]sreport.desc_substamp" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+inline std::string sreport::desc_subprofile() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_subprofile" << std::endl 
+       ;
+    if(VERBOSE) ss
+       << "[sreport.desc_subprofile.VERBOSE" << std::endl 
+       << ( subprofile ? subprofile->desc() : "-" )
+       << "]sreport.desc_subprofile.VERBOSE" << std::endl 
+       ;
+
+    /*
+    ss << "[sreport.desc_subprofile.compare_subarrays_report" << std::endl 
+       <<  ( subprofile ? subprofile->compare_subarrays_report<double, int64_t>( "delta_subprofile", "a", "b" ) : "-" )
+       << "]sreport.desc_subprofile.compare_subarrays_report" << std::endl 
+    */
+
+    ss
+       << "]sreport.desc_subprofile" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+inline void sreport::save(const char* dir)
+{
+    smry->save_verbose(dir); 
+}
+
 int main(int argc, char** argv)
 {
     const char* dirp = argc > 1 ? argv[1] : U::PWD() ;   
     if(dirp == nullptr) return 0 ; 
     U::SetEnvDefaultExecutableSiblingPath("FOLD", argv[0], dirp );
 
-    bool VERBOSE = getenv("VERBOSE") != nullptr ; 
-
-    NPFold* f = NPFold::LoadNoData(dirp); 
-    bool f_empty = f && f->is_empty()  ; 
-
-    std::cout 
-        << "sreport"
-        << std::endl
-        << "NPFold::LoadNoData(\"" << dirp << "\")" 
-        << std::endl
-        << " f " << ( f ? "YES" : "NO " ) 
-        << std::endl
-        << " f_empty " << ( f_empty ? "YES" : "NO " )
-        << std::endl
-        ;
-
-    if(f_empty) std::cerr 
-        << "sreport : ABORT : f_empty : EMPTY DIR ? " 
-        << std::endl 
-        << ( dirp ? dirp : "-" )
-        << std::endl 
-        ;
-    if(f_empty) return 1 ; 
-
-    const NP* run = f->get("run"); 
-    if(run) std::cout 
-        << "[sreport.run " 
-        << run->sstr() 
-        << std::endl 
-        << " sreport.run.descMetaKVS "
-        << std::endl 
-        << run->descMetaKVS()
-        << "]sreport.run " 
-        << std::endl 
-        ;   
-
-    if(VERBOSE) std::cout 
-        << "[sreport.VERBOSE "
-        << std::endl
-        << f->desc()
-        << std::endl
-        << "]sreport.VERBOSE "
-        << std::endl
-        ; 
-
-    NPFold* smry = f->subfold_summary("substamp", "a://p", "b://n"); 
-
-    if(VERBOSE) std::cout 
-        << "[sreport.smry.desc.VERBOSE" << std::endl 
-        << smry->desc() 
-        << "]sreport.smry.desc.VERBOSE" << std::endl 
-        << std::endl
-        ;
-
-    std::cout << smry->compare_subarrays_report<double, int64_t>( "delta_substamp", "a", "b" ) ; 
-
-
-    smry->save_verbose("$FOLD"); 
-
+    sreport rep(dirp) ; 
+    std::cout << rep.desc() ; 
+    if(!rep.fold_valid) return 1 ; 
+    rep.save("$FOLD"); 
     return 0 ; 
 }
 
