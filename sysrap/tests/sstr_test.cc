@@ -195,6 +195,43 @@ void test_empty()
 }
 
 
+void test_ParseIntSpecList()
+{
+     const char* spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2" ; 
+     std::vector<int64_t> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000 } ;  
+     std::vector<std::string> elem ; 
+     sstr::Split(  spec, ',' , elem ); 
+     assert( elem.size() == expect.size() ); 
+
+     std::vector<int64_t> value ; 
+     sstr::ParseIntSpecList(value, spec); 
+     assert( value.size() == expect.size() ); 
+
+     int num = value.size(); 
+     int pass = 0 ; 
+
+     for(int i=0 ; i < num ; i++)
+     {
+         const char* s = elem[i].c_str(); 
+         int64_t e = expect[i] ;  
+         int64_t v = value[i] ;  
+         bool match = e == v ; 
+         pass += int(match) ; 
+         std::cout  
+              << std::setw(10) << s
+              << std::setw(10) << e
+              << std::setw(10) << v
+              << ( match ? " " : " ERROR MISMATCH" )
+              << std::endl 
+              ;
+
+     }
+     assert( pass == num ); 
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -205,7 +242,7 @@ int main(int argc, char** argv)
     test_Write(); 
     test_empty(); 
     */
-
+    test_ParseIntSpecList() ; 
 
     return 0 ; 
 } 

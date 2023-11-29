@@ -74,6 +74,15 @@ struct sstr
 
     static bool IsWhitespace(const std::string& s ); 
 
+    static bool isdigit_(char c );
+    static bool isalnum_(char c );
+    static bool isupper_(char c );
+    static bool islower_(char c );
+
+    static int64_t ParseIntSpec( const char* spec, int64_t& scale ); 
+    static void ParseIntSpecList( std::vector<int64_t>& ii, const char* spec, char delim=',' ); 
+
+
 };
 
 inline void sstr::Write(const char* path, const char* txt )
@@ -449,5 +458,72 @@ inline const char* sstr::ParseStringIntInt( const char* triplet, int& y, int& z,
 inline bool sstr::IsWhitespace(const std::string& str )
 {
     return str.find_first_not_of(" \t\n\v\f\r") == std::string::npos ; 
+}
+
+inline bool sstr::isdigit_(char c ) { return std::isdigit(static_cast<unsigned char>(c)) ; }
+inline bool sstr::isalnum_(char c ) { return std::isalnum(static_cast<unsigned char>(c)) ; }
+inline bool sstr::isupper_(char c ) { return std::isupper(static_cast<unsigned char>(c)) ; }
+inline bool sstr::islower_(char c ) { return std::islower(static_cast<unsigned char>(c)) ; }
+
+
+/**
+sstr::ParseIntSpec
+--------------------
+
++------+--------------+-------------+
+| spec | value        | scale       |
+| (in) | (out)        | (in/out)    |
++======+==============+=============+
+|  "1" |  1           |             | 
+| "h1" |  100         |    100      |
+| "H1" |  100000      |    100000   |
+| "K1" |  1000        |    1000     |
+| "K2" |  2000        |    1000     | 
+| "M1" |  1000000     |   1000000   |
+| "M2" |  2000000     |   1000000   |
++------+--------------+-------------+
+
+* "K" or "M" are prefixes to avoid lots of zeros 
+* spec with prefix both uses the scales to multiply the value and sets the scale for subsequent
+* spec without prefix is multiplied by the current scale 
+
+**/
+
+inline int64_t sstr::ParseIntSpec( const char* spec, int64_t& scale ) // static 
+{
+    bool valid = spec != nullptr && strlen(spec) > 0 ; 
+    assert(valid); 
+    bool is_digit = isdigit_(spec[0]);  
+    int64_t value = strtoll( is_digit ? spec : spec + 1 , nullptr, 10 ) ; 
+    if(!is_digit)
+    {
+        switch(spec[0])
+        {
+            case 'h': scale = 100     ; break ;  
+            case 'K': scale = 1000    ; break ;  
+            case 'H': scale = 100000   ; break ;  
+            case 'M': scale = 1000000 ; break ;  
+        }
+    }
+    return value*scale  ; 
+}
+
+/**
+sstr::ParseIntSpecList
+------------------------
+
+Parses delimited string into vector of ints, for example::
+
+    "M1,2,3,4,5,K1,2"   -> 1000000,2000000,3000000,4000000,5000000,1000,2000"
+
+**/
+
+inline void sstr::ParseIntSpecList( std::vector<int64_t>& values, const char* spec, char delim ) // static 
+{
+    std::stringstream ss; 
+    ss.str(spec)  ;
+    std::string elem ;
+    int64_t scale = 1 ; 
+    while (std::getline(ss, elem, delim)) values.push_back( ParseIntSpec( elem.c_str(), scale )) ; 
 }
 
