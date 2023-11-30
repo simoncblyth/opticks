@@ -263,6 +263,7 @@ class Fold(object):
         self.stems = []
         self.abbrev = []
         self.txts = {}
+        self.ff = []
 
         if base is None or self.is_concat:
             log.info("not loading as base None or is_concat")
@@ -308,6 +309,7 @@ class Fold(object):
                 self.txts[name] = a
             elif self.IsFold(base, name):
                 a = Fold(path, symbol=name)
+                self.ff.append(name)
             pass
             setattr(self, stem, a ) 
 

@@ -1,0 +1,42 @@
+OOM_bad_alloc_with_G4CXTest_80M
+==================================
+
+Pushing out the stats::
+
+   export OPTICKS_NUM_PHOTON=H1:10,M2,3,5,7,10,20,40,80,100
+
+
+::
+
+    N[blyth@localhost sysrap]$ ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
+    ...
+
+    2023-11-30 19:01:12.998 INFO  [264823] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 300000
+    2023-11-30 19:01:19.767 INFO  [264823] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 200000
+    2023-11-30 19:01:26.543 INFO  [264823] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 100000
+    2023-11-30 19:01:33.307 INFO  [264823] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 0
+    2023-11-30 19:01:33.911 INFO  [264823] [U4Recorder::MakeMetaArray@690] U4Recorder::DescFakes  
+    U4Recorder::FAKES_SKIP NO 
+    U4Recorder::FAKES      YES
+    FAKES.size             0
+
+    2023-11-30 19:01:50.758 INFO  [264823] [SEvt::save@3779]  dir /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/G4CXTest/ALL2/n017 index 17 instance 1 OPTICKS_SAVE_COMP  genstep,photon,hit
+    2023-11-30 19:02:01.820 INFO  [264823] [U4Recorder::EndOfEventAction_@328]  savedir -
+    2023-11-30 19:02:06.542 INFO  [264823] [SEvent::MakeGenstep@161]  gentype 6 index (1-based) 17 with_index YES num_ph 40000000 num_ph/M 40 dump 0
+    2023-11-30 19:02:22.744 INFO  [264823] [QSim::simulate@366]  eventID 16 dt 1.460622e+01
+    2023-11-30 19:02:33.296 INFO  [264823] [SEvt::save@3779]  dir /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/G4CXTest/ALL2/p017 index 17 instance 0 OPTICKS_SAVE_COMP  genstep,photon,hit
+    2023-11-30 19:02:44.340 INFO  [264823] [G4CXApp::GeneratePrimaries@223] [ SEventConfig::RunningModeLabel SRM_TORCH eventID 17
+    2023-11-30 19:02:44.340 INFO  [264823] [SEvent::MakeGenstep@161]  gentype 6 index (1-based) 18 with_index YES num_ph 80000000 num_ph/M 80 dump 0
+    U4VPrimaryGenerator::GeneratePrimaries ph (80000000, 4, 4, )
+    2023-11-30 19:03:53.366 INFO  [264823] [G4CXApp::GeneratePrimaries@251] ]  eventID 17
+    2023-11-30 19:03:53.400 INFO  [264823] [U4Recorder::BeginOfEventAction_@292]  eventID 17
+    2023-11-30 19:03:53.419 INFO  [264823] [SEvent::MakeGenstep@161]  gentype 6 index (1-based) 18 with_index YES num_ph 80000000 num_ph/M 80 dump 0
+    2023-11-30 19:08:50.585 INFO  [264823] [SEvt::hostside_running_resize_@2190] resizing photon 0 to evt.num_photon 80000000
+    terminate called after throwing an instance of 'std::bad_alloc'
+      what():  std::bad_alloc
+    /home/blyth/opticks/g4cx/tests/G4CXTest_GEOM.sh: line 182: 264823 Aborted                 (core dumped) $bin
+    /home/blyth/opticks/g4cx/tests/G4CXTest_GEOM.sh : run error
+    N[blyth@localhost sysrap]$ 
+
+
+

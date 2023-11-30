@@ -146,10 +146,6 @@ NP* SEvent::MakeCarrierGenstep(int idx){  return MakeGenstep( OpticksGenstep_CAR
 SEvent::MakeGenstep
 ---------------------
 
-For varying photons per event need to get the SEvt index here::
-
-   BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh run
-
 **/
 
 
@@ -160,16 +156,22 @@ NP* SEvent::MakeGenstep( int gentype, int index )
     int num_ph = with_index ? SEventConfig::NumPhoton(index-1) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
     unsigned num_gs = 1 ; 
+    const int M = 1000000 ; 
 
     LOG(info) 
         << " gentype " << gentype
         << " index (1-based) " << index
         << " with_index " << ( with_index ? "YES" : "NO " )
         << " num_ph " << num_ph 
+        << " num_ph/M " << num_ph/M 
         << " dump " << dump
         ; 
 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
+    gs->set_meta<std::string>("creator", "SEvent::MakeGenstep" ); 
+    gs->set_meta<int>("num_ph", num_ph ); 
+    gs->set_meta<int>("index",  index ); 
+
     switch(gentype)
     {
         case  OpticksGenstep_TORCH:         FillGenstep<storch>(   gs, num_ph, dump) ; break ; 

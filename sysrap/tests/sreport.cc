@@ -2,19 +2,16 @@
 sreport.cc : Summarize + Present SEvt/NPFold metadata time stamps 
 =============================================================================
 
-* formerly sstampfold_report using sstampfold.h but that functionality 
-  moved into NPFold.h NPX.h 
-
 ::
  
     ~/opticks/sysrap/tests/sreport.sh 
-    JOB=N2 ~/opticks/sysrap/tests/sreport.sh runo
+    ~/opticks/sysrap/tests/sreport.sh grab
+    ~/opticks/sysrap/tests/sreport.sh ana 
 
 
 Summarizes SEvt/NPFold metadata time stamps into substamp arrays 
 grouped by NPFold path prefix. The summary NPFold is presented textually 
 and saved to allow plotting from python. 
-
 
 +-----+---------------------------------+-------------------------+
 | key | SEvt/NPFold path prefix         |  SEvt type              |
@@ -25,29 +22,17 @@ and saved to allow plotting from python.
 +-----+---------------------------------+-------------------------+
 
 The tables are presented with row and column labels and the 
-summary NPFold is saved to ./sreport relative to 
-the invoking directory which needs to contain SEvt/NPFold folders 
-corresponding to the path prefix.  
-
+summary NPFold is saved to DIR_sreport sibling to invoking DIR 
+which needs to contain SEvt/NPFold folders corresponding to the path prefix.  
 The use of NPFold::LoadNoData means that only SEvt NPFold/NP 
 metadata is loaded. Excluding the array data makes the load 
-very fast and able to handle large numbers of persisted SEvt NPFold. 
+very fast and able to handle large numbers of persisted SEvt NPFold.
 
 Usage::
 
     epsilon:~ blyth$ cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
-
-    epsilon:ALL0 blyth$ find . -name NPFold_meta.txt | head -5
-    ./p009/NPFold_meta.txt
-    ./p007/NPFold_meta.txt
-    ./p001/NPFold_meta.txt
-    ./p006/NPFold_meta.txt
-    ./p008/NPFold_meta.txt
-
     epsilon:ALL0 blyth$ sreport 
-    ...
-    
-    epsilon:ALL0 blyth$ ls -alst ../sreport/   ##  ls output NPFold directory 
+    epsilon:ALL0 blyth$ ls -alst ../ALL0_sreport 
     total 8
     8 -rw-r--r--  1 blyth  staff    4 Nov 26 14:12 NPFold_index.txt
     0 drwxr-xr-x  9 blyth  staff  288 Nov 26 13:01 b
@@ -58,23 +43,16 @@ Usage::
 
 
 
-Actions
----------
+TODO: restructure to allow loading summary report 
+and giving the textual presentation by refactor into 
+create/save/load/desc methods.
 
-1. NPFold::LoadNoData metadata of a single run with run metdata and 
-   multiple SEvt folders often with both //p and //n prefix subfold
-
-2. 
-
-
-
+Can detect whether to create or load based on 
+the name of the invoking or argument directory. 
 
 **/
 
-#include <cstdlib>
-
 #include "NPFold.h"
-
 
 struct sreport
 {

@@ -2187,7 +2187,13 @@ being configured to zero via SEventConfig.
 
 void SEvt::hostside_running_resize_()
 {
-    LOG(info) << "resizing photon " << photon.size() << " to evt.num_photon " << evt->num_photon  ; 
+    LOG(info) 
+        << " photon.size " << photon.size() 
+        << " photon.size/M " << photon.size()/M 
+        << " => "
+        << " evt.num_photon " << evt->num_photon  
+        << " evt.num_photon/M " << evt->num_photon/M  
+        ; 
 
     if(evt->num_photon > 0) 
     { 

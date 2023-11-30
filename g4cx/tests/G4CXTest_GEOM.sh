@@ -3,22 +3,24 @@ usage(){ cat << EOU
 G4CXTest_GEOM.sh : Standalone optical only bi-simulation with G4CXApp::Main and current GEOM 
 ================================================================================================
 
-Standalone optical Geant4 initialization is faster than embedded Geant4 + Opticks but is 
-still 2-3 min to voxelize. 
-
-See ~/opticks/CSGOptiX/cxs_min.sh for initializion in ~2 second. 
+Standalone optical Geant4 initialization is faster than embedded Geant4 + Opticks but still ~120s to voxelize. 
 
 Workstation::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg
-
     LOG=1 BP=C4CustomART::doIt ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg  
 
 Laptop::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh grab 
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
+
+
+Where possible its better to use pure Opticks simulation (no bi-simulation) 
+booting from a persisted geometry during testing due to the ~2s initialization time, eg with::
+
+    ~/opticks/CSGOptiX/cxs_min.sh
 
 
 storch::generate is used for both GPU and CPU generation
@@ -38,8 +40,7 @@ storch::generate is used for both GPU and CPU generation
 EOU
 }
 
-cd $(dirname $BASH_SOURCE)
-SDIR=$(pwd)
+SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 bin=G4CXTest
 script=$SDIR/G4CXTest_GEOM.py 
@@ -49,35 +50,47 @@ source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for findi
 [ -n "$CVD" ] && export CUDA_VISIBLE_DEVICES=$CVD
 
 
-
 ## OPTICKS_INTEGRATION_MODE configures GPU and/or CPU optical simulation
 #oim=1  # GPU only 
 #oim=2  # CPU only 
 oim=3   # GPU and CPU 
 export OPTICKS_INTEGRATION_MODE=${OIM:-$oim} 
 
+
+version=2
+VERSION=${VERSION:-$version}
+export VERSION    ## used in SEvt output directory name ALL$VERSION
+
+
+TMP=${TMP:-/tmp/$USER/opticks}
+export BASE=$TMP/GEOM/$GEOM
+export LOGBASE=$BASE/$bin/ALL$VERSION
+export AFOLD=$LOGBASE/p001 
+export BFOLD=$LOGBASE/n001 
+#export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
+
+mkdir -p $LOGBASE
+cd $LOGBASE            ## logfile written in invoking directory 
+
+
+#export G4CXOpticks__SaveGeometry_DIR=$BASE  ## optionally save geom into BASE for debug 
+export G4CXApp__SensDet=PMTSDMgr             ## used for post GDML SensDet hookup
+
+
+case $VERSION in 
+ 0) oem=Minimal ;;
+ 1) oem=HitOnly ;; 
+ 2) oem=HitAndPhoton ;; 
+99) oem=StandardFullDebug ;;
+esac 
+
 ## OPTICKS_EVENT_MODE configures the SEvt components to gather and save
-#oem=Minimal
-#oem=HitOnly      ## CURRENTLY B SIDE CANNOT JUST GET HITS, IT NEEDS PHOTONS TO SELECT FROM 
-oem=HitAndPhoton
-#oem=StandardFullDebug
+## for now are tieing that with VERSION 
+
 export OPTICKS_EVENT_MODE=${OEM:-$oem}   
 export OPTICKS_MAX_BOUNCE=31
-export OPTICKS_NUM_EVENT=3
-
-
-#num=1000
-#num=5000
-#num=100000
-num=1000000
-NUM=${NUM:-$num}
-
-export OPTICKS_MAX_PHOTON=1000000
-
-if [ $NUM -gt $OPTICKS_MAX_PHOTON ]; then
-   echo $BASH_SOURCE : ERROR NUM $NUM OPTICKS_MAX_PHOTON $OPTICKS_MAX_PHOTON && exit 1 
-fi
-
+export OPTICKS_MAX_PHOTON=M100  ## sstr::ParseScale h/K/H/M prefixes 
+export OPTICKS_NUM_EVENT=19     ## MUST MATCH num elem in OPTICKS_NUM_PHOTON below
 
 
 #srm=SRM_DEFAULT
@@ -87,10 +100,19 @@ srm=SRM_TORCH
 #srm=SRM_GUN
 export OPTICKS_RUNNING_MODE=$srm
 
+
 echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
-    export SEvent_MakeGenstep_num_ph=$NUM
+    #export SEvent_MakeGenstep_num_ph=$NUM   ## trumped by OPTICKS_NUM_PHOTON
+
+    #onp=K1:10 
+    onp=H1:10,M2,3,5,7,10,20,40,80,100
+    #onp=M3,10   
+    ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
+
+    export OPTICKS_NUM_PHOTON=${ONP:-$onp}
+
     #src="rectangle"
     #src="disc"
     src="sphere"
@@ -123,23 +145,6 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then 
     echo -n 
 fi 
-
-
-TMP=${TMP:-/tmp/$USER/opticks}
-export BASE=$TMP/GEOM/$GEOM
-export VERSION=0                       # used in SEvt output directory 
-export LOGBASE=$BASE/$bin/ALL$VERSION
-export AFOLD=$LOGBASE/p001 
-export BFOLD=$LOGBASE/n001 
-#export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
-
-mkdir -p $LOGBASE
-cd $LOGBASE            ## logfile written in invoking directory 
-
-
-#export G4CXOpticks__SaveGeometry_DIR=$BASE  ## optionally save geom into BASE for debug 
-export G4CXApp__SensDet=PMTSDMgr             ## used for post GDML SensDet hookup
-
 
 logging()
 {
@@ -181,8 +186,6 @@ if [ "${arg/report}" != "$arg" ]; then
     sreport
     [ $? -ne 0 ] && echo $BASH_SOURCE : sreport error && exit 1 
 fi 
-
-
 
 if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $bin

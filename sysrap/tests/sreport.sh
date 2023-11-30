@@ -1,30 +1,36 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-sreport.sh
-============
+sreport.sh : summarize SEvt metadata into eg ALL0_sreport FOLD 
+================================================================
 
-NB the sreport binary is built and installed standardly 
-as well as being built standalone by this script during development.::
+The sreport binary is built and installed standardly as well as 
+being built standalone by this script during development.::
 
    ~/opticks/sysrap/tests/sreport.sh
 
-   JOB=N3 ~/opticks/sysrap/tests/sreport.sh 
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh        ## summarize SEvt folders
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab   ## from remove to local 
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana    ## local plotting 
 
-   PICK=AB ~/opticks/sysrap/tests/sreport.sh ana
+   substamp=1 ~/opticks/sysrap/tests/sreport.sh ana 
+   subprofile=1 ~/opticks/sysrap/tests/sreport.sh ana 
 
-   PICK=A TLIM=-5,500 ~/opticks/sysrap/tests/sreport.sh ana
 
-NB the sreport executable can be used without using this script 
-by invoking the executable from appropriate directories. For example::
+Running "run" the sreport binary loads the SEvt subfolders with names 
+like p001 n001 beneath the invoking directory in NoData mode which 
+just loads the metadata. The event metadata is summarized and  
+saved into the FOLD directory. 
 
+The sreport executable can be used without this script by invoking 
+it from appropriate directories, examples are shown below.
+
+Invoking Directory 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
+Summary "FOLD" Directory 
+   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport
 
-Which contains NPFold directories with names p001 n001 etc..
-that match the fold prefixed hardcoded into the sreport 
-executable. 
-
-The default output FOLD when no envvar is defined is "../ALL0_sreport" 
-relative to the invoking directory or directory argument. 
+This means that can "grab" the summary FOLD back to laptop for 
+plotting without needing to transfer any large files. 
 
 EOU
 }
@@ -54,27 +60,22 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-
-job=N3
+job=N4
 JOB=${JOB:-$job}
 
-dir=unknown 
+DIR=unknown 
 case $JOB in 
-  L1) dir=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
-  N1) dir=/data/blyth/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
-  N2) dir=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
-  N3) dir=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
+  L1) DIR=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
+  N1) DIR=/data/$USER/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
+  N2) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
+  N3) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
+  N4) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
 esac
 
-cd $dir
-[ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY job $job dir $dir && exit 0 
-
-
-export FOLD=${PWD}_${name}   ## set FOLD used by binary, for ana  (formerly $PWD/../$name)
+export FOLD=${DIR}_${name}   ## FOLD is output directory used by binary, export it for python 
 export MODE=2                ## 2:matplotlib plotting 
 
-
-vars="0 BASH_SOURCE SDIR FOLD PWD name bin script"
+vars="0 BASH_SOURCE SDIR JOB DIR FOLD MODE name bin script"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
@@ -85,16 +86,26 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
 
-
 if [ "${arg/dbg}" != "$arg" ]; then 
+    cd $DIR
+    [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR && exit 0 
+
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
 fi
 
 if [ "${arg/run}" != "$arg" ]; then 
-    echo run $bin
+    cd $DIR
+    [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR && exit 0 
+
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
+fi
+
+if [ "${arg/grab}" != "$arg" ]; then 
+    echo $BASH_SOURCE : grab FOLD $FOLD 
+    source $OPTICKS_HOME/bin/rsync.sh $FOLD
+    [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 4
 fi
 
 if [ "${arg/noa}" != "$arg" ]; then 

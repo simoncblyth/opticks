@@ -217,6 +217,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sctx    current_ctx = {};  
 
 
+    static constexpr const int M = 1000000 ; 
     static constexpr const unsigned UNDEF = ~0u ; 
     static bool IsDefined(unsigned val); 
 

@@ -5,25 +5,24 @@ cxs_min.sh : minimal executable and script for shakedown
 
 Usage::
 
+    ~/opticks/CSGOptiX/cxs_min.sh
+    ~/opticks/CSGOptiX/cxs_min.sh info
+    ~/opticks/CSGOptiX/cxs_min.sh run       ## create SEvt 
+    ~/opticks/CSGOptiX/cxs_min.sh report    ## summarize SEvt metadata   
 
-     ~/opticks/CSGOptiX/cxs_min.sh
-     ~/opticks/CSGOptiX/cxs_min.sh info
-     ~/opticks/CSGOptiX/cxs_min.sh run
-     ~/opticks/CSGOptiX/cxs_min.sh report
+Debug::
 
-     ~/opticks/CSGOptiX/cxs_min.sh grab 
-
-     EVT=p012 ~/opticks/CSGOptiX/cxs_min.sh ana
-
-
-    BP=SEvt::SEvt ~/opticks/CSGOptiX/cxs_min.sh
+    BP=SEvt::SEvt               ~/opticks/CSGOptiX/cxs_min.sh
     BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh
 
+Analysis/Plotting::
+
+    ~/opticks/CSGOptiX/cxs_min.sh grab 
+    EVT=p012 ~/opticks/CSGOptiX/cxs_min.sh ana
+
     MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
-
-    EVT=p005 ~/opticks/CSGOptiX/cxs_min.sh ana 
-    EVT=p010 ~/opticks/CSGOptiX/cxs_min.sh ana
-
+    EVT=p005     ~/opticks/CSGOptiX/cxs_min.sh ana 
+    EVT=p010     ~/opticks/CSGOptiX/cxs_min.sh ana
 
 EOU
 }

@@ -2171,8 +2171,6 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         }
         t->labels = new std::vector<std::string>(comkeys.begin(), comkeys.end())  ; 
 
-        //NP* l = NPX::MakeCharArray(comkeys); 
-        //l->names = comkeys ; 
 
         NP* dt = NP::DeltaColumn<int64_t>(t); 
         dt->names = t->names ; 
@@ -2184,7 +2182,6 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         out->add(keyname, t );
         out->add(U::FormName("delta_",keyname,nullptr), dt );
         out->add("subcount", count ); 
-
     }
     if(dump) std::cout 
         << "]NPFold::substamp" 
@@ -2216,12 +2213,11 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
     std::vector<std::string> subpaths ; 
     find_subfold_with_prefix(subs, &subpaths,  prefix );  
     assert( subs.size() == subpaths.size() ); 
-
     int num_sub = int(subs.size()) ; 
     int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
     bool skip = num_sub == 0 || num_prof0 == 0 ; 
 
-    bool dump = false ; 
+    bool dump = getenv("NPFold__subprofile_DUMP") != nullptr ; 
 
     if(dump) std::cout 
         << "[NPFold::subprofile"
@@ -2293,13 +2289,10 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
             }
             t->names.push_back(subpath); 
         }
-
-        NP* l = NPX::MakeCharArray(comkeys); 
-        l->names = comkeys ; 
+        t->labels = new std::vector<std::string>(comkeys.begin(), comkeys.end())  ; 
 
         out = new NPFold ; 
         out->add(keyname, t );
-        out->add("labels", l ) ; 
     }
     std::cout 
         << "]NPFold::subprofile" 

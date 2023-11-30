@@ -96,7 +96,12 @@ int SEventConfig::_GetNumPhoton(int idx)
     int nevt0 = NumEvent(); 
     int nevt1 = _NumPhotonPerEvent->size() ;
     bool match = nevt0 == nevt1 ;  
-    LOG_IF(fatal, !match) << " nevt0 " << nevt0 << " nevt1 " << nevt1 ; 
+    LOG_IF(fatal, !match) 
+        << " NumEvent MISMATCH BETWEEN " 
+        << std::endl 
+        << " nevt0:NumEvent()              " << nevt0 << "( from " << kNumEvent  << ":" << ( getenv(kNumEvent) ? getenv(kNumEvent) : "-" ) << ") "
+        << " nevt1:_NumPhotonPerEvent.size " << nevt1 << "( from " << kNumPhoton << ":" << ( getenv(kNumPhoton) ? getenv(kNumPhoton) : "-" ) << ") "
+        ; 
     assert( match ); 
     if(idx < 0 ) idx += nevt0 ; 
     if(idx >= nevt0) return 0 ; 
@@ -306,20 +311,20 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
     if(IsRGModeSimulate() && IsMinimal())
     {
         LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
-        gather_mask = SCOMP_HIT  ; 
-        save_mask = 0 ;  
+        gather_mask = SCOMP_HIT | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_GENSTEP  ;  
     }
     else if(IsRGModeSimulate() && IsHitOnly())
     {
         LOG(LEVEL) << "IsRGModeSimulate() && IsHitOnly()" ; 
-        gather_mask = SCOMP_HIT  ; 
-        save_mask = SCOMP_HIT ;   
+        gather_mask = SCOMP_HIT | SCOMP_GENSTEP ; 
+        save_mask = SCOMP_HIT | SCOMP_GENSTEP ;   
     }
     else if(IsRGModeSimulate() && IsHitAndPhoton())
     {
         LOG(LEVEL) << "IsRGModeSimulate() && IsHitAndPhoton()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_PHOTON ; 
-        save_mask = SCOMP_HIT | SCOMP_PHOTON ;   
+        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP ;   
     }
     else if(IsRGModeSimulate())
     {
