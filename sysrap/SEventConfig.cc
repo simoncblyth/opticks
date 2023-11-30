@@ -34,7 +34,6 @@ const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for Mi
 int         SEventConfig::_G4StateRerunDefault = -1 ;
 const char* SEventConfig::_MaxBounceNotes = "MaxBounceLimit:31, MaxRecordLimit:32 (see sseq.h)" ; 
  
-int SEventConfig::_MaxGenstepDefault = 1000*K ; 
 int SEventConfig::_MaxBounceDefault = 9 ; 
 
 int SEventConfig::_MaxRecordDefault = 0 ; 
@@ -53,11 +52,13 @@ const char* SEventConfig::_RGModeDefault = "simulate" ;
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
 #ifdef __APPLE__
-int  SEventConfig::_MaxPhotonDefault = 1*M ; 
-int  SEventConfig::_MaxSimtraceDefault = 1*M ; 
+const char* SEventConfig::_MaxGenstepDefault = "M1" ; 
+const char* SEventConfig::_MaxPhotonDefault = "M1" ; 
+const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
 #else
-int  SEventConfig::_MaxPhotonDefault = 3*M ; 
-int  SEventConfig::_MaxSimtraceDefault = 3*M ; 
+const char* SEventConfig::_MaxGenstepDefault = "M3" ; 
+const char* SEventConfig::_MaxPhotonDefault = "M3" ; 
+const char* SEventConfig::_MaxSimtraceDefault = "M3" ; 
 #endif
 
 
@@ -107,10 +108,10 @@ int SEventConfig::_GetNumPhoton(int idx)
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
+int SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt(kMaxGenstep,  _MaxGenstepDefault ) ; 
+int SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt(kMaxPhoton,   _MaxPhotonDefault ) ; 
+int SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt(kMaxSimtrace, _MaxSimtraceDefault ) ; 
 
-int SEventConfig::_MaxGenstep   = ssys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
-int SEventConfig::_MaxPhoton    = ssys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
-int SEventConfig::_MaxSimtrace  = ssys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
 int SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ; 
 int SEventConfig::_MaxRecord    = ssys::getenvint(kMaxRecord, _MaxRecordDefault ) ;    
 int SEventConfig::_MaxRec       = ssys::getenvint(kMaxRec, _MaxRecDefault ) ;   
@@ -453,13 +454,19 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << kMaxGenstep 
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() 
+       << std::setw(20) << " MaxGenstep/M " << " : " << MaxGenstep()/M
        << std::endl 
        << std::setw(25) << kMaxPhoton 
        << std::setw(20) << " MaxPhoton " << " : " << MaxPhoton() 
+       << std::setw(20) << " MaxPhoton/M " << " : " << MaxPhoton()/M 
        << std::endl 
        << std::setw(25) << kMaxSimtrace 
        << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() 
+       << std::setw(20) << " MaxSimtrace/M " << " : " << MaxSimtrace()/M 
+       << std::endl 
+       << std::setw(25) << ""
        << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() 
+       << std::setw(20) << " MaxCurandState/M " << " : " << MaxCurandState()/M
        << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() 

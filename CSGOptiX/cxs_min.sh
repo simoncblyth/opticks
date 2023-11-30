@@ -109,9 +109,13 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
     #onp=K1:10 
-    onp=H1:10,M2:3
+    onp=H1:10,M2,3,5,7,10,20,40,80,100
+    #onp=M3,10   
+    ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
+
     export OPTICKS_NUM_PHOTON=${ONP:-$onp}
-    export SEvent_MakeGenstep_num_ph=100000
+
+    #export SEvent_MakeGenstep_num_ph=100000  NOT USED WHEN USING OPTICKS_NUM_PHOTON
     #src="rectangle"
     #src="disc"
     src="sphere"
@@ -151,9 +155,11 @@ esac
 
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
 export OPTICKS_MAX_BOUNCE=31
-export OPTICKS_MAX_PHOTON=3000000
+
+
+export OPTICKS_MAX_PHOTON=M100
 export OPTICKS_INTEGRATION_MODE=1
-export OPTICKS_NUM_EVENT=12
+export OPTICKS_NUM_EVENT=19
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}

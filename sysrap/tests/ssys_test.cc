@@ -353,7 +353,30 @@ void test_PWD()
 }
 
 
+void test_getenv_ParseInt()
+{
+    std::vector<std::string> _fallback = { "1", "10", "20", "M1" , "K1", "M2", "M3" } ; 
 
+    int num_fallback = _fallback.size(); 
+    const int K = 1000 ; 
+    const int M = 1000000 ; 
+    const char* ekey = "HELLO" ; 
+    std::cout << "test_getenv_ParseInt ekey " << ekey << std::endl ; 
+
+    for(int i=0 ; i < num_fallback ; i++)
+    {
+        const char* fallback = _fallback[i].c_str(); 
+        int num = ssys::getenv_ParseInt(ekey, fallback ); 
+
+        std::cout 
+            << std::setw(20) << fallback 
+            << " num:   " << std::setw(10) << std::scientific << num 
+            << " num/M: " << std::setw(10) << num/M  
+            << " num/K: " << std::setw(10) << num/K 
+            << std::endl
+            ; 
+    }
+}
 
 
 
@@ -391,10 +414,12 @@ int main(int argc, char** argv)
     test_fill_evec_string(); 
     test_Dump(); 
     test_Desc(); 
-    */
     test_PWD(); 
-
-
+    */
+    test_getenv_ParseInt(); 
  
     return 0 ; 
 }
+
+// ~/opticks/sysrap/tests/ssys_test.sh
+

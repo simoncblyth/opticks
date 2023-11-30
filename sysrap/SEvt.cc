@@ -2067,7 +2067,9 @@ void SEvt::setNumPhoton(unsigned num_photon)
 {
     //LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ; 
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
-    LOG_IF(fatal, !num_photon_allowed) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
+    const int M = 1000000 ; 
+
+    LOG_IF(fatal, !num_photon_allowed) << " num_photon/M " << num_photon/M << " evt.max_photon/M " << evt->max_photon/M ;
     assert( num_photon_allowed );
 
     evt->num_photon = num_photon ; 

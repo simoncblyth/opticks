@@ -37,7 +37,9 @@ struct ssys
     static const char* getenvvar(const char* ekey, const char* fallback, char q, char r ); 
 
 
+    static int getenv_ParseInt(const char* ekey, const char* fallback);  
     static int getenvint(const char* ekey, int fallback);  
+
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
     static unsigned getenvunsigned_fallback_max(const char* ekey );  
 
@@ -206,6 +208,13 @@ inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char 
 }
 
 
+inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
+{
+    const char* spec = getenvvar(ekey, fallback); 
+    bool valid = spec != nullptr && strlen(spec) > 0 ;  
+    if(!valid) return -1 ;
+    return sstr::ParseInt<int>(spec) ;  
+}
 
 
 inline int ssys::getenvint(const char* ekey, int fallback)

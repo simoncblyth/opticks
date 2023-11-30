@@ -5,7 +5,6 @@ sreport.py
 
 TODO: incorporate sprof_fold_report.py into this
 
-
 """
 
 import os, numpy as np
@@ -32,7 +31,7 @@ palette = ["red","green", "blue",
            ]
 
 
-def make_title(meta, method):
+def make_title(meta, method, symbol):
     base = meta.base.replace("/data/blyth/opticks/GEOM/", "")
     smry = meta.smry("GPUMeta,prefix,creator")
     sfmt = meta.smry("stampFmt") 
@@ -40,69 +39,81 @@ def make_title(meta, method):
     title = " ".join([titl,base,smry]) 
     return title
 
-class Stamps(object):
-    def __init__(self, f, symbol="A"):
+smry__ = lambda _:NPMeta.Summarize(_)
+smry_ = lambda _:list(map(smry__, _))
 
-        s = f.substamp
+class Substamp(object):
+    def __init__(self, f, symbol="fold.substamp.a"):
+
+        substamp = f.substamp
         meta = f.substamp_meta
         names = f.substamp_names
+        delta = f.delta_substamp 
+        labels = f.substamp_labels
+        etime = f.delta_substamp[:,-1]  
 
+        _icol = np.where(f.subcount_labels == 'photon')[0] 
+        icol = _icol[0] if len(_icol) == 1 else -1 
+        subcount_photon = f.subcount[:,icol] if icol > -1 else None
 
-        assert len(s.shape) == 2 
+        labels_s = smry_(labels)
+        hdr = (" " * 8  + " %4s " * len(labels_s) ) % tuple(labels_s) 
 
-        title = make_title(meta, method="Stamps")
+        title = make_title(meta, method="Substamp", symbol=symbol)
 
-        #e_sel = slice(1,None)              # skip 1st event, as initialization messes timings
-        #t_sel = slice(2,None)              # skip first two stamps (init, BeginOfRun) 
-        ## TODO: arrange stamps to avoid these 
-        e_sel = slice(None)
-        t_sel = slice(None)
-        
+        assert len(substamp.shape) == 2 
+        assert delta.shape == substamp.shape 
 
-        e_rel = names[e_sel]      # rel path of the evt folds, eg shape (9,)
-        t_lab = labels_(f.labels)[t_sel]
-
-        smry_ = lambda _:NPMeta.Summarize(_.decode("utf-8"))
-        s_lab = list(map(smry_, t_lab))
-
-        hdr = (" " * 8  + " %4s " * len(s_lab) ) % tuple(s_lab) 
-
-
-        ss =  s[e_sel,t_sel]        # selected timestamps, eg shape (9,13)
-
-        dss = ss - ss[:,0,np.newaxis]      # subtract first column stamp from all stamps row by row
-                                           # hence giving begin of event relative time delta in microseconds
-
-        assert dss.shape == ss.shape 
-
-        assert len(e_rel) == dss.shape[0]  # event dimension 
-        assert len(t_lab) == dss.shape[1]  # time stamp dimension 
-
-        self.ss  = ss 
-        self.dss = dss 
-        self.s_lab = s_lab
+        self.substamp = substamp
+        self.delta = delta 
+        self.labels_s = labels_s
         self.hdr = hdr
         self.title = title
         self.symbol = symbol
+
+        self.etime = etime 
+        self.subcount_photon = subcount_photon
  
     def __repr__(self):
-        return "\n".join([self.title, self.hdr, "%s.dss" % self.symbol, repr(self.dss)])
+        return "\n".join([self.title, self.hdr, self.symbol, repr(self.delta)])
 
-    def plot(self):
-        st = self
+    def plot_etime_vs_photon(self):
+        ss = self
+        ax = None
+        etime = self.etime
+        subcount_photon = self.subcount_photon
+
+        if etime is None:
+            log.error("plot_etime_vs_photon.ABORT etime None")
+            return 
+        pass
+        if subcount_photon is None:
+            log.error("plot_etime_vs_photon.ABORT subcount_photon None")
+            return 
+        pass
+        if MODE == 2:
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=ss.title, equal=False)
+            ax = axs[0]
+            ax.scatter( subcount_photon, etime, label="etime_vs_photon")
+            ax.legend()
+            fig.show()
+        pass  
+        return ax
+
+
+    def plot_delta(self):
+        ss = self
         ax = None
         if MODE == 2:
-            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=st.title, equal=False)
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=ss.title, equal=False)
             ax = axs[0]
-
             if TLIM[1] > TLIM[0]:
                 ax.set_xlim(*TLIM)
             pass
-
-            dss = st.dss
+            dss = ss.delta
             for i in range(len(dss)):
                 for j in range(len(dss[i])):
-                    label = None if i > 0 else st.s_lab[j]
+                    label = None if i > 0 else ss.labels_s[j]
                     color = palette[j % len(palette)]
                     ax.vlines( dss[i,j], i-0.5, i+0.5, label=label , colors=[color] ) 
                 pass
@@ -114,21 +125,23 @@ class Stamps(object):
 
 
 if __name__ == '__main__':
-    ab = Fold.Load(symbol="ab")
-    print(repr(ab))
-    print("MODE:%d" % MODE) 
+    fold = Fold.Load(symbol="fold")
 
-    if PICK in ["AB", "BA", "A", "B"]:
-        for symbol in PICK:
-            sym = symbol.lower()  
-            f = getattr(ab, sym, None)
+    print(repr(fold))
+    print("MODE:%d PICK:%s " % (MODE, PICK) ) 
+
+    if hasattr(fold, "substamp"):
+        for e in PICK:
+            f = getattr(fold.substamp, e.lower(), None)
+            symbol = "fold.substamp.%s" % e.lower() 
             if f is None: 
-                print("sym:%s MISSING " % sym)
+                print("%s : MISSING " % symbol)
                 continue 
             pass 
-            st = Stamps(f, symbol=symbol)
-            print(repr(st))
-            ax = st.plot()
+            ss = Substamp(f, symbol=symbol )
+            print(repr(ss))
+            ax = ss.plot_delta()
+            ax = ss.plot_etime_vs_photon()
         pass
     pass
 

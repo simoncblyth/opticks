@@ -3,16 +3,12 @@ usage(){ cat << EOU
 sreport.sh
 ============
 
-Caution the sreport binary is built and installed standardly 
-as well as being built standalone by this script
-during development. 
-
-::
+NB the sreport binary is built and installed standardly 
+as well as being built standalone by this script during development.::
 
    ~/opticks/sysrap/tests/sreport.sh
 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh 
-
 
    PICK=AB ~/opticks/sysrap/tests/sreport.sh ana
 
@@ -21,18 +17,14 @@ during development.
 NB the sreport executable can be used without using this script 
 by invoking the executable from appropriate directories. For example::
 
-   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL
+   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
 
 Which contains NPFold directories with names p001 n001 etc..
 that match the fold prefixed hardcoded into the sreport 
 executable. 
 
-The default output FOLD when no envvar is defined is "../sreport" 
-relative to the invoking directory of directory argument, eg::
-
-   /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sreport/
-
-HMM: MAYBE CHANGE TO  ../ALL_sreport ../ALL0_sreport etc.. 
+The default output FOLD when no envvar is defined is "../ALL0_sreport" 
+relative to the invoking directory or directory argument. 
 
 EOU
 }
@@ -63,7 +55,7 @@ fi
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 
-job=N1
+job=N3
 JOB=${JOB:-$job}
 
 dir=unknown 
@@ -71,16 +63,15 @@ case $JOB in
   L1) dir=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
   N1) dir=/data/blyth/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
   N2) dir=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
-  N3) dir=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL ;;
+  N3) dir=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
 esac
 
 cd $dir
 [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY job $job dir $dir && exit 0 
 
 
-export FOLD=$PWD/../$name   ## set FOLD used by binary, for ana 
-export MODE=2               ## 2:matplotlib plotting 
-
+export FOLD=${PWD}_${name}   ## set FOLD used by binary, for ana  (formerly $PWD/../$name)
+export MODE=2                ## 2:matplotlib plotting 
 
 
 vars="0 BASH_SOURCE SDIR FOLD PWD name bin script"

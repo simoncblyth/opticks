@@ -85,8 +85,12 @@ struct sstr
     static bool isupper_(char c );
     static bool islower_(char c );
 
+
     template<typename T>
     static T ParseIntSpec( const char* spec, T& scale ); 
+
+    template<typename T>
+    static T ParseInt( const char* spec ); 
 
     template<typename T>
     static void ParseIntSpecList( std::vector<T>& ii, const char* spec, char delim=',' ); 
@@ -574,6 +578,15 @@ inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static
     ParseScale<T>(spec, scale); 
     return value*scale  ; 
 }
+
+template<typename T>
+inline T sstr::ParseInt( const char* spec) // static 
+{
+    T scale(1) ; 
+    return ParseIntSpec<T>( spec, scale ); 
+}
+
+
 
 template<typename T>
 inline void sstr::ParseScale( const char* spec, T& scale )
