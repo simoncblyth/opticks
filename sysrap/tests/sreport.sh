@@ -3,8 +3,20 @@ usage(){ cat << EOU
 sreport.sh : summarize SEvt metadata into eg ALL0_sreport FOLD 
 ================================================================
 
-The sreport binary is built and installed standardly as well as 
-being built standalone by this script during development.::
+The output NPFold and summary NPFold from several scripts are managed 
+by this sreport.sh script. 
+
++-----------------------------------------+---------------+
+|  bash script that creates SEvt NPFold   |   JOB tags    |      
++=========================================+===============+
+| ~/opticks/CSGOptiX/cxs_min.sh           |  N3           |
++-----------------------------------------+---------------+
+| ~/opticks/g4cx/tests/G4CXTest_GEOM.sh   |  N2,N4        |
++-----------------------------------------+---------------+
+| ~/j/okjob.sh + ~/j/jok.bash             |  L1,N1        |
++-----------------------------------------+---------------+
+
+::
 
    ~/opticks/sysrap/tests/sreport.sh
 
@@ -12,25 +24,42 @@ being built standalone by this script during development.::
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab   ## from remove to local 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana    ## local plotting 
 
-   substamp=1 ~/opticks/sysrap/tests/sreport.sh ana 
-   subprofile=1 ~/opticks/sysrap/tests/sreport.sh ana 
+
+**JOB**
+   selects the output and summary folders of various scripts
+
+**build**
+   standalone build of the sreport binary, CAUTION the binary is also built 
+   and installed by the standard "om" build 
+
+**run**  
+   sreport loads the SEvt subfolders "p001" "n001" etc beneath 
+   the invoking directory in NoData(metadata only) mode and 
+   writes a summary NPFold into FOLD directory 
+   
+   NB DEV=1 uses the standalone binary built by this script, and 
+   not defining DEV uses that standardly intalled sreport binary 
+
+**grab**
+   grab command just rsyncs the summary FOLD back to laptop for 
+   metadata plotting without needing to transfer the potentially 
+   large SEvt folders. 
+
+**ana**
+   python plotting using ~/opticks/sysrap/tests/sreport.py::
+
+       substamp=1 ~/opticks/sysrap/tests/sreport.sh ana 
+       subprofile=1 ~/opticks/sysrap/tests/sreport.sh ana 
 
 
-Running "run" the sreport binary loads the SEvt subfolders with names 
-like p001 n001 beneath the invoking directory in NoData mode which 
-just loads the metadata. The event metadata is summarized and  
-saved into the FOLD directory. 
 
-The sreport executable can be used without this script by invoking 
-it from appropriate directories, examples are shown below.
+Note that *sreport* executable can be used without this script 
+by invoking it from appropriate directories, examples are shown below.
 
 Invoking Directory 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
 Summary "FOLD" Directory 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport
-
-This means that can "grab" the summary FOLD back to laptop for 
-plotting without needing to transfer any large files. 
 
 EOU
 }
@@ -60,7 +89,7 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N4
+job=N3
 JOB=${JOB:-$job}
 
 DIR=unknown 

@@ -48,25 +48,65 @@ def make_title(meta, method, symbol):
 smry__ = lambda _:NPMeta.Summarize(_)
 smry_ = lambda _:list(map(smry__, _))
 
+
+class Subprofile(object):
+    """
+    Why VM is so large with CUDA
+
+    * https://forums.developer.nvidia.com/t/high-virtual-memory-consumption-on-linux-for-cuda-programs-is-it-possible-to-avoid-it/67706/4
+
+    """
+    FONTSIZE = 20 
+    XLABEL = "Time from 1st sprof.h stamp (seconds)"
+    YLABEL = "VM and/or RSS sprof.h memory (GB) "
+
+    @classmethod
+    def Time_VM_RS(cls, f):
+        subprofile = f.subprofile
+        assert len(subprofile.shape) == 3
+        t0 = subprofile[0,0,0] 
+        sp = subprofile.reshape(-1,3)   
+        tp = (sp[:,0] - t0)/1e6   ## seconds from start
+        vm = sp[:,1]/1e6          ## GB
+        rs = sp[:,2]/1e6          ## GB
+        return tp, vm, rs 
+
+    @classmethod
+    def Title(cls, f):
+        meta = f.subprofile_meta
+        base = meta.base.replace("/data/blyth/opticks/GEOM/", "")
+        smry = meta.smry("GPUMeta,prefix,creator")
+        sfmt = meta.smry("stampFmt") 
+        title = "\n".join([base,smry,sfmt]) 
+        return title
+
 class Subprofile_ALL(object):
     def __init__(self, base, symbol="fold.subprofile"):
-        title = "Subprofile_ALL"
-        fontsize = 20 
+        title = ["Subprofile_ALL "]  
+        for sym in base.ff:
+            f = getattr(base, sym)
+            title.append(Subprofile.Title(f))
+        pass
+        label = "\n".join(title)
+
+        fontsize = Subprofile.FONTSIZE
         if MODE == 2:
-            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
             ax = axs[0]
             for sym in base.ff:
                 f = getattr(base, sym)
-                sp = f.subprofile.reshape(-1,3)
-                time = sp[:,0]
-                vm = sp[:,1]
-                rs = sp[:,2]
-                ax.scatter( time, vm, label="%s : VM vs time" % sym.upper())
-                ax.plot( time, vm )
-                ax.scatter( time, rs, label="%s : RS vs time" % sym.upper())
-                ax.plot( time, rs )
+               
+                tp,vm,rs = Subprofile.Time_VM_RS(f)
+
+                if "VM" in os.environ:
+                    ax.scatter( tp, vm, label="%s : VM(GB) vs time(s)" % sym.upper())
+                    ax.plot(    tp, vm )
+                pass
+                ax.scatter( tp, rs, label="%s : RSS(GB) vs time(s)" % sym.upper())
+                ax.plot( tp, rs )
             pass
-            ax.set_xlabel("time", fontsize=fontsize )
+            ax.set_xlabel(Subprofile.XLABEL, fontsize=Subprofile.FONTSIZE )
+            ax.set_ylabel(Subprofile.YLABEL, fontsize=Subprofile.FONTSIZE )
             ax.legend()
             fig.show()
         pass  
@@ -74,31 +114,24 @@ class Subprofile_ALL(object):
 class Subprofile_ONE(object):
     def __init__(self, f, symbol="fold.subprofile.a"):
 
-        subprofile = f.subprofile
         meta = f.subprofile_meta
         names = f.subprofile_names
         labels = f.subprofile_labels
-
-        sp = subprofile.reshape(-1,3)   
-        labels_s = smry_(labels)
-        hdr = (" " * 8  + " %4s " * len(labels_s) ) % tuple(labels_s) 
-
-        assert len(subprofile.shape) == 3
         title = make_title(meta, method="Subprofile_ONE", symbol=symbol)
 
-        fontsize = 20 
-        time = sp[:,0]
-        vm = sp[:,1]
-        rs = sp[:,2]
-   
+        tp,vm,rs = Subprofile.Time_VM_RS(f)
+
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
             ax = axs[0]
-            ax.scatter( time, vm, label="VM vs time")
-            ax.plot( time, vm )
-            ax.scatter( time, rs, label="RS vs time")
-            ax.plot( time, rs )
-            ax.set_xlabel("time", fontsize=fontsize )
+            if "VM" in os.environ:
+                ax.scatter( tp, vm, label="VM(GB) vs time(s)")
+                ax.plot( tp, vm )
+            pass
+            ax.scatter( tp, rs, label="RSS(GB) vs time(s)")
+            ax.plot( tp, rs )
+            ax.set_xlabel(Subprofile.XLABEL, fontsize=Subprofile.FONTSIZE )
+            ax.set_ylabel(Subprofile.YLABEL, fontsize=Subprofile.FONTSIZE )
             ax.legend()
             fig.show()
         pass  
