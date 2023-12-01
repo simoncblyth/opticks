@@ -93,21 +93,51 @@ int SEventConfig::_GetNumPhoton(int idx)
 {
     if(_NumPhotonPerEvent == nullptr) return 0 ; 
 
-    int nevt0 = NumEvent(); 
+    int nevt0 = NumEvent() ; 
     int nevt1 = _NumPhotonPerEvent->size() ;
     bool match = nevt0 == nevt1 ;  
     LOG_IF(fatal, !match) 
         << " NumEvent MISMATCH BETWEEN " 
         << std::endl 
-        << " nevt0:NumEvent()              " << nevt0 << "( from " << kNumEvent  << ":" << ( getenv(kNumEvent) ? getenv(kNumEvent) : "-" ) << ") "
+        << " nevt0:_NumEvent               " << nevt0 << "( from " << kNumEvent  << ":" << ( getenv(kNumEvent) ? getenv(kNumEvent) : "-" ) << ") "
         << " nevt1:_NumPhotonPerEvent.size " << nevt1 << "( from " << kNumPhoton << ":" << ( getenv(kNumPhoton) ? getenv(kNumPhoton) : "-" ) << ") "
         ; 
     assert( match ); 
-    if(idx < 0 ) idx += nevt0 ; 
+    if(idx < 0 ) idx += nevt0 ;   // allow -ve indices to count from the back 
     if(idx >= nevt0) return 0 ; 
 
     return (*_NumPhotonPerEvent)[idx] ; 
 }
+
+/**
+
+::
+
+    OPTICKS_NUM_EVENT=4 OPTICKS_NUM_PHOTON=M1:3 SEventConfigTest 
+
+**/
+
+int SEventConfig::_GetNumEvent()
+{
+    bool have_NumPhotonPerEvent = _NumPhotonPerEvent && _NumPhotonPerEvent->size() > 0 ; 
+    bool override_NumEvent = have_NumPhotonPerEvent && int(_NumPhotonPerEvent->size()) != _NumEvent ; 
+    LOG_IF(error, override_NumEvent ) 
+        << " Overriding NumEvent "
+        << "(" << kNumEvent  << ")" 
+        << " value " << _NumEvent 
+        << " as inconsistent with NumPhoton list length "
+        << "(" << kNumPhoton << ")" 
+        << " of " << ( _NumPhotonPerEvent ? _NumPhotonPerEvent->size() : -1 )
+        ;
+    return override_NumEvent ? int(_NumPhotonPerEvent->size()) : _NumEvent ; 
+}
+
+int SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
+int SEventConfig::NumEvent(){         return _GetNumEvent() ; }
+
+
+
+
 
 
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
@@ -162,10 +192,6 @@ bool SEventConfig::IsRunningModeTorch(){         return RunningMode() == SRM_TOR
 bool SEventConfig::IsRunningModeInputPhoton(){   return RunningMode() == SRM_INPUT_PHOTON ; } 
 bool SEventConfig::IsRunningModeInputGenstep(){  return RunningMode() == SRM_INPUT_GENSTEP ; } 
 bool SEventConfig::IsRunningModeGun(){           return RunningMode() == SRM_GUN ; } 
-
-int         SEventConfig::NumEvent(){     return _NumEvent ; }
-int         SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
-
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
 
 /**

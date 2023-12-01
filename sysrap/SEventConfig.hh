@@ -138,9 +138,7 @@ struct SYSRAP_API SEventConfig
     static bool IsRunningModeInputGenstep();  
     static bool IsRunningModeGun();  
 
-    static int         NumEvent(); 
-    static int         NumPhoton(int idx); // some tests need varying photon count 
- 
+
     static const char* G4StateSpec(); 
     static int         G4StateRerun(); 
 
@@ -300,6 +298,10 @@ struct SYSRAP_API SEventConfig
     static std::vector<int>* _GetNumPhotonPerEvent(); 
     static std::vector<int>* _NumPhotonPerEvent ; 
     static int               _GetNumPhoton(int idx); 
+    static int               _GetNumEvent(); 
+    static int               NumPhoton(int idx); // some tests need varying photon count 
+    static int               NumEvent();         // some tests use event count and nned to detect last event 
+ 
 
     static const char* _G4StateSpec ; 
     static int         _G4StateRerun ; 
