@@ -65,6 +65,7 @@ struct sreport
 
     bool VERBOSE ;
     const NP* run ;
+    const NP* runprof ;
     NPFold* substamp ;   
     NPFold* subprofile ;   
     NPFold* smry ; 
@@ -75,6 +76,7 @@ struct sreport
     std::string desc() const ;
     std::string desc_fold() const ;
     std::string desc_run() const ;
+    std::string desc_runprof() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
 
@@ -88,10 +90,12 @@ inline sreport::sreport( const char* dirp_ )
     fold_valid( fold && !fold->is_empty() ),
     VERBOSE(getenv("sreport__VERBOSE") != nullptr),
     run(fold ? fold->get("run") : nullptr),
+    runprof( run ? run->makeMetaKVProfileArray("Index") : nullptr),
     substamp(fold_valid ? fold->subfold_summary("substamp", ASEL, BSEL) : nullptr),
     subprofile(fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr),
     smry(new NPFold)
 {
+    smry->add("runprof", runprof ) ; 
     smry->add_subfold("substamp", substamp ) ; 
     smry->add_subfold("subprofile", subprofile ) ; 
 }
@@ -103,6 +107,7 @@ inline std::string sreport::desc() const
     ss << "[sreport.desc" << std::endl 
        << desc_fold()
        << desc_run() 
+       << desc_runprof() 
        << desc_substamp()
        << "]sreport.desc" << std::endl 
        ; 
@@ -144,6 +149,20 @@ inline std::string sreport::desc_run() const
     std::string str = ss.str() ;
     return str ;  
 }
+
+inline std::string sreport::desc_runprof() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_runprof" << std::endl 
+       << ( runprof ? runprof->sstr() : "-" ) << std::endl 
+       << ".sreport.desc_runprof.descTable " << std::endl 
+       << ( runprof ? runprof->descTable<int64_t>(17) : "-" ) << std::endl
+       << "]sreport.desc_runprof" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
 
 inline std::string sreport::desc_substamp() const
 {

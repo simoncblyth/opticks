@@ -39,7 +39,7 @@ void U4Debug::Save(int eventID)
 {
     //const char* dir = GetSaveDir(eventID); 
 
-    const char* dir = spath::Resolve( ETOK, sstr::FormatIndex(eventID, true, 3) ); 
+    const char* dir = spath::Resolve( ETOK, sstr::FormatIndex(eventID, true, 3, nullptr) ); 
 
 
     std::cout 

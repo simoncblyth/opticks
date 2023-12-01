@@ -1393,6 +1393,17 @@ void SEvt::SetRunProf(const char* k)   // static
     SetRunMeta<std::string>( k, sprof::Now() ); 
 }
 
+void SEvt::setRunProf_Annotated(const char* hdr) const  
+{
+    std::string eid = getIndexString_(hdr) ; 
+    SetRunMeta<std::string>( eid.c_str(), sprof::Now() ); 
+}
+
+
+
+
+
+
 
 
 /**
@@ -1510,6 +1521,7 @@ void SEvt::beginOfEvent(int eventID)
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);   
 
+
     LOG_IF(info, LIFECYCLE) << id() ; 
 
     if(isECPU())
@@ -1554,6 +1566,8 @@ void SEvt::endOfEvent(int eventID)
 
     clear(); 
 
+    //sprof::Stamp(p_SEvt__endOfEvent_1);  
+    // HMM: misses the boat of being saved with the SEvt
 
     bool is_last_eventID = eventID == SEventConfig::NumEvent()-1 ; 
     if(is_last_eventID)
@@ -1580,6 +1594,7 @@ void SEvt::endMeta()
     setMetaProf("SEvt__beginOfEvent_0", p_SEvt__beginOfEvent_0); 
     setMetaProf("SEvt__beginOfEvent_1", p_SEvt__beginOfEvent_1); 
     setMetaProf("SEvt__endOfEvent_0",   p_SEvt__endOfEvent_0); 
+    //setMetaProf("SEvt__endOfEvent_1",   p_SEvt__endOfEvent_1); 
 
     setMeta<uint64_t>("t_BeginOfEvent", t_BeginOfEvent ); 
 
@@ -1697,8 +1712,14 @@ std::string SEvt::DescHasInputPhoton()  // static
 SEvt::clear_vectors
 --------------------
 
-Set the photon counts to zero and clear the vectors. 
+This private method is invoked only from SEvt::clear and SEvt::clear_except
+
+1. set photon counts to zero 
+2. clears the vectors
+3. shrink_to_fit : deallocating memory when shrink:true
+
 Note that most of the vectors are only used with hostside running.
+
 
 **/
 
@@ -1795,8 +1816,9 @@ void SEvt::clear()
 
     if(CLEAR_SIGINT) std::raise(SIGINT);
     LOG(LEVEL) << "[" ;
- 
-    clear_vectors(); 
+
+    bool shrink = true ;  
+    clear_vectors(shrink); 
     fold->clear(); 
 
     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_vectors " ; 
@@ -1818,7 +1840,8 @@ void SEvt::clear_except(const char* keep, char delim)
     LOG_IF(info, LIFECYCLE) << id() << " keep:[" << keep << "]"  ; 
     LOG(LEVEL) << "[" ; 
 
-    clear_vectors(); 
+    bool shrink = true ; 
+    clear_vectors(shrink); 
 
     bool copy = false ; 
     if(fold) fold->clear_except(keep, copy, delim); 
@@ -1835,11 +1858,15 @@ void SEvt::setIndex(int index_)
 
     index = index_ ; 
     t_BeginOfEvent = sstamp::Now();  // moved here from the static 
+
+    setRunProf_Annotated("SEvt__setIndex_" ); 
 }
 void SEvt::endIndex(int index_)
 { 
     assert( std::abs(index) == std::abs(index_) );  
     t_EndOfEvent = sstamp::Now();  
+
+    setRunProf_Annotated("SEvt__endIndex_" ); 
 }
 
 int SEvt::getIndex() const 
@@ -3579,7 +3606,7 @@ const char* SEvt::getOutputDir_OLD(const char* base_) const
     const char* defd = DefaultDir() ; 
     const char* base = base_ ? base_ : defd ; 
     const char* reldir = GetReldir() ;   // eg "ALL" or "ALL0" or "ALL${VERSION:-0}"
-    const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
+    const char* sidx = hasIndex() ? getIndexString(nullptr) : nullptr ; 
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
 
@@ -3621,7 +3648,7 @@ const char* SEvt::getOutputDir(const char* base_) const
 {
     const char* base = base_ ? base_ : "$TMP/GEOM/$GEOM/$ExecutableName" ; 
     const char* reldir = GetReldir() ; 
-    const char* sidx = hasIndex() ? getIndexString() : nullptr ; 
+    const char* sidx = hasIndex() ? getIndexString(nullptr) : nullptr ; 
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
 
@@ -3641,10 +3668,7 @@ const char* SEvt::getOutputDir(const char* base_) const
 }
 
 
-
-
-
-const char* SEvt::getIndexString() const 
+std::string SEvt::getIndexString_(const char* hdr) const 
 {
     int u_index = 0 ; 
     assert( index > 0 ); 
@@ -3661,8 +3685,15 @@ const char* SEvt::getIndexString() const
 
     bool pfx = true ; // 'n' 'p' 'z'
     int wid = 3 ; 
-    return sstr::FormatIndex(u_index, pfx, wid); 
+    return sstr::FormatIndex_(u_index, pfx, wid, hdr ); 
 }
+
+const char* SEvt::getIndexString(const char* hdr) const 
+{
+    std::string str = getIndexString_(hdr); 
+    return strdup(str.c_str()); 
+}
+
 
 
 

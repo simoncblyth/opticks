@@ -2158,7 +2158,20 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
             std::vector<int64_t>   stamps ; 
             bool only_with_stamps = true ; 
             sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps ); 
-            assert( int(stamps.size()) == nj ) ; 
+
+            int num_stamp = stamps.size() ;
+            bool consistent_num_stamp = num_stamp == nj ;  
+        
+            if(!consistent_num_stamp) std::cerr 
+                << "NPFold::substamp"
+                << " i " << i 
+                << " subpath " << ( subpath ? subpath : "-" )
+                << " consistent_num_stamp " << ( consistent_num_stamp ? "YES" : "NO " )
+                << " num_stamp " << num_stamp
+                << " nj " << nj 
+                << std::endl 
+                ;
+            assert(consistent_num_stamp) ; 
 
             if(i == 0) comkeys = keys ; 
             bool same_keys = i == 0 ? true : keys == comkeys ; 
@@ -2306,6 +2319,10 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
 /**
 NPFold::subfold_summary
 -----------------------
+
+Applies the substamp or subprofile methods to each subfold
+found within this NPFold creating summary sub for 
+each group of subfold specified by the argument paths. 
 
 ::
 

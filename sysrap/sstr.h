@@ -54,8 +54,8 @@ struct sstr
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
 
-    static std::string FormatIndex_( int idx, bool prefix, int wid ); 
-    static const char* FormatIndex(  int idx, bool prefix, int wid ); 
+    static std::string FormatIndex_( int idx, bool prefix, int wid, const char* hdr ); 
+    static const char* FormatIndex(  int idx, bool prefix, int wid, const char* hdr ); 
 
 
 
@@ -378,9 +378,10 @@ template std::string sstr::Format_( const char*, const char*, int, int );
 
 
 
-inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid )
+inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid, const char* hdr )
 {
     std::stringstream ss ;  
+    if(hdr) ss << hdr ; 
     if(prefix) ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) ) ; 
     ss << std::setfill('0') << std::setw(wid) << std::abs(idx) ; 
     std::string str = ss.str(); 
@@ -405,9 +406,9 @@ prefix:true wid:3
 
 **/
 
-inline const char* sstr::FormatIndex( int idx, bool prefix, int wid )
+inline const char* sstr::FormatIndex( int idx, bool prefix, int wid, const char* hdr )
 {
-    std::string str = FormatIndex_(idx, prefix, wid ); 
+    std::string str = FormatIndex_(idx, prefix, wid, hdr ); 
     return strdup(str.c_str()); 
 }
 

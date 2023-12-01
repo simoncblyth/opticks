@@ -80,6 +80,10 @@ class Subprofile(object):
         title = "\n".join([base,smry,sfmt]) 
         return title
 
+
+
+
+
 class Subprofile_ALL(object):
     def __init__(self, base, symbol="fold.subprofile"):
         title = ["Subprofile_ALL "]  
@@ -109,7 +113,36 @@ class Subprofile_ALL(object):
             ax.set_ylabel(Subprofile.YLABEL, fontsize=Subprofile.FONTSIZE )
             ax.legend()
             fig.show()
+
+
+class Runprofile_ALL(object):
+    def __init__(self, rp, symbol="fold.runprofile"):
+        label = "Runprofile_ALL " 
+        fontsize = Subprofile.FONTSIZE
+        if MODE == 2:
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
+            ax = axs[0]
+
+            tp = (rp[:,0] - rp[0,0])/1e6
+            vm = rp[:,1]/1e6
+            rs = rp[:,2]/1e6 
+
+            if "VM" in os.environ:
+                ax.scatter( tp, vm, label="%s : VM(GB) vs time(s)" % symbol)
+                ax.plot(    tp, vm )
+            pass
+            ax.scatter( tp, rs, label="%s : RSS(GB) vs time(s)" % symbol )
+            ax.plot( tp, rs )
+            pass
+            ax.set_xlabel(Subprofile.XLABEL, fontsize=Subprofile.FONTSIZE )
+            ax.set_ylabel(Subprofile.YLABEL, fontsize=Subprofile.FONTSIZE )
+
+            yl = ax.get_ylim()
+            ax.vlines( tp[::4], yl[0], yl[1] ) 
+            ax.legend()
+            fig.show()
         pass  
+
 
 class Subprofile_ONE(object):
     def __init__(self, f, symbol="fold.subprofile.a"):
@@ -344,6 +377,10 @@ if __name__ == '__main__':
             Subprofile_ONE(f, symbol=symbol)
         pass
         Subprofile_ALL(fold.subprofile, symbol="fold.subprofile")
+    pass
+
+    if "runprof" in os.environ and hasattr(fold, "runprof"):
+        Runprofile_ALL(fold.runprof, symbol="fold.runprof" )
     pass
 pass
 

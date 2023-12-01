@@ -51,8 +51,8 @@ export EVT=${EVT:-p001}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-
-VERSION=${VERSION:-2}   ## see below currently using VERSION TO SELECT OEM 
+version=3
+VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OEM 
 export VERSION
 
 export LOGDIR=$BINBASE/ALL$VERSION
@@ -108,7 +108,8 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
     #onp=K1:10 
-    onp=H1:10,M2,3,5,7,10,20,40,80,100
+    #onp=H1:10,M2,3,5,7,10,20,40,80,100
+    onp=H1:10
     #onp=M3,10   
     ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
 
@@ -149,6 +150,7 @@ case $VERSION in
  0) oem=Minimal ;;
  1) oem=HitOnly ;; 
  2) oem=HitAndPhoton ;; 
+ 3) oem=HitAndPhoton ;; 
 99) oem=StandardFullDebug ;;
 esac 
 

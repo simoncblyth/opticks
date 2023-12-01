@@ -110,7 +110,9 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
     #onp=K1:10 
     #onp=H1:10,M2,3,5,7,10,20,40,80,100
     #onp=M3,10   
-    onp=M10
+    #onp=M10
+    #onp=M1,2,3
+    onp=H1:10
     ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
 
     export OPTICKS_NUM_PHOTON=${ONP:-$onp}
@@ -165,6 +167,7 @@ logging()
    export SEvt__LIFECYCLE=1  ## sparse SEvt debug output, works well alone  
 }
 [ -n "$LOG" ] && logging
+[ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 
 defarg="info_env_run_report_ana"
 #defarg="info_dbg_ana"

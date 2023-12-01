@@ -129,6 +129,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sprof p_SEvt__beginOfEvent_0 ; 
     sprof p_SEvt__beginOfEvent_1 ; 
     sprof p_SEvt__endOfEvent_0 ;
+    //sprof p_SEvt__endOfEvent_1 ;
 
     uint64_t t_BeginOfEvent ; 
 #ifndef PRODUCTION
@@ -404,6 +405,8 @@ public:
 
     static void SetRunProf(const char* k, const sprof& v); 
     static void SetRunProf(const char* k);  // NOW 
+    void setRunProf_Annotated(const char* hdr) const  ; 
+
 
     static void SaveRunMeta(const char* base=nullptr ); 
 
@@ -452,7 +455,7 @@ public:
     static std::string DescHasInputPhoton(); 
 
 private:
-    void clear_vectors(bool shrink=true) ; 
+    void clear_vectors(bool shrink) ; 
 public:
     void clear() ; 
     void clear_except(const char* keep, char delim=',' ); 
@@ -607,8 +610,9 @@ public:
 
     const char* getOutputDir_OLD(const char* base_=nullptr) const ; 
     const char* getOutputDir(const char* base_=nullptr) const ; 
-    const char* getIndexString() const ; 
 
+    std::string getIndexString_(const char* hdr) const ; 
+    const char* getIndexString(const char* hdr) const ; 
 
 
     static const char* RunDir( const char* base_=nullptr ); 

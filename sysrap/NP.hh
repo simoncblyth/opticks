@@ -357,8 +357,10 @@ struct NP
     typedef std::vector<std::string> VS ; 
     typedef std::vector<int64_t> VT ; 
 
-    static void GetMetaKV_( const char* metadata    , VS* keys, VS* vals, bool only_with_profile ); 
-    static void GetMetaKV(  const std::string& meta , VS* keys, VS* vals, bool only_with_profile ); 
+
+    NP* makeMetaKVProfileArray(const char* ptn=nullptr) const ; 
+    static void GetMetaKV_( const char* metadata    , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr ); 
+    static void GetMetaKV(  const std::string& meta , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr ); 
 
     static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
     static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
@@ -989,6 +991,17 @@ inline bool NP::is_itemtype() const  // size of item matches size of type
 {
     return item_bytes() == sizeof(T) ; 
 }
+
+/**
+NP::clear
+----------
+
+Note that std::vector::clear by itself does not deallocate 
+the memory, it is necessary in addition to call std::vector::shrink_to_fit 
+and even that is non-binding. 
+
+**/
+
 
 inline void NP::clear()
 {
@@ -4385,19 +4398,54 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
     return get_meta_string_( metadata, key ); 
 }
 
+/**
+NP::makeMetaKVProfileArray
+----------------------------
 
+**/
 
+inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    bool only_with_profile = true ; 
+    GetMetaKV(meta, &keys, &vals, only_with_profile, ptn ); 
+    assert( keys.size() == vals.size() ); 
+    int num_key = keys.size(); 
 
+    int ni = num_key ; 
+    int nj = 3 ; 
 
+    NP* prof = ni > 0 ? NP::Make<int64_t>(ni, nj ) : nullptr  ; 
+    int64_t* pp = prof ? prof->values<int64_t>() : nullptr ; 
+    if(prof) prof->labels = new std::vector<std::string> {"st[us]", "vm[kb]", "rs[kb]" } ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        const char* k = keys[i].c_str(); 
+        const char* v = vals[i].c_str(); 
+        bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
+        assert( looks_like_prof );
+   
+        char* end = nullptr ; 
+        int64_t st = strtoll( v,   &end, 10 ) ; 
+        int64_t vm = strtoll( end+1, &end , 10 ) ; 
+        int64_t rs = strtoll( end+1, &end , 10 ) ; 
 
-
-
+        pp[nj*i + 0 ] = st ; 
+        pp[nj*i + 1 ] = vm ; 
+        pp[nj*i + 2 ] = rs ; 
+        prof->names.push_back(k) ; 
+    }
+    return prof ; 
+}
 
 inline void NP::GetMetaKV_(
     const char* metadata, 
     std::vector<std::string>* keys, 
     std::vector<std::string>* vals, 
-    bool only_with_profile ) // static
+    bool only_with_profile,
+    const char* ptn
+    ) // static
 {
     if(metadata == nullptr) return ; 
     std::stringstream ss;
@@ -4410,12 +4458,13 @@ inline void NP::GetMetaKV_(
         size_t pos = s.find(delim); 
         if( pos != std::string::npos )
         {
-            std::string k = s.substr(0, pos);
+            std::string _k = s.substr(0, pos);
             std::string _v = s.substr(pos+1);
+            const char* k = _k.c_str(); 
             const char* v = _v.c_str(); 
-
+            bool match_ptn = ptn ? strstr( k, ptn ) != nullptr : true  ; 
             bool looks_like_profile = U::LooksLikeProfileTriplet(v); 
-            bool select = only_with_profile ? looks_like_profile  : true ; 
+            bool select = only_with_profile ? looks_like_profile && match_ptn : match_ptn ; 
             if(!select) continue ; 
 
             if(keys) keys->push_back(k); 
@@ -4428,10 +4477,11 @@ inline void NP::GetMetaKV(
     const std::string& meta, 
     std::vector<std::string>* keys,
     std::vector<std::string>* vals, 
-    bool only_with_profile ) // static
+    bool only_with_profile, 
+    const char* ptn)  // static
 {
     const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
-    return GetMetaKV_( metadata, keys, vals, only_with_profile ); 
+    return GetMetaKV_( metadata, keys, vals, only_with_profile, ptn  ); 
 }
 
 
@@ -4754,9 +4804,6 @@ inline std::string NP::descMetaKVS() const
     std::string str = ss.str(); 
     return str ; 
 }
-
-
-
 
 
 
