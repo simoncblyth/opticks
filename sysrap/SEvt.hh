@@ -90,6 +90,8 @@ struct stimer ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
+    friend struct SEvtTest ; 
+
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
     static bool LIFECYCLE ; 
 
@@ -450,7 +452,7 @@ public:
     static std::string DescHasInputPhoton(); 
 
 private:
-    void clear_vectors() ; 
+    void clear_vectors(bool shrink=true) ; 
 public:
     void clear() ; 
     void clear_except(const char* keep, char delim=',' ); 

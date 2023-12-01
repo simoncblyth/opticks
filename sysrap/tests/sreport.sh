@@ -89,7 +89,7 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N3
+job=N5
 JOB=${JOB:-$job}
 
 DIR=unknown 
@@ -99,6 +99,7 @@ case $JOB in
   N2) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
   N3) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N4) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
+  N5) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
 esac
 
 export FOLD=${DIR}_${name}   ## FOLD is output directory used by binary, export it for python 

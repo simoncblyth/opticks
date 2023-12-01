@@ -57,7 +57,7 @@ oim=3   # GPU and CPU
 export OPTICKS_INTEGRATION_MODE=${OIM:-$oim} 
 
 
-version=2
+version=3
 VERSION=${VERSION:-$version}
 export VERSION    ## used in SEvt output directory name ALL$VERSION
 
@@ -81,6 +81,7 @@ case $VERSION in
  0) oem=Minimal ;;
  1) oem=HitOnly ;; 
  2) oem=HitAndPhoton ;; 
+ 3) oem=HitAndPhoton ;;    ## USING 3 FOR LEAK TEST 
 99) oem=StandardFullDebug ;;
 esac 
 
@@ -107,8 +108,9 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
     #export SEvent_MakeGenstep_num_ph=$NUM   ## trumped by OPTICKS_NUM_PHOTON
 
     #onp=K1:10 
-    onp=H1:10,M2,3,5,7,10,20,40,80,100
+    #onp=H1:10,M2,3,5,7,10,20,40,80,100
     #onp=M3,10   
+    onp=M10
     ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
 
     export OPTICKS_NUM_PHOTON=${ONP:-$onp}
@@ -164,7 +166,7 @@ logging()
 }
 [ -n "$LOG" ] && logging
 
-defarg="info_run_report_ana"
+defarg="info_env_run_report_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
@@ -173,6 +175,10 @@ vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%50s : %s \n" "$var" "${!var}" ; done 
+fi 
+
+if [ "${arg/env}" != "$arg" ]; then 
+    env | grep OPTICKS | perl -n -e 'm/(\S*)=(\S*)/ && printf("%50s : %s\n", $1, $2) ' -
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then

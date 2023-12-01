@@ -129,6 +129,8 @@ set(TEST_SOURCES
 
    scontext_test.cc
    ssys_test.cc
+
+   SEvt_test.cc
 )
 
 

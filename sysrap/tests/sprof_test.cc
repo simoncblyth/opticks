@@ -79,7 +79,7 @@ void test_ctor_dtor()
 
 int main(int argc, char** argv)
 {
-    test_uninitialized(); 
-    //    sprof_test t ; 
+    //test_uninitialized(); 
+    sprof_test t ; 
     return 0 ; 
 }

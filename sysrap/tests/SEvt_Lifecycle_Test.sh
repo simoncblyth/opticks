@@ -1,4 +1,15 @@
 #!/bin/bash -l
+usage(){ cat << EOU
+SEvt_Lifecycle_Test.sh
+=======================
+
+::
+ 
+   ~/opticks/sysrap/tests/SEvt_Lifecycle_Test.sh
+
+
+EOU
+}
 
 name=SEvt_Lifecycle_Test
 
@@ -8,24 +19,33 @@ loglevel()
     export SEvt=INFO
 }
 
-[ -n "$DBG" ] && loglevel 
+[ -n "$LOG" ] && loglevel 
 
 
 defarg="run_ana"
 arg=${1:-$defarg}
 
+cd $(dirname $BASH_SOURCE)
+
+export GEOM=SEVT_LIFECYCLE_TEST
+
 export OPTICKS_INPUT_PHOTON=RainXZ100_f4.npy
 export OPTICKS_EVENT_MODE=StandardFullDebug
 export OPTICKS_MAX_BOUNCE=31 
 
+evt=p001
+tmp=/tmp/$USER/opticks
+version=0 
 
-evt=001
-export EVT=${EVT:-$evt}
-export FOLD=/tmp/$USER/opticks/GEOM/$name/ALL/$EVT
+EVT=${EVT:-$evt}
+TMP=${TMP:-$tmp}
+VERSION=${VERSION:-$version}
 
-vars="arg OPTICKS_INPUT_PHOTON OPTICKS_EVENT_MODE EVT FOLD"
+export FOLD=$TMP/GEOM/$GEOM/$name/ALL$VERSION/$EVT
+
+
+vars="arg OPTICKS_INPUT_PHOTON OPTICKS_EVENT_MODE EVT TMP GEOM VERSION FOLD"
 for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
-
 
 if [ "${arg/run}" != "$arg" ]; then 
    $name 
@@ -33,10 +53,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in
-      Darwin) lldb__ $name ;;
-      Linux)  gdb__ $name ;;  
-   esac
+   dbg__ $name
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi 
 

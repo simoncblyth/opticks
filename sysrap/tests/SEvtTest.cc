@@ -1,3 +1,4 @@
+// ~/opticks/sysrap/tests/SEvtTest.sh 
 
 #include "OPTICKS_LOG.hh"
 #include "OpticksGenstep.h"
@@ -12,8 +13,22 @@
 #include "SEvt.hh"
 
 
+struct SEvtTest
+{
+    static constexpr const int M = 1000000 ; 
 
-void test_AddGenstep()
+    static void AddGenstep(); 
+    static void LifeCycle(); 
+    static void InputPhoton(); 
+    static void getSaveDir(); 
+    static void getOutputDir(); 
+    static void setMetaProf(); 
+    static void hostside_running_resize_(); 
+    static void Main(); 
+ 
+};
+
+void SEvtTest::AddGenstep()
 {
    SEvt* evt = SEvt::Create(0) ; 
    assert( SEvt::Get(0) == evt );  
@@ -32,10 +47,8 @@ void test_AddGenstep()
 }
 
 
-void test_LifeCycle()
+void SEvtTest::LifeCycle()
 {
-
-
     unsigned max_bounce = 9 ; 
     SEventConfig::SetMaxBounce(max_bounce); 
     SEventConfig::SetMaxRecord(max_bounce+1); 
@@ -115,7 +128,7 @@ void test_LifeCycle()
     LOG(info) << evt->desc() ;
 }
 
-void test_InputPhoton()
+void SEvtTest::InputPhoton()
 {
     const char* ipf = SEventConfig::InputPhotonFrame();  
     if( ipf == nullptr) return ; 
@@ -124,6 +137,9 @@ void test_InputPhoton()
     LOG(info) << evt->desc() ;
 
     NP* ip = evt->getInputPhoton(); 
+    LOG_IF(fatal, !ip ) << " FAILED TO getInputPhoton " ; 
+    if(!ip) return ; 
+
     
     const char* FOLD = spath::Resolve("$TMP/SEvtTest/test_InputPhoton"); 
     sdirectory::MakeDirs( FOLD, 0 ); 
@@ -158,7 +174,7 @@ Only after the save does the savedir get set.
 **/
 
 
-void test_savedir()
+void SEvtTest::getSaveDir()
 {
     SEvt* evt = SEvt::Create(0);
 
@@ -179,21 +195,21 @@ void test_savedir()
 }
 
 
-void test_getOutputDir()
+void SEvtTest::getOutputDir()
 {
     SEvt* evt = SEvt::Create(0);
     const char* dir0 = evt->getOutputDir_OLD(); 
     const char* dir1 = evt->getOutputDir(); 
 
     LOG(info) 
-        << "test_getOutputDir" << std::endl 
+        << "getOutputDir" << std::endl 
         << " dir0 [" << ( dir0 ? dir0 : "-" ) << "]" << std::endl 
         << " dir1 [" << ( dir1 ? dir1 : "-" ) << "]" << std::endl 
         ;
 }
 
 
-void test_setMetaProf()
+void SEvtTest::setMetaProf()
 {
     SEvt* evt = SEvt::Create(0);
 
@@ -204,21 +220,75 @@ void test_setMetaProf()
     std::cout << "evt->meta" << std::endl << evt->meta << std::endl ;  
 }
 
+/**
+SEvtTest::hostside_running_resize_
+------------------------------------
+
+Profile time, VM, RSS change from hostside_running_resize
+
+**/
+
+void SEvtTest::hostside_running_resize_()
+{
+    int num = 10*M ; 
+    bool edump = false ; 
+
+    SEventConfig::SetMaxPhoton(num); 
+
+    SEvt::Create_EGPU() ; 
+    SEvt* evt = SEvt::Get_EGPU(); 
+
+    sprof p0, p1, p2  ;
+   
+    sprof::Stamp(p0);  
+
+    evt->setNumPhoton(num); 
+
+    if(edump)
+    std::cout 
+        << " (SEvt)evt->(sevent)evt->descNum "
+        << evt->evt->descNum()
+        ;
+
+    evt->hostside_running_resize_() ;     
+
+    sprof::Stamp(p1);  
+    std::cout 
+        << "sprof::Desc(p0, p1) : before and after setNumPhoton+hostside_running_resize_ : to " << num << std::endl 
+        << sprof::Desc(p0, p1 )
+        ; 
+
+    bool shrink = true ; 
+    evt->clear_vectors(shrink) ; 
+
+    sprof::Stamp(p2);  
+    std::cout 
+        << "sprof::Desc(p1,p2) : before and after : SEvt::clear_vectors  " << std::endl 
+        << "SMALL DELTA INDICATES THE RESIZE TO ZERO : DID NOT DEALLOCATE MEMORY " << std::endl 
+        << "FIND THAT NEED shrink = true TO GET THE DEALLOC TO HAPPEN " << std::endl 
+        << sprof::Desc(p1, p2 ) 
+        ; 
+
+}
+
+void SEvtTest::Main()
+{
+    /*
+    AddGenstep(); 
+    LifeCycle(); 
+    InputPhoton(); 
+    getSaveDir(); 
+    getOutputDir(); 
+    setMetaProf(); 
+    */
+    hostside_running_resize_() ; 
+}
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGModeTest(); 
-
-    /*
-    test_AddGenstep(); 
-    test_LifeCycle(); 
-    test_InputPhoton(); 
-    test_savedir(); 
-    test_getOutputDir(); 
-    */
-
-    test_setMetaProf(); 
-
+    SEvtTest::Main(); 
     return 0 ; 
 }
-
+// ~/opticks/sysrap/tests/SEvtTest.sh 

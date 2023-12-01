@@ -3,8 +3,20 @@
 #include "OpticksGenstep.h"
 #include "SEvt.hh"
 
+struct SEvt_test
+{
+    static constexpr const int M = 1000000 ; 
 
-void test_AddGenstep()
+    static void AddGenstep(); 
+    static void GetNumHit(); 
+    static void RUN_META(); 
+    static void SetRunProf(); 
+
+};
+
+
+
+void SEvt_test::AddGenstep()
 {
    for(unsigned i=0 ; i < 10 ; i++)
    {
@@ -18,7 +30,7 @@ void test_AddGenstep()
    std::cout << SEvt::Get_EGPU()->desc() << std::endl ; 
 }
 
-void test_GetNumHit()
+void SEvt_test::GetNumHit()
 {
     unsigned num_hit = SEvt::GetNumHit(SEvt::EGPU); 
     unsigned UNDEF = ~0u ; 
@@ -36,7 +48,7 @@ void test_GetNumHit()
     // when num_hit is UNDEF the below loop does nothing as int(UNDEF) is -1 
 }
 
-void test_RUN_META()
+void SEvt_test::RUN_META()
 {
     NP* m = SEvt::RUN_META ; 
 
@@ -48,7 +60,7 @@ void test_RUN_META()
         ;   
 }
 
-void test_SetRunProf()
+void SEvt_test::SetRunProf()
 {
     std::cout << "test_SetRunProf" << std::endl ; 
     SEvt::SetRunProf("test_SetRunProf_0"); 
@@ -58,16 +70,16 @@ void test_SetRunProf()
 
 
 
+// when tests start to need logging, switch to SEvtTest.cc
+
 int main()
 {
-    SEvt* evt = SEvt::Create_EGPU() ; 
+    SEvt::Create_EGPU() ; 
 
-    /*
-    test_AddGenstep(); 
-    test_GetNumHit();  
-    test_RUN_META(); 
-    */
-    test_SetRunProf(); 
+    SEvt_test::AddGenstep(); 
+    SEvt_test::GetNumHit();  
+    SEvt_test::RUN_META(); 
+    SEvt_test::SetRunProf(); 
 
     return 0 ; 
 }

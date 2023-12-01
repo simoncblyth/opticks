@@ -1702,7 +1702,7 @@ Note that most of the vectors are only used with hostside running.
 
 **/
 
-void SEvt::clear_vectors()
+void SEvt::clear_vectors(bool shrink)
 {
     numgenstep_collected = 0u ; 
     numphoton_collected = 0u ; 
@@ -1724,21 +1724,49 @@ void SEvt::clear_vectors()
 
 
     genstep.clear();
+    if(shrink) genstep.shrink_to_fit();
+
     gs.clear();
+    if(shrink) gs.shrink_to_fit();
 
     pho0.clear(); 
+    if(shrink) pho0.shrink_to_fit();
+
     pho.clear(); 
+    if(shrink) pho.shrink_to_fit();
+
     slot.clear(); 
+    if(shrink) slot.shrink_to_fit();
+
     photon.clear(); 
+    if(shrink) photon.shrink_to_fit();
+
     record.clear(); 
+    if(shrink) record.shrink_to_fit();
+
     rec.clear(); 
+    if(shrink) rec.shrink_to_fit();
+
     seq.clear(); 
+    if(shrink) seq.shrink_to_fit();
+
     prd.clear(); 
+    if(shrink) prd.shrink_to_fit();
+
     tag.clear(); 
+    if(shrink) tag.shrink_to_fit();
+
     flat.clear(); 
+    if(shrink) flat.shrink_to_fit();
+
     simtrace.clear(); 
+    if(shrink) simtrace.shrink_to_fit();
+
     aux.clear(); 
+    if(shrink) aux.shrink_to_fit();
+
     sup.clear(); 
+    if(shrink) sup.shrink_to_fit();
 
     // NOTE no hit : thats a sub-selection of the photon 
 
@@ -2298,7 +2326,7 @@ unsigned SEvt::get_genflag(const spho& label) const
 
 
 /**
-SEvt::beginPhoton : only used for hostside running eg with U4RecorderTest
+SEvt::beginPhoton : only used for hostside running eg with G4CXTest
 ---------------------------------------------------------------------------
 
 Canonically invoked from tail of U4Recorder::PreUserTrackingAction_Optical

@@ -11,20 +11,23 @@ sprof.h
 
 struct sprof
 {
-    uint64_t st ;  // microsecond timestamp
-    uint32_t vm ;  // KB
-    uint32_t rs ;  // KB 
+    int64_t st ;  // microsecond timestamp
+    int32_t vm ;  // KB
+    int32_t rs ;  // KB 
 
     static void Stamp(sprof& prof); 
     static std::string Desc(const sprof& prof); 
+
+    static inline sprof Diff(const sprof& p0, const sprof& p1); 
+    static std::string Desc(const sprof& p0, const sprof& p1); 
     static std::string Now(); 
     static bool LooksLikeProfileTriplet(const char* str); 
 };
 
-inline void sprof::Stamp(sprof& prof)
+inline void sprof::Stamp(sprof& p)
 {
-    prof.st = sstamp::Now(); 
-    sproc::Query(prof.vm, prof.rs) ; 
+    p.st = sstamp::Now(); 
+    sproc::Query(p.vm, p.rs) ;  // sprof::Stamp
 }
 
 inline std::string sprof::Desc(const sprof& prof)
@@ -35,6 +38,31 @@ inline std::string sprof::Desc(const sprof& prof)
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline sprof sprof::Diff(const sprof& p0, const sprof& p1)
+{
+    sprof df ;
+    df.st = p1.st - p0.st ; 
+    df.vm = p1.vm - p0.vm ; 
+    df.rs = p1.rs - p0.rs ; 
+    return df ; 
+}
+
+inline std::string sprof::Desc(const sprof& p0, const sprof& p1)
+{
+    sprof df = Diff(p0, p1) ; 
+    std::stringstream ss ; 
+    ss << Desc(p0) << std::endl ; 
+    ss << Desc(p1) << std::endl ; 
+    ss << Desc(df) << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
 inline std::string sprof::Now()
 {
     sprof now ; 

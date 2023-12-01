@@ -45,12 +45,11 @@ Survey usage, mostly ExecutableName::
 
 struct sproc 
 {
-    static constexpr const unsigned long long K = 1000 ;   // 1024?
-    static uint32_t parseLine(char* line); 
+    static constexpr const int32_t K = 1000 ;   // 1024?
+    static int32_t parseLine(char* line); 
 
-    static int Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb ); 
+    static int Query(int32_t& virtual_size_kb, int32_t& resident_size_kb ); 
 
-    // TODO: remove these four, switch to Query 
     static float VirtualMemoryUsageMB();
     static float VirtualMemoryUsageKB();
     static float ResidentSetSizeMB();
@@ -74,7 +73,7 @@ Expects a line of the below form with digits and ending in " Kb"::
 
 **/
 
-inline uint32_t sproc::parseLine(char* line){
+inline int32_t sproc::parseLine(char* line){
     int i = strlen(line);
     const char* p = line;
     while (*p <'0' || *p > '9') p++; // advance until first digit 
@@ -84,7 +83,7 @@ inline uint32_t sproc::parseLine(char* line){
 
 
 #ifdef _MSC_VER
-inline void sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
+inline void sproc::Query(int32_t& virtual_size_kb, int32_t& resident_size_kb )
 {
     virtual_size_kb = 0 ; 
     resident_size_kb = 0 ; 
@@ -97,7 +96,7 @@ inline void sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
 https://developer.apple.com/forums/thread/105088
 **/
 
-inline int sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
+inline int sproc::Query(int32_t& virtual_size_kb, int32_t& resident_size_kb )
 {
     struct mach_task_basic_info info;
     mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
@@ -112,8 +111,8 @@ inline int sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
         vm_size_t virtual_ = info.virtual_size  ;  
         vm_size_t resident_ = info.resident_size  ;  
 
-        virtual_size_kb = virtual_/K  ;   // narrowing 
-        resident_size_kb = resident_/K ;  // narrowing 
+        virtual_size_kb = int32_t(virtual_/K)  ;   // narrowing 
+        resident_size_kb = int32_t(resident_/K) ;  // narrowing 
     }
     else
     {
@@ -128,7 +127,7 @@ inline int sproc::Query(uint32_t& virtual_size_kb, uint32_t& resident_size_kb )
     
 // https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
-inline int sproc::Query(uint32_t& virtual_size, uint32_t& resident_size )
+inline int sproc::Query(int32_t& virtual_size, int32_t& resident_size )
 {
     FILE* file = fopen("/proc/self/status", "r");
     char line[128];
@@ -155,30 +154,31 @@ inline int sproc::Query(uint32_t& virtual_size, uint32_t& resident_size )
 
 inline float sproc::VirtualMemoryUsageKB()
 {
-    uint32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb, resident_size_kb ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     return virtual_size_kb ;
 }
 inline float sproc::ResidentSetSizeKB()
 {
-    uint32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb, resident_size_kb ; 
     Query(virtual_size_kb, resident_size_kb ) ; 
     return resident_size_kb ;
 }
 inline float sproc::VirtualMemoryUsageMB()
 {
-    uint32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb, resident_size_kb ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     float size_mb = virtual_size_kb/K ;
     return size_mb  ;
 }
 inline float sproc::ResidentSetSizeMB()
 {
-    uint32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb, resident_size_kb ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     float size_mb = resident_size_kb/K ;
     return size_mb  ;
 }
+
 
 
 
