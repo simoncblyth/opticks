@@ -109,18 +109,12 @@ NB : currently only limited gentype can be generated with this
 
 inline NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
-    //std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
-
-    NP* ph = nullptr ; 
-
     const quad6* gg = (quad6*)gs_->bytes() ; 
-
     NP* se = SEvent::MakeSeed(gs_) ;
-    //std::cout << " se " << ( se ? se->sstr() : "-" ) << std::endl ; 
     const int*   seed = (int*)se->bytes() ;   
 
     int tot_photon = se->shape[0] ; 
-    ph = NP::Make<float>( tot_photon, 4, 4); 
+    NP* ph = NP::Make<float>( tot_photon, 4, 4); 
     sphoton* pp = (sphoton*)ph->bytes() ; 
 
     unsigned rng_seed = 1u ; 
@@ -146,6 +140,7 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
             case OpticksGenstep_INPUT_PHOTON:    assert(0)  ; break ; 
         }    
     }
+    delete se ; 
     return ph ;
 }
 

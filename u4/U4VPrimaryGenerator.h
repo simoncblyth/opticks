@@ -27,7 +27,6 @@ struct U4_API U4VPrimaryGenerator
     template<typename P> 
     static G4PrimaryVertex* MakePrimaryVertexPhoton( const P& p); 
 
-   // static void GeneratePrimaries(G4Event *event); 
     static void GeneratePrimaries_From_Photons(G4Event* event, const NP* ph ); 
 
 };
@@ -41,8 +40,6 @@ struct U4_API U4VPrimaryGenerator
 #include "G4PrimaryParticle.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
-
-//#include "SGenerate.h"  // needs MOCK_CURAND
 
 #include "scuda.h"
 #include "squad.h"
@@ -111,8 +108,7 @@ inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const P& p
 U4VPrimaryGenerator::GeneratePrimaries
 ---------------------------------------
 
-1. generates NP array of Opticks sphoton or sphotond with SGenerate::GeneratePhotons 
-2. populates the G4Event argument with these as G4PrimaryVertex
+1. populates the G4Event argument with photon parameters from ph array tas G4PrimaryVertex
 
 Notice that there are no G4Track in sight here, so there is no 
 direct way to annotate the tracks with *spho* labels.  
@@ -129,15 +125,6 @@ should associate as such in the SEvt to retain access to these
 
 **/
 
-/*
-inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
-{
-    int idx = 1 ; // SEvt::ECPU 
-    NP* ph = SGenerate::GeneratePhotons(idx); 
-  
-    GeneratePrimaries_From_Photons(event, ph); 
-}
-*/
 
 inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, const NP* ph )
 {

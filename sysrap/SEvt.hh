@@ -199,7 +199,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     // [--- these vectors are cleared by SEvt::clear_
     std::vector<quad6>   genstep ; 
     std::vector<sgs>     gs ; 
-    std::vector<spho>    pho0 ;  // unordered push_back as they come 
     std::vector<spho>    pho ;   // spho are label structs holding 4*int  
     std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 

@@ -20,9 +20,11 @@ by this sreport.sh script.
 
    ~/opticks/sysrap/tests/sreport.sh
 
-   JOB=N3 ~/opticks/sysrap/tests/sreport.sh        ## summarize SEvt folders
-   JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab   ## from remove to local 
-   JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana    ## local plotting 
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh           ## summarize SEvt folders
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab      ## from remove to local 
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana       ## local plotting 
+
+   runprof=1 ~/opticks/sysrap/tests/sreport.sh ana   
 
 
 **JOB**

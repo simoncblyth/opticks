@@ -190,15 +190,19 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
+if [ "${arg/dbg}" != "$arg" ]; then
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
+fi 
+
 if [ "${arg/report}" != "$arg" ]; then
-    rm -f $bin.log
     sreport
     [ $? -ne 0 ] && echo $BASH_SOURCE : sreport error && exit 1 
 fi 
 
-if [ "${arg/dbg}" != "$arg" ]; then
-    dbg__ $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
+if [ "${arg/plot}" != "$arg" ]; then
+    runprof=1 $SDIR/../../sysrap/tests/sreport.sh ana
+    [ $? -ne 0 ] && echo $BASH_SOURCE : sreport.plot error && exit 1 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then

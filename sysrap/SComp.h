@@ -170,7 +170,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_SEQ )      names.push_back(SEQ_) ;  
     if( mask & SCOMP_PRD )      names.push_back(PRD_) ;  
     if( mask & SCOMP_SEED )     names.push_back(SEED_) ; 
-    if( mask & SCOMP_HIT )      names.push_back(HIT_) ; 
+    if( mask & SCOMP_HIT )      names.push_back(HIT_) ;   // CAUTION : HIT MUST STAY AFTER PHOTON IN THE NAMES
     if( mask & SCOMP_SIMTRACE ) names.push_back(SIMTRACE_) ; 
     if( mask & SCOMP_DOMAIN )   names.push_back(DOMAIN_) ; 
     if( mask & SCOMP_INPHOTON ) names.push_back(INPHOTON_) ; 

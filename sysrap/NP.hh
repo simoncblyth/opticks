@@ -199,6 +199,8 @@ struct NP
 
 
     std::string descValues() const ; 
+    std::string descSize() const ; 
+
 
     template<typename T>
     std::string descTable(int wid=7) const ; 
@@ -1739,6 +1741,18 @@ inline std::string NP::descValues() const
     }
     std::string s = ss.str(); 
     return s ; 
+}
+
+
+inline std::string NP::descSize() const 
+{
+    std::stringstream ss ; 
+    ss << "NP::descSize"
+       << " arr_bytes " << arr_bytes()
+       << " arr_kb " << arr_bytes()/1000
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

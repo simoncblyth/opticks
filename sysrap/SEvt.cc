@@ -942,18 +942,8 @@ NP* SEvt::gatherDomain() const
     evt->get_config(dom[1]);  // maxima, counts 
     NP* domain = NP::Make<float>( 2, 4, 4 );
     domain->read2<float>( (float*)&dom[0] );
-
-    // MOVED THE BELOW TO SEvt::endMeta
-    //domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
-    //domain->set_meta<unsigned>("hitmask", selector->hitmask );
-    //domain->set_meta<int>("index", index); 
-    //domain->set_meta<int>("instance", instance); 
-
     return domain ;
 }
-
-
-
 
 int SEvt::Count()  // static
 {
@@ -1530,7 +1520,7 @@ void SEvt::beginOfEvent(int eventID)
     }
 
 
-    addFrameGenstep();     // needed for simtrace and input photon running
+    addFrameGenstep();  // does genstep setup for simtrace, input photon and torch running
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
 
@@ -1749,9 +1739,6 @@ void SEvt::clear_vectors(bool shrink)
 
     gs.clear();
     if(shrink) gs.shrink_to_fit();
-
-    pho0.clear(); 
-    if(shrink) pho0.shrink_to_fit();
 
     pho.clear(); 
     if(shrink) pho.shrink_to_fit();
@@ -2395,7 +2382,6 @@ void SEvt::beginPhoton(const spho& label)
 
     unsigned genflag = get_genflag(label);  
 
-    pho0.push_back(label);    // push_back asis for debugging
     pho[idx] = label ;        // slot in the photon label  
     slot[idx] = 0 ;           // slot/bounce incremented only at tail of SEvt::pointPhoton
 
@@ -2989,13 +2975,24 @@ void SEvt::checkPhotonLineage(const spho& label) const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-NP* SEvt::gatherPho0() const { return NPX::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
 NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
 NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 bool SEvt::haveGenstepVec() const { return genstep.size() > 0 ; }
 
+/**
+SEvt::gatherPhoton
+--------------------
+
+1. allocates with NP::Make
+2. populates by reading from photon vector using the sevent.h pointer
+   that makes things follow the on device approach 
+
+NB this means the array holds an independent copy of the vector data, 
+as do all(?) the gather methods.
+
+**/
 
 NP* SEvt::gatherPhoton() const 
 { 
@@ -3004,9 +3001,6 @@ NP* SEvt::gatherPhoton() const
     p->read2( (float*)evt->photon ); 
     return p ; 
 } 
-
-
-
 
 NP* SEvt::gatherRecord() const 
 { 
@@ -3079,7 +3073,8 @@ Does CPU side equivalent of QEvent::gatherHit_
 using the photon array and the sphoton_selector 
 
 HMM: notice that this relies on having gathered 
-the photon so cannot have HitOnly on B side ? 
+the photon array, and there being an entry in the fold.
+So cannot have HitOnly on B side ? 
 
 **/
 
@@ -3102,11 +3097,7 @@ NP* SEvt::gatherSimtrace() const
 SEvt::makePhoton
 -----------------
 
-This is galled by SEvt::gatherPhoton 
-
-Formerly planted timing metadata on the photon array,
-have now moved that to the SEvt NPFold_meta.txt
-as they are not photon specific. 
+This is called by SEvt::gatherPhoton 
 
 **/
 
@@ -3380,6 +3371,8 @@ std::string SEvt::descDbg() const
 SEvt::gather_components
 ------------------------
 
+Invoked by SEvt::gather
+
 NB the provider is either this SEvt OR a QEvent instance held by QSim 
 
 Note thet QEvent::setGenstep invoked SEvt::clear so the genstep vectors 
@@ -3457,7 +3450,7 @@ SEvt::gather
 Collects the components configured by SEventConfig::CompMask
 into NPFold from the SCompProvider which can either be:
 
-* this SEvt instance for hostside running, eg U4RecorderTest, X4SimtraceTest
+* this SEvt instance for hostside running
 * the qudarap/QEvent instance for deviceside running, eg G4CXSimulateTest
 
 **/
@@ -3797,10 +3790,6 @@ This method always needs to be run even when no arrays are intended
 to be saved. The default is to not save anything but some arrays
 are usually gathered. 
 
-
-
-
-
 Saving arrays is a debugging activity configured 
 with SEventConfig::SaveCompLabel that has a large impact on performance. 
 
@@ -3870,14 +3859,14 @@ void SEvt::saveLabels(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ; 
 
-    NP* a0 = gatherPho0();  
-    if(a0) a0->save(dir, "pho0.npy"); 
 
     NP* a = gatherPho();  
     if(a) a->save(dir, "pho.npy"); 
+    delete a ; 
 
     NP* g = gatherGS(); 
     if(g) g->save(dir, "gs.npy"); 
+    delete g ; 
 
     LOG(LEVEL) << "] dir " << dir ; 
 }
@@ -4000,7 +3989,6 @@ std::string SEvt::descVec() const
        << " save_comp " << save_comp.size()  
        << " genstep " << genstep.size()  
        << " gs " << gs.size()  
-       << " pho0 " << pho0.size()  
        << " pho " << pho.size()  
        << " slot " << slot.size()
        << " photon " << photon.size()  

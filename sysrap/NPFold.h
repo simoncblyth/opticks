@@ -1086,7 +1086,7 @@ inline void NPFold::clear_(const std::vector<std::string>* keep)
     }
 
     subfold.clear();
-    ff.clear(); 
+    ff.clear();       // folder keys 
 }
 
 /**
