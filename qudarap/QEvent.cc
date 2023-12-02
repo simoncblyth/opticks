@@ -155,9 +155,14 @@ QEvent::setGenstep
 
 Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
 
+HMM: could go direct from the genstep vector to the upload without 
+gathering the array and adding to the fold 
+the array copy 
+
+
 **/
 
-int QEvent::setGenstep()  // onto device
+int QEvent::setGenstep_OLD()  // onto device
 {
     LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
     
@@ -166,20 +171,10 @@ int QEvent::setGenstep()  // onto device
     sev->t_setGenstep_0 = sstamp::Now(); 
 #endif
 
-#ifdef DEBUG_SEVT_LIFECYCLE
-    NP* gs_ = SEvent::GetGENSTEP(); 
-
-    LOG_IF(fatal, gs_ == nullptr ) 
-         << "Must SEvent::SetGENSTEP before calling QEvent::setGenstep " 
-         ;
-
-#else
     NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
     LOG_IF(fatal, gs_ == nullptr ) 
          << "Must add gensteps to SEvt::EGPU instance before calling QEvent::setGenstep " 
          ;
-#endif
-
     if(gs_ == nullptr) std::raise(SIGINT); 
 
 
@@ -198,6 +193,51 @@ int QEvent::setGenstep()  // onto device
     LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
     return rc ; 
 } 
+
+
+/**
+QEvent::setGenstep
+-------------------
+
+Differences from _OLD version
+
+1. no gatherGenstep, no intermediated NP array, instead 
+   get genstep data direct from inside the vecs with no copying 
+
+2. no SEvt::clear as that is too much dealing with 
+   other lifecycle concerns that do not belong in
+   a "setGenstep" method
+
+
+**/
+
+int QEvent::setGenstep()  // onto device
+{
+    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
+
+#ifndef PRODUCTION 
+    sev->t_setGenstep_0 = sstamp::Now(); 
+#endif
+
+    quad6* qq = sev->getGenstepVecData() ; 
+    int num_qq = sev->getGenstepVecSize() ; 
+
+    LOG_IF(fatal, qq == nullptr ) << "Must add gensteps to SEvt::EGPU before QEvent::setGenstep call " ; 
+    if(qq == nullptr) std::raise(SIGINT); 
+
+#ifndef PRODUCTION 
+    sev->t_setGenstep_1 = sstamp::Now(); 
+    sev->t_setGenstep_2 = sstamp::Now(); 
+#endif
+
+    int rc = setGenstepUpload(qq, num_qq) ; 
+
+    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
+
+    return rc ; 
+}
+
+
 
 
 /**
@@ -234,14 +274,34 @@ If the number of gensteps is zero there are no photons and no launch.
 
 int QEvent::setGenstepUpload(const NP* gs_) 
 {
+    gs = gs_ ; 
+    SGenstep::Check(gs); 
+    LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
+
+    int num_genstep = gs_->shape[0] ;
+    const char* data = gs_->bytes() ;
+    const quad6* qq = (const quad6*)data ; 
+    return setGenstepUpload(qq, num_genstep); 
+}
+
+/**
+QEvent::setGenstepUpload
+---------------------------
+
+Switch to quad6* arg to allow direct from vector upload, 
+avoiding the intermediate array.
+
+**/
+
+
+int QEvent::setGenstepUpload(const quad6* qq, int num_genstep ) 
+{
     LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
 #ifndef PRODUCTION 
     sev->t_setGenstep_3 = sstamp::Now(); 
 #endif
 
-    gs = gs_ ; 
-    SGenstep::Check(gs); 
-    evt->num_genstep = gs->shape[0] ; 
+    evt->num_genstep = num_genstep ; 
     bool not_allocated = evt->genstep == nullptr && evt->seed == nullptr ; 
 
 
@@ -255,9 +315,6 @@ int QEvent::setGenstepUpload(const NP* gs_)
         device_alloc_genstep_and_seed() ; 
     }
 
-    LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
-
-
  
     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
     LOG_IF(fatal, !num_gs_allowed) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
@@ -267,7 +324,7 @@ int QEvent::setGenstepUpload(const NP* gs_)
     sev->t_setGenstep_4 = sstamp::Now(); 
 #endif
 
-    QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep ); 
+    QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)qq, evt->num_genstep ); 
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_5 = sstamp::Now(); 
@@ -287,7 +344,7 @@ int QEvent::setGenstepUpload(const NP* gs_)
     sev->t_setGenstep_7 = sstamp::Now(); 
 #endif
 
-    int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
+    int gencode0 = SGenstep::GetGencode(qq, 0); // gencode of first genstep   
 
     if(OpticksGenstep_::IsFrame(gencode0))   // OpticksGenstep_FRAME  (HMM: Obtuse, maybe change to SIMTRACE ?)
     {
@@ -380,6 +437,10 @@ void QEvent::setInputPhoton()
     int numph = input_photon->shape[0] ; 
     setNumPhoton( numph ); 
     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), numph ); 
+
+    // HMM: there is a getter ... 
+    //delete input_photon ; 
+    //input_photon = nullptr ;  
 }
 
 void QEvent::checkInputPhoton() const 
@@ -407,13 +468,20 @@ void QEvent::checkInputPhoton() const
 
 
 
+
+/**
+QEvent::setGenstep
+-------------------
+
+Was being used by  QEventTest::setGenstep_quad6
+
 int QEvent::setGenstep(quad6* qgs, unsigned num_gs )  // TODO: what uses this ? eliminate ?
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
     return setGenstepUpload( gs_ ); 
 }
-
+**/
 
 
 
@@ -475,17 +543,14 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
 
 
 
-
 NP* QEvent::getGenstep() const 
 {
     return const_cast<NP*>(gs) ;  // const_cast so can use QEvent::gatherComponent_
 }
-
 NP* QEvent::getInputPhoton() const 
 {
     return input_photon ; 
 }
-
 
 
 

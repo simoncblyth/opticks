@@ -4,6 +4,8 @@
 
 #include "OpticksGenstep.h"
 #include "NP.hh"
+#include "NPX.h"
+
 #include "QBuf.hh"
 
 #include "spath.h"
@@ -209,7 +211,10 @@ void QEventTest::setGenstep_checkEvt()
 void QEventTest::setGenstep_quad6()
 {
     std::cout << "QEventTest::setGenstep_quad6" << std::endl ; 
-    quad6 gs ; 
+
+    std::vector<quad6> qgs(1) ;
+
+    quad6& gs = qgs[0]  ; 
     gs.q0.u = make_uint4( OpticksGenstep_CARRIER, 0u, 0u, 10u );   
     gs.q1.u = make_uint4( 0u,0u,0u,0u );  
     gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // post
@@ -217,8 +222,11 @@ void QEventTest::setGenstep_quad6()
     gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f );  // polw
     gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // flag
 
+    NP* a_gs = NPX::ArrayFromVec<float,quad6>( qgs, 6, 4) ;
+
+
     QEvent* event = new QEvent ; 
-    event->setGenstep(&gs, 1); 
+    event->setGenstepUpload( a_gs );  
 
     event->gs->dump(); 
     event->checkEvt(); 

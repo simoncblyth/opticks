@@ -131,10 +131,23 @@ const quad6& SGenstep::GetGenstep(const NP* gs, unsigned gs_idx )
     return q ; 
 }
 
+
+int SGenstep::GetGencode( const quad6* qq, unsigned gs_idx  ) // static
+{
+    const quad6& q = qq[gs_idx] ; 
+    return GetGencode(q) ; 
+}
 int SGenstep::GetGencode( const NP* gs, unsigned gs_idx  ) // static
 {
     const quad6& q = GetGenstep(gs, gs_idx); 
     return GetGencode(q) ; 
+}
+
+
+int SGenstep::GetNumPhoton( const quad6* qq, unsigned gs_idx  ) // static
+{
+    const quad6& q = qq[gs_idx] ; 
+    return GetNumPhoton(q) ; 
 }
 int SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
 {

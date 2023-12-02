@@ -36,7 +36,9 @@ enum {
     SCOMP_PIXEL     = 0x1 << 16,
     SCOMP_G4STATE   = 0x1 << 17,
     SCOMP_AUX       = 0x1 << 18,
-    SCOMP_SUP       = 0x1 << 19
+    SCOMP_SUP       = 0x1 << 19,
+    SCOMP_PHO       = 0x1 << 20,
+    SCOMP_GS        = 0x1 << 21
 };
 
 struct SYSRAP_API SCompProvider
@@ -50,6 +52,7 @@ struct SYSRAP_API SComp
 {
     static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,prd,seed,hit,simtrace,domain,inphoton,tag,flat" ; 
     static constexpr const char* UNDEFINED_ = "undefined" ; 
+
     static constexpr const char* GENSTEP_   = "genstep" ; 
     static constexpr const char* PHOTON_    = "photon" ; 
     static constexpr const char* RECORD_    = "record" ; 
@@ -63,12 +66,15 @@ struct SYSRAP_API SComp
     static constexpr const char* INPHOTON_  = "inphoton" ; 
     static constexpr const char* TAG_       = "tag" ; 
     static constexpr const char* FLAT_      = "flat" ; 
+
     static constexpr const char* ISECT_     = "isect" ; 
     static constexpr const char* FPHOTON_   = "fphoton" ; 
     static constexpr const char* PIXEL_     = "pixel" ; 
     static constexpr const char* G4STATE_   = "g4state" ; 
     static constexpr const char* AUX_       = "aux" ; 
     static constexpr const char* SUP_       = "sup" ; 
+    static constexpr const char* PHO_       = "pho" ; 
+    static constexpr const char* GS_        = "gs" ; 
 
     static bool Match(const char* q, const char* n ); 
     static unsigned    Comp(const char* name); 
@@ -99,6 +105,8 @@ struct SYSRAP_API SComp
     static bool IsG4State( unsigned mask){ return mask & SCOMP_G4STATE ; }
     static bool IsAux(     unsigned mask){ return mask & SCOMP_AUX ; }
     static bool IsSup(     unsigned mask){ return mask & SCOMP_SUP ; }
+    static bool IsPho(     unsigned mask){ return mask & SCOMP_PHO ; }
+    static bool IsGS(      unsigned mask){ return mask & SCOMP_GS ; }
 
 };
 
@@ -129,6 +137,8 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, G4STATE_))  comp = SCOMP_G4STATE ; 
     if(Match(name, AUX_))      comp = SCOMP_AUX ; 
     if(Match(name, SUP_))      comp = SCOMP_SUP ; 
+    if(Match(name, PHO_))      comp = SCOMP_PHO ; 
+    if(Match(name, GS_))       comp = SCOMP_GS ; 
     return comp ; 
 }
 inline const char* SComp::Name(unsigned comp)
@@ -156,6 +166,8 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_G4STATE:   s = G4STATE_    ; break ;  
         case SCOMP_AUX:       s = AUX_        ; break ;  
         case SCOMP_SUP:       s = SUP_        ; break ;  
+        case SCOMP_PHO:       s = PHO_        ; break ;  
+        case SCOMP_GS:        s = GS_         ; break ;  
     }
     return s ; 
 }
@@ -182,6 +194,8 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_G4STATE )  names.push_back(G4STATE_) ; 
     if( mask & SCOMP_AUX )      names.push_back(AUX_) ; 
     if( mask & SCOMP_SUP )      names.push_back(SUP_) ; 
+    if( mask & SCOMP_PHO )      names.push_back(PHO_) ; 
+    if( mask & SCOMP_GS )       names.push_back(GS_) ; 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" ); 

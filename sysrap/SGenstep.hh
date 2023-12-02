@@ -23,7 +23,11 @@ struct SYSRAP_API SGenstep
     static int GetNumPhoton( const quad6& gs ) ; 
 
     static const quad6& GetGenstep(const NP* gs, unsigned gs_idx ); 
+
+    static int GetGencode( const quad6* qq, unsigned gs_idx  ); 
     static int GetGencode(    const NP* gs, unsigned gs_idx  ); 
+
+    static int GetNumPhoton( const quad6* qq, unsigned gs_idx  ); 
     static int GetNumPhoton( const NP* gs, unsigned gs_idx  ); 
 
     static void Check(const NP* gs); 

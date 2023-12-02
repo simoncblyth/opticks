@@ -511,6 +511,11 @@ To avoid issues with inphoton and saving 2nd events,
 treat the inphoton more like other arrays by having a distinct
 narrowed inphoton copy for each event. 
 
+HMM: unlike other gathered component this is not being 
+added to the fold, so will not be cleared ? 
+
+TODO : switch to narrowing at initialization, so can avoid the gather 
+
 
 **/
 
@@ -1493,14 +1498,16 @@ Lifecycle::
             A:SEvt::beginOfEvent        
            
             QEvent::setGenstep
-               B:SEvt::getGenstep 
                A:SEvt::clear
                QEvent::setGenstep(NP*)  
            
             SCSGOptiX::simulate_launch 
            
             A:SEvt::endOfEvent         
+               
 
+ECPU
+-----
 
 As gensteps are collected before EGPU.beginOfEvent
 cannot clear EGPU at this juncture. 
@@ -1528,10 +1535,10 @@ void SEvt::beginOfEvent(int eventID)
 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    if(isECPU())
-    {
-        clear(); 
-    }
+    /*
+    if(isECPU()) clear();   // following QSim shuffle no need to not-clear for EGPU 
+    */
+    clear(); 
 
 
     addOtherGenstep();  // does genstep setup for simtrace, input photon and torch running
@@ -1571,8 +1578,8 @@ void SEvt::endOfEvent(int eventID)
     int index_ = 1+eventID ;    
     endIndex(index_);   // also sets t_EndOfEvent stamp
     endMeta(); 
-    save();              // gather and save SEventConfig configured arrays
 
+    save();              // gather and save SEventConfig configured arrays
     clear(); 
 
     //sprof::Stamp(p_SEvt__endOfEvent_1);  
@@ -3011,7 +3018,30 @@ void SEvt::checkPhotonLineage(const spho& label) const
 NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
 NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
+
+/**
+SEvt::gatherGenstep
+--------------------
+
+As gensteps always originate on CPU its kinda silly to call access gather-ing.
+
+**/
+
 NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
+
+
+quad6* SEvt::getGenstepVecData() const 
+{
+    return genstep.size() == 0 ? nullptr : (quad6*)genstep.data(); 
+}
+int SEvt::getGenstepVecSize() const 
+{
+    return genstep.size(); 
+}
+
+
+
+
 bool SEvt::haveGenstepVec() const { return genstep.size() > 0 ; }
 
 /**
@@ -3269,6 +3299,8 @@ NP* SEvt::gatherComponent_(unsigned cmp) const
         case SCOMP_SEED:      a = gatherSeed()     ; break ;   
         case SCOMP_HIT:       a = gatherHit()      ; break ;   
         case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;   
+        case SCOMP_PHO:       a = gatherPho()      ; break ;   
+        case SCOMP_GS:        a = gatherGS()       ; break ;   
     }   
     return a ; 
 }
@@ -3403,12 +3435,29 @@ std::string SEvt::descDbg() const
 }
 
 /**
-SEvt::gather_components
-------------------------
+SEvt::gather_components : collects fresh arrays into NPFold from provider
+---------------------------------------------------------------------------
 
-Invoked by SEvt::gather
+SEvt::gather_components is invoked by SEvt::gather from SEvt::save::
 
-NB the provider is either this SEvt OR a QEvent instance held by QSim 
+
+     +-------------------+                 +-----------------+
+     | QEvent/GPU buf    |                 |  SEvt/NPFold    | 
+     |   OR              | === gather ===> |                 |
+     | SEvt vecs         |                 |                 |
+     +-------------------+                 +-----------------+
+
+
+1. invokes gatherComponent on the SCompProvider instance which is either 
+   this SEvt instance for CPU/U4Recorder running OR the QEvent instance
+   for GPU/QSim runnning 
+
+   * the SCompProvider allocates an NP array and populates it either 
+     from vectors for CPU running or by copies from GPU device buffers 
+
+2. the freshly created NP arrays are added to the NPFold, 
+   NB pre-existing keys cause NPFold asserts, so it is essential 
+   that SEvt::clear is called to clear the fold before gathering 
 
 Note thet QEvent::setGenstep invoked SEvt::clear so the genstep vectors 
 are clear when this gets called. So must rely on the contents of the 
@@ -3874,7 +3923,10 @@ void SEvt::save(const char* dir_)
     save_fold->save(dir); 
     LOG(LEVEL) << "] save_fold.save " << dir ; 
 
-    saveLabels(dir);   
+    // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS 
+
+
+  //    saveLabels(dir);   
     saveFrame(dir);   
     // could add these to the fold ?  
 }
@@ -3889,7 +3941,6 @@ void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
 SEvt::saveLabels : hostside running only 
 --------------------------------------------
 
-**/
 
 void SEvt::saveLabels(const char* dir) const 
 {
@@ -3906,6 +3957,10 @@ void SEvt::saveLabels(const char* dir) const
 
     LOG(LEVEL) << "] dir " << dir ; 
 }
+
+**/
+
+
 
 void SEvt::saveFrame(const char* dir) const 
 {
@@ -3929,6 +3984,8 @@ std::string SEvt::descComponent() const
     const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
     const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
     const NP* g4state  = fold->get(SComp::Name(SCOMP_G4STATE)) ; 
+    const NP* pho      = fold->get(SComp::Name(SCOMP_PHO)) ; 
+    const NP* gs       = fold->get(SComp::Name(SCOMP_GS)) ; 
 
     std::stringstream ss ; 
     ss << "SEvt::descComponent" 
@@ -3998,6 +4055,14 @@ std::string SEvt::descComponent() const
        << std::setw(20) << ( g4state ? g4state->sstr() : "-" ) 
        << " "
        << std::endl
+       << std::setw(20) << "pho" << " " 
+       << std::setw(20) << ( pho ? pho->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "gs" << " " 
+       << std::setw(20) << ( gs ? gs->sstr() : "-" ) 
+       << " "
+       << std::endl
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -4044,13 +4109,13 @@ std::string SEvt::descVec() const
 
 
 
-
-
 const NP* SEvt::getGenstep() const { return fold->get(SComp::GENSTEP_) ;}
 const NP* SEvt::getPhoton() const {  return fold->get(SComp::PHOTON_) ; }
 const NP* SEvt::getHit() const {     return fold->get(SComp::HIT_) ; }
 const NP* SEvt::getAux() const {     return fold->get(SComp::AUX_) ; }
 const NP* SEvt::getSup() const {     return fold->get(SComp::SUP_) ; }
+const NP* SEvt::getPho() const {     return fold->get(SComp::PHO_) ; }
+const NP* SEvt::getGS() const {      return fold->get(SComp::GS_) ; }
 
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    

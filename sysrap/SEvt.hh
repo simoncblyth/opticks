@@ -532,7 +532,11 @@ public:
     NP* gatherPho() const ;    // resized at genstep and slotted in 
     NP* gatherGS() const ;   // genstep labels from std::vector<sgs>  
 
-    NP* gatherGenstep() const ;  // from genstep vector
+    NP*    gatherGenstep() const ;  // from genstep vector
+    quad6* getGenstepVecData() const ; 
+    int    getGenstepVecSize() const ; 
+
+
     bool haveGenstepVec() const ; 
 
 
@@ -627,7 +631,7 @@ public:
 
     void save(const char* dir); 
     void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
-    void saveLabels(const char* dir) const ;  // formerly savePho
+    //void saveLabels(const char* dir) const ; 
     void saveFrame(const char* dir_) const ; 
 
     std::string descComponent() const ; 
@@ -639,6 +643,8 @@ public:
     const NP* getHit() const ; 
     const NP* getAux() const ; 
     const NP* getSup() const ; 
+    const NP* getPho() const ; 
+    const NP* getGS() const ; 
 
     unsigned getNumPhoton() const ; 
     unsigned getNumHit() const ; 

@@ -89,15 +89,17 @@ public:
     A2: Dont need the meta, need the method that access the underlying SEvt.  
     **/
 public:
+    int setGenstep_OLD();  // PRIMARY ACTION OF QEvent 
     int setGenstep();  // PRIMARY ACTION OF QEvent 
 
 private:
+    int setGenstepUpload(const quad6* qq, int num_genstep ) ; 
     int  setGenstepUpload(const NP* gs);
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     void checkInputPhoton() const ; 
 
-    int setGenstep(quad6* gs, unsigned num_gs ); 
+    //int setGenstep(quad6* gs, unsigned num_gs ); 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
     void     count_genstep_photons_and_fill_seed_buffer(); 
@@ -122,8 +124,10 @@ public:
     const char* getTypeName() const ; 
     NP*      gatherComponent(unsigned comp) const ; 
 public:
+    // [ expedient getters : despite these coming from SEvt 
     NP*      getGenstep() const ; 
     NP*      getInputPhoton() const ; 
+    // ]
 
     NP*      gatherPhoton() const ; 
     NP*      gatherHit() const ; 
