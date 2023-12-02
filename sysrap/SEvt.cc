@@ -989,12 +989,12 @@ SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
 SEvt* SEvt::Create(int idx)  // static
 { 
     assert( idx == 0 || idx == 1); 
-    SEvt* evt = new SEvt ; 
-    evt->setInstance(idx) ; 
-    INSTANCES[idx] = evt  ; 
-    assert( Get(idx) == evt ); 
+    SEvt* ev = new SEvt ; 
+    ev->setInstance(idx) ; 
+    INSTANCES[idx] = ev  ; 
+    assert( Get(idx) == ev ); 
     LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
-    return evt  ; 
+    return ev  ; 
 }
 
 bool SEvt::isEGPU() const { return instance == EGPU ; }
@@ -1144,7 +1144,7 @@ HMM : versioning the reldir is too useful to be done here
 
 SEvt* SEvt::HighLevelCreate(int idx) // static
 {
-    SEvt* evt = nullptr ; 
+    SEvt* ev = nullptr ; 
 
     int g4state_rerun_id = SEventConfig::G4StateRerun(); 
     bool rerun = g4state_rerun_id > -1 ;
@@ -1176,18 +1176,18 @@ SEvt* SEvt::HighLevelCreate(int idx) // static
     if(rerun == false)
     {   
         SEvt::SetReldir(alldir); 
-        evt = SEvt::Create(idx);    
+        ev = SEvt::Create(idx);    
     }   
     else
     {   
         SEvt::SetReldir(seldir);   // HUH: LoadRelative calls this static anyhow ?
-        evt = SEvt::LoadRelative(alldir0) ;
-        evt->clear_except("g4state");  // clear loaded evt but keep g4state 
+        ev = SEvt::LoadRelative(alldir0) ;
+        ev->clear_except("g4state");  // clear loaded evt but keep g4state 
         // when rerunning have to load states from alldir0 and then change reldir to save into seldir
     }
     // HMM: note how reldir at object rather then static level is a bit problematic for loading 
 
-    return evt ; 
+    return ev ; 
 }
 
 void SEvt::Check(int idx)
@@ -1250,10 +1250,10 @@ void SEvt::addTorchGenstep()
 SEvt* SEvt::LoadAbsolute(const char* dir_) // static
 {
     const char* dir = spath::Resolve(dir_); 
-    SEvt* evt = new SEvt ; 
-    int rc = evt->loadfold(dir) ; 
-    if(rc != 0) evt->is_loadfail = true ; 
-    return evt  ; 
+    SEvt* ev = new SEvt ; 
+    int rc = ev->loadfold(dir) ; 
+    if(rc != 0) ev->is_loadfail = true ; 
+    return ev  ; 
 }
 
 
@@ -1276,12 +1276,12 @@ SEvt* SEvt::LoadRelative(const char* rel)  // static
 
     if(rel != nullptr) SetReldir(rel); 
 
-    SEvt* evt = new SEvt ; 
-    int rc = evt->load() ; 
-    if(rc != 0) evt->is_loadfail = true ; 
+    SEvt* ev = new SEvt ; 
+    int rc = ev->load() ; 
+    if(rc != 0) ev->is_loadfail = true ; 
 
     LOG(LEVEL) << "]" ; 
-    return evt ; 
+    return ev ; 
 }
 
 
@@ -1538,6 +1538,7 @@ void SEvt::beginOfEvent(int eventID)
 
     setMeta<int>("NumPhotonCollected", numphoton_collected ); 
     setMeta<int>("NumGenstepCollected", numgenstep_collected ); 
+    setMeta<int>("MaxBounce", evt->max_bounce ); 
 
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
@@ -2051,7 +2052,6 @@ sgs SEvt::addGenstep(const quad6& q_)
 #ifdef SEVT_NUMPHOTON_FROM_GENSTEP_CHECK
     unsigned numphoton_from_genstep = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
     assert( numphoton_from_genstep == numphoton_collected );   
-    // DONE: Zike reports this assert succeeds, so have removed the slower getNumPhotonFromGenstep
 #endif
 
     unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep 
@@ -2065,8 +2065,8 @@ sgs SEvt::addGenstep(const quad6& q_)
     s.offset = numphoton_collected ;  // sum numphotons from all previously collected gensteps (since last clear)
     s.gentype = q.gentype() ; 
 
-    gs.push_back(s) ;      // summary labels 
-    genstep.push_back(q) ; // actual genstep params : copied into the vector
+    gs.push_back(s) ;                 // summary labels 
+    genstep.push_back(q) ;            // actual genstep params : copied into the vector
 
     numgenstep_collected += 1 ; 
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
@@ -2255,64 +2255,79 @@ void SEvt::hostside_running_resize_()
         << " evt.num_photon/M " << evt->num_photon/M  
         ; 
 
-    if(evt->num_photon > 0) 
+    bool shrink = true ; 
+
+    if(evt->num_photon > 0)        // no device side equivalent array 
     { 
-         pho.resize(  evt->num_photon );  
-         // no device side equivalent array 
+        pho.resize(  evt->num_photon );  
+        if(shrink) pho.shrink_to_fit();
     }
-    if(evt->num_photon > 0) 
+    if(evt->num_photon > 0)       // no device side equivalent array 
     {
         slot.resize( evt->num_photon ); 
-         // no device side equivalent array 
+        if(shrink) slot.shrink_to_fit();
     }
+    // pho and slot look essential for U4Recorder bookkeeping 
+
+
     if(evt->num_photon > 0) 
     { 
         photon.resize(evt->num_photon);
+        if(shrink) photon.shrink_to_fit();
         evt->photon = photon.data() ; 
     }
     if(evt->num_record > 0) 
     {
         record.resize(evt->num_record); 
+        if(shrink) record.shrink_to_fit();
         evt->record = record.data() ; 
     }
     if(evt->num_rec > 0) 
     {
         rec.resize(evt->num_rec); 
+        if(shrink) rec.shrink_to_fit();
         evt->rec = rec.data() ; 
     }
     if(evt->num_aux > 0) 
     {
         aux.resize(evt->num_aux); 
+        if(shrink) aux.shrink_to_fit();
         evt->aux = aux.data() ; 
     }
     if(evt->num_sup > 0) 
     {
         sup.resize(evt->num_sup); 
+        if(shrink) sup.shrink_to_fit();
         evt->sup = sup.data() ; 
     }
     if(evt->num_seq > 0) 
     {
         seq.resize(evt->num_seq); 
+        if(shrink) seq.shrink_to_fit();
         evt->seq = seq.data() ; 
     }
     if(evt->num_prd > 0) 
     {
         prd.resize(evt->num_prd); 
+        if(shrink) prd.shrink_to_fit();
         evt->prd = prd.data() ; 
     }
     if(evt->num_tag > 0) 
     {
         tag.resize(evt->num_tag); 
+        if(shrink) tag.shrink_to_fit();
         evt->tag = tag.data() ; 
     }
     if(evt->num_flat > 0) 
     {
         flat.resize(evt->num_flat); 
+        if(shrink) flat.shrink_to_fit();
         evt->flat = flat.data() ; 
     }
     if(evt->num_simtrace > 0) 
     {
         simtrace.resize(evt->num_simtrace); 
+        if(shrink) simtrace.shrink_to_fit();
         evt->simtrace = simtrace.data() ; 
     }
 }
@@ -3093,6 +3108,8 @@ using the photon array and the sphoton_selector
 HMM: notice that this relies on having gathered 
 the photon array, and there being an entry in the fold.
 So cannot have HitOnly on B side ? 
+
+This means that hit must come after photon in the component order 
 
 **/
 

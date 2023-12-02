@@ -368,7 +368,8 @@ void G4CXOpticks::init_SEvt()
     smeta::Collect(*rms, "G4CXOpticks__init_SEvt"); 
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
 
-    SEvt::SetRunMetaString("QSim__Switches", QSim::Switches() ); 
+    std::string switches = QSim::Switches() ;
+    SEvt::SetRunMetaString("QSim__Switches", switches.c_str() ); 
 
 #ifdef WITH_CUSTOM4
     std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
