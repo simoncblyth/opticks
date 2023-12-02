@@ -1428,75 +1428,80 @@ Dump flags with::
    ssys_test
 
 **/
-std::string QSim::Desc()  // static
+std::string QSim::Desc(char delim)  // static
 {
     std::stringstream ss ; 
-    ss << "QSim::Desc"
-       << std::endl 
+    ss << ( delim == ',' ? "" : "QSim::Desc\n" )
 #ifdef CONFIG_Debug
        << "CONFIG_Debug"
 #else
-       << "NOT:CONFIG_Debug"
+       << "NOT-CONFIG_Debug"
 #endif
-       << std::endl 
+       << delim 
 #ifdef CONFIG_RelWithDebInfo
        << "CONFIG_RelWithDebInfo"
 #else
-       << "NOT:CONFIG_RelWithDebInfo"
+       << "NOT-CONFIG_RelWithDebInfo"
 #endif
-       << std::endl 
+       << delim 
 #ifdef CONFIG_Release
        << "CONFIG_Release"
 #else
-       << "NOT:CONFIG_Release"
+       << "NOT-CONFIG_Release"
 #endif
-       << std::endl 
+       << delim 
 #ifdef CONFIG_MinSizeRel
        << "CONFIG_MinSizeRel"
 #else
-       << "NOT:CONFIG_MinSizeRel"
+       << "NOT-CONFIG_MinSizeRel"
 #endif
-       << std::endl 
+       << delim 
 #ifdef PRODUCTION
        << "PRODUCTION"
 #else
-       << "NOT:PRODUCTION"
+       << "NOT-PRODUCTION"
 #endif
-       << std::endl 
+       << delim 
 #ifdef WITH_CHILD
        << "WITH_CHILD"
 #else
-       << "NOT:WITH_CHILD"
+       << "NOT-WITH_CHILD"
 #endif
-       << std::endl 
+       << delim
 #ifdef WITH_CUSTOM4
        << "WITH_CUSTOM4"
 #else
-       << "NOT:WITH_CUSTOM4"
+       << "NOT-WITH_CUSTOM4"
 #endif
-       << std::endl 
+       << delim
 #ifdef PLOG_LOCAL
        << "PLOG_LOCAL"
 #else
-       << "NOT:PLOG_LOCAL"
+       << "NOT-PLOG_LOCAL"
 #endif
-       << std::endl 
+       << delim
 #ifdef DEBUG_PIDX
        << "DEBUG_PIDX"
 #else
-       << "NOT:DEBUG_PIDX"
+       << "NOT-DEBUG_PIDX"
 #endif
-       << std::endl 
+       << delim
 #ifdef DEBUG_TAG
        << "DEBUG_TAG"
 #else
-       << "NOT:DEBUG_TAG"
+       << "NOT-DEBUG_TAG"
 #endif
-       << std::endl 
+       << delim
        ;
     std::string str = ss.str() ; 
     return str ;  
 }
 
+
+
+std::string QSim::Switches()  // static
+{
+    return Desc(','); 
+}
 
 

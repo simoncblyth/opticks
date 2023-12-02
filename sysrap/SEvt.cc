@@ -78,6 +78,12 @@ NP* SEvt::Init_RUN_META() //
 
 NP* SEvt::RUN_META = Init_RUN_META() ; 
 
+std::string* SEvt::RunMetaString() // static
+{
+    return RUN_META ? &(RUN_META->meta) : nullptr ; 
+}
+
+
 NP* SEvt::UU = nullptr ; 
 NP* SEvt::UU_BURN = nullptr ; // NP::Load("$SEvt__UU_BURN") ; 
 
@@ -606,8 +612,8 @@ is now split from eg initInputPhotons.
     transforms the photons using the frame transform
 
 Formerly(?) for simtrace and input photon running with or without a transform 
-it was necessary to call this for every event due to the former call to addFrameGenstep, 
-but now that the genstep setup is moved to SEvt::BeginOfEvent it is only needed 
+it was necessary to call this for every event due to the former call to addOtherGenstep, 
+but now that the genstep setup is moved to SEvt::beginOfEvent it is only needed 
 to call this for each frame, usually once only. 
 
 **/
@@ -616,7 +622,6 @@ to call this for each frame, usually once only.
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
-    // former call to addFrameGenstep() is relocated to SEvt::BeginOfEvent
     transformInputPhoton();  
 }
 
@@ -662,7 +667,7 @@ void SEvt::transformInputPhoton()
 
 
 /**
-SEvt::addFrameGenstep  TODO: this needs better name "beginOfEvent_setupGenstep" ?
+SEvt::addOtherGenstep  (formerly addFrameGenstep)
 --------------------------------------------------------------------------------------
 
 This is invoked from SEvt::beginOfEvent together with SEvt::setIndex
@@ -682,7 +687,7 @@ have been done already.
 
 **/
 
-void SEvt::addFrameGenstep()
+void SEvt::addOtherGenstep()
 {
     LOG_IF(info, LIFECYCLE) << id() ; 
     LOG(LEVEL); 
@@ -1239,7 +1244,7 @@ void SEvt::addTorchGenstep()
 }
 
 
-// InputPhoton genstep addition invoked from SEvt::addFrameGenstep
+// InputPhoton genstep addition invoked from SEvt::addOtherGenstep
 
 
 SEvt* SEvt::LoadAbsolute(const char* dir_) // static
@@ -1372,6 +1377,14 @@ template void SEvt::SetRunMeta<unsigned>( const char*, unsigned  );
 template void SEvt::SetRunMeta<float>(    const char*, float  );
 template void SEvt::SetRunMeta<double>(   const char*, double  );
 template void SEvt::SetRunMeta<std::string>( const char*, std::string  );
+
+void SEvt::SetRunMetaString(const char* k, const char* v ) // static
+{
+    std::string* rms = RunMetaString(); 
+    assert(rms); 
+    NP::SetMeta<std::string>(*rms, k, v ); 
+}
+
 
 
 void SEvt::SetRunProf(const char* k, const sprof& v) // static
@@ -1507,6 +1520,7 @@ void SEvt::beginOfEvent(int eventID)
 
     setStage(SEvt__beginOfEvent); 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
+
     int index_ = 1+eventID ;  
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);   
@@ -1520,7 +1534,11 @@ void SEvt::beginOfEvent(int eventID)
     }
 
 
-    addFrameGenstep();  // does genstep setup for simtrace, input photon and torch running
+    addOtherGenstep();  // does genstep setup for simtrace, input photon and torch running
+
+    setMeta<int>("NumPhotonCollected", numphoton_collected ); 
+    setMeta<int>("NumGenstepCollected", numgenstep_collected ); 
+
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
 

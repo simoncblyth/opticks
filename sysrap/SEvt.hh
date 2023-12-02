@@ -232,6 +232,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static NP* Init_RUN_META(); 
     static NP* RUN_META ; 
+    static std::string* RunMetaString();  
 
 
     static NP* UU ;  
@@ -316,7 +317,7 @@ public:
     static const bool transformInputPhoton_WIDE ; 
     void transformInputPhoton(); 
 
-    void addFrameGenstep(); 
+    void addOtherGenstep(); 
     void assertZeroGenstep();
 
 
@@ -401,6 +402,8 @@ public:
 
     template<typename T>
     static void SetRunMeta(const char* k, T v ); 
+
+    static void SetRunMetaString(const char* k, const char* v ); 
 
     static void SetRunProf(const char* k, const sprof& v); 
     static void SetRunProf(const char* k);  // NOW 

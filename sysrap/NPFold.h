@@ -956,6 +956,11 @@ NPFold::add_
 
 This lower level method does not add DOT_NPY to keys
 
+NB the assertion that the key is not already present
+avoids potential memory leak if were to just replace 
+the pointer loosing connection with that previous allocation
+
+
 **/
 inline void NPFold::add_(const char* k, const NP* a) 
 {

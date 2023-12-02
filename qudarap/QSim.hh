@@ -171,7 +171,8 @@ public:
 
     void multifilm_lookup_all( quad2* sample , quad2* result ,  unsigned width, unsigned height );
 
-    static std::string Desc(); 
+    static std::string Desc(char delim='\n'); 
+    static std::string Switches(); 
 };
 
 

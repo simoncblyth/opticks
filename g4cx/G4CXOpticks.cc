@@ -358,18 +358,23 @@ void G4CXOpticks::init_SEvt()
     sim->serialize() ;  
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
 
-    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  Y: Essential set_matline of Cerenkov Genstep 
-
-    smeta::Collect(sev->meta, "G4CXOpticks::init_SEvt"); 
+    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  A: YES, Essential set_matline of Cerenkov Genstep 
 
     std::string gm = sim->getGPUMeta() ; 
-    sev->setMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
+    std::string* rms = SEvt::RunMetaString() ; 
+    assert(rms); 
+    
+    smeta::Collect(*rms, "G4CXOpticks__init_SEvt"); 
+    SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
+    SEvt::SetRunMetaString("QSim__Switches", QSim::Switches() ); 
 
 #ifdef WITH_CUSTOM4
     std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
-    sev->setMetaString("C4Version", c4.c_str()); 
+    SEvt::SetRunMetaString("C4Version", c4.c_str()); 
 #else
-    sev->setMetaString("C4Version", "NOT-WITH_CUSTOM4" ); 
+    SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" ); 
 #endif
 
 }
