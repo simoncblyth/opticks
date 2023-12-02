@@ -138,7 +138,11 @@ class Runprofile_ALL(object):
             ax.set_ylabel(Subprofile.YLABEL, fontsize=Subprofile.FONTSIZE )
 
             yl = ax.get_ylim()
-            ax.vlines( tp[::4], yl[0], yl[1] ) 
+            ax.vlines( tp[::4], yl[0], yl[1], color="blue", label="nBeg" ) 
+            ax.vlines( tp[1::4], yl[0], yl[1], color="red", label="nEnd" ) 
+            ax.vlines( tp[2::4], yl[0], yl[1], color="cyan", label="pBeg" ) 
+            ax.vlines( tp[3::4], yl[0], yl[1], color="pink", label="pEnd" ) 
+
             ax.legend()
             fig.show()
         pass  

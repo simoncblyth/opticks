@@ -38,6 +38,8 @@ struct ssys
 
 
     static int getenv_ParseInt(const char* ekey, const char* fallback);  
+    static std::vector<int>* getenv_ParseIntSpecList(const char* ekey, const char* fallback); 
+
     static int getenvint(const char* ekey, int fallback);  
 
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
@@ -214,6 +216,14 @@ inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
     bool valid = spec != nullptr && strlen(spec) > 0 ;  
     if(!valid) return -1 ;
     return sstr::ParseInt<int>(spec) ;  
+}
+
+inline std::vector<int>* ssys::getenv_ParseIntSpecList(const char* ekey, const char* fallback)
+{
+    const char* spec = getenvvar(ekey, fallback); 
+    bool valid = spec != nullptr && strlen(spec) > 0 ;  
+    if(!valid) return nullptr ;
+    return sstr::ParseIntSpecList<int>( spec, ',' ); 
 }
 
 

@@ -54,6 +54,7 @@ struct sstr
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
 
+    static std::string FormatIndexDefault_( int idx, const char* hdr=nullptr  );  // "p001" "p002" "n001" "z000" ... 
     static std::string FormatIndex_( int idx, bool prefix, int wid, const char* hdr ); 
     static const char* FormatIndex(  int idx, bool prefix, int wid, const char* hdr ); 
 
@@ -377,6 +378,12 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
 template std::string sstr::Format_( const char*, const char*, int, int ); 
 
 
+inline std::string sstr::FormatIndexDefault_( int idx, const char* hdr )
+{
+    bool prefix = true ; 
+    int wid = 3 ; 
+    return FormatIndex_(idx,  prefix, wid, hdr ); 
+}
 
 inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid, const char* hdr )
 {

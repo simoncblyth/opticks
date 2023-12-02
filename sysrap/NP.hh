@@ -4416,6 +4416,10 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
 NP::makeMetaKVProfileArray
 ----------------------------
 
+1. finds metadata lines looking like profile stamps with keys containing the ptn, 
+   a nullptr ptn matches all lines 
+2. create (N,3) int64_t array filled with the stamps (t[us],vm[kb],rs[kb])
+
 **/
 
 inline NP* NP::makeMetaKVProfileArray(const char* ptn) const

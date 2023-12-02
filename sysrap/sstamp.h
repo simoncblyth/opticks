@@ -13,6 +13,7 @@ struct sstamp
     static std::string FormatInt(int64_t t, int wid ); 
     static bool LooksLikeStampInt(const char* str); 
     static void sleep(int seconds); 
+    static void sleep_us(int microseconds); 
 }; 
 
 inline uint64_t sstamp::Now()
@@ -96,4 +97,13 @@ inline void sstamp::sleep(int seconds)
     std::chrono::seconds dura(seconds);
     std::this_thread::sleep_for( dura );
 }
+
+inline void sstamp::sleep_us(int us)
+{
+    std::chrono::microseconds dura(us);
+    std::this_thread::sleep_for( dura );
+}
+
+
+
 

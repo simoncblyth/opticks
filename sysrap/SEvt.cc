@@ -3472,6 +3472,7 @@ void SEvt::gather()
 
 void SEvt::add_array( const char* k, const NP* a )
 {
+    LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
     fold->add(k, a);  
 }
 

@@ -430,8 +430,8 @@ struct U
     static std::string FormName_( int idx, int wid=3 ); 
     static const char* FormName( int idx, int wid=3 ); 
 
-    static std::string FormName_( const char* prefix, int idx, const char* ext ); 
-    static const char* FormName(  const char* prefix, int idx, const char* ext ); 
+    static std::string FormName_( const char* prefix, int idx, const char* ext, int wid=-1 ); 
+    static const char* FormName(  const char* prefix, int idx, const char* ext, int wid=-1 ); 
 
     static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
     static const char* FormName( const char* prefix, const char* body, const char* ext ); 
@@ -973,20 +973,33 @@ inline const char* U::FormName( int idx, int wid )
 }
 
 
-inline std::string U::FormName_( const char* prefix, int idx, const char* ext )
+inline std::string U::FormName_( const char* prefix, int idx, const char* ext, int wid )
 {
     std::stringstream ss ; 
     if(prefix) ss << prefix ; 
-    ss << idx ; 
+
+    if( wid > 0 )
+    {
+        ss << std::setfill('0') << std::setw(wid) << idx ; 
+    }
+    else
+    {
+        ss << idx ; 
+    }
+
     if(ext) ss << ext ; 
     std::string s = ss.str(); 
     return s ; 
 }
-inline const char* U::FormName( const char* prefix, int idx, const char* ext )
+inline const char* U::FormName( const char* prefix, int idx, const char* ext, int wid )
 {
-    std::string name = FormName_(prefix, idx, ext ); 
+    std::string name = FormName_(prefix, idx, ext, wid ); 
     return strdup(name.c_str()); 
 }
+
+
+
+
 
 inline std::string U::FormName_( const char* prefix, const char* body, const char* ext )
 {
