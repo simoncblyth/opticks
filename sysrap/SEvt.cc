@@ -183,7 +183,8 @@ SEvt::SEvt()
     numgenstep_collected(0u),   // updated by addGenstep
     numphoton_collected(0u),   // updated by addGenstep
     numphoton_genstep_max(0u),
-    clear_count(0),
+    clear_genstep_vector_count(0),
+    clear_output_vector_count(0),
     gather_total(0),
     genstep_total(0),
     photon_total(0),
@@ -617,7 +618,7 @@ is now split from eg initInputPhotons.
     transforms the photons using the frame transform
 
 Formerly(?) for simtrace and input photon running with or without a transform 
-it was necessary to call this for every event due to the former call to addOtherGenstep, 
+it was necessary to call this for every event due to the former call to addInputGenstep, 
 but now that the genstep setup is moved to SEvt::beginOfEvent it is only needed 
 to call this for each frame, usually once only. 
 
@@ -672,8 +673,8 @@ void SEvt::transformInputPhoton()
 
 
 /**
-SEvt::addOtherGenstep  (formerly addFrameGenstep)
---------------------------------------------------------------------------------------
+SEvt::addInputGenstep  (formerly addFrameGenstep) 
+--------------------------------------------------
 
 This is invoked from SEvt::beginOfEvent together with SEvt::setIndex
 
@@ -692,7 +693,7 @@ have been done already.
 
 **/
 
-void SEvt::addOtherGenstep()
+void SEvt::addInputGenstep()
 {
     LOG_IF(info, LIFECYCLE) << id() ; 
     LOG(LEVEL); 
@@ -716,6 +717,7 @@ void SEvt::addOtherGenstep()
     {   
         bool has_torch = SEventConfig::IsRunningModeTorch()  ; 
         int inputs = int(hasInputGenstep()) + int(hasInputPhoton()) + int(has_torch) ; 
+        // HMM: could call it InputTorch too 
 
         LOG_IF(fatal, inputs > 1 ) 
             << " CANNOT COMBINE INPUTS : input_photon/input_genstep/torch "
@@ -736,7 +738,16 @@ void SEvt::addOtherGenstep()
             }
             else if( has_torch )
             {
-                igs = SEvent::MakeTorchGenstep(index);  // pass index to allow changing num photons per event
+                if( SEvent::HasGENSTEP() )   
+                {   
+                    // expected with G4CXApp.h U4Recorder running : see G4CXApp::GeneratePrimaries
+                    // this is because the gensteps are needed really really with Geant4 running 
+                    igs = SEvent::GetGENSTEP() ; 
+                }
+                else
+                {
+                    igs = SEvent::MakeTorchGenstep(index);  // pass index to allow changing num photons per event
+                }
             }
             assert(igs);  
             addGenstep(igs); 
@@ -1178,19 +1189,11 @@ SEvt* SEvt::HighLevelCreate(int idx) // static
         ;   
 
 
-    if(rerun == false)
-    {   
-        SEvt::SetReldir(alldir); 
-        ev = SEvt::Create(idx);    
-    }   
-    else
-    {   
-        SEvt::SetReldir(seldir);   // HUH: LoadRelative calls this static anyhow ?
-        ev = SEvt::LoadRelative(alldir0) ;
-        ev->clear_except("g4state");  // clear loaded evt but keep g4state 
-        // when rerunning have to load states from alldir0 and then change reldir to save into seldir
-    }
-    // HMM: note how reldir at object rather then static level is a bit problematic for loading 
+    assert( rerun == false ); 
+
+    SEvt::SetReldir(alldir); 
+    ev = SEvt::Create(idx);    
+
 
     return ev ; 
 }
@@ -1249,8 +1252,6 @@ void SEvt::addTorchGenstep()
 }
 
 
-// InputPhoton genstep addition invoked from SEvt::addOtherGenstep
-
 
 SEvt* SEvt::LoadAbsolute(const char* dir_) // static
 {
@@ -1291,24 +1292,25 @@ SEvt* SEvt::LoadRelative(const char* rel)  // static
 
 
 /**
-SEvt::Clear
--------------
-
-SEvt::Clear is invoked in two situations:
-
-1. from QEvent::setGenstep after SEvt::GatherGenstep to prepare 
-   for further genstep collection, this is done immediately prior to 
-   simulation launches
-
-2. from SEvt::EndOfEvent immediately after SEvt::Save
+SEvt::ClearOutput
+-------------------
 
 **/
 
-void SEvt::Clear()
+void SEvt::ClearOutput()
 {
-    if(Exists(0)) Get(0)->clear();  
-    if(Exists(1)) Get(1)->clear();  
+    if(Exists(0)) Get(0)->clear_output();  
+    if(Exists(1)) Get(1)->clear_output();  
 }
+void SEvt::ClearGenstep()
+{
+    if(Exists(0)) Get(0)->clear_genstep();  
+    if(Exists(1)) Get(1)->clear_genstep();  
+}
+
+
+
+
 void SEvt::Save()
 { 
     if(Exists(0)) Get(0)->save();  
@@ -1482,7 +1484,7 @@ Lifecycle::
     
       G4CXApp::BeginOfEventAction
         U4Recorder::BeginOfEventAction
-          B.SEvt::beginOfEvent
+          ECPU.SEvt::beginOfEvent
 
       ... collect gensteps into whichever SEvt are instanciated
       ... collect gensteps into whichever SEvt are instanciated
@@ -1490,12 +1492,12 @@ Lifecycle::
 
       G4CXApp::EndOfEventAction
         U4Recorder::EndOfEventAction
-          B.SEvt::endOfEvent               
+          ECPU.SEvt::endOfEvent               
 
         G4CXOpticks::simulate
           QSim::simulate
 
-            A:SEvt::beginOfEvent        
+            EGPU.SEvt::beginOfEvent        
            
             QEvent::setGenstep
                A:SEvt::clear
@@ -1503,7 +1505,7 @@ Lifecycle::
            
             SCSGOptiX::simulate_launch 
            
-            A:SEvt::endOfEvent         
+            EGPU.:SEvt::endOfEvent         
                
 
 ECPU
@@ -1517,7 +1519,6 @@ This remains true even with runningMode 1 which has no ECPU
 as still need to collect the gensteps. 
 
 **/
-
 
 
 void SEvt::beginOfEvent(int eventID)
@@ -1535,13 +1536,9 @@ void SEvt::beginOfEvent(int eventID)
 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    /*
-    if(isECPU()) clear();   // following QSim shuffle no need to not-clear for EGPU 
-    */
-    clear(); 
+    clear_output(); 
 
-
-    addOtherGenstep();  // does genstep setup for simtrace, input photon and torch running
+    addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
 
     setMeta<int>("NumPhotonCollected", numphoton_collected ); 
     setMeta<int>("NumGenstepCollected", numgenstep_collected ); 
@@ -1580,7 +1577,8 @@ void SEvt::endOfEvent(int eventID)
     endMeta(); 
 
     save();              // gather and save SEventConfig configured arrays
-    clear(); 
+    clear_output(); 
+    clear_genstep(); 
 
     //sprof::Stamp(p_SEvt__endOfEvent_1);  
     // HMM: misses the boat of being saved with the SEvt
@@ -1725,92 +1723,60 @@ std::string SEvt::DescHasInputPhoton()  // static
 
 
 /**
-SEvt::clear_vectors
---------------------
-
-This private method is invoked only from SEvt::clear and SEvt::clear_except
+SEvt::clear_genstep_vector
+----------------------------
 
 1. set photon counts to zero 
 2. clears the vectors
-3. shrink_to_fit : deallocating memory when shrink:true
 
 Note that most of the vectors are only used with hostside running.
 
 
 **/
 
-void SEvt::clear_vectors(bool shrink)
+void SEvt::clear_genstep_vector()
 {
     numgenstep_collected = 0u ; 
     numphoton_collected = 0u ; 
     numphoton_genstep_max = 0u ; 
 
-    clear_count += 1 ; 
-
-    if(DEBUG_CLEAR > 0)
-    {
-        LOG(info) 
-           << " DEBUG_CLEAR " << DEBUG_CLEAR
-           << " clear_count " << clear_count 
-           ; 
-        std::raise(SIGINT);  
-    }
-
+    clear_genstep_vector_count += 1 ; 
 
     setNumPhoton(0); 
 
-
-    genstep.clear();
-    if(shrink) genstep.shrink_to_fit();
-
     gs.clear();
-    if(shrink) gs.shrink_to_fit();
+    genstep.clear();
+    gather_done = false ;  
+}
+
+
+void SEvt::clear_output_vector()
+{
+    clear_output_vector_count += 1 ; 
 
     pho.clear(); 
-    if(shrink) pho.shrink_to_fit();
-
     slot.clear(); 
-    if(shrink) slot.shrink_to_fit();
-
     photon.clear(); 
-    if(shrink) photon.shrink_to_fit();
-
     record.clear(); 
-    if(shrink) record.shrink_to_fit();
-
     rec.clear(); 
-    if(shrink) rec.shrink_to_fit();
-
     seq.clear(); 
-    if(shrink) seq.shrink_to_fit();
-
     prd.clear(); 
-    if(shrink) prd.shrink_to_fit();
-
     tag.clear(); 
-    if(shrink) tag.shrink_to_fit();
-
     flat.clear(); 
-    if(shrink) flat.shrink_to_fit();
-
     simtrace.clear(); 
-    if(shrink) simtrace.shrink_to_fit();
-
     aux.clear(); 
-    if(shrink) aux.shrink_to_fit();
-
     sup.clear(); 
-    if(shrink) sup.shrink_to_fit();
-
     // NOTE no hit : thats a sub-selection of the photon 
-
-    gather_done = false ;  
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
 }
 
+
+
+
+
 /**
-SEvt::clear
--------------
+SEvt::clear_output
+--------------------
 
 Clear vectors and the fold.
 
@@ -1821,46 +1787,31 @@ Note this is called by:
 
 **/
 
-void SEvt::clear()
+void SEvt::clear_output()
 {
-    setStage(SEvt__clear); 
+    setStage(SEvt__clear_output); 
 
-    LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_vectors " ; 
+    LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_output_vector " ; 
 
-    if(CLEAR_SIGINT) std::raise(SIGINT);
-    LOG(LEVEL) << "[" ;
+    clear_output_vector(); 
+    fold->clear_except("genstep", false, ','); 
 
-    bool shrink = true ;  
-    clear_vectors(shrink); 
-    fold->clear(); 
-
-    LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_vectors " ; 
+    LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_output_vector " ; 
 
     LOG(LEVEL) << "]" ; 
 }
 
-
-/**
-SEvt::clear_except
---------------------
-
-The comma delimited keeplist need not contain .npy on its keys
-
-**/
-
-void SEvt::clear_except(const char* keep, char delim)
+void SEvt::clear_genstep()
 {
-    LOG_IF(info, LIFECYCLE) << id() << " keep:[" << keep << "]"  ; 
-    LOG(LEVEL) << "[" ; 
+    setStage(SEvt__clear_genstep); 
+    LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_genstep_vector " ; 
 
-    bool shrink = true ; 
-    clear_vectors(shrink); 
+    clear_genstep_vector(); 
+    fold->clear_only("genstep", false, ','); 
 
-    bool copy = false ; 
-    if(fold) fold->clear_except(keep, copy, delim); 
-
-    LOG(LEVEL) << "]" ; 
+    LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_genstep_vector " ; 
 }
+
 
 
 void SEvt::setIndex(int index_)

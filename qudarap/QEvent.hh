@@ -89,7 +89,6 @@ public:
     A2: Dont need the meta, need the method that access the underlying SEvt.  
     **/
 public:
-    int setGenstep_OLD();  // PRIMARY ACTION OF QEvent 
     int setGenstep();  // PRIMARY ACTION OF QEvent 
 
 private:

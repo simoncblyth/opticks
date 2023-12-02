@@ -238,7 +238,7 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
         delete ph ; 
 
-        SEvent::SetGENSTEP(gs); 
+        SEvent::SetGENSTEP(gs);  // picked up by 
     }
     else if(SEventConfig::IsRunningModeInputPhoton())
     {
@@ -263,13 +263,6 @@ Its too late to SEvt::AddTorchGenstep here as GeneratePrimaries already run
 
 void G4CXApp::BeginOfEventAction(const G4Event* event)
 { 
-    SEvt* sev = SEvt::Get_ECPU();  
-    if(SEventConfig::IsRunningModeTorch())
-    {
-        NP* gs = SEvent::GetGENSTEP(); 
-        sev->addGenstep(gs); 
-    }
-
     G4int eventID = event->GetEventID(); 
     fRecorder->BeginOfEventAction_(eventID); 
 }
@@ -280,14 +273,21 @@ G4CXApp::EndOfEventAction
 
 ::
 
-    SEvt::ECPU endOfEvent
-    G4CXOpticks::simulate
-          SEvt::EGPU beginOfEvent
-          ... launch .. 
-          SEvt::EGPU endOfEvent
+     ECPU.begin
 
-* GPU begin after CPU end 
 
+     ECPU.end.HEAD
+
+       G4CXOpticks::simulate
+
+          QSim::simulate.HEAD
+              EGPU.begin
+              simulate_launch 
+              EGPU.end
+          QSim::simulate.TAIL
+
+     ECPU.end.TAIL
+     
 **/
 
 

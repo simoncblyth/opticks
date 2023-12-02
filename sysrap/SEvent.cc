@@ -42,7 +42,7 @@ void SEvent::SetGENSTEP(NP* gs)
     LOG_IF(info, SEvt::LIFECYCLE ) <<  " GENSTEP " << ( GENSTEP ? GENSTEP->sstr() : "-" ); 
 }
 
-bool SEvent::HaveGENSTEP()
+bool SEvent::HasGENSTEP()
 {
     return GENSTEP != nullptr ; 
 }
@@ -56,7 +56,7 @@ void SEvent::SetHIT(NP* gs)
 {
     HIT = gs ; 
 }
-bool SEvent::HaveHIT()
+bool SEvent::HasHIT()
 {
     return HIT != nullptr ; 
 }

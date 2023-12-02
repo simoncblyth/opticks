@@ -331,27 +331,14 @@ the launch.
 
     QSim::simulate 
 
-       SEvt::beginOfEvent
+       EGPU.SEvt::beginOfEvent
 
        QEvent::setGenstep
-          ECPU.SEvt::getGenstep 
-          SEvt::clear
-          QEvent::setGenstep(NP*)
+          QEvent::setGenstepUpload(quad6*)
 
        SCSGOptiX::simulate_launch 
 
-       SEvt::endOfEvent
-
-
-
-* EGPU.SEvt::beginOfEvent skips clear in order
-  get access to the gensteps... maybe uploading 
-  genstep before SEvt::beginOfEvent can avoid that 
-
-
-RECENT CHANGES
-
-1. moved QEvent::setGenstep before SEvt::beginOfEvent 
+       EGPU.SEvt::endOfEvent
 
 
 **/
@@ -365,12 +352,11 @@ double QSim::simulate(int eventID)
     if( event == nullptr ) std::raise(SIGINT) ; 
     if( event == nullptr ) return -1. ; 
 
+    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+
     int rc = event->setGenstep() ;    // QEvent 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
-
-
-    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol

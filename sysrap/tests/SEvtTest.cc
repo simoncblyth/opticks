@@ -258,8 +258,7 @@ void SEvtTest::hostside_running_resize_()
         << sprof::Desc(p0, p1 )
         ; 
 
-    bool shrink = true ; 
-    evt->clear_vectors(shrink) ; 
+    evt->clear_output() ; 
 
     sprof::Stamp(p2);  
     std::cout 

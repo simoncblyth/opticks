@@ -219,7 +219,11 @@ public:
 private:
     void clear_(const std::vector<std::string>* keep); 
 public:
+    void clear_only(  const char* clrlist=nullptr, bool copy=true, char delim=','); 
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
+    void clear_except_(const std::vector<std::string>& keep, bool copy ) ; 
+
+
 
 
     NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
@@ -1119,23 +1123,15 @@ So take a simpler approach:
 NB that this means old pointers will be invalidated. 
 Unsure if that will be a problem.
 
+
+Q: HOW TO USE THIS WITHOUT LEAKING IN COPY:TRUE AND FALSE MODES ? 
+
 **/
 
-inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
+
+inline void NPFold::clear_except_(const std::vector<std::string>& keep, bool copy )
 {
-    if(verbose_) std::cerr 
-         << "NPFold::clear_except("
-         << " keeplist:" << keeplist
-         << " copy:" << copy 
-         << " delim:" << delim 
-         << ")" 
-         << std::endl 
-         ; 
-
     check_integrity(); 
-
-    std::vector<std::string> keep ; 
-    if(keeplist) SplitKeys(keep, keeplist, delim); 
 
     std::vector<const NP*>   tmp_aa ; 
     std::vector<std::string> tmp_kk ; 
@@ -1144,7 +1140,7 @@ inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
     {
         const NP* a = aa[i]; 
         const std::string& k = kk[i] ; 
-        bool listed = keeplist && std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
+        bool listed = std::find( keep.begin(), keep.end(), k ) != keep.end() ; 
         if(listed)
         { 
             tmp_aa.push_back(copy ? NP::MakeCopy(a) : a ); 
@@ -1170,6 +1166,51 @@ inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
         add_( k.c_str(), a ); 
     }
 }
+
+
+inline void NPFold::clear_except(const char* keeplist, bool copy, char delim )
+{
+    if(verbose_) std::cerr 
+         << "NPFold::clear_except("
+         << " keeplist:" << keeplist
+         << " copy:" << copy 
+         << " delim:" << delim 
+         << ")" 
+         << std::endl 
+         ; 
+
+    std::vector<std::string> keep ; 
+    if(keeplist) SplitKeys(keep, keeplist, delim); 
+
+    clear_except_(keep, copy ); 
+}
+
+/**
+NPFold::clear_only
+-------------------
+
+This is an alternative interface to clear_except which 
+forms a keeplist based on the keys present in the NPFold 
+and the ones on the clear list.  
+
+**/
+
+inline void NPFold::clear_only(const char* clearlist, bool copy, char delim )
+{
+    std::vector<std::string> clr ; 
+    if(clearlist) SplitKeys(clr, clearlist, delim); 
+
+    std::vector<std::string> keep ; 
+    int num_k = kk.size(); 
+    for(int i=0 ; i < num_k ; i++)
+    {
+        const char* k = kk[i].c_str(); 
+        bool k_listed = std::find( clr.begin(), clr.end(), k ) != clr.end() ;  
+        if(!k_listed) keep.push_back(k) ; 
+    }
+    clear_except_(keep, copy ); 
+}
+
 
 /**
 NPFold::copy

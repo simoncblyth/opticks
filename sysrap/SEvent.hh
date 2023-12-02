@@ -22,12 +22,12 @@ struct SYSRAP_API SEvent
     static NP* GENSTEP ; 
     static NP*  GetGENSTEP(); 
     static void SetGENSTEP(NP* gs); 
-    static bool HaveGENSTEP(); 
+    static bool HasGENSTEP(); 
 
     static NP* HIT ; 
     static NP*  GetHIT(); 
     static void SetHIT(NP* gs); 
-    static bool HaveHIT(); 
+    static bool HasHIT(); 
 
 
 

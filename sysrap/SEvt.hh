@@ -103,7 +103,8 @@ struct SYSRAP_API SEvt : public SCompProvider
            SEvt__beginOfEvent, 
            SEvt__endOfEvent,
            SEvt__gather,
-           SEvt__clear,
+           SEvt__clear_output,
+           SEvt__clear_genstep,
            SEvt__OTHER
            } ; 
 
@@ -112,7 +113,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__beginOfEvent_ = "SEvt__beginOfEvent" ;  
     static constexpr const char* SEvt__endOfEvent_ = "SEvt__endOfEvent" ;  
     static constexpr const char* SEvt__gather_ = "SEvt__gather" ;  
-    static constexpr const char* SEvt__clear_ = "SEvt__clear" ;  
+    static constexpr const char* SEvt__clear_output_ = "SEvt__clear_output" ;  
     static constexpr const char* SEvt__OTHER_ = "SEvt__OTHER" ;  
 
     const char* descStage() const ; 
@@ -186,8 +187,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     unsigned           numgenstep_collected ;   // updated by addGenstep
     unsigned           numphoton_collected ;    // updated by addGenstep 
-    unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear
-    int                clear_count ; 
+    unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear_genstep_vector
+    int                clear_genstep_vector_count ; 
+    int                clear_output_vector_count ; 
 
     // moved here from G4CXOpticks, updated in gather 
     unsigned gather_total ; 
@@ -196,9 +198,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned hit_total ; 
 
 
-    // [--- these vectors are cleared by SEvt::clear_
+    // [--- these vectors are cleared by SEvt::clear_genstep_vector
     std::vector<quad6>   genstep ; 
     std::vector<sgs>     gs ; 
+    // ] 
+
+    // [--- these vectors are cleared by SEvt::clear_output_vector
     std::vector<spho>    pho ;   // spho are label structs holding 4*int  
     std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 
@@ -211,7 +216,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<quad4>   simtrace ; 
     std::vector<quad4>   aux ; 
     std::vector<quad6>   sup ; 
-    // ]---- these vectors are cleared by SEvt::clear_
+    // ]---- these vectors are cleared by SEvt::clear_output_vector
+
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -317,7 +323,7 @@ public:
     static const bool transformInputPhoton_WIDE ; 
     void transformInputPhoton(); 
 
-    void addOtherGenstep(); 
+    void addInputGenstep(); 
     void assertZeroGenstep();
 
 
@@ -385,7 +391,9 @@ public:
 
     static SEvt* LoadAbsolute(const char* dir); 
     static SEvt* LoadRelative(const char* rel=nullptr);  // formerly Load
-    static void Clear(); 
+
+    static void ClearOutput(); 
+    static void ClearGenstep(); 
     static void Save() ; 
     //static void SaveExtra(const char* name, const NP* a) ; 
 
@@ -457,10 +465,11 @@ public:
     static std::string DescHasInputPhoton(); 
 
 private:
-    void clear_vectors(bool shrink) ; 
+    void clear_genstep_vector() ; 
+    void clear_output_vector() ; 
 public:
-    void clear() ; 
-    void clear_except(const char* keep, char delim=',' ); 
+    void clear_genstep() ; 
+    void clear_output() ; 
 
     void setIndex(int index_) ;  
     void endIndex(int index_) ;  

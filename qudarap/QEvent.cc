@@ -151,53 +151,9 @@ std::string QEvent::desc() const
 
 /**
 QEvent::setGenstep
---------------------
+-------------------
 
 Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
-
-HMM: could go direct from the genstep vector to the upload without 
-gathering the array and adding to the fold 
-the array copy 
-
-
-**/
-
-int QEvent::setGenstep_OLD()  // onto device
-{
-    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
-    
-
-#ifndef PRODUCTION 
-    sev->t_setGenstep_0 = sstamp::Now(); 
-#endif
-
-    NP* gs_ = sev->gatherGenstep();  // creates array from quad6 genstep vector 
-    LOG_IF(fatal, gs_ == nullptr ) 
-         << "Must add gensteps to SEvt::EGPU instance before calling QEvent::setGenstep " 
-         ;
-    if(gs_ == nullptr) std::raise(SIGINT); 
-
-
-#ifndef PRODUCTION 
-    sev->t_setGenstep_1 = sstamp::Now(); 
-#endif
-
-    sev->clear();   // clears quad6 genstep vector and the fold,  ready to collect more genstep
-
-#ifndef PRODUCTION 
-    sev->t_setGenstep_2 = sstamp::Now(); 
-#endif
-
-    int rc = gs_ == nullptr ? -1 : setGenstepUpload(gs_) ; 
-
-    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
-    return rc ; 
-} 
-
-
-/**
-QEvent::setGenstep
--------------------
 
 Differences from _OLD version
 
@@ -227,6 +183,9 @@ int QEvent::setGenstep()  // onto device
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_1 = sstamp::Now(); 
+#endif
+
+#ifndef PRODUCTION 
     sev->t_setGenstep_2 = sstamp::Now(); 
 #endif
 
