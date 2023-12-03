@@ -114,7 +114,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $src -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
+    gcc $src -g -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
 

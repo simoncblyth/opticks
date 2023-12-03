@@ -409,6 +409,8 @@ struct NP
     static bool Exists(const char* base, const char* rel, const char* name);   
     static bool Exists(const char* dir, const char* name);   
     static bool Exists(const char* path);   
+    static bool ExistsSidecar( const char* path, const char* ext ); 
+
 
     static const char NODATA_PREFIX = '@' ; 
     static bool IsNoData(const char* path); 
@@ -1910,6 +1912,8 @@ inline void NP::CopyMeta( NP* b, const NP* a ) // static
     b->set_shape( a->shape ); 
     b->meta = a->meta ;    // pass along the metadata 
     b->names = a->names ; 
+    b->nodata = a->nodata ; 
+    if(a->labels) b->labels = new std::vector<std::string>( a->labels->begin(), a->labels->end() ) ; 
 }
 
 
@@ -2016,13 +2020,18 @@ inline NP* NP::MakeCopy(const NP* a) // static
 
     assert( a->arr_bytes() == b->arr_bytes() ); 
 
-    memcpy( b->bytes(), a->bytes(), a->arr_bytes() );    
+    if(a->nodata == false)
+    {
+        memcpy( b->bytes(), a->bytes(), a->arr_bytes() );    
+    }
     unsigned nv = a->num_values(); 
 
     if(VERBOSE) std::cout 
         << "NP::MakeCopy"
         << " a.dtype " << a->dtype
         << " b.dtype " << b->dtype
+        << " a.nodata " << a->nodata
+        << " b.nodata " << b->nodata
         << " nv " << nv
         << std::endl 
         ;
@@ -5212,6 +5221,14 @@ inline bool NP::Exists(const char* path_) // static
     return fp.fail() ? false : true ; 
 }
 
+inline bool NP::ExistsSidecar( const char* path, const char* ext ) // static
+{
+    std::string vstr_path = U::ChangeExt(path, ".npy", ext ); 
+    return Exists(vstr_path.c_str()) ; 
+}
+
+
+
 inline bool NP::IsNoData(const char* path) // static
 {
     return path && strlen(path) > 0 && path[0] == NODATA_PREFIX ; 
@@ -5308,11 +5325,18 @@ inline int NP::load_string_( const char* path, const char* ext, std::string& str
 
 inline int NP::load_strings_( const char* path, const char* ext, std::vector<std::string>* vstr )
 {
+    if(vstr == nullptr) return 1 ;
     std::string vstr_path = U::ChangeExt(path, ".npy", ext ); 
     std::ifstream fp(vstr_path.c_str(), std::ios::in);
-    if(fp.fail()) return 1 ; 
+    int rc = fp.fail() ? 1 : 0 ; 
 
-    if(vstr == nullptr) vstr = new std::vector<std::string> ; 
+    if(false) std::cout 
+        << "NP::load_strings_" << std::endl 
+        << " path " << ( path ? path : "-" ) << std::endl 
+        << " vstr_path " << vstr_path << std::endl 
+        << " rc " << rc << std::endl 
+        ; 
+
     std::string line ; 
     while (std::getline(fp, line)) vstr->push_back(line);  // getline swallows new lines  
     return 0 ; 
@@ -5321,7 +5345,11 @@ inline int NP::load_strings_( const char* path, const char* ext, std::vector<std
 
 inline int NP::load_meta(  const char* path ){  return load_string_( path, "_meta.txt",  meta  ) ; }
 inline int NP::load_names( const char* path ){  return load_strings_( path, "_names.txt", &names ) ; }
-inline int NP::load_labels( const char* path ){  return load_strings_( path, "_labels.txt", labels ) ; }
+inline int NP::load_labels( const char* path )
+{  
+    labels = ExistsSidecar(path, "_labels.txt") ? new std::vector<std::string> : nullptr ; 
+    return load_strings_( path, "_labels.txt", labels ) ; 
+}
 
 
 inline void NP::save_string_(const char* path, const char* ext, const std::string& str ) const 

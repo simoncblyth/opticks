@@ -54,85 +54,77 @@ the name of the invoking or argument directory.
 
 #include "NPFold.h"
 
+
 struct sreport
 {
-    static constexpr const char* ASEL = "a://p" ; 
-    static constexpr const char* BSEL = "b://n" ; 
+    bool    VERBOSE ;
 
-    const char* dirp ; 
-    NPFold* fold ; 
-    bool fold_valid ; 
+    NP*       run ; 
+    NP*       runprof ;
+    NPFold*   substamp ;   
+    NPFold*   subprofile ;   
 
-    bool VERBOSE ;
-    const NP* run ;
-    const NP* runprof ;
-    NPFold* substamp ;   
-    NPFold* subprofile ;   
-    NPFold* smry ; 
+    sreport();  
 
-    sreport(const char* dirp);  
-    void init(); 
+    NPFold* serialize() const ; 
+    void    import( const NPFold* fold ); 
+    void save(const char* dir) const ; 
+    static sreport* Load(const char* dir) ; 
 
     std::string desc() const ;
-    std::string desc_fold() const ;
     std::string desc_run() const ;
     std::string desc_runprof() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
-
-    void save(const char* dir); 
 };
 
-inline sreport::sreport( const char* dirp_ )
+inline sreport::sreport()
     :
-    dirp(dirp_),
-    fold(NPFold::LoadNoData(dirp)),
-    fold_valid( fold && !fold->is_empty() ),
     VERBOSE(getenv("sreport__VERBOSE") != nullptr),
-    run(fold ? fold->get("run") : nullptr),
-    runprof( run ? run->makeMetaKVProfileArray("Index") : nullptr),
-    substamp(fold_valid ? fold->subfold_summary("substamp", ASEL, BSEL) : nullptr),
-    subprofile(fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr),
-    smry(new NPFold)
+    run( nullptr ),
+    runprof( nullptr ),
+    substamp( nullptr),
+    subprofile( nullptr )
 {
+}
+inline NPFold* sreport::serialize() const 
+{
+    NPFold* smry = new NPFold ;  
+    smry->add("run", run ) ; 
     smry->add("runprof", runprof ) ; 
     smry->add_subfold("substamp", substamp ) ; 
     smry->add_subfold("subprofile", subprofile ) ; 
+    return smry ; 
 }
-
+inline void sreport::import(const NPFold* smry) 
+{
+    run = smry->get("run")->copy() ; 
+    runprof = smry->get("runprof")->copy() ; 
+    substamp = smry->get_subfold("substamp"); 
+    subprofile = smry->get_subfold("subprofile"); 
+}
+inline void sreport::save(const char* dir) const 
+{
+    NPFold* smry = serialize(); 
+    smry->save_verbose(dir); 
+}
+inline sreport* sreport::Load(const char* dir) // static
+{
+    NPFold* smry = NPFold::Load(dir) ; 
+    sreport* report = new sreport ; 
+    report->import(smry) ; 
+    return report ; 
+}
 
 inline std::string sreport::desc() const
 {
     std::stringstream ss ; 
     ss << "[sreport.desc" << std::endl 
-       << desc_fold()
        << desc_run() 
        << desc_runprof() 
        << desc_substamp()
        << "]sreport.desc" << std::endl 
        ; 
-    std::string str = ss.str() ;
-    return str ;  
-}
-
-inline std::string sreport::desc_fold() const
-{
-    std::stringstream ss ; 
-    ss << "[sreport.desc_fold" << std::endl 
-       << "fold = NPFold::LoadNoData(\"" << dirp << "\")" << std::endl
-       << "fold " << ( fold ? "YES" : "NO " )  << std::endl
-       << "fold_valid " << ( fold_valid ? "YES" : "NO " ) << std::endl
-       ;
-
-    if(VERBOSE) ss
-       << "[sreport.desc_fold.VERBOSE " << std::endl
-       << ( fold ? fold->desc() : "-" ) << std::endl
-       << "]sreport.desc_fold.VERBOSE " << std::endl
-       ; 
-
-    ss << "]sreport.desc_fold" << std::endl 
-       ; 
-
     std::string str = ss.str() ;
     return str ;  
 }
@@ -162,7 +154,6 @@ inline std::string sreport::desc_runprof() const
     std::string str = ss.str() ;
     return str ;  
 }
-
 
 inline std::string sreport::desc_substamp() const
 {
@@ -210,21 +201,153 @@ inline std::string sreport::desc_subprofile() const
 }
 
 
-inline void sreport::save(const char* dir)
+
+struct sreport_Creator
+{ 
+    static constexpr const char* ASEL = "a://p" ; 
+    static constexpr const char* BSEL = "b://n" ; 
+
+    bool VERBOSE ;
+    const char* dirp ; 
+    NPFold*    fold ; 
+    bool fold_valid ; 
+    const NP*  run ; 
+    sreport*   report ; 
+
+    sreport_Creator(  const char* dirp_ ); 
+    void init(); 
+
+    std::string desc() const ;
+    std::string desc_fold() const ;
+    std::string desc_fold_detail() const ;
+    std::string desc_run() const ;
+}; 
+
+inline sreport_Creator::sreport_Creator( const char* dirp_ )
+    :
+    VERBOSE(getenv("sreport_Creator__VERBOSE") != nullptr),
+    dirp(dirp_ ? strdup(dirp_) : nullptr),
+    fold(NPFold::LoadNoData(dirp)),
+    fold_valid(NPFold::IsValid(fold)),
+    run(fold_valid ? fold->get("run") : nullptr),
+    report(new sreport)
 {
-    smry->save_verbose(dir); 
+    init(); 
 }
+
+inline void sreport_Creator::init() 
+{
+    report->run     = run ? run->copy() : nullptr ; 
+    report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
+    if(run) NP::CopyMeta( report->runprof, run ) ;   
+    report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
+    report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
+}
+
+inline std::string sreport_Creator::desc() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport_Creator.desc" << std::endl 
+       << desc_fold() 
+       << ( VERBOSE ? desc_fold_detail() : "" ) 
+       << desc_run()
+       << "]sreport_Creator.desc" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport_Creator::desc_fold() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport_Creator.desc_fold" << std::endl 
+       << "fold = NPFold::LoadNoData(\"" << dirp << "\")" << std::endl
+       << "fold " << ( fold ? "YES" : "NO " )  << std::endl
+       << "fold_valid " << ( fold_valid ? "YES" : "NO " ) << std::endl
+       << "]sreport_Creator.desc_fold" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport_Creator::desc_fold_detail() const
+{
+    std::stringstream ss ; 
+    ss
+       << "[sreport_Creator.desc_fold_detail " << std::endl
+       << ( fold ? fold->desc() : "-" ) << std::endl
+       << "]sreport_Creator.desc_fold_detail " << std::endl
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+inline std::string sreport_Creator::desc_run() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport_Creator.desc_run" << std::endl 
+       << ( run ? run->sstr() : "-" ) << std::endl 
+       << ".sreport_Creator.desc_run.descMetaKVS " << std::endl 
+       << ( run ? run->descMetaKVS() : "-" ) << std::endl
+       << "]sreport_Creator.desc_run" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+
 
 int main(int argc, char** argv)
 {
+    char* argv0 = argv[0] ; 
     const char* dirp = argc > 1 ? argv[1] : U::PWD() ;   
     if(dirp == nullptr) return 0 ; 
-    U::SetEnvDefaultExecutableSiblingPath("FOLD", argv[0], dirp );
+    bool is_executable_sibling_path = U::IsExecutableSiblingPath( argv0 , dirp ) ; 
 
-    sreport rep(dirp) ; 
-    std::cout << rep.desc() ; 
-    if(!rep.fold_valid) return 1 ; 
-    rep.save("$FOLD"); 
+    std::cout 
+       << "[sreport.main"
+       << "  argv0 " << ( argv0 ? argv0 : "-" )
+       << " dirp " << ( dirp ? dirp : "-" ) 
+       << " is_executable_sibling_path " << ( is_executable_sibling_path ? "YES" : "NO " ) 
+       << std::endl 
+       ; 
+
+    if( is_executable_sibling_path == false )  // not in eg ALL3_sreport directory 
+    {
+        U::SetEnvDefaultExecutableSiblingPath("FOLD", argv0, dirp );
+        std::cout << "[sreport.main : CREATING REPORT " << std::endl ; 
+        sreport_Creator creator(dirp); 
+        std::cout << creator.desc() ; 
+        if(!creator.fold_valid) return 1 ; 
+
+        sreport* report = creator.report ; 
+        std::cout << report->desc() ; 
+        report->save("$FOLD"); 
+        std::cout << "]sreport.main : CREATED REPORT " << std::endl ; 
+
+        if(getenv("CHECK") != nullptr )
+        {        
+            std::cout << "[sreport.main : CHECK LOADED REPORT " << std::endl ; 
+            sreport* report2 = sreport::Load("$FOLD") ;  
+            std::cout << report2->desc() ; 
+            std::cout << "]sreport.main : CHECK LOADED REPORT " << std::endl ; 
+        }
+
+    }
+    else
+    {
+        std::cout << "[sreport.main : LOADING REPORT " << std::endl ; 
+        sreport* report = sreport::Load(dirp) ;  
+        std::cout << report->desc() ; 
+        std::cout << "]sreport.main : LOADED REPORT " << std::endl ; 
+    }
+
+    std::cout 
+       << "]sreport.main"
+       << std::endl
+       ;
+
     return 0 ; 
 }
 

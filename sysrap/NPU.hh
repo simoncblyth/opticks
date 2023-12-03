@@ -423,6 +423,7 @@ struct U
 
     static std::string FormSiblingPath( const char* sibname , const char* dirpath ); 
     static std::string FormExecutableSiblingPath( const char* argv0 , const char* dirpath ); 
+    static bool        IsExecutableSiblingPath(   const char* argv0,  const char* dirpath ); 
     static int SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath ); 
 
     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
@@ -802,6 +803,21 @@ inline const char* U::BaseName_( const char* path )
 }
 
 
+/**
+U::BaseName_NoSepAsis
+-----------------------
+
+Returns the basename of a path, when there is no separator 
+returns the path asis. For example::
+
+   U::BaseName_NoSepAsis("/some/directory/path/name.txt") -> "name.txt"
+   U::BaseName("/some/directory/path/name.txt") -> name.txt
+
+   U::BaseName_NoSepAsis("name.txt") -> "name.txt"
+   U::BaseName("name.txt") -> ""
+
+**/
+
 inline std::string U::BaseName_NoSepAsis( const char* path )
 {
     std::string p = path ; 
@@ -866,6 +882,46 @@ inline std::string U::FormExecutableSiblingPath( const char* argv0 , const char*
         ;
 
     return sibpath ; 
+}
+
+/**
+U::IsExecutableSiblingPath
+----------------------------
+
+For argv0 of sreport OR /some/path/to/sreport dirpath the
+exepected results are:
+
+* /some/director/tree/leading/to/ALL0_sreport   YES
+* /some/director/tree/leading/to/sreport        NO
+
+* ALL0_sreport   YES
+* sreport        NO
+
+**/
+
+inline bool U::IsExecutableSiblingPath(const char* argv0,  const char* dirpath )  // static
+{
+    const char* exename = BaseName_NoSepAsis_(argv0) ; 
+    const char* basename = BaseName_NoSepAsis_(dirpath) ;  
+    bool is_executable_sibling_path = basename && exename && EndsWith(basename, exename) && strlen(basename) > strlen(exename) ; 
+
+    if(VERBOSE) std::cout 
+        << "[U::IsExecutableSiblingPath"
+        << std::endl 
+        << " argv0 " << ( argv0 ? argv0 : "-" )
+        << std::endl 
+        << " dirpath " << ( dirpath ? dirpath : "-" )
+        << std::endl 
+        << " exename " << ( exename ? exename : "-" )
+        << std::endl 
+        << " basename " << ( basename ? basename : "-" )
+        << std::endl 
+        << " is_executable_sibling_path " << ( is_executable_sibling_path ? "YES" : "NO " )
+        << "]U::IsExecutableSiblingPath"
+        << std::endl 
+        ;
+
+    return is_executable_sibling_path ; 
 }
 
 inline int U::SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath )
