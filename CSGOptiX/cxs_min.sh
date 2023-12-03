@@ -181,7 +181,10 @@ vars="GEOM LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
-   env | grep OPTICKS 
+fi 
+
+if [ "${arg/env}" != "$arg" ]; then 
+    env | grep OPTICKS | perl -n -e 'm/(\S*)=(\S*)/ && printf("%50s : %s\n", $1, $2) ' -
 fi 
 
 if [ "${arg/fold}" != "$arg" ]; then

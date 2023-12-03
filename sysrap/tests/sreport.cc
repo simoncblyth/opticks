@@ -28,27 +28,20 @@ The use of NPFold::LoadNoData means that only SEvt NPFold/NP
 metadata is loaded. Excluding the array data makes the load 
 very fast and able to handle large numbers of persisted SEvt NPFold.
 
-Usage::
+Usage from source "run" directory creates the report saving into eg ../ALL3_sreport::
 
-    epsilon:~ blyth$ cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
-    epsilon:ALL0 blyth$ sreport 
-    epsilon:ALL0 blyth$ ls -alst ../ALL0_sreport 
-    total 8
-    8 -rw-r--r--  1 blyth  staff    4 Nov 26 14:12 NPFold_index.txt
-    0 drwxr-xr-x  9 blyth  staff  288 Nov 26 13:01 b
-    0 drwxr-xr-x  5 blyth  staff  160 Nov 26 13:01 .
-    0 drwxr-xr-x  9 blyth  staff  288 Nov 26 13:01 a
-    0 drwxr-xr-x  5 blyth  staff  160 Nov 26 13:01 ..
-    epsilon:ALL0 blyth$ 
+    epsilon:~ blyth$ cd /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/G4CXTest/ALL3
+    epsilon:ALL3 blyth$ sreport 
+    epsilon:ALL3 blyth$ ls -alst ../ALL3_sreport 
 
+Usage from report directory loads and presents the report::
 
+    epsilon:ALL3 blyth$ cd ../ALL3_sreport/
+    epsilon:ALL3_sreport blyth$ sreport        
 
-TODO: restructure to allow loading summary report 
-and giving the textual presentation by refactor into 
-create/save/load/desc methods.
-
-Can detect whether to create or load based on 
-the name of the invoking or argument directory. 
+Note that this means that can only rsync the small report directory 
+and still be able to present the report on laptop concerening run folders
+with many large arrays left on the server. 
 
 **/
 
@@ -73,6 +66,7 @@ struct sreport
 
     std::string desc() const ;
     std::string desc_run() const ;
+    std::string desc_run_juncture() const ;
     std::string desc_runprof() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
@@ -121,6 +115,7 @@ inline std::string sreport::desc() const
     std::stringstream ss ; 
     ss << "[sreport.desc" << std::endl 
        << desc_run() 
+       << desc_run_juncture() 
        << desc_runprof() 
        << desc_substamp()
        << "]sreport.desc" << std::endl 
@@ -141,6 +136,22 @@ inline std::string sreport::desc_run() const
     std::string str = ss.str() ;
     return str ;  
 }
+
+inline std::string sreport::desc_run_juncture() const
+{
+    const char* juncture  = "SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META" ; 
+
+    std::stringstream ss ; 
+    ss << "[sreport.desc_run_juncture" << std::endl 
+       << ( run ? run->descMetaKV(juncture) : "-" )    
+       << "]sreport.desc_run_juncture" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+
 
 inline std::string sreport::desc_runprof() const
 {

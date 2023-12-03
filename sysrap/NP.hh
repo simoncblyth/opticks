@@ -386,11 +386,11 @@ struct NP
     std::string descMeta() const ; 
 
     static int         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
-    static std::string DescMetaKVS(const std::string& meta); 
+    static std::string DescMetaKVS(const std::string& meta ); 
     std::string descMetaKVS() const ; 
 
-    static std::string DescMetaKV(const std::string& meta); 
-    std::string descMetaKV() const ; 
+    static std::string DescMetaKV(const std::string& meta, const char* juncture = nullptr ); 
+    std::string descMetaKV(const char* juncture=nullptr) const ; 
 
 
     const char* get_lpath() const ; 
@@ -4769,7 +4769,9 @@ inline int NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_
 }
 
 
-inline std::string NP::DescMetaKVS(const std::string& meta)  // static
+
+
+inline std::string NP::DescMetaKVS(const std::string& meta )  // static
 {
     std::vector<std::string> keys ;  
     std::vector<std::string> vals ;  
@@ -4834,7 +4836,7 @@ inline std::string NP::descMetaKVS() const
 
 
 
-inline std::string NP::DescMetaKV(const std::string& meta)  // static
+inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_ )  // static
 {
     std::vector<std::string> keys ;  
     std::vector<std::string> vals ;  
@@ -4847,6 +4849,8 @@ inline std::string NP::DescMetaKV(const std::string& meta)  // static
     std::vector<int64_t> tt ;  
     std::vector<int> ii ; 
 
+    // collect times and indices of all entries 
+    // time is set to zero for entries without time stamps 
     for(int i=0 ; i < num_keys ; i++)
     {
         const char* v = vals[i].c_str(); 
@@ -4860,11 +4864,16 @@ inline std::string NP::DescMetaKV(const std::string& meta)  // static
         if(t > 0 && t < t0) t0 = t ; 
     } 
 
+    // sort the indices into time increasing order 
     auto order = [&tt](const size_t& a, const size_t &b) { return tt[a] < tt[b];}  ; 
     std::sort( ii.begin(), ii.end(), order ); 
 
+
     std::stringstream ss ; 
     ss.imbue(std::locale("")) ;  // commas for thousands
+
+    // use the time sorted indices to output in time order
+    // entries without time info at t=0 appear first 
     for(int j=0 ; j < num_keys ; j++)
     {
         int i = ii[j] ; 
@@ -4882,30 +4891,57 @@ inline std::string NP::DescMetaKV(const std::string& meta)  // static
            << std::endl 
            ;
     }
+
+    
+
+    if(juncture_ && strlen(juncture_) > 0)
+    {
+        std::vector<std::string> juncture ; 
+        Split(juncture, juncture_ , ',' ); 
+        int num_juncture = juncture.size() ; 
+        ss << "juncture:" << num_juncture << " [" << juncture_ << "] time ranges between junctures" << std::endl ; 
+  
+        int64_t tp = 0 ; 
+        for(int j=0 ; j < num_juncture ; j++)
+        {
+            const char* j_key = juncture[j].c_str() ; 
+            int i = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), j_key )) ; 
+            if( i == int(keys.size()) ) continue ; 
+
+            const char* k = keys[i].c_str(); 
+            const char* v = vals[i].c_str(); 
+            int64_t t = tt[i] ;  
+
+            ss << std::setw(30) << k 
+               << " : "
+               << std::setw(12) << ( t > 0 && tp > 0 ? t - tp : -1 )
+               << std::setw(23) << ""
+               << " : "
+               << std::setw(12) << ( t > 0 && t0 > 0 ? t - t0 : -1 )
+               << " : "
+               << U::Format(t) 
+               << " JUNCTURE" 
+               << std::endl 
+               ;
+
+             if( t > 0 ) tp = t ; 
+        }
+    }
+
     std::string str = ss.str(); 
     return str ; 
 }
 
-inline std::string NP::descMetaKV() const 
+inline std::string NP::descMetaKV(const char* juncture) const 
 {
     std::stringstream ss ; 
     ss << "NP::descMetaKV" 
        << std::endl 
-       << DescMetaKV(meta) 
+       << DescMetaKV(meta, juncture) 
        ;
     std::string str = ss.str(); 
     return str ; 
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

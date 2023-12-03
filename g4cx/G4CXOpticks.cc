@@ -365,7 +365,8 @@ void G4CXOpticks::init_SEvt()
     std::string* rms = SEvt::RunMetaString() ; 
     assert(rms); 
     
-    smeta::Collect(*rms, "G4CXOpticks__init_SEvt"); 
+    bool stamp = false ; 
+    smeta::Collect(*rms, "G4CXOpticks__init_SEvt", stamp ); 
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
 
     std::string switches = QSim::Switches() ;

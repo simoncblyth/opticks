@@ -110,7 +110,7 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     LOG(LEVEL) << "[ new QRng " ;
     QRng* rng = new QRng ;  // loads and uploads curandState 
-    LOG(LEVEL) << "] new QRng " ;
+    LOG(LEVEL) << "] new QRng " << rng->desc()  ;
 
     LOG(LEVEL) << rng->desc(); 
 
