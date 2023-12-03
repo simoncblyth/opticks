@@ -158,7 +158,8 @@ export OPTICKS_EVENT_MODE=${OEM:-$oem}
 export OPTICKS_MAX_BOUNCE=31
 
 
-export OPTICKS_MAX_PHOTON=M100
+#export OPTICKS_MAX_PHOTON=M100   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
+export OPTICKS_MAX_PHOTON=M1
 export OPTICKS_INTEGRATION_MODE=1
 export OPTICKS_NUM_EVENT=19
 

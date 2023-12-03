@@ -4909,7 +4909,7 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
             if( i == int(keys.size()) ) continue ; 
 
             const char* k = keys[i].c_str(); 
-            const char* v = vals[i].c_str(); 
+            //const char* v = vals[i].c_str(); 
             int64_t t = tt[i] ;  
 
             ss << std::setw(30) << k 
