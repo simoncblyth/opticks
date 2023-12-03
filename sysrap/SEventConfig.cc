@@ -439,7 +439,7 @@ void SEventConfig::Check()
 {
    assert( _IntegrationMode >= -1 && _IntegrationMode <= 3 ); 
 
-   assert( _MaxBounce >  0 && _MaxBounce <  LIMIT ) ;  
+   assert( _MaxBounce >= 0 && _MaxBounce <  LIMIT ) ;   // TRY 0 : FOR DEBUG 
    assert( _MaxRecord >= 0 && _MaxRecord <= LIMIT ) ; 
    assert( _MaxRec    >= 0 && _MaxRec    <= LIMIT ) ; 
    assert( _MaxSeq    >= 0 && _MaxSeq    <= LIMIT ) ; 

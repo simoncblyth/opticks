@@ -155,13 +155,15 @@ case $VERSION in
 esac 
 
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
-export OPTICKS_MAX_BOUNCE=31
+
+omb=31
+export OPTICKS_MAX_BOUNCE=${OMB:-$omb}
 
 
 #export OPTICKS_MAX_PHOTON=M100   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
 export OPTICKS_MAX_PHOTON=M1
 export OPTICKS_INTEGRATION_MODE=1
-export OPTICKS_NUM_EVENT=19
+export OPTICKS_NUM_EVENT=10
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
@@ -200,7 +202,9 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    fi 
 
    if [ "${arg/run}" != "$arg" ]; then
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N"
        $bin
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N"
    elif [ "${arg/dbg}" != "$arg" ]; then
        dbg__ $bin 
    fi 

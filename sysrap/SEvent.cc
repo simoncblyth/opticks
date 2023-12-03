@@ -158,7 +158,7 @@ NP* SEvent::MakeGenstep( int gentype, int index )
     unsigned num_gs = 1 ; 
     const int M = 1000000 ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " gentype " << gentype
         << " index (1-based) " << index
         << " with_index " << ( with_index ? "YES" : "NO " )
