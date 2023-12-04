@@ -24,6 +24,8 @@ struct SEvtTest
     static void getOutputDir(); 
     static void setMetaProf(); 
     static void hostside_running_resize_(); 
+    static void CountNibbles(); 
+
     static void Main(); 
  
 };
@@ -270,6 +272,19 @@ void SEvtTest::hostside_running_resize_()
 
 }
 
+void SEvtTest::CountNibbles()
+{
+    const char* path = spath::Resolve("$SEQPATH"); 
+    NP* seq = path ? NP::Load(path) : nullptr ;
+    if(seq == nullptr) return ; 
+
+    NP* nibcount = SEvt::CountNibbles(seq); 
+    std::cout << nibcount->descTable<int>(7) ; 
+}
+
+
+
+
 void SEvtTest::Main()
 {
     /*
@@ -279,8 +294,11 @@ void SEvtTest::Main()
     getSaveDir(); 
     getOutputDir(); 
     setMetaProf(); 
-    */
     hostside_running_resize_() ; 
+    */
+    CountNibbles() ; 
+    
+
 }
 
 int main(int argc, char** argv)

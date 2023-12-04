@@ -212,6 +212,8 @@ SSEQ_METHOD std::string sseq::brief() const
     return sstr::TrimTrailing(fseq.c_str()) ; 
 } 
 
+
+
 #endif
 
 

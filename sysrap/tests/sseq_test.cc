@@ -338,14 +338,14 @@ void test_shiftwrap()
 
 void test_load_seq()
 {
-    const char* path = spath::Resolve("$TMP/GEOM/$GEOM/G4CXTest/ALL0/p001/seq.npy") ; 
+    const char* path = spath::Resolve("$TMP/GEOM/$GEOM/$EXECUTABLE/ALL$VERSION/$EVT/seq.npy") ; 
     NP* a = NP::Load(path); 
     std::cout << " path " << path << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
 
     std::vector<sseq> qq ; 
     NPX::VecFromArray<sseq>(qq, a ); 
 
-    for(int i=0 ; i < std::min(int(qq.size()), 10) ; i++)
+    for(int i=0 ; i < std::min(int(qq.size()), 100) ; i++)
     {
         const sseq& q = qq[i] ; 
         std::cout << q.desc_seqhis() << std::endl ;  
@@ -375,3 +375,7 @@ int main()
 
     return 0 ; 
 }
+// ~/opticks/sysrap/tests/sseq_test.sh 
+
+
+

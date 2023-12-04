@@ -20,6 +20,10 @@ export GEOM=SEVT_TEST
 export OPTICKS_INPUT_PHOTON_FRAME=0 
 export CFBASE 
 
+
+export SEQPATH=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL4/A000/seq.npy 
+
+
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 

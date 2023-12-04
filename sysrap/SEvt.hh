@@ -685,5 +685,8 @@ public:
     void getFramePhoton(sphoton& p, unsigned idx) const ; 
     void getFrameHit(   sphoton& p, unsigned idx) const ; 
     void applyFrameTransform(sphoton& lp) const ; 
+
+    static NP* CountNibbles( const NP* seq ); 
+
 };
 

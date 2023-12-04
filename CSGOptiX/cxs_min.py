@@ -34,7 +34,40 @@ if __name__ == '__main__':
     print("qtab")
     print(qtab)
 
-    label = e.f.base
+
+    if hasattr(e.f, 'record'):
+        pp = e.f.record[:,:,0,:3].reshape(-1,3)
+        found = "record"
+    elif hasattr(e.f, 'photon'):
+        pp = e.f.photon[:,0,:3]
+        found = "photon"
+    elif hasattr(e.f, 'hit'):
+        pp = e.f.hit[:,0,:3]
+        found = "hit"
+    elif hasattr(e.f, 'inphoton'):
+        pp = e.f.inphoton[:,0,:3]
+        found = "inphoton"
+    elif hasattr(e.f, 'genstep'):
+        pp = e.f.genstep[:,1,:3]
+        found = "genstep"
+    else:
+        pp = None
+        found = "NONE" 
+        pass
+    pass
+
+    label = "%s : found %s " % ( e.f.base, found )
+    print(label)
+
+    assert not pp is None
+
+    gpos = np.ones( [len(pp), 4 ] )
+    gpos[:,:3] = pp
+    lpos = np.dot( gpos, e.f.sframe.w2m )
+    upos = gpos if GLOBAL else lpos
+
+
+
 
     if MODE in [0,1]:
         print("not plotting as MODE %d in environ" % MODE )
@@ -49,16 +82,7 @@ if __name__ == '__main__':
         pvplt_frame(pl, e.f.sframe, local=not GLOBAL )
     pass
 
-    #pp = e.f.inphoton[:,0,:3]
-    #pp = e.f.photon[:,0,:3]
-    #pp = e.f.hit[:,0,:3]
-    pp = e.f.record[:,:,0,:3].reshape(-1,3)
-
-    gpos = np.ones( [len(pp), 4 ] )
-    gpos[:,:3] = pp
-    lpos = np.dot( gpos, e.f.sframe.w2m )
-    upos = gpos if GLOBAL else lpos
-
+    
 
     H,V = 0,2  # X, Z
 

@@ -4373,3 +4373,33 @@ void SEvt::applyFrameTransform(sphoton& lp) const
     frame.transform_w2m(lp); 
 }
 
+
+NP* SEvt::CountNibbles( const NP* seq ) // static
+{
+    std::vector<sseq> qq ; 
+    NPX::VecFromArray<sseq>(qq, seq ); 
+    int num_seq = qq.size(); 
+
+    int ni = sseq::SLOTS+1 ; 
+    int nj = 2 ; 
+
+    NP* nibcount = NP::Make<int>( ni, nj ) ; 
+    nibcount->labels = new std::vector<std::string> {"nibcount", "sum" } ;
+    for(int i=0 ; i < int(sseq::SLOTS + 1) ; i++) nibcount->names.push_back(U::FormName_(i)) ; 
+    int* nn = nibcount->values<int>() ; 
+
+    for(int i=0 ; i < num_seq ; i++)
+    {
+        const sseq& q = qq[i] ; 
+        int nibs = q.seqhis_nibbles(); 
+        assert( nibs <= int(sseq::SLOTS) ) ; 
+        if(i < 100) std::cout << q.desc_seqhis() << std::endl ;  
+        nn[nj*nibs+0] += 1 ; 
+    }
+
+    //for(int i=0 ; i < ni ; i++) TODO cumulative
+    //std::cout << nibcount->descTable<int>(7); 
+    return nibcount ; 
+}
+
+
