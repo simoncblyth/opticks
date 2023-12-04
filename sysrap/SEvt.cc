@@ -2091,7 +2091,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     assert( num_photon_allowed );
 
     evt->num_photon = num_photon ; 
-    evt->num_seq    = evt->max_seq   > 0 ? evt->num_photon : 0 ;
+    evt->num_seq    = evt->max_seq  == 1 ? evt->num_photon : 0 ;
     evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;
     evt->num_flat   = evt->max_flat == 1 ? evt->num_photon : 0 ;
     evt->num_sup    = evt->max_sup   > 0 ? evt->num_photon : 0 ;
@@ -2536,8 +2536,9 @@ void SEvt::rjoinPhoton(const spho& label)
 #ifndef PRODUCTION
     const int& bounce = slot[idx] ; assert( bounce > 0 );   
     int prior = bounce - 1 ; 
+    int num_slots = evt->max_bounce + 1  ;
     // at truncation point and beyond cannot compare or do rejoin fixup
-    if( evt->seq && prior < evt->max_seq )
+    if( evt->seq && prior < num_slots  )
     {
         current_ctx.seq = seq[idx] ; 
         sseq& current_seq = current_ctx.seq ; 

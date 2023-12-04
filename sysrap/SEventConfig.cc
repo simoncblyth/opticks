@@ -442,9 +442,9 @@ void SEventConfig::Check()
    assert( _MaxBounce >= 0 && _MaxBounce <  LIMIT ) ;   // TRY 0 : FOR DEBUG 
    assert( _MaxRecord >= 0 && _MaxRecord <= LIMIT ) ; 
    assert( _MaxRec    >= 0 && _MaxRec    <= LIMIT ) ; 
-   assert( _MaxSeq    >= 0 && _MaxSeq    <= LIMIT ) ; 
    assert( _MaxPrd    >= 0 && _MaxPrd    <= LIMIT ) ; 
 
+   assert( _MaxSeq    >= 0 && _MaxSeq    <= 1 ) ;    // formerly incorrectly allowed up to LIMIT 
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ; 
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ; 
 }
@@ -723,11 +723,11 @@ int SEventConfig::Initialize() // static
     {
         SEventConfig::SetMaxRecord(max_bounce+1); 
         SEventConfig::SetMaxRec(max_bounce+1); 
-        SEventConfig::SetMaxSeq(max_bounce+1);  // HUH: seq is photon level thing ? 
         SEventConfig::SetMaxPrd(max_bounce+1); 
         SEventConfig::SetMaxAux(max_bounce+1); 
 
         // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
+        SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
         SEventConfig::SetMaxTag(1);   
         SEventConfig::SetMaxFlat(1); 
         SEventConfig::SetMaxSup(1); 

@@ -941,16 +941,14 @@ void QEvent::device_alloc_photon()
 #ifndef PRODUCTION
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
     evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
-    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq*sizeof(sseq)"    ) : nullptr ; 
-    // evt->seq looks to be evt->max_seq times larger than it needs to be : as sseq is compound 
-
     evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
+    evt->seq     = evt->max_seq   == 1 ? QU::device_alloc_zero<sseq>(    evt->max_photon                  , "max_photon*sizeof(sseq)"    ) : nullptr ; 
     evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
     evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
 #endif
 
-    LOG(info) << desc() ; 
-    LOG(info) << desc_alloc() ; 
+    LOG(LEVEL) << desc() ; 
+    LOG(LEVEL) << desc_alloc() ; 
 }
 
 

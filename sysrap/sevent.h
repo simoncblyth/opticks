@@ -112,7 +112,7 @@ struct sevent
     int      max_bounce  ; // eg: 0:32  (not including 32)
     int      max_record  ; // eg: 10  full step record 
     int      max_rec     ; // eg: 10  compressed step record
-    int      max_seq     ; // eg: 16  seqhis/seqbnd
+    int      max_seq     ; // now restricted to 0 or 1 only 
     int      max_prd     ; // eg: 16  
     int      max_tag     ; // 0 or 1 only 
     int      max_flat    ; // 0 or 1 only
