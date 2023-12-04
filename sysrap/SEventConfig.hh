@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <limits>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 struct NP ; 
@@ -63,6 +64,8 @@ struct SYSRAP_API SEventConfig
 {
     static const plog::Severity LEVEL ;  
     static const int LIMIT ; 
+    static constexpr const int MISSING_INDEX = std::numeric_limits<int>::max() ; 
+
     static void Check(); 
     static std::string Desc(); 
     static std::string HitMaskLabel(); 
@@ -307,6 +310,7 @@ struct SYSRAP_API SEventConfig
     static int               NumPhoton(int idx); // some tests need varying photon count 
     static int               NumEvent();         // some tests use event count and nned to detect last event 
     static int               EventIndex(int idx) ; 
+    static int               EventIndexArg(int index) ; 
  
 
     static const char* _G4StateSpec ; 

@@ -471,11 +471,13 @@ public:
     void clear_genstep() ; 
     void clear_output() ; 
 
-    void setIndex(int index_) ;  
-    void endIndex(int index_) ;  
-
+    void setIndex(int index_arg) ;  
+    void endIndex(int index_arg) ;  
+    int  getIndexArg() const ; 
     int  getIndex() const ; 
     int  getIndexPresentation() const ; 
+    std::string descIndex() const ; 
+
     void incrementIndex() ;  
     void unsetIndex() ;  
 

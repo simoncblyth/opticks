@@ -200,8 +200,8 @@ inline std::string sreport::desc_subprofile() const
 
 struct sreport_Creator
 { 
-    static constexpr const char* ASEL = "a://p" ; 
-    static constexpr const char* BSEL = "b://n" ; 
+    static constexpr const char* ASEL = "a://A" ; 
+    static constexpr const char* BSEL = "b://B" ; 
 
     bool VERBOSE ;
     const char* dirp ; 

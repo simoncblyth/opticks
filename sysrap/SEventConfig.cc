@@ -138,7 +138,7 @@ int SEventConfig::_GetNumEvent()
 int SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
 int SEventConfig::NumEvent(){         return _GetNumEvent() ; }
 int SEventConfig::EventIndex(int idx){ return _StartIndex + idx ; }
-
+int SEventConfig::EventIndexArg(int index){ return index == MISSING_INDEX ? -1 : index - _StartIndex ; }
 
 
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 

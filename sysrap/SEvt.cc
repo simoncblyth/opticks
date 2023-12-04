@@ -1529,9 +1529,8 @@ void SEvt::beginOfEvent(int eventID)
     setStage(SEvt__beginOfEvent); 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
 
-    int index_ = eventID ;    // now 0-based : so can just use eventID
-    LOG(LEVEL) << " index_ " << index_ ; 
-    setIndex(index_);   
+    LOG(LEVEL) << " eventID " << eventID ;   // 0-based 
+    setIndex(eventID);   
 
 
     LOG_IF(info, LIFECYCLE) << id() ; 
@@ -1572,8 +1571,7 @@ void SEvt::endOfEvent(int eventID)
     LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__endOfEvent_0);  
 
-    int index_ = eventID ;   // now 0-based index  
-    endIndex(index_);   // also sets t_EndOfEvent stamp
+    endIndex(eventID);   // eventID is 0-based 
     endMeta(); 
 
     save();              // gather and save SEventConfig configured arrays
@@ -1632,10 +1630,6 @@ void SEvt::endMeta()
 }
 
 
-bool SEvt::IndexPermitted(int index_) // static
-{
-    return index_ >= 0 ;  // now zero-based 
-}
 
 int SEvt::GetIndex(int idx)
 {   
@@ -1810,23 +1804,22 @@ void SEvt::clear_genstep()
 
 
 
-void SEvt::setIndex(int index_)
+void SEvt::setIndex(int index_arg)
 { 
-    bool index_permitted = IndexPermitted(index_); 
-    LOG_IF(fatal, !index_permitted) << " index_ " << index_ << " count " << Count() ; 
-    assert( index_permitted ); 
-
-    index = index_ ; 
-    t_BeginOfEvent = sstamp::Now();  // moved here from the static 
+    assert( index_arg >= 0 ); 
+    index = SEventConfig::EventIndex(index_arg) ;  // may be offset by OPTICKS_START_INDEX
+    t_BeginOfEvent = sstamp::Now();                // moved here from the static 
 
     setRunProf_Annotated("SEvt__setIndex_" ); 
 }
-void SEvt::endIndex(int index_)
+void SEvt::endIndex(int index_arg)
 { 
-    bool consistent = index == index_ ; 
+    int index_expected = SEventConfig::EventIndex(index_arg) ; 
+    bool consistent = index_expected == index ; 
     LOG_IF(fatal, !consistent)
-         << " index_ " << index_   
-         << " index " << index   
+         << " index_arg " << index_arg   
+         << " index_expected " << index_expected   
+         << " index " << index 
          << " consistent " << ( consistent ? "YES" : "NO " ) 
          ;
     assert( consistent );  
@@ -1835,6 +1828,10 @@ void SEvt::endIndex(int index_)
     setRunProf_Annotated("SEvt__endIndex_" ); 
 }
 
+int SEvt::getIndexArg() const 
+{
+    return SEventConfig::EventIndexArg(index); 
+}
 int SEvt::getIndex() const 
 { 
     return index ; 
@@ -1844,14 +1841,22 @@ int SEvt::getIndexPresentation() const
     return index == MISSING_INDEX ? -1 : index ; 
 }
 
-
+std::string SEvt::descIndex() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt::descIndex"
+       << " index                " << index                  << " (internal index which may be offset by OPTICKS_START_INDEX) " << std::endl 
+       << " getIndexPresentation " << getIndexPresentation() << " (internal index presentation avoidsing MISSING_INDEX " << std::endl 
+       << " getIndexArg          " << getIndexArg()          << " (external index removing any offsets, mapping back to eg Geant4 eventID " << std::endl    
+       ;
+    std::string str = ss.str() ; 
+    return str ;   
+}
 
 void SEvt::incrementIndex()
 {
-    int base_index = index == MISSING_INDEX ? 0 : index ; 
-    assert( base_index >= 0 ); 
-    int new_index = base_index + 1 ; 
-    setIndex(new_index); 
+    int index_arg = getIndexArg();  // -1 when MISSING_INDEX
+    setIndex(index_arg + 1); 
 }
 void SEvt::unsetIndex()
 {  
