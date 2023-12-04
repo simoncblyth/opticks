@@ -1,10 +1,42 @@
-is_seq_buffer_32x_too_large
-============================
+is_seq_buffer_32x_too_large : YES, NOW FIXED
+===============================================
 
 Related
 ---------
 
 * :doc:`OPTICKS_MAX_BOUNCE_scanning`
+
+
+Check
+-------
+
+::
+
+   os ; VERSION=99 QEvent=INFO ./cxs_min.sh 
+
+
+
+Fixed ? Seems yes
+--------------------
+
+::
+
+    epsilon:opticks blyth$ git l -n1
+    commit 36c0dfebe1e21ab43e3135ffec2bac949f6b6142 (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Dec 4 12:59:17 2023 +0800
+
+        try reducing oversized seq GPU debug buffer see ~/opticks/notes/issues/is_seq_buffer_32x_too_large.rst
+
+    A       notes/issues/OPTICKS_MAX_BOUNCE_scanning.rst
+    A       notes/issues/is_seq_buffer_32x_too_large.rst
+    M       qudarap/QEvent.cc
+    M       sysrap/SEventConfig.cc
+    M       sysrap/SEvt.cc
+    M       sysrap/sevent.h
+    epsilon:opticks blyth$ 
+
+
 
 
 Overview

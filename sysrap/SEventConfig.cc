@@ -722,7 +722,8 @@ int SEventConfig::Initialize() // static
     else if(IsStandardFullDebug())
     {
         SEventConfig::SetMaxRecord(max_bounce+1); 
-        SEventConfig::SetMaxRec(max_bounce+1); 
+        //SEventConfig::SetMaxRec(max_bounce+1); 
+        SEventConfig::SetMaxRec(0); 
         SEventConfig::SetMaxPrd(max_bounce+1); 
         SEventConfig::SetMaxAux(max_bounce+1); 
 
