@@ -214,7 +214,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 fi 
 
 if [ "${arg/meta}" != "$arg" ]; then
-   if [ -f "run_meta.txt" -a -n "$OPTICKS_SCAN_INDEX" ] -a -d "$OPTICKS_SCAN_INDEX" ; then
+   if [ -f "run_meta.txt" -a -n "$OPTICKS_SCAN_INDEX"  -a -d "$OPTICKS_SCAN_INDEX" ] ; then
        cp run_meta.txt $OPTICKS_SCAN_INDEX/run_meta.txt
    fi 
    [ $? -ne 0 ] && echo $BASH_SOURCE meta error && exit 1 

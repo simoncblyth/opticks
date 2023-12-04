@@ -13,7 +13,7 @@ SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
 SDIR=$(cd $(dirname $SOURCE) && pwd)
 script=$SDIR/cxs_min.sh
 
-export SCANNER=$SOURCE
+export OPTICKS_SCANNER=$SOURCE
 export OPTICKS_RUNNING_MODE=SRM_TORCH
 export OPTICKS_NUM_EVENT=1
 export OPTICKS_NUM_PHOTON=H1
