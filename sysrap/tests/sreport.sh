@@ -66,7 +66,8 @@ Summary "FOLD" Directory
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
+SDIR=$(cd $(dirname $SOURCE) && pwd)
 name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py

@@ -188,11 +188,9 @@ GEOM(){
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
-b7(){  opticks-build7 ; }
-oo7(){ oo ; b7 ; }
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
-ocu(){ oxrap cu ; }
 
 bst(){ cd $(opticks-home)/examples/Geant4/BoundaryStandalone ;  }
 sgs(){ cd $(opticks-home)/examples/Geant4/ScintGenStandalone ;  }

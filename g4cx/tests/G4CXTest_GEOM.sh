@@ -40,7 +40,8 @@ storch::generate is used for both GPU and CPU generation
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
+SDIR=$(cd $(dirname $SOURCE) && pwd)
 
 bin=G4CXTest
 script=$SDIR/G4CXTest_GEOM.py 
