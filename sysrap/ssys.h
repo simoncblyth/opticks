@@ -106,6 +106,9 @@ struct ssys
     static std::string Desc();
     static std::string PWD();
 
+    static void getenv_with_prefix(std::vector<std::pair<std::string,std::string>>& kvs, const char* prefix) ; 
+
+
 }; 
 
 
@@ -794,6 +797,35 @@ inline std::string ssys::Desc()  // static
 inline std::string ssys::PWD()  // static
 {
     return getenvvar("PWD");    // note no newline
+}
+
+
+#ifdef _MSC_VER
+#else
+#include <unistd.h>
+extern char **environ;
+#endif
+
+
+inline void ssys::getenv_with_prefix(std::vector<std::pair<std::string,std::string>>& kvs, const char* prefix)
+{
+#ifdef _MSC_VER
+#else
+    int i=0 ; 
+    char delim='=' ; 
+    while(environ[i])
+    {
+        std::string kv = environ[i++] ;
+        size_t pos = kv.find(delim); 
+        if( pos == std::string::npos ) continue ; 
+        std::string k = kv.substr(0, pos);
+        std::string v = kv.substr(pos+1);
+        bool match_prefix = prefix ? sstr::StartsWith( k.c_str(), prefix ) : true ; 
+        //if(match_prefix) std::cout << "[" << k << "][" << v << "]" << ( match_prefix ? "YES" : "NO "  ) << std::endl ; 
+        if(!match_prefix) continue ; 
+        kvs.push_back( std::pair<std::string,std::string>( k, v ) ); 
+    }
+#endif
 }
 
 

@@ -69,7 +69,17 @@ uint64_t SEvt::TimerStartCount(){ return TIMER->start_count() ; }
 std::string SEvt::TimerDesc(){ return TIMER->desc() ; }
 
 
-NP* SEvt::Init_RUN_META() // 
+/**
+SEvt::Init_RUN_META
+---------------------
+
+As this is a static it happens just as libSysRap is loaded, 
+very soon after starting the executable. 
+
+**/
+
+
+NP* SEvt::Init_RUN_META() // static 
 {
     NP* run_meta = NP::Make<float>(1);
     run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() ); 

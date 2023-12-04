@@ -15,6 +15,7 @@ BASH_SOURCE fails to export
 
 struct smeta
 {
+    static constexpr const char* PREFIX = "OPTICKS_" ;  
     static constexpr const char* VARS = R"( 
 CVD
 CUDA_VISIBLE_DEVICES
@@ -66,11 +67,25 @@ inline void smeta::Collect(std::string& meta, const char* source, bool stamp )
     CollectEnv(meta); 
 }
 
-inline void smeta::CollectEnv(std::string& meta)
+/**
+smeta::CollectEnv
+-------------------
+
+TODO: collect all envvars starting with prefix OPTICKS_
+
+**/
+
+inline void smeta::CollectEnv(std::string& meta )
 {
     typedef std::pair<std::string, std::string> KV ; 
-    std::vector<KV> kvs ; 
-    ssys::getenv_(kvs, VARS); 
-    NP::SetMetaKV(meta, kvs); 
+    std::vector<KV> kvs0 ; 
+    ssys::getenv_(kvs0, VARS); 
+    NP::SetMetaKV(meta, kvs0); 
+
+    std::vector<KV> kvs1 ; 
+    ssys::getenv_with_prefix(kvs1, PREFIX); 
+    NP::SetMetaKV(meta, kvs1);
 }
+
+
 

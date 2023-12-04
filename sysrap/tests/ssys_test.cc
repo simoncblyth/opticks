@@ -380,6 +380,27 @@ void test_getenv_ParseInt()
 
 
 
+void test_getenv_with_prefix()
+{
+    typedef std::pair<std::string,std::string> KV ; 
+
+    std::vector<KV> kvs ;  
+    ssys::getenv_with_prefix(kvs, "OPTICKS_"); 
+
+    int num_kvs = kvs.size() ; 
+    for(int i=0 ; i < num_kvs ; i++)
+    {
+        const KV& kv = kvs[i]; 
+        std::cout 
+            << std::setw(3) << i << " " 
+            << "[" << kv.first << "]"
+            << "[" << kv.second << "]"
+            << std::endl 
+            ;
+    }
+
+}
+
 
 int main(int argc, char** argv)
 {
@@ -415,8 +436,10 @@ int main(int argc, char** argv)
     test_Dump(); 
     test_Desc(); 
     test_PWD(); 
-    */
     test_getenv_ParseInt(); 
+    */
+
+    test_getenv_with_prefix(); 
  
     return 0 ; 
 }

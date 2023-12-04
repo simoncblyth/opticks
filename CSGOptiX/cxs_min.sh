@@ -31,14 +31,11 @@ SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
 SDIR=$(cd $(dirname $SOURCE) && pwd)
 
 case $(uname) in
-   #Linux) defarg=dbg_info ;;
    Linux) defarg=run_report_info ;;
    Darwin) defarg=ana ;;
 esac
 
-if [ -n "$BP" ]; then
-   defarg="dbg"
-fi 
+[ -n "$BP" ] && defarg=dbg
 
 arg=${1:-$defarg}
 
@@ -60,7 +57,7 @@ export LOGDIR=$BINBASE/ALL$VERSION
 export AFOLD=$BINBASE/ALL$VERSION/$EVT
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
-export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
+#export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
 
 
 mkdir -p $LOGDIR 
@@ -68,14 +65,14 @@ cd $LOGDIR
 LOGFILE=$bin.log
 
 
-#srm=SRM_DEFAULT
-srm=SRM_TORCH
-#srm=SRM_INPUT_PHOTON
-#srm=SRM_INPUT_GENSTEP
-#srm=SRM_GUN
-export OPTICKS_RUNNING_MODE=$srm
+#opticks_running_mode=SRM_DEFAULT
+opticks_running_mode=SRM_TORCH
+#opticks_running_mode=SRM_INPUT_PHOTON
+#opticks_running_mode=SRM_INPUT_GENSTEP
+#opticks_running_mode=SRM_GUN
 
-echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
+export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
+
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
 
@@ -108,13 +105,13 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    #onp=K1:10 
-    #onp=H1:10,M2,3,5,7,10,20,40,80,100
-    onp=H1:10
-    #onp=M3,10   
+    #opticks_num_photon=K1:10 
+    #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
+    opticks_num_photon=H1:10
+    #opticks_num_photon=M3,10   
     ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
 
-    export OPTICKS_NUM_PHOTON=${ONP:-$onp}
+    export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}
 
     #export SEvent_MakeGenstep_num_ph=100000  NOT USED WHEN USING OPTICKS_NUM_PHOTON
     #src="rectangle"
@@ -148,19 +145,18 @@ fi
 
 
 case $VERSION in 
- 0) oem=Minimal ;;
- 1) oem=HitOnly ;; 
- 2) oem=HitAndPhoton ;; 
- 3) oem=HitAndPhoton ;; 
-99) oem=StandardFullDebug ;;
+ 0) opticks_event_mode=Minimal ;;
+ 1) opticks_event_mode=HitOnly ;; 
+ 2) opticks_event_mode=HitAndPhoton ;; 
+ 3) opticks_event_mode=HitAndPhoton ;; 
+99) opticks_event_mode=StandardFullDebug ;;
 esac 
-
-export OPTICKS_EVENT_MODE=${OEM:-$oem}
 
 opticks_max_bounce=31
 opticks_num_event=10 
 opticks_start_index=0
 
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
@@ -179,10 +175,10 @@ logging(){
     export CSGOptiX=INFO
     export QEvent=INFO 
     export QSim=INFO
-    #export SEvt__DEBUG_CLEAR=1   # see ~/opticks/notes/issues/SEvt__clear_double_call.rst
-    #export SEvt__LIFECYCLE=1
+    export SEvt__LIFECYCLE=1
 }
 [ -n "$LOG" ] && logging
+[ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 
 
 vars="GEOM LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
@@ -216,6 +212,14 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
    fi 
 fi 
+
+if [ "${arg/meta}" != "$arg" ]; then
+   if [ -f "run_meta.txt" -a -n "$OPTICKS_SCAN_INDEX" ] -a -d "$OPTICKS_SCAN_INDEX" ; then
+       cp run_meta.txt $OPTICKS_SCAN_INDEX/run_meta.txt
+   fi 
+   [ $? -ne 0 ] && echo $BASH_SOURCE meta error && exit 1 
+fi 
+
 
 if [ "${arg/report}" != "$arg" ]; then
    sreport
