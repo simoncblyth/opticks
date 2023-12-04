@@ -167,6 +167,7 @@ public:
     unsigned getNumSimtrace() const ;  
 public:
     std::string desc() const ; 
+    std::string desc_alloc() const ; 
 
     void checkEvt() ;  // GPU side 
 

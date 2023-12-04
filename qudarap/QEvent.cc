@@ -148,6 +148,21 @@ std::string QEvent::desc() const
     return s ; 
 }
 
+std::string QEvent::desc_alloc() const
+{
+    salloc* alloc = QU::alloc ; 
+    std::stringstream ss ; 
+    ss << "[QEvent::desc_alloc " << std::endl ; 
+    ss << ( alloc ? "salloc::desc" : "NO-salloc" ) << std::endl ;
+    ss << ( alloc ? alloc->desc() : "" ) << std::endl ;
+    ss << "]QEvent::desc_alloc " << std::endl ; 
+    std::string s = ss.str();  
+    return s ; 
+}
+
+
+
+
 
 /**
 QEvent::setGenstep
@@ -934,7 +949,12 @@ void QEvent::device_alloc_photon()
     evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
 #endif
 
+    LOG(info) << desc() ; 
+    LOG(info) << desc_alloc() ; 
 }
+
+
+
 
 
 void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static 
