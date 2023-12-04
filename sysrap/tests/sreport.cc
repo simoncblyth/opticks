@@ -50,6 +50,8 @@ with many large arrays left on the server.
 
 struct sreport
 {
+    static constexpr const char* JUNCTURE = "SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META" ; 
+
     bool    VERBOSE ;
 
     NP*       run ; 
@@ -66,7 +68,6 @@ struct sreport
 
     std::string desc() const ;
     std::string desc_run() const ;
-    std::string desc_run_juncture() const ;
     std::string desc_runprof() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
@@ -115,7 +116,6 @@ inline std::string sreport::desc() const
     std::stringstream ss ; 
     ss << "[sreport.desc" << std::endl 
        << desc_run() 
-       << desc_run_juncture() 
        << desc_runprof() 
        << desc_substamp()
        << "]sreport.desc" << std::endl 
@@ -130,27 +130,12 @@ inline std::string sreport::desc_run() const
     ss << "[sreport.desc_run" << std::endl 
        << ( run ? run->sstr() : "-" ) << std::endl 
        << ".sreport.desc_run.descMetaKVS " << std::endl 
-       << ( run ? run->descMetaKVS() : "-" ) << std::endl
+       << ( run ? run->descMetaKVS(JUNCTURE) : "-" ) << std::endl
        << "]sreport.desc_run" << std::endl 
        ; 
     std::string str = ss.str() ;
     return str ;  
 }
-
-inline std::string sreport::desc_run_juncture() const
-{
-    const char* juncture  = "SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META" ; 
-
-    std::stringstream ss ; 
-    ss << "[sreport.desc_run_juncture" << std::endl 
-       << ( run ? run->descMetaKV(juncture) : "-" )    
-       << "]sreport.desc_run_juncture" << std::endl 
-       ; 
-    std::string str = ss.str() ;
-    return str ;  
-}
-
-
 
 
 inline std::string sreport::desc_runprof() const
@@ -261,7 +246,7 @@ inline std::string sreport_Creator::desc() const
     ss << "[sreport_Creator.desc" << std::endl 
        << desc_fold() 
        << ( VERBOSE ? desc_fold_detail() : "" ) 
-       << desc_run()
+       << ( VERBOSE ? desc_run() : "" )
        << "]sreport_Creator.desc" << std::endl 
        ; 
     std::string str = ss.str() ;
