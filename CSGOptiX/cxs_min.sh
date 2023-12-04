@@ -205,11 +205,12 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    if [ "${arg/run}" != "$arg" ]; then
        date +"%Y-%m-%d %H:%M:%S.%3N  %N"
        $bin
+       [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
        date +"%Y-%m-%d %H:%M:%S.%3N  %N"
    elif [ "${arg/dbg}" != "$arg" ]; then
        dbg__ $bin 
+       [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
    fi 
-   [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
 if [ "${arg/report}" != "$arg" ]; then

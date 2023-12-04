@@ -27,6 +27,7 @@ const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG
 int         SEventConfig::_IntegrationModeDefault = -1 ;
 const char* SEventConfig::_EventModeDefault = "Default" ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
+int         SEventConfig::_StartIndexDefault = 0 ;
 int         SEventConfig::_NumEventDefault = 1 ;
 const char* SEventConfig::_NumPhotonDefault = nullptr ;
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
@@ -75,6 +76,7 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault ); 
 int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
+int         SEventConfig::_StartIndex = ssys::getenvint(kStartIndex, _StartIndexDefault ); 
 int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault ); 
 
 std::vector<int>* SEventConfig::_GetNumPhotonPerEvent()
@@ -132,11 +134,10 @@ int SEventConfig::_GetNumEvent()
     return override_NumEvent ? int(_NumPhotonPerEvent->size()) : _NumEvent ; 
 }
 
+
 int SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
 int SEventConfig::NumEvent(){         return _GetNumEvent() ; }
-
-
-
+int SEventConfig::EventIndex(int idx){ return _StartIndex + idx ; }
 
 
 
@@ -269,7 +270,9 @@ bool SEventConfig::IsHitAndPhoton(){      return _EventMode && strcmp(_EventMode
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
 void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
-void SEventConfig::SetNumEvent(int nevt){             _NumEvent = nevt ; Check() ; }
+
+void SEventConfig::SetStartIndex(int index0){        _StartIndex = index0 ; Check() ; }
+void SEventConfig::SetNumEvent(int nevt){            _NumEvent = nevt ; Check() ; }
 void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; Check() ; }
 void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; Check() ; }
 
@@ -447,6 +450,8 @@ void SEventConfig::Check()
    assert( _MaxSeq    >= 0 && _MaxSeq    <= 1 ) ;    // formerly incorrectly allowed up to LIMIT 
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ; 
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ; 
+
+   assert( _StartIndex >= 0 ); 
 }
 
  

@@ -83,6 +83,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
     static constexpr const char* kEventMode    = "OPTICKS_EVENT_MODE" ; 
     static constexpr const char* kRunningMode  = "OPTICKS_RUNNING_MODE" ; 
+    static constexpr const char* kStartIndex   = "OPTICKS_START_INDEX" ; 
     static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ; 
     static constexpr const char* kNumPhoton    = "OPTICKS_NUM_PHOTON" ; 
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
@@ -205,6 +206,8 @@ struct SYSRAP_API SEventConfig
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State/Torch
+
+    static void SetStartIndex(int index0); 
     static void SetNumEvent(int nevt);            // NumEvent is used by some tests 
     static void SetNumPhoton(const char* spec);   // NumPhoton is used by some tests 
     static void SetG4StateSpec(const char* spec); 
@@ -254,6 +257,7 @@ struct SYSRAP_API SEventConfig
     static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
     static const char* _RunningModeDefault ; 
+    static int         _StartIndexDefault ; 
     static int         _NumEventDefault ; 
     static const char* _NumPhotonDefault ; 
     static const char* _G4StateSpecDefault ; 
@@ -293,6 +297,7 @@ struct SYSRAP_API SEventConfig
     static int         _IntegrationMode ; 
     static const char* _EventMode ; 
     static int         _RunningMode ; 
+    static int         _StartIndex ; 
     static int         _NumEvent ; 
 
     static std::vector<int>* _GetNumPhotonPerEvent(); 
@@ -301,6 +306,7 @@ struct SYSRAP_API SEventConfig
     static int               _GetNumEvent(); 
     static int               NumPhoton(int idx); // some tests need varying photon count 
     static int               NumEvent();         // some tests use event count and nned to detect last event 
+    static int               EventIndex(int idx) ; 
  
 
     static const char* _G4StateSpec ; 

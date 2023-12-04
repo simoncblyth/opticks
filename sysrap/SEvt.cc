@@ -1572,7 +1572,7 @@ void SEvt::endOfEvent(int eventID)
     LOG_IF(info, LIFECYCLE) << id() ; 
     sprof::Stamp(p_SEvt__endOfEvent_0);  
 
-    int index_ = 1+eventID ;    
+    int index_ = eventID ;   // now 0-based index  
     endIndex(index_);   // also sets t_EndOfEvent stamp
     endMeta(); 
 
@@ -1823,7 +1823,13 @@ void SEvt::setIndex(int index_)
 }
 void SEvt::endIndex(int index_)
 { 
-    assert( std::abs(index) == std::abs(index_) );  
+    bool consistent = index == index_ ; 
+    LOG_IF(fatal, !consistent)
+         << " index_ " << index_   
+         << " index " << index   
+         << " consistent " << ( consistent ? "YES" : "NO " ) 
+         ;
+    assert( consistent );  
     t_EndOfEvent = sstamp::Now();  
 
     setRunProf_Annotated("SEvt__endIndex_" ); 
