@@ -109,7 +109,7 @@ struct sevent
     int      max_photon  ;  // eg:  100,000,000
     int      max_simtrace ; // eg: 100,000,000
 
-    int      max_bounce  ; // eg:  9 
+    int      max_bounce  ; // eg: 0:32  (not including 32)
     int      max_record  ; // eg: 10  full step record 
     int      max_rec     ; // eg: 10  compressed step record
     int      max_seq     ; // eg: 16  seqhis/seqbnd

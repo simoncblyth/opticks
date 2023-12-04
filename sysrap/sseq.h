@@ -56,8 +56,8 @@ struct sseq
     static constexpr const unsigned NSEQ = 2 ;  
     static constexpr const unsigned BITS = 4 ;
     static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;
-    static constexpr const unsigned SLOTMAX = 64/BITS ; 
-    static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;
+    static constexpr const unsigned SLOTMAX = 64/BITS ;     // 16 
+    static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;  // 32
 
     typedef unsigned long long ULL ; 
     ULL seqhis[NSEQ] ; 
@@ -170,7 +170,7 @@ NB: nibble restriction of each "slot" means there is absolute no need for FFSLL
 
 SSEQ_METHOD void sseq::add_nibble(unsigned slot, unsigned flag, unsigned boundary )
 {
-    unsigned iseq = slot/SLOTMAX ;  // iseq:element to write to 
+    unsigned iseq = slot/SLOTMAX ;  // iseq:element to write to, 0 or 1 for NSEQ 2   
     unsigned shift = BITS*(slot - iseq*SLOTMAX) ; 
 
     if(iseq < NSEQ) 

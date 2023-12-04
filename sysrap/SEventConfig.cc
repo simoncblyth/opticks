@@ -709,7 +709,7 @@ int SEventConfig::Initialize() // static
         <<  " RunningModeLabel() " << RunningModeLabel() 
         ; 
 
-    int maxbounce = MaxBounce(); 
+    int max_bounce = MaxBounce(); 
 
     if(IsDefault())
     {
@@ -721,11 +721,11 @@ int SEventConfig::Initialize() // static
     }
     else if(IsStandardFullDebug())
     {
-        SEventConfig::SetMaxRecord(maxbounce+1); 
-        SEventConfig::SetMaxRec(maxbounce+1); 
-        SEventConfig::SetMaxSeq(maxbounce+1); 
-        SEventConfig::SetMaxPrd(maxbounce+1); 
-        SEventConfig::SetMaxAux(maxbounce+1); 
+        SEventConfig::SetMaxRecord(max_bounce+1); 
+        SEventConfig::SetMaxRec(max_bounce+1); 
+        SEventConfig::SetMaxSeq(max_bounce+1);  // HUH: seq is photon level thing ? 
+        SEventConfig::SetMaxPrd(max_bounce+1); 
+        SEventConfig::SetMaxAux(max_bounce+1); 
 
         // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
         SEventConfig::SetMaxTag(1);   

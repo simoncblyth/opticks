@@ -1,14 +1,45 @@
 #!/bin/bash -l
+usage(){ cat << EOU
+SEventConfigTest.sh
+=====================
 
-name=SEventConfigTest
+::
 
-#mode=StandardFullDebug
-#mode=Default
-mode=Minimal
+    ~/opticks/sysrap/tests/SEventConfigTest.sh
+
+    OEM=StandardFullDebug ~/opticks/sysrap/tests/SEventConfigTest.sh 
+    OEM=StandardFullDebug ~/opticks/sysrap/tests/SEventConfigTest.sh 
+
+
+
+EOU
+}
 
 cd $(dirname $BASH_SOURCE)
+name=SEventConfigTest
 
-export OPTICKS_EVENT_MODE=$mode
+#oem=StandardFullDebug
+#oem=Default
+oem=Minimal
+export OPTICKS_EVENT_MODE=${OEM:-$oem}
+
+case $OPTICKS_EVENT_MODE in 
+   Default|Minimal|StandardFullDebug|HitOnly|HitAndPhoton)   ok=1 ;; 
+   *) ok=0 ;;  
+esac
+
+if [ $ok -eq  1 ]; then
+    echo $BASH_SOURCE : OPTICKS_EVENT_MODE $OPTICKS_EVENT_MODE IS VALID
+else
+    echo $BASH_SOURCE : ERROR : OPTICKS_EVENT_MODE $OPTICKS_EVENT_MODE NOT VALID 
+    exit 1  
+fi 
+
+
+omb=31
+export OPTICKS_MAX_BOUNCE=${OMB:-$omb}
+
+
 
 #export OPTICKS_OUT_FOLD=${TMP:-/tmp/$USER/opticks}/$name/out_fold
 #export OPTICKS_OUT_NAME=organized/relative/dir/tree/out_name
@@ -43,5 +74,4 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi 
 
 exit 0 
-
 
