@@ -157,15 +157,18 @@ esac
 
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
 
-omb=31
-export OPTICKS_MAX_BOUNCE=${OMB:-$omb}
+opticks_max_bounce=31
+opticks_num_event=10 
+opticks_start_index=0
+
+export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
+export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 
 
 #export OPTICKS_MAX_PHOTON=M100   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
 export OPTICKS_MAX_PHOTON=M1
 export OPTICKS_INTEGRATION_MODE=1
-export OPTICKS_NUM_EVENT=10
-export OPTICKS_START_INDEX=5
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}

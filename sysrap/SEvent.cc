@@ -146,21 +146,24 @@ NP* SEvent::MakeCarrierGenstep(int idx){  return MakeGenstep( OpticksGenstep_CAR
 SEvent::MakeGenstep
 ---------------------
 
+NB index_arg is userspace 0-based index, that is not the same as the internal SEvt::index 
+which may be offset by OPTICKS_START_INDEX
+
 **/
 
 
-NP* SEvent::MakeGenstep( int gentype, int index )
+NP* SEvent::MakeGenstep( int gentype, int index_arg )
 {
-    bool with_index = index != -1 ; 
-    if(with_index) assert( index >= 0 );  // SEvt::index is now 0-based 
-    int num_ph = with_index ? SEventConfig::NumPhoton(index) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
+    bool with_index = index_arg != -1 ; 
+    if(with_index) assert( index_arg >= 0 );  // index_arg is 0-based 
+    int num_ph = with_index ? SEventConfig::NumPhoton(index_arg) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
     unsigned num_gs = 1 ; 
     const int M = 1000000 ; 
 
     LOG(LEVEL) 
         << " gentype " << gentype
-        << " index (1-based) " << index
+        << " index_arg " << index_arg
         << " with_index " << ( with_index ? "YES" : "NO " )
         << " num_ph " << num_ph 
         << " num_ph/M " << num_ph/M 
@@ -170,7 +173,7 @@ NP* SEvent::MakeGenstep( int gentype, int index )
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     gs->set_meta<std::string>("creator", "SEvent::MakeGenstep" ); 
     gs->set_meta<int>("num_ph", num_ph ); 
-    gs->set_meta<int>("index",  index ); 
+    gs->set_meta<int>("index_arg",  index_arg ); 
 
     switch(gentype)
     {

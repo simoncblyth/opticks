@@ -746,7 +746,8 @@ void SEvt::addInputGenstep()
                 }
                 else
                 {
-                    igs = SEvent::MakeTorchGenstep(index);  // pass index to allow changing num photons per event
+                    int index_arg = getIndexArg(); 
+                    igs = SEvent::MakeTorchGenstep(index_arg);  // pass index to allow changing num photons per event
                 }
             }
             assert(igs);  

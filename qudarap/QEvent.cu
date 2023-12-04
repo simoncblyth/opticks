@@ -200,7 +200,9 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt )
     printf("//QEvent_count_genstep_photons_and_fill_seed_buffer evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon );      
 #endif
 
-    assert( evt->seed && evt->num_seed > 0 ); 
+    bool expect_seed =  evt->seed && evt->num_seed > 0 ; 
+    if(!expect_seed) printf("//QEvent_count_genstep_photons_and_fill_seed_buffer  evt.seed %s  evt.num_seed %d \n",  (evt->seed ? "YES" : "NO " ), evt->num_seed );  
+    assert( expect_seed ); 
 
     bool num_seed_ok = evt->num_seed <= evt->max_photon ;
 
