@@ -1529,7 +1529,7 @@ void SEvt::beginOfEvent(int eventID)
     setStage(SEvt__beginOfEvent); 
     sprof::Stamp(p_SEvt__beginOfEvent_0);  
 
-    int index_ = 1+eventID ;  
+    int index_ = eventID ;    // now 0-based : so can just use eventID
     LOG(LEVEL) << " index_ " << index_ ; 
     setIndex(index_);   
 
@@ -1634,16 +1634,12 @@ void SEvt::endMeta()
 
 bool SEvt::IndexPermitted(int index_) // static
 {
-    return index_ >= 1 ;  // no longer allowing -ve index 
-    //return std::abs(index_) >= 1 ;   
-    // for simplicity dont depend on Count, always dis-allow index 0 
+    return index_ >= 0 ;  // now zero-based 
 }
-
-
 
 int SEvt::GetIndex(int idx)
 {   
-    return Exists(idx) ? Get(idx)->getIndex() : 0 ;   
+    return Exists(idx) ? Get(idx)->getIndex() : -1 ;   
 }
 S4RandomArray* SEvt::GetRandomArray(int idx)
 { 
@@ -1816,7 +1812,7 @@ void SEvt::clear_genstep()
 
 void SEvt::setIndex(int index_)
 { 
-    bool index_permitted = IndexPermitted(index_);  // >= 1 
+    bool index_permitted = IndexPermitted(index_); 
     LOG_IF(fatal, !index_permitted) << " index_ " << index_ << " count " << Count() ; 
     assert( index_permitted ); 
 
@@ -1847,7 +1843,8 @@ int SEvt::getIndexPresentation() const
 void SEvt::incrementIndex()
 {
     int base_index = index == MISSING_INDEX ? 0 : index ; 
-    int new_index = base_index < 0 ? base_index - 1 : base_index + 1 ; 
+    assert( base_index >= 0 ); 
+    int new_index = base_index + 1 ; 
     setIndex(new_index); 
 }
 void SEvt::unsetIndex()
@@ -3697,25 +3694,25 @@ const char* SEvt::getOutputDir(const char* base_) const
     return path ; 
 }
 
+char SEvt::getInstancePrefix() const
+{
+    char pfx = '\0' ; 
+    switch(instance)
+    {
+       case EGPU:             pfx = 'A' ; break ; 
+       case ECPU:             pfx = 'B' ; break ; 
+       case MISSING_INSTANCE: pfx = 'M' ; break ; 
+       default:               pfx = 'D' ; break ; 
+    }
+    return pfx ; 
+}
 
 std::string SEvt::getIndexString_(const char* hdr) const 
 {
-    int u_index = 0 ; 
-    assert( index > 0 ); 
-    if(SEventConfig::IsRGModeSimulate())
-    {
-        assert( instance == SEvt::EGPU || instance == SEvt::ECPU ); 
-        u_index = instance == SEvt::EGPU ? index : -index ; 
-    }
-    else if(SEventConfig::IsRGModeSimtrace())
-    {
-        //assert( instance == MISSING_INSTANCE );  // not with U4SimtraceTest.sh 
-        u_index = index ;  ; 
-    }
-
-    bool pfx = true ; // 'n' 'p' 'z'
+    assert( index >= 0 && index != MISSING_INDEX ); 
     int wid = 3 ; 
-    return sstr::FormatIndex_(u_index, pfx, wid, hdr ); 
+    char pfx = getInstancePrefix(); 
+    return sstr::FormatIndex_(index, pfx, wid, hdr ); 
 }
 
 const char* SEvt::getIndexString(const char* hdr) const 

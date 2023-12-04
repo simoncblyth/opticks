@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include "SLOG.hh"
 
-//#include "SPath.hh"
 #include "spath.h"
 #include "sstr.h"
 
@@ -17,15 +16,6 @@
 const plog::Severity U4Debug::LEVEL = SLOG::EnvLevel("U4Debug", "DEBUG" ); 
 
 
-/*
-const char* U4Debug::SaveDir = getenv(EKEY) ;   
-
-const char* U4Debug::GetSaveDir(int eventID)
-{
-    return SPath::Resolve(SaveDir ? SaveDir : "/tmp" , eventID, DIRPATH );  
-}
-*/
-
 
 /**
 U4Debug::Save
@@ -37,18 +27,7 @@ This is used for example from junoSD_PMT_v2::EndOfEvent WITH_G4CXOPTICKS_DEBUG
 
 void U4Debug::Save(int eventID)
 {
-    //const char* dir = GetSaveDir(eventID); 
-
-    const char* dir = spath::Resolve( ETOK, sstr::FormatIndex(eventID, true, 3, nullptr) ); 
-
-
-    std::cout 
-        << "U4Debug::Save"  
-        << " eventID " << eventID 
-        << " dir " << dir 
-        << " ETOK " << ETOK 
-        << std::endl
-        ; 
+    const char* dir = spath::Resolve( ETOK, sstr::FormatIndex(eventID, 'B', 3, nullptr) ); 
 
     LOG(LEVEL) 
         << " eventID " << eventID 

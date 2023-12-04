@@ -54,9 +54,9 @@ struct sstr
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
 
-    static std::string FormatIndexDefault_( int idx, const char* hdr=nullptr  );  // "p001" "p002" "n001" "z000" ... 
-    static std::string FormatIndex_( int idx, bool prefix, int wid, const char* hdr ); 
-    static const char* FormatIndex(  int idx, bool prefix, int wid, const char* hdr ); 
+    static std::string FormatIndexDefault_( int idx, const char* hdr=nullptr  );  // "A000" "A001" "A002" ... 
+    static std::string FormatIndex_( int idx, char prefix, int wid, const char* hdr ); 
+    static const char* FormatIndex(  int idx, char prefix, int wid, const char* hdr ); 
 
 
 
@@ -380,16 +380,22 @@ template std::string sstr::Format_( const char*, const char*, int, int );
 
 inline std::string sstr::FormatIndexDefault_( int idx, const char* hdr )
 {
-    bool prefix = true ; 
+    char prefix = 'A' ; 
     int wid = 3 ; 
     return FormatIndex_(idx,  prefix, wid, hdr ); 
 }
 
-inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid, const char* hdr )
+inline std::string sstr::FormatIndex_( int idx, char prefix, int wid, const char* hdr )
 {
+    assert( prefix == '\0' || prefix == 'A' || prefix == 'B' ); 
+    assert( idx >= 0 ); 
+
     std::stringstream ss ;  
     if(hdr) ss << hdr ; 
-    if(prefix) ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) ) ; 
+
+    //if(prefix) ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) ) ; 
+    if(prefix != '\0') ss << prefix  ; 
+
     ss << std::setfill('0') << std::setw(wid) << std::abs(idx) ; 
     std::string str = ss.str(); 
     return str ; 
@@ -399,21 +405,21 @@ inline std::string sstr::FormatIndex_( int idx, bool prefix, int wid, const char
 sstr::FormatIndex
 -------------------
 
-prefix:true wid:3
+prefix:A wid:3
 
 +-----+--------+
 | idx |  val   |
 +=====+========+
-|  1  | p001   |
+|  1  | A001   |
 +-----+--------+
-|  -1 | n001   |
+|  -1 | *FAIL* |
 +-----+--------+
-|  0  | z000   |
+|  0  | A000   |
 +-----+--------+
 
 **/
 
-inline const char* sstr::FormatIndex( int idx, bool prefix, int wid, const char* hdr )
+inline const char* sstr::FormatIndex( int idx, char prefix, int wid, const char* hdr )
 {
     std::string str = FormatIndex_(idx, prefix, wid, hdr ); 
     return strdup(str.c_str()); 

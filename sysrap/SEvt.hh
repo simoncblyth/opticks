@@ -626,6 +626,7 @@ public:
     const char* getOutputDir_OLD(const char* base_=nullptr) const ; 
     const char* getOutputDir(const char* base_=nullptr) const ; 
 
+    char getInstancePrefix() const ; 
     std::string getIndexString_(const char* hdr) const ; 
     const char* getIndexString(const char* hdr) const ; 
 

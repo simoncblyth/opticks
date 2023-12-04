@@ -131,7 +131,7 @@ void NPFold_clear_test::t0()
         sstamp::sleep_us(100000); 
         run->set_meta<std::string>(head.c_str(), sprof::Now() ); 
 
-        std::string dir = sstr::FormatIndexDefault_( idx + 1 , "$FOLD/");  
+        std::string dir = sstr::FormatIndexDefault_( idx, "$FOLD/");  
         ev->save(dir.c_str()) ;  
 
         std::string body = U::FormName_("body_", idx, nullptr, 3 ) ; 

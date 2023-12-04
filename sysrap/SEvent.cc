@@ -152,8 +152,8 @@ SEvent::MakeGenstep
 NP* SEvent::MakeGenstep( int gentype, int index )
 {
     bool with_index = index != -1 ; 
-    if(with_index) assert( index > 0 );  // SEvt::index is 1-based 
-    int num_ph = with_index ? SEventConfig::NumPhoton(index-1) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
+    if(with_index) assert( index >= 0 );  // SEvt::index is now 0-based 
+    int num_ph = with_index ? SEventConfig::NumPhoton(index) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
     unsigned num_gs = 1 ; 
     const int M = 1000000 ; 
