@@ -8,16 +8,6 @@ Overview
 Currently its set at initialization and never changed. Can it 
 be changed from event to event to facilitate scanning ? 
 
-
-Related
----------
-
-* :doc:`is_seq_buffer_32x_too_large`
-
-
-Issue
---------
-
 * not easy to change this within a run of SEvt in debug mode as
   array sizes vary with it ?
 
@@ -25,9 +15,37 @@ Issue
     can change the max_bounce without issue ?
 
 
-::
+* whatever decided to cxs_min_scan.sh via separate invokations 
+  which set OPTICKS_START_INDEX 
 
-   OMB=0 SEvt=INFO PIDX=0 ~/opticks/cxs_min.sh
+
+Observation
+------------
+
+* with SRM_TORCH from CD center see linear correspondence
+  between MAX_BOUNCE and launch time up until about MAX_BOUNCE 16 
+
+
+
+Related
+---------
+
+* :doc:`is_seq_buffer_32x_too_large`
+
+
+Workflow
+----------
+
+Workstation::
+
+    ./cxs_min_scan.sh  
+    
+Laptop::
+
+    ./cxs_min.sh grab 
+    substamp_ONE=1 maxb_scan=1 ./sreport.sh ana
+
+    PLOT=Substamp_ONE_maxb_scan ./sreport.sh ana
 
 
 
@@ -85,8 +103,6 @@ Does max_bounce change record size ?  YES
     2100     evt->num_rec    = evt->max_rec    * evt->num_photon ;
     2101     evt->num_aux    = evt->max_aux    * evt->num_photon ;
     2102     evt->num_prd    = evt->max_prd    * evt->num_photon ;
-
-
 
 
 Find

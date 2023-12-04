@@ -17,6 +17,34 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
 
+
+
+def format_large_number(number):
+    if number//1000000 == 0:
+        if number % 1000 == 0:
+            num_K = number//1000
+            num = "%dK" % num_K
+        else:
+            num = "%d" % number
+        pass
+    elif number//1000000 > 0:
+        if number % 1000000 == 0:
+            num_M = number//1000000
+            num = "%dM" % num_M
+        else:
+            num = "%d" % number
+        pass
+    else:
+        num = "%d" % number
+    pass
+    return num
+
+
+
+COMMANDLINE = os.environ.get("COMMANDLINE", "")
+STEM =  os.environ.get("STEM", "")
+HEADLINE = "%s ## %s " % (COMMANDLINE, STEM ) 
+PLOT =  os.environ.get("PLOT", "")
 MODE =  int(os.environ.get("MODE", "2"))
 PICK =  os.environ.get("PICK", "AB")
 TLIM =  np.array(list(map(int,os.environ.get("TLIM", "0,0").split(","))),dtype=np.int32)
@@ -183,13 +211,19 @@ class Substamp(object):
     def Subcount(cls, f, label="photon"):
         _icol = np.where(f.subcount_labels == label)[0] 
         icol = _icol[0] if len(_icol) == 1 else -1 
-        subcount = f.subcount[:,icol]/1e6 if icol > -1 else None
+        subcount = f.subcount[:,icol] if icol > -1 else None
         return subcount
     @classmethod
     def Labels(cls, f):
         labels = f.substamp_labels
         labels_s = smry_(labels)
         return labels_s
+    @classmethod
+    def DeltaColumn(cls, f, label ):
+        _c = np.where( f.substamp_labels == label )[0]
+        c = _c[0] if len(_c) == 1 else -1 
+        return f.delta_substamp[:,c] if c > -1 else None
+
     @classmethod
     def Hdr(cls, f):
         labels_s = cls.Labels(f)
@@ -211,7 +245,10 @@ class Substamp_ONE_Etime(object):
         delta = f.delta_substamp 
 
         etime = Substamp.ETime(f) 
-        subcount_photon = Substamp.Subcount(f, "photon")
+        _subcount_photon = Substamp.Subcount(f, "photon")
+        assert not _subcount_photon is None
+        subcount_photon = _subcount_photon/1e6
+
         title = Substamp.Title(f, symbol=symbol)
         hdr = Substamp.Hdr(f)
 
@@ -250,15 +287,17 @@ class Substamp_ALL_Hit_vs_Photon(object):
             for sym in base.ff:
                 f = getattr(base, sym)
 
-                subcount_photon = Substamp.Subcount(f, "photon")
-                subcount_hit = Substamp.Subcount(f, "hit")
+                _subcount_photon = Substamp.Subcount(f, "photon")
+                subcount_photon = _subcount_photon/1e6
+                _subcount_hit = Substamp.Subcount(f, "hit")
+                subcount_hit = _subcount_hit/1e6
 
                 deg = 1  # linear   
                 linefit = np.poly1d(np.polyfit(subcount_photon, subcount_hit, deg))
                 linefit_label = "%s:line fit:  slope %10.2f    intercept %10.2f " % (sym.upper(), linefit.coef[0], linefit.coef[1])
 
                 ax.scatter( subcount_photon, subcount_hit, label="%s : hit_vs_photon (millions)" % sym.upper() )
-                ax.plot( subcount_photon, linefit(subcount_photon), label=linefit_label )
+                ax.plot( subcount_photon, linefit(subcount_photon), linestyle="dotted", label=linefit_label,  )
             pass
             #ax.set_yscale('log')
             ax.set_ylabel("Number of Hits (Millions)", fontsize=fontsize )
@@ -280,7 +319,8 @@ class Substamp_ALL_Etime_vs_Photon(object):
                 f = getattr(base, sym)
 
                 etime = Substamp.ETime(f) 
-                subcount_photon = Substamp.Subcount(f, "photon")
+                _subcount_photon = Substamp.Subcount(f, "photon")
+                subcount_photon = _subcount_photon/1e6
 
                 deg = 1  # linear   
                 linefit = np.poly1d(np.polyfit(subcount_photon, etime, deg))
@@ -308,8 +348,10 @@ class Substamp_ALL_RATIO_vs_Photon(object):
             assert "a" in base.ff
             assert "b" in base.ff
 
-            a_photon = Substamp.Subcount(base.a, "photon")
-            b_photon = Substamp.Subcount(base.b, "photon")
+            _a_photon = Substamp.Subcount(base.a, "photon")
+            a_photon = _a_photon/1e6
+            _b_photon = Substamp.Subcount(base.b, "photon")
+            b_photon = _b_photon/1e6
             assert np.all( a_photon == b_photon )
 
             a_etime = Substamp.ETime(base.a)
@@ -324,6 +366,8 @@ class Substamp_ALL_RATIO_vs_Photon(object):
             ax.legend(loc="lower right")
             fig.show()
         pass
+
+
 
 
 class Substamp_ONE_Delta(object):
@@ -352,6 +396,48 @@ class Substamp_ONE_Delta(object):
         pass  
         self.ax = ax
 
+class Substamp_ONE_maxb_scan(object):
+    def __init__(self, f, symbol="fold.substamp.a"):
+
+        delta = f.delta_substamp 
+
+        _subcount_photon = Substamp.Subcount(f, "photon")
+        u_subcount_photon = np.unique(_subcount_photon)
+        assert len(u_subcount_photon) == 1, u_subcount_photon
+        n_subcount_photon = u_subcount_photon[0]
+        num = format_large_number(n_subcount_photon)
+
+        title0 = Substamp.Title(f, symbol=symbol)
+        title1 = "Launch Time for %s photons vs MAX_BOUNCE "  % num
+        title = "\n".join([title0, title1])
+
+        labels_s = Substamp.Labels(f)
+
+        pre = Substamp.DeltaColumn(f, "t_PreLaunch")        
+        pos = Substamp.DeltaColumn(f, "t_PostLaunch")        
+        launch = pos - pre 
+        mxb = np.arange(len(launch))
+
+        sel = slice(18)
+        deg = 1  # linear   
+        linefit = np.poly1d(np.polyfit(mxb[sel], launch[sel], deg))
+        linefit_label = "%s : line fit:  slope %10.2f    intercept %10.2f " % (symbol, linefit.coef[0], linefit.coef[1])
+
+        print(labels_s)
+ 
+        ax = None
+        if MODE == 2:
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
+            ax = axs[0]
+            ax.scatter(  mxb, launch, label="launch time vs max bounce ")
+            ax.plot( mxb, linefit(mxb), linestyle="dotted", label=linefit_label )
+            ax.legend(loc="lower right")
+            ax.text(-0.05,  -0.1, HEADLINE, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+            fig.show()
+        pass  
+        self.ax = ax
+
+
 
 if __name__ == '__main__':
     fold = Fold.Load(symbol="fold")
@@ -359,31 +445,33 @@ if __name__ == '__main__':
     print(repr(fold))
     print("MODE:%d PICK:%s " % (MODE, PICK) ) 
 
-    if "substamp_ONE" in os.environ and hasattr(fold, "substamp"):
+    if PLOT.startswith("Substamp_ONE") and hasattr(fold, "substamp"):
         for e in PICK:
             f = getattr(fold.substamp, e.lower(), None)
             symbol = "fold.substamp.%s" % e.lower() 
             if f is None: continue 
-            if True or "delta" in os.environ: Substamp_ONE_Delta(f, symbol=symbol)
-            if True or "etime" in os.environ: Substamp_ONE_Etime(f, symbol=symbol)
+            if PLOT.startswith("Substamp_ONE_Delta"): Substamp_ONE_Delta(f, symbol=symbol)
+            if PLOT.startswith("Substamp_ONE_Etime"): Substamp_ONE_Etime(f, symbol=symbol)
+            if PLOT.startswith("Substamp_ONE_maxb_scan"): Substamp_ONE_maxb_scan(f, symbol=symbol)
         pass
-    if "substamp_ALL" in os.environ and hasattr(fold, "substamp"):
-        Substamp_ALL_Etime_vs_Photon(  fold.substamp, symbol="fold.substamp")
-        Substamp_ALL_Hit_vs_Photon(    fold.substamp, symbol="fold.substamp" )
-        Substamp_ALL_RATIO_vs_Photon(  fold.substamp, symbol="fold.substamp")
+    pass  
+    if PLOT.startswith("Substamp_ALL") and hasattr(fold, "substamp"):
+        if PLOT.startswith("Substamp_ALL_Etime_vs_Photon"): Substamp_ALL_Etime_vs_Photon(  fold.substamp, symbol="fold.substamp")
+        if PLOT.startswith("Substamp_ALL_Hit_vs_Photon"): Substamp_ALL_Hit_vs_Photon(    fold.substamp, symbol="fold.substamp" )
+        if PLOT.startswith("Substamp_ALL_RATIO_vs_Photon"): Substamp_ALL_RATIO_vs_Photon(  fold.substamp, symbol="fold.substamp")
     pass
-
-    if "subprofile" in os.environ and hasattr(fold, "subprofile"):
+    if PLOT.startswith("Subprofile_ONE") and hasattr(fold, "subprofile"):
         for e in PICK:
             f = getattr(fold.subprofile, e.lower(), None)
             symbol = "fold.subprofile.%s" % e.lower() 
             if f is None: continue
             Subprofile_ONE(f, symbol=symbol)
         pass
+    pass
+    if PLOT.startswith("Subprofile_ALL") and hasattr(fold, "subprofile"):
         Subprofile_ALL(fold.subprofile, symbol="fold.subprofile")
     pass
-
-    if "runprof" in os.environ and hasattr(fold, "runprof"):
+    if PLOT.startswith("Runprofile_ALL") and hasattr(fold, "runprof"):
         Runprofile_ALL(fold.runprof, symbol="fold.runprof" )
     pass
 pass

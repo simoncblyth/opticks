@@ -27,8 +27,7 @@ Analysis/Plotting::
 EOU
 }
 
-SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
-SDIR=$(cd $(dirname $SOURCE) && pwd)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 case $(uname) in
    Linux) defarg=run_report_info ;;
@@ -45,13 +44,15 @@ script=$SDIR/cxs_min.py
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
-export EVT=${EVT:-p001}
+export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-version=3
-VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OEM 
+version=4
+VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
+## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
+
 
 export LOGDIR=$BINBASE/ALL$VERSION
 export AFOLD=$BINBASE/ALL$VERSION/$EVT
@@ -105,14 +106,6 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    #opticks_num_photon=K1:10 
-    #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
-    opticks_num_photon=H1:10
-    #opticks_num_photon=M3,10   
-    ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
-
-    export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}
-
     #export SEvent_MakeGenstep_num_ph=100000  NOT USED WHEN USING OPTICKS_NUM_PHOTON
     #src="rectangle"
     #src="disc"
@@ -147,13 +140,14 @@ fi
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
  1) opticks_event_mode=HitOnly ;; 
- 2) opticks_event_mode=HitAndPhoton ;; 
- 3) opticks_event_mode=HitAndPhoton ;; 
+ 2) opticks_event_mode=HitPhoton ;; 
+ 3) opticks_event_mode=HitPhoton ;; 
+ 4) opticks_event_mode=HitPhotonSeq ;; 
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
 opticks_max_bounce=31
-opticks_num_event=10 
+opticks_num_event=1 
 opticks_start_index=0
 
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
@@ -161,9 +155,13 @@ export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 
+#opticks_num_photon=K1:10 
+#opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
+#opticks_num_photon=H1:10
+#opticks_num_photon=M3,10   
 
-#export OPTICKS_MAX_PHOTON=M100   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
-export OPTICKS_MAX_PHOTON=M1
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  ## ONLY FOR SRM_TORCH RUNNING + NB MUST MAX_PHOTON  
+export OPTICKS_MAX_PHOTON=M1   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
 export OPTICKS_INTEGRATION_MODE=1
 
 cvd=1   # default 1:TITAN RTX

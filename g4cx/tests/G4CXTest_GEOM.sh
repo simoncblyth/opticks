@@ -40,8 +40,7 @@ storch::generate is used for both GPU and CPU generation
 EOU
 }
 
-SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
-SDIR=$(cd $(dirname $SOURCE) && pwd)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 bin=G4CXTest
 script=$SDIR/G4CXTest_GEOM.py 
@@ -79,45 +78,50 @@ export G4CXApp__SensDet=PMTSDMgr             ## used for post GDML SensDet hooku
 
 
 case $VERSION in 
- 0) oem=Minimal ;;
- 1) oem=HitOnly ;; 
- 2) oem=HitAndPhoton ;; 
- 3) oem=HitAndPhoton ;;    ## USING 3 FOR LEAK TEST 
-99) oem=StandardFullDebug ;;
+ 0) opticks_event_mode=Minimal ;;
+ 1) opticks_event_mode=Hit ;; 
+ 2) opticks_event_mode=HitPhoton ;; 
+ 3) opticks_event_mode=HitPhoton ;;    ## USING 3 FOR LEAK TEST 
+ 4) opticks_event_mode=HitPhotonSeq ;; 
+99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
 ## OPTICKS_EVENT_MODE configures the SEvt components to gather and save
 ## for now are tieing that with VERSION 
 
-export OPTICKS_EVENT_MODE=${OEM:-$oem}   
-export OPTICKS_MAX_BOUNCE=31
-export OPTICKS_MAX_PHOTON=M100  ## sstr::ParseScale h/K/H/M prefixes 
-export OPTICKS_NUM_EVENT=19     ## MUST MATCH num elem in OPTICKS_NUM_PHOTON below
 
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}   
 
-#srm=SRM_DEFAULT
-srm=SRM_TORCH
-#srm=SRM_INPUT_PHOTON
-#srm=SRM_INPUT_GENSTEP    ## NOT IMPLEMENTED FOR GEANT4
-#srm=SRM_GUN
-export OPTICKS_RUNNING_MODE=$srm
+#opticks_num_photon=K1:10 
+#opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
+#opticks_num_photon=M3,10   
+#opticks_num_photon=M10
+#opticks_num_photon=M1,2,3
+opticks_num_photon=H1:10
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}   
+## NB UP TO MAX_PHOTON ONLY
 
+opticks_num_event=10
+export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}  
+## for SRM_TORCH running match OPTICKS_NUM_PHOTON to avoid logging warnings 
 
-echo $BASH_SOURCE OPTICKS_RUNNING_MODE $OPTICKS_RUNNING_MODE
+opticks_max_photon=M100  
+export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}   ## SRM_TORCH mode only 
+## sstr::ParseScale h/K/H/M prefixes : leaving higher than needed costs VRAM + init time
+
+opticks_max_bounce=31
+export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+
+#opticks_running_mode=SRM_DEFAULT
+opticks_running_mode=SRM_TORCH
+#opticks_running_mode=SRM_INPUT_PHOTON
+#opticks_running_mode=SRM_INPUT_GENSTEP    ## NOT IMPLEMENTED FOR GEANT4
+#opticks_running_mode=SRM_GUN
+export OPTICKS_RUNNING_MODE=$opticks_running_mode
+
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
     #export SEvent_MakeGenstep_num_ph=$NUM   ## trumped by OPTICKS_NUM_PHOTON
-
-    #onp=K1:10 
-    #onp=H1:10,M2,3,5,7,10,20,40,80,100
-    #onp=M3,10   
-    #onp=M10
-    #onp=M1,2,3
-    onp=H1:10
-    ## NB NEEDS TO BE WITHIN MAX_PHOTON constaint 
-
-    export OPTICKS_NUM_PHOTON=${ONP:-$onp}
-
     #src="rectangle"
     #src="disc"
     src="sphere"

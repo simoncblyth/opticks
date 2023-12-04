@@ -54,6 +54,13 @@ by this sreport.sh script.
        subprofile=1 ~/opticks/sysrap/tests/sreport.sh ana 
 
 
+**mpcap**
+   capture plot screenshots::
+
+       PLOT=Substamp_ONE_maxb_scan PICK=A ~/opticks/sreport.sh        ## display plot form one tab
+       PLOT=Substamp_ONE_maxb_scan PICK=A ~/opticks/sreport.sh mpcap  ## capture from another
+       PLOT=Substamp_ONE_maxb_scan PICK=A PUB=some_anno ~/opticks/sreport.sh mppub  ## publish 
+
 
 Note that *sreport* executable can be used without this script 
 by invoking it from appropriate directories, examples are shown below.
@@ -66,8 +73,10 @@ Summary "FOLD" Directory
 EOU
 }
 
-SOURCE=$([ -L $BASH_SOURCE ] && readlink $BASH_SOURCE || echo $BASH_SOURCE)
-SDIR=$(cd $(dirname $SOURCE) && pwd)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
+#vars="0 BASH_SOURCE SDIR"
+#for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+
 name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py
@@ -81,6 +90,8 @@ else
     #defarg="build_run_info_ana"
     defarg="build_run_info_noa"
 fi
+
+[ -n "$PLOT" ] && defarg="ana"
 arg=${1:-$defarg}
 
 
@@ -92,7 +103,7 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N5
+job=N6
 JOB=${JOB:-$job}
 
 DIR=unknown 
@@ -103,12 +114,14 @@ case $JOB in
   N3) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N4) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
   N5) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
+  N6) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
 esac
 
+export STEM=${JOB}_${PLOT}_${PICK}
 export FOLD=${DIR}_${name}   ## FOLD is output directory used by binary, export it for python 
 export MODE=2                ## 2:matplotlib plotting 
 
-vars="0 BASH_SOURCE SDIR JOB DIR FOLD MODE name bin script"
+vars="0 BASH_SOURCE SDIR JOB DIR FOLD MODE name bin script STEM"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
@@ -147,6 +160,7 @@ if [ "${arg/noa}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
+    export COMMANDLINE="PLOT=$PLOT PICK=$PICK ~/opticks/sreport.sh"
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi
@@ -154,6 +168,22 @@ fi
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
 fi 
+
+if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=cxs_min
+    export CAP_STEM=$STEM
+    case $arg in  
+       mpcap) source mpcap.sh cap  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+    if [ "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
+fi 
+
+
+
 
 exit 0 
 

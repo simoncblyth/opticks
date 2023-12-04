@@ -257,14 +257,16 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
 void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
 void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
-void SEventConfig::SetHitOnly(){            SetEventMode(HitOnly)           ; }
-void SEventConfig::SetHitAndPhoton(){       SetEventMode(HitAndPhoton)      ; }
+void SEventConfig::SetHit(){                SetEventMode(Hit)               ; }
+void SEventConfig::SetHitPhoton(){          SetEventMode(HitPhoton)         ; }
+void SEventConfig::SetHitPhotonSeq(){       SetEventMode(HitPhotonSeq)      ; }
 
 bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
 bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode, Minimal) == 0 ; }
-bool SEventConfig::IsHitOnly(){           return _EventMode && strcmp(_EventMode, HitOnly) == 0 ; }
-bool SEventConfig::IsHitAndPhoton(){      return _EventMode && strcmp(_EventMode, HitAndPhoton) == 0 ; }
+bool SEventConfig::IsHit(){               return _EventMode && strcmp(_EventMode, Hit) == 0 ; }
+bool SEventConfig::IsHitPhoton(){         return _EventMode && strcmp(_EventMode, HitPhoton) == 0 ; }
+bool SEventConfig::IsHitPhotonSeq(){      return _EventMode && strcmp(_EventMode, HitPhotonSeq) == 0 ; }
 
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
@@ -343,17 +345,23 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
         gather_mask = SCOMP_HIT | SCOMP_GENSTEP  ; 
         save_mask = SCOMP_GENSTEP  ;  
     }
-    else if(IsRGModeSimulate() && IsHitOnly())
+    else if(IsRGModeSimulate() && IsHit())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitOnly()" ; 
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHit()" ; 
         gather_mask = SCOMP_HIT | SCOMP_GENSTEP ; 
         save_mask = SCOMP_HIT | SCOMP_GENSTEP ;   
     }
-    else if(IsRGModeSimulate() && IsHitAndPhoton())
+    else if(IsRGModeSimulate() && IsHitPhoton())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitAndPhoton()" ; 
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhoton()" ; 
         gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP  ; 
         save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP ;   
+    }
+    else if(IsRGModeSimulate() && IsHitPhotonSeq())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;   
     }
     else if(IsRGModeSimulate())
     {
@@ -720,7 +728,7 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;
     }
-    else if(IsMinimal() || IsHitOnly() || IsHitAndPhoton())
+    else if(IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq()  )
     {
         SetComp() ;  
     }
