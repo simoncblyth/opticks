@@ -268,6 +268,28 @@ bool SEventConfig::IsHit(){               return _EventMode && strcmp(_EventMode
 bool SEventConfig::IsHitPhoton(){         return _EventMode && strcmp(_EventMode, HitPhoton) == 0 ; }
 bool SEventConfig::IsHitPhotonSeq(){      return _EventMode && strcmp(_EventMode, HitPhotonSeq) == 0 ; }
 
+std::string SEventConfig::DescEventMode()  // static
+{
+    std::stringstream ss ; 
+    ss << "SEventConfig::DescEventMode" << std::endl 
+       << Default 
+       << std::endl
+       << StandardFullDebug 
+       << std::endl
+       << Minimal
+       << std::endl
+       << Hit
+       << std::endl
+       << HitPhoton
+       << std::endl
+       << HitPhotonSeq
+       << std::endl
+       ;
+   
+    std::string str = ss.str() ;
+    return str ;  
+}
+
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
@@ -362,6 +384,7 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
         LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ; 
         gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ; 
         save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;   
+        SetMaxSeq(1);  
     }
     else if(IsRGModeSimulate())
     {
@@ -728,7 +751,7 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;
     }
-    else if(IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq()  )
+    else if(IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() )
     {
         SetComp() ;  
     }
@@ -751,7 +774,7 @@ int SEventConfig::Initialize() // static
     else
     {
         LOG(fatal) << "mode [" << mode << "] IS NOT RECOGNIZED "  ;         
-        LOG(fatal) << " options : " << Default << "," << StandardFullDebug ; 
+        LOG(fatal) << " options " << std::endl << DescEventMode() ; 
         assert(0); 
     }
 

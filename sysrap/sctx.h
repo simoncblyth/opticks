@@ -130,7 +130,7 @@ SCTX_METHOD void sctx::point(int bounce)
 { 
     if(evt->record && bounce < evt->max_record) evt->record[evt->max_record*idx+bounce] = p ;   
     if(evt->rec    && bounce < evt->max_rec)    evt->add_rec( rec, idx, bounce, p );    // this copies into evt->rec array 
-    if(evt->seq    && bounce < evt->max_seq)    seq.add_nibble( bounce, p.flag(), p.boundary() );  
+    if(evt->seq)                                seq.add_nibble( bounce, p.flag(), p.boundary() );  
     if(evt->aux    && bounce < evt->max_aux)    evt->aux[evt->max_aux*idx+bounce] = aux ;   
 }
 

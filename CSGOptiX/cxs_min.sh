@@ -48,7 +48,7 @@ export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-version=4
+version=99
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -159,6 +159,7 @@ export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
 #opticks_num_photon=H1:10
 #opticks_num_photon=M3,10   
+opticks_num_photon=H1
 
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  ## ONLY FOR SRM_TORCH RUNNING + NB MUST MAX_PHOTON  
 export OPTICKS_MAX_PHOTON=M1   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
@@ -227,6 +228,12 @@ fi
 if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR
 fi 
+
+if [ "${arg/gevt}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/rsync.sh $LOGDIR/$EVT
+fi 
+
+
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script

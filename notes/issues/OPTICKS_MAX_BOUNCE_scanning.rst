@@ -25,6 +25,27 @@ Observation
 * with SRM_TORCH from CD center see linear correspondence
   between MAX_BOUNCE and launch time up until about MAX_BOUNCE 16 
 
+  * makes sense : the more ray traces per photon the longer it takes
+  * BUT NOTE THE TIME STILL GOING UP EVEN IN THE EXTREME TAIL 
+
+
+
+WIP : histogram of bounce counts
+----------------------------------
+
+* add HitPhotonSeq event mode : at switch that on with VERSION 4  
+
+::
+
+    ~/opticks/cxs_min.sh        ## workstation
+    ~/opticks/cxs_min.sh grab   ## laptop
+
+
+Trying to add just seq giving all "TO"::
+
+    In [8]: a.qtab
+    Out[8]: array([[b'100000', b'0', b'TO                                                                                              ']], dtype='|S96')
+
 
 
 Related
@@ -43,9 +64,8 @@ Workstation::
 Laptop::
 
     ./cxs_min.sh grab 
-    substamp_ONE=1 maxb_scan=1 ./sreport.sh ana
 
-    PLOT=Substamp_ONE_maxb_scan ./sreport.sh ana
+    PLOT=Substamp_ONE_maxb_scan ~/opticks/sreport.sh 
 
 
 

@@ -209,9 +209,13 @@ struct SYSRAP_API SEventConfig
     static bool IsHitPhoton();
     static bool IsHitPhotonSeq();
 
+    static std::string DescEventMode() ; 
+
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State/Torch
+
+
 
     static void SetStartIndex(int index0); 
     static void SetNumEvent(int nevt);            // NumEvent is used by some tests 
