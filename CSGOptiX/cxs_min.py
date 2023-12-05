@@ -70,10 +70,13 @@ if __name__ == '__main__':
         print("not plotting as MODE %d in environ" % MODE )
     elif MODE == 2:
         label = "%s : " % ( e.f.base.replace("/data/blyth/opticks/","") )
+        label +=  " : %s " % PLOT
+
         if PLOT.startswith("seqnib") and hasattr(e.f, "seqnib"):
-            label +=  " : %s " % PLOT
+            expl = "Photon History Step Counts Occurrence in single 1M photon event"
+        elif PLOT.startswith("thit") and hasattr(e.f, "hit"):
+            expl = "Histogram hit times[ns] of all(and step tail) : from  1M photon TORCH event"       
         pass 
-        expl = "Photon History Step Counts Occurrence in single 1M photon event"
         title = "\n".join([label, expl])
         pl = mpplt_plotter(label=title)
         fig, axs = pl
@@ -116,10 +119,27 @@ if __name__ == '__main__':
             ax2.plot( bounce, cs_seqnib, linestyle="dashed" )
             ax2.set_ylabel( "Cumulative counts rising to total of 1M photons", fontsize=20 )
         elif PLOT.startswith("thit") and hasattr(e.f, "hit"):
-            thit = e.f.hit[:,0,3] 
-            thit_n, thit_bin = np.histogram(thit, bins=100) 
+            hit_time = e.f.hit[:,0,3] 
+            mn_hit_time = hit_time.min() 
+            mx_hit_time = hit_time.max() 
+            bins = np.linspace( mn_hit_time, mx_hit_time, 100 )
+
+            hit_time_n,_  = np.histogram(hit_time, bins=bins ) 
             ax.set_aspect('auto')
-            ax.plot( thit_bin[:-1], thit_n, drawstyle="steps-mid", label="Hit time [ns]" )
+            ax.plot( bins[:-1], hit_time_n, drawstyle="steps-mid", label="Simulated Hit time [ns]" )
+
+            hit_idx = e.f.hit.view(np.uint32)[:,3,2] & 0x7fffffff    
+            hit_nib = a.f.seqnib[hit_idx]   # nibbles of the hits  
+
+            cut = 23
+            hit_time_sel = hit_time[hit_nib>cut]
+            sel_time_n, _ = np.histogram(hit_time_sel, bins=bins) 
+
+            ax.plot( bins[:-1], sel_time_n, drawstyle="steps-mid", label="Simulated Hit time [ns] for step points > %d " % cut  )
+
+            ax.set_ylabel("Photon counts in simulated time[ns] bins", fontsize=20)
+            ax.set_xlabel("Simulated time[ns]", fontsize=20)
+
             ax.set_yscale('log')
             ax.legend() 
             # need the seqnib of each photon so can check times of the big seqnib 
@@ -128,7 +148,11 @@ if __name__ == '__main__':
             print("PLOT:%s unhandled" % PLOT)
         pass 
     elif MODE == 3:
-        pl.add_points(spos[:,:3])
+        if PLOT.startswith("scatter"):
+            pl.add_points(spos[:,:3])
+        else:
+            pass
+        pass 
     else:
         pass
     pass

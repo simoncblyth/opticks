@@ -1,5 +1,5 @@
-cxs_min_sphoton_idx_unexpected
-=================================
+cxs_min_sphoton_idx_unexpected : FIXED
+=========================================
 
 ::
 
@@ -15,6 +15,28 @@ Thats just the orient bit flipped one way or other::
 Added at tail of qsim::generate_photon::
 
       p.set_idx(photon_id);
+
+
+FIXED::
+
+    Out[3]: array([     0,      1,      2,      3,      4, ..., 999995, 999996, 999997, 999998, 999999], dtype=uint32)
+
+    In [4]: idx = a.f.photon.view(np.uint32)[:,3,2] & 0x7fffffff
+
+    In [7]: np.all( idx == np.arange(1000000) )
+    Out[7]: True
+
+
+
+    In [8]: idx = a.f.hit.view(np.uint32)[:,3,2] & 0x7fffffff
+
+    In [9]: idx
+    Out[9]: array([    13,     18,     19,     26,     28, ..., 999978, 999981, 999988, 999997, 999999], dtype=uint32)
+
+    In [10]: idx.shape
+    Out[10]: (223036,)
+
+
 
 
 

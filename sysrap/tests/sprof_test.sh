@@ -7,7 +7,6 @@ sprof_test.sh
 
    ~/opticks/sysrap/tests/sprof_test.sh
 
-
 EOU
 }
 

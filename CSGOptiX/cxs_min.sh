@@ -24,6 +24,9 @@ Analysis/Plotting::
     EVT=p005     ~/opticks/CSGOptiX/cxs_min.sh ana 
     EVT=p010     ~/opticks/CSGOptiX/cxs_min.sh ana
 
+
+    PLOT=scatter MODE=3 ~/o/cxs_min.sh pvcap 
+
 EOU
 }
 
@@ -49,7 +52,7 @@ export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-version=4
+version=1
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -70,21 +73,23 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
- 1) opticks_event_mode=HitOnly ;; 
+ 1) opticks_event_mode=Hit ;; 
  2) opticks_event_mode=HitPhoton ;; 
  3) opticks_event_mode=HitPhoton ;; 
  4) opticks_event_mode=HitPhotonSeq ;; 
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
-#opticks_num_photon=K1:10   # only for SRM_TORCH RUNNING
+# only for SRM_TORCH RUNNING
+#opticks_num_photon=K1:10
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
-opticks_num_photon=H1:10
+#opticks_num_photon=H1:10
 #opticks_num_photon=M3,10   
-#opticks_num_photon=H1
+opticks_num_photon=M1
+#opticks_num_photon=M10
 
-opticks_num_event=10 
-opticks_max_photon=M1   ## large MAX_PHOTON costs QRng initialization time + VRAM 
+opticks_num_event=1
+opticks_max_photon=M1   ## cost: QRng init time + VRAM 
 opticks_start_index=0
 opticks_max_bounce=31
 opticks_integration_mode=1
@@ -236,17 +241,18 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi 
 
-if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$AFOLD/figs
     export CAP_REL=cxs_min
     export CAP_STEM=$STEM
     case $arg in  
+       pvcap) source pvcap.sh cap  ;;  
        mpcap) source mpcap.sh cap  ;;  
+       pvpub) source pvcap.sh env  ;;  
        mppub) source mpcap.sh env  ;;  
     esac
-    if [ "$arg" == "mppub" ]; then 
+    if [ "$arg" == "pvpub" -o "$arg" == "mppub" ]; then 
         source epub.sh 
     fi  
 fi 
-
 

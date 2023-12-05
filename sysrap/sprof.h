@@ -15,14 +15,23 @@ struct sprof
     int32_t vm ;  // KB
     int32_t rs ;  // KB 
 
+    static bool Equal(const sprof& a, const sprof& b); 
     static void Stamp(sprof& prof); 
-    static std::string Desc(const sprof& prof); 
+    static std::string Serialize(const sprof& prof);  // formerly Desc
+    static std::string Desc_(const sprof& prof);  // dont call Desc for now as need to change all Desc to Serialize
+    static int         Import(sprof& prof, const char* str); 
 
     static inline sprof Diff(const sprof& p0, const sprof& p1); 
     static std::string Desc(const sprof& p0, const sprof& p1); 
     static std::string Now(); 
     static bool LooksLikeProfileTriplet(const char* str); 
+
 };
+
+inline bool sprof::Equal(const sprof& a, const sprof& b)
+{
+    return a.st == b.st && a.vm == b.vm && a.rs == b.rs ; 
+}
 
 inline void sprof::Stamp(sprof& p)
 {
@@ -30,13 +39,35 @@ inline void sprof::Stamp(sprof& p)
     sproc::Query(p.vm, p.rs) ;  // sprof::Stamp
 }
 
-inline std::string sprof::Desc(const sprof& prof)
+inline std::string sprof::Serialize(const sprof& prof)
 {
     char delim = ',' ; 
     std::stringstream ss ; 
     ss << prof.st << delim << prof.vm << delim << prof.rs ; 
     std::string str = ss.str(); 
     return str ; 
+}
+
+inline std::string sprof::Desc_(const sprof& prof)  
+{
+    std::stringstream ss ; 
+    ss << std::setw(20) << prof.st 
+       << std::setw(10) << prof.vm 
+       << std::setw(10) << prof.rs 
+       << " " << sstamp::Format(prof.st) 
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline int sprof::Import(sprof& prof, const char* str)
+{
+    if(!LooksLikeProfileTriplet(str)) return 1 ; 
+    char* end ; 
+    prof.st = strtoll( str, &end, 10 ) ; 
+    prof.vm = strtoll( end+1, &end, 10 ) ; 
+    prof.rs = strtoll( end+1, &end, 10 ) ; 
+    return 0 ; 
 }
 
 inline sprof sprof::Diff(const sprof& p0, const sprof& p1)
@@ -52,22 +83,19 @@ inline std::string sprof::Desc(const sprof& p0, const sprof& p1)
 {
     sprof df = Diff(p0, p1) ; 
     std::stringstream ss ; 
-    ss << Desc(p0) << std::endl ; 
-    ss << Desc(p1) << std::endl ; 
-    ss << Desc(df) << std::endl ; 
+    ss << Desc_(p0) << std::endl ; 
+    ss << Desc_(p1) << std::endl ; 
+    ss << Desc_(df) << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
-
-
-
 
 
 inline std::string sprof::Now()
 {
     sprof now ; 
     Stamp(now);  
-    return Desc(now);  
+    return Serialize(now);  
 }
 
 

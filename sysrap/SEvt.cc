@@ -1407,7 +1407,7 @@ void SEvt::SetRunMetaString(const char* k, const char* v ) // static
 
 void SEvt::SetRunProf(const char* k, const sprof& v) // static
 {
-    SetRunMeta<std::string>( k, sprof::Desc(v) ); 
+    SetRunMeta<std::string>( k, sprof::Serialize(v) ); 
 }
 void SEvt::SetRunProf(const char* k)   // static 
 {
@@ -1452,7 +1452,7 @@ void SEvt::setMetaString(const char* k, const char* v)
 
 void SEvt::setMetaProf(const char* k, const sprof& v)
 {
-    NP::SetMeta<std::string>(meta, k, sprof::Desc(v) ); 
+    NP::SetMeta<std::string>(meta, k, sprof::Serialize(v) ); 
 }
 void SEvt::setMetaProf(const char* k)   
 {

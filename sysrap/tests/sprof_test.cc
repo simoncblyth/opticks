@@ -3,13 +3,13 @@
 void test_uninitialized()
 {
     sprof u  ;  // uninitialized : starts with garbage 
-    std::cout << " sprof u   : " << sprof::Desc(u) << std::endl ; 
+    std::cout << " sprof u   : " << sprof::Desc_(u) << std::endl ; 
 
     sprof* d0 = new sprof ; 
-    std::cout << " new sprof : " << sprof::Desc(*d0) << std::endl ; 
+    std::cout << " new sprof : " << sprof::Desc_(*d0) << std::endl ; 
 
     sprof* d1 = new sprof() ; 
-    std::cout << " new sprof() :" << sprof::Desc(*d1) << std::endl ; 
+    std::cout << " new sprof() :" << sprof::Desc_(*d1) << std::endl ; 
 
 }
 
@@ -17,13 +17,13 @@ void test_uninitialized()
 void test_procedural()
 {
     sprof p = {} ; // zeros 
-    std::cout << sprof::Desc(p) << std::endl ; 
+    std::cout << sprof::Desc_(p) << std::endl ; 
 
     for(int i=0 ; i < 100 ; i++)
     {
         sprof::Stamp(p); 
 
-        std::string str = sprof::Desc(p) ; 
+        std::string str = sprof::Desc_(p) ; 
         bool llpt = sprof::LooksLikeProfileTriplet(str.c_str()) ; 
         std::cout << str << " llpt " << ( llpt ? "YES" : "NO " )  << std::endl ; 
     }
@@ -46,9 +46,9 @@ void sprof_test::dump(const char* msg) const
     std::cout 
         << msg 
         << std::endl
-        << "p0 " << sprof::Desc(p0) 
+        << "p0 " << sprof::Desc_(p0) 
         << std::endl 
-        << "p1 " << sprof::Desc(p1) 
+        << "p1 " << sprof::Desc_(p1) 
         << std::endl  
         ;
 }
@@ -75,11 +75,34 @@ void test_ctor_dtor()
 {
     sprof_test t ; 
 }
+void test_Serialize_Import()
+{
+    sprof p0 ; 
+    sprof::Stamp(p0); 
+
+
+
+    std::string data = sprof::Serialize(p0); 
+    std::cout << data << std::endl ; 
+
+    sprof p1 ; 
+    sprof::Import( p1, data.c_str() ) ; 
+
+    std::cout << "p0:" << sprof::Desc_(p0)  << std::endl ; 
+    std::cout << "p1:" << sprof::Desc_(p1)  << std::endl ; 
+
+    assert( sprof::Equal(p0, p1) ); 
+}
 
 
 int main(int argc, char** argv)
 {
-    //test_uninitialized(); 
-    sprof_test t ; 
+    /*
+    test_uninitialized(); 
+    test_ctor_dtor();
+    */
+
+    test_Serialize_Import(); 
+    
     return 0 ; 
 }

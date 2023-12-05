@@ -66,6 +66,9 @@ set(SOURCES
 
     SCurandState.cc
     SSys.cc
+    SProf.cc
+
+
     SStr.cc
     SPath.cc
     SSeq.cc
@@ -178,6 +181,7 @@ set(HEADERS
     SCurandState.hh
     sproc.h
     sprof.h
+    SProf.hh
     smeta.h
 
     SBacktrace.h

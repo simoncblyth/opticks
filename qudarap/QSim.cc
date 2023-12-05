@@ -364,8 +364,7 @@ double QSim::simulate(int eventID)
 
     LOG(info) 
         << " eventID " << eventID 
-        << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
-        << " dt " << std::scientific << dt 
+        << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
         ; 
 
     sev->t_Launch = dt ; 

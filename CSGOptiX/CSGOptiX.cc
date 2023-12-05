@@ -42,6 +42,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 // sysrap
 #include "sproc.h"
 #include "ssys.h"
+#include "SProf.hh"
 
 #include "SGLM.h"
 #include "NP.hh"
@@ -168,20 +169,13 @@ void CSGOptiX::SimtraceMain()
 }
 void CSGOptiX::SimulateMain() // static
 {
+    SProf::Add("CSGOptiX__SimulateMain_HEAD"); 
     SEventConfig::SetRGModeSimulate(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-
-    LOG(info) 
-        << " " << SEventConfig::kNumEvent    << "=" << SEventConfig::NumEvent()
-        << " " << SEventConfig::kRunningMode << "=" << SEventConfig::RunningModeLabel()
-        << " SEventConfig::IsRunningModeTorch() " << ( SEventConfig::IsRunningModeTorch() ? "YES" : "NO " )
-        ; 
-
-    for(int i=0 ; i < SEventConfig::NumEvent() ; i++)
-    {
-        cx->simulate(i); 
-    }
+    for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i); 
+    SProf::Add("CSGOptiX__SimulateMain_TAIL"); 
+    SProf::Write("run_meta.txt", true ); // append:true 
 }
 
 /**
