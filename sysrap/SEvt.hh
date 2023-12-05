@@ -686,6 +686,7 @@ public:
     void applyFrameTransform(sphoton& lp) const ; 
 
     static NP* CountNibbles( const NP* seq ); 
+    static NP* CountNibbles_Table( const NP* seqnib ); 
 
 };
 

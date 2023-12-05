@@ -8,14 +8,17 @@
 #include "sprof.h"
 #include "stran.h"
 #include "sdirectory.h"
+#include "ssys.h"
 
 #include "SEventConfig.hh"
 #include "SEvt.hh"
+#include "NPFold.h"
 
 
 struct SEvtTest
 {
     static constexpr const int M = 1000000 ; 
+    static const char* TEST ; 
 
     static void AddGenstep(); 
     static void LifeCycle(); 
@@ -29,6 +32,9 @@ struct SEvtTest
     static void Main(); 
  
 };
+
+
+const char* SEvtTest::TEST = ssys::getenvvar("TEST", "CountNibbles" ); 
 
 void SEvtTest::AddGenstep()
 {
@@ -278,8 +284,28 @@ void SEvtTest::CountNibbles()
     NP* seq = path ? NP::Load(path) : nullptr ;
     if(seq == nullptr) return ; 
 
-    NP* nibcount = SEvt::CountNibbles(seq); 
-    std::cout << nibcount->descTable<int>(7) ; 
+    NP* seqnib = SEvt::CountNibbles(seq); 
+    NP* seqnib_table = SEvt::CountNibbles_Table(seqnib); 
+
+    std::cout 
+        << "SEvtTest::CountNibbles" 
+        << std::endl
+        << " path " << ( path ? path : "-" )
+        << std::endl
+        << " seq " << ( seq ? seq->sstr() : "-" )
+        << std::endl
+        << " seqnib " << ( seqnib ? seqnib->sstr() : "-" )
+        << std::endl
+        << " seqnib_table " << ( seqnib_table ? seqnib_table->sstr() : "-" )
+        << std::endl
+        ; 
+ 
+    std::cout << seqnib_table->descTable<int>(7) ; 
+
+    NPFold* fold = new NPFold ; 
+    fold->add( "seqnib", seqnib ); 
+    fold->add( "seqnib_table", seqnib_table ); 
+    fold->save("$FOLD"); 
 }
 
 
@@ -287,18 +313,14 @@ void SEvtTest::CountNibbles()
 
 void SEvtTest::Main()
 {
-    /*
-    AddGenstep(); 
-    LifeCycle(); 
-    InputPhoton(); 
-    getSaveDir(); 
-    getOutputDir(); 
-    setMetaProf(); 
-    hostside_running_resize_() ; 
-    */
-    CountNibbles() ; 
-    
-
+    if( strcmp(TEST, "AddGenstep") == 0 ) AddGenstep();
+    if( strcmp(TEST, "LifeCycle") == 0 ) LifeCycle();
+    if( strcmp(TEST, "InputPhoton") == 0 ) InputPhoton();
+    if( strcmp(TEST, "getSaveDir") == 0 ) getSaveDir();
+    if( strcmp(TEST, "getOutputDir") == 0 ) getOutputDir();
+    if( strcmp(TEST, "setMetaProf") == 0 ) setMetaProf();
+    if( strcmp(TEST, "hostside_running_resize_") == 0 ) hostside_running_resize_();
+    if( strcmp(TEST, "CountNibbles") == 0 ) CountNibbles();
 }
 
 int main(int argc, char** argv)

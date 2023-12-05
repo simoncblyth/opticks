@@ -14,7 +14,6 @@ EOU
 name=SEvtTest
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-script=$SDIR/SEvtTestIP.py
 
 export GEOM=SEVT_TEST
 export OPTICKS_INPUT_PHOTON_FRAME=0 
@@ -27,7 +26,14 @@ export SEQPATH=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL4/A000
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
-export FOLD=$TMP/$name
+export TEST=CountNibbles
+export FOLD=$TMP/$name/$TEST
+
+case $TEST in
+   InputPhoton) script=$SDIR/SEvtTestIP.py ;;
+  CountNibbles) script=$SDIR/SEvtTestCountNibbles.py ;;
+             *) script=$SDIR/SEvtTest.py ;;
+esac
 
 
 defarg=run_ana
@@ -42,8 +48,6 @@ if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $name
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi 
-
-
 
 
 if [ "${arg/ana}" != "$arg" ]; then 

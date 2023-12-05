@@ -3888,10 +3888,12 @@ void SEvt::save(const char* dir_)
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ; 
     if(save_fold == nullptr) return ;  
 
-
     const NP* seq = save_fold->get("seq"); 
-    NP* seqnib = seq ? CountNibbles(seq) : nullptr ; 
-    save_fold->add("seqnib", seqnib );   // does nothing when seqnib nullptr 
+    NP* seqnib       = seq   ? CountNibbles(seq) : nullptr ; 
+    NP* seqnib_table = seqnib? CountNibbles_Table(seqnib) : nullptr ; 
+    save_fold->add("seqnib", seqnib );           
+    save_fold->add("seqnib_table", seqnib_table );   
+    // NPFold::add does nothing with nullptr array 
 
 
     const char* dir = getOutputDir(dir_); 
@@ -4357,6 +4359,14 @@ void SEvt::applyFrameTransform(sphoton& lp) const
     frame.transform_w2m(lp); 
 }
 
+/**
+SEvt::CountNibbles
+--------------------
+
+Create array of ints the same length as seq with nibble counts,
+from 0 to 32(typically). 
+
+**/
 
 NP* SEvt::CountNibbles( const NP* seq ) // static
 {
@@ -4364,22 +4374,36 @@ NP* SEvt::CountNibbles( const NP* seq ) // static
     NPX::VecFromArray<sseq>(qq, seq ); 
     int num_seq = qq.size(); 
 
-    int ni = sseq::SLOTS+1 ; 
-
-    NP* seqnib = NP::Make<int>( ni ) ; 
-    seqnib->labels = new std::vector<std::string> {"seqnib" } ;
-    for(int i=0 ; i < int(sseq::SLOTS + 1) ; i++) seqnib->names.push_back(U::FormName_(i)) ; 
+    NP* seqnib = NP::Make<int>( seq->shape[0] ) ; 
     int* nn = seqnib->values<int>() ; 
-
-    for(int i=0 ; i < num_seq ; i++)
+    for(int i=0 ; i < num_seq ; i++) 
     {
         const sseq& q = qq[i] ; 
-        int nibs = q.seqhis_nibbles(); 
-        assert( nibs <= int(sseq::SLOTS) ) ; 
-        if(i < 100) std::cout << q.desc_seqhis() << std::endl ;  
-        nn[nibs] += 1 ; 
+        nn[i] = q.seqhis_nibbles();
     }
     return seqnib ; 
 }
 
+/**
+SEvt::CountNibbles_Table
+--------------------------
+
+**/
+
+NP* SEvt::CountNibbles_Table( const NP* seqnib ) // static
+{
+    int num_seqnib = seqnib->shape[0] ; 
+    const int* nn = seqnib->cvalues<int>() ; 
+
+    int ni =  sseq::SLOTS + 1 ; 
+    NP* seqnib_table = NP::Make<int>(ni) ; 
+    int* cc = seqnib_table->values<int>() ; 
+    for(int i=0 ; i < num_seqnib ; i++)
+    {
+        int nibs = nn[i] ; 
+        assert( nibs < ni ); 
+        cc[nibs] += 1 ; 
+    }
+    return seqnib_table ; 
+}
 

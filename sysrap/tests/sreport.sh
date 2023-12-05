@@ -171,7 +171,7 @@ fi
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
-    export CAP_REL=cxs_min
+    export CAP_REL=cxs_min   ## HUH: DEPENDS ON JOB
     export CAP_STEM=$STEM
     case $arg in  
        mpcap) source mpcap.sh cap  ;;  

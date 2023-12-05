@@ -48,22 +48,52 @@ export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
-version=99
+version=4
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
 
-
 export LOGDIR=$BINBASE/ALL$VERSION
 export AFOLD=$BINBASE/ALL$VERSION/$EVT
+export STEM=ALL${VERSION}_${PLOT}
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
 #export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
 
-
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGFILE=$bin.log
+
+case $VERSION in 
+ 0) opticks_event_mode=Minimal ;;
+ 1) opticks_event_mode=HitOnly ;; 
+ 2) opticks_event_mode=HitPhoton ;; 
+ 3) opticks_event_mode=HitPhoton ;; 
+ 4) opticks_event_mode=HitPhotonSeq ;; 
+99) opticks_event_mode=StandardFullDebug ;;
+esac 
+
+opticks_max_bounce=31
+opticks_num_event=10 
+opticks_start_index=0
+
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
+export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
+export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
+
+#opticks_num_photon=K1:10 
+#opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
+opticks_num_photon=H1:10
+#opticks_num_photon=M3,10   
+#opticks_num_photon=H1
+
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  ## ONLY FOR SRM_TORCH RUNNING + NB MUST MAX_PHOTON  
+export OPTICKS_MAX_PHOTON=M1   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
+export OPTICKS_INTEGRATION_MODE=1
+
+cvd=1   # default 1:TITAN RTX
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 
 #opticks_running_mode=SRM_DEFAULT
@@ -137,37 +167,6 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then
 fi 
 
 
-case $VERSION in 
- 0) opticks_event_mode=Minimal ;;
- 1) opticks_event_mode=HitOnly ;; 
- 2) opticks_event_mode=HitPhoton ;; 
- 3) opticks_event_mode=HitPhoton ;; 
- 4) opticks_event_mode=HitPhotonSeq ;; 
-99) opticks_event_mode=StandardFullDebug ;;
-esac 
-
-opticks_max_bounce=31
-opticks_num_event=1 
-opticks_start_index=0
-
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
-export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
-export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
-export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
-
-#opticks_num_photon=K1:10 
-#opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
-#opticks_num_photon=H1:10
-#opticks_num_photon=M3,10   
-opticks_num_photon=H1
-
-export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  ## ONLY FOR SRM_TORCH RUNNING + NB MUST MAX_PHOTON  
-export OPTICKS_MAX_PHOTON=M1   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
-export OPTICKS_INTEGRATION_MODE=1
-
-cvd=1   # default 1:TITAN RTX
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
-
 
 logging(){ 
     export CSGFoundry=INFO
@@ -233,10 +232,21 @@ if [ "${arg/gevt}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR/$EVT
 fi 
 
-
-
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
+fi 
+
+if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$AFOLD/figs
+    export CAP_REL=cxs_min
+    export CAP_STEM=$STEM
+    case $arg in  
+       mpcap) source mpcap.sh cap  ;;  
+       mppub) source mpcap.sh env  ;;  
+    esac
+    if [ "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi  
 fi 
 
 

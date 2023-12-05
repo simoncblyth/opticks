@@ -407,8 +407,14 @@ class Substamp_ONE_maxb_scan(object):
         n_subcount_photon = u_subcount_photon[0]
         num = format_large_number(n_subcount_photon)
 
+        _subcount_hit = Substamp.Subcount(f, "hit")
+
         title0 = Substamp.Title(f, symbol=symbol)
-        title1 = "Launch Time[us] for %s photons vs MAX_BOUNCE "  % num
+        if PLOT.endswith("_HIT"):
+            title1 = "Hit count for %s photons vs MAX_BOUNCE "  % num
+        else:
+            title1 = "Launch Time[us] for %s photons vs MAX_BOUNCE "  % num
+        pass
         title = "\n".join([title0, title1])
 
         labels_s = Substamp.Labels(f)
@@ -429,11 +435,18 @@ class Substamp_ONE_maxb_scan(object):
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
             ax = axs[0]
-            ax.scatter(  mxb, launch, label="launch time [us] vs max bounce (0->31) ")
-            ax.plot( mxb, linefit(mxb), linestyle="dotted", label=linefit_label )
+            if PLOT.endswith("_HIT"):
+                ax.plot(  mxb, _subcount_hit, label=None )
+                ax.scatter(  mxb, _subcount_hit, label="hit count vs max bounce (0->31) ")
+                ax.set_ylabel("Hit count", fontsize=20 )
+                ax.set_xlabel("OPTICKS_MAX_BOUNCE (aka MAX_TRACE)", fontsize=20 )
+            else:
+                ax.scatter(  mxb, launch, label="launch time [us] vs max bounce (0->31) ")
+                ax.plot( mxb, linefit(mxb), linestyle="dotted", label=linefit_label )
+                ax.text(-0.05,  -0.1, HEADLINE, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
+                ax.set_ylabel("GPU Launch Time [us] ", fontsize=12 )
+            pass
             ax.legend(loc="lower right")
-            ax.text(-0.05,  -0.1, HEADLINE, va='bottom', ha='left', family="monospace", fontsize=12, transform=ax.transAxes)
-            ax.set_ylabel("GPU Launch Time [us] ", fontsize=12 )
             fig.show()
         pass  
         self.ax = ax
