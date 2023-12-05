@@ -260,6 +260,13 @@ def mpplt_annotate_ax( ax ):
 
 
 def mpplt_plotter(nrows=1, ncols=1, label="", equal=True):
+    """
+    ISSUE: Observe that when plotting onto an external screen the layout of the 
+    plot differs : mysteriously this even happens when a plot is created on the 
+    laptop screen and then dragged onto the external monitor. But everything 
+    works fine when the screen capture is done on the laptop screen.
+    This might be related to retina resolution of the laptop screen. 
+    """
     fig, axs = mpp.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi 
     if type(axs).__name__ == 'AxesSubplot':axs=np.array([axs], dtype=np.object )
 

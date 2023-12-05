@@ -13,6 +13,9 @@ command to copy that into the event folder. But thats in
 the wrong place so would need special casing to use that 
 metadata. 
 
+How to create plots of launch time vs MAX_BOUNCE 
+-------------------------------------------------------
+
 ::
 
    ~/opticks/CSGOptiX/cxs_min_scan.sh 
@@ -20,14 +23,14 @@ metadata.
 
 Workstation::
 
-    o
-    ./cxs_min_scan.sh    # using symbolic link 
+    ~/opticks/cxs_min_scan.sh  ## using symbolic link 
     
 Laptop::
 
-    o
-    ./cxs_min.sh grab 
-    substamp_ONE=1 maxb_scan=1 ./sreport.sh ana
+    ~/opticks/cxs_min.sh grab 
+    PLOT=Substamp_ONE_maxb_scan PICK=A ~/opticks/sreport.sh 
+    PLOT=Substamp_ONE_maxb_scan PICK=A ~/opticks/sreport.sh mpcap
+    PLOT=Substamp_ONE_maxb_scan PICK=A PUB=expensive_tail ~/opticks/sreport.sh mppub
 
 EOU
 }

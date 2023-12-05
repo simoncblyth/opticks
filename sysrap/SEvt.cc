@@ -3691,6 +3691,9 @@ in attempt to remove lots of tedious code by
 focussing tokenization into spath.h and the 
 high level control here in one place. 
 
+HMM: could expand on that approach exposing ALL$VERSION 
+here too instead of hiding in Reldir
+
 **/
 
 const char* SEvt::getOutputDir(const char* base_) const 
@@ -3832,7 +3835,6 @@ void SEvt::onload()
         << " index " << index
         << " instance " << instance
         ;
-
 }
 
 
@@ -3875,6 +3877,7 @@ void SEvt::save(const char* dir_)
     LOG_IF(info, LIFECYCLE) << id() ; 
     gather(); 
 
+
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
 
@@ -3884,6 +3887,12 @@ void SEvt::save(const char* dir_)
 
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ; 
     if(save_fold == nullptr) return ;  
+
+
+    const NP* seq = save_fold->get("seq"); 
+    NP* seqnib = seq ? CountNibbles(seq) : nullptr ; 
+    save_fold->add("seqnib", seqnib );   // does nothing when seqnib nullptr 
+
 
     const char* dir = getOutputDir(dir_); 
     LOG(info) << " dir " << dir <<  " index " << index << " instance " << instance  << " OPTICKS_SAVE_COMP  " << save_comp ; 
@@ -3895,11 +3904,10 @@ void SEvt::save(const char* dir_)
     LOG(LEVEL) << "] save_fold.save " << dir ; 
 
     // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS 
+    delete seqnib ;  
 
-
-  //    saveLabels(dir);   
     saveFrame(dir);   
-    // could add these to the fold ?  
+    // could add to the fold ?  
 }
 
 void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
@@ -3907,30 +3915,6 @@ void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
     const char* dir = getOutputDir(dir_); 
     a->save(dir, name );  
 } 
-
-/**
-SEvt::saveLabels : hostside running only 
---------------------------------------------
-
-
-void SEvt::saveLabels(const char* dir) const 
-{
-    LOG(LEVEL) << "[ dir " << dir ; 
-
-
-    NP* a = gatherPho();  
-    if(a) a->save(dir, "pho.npy"); 
-    delete a ; 
-
-    NP* g = gatherGS(); 
-    if(g) g->save(dir, "gs.npy"); 
-    delete g ; 
-
-    LOG(LEVEL) << "] dir " << dir ; 
-}
-
-**/
-
 
 
 void SEvt::saveFrame(const char* dir) const 
@@ -4381,12 +4365,11 @@ NP* SEvt::CountNibbles( const NP* seq ) // static
     int num_seq = qq.size(); 
 
     int ni = sseq::SLOTS+1 ; 
-    int nj = 2 ; 
 
-    NP* nibcount = NP::Make<int>( ni, nj ) ; 
-    nibcount->labels = new std::vector<std::string> {"nibcount", "sum" } ;
-    for(int i=0 ; i < int(sseq::SLOTS + 1) ; i++) nibcount->names.push_back(U::FormName_(i)) ; 
-    int* nn = nibcount->values<int>() ; 
+    NP* seqnib = NP::Make<int>( ni ) ; 
+    seqnib->labels = new std::vector<std::string> {"seqnib" } ;
+    for(int i=0 ; i < int(sseq::SLOTS + 1) ; i++) seqnib->names.push_back(U::FormName_(i)) ; 
+    int* nn = seqnib->values<int>() ; 
 
     for(int i=0 ; i < num_seq ; i++)
     {
@@ -4394,12 +4377,9 @@ NP* SEvt::CountNibbles( const NP* seq ) // static
         int nibs = q.seqhis_nibbles(); 
         assert( nibs <= int(sseq::SLOTS) ) ; 
         if(i < 100) std::cout << q.desc_seqhis() << std::endl ;  
-        nn[nj*nibs+0] += 1 ; 
+        nn[nibs] += 1 ; 
     }
-
-    //for(int i=0 ; i < ni ; i++) TODO cumulative
-    //std::cout << nibcount->descTable<int>(7); 
-    return nibcount ; 
+    return seqnib ; 
 }
 
 

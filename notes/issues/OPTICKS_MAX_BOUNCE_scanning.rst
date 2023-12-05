@@ -47,7 +47,6 @@ Trying to add just seq giving all "TO"::
     Out[8]: array([[b'100000', b'0', b'TO                                                                                              ']], dtype='|S96')
 
 
-
 Related
 ---------
 

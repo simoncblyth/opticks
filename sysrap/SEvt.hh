@@ -643,7 +643,6 @@ public:
 
     void save(const char* dir); 
     void saveExtra(const char* dir_, const char* name, const NP* a ) const ; 
-    //void saveLabels(const char* dir) const ; 
     void saveFrame(const char* dir_) const ; 
 
     std::string descComponent() const ; 
