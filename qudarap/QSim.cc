@@ -1,12 +1,12 @@
 
 #include <csignal>
-//#include <cuda_runtime.h>
 
 #include "SLOG.hh"
 
 #include "ssys.h"
 #include "sstamp.h"
 #include "spath.h"
+#include "SProf.hh"
 
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -345,11 +345,9 @@ the launch.
 
 double QSim::simulate(int eventID)
 {
-    LOG(LEVEL) << desc() ;  
-    LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
+    SProf::Add("QSim__simulate_HEAD"); 
 
-    LOG_IF(error, event == nullptr) << " QEvent:event null " << desc()  ; 
-    if( event == nullptr ) std::raise(SIGINT) ; 
+    LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
     if( event == nullptr ) return -1. ; 
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
@@ -357,10 +355,13 @@ double QSim::simulate(int eventID)
     int rc = event->setGenstep() ;    // QEvent 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
+    SProf::Add("QSim__simulate_PREL"); 
 
     sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
     sev->t_PostLaunch = sstamp::Now() ; 
+
+    SProf::Add("QSim__simulate_POST"); 
 
     LOG(info) 
         << " eventID " << eventID 
@@ -372,7 +373,7 @@ double QSim::simulate(int eventID)
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
 
    
-
+    SProf::Add("QSim__simulate_TAIL"); 
     return dt ; 
 }
 

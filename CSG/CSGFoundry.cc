@@ -14,6 +14,7 @@
 
 #include "ssys.h"
 #include "sproc.h"
+#include "SProf.hh"
 
 #include "smeta.h"
 #include "SSim.hh"
@@ -2850,6 +2851,8 @@ bool CSGFoundry::Load_saveAlt = ssys::getenvbool("CSGFoundry_Load_saveAlt") ;
 
 CSGFoundry* CSGFoundry::Load() // static
 {
+    SProf::Add("CSGFoundry__Load_HEAD"); 
+
     LOG(LEVEL) << "[ argumentless " ; 
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
@@ -2868,6 +2871,7 @@ CSGFoundry* CSGFoundry::Load() // static
     AfterLoadOrCreate(); 
 
     LOG(LEVEL) << "] argumentless " ; 
+    SProf::Add("CSGFoundry__Load_TAIL"); 
     return dst ; 
 }
 

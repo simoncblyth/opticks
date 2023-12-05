@@ -276,6 +276,7 @@ CSGOptiX::Create
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
+    SProf::Add("CSGOptiX__Create_HEAD"); 
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
@@ -292,6 +293,7 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     } 
 
     LOG(LEVEL) << "]" ; 
+    SProf::Add("CSGOptiX__Create_TAIL"); 
     return cx ; 
 }
 
@@ -533,7 +535,7 @@ CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 double CSGOptiX::simulate(int eventID)
 {
     assert(sim); 
-    double dt = sim->simulate(eventID) ;
+    double dt = sim->simulate(eventID) ; // (QSim)
     return dt ; 
 }
 
