@@ -122,6 +122,8 @@ if __name__ == '__main__':
             ax.plot( thit_bin[:-1], thit_n, drawstyle="steps-mid", label="Hit time [ns]" )
             ax.set_yscale('log')
             ax.legend() 
+            # need the seqnib of each photon so can check times of the big seqnib 
+            # PLOT=thit MODE=2 ~/o/cxs_min.sh  
         else:
             print("PLOT:%s unhandled" % PLOT)
         pass 

@@ -362,7 +362,11 @@ double QSim::simulate(int eventID)
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
     sev->t_PostLaunch = sstamp::Now() ; 
 
-    LOG(info) << " eventID " << eventID << " dt " << std::scientific << dt ; 
+    LOG(info) 
+        << " eventID " << eventID 
+        << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
+        << " dt " << std::scientific << dt 
+        ; 
 
     sev->t_Launch = dt ; 
     sev->endOfEvent(eventID);

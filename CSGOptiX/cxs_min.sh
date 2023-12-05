@@ -35,6 +35,7 @@ case $(uname) in
 esac
 
 [ -n "$BP" ] && defarg=dbg
+[ -n "$PLOT" ] && defarg=ana
 
 arg=${1:-$defarg}
 
@@ -58,11 +59,14 @@ export AFOLD=$BINBASE/ALL$VERSION/$EVT
 export STEM=ALL${VERSION}_${PLOT}
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
-#export BFOLD=$BASE/jok-tds/ALL0/p001    ## comparison with "A" from another executable
+#export BFOLD=$BASE/jok-tds/ALL0/A001    ## comparison with "A" from another executable
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGFILE=$bin.log
+
+cvd=1   # default 1:TITAN RTX
+export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
@@ -73,28 +77,17 @@ case $VERSION in
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
-opticks_max_bounce=31
-opticks_num_event=10 
-opticks_start_index=0
-
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
-export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
-export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
-export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
-
-#opticks_num_photon=K1:10 
+#opticks_num_photon=K1:10   # only for SRM_TORCH RUNNING
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
 opticks_num_photon=H1:10
 #opticks_num_photon=M3,10   
 #opticks_num_photon=H1
 
-export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  ## ONLY FOR SRM_TORCH RUNNING + NB MUST MAX_PHOTON  
-export OPTICKS_MAX_PHOTON=M1   ## leaving MAX_PHOTON larger than needed costs QRng initialization time + VRAM 
-export OPTICKS_INTEGRATION_MODE=1
-
-cvd=1   # default 1:TITAN RTX
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
-
+opticks_num_event=10 
+opticks_max_photon=M1   ## large MAX_PHOTON costs QRng initialization time + VRAM 
+opticks_start_index=0
+opticks_max_bounce=31
+opticks_integration_mode=1
 
 #opticks_running_mode=SRM_DEFAULT
 opticks_running_mode=SRM_TORCH
@@ -102,6 +95,13 @@ opticks_running_mode=SRM_TORCH
 #opticks_running_mode=SRM_INPUT_GENSTEP
 #opticks_running_mode=SRM_GUN
 
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon} 
+export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
+export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}
+export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
+export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 
