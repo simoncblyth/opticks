@@ -245,6 +245,17 @@ void U4Material::RemoveProperty( const char* key, G4Material* mat )
     }
 }
 
+/**
+U4Material::GetPropertyNames
+-------------------------------
+
+Note difference between Geant4 versions.
+With older Geant4 only existing property names are returned. 
+With newer Geant4 every property name under the sun is returned. 
+
+**/
+
+
 #if G4VERSION_NUMBER < 1100
 void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Material* mat )
 {
@@ -269,12 +280,10 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
   const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
   if( mpt_ == nullptr ) return ; 
   std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
-  //const vector<G4String>::const_iterator iter = pnames.begin();
   for(std::vector<G4String>::const_iterator iter = pnames.begin(); iter != pnames.end(); iter++)
-    {
-      // std::string name=(iter).c_str();
-      //names.push_back(name);  
-    }
+  {
+      names.push_back(*iter);  // from Ilker Parmaksiz testing with Geant4 11.1.1 
+  }
 }
 #endif
 /**
@@ -372,6 +381,7 @@ NPFold* U4Material::MakePropertyFold(const G4Material* mat )
     {
         const char* propname = propnames[i].c_str() ; 
         G4MaterialPropertyVector* prop = GetProperty(mat, propname );  
+        if(prop == nullptr) continue ;  // from Ilker Parmaksiz testing with Geant4 11.1.1 
         NP* a = U4MaterialPropertyVector::ConvertToArray(prop); 
         fold->add( propname, a ); 
     }
