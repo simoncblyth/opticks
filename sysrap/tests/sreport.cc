@@ -52,19 +52,19 @@ struct sreport
 {
     static constexpr const char* JUNCTURE = "SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META" ; 
     static constexpr const char* RANGES = R"(
-        SEvt__Init_RUN_META:CSGFoundry__Load_HEAD       
-        CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL     ## load geom 
-        CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL     ## upload geom
-        A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_PREL         ## upload genstep
-        A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate kernel
+        SEvt__Init_RUN_META:CSGFoundry__Load_HEAD                     ## init
+        CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL                   ## load_geom
+        CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL                   ## upload_geom
+        A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_PREL         ## upload_genstep
+        A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate
         A%0.3d_QSim__simulate_POST:A%0.3d_QSim__simulate_TAIL         ## download 
-        A%0.3d_QSim__simulate_TAIL:CSGOptiX__SimulateMain_TAIL
        )" ; 
 
     bool    VERBOSE ;
 
     NP*       run ; 
     NP*       runprof ;
+    NP*       ranges ;
     NPFold*   substamp ;   
     NPFold*   subprofile ;   
 
@@ -78,6 +78,7 @@ struct sreport
     std::string desc() const ;
     std::string desc_run() const ;
     std::string desc_runprof() const ;
+    std::string desc_ranges() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
 };
@@ -87,6 +88,7 @@ inline sreport::sreport()
     VERBOSE(getenv("sreport__VERBOSE") != nullptr),
     run( nullptr ),
     runprof( nullptr ),
+    ranges( nullptr ),
     substamp( nullptr),
     subprofile( nullptr )
 {
@@ -96,6 +98,7 @@ inline NPFold* sreport::serialize() const
     NPFold* smry = new NPFold ;  
     smry->add("run", run ) ; 
     smry->add("runprof", runprof ) ; 
+    smry->add("ranges", ranges ) ; 
     smry->add_subfold("substamp", substamp ) ; 
     smry->add_subfold("subprofile", subprofile ) ; 
     return smry ; 
@@ -104,6 +107,7 @@ inline void sreport::import(const NPFold* smry)
 {
     run = smry->get("run")->copy() ; 
     runprof = smry->get("runprof")->copy() ; 
+    ranges = smry->get("ranges")->copy() ; 
     substamp = smry->get_subfold("substamp"); 
     subprofile = smry->get_subfold("subprofile"); 
 }
@@ -126,6 +130,7 @@ inline std::string sreport::desc() const
     ss << "[sreport.desc" << std::endl 
        << desc_run() 
        << desc_runprof() 
+       << desc_ranges() 
        << desc_substamp()
        << "]sreport.desc" << std::endl 
        ; 
@@ -159,6 +164,22 @@ inline std::string sreport::desc_runprof() const
     std::string str = ss.str() ;
     return str ;  
 }
+
+inline std::string sreport::desc_ranges() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_ranges" << std::endl 
+       << ( ranges ? ranges->sstr() : "-" ) << std::endl 
+       << ".sreport.desc_ranges.descTable " << std::endl 
+       << ( ranges ? ranges->descTable<int64_t>(17) : "-" ) << std::endl
+       << "]sreport.desc_ranges" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+
 
 inline std::string sreport::desc_substamp() const
 {
@@ -245,6 +266,8 @@ inline void sreport_Creator::init()
     report->run     = run ? run->copy() : nullptr ; 
     report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
     if(run) NP::CopyMeta( report->runprof, run ) ;   
+
+    report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
 }

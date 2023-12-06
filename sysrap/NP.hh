@@ -392,7 +392,11 @@ struct NP
     static int FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ); 
 
     static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ); 
-    static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) ; 
+    static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ; 
+    static NP*  MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr ) ; 
+    NP* makeMetaKVS_ranges(const char* ranges_ ) const ;  
+
+
     static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr ); 
     std::string descMetaKVS(const char* juncture=nullptr, const char* ranges=nullptr) const ; 
 
@@ -4521,6 +4525,8 @@ inline void NP::GetMetaKV(
 
 
 
+
+
 inline void NP::GetMetaKVS_(
     const char* metadata, 
     std::vector<std::string>* keys, 
@@ -4875,7 +4881,40 @@ to avoid redoing things
 
 **/
 
-inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) 
+inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) 
+{
+    std::stringstream ss ; 
+    NP* a = MakeMetaKVS_ranges(keys, tt, ranges_ , &ss ); 
+    ss << " a " << a->sstr(); 
+    std::string str = ss.str(); 
+    return str ;
+}
+
+inline NP* NP::makeMetaKVS_ranges(const char* ranges_ ) const 
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    std::vector<int64_t> tt ;  
+    bool only_with_stamp = true ; 
+    GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp ); 
+    assert( keys.size() == vals.size() ); 
+    assert( keys.size() == tt.size() ); 
+    assert( tt.size() == keys.size() ); 
+    return MakeMetaKVS_ranges(keys, tt, ranges_ , nullptr ); 
+}
+
+
+
+/**
+NP::MakeMetaKVS_ranges
+-----------------------
+
+
+
+**/
+
+
+inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss ) 
 {
     assert(ranges_ && strlen(ranges_) > 0); 
     std::vector<std::string> ranges ; 
@@ -4884,9 +4923,11 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
     assert( ranges.size() == anno.size() ) ;  
 
     int num_ranges = ranges.size() ; 
-    std::stringstream ss ; 
-    ss.imbue(std::locale("")) ;  // commas for thousands
-    ss << "ranges:" << num_ranges 
+
+    if(ss) ss->imbue(std::locale("")) ; // commas for thousands
+
+    if(ss) (*ss) 
+       << "ranges:" << num_ranges 
        << " time ranges between pairs of stamps " 
        << std::endl 
        ; 
@@ -4965,13 +5006,22 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
 
     // present the ranges in order of start time 
 
+    int ni = num_specs ; 
+    int nj = 5 ; 
+
+    NP* _rr = NP::Make<int64_t>( ni, nj ) ; 
+    int64_t* rr = _rr->values<int64_t>(); 
+
     int64_t ab_total = 0 ; 
     int wid = 30 ;  
+    _rr->labels = new std::vector<std::string> { "ta", "tb", "ab", "ia", "ib" } ; 
 
     for(int j=0 ; j < num_specs ; j++)
     {
         int i = ii[j]; 
         const char* spec = specs[i].c_str();  
+        _rr->names.push_back(spec); 
+
         std::vector<std::string> elem ;     
         U::Split( spec, ':', elem );  
         assert( elem.size() > 1 ); 
@@ -4986,9 +5036,16 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
         int64_t ab = tb - ta ; 
+
+        rr[nj*j+0] = ta ; 
+        rr[nj*j+1] = tb ;
+        rr[nj*j+2] = ab ;
+        rr[nj*j+3] = ia ;
+        rr[nj*j+4] = ib ;
+
         ab_total += ab ; 
 
-        ss 
+        if(ss) (*ss) 
             << " " << std::setw(wid) << ak 
             << " ==> "
             << " " << std::setw(wid) << bk
@@ -4998,7 +5055,7 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
             ;  
     }
 
-    ss 
+    if(ss) (*ss) 
        << " " << std::setw(wid) << ""
        << "     " 
        << " " << std::setw(wid) << "TOTAL:"
@@ -5006,9 +5063,7 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
        << std::endl 
        ;  
  
-       
-    std::string str = ss.str(); 
-    return str ; 
+    return _rr ;        
 }
 
 
@@ -5064,7 +5119,7 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
            ;
     }
     if(juncture_ && strlen(juncture_) > 0 ) ss << DescMetaKVS_juncture(keys, tt, t_first, juncture_ ); 
-    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges(keys, tt, t_first, ranges_ ); 
+    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges(keys, tt, ranges_ ); 
     std::string str = ss.str(); 
     return str ; 
 }
