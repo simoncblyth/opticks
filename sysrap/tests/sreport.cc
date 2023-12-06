@@ -51,6 +51,15 @@ with many large arrays left on the server.
 struct sreport
 {
     static constexpr const char* JUNCTURE = "SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META" ; 
+    static constexpr const char* RANGES = R"(
+        SEvt__Init_RUN_META:CSGFoundry__Load_HEAD       
+        CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL     ## load geom 
+        CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL     ## upload geom
+        QSim__simulate_HEAD:QSim__simulate_PREL         ## upload genstep
+        QSim__simulate_PREL:QSim__simulate_POST         ## simulate kernel
+        QSim__simulate_POST:QSim__simulate_TAIL         ## download 
+        QSim__simulate_TAIL:CSGOptiX__SimulateMain_TAIL
+       )" ; 
 
     bool    VERBOSE ;
 
@@ -130,7 +139,7 @@ inline std::string sreport::desc_run() const
     ss << "[sreport.desc_run" << std::endl 
        << ( run ? run->sstr() : "-" ) << std::endl 
        << ".sreport.desc_run.descMetaKVS " << std::endl 
-       << ( run ? run->descMetaKVS(JUNCTURE) : "-" ) << std::endl
+       << ( run ? run->descMetaKVS(JUNCTURE, RANGES) : "-" ) << std::endl
        << "]sreport.desc_run" << std::endl 
        ; 
     std::string str = ss.str() ;

@@ -74,8 +74,6 @@ EOU
 }
 
 SDIR=$(dirname $(realpath $BASH_SOURCE))
-#vars="0 BASH_SOURCE SDIR"
-#for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 
 name=sreport
 src=$SDIR/$name.cc
@@ -103,7 +101,7 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N6
+job=N7
 JOB=${JOB:-$job}
 
 DIR=unknown 
@@ -115,6 +113,7 @@ case $JOB in
   N4) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
   N5) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
   N6) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
+  N7) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;
 esac
 
 export STEM=${JOB}_${PLOT}_${PICK}

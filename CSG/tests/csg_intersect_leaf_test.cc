@@ -97,7 +97,7 @@ NP* Geometry::circle_scan(bool norm) const
     NP* a = NP::Make<float>(N,4,4); 
     quad4* aa = a->values<quad4>()  ; 
 
-    for(int i=0 ; i < 360 ; i++)
+    for(int i=0 ; i < N ; i++)
     {
         quad4& q = aa[i] ; 
 

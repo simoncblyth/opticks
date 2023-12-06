@@ -447,7 +447,13 @@ struct U
     static const char* Summarize( const char* label, int wid ); 
     static std::string Summarize_( const char* label, int wid ); 
 
+
     static void LineVector( std::vector<std::string>& lines, const char* LINES ); 
+
+    static void LiteralTrim( std::string& line ); 
+    static void Literal(    std::vector<std::string>& lines, const char* LINES ); 
+    static void LiteralAnno( std::vector<std::string>& field, std::vector<std::string>& anno, const char* LINES, const char* delim="#" );
+
     static std::string Space(int wid); 
 
 
@@ -1145,8 +1151,13 @@ inline std::string U::Summarize_( const char* label, int wid )  // static
 }
 
 
+/**
+U::LineVector
+--------------
 
 
+
+**/
 
 inline void U::LineVector( std::vector<std::string>& lines, const char* LINES )
 {
@@ -1158,6 +1169,70 @@ inline void U::LineVector( std::vector<std::string>& lines, const char* LINES )
         lines.push_back(line); 
     }
 }
+
+
+inline void U::LiteralTrim( std::string& line )
+{
+    const char* trim = " " ;  
+    if(strlen(line.c_str())==0) return ; 
+    line.erase(0, line.find_first_not_of(trim));  // left trim
+    line.erase(line.find_last_not_of(trim) + 1);   // right trim 
+}
+
+inline void U::Literal( std::vector<std::string>& lines, const char* LINES )
+{
+    std::stringstream fss(LINES);
+    std::string line ; 
+    while(getline(fss, line))
+    {
+        LiteralTrim(line); 
+        if(line.size() == 0) continue ; 
+        lines.push_back(line); 
+    }
+}
+
+inline void U::LiteralAnno( std::vector<std::string>& field, std::vector<std::string>& anno, const char* LINES, const char* delim  )
+{
+    std::vector<std::string> lines ; 
+    U::Literal(lines, LINES ); 
+    int num_lines = lines.size();     
+    bool dump = false ; 
+
+    if(dump) std::cout << "U::LiteralAnno num_lines " << num_lines << std::endl ; 
+
+    for(int i=0 ; i < num_lines ; i++)
+    {
+        const std::string& line = lines[i] ; 
+        std::size_t pfirst = line.find_first_of(delim) ; // first char matching any of delim char
+        std::size_t plast =  line.find_last_of(delim) ;  // last char matching any of delim char
+
+        if(dump) std::cout 
+            << " line [" << line << "]" 
+            << " pfirst " << pfirst  
+            << " plast " << plast  
+            << std::endl 
+            ;
+
+        if( pfirst != std::string::npos && plast != std::string::npos && plast - pfirst == 1 )
+        {
+            std::string _field = line.substr(0, pfirst) ; 
+            std::string _anno  = line.substr(plast+1) ; 
+            LiteralTrim(_field); 
+            LiteralTrim(_anno); 
+            field.push_back( _field ); 
+            anno.push_back( _anno ); 
+        } 
+        else
+        {
+            field.push_back(line); 
+            anno.push_back(""); 
+        }
+    }
+}
+
+
+
+
 
 inline std::string U::Space(int wid)
 {

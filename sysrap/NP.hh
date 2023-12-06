@@ -386,11 +386,16 @@ struct NP
     std::string descMeta() const ; 
 
     static int         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
-    static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr ); 
-    std::string descMetaKVS(const char* juncture=nullptr) const ; 
 
-    static std::string DescMetaKV(const std::string& meta, const char* juncture = nullptr ); 
-    std::string descMetaKV(const char* juncture=nullptr) const ; 
+
+    static int KeyIndex( const std::vector<std::string>& keys, const char* key ); 
+    static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ); 
+    static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) ; 
+    static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr ); 
+    std::string descMetaKVS(const char* juncture=nullptr, const char* ranges=nullptr) const ; 
+
+    static std::string DescMetaKV(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr ); 
+    std::string descMetaKV(const char* juncture=nullptr, const char* ranges=nullptr) const ; 
 
 
     const char* get_lpath() const ; 
@@ -4769,9 +4774,136 @@ inline int NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_
 }
 
 
+inline int NP::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
+{
+    int ikey = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), key )) ; 
+    return ikey == int(keys.size()) ? -1 : ikey ; 
+} 
+
+inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ) 
+{
+    assert(juncture_ && strlen(juncture_) > 0); 
+    std::vector<std::string> juncture ; 
+    Split(juncture, juncture_ , ',' ); 
+    int num_juncture = juncture.size() ; 
+
+    std::stringstream ss ; 
+    ss.imbue(std::locale("")) ;  // commas for thousands
+    ss << "juncture:" << num_juncture << " [" << juncture_ << "] time ranges between junctures" << std::endl ; 
+  
+    int64_t tp = 0 ; 
+    for(int j=0 ; j < num_juncture ; j++)
+    {
+        const char* j_key = juncture[j].c_str() ; 
+        int i = KeyIndex(keys, j_key) ; 
+        if( i == -1 ) continue ; 
+
+        const char* k = keys[i].c_str(); 
+        int64_t t = tt[i] ;  
+
+        ss << std::setw(30) << k 
+           << " : "
+           << std::setw(12) << ( t > 0 && tp > 0 ? t - tp : -1 )
+           << std::setw(23) << ""
+           << " : "
+           << std::setw(12) << ( t > 0 && t0 > 0 ? t - t0 : -1 )
+           << " : "
+           << U::Format(t) 
+           << " JUNCTURE" 
+           << std::endl 
+           ;
+
+         if( t > 0 ) tp = t ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+NP::DescMetaKVS_ranges
+------------------------
+
+Newline delimited list of colon separated pairs of tags, optionally with annotation::
+
+   CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL    ## annotation here 
+   CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL    ## annotation here 
+
+**/
+
+inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) 
+{
+    assert(ranges_ && strlen(ranges_) > 0); 
+    std::vector<std::string> ranges ; 
+    std::vector<std::string> anno ; 
+    U::LiteralAnno(ranges, anno, ranges_ , "#" ); 
+    assert( ranges.size() == anno.size() ) ;  
+
+    int num_ranges = ranges.size() ; 
+    std::stringstream ss ; 
+    ss.imbue(std::locale("")) ;  // commas for thousands
+    ss << "ranges:" << num_ranges 
+       << " time ranges between pairs of stamps " 
+       << std::endl 
+       ; 
+
+    bool dump = false ; 
+    if(dump) ss << "[" << ranges_ << "]" << std::endl ; 
+ 
+    char delim = ':' ;
+    int64_t ab_total = 0 ; 
+    int wid = 30 ;  
+
+    for(int i=0 ; i < num_ranges ; i++)
+    {
+        const std::string& range = ranges[i] ; 
+        size_t pos = range.find(delim); 
+        if( pos == std::string::npos ) continue ; 
+        std::string a = range.substr(0, pos);
+        std::string b = range.substr(pos+1);
+        int ia = KeyIndex(keys, a.c_str() ) ; 
+        int ib = KeyIndex(keys, b.c_str() ) ; 
+        int64_t ta = ia > -1 ? tt[ia] : 0 ; 
+        int64_t tb = ib > -1 ? tt[ib] : 0 ; 
+        int64_t ab = tb - ta ; 
+        ab_total += ab ; 
+
+        if(dump) ss 
+            << "[" 
+            << a << ";" << ia << ";" << ta 
+            << "] ==> ["  
+            << b << ";" << ib << ";" << tb 
+            << "]" 
+            <<  ab 
+            << std::endl
+            ; 
+
+        ss 
+            << " " << std::setw(wid) << a 
+            << " ==> "
+            << " " << std::setw(wid) << b
+            << "      " << std::setw(16) << std::right << ab 
+            << ( anno[i].empty() ? "" : "    ## " ) << anno[i] 
+            << std::endl
+            ;  
+
+        
+    }
+
+    ss 
+       << " " << std::setw(wid) << ""
+       << "     " 
+       << " " << std::setw(wid) << "TOTAL:"
+       << "      " << std::setw(16) << std::right << ab_total 
+       << std::endl 
+       ;  
+ 
+       
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
-inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture_ )  // static
+inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture_ , const char* ranges_ )  // static
 {
     std::vector<std::string> keys ;  
     std::vector<std::string> vals ;  
@@ -4822,53 +4954,18 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
            << std::endl 
            ;
     }
-
-
-    if(juncture_ && strlen(juncture_) > 0)
-    {
-        std::vector<std::string> juncture ; 
-        Split(juncture, juncture_ , ',' ); 
-        int num_juncture = juncture.size() ; 
-        ss << "juncture:" << num_juncture << " [" << juncture_ << "] time ranges between junctures" << std::endl ; 
-  
-        int64_t t0 = t_first ; 
-        int64_t tp = 0 ; 
-        for(int j=0 ; j < num_juncture ; j++)
-        {
-            const char* j_key = juncture[j].c_str() ; 
-            int i = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), j_key )) ; 
-            if( i == int(keys.size()) ) continue ; 
-
-            const char* k = keys[i].c_str(); 
-            //const char* v = vals[i].c_str(); 
-            int64_t t = tt[i] ;  
-
-            ss << std::setw(30) << k 
-               << " : "
-               << std::setw(12) << ( t > 0 && tp > 0 ? t - tp : -1 )
-               << std::setw(23) << ""
-               << " : "
-               << std::setw(12) << ( t > 0 && t0 > 0 ? t - t0 : -1 )
-               << " : "
-               << U::Format(t) 
-               << " JUNCTURE" 
-               << std::endl 
-               ;
-
-             if( t > 0 ) tp = t ; 
-        }
-    }
-
+    if(juncture_ && strlen(juncture_) > 0 ) ss << DescMetaKVS_juncture(keys, tt, t_first, juncture_ ); 
+    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges(keys, tt, t_first, ranges_ ); 
     std::string str = ss.str(); 
     return str ; 
 }
 
-inline std::string NP::descMetaKVS(const char* juncture_) const 
+inline std::string NP::descMetaKVS(const char* juncture_, const char* ranges_) const 
 {
     std::stringstream ss ; 
     ss << "NP::descMetaKVS" 
        << std::endl 
-       << DescMetaKVS(meta, juncture_) 
+       << DescMetaKVS(meta, juncture_, ranges_) 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -4876,7 +4973,7 @@ inline std::string NP::descMetaKVS(const char* juncture_) const
 
 
 
-inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_ )  // static
+inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_, const char* ranges_ )  // static
 {
     std::vector<std::string> keys ;  
     std::vector<std::string> vals ;  
@@ -4972,12 +5069,12 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
     return str ; 
 }
 
-inline std::string NP::descMetaKV(const char* juncture) const 
+inline std::string NP::descMetaKV(const char* juncture, const char* ranges) const 
 {
     std::stringstream ss ; 
     ss << "NP::descMetaKV" 
        << std::endl 
-       << DescMetaKV(meta, juncture) 
+       << DescMetaKV(meta, juncture, ranges) 
        ;
     std::string str = ss.str(); 
     return str ; 
