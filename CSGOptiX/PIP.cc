@@ -19,6 +19,8 @@
 
 #include "Ctx.h"
 #include "Binding.h"
+
+#include "OPT.h"
 #include "PIP.h"
 
 #include "SLOG.hh"
@@ -37,185 +39,6 @@ bool PIP::OptiXVersionIsSupported()  // static
     return ok ; 
 }
 
-/**
-PIP::DebugLevel
------------------
-
-https://forums.developer.nvidia.com/t/gpu-program-optimization-questions/195238/2
-
-droettger, Nov 2021::
-
-    The new OPTIX_COMPILE_DEBUG_LEVEL_MODERATE is documented to have an impact on
-    performance.  You should use OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL which keeps only
-    the line information for profiling and OPTIX_COMPILE_DEBUG_LEVEL_NONE to remove
-    even that.  Never profile compute kernels build as debug! That will completely
-    change the code structure and does not represent the fully optimized code.
-
-
-See optix7-;optix7-types
-
-**/
-
-
-OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
-{
-    OptixCompileDebugLevel level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
-#if OPTIX_VERSION == 70000
-    if(     strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
-    else if(strcmp(option, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
-    else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
-    else if(strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
-#elif OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
-    if(     strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT ; 
-    else if(strcmp(option, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
-    else if(strcmp(option, "MINIMAL") == 0 )  level = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL ; 
-    else if(strcmp(option, "MODERATE") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE ; 
-    else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
-#else
-    LOG(fatal) << " NOT RECOGNIZED " << " option " << option  << " level " << level  
-               << " OPTIX_VERSION " << OPTIX_VERSION ; 
-    assert(0);   
-#endif
-    LOG(LEVEL) << " option " << option << " level " << level << " OPTIX_VERSION " << OPTIX_VERSION ;  
-    return level ; 
-}
-const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
-{
-    const char* s = nullptr ; 
-    switch(debugLevel)
-    {  
-#if OPTIX_VERSION == 70000
-        case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
-        case OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO: s = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ ; break ;
-        case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
-#elif OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
-        case OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT:  s = OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT_  ; break ; 
-        case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
-        case OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL:  s = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL_  ; break ;
-        case OPTIX_COMPILE_DEBUG_LEVEL_MODERATE: s = OPTIX_COMPILE_DEBUG_LEVEL_MODERATE_ ; break ;
-        case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
-#endif
-    }
-
-    if( s == nullptr )
-    {
-        LOG(fatal) 
-            << " IS NOT RECOGNIZED  "
-            << " debugLevel " << debugLevel 
-            << " OPTIX_VERSION " << OPTIX_VERSION 
-            ; 
-    }
-    return s ;    
-}
-
-OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // static 
-{
-    OptixCompileOptimizationLevel level ; 
-    if(      strcmp(option, "LEVEL_0") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0  ; 
-    else if( strcmp(option, "LEVEL_1") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1  ; 
-    else if( strcmp(option, "LEVEL_2") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2  ; 
-    else if( strcmp(option, "LEVEL_3") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3  ; 
-    else if( strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_DEFAULT  ; 
-    else 
-    {
-        LOG(fatal) 
-            << " IS NOT RECOGNIZED  "
-            << " option " << option 
-            << " level " << level 
-            << " OPTIX_VERSION " << OPTIX_VERSION 
-            ; 
-        assert(0) ; 
-    }
- 
-    LOG(LEVEL) << " option " << option << " level " << level ;  
-    return level ; 
-}
-const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
-{
-    const char* s = nullptr ; 
-    switch(optLevel)
-    {
-        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_0: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ ; break ; 
-        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_1: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ ; break ; 
-        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_2: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ ; break ; 
-        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_3: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ ; break ; 
-        default:                                                                         ; break ; 
-    }
-
-    if( s == nullptr )
-    {
-        LOG(fatal) 
-            << " IS NOT RECOGNIZED  "
-            << " optLevel " << optLevel 
-            << " OPTIX_VERSION " << OPTIX_VERSION 
-            ; 
-        assert(0) ; 
-    }
-    return s ; 
-} 
-OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
-{
-    OptixExceptionFlags flag = OPTIX_EXCEPTION_FLAG_NONE ; 
-    if(      strcmp(opt, "NONE") == 0 )          flag = OPTIX_EXCEPTION_FLAG_NONE ;  
-    else if( strcmp(opt, "STACK_OVERFLOW") == 0) flag = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ; 
-    else if( strcmp(opt, "TRACE_DEPTH") == 0)    flag = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH  ; 
-    else if( strcmp(opt, "USER") == 0)           flag = OPTIX_EXCEPTION_FLAG_USER  ; 
-    else if( strcmp(opt, "DEBUG") == 0)          flag = OPTIX_EXCEPTION_FLAG_DEBUG  ; 
-    else 
-    {
-        LOG(fatal) 
-            << " IS NOT RECOGNIZED  "
-            << " opt " << opt
-            << " flag " << flag
-            << " OPTIX_VERSION " << OPTIX_VERSION 
-            ; 
-        assert(0) ; 
-    }
-    return flag ; 
-}
-const char* PIP::ExceptionFlags__(OptixExceptionFlags excFlag)
-{
-    const char* s = nullptr ; 
-    switch(excFlag)
-    {
-        case OPTIX_EXCEPTION_FLAG_NONE:           s = OPTIX_EXCEPTION_FLAG_NONE_            ; break ; 
-        case OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW: s = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_  ; break ;
-        case OPTIX_EXCEPTION_FLAG_TRACE_DEPTH:    s = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_     ; break ; 
-        case OPTIX_EXCEPTION_FLAG_USER:           s = OPTIX_EXCEPTION_FLAG_USER_            ; break ; 
-        case OPTIX_EXCEPTION_FLAG_DEBUG:          s = OPTIX_EXCEPTION_FLAG_DEBUG_           ; break ;      
-    }
-    return s ; 
-}
-
-unsigned PIP::ExceptionFlags(const char* options)
-{
-    std::vector<std::string> opts ; 
-    sstr::Split( options, '|', opts );  
-
-    unsigned exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE ; 
-    for(unsigned i=0 ; i < opts.size() ; i++)
-    {
-        const std::string& opt = opts[i] ; 
-        exceptionFlags |= ExceptionFlags_(opt.c_str()); 
-    }
-    LOG(LEVEL) << " options " << options << " exceptionFlags " << exceptionFlags ; 
-    return exceptionFlags ;  
-}
-
-std::string PIP::Desc_ExceptionFlags( unsigned flags )
-{
-    std::stringstream ss ; 
-    if( flags & OPTIX_EXCEPTION_FLAG_NONE )           ss << OPTIX_EXCEPTION_FLAG_NONE_ << " " ; 
-    if( flags & OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ) ss << OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ << " " ; 
-    if( flags & OPTIX_EXCEPTION_FLAG_TRACE_DEPTH )    ss << OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ << " " ; 
-    if( flags & OPTIX_EXCEPTION_FLAG_USER )           ss << OPTIX_EXCEPTION_FLAG_USER_ << " " ; 
-    if( flags & OPTIX_EXCEPTION_FLAG_DEBUG )          ss << OPTIX_EXCEPTION_FLAG_DEBUG_ << " " ; 
-    std::string str = ss.str() ; 
-    return str ; 
-}
-
-
-
 
 const char* PIP::CreatePipelineOptions_exceptionFlags  = ssys::getenvvar("PIP__CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
 
@@ -229,7 +52,7 @@ OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues
     pipeline_compile_options.traversableGraphFlags = traversableGraphFlags ; 
     pipeline_compile_options.numPayloadValues      = numPayloadValues ;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = numAttributeValues ;
-    pipeline_compile_options.exceptionFlags        = ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
+    pipeline_compile_options.exceptionFlags        = OPT::ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
     pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
     return pipeline_compile_options ;  
@@ -243,7 +66,7 @@ std::string PIP::Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& 
        << " pipeline_compile_options.numPayloadValues   " << pipeline_compile_options.numPayloadValues  << std::endl 
        << " pipeline_compile_options.numAttributeValues " << pipeline_compile_options.numAttributeValues << std::endl
        << " pipeline_compile_options.exceptionFlags     " << pipeline_compile_options.exceptionFlags  
-       << Desc_ExceptionFlags( pipeline_compile_options.exceptionFlags )
+       << OPT::Desc_ExceptionFlags( pipeline_compile_options.exceptionFlags )
        << std::endl 
        << "]PIP::Desc_PipelineCompileOptions" << std::endl 
        ;
@@ -367,10 +190,10 @@ std::string PIP::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& modu
        << " OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT " << OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT
        << std::endl 
        << " module_compile_options.optLevel         " << module_compile_options.optLevel  
-       << " " << OptimizationLevel_( module_compile_options.optLevel )
+       << " " << OPT::OptimizationLevel_( module_compile_options.optLevel )
        << std::endl 
        << " module_compile_options.debugLevel       " << module_compile_options.debugLevel  
-       << " " << DebugLevel_( module_compile_options.debugLevel )
+       << " " << OPT::DebugLevel_( module_compile_options.debugLevel )
        << std::endl 
        << "]PIP::Desc_ModuleCompileOptions" 
        << std::endl 
@@ -379,24 +202,25 @@ std::string PIP::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& modu
     return str ; 
 }
 
-
-
-
 OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
 {
     std::string ptx ; 
     bool ptx_ok = spath::Read(ptx, ptx_path ); 
 
     LOG(LEVEL)
-        << " ptx_path " << ptx_path << std::endl 
-        << " ptx.size " << ptx.size() << std::endl 
-        << " ptx_pl " << ( ptx_ok ? "YES" : "NO " ) << std::endl 
+        << std::endl 
+        << " ptx_path " << ptx_path 
+        << std::endl 
+        << " ptx.size " << ptx.size() 
+        << std::endl 
+        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " ) 
+        << std::endl 
         ; 
     assert(ptx_ok); 
 
     int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ; 
-    OptixCompileOptimizationLevel optLevel = OptimizationLevel(CreateModule_optLevel) ; 
-    OptixCompileDebugLevel      debugLevel = DebugLevel(CreateModule_debugLevel) ; 
+    OptixCompileOptimizationLevel optLevel = OPT::OptimizationLevel(CreateModule_optLevel) ; 
+    OptixCompileDebugLevel      debugLevel = OPT::DebugLevel(CreateModule_debugLevel) ; 
 
     OptixModule module = nullptr ;
     OptixModuleCompileOptions module_compile_options = {};
@@ -576,7 +400,7 @@ std::string PIP::Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeli
        << "[PIP::Desc_PipelineLinkOptions" << std::endl 
        << " pipeline_link_options.maxTraceDepth " << pipeline_link_options.maxTraceDepth << std::endl 
        << " pipeline_link_options.debugLevel    " << pipeline_link_options.debugLevel 
-       << " " << DebugLevel_(pipeline_link_options.debugLevel ) 
+       << " " << OPT::DebugLevel_(pipeline_link_options.debugLevel ) 
        << std::endl
        << " PIP__linkPipeline_debugLevel " << linkPipeline_debugLevel 
        << std::endl
@@ -599,7 +423,7 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 #elif OPTIX_VERSION == 70500
 #endif
 
-    OptixCompileDebugLevel debugLevel = DebugLevel(linkPipeline_debugLevel)  ; 
+    OptixCompileDebugLevel debugLevel = OPT::DebugLevel(linkPipeline_debugLevel)  ; 
     pipeline_link_options.debugLevel = debugLevel;
 
     size_t sizeof_log = 0 ; 

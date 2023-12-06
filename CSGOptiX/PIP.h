@@ -36,40 +36,6 @@ struct PIP
 
 
     static bool OptiXVersionIsSupported(); 
-    static OptixCompileDebugLevel        DebugLevel(const char* option); 
-    static const char *                  DebugLevel_( OptixCompileDebugLevel debugLevel ); 
-
-#if OPTIX_VERSION == 70000
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_NONE_     = "OPTIX_COMPILE_DEBUG_LEVEL_NONE" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ = "OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_FULL_     = "OPTIX_COMPILE_DEBUG_LEVEL_FULL" ; 
-#elif OPTIX_VERSION == 70500
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT_  = "OPTIX_COMPILE_DEBUG_LEVEL_DEFAULT" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_NONE_     = "OPTIX_COMPILE_DEBUG_LEVEL_NONE" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL_  = "OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_MODERATE_ = "OPTIX_COMPILE_DEBUG_LEVEL_MODERATE" ; 
-    static constexpr const char* OPTIX_COMPILE_DEBUG_LEVEL_FULL_     = "OPTIX_COMPILE_DEBUG_LEVEL_FULL" ; 
-#endif
-
-    static OptixCompileOptimizationLevel OptimizationLevel(const char* option) ; 
-    static const char* OptimizationLevel_( OptixCompileOptimizationLevel optLevel ); 
-    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_DEFAULT_ = "OPTIX_COMPILE_OPTIMIZATION_DEFAULT" ;
-    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_0" ;
-    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_1" ;
-    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_2" ; 
-    static constexpr const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_3" ;
-
-
-    static OptixExceptionFlags           ExceptionFlags_(const char* opt) ; 
-    static unsigned                      ExceptionFlags(const char* options); 
-    static std::string                   Desc_ExceptionFlags( unsigned flags ); 
-
-    static const char*                   ExceptionFlags__(OptixExceptionFlags excFlag) ; 
-    static constexpr const char* OPTIX_EXCEPTION_FLAG_NONE_           = "OPTIX_EXCEPTION_FLAG_NONE" ; 
-    static constexpr const char* OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ = "OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW" ; 
-    static constexpr const char* OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_    = "OPTIX_EXCEPTION_FLAG_TRACE_DEPTH" ; 
-    static constexpr const char* OPTIX_EXCEPTION_FLAG_USER_           = "OPTIX_EXCEPTION_FLAG_USER_" ; 
-    static constexpr const char* OPTIX_EXCEPTION_FLAG_DEBUG_          = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
 
 
     static const char*                 CreatePipelineOptions_exceptionFlags ; 
