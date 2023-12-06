@@ -21,6 +21,10 @@ sysrap/tests/SGLM_set_frame_test.sh
     ELV=t:Water_solid,Rock_solid  ./cxr_min.sh    # with colon not working 
 
 
+    MOI=PMT_20inch_veto:0:1000 ~/o/cxr_min.sh
+
+
+
 FIXED Issue : EYE inputs not being extent scaled
 -----------------------------------------------------
 
@@ -40,7 +44,7 @@ DONE: added saving of SGLM::desc for debugging view issues
 EOU
 }
 
-DIR=$(dirname $BASH_SOURCE)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 case $(uname) in
    Linux) defarg=run_info ;;
@@ -54,7 +58,9 @@ export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 bin=CSGOptiXRMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
-export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to load
+
+# now done in GEOM.sh 
+# export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to load
 
 
 moi=ALL
@@ -65,6 +71,7 @@ moi=ALL
 #moi=PMT_20inch_veto:0:1000
 #moi=sChimneyAcrylic 
 
+export MOI=${MOI:-$moi}
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
@@ -80,16 +87,15 @@ cam=perspective
 #escale=asis
 escale=extent
 
-case $moi in 
-   ALL) eye=0,2.0,0 ; tmin=1.75 ; zoom=2.0 ;; 
-   PMT_20inch_veto:0:1000) eye=1,1,5 ; tmin=0.4  ;;
-   NNVT:0:1000) eye=1,0,5 ; zoom=2 ;;
-   UP_sChimneyAcrylic) eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
-   sChimneyAcrylic) eye=-10,0,0 ; tmin=0.1 ; zoom=0.5 ;; 
-   NEW_sChimneyAcrylic) eye=-30,0,5 ; tmin=25 ; icam=1 ;; 
+case $MOI in 
+   ALL)                    eye=0,2.0,0   ; tmin=1.75 ; zoom=2.0 ;; 
+   PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
+   NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
+   UP_sChimneyAcrylic)     eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
+   sChimneyAcrylic)        eye=-10,0,0   ; tmin=0.1 ; zoom=0.5 ;; 
+   NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
 esac
 
-export MOI=${MOI:-$moi}
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
 export ZOOM=${ZOOM:-$zoom}
@@ -113,14 +119,17 @@ logging(){
     export CSGFoundry=INFO 
     export CSGOptiX=INFO
 }
-#logging 
+[ -n "$LOG" ] && logging 
 
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
-export PBAS=/tmp/$USER/opticks/   # note trailing slash 
-export BASE=${PBAS}GEOM/$GEOM/$bin
+
+TMP=${TMP:-/tmp/$USER/opticks}
+
+export PBAS=${TMP}/    # note trailing slash 
+export BASE=$TMP/GEOM/$GEOM/$bin
 export LOGDIR=$BASE
 mkdir -p $LOGDIR 
 cd $LOGDIR 

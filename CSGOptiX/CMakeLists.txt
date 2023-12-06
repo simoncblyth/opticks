@@ -104,8 +104,8 @@ target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 
 target_compile_definitions( ${name} PUBLIC WITH_SIMULATE )
-#target_compile_definitions( ${name} PUBLIC WITH_SIMTRACE )
-#target_compile_definitions( ${name} PUBLIC WITH_RENDER )
+target_compile_definitions( ${name} PUBLIC WITH_SIMTRACE )
+target_compile_definitions( ${name} PUBLIC WITH_RENDER )
 
 #[=[
 
