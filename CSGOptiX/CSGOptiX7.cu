@@ -279,6 +279,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         // HMM: normalize here or within CSG ? Actually only needed for 
         // geometry with active scaling, such as ellipsoid.  
         // TODO: move this so its only done when needed
+        //     ~/o/notes/issues/CSGOptiX_simulate_avoid_normalizing_every_normal.rst
+        //
+
         float3* normal = prd->normal();  
         *normal = normalize(*normal); 
 
@@ -519,7 +522,7 @@ Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 
 Note that optixReportIntersection returns a bool, but that is 
 only relevant when using anyHit as it provides a way to ignore hits.
-But Opticks does not used any anyHit so the returned bool should 
+But Opticks does not use anyHit so the returned bool should 
 always be true. 
 
 The attributes passed into optixReportIntersection are 

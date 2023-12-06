@@ -6,15 +6,16 @@ csg_intersect_leaf_test.sh
 ::
 
     MODE=2 ~/opticks/CSG/tests/csg_intersect_leaf_test.sh ana
+    MODE=2 ~/o/CSG/tests/csg_intersect_leaf_test.sh ana
 
 EOU
 }
 
 name=csg_intersect_leaf_test
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-
-export FOLD=/tmp/$name
+TMP=${TMP:-/tmp/$USER/opticks}
+export FOLD=$TMP/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 script=$SDIR/$name.py 
@@ -25,7 +26,7 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE name FOLD bin CUDA_PREFIX arg script"
+vars="BASH_SOURCE name TMP FOLD bin CUDA_PREFIX arg script"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

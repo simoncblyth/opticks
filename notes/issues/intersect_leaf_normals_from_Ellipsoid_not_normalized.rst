@@ -13,12 +13,10 @@ Context
 * this prompted detailed PIDX (single photon) debug revealing 
   non-normalized normals for ellipsoid intersects
 
-
 ::
 
    APID=552 BPID=552 MODE=2 ~/opticks/g4cx/tests/G4CXTest.sh tra
    PIDX=552          MODE=2 ~/opticks/g4cx/tests/G4CXTest.sh tra    
-
 
 
 THE FIX
