@@ -57,9 +57,17 @@ struct PIP
     const char* desc() const ; 
 
     void init(); 
-    void createRaygenPG(const char* rg);
-    void createMissPG(const char* ms);
-    void createHitgroupPG(const char* is, const char* ch, const char* ah );
+
+
+    static constexpr const char* RG = "__raygen__rg" ; 
+    static constexpr const char* MS = "__miss__ms" ; 
+    static constexpr const char* IS = "__intersection__is" ; 
+    static constexpr const char* CH = "__closesthit__ch" ; 
+    static constexpr const char* AH = "__anyhit__ah" ; 
+
+    void createRaygenPG();
+    void createMissPG();
+    void createHitgroupPG();
 
 
     static const char* linkPipeline_debugLevel ; 

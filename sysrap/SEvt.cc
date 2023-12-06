@@ -1437,7 +1437,7 @@ SEvt::SaveRunMeta
 void SEvt::SaveRunMeta(const char* base)
 {
     const char* dir = RunDir(base); 
-    LOG(info) 
+    LOG(LEVEL) 
         << " base " << ( base ? base : "-" ) 
         << " dir " << ( dir ? dir : "-" ) 
         ; 
@@ -1598,7 +1598,7 @@ void SEvt::endOfEvent(int eventID)
         SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
         bool is_last_evt = isLastEvt() ; 
 
-        LOG(info) 
+        LOG(LEVEL) 
             << " is_last_eventID " << ( is_last_eventID ? "YES" : "NO " ) 
             << " is_last_evt " << ( is_last_evt ? "YES" : "NO " ) 
             ;
@@ -3897,7 +3897,7 @@ void SEvt::save(const char* dir_)
 
 
     const char* dir = getOutputDir(dir_); 
-    LOG(info) << " dir " << dir <<  " index " << index << " instance " << instance  << " OPTICKS_SAVE_COMP  " << save_comp ; 
+    LOG(info) << dir << " " << save_comp ; 
     LOG(LEVEL) << descSaveDir(dir_) ; 
 
 

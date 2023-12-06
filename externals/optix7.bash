@@ -25,6 +25,7 @@ optix7-sbt(){      open ~/opticks_refs/sbt-s21888-rtx-accelerated-raytracing-wit
 optix7-release-notes(){ open $HOME/opticks_refs/OptiX_Release_Notes_7.4_01.pdf ; }
 
 optix7-types(){    vim -R $(optix7-prefix)/include/optix_7_types.h ; }
+optix7-host(){     vim -R $(optix7-prefix)/include/optix_7_host.h ; }
 optix7-usage(){ cat << \EOU
 
 OptiX 7 : Brand New Lower Level API

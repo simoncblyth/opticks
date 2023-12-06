@@ -72,7 +72,8 @@ knobs()
    #optLevel=LEVEL_0
    optLevel=LEVEL_3
 
-
+ 
+   #export PIP__max_trace_depth=1
    export PIP__CreatePipelineOptions_exceptionFlags=$exceptionFlags # NONE/STACK_OVERFLOW/TRACE_DEPTH/USER/DEBUG
    export PIP__CreateModule_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   (DEFAULT is MINIMAL)
    export PIP__linkPipeline_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   
@@ -239,10 +240,10 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    fi 
 
    if [ "${arg/run}" != "$arg" ]; then
-       date +"%Y-%m-%d %H:%M:%S.%3N  %N"
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N : [$BASH_SOURCE "
        $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-       date +"%Y-%m-%d %H:%M:%S.%3N  %N"
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE "
    elif [ "${arg/dbg}" != "$arg" ]; then
        dbg__ $bin 
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 

@@ -4,8 +4,7 @@
 
 struct OPT
 {
-
-
+    static constexpr const bool VERBOSE = false ; 
 
     static OptixCompileDebugLevel        DebugLevel(const char* option); 
     static const char *                  DebugLevel_( OptixCompileDebugLevel debugLevel ); 
@@ -46,6 +45,7 @@ struct OPT
     static constexpr const char* OPTIX_EXCEPTION_FLAG_DEBUG_          = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
 
 };
+
 
 
 
@@ -91,7 +91,13 @@ inline OptixCompileDebugLevel OPT::DebugLevel(const char* option)  // static
         ; 
     assert(0);   
 #endif
-    std::cout << " option " << option << " level " << level << " OPTIX_VERSION " << OPTIX_VERSION  << std::endl ;  
+    if(VERBOSE) std::cout 
+         << "OPT::DebugLevel"
+         << " option " << option 
+         << " level " << level 
+         << " OPTIX_VERSION " << OPTIX_VERSION  
+         << std::endl
+         ;  
     return level ; 
 }
 
@@ -144,7 +150,7 @@ inline OptixCompileOptimizationLevel OPT::OptimizationLevel(const char* option) 
         assert(0) ; 
     }
  
-    std::cout 
+    if(VERBOSE) std::cout 
         << "OPT::OptimizationLevel " 
         << " option " << option 
         << " level " << level 
@@ -228,10 +234,11 @@ inline unsigned OPT::ExceptionFlags(const char* options)
         const std::string& opt = opts[i] ; 
         exceptionFlags |= ExceptionFlags_(opt.c_str()); 
     }
-    std::cerr 
+    if(VERBOSE) std::cerr 
         << "OPT::ExceptionFlags"  
         << " options " << options 
         << " exceptionFlags " << exceptionFlags 
+        << std::endl 
         ; 
     return exceptionFlags ;  
 }

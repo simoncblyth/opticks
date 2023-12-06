@@ -376,14 +376,15 @@ extern "C" __global__ void __raygen__rg()
 #ifndef PRODUCTION
     switch( params.raygenmode )
     {
+
+#ifdef WITH_SIMULATE
+        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
+#endif
 #ifdef WITH_RENDER
         case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;  
 #endif
 #ifdef WITH_SIMTRACE
         case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
-#endif
-#ifdef WITH_SIMULATE
-        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
 #endif
     }
 #else

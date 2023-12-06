@@ -366,6 +366,7 @@ double QSim::simulate(int eventID)
     LOG(info) 
         << " eventID " << eventID 
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
+        << " ph " << std::setw(10) << event->getNumPhoton() 
         ; 
 
     sev->t_Launch = dt ; 

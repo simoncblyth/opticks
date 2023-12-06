@@ -19,10 +19,8 @@
 
 #include "Ctx.h"
 #include "Binding.h"
-
 #include "OPT.h"
 #include "PIP.h"
-
 #include "SLOG.hh"
 
 const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG"); 
@@ -42,10 +40,26 @@ bool PIP::OptiXVersionIsSupported()  // static
 
 const char* PIP::CreatePipelineOptions_exceptionFlags  = ssys::getenvvar("PIP__CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
 
+/**
+PIP::CreatePipelineOptions
+----------------------------
+
+traversableGraphFlags
+    OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS : got no intersects with this
+    OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING  : works 
+ 
+usesPrimitiveTypeFlags
+    from optix7-;optix7-types
+    Setting to zero corresponds to enabling OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM and OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE.
+
+    Changed form unset 0 to OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM removing OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE
+
+**/
+
+
 OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
-    //unsigned traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS ; 
-    unsigned traversableGraphFlags=OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;  // without this get no intersects
+    unsigned traversableGraphFlags=OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
 
     OptixPipelineCompileOptions pipeline_compile_options = {} ;
     pipeline_compile_options.usesMotionBlur        = false;
@@ -54,6 +68,7 @@ OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues
     pipeline_compile_options.numAttributeValues    = numAttributeValues ;
     pipeline_compile_options.exceptionFlags        = OPT::ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
     pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
+    pipeline_compile_options.usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM ;  
 
     return pipeline_compile_options ;  
 }
@@ -105,7 +120,7 @@ const char* PIP::desc() const
    return strdup(s.c_str()); 
 }
 
-const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
+const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP__max_trace_depth", 1 ) ;   // was 2 
 
 /**
 PIP::PIP
@@ -147,9 +162,9 @@ void PIP::init()
 {
     LOG(LEVEL)  << "[" ; 
 
-    createRaygenPG("rg");
-    createMissPG("ms"); 
-    createHitgroupPG("is", "ch", nullptr); 
+    createRaygenPG();
+    createMissPG(); 
+    createHitgroupPG(); 
     linkPipeline(max_trace_depth);
 
     LOG(LEVEL)  << "]" ; 
@@ -259,15 +274,14 @@ Creates member raygen_pg
 
 **/
 
-void PIP::createRaygenPG(const char* rg)
-{
-    std::string rg_ = "__raygen__" ; 
-    rg_ += rg ;  
 
+
+void PIP::createRaygenPG()
+{
     OptixProgramGroupDesc desc    = {}; 
     desc.kind                     = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
     desc.raygen.module            = module;
-    desc.raygen.entryFunctionName = rg_.c_str() ;
+    desc.raygen.entryFunctionName = RG ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -295,15 +309,12 @@ Creates member miss_pg
 
 **/
 
-void PIP::createMissPG(const char* ms)
+void PIP::createMissPG()
 {
-    std::string ms_ = "__miss__" ; 
-    ms_ += ms ;  
-
     OptixProgramGroupDesc desc  = {};
     desc.kind                   = OPTIX_PROGRAM_GROUP_KIND_MISS;
     desc.miss.module            = module;
-    desc.miss.entryFunctionName = ms_.c_str() ;
+    desc.miss.entryFunctionName = MS ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -327,38 +338,21 @@ void PIP::createMissPG(const char* ms)
 PIP::createHitgroupPG
 ---------------------
 
-Creates member hitgroup_pg
-
 **/
 
-void PIP::createHitgroupPG(const char* is, const char* ch, const char* ah )
+void PIP::createHitgroupPG()
 {
-    std::string is_ = "__intersection__" ; 
-    std::string ch_ = "__closesthit__" ; 
-    std::string ah_ = "__anyhit__" ; 
-
-    if(is) is_ += is ;  
-    if(ch) ch_ += ch ;  
-    if(ah) ah_ += ah ;  
-
     OptixProgramGroupDesc desc = {};
     desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
 
-    if(is)  
-    { 
-        desc.hitgroup.moduleIS            = module ;
-        desc.hitgroup.entryFunctionNameIS =  is_.c_str() ;
-    }
-    if(ch)
-    {
-        desc.hitgroup.moduleCH            = module  ; 
-        desc.hitgroup.entryFunctionNameCH = ch_.c_str() ;
-    }
-    if(ah)
-    {
-        desc.hitgroup.moduleAH            = module ;
-        desc.hitgroup.entryFunctionNameAH = ah_.c_str();
-    }
+    desc.hitgroup.moduleIS            = module ;
+    desc.hitgroup.entryFunctionNameIS =  IS ;
+
+    desc.hitgroup.moduleCH            = module  ; 
+    desc.hitgroup.entryFunctionNameCH = CH ;
+
+    desc.hitgroup.moduleAH            = nullptr ;
+    desc.hitgroup.entryFunctionNameAH = nullptr ; 
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -513,8 +507,8 @@ void PIP::configureStack()
         << " continuationStackSize " << continuationStackSize
         ;
 
-
-    unsigned maxTraversableGraphDepth = 2 ;  // Opticks only using IAS->GAS
+    // see optix7-;optix7-host : it states that IAS->GAS needs to be two  
+    unsigned maxTraversableGraphDepth = 2 ; 
 
     LOG(LEVEL) 
         << "(further inputs to optixPipelineSetStackSize)"
