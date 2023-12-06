@@ -117,12 +117,12 @@ esac
 # only for SRM_TORCH RUNNING
 #opticks_num_photon=K1:10
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
-#opticks_num_photon=H1:10
+opticks_num_photon=H1:10
 #opticks_num_photon=M3,10   
-opticks_num_photon=M1
+#opticks_num_photon=M1
 #opticks_num_photon=M10
 
-opticks_num_event=1
+opticks_num_event=10
 opticks_max_photon=M1   ## cost: QRng init time + VRAM 
 opticks_start_index=0
 opticks_max_bounce=31

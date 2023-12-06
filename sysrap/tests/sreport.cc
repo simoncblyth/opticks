@@ -55,10 +55,10 @@ struct sreport
         SEvt__Init_RUN_META:CSGFoundry__Load_HEAD       
         CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL     ## load geom 
         CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL     ## upload geom
-        QSim__simulate_HEAD:QSim__simulate_PREL         ## upload genstep
-        QSim__simulate_PREL:QSim__simulate_POST         ## simulate kernel
-        QSim__simulate_POST:QSim__simulate_TAIL         ## download 
-        QSim__simulate_TAIL:CSGOptiX__SimulateMain_TAIL
+        A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_PREL         ## upload genstep
+        A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate kernel
+        A%0.3d_QSim__simulate_POST:A%0.3d_QSim__simulate_TAIL         ## download 
+        A%0.3d_QSim__simulate_TAIL:CSGOptiX__SimulateMain_TAIL
        )" ; 
 
     bool    VERBOSE ;

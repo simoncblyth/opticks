@@ -389,6 +389,8 @@ struct NP
 
 
     static int KeyIndex( const std::vector<std::string>& keys, const char* key ); 
+    static int FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ); 
+
     static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ); 
     static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) ; 
     static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr ); 
@@ -4780,6 +4782,45 @@ inline int NP::KeyIndex( const std::vector<std::string>& keys, const char* key )
     return ikey == int(keys.size()) ? -1 : ikey ; 
 } 
 
+/**
+NP::FormattedKeyIndex
+----------------------
+
+Search for key within a list of keys. When found returns the index, otherwise returns -1. 
+When the key string contains a "%" character it is assumed to be a format 
+string suitable for formatting a single integer index that is tried in the 
+range from idx0 to idx1.  
+
+**/
+
+inline int NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ) // static
+{
+    int k = -1 ; 
+    if( strchr(key,'%') == nullptr ) 
+    {
+        fkey = key ; 
+        k = KeyIndex(keys, key ) ; 
+    }
+    else
+    {
+        const int N = 100 ; 
+        char keybuf[N] ; 
+        for( int idx=idx0 ; idx < idx1 ; idx++)
+        {
+            int n = snprintf(keybuf, N, key, idx ) ;  
+            assert( n < N ); 
+            k = KeyIndex(keys, keybuf ) ; 
+            if( k > -1 ) 
+            {
+                fkey = keybuf ; 
+                break ; 
+            }
+        }
+    }
+    return k ; 
+} 
+
+
 inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ) 
 {
     assert(juncture_ && strlen(juncture_) > 0); 
@@ -4828,6 +4869,10 @@ Newline delimited list of colon separated pairs of tags, optionally with annotat
    CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL    ## annotation here 
    CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL    ## annotation here 
 
+
+HMM : repetitious nature of this suggests needs a "record" struct 
+to avoid redoing things 
+
 **/
 
 inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* ranges_ ) 
@@ -4846,47 +4891,111 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
        << std::endl 
        ; 
 
-    bool dump = false ; 
-    if(dump) ss << "[" << ranges_ << "]" << std::endl ; 
+    // Stamp keys are wildcarded by including strings like %0.3d 
+    // so need to pre-pass looking for keys with a range of indices, 
+    // so effectively are generating simple ranges without wildcard 
+    // based on the keys, wildcards and idx range.  
  
     char delim = ':' ;
-    int64_t ab_total = 0 ; 
-    int wid = 30 ;  
+    std::vector<std::string> specs ; 
 
     for(int i=0 ; i < num_ranges ; i++)
     {
-        const std::string& range = ranges[i] ; 
+        const std::string& range = ranges[i] ;  // 
         size_t pos = range.find(delim); 
         if( pos == std::string::npos ) continue ; 
-        std::string a = range.substr(0, pos);
-        std::string b = range.substr(pos+1);
-        int ia = KeyIndex(keys, a.c_str() ) ; 
-        int ib = KeyIndex(keys, b.c_str() ) ; 
+
+        std::string _a = range.substr(0, pos);
+        std::string _b = range.substr(pos+1);
+        const char* a = _a.c_str();  
+        const char* b = _b.c_str();  
+
+        // idx0 idx1 specifies the range for wildcard replacements
+        int idx1 = 10 ; 
+        for(int idx0=0 ; idx0 < idx1 ; idx0++)
+        {
+            std::string akey ; 
+            std::string bkey ; 
+            int ia = FormattedKeyIndex(akey, keys, a, idx0, idx0+1 ) ; 
+            int ib = FormattedKeyIndex(bkey, keys, b, idx0, idx0+1 ) ; 
+
+            if(!akey.empty() && !bkey.empty() && ia > -1 && ib > -1)
+            {
+                std::stringstream mm ; 
+                mm << akey << ":" << bkey << ":" << anno[i] ; 
+                std::string spec = mm.str(); 
+                if(std::find(specs.begin(), specs.end(), spec) == specs.end())  specs.push_back(spec); 
+            }
+        }
+    }
+
+
+    // Collect start times of the simple stamp ranges
+
+    int num_specs = specs.size(); 
+    std::vector<int64_t> stt(num_specs); 
+
+    for(int i=0 ; i < num_specs ; i++)
+    {
+        const char* spec = specs[i].c_str();  
+        std::vector<std::string> elem ;     
+        U::Split( spec, ':', elem );  
+        assert( elem.size() > 1 ); 
+
+        const char* ak = elem[0].c_str(); 
+        const char* bk = elem[1].c_str(); 
+     
+        int ia = KeyIndex( keys, ak ); 
+        int ib = KeyIndex( keys, bk ); 
+
+        int64_t ta = ia > -1 ? tt[ia] : 0 ; 
+        int64_t tb = ib > -1 ? tt[ib] : 0 ; 
+        assert( ta > 0 && tb > 0 ); 
+
+        stt[i] = ta ;   
+    } 
+ 
+    // Sort indices into ascending start time order 
+
+    std::vector<int> ii(num_specs); 
+    std::iota(ii.begin(), ii.end(), 0); 
+    auto order = [&stt](const size_t& a, const size_t &b) { return stt[a] < stt[b];}  ; 
+    std::sort(ii.begin(), ii.end(), order );  
+
+
+    // present the ranges in order of start time 
+
+    int64_t ab_total = 0 ; 
+    int wid = 30 ;  
+
+    for(int j=0 ; j < num_specs ; j++)
+    {
+        int i = ii[j]; 
+        const char* spec = specs[i].c_str();  
+        std::vector<std::string> elem ;     
+        U::Split( spec, ':', elem );  
+        assert( elem.size() > 1 ); 
+
+        const char* ak = elem[0].c_str(); 
+        const char* bk = elem[1].c_str(); 
+        const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
+     
+        int ia = KeyIndex( keys, ak ); 
+        int ib = KeyIndex( keys, bk ); 
+
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
         int64_t ab = tb - ta ; 
         ab_total += ab ; 
 
-        if(dump) ss 
-            << "[" 
-            << a << ";" << ia << ";" << ta 
-            << "] ==> ["  
-            << b << ";" << ib << ";" << tb 
-            << "]" 
-            <<  ab 
-            << std::endl
-            ; 
-
         ss 
-            << " " << std::setw(wid) << a 
+            << " " << std::setw(wid) << ak 
             << " ==> "
-            << " " << std::setw(wid) << b
+            << " " << std::setw(wid) << bk
             << "      " << std::setw(16) << std::right << ab 
-            << ( anno[i].empty() ? "" : "    ## " ) << anno[i] 
+            << ( no == nullptr ? "" : "    ## " ) << ( no ? no : "" ) 
             << std::endl
             ;  
-
-        
     }
 
     ss 
