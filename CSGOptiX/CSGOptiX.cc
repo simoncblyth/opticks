@@ -174,6 +174,7 @@ void CSGOptiX::SimulateMain() // static
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i); 
+    SProf::UnsetTag(); 
     SProf::Add("CSGOptiX__SimulateMain_TAIL"); 
     SProf::Write("run_meta.txt", true ); // append:true 
 }
@@ -534,6 +535,7 @@ CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 **/
 double CSGOptiX::simulate(int eventID)
 {
+    SProf::SetTag(eventID, "A%0.3d_" ) ; 
     assert(sim); 
     double dt = sim->simulate(eventID) ; // (QSim)
     return dt ; 

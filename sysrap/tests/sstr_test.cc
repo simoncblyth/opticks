@@ -297,7 +297,54 @@ void test_ParseIntSpecList_demo()
 }
 
 
- 
+
+
+void test_snprintf()
+{
+    char buf[10];
+    for(int i=0 ; i < 1010 ; i++)
+    {
+        int n = snprintf(buf, 10, "%0.3d", i) ; 
+        std::cout << buf << ":" << n << std::endl ; 
+    }
+} 
+
+
+
+struct Prof
+{
+    static constexpr const char* FMT = "%0.3d" ; 
+    static constexpr const int N = 10 ; 
+    static char TAG[N] ; 
+    static int SetTag(int idx, const char* fmt=FMT ); 
+    static void UnsetTag(); 
+};
+
+char Prof::TAG[N] = {} ; 
+
+inline int Prof::SetTag(int idx, const char* fmt)
+{
+    return snprintf(TAG, N, fmt, idx ); 
+}
+inline void Prof::UnsetTag()
+{
+    TAG[0] = '\0' ; 
+}
+
+void test_TAG()
+{
+    std::cout << __FUNCTION__ << std::endl; 
+    std::cout << "[" << Prof::TAG << "]" << std::endl ; 
+    for(int i=0 ; i < 100 ; i++) 
+    {
+        Prof::SetTag(i,"A%0.3d"); 
+        if( i % 10 == 0 ) Prof::UnsetTag(); 
+        std::cout << "[" << Prof::TAG << "]" << std::endl ; 
+    }
+    
+
+}
+
 
 
 
@@ -312,10 +359,11 @@ int main(int argc, char** argv)
     test_empty(); 
     test_ParseIntSpecList<int64_t>() ; 
     test_ParseIntSpecList<int>() ; 
-    */
-
     test_ParseIntSpecList_demo<int>() ; 
-
+    test_snprintf(); 
+    */
+    test_TAG(); 
+   
 
     return 0 ; 
 } 

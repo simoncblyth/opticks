@@ -8,6 +8,14 @@
 
 struct SYSRAP_API SProf
 {
+    static constexpr const char* FMT = "%0.3d" ; 
+    static constexpr const int N = 10 ; 
+    static char TAG[N] ; 
+    static int  SetTag(int idx, const char* fmt=FMT ); 
+    static bool HasTag(); 
+    static const char* Tag(); 
+    static void UnsetTag(); 
+
     static std::vector<sprof>       PROF ; 
     static std::vector<std::string> NAME ; 
 
@@ -22,6 +30,30 @@ struct SYSRAP_API SProf
     static void Read( const char* path ); 
 };
 
+
+
+
+inline int SProf::SetTag(int idx, const char* fmt)
+{
+    return snprintf(TAG, N, fmt, idx ); 
+}
+inline bool SProf::HasTag()
+{   
+    return TAG[0] != '\0' ; 
+}
+inline const char* SProf::Tag()
+{
+    return TAG[0] == '\0' ? nullptr : TAG ; 
+}
+inline void SProf::UnsetTag()
+{
+    TAG[0] = '\0' ; 
+}
+
+
+
+
+
 inline void SProf::Add(const char* name)
 { 
     sprof prof ; 
@@ -29,8 +61,11 @@ inline void SProf::Add(const char* name)
     Add(name, prof); 
 }
 
-inline void SProf::Add( const char* name, const sprof& prof)
+inline void SProf::Add( const char* _name, const sprof& prof)
 {
+    std::stringstream ss ; 
+    ss << ( HasTag() ? TAG : "" ) << _name ;   
+    std::string name = ss.str(); 
     NAME.push_back(name); 
     PROF.push_back(prof); 
 }

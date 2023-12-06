@@ -1,4 +1,7 @@
 #include "SProf.hh"
+
+char SProf::TAG[N] = {} ; 
+
 std::vector<sprof>       SProf::PROF = {} ; 
 std::vector<std::string> SProf::NAME = {} ; 
 
