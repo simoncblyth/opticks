@@ -24,8 +24,8 @@ OptixDeviceContext Ctx::context = nullptr ;
 
 void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */)  // static 
 {
-    LOG(info)
-        << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: " << message ;
+    LOG(LEVEL)
+        << "[" << std::setw(2) << level << "][" << std::setw( 12 ) << tag << "]: " << message ;
 }
 
 Ctx::Ctx()

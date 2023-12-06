@@ -154,7 +154,7 @@ static __forceinline__ __device__ void trace(
 #endif
 }
 
-#ifndef PRODUCTION
+#if !defined(PRODUCTION) && defined(WITH_RENDER)
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
 {
@@ -167,6 +167,8 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
             255u
             );
 }
+
+
 
 /**
 render : non-pure, uses params for viewpoint inputs and pixels output 
@@ -215,6 +217,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 }
 #endif
  
+
+#if defined(WITH_SIMULATE)
+
 /**
 simulate : uses params for input: gensteps, seeds and output photons 
 ----------------------------------------------------------------------
@@ -293,7 +298,11 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     evt->photon[idx] = ctx.p ;
 }
 
-#ifndef PRODUCTION
+#endif
+
+
+#if !defined(PRODUCTION) && defined(WITH_SIMTRACE)
+
 /**
 simtrace
 ----------
@@ -317,6 +326,7 @@ if( index > 0 )
     params.fphoton[index] = p ; 
 }
 **/
+
 
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
@@ -366,9 +376,15 @@ extern "C" __global__ void __raygen__rg()
 #ifndef PRODUCTION
     switch( params.raygenmode )
     {
+#ifdef WITH_RENDER
         case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;  
+#endif
+#ifdef WITH_SIMTRACE
         case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
+#endif
+#ifdef WITH_SIMULATE
         case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
+#endif
     }
 #else
     simulate( idx, dim, &prd ) ;

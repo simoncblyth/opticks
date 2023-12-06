@@ -103,6 +103,10 @@ target_compile_definitions( ${name} PUBLIC WITH_SGLM )  # needs to be PUBLIC as 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 
+target_compile_definitions( ${name} PUBLIC WITH_SIMULATE )
+#target_compile_definitions( ${name} PUBLIC WITH_SIMTRACE )
+#target_compile_definitions( ${name} PUBLIC WITH_RENDER )
+
 #[=[
 
 WITH_THRUST compile definition

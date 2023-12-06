@@ -3,6 +3,9 @@
 Ctx : instanciation creates OptiX 7 optixDeviceContext and populates Properties  
 ==================================================================================
 
+Instanciated by CSGOptiX::initCtx dump properties using: CSGOptiX=INFO
+
+
 **/
 
 #include <optix.h>
@@ -17,7 +20,6 @@ struct Ctx
     static OptixDeviceContext context ;
     static void log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */); 
 
-    //int device ; 
     Properties* props  ; 
     Ctx(); 
 

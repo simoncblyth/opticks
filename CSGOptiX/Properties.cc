@@ -69,8 +69,8 @@ std::string Properties::desc() const
         << std::endl 
         ;  
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

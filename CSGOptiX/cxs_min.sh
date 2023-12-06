@@ -64,23 +64,25 @@ knobs()
    #exceptionFlags=STACK_OVERFLOW   
    exceptionFlags=NONE
 
-   debugLevel=DEFAULT
-   #debugLevel=NONE
+   #debugLevel=DEFAULT
+   debugLevel=NONE
    #debugLevel=FULL
 
-   optLevel=DEFAULT
+   #optLevel=DEFAULT
    #optLevel=LEVEL_0
-   #optLevel=LEVEL_3
+   optLevel=LEVEL_3
 
 
    export PIP__CreatePipelineOptions_exceptionFlags=$exceptionFlags # NONE/STACK_OVERFLOW/TRACE_DEPTH/USER/DEBUG
    export PIP__CreateModule_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   (DEFAULT is MINIMAL)
    export PIP__linkPipeline_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   
    export PIP__CreateModule_optLevel=$optLevel      # DEFAULT/LEVEL_0/LEVEL_1/LEVEL_2/LEVEL_3  
-   export Ctx=INFO
-   export PIP=INFO
+
+   #export Ctx=INFO
+   #export PIP=INFO
+   #export CSGOptiX=INFO
 }
-[ -n "$KNOBS" ] && knobs
+knobs
 
 
 version=1
