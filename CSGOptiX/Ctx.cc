@@ -24,7 +24,7 @@ OptixDeviceContext Ctx::context = nullptr ;
 
 void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */)  // static 
 {
-    LOG(LEVEL)
+    LOG(info)
         << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: " << message ;
 }
 
@@ -40,6 +40,8 @@ Ctx::Ctx()
     OptixDeviceContextOptions options = {};
     options.logCallbackFunction       = &Ctx::log_cb;
     options.logCallbackLevel          = 4;
+    //options.validationMode = OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL ; 
+
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
     props = new Properties ;   // instanciation gets the properties

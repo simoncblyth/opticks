@@ -62,12 +62,14 @@ struct PIP
 
     static OptixExceptionFlags           ExceptionFlags_(const char* opt) ; 
     static unsigned                      ExceptionFlags(const char* options); 
+    static std::string                   Desc_ExceptionFlags( unsigned flags ); 
+
     static const char*                   ExceptionFlags__(OptixExceptionFlags excFlag) ; 
-    static const char* OPTIX_EXCEPTION_FLAG_NONE_ ;
-    static const char* OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ ;
-    static const char* OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ ;
-    static const char* OPTIX_EXCEPTION_FLAG_USER_ ;
-    static const char* OPTIX_EXCEPTION_FLAG_DEBUG_ ;
+    static constexpr const char* OPTIX_EXCEPTION_FLAG_NONE_           = "OPTIX_EXCEPTION_FLAG_NONE" ; 
+    static constexpr const char* OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ = "OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW" ; 
+    static constexpr const char* OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_    = "OPTIX_EXCEPTION_FLAG_TRACE_DEPTH" ; 
+    static constexpr const char* OPTIX_EXCEPTION_FLAG_USER_           = "OPTIX_EXCEPTION_FLAG_USER_" ; 
+    static constexpr const char* OPTIX_EXCEPTION_FLAG_DEBUG_          = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
 
 
     static const char*                 CreatePipelineOptions_exceptionFlags ; 
@@ -76,7 +78,14 @@ struct PIP
 
     static const char* CreateModule_debugLevel ; 
     static const char* CreateModule_optLevel ; 
+
+    static std::string Desc(); 
+    static std::string Desc_ModuleCompileOptions(const OptixModuleCompileOptions& module_compile_options ); 
+    static std::string Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options ); 
+
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
+
+
 
     PIP(const char* ptx_path_, const Properties* properties_ ); 
     const char* desc() const ; 
@@ -86,10 +95,11 @@ struct PIP
     void createMissPG(const char* ms);
     void createHitgroupPG(const char* is, const char* ch, const char* ah );
 
+
     static const char* linkPipeline_debugLevel ; 
+    std::string Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options ); 
     void linkPipeline(unsigned max_trace_depth);
     void configureStack(); 
-
 }; 
 
 

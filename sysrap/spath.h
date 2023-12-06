@@ -78,6 +78,8 @@ public:
 
     static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
+    static bool Read( std::string& str , const char* path ); 
+
 };
 
 
@@ -626,5 +628,20 @@ inline const char* spath::SearchDirUpTreeWithFile( const char* startdir, const c
         *last = '\0' ;  // move the null termination inwards from right, going up directory by directory 
     }
     return ( dir && strlen(dir) > 1 ) ? strdup(dir) : nullptr ; 
+}
+
+
+inline bool spath::Read( std::string& str , const char* path_ )  // static
+{
+    const char* path = Resolve(path_); 
+    std::ifstream fp(path);
+    if( fp.good() )
+    {   
+        std::stringstream content ;
+        content << fp.rdbuf();
+        str = content.str();
+        return true;
+    }   
+    return false;
 }
 

@@ -11,8 +11,10 @@
 
 #include <cuda_runtime.h>
 #include "scuda.h"    // roundUp
-#include "SStr.hh"
-#include "SSys.hh"
+#include "sstr.h"
+#include "ssys.h"
+#include "spath.h"
+
 #include "OPTIX_CHECK.h"
 
 #include "Ctx.h"
@@ -24,18 +26,6 @@
 const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG"); 
 
 
-static bool readFile( std::string& str, const char* path )
-{
-    std::ifstream fp(path);
-    if( fp.good() )
-    {   
-        std::stringstream content ;
-        content << fp.rdbuf();
-        str = content.str();
-        return true;
-    }   
-    return false;
-}
 
 
 bool PIP::OptiXVersionIsSupported()  // static
@@ -46,6 +36,25 @@ bool PIP::OptiXVersionIsSupported()  // static
 #endif
     return ok ; 
 }
+
+/**
+PIP::DebugLevel
+-----------------
+
+https://forums.developer.nvidia.com/t/gpu-program-optimization-questions/195238/2
+
+droettger, Nov 2021::
+
+    The new OPTIX_COMPILE_DEBUG_LEVEL_MODERATE is documented to have an impact on
+    performance.  You should use OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL which keeps only
+    the line information for profiling and OPTIX_COMPILE_DEBUG_LEVEL_NONE to remove
+    even that.  Never profile compute kernels build as debug! That will completely
+    change the code structure and does not represent the fully optimized code.
+
+
+See optix7-;optix7-types
+
+**/
 
 
 OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
@@ -177,16 +186,11 @@ const char* PIP::ExceptionFlags__(OptixExceptionFlags excFlag)
     }
     return s ; 
 }
-const char* PIP::OPTIX_EXCEPTION_FLAG_NONE_ = "OPTIX_EXCEPTION_FLAG_NONE" ; 
-const char* PIP::OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ = "OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW" ; 
-const char* PIP::OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ = "OPTIX_EXCEPTION_FLAG_TRACE_DEPTH" ; 
-const char* PIP::OPTIX_EXCEPTION_FLAG_USER_ = "OPTIX_EXCEPTION_FLAG_USER_" ; 
-const char* PIP::OPTIX_EXCEPTION_FLAG_DEBUG_ = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
 
 unsigned PIP::ExceptionFlags(const char* options)
 {
     std::vector<std::string> opts ; 
-    SStr::Split( options, '|', opts );  
+    sstr::Split( options, '|', opts );  
 
     unsigned exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE ; 
     for(unsigned i=0 ; i < opts.size() ; i++)
@@ -198,8 +202,22 @@ unsigned PIP::ExceptionFlags(const char* options)
     return exceptionFlags ;  
 }
 
+std::string PIP::Desc_ExceptionFlags( unsigned flags )
+{
+    std::stringstream ss ; 
+    if( flags & OPTIX_EXCEPTION_FLAG_NONE )           ss << OPTIX_EXCEPTION_FLAG_NONE_ << " " ; 
+    if( flags & OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ) ss << OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ << " " ; 
+    if( flags & OPTIX_EXCEPTION_FLAG_TRACE_DEPTH )    ss << OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ << " " ; 
+    if( flags & OPTIX_EXCEPTION_FLAG_USER )           ss << OPTIX_EXCEPTION_FLAG_USER_ << " " ; 
+    if( flags & OPTIX_EXCEPTION_FLAG_DEBUG )          ss << OPTIX_EXCEPTION_FLAG_DEBUG_ << " " ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
-const char* PIP::CreatePipelineOptions_exceptionFlags  = SSys::getenvvar("PIP_CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
+
+
+
+const char* PIP::CreatePipelineOptions_exceptionFlags  = ssys::getenvvar("PIP__CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
 
 OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
@@ -216,6 +234,27 @@ OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues
 
     return pipeline_compile_options ;  
 }
+
+std::string PIP::Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options )
+{
+    std::stringstream ss ; 
+    ss 
+       << "[PIP::Desc_PipelineCompileOptions" << std::endl 
+       << " pipeline_compile_options.numPayloadValues   " << pipeline_compile_options.numPayloadValues  << std::endl 
+       << " pipeline_compile_options.numAttributeValues " << pipeline_compile_options.numAttributeValues << std::endl
+       << " pipeline_compile_options.exceptionFlags     " << pipeline_compile_options.exceptionFlags  
+       << Desc_ExceptionFlags( pipeline_compile_options.exceptionFlags )
+       << std::endl 
+       << "]PIP::Desc_PipelineCompileOptions" << std::endl 
+       ;
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+
+
+
 
 OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 {
@@ -243,7 +282,7 @@ const char* PIP::desc() const
    return strdup(s.c_str()); 
 }
 
-const int PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
+const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
 
 /**
 PIP::PIP
@@ -301,32 +340,75 @@ PTX from file is read and compiled into the module
 
 **/
 
-const char* PIP::CreateModule_optLevel   = SSys::getenvvar("PIP_CreateModule_optLevel", "DEFAULT" ) ; 
-const char* PIP::CreateModule_debugLevel = SSys::getenvvar("PIP_CreateModule_debugLevel", "DEFAULT" ) ; 
+const char* PIP::CreateModule_optLevel   = ssys::getenvvar("PIP__CreateModule_optLevel", "DEFAULT" ) ; 
+const char* PIP::CreateModule_debugLevel = ssys::getenvvar("PIP__CreateModule_debugLevel", "DEFAULT" ) ; 
+
+std::string PIP::Desc()
+{
+    std::stringstream ss ; 
+    ss 
+       << "[PIP::Desc" << std::endl 
+       << " PIP__CreateModule_optLevel    " << CreateModule_optLevel << std::endl 
+       << " PIP__CreateModule_debugLevel  " << CreateModule_debugLevel << std::endl 
+       << "]PIP::Desc" << std::endl 
+       ;
+
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+std::string PIP::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& module_compile_options )
+{
+    std::stringstream ss ; 
+    ss 
+       << "[PIP::Desc_ModuleCompileOptions" << std::endl 
+       << " module_compile_options.maxRegisterCount " << module_compile_options.maxRegisterCount  
+       << " OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT " << OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT
+       << std::endl 
+       << " module_compile_options.optLevel         " << module_compile_options.optLevel  
+       << " " << OptimizationLevel_( module_compile_options.optLevel )
+       << std::endl 
+       << " module_compile_options.debugLevel       " << module_compile_options.debugLevel  
+       << " " << DebugLevel_( module_compile_options.debugLevel )
+       << std::endl 
+       << "]PIP::Desc_ModuleCompileOptions" 
+       << std::endl 
+       ;
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+
 
 OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
 {
     std::string ptx ; 
-    readFile(ptx, ptx_path ); 
-
-    int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ; 
-    OptixCompileOptimizationLevel optLevel = OptimizationLevel(CreateModule_optLevel) ; 
-    OptixCompileDebugLevel  debugLevel = DebugLevel(CreateModule_debugLevel) ; 
+    bool ptx_ok = spath::Read(ptx, ptx_path ); 
 
     LOG(LEVEL)
         << " ptx_path " << ptx_path << std::endl 
-        << " ptx size " << ptx.size() << std::endl 
-        << " maxRegisterCount " << maxRegisterCount << std::endl 
-        << " optLevel " << OptimizationLevel_(optLevel) << std::endl 
-        << " debugLevel " << DebugLevel_(debugLevel) << std::endl 
-        ;
+        << " ptx.size " << ptx.size() << std::endl 
+        << " ptx_pl " << ( ptx_ok ? "YES" : "NO " ) << std::endl 
+        ; 
+    assert(ptx_ok); 
 
+    int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ; 
+    OptixCompileOptimizationLevel optLevel = OptimizationLevel(CreateModule_optLevel) ; 
+    OptixCompileDebugLevel      debugLevel = DebugLevel(CreateModule_debugLevel) ; 
 
     OptixModule module = nullptr ;
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount     = maxRegisterCount ;
     module_compile_options.optLevel             = optLevel ; 
     module_compile_options.debugLevel           = debugLevel ;
+
+    LOG(LEVEL) 
+        << Desc()
+        << Desc_ModuleCompileOptions( module_compile_options ) 
+        ; 
+
 
     size_t sizeof_log = 0 ; 
     char log[2048]; // For error reporting from OptiX creation functions
@@ -484,7 +566,26 @@ Create pipeline from the program_groups
 **/
 
 
-const char* PIP::linkPipeline_debugLevel = SSys::getenvvar("PIP_linkPipeline_debugLevel", "DEFAULT" ) ; 
+const char* PIP::linkPipeline_debugLevel = ssys::getenvvar("PIP__linkPipeline_debugLevel", "DEFAULT" ) ; 
+
+
+std::string PIP::Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options )
+{
+    std::stringstream ss ; 
+    ss 
+       << "[PIP::Desc_PipelineLinkOptions" << std::endl 
+       << " pipeline_link_options.maxTraceDepth " << pipeline_link_options.maxTraceDepth << std::endl 
+       << " pipeline_link_options.debugLevel    " << pipeline_link_options.debugLevel 
+       << " " << DebugLevel_(pipeline_link_options.debugLevel ) 
+       << std::endl
+       << " PIP__linkPipeline_debugLevel " << linkPipeline_debugLevel 
+       << std::endl
+       << "]PIP::Desc_PipelineLinkOptions" << std::endl 
+       ;
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
 
 void PIP::linkPipeline(unsigned max_trace_depth)
 {
@@ -498,7 +599,8 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 #elif OPTIX_VERSION == 70500
 #endif
 
-    pipeline_link_options.debugLevel             = DebugLevel(linkPipeline_debugLevel) ;
+    OptixCompileDebugLevel debugLevel = DebugLevel(linkPipeline_debugLevel)  ; 
+    pipeline_link_options.debugLevel = debugLevel;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -517,12 +619,6 @@ void PIP::linkPipeline(unsigned max_trace_depth)
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
 }
-
-
-
-   
-
-
 
 
 

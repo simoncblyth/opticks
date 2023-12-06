@@ -52,6 +52,19 @@ export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 
+
+knobs()
+{
+   type $FUNCNAME 
+   export PIP__CreateModule_debugLevel=NONE  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   (DEFAULT is MINIMAL)
+   export PIP__linkPipeline_debugLevel=NONE  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   
+   export PIP__CreateModule_optLevel=NONE    # DEFAULT/LEVEL_0/LEVEL_1/LEVEL_2/LEVEL_3  
+   export Ctx=INFO
+   export PIP=INFO
+}
+[ -n "$KNOBS" ] && knobs
+
+
 version=1
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
