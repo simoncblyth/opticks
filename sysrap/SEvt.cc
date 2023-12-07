@@ -4396,7 +4396,7 @@ NP* SEvt::CountNibbles_Table( const NP* seqnib ) // static
     const int* nn = seqnib->cvalues<int>() ; 
 
     int ni =  sseq::SLOTS + 1 ; 
-    NP* seqnib_table = NP::Make<int>(ni) ; 
+    NP* seqnib_table = NP::Make<int>(ni, 1) ; 
     int* cc = seqnib_table->values<int>() ; 
     for(int i=0 ; i < num_seqnib ; i++)
     {

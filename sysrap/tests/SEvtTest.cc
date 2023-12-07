@@ -281,7 +281,7 @@ void SEvtTest::hostside_running_resize_()
 void SEvtTest::CountNibbles()
 {
     const char* path = spath::Resolve("$SEQPATH"); 
-    NP* seq = path ? NP::Load(path) : nullptr ;
+    NP* seq = path ? NP::LoadIfExists(path) : nullptr ;
     if(seq == nullptr) return ; 
 
     NP* seqnib = SEvt::CountNibbles(seq); 

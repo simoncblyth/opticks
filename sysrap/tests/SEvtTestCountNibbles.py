@@ -9,7 +9,7 @@ if __name__ == '__main__':
    
     tab0 = f.seqnib_table
     u_seqnib, n_seqnib = np.unique( f.seqnib, return_counts=True )
-    print(np.c_[u_seqnib, n_seqnib])
+    print(np.c_[u_seqnib, n_seqnib  ])
 
-    assert np.all( tab0[2:] == n_seqnib  )  
+    assert np.all( tab0[2:] == n_seqnib[:,np.newaxis]  )  
 
