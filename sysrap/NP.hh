@@ -202,8 +202,12 @@ struct NP
     std::string descSize() const ; 
 
 
+
     template<typename T>
     std::string descTable(int wid=7) const ; 
+
+    template<typename T>
+    T findMinimumTimestamp() const ; 
 
     template<typename T>
     std::string descTable_(
@@ -1774,8 +1778,6 @@ inline std::string NP::descSize() const
 NP::descTable
 ----------------
 
-TODO: column totals 
-
 **/
 
 template<typename T>
@@ -1784,6 +1786,33 @@ inline std::string NP::descTable(int wid) const
     return descTable_<T>(wid, labels, &names ); 
 }
 
+
+
+template<typename T>
+inline T NP::findMinimumTimestamp() const 
+{
+    const T* vv = cvalues<T>() ; 
+
+    T MAX = std::numeric_limits<T>::max(); 
+    T t0 = MAX ; 
+
+    int nv = num_values() ; 
+    for(int i=0 ; i < nv ; i++)
+    {
+        T t = vv[i] ;
+        if(!U::LooksLikeTimestamp<T>(t)) continue ; 
+        if( t < t0 ) t0 = t ;          
+    }
+    return t0 == MAX ? 0 : t0 ; 
+}
+
+
+/**
+NP::descTable_
+-----------------
+
+**/
+
 template<typename T>
 inline std::string NP::descTable_(int wid, 
     const std::vector<std::string>* column_labels, 
@@ -1791,6 +1820,8 @@ inline std::string NP::descTable_(int wid,
   ) const 
 {
     bool with_column_totals = true ; 
+
+
 
     std::stringstream ss ; 
     ss << "NP::descTable_ " << sstr() << std::endl ; 
@@ -1807,9 +1838,11 @@ inline std::string NP::descTable_(int wid,
 
     if(!skip)
     {
+        const T* vv = cvalues<T>() ; 
+        T t0 = findMinimumTimestamp<T>() ; 
+
         int ni = shape[0] ; 
         int nj = shape[1] ; 
-        const T* vv = cvalues<T>() ; 
         int cwid = wid ; 
         int rwid = 2*wid ; 
         
@@ -1830,6 +1863,7 @@ inline std::string NP::descTable_(int wid,
             ;  
 
         std::vector<T> column_totals(nj,0); 
+        int num_timestamp = 0 ; 
 
         for(int i=0 ; i < ni ; i++) 
         {
@@ -1837,14 +1871,20 @@ inline std::string NP::descTable_(int wid,
             for(int j=0 ; j < nj ; j++) 
             {
                 T v = vv[i*nj+j] ;
-                column_totals[j] += v ;  
+                bool timestamp = U::LooksLikeTimestamp<T>(v) ;
+                if(timestamp) num_timestamp += 1 ; 
+                T pv = timestamp ? v - t0 : v  ; 
+
+                column_totals[j] += pv ;  
                 ss
                     << std::setw(cwid) 
-                    << v 
+                    << pv 
                     << ( j < nj -1 ? " " : "\n" ) 
                     ; 
             }
         }
+
+        ss << "num_timestamp " << num_timestamp << " auto-offset from t0 " << t0 << std::endl ; 
 
         if(with_column_totals)
         {

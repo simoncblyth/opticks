@@ -67,6 +67,9 @@ struct sreport
     NP*       ranges ;
     NPFold*   substamp ;   
     NPFold*   subprofile ;   
+    NPFold*   submeta ;   
+    NPFold*   submeta_NumPhotonCollected ;   
+    NPFold*   subcount ;   
 
     sreport();  
 
@@ -81,6 +84,8 @@ struct sreport
     std::string desc_ranges() const ;
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
+    std::string desc_submeta() const ;
+    std::string desc_subcount() const ;
 };
 
 inline sreport::sreport()
@@ -90,7 +95,10 @@ inline sreport::sreport()
     runprof( nullptr ),
     ranges( nullptr ),
     substamp( nullptr),
-    subprofile( nullptr )
+    subprofile( nullptr ),
+    submeta( nullptr ),
+    submeta_NumPhotonCollected( nullptr ),
+    subcount( nullptr )
 {
 }
 inline NPFold* sreport::serialize() const 
@@ -101,6 +109,9 @@ inline NPFold* sreport::serialize() const
     smry->add("ranges", ranges ) ; 
     smry->add_subfold("substamp", substamp ) ; 
     smry->add_subfold("subprofile", subprofile ) ; 
+    smry->add_subfold("submeta", submeta ) ; 
+    smry->add_subfold("submeta_NumPhotonCollected", submeta_NumPhotonCollected ) ; 
+    smry->add_subfold("subcount", subcount ) ; 
     return smry ; 
 }
 inline void sreport::import(const NPFold* smry) 
@@ -110,6 +121,9 @@ inline void sreport::import(const NPFold* smry)
     ranges = smry->get("ranges")->copy() ; 
     substamp = smry->get_subfold("substamp"); 
     subprofile = smry->get_subfold("subprofile"); 
+    submeta = smry->get_subfold("submeta"); 
+    submeta_NumPhotonCollected = smry->get_subfold("submeta_NumPhotonCollected"); 
+    subcount = smry->get_subfold("subcount"); 
 }
 inline void sreport::save(const char* dir) const 
 {
@@ -132,6 +146,8 @@ inline std::string sreport::desc() const
        << desc_runprof() 
        << desc_ranges() 
        << desc_substamp()
+       << desc_submeta()
+       << desc_subcount()
        << "]sreport.desc" << std::endl 
        ; 
     std::string str = ss.str() ;
@@ -227,6 +243,33 @@ inline std::string sreport::desc_subprofile() const
 }
 
 
+inline std::string sreport::desc_submeta() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_submeta" << std::endl 
+       << ( submeta ? submeta->desc() : "-" )
+       << "]sreport.desc_submeta" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+inline std::string sreport::desc_subcount() const
+{
+    std::stringstream ss ; 
+    ss << "[sreport.desc_subcount" << std::endl 
+       << ( subcount ? subcount->desc() : "-" )
+       << "]sreport.desc_subcount" << std::endl 
+       ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
+
+
+
+
+
+
 
 struct sreport_Creator
 { 
@@ -270,6 +313,9 @@ inline void sreport_Creator::init()
     report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
+    report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ; 
+    report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ; 
+    report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ; 
 }
 
 inline std::string sreport_Creator::desc() const

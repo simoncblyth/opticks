@@ -540,6 +540,9 @@ struct U
 
     static uint64_t Now(); 
     static bool LooksLikeStampInt(   const char* str); 
+    template<typename T>
+    static bool LooksLikeTimestamp( T value ); 
+
     static bool LooksLikeProfileTriplet(const char* str); 
 
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T."); 
@@ -1663,6 +1666,14 @@ inline bool U::LooksLikeStampInt(const char* str) // static
     for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;
     return length == 16 && digits == length  ;
 }
+
+
+template<typename T>
+inline bool U::LooksLikeTimestamp( T value )
+{
+    return sizeof(T) == 8 && value > 1700000000000000 ; 
+}
+
 
 /**
 U::LooksLikeProfileTriplet
