@@ -363,10 +363,13 @@ double QSim::simulate(int eventID)
 
     SProf::Add("QSim__simulate_POST"); 
 
+    int num_ph = event->getNumPhoton() 
+
     LOG(info) 
         << " eventID " << eventID 
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
-        << " ph " << std::setw(10) << event->getNumPhoton() 
+        << " ph " << std::setw(10) << num_ph 
+        << " ph/M " << std::setw(10) << num_ph/M 
         ; 
 
     sev->t_Launch = dt ; 

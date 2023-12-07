@@ -4992,7 +4992,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* b = _b.c_str();  
 
         // idx0 idx1 specifies the range for wildcard replacements
-        int idx1 = 10 ; 
+        int idx1 = 30 ; 
         for(int idx0=0 ; idx0 < idx1 ; idx0++)
         {
             std::string akey ; 

@@ -55,6 +55,7 @@ struct SCSGOptiX ;
 
 struct QUDARAP_API QSim
 {
+    static constexpr const int M = 1000000 ;  
     static const plog::Severity LEVEL ; 
     static const char* PREFIX ; 
     static QSim* INSTANCE ; 
