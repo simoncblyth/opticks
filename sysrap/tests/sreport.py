@@ -455,6 +455,48 @@ class Substamp_ONE_maxb_scan(object):
         self.ax = ax
 
 
+
+class Ranges_SPAN(object):
+    """
+    PLOT=Ranges_SPAN ~/o/sreport.sh 
+    """
+    def __init__(self, fold, symbol="fold"):
+
+        NPC = fold.submeta_NumPhotonCollected.a[:,0]
+        title = "Ranges_SPAN : Total Process Time Accounting : ~20 evt from 0.1 M to 100M photons"
+        print(title)
+
+        print("NPC:%s" % str(NPC))
+
+        t0 = fold.ranges[0,0]
+        ax = None
+        if MODE == 2:
+            fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
+            ax = axs[0]
+            names = ["init", "load_geom", "upload_geom", "simulate", "download", "upload_genstep" ]
+            COLORS = ["yellow", "magenta", "cyan",  "red", "green", "blue" ]
+
+            for i, name in enumerate(names):
+                color = COLORS[i%len(COLORS)]
+                ww = np.where( np.char.endswith( fold.ranges_names, name ))[0]  
+                if i > 3:
+                    assert len(ww) == len(NPC)
+                pass
+                for j, w in enumerate(ww): 
+                    rg = (fold.ranges[w] - t0)/1e6 
+                    ax.axvspan(rg[0], rg[1], alpha=0.5, color=color, label=name if j==0 else None )
+                pass
+            pass
+            ax.legend(loc="center right")
+            #ax.set_yscale('log')
+            ax.set_xlabel("cxr_min.sh (CSGOptiXSMTest) Process Run Time[s]", fontsize=20 ); 
+            fig.show()
+        pass  
+        self.ax = ax
+
+
+
+
 class Ranges_ONE(object):
     """
     PLOT=Ranges_ONE ~/o/sreport.sh 
@@ -507,7 +549,7 @@ if __name__ == '__main__':
             f = getattr(fold.substamp, e.lower(), None)
             symbol = "fold.substamp.%s" % e.lower() 
             p_symbol = "fold.submeta_NumPhotonCollected.%s[:,0]" % e.lower() 
-
+            pass
             if f is None: continue 
             # changes args from f to fold 
             if PLOT.startswith("Substamp_ONE_Delta"): Substamp_ONE_Delta(fold, symbol=symbol )
@@ -517,6 +559,8 @@ if __name__ == '__main__':
     pass  
     if PLOT.startswith("Ranges_ONE") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
         Ranges_ONE(fold, symbol="fold")
+    if PLOT.startswith("Ranges_SPAN") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
+        Ranges_SPAN(fold, symbol="fold")
     pass
     if PLOT.startswith("Substamp_ALL") and hasattr(fold, "substamp"):
         if PLOT.startswith("Substamp_ALL_Etime_vs_Photon"): Substamp_ALL_Etime_vs_Photon(  fold, symbol="fold.substamp" )

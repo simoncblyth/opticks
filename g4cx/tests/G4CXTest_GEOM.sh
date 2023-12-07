@@ -50,12 +50,6 @@ source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for findi
 [ -n "$CVD" ] && export CUDA_VISIBLE_DEVICES=$CVD
 
 
-## OPTICKS_INTEGRATION_MODE configures GPU and/or CPU optical simulation
-#oim=1  # GPU only 
-#oim=2  # CPU only 
-oim=3   # GPU and CPU 
-export OPTICKS_INTEGRATION_MODE=${OIM:-$oim} 
-
 
 version=3
 VERSION=${VERSION:-$version}
@@ -77,6 +71,40 @@ cd $LOGBASE            ## logfile written in invoking directory
 export G4CXApp__SensDet=PMTSDMgr             ## used for post GDML SensDet hookup
 
 
+
+knobs()
+{
+   type $FUNCNAME 
+
+   local exceptionFlags
+   local debugLevel
+   local optLevel
+
+   #exceptionFlags=STACK_OVERFLOW   
+   exceptionFlags=NONE
+
+   #debugLevel=DEFAULT
+   debugLevel=NONE
+   #debugLevel=FULL
+
+   #optLevel=DEFAULT
+   #optLevel=LEVEL_0
+   optLevel=LEVEL_3
+
+ 
+   #export PIP__max_trace_depth=1
+   export PIP__CreatePipelineOptions_exceptionFlags=$exceptionFlags # NONE/STACK_OVERFLOW/TRACE_DEPTH/USER/DEBUG
+   export PIP__CreateModule_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   (DEFAULT is MINIMAL)
+   export PIP__linkPipeline_debugLevel=$debugLevel  # DEFAULT/NONE/MINIMAL/MODERATE/FULL   
+   export PIP__CreateModule_optLevel=$optLevel      # DEFAULT/LEVEL_0/LEVEL_1/LEVEL_2/LEVEL_3  
+
+   #export Ctx=INFO
+   #export PIP=INFO
+   #export CSGOptiX=INFO
+}
+knobs
+
+
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
  1) opticks_event_mode=Hit ;; 
@@ -86,38 +114,34 @@ case $VERSION in
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
-## OPTICKS_EVENT_MODE configures the SEvt components to gather and save
-## for now are tieing that with VERSION 
-
-
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}   
-
 #opticks_num_photon=K1:10 
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
+#opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
 #opticks_num_photon=M3,10   
 #opticks_num_photon=M10
 #opticks_num_photon=M1,2,3
 opticks_num_photon=H1:10
-export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}   
-## NB UP TO MAX_PHOTON ONLY
 
 opticks_num_event=10
-export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}  
-## for SRM_TORCH running match OPTICKS_NUM_PHOTON to avoid logging warnings 
-
-opticks_max_photon=M100  
-export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}   ## SRM_TORCH mode only 
-## sstr::ParseScale h/K/H/M prefixes : leaving higher than needed costs VRAM + init time
-
+opticks_max_photon=H10  
+opticks_start_index=0
 opticks_max_bounce=31
-export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+opticks_integration_mode=1
 
 #opticks_running_mode=SRM_DEFAULT
 opticks_running_mode=SRM_TORCH
 #opticks_running_mode=SRM_INPUT_PHOTON
 #opticks_running_mode=SRM_INPUT_GENSTEP    ## NOT IMPLEMENTED FOR GEANT4
 #opticks_running_mode=SRM_GUN
-export OPTICKS_RUNNING_MODE=$opticks_running_mode
+
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}   
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}   
+export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}  
+export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}  
+export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
+export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
+export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 

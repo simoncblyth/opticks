@@ -363,7 +363,7 @@ double QSim::simulate(int eventID)
 
     SProf::Add("QSim__simulate_POST"); 
 
-    int num_ph = event->getNumPhoton() 
+    int num_ph = event->getNumPhoton() ; 
 
     LOG(info) 
         << " eventID " << eventID 
