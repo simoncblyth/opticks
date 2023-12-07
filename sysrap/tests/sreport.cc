@@ -306,9 +306,11 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
 
 inline void sreport_Creator::init() 
 {
-    report->run     = run ? run->copy() : nullptr ; 
     report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
-    if(run) NP::CopyMeta( report->runprof, run ) ;   
+    report->run     = run ? run->copy() : nullptr ; 
+
+    bool with_shape = false ; 
+    if(run) NP::CopyMeta( report->runprof, run, with_shape ) ;   
 
     report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 

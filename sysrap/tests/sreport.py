@@ -459,6 +459,9 @@ class Substamp_ONE_maxb_scan(object):
 class Ranges_SPAN(object):
     """
     PLOT=Ranges_SPAN ~/o/sreport.sh 
+
+    TODO: split off QRng upload, probably most of upload_geom from that 
+
     """
     def __init__(self, fold, symbol="fold"):
 

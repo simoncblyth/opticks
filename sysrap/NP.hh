@@ -217,7 +217,7 @@ struct NP
        ) const ; 
 
     static NP* MakeLike(  const NP* src);  
-    static void CopyMeta( NP* b, const NP* a ); 
+    static void CopyMeta( NP* b, const NP* a, bool with_shape=true  ); 
 
     static constexpr const char* Preserve_Last_Column_Integer_Annotation = "Preserve_Last_Column_Integer_Annotation" ; 
     void set_preserve_last_column_integer_annotation(); 
@@ -1958,9 +1958,9 @@ inline NP* NP::MakeLike(const NP* src) // static
     return dst ; 
 }
 
-inline void NP::CopyMeta( NP* b, const NP* a ) // static
+inline void NP::CopyMeta( NP* b, const NP* a, bool with_shape  ) // static
 {
-    b->set_shape( a->shape ); 
+    if(with_shape) b->set_shape( a->shape ); 
     b->meta = a->meta ;    // pass along the metadata 
     b->names = a->names ; 
     b->nodata = a->nodata ; 
@@ -4493,6 +4493,7 @@ inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
 
     int ni = num_key ; 
     int nj = 3 ; 
+    bool dump = false ; 
 
     NP* prof = ni > 0 ? NP::Make<int64_t>(ni, nj ) : nullptr  ; 
     int64_t* pp = prof ? prof->values<int64_t>() : nullptr ; 
@@ -4503,11 +4504,22 @@ inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
         const char* v = vals[i].c_str(); 
         bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
         assert( looks_like_prof );
-   
+
+  
         char* end = nullptr ; 
         int64_t st = strtoll( v,   &end, 10 ) ; 
         int64_t vm = strtoll( end+1, &end , 10 ) ; 
         int64_t rs = strtoll( end+1, &end , 10 ) ; 
+
+        if(dump) std::cout 
+            << "NP::makeMetaKVProfileArray"
+            << " k " << ( k ? k : "-" ) 
+            << " v " << ( v ? v : "-" ) 
+            << " st " << st 
+            << " vm " << vm 
+            << " rs " << rs 
+            << std::endl 
+            ;
 
         pp[nj*i + 0 ] = st ; 
         pp[nj*i + 1 ] = vm ; 

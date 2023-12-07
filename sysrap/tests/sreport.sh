@@ -102,7 +102,8 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N7
+#job=N7
+job=N5
 JOB=${JOB:-$job}
 
 DIR=unknown 
@@ -181,9 +182,6 @@ if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
         source epub.sh 
     fi  
 fi 
-
-
-
 
 exit 0 
 

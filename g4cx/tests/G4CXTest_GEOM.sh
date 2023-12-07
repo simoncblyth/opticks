@@ -126,7 +126,7 @@ opticks_num_event=10
 opticks_max_photon=H10  
 opticks_start_index=0
 opticks_max_bounce=31
-opticks_integration_mode=1
+opticks_integration_mode=3
 
 #opticks_running_mode=SRM_DEFAULT
 opticks_running_mode=SRM_TORCH
