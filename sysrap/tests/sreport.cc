@@ -308,10 +308,6 @@ inline void sreport_Creator::init()
 {
     report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
     report->run     = run ? run->copy() : nullptr ; 
-
-    bool with_shape = false ; 
-    if(run) NP::CopyMeta( report->runprof, run, with_shape ) ;   
-
     report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 

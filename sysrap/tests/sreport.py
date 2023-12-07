@@ -135,9 +135,13 @@ class Subprofile_ALL(object):
             fig.show()
 
 
-class Runprofile_ALL(object):
-    def __init__(self, rp, symbol="fold.runprofile"):
-        label = "Runprofile_ALL " 
+class Runprof_ALL(object):
+    """
+    PLOT=Runprof_ALL ~/o/sreport.sh 
+    """
+    def __init__(self, fold, symbol="fold.runprof"):
+        rp = eval(symbol)
+        label = "Runprof_ALL " 
         fontsize = Subprofile.FONTSIZE
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=label, equal=False)
@@ -169,7 +173,11 @@ class Runprofile_ALL(object):
 
 
 class Subprofile_ONE(object):
-    def __init__(self, f, symbol="fold.subprofile.a"):
+    """
+    PLOT=Subprofile_ONE ~/o/sreport.sh 
+    """
+    def __init__(self, fold, symbol="fold.subprofile.a"):
+        f = eval(symbol)
 
         meta = f.subprofile_meta
         names = f.subprofile_names
@@ -342,6 +350,9 @@ class Substamp_ALL_Etime_vs_Photon(object):
 
 
 class Substamp_ALL_RATIO_vs_Photon(object):
+    """
+    PLOT=Substamp_ALL_RATIO_vs_Photon ~/o/sreport.sh
+    """
     def __init__(self, fold, symbol="fold.substamp"):
         base = eval(symbol)
         title = "Substamp_ALL_RATIO_vs_Photon"
@@ -352,10 +363,8 @@ class Substamp_ALL_RATIO_vs_Photon(object):
             assert "a" in base.ff
             assert "b" in base.ff
 
-            _a_photon = Substamp.Subcount(base.a, "photon")
-            a_photon = _a_photon/1e6
-            _b_photon = Substamp.Subcount(base.b, "photon")
-            b_photon = _b_photon/1e6
+            a_photon = fold.submeta_NumPhotonCollected.a[:,0]/1e6
+            b_photon = fold.submeta_NumPhotonCollected.b[:,0]/1e6
             assert np.all( a_photon == b_photon )
 
             a_etime = Substamp.ETime(base.a)
@@ -366,7 +375,8 @@ class Substamp_ALL_RATIO_vs_Photon(object):
             pass
             ax.set_ylabel("B/A Event time ratio", fontsize=fontsize )
             ax.set_xlabel("Number of Photons (Millions)", fontsize=fontsize )
-            ax.set_yscale('log')
+            ax.set_ylim( 0, 300)
+            #ax.set_yscale('log')
             ax.legend(loc="lower right")
             fig.show()
         pass
@@ -471,7 +481,7 @@ class Ranges_SPAN(object):
 
         print("NPC:%s" % str(NPC))
 
-        t0 = fold.ranges[0,0]
+        t0 = fold.ranges[0,0]   ## currently ranges only setup for cxs_min.sh 
         ax = None
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
@@ -581,8 +591,8 @@ if __name__ == '__main__':
     if PLOT.startswith("Subprofile_ALL") and hasattr(fold, "subprofile"):
         Subprofile_ALL(fold, symbol="fold.subprofile")
     pass
-    if PLOT.startswith("Runprofile_ALL") and hasattr(fold, "runprof"):
-        Runprofile_ALL(fold, symbol="fold.runprof" )
+    if PLOT.startswith("Runprof_ALL") and hasattr(fold, "runprof"):
+        Runprof_ALL(fold, symbol="fold.runprof" )
     pass
 pass
 

@@ -59,9 +59,9 @@ export VERSION    ## used in SEvt output directory name ALL$VERSION
 TMP=${TMP:-/tmp/$USER/opticks}
 export BASE=$TMP/GEOM/$GEOM
 export LOGBASE=$BASE/$bin/ALL$VERSION
-export AFOLD=$LOGBASE/p001 
-export BFOLD=$LOGBASE/n001 
-#export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/p001  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
+export AFOLD=$LOGBASE/A000 
+export BFOLD=$LOGBASE/B000 
+#export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/A000  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
 
 mkdir -p $LOGBASE
 cd $LOGBASE            ## logfile written in invoking directory 
@@ -116,7 +116,7 @@ esac
 
 #opticks_num_photon=K1:10 
 #opticks_num_photon=H1:10,M2,3,5,7,10,20,40,80,100
-#opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
+#opticks_num_photon=M200   ## M200 : OOM with TITAN RTX 24G 
 #opticks_num_photon=M3,10   
 #opticks_num_photon=M10
 #opticks_num_photon=M1,2,3

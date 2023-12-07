@@ -217,7 +217,7 @@ struct NP
        ) const ; 
 
     static NP* MakeLike(  const NP* src);  
-    static void CopyMeta( NP* b, const NP* a, bool with_shape=true  ); 
+    static void CopyMeta( NP* b, const NP* a ); 
 
     static constexpr const char* Preserve_Last_Column_Integer_Annotation = "Preserve_Last_Column_Integer_Annotation" ; 
     void set_preserve_last_column_integer_annotation(); 
@@ -1958,9 +1958,9 @@ inline NP* NP::MakeLike(const NP* src) // static
     return dst ; 
 }
 
-inline void NP::CopyMeta( NP* b, const NP* a, bool with_shape  ) // static
+inline void NP::CopyMeta( NP* b, const NP* a ) // static
 {
-    if(with_shape) b->set_shape( a->shape ); 
+    b->set_shape( a->shape ); 
     b->meta = a->meta ;    // pass along the metadata 
     b->names = a->names ; 
     b->nodata = a->nodata ; 
@@ -4526,6 +4526,7 @@ inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
         pp[nj*i + 2 ] = rs ; 
         prof->names.push_back(k) ; 
     }
+    prof->meta = meta ; 
     return prof ; 
 }
 
