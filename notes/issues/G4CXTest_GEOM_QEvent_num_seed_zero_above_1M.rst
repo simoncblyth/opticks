@@ -2,6 +2,27 @@ G4CXTest_GEOM_QEvent_num_seed_zero_above_1M
 ==============================================
 
 
+Fix
+----
+
+G4CXApp::GeneratePrimaries had index off by one error::
+
+    233     else if(SEventConfig::IsRunningModeTorch())
+    234     {
+    235         int idx = eventID + 1 ;
+    236         NP* gs = SEvent::MakeTorchGenstep(idx) ;
+    237         NP* ph = SGenerate::GeneratePhotons(gs);
+    238         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
+    239         delete ph ;
+    240 
+    241         SEvent::SetGENSTEP(gs);  // picked up by 
+    242     }
+
+
+
+Issue 
+---------
+
 ::
 
     121 #opticks_num_photon=M10
@@ -48,5 +69,44 @@ G4CXTest_GEOM_QEvent_num_seed_zero_above_1M
     /home/blyth/o/G4CXTest_GEOM.sh: line 220: 189391 Aborted                 (core dumped) $bin
     /home/blyth/o/G4CXTest_GEOM.sh : run error
     N[blyth@localhost ~]$ 
+
+
+Maybe the last B side event is messing up the last A side event ?
+
+* lifecycle issue ?
+
+
+
+Rerun with opticks_integration_mode:1 looks like are 
+running with incorrect number of photons::
+
+    2023-12-07 19:49:02.257 INFO  [457199] [G4CXApp::BeamOn@342] [ OPTICKS_NUM_EVENT=10
+    2023-12-07 19:50:36.622 INFO  [457199] [G4CXApp::GeneratePrimaries@223] [ SEventConfig::RunningModeLabel SRM_TORCH eventID 0
+    U4VPrimaryGenerator::GeneratePrimaries ph (200000, 4, 4, )
+    2023-12-07 19:50:36.767 INFO  [457199] [G4CXApp::GeneratePrimaries@253] ]  eventID 0
+    2023-12-07 19:50:36.767 INFO  [457199] [U4Recorder::BeginOfEventAction_@292]  eventID 0
+    2023-12-07 19:50:36.851 INFO  [457199] [SEvt::hostside_running_resize_@2227]  photon.size 0 photon.size/M 0 =>  evt.num_photon 200000 evt.num_photon/M 0
+    2023-12-07 19:50:43.561 INFO  [457199] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 100000
+    2023-12-07 19:50:50.237 INFO  [457199] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 0
+    2023-12-07 19:50:50.237 INFO  [457199] [SEvt::add_array@3530]  k TRS.npy a -
+    2023-12-07 19:50:50.237 INFO  [457199] [U4Recorder::MakeMetaArray@690] U4Recorder::DescFakes  
+    U4Recorder::FAKES_SKIP NO 
+    U4Recorder::FAKES      YES
+    FAKES.size             0
+
+
+Looking back at the opticks_integration_mode:3 run see same issue. Not using intended number of photons::
+
+    2023-12-07 19:35:32.501 INFO  [430705] [G4CXApp::BeamOn@342] [ OPTICKS_NUM_EVENT=10
+    2023-12-07 19:37:03.886 INFO  [430705] [G4CXApp::GeneratePrimaries@223] [ SEventConfig::RunningModeLabel SRM_TORCH eventID 0
+    U4VPrimaryGenerator::GeneratePrimaries ph (200000, 4, 4, )
+    2023-12-07 19:37:04.030 INFO  [430705] [G4CXApp::GeneratePrimaries@253] ]  eventID 0
+    2023-12-07 19:37:04.030 INFO  [430705] [U4Recorder::BeginOfEventAction_@292]  eventID 0
+    2023-12-07 19:37:04.114 INFO  [430705] [SEvt::hostside_running_resize_@2227]  photon.size 0 photon.size/M 0 =>  evt.num_photon 200000 evt.num_photon/M 0
+    2023-12-07 19:37:10.989 INFO  [430705] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 100000
+    2023-12-07 19:37:17.712 INFO  [430705] [U4Recorder::PreUserTrackingAction_Optical@392]  modulo 100000 : ulabel.id 0
+    2023-12-07 19:37:17.712 INFO  [430705] [SEvt::add_array@3530]  k TRS.npy a -
+    2023-12-07 19:37:17.712 INFO  [430705] [U4Recorder::MakeMetaArray@690] U4Recorder::DescFakes  
+
 
 

@@ -232,8 +232,8 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     }
     else if(SEventConfig::IsRunningModeTorch())
     {
-        int idx = eventID + 1 ; 
-        NP* gs = SEvent::MakeTorchGenstep(idx) ;        
+        int idx_arg = eventID ; 
+        NP* gs = SEvent::MakeTorchGenstep(idx_arg) ;        
         NP* ph = SGenerate::GeneratePhotons(gs); 
         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
         delete ph ; 

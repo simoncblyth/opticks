@@ -136,10 +136,10 @@ HMM: perhaps SEventConfig to do this in standardized place ?
 
 **/
 
-NP* SEvent::MakeTorchGenstep(int idx){    return MakeGenstep( OpticksGenstep_TORCH, idx ) ; }
-NP* SEvent::MakeCerenkovGenstep(int idx){ return MakeGenstep( OpticksGenstep_CERENKOV, idx ) ; }
-NP* SEvent::MakeScintGenstep(int idx){    return MakeGenstep( OpticksGenstep_SCINTILLATION, idx ) ; }
-NP* SEvent::MakeCarrierGenstep(int idx){  return MakeGenstep( OpticksGenstep_CARRIER, idx ) ; }
+NP* SEvent::MakeTorchGenstep(   int idx_arg){    return MakeGenstep( OpticksGenstep_TORCH, idx_arg ) ; }
+NP* SEvent::MakeCerenkovGenstep(int idx_arg){ return MakeGenstep( OpticksGenstep_CERENKOV, idx_arg ) ; }
+NP* SEvent::MakeScintGenstep(   int idx_arg){    return MakeGenstep( OpticksGenstep_SCINTILLATION, idx_arg ) ; }
+NP* SEvent::MakeCarrierGenstep( int idx_arg){  return MakeGenstep( OpticksGenstep_CARRIER, idx_arg ) ; }
 
 
 /**

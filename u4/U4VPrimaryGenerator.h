@@ -128,7 +128,7 @@ should associate as such in the SEvt to retain access to these
 
 inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, const NP* ph )
 {
-    std::cout << "U4VPrimaryGenerator::GeneratePrimaries ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
+    std::cout << "U4VPrimaryGenerator::GeneratePrimaries_From_Photons ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
 
     if(ph == nullptr) std::cerr 
          << "U4VPrimaryGenerator::GeneratePrimaries : FATAL : NO PHOTONS " << std::endl 
