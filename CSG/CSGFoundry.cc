@@ -2675,10 +2675,11 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    LOG(LEVEL) << "[ SSim::Load " ;  
-    sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
-    LOG(LEVEL) << "] SSim::Load " ; 
-    if( sim == nullptr ) sim = SSim::Get() ;  // NEED SAME ENV AS ctor
+    // REMOVE THIS SECOND SSim LOAD
+    // LOG(LEVEL) << "[ SSim::Load " ;  
+    // sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
+    // LOG(LEVEL) << "] SSim::Load " ; 
+    // if( sim == nullptr ) sim = SSim::Get() ;  // NEED SAME ENV AS ctor
  
     mtime = MTime(dir, "solid.npy"); 
 
@@ -2955,10 +2956,11 @@ HMM: this means dont really need to persit CSGFoundry : however
 its very useful for debugging and access to geometry info, so 
 will continue to do so for now. 
 
-HUH : there is another SSim::Load at tail of CSGFoundry::load
 
-* LOOKS LIKE SSim GETTING LOADED TWICE ? 
-* TODO : SLIM DOWN THE SIMULAR METHODS
+* PREVIOUSLY SSim WAS GETTING LOADED TWICE ? 
+  with the second SSim::Load at tail of CSGFoundry::load
+  Try removing that. 
+
 
 **/
 

@@ -27,7 +27,7 @@ class PTX(object):
     TOT = "TOTAL .f64 lines in function regions of the PTX"
    
     def __init__(self, path):
-        lines = file(path).read().split("\n")
+        lines = open(path).read().split("\n")
         d = odict()
         d[self.TOT] = 0 
         region = "start"
@@ -52,7 +52,7 @@ class PTX(object):
         self.d = d
 
     def __repr__(self):
-        return "\n".join(["ptx.py %s" % self.path] + map(lambda kv:"%4d : %s " %  (kv[1],kv[0]), self.d.items()))
+        return "\n".join(["ptx.py %s" % self.path] + list(map(lambda kv:"%4d : %s " %  (kv[1],kv[0]), self.d.items())))
      
 
 if __name__ == '__main__':
