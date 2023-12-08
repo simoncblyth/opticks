@@ -293,7 +293,16 @@ void CSGOptiX::InitSim( SSim* ssim  )
     LOG_IF(fatal, ssim == nullptr ) << "simulate/simtrace modes require SSim/QSim setup" ;
     assert(ssim);  
 
-    ssim->serialize() ;  // SSim::serialize stree::serialize into NPFold  (moved from InitEvt)
+
+    if( ssim->hasTop() == false )
+    {
+        ssim->serialize() ;  // SSim::serialize stree::serialize into NPFold  (moved from InitEvt)
+    } 
+    else
+    {
+        LOG(LEVEL) << " NOT calling SSim::serialize : as already done, loaded ? " ;  
+    }
+    
 
     QSim::UploadComponents(ssim);  
 

@@ -107,6 +107,8 @@ public:
     void load(const char* base, const char* reldir=RELDIR) ; 
     void load_(const char* dir); 
     void serialize(); 
+    bool hasTop() const ; 
+
 
 public:
 

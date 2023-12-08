@@ -382,11 +382,15 @@ NPFold layout::
 
 **/
 
+
 void SSim::serialize()
 {
+    bool has_top = hasTop(); 
+
     LOG(LEVEL) << "[" ; 
-    LOG_IF(fatal, top != nullptr)  << " top non-null : cannot serialize twice " ;  
-    assert( top == nullptr ); 
+    LOG_IF(fatal, has_top )  << " has_top : cannot serialize twice : DONT SERIALIZE AFTER LOADING SSim " ;  
+    assert( !has_top );
+ 
     top = new NPFold ;  
     NPFold* f_tree = tree->serialize() ;
     top->add_subfold( stree::RELDIR, f_tree ); 
@@ -398,6 +402,14 @@ void SSim::serialize()
 
     LOG(LEVEL) << "]" ; 
 }
+
+bool SSim::hasTop() const
+{
+   return top != nullptr ; 
+}
+
+
+
 
 
 template<typename ... Args>
